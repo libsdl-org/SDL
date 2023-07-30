@@ -311,12 +311,25 @@ static SDL_bool keyboard_repeat_key_is_set(SDL_WaylandKeyboardRepeat *repeat_inf
     return repeat_info->is_initialized && repeat_info->is_key_down && key == repeat_info->key;
 }
 
+static void sync_done_handler(void *data, struct wl_callback *callback, uint32_t callback_data)
+{
+    /* Nothing to do, just destroy the callback */
+    wl_callback_destroy(callback);
+}
+
+static struct wl_callback_listener sync_listener = {
+    sync_done_handler
+};
+
 void Wayland_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *d = _this->driverdata;
 
-    /* TODO: Maybe use a pipe to avoid the compositor roundtrip? */
-    wl_display_sync(d->display);
+    /* Queue a sync event to unblock the event queue fd if it's empty and being waited on.
+     * TODO: Maybe use a pipe to avoid the compositor roundtrip?
+     */
+    struct wl_callback *cb = wl_display_sync(d->display);
+    wl_callback_add_listener(cb, &sync_listener, NULL);
     WAYLAND_wl_display_flush(d->display);
 }
 
@@ -2704,6 +2717,9 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
         }
         if (input->primary_selection_device->selection_source != NULL) {
             Wayland_primary_selection_source_destroy(input->primary_selection_device->selection_source);
+        }
+        if (input->primary_selection_device->primary_selection_device != NULL) {
+            zwp_primary_selection_device_v1_destroy(input->primary_selection_device->primary_selection_device);
         }
         SDL_free(input->primary_selection_device);
     }
