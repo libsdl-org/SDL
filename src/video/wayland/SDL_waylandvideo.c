@@ -672,6 +672,10 @@ static void Wayland_free_display(SDL_VideoDisplay *display)
         SDL_DisplayData *display_data = display->driverdata;
         int i;
 
+        if (display_data->xdg_output) {
+            zxdg_output_v1_destroy(display_data->xdg_output);
+        }
+
         if (wl_output_get_version(display_data->output) >= WL_OUTPUT_RELEASE_SINCE_VERSION) {
             wl_output_release(display_data->output);
         } else {
