@@ -51,6 +51,14 @@ typedef HRESULT (WINAPI *DwmSetWindowAttribute_t)(HWND hwnd, DWORD dwAttribute, 
 #define SWP_NOCOPYBITS 0
 #endif
 
+/* An undocumented message to create a popup system menu
+ * - wParam is always 0
+ * - lParam = MAKELONG(x, y) where x and y are the screen coordinates where the menu should be displayed
+ */
+#ifndef WM_POPUPSYSTEMMENU
+#define WM_POPUPSYSTEMMENU 0x313
+#endif
+
 /* #define HIGHDPI_DEBUG */
 
 /* Fake window to help with DirectInput events. */
@@ -1484,6 +1492,17 @@ int WIN_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperati
     FlashWindowEx(&desc);
 
     return 0;
+}
+
+void WIN_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
+{
+    const SDL_WindowData *data = window->driverdata;
+    POINT pt;
+
+    pt.x = x;
+    pt.y = y;
+    ClientToScreen(data->hwnd, &pt);
+    SendMessage(data->hwnd, WM_POPUPSYSTEMMENU, 0, MAKELPARAM(pt.x, pt.y));
 }
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 

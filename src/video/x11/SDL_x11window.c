@@ -1957,4 +1957,29 @@ int SDL_X11_SetWindowTitle(Display *display, Window xwindow, char *title)
     return 0;
 }
 
+void X11_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
+{
+    SDL_WindowData *data = window->driverdata;
+    SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
+    Display *display = data->videodata->display;
+    Window root = RootWindow(display, displaydata->screen);
+    XClientMessageEvent e;
+    Window childReturn;
+    int wx, wy;
+
+    SDL_zero(e);
+    X11_XTranslateCoordinates(display, data->xwindow, root, x, y, &wx, &wy, &childReturn);
+
+    e.type = ClientMessage;
+    e.window = data->xwindow;
+    e.message_type = X11_XInternAtom(display, "_GTK_SHOW_WINDOW_MENU", 0);
+    e.data.l[0] = 0;  /* GTK device ID (unused) */
+    e.data.l[1] = wx; /* X coordinate relative to root */
+    e.data.l[2] = wy; /* Y coordinate relative to root */
+    e.format = 32;
+
+    X11_XSendEvent(display, root, False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&e);
+    X11_XFlush(display);
+}
+
 #endif /* SDL_VIDEO_DRIVER_X11 */

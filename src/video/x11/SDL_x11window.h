@@ -115,6 +115,7 @@ extern int X11_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struc
 extern int X11_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 extern void X11_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept);
 extern int X11_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
+extern void X11_ShowWindowSystemMenu(SDL_Window *window, int x, int y);
 
 int SDL_X11_SetWindowTitle(Display *display, Window xwindow, char *title);
 void X11_UpdateWindowPosition(SDL_Window *window);

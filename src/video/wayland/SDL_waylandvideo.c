@@ -209,6 +209,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     device->SetWindowHitTest = Wayland_SetWindowHitTest;
     device->FlashWindow = Wayland_FlashWindow;
     device->HasScreenKeyboardSupport = Wayland_HasScreenKeyboardSupport;
+    device->ShowWindowSystemMenu = Wayland_ShowWindowSystemMenu;
 
 #ifdef SDL_USE_LIBDBUS
     if (SDL_SystemTheme_Init())

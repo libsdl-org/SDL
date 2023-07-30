@@ -554,6 +554,19 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
     }
 
     if (input->pointer_focus) {
+        SDL_WindowData *wind = (SDL_WindowData *)wl_surface_get_user_data(surface);
+
+        if (wind) {
+            /* Clear the capture flag and raise all buttons */
+            wind->sdlwindow->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
+
+            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, 0, SDL_RELEASED, SDL_BUTTON_LEFT);
+            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, 0, SDL_RELEASED, SDL_BUTTON_RIGHT);
+            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, 0, SDL_RELEASED, SDL_BUTTON_MIDDLE);
+            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, 0, SDL_RELEASED, SDL_BUTTON_X1);
+            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, 0, SDL_RELEASED, SDL_BUTTON_X2);
+        }
+
         SDL_SetMouseFocus(NULL);
         input->pointer_focus = NULL;
     }

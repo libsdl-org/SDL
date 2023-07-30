@@ -5054,6 +5054,19 @@ SDL_bool SDL_ShouldAllowTopmost(void)
     return SDL_GetHintBoolean(SDL_HINT_ALLOW_TOPMOST, SDL_TRUE);
 }
 
+int SDL_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
+{
+    CHECK_WINDOW_MAGIC(window, -1)
+    CHECK_WINDOW_NOT_POPUP(window, -1)
+
+    if (_this->ShowWindowSystemMenu) {
+        _this->ShowWindowSystemMenu(window, x, y);
+        return 0;
+    }
+
+    return SDL_Unsupported();
+}
+
 int SDL_SetWindowHitTest(SDL_Window *window, SDL_HitTest callback, void *callback_data)
 {
     CHECK_WINDOW_MAGIC(window, -1);
