@@ -126,28 +126,6 @@ static void ANDROIDAUDIO_CloseDevice(SDL_AudioDevice *device)
     }
 }
 
-static SDL_bool ANDROIDAUDIO_Init(SDL_AudioDriverImpl *impl)
-{
-    // !!! FIXME: if on Android API < 24, DetectDevices and Deinitialize should be NULL and OnlyHasDefaultOutputDevice and OnlyHasDefaultCaptureDevice should be SDL_TRUE, since audio device enum and hotplug appears to require Android 7.0+.
-    impl->ThreadInit = Android_AudioThreadInit;
-    impl->DetectDevices = Android_StartAudioHotplug;
-    impl->Deinitialize = Android_StopAudioHotplug;
-    impl->OpenDevice = ANDROIDAUDIO_OpenDevice;
-    impl->PlayDevice = ANDROIDAUDIO_PlayDevice;
-    impl->GetDeviceBuf = ANDROIDAUDIO_GetDeviceBuf;
-    impl->CloseDevice = ANDROIDAUDIO_CloseDevice;
-    impl->CaptureFromDevice = ANDROIDAUDIO_CaptureFromDevice;
-    impl->FlushCapture = ANDROIDAUDIO_FlushCapture;
-
-    impl->HasCaptureSupport = SDL_TRUE;
-
-    return SDL_TRUE;
-}
-
-AudioBootStrap ANDROIDAUDIO_bootstrap = {
-    "android", "SDL Android audio driver", ANDROIDAUDIO_Init, SDL_FALSE
-};
-
 // Pause (block) all non already paused audio devices by taking their mixer lock
 void ANDROIDAUDIO_PauseDevices(void)
 {
@@ -187,5 +165,27 @@ void ANDROIDAUDIO_ResumeDevices(void)
         }
     }
 }
+
+static SDL_bool ANDROIDAUDIO_Init(SDL_AudioDriverImpl *impl)
+{
+    // !!! FIXME: if on Android API < 24, DetectDevices and Deinitialize should be NULL and OnlyHasDefaultOutputDevice and OnlyHasDefaultCaptureDevice should be SDL_TRUE, since audio device enum and hotplug appears to require Android 7.0+.
+    impl->ThreadInit = Android_AudioThreadInit;
+    impl->DetectDevices = Android_StartAudioHotplug;
+    impl->Deinitialize = Android_StopAudioHotplug;
+    impl->OpenDevice = ANDROIDAUDIO_OpenDevice;
+    impl->PlayDevice = ANDROIDAUDIO_PlayDevice;
+    impl->GetDeviceBuf = ANDROIDAUDIO_GetDeviceBuf;
+    impl->CloseDevice = ANDROIDAUDIO_CloseDevice;
+    impl->CaptureFromDevice = ANDROIDAUDIO_CaptureFromDevice;
+    impl->FlushCapture = ANDROIDAUDIO_FlushCapture;
+
+    impl->HasCaptureSupport = SDL_TRUE;
+
+    return SDL_TRUE;
+}
+
+AudioBootStrap ANDROIDAUDIO_bootstrap = {
+    "android", "SDL Android audio driver", ANDROIDAUDIO_Init, SDL_FALSE
+};
 
 #endif // SDL_AUDIO_DRIVER_ANDROID
