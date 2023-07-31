@@ -260,13 +260,11 @@ static int AAUDIO_OpenDevice(SDL_AudioDevice *device)
     SDL_UpdatedAudioDeviceFormat(device);
 
     // Allocate mixing buffer
-    if (!iscapture) {
-        hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
-        if (hidden->mixbuf == NULL) {
-            return SDL_OutOfMemory();
-        }
-        SDL_memset(hidden->mixbuf, device->silence_value, device->buffer_size);
+    hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
+    if (hidden->mixbuf == NULL) {
+        return SDL_OutOfMemory();
     }
+    SDL_memset(hidden->mixbuf, device->silence_value, device->buffer_size);
 
     hidden->semaphore = SDL_CreateSemaphore(0);
     if (!hidden->semaphore) {
