@@ -698,6 +698,8 @@ which index is the "opengl" or whatnot driver, you can just pass that string dir
 here, now. Passing NULL is the same as passing -1 here in SDL2, to signify you want SDL
 to decide for you.
 
+The SDL_RENDERER_TARGETTEXTURE flag has been removed, all current renderers support target texture functionality.
+
 When a renderer is created, it will automatically set the logical size to the size of
 the window in points. For high DPI displays, this will set up scaling from points to
 pixels. You can disable this scaling with:

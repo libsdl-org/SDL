@@ -778,10 +778,6 @@ extern DECLSPEC void SDLCALL SDL_UnlockTexture(SDL_Texture *texture);
 /**
  * Set a texture as the current rendering target.
  *
- * Before using this function, you should check the
- * `SDL_RENDERER_TARGETTEXTURE` bit in the flags of SDL_RendererInfo to see if
- * render targets are supported.
- *
  * The default render target is the window for which the renderer was created.
  * To stop rendering to a texture and render to the window again, call this
  * function with a NULL `texture`.
