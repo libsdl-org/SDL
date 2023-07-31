@@ -643,8 +643,9 @@ int X11_InitModes(_THIS)
         int xrandr_major, xrandr_minor;
         /* require at least XRandR v1.3 */
         if (CheckXRandR(data->display, &xrandr_major, &xrandr_minor) &&
-            (xrandr_major >= 2 || (xrandr_major == 1 && xrandr_minor >= 3))) {
-            return X11_InitModes_XRandR(_this);
+            (xrandr_major >= 2 || (xrandr_major == 1 && xrandr_minor >= 3)) &&
+            X11_InitModes_XRandR(_this) == 0) {
+            return 0;
         }
     }
 #endif /* SDL_VIDEO_DRIVER_X11_XRANDR */
