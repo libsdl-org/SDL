@@ -15,6 +15,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+#include "testutils.h"
 
 int main(int argc, char *argv[])
 {
@@ -29,12 +30,24 @@ int main(int argc, char *argv[])
     Uint32 audio_len = 0;
     SDL_AudioStream *stream;
     SDL_AudioDeviceID device;
+    const char *fname = "sample.wav";
+    char *path;
+    int rc;
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     window = SDL_CreateWindow("Drag the slider: Normal speed", 640, 480, 0);
     renderer = SDL_CreateRenderer(window, NULL, 0);
 
-    SDL_LoadWAV("sample.wav", &spec, &audio_buf, &audio_len);
+    path = GetNearbyFilename(fname);
+    rc = SDL_LoadWAV(path ? path : fname, &spec, &audio_buf, &audio_len);
+    SDL_free(path);
+
+    if (rc < 0) {
+        SDL_Log("Failed to load '%s': %s", fname, SDL_GetError());
+        SDL_Quit();
+        return 1;
+    }
+
     stream = SDL_CreateAudioStream(&spec, &spec);
     SDL_PutAudioStreamData(stream, audio_buf, audio_len);
     device = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &spec);
