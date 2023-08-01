@@ -1301,7 +1301,7 @@ static void SetWindowMaximized(_THIS, SDL_Window *window, SDL_bool maximized)
         X11_XSync(display, False);
         prev_handler = X11_XSetErrorHandler(X11_CatchAnyError);
 
-        timeout = SDL_GetTicks64() + 1000;
+        timeout = SDL_GetTicks64() + 100;
         while (SDL_TRUE) {
             caught_x11_error = SDL_FALSE;
             X11_XSync(display, False);
