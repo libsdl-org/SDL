@@ -13,6 +13,9 @@
 			buildPhases = (
 			);
 			dependencies = (
+				F3E1F8032A78C3C500AC76D3 /* PBXTargetDependency */,
+				F3E1F8012A78C3BE00AC76D3 /* PBXTargetDependency */,
+				F3E1F7FF2A78C3AD00AC76D3 /* PBXTargetDependency */,
 				F35E56E72983133F00A43A5F /* PBXTargetDependency */,
 				DB0F490517CA5249008798C5 /* PBXTargetDependency */,
 				DB0F490717CA5249008798C5 /* PBXTargetDependency */,
@@ -569,6 +572,27 @@
 			proxyType = 1;
 			remoteGlobalIDString = F35E56A2298312CB00A43A5F;
 			remoteInfo = testautomation;
+		};
+		F3E1F7FE2A78C3AD00AC76D3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DB89956D18A19ABA0092407C;
+			remoteInfo = testhotplug;
+		};
+		F3E1F8002A78C3BE00AC76D3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DB445EE618184B7000B306B0;
+			remoteInfo = testdropfile;
+		};
+		F3E1F8022A78C3C500AC76D3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F3C17CDB28E416CF00E1A26D;
+			remoteInfo = testgeometry;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -3588,6 +3612,21 @@
 			isa = PBXTargetDependency;
 			target = F35E56A2298312CB00A43A5F /* testautomation */;
 			targetProxy = F35E56E62983133F00A43A5F /* PBXContainerItemProxy */;
+		};
+		F3E1F7FF2A78C3AD00AC76D3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DB89956D18A19ABA0092407C /* testhotplug */;
+			targetProxy = F3E1F7FE2A78C3AD00AC76D3 /* PBXContainerItemProxy */;
+		};
+		F3E1F8012A78C3BE00AC76D3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DB445EE618184B7000B306B0 /* testdropfile */;
+			targetProxy = F3E1F8002A78C3BE00AC76D3 /* PBXContainerItemProxy */;
+		};
+		F3E1F8032A78C3C500AC76D3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F3C17CDB28E416CF00E1A26D /* testgeometry */;
+			targetProxy = F3E1F8022A78C3C500AC76D3 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
