@@ -1317,7 +1317,6 @@
 		F3C17C7328E40ADE00E1A26D /* testutils.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testutils.c; sourceTree = "<group>"; };
 		F3C17CD628E416AC00E1A26D /* testgeometry.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testgeometry.c; sourceTree = "<group>"; };
 		F3C17CDC28E416CF00E1A26D /* testgeometry.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testgeometry.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		F3CB56D82A7897D800766177 /* testoverlay-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "testoverlay-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1719,7 +1718,6 @@
 		08FB7794FE84155DC02AAC07 /* SDLTest */ = {
 			isa = PBXGroup;
 			children = (
-				F3CB56D82A7897D800766177 /* testoverlay-Info.plist */,
 				F3C17C6A28E3FD4400E1A26D /* config.xcconfig */,
 				003FA63A093FFD41000C53B3 /* SDL.xcodeproj */,
 				08FB7795FE84155DC02AAC07 /* Source */,
@@ -3990,8 +3988,6 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = "testoverlay-Info.plist";
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				PRODUCT_NAME = testoverlay;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
@@ -4164,8 +4160,6 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = "testoverlay-Info.plist";
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				PRODUCT_NAME = testoverlay;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
