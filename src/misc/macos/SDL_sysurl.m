@@ -20,6 +20,8 @@
 */
 #include "SDL_internal.h"
 
+#if defined(__MACOS__)
+
 #include "../SDL_sysurl.h"
 
 #import <Cocoa/Cocoa.h>
@@ -33,3 +35,5 @@ int SDL_SYS_OpenURL(const char *url)
         return status == noErr ? 0 : -1;
     }
 }
+
+#endif /* __MACOS__ */
