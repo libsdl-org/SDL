@@ -40,6 +40,8 @@ typedef struct {
     /* What location we last saw the cursor move to. */
     CGFloat lastMoveX;
     CGFloat lastMoveY;
+    /* If we just turned on relative mode, and should skip a single mouse motion event. */
+    SDL_bool justEnabledRelative;
 } SDL_MouseData;
 
 @interface NSCursor (InvisibleCursor)
