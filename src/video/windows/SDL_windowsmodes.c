@@ -318,10 +318,19 @@ static void WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info,
         if (SDL_wcscmp(driverdata->DeviceName, info->szDevice) == 0) {
             SDL_bool moved = (index != i);
 
+            if (driverdata->state != DisplayRemoved) {
+                /* We've already enumerated this display, don't move it */
+                return;
+            }
+
+            if (index >= _this->num_displays) {
+                /* This should never happen due to the check above, but just in case... */
+                return;
+            }
+
             if (moved) {
                 SDL_VideoDisplay tmp;
 
-                SDL_assert(index < _this->num_displays);
                 SDL_memcpy(&tmp, &_this->displays[index], sizeof(tmp));
                 SDL_memcpy(&_this->displays[index], &_this->displays[i], sizeof(tmp));
                 SDL_memcpy(&_this->displays[i], &tmp, sizeof(tmp));
