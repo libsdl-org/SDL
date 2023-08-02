@@ -2467,9 +2467,9 @@ SDL_DisplayID Cocoa_GetDisplayForWindow(SDL_VideoDevice *_this, SDL_Window *wind
             displayid = [[screen.deviceDescription objectForKey:@"NSScreenNumber"] unsignedIntValue];
 
             for (i = 0; i < _this->num_displays; i++) {
-                SDL_DisplayData *displaydata = _this->displays[i].driverdata;
+                SDL_DisplayData *displaydata = _this->displays[i]->driverdata;
                 if (displaydata != NULL && displaydata->display == displayid) {
-                    return _this->displays[i].id;
+                    return _this->displays[i]->id;
                 }
             }
         }

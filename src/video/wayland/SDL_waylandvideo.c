@@ -935,7 +935,7 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     Wayland_FiniMouse(data);
 
     for (i = _this->num_displays - 1; i >= 0; --i) {
-        SDL_VideoDisplay *display = &_this->displays[i];
+        SDL_VideoDisplay *display = _this->displays[i];
         Wayland_free_display(display);
     }
 
