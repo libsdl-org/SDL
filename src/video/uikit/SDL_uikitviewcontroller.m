@@ -467,8 +467,8 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
             size_t deleteLength = SDL_utf8strlen([[committedText substringFromIndex:matchLength] UTF8String]);
             while (deleteLength > 0) {
                 /* Send distinct down and up events for each backspace action */
-                SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_BACKSPACE);
-                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_BACKSPACE);
+                SDL_SendVirtualKeyboardKey(SDL_PRESSED, SDL_SCANCODE_BACKSPACE);
+                SDL_SendVirtualKeyboardKey(SDL_RELEASED, SDL_SCANCODE_BACKSPACE);
                 --deleteLength;
             }
         }
