@@ -3940,7 +3940,8 @@
 				OTHER_LDFLAGS = "$(CONFIG_FRAMEWORK_LDFLAGS)";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.libsdl.$(PRODUCT_NAME)";
 				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos appletvsimulator appletvos";
-				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2,3";
 				TVOS_DEPLOYMENT_TARGET = 9.0;
 			};
 			name = Debug;
@@ -4112,7 +4113,8 @@
 				OTHER_LDFLAGS = "$(CONFIG_FRAMEWORK_LDFLAGS)";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.libsdl.$(PRODUCT_NAME)";
 				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos appletvsimulator appletvos";
-				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2,3";
 				TVOS_DEPLOYMENT_TARGET = 9.0;
 			};
 			name = Release;
