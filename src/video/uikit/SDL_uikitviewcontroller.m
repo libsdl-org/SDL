@@ -405,7 +405,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 {
     BOOL shouldStartTextInput = NO;
 
-    if (!SDL_TextInputActive() && !hidingKeyboard && !rotatingOrientation) {
+    if (!SDL_IsTextInputActive() && !hidingKeyboard && !rotatingOrientation) {
         shouldStartTextInput = YES;
     }
 
@@ -434,7 +434,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 {
     BOOL shouldStopTextInput = NO;
 
-    if (SDL_TextInputActive() && !showingKeyboard && !rotatingOrientation) {
+    if (SDL_IsTextInputActive() && !showingKeyboard && !rotatingOrientation) {
         shouldStopTextInput = YES;
     }
 
