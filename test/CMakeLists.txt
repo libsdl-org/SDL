@@ -202,6 +202,7 @@ if(Python3_FOUND AND Python3_VERSION VERSION_GREATER_EQUAL "3.2")
     endforeach()
 endif()
 
+add_sdl_test_executable(testaudio NEEDS_RESOURCES TESTUTILS SOURCES testaudio.c)
 add_sdl_test_executable(testfile NONINTERACTIVE SOURCES testfile.c)
 add_sdl_test_executable(testcontroller TESTUTILS SOURCES testcontroller.c gamepadutils.c ${gamepad_image_headers})
 add_sdl_test_executable(testgeometry TESTUTILS SOURCES testgeometry.c)
