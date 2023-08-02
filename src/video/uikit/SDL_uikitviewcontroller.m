@@ -63,11 +63,11 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 @implementation SDLUITextField : UITextField
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
-	if (action == @selector(paste:)) {
-		return NO;
-	}
+    if (action == @selector(paste:)) {
+        return NO;
+    }
 
-	return [super canPerformAction:action withSender:sender];
+    return [super canPerformAction:action withSender:sender];
 }
 @end
 
