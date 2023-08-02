@@ -22,7 +22,9 @@
 #endif
 #define SDL_DYNAMIC_API 0
 
+#ifndef NO_BUILD_CONFIG
 #include "../src/SDL_internal.h"
+#endif
 
 #include <stdio.h>
 #include <string.h>

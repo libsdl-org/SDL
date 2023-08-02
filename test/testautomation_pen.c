@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#ifndef NO_BUILD_CONFIG
 #include <stddef.h>
 
 /**
@@ -1907,3 +1908,23 @@ SDLTest_TestSuiteReference penTestSuite = {
     penTests,
     NULL
 };
+
+#else
+
+#include <SDL3/SDL_test.h>
+#include "testautomation_suites.h"
+
+/* Sequence of Mouse test cases */
+static const SDLTest_TestCaseReference *penTests[] = {
+    NULL
+};
+
+/* Mouse test suite (global) */
+SDLTest_TestSuiteReference penTestSuite = {
+    "Pen",
+    NULL,
+    penTests,
+    NULL
+};
+
+#endif

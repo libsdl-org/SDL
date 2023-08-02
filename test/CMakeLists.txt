@@ -2,7 +2,12 @@
 # CMake script for building the SDL tests
 #
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../cmake")
+
+include(CheckIncludeFile)
 include(CheckStructHasMember)
+include(CMakePushCheckState)
+include(sdlcompilers)
 
 if(SDL_TESTS_LINK_SHARED)
     set(sdl_name_component SDL3-shared)
@@ -220,7 +225,7 @@ if(HAVE_LIBUDEV_H)
 endif()
 
 set(FFmpeg_FIND_COMPONENTS AVCODEC AVFORMAT AVUTIL SWSCALE)
-include("${SDL3_SOURCE_DIR}/cmake/FindFFmpeg.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../cmake/FindFFmpeg.cmake")
 if(FFmpeg_FOUND)
     cmake_push_check_state()
     list(APPEND CMAKE_REQUIRED_INCLUDES "${FFmpeg_AVUTIL_INCLUDE_DIRS}")
