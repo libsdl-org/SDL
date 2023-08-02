@@ -18,6 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
 #include "../SDL_internal.h"
 
 /* The high-level video driver subsystem */
@@ -131,11 +132,11 @@ static VideoBootStrap *bootstrap[] = {
     &OS2DIVE_bootstrap,
     &OS2VMAN_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_OFFSCREEN
-    &OFFSCREEN_bootstrap,
-#endif
 #if SDL_VIDEO_DRIVER_NGAGE
     &NGAGE_bootstrap,
+#endif
+#if SDL_VIDEO_DRIVER_OFFSCREEN
+    &OFFSCREEN_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_DUMMY
     &DUMMY_bootstrap,
