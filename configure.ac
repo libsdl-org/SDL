@@ -4625,14 +4625,14 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
             AC_DEFINE(SDL_VIDEO_DRIVER_OS2, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/video/os2/*.c"
             have_video=yes
-            SUMMARY_video="${SUMMARY_video} os/2"
+            SUMMARY_video="${SUMMARY_video} OS/2"
         fi
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
             AC_DEFINE(SDL_AUDIO_DRIVER_OS2, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/audio/os2/*.c"
             have_audio=yes
-            SUMMARY_audio="${SUMMARY_audio} os/2"
+            SUMMARY_audio="${SUMMARY_audio} OS/2"
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lmmpm2"
         fi
         # Set up files for the thread library

@@ -29640,7 +29640,7 @@ printf "%s\n" "#define SDL_VIDEO_DRIVER_OS2 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/video/os2/*.c"
             have_video=yes
-            SUMMARY_video="${SUMMARY_video} os/2"
+            SUMMARY_video="${SUMMARY_video} OS/2"
         fi
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -29649,7 +29649,7 @@ printf "%s\n" "#define SDL_AUDIO_DRIVER_OS2 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/audio/os2/*.c"
             have_audio=yes
-            SUMMARY_audio="${SUMMARY_audio} os/2"
+            SUMMARY_audio="${SUMMARY_audio} OS/2"
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lmmpm2"
         fi
         # Set up files for the thread library
