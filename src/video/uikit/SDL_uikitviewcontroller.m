@@ -74,6 +74,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
     UITextField *textField;
     BOOL hardwareKeyboard;
     BOOL showingKeyboard;
+    BOOL hidingKeyboard;
     BOOL rotatingOrientation;
     NSString *committedText;
     NSString *obligateForBackspace;
@@ -91,6 +92,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
         [self initKeyboard];
         hardwareKeyboard = NO;
         showingKeyboard = NO;
+        hidingKeyboard = NO;
         rotatingOrientation = NO;
 #endif
 
@@ -277,8 +279,22 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 #if !TARGET_OS_TV
-    [center addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
-    [center addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+    [center addObserver:self
+               selector:@selector(keyboardWillShow:)
+                   name:UIKeyboardWillShowNotification
+                 object:nil];
+    [center addObserver:self
+               selector:@selector(keyboardDidShow:)
+                   name:UIKeyboardDidShowNotification
+                 object:nil];
+    [center addObserver:self
+               selector:@selector(keyboardWillHide:)
+                   name:UIKeyboardWillHideNotification
+                 object:nil];
+    [center addObserver:self
+               selector:@selector(keyboardDidHide:)
+                   name:UIKeyboardDidHideNotification
+                 object:nil];
 #endif
     [center addObserver:self selector:@selector(textFieldTextDidChange:) name:UITextFieldTextDidChangeNotification object:nil];
 }
@@ -341,8 +357,18 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 {
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 #if !TARGET_OS_TV
-    [center removeObserver:self name:UIKeyboardWillShowNotification object:nil];
-    [center removeObserver:self name:UIKeyboardWillHideNotification object:nil];
+    [center removeObserver:self
+                      name:UIKeyboardWillShowNotification
+                    object:nil];
+    [center removeObserver:self
+                      name:UIKeyboardDidShowNotification
+                    object:nil];
+    [center removeObserver:self
+                      name:UIKeyboardWillHideNotification
+                    object:nil];
+    [center removeObserver:self
+                      name:UIKeyboardDidHideNotification
+                    object:nil];
 #endif
     [center removeObserver:self name:UITextFieldTextDidChangeNotification object:nil];
 }
@@ -350,23 +376,40 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 /* reveal onscreen virtual keyboard */
 - (void)showKeyboard
 {
+    if (keyboardVisible) {
+        return;
+    }
+
     keyboardVisible = YES;
     if (textField.window) {
         showingKeyboard = YES;
         [textField becomeFirstResponder];
-        showingKeyboard = NO;
     }
 }
 
 /* hide onscreen virtual keyboard */
 - (void)hideKeyboard
 {
+    if (!keyboardVisible) {
+        return;
+    }
+
     keyboardVisible = NO;
-    [textField resignFirstResponder];
+    if (textField.window) {
+        hidingKeyboard = YES;
+        [textField resignFirstResponder];
+    }
 }
 
 - (void)keyboardWillShow:(NSNotification *)notification
 {
+    BOOL shouldStartTextInput = NO;
+
+    if (!SDL_TextInputActive() && !hidingKeyboard && !rotatingOrientation) {
+        shouldStartTextInput = YES;
+    }
+
+    showingKeyboard = YES;
 #if !TARGET_OS_TV
     CGRect kbrect = [[notification userInfo][UIKeyboardFrameEndUserInfoKey] CGRectValue];
 
@@ -376,14 +419,36 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 
     [self setKeyboardHeight:(int)kbrect.size.height];
 #endif
+
+    if (shouldStartTextInput) {
+        SDL_StartTextInput();
+    }
+}
+
+- (void)keyboardDidShow:(NSNotification *)notification
+{
+    showingKeyboard = NO;
 }
 
 - (void)keyboardWillHide:(NSNotification *)notification
 {
-    if (!showingKeyboard && !rotatingOrientation) {
+    BOOL shouldStopTextInput = NO;
+
+    if (SDL_TextInputActive() && !showingKeyboard && !rotatingOrientation) {
+        shouldStopTextInput = YES;
+    }
+
+    hidingKeyboard = YES;
+    [self setKeyboardHeight:0];
+
+    if (shouldStopTextInput) {
         SDL_StopTextInput();
     }
-    [self setKeyboardHeight:0];
+}
+
+- (void)keyboardDidHide:(NSNotification *)notification
+{
+    hidingKeyboard = NO;
 }
 
 - (void)textFieldTextDidChange:(NSNotification *)notification
