@@ -547,7 +547,7 @@ static void StreamThing_ondrop(Thing *thing, int button, float x, float y)
             TrashThing(thing);
         } else if (((droppable_highlighted_thing->what == THING_LOGDEV) || (droppable_highlighted_thing->what == THING_LOGDEV_CAPTURE)) && (droppable_highlighted_thing != thing->line_connected_to)) {
             /* connect to a logical device! */
-            SDL_Log("Binding audio stream ('%s') to logical device %u", thing->titlebar, droppable_highlighted_thing->data.logdev.devid);
+            SDL_Log("Binding audio stream ('%s') to logical device %u", thing->titlebar, (unsigned int) droppable_highlighted_thing->data.logdev.devid);
             if (thing->line_connected_to) {
                 const SDL_AudioSpec *spec = &droppable_highlighted_thing->data.logdev.spec;
                 SDL_UnbindAudioStream(thing->data.stream.stream); /* unbind from current device */
