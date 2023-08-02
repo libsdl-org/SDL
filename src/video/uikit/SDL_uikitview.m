@@ -412,7 +412,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             SDL_SendKeyboardKey(SDL_PRESSED, scancode);
         }
     }
-    if (SDL_TextInputActive()) {
+    if (SDL_IsTextInputActive()) {
         [super pressesBegan:presses withEvent:event];
     }
 }
@@ -425,7 +425,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             SDL_SendKeyboardKey(SDL_RELEASED, scancode);
         }
     }
-    if (SDL_TextInputActive()) {
+    if (SDL_IsTextInputActive()) {
         [super pressesEnded:presses withEvent:event];
     }
 }
@@ -438,7 +438,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             SDL_SendKeyboardKey(SDL_RELEASED, scancode);
         }
     }
-    if (SDL_TextInputActive()) {
+    if (SDL_IsTextInputActive()) {
         [super pressesCancelled:presses withEvent:event];
     }
 }
@@ -446,7 +446,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 - (void)pressesChanged:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
     /* This is only called when the force of a press changes. */
-    if (SDL_TextInputActive()) {
+    if (SDL_IsTextInputActive()) {
         [super pressesChanged:presses withEvent:event];
     }
 }
