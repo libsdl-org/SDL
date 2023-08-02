@@ -591,7 +591,7 @@ static Thing *CreateStreamThing(const SDL_AudioSpec *spec, const Uint8 *buf, con
 {
     static const ThingType can_be_dropped_onto[] = { THING_TRASHCAN, THING_LOGDEV, THING_LOGDEV_CAPTURE, THING_NULL };
     Thing *thing = CreateThing(THING_STREAM, x, y, 0, -1, -1, soundboard_texture, fname ? xstrdup(fname) : NULL);
-    SDL_Log("Adding audio stream for %s", fname);
+    SDL_Log("Adding audio stream for %s", fname ? fname : "(null)");
     thing->data.stream.stream = SDL_CreateAudioStream(spec, spec);
     if (buf && buflen) {
         SDL_PutAudioStreamData(thing->data.stream.stream, buf, (int) buflen);
