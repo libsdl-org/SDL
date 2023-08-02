@@ -2154,7 +2154,7 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
         int i;
         for (i = 0; i < _this->num_displays; i++) {
-            float scale = _this->displays[i].driverdata->scale_factor;
+            float scale = _this->displays[i]->driverdata->scale_factor;
             data->windowed_scale_factor = SDL_max(data->windowed_scale_factor, scale);
         }
     }

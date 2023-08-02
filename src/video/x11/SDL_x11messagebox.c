@@ -467,8 +467,8 @@ static int X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
         X11_XTranslateCoordinates(display, windowdata->xwindow, RootWindow(display, data->screen), x, y, &x, &y, &dummy);
     } else {
         const SDL_VideoDevice *dev = SDL_GetVideoDevice();
-        if ((dev) && (dev->displays) && (dev->num_displays > 0)) {
-            const SDL_VideoDisplay *dpy = &dev->displays[0];
+        if (dev && dev->displays && dev->num_displays > 0) {
+            const SDL_VideoDisplay *dpy = dev->displays[0];
             const SDL_DisplayData *dpydata = dpy->driverdata;
             x = dpydata->x + ((dpy->current_mode->w - data->dialog_width) / 2);
             y = dpydata->y + ((dpy->current_mode->h - data->dialog_height) / 3);

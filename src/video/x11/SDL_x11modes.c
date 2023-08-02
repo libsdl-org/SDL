@@ -99,7 +99,7 @@ static void UpdateDisplayContentScale(float scale)
 
     if (viddevice) {
         for (i = 0; i < viddevice->num_displays; ++i) {
-            SDL_SetDisplayContentScale(&viddevice->displays[i], scale);
+            SDL_SetDisplayContentScale(viddevice->displays[i], scale);
         }
     }
 }
