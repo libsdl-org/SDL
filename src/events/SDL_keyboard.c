@@ -1013,7 +1013,7 @@ int SDL_SendKeyboardKeyAndKeycode(Uint64 timestamp, Uint8 state, SDL_Scancode sc
 
 int SDL_SendKeyboardKeyAutoRelease(Uint64 timestamp, SDL_Scancode scancode)
 {
-    return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL | KEYBOARD_AUTORELEASE, SDL_PRESSED, scancode, SDLK_UNKNOWN);
+    return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_AUTORELEASE, SDL_PRESSED, scancode, SDLK_UNKNOWN);
 }
 
 int SDL_SendKeyboardKeyIgnoreModifiers(Uint64 timestamp, Uint8 state, SDL_Scancode scancode)
@@ -1034,6 +1034,13 @@ void SDL_ReleaseAutoReleaseKeys(void)
         }
         keyboard->autorelease_pending = SDL_FALSE;
     }
+
+    if (keyboard->hardware_timestamp) {
+        /* Keep hardware keyboard "active" for 250 ms */
+        if (SDL_GetTicks() >= keyboard->hardware_timestamp + 250) {
+            keyboard->hardware_timestamp = 0;
+        }
+    }
 }
 
 SDL_bool SDL_HardwareKeyboardKeyPressed(void)
@@ -1047,12 +1054,6 @@ SDL_bool SDL_HardwareKeyboardKeyPressed(void)
         }
     }
 
-    if (keyboard->hardware_timestamp) {
-        /* Keep hardware keyboard "active" for 250 ms */
-        if (SDL_GetTicks() >= keyboard->hardware_timestamp + 250) {
-            keyboard->hardware_timestamp = 0;
-        }
-    }
     return keyboard->hardware_timestamp ? SDL_TRUE : SDL_FALSE;
 }
 
