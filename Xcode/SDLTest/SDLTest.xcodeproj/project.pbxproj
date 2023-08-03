@@ -1309,7 +1309,6 @@
 		DB445EFA18184BB600B306B0 /* testdropfile.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testdropfile.c; sourceTree = "<group>"; };
 		DB89957E18A19ABA0092407C /* testhotplug.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testhotplug.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB89958318A19B130092407C /* testhotplug.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testhotplug.c; sourceTree = "<group>"; };
-		DBBC552C182831D700F3CA8D /* TestDropFile-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "TestDropFile-Info.plist"; sourceTree = SOURCE_ROOT; };
 		F35E56AA298312CB00A43A5F /* testautomation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testautomation.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F35E56B62983130A00A43A5F /* testautomation_main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_main.c; sourceTree = "<group>"; };
 		F35E56B72983130A00A43A5F /* testautomation_hints.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_hints.c; sourceTree = "<group>"; };
@@ -1732,7 +1731,6 @@
 				00794E6109D20839003FC8A1 /* sample.bmp */,
 				00794E6209D20839003FC8A1 /* sample.wav */,
 				DB166ECF16A1D87000A1396C /* shapes */,
-				DBBC552C182831D700F3CA8D /* TestDropFile-Info.plist */,
 				00794E6309D20839003FC8A1 /* utf8.txt */,
 			);
 			name = Resources;
@@ -4553,7 +4551,6 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = "TestDropFile-Info.plist";
 				PRODUCT_NAME = testdropfile;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
@@ -4564,7 +4561,6 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = "TestDropFile-Info.plist";
 				PRODUCT_NAME = testdropfile;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
