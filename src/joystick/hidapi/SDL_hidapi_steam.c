@@ -1153,23 +1153,15 @@ static SDL_bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
                                           (ctx->m_state.ulButtons & STEAM_BUTTON_BACK_LEFT_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC1 + 1,
                                           (ctx->m_state.ulButtons & STEAM_BUTTON_BACK_RIGHT_MASK) ? SDL_PRESSED : SDL_RELEASED);
-            }
-            {
-                /* Minimum distance from center of pad to register a direction */
-                const int kPadDeadZone = 10000;
 
-                /* Pad coordinates are like math grid coordinates: negative is bottom left */
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_UP,
-                                          (ctx->m_state.sLeftPadY > kPadDeadZone) ? SDL_PRESSED : SDL_RELEASED);
-
+                                          (ctx->m_state.ulButtons & STEAM_TOUCH_0_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN,
-                                          (ctx->m_state.sLeftPadY < -kPadDeadZone) ? SDL_PRESSED : SDL_RELEASED);
-
+                                          (ctx->m_state.ulButtons & STEAM_TOUCH_3_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT,
-                                          (ctx->m_state.sLeftPadX < -kPadDeadZone) ? SDL_PRESSED : SDL_RELEASED);
-
+                                          (ctx->m_state.ulButtons & STEAM_TOUCH_2_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT,
-                                          (ctx->m_state.sLeftPadX > kPadDeadZone) ? SDL_PRESSED : SDL_RELEASED);
+                                          (ctx->m_state.ulButtons & STEAM_TOUCH_1_MASK) ? SDL_PRESSED : SDL_RELEASED);
             }
 
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, (int)ctx->m_state.sTriggerL * 2 - 32768);
