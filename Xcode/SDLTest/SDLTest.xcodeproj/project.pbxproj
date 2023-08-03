@@ -4289,6 +4289,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Steam Controller support";
 				PRODUCT_NAME = testcontroller;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
@@ -4299,6 +4300,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Steam Controller support";
 				PRODUCT_NAME = testcontroller;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
