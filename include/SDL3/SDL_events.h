@@ -574,7 +574,6 @@ typedef struct SDL_OSEvent
 } SDL_OSEvent;
 
 union SDL_Event;
-typedef union SDL_Event SDL_Event;
 
 /**
  *  \brief A user-defined event type (event.user.*)
@@ -587,7 +586,7 @@ typedef struct SDL_UserEvent
     Sint32 code;        /**< User defined event code */
     void *data1;        /**< User defined data pointer */
     void *data2;        /**< User defined data pointer */
-    void (SDLCALL *free)(SDL_Event *); /**< User specified function for freeing user defined 
+    void (SDLCALL *free)(union SDL_Event *); /**< User specified function for freeing user defined 
                                         data (data1, data2) as required. Set to NULL if not required. */
 } SDL_UserEvent;
 
