@@ -63,11 +63,11 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 @implementation SDLUITextField : UITextField
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
-	if (action == @selector(paste:)) {
-		return NO;
-	}
+    if (action == @selector(paste:)) {
+        return NO;
+    }
 
-	return [super canPerformAction:action withSender:sender];
+    return [super canPerformAction:action withSender:sender];
 }
 @end
 
@@ -82,6 +82,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     SDLUITextField *textField;
     BOOL hardwareKeyboard;
     BOOL showingKeyboard;
+    BOOL hidingKeyboard;
     BOOL rotatingOrientation;
     NSString *committedText;
     NSString *obligateForBackspace;
@@ -99,6 +100,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         [self initKeyboard];
         hardwareKeyboard = NO;
         showingKeyboard = NO;
+        hidingKeyboard = NO;
         rotatingOrientation = NO;
 #endif
 
@@ -292,7 +294,18 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
                selector:@selector(keyboardWillShow:)
                    name:UIKeyboardWillShowNotification
                  object:nil];
-    [center addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+    [center addObserver:self
+               selector:@selector(keyboardDidShow:)
+                   name:UIKeyboardDidShowNotification
+                 object:nil];
+    [center addObserver:self
+               selector:@selector(keyboardWillHide:)
+                   name:UIKeyboardWillHideNotification
+                 object:nil];
+    [center addObserver:self
+               selector:@selector(keyboardDidHide:)
+                   name:UIKeyboardDidHideNotification
+                 object:nil];
 #endif
     [center addObserver:self
                selector:@selector(textFieldTextDidChange:)
@@ -363,7 +376,15 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     [center removeObserver:self
                       name:UIKeyboardWillShowNotification
                     object:nil];
-    [center removeObserver:self name:UIKeyboardWillHideNotification object:nil];
+    [center removeObserver:self
+                      name:UIKeyboardDidShowNotification
+                    object:nil];
+    [center removeObserver:self
+                      name:UIKeyboardWillHideNotification
+                    object:nil];
+    [center removeObserver:self
+                      name:UIKeyboardDidHideNotification
+                    object:nil];
 #endif
     [center removeObserver:self
                       name:UITextFieldTextDidChangeNotification
@@ -373,23 +394,40 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 /* reveal onscreen virtual keyboard */
 - (void)showKeyboard
 {
+    if (keyboardVisible) {
+        return;
+    }
+
     keyboardVisible = YES;
     if (textField.window) {
         showingKeyboard = YES;
         [textField becomeFirstResponder];
-        showingKeyboard = NO;
     }
 }
 
 /* hide onscreen virtual keyboard */
 - (void)hideKeyboard
 {
+    if (!keyboardVisible) {
+        return;
+    }
+
     keyboardVisible = NO;
-    [textField resignFirstResponder];
+    if (textField.window) {
+        hidingKeyboard = YES;
+        [textField resignFirstResponder];
+    }
 }
 
 - (void)keyboardWillShow:(NSNotification *)notification
 {
+    BOOL shouldStartTextInput = NO;
+
+    if (!SDL_TextInputActive() && !hidingKeyboard && !rotatingOrientation) {
+        shouldStartTextInput = YES;
+    }
+
+    showingKeyboard = YES;
 #if !TARGET_OS_TV
     CGRect kbrect = [[notification userInfo][UIKeyboardFrameEndUserInfoKey] CGRectValue];
 
@@ -399,14 +437,36 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
     [self setKeyboardHeight:(int)kbrect.size.height];
 #endif
+
+    if (shouldStartTextInput) {
+        SDL_StartTextInput();
+    }
+}
+
+- (void)keyboardDidShow:(NSNotification *)notification
+{
+    showingKeyboard = NO;
 }
 
 - (void)keyboardWillHide:(NSNotification *)notification
 {
-    if (!showingKeyboard && !rotatingOrientation) {
+    BOOL shouldStopTextInput = NO;
+
+    if (SDL_TextInputActive() && !showingKeyboard && !rotatingOrientation) {
+        shouldStopTextInput = YES;
+    }
+
+    hidingKeyboard = YES;
+    [self setKeyboardHeight:0];
+
+    if (shouldStopTextInput) {
         SDL_StopTextInput();
     }
-    [self setKeyboardHeight:0];
+}
+
+- (void)keyboardDidHide:(NSNotification *)notification
+{
+    hidingKeyboard = NO;
 }
 
 - (void)textFieldTextDidChange:(NSNotification *)notification
@@ -425,8 +485,8 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
             size_t deleteLength = SDL_utf8strlen([[committedText substringFromIndex:matchLength] UTF8String]);
             while (deleteLength > 0) {
                 /* Send distinct down and up events for each backspace action */
-                SDL_SendKeyboardKey(0, SDL_PRESSED, SDL_SCANCODE_BACKSPACE);
-                SDL_SendKeyboardKey(0, SDL_RELEASED, SDL_SCANCODE_BACKSPACE);
+                SDL_SendVirtualKeyboardKey(0, SDL_PRESSED, SDL_SCANCODE_BACKSPACE);
+                SDL_SendVirtualKeyboardKey(0, SDL_RELEASED, SDL_SCANCODE_BACKSPACE);
                 --deleteLength;
             }
         }

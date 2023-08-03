@@ -520,7 +520,7 @@ void Cocoa_QuitModes(SDL_VideoDevice *_this)
     int i, j;
 
     for (i = 0; i < _this->num_displays; ++i) {
-        SDL_VideoDisplay *display = &_this->displays[i];
+        SDL_VideoDisplay *display = _this->displays[i];
         SDL_DisplayModeData *mode;
 
         if (display->current_mode->driverdata != display->desktop_mode.driverdata) {

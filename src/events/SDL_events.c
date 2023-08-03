@@ -580,8 +580,6 @@ int SDL_StartEventLoop(void)
     SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, SDL_FALSE);
     SDL_SetEventEnabled(SDL_EVENT_DROP_TEXT, SDL_FALSE);
 #endif
-    SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_UPDATE_COMPLETE, SDL_FALSE);
-    SDL_SetEventEnabled(SDL_EVENT_GAMEPAD_UPDATE_COMPLETE, SDL_FALSE);
 
     SDL_EventQ.active = SDL_TRUE;
     SDL_UnlockMutex(SDL_EventQ.lock);

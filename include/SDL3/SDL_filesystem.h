@@ -159,11 +159,11 @@ extern DECLSPEC char *SDLCALL SDL_GetPrefPath(const char *org, const char *app);
  * | SAVEDGAMES  | Vista+  |           |      |            |       |            |
  * | SCREENSHOTS | Vista+  |           |      |            |       |            |
  * | TEMPLATES   | X       | X         |      | X          |       |            |
- * | VIDEOS      | X       | X         |      | X          |       |            |
+ * | VIDEOS      | X       | X*        |      | X          |       |            |
  *
- * Note that on macOS/iOS, the Videos folder is called "Movies".
+ * * Note that on macOS/iOS, the Videos folder is called "Movies".
  *
- * \sa SDL_GetPath
+ * \sa SDL_GetUserFolder
  */
 typedef enum
 {
@@ -206,12 +206,17 @@ typedef enum
 } SDL_Folder;
 
 /**
- * Finds the most suitable OS-provided folder for @p folder, and returns its
- * path in OS-specific notation.
+ * Finds the most suitable user folder for @p purpose, and returns its path in
+ * OS-specific notation.
  *
  * Many OSes provide certain standard folders for certain purposes, such as
  * storing pictures, music or videos for a certain user. This function gives
  * the path for many of those special locations.
+ *
+ * This function is specifically for _user_ folders, which are meant for the
+ * user to access and manage. For application-specific folders, meant to hold
+ * data for the application to manage, see SDL_GetBasePath() and
+ * SDL_GetPrefPath().
  *
  * Note that the function is expensive, and should be called once at the
  * beginning of the execution and kept for as long as needed.
@@ -229,7 +234,7 @@ typedef enum
  *
  * \sa SDL_Folder
  */
-extern DECLSPEC char *SDLCALL SDL_GetPath(SDL_Folder folder);
+extern DECLSPEC char *SDLCALL SDL_GetUserFolder(SDL_Folder folder);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

@@ -20,6 +20,8 @@
 */
 #include "SDL_internal.h"
 
+#if defined(__IOS__) || defined(__TVOS__)
+
 #include "../SDL_sysurl.h"
 
 #import <UIKit/UIKit.h>
@@ -33,3 +35,5 @@ int SDL_SYS_OpenURL(const char *url)
         return [[UIApplication sharedApplication] openURL:nsurl] ? 0 : -1;
     }
 }
+
+#endif /* __IOS__ || __TVOS__ */

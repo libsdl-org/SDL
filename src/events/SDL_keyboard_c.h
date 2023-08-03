@@ -49,6 +49,9 @@ extern int SDL_SetKeyboardFocus(SDL_Window *window);
  */
 extern int SDL_SendKeyboardUnicodeKey(Uint64 timestamp, Uint32 ch);
 
+/* Send a key from a virtual key source, like an on-screen keyboard */
+extern int SDL_SendVirtualKeyboardKey(Uint64 timestamp, Uint8 state, SDL_Scancode scancode);
+
 /* Send a keyboard key event */
 extern int SDL_SendKeyboardKey(Uint64 timestamp, Uint8 state, SDL_Scancode scancode);
 extern int SDL_SendKeyboardKeyAutoRelease(Uint64 timestamp, SDL_Scancode scancode);

@@ -255,7 +255,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
         SDL_Window *window = device->windows;
         int i;
         for (i = 0; i < device->num_displays; ++i) {
-            SDL_Window *fullscreen_window = device->displays[i].fullscreen_window;
+            SDL_Window *fullscreen_window = device->displays[i]->fullscreen_window;
             if (fullscreen_window) {
                 if (fullscreen_window->flags & SDL_WINDOW_MINIMIZED) {
                     SDL_RestoreWindow(fullscreen_window);

@@ -392,7 +392,7 @@ void UIKit_QuitModes(SDL_VideoDevice *_this)
     int i, j;
     @autoreleasepool {
         for (i = 0; i < _this->num_displays; i++) {
-            SDL_VideoDisplay *display = &_this->displays[i];
+            SDL_VideoDisplay *display = _this->displays[i];
 
             UIKit_FreeDisplayModeData(&display->desktop_mode);
             for (j = 0; j < display->num_fullscreen_modes; j++) {

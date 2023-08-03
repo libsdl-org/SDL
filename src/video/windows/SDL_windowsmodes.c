@@ -352,18 +352,27 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
     // ready to be added to allow any displays that we can't fully query to be
     // removed
     for (i = 0; i < _this->num_displays; ++i) {
-        SDL_DisplayData *driverdata = _this->displays[i].driverdata;
+        SDL_DisplayData *driverdata = _this->displays[i]->driverdata;
         if (SDL_wcscmp(driverdata->DeviceName, info->szDevice) == 0) {
             SDL_bool moved = (index != i);
             SDL_bool changed_bounds = SDL_FALSE;
 
-            if (moved) {
-                SDL_VideoDisplay tmp;
+            if (driverdata->state != DisplayRemoved) {
+                /* We've already enumerated this display, don't move it */
+                return;
+            }
 
-                SDL_assert(index < _this->num_displays);
-                SDL_memcpy(&tmp, &_this->displays[index], sizeof(tmp));
-                SDL_memcpy(&_this->displays[index], &_this->displays[i], sizeof(tmp));
-                SDL_memcpy(&_this->displays[i], &tmp, sizeof(tmp));
+            if (index >= _this->num_displays) {
+                /* This should never happen due to the check above, but just in case... */
+                return;
+            }
+
+            if (moved) {
+                SDL_VideoDisplay *tmp;
+
+                tmp = _this->displays[index];
+                _this->displays[index] = _this->displays[i];
+                _this->displays[i] = tmp;
                 i = index;
             }
 
@@ -371,7 +380,7 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
             driverdata->state = DisplayUnchanged;
 
             if (!_this->setting_display_mode) {
-                SDL_VideoDisplay *existing_display = &_this->displays[i];
+                SDL_VideoDisplay *existing_display = _this->displays[i];
                 SDL_Rect bounds;
 
                 SDL_ResetFullscreenDisplayModes(existing_display);
@@ -645,7 +654,7 @@ void WIN_RefreshDisplays(SDL_VideoDevice *_this)
     // Mark all displays as potentially invalid to detect
     // entries that have actually been removed
     for (i = 0; i < _this->num_displays; ++i) {
-        SDL_DisplayData *driverdata = _this->displays[i].driverdata;
+        SDL_DisplayData *driverdata = _this->displays[i]->driverdata;
         driverdata->state = DisplayRemoved;
     }
 
@@ -656,7 +665,7 @@ void WIN_RefreshDisplays(SDL_VideoDevice *_this)
     // Delete any entries still marked as invalid, iterate
     // in reverse as each delete takes effect immediately
     for (i = _this->num_displays - 1; i >= 0; --i) {
-        SDL_VideoDisplay *display = &_this->displays[i];
+        SDL_VideoDisplay *display = _this->displays[i];
         SDL_DisplayData *driverdata = display->driverdata;
         if (driverdata->state == DisplayRemoved) {
             SDL_DelVideoDisplay(display->id, SDL_TRUE);
@@ -665,7 +674,7 @@ void WIN_RefreshDisplays(SDL_VideoDevice *_this)
 
     // Send events for any newly added displays
     for (i = 0; i < _this->num_displays; ++i) {
-        SDL_VideoDisplay *display = &_this->displays[i];
+        SDL_VideoDisplay *display = _this->displays[i];
         SDL_DisplayData *driverdata = display->driverdata;
         if (driverdata->state == DisplayAdded) {
             SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_CONNECTED, 0);

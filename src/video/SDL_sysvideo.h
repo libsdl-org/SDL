@@ -363,7 +363,7 @@ struct SDL_VideoDevice
     SDL_Window *wakeup_window;
     SDL_Mutex *wakeup_lock; /* Initialized only if WaitEventTimeout/SendWakeupEvent are supported */
     int num_displays;
-    SDL_VideoDisplay *displays;
+    SDL_VideoDisplay **displays;
     SDL_Window *windows;
     SDL_Window *grabbed_window;
     Uint8 window_magic;

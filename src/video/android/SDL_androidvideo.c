@@ -268,7 +268,7 @@ void Android_SendResize(SDL_Window *window)
     */
     SDL_VideoDevice *device = SDL_GetVideoDevice();
     if (device && device->num_displays > 0) {
-        SDL_VideoDisplay *display = &device->displays[0];
+        SDL_VideoDisplay *display = device->displays[0];
         SDL_DisplayMode desktop_mode;
 
         SDL_zero(desktop_mode);

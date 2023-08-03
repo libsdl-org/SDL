@@ -198,6 +198,7 @@ set(SDL_SHARED_DEFAULT ON)
 set(SDL_STATIC_DEFAULT ON)
 
 set(SDL_SHARED_AVAILABLE ON)
+set(SDL_STATIC_AVAILABLE ON)
 
 # All these *_DEFAULT vars will default to ON if not specified,
 # so you only need to override them if they need to be disabled.
@@ -262,6 +263,11 @@ foreach(_SUB IN LISTS SDL_SUBSYSTEMS)
   endif()
   option(SDL_${_OPT} "Enable the ${_SUB} subsystem" ${SDL_${_OPT}_DEFAULT})
 endforeach()
+
+cmake_dependent_option(SDL_FRAMEWORK "Build SDL libraries as Apple Framework" OFF "APPLE" OFF)
+if(SDL_FRAMEWORK)
+  set(SDL_STATIC_AVAILABLE FALSE)
+endif()
 
 # Allow some projects to be built conditionally.
 set_option(SDL_DISABLE_INSTALL    "Disable installation of SDL3" ${SDL3_SUBPROJECT})
@@ -354,11 +360,8 @@ set_option(SDL_CLANG_TIDY          "Run clang-tidy static analysis" OFF)
 set(SDL_VENDOR_INFO "" CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
 
 cmake_dependent_option(SDL_SHARED "Build a shared version of the library" ${SDL_SHARED_DEFAULT} ${SDL_SHARED_AVAILABLE} OFF)
-option(SDL_STATIC "Build a static version of the library" ${SDL_STATIC_DEFAULT})
+cmake_dependent_option(SDL_STATIC "Build a static version of the library" ${SDL_STATIC_DEFAULT} ${SDL_STATIC_AVAILABLE} OFF)
 option(SDL_TEST_LIBRARY   "Build the SDL3_test library" ON)
-
-# Apple Frameworks NEED a (shared) SDL3.framework for `#include <SDL3/xxx.h>` to work
-cmake_dependent_option(SDL_FRAMEWORK "Build SDL libraries as Apple Framework" OFF "SDL_SHARED;APPLE" OFF)
 
 dep_option(SDL_STATIC_PIC      "Static version of the library should be built with Position Independent Code" "${CMAKE_POSITION_INDEPENDENT_CODE}" "SDL_STATIC" OFF)
 dep_option(SDL_TESTS           "Build the test directory" OFF SDL_TEST_LIBRARY OFF)
@@ -3097,18 +3100,6 @@ if(SDL_STATIC)
     OUTPUT_NAME "${sdl_static_libname}"
     POSITION_INDEPENDENT_CODE "${SDL_STATIC_PIC}"
   )
-  if(APPLE)
-    set_target_properties(SDL3-static PROPERTIES
-      FRAMEWORK "${SDL_FRAMEWORK}"
-    )
-    if(SDL_FRAMEWORK)
-      set_target_properties(SDL3-static PROPERTIES
-        FRAMEWORK_VERSION "${SDL_FRAMEWORK_VERSION}"
-        MACOSX_FRAMEWORK_IDENTIFIER "org.libsdl.SDL3-static"
-        RESOURCE "${SDL_FRAMEWORK_RESOURCES}"
-      )
-    endif()
-  endif()
   target_compile_definitions(SDL3-static PRIVATE SDL_STATIC_LIB)
   target_link_libraries(SDL3-static PRIVATE ${SDL_CMAKE_DEPENDS})
   target_include_directories(SDL3-static
@@ -3195,12 +3186,6 @@ if(SDL_FRAMEWORK)
   set(SDL_SDL_INSTALL_CMAKEDIR "${SDL_SDL_INSTALL_RESOURCEDIR}/CMake")
   set(SDL_SDL_INSTALL_REAL_RESOURCEDIR "SDL3.framework/Versions/${SDL_FRAMEWORK_VERSION}/Resources")
   set(SDL_SDL_INSTALL_REAL_CMAKEDIR "${SDL_SDL_INSTALL_REAL_RESOURCEDIR}/CMake")
-
-  # - Install other SDL3*Config.cmake files in SDL3*.framework/Resources/CMake
-  # - The *_RELATIVE_CMAKEDIR variables are the symlinked folders visible from outside
-  set(SDL_SDLstatic_INSTALL_RESOURCEDIR "SDL3-static.framework/Resources")
-  set(SDL_SDLstatic_INSTALL_CMAKEDIR "${SDL_SDLstatic_INSTALL_RESOURCEDIR}/CMake")
-  set(SDL_SDLstatic_INSTALL_CMAKEFILENAME "SDL3-staticConfig.cmake")
 
   set(SDL_SDLtest_INSTALL_RESOURCEDIR "SDL3_test.framework/Resources")
   set(SDL_SDLtest_INSTALL_CMAKEDIR "${SDL_SDLtest_INSTALL_RESOURCEDIR}/CMake")

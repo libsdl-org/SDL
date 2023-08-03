@@ -177,7 +177,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     return retval;
 }
 
-char *SDL_GetPath(SDL_Folder folder)
+char *SDL_GetUserFolder(SDL_Folder folder)
 {
     typedef HRESULT (WINAPI *pfnSHGetKnownFolderPath)(REFGUID /* REFKNOWNFOLDERID */, DWORD, HANDLE, PWSTR*);
     HMODULE lib = LoadLibrary(L"Shell32.dll");
@@ -346,7 +346,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     return NULL;
 }
 
-char *SDL_GetPath(SDL_Folder folder)
+char *SDL_GetUserFolder(SDL_Folder folder)
 {
     SDL_Unsupported();
     return NULL;
