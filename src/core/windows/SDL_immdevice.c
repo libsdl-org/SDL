@@ -355,6 +355,22 @@ void SDL_IMMDevice_Quit(void)
     deviceid_list = NULL;
 }
 
+SDL_bool SDL_IMMDevice_GetIsCapture(IMMDevice *device)
+{
+    SDL_bool iscapture = SDL_FALSE;
+    IMMEndpoint *endpoint = NULL;
+    if (SUCCEEDED(IMMDevice_QueryInterface(device, &SDL_IID_IMMEndpoint, (void **)&endpoint))) {
+        EDataFlow flow;
+        
+        if (SUCCEEDED(IMMEndpoint_GetDataFlow(endpoint, &flow))) {
+            iscapture = (flow == eCapture);
+        }
+    }
+    
+    IMMEndpoint_Release(endpoint);
+    return iscapture;
+}
+
 int SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_bool iscapture)
 {
     const Uint64 timeout = SDL_GetTicks() + 8000;  /* intel's audio drivers can fail for up to EIGHT SECONDS after a device is connected or we wake from sleep. */

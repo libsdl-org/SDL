@@ -28,6 +28,7 @@
 
 int SDL_IMMDevice_Init(void);
 void SDL_IMMDevice_Quit(void);
+SDL_bool SDL_IMMDevice_GetIsCapture(IMMDevice* device);
 int SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_bool iscapture);
 void SDL_IMMDevice_EnumerateEndpoints(SDL_bool useguid);
 int SDL_IMMDevice_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture);

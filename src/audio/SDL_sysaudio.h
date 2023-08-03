@@ -86,6 +86,7 @@ typedef struct SDL_AudioDriverImpl
     SDL_bool OnlyHasDefaultCaptureDevice;
     SDL_bool AllowsArbitraryDeviceNames;
     SDL_bool SupportsNonPow2Samples;
+    SDL_bool SupportsCaptureOnPlaybackDevices;
 } SDL_AudioDriverImpl;
 
 typedef struct SDL_AudioDeviceItem

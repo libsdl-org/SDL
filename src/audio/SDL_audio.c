@@ -1220,10 +1220,21 @@ static SDL_AudioDeviceID open_audio_device(const char *devname, int iscapture,
            It might still need to open a device based on the string for,
            say, a network audio server, but this optimizes some cases. */
         SDL_AudioDeviceItem *item;
+
         for (item = iscapture ? current_audio.inputDevices : current_audio.outputDevices; item; item = item->next) {
             if ((item->handle != NULL) && (SDL_strcmp(item->name, devname) == 0)) {
                 handle = item->handle;
                 break;
+            }
+        }
+
+        if (handle == NULL && iscapture && current_audio.impl.SupportsCaptureOnPlaybackDevices)
+        {
+            for (item = ((!iscapture || (iscapture && current_audio.impl.SupportsCaptureOnPlaybackDevices)) ? current_audio.outputDevices : current_audio.inputDevices); item; item = item->next) {
+                if ((item->handle != NULL) && (SDL_strcmp(item->name, devname) == 0)) {
+                    handle = item->handle;
+                    break;
+                }
             }
         }
     }
