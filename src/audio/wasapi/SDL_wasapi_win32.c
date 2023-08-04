@@ -49,7 +49,7 @@ static const IID SDL_IID_IAudioClient = { 0x1cb9ad4c, 0xdbfa, 0x4c32, { 0xb1, 0x
 
 int WASAPI_PlatformInit(void)
 {
-    if (SDL_IMMDevice_Init() < 0) {
+    if (SDL_IMMDevice_Init() < 0) {   // this will call WIN_CoInitialize for us!
         return -1; /* This is set by SDL_IMMDevice_Init */
     }
 
@@ -72,78 +72,79 @@ void WASAPI_PlatformDeinit(void)
     pAvSetMmThreadCharacteristicsW = NULL;
     pAvRevertMmThreadCharacteristics = NULL;
 
-    SDL_IMMDevice_Quit();
+    SDL_IMMDevice_Quit();  // This will call WIN_CoUninitialize for us!
 }
 
-void WASAPI_PlatformThreadInit(SDL_AudioDevice *_this)
+void WASAPI_PlatformThreadInit(SDL_AudioDevice *device)
 {
     /* this thread uses COM. */
     if (SUCCEEDED(WIN_CoInitialize())) { /* can't report errors, hope it worked! */
-        _this->hidden->coinitialized = SDL_TRUE;
+        device->hidden->coinitialized = SDL_TRUE;
     }
 
     /* Set this thread to very high "Pro Audio" priority. */
     if (pAvSetMmThreadCharacteristicsW) {
         DWORD idx = 0;
-        _this->hidden->task = pAvSetMmThreadCharacteristicsW(L"Pro Audio", &idx);
+        device->hidden->task = pAvSetMmThreadCharacteristicsW(L"Pro Audio", &idx);
+    } else {
+        SDL_SetThreadPriority(device->iscapture ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_TIME_CRITICAL);
     }
+
 }
 
-void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *_this)
+void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *device)
 {
     /* Set this thread back to normal priority. */
-    if (_this->hidden->task && pAvRevertMmThreadCharacteristics) {
-        pAvRevertMmThreadCharacteristics(_this->hidden->task);
-        _this->hidden->task = NULL;
+    if (device->hidden->task && pAvRevertMmThreadCharacteristics) {
+        pAvRevertMmThreadCharacteristics(device->hidden->task);
+        device->hidden->task = NULL;
     }
 
-    if (_this->hidden->coinitialized) {
+    if (device->hidden->coinitialized) {
         WIN_CoUninitialize();
-        _this->hidden->coinitialized = SDL_FALSE;
+        device->hidden->coinitialized = SDL_FALSE;
     }
 }
 
-int WASAPI_ActivateDevice(SDL_AudioDevice *_this, const SDL_bool isrecovery)
+int WASAPI_ActivateDevice(SDL_AudioDevice *device)
 {
-    IMMDevice *device = NULL;
-    HRESULT ret;
-
-    if (SDL_IMMDevice_Get(_this->hidden->devid, &device, _this->iscapture) < 0) {
-        _this->hidden->client = NULL;
+    IMMDevice *immdevice = NULL;
+    if (SDL_IMMDevice_Get(device, &immdevice, device->iscapture) < 0) {
+        device->hidden->client = NULL;
         return -1; /* This is already set by SDL_IMMDevice_Get */
     }
 
-    /* this is not async in standard win32, yay! */
-    ret = IMMDevice_Activate(device, &SDL_IID_IAudioClient, CLSCTX_ALL, NULL, (void **)&_this->hidden->client);
-    IMMDevice_Release(device);
+    /* this is _not_ async in standard win32, yay! */
+    HRESULT ret = IMMDevice_Activate(immdevice, &SDL_IID_IAudioClient, CLSCTX_ALL, NULL, (void **)&device->hidden->client);
+    IMMDevice_Release(immdevice);
 
     if (FAILED(ret)) {
-        SDL_assert(_this->hidden->client == NULL);
+        SDL_assert(device->hidden->client == NULL);
         return WIN_SetErrorFromHRESULT("WASAPI can't activate audio endpoint", ret);
     }
 
-    SDL_assert(_this->hidden->client != NULL);
-    if (WASAPI_PrepDevice(_this, isrecovery) == -1) { /* not async, fire it right away. */
+    SDL_assert(device->hidden->client != NULL);
+    if (WASAPI_PrepDevice(device) == -1) { /* not async, fire it right away. */
         return -1;
     }
 
     return 0; /* good to go. */
 }
 
-void WASAPI_EnumerateEndpoints(void)
+void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)
 {
-    SDL_IMMDevice_EnumerateEndpoints(SDL_FALSE);
-}
-
-int WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
-{
-    return SDL_IMMDevice_GetDefaultAudioInfo(name, spec, iscapture);
+    SDL_IMMDevice_EnumerateEndpoints(default_output, default_capture);
 }
 
 void WASAPI_PlatformDeleteActivationHandler(void *handler)
 {
     /* not asynchronous. */
     SDL_assert(!"This function should have only been called on WinRT.");
+}
+
+void WASAPI_PlatformFreeDeviceHandle(SDL_AudioDevice *device)
+{
+    SDL_IMMDevice_FreeDeviceHandle(device);
 }
 
 #endif /* SDL_AUDIO_DRIVER_WASAPI && !defined(__WINRT__) */

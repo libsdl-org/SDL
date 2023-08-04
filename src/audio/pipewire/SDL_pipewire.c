@@ -327,38 +327,13 @@ static void io_list_remove(Uint32 id)
             spa_list_remove(&n->link);
 
             if (hotplug_events_enabled) {
-                SDL_RemoveAudioDevice(n->is_capture, PW_ID_TO_HANDLE(id));
+                SDL_AudioDeviceDisconnected(SDL_FindPhysicalAudioDeviceByHandle(PW_ID_TO_HANDLE(id)));
             }
 
             SDL_free(n);
 
             break;
         }
-    }
-}
-
-static void io_list_sort(void)
-{
-    struct io_node *default_sink = NULL, *default_source = NULL;
-    struct io_node *n, *temp;
-
-    /* Find and move the default nodes to the beginning of the list */
-    spa_list_for_each_safe (n, temp, &hotplug_io_list, link) {
-        if (pipewire_default_sink_id != NULL && SDL_strcmp(n->path, pipewire_default_sink_id) == 0) {
-            default_sink = n;
-            spa_list_remove(&n->link);
-        } else if (pipewire_default_source_id != NULL && SDL_strcmp(n->path, pipewire_default_source_id) == 0) {
-            default_source = n;
-            spa_list_remove(&n->link);
-        }
-    }
-
-    if (default_source) {
-        spa_list_prepend(&hotplug_io_list, &default_source->link);
-    }
-
-    if (default_sink) {
-        spa_list_prepend(&hotplug_io_list, &default_sink->link);
     }
 }
 
@@ -377,17 +352,6 @@ static struct io_node *io_list_get_by_id(Uint32 id)
     struct io_node *n, *temp;
     spa_list_for_each_safe (n, temp, &hotplug_io_list, link) {
         if (n->id == id) {
-            return n;
-        }
-    }
-    return NULL;
-}
-
-static struct io_node *io_list_get_by_path(char *path)
-{
-    struct io_node *n, *temp;
-    spa_list_for_each_safe (n, temp, &hotplug_io_list, link) {
-        if (SDL_strcmp(n->path, path) == 0) {
             return n;
         }
     }
@@ -640,6 +604,19 @@ static char *get_name_from_json(const char *json)
     return SDL_strdup(value);
 }
 
+static void change_default_device(const char *path)
+{
+    if (hotplug_events_enabled) {
+        struct io_node *n, *temp;
+        spa_list_for_each_safe (n, temp, &hotplug_io_list, link) {
+            if (SDL_strcmp(n->path, path) == 0) {
+                SDL_DefaultAudioDeviceChanged(SDL_FindPhysicalAudioDeviceByHandle(PW_ID_TO_HANDLE(n->id)));
+                return; // found it, we're done.
+            }
+        }
+    }
+}
+
 /* Metadata node callback */
 static int metadata_property(void *object, Uint32 subject, const char *key, const char *type, const char *value)
 {
@@ -652,12 +629,14 @@ static int metadata_property(void *object, Uint32 subject, const char *key, cons
             }
             pipewire_default_sink_id = get_name_from_json(value);
             node->persist = SDL_TRUE;
+            change_default_device(pipewire_default_sink_id);
         } else if (!SDL_strcmp(key, "default.audio.source")) {
             if (pipewire_default_source_id != NULL) {
                 SDL_free(pipewire_default_source_id);
             }
             pipewire_default_source_id = get_name_from_json(value);
             node->persist = SDL_TRUE;
+            change_default_device(pipewire_default_source_id);
         }
     }
 
@@ -833,7 +812,7 @@ static void hotplug_loop_destroy(void)
     }
 }
 
-static void PIPEWIRE_DetectDevices(void)
+static void PIPEWIRE_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)
 {
     struct io_node *io;
 
@@ -844,11 +823,15 @@ static void PIPEWIRE_DetectDevices(void)
         PIPEWIRE_pw_thread_loop_wait(hotplug_loop);
     }
 
-    /* Sort the I/O list so the default source/sink are listed first */
-    io_list_sort();
-
     spa_list_for_each (io, &hotplug_io_list, link) {
-        SDL_AddAudioDevice(io->is_capture, io->name, &io->spec, PW_ID_TO_HANDLE(io->id));
+        SDL_AudioDevice *device = SDL_AddAudioDevice(io->is_capture, io->name, &io->spec, PW_ID_TO_HANDLE(io->id));
+        if (pipewire_default_sink_id != NULL && SDL_strcmp(io->path, pipewire_default_sink_id) == 0) {
+            SDL_assert(!io->is_capture);
+            *default_output = device;
+        } else if (pipewire_default_source_id != NULL && SDL_strcmp(io->path, pipewire_default_source_id) == 0) {
+            SDL_assert(io->is_capture);
+            *default_capture = device;
+        }
     }
 
     hotplug_events_enabled = SDL_TRUE;
@@ -936,167 +919,115 @@ static void initialize_spa_info(const SDL_AudioSpec *spec, struct spa_audio_info
     }
 }
 
-static void output_callback(void *data)
+static Uint8 *PIPEWIRE_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
-    struct pw_buffer *pw_buf;
-    struct spa_buffer *spa_buf;
-    Uint8 *dst;
+    // See if a buffer is available. If this returns NULL, SDL_OutputAudioThreadIterate will return SDL_FALSE, but since we own the thread, it won't kill playback.
+    // !!! FIXME: It's not clear to me if this ever returns NULL or if this was just defensive coding.
 
-    SDL_AudioDevice *_this = (SDL_AudioDevice *)data;
-    struct pw_stream *stream = _this->hidden->stream;
-
-    /* Shutting down, don't do anything */
-    if (SDL_AtomicGet(&_this->shutdown)) {
-        return;
-    }
-
-    /* See if a buffer is available */
-    pw_buf = PIPEWIRE_pw_stream_dequeue_buffer(stream);
+    struct pw_stream *stream = device->hidden->stream;
+    struct pw_buffer *pw_buf = PIPEWIRE_pw_stream_dequeue_buffer(stream);
     if (pw_buf == NULL) {
-        return;
+        return NULL;
     }
 
-    spa_buf = pw_buf->buffer;
-
+    struct spa_buffer *spa_buf = pw_buf->buffer;
     if (spa_buf->datas[0].data == NULL) {
-        return;
+        PIPEWIRE_pw_stream_queue_buffer(stream, pw_buf);
+        return NULL;
     }
 
-    /*
-     * If the device is disabled, write silence to the stream buffer
-     * and run the callback with the work buffer to keep the callback
-     * firing regularly in case the audio is being used as a timer.
-     */
-    SDL_LockMutex(_this->mixer_lock);
-    if (!SDL_AtomicGet(&_this->paused)) {
-        if (SDL_AtomicGet(&_this->enabled)) {
-            dst = spa_buf->datas[0].data;
-        } else {
-            dst = _this->work_buffer;
-            SDL_memset(spa_buf->datas[0].data, _this->spec.silence, _this->spec.size);
-        }
+    device->hidden->pw_buf = pw_buf;
+    return (Uint8 *) spa_buf->datas[0].data;
+}
 
-        if (!_this->stream) {
-            _this->callbackspec.callback(_this->callbackspec.userdata, dst, _this->callbackspec.size);
-        } else {
-            int got;
-
-            /* Fire the callback until we have enough to fill a buffer */
-            while (SDL_GetAudioStreamAvailable(_this->stream) < _this->spec.size) {
-                _this->callbackspec.callback(_this->callbackspec.userdata, _this->work_buffer, _this->callbackspec.size);
-                SDL_PutAudioStreamData(_this->stream, _this->work_buffer, _this->callbackspec.size);
-            }
-
-            got = SDL_GetAudioStreamData(_this->stream, dst, _this->spec.size);
-            SDL_assert(got == _this->spec.size);
-        }
-    } else {
-        SDL_memset(spa_buf->datas[0].data, _this->spec.silence, _this->spec.size);
-    }
-    SDL_UnlockMutex(_this->mixer_lock);
-
+static void PIPEWIRE_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+{
+    struct pw_stream *stream = device->hidden->stream;
+    struct pw_buffer *pw_buf = device->hidden->pw_buf;
+    struct spa_buffer *spa_buf = pw_buf->buffer;
     spa_buf->datas[0].chunk->offset = 0;
-    spa_buf->datas[0].chunk->stride = _this->hidden->stride;
-    spa_buf->datas[0].chunk->size = _this->spec.size;
+    spa_buf->datas[0].chunk->stride = device->hidden->stride;
+    spa_buf->datas[0].chunk->size = buffer_size;
 
     PIPEWIRE_pw_stream_queue_buffer(stream, pw_buf);
+    device->hidden->pw_buf = NULL;
+}
+
+static void output_callback(void *data)
+{
+    SDL_OutputAudioThreadIterate((SDL_AudioDevice *)data);
+}
+
+static void PIPEWIRE_FlushCapture(SDL_AudioDevice *device)
+{
+    struct pw_stream *stream = device->hidden->stream;
+    struct pw_buffer *pw_buf = PIPEWIRE_pw_stream_dequeue_buffer(stream);
+    if (pw_buf != NULL) {  // just requeue it without any further thought.
+        PIPEWIRE_pw_stream_queue_buffer(stream, pw_buf);
+    }
+}
+
+static int PIPEWIRE_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
+{
+    struct pw_stream *stream = device->hidden->stream;
+    struct pw_buffer *pw_buf = PIPEWIRE_pw_stream_dequeue_buffer(stream);
+    if (!pw_buf) {
+        return 0;
+    }
+
+    struct spa_buffer *spa_buf = pw_buf->buffer;
+    if (!spa_buf) {
+        PIPEWIRE_pw_stream_queue_buffer(stream, pw_buf);
+        return 0;
+    }
+
+    const Uint8 *src = (const Uint8 *)spa_buf->datas[0].data;
+    const Uint32 offset = SPA_MIN(spa_buf->datas[0].chunk->offset, spa_buf->datas[0].maxsize);
+    const Uint32 size = SPA_MIN(spa_buf->datas[0].chunk->size, spa_buf->datas[0].maxsize - offset);
+    const int cpy = SDL_min(buflen, (int) size);
+
+    SDL_assert(size <= buflen);  // We'll have to reengineer some stuff if this turns out to not be true.
+
+    SDL_memcpy(buffer, src + offset, cpy);
+    PIPEWIRE_pw_stream_queue_buffer(stream, pw_buf);
+
+    return cpy;
 }
 
 static void input_callback(void *data)
 {
-    struct pw_buffer *pw_buf;
-    struct spa_buffer *spa_buf;
-    Uint8 *src;
-    SDL_AudioDevice *_this = (SDL_AudioDevice *)data;
-    struct pw_stream *stream = _this->hidden->stream;
-
-    /* Shutting down, don't do anything */
-    if (SDL_AtomicGet(&_this->shutdown)) {
-        return;
-    }
-
-    pw_buf = PIPEWIRE_pw_stream_dequeue_buffer(stream);
-    if (pw_buf == NULL) {
-        return;
-    }
-
-    spa_buf = pw_buf->buffer;
-    (src = (Uint8 *)spa_buf->datas[0].data);
-    if (src == NULL) {
-        return;
-    }
-
-    if (!SDL_AtomicGet(&_this->paused)) {
-        /* Calculate the offset and data size */
-        const Uint32 offset = SPA_MIN(spa_buf->datas[0].chunk->offset, spa_buf->datas[0].maxsize);
-        const Uint32 size = SPA_MIN(spa_buf->datas[0].chunk->size, spa_buf->datas[0].maxsize - offset);
-
-        src += offset;
-
-        /* Fill the buffer with silence if the stream is disabled. */
-        if (!SDL_AtomicGet(&_this->enabled)) {
-            SDL_memset(src, _this->callbackspec.silence, size);
-        }
-
-        /* Pipewire can vary the latency, so buffer all incoming data */
-        SDL_WriteToDataQueue(_this->hidden->buffer, src, size);
-
-        while (SDL_GetDataQueueSize(_this->hidden->buffer) >= _this->callbackspec.size) {
-            SDL_ReadFromDataQueue(_this->hidden->buffer, _this->work_buffer, _this->callbackspec.size);
-
-            SDL_LockMutex(_this->mixer_lock);
-            _this->callbackspec.callback(_this->callbackspec.userdata, _this->work_buffer, _this->callbackspec.size);
-            SDL_UnlockMutex(_this->mixer_lock);
-        }
-    } else if (_this->hidden->buffer) { /* Flush the buffer when paused */
-        if (SDL_GetDataQueueSize(_this->hidden->buffer) != 0) {
-            SDL_ClearDataQueue(_this->hidden->buffer, _this->hidden->input_buffer_packet_size);
-        }
-    }
-
-    PIPEWIRE_pw_stream_queue_buffer(stream, pw_buf);
+    SDL_CaptureAudioThreadIterate((SDL_AudioDevice *)data);
 }
 
 static void stream_add_buffer_callback(void *data, struct pw_buffer *buffer)
 {
-    SDL_AudioDevice *_this = data;
+    SDL_AudioDevice *device = (SDL_AudioDevice *) data;
 
-    if (_this->iscapture == SDL_FALSE) {
-        /*
-         * Clamp the output spec samples and size to the max size of the Pipewire buffer.
-         * If they exceed the maximum size of the Pipewire buffer, double buffering will be used.
-         */
-        if (_this->spec.size > buffer->buffer->datas[0].maxsize) {
-            _this->spec.samples = buffer->buffer->datas[0].maxsize / _this->hidden->stride;
-            _this->spec.size = buffer->buffer->datas[0].maxsize;
+    if (device->iscapture == SDL_FALSE) {
+        /* Clamp the output spec samples and size to the max size of the Pipewire buffer.
+           If they exceed the maximum size of the Pipewire buffer, double buffering will be used. */
+        if (device->buffer_size > buffer->buffer->datas[0].maxsize) {
+            SDL_LockMutex(device->lock);
+            device->sample_frames = buffer->buffer->datas[0].maxsize / device->hidden->stride;
+            device->buffer_size = buffer->buffer->datas[0].maxsize;
+            SDL_UnlockMutex(device->lock);
         }
-    } else if (_this->hidden->buffer == NULL) {
-        /*
-         * The latency of source nodes can change, so buffering is always required.
-         *
-         * Ensure that the intermediate input buffer is large enough to hold the requested
-         * application packet size or a full buffer of data from Pipewire, whichever is larger.
-         *
-         * A packet size of 2 periods should be more than is ever needed.
-         */
-        _this->hidden->input_buffer_packet_size = SPA_MAX(_this->spec.size, buffer->buffer->datas[0].maxsize) * 2;
-        _this->hidden->buffer = SDL_CreateDataQueue(_this->hidden->input_buffer_packet_size, _this->hidden->input_buffer_packet_size);
     }
 
-    _this->hidden->stream_init_status |= PW_READY_FLAG_BUFFER_ADDED;
-    PIPEWIRE_pw_thread_loop_signal(_this->hidden->loop, false);
+    device->hidden->stream_init_status |= PW_READY_FLAG_BUFFER_ADDED;
+    PIPEWIRE_pw_thread_loop_signal(device->hidden->loop, false);
 }
 
 static void stream_state_changed_callback(void *data, enum pw_stream_state old, enum pw_stream_state state, const char *error)
 {
-    SDL_AudioDevice *_this = data;
+    SDL_AudioDevice *device = (SDL_AudioDevice *) data;
 
     if (state == PW_STREAM_STATE_STREAMING) {
-        _this->hidden->stream_init_status |= PW_READY_FLAG_STREAM_READY;
+        device->hidden->stream_init_status |= PW_READY_FLAG_STREAM_READY;
     }
 
     if (state == PW_STREAM_STATE_STREAMING || state == PW_STREAM_STATE_ERROR) {
-        PIPEWIRE_pw_thread_loop_signal(_this->hidden->loop, false);
+        PIPEWIRE_pw_thread_loop_signal(device->hidden->loop, false);
     }
 }
 
@@ -1109,7 +1040,7 @@ static const struct pw_stream_events stream_input_events = { PW_VERSION_STREAM_E
                                                              .add_buffer = stream_add_buffer_callback,
                                                              .process = input_callback };
 
-static int PIPEWIRE_OpenDevice(SDL_AudioDevice *_this, const char *devname)
+static int PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
 {
     /*
      * NOTE: The PW_STREAM_FLAG_RT_PROCESS flag can be set to call the stream
@@ -1128,12 +1059,12 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *_this, const char *devname)
     struct SDL_PrivateAudioData *priv;
     struct pw_properties *props;
     const char *app_name, *app_id, *stream_name, *stream_role, *error;
-    Uint32 node_id = _this->handle == NULL ? PW_ID_ANY : PW_HANDLE_TO_ID(_this->handle);
-    SDL_bool iscapture = _this->iscapture;
+    Uint32 node_id = device->handle == NULL ? PW_ID_ANY : PW_HANDLE_TO_ID(device->handle);
+    const SDL_bool iscapture = device->iscapture;
     int res;
 
     /* Clamp the period size to sane values */
-    const int min_period = PW_MIN_SAMPLES * SPA_MAX(_this->spec.freq / PW_BASE_CLOCK_RATE, 1);
+    const int min_period = PW_MIN_SAMPLES * SPA_MAX(device->spec.freq / PW_BASE_CLOCK_RATE, 1);
 
     /* Get the hints for the application name, stream name and role */
     app_name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_APP_NAME);
@@ -1162,27 +1093,28 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *_this, const char *devname)
     }
 
     /* Initialize the Pipewire stream info from the SDL audio spec */
-    initialize_spa_info(&_this->spec, &spa_info);
+    initialize_spa_info(&device->spec, &spa_info);
     params = spa_format_audio_raw_build(&b, SPA_PARAM_EnumFormat, &spa_info);
     if (params == NULL) {
         return SDL_SetError("Pipewire: Failed to set audio format parameters");
     }
 
     priv = SDL_calloc(1, sizeof(struct SDL_PrivateAudioData));
-    _this->hidden = priv;
+    device->hidden = priv;
     if (priv == NULL) {
         return SDL_OutOfMemory();
     }
 
     /* Size of a single audio frame in bytes */
-    priv->stride = (SDL_AUDIO_BITSIZE(_this->spec.format) >> 3) * _this->spec.channels;
+    priv->stride = (SDL_AUDIO_BITSIZE(device->spec.format) / 8) * device->spec.channels;
 
-    if (_this->spec.samples < min_period) {
-        _this->spec.samples = min_period;
-        _this->spec.size = _this->spec.samples * priv->stride;
+    if (device->sample_frames < min_period) {
+        device->sample_frames = min_period;
     }
 
-    (void)SDL_snprintf(thread_name, sizeof(thread_name), "SDLAudio%c%ld", (iscapture) ? 'C' : 'P', (long)_this->handle);
+    SDL_UpdatedAudioDeviceFormat(device);
+
+    SDL_GetAudioThreadName(device, thread_name, sizeof(thread_name));
     priv->loop = PIPEWIRE_pw_thread_loop_new(thread_name, NULL);
     if (priv->loop == NULL) {
         return SDL_SetError("Pipewire: Failed to create stream loop (%i)", errno);
@@ -1213,9 +1145,10 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *_this, const char *devname)
     }
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_NAME, stream_name);
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_DESCRIPTION, stream_name);
-    PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_LATENCY, "%u/%i", _this->spec.samples, _this->spec.freq);
-    PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_RATE, "1/%u", _this->spec.freq);
+    PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_LATENCY, "%u/%i", device->sample_frames, device->spec.freq);
+    PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_RATE, "1/%u", device->spec.freq);
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_ALWAYS_PROCESS, "true");
+    PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_DONT_RECONNECT, "true");  // Requesting a specific device, don't migrate to new default hardware.
 
     /*
      * Pipewire 0.3.44 introduced PW_KEY_TARGET_OBJECT that takes either a path
@@ -1240,7 +1173,7 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *_this, const char *devname)
 
     /* Create the new stream */
     priv->stream = PIPEWIRE_pw_stream_new_simple(PIPEWIRE_pw_thread_loop_get_loop(priv->loop), stream_name, props,
-                                                 iscapture ? &stream_input_events : &stream_output_events, _this);
+                                                 iscapture ? &stream_input_events : &stream_output_events, device);
     if (priv->stream == NULL) {
         return SDL_SetError("Pipewire: Failed to create stream (%i)", errno);
     }
@@ -1268,75 +1201,35 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *_this, const char *devname)
         return SDL_SetError("Pipewire: Stream error: %s", error);
     }
 
-    /* If this is a capture stream, make sure the intermediate buffer was successfully allocated. */
-    if (iscapture && priv->buffer == NULL) {
-        return SDL_SetError("Pipewire: Failed to allocate source buffer");
-    }
-
     return 0;
 }
 
-static void PIPEWIRE_CloseDevice(SDL_AudioDevice *_this)
+static void PIPEWIRE_CloseDevice(SDL_AudioDevice *device)
 {
-    if (_this->hidden->loop) {
-        PIPEWIRE_pw_thread_loop_stop(_this->hidden->loop);
+    if (!device->hidden) {
+        return;
     }
 
-    if (_this->hidden->stream) {
-        PIPEWIRE_pw_stream_destroy(_this->hidden->stream);
+    if (device->hidden->loop) {
+        PIPEWIRE_pw_thread_loop_stop(device->hidden->loop);
     }
 
-    if (_this->hidden->context) {
-        PIPEWIRE_pw_context_destroy(_this->hidden->context);
+    if (device->hidden->stream) {
+        PIPEWIRE_pw_stream_destroy(device->hidden->stream);
     }
 
-    if (_this->hidden->loop) {
-        PIPEWIRE_pw_thread_loop_destroy(_this->hidden->loop);
+    if (device->hidden->context) {
+        PIPEWIRE_pw_context_destroy(device->hidden->context);
     }
 
-    if (_this->hidden->buffer) {
-        SDL_DestroyDataQueue(_this->hidden->buffer);
+    if (device->hidden->loop) {
+        PIPEWIRE_pw_thread_loop_destroy(device->hidden->loop);
     }
 
-    SDL_free(_this->hidden);
-}
+    SDL_free(device->hidden);
+    device->hidden = NULL;
 
-static int PIPEWIRE_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
-{
-    struct io_node *node;
-    char *target;
-    int ret = 0;
-
-    PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
-
-    if (iscapture) {
-        if (pipewire_default_source_id == NULL) {
-            ret = SDL_SetError("PipeWire could not find a default source");
-            goto failed;
-        }
-        target = pipewire_default_source_id;
-    } else {
-        if (pipewire_default_sink_id == NULL) {
-            ret = SDL_SetError("PipeWire could not find a default sink");
-            goto failed;
-        }
-        target = pipewire_default_sink_id;
-    }
-
-    node = io_list_get_by_path(target);
-    if (node == NULL) {
-        ret = SDL_SetError("PipeWire device list is out of sync with defaults");
-        goto failed;
-    }
-
-    if (name != NULL) {
-        *name = SDL_strdup(node->name);
-    }
-    SDL_copyp(spec, &node->spec);
-
-failed:
-    PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
-    return ret;
+    SDL_AudioThreadFinalize(device);
 }
 
 static void PIPEWIRE_Deinitialize(void)
@@ -1366,13 +1259,15 @@ static SDL_bool PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
     /* Set the function pointers */
     impl->DetectDevices = PIPEWIRE_DetectDevices;
     impl->OpenDevice = PIPEWIRE_OpenDevice;
-    impl->CloseDevice = PIPEWIRE_CloseDevice;
     impl->Deinitialize = PIPEWIRE_Deinitialize;
-    impl->GetDefaultAudioInfo = PIPEWIRE_GetDefaultAudioInfo;
+    impl->PlayDevice = PIPEWIRE_PlayDevice;
+    impl->GetDeviceBuf = PIPEWIRE_GetDeviceBuf;
+    impl->CaptureFromDevice = PIPEWIRE_CaptureFromDevice;
+    impl->FlushCapture = PIPEWIRE_FlushCapture;
+    impl->CloseDevice = PIPEWIRE_CloseDevice;
 
     impl->HasCaptureSupport = SDL_TRUE;
     impl->ProvidesOwnCallbackThread = SDL_TRUE;
-    impl->SupportsNonPow2Samples = SDL_TRUE;
 
     return SDL_TRUE;
 }

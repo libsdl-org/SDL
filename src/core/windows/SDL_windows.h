@@ -78,6 +78,7 @@
 
 #include <windows.h>
 #include <basetyps.h> /* for REFIID with broken mingw.org headers */
+#include <mmreg.h>
 
 /* Older Visual C++ headers don't have the Win64-compatible typedefs... */
 #if defined(_MSC_VER) && (_MSC_VER <= 1200)
@@ -153,6 +154,8 @@ extern void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect);
 
 /* Returns SDL_TRUE if the rect is empty */
 extern BOOL WIN_IsRectEmpty(const RECT *rect);
+
+extern SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

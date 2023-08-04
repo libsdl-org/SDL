@@ -32,8 +32,6 @@ struct SDL_PrivateAudioData
 
     /* Raw mixing buffer */
     Uint8 *mixbuf;
-    int mixlen;
 };
-#define FUDGE_TICKS 10 /* The scheduler overhead ticks per frame */
 
 #endif /* SDL_dspaudio_h_ */

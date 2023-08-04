@@ -1241,7 +1241,7 @@ static int LAW_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
 
     dst = (Sint16 *)src;
 
-    /* Work backwards, since we're expanding in-place. SDL_AudioSpec.format will
+    /* Work backwards, since we're expanding in-place. `format` will
      * inform the caller about the byte order.
      */
     i = sample_count;
@@ -1667,15 +1667,11 @@ static int WaveCheckFormat(WaveFile *file, size_t datalength)
 
     if (format->channels == 0) {
         return SDL_SetError("Invalid number of channels");
-    } else if (format->channels > 255) {
-        /* Limit given by SDL_AudioSpec.channels. */
-        return SDL_SetError("Number of channels exceeds limit of 255");
     }
 
     if (format->frequency == 0) {
         return SDL_SetError("Invalid sample rate");
     } else if (format->frequency > INT_MAX) {
-        /* Limit given by SDL_AudioSpec.freq. */
         return SDL_SetError("Sample rate exceeds limit of %d", INT_MAX);
     }
 
@@ -2025,13 +2021,12 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
         break;
     }
 
-    /* Setting up the SDL_AudioSpec. All unsupported formats were filtered out
+    /* Setting up the specs. All unsupported formats were filtered out
      * by checks earlier in this function.
      */
-    SDL_zerop(spec);
     spec->freq = format->frequency;
     spec->channels = (Uint8)format->channels;
-    spec->samples = 4096; /* Good default buffer size */
+    spec->format = 0;
 
     switch (format->encoding) {
     case MS_ADPCM_CODE:
@@ -2061,9 +2056,9 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
             return SDL_SetError("Unexpected %u-bit PCM data format", (unsigned int)format->bitspersample);
         }
         break;
+    default:
+        return SDL_SetError("Unexpected data format");
     }
-
-    spec->silence = SDL_GetSilenceValueForFormat(spec->format);
 
     /* Report the end position back to the cleanup code. */
     if (RIFFlengthknown) {
@@ -2075,31 +2070,26 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
     return 0;
 }
 
-SDL_AudioSpec *SDL_LoadWAV_RW(SDL_RWops *src, SDL_bool freesrc, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
+int SDL_LoadWAV_RW(SDL_RWops *src, int freesrc, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
 {
     int result = -1;
     WaveFile file;
 
-    SDL_zero(file);
-
     /* Make sure we are passed a valid data source */
     if (src == NULL) {
-        /* Error may come from RWops. */
-        goto done;
+        return -1;  /* Error may come from RWops. */
     } else if (spec == NULL) {
-        SDL_InvalidParamError("spec");
-        goto done;
+        return SDL_InvalidParamError("spec");
     } else if (audio_buf == NULL) {
-        SDL_InvalidParamError("audio_buf");
-        goto done;
+        return SDL_InvalidParamError("audio_buf");
     } else if (audio_len == NULL) {
-        SDL_InvalidParamError("audio_len");
-        goto done;
+        return SDL_InvalidParamError("audio_len");
     }
 
     *audio_buf = NULL;
     *audio_len = 0;
 
+    SDL_zero(file);
     file.riffhint = WaveGetRiffSizeHint();
     file.trunchint = WaveGetTruncationHint();
     file.facthint = WaveGetFactChunkHint();
@@ -2107,7 +2097,6 @@ SDL_AudioSpec *SDL_LoadWAV_RW(SDL_RWops *src, SDL_bool freesrc, SDL_AudioSpec *s
     result = WaveLoad(src, &file, spec, audio_buf, audio_len);
     if (result < 0) {
         SDL_free(*audio_buf);
-        spec = NULL;
         audio_buf = NULL;
         audio_len = 0;
     }
@@ -2119,13 +2108,11 @@ SDL_AudioSpec *SDL_LoadWAV_RW(SDL_RWops *src, SDL_bool freesrc, SDL_AudioSpec *s
     WaveFreeChunkData(&file.chunk);
     SDL_free(file.decoderdata);
 
-done:
-    if (freesrc && src) {
-        SDL_RWclose(src);
-    }
-    if (result == 0) {
-        return spec;
-    } else {
-        return NULL;
-    }
+    return result;
 }
+
+int SDL_LoadWAV(const char *path, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
+{
+    return SDL_LoadWAV_RW(SDL_RWFromFile(path, "rb"), 1, spec, audio_buf, audio_len);
+}
+

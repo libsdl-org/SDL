@@ -26,16 +26,14 @@
 #include <mmdeviceapi.h>
 #include <mmreg.h>
 
+typedef struct SDL_AudioDevice SDL_AudioDevice; // this is defined in src/audio/SDL_sysaudio.h
+
 int SDL_IMMDevice_Init(void);
 void SDL_IMMDevice_Quit(void);
-int SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_bool iscapture);
-void SDL_IMMDevice_EnumerateEndpoints(SDL_bool useguid);
-int SDL_IMMDevice_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture);
-
-SDL_AudioFormat WaveFormatToSDLFormat(WAVEFORMATEX *waveformat);
-
-/* these increment as default devices change. Opened default devices pick up changes in their threads. */
-extern SDL_AtomicInt SDL_IMMDevice_DefaultPlaybackGeneration;
-extern SDL_AtomicInt SDL_IMMDevice_DefaultCaptureGeneration;
+int SDL_IMMDevice_Get(SDL_AudioDevice *device, IMMDevice **immdevice, SDL_bool iscapture);
+void SDL_IMMDevice_EnumerateEndpoints(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture);
+LPGUID SDL_IMMDevice_GetDirectSoundGUID(SDL_AudioDevice *device);
+LPCWSTR SDL_IMMDevice_GetDevID(SDL_AudioDevice *device);
+void SDL_IMMDevice_FreeDeviceHandle(SDL_AudioDevice *device);
 
 #endif /* SDL_IMMDEVICE_H */

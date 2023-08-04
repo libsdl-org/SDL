@@ -28,6 +28,8 @@
 struct SDL_PrivateAudioData
 {
     BSoundPlayer *audio_obj;
+    Uint8 *current_buffer;
+    int current_buffer_len;
 };
 
 #endif /* SDL_haikuaudio_h_ */

@@ -53,21 +53,16 @@ using namespace Microsoft::WRL;
 
 static Platform::String ^ SDL_PKEY_AudioEngine_DeviceFormat = L"{f19f064d-082c-4e27-bc73-6882a1bb8e4c} 0";
 
-static void WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid);
-static void WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid);
-extern "C" {
-SDL_AtomicInt SDL_IMMDevice_DefaultPlaybackGeneration;
-SDL_AtomicInt SDL_IMMDevice_DefaultCaptureGeneration;
+
+static SDL_bool FindWinRTAudioDeviceCallback(SDL_AudioDevice *device, void *userdata)
+{
+    return (SDL_wcscmp((LPCWSTR) device->handle, (LPCWSTR) userdata) == 0) ? SDL_TRUE : SDL_FALSE;
 }
 
-/* This is a list of device id strings we have inflight, so we have consistent pointers to the same device. */
-typedef struct DevIdList
+static SDL_AudioDevice *FindWinRTAudioDevice(LPCWSTR devid)
 {
-    WCHAR *str;
-    struct DevIdList *next;
-} DevIdList;
-
-static DevIdList *deviceid_list = NULL;
+    return SDL_FindPhysicalAudioDeviceByCallback(FindWinRTAudioDeviceCallback, (void *) devid);
+}
 
 class SDL_WasapiDeviceEventHandler
 {
@@ -80,9 +75,10 @@ class SDL_WasapiDeviceEventHandler
     void OnEnumerationCompleted(DeviceWatcher ^ sender, Platform::Object ^ args);
     void OnDefaultRenderDeviceChanged(Platform::Object ^ sender, DefaultAudioRenderDeviceChangedEventArgs ^ args);
     void OnDefaultCaptureDeviceChanged(Platform::Object ^ sender, DefaultAudioCaptureDeviceChangedEventArgs ^ args);
-    SDL_Semaphore *completed;
+    void WaitForCompletion();
 
   private:
+    SDL_Semaphore *completed_semaphore;
     const SDL_bool iscapture;
     DeviceWatcher ^ watcher;
     Windows::Foundation::EventRegistrationToken added_handler;
@@ -93,10 +89,11 @@ class SDL_WasapiDeviceEventHandler
 };
 
 SDL_WasapiDeviceEventHandler::SDL_WasapiDeviceEventHandler(const SDL_bool _iscapture)
-    : iscapture(_iscapture), completed(SDL_CreateSemaphore(0))
+    : iscapture(_iscapture), completed_semaphore(SDL_CreateSemaphore(0))
 {
-    if (!completed)
+    if (!completed_semaphore) {
         return; // uhoh.
+    }
 
     Platform::String ^ selector = _iscapture ? MediaDevice::GetAudioCaptureSelector() : MediaDevice::GetAudioRenderSelector();
     Platform::Collections::Vector<Platform::String ^> properties;
@@ -128,9 +125,10 @@ SDL_WasapiDeviceEventHandler::~SDL_WasapiDeviceEventHandler()
         watcher->Stop();
         watcher = nullptr;
     }
-    if (completed) {
-        SDL_DestroySemaphore(completed);
-        completed = nullptr;
+
+    if (completed_semaphore) {
+        SDL_DestroySemaphore(completed_semaphore);
+        completed_semaphore = nullptr;
     }
 
     if (iscapture) {
@@ -142,21 +140,34 @@ SDL_WasapiDeviceEventHandler::~SDL_WasapiDeviceEventHandler()
 
 void SDL_WasapiDeviceEventHandler::OnDeviceAdded(DeviceWatcher ^ sender, DeviceInformation ^ info)
 {
+    /* You can have multiple endpoints on a device that are mutually exclusive ("Speakers" vs "Line Out" or whatever).
+       In a perfect world, things that are unplugged won't be in this collection. The only gotcha is probably for
+       phones and tablets, where you might have an internal speaker and a headphone jack and expect both to be
+       available and switch automatically. (!!! FIXME...?) */
+
     SDL_assert(sender == this->watcher);
     char *utf8dev = WIN_StringToUTF8(info->Name->Data());
     if (utf8dev) {
-        WAVEFORMATEXTENSIBLE fmt;
+        SDL_AudioSpec spec;
+        SDL_zero(spec);
+
         Platform::Object ^ obj = info->Properties->Lookup(SDL_PKEY_AudioEngine_DeviceFormat);
         if (obj) {
             IPropertyValue ^ property = (IPropertyValue ^) obj;
             Platform::Array<unsigned char> ^ data;
             property->GetUInt8Array(&data);
-            SDL_memcpy(&fmt, data->Data, SDL_min(data->Length, sizeof(WAVEFORMATEXTENSIBLE)));
-        } else {
+            WAVEFORMATEXTENSIBLE fmt;
             SDL_zero(fmt);
+            SDL_memcpy(&fmt, data->Data, SDL_min(data->Length, sizeof(WAVEFORMATEXTENSIBLE)));
+            spec.channels = (Uint8)fmt.Format.nChannels;
+            spec.freq = fmt.Format.nSamplesPerSec;
+            spec.format = SDL_WaveFormatExToSDLFormat((WAVEFORMATEX *)&fmt);
         }
 
-        WASAPI_AddDevice(this->iscapture, utf8dev, &fmt, info->Id->Data());
+        LPWSTR devid = SDL_wcsdup(info->Id->Data());
+        if (devid) {
+            SDL_AddAudioDevice(this->iscapture, utf8dev, spec.channels ? &spec : NULL, devid);
+        }
         SDL_free(utf8dev);
     }
 }
@@ -164,7 +175,7 @@ void SDL_WasapiDeviceEventHandler::OnDeviceAdded(DeviceWatcher ^ sender, DeviceI
 void SDL_WasapiDeviceEventHandler::OnDeviceRemoved(DeviceWatcher ^ sender, DeviceInformationUpdate ^ info)
 {
     SDL_assert(sender == this->watcher);
-    WASAPI_RemoveDevice(this->iscapture, info->Id->Data());
+    WASAPI_DisconnectDevice(FindWinRTAudioDevice(info->Id->Data()));
 }
 
 void SDL_WasapiDeviceEventHandler::OnDeviceUpdated(DeviceWatcher ^ sender, DeviceInformationUpdate ^ args)
@@ -175,19 +186,30 @@ void SDL_WasapiDeviceEventHandler::OnDeviceUpdated(DeviceWatcher ^ sender, Devic
 void SDL_WasapiDeviceEventHandler::OnEnumerationCompleted(DeviceWatcher ^ sender, Platform::Object ^ args)
 {
     SDL_assert(sender == this->watcher);
-    SDL_PostSemaphore(this->completed);
+    if (this->completed_semaphore) {
+        SDL_PostSemaphore(this->completed_semaphore);
+    }
 }
 
 void SDL_WasapiDeviceEventHandler::OnDefaultRenderDeviceChanged(Platform::Object ^ sender, DefaultAudioRenderDeviceChangedEventArgs ^ args)
 {
     SDL_assert(!this->iscapture);
-    SDL_AtomicAdd(&SDL_IMMDevice_DefaultPlaybackGeneration, 1);
+    SDL_DefaultAudioDeviceChanged(FindWinRTAudioDevice(args->Id->Data()));
 }
 
 void SDL_WasapiDeviceEventHandler::OnDefaultCaptureDeviceChanged(Platform::Object ^ sender, DefaultAudioCaptureDeviceChangedEventArgs ^ args)
 {
     SDL_assert(this->iscapture);
-    SDL_AtomicAdd(&SDL_IMMDevice_DefaultCaptureGeneration, 1);
+    SDL_DefaultAudioDeviceChanged(FindWinRTAudioDevice(args->Id->Data()));
+}
+
+void SDL_WasapiDeviceEventHandler::WaitForCompletion()
+{
+    if (this->completed_semaphore) {
+        SDL_WaitSemaphore(this->completed_semaphore);
+        SDL_DestroySemaphore(this->completed_semaphore);
+        this->completed_semaphore = nullptr;
+    }
 }
 
 static SDL_WasapiDeviceEventHandler *playback_device_event_handler;
@@ -195,54 +217,63 @@ static SDL_WasapiDeviceEventHandler *capture_device_event_handler;
 
 int WASAPI_PlatformInit(void)
 {
-    SDL_AtomicSet(&SDL_IMMDevice_DefaultPlaybackGeneration, 1);
-    SDL_AtomicSet(&SDL_IMMDevice_DefaultCaptureGeneration, 1);
     return 0;
 }
 
 void WASAPI_PlatformDeinit(void)
 {
-    DevIdList *devidlist;
-    DevIdList *next;
-
     delete playback_device_event_handler;
     playback_device_event_handler = nullptr;
     delete capture_device_event_handler;
     capture_device_event_handler = nullptr;
-
-    for (devidlist = deviceid_list; devidlist; devidlist = next) {
-        next = devidlist->next;
-        SDL_free(devidlist->str);
-        SDL_free(devidlist);
-    }
-    deviceid_list = NULL;
 }
 
-void WASAPI_EnumerateEndpoints(void)
+void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)
 {
+    Platform::String ^ defdevid;
+
     // DeviceWatchers will fire an Added event for each existing device at
     //  startup, so we don't need to enumerate them separately before
     //  listening for updates.
     playback_device_event_handler = new SDL_WasapiDeviceEventHandler(SDL_FALSE);
+    playback_device_event_handler->WaitForCompletion();
+    defdevid = MediaDevice::GetDefaultAudioRenderId(AudioDeviceRole::Default);
+    if (defdevid) {
+        *default_output = FindWinRTAudioDevice(defdevid->Data());
+    }
+
     capture_device_event_handler = new SDL_WasapiDeviceEventHandler(SDL_TRUE);
-    SDL_WaitSemaphore(playback_device_event_handler->completed);
-    SDL_WaitSemaphore(capture_device_event_handler->completed);
+    capture_device_event_handler->WaitForCompletion();
+    defdevid = MediaDevice::GetDefaultAudioCaptureId(AudioDeviceRole::Default);
+    if (defdevid) {
+        *default_capture = FindWinRTAudioDevice(defdevid->Data());
+    }
 }
 
-struct SDL_WasapiActivationHandler : public RuntimeClass<RuntimeClassFlags<ClassicCom>, FtmBase, IActivateAudioInterfaceCompletionHandler>
+class SDL_WasapiActivationHandler : public RuntimeClass<RuntimeClassFlags<ClassicCom>, FtmBase, IActivateAudioInterfaceCompletionHandler>
 {
-    SDL_WasapiActivationHandler() : device(nullptr) {}
-    STDMETHOD(ActivateCompleted)
-    (IActivateAudioInterfaceAsyncOperation *operation);
-    SDL_AudioDevice *device;
+public:
+    SDL_WasapiActivationHandler() : completion_semaphore(SDL_CreateSemaphore(0)) { SDL_assert(completion_semaphore != NULL); }
+    STDMETHOD(ActivateCompleted)(IActivateAudioInterfaceAsyncOperation *operation);
+    void WaitForCompletion();
+private:
+    SDL_Semaphore *completion_semaphore;
 };
+
+void SDL_WasapiActivationHandler::WaitForCompletion()
+{
+    if (completion_semaphore) {
+        SDL_WaitSemaphore(completion_semaphore);
+        SDL_DestroySemaphore(completion_semaphore);
+        completion_semaphore = NULL;
+    }
+}
 
 HRESULT
 SDL_WasapiActivationHandler::ActivateCompleted(IActivateAudioInterfaceAsyncOperation *async)
 {
     // Just set a flag, since we're probably in a different thread. We'll pick it up and init everything on our own thread to prevent races.
-    SDL_AtomicSet(&device->hidden->just_activated, 1);
-    WASAPI_UnrefDevice(device);
+    SDL_PostSemaphore(completion_semaphore);
     return S_OK;
 }
 
@@ -251,24 +282,10 @@ void WASAPI_PlatformDeleteActivationHandler(void *handler)
     ((SDL_WasapiActivationHandler *)handler)->Release();
 }
 
-int WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
+int WASAPI_ActivateDevice(SDL_AudioDevice *device)
 {
-    return SDL_Unsupported();
-}
-
-int WASAPI_ActivateDevice(SDL_AudioDevice *_this, const SDL_bool isrecovery)
-{
-    LPCWSTR devid = _this->hidden->devid;
-    Platform::String ^ defdevid;
-
-    if (devid == nullptr) {
-        defdevid = _this->iscapture ? MediaDevice::GetDefaultAudioCaptureId(AudioDeviceRole::Default) : MediaDevice::GetDefaultAudioRenderId(AudioDeviceRole::Default);
-        if (defdevid) {
-            devid = defdevid->Data();
-        }
-    }
-
-    SDL_AtomicSet(&_this->hidden->just_activated, 0);
+    LPCWSTR devid = (LPCWSTR) device->handle;
+    SDL_assert(devid != NULL);
 
     ComPtr<SDL_WasapiActivationHandler> handler = Make<SDL_WasapiActivationHandler>();
     if (handler == nullptr) {
@@ -276,10 +293,8 @@ int WASAPI_ActivateDevice(SDL_AudioDevice *_this, const SDL_bool isrecovery)
     }
 
     handler.Get()->AddRef(); // we hold a reference after ComPtr destructs on return, causing a Release, and Release ourselves in WASAPI_PlatformDeleteActivationHandler(), etc.
-    handler.Get()->device = _this;
-    _this->hidden->activation_handler = handler.Get();
+    device->hidden->activation_handler = handler.Get();
 
-    WASAPI_RefDevice(_this); /* completion handler will unref it. */
     IActivateAudioInterfaceAsyncOperation *async = nullptr;
     const HRESULT ret = ActivateAudioInterfaceAsync(devid, __uuidof(IAudioClient), nullptr, handler.Get(), &async);
 
@@ -288,21 +303,11 @@ int WASAPI_ActivateDevice(SDL_AudioDevice *_this, const SDL_bool isrecovery)
             async->Release();
         }
         handler.Get()->Release();
-        WASAPI_UnrefDevice(_this);
         return WIN_SetErrorFromHRESULT("WASAPI can't activate requested audio endpoint", ret);
     }
 
-    /* Spin until the async operation is complete.
-     * If we don't PrepDevice before leaving this function, the bug list gets LONG:
-     * - device.spec is not filled with the correct information
-     * - The 'obtained' spec will be wrong for ALLOW_CHANGE properties
-     * - SDL_AudioStreams will/will not be allocated at the right time
-     * - SDL_assert(device->callbackspec.size == device->spec.size) will fail
-     * - When the assert is ignored, skipping or a buffer overflow will occur
-     */
-    while (!SDL_AtomicCAS(&_this->hidden->just_activated, 1, 0)) {
-        SDL_Delay(1);
-    }
+    // !!! FIXME: the problems in SDL2 that needed this to be synchronous are _probably_ solved by SDL3, and this can block indefinitely if a user prompt is shown to get permission to use a microphone.
+    handler.Get()->WaitForCompletion();  // block here until we have an answer, so this is synchronous to us after all.
 
     HRESULT activateRes = S_OK;
     IUnknown *iunknown = nullptr;
@@ -314,114 +319,32 @@ int WASAPI_ActivateDevice(SDL_AudioDevice *_this, const SDL_bool isrecovery)
         return WIN_SetErrorFromHRESULT("Failed to activate WASAPI device", activateRes);
     }
 
-    iunknown->QueryInterface(IID_PPV_ARGS(&_this->hidden->client));
-    if (!_this->hidden->client) {
+    iunknown->QueryInterface(IID_PPV_ARGS(&device->hidden->client));
+    if (!device->hidden->client) {
         return SDL_SetError("Failed to query WASAPI client interface");
     }
 
-    if (WASAPI_PrepDevice(_this, isrecovery) == -1) {
+    if (WASAPI_PrepDevice(device) == -1) {
         return -1;
     }
 
     return 0;
 }
 
-void WASAPI_PlatformThreadInit(SDL_AudioDevice *_this)
+void WASAPI_PlatformThreadInit(SDL_AudioDevice *device)
+{
+    // !!! FIXME: set this thread to "Pro Audio" priority.
+    SDL_SetThreadPriority(device->iscapture ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_TIME_CRITICAL);
+}
+
+void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *device)
 {
     // !!! FIXME: set this thread to "Pro Audio" priority.
 }
 
-void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *_this)
+void WASAPI_PlatformFreeDeviceHandle(SDL_AudioDevice *device)
 {
-    // !!! FIXME: set this thread to "Pro Audio" priority.
-}
-
-/* Everything below was copied from SDL_wasapi.c, before it got moved to SDL_immdevice.c! */
-
-static const GUID SDL_KSDATAFORMAT_SUBTYPE_PCM = { 0x00000001, 0x0000, 0x0010, { 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
-static const GUID SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = { 0x00000003, 0x0000, 0x0010, { 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
-
-extern "C" SDL_AudioFormat
-WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
-{
-    if ((waveformat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT) && (waveformat->wBitsPerSample == 32)) {
-        return SDL_AUDIO_F32SYS;
-    } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 16)) {
-        return SDL_AUDIO_S16SYS;
-    } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 32)) {
-        return SDL_AUDIO_S32SYS;
-    } else if (waveformat->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
-        const WAVEFORMATEXTENSIBLE *ext = (const WAVEFORMATEXTENSIBLE *)waveformat;
-        if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, sizeof(GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
-            return SDL_AUDIO_F32SYS;
-        } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof(GUID)) == 0) && (waveformat->wBitsPerSample == 16)) {
-            return SDL_AUDIO_S16SYS;
-        } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof(GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
-            return SDL_AUDIO_S32SYS;
-        }
-    }
-    return 0;
-}
-
-static void WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
-{
-    DevIdList *i;
-    DevIdList *next;
-    DevIdList *prev = NULL;
-    for (i = deviceid_list; i; i = next) {
-        next = i->next;
-        if (SDL_wcscmp(i->str, devid) == 0) {
-            if (prev) {
-                prev->next = next;
-            } else {
-                deviceid_list = next;
-            }
-            SDL_RemoveAudioDevice(iscapture, i->str);
-            SDL_free(i->str);
-            SDL_free(i);
-        } else {
-            prev = i;
-        }
-    }
-}
-
-static void WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid)
-{
-    DevIdList *devidlist;
-    SDL_AudioSpec spec;
-
-    /* You can have multiple endpoints on a device that are mutually exclusive ("Speakers" vs "Line Out" or whatever).
-       In a perfect world, things that are unplugged won't be in this collection. The only gotcha is probably for
-       phones and tablets, where you might have an internal speaker and a headphone jack and expect both to be
-       available and switch automatically. (!!! FIXME...?) */
-
-    /* see if we already have this one. */
-    for (devidlist = deviceid_list; devidlist; devidlist = devidlist->next) {
-        if (SDL_wcscmp(devidlist->str, devid) == 0) {
-            return; /* we already have this. */
-        }
-    }
-
-    devidlist = (DevIdList *)SDL_malloc(sizeof(*devidlist));
-    if (devidlist == NULL) {
-        return; /* oh well. */
-    }
-
-    devid = SDL_wcsdup(devid);
-    if (!devid) {
-        SDL_free(devidlist);
-        return; /* oh well. */
-    }
-
-    devidlist->str = (WCHAR *)devid;
-    devidlist->next = deviceid_list;
-    deviceid_list = devidlist;
-
-    SDL_zero(spec);
-    spec.channels = (Uint8)fmt->Format.nChannels;
-    spec.freq = fmt->Format.nSamplesPerSec;
-    spec.format = WaveFormatToSDLFormat((WAVEFORMATEX *)fmt);
-    SDL_AddAudioDevice(iscapture, devname, &spec, (void *)devid);
+    SDL_free(device->handle);
 }
 
 #endif // SDL_AUDIO_DRIVER_WASAPI && defined(__WINRT__)

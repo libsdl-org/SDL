@@ -335,6 +335,33 @@ BOOL WIN_IsRectEmpty(const RECT *rect)
     return (rect->right <= rect->left) || (rect->bottom <= rect->top);
 }
 
+/* Some GUIDs we need to know without linking to libraries that aren't available before Vista. */
+/* *INDENT-OFF* */ /* clang-format off */
+static const GUID SDL_KSDATAFORMAT_SUBTYPE_PCM = { 0x00000001, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
+static const GUID SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = { 0x00000003, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
+/* *INDENT-ON* */ /* clang-format on */
+
+SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat)
+{
+    if ((waveformat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT) && (waveformat->wBitsPerSample == 32)) {
+        return SDL_AUDIO_F32SYS;
+    } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 16)) {
+        return SDL_AUDIO_S16SYS;
+    } else if ((waveformat->wFormatTag == WAVE_FORMAT_PCM) && (waveformat->wBitsPerSample == 32)) {
+        return SDL_AUDIO_S32SYS;
+    } else if (waveformat->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
+        const WAVEFORMATEXTENSIBLE *ext = (const WAVEFORMATEXTENSIBLE *)waveformat;
+        if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, sizeof(GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
+            return SDL_AUDIO_F32SYS;
+        } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof(GUID)) == 0) && (waveformat->wBitsPerSample == 16)) {
+            return SDL_AUDIO_S16SYS;
+        } else if ((SDL_memcmp(&ext->SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof(GUID)) == 0) && (waveformat->wBitsPerSample == 32)) {
+            return SDL_AUDIO_S32SYS;
+        }
+    }
+    return 0;
+}
+
 /* Win32-specific SDL_RunApp(), which does most of the SDL_main work,
   based on SDL_windows_main.c, placed in the public domain by Sam Lantinga  4/13/98 */
 #ifdef __WIN32__

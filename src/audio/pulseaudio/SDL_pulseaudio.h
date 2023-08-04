@@ -36,7 +36,6 @@ struct SDL_PrivateAudioData
 
     /* Raw mixing buffer */
     Uint8 *mixbuf;
-    int mixlen;
 
     int bytes_requested; /* bytes of data the hardware wants _now_. */
 

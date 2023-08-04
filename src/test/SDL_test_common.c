@@ -117,10 +117,9 @@ SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, Uint32 flags)
     state->logical_presentation = SDL_LOGICAL_PRESENTATION_DISABLED;
     state->logical_scale_mode = SDL_SCALEMODE_LINEAR;
     state->num_windows = 1;
-    state->audiospec.freq = 22050;
-    state->audiospec.format = SDL_AUDIO_S16;
-    state->audiospec.channels = 2;
-    state->audiospec.samples = 2048;
+    state->audio_freq = 22050;
+    state->audio_format = SDL_AUDIO_S16;
+    state->audio_channels = 2;
 
     /* Set some very sane GL defaults */
     state->gl_red_size = 8;
@@ -604,7 +603,7 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             if (!argv[index]) {
                 return -1;
             }
-            state->audiospec.freq = SDL_atoi(argv[index]);
+            state->audio_freq = SDL_atoi(argv[index]);
             return 2;
         }
         if (SDL_strcasecmp(argv[index], "--format") == 0) {
@@ -613,23 +612,23 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
                 return -1;
             }
             if (SDL_strcasecmp(argv[index], "U8") == 0) {
-                state->audiospec.format = SDL_AUDIO_U8;
+                state->audio_format = SDL_AUDIO_U8;
                 return 2;
             }
             if (SDL_strcasecmp(argv[index], "S8") == 0) {
-                state->audiospec.format = SDL_AUDIO_S8;
+                state->audio_format = SDL_AUDIO_S8;
                 return 2;
             }
             if (SDL_strcasecmp(argv[index], "S16") == 0) {
-                state->audiospec.format = SDL_AUDIO_S16;
+                state->audio_format = SDL_AUDIO_S16;
                 return 2;
             }
             if (SDL_strcasecmp(argv[index], "S16LE") == 0) {
-                state->audiospec.format = SDL_AUDIO_S16LSB;
+                state->audio_format = SDL_AUDIO_S16LSB;
                 return 2;
             }
             if (SDL_strcasecmp(argv[index], "S16BE") == 0) {
-                state->audiospec.format = SDL_AUDIO_S16MSB;
+                state->audio_format = SDL_AUDIO_S16MSB;
                 return 2;
             }
 
@@ -642,15 +641,7 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             if (!argv[index]) {
                 return -1;
             }
-            state->audiospec.channels = (Uint8) SDL_atoi(argv[index]);
-            return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "--samples") == 0) {
-            ++index;
-            if (!argv[index]) {
-                return -1;
-            }
-            state->audiospec.samples = (Uint16) SDL_atoi(argv[index]);
+            state->audio_channels = (Uint8) SDL_atoi(argv[index]);
             return 2;
         }
     }
@@ -1452,7 +1443,8 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
                     SDL_GetCurrentAudioDriver());
         }
 
-        state->audio_id = SDL_OpenAudioDevice(NULL, 0, &state->audiospec, NULL, 0);
+        const SDL_AudioSpec spec = { state->audio_format, state->audio_channels, state->audio_freq };
+        state->audio_id = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &spec);
         if (!state->audio_id) {
             SDL_Log("Couldn't open audio: %s\n", SDL_GetError());
             return SDL_FALSE;

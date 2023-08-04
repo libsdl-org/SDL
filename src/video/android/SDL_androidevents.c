@@ -108,7 +108,7 @@ void Android_PumpEvents_Blocking(SDL_VideoDevice *_this)
 
         ANDROIDAUDIO_PauseDevices();
         openslES_PauseDevices();
-        aaudio_PauseDevices();
+        AAUDIO_PauseDevices();
 
         if (SDL_WaitSemaphore(Android_ResumeSem) == 0) {
 
@@ -119,7 +119,7 @@ void Android_PumpEvents_Blocking(SDL_VideoDevice *_this)
 
             ANDROIDAUDIO_ResumeDevices();
             openslES_ResumeDevices();
-            aaudio_ResumeDevices();
+            AAUDIO_ResumeDevices();
 
             /* Restore the GL Context from here, as this operation is thread dependent */
 #ifdef SDL_VIDEO_OPENGL_EGL
@@ -160,9 +160,9 @@ void Android_PumpEvents_Blocking(SDL_VideoDevice *_this)
         }
     }
 
-    if (aaudio_DetectBrokenPlayState()) {
-        aaudio_PauseDevices();
-        aaudio_ResumeDevices();
+    if (AAUDIO_DetectBrokenPlayState()) {
+        AAUDIO_PauseDevices();
+        AAUDIO_ResumeDevices();
     }
 }
 
@@ -187,7 +187,7 @@ void Android_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
             if (videodata->pauseAudio) {
                 ANDROIDAUDIO_PauseDevices();
                 openslES_PauseDevices();
-                aaudio_PauseDevices();
+                AAUDIO_PauseDevices();
             }
 
             backup_context = 0;
@@ -203,7 +203,7 @@ void Android_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
             if (videodata->pauseAudio) {
                 ANDROIDAUDIO_ResumeDevices();
                 openslES_ResumeDevices();
-                aaudio_ResumeDevices();
+                AAUDIO_ResumeDevices();
             }
 
 #ifdef SDL_VIDEO_OPENGL_EGL
@@ -246,9 +246,9 @@ void Android_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
         }
     }
 
-    if (aaudio_DetectBrokenPlayState()) {
-        aaudio_PauseDevices();
-        aaudio_ResumeDevices();
+    if (AAUDIO_DetectBrokenPlayState()) {
+        AAUDIO_PauseDevices();
+        AAUDIO_ResumeDevices();
     }
 }
 

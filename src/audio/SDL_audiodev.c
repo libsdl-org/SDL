@@ -45,13 +45,13 @@
 #define SDL_PATH_DEV_AUDIO "/dev/audio"
 #endif
 
-static void test_device(const int iscapture, const char *fname, int flags, int (*test)(int fd))
+static void test_device(const SDL_bool iscapture, const char *fname, int flags, SDL_bool (*test)(int fd))
 {
     struct stat sb;
     if ((stat(fname, &sb) == 0) && (S_ISCHR(sb.st_mode))) {
         const int audio_fd = open(fname, flags | O_CLOEXEC, 0);
         if (audio_fd >= 0) {
-            const int okay = test(audio_fd);
+            const SDL_bool okay = test(audio_fd);
             close(audio_fd);
             if (okay) {
                 static size_t dummyhandle = 0;
@@ -69,12 +69,12 @@ static void test_device(const int iscapture, const char *fname, int flags, int (
     }
 }
 
-static int test_stub(int fd)
+static SDL_bool test_stub(int fd)
 {
-    return 1;
+    return SDL_TRUE;
 }
 
-static void SDL_EnumUnixAudioDevices_Internal(const int iscapture, const int classic, int (*test)(int))
+static void SDL_EnumUnixAudioDevices_Internal(const SDL_bool iscapture, const SDL_bool classic, SDL_bool (*test)(int))
 {
     const int flags = iscapture ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT;
     const char *audiodev;
@@ -116,7 +116,7 @@ static void SDL_EnumUnixAudioDevices_Internal(const int iscapture, const int cla
     }
 }
 
-void SDL_EnumUnixAudioDevices(const int classic, int (*test)(int))
+void SDL_EnumUnixAudioDevices(const SDL_bool classic, SDL_bool (*test)(int))
 {
     SDL_EnumUnixAudioDevices_Internal(SDL_TRUE, classic, test);
     SDL_EnumUnixAudioDevices_Internal(SDL_FALSE, classic, test);

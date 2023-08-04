@@ -1,0 +1,8 @@
+The .bmp files used by testaudio.c were made by AlDraw:
+
+https://linktr.ee/AlexDraw
+
+They may be distributed as public domain files!
+
+
+

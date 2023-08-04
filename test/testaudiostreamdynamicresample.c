@@ -15,13 +15,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
-
-static void SDLCALL audio_callback(void *userdata, Uint8 * stream, int len)
-{
-    SDL_AudioStream *audiostream = (SDL_AudioStream *) userdata;
-    SDL_memset(stream, 0, len);
-    SDL_GetAudioStreamData(audiostream, stream, len);
-}
+#include "testutils.h"
 
 int main(int argc, char *argv[])
 {
@@ -36,24 +30,35 @@ int main(int argc, char *argv[])
     Uint32 audio_len = 0;
     SDL_AudioStream *stream;
     SDL_AudioDeviceID device;
+    const char *fname = "sample.wav";
+    char *path;
+    int rc;
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     window = SDL_CreateWindow("Drag the slider: Normal speed", 640, 480, 0);
     renderer = SDL_CreateRenderer(window, NULL, 0);
 
-    SDL_LoadWAV("sample.wav", &spec, &audio_buf, &audio_len);
-    stream = SDL_CreateAudioStream(spec.format, spec.channels, spec.freq, spec.format, spec.channels, spec.freq);
+    path = GetNearbyFilename(fname);
+    rc = SDL_LoadWAV(path ? path : fname, &spec, &audio_buf, &audio_len);
+    SDL_free(path);
+
+    if (rc < 0) {
+        SDL_Log("Failed to load '%s': %s", fname, SDL_GetError());
+        SDL_Quit();
+        return 1;
+    }
+
+    stream = SDL_CreateAudioStream(&spec, &spec);
     SDL_PutAudioStreamData(stream, audio_buf, audio_len);
-    spec.callback = audio_callback;
-    spec.userdata = stream;
-    device = SDL_OpenAudioDevice(NULL, SDL_FALSE, &spec, NULL, 0);
-    SDL_PlayAudioDevice(device);
+    device = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &spec);
+    SDL_BindAudioStream(device, stream);
 
     slider_fill_area.w /= 2;
 
     while (!done) {
         SDL_Event e;
         int newmultiplier = multiplier;
+
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_EVENT_QUIT) {
                 done = 1;
@@ -74,6 +79,7 @@ int main(int argc, char *argv[])
         }
 
         if (multiplier != newmultiplier) {
+            SDL_AudioSpec newspec;
             char title[64];
             int newfreq = spec.freq;
 
@@ -94,13 +100,13 @@ int main(int argc, char *argv[])
                 newfreq = spec.freq + (int) (spec.freq * (multiplier / 100.0f));
             }
             /* SDL_Log("newfreq=%d   multiplier=%d\n", newfreq, multiplier); */
-            SDL_LockAudioDevice(device);
-            SDL_SetAudioStreamFormat(stream, spec.format, spec.channels, newfreq, spec.format, spec.channels, spec.freq);
-            SDL_UnlockAudioDevice(device);
+            SDL_memcpy(&newspec, &spec, sizeof (spec));
+            newspec.freq = newfreq;
+            SDL_SetAudioStreamFormat(stream, &newspec, NULL);
         }
 
         /* keep it looping. */
-        if (SDL_GetAudioStreamAvailable(stream) < (1024 * 100)) {
+        if (SDL_GetAudioStreamAvailable(stream) < ((int) (audio_len / 2))) {
             SDL_PutAudioStreamData(stream, audio_buf, audio_len);
         }
 
@@ -116,6 +122,7 @@ int main(int argc, char *argv[])
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_CloseAudioDevice(device);
+    SDL_DestroyAudioStream(stream);
     SDL_free(audio_buf);
     SDL_Quit();
     return 0;

@@ -34,7 +34,6 @@ struct SDL_PrivateAudioData
 
     /* Raw mixing buffer */
     Uint8 *mixbuf;
-    int mixlen;
 
     /* swizzle function */
     void (*swizzle_func)(SDL_AudioDevice *_this, void *buffer, Uint32 bufferlen);

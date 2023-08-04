@@ -96,18 +96,21 @@ static SDL_bool is_lfe_channel(int channel_index, int channel_count)
     return (channel_count == 3 && channel_index == 2) || (channel_count >= 6 && channel_index == 3);
 }
 
-static void SDLCALL fill_buffer(void *unused, Uint8 *stream, int len)
+static void SDLCALL fill_buffer(SDL_AudioStream *stream, int len, void *unused)
 {
-    Sint16 *buffer = (Sint16 *)stream;
-    int samples = len / sizeof(Sint16);
+    const int samples = len / sizeof(Sint16);
+    Sint16 *buffer = NULL;
     static int total_samples = 0;
     int i;
-
-    SDL_memset(stream, 0, len);
 
     /* This can happen for a short time when switching devices */
     if (active_channel == total_channels) {
         return;
+    }
+
+    buffer = (Sint16 *) SDL_calloc(samples, sizeof(Sint16));
+    if (!buffer) {
+        return;  /* oh well. */
     }
 
     /* Play a sine wave on the active channel only */
@@ -134,12 +137,18 @@ static void SDLCALL fill_buffer(void *unused, Uint8 *stream, int len)
             break;
         }
     }
+
+    SDL_PutAudioStreamData(stream, buffer, samples * sizeof (Sint16));
+
+    SDL_free(buffer);
 }
 
 int main(int argc, char *argv[])
 {
-    int i;
+    SDL_AudioDeviceID *devices = NULL;
     SDLTest_CommonState *state;
+    int devcount = 0;
+    int i;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -168,38 +177,58 @@ int main(int argc, char *argv[])
 
     SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
 
-    for (i = 0; i < SDL_GetNumAudioDevices(0); i++) {
-        const char *devname = SDL_GetAudioDeviceName(i, 0);
+    devices = SDL_GetAudioOutputDevices(&devcount);
+    if (!devices) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GetAudioOutputDevices() failed: %s\n", SDL_GetError());
+        devcount = 0;
+    }
+
+    SDL_Log("Available audio devices:");
+    for (i = 0; i < devcount; i++) {
+        SDL_Log("%s", SDL_GetAudioDeviceName(devices[i]));
+    }
+
+    for (i = 0; i < devcount; i++) {
+        SDL_AudioStream *stream = NULL;
+        char *devname = SDL_GetAudioDeviceName(devices[i]);
         int j;
         SDL_AudioSpec spec;
         SDL_AudioDeviceID dev;
 
-        if (SDL_GetAudioDeviceSpec(i, 0, &spec) != 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GetAudioSpec() failed: %s\n", SDL_GetError());
+        SDL_Log("Testing audio device: %s\n", devname);
+        SDL_free(devname);
+
+        if (SDL_GetAudioDeviceFormat(devices[i], &spec) != 0) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GetAudioDeviceFormat() failed: %s\n", SDL_GetError());
             continue;
         }
 
+        SDL_Log("  (%d channels)\n", spec.channels);
+
         spec.freq = SAMPLE_RATE_HZ;
         spec.format = SDL_AUDIO_S16SYS;
-        spec.samples = 4096;
-        spec.callback = fill_buffer;
 
-        dev = SDL_OpenAudioDevice(devname, 0, &spec, NULL, 0);
+        dev = SDL_OpenAudioDevice(devices[i], &spec);
         if (dev == 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_OpenAudioDevice() failed: %s\n", SDL_GetError());
             continue;
         }
 
-        SDL_Log("Testing audio device: %s (%d channels)\n", devname, spec.channels);
+        stream = SDL_CreateAndBindAudioStream(dev, &spec);
+        if (stream == NULL) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateAndBindAudioStream() failed: %s\n", SDL_GetError());
+            SDL_CloseAudioDevice(dev);
+            continue;
+        }
 
         /* These are used by the fill_buffer callback */
         total_channels = spec.channels;
         active_channel = 0;
 
-        SDL_PlayAudioDevice(dev);
+        SDL_SetAudioStreamGetCallback(stream, fill_buffer, NULL);
 
         for (j = 0; j < total_channels; j++) {
-            int sine_freq = is_lfe_channel(j, total_channels) ? LFE_SINE_FREQ_HZ : SINE_FREQ_HZ;
+            const int sine_freq = is_lfe_channel(j, total_channels) ? LFE_SINE_FREQ_HZ : SINE_FREQ_HZ;
 
             SDL_Log("Playing %d Hz test tone on channel: %s\n", sine_freq, get_channel_name(j, total_channels));
 
@@ -212,7 +241,10 @@ int main(int argc, char *argv[])
         }
 
         SDL_CloseAudioDevice(dev);
+        SDL_DestroyAudioStream(stream);
     }
+
+    SDL_free(devices);
 
     SDL_Quit();
     return 0;

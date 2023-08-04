@@ -27,85 +27,57 @@ static SDL_AudioSpec spec;
 static Uint8 *sound = NULL; /* Pointer to wave data */
 static Uint32 soundlen = 0; /* Length of wave data */
 
-typedef struct
-{
-    SDL_AudioDeviceID dev;
-    int soundpos;
-    SDL_AtomicInt done;
-} callback_data;
+/* these have to be in globals so the Emscripten port can see them in the mainloop.  :/  */
+static SDL_AudioDeviceID device = 0;
+static SDL_AudioStream *stream = NULL;
 
-static callback_data cbd[64];
-
-static void SDLCALL
-play_through_once(void *arg, Uint8 *stream, int len)
-{
-    callback_data *cbdata = (callback_data *)arg;
-    Uint8 *waveptr = sound + cbdata->soundpos;
-    int waveleft = soundlen - cbdata->soundpos;
-    int cpy = len;
-    if (cpy > waveleft) {
-        cpy = waveleft;
-    }
-
-    SDL_memcpy(stream, waveptr, cpy);
-    len -= cpy;
-    cbdata->soundpos += cpy;
-    if (len > 0) {
-        stream += cpy;
-        SDL_memset(stream, spec.silence, len);
-        SDL_AtomicSet(&cbdata->done, 1);
-    }
-}
 
 #ifdef __EMSCRIPTEN__
 static void loop(void)
 {
-    if (SDL_AtomicGet(&cbd[0].done)) {
-        emscripten_cancel_main_loop();
-        SDL_PauseAudioDevice(cbd[0].dev);
-        SDL_CloseAudioDevice(cbd[0].dev);
+    if (SDL_GetAudioStreamAvailable(stream) == 0) {
+        SDL_Log("done.");
+        SDL_CloseAudioDevice(device);
+        SDL_DestroyAudioStream(stream);
         SDL_free(sound);
         SDL_Quit();
+        emscripten_cancel_main_loop();
     }
 }
 #endif
 
 static void
-test_multi_audio(int devcount)
+test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
 {
     int keep_going = 1;
+    SDL_AudioStream **streams = NULL;
     int i;
 
-#ifdef __ANDROID__
+#ifdef __ANDROID__  /* !!! FIXME: maybe always create a window, in the SDLTest layer, so these #ifdefs don't have to be here? */
     SDL_Event event;
 
     /* Create a Window to get fully initialized event processing for testing pause on Android. */
     SDL_CreateWindow("testmultiaudio", 320, 240, 0);
 #endif
 
-    if (devcount > 64) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Too many devices (%d), clamping to 64...\n",
-                     devcount);
-        devcount = 64;
-    }
-
-    spec.callback = play_through_once;
-
     for (i = 0; i < devcount; i++) {
-        const char *devname = SDL_GetAudioDeviceName(i, 0);
-        SDL_Log("playing on device #%d: ('%s')...", i, devname);
+        char *devname = SDL_GetAudioDeviceName(devices[i]);
 
-        SDL_memset(&cbd[0], '\0', sizeof(callback_data));
-        spec.userdata = &cbd[0];
-        cbd[0].dev = SDL_OpenAudioDevice(devname, 0, &spec, NULL, 0);
-        if (cbd[0].dev == 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Open device failed: %s\n", SDL_GetError());
+        SDL_Log("Playing on device #%d of %d: id=%u, name='%s'...", i, devcount, (unsigned int) devices[i], devname);
+
+        device = SDL_OpenAudioDevice(devices[i], &spec);
+        if (device == 0) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Open device failed: %s", SDL_GetError());
+        } else if ((stream = SDL_CreateAndBindAudioStream(device, &spec)) == NULL) {  /* we can reuse these, but we'll just make one each time for now. */
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Audio stream creation failed: %s", SDL_GetError());
+            SDL_CloseAudioDevice(device);
         } else {
-            SDL_PlayAudioDevice(cbd[0].dev);
+            SDL_PutAudioStreamData(stream, sound, soundlen);
+            SDL_FlushAudioStream(stream);
 #ifdef __EMSCRIPTEN__
             emscripten_set_main_loop(loop, 0, 1);
 #else
-            while (!SDL_AtomicGet(&cbd[0].done)) {
+            while (SDL_GetAudioStreamAvailable(stream) > 0) {
 #ifdef __ANDROID__
                 /* Empty queue, some application events would prevent pause. */
                 while (SDL_PollEvent(&event)) {
@@ -113,61 +85,77 @@ test_multi_audio(int devcount)
 #endif
                 SDL_Delay(100);
             }
-            SDL_PauseAudioDevice(cbd[0].dev);
 #endif
-            SDL_Log("done.\n");
-            SDL_CloseAudioDevice(cbd[0].dev);
+            SDL_Log("done.");
+            SDL_CloseAudioDevice(device);
+            SDL_DestroyAudioStream(stream);
         }
+        SDL_free(devname);
+        stream = NULL;
     }
 
-    SDL_memset(cbd, '\0', sizeof(cbd));
-
-    SDL_Log("playing on all devices...\n");
-    for (i = 0; i < devcount; i++) {
-        const char *devname = SDL_GetAudioDeviceName(i, 0);
-        spec.userdata = &cbd[i];
-        cbd[i].dev = SDL_OpenAudioDevice(devname, 0, &spec, NULL, 0);
-        if (cbd[i].dev == 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Open device %d failed: %s\n", i, SDL_GetError());
-        }
-    }
-
-    for (i = 0; i < devcount; i++) {
-        if (cbd[i].dev) {
-            SDL_PlayAudioDevice(cbd[i].dev);
-        }
-    }
-
-    while (keep_going) {
-        keep_going = 0;
+    /* note that Emscripten currently doesn't run this part (but maybe only has a single audio device anyhow?) */
+    SDL_Log("Playing on all devices...\n");
+    streams = (SDL_AudioStream **) SDL_calloc(devcount, sizeof (SDL_AudioStream *));
+    if (!streams) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
+    } else {
         for (i = 0; i < devcount; i++) {
-            if ((cbd[i].dev) && (!SDL_AtomicGet(&cbd[i].done))) {
-                keep_going = 1;
+            char *devname = SDL_GetAudioDeviceName(devices[i]);
+            device = SDL_OpenAudioDevice(devices[i], &spec);
+            if (device == 0) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Open device %d of %d (id=%u, name='%s') failed: %s\n", i, devcount, (unsigned int) devices[i], devname, SDL_GetError());
+            }
+            SDL_free(devname);
+            devices[i] = device; /* just replace the physical device ID with the newly-opened logical device ID. */
+            if (device) {
+                SDL_PauseAudioDevice(device);  /* hold while we set up all the streams. */
+                streams[i] = SDL_CreateAndBindAudioStream(device, &spec);
+                if (streams[i] == NULL) {
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Audio stream creation failed for device %d of %d: %s", i, devcount, SDL_GetError());
+                } else {
+                    SDL_PutAudioStreamData(streams[i], sound, soundlen);
+                    SDL_FlushAudioStream(streams[i]);
+                }
             }
         }
-#ifdef __ANDROID__
-        /* Empty queue, some application events would prevent pause. */
-        while (SDL_PollEvent(&event)) {
+
+        /* try to start all the devices about the same time. SDL does not guarantee sync across physical devices. */
+        for (i = 0; i < devcount; i++) {
+            if (devices[i]) {
+                SDL_UnpauseAudioDevice(devices[i]);
+            }
         }
+
+        while (keep_going) {
+            keep_going = 0;
+            for (i = 0; i < devcount; i++) {
+                if (streams[i] && (SDL_GetAudioStreamAvailable(streams[i]) > 0)) {
+                    keep_going = 1;
+                }
+            }
+#ifdef __ANDROID__
+            /* Empty queue, some application events would prevent pause. */
+            while (SDL_PollEvent(&event)) {}
 #endif
 
-        SDL_Delay(100);
-    }
-
-#ifndef __EMSCRIPTEN__
-    for (i = 0; i < devcount; i++) {
-        if (cbd[i].dev) {
-            SDL_PauseAudioDevice(cbd[i].dev);
-            SDL_CloseAudioDevice(cbd[i].dev);
+            SDL_Delay(100);
         }
+
+        for (i = 0; i < devcount; i++) {
+            SDL_CloseAudioDevice(devices[i]);
+            SDL_DestroyAudioStream(streams[i]);
+        }
+
+        SDL_free(streams);
     }
 
     SDL_Log("All done!\n");
-#endif
 }
 
 int main(int argc, char **argv)
 {
+    SDL_AudioDeviceID *devices = NULL;
     int devcount = 0;
     int i;
     char *filename = NULL;
@@ -212,20 +200,21 @@ int main(int argc, char **argv)
 
     filename = GetResourceFilename(filename, "sample.wav");
 
-    devcount = SDL_GetNumAudioDevices(0);
-    if (devcount < 1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Don't see any specific audio devices!\n");
+    devices = SDL_GetAudioOutputDevices(&devcount);
+    if (devices == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Don't see any specific audio devices!");
     } else {
         /* Load the wave file into memory */
-        if (SDL_LoadWAV(filename, &spec, &sound, &soundlen) == NULL) {
+        if (SDL_LoadWAV(filename, &spec, &sound, &soundlen) == -1) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename,
                          SDL_GetError());
         } else {
-            test_multi_audio(devcount);
+            test_multi_audio(devices, devcount);
             SDL_free(sound);
         }
     }
 
+    SDL_free(devices);
     SDL_free(filename);
 
     SDL_Quit();
@@ -233,3 +222,4 @@ int main(int argc, char **argv)
 
     return 0;
 }
+

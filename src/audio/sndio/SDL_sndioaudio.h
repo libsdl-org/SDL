@@ -30,15 +30,9 @@
 
 struct SDL_PrivateAudioData
 {
-    /* The audio device handle */
-    struct sio_hdl *dev;
-
-    /* Raw mixing buffer */
-    Uint8 *mixbuf;
-    int mixlen;
-
-    /* Polling structures for non-blocking sndio devices */
-    struct pollfd *pfd;
+    struct sio_hdl *dev;  // The audio device handle
+    Uint8 *mixbuf; // Raw mixing buffer
+    struct pollfd *pfd;  // Polling structures for non-blocking sndio devices
 };
 
 #endif /* SDL_sndioaudio_h_ */
