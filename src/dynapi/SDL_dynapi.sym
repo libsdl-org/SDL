@@ -884,7 +884,7 @@ SDL3_0.0.0 {
     SDL_GetSilenceValueForFormat;
     SDL_LoadWAV;
     SDL_PauseAudioDevice;
-    SDL_UnpauseAudioDevice;
+    SDL_ResumeAudioDevice;
     SDL_IsAudioDevicePaused;
     SDL_GetAudioStreamBinding;
     SDL_ShowWindowSystemMenu;

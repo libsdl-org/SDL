@@ -438,7 +438,7 @@ extern DECLSPEC SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(SDL_AudioDeviceID 
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_UnpauseAudioDevice
+ * \sa SDL_ResumeAudioDevice
  * \sa SDL_IsAudioDevicePaused
  */
 extern DECLSPEC int SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev);
@@ -466,10 +466,10 @@ extern DECLSPEC int SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_UnpauseAudioDevice
+ * \sa SDL_ResumeAudioDevice
  * \sa SDL_IsAudioDevicePaused
  */
-extern DECLSPEC int SDLCALL SDL_UnpauseAudioDevice(SDL_AudioDeviceID dev);
+extern DECLSPEC int SDLCALL SDL_ResumeAudioDevice(SDL_AudioDeviceID dev);
 
 /**
  * Use this function to query if an audio device is paused.
@@ -489,7 +489,7 @@ extern DECLSPEC int SDLCALL SDL_UnpauseAudioDevice(SDL_AudioDeviceID dev);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_PauseAudioDevice
- * \sa SDL_UnpauseAudioDevice
+ * \sa SDL_ResumeAudioDevice
  * \sa SDL_IsAudioDevicePaused
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IsAudioDevicePaused(SDL_AudioDeviceID dev);

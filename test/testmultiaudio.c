@@ -123,7 +123,7 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
         /* try to start all the devices about the same time. SDL does not guarantee sync across physical devices. */
         for (i = 0; i < devcount; i++) {
             if (devices[i]) {
-                SDL_UnpauseAudioDevice(devices[i]);
+                SDL_ResumeAudioDevice(devices[i]);
             }
         }
 

@@ -148,7 +148,7 @@ Rather than iterating over audio devices using a device index, there is a new fu
 
 SDL_LockAudioDevice() and SDL_UnlockAudioDevice() have been removed, since there is no callback in another thread to protect. SDL's audio subsystem and SDL_AudioStream maintain their own locks internally, so audio streams are safe to use from any thread. If the app assigns a callback to a specific stream, it can use the stream's lock through SDL_LockAudioStream() if necessary.
 
-SDL_PauseAudioDevice() no longer takes a second argument; it always pauses the device. To unpause, use SDL_UnpauseAudioDevice().
+SDL_PauseAudioDevice() no longer takes a second argument; it always pauses the device. To unpause, use SDL_ResumeAudioDevice().
 
 Audio devices, opened by SDL_OpenAudioDevice(), no longer start in a paused state, as they don't begin processing audio until a stream is bound.
 

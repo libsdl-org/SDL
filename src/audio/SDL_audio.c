@@ -1322,7 +1322,7 @@ int SDL_PauseAudioDevice(SDL_AudioDeviceID devid)
     return SetLogicalAudioDevicePauseState(devid, 1);
 }
 
-int SDLCALL SDL_UnpauseAudioDevice(SDL_AudioDeviceID devid)
+int SDLCALL SDL_ResumeAudioDevice(SDL_AudioDeviceID devid)
 {
     return SetLogicalAudioDevicePauseState(devid, 0);
 }

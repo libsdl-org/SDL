@@ -43,13 +43,13 @@ static void loop(void)
         } else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
             if (e.button.button == 1) {
                 SDL_PauseAudioDevice(devid_out);
-                SDL_UnpauseAudioDevice(devid_in);
+                SDL_ResumeAudioDevice(devid_in);
             }
         } else if (e.type == SDL_EVENT_MOUSE_BUTTON_UP) {
             if (e.button.button == 1) {
                 SDL_PauseAudioDevice(devid_in);
                 SDL_FlushAudioStream(stream_in);  /* so no samples are held back for resampling purposes. */
-                SDL_UnpauseAudioDevice(devid_out);
+                SDL_ResumeAudioDevice(devid_out);
             }
         }
     }

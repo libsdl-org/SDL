@@ -308,10 +308,10 @@ expression e;
 + SDL_PauseAudioDevice(e)
 |
 - SDL_PauseAudioDevice(e, 0)
-+ SDL_UnpauseAudioDevice(e)
++ SDL_ResumeAudioDevice(e)
 |
 - SDL_PauseAudioDevice(e, SDL_FALSE)
-+ SDL_UnpauseAudioDevice(e)
++ SDL_ResumeAudioDevice(e)
 )
 
 @@
@@ -321,7 +321,7 @@ expression e, pause_on;
 + if (pause_on) {
 +    SDL_PauseAudioDevice(e);
 + } else {
-+    SDL_UnpauseAudioDevice(e);
++    SDL_ResumeAudioDevice(e);
 + }
 
 
