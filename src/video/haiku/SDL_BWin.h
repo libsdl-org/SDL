@@ -155,9 +155,12 @@ class SDL_BWin : public BWindow
 
     void UpdateCurrentView()
     {
+#ifdef SDL_VIDEO_OPENGL
         if (_SDL_GLView != NULL) {
             SetCurrentView(_SDL_GLView);
-        } else if (_SDL_View != NULL) {
+        } else
+#endif
+        if (_SDL_View != NULL) {
             SetCurrentView(_SDL_View);
         } else {
             SetCurrentView(NULL);
@@ -454,10 +457,13 @@ class SDL_BWin : public BWindow
                 delete pendingMessage;
             }
             if (_bitmap != NULL) {
-                if (_SDL_View != NULL && _cur_view == _SDL_View)
-                    _SDL_View->Draw(Bounds());
-                else if (_SDL_GLView != NULL && _cur_view == _SDL_GLView) {
+#ifdef SDL_VIDEO_OPENGL
+                if (_SDL_GLView != NULL && _cur_view == _SDL_GLView) {
                     _SDL_GLView->CopyPixelsIn(_bitmap, B_ORIGIN);
+                } else
+#endif
+                if (_SDL_View != NULL && _cur_view == _SDL_View) {
+                    _SDL_View->Draw(Bounds());
                 }
             }
             break;

@@ -1151,7 +1151,6 @@ retry:
     SDL_LockMutex(Android_ActivityMutex);
 
     if (Android_Window) {
-        SDL_VideoDevice *_this = SDL_GetVideoDevice();
         SDL_WindowData *data = Android_Window->driverdata;
 
         /* Wait for Main thread being paused and context un-activated to release 'egl_surface' */
@@ -1168,7 +1167,7 @@ retry:
 
 #ifdef SDL_VIDEO_OPENGL_EGL
         if (data->egl_surface != EGL_NO_SURFACE) {
-            SDL_EGL_DestroySurface(_this, data->egl_surface);
+            SDL_EGL_DestroySurface(SDL_GetVideoDevice(), data->egl_surface);
             data->egl_surface = EGL_NO_SURFACE;
         }
 #endif

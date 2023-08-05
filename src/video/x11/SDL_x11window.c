@@ -423,7 +423,6 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData *windowdata;
     Display *display = data->display;
     int screen = displaydata->screen;
-    const int transparent = (window->flags & SDL_WINDOW_TRANSPARENT) ? SDL_TRUE : SDL_FALSE;
     Visual *visual;
     int depth;
     XSetWindowAttributes xattr;
@@ -443,6 +442,7 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_bool undefined_position = SDL_FALSE;
 
 #if defined(SDL_VIDEO_OPENGL_GLX) || defined(SDL_VIDEO_OPENGL_EGL)
+    const int transparent = (window->flags & SDL_WINDOW_TRANSPARENT) ? SDL_TRUE : SDL_FALSE;
     const char *forced_visual_id = SDL_GetHint(SDL_HINT_VIDEO_X11_WINDOW_VISUALID);
 
     if (forced_visual_id != NULL && forced_visual_id[0] != '\0') {
