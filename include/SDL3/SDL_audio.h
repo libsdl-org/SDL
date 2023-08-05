@@ -1112,7 +1112,8 @@ extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAndBindAudioStream(SDL_AudioD
  * ```
  *
  * \param src The data source for the WAVE data
- * \param freesrc If SDL_TRUE, calls SDL_RWclose() on `src` before returning, even in the case of an error
+ * \param freesrc If SDL_TRUE, calls SDL_RWclose() on `src` before returning,
+ *                even in the case of an error
  * \param spec A pointer to an SDL_AudioSpec that will be set to the WAVE
  *             data's format details on successful return
  * \param audio_buf A pointer filled with the audio data, allocated by the
