@@ -1066,9 +1066,6 @@ extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAndBindAudioStream(SDL_AudioD
  * be valid pointers. The entire data portion of the file is then loaded into
  * memory and decoded if necessary.
  *
- * If `freesrc` is non-zero, the data source gets automatically closed and
- * freed before the function returns.
- *
  * Supported formats are RIFF WAVE files with the formats PCM (8, 16, 24, and
  * 32 bits), IEEE Float (32 bits), Microsoft ADPCM and IMA ADPCM (4 bits), and
  * A-law and mu-law (8 bits). Other formats are currently unsupported and
@@ -1115,11 +1112,11 @@ extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAndBindAudioStream(SDL_AudioD
  * ```
  *
  * \param src The data source for the WAVE data
- * \param freesrc If non-zero, SDL will _always_ free the data source
+ * \param freesrc If SDL_TRUE, calls SDL_RWclose() on `src` before returning, even in the case of an error
  * \param spec A pointer to an SDL_AudioSpec that will be set to the WAVE
- *             data's format details on successful return.
+ *             data's format details on successful return
  * \param audio_buf A pointer filled with the audio data, allocated by the
- *                  function.
+ *                  function
  * \param audio_len A pointer filled with the length of the audio data buffer
  *                  in bytes
  * \returns This function, if successfully called, returns 0. `audio_buf` will
@@ -1141,7 +1138,7 @@ extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAndBindAudioStream(SDL_AudioD
  * \sa SDL_free
  * \sa SDL_LoadWAV
  */
-extern DECLSPEC int SDLCALL SDL_LoadWAV_RW(SDL_RWops * src, int freesrc,
+extern DECLSPEC int SDLCALL SDL_LoadWAV_RW(SDL_RWops * src, SDL_bool freesrc,
                                            SDL_AudioSpec * spec, Uint8 ** audio_buf,
                                            Uint32 * audio_len);
 
