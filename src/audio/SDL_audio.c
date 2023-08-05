@@ -1681,7 +1681,7 @@ int SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SDL
     const SDL_bool iscapture = device->iscapture;
 
     if ((device->spec.format != newspec->format) || (device->spec.channels != newspec->channels) || (device->spec.freq != newspec->freq)) {
-        SDL_memcpy(&device->spec, newspec, sizeof (newspec));
+        SDL_memcpy(&device->spec, newspec, sizeof (*newspec));
         for (SDL_LogicalAudioDevice *logdev = device->logical_devices; !kill_device && (logdev != NULL); logdev = logdev->next) {
             for (SDL_AudioStream *stream = logdev->bound_streams; !kill_device && (stream != NULL); stream = stream->next_binding) {
                 if (SDL_SetAudioStreamFormat(stream, iscapture ? &device->spec : NULL, iscapture ? NULL : &device->spec) == -1) {
