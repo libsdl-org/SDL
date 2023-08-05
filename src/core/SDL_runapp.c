@@ -24,7 +24,7 @@
  * If not, you can special case it here by appending || defined(__YOUR_PLATFORM__) */
 #if ( !defined(SDL_MAIN_NEEDED) && !defined(SDL_MAIN_AVAILABLE) ) || defined(__ANDROID__)
 
-DECLSPEC int MINGW32_FORCEALIGN
+DECLSPEC int
 SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
 {
     char empty[1] = {0};
