@@ -24,13 +24,6 @@
  * If not, you can special case it here by appending || defined(__YOUR_PLATFORM__) */
 #if ( !defined(SDL_MAIN_NEEDED) && !defined(SDL_MAIN_AVAILABLE) ) || defined(__ANDROID__)
 
-#if defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__)
-#include "windows/SDL_windows.h"
-#endif
-#ifndef MINGW32_FORCEALIGN
-#define MINGW32_FORCEALIGN
-#endif
-
 DECLSPEC int MINGW32_FORCEALIGN
 SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
 {

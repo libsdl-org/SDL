@@ -375,7 +375,7 @@ static int OutOfMemory(void)
     return -1;
 }
 
-DECLSPEC int SDL_RunApp(int _argc, char* _argv[], SDL_main_func mainFunction, void * reserved)
+DECLSPEC int MINGW32_FORCEALIGN SDL_RunApp(int _argc, char* _argv[], SDL_main_func mainFunction, void * reserved)
 {
 
     /* Gets the arguments with GetCommandLine, converts them to argc and argv
