@@ -321,7 +321,6 @@ extern DECLSPEC SDL_JoystickID *SDLCALL SDL_GetGamepads(int *count);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetGamepadNameForIndex
  * \sa SDL_OpenGamepad
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IsGamepad(SDL_JoystickID instance_id);
@@ -478,7 +477,6 @@ extern DECLSPEC char *SDLCALL SDL_GetGamepadInstanceMapping(SDL_JoystickID insta
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CloseGamepad
- * \sa SDL_GetGamepadNameForIndex
  * \sa SDL_IsGamepad
  */
 extern DECLSPEC SDL_Gamepad *SDLCALL SDL_OpenGamepad(SDL_JoystickID instance_id);
@@ -532,7 +530,7 @@ extern DECLSPEC SDL_JoystickID SDLCALL SDL_GetGamepadInstanceID(SDL_Gamepad *gam
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetGamepadNameForIndex
+ * \sa SDL_GetGamepadInstanceName
  * \sa SDL_OpenGamepad
  */
 extern DECLSPEC const char *SDLCALL SDL_GetGamepadName(SDL_Gamepad *gamepad);
