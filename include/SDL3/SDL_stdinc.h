@@ -335,8 +335,9 @@ typedef uint64_t Uint64;
 #endif /* !SDL_COMPILE_TIME_ASSERT */
 
 #ifndef SDL_COMPILE_TIME_ASSERT
+/* universal, but may trigger -Wunused-local-typedefs */
 #define SDL_COMPILE_TIME_ASSERT(name, x)               \
-       extern int SDL_compile_time_assert_ ## name[(x) * 2 - 1]
+       typedef int SDL_compile_time_assert_ ## name[(x) * 2 - 1]
 #endif
 
 /** \cond */
