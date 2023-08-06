@@ -42,7 +42,7 @@ static void DISKAUDIO_WaitDevice(SDL_AudioDevice *device)
 
 static void DISKAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
-    const Sint64 written = SDL_RWwrite(device->hidden->io, buffer, buffer_size);
+    const int written = (int)SDL_RWwrite(device->hidden->io, buffer, (size_t)buffer_size);
     if (written != buffer_size) { // If we couldn't write, assume fatal error for now
         SDL_AudioDeviceDisconnected(device);
     }
@@ -62,7 +62,7 @@ static int DISKAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, in
     const int origbuflen = buflen;
 
     if (h->io) {
-        const int br = (int) SDL_RWread(h->io, buffer, (Sint64) buflen);
+        const int br = (int)SDL_RWread(h->io, buffer, (size_t)buflen);
         buflen -= br;
         buffer = ((Uint8 *)buffer) + br;
         if (buflen > 0) { // EOF (or error, but whatever).

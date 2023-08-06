@@ -1694,40 +1694,18 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMapping(SDL_JoystickID instance_id
 /*
  * Add or update an entry into the Mappings Database
  */
-int SDL_AddGamepadMappingsFromRW(SDL_RWops *src, int freesrc)
+int SDL_AddGamepadMappingsFromRW(SDL_RWops *src, SDL_bool freesrc)
 {
     const char *platform = SDL_GetPlatform();
     int gamepads = 0;
     char *buf, *line, *line_end, *tmp, *comma, line_platform[64];
-    Sint64 db_size;
+    size_t db_size;
     size_t platform_len;
 
-    if (src == NULL) {
-        return SDL_InvalidParamError("src");
-    }
-    db_size = SDL_RWsize(src);
-
-    buf = (char *)SDL_malloc((size_t)db_size + 1);
+    buf = (char *)SDL_LoadFile_RW(src, &db_size, freesrc);
     if (buf == NULL) {
-        if (freesrc) {
-            SDL_RWclose(src);
-        }
         return SDL_SetError("Could not allocate space to read DB into memory");
     }
-
-    if (SDL_RWread(src, buf, db_size) != db_size) {
-        if (freesrc) {
-            SDL_RWclose(src);
-        }
-        SDL_free(buf);
-        return SDL_SetError("Could not read DB");
-    }
-
-    if (freesrc) {
-        SDL_RWclose(src);
-    }
-
-    buf[db_size] = '\0';
     line = buf;
 
     PushMappingChangeTracking();

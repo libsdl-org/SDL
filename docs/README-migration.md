@@ -910,32 +910,25 @@ size_t SDL_RWwrite(SDL_RWops *context, const void *ptr, size_t size, size_t maxn
 But now they look more like POSIX:
 
 ```c
-Sint64 SDL_RWread(SDL_RWops *context, void *ptr, Sint64 size);
-Sint64 SDL_RWwrite(SDL_RWops *context, const void *ptr, Sint64 size);
+size_t SDL_RWread(SDL_RWops *context, void *ptr, size_t size);
+size_t SDL_RWwrite(SDL_RWops *context, const void *ptr, size_t size);
 ```
-
-SDL_RWread() previously returned 0 at end of file or other error. Now it returns the number of bytes read, 0 for end of file, -1 for another error, or -2 for data not ready (in the case of a non-blocking context).
 
 Code that used to look like this:
 ```
 size_t custom_read(void *ptr, size_t size, size_t nitems, SDL_RWops *stream)
 {
-    return (size_t)SDL_RWread(stream, ptr, size, nitems);
+    return SDL_RWread(stream, ptr, size, nitems);
 }
 ```
 should be changed to:
 ```
 size_t custom_read(void *ptr, size_t size, size_t nitems, SDL_RWops *stream)
 {
-    Sint64 amount = SDL_RWread(stream, ptr, size * nitems);
-    if (amount <= 0) {
-        return 0;
-    }
-    return (size_t)(amount / size);
+    size_t bytes = SDL_RWread(stream, ptr, size * nitems);
+    return (bytes / size);
 }
 ```
-
-Similarly, SDL_RWwrite() can return -2 for data not ready in the case of a non-blocking context. There is currently no way to create a non-blocking context, we have simply defined the semantic for your own custom SDL_RWops object.
 
 SDL_RWFromFP has been removed from the API, due to issues when the SDL library uses a different C runtime from the application.
 
@@ -944,23 +937,7 @@ You can implement this in your own code easily:
 #include <stdio.h>
 
 
-static Sint64 SDLCALL
-stdio_size(SDL_RWops * context)
-{
-    Sint64 pos, size;
-
-    pos = SDL_RWseek(context, 0, SDL_RW_SEEK_CUR);
-    if (pos < 0) {
-        return -1;
-    }
-    size = SDL_RWseek(context, 0, SDL_RW_SEEK_END);
-
-    SDL_RWseek(context, pos, SDL_RW_SEEK_SET);
-    return size;
-}
-
-static Sint64 SDLCALL
-stdio_seek(SDL_RWops * context, Sint64 offset, int whence)
+static Sint64 SDLCALL stdio_seek(SDL_RWops *context, Sint64 offset, int whence)
 {
     int stdiowhence;
 
@@ -988,54 +965,46 @@ stdio_seek(SDL_RWops * context, Sint64 offset, int whence)
     return SDL_Error(SDL_EFSEEK);
 }
 
-static Sint64 SDLCALL
-stdio_read(SDL_RWops * context, void *ptr, Sint64 size)
+static size_t SDLCALL stdio_read(SDL_RWops *context, void *ptr, size_t size)
 {
-    size_t nread;
+    size_t bytes;
 
-    nread = fread(ptr, 1, (size_t) size, (FILE *)context->hidden.stdio.fp);
-    if (nread == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
-        return SDL_Error(SDL_EFREAD);
+    bytes = fread(ptr, 1, size, (FILE *)context->hidden.stdio.fp);
+    if (bytes == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
+        SDL_Error(SDL_EFREAD);
     }
-    return (Sint64) nread;
+    return bytes;
 }
 
-static Sint64 SDLCALL
-stdio_write(SDL_RWops * context, const void *ptr, Sint64 size)
+static size_t SDLCALL stdio_write(SDL_RWops *context, const void *ptr, size_t size)
 {
-    size_t nwrote;
+    size_t bytes;
 
-    nwrote = fwrite(ptr, 1, (size_t) size, (FILE *)context->hidden.stdio.fp);
-    if (nwrote == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
-        return SDL_Error(SDL_EFWRITE);
+    bytes = fwrite(ptr, 1, size, (FILE *)context->hidden.stdio.fp);
+    if (bytes == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
+        SDL_Error(SDL_EFWRITE);
     }
-    return (Sint64) nwrote;
+    return bytes;
 }
 
-static int SDLCALL
-stdio_close(SDL_RWops * context)
+static int SDLCALL stdio_close(SDL_RWops *context)
 {
     int status = 0;
-    if (context) {
-        if (context->hidden.stdio.autoclose) {
-            /* WARNING:  Check the return value here! */
-            if (fclose((FILE *)context->hidden.stdio.fp) != 0) {
-                status = SDL_Error(SDL_EFWRITE);
-            }
+    if (context->hidden.stdio.autoclose) {
+        if (fclose((FILE *)context->hidden.stdio.fp) != 0) {
+            status = SDL_Error(SDL_EFWRITE);
         }
-        SDL_DestroyRW(context);
     }
+    SDL_DestroyRW(context);
     return status;
 }
 
-SDL_RWops *
-SDL_RWFromFP(void *fp, SDL_bool autoclose)
+SDL_RWops *SDL_RWFromFP(void *fp, SDL_bool autoclose)
 {
     SDL_RWops *rwops = NULL;
 
     rwops = SDL_CreateRW();
     if (rwops != NULL) {
-        rwops->size = stdio_size;
         rwops->seek = stdio_seek;
         rwops->read = stdio_read;
         rwops->write = stdio_write;
@@ -1048,10 +1017,23 @@ SDL_RWFromFP(void *fp, SDL_bool autoclose)
 }
 ```
 
+The functions SDL_ReadU8(), SDL_ReadU16LE(), SDL_ReadU16BE(), SDL_ReadU32LE(), SDL_ReadU32BE(), SDL_ReadU64LE(), and SDL_ReadU64BE() now return SDL_TRUE if the read succeeded and SDL_FALSE if it didn't, and store the data in a pointer passed in as a parameter.
 
 The following functions have been renamed:
 * SDL_AllocRW() => SDL_CreateRW()
 * SDL_FreeRW() => SDL_DestroyRW()
+* SDL_ReadBE16() => SDL_ReadU16BE()
+* SDL_ReadBE32() => SDL_ReadU32BE()
+* SDL_ReadBE64() => SDL_ReadU64BE()
+* SDL_ReadLE16() => SDL_ReadU16LE()
+* SDL_ReadLE32() => SDL_ReadU32LE()
+* SDL_ReadLE64() => SDL_ReadU64LE()
+* SDL_WriteBE16() => SDL_WriteU16BE()
+* SDL_WriteBE32() => SDL_WriteU32BE()
+* SDL_WriteBE64() => SDL_WriteU64BE()
+* SDL_WriteLE16() => SDL_WriteU16LE()
+* SDL_WriteLE32() => SDL_WriteU32LE()
+* SDL_WriteLE64() => SDL_WriteU64LE()
 
 ## SDL_sensor.h
 

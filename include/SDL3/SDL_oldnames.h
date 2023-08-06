@@ -423,6 +423,18 @@
 #define RW_SEEK_SET SDL_RW_SEEK_SET
 #define SDL_AllocRW SDL_CreateRW
 #define SDL_FreeRW SDL_DestroyRW
+#define SDL_ReadBE16 SDL_ReadU16BE
+#define SDL_ReadBE32 SDL_ReadU32BE
+#define SDL_ReadBE64 SDL_ReadU64BE
+#define SDL_ReadLE16 SDL_ReadU16LE
+#define SDL_ReadLE32 SDL_ReadU32LE
+#define SDL_ReadLE64 SDL_ReadU64LE
+#define SDL_WriteBE16 SDL_WriteU16BE
+#define SDL_WriteBE32 SDL_WriteU32BE
+#define SDL_WriteBE64 SDL_WriteU64BE
+#define SDL_WriteLE16 SDL_WriteU16LE
+#define SDL_WriteLE32 SDL_WriteU32LE
+#define SDL_WriteLE64 SDL_WriteU64LE
 
 /* ##SDL_sensor.h */
 #define SDL_SensorClose SDL_CloseSensor
@@ -863,6 +875,18 @@
 #define RW_SEEK_SET RW_SEEK_SET_renamed_SDL_RW_SEEK_SET
 #define SDL_AllocRW SDL_AllocRW_renamed_SDL_CreateRW
 #define SDL_FreeRW SDL_FreeRW_renamed_SDL_DestroyRW
+#define SDL_ReadBE16 SDL_ReadBE16_renamed_SDL_ReadU16BE
+#define SDL_ReadBE32 SDL_ReadBE32_renamed_SDL_ReadU32BE
+#define SDL_ReadBE64 SDL_ReadBE64_renamed_SDL_ReadU64BE
+#define SDL_ReadLE16 SDL_ReadLE16_renamed_SDL_ReadU16LE
+#define SDL_ReadLE32 SDL_ReadLE32_renamed_SDL_ReadU32LE
+#define SDL_ReadLE64 SDL_ReadLE64_renamed_SDL_ReadU64LE
+#define SDL_WriteBE16 SDL_WriteBE16_renamed_SDL_WriteU16BE
+#define SDL_WriteBE32 SDL_WriteBE32_renamed_SDL_WriteU32BE
+#define SDL_WriteBE64 SDL_WriteBE64_renamed_SDL_WriteU64BE
+#define SDL_WriteLE16 SDL_WriteLE16_renamed_SDL_WriteU16LE
+#define SDL_WriteLE32 SDL_WriteLE32_renamed_SDL_WriteU32LE
+#define SDL_WriteLE64 SDL_WriteLE64_renamed_SDL_WriteU64LE
 
 /* ##SDL_sensor.h */
 #define SDL_SensorClose SDL_SensorClose_renamed_SDL_CloseSensor

@@ -2690,3 +2690,63 @@ typedef SDL_cond, SDL_Condition;
 - SDL_strtokr
 + SDL_strtok_r
   (...)
+@@
+@@
+- SDL_ReadLE16
++ SDL_ReadU16LE
+  (...)
+@@
+@@
+- SDL_ReadLE32
++ SDL_ReadU32LE
+  (...)
+@@
+@@
+- SDL_ReadBE32
++ SDL_ReadU32BE
+  (...)
+@@
+@@
+- SDL_ReadBE16
++ SDL_ReadU16BE
+  (...)
+@@
+@@
+- SDL_ReadLE64
++ SDL_ReadU64LE
+  (...)
+@@
+@@
+- SDL_ReadBE64
++ SDL_ReadU64BE
+  (...)
+@@
+@@
+- SDL_WriteLE16
++ SDL_WriteU16LE
+  (...)
+@@
+@@
+- SDL_WriteBE16
++ SDL_WriteU16BE
+  (...)
+@@
+@@
+- SDL_WriteLE32
++ SDL_WriteU32LE
+  (...)
+@@
+@@
+- SDL_WriteBE32
++ SDL_WriteU32BE
+  (...)
+@@
+@@
+- SDL_WriteLE64
++ SDL_WriteU64LE
+  (...)
+@@
+@@
+- SDL_WriteBE64
++ SDL_WriteU64BE
+  (...)
