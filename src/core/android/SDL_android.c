@@ -1983,13 +1983,18 @@ int Android_JNI_FileOpen(SDL_RWops *ctx,
     return 0;
 }
 
-Sint64 Android_JNI_FileRead(SDL_RWops *ctx, void *buffer, Sint64 size)
+size_t Android_JNI_FileRead(SDL_RWops *ctx, void *buffer, size_t size)
 {
     AAsset *asset = (AAsset *)ctx->hidden.androidio.asset;
-    return (Sint64) AAsset_read(asset, buffer, (size_t) size);
+    int bytes = AAsset_read(asset, buffer, size);
+    if (bytes < 0) {
+        SDL_SetError("AAsset_read() failed");
+        return 0;
+    }
+    return (size_t)bytes;
 }
 
-Sint64 Android_JNI_FileWrite(SDL_RWops *ctx, const void *buffer, Sint64 size)
+size_t Android_JNI_FileWrite(SDL_RWops *ctx, const void *buffer, size_t size)
 {
     return SDL_SetError("Cannot write to Android package filesystem");
 }

@@ -1553,7 +1553,7 @@ static int WaveReadPartialChunkData(SDL_RWops *src, WaveChunk *chunk, size_t len
             return -2;
         }
 
-        chunk->size = (size_t) SDL_RWread(src, chunk->data, length);
+        chunk->size = SDL_RWread(src, chunk->data, length);
         if (chunk->size != length) {
             /* Expected to be handled by the caller. */
         }
@@ -1614,16 +1614,20 @@ static int WaveReadFormat(WaveFile *file)
         return SDL_OutOfMemory();
     }
 
-    format->formattag = SDL_ReadLE16(fmtsrc);
+    if (!SDL_ReadU16LE(fmtsrc, &format->formattag) ||
+        !SDL_ReadU16LE(fmtsrc, &format->channels) ||
+        !SDL_ReadU32LE(fmtsrc, &format->frequency) ||
+        !SDL_ReadU32LE(fmtsrc, &format->byterate) ||
+        !SDL_ReadU16LE(fmtsrc, &format->blockalign)) {
+        return -1;
+    }
     format->encoding = format->formattag;
-    format->channels = SDL_ReadLE16(fmtsrc);
-    format->frequency = SDL_ReadLE32(fmtsrc);
-    format->byterate = SDL_ReadLE32(fmtsrc);
-    format->blockalign = SDL_ReadLE16(fmtsrc);
 
     /* This is PCM specific in the first version of the specification. */
     if (fmtlen >= 16) {
-        format->bitspersample = SDL_ReadLE16(fmtsrc);
+        if (!SDL_ReadU16LE(fmtsrc, &format->bitspersample)) {
+            return -1;
+        }
     } else if (format->encoding == PCM_CODE) {
         SDL_RWclose(fmtsrc);
         return SDL_SetError("Missing wBitsPerSample field in WAVE fmt chunk");
@@ -1631,7 +1635,9 @@ static int WaveReadFormat(WaveFile *file)
 
     /* The earlier versions also don't have this field. */
     if (fmtlen >= 18) {
-        format->extsize = SDL_ReadLE16(fmtsrc);
+        if (!SDL_ReadU16LE(fmtsrc, &format->extsize)) {
+            return -1;
+        }
     }
 
     if (format->formattag == EXTENSIBLE_CODE) {
@@ -1647,10 +1653,11 @@ static int WaveReadFormat(WaveFile *file)
             return SDL_SetError("Extensible WAVE header too small");
         }
 
-        format->validsamplebits = SDL_ReadLE16(fmtsrc);
+        if (!SDL_ReadU16LE(fmtsrc, &format->validsamplebits) ||
+            !SDL_ReadU32LE(fmtsrc, &format->channelmask) ||
+            SDL_RWread(fmtsrc, format->subformat, 16) != 16) {
+        }
         format->samplesperblock = format->validsamplebits;
-        format->channelmask = SDL_ReadLE32(fmtsrc);
-        SDL_RWread(fmtsrc, format->subformat, 16);
         format->encoding = WaveGetFormatGUIDEncoding(format);
     }
 
@@ -1802,9 +1809,9 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
     if (RIFFchunk.fourcc == RIFF) {
         Uint32 formtype;
         /* Read the form type. "WAVE" expected. */
-        if (SDL_RWread(src, &formtype, sizeof(Uint32)) != sizeof(Uint32)) {
+        if (!SDL_ReadU32LE(src, &formtype)) {
             return SDL_SetError("Could not read RIFF form type");
-        } else if (SDL_SwapLE32(formtype) != WAVE) {
+        } else if (formtype != WAVE) {
             return SDL_SetError("RIFF form type is not WAVE (not a Waveform file)");
         }
     } else if (RIFFchunk.fourcc == WAVE) {
@@ -1891,10 +1898,8 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
                 } else {
                     /* Let's use src directly, it's just too convenient. */
                     Sint64 position = SDL_RWseek(src, chunk->position, SDL_RW_SEEK_SET);
-                    Uint32 samplelength;
-                    if (position == chunk->position && SDL_RWread(src, &samplelength, sizeof(Uint32)) == sizeof(Uint32)) {
+                    if (position == chunk->position && SDL_ReadU32LE(src, &file->fact.samplelength)) {
                         file->fact.status = 1;
-                        file->fact.samplelength = SDL_SwapLE32(samplelength);
                     } else {
                         file->fact.status = -1;
                     }
@@ -1937,7 +1942,7 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
             Uint64 position = (Uint64)chunk->position + chunk->length - 1;
             if (position > SDL_MAX_SINT64 || SDL_RWseek(src, (Sint64)position, SDL_RW_SEEK_SET) != (Sint64)position) {
                 return SDL_SetError("Could not seek to WAVE chunk data");
-            } else if (SDL_RWread(src, &tmp, 1) != 1) {
+            } else if (!SDL_ReadU8(src, &tmp)) {
                 return SDL_SetError("RIFF size truncates chunk");
             }
         }
