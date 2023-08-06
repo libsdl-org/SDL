@@ -155,7 +155,7 @@ SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn,
                  pfnSDL_CurrentBeginThread pfnBeginThread,
                  pfnSDL_CurrentEndThread pfnEndThread);
 
-
+#if !defined(__BUILDING_SDL2_COMPAT__) /* do not conflict with sdl2-compat::sdl3_include_wrapper.h */
 #if defined(SDL_CreateThread) && SDL_DYNAMIC_API
 #undef SDL_CreateThread
 #define SDL_CreateThread(fn, name, data) SDL_CreateThread_REAL(fn, name, data, (pfnSDL_CurrentBeginThread)SDL_beginthread, (pfnSDL_CurrentEndThread)SDL_endthread)
@@ -165,6 +165,7 @@ SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn,
 #define SDL_CreateThread(fn, name, data) SDL_CreateThread(fn, name, data, (pfnSDL_CurrentBeginThread)SDL_beginthread, (pfnSDL_CurrentEndThread)SDL_endthread)
 #define SDL_CreateThreadWithStackSize(fn, name, stacksize, data) SDL_CreateThreadWithStackSize(fn, name, stacksize, data, (pfnSDL_CurrentBeginThread)SDL_beginthread, (pfnSDL_CurrentEndThread)SDL_endthread)
 #endif
+#endif /* !__BUILDING_SDL2_COMPAT__ */
 
 #else
 
