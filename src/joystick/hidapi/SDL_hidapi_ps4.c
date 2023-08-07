@@ -694,19 +694,20 @@ static void HIDAPI_DriverPS4_TickleBluetooth(SDL_HIDAPI_Device *device)
 
 static void HIDAPI_DriverPS4_SetEnhancedModeAvailable(SDL_DriverPS4_Context *ctx)
 {
-    if (!ctx->effects_supported) {
-        /* We shouldn't be sending any packets to the controller */
-        return;
-    }
-
     ctx->enhanced_mode_available = SDL_TRUE;
 
     if (ctx->touchpad_supported) {
         SDL_PrivateJoystickAddTouchpad(ctx->joystick, 2);
+        ctx->report_touchpad = SDL_TRUE;
     }
+
     if (ctx->sensors_supported) {
         SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, 250.0f);
         SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, 250.0f);
+    }
+
+    if (ctx->device->is_bluetooth && ctx->official_controller) {
+        ctx->report_battery = SDL_TRUE;
     }
 }
 
@@ -716,17 +717,10 @@ static void HIDAPI_DriverPS4_SetEnhancedMode(SDL_DriverPS4_Context *ctx)
         HIDAPI_DriverPS4_SetEnhancedModeAvailable(ctx);
     }
 
-    if (!ctx->enhanced_mode && ctx->enhanced_mode_available) {
+    if (!ctx->enhanced_mode) {
         ctx->enhanced_mode = SDL_TRUE;
 
-        if (ctx->touchpad_supported) {
-            ctx->report_touchpad = SDL_TRUE;
-        }
-
-        if (ctx->device->is_bluetooth && ctx->official_controller) {
-            ctx->report_battery = SDL_TRUE;
-        }
-
+        /* Switch into enhanced report mode */
         HIDAPI_DriverPS4_UpdateEffects(ctx, SDL_FALSE);
     }
 }
@@ -888,12 +882,20 @@ static int HIDAPI_DriverPS4_InternalSendJoystickEffect(SDL_DriverPS4_Context *ct
     Uint8 data[78];
     int report_size, offset;
 
-    if (application_usage) {
-        HIDAPI_DriverPS4_UpdateEnhancedModeOnApplicationUsage(ctx);
+    if (!ctx->effects_supported) {
+        /* We shouldn't be sending packets to this controller */
+        return SDL_Unsupported();
     }
 
-    if (!ctx->enhanced_mode_available) {
-        return SDL_Unsupported();
+    if (!ctx->enhanced_mode) {
+        if (application_usage) {
+            HIDAPI_DriverPS4_UpdateEnhancedModeOnApplicationUsage(ctx);
+        }
+
+        if (!ctx->enhanced_mode) {
+            /* We're not in enhanced mode, effects aren't allowed */
+            return SDL_Unsupported();
+        }
     }
 
     SDL_zeroa(data);
@@ -1059,7 +1061,7 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
     axis = ((int)packet->ucRightJoystickY * 257) - 32768;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
 
-    if (size > 9 && ctx->report_battery) {
+    if (size > 9 && ctx->report_battery && ctx->enhanced_reports) {
         /* Battery level ranges from 0 to 10 */
         int level = (packet->ucBatteryLevel & 0xF);
         if (level == 0) {
@@ -1073,7 +1075,7 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
         }
     }
 
-    if (size > 9 && ctx->report_touchpad) {
+    if (size > 9 && ctx->report_touchpad && ctx->enhanced_reports) {
         touchpad_state = !(packet->ucTouchpadCounter1 & 0x80) ? SDL_PRESSED : SDL_RELEASED;
         touchpad_x = packet->rgucTouchpadData1[0] | (((int)packet->rgucTouchpadData1[1] & 0x0F) << 8);
         touchpad_y = (packet->rgucTouchpadData1[1] >> 4) | ((int)packet->rgucTouchpadData1[2] << 4);

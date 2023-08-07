@@ -774,16 +774,13 @@ static void HIDAPI_DriverPS5_TickleBluetooth(SDL_HIDAPI_Device *device)
 
 static void HIDAPI_DriverPS5_SetEnhancedModeAvailable(SDL_DriverPS5_Context *ctx)
 {
-    if (!ctx->effects_supported) {
-        /* We shouldn't be sending any packets to the controller */
-        return;
-    }
-
     ctx->enhanced_mode_available = SDL_TRUE;
 
     if (ctx->touchpad_supported) {
         SDL_PrivateJoystickAddTouchpad(ctx->joystick, 2);
+        ctx->report_touchpad = SDL_TRUE;
     }
+
     if (ctx->sensors_supported) {
         if (ctx->device->is_bluetooth) {
             /* Bluetooth sensor update rate appears to be 1000 Hz */
@@ -793,6 +790,10 @@ static void HIDAPI_DriverPS5_SetEnhancedModeAvailable(SDL_DriverPS5_Context *ctx
             SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, 250.0f);
             SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, 250.0f);
         }
+    }
+
+    if (ctx->device->is_bluetooth) {
+        ctx->report_battery = SDL_TRUE;
     }
 }
 
@@ -804,14 +805,6 @@ static void HIDAPI_DriverPS5_SetEnhancedMode(SDL_DriverPS5_Context *ctx)
 
     if (!ctx->enhanced_mode && ctx->enhanced_mode_available) {
         ctx->enhanced_mode = SDL_TRUE;
-
-        if (ctx->touchpad_supported) {
-            ctx->report_touchpad = SDL_TRUE;
-        }
-
-        if (ctx->device->is_bluetooth) {
-            ctx->report_battery = SDL_TRUE;
-        }
 
         /* Switch into enhanced report mode */
         HIDAPI_DriverPS5_UpdateEffects(ctx, 0, SDL_FALSE);
@@ -1017,12 +1010,20 @@ static int HIDAPI_DriverPS5_InternalSendJoystickEffect(SDL_DriverPS5_Context *ct
     int *pending_size;
     int maximum_size;
 
-    if (application_usage) {
-        HIDAPI_DriverPS5_UpdateEnhancedModeOnApplicationUsage(ctx);
+    if (!ctx->effects_supported) {
+        /* We shouldn't be sending packets to this controller */
+        return SDL_Unsupported();
     }
 
-    if (!ctx->enhanced_mode_available) {
-        return SDL_Unsupported();
+    if (!ctx->enhanced_mode) {
+        if (application_usage) {
+            HIDAPI_DriverPS5_UpdateEnhancedModeOnApplicationUsage(ctx);
+        }
+
+        if (!ctx->enhanced_mode) {
+            /* We're not in enhanced mode, effects aren't allowed */
+            return SDL_Unsupported();
+        }
     }
 
     SDL_zeroa(data);
