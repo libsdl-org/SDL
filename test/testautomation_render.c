@@ -1043,7 +1043,7 @@ _hasTexAlpha(void)
 /**
  * @brief Compares screen pixels with image pixels. Helper function.
  *
- * @param s Image to compare against.
+ * @param referenceSurface Image to compare against.
  *
  * \sa
  * http://wiki.libsdl.org/SDL_RenderReadPixels
