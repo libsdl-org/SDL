@@ -1,7 +1,7 @@
 # SDL2 CMake configuration file:
 # This file is meant to be placed in a cmake subfolder of SDL2-devel-2.x.y-VC
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.0...3.5)
 
 include(FeatureSummary)
 set_package_properties(SDL2 PROPERTIES

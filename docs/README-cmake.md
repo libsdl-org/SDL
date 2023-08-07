@@ -48,7 +48,7 @@ SDL can be included in your project in 2 major ways:
 The following CMake script supports both, depending on the value of `MYGAME_VENDORED`.
 
 ```cmake
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 project(mygame)
 
 # Create an option to switch between a system sdl library and a vendored sdl library
