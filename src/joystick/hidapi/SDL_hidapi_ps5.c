@@ -412,7 +412,7 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
         /* Connected over Bluetooth, using simple reports (DirectInput enabled) */
     }
 
-    if (ctx->enhanced_reports) {
+    if (device->vendor_id == USB_VENDOR_SONY && ctx->enhanced_reports) {
         /* Read the serial number (Bluetooth address in reverse byte order)
            This will also enable enhanced reports over Bluetooth
         */
