@@ -1758,15 +1758,16 @@ static size_t SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, do
                     }
                     if (num[i] == '9') {
                         num[i] = '0';
+                        if (i == 0 || num[i - 1] == '-' || num[i - 1] == '+') {
+                            SDL_memmove(&num[i+1], &num[i], length - i);
+                            num[i] = '1';
+                            ++length;
+                            break;
+                        }
                     } else {
                         ++num[i];
                         break;
                     }
-                }
-                if (i == 0 || num[i] == '-' || num[i] == '+') {
-                    SDL_memmove(&num[i+1], &num[i], length - i);
-                    num[i] = '1';
-                    ++length;
                 }
                 SDL_assert(length < sizeof(num));
                 num[length++] = '0';
