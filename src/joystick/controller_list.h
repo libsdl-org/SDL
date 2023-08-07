@@ -97,6 +97,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0c12, 0x1e10 ), k_eControllerType_PS4Controller, NULL },	// P4 Wired Gamepad generic knock off - lightbar but not trackpad or gyro
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0203 ), k_eControllerType_PS4Controller, NULL },	// Victrix Pro FS (PS4 peripheral but no trackpad/lightbar)
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0207 ), k_eControllerType_PS4Controller, NULL },	// Victrix Pro FS V2 w/ Touchpad for PS4
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x020a ), k_eControllerType_PS4Controller, NULL },	// Victrix Pro FS PS4/PS5 (PS4 mode)
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0055 ), k_eControllerType_PS4Controller, NULL },	// HORIPAD 4 FPS
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x005e ), k_eControllerType_PS4Controller, NULL },	// HORI Fighting Commander 4 PS4
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0066 ), k_eControllerType_PS4Controller, NULL },	// HORIPAD 4 FPS Plus
@@ -148,6 +149,7 @@ static const ControllerDescription_t arrControllers[] = {
 
 	{ MAKE_CONTROLLER_ID( 0x054c, 0x0ce6 ), k_eControllerType_PS5Controller, NULL },	// Sony DualSense Controller
 	{ MAKE_CONTROLLER_ID( 0x054c, 0x0df2 ), k_eControllerType_PS5Controller, NULL },	// Sony DualSense Edge Controller
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0209 ), k_eControllerType_PS5Controller, NULL },	// Victrix Pro FS PS4/PS5 (PS5 mode)
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0163 ), k_eControllerType_PS5Controller, NULL },	// HORI Fighting Commander OCTA
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0184 ), k_eControllerType_PS5Controller, NULL },	// Hori Fighting Stick α
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x100b ), k_eControllerType_PS5Controller, NULL },	// Razer Wolverine V2 Pro (Wired)
