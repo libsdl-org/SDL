@@ -46,6 +46,13 @@ macro(add_sdl_test_executable TARGET)
             target_compile_options(${TARGET} PRIVATE "/clang:-fcomment-block-commands=deprecated")
         endif()
     endif()
+
+    if(USE_GCC OR USE_CLANG)
+        check_c_compiler_flag(-fno-fast-math HAVE_GCC_FNO_FAST_MATH)
+        if(HAVE_GCC_FNO_FAST_MATH)
+            target_compile_options(${TARGET} PRIVATE -fno-fast-math)
+        endif()
+    endif()
 endmacro()
 
 if(NOT TARGET SDL2::SDL2-static)
