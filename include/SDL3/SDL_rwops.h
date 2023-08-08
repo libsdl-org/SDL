@@ -339,7 +339,9 @@ extern DECLSPEC void SDLCALL SDL_DestroyRW(SDL_RWops *context);
  * Use this function to get the size of the data stream in an SDL_RWops.
  *
  * \param context the SDL_RWops to get the size of the data stream from
- * \returns the size of the data stream in the SDL_RWops on success or a negative error code on failure; call SDL_GetError() for more information.
+ * \returns the size of the data stream in the SDL_RWops on success or a
+ *          negative error code on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -366,7 +368,8 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWsize(SDL_RWops *context);
  *               negative
  * \param whence any of `SDL_RW_SEEK_SET`, `SDL_RW_SEEK_CUR`,
  *               `SDL_RW_SEEK_END`
- * \returns the final offset in the data stream after the seek or a negative error code on failure; call SDL_GetError() for more information.
+ * \returns the final offset in the data stream after the seek or a negative
+ *          error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -387,8 +390,8 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWseek(SDL_RWops *context, Sint64 offset, int
  * method, with an offset of 0 bytes from `SDL_RW_SEEK_CUR`, to simplify
  * application development.
  *
- * \param context an SDL_RWops data stream object from which to get the current
- *                offset
+ * \param context an SDL_RWops data stream object from which to get the
+ *                current offset
  * \returns the current offset in the stream, or -1 if the information can not
  *          be determined.
  *
@@ -550,8 +553,8 @@ extern DECLSPEC void *SDLCALL SDL_LoadFile(const char *file, size_t *datasize);
  *
  * \param src the SDL_RWops to read from
  * \param value a pointer filled in with the data read
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError() for
- *          more information.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -566,7 +569,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU8(SDL_RWops *src, Uint8 *value);
  *
  * \param src the stream from which to read data
  * \param value a pointer filled in with the data read
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -581,10 +585,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU16LE(SDL_RWops *src, Uint16 *value);
  *
  * \param src the stream from which to read data
  * \param value a pointer filled in with the data read
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
- *
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_ReadS16LE(SDL_RWops *src, Sint16 *value);
 
@@ -597,10 +601,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadS16LE(SDL_RWops *src, Sint16 *value);
  *
  * \param src the stream from which to read data
  * \param value a pointer filled in with the data read
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
- *
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_ReadU16BE(SDL_RWops *src, Uint16 *value);
 
@@ -613,7 +617,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU16BE(SDL_RWops *src, Uint16 *value);
  *
  * \param src the stream from which to read data
  * \param value a pointer filled in with the data read
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -628,7 +633,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadS16BE(SDL_RWops *src, Sint16 *value);
  *
  * \param src the stream from which to read data
  * \param value a pointer filled in with the data read
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -643,7 +649,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU32LE(SDL_RWops *src, Uint32 *value);
  *
  * \param src the stream from which to read data
  * \param value a pointer filled in with the data read
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -658,7 +665,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadS32LE(SDL_RWops *src, Sint32 *value);
  *
  * \param src the stream from which to read data
  * \param value a pointer filled in with the data read
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -673,7 +681,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU32BE(SDL_RWops *src, Uint32 *value);
  *
  * \param src the stream from which to read data
  * \param value a pointer filled in with the data read
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -688,7 +697,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadS32BE(SDL_RWops *src, Sint32 *value);
  *
  * \param src the stream from which to read data
  * \param value a pointer filled in with the data read
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -703,7 +713,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU64LE(SDL_RWops *src, Uint64 *value);
  *
  * \param src the stream from which to read data
  * \param value a pointer filled in with the data read
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -718,7 +729,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadS64LE(SDL_RWops *src, Sint64 *value);
  *
  * \param src the stream from which to read data
  * \param value a pointer filled in with the data read
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -733,7 +745,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU64BE(SDL_RWops *src, Uint64 *value);
  *
  * \param src the stream from which to read data
  * \param value a pointer filled in with the data read
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -752,7 +765,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadS64BE(SDL_RWops *src, Sint64 *value);
  *
  * \param dst the SDL_RWops to write to
  * \param value the byte value to write
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -768,7 +782,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteU8(SDL_RWops *dst, Uint8 value);
  *
  * \param dst the stream to which data will be written
  * \param value the data to be written, in native format
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -784,7 +799,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteU16LE(SDL_RWops *dst, Uint16 value);
  *
  * \param dst the stream to which data will be written
  * \param value the data to be written, in native format
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -799,7 +815,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteS16LE(SDL_RWops *dst, Sint16 value);
  *
  * \param dst the stream to which data will be written
  * \param value the data to be written, in native format
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -814,7 +831,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteU16BE(SDL_RWops *dst, Uint16 value);
  *
  * \param dst the stream to which data will be written
  * \param value the data to be written, in native format
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -830,7 +848,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteS16BE(SDL_RWops *dst, Sint16 value);
  *
  * \param dst the stream to which data will be written
  * \param value the data to be written, in native format
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -846,7 +865,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteU32LE(SDL_RWops *dst, Uint32 value);
  *
  * \param dst the stream to which data will be written
  * \param value the data to be written, in native format
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -861,7 +881,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteS32LE(SDL_RWops *dst, Sint32 value);
  *
  * \param dst the stream to which data will be written
  * \param value the data to be written, in native format
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -876,7 +897,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteU32BE(SDL_RWops *dst, Uint32 value);
  *
  * \param dst the stream to which data will be written
  * \param value the data to be written, in native format
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -892,7 +914,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteS32BE(SDL_RWops *dst, Sint32 value);
  *
  * \param dst the stream to which data will be written
  * \param value the data to be written, in native format
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -908,7 +931,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteU64LE(SDL_RWops *dst, Uint64 value);
  *
  * \param dst the stream to which data will be written
  * \param value the data to be written, in native format
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -923,25 +947,13 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteS64LE(SDL_RWops *dst, Sint64 value);
  *
  * \param dst the stream to which data will be written
  * \param value the data to be written, in native format
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_WriteU64BE(SDL_RWops *dst, Uint64 value);
 
-/**
- * Use this function to write 64 bits in native format to an SDL_RWops as
- * big-endian data.
- *
- * SDL byteswaps the data only if necessary, so the application always
- * specifies native format, and the data written will be in big-endian format.
- *
- * \param dst the stream to which data will be written
- * \param value the data to be written, in native format
- * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- */
 extern DECLSPEC SDL_bool SDLCALL SDL_WriteU64BE(SDL_RWops *dst, Uint64 value);
 /* @} *//* Write endian functions */
 
