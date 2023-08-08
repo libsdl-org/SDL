@@ -279,7 +279,6 @@ endif()
 
 if(SDL_DUMMYAUDIO)
     set_property(TARGET testaudioinfo PROPERTY SDL_NONINTERACTIVE 1)
-    set_property(TARGET testsurround PROPERTY SDL_NONINTERACTIVE 1)
 endif()
 
 if(SDL_DUMMYVIDEO)
