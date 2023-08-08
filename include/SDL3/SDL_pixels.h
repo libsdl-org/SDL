@@ -91,6 +91,8 @@ typedef enum
 {
     SDL_ARRAYORDER_NONE,
     SDL_ARRAYORDER_RGB,
+    SDL_ARRAYORDER_UNUSED1, /* Left for compatibility with SDL2 */
+    SDL_ARRAYORDER_UNUSED2, /* Left for compatibility with SDL2 */
     SDL_ARRAYORDER_BGR
 } SDL_ArrayOrder;
 
