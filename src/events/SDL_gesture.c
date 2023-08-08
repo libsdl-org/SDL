@@ -61,7 +61,7 @@ typedef struct
 typedef struct
 {
     SDL_FloatPoint path[DOLLARNPOINTS];
-    unsigned long hash;
+    Sint64 hash;
 } SDL_DollarTemplate;
 
 typedef struct
@@ -630,7 +630,7 @@ void SDL_GestureProcessEvent(SDL_Event *event)
                                         &bestTempl, inTouch);
                 if (bestTempl >= 0) {
                     /* Send Event */
-                    unsigned long gestureId = inTouch->dollarTemplate[bestTempl].hash;
+                    Sint64 gestureId = inTouch->dollarTemplate[bestTempl].hash;
                     SDL_SendGestureDollar(inTouch, gestureId, error);
                     /* printf ("%s\n",);("Dollar error: %f\n",error); */
                 }
