@@ -294,7 +294,6 @@ int pixels_getPixelFormatName(void *arg)
 int pixels_allocFreePalette(void *arg)
 {
     const char *expectedError1 = "Parameter 'ncolors' is invalid";
-    const char *expectedError2 = "Parameter 'palette' is invalid";
     const char *error;
     int variation;
     int i;
@@ -357,19 +356,6 @@ int pixels_allocFreePalette(void *arg)
             SDLTest_AssertCheck(SDL_strcmp(error, expectedError1) == 0,
                                 "Validate error message, expected: '%s', got: '%s'", expectedError1, error);
         }
-    }
-
-    /* Invalid free pointer */
-    SDL_ClearError();
-    SDLTest_AssertPass("Call to SDL_ClearError()");
-    SDL_FreePalette(NULL);
-    SDLTest_AssertPass("Call to SDL_FreePalette(NULL)");
-    error = SDL_GetError();
-    SDLTest_AssertPass("Call to SDL_GetError()");
-    SDLTest_AssertCheck(error != NULL, "Validate that error message was not NULL");
-    if (error != NULL) {
-        SDLTest_AssertCheck(SDL_strcmp(error, expectedError2) == 0,
-                            "Validate error message, expected: '%s', got: '%s'", expectedError2, error);
     }
 
     return TEST_COMPLETED;
