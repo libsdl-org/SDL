@@ -198,15 +198,16 @@ static SDL_Scancode button_to_scancode(int button)
 
 int Android_OnPadDown(int device_id, int keycode)
 {
+    Uint64 timestamp = SDL_GetTicksNS();
     SDL_joylist_item *item;
     int button = keycode_to_SDL(keycode);
     if (button >= 0) {
         SDL_LockJoysticks();
         item = JoystickByDeviceId(device_id);
         if (item && item->joystick) {
-            SDL_SendJoystickButton(0, item->joystick, button, SDL_PRESSED);
+            SDL_SendJoystickButton(timestamp, item->joystick, button, SDL_PRESSED);
         } else {
-            SDL_SendKeyboardKey(0, SDL_PRESSED, button_to_scancode(button));
+            SDL_SendKeyboardKey(timestamp, SDL_PRESSED, button_to_scancode(button));
         }
         SDL_UnlockJoysticks();
         return 0;
@@ -217,15 +218,16 @@ int Android_OnPadDown(int device_id, int keycode)
 
 int Android_OnPadUp(int device_id, int keycode)
 {
+    Uint64 timestamp = SDL_GetTicksNS();
     SDL_joylist_item *item;
     int button = keycode_to_SDL(keycode);
     if (button >= 0) {
         SDL_LockJoysticks();
         item = JoystickByDeviceId(device_id);
         if (item && item->joystick) {
-            SDL_SendJoystickButton(0, item->joystick, button, SDL_RELEASED);
+            SDL_SendJoystickButton(timestamp, item->joystick, button, SDL_RELEASED);
         } else {
-            SDL_SendKeyboardKey(0, SDL_RELEASED, button_to_scancode(button));
+            SDL_SendKeyboardKey(timestamp, SDL_RELEASED, button_to_scancode(button));
         }
         SDL_UnlockJoysticks();
         return 0;
@@ -236,13 +238,14 @@ int Android_OnPadUp(int device_id, int keycode)
 
 int Android_OnJoy(int device_id, int axis, float value)
 {
+    Uint64 timestamp = SDL_GetTicksNS();
     /* Android gives joy info normalized as [-1.0, 1.0] or [0.0, 1.0] */
     SDL_joylist_item *item;
 
     SDL_LockJoysticks();
     item = JoystickByDeviceId(device_id);
     if (item && item->joystick) {
-        SDL_SendJoystickAxis(0, item->joystick, axis, (Sint16)(32767. * value));
+        SDL_SendJoystickAxis(timestamp, item->joystick, axis, (Sint16)(32767. * value));
     }
     SDL_UnlockJoysticks();
 
@@ -251,6 +254,7 @@ int Android_OnJoy(int device_id, int axis, float value)
 
 int Android_OnHat(int device_id, int hat_id, int x, int y)
 {
+    Uint64 timestamp = SDL_GetTicksNS();
     const int DPAD_UP_MASK = (1 << SDL_GAMEPAD_BUTTON_DPAD_UP);
     const int DPAD_DOWN_MASK = (1 << SDL_GAMEPAD_BUTTON_DPAD_DOWN);
     const int DPAD_LEFT_MASK = (1 << SDL_GAMEPAD_BUTTON_DPAD_LEFT);
@@ -278,16 +282,16 @@ int Android_OnHat(int device_id, int hat_id, int x, int y)
             dpad_delta = (dpad_state ^ item->dpad_state);
             if (dpad_delta) {
                 if (dpad_delta & DPAD_UP_MASK) {
-                    SDL_SendJoystickButton(0, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, (dpad_state & DPAD_UP_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    SDL_SendJoystickButton(timestamp, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, (dpad_state & DPAD_UP_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 }
                 if (dpad_delta & DPAD_DOWN_MASK) {
-                    SDL_SendJoystickButton(0, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, (dpad_state & DPAD_DOWN_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    SDL_SendJoystickButton(timestamp, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, (dpad_state & DPAD_DOWN_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 }
                 if (dpad_delta & DPAD_LEFT_MASK) {
-                    SDL_SendJoystickButton(0, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, (dpad_state & DPAD_LEFT_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    SDL_SendJoystickButton(timestamp, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, (dpad_state & DPAD_LEFT_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 }
                 if (dpad_delta & DPAD_RIGHT_MASK) {
-                    SDL_SendJoystickButton(0, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, (dpad_state & DPAD_RIGHT_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    SDL_SendJoystickButton(timestamp, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, (dpad_state & DPAD_RIGHT_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 }
                 item->dpad_state = dpad_state;
             }

@@ -1782,6 +1782,7 @@ int SDL_SendJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis, S
     }
 
     /* Update internal joystick state */
+    SDL_assert(timestamp != 0);
     info->value = value;
     joystick->update_complete = timestamp;
 
@@ -1825,6 +1826,7 @@ int SDL_SendJoystickHat(Uint64 timestamp, SDL_Joystick *joystick, Uint8 hat, Uin
     }
 
     /* Update internal joystick state */
+    SDL_assert(timestamp != 0);
     joystick->hats[hat] = value;
     joystick->update_complete = timestamp;
 
@@ -1884,6 +1886,7 @@ int SDL_SendJoystickButton(Uint64 timestamp, SDL_Joystick *joystick, Uint8 butto
     }
 
     /* Update internal joystick state */
+    SDL_assert(timestamp != 0);
     joystick->buttons[button] = state;
     joystick->update_complete = timestamp;
 
@@ -3225,6 +3228,7 @@ int SDL_SendJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick, int touch
     }
 
     /* Update internal joystick state */
+    SDL_assert(timestamp != 0);
     finger_info->state = state;
     finger_info->x = x;
     finger_info->y = y;
