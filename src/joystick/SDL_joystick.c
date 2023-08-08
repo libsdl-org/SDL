@@ -1953,7 +1953,7 @@ void SDL_UpdateJoysticks(void)
 
                 event.type = SDL_EVENT_JOYSTICK_UPDATE_COMPLETE;
                 event.common.timestamp = joystick->update_complete;
-                event.gdevice.which = joystick->instance_id;
+                event.jdevice.which = joystick->instance_id;
                 SDL_PushEvent(&event);
 
                 joystick->update_complete = 0;
