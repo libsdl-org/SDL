@@ -140,6 +140,12 @@ SDL_bool SDL_GetMasksForPixelFormatEnum(Uint32 format, int *bpp, Uint32 *Rmask,
 
 #if SDL_HAVE_YUV
     /* Partial support for SDL_Surface with FOURCC */
+    if (SDL_ISPIXELFORMAT_FOURCC(format)) {
+        /* Not a format that uses masks */
+        *bpp = 0;
+        *Rmask = *Gmask = *Bmask = *Amask = 0;
+        return SDL_TRUE;
+    }
 #else
     if (SDL_ISPIXELFORMAT_FOURCC(format)) {
         SDL_SetError("SDL not built with YUV support");
@@ -178,11 +184,6 @@ SDL_bool SDL_GetMasksForPixelFormatEnum(Uint32 format, int *bpp, Uint32 *Rmask,
         *Gmask = 0x0000FF00;
         *Bmask = 0x000000FF;
 #endif
-        return SDL_TRUE;
-    }
-
-    if (SDL_ISPIXELFORMAT_FOURCC(format)) {
-        /* Not a format that uses masks */
         return SDL_TRUE;
     }
 
