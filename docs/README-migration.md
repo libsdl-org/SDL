@@ -925,8 +925,10 @@ should be changed to:
 ```
 size_t custom_read(void *ptr, size_t size, size_t nitems, SDL_RWops *stream)
 {
-    size_t bytes = SDL_RWread(stream, ptr, size * nitems);
-    return (bytes / size);
+    if (size > 0 && nitems > 0) {
+        return SDL_RWread(stream, ptr, size * nitems) / size;
+    }
+    return 0;
 }
 ```
 
