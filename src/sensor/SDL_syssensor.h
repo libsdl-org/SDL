@@ -27,24 +27,30 @@
 
 #include "SDL_sensor_c.h"
 
+#define _guarded SDL_GUARDED_BY(SDL_sensor_lock)
+
 /* The SDL sensor structure */
 struct SDL_Sensor
 {
-    SDL_SensorID instance_id;   /* Device instance, monotonically increasing from 0 */
-    char *name;                 /* Sensor name - system dependent */
-    SDL_SensorType type;        /* Type of the sensor */
-    int non_portable_type;      /* Platform dependent type of the sensor */
+    const void *magic _guarded;
 
-    float data[16];             /* The current state of the sensor */
+    SDL_SensorID instance_id _guarded;   /* Device instance, monotonically increasing from 0 */
+    char *name _guarded;                 /* Sensor name - system dependent */
+    SDL_SensorType type _guarded;        /* Type of the sensor */
+    int non_portable_type _guarded;      /* Platform dependent type of the sensor */
 
-    struct SDL_SensorDriver *driver;
+    float data[16] _guarded;             /* The current state of the sensor */
 
-    struct sensor_hwdata *hwdata; /* Driver dependent information */
+    struct SDL_SensorDriver *driver _guarded;
 
-    int ref_count; /* Reference count for multiple opens */
+    struct sensor_hwdata *hwdata _guarded; /* Driver dependent information */
 
-    struct SDL_Sensor *next; /* pointer to next sensor we have allocated */
+    int ref_count _guarded; /* Reference count for multiple opens */
+
+    struct SDL_Sensor *next _guarded; /* pointer to next sensor we have allocated */
 };
+
+#undef _guarded
 
 typedef struct SDL_SensorDriver
 {

@@ -23,6 +23,10 @@
 #ifndef SDL_sensor_c_h_
 #define SDL_sensor_c_h_
 
+#ifdef SDL_THREAD_SAFETY_ANALYSIS
+extern SDL_Mutex *SDL_sensor_lock;
+#endif
+
 struct SDL_SensorDriver;
 
 /* Useful functions and variables from SDL_sensor.c */
@@ -34,8 +38,17 @@ extern SDL_SensorID SDL_GetNextSensorInstanceID(void);
 extern int SDL_InitSensors(void);
 extern void SDL_QuitSensors(void);
 
-extern void SDL_LockSensors(void);
-extern void SDL_UnlockSensors(void);
+/* Return whether the sensor system is currently initialized */
+extern SDL_bool SDL_SensorsInitialized(void);
+
+/* Return whether the sensors are currently locked */
+extern SDL_bool SDL_SensorsLocked(void);
+
+/* Make sure we currently have the sensors locked */
+extern void SDL_AssertSensorsLocked(void) SDL_ASSERT_CAPABILITY(SDL_sensor_lock);
+
+extern void SDL_LockSensors(void) SDL_ACQUIRE(SDL_sensor_lock);
+extern void SDL_UnlockSensors(void) SDL_RELEASE(SDL_sensor_lock);
 
 /* Function to return whether there are any sensors opened by the application */
 extern SDL_bool SDL_SensorsOpened(void);
