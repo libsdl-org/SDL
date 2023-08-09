@@ -258,7 +258,11 @@ static void SDL_ANDROID_SensorClose(SDL_Sensor *sensor)
 
 static void SDL_ANDROID_SensorQuit(void)
 {
+    /* All sensors are closed, but we need to unblock the sensor thread */
+    SDL_AssertSensorsLocked();
+    SDL_UnlockSensors();
     SDL_ANDROID_StopSensorThread(&SDL_sensor_thread_context);
+    SDL_LockSensors();
 
     if (SDL_sensors) {
         SDL_free(SDL_sensors);
