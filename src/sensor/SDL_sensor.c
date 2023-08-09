@@ -344,6 +344,7 @@ SDL_Sensor *SDL_OpenSensor(SDL_SensorID instance_id)
         SDL_UnlockSensors();
         return NULL;
     }
+    sensor->magic = &SDL_sensor_magic;
     sensor->driver = driver;
     sensor->instance_id = instance_id;
     sensor->type = driver->GetDeviceType(device_index);
