@@ -137,14 +137,6 @@ else()
   set(SDL_HIDAPI_LIBUSB_AVAILABLE TRUE)
 endif()
 
-# On the other hand, *BSD specifically uses libusb only, so we make a special
-#  case just for them.
-if(FREEBSD OR NETBSD OR OPENBSD OR BSDI)
-  set(SDL_HIDAPI_LIBUSB_DEFAULT TRUE)
-else()
-  set(SDL_HIDAPI_LIBUSB_DEFAULT FALSE)
-endif()
-
 set(SDL_ASSEMBLY_DEFAULT OFF)
 if(USE_CLANG OR USE_GCC OR USE_INTELCC OR MSVC_VERSION GREATER 1400)
   set(SDL_ASSEMBLY_DEFAULT ON)
@@ -349,7 +341,7 @@ set_option(SDL_OFFSCREEN           "Use offscreen video driver" ON)
 option_string(SDL_BACKGROUNDING_SIGNAL "number to use for magic backgrounding signal or 'OFF'" OFF)
 option_string(SDL_FOREGROUNDING_SIGNAL "number to use for magic foregrounding signal or 'OFF'" OFF)
 dep_option(SDL_HIDAPI              "Enable the HIDAPI subsystem" ON "NOT VISIONOS" OFF)
-dep_option(SDL_HIDAPI_LIBUSB       "Use libusb for low level joystick drivers" ${SDL_HIDAPI_LIBUSB_DEFAULT} "SDL_HIDAPI;${SDL_HIDAPI_LIBUSB_AVAILABLE}" OFF)
+dep_option(SDL_HIDAPI_LIBUSB       "Use libusb for low level joystick drivers" ON SDL_HIDAPI_LIBUSB_AVAILABLE OFF)
 dep_option(SDL_HIDAPI_JOYSTICK     "Use HIDAPI for low level joystick drivers" ON SDL_HIDAPI OFF)
 dep_option(SDL_VIRTUAL_JOYSTICK    "Enable the virtual-joystick driver" ON SDL_HIDAPI OFF)
 set_option(SDL_LIBUDEV             "Enable libudev support" ON)
