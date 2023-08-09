@@ -1105,29 +1105,31 @@ const char *SDL_GetGamepadStringForAxis(SDL_GamepadAxis axis)
 }
 
 static const char *map_StringForGamepadButton[] = {
-    "a",
-    "b",
-    "x",
-    "y",
-    "back",
-    "guide",
-    "start",
-    "leftstick",
-    "rightstick",
-    "leftshoulder",
-    "rightshoulder",
-    "dpup",
-    "dpdown",
-    "dpleft",
-    "dpright",
-    "misc1",
-    "paddle1",
-    "paddle2",
-    "paddle3",
-    "paddle4",
-    "touchpad"
+    "a", NULL,
+    "b", NULL,
+    "x", NULL,
+    "y", NULL,
+    "back", NULL,
+    "guide", NULL,
+    "start", NULL,
+    "leftstick", NULL,
+    "rightstick", NULL,
+    "leftshoulder", NULL,
+    "rightshoulder", NULL,
+    "dpup", NULL,
+    "dpdown", NULL,
+    "dpleft", NULL,
+    "dpright", NULL,
+    "misc1", NULL,
+    /* Keep using paddle1-4 when we generate mapping strings so that they
+     * can be reused with SDL2, but accept rightpaddle1 etc. as input */
+    "paddle1", "rightpaddle1",
+    "paddle2", "leftpaddle1",
+    "paddle3", "rightpaddle2",
+    "paddle4", "leftpaddle2",
+    "touchpad", NULL
 };
-SDL_COMPILE_TIME_ASSERT(map_StringForGamepadButton, SDL_arraysize(map_StringForGamepadButton) == SDL_GAMEPAD_BUTTON_MAX);
+SDL_COMPILE_TIME_ASSERT(map_StringForGamepadButton, SDL_arraysize(map_StringForGamepadButton) == 2 * SDL_GAMEPAD_BUTTON_MAX);
 
 /*
  * convert a string to its enum equivalent
@@ -1141,8 +1143,8 @@ SDL_GamepadButton SDL_GetGamepadButtonFromString(const char *str)
     }
 
     for (i = 0; i < SDL_arraysize(map_StringForGamepadButton); ++i) {
-        if (SDL_strcasecmp(str, map_StringForGamepadButton[i]) == 0) {
-            return (SDL_GamepadButton)i;
+        if (map_StringForGamepadButton[i] && SDL_strcasecmp(str, map_StringForGamepadButton[i]) == 0) {
+            return (SDL_GamepadButton) (i / 2);
         }
     }
     return SDL_GAMEPAD_BUTTON_INVALID;
@@ -1154,7 +1156,7 @@ SDL_GamepadButton SDL_GetGamepadButtonFromString(const char *str)
 const char *SDL_GetGamepadStringForButton(SDL_GamepadButton button)
 {
     if (button > SDL_GAMEPAD_BUTTON_INVALID && button < SDL_GAMEPAD_BUTTON_MAX) {
-        return map_StringForGamepadButton[button];
+        return map_StringForGamepadButton[button * 2];
     }
     return NULL;
 }
@@ -1660,10 +1662,12 @@ static GamepadMapping_t *SDL_PrivateGenerateAutomaticGamepadMapping(const char *
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpleft", &raw_map->dpleft);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpright", &raw_map->dpright);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "misc1", &raw_map->misc1);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle1", &raw_map->paddle1);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle2", &raw_map->paddle2);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle3", &raw_map->paddle3);
-    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle4", &raw_map->paddle4);
+    /* Keep using paddle1-4 in the generated mapping so that it can be
+     * reused with SDL2 */
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle1", &raw_map->right_paddle1);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle2", &raw_map->left_paddle1);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle3", &raw_map->right_paddle2);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle4", &raw_map->left_paddle2);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "leftx", &raw_map->leftx);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "lefty", &raw_map->lefty);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "rightx", &raw_map->rightx);

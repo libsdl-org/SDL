@@ -669,24 +669,24 @@ static SDL_bool VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadM
         out->misc1.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_PADDLE1))) {
-        out->paddle1.kind = EMappingKind_Button;
-        out->paddle1.target = current_button++;
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1))) {
+        out->right_paddle1.kind = EMappingKind_Button;
+        out->right_paddle1.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_PADDLE2))) {
-        out->paddle2.kind = EMappingKind_Button;
-        out->paddle2.target = current_button++;
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_LEFT_PADDLE1))) {
+        out->left_paddle1.kind = EMappingKind_Button;
+        out->left_paddle1.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_PADDLE3))) {
-        out->paddle3.kind = EMappingKind_Button;
-        out->paddle3.target = current_button++;
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2))) {
+        out->right_paddle2.kind = EMappingKind_Button;
+        out->right_paddle2.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_PADDLE4))) {
-        out->paddle4.kind = EMappingKind_Button;
-        out->paddle4.target = current_button++;
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_LEFT_PADDLE2))) {
+        out->left_paddle2.kind = EMappingKind_Button;
+        out->left_paddle2.target = current_button++;
     }
 
     if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_GAMEPAD_AXIS_LEFTX))) {

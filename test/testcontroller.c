@@ -131,10 +131,10 @@ static int s_arrBindingOrder[] = {
     SDL_GAMEPAD_ELEMENT_INVALID,
 
     /* Paddle sequence */
-    SDL_GAMEPAD_BUTTON_PADDLE1,
-    SDL_GAMEPAD_BUTTON_PADDLE2,
-    SDL_GAMEPAD_BUTTON_PADDLE3,
-    SDL_GAMEPAD_BUTTON_PADDLE4,
+    SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1,
+    SDL_GAMEPAD_BUTTON_LEFT_PADDLE1,
+    SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2,
+    SDL_GAMEPAD_BUTTON_LEFT_PADDLE2,
     SDL_GAMEPAD_ELEMENT_INVALID,
 };
 
@@ -749,13 +749,13 @@ static const char *GetBindingInstruction(void)
         return "Press the D-Pad right";
     case SDL_GAMEPAD_BUTTON_MISC1:
         return "Press the bottom center button (Share/Capture)";
-    case SDL_GAMEPAD_BUTTON_PADDLE1:
+    case SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1:
         return "Press the upper paddle under your right hand";
-    case SDL_GAMEPAD_BUTTON_PADDLE2:
+    case SDL_GAMEPAD_BUTTON_LEFT_PADDLE1:
         return "Press the upper paddle under your left hand";
-    case SDL_GAMEPAD_BUTTON_PADDLE3:
+    case SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2:
         return "Press the lower paddle under your right hand";
-    case SDL_GAMEPAD_BUTTON_PADDLE4:
+    case SDL_GAMEPAD_BUTTON_LEFT_PADDLE2:
         return "Press the lower paddle under your left hand";
     case SDL_GAMEPAD_BUTTON_TOUCHPAD:
         return "Press down on the touchpad";
@@ -1024,7 +1024,7 @@ static SDL_bool ShowingFront(void)
     int i;
 
     /* Show the back of the gamepad if the paddles are being held or bound */
-    for (i = SDL_GAMEPAD_BUTTON_PADDLE1; i <= SDL_GAMEPAD_BUTTON_PADDLE4; ++i) {
+    for (i = SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1; i <= SDL_GAMEPAD_BUTTON_LEFT_PADDLE2; ++i) {
         if (SDL_GetGamepadButton(controller->gamepad, (SDL_GamepadButton)i) == SDL_PRESSED ||
             binding_element == i) {
             showing_front = SDL_FALSE;
