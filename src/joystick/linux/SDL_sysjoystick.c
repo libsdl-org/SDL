@@ -2517,19 +2517,19 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
             joystick->hwdata->has_key[BTN_TRIGGER_HAPPY6] &&
             joystick->hwdata->has_key[BTN_TRIGGER_HAPPY7] &&
             joystick->hwdata->has_key[BTN_TRIGGER_HAPPY8]) {
-            out->paddle1.kind = EMappingKind_Button;
-            out->paddle1.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY5];
-            out->paddle2.kind = EMappingKind_Button;
-            out->paddle2.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY7];
-            out->paddle3.kind = EMappingKind_Button;
-            out->paddle3.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY6];
-            out->paddle4.kind = EMappingKind_Button;
-            out->paddle4.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY8];
+            out->right_paddle1.kind = EMappingKind_Button;
+            out->right_paddle1.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY5];
+            out->left_paddle1.kind = EMappingKind_Button;
+            out->left_paddle1.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY7];
+            out->right_paddle2.kind = EMappingKind_Button;
+            out->right_paddle2.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY6];
+            out->left_paddle2.kind = EMappingKind_Button;
+            out->left_paddle2.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY8];
 #ifdef DEBUG_GAMEPAD_MAPPING
-            SDL_Log("Mapped PADDLE1 to button %d (BTN_TRIGGER_HAPPY5)", out->paddle1.target);
-            SDL_Log("Mapped PADDLE2 to button %d (BTN_TRIGGER_HAPPY7)", out->paddle2.target);
-            SDL_Log("Mapped PADDLE3 to button %d (BTN_TRIGGER_HAPPY6)", out->paddle3.target);
-            SDL_Log("Mapped PADDLE4 to button %d (BTN_TRIGGER_HAPPY8)", out->paddle4.target);
+            SDL_Log("Mapped RIGHT_PADDLE1 to button %d (BTN_TRIGGER_HAPPY5)", out->right_paddle1.target);
+            SDL_Log("Mapped LEFT_PADDLE1 to button %d (BTN_TRIGGER_HAPPY7)", out->left_paddle1.target);
+            SDL_Log("Mapped RIGHT_PADDLE2 to button %d (BTN_TRIGGER_HAPPY6)", out->right_paddle2.target);
+            SDL_Log("Mapped LEFT_PADDLE2 to button %d (BTN_TRIGGER_HAPPY8)", out->left_paddle2.target);
 #endif
         }
 

@@ -96,10 +96,10 @@ typedef enum
     SDL_GAMEPAD_BUTTON_DPAD_LEFT,
     SDL_GAMEPAD_BUTTON_DPAD_RIGHT,
     SDL_GAMEPAD_BUTTON_MISC1,    /* Additional button (e.g. Xbox Series X share button, PS5 microphone button, Nintendo Switch Pro capture button, Amazon Luna microphone button) */
-    SDL_GAMEPAD_BUTTON_PADDLE1,  /* Upper or primary paddle, under your right hand (e.g. Xbox Elite paddle P1) */
-    SDL_GAMEPAD_BUTTON_PADDLE2,  /* Upper or primary paddle, under your left hand (e.g. Xbox Elite paddle P3) */
-    SDL_GAMEPAD_BUTTON_PADDLE3,  /* Lower or secondary paddle, under your right hand (e.g. Xbox Elite paddle P2) */
-    SDL_GAMEPAD_BUTTON_PADDLE4,  /* Lower or secondary paddle, under your left hand (e.g. Xbox Elite paddle P4) */
+    SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1,  /* Upper or primary paddle, under your right hand (e.g. Xbox Elite paddle P1) */
+    SDL_GAMEPAD_BUTTON_LEFT_PADDLE1,   /* Upper or primary paddle, under your left hand (e.g. Xbox Elite paddle P3) */
+    SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2,  /* Lower or secondary paddle, under your right hand (e.g. Xbox Elite paddle P2) */
+    SDL_GAMEPAD_BUTTON_LEFT_PADDLE2,   /* Lower or secondary paddle, under your left hand (e.g. Xbox Elite paddle P4) */
     SDL_GAMEPAD_BUTTON_TOUCHPAD, /* PS4/PS5 touchpad button */
     SDL_GAMEPAD_BUTTON_MAX
 } SDL_GamepadButton;

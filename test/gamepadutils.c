@@ -54,10 +54,10 @@ static const struct
     { 141, 242 }, /* SDL_GAMEPAD_BUTTON_DPAD_LEFT */
     { 211, 242 }, /* SDL_GAMEPAD_BUTTON_DPAD_RIGHT */
     { 257, 199 }, /* SDL_GAMEPAD_BUTTON_MISC1 */
-    { 157, 160 }, /* SDL_GAMEPAD_BUTTON_PADDLE1 */
-    { 355, 160 }, /* SDL_GAMEPAD_BUTTON_PADDLE2 */
-    { 157, 200 }, /* SDL_GAMEPAD_BUTTON_PADDLE3 */
-    { 355, 200 }, /* SDL_GAMEPAD_BUTTON_PADDLE4 */
+    { 157, 160 }, /* SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1 */
+    { 355, 160 }, /* SDL_GAMEPAD_BUTTON_LEFT_PADDLE1 */
+    { 157, 200 }, /* SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2 */
+    { 355, 200 }, /* SDL_GAMEPAD_BUTTON_LEFT_PADDLE2 */
 };
 
 /* This is indexed by gamepad element */
@@ -397,7 +397,7 @@ int GetGamepadImageElementAt(GamepadImage *ctx, float x, float y)
     for (i = 0; i < SDL_arraysize(button_positions); ++i) {
         SDL_bool on_front = SDL_TRUE;
 
-        if (i >= SDL_GAMEPAD_BUTTON_PADDLE1 && i <= SDL_GAMEPAD_BUTTON_PADDLE4) {
+        if (i >= SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1 && i <= SDL_GAMEPAD_BUTTON_LEFT_PADDLE2) {
             on_front = SDL_FALSE;
         }
         if (on_front == ctx->showing_front) {
@@ -560,7 +560,7 @@ void RenderGamepadImage(GamepadImage *ctx)
             SDL_GamepadButton button_position = GetRemappedButton(ctx->face_style, (SDL_GamepadButton)i);
             SDL_bool on_front = SDL_TRUE;
 
-            if (i >= SDL_GAMEPAD_BUTTON_PADDLE1 && i <= SDL_GAMEPAD_BUTTON_PADDLE4) {
+            if (i >= SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1 && i <= SDL_GAMEPAD_BUTTON_LEFT_PADDLE2) {
                 on_front = SDL_FALSE;
             }
             if (on_front == ctx->showing_front) {
@@ -681,10 +681,10 @@ static const char *gamepad_button_names[] = {
     "DPAD Left",
     "DPAD Right",
     "Misc1",
-    "Paddle1",
-    "Paddle2",
-    "Paddle3",
-    "Paddle4",
+    "Right Paddle 1",
+    "Left Paddle 1",
+    "Right Paddle 2",
+    "Left Paddle 2",
     "Touchpad",
 };
 SDL_COMPILE_TIME_ASSERT(gamepad_button_names, SDL_arraysize(gamepad_button_names) == SDL_GAMEPAD_BUTTON_MAX);

@@ -349,22 +349,24 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
             }
             if (controller.physicalInputProfile.buttons[GCInputXboxPaddleOne] != nil) {
                 device->has_xbox_paddles = SDL_TRUE;
-                device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_PADDLE1);
+                device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1);
                 ++nbuttons;
             }
             if (controller.physicalInputProfile.buttons[GCInputXboxPaddleTwo] != nil) {
+                /* TODO: Is this right? SDL_gamepad.h says P2 is the lower right */
                 device->has_xbox_paddles = SDL_TRUE;
-                device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_PADDLE2);
+                device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_LEFT_PADDLE1);
                 ++nbuttons;
             }
             if (controller.physicalInputProfile.buttons[GCInputXboxPaddleThree] != nil) {
+                /* TODO: Is this right? SDL_gamepad.h says P3 is the upper left */
                 device->has_xbox_paddles = SDL_TRUE;
-                device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_PADDLE3);
+                device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2);
                 ++nbuttons;
             }
             if (controller.physicalInputProfile.buttons[GCInputXboxPaddleFour] != nil) {
                 device->has_xbox_paddles = SDL_TRUE;
-                device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_PADDLE4);
+                device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_LEFT_PADDLE2);
                 ++nbuttons;
             }
             if (controller.physicalInputProfile.buttons[GCInputXboxShareButton] != nil) {
@@ -1055,16 +1057,16 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             }
 
             if (joystick->hwdata->has_xbox_paddles) {
-                if (joystick->hwdata->button_mask & (1 << SDL_GAMEPAD_BUTTON_PADDLE1)) {
+                if (joystick->hwdata->button_mask & (1 << SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1)) {
                     buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxPaddleOne].isPressed;
                 }
-                if (joystick->hwdata->button_mask & (1 << SDL_GAMEPAD_BUTTON_PADDLE2)) {
+                if (joystick->hwdata->button_mask & (1 << SDL_GAMEPAD_BUTTON_LEFT_PADDLE1)) {
                     buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxPaddleTwo].isPressed;
                 }
-                if (joystick->hwdata->button_mask & (1 << SDL_GAMEPAD_BUTTON_PADDLE3)) {
+                if (joystick->hwdata->button_mask & (1 << SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2)) {
                     buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxPaddleThree].isPressed;
                 }
-                if (joystick->hwdata->button_mask & (1 << SDL_GAMEPAD_BUTTON_PADDLE4)) {
+                if (joystick->hwdata->button_mask & (1 << SDL_GAMEPAD_BUTTON_LEFT_PADDLE2)) {
                     buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxPaddleFour].isPressed;
                 }
 
@@ -1826,16 +1828,18 @@ const char *IOS_GetAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_Gamepad
                 case SDL_GAMEPAD_BUTTON_MISC1:
                     GetAppleSFSymbolsNameForElement(elements[GCInputDualShockTouchpadButton], elementName);
                     break;
-                case SDL_GAMEPAD_BUTTON_PADDLE1:
+                case SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1:
                     GetAppleSFSymbolsNameForElement(elements[GCInputXboxPaddleOne], elementName);
                     break;
-                case SDL_GAMEPAD_BUTTON_PADDLE2:
+                case SDL_GAMEPAD_BUTTON_LEFT_PADDLE1:
+                    /* TODO: Is this right? SDL_gamepad.h says P2 is the lower right */
                     GetAppleSFSymbolsNameForElement(elements[GCInputXboxPaddleTwo], elementName);
                     break;
-                case SDL_GAMEPAD_BUTTON_PADDLE3:
+                case SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2:
+                    /* TODO: Is this right? SDL_gamepad.h says P3 is the upper left */
                     GetAppleSFSymbolsNameForElement(elements[GCInputXboxPaddleThree], elementName);
                     break;
-                case SDL_GAMEPAD_BUTTON_PADDLE4:
+                case SDL_GAMEPAD_BUTTON_LEFT_PADDLE2:
                     GetAppleSFSymbolsNameForElement(elements[GCInputXboxPaddleFour], elementName);
                     break;
                 case SDL_GAMEPAD_BUTTON_TOUCHPAD:
