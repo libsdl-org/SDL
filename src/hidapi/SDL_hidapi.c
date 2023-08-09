@@ -873,6 +873,41 @@ typedef struct LIBUSB_hid_device_ LIBUSB_hid_device;
 #undef read_thread
 #undef return_data
 
+/* If the platform has any backend other than libusb, try to avoid using
+ * libusb as the main backend for devices, since it detaches drivers and
+ * therefore makes devices inaccessible to the rest of the OS.
+ *
+ * We do this by whitelisting devices we know to be accessible _exclusively_
+ * via libusb; these are typically devices that look like HIDs but have a
+ * quirk that requires direct access to the hardware.
+ */
+static const struct {
+    Uint16 vendor;
+    Uint16 product;
+} SDL_libusb_whitelist[] = {
+    { 0x057e, 0x0337 } /* Nintendo WUP-028, Wii U/Switch GameCube Adapter */
+};
+
+static SDL_bool
+IsInWhitelist(Uint16 vendor, Uint16 product)
+{
+    int i;
+    for (i = 0; i < SDL_arraysize(SDL_libusb_whitelist); i += 1) {
+        if (vendor == SDL_libusb_whitelist[i].vendor &&
+            product == SDL_libusb_whitelist[i].product) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND
+static const SDL_bool use_libusb_whitelist_default = SDL_TRUE;
+#else
+static const SDL_bool use_libusb_whitelist_default = SDL_FALSE;
+#endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND */
+static SDL_bool use_libusb_whitelist = use_libusb_whitelist_default;
+
 #endif /* HAVE_LIBUSB */
 
 #endif /* !SDL_HIDAPI_DISABLED */
@@ -1118,6 +1153,8 @@ int SDL_hid_init(void)
 #endif
 
 #ifdef HAVE_LIBUSB
+    use_libusb_whitelist = SDL_GetHintBoolean("SDL_HIDAPI_LIBUSB_WHITELIST",
+                                              use_libusb_whitelist_default);
     if (SDL_getenv("SDL_HIDAPI_DISABLE_LIBUSB") != NULL) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                      "libusb disabled by SDL_HIDAPI_DISABLE_LIBUSB");
@@ -1308,6 +1345,16 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
         SDL_Log("libusb devices found:");
 #endif
         for (usb_dev = usb_devs; usb_dev; usb_dev = usb_dev->next) {
+            if (use_libusb_whitelist) {
+                if (!IsInWhitelist(usb_dev->vendor_id, usb_dev->product_id)) {
+#ifdef DEBUG_HIDAPI
+                    SDL_Log("Device was not in libusb whitelist: %ls %ls 0x%.4hx 0x%.4hx",
+                            usb_dev->manufacturer_string, usb_dev->product_string,
+                            usb_dev->vendor_id, usb_dev->product_id);
+#endif /* DEBUG_HIDAPI */
+                    continue;
+                }
+            }
             new_dev = (struct SDL_hid_device_info *)SDL_malloc(sizeof(struct SDL_hid_device_info));
             if (new_dev == NULL) {
                 LIBUSB_hid_free_enumeration(usb_devs);
