@@ -17,7 +17,7 @@ def main():
 
     binary_data = args.input.open("rb").read()
 
-    with open(args.output, "w") as fout:
+    with args.output.open("w") as fout:
         fout.write("unsigned char {}[] = {{\n".format(varname))
         bytes_written = 0
         while bytes_written < len(binary_data):
