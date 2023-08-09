@@ -34,6 +34,10 @@
 /******************************************************************************/
 /* Enable thread safety attributes only with clang.
  * The attributes can be safely erased when compiling with other compilers.
+ *
+ * To enable analysis, set these environment variables before running cmake:
+ *      export CC=clang
+ *      export CFLAGS="-DSDL_THREAD_SAFETY_ANALYSIS -Wthread-safety"
  */
 #if defined(SDL_THREAD_SAFETY_ANALYSIS) && \
     defined(__clang__) && (!defined(SWIG))
