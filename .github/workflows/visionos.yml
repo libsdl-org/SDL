@@ -2,6 +2,7 @@ name: Build (visionOS)
 
 # FIXME: CMake 3.28 is not yet available on the github runner
 # on: [push, pull_request]
+on: workflow_dispatch:  # FIXME: remove this event once cmake 3.28 is released
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
