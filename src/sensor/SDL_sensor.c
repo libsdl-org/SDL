@@ -59,7 +59,7 @@ static int SDL_sensors_locked;
 static SDL_bool SDL_sensors_initialized;
 static SDL_Sensor *SDL_sensors SDL_GUARDED_BY(SDL_sensor_lock) = NULL;
 static SDL_AtomicInt SDL_last_sensor_instance_id SDL_GUARDED_BY(SDL_sensor_lock);
-char SDL_sensor_magic;
+static char SDL_sensor_magic;
 
 #define CHECK_SENSOR_MAGIC(sensor, retval)              \
     if (!sensor || sensor->magic != &SDL_sensor_magic) { \
