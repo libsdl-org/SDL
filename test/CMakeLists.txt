@@ -302,6 +302,12 @@ if(OPENGL_FOUND)
 endif()
 if(EMSCRIPTEN)
     set_property(TARGET testshader APPEND_STRING PROPERTY LINK_FLAGS " -sLEGACY_GL_EMULATION")
+
+    find_package(Python3 COMPONENTS Interpreter)
+    if(TARGET Python3::Interpreter)
+        add_custom_target(serve-sdl-tests
+            COMMAND Python3::Interpreter "${CMAKE_CURRENT_SOURCE_DIR}/emscripten/server.py" -d "${CMAKE_CURRENT_BINARY_DIR}")
+    endif()
 endif()
 
 if(PSP)
