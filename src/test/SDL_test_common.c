@@ -71,7 +71,7 @@ static const char *video_usage[] = {
 /* !!! FIXME: Float32? Sint32? */
 static const char *audio_usage[] = {
     "[--audio driver]", "[--rate N]", "[--format U8|S8|S16|S16LE|S16BE]",
-    "[--channels N]", "[--samples N]"
+    "[--channels N]"
 };
 
 static void SDL_snprintfcat(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
