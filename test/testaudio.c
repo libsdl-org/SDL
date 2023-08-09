@@ -1036,6 +1036,11 @@ int main(int argc, char *argv[])
         Quit(2);
     }
 
+    if (state->audio_id) {
+        SDL_CloseAudioDevice(state->audio_id);
+        state->audio_id = 0;
+    }
+
     SetDefaultTitleBar();
 
     physdev_texture = CreateTexture("physaudiodev.bmp");
