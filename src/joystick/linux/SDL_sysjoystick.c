@@ -1553,6 +1553,8 @@ static int LINUX_JoystickSendEffect(SDL_Joystick *joystick, const void *data, in
 
 static int LINUX_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
+    SDL_AssertJoysticksLocked();
+
     if (!joystick->hwdata->has_accelerometer && !joystick->hwdata->has_gyro) {
         return SDL_Unsupported();
     }
@@ -1722,6 +1724,8 @@ static void PollAllSensors(Uint64 timestamp, SDL_Joystick *joystick)
 {
     struct input_absinfo absinfo;
     int i;
+
+    SDL_AssertJoysticksLocked();
 
     SDL_assert(joystick->hwdata->fd_sensor >= 0);
 

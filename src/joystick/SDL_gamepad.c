@@ -362,6 +362,8 @@ void SDL_PrivateGamepadRemoved(SDL_JoystickID instance_id)
     SDL_Event event;
     SDL_Gamepad *gamepad;
 
+    SDL_AssertJoysticksLocked();
+
     if (!SDL_gamepads_initialized) {
         return;
     }
@@ -466,6 +468,8 @@ static void AdjustSensorOrientation(SDL_Joystick *joystick, float *src, float *d
 {
     unsigned int i, j;
 
+    SDL_AssertJoysticksLocked();
+
     for (i = 0; i < 3; ++i) {
         dst[i] = 0.0f;
         for (j = 0; j < 3; ++j) {
@@ -558,6 +562,8 @@ static void AddMappingChangeTracking(GamepadMapping_t *mapping)
 static SDL_bool HasMappingChangeTracking(MappingChangeTracker *tracker, GamepadMapping_t *mapping)
 {
     int i;
+
+    SDL_AssertJoysticksLocked();
 
     for (i = 0; i < tracker->num_changed_mappings; ++i) {
         if (tracker->changed_mappings[i] == mapping) {
