@@ -550,8 +550,16 @@ static void OutputBufferReadyCallback(void *inUserData, AudioQueueRef inAQ, Audi
     SDL_assert(inBuffer != NULL);  // ...right?
     SDL_assert(device->hidden->current_buffer == NULL);  // shouldn't have anything pending
     device->hidden->current_buffer = inBuffer;
-    SDL_OutputAudioThreadIterate(device);
-    SDL_assert(device->hidden->current_buffer == NULL);  // PlayDevice should have enqueued and cleaned it out.
+    const SDL_bool okay = SDL_OutputAudioThreadIterate(device);
+    SDL_assert((device->hidden->current_buffer == NULL) || !okay);  // PlayDevice should have enqueued and cleaned it out, unless we failed or shutdown.
+
+    // buffer is unexpectedly here? We're probably dying, but try to requeue this buffer with silence.
+    if (device->hidden->current_buffer) {
+        AudioQueueBufferRef current_buffer = device->hidden->current_buffer;
+        device->hidden->current_buffer = NULL;
+        SDL_memset(current_buffer->mAudioData, device->silence_value, (size_t) current_buffer->mAudioDataBytesCapacity);
+        AudioQueueEnqueueBuffer(device->hidden->audioQueue, current_buffer, 0, NULL);
+    }
 }
 
 static int COREAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
