@@ -238,7 +238,7 @@ Uint32 X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwin
 
         for (i = 0; i < numItems; ++i) {
             if (atoms[i] == _NET_WM_STATE_HIDDEN) {
-                flags |= SDL_WINDOW_HIDDEN;
+                flags |= SDL_WINDOW_MINIMIZED | SDL_WINDOW_OCCLUDED;
             } else if (atoms[i] == _NET_WM_STATE_FOCUSED) {
                 flags |= SDL_WINDOW_INPUT_FOCUS;
             } else if (atoms[i] == _NET_WM_STATE_MAXIMIZED_VERT) {

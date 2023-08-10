@@ -643,7 +643,7 @@ static void Cocoa_SendExposedEventIfVisible(SDL_Window *window)
         int newVisibility = [[change objectForKey:@"new"] intValue];
         if (newVisibility) {
             SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
-        } else {
+        } else if (![_data.nswindow isMiniaturized]) {
             SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
         }
     }
@@ -662,7 +662,7 @@ static void Cocoa_SendExposedEventIfVisible(SDL_Window *window)
     if (wasVisible != isVisible) {
         if (isVisible) {
             SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
-        } else {
+        } else if (![_data.nswindow isMiniaturized]) {
             SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
         }
 
