@@ -132,7 +132,7 @@ typedef enum
     SDL_WINDOW_FULLSCREEN           = 0x00000001,   /**< window is in fullscreen mode */
     SDL_WINDOW_OPENGL               = 0x00000002,   /**< window usable with OpenGL context */
     SDL_WINDOW_OCCLUDED             = 0x00000004,   /**< window is occluded */
-    SDL_WINDOW_HIDDEN               = 0x00000008,   /**< window is not visible */
+    SDL_WINDOW_HIDDEN               = 0x00000008,   /**< window is neither mapped onto the desktop nor shown in the taskbar/dock/window list; SDL_ShowWindow() is required for it to become visible */
     SDL_WINDOW_BORDERLESS           = 0x00000010,   /**< no window decoration */
     SDL_WINDOW_RESIZABLE            = 0x00000020,   /**< window can be resized */
     SDL_WINDOW_MINIMIZED            = 0x00000040,   /**< window is minimized */
