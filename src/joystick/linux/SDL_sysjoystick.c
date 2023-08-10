@@ -1041,7 +1041,7 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd)
         }
         for (i = 0; i < ABS_MAX; ++i) {
             /* Skip digital hats */
-            if (joystick->hwdata->has_hat[(i - ABS_HAT0X) / 2]) {
+            if (i >= ABS_HAT0X && i <= ABS_HAT3Y && joystick->hwdata->has_hat[(i - ABS_HAT0X) / 2]) {
                 continue;
             }
             if (test_bit(i, absbit)) {
