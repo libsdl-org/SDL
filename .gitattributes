@@ -1,0 +1,12 @@
+*.c                 text
+*.cpp               text
+*.h                 text
+*.cmake             text
+*.py                text
+*.txt               text
+*.sh                text
+*.vcxproj           text eol=crlf
+*.sln               text eol=crlf
+*.filters           text eol=crlf
+*.appxmanifest      text eol=crlf
+*.pbxproj           text
