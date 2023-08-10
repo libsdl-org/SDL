@@ -114,8 +114,8 @@ typedef struct
     SDL_MouseClickState *clickstate;
 
     SDL_Cursor *cursors;
-    SDL_Cursor *def_cursor;
-    SDL_Cursor *cur_cursor;
+    SDL_Cursor *default_cursor;
+    SDL_Cursor *current_cursor;
     SDL_bool cursor_shown;
 
     /* Driver-dependent data. */
