@@ -213,7 +213,7 @@ void SDL_PostInitMouse(void)
     /* Create a dummy mouse cursor for video backends that don't support true cursors,
      * so that mouse grab and focus functionality will work.
      */
-    if (!mouse->default_cursor) {
+    if (!mouse->def_cursor) {
         SDL_Surface *surface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_ARGB8888);
         if (surface) {
             SDL_memset(surface->pixels, 0, (size_t)surface->h * surface->pitch);
@@ -227,20 +227,20 @@ void SDL_SetDefaultCursor(SDL_Cursor *cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    if (cursor == mouse->default_cursor) {
+    if (cursor == mouse->def_cursor) {
         return;
     }
 
-    if (mouse->default_cursor) {
-        SDL_Cursor *default_cursor = mouse->default_cursor;
+    if (mouse->def_cursor) {
+        SDL_Cursor *default_cursor = mouse->def_cursor;
 
-        mouse->default_cursor = NULL;
+        mouse->def_cursor = NULL;
         SDL_DestroyCursor(default_cursor);
     }
 
-    mouse->default_cursor = cursor;
+    mouse->def_cursor = cursor;
 
-    if (!mouse->current_cursor) {
+    if (!mouse->cur_cursor) {
         SDL_SetCursor(cursor);
     }
 }
@@ -621,8 +621,8 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
 
     /* Move the mouse cursor, if needed */
     if (mouse->cursor_shown && !mouse->relative_mode &&
-        mouse->MoveCursor && mouse->current_cursor) {
-        mouse->MoveCursor(mouse->current_cursor);
+        mouse->MoveCursor && mouse->cur_cursor) {
+        mouse->MoveCursor(mouse->cur_cursor);
     }
 
     /* Post the event, if desired */
@@ -872,9 +872,9 @@ void SDL_QuitMouse(void)
         cursor = next;
     }
     mouse->cursors = NULL;
-    mouse->current_cursor = NULL;
+    mouse->cur_cursor = NULL;
 
-    if (mouse->default_cursor) {
+    if (mouse->def_cursor) {
         SDL_SetDefaultCursor(NULL);
     }
 
@@ -1308,14 +1308,14 @@ int SDL_SetCursor(SDL_Cursor *cursor)
     SDL_Mouse *mouse = SDL_GetMouse();
 
     /* Return immediately if setting the cursor to the currently set one (fixes #7151) */
-    if (cursor == mouse->current_cursor) {
+    if (cursor == mouse->cur_cursor) {
         return 0;
     }
 
     /* Set the new cursor */
     if (cursor) {
         /* Make sure the cursor is still valid for this mouse */
-        if (cursor != mouse->default_cursor) {
+        if (cursor != mouse->def_cursor) {
             SDL_Cursor *found;
             for (found = mouse->cursors; found; found = found->next) {
                 if (found == cursor) {
@@ -1326,12 +1326,12 @@ int SDL_SetCursor(SDL_Cursor *cursor)
                 return SDL_SetError("Cursor not associated with the current mouse");
             }
         }
-        mouse->current_cursor = cursor;
+        mouse->cur_cursor = cursor;
     } else {
         if (mouse->focus) {
-            cursor = mouse->current_cursor;
+            cursor = mouse->cur_cursor;
         } else {
-            cursor = mouse->default_cursor;
+            cursor = mouse->def_cursor;
         }
     }
 
@@ -1354,7 +1354,7 @@ SDL_Cursor *SDL_GetCursor(void)
     if (mouse == NULL) {
         return NULL;
     }
-    return mouse->current_cursor;
+    return mouse->cur_cursor;
 }
 
 SDL_Cursor *SDL_GetDefaultCursor(void)
@@ -1364,7 +1364,7 @@ SDL_Cursor *SDL_GetDefaultCursor(void)
     if (mouse == NULL) {
         return NULL;
     }
-    return mouse->default_cursor;
+    return mouse->def_cursor;
 }
 
 void SDL_DestroyCursor(SDL_Cursor *cursor)
@@ -1376,11 +1376,11 @@ void SDL_DestroyCursor(SDL_Cursor *cursor)
         return;
     }
 
-    if (cursor == mouse->default_cursor) {
+    if (cursor == mouse->def_cursor) {
         return;
     }
-    if (cursor == mouse->current_cursor) {
-        SDL_SetCursor(mouse->default_cursor);
+    if (cursor == mouse->cur_cursor) {
+        SDL_SetCursor(mouse->def_cursor);
     }
 
     for (prev = NULL, curr = mouse->cursors; curr;
