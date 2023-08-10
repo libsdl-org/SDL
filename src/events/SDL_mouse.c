@@ -234,7 +234,11 @@ void SDL_SetDefaultCursor(SDL_Cursor *cursor)
     if (mouse->def_cursor) {
         SDL_Cursor *default_cursor = mouse->def_cursor;
 
+        if (mouse->cur_cursor == mouse->def_cursor) {
+            mouse->cur_cursor = NULL;
+        }
         mouse->def_cursor = NULL;
+
         SDL_DestroyCursor(default_cursor);
     }
 
@@ -865,6 +869,10 @@ void SDL_QuitMouse(void)
     SDL_SetRelativeMouseMode(SDL_FALSE);
     SDL_ShowCursor();
 
+    if (mouse->def_cursor) {
+        SDL_SetDefaultCursor(NULL);
+    }
+
     cursor = mouse->cursors;
     while (cursor) {
         next = cursor->next;
@@ -873,10 +881,6 @@ void SDL_QuitMouse(void)
     }
     mouse->cursors = NULL;
     mouse->cur_cursor = NULL;
-
-    if (mouse->def_cursor) {
-        SDL_SetDefaultCursor(NULL);
-    }
 
     if (mouse->sources) {
         SDL_free(mouse->sources);
