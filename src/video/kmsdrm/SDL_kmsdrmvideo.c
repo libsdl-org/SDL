@@ -188,7 +188,7 @@ static float CalculateRefreshRate(drmModeModeInfo *mode)
         den *= mode->vscan;
     }
 
-    return ((100 * num) / den) / 100.0f;
+    return ((100 * (Sint64)num) / den) / 100.0f;
 }
 
 static int KMSDRM_Available(void)
