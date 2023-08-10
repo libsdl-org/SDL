@@ -1190,7 +1190,9 @@ int SDL_vsscanf(const char *text, const char *fmt, va_list ap)
                     suppress = SDL_TRUE;
                     break;
                 case 'h':
-                    if (inttype > DO_SHORT) {
+                    if (inttype == DO_INT) {
+                        inttype = DO_SHORT;
+                    } else if (inttype > DO_SHORT) {
                         ++inttype;
                     }
                     break;
