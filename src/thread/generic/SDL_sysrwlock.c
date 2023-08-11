@@ -43,22 +43,27 @@
 
 struct SDL_RWLock
 {
+#ifdef SDL_THREADS_DISABLED
+    int unused;
+#else
     SDL_Mutex *lock;
     SDL_Condition *condition;
     SDL_threadID writer_thread;
     SDL_AtomicInt reader_count;
     SDL_AtomicInt writer_count;
+#endif
 };
 
 SDL_RWLock *SDL_CreateRWLock_generic(void)
 {
-    SDL_RWLock *rwlock = (SDL_RWLock *) SDL_malloc(sizeof (*rwlock));
+    SDL_RWLock *rwlock = (SDL_RWLock *) SDL_calloc(1, sizeof (*rwlock));
 
     if (!rwlock) {
         SDL_OutOfMemory();
         return NULL;
     }
 
+#ifndef SDL_THREADS_DISABLED
     rwlock->lock = SDL_CreateMutex();
     if (!rwlock->lock) {
         SDL_free(rwlock);
@@ -74,6 +79,7 @@ SDL_RWLock *SDL_CreateRWLock_generic(void)
 
     SDL_AtomicSet(&rwlock->reader_count, 0);
     SDL_AtomicSet(&rwlock->writer_count, 0);
+#endif
 
     return rwlock;
 }
@@ -81,14 +87,17 @@ SDL_RWLock *SDL_CreateRWLock_generic(void)
 void SDL_DestroyRWLock_generic(SDL_RWLock *rwlock)
 {
     if (rwlock) {
+#ifndef SDL_THREADS_DISABLED
         SDL_DestroyMutex(rwlock->lock);
         SDL_DestroyCondition(rwlock->condition);
+#endif
         SDL_free(rwlock);
     }
 }
 
 int SDL_LockRWLockForReading_generic(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
+#ifndef SDL_THREADS_DISABLED
     if (!rwlock) {
         return SDL_InvalidParamError("rwlock");
     } else if (SDL_LockMutex(rwlock->lock) == -1) {
@@ -99,11 +108,14 @@ int SDL_LockRWLockForReading_generic(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_AN
 
     SDL_AtomicAdd(&rwlock->reader_count, 1);
     SDL_UnlockMutex(rwlock->lock);   /* other readers can attempt to share the lock. */
+#endif
+
     return 0;
 }
 
 int SDL_LockRWLockForWriting_generic(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
+#ifndef SDL_THREADS_DISABLED
     if (!rwlock) {
         return SDL_InvalidParamError("rwlock");
     } else if (SDL_LockMutex(rwlock->lock) == -1) {
@@ -116,12 +128,14 @@ int SDL_LockRWLockForWriting_generic(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_AN
 
     /* we hold the lock! */
     SDL_AtomicAdd(&rwlock->writer_count, 1);  /* we let these be recursive, but the API doesn't require this. It _does_ trust you unlock correctly! */
+#endif
 
     return 0;
 }
 
 int SDL_TryLockRWLockForReading_generic(SDL_RWLock *rwlock)
 {
+#ifndef SDL_THREADS_DISABLED
     int rc;
 
     if (!rwlock) {
@@ -138,11 +152,14 @@ int SDL_TryLockRWLockForReading_generic(SDL_RWLock *rwlock)
 
     SDL_AtomicAdd(&rwlock->reader_count, 1);
     SDL_UnlockMutex(rwlock->lock);   /* other readers can attempt to share the lock. */
+#endif
+
     return 0;
 }
 
 int SDL_TryLockRWLockForWriting_generic(SDL_RWLock *rwlock)
 {
+#ifndef SDL_THREADS_DISABLED
     int rc;
 
     if (!rwlock) {
@@ -158,12 +175,14 @@ int SDL_TryLockRWLockForWriting_generic(SDL_RWLock *rwlock)
 
     /* we hold the lock! */
     SDL_AtomicAdd(&rwlock->writer_count, 1);  /* we let these be recursive, but the API doesn't require this. It _does_ trust you unlock correctly! */
+#endif
 
     return 0;
 }
 
 int SDL_UnlockRWLock_generic(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
+#ifndef SDL_THREADS_DISABLED
     if (!rwlock) {
         return SDL_InvalidParamError("rwlock");
     }
@@ -179,6 +198,7 @@ int SDL_UnlockRWLock_generic(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /
     }
 
     SDL_UnlockMutex(rwlock->lock);
+#endif
 
     return 0;
 }
