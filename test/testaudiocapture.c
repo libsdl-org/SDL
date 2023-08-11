@@ -98,7 +98,8 @@ int main(int argc, char **argv)
 {
     SDL_AudioDeviceID *devices;
     SDLTest_CommonState *state;
-    SDL_AudioSpec spec;
+    SDL_AudioSpec outspec;
+    SDL_AudioSpec inspec;
     SDL_AudioDeviceID device;
     SDL_AudioDeviceID want_device = SDL_AUDIO_DEVICE_DEFAULT_CAPTURE;
     const char *devname = NULL;
@@ -178,8 +179,8 @@ int main(int argc, char **argv)
         exit(1);
     }
     SDL_PauseAudioDevice(device);
-    SDL_GetAudioDeviceFormat(device, &spec);
-    stream_out = SDL_CreateAndBindAudioStream(device, &spec);
+    SDL_GetAudioDeviceFormat(device, &outspec);
+    stream_out = SDL_CreateAndBindAudioStream(device, &outspec);
     if (!stream_out) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create an audio stream for playback: %s!\n", SDL_GetError());
         SDL_Quit();
@@ -198,13 +199,15 @@ int main(int argc, char **argv)
         exit(1);
     }
     SDL_PauseAudioDevice(device);
-    SDL_GetAudioDeviceFormat(device, &spec);
-    stream_in = SDL_CreateAndBindAudioStream(device, &spec);
+    SDL_GetAudioDeviceFormat(device, &inspec);
+    stream_in = SDL_CreateAndBindAudioStream(device, &inspec);
     if (!stream_in) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create an audio stream for capture: %s!\n", SDL_GetError());
         SDL_Quit();
         exit(1);
     }
+
+    SDL_SetAudioStreamFormat(stream_in, NULL, &outspec);  /* make sure we output at the playback format. */
 
     SDL_Log("Ready! Hold down mouse or finger to record!\n");
 
