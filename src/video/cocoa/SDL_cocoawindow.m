@@ -2185,7 +2185,18 @@ void Cocoa_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
     @autoreleasepool {
         NSWindow *nswindow = ((__bridge SDL_CocoaWindowData *)window->driverdata).nswindow;
 
-        [nswindow orderOut:nil];
+        /* orderOut has no effect on miniaturized windows, so close must be used to remove
+         * the window from the desktop and window list in this case.
+         *
+         * SDL holds a strong reference to the window (oneShot/releasedWhenClosed are 'NO'),
+         * and calling 'close' doesn't send a 'windowShouldClose' message, so it's safe to
+         * use for this purpose as nothing is implicitly released.
+         */
+        if (![nswindow isMiniaturized]) {
+            [nswindow orderOut:nil];
+        } else {
+            [nswindow close];
+        }
 
         /* Transfer keyboard focus back to the parent */
         if (window->flags & SDL_WINDOW_POPUP_MENU) {
