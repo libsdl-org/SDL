@@ -81,7 +81,11 @@ static void ResampleAudio(const int chans, const int inrate, const int outrate,
     int i, j, chan;
 
     for (i = 0; i < outframes; i++) {
-        const int srcindex = (int)((Sint64)i * inrate / outrate);
+        int srcindex = (int)((Sint64)i * inrate / outrate);
+        if (srcindex >= inframes) {  // !!! FIXME: can we clamp this without an if statement on each iteration?
+            srcindex = inframes - 1;
+        }
+
         /* Calculating the following way avoids subtraction or modulo of large
          * floats which have low result precision.
          *   interpolation1
