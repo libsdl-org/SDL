@@ -89,427 +89,338 @@ AUDIOCVT_FROMFLOAT_SCALAR(S32, Sint32, -2147483648LL, 2147483647, ((Sint32)(samp
 #ifdef SDL_SSE2_INTRINSICS
 static void SDL_TARGETING("sse2") SDL_Convert_S8_to_F32_SSE2(float *dst, const Sint8 *src, int num_samples)
 {
-    int i;
+    int i = num_samples;
+
+    /* 1) Flip the sign bit to convert from S8 to U8 format
+     * 2) Construct a float in the range [65536.0, 65538.0)
+     * 3) Shift the float range to [-1.0, 1.0)
+     * dst[i] = i2f((src[i] ^ 0x80) | 0x47800000) - 65537.0 */
+    const __m128i zero = _mm_setzero_si128();
+    const __m128i flipper = _mm_set1_epi8(-0x80);
+    const __m128i caster = _mm_set1_epi16(0x4780 /* 0x47800000 = f2i(65536.0) */);
+    const __m128 offset = _mm_set1_ps(-65537.0);
 
     LOG_DEBUG_AUDIO_CONVERT("S8", "F32 (using SSE2)");
 
-    src += num_samples - 1;
-    dst += num_samples - 1;
+    while (i >= 16) {
+        i -= 16;
 
-    /* Get dst aligned to 16 bytes (since buffer is growing, we don't have to worry about overreading from src) */
-    for (i = num_samples; i && (((size_t)(dst - 15)) & 15); --i, --src, --dst) {
-        *dst = ((float)*src) * DIVBY128;
+        const __m128i bytes = _mm_xor_si128(_mm_loadu_si128((const __m128i *)&src[i]), flipper);
+
+        const __m128i shorts1 = _mm_unpacklo_epi8(bytes, zero);
+        const __m128i shorts2 = _mm_unpackhi_epi8(bytes, zero);
+
+        const __m128 floats1 = _mm_add_ps(_mm_castsi128_ps(_mm_unpacklo_epi16(shorts1, caster)), offset);
+        const __m128 floats2 = _mm_add_ps(_mm_castsi128_ps(_mm_unpackhi_epi16(shorts1, caster)), offset);
+        const __m128 floats3 = _mm_add_ps(_mm_castsi128_ps(_mm_unpacklo_epi16(shorts2, caster)), offset);
+        const __m128 floats4 = _mm_add_ps(_mm_castsi128_ps(_mm_unpackhi_epi16(shorts2, caster)), offset);
+
+        _mm_storeu_ps(&dst[i], floats1);
+        _mm_storeu_ps(&dst[i + 4], floats2);
+        _mm_storeu_ps(&dst[i + 8], floats3);
+        _mm_storeu_ps(&dst[i + 12], floats4);
     }
 
-    src -= 15;
-    dst -= 15; /* adjust to read SSE blocks from the start. */
-    SDL_assert(!i || !(((size_t)dst) & 15));
-
-    /* Make sure src is aligned too. */
-    if (!(((size_t)src) & 15)) {
-        /* Aligned! Do SSE blocks as long as we have 16 bytes available. */
-        const __m128i *mmsrc = (const __m128i *)src;
-        const __m128i zero = _mm_setzero_si128();
-        const __m128 divby128 = _mm_set1_ps(DIVBY128);
-        while (i >= 16) {                                /* 16 * 8-bit */
-            const __m128i bytes = _mm_load_si128(mmsrc); /* get 16 sint8 into an XMM register. */
-            /* treat as int16, shift left to clear every other sint16, then back right with sign-extend. Now sint16. */
-            const __m128i shorts1 = _mm_srai_epi16(_mm_slli_epi16(bytes, 8), 8);
-            /* right-shift-sign-extend gets us sint16 with the other set of values. */
-            const __m128i shorts2 = _mm_srai_epi16(bytes, 8);
-            /* unpack against zero to make these int32, shift to make them sign-extend, convert to float, multiply. Whew! */
-            const __m128 floats1 = _mm_mul_ps(_mm_cvtepi32_ps(_mm_srai_epi32(_mm_slli_epi32(_mm_unpacklo_epi16(shorts1, zero), 16), 16)), divby128);
-            const __m128 floats2 = _mm_mul_ps(_mm_cvtepi32_ps(_mm_srai_epi32(_mm_slli_epi32(_mm_unpacklo_epi16(shorts2, zero), 16), 16)), divby128);
-            const __m128 floats3 = _mm_mul_ps(_mm_cvtepi32_ps(_mm_srai_epi32(_mm_slli_epi32(_mm_unpackhi_epi16(shorts1, zero), 16), 16)), divby128);
-            const __m128 floats4 = _mm_mul_ps(_mm_cvtepi32_ps(_mm_srai_epi32(_mm_slli_epi32(_mm_unpackhi_epi16(shorts2, zero), 16), 16)), divby128);
-            /* Interleave back into correct order, store. */
-            _mm_store_ps(dst, _mm_unpacklo_ps(floats1, floats2));
-            _mm_store_ps(dst + 4, _mm_unpackhi_ps(floats1, floats2));
-            _mm_store_ps(dst + 8, _mm_unpacklo_ps(floats3, floats4));
-            _mm_store_ps(dst + 12, _mm_unpackhi_ps(floats3, floats4));
-            i -= 16;
-            mmsrc--;
-            dst -= 16;
-        }
-
-        src = (const Sint8 *)mmsrc;
-    }
-
-    src += 15;
-    dst += 15; /* adjust for any scalar finishing. */
-
-    /* Finish off any leftovers with scalar operations. */
     while (i) {
-        *dst = ((float)*src) * DIVBY128;
-        i--;
-        src--;
-        dst--;
+        --i;
+        _mm_store_ss(&dst[i], _mm_add_ss(_mm_castsi128_ps(_mm_cvtsi32_si128((Uint8)src[i] ^ 0x47800080u)), offset));
     }
 }
 
 static void SDL_TARGETING("sse2") SDL_Convert_U8_to_F32_SSE2(float *dst, const Uint8 *src, int num_samples)
 {
-    int i;
+    int i = num_samples;
+
+    /* 1) Construct a float in the range [65536.0, 65538.0)
+     * 2) Shift the float range to [-1.0, 1.0)
+     * dst[i] = i2f(src[i] | 0x47800000) - 65537.0 */
+    const __m128i zero = _mm_setzero_si128();
+    const __m128i caster = _mm_set1_epi16(0x4780 /* 0x47800000 = f2i(65536.0) */);
+    const __m128 offset = _mm_set1_ps(-65537.0);
 
     LOG_DEBUG_AUDIO_CONVERT("U8", "F32 (using SSE2)");
 
-    src += num_samples - 1;
-    dst += num_samples - 1;
+    while (i >= 16) {
+        i -= 16;
 
-    /* Get dst aligned to 16 bytes (since buffer is growing, we don't have to worry about overreading from src) */
-    for (i = num_samples; i && (((size_t)(dst - 15)) & 15); --i, --src, --dst) {
-        *dst = (((float)*src) * DIVBY128) - 1.0f;
+        const __m128i bytes = _mm_loadu_si128((const __m128i *)&src[i]);
+
+        const __m128i shorts1 = _mm_unpacklo_epi8(bytes, zero);
+        const __m128i shorts2 = _mm_unpackhi_epi8(bytes, zero);
+
+        const __m128 floats1 = _mm_add_ps(_mm_castsi128_ps(_mm_unpacklo_epi16(shorts1, caster)), offset);
+        const __m128 floats2 = _mm_add_ps(_mm_castsi128_ps(_mm_unpackhi_epi16(shorts1, caster)), offset);
+        const __m128 floats3 = _mm_add_ps(_mm_castsi128_ps(_mm_unpacklo_epi16(shorts2, caster)), offset);
+        const __m128 floats4 = _mm_add_ps(_mm_castsi128_ps(_mm_unpackhi_epi16(shorts2, caster)), offset);
+
+        _mm_storeu_ps(&dst[i], floats1);
+        _mm_storeu_ps(&dst[i + 4], floats2);
+        _mm_storeu_ps(&dst[i + 8], floats3);
+        _mm_storeu_ps(&dst[i + 12], floats4);
     }
 
-    src -= 15;
-    dst -= 15; /* adjust to read SSE blocks from the start. */
-    SDL_assert(!i || !(((size_t)dst) & 15));
-
-    /* Make sure src is aligned too. */
-    if (!(((size_t)src) & 15)) {
-        /* Aligned! Do SSE blocks as long as we have 16 bytes available. */
-        const __m128i *mmsrc = (const __m128i *)src;
-        const __m128i zero = _mm_setzero_si128();
-        const __m128 divby128 = _mm_set1_ps(DIVBY128);
-        const __m128 minus1 = _mm_set1_ps(-1.0f);
-        while (i >= 16) {                                /* 16 * 8-bit */
-            const __m128i bytes = _mm_load_si128(mmsrc); /* get 16 uint8 into an XMM register. */
-            /* treat as int16, shift left to clear every other sint16, then back right with zero-extend. Now uint16. */
-            const __m128i shorts1 = _mm_srli_epi16(_mm_slli_epi16(bytes, 8), 8);
-            /* right-shift-zero-extend gets us uint16 with the other set of values. */
-            const __m128i shorts2 = _mm_srli_epi16(bytes, 8);
-            /* unpack against zero to make these int32, convert to float, multiply, add. Whew! */
-            /* Note that AVX2 can do floating point multiply+add in one instruction, fwiw. SSE2 cannot. */
-            const __m128 floats1 = _mm_add_ps(_mm_mul_ps(_mm_cvtepi32_ps(_mm_unpacklo_epi16(shorts1, zero)), divby128), minus1);
-            const __m128 floats2 = _mm_add_ps(_mm_mul_ps(_mm_cvtepi32_ps(_mm_unpacklo_epi16(shorts2, zero)), divby128), minus1);
-            const __m128 floats3 = _mm_add_ps(_mm_mul_ps(_mm_cvtepi32_ps(_mm_unpackhi_epi16(shorts1, zero)), divby128), minus1);
-            const __m128 floats4 = _mm_add_ps(_mm_mul_ps(_mm_cvtepi32_ps(_mm_unpackhi_epi16(shorts2, zero)), divby128), minus1);
-            /* Interleave back into correct order, store. */
-            _mm_store_ps(dst, _mm_unpacklo_ps(floats1, floats2));
-            _mm_store_ps(dst + 4, _mm_unpackhi_ps(floats1, floats2));
-            _mm_store_ps(dst + 8, _mm_unpacklo_ps(floats3, floats4));
-            _mm_store_ps(dst + 12, _mm_unpackhi_ps(floats3, floats4));
-            i -= 16;
-            mmsrc--;
-            dst -= 16;
-        }
-
-        src = (const Uint8 *)mmsrc;
-    }
-
-    src += 15;
-    dst += 15; /* adjust for any scalar finishing. */
-
-    /* Finish off any leftovers with scalar operations. */
     while (i) {
-        *dst = (((float)*src) * DIVBY128) - 1.0f;
-        i--;
-        src--;
-        dst--;
+        --i;
+        _mm_store_ss(&dst[i], _mm_add_ss(_mm_castsi128_ps(_mm_cvtsi32_si128((Uint8)src[i] ^ 0x47800000u)), offset));
     }
 }
 
 static void SDL_TARGETING("sse2") SDL_Convert_S16_to_F32_SSE2(float *dst, const Sint16 *src, int num_samples)
 {
-    int i;
+    int i = num_samples;
+
+    /* 1) Flip the sign bit to convert from S16 to U16 format
+     * 2) Construct a float in the range [256.0, 258.0)
+     * 3) Shift the float range to [-1.0, 1.0)
+     * dst[i] = i2f((src[i] ^ 0x8000) | 0x43800000) - 257.0 */
+    const __m128i flipper = _mm_set1_epi16(-0x8000);
+    const __m128i caster = _mm_set1_epi16(0x4380 /* 0x43800000 = f2i(256.0) */);
+    const __m128 offset = _mm_set1_ps(-257.0f);
 
     LOG_DEBUG_AUDIO_CONVERT("S16", "F32 (using SSE2)");
 
-    src += num_samples - 1;
-    dst += num_samples - 1;
+    while (i >= 16) {
+        i -= 16;
 
-    /* Get dst aligned to 16 bytes (since buffer is growing, we don't have to worry about overreading from src) */
-    for (i = num_samples; i && (((size_t)(dst - 7)) & 15); --i, --src, --dst) {
-        *dst = ((float)*src) * DIVBY32768;
+        const __m128i shorts1 = _mm_xor_si128(_mm_loadu_si128((const __m128i *)&src[i]), flipper);
+        const __m128i shorts2 = _mm_xor_si128(_mm_loadu_si128((const __m128i *)&src[i + 8]), flipper);
+
+        const __m128 floats1 = _mm_add_ps(_mm_castsi128_ps(_mm_unpacklo_epi16(shorts1, caster)), offset);
+        const __m128 floats2 = _mm_add_ps(_mm_castsi128_ps(_mm_unpackhi_epi16(shorts1, caster)), offset);
+        const __m128 floats3 = _mm_add_ps(_mm_castsi128_ps(_mm_unpacklo_epi16(shorts2, caster)), offset);
+        const __m128 floats4 = _mm_add_ps(_mm_castsi128_ps(_mm_unpackhi_epi16(shorts2, caster)), offset);
+
+        _mm_storeu_ps(&dst[i], floats1);
+        _mm_storeu_ps(&dst[i + 4], floats2);
+        _mm_storeu_ps(&dst[i + 8], floats3);
+        _mm_storeu_ps(&dst[i + 12], floats4);
     }
 
-    src -= 7;
-    dst -= 7; /* adjust to read SSE blocks from the start. */
-    SDL_assert(!i || !(((size_t)dst) & 15));
-
-    /* Make sure src is aligned too. */
-    if (!(((size_t)src) & 15)) {
-        /* Aligned! Do SSE blocks as long as we have 16 bytes available. */
-        const __m128 divby32768 = _mm_set1_ps(DIVBY32768);
-        while (i >= 8) {                                               /* 8 * 16-bit */
-            const __m128i ints = _mm_load_si128((__m128i const *)src); /* get 8 sint16 into an XMM register. */
-            /* treat as int32, shift left to clear every other sint16, then back right with sign-extend. Now sint32. */
-            const __m128i a = _mm_srai_epi32(_mm_slli_epi32(ints, 16), 16);
-            /* right-shift-sign-extend gets us sint32 with the other set of values. */
-            const __m128i b = _mm_srai_epi32(ints, 16);
-            /* Interleave these back into the right order, convert to float, multiply, store. */
-            _mm_store_ps(dst, _mm_mul_ps(_mm_cvtepi32_ps(_mm_unpacklo_epi32(a, b)), divby32768));
-            _mm_store_ps(dst + 4, _mm_mul_ps(_mm_cvtepi32_ps(_mm_unpackhi_epi32(a, b)), divby32768));
-            i -= 8;
-            src -= 8;
-            dst -= 8;
-        }
-    }
-
-    src += 7;
-    dst += 7; /* adjust for any scalar finishing. */
-
-    /* Finish off any leftovers with scalar operations. */
     while (i) {
-        *dst = ((float)*src) * DIVBY32768;
-        i--;
-        src--;
-        dst--;
+        --i;
+        _mm_store_ss(&dst[i], _mm_add_ss(_mm_castsi128_ps(_mm_cvtsi32_si128((Uint16)src[i] ^ 0x43808000u)), offset));
     }
 }
 
 static void SDL_TARGETING("sse2") SDL_Convert_S32_to_F32_SSE2(float *dst, const Sint32 *src, int num_samples)
 {
-    int i;
+    int i = num_samples;
+
+    /* dst[i] = f32(src[i]) / f32(0x80000000) */
+    const __m128 scaler = _mm_set1_ps(0x1p-31f);
 
     LOG_DEBUG_AUDIO_CONVERT("S32", "F32 (using SSE2)");
 
-    /* Get dst aligned to 16 bytes */
-    for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
-        *dst = ((float)(*src >> 8)) * DIVBY8388607;
+    while (i >= 16) {
+        i -= 16;
+
+        const __m128i ints1 = _mm_loadu_si128((const __m128i *)&src[i]);
+        const __m128i ints2 = _mm_loadu_si128((const __m128i *)&src[i + 4]);
+        const __m128i ints3 = _mm_loadu_si128((const __m128i *)&src[i + 8]);
+        const __m128i ints4 = _mm_loadu_si128((const __m128i *)&src[i + 12]);
+
+        const __m128 floats1 = _mm_mul_ps(_mm_cvtepi32_ps(ints1), scaler);
+        const __m128 floats2 = _mm_mul_ps(_mm_cvtepi32_ps(ints2), scaler);
+        const __m128 floats3 = _mm_mul_ps(_mm_cvtepi32_ps(ints3), scaler);
+        const __m128 floats4 = _mm_mul_ps(_mm_cvtepi32_ps(ints4), scaler);
+
+        _mm_storeu_ps(&dst[i], floats1);
+        _mm_storeu_ps(&dst[i + 4], floats2);
+        _mm_storeu_ps(&dst[i + 8], floats3);
+        _mm_storeu_ps(&dst[i + 12], floats4);
     }
 
-    SDL_assert(!i || !(((size_t)dst) & 15));
-
-    /* Make sure src is aligned too. */
-    if (!(((size_t)src) & 15)) {
-        /* Aligned! Do SSE blocks as long as we have 16 bytes available. */
-        const __m128 divby8388607 = _mm_set1_ps(DIVBY8388607);
-        const __m128i *mmsrc = (const __m128i *)src;
-        while (i >= 4) { /* 4 * sint32 */
-            /* shift out lowest bits so int fits in a float32. Small precision loss, but much faster. */
-            _mm_store_ps(dst, _mm_mul_ps(_mm_cvtepi32_ps(_mm_srai_epi32(_mm_load_si128(mmsrc), 8)), divby8388607));
-            i -= 4;
-            mmsrc++;
-            dst += 4;
-        }
-        src = (const Sint32 *)mmsrc;
-    }
-
-    /* Finish off any leftovers with scalar operations. */
     while (i) {
-        *dst = ((float)(*src >> 8)) * DIVBY8388607;
-        i--;
-        src++;
-        dst++;
+        --i;
+        _mm_store_ss(&dst[i], _mm_mul_ss(_mm_cvt_si2ss(_mm_setzero_ps(), src[i]), scaler));
     }
 }
 
 static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S8_SSE2(Sint8 *dst, const float *src, int num_samples)
 {
-    int i;
+    int i = num_samples;
+
+    /* 1) Shift the float range from [-1.0, 1.0] to [98303.0, 98305.0]
+     * 2) Extract the lowest 16 bits and clamp to [-128, 127]
+     * Overflow is correctly handled for inputs between roughly [-255.0, 255.0]
+     * dst[i] = clamp(i16(f2i(src[i] + 98304.0) & 0xFFFF), -128, 127) */
+    const __m128 offset = _mm_set1_ps(98304.0f);
+    const __m128i mask = _mm_set1_epi16(0xFF);
 
     LOG_DEBUG_AUDIO_CONVERT("F32", "S8 (using SSE2)");
 
-    /* Get dst aligned to 16 bytes */
-    for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
-        const float sample = *src;
-        if (sample >= 1.0f) {
-            *dst = 127;
-        } else if (sample <= -1.0f) {
-            *dst = -128;
-        } else {
-            *dst = (Sint8)(sample * 127.0f);
-        }
+    while (i >= 16) {
+        const __m128 floats1 = _mm_loadu_ps(&src[0]);
+        const __m128 floats2 = _mm_loadu_ps(&src[4]);
+        const __m128 floats3 = _mm_loadu_ps(&src[8]);
+        const __m128 floats4 = _mm_loadu_ps(&src[12]);
+
+        const __m128i ints1 = _mm_castps_si128(_mm_add_ps(floats1, offset));
+        const __m128i ints2 = _mm_castps_si128(_mm_add_ps(floats2, offset));
+        const __m128i ints3 = _mm_castps_si128(_mm_add_ps(floats3, offset));
+        const __m128i ints4 = _mm_castps_si128(_mm_add_ps(floats4, offset));
+
+        const __m128i shorts1 = _mm_and_si128(_mm_packs_epi16(ints1, ints2), mask);
+        const __m128i shorts2 = _mm_and_si128(_mm_packs_epi16(ints3, ints4), mask);
+
+        const __m128i bytes = _mm_packus_epi16(shorts1, shorts2);
+
+        _mm_storeu_si128((__m128i*)dst, bytes);
+
+        i -= 16;
+        src += 16;
+        dst += 16;
     }
 
-    SDL_assert(!i || !(((size_t)dst) & 15));
-
-    /* Make sure src is aligned too. */
-    if (!(((size_t)src) & 15)) {
-        /* Aligned! Do SSE blocks as long as we have 16 bytes available. */
-        const __m128 one = _mm_set1_ps(1.0f);
-        const __m128 negone = _mm_set1_ps(-1.0f);
-        const __m128 mulby127 = _mm_set1_ps(127.0f);
-        __m128i *mmdst = (__m128i *)dst;
-        while (i >= 16) {                                                                                                            /* 16 * float32 */
-            const __m128i ints1 = _mm_cvtps_epi32(_mm_mul_ps(_mm_min_ps(_mm_max_ps(negone, _mm_load_ps(src)), one), mulby127));      /* load 4 floats, clamp, convert to sint32 */
-            const __m128i ints2 = _mm_cvtps_epi32(_mm_mul_ps(_mm_min_ps(_mm_max_ps(negone, _mm_load_ps(src + 4)), one), mulby127));  /* load 4 floats, clamp, convert to sint32 */
-            const __m128i ints3 = _mm_cvtps_epi32(_mm_mul_ps(_mm_min_ps(_mm_max_ps(negone, _mm_load_ps(src + 8)), one), mulby127));  /* load 4 floats, clamp, convert to sint32 */
-            const __m128i ints4 = _mm_cvtps_epi32(_mm_mul_ps(_mm_min_ps(_mm_max_ps(negone, _mm_load_ps(src + 12)), one), mulby127)); /* load 4 floats, clamp, convert to sint32 */
-            _mm_store_si128(mmdst, _mm_packs_epi16(_mm_packs_epi32(ints1, ints2), _mm_packs_epi32(ints3, ints4)));                   /* pack down, store out. */
-            i -= 16;
-            src += 16;
-            mmdst++;
-        }
-        dst = (Sint8 *)mmdst;
-    }
-
-    /* Finish off any leftovers with scalar operations. */
     while (i) {
-        const float sample = *src;
-        if (sample >= 1.0f) {
-            *dst = 127;
-        } else if (sample <= -1.0f) {
-            *dst = -128;
-        } else {
-            *dst = (Sint8)(sample * 127.0f);
-        }
-        i--;
-        src++;
-        dst++;
+        const __m128i ints = _mm_castps_si128(_mm_add_ss(_mm_load_ss(src), offset));
+        *dst = (Sint8)(_mm_cvtsi128_si32(_mm_packs_epi16(ints, ints)) & 0xFF);
+
+        --i;
+        ++src;
+        ++dst;
     }
 }
 
 static void SDL_TARGETING("sse2") SDL_Convert_F32_to_U8_SSE2(Uint8 *dst, const float *src, int num_samples)
 {
-    int i;
+    int i = num_samples;
+
+    /* 1) Shift the float range from [-1.0, 1.0] to [98304.0, 98306.0]
+     * 2) Extract the lowest 16 bits and clamp to [0, 255]
+     * Overflow is correctly handled for inputs between roughly [-254.0, 254.0]
+     * dst[i] = clamp(i16(f2i(src[i] + 98305.0) & 0xFFFF), 0, 255) */
+    const __m128 offset = _mm_set1_ps(98305.0f);
+    const __m128i mask = _mm_set1_epi16(0xFF);
 
     LOG_DEBUG_AUDIO_CONVERT("F32", "U8 (using SSE2)");
 
-    /* Get dst aligned to 16 bytes */
-    for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
-        const float sample = *src;
-        if (sample >= 1.0f) {
-            *dst = 255;
-        } else if (sample <= -1.0f) {
-            *dst = 0;
-        } else {
-            *dst = (Uint8)((sample + 1.0f) * 127.0f);
-        }
+    while (i >= 16) {
+
+        const __m128 floats1 = _mm_loadu_ps(&src[0]);
+        const __m128 floats2 = _mm_loadu_ps(&src[4]);
+        const __m128 floats3 = _mm_loadu_ps(&src[8]);
+        const __m128 floats4 = _mm_loadu_ps(&src[12]);
+
+        const __m128i ints1 = _mm_castps_si128(_mm_add_ps(floats1, offset));
+        const __m128i ints2 = _mm_castps_si128(_mm_add_ps(floats2, offset));
+        const __m128i ints3 = _mm_castps_si128(_mm_add_ps(floats3, offset));
+        const __m128i ints4 = _mm_castps_si128(_mm_add_ps(floats4, offset));
+
+        const __m128i shorts1 = _mm_and_si128(_mm_packus_epi16(ints1, ints2), mask);
+        const __m128i shorts2 = _mm_and_si128(_mm_packus_epi16(ints3, ints4), mask);
+
+        const __m128i bytes = _mm_packus_epi16(shorts1, shorts2);
+
+        _mm_storeu_si128((__m128i*)dst, bytes);
+
+        i -= 16;
+        src += 16;
+        dst += 16;
     }
 
-    SDL_assert(!i || !(((size_t)dst) & 15));
-
-    /* Make sure src is aligned too. */
-    if (!(((size_t)src) & 15)) {
-        /* Aligned! Do SSE blocks as long as we have 16 bytes available. */
-        const __m128 one = _mm_set1_ps(1.0f);
-        const __m128 negone = _mm_set1_ps(-1.0f);
-        const __m128 mulby127 = _mm_set1_ps(127.0f);
-        __m128i *mmdst = (__m128i *)dst;
-        while (i >= 16) {                                                                                                                             /* 16 * float32 */
-            const __m128i ints1 = _mm_cvtps_epi32(_mm_mul_ps(_mm_add_ps(_mm_min_ps(_mm_max_ps(negone, _mm_load_ps(src)), one), one), mulby127));      /* load 4 floats, clamp, convert to sint32 */
-            const __m128i ints2 = _mm_cvtps_epi32(_mm_mul_ps(_mm_add_ps(_mm_min_ps(_mm_max_ps(negone, _mm_load_ps(src + 4)), one), one), mulby127));  /* load 4 floats, clamp, convert to sint32 */
-            const __m128i ints3 = _mm_cvtps_epi32(_mm_mul_ps(_mm_add_ps(_mm_min_ps(_mm_max_ps(negone, _mm_load_ps(src + 8)), one), one), mulby127));  /* load 4 floats, clamp, convert to sint32 */
-            const __m128i ints4 = _mm_cvtps_epi32(_mm_mul_ps(_mm_add_ps(_mm_min_ps(_mm_max_ps(negone, _mm_load_ps(src + 12)), one), one), mulby127)); /* load 4 floats, clamp, convert to sint32 */
-            _mm_store_si128(mmdst, _mm_packus_epi16(_mm_packs_epi32(ints1, ints2), _mm_packs_epi32(ints3, ints4)));                                   /* pack down, store out. */
-            i -= 16;
-            src += 16;
-            mmdst++;
-        }
-        dst = (Uint8 *)mmdst;
-    }
-
-    /* Finish off any leftovers with scalar operations. */
     while (i) {
-        const float sample = *src;
-        if (sample >= 1.0f) {
-            *dst = 255;
-        } else if (sample <= -1.0f) {
-            *dst = 0;
-        } else {
-            *dst = (Uint8)((sample + 1.0f) * 127.0f);
-        }
-        i--;
-        src++;
-        dst++;
+        const __m128i ints = _mm_castps_si128(_mm_add_ss(_mm_load_ss(src), offset));
+        *dst = (Uint8)(_mm_cvtsi128_si32(_mm_packus_epi16(ints, ints)) & 0xFF);
+
+        --i;
+        ++src;
+        ++dst;
     }
 }
 
 static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S16_SSE2(Sint16 *dst, const float *src, int num_samples)
 {
-    int i;
+    int i = num_samples;
+
+    /* 1) Shift the float range from [-1.0, 1.0] to [256.0, 258.0]
+     * 2) Shift the int range from [0x43800000, 0x43810000] to [-32768,32768]
+     * 3) Clamp to range [-32768,32767]
+     * Overflow is correctly handled for inputs between roughly [-257.0, +inf)
+     * dst[i] = clamp(f2i(src[i] + 257.0) - 0x43808000, -32768, 32767) */
+    const __m128 offset = _mm_set1_ps(257.0f);
 
     LOG_DEBUG_AUDIO_CONVERT("F32", "S16 (using SSE2)");
 
-    /* Get dst aligned to 16 bytes */
-    for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
-        const float sample = *src;
-        if (sample >= 1.0f) {
-            *dst = 32767;
-        } else if (sample <= -1.0f) {
-            *dst = -32768;
-        } else {
-            *dst = (Sint16)(sample * 32767.0f);
-        }
+    while (i >= 16) {
+        const __m128 floats1 = _mm_loadu_ps(&src[0]);
+        const __m128 floats2 = _mm_loadu_ps(&src[4]);
+        const __m128 floats3 = _mm_loadu_ps(&src[8]);
+        const __m128 floats4 = _mm_loadu_ps(&src[12]);
+
+        const __m128i ints1 = _mm_sub_epi32(_mm_castps_si128(_mm_add_ps(floats1, offset)), _mm_castps_si128(offset));
+        const __m128i ints2 = _mm_sub_epi32(_mm_castps_si128(_mm_add_ps(floats2, offset)), _mm_castps_si128(offset));
+        const __m128i ints3 = _mm_sub_epi32(_mm_castps_si128(_mm_add_ps(floats3, offset)), _mm_castps_si128(offset));
+        const __m128i ints4 = _mm_sub_epi32(_mm_castps_si128(_mm_add_ps(floats4, offset)), _mm_castps_si128(offset));
+
+        const __m128i shorts1 = _mm_packs_epi32(ints1, ints2);
+        const __m128i shorts2 = _mm_packs_epi32(ints3, ints4);
+
+        _mm_storeu_si128((__m128i*)&dst[0], shorts1);
+        _mm_storeu_si128((__m128i*)&dst[8], shorts2);
+
+        i -= 16;
+        src += 16;
+        dst += 16;
     }
 
-    SDL_assert(!i || !(((size_t)dst) & 15));
-
-    /* Make sure src is aligned too. */
-    if (!(((size_t)src) & 15)) {
-        /* Aligned! Do SSE blocks as long as we have 16 bytes available. */
-        const __m128 one = _mm_set1_ps(1.0f);
-        const __m128 negone = _mm_set1_ps(-1.0f);
-        const __m128 mulby32767 = _mm_set1_ps(32767.0f);
-        __m128i *mmdst = (__m128i *)dst;
-        while (i >= 8) {                                                                                                              /* 8 * float32 */
-            const __m128i ints1 = _mm_cvtps_epi32(_mm_mul_ps(_mm_min_ps(_mm_max_ps(negone, _mm_load_ps(src)), one), mulby32767));     /* load 4 floats, clamp, convert to sint32 */
-            const __m128i ints2 = _mm_cvtps_epi32(_mm_mul_ps(_mm_min_ps(_mm_max_ps(negone, _mm_load_ps(src + 4)), one), mulby32767)); /* load 4 floats, clamp, convert to sint32 */
-            _mm_store_si128(mmdst, _mm_packs_epi32(ints1, ints2));                                                                    /* pack to sint16, store out. */
-            i -= 8;
-            src += 8;
-            mmdst++;
-        }
-        dst = (Sint16 *)mmdst;
-    }
-
-    /* Finish off any leftovers with scalar operations. */
     while (i) {
-        const float sample = *src;
-        if (sample >= 1.0f) {
-            *dst = 32767;
-        } else if (sample <= -1.0f) {
-            *dst = -32768;
-        } else {
-            *dst = (Sint16)(sample * 32767.0f);
-        }
-        i--;
-        src++;
-        dst++;
+        const __m128i ints = _mm_sub_epi32(_mm_castps_si128(_mm_add_ss(_mm_load_ss(src), offset)), _mm_castps_si128(offset));
+        *dst = (Sint16)(_mm_cvtsi128_si32(_mm_packs_epi32(ints, ints)) & 0xFFFF);
+
+        --i;
+        ++src;
+        ++dst;
     }
 }
 
 static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S32_SSE2(Sint32 *dst, const float *src, int num_samples)
 {
-    int i;
+    int i = num_samples;
+
+    /* 1) Scale the float range from [-1.0, 1.0] to [-2147483648.0, 2147483648.0]
+     * 2) Convert to integer (values too small/large become 0x80000000 = -2147483648)
+     * 3) Fixup values which were too large (0x80000000 ^ 0xFFFFFFFF = 2147483647)
+     * dst[i] = i32(src[i] * 2147483648.0) ^ ((src[i] >= 2147483648.0) ? 0xFFFFFFFF : 0x00000000) */
+    const __m128 limit = _mm_set1_ps(0x1p31f);
 
     LOG_DEBUG_AUDIO_CONVERT("F32", "S32 (using SSE2)");
 
-    /* Get dst aligned to 16 bytes */
-    for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
-        const float sample = *src;
-        if (sample >= 1.0f) {
-            *dst = 2147483647;
-        } else if (sample <= -1.0f) {
-            *dst = (Sint32)-2147483648LL;
-        } else {
-            *dst = ((Sint32)(sample * 8388607.0f)) << 8;
-        }
+    while (i >= 16) {
+        const __m128 floats1 = _mm_loadu_ps(&src[0]);
+        const __m128 floats2 = _mm_loadu_ps(&src[4]);
+        const __m128 floats3 = _mm_loadu_ps(&src[8]);
+        const __m128 floats4 = _mm_loadu_ps(&src[12]);
+
+        const __m128 values1 = _mm_mul_ps(floats1, limit);
+        const __m128 values2 = _mm_mul_ps(floats2, limit);
+        const __m128 values3 = _mm_mul_ps(floats3, limit);
+        const __m128 values4 = _mm_mul_ps(floats4, limit);
+
+        const __m128i ints1 = _mm_xor_si128(_mm_cvttps_epi32(values1), _mm_castps_si128(_mm_cmpge_ps(values1, limit)));
+        const __m128i ints2 = _mm_xor_si128(_mm_cvttps_epi32(values2), _mm_castps_si128(_mm_cmpge_ps(values2, limit)));
+        const __m128i ints3 = _mm_xor_si128(_mm_cvttps_epi32(values3), _mm_castps_si128(_mm_cmpge_ps(values3, limit)));
+        const __m128i ints4 = _mm_xor_si128(_mm_cvttps_epi32(values4), _mm_castps_si128(_mm_cmpge_ps(values4, limit)));
+
+        _mm_storeu_si128((__m128i*)&dst[0], ints1);
+        _mm_storeu_si128((__m128i*)&dst[4], ints2);
+        _mm_storeu_si128((__m128i*)&dst[8], ints3);
+        _mm_storeu_si128((__m128i*)&dst[12], ints4);
+
+        i -= 16;
+        src += 16;
+        dst += 16;
     }
 
-    SDL_assert(!i || !(((size_t)dst) & 15));
-    SDL_assert(!i || !(((size_t)src) & 15));
-
-    {
-        /* Aligned! Do SSE blocks as long as we have 16 bytes available. */
-        const __m128 one = _mm_set1_ps(1.0f);
-        const __m128 negone = _mm_set1_ps(-1.0f);
-        const __m128 mulby8388607 = _mm_set1_ps(8388607.0f);
-        __m128i *mmdst = (__m128i *)dst;
-        while (i >= 4) {                                                                                                                                 /* 4 * float32 */
-            _mm_store_si128(mmdst, _mm_slli_epi32(_mm_cvtps_epi32(_mm_mul_ps(_mm_min_ps(_mm_max_ps(negone, _mm_load_ps(src)), one), mulby8388607)), 8)); /* load 4 floats, clamp, convert to sint32 */
-            i -= 4;
-            src += 4;
-            mmdst++;
-        }
-        dst = (Sint32 *)mmdst;
-    }
-
-    /* Finish off any leftovers with scalar operations. */
     while (i) {
-        const float sample = *src;
-        if (sample >= 1.0f) {
-            *dst = 2147483647;
-        } else if (sample <= -1.0f) {
-            *dst = (Sint32)-2147483648LL;
-        } else {
-            *dst = ((Sint32)(sample * 8388607.0f)) << 8;
-        }
-        i--;
-        src++;
-        dst++;
+        const __m128 floats = _mm_load_ss(src);
+        const __m128 values = _mm_mul_ss(floats, limit);
+        const __m128i ints = _mm_xor_si128(_mm_cvttps_epi32(values), _mm_castps_si128(_mm_cmpge_ss(values, limit)));
+        *dst = (Sint32)_mm_cvtsi128_si32(ints);
+
+        --i;
+        ++src;
+        ++dst;
     }
 }
 #endif
