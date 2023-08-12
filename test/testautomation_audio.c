@@ -913,6 +913,133 @@ static int audio_resampleLoss(void *arg)
 
   return TEST_COMPLETED;
 }
+
+/**
+ * \brief Check accuracy converting between audio formats.
+ *
+ * \sa SDL_ConvertAudioSamples
+ */
+static int audio_convertAccuracy(void *arg)
+{
+    static SDL_AudioFormat formats[] = { SDL_AUDIO_S8, SDL_AUDIO_U8, SDL_AUDIO_S16SYS, SDL_AUDIO_S32SYS };
+    static const char* format_names[] = { "S8", "U8", "S16", "S32" };
+
+    int src_num = 65537 + 2048 + 48 + 256 + 100000;
+    int src_len = src_num * sizeof(float);
+    float* src_data = SDL_malloc(src_len);
+    int i, j;
+
+    SDLTest_AssertCheck(src_data != NULL, "Expected source buffer to be created.");
+    if (src_data == NULL) {
+        return TEST_ABORTED;
+    }
+
+    j = 0;
+
+    /* Generate a uniform range of floats between [-1.0, 1.0] */
+    for (i = 0; i < 65537; ++i) {
+        src_data[j++] = ((float)i - 32768.0f) / 32768.0f;
+    }
+
+    /* Generate floats close to 1.0 */
+    const float max_val = 16777216.0f;
+
+    for (i = 0; i < 1024; ++i) {
+        float f = (max_val + (float)(512 - i)) / max_val;
+        src_data[j++] =  f;
+        src_data[j++] = -f;
+    }
+
+    for (i = 0; i < 24; ++i) {
+        float f = (max_val + (float)(3u << i)) / max_val;
+        src_data[j++] =  f;
+        src_data[j++] = -f;
+    }
+
+    /* Generate floats far outside the [-1.0, 1.0] range */
+    for (i = 0; i < 128; ++i) {
+        float f = 2.0f + (float) i;
+        src_data[j++] =  f;
+        src_data[j++] = -f;
+    }
+
+    /* Fill the rest with random floats between [-1.0, 1.0] */
+    for (i = 0; i < 100000; ++i) {
+        src_data[j++] = SDLTest_RandomSint32() / 2147483648.0f;
+    }
+
+    for (i = 0; i < SDL_arraysize(formats); ++i) {
+        SDL_AudioSpec src_spec, tmp_spec;
+        Uint64 convert_begin, convert_end;
+        Uint8 *tmp_data, *dst_data;
+        int tmp_len, dst_len;
+        int ret;
+
+        SDL_AudioFormat format = formats[i];
+        const char* format_name = format_names[i];
+
+        /* Formats with > 23 bits can represent every value exactly */
+        float min_delta =  1.0f;
+        float max_delta = -1.0f;
+
+        /* Subtract 1 bit to account for sign */
+        int bits = SDL_AUDIO_BITSIZE(format) - 1;
+        float target_max_delta = (bits > 23) ? 0.0f : (1.0f / (float)(1 << bits));
+        float target_min_delta = -target_max_delta;
+
+        src_spec.format = SDL_AUDIO_F32;
+        src_spec.channels = 1;
+        src_spec.freq = 44800;
+
+        tmp_spec.format = format;
+        tmp_spec.channels = 1;
+        tmp_spec.freq = 44800;
+
+        convert_begin = SDL_GetPerformanceCounter();
+
+        tmp_data = NULL;
+        tmp_len = 0;
+        ret = SDL_ConvertAudioSamples(&src_spec, (const Uint8*) src_data, src_len, &tmp_spec, &tmp_data, &tmp_len);
+        SDLTest_AssertCheck(ret == 0, "Expected SDL_ConvertAudioSamples(F32->%s) to succeed", format_name);
+        if (ret != 0) {
+            SDL_free(src_data);
+            return TEST_ABORTED;
+        }
+
+        dst_data = NULL;
+        dst_len = 0;
+        ret = SDL_ConvertAudioSamples(&tmp_spec, tmp_data, tmp_len, &src_spec, &dst_data, &dst_len);
+        SDLTest_AssertCheck(ret == 0, "Expected SDL_ConvertAudioSamples(%s->F32) to succeed", format_name);
+        if (ret != 0) {
+            SDL_free(tmp_data);
+            SDL_free(src_data);
+            return TEST_ABORTED;
+        }
+
+        convert_end = SDL_GetPerformanceCounter();
+        SDLTest_Log("Conversion via %s took %f seconds.", format_name, ((double)(convert_end - convert_begin)) / SDL_GetPerformanceFrequency());
+
+        SDL_free(tmp_data);
+
+        for (j = 0; j < src_num; ++j) {
+            float x = src_data[j];
+            float y = ((float*)dst_data)[j];
+            float d = SDL_clamp(x, -1.0f, 1.0f) - y;
+
+            min_delta = SDL_min(min_delta, d);
+            max_delta = SDL_max(max_delta, d);
+        }
+
+        SDLTest_AssertCheck(min_delta >= target_min_delta, "%s has min delta of %+f, should be >= %+f", format_name, min_delta, target_min_delta);
+        SDLTest_AssertCheck(max_delta <= target_max_delta, "%s has max delta of %+f, should be <= %+f", format_name, max_delta, target_max_delta);
+
+        SDL_free(dst_data);
+    }
+
+    SDL_free(src_data);
+
+    return TEST_COMPLETED;
+}
 /* ================= Test Case References ================== */
 
 /* Audio test cases */
@@ -986,11 +1113,16 @@ static const SDLTest_TestCaseReference audioTest16 = {
     audio_resampleLoss, "audio_resampleLoss", "Check signal-to-noise ratio and maximum error of audio resampling.", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference audioTest17 = {
+    audio_convertAccuracy, "audio_convertAccuracy", "Check accuracy converting between audio formats.", TEST_ENABLED
+};
+
 /* Sequence of Audio test cases */
 static const SDLTest_TestCaseReference *audioTests[] = {
     &audioTest1, &audioTest2, &audioTest3, &audioTest4, &audioTest5, &audioTest6,
     &audioTest7, &audioTest8, &audioTest9, &audioTest10, &audioTest11,
-    &audioTest12, &audioTest13, &audioTest14, &audioTest15, &audioTest16, NULL
+    &audioTest12, &audioTest13, &audioTest14, &audioTest15, &audioTest16,
+    &audioTest17, NULL
 };
 
 /* Audio test suite (global) */
