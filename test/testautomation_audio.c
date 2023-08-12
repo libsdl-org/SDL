@@ -703,7 +703,7 @@ static int audio_convertAudio(void *arg)
                         src_len = l * src_samplesize;
                         SDLTest_Log("Creating dummy sample buffer of %i length (%i bytes)", l, src_len);
                         src_buf = (Uint8 *)SDL_malloc(src_len);
-                        SDLTest_AssertCheck(dst_buf != NULL, "Check src data buffer to convert is not NULL");
+                        SDLTest_AssertCheck(src_buf != NULL, "Check src data buffer to convert is not NULL");
                         if (src_buf == NULL) {
                             return TEST_ABORTED;
                         }
