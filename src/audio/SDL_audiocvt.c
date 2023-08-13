@@ -955,8 +955,8 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
         const int resampler_padding_bytes = resampler_padding_frames * src_sample_frame_size;
         SDL_assert(src_rate != dst_rate);
         SDL_assert(history_buffer_bytes >= resampler_padding_bytes);
-        ConvertAudio(resampler_padding_frames, history_buffer + (history_buffer_bytes - resampler_padding_bytes), src_format, src_channels, stream->left_padding, SDL_AUDIO_F32, pre_resample_channels);
-        ConvertAudio(resampler_padding_frames, future_buffer, src_format, src_channels, stream->right_padding, SDL_AUDIO_F32, pre_resample_channels);
+        ConvertAudio(resampler_padding_frames, history_buffer + (history_buffer_bytes - resampler_padding_bytes), src_format, src_channels, stream->left_padding, SDL_AUDIO_F32SYS, pre_resample_channels);
+        ConvertAudio(resampler_padding_frames, future_buffer, src_format, src_channels, stream->right_padding, SDL_AUDIO_F32SYS, pre_resample_channels);
     }
 
     // slide in new data to the history buffer, shuffling out the oldest, for the next run, since we've already updated left_padding with current data.
@@ -986,9 +986,9 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
     }
 
     // Resampling! get the work buffer to float32 format, etc, in-place.
-    ConvertAudio(input_frames, workbuf, src_format, src_channels, workbuf, SDL_AUDIO_F32, pre_resample_channels);
+    ConvertAudio(input_frames, workbuf, src_format, src_channels, workbuf, SDL_AUDIO_F32SYS, pre_resample_channels);
 
-    if ((dst_format == SDL_AUDIO_F32) && (dst_channels == pre_resample_channels)) {
+    if ((dst_format == SDL_AUDIO_F32SYS) && (dst_channels == pre_resample_channels)) {
         resample_outbuf = (float *) buf;
     } else {
         const int output_bytes = output_frames * pre_resample_channels * sizeof (float);
@@ -1003,9 +1003,9 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
     // Get us to the final format!
     // see if we can do the conversion in-place (will fit in `buf` while in-progress), or if we need to do it in the workbuf and copy it over
     if (max_sample_frame_size <= dst_sample_frame_size) {
-        ConvertAudio(output_frames, resample_outbuf, SDL_AUDIO_F32, pre_resample_channels, buf, dst_format, dst_channels);
+        ConvertAudio(output_frames, resample_outbuf, SDL_AUDIO_F32SYS, pre_resample_channels, buf, dst_format, dst_channels);
     } else {
-        ConvertAudio(output_frames, resample_outbuf, SDL_AUDIO_F32, pre_resample_channels, workbuf, dst_format, dst_channels);
+        ConvertAudio(output_frames, resample_outbuf, SDL_AUDIO_F32SYS, pre_resample_channels, workbuf, dst_format, dst_channels);
         SDL_memcpy(buf, workbuf, output_frames * dst_sample_frame_size);
     }
 
