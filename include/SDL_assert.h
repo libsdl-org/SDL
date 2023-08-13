@@ -55,6 +55,8 @@ assert can have unique static variables associated with it.
     #define SDL_TriggerBreakpoint() __builtin_debugtrap()
 #elif ( (!defined(__NACL__)) && ((defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))) )
     #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "int $3\n\t" )
+#elif (defined(__GNUC__) || defined(__clang__)) && defined(__riscv)
+    #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "ebreak\n\t" )
 #elif ( defined(__APPLE__) && (defined(__arm64__) || defined(__aarch64__)) )  /* this might work on other ARM targets, but this is a known quantity... */
     #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "brk #22\n\t" )
 #elif defined(__APPLE__) && defined(__arm__)
