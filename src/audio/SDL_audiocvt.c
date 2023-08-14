@@ -751,7 +751,10 @@ int SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
     stream->flushed = SDL_FALSE;
 
     if (stream->put_callback) {
-        stream->put_callback(stream, SDL_GetAudioStreamAvailable(stream) - prev_available, stream->put_callback_userdata);
+        const int newavail = SDL_GetAudioStreamAvailable(stream) - prev_available;
+        if (newavail > 0) {   // don't call the callback if we can't actually offer new data (still filling future buffer, only added 1 frame but downsampling needs more to produce new sound, etc).
+            stream->put_callback(stream, newavail, stream->put_callback_userdata);
+        }
     }
 
     SDL_UnlockMutex(stream->lock);
@@ -1047,7 +1050,9 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
         approx_request *= stream->src_sample_frame_size;  // convert sample frames to bytes.
         const int already_have = SDL_GetAudioStreamAvailable(stream);
         approx_request -= SDL_min(approx_request, already_have);  // we definitely have this much output already packed in.
-        stream->get_callback(stream, approx_request, stream->get_callback_userdata);
+        if (approx_request > 0) {  // don't call the callback if we can satisfy this request with existing data.
+            stream->get_callback(stream, approx_request, stream->get_callback_userdata);
+        }
     }
 
     // we convert in chunks, so we don't end up allocating a massive work buffer, etc.
