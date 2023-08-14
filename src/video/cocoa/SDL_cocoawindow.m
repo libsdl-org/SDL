@@ -955,7 +955,12 @@ static void Cocoa_SendExposedEventIfVisible(SDL_Window *window)
 
 - (void)windowDidDeminiaturize:(NSNotification *)aNotification
 {
-    SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+    /* isZoomed always returns true if the window is not resizable */
+    if ((_data.window->flags & SDL_WINDOW_RESIZABLE) && [_data.nswindow isZoomed]) {
+        SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
+    } else {
+        SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+    }
 }
 
 - (void)windowDidBecomeKey:(NSNotification *)aNotification
