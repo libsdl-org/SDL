@@ -74,7 +74,7 @@ static void SDL_Convert_U8_to_F32_Scalar(float *dst, const Uint8 *src, int num_s
         /* 1) Construct a float in the range [65536.0, 65538.0)
          * 2) Shift the float range to [-1.0, 1.0) */
         union float_bits x;
-        x.u32 = (Uint8)src[i] ^ 0x47800000u;
+        x.u32 = src[i] ^ 0x47800000u;
         dst[i] = x.f32 - 65537.0f;
     }
 }
@@ -190,7 +190,7 @@ static void SDL_Convert_F32_to_S32_Scalar(Sint32 *dst, const float *src, int num
         z &= SIGNMASK(y ^ z);
         x.u32 = y - z;
 
-        dst[i] = (Sint32)((Uint32)(Sint32)x.f32 ^ SIGNMASK(z));
+        dst[i] = (Sint32)x.f32 ^ (Sint32)SIGNMASK(z);
     }
 }
 
