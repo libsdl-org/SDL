@@ -563,7 +563,7 @@
     <ClCompile Include="..\..\src\events\SDL_touch.c" />
     <ClCompile Include="..\..\src\events\SDL_windowevents.c" />
     <ClCompile Include="..\..\src\file\SDL_rwops.c" />
-    <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfilesystem.c" />
+    <ClCompile Include="..\..\src\filesystem\gdk\SDL_sysfilesystem.cpp" />
     <ClCompile Include="..\..\src\haptic\dummy\SDL_syshaptic.c" />
     <ClCompile Include="..\..\src\haptic\SDL_haptic.c" />
     <ClCompile Include="..\..\src\haptic\windows\SDL_dinputhaptic.c" />
