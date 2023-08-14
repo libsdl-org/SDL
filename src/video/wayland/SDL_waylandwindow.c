@@ -1529,12 +1529,6 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     /* Restore state that was set prior to this call */
     Wayland_SetWindowTitle(_this, window);
-    if (window->flags & SDL_WINDOW_MAXIMIZED) {
-        Wayland_MaximizeWindow(_this, window);
-    }
-    if (window->flags & SDL_WINDOW_MINIMIZED) {
-        Wayland_MinimizeWindow(_this, window);
-    }
 
     /* We have to wait until the surface gets a "configure" event, or use of
      * this surface will fail. This is a new rule for xdg_shell.
@@ -1940,11 +1934,6 @@ void Wayland_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
         return;
     }
 
-    /* Set this flag now even if we never actually maximized, eventually
-     * ShowWindow will take care of it along with the other window state.
-     */
-    window->flags &= ~SDL_WINDOW_MAXIMIZED;
-
 #ifdef HAVE_LIBDECOR_H
     if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
         if (wind->shell_surface.libdecor.frame == NULL) {
@@ -2025,11 +2014,6 @@ void Wayland_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
         return;
     }
 
-    /* Set this flag now even if we don't actually maximize yet, eventually
-     * ShowWindow will take care of it along with the other window state.
-     */
-    window->flags |= SDL_WINDOW_MAXIMIZED;
-
 #ifdef HAVE_LIBDECOR_H
     if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
         if (wind->shell_surface.libdecor.frame == NULL) {
@@ -2057,6 +2041,8 @@ void Wayland_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_VideoData *viddata = _this->driverdata;
     SDL_WindowData *wind = window->driverdata;
 
+    /* Maximized and minimized flags are mutually exclusive */
+    window->flags &= ~SDL_WINDOW_MAXIMIZED;
     window->flags |= SDL_WINDOW_MINIMIZED;
 
 #ifdef HAVE_LIBDECOR_H
