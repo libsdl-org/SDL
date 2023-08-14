@@ -58,7 +58,8 @@ static void SDL_Convert_S8_to_F32_Scalar(float *dst, const Sint8 *src, int num_s
     for (i = num_samples - 1; i >= 0; --i) {
         /* 1) Construct a float in the range [65536.0, 65538.0)
          * 2) Shift the float range to [-1.0, 1.0) */
-        union float_bits x = { .u32 = (Uint8)src[i] ^ 0x47800080u };
+        union float_bits x;
+        x.u32 = (Uint8)src[i] ^ 0x47800080u;
         dst[i] = x.f32 - 65537.0f;
     }
 }
@@ -72,7 +73,8 @@ static void SDL_Convert_U8_to_F32_Scalar(float *dst, const Uint8 *src, int num_s
     for (i = num_samples - 1; i >= 0; --i) {
         /* 1) Construct a float in the range [65536.0, 65538.0)
          * 2) Shift the float range to [-1.0, 1.0) */
-        union float_bits x = { .u32 = (Uint8)src[i] ^ 0x47800000u };
+        union float_bits x;
+        x.u32 = (Uint8)src[i] ^ 0x47800000u;
         dst[i] = x.f32 - 65537.0f;
     }
 }
@@ -86,7 +88,8 @@ static void SDL_Convert_S16_to_F32_Scalar(float *dst, const Sint16 *src, int num
     for (i = num_samples - 1; i >= 0; --i) {
         /* 1) Construct a float in the range [256.0, 258.0)
          * 2) Shift the float range to [-1.0, 1.0) */
-        union float_bits x = { .u32 = (Uint16)src[i] ^ 0x43808000u };
+        union float_bits x;
+        x.u32 = (Uint16)src[i] ^ 0x43808000u;
         dst[i] = x.f32 - 257.0f;
     }
 }
@@ -115,7 +118,8 @@ static void SDL_Convert_F32_to_S8_Scalar(Sint8 *dst, const float *src, int num_s
         /* 1) Shift the float range from [-1.0, 1.0] to [98303.0, 98305.0]
          * 2) Shift the integer range from [0x47BFFF80, 0x47C00080] to [-128, 128]
          * 3) Clamp the value to [-128, 127] */
-        union float_bits x = { .f32 = src[i] + 98304.0f };
+        union float_bits x;
+        x.f32 = src[i] + 98304.0f;
 
         Uint32 y = x.u32 - 0x47C00000u;
         Uint32 z = 0x7Fu - (y ^ SIGNMASK(y));
@@ -132,12 +136,13 @@ static void SDL_Convert_F32_to_U8_Scalar(Uint8 *dst, const float *src, int num_s
     LOG_DEBUG_AUDIO_CONVERT("F32", "U8");
 
     for (i = 0; i < num_samples; ++i) {
-        union float_bits x = { .f32 = src[i] + 98304.0f };
-
         /* 1) Shift the float range from [-1.0, 1.0] to [98303.0, 98305.0]
          * 2) Shift the integer range from [0x47BFFF80, 0x47C00080] to [-128, 128]
          * 3) Clamp the value to [-128, 127]
          * 4) Shift the integer range from [-128, 127] to [0, 255] */
+        union float_bits x;
+        x.f32 = src[i] + 98304.0f;
+
         Uint32 y = x.u32 - 0x47C00000u;
         Uint32 z = 0x7Fu - (y ^ SIGNMASK(y));
         y = (y ^ 0x80u) ^ (z & SIGNMASK(z));
@@ -156,7 +161,8 @@ static void SDL_Convert_F32_to_S16_Scalar(Sint16 *dst, const float *src, int num
         /* 1) Shift the float range from [-1.0, 1.0] to [383.0, 385.0]
          * 2) Shift the integer range from [0x43BF8000, 0x43C08000] to [-32768, 32768]
          * 3) Clamp values outside the [-32768, 32767] range */
-        union float_bits x = { .f32 = src[i] + 384.0f };
+        union float_bits x;
+        x.f32 = src[i] + 384.0f;
 
         Uint32 y = x.u32 - 0x43C00000u;
         Uint32 z = 0x7FFFu - (y ^ SIGNMASK(y));
@@ -173,11 +179,12 @@ static void SDL_Convert_F32_to_S32_Scalar(Sint32 *dst, const float *src, int num
     LOG_DEBUG_AUDIO_CONVERT("F32", "S32");
 
     for (i = 0; i < num_samples; ++i) {
-        union float_bits x = { .f32 = src[i] };
-
         /* 1) Shift the float range from [-1.0, 1.0] to [-2147483648.0, 2147483648.0]
          * 2) Set values outside the [-2147483648.0, 2147483647.0] range to -2147483648.0
          * 3) Convert the float to an integer, and fixup values outside the valid range */
+        union float_bits x;
+        x.f32 = src[i];
+
         Uint32 y = x.u32 + 0x0F800000u;
         Uint32 z = y - 0xCF000000u;
         z &= SIGNMASK(y ^ z);
@@ -401,7 +408,6 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_U8_SSE2(Uint8 *dst, const f
     LOG_DEBUG_AUDIO_CONVERT("F32", "U8 (using SSE2)");
 
     while (i >= 16) {
-
         const __m128 floats1 = _mm_loadu_ps(&src[0]);
         const __m128 floats2 = _mm_loadu_ps(&src[4]);
         const __m128 floats3 = _mm_loadu_ps(&src[8]);
