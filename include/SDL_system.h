@@ -593,7 +593,8 @@ extern DECLSPEC void SDLCALL SDL_OnApplicationDidChangeStatusBarOrientation(void
 
 /* Functions used only by GDK */
 #if defined(__GDK__)
-typedef struct XTaskQueueObject * XTaskQueueHandle;
+typedef struct XTaskQueueObject *XTaskQueueHandle;
+typedef struct XUser *XUserHandle;
 
 /**
  * Gets a reference to the global async task queue handle for GDK,
@@ -609,6 +610,19 @@ typedef struct XTaskQueueObject * XTaskQueueHandle;
  * \since This function is available since SDL 2.24.0.
  */
 extern DECLSPEC int SDLCALL SDL_GDKGetTaskQueue(XTaskQueueHandle * outTaskQueue);
+
+/**
+ * Gets a reference to the default user handle for GDK.
+ *
+ * This is effectively a synchronous version of XUserAddAsync, which always
+ * prefers the default user and allows a sign-in UI.
+ *
+ * \param outUserHandle a pointer to be filled in with the default user handle.
+ * \returns 0 if success, -1 if any error occurs.
+ *
+ * \since This function is available since SDL 2.28.0.
+ */
+extern DECLSPEC int SDLCALL SDL_GDKGetDefaultUser(XUserHandle * outUserHandle);
 
 #endif
 

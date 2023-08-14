@@ -218,3 +218,24 @@ SDL_GDKSuspendComplete()
         SetEvent(plmSuspendComplete);
     }
 }
+
+extern "C" DECLSPEC int
+SDL_GDKGetDefaultUser(XUserHandle *outUserHandle)
+{
+    XAsyncBlock block = { 0 };
+    HRESULT result;
+
+    if (FAILED(result = XUserAddAsync(XUserAddOptions::AddDefaultUserAllowingUI, &block))) {
+        return WIN_SetErrorFromHRESULT("XUserAddAsync", result);
+    }
+
+    do {
+        result = XUserAddResult(&block, outUserHandle);
+    } while (result == E_PENDING);
+    if (FAILED(result)) {
+        return WIN_SetErrorFromHRESULT("XUserAddResult", result);
+    }
+
+    return 0;
+}
+
