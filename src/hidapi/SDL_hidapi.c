@@ -902,11 +902,14 @@ IsInWhitelist(Uint16 vendor, Uint16 product)
 }
 
 #if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND
-#define use_libusb_whitelist_default SDL_TRUE
+/* We have another way to get HID devices, so use the whitelist to get devices where libusb is preferred */
+#define SDL_HIDAPI_LIBUSB_WHITELIST_DEFAULT SDL_TRUE
 #else
-#define use_libusb_whitelist_default SDL_FALSE
+/* libusb is the only way to get HID devices, so don't use the whitelist, get them all */
+#define SDL_HIDAPI_LIBUSB_WHITELIST_DEFAULT SDL_FALSE
 #endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND */
-static SDL_bool use_libusb_whitelist = use_libusb_whitelist_default;
+
+static SDL_bool use_libusb_whitelist = SDL_HIDAPI_LIBUSB_WHITELIST_DEFAULT;
 
 #endif /* HAVE_LIBUSB */
 
@@ -1154,7 +1157,7 @@ int SDL_hid_init(void)
 
 #ifdef HAVE_LIBUSB
     use_libusb_whitelist = SDL_GetHintBoolean("SDL_HIDAPI_LIBUSB_WHITELIST",
-                                              use_libusb_whitelist_default);
+                                              SDL_HIDAPI_LIBUSB_WHITELIST_DEFAULT);
     if (SDL_getenv("SDL_HIDAPI_DISABLE_LIBUSB") != NULL) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                      "libusb disabled by SDL_HIDAPI_DISABLE_LIBUSB");
