@@ -1056,6 +1056,7 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
     }
 
     // we convert in chunks, so we don't end up allocating a massive work buffer, etc.
+#if 0  // !!! FIXME: see https://github.com/libsdl-org/SDL/issues/8036#issuecomment-1680708349
     int retval = 0;
     while (len > 0) { // didn't ask for a whole sample frame, nothing to do
         const int chunk_size = 1024 * 1024;  // !!! FIXME: a megabyte might be overly-aggressive.
@@ -1081,6 +1082,9 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
             }
         }
     }
+#else
+    const int retval = GetAudioStreamDataInternal(stream, buf, len);
+#endif
 
     SDL_UnlockMutex(stream->lock);
 
