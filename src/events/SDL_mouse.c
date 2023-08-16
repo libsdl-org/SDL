@@ -239,7 +239,11 @@ void SDL_SetDefaultCursor(SDL_Cursor *cursor)
         }
         mouse->def_cursor = NULL;
 
-        SDL_DestroyCursor(default_cursor);
+        if (mouse->FreeCursor && default_cursor->driverdata) {
+            mouse->FreeCursor(default_cursor);
+        } else {
+            SDL_free(default_cursor);
+        }
     }
 
     mouse->def_cursor = cursor;
