@@ -151,6 +151,23 @@ static const char GLES2_Fragment_TextureBGR[] =                 \
 "}\n"                                                           \
 ;
 
+/* Palette to ABGR conversion */
+static const char GLES2_Fragment_TexturePalette[] =                               \
+"uniform sampler2D u_texture;\n"                                                  \
+"uniform sampler2D u_texture_p;\n"                                                \
+"varying mediump vec4 v_color;\n"                                                 \
+"varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n"                               \
+"\n"                                                                              \
+"void main()\n"                                                                   \
+"{\n"                                                                             \
+"    float index = texture2D(u_texture, v_texCoord).r * 255.0;\n"                 \
+"    SDL_TEXCOORD_PRECISION vec2 paletteXY = vec2((index + 0.5) / 256.0, 0.5);\n" \
+"    mediump vec4 rgba = texture2D(u_texture_p, paletteXY);\n"                    \
+"    gl_FragColor = rgba;\n"                                                      \
+"    gl_FragColor *= v_color;\n"                                                  \
+"}\n"                                                                             \
+;
+
 #if SDL_HAVE_YUV
 
 #define JPEG_SHADER_CONSTANTS                                   \
@@ -413,6 +430,8 @@ const char *GLES2_GetShader(GLES2_ShaderType type)
         return GLES2_Fragment_TextureRGB;
     case GLES2_SHADER_FRAGMENT_TEXTURE_BGR:
         return GLES2_Fragment_TextureBGR;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE:
+        return GLES2_Fragment_TexturePalette;
 #if SDL_HAVE_YUV
     case GLES2_SHADER_FRAGMENT_TEXTURE_YUV_JPEG:
         return GLES2_Fragment_TextureYUVJPEG;

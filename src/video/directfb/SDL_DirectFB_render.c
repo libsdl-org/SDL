@@ -318,18 +318,20 @@ static int DirectFB_AcquireVidLayer(SDL_Renderer * renderer, SDL_Texture * textu
 
 
 /* Copy the SDL_Surface palette to the DirectFB texture palette */
-void DirectFB_SetTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Palette *pal)
+int DirectFB_SetTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture,
+                               const SDL_Color * colors, int firstcolor, int ncolors)
 {
     int i;
     DFBColor dfbpal[256];
     DirectFB_TextureData *data = (DirectFB_TextureData *) texture->driverdata;
-    for (i = 0; i < pal->ncolors; i++) {
-            dfbpal[i].a = pal->colors[i].a;
-            dfbpal[i].r = pal->colors[i].r;
-            dfbpal[i].g = pal->colors[i].g;
-            dfbpal[i].b = pal->colors[i].b;
+    for (i = 0; i < ncolors; i++) {
+            dfbpal[i].a = colors[i].a;
+            dfbpal[i].r = colors[i].r;
+            dfbpal[i].g = colors[i].g;
+            dfbpal[i].b = colors[i].b;
     }
-    data->palette->SetEntries(data->palette, dfbpal, pal->ncolors, 0);
+    data->palette->SetEntries(data->palette, dfbpal, ncolors, firstcolor);
+    return 0;
 }
 
 static int DirectFB_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
@@ -1148,6 +1150,7 @@ SDL_Renderer *DirectFB_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->WindowEvent = DirectFB_WindowEvent;
     renderer->CreateTexture = DirectFB_CreateTexture;
     renderer->UpdateTexture = DirectFB_UpdateTexture;
+    renderer->SetTexturePalette = DirectFB_SetTexturePalette;
     renderer->LockTexture = DirectFB_LockTexture;
     renderer->UnlockTexture = DirectFB_UnlockTexture;
     renderer->SetTextureScaleMode = DirectFB_SetTextureScaleMode;

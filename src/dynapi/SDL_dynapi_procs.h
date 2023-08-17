@@ -981,3 +981,4 @@ SDL_DYNAPI_PROC(void,SDL_GDKSuspendComplete,(void),(),)
 #endif
 SDL_DYNAPI_PROC(SDL_bool,SDL_HasWindowSurface,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_DestroyWindowSurface,(SDL_Window *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_SetTexturePalette,(SDL_Texture *a, const SDL_Color *b, int c, int d),(a,b,c,d),return)

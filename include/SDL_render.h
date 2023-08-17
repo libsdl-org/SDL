@@ -657,6 +657,21 @@ extern DECLSPEC int SDLCALL SDL_UpdateNVTexture(SDL_Texture * texture,
                                                  const Uint8 *UVplane, int UVpitch);
 
 /**
+ * Set the palette used by an indexed texture.
+ *
+ * \param texture the texture to update
+ * \param colors an array of SDL_Color structures to copy into the palette
+ * \param firstcolor the index of the first palette entry to modify
+ * \param ncolors the number of entries to modify
+ * \return 0 on success, or -1 if the texture is not valid.
+ *
+ * \since This function is available since SDL 2.28.0.
+ */
+extern DECLSPEC int SDLCALL SDL_SetTexturePalette(SDL_Texture * texture,
+                                                  const SDL_Color * colors,
+                                                  int firstcolor, int ncolors);
+
+/**
  * Lock a portion of the texture for **write-only** pixel access.
  *
  * As an optimization, the pixels made available for editing don't necessarily

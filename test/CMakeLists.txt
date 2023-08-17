@@ -197,7 +197,8 @@ elseif(OS2)
     add_sdl_test_executable(testnative NEEDS_RESOURCES testnative.c testnativeos2.c testutils.c)
 endif()
 
-add_sdl_test_executable(testoverlay2 NEEDS_RESOURCES testoverlay2.c testyuv_cvt.c testutils.c)
+add_sdl_test_executable(testoverlay2 NEEDS_RESOURCES testoverlay2.c testutils.c)
+add_sdl_test_executable(testpalette testpalette.c)
 add_sdl_test_executable(testplatform NONINTERACTIVE testplatform.c)
 add_sdl_test_executable(testpower NONINTERACTIVE testpower.c)
 add_sdl_test_executable(testfilesystem NONINTERACTIVE testfilesystem.c)
@@ -304,6 +305,7 @@ if(PSP)
         testlock
         testmessage
         testoverlay2
+        testpalette
         testplatform
         testpower
         testqsort

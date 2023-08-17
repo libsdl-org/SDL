@@ -26,6 +26,7 @@
 #include "SDL_render.h"
 #include "SDL_events.h"
 #include "SDL_mutex.h"
+#include "SDL_palette_sw_c.h"
 #include "SDL_yuv_sw_c.h"
 
 /* Set up for C function definitions, even when using C++ */
@@ -66,6 +67,7 @@ struct SDL_Texture
     /* Support for formats not supported directly by the renderer */
     SDL_Texture *native;
     SDL_SW_YUVTexture *yuv;
+    SDL_SW_PaletteTexture *palette;
     void *pixels;
     int pitch;
     SDL_Rect locked_rect;
@@ -182,6 +184,8 @@ struct SDL_Renderer
                            const Uint8 *Yplane, int Ypitch,
                            const Uint8 *UVplane, int UVpitch);
 #endif
+    int (*SetTexturePalette)(SDL_Renderer *renderer, SDL_Texture *texture,
+                             const SDL_Color *colors, int firstcolor, int ncolors);
     int (*LockTexture)(SDL_Renderer *renderer, SDL_Texture *texture,
                        const SDL_Rect *rect, void **pixels, int *pitch);
     void (*UnlockTexture)(SDL_Renderer *renderer, SDL_Texture *texture);

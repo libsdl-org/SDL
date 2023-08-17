@@ -105,6 +105,10 @@ typedef struct
     int pitch;
     SDL_Rect locked_rect;
 #endif
+
+    /* Paletted texture support */
+    SDL_bool palette;
+    D3D_TextureRep ptexture;
 } D3D_TextureData;
 
 typedef struct
@@ -201,6 +205,7 @@ static D3DFORMAT PixelFormatToD3DFMT(Uint32 format)
         return D3DFMT_X8R8G8B8;
     case SDL_PIXELFORMAT_ARGB8888:
         return D3DFMT_A8R8G8B8;
+    case SDL_PIXELFORMAT_INDEX8:
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
     case SDL_PIXELFORMAT_NV12:
@@ -563,8 +568,15 @@ static int D3D_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         if (D3D_CreateTextureRep(data->device, &texturedata->vtexture, usage, texture->format, PixelFormatToD3DFMT(texture->format), (texture->w + 1) / 2, (texture->h + 1) / 2) < 0) {
             return -1;
         }
-    }
+    } else
 #endif
+        if (texture->format == SDL_PIXELFORMAT_INDEX8) {
+        texturedata->palette = SDL_TRUE;
+
+        if (D3D_CreateTextureRep(data->device, &texturedata->ptexture, usage, SDL_PIXELFORMAT_ARGB8888, D3DFMT_A8R8G8B8, 256, 1) < 0) {
+            return -1;
+        }
+    }
     return 0;
 }
 
@@ -589,8 +601,13 @@ static int D3D_RecreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         if (D3D_RecreateTextureRep(data->device, &texturedata->vtexture) < 0) {
             return -1;
         }
-    }
+    } else
 #endif
+        if (texturedata->palette) {
+        if (D3D_RecreateTextureRep(data->device, &texturedata->ptexture) < 0) {
+            return -1;
+        }
+    }
     return 0;
 }
 
@@ -652,6 +669,30 @@ static int D3D_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
     return 0;
 }
 #endif
+
+static int D3D_SetTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture,
+                                 const SDL_Color *colors, int firstcolor, int ncolors)
+{
+    D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;
+    D3D_TextureData *texturedata = (D3D_TextureData *)texture->driverdata;
+    Uint32 palette[256];
+    int i;
+
+    if (!texturedata) {
+        SDL_SetError("Texture is not currently available");
+        return -1;
+    }
+
+    SDL_assert(ncolors <= SDL_arraysize(palette));
+    for (i = 0; i < ncolors; i++) {
+        palette[i] = (colors[i].a << 24) | (colors[i].r << 16) | (colors[i].g << 8) | colors[i].b;
+    }
+
+    if (D3D_UpdateTextureRep(data->device, &texturedata->ptexture, firstcolor, 0, ncolors, 1, palette, sizeof(palette)) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
 static int D3D_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                            const SDL_Rect *rect, void **pixels, int *pitch)
@@ -975,8 +1016,17 @@ static int SetupTextureState(D3D_RenderData *data, SDL_Texture *texture, LPDIREC
         if (BindTextureRep(data->device, &texturedata->vtexture, 2) < 0) {
             return -1;
         }
-    }
+    } else
 #endif
+        if (texturedata->palette) {
+        *shader = data->shaders[SHADER_PALETTE];
+
+        UpdateTextureScaleMode(data, texturedata, 1);
+
+        if (BindTextureRep(data->device, &texturedata->ptexture, 1) < 0) {
+            return -1;
+        }
+    }
     return 0;
 }
 
@@ -986,10 +1036,8 @@ static int SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
     const SDL_BlendMode blend = cmd->data.draw.blend;
 
     if (texture != data->drawstate.texture) {
-#if SDL_HAVE_YUV
         D3D_TextureData *oldtexturedata = data->drawstate.texture ? (D3D_TextureData *)data->drawstate.texture->driverdata : NULL;
         D3D_TextureData *newtexturedata = texture ? (D3D_TextureData *)texture->driverdata : NULL;
-#endif
         LPDIRECT3DPIXELSHADER9 shader = NULL;
 
         /* disable any enabled textures we aren't going to use, let SetupTextureState() do the rest. */
@@ -1000,8 +1048,12 @@ static int SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
         if ((newtexturedata == NULL || !newtexturedata->yuv) && (oldtexturedata && oldtexturedata->yuv)) {
             IDirect3DDevice9_SetTexture(data->device, 1, NULL);
             IDirect3DDevice9_SetTexture(data->device, 2, NULL);
-        }
+        } else
 #endif
+            if ((!newtexturedata || !newtexturedata->palette) && (oldtexturedata && oldtexturedata->palette)) {
+            IDirect3DDevice9_SetTexture(data->device, 1, NULL);
+        }
+
         if (texture && SetupTextureState(data, texture, &shader) < 0) {
             return -1;
         }
@@ -1022,8 +1074,11 @@ static int SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
         if (texturedata->yuv) {
             UpdateDirtyTexture(data->device, &texturedata->utexture);
             UpdateDirtyTexture(data->device, &texturedata->vtexture);
-        }
+        } else
 #endif
+            if (texturedata->palette) {
+            UpdateDirtyTexture(data->device, &texturedata->ptexture);
+        }
     }
 
     if (blend != data->drawstate.blend) {
@@ -1387,8 +1442,11 @@ static void D3D_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         if (data->yuv) {
             IDirect3DDevice9_SetTexture(renderdata->device, 1, NULL);
             IDirect3DDevice9_SetTexture(renderdata->device, 2, NULL);
-        }
+        } else
 #endif
+            if (data->palette) {
+            IDirect3DDevice9_SetTexture(renderdata->device, 1, NULL);
+        }
     }
 
     if (data == NULL) {
@@ -1421,14 +1479,12 @@ static void D3D_DestroyRenderer(SDL_Renderer *renderer)
             IDirect3DSurface9_Release(data->currentRenderTarget);
             data->currentRenderTarget = NULL;
         }
-#if SDL_HAVE_YUV
         for (i = 0; i < SDL_arraysize(data->shaders); ++i) {
             if (data->shaders[i]) {
                 IDirect3DPixelShader9_Release(data->shaders[i]);
                 data->shaders[i] = NULL;
             }
         }
-#endif
         /* Release all vertex buffers */
         for (i = 0; i < SDL_arraysize(data->vertexBuffers); ++i) {
             if (data->vertexBuffers[i]) {
@@ -1589,6 +1645,7 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
 #if SDL_HAVE_YUV
     renderer->UpdateTextureYUV = D3D_UpdateTextureYUV;
 #endif
+    renderer->SetTexturePalette = D3D_SetTexturePalette;
     renderer->LockTexture = D3D_LockTexture;
     renderer->UnlockTexture = D3D_UnlockTexture;
     renderer->SetTextureScaleMode = D3D_SetTextureScaleMode;
@@ -1699,8 +1756,8 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
 
     /* Set up parameters for rendering */
     D3D_InitRenderState(data);
-#if SDL_HAVE_YUV
-    if (caps.MaxSimultaneousTextures >= 3) {
+
+    if (caps.MaxSimultaneousTextures >= 2) {
         int i;
         for (i = 0; i < SDL_arraysize(data->shaders); ++i) {
             result = D3D9_CreatePixelShader(data->device, (D3D9_Shader)i, &data->shaders[i]);
@@ -1708,12 +1765,17 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
                 D3D_SetError("CreatePixelShader()", result);
             }
         }
-        if (data->shaders[SHADER_YUV_JPEG] && data->shaders[SHADER_YUV_BT601] && data->shaders[SHADER_YUV_BT709]) {
+        if (data->shaders[SHADER_PALETTE]) {
+            renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_INDEX8;
+        }
+#if SDL_HAVE_YUV
+        if (caps.MaxSimultaneousTextures >= 3 && data->shaders[SHADER_YUV_JPEG] && data->shaders[SHADER_YUV_BT601] && data->shaders[SHADER_YUV_BT709]) {
             renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
             renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
         }
-    }
 #endif
+    }
+
     data->drawstate.viewport_dirty = SDL_TRUE;
     data->drawstate.cliprect_dirty = SDL_TRUE;
     data->drawstate.cliprect_enabled_dirty = SDL_TRUE;

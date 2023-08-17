@@ -23,7 +23,7 @@ TARGETS = testatomic.exe testdisplayinfo.exe testbounds.exe testdraw2.exe &
           testaudioinfo.exe testaudiocapture.exe loopwave.exe loopwavequeue.exe &
           testsurround.exe testyuv.exe testgl2.exe testvulkan.exe testnative.exe &
           testautomation.exe testaudiohotplug.exe testcustomcursor.exe testmultiaudio.exe &
-          testoffscreen.exe testurl.exe
+          testoffscreen.exe testurl.exe testpalette.exe
 
 noninteractive = &
 	testatomic.exe &
@@ -86,9 +86,6 @@ testautomation.exe: $(TAOBJS)
   wlink SYS $(SYSTEM) libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
 
 testnative.exe: $(TNOBJS)
-  wlink SYS $(SYSTEM) libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
-
-testoverlay2.exe: testoverlay2.obj testyuv_cvt.obj
   wlink SYS $(SYSTEM) libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
 
 testyuv.exe: testyuv.obj testyuv_cvt.obj

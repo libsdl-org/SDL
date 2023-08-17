@@ -453,6 +453,9 @@
     <ClInclude Include="..\include\SDL_misc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\render\SDL_palette_sw_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClCompile Include="..\src\atomic\SDL_atomic.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -834,6 +837,9 @@
     <ClInclude Include="..\src\joystick\controller_type.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClCompile Include="..\src\render\SDL_palette_sw.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\joystick\windows\SDL_windows_gaming_input.c">

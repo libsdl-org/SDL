@@ -18,6 +18,7 @@ These are test programs for the SDL library:
 	testmouse	Tests mouse coordinates
 	testmultiaudio	Tests using several audio devices
 	testoverlay2	Tests the overlay flickering/scaling during playback.
+	testpalette	Tests palette rotation effects.
 	testplatform	Tests types, endianness and cpu capabilities
 	testsem		Tests SDL's semaphore implementation
 	testshape	Tests shaped windows

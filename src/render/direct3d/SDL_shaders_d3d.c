@@ -41,6 +41,8 @@
      hexdump -v -e '6/4 "0x%08.8x, " "\n"' <FILE>
 */
 
+#if SDL_HAVE_YUV
+
 /* --- D3D9_PixelShader_YUV_JPEG.hlsl ---
     Texture2D theTextureY : register(t0);
     Texture2D theTextureU : register(t1);
@@ -257,10 +259,54 @@ static const DWORD D3D9_PixelShader_YUV_BT709[] = {
     0x90e40000, 0x02000001, 0x800f0800, 0x80e40000, 0x0000ffff
 };
 
+#endif
+
+/* --- D3D9_PixelShader_Palette.hlsl ---
+    uniform sampler2D image;
+    uniform sampler1D palette;
+
+    struct PixelShaderInput
+    {
+        float4 pos : SV_POSITION;
+        float2 tex : TEXCOORD0;
+        float4 color : COLOR0;
+    };
+
+    float4 main(PixelShaderInput input) : SV_TARGET
+    {
+        float4 Output;
+        float index;
+
+        index = tex2D(image, input.tex).r;
+        Output = tex1D(palette, index * (255. / 256) + (0.5 / 256));
+
+        return Output * input.color;
+    }
+*/
+static const DWORD D3D9_PixelShader_Palette[] = {
+    0xffff0200, 0x002afffe, 0x42415443, 0x0000001c, 0x0000007b, 0xffff0200,
+    0x00000002, 0x0000001c, 0x00000100, 0x00000074, 0x00000044, 0x00000003,
+    0x00000001, 0x0000004c, 0x00000000, 0x0000005c, 0x00010003, 0x00000001,
+    0x00000064, 0x00000000, 0x67616d69, 0xabab0065, 0x000c0004, 0x00010001,
+    0x00000001, 0x00000000, 0x656c6170, 0x00657474, 0x000b0004, 0x00010001,
+    0x00000001, 0x00000000, 0x325f7370, 0x4d00305f, 0x6f726369, 0x74666f73,
+    0x29522820, 0x534c4820, 0x6853204c, 0x72656461, 0x6d6f4320, 0x656c6970,
+    0x30312072, 0xab00312e, 0x05000051, 0xa00f0000, 0x3f7f0000, 0x3b000000,
+    0x00000000, 0x00000000, 0x0200001f, 0x80000000, 0xb0030000, 0x0200001f,
+    0x80000000, 0x900f0000, 0x0200001f, 0x90000000, 0xa00f0800, 0x0200001f,
+    0x90000000, 0xa00f0801, 0x03000042, 0x800f0000, 0xb0e40000, 0xa0e40800,
+    0x04000004, 0x80030000, 0x80000000, 0xa0000000, 0xa0550000, 0x03000042,
+    0x800f0000, 0x80e40000, 0xa0e40801, 0x03000005, 0x800f0000, 0x80e40000,
+    0x90e40000, 0x02000001, 0x800f0800, 0x80e40000, 0x0000ffff
+};
+
 static const DWORD *D3D9_shaders[] = {
+#if SDL_HAVE_YUV
     D3D9_PixelShader_YUV_JPEG,
     D3D9_PixelShader_YUV_BT601,
     D3D9_PixelShader_YUV_BT709,
+#endif
+    D3D9_PixelShader_Palette,
 };
 
 HRESULT D3D9_CreatePixelShader(IDirect3DDevice9 *d3dDevice, D3D9_Shader shader, IDirect3DPixelShader9 **pixelShader)

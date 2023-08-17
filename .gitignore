@@ -150,6 +150,7 @@ test/testmouse
 test/testmultiaudio
 test/testnative
 test/testoverlay2
+test/testpalette
 test/testplatform
 test/testpower
 test/testqsort
