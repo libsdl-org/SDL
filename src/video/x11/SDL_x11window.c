@@ -1934,6 +1934,18 @@ int SDL_X11_SetWindowTitle(Display *display, Window xwindow, char *title)
 
     if (conv == 0) {
         X11_XSetTextProperty(display, xwindow, &titleprop, XA_WM_NAME);
+
+        /* update the x11 class name property for the window */
+        XClassHint *classhints = X11_XAllocClassHint();
+        if (classhints)
+        {
+            classhints->res_class = (char*)titleprop.value;
+            classhints->res_name = (char*)titleprop.value;
+
+            X11_XSetWMProperties(display, xwindow, NULL, NULL, NULL, 0, NULL, NULL, classhints);
+            X11_XFree(classhints);
+        }
+
         X11_XFree(titleprop.value);
         /* we know this can't be a locale error as we checked X locale validity */
     } else if (conv < 0) {
@@ -1947,6 +1959,18 @@ int SDL_X11_SetWindowTitle(Display *display, Window xwindow, char *title)
     status = X11_Xutf8TextListToTextProperty(display, &title, 1, XUTF8StringStyle, &titleprop);
     if (status == Success) {
         X11_XSetTextProperty(display, xwindow, &titleprop, _NET_WM_NAME);
+
+        /* update the x11 class name property for the window */
+        XClassHint *classhints = X11_XAllocClassHint();
+        if (classhints)
+        {
+            classhints->res_class = (char*)titleprop.value;
+            classhints->res_name = (char*)titleprop.value;
+
+            X11_XSetWMProperties(display, xwindow, NULL, NULL, NULL, 0, NULL, NULL, classhints);
+            X11_XFree(classhints);
+        }
+
         X11_XFree(titleprop.value);
     } else {
         return SDL_SetError("Failed to convert title to UTF8! Bad encoding, or bad Xorg encoding? Window title: «%s»", title);
