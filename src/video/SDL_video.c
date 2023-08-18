@@ -3355,18 +3355,14 @@ void SDL_VideoQuit(void)
         SDL_VideoDisplay *display = &_this->displays[i];
         SDL_ResetDisplayModes(i);
         SDL_free(display->desktop_mode.driverdata);
-        display->desktop_mode.driverdata = NULL;
         SDL_free(display->driverdata);
-        display->driverdata = NULL;
+        SDL_free(display->name);
     }
-    if (_this->displays) {
-        for (i = 0; i < _this->num_displays; ++i) {
-            SDL_free(_this->displays[i].name);
-        }
-        SDL_free(_this->displays);
-        _this->displays = NULL;
-        _this->num_displays = 0;
-    }
+
+    SDL_free(_this->displays);
+    _this->displays = NULL;
+    _this->num_displays = 0;
+
     SDL_free(_this->clipboard_text);
     _this->clipboard_text = NULL;
     _this->free(_this);
