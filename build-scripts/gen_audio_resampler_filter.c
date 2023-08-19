@@ -41,23 +41,27 @@ gcc -o genfilter build-scripts/gen_audio_resampler_filter.c -lm && ./genfilter >
 #include <stdio.h>
 #include <math.h>
 
+#ifndef M_PI
+    #define M_PI 3.14159265358979323846
+#endif
+
 #define RESAMPLER_ZERO_CROSSINGS 5
 #define RESAMPLER_BITS_PER_SAMPLE 16
 #define RESAMPLER_SAMPLES_PER_ZERO_CROSSING  (1 << ((RESAMPLER_BITS_PER_SAMPLE / 2) + 1))
-#define RESAMPLER_FILTER_SIZE ((RESAMPLER_SAMPLES_PER_ZERO_CROSSING * RESAMPLER_ZERO_CROSSINGS) + 1)
+#define RESAMPLER_FILTER_SIZE (RESAMPLER_SAMPLES_PER_ZERO_CROSSING * RESAMPLER_ZERO_CROSSINGS)
 
 /* This is a "modified" bessel function, so you can't use POSIX j0() */
 static double
 bessel(const double x)
 {
     const double xdiv2 = x / 2.0;
-    double i0 = 1.0f;
-    double f = 1.0f;
+    double i0 = 1.0;
+    double f = 1.0;
     int i = 1;
 
     while (1) {
         const double diff = pow(xdiv2, i * 2) / pow(f, 2);
-        if (diff < 1.0e-21f) {
+        if (diff < 1.0e-21) {
             break;
         }
         i0 += diff;
@@ -70,30 +74,25 @@ bessel(const double x)
 
 /* build kaiser table with cardinal sine applied to it, and array of differences between elements. */
 static void
-kaiser_and_sinc(float *table, float *diffs, const int tablelen, const double beta)
+kaiser_and_sinc(double *table, double *diffs, const int tablelen, const double beta)
 {
-    const int lenm1 = tablelen - 1;
-    const int lenm1div2 = lenm1 / 2;
     const double bessel_beta = bessel(beta);
     int i;
 
-    table[0] = 1.0f;
-    for (i = 1; i < tablelen; i++) {
-        const double kaiser = bessel(beta * sqrt(1.0 - pow(((i - lenm1) / 2.0) / lenm1div2, 2.0))) / bessel_beta;
-        table[tablelen - i] = (float) kaiser;
-    }
+    table[0] = 1.0;
+    diffs[tablelen - 1] = 0.0;
 
     for (i = 1; i < tablelen; i++) {
-        const float x = (((float) i) / ((float) RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) * ((float) M_PI);
-        table[i] *= sinf(x) / x;
+        const double kaiser = bessel(beta * sqrt(1.0 - pow((double)i / (double)(tablelen - 1), 2.0))) / bessel_beta;
+        const double x = (((double) i) / ((double) RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) * M_PI;
+        table[i] = kaiser * (sin(x) / x);
         diffs[i - 1] = table[i] - table[i - 1];
     }
-    diffs[lenm1] = 0.0f;
 }
 
 
-static float ResamplerFilter[RESAMPLER_FILTER_SIZE];
-static float ResamplerFilterDifference[RESAMPLER_FILTER_SIZE];
+static double ResamplerFilter[RESAMPLER_FILTER_SIZE + 1];
+static double ResamplerFilterDifference[RESAMPLER_FILTER_SIZE + 1];
 
 static void
 PrepareResampleFilter(void)
@@ -101,12 +100,12 @@ PrepareResampleFilter(void)
     /* if dB > 50, beta=(0.1102 * (dB - 8.7)), according to Matlab. */
     const double dB = 80.0;
     const double beta = 0.1102 * (dB - 8.7);
-    kaiser_and_sinc(ResamplerFilter, ResamplerFilterDifference, RESAMPLER_FILTER_SIZE, beta);
+    kaiser_and_sinc(ResamplerFilter, ResamplerFilterDifference, RESAMPLER_FILTER_SIZE + 1, beta);
 }
 
 int main(void)
 {
-    int i;
+    int i, j;
 
     PrepareResampleFilter();
 
@@ -137,21 +136,21 @@ int main(void)
         "#define RESAMPLER_ZERO_CROSSINGS %d\n"
         "#define RESAMPLER_BITS_PER_SAMPLE %d\n"
         "#define RESAMPLER_SAMPLES_PER_ZERO_CROSSING (1 << ((RESAMPLER_BITS_PER_SAMPLE / 2) + 1))\n"
-        "#define RESAMPLER_FILTER_SIZE ((RESAMPLER_SAMPLES_PER_ZERO_CROSSING * RESAMPLER_ZERO_CROSSINGS) + 1)\n"
+        "#define RESAMPLER_FILTER_SIZE (RESAMPLER_SAMPLES_PER_ZERO_CROSSING * RESAMPLER_ZERO_CROSSINGS)\n"
         "\n", RESAMPLER_ZERO_CROSSINGS, RESAMPLER_BITS_PER_SAMPLE
     );
 
-    printf("static const float ResamplerFilter[RESAMPLER_FILTER_SIZE] = {\n");
-    printf("    %.9ff", ResamplerFilter[0]);
-    for (i = 0; i < RESAMPLER_FILTER_SIZE-1; i++) {
-        printf("%s%.9ff", ((i % 5) == 4) ? ",\n    " : ", ", ResamplerFilter[i+1]);
+    printf("static const float ResamplerFilter[RESAMPLER_FILTER_SIZE] = {");
+    for (i = 0; i < RESAMPLER_FILTER_SIZE; i++) {
+        j = (i % RESAMPLER_ZERO_CROSSINGS) * RESAMPLER_SAMPLES_PER_ZERO_CROSSING + (i / RESAMPLER_ZERO_CROSSINGS);
+        printf("%s%12.9ff,", (i % RESAMPLER_ZERO_CROSSINGS) ? "" : "\n    ", ResamplerFilter[j]);
     }
     printf("\n};\n\n");
 
-    printf("static const float ResamplerFilterDifference[RESAMPLER_FILTER_SIZE] = {\n");
-    printf("    %.9ff", ResamplerFilterDifference[0]);
-    for (i = 0; i < RESAMPLER_FILTER_SIZE-1; i++) {
-        printf("%s%.9ff", ((i % 5) == 4) ? ",\n    " : ", ", ResamplerFilterDifference[i+1]);
+    printf("static const float ResamplerFilterDifference[RESAMPLER_FILTER_SIZE] = {");
+    for (i = 0; i < RESAMPLER_FILTER_SIZE; i++) {
+        j = (i % RESAMPLER_ZERO_CROSSINGS) * RESAMPLER_SAMPLES_PER_ZERO_CROSSING + (i / RESAMPLER_ZERO_CROSSINGS);
+        printf("%s%12.9ff,", (i % RESAMPLER_ZERO_CROSSINGS) ? "" : "\n    ", ResamplerFilterDifference[j]);
     }
     printf("\n};\n\n");
 

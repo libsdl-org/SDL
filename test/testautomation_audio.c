@@ -794,9 +794,10 @@ static int audio_resampleLoss(void *arg)
     double signal_to_noise;
     double max_error;
   } test_specs[] = {
-    { 50, 440, 0, 44100, 48000, 60, 0.0025 },
-    { 50, 5000, SDL_PI_D / 2, 20000, 10000, 65, 0.0010 },
-    { 50, 440, 0, 22050, 96000, 60, 0.0120 }, /* I have no idea how to tune these values */
+    { 50, 440, 0, 44100, 48000, 79, 0.0008 },
+    { 50, 5000, SDL_PI_D / 2, 20000, 10000, 999, 0.0001 },
+    { 50, 440, 0, 22050, 96000, 76, 0.0120 }, /* I have no idea how to tune these values */
+    { 50, 440, 0, 96000, 22050, 80, 0.0014 },
     { 0 }
   };
 
