@@ -68,7 +68,7 @@ static int GetHistoryBufferSampleFrames(const Sint32 required_resampler_frames)
 static void ResampleAudio(const int chans, const int inrate, const int outrate,
                          const float *lpadding, const float *rpadding,
                          const float *inbuf, const int inframes,
-                         float *outbuf, const int outframes)
+                         float *outbuf, const int outframes, const int offset)
 {
     /* This function uses integer arithmetics to avoid precision loss caused
      * by large floating point numbers. For some operations, Sint32 or Sint64
@@ -81,10 +81,11 @@ static void ResampleAudio(const int chans, const int inrate, const int outrate,
     int i, j, chan;
 
     for (i = 0; i < outframes; i++) {
-        int srcindex = (int)((Sint64)i * inrate / outrate);
-        if (srcindex >= inframes) {  // !!! FIXME: can we clamp this without an if statement on each iteration?
-            srcindex = inframes - 1;
-        }
+        /* Offset by outrate to avoid negative numbers (which don't round correctly) */
+        Sint64 srcpos = ((Sint64)i * inrate) + offset + outrate;
+        int srcindex = (int)(srcpos / outrate) - 1;
+        SDL_assert(srcindex >= -1);
+        SDL_assert(srcindex < inframes);
 
         /* Calculating the following way avoids subtraction or modulo of large
          * floats which have low result precision.
@@ -92,7 +93,7 @@ static void ResampleAudio(const int chans, const int inrate, const int outrate,
          * = (i / outrate * inrate) - floor(i / outrate * inrate)
          * = mod(i / outrate * inrate, 1)
          * = mod(i * inrate, outrate) / outrate */
-        const int srcfraction = ((Sint64)i) * inrate % outrate;
+        const int srcfraction = (int)(srcpos % outrate);
         const float interpolation1 = ((float)srcfraction) / ((float)outrate);
         const int filterindex1 = ((Sint32)srcfraction) * RESAMPLER_SAMPLES_PER_ZERO_CROSSING / outrate;
         const float interpolation2 = 1.0f - interpolation1;
@@ -105,6 +106,7 @@ static void ResampleAudio(const int chans, const int inrate, const int outrate,
             for (j = 0; (filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) < RESAMPLER_FILTER_SIZE; j++) {
                 const int filt_ind = filterindex1 + j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
                 const int srcframe = srcindex - j;
+                SDL_assert(paddinglen + srcframe >= 0);
                 /* !!! FIXME: we can bubble this conditional out of here by doing a pre loop. */
                 const float insample = (srcframe < 0) ? lpadding[((paddinglen + srcframe) * chans) + chan] : inbuf[(srcframe * chans) + chan];
                 outsample += (float) (insample * (ResamplerFilter[filt_ind] + (interpolation1 * ResamplerFilterDifference[filt_ind])));
@@ -114,6 +116,7 @@ static void ResampleAudio(const int chans, const int inrate, const int outrate,
             for (j = 0; (filterindex2 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) < RESAMPLER_FILTER_SIZE; j++) {
                 const int filt_ind = filterindex2 + j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
                 const int srcframe = srcindex + 1 + j;
+                SDL_assert(srcframe - inframes < paddinglen);
                 // !!! FIXME: we can bubble this conditional out of here by doing a post loop.
                 const float insample = (srcframe >= inframes) ? rpadding[((srcframe - inframes) * chans) + chan] : inbuf[(srcframe * chans) + chan];
                 outsample += (float) (insample * (ResamplerFilter[filt_ind] + (interpolation2 * ResamplerFilterDifference[filt_ind])));
@@ -551,6 +554,7 @@ static int SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *sr
         stream->history_buffer_allocation = history_buffer_allocation;
     }
 
+    stream->resample_offset = 0;
     stream->resampler_padding_frames = resampler_padding_frames;
     stream->history_buffer_frames = history_buffer_frames;
     stream->max_sample_frame_size = max_sample_frame_size;
@@ -796,30 +800,17 @@ static Uint8 *EnsureStreamWorkBufferSize(SDL_AudioStream *stream, size_t newlen)
     return ptr;
 }
 
-static int CalculateAudioStreamWorkBufSize(const SDL_AudioStream *stream, int len)
+static int CalculateAudioStreamWorkBufSize(const SDL_AudioStream *stream, int input_frames, int output_frames)
 {
-    int workbuflen = len;
-    int workbuf_frames = len / stream->dst_sample_frame_size;  // start with requested sample frames
-    int inputlen = workbuf_frames * stream->max_sample_frame_size;
+    int workbuflen = SDL_max(input_frames, output_frames) * stream->max_sample_frame_size;
 
-    if (inputlen > workbuflen) {
-        workbuflen = inputlen;
-    }
-
-    if (stream->dst_spec.freq != stream->src_spec.freq) {
-        // calculate requested sample frames needed before resampling. Use a Uint64 so the multiplication doesn't overflow.
-        const int input_frames = ((int) ((((Uint64) workbuf_frames) * stream->src_spec.freq) / stream->dst_spec.freq));
-        inputlen = input_frames * stream->max_sample_frame_size;
-        if (inputlen > workbuflen) {
-            workbuflen = inputlen;
-        }
+    if (input_frames != output_frames) {
         // Calculate space needed to move to format/channels used for resampling stage.
-        inputlen = input_frames * stream->pre_resample_channels * sizeof (float);
-        if (inputlen > workbuflen) {
-            workbuflen = inputlen;
-        }
+        int inputlen = input_frames * stream->pre_resample_channels * sizeof (float);
+        workbuflen = SDL_max(workbuflen, inputlen);
+
         // Calculate space needed after resample (which lives in a second copy in the same buffer).
-        workbuflen += workbuf_frames * stream->pre_resample_channels * sizeof (float);
+        workbuflen += output_frames * stream->pre_resample_channels * sizeof (float);
     }
 
     return workbuflen;
@@ -844,6 +835,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
     int future_buffer_filled_frames = stream->future_buffer_filled_frames;
     Uint8 *future_buffer = stream->future_buffer;
     Uint8 *history_buffer = stream->history_buffer;
+    int resample_offset = stream->resample_offset;
     float *resample_outbuf;
     int input_frames;
     int output_frames;
@@ -866,21 +858,19 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
         return 0;  // nothing to do.
     }
 
-    // !!! FIXME: this could be less aggressive about allocation, if we decide the necessary size at each stage and select the maximum required.
-    workbuflen = CalculateAudioStreamWorkBufSize(stream, len);
-    workbuf = EnsureStreamWorkBufferSize(stream, workbuflen);
-    if (!workbuf) {
-        return -1;
-    }
-
     // figure out how much data we need to fulfill the request.
-    input_frames = len / dst_sample_frame_size;  // total sample frames caller wants
+    input_frames = output_frames;  // total sample frames caller wants
+
     if (dst_rate != src_rate) {
-        // calculate requested sample frames needed before resampling. Use a Uint64 so the multiplication doesn't overflow.
-        const int resampled_input_frames = (int) ((((Uint64) input_frames) * src_rate) / dst_rate);
-        if (resampled_input_frames > 0) {
-            input_frames = resampled_input_frames;
-        } else {  // uhoh, not enough input frames!
+        Sint64 last_offset = ((Sint64)(input_frames - 1) * src_rate) + resample_offset;
+        input_frames = (int)(last_offset / dst_rate) + 1;
+
+        Sint64 next_offset = last_offset + src_rate;
+        stream->resample_offset = (int)(next_offset - ((Sint64)input_frames * dst_rate));
+
+        // SDL_Log("Fraction: %i, %i", resampler_fraction, stream->resampler_fraction);
+
+        if (input_frames == 0) {  // uhoh, not enough input frames!
             // if they are upsampling and we end up needing less than a frame of input, we reject it because it would cause artifacts on future reads to eat a full input frame.
             //  however, if the stream is flushed, we would just be padding any remaining input with silence anyhow, so use it up.
             if (stream->flushed) {
@@ -891,8 +881,15 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
             }
         }
     }
-
+    
+    // !!! FIXME: this could be less aggressive about allocation, if we decide the necessary size at each stage and select the maximum required.
+    workbuflen = CalculateAudioStreamWorkBufSize(stream, input_frames, output_frames);
+    workbuf = EnsureStreamWorkBufferSize(stream, workbuflen);
     workbuf_frames = 0;  // no input has been moved to the workbuf yet.
+
+    if (!workbuf) {
+        return -1;
+    }
 
     // move any previous right-padding to the start of the buffer to convert, as those would have been the next samples from the queue ("the future buffer").
     if (future_buffer_filled_frames) {
@@ -996,10 +993,12 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
         resample_outbuf = (float *) ((workbuf + stream->work_buffer_allocation) - output_bytes);  // do at the end of the buffer so we have room for final convert at front.
     }
 
+    // SDL_Log("IN: %i, WORK: %i, OUT: %i", input_frames, workbuf_frames, output_frames);
+
     ResampleAudio(pre_resample_channels, src_rate, dst_rate,
                   stream->left_padding, stream->right_padding,
                   (const float *) workbuf, input_frames,
-                  resample_outbuf, output_frames);
+                  resample_outbuf, output_frames, resample_offset);
 
     // Get us to the final format!
     // see if we can do the conversion in-place (will fit in `buf` while in-progress), or if we need to do it in the workbuf and copy it over
@@ -1056,7 +1055,7 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
     }
 
     // we convert in chunks, so we don't end up allocating a massive work buffer, etc.
-#if 0  // !!! FIXME: see https://github.com/libsdl-org/SDL/issues/8036#issuecomment-1680708349
+#if 1  // !!! FIXME: see https://github.com/libsdl-org/SDL/issues/8036#issuecomment-1680708349
     int retval = 0;
     while (len > 0) { // didn't ask for a whole sample frame, nothing to do
         const int chunk_size = 1024 * 1024;  // !!! FIXME: a megabyte might be overly-aggressive.
