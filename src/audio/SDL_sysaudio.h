@@ -179,6 +179,7 @@ struct SDL_AudioStream
     int resampler_padding_frames;
     int history_buffer_frames;
     int future_buffer_filled_frames;
+    int resample_offset;
 
     SDL_AudioSpec src_spec;
     SDL_AudioSpec dst_spec;

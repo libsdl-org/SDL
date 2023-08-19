@@ -796,6 +796,7 @@ static int audio_resampleLoss(void *arg)
   } test_specs[] = {
     { 50, 440, 0, 44100, 48000, 60, 0.0025 },
     { 50, 5000, SDL_PI_D / 2, 20000, 10000, 65, 0.0010 },
+    { 50, 440, 0, 22050, 96000, 60, 0.0120 }, /* I have no idea how to tune these values */
     { 0 }
   };
 
