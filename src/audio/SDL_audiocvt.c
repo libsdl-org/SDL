@@ -95,16 +95,16 @@ static void ResampleAudio(const int chans, const int inrate, const int outrate,
          * = mod(i * inrate, outrate) / outrate */
         const int srcfraction = (int)(srcpos % outrate);
         const float interpolation1 = ((float)srcfraction) / ((float)outrate);
-        const int filterindex1 = ((Sint32)srcfraction) * RESAMPLER_SAMPLES_PER_ZERO_CROSSING / outrate;
+        const int filterindex1 = (((Sint32)srcfraction) * RESAMPLER_SAMPLES_PER_ZERO_CROSSING / outrate) * RESAMPLER_ZERO_CROSSINGS;
         const float interpolation2 = 1.0f - interpolation1;
-        const int filterindex2 = ((Sint32)(outrate - srcfraction)) * RESAMPLER_SAMPLES_PER_ZERO_CROSSING / outrate;
+        const int filterindex2 = RESAMPLER_FILTER_SIZE - filterindex1 - RESAMPLER_ZERO_CROSSINGS;
 
         for (chan = 0; chan < chans; chan++) {
             float outsample = 0.0f;
 
             // do this twice to calculate the sample, once for the "left wing" and then same for the right.
-            for (j = 0; (filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) < RESAMPLER_FILTER_SIZE; j++) {
-                const int filt_ind = filterindex1 + j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
+            for (j = 0; j < RESAMPLER_ZERO_CROSSINGS; j++) {
+                const int filt_ind = j + filterindex1;
                 const int srcframe = srcindex - j;
                 SDL_assert(paddinglen + srcframe >= 0);
                 /* !!! FIXME: we can bubble this conditional out of here by doing a pre loop. */
@@ -113,8 +113,8 @@ static void ResampleAudio(const int chans, const int inrate, const int outrate,
             }
 
             // Do the right wing!
-            for (j = 0; (filterindex2 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) < RESAMPLER_FILTER_SIZE; j++) {
-                const int filt_ind = filterindex2 + j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
+            for (j = 0; j < RESAMPLER_ZERO_CROSSINGS; j++) {
+                const int filt_ind = j + filterindex2;
                 const int srcframe = srcindex + 1 + j;
                 SDL_assert(srcframe - inframes < paddinglen);
                 // !!! FIXME: we can bubble this conditional out of here by doing a post loop.
