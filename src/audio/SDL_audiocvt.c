@@ -867,17 +867,6 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
 
     if (resample_rate) {
         input_frames = GetResamplerNeededInputFrames(output_frames, resample_rate, stream->resample_offset);
-
-        if (input_frames == 0) {  // uhoh, not enough input frames!
-            // if they are upsampling and we end up needing less than a frame of input, we reject it because it would cause artifacts on future reads to eat a full input frame.
-            //  however, if the stream is flushed, we would just be padding any remaining input with silence anyhow, so use it up.
-            if (stream->flushed) {
-                SDL_assert(((size_t) ((input_frames * src_sample_frame_size) + future_buffer_filled_frames)) <= stream->future_buffer_allocation);
-                // leave input_frames alone; this will just shuffle what's available from the future buffer and pad with silence as appropriate, below.
-            } else {
-                return 0;
-            }
-        }
     }
     
     // !!! FIXME: this could be less aggressive about allocation, if we decide the necessary size at each stage and select the maximum required.
@@ -958,6 +947,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
         const int history_buffer_bytes = history_buffer_frames * src_sample_frame_size;
         const int request_bytes = workbuf_frames * src_sample_frame_size;
         if (history_buffer_frames > workbuf_frames) {
+            // FIXME: This gets exponentially slower as the request gets smaller
             const int preserve_bytes = history_buffer_bytes - request_bytes;
             SDL_memmove(history_buffer, history_buffer + request_bytes, preserve_bytes);
             SDL_memcpy(history_buffer + preserve_bytes, workbuf, request_bytes);
