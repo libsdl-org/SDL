@@ -183,6 +183,7 @@ struct SDL_AudioStream
 
     SDL_AudioSpec src_spec;
     SDL_AudioSpec dst_spec;
+    Sint64 resample_rate;
 
     int src_sample_frame_size;
     int dst_sample_frame_size;
