@@ -66,25 +66,23 @@ static void loop(void)
         SDL_AudioSpec newspec;
         char title[64];
         int newfreq = spec.freq;
+        float scale = 1.0f;
 
         multiplier = newmultiplier;
-        if (multiplier == 0) {
-            SDL_snprintf(title, sizeof (title), "Drag the slider: Normal speed");
-        } else if (multiplier < 0) {
-            SDL_snprintf(title, sizeof (title), "Drag the slider: %.2fx slow", (-multiplier / 100.0f) + 1.0f);
-        } else {
-            SDL_snprintf(title, sizeof (title), "Drag the slider: %.2fx fast", (multiplier / 100.0f) + 1.0f);
+
+        if (multiplier < 0) {
+            scale = 100.0f / (100.0f - multiplier);
+        } else if (multiplier > 0) {
+            scale = (multiplier + 100.0f) / 100.0f;
         }
+
+        SDL_snprintf(title, sizeof (title), "Drag the slider: %.2fx speed", scale);
+
         for (i = 0; i < state->num_windows; i++) {
             SDL_SetWindowTitle(state->windows[i], title);
         }
 
-        /* this math sucks, but whatever. */
-        if (multiplier < 0) {
-            newfreq = spec.freq + (int) ((spec.freq * (multiplier / 400.0f)) * 0.75f);
-        } else if (multiplier > 0) {
-            newfreq = spec.freq + (int) (spec.freq * (multiplier / 100.0f));
-        }
+        newfreq = (int) (spec.freq * scale);
         /* SDL_Log("newfreq=%d   multiplier=%d\n", newfreq, multiplier); */
         SDL_memcpy(&newspec, &spec, sizeof (spec));
         newspec.freq = newfreq;
