@@ -64,16 +64,7 @@ static int GetResamplerPaddingFrames(const Sint64 resample_rate)
 
 static int GetHistoryBufferSampleFrames(const Sint32 required_resampler_frames)
 {
-    /* we want to keep enough input history to successfully resample data between arbitrary
-       frequencies without causing artifacts at the start of a chunk, but also to retain
-       history if the output frequency changes midstream. So we always demand at least 5000
-       sample frames here--which is enough to cover a sudden resample from 192000Hz to 22050Hz
-       without problems--if the app is gradually changing the sample rate for a pitch effect
-       to any destination, this won't be a problem, and if they just need a dramatic
-       downsample that doesn't change, we give them the buffer they need and that won't be a
-       problem either. Upsamples don't need this at any frequency. The rest seems like an
-       acceptable loss. */
-    return (int) SDL_max(required_resampler_frames, 5000);
+    return required_resampler_frames;
 }
 
 // lpadding and rpadding are expected to be buffers of (GetResamplerPaddingFrames(resample_rate) * chans * sizeof (float)) bytes.
@@ -947,7 +938,6 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
         const int history_buffer_bytes = history_buffer_frames * src_sample_frame_size;
         const int request_bytes = workbuf_frames * src_sample_frame_size;
         if (history_buffer_frames > workbuf_frames) {
-            // FIXME: This gets exponentially slower as the request gets smaller
             const int preserve_bytes = history_buffer_bytes - request_bytes;
             SDL_memmove(history_buffer, history_buffer + request_bytes, preserve_bytes);
             SDL_memcpy(history_buffer + preserve_bytes, workbuf, request_bytes);
