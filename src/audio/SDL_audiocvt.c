@@ -45,16 +45,16 @@ static Sint64 GetResampleRate(const int src_rate, const int dst_rate)
 
 static size_t GetResamplerAvailableOutputFrames(const size_t input_frames, const Sint64 resample_rate, const Sint64 resample_offset)
 {
-    SDL_assert(resample_offset < resample_rate);
+    const Sint64 frames = ((((Sint64)input_frames << 32) - resample_offset - 1) / resample_rate) + 1;
 
-    return (size_t)((((Sint64)input_frames << 32) - resample_offset + resample_rate - 1) / resample_rate);
+    return (size_t) SDL_max(frames, 0);
 }
 
 static int GetResamplerNeededInputFrames(const int output_frames, const Sint64 resample_rate, const Sint64 resample_offset)
 {
-    const Sint64 lastpos = ((output_frames - 1) * resample_rate) + resample_offset;
+    const Sint32 frames = (Sint32)((((output_frames - 1) * resample_rate) + resample_offset) >> 32) + 1;
 
-    return (int)(Sint32)(lastpos >> 32) + 1;
+    return (int) SDL_max(frames, 0);
 }
 
 static int GetResamplerPaddingFrames(const Sint64 resample_rate)
