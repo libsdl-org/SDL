@@ -67,14 +67,14 @@ static int GetHistoryBufferSampleFrames(const Sint32 required_resampler_frames)
 static void ResampleAudio(const int chans, const int inrate, const int outrate,
                          const float *lpadding, const float *rpadding,
                          const float *inbuf, const int inframes,
-                         float *outbuf, const int outframes, const Sint64 offset)
+                         float *outbuf, const int outframes, Sint64* resample_offset)
 {
     const int paddinglen = GetResamplerPaddingFrames(inrate, outrate);
     float *dst = outbuf;
     int i, j, chan;
 
     const Sint64 srcstep = GetResampleRate(inrate, outrate);
-    Sint64 srcpos = offset;
+    Sint64 srcpos = *resample_offset;
 
     for (i = 0; i < outframes; i++) {
         int srcindex = (int)(Sint32)(srcpos >> 32);
@@ -116,6 +116,8 @@ static void ResampleAudio(const int chans, const int inrate, const int outrate,
             *(dst++) = outsample;
         }
     }
+
+    *resample_offset = srcpos - ((Sint64)inframes << 32);
 }
 
 /*
@@ -825,7 +827,6 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
     int future_buffer_filled_frames = stream->future_buffer_filled_frames;
     Uint8 *future_buffer = stream->future_buffer;
     Uint8 *history_buffer = stream->history_buffer;
-    Sint64 resample_offset = stream->resample_offset;
     float *resample_outbuf;
     int input_frames;
     int output_frames;
@@ -854,12 +855,8 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
     if (dst_rate != src_rate) {
         // Make sure this matches the logic used in ResampleAudio
         const Sint64 srcstep = GetResampleRate(src_rate, dst_rate);
-
-        Sint64 nextpos = (output_frames * srcstep) + resample_offset;
-        Sint64 lastpos = nextpos - srcstep;
-
+        const Sint64 lastpos = ((output_frames - 1) * srcstep) + stream->resample_offset;
         input_frames = (int)(Sint32)(lastpos >> 32) + 1;
-        stream->resample_offset = nextpos - ((Sint64)input_frames << 32);
 
         if (input_frames == 0) {  // uhoh, not enough input frames!
             // if they are upsampling and we end up needing less than a frame of input, we reject it because it would cause artifacts on future reads to eat a full input frame.
@@ -989,7 +986,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
     ResampleAudio(pre_resample_channels, src_rate, dst_rate,
                   stream->left_padding, stream->right_padding,
                   (const float *) workbuf, input_frames,
-                  resample_outbuf, output_frames, resample_offset);
+                  resample_outbuf, output_frames, &stream->resample_offset);
 
     // Get us to the final format!
     // see if we can do the conversion in-place (will fit in `buf` while in-progress), or if we need to do it in the workbuf and copy it over
