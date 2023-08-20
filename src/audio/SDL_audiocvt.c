@@ -554,7 +554,6 @@ static int SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *sr
         stream->history_buffer_allocation = history_buffer_allocation;
     }
 
-    stream->resample_offset = 0;
     stream->resampler_padding_frames = resampler_padding_frames;
     stream->history_buffer_frames = history_buffer_frames;
     stream->max_sample_frame_size = max_sample_frame_size;
@@ -1141,6 +1140,7 @@ int SDL_ClearAudioStream(SDL_AudioStream *stream)
     if (stream->history_buffer != NULL) {
         SDL_memset(stream->history_buffer, SDL_GetSilenceValueForFormat(stream->src_spec.format), stream->history_buffer_frames * stream->src_spec.channels * sizeof (float));
     }
+    stream->resample_offset = 0;
     stream->future_buffer_filled_frames = 0;
     stream->flushed = SDL_FALSE;
     SDL_UnlockMutex(stream->lock);
