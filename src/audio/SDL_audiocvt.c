@@ -100,7 +100,6 @@ static void ResampleAudio(const int chans, const float *lpadding, const float *r
             for (j = 0; j < RESAMPLER_ZERO_CROSSINGS; j++) {
                 const int filt_ind = j + filterindex1;
                 const int srcframe = srcindex - j;
-                SDL_assert(paddinglen + srcframe >= 0);
                 /* !!! FIXME: we can bubble this conditional out of here by doing a pre loop. */
                 const float insample = (srcframe < 0) ? lpadding[((paddinglen + srcframe) * chans) + chan] : inbuf[(srcframe * chans) + chan];
                 outsample += (float) (insample * (ResamplerFilter[filt_ind] + (interpolation1 * ResamplerFilterDifference[filt_ind])));
@@ -110,7 +109,6 @@ static void ResampleAudio(const int chans, const float *lpadding, const float *r
             for (j = 0; j < RESAMPLER_ZERO_CROSSINGS; j++) {
                 const int filt_ind = j + filterindex2;
                 const int srcframe = srcindex + 1 + j;
-                SDL_assert(srcframe - inframes < paddinglen);
                 // !!! FIXME: we can bubble this conditional out of here by doing a post loop.
                 const float insample = (srcframe >= inframes) ? rpadding[((srcframe - inframes) * chans) + chan] : inbuf[(srcframe * chans) + chan];
                 outsample += (float) (insample * (ResamplerFilter[filt_ind] + (interpolation2 * ResamplerFilterDifference[filt_ind])));
