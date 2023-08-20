@@ -32,22 +32,21 @@
 
 #include "SDL_audio_resampler_filter.h"
 
-static int GetResamplerPaddingFrames(const int iinrate, const int ioutrate)
+static Sint64 GetResampleRate(const int inrate, const int outrate)
 {
-    /* This function uses integer arithmetics to avoid precision loss caused
-     * by large floating point numbers. Sint32 is needed for the large number
-     * multiplication. The integers are assumed to be non-negative so that
-     * division rounds by truncation. */
-    const Sint32 inrate = (Sint32) iinrate;
-    const Sint32 outrate = (Sint32) ioutrate;
-    SDL_assert(inrate >= 0);
-    SDL_assert(outrate >= 0);
+    return ((Sint64)inrate << 32) / (Sint64)outrate;
+}
+
+static int GetResamplerPaddingFrames(const int inrate, const int outrate)
+{
+    SDL_assert(inrate > 0);
+    SDL_assert(outrate > 0);
+
     if (inrate == outrate) {
         return 0;
-    } else if (inrate > outrate) {
-        return (int) (((RESAMPLER_SAMPLES_PER_ZERO_CROSSING * inrate) + (outrate - 1)) / outrate);
     }
-    return RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
+
+    return RESAMPLER_ZERO_CROSSINGS + 1;
 }
 
 static int GetHistoryBufferSampleFrames(const Sint32 required_resampler_frames)
@@ -68,36 +67,28 @@ static int GetHistoryBufferSampleFrames(const Sint32 required_resampler_frames)
 static void ResampleAudio(const int chans, const int inrate, const int outrate,
                          const float *lpadding, const float *rpadding,
                          const float *inbuf, const int inframes,
-                         float *outbuf, const int outframes, const int offset)
+                         float *outbuf, const int outframes, const Sint64 offset)
 {
-    /* This function uses integer arithmetics to avoid precision loss caused
-     * by large floating point numbers. For some operations, Sint32 or Sint64
-     * are needed for the large number multiplications. The input integers are
-     * assumed to be non-negative so that division rounds by truncation and
-     * modulo is always non-negative. Note that the operator order is important
-     * for these integer divisions. */
     const int paddinglen = GetResamplerPaddingFrames(inrate, outrate);
     float *dst = outbuf;
     int i, j, chan;
 
+    const Sint64 srcstep = GetResampleRate(inrate, outrate);
+    Sint64 srcpos = offset;
+
     for (i = 0; i < outframes; i++) {
-        /* Offset by outrate to avoid negative numbers (which don't round correctly) */
-        Sint64 srcpos = ((Sint64)i * inrate) + offset + outrate;
-        int srcindex = (int)(srcpos / outrate) - 1;
+        int srcindex = (int)(Sint32)(srcpos >> 32);
+        Uint32 srcfraction = (Uint32)(srcpos & 0xFFFFFFFF);
+        srcpos += srcstep;
+
         SDL_assert(srcindex >= -1);
         SDL_assert(srcindex < inframes);
 
-        /* Calculating the following way avoids subtraction or modulo of large
-         * floats which have low result precision.
-         *   interpolation1
-         * = (i / outrate * inrate) - floor(i / outrate * inrate)
-         * = mod(i / outrate * inrate, 1)
-         * = mod(i * inrate, outrate) / outrate */
-        const int srcfraction = (int)(srcpos % outrate);
-        const float interpolation1 = ((float)srcfraction) / ((float)outrate);
-        const int filterindex1 = (((Sint32)srcfraction) * RESAMPLER_SAMPLES_PER_ZERO_CROSSING / outrate) * RESAMPLER_ZERO_CROSSINGS;
+        const float interpolation1 = (float)srcfraction * 0x1p-32f;
+        const int filterindex1 = (int)(srcfraction >> (32 - RESAMPLER_BITS_PER_ZERO_CROSSING)) * RESAMPLER_ZERO_CROSSINGS;
+
         const float interpolation2 = 1.0f - interpolation1;
-        const int filterindex2 = RESAMPLER_FILTER_SIZE - filterindex1 - RESAMPLER_ZERO_CROSSINGS;
+        const int filterindex2 = RESAMPLER_FILTER_SIZE - RESAMPLER_ZERO_CROSSINGS - filterindex1;
 
         for (chan = 0; chan < chans; chan++) {
             float outsample = 0.0f;
@@ -834,7 +825,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
     int future_buffer_filled_frames = stream->future_buffer_filled_frames;
     Uint8 *future_buffer = stream->future_buffer;
     Uint8 *history_buffer = stream->history_buffer;
-    int resample_offset = stream->resample_offset;
+    Sint64 resample_offset = stream->resample_offset;
     float *resample_outbuf;
     int input_frames;
     int output_frames;
@@ -861,13 +852,14 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
     input_frames = output_frames;  // total sample frames caller wants
 
     if (dst_rate != src_rate) {
-        Sint64 last_offset = ((Sint64)(input_frames - 1) * src_rate) + resample_offset;
-        input_frames = (int)(last_offset / dst_rate) + 1;
+        // Make sure this matches the logic used in ResampleAudio
+        const Sint64 srcstep = GetResampleRate(src_rate, dst_rate);
 
-        Sint64 next_offset = last_offset + src_rate;
-        stream->resample_offset = (int)(next_offset - ((Sint64)input_frames * dst_rate));
+        Sint64 nextpos = (output_frames * srcstep) + resample_offset;
+        Sint64 lastpos = nextpos - srcstep;
 
-        // SDL_Log("Fraction: %i, %i", resampler_fraction, stream->resampler_fraction);
+        input_frames = (int)(Sint32)(lastpos >> 32) + 1;
+        stream->resample_offset = nextpos - ((Sint64)input_frames << 32);
 
         if (input_frames == 0) {  // uhoh, not enough input frames!
             // if they are upsampling and we end up needing less than a frame of input, we reject it because it would cause artifacts on future reads to eat a full input frame.
