@@ -32,6 +32,8 @@
 
 #include "SDL_audio_resampler_filter.h"
 
+#define RESAMPLER_MAX_PADDING_FRAMES (RESAMPLER_ZERO_CROSSINGS + 1)
+
 static Sint64 GetResampleRate(const int src_rate, const int dst_rate)
 {
     SDL_assert(src_rate > 0);
@@ -59,12 +61,14 @@ static int GetResamplerNeededInputFrames(const int output_frames, const Sint64 r
 
 static int GetResamplerPaddingFrames(const Sint64 resample_rate)
 {
-    return resample_rate ? (RESAMPLER_ZERO_CROSSINGS + 1) : 0;
+    return resample_rate ? RESAMPLER_MAX_PADDING_FRAMES : 0;
 }
 
-static int GetHistoryBufferSampleFrames(const Sint32 required_resampler_frames)
+static int GetHistoryBufferSampleFrames(const int required_resampler_frames)
 {
-    return required_resampler_frames;
+    SDL_assert(required_resampler_frames <= RESAMPLER_MAX_PADDING_FRAMES);
+
+    return RESAMPLER_MAX_PADDING_FRAMES;
 }
 
 // lpadding and rpadding are expected to be buffers of (GetResamplerPaddingFrames(resample_rate) * chans * sizeof (float)) bytes.
@@ -98,7 +102,7 @@ static void ResampleAudio(const int chans, const float *lpadding, const float *r
 
             // do this twice to calculate the sample, once for the "left wing" and then same for the right.
             for (j = 0; j < RESAMPLER_ZERO_CROSSINGS; j++) {
-                const int filt_ind = j + filterindex1;
+                const int filt_ind = filterindex1 + j;
                 const int srcframe = srcindex - j;
                 /* !!! FIXME: we can bubble this conditional out of here by doing a pre loop. */
                 const float insample = (srcframe < 0) ? lpadding[((paddinglen + srcframe) * chans) + chan] : inbuf[(srcframe * chans) + chan];
@@ -107,7 +111,7 @@ static void ResampleAudio(const int chans, const float *lpadding, const float *r
 
             // Do the right wing!
             for (j = 0; j < RESAMPLER_ZERO_CROSSINGS; j++) {
-                const int filt_ind = j + filterindex2;
+                const int filt_ind = filterindex2 + j;
                 const int srcframe = srcindex + 1 + j;
                 // !!! FIXME: we can bubble this conditional out of here by doing a post loop.
                 const float insample = (srcframe >= inframes) ? rpadding[((srcframe - inframes) * chans) + chan] : inbuf[(srcframe * chans) + chan];
