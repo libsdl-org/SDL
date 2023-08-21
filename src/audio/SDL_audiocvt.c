@@ -91,35 +91,34 @@ static void ResampleAudio(const int chans, const float *lpadding, const float *r
         SDL_assert(srcindex >= -1);
         SDL_assert(srcindex < inframes);
 
+        const int filterindex = (int)(srcfraction >> (32 - RESAMPLER_BITS_PER_ZERO_CROSSING)) * RESAMPLER_ZERO_CROSSINGS;
+
         const float interpolation1 = (float)srcfraction * 0x1p-32f;
-        const int filterindex1 = (int)(srcfraction >> (32 - RESAMPLER_BITS_PER_ZERO_CROSSING)) * RESAMPLER_ZERO_CROSSINGS;
-
         const float interpolation2 = 1.0f - interpolation1;
-        const int filterindex2 = RESAMPLER_FILTER_SIZE - RESAMPLER_ZERO_CROSSINGS - filterindex1;
 
-        for (chan = 0; chan < chans; chan++) {
-            float outsample = 0.0f;
-
-            // do this twice to calculate the sample, once for the "left wing" and then same for the right.
-            for (j = 0; j < RESAMPLER_ZERO_CROSSINGS; j++) {
-                const int filt_ind = filterindex1 + j;
-                const int srcframe = srcindex - j;
-                /* !!! FIXME: we can bubble this conditional out of here by doing a pre loop. */
-                const float insample = (srcframe < 0) ? lpadding[((paddinglen + srcframe) * chans) + chan] : inbuf[(srcframe * chans) + chan];
-                outsample += (float) (insample * (ResamplerFilter[filt_ind] + (interpolation1 * ResamplerFilterDifference[filt_ind])));
-            }
-
-            // Do the right wing!
-            for (j = 0; j < RESAMPLER_ZERO_CROSSINGS; j++) {
-                const int filt_ind = filterindex2 + j;
-                const int srcframe = srcindex + 1 + j;
-                // !!! FIXME: we can bubble this conditional out of here by doing a post loop.
-                const float insample = (srcframe >= inframes) ? rpadding[((srcframe - inframes) * chans) + chan] : inbuf[(srcframe * chans) + chan];
-                outsample += (float) (insample * (ResamplerFilter[filt_ind] + (interpolation2 * ResamplerFilterDifference[filt_ind])));
-            }
-
-            *(dst++) = outsample;
+        for (chan = 0; chan < chans; ++chan) {
+            dst[chan] = 0.0f;
         }
+
+        for (j = 0; j < RESAMPLER_ZERO_CROSSINGS; j++) {
+            const int filt_ind1 = filterindex + j;
+            const int filt_ind2 = RESAMPLER_FILTER_SIZE - 1 - filt_ind1;
+
+            const float scale1 = ResamplerFilter[filt_ind1] + (interpolation1 * ResamplerFilterDifference[filt_ind1]);
+            const float scale2 = ResamplerFilter[filt_ind2] + (interpolation2 * ResamplerFilterDifference[filt_ind2]);
+
+            const int srcframe1 = srcindex - j;
+            const int srcframe2 = srcframe1 + RESAMPLER_ZERO_CROSSINGS;
+
+            const float* inputs1 = (srcframe1 < 0) ? &lpadding[(paddinglen + srcframe1) * chans] : &inbuf[srcframe1 * chans];
+            const float* inputs2 = (srcframe2 >= inframes) ? &rpadding[(srcframe2 - inframes) * chans] : &inbuf[srcframe2 * chans];
+
+            for (chan = 0; chan < chans; chan++) {
+                dst[chan] += (inputs1[chan] * scale1) + (inputs2[chan] * scale2);
+            }
+        }
+
+        dst += chan;
     }
 
     *resample_offset = srcpos - ((Sint64)inframes << 32);
