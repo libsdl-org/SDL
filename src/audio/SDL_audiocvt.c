@@ -32,8 +32,12 @@
 
 #include "SDL_audio_resampler_filter.h"
 
+/* For a given srcpos, `srcpos + frame` are sampled, where `-RESAMPLER_ZERO_CROSSINGS < frame <= RESAMPLER_ZERO_CROSSINGS`.
+ * Note, when upsampling, it is also possible to start sampling from `srcpos = -1`. */
 #define RESAMPLER_MAX_PADDING_FRAMES (RESAMPLER_ZERO_CROSSINGS + 1)
 
+/* The source position is tracked using 32:32 fixed-point arithmetic.
+ * This gives high precision and avoids lots of divides in ResampleAudio. */
 static Sint64 GetResampleRate(const int src_rate, const int dst_rate)
 {
     SDL_assert(src_rate > 0);
@@ -47,16 +51,16 @@ static Sint64 GetResampleRate(const int src_rate, const int dst_rate)
 
 static size_t GetResamplerAvailableOutputFrames(const size_t input_frames, const Sint64 resample_rate, const Sint64 resample_offset)
 {
-    const Sint64 frames = ((((Sint64)input_frames << 32) - resample_offset - 1) / resample_rate) + 1;
+    const Sint64 output_frames = ((((Sint64)input_frames << 32) - resample_offset - 1) / resample_rate) + 1;
 
-    return (size_t) SDL_max(frames, 0);
+    return (size_t) SDL_max(output_frames, 0);
 }
 
 static int GetResamplerNeededInputFrames(const int output_frames, const Sint64 resample_rate, const Sint64 resample_offset)
 {
-    const Sint32 frames = (Sint32)((((output_frames - 1) * resample_rate) + resample_offset) >> 32) + 1;
+    const Sint32 input_frames = (Sint32)((((output_frames - 1) * resample_rate) + resample_offset) >> 32) + 1;
 
-    return (int) SDL_max(frames, 0);
+    return (int) SDL_max(input_frames, 0);
 }
 
 static int GetResamplerPaddingFrames(const Sint64 resample_rate)
@@ -68,6 +72,7 @@ static int GetHistoryBufferSampleFrames(const int required_resampler_frames)
 {
     SDL_assert(required_resampler_frames <= RESAMPLER_MAX_PADDING_FRAMES);
 
+    // Even if we aren't currently resampling, make sure to keep enough history in case we need to later.
     return RESAMPLER_MAX_PADDING_FRAMES;
 }
 
@@ -88,8 +93,7 @@ static void ResampleAudio(const int chans, const float *lpadding, const float *r
         Uint32 srcfraction = (Uint32)(srcpos & 0xFFFFFFFF);
         srcpos += resample_rate;
 
-        SDL_assert(srcindex >= -1);
-        SDL_assert(srcindex < inframes);
+        SDL_assert(srcindex >= -1 && srcindex < inframes);
 
         const int filterindex = (int)(srcfraction >> (32 - RESAMPLER_BITS_PER_ZERO_CROSSING)) * RESAMPLER_ZERO_CROSSINGS;
 
