@@ -147,8 +147,8 @@ SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, Uint32 flags)
 }
 
 void SDLTest_CommonDestroyState(SDLTest_CommonState *state) {
-    SDLTest_LogAllocations();
     SDL_free(state);
+    SDLTest_LogAllocations();
 }
 
 #define SEARCHARG(dim)                  \
