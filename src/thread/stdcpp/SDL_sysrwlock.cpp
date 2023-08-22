@@ -27,7 +27,7 @@
 struct SDL_RWLock
 {
     std::shared_mutex cpp_mutex;
-    SDL_threadID write_owner;
+    SDL_ThreadID write_owner;
 };
 
 /* Create a rwlock */

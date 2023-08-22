@@ -2755,3 +2755,7 @@ typedef SDL_cond, SDL_Condition;
 - SDL_ThreadID
 + SDL_GetCurrentThreadID
   (...)
+@@
+@@
+- SDL_threadID
++ SDL_ThreadID

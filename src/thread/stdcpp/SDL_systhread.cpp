@@ -63,15 +63,15 @@ SDL_SYS_SetupThread(const char *name)
     return;
 }
 
-extern "C" SDL_threadID
+extern "C" SDL_ThreadID
 SDL_GetCurrentThreadID(void)
 {
 #ifdef __WINRT__
     return GetCurrentThreadId();
 #else
     // HACK: Mimic a thread ID, if one isn't otherwise available.
-    static thread_local SDL_threadID current_thread_id = 0;
-    static SDL_threadID next_thread_id = 1;
+    static thread_local SDL_ThreadID current_thread_id = 0;
+    static SDL_ThreadID next_thread_id = 1;
     static std::mutex next_thread_id_mutex;
 
     if (current_thread_id == 0) {

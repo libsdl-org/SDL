@@ -50,7 +50,7 @@ struct SDL_Thread;
 typedef struct SDL_Thread SDL_Thread;
 
 /* The SDL thread ID */
-typedef unsigned long SDL_threadID;
+typedef unsigned long SDL_ThreadID;
 
 /* Thread local storage ID, 0 is the invalid ID */
 typedef unsigned int SDL_TLSID;
@@ -273,7 +273,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetThreadName(SDL_Thread *thread);
  *
  * \sa SDL_GetThreadID
  */
-extern DECLSPEC SDL_threadID SDLCALL SDL_GetCurrentThreadID(void);
+extern DECLSPEC SDL_ThreadID SDLCALL SDL_GetCurrentThreadID(void);
 
 /**
  * Get the thread identifier for the specified thread.
@@ -290,7 +290,7 @@ extern DECLSPEC SDL_threadID SDLCALL SDL_GetCurrentThreadID(void);
  *
  * \sa SDL_GetCurrentThreadID
  */
-extern DECLSPEC SDL_threadID SDLCALL SDL_GetThreadID(SDL_Thread * thread);
+extern DECLSPEC SDL_ThreadID SDLCALL SDL_GetThreadID(SDL_Thread * thread);
 
 /**
  * Set the priority for the current thread.

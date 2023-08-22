@@ -101,7 +101,7 @@ static struct
     Uint64 m_unLastDetect;
 
 #if defined(__WIN32__) || defined(__WINGDK__)
-    SDL_threadID m_nThreadID;
+    SDL_ThreadID m_nThreadID;
     WNDCLASSEXA m_wndClass;
     HWND m_hwndMsg;
     HDEVNOTIFY m_hNotify;

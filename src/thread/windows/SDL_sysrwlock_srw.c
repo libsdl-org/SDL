@@ -82,7 +82,7 @@ static SDL_rwlock_impl_t SDL_rwlock_impl_active = { 0 };
 typedef struct SDL_rwlock_srw
 {
     SRWLOCK srw;
-    SDL_threadID write_owner;
+    SDL_ThreadID write_owner;
 } SDL_rwlock_srw;
 
 static SDL_RWLock *SDL_CreateRWLock_srw(void)

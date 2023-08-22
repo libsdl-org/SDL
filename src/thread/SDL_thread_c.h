@@ -59,7 +59,7 @@ typedef enum SDL_ThreadState
 /* This is the system-independent thread info structure */
 struct SDL_Thread
 {
-    SDL_threadID threadid;
+    SDL_ThreadID threadid;
     SYS_ThreadHandle handle;
     int status;
     SDL_AtomicInt state; /* SDL_THREAD_STATE_* */

@@ -22,7 +22,7 @@
 #include <SDL3/SDL_test.h>
 
 static SDL_Mutex *mutex = NULL;
-static SDL_threadID mainthread;
+static SDL_ThreadID mainthread;
 static SDL_AtomicInt doterminate;
 static int nb_threads = 6;
 static SDL_Thread **threads;
@@ -53,7 +53,7 @@ static void terminate(int sig)
 
 static void closemutex(int sig)
 {
-    SDL_threadID id = SDL_GetCurrentThreadID();
+    SDL_ThreadID id = SDL_GetCurrentThreadID();
     int i;
     SDL_Log("Thread %lu:  Cleaning up...\n", id == mainthread ? 0 : id);
     SDL_AtomicSet(&doterminate, 1);

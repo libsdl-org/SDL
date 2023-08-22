@@ -27,7 +27,7 @@
 struct SDL_Mutex
 {
     int recursive;
-    SDL_threadID owner;
+    SDL_ThreadID owner;
     SDL_Semaphore *sem;
 };
 
@@ -74,7 +74,7 @@ int SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn
 #ifdef SDL_THREADS_DISABLED
     return 0;
 #else
-    SDL_threadID this_thread;
+    SDL_ThreadID this_thread;
 
     if (mutex == NULL) {
         return 0;
@@ -104,7 +104,7 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
     return 0;
 #else
     int retval = 0;
-    SDL_threadID this_thread;
+    SDL_ThreadID this_thread;
 
     if (mutex == NULL) {
         return 0;

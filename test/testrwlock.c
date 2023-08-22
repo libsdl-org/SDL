@@ -19,7 +19,7 @@
 #include <SDL3/SDL_test.h>
 
 static SDL_RWLock *rwlock = NULL;
-static SDL_threadID mainthread;
+static SDL_ThreadID mainthread;
 static SDL_AtomicInt doterminate;
 static int nb_threads = 6;
 static SDL_Thread **threads;
@@ -30,7 +30,7 @@ static SDLTest_CommonState *state;
 
 static void DoWork(const int workticks)  /* "Work" */
 {
-    const SDL_threadID tid = SDL_GetCurrentThreadID();
+    const SDL_ThreadID tid = SDL_GetCurrentThreadID();
     const SDL_bool is_reader = tid != mainthread;
     const char *typestr = is_reader ? "Reader" : "Writer";
     int rc;

@@ -1179,6 +1179,9 @@ The following functions have been renamed:
 * SDL_TLSSet() => SDL_SetTLS()
 * SDL_ThreadID() => SDL_GetCurrentThreadID()
 
+The following symbols have been renamed:
+* SDL_threadID => SDL_ThreadID
+
 ## SDL_timer.h
 
 SDL_GetTicks() now returns a 64-bit value. Instead of using the SDL_TICKS_PASSED macro, you can directly compare tick values, e.g.
