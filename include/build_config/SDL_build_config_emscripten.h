@@ -168,6 +168,9 @@
 #define SDL_AUDIO_DRIVER_DISK 1
 #define SDL_AUDIO_DRIVER_DUMMY 1
 #define SDL_AUDIO_DRIVER_EMSCRIPTEN 1
+#ifdef __EMSCRIPTEN_PTHREADS__
+#define SDL_AUDIO_DRIVER_AUDIOWORKLET 1
+#endif
 
 /* Enable various input drivers */
 #define SDL_JOYSTICK_EMSCRIPTEN 1
