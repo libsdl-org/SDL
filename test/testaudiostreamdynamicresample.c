@@ -440,6 +440,7 @@ int main(int argc, char *argv[])
     }
 #endif
 
+    SDLTest_CleanupTextDrawing();
     SDL_DestroyAudioStream(stream);
     SDL_free(audio_buf);
     SDLTest_CommonQuit(state);

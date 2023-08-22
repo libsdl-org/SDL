@@ -388,6 +388,15 @@ ret:
     /* Destroy the window. */
     SDL_DestroyWindow(window);
 
+    if (g_bitmap) {
+        SDL_free(g_bitmap);
+        g_bitmap = NULL;
+    }
+    if (g_shape_surface) {
+        SDL_DestroySurface(g_shape_surface);
+        g_shape_surface = NULL;
+    }
+
     SDL_Quit();
     SDLTest_CommonDestroyState(state);
 

@@ -15,8 +15,6 @@
    pump the event loop and catch keystrokes.
 */
 
-#include <stdlib.h>
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
@@ -25,21 +23,9 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
-static SDL_Window *window;
-static SDL_Renderer *renderer;
+static SDLTest_CommonState *state;
 static SDLTest_TextWindow *textwin;
 static int done;
-
-/* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
-static void
-quit(int rc)
-{
-    SDL_Quit();
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
-    }
-}
 
 static void
 print_string(char **text, size_t *maxlen, const char *fmt, ...)
@@ -171,6 +157,7 @@ PrintText(const char *eventtype, const char *text)
 static void loop(void)
 {
     SDL_Event event;
+    int i;
     /* Check for events */
     /*SDL_WaitEvent(&event); emscripten does not like waiting*/
 
@@ -234,11 +221,13 @@ static void loop(void)
         }
     }
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDLTest_TextWindowDisplay(textwin, renderer);
-    SDL_RenderPresent(renderer);
+    for (i = 0; i < state->num_windows; i++) {
+        SDL_SetRenderDrawColor(state->renderers[i], 0, 0, 0, 255);
+        SDL_RenderClear(state->renderers[i]);
+        SDL_SetRenderDrawColor(state->renderers[i], 255, 255, 255, 255);
+        SDLTest_TextWindowDisplay(textwin, state->renderers[i]);
+        SDL_RenderPresent(state->renderers[i]);
+    }
 
     /* Slow down framerate */
     SDL_Delay(100);
@@ -252,13 +241,14 @@ static void loop(void)
 
 int main(int argc, char *argv[])
 {
-    SDLTest_CommonState *state;
+    int w, h;
 
     /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, 0);
+    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (state == NULL) {
         return 1;
     }
+    state->window_title = "CheckKeys Test";
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -275,31 +265,22 @@ int main(int argc, char *argv[])
     SDL_SetHint(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, "1");
 
     /* Initialize SDL */
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (!SDLTest_CommonInit(state)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 1;
     }
 
-    /* Set 640x480 video mode */
-    window = SDL_CreateWindow("CheckKeys Test", 640, 480, 0);
-    if (window == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create 640x480 window: %s\n",
-                     SDL_GetError());
-        quit(2);
-    }
-
-    renderer = SDL_CreateRenderer(window, NULL, 0);
-    if (renderer == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n",
-                     SDL_GetError());
-        quit(2);
-    }
-
-    textwin = SDLTest_TextWindowCreate(0, 0, 640, 480);
+    SDL_GetWindowSize(state->windows[0], &w, &h);
+    textwin = SDLTest_TextWindowCreate(0.f, 0.f, (float)w, (float)h);
 
 #ifdef __IOS__
-    /* Creating the context creates the view, which we need to show keyboard */
-    SDL_GL_CreateContext(window);
+    {
+        int i;
+        /* Creating the context creates the view, which we need to show keyboard */
+        for (i = 0; i < state->num_windows; i++) {
+            SDL_GL_CreateContext(state->windows[i]);
+        }
+    }
 #endif
 
     SDL_StartTextInput();
@@ -319,7 +300,8 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    SDL_Quit();
-    SDLTest_CommonDestroyState(state);
+    SDLTest_TextWindowDestroy(textwin);
+    SDLTest_CleanupTextDrawing();
+    SDLTest_CommonQuit(state);
     return 0;
 }

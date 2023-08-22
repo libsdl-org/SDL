@@ -243,6 +243,7 @@ int main(int argc, char **argv)
     char *filename = NULL;
     SDL_Surface *original;
     SDL_Surface *converted;
+    SDL_Surface *bmp;
     SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_Texture *output[3];
@@ -368,7 +369,9 @@ int main(int argc, char **argv)
     }
 
     filename = GetResourceFilename(filename, "testyuv.bmp");
-    original = SDL_ConvertSurfaceFormat(SDL_LoadBMP(filename), SDL_PIXELFORMAT_RGB24);
+    bmp = SDL_LoadBMP(filename);
+    original = SDL_ConvertSurfaceFormat(bmp, SDL_PIXELFORMAT_RGB24);
+    SDL_DestroySurface(bmp);
     if (original == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename, SDL_GetError());
         return 3;
@@ -481,7 +484,13 @@ int main(int argc, char **argv)
             SDL_Delay(10);
         }
     }
+    SDL_free(raw_yuv);
     SDL_free(filename);
+    SDL_DestroySurface(original);
+    SDL_DestroySurface(converted);
+    SDLTest_CleanupTextDrawing();
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
     SDL_Quit();
     SDLTest_CommonDestroyState(state);
     return 0;
