@@ -76,6 +76,9 @@ static int GetHistoryBufferSampleFrames(const int required_resampler_frames)
     return RESAMPLER_MAX_PADDING_FRAMES;
 }
 
+#define RESAMPLER_FILTER_INTERP_BITS (32 - RESAMPLER_BITS_PER_ZERO_CROSSING)
+#define RESAMPLER_FILTER_INTERP_RANGE (1 << RESAMPLER_FILTER_INTERP_BITS)
+
 // lpadding and rpadding are expected to be buffers of (GetResamplerPaddingFrames(resample_rate) * chans * sizeof (float)) bytes.
 static void ResampleAudio(const int chans, const float *lpadding, const float *rpadding,
                          const float *inbuf, const int inframes, float *outbuf, const int outframes,
@@ -95,9 +98,9 @@ static void ResampleAudio(const int chans, const float *lpadding, const float *r
 
         SDL_assert(srcindex >= -1 && srcindex < inframes);
 
-        const int filterindex = (int)(srcfraction >> (32 - RESAMPLER_BITS_PER_ZERO_CROSSING)) * RESAMPLER_ZERO_CROSSINGS;
+        const int filterindex = (int)(srcfraction >> RESAMPLER_FILTER_INTERP_BITS) * RESAMPLER_ZERO_CROSSINGS;
 
-        const float interpolation1 = (float)srcfraction * 0x1p-32f;
+        const float interpolation1 = (float)(srcfraction & (RESAMPLER_FILTER_INTERP_RANGE - 1)) * (1.0f / RESAMPLER_FILTER_INTERP_RANGE);
         const float interpolation2 = 1.0f - interpolation1;
 
         for (chan = 0; chan < chans; ++chan) {
