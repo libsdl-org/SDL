@@ -59,12 +59,12 @@ extern "C" void
 SDL_SYS_SetupThread(const char *name)
 {
     // Make sure a thread ID gets assigned ASAP, for debugging purposes:
-    SDL_ThreadID();
+    SDL_GetCurrentThreadID();
     return;
 }
 
 extern "C" SDL_threadID
-SDL_ThreadID(void)
+SDL_GetCurrentThreadID(void)
 {
 #ifdef __WINRT__
     return GetCurrentThreadId();

@@ -80,7 +80,7 @@ int SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn
         return 0;
     }
 
-    this_thread = SDL_ThreadID();
+    this_thread = SDL_GetCurrentThreadID();
     if (mutex->owner == this_thread) {
         ++mutex->recursive;
     } else {
@@ -110,7 +110,7 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
         return 0;
     }
 
-    this_thread = SDL_ThreadID();
+    this_thread = SDL_GetCurrentThreadID();
     if (mutex->owner == this_thread) {
         ++mutex->recursive;
     } else {
@@ -140,7 +140,7 @@ int SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doe
     }
 
     /* If we don't own the mutex, we can't unlock it */
-    if (SDL_ThreadID() != mutex->owner) {
+    if (SDL_GetCurrentThreadID() != mutex->owner) {
         return SDL_SetError("mutex not owned by this thread");
     }
 

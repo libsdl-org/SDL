@@ -661,7 +661,7 @@
 #define SDL_SurfaceHasRLE SDL_SurfaceHasRLE_REAL
 #define SDL_TextInputActive SDL_TextInputActive_REAL
 #define SDL_TextInputShown SDL_TextInputShown_REAL
-#define SDL_ThreadID SDL_ThreadID_REAL
+#define SDL_GetCurrentThreadID SDL_GetCurrentThreadID_REAL
 #define SDL_TryLockMutex SDL_TryLockMutex_REAL
 #define SDL_TryLockRWLockForReading SDL_TryLockRWLockForReading_REAL
 #define SDL_TryLockRWLockForWriting SDL_TryLockRWLockForWriting_REAL

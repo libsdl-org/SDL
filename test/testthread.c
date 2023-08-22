@@ -60,7 +60,7 @@ ThreadFunc(void *data)
 
     SDL_SetTLS(tls, "baby thread", NULL);
     SDL_Log("Started thread %s: My thread id is %lu, thread data = %s\n",
-            (char *)data, SDL_ThreadID(), (const char *)SDL_GetTLS(tls));
+            (char *)data, SDL_GetCurrentThreadID(), (const char *)SDL_GetTLS(tls));
     while (alive) {
         SDL_Log("Thread '%s' is alive!\n", (char *)data);
 

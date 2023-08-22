@@ -2750,3 +2750,8 @@ typedef SDL_cond, SDL_Condition;
 - SDL_WriteBE64
 + SDL_WriteU64BE
   (...)
+@@
+@@
+- SDL_ThreadID
++ SDL_GetCurrentThreadID
+  (...)

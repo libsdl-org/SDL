@@ -516,7 +516,7 @@ int SDL_VideoInit(const char *driver_name)
     _this = video;
     _this->name = bootstrap[i]->name;
     _this->next_object_id = 1;
-    _this->thread = SDL_ThreadID();
+    _this->thread = SDL_GetCurrentThreadID();
 
     /* Set some very sane GL defaults */
     _this->gl_config.driver_loaded = 0;
@@ -597,7 +597,7 @@ SDL_VideoDevice *SDL_GetVideoDevice(void)
 
 SDL_bool SDL_OnVideoThread(void)
 {
-    return (_this && SDL_ThreadID() == _this->thread) ? SDL_TRUE : SDL_FALSE;
+    return (_this && SDL_GetCurrentThreadID() == _this->thread) ? SDL_TRUE : SDL_FALSE;
 }
 
 SDL_bool SDL_IsVideoContextExternal(void)

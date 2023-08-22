@@ -78,7 +78,7 @@ extern "C" int SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY
 
     try {
         rwlock->cpp_mutex.lock();
-        rwlock->write_owner = SDL_ThreadID();
+        rwlock->write_owner = SDL_GetCurrentThreadID();
         return 0;
     } catch (std::system_error &ex) {
         return SDL_SetError("unable to lock a C++ rwlock: code=%d; %s", ex.code(), ex.what());
@@ -108,7 +108,7 @@ int SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
     } else if (rwlock->cpp_mutex.try_lock() == false) {
         retval = SDL_RWLOCK_TIMEDOUT;
     } else {
-        rwlock->write_owner = SDL_ThreadID();
+        rwlock->write_owner = SDL_GetCurrentThreadID();
     }
     return retval;
 }
@@ -119,7 +119,7 @@ SDL_UnlockRWLock(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang does
 {
     if (!rwlock) {
         return SDL_InvalidParamError("rwlock");
-    } else if (rwlock->write_owner == SDL_ThreadID()) {
+    } else if (rwlock->write_owner == SDL_GetCurrentThreadID()) {
         rwlock->write_owner = 0;
         rwlock->cpp_mutex.unlock();
     } else {

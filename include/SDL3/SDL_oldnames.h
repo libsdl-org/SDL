@@ -474,6 +474,7 @@
 #define SDL_TLSCreate SDL_CreateTLS
 #define SDL_TLSGet SDL_GetTLS
 #define SDL_TLSSet SDL_SetTLS
+#define SDL_ThreadID SDL_GetCurrentThreadID
 
 /* ##SDL_timer.h */
 #define SDL_GetTicks64 SDL_GetTicks
@@ -926,6 +927,7 @@
 #define SDL_TLSCreate SDL_TLSCreate_renamed_SDL_CreateTLS
 #define SDL_TLSGet SDL_TLSGet_renamed_SDL_GetTLS
 #define SDL_TLSSet SDL_TLSSet_renamed_SDL_SetTLS
+#define SDL_ThreadID SDL_ThreadID_renamed_SDL_GetCurrentThreadID
 
 /* ##SDL_timer.h */
 #define SDL_GetTicks64 SDL_GetTicks64_renamed_SDL_GetTicks

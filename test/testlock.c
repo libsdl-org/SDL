@@ -42,7 +42,7 @@ SDL_Quit_Wrapper(void)
 
 static void printid(void)
 {
-    SDL_Log("Thread %lu:  exiting\n", SDL_ThreadID());
+    SDL_Log("Thread %lu:  exiting\n", SDL_GetCurrentThreadID());
 }
 
 static void terminate(int sig)
@@ -53,7 +53,7 @@ static void terminate(int sig)
 
 static void closemutex(int sig)
 {
-    SDL_threadID id = SDL_ThreadID();
+    SDL_threadID id = SDL_GetCurrentThreadID();
     int i;
     SDL_Log("Thread %lu:  Cleaning up...\n", id == mainthread ? 0 : id);
     SDL_AtomicSet(&doterminate, 1);
@@ -74,19 +74,19 @@ static void closemutex(int sig)
 static int SDLCALL
 Run(void *data)
 {
-    if (SDL_ThreadID() == mainthread) {
+    if (SDL_GetCurrentThreadID() == mainthread) {
         (void)signal(SIGTERM, closemutex);
     }
-    SDL_Log("Thread %lu: starting up", SDL_ThreadID());
+    SDL_Log("Thread %lu: starting up", SDL_GetCurrentThreadID());
     while (!SDL_AtomicGet(&doterminate)) {
-        SDL_Log("Thread %lu: ready to work\n", SDL_ThreadID());
+        SDL_Log("Thread %lu: ready to work\n", SDL_GetCurrentThreadID());
         if (SDL_LockMutex(mutex) < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't lock mutex: %s", SDL_GetError());
             exit(1);
         }
-        SDL_Log("Thread %lu: start work!\n", SDL_ThreadID());
+        SDL_Log("Thread %lu: start work!\n", SDL_GetCurrentThreadID());
         SDL_Delay(1 * worktime);
-        SDL_Log("Thread %lu: work done!\n", SDL_ThreadID());
+        SDL_Log("Thread %lu: work done!\n", SDL_GetCurrentThreadID());
         if (SDL_UnlockMutex(mutex) < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't unlock mutex: %s", SDL_GetError());
             exit(1);
@@ -94,11 +94,11 @@ Run(void *data)
         /* If this sleep isn't done, then threads may starve */
         SDL_Delay(10);
     }
-    if (SDL_ThreadID() == mainthread && SDL_AtomicGet(&doterminate)) {
-        SDL_Log("Thread %lu: raising SIGTERM\n", SDL_ThreadID());
+    if (SDL_GetCurrentThreadID() == mainthread && SDL_AtomicGet(&doterminate)) {
+        SDL_Log("Thread %lu: raising SIGTERM\n", SDL_GetCurrentThreadID());
         (void)raise(SIGTERM);
     }
-    SDL_Log("Thread %lu: exiting!\n", SDL_ThreadID());
+    SDL_Log("Thread %lu: exiting!\n", SDL_GetCurrentThreadID());
     return 0;
 }
 
@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    mainthread = SDL_ThreadID();
+    mainthread = SDL_GetCurrentThreadID();
     SDL_Log("Main thread: %lu\n", mainthread);
     (void)atexit(printid);
     for (i = 0; i < nb_threads; ++i) {

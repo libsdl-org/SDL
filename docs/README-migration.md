@@ -1177,6 +1177,7 @@ The following functions have been renamed:
 * SDL_TLSCreate() => SDL_CreateTLS()
 * SDL_TLSGet() => SDL_GetTLS()
 * SDL_TLSSet() => SDL_SetTLS()
+* SDL_ThreadID() => SDL_GetCurrentThreadID()
 
 ## SDL_timer.h
 

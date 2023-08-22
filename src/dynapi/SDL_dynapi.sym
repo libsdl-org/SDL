@@ -638,7 +638,7 @@ SDL3_0.0.0 {
     SDL_SurfaceHasRLE;
     SDL_TextInputActive;
     SDL_TextInputShown;
-    SDL_ThreadID;
+    SDL_GetCurrentThreadID;
     SDL_TryLockMutex;
     SDL_TryLockRWLockForReading;
     SDL_TryLockRWLockForWriting;

@@ -94,7 +94,7 @@ static void ManagementThreadMainloop(void)
 int WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, int *wait_on_result)
 {
     // We want to block for a result, but we are already running from the management thread! Just run the task now so we don't deadlock.
-    if ((wait_on_result != NULL) && (SDL_ThreadID() == SDL_GetThreadID(ManagementThread))) {
+    if ((wait_on_result != NULL) && (SDL_GetCurrentThreadID() == SDL_GetThreadID(ManagementThread))) {
         *wait_on_result = task(userdata);
         return 0;  // completed!
     }

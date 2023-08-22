@@ -30,7 +30,7 @@ static SDLTest_CommonState *state;
 
 static void DoWork(const int workticks)  /* "Work" */
 {
-    const SDL_threadID tid = SDL_ThreadID();
+    const SDL_threadID tid = SDL_GetCurrentThreadID();
     const SDL_bool is_reader = tid != mainthread;
     const char *typestr = is_reader ? "Reader" : "Writer";
     int rc;
@@ -54,11 +54,11 @@ static void DoWork(const int workticks)  /* "Work" */
 static int SDLCALL
 ReaderRun(void *data)
 {
-    SDL_Log("Reader Thread %lu: starting up", SDL_ThreadID());
+    SDL_Log("Reader Thread %lu: starting up", SDL_GetCurrentThreadID());
     while (!SDL_AtomicGet(&doterminate)) {
         DoWork(worktime);
     }
-    SDL_Log("Reader Thread %lu: exiting!\n", SDL_ThreadID());
+    SDL_Log("Reader Thread %lu: exiting!\n", SDL_GetCurrentThreadID());
     return 0;
 }
 
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    mainthread = SDL_ThreadID();
+    mainthread = SDL_GetCurrentThreadID();
     SDL_Log("Writer thread: %lu\n", mainthread);
     for (i = 0; i < nb_threads; ++i) {
         char name[64];

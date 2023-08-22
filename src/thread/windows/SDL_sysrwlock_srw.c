@@ -121,7 +121,7 @@ static int SDL_LockRWLockForWriting_srw(SDL_RWLock *_rwlock) SDL_NO_THREAD_SAFET
         return SDL_InvalidParamError("rwlock");
     }
     pAcquireSRWLockExclusive(&rwlock->srw);
-    rwlock->write_owner = SDL_ThreadID();
+    rwlock->write_owner = SDL_GetCurrentThreadID();
     return 0;
 }
 
@@ -156,7 +156,7 @@ static int SDL_UnlockRWLock_srw(SDL_RWLock *_rwlock) SDL_NO_THREAD_SAFETY_ANALYS
     SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *) _rwlock;
     if (rwlock == NULL) {
         return SDL_InvalidParamError("rwlock");
-    } else if (rwlock->write_owner == SDL_ThreadID()) {
+    } else if (rwlock->write_owner == SDL_GetCurrentThreadID()) {
         rwlock->write_owner = 0;
         pReleaseSRWLockExclusive(&rwlock->srw);
     } else {

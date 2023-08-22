@@ -92,7 +92,7 @@ void SDL_SYS_SetupThread(const char *name)
     /* Do nothing. */
 }
 
-SDL_threadID SDL_ThreadID(void)
+SDL_threadID SDL_GetCurrentThreadID(void)
 {
     return (SDL_threadID)sceKernelGetThreadId();
 }
