@@ -2008,15 +2008,22 @@ int main(int argc, char *argv[])
         HandleGamepadRemoved(controllers[0].id);
         DelController(controllers[0].id);
     }
+    SDL_free(controllers);
+    SDL_free(controller_name);
     DestroyGamepadImage(image);
     DestroyGamepadDisplay(gamepad_elements);
     DestroyGamepadTypeDisplay(gamepad_type);
     DestroyJoystickDisplay(joystick_elements);
+    DestroyGamepadButton(setup_mapping_button);
+    DestroyGamepadButton(done_mapping_button);
+    DestroyGamepadButton(cancel_button);
+    DestroyGamepadButton(clear_button);
     DestroyGamepadButton(copy_button);
+    DestroyGamepadButton(paste_button);
+    SDLTest_CleanupTextDrawing();
     SDL_DestroyRenderer(screen);
     SDL_DestroyWindow(window);
-    SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD);
+    SDL_Quit();
     SDLTest_CommonDestroyState(state);
-
     return 0;
 }

@@ -35,17 +35,6 @@ static int sprite_w, sprite_h;
 static SDL_Renderer *renderer;
 static int done;
 
-/* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
-static void
-quit(int rc)
-{
-    SDL_Quit();
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
-    }
-}
-
 static void MoveSprites(void)
 {
     int i;
@@ -100,7 +89,8 @@ static void loop(void)
 
 int main(int argc, char *argv[])
 {
-    SDL_Window *window;
+    SDL_Window *window = NULL;
+    int return_code = -1;
     int i;
 
     /* Enable standard application logging */
@@ -108,17 +98,24 @@ int main(int argc, char *argv[])
 
     if (argc > 1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "USAGE: %s\n", argv[0]);
-        quit(1);
+        return_code = 1;
+        goto quit;
     }
 
     if (SDL_CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer) < 0) {
-        quit(2);
+        return_code = 2;
+        goto quit;
+    }
+
+    if (SDL_SetWindowTitle(window, argv[0]) < 0) {
+        SDL_Log("SDL_SetWindowTitle: %s", SDL_GetError());
     }
 
     sprite = LoadTexture(renderer, "icon.bmp", SDL_TRUE, &sprite_w, &sprite_h);
 
     if (sprite == NULL) {
-        quit(2);
+        return_code = 3;
+        goto quit;
     }
 
     /* Initialize the sprite positions */
@@ -146,7 +143,10 @@ int main(int argc, char *argv[])
         loop();
     }
 #endif
-    quit(0);
-
-    return 0; /* to prevent compiler warning */
+    return_code = 0;
+quit:
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    return return_code;
 }

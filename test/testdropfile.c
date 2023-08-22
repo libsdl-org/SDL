@@ -10,23 +10,10 @@
   freely.
 */
 
-#include <stdlib.h>
-
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
 
 static SDLTest_CommonState *state;
-
-/* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
-static void
-quit(int rc)
-{
-    SDLTest_CommonQuit(state);
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
-    }
-}
 
 int main(int argc, char *argv[])
 {
@@ -35,6 +22,7 @@ int main(int argc, char *argv[])
     SDL_bool is_hover = SDL_FALSE;
     float x = 0.0f, y = 0.0f;
     unsigned int windowID = 0;
+    int return_code = -1;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
@@ -58,12 +46,14 @@ int main(int argc, char *argv[])
         }
         if (consumed < 0) {
             SDLTest_CommonLogUsage(state, argv[0], NULL);
-            quit(1);
+            return_code = 1;
+            goto quit;
         }
         i += consumed;
     }
     if (!SDLTest_CommonInit(state)) {
-        quit(2);
+        return_code = 1;
+        goto quit;
     }
 
 
@@ -114,7 +104,8 @@ int main(int argc, char *argv[])
         SDL_Delay(16);
     }
 
-    quit(0);
-    /* keep the compiler happy ... */
-    return 0;
+    return_code = 0;
+quit:
+    SDLTest_CommonQuit(state);
+    return return_code;
 }

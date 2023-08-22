@@ -10,8 +10,6 @@
   freely.
 */
 
-#include <stdlib.h>
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
@@ -41,17 +39,6 @@ static int system_cursor = -1;
 static SDL_Cursor *cursor = NULL;
 static SDL_bool relative_mode = SDL_FALSE;
 static const SDL_DisplayMode *highlighted_mode = NULL;
-
-/* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
-static void
-quit(int rc)
-{
-    SDLTest_CommonQuit(state);
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
-    }
-}
 
 /* Draws the modes menu, and stores the mode index under the mouse in highlighted_mode */
 static void
@@ -298,7 +285,7 @@ int main(int argc, char *argv[])
 #endif
     SDL_DestroyCursor(cursor);
 
-    quit(0);
-    /* keep the compiler happy ... */
+    SDLTest_CleanupTextDrawing();
+    SDLTest_CommonQuit(state);
     return 0;
 }

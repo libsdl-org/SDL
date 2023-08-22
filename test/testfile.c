@@ -369,6 +369,7 @@ int main(int argc, char *argv[])
     SDL_RWclose(rwops);
     SDL_Log("test5 OK\n");
     cleanup();
+    SDL_Quit();
     SDLTest_CommonDestroyState(state);
     return 0; /* all ok */
 }
