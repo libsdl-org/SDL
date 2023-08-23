@@ -163,31 +163,21 @@ static void EMSCRIPTENAUDIO_CloseDevice(_THIS)
                 for (var i = 0; i < tracks.length; i++) {
                     SDL2.capture.stream.removeTrack(tracks[i]);
                 }
-                SDL2.capture.stream = undefined;
             }
             if (SDL2.capture.scriptProcessorNode !== undefined) {
                 SDL2.capture.scriptProcessorNode.onaudioprocess = function(audioProcessingEvent) {};
                 SDL2.capture.scriptProcessorNode.disconnect();
-                SDL2.capture.scriptProcessorNode = undefined;
             }
             if (SDL2.capture.mediaStreamNode !== undefined) {
                 SDL2.capture.mediaStreamNode.disconnect();
-                SDL2.capture.mediaStreamNode = undefined;
-            }
-            if (SDL2.capture.silenceBuffer !== undefined) {
-                SDL2.capture.silenceBuffer = undefined
             }
             SDL2.capture = undefined;
         } else {
             if (SDL2.audio.scriptProcessorNode != undefined) {
                 SDL2.audio.scriptProcessorNode.disconnect();
-                SDL2.audio.scriptProcessorNode = undefined;
             }
             if (SDL2.audio.silenceTimer !== undefined) {
                 clearInterval(SDL2.audio.silenceTimer);
-            }
-            if (SDL2.audio.silenceBuffer !== undefined) {
-                SDL2.audio.silenceBuffer = undefined
             }
             SDL2.audio = undefined;
         }
