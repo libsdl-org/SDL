@@ -942,7 +942,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
         return output_bytes;
     }
 
-    int work_buffer_frames = (work_buffer_tail - work_buffer) / src_sample_frame_size;
+    int work_buffer_frames = (int)(work_buffer_tail - work_buffer) / src_sample_frame_size;
     SDL_assert(work_buffer_frames == input_frames + (resampler_padding_frames * 2));
 
     // Resampling! get the work buffer to float32 format, etc, in-place.
