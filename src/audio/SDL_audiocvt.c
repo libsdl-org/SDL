@@ -84,10 +84,19 @@ static int GetHistoryBufferSampleFrames(const int required_resampler_frames)
 
 #define RESAMPLER_SAMPLES_PER_FRAME (RESAMPLER_ZERO_CROSSINGS * 2)
 
+#define RESAMPLER_FULL_FILTER_SIZE RESAMPLER_SAMPLES_PER_FRAME * (RESAMPLER_SAMPLES_PER_ZERO_CROSSING + 1)
+
 // TODO: Add SIMD-accelerated versions
-static void ResampleFrame(const float* src, float* dst, const float* filter, const int chans)
+static void ResampleFrame(const float* src, float* dst, const float* raw_filter, const float interp, const int chans)
 {
     int i, chan;
+
+    float filter[RESAMPLER_SAMPLES_PER_FRAME];
+
+    // Interpolate between the nearest two filters
+    for (i = 0; i < RESAMPLER_SAMPLES_PER_FRAME; i++) {
+        filter[i] = (raw_filter[i] * (1.0f - interp)) + (raw_filter[i + RESAMPLER_SAMPLES_PER_FRAME] * interp);
+    }
 
     if (chans == 2) {
         float v0 = 0.0f;
@@ -136,12 +145,40 @@ static void ResampleFrame(const float* src, float* dst, const float* filter, con
     }
 }
 
+static float FullResamplerFilter[RESAMPLER_FULL_FILTER_SIZE];
+
+void SDL_SetupAudioResampler()
+{
+    // Build a table combining the left and right wings, for faster access
+
+    int i, j;
+
+    for (i = 0; i < RESAMPLER_SAMPLES_PER_ZERO_CROSSING; ++i) {
+        for (j = 0; j < RESAMPLER_ZERO_CROSSINGS; j++) {
+            int lwing = (i * RESAMPLER_SAMPLES_PER_FRAME) + (RESAMPLER_ZERO_CROSSINGS - 1) - j;
+            int rwing = (RESAMPLER_FULL_FILTER_SIZE - 1) - lwing;
+
+            float value = ResamplerFilter[(i * RESAMPLER_ZERO_CROSSINGS) + j];
+            FullResamplerFilter[lwing] = value;
+            FullResamplerFilter[rwing] = value;
+        }
+    }
+
+    for (i = 0; i < RESAMPLER_ZERO_CROSSINGS; ++i) {
+        int rwing = i + RESAMPLER_ZERO_CROSSINGS;
+        int lwing = (RESAMPLER_FULL_FILTER_SIZE - 1) - rwing;
+
+        FullResamplerFilter[lwing] = 0.0f;
+        FullResamplerFilter[rwing] = 0.0f;
+    }
+}
+
 static void ResampleAudio(const int chans, const float *inbuf, const int inframes, float *outbuf, const int outframes,
                          const Sint64 resample_rate, Sint64* resample_offset)
 {
     SDL_assert(resample_rate > 0);
     float *dst = outbuf;
-    int i, j;
+    int i;
 
     Sint64 srcpos = *resample_offset;
 
@@ -152,26 +189,12 @@ static void ResampleAudio(const int chans, const float *inbuf, const int inframe
 
         SDL_assert(srcindex >= -1 && srcindex < inframes);
 
-        const int filterindex = (int)(srcfraction >> RESAMPLER_FILTER_INTERP_BITS) * RESAMPLER_ZERO_CROSSINGS;
-
-        const float interpolation1 = (float)(srcfraction & (RESAMPLER_FILTER_INTERP_RANGE - 1)) * (1.0f / RESAMPLER_FILTER_INTERP_RANGE);
-        const float interpolation2 = 1.0f - interpolation1;
-
-        float filter[RESAMPLER_SAMPLES_PER_FRAME];
-
-        for (j = 0; j < RESAMPLER_ZERO_CROSSINGS; j++) {
-            const int filt_ind1 = filterindex + (RESAMPLER_ZERO_CROSSINGS - 1) - j;
-            const int filt_ind2 = (RESAMPLER_FILTER_SIZE - 1) - filt_ind1;
-
-            const float scale1 = (ResamplerFilter[filt_ind1] * interpolation2) + (ResamplerFilter[filt_ind1 + RESAMPLER_ZERO_CROSSINGS] * interpolation1);
-            const float scale2 = (ResamplerFilter[filt_ind2] * interpolation1) + (ResamplerFilter[filt_ind2 + RESAMPLER_ZERO_CROSSINGS] * interpolation2);
-
-            filter[j] = scale1;
-            filter[j + RESAMPLER_ZERO_CROSSINGS] = scale2;
-        }
+        const float* filter = &FullResamplerFilter[(srcfraction >> RESAMPLER_FILTER_INTERP_BITS) * RESAMPLER_SAMPLES_PER_FRAME];
+        const float interp = (float)(srcfraction & (RESAMPLER_FILTER_INTERP_RANGE - 1)) * (1.0f / RESAMPLER_FILTER_INTERP_RANGE);
 
         const float* src = &inbuf[(srcindex - (RESAMPLER_ZERO_CROSSINGS - 1)) * chans];
-        ResampleFrame(src, dst, filter, chans);
+        ResampleFrame(src, dst, filter, interp, chans);
+
         dst += chans;
     }
 
