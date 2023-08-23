@@ -164,21 +164,15 @@ struct SDL_AudioStream
     void *put_callback_userdata;
 
     Uint8 *work_buffer;    // used for scratch space during data conversion/resampling.
+    size_t work_buffer_allocation;
+
     Uint8 *history_buffer;  // history for left padding and future sample rate changes.
-    Uint8 *future_buffer;  // stuff that left the queue for the right padding and will be next read's data.
-    float *left_padding;  // left padding for resampling.
-    float *right_padding;  // right padding for resampling.
+    size_t history_buffer_allocation;
 
     SDL_bool flushed;
 
-    size_t work_buffer_allocation;
-    size_t history_buffer_allocation;
-    size_t future_buffer_allocation;
-    size_t resampler_padding_allocation;
-
     int resampler_padding_frames;
     int history_buffer_frames;
-    int future_buffer_filled_frames;
 
     SDL_AudioSpec src_spec;
     SDL_AudioSpec dst_spec;
