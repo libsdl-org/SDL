@@ -962,12 +962,17 @@ void (*SDL_Convert_F32_to_U8)(Uint8 *dst, const float *src, int num_samples) = N
 void (*SDL_Convert_F32_to_S16)(Sint16 *dst, const float *src, int num_samples) = NULL;
 void (*SDL_Convert_F32_to_S32)(Sint32 *dst, const float *src, int num_samples) = NULL;
 
+extern void SDL_SetupAudioResampler(void);
+
 void SDL_ChooseAudioConverters(void)
 {
     static SDL_bool converters_chosen = SDL_FALSE;
     if (converters_chosen) {
         return;
     }
+
+    // FIXME: Hacks on top of hacks.
+    SDL_SetupAudioResampler();
 
 #define SET_CONVERTER_FUNCS(fntype) \
     SDL_Convert_S8_to_F32 = SDL_Convert_S8_to_F32_##fntype; \

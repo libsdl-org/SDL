@@ -50,7 +50,6 @@ gcc -o genfilter build-scripts/gen_audio_resampler_filter.c -lm && ./genfilter >
 #define RESAMPLER_BITS_PER_ZERO_CROSSING  ((RESAMPLER_BITS_PER_SAMPLE / 2) + 1)
 #define RESAMPLER_SAMPLES_PER_ZERO_CROSSING  (1 << RESAMPLER_BITS_PER_ZERO_CROSSING)
 #define RESAMPLER_FILTER_SIZE (RESAMPLER_SAMPLES_PER_ZERO_CROSSING * RESAMPLER_ZERO_CROSSINGS)
-#define RESAMPLER_TABLE_SIZE (RESAMPLER_FILTER_SIZE + RESAMPLER_ZERO_CROSSINGS)
 
 /* This is a "modified" bessel function, so you can't use POSIX j0() */
 static double
@@ -136,18 +135,13 @@ int main(void)
         "#define RESAMPLER_BITS_PER_ZERO_CROSSING ((RESAMPLER_BITS_PER_SAMPLE / 2) + 1)\n"
         "#define RESAMPLER_SAMPLES_PER_ZERO_CROSSING (1 << RESAMPLER_BITS_PER_ZERO_CROSSING)\n"
         "#define RESAMPLER_FILTER_SIZE (RESAMPLER_SAMPLES_PER_ZERO_CROSSING * RESAMPLER_ZERO_CROSSINGS)\n"
-        "#define RESAMPLER_TABLE_SIZE (RESAMPLER_FILTER_SIZE + RESAMPLER_ZERO_CROSSINGS)\n"
         "\n", RESAMPLER_ZERO_CROSSINGS, RESAMPLER_BITS_PER_SAMPLE
     );
 
-    printf("static const float ResamplerFilter[RESAMPLER_TABLE_SIZE] = {");
-    for (i = 0; i < RESAMPLER_TABLE_SIZE; i++) {
-        double v = 0.0;
-        if (i < RESAMPLER_FILTER_SIZE) {
-            j = (i % RESAMPLER_ZERO_CROSSINGS) * RESAMPLER_SAMPLES_PER_ZERO_CROSSING + (i / RESAMPLER_ZERO_CROSSINGS);
-            v = ResamplerFilter[j];
-        }
-        printf("%s%12.9ff,", (i % RESAMPLER_ZERO_CROSSINGS) ? "" : "\n    ", v);
+    printf("static const float ResamplerFilter[RESAMPLER_FILTER_SIZE] = {");
+    for (i = 0; i < RESAMPLER_FILTER_SIZE; i++) {
+        j = (i % RESAMPLER_ZERO_CROSSINGS) * RESAMPLER_SAMPLES_PER_ZERO_CROSSING + (i / RESAMPLER_ZERO_CROSSINGS);
+        printf("%s%12.9ff,", (i % RESAMPLER_ZERO_CROSSINGS) ? "" : "\n    ", ResamplerFilter[j]);
     }
     printf("\n};\n\n");
 
