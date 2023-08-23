@@ -1037,7 +1037,7 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
 
     int retval = 0;
     while (len > 0) { // didn't ask for a whole sample frame, nothing to do
-        const int chunk_size = 1024 * 1024;  // !!! FIXME: a megabyte might be overly-aggressive.
+        const int chunk_size = 32 * 1024;
         const int rc = GetAudioStreamDataInternal(stream, buf, SDL_min(len, chunk_size));
 
         if (rc == -1) {
