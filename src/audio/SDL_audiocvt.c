@@ -82,12 +82,66 @@ static int GetHistoryBufferSampleFrames(const int required_resampler_frames)
 #define RESAMPLER_FILTER_INTERP_BITS (32 - RESAMPLER_BITS_PER_ZERO_CROSSING)
 #define RESAMPLER_FILTER_INTERP_RANGE (1 << RESAMPLER_FILTER_INTERP_BITS)
 
+#define RESAMPLER_SAMPLES_PER_FRAME (RESAMPLER_ZERO_CROSSINGS * 2)
+
+// TODO: Add SIMD-accelerated versions
+static void ResampleFrame(const float* src, float* dst, const float* filter, const int chans)
+{
+    int i, chan;
+
+    if (chans == 2) {
+        float v0 = 0.0f;
+        float v1 = 0.0f;
+
+        for (i = 0; i < RESAMPLER_SAMPLES_PER_FRAME; i++) {
+            const float scale = filter[i];
+            v0 += src[i * 2 + 0] * scale;
+            v1 += src[i * 2 + 1] * scale;
+        }
+
+        dst[0] = v0;
+        dst[1] = v1;
+        return;
+    }
+
+    if (chans == 1) {
+        float v0 = 0.0f;
+
+        for (i = 0; i < RESAMPLER_SAMPLES_PER_FRAME; i++) {
+            v0 += src[i] * filter[i];
+        }
+
+        dst[0] = v0;
+        return;
+    }
+
+    // Try and give the compiler a hint about how many channels there are
+    if (chans < 1 || chans > 8) {
+        SDL_assert(!"Invalid channel count");
+        return;
+    }
+
+    // Calculate the result in-place
+    for (chan = 0; chan < chans; ++chan) {
+        dst[chan] = 0.0f;
+    }
+
+    for (i = 0; i < RESAMPLER_SAMPLES_PER_FRAME; i++) {
+        const float* inputs = &src[i * chans];
+        const float scale = filter[i];
+
+        for (chan = 0; chan < chans; chan++) {
+            dst[chan] += inputs[chan] * scale;
+        }
+    }
+}
+
 static void ResampleAudio(const int chans, const float *inbuf, const int inframes, float *outbuf, const int outframes,
                          const Sint64 resample_rate, Sint64* resample_offset)
 {
     SDL_assert(resample_rate > 0);
     float *dst = outbuf;
-    int i, j, chan;
+    int i, j;
 
     Sint64 srcpos = *resample_offset;
 
@@ -103,29 +157,22 @@ static void ResampleAudio(const int chans, const float *inbuf, const int inframe
         const float interpolation1 = (float)(srcfraction & (RESAMPLER_FILTER_INTERP_RANGE - 1)) * (1.0f / RESAMPLER_FILTER_INTERP_RANGE);
         const float interpolation2 = 1.0f - interpolation1;
 
-        for (chan = 0; chan < chans; ++chan) {
-            dst[chan] = 0.0f;
-        }
+        float filter[RESAMPLER_SAMPLES_PER_FRAME];
 
         for (j = 0; j < RESAMPLER_ZERO_CROSSINGS; j++) {
-            const int filt_ind1 = filterindex + j;
+            const int filt_ind1 = filterindex + (RESAMPLER_ZERO_CROSSINGS - 1) - j;
             const int filt_ind2 = (RESAMPLER_FILTER_SIZE - 1) - filt_ind1;
 
             const float scale1 = (ResamplerFilter[filt_ind1] * interpolation2) + (ResamplerFilter[filt_ind1 + RESAMPLER_ZERO_CROSSINGS] * interpolation1);
             const float scale2 = (ResamplerFilter[filt_ind2] * interpolation1) + (ResamplerFilter[filt_ind2 + RESAMPLER_ZERO_CROSSINGS] * interpolation2);
 
-            const int srcframe1 = srcindex - j;
-            const int srcframe2 = srcframe1 + RESAMPLER_ZERO_CROSSINGS;
-
-            const float* inputs1 = &inbuf[srcframe1 * chans];
-            const float* inputs2 = &inbuf[srcframe2 * chans];
-
-            for (chan = 0; chan < chans; chan++) {
-                dst[chan] += (inputs1[chan] * scale1) + (inputs2[chan] * scale2);
-            }
+            filter[j] = scale1;
+            filter[j + RESAMPLER_ZERO_CROSSINGS] = scale2;
         }
 
-        dst += chan;
+        const float* src = &inbuf[(srcindex - (RESAMPLER_ZERO_CROSSINGS - 1)) * chans];
+        ResampleFrame(src, dst, filter, chans);
+        dst += chans;
     }
 
     *resample_offset = srcpos - ((Sint64)inframes << 32);
