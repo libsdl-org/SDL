@@ -46,6 +46,16 @@
 #endif
 typedef HRESULT (WINAPI *DwmSetWindowAttribute_t)(HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
 
+/* Transparent window support */
+typedef struct
+{
+    int left_width;
+    int right_width;
+    int top_height;
+    int bottom_height;
+} MARGINS;
+typedef HRESULT (WINAPI *DwmExtendFrameIntoClientArea_t)(HWND hwnd, const MARGINS *pMarInSet);
+
 /* Windows CE compatibility */
 #ifndef SWP_NOCOPYBITS
 #define SWP_NOCOPYBITS 0
@@ -585,6 +595,21 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     if (!(window->flags & SDL_WINDOW_OPENGL)) {
         return 0;
+    }
+
+    /* Only OpenGL has transparent framebuffer which is handled by above */
+    /* FIXME: Transparent window support for renderers other than OpenGL possible? */
+    if (window->flags & SDL_WINDOW_TRANSPARENT) {
+        void *handle = SDL_LoadObject("dwmapi.dll");
+        if (handle) {
+            DwmExtendFrameIntoClientArea_t DwmExtendFrameIntoClientAreaFunc = (DwmExtendFrameIntoClientArea_t)SDL_LoadFunction(handle, "DwmExtendFrameIntoClientArea");
+            if (DwmExtendFrameIntoClientAreaFunc) {
+                /* Negative margins create "sheet of glass" effect, thus transparent */
+                MARGINS margins = {-1, -1, -1, -1};
+                DwmExtendFrameIntoClientAreaFunc(hwnd, &margins);
+            }
+            SDL_UnloadObject(handle);
+        }
     }
 
     /* The rest of this macro mess is for OpenGL or OpenGL ES windows */
