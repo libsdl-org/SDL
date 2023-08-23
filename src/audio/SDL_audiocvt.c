@@ -254,7 +254,6 @@ static void AudioConvertByteswap(void *dst, const void *src, int num_samples, in
 
         CASESWAP(16);
         CASESWAP(32);
-        CASESWAP(64);
 
 #undef CASESWAP
 
