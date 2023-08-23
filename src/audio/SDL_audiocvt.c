@@ -109,10 +109,10 @@ static void ResampleAudio(const int chans, const float *inbuf, const int inframe
 
         for (j = 0; j < RESAMPLER_ZERO_CROSSINGS; j++) {
             const int filt_ind1 = filterindex + j;
-            const int filt_ind2 = RESAMPLER_FILTER_SIZE - 1 - filt_ind1;
+            const int filt_ind2 = (RESAMPLER_FILTER_SIZE - 1) - filt_ind1;
 
-            const float scale1 = ResamplerFilter[filt_ind1] + (interpolation1 * ResamplerFilterDifference[filt_ind1]);
-            const float scale2 = ResamplerFilter[filt_ind2] + (interpolation2 * ResamplerFilterDifference[filt_ind2]);
+            const float scale1 = (ResamplerFilter[filt_ind1] * interpolation2) + (ResamplerFilter[filt_ind1 + RESAMPLER_ZERO_CROSSINGS] * interpolation1);
+            const float scale2 = (ResamplerFilter[filt_ind2] * interpolation1) + (ResamplerFilter[filt_ind2 + RESAMPLER_ZERO_CROSSINGS] * interpolation2);
 
             const int srcframe1 = srcindex - j;
             const int srcframe2 = srcframe1 + RESAMPLER_ZERO_CROSSINGS;
