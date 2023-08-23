@@ -55,11 +55,6 @@ static void EMSCRIPTENAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buf
     }, buffer, buffer_size / framelen);
 }
 
-static void HandleAudioProcess(SDL_AudioDevice *device)  // this fires when the main thread is idle.
-{
-    SDL_OutputAudioThreadIterate(device);
-}
-
 
 static void EMSCRIPTENAUDIO_FlushCapture(SDL_AudioDevice *device)
 {
@@ -90,11 +85,6 @@ static int EMSCRIPTENAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buff
     }, buffer, (buflen / sizeof(float)) / device->spec.channels);
 
     return buflen;
-}
-
-static void HandleCaptureProcess(SDL_AudioDevice *device)  // this fires when the main thread is idle.
-{
-    SDL_CaptureAudioThreadIterate(device);
 }
 
 static void EMSCRIPTENAUDIO_CloseDevice(SDL_AudioDevice *device)
@@ -262,7 +252,7 @@ static int EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
             } else if (navigator.webkitGetUserMedia !== undefined) {
                 navigator.webkitGetUserMedia({ audio: true, video: false }, have_microphone, no_microphone);
             }
-        }, device->spec.channels, device->sample_frames, HandleCaptureProcess, device);
+        }, device->spec.channels, device->sample_frames, SDL_CaptureAudioThreadIterate, device);
     } else {
         // setup a ScriptProcessorNode
         MAIN_THREAD_EM_ASM({
@@ -274,7 +264,7 @@ static int EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
                 dynCall('vi', $2, [$3]);
             };
             SDL3.audio.scriptProcessorNode['connect'](SDL3.audioContext['destination']);
-        }, device->spec.channels, device->sample_frames, HandleAudioProcess, device);
+        }, device->spec.channels, device->sample_frames, SDL_OutputAudioThreadIterate, device);
     }
 
     return 0;
