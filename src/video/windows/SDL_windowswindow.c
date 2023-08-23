@@ -605,7 +605,7 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
             DwmExtendFrameIntoClientArea_t DwmExtendFrameIntoClientAreaFunc = (DwmExtendFrameIntoClientArea_t)SDL_LoadFunction(handle, "DwmExtendFrameIntoClientArea");
             if (DwmExtendFrameIntoClientAreaFunc) {
                 /* Negative margins create "sheet of glass" effect, thus transparent */
-                MARGINS margins = {-1};
+                MARGINS margins = {-1, -1, -1, -1};
                 DwmExtendFrameIntoClientAreaFunc(hwnd, &margins);
             }
             SDL_UnloadObject(handle);
