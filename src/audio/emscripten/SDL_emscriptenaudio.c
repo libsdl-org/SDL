@@ -156,7 +156,7 @@ static void EMSCRIPTENAUDIO_CloseDevice(_THIS)
         var SDL2 = Module['SDL2'];
         if ($0) {
             if (SDL2.capture.silenceTimer !== undefined) {
-                clearTimeout(SDL2.capture.silenceTimer);
+                clearInterval(SDL2.capture.silenceTimer);
             }
             if (SDL2.capture.stream !== undefined) {
                 var tracks = SDL2.capture.stream.getAudioTracks();
@@ -294,7 +294,7 @@ static int EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
             var have_microphone = function(stream) {
                 //console.log('SDL audio capture: we have a microphone! Replacing silence callback.');
                 if (SDL2.capture.silenceTimer !== undefined) {
-                    clearTimeout(SDL2.capture.silenceTimer);
+                    clearInterval(SDL2.capture.silenceTimer);
                     SDL2.capture.silenceTimer = undefined;
                     SDL2.capture.silenceBuffer = undefined
                 }
@@ -323,7 +323,7 @@ static int EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
                 dynCall('vi', $2, [$3]);
             };
 
-            SDL2.capture.silenceTimer = setTimeout(silence_callback, ($1 / SDL2.audioContext.sampleRate) * 1000);
+            SDL2.capture.silenceTimer = setInterval(silence_callback, ($1 / SDL2.audioContext.sampleRate) * 1000);
 
             if ((navigator.mediaDevices !== undefined) && (navigator.mediaDevices.getUserMedia !== undefined)) {
                 navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(have_microphone).catch(no_microphone);
