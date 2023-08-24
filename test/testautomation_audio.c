@@ -802,18 +802,22 @@ static int audio_resampleLoss(void *arg)
   };
 
   int spec_idx = 0;
+  int min_channels = 1;
+  int max_channels = 1 /*8*/;
+  int num_channels = min_channels;
 
-  for (spec_idx = 0; test_specs[spec_idx].time > 0; ++spec_idx) {
+  for (spec_idx = 0; test_specs[spec_idx].time > 0; ++num_channels) {
     const struct test_spec_t *spec = &test_specs[spec_idx];
     const int frames_in = spec->time * spec->rate_in;
     const int frames_target = spec->time * spec->rate_out;
-    const int len_in = frames_in * (int)sizeof(float);
-    const int len_target = frames_target * (int)sizeof(float);
+    const int len_in = (frames_in * num_channels) * (int)sizeof(float);
+    const int len_target = (frames_target * num_channels) * (int)sizeof(float);
 
     SDL_AudioSpec tmpspec1, tmpspec2;
     Uint64 tick_beg = 0;
     Uint64 tick_end = 0;
     int i = 0;
+    int j = 0;
     int ret = 0;
     SDL_AudioStream *stream = NULL;
     float *buf_in = NULL;
@@ -823,15 +827,20 @@ static int audio_resampleLoss(void *arg)
     double sum_squared_error = 0;
     double sum_squared_value = 0;
     double signal_to_noise = 0;
+   
+    if (num_channels > max_channels) {
+        num_channels = 1;
+        ++spec_idx;
+    }
 
     SDLTest_AssertPass("Test resampling of %i s %i Hz %f phase sine wave from sampling rate of %i Hz to %i Hz",
                        spec->time, spec->freq, spec->phase, spec->rate_in, spec->rate_out);
 
     tmpspec1.format = SDL_AUDIO_F32;
-    tmpspec1.channels = 1;
+    tmpspec1.channels = num_channels;
     tmpspec1.freq = spec->rate_in;
     tmpspec2.format = SDL_AUDIO_F32;
-    tmpspec2.channels = 1;
+    tmpspec2.channels = num_channels;
     tmpspec2.freq = spec->rate_out;
     stream = SDL_CreateAudioStream(&tmpspec1, &tmpspec2);
     SDLTest_AssertPass("Call to SDL_CreateAudioStream(SDL_AUDIO_F32, 1, %i, SDL_AUDIO_F32, 1, %i)", spec->rate_in, spec->rate_out);
@@ -848,7 +857,10 @@ static int audio_resampleLoss(void *arg)
     }
 
     for (i = 0; i < frames_in; ++i) {
-      *(buf_in + i) = (float)sine_wave_sample(i, spec->rate_in, spec->freq, spec->phase);
+      float f = (float)sine_wave_sample(i, spec->rate_in, spec->freq, spec->phase);
+      for (j = 0; j < num_channels; ++j) {
+        *(buf_in + (i * num_channels) + j) = f;
+      }
     }
 
     tick_beg = SDL_GetPerformanceCounter();
@@ -890,13 +902,15 @@ static int audio_resampleLoss(void *arg)
     tick_end = SDL_GetPerformanceCounter();
     SDLTest_Log("Resampling used %f seconds.", ((double)(tick_end - tick_beg)) / SDL_GetPerformanceFrequency());
 
-    for (i = 0; i < len_out / (int)sizeof(float); ++i) {
-        const float output = *(buf_out + i);
+    for (i = 0; i < frames_target; ++i) {
         const double target = sine_wave_sample(i, spec->rate_out, spec->freq, spec->phase);
-        const double error = SDL_fabs(target - output);
-        max_error = SDL_max(max_error, error);
-        sum_squared_error += error * error;
-        sum_squared_value += target * target;
+        for (j = 0; j < num_channels; ++j) {
+            const float output = *(buf_out + (i * num_channels) + j);
+            const double error = SDL_fabs(target - output);
+            max_error = SDL_max(max_error, error);
+            sum_squared_error += error * error;
+            sum_squared_value += target * target;
+        }
     }
     SDL_free(buf_out);
     signal_to_noise = 10 * SDL_log10(sum_squared_value / sum_squared_error); /* decibel */
