@@ -863,6 +863,8 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
     SDL_Log("AUDIOSTREAM: asking for an output chunk of %d bytes.", len);
 #endif
 
+    SDL_assert((len % dst_sample_frame_size) == 0);
+
     // Clamp the output length to the maximum currently available.
     // The rest of this function assumes enough input data is available.
     const int max_available = SDL_GetAudioStreamAvailable(stream);
@@ -1049,9 +1051,10 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
         }
     }
 
+    const int chunk_size = stream->dst_sample_frame_size * 4096;
+
     int retval = 0;
     while (len > 0) { // didn't ask for a whole sample frame, nothing to do
-        const int chunk_size = 32 * 1024;
         const int rc = GetAudioStreamDataInternal(stream, buf, SDL_min(len, chunk_size));
 
         if (rc == -1) {
