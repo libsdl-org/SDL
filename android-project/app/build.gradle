@@ -8,22 +8,22 @@ else {
 }
 
 android {
-    compileSdkVersion 31
+    if (buildAsApplication) {
+        namespace "org.libsdl.app"
+    }
+    compileSdkVersion 34
     defaultConfig {
-        if (buildAsApplication) {
-            applicationId "org.libsdl.app"
-        }
-        minSdkVersion 16
-        targetSdkVersion 31
+        minSdkVersion 19
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
         externalNativeBuild {
             ndkBuild {
-                arguments "APP_PLATFORM=android-16"
+                arguments "APP_PLATFORM=android-19"
                 abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
             }
             // cmake {
-            //     arguments "-DANDROID_APP_PLATFORM=android-16", "-DANDROID_STL=c++_static"
+            //     arguments "-DANDROID_APP_PLATFORM=android-19", "-DANDROID_STL=c++_static"
             //     // abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
             //     abiFilters 'arm64-v8a'
             // }
@@ -53,10 +53,10 @@ android {
         }
        
     }
-    lintOptions {
+    lint {
         abortOnError false
     }
-    
+
     if (buildAsLibrary) {
         libraryVariants.all { variant ->
             variant.outputs.each { output ->
