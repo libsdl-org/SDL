@@ -486,6 +486,7 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
             /* The Razer Wolverine V2 Pro doesn't respond to the detection protocol, but has a touchpad and sensors, but no vibration */
             ctx->sensors_supported = SDL_TRUE;
             ctx->touchpad_supported = SDL_TRUE;
+            ctx->use_alternate_report = SDL_TRUE;
         }
     }
     ctx->effects_supported = (ctx->lightbar_supported || ctx->vibration_supported || ctx->playerled_supported);
