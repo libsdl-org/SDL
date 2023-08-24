@@ -879,9 +879,7 @@ static int audio_resampleLoss(void *arg)
 
     len_out = SDL_GetAudioStreamData(stream, buf_out, len_target);
     SDLTest_AssertPass("Call to SDL_GetAudioStreamData(stream, buf_out, %i)", len_target);
-    /** !!! FIXME: SDL_AudioStream does not return output of the same length as
-     ** !!! FIXME: the input even if SDL_FlushAudioStream is called. */
-    SDLTest_AssertCheck(len_out <= len_target, "Expected output length to be no larger than %i, got %i.",
+    SDLTest_AssertCheck(len_out == len_target, "Expected output length to be no larger than %i, got %i.",
                         len_target, len_out);
     SDL_DestroyAudioStream(stream);
     if (len_out > len_target) {
