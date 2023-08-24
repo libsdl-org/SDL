@@ -692,14 +692,13 @@ static int audio_convertAudio(void *arg)
                     } else {
                         Uint8 *dst_buf = NULL, *src_buf = NULL;
                         int dst_len = 0, src_len = 0, real_dst_len = 0;
-                        int l = 64;
+                        int l = 64, m;
                         int src_samplesize, dst_samplesize;
+                        int src_silence, dst_silence;
 
                         src_samplesize = (SDL_AUDIO_BITSIZE(spec1.format) / 8) * spec1.channels;
                         dst_samplesize = (SDL_AUDIO_BITSIZE(spec2.format) / 8) * spec2.channels;
 
-
-                        /* Create some random data to convert */
                         src_len = l * src_samplesize;
                         SDLTest_Log("Creating dummy sample buffer of %i length (%i bytes)", l, src_len);
                         src_buf = (Uint8 *)SDL_malloc(src_len);
@@ -708,15 +707,11 @@ static int audio_convertAudio(void *arg)
                             return TEST_ABORTED;
                         }
 
-                        src_len = src_len & ~(src_samplesize - 1);
-                        dst_len = dst_samplesize * (src_len / src_samplesize);
-                        if (spec1.freq < spec2.freq) {
-                            const double mult = ((double)spec2.freq) / ((double)spec1.freq);
-                            dst_len *= (int) SDL_ceil(mult);
-                        }
+                        src_silence = SDL_GetSilenceValueForFormat(spec1.format);
+                        SDL_memset(src_buf, src_silence, src_len);
 
-                        dst_len = dst_len & ~(dst_samplesize - 1);
-                        dst_buf = (Uint8 *)SDL_calloc(1, dst_len);
+                        dst_len = ((int)((((Sint64)l * spec2.freq) - 1) / spec1.freq) + 1) * dst_samplesize;
+                        dst_buf = (Uint8 *)SDL_malloc(dst_len);
                         SDLTest_AssertCheck(dst_buf != NULL, "Check dst data buffer to convert is not NULL");
                         if (dst_buf == NULL) {
                             return TEST_ABORTED;
@@ -728,18 +723,28 @@ static int audio_convertAudio(void *arg)
                             return TEST_ABORTED;
                         }
 
+                        real_dst_len = SDL_GetAudioStreamAvailable(stream);
+                        SDLTest_AssertCheck(dst_len == real_dst_len, "Verify available; expected: %i; got: %i", dst_len, real_dst_len);
+
                         real_dst_len = SDL_GetAudioStreamData(stream, dst_buf, dst_len);
-                        SDLTest_AssertCheck(real_dst_len > 0, "Verify result value; expected: > 0; got: %i", real_dst_len);
-                        if (real_dst_len < 0) {
+                        SDLTest_AssertCheck(dst_len == real_dst_len, "Verify result value; expected: %i; got: %i", dst_len, real_dst_len);
+                        if (dst_len != real_dst_len) {
                             return TEST_ABORTED;
+                        }
+
+                        dst_silence = SDL_GetSilenceValueForFormat(spec2.format);
+
+                        for (m = 0; m < real_dst_len; ++m) {
+                            if (dst_buf[m] != dst_silence) {
+                                SDLTest_LogError("Output buffer is not silent");
+                                return TEST_ABORTED;
+                            }
                         }
 
                         SDL_DestroyAudioStream(stream);
                         /* Free converted buffer */
                         SDL_free(src_buf);
                         SDL_free(dst_buf);
-
-
                     }
                 }
             }
@@ -1101,12 +1106,8 @@ static const SDLTest_TestCaseReference audioTest9 = {
     audio_lockUnlockOpenAudioDevice, "audio_lockUnlockOpenAudioDevice", "Locks and unlocks an open audio device.", TEST_ENABLED
 };
 
-/* TODO: enable test when SDL_ConvertAudio segfaults on cygwin have been fixed.
- * TODO: re-check, since this was changer to AudioStream */
-/* For debugging, test case can be run manually using --filter audio_convertAudio  */
-
 static const SDLTest_TestCaseReference audioTest10 = {
-    audio_convertAudio, "audio_convertAudio", "Convert audio using available formats.", TEST_DISABLED
+    audio_convertAudio, "audio_convertAudio", "Convert audio using available formats.", TEST_ENABLED
 };
 
 /* TODO: enable test when SDL_AudioDeviceConnected has been implemented.           */
