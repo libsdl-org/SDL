@@ -899,6 +899,7 @@ SDL3_0.0.0 {
     SDL_WriteS32LE;
     SDL_WriteS32BE;
     SDL_WriteS64LE;
+    SDL_WriteS64BE;
     # extra symbols go here (don't modify this line)
   local: *;
 };

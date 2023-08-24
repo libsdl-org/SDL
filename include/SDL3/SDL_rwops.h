@@ -954,7 +954,22 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteS64LE(SDL_RWops *dst, Sint64 value);
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_WriteU64BE(SDL_RWops *dst, Uint64 value);
 
-extern DECLSPEC SDL_bool SDLCALL SDL_WriteU64BE(SDL_RWops *dst, Uint64 value);
+/**
+ * Use this function to write 64 bits in native format to an SDL_RWops as
+ * big-endian data.
+ *
+ * SDL byteswaps the data only if necessary, so the application always
+ * specifies native format, and the data written will be in big-endian format.
+ *
+ * \param dst the stream to which data will be written
+ * \param value the data to be written, in native format
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_WriteS64BE(SDL_RWops *dst, Sint64 value);
+
 /* @} *//* Write endian functions */
 
 /* Ends C function definitions when using C++ */
