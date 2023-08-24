@@ -72,6 +72,7 @@ const SDL_AudioFormat *SDL_ClosestAudioFormats(SDL_AudioFormat format);
 
 // Must be called at least once before using converters (SDL_CreateAudioStream will call it !!! FIXME but probably shouldn't).
 extern void SDL_ChooseAudioConverters(void);
+extern void SDL_SetupAudioResampler(void);
 
 /* Backends should call this as devices are added to the system (such as
    a USB headset being plugged in), and should also be called for

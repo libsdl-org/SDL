@@ -84,10 +84,9 @@ static int GetHistoryBufferSampleFrames(const int required_resampler_frames)
 
 #define RESAMPLER_SAMPLES_PER_FRAME (RESAMPLER_ZERO_CROSSINGS * 2)
 
-#define RESAMPLER_FULL_FILTER_SIZE RESAMPLER_SAMPLES_PER_FRAME * (RESAMPLER_SAMPLES_PER_ZERO_CROSSING + 1)
+#define RESAMPLER_FULL_FILTER_SIZE (RESAMPLER_SAMPLES_PER_FRAME * (RESAMPLER_SAMPLES_PER_ZERO_CROSSING + 1))
 
-// TODO: Add SIMD-accelerated versions
-static void ResampleFrame(const float* src, float* dst, const float* raw_filter, const float interp, const int chans)
+static void ResampleFrame_Scalar(const float* src, float* dst, const float* raw_filter, const float interp, const int chans)
 {
     int i, chan;
 
@@ -124,33 +123,122 @@ static void ResampleFrame(const float* src, float* dst, const float* raw_filter,
         return;
     }
 
-    // Try and give the compiler a hint about how many channels there are
-    if (chans < 1 || chans > 8) {
-        SDL_assert(!"Invalid channel count");
+    for (chan = 0; chan < chans; chan++) {
+        float f = 0.0f;
+
+        for (i = 0; i < RESAMPLER_SAMPLES_PER_FRAME; i++) {
+            f += src[i * chans + chan] * filter[i];
+        }
+
+        dst[chan] = f;
+    }
+}
+
+#ifdef SDL_SSE_INTRINSICS
+static void SDL_TARGETING("sse") ResampleFrame_SSE(const float* src, float* dst, const float* raw_filter, const float interp, const int chans)
+{
+#if RESAMPLER_SAMPLES_PER_FRAME != 10
+#error Invalid samples per frame
+#endif
+
+    // Load the filter
+    __m128 f0 = _mm_loadu_ps(raw_filter + 0);
+    __m128 f1 = _mm_loadu_ps(raw_filter + 4);
+    __m128 f2 = _mm_loadl_pi(_mm_setzero_ps(), (const __m64*)(raw_filter + 8));
+
+    __m128 g0 = _mm_loadu_ps(raw_filter + 10);
+    __m128 g1 = _mm_loadu_ps(raw_filter + 14);
+    __m128 g2 = _mm_loadl_pi(_mm_setzero_ps(), (const __m64*)(raw_filter + 18));
+
+    __m128 interp1 = _mm_set1_ps(interp);
+    __m128 interp2 = _mm_sub_ps(_mm_set1_ps(1.0f), _mm_set1_ps(interp));
+
+    // Linear interpolate the filter
+    f0 = _mm_add_ps(_mm_mul_ps(f0, interp2), _mm_mul_ps(g0, interp1));
+    f1 = _mm_add_ps(_mm_mul_ps(f1, interp2), _mm_mul_ps(g1, interp1));
+    f2 = _mm_add_ps(_mm_mul_ps(f2, interp2), _mm_mul_ps(g2, interp1));
+
+    if (chans == 2) {
+        // Duplicate each of the filter elements
+        g0 = _mm_shuffle_ps(f0, f0, _MM_SHUFFLE(3, 3, 2, 2));
+        f0 = _mm_shuffle_ps(f0, f0, _MM_SHUFFLE(1, 1, 0, 0));
+        g1 = _mm_shuffle_ps(f1, f1, _MM_SHUFFLE(3, 3, 2, 2));
+        f1 = _mm_shuffle_ps(f1, f1, _MM_SHUFFLE(1, 1, 0, 0));
+        f2 = _mm_shuffle_ps(f2, f2, _MM_SHUFFLE(1, 1, 0, 0));
+
+        // Multiply the filter by the input
+        f0 = _mm_mul_ps(f0, _mm_loadu_ps(src + 0));
+        g0 = _mm_mul_ps(g0, _mm_loadu_ps(src + 4));
+        f1 = _mm_mul_ps(f1, _mm_loadu_ps(src + 8));
+        g1 = _mm_mul_ps(g1, _mm_loadu_ps(src + 12));
+        f2 = _mm_mul_ps(f2, _mm_loadu_ps(src + 16));
+
+        // Calculate the sum
+        f0 = _mm_add_ps(_mm_add_ps(_mm_add_ps(f0, g0), _mm_add_ps(f1, g1)), f2);
+        f0 = _mm_add_ps(f0, _mm_movehl_ps(f0, f0));
+
+        // Store the result
+        _mm_storel_pi((__m64*) dst, f0);
         return;
     }
 
-    // Calculate the result in-place
-    for (chan = 0; chan < chans; ++chan) {
-        dst[chan] = 0.0f;
+    if (chans == 1) {
+        // Multiply the filter by the input
+        f0 = _mm_mul_ps(f0, _mm_loadu_ps(src + 0));
+        f1 = _mm_mul_ps(f1, _mm_loadu_ps(src + 4));
+        f2 = _mm_mul_ps(f2, _mm_loadl_pi(_mm_setzero_ps(), (const __m64*)(src + 8)));
+
+        // Calculate the sum
+        f0 = _mm_add_ps(f0, f1);
+        f0 = _mm_add_ps(_mm_add_ps(f0, f2), _mm_movehl_ps(f0, f0));
+        f0 = _mm_add_ss(f0, _mm_shuffle_ps(f0, f0, _MM_SHUFFLE(1, 1, 1, 1)));
+
+        // Store the result
+        _mm_store_ss(dst, f0);
+        return;
     }
 
-    for (i = 0; i < RESAMPLER_SAMPLES_PER_FRAME; i++) {
-        const float* inputs = &src[i * chans];
-        const float scale = filter[i];
+    float filter[RESAMPLER_SAMPLES_PER_FRAME];
+    _mm_storeu_ps(filter + 0, f0);
+    _mm_storeu_ps(filter + 4, f1);
+    _mm_storel_pi((__m64*)(filter + 8), f2);
 
-        for (chan = 0; chan < chans; chan++) {
-            dst[chan] += inputs[chan] * scale;
+    int i, chan = 0;
+
+    for (; chan + 4 <= chans; chan++) {
+        f0 = _mm_setzero_ps();
+
+        for (i = 0; i < RESAMPLER_SAMPLES_PER_FRAME; i++) {
+            f0 = _mm_add_ps(f0, _mm_mul_ps(_mm_loadu_ps(&src[i * chans + chan]), _mm_load1_ps(&filter[i])));
         }
+
+        _mm_storeu_ps(&dst[chan], f0);
+    }
+
+    for (; chan < chans; chan++) {
+        f0 = _mm_setzero_ps();
+
+        for (i = 0; i < RESAMPLER_SAMPLES_PER_FRAME; i++) {
+            f0 = _mm_add_ss(f0, _mm_mul_ss(_mm_load_ss(&src[i * chans + chan]), _mm_load_ss(&filter[i])));
+        }
+
+        _mm_store_ss(&dst[chan], f0);
     }
 }
+#endif
+
+static void (*ResampleFrame)(const float* src, float* dst, const float* raw_filter, const float interp, const int chans);
 
 static float FullResamplerFilter[RESAMPLER_FULL_FILTER_SIZE];
 
 void SDL_SetupAudioResampler()
 {
-    // Build a table combining the left and right wings, for faster access
+    static SDL_bool setup = SDL_FALSE;
+    if (setup) {
+        return;
+    }
 
+    // Build a table combining the left and right wings, for faster access
     int i, j;
 
     for (i = 0; i < RESAMPLER_SAMPLES_PER_ZERO_CROSSING; ++i) {
@@ -171,6 +259,16 @@ void SDL_SetupAudioResampler()
         FullResamplerFilter[lwing] = 0.0f;
         FullResamplerFilter[rwing] = 0.0f;
     }
+
+    ResampleFrame = ResampleFrame_Scalar;
+
+#ifdef SDL_SSE_INTRINSICS
+    if (SDL_HasSSE()) {
+        ResampleFrame = ResampleFrame_SSE;
+    }
+#endif
+
+    setup = SDL_TRUE;
 }
 
 static void ResampleAudio(const int chans, const float *inbuf, const int inframes, float *outbuf, const int outframes,
@@ -651,6 +749,7 @@ SDL_AudioStream *SDL_CreateAudioStream(const SDL_AudioSpec *src_spec, const SDL_
 
     // Make sure we've chosen audio conversion functions (SIMD, scalar, etc.)
     SDL_ChooseAudioConverters();  // !!! FIXME: let's do this during SDL_Init
+    SDL_SetupAudioResampler();
 
     retval->packetlen = packetlen;
     SDL_memcpy(&retval->src_spec, src_spec, sizeof (SDL_AudioSpec));
@@ -825,17 +924,12 @@ static Uint8 *EnsureStreamWorkBufferSize(SDL_AudioStream *stream, size_t newlen)
 
 static int CalculateAudioStreamWorkBufSize(const SDL_AudioStream *stream, int input_frames, int output_frames)
 {
-    int workbuflen = SDL_max(input_frames, output_frames) * stream->max_sample_frame_size;
+    int workbuf_frames = input_frames + (stream->resampler_padding_frames * 2);
+    int workbuflen = workbuf_frames * stream->max_sample_frame_size;
 
     if (stream->resample_rate) {
-        int resample_frame_size = stream->pre_resample_channels * sizeof(float);
-
-        // Calculate space needed to move to format/channels used for resampling stage.
-        int inputlen = (input_frames + (stream->resampler_padding_frames * 2)) * resample_frame_size;
-
-        workbuflen = SDL_max(workbuflen, inputlen);
-
         // Calculate space needed after resample (which lives in a second copy in the same buffer).
+        int resample_frame_size = stream->pre_resample_channels * sizeof(float);
         workbuflen += output_frames * resample_frame_size;
     }
 
@@ -888,7 +982,6 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
         input_frames = GetResamplerNeededInputFrames(output_frames, resample_rate, stream->resample_offset);
     }
 
-    // !!! FIXME: this could be less aggressive about allocation, if we decide the necessary size at each stage and select the maximum required.
     int work_buffer_capacity = CalculateAudioStreamWorkBufSize(stream, input_frames, output_frames);
     Uint8* work_buffer = EnsureStreamWorkBufferSize(stream, work_buffer_capacity);
 
