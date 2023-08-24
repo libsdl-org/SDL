@@ -39,6 +39,8 @@
 #define NEED_SCALAR_CONVERTER_FALLBACKS 1
 #endif
 
+#define DIVBY2147483648 0.0000000004656612873077392578125f /* 0x1p-31f */
+
 #if NEED_SCALAR_CONVERTER_FALLBACKS
 
 /* This code requires that floats are in the IEEE-754 binary32 format */
@@ -101,7 +103,7 @@ static void SDL_Convert_S32_to_F32_Scalar(float *dst, const Sint32 *src, int num
     LOG_DEBUG_AUDIO_CONVERT("S32", "F32");
 
     for (i = num_samples - 1; i >= 0; --i) {
-        dst[i] = (float)src[i] * 0x1p-31f;
+        dst[i] = (float)src[i] * DIVBY2147483648;
     }
 }
 
@@ -319,7 +321,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_S32_to_F32_SSE2(float *dst, const 
     int i = num_samples;
 
     /* dst[i] = f32(src[i]) / f32(0x80000000) */
-    const __m128 scaler = _mm_set1_ps(0x1p-31f);
+    const __m128 scaler = _mm_set1_ps(DIVBY2147483648);
 
     LOG_DEBUG_AUDIO_CONVERT("S32", "F32 (using SSE2)");
 
@@ -493,7 +495,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S32_SSE2(Sint32 *dst, const
      * 2) Convert to integer (values too small/large become 0x80000000 = -2147483648)
      * 3) Fixup values which were too large (0x80000000 ^ 0xFFFFFFFF = 2147483647)
      * dst[i] = i32(src[i] * 2147483648.0) ^ ((src[i] >= 2147483648.0) ? 0xFFFFFFFF : 0x00000000) */
-    const __m128 limit = _mm_set1_ps(0x1p31f);
+    const __m128 limit = _mm_set1_ps(2147483648.0f);
 
     LOG_DEBUG_AUDIO_CONVERT("F32", "S32 (using SSE2)");
 
@@ -537,9 +539,9 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S32_SSE2(Sint32 *dst, const
 #endif
 
 #ifdef SDL_NEON_INTRINSICS
-#define DIVBY128        0x1p-7f
-#define DIVBY32768      0x1p-15f
-#define DIVBY8388607    0x1.000002p-23f
+#define DIVBY128     0.0078125f /* 0x1p-7f */
+#define DIVBY32768   0.000030517578125f /* 0x1p-15f */
+#define DIVBY8388607 0.00000011920930376163766f /* 0x1.000002p-23f */
 
 static void SDL_Convert_S8_to_F32_NEON(float *dst, const Sint8 *src, int num_samples)
 {
