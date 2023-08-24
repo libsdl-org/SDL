@@ -982,6 +982,14 @@ static int audio_convertAccuracy(void *arg)
         src_data[j++] = SDLTest_RandomSint32() / 2147483648.0f;
     }
 
+    /* Shuffle the data for good measure */
+    for (i = src_num - 1; i >= 0; --i) {
+        float f = src_data[i];
+        j = SDLTest_RandomIntegerInRange(0, src_num);
+        src_data[i] = src_data[j];
+        src_data[j] = f;
+    }
+
     for (i = 0; i < SDL_arraysize(formats); ++i) {
         SDL_AudioSpec src_spec, tmp_spec;
         Uint64 convert_begin, convert_end;
