@@ -493,6 +493,7 @@ int SDL_InitAudio(const char *driver_name)
     }
 
     SDL_ChooseAudioConverters();
+    SDL_SetupAudioResampler();
 
     SDL_RWLock *device_list_lock = SDL_CreateRWLock();  // create this early, so if it fails we don't have to tear down the whole audio subsystem.
     if (!device_list_lock) {
