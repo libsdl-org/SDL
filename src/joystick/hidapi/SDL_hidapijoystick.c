@@ -663,6 +663,8 @@ static void HIDAPI_UpdateJoystickSerial(SDL_HIDAPI_Device *device)
 {
     int i;
 
+    SDL_AssertJoysticksLocked();
+
     for (i = 0; i < device->num_joysticks; ++i) {
         SDL_Joystick *joystick = SDL_GetJoystickFromInstanceID(device->joysticks[i]);
         if (joystick && device->serial) {
