@@ -969,3 +969,6 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_WriteS32LE,(SDL_RWops *a, Sint32 b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_WriteS32BE,(SDL_RWops *a, Sint32 b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_WriteS64LE,(SDL_RWops *a, Sint64 b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_WriteS64BE,(SDL_RWops *a, Sint64 b),(a,b),return)
+#ifdef __GDK__
+SDL_DYNAPI_PROC(int,SDL_GDKGetDefaultUser,(XUserHandle *a),(a),return)
+#endif
