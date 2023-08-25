@@ -23,7 +23,7 @@
 #ifndef SDL_sysvideo_h_
 #define SDL_sysvideo_h_
 
-#include "SDL_vulkan_internal.h"
+#include <SDL3/SDL_vulkan.h>
 
 /* The SDL video driver */
 
@@ -442,8 +442,8 @@ struct SDL_VideoDevice
     /* Data used by the Vulkan drivers */
     struct
     {
-        PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
-        PFN_vkEnumerateInstanceExtensionProperties vkEnumerateInstanceExtensionProperties;
+        SDL_FunctionPointer vkGetInstanceProcAddr;
+        SDL_FunctionPointer vkEnumerateInstanceExtensionProperties;
         int loader_loaded;
         char loader_path[256];
         void *loader_handle;
