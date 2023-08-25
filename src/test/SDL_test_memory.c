@@ -284,8 +284,6 @@ void SDLTest_LogAllocations(void)
 
     SDL_strlcpy(line, "Memory allocations:\n", sizeof(line));
     ADD_LINE();
-    SDL_strlcpy(line, "Expect 2 allocations from within SDL_GetErrBuf()\n", sizeof(line));
-    ADD_LINE();
 
     count = 0;
     total_allocated = 0;
