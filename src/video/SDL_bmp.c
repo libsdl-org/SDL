@@ -743,7 +743,7 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, SDL_bool freedst)
     }
 
     if (SDL_LockSurface(intermediate_surface) == 0) {
-        const int bw = intermediate_surface->w * intermediate_surface->format->BytesPerPixel;
+        const size_t bw = intermediate_surface->w * intermediate_surface->format->BytesPerPixel;
 
         /* Set the BMP file header values */
         bfSize = 0; /* We'll write this when we're done */

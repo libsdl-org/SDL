@@ -378,7 +378,7 @@ static int DSOUND_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int b
         return -1;
     }
 
-    SDL_assert(ptr1len == buflen);
+    SDL_assert(ptr1len == (DWORD)buflen);
     SDL_assert(ptr2 == NULL);
     SDL_assert(ptr2len == 0);
 
@@ -614,7 +614,7 @@ static int DSOUND_OpenDevice(SDL_AudioDevice *device)
                 }
 
                 wfmt.Format.wBitsPerSample = SDL_AUDIO_BITSIZE(device->spec.format);
-                wfmt.Format.nChannels = device->spec.channels;
+                wfmt.Format.nChannels = (WORD)device->spec.channels;
                 wfmt.Format.nSamplesPerSec = device->spec.freq;
                 wfmt.Format.nBlockAlign = wfmt.Format.nChannels * (wfmt.Format.wBitsPerSample / 8);
                 wfmt.Format.nAvgBytesPerSec = wfmt.Format.nSamplesPerSec * wfmt.Format.nBlockAlign;
