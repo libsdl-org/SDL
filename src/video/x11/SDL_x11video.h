@@ -25,30 +25,6 @@
 
 #include "../SDL_sysvideo.h"
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
-#include <X11/Xresource.h>
-
-#ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
-#include <X11/Xcursor/Xcursor.h>
-#endif
-#ifdef SDL_VIDEO_DRIVER_X11_XDBE
-#include <X11/extensions/Xdbe.h>
-#endif
-#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
-#include <X11/extensions/XInput2.h>
-#endif
-#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
-#include <X11/extensions/Xrandr.h>
-#endif
-#ifdef SDL_VIDEO_DRIVER_X11_XSCRNSAVER
-#include <X11/extensions/scrnsaver.h>
-#endif
-#ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
-#include <X11/extensions/shape.h>
-#endif
-
 #include "../../core/linux/SDL_dbus.h"
 #include "../../core/linux/SDL_ime.h"
 
