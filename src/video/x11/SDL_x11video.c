@@ -39,8 +39,6 @@
 #include "SDL_x11opengles.h"
 #endif
 
-#include "SDL_x11vulkan.h"
-
 /* Initialization/Query functions */
 static int X11_VideoInit(SDL_VideoDevice *_this);
 static void X11_VideoQuit(SDL_VideoDevice *_this);
