@@ -560,7 +560,7 @@ SDL_Surface *SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc)
         } break;
 
         default:
-            if (SDL_RWread(src, bits, surface->pitch) != surface->pitch) {
+            if (SDL_RWread(src, bits, surface->pitch) != (size_t)surface->pitch) {
                 goto done;
             }
             if (biBitCount == 8 && palette && biClrUsed < (1u << biBitCount)) {
