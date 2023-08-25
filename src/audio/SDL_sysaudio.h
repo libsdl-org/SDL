@@ -185,7 +185,6 @@ struct SDL_AudioStream
     int dst_sample_frame_size;
     int max_sample_frame_size;
 
-    int pre_resample_channels;
     int packetlen;
 
     SDL_LogicalAudioDevice *bound_device;
