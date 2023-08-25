@@ -29,7 +29,7 @@
 #ifndef SDL_waylandvulkan_h_
 #define SDL_waylandvulkan_h_
 
-#include "../SDL_vulkan_internal.h"
+#include <SDL3/SDL_vulkan.h>
 #include "../SDL_sysvideo.h"
 
 #if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_WAYLAND)
