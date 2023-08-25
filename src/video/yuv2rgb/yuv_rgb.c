@@ -241,17 +241,12 @@ void rgb24_yuv420_std(
 
 #ifdef SDL_SSE2_INTRINSICS
 
+/* SDL doesn't use these atm and compiling them adds seconds onto the build.  --ryan.
 #define SSE_FUNCTION_NAME	yuv420_rgb565_sse
 #define STD_FUNCTION_NAME	yuv420_rgb565_std
 #define YUV_FORMAT			YUV_FORMAT_420
 #define RGB_FORMAT			RGB_FORMAT_RGB565
 #define SSE_ALIGNED
-#include "yuv_rgb_sse_func.h"
-
-#define SSE_FUNCTION_NAME	yuv420_rgb565_sseu
-#define STD_FUNCTION_NAME	yuv420_rgb565_std
-#define YUV_FORMAT			YUV_FORMAT_420
-#define RGB_FORMAT			RGB_FORMAT_RGB565
 #include "yuv_rgb_sse_func.h"
 
 #define SSE_FUNCTION_NAME	yuv420_rgb24_sse
@@ -261,23 +256,11 @@ void rgb24_yuv420_std(
 #define SSE_ALIGNED
 #include "yuv_rgb_sse_func.h"
 
-#define SSE_FUNCTION_NAME	yuv420_rgb24_sseu
-#define STD_FUNCTION_NAME	yuv420_rgb24_std
-#define YUV_FORMAT			YUV_FORMAT_420
-#define RGB_FORMAT			RGB_FORMAT_RGB24
-#include "yuv_rgb_sse_func.h"
-
 #define SSE_FUNCTION_NAME	yuv420_rgba_sse
 #define STD_FUNCTION_NAME	yuv420_rgba_std
 #define YUV_FORMAT			YUV_FORMAT_420
 #define RGB_FORMAT			RGB_FORMAT_RGBA
 #define SSE_ALIGNED
-#include "yuv_rgb_sse_func.h"
-
-#define SSE_FUNCTION_NAME	yuv420_rgba_sseu
-#define STD_FUNCTION_NAME	yuv420_rgba_std
-#define YUV_FORMAT			YUV_FORMAT_420
-#define RGB_FORMAT			RGB_FORMAT_RGBA
 #include "yuv_rgb_sse_func.h"
 
 #define SSE_FUNCTION_NAME	yuv420_bgra_sse
@@ -287,23 +270,11 @@ void rgb24_yuv420_std(
 #define SSE_ALIGNED
 #include "yuv_rgb_sse_func.h"
 
-#define SSE_FUNCTION_NAME	yuv420_bgra_sseu
-#define STD_FUNCTION_NAME	yuv420_bgra_std
-#define YUV_FORMAT			YUV_FORMAT_420
-#define RGB_FORMAT			RGB_FORMAT_BGRA
-#include "yuv_rgb_sse_func.h"
-
 #define SSE_FUNCTION_NAME	yuv420_argb_sse
 #define STD_FUNCTION_NAME	yuv420_argb_std
 #define YUV_FORMAT			YUV_FORMAT_420
 #define RGB_FORMAT			RGB_FORMAT_ARGB
 #define SSE_ALIGNED
-#include "yuv_rgb_sse_func.h"
-
-#define SSE_FUNCTION_NAME	yuv420_argb_sseu
-#define STD_FUNCTION_NAME	yuv420_argb_std
-#define YUV_FORMAT			YUV_FORMAT_420
-#define RGB_FORMAT			RGB_FORMAT_ARGB
 #include "yuv_rgb_sse_func.h"
 
 #define SSE_FUNCTION_NAME	yuv420_abgr_sse
@@ -313,23 +284,11 @@ void rgb24_yuv420_std(
 #define SSE_ALIGNED
 #include "yuv_rgb_sse_func.h"
 
-#define SSE_FUNCTION_NAME	yuv420_abgr_sseu
-#define STD_FUNCTION_NAME	yuv420_abgr_std
-#define YUV_FORMAT			YUV_FORMAT_420
-#define RGB_FORMAT			RGB_FORMAT_ABGR
-#include "yuv_rgb_sse_func.h"
-
 #define SSE_FUNCTION_NAME	yuv422_rgb565_sse
 #define STD_FUNCTION_NAME	yuv422_rgb565_std
 #define YUV_FORMAT			YUV_FORMAT_422
 #define RGB_FORMAT			RGB_FORMAT_RGB565
 #define SSE_ALIGNED
-#include "yuv_rgb_sse_func.h"
-
-#define SSE_FUNCTION_NAME	yuv422_rgb565_sseu
-#define STD_FUNCTION_NAME	yuv422_rgb565_std
-#define YUV_FORMAT			YUV_FORMAT_422
-#define RGB_FORMAT			RGB_FORMAT_RGB565
 #include "yuv_rgb_sse_func.h"
 
 #define SSE_FUNCTION_NAME	yuv422_rgb24_sse
@@ -339,23 +298,11 @@ void rgb24_yuv420_std(
 #define SSE_ALIGNED
 #include "yuv_rgb_sse_func.h"
 
-#define SSE_FUNCTION_NAME	yuv422_rgb24_sseu
-#define STD_FUNCTION_NAME	yuv422_rgb24_std
-#define YUV_FORMAT			YUV_FORMAT_422
-#define RGB_FORMAT			RGB_FORMAT_RGB24
-#include "yuv_rgb_sse_func.h"
-
 #define SSE_FUNCTION_NAME	yuv422_rgba_sse
 #define STD_FUNCTION_NAME	yuv422_rgba_std
 #define YUV_FORMAT			YUV_FORMAT_422
 #define RGB_FORMAT			RGB_FORMAT_RGBA
 #define SSE_ALIGNED
-#include "yuv_rgb_sse_func.h"
-
-#define SSE_FUNCTION_NAME	yuv422_rgba_sseu
-#define STD_FUNCTION_NAME	yuv422_rgba_std
-#define YUV_FORMAT			YUV_FORMAT_422
-#define RGB_FORMAT			RGB_FORMAT_RGBA
 #include "yuv_rgb_sse_func.h"
 
 #define SSE_FUNCTION_NAME	yuv422_bgra_sse
@@ -365,23 +312,11 @@ void rgb24_yuv420_std(
 #define SSE_ALIGNED
 #include "yuv_rgb_sse_func.h"
 
-#define SSE_FUNCTION_NAME	yuv422_bgra_sseu
-#define STD_FUNCTION_NAME	yuv422_bgra_std
-#define YUV_FORMAT			YUV_FORMAT_422
-#define RGB_FORMAT			RGB_FORMAT_BGRA
-#include "yuv_rgb_sse_func.h"
-
 #define SSE_FUNCTION_NAME	yuv422_argb_sse
 #define STD_FUNCTION_NAME	yuv422_argb_std
 #define YUV_FORMAT			YUV_FORMAT_422
 #define RGB_FORMAT			RGB_FORMAT_ARGB
 #define SSE_ALIGNED
-#include "yuv_rgb_sse_func.h"
-
-#define SSE_FUNCTION_NAME	yuv422_argb_sseu
-#define STD_FUNCTION_NAME	yuv422_argb_std
-#define YUV_FORMAT			YUV_FORMAT_422
-#define RGB_FORMAT			RGB_FORMAT_ARGB
 #include "yuv_rgb_sse_func.h"
 
 #define SSE_FUNCTION_NAME	yuv422_abgr_sse
@@ -391,23 +326,11 @@ void rgb24_yuv420_std(
 #define SSE_ALIGNED
 #include "yuv_rgb_sse_func.h"
 
-#define SSE_FUNCTION_NAME	yuv422_abgr_sseu
-#define STD_FUNCTION_NAME	yuv422_abgr_std
-#define YUV_FORMAT			YUV_FORMAT_422
-#define RGB_FORMAT			RGB_FORMAT_ABGR
-#include "yuv_rgb_sse_func.h"
-
 #define SSE_FUNCTION_NAME	yuvnv12_rgb565_sse
 #define STD_FUNCTION_NAME	yuvnv12_rgb565_std
 #define YUV_FORMAT			YUV_FORMAT_NV12
 #define RGB_FORMAT			RGB_FORMAT_RGB565
 #define SSE_ALIGNED
-#include "yuv_rgb_sse_func.h"
-
-#define SSE_FUNCTION_NAME	yuvnv12_rgb565_sseu
-#define STD_FUNCTION_NAME	yuvnv12_rgb565_std
-#define YUV_FORMAT			YUV_FORMAT_NV12
-#define RGB_FORMAT			RGB_FORMAT_RGB565
 #include "yuv_rgb_sse_func.h"
 
 #define SSE_FUNCTION_NAME	yuvnv12_rgb24_sse
@@ -417,23 +340,11 @@ void rgb24_yuv420_std(
 #define SSE_ALIGNED
 #include "yuv_rgb_sse_func.h"
 
-#define SSE_FUNCTION_NAME	yuvnv12_rgb24_sseu
-#define STD_FUNCTION_NAME	yuvnv12_rgb24_std
-#define YUV_FORMAT			YUV_FORMAT_NV12
-#define RGB_FORMAT			RGB_FORMAT_RGB24
-#include "yuv_rgb_sse_func.h"
-
 #define SSE_FUNCTION_NAME	yuvnv12_rgba_sse
 #define STD_FUNCTION_NAME	yuvnv12_rgba_std
 #define YUV_FORMAT			YUV_FORMAT_NV12
 #define RGB_FORMAT			RGB_FORMAT_RGBA
 #define SSE_ALIGNED
-#include "yuv_rgb_sse_func.h"
-
-#define SSE_FUNCTION_NAME	yuvnv12_rgba_sseu
-#define STD_FUNCTION_NAME	yuvnv12_rgba_std
-#define YUV_FORMAT			YUV_FORMAT_NV12
-#define RGB_FORMAT			RGB_FORMAT_RGBA
 #include "yuv_rgb_sse_func.h"
 
 #define SSE_FUNCTION_NAME	yuvnv12_bgra_sse
@@ -443,12 +354,6 @@ void rgb24_yuv420_std(
 #define SSE_ALIGNED
 #include "yuv_rgb_sse_func.h"
 
-#define SSE_FUNCTION_NAME	yuvnv12_bgra_sseu
-#define STD_FUNCTION_NAME	yuvnv12_bgra_std
-#define YUV_FORMAT			YUV_FORMAT_NV12
-#define RGB_FORMAT			RGB_FORMAT_BGRA
-#include "yuv_rgb_sse_func.h"
-
 #define SSE_FUNCTION_NAME	yuvnv12_argb_sse
 #define STD_FUNCTION_NAME	yuvnv12_argb_std
 #define YUV_FORMAT			YUV_FORMAT_NV12
@@ -456,17 +361,114 @@ void rgb24_yuv420_std(
 #define SSE_ALIGNED
 #include "yuv_rgb_sse_func.h"
 
-#define SSE_FUNCTION_NAME	yuvnv12_argb_sseu
-#define STD_FUNCTION_NAME	yuvnv12_argb_std
-#define YUV_FORMAT			YUV_FORMAT_NV12
-#define RGB_FORMAT			RGB_FORMAT_ARGB
-#include "yuv_rgb_sse_func.h"
-
 #define SSE_FUNCTION_NAME	yuvnv12_abgr_sse
 #define STD_FUNCTION_NAME	yuvnv12_abgr_std
 #define YUV_FORMAT			YUV_FORMAT_NV12
 #define RGB_FORMAT			RGB_FORMAT_ABGR
 #define SSE_ALIGNED
+#include "yuv_rgb_sse_func.h"
+*/
+
+#define SSE_FUNCTION_NAME	yuv420_rgb565_sseu
+#define STD_FUNCTION_NAME	yuv420_rgb565_std
+#define YUV_FORMAT			YUV_FORMAT_420
+#define RGB_FORMAT			RGB_FORMAT_RGB565
+#include "yuv_rgb_sse_func.h"
+
+#define SSE_FUNCTION_NAME	yuv420_rgb24_sseu
+#define STD_FUNCTION_NAME	yuv420_rgb24_std
+#define YUV_FORMAT			YUV_FORMAT_420
+#define RGB_FORMAT			RGB_FORMAT_RGB24
+#include "yuv_rgb_sse_func.h"
+
+#define SSE_FUNCTION_NAME	yuv420_rgba_sseu
+#define STD_FUNCTION_NAME	yuv420_rgba_std
+#define YUV_FORMAT			YUV_FORMAT_420
+#define RGB_FORMAT			RGB_FORMAT_RGBA
+#include "yuv_rgb_sse_func.h"
+
+#define SSE_FUNCTION_NAME	yuv420_bgra_sseu
+#define STD_FUNCTION_NAME	yuv420_bgra_std
+#define YUV_FORMAT			YUV_FORMAT_420
+#define RGB_FORMAT			RGB_FORMAT_BGRA
+#include "yuv_rgb_sse_func.h"
+
+#define SSE_FUNCTION_NAME	yuv420_argb_sseu
+#define STD_FUNCTION_NAME	yuv420_argb_std
+#define YUV_FORMAT			YUV_FORMAT_420
+#define RGB_FORMAT			RGB_FORMAT_ARGB
+#include "yuv_rgb_sse_func.h"
+
+#define SSE_FUNCTION_NAME	yuv420_abgr_sseu
+#define STD_FUNCTION_NAME	yuv420_abgr_std
+#define YUV_FORMAT			YUV_FORMAT_420
+#define RGB_FORMAT			RGB_FORMAT_ABGR
+#include "yuv_rgb_sse_func.h"
+
+#define SSE_FUNCTION_NAME	yuv422_rgb565_sseu
+#define STD_FUNCTION_NAME	yuv422_rgb565_std
+#define YUV_FORMAT			YUV_FORMAT_422
+#define RGB_FORMAT			RGB_FORMAT_RGB565
+#include "yuv_rgb_sse_func.h"
+
+#define SSE_FUNCTION_NAME	yuv422_rgb24_sseu
+#define STD_FUNCTION_NAME	yuv422_rgb24_std
+#define YUV_FORMAT			YUV_FORMAT_422
+#define RGB_FORMAT			RGB_FORMAT_RGB24
+#include "yuv_rgb_sse_func.h"
+
+#define SSE_FUNCTION_NAME	yuv422_rgba_sseu
+#define STD_FUNCTION_NAME	yuv422_rgba_std
+#define YUV_FORMAT			YUV_FORMAT_422
+#define RGB_FORMAT			RGB_FORMAT_RGBA
+#include "yuv_rgb_sse_func.h"
+
+#define SSE_FUNCTION_NAME	yuv422_bgra_sseu
+#define STD_FUNCTION_NAME	yuv422_bgra_std
+#define YUV_FORMAT			YUV_FORMAT_422
+#define RGB_FORMAT			RGB_FORMAT_BGRA
+#include "yuv_rgb_sse_func.h"
+
+#define SSE_FUNCTION_NAME	yuv422_argb_sseu
+#define STD_FUNCTION_NAME	yuv422_argb_std
+#define YUV_FORMAT			YUV_FORMAT_422
+#define RGB_FORMAT			RGB_FORMAT_ARGB
+#include "yuv_rgb_sse_func.h"
+
+#define SSE_FUNCTION_NAME	yuv422_abgr_sseu
+#define STD_FUNCTION_NAME	yuv422_abgr_std
+#define YUV_FORMAT			YUV_FORMAT_422
+#define RGB_FORMAT			RGB_FORMAT_ABGR
+#include "yuv_rgb_sse_func.h"
+
+#define SSE_FUNCTION_NAME	yuvnv12_rgb565_sseu
+#define STD_FUNCTION_NAME	yuvnv12_rgb565_std
+#define YUV_FORMAT			YUV_FORMAT_NV12
+#define RGB_FORMAT			RGB_FORMAT_RGB565
+#include "yuv_rgb_sse_func.h"
+
+#define SSE_FUNCTION_NAME	yuvnv12_rgb24_sseu
+#define STD_FUNCTION_NAME	yuvnv12_rgb24_std
+#define YUV_FORMAT			YUV_FORMAT_NV12
+#define RGB_FORMAT			RGB_FORMAT_RGB24
+#include "yuv_rgb_sse_func.h"
+
+#define SSE_FUNCTION_NAME	yuvnv12_rgba_sseu
+#define STD_FUNCTION_NAME	yuvnv12_rgba_std
+#define YUV_FORMAT			YUV_FORMAT_NV12
+#define RGB_FORMAT			RGB_FORMAT_RGBA
+#include "yuv_rgb_sse_func.h"
+
+#define SSE_FUNCTION_NAME	yuvnv12_bgra_sseu
+#define STD_FUNCTION_NAME	yuvnv12_bgra_std
+#define YUV_FORMAT			YUV_FORMAT_NV12
+#define RGB_FORMAT			RGB_FORMAT_BGRA
+#include "yuv_rgb_sse_func.h"
+
+#define SSE_FUNCTION_NAME	yuvnv12_argb_sseu
+#define STD_FUNCTION_NAME	yuvnv12_argb_std
+#define YUV_FORMAT			YUV_FORMAT_NV12
+#define RGB_FORMAT			RGB_FORMAT_ARGB
 #include "yuv_rgb_sse_func.h"
 
 #define SSE_FUNCTION_NAME	yuvnv12_abgr_sseu
@@ -476,6 +478,7 @@ void rgb24_yuv420_std(
 #include "yuv_rgb_sse_func.h"
 
 
+/* SDL doesn't use these atm and compiling them adds seconds onto the build.  --ryan.
 #define UNPACK_RGB24_32_STEP1(RGB1, RGB2, RGB3, RGB4, RGB5, RGB6, R1, R2, G1, G2, B1, B2) \
 R1 = _mm_unpacklo_epi8(RGB1, RGB4); \
 R2 = _mm_unpackhi_epi8(RGB1, RGB4); \
@@ -515,7 +518,9 @@ V = _mm_add_epi16(_mm_mullo_epi16(R, _mm_set1_epi16(param->matrix[2][0])), \
 V = _mm_add_epi16(V, _mm_mullo_epi16(B, _mm_set1_epi16(param->matrix[2][2]))); \
 V = _mm_add_epi16(V, _mm_set1_epi16(128<<PRECISION)); \
 V = _mm_srai_epi16(V, PRECISION);
+*/
 
+#if 0  // SDL doesn't use these atm and compiling them adds seconds onto the build.  --ryan.
 #define RGB2YUV_32 \
 	__m128i r1, r2, b1, b2, g1, g2; \
 	__m128i r_16, g_16, b_16; \
@@ -608,7 +613,9 @@ V = _mm_srai_epi16(V, PRECISION);
 	v1 = _mm_avg_epu8(v1, v2); \
 	SAVE_SI128((__m128i*)(u_ptr), u1); \
 	SAVE_SI128((__m128i*)(v_ptr), v1);
+#endif
 
+/* SDL doesn't use these atm and compiling them adds seconds onto the build.  --ryan.
 void SDL_TARGETING("sse2") rgb24_yuv420_sse(uint32_t width, uint32_t height,
 	const uint8_t *RGB, uint32_t RGB_stride,
 	uint8_t *Y, uint8_t *U, uint8_t *V, uint32_t Y_stride, uint32_t UV_stride,
@@ -680,7 +687,7 @@ void SDL_TARGETING("sse2") rgb24_yuv420_sseu(uint32_t width, uint32_t height,
 	#undef LOAD_SI128
 	#undef SAVE_SI128
 }
-
+*/
 
 #endif //SDL_SSE2_INTRINSICS
 
