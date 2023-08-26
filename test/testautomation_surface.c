@@ -328,6 +328,10 @@ static int surface_testCompleteSurfaceConversion(void *arg)
         SDL_PIXELFORMAT_ABGR8888,
         SDL_PIXELFORMAT_BGRA8888,
         SDL_PIXELFORMAT_ARGB2101010,
+        SDL_PIXELFORMAT_R16,
+        SDL_PIXELFORMAT_R32,
+        SDL_PIXELFORMAT_RF16,
+        SDL_PIXELFORMAT_RF32,
     };
     SDL_Surface *face = NULL, *cvt1, *cvt2, *final;
     SDL_PixelFormat *fmt1, *fmt2;
