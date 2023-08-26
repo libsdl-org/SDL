@@ -811,7 +811,7 @@ static int audio_resampleLoss(void *arg)
   int max_channels = 1 /*8*/;
   int num_channels = min_channels;
 
-  for (spec_idx = 0; test_specs[spec_idx].time > 0; ++num_channels) {
+  for (spec_idx = 0; test_specs[spec_idx].time > 0;) {
     const struct test_spec_t *spec = &test_specs[spec_idx];
     const int frames_in = spec->time * spec->rate_in;
     const int frames_target = spec->time * spec->rate_out;
@@ -832,11 +832,6 @@ static int audio_resampleLoss(void *arg)
     double sum_squared_error = 0;
     double sum_squared_value = 0;
     double signal_to_noise = 0;
-   
-    if (num_channels > max_channels) {
-        num_channels = 1;
-        ++spec_idx;
-    }
 
     SDLTest_AssertPass("Test resampling of %i s %i Hz %f phase sine wave from sampling rate of %i Hz to %i Hz",
                        spec->time, spec->freq, spec->phase, spec->rate_in, spec->rate_out);
@@ -928,6 +923,11 @@ static int audio_resampleLoss(void *arg)
                         signal_to_noise, spec->signal_to_noise);
     SDLTest_AssertCheck(max_error <= spec->max_error, "Maximum conversion error %f should be no more than %f.",
                         max_error, spec->max_error);
+       
+    if (++num_channels > max_channels) {
+        num_channels = min_channels;
+        ++spec_idx;
+    }
   }
 
   return TEST_COMPLETED;
