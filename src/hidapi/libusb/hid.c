@@ -259,8 +259,16 @@ static int get_usage(uint8_t *report_descriptor, size_t size,
 			//printf("Usage Page: %x\n", (uint32_t)*usage_page);
 		}
 		if (key_cmd == 0x8) {
-			*usage = get_bytes(report_descriptor, size, data_len, i);
-			usage_found = 1;
+			if (data_len == 4) { /* Usages 5.5 / Usage Page 6.2.2.7 */
+				*usage_page = get_bytes(report_descriptor, size, 2, i + 2);
+				usage_page_found = 1;
+				*usage = get_bytes(report_descriptor, size, 2, i);
+				usage_found = 1;
+			}
+			else {
+				*usage = get_bytes(report_descriptor, size, data_len, i);
+				usage_found = 1;
+			}
 			//printf("Usage: %x\n", (uint32_t)*usage);
 		}
 

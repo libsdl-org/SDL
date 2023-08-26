@@ -206,7 +206,7 @@ static wchar_t *copy_udev_string(struct udev_device *dev, const char *udev_name)
  * Returns 1 if successful, 0 if an invalid key
  * Sets data_len and key_size when successful
  */
-static int get_hid_item_size(__u8 *report_descriptor, unsigned int pos, __u32 size, int *data_len, int *key_size)
+static int get_hid_item_size(const __u8 *report_descriptor, __u32 size, unsigned int pos, int *data_len, int *key_size)
 {
 	int key = report_descriptor[pos];
 	int size_code;
@@ -262,7 +262,7 @@ static int get_hid_item_size(__u8 *report_descriptor, unsigned int pos, __u32 si
  * Get bytes from a HID Report Descriptor.
  * Only call with a num_bytes of 0, 1, 2, or 4.
  */
-static __u32 get_hid_report_bytes(__u8 *rpt, size_t len, size_t num_bytes, size_t cur)
+static __u32 get_hid_report_bytes(const __u8 *rpt, size_t len, size_t num_bytes, size_t cur)
 {
 	/* Return if there aren't enough bytes. */
 	if (cur + num_bytes >= len)
@@ -286,6 +286,60 @@ static __u32 get_hid_report_bytes(__u8 *rpt, size_t len, size_t num_bytes, size_
 }
 
 /*
+ * Iterates until the end of a Collection.
+ * Assumes that *pos is exactly at the beginning of a Collection.
+ * Skips all nested Collection, i.e. iterates until the end of current level Collection.
+ *
+ * The return value is non-0 when an end of current Collection is found,
+ * 0 when error is occured (broken Descriptor, end of a Collection is found before its begin,
+ *  or no Collection is found at all).
+ */
+static int hid_iterate_over_collection(const __u8 *report_descriptor, __u32 size, unsigned int *pos, int *data_len, int *key_size)
+{
+	int collection_level = 0;
+
+	while (*pos < size) {
+		int key = report_descriptor[*pos];
+		int key_cmd = key & 0xfc;
+
+		/* Determine data_len and key_size */
+		if (!get_hid_item_size(report_descriptor, size, *pos, data_len, key_size))
+			return 0; /* malformed report */
+
+		switch (key_cmd) {
+		case 0xa0: /* Collection 6.2.2.4 (Main) */
+			collection_level++;
+			break;
+		case 0xc0: /* End Collection 6.2.2.4 (Main) */
+			collection_level--;
+			break;
+		}
+
+		if (collection_level < 0) {
+			/* Broken descriptor or someone is using this function wrong,
+			 * i.e. should be called exactly at the collection start */
+			return 0;
+		}
+
+		if (collection_level == 0) {
+			/* Found it!
+			 * Also possible when called not at the collection start, but should not happen if used correctly */
+			return 1;
+		}
+
+		*pos += *data_len + *key_size;
+	}
+
+	return 0; /* Did not find the end of a Collection */
+}
+
+struct hid_usage_iterator {
+	unsigned int pos;
+	int usage_page_found;
+	unsigned short usage_page;
+};
+
+/*
  * Retrieves the device's Usage Page and Usage from the report descriptor.
  * The algorithm returns the current Usage Page/Usage pair whenever a new
  * Collection is found and a Usage Local Item is currently in scope.
@@ -302,63 +356,64 @@ static __u32 get_hid_report_bytes(__u8 *rpt, size_t len, size_t num_bytes, size_
  * 1 when finished processing descriptor.
  * -1 on a malformed report.
  */
-static int get_next_hid_usage(__u8 *report_descriptor, __u32 size, unsigned int *pos, unsigned short *usage_page, unsigned short *usage)
+static int get_next_hid_usage(const __u8 *report_descriptor, __u32 size, struct hid_usage_iterator *ctx, unsigned short *usage_page, unsigned short *usage)
 {
 	int data_len, key_size;
-	int initial = *pos == 0; /* Used to handle case where no top-level application collection is defined */
-	int usage_pair_ready = 0;
+	int initial = ctx->pos == 0; /* Used to handle case where no top-level application collection is defined */
 
-	/* Usage is a Local Item, it must be set before each Main Item (Collection) before a pair is returned */
 	int usage_found = 0;
 
-	while (*pos < size) {
-		int key = report_descriptor[*pos];
+	while (ctx->pos < size) {
+		int key = report_descriptor[ctx->pos];
 		int key_cmd = key & 0xfc;
 
 		/* Determine data_len and key_size */
-		if (!get_hid_item_size(report_descriptor, *pos, size, &data_len, &key_size))
+		if (!get_hid_item_size(report_descriptor, size, ctx->pos, &data_len, &key_size))
 			return -1; /* malformed report */
 
 		switch (key_cmd) {
 		case 0x4: /* Usage Page 6.2.2.7 (Global) */
-			*usage_page = get_hid_report_bytes(report_descriptor, size, data_len, *pos);
+			ctx->usage_page = get_hid_report_bytes(report_descriptor, size, data_len, ctx->pos);
+			ctx->usage_page_found = 1;
 			break;
 
 		case 0x8: /* Usage 6.2.2.8 (Local) */
-			*usage = get_hid_report_bytes(report_descriptor, size, data_len, *pos);
-			usage_found = 1;
+			if (data_len == 4) { /* Usages 5.5 / Usage Page 6.2.2.7 */
+				ctx->usage_page = get_hid_report_bytes(report_descriptor, size, 2, ctx->pos + 2);
+				ctx->usage_page_found = 1;
+				*usage = get_hid_report_bytes(report_descriptor, size, 2, ctx->pos);
+				usage_found = 1;
+			}
+			else {
+				*usage = get_hid_report_bytes(report_descriptor, size, data_len, ctx->pos);
+				usage_found = 1;
+			}
 			break;
 
 		case 0xa0: /* Collection 6.2.2.4 (Main) */
-			/* A Usage Item (Local) must be found for the pair to be valid */
-			if (usage_found)
-				usage_pair_ready = 1;
+			if (!hid_iterate_over_collection(report_descriptor, size, &ctx->pos, &data_len, &key_size)) {
+				return -1;
+			}
 
-			/* Usage is a Local Item, unset it */
-			usage_found = 0;
-			break;
+			/* A pair is valid - to be reported when Collection is found */
+			if (usage_found && ctx->usage_page_found) {
+				*usage_page = ctx->usage_page;
+				return 0;
+			}
 
-		case 0x80: /* Input 6.2.2.4 (Main) */
-		case 0x90: /* Output 6.2.2.4 (Main) */
-		case 0xb0: /* Feature 6.2.2.4 (Main) */
-		case 0xc0: /* End Collection 6.2.2.4 (Main) */
-			/* Usage is a Local Item, unset it */
-			usage_found = 0;
 			break;
 		}
 
 		/* Skip over this key and its associated data */
-		*pos += data_len + key_size;
-
-		/* Return usage pair */
-		if (usage_pair_ready)
-			return 0;
+		ctx->pos += data_len + key_size;
 	}
 
 	/* If no top-level application collection is found and usage page/usage pair is found, pair is valid
 	   https://docs.microsoft.com/en-us/windows-hardware/drivers/hid/top-level-collections */
-	if (initial && usage_found)
-		return 0; /* success */
+	if (initial && usage_found && ctx->usage_page_found) {
+			*usage_page = ctx->usage_page;
+			return 0; /* success */
+	}
 
 	return 1; /* finished processing */
 }
@@ -804,12 +859,14 @@ static struct hid_device_info * create_device_info_for_device(struct udev_device
 	result = get_hid_report_descriptor_from_sysfs(sysfs_path, &report_desc);
 	if (result >= 0) {
 		unsigned short page = 0, usage = 0;
-		unsigned int pos = 0;
+		struct hid_usage_iterator usage_iterator;
+		memset(&usage_iterator, 0, sizeof(usage_iterator));
+
 		/*
 		 * Parse the first usage and usage page
 		 * out of the report descriptor.
 		 */
-		if (!get_next_hid_usage(report_desc.value, report_desc.size, &pos, &page, &usage)) {
+		if (!get_next_hid_usage(report_desc.value, report_desc.size, &usage_iterator, &page, &usage)) {
 			cur_dev->usage_page = page;
 			cur_dev->usage = usage;
 		}
@@ -818,7 +875,7 @@ static struct hid_device_info * create_device_info_for_device(struct udev_device
 		 * Parse any additional usage and usage pages
 		 * out of the report descriptor.
 		 */
-		while (!get_next_hid_usage(report_desc.value, report_desc.size, &pos, &page, &usage)) {
+		while (!get_next_hid_usage(report_desc.value, report_desc.size, &usage_iterator, &page, &usage)) {
 			/* Create new record for additional usage pairs */
 			struct hid_device_info *tmp = (struct hid_device_info*) calloc(1, sizeof(struct hid_device_info));
 			struct hid_device_info *prev_dev = cur_dev;
@@ -980,9 +1037,10 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 
 		struct hidraw_report_descriptor report_desc;
 		unsigned short page = 0, usage = 0;
-		unsigned int pos = 0;
 		if (get_hid_report_descriptor_from_sysfs(sysfs_path, &report_desc) >= 0) {
-			get_next_hid_usage(report_desc.value, report_desc.size, &pos, &page, &usage);
+			struct hid_usage_iterator usage_iterator;
+			memset(&usage_iterator, 0, sizeof(usage_iterator));
+			get_next_hid_usage(report_desc.value, report_desc.size, &usage_iterator, &page, &usage);
 		}
 		if (HIDAPI_IGNORE_DEVICE(bus_type, dev_vid, dev_pid, page, usage)) {
 			continue;
