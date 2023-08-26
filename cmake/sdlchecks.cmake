@@ -1029,7 +1029,14 @@ macro(CheckHIDAPI)
       if(PC_LIBUSB_FOUND)
         cmake_push_check_state()
         list(APPEND CMAKE_REQUIRED_INCLUDES ${PC_LIBUSB_INCLUDE_DIRS})
-        check_include_file(libusb.h HAVE_LIBUSB_H)
+        list(APPEND CMAKE_REQUIRED_LIBRARIES PkgConfig::PC_LIBUSB)
+        check_c_source_compiles("
+          #include <stddef.h>
+          #include <libusb.h>
+          int main(int argc, char **argv) {
+            libusb_close(NULL);
+            return 0;
+          }" HAVE_LIBUSB_H)
         cmake_pop_check_state()
         if(HAVE_LIBUSB_H)
           set(HAVE_LIBUSB TRUE)
