@@ -2435,7 +2435,6 @@ void SDLTest_CommonQuit(SDLTest_CommonState *state)
     common_usage_audio = NULL;
     common_usage_videoaudio = NULL;
 
-    SDL_free(state->windows);
     if (state->targets) {
         for (i = 0; i < state->num_windows; ++i) {
             if (state->targets[i]) {
@@ -2451,6 +2450,12 @@ void SDLTest_CommonQuit(SDLTest_CommonState *state)
             }
         }
         SDL_free(state->renderers);
+    }
+    if (state->windows) {
+        for (i = 0; i < state->num_windows; i++) {
+            SDL_DestroyWindow(state->windows[i]);
+        }
+        SDL_free(state->windows);
     }
     if (state->flags & SDL_INIT_VIDEO) {
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
