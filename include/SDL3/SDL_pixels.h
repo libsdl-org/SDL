@@ -93,7 +93,8 @@ typedef enum
     SDL_ARRAYORDER_RGB,
     SDL_ARRAYORDER_UNUSED1, /* Left for compatibility with SDL2 */
     SDL_ARRAYORDER_UNUSED2, /* Left for compatibility with SDL2 */
-    SDL_ARRAYORDER_BGR
+    SDL_ARRAYORDER_BGR,
+    SDL_ARRAYORDER_R,
 } SDL_ArrayOrder;
 
 /** Packed component layout. */
@@ -295,7 +296,12 @@ typedef enum
     SDL_PIXELFORMAT_NV21 =      /**< Planar mode: Y + V/U interleaved  (2 planes) */
         SDL_DEFINE_PIXELFOURCC('N', 'V', '2', '1'),
     SDL_PIXELFORMAT_EXTERNAL_OES =      /**< Android video texture format */
-        SDL_DEFINE_PIXELFOURCC('O', 'E', 'S', ' ')
+        SDL_DEFINE_PIXELFOURCC('O', 'E', 'S', ' '),
+
+    SDL_PIXELFORMAT_R16  = SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_R, 0, 16, 2),
+    SDL_PIXELFORMAT_R32  = SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU32, SDL_ARRAYORDER_R, 0, 32, 4),
+    SDL_PIXELFORMAT_RF16 = SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_R, 0, 16, 2),
+    SDL_PIXELFORMAT_RF32 = SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_R, 0, 32, 4),
 } SDL_PixelFormatEnum;
 
 /**

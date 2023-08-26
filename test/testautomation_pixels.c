@@ -46,7 +46,11 @@ static const Uint32 g_AllFormats[] = {
     SDL_PIXELFORMAT_UYVY,
     SDL_PIXELFORMAT_YVYU,
     SDL_PIXELFORMAT_NV12,
-    SDL_PIXELFORMAT_NV21
+    SDL_PIXELFORMAT_NV21,
+    SDL_PIXELFORMAT_R16,
+    SDL_PIXELFORMAT_R32,
+    SDL_PIXELFORMAT_RF16,
+    SDL_PIXELFORMAT_RF32,
 };
 static const int g_numAllFormats = SDL_arraysize(g_AllFormats);
 
@@ -88,7 +92,11 @@ static const char *g_AllFormatsVerbose[] = {
     "SDL_PIXELFORMAT_UYVY",
     "SDL_PIXELFORMAT_YVYU",
     "SDL_PIXELFORMAT_NV12",
-    "SDL_PIXELFORMAT_NV21"
+    "SDL_PIXELFORMAT_NV21",
+    "SDL_PIXELFORMAT_R16",
+    "SDL_PIXELFORMAT_R32",
+    "SDL_PIXELFORMAT_RF16",
+    "SDL_PIXELFORMAT_RF32",
 };
 
 /* Definition of some invalid formats for negative tests */

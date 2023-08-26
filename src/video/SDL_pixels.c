@@ -125,6 +125,10 @@ const char *SDL_GetPixelFormatName(Uint32 format)
         CASE(SDL_PIXELFORMAT_YVYU)
         CASE(SDL_PIXELFORMAT_NV12)
         CASE(SDL_PIXELFORMAT_NV21)
+        CASE(SDL_PIXELFORMAT_R16)
+        CASE(SDL_PIXELFORMAT_R32)
+        CASE(SDL_PIXELFORMAT_RF16)
+        CASE(SDL_PIXELFORMAT_RF32)
         CASE(SDL_PIXELFORMAT_EXTERNAL_OES)
 
     default:
@@ -184,6 +188,20 @@ SDL_bool SDL_GetMasksForPixelFormatEnum(Uint32 format, int *bpp, Uint32 *Rmask,
         *Gmask = 0x0000FF00;
         *Bmask = 0x000000FF;
 #endif
+        return SDL_TRUE;
+    }
+
+    if (format == SDL_PIXELFORMAT_R16 || format == SDL_PIXELFORMAT_RF16) {
+        *Rmask = 0x0000FFFF;
+        *Gmask = 0x00000000;
+        *Bmask = 0x00000000;
+        return SDL_TRUE;
+    }
+
+    if (format == SDL_PIXELFORMAT_R32 || format == SDL_PIXELFORMAT_RF32) {
+        *Rmask = 0xFFFFFFFF;
+        *Gmask = 0x00000000;
+        *Bmask = 0x00000000;
         return SDL_TRUE;
     }
 
