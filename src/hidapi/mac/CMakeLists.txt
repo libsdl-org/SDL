@@ -12,7 +12,7 @@ find_package(Threads REQUIRED)
 target_link_libraries(hidapi_darwin
     PUBLIC hidapi_include
     PRIVATE Threads::Threads
-    PRIVATE "-framework IOKit" "-framework CoreFoundation" "-framework AppKit"
+    PRIVATE "-framework IOKit" "-framework CoreFoundation"
 )
 
 set_target_properties(hidapi_darwin
