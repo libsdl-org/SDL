@@ -103,6 +103,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           ${{ matrix.platform.cmake }}
     - name: Build (CMake)
+      id: build
       run: |
         ${{ matrix.platform.source_cmd }}
         cmake --build build/ --config Release --verbose --parallel
@@ -123,6 +124,7 @@ jobs:
         cmake --install build/ --config Release
         ( cd cmake_prefix; find . ) | LC_ALL=C sort -u
     - name: Package (CPack)
+      if: ${{ always() && steps.build.outcome == 'success' }}
       run: |
         cmake --build build/ --config Release --target package
     - name: Verify CMake configuration files
@@ -141,6 +143,7 @@ jobs:
         export PKG_CONFIG_PATH=$(echo "${{ github.workspace }}/cmake_prefix/lib/pkgconfig" | sed  -e 's#\\#/#g')
         cmake/test/test_pkgconfig.sh
     - uses: actions/upload-artifact@v3
+      if: ${{ always() && steps.build.outcome == 'success' }}
       with:
         if-no-files-found: error
         name: ${{ matrix.platform.artifact }}

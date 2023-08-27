@@ -57,7 +57,9 @@ jobs:
         ${{ matrix.platform.flags }} `
         -DCMAKE_INSTALL_PREFIX=prefix
     - name: Build (CMake)
-      run: cmake --build build/ --config Release --parallel
+      id: build
+      run: |
+        cmake --build build/ --config Release --parallel
     - name: Run build-time tests
       if: ${{ !matrix.platform.notests }}
       run: |
@@ -68,6 +70,7 @@ jobs:
         echo "SDL3_DIR=$Env:GITHUB_WORKSPACE/prefix" >> $Env:GITHUB_ENV
         cmake --install build/
     - name: Package (CPack)
+      if: ${{ always() && steps.build.outcome == 'success' }}
       run: |
         cmake --build build/ --config Release --target PACKAGE
     - name: Verify CMake configuration files
@@ -84,6 +87,7 @@ jobs:
       if: ${{ matrix.platform.project != '' }}
       run: msbuild ${{ matrix.platform.project }} /m /p:BuildInParallel=true /p:Configuration=Release ${{ matrix.platform.projectflags }}
     - uses: actions/upload-artifact@v3
+      if: ${{ always() && steps.build.outcome == 'success' }}
       with:
         if-no-files-found: error
         name: ${{ matrix.platform.artifact }}
