@@ -634,7 +634,7 @@ void SDL_QuitAudio(void)
     SDL_AtomicSet(&current_audio.output_device_count, 0);
     SDL_AtomicSet(&current_audio.capture_device_count, 0);
     SDL_UnlockRWLock(current_audio.device_list_lock);
-    
+
     // mark all devices for shutdown so all threads can begin to terminate.
     for (SDL_AudioDevice *i = devices; i != NULL; i = i->next) {
         SDL_AtomicSet(&i->shutdown, 1);
@@ -926,7 +926,7 @@ static SDL_LogicalAudioDevice *ObtainLogicalAudioDevice(SDL_AudioDeviceID devid)
     }
 
     if (!logdev) {
-        SDL_SetError("Invalid audio device instance ID");
+        SDL_SetError("Invalid logical audio device instance ID");
     }
 
     return logdev;
@@ -968,7 +968,7 @@ static SDL_AudioDevice *ObtainPhysicalAudioDevice(SDL_AudioDeviceID devid)
     SDL_UnlockRWLock(current_audio.device_list_lock);
 
     if (!dev) {
-        SDL_SetError("Invalid audio device instance ID");
+        SDL_SetError("Invalid physical audio device instance ID");
     }
 
     return dev;
