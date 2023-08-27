@@ -1552,9 +1552,9 @@ SDL_AudioStream *SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_Au
     if (callback) {
         int rc;
         if (iscapture) {
-            rc = SDL_SetAudioStreamGetCallback(stream, callback, userdata);
-        } else {
             rc = SDL_SetAudioStreamPutCallback(stream, callback, userdata);
+        } else {
+            rc = SDL_SetAudioStreamGetCallback(stream, callback, userdata);
         }
         SDL_assert(rc == 0);  // should only fail if stream==NULL atm.
     }
