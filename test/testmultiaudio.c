@@ -66,7 +66,7 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
         if ((stream = SDL_OpenAudioDeviceStream(devices[i], &spec, NULL, NULL)) == NULL) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Audio stream creation failed: %s", SDL_GetError());
         } else {
-            SDL_ResumeAudioDevice(SDL_GetAudioStreamBinding(stream));
+            SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
             SDL_PutAudioStreamData(stream, sound, soundlen);
             SDL_FlushAudioStream(stream);
 #ifdef __EMSCRIPTEN__
@@ -107,7 +107,7 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
         /* try to start all the devices about the same time. SDL does not guarantee sync across physical devices. */
         for (i = 0; i < devcount; i++) {
             if (streams[i]) {
-                SDL_ResumeAudioDevice(SDL_GetAudioStreamBinding(streams[i]));
+                SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(streams[i]));
             }
         }
 

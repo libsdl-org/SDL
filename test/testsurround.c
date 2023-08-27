@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_OpenAudioDeviceStream() failed: %s\n", SDL_GetError());
             continue;
         }
-        SDL_ResumeAudioDevice(SDL_GetAudioStreamBinding(stream));
+        SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
 
         for (j = 0; j < total_channels; j++) {
             const int sine_freq = is_lfe_channel(j, total_channels) ? LFE_SINE_FREQ_HZ : SINE_FREQ_HZ;

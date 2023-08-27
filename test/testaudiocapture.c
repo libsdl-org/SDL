@@ -28,8 +28,8 @@ static int done = 0;
 
 static void loop(void)
 {
-    const SDL_AudioDeviceID devid_in = SDL_GetAudioStreamBinding(stream_in);
-    const SDL_AudioDeviceID devid_out = SDL_GetAudioStreamBinding(stream_out);
+    const SDL_AudioDeviceID devid_in = SDL_GetAudioStreamDevice(stream_in);
+    const SDL_AudioDeviceID devid_out = SDL_GetAudioStreamDevice(stream_out);
     SDL_bool please_quit = SDL_FALSE;
     SDL_Event e;
 
