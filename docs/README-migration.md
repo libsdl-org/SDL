@@ -94,7 +94,7 @@ In SDL2, you might have done something like this to play audio...
     /* ...somewhere near startup... */
     const SDL_AudioSpec spec = { SDL_AUDIO_S16, 2, 44100 };
     SDL_AudioStream *stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &spec, MyAudioCallback, &my_audio_callback_user_data);
-    SDL_ResumeAudioDevice(SDL_GetAudioStreamBinding(stream));
+    SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
 ```
 
 If you used SDL_QueueAudio instead of a callback in SDL2, this is also straightforward.
@@ -103,7 +103,7 @@ If you used SDL_QueueAudio instead of a callback in SDL2, this is also straightf
     /* ...somewhere near startup... */
     const SDL_AudioSpec spec = { SDL_AUDIO_S16, 2, 44100 };
     SDL_AudioStream *stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &spec, NULL, NULL);
-    SDL_ResumeAudioDevice(SDL_GetAudioStreamBinding(stream));
+    SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
 
     /* ...in your main loop... */
     /* calculate a little more audio into `buf`, add it to `stream` */

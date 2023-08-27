@@ -72,7 +72,7 @@ open_audio(void)
         SDL_free(wave.sound);
         quit(2);
     }
-    SDL_ResumeAudioDevice(SDL_GetAudioStreamBinding(stream));
+    SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
 }
 
 

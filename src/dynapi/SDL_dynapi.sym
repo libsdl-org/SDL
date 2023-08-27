@@ -886,7 +886,7 @@ SDL3_0.0.0 {
     SDL_PauseAudioDevice;
     SDL_ResumeAudioDevice;
     SDL_IsAudioDevicePaused;
-    SDL_GetAudioStreamBinding;
+    SDL_GetAudioStreamDevice;
     SDL_ShowWindowSystemMenu;
     SDL_ReadS16LE;
     SDL_ReadS16BE;

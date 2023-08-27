@@ -1498,7 +1498,7 @@ void SDL_UnbindAudioStream(SDL_AudioStream *stream)
     SDL_UnbindAudioStreams(&stream, 1);
 }
 
-SDL_AudioDeviceID SDL_GetAudioStreamBinding(SDL_AudioStream *stream)
+SDL_AudioDeviceID SDL_GetAudioStreamDevice(SDL_AudioStream *stream)
 {
     SDL_AudioDeviceID retval = 0;
     if (stream) {

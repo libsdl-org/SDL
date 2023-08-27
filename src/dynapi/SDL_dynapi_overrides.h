@@ -911,7 +911,7 @@
 #define SDL_PauseAudioDevice SDL_PauseAudioDevice_REAL
 #define SDL_ResumeAudioDevice SDL_ResumeAudioDevice_REAL
 #define SDL_IsAudioDevicePaused SDL_IsAudioDevicePaused_REAL
-#define SDL_GetAudioStreamBinding SDL_GetAudioStreamBinding_REAL
+#define SDL_GetAudioStreamDevice SDL_GetAudioStreamDevice_REAL
 #define SDL_ShowWindowSystemMenu SDL_ShowWindowSystemMenu_REAL
 #define SDL_ReadS16LE SDL_ReadS16LE_REAL
 #define SDL_ReadS16BE SDL_ReadS16BE_REAL

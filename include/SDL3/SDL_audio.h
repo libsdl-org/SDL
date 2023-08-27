@@ -549,7 +549,7 @@ extern DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID devid);
  * \sa SDL_BindAudioStreams
  * \sa SDL_UnbindAudioStreams
  * \sa SDL_UnbindAudioStream
- * \sa SDL_GetAudioStreamBinding
+ * \sa SDL_GetAudioStreamDevice
  */
 extern DECLSPEC int SDLCALL SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int num_streams);
 
@@ -571,7 +571,7 @@ extern DECLSPEC int SDLCALL SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_Au
  * \sa SDL_BindAudioStreams
  * \sa SDL_UnbindAudioStreams
  * \sa SDL_UnbindAudioStream
- * \sa SDL_GetAudioStreamBinding
+ * \sa SDL_GetAudioStreamDevice
  */
 extern DECLSPEC int SDLCALL SDL_BindAudioStream(SDL_AudioDeviceID devid, SDL_AudioStream *stream);
 
@@ -595,7 +595,7 @@ extern DECLSPEC int SDLCALL SDL_BindAudioStream(SDL_AudioDeviceID devid, SDL_Aud
  * \sa SDL_BindAudioStreams
  * \sa SDL_BindAudioStream
  * \sa SDL_UnbindAudioStream
- * \sa SDL_GetAudioStreamBinding
+ * \sa SDL_GetAudioStreamDevice
  */
 extern DECLSPEC void SDLCALL SDL_UnbindAudioStreams(SDL_AudioStream **streams, int num_streams);
 
@@ -614,7 +614,7 @@ extern DECLSPEC void SDLCALL SDL_UnbindAudioStreams(SDL_AudioStream **streams, i
  * \sa SDL_BindAudioStream
  * \sa SDL_BindAudioStreams
  * \sa SDL_UnbindAudioStreams
- * \sa SDL_GetAudioStreamBinding
+ * \sa SDL_GetAudioStreamDevice
  */
 extern DECLSPEC void SDLCALL SDL_UnbindAudioStream(SDL_AudioStream *stream);
 
@@ -638,7 +638,7 @@ extern DECLSPEC void SDLCALL SDL_UnbindAudioStream(SDL_AudioStream *stream);
  * \sa SDL_UnbindAudioStream
  * \sa SDL_UnbindAudioStreams
  */
-extern DECLSPEC SDL_AudioDeviceID SDLCALL SDL_GetAudioStreamBinding(SDL_AudioStream *stream);
+extern DECLSPEC SDL_AudioDeviceID SDLCALL SDL_GetAudioStreamDevice(SDL_AudioStream *stream);
 
 
 /**
