@@ -910,12 +910,12 @@ extern DECLSPEC int SDLCALL SDL_UnlockAudioStream(SDL_AudioStream *stream);
  * manage the lock explicitly.
  *
  * \param stream The SDL audio stream associated with this callback.
- * \param approx_request The _approximate_ amout of data, in bytes, that is requested.
+ * \param approx_amount The _approximate_ amount of data, in bytes, that is requested or available.
  *                       This might be slightly overestimated due to buffering or
- *                       resampling, and may change from call to call anyhow.
+ *                       resampling, and may change from call to call.
  * \param userdata An opaque pointer provided by the app for their personal use.
  */
-typedef void (SDLCALL *SDL_AudioStreamRequestCallback)(SDL_AudioStream *stream, int approx_request, void *userdata);
+typedef void (SDLCALL *SDL_AudioStreamCallback)(void *userdata, SDL_AudioStream *stream, int approx_amount);
 
 /**
  * Set a callback that runs when data is requested from an audio stream.
@@ -960,7 +960,7 @@ typedef void (SDLCALL *SDL_AudioStreamRequestCallback)(SDL_AudioStream *stream, 
  *
  * \sa SDL_SetAudioStreamPutCallback
  */
-extern DECLSPEC int SDLCALL SDL_SetAudioStreamGetCallback(SDL_AudioStream *stream, SDL_AudioStreamRequestCallback callback, void *userdata);
+extern DECLSPEC int SDLCALL SDL_SetAudioStreamGetCallback(SDL_AudioStream *stream, SDL_AudioStreamCallback callback, void *userdata);
 
 /**
  * Set a callback that runs when data is added to an audio stream.
@@ -1008,7 +1008,7 @@ extern DECLSPEC int SDLCALL SDL_SetAudioStreamGetCallback(SDL_AudioStream *strea
  *
  * \sa SDL_SetAudioStreamGetCallback
  */
-extern DECLSPEC int SDLCALL SDL_SetAudioStreamPutCallback(SDL_AudioStream *stream, SDL_AudioStreamRequestCallback callback, void *userdata);
+extern DECLSPEC int SDLCALL SDL_SetAudioStreamPutCallback(SDL_AudioStream *stream, SDL_AudioStreamCallback callback, void *userdata);
 
 
 /**
@@ -1080,7 +1080,7 @@ extern DECLSPEC void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *stream);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_AudioStream *SDLCALL SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec, SDL_AudioStreamRequestCallback callback, void *userdata);
+extern DECLSPEC SDL_AudioStream *SDLCALL SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec, SDL_AudioStreamCallback callback, void *userdata);
 
 /**
  * Load the audio data of a WAVE file into memory.

@@ -159,9 +159,9 @@ struct SDL_AudioStream
     SDL_DataQueue *queue;
     SDL_Mutex *lock;  // this is just a copy of `queue`'s mutex. We share a lock.
 
-    SDL_AudioStreamRequestCallback get_callback;
+    SDL_AudioStreamCallback get_callback;
     void *get_callback_userdata;
-    SDL_AudioStreamRequestCallback put_callback;
+    SDL_AudioStreamCallback put_callback;
     void *put_callback_userdata;
 
     Uint8 *work_buffer;    // used for scratch space during data conversion/resampling.

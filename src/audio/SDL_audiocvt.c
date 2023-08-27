@@ -777,7 +777,7 @@ SDL_AudioStream *SDL_CreateAudioStream(const SDL_AudioSpec *src_spec, const SDL_
     return retval;
 }
 
-int SDL_SetAudioStreamGetCallback(SDL_AudioStream *stream, SDL_AudioStreamRequestCallback callback, void *userdata)
+int SDL_SetAudioStreamGetCallback(SDL_AudioStream *stream, SDL_AudioStreamCallback callback, void *userdata)
 {
     if (!stream) {
         return SDL_InvalidParamError("stream");
@@ -789,7 +789,7 @@ int SDL_SetAudioStreamGetCallback(SDL_AudioStream *stream, SDL_AudioStreamReques
     return 0;
 }
 
-int SDL_SetAudioStreamPutCallback(SDL_AudioStream *stream, SDL_AudioStreamRequestCallback callback, void *userdata)
+int SDL_SetAudioStreamPutCallback(SDL_AudioStream *stream, SDL_AudioStreamCallback callback, void *userdata)
 {
     if (!stream) {
         return SDL_InvalidParamError("stream");
@@ -894,7 +894,7 @@ int SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
     if (stream->put_callback) {
         const int newavail = SDL_GetAudioStreamAvailable(stream) - prev_available;
         if (newavail > 0) {   // don't call the callback if we can't actually offer new data (still filling future buffer, only added 1 frame but downsampling needs more to produce new sound, etc).
-            stream->put_callback(stream, newavail, stream->put_callback_userdata);
+            stream->put_callback(stream->put_callback_userdata, stream, newavail);
         }
     }
 
@@ -948,7 +948,7 @@ static void UpdateStreamHistoryBuffer(SDL_AudioStream* stream, Uint8* input_buff
         SDL_assert(padding_bytes <= history_bytes);
         SDL_memcpy(left_padding, history_buffer + history_bytes - padding_bytes, padding_bytes);
     }
-    
+
     // Update the history buffer using the new input data
     if (input_bytes >= history_bytes) {
         SDL_memcpy(history_buffer, input_buffer + (input_bytes - history_bytes), history_bytes);
@@ -1056,7 +1056,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
     //
     // ResampleAudio also requires an additional buffer if it can't write straight to the output:
     //   resample_frame_size * output_frames
-    // 
+    //
     // Note, ConvertAudio requires (num_frames * max_sample_frame_size) of scratch space
     const int work_buffer_frames = input_frames + (resampler_padding_frames * 2);
     int work_buffer_capacity = work_buffer_frames * max_sample_frame_size;
@@ -1121,7 +1121,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int le
         SDL_assert(stream->flushed);
         SDL_memset(right_padding + right_padding_bytes, SDL_GetSilenceValueForFormat(src_format), padding_bytes - right_padding_bytes);
     }
-    
+
     SDL_assert(work_buffer_frames == input_frames + (resampler_padding_frames * 2));
 
     // Resampling! get the work buffer to float32 format, etc, in-place.
@@ -1186,7 +1186,7 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
         const int already_have = SDL_GetAudioStreamAvailable(stream);
         approx_request -= SDL_min(approx_request, already_have);  // we definitely have this much output already packed in.
         if (approx_request > 0) {  // don't call the callback if we can satisfy this request with existing data.
-            stream->get_callback(stream, approx_request, stream->get_callback_userdata);
+            stream->get_callback(stream->get_callback_userdata, stream, approx_request);
         }
     }
 

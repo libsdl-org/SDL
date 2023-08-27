@@ -1511,7 +1511,7 @@ SDL_AudioDeviceID SDL_GetAudioStreamDevice(SDL_AudioStream *stream)
     return retval;
 }
 
-SDL_AudioStream *SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec, SDL_AudioStreamRequestCallback callback, void *userdata)
+SDL_AudioStream *SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec, SDL_AudioStreamCallback callback, void *userdata)
 {
     SDL_AudioDeviceID logdevid = SDL_OpenAudioDevice(devid, spec);
     if (!logdevid) {
