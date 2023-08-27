@@ -717,6 +717,9 @@ static int audio_convertAudio(void *arg)
                             return TEST_ABORTED;
                         }
 
+                        real_dst_len = SDL_GetAudioStreamAvailable(stream);
+                        SDLTest_AssertCheck(0 == real_dst_len, "Verify available (pre-put); expected: %i; got: %i", 0, real_dst_len);
+
                         /* Run the audio converter */
                         if (SDL_PutAudioStreamData(stream, src_buf, src_len) < 0 ||
                                 SDL_FlushAudioStream(stream) < 0) {
@@ -724,7 +727,7 @@ static int audio_convertAudio(void *arg)
                         }
 
                         real_dst_len = SDL_GetAudioStreamAvailable(stream);
-                        SDLTest_AssertCheck(dst_len == real_dst_len, "Verify available; expected: %i; got: %i", dst_len, real_dst_len);
+                        SDLTest_AssertCheck(dst_len == real_dst_len, "Verify available (post-put); expected: %i; got: %i", dst_len, real_dst_len);
 
                         real_dst_len = SDL_GetAudioStreamData(stream, dst_buf, dst_len);
                         SDLTest_AssertCheck(dst_len == real_dst_len, "Verify result value; expected: %i; got: %i", dst_len, real_dst_len);
@@ -732,9 +735,12 @@ static int audio_convertAudio(void *arg)
                             return TEST_ABORTED;
                         }
 
+                        real_dst_len = SDL_GetAudioStreamAvailable(stream);
+                        SDLTest_AssertCheck(0 == real_dst_len, "Verify available (post-get); expected: %i; got: %i", 0, real_dst_len);
+
                         dst_silence = SDL_GetSilenceValueForFormat(spec2.format);
 
-                        for (m = 0; m < real_dst_len; ++m) {
+                        for (m = 0; m < dst_len; ++m) {
                             if (dst_buf[m] != dst_silence) {
                                 SDLTest_LogError("Output buffer is not silent");
                                 return TEST_ABORTED;
