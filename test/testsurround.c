@@ -96,7 +96,7 @@ static SDL_bool is_lfe_channel(int channel_index, int channel_count)
     return (channel_count == 3 && channel_index == 2) || (channel_count >= 6 && channel_index == 3);
 }
 
-static void SDLCALL fill_buffer(SDL_AudioStream *stream, int len, void *unused)
+static void SDLCALL fill_buffer(void *userdata, SDL_AudioStream *stream, int len)
 {
     const int samples = len / sizeof(Sint16);
     Sint16 *buffer = NULL;
