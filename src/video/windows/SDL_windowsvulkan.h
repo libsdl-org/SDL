@@ -29,10 +29,10 @@
 #ifndef SDL_windowsvulkan_h_
 #define SDL_windowsvulkan_h_
 
+#if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_WINDOWS)
+
 #include "../SDL_vulkan_internal.h"
 #include "../SDL_sysvideo.h"
-
-#if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_WINDOWS)
 
 int WIN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 void WIN_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);

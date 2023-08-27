@@ -28,6 +28,8 @@
 
 #if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_VIVANTE)
 
+#include "../SDL_vulkan_internal.h"
+
 #include "SDL_vivantevideo.h"
 
 #include "SDL_vivantevulkan.h"

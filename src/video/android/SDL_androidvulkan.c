@@ -28,6 +28,8 @@
 
 #if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_ANDROID)
 
+#include "../SDL_vulkan_internal.h"
+
 #include "SDL_androidvideo.h"
 #include "SDL_androidwindow.h"
 

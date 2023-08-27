@@ -28,6 +28,8 @@
 
 #if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_KMSDRM)
 
+#include "../SDL_vulkan_internal.h"
+
 #include "SDL_kmsdrmvideo.h"
 #include "SDL_kmsdrmdyn.h"
 #include "SDL_kmsdrmvulkan.h"

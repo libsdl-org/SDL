@@ -28,6 +28,8 @@
 
 #if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_WINDOWS)
 
+#include "../SDL_vulkan_internal.h"
+
 #include "SDL_windowsvideo.h"
 #include "SDL_windowswindow.h"
 

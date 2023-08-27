@@ -22,9 +22,10 @@
 
 #if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_X11)
 
+#include "../SDL_vulkan_internal.h"
+
 #include "SDL_x11video.h"
 
-#include "../SDL_vulkan_internal.h"
 #include "SDL_x11vulkan.h"
 
 #include <X11/Xlib.h>
