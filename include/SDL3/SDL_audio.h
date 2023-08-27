@@ -1033,19 +1033,19 @@ extern DECLSPEC void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *stream);
 /**
  * Convenience function for straightforward audio init for the common case.
  *
- * If all your app intends to do is provide a single source of PCM audio,
- * this function allows you to do all your audio setup in a single call.
+ * If all your app intends to do is provide a single source of PCM audio, this
+ * function allows you to do all your audio setup in a single call.
  *
  * This is intended to be a clean means to migrate apps from SDL2.
  *
  * This function will open an audio device, create a stream and bind it.
  * Unlike other methods of setup, the audio device will be closed when this
- * stream is destroyed, so the app can treat the returned SDL_AudioStream
- * as the only object needed to manage audio playback.
+ * stream is destroyed, so the app can treat the returned SDL_AudioStream as
+ * the only object needed to manage audio playback.
  *
- * Also unlike other functions, the audio device begins paused. This is
- * to map more closely to SDL2-style behavior, and since there is no extra
- * step here to bind a stream to begin audio flowing.
+ * Also unlike other functions, the audio device begins paused. This is to map
+ * more closely to SDL2-style behavior, and since there is no extra step here
+ * to bind a stream to begin audio flowing.
  *
  * This function works with both playback and capture devices.
  *
@@ -1062,18 +1062,19 @@ extern DECLSPEC void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *stream);
  * capturing). Otherwise, the callback will begin to fire once the device is
  * unpaused.
  *
- * \param devid an audio device to open, or SDL_AUDIO_DEVICE_DEFAULT_OUTPUT
- *              or SDL_AUDIO_DEVICE_DEFAULT_CAPTURE.
+ * \param devid an audio device to open, or SDL_AUDIO_DEVICE_DEFAULT_OUTPUT or
+ *              SDL_AUDIO_DEVICE_DEFAULT_CAPTURE.
  * \param spec the audio stream's data format. Required.
- * \param callback A callback where the app will provide new data for playback,
- *                 or receive new data for capture. Can be NULL, in which case
- *                 the app will need to call SDL_PutAudioStreamData or
- *                 SDL_GetAudioStreamData as necessary.
+ * \param callback A callback where the app will provide new data for
+ *                 playback, or receive new data for capture. Can be NULL, in
+ *                 which case the app will need to call SDL_PutAudioStreamData
+ *                 or SDL_GetAudioStreamData as necessary.
  * \param userdata App-controlled pointer passed to callback. Can be NULL.
  *                 Ignored if callback is NULL.
  * \returns an audio stream on success, ready to use. NULL on error; call
  *          SDL_GetError() for more information. When done with this stream,
- *          call SDL_DestroyAudioStream to free resources and close the device.
+ *          call SDL_DestroyAudioStream to free resources and close the
+ *          device.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
