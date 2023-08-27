@@ -69,7 +69,7 @@ static void iteration(void)
                 done = 1;
             }
         } else if (e.type == SDL_EVENT_AUDIO_DEVICE_ADDED) {
-            const SDL_AudioDeviceID which = (SDL_AudioDeviceID ) e.adevice.which;
+            const SDL_AudioDeviceID which = (SDL_AudioDeviceID) e.adevice.which;
             const SDL_bool iscapture = e.adevice.iscapture ? SDL_TRUE : SDL_FALSE;
             char *name = SDL_GetAudioDeviceName(which);
             if (name != NULL) {
@@ -80,20 +80,15 @@ static void iteration(void)
                 continue;
             }
             if (!iscapture) {
-                dev = SDL_OpenAudioDevice(which, &spec);
-                if (!dev) {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open '%s': %s\n", name, SDL_GetError());
+                SDL_AudioStream *stream = SDL_OpenAudioDeviceStream(which, &spec, NULL, NULL);
+                if (!stream) {
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to create/bind an audio stream to %u ('%s'): %s", (unsigned int) which, name, SDL_GetError());
                 } else {
-                    SDL_AudioStream *stream;
-                    SDL_Log("Opened '%s' as %u\n", name, (unsigned int)dev);
-                    stream = SDL_CreateAndBindAudioStream(dev, &spec);
-                    if (!stream) {
-                        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to create/bind an audio stream to %u ('%s'): %s", (unsigned int) dev, name, SDL_GetError());
-                        SDL_CloseAudioDevice(dev);
-                    }
+                    SDL_Log("Opened '%s' as %u\n", name, (unsigned int) which);
                     /* !!! FIXME: laziness, this used to loop the audio, but we'll just play it once for now on each connect. */
                     SDL_PutAudioStreamData(stream, sound, soundlen);
                     SDL_FlushAudioStream(stream);
+                    SDL_ResumeAudioDevice(SDL_GetAudioStreamBinding(stream));
                     /* !!! FIXME: this is leaking the stream for now. We'll wire it up to a dictionary or whatever later. */
                 }
             }
@@ -101,7 +96,7 @@ static void iteration(void)
         } else if (e.type == SDL_EVENT_AUDIO_DEVICE_REMOVED) {
             dev = (SDL_AudioDeviceID)e.adevice.which;
             SDL_Log("%s device %u removed.\n", devtypestr(e.adevice.iscapture), (unsigned int)dev);
-            SDL_CloseAudioDevice(dev);
+            /* !!! FIXME: we need to keep track of our streams and destroy them here. */
         }
     }
 }

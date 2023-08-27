@@ -34,7 +34,6 @@ static struct
     Uint32 soundpos;
 } wave;
 
-static SDL_AudioDeviceID device;
 static SDL_AudioStream *stream;
 
 static void fillerup(void)
@@ -58,30 +57,22 @@ quit(int rc)
 static void
 close_audio(void)
 {
-    if (device != 0) {
+    if (stream) {
         SDL_DestroyAudioStream(stream);
         stream = NULL;
-        SDL_CloseAudioDevice(device);
-        device = 0;
     }
 }
 
 static void
 open_audio(void)
 {
-    device = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &wave.spec);
-    if (!device) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open audio: %s\n", SDL_GetError());
-        SDL_free(wave.sound);
-        quit(2);
-    }
-    stream = SDL_CreateAndBindAudioStream(device, &wave.spec);
+    stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &wave.spec, NULL, NULL);
     if (!stream) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create audio stream: %s\n", SDL_GetError());
-        SDL_CloseAudioDevice(device);
         SDL_free(wave.sound);
         quit(2);
     }
+    SDL_ResumeAudioDevice(SDL_GetAudioStreamBinding(stream));
 }
 
 

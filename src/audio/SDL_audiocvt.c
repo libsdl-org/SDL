@@ -1281,7 +1281,14 @@ int SDL_ClearAudioStream(SDL_AudioStream *stream)
 void SDL_DestroyAudioStream(SDL_AudioStream *stream)
 {
     if (stream) {
-        SDL_UnbindAudioStream(stream);
+        const SDL_bool is_simplified = stream->is_simplified;
+        if (is_simplified) {
+            SDL_assert(stream->bound_device->is_simplified);
+            SDL_CloseAudioDevice(stream->bound_device->instance_id);  // this will unbind the stream.
+        } else {
+            SDL_UnbindAudioStream(stream);
+        }
+
         // do not destroy stream->lock! it's a copy of `stream->queue`'s mutex, so destroying the queue will handle it.
         SDL_DestroyDataQueue(stream->queue);
         SDL_aligned_free(stream->work_buffer);

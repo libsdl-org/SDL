@@ -1357,6 +1357,9 @@ int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int
         return SDL_SetError("Audio streams are bound to device ids from SDL_OpenAudioDevice, not raw physical devices");
     } else if ((logdev = ObtainLogicalAudioDevice(devid)) == NULL) {
         return -1;  // ObtainLogicalAudioDevice set the error message.
+    } else if (logdev->is_simplified) {
+        SDL_UnlockMutex(logdev->physical_device->lock);
+        return SDL_SetError("Cannot change stream bindings on device opened with SDL_OpenAudioDeviceStream");
     }
 
     // make sure start of list is sane.
@@ -1460,7 +1463,8 @@ void SDL_UnbindAudioStreams(SDL_AudioStream **streams, int num_streams)
     // everything is locked, start unbinding streams.
     for (int i = 0; i < num_streams; i++) {
         SDL_AudioStream *stream = streams[i];
-        if (stream && stream->bound_device) {
+        // don't allow unbinding from "simplified" devices (opened with SDL_OpenAudioDeviceStream). Just ignore them.
+        if (stream && stream->bound_device && !stream->bound_device->is_simplified) {
             if (stream->bound_device->bound_streams == stream) {
                 SDL_assert(stream->prev_binding == NULL);
                 stream->bound_device->bound_streams = stream->next_binding;
@@ -1507,33 +1511,55 @@ SDL_AudioDeviceID SDL_GetAudioStreamBinding(SDL_AudioStream *stream)
     return retval;
 }
 
-SDL_AudioStream *SDL_CreateAndBindAudioStream(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec)
+SDL_AudioStream *SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec, SDL_AudioStreamRequestCallback callback, void *userdata)
 {
-    const SDL_bool islogical = (devid & (1<<1)) ? SDL_FALSE : SDL_TRUE;
-    if (!islogical) {
-        SDL_SetError("Audio streams are bound to device ids from SDL_OpenAudioDevice, not raw physical devices");
-        return NULL;
+    SDL_AudioDeviceID logdevid = SDL_OpenAudioDevice(devid, spec);
+    if (!logdevid) {
+        return NULL;  // error string should already be set.
     }
+
+    SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(logdevid);
+    if (logdev == NULL) { // this shouldn't happen, but just in case.
+        SDL_CloseAudioDevice(logdevid);
+        return NULL;  // error string should already be set.
+    }
+
+    SDL_AudioDevice *physdevice = logdev->physical_device;
+    SDL_assert(physdevice != NULL);
+    SDL_UnlockMutex(physdevice->lock);  // we don't need to hold the lock for any of this.
+    const SDL_bool iscapture = physdevice->iscapture;
+
+    SDL_AtomicSet(&logdev->paused, 1);   // start the device paused, to match SDL2.
 
     SDL_AudioStream *stream = NULL;
-    SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid);
-    if (logdev) {
-        SDL_AudioDevice *device = logdev->physical_device;
-        if (device->iscapture) {
-            stream = SDL_CreateAudioStream(&device->spec, spec);
-        } else {
-            stream = SDL_CreateAudioStream(spec, &device->spec);
-        }
-
-        if (stream) {
-            if (SDL_BindAudioStream(devid, stream) == -1) {
-                SDL_DestroyAudioStream(stream);
-                stream = NULL;
-            }
-        }
-        SDL_UnlockMutex(device->lock);
+    if (iscapture) {
+        stream = SDL_CreateAudioStream(&physdevice->spec, spec);
+    } else {
+        stream = SDL_CreateAudioStream(spec, &physdevice->spec);
     }
-    return stream;
+
+    if (!stream) {
+        SDL_CloseAudioDevice(logdevid);
+    } else if (SDL_BindAudioStream(logdevid, stream) == -1) {
+        SDL_DestroyAudioStream(stream);
+        SDL_CloseAudioDevice(logdevid);
+        stream = NULL;
+    }
+
+    logdev->is_simplified = SDL_TRUE;  // forbid further binding changes on this logical device.
+    stream->is_simplified = SDL_TRUE;  // so we know to close the audio device when this is destroyed.
+
+    if (callback) {
+        int rc;
+        if (iscapture) {
+            rc = SDL_SetAudioStreamGetCallback(stream, callback, userdata);
+        } else {
+            rc = SDL_SetAudioStreamPutCallback(stream, callback, userdata);
+        }
+        SDL_assert(rc == 0);  // should only fail if stream==NULL atm.
+    }
+
+    return stream;   // ready to rock.
 }
 
 #define NUM_FORMATS 8
