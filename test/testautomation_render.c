@@ -43,6 +43,7 @@ static int _isSupported(int code);
 void InitCreateRenderer(void *arg)
 {
     int posX = 100, posY = 100, width = 320, height = 240;
+    int renderer_flags = SDL_RENDERER_ACCELERATED;
     renderer = NULL;
     window = SDL_CreateWindow("render_testCreateRenderer", posX, posY, width, height, 0);
     SDLTest_AssertPass("SDL_CreateWindow()");
@@ -51,7 +52,11 @@ void InitCreateRenderer(void *arg)
         return;
     }
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "dummy") == 0) {
+        renderer_flags = 0;
+    }
+
+    renderer = SDL_CreateRenderer(window, -1, renderer_flags);
     SDLTest_AssertPass("SDL_CreateRenderer()");
     SDLTest_AssertCheck(renderer != NULL, "Check SDL_CreateRenderer result");
     if (renderer == NULL) {
