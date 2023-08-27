@@ -1064,7 +1064,7 @@ extern DECLSPEC void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *stream);
  *
  * \param devid an audio device to open, or SDL_AUDIO_DEVICE_DEFAULT_OUTPUT
  *              or SDL_AUDIO_DEVICE_DEFAULT_CAPTURE.
- * \param spec the audio stream's input format. Required.
+ * \param spec the audio stream's data format. Required.
  * \param callback A callback where the app will provide new data for playback,
  *                 or receive new data for capture. Can be NULL, in which case
  *                 the app will need to call SDL_PutAudioStreamData or
