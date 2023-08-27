@@ -33,6 +33,7 @@ static SDLTest_TestSuiteReference *testSuites[] = {
     &mainTestSuite,
     &mathTestSuite,
     &mouseTestSuite,
+    &penTestSuite,
     &pixelsTestSuite,
     &platformTestSuite,
     &propertiesTestSuite,

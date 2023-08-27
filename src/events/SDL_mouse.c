@@ -22,9 +22,11 @@
 
 /* General mouse handling code for SDL */
 
-#include "SDL_events_c.h"
 #include "../SDL_hints_c.h"
 #include "../video/SDL_sysvideo.h"
+#include "SDL_events_c.h"
+#include "SDL_mouse_c.h"
+#include "SDL_pen_c.h"
 #if defined(__WIN32__) || defined(__GDK__)
 #include "../core/windows/SDL_windows.h" // For GetDoubleClickTime()
 #endif
@@ -221,6 +223,8 @@ void SDL_PostInitMouse(void)
             SDL_DestroySurface(surface);
         }
     }
+
+    SDL_PenInit();
 }
 
 void SDL_SetDefaultCursor(SDL_Cursor *cursor)
@@ -351,17 +355,25 @@ void SDL_SetMouseFocus(SDL_Window *window)
     SDL_SetCursor(NULL);
 }
 
+SDL_bool SDL_MousePositionInWindow(SDL_Window *window, SDL_MouseID mouseID, float x, float y)
+{
+    if (!window) {
+        return SDL_FALSE;
+    }
+
+    if (window && !(window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
+        if (x < 0.0f || y < 0.0f || x >= (float)window->w || y >= (float)window->h) {
+            return SDL_FALSE;
+        }
+    }
+    return SDL_TRUE;
+}
+
 /* Check to see if we need to synthesize focus events */
 static SDL_bool SDL_UpdateMouseFocus(SDL_Window *window, float x, float y, Uint32 buttonstate, SDL_bool send_mouse_motion)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_bool inWindow = SDL_TRUE;
-
-    if (window && !(window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
-        if (x < 0.0f || y < 0.0f || x >= (float)window->w || y >= (float)window->h) {
-            inWindow = SDL_FALSE;
-        }
-    }
+    SDL_bool inWindow = SDL_MousePositionInWindow(window, mouse->mouseID, x, y);
 
     if (!inWindow) {
         if (window == mouse->focus) {

@@ -163,6 +163,9 @@ extern void SDL_PerformWarpMouseInWindow(SDL_Window *window, float x, float y, S
 extern void SDL_ResetMouse(void);
 #endif /* 0 */
 
+/* Check if mouse position is within window or captured by window */
+extern SDL_bool SDL_MousePositionInWindow(SDL_Window *window, SDL_MouseID mouseID, float x, float y);
+
 /* Shutdown the mouse subsystem */
 extern void SDL_QuitMouse(void);
 

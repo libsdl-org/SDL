@@ -29,5 +29,9 @@ extern void X11_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window);
 extern int X11_SuspendScreenSaver(SDL_VideoDevice *_this);
 extern void X11_ReconcileKeyboardState(SDL_VideoDevice *_this);
 extern void X11_GetBorderValues(SDL_WindowData *data);
+extern void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *wdata, int button, const float x, const float y, const unsigned long time);
+extern void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *wdata, int button);
+extern SDL_WindowData *X11_FindWindow(SDL_VideoDevice *_this, Window window);
+extern SDL_bool X11_ProcessHitTest(SDL_VideoDevice *_this, const SDL_WindowData *data, const float x, const float y);
 
 #endif /* SDL_x11events_h_ */

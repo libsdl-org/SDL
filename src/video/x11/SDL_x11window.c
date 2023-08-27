@@ -592,8 +592,8 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
         X11_ConstrainPopup(window);
     }
     SDL_RelativeToGlobalForWindow(window,
-                                      window->windowed.x, window->windowed.y,
-                                      &win_x, &win_y);
+                                  window->windowed.x, window->windowed.y,
+                                  &win_x, &win_y);
 
     /* Always create this with the window->windowed.* fields; if we're
        creating a windowed mode window, that's fine. If we're creating a
@@ -754,12 +754,20 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     X11_Xinput2SelectTouch(_this, window);
 
-    X11_XSelectInput(display, w,
-                     (FocusChangeMask | EnterWindowMask | LeaveWindowMask |
-                      ExposureMask | ButtonPressMask | ButtonReleaseMask |
-                      PointerMotionMask | KeyPressMask | KeyReleaseMask |
-                      PropertyChangeMask | StructureNotifyMask |
-                      KeymapStateMask | fevent));
+    {
+        unsigned int x11_pointer_events = ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
+        if (X11_Xinput2SelectMouse(_this, window)) {
+            /* If XInput2 can handle pointer events, we don't track them here */
+            x11_pointer_events = 0;
+        }
+
+        X11_XSelectInput(display, w,
+                         (FocusChangeMask | EnterWindowMask | LeaveWindowMask | ExposureMask |
+                          x11_pointer_events |
+                          KeyPressMask | KeyReleaseMask |
+                          PropertyChangeMask | StructureNotifyMask |
+                          KeymapStateMask | fevent));
+    }
 
     /* For _ICC_PROFILE. */
     X11_XSelectInput(display, RootWindow(display, screen), PropertyChangeMask);
@@ -832,7 +840,8 @@ static int X11_CatchAnyError(Display *d, XErrorEvent *e)
     return 0;
 }
 
-enum check_method {
+enum check_method
+{
     COMPARE_POSITION = 1,
     COMPARE_SIZE = 2,
     COMPARE_DOUBLE_ATTEMPT = 3,
@@ -842,8 +851,8 @@ enum check_method {
 /* Wait a brief time, or not, to see if the window manager decided to move/resize the window.
  * Send MOVED and RESIZED window events */
 static void X11_WaitAndSendWindowEvents(SDL_Window *window, int param_timeout, enum check_method method,
-            int orig_x, int orig_y, int dest_x, int dest_y,
-            int orig_w, int orig_h, int dest_w, int dest_h)
+                                        int orig_x, int orig_y, int dest_x, int dest_y,
+                                        int orig_w, int orig_h, int dest_w, int dest_h)
 {
     SDL_WindowData *data = window->driverdata;
     Display *display = data->videodata->display;
@@ -934,7 +943,6 @@ static void X11_WaitAndSendWindowEvents(SDL_Window *window, int param_timeout, e
     caught_x11_error = SDL_FALSE;
 }
 
-
 int X11_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon)
 {
     SDL_WindowData *data = window->driverdata;
@@ -974,8 +982,8 @@ int X11_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *i
         }
 
         X11_XChangeProperty(display, data->xwindow, _NET_WM_ICON, XA_CARDINAL,
-                                32, PropModeReplace, (unsigned char *)propdata,
-                                propsize);
+                            32, PropModeReplace, (unsigned char *)propdata,
+                            propsize);
         SDL_free(propdata);
 
         if (caught_x11_error) {
@@ -1351,7 +1359,6 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     if (data->border_left == 0 && data->border_right == 0 && data->border_top == 0 && data->border_bottom == 0) {
         X11_GetBorderValues(data);
     }
-
 }
 
 void X11_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
@@ -1484,7 +1491,6 @@ static void X11_SetWindowMaximized(SDL_VideoDevice *_this, SDL_Window *window, S
 
         /* Send MOVED/RESIZED event, if needed. Compare with initial position and size. Timeout 1000 */
         X11_WaitAndSendWindowEvents(window, 1000, COMPARE_ORIG, orig_x, orig_y, 0, 0, orig_w, orig_h, 0, 0);
-
 
     } else {
         X11_SetNetWMState(_this, data->xwindow, window->flags);
