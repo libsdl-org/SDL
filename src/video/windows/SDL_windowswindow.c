@@ -47,14 +47,20 @@
 typedef HRESULT (WINAPI *DwmSetWindowAttribute_t)(HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
 
 /* Transparent window support */
+#ifndef DWM_BB_ENABLE
+#define DWM_BB_ENABLE 0x00000001
+#endif
+#ifndef DWM_BB_BLURREGION
+#define DWM_BB_BLURREGION 0x00000002
+#endif
 typedef struct
 {
-    int left_width;
-    int right_width;
-    int top_height;
-    int bottom_height;
-} MARGINS;
-typedef HRESULT (WINAPI *DwmExtendFrameIntoClientArea_t)(HWND hwnd, const MARGINS *pMarInSet);
+    DWORD flags;
+    BOOL enable;
+    HRGN blur_region;
+    BOOL transition_on_maxed;
+} DWM_BLURBEHIND;
+typedef HRESULT(WINAPI *DwmEnableBlurBehindWindow_t)(HWND hwnd, const DWM_BLURBEHIND *pBlurBehind);
 
 /* Windows CE compatibility */
 #ifndef SWP_NOCOPYBITS
@@ -593,23 +599,27 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
         ShowWindow(hwnd, SW_SHOWMINNOACTIVE);
     }
 
-    if (!(window->flags & SDL_WINDOW_OPENGL)) {
-        return 0;
-    }
-
-    /* Only OpenGL has transparent framebuffer which is handled by above */
-    /* FIXME: Transparent window support for renderers other than OpenGL possible? */
+    /* FIXME: does not work on all hardware configurations with different renders (i.e. hybrid GPUs) */
     if (window->flags & SDL_WINDOW_TRANSPARENT) {
         void *handle = SDL_LoadObject("dwmapi.dll");
         if (handle) {
-            DwmExtendFrameIntoClientArea_t DwmExtendFrameIntoClientAreaFunc = (DwmExtendFrameIntoClientArea_t)SDL_LoadFunction(handle, "DwmExtendFrameIntoClientArea");
-            if (DwmExtendFrameIntoClientAreaFunc) {
-                /* Negative margins create "sheet of glass" effect, thus transparent */
-                MARGINS margins = {-1, -1, -1, -1};
-                DwmExtendFrameIntoClientAreaFunc(hwnd, &margins);
+            DwmEnableBlurBehindWindow_t DwmEnableBlurBehindWindowFunc = (DwmEnableBlurBehindWindow_t)SDL_LoadFunction(handle, "DwmEnableBlurBehindWindow");
+            if (DwmEnableBlurBehindWindowFunc) {
+                /* The region indicates which part of the window will be blurred and rest will be transparent. This
+                   is because the alpha value of the window will be used for non-blurred areas
+                   We can use (-1, -1, 0, 0) boundary to make sure no pixels are being blurred
+                */
+                HRGN rgn = CreateRectRgn(-1, -1, 0, 0);
+                DWM_BLURBEHIND bb = {DWM_BB_ENABLE | DWM_BB_BLURREGION, TRUE, rgn, FALSE};
+                DwmEnableBlurBehindWindowFunc(hwnd, &bb);
+                DeleteObject(rgn);
             }
             SDL_UnloadObject(handle);
         }
+    }
+
+    if (!(window->flags & SDL_WINDOW_OPENGL)) {
+        return 0;
     }
 
     /* The rest of this macro mess is for OpenGL or OpenGL ES windows */
