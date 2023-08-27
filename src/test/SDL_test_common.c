@@ -25,6 +25,7 @@
 static const char *common_usage[] = {
     "[-h | --help]",
     "[--trackmem]",
+    "[--randmem]",
     "[--log all|error|system|audio|video|render|input]",
 };
 
@@ -95,7 +96,8 @@ SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, Uint32 flags)
     for (i = 1; argv[i]; ++i) {
         if (SDL_strcasecmp(argv[i], "--trackmem") == 0) {
             SDLTest_TrackAllocations();
-            break;
+        } else if (SDL_strcasecmp(argv[i], "--randmem") == 0) {
+            SDLTest_RandFillAllocations();
         }
     }
 
@@ -167,6 +169,10 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
         return -1;
     }
     if (SDL_strcasecmp(argv[index], "--trackmem") == 0) {
+        /* Already handled in SDLTest_CommonCreateState() */
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--randmem") == 0) {
         /* Already handled in SDLTest_CommonCreateState() */
         return 1;
     }
