@@ -192,7 +192,7 @@ static void SDLCALL SDL_PollSentinelChanged(void *userdata, const char *name, co
  * Verbosity of logged events as defined in SDL_HINT_EVENT_LOGGING:
  *  - 0: (default) no logging
  *  - 1: logging of most events
- *  - 2: as above, plus mouse and finger motion
+ *  - 2: as above, plus mouse, pen, and finger motion
  */
 static int SDL_EventLoggingVerbosity = 0;
 
@@ -206,10 +206,11 @@ static void SDL_LogEvent(const SDL_Event *event)
     char name[64];
     char details[128];
 
-    /* sensor/mouse/finger motion are spammy, ignore these if they aren't demanded. */
+    /* sensor/mouse/pen/finger motion are spammy, ignore these if they aren't demanded. */
     if ((SDL_EventLoggingVerbosity < 2) &&
         ((event->type == SDL_EVENT_MOUSE_MOTION) ||
          (event->type == SDL_EVENT_FINGER_MOTION) ||
+         (event->type == SDL_EVENT_PEN_MOTION) ||
          (event->type == SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION) ||
          (event->type == SDL_EVENT_GAMEPAD_SENSOR_UPDATE) ||
          (event->type == SDL_EVENT_SENSOR_UPDATE))) {
@@ -302,6 +303,8 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_RESTORED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_MOUSE_ENTER);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_MOUSE_LEAVE);
+        SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_PEN_ENTER);
+        SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_PEN_LEAVE);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_FOCUS_GAINED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_FOCUS_LOST);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_CLOSE_REQUESTED);
@@ -469,6 +472,53 @@ static void SDL_LogEvent(const SDL_Event *event)
         PRINT_FINGER_EVENT(event);
         break;
 #undef PRINT_FINGER_EVENT
+
+#define PRINT_PTIP_EVENT(event)                                                                                    \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u tip=%u state=%s x=%g y=%g)", \
+                       (uint)event->ptip.timestamp, (uint)event->ptip.windowID,                                    \
+                       (uint)event->ptip.which, (uint)event->ptip.tip,                                             \
+                       event->ptip.state == SDL_PRESSED ? "down" : "up",                                           \
+                       event->ptip.x, event->ptip.y)
+        SDL_EVENT_CASE(SDL_EVENT_PEN_DOWN)
+        PRINT_PTIP_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_PEN_UP)
+        PRINT_PTIP_EVENT(event);
+        break;
+#undef PRINT_PTIP_EVENT
+
+        SDL_EVENT_CASE(SDL_EVENT_PEN_MOTION)
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u state=%08x x=%g y=%g [%g, %g, %g, %g, %g, %g])",
+                           (uint)event->pmotion.timestamp, (uint)event->pmotion.windowID,
+                           (uint)event->pmotion.which, (uint)event->pmotion.pen_state,
+                           event->pmotion.x, event->pmotion.y,
+                           event->pmotion.axes[SDL_PEN_AXIS_PRESSURE],
+                           event->pmotion.axes[SDL_PEN_AXIS_XTILT],
+                           event->pmotion.axes[SDL_PEN_AXIS_YTILT],
+                           event->pmotion.axes[SDL_PEN_AXIS_DISTANCE],
+                           event->pmotion.axes[SDL_PEN_AXIS_ROTATION],
+                           event->pmotion.axes[SDL_PEN_AXIS_SLIDER]);
+        break;
+
+#define PRINT_PBUTTON_EVENT(event)                                                                                                               \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u tip=%u state=%s x=%g y=%g axes=[%g, %g, %g, %g, %g, %g])", \
+                       (uint)event->pbutton.timestamp, (uint)event->pbutton.windowID,                                                            \
+                       (uint)event->pbutton.which, (uint)event->pbutton.button,                                                                  \
+                       event->pbutton.state == SDL_PRESSED ? "pressed" : "released",                                                             \
+                       event->pbutton.x, event->pbutton.y,                                                                                       \
+                       event->pbutton.axes[SDL_PEN_AXIS_PRESSURE],                                                                               \
+                       event->pbutton.axes[SDL_PEN_AXIS_XTILT],                                                                                  \
+                       event->pbutton.axes[SDL_PEN_AXIS_YTILT],                                                                                  \
+                       event->pbutton.axes[SDL_PEN_AXIS_DISTANCE],                                                                               \
+                       event->pbutton.axes[SDL_PEN_AXIS_ROTATION],                                                                               \
+                       event->pbutton.axes[SDL_PEN_AXIS_SLIDER])
+        SDL_EVENT_CASE(SDL_EVENT_PEN_BUTTON_DOWN)
+        PRINT_PBUTTON_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_PEN_BUTTON_UP)
+        PRINT_PBUTTON_EVENT(event);
+        break;
+#undef PRINT_PBUTTON_EVENT
 
 #define PRINT_DROP_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (data='%s' timestamp=%u windowid=%u x=%f y=%f)", event->drop.data, (uint)event->drop.timestamp, (uint)event->drop.windowID, event->drop.x, event->drop.y)
         SDL_EVENT_CASE(SDL_EVENT_DROP_FILE)

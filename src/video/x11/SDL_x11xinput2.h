@@ -32,11 +32,12 @@ typedef struct XGenericEventCookie XGenericEventCookie;
 
 extern void X11_InitXinput2(SDL_VideoDevice *_this);
 extern void X11_InitXinput2Multitouch(SDL_VideoDevice *_this);
-extern int X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie);
+extern int X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie);
 extern int X11_Xinput2IsInitialized(void);
 extern int X11_Xinput2IsMultitouchSupported(void);
 extern void X11_Xinput2SelectTouch(SDL_VideoDevice *_this, SDL_Window *window);
 extern void X11_Xinput2GrabTouch(SDL_VideoDevice *_this, SDL_Window *window);
 extern void X11_Xinput2UngrabTouch(SDL_VideoDevice *_this, SDL_Window *window);
+extern SDL_bool X11_Xinput2SelectMouse(SDL_VideoDevice *_this, SDL_Window *window);
 
 #endif /* SDL_x11xinput2_h_ */

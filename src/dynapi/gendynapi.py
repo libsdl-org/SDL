@@ -379,7 +379,7 @@ def check_comment():
         if header != 'SDL_stdinc.h':
             parameter_name = i['parameter_name']
             for n in parameter_name:
-                if n != "" and "\\param " + n not in comment:
+                if n != "" and "\\param " + n not in comment and "\\param[out] " + n not in comment:
                     check_comment_header()
                     print("  In file %s: function %s() missing '\\param %s'" % (header, name, n));
 

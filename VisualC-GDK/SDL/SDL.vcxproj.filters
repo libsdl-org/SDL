@@ -300,6 +300,9 @@
     <ClInclude Include="..\..\include\SDL3\SDL_opengles2_khrplatform.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_pen.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_pixels.h">
       <Filter>API Headers</Filter>
     </ClInclude>
@@ -938,6 +941,9 @@
       <Filter>events</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\events\SDL_mouse.c">
+      <Filter>events</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\events\SDL_pen.c">
       <Filter>events</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\events\SDL_quit.c">
