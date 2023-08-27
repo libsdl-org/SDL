@@ -901,7 +901,7 @@
 #define SDL_SetAudioStreamGetCallback SDL_SetAudioStreamGetCallback_REAL
 #define SDL_SetAudioStreamPutCallback SDL_SetAudioStreamPutCallback_REAL
 #define SDL_DestroyAudioStream SDL_DestroyAudioStream_REAL
-#define SDL_CreateAndBindAudioStream SDL_CreateAndBindAudioStream_REAL
+#define SDL_OpenAudioDeviceStream SDL_OpenAudioDeviceStream_REAL
 #define SDL_LoadWAV_RW SDL_LoadWAV_RW_REAL
 #define SDL_LoadWAV SDL_LoadWAV_REAL
 #define SDL_MixAudioFormat SDL_MixAudioFormat_REAL

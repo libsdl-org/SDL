@@ -876,7 +876,7 @@ SDL3_0.0.0 {
     SDL_SetAudioStreamGetCallback;
     SDL_SetAudioStreamPutCallback;
     SDL_DestroyAudioStream;
-    SDL_CreateAndBindAudioStream;
+    SDL_OpenAudioDeviceStream;
     SDL_LoadWAV_RW;
     SDL_LoadWAV;
     SDL_MixAudioFormat;

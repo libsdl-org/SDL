@@ -28,7 +28,6 @@ static Uint8 *sound = NULL; /* Pointer to wave data */
 static Uint32 soundlen = 0; /* Length of wave data */
 
 /* these have to be in globals so the Emscripten port can see them in the mainloop.  :/  */
-static SDL_AudioDeviceID device = 0;
 static SDL_AudioStream *stream = NULL;
 
 
@@ -37,7 +36,6 @@ static void loop(void)
 {
     if (SDL_GetAudioStreamAvailable(stream) == 0) {
         SDL_Log("done.");
-        SDL_CloseAudioDevice(device);
         SDL_DestroyAudioStream(stream);
         SDL_free(sound);
         SDL_Quit();
@@ -65,13 +63,10 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
 
         SDL_Log("Playing on device #%d of %d: id=%u, name='%s'...", i, devcount, (unsigned int) devices[i], devname);
 
-        device = SDL_OpenAudioDevice(devices[i], &spec);
-        if (device == 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Open device failed: %s", SDL_GetError());
-        } else if ((stream = SDL_CreateAndBindAudioStream(device, &spec)) == NULL) {  /* we can reuse these, but we'll just make one each time for now. */
+        if ((stream = SDL_OpenAudioDeviceStream(devices[i], &spec, NULL, NULL)) == NULL) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Audio stream creation failed: %s", SDL_GetError());
-            SDL_CloseAudioDevice(device);
         } else {
+            SDL_ResumeAudioDevice(SDL_GetAudioStreamBinding(stream));
             SDL_PutAudioStreamData(stream, sound, soundlen);
             SDL_FlushAudioStream(stream);
 #ifdef __EMSCRIPTEN__
@@ -87,7 +82,6 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
             }
 #endif
             SDL_Log("done.");
-            SDL_CloseAudioDevice(device);
             SDL_DestroyAudioStream(stream);
         }
         SDL_free(devname);
@@ -101,29 +95,19 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
     } else {
         for (i = 0; i < devcount; i++) {
-            char *devname = SDL_GetAudioDeviceName(devices[i]);
-            device = SDL_OpenAudioDevice(devices[i], &spec);
-            if (device == 0) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Open device %d of %d (id=%u, name='%s') failed: %s\n", i, devcount, (unsigned int) devices[i], devname, SDL_GetError());
-            }
-            SDL_free(devname);
-            devices[i] = device; /* just replace the physical device ID with the newly-opened logical device ID. */
-            if (device) {
-                SDL_PauseAudioDevice(device);  /* hold while we set up all the streams. */
-                streams[i] = SDL_CreateAndBindAudioStream(device, &spec);
-                if (streams[i] == NULL) {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Audio stream creation failed for device %d of %d: %s", i, devcount, SDL_GetError());
-                } else {
-                    SDL_PutAudioStreamData(streams[i], sound, soundlen);
-                    SDL_FlushAudioStream(streams[i]);
-                }
+            streams[i] = SDL_OpenAudioDeviceStream(devices[i], &spec, NULL, NULL);
+            if (streams[i] == NULL) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Audio stream creation failed for device %d of %d: %s", i, devcount, SDL_GetError());
+            } else {
+                SDL_PutAudioStreamData(streams[i], sound, soundlen);
+                SDL_FlushAudioStream(streams[i]);
             }
         }
 
         /* try to start all the devices about the same time. SDL does not guarantee sync across physical devices. */
         for (i = 0; i < devcount; i++) {
-            if (devices[i]) {
-                SDL_ResumeAudioDevice(devices[i]);
+            if (streams[i]) {
+                SDL_ResumeAudioDevice(SDL_GetAudioStreamBinding(streams[i]));
             }
         }
 
@@ -143,7 +127,6 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
         }
 
         for (i = 0; i < devcount; i++) {
-            SDL_CloseAudioDevice(devices[i]);
             SDL_DestroyAudioStream(streams[i]);
         }
 

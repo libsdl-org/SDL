@@ -53,15 +53,15 @@ The following structures have been renamed:
 
 ## SDL_audio.h
 
-The audio subsystem in SDL3 is dramatically different than SDL2. The primary way to play audio is no longer an audio callback; instead you bind SDL_AudioStreams to devices.
+The audio subsystem in SDL3 is dramatically different than SDL2. The primary way to play audio is no longer an audio callback; instead you bind SDL_AudioStreams to devices; however, there is still a callback method available if needed.
 
 The SDL 1.2 audio compatibility API has also been removed, as it was a simplified version of the audio callback interface.
 
 SDL3 will not implicitly initialize the audio subsystem on your behalf if you open a device without doing so. Please explicitly call SDL_Init(SDL_INIT_AUDIO) at some point.
 
-If your app depends on the callback method, there is a similar approach you can take. But first, this is the new approach:
+SDL3's audio subsystem offers an enormous amount of power over SDL2, but if you just want a simple migration of your existing code, you can ignore most of it. The simplest migration path from SDL2 looks something like this:
 
-In SDL2, you might have done something like this to play audio:
+In SDL2, you might have done something like this to play audio...
 
 ```c
     void SDLCALL MyAudioCallback(void *userdata, Uint8 * stream, int len)
@@ -82,20 +82,7 @@ In SDL2, you might have done something like this to play audio:
     SDL_PauseAudioDevice(my_audio_device, 0);
 ```
 
-in SDL3:
-
-```c
-    /* ...somewhere near startup... */
-    SDL_AudioSpec spec = { SDL_AUDIO_S16, 2, 44100 };
-    SDL_AudioDeviceID my_audio_device = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &spec);
-    SDL_AudioSteam *stream = SDL_CreateAndBindAudioStream(my_audio_device, &spec);
-
-    /* ...in your main loop... */
-    /* calculate a little more audio into `buf`, add it to `stream` */
-    SDL_PutAudioStreamData(stream, buf, buflen);
-```
-
-If you absolutely require the callback method, SDL_AudioStreams can use a callback whenever more data is to be read from them, which can be used to simulate SDL2 semantics:
+...in SDL3, you can do this...
 
 ```c
     void SDLCALL MyAudioCallback(SDL_AudioStream *stream, int len, void *userdata)
@@ -105,19 +92,32 @@ If you absolutely require the callback method, SDL_AudioStreams can use a callba
     }
 
     /* ...somewhere near startup... */
-    SDL_AudioSpec spec = { SDL_AUDIO_S16, 2, 44100 };
-    SDL_AudioDeviceID my_audio_device = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &spec);
-    SDL_AudioSteam *stream = SDL_CreateAndBindAudioStream(my_audio_device, &spec);
-    SDL_SetAudioStreamGetCallback(stream, MyAudioCallback);
-
-    /* MyAudioCallback will be called whenever the device requests more audio data. */
+    const SDL_AudioSpec spec = { SDL_AUDIO_S16, 2, 44100 };
+    SDL_AudioStream *stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &spec, MyAudioCallback, &my_audio_callback_user_data);
+    SDL_ResumeAudioDevice(SDL_GetAudioStreamBinding(stream));
 ```
+
+If you used SDL_QueueAudio instead of a callback in SDL2, this is also straightforward.
+
+```c
+    /* ...somewhere near startup... */
+    const SDL_AudioSpec spec = { SDL_AUDIO_S16, 2, 44100 };
+    SDL_AudioStream *stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &spec, NULL, NULL);
+    SDL_ResumeAudioDevice(SDL_GetAudioStreamBinding(stream));
+
+    /* ...in your main loop... */
+    /* calculate a little more audio into `buf`, add it to `stream` */
+    SDL_PutAudioStreamData(stream, buf, buflen);
+
+```
+
+...these same migration examples apply to audio capture, just using SDL_GetAudioStreamData instead of SDL_PutAudioStreamData.
 
 SDL_AudioInit() and SDL_AudioQuit() have been removed. Instead you can call SDL_InitSubSystem() and SDL_QuitSubSystem() with SDL_INIT_AUDIO, which will properly refcount the subsystems. You can choose a specific audio driver using SDL_AUDIO_DRIVER hint.
 
 The `SDL_AUDIO_ALLOW_*` symbols have been removed; now one may request the format they desire from the audio device, but ultimately SDL_AudioStream will manage the difference. One can use SDL_GetAudioDeviceFormat() to see what the final format is, if any "allowed" changes should be accomodated by the app.
 
-SDL_AudioDeviceID now represents both an open audio device's handle (a "logical" device) and the instance ID that the hardware owns as long as it exists on the system (a "physical" device). The separation between device instances and device indexes is gone.
+SDL_AudioDeviceID now represents both an open audio device's handle (a "logical" device) and the instance ID that the hardware owns as long as it exists on the system (a "physical" device). The separation between device instances and device indexes is gone, and logical and physical devices are almost entirely interchangeable at the API level.
 
 Devices are opened by physical device instance ID, and a new logical instance ID is generated by the open operation; This allows any device to be opened multiple times, possibly by unrelated pieces of code. SDL will manage the logical devices to provide a single stream of audio to the physical device behind the scenes.
 
