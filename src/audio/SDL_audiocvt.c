@@ -205,7 +205,7 @@ static void SDL_TARGETING("sse") ResampleFrame_SSE(const float* src, float* dst,
 
     int i, chan = 0;
 
-    for (; chan + 4 <= chans; chan++) {
+    for (; chan + 4 <= chans; chan += 4) {
         f0 = _mm_setzero_ps();
 
         for (i = 0; i < RESAMPLER_SAMPLES_PER_FRAME; i++) {
