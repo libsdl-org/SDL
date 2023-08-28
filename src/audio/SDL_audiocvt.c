@@ -160,11 +160,11 @@ static void SDL_TARGETING("sse") ResampleFrame_SSE(const float* src, float* dst,
 
     if (chans == 2) {
         // Duplicate each of the filter elements
-        g0 = _mm_shuffle_ps(f0, f0, _MM_SHUFFLE(3, 3, 2, 2));
-        f0 = _mm_shuffle_ps(f0, f0, _MM_SHUFFLE(1, 1, 0, 0));
-        g1 = _mm_shuffle_ps(f1, f1, _MM_SHUFFLE(3, 3, 2, 2));
-        f1 = _mm_shuffle_ps(f1, f1, _MM_SHUFFLE(1, 1, 0, 0));
-        f2 = _mm_shuffle_ps(f2, f2, _MM_SHUFFLE(1, 1, 0, 0));
+        g0 = _mm_unpackhi_ps(f0, f0);
+        f0 = _mm_unpacklo_ps(f0, f0);
+        g1 = _mm_unpackhi_ps(f1, f1);
+        f1 = _mm_unpacklo_ps(f1, f1);
+        f2 = _mm_unpacklo_ps(f2, f2);
 
         // Multiply the filter by the input
         f0 = _mm_mul_ps(f0, _mm_loadu_ps(src + 0));
