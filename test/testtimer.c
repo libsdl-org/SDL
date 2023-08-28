@@ -18,8 +18,37 @@
 #include <stdio.h>
 
 #include "SDL.h"
+#include "SDL_test.h"
 
 #define DEFAULT_RESOLUTION 1
+
+static int test_sdl_delay_within_bounds(void) {
+    const int testDelay = 100;
+    const int marginOfError = 25;
+    Uint64 result;
+    Uint64 result2;
+    Sint64 difference;
+
+    SDLTest_ResetAssertSummary();
+
+    /* Get ticks count - should be non-zero by now */
+    result = SDL_GetTicks();
+    SDLTest_AssertPass("Call to SDL_GetTicks()");
+    SDLTest_AssertCheck(result > 0, "Check result value, expected: >0, got: %" SDL_PRIu64, result);
+
+    /* Delay a bit longer and measure ticks and verify difference */
+    SDL_Delay(testDelay);
+    SDLTest_AssertPass("Call to SDL_Delay(%d)", testDelay);
+    result2 = SDL_GetTicks();
+    SDLTest_AssertPass("Call to SDL_GetTicks()");
+    SDLTest_AssertCheck(result2 > 0, "Check result value, expected: >0, got: %" SDL_PRIu64, result2);
+    difference = result2 - result;
+    SDLTest_AssertCheck(difference > (testDelay - marginOfError), "Check difference, expected: >%d, got: %" SDL_PRIu64, testDelay - marginOfError, difference);
+    /* Disabled because this might fail on non-interactive systems. */
+    SDLTest_AssertCheck(difference < (testDelay + marginOfError), "Check difference, expected: <%d, got: %" SDL_PRIu64, testDelay + marginOfError, difference);
+
+    return SDLTest_AssertSummaryToTestResult() == TEST_RESULT_PASSED ? 0 : 1;
+}
 
 static int ticks = 0;
 
@@ -39,14 +68,42 @@ callback(Uint32 interval, void *param)
 
 int main(int argc, char *argv[])
 {
-    int i, desired;
+    int i;
+    int desired = -1;
     SDL_TimerID t1, t2, t3;
     Uint64 start64, now64;
     Uint32 start32, now32;
     Uint64 start, now;
+    SDL_bool run_interactive_tests = SDL_FALSE;
+    int return_code = 0;
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed = 0;
+
+        if (!consumed) {
+            if (SDL_strcmp(argv[i], "--interactive") == 0) {
+                run_interactive_tests = SDL_TRUE;
+                consumed = 1;
+            } else if (desired < 0) {
+                char *endptr;
+
+                desired = SDL_strtoul(argv[i], &endptr, 0);
+                if (desired != 0 && endptr != argv[i] && *endptr == '\0') {
+                    consumed = 1;
+                }
+            }
+        }
+        if (consumed <= 0) {
+            SDL_Log("Usage: %s [--interactive] [interval]", argv[0]);
+            return 1;
+        }
+
+        i += consumed;
+    }
 
     if (SDL_Init(SDL_INIT_TIMER) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
@@ -74,14 +131,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    /* Start the timer */
-    desired = 0;
-    if (argv[1]) {
-        desired = SDL_atoi(argv[1]);
-    }
-    if (desired == 0) {
+    if (desired < 0) {
         desired = DEFAULT_RESOLUTION;
     }
+
+    /* Start the timer */
     t1 = SDL_AddTimer(desired, ticktock, NULL);
 
     /* Wait 10 seconds */
@@ -102,14 +156,17 @@ int main(int argc, char *argv[])
     t1 = SDL_AddTimer(100, callback, (void *)1);
     if (!t1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create timer 1: %s\n", SDL_GetError());
+        return_code = 1;
     }
     t2 = SDL_AddTimer(50, callback, (void *)2);
     if (!t2) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create timer 2: %s\n", SDL_GetError());
+        return_code = 1;
     }
     t3 = SDL_AddTimer(233, callback, (void *)3);
     if (!t3) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create timer 3: %s\n", SDL_GetError());
+        return_code = 1;
     }
 
     /* Wait 10 seconds */
@@ -141,8 +198,11 @@ int main(int argc, char *argv[])
     now32 = SDL_GetTicks();
     SDL_Log("Delay 1 second = %d ms in ticks, %d ms in ticks64, %f ms according to performance counter\n", (int)(now32 - start32), (int)(now64 - start64), (double)((now - start) * 1000) / SDL_GetPerformanceFrequency());
 
+    if (run_interactive_tests) {
+        return_code |= test_sdl_delay_within_bounds();
+    }
     SDL_Quit();
-    return 0;
+    return return_code;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

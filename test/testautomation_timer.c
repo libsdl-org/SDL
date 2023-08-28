@@ -94,7 +94,10 @@ int timer_delayAndGetTicks(void *arg)
     SDLTest_AssertCheck(result2 > 0, "Check result value, expected: >0, got: %" SDL_PRIu32, result2);
     difference = result2 - result;
     SDLTest_AssertCheck(difference > (testDelay - marginOfError), "Check difference, expected: >%" SDL_PRIu32 ", got: %" SDL_PRIu32, testDelay - marginOfError, difference);
+#if 0
+    /* Disabled because this might fail on non-interactive systems. Moved to testtimer. */
     SDLTest_AssertCheck(difference < (testDelay + marginOfError), "Check difference, expected: <%" SDL_PRIu32 ", got: %" SDL_PRIu32, testDelay + marginOfError, difference);
+#endif
 
     return TEST_COMPLETED;
 }
