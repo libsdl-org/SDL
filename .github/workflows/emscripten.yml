@@ -25,7 +25,7 @@ jobs:
             -DSDL_WERROR=ON \
             -DSDL_TESTS=ON \
             -DSDL_INSTALL_TESTS=ON \
-            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_INSTALL_PREFIX=prefix \
             -GNinja
       - name: Build (CMake)
@@ -42,11 +42,11 @@ jobs:
           cmake --install build/
       - name: Package (CPack)
         run: |
-          cmake --build build/ --config Release --target package
+          cmake --build build/ --config Debug --target package
       - name: Verify CMake configuration files
         run: |
           emcmake cmake -S cmake/test -B cmake_config_build \
-            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_BUILD_TYPE=Debug \
             -DSDL_VENDOR_INFO="Github Workflow" \
             -DTEST_SHARED=FALSE \
             -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }}
