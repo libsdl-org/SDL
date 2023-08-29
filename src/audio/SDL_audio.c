@@ -336,7 +336,7 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
         SDL_LogicalAudioDevice *next = NULL;
         for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev != NULL; logdev = next) {
             next = logdev->next;
-            if (!logdev->is_default) {  // if opened as a default, leave it on the zombie device for later migration.
+            if (!logdev->opened_as_default) {  // if opened as a default, leave it on the zombie device for later migration.
                 DisconnectLogicalAudioDevice(logdev);
             }
         }
@@ -1043,16 +1043,16 @@ int SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec)
         return SDL_InvalidParamError("spec");
     }
 
-    SDL_bool is_default = SDL_FALSE;
+    SDL_bool wants_default = SDL_FALSE;
     if (devid == SDL_AUDIO_DEVICE_DEFAULT_OUTPUT) {
         devid = current_audio.default_output_device_id;
-        is_default = SDL_TRUE;
+        wants_default = SDL_TRUE;
     } else if (devid == SDL_AUDIO_DEVICE_DEFAULT_CAPTURE) {
         devid = current_audio.default_capture_device_id;
-        is_default = SDL_TRUE;
+        wants_default = SDL_TRUE;
     }
 
-    if ((devid == 0) && is_default) {
+    if ((devid == 0) && wants_default) {
         return SDL_SetError("No default audio device available");
     }
 
@@ -1081,9 +1081,9 @@ static void ClosePhysicalAudioDevice(SDL_AudioDevice *device)
         SDL_AtomicSet(&device->thread_alive, 0);
     }
 
-    if (device->is_opened) {
+    if (device->currently_opened) {
         current_audio.impl.CloseDevice(device);  // if ProvidesOwnCallbackThread, this must join on any existing device thread before returning!
-        device->is_opened = SDL_FALSE;
+        device->currently_opened = SDL_FALSE;
         device->hidden = NULL;  // just in case.
     }
 
@@ -1190,7 +1190,7 @@ char *SDL_GetAudioThreadName(SDL_AudioDevice *device, char *buf, size_t buflen)
 // this expects the device lock to be held.
 static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec *inspec)
 {
-    SDL_assert(!device->is_opened);
+    SDL_assert(!device->currently_opened);
     SDL_assert(device->logical_devices == NULL);
 
     // Just pretend to open a zombie device. It can still collect logical devices on the assumption they will all migrate when the default device is officially changed.
@@ -1212,7 +1212,7 @@ static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec 
     device->sample_frames = GetDefaultSampleFramesFromFreq(device->spec.freq);
     SDL_UpdatedAudioDeviceFormat(device);  // start this off sane.
 
-    device->is_opened = SDL_TRUE;  // mark this true even if impl.OpenDevice fails, so we know to clean up.
+    device->currently_opened = SDL_TRUE;  // mark this true even if impl.OpenDevice fails, so we know to clean up.
     if (current_audio.impl.OpenDevice(device) < 0) {
         ClosePhysicalAudioDevice(device);  // clean up anything the backend left half-initialized.
         return -1;
@@ -1252,16 +1252,16 @@ SDL_AudioDeviceID SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSp
         return 0;
     }
 
-    SDL_bool is_default = SDL_FALSE;
+    SDL_bool wants_default = SDL_FALSE;
     if (devid == SDL_AUDIO_DEVICE_DEFAULT_OUTPUT) {
         devid = current_audio.default_output_device_id;
-        is_default = SDL_TRUE;
+        wants_default = SDL_TRUE;
     } else if (devid == SDL_AUDIO_DEVICE_DEFAULT_CAPTURE) {
         devid = current_audio.default_capture_device_id;
-        is_default = SDL_TRUE;
+        wants_default = SDL_TRUE;
     }
 
-    if ((devid == 0) && is_default) {
+    if ((devid == 0) && wants_default) {
         SDL_SetError("No default audio device available");
         return 0;
     }
@@ -1274,7 +1274,7 @@ SDL_AudioDeviceID SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSp
     } else {
         SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid);  // this locks the physical device, too.
         if (logdev) {
-            is_default = logdev->is_default;  // was the original logical device meant to be a default? Make this one, too.
+            wants_default = logdev->opened_as_default;  // was the original logical device meant to be a default? Make this one, too.
             device = logdev->physical_device;
         }
     }
@@ -1283,18 +1283,18 @@ SDL_AudioDeviceID SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSp
 
     if (device) {
         SDL_LogicalAudioDevice *logdev = NULL;
-        if (!is_default && SDL_AtomicGet(&device->zombie)) {
+        if (!wants_default && SDL_AtomicGet(&device->zombie)) {
             // uhoh, this device is undead, and just waiting for a new default device to be declared so it can hand off to it. Refuse explicit opens.
             SDL_SetError("Device was already lost and can't accept new opens");
         } else if ((logdev = (SDL_LogicalAudioDevice *) SDL_calloc(1, sizeof (SDL_LogicalAudioDevice))) == NULL) {
             SDL_OutOfMemory();
-        } else if (!device->is_opened && OpenPhysicalAudioDevice(device, spec) == -1) {  // first thing using this physical device? Open at the OS level...
+        } else if (!device->currently_opened && OpenPhysicalAudioDevice(device, spec) == -1) {  // first thing using this physical device? Open at the OS level...
             SDL_free(logdev);
         } else {
             SDL_AtomicSet(&logdev->paused, 0);
             retval = logdev->instance_id = assign_audio_device_instance_id(device->iscapture, /*islogical=*/SDL_TRUE);
             logdev->physical_device = device;
-            logdev->is_default = is_default;
+            logdev->opened_as_default = wants_default;
             logdev->next = device->logical_devices;
             if (device->logical_devices) {
                 device->logical_devices->prev = logdev;
@@ -1357,7 +1357,7 @@ int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int
         return SDL_SetError("Audio streams are bound to device ids from SDL_OpenAudioDevice, not raw physical devices");
     } else if ((logdev = ObtainLogicalAudioDevice(devid)) == NULL) {
         return -1;  // ObtainLogicalAudioDevice set the error message.
-    } else if (logdev->is_simplified) {
+    } else if (logdev->simplified) {
         SDL_UnlockMutex(logdev->physical_device->lock);
         return SDL_SetError("Cannot change stream bindings on device opened with SDL_OpenAudioDeviceStream");
     }
@@ -1464,7 +1464,7 @@ void SDL_UnbindAudioStreams(SDL_AudioStream **streams, int num_streams)
     for (int i = 0; i < num_streams; i++) {
         SDL_AudioStream *stream = streams[i];
         // don't allow unbinding from "simplified" devices (opened with SDL_OpenAudioDeviceStream). Just ignore them.
-        if (stream && stream->bound_device && !stream->bound_device->is_simplified) {
+        if (stream && stream->bound_device && !stream->bound_device->simplified) {
             if (stream->bound_device->bound_streams == stream) {
                 SDL_assert(stream->prev_binding == NULL);
                 stream->bound_device->bound_streams = stream->next_binding;
@@ -1546,8 +1546,8 @@ SDL_AudioStream *SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_Au
         stream = NULL;
     }
 
-    logdev->is_simplified = SDL_TRUE;  // forbid further binding changes on this logical device.
-    stream->is_simplified = SDL_TRUE;  // so we know to close the audio device when this is destroyed.
+    logdev->simplified = SDL_TRUE;  // forbid further binding changes on this logical device.
+    stream->simplified = SDL_TRUE;  // so we know to close the audio device when this is destroyed.
 
     if (callback) {
         int rc;
@@ -1625,7 +1625,7 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
         SDL_bool needs_migration = SDL_FALSE;
         SDL_zero(spec);
         for (SDL_LogicalAudioDevice *logdev = current_default_device->logical_devices; logdev != NULL; logdev = logdev->next) {
-            if (logdev->is_default) {
+            if (logdev->opened_as_default) {
                 needs_migration = SDL_TRUE;
                 for (SDL_AudioStream *stream = logdev->bound_streams; stream != NULL; stream = stream->next_binding) {
                     const SDL_AudioSpec *streamspec = iscapture ? &stream->dst_spec : &stream->src_spec;
@@ -1655,7 +1655,7 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
             for (SDL_LogicalAudioDevice *logdev = current_default_device->logical_devices; logdev != NULL; logdev = next) {
                 next = logdev->next;
 
-                if (!logdev->is_default) {
+                if (!logdev->opened_as_default) {
                     continue;  // not opened as a default, leave it on the current physical device.
                 }
 

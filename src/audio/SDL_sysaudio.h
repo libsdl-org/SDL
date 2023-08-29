@@ -187,7 +187,7 @@ struct SDL_AudioStream
 
     int packetlen;
 
-    SDL_bool is_simplified;  // SDL_TRUE if created via SDL_OpenAudioDeviceStream
+    SDL_bool simplified;  // SDL_TRUE if created via SDL_OpenAudioDeviceStream
 
     SDL_LogicalAudioDevice *bound_device;
     SDL_AudioStream *next_binding;
@@ -213,10 +213,10 @@ struct SDL_LogicalAudioDevice
     SDL_AudioStream *bound_streams;
 
     // SDL_TRUE if this was opened as a default device.
-    SDL_bool is_default;
+    SDL_bool opened_as_default;
 
     // SDL_TRUE if device was opened with SDL_OpenAudioDeviceStream (so it forbids binding changes, etc).
-    SDL_bool is_simplified;
+    SDL_bool simplified;
 
     // double-linked list of opened devices on the same physical device.
     SDL_LogicalAudioDevice *next;
@@ -272,7 +272,7 @@ struct SDL_AudioDevice
     SDL_Thread *thread;
 
     // SDL_TRUE if this physical device is currently opened by the backend.
-    SDL_bool is_opened;
+    SDL_bool currently_opened;
 
     // Data private to this driver
     struct SDL_PrivateAudioData *hidden;

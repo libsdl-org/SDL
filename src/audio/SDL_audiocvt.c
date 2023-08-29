@@ -1281,9 +1281,9 @@ int SDL_ClearAudioStream(SDL_AudioStream *stream)
 void SDL_DestroyAudioStream(SDL_AudioStream *stream)
 {
     if (stream) {
-        const SDL_bool is_simplified = stream->is_simplified;
-        if (is_simplified) {
-            SDL_assert(stream->bound_device->is_simplified);
+        const SDL_bool simplified = stream->simplified;
+        if (simplified) {
+            SDL_assert(stream->bound_device->simplified);
             SDL_CloseAudioDevice(stream->bound_device->instance_id);  // this will unbind the stream.
         } else {
             SDL_UnbindAudioStream(stream);
