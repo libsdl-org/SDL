@@ -1754,6 +1754,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, Uint32 flags)
             return NULL;
         }
 
+#ifdef __MACOS__
         if (SDL_GetHintBoolean(SDL_HINT_METAL_PREFER_LOW_POWER_DEVICE, SDL_TRUE)) {
             NSArray<id<MTLDevice>> *devices = MTLCopyAllDevices();
 
@@ -1764,6 +1765,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, Uint32 flags)
                 }
             }
         }
+#endif
 
         if (mtldevice == nil) {
             mtldevice = MTLCreateSystemDefaultDevice();
