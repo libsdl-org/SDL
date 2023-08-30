@@ -106,14 +106,16 @@ static int PSPAUDIO_OpenDevice(SDL_AudioDevice *device)
     return 0;
 }
 
-static void PSPAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static int PSPAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
+    int rc;
     if (!isBasicAudioConfig(&device->spec)) {
         SDL_assert(device->spec.channels == 2);
-        sceAudioSRCOutputBlocking(PSP_AUDIO_VOLUME_MAX, (void *) buffer);
+        rc = sceAudioSRCOutputBlocking(PSP_AUDIO_VOLUME_MAX, (void *) buffer);
     } else {
-        sceAudioOutputPannedBlocking(device->hidden->channel, PSP_AUDIO_VOLUME_MAX, PSP_AUDIO_VOLUME_MAX, (void *) buffer);
+        rc = sceAudioOutputPannedBlocking(device->hidden->channel, PSP_AUDIO_VOLUME_MAX, PSP_AUDIO_VOLUME_MAX, (void *) buffer);
     }
+    return (rc == 0) ? 0 : -1;
 }
 
 static void PSPAUDIO_WaitDevice(SDL_AudioDevice *device)

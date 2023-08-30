@@ -87,9 +87,10 @@ static int ANDROIDAUDIO_OpenDevice(SDL_AudioDevice *device)
 
 // !!! FIXME: this needs a WaitDevice implementation.
 
-static void ANDROIDAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static int ANDROIDAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     Android_JNI_WriteAudioBuffer();
+    return 0;
 }
 
 static Uint8 *ANDROIDAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)

@@ -351,7 +351,7 @@ static void ALSA_WaitDevice(SDL_AudioDevice *device)
     }
 }
 
-static void ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static int ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     SDL_assert(buffer == device->hidden->mixbuf);
     Uint8 *sample_buf = device->hidden->mixbuf;
@@ -378,8 +378,7 @@ static void ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int bu
                 SDL_LogError(SDL_LOG_CATEGORY_AUDIO,
                              "ALSA write failed (unrecoverable): %s",
                              ALSA_snd_strerror(status));
-                SDL_AudioDeviceDisconnected(device);
-                return;
+                return -1;
             }
             continue;
         } else if (status == 0) {
@@ -391,6 +390,8 @@ static void ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int bu
         sample_buf += status * frame_size;
         frames_left -= status;
     }
+
+    return 0;
 }
 
 static Uint8 *ALSA_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)

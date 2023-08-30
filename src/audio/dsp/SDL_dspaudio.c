@@ -225,17 +225,17 @@ static void DSP_WaitDevice(SDL_AudioDevice *device)
     }
 }
 
-static void DSP_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static int DSP_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
     if (write(h->audio_fd, buffer, buflen) == -1) {
         perror("Audio write");
-        SDL_AudioDeviceDisconnected(device);
-        return;
+        return -1;
     }
 #ifdef DEBUG_AUDIO
     fprintf(stderr, "Wrote %d bytes of audio data\n", h->mixlen);
 #endif
+    return 0;
 }
 
 static Uint8 *DSP_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)

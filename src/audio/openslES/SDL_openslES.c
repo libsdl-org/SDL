@@ -638,7 +638,7 @@ static void openslES_WaitDevice(SDL_AudioDevice *device)
     SDL_WaitSemaphore(audiodata->playsem);
 }
 
-static void openslES_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static int openslES_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *audiodata = device->hidden;
 
@@ -657,6 +657,8 @@ static void openslES_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, in
     if (SL_RESULT_SUCCESS != result) {
         SDL_PostSemaphore(audiodata->playsem);
     }
+
+    return 0;
 }
 
 ///           n   playn sem

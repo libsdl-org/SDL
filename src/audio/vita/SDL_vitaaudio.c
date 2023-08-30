@@ -130,9 +130,9 @@ static int VITAAUD_OpenDevice(SDL_AudioDevice *device)
     return 0;
 }
 
-static void VITAAUD_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+static int VITAAUD_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
-    sceAudioOutOutput(device->hidden->port, buffer);
+    return (sceAudioOutOutput(device->hidden->port, buffer) == 0) ? 0 : -1;
 }
 
 // This function waits until it is possible to write a full sound buffer

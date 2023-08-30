@@ -413,12 +413,13 @@ static Uint8 *WASAPI_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
     return (Uint8 *)buffer;
 }
 
-static void WASAPI_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static int WASAPI_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     if (device->hidden->render != NULL) { // definitely activated?
         // WasapiFailed() will mark the device for reacquisition or removal elsewhere.
         WasapiFailed(device, IAudioRenderClient_ReleaseBuffer(device->hidden->render, device->sample_frames, 0));
     }
+    return 0;
 }
 
 static void WASAPI_WaitDevice(SDL_AudioDevice *device)

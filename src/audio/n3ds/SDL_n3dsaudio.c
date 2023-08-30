@@ -176,7 +176,7 @@ static int N3DSAUDIO_OpenDevice(SDL_AudioDevice *device)
     return 0;
 }
 
-static void N3DSAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static int N3DSAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     contextLock(device);
 
@@ -196,6 +196,8 @@ static void N3DSAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, i
     DSP_FlushDataCache(device->hidden->waveBuf[nextbuf].data_vaddr, buflen);
 
     ndspChnWaveBufAdd(0, &device->hidden->waveBuf[nextbuf]);
+
+    return 0;
 }
 
 static void N3DSAUDIO_WaitDevice(SDL_AudioDevice *device)

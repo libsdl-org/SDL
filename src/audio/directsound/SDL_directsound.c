@@ -285,11 +285,14 @@ static void DSOUND_WaitDevice(SDL_AudioDevice *device)
     }
 }
 
-static void DSOUND_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static int DSOUND_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     // Unlock the buffer, allowing it to play
     SDL_assert(buflen == device->buffer_size);
-    IDirectSoundBuffer_Unlock(device->hidden->mixbuf, (LPVOID) buffer, buflen, NULL, 0);
+    if (IDirectSoundBuffer_Unlock(device->hidden->mixbuf, (LPVOID) buffer, buflen, NULL, 0) != DS_OK) {
+        return -1;
+    }
+    return 0;
 }
 
 static Uint8 *DSOUND_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)

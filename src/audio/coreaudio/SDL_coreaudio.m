@@ -525,7 +525,7 @@ static SDL_bool UpdateAudioSession(SDL_AudioDevice *device, SDL_bool open, SDL_b
 #endif
 
 
-static void COREAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+static int COREAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
     AudioQueueBufferRef current_buffer = device->hidden->current_buffer;
     SDL_assert(current_buffer != NULL);  // should have been called from OutputBufferReadyCallback
@@ -533,6 +533,7 @@ static void COREAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, i
     current_buffer->mAudioDataByteSize = current_buffer->mAudioDataBytesCapacity;
     device->hidden->current_buffer = NULL;
     AudioQueueEnqueueBuffer(device->hidden->audioQueue, current_buffer, 0, NULL);
+    return 0;
 }
 
 static Uint8 *COREAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)

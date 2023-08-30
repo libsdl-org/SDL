@@ -412,7 +412,7 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
 
 static void SDL_AudioThreadDeinit_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static void SDL_AudioWaitDevice_Default(SDL_AudioDevice *device) { /* no-op. */ }
-static void SDL_AudioPlayDevice_Default(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size) { /* no-op. */ }
+static int SDL_AudioPlayDevice_Default(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size) { return 0; /* no-op. */ }
 static void SDL_AudioWaitCaptureDevice_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static void SDL_AudioFlushCapture_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static void SDL_AudioCloseDevice_Default(SDL_AudioDevice *device) { /* no-op. */ }
@@ -731,8 +731,10 @@ SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
             }
         }
 
-        // !!! FIXME: have PlayDevice return a value and do disconnects in here with it.
-        current_audio.impl.PlayDevice(device, mix_buffer, buffer_size);  // this SHOULD NOT BLOCK, as we are holding a lock right now. Block in WaitDevice!
+        // PlayDevice SHOULD NOT BLOCK, as we are holding a lock right now. Block in WaitDevice instead!
+        if (current_audio.impl.PlayDevice(device, mix_buffer, buffer_size) < 0) {
+            retval = SDL_FALSE;
+        }
     }
 
     SDL_UnlockMutex(device->lock);

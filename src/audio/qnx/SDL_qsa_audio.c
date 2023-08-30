@@ -110,10 +110,10 @@ static void QSA_WaitDevice(SDL_AudioDevice *device)
     }
 }
 
-static void QSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static int QSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     if (SDL_AtomicGet(&device->shutdown) || !device->hidden) {
-        return;
+        return 0;
     }
 
     int towrite = buflen;
@@ -125,7 +125,7 @@ static void QSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buf
             // Check if samples playback got stuck somewhere in hardware or in the audio device driver
             if ((errno == EAGAIN) && (bw == 0)) {
                 if (device->hidden->timeout_on_wait) {
-                    return;  // oh well, try again next time.  !!! FIXME: Should we just disconnect the device in this case?
+                    return 0;  // oh well, try again next time.  !!! FIXME: Should we just disconnect the device in this case?
                 }
             }
 
@@ -145,17 +145,17 @@ static void QSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buf
                 int status = snd_pcm_plugin_status(device->hidden->audio_handle, &cstatus);
                 if (status < 0) {
                     QSA_SetError("snd_pcm_plugin_status", status);
-                    return;  // !!! FIXME: disconnect the device?
+                    return -1;
                 } else if ((cstatus.status == SND_PCM_STATUS_UNDERRUN) || (cstatus.status == SND_PCM_STATUS_READY)) {
                     status = snd_pcm_plugin_prepare(device->hidden->audio_handle, device->iscapture ? SND_PCM_CHANNEL_CAPTURE : SND_PCM_CHANNEL_PLAYBACK);
                     if (status < 0) {
                         QSA_SetError("snd_pcm_plugin_prepare", status);
-                        return;  // !!! FIXME: disconnect the device?
+                        return -1;
                     }
                 }
                 continue;
             } else {
-                return;  // !!! FIXME: disconnect the device?
+                return -1;
             }
         } else {
             // we wrote all remaining data
@@ -165,9 +165,7 @@ static void QSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buf
     }
 
     // If we couldn't write, assume fatal error for now
-    if (towrite != 0) {
-        SDL_AudioDeviceDisconnected(device);
-    }
+    return (towrite != 0) ? -1 : 0;
 }
 
 static Uint8 *QSA_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)

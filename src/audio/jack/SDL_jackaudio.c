@@ -149,7 +149,7 @@ static int jackProcessPlaybackCallback(jack_nframes_t nframes, void *arg)
     return 0;
 }
 
-static void JACK_PlayDevice(SDL_AudioDevice *device, const Uint8 *ui8buffer, int buflen)
+static int JACK_PlayDevice(SDL_AudioDevice *device, const Uint8 *ui8buffer, int buflen)
 {
     const float *buffer = (float *) ui8buffer;
     jack_port_t **ports = device->hidden->sdlports;
@@ -167,6 +167,8 @@ static void JACK_PlayDevice(SDL_AudioDevice *device, const Uint8 *ui8buffer, int
             }
         }
     }
+
+    return 0;
 }
 
 static Uint8 *JACK_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)

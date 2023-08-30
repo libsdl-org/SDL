@@ -36,7 +36,7 @@ static Uint8 *EMSCRIPTENAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_
     return device->hidden->mixbuf;
 }
 
-static void EMSCRIPTENAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+static int EMSCRIPTENAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
     const int framelen = (SDL_AUDIO_BITSIZE(device->spec.format) / 8) * device->spec.channels;
     MAIN_THREAD_EM_ASM({
@@ -53,6 +53,7 @@ static void EMSCRIPTENAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buf
             }
         }
     }, buffer, buffer_size / framelen);
+    return 0;
 }
 
 

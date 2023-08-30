@@ -141,20 +141,18 @@ static void NETBSDAUDIO_WaitDevice(SDL_AudioDevice *device)
     }
 }
 
-static void NETBSDAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static int NETBSDAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
     const int written = write(h->audio_fd, buffer, buflen);
-    if (written == -1) {
-        // Non recoverable error has occurred. It should be reported!!!
-        SDL_AudioDeviceDisconnected(device);
-        perror("audio");
-        return;
+    if (written != buflen) {  // Treat even partial writes as fatal errors.
+        return -1;
     }
 
 #ifdef DEBUG_AUDIO
     fprintf(stderr, "Wrote %d bytes of audio data\n", written);
 #endif
+    return 0;
 }
 
 static Uint8 *NETBSDAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)

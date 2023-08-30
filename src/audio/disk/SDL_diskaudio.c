@@ -40,15 +40,16 @@ static void DISKAUDIO_WaitDevice(SDL_AudioDevice *device)
     SDL_Delay(device->hidden->io_delay);
 }
 
-static void DISKAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+static int DISKAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
     const int written = (int)SDL_RWwrite(device->hidden->io, buffer, (size_t)buffer_size);
     if (written != buffer_size) { // If we couldn't write, assume fatal error for now
-        SDL_AudioDeviceDisconnected(device);
+        return -1;
     }
 #ifdef DEBUG_AUDIO
     SDL_Log("DISKAUDIO: Wrote %d bytes of audio data", (int) written);
 #endif
+    return 0;
 }
 
 static Uint8 *DISKAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)

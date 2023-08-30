@@ -940,7 +940,7 @@ static Uint8 *PIPEWIRE_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
     return (Uint8 *) spa_buf->datas[0].data;
 }
 
-static void PIPEWIRE_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+static int PIPEWIRE_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
     struct pw_stream *stream = device->hidden->stream;
     struct pw_buffer *pw_buf = device->hidden->pw_buf;
@@ -951,6 +951,8 @@ static void PIPEWIRE_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, in
 
     PIPEWIRE_pw_stream_queue_buffer(stream, pw_buf);
     device->hidden->pw_buf = NULL;
+
+    return 0;
 }
 
 static void output_callback(void *data)

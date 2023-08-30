@@ -85,9 +85,10 @@ static int PS2AUDIO_OpenDevice(SDL_AudioDevice *device)
     return 0;
 }
 
-static void PS2AUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static int PS2AUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
-    audsrv_play_audio((char *)buffer, buflen);
+    // this returns number of bytes accepted or a negative error. We assume anything other than buflen is a fatal error.
+    return (audsrv_play_audio((char *)buffer, buflen) != buflen) ? -1 : 0;
 }
 
 static void PS2AUDIO_WaitDevice(SDL_AudioDevice *device)

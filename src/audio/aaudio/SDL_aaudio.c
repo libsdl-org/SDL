@@ -111,13 +111,14 @@ static void AAUDIO_WaitDevice(SDL_AudioDevice *device)
     SDL_WaitSemaphore(device->hidden->semaphore);
 }
 
-static void AAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static int AAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     // AAUDIO_dataCallback picks up our work and unblocks AAUDIO_WaitDevice. But make sure we didn't fail here.
     if (SDL_AtomicGet(&device->hidden->error_callback_triggered)) {
         SDL_AtomicSet(&device->hidden->error_callback_triggered, 0);
-        SDL_AudioDeviceDisconnected(device);
+        return -1;
     }
+    return 0;
 }
 
 // no need for a FlushCapture implementation, just don't read mixbuf until the next iteration.
