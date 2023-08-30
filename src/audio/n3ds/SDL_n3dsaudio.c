@@ -185,7 +185,7 @@ static int N3DSAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, in
     if (device->hidden->isCancelled ||
         device->hidden->waveBuf[nextbuf].status != NDSP_WBUF_FREE) {
         contextUnlock(device);
-        return;
+        return 0;  // !!! FIXME: is this a fatal error? If so, this should return -1.
     }
 
     device->hidden->nextbuf = (nextbuf + 1) % NUM_BUFFERS;
