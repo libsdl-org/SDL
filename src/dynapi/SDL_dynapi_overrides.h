@@ -927,3 +927,5 @@
 #define SDL_WriteS64BE SDL_WriteS64BE_REAL
 #define SDL_GDKGetDefaultUser SDL_GDKGetDefaultUser_REAL
 #define SDL_SetWindowFocusable SDL_SetWindowFocusable_REAL
+#define SDL_GetAudioStreamSpeed SDL_GetAudioStreamSpeed_REAL
+#define SDL_SetAudioStreamSpeed SDL_SetAudioStreamSpeed_REAL

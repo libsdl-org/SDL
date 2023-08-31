@@ -1237,6 +1237,43 @@ int SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_s
     return 0;
 }
 
+float SDL_GetAudioStreamSpeed(SDL_AudioStream *stream)
+{
+    if (!stream) {
+        SDL_InvalidParamError("stream");
+        return 0.0f;
+    }
+
+    SDL_LockMutex(stream->lock);
+    float speed = stream->speed;
+    SDL_UnlockMutex(stream->lock);
+
+    return speed;
+}
+
+int SDL_SetAudioStreamSpeed(SDL_AudioStream *stream, float speed)
+{
+    if (!stream) {
+        return SDL_InvalidParamError("stream");
+    }
+
+    // Picked mostly arbitrarily.
+    static const float min_speed = 0.01f;
+    static const float max_speed = 100.0f;
+
+    if (speed < min_speed) {
+        return SDL_SetError("Speed is too low");
+    } else if (speed > max_speed) {
+        return SDL_SetError("Speed is too high");
+    }
+
+    SDL_LockMutex(stream->lock);
+    stream->speed = speed;
+    SDL_UnlockMutex(stream->lock);
+
+    return 0;
+}
+
 static int CheckAudioStreamIsFullySetup(SDL_AudioStream *stream)
 {
     if (stream->src_spec.format == 0) {
