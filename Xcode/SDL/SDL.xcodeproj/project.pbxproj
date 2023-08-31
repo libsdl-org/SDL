@@ -63,7 +63,6 @@
 		A75FDBB823E4CBC700529352 /* ReadMe.txt in Resources */ = {isa = PBXBuildFile; fileRef = F59C710300D5CB5801000001 /* ReadMe.txt */; };
 		A75FDBC523EA380300529352 /* SDL_hidapi_rumble.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDBC323EA380300529352 /* SDL_hidapi_rumble.h */; };
 		A75FDBCE23EA380300529352 /* SDL_hidapi_rumble.c in Sources */ = {isa = PBXBuildFile; fileRef = A75FDBC423EA380300529352 /* SDL_hidapi_rumble.c */; };
-		A7D8A94523E2514000DCD162 /* SDL_dataqueue.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A57023E2513D00DCD162 /* SDL_dataqueue.h */; };
 		A7D8A94B23E2514000DCD162 /* SDL.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A57123E2513D00DCD162 /* SDL.c */; };
 		A7D8A95123E2514000DCD162 /* SDL_spinlock.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A57323E2513D00DCD162 /* SDL_spinlock.c */; };
 		A7D8A95723E2514000DCD162 /* SDL_atomic.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A57423E2513D00DCD162 /* SDL_atomic.c */; };
@@ -315,7 +314,6 @@
 		A7D8BAFD23E2514500DCD162 /* s_floor.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A92523E2514000DCD162 /* s_floor.c */; };
 		A7D8BB0323E2514500DCD162 /* math_libm.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A92623E2514000DCD162 /* math_libm.h */; };
 		A7D8BB0923E2514500DCD162 /* k_tan.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A92723E2514000DCD162 /* k_tan.c */; };
-		A7D8BB0F23E2514500DCD162 /* SDL_dataqueue.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A92823E2514000DCD162 /* SDL_dataqueue.c */; };
 		A7D8BB1523E2514500DCD162 /* SDL_mouse.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A92A23E2514000DCD162 /* SDL_mouse.c */; };
 		A7D8BB1B23E2514500DCD162 /* SDL_mouse_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A92B23E2514000DCD162 /* SDL_mouse_c.h */; };
 		A7D8BB2123E2514500DCD162 /* scancodes_windows.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A92C23E2514000DCD162 /* scancodes_windows.h */; };
@@ -531,7 +529,6 @@
 		A75FDBA723E4CB6F00529352 /* LICENSE.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
 		A75FDBC323EA380300529352 /* SDL_hidapi_rumble.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_hidapi_rumble.h; sourceTree = "<group>"; };
 		A75FDBC423EA380300529352 /* SDL_hidapi_rumble.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_rumble.c; sourceTree = "<group>"; };
-		A7D8A57023E2513D00DCD162 /* SDL_dataqueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_dataqueue.h; sourceTree = "<group>"; };
 		A7D8A57123E2513D00DCD162 /* SDL.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL.c; sourceTree = "<group>"; };
 		A7D8A57323E2513D00DCD162 /* SDL_spinlock.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_spinlock.c; sourceTree = "<group>"; };
 		A7D8A57423E2513D00DCD162 /* SDL_atomic.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_atomic.c; sourceTree = "<group>"; };
@@ -812,7 +809,6 @@
 		A7D8A92523E2514000DCD162 /* s_floor.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = s_floor.c; sourceTree = "<group>"; };
 		A7D8A92623E2514000DCD162 /* math_libm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = math_libm.h; sourceTree = "<group>"; };
 		A7D8A92723E2514000DCD162 /* k_tan.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = k_tan.c; sourceTree = "<group>"; };
-		A7D8A92823E2514000DCD162 /* SDL_dataqueue.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_dataqueue.c; sourceTree = "<group>"; };
 		A7D8A92A23E2514000DCD162 /* SDL_mouse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_mouse.c; sourceTree = "<group>"; };
 		A7D8A92B23E2514000DCD162 /* SDL_mouse_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_mouse_c.h; sourceTree = "<group>"; };
 		A7D8A92C23E2514000DCD162 /* scancodes_windows.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scancodes_windows.h; sourceTree = "<group>"; };
@@ -1108,8 +1104,6 @@
 				A7D8A5EB23E2513D00DCD162 /* video */,
 				A7D8A7F523E2513F00DCD162 /* SDL_assert_c.h */,
 				A7D8A94423E2514000DCD162 /* SDL_assert.c */,
-				A7D8A92823E2514000DCD162 /* SDL_dataqueue.c */,
-				A7D8A57023E2513D00DCD162 /* SDL_dataqueue.h */,
 				A7D8A57523E2513D00DCD162 /* SDL_error_c.h */,
 				A7D8A8BF23E2513F00DCD162 /* SDL_error.c */,
 				F382071C284F362F004DD584 /* SDL_guid.c */,
@@ -2070,7 +2064,6 @@
 				F3F7D9B92933074E00816151 /* SDL_cpuinfo.h in Headers */,
 				F3990E062A788303000D8759 /* SDL_hidapi_ios.h in Headers */,
 				A7D8B98023E2514400DCD162 /* SDL_d3dmath.h in Headers */,
-				A7D8A94523E2514000DCD162 /* SDL_dataqueue.h in Headers */,
 				A7D8B8A223E2514400DCD162 /* SDL_diskaudio.h in Headers */,
 				A7D8BB3F23E2514500DCD162 /* SDL_displayevents_c.h in Headers */,
 				A7D8BA1923E2514400DCD162 /* SDL_draw.h in Headers */,
@@ -2552,7 +2545,6 @@
 				A7D8BBDB23E2574800DCD162 /* SDL_uikitmetalview.m in Sources */,
 				A7D8BB1523E2514500DCD162 /* SDL_mouse.c in Sources */,
 				A7D8BAD923E2514500DCD162 /* e_rem_pio2.c in Sources */,
-				A7D8BB0F23E2514500DCD162 /* SDL_dataqueue.c in Sources */,
 				F395C19C2569C68F00942BFF /* SDL_iokitjoystick.c in Sources */,
 				A7D8B4B223E2514300DCD162 /* SDL_sysjoystick.c in Sources */,
 				A7D8B3E023E2514300DCD162 /* SDL_cpuinfo.c in Sources */,
