@@ -1475,6 +1475,17 @@ extern "C" {
 #define SDL_HINT_RENDER_VSYNC               "SDL_RENDER_VSYNC"
 
 /**
+ *  \brief  A variable controlling whether the Metal render driver select low power device over default one
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Use the prefered OS device
+ *    "1"       - Select a low power one
+ *
+ *  By default the prefered OS device is used.
+ */
+#define SDL_HINT_RENDER_METAL_PREFER_LOW_POWER_DEVICE "SDL_RENDER_METAL_PREFER_LOW_POWER_DEVICE"
+
+/**
  *  \brief  A variable controlling if VSYNC is automatically disable if doesn't reach the enough FPS
  *
  *  This variable can be set to the following values:
