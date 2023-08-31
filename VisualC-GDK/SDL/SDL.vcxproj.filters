@@ -396,7 +396,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_vulkan.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\SDL_dataqueue.h" />
     <ClInclude Include="..\..\src\SDL_error_c.h" />
     <ClInclude Include="..\..\src\SDL_list.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_metal.h">
@@ -838,7 +837,6 @@
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
     <ClCompile Include="..\..\src\SDL.c" />
     <ClCompile Include="..\..\src\SDL_assert.c" />
-    <ClCompile Include="..\..\src\SDL_dataqueue.c" />
     <ClCompile Include="..\..\src\SDL_error.c" />
     <ClCompile Include="..\..\src\SDL_guid.c" />
     <ClCompile Include="..\..\src\SDL_hints.c" />

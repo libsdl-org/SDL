@@ -385,7 +385,6 @@
     <ClInclude Include="..\..\src\render\software\SDL_rotate.h" />
     <ClInclude Include="..\..\src\render\software\SDL_triangle.h" />
     <ClInclude Include="..\..\src\SDL_assert_c.h" />
-    <ClInclude Include="..\..\src\SDL_dataqueue.h" />
     <ClInclude Include="..\..\src\SDL_error_c.h" />
     <ClCompile Include="..\..\src\core\windows\pch.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -585,7 +584,6 @@
     <ClCompile Include="..\..\src\render\software\SDL_triangle.c" />
     <ClCompile Include="..\..\src\SDL.c" />
     <ClCompile Include="..\..\src\SDL_assert.c" />
-    <ClCompile Include="..\..\src\SDL_dataqueue.c" />
     <ClCompile Include="..\..\src\SDL_list.c" />
     <ClCompile Include="..\..\src\SDL_error.c" />
     <ClCompile Include="..\..\src\SDL_hints.c" />
