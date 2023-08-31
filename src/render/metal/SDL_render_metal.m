@@ -1755,7 +1755,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, Uint32 flags)
         }
 
 #ifdef __MACOS__
-        if (SDL_GetHintBoolean(SDL_HINT_METAL_PREFER_LOW_POWER_DEVICE, SDL_TRUE)) {
+        if (SDL_GetHintBoolean(SDL_HINT_RENDER_METAL_PREFER_LOW_POWER_DEVICE, SDL_TRUE)) {
             NSArray<id<MTLDevice>> *devices = MTLCopyAllDevices();
 
             for (id<MTLDevice> device in devices) {
