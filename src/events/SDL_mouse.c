@@ -609,6 +609,13 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
         }
     }
 
+    if (mouse->has_position && xrel == 0.0f && yrel == 0.0f) { /* Drop events that don't change state */
+#ifdef DEBUG_MOUSE
+        SDL_Log("Mouse event didn't change state - dropped!\n");
+#endif
+        return 0;
+    }
+
     /* Ignore relative motion positioning the first touch */
     if (mouseID == SDL_TOUCH_MOUSEID && !GetButtonState(mouse, SDL_TRUE)) {
         xrel = 0.0f;
@@ -616,13 +623,6 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
     }
 
     if (mouse->has_position) {
-        if (xrel == 0.0f && yrel == 0.0f) { /* Drop events that don't change state */
-#ifdef DEBUG_MOUSE
-            SDL_Log("Mouse event didn't change state - dropped!\n");
-#endif
-            return 0;
-        }
-
         /* Update internal mouse coordinates */
         if (!mouse->relative_mode) {
             mouse->x = x;
