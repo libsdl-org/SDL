@@ -24,8 +24,6 @@
 #ifndef SDL_sysaudio_h_
 #define SDL_sysaudio_h_
 
-#include "../SDL_dataqueue.h"
-
 #define DEBUG_AUDIOSTREAM 0
 #define DEBUG_AUDIO_CONVERT 0
 
@@ -154,38 +152,31 @@ typedef struct SDL_AudioDriver
     SDL_AtomicInt shutting_down;  // non-zero during SDL_Quit, so we known not to accept any last-minute device hotplugs.
 } SDL_AudioDriver;
 
+typedef struct SDL_AudioQueue SDL_AudioQueue;
+
 struct SDL_AudioStream
 {
-    SDL_DataQueue *queue;
-    SDL_Mutex *lock;  // this is just a copy of `queue`'s mutex. We share a lock.
+    SDL_Mutex* lock;
 
     SDL_AudioStreamCallback get_callback;
     void *get_callback_userdata;
     SDL_AudioStreamCallback put_callback;
     void *put_callback_userdata;
 
+    SDL_AudioSpec src_spec;
+    SDL_AudioSpec dst_spec;
+    float speed;
+
+    SDL_AudioQueue* queue;
+
+    SDL_bool track_changed;
+    Sint64 resample_offset;
+
     Uint8 *work_buffer;    // used for scratch space during data conversion/resampling.
     size_t work_buffer_allocation;
 
     Uint8 *history_buffer;  // history for left padding and future sample rate changes.
     size_t history_buffer_allocation;
-
-    SDL_bool flushed;
-
-    int resampler_padding_frames;
-    int history_buffer_frames;
-
-    SDL_AudioSpec src_spec;
-    SDL_AudioSpec dst_spec;
-
-    Sint64 resample_rate;
-    Sint64 resample_offset;
-
-    int src_sample_frame_size;
-    int dst_sample_frame_size;
-    int max_sample_frame_size;
-
-    int packetlen;
 
     SDL_bool simplified;  // SDL_TRUE if created via SDL_OpenAudioDeviceStream
 
