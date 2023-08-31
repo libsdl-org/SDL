@@ -470,18 +470,23 @@ static Sint64 GetResampleRate(const int src_rate, const int dst_rate)
     return sample_rate;
 }
 
-static size_t GetResamplerAvailableOutputFrames(const size_t input_frames, const Sint64 resample_rate, const Sint64 resample_offset)
+// !!! FIXME: This will blow up on weird processors.
+#ifndef SDL_INT_MAX
+#define SDL_INT_MAX 0x7FFFFFFF
+#endif
+
+static int GetResamplerAvailableOutputFrames(const size_t input_frames, const Sint64 resample_rate, const Sint64 resample_offset)
 {
     const Sint64 output_frames = (((Sint64)input_frames << 32) - resample_offset + resample_rate - 1) / resample_rate;
 
-    return (size_t) SDL_max(output_frames, 0);
+    return (int) SDL_clamp(output_frames, 0, SDL_INT_MAX);
 }
 
 static int GetResamplerNeededInputFrames(const int output_frames, const Sint64 resample_rate, const Sint64 resample_offset)
 {
     const Sint32 input_frames = (Sint32)((((output_frames - 1) * resample_rate) + resample_offset) >> 32) + 1;
 
-    return (int) SDL_max(input_frames, 0);
+    return (int) SDL_clamp(input_frames, 0, SDL_INT_MAX);
 }
 
 static int GetResamplerPaddingFrames(const Sint64 resample_rate)
@@ -1411,28 +1416,28 @@ static void UpdateStreamHistoryBuffer(SDL_AudioStream* stream, const SDL_AudioSp
     }
 }
 
-static size_t GetAudioStreamTrackAvailableFrames(SDL_AudioStream* stream, SDL_AudioTrack* track, Sint64 resample_offset)
+static Sint64 GetAudioStreamTrackAvailableFrames(SDL_AudioStream* stream, SDL_AudioTrack* track, Sint64 resample_offset)
 {
-    size_t frames = track->queued_bytes / GetAudioSpecFrameSize(&track->spec);
-
+    size_t input_frames = track->queued_bytes / GetAudioSpecFrameSize(&track->spec);
     Sint64 resample_rate = GetStreamResampleRate(stream, track->spec.freq);
+    Sint64 output_frames = (Sint64) input_frames;
 
     if (resample_rate) {
         if (!track->flushed) {
             SDL_assert(track->next == NULL);
             const int history_buffer_frames = GetHistoryBufferSampleFrames();
-            frames -= SDL_min(frames, (size_t)history_buffer_frames);
+            input_frames -= SDL_min(input_frames, (size_t) history_buffer_frames);
         }
 
-        frames = GetResamplerAvailableOutputFrames(frames, resample_rate, resample_offset);
+        output_frames = GetResamplerAvailableOutputFrames(input_frames, resample_rate, resample_offset);
     }
 
-    return frames;
+    return output_frames;
 }
 
-static size_t GetAudioStreamAvailableFrames(SDL_AudioStream *stream)
+static Sint64 GetAudioStreamAvailableFrames(SDL_AudioStream *stream)
 {
-    size_t total = 0;
+    Sint64 total = 0;
     Sint64 resample_offset = stream->resample_offset;
     SDL_AudioTrack* track;
 
@@ -1647,22 +1652,21 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
 
     // give the callback a chance to fill in more stream data if it wants.
     if (stream->get_callback) {
-        int approx_request = len / dst_frame_size;  // start with sample frames desired
+        Sint64 approx_request = len / dst_frame_size;  // start with sample frames desired
 
-        const int available_frames = (int) GetAudioStreamAvailableFrames(stream);
+        const Sint64 available_frames = GetAudioStreamAvailableFrames(stream);
         approx_request -= SDL_min(available_frames, approx_request);
 
         const Sint64 resample_rate = GetStreamResampleRate(stream, stream->src_spec.freq);
 
-        // FIXME: Is this correct?
         if (resample_rate) {
-            approx_request = GetResamplerNeededInputFrames(approx_request, resample_rate, 0);
+            approx_request = GetResamplerNeededInputFrames((int) approx_request, resample_rate, 0);
         }
 
         approx_request *= GetAudioSpecFrameSize(&stream->src_spec);  // convert sample frames to bytes.
 
         if (approx_request > 0) {  // don't call the callback if we can satisfy this request with existing data.
-            stream->get_callback(stream->get_callback_userdata, stream, approx_request);
+            stream->get_callback(stream->get_callback_userdata, stream, (int) SDL_min(approx_request, SDL_INT_MAX));
         }
     }
 
@@ -1677,7 +1681,7 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
             break;
         }
 
-        const int max_frames = (int) GetAudioStreamTrackAvailableFrames(stream, track, stream->resample_offset);
+        const Sint64 max_frames = GetAudioStreamTrackAvailableFrames(stream, track, stream->resample_offset);
 
         if (max_frames == 0) {
             if (track->flushed) {
@@ -1703,7 +1707,7 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
         // GetAudioStreamDataInternal assumes enough input data is available.
         int output_frames = len / dst_frame_size;
         output_frames = SDL_min(output_frames, chunk_size);
-        output_frames = SDL_min(output_frames, max_frames);
+        output_frames = (int) SDL_min(output_frames, max_frames);
 
         if (GetAudioStreamDataInternal(stream, buf, output_frames) != 0) {
             if (retval == 0) {
@@ -1742,7 +1746,7 @@ int SDL_GetAudioStreamAvailable(SDL_AudioStream *stream)
         return 0;
     }
 
-    size_t count = GetAudioStreamAvailableFrames(stream);
+    Sint64 count = GetAudioStreamAvailableFrames(stream);
 
     // convert from sample frames to bytes in destination format.
     count *= GetAudioSpecFrameSize(&stream->dst_spec);
@@ -1750,8 +1754,7 @@ int SDL_GetAudioStreamAvailable(SDL_AudioStream *stream)
     SDL_UnlockMutex(stream->lock);
 
     // if this overflows an int, just clamp it to a maximum.
-    const int max_int = 0x7FFFFFFF;  // !!! FIXME: This will blow up on weird processors. Is there an SDL_INT_MAX?
-    return (count >= ((size_t) max_int)) ? max_int : ((int) count);
+    return (int) SDL_min(count, 0x7FFFFFFF);
 }
 
 int SDL_ClearAudioStream(SDL_AudioStream *stream)
