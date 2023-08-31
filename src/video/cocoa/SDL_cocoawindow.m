@@ -2170,16 +2170,17 @@ void Cocoa_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             if (SDL_WINDOW_IS_POPUP(window)) {
                 NSWindow *nsparent = ((__bridge SDL_CocoaWindowData *)window->parent->driverdata).nswindow;
                 [nsparent addChildWindow:nswindow ordered:NSWindowAbove];
-            }
-            if (bActivate) {
-                [nswindow makeKeyAndOrderFront:nil];
             } else {
-                /* Order this window below the key window if we're not activating it */
-                if ([NSApp keyWindow]) {
-                    [nswindow orderWindow:NSWindowBelow relativeTo:[[NSApp keyWindow] windowNumber]];
+                if (bActivate) {
+                    [nswindow makeKeyAndOrderFront:nil];
+                } else {
+                    /* Order this window below the key window if we're not activating it */
+                    if ([NSApp keyWindow]) {
+                        [nswindow orderWindow:NSWindowBelow relativeTo:[[NSApp keyWindow] windowNumber]];
+                    }
                 }
-                [nswindow setIsVisible:YES];
             }
+            [nswindow setIsVisible:YES];
             [windowData.listener resumeVisibleObservation];
         }
     }
@@ -2234,13 +2235,13 @@ void Cocoa_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
             if (SDL_WINDOW_IS_POPUP(window)) {
                 NSWindow *nsparent = ((__bridge SDL_CocoaWindowData *)window->parent->driverdata).nswindow;
                 [nsparent addChildWindow:nswindow ordered:NSWindowAbove];
-            }
-
-            if (bActivate) {
-                [NSApp activateIgnoringOtherApps:YES];
-                [nswindow makeKeyAndOrderFront:nil];
             } else {
-                [nswindow orderFront:nil];
+                if (bActivate) {
+                    [NSApp activateIgnoringOtherApps:YES];
+                    [nswindow makeKeyAndOrderFront:nil];
+                } else {
+                    [nswindow orderFront:nil];
+                }
             }
         }
         [windowData.listener resumeVisibleObservation];
