@@ -38,7 +38,8 @@ extern "C" {
 
 /* Function prototypes */
 
-#define FONT_CHARACTER_SIZE 8
+extern int FONT_CHARACTER_SIZE;
+
 #define FONT_LINE_HEIGHT    (FONT_CHARACTER_SIZE + 2)
 
 /**
