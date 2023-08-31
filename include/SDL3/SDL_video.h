@@ -1681,7 +1681,8 @@ extern DECLSPEC int SDLCALL SDL_SetWindowInputFocus(SDL_Window *window);
  * Set whether the window may have input focus.
  *
  * \param window the window to set focusable state
- * \param focusable SDL_TRUE to allow input focus, SDL_FALSE to not allow input focus
+ * \param focusable SDL_TRUE to allow input focus, SDL_FALSE to not allow
+ *                  input focus
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
