@@ -3126,11 +3126,12 @@ struct SDLTest_CharTextureCache
 */
 static struct SDLTest_CharTextureCache *SDLTest_CharTextureCacheList;
 
+int FONT_CHARACTER_SIZE = 8;
+
 int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
 {
     const Uint32 charWidth = FONT_CHARACTER_SIZE;
     const Uint32 charHeight = FONT_CHARACTER_SIZE;
-    const Uint32 charSize = FONT_CHARACTER_SIZE;
     SDL_FRect srect;
     SDL_FRect drect;
     int result;
@@ -3149,8 +3150,8 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
      */
     srect.x = 0.0f;
     srect.y = 0.0f;
-    srect.w = (float)charWidth;
-    srect.h = (float)charHeight;
+    srect.w = 8.0f;
+    srect.h = 8.0f;
 
     /*
      * Setup destination rectangle
@@ -3190,7 +3191,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
             return -1;
         }
 
-        charpos = SDLTest_FontData + ci * charSize;
+        charpos = SDLTest_FontData + ci * 8;
         linepos = (Uint8 *)character->pixels;
         pitch = character->pitch;
 
@@ -3221,6 +3222,8 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
         if (cache->charTextureCache[ci] == NULL) {
             return -1;
         }
+
+        SDL_SetTextureScaleMode(cache->charTextureCache[ci], SDL_SCALEMODE_NEAREST);
     }
 
     /*
