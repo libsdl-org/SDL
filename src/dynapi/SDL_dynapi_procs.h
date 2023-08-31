@@ -973,3 +973,5 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_WriteS64BE,(SDL_RWops *a, Sint64 b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_GDKGetDefaultUser,(XUserHandle *a),(a),return)
 #endif
 SDL_DYNAPI_PROC(int,SDL_SetWindowFocusable,(SDL_Window *a, SDL_bool b),(a,b),return)
+SDL_DYNAPI_PROC(float,SDL_GetAudioStreamSpeed,(SDL_AudioStream *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_SetAudioStreamSpeed,(SDL_AudioStream *a, float b),(a,b),return)

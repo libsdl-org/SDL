@@ -703,10 +703,45 @@ extern DECLSPEC int SDLCALL SDL_GetAudioStreamFormat(SDL_AudioStream *stream,
  * \sa SDL_PutAudioStreamData
  * \sa SDL_GetAudioStreamData
  * \sa SDL_GetAudioStreamAvailable
+ * \sa SDL_SetAudioStreamSpeed
  */
 extern DECLSPEC int SDLCALL SDL_SetAudioStreamFormat(SDL_AudioStream *stream,
                                                      const SDL_AudioSpec *src_spec,
                                                      const SDL_AudioSpec *dst_spec);
+
+/**
+ * Get the playback speed of an audio stream.
+ *
+ * \param stream the SDL_AudioStream to query.
+ * \returns the playback speed of the stream, or 0.0 on error
+ *
+ * \threadsafety It is safe to call this function from any thread, as it holds
+ *               a stream-specific mutex while running.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetAudioStreamSpeed
+ */
+extern DECLSPEC float SDLCALL SDL_GetAudioStreamSpeed(SDL_AudioStream *stream);
+
+/**
+ * Change the playback speed of an audio stream.
+ *
+ * \param stream The stream the speed is being changed
+ * \param speed The new speed. 1.0 is normal speed, 1.2 is 20% faster, etc.
+ *              Must be between 0.01 and 100.
+ * \returns 0 on success, or -1 on error.
+ *
+ * \threadsafety It is safe to call this function from any thread, as it holds
+ *               a stream-specific mutex while running.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetAudioStreamSpeed
+ * \sa SDL_SetAudioStreamFormat
+ */
+extern DECLSPEC int SDLCALL SDL_SetAudioStreamSpeed(SDL_AudioStream *stream,
+                                                    float speed);
 
 /**
  * Add data to be converted/resampled to the stream.
