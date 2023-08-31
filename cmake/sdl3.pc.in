@@ -10,4 +10,4 @@ Version: @PROJECT_VERSION@
 Requires.private: @SDL_PC_PRIVATE_REQUIRES@
 Conflicts:
 Libs: -L${libdir} @SDL_RLD_FLAGS@ @SDL_PC_LIBS@ @SDL_PC_SECTION_LIBS_PRIVATE@ @SDL_PC_STATIC_LIBS@
-Cflags: -I${includedir} -I${includedir}/SDL3 @SDL_PC_CFLAGS@
+Cflags: -I${includedir} @SDL_PC_CFLAGS@
