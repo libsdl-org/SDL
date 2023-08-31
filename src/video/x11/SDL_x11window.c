@@ -623,7 +623,7 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     /* Setup the input hints so we get keyboard input */
     wmhints = X11_XAllocWMHints();
-    wmhints->input = True;
+    wmhints->input = !(window->flags & SDL_WINDOW_NOT_FOCUSABLE) ? True : False;
     wmhints->window_group = data->window_group;
     wmhints->flags = InputHint | WindowGroupHint;
 
@@ -1980,6 +1980,26 @@ void X11_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
 
     X11_XSendEvent(display, root, False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&e);
     X11_XFlush(display);
+}
+
+int X11_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool focusable)
+{
+    SDL_WindowData *data = window->driverdata;
+    Display *display = data->videodata->display;
+    XWMHints *wmhints;
+
+    wmhints = X11_XGetWMHints(display, data->xwindow);
+    if (wmhints == NULL) {
+        return SDL_SetError("Couldn't get WM hints");
+    }
+
+    wmhints->input = focusable ? True : False;
+    wmhints->flags |= InputHint;
+
+    X11_XSetWMHints(display, data->xwindow, wmhints);
+    X11_XFree(wmhints);
+
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */

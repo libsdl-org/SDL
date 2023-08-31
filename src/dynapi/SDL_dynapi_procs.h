@@ -972,3 +972,4 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_WriteS64BE,(SDL_RWops *a, Sint64 b),(a,b),return)
 #ifdef __GDK__
 SDL_DYNAPI_PROC(int,SDL_GDKGetDefaultUser,(XUserHandle *a),(a),return)
 #endif
+SDL_DYNAPI_PROC(int,SDL_SetWindowFocusable,(SDL_Window *a, SDL_bool b),(a,b),return)

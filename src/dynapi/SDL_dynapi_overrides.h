@@ -926,3 +926,4 @@
 #define SDL_WriteS64LE SDL_WriteS64LE_REAL
 #define SDL_WriteS64BE SDL_WriteS64BE_REAL
 #define SDL_GDKGetDefaultUser SDL_GDKGetDefaultUser_REAL
+#define SDL_SetWindowFocusable SDL_SetWindowFocusable_REAL

@@ -211,6 +211,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->AcceptDragAndDrop = WIN_AcceptDragAndDrop;
     device->FlashWindow = WIN_FlashWindow;
     device->ShowWindowSystemMenu = WIN_ShowWindowSystemMenu;
+    device->SetWindowFocusable = WIN_SetWindowFocusable;
 
     device->shape_driver.CreateShaper = Win32_CreateShaper;
     device->shape_driver.SetWindowShape = Win32_SetWindowShape;

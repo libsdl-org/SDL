@@ -150,7 +150,8 @@ typedef enum
     SDL_WINDOW_KEYBOARD_GRABBED     = 0x00100000,   /**< window has grabbed keyboard input */
     SDL_WINDOW_VULKAN               = 0x10000000,   /**< window usable for Vulkan surface */
     SDL_WINDOW_METAL                = 0x20000000,   /**< window usable for Metal view */
-    SDL_WINDOW_TRANSPARENT          = 0x40000000    /**< window with transparent buffer */
+    SDL_WINDOW_TRANSPARENT          = 0x40000000,   /**< window with transparent buffer */
+    SDL_WINDOW_NOT_FOCUSABLE        = 0x80000000,   /**< window should not be focusable */
 
 } SDL_WindowFlags;
 
@@ -1675,6 +1676,19 @@ extern DECLSPEC int SDLCALL SDL_SetWindowModalFor(SDL_Window *modal_window, SDL_
  * \sa SDL_RaiseWindow
  */
 extern DECLSPEC int SDLCALL SDL_SetWindowInputFocus(SDL_Window *window);
+
+/**
+ * Set whether the window may have input focus.
+ *
+ * \param window the window to set focusable state
+ * \param focusable SDL_TRUE to allow input focus, SDL_FALSE to not allow input focus
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_SetWindowFocusable(SDL_Window *window, SDL_bool focusable);
+
 
 /**
  * Display the system-level window menu.

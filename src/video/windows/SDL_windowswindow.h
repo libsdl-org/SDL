@@ -109,6 +109,7 @@ extern int WIN_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Flash
 extern void WIN_UpdateDarkModeForHWND(HWND hwnd);
 extern int WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags);
 extern void WIN_ShowWindowSystemMenu(SDL_Window *window, int x, int y);
+extern int WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool focusable);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

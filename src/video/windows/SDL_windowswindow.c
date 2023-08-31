@@ -144,10 +144,11 @@ static DWORD GetWindowStyleEx(SDL_Window *window)
 {
     DWORD style = 0;
 
-    if (SDL_WINDOW_IS_POPUP(window)) {
-        style = WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
-    } else if (window->flags & SDL_WINDOW_UTILITY) {
-        style = WS_EX_TOOLWINDOW;
+    if (SDL_WINDOW_IS_POPUP(window) || (window->flags & SDL_WINDOW_UTILITY)) {
+        style |= WS_EX_TOOLWINDOW;
+    }
+    if (SDL_WINDOW_IS_POPUP(window) || (window->flags & SDL_WINDOW_NOT_FOCUSABLE)) {
+        style |= WS_EX_NOACTIVATE;
     }
     return style;
 }
@@ -1538,6 +1539,31 @@ void WIN_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
     pt.y = y;
     ClientToScreen(data->hwnd, &pt);
     SendMessage(data->hwnd, WM_POPUPSYSTEMMENU, 0, MAKELPARAM(pt.x, pt.y));
+}
+
+int WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool focusable)
+{
+    SDL_WindowData *data = window->driverdata;
+    HWND hwnd = data->hwnd;
+    const LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
+
+    SDL_assert(style != 0);
+
+    if (focusable) {
+        if (style & WS_EX_NOACTIVATE) {
+            if (SetWindowLong(hwnd, GWL_EXSTYLE, style & ~WS_EX_NOACTIVATE) == 0) {
+                return WIN_SetError("SetWindowLong()");
+            }
+        }
+    } else {
+        if (!(style & WS_EX_NOACTIVATE)) {
+            if (SetWindowLong(hwnd, GWL_EXSTYLE, style | WS_EX_NOACTIVATE) == 0) {
+                return WIN_SetError("SetWindowLong()");
+            }
+        }
+    }
+
+    return 0;
 }
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 

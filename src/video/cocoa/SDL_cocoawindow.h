@@ -169,5 +169,6 @@ extern int Cocoa_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, str
 extern int Cocoa_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 extern void Cocoa_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept);
 extern int Cocoa_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
+extern int Cocoa_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool focusable);
 
 #endif /* SDL_cocoawindow_h_ */

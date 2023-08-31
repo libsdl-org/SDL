@@ -116,7 +116,7 @@
 - (BOOL)canBecomeKeyWindow
 {
     SDL_Window *window = [self findSDLWindow];
-    if (window && !(window->flags & SDL_WINDOW_TOOLTIP)) {
+    if (window && !(window->flags & (SDL_WINDOW_TOOLTIP | SDL_WINDOW_NOT_FOCUSABLE))) {
         return YES;
     } else {
         return NO;
@@ -2676,6 +2676,11 @@ int Cocoa_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOpera
         }
         return 0;
     }
+}
+
+int Cocoa_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool focusable)
+{
+    return 0; /* just succeed, the real work is done elsewhere. */
 }
 
 int Cocoa_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity)
