@@ -175,6 +175,9 @@
     <Filter Include="video\gdk">
       <UniqueIdentifier>{3ad16a8a-0ed8-439c-a771-383af2e2867f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="video\intrin">
+      <UniqueIdentifier>{11f51180-1a84-4bc5-8bfd-b2a33e6e42c0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h">
@@ -839,6 +842,12 @@
     <ClInclude Include="..\..\src\thread\generic\SDL_sysrwlock_c.h">
       <Filter>thread\generic</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\video\intrin\SDL_blit_A_avx2.h">
+      <Filter>video\intrin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\intrin\SDL_blit_A_sse4.1.h">
+      <Filter>video\intrin</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
@@ -1396,6 +1405,12 @@
     </ClCompile>
     <ClCompile Include="..\..\src\thread\generic\SDL_sysrwlock.c">
       <Filter>thread\generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\intrin\SDL_blit_A_avx2.c">
+      <Filter>video\intrin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\intrin\SDL_blit_A_sse4_1.c">
+      <Filter>video\intrin</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
