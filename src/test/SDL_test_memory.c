@@ -25,6 +25,26 @@
 #include <libunwind.h>
 #endif
 
+#ifdef __WINDOWS__
+#include <windows.h>
+#include <dbghelp.h>
+
+static void *s_dbghelp;
+
+typedef BOOL (__stdcall *dbghelp_SymInitialize_fn)(HANDLE hProcess, PCSTR UserSearchPath, BOOL fInvadeProcess);
+
+typedef BOOL (__stdcall *dbghelp_SymFromAddr_fn)(HANDLE hProcess, DWORD64 Address, PDWORD64 Displacement, PSYMBOL_INFO Symbol);
+static dbghelp_SymFromAddr_fn dbghelp_SymFromAddr;
+
+#ifdef _WIN64
+typedef BOOL (__stdcall *dbghelp_SymGetLineFromAddr_fn)(HANDLE hProcess, DWORD64 qwAddr, PDWORD pdwDisplacement, PIMAGEHLP_LINE64 Line);
+#else
+typedef BOOL (__stdcall *dbghelp_SymGetLineFromAddr_fn)(HANDLE hProcess, DWORD qwAddr, PDWORD pdwDisplacement, PIMAGEHLP_LINE Line);
+#endif
+static dbghelp_SymGetLineFromAddr_fn dbghelp_SymGetLineFromAddr;
+
+#endif
+
 /* This is a simple tracking allocator to demonstrate the use of SDL's
    memory allocation replacement functionality.
 
@@ -32,12 +52,14 @@
    for production code.
 */
 
+#define MAXIMUM_TRACKED_STACK_DEPTH 32
+
 typedef struct SDL_tracked_allocation
 {
     void *mem;
     size_t size;
-    Uint64 stack[10];
-    char stack_names[10][256];
+    Uint64 stack[MAXIMUM_TRACKED_STACK_DEPTH];
+    char stack_names[MAXIMUM_TRACKED_STACK_DEPTH][256];
     struct SDL_tracked_allocation *next;
 } SDL_tracked_allocation;
 
@@ -124,6 +146,40 @@ static void SDL_TrackAllocation(void *mem, size_t size)
 
             if (stack_index == SDL_arraysize(entry->stack)) {
                 break;
+            }
+        }
+    }
+#elif defined(__WINDOWS__)
+    {
+        Uint32 count;
+        PVOID frames[63];
+        Uint32 i;
+
+        count = CaptureStackBackTrace(1, SDL_arraysize(frames), frames, NULL);
+
+        entry->size = SDL_min(count, MAXIMUM_TRACKED_STACK_DEPTH);
+        for (i = 0; i < entry->size; i++) {
+            char symbol_buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(TCHAR)];
+            PSYMBOL_INFO pSymbol = (PSYMBOL_INFO)symbol_buffer;
+            DWORD64 dwDisplacement = 0;
+            DWORD lineColumn = 0;
+            pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+            pSymbol->MaxNameLen = MAX_SYM_NAME;
+            IMAGEHLP_LINE line;
+            line.SizeOfStruct = sizeof(line);
+
+            entry->stack[i] = (Uint64)(uintptr_t)frames[i];
+            if (s_dbghelp) {
+                if (!dbghelp_SymFromAddr(GetCurrentProcess(), (DWORD64)(uintptr_t)frames[i], &dwDisplacement, pSymbol)) {
+                    SDL_strlcpy(pSymbol->Name, "???", MAX_SYM_NAME);
+                    dwDisplacement = 0;
+                }
+                if (!dbghelp_SymGetLineFromAddr(GetCurrentProcess(), (DWORD64)(uintptr_t)frames[i], &lineColumn, &line)) {
+                    line.FileName = "";
+                    line.LineNumber = 0;
+                }
+
+                SDL_snprintf(entry->stack_names[i], sizeof(entry->stack_names[i]), "%s+0x%llx %s:%u", pSymbol->Name, (unsigned long long)dwDisplacement, line.FileName, (Uint32)line.LineNumber);
             }
         }
     }
@@ -235,6 +291,30 @@ void SDLTest_TrackAllocations(void)
     if (s_previous_allocations != 0) {
         SDL_Log("SDLTest_TrackAllocations(): There are %d previous allocations, disabling free() validation", s_previous_allocations);
     }
+#ifdef __WINDOWS__
+    {
+        s_dbghelp = SDL_LoadObject("dbghelp.dll");
+        if (s_dbghelp) {
+            dbghelp_SymInitialize_fn dbghelp_SymInitialize;
+            dbghelp_SymInitialize = (dbghelp_SymInitialize_fn)SDL_LoadFunction(s_dbghelp, "SymInitialize");
+            dbghelp_SymFromAddr = (dbghelp_SymFromAddr_fn)SDL_LoadFunction(s_dbghelp, "SymFromAddr");
+#ifdef _WIN64
+            dbghelp_SymGetLineFromAddr = (dbghelp_SymGetLineFromAddr_fn)SDL_LoadFunction(s_dbghelp, "SymGetLineFromAddr64");
+#else
+            dbghelp_SymGetLineFromAddr = (dbghelp_SymGetLineFromAddr_fn)SDL_LoadFunction(s_dbghelp, "SymGetLineFromAddr");
+#endif
+            if (!dbghelp_SymFromAddr || !dbghelp_SymFromAddr || !dbghelp_SymGetLineFromAddr) {
+                SDL_UnloadObject(s_dbghelp);
+                s_dbghelp = NULL;
+            } else {
+                if (!dbghelp_SymInitialize(GetCurrentProcess(), NULL, TRUE)) {
+                    SDL_UnloadObject(s_dbghelp);
+                    s_dbghelp = NULL;
+                }
+            }
+        }
+    }
+#endif
 
     SDL_GetMemoryFunctions(&SDL_malloc_orig,
                            &SDL_calloc_orig,
