@@ -730,8 +730,8 @@ SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
 
     SDL_bool retval = SDL_TRUE;
     int buffer_size = device->buffer_size;
-    Uint8 *mix_buffer = current_audio.impl.GetDeviceBuf(device, &buffer_size);
-    if (!mix_buffer) {
+    Uint8 *device_buffer = current_audio.impl.GetDeviceBuf(device, &buffer_size);
+    if (!device_buffer) {
         retval = SDL_FALSE;
     } else {
         SDL_assert(buffer_size <= device->buffer_size);  // you can ask for less, but not more.
@@ -739,59 +739,83 @@ SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
         switch (ChooseMixStrategy(device)) {
             case MIXSTRATEGY_SILENCE: {
                 //SDL_Log("MIX STRATEGY: SILENCE");
-                SDL_memset(mix_buffer, device->silence_value, buffer_size);
+                SDL_memset(device_buffer, device->silence_value, buffer_size);
                 break;
             }
 
             case MIXSTRATEGY_COPYONE: {
                 //SDL_Log("MIX STRATEGY: COPYONE");
-                SDL_assert(device->logical_devices != NULL);
-                SDL_assert(device->logical_devices->next == NULL);
-                SDL_assert(device->logical_devices->bound_streams != NULL);
-                SDL_assert(device->logical_devices->bound_streams->next_binding == NULL);
-                const int br = SDL_GetAudioStreamData(device->logical_devices->bound_streams, mix_buffer, buffer_size);
+                SDL_LogicalAudioDevice *logdev = device->logical_devices;
+                SDL_assert(logdev != NULL);
+                SDL_assert(logdev->next == NULL);
+                SDL_assert(logdev->bound_streams != NULL);
+                SDL_assert(logdev->bound_streams->next_binding == NULL);
+
+                SDL_AudioStream *stream = logdev->bound_streams;
+                SDL_SetAudioStreamFormat(stream, NULL, &device->spec);
+                const int br = SDL_GetAudioStreamData(stream, device_buffer, buffer_size);
                 if (br < 0) {  // Probably OOM. Kill the audio device; the whole thing is likely dying soon anyhow.
                     retval = SDL_FALSE;
-                    SDL_memset(mix_buffer, device->silence_value, buffer_size);  // just supply silence to the device before we die.
+                    SDL_memset(device_buffer, device->silence_value, buffer_size);  // just supply silence to the device before we die.
                 } else if (br < buffer_size) {
-                    SDL_memset(mix_buffer + br, device->silence_value, buffer_size - br);  // silence whatever we didn't write to.
+                    SDL_memset(device_buffer + br, device->silence_value, buffer_size - br);  // silence whatever we didn't write to.
                 }
                 break;
             }
 
             case MIXSTRATEGY_MIX: {
                 //SDL_Log("MIX STRATEGY: MIX");
-                SDL_memset(mix_buffer, device->silence_value, buffer_size);  // start with silence.
+                float *mix_buffer = (float *) ((device->spec.format == SDL_AUDIO_F32) ? device_buffer : device->mix_buffer);
+                const int needed_samples = buffer_size / (SDL_AUDIO_BITSIZE(device->spec.format) / 8);
+                const int work_buffer_size = needed_samples * sizeof (float);
+                SDL_AudioSpec outspec;
+
+                SDL_assert(work_buffer_size <= device->work_buffer_size);
+
+                outspec.format = SDL_AUDIO_F32SYS;
+                outspec.channels = device->spec.channels;
+                outspec.freq = device->spec.freq;
+                outspec.format = SDL_AUDIO_F32SYS;
+
+                SDL_memset(mix_buffer, '\0', buffer_size);  // start with silence.
+
                 for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev != NULL; logdev = logdev->next) {
                     if (SDL_AtomicGet(&logdev->paused)) {
                         continue;  // paused? Skip this logical device.
                     }
 
                     for (SDL_AudioStream *stream = logdev->bound_streams; stream != NULL; stream = stream->next_binding) {
+                        SDL_SetAudioStreamFormat(stream, NULL, &outspec);
                         /* this will hold a lock on `stream` while getting. We don't explicitly lock the streams
                            for iterating here because the binding linked list can only change while the device lock is held.
                            (we _do_ lock the stream during binding/unbinding to make sure that two threads can't try to bind
                            the same stream to different devices at the same time, though.) */
-                        const int br = SDL_GetAudioStreamData(stream, device->work_buffer, buffer_size);
+                        const int br = SDL_GetAudioStreamData(stream, device->work_buffer, work_buffer_size);
                         if (br < 0) {  // Probably OOM. Kill the audio device; the whole thing is likely dying soon anyhow.
                             retval = SDL_FALSE;
                             break;
                         } else if (br > 0) {  // it's okay if we get less than requested, we mix what we have.
-                            // !!! FIXME: this needs to mix to float32 or int32, so we don't clip.
-                            if (SDL_MixAudioFormat(mix_buffer, device->work_buffer, device->spec.format, br, SDL_MIX_MAXVOLUME) < 0) {  // !!! FIXME: allow streams to specify gain?
-                                SDL_assert(!"We probably ended up with some totally unexpected audio format here");
+                            if (SDL_MixAudioFormat((Uint8 *) mix_buffer, device->work_buffer, SDL_AUDIO_F32SYS, br, SDL_MIX_MAXVOLUME) < 0) {  // !!! FIXME: allow streams to specify gain?
+                                SDL_assert(!"This shouldn't happen.");
                                 retval = SDL_FALSE;  // uh...?
                                 break;
                             }
                         }
                     }
                 }
+
+                if (((Uint8 *) mix_buffer) != device_buffer) {
+                    // !!! FIXME: we can't promise the device buf is aligned/padded for SIMD.
+                    //ConvertAudio(needed_samples * device->spec.channels, mix_buffer, SDL_AUDIO_F32SYS, device->spec.channels, device_buffer, device->spec.format, device->spec.channels, device->work_buffer);
+                    ConvertAudio(needed_samples / device->spec.channels, mix_buffer, SDL_AUDIO_F32SYS, device->spec.channels, device->work_buffer, device->spec.format, device->spec.channels, NULL);
+                    SDL_memcpy(device_buffer, device->work_buffer, buffer_size);
+                }
                 break;
             }
         }
 
         // PlayDevice SHOULD NOT BLOCK, as we are holding a lock right now. Block in WaitDevice instead!
-        if (current_audio.impl.PlayDevice(device, mix_buffer, buffer_size) < 0) {
+        if (current_audio.impl.PlayDevice(device, device_buffer, buffer_size) < 0) {
             retval = SDL_FALSE;
         }
     }
@@ -1148,10 +1172,11 @@ static void ClosePhysicalAudioDevice(SDL_AudioDevice *device)
         device->hidden = NULL;  // just in case.
     }
 
-    if (device->work_buffer) {
-        SDL_aligned_free(device->work_buffer);
-        device->work_buffer = NULL;
-    }
+    SDL_aligned_free(device->work_buffer);
+    device->work_buffer = NULL;
+
+    SDL_aligned_free(device->mix_buffer);
+    device->mix_buffer = NULL;
 
     SDL_memcpy(&device->spec, &device->default_spec, sizeof (SDL_AudioSpec));
     device->sample_frames = 0;
@@ -1239,6 +1264,8 @@ void SDL_UpdatedAudioDeviceFormat(SDL_AudioDevice *device)
 {
     device->silence_value = SDL_GetSilenceValueForFormat(device->spec.format);
     device->buffer_size = device->sample_frames * (SDL_AUDIO_BITSIZE(device->spec.format) / 8) * device->spec.channels;
+    device->work_buffer_size = device->sample_frames * sizeof (float) * device->spec.channels;
+    device->work_buffer_size = SDL_max(device->buffer_size, device->work_buffer_size);  // just in case we end up with a 64-bit audio format at some point.
 }
 
 char *SDL_GetAudioThreadName(SDL_AudioDevice *device, char *buf, size_t buflen)
@@ -1282,10 +1309,18 @@ static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec 
     SDL_UpdatedAudioDeviceFormat(device);  // in case the backend changed things and forgot to call this.
 
     // Allocate a scratch audio buffer
-    device->work_buffer = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), device->buffer_size);
+    device->work_buffer = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), device->work_buffer_size);
     if (device->work_buffer == NULL) {
         ClosePhysicalAudioDevice(device);
         return SDL_OutOfMemory();
+    }
+
+    if (device->spec.format != SDL_AUDIO_F32SYS) {
+        device->mix_buffer = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), device->work_buffer_size);
+        if (device->mix_buffer == NULL) {
+            ClosePhysicalAudioDevice(device);
+            return SDL_OutOfMemory();
+        }
     }
 
     // Start the audio thread if necessary
@@ -1765,7 +1800,7 @@ int SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SDL
 {
     SDL_bool kill_device = SDL_FALSE;
 
-    const int orig_buffer_size = device->buffer_size;
+    const int orig_work_buffer_size = device->work_buffer_size;
     const SDL_bool iscapture = device->iscapture;
 
     if ((device->spec.format != newspec->format) || (device->spec.channels != newspec->channels) || (device->spec.freq != newspec->freq)) {
@@ -1782,11 +1817,20 @@ int SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SDL
     if (!kill_device) {
         device->sample_frames = new_sample_frames;
         SDL_UpdatedAudioDeviceFormat(device);
-        if (device->work_buffer && (device->buffer_size > orig_buffer_size)) {
+        if (device->work_buffer && (device->work_buffer_size > orig_work_buffer_size)) {
             SDL_aligned_free(device->work_buffer);
-            device->work_buffer = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), device->buffer_size);
+            device->work_buffer = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), device->work_buffer_size);
             if (!device->work_buffer) {
                 kill_device = SDL_TRUE;
+            }
+
+            SDL_aligned_free(device->mix_buffer);
+            device->mix_buffer = NULL;
+            if (device->spec.format != SDL_AUDIO_F32SYS) {
+                device->mix_buffer = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), device->work_buffer_size);
+                if (!device->mix_buffer) {
+                    kill_device = SDL_TRUE;
+                }
             }
         }
     }

@@ -114,6 +114,11 @@ extern SDL_bool SDL_CaptureAudioThreadIterate(SDL_AudioDevice *device);
 extern void SDL_CaptureAudioThreadShutdown(SDL_AudioDevice *device);
 extern void SDL_AudioThreadFinalize(SDL_AudioDevice *device);
 
+// this gets used from the audio device threads. It has rules, don't use this if you don't know how to use it!
+void ConvertAudio(int num_frames, const void *src, SDL_AudioFormat src_format, int src_channels,
+                  void *dst, SDL_AudioFormat dst_format, int dst_channels, void* scratch);
+
+
 typedef struct SDL_AudioDriverImpl
 {
     void (*DetectDevices)(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture);
@@ -265,8 +270,12 @@ struct SDL_AudioDevice
     // SDL_TRUE if this is a capture device instead of an output device
     SDL_bool iscapture;
 
-    // Scratch buffer used for mixing.
+    // Scratch buffers used for mixing.
     Uint8 *work_buffer;
+    Uint8 *mix_buffer;
+
+    // Size of work_buffer (and mix_buffer) in bytes.
+    int work_buffer_size;
 
     // A thread to feed the audio device
     SDL_Thread *thread;

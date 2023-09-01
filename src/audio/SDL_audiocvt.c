@@ -488,8 +488,8 @@ static SDL_bool SDL_IsSupportedChannelCount(const int channels)
 //
 // The scratch buffer must be able to store `num_frames * CalculateMaxSampleFrameSize(src_format, src_channels, dst_format, dst_channels)` bytes.
 // If the scratch buffer is NULL, this restriction applies to the output buffer instead.
-static void ConvertAudio(int num_frames, const void *src, SDL_AudioFormat src_format, int src_channels,
-                         void *dst, SDL_AudioFormat dst_format, int dst_channels, void* scratch)
+void ConvertAudio(int num_frames, const void *src, SDL_AudioFormat src_format, int src_channels,
+                  void *dst, SDL_AudioFormat dst_format, int dst_channels, void* scratch)
 {
     SDL_assert(src != NULL);
     SDL_assert(dst != NULL);
