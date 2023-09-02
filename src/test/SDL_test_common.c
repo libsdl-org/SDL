@@ -2046,6 +2046,8 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
     {
         SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
         if (window) {
+            /* Clear cache to avoid stale textures */
+            SDLTest_CleanupTextDrawing();
             for (i = 0; i < state->num_windows; ++i) {
                 if (window == state->windows[i]) {
                     if (state->targets[i]) {
