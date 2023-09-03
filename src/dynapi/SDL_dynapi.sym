@@ -902,8 +902,8 @@ SDL3_0.0.0 {
     SDL_WriteS64BE;
     SDL_GDKGetDefaultUser;
     SDL_SetWindowFocusable;
-    SDL_GetAudioStreamSpeed;
-    SDL_SetAudioStreamSpeed;
+    SDL_GetAudioStreamFrequencyRatio;
+    SDL_SetAudioStreamFrequencyRatio;
     # extra symbols go here (don't modify this line)
   local: *;
 };

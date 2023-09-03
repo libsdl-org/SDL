@@ -143,7 +143,7 @@ static void skip_audio(float amount)
 
     SDL_LockAudioStream(stream);
 
-    speed = SDL_GetAudioStreamSpeed(stream);
+    speed = SDL_GetAudioStreamFrequencyRatio(stream);
     SDL_GetAudioStreamFormat(stream, NULL, &dst_spec);
 
     /* Gimme that crunchy audio */
@@ -151,7 +151,7 @@ static void skip_audio(float amount)
     new_spec.channels = 1;
     new_spec.freq = 4000;
 
-    SDL_SetAudioStreamSpeed(stream, 100.0f);
+    SDL_SetAudioStreamFrequencyRatio(stream, 100.0f);
     SDL_SetAudioStreamFormat(stream, NULL, &new_spec);
 
     num_frames = (int)(new_spec.freq * ((speed * amount) / 100.0f));
@@ -163,7 +163,7 @@ static void skip_audio(float amount)
     }
 
     SDL_SetAudioStreamFormat(stream, NULL, &dst_spec);
-    SDL_SetAudioStreamSpeed(stream, speed);
+    SDL_SetAudioStreamFrequencyRatio(stream, speed);
 
     SDL_UnlockAudioStream(stream);
 
@@ -287,7 +287,7 @@ static void loop(void)
 
     if (sliders[0].changed) {
         sliders[0].changed = SDL_FALSE;
-        SDL_SetAudioStreamSpeed(stream, sliders[0].value);
+        SDL_SetAudioStreamFrequencyRatio(stream, sliders[0].value);
     }
 
     if (SDL_GetAudioStreamFormat(stream, &src_spec, &dst_spec) == 0) {

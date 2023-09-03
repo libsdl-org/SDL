@@ -170,7 +170,7 @@ struct SDL_AudioStream
 
     SDL_AudioSpec src_spec;
     SDL_AudioSpec dst_spec;
-    float speed;
+    float freq_ratio;
 
     SDL_AudioQueue* queue;
 
