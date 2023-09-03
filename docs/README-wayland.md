@@ -34,3 +34,12 @@ encounter limitations or behavior that is different from other windowing systems
 ### Warping the global mouse cursor position via ```SDL_WarpMouseGlobal()``` doesn't work
 
 - For security reasons, Wayland does not allow warping the global mouse cursor position.
+
+### The application icon can't be set via ```SDL_SetWindowIcon()```
+
+- Wayland doesn't support programmatically setting the application icon. To provide a custom icon for your application,
+  you must create an associated desktop entry file, aka a `.desktop` file, that points to the icon image. Please see the
+  [Desktop Entry Specification](https://specifications.freedesktop.org/desktop-entry-spec/latest/) for more information
+  on the format of this file. Note that if your application manually sets the application ID via the `SDL_APP_ID` hint
+  string, the desktop entry file name should match the application ID. For example, if your application ID is set
+  to `org.my_org.sdl_app`, the desktop entry file should be named `org.my_org.sdl_app.desktop`.
