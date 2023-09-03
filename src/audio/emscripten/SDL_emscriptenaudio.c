@@ -38,7 +38,7 @@ static Uint8 *EMSCRIPTENAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_
 
 static int EMSCRIPTENAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
-    const int framelen = SDL_AUDIO_BYTESIZE(device->spec.format) * device->spec.channels;
+    const int framelen = SDL_AUDIO_FRAMESIZE(device->spec);
     MAIN_THREAD_EM_ASM({
         var SDL3 = Module['SDL3'];
         var numChannels = SDL3.audio.currentOutputBuffer['numberOfChannels'];
