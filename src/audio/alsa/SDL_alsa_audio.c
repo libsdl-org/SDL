@@ -355,8 +355,7 @@ static int ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buf
 {
     SDL_assert(buffer == device->hidden->mixbuf);
     Uint8 *sample_buf = device->hidden->mixbuf;
-    const int frame_size = SDL_AUDIO_BYTESIZE(device->spec.format) *
-                           device->spec.channels;
+    const int frame_size = SDL_AUDIO_FRAMESIZE(device->spec);
     snd_pcm_uframes_t frames_left = (snd_pcm_uframes_t) (buflen / frame_size);
 
     device->hidden->swizzle_func(device, sample_buf, frames_left);
@@ -402,8 +401,7 @@ static Uint8 *ALSA_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 static int ALSA_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
 {
     Uint8 *sample_buf = (Uint8 *)buffer;
-    const int frame_size = SDL_AUDIO_BYTESIZE(device->spec.format) *
-                           device->spec.channels;
+    const int frame_size = SDL_AUDIO_FRAMESIZE(device->spec);
     const int total_frames = buflen / frame_size;
     snd_pcm_uframes_t frames_left = total_frames;
 

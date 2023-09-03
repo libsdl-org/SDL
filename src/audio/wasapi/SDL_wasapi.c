@@ -621,7 +621,7 @@ static int mgmtthrtask_PrepDevice(void *userdata)
         return -1;
     }
 
-    device->hidden->framesize = SDL_AUDIO_BYTESIZE(device->spec.format) * device->spec.channels;
+    device->hidden->framesize = SDL_AUDIO_FRAMESIZE(device->spec);
 
     if (device->iscapture) {
         IAudioCaptureClient *capture = NULL;

@@ -832,9 +832,9 @@ SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
 void SDL_OutputAudioThreadShutdown(SDL_AudioDevice *device)
 {
     SDL_assert(!device->iscapture);
-    const int samples = (device->buffer_size / SDL_AUDIO_BYTESIZE(device->spec.format)) / device->spec.channels;
+    const int frames = device->buffer_size / SDL_AUDIO_FRAMESIZE(device->spec);
     // Wait for the audio to drain. !!! FIXME: don't bother waiting if device is lost.
-    SDL_Delay(((samples * 1000) / device->spec.freq) * 2);
+    SDL_Delay(((frames * 1000) / device->spec.freq) * 2);
     current_audio.impl.ThreadDeinit(device);
     SDL_AudioThreadFinalize(device);
 }
@@ -1261,7 +1261,7 @@ static int GetDefaultSampleFramesFromFreq(int freq)
 void SDL_UpdatedAudioDeviceFormat(SDL_AudioDevice *device)
 {
     device->silence_value = SDL_GetSilenceValueForFormat(device->spec.format);
-    device->buffer_size = device->sample_frames * SDL_AUDIO_BYTESIZE(device->spec.format) * device->spec.channels;
+    device->buffer_size = device->sample_frames * SDL_AUDIO_FRAMESIZE(device->spec);
     device->work_buffer_size = device->sample_frames * sizeof (float) * device->spec.channels;
     device->work_buffer_size = SDL_max(device->buffer_size, device->work_buffer_size);  // just in case we end up with a 64-bit audio format at some point.
 }

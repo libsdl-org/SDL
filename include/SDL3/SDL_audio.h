@@ -152,6 +152,9 @@ typedef struct SDL_AudioSpec
     int freq;                   /**< sample rate: sample frames per second */
 } SDL_AudioSpec;
 
+/* Calculate the size of each audio frame (in bytes) */
+#define SDL_AUDIO_FRAMESIZE(x) (SDL_AUDIO_BYTESIZE((x).format) * (x).channels)
+
 /* SDL_AudioStream is an audio conversion interface.
     - It can handle resampling data in chunks without generating
       artifacts, when it doesn't have the complete buffer available.

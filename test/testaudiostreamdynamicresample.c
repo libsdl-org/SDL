@@ -292,7 +292,7 @@ static void loop(void)
 
     if (SDL_GetAudioStreamFormat(stream, &src_spec, &dst_spec) == 0) {
         available_bytes = SDL_GetAudioStreamAvailable(stream);
-        available_seconds = (float)available_bytes / (float)(SDL_AUDIO_BYTESIZE(dst_spec.format) * dst_spec.freq * dst_spec.channels);
+        available_seconds = (float)available_bytes / (float)(SDL_AUDIO_FRAMESIZE(dst_spec) * dst_spec.freq);
 
         /* keep it looping. */
         if (auto_loop && (available_seconds < 10.0f)) {

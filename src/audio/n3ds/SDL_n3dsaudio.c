@@ -161,7 +161,7 @@ static int N3DSAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     SDL_memset(device->hidden->waveBuf, 0, sizeof(ndspWaveBuf) * NUM_BUFFERS);
 
-    const int sample_frame_size = device->spec.channels * SDL_AUDIO_BYTESIZE(device->spec.format);
+    const int sample_frame_size = SDL_AUDIO_FRAMESIZE(device->spec);
     for (unsigned i = 0; i < NUM_BUFFERS; i++) {
         device->hidden->waveBuf[i].data_vaddr = data_vaddr;
         device->hidden->waveBuf[i].nsamples = device->buffer_size / sample_frame_size;

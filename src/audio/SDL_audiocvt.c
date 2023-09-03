@@ -1056,11 +1056,6 @@ static int CalculateMaxFrameSize(SDL_AudioFormat src_format, int src_channels, S
     return max_format_size * max_channels;
 }
 
-static int GetAudioSpecFrameSize(const SDL_AudioSpec* spec)
-{
-    return SDL_AUDIO_BYTESIZE(spec->format) * spec->channels;
-}
-
 static Sint64 GetStreamResampleRate(SDL_AudioStream* stream, int src_freq)
 {
     src_freq = (int)((float)src_freq * stream->freq_ratio);
@@ -1070,7 +1065,7 @@ static Sint64 GetStreamResampleRate(SDL_AudioStream* stream, int src_freq)
 
 static int ResetHistoryBuffer(SDL_AudioStream *stream, const SDL_AudioSpec *spec)
 {
-    const size_t history_buffer_allocation = GetHistoryBufferSampleFrames() * GetAudioSpecFrameSize(spec);
+    const size_t history_buffer_allocation = GetHistoryBufferSampleFrames() * SDL_AUDIO_FRAMESIZE(*spec);
     Uint8 *history_buffer = stream->history_buffer;
 
     if (stream->history_buffer_allocation < history_buffer_allocation) {
@@ -1313,7 +1308,7 @@ int SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
         return -1;
     }
 
-    if ((len % GetAudioSpecFrameSize(&stream->src_spec)) != 0) {
+    if ((len % SDL_AUDIO_FRAMESIZE(stream->src_spec)) != 0) {
         SDL_UnlockMutex(stream->lock);
         return SDL_SetError("Can't add partial sample frames");
     }
@@ -1398,7 +1393,7 @@ static void UpdateStreamHistoryBuffer(SDL_AudioStream* stream, const SDL_AudioSp
 
     // Even if we aren't currently resampling, we always need to update the history buffer
     Uint8 *history_buffer = stream->history_buffer;
-    int history_bytes = history_buffer_frames * GetAudioSpecFrameSize(spec);
+    int history_bytes = history_buffer_frames * SDL_AUDIO_FRAMESIZE(*spec);
 
     if (left_padding != NULL) {
         // Fill in the left padding using the history buffer
@@ -1418,7 +1413,7 @@ static void UpdateStreamHistoryBuffer(SDL_AudioStream* stream, const SDL_AudioSp
 
 static Sint64 GetAudioStreamTrackAvailableFrames(SDL_AudioStream* stream, SDL_AudioTrack* track, Sint64 resample_offset)
 {
-    size_t input_frames = track->queued_bytes / GetAudioSpecFrameSize(&track->spec);
+    size_t input_frames = track->queued_bytes / SDL_AUDIO_FRAMESIZE(track->spec);
     Sint64 resample_rate = GetStreamResampleRate(stream, track->spec.freq);
     Sint64 output_frames = (Sint64) input_frames;
 
@@ -1460,7 +1455,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int ou
 
     const SDL_AudioFormat src_format = src_spec->format;
     const int src_channels = src_spec->channels;
-    const int src_frame_size = GetAudioSpecFrameSize(src_spec);
+    const int src_frame_size = SDL_AUDIO_FRAMESIZE(*src_spec);
 
     const SDL_AudioFormat dst_format = dst_spec->format;
     const int dst_channels = dst_spec->channels;
@@ -1646,7 +1641,7 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
         return -1;
     }
 
-    const int dst_frame_size = GetAudioSpecFrameSize(&stream->dst_spec);
+    const int dst_frame_size = SDL_AUDIO_FRAMESIZE(stream->dst_spec);
 
     len -= len % dst_frame_size;  // chop off any fractional sample frame.
 
@@ -1663,7 +1658,7 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
             approx_request = GetResamplerNeededInputFrames((int) approx_request, resample_rate, 0);
         }
 
-        approx_request *= GetAudioSpecFrameSize(&stream->src_spec);  // convert sample frames to bytes.
+        approx_request *= SDL_AUDIO_FRAMESIZE(stream->src_spec);  // convert sample frames to bytes.
 
         if (approx_request > 0) {  // don't call the callback if we can satisfy this request with existing data.
             stream->get_callback(stream->get_callback_userdata, stream, (int) SDL_min(approx_request, SDL_INT_MAX));
@@ -1749,7 +1744,7 @@ int SDL_GetAudioStreamAvailable(SDL_AudioStream *stream)
     Sint64 count = GetAudioStreamAvailableFrames(stream);
 
     // convert from sample frames to bytes in destination format.
-    count *= GetAudioSpecFrameSize(&stream->dst_spec);
+    count *= SDL_AUDIO_FRAMESIZE(stream->dst_spec);
 
     SDL_UnlockMutex(stream->lock);
 

@@ -513,7 +513,7 @@ static void StreamThing_ontick(Thing *thing, Uint64 now)
         if (!available || (SDL_GetAudioStreamFormat(thing->data.stream.stream, NULL, &spec) < 0)) {
             DestroyThingInPoof(thing);
         } else {
-            const int ticksleft = (int) ((((Uint64) ((available / SDL_AUDIO_BYTESIZE(spec.format)) / spec.channels)) * 1000) / spec.freq);
+            const int ticksleft = (int) ((((Uint64) (available / SDL_AUDIO_FRAMESIZE(spec))) * 1000) / spec.freq);
             const float pct = thing->data.stream.total_ticks ? (((float) (ticksleft)) / ((float) thing->data.stream.total_ticks)) : 0.0f;
             thing->progress = 1.0f - pct;
         }
@@ -553,7 +553,7 @@ static void StreamThing_ondrop(Thing *thing, int button, float x, float y)
                 SDL_UnbindAudioStream(thing->data.stream.stream); /* unbind from current device */
                 if (thing->line_connected_to->what == THING_LOGDEV_CAPTURE) {
                     SDL_FlushAudioStream(thing->data.stream.stream);
-                    thing->data.stream.total_ticks = (int) (((((Uint64) (SDL_GetAudioStreamAvailable(thing->data.stream.stream) / SDL_AUDIO_BYTESIZE(spec->format))) / spec->channels) * 1000) / spec->freq);
+                    thing->data.stream.total_ticks = (int) ((((Uint64) (SDL_GetAudioStreamAvailable(thing->data.stream.stream) / SDL_AUDIO_FRAMESIZE(*spec))) * 1000) / spec->freq);
                 }
             }
 
@@ -596,7 +596,7 @@ static Thing *CreateStreamThing(const SDL_AudioSpec *spec, const Uint8 *buf, con
     if (buf && buflen) {
         SDL_PutAudioStreamData(thing->data.stream.stream, buf, (int) buflen);
         SDL_FlushAudioStream(thing->data.stream.stream);
-        thing->data.stream.total_ticks = (int) (((((Uint64) (SDL_GetAudioStreamAvailable(thing->data.stream.stream) / SDL_AUDIO_BYTESIZE(spec->format))) / spec->channels) * 1000) / spec->freq);
+        thing->data.stream.total_ticks = (int) ((((Uint64) (SDL_GetAudioStreamAvailable(thing->data.stream.stream) / SDL_AUDIO_FRAMESIZE(*spec))) * 1000) / spec->freq);
     }
     thing->ontick = StreamThing_ontick;
     thing->ondrag = StreamThing_ondrag;
