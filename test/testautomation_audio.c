@@ -842,14 +842,14 @@ static int audio_resampleLoss(void *arg)
     SDLTest_AssertPass("Test resampling of %i s %i Hz %f phase sine wave from sampling rate of %i Hz to %i Hz",
                        spec->time, spec->freq, spec->phase, spec->rate_in, spec->rate_out);
 
-    tmpspec1.format = SDL_AUDIO_F32;
+    tmpspec1.format = SDL_AUDIO_F32SYS;
     tmpspec1.channels = num_channels;
     tmpspec1.freq = spec->rate_in;
-    tmpspec2.format = SDL_AUDIO_F32;
+    tmpspec2.format = SDL_AUDIO_F32SYS;
     tmpspec2.channels = num_channels;
     tmpspec2.freq = spec->rate_out;
     stream = SDL_CreateAudioStream(&tmpspec1, &tmpspec2);
-    SDLTest_AssertPass("Call to SDL_CreateAudioStream(SDL_AUDIO_F32, 1, %i, SDL_AUDIO_F32, 1, %i)", spec->rate_in, spec->rate_out);
+    SDLTest_AssertPass("Call to SDL_CreateAudioStream(SDL_AUDIO_F32SYS, 1, %i, SDL_AUDIO_F32SYS, 1, %i)", spec->rate_in, spec->rate_out);
     SDLTest_AssertCheck(stream != NULL, "Expected SDL_CreateAudioStream to succeed.");
     if (stream == NULL) {
       return TEST_ABORTED;
@@ -1020,13 +1020,13 @@ static int audio_convertAccuracy(void *arg)
         float target_max_delta = (bits > 23) ? 0.0f : (1.0f / (float)(1 << bits));
         float target_min_delta = -target_max_delta;
 
-        src_spec.format = SDL_AUDIO_F32;
+        src_spec.format = SDL_AUDIO_F32SYS;
         src_spec.channels = 1;
-        src_spec.freq = 44800;
+        src_spec.freq = 44100;
 
         tmp_spec.format = format;
         tmp_spec.channels = 1;
-        tmp_spec.freq = 44800;
+        tmp_spec.freq = 44100;
 
         convert_begin = SDL_GetPerformanceCounter();
 

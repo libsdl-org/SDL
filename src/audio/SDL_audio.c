@@ -765,7 +765,7 @@ SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
 
             case MIXSTRATEGY_MIX: {
                 //SDL_Log("MIX STRATEGY: MIX");
-                float *mix_buffer = (float *) ((device->spec.format == SDL_AUDIO_F32) ? device_buffer : device->mix_buffer);
+                float *mix_buffer = (float *) ((device->spec.format == SDL_AUDIO_F32SYS) ? device_buffer : device->mix_buffer);
                 const int needed_samples = buffer_size / (SDL_AUDIO_BITSIZE(device->spec.format) / 8);
                 const int work_buffer_size = needed_samples * sizeof (float);
                 SDL_AudioSpec outspec;
