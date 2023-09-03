@@ -1063,7 +1063,7 @@ static int GetAudioSpecFrameSize(const SDL_AudioSpec* spec)
 
 static Sint64 GetStreamResampleRate(SDL_AudioStream* stream, int src_freq)
 {
-    src_freq = (int)((float)src_freq * stream->speed);
+    src_freq = (int)((float)src_freq * stream->freq_ratio);
 
     return GetResampleRate(src_freq, stream->dst_spec.freq);
 }
@@ -1101,7 +1101,7 @@ SDL_AudioStream *SDL_CreateAudioStream(const SDL_AudioSpec *src_spec, const SDL_
         return NULL;
     }
 
-    retval->speed = 1.0f;
+    retval->freq_ratio = 1.0f;
     retval->queue = CreateAudioQueue(4096);
     retval->track_changed = SDL_TRUE;
 
@@ -1242,7 +1242,7 @@ int SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_s
     return 0;
 }
 
-float SDL_GetAudioStreamSpeed(SDL_AudioStream *stream)
+float SDL_GetAudioStreamFrequencyRatio(SDL_AudioStream *stream)
 {
     if (!stream) {
         SDL_InvalidParamError("stream");
@@ -1250,30 +1250,30 @@ float SDL_GetAudioStreamSpeed(SDL_AudioStream *stream)
     }
 
     SDL_LockMutex(stream->lock);
-    float speed = stream->speed;
+    float freq_ratio = stream->freq_ratio;
     SDL_UnlockMutex(stream->lock);
 
-    return speed;
+    return freq_ratio;
 }
 
-int SDL_SetAudioStreamSpeed(SDL_AudioStream *stream, float speed)
+int SDL_SetAudioStreamFrequencyRatio(SDL_AudioStream *stream, float freq_ratio)
 {
     if (!stream) {
         return SDL_InvalidParamError("stream");
     }
 
     // Picked mostly arbitrarily.
-    static const float min_speed = 0.01f;
-    static const float max_speed = 100.0f;
+    static const float min_freq_ratio = 0.01f;
+    static const float max_freq_ratio = 100.0f;
 
-    if (speed < min_speed) {
-        return SDL_SetError("Speed is too low");
-    } else if (speed > max_speed) {
-        return SDL_SetError("Speed is too high");
+    if (freq_ratio < min_freq_ratio) {
+        return SDL_SetError("Frequency ratio is too low");
+    } else if (freq_ratio > max_freq_ratio) {
+        return SDL_SetError("Frequency ratio is too high");
     }
 
     SDL_LockMutex(stream->lock);
-    stream->speed = speed;
+    stream->freq_ratio = freq_ratio;
     SDL_UnlockMutex(stream->lock);
 
     return 0;
