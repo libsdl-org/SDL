@@ -994,9 +994,9 @@ static int audio_convertAccuracy(void *arg)
     }
 
     /* Shuffle the data for good measure */
-    for (i = src_num - 1; i >= 0; --i) {
+    for (i = src_num - 1; i > 0; --i) {
         float f = src_data[i];
-        j = SDLTest_RandomIntegerInRange(0, src_num);
+        j = SDLTest_RandomIntegerInRange(0, i);
         src_data[i] = src_data[j];
         src_data[j] = f;
     }
