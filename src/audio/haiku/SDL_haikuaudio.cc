@@ -131,29 +131,29 @@ static int HAIKUAUDIO_OpenDevice(SDL_AudioDevice *device)
             format.format = media_raw_audio_format::B_AUDIO_UCHAR;
             break;
 
-        case SDL_AUDIO_S16LSB:
+        case SDL_AUDIO_S16LE:
             format.format = media_raw_audio_format::B_AUDIO_SHORT;
             break;
 
-        case SDL_AUDIO_S16MSB:
+        case SDL_AUDIO_S16BE:
             format.format = media_raw_audio_format::B_AUDIO_SHORT;
             format.byte_order = B_MEDIA_BIG_ENDIAN;
             break;
 
-        case SDL_AUDIO_S32LSB:
+        case SDL_AUDIO_S32LE:
             format.format = media_raw_audio_format::B_AUDIO_INT;
             break;
 
-        case SDL_AUDIO_S32MSB:
+        case SDL_AUDIO_S32BE:
             format.format = media_raw_audio_format::B_AUDIO_INT;
             format.byte_order = B_MEDIA_BIG_ENDIAN;
             break;
 
-        case SDL_AUDIO_F32LSB:
+        case SDL_AUDIO_F32LE:
             format.format = media_raw_audio_format::B_AUDIO_FLOAT;
             break;
 
-        case SDL_AUDIO_F32MSB:
+        case SDL_AUDIO_F32BE:
             format.format = media_raw_audio_format::B_AUDIO_FLOAT;
             format.byte_order = B_MEDIA_BIG_ENDIAN;
             break;

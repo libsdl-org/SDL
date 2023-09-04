@@ -198,9 +198,9 @@ static int AAUDIO_OpenDevice(SDL_AudioDevice *device)
     const aaudio_direction_t direction = (iscapture ? AAUDIO_DIRECTION_INPUT : AAUDIO_DIRECTION_OUTPUT);
     ctx.AAudioStreamBuilder_setDirection(builder, direction);
     aaudio_format_t format;
-    if ((device->spec.format == SDL_AUDIO_S32SYS) && (SDL_GetAndroidSDKVersion() >= 31)) {
+    if ((device->spec.format == SDL_AUDIO_S32) && (SDL_GetAndroidSDKVersion() >= 31)) {
         format = AAUDIO_FORMAT_PCM_I32;
-    } else if (device->spec.format == SDL_AUDIO_F32SYS) {
+    } else if (device->spec.format == SDL_AUDIO_F32) {
         format = AAUDIO_FORMAT_PCM_FLOAT;
     } else {
         format = AAUDIO_FORMAT_PCM_I16;  // sint16 is a safe bet for everything else.
@@ -245,11 +245,11 @@ static int AAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     format = ctx.AAudioStream_getFormat(hidden->stream);
     if (format == AAUDIO_FORMAT_PCM_I16) {
-        device->spec.format = SDL_AUDIO_S16SYS;
+        device->spec.format = SDL_AUDIO_S16;
     } else if (format == AAUDIO_FORMAT_PCM_I32) {
-        device->spec.format = SDL_AUDIO_S32SYS;
+        device->spec.format = SDL_AUDIO_S32;
     } else if (format == AAUDIO_FORMAT_PCM_FLOAT) {
-        device->spec.format = SDL_AUDIO_F32SYS;
+        device->spec.format = SDL_AUDIO_F32;
     } else {
         return SDL_SetError("Got unexpected audio format %d from AAudioStream_getFormat", (int) format);
     }

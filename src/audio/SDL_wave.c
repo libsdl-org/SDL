@@ -2039,10 +2039,10 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
     case ALAW_CODE:
     case MULAW_CODE:
         /* These can be easily stored in the byte order of the system. */
-        spec->format = SDL_AUDIO_S16SYS;
+        spec->format = SDL_AUDIO_S16;
         break;
     case IEEE_FLOAT_CODE:
-        spec->format = SDL_AUDIO_F32LSB;
+        spec->format = SDL_AUDIO_F32LE;
         break;
     case PCM_CODE:
         switch (format->bitspersample) {
@@ -2050,11 +2050,11 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
             spec->format = SDL_AUDIO_U8;
             break;
         case 16:
-            spec->format = SDL_AUDIO_S16LSB;
+            spec->format = SDL_AUDIO_S16LE;
             break;
         case 24: /* Has been shifted to 32 bits. */
         case 32:
-            spec->format = SDL_AUDIO_S32LSB;
+            spec->format = SDL_AUDIO_S32LE;
             break;
         default:
             /* Just in case something unexpected happened in the checks. */

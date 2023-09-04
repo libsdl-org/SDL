@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
         SDL_Log("  (%d channels)\n", spec.channels);
 
         spec.freq = SAMPLE_RATE_HZ;
-        spec.format = SDL_AUDIO_S16SYS;
+        spec.format = SDL_AUDIO_S16;
 
         /* These are used by the fill_buffer callback */
         total_channels = spec.channels;

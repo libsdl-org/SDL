@@ -71,7 +71,7 @@ static int VITAAUD_OpenDevice(SDL_AudioDevice *device)
 
     closefmts = SDL_ClosestAudioFormats(device->spec.format);
     while ((test_format = *(closefmts++)) != 0) {
-        if (test_format == SDL_AUDIO_S16LSB) {
+        if (test_format == SDL_AUDIO_S16LE) {
             device->spec.format = test_format;
             break;
         }

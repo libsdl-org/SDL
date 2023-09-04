@@ -416,12 +416,12 @@ static const char *AudioFmtToString(const SDL_AudioFormat fmt)
         #define FMTCASE(x) case SDL_AUDIO_##x: return #x
         FMTCASE(U8);
         FMTCASE(S8);
-        FMTCASE(S16LSB);
-        FMTCASE(S16MSB);
-        FMTCASE(S32LSB);
-        FMTCASE(S32MSB);
-        FMTCASE(F32LSB);
-        FMTCASE(F32MSB);
+        FMTCASE(S16LE);
+        FMTCASE(S16BE);
+        FMTCASE(S32LE);
+        FMTCASE(S32BE);
+        FMTCASE(F32LE);
+        FMTCASE(F32BE);
         #undef FMTCASE
     }
     return "?";
@@ -965,7 +965,7 @@ static void Loop(void)
             case SDL_EVENT_AUDIO_DEVICE_ADDED:
                 CreatePhysicalDeviceThing(event.adevice.which, event.adevice.iscapture);
                 break;
-    
+
             case SDL_EVENT_AUDIO_DEVICE_REMOVED: {
                 const SDL_AudioDeviceID which = event.adevice.which;
                 Thing *i, *next;

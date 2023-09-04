@@ -284,13 +284,13 @@ static int SNDIO_OpenDevice(SDL_AudioDevice *device)
     }
 
     if ((par.bps == 4) && (par.sig) && (par.le)) {
-        device->spec.format = SDL_AUDIO_S32LSB;
+        device->spec.format = SDL_AUDIO_S32LE;
     } else if ((par.bps == 4) && (par.sig) && (!par.le)) {
-        device->spec.format = SDL_AUDIO_S32MSB;
+        device->spec.format = SDL_AUDIO_S32BE;
     } else if ((par.bps == 2) && (par.sig) && (par.le)) {
-        device->spec.format = SDL_AUDIO_S16LSB;
+        device->spec.format = SDL_AUDIO_S16LE;
     } else if ((par.bps == 2) && (par.sig) && (!par.le)) {
-        device->spec.format = SDL_AUDIO_S16MSB;
+        device->spec.format = SDL_AUDIO_S16BE;
     } else if ((par.bps == 1) && (par.sig)) {
         device->spec.format = SDL_AUDIO_S8;
     } else if ((par.bps == 1) && (!par.sig)) {

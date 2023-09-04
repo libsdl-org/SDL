@@ -111,12 +111,12 @@ static int DSP_OpenDevice(SDL_AudioDevice *device)
                 format = AFMT_U8;
             }
             break;
-        case SDL_AUDIO_S16LSB:
+        case SDL_AUDIO_S16LE:
             if (value & AFMT_S16_LE) {
                 format = AFMT_S16_LE;
             }
             break;
-        case SDL_AUDIO_S16MSB:
+        case SDL_AUDIO_S16BE:
             if (value & AFMT_S16_BE) {
                 format = AFMT_S16_BE;
             }
