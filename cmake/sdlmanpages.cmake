@@ -2,7 +2,9 @@ include(CMakeParseArguments)
 include(GNUInstallDirs)
 
 function(SDL_generate_manpages)
-  cmake_parse_arguments(ARG "" "RESULT_VARIABLE;NAME;BUILD_DOCDIR;HEADERS_DIR;SOURCE_DIR;SYMBOL;OPTION_FILE;WIKIHEADERS_PL_PATH" "" ${ARGN})
+  cmake_parse_arguments(ARG "" "RESULT_VARIABLE;NAME;BUILD_DOCDIR;HEADERS_DIR;SOURCE_DIR;SYMBOL;OPTION_FILE;WIKIHEADERS_PL_PATH;REVISION" "" ${ARGN})
+
+  set(wikiheaders_extra_args)
 
   if(NOT ARG_NAME)
     set(ARG_NAME "${PROJECT_NAME}")
@@ -25,6 +27,10 @@ function(SDL_generate_manpages)
     message(FATAL_ERROR "Missing required SYMBOL argument")
   endif()
 
+  if(ARG_REVISION)
+    list(APPEND wikiheaders_extra_args "--rev=${ARG_REVISION}")
+  endif()
+
   if(NOT ARG_BUILD_DOCDIR)
     set(ARG_BUILD_DOCDIR "${CMAKE_CURRENT_BINARY_DIR}/docs")
   endif()
@@ -40,13 +46,13 @@ function(SDL_generate_manpages)
     add_custom_command(
       OUTPUT "${BUILD_WIKIDIR}/${ARG_SYMBOL}.md"
       COMMAND "${CMAKE_COMMAND}" -E make_directory "${BUILD_WIKIDIR}"
-      COMMAND "${PERL_EXECUTABLE}" "${ARG_WIKIHEADERS_PL_PATH}" "${ARG_SOURCE_DIR}" "${BUILD_WIKIDIR}" "--options=${ARG_OPTION_FILE}" --copy-to-wiki
+      COMMAND "${PERL_EXECUTABLE}" "${ARG_WIKIHEADERS_PL_PATH}" "${ARG_SOURCE_DIR}" "${BUILD_WIKIDIR}" "--options=${ARG_OPTION_FILE}" --copy-to-wiki ${wikiheaders_extra_args}
       DEPENDS ${HEADER_FILES} "${ARG_WIKIHEADERS_PL_PATH}" "${ARG_OPTION_FILE}"
       COMMENT "Generating ${ARG_NAME} wiki markdown files"
     )
     add_custom_command(
       OUTPUT "${BUILD_MANDIR}/man3/${ARG_SYMBOL}.3"
-      COMMAND "${PERL_EXECUTABLE}" "${ARG_WIKIHEADERS_PL_PATH}" "${ARG_SOURCE_DIR}" "${BUILD_WIKIDIR}" "--options=${ARG_OPTION_FILE}" "--manpath=${BUILD_MANDIR}" --copy-to-manpages
+      COMMAND "${PERL_EXECUTABLE}" "${ARG_WIKIHEADERS_PL_PATH}" "${ARG_SOURCE_DIR}" "${BUILD_WIKIDIR}" "--options=${ARG_OPTION_FILE}" "--manpath=${BUILD_MANDIR}" --copy-to-manpages ${wikiheaders_extra_args}
       DEPENDS  "${BUILD_WIKIDIR}/${ARG_SYMBOL}.md" "${ARG_WIKIHEADERS_PL_PATH}" "${ARG_OPTION_FILE}"
       COMMENT "Generating ${ARG_NAME} man pages"
     )

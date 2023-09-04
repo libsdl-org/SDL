@@ -3360,6 +3360,7 @@ if(NOT SDL_DISABLE_INSTALL)
     SDL_generate_manpages(
       SYMBOL "SDL_Init"
       WIKIHEADERS_PL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/build-scripts/wikiheaders.pl"
+      REVISION "${SDL_REVISION}"
     )
     if(TARGET SDL3-javadoc)
       set(SDL_INSTALL_JAVADOCDIR "${CMAKE_INSTALL_DATAROOTDIR}/javadoc" CACHE PATH "Path where to install SDL3 javadoc")

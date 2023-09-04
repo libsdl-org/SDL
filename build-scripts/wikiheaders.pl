@@ -31,6 +31,7 @@ my $optionsfname = undef;
 my $wikipreamble = undef;
 my $changeformat = undef;
 my $manpath = undef;
+my $gitrev = undef;
 
 foreach (@ARGV) {
     $warn_about_missing = 1, next if $_ eq '--warn-about-missing';
@@ -46,6 +47,9 @@ foreach (@ARGV) {
         next;
     } elsif (/\A--manpath=(.*)\Z/) {
         $manpath = $1;
+        next;
+    } elsif (/\A--rev=(.*)\Z/) {
+        $gitrev = $1;
         next;
     }
     $srcpath = $_, next if not defined $srcpath;
@@ -1437,8 +1441,10 @@ if ($copy_direction == 1) {  # --copy-to-headers
     close(FH);
     }
 
-    my $gitrev = `cd "$srcpath" ; git rev-list HEAD~..`;
-    chomp($gitrev);
+    if (!$gitrev) {
+        $gitrev = `cd "$srcpath" ; git rev-list HEAD~..`;
+        chomp($gitrev);
+    }
 
     # !!! FIXME
     open(FH, '<', "$srcpath/$versionfname") or die("Can't open '$srcpath/$versionfname': $!\n");
