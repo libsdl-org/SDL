@@ -2640,6 +2640,7 @@ static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
         MAKE_VIDPID(0x046d, 0xc262), /* Logitech G920 (active mode) */
         MAKE_VIDPID(0x046d, 0xc268), /* Logitech PRO Racing Wheel (PC mode) */
         MAKE_VIDPID(0x046d, 0xc269), /* Logitech PRO Racing Wheel (PS4/PS5 mode) */
+        MAKE_VIDPID(0x046d, 0xc272), /* Logitech PRO Racing Wheel for Xbox (PC mode) */
         MAKE_VIDPID(0x046d, 0xc26d), /* Logitech G923 (Xbox) */
         MAKE_VIDPID(0x046d, 0xc26e), /* Logitech G923 */
         MAKE_VIDPID(0x046d, 0xca03), /* Logitech Momo Racing */
