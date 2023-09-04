@@ -2482,6 +2482,8 @@ static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
         MAKE_VIDPID(0x046d, 0xc272), /* Logitech PRO Racing Wheel for Xbox (PC mode) */
         MAKE_VIDPID(0x046d, 0xc26d), /* Logitech G923 (Xbox) */
         MAKE_VIDPID(0x046d, 0xc26e), /* Logitech G923 */
+        MAKE_VIDPID(0x046d, 0xc266), /* Logitech G923 for Playstation 4 and PC (PC mode) */
+        MAKE_VIDPID(0x046d, 0xc267), /* Logitech G923 for Playstation 4 and PC (PS4 mode)*/
         MAKE_VIDPID(0x046d, 0xca03), /* Logitech Momo Racing */
         MAKE_VIDPID(0x044f, 0xb65d), /* Thrustmaster Wheel FFB */
         MAKE_VIDPID(0x044f, 0xb66d), /* Thrustmaster Wheel FFB */
