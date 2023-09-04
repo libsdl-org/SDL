@@ -157,7 +157,7 @@ typedef struct SDL_AudioDriver
     SDL_AtomicInt shutting_down;  // non-zero during SDL_Quit, so we known not to accept any last-minute device hotplugs.
 } SDL_AudioDriver;
 
-typedef struct SDL_AudioQueue SDL_AudioQueue;
+struct SDL_AudioQueue; // forward decl.
 
 struct SDL_AudioStream
 {
@@ -172,7 +172,7 @@ struct SDL_AudioStream
     SDL_AudioSpec dst_spec;
     float freq_ratio;
 
-    SDL_AudioQueue* queue;
+    struct SDL_AudioQueue* queue;
 
     SDL_bool track_changed;
     Sint64 resample_offset;
