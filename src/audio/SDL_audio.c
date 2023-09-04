@@ -765,17 +765,17 @@ SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
 
             case MIXSTRATEGY_MIX: {
                 //SDL_Log("MIX STRATEGY: MIX");
-                float *mix_buffer = (float *) ((device->spec.format == SDL_AUDIO_F32SYS) ? device_buffer : device->mix_buffer);
+                float *mix_buffer = (float *) ((device->spec.format == SDL_AUDIO_F32) ? device_buffer : device->mix_buffer);
                 const int needed_samples = buffer_size / (SDL_AUDIO_BITSIZE(device->spec.format) / 8);
                 const int work_buffer_size = needed_samples * sizeof (float);
                 SDL_AudioSpec outspec;
 
                 SDL_assert(work_buffer_size <= device->work_buffer_size);
 
-                outspec.format = SDL_AUDIO_F32SYS;
+                outspec.format = SDL_AUDIO_F32;
                 outspec.channels = device->spec.channels;
                 outspec.freq = device->spec.freq;
-                outspec.format = SDL_AUDIO_F32SYS;
+                outspec.format = SDL_AUDIO_F32;
 
                 SDL_memset(mix_buffer, '\0', buffer_size);  // start with silence.
 
@@ -795,7 +795,7 @@ SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
                             retval = SDL_FALSE;
                             break;
                         } else if (br > 0) {  // it's okay if we get less than requested, we mix what we have.
-                            if (SDL_MixAudioFormat((Uint8 *) mix_buffer, device->work_buffer, SDL_AUDIO_F32SYS, br, SDL_MIX_MAXVOLUME) < 0) {  // !!! FIXME: allow streams to specify gain?
+                            if (SDL_MixAudioFormat((Uint8 *) mix_buffer, device->work_buffer, SDL_AUDIO_F32, br, SDL_MIX_MAXVOLUME) < 0) {  // !!! FIXME: allow streams to specify gain?
                                 SDL_assert(!"This shouldn't happen.");
                                 retval = SDL_FALSE;  // uh...?
                                 break;
@@ -806,8 +806,8 @@ SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
 
                 if (((Uint8 *) mix_buffer) != device_buffer) {
                     // !!! FIXME: we can't promise the device buf is aligned/padded for SIMD.
-                    //ConvertAudio(needed_samples * device->spec.channels, mix_buffer, SDL_AUDIO_F32SYS, device->spec.channels, device_buffer, device->spec.format, device->spec.channels, device->work_buffer);
-                    ConvertAudio(needed_samples / device->spec.channels, mix_buffer, SDL_AUDIO_F32SYS, device->spec.channels, device->work_buffer, device->spec.format, device->spec.channels, NULL);
+                    //ConvertAudio(needed_samples * device->spec.channels, mix_buffer, SDL_AUDIO_F32, device->spec.channels, device_buffer, device->spec.format, device->spec.channels, device->work_buffer);
+                    ConvertAudio(needed_samples / device->spec.channels, mix_buffer, SDL_AUDIO_F32, device->spec.channels, device->work_buffer, device->spec.format, device->spec.channels, NULL);
                     SDL_memcpy(device_buffer, device->work_buffer, buffer_size);
                 }
                 break;
@@ -1208,16 +1208,14 @@ static SDL_AudioFormat ParseAudioFormatString(const char *string)
         #define CHECK_FMT_STRING(x) if (SDL_strcmp(string, #x) == 0) { return SDL_AUDIO_##x; }
         CHECK_FMT_STRING(U8);
         CHECK_FMT_STRING(S8);
-        CHECK_FMT_STRING(S16LSB);
-        CHECK_FMT_STRING(S16MSB);
+        CHECK_FMT_STRING(S16LE);
+        CHECK_FMT_STRING(S16BE);
         CHECK_FMT_STRING(S16);
-        CHECK_FMT_STRING(S32LSB);
-        CHECK_FMT_STRING(S32MSB);
-        CHECK_FMT_STRING(S32SYS);
+        CHECK_FMT_STRING(S32LE);
+        CHECK_FMT_STRING(S32BE);
         CHECK_FMT_STRING(S32);
-        CHECK_FMT_STRING(F32LSB);
-        CHECK_FMT_STRING(F32MSB);
-        CHECK_FMT_STRING(F32SYS);
+        CHECK_FMT_STRING(F32LE);
+        CHECK_FMT_STRING(F32BE);
         CHECK_FMT_STRING(F32);
         #undef CHECK_FMT_STRING
     }
@@ -1315,7 +1313,7 @@ static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec 
         return SDL_OutOfMemory();
     }
 
-    if (device->spec.format != SDL_AUDIO_F32SYS) {
+    if (device->spec.format != SDL_AUDIO_F32) {
         device->mix_buffer = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), device->work_buffer_size);
         if (device->mix_buffer == NULL) {
             ClosePhysicalAudioDevice(device);
@@ -1660,14 +1658,14 @@ SDL_AudioStream *SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_Au
 
 #define NUM_FORMATS 8
 static const SDL_AudioFormat format_list[NUM_FORMATS][NUM_FORMATS + 1] = {
-    { SDL_AUDIO_U8, SDL_AUDIO_S8, SDL_AUDIO_S16LSB, SDL_AUDIO_S16MSB, SDL_AUDIO_S32LSB, SDL_AUDIO_S32MSB, SDL_AUDIO_F32LSB, SDL_AUDIO_F32MSB, 0 },
-    { SDL_AUDIO_S8, SDL_AUDIO_U8, SDL_AUDIO_S16LSB, SDL_AUDIO_S16MSB, SDL_AUDIO_S32LSB, SDL_AUDIO_S32MSB, SDL_AUDIO_F32LSB, SDL_AUDIO_F32MSB, 0 },
-    { SDL_AUDIO_S16LSB, SDL_AUDIO_S16MSB, SDL_AUDIO_S32LSB, SDL_AUDIO_S32MSB, SDL_AUDIO_F32LSB, SDL_AUDIO_F32MSB, SDL_AUDIO_U8, SDL_AUDIO_S8, 0 },
-    { SDL_AUDIO_S16MSB, SDL_AUDIO_S16LSB, SDL_AUDIO_S32MSB, SDL_AUDIO_S32LSB, SDL_AUDIO_F32MSB, SDL_AUDIO_F32LSB, SDL_AUDIO_U8, SDL_AUDIO_S8, 0 },
-    { SDL_AUDIO_S32LSB, SDL_AUDIO_S32MSB, SDL_AUDIO_F32LSB, SDL_AUDIO_F32MSB, SDL_AUDIO_S16LSB, SDL_AUDIO_S16MSB, SDL_AUDIO_U8, SDL_AUDIO_S8, 0 },
-    { SDL_AUDIO_S32MSB, SDL_AUDIO_S32LSB, SDL_AUDIO_F32MSB, SDL_AUDIO_F32LSB, SDL_AUDIO_S16MSB, SDL_AUDIO_S16LSB, SDL_AUDIO_U8, SDL_AUDIO_S8, 0 },
-    { SDL_AUDIO_F32LSB, SDL_AUDIO_F32MSB, SDL_AUDIO_S32LSB, SDL_AUDIO_S32MSB, SDL_AUDIO_S16LSB, SDL_AUDIO_S16MSB, SDL_AUDIO_U8, SDL_AUDIO_S8, 0 },
-    { SDL_AUDIO_F32MSB, SDL_AUDIO_F32LSB, SDL_AUDIO_S32MSB, SDL_AUDIO_S32LSB, SDL_AUDIO_S16MSB, SDL_AUDIO_S16LSB, SDL_AUDIO_U8, SDL_AUDIO_S8, 0 },
+    { SDL_AUDIO_U8, SDL_AUDIO_S8, SDL_AUDIO_S16LE, SDL_AUDIO_S16BE, SDL_AUDIO_S32LE, SDL_AUDIO_S32BE, SDL_AUDIO_F32LE, SDL_AUDIO_F32BE, 0 },
+    { SDL_AUDIO_S8, SDL_AUDIO_U8, SDL_AUDIO_S16LE, SDL_AUDIO_S16BE, SDL_AUDIO_S32LE, SDL_AUDIO_S32BE, SDL_AUDIO_F32LE, SDL_AUDIO_F32BE, 0 },
+    { SDL_AUDIO_S16LE, SDL_AUDIO_S16BE, SDL_AUDIO_S32LE, SDL_AUDIO_S32BE, SDL_AUDIO_F32LE, SDL_AUDIO_F32BE, SDL_AUDIO_U8, SDL_AUDIO_S8, 0 },
+    { SDL_AUDIO_S16BE, SDL_AUDIO_S16LE, SDL_AUDIO_S32BE, SDL_AUDIO_S32LE, SDL_AUDIO_F32BE, SDL_AUDIO_F32LE, SDL_AUDIO_U8, SDL_AUDIO_S8, 0 },
+    { SDL_AUDIO_S32LE, SDL_AUDIO_S32BE, SDL_AUDIO_F32LE, SDL_AUDIO_F32BE, SDL_AUDIO_S16LE, SDL_AUDIO_S16BE, SDL_AUDIO_U8, SDL_AUDIO_S8, 0 },
+    { SDL_AUDIO_S32BE, SDL_AUDIO_S32LE, SDL_AUDIO_F32BE, SDL_AUDIO_F32LE, SDL_AUDIO_S16BE, SDL_AUDIO_S16LE, SDL_AUDIO_U8, SDL_AUDIO_S8, 0 },
+    { SDL_AUDIO_F32LE, SDL_AUDIO_F32BE, SDL_AUDIO_S32LE, SDL_AUDIO_S32BE, SDL_AUDIO_S16LE, SDL_AUDIO_S16BE, SDL_AUDIO_U8, SDL_AUDIO_S8, 0 },
+    { SDL_AUDIO_F32BE, SDL_AUDIO_F32LE, SDL_AUDIO_S32BE, SDL_AUDIO_S32LE, SDL_AUDIO_S16BE, SDL_AUDIO_S16LE, SDL_AUDIO_U8, SDL_AUDIO_S8, 0 },
 };
 
 const SDL_AudioFormat *SDL_ClosestAudioFormats(SDL_AudioFormat format)
@@ -1826,7 +1824,7 @@ int SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SDL
 
             SDL_aligned_free(device->mix_buffer);
             device->mix_buffer = NULL;
-            if (device->spec.format != SDL_AUDIO_F32SYS) {
+            if (device->spec.format != SDL_AUDIO_F32) {
                 device->mix_buffer = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), device->work_buffer_size);
                 if (!device->mix_buffer) {
                     kill_device = SDL_TRUE;

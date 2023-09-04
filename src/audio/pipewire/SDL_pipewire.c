@@ -898,22 +898,22 @@ static void initialize_spa_info(const SDL_AudioSpec *spec, struct spa_audio_info
     case SDL_AUDIO_S8:
         info->format = SPA_AUDIO_FORMAT_S8;
         break;
-    case SDL_AUDIO_S16LSB:
+    case SDL_AUDIO_S16LE:
         info->format = SPA_AUDIO_FORMAT_S16_LE;
         break;
-    case SDL_AUDIO_S16MSB:
+    case SDL_AUDIO_S16BE:
         info->format = SPA_AUDIO_FORMAT_S16_BE;
         break;
-    case SDL_AUDIO_S32LSB:
+    case SDL_AUDIO_S32LE:
         info->format = SPA_AUDIO_FORMAT_S32_LE;
         break;
-    case SDL_AUDIO_S32MSB:
+    case SDL_AUDIO_S32BE:
         info->format = SPA_AUDIO_FORMAT_S32_BE;
         break;
-    case SDL_AUDIO_F32LSB:
+    case SDL_AUDIO_F32LE:
         info->format = SPA_AUDIO_FORMAT_F32_LE;
         break;
-    case SDL_AUDIO_F32MSB:
+    case SDL_AUDIO_F32BE:
         info->format = SPA_AUDIO_FORMAT_F32_BE;
         break;
     }

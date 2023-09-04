@@ -176,13 +176,13 @@ static int audio_initOpenCloseQuitAudio(void *arg)
             case 0:
                 /* Set standard desired spec */
                 desired.freq = 22050;
-                desired.format = SDL_AUDIO_S16SYS;
+                desired.format = SDL_AUDIO_S16;
                 desired.channels = 2;
 
             case 1:
                 /* Set custom desired spec */
                 desired.freq = 48000;
-                desired.format = SDL_AUDIO_F32SYS;
+                desired.format = SDL_AUDIO_F32;
                 desired.channels = 2;
                 break;
             }
@@ -261,14 +261,14 @@ static int audio_pauseUnpauseAudio(void *arg)
             case 0:
                 /* Set standard desired spec */
                 desired.freq = 22050;
-                desired.format = SDL_AUDIO_S16SYS;
+                desired.format = SDL_AUDIO_S16;
                 desired.channels = 2;
                 break;
 
             case 1:
                 /* Set custom desired spec */
                 desired.freq = 48000;
-                desired.format = SDL_AUDIO_F32SYS;
+                desired.format = SDL_AUDIO_F32;
                 desired.channels = 2;
                 break;
             }
@@ -441,17 +441,33 @@ static int audio_printCurrentAudioDriver(void *arg)
 }
 
 /* Definition of all formats, channels, and frequencies used to test audio conversions */
-static SDL_AudioFormat g_audioFormats[] = { SDL_AUDIO_S8, SDL_AUDIO_U8, SDL_AUDIO_S16LSB, SDL_AUDIO_S16MSB, SDL_AUDIO_S16SYS, SDL_AUDIO_S16,
-                                    SDL_AUDIO_S32LSB, SDL_AUDIO_S32MSB, SDL_AUDIO_S32SYS, SDL_AUDIO_S32,
-                                    SDL_AUDIO_F32LSB, SDL_AUDIO_F32MSB, SDL_AUDIO_F32SYS, SDL_AUDIO_F32 };
-static const char *g_audioFormatsVerbose[] = { "SDL_AUDIO_S8", "SDL_AUDIO_U8", "SDL_AUDIO_S16LSB", "SDL_AUDIO_S16MSB", "SDL_AUDIO_S16SYS", "SDL_AUDIO_S16",
-                                       "SDL_AUDIO_S32LSB", "SDL_AUDIO_S32MSB", "SDL_AUDIO_S32SYS", "SDL_AUDIO_S32",
-                                       "SDL_AUDIO_F32LSB", "SDL_AUDIO_F32MSB", "SDL_AUDIO_F32SYS", "SDL_AUDIO_F32" };
+static SDL_AudioFormat g_audioFormats[] = {
+    SDL_AUDIO_S8, SDL_AUDIO_U8,
+    SDL_AUDIO_S16LE, SDL_AUDIO_S16BE, SDL_AUDIO_S16,
+    SDL_AUDIO_S32LE, SDL_AUDIO_S32BE, SDL_AUDIO_S32,
+    SDL_AUDIO_F32LE, SDL_AUDIO_F32BE, SDL_AUDIO_F32
+};
+static const char *g_audioFormatsVerbose[] = {
+    "SDL_AUDIO_S8", "SDL_AUDIO_U8",
+    "SDL_AUDIO_S16LE", "SDL_AUDIO_S16BE", "SDL_AUDIO_S16",
+    "SDL_AUDIO_S32LE", "SDL_AUDIO_S32BE", "SDL_AUDIO_S32",
+    "SDL_AUDIO_F32LE", "SDL_AUDIO_F32BE", "SDL_AUDIO_F32"
+};
 static const int g_numAudioFormats = SDL_arraysize(g_audioFormats);
 static Uint8 g_audioChannels[] = { 1, 2, 4, 6 };
 static const int g_numAudioChannels = SDL_arraysize(g_audioChannels);
 static int g_audioFrequencies[] = { 11025, 22050, 44100, 48000 };
 static const int g_numAudioFrequencies = SDL_arraysize(g_audioFrequencies);
+
+/* Verify the audio formats are laid out as expected */
+SDL_COMPILE_TIME_ASSERT(SDL_AUDIO_U8_FORMAT, SDL_AUDIO_U8 == SDL_AUDIO_BITSIZE(8));
+SDL_COMPILE_TIME_ASSERT(SDL_AUDIO_S8_FORMAT, SDL_AUDIO_S8 == (SDL_AUDIO_BITSIZE(8) | SDL_AUDIO_MASK_SIGNED));
+SDL_COMPILE_TIME_ASSERT(SDL_AUDIO_S16LE_FORMAT, SDL_AUDIO_S16LE == (SDL_AUDIO_BITSIZE(16) | SDL_AUDIO_MASK_SIGNED | SDL_AUDIO_MASK_LIL_ENDIAN));
+SDL_COMPILE_TIME_ASSERT(SDL_AUDIO_S16BE_FORMAT, SDL_AUDIO_S16BE == (SDL_AUDIO_BITSIZE(16) | SDL_AUDIO_MASK_SIGNED | SDL_AUDIO_MASK_BIG_ENDIAN));
+SDL_COMPILE_TIME_ASSERT(SDL_AUDIO_S32LE_FORMAT, SDL_AUDIO_S32LE == (SDL_AUDIO_BITSIZE(32) | SDL_AUDIO_MASK_SIGNED | SDL_AUDIO_MASK_LIL_ENDIAN));
+SDL_COMPILE_TIME_ASSERT(SDL_AUDIO_S32BE_FORMAT, SDL_AUDIO_S32BE == (SDL_AUDIO_BITSIZE(32) | SDL_AUDIO_MASK_SIGNED | SDL_AUDIO_MASK_BIG_ENDIAN));
+SDL_COMPILE_TIME_ASSERT(SDL_AUDIO_F32LE_FORMAT, SDL_AUDIO_F32LE == (SDL_AUDIO_BITSIZE(32) | SDL_AUDIO_MASK_FLOAT | SDL_AUDIO_MASK_SIGNED | SDL_AUDIO_MASK_LIL_ENDIAN));
+SDL_COMPILE_TIME_ASSERT(SDL_AUDIO_F32BE_FORMAT, SDL_AUDIO_F32BE == (SDL_AUDIO_BITSIZE(32) | SDL_AUDIO_MASK_FLOAT | SDL_AUDIO_MASK_SIGNED | SDL_AUDIO_MASK_BIG_ENDIAN));
 
 /**
  * \brief Builds various audio conversion structures
@@ -466,7 +482,7 @@ static int audio_buildAudioStream(void *arg)
     int i, ii, j, jj, k, kk;
 
     /* No conversion needed */
-    spec1.format = SDL_AUDIO_S16LSB;
+    spec1.format = SDL_AUDIO_S16LE;
     spec1.channels = 2;
     spec1.freq = 22050;
     stream = SDL_CreateAudioStream(&spec1, &spec1);
@@ -478,7 +494,7 @@ static int audio_buildAudioStream(void *arg)
     spec1.format = SDL_AUDIO_S8;
     spec1.channels = 1;
     spec1.freq = 22050;
-    spec2.format = SDL_AUDIO_S16LSB;
+    spec2.format = SDL_AUDIO_S16LE;
     spec2.channels = 2;
     spec2.freq = 44100;
     stream = SDL_CreateAudioStream(&spec1, &spec2);
@@ -533,7 +549,7 @@ static int audio_buildAudioStreamNegative(void *arg)
     spec1.format = SDL_AUDIO_S8;
     spec1.channels = 1;
     spec1.freq = 22050;
-    spec2.format = SDL_AUDIO_S16LSB;
+    spec2.format = SDL_AUDIO_S16LE;
     spec2.channels = 2;
     spec2.freq = 44100;
 
@@ -546,7 +562,7 @@ static int audio_buildAudioStreamNegative(void *arg)
         spec1.format = SDL_AUDIO_S8;
         spec1.channels = 1;
         spec1.freq = 22050;
-        spec2.format = SDL_AUDIO_S16LSB;
+        spec2.format = SDL_AUDIO_S16LE;
         spec2.channels = 2;
         spec2.freq = 44100;
 
@@ -842,14 +858,14 @@ static int audio_resampleLoss(void *arg)
     SDLTest_AssertPass("Test resampling of %i s %i Hz %f phase sine wave from sampling rate of %i Hz to %i Hz",
                        spec->time, spec->freq, spec->phase, spec->rate_in, spec->rate_out);
 
-    tmpspec1.format = SDL_AUDIO_F32SYS;
+    tmpspec1.format = SDL_AUDIO_F32;
     tmpspec1.channels = num_channels;
     tmpspec1.freq = spec->rate_in;
-    tmpspec2.format = SDL_AUDIO_F32SYS;
+    tmpspec2.format = SDL_AUDIO_F32;
     tmpspec2.channels = num_channels;
     tmpspec2.freq = spec->rate_out;
     stream = SDL_CreateAudioStream(&tmpspec1, &tmpspec2);
-    SDLTest_AssertPass("Call to SDL_CreateAudioStream(SDL_AUDIO_F32SYS, 1, %i, SDL_AUDIO_F32SYS, 1, %i)", spec->rate_in, spec->rate_out);
+    SDLTest_AssertPass("Call to SDL_CreateAudioStream(SDL_AUDIO_F32, 1, %i, SDL_AUDIO_F32, 1, %i)", spec->rate_in, spec->rate_out);
     SDLTest_AssertCheck(stream != NULL, "Expected SDL_CreateAudioStream to succeed.");
     if (stream == NULL) {
       return TEST_ABORTED;
@@ -929,7 +945,7 @@ static int audio_resampleLoss(void *arg)
                         signal_to_noise, spec->signal_to_noise);
     SDLTest_AssertCheck(max_error <= spec->max_error, "Maximum conversion error %f should be no more than %f.",
                         max_error, spec->max_error);
-       
+
     if (++num_channels > max_channels) {
         num_channels = min_channels;
         ++spec_idx;
@@ -946,7 +962,7 @@ static int audio_resampleLoss(void *arg)
  */
 static int audio_convertAccuracy(void *arg)
 {
-    static SDL_AudioFormat formats[] = { SDL_AUDIO_S8, SDL_AUDIO_U8, SDL_AUDIO_S16SYS, SDL_AUDIO_S32SYS };
+    static SDL_AudioFormat formats[] = { SDL_AUDIO_S8, SDL_AUDIO_U8, SDL_AUDIO_S16, SDL_AUDIO_S32 };
     static const char* format_names[] = { "S8", "U8", "S16", "S32" };
 
     int src_num = 65537 + 2048 + 48 + 256 + 100000;
@@ -1020,7 +1036,7 @@ static int audio_convertAccuracy(void *arg)
         float target_max_delta = (bits > 23) ? 0.0f : (1.0f / (float)(1 << bits));
         float target_min_delta = -target_max_delta;
 
-        src_spec.format = SDL_AUDIO_F32SYS;
+        src_spec.format = SDL_AUDIO_F32;
         src_spec.channels = 1;
         src_spec.freq = 44100;
 
@@ -1099,15 +1115,15 @@ static int audio_formatChange(void *arg)
     double target_signal_to_noise = 75.0;
     int sine_freq = 500;
 
-    spec1.format = SDL_AUDIO_F32SYS;
+    spec1.format = SDL_AUDIO_F32;
     spec1.channels = 1;
     spec1.freq = 20000;
 
-    spec2.format = SDL_AUDIO_F32SYS;
+    spec2.format = SDL_AUDIO_F32;
     spec2.channels = 1;
     spec2.freq = 40000;
 
-    spec3.format = SDL_AUDIO_F32SYS;
+    spec3.format = SDL_AUDIO_F32;
     spec3.channels = 1;
     spec3.freq = 80000;
 

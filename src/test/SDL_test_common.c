@@ -71,7 +71,7 @@ static const char *video_usage[] = {
 
 /* !!! FIXME: Float32? Sint32? */
 static const char *audio_usage[] = {
-    "[--audio driver]", "[--rate N]", "[--format U8|S8|S16|S16LE|S16BE]",
+    "[--audio driver]", "[--rate N]", "[--format U8|S8|S16|S16LE|S16BE|S32|S32LE|S32BE|F32|F32LE|F32BE]",
     "[--channels N]"
 };
 
@@ -630,16 +630,37 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
                 return 2;
             }
             if (SDL_strcasecmp(argv[index], "S16LE") == 0) {
-                state->audio_format = SDL_AUDIO_S16LSB;
+                state->audio_format = SDL_AUDIO_S16LE;
                 return 2;
             }
             if (SDL_strcasecmp(argv[index], "S16BE") == 0) {
-                state->audio_format = SDL_AUDIO_S16MSB;
+                state->audio_format = SDL_AUDIO_S16BE;
                 return 2;
             }
-
-            /* !!! FIXME: Float32? Sint32? */
-
+            if (SDL_strcasecmp(argv[index], "S32") == 0) {
+                state->audio_format = SDL_AUDIO_S32;
+                return 2;
+            }
+            if (SDL_strcasecmp(argv[index], "S32LE") == 0) {
+                state->audio_format = SDL_AUDIO_S32LE;
+                return 2;
+            }
+            if (SDL_strcasecmp(argv[index], "S32BE") == 0) {
+                state->audio_format = SDL_AUDIO_S32BE;
+                return 2;
+            }
+            if (SDL_strcasecmp(argv[index], "F32") == 0) {
+                state->audio_format = SDL_AUDIO_F32;
+                return 2;
+            }
+            if (SDL_strcasecmp(argv[index], "F32LE") == 0) {
+                state->audio_format = SDL_AUDIO_F32LE;
+                return 2;
+            }
+            if (SDL_strcasecmp(argv[index], "F32BE") == 0) {
+                state->audio_format = SDL_AUDIO_F32BE;
+                return 2;
+            }
             return -1;
         }
         if (SDL_strcasecmp(argv[index], "--channels") == 0) {

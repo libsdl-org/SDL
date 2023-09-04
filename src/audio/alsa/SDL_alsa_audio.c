@@ -565,22 +565,22 @@ static int ALSA_OpenDevice(SDL_AudioDevice *device)
         case SDL_AUDIO_S8:
             format = SND_PCM_FORMAT_S8;
             break;
-        case SDL_AUDIO_S16LSB:
+        case SDL_AUDIO_S16LE:
             format = SND_PCM_FORMAT_S16_LE;
             break;
-        case SDL_AUDIO_S16MSB:
+        case SDL_AUDIO_S16BE:
             format = SND_PCM_FORMAT_S16_BE;
             break;
-        case SDL_AUDIO_S32LSB:
+        case SDL_AUDIO_S32LE:
             format = SND_PCM_FORMAT_S32_LE;
             break;
-        case SDL_AUDIO_S32MSB:
+        case SDL_AUDIO_S32BE:
             format = SND_PCM_FORMAT_S32_BE;
             break;
-        case SDL_AUDIO_F32LSB:
+        case SDL_AUDIO_F32LE:
             format = SND_PCM_FORMAT_FLOAT_LE;
             break;
-        case SDL_AUDIO_F32MSB:
+        case SDL_AUDIO_F32BE:
             format = SND_PCM_FORMAT_FLOAT_BE;
             break;
         default:

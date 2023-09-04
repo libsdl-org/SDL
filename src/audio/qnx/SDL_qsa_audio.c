@@ -309,7 +309,7 @@ static SDL_AudioFormat QnxFormatToSDLFormat(const int32_t qnxfmt)
         #undef CHECKFMT
         default: break;
     }
-    return SDL_AUDIO_S16SYS;  // oh well.
+    return SDL_AUDIO_S16;  // oh well.
 }
 
 static void QSA_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)

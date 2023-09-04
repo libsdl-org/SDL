@@ -309,7 +309,7 @@ static int JACK_OpenDevice(SDL_AudioDevice *device)
     /* !!! FIXME: docs say about buffer size: "This size may change, clients that depend on it must register a bufsize_callback so they will be notified if it does." */
 
     /* Jack pretty much demands what it wants. */
-    device->spec.format = SDL_AUDIO_F32SYS;
+    device->spec.format = SDL_AUDIO_F32;
     device->spec.freq = JACK_jack_get_sample_rate(client);
     device->spec.channels = channels;
     device->sample_frames = JACK_jack_get_buffer_size(client);
