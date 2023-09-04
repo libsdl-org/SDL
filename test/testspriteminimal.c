@@ -20,7 +20,8 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include "testutils.h"
+
+#include "icon.h"
 
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
@@ -34,6 +35,25 @@ static int sprite_w, sprite_h;
 
 static SDL_Renderer *renderer;
 static int done;
+
+static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned int len, int *w, int *h) {
+    SDL_Texture *texture = NULL;
+    SDL_Surface *surface;
+    SDL_RWops *src = SDL_RWFromConstMem(data, len);
+    if (src) {
+        surface = SDL_LoadBMP_RW(src, SDL_TRUE);
+        if (surface) {
+            /* Treat white as transparent */
+            SDL_SetSurfaceColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, 255, 255, 255));
+
+            texture = SDL_CreateTextureFromSurface(r, surface);
+            *w = surface->w;
+            *h = surface->h;
+            SDL_DestroySurface(surface);
+        }
+    }
+    return texture;
+}
 
 static void MoveSprites(void)
 {
@@ -111,9 +131,10 @@ int main(int argc, char *argv[])
         SDL_Log("SDL_SetWindowTitle: %s", SDL_GetError());
     }
 
-    sprite = LoadTexture(renderer, "icon.bmp", SDL_TRUE, &sprite_w, &sprite_h);
+    sprite = CreateTexture(renderer, icon_bmp, icon_bmp_len, &sprite_w, &sprite_h);
 
     if (sprite == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture (%s)", SDL_GetError());
         return_code = 3;
         goto quit;
     }
