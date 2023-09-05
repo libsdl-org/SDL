@@ -84,6 +84,7 @@ typedef Uint16 SDL_AudioFormat;
 #define SDL_AUDIO_MASK_BIG_ENDIAN    (1<<12)
 #define SDL_AUDIO_MASK_SIGNED        (1<<15)
 #define SDL_AUDIO_BITSIZE(x)         ((x) & SDL_AUDIO_MASK_BITSIZE)
+#define SDL_AUDIO_BYTESIZE(x)        (SDL_AUDIO_BITSIZE(x) / 8)
 #define SDL_AUDIO_ISFLOAT(x)         ((x) & SDL_AUDIO_MASK_FLOAT)
 #define SDL_AUDIO_ISBIGENDIAN(x)     ((x) & SDL_AUDIO_MASK_BIG_ENDIAN)
 #define SDL_AUDIO_ISLITTLEENDIAN(x)  (!SDL_AUDIO_ISBIGENDIAN(x))

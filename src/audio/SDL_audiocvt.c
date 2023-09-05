@@ -1048,8 +1048,8 @@ void ConvertAudio(int num_frames, const void *src, SDL_AudioFormat src_format, i
 // Calculate the largest frame size needed to convert between the two formats.
 static int CalculateMaxFrameSize(SDL_AudioFormat src_format, int src_channels, SDL_AudioFormat dst_format, int dst_channels)
 {
-    const int src_format_size = SDL_AUDIO_BITSIZE(src_format) / 8;
-    const int dst_format_size = SDL_AUDIO_BITSIZE(dst_format) / 8;
+    const int src_format_size = SDL_AUDIO_BYTESIZE(src_format);
+    const int dst_format_size = SDL_AUDIO_BYTESIZE(dst_format);
     const int max_app_format_size = SDL_max(src_format_size, dst_format_size);
     const int max_format_size = SDL_max(max_app_format_size, sizeof (float));  // ConvertAudio and ResampleAudio use floats.
     const int max_channels = SDL_max(src_channels, dst_channels);
@@ -1058,7 +1058,7 @@ static int CalculateMaxFrameSize(SDL_AudioFormat src_format, int src_channels, S
 
 static int GetAudioSpecFrameSize(const SDL_AudioSpec* spec)
 {
-    return (SDL_AUDIO_BITSIZE(spec->format) / 8) * spec->channels;
+    return SDL_AUDIO_BYTESIZE(spec->format) * spec->channels;
 }
 
 static Sint64 GetStreamResampleRate(SDL_AudioStream* stream, int src_freq)
