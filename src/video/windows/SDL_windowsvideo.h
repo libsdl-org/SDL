@@ -379,6 +379,9 @@ struct SDL_VideoData
 {
     int render;
 
+    SDL_bool coinitialized;
+    SDL_bool oleinitialized;
+
     DWORD clipboard_count;
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) /* Xbox doesn't support user32/shcore*/
