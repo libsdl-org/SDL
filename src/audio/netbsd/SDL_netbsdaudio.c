@@ -130,7 +130,7 @@ static void NETBSDAUDIO_WaitDevice(SDL_AudioDevice *device)
             SDL_AudioDeviceDisconnected(device);
             return;
         }
-        const size_t remain = (size_t)((iscapture ? info.record.seek : info.play.seek) * (SDL_AUDIO_BITSIZE(device->spec.format) / 8));
+        const size_t remain = (size_t)((iscapture ? info.record.seek : info.play.seek) * SDL_AUDIO_BYTESIZE(device->spec.format));
         if (!iscapture && (remain >= device->buffer_size)) {
             SDL_Delay(10);
         } else if (iscapture && (remain < device->buffer_size)) {
@@ -181,7 +181,7 @@ static void NETBSDAUDIO_FlushCapture(SDL_AudioDevice *device)
     struct SDL_PrivateAudioData *h = device->hidden;
     audio_info_t info;
     if (ioctl(device->hidden->audio_fd, AUDIO_GETINFO, &info) == 0) {
-        size_t remain = (size_t)(info.record.seek * (SDL_AUDIO_BITSIZE(device->spec.format) / 8));
+        size_t remain = (size_t)(info.record.seek * SDL_AUDIO_BYTESIZE(device->spec.format));
         while (remain > 0) {
             char buf[512];
             const size_t len = SDL_min(sizeof(buf), remain);

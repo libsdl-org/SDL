@@ -712,8 +712,8 @@ static int audio_convertAudio(void *arg)
                         int src_samplesize, dst_samplesize;
                         int src_silence, dst_silence;
 
-                        src_samplesize = (SDL_AUDIO_BITSIZE(spec1.format) / 8) * spec1.channels;
-                        dst_samplesize = (SDL_AUDIO_BITSIZE(spec2.format) / 8) * spec2.channels;
+                        src_samplesize = SDL_AUDIO_BYTESIZE(spec1.format) * spec1.channels;
+                        dst_samplesize = SDL_AUDIO_BYTESIZE(spec2.format) * spec2.channels;
 
                         src_len = l * src_samplesize;
                         SDLTest_Log("Creating dummy sample buffer of %i length (%i bytes)", l, src_len);

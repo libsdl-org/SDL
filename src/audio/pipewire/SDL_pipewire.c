@@ -1108,7 +1108,7 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     }
 
     /* Size of a single audio frame in bytes */
-    priv->stride = (SDL_AUDIO_BITSIZE(device->spec.format) / 8) * device->spec.channels;
+    priv->stride = SDL_AUDIO_BYTESIZE(device->spec.format) * device->spec.channels;
 
     if (device->sample_frames < min_period) {
         device->sample_frames = min_period;
