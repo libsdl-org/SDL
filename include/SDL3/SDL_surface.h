@@ -778,7 +778,10 @@ extern DECLSPEC int SDLCALL SDL_FillSurfaceRects
  * \param srcrect the SDL_Rect structure representing the rectangle to be
  *                copied, or NULL to copy the entire surface
  * \param dst the SDL_Surface structure that is the blit target
- * \param dstrect the SDL_Rect structure representing the x and y position in the destination surface. On input the width and height are ignored (taken from srcrect), and on output this is filled in with the actual rectangle used after clipping.
+ * \param dstrect the SDL_Rect structure representing the x and y position in
+ *                the destination surface. On input the width and height are
+ *                ignored (taken from srcrect), and on output this is filled
+ *                in with the actual rectangle used after clipping.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
