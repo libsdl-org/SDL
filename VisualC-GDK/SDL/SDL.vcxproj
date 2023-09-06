@@ -370,6 +370,8 @@
     <ClInclude Include="..\..\src\audio\SDL_audio_c.h" />
     <ClInclude Include="..\..\src\audio\SDL_audiodev_c.h" />
     <ClInclude Include="..\..\src\audio\SDL_sysaudio.h" />
+    <ClInclude Include="..\..\src\audio\SDL_audioqueue.h" />
+    <ClInclude Include="..\..\src\audio\SDL_audioresample.h" />
     <ClInclude Include="..\..\src\audio\SDL_wave.h" />
     <ClInclude Include="..\..\src\audio\wasapi\SDL_wasapi.h" />
     <ClInclude Include="..\..\src\core\gdk\SDL_gdk.h" />
@@ -549,6 +551,8 @@
     <ClCompile Include="..\..\src\audio\SDL_audiocvt.c" />
     <ClCompile Include="..\..\src\audio\SDL_audiodev.c" />
     <ClCompile Include="..\..\src\audio\SDL_audiotypecvt.c" />
+    <ClCompile Include="..\..\src\audio\SDL_audioqueue.c" />
+    <ClCompile Include="..\..\src\audio\SDL_audioresample.c" />
     <ClCompile Include="..\..\src\audio\SDL_mixer.c" />
     <ClCompile Include="..\..\src\audio\SDL_wave.c" />
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
