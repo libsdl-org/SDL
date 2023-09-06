@@ -483,14 +483,9 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/stdlib/*.c"
   "${SDL3_SOURCE_DIR}/src/thread/*.c"
   "${SDL3_SOURCE_DIR}/src/timer/*.c"
+  "${SDL3_SOURCE_DIR}/src/video/*.c"
   "${SDL3_SOURCE_DIR}/src/video/yuv2rgb/*.c"
 )
-
-# Exclude intrinsinc modules from general builds
-file(GLOB video_sources "${SDL3_SOURCE_DIR}/src/video/*.c")
-list(FILTER video_sources EXCLUDE REGEX "SDL_blit_A_avx2.c$")
-list(FILTER video_sources EXCLUDE REGEX "SDL_blit_A_sse4_1.c$")
-sdl_glob_sources(${video_sources})
 
 if(USE_INTELCC)
   # warning #39: division by zero
@@ -718,7 +713,6 @@ if(SDL_ASSEMBLY)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_SSE4_1)
       set(HAVE_SSE4_1 TRUE)
-      sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/SDL_blit_A_sse4_1.c")
     endif()
   endif()
   if(SDL_SSE4_2)
@@ -782,7 +776,6 @@ if(SDL_ASSEMBLY)
         return 0;
       }" COMPILER_SUPPORTS_AVX2)
     cmake_pop_check_state()
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/SDL_blit_A_*.c")
     if(COMPILER_SUPPORTS_AVX2)
       set(HAVE_AVX2 TRUE)
     endif()
