@@ -1956,16 +1956,28 @@ static void data_offer_handle_offer(void *data, struct wl_data_offer *wl_data_of
 {
     SDL_WaylandDataOffer *offer = data;
     Wayland_data_offer_add_mime(offer, mime_type);
+    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                 ". In wl_data_offer_listener . data_offer_handle_offer on data_offer 0x%08x for MIME '%s'\n",
+                 (wl_data_offer ? WAYLAND_wl_proxy_get_id((struct wl_proxy *) wl_data_offer) : -1),
+                 mime_type);
 }
 
 static void data_offer_handle_source_actions(void *data, struct wl_data_offer *wl_data_offer,
                                              uint32_t source_actions)
 {
+    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                 ". In wl_data_offer_listener . data_offer_handle_source_actions on data_offer 0x%08x for Source Actions '%d'\n",
+                 (wl_data_offer ? WAYLAND_wl_proxy_get_id((struct wl_proxy *) wl_data_offer) : -1),
+                 source_actions);
 }
 
 static void data_offer_handle_actions(void *data, struct wl_data_offer *wl_data_offer,
                                       uint32_t dnd_action)
 {
+    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                 ". In wl_data_offer_listener . data_offer_handle_actions on data_offer 0x%08x for DND Actions '%d'\n",
+                 (wl_data_offer ? WAYLAND_wl_proxy_get_id((struct wl_proxy *) wl_data_offer) : -1),
+                 dnd_action);
 }
 
 static const struct wl_data_offer_listener data_offer_listener = {
@@ -1979,6 +1991,10 @@ static void primary_selection_offer_handle_offer(void *data, struct zwp_primary_
 {
     SDL_WaylandPrimarySelectionOffer *offer = data;
     Wayland_primary_selection_offer_add_mime(offer, mime_type);
+    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                 ". In zwp_primary_selection_offer_v1_listener . primary_selection_offer_handle_offer on primary_selection_offer 0x%08x for MIME '%s'\n",
+                 (zwp_primary_selection_offer_v1 ? WAYLAND_wl_proxy_get_id((struct wl_proxy *) zwp_primary_selection_offer_v1) : -1),
+                 mime_type);
 }
 
 static const struct zwp_primary_selection_offer_v1_listener primary_selection_offer_listener = {
@@ -1995,6 +2011,9 @@ static void data_device_handle_data_offer(void *data, struct wl_data_device *wl_
         WAYLAND_wl_list_init(&(data_offer->mimes));
         wl_data_offer_set_user_data(id, data_offer);
         wl_data_offer_add_listener(id, &data_offer_listener, data_offer);
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     ". In wl_data_device_listener . data_device_handle_data_offer on data_offer 0x%08x\n",
+                     (id ? WAYLAND_wl_proxy_get_id((struct wl_proxy *) id) : -1));
     }
 }
 
@@ -2003,7 +2022,8 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
                                      wl_fixed_t x, wl_fixed_t y, struct wl_data_offer *id)
 {
     SDL_WaylandDataDevice *data_device = data;
-    SDL_bool has_mime = SDL_FALSE;
+    data_device->has_mime_file = SDL_FALSE;
+    data_device->has_mime_text = SDL_FALSE;
     uint32_t dnd_action = WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE;
 
     data_device->drag_serial = serial;
@@ -2014,17 +2034,23 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
         /* TODO: SDL Support more mime types */
 #ifdef SDL_USE_LIBDBUS
         if (Wayland_data_offer_has_mime(data_device->drag_offer, FILE_PORTAL_MIME)) {
-            has_mime = SDL_TRUE;
+            data_device->has_mime_file = SDL_TRUE;
             wl_data_offer_accept(id, serial, FILE_PORTAL_MIME);
         }
 #endif
         if (Wayland_data_offer_has_mime(data_device->drag_offer, FILE_MIME)) {
-            has_mime = SDL_TRUE;
+            data_device->has_mime_file = SDL_TRUE;
             wl_data_offer_accept(id, serial, FILE_MIME);
         }
 
+        if (Wayland_data_offer_has_mime(data_device->drag_offer, TEXT_MIME)) {
+            data_device->has_mime_text = SDL_TRUE;
+            wl_data_offer_accept(id, serial, TEXT_MIME);
+        }
+
         /* SDL only supports "copy" style drag and drop */
-        if (has_mime) {
+        if (data_device->has_mime_file == SDL_TRUE ||
+            data_device->has_mime_text == SDL_TRUE) {
             dnd_action = WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY;
         } else {
             /* drag_mime is NULL this will decline the offer */
@@ -2041,10 +2067,30 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
             SDL_WindowData *window = Wayland_GetWindowDataForOwnedSurface(surface);
             if (window) {
                 data_device->dnd_window = window->sdlwindow;
+                const float dx = (float)wl_fixed_to_double(x);
+                const float dy = (float)wl_fixed_to_double(y);
+                SDL_SendDropPosition(data_device->dnd_window, dx, dy);
+                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                             ". In wl_data_device_listener . data_device_handle_enter on data_offer 0x%08x at %d x %d into window %d for serial %d\n",
+                             WAYLAND_wl_proxy_get_id((struct wl_proxy *) id),
+                             wl_fixed_to_int(x), wl_fixed_to_int(y), SDL_GetWindowID(data_device->dnd_window), serial);
             } else {
                 data_device->dnd_window = NULL;
+                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                             ". In wl_data_device_listener . data_device_handle_enter on data_offer 0x%08x at %d x %d for serial %d\n",
+                             WAYLAND_wl_proxy_get_id((struct wl_proxy *) id),
+                             wl_fixed_to_int(x), wl_fixed_to_int(y), serial);
             }
+        } else {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         ". In wl_data_device_listener . data_device_handle_enter on data_offer 0x%08x at %d x %d for serial %d\n",
+                         WAYLAND_wl_proxy_get_id((struct wl_proxy *) id),
+                         wl_fixed_to_int(x), wl_fixed_to_int(y), serial);
         }
+    } else {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     ". In wl_data_device_listener . data_device_handle_enter on data_offer 0x%08x at %d x %d for serial %d\n",
+                     -1, wl_fixed_to_int(x), wl_fixed_to_int(y), serial);
     }
 }
 
@@ -2053,9 +2099,26 @@ static void data_device_handle_leave(void *data, struct wl_data_device *wl_data_
     SDL_WaylandDataDevice *data_device = data;
 
     if (data_device->drag_offer) {
+        if (data_device->dnd_window) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         ". In wl_data_device_listener . data_device_handle_leave on data_offer 0x%08x from window %d for serial %d\n",
+                         WAYLAND_wl_proxy_get_id((struct wl_proxy *) data_device->drag_offer->offer),
+                         SDL_GetWindowID(data_device->dnd_window), data_device->drag_serial);
+        } else {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         ". In wl_data_device_listener . data_device_handle_leave on data_offer 0x%08x for serial %d\n",
+                         WAYLAND_wl_proxy_get_id((struct wl_proxy *) data_device->drag_offer->offer),
+                         data_device->drag_serial);
+        }
         Wayland_data_offer_destroy(data_device->drag_offer);
         data_device->drag_offer = NULL;
+    } else {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     ". In wl_data_device_listener . data_device_handle_leave on data_offer 0x%08x for serial %d\n",
+                     -1, -1);
     }
+    data_device->has_mime_file = SDL_FALSE;
+    data_device->has_mime_text = SDL_FALSE;
 }
 
 static void data_device_handle_motion(void *data, struct wl_data_device *wl_data_device,
@@ -2063,7 +2126,9 @@ static void data_device_handle_motion(void *data, struct wl_data_device *wl_data
 {
     SDL_WaylandDataDevice *data_device = data;
 
-    if (data_device->drag_offer && data_device->dnd_window) {
+    if (data_device->drag_offer && data_device->dnd_window &&
+        (data_device->has_mime_file == SDL_TRUE ||
+         data_device->has_mime_text == SDL_TRUE)) {
         const float dx = (float)wl_fixed_to_double(x);
         const float dy = (float)wl_fixed_to_double(y);
 
@@ -2072,6 +2137,15 @@ static void data_device_handle_motion(void *data, struct wl_data_device *wl_data
          *      hammer the DBus interface hundreds or even thousands of times per second.
          */
         SDL_SendDropPosition(data_device->dnd_window, dx, dy);
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     ". In wl_data_device_listener . data_device_handle_motion on data_offer 0x%08x at %d x %d in window %d serial %d\n",
+                     WAYLAND_wl_proxy_get_id((struct wl_proxy *) data_device->drag_offer->offer),
+                     wl_fixed_to_int(x), wl_fixed_to_int(y),
+                     SDL_GetWindowID(data_device->dnd_window), data_device->drag_serial);
+    } else {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     ". In wl_data_device_listener . data_device_handle_motion on data_offer 0x%08x at %d x %d serial %d\n",
+                     -1, wl_fixed_to_int(x), wl_fixed_to_int(y), -1);
     }
 }
 
@@ -2079,13 +2153,18 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
 {
     SDL_WaylandDataDevice *data_device = data;
 
-    if (data_device->drag_offer && data_device->dnd_window) {
+    if (data_device->drag_offer && data_device->dnd_window &&
+        (data_device->has_mime_file == SDL_TRUE ||
+         data_device->has_mime_text == SDL_TRUE)) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     ". In wl_data_device_listener . data_device_handle_drop on data_offer 0x%08x in window %d serial %d\n",
+                     WAYLAND_wl_proxy_get_id((struct wl_proxy *) data_device->drag_offer->offer),
+                     SDL_GetWindowID(data_device->dnd_window), data_device->drag_serial);
         /* TODO: SDL Support more mime types */
         size_t length;
         SDL_bool drop_handled = SDL_FALSE;
 #ifdef SDL_USE_LIBDBUS
-        if (Wayland_data_offer_has_mime(
-            data_device->drag_offer, FILE_PORTAL_MIME)) {
+        if (Wayland_data_offer_has_mime(data_device->drag_offer, FILE_PORTAL_MIME)) {
             void *buffer = Wayland_data_offer_receive(data_device->drag_offer,
                                                       FILE_PORTAL_MIME, &length);
             if (buffer) {
@@ -2112,21 +2191,46 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
          * When running a flatpak sandbox this will most likely be a list of
          * non paths that are not visible to the application
          */
-        if (!drop_handled && Wayland_data_offer_has_mime(
-                                                         data_device->drag_offer, FILE_MIME)) {
+        if (!drop_handled) {
+            const char *mime_type = (data_device->has_mime_file ? FILE_MIME :
+                                    (data_device->has_mime_text ? TEXT_MIME : ""));
             void *buffer = Wayland_data_offer_receive(data_device->drag_offer,
-                                                      FILE_MIME, &length);
-            if (buffer) {
-                char *saveptr = NULL;
-                char *token = SDL_strtok_r((char *)buffer, "\r\n", &saveptr);
-                while (token) {
-                    if (SDL_URIToLocal(token, token) >= 0) {
-                        SDL_SendDropFile(data_device->dnd_window, NULL, token);
+                                                      mime_type, &length);
+            if (data_device->has_mime_file) {
+                if (buffer) {
+                    char *saveptr = NULL;
+                    char *token = SDL_strtok_r((char *)buffer, "\r\n", &saveptr);
+                    while (token) {
+                        if (SDL_URIToLocal(token, token) >= 0) {
+                            SDL_SendDropFile(data_device->dnd_window, NULL, token);
+                        }
+                        token = SDL_strtok_r(NULL, "\r\n", &saveptr);
                     }
-                    token = SDL_strtok_r(NULL, "\r\n", &saveptr);
+                    SDL_free(buffer);
+                    SDL_SendDropComplete(data_device->dnd_window);
+                } else {
+                    SDL_SendDropComplete(data_device->dnd_window);
                 }
-                SDL_SendDropComplete(data_device->dnd_window);
-                SDL_free(buffer);
+                drop_handled = SDL_TRUE;
+            } else if (data_device->has_mime_text) {
+                if (buffer) {
+                    char *saveptr = NULL;
+                    char *token = SDL_strtok_r((char *)buffer, "\r\n", &saveptr);
+                    while (token) {
+                        SDL_SendDropText(data_device->dnd_window, token);
+                        token = SDL_strtok_r(NULL, "\r\n", &saveptr);
+                    }
+                    SDL_free(buffer);
+                    SDL_SendDropComplete(data_device->dnd_window);
+                } else {
+                    /* Even though there has been a valid data offer,
+                     *  and there have been valid Enter, Motion, and Drop callbacks,
+                     *  Wayland_data_offer_receive may return an empty buffer,
+                     *  because the data is actually in the primary selection device,
+                     *  not in the data device.
+                     */
+                    SDL_SendDropComplete(data_device->dnd_window);
+                }
                 drop_handled = SDL_TRUE;
             }
         }
@@ -2135,6 +2239,10 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
             WL_DATA_OFFER_FINISH_SINCE_VERSION) {
             wl_data_offer_finish(data_device->drag_offer->offer);
         }
+    } else {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     ". In wl_data_device_listener . data_device_handle_drop on data_offer 0x%08x serial %d\n",
+                     -1, -1);
     }
 
     Wayland_data_offer_destroy(data_device->drag_offer);
@@ -2151,6 +2259,9 @@ static void data_device_handle_selection(void *data, struct wl_data_device *wl_d
         offer = wl_data_offer_get_user_data(id);
     }
 
+    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                 ". In data_device_listener . data_device_handle_selection on data_offer 0x%08x\n",
+                 (id ? WAYLAND_wl_proxy_get_id((struct wl_proxy *) id) : -1));
     if (data_device->selection_offer != offer) {
         Wayland_data_offer_destroy(data_device->selection_offer);
         data_device->selection_offer = offer;
@@ -2179,6 +2290,9 @@ static void primary_selection_device_handle_offer(void *data, struct zwp_primary
         zwp_primary_selection_offer_v1_set_user_data(id, primary_selection_offer);
         zwp_primary_selection_offer_v1_add_listener(id, &primary_selection_offer_listener, primary_selection_offer);
     }
+    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                 ". In zwp_primary_selection_device_v1_listener . primary_selection_device_handle_offer on primary_selection_offer 0x%08x\n",
+                 (id ? WAYLAND_wl_proxy_get_id((struct wl_proxy *) id) : -1));
 }
 
 static void primary_selection_device_handle_selection(void *data, struct zwp_primary_selection_device_v1 *zwp_primary_selection_device_v1,
@@ -2195,6 +2309,9 @@ static void primary_selection_device_handle_selection(void *data, struct zwp_pri
         Wayland_primary_selection_offer_destroy(primary_selection_device->selection_offer);
         primary_selection_device->selection_offer = offer;
     }
+    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                 ". In zwp_primary_selection_device_v1_listener . primary_selection_device_handle_selection on primary_selection_offer 0x%08x\n",
+                 (id ? WAYLAND_wl_proxy_get_id((struct wl_proxy *) id) : -1));
 
     SDL_SendClipboardUpdate();
 }
