@@ -35,10 +35,11 @@ static Uint8 *audio_buf = NULL;
 static Uint32 audio_len = 0;
 
 static SDL_bool auto_loop = SDL_TRUE;
-static SDL_bool auto_flush = SDL_TRUE;
+static SDL_bool auto_flush = SDL_FALSE;
 
 static Uint64 last_get_callback = 0;
-static int last_get_amount = 0;
+static int last_get_amount_additional = 0;
+static int last_get_amount_total = 0;
 
 typedef struct Slider
 {
@@ -46,7 +47,7 @@ typedef struct Slider
     SDL_bool changed;
     char fmtlabel[64];
     float pos;
-    int type;
+    int flags;
     float min;
     float mid;
     float max;
@@ -57,7 +58,7 @@ typedef struct Slider
 Slider sliders[NUM_SLIDERS];
 static int active_slider = -1;
 
-static void init_slider(int index, const char* fmtlabel, int type, float value, float min, float max)
+static void init_slider(int index, const char* fmtlabel, int flags, float value, float min, float max)
 {
     Slider* slider = &sliders[index];
 
@@ -67,12 +68,12 @@ static void init_slider(int index, const char* fmtlabel, int type, float value, 
     slider->area.h = SLIDER_HEIGHT_PERC * state->window_h;
     slider->changed = SDL_TRUE;
     SDL_strlcpy(slider->fmtlabel, fmtlabel, SDL_arraysize(slider->fmtlabel));
-    slider->type = type;
+    slider->flags = flags;
     slider->min = min;
     slider->max = max;
     slider->value = value;
 
-    if (slider->type == 0) {
+    if (slider->flags & 1) {
         slider->pos = (value - slider->min + 0.5f) / (slider->max - slider->min + 1.0f);
     } else {
         slider->pos = 0.5f;
@@ -269,7 +270,7 @@ static void loop(void)
         value = SDL_clamp(value, 0.0f, 1.0f);
         slider->pos = value;
 
-        if (slider->type == 0) {
+        if (slider->flags & 1) {
             value = slider->min + (value * (slider->max - slider->min + 1.0f));
             value = SDL_clamp(value, slider->min, slider->max);
         } else {
@@ -321,7 +322,8 @@ static void loop(void)
             SDL_SetRenderDrawColor(rend, 0x58, 0x6E, 0x75, 0xFF);
             SDL_RenderFillRect(rend, &area);
 
-            draw_textf(rend, (int)slider->area.x, (int)slider->area.y, slider->fmtlabel, slider->value);
+            draw_textf(rend, (int)slider->area.x, (int)slider->area.y, slider->fmtlabel,
+                (slider->flags & 2) ? ((float)(int)slider->value) : slider->value);
         }
 
         draw_textf(rend, 0, draw_y, "%7s, Loop: %3s, Flush: %3s",
@@ -333,7 +335,8 @@ static void loop(void)
 
         SDL_LockAudioStream(stream);
 
-        draw_textf(rend, 0, draw_y, "Get Callback: %i bytes, %i ms ago", last_get_amount, (int)(SDL_GetTicks() - last_get_callback));
+        draw_textf(rend, 0, draw_y, "Get Callback: %i/%i bytes, %2i ms ago",
+            last_get_amount_additional, last_get_amount_total, (int)(SDL_GetTicks() - last_get_callback));
         draw_y += FONT_LINE_HEIGHT;
 
         SDL_UnlockAudioStream(stream);
@@ -356,10 +359,11 @@ static void loop(void)
     }
 }
 
-static void SDLCALL our_get_callback(void *userdata, SDL_AudioStream *strm, int approx_amount, int total_amount)
+static void SDLCALL our_get_callback(void *userdata, SDL_AudioStream *strm, int additional_amount, int total_amount)
 {
     last_get_callback = SDL_GetTicks();
-    last_get_amount = approx_amount;
+    last_get_amount_additional = additional_amount;
+    last_get_amount_total = total_amount;
 }
 
 int main(int argc, char *argv[])
@@ -415,9 +419,9 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    init_slider(0, "Speed: %3.2fx", 1, 1.0f, 0.2f, 5.0f);
-    init_slider(1, "Freq: %.0f", 1, (float)spec.freq, 4000.0f, 192000.0f);
-    init_slider(2, "Channels: %.0f", 0, (float)spec.channels, 1.0f, 8.0f);
+    init_slider(0, "Speed: %3.2fx", 0x0, 1.0f, 0.2f, 5.0f);
+    init_slider(1, "Freq: %g", 0x2, (float)spec.freq, 4000.0f, 192000.0f);
+    init_slider(2, "Channels: %g", 0x3, (float)spec.channels, 1.0f, 8.0f);
 
     for (i = 0; i < state->num_windows; i++) {
         SDL_SetWindowTitle(state->windows[i], "Resampler Test");

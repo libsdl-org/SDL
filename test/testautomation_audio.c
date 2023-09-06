@@ -443,15 +443,15 @@ static int audio_printCurrentAudioDriver(void *arg)
 /* Definition of all formats, channels, and frequencies used to test audio conversions */
 static SDL_AudioFormat g_audioFormats[] = {
     SDL_AUDIO_S8, SDL_AUDIO_U8,
-    SDL_AUDIO_S16LE, SDL_AUDIO_S16BE, SDL_AUDIO_S16,
-    SDL_AUDIO_S32LE, SDL_AUDIO_S32BE, SDL_AUDIO_S32,
-    SDL_AUDIO_F32LE, SDL_AUDIO_F32BE, SDL_AUDIO_F32
+    SDL_AUDIO_S16LE, SDL_AUDIO_S16BE,
+    SDL_AUDIO_S32LE, SDL_AUDIO_S32BE,
+    SDL_AUDIO_F32LE, SDL_AUDIO_F32BE
 };
 static const char *g_audioFormatsVerbose[] = {
     "SDL_AUDIO_S8", "SDL_AUDIO_U8",
-    "SDL_AUDIO_S16LE", "SDL_AUDIO_S16BE", "SDL_AUDIO_S16",
-    "SDL_AUDIO_S32LE", "SDL_AUDIO_S32BE", "SDL_AUDIO_S32",
-    "SDL_AUDIO_F32LE", "SDL_AUDIO_F32BE", "SDL_AUDIO_F32"
+    "SDL_AUDIO_S16LE", "SDL_AUDIO_S16BE",
+    "SDL_AUDIO_S32LE", "SDL_AUDIO_S32BE",
+    "SDL_AUDIO_F32LE", "SDL_AUDIO_F32BE"
 };
 static const int g_numAudioFormats = SDL_arraysize(g_audioFormats);
 static Uint8 g_audioChannels[] = { 1, 2, 4, 6 };

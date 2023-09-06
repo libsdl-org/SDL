@@ -68,7 +68,7 @@ extern void SDL_QuitAudio(void);
 // Function to get a list of audio formats, ordered most similar to `format` to least, 0-terminated. Don't free results.
 const SDL_AudioFormat *SDL_ClosestAudioFormats(SDL_AudioFormat format);
 
-// Must be called at least once before using converters (SDL_CreateAudioStream will call it !!! FIXME but probably shouldn't).
+// Must be called at least once before using converters.
 extern void SDL_ChooseAudioConverters(void);
 extern void SDL_SetupAudioResampler(void);
 
@@ -174,7 +174,7 @@ struct SDL_AudioStream
 
     struct SDL_AudioQueue* queue;
 
-    SDL_bool track_changed;
+    SDL_AudioSpec input_spec; // The spec of input data currently being processed
     Sint64 resample_offset;
 
     Uint8 *work_buffer;    // used for scratch space during data conversion/resampling.

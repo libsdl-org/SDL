@@ -20,707 +20,16 @@
 */
 #include "SDL_internal.h"
 
-// Functions for audio drivers to perform runtime conversion of audio format
-
 #include "SDL_audio_c.h"
 
-/* SDL's resampler uses a "bandlimited interpolation" algorithm:
-     https://ccrma.stanford.edu/~jos/resample/ */
+#include "SDL_audioqueue.h"
+#include "SDL_audioresample.h"
 
-#include "SDL_audio_resampler_filter.h"
-
-typedef struct SDL_AudioChunk SDL_AudioChunk;
-typedef struct SDL_AudioTrack SDL_AudioTrack;
-typedef struct SDL_AudioQueue SDL_AudioQueue;
-
-struct SDL_AudioChunk
-{
-    SDL_AudioChunk *next;
-    size_t head;
-    size_t tail;
-    Uint8 data[SDL_VARIABLE_LENGTH_ARRAY];
-};
-
-struct SDL_AudioTrack
-{
-    SDL_AudioSpec spec;
-    SDL_AudioTrack *next;
-
-    SDL_AudioChunk *head;
-    SDL_AudioChunk *tail;
-
-    size_t queued_bytes;
-    SDL_bool flushed;
-};
-
-struct SDL_AudioQueue
-{
-    SDL_AudioTrack *head;
-    SDL_AudioTrack *tail;
-    size_t chunk_size;
-
-    SDL_AudioChunk *free_chunks;
-    size_t num_free_chunks;
-};
-
-static void DestroyAudioChunk(SDL_AudioChunk *chunk)
-{
-    SDL_free(chunk);
-}
-
-static void DestroyAudioChunks(SDL_AudioChunk *chunk)
-{
-    while (chunk) {
-        SDL_AudioChunk *next = chunk->next;
-        DestroyAudioChunk(chunk);
-        chunk = next;
-    }
-}
-
-static void DestroyAudioTrack(SDL_AudioTrack *track)
-{
-    DestroyAudioChunks(track->head);
-
-    SDL_free(track);
-}
-
-static SDL_AudioQueue *CreateAudioQueue(size_t chunk_size)
-{
-    SDL_AudioQueue *queue = (SDL_AudioQueue *)SDL_calloc(1, sizeof(*queue));
-
-    if (queue == NULL) {
-        SDL_OutOfMemory();
-        return NULL;
-    }
-
-    queue->chunk_size = chunk_size;
-    return queue;
-}
-
-static void ClearAudioQueue(SDL_AudioQueue *queue)
-{
-    SDL_AudioTrack *track = queue->head;
-
-    while (track) {
-        SDL_AudioTrack *next = track->next;
-        DestroyAudioTrack(track);
-        track = next;
-    }
-
-    queue->head = NULL;
-    queue->tail = NULL;
-
-    DestroyAudioChunks(queue->free_chunks);
-    queue->free_chunks = NULL;
-    queue->num_free_chunks = 0;
-}
-
-static void DestroyAudioQueue(SDL_AudioQueue *queue)
-{
-    ClearAudioQueue(queue);
-
-    SDL_free(queue);
-}
-
-static void ResetAudioChunk(SDL_AudioChunk* chunk)
-{
-    chunk->next = NULL;
-    chunk->head = 0;
-    chunk->tail = 0;
-}
-
-static SDL_AudioChunk *CreateAudioChunk(size_t chunk_size)
-{
-    SDL_AudioChunk *chunk = (SDL_AudioChunk *)SDL_malloc(sizeof(*chunk) + chunk_size);
-
-    if (chunk == NULL) {
-        return NULL;
-    }
-
-    ResetAudioChunk(chunk);
-
-    return chunk;
-}
-
-static SDL_AudioTrack *CreateAudioTrack(SDL_AudioQueue *queue, const SDL_AudioSpec *spec)
-{
-    SDL_AudioTrack *track = (SDL_AudioTrack *)SDL_calloc(1, sizeof(*track));
-
-    if (track == NULL) {
-        return NULL;
-    }
-
-    SDL_copyp(&track->spec, spec);
-
-    return track;
-}
-
-static SDL_AudioTrack *GetAudioQueueTrackForWriting(SDL_AudioQueue *queue, const SDL_AudioSpec *spec)
-{
-    SDL_AudioTrack *track = queue->tail;
-
-    if ((track == NULL) || track->flushed) {
-        SDL_AudioTrack *new_track = CreateAudioTrack(queue, spec);
-
-        if (new_track == NULL) {
-            SDL_OutOfMemory();
-            return NULL;
-        }
-
-        if (track) {
-            track->next = new_track;
-        } else {
-            queue->head = new_track;
-        }
-
-        queue->tail = new_track;
-
-        track = new_track;
-    } else {
-        SDL_assert((track->spec.format == spec->format) &&
-                   (track->spec.channels == spec->channels) &&
-                   (track->spec.freq == spec->freq));
-    }
-
-    return track;
-}
-
-static SDL_AudioChunk* CreateAudioChunkFromQueue(SDL_AudioQueue *queue)
-{
-    if (queue->num_free_chunks > 0) {
-        SDL_AudioChunk* chunk = queue->free_chunks;
-
-        queue->free_chunks = chunk->next;
-        --queue->num_free_chunks;
-
-        ResetAudioChunk(chunk);
-
-        return chunk;
-    }
-
-    return CreateAudioChunk(queue->chunk_size);
-}
-
-static int WriteToAudioQueue(SDL_AudioQueue *queue, const SDL_AudioSpec *spec, const Uint8 *data, size_t len)
-{
-    if (len == 0) {
-        return 0;
-    }
-
-    SDL_AudioTrack *track = GetAudioQueueTrackForWriting(queue, spec);
-
-    if (track == NULL) {
-        return -1;
-    }
-
-    SDL_AudioChunk *chunk = track->tail;
-    const size_t chunk_size = queue->chunk_size;
-
-    // Allocate the first chunk here to simplify the logic later on
-    if (chunk == NULL) {
-        chunk = CreateAudioChunkFromQueue(queue);
-
-        if (chunk == NULL) {
-            return SDL_OutOfMemory();
-        }
-
-        SDL_assert((track->head == NULL) && (track->queued_bytes == 0));
-        track->head = chunk;
-        track->tail = chunk;
-    }
-
-    size_t total = 0;
-
-    while (total < len) {
-        if (chunk->tail >= chunk_size) {
-            SDL_AudioChunk *next = CreateAudioChunkFromQueue(queue);
-
-            if (next == NULL) {
-                break;
-            }
-
-            chunk->next = next;
-            chunk = next;
-        }
-
-        size_t to_write = chunk_size - chunk->tail;
-        to_write = SDL_min(to_write, len - total);
-
-        SDL_memcpy(&chunk->data[chunk->tail], &data[total], to_write);
-        chunk->tail += to_write;
-
-        total += to_write;
-    }
-
-    // Roll back the changes if we couldn't write all the data
-    if (total < len) {
-        chunk = track->tail;
-
-        SDL_AudioChunk *next = chunk->next;
-        chunk->next = NULL;
-
-        while (next) {
-            chunk = next;
-            next = chunk->next;
-
-            SDL_assert(chunk->head == 0);
-            SDL_assert(total >= chunk->tail);
-            total -= chunk->tail;
-
-            DestroyAudioChunk(chunk);
-        }
-
-        chunk = track->tail;
-
-        SDL_assert(chunk->tail >= total);
-        chunk->tail -= total;
-        SDL_assert(chunk->head <= chunk->tail);
-
-        return SDL_OutOfMemory();
-    }
-
-    track->tail = chunk;
-    track->queued_bytes += total;
-
-    return 0;
-}
-
-static void ReadFromAudioQueue(SDL_AudioQueue *queue, Uint8 *data, size_t len)
-{
-    if (len == 0) {
-        return;
-    }
-
-    SDL_AudioTrack *track = queue->head;
-    SDL_AudioChunk *chunk = track->head;
-    size_t total = 0;
-
-    SDL_assert(len <= track->queued_bytes);
-
-    for (;;) {
-        SDL_assert(chunk != NULL);
-
-        size_t to_read = chunk->tail - chunk->head;
-        to_read = SDL_min(to_read, len - total);
-        SDL_memcpy(&data[total], &chunk->data[chunk->head], to_read);
-        total += to_read;
-
-        if (total == len) {
-            chunk->head += to_read;
-            break;
-        }
-
-        SDL_AudioChunk *next = chunk->next;
-
-        const size_t max_free_chunks = 4;
-
-        if (queue->num_free_chunks < max_free_chunks) {
-            chunk->next = queue->free_chunks;
-            queue->free_chunks = chunk;
-            ++queue->num_free_chunks;
-        } else {
-            DestroyAudioChunk(chunk);
-        }
-
-        chunk = next;
-    }
-
-    SDL_assert(total == len);
-    SDL_assert(chunk != NULL);
-    track->head = chunk;
-
-    SDL_assert(track->queued_bytes >= total);
-    track->queued_bytes -= total;
-}
-
-static size_t PeekIntoAudioQueue(SDL_AudioQueue *queue, Uint8 *data, size_t len)
-{
-    SDL_AudioTrack *track = queue->head;
-    SDL_AudioChunk *chunk = track->head;
-    size_t total = 0;
-
-    for (; chunk; chunk = chunk->next) {
-        size_t to_read = chunk->tail - chunk->head;
-        to_read = SDL_min(to_read, len - total);
-        SDL_memcpy(&data[total], &chunk->data[chunk->head], to_read);
-        total += to_read;
-
-        if (total == len) {
-            break;
-        }
-    }
-
-    return total;
-}
-
-static void FlushAudioQueue(SDL_AudioQueue *queue)
-{
-    SDL_AudioTrack *track = queue->tail;
-
-    if (track) {
-        track->flushed = SDL_TRUE;
-    }
-}
-
-static SDL_AudioTrack* GetCurrentAudioTrack(SDL_AudioQueue *queue)
-{
-    return queue->head;
-}
-
-static void PopCurrentAudioTrack(SDL_AudioQueue *queue)
-{
-    SDL_AudioTrack *track = queue->head;
-
-    SDL_assert(track->flushed);
-
-    SDL_AudioTrack *next = track->next;
-    DestroyAudioTrack(track);
-
-    queue->head = next;
-
-    if (next == NULL)
-        queue->tail = NULL;
-}
-
-static SDL_AudioChunk *CreateAudioChunks(size_t chunk_size, const Uint8 *data, size_t len)
-{
-    SDL_assert(len != 0);
-
-    SDL_AudioChunk *head = NULL;
-    SDL_AudioChunk *tail = NULL;
-
-    while (len > 0) {
-        SDL_AudioChunk *chunk = CreateAudioChunk(chunk_size);
-
-        if (chunk == NULL) {
-            break;
-        }
-
-        size_t to_write = SDL_min(len, chunk_size);
-
-        SDL_memcpy(chunk->data, data, to_write);
-        chunk->tail = to_write;
-
-        data += to_write;
-        len -= to_write;
-
-        if (tail) {
-            tail->next = chunk;
-        } else {
-            head = chunk;
-        }
-
-        tail = chunk;
-    }
-
-    if (len > 0) {
-        DestroyAudioChunks(head);
-        SDL_OutOfMemory();
-        return NULL;
-    }
-
-    tail->next = head;
-
-    return tail;
-}
-
-static int WriteChunksToAudioQueue(SDL_AudioQueue *queue, const SDL_AudioSpec *spec, SDL_AudioChunk *chunks, size_t len)
-{
-    SDL_AudioChunk *tail = chunks;
-    SDL_AudioChunk *head = tail->next;
-    tail->next = NULL;
-
-    SDL_AudioTrack *track = GetAudioQueueTrackForWriting(queue, spec);
-
-    if (track == NULL) {
-        DestroyAudioChunks(head);
-        return -1;
-    }
-
-    if (track->tail) {
-        track->tail->next = head;
-    } else {
-        track->head = head;
-    }
-
-    track->tail = tail;
-    track->queued_bytes += len;
-
-    return 0;
-}
-
-/* For a given srcpos, `srcpos + frame` are sampled, where `-RESAMPLER_ZERO_CROSSINGS < frame <= RESAMPLER_ZERO_CROSSINGS`.
- * Note, when upsampling, it is also possible to start sampling from `srcpos = -1`. */
-#define RESAMPLER_MAX_PADDING_FRAMES (RESAMPLER_ZERO_CROSSINGS + 1)
-
-/* The source position is tracked using 32:32 fixed-point arithmetic.
- * This gives high precision and avoids lots of divides in ResampleAudio. */
-static Sint64 GetResampleRate(const int src_rate, const int dst_rate)
-{
-    SDL_assert(src_rate > 0);
-    SDL_assert(dst_rate > 0);
-
-    if (src_rate == dst_rate) {
-        return 0;
-    }
-
-    Sint64 sample_rate = ((Sint64)src_rate << 32) / (Sint64)dst_rate;
-    SDL_assert(sample_rate > 0);
-
-    return sample_rate;
-}
-
-// !!! FIXME: This will blow up on weird processors.
 #ifndef SDL_INT_MAX
-#define SDL_INT_MAX 0x7FFFFFFF
+#define SDL_INT_MAX ((int)(~0u>>1))
 #endif
 
-static int GetResamplerAvailableOutputFrames(const size_t input_frames, const Sint64 resample_rate, const Sint64 resample_offset)
-{
-    const Sint64 output_frames = (((Sint64)input_frames << 32) - resample_offset + resample_rate - 1) / resample_rate;
-
-    return (int) SDL_clamp(output_frames, 0, SDL_INT_MAX);
-}
-
-static int GetResamplerNeededInputFrames(const int output_frames, const Sint64 resample_rate, const Sint64 resample_offset)
-{
-    const Sint32 input_frames = (Sint32)((((output_frames - 1) * resample_rate) + resample_offset) >> 32) + 1;
-
-    return (int) SDL_clamp(input_frames, 0, SDL_INT_MAX);
-}
-
-static int GetResamplerPaddingFrames(const Sint64 resample_rate)
-{
-    // This must always be <= GetHistoryBufferSampleFrames()
-
-    return resample_rate ? RESAMPLER_MAX_PADDING_FRAMES : 0;
-}
-
-static int GetHistoryBufferSampleFrames()
-{
-    // Even if we aren't currently resampling, make sure to keep enough history in case we need to later.
-    return RESAMPLER_MAX_PADDING_FRAMES;
-}
-
-#define RESAMPLER_FILTER_INTERP_BITS (32 - RESAMPLER_BITS_PER_ZERO_CROSSING)
-#define RESAMPLER_FILTER_INTERP_RANGE (1 << RESAMPLER_FILTER_INTERP_BITS)
-
-#define RESAMPLER_SAMPLES_PER_FRAME (RESAMPLER_ZERO_CROSSINGS * 2)
-
-#define RESAMPLER_FULL_FILTER_SIZE (RESAMPLER_SAMPLES_PER_FRAME * (RESAMPLER_SAMPLES_PER_ZERO_CROSSING + 1))
-
-static void ResampleFrame_Scalar(const float* src, float* dst, const float* raw_filter, const float interp, const int chans)
-{
-    int i, chan;
-
-    float filter[RESAMPLER_SAMPLES_PER_FRAME];
-
-    // Interpolate between the nearest two filters
-    for (i = 0; i < RESAMPLER_SAMPLES_PER_FRAME; i++) {
-        filter[i] = (raw_filter[i] * (1.0f - interp)) + (raw_filter[i + RESAMPLER_SAMPLES_PER_FRAME] * interp);
-    }
-
-    if (chans == 2) {
-        float v0 = 0.0f;
-        float v1 = 0.0f;
-
-        for (i = 0; i < RESAMPLER_SAMPLES_PER_FRAME; i++) {
-            const float scale = filter[i];
-            v0 += src[i * 2 + 0] * scale;
-            v1 += src[i * 2 + 1] * scale;
-        }
-
-        dst[0] = v0;
-        dst[1] = v1;
-        return;
-    }
-
-    if (chans == 1) {
-        float v0 = 0.0f;
-
-        for (i = 0; i < RESAMPLER_SAMPLES_PER_FRAME; i++) {
-            v0 += src[i] * filter[i];
-        }
-
-        dst[0] = v0;
-        return;
-    }
-
-    for (chan = 0; chan < chans; chan++) {
-        float f = 0.0f;
-
-        for (i = 0; i < RESAMPLER_SAMPLES_PER_FRAME; i++) {
-            f += src[i * chans + chan] * filter[i];
-        }
-
-        dst[chan] = f;
-    }
-}
-
-#ifdef SDL_SSE_INTRINSICS
-static void SDL_TARGETING("sse") ResampleFrame_SSE(const float* src, float* dst, const float* raw_filter, const float interp, const int chans)
-{
-#if RESAMPLER_SAMPLES_PER_FRAME != 10
-#error Invalid samples per frame
-#endif
-
-    // Load the filter
-    __m128 f0 = _mm_loadu_ps(raw_filter + 0);
-    __m128 f1 = _mm_loadu_ps(raw_filter + 4);
-    __m128 f2 = _mm_loadl_pi(_mm_setzero_ps(), (const __m64*)(raw_filter + 8));
-
-    __m128 g0 = _mm_loadu_ps(raw_filter + 10);
-    __m128 g1 = _mm_loadu_ps(raw_filter + 14);
-    __m128 g2 = _mm_loadl_pi(_mm_setzero_ps(), (const __m64*)(raw_filter + 18));
-
-    __m128 interp1 = _mm_set1_ps(interp);
-    __m128 interp2 = _mm_sub_ps(_mm_set1_ps(1.0f), _mm_set1_ps(interp));
-
-    // Linear interpolate the filter
-    f0 = _mm_add_ps(_mm_mul_ps(f0, interp2), _mm_mul_ps(g0, interp1));
-    f1 = _mm_add_ps(_mm_mul_ps(f1, interp2), _mm_mul_ps(g1, interp1));
-    f2 = _mm_add_ps(_mm_mul_ps(f2, interp2), _mm_mul_ps(g2, interp1));
-
-    if (chans == 2) {
-        // Duplicate each of the filter elements
-        g0 = _mm_unpackhi_ps(f0, f0);
-        f0 = _mm_unpacklo_ps(f0, f0);
-        g1 = _mm_unpackhi_ps(f1, f1);
-        f1 = _mm_unpacklo_ps(f1, f1);
-        f2 = _mm_unpacklo_ps(f2, f2);
-
-        // Multiply the filter by the input
-        f0 = _mm_mul_ps(f0, _mm_loadu_ps(src + 0));
-        g0 = _mm_mul_ps(g0, _mm_loadu_ps(src + 4));
-        f1 = _mm_mul_ps(f1, _mm_loadu_ps(src + 8));
-        g1 = _mm_mul_ps(g1, _mm_loadu_ps(src + 12));
-        f2 = _mm_mul_ps(f2, _mm_loadu_ps(src + 16));
-
-        // Calculate the sum
-        f0 = _mm_add_ps(_mm_add_ps(_mm_add_ps(f0, g0), _mm_add_ps(f1, g1)), f2);
-        f0 = _mm_add_ps(f0, _mm_movehl_ps(f0, f0));
-
-        // Store the result
-        _mm_storel_pi((__m64*) dst, f0);
-        return;
-    }
-
-    if (chans == 1) {
-        // Multiply the filter by the input
-        f0 = _mm_mul_ps(f0, _mm_loadu_ps(src + 0));
-        f1 = _mm_mul_ps(f1, _mm_loadu_ps(src + 4));
-        f2 = _mm_mul_ps(f2, _mm_loadl_pi(_mm_setzero_ps(), (const __m64*)(src + 8)));
-
-        // Calculate the sum
-        f0 = _mm_add_ps(f0, f1);
-        f0 = _mm_add_ps(_mm_add_ps(f0, f2), _mm_movehl_ps(f0, f0));
-        f0 = _mm_add_ss(f0, _mm_shuffle_ps(f0, f0, _MM_SHUFFLE(1, 1, 1, 1)));
-
-        // Store the result
-        _mm_store_ss(dst, f0);
-        return;
-    }
-
-    float filter[RESAMPLER_SAMPLES_PER_FRAME];
-    _mm_storeu_ps(filter + 0, f0);
-    _mm_storeu_ps(filter + 4, f1);
-    _mm_storel_pi((__m64*)(filter + 8), f2);
-
-    int i, chan = 0;
-
-    for (; chan + 4 <= chans; chan += 4) {
-        f0 = _mm_setzero_ps();
-
-        for (i = 0; i < RESAMPLER_SAMPLES_PER_FRAME; i++) {
-            f0 = _mm_add_ps(f0, _mm_mul_ps(_mm_loadu_ps(&src[i * chans + chan]), _mm_load1_ps(&filter[i])));
-        }
-
-        _mm_storeu_ps(&dst[chan], f0);
-    }
-
-    for (; chan < chans; chan++) {
-        f0 = _mm_setzero_ps();
-
-        for (i = 0; i < RESAMPLER_SAMPLES_PER_FRAME; i++) {
-            f0 = _mm_add_ss(f0, _mm_mul_ss(_mm_load_ss(&src[i * chans + chan]), _mm_load_ss(&filter[i])));
-        }
-
-        _mm_store_ss(&dst[chan], f0);
-    }
-}
-#endif
-
-static void (*ResampleFrame)(const float* src, float* dst, const float* raw_filter, const float interp, const int chans);
-
-static float FullResamplerFilter[RESAMPLER_FULL_FILTER_SIZE];
-
-void SDL_SetupAudioResampler()
-{
-    static SDL_bool setup = SDL_FALSE;
-    if (setup) {
-        return;
-    }
-
-    // Build a table combining the left and right wings, for faster access
-    int i, j;
-
-    for (i = 0; i < RESAMPLER_SAMPLES_PER_ZERO_CROSSING; ++i) {
-        for (j = 0; j < RESAMPLER_ZERO_CROSSINGS; j++) {
-            int lwing = (i * RESAMPLER_SAMPLES_PER_FRAME) + (RESAMPLER_ZERO_CROSSINGS - 1) - j;
-            int rwing = (RESAMPLER_FULL_FILTER_SIZE - 1) - lwing;
-
-            float value = ResamplerFilter[(i * RESAMPLER_ZERO_CROSSINGS) + j];
-            FullResamplerFilter[lwing] = value;
-            FullResamplerFilter[rwing] = value;
-        }
-    }
-
-    for (i = 0; i < RESAMPLER_ZERO_CROSSINGS; ++i) {
-        int rwing = i + RESAMPLER_ZERO_CROSSINGS;
-        int lwing = (RESAMPLER_FULL_FILTER_SIZE - 1) - rwing;
-
-        FullResamplerFilter[lwing] = 0.0f;
-        FullResamplerFilter[rwing] = 0.0f;
-    }
-
-    ResampleFrame = ResampleFrame_Scalar;
-
-#ifdef SDL_SSE_INTRINSICS
-    if (SDL_HasSSE()) {
-        ResampleFrame = ResampleFrame_SSE;
-    }
-#endif
-
-    setup = SDL_TRUE;
-}
-
-static void ResampleAudio(const int chans, const float *inbuf, const int inframes, float *outbuf, const int outframes,
-                          const Sint64 resample_rate, Sint64* resample_offset)
-{
-    SDL_assert(resample_rate > 0);
-    float *dst = outbuf;
-    int i;
-
-    Sint64 srcpos = *resample_offset;
-
-    for (i = 0; i < outframes; i++) {
-        int srcindex = (int)(Sint32)(srcpos >> 32);
-        Uint32 srcfraction = (Uint32)(srcpos & 0xFFFFFFFF);
-        srcpos += resample_rate;
-
-        SDL_assert(srcindex >= -1 && srcindex < inframes);
-
-        const float* filter = &FullResamplerFilter[(srcfraction >> RESAMPLER_FILTER_INTERP_BITS) * RESAMPLER_SAMPLES_PER_FRAME];
-        const float interp = (float)(srcfraction & (RESAMPLER_FILTER_INTERP_RANGE - 1)) * (1.0f / RESAMPLER_FILTER_INTERP_RANGE);
-
-        const float* src = &inbuf[(srcindex - (RESAMPLER_ZERO_CROSSINGS - 1)) * chans];
-        ResampleFrame(src, dst, filter, interp, chans);
-
-        dst += chans;
-    }
-
-    *resample_offset = srcpos - ((Sint64)inframes << 32);
-}
+#define AUDIO_SPECS_EQUAL(x, y) (((x).format == (y).format) && ((x).channels == (y).channels) && ((x).freq == (y).freq))
 
 /*
  * CHANNEL LAYOUTS AS SDL EXPECTS THEM:
@@ -1056,16 +365,27 @@ static int CalculateMaxFrameSize(SDL_AudioFormat src_format, int src_channels, S
     return max_format_size * max_channels;
 }
 
-static Sint64 GetStreamResampleRate(SDL_AudioStream* stream, int src_freq)
+static Sint64 GetAudioStreamResampleRate(SDL_AudioStream* stream, int src_freq, Sint64 resample_offset)
 {
     src_freq = (int)((float)src_freq * stream->freq_ratio);
 
-    return GetResampleRate(src_freq, stream->dst_spec.freq);
+    Sint64 resample_rate = SDL_GetResampleRate(src_freq, stream->dst_spec.freq);
+
+    // If src_freq == dst_freq, and we aren't between frames, don't resample
+    if ((resample_rate == 0x100000000) && (resample_offset == 0)) {
+        resample_rate = 0;
+    }
+
+    return resample_rate;
 }
 
-static int ResetHistoryBuffer(SDL_AudioStream *stream, const SDL_AudioSpec *spec)
+static int UpdateAudioStreamInputSpec(SDL_AudioStream *stream, const SDL_AudioSpec *spec)
 {
-    const size_t history_buffer_allocation = GetHistoryBufferSampleFrames() * SDL_AUDIO_FRAMESIZE(*spec);
+    if (AUDIO_SPECS_EQUAL(stream->input_spec, *spec)) {
+        return 0;
+    }
+
+    const size_t history_buffer_allocation = SDL_GetResamplerHistoryFrames() * SDL_AUDIO_FRAMESIZE(*spec);
     Uint8 *history_buffer = stream->history_buffer;
 
     if (stream->history_buffer_allocation < history_buffer_allocation) {
@@ -1079,6 +399,7 @@ static int ResetHistoryBuffer(SDL_AudioStream *stream, const SDL_AudioSpec *spec
     }
 
     SDL_memset(history_buffer, SDL_GetSilenceValueForFormat(spec->format), history_buffer_allocation);
+    SDL_copyp(&stream->input_spec, spec);
 
     return 0;
 }
@@ -1097,8 +418,7 @@ SDL_AudioStream *SDL_CreateAudioStream(const SDL_AudioSpec *src_spec, const SDL_
     }
 
     retval->freq_ratio = 1.0f;
-    retval->queue = CreateAudioQueue(4096);
-    retval->track_changed = SDL_TRUE;
+    retval->queue = SDL_CreateAudioQueue(4096);
 
     if (retval->queue == NULL) {
         SDL_free(retval);
@@ -1219,13 +539,7 @@ int SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_s
     SDL_LockMutex(stream->lock);
 
     if (src_spec) {
-        // If the format hasn't changed, don't try and flush the stream.
-        if ((stream->src_spec.format != src_spec->format) ||
-            (stream->src_spec.channels != src_spec->channels) ||
-            (stream->src_spec.freq != src_spec->freq)) {
-            SDL_FlushAudioStream(stream);
-            SDL_copyp(&stream->src_spec, src_spec);
-        }
+        SDL_copyp(&stream->src_spec, src_spec);
     }
 
     if (dst_spec) {
@@ -1313,20 +627,22 @@ int SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
         return SDL_SetError("Can't add partial sample frames");
     }
 
-    SDL_AudioChunk* chunks = NULL;
+    SDL_AudioTrack* track = NULL;
 
     // When copying in large amounts of data, try and do as much work as possible
     // outside of the stream lock, otherwise the output device is likely to be starved.
-    const int large_input_thresh = 64 * 1024;
+    const int large_input_thresh = 1024 * 1024;
 
     if (len >= large_input_thresh) {
-        size_t chunk_size = stream->queue->chunk_size;
+        SDL_AudioSpec src_spec;
+        SDL_copyp(&src_spec, &stream->src_spec);
 
         SDL_UnlockMutex(stream->lock);
 
-        chunks = CreateAudioChunks(chunk_size, (const Uint8*) buf, len);
+        size_t chunk_size = SDL_GetAudioQueueChunkSize(stream->queue);
+        track = SDL_CreateChunkedAudioTrack(&src_spec, buf, len, chunk_size);
 
-        if (chunks == NULL) {
+        if (track == NULL) {
             return -1;
         }
 
@@ -1335,10 +651,13 @@ int SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
 
     const int prev_available = stream->put_callback ? SDL_GetAudioStreamAvailable(stream) : 0;
 
-    // just queue the data, we convert/resample when dequeueing.
-    const int retval = chunks
-        ? WriteChunksToAudioQueue(stream->queue, &stream->src_spec, chunks, len)
-        : WriteToAudioQueue(stream->queue, &stream->src_spec, (const Uint8*) buf, len);
+    int retval = 0;
+
+    if (track != NULL) {
+        SDL_AddTrackToAudioQueue(stream->queue, track);
+    } else {
+        retval = SDL_WriteToAudioQueue(stream->queue, &stream->src_spec, buf, len);
+    }
 
     if ((retval == 0) && stream->put_callback) {
         const int newavail = SDL_GetAudioStreamAvailable(stream) - prev_available;
@@ -1350,7 +669,6 @@ int SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
     return retval;
 }
 
-
 int SDL_FlushAudioStream(SDL_AudioStream *stream)
 {
     if (stream == NULL) {
@@ -1358,7 +676,7 @@ int SDL_FlushAudioStream(SDL_AudioStream *stream)
     }
 
     SDL_LockMutex(stream->lock);
-    FlushAudioQueue(stream->queue);
+    SDL_FlushAudioQueue(stream->queue);
     SDL_UnlockMutex(stream->lock);
 
     return 0;
@@ -1366,7 +684,7 @@ int SDL_FlushAudioStream(SDL_AudioStream *stream)
 
 /* this does not save the previous contents of stream->work_buffer. It's a work buffer!!
    The returned buffer is aligned/padded for use with SIMD instructions. */
-static Uint8 *EnsureStreamWorkBufferSize(SDL_AudioStream *stream, size_t newlen)
+static Uint8 *EnsureAudioStreamWorkBufferSize(SDL_AudioStream *stream, size_t newlen)
 {
     if (stream->work_buffer_allocation >= newlen) {
         return stream->work_buffer;
@@ -1384,14 +702,14 @@ static Uint8 *EnsureStreamWorkBufferSize(SDL_AudioStream *stream, size_t newlen)
     return ptr;
 }
 
-static void UpdateStreamHistoryBuffer(SDL_AudioStream* stream, const SDL_AudioSpec* spec,
+static void UpdateAudioStreamHistoryBuffer(SDL_AudioStream* stream,
     Uint8* input_buffer, int input_bytes, Uint8* left_padding, int padding_bytes)
 {
-    const int history_buffer_frames = GetHistoryBufferSampleFrames();
+    const int history_buffer_frames = SDL_GetResamplerHistoryFrames();
 
     // Even if we aren't currently resampling, we always need to update the history buffer
     Uint8 *history_buffer = stream->history_buffer;
-    int history_bytes = history_buffer_frames * SDL_AUDIO_FRAMESIZE(*spec);
+    int history_bytes = history_buffer_frames * SDL_AUDIO_FRAMESIZE(stream->input_spec);
 
     if (left_padding != NULL) {
         // Fill in the left padding using the history buffer
@@ -1409,46 +727,99 @@ static void UpdateStreamHistoryBuffer(SDL_AudioStream* stream, const SDL_AudioSp
     }
 }
 
-static Sint64 GetAudioStreamTrackAvailableFrames(SDL_AudioStream* stream, SDL_AudioTrack* track, Sint64 resample_offset)
+static Sint64 NextAudioStreamIter(SDL_AudioStream* stream, void** inout_iter,
+    Sint64* inout_resample_offset, SDL_AudioSpec* out_spec, SDL_bool* out_flushed)
 {
-    size_t input_frames = track->queued_bytes / SDL_AUDIO_FRAMESIZE(track->spec);
-    Sint64 resample_rate = GetStreamResampleRate(stream, track->spec.freq);
-    Sint64 output_frames = (Sint64) input_frames;
+    SDL_AudioSpec spec;
+    SDL_bool flushed;
+    size_t queued_bytes = SDL_NextAudioQueueIter(stream->queue, inout_iter, &spec, &flushed);
 
-    if (resample_rate) {
-        if (!track->flushed) {
-            SDL_assert(track->next == NULL);
-            const int history_buffer_frames = GetHistoryBufferSampleFrames();
-            input_frames -= SDL_min(input_frames, (size_t) history_buffer_frames);
+    if (out_spec) {
+        SDL_copyp(out_spec, &spec);
+    }
+
+    // There is infinite audio available, whether or not we are resampling
+    if (queued_bytes == SDL_SIZE_MAX) {
+        *inout_resample_offset = 0;
+
+        if (out_flushed) {
+            *out_flushed = SDL_FALSE;
         }
 
-        output_frames = GetResamplerAvailableOutputFrames(input_frames, resample_rate, resample_offset);
+        return SDL_MAX_SINT32;
+    }
+
+    Sint64 resample_offset = *inout_resample_offset;
+    Sint64 resample_rate = GetAudioStreamResampleRate(stream, spec.freq, resample_offset);
+    Sint64 output_frames = (Sint64)(queued_bytes / SDL_AUDIO_FRAMESIZE(spec));
+
+    if (resample_rate) {
+        // Resampling requires padding frames to the left and right of the current position.
+        // Past the end of the track, the right padding is filled with silence.
+        // But we only want to do that if the track is actually finished (flushed).
+        if (!flushed) {
+            output_frames -= SDL_GetResamplerPaddingFrames(resample_rate);
+        }
+
+        output_frames = SDL_GetResamplerOutputFrames(output_frames, resample_rate, &resample_offset);
+    }
+
+    if (flushed) {
+        resample_offset = 0;
+    }
+
+    *inout_resample_offset = resample_offset;
+
+    if (out_flushed) {
+        *out_flushed = flushed;
     }
 
     return output_frames;
 }
 
-static Sint64 GetAudioStreamAvailableFrames(SDL_AudioStream *stream)
+static Sint64 GetAudioStreamAvailableFrames(SDL_AudioStream* stream, Sint64* out_resample_offset)
 {
-    Sint64 total = 0;
-    Sint64 resample_offset = stream->resample_offset;
-    SDL_AudioTrack* track;
+    void* iter = SDL_BeginAudioQueueIter(stream->queue);
 
-    for (track = GetCurrentAudioTrack(stream->queue); track; track = track->next) {
-        total += GetAudioStreamTrackAvailableFrames(stream, track, resample_offset);
-        resample_offset = 0;
+    Sint64 resample_offset = stream->resample_offset;
+    Sint64 output_frames = 0;
+
+    while (iter) {
+        output_frames += NextAudioStreamIter(stream, &iter, &resample_offset, NULL, NULL);
+
+        // Already got loads of frames. Just clamp it to something reasonable
+        if (output_frames >= SDL_MAX_SINT32) {
+            output_frames = SDL_MAX_SINT32;
+            break;
+        }
     }
 
-    return total;
+    if (out_resample_offset) {
+        *out_resample_offset = resample_offset;
+    }
+
+    return output_frames;
+}
+
+static Sint64 GetAudioStreamHead(SDL_AudioStream* stream, SDL_AudioSpec* out_spec, SDL_bool* out_flushed)
+{
+    void* iter = SDL_BeginAudioQueueIter(stream->queue);
+
+    if (iter == NULL) {
+        SDL_zerop(out_spec);
+        *out_flushed = SDL_FALSE;
+        return 0;
+    }
+
+    Sint64 resample_offset = stream->resample_offset;
+    return NextAudioStreamIter(stream, &iter, &resample_offset, out_spec, out_flushed);
 }
 
 // You must hold stream->lock and validate your parameters before calling this!
 // Enough input data MUST be available!
 static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int output_frames)
 {
-    SDL_AudioTrack* track = GetCurrentAudioTrack(stream->queue);
-
-    const SDL_AudioSpec* src_spec = &track->spec;
+    const SDL_AudioSpec* src_spec = &stream->input_spec;
     const SDL_AudioSpec* dst_spec = &stream->dst_spec;
 
     const SDL_AudioFormat src_format = src_spec->format;
@@ -1459,7 +830,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int ou
     const int dst_channels = dst_spec->channels;
 
     const int max_frame_size = CalculateMaxFrameSize(src_format, src_channels, dst_format, dst_channels);
-    const Sint64 resample_rate = GetStreamResampleRate(stream, src_spec->freq);
+    const Sint64 resample_rate = GetAudioStreamResampleRate(stream, src_spec->freq, stream->resample_offset);
 
 #if DEBUG_AUDIOSTREAM
     SDL_Log("AUDIOSTREAM: asking for %d frames.", output_frames);
@@ -1477,7 +848,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int ou
         if ((src_format == dst_format) && (src_channels == dst_channels)) {
             input_buffer = buf;
         } else {
-            input_buffer = EnsureStreamWorkBufferSize(stream, output_frames * max_frame_size);
+            input_buffer = EnsureAudioStreamWorkBufferSize(stream, output_frames * max_frame_size);
 
             if (!input_buffer) {
                 return -1;
@@ -1485,10 +856,12 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int ou
         }
 
         const int input_bytes = output_frames * src_frame_size;
-        ReadFromAudioQueue(stream->queue, input_buffer, input_bytes);
+        if (SDL_ReadFromAudioQueue(stream->queue, input_buffer, input_bytes) != 0) {
+            SDL_assert(!"Not enough data in queue (read)");
+        }
 
         // Even if we aren't currently resampling, we always need to update the history buffer
-        UpdateStreamHistoryBuffer(stream, src_spec, input_buffer, input_bytes, NULL, 0);
+        UpdateAudioStreamHistoryBuffer(stream, input_buffer, input_bytes, NULL, 0);
 
         // Convert the data, if necessary
         if (buf != input_buffer) {
@@ -1503,10 +876,10 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int ou
     // Because resampling happens "between" frames, The same number of output_frames
     // can require a different number of input_frames, depending on the resample_offset.
     // Infact, input_frames can sometimes even be zero when upsampling.
-    const int input_frames = GetResamplerNeededInputFrames(output_frames, resample_rate, stream->resample_offset);
+    const int input_frames = (int) SDL_GetResamplerInputFrames(output_frames, resample_rate, stream->resample_offset);
     const int input_bytes = input_frames * src_frame_size;
 
-    const int resampler_padding_frames = GetResamplerPaddingFrames(resample_rate);
+    const int resampler_padding_frames = SDL_GetResamplerPaddingFrames(resample_rate);
 
     // If increasing channels, do it after resampling, since we'd just
     // do more work to resample duplicate channels. If we're decreasing, do
@@ -1549,7 +922,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int ou
         work_buffer_capacity += resample_bytes;
     }
 
-    Uint8* work_buffer = EnsureStreamWorkBufferSize(stream, work_buffer_capacity);
+    Uint8* work_buffer = EnsureAudioStreamWorkBufferSize(stream, work_buffer_capacity);
 
     if (!work_buffer) {
         return -1;
@@ -1572,19 +945,16 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int ou
     SDL_assert((work_buffer_tail - work_buffer) <= work_buffer_capacity);
 
     // Now read unconverted data from the queue into the work buffer to fulfill the request.
-    ReadFromAudioQueue(stream->queue, input_buffer, (size_t) input_bytes);
+    if (SDL_ReadFromAudioQueue(stream->queue, input_buffer, input_bytes) != 0) {
+        SDL_assert(!"Not enough data in queue (resample read)");
+    }
 
     // Update the history buffer and fill in the left padding
-    UpdateStreamHistoryBuffer(stream, src_spec, input_buffer, input_bytes, left_padding, padding_bytes);
+    UpdateAudioStreamHistoryBuffer(stream, input_buffer, input_bytes, left_padding, padding_bytes);
 
-    // Fill in the right padding by peeking into the input queue
-    const int right_padding_bytes = (int) PeekIntoAudioQueue(stream->queue, right_padding, padding_bytes);
-
-    if (right_padding_bytes < padding_bytes) {
-        // If we have run out of data, fill the rest with silence.
-        // This should only happen if the stream has been flushed.
-        SDL_assert(track->flushed);
-        SDL_memset(right_padding + right_padding_bytes, SDL_GetSilenceValueForFormat(src_format), padding_bytes - right_padding_bytes);
+    // Fill in the right padding by peeking into the input queue (missing data is filled with silence)
+    if (SDL_PeekIntoAudioQueue(stream->queue, right_padding, padding_bytes) != 0) {
+        SDL_assert(!"Not enough data in queue (resample peek)");
     }
 
     SDL_assert(work_buffer_frames == input_frames + (resampler_padding_frames * 2));
@@ -1600,7 +970,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int ou
     // Decide where the resampled output goes
     void* resample_buffer = (resample_buffer_offset != -1) ? (work_buffer + resample_buffer_offset) : buf;
 
-    ResampleAudio(resample_channels,
+    SDL_ResampleAudio(resample_channels,
                   (const float *) input_buffer, input_frames,
                   (float*) resample_buffer, output_frames,
                   resample_rate, &stream->resample_offset);
@@ -1646,83 +1016,73 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
     // give the callback a chance to fill in more stream data if it wants.
     if (stream->get_callback) {
         Sint64 total_request = len / dst_frame_size;  // start with sample frames desired
-        Sint64 approx_request = total_request;
+        Sint64 additional_request = total_request;
 
-        const Sint64 available_frames = GetAudioStreamAvailableFrames(stream);
-        approx_request -= SDL_min(available_frames, approx_request);
+        Sint64 resample_offset = 0;
+        Sint64 available_frames = GetAudioStreamAvailableFrames(stream, &resample_offset);
 
-        const Sint64 resample_rate = GetStreamResampleRate(stream, stream->src_spec.freq);
+        additional_request -= SDL_min(additional_request, available_frames);
+
+        Sint64 resample_rate = GetAudioStreamResampleRate(stream, stream->src_spec.freq, resample_offset);
 
         if (resample_rate) {
-            total_request = GetResamplerNeededInputFrames((int) total_request, resample_rate, 0);
-            approx_request = GetResamplerNeededInputFrames((int) approx_request, resample_rate, 0);
+            total_request = SDL_GetResamplerInputFrames(total_request, resample_rate, resample_offset);
+            additional_request = SDL_GetResamplerInputFrames(additional_request, resample_rate, resample_offset);
         }
 
         total_request *= SDL_AUDIO_FRAMESIZE(stream->src_spec);  // convert sample frames to bytes.
-        approx_request *= SDL_AUDIO_FRAMESIZE(stream->src_spec);  // convert sample frames to bytes.
-        stream->get_callback(stream->get_callback_userdata, stream, (int) SDL_min(approx_request, SDL_INT_MAX), (int) SDL_min(total_request, SDL_INT_MAX));
+        additional_request *= SDL_AUDIO_FRAMESIZE(stream->src_spec);  // convert sample frames to bytes.
+        stream->get_callback(stream->get_callback_userdata, stream, (int) SDL_min(additional_request, SDL_INT_MAX), (int) SDL_min(total_request, SDL_INT_MAX));
     }
 
+    // Process the data in chunks to avoid allocating too much memory (and potential integer overflows)
     const int chunk_size = 4096;
 
-    int retval = 0;
+    int total = 0;
 
-    while (len > 0) {
-        SDL_AudioTrack* track = GetCurrentAudioTrack(stream->queue);
+    while (total < len) {
+        // Audio is processed a track at a time.
+        SDL_AudioSpec input_spec;
+        SDL_bool flushed;
+        const Sint64 available_frames = GetAudioStreamHead(stream, &input_spec, &flushed);
 
-        if (track == NULL) {
-            break;
-        }
-
-        const Sint64 max_frames = GetAudioStreamTrackAvailableFrames(stream, track, stream->resample_offset);
-
-        if (max_frames == 0) {
-            if (track->flushed) {
-                PopCurrentAudioTrack(stream->queue);
-                stream->track_changed = SDL_TRUE;
+        if (available_frames == 0) {
+            if (flushed) {
+                SDL_PopAudioQueueHead(stream->queue);
+                SDL_zero(stream->input_spec);
                 stream->resample_offset = 0;
                 continue;
             }
-
+            // There are no frames available, but the track hasn't been flushed, so more might be added later.
             break;
         }
 
-        if (stream->track_changed) {
-            if (ResetHistoryBuffer(stream, &track->spec) != 0) {
-                retval = -1;
-                break;
-            }
-
-            stream->track_changed = SDL_FALSE;
+        if (UpdateAudioStreamInputSpec(stream, &input_spec) != 0) {
+            total = total ? total : -1;
+            break;
         }
 
         // Clamp the output length to the maximum currently available.
-        // GetAudioStreamDataInternal assumes enough input data is available.
-        int output_frames = len / dst_frame_size;
+        // GetAudioStreamDataInternal requires enough input data is available.
+        int output_frames = (len - total) / dst_frame_size;
         output_frames = SDL_min(output_frames, chunk_size);
-        output_frames = (int) SDL_min(output_frames, max_frames);
+        output_frames = (int) SDL_min(output_frames, available_frames);
 
-        if (GetAudioStreamDataInternal(stream, buf, output_frames) != 0) {
-            if (retval == 0) {
-                retval = -1;
-            }
+        if (GetAudioStreamDataInternal(stream, &buf[total], output_frames) != 0) {
+            total = total ? total : -1;
             break;
         }
 
-        const int output_bytes = output_frames * dst_frame_size;
-
-        buf += output_bytes;
-        len -= output_bytes;
-        retval += output_bytes;
+        total += output_frames * dst_frame_size;
     }
 
     SDL_UnlockMutex(stream->lock);
 
 #if DEBUG_AUDIOSTREAM
-    SDL_Log("AUDIOSTREAM: Final result was %d", retval);
+    SDL_Log("AUDIOSTREAM: Final result was %d", total);
 #endif
 
-    return retval;
+    return total;
 }
 
 // number of converted/resampled bytes available
@@ -1739,7 +1099,7 @@ int SDL_GetAudioStreamAvailable(SDL_AudioStream *stream)
         return 0;
     }
 
-    Sint64 count = GetAudioStreamAvailableFrames(stream);
+    Sint64 count = GetAudioStreamAvailableFrames(stream, NULL);
 
     // convert from sample frames to bytes in destination format.
     count *= SDL_AUDIO_FRAMESIZE(stream->dst_spec);
@@ -1747,7 +1107,7 @@ int SDL_GetAudioStreamAvailable(SDL_AudioStream *stream)
     SDL_UnlockMutex(stream->lock);
 
     // if this overflows an int, just clamp it to a maximum.
-    return (int) SDL_min(count, 0x7FFFFFFF);
+    return (int) SDL_min(count, SDL_INT_MAX);
 }
 
 int SDL_ClearAudioStream(SDL_AudioStream *stream)
@@ -1758,8 +1118,8 @@ int SDL_ClearAudioStream(SDL_AudioStream *stream)
 
     SDL_LockMutex(stream->lock);
 
-    ClearAudioQueue(stream->queue);
-    stream->track_changed = SDL_TRUE;
+    SDL_ClearAudioQueue(stream->queue);
+    SDL_zero(stream->input_spec);
     stream->resample_offset = 0;
 
     SDL_UnlockMutex(stream->lock);
@@ -1782,7 +1142,7 @@ void SDL_DestroyAudioStream(SDL_AudioStream *stream)
 
     SDL_aligned_free(stream->history_buffer);
     SDL_aligned_free(stream->work_buffer);
-    DestroyAudioQueue(stream->queue);
+    SDL_DestroyAudioQueue(stream->queue);
     SDL_DestroyMutex(stream->lock);
 
     SDL_free(stream);

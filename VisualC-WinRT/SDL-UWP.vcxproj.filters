@@ -183,6 +183,12 @@
     <ClInclude Include="..\src\audio\SDL_sysaudio.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\audio\SDL_audioqueue.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\audio\SDL_audioresample.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\audio\SDL_wave.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -471,6 +477,12 @@
     <ClCompile Include="..\src\audio\SDL_audiotypecvt.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\audio\SDL_audioqueue.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\audio\SDL_audioresample.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>        
     <ClCompile Include="..\src\audio\SDL_mixer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
