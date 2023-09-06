@@ -1383,7 +1383,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
 
         case 4:
 #if defined(SDL_SSE4_1_INTRINSICS) || defined(SDL_AVX2_INTRINSICS)
-            if (sf->BytesPerPixel == 4 && df->BytesPerPixel == 4) {
+            if (sf->BytesPerPixel == 4 && df->BytesPerPixel == 4 && (SDL_HasAVX2() || SDL_HasSSE41())) {
                 return BlitNtoNPixelAlpha;
             }
 #endif
