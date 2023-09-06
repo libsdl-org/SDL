@@ -4,7 +4,7 @@
 
 #ifdef SDL_SSE4_1_INTRINSICS
 
-#include "../SDL_blit.h"
+#include "SDL_blit.h"
 
 #if !defined(_MSC_VER) || (defined(_MSC_VER) && defined(__clang__))
 __attribute__((target("sse4.1")))

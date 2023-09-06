@@ -4,8 +4,8 @@
 
 #ifdef SDL_AVX2_INTRINSICS
 
-#include "../SDL_blit.h"
-#include "SDL_blit_A_sse4.1.h"
+#include "SDL_blit.h"
+#include "SDL_blit_A_sse4_1.h"
 
 #if !defined(_MSC_VER) || (defined(_MSC_VER) && defined(__clang__))
 __attribute__((target("avx2")))
