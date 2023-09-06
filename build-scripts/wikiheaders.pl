@@ -792,6 +792,45 @@ while (my $d = readdir(DH)) {
 }
 closedir(DH);
 
+delete $wikifuncs{"Undocumented"};
+
+{
+    my $path = "$wikipath/Undocumented.md";
+    open(FH, '>', $path) or die("Can't open '$path': $!\n");
+
+    print FH "# Undocumented\n\n";
+
+    print FH "## Functions defined in the headers, but not in the wiki\n\n";
+    my $header_only_func = 0;
+    foreach (keys %headerfuncs) {
+        my $fn = $_;
+        if (not defined $wikifuncs{$fn}) {
+            print FH "- [$fn]($fn)\n";
+            $header_only_func = 1;
+        }
+    }
+    if (!$header_only_func) {
+        print FH "(none)\n";
+    }
+    print FH "\n";
+
+    print FH "## Functions defined in the wiki, but not in the headers\n\n";
+
+    my $wiki_only_func = 0;
+    foreach (keys %wikifuncs) {
+        my $fn = $_;
+        if (not defined $headerfuncs{$fn}) {
+            print FH "- [$fn]($fn)\n";
+            $wiki_only_func = 1;
+        }
+    }
+    if (!$wiki_only_func) {
+        print FH "(none)\n";
+    }
+    print FH "\n";
+
+    close(FH);
+}
 
 if ($warn_about_missing) {
     foreach (keys %wikifuncs) {
