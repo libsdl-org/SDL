@@ -452,11 +452,11 @@
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_sse_func.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_std_func.h" />
-    <ClCompile Include="..\..\src\video\intrin\SDL_blit_A_avx2.c">
-      <Filter>video\intrin</Filter>
+    <ClCompile Include="..\..\src\video\SDL_blit_A_avx2.c">
+      <Filter>video</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\video\intrin\SDL_blit_A_sse4_1.c">
-      <Filter>video\intrin</Filter>
+    <ClCompile Include="..\..\src\video\SDL_blit_A_sse4_1.c">
+      <Filter>video</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
