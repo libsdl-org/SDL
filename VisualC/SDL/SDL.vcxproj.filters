@@ -871,11 +871,11 @@
     </ClInclude>
     <ClInclude Include="..\..\src\hidapi\SDL_hidapi_c.h" />
     <ClInclude Include="..\..\src\thread\generic\SDL_sysrwlock_c.h" />
-    <ClInclude Include="..\..\src\video\intrin\SDL_blit_A_avx2.h">
-      <Filter>video\intrin</Filter>
+    <ClInclude Include="..\..\src\video\SDL_blit_A_avx2.h">
+      <Filter>video</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\video\intrin\SDL_blit_A_sse4.1.h">
-      <Filter>video\intrin</Filter>
+    <ClInclude Include="..\..\src\video\SDL_blit_A_sse4_1.h">
+      <Filter>video</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\thread\generic\SDL_sysrwlock_c.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_common.h" />
@@ -1525,11 +1525,11 @@
       <Filter>stdlib</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\thread\generic\SDL_sysrwlock.c" />
-    <ClCompile Include="..\..\src\video\intrin\SDL_blit_A_avx2.c">
-      <Filter>video\intrin</Filter>
+    <ClCompile Include="..\..\src\video\SDL_blit_A_avx2.c">
+      <Filter>video</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\video\intrin\SDL_blit_A_sse4_1.c">
-      <Filter>video\intrin</Filter>
+    <ClCompile Include="..\..\src\video\SDL_blit_A_sse4_1.c">
+      <Filter>video</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\thread\generic\SDL_sysrwlock.c" />
     <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx.c" />

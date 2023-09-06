@@ -25,10 +25,10 @@
 #include "SDL_blit.h"
 
 #ifdef SDL_SSE4_1_INTRINSICS
-#include "intrin/SDL_blit_A_sse4.1.h"
+#include "SDL_blit_A_sse4_1.h"
 #endif
 #ifdef SDL_AVX2_INTRINSICS
-#include "intrin/SDL_blit_A_avx2.h"
+#include "SDL_blit_A_avx2.h"
 #endif
 #if defined(SDL_SSE4_1_INTRINSICS) || defined(SDL_AVX2_INTRINSICS)
 #include "SDL3/SDL_cpuinfo.h"
