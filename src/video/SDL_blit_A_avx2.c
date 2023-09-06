@@ -4,6 +4,8 @@
 
 #ifdef SDL_AVX2_INTRINSICS
 
+#define SDL_blit_A_avx2_c
+
 #include "SDL_blit.h"
 #include "SDL_blit_A_sse4_1.h"
 

@@ -4,7 +4,10 @@
 
 #ifdef SDL_SSE4_1_INTRINSICS
 
+#define SDL_blit_A_sse4_1_c
+
 #include "SDL_blit.h"
+#include "SDL_blit_A_sse4_1.h"
 
 /**
  * Using the SSE4.1 instruction set, blit four pixels with alpha blending
