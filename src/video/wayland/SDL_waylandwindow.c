@@ -755,11 +755,10 @@ static void handle_configure_zxdg_decoration(void *data,
         WAYLAND_wl_display_roundtrip(driverdata->waylandData->display);
 
         Wayland_HideWindow(device, window);
+        SDL_zero(driverdata->shell_surface);
         driverdata->shell_surface_type = WAYLAND_SURFACE_LIBDECOR;
 
-        if (!window->is_hiding && !(window->flags & SDL_WINDOW_HIDDEN)) {
-            Wayland_ShowWindow(device, window);
-        }
+        Wayland_ShowWindow(device, window);
     }
 }
 
