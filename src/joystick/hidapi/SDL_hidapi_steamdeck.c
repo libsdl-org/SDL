@@ -32,6 +32,11 @@
 
 #include <stdint.h>
 
+typedef struct
+{
+    Uint32 update_rate_us;
+} SDL_DriverSteamDeck_Context;
+
 /*****************************************************************************************************/
 
 static void HIDAPI_DriverSteamDeck_RegisterHints(SDL_HintCallback callback, void *userdata)
@@ -67,7 +72,31 @@ static SDL_bool HIDAPI_DriverSteamDeck_IsSupportedDevice(
 
 static SDL_bool HIDAPI_DriverSteamDeck_InitDevice(SDL_HIDAPI_Device *device)
 {
-    return SDL_FALSE;
+    int size;
+    Uint8 data[64];
+    SDL_DriverSteamDeck_Context *ctx;
+
+    ctx = (SDL_DriverSteamDeck_Context *)SDL_calloc(1, sizeof(*ctx));
+    if (ctx == NULL) {
+        SDL_OutOfMemory();
+        return SDL_FALSE;
+    }
+
+    // Always 1kHz according to USB descriptor
+    ctx->update_rate_us = 1000;
+
+    device->context = ctx;
+
+    // Read a report to see if this is the correct endpoint.
+    // Mouse, Keyboard and Controller have the same VID/PID but
+    // only the controller hidraw device receives hid reports.
+    size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 16);
+    if (size == 0)
+        return SDL_FALSE;
+
+    HIDAPI_SetDeviceName(device, "Steam Deck");
+
+    return HIDAPI_JoystickConnected(device, NULL);
 }
 
 static int HIDAPI_DriverSteamDeck_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
@@ -86,7 +115,19 @@ static SDL_bool HIDAPI_DriverSteamDeck_UpdateDevice(SDL_HIDAPI_Device *device)
 
 static SDL_bool HIDAPI_DriverSteamDeck_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return SDL_FALSE;
+    SDL_DriverSteamDeck_Context *ctx = (SDL_DriverSteamDeck_Context *)device->context;
+    float update_rate_in_hz = 1.0f / (float)(ctx->update_rate_us) * 1.0e6f;
+
+    SDL_AssertJoysticksLocked();
+
+    // Initialize the joystick capabilities
+    joystick->nbuttons = 20;
+    joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
+
+    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, update_rate_in_hz);
+    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, update_rate_in_hz);
+
+    return SDL_TRUE;
 }
 
 static int HIDAPI_DriverSteamDeck_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
