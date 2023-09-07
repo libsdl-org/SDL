@@ -66,6 +66,9 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
 #ifdef SDL_JOYSTICK_HIDAPI_STEAM
     &SDL_HIDAPI_DriverSteam,
 #endif
+#ifdef SDL_JOYSTICK_HIDAPI_STEAMDECK
+    &SDL_HIDAPI_DriverSteamDeck,
+#endif
 #ifdef SDL_JOYSTICK_HIDAPI_SWITCH
     &SDL_HIDAPI_DriverNintendoClassic,
     &SDL_HIDAPI_DriverJoyCons,

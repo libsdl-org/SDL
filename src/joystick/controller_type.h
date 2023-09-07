@@ -37,6 +37,7 @@ typedef enum
 	k_eControllerType_UnknownSteamController = 1,
 	k_eControllerType_SteamController = 2,
 	k_eControllerType_SteamControllerV2 = 3,
+	k_eControllerType_SteamDeck = 4,
 
 	// Other Controllers
 	k_eControllerType_UnknownNonSteamController = 30,
