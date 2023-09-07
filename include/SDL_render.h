@@ -42,7 +42,7 @@
  *  of the many good 3D engines.
  *
  *  These functions must be called from the main thread.
- *  See this bug for details: http://bugzilla.libsdl.org/show_bug.cgi?id=1995
+ *  See this bug for details: https://github.com/libsdl-org/SDL/issues/986
  */
 
 #ifndef SDL_render_h_
