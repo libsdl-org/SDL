@@ -349,9 +349,9 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SD
  * An opened audio device starts out with no audio streams bound. To start
  * audio playing, bind a stream and supply audio data to it. Unlike SDL2,
  * there is no audio callback; you only bind audio streams and make sure they
- * have data flowing into them (although, as an optional feature, each audio
- * stream may have its own callback, which can be used to simulate SDL2's
- * semantics).
+ * have data flowing into them (however, you can simulate SDL2's semantics
+ * fairly closely by using SDL_OpenAudioDeviceStream instead of this
+ * function).
  *
  * If you don't care about opening a specific device, pass a `devid` of either
  * `SDL_AUDIO_DEVICE_DEFAULT_OUTPUT` or `SDL_AUDIO_DEVICE_DEFAULT_CAPTURE`. In
