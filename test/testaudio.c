@@ -10,6 +10,8 @@
 #include "testutils.h"
 
 #define POOF_LIFETIME 250
+#define VISUALIZER_WIDTH 100
+#define VISUALIZER_HEIGHT 50
 
 typedef struct Texture
 {
@@ -50,6 +52,15 @@ struct Thing
             SDL_bool iscapture;
             SDL_AudioSpec spec;
             Thing *physdev;
+            SDL_bool visualizer_enabled;
+            SDL_bool visualizer_updated;
+            SDL_Texture *visualizer;
+            SDL_Mutex *postmix_lock;
+            float *postmix_buffer;
+            int postmix_buflen;
+            int postmix_allocated;
+            SDL_AudioSpec postmix_spec;
+            SDL_AtomicInt postmix_updated;
         } logdev;
         struct {
             SDL_AudioSpec spec;
@@ -98,6 +109,7 @@ static SDLTest_CommonState *state = NULL;
 static Thing *things = NULL;
 static char *current_titlebar = NULL;
 
+static Thing *mouseover_thing = NULL;
 static Thing *droppable_highlighted_thing = NULL;
 static Thing *dragging_thing = NULL;
 static int dragging_button = -1;
@@ -281,21 +293,40 @@ static void DestroyThing(Thing *thing)
         return;
     }
 
+    if (mouseover_thing == thing) {
+        mouseover_thing = NULL;
+    }
+
+    if (droppable_highlighted_thing == thing) {
+        droppable_highlighted_thing = NULL;
+    }
+
+    if (dragging_thing == thing) {
+        dragging_thing = NULL;
+    }
+
     switch (thing->what) {
         case THING_POOF: break;
         case THING_NULL: break;
         case THING_TRASHCAN: break;
+
         case THING_LOGDEV:
         case THING_LOGDEV_CAPTURE:
             SDL_CloseAudioDevice(thing->data.logdev.devid);
+            SDL_DestroyTexture(thing->data.logdev.visualizer);
+            SDL_DestroyMutex(thing->data.logdev.postmix_lock);
+            SDL_free(thing->data.logdev.postmix_buffer);
             break;
+
         case THING_PHYSDEV:
         case THING_PHYSDEV_CAPTURE:
             SDL_free(thing->data.physdev.name);
             break;
+
         case THING_WAV:
             SDL_free(thing->data.wav.buf);
             break;
+
         case THING_STREAM:
             SDL_DestroyAudioStream(thing->data.stream.stream);
             break;
@@ -750,6 +781,135 @@ static void LogicalDeviceThing_ondrop(Thing *thing, int button, float x, float y
     }
 }
 
+static void SDLCALL PostmixCallback(void *userdata, const SDL_AudioSpec *spec, float *buffer, int buflen)
+{
+    Thing *thing = (Thing *) userdata;
+
+    SDL_LockMutex(thing->data.logdev.postmix_lock);
+
+    if (thing->data.logdev.postmix_allocated < buflen) {
+        void *ptr = SDL_realloc(thing->data.logdev.postmix_buffer, buflen);
+        if (!ptr) {
+            SDL_UnlockMutex(thing->data.logdev.postmix_lock);
+            return;  /* oh well. */
+        }
+        thing->data.logdev.postmix_buffer = (float *) ptr;
+        thing->data.logdev.postmix_allocated = buflen;
+    }
+
+    SDL_copyp(&thing->data.logdev.postmix_spec, spec);
+    SDL_memcpy(thing->data.logdev.postmix_buffer, buffer, buflen);
+    thing->data.logdev.postmix_buflen = buflen;
+    SDL_AtomicSet(&thing->data.logdev.postmix_updated, 1);
+
+    SDL_UnlockMutex(thing->data.logdev.postmix_lock);
+}
+
+static void UpdateVisualizer(SDL_Renderer *renderer, SDL_Texture *visualizer, const int channels, const float *buffer, const int buflen)
+{
+    static const SDL_Color channel_colors[8] = {
+        { 255, 255, 255, 255 },
+        { 255, 0, 0, 255 },
+        { 0, 255, 0, 255 },
+        { 0, 0, 255, 255 },
+        { 255, 255, 0, 255 },
+        { 0, 255, 255, 255 },
+        { 255, 0, 255, 255 },
+        { 127, 127, 127, 255 }
+    };
+
+    SDL_SetRenderTarget(renderer, visualizer);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+
+    if (buffer && buflen) {
+        const int frames = (buflen / sizeof (float)) / channels;
+        const int skip = frames / (VISUALIZER_WIDTH * 2);
+        int i, j;
+
+        for (i = channels - 1; i >= 0; i--) {
+            const SDL_Color *color = &channel_colors[i % SDL_arraysize(channel_colors)];
+            SDL_FPoint points[VISUALIZER_WIDTH + 2];
+            float prevx = 0.0f;
+            int pointidx = 1;
+
+            points[0].x = 0.0f;
+            points[0].y = VISUALIZER_HEIGHT * 0.5f;
+
+            for (j = 0; j < (SDL_arraysize(points)-1); j++) {
+                const float val = buffer[((j * skip) * channels) + i];
+                const float x = prevx + 2;
+                const float y = (VISUALIZER_HEIGHT * 0.5f) - (VISUALIZER_HEIGHT * (val * 0.5f));
+                SDL_assert(pointidx < SDL_arraysize(points));
+                points[pointidx].x = x;
+                points[pointidx].y = y;
+                pointidx++;
+                prevx = x;
+            }
+
+            SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, 255);
+            SDL_RenderLines(renderer, points, pointidx);
+        }
+    }
+
+    SDL_SetRenderTarget(renderer, NULL);
+}
+
+static void LogicalDeviceThing_ontick(Thing *thing, Uint64 now)
+{
+    const SDL_bool ismousedover = (thing == mouseover_thing) ? SDL_TRUE : SDL_FALSE;
+
+    if (!thing->data.logdev.visualizer || !thing->data.logdev.postmix_lock) {  /* need these to work, skip if they failed. */
+        return;
+    }
+
+    if (thing->data.logdev.visualizer_enabled != ismousedover) {
+        thing->data.logdev.visualizer_enabled = ismousedover;
+        if (!ismousedover) {
+            SDL_SetAudioPostmixCallback(thing->data.logdev.devid, NULL, NULL);
+        } else {
+            if (thing->data.logdev.postmix_buffer) {
+                SDL_memset(thing->data.logdev.postmix_buffer, '\0', thing->data.logdev.postmix_buflen);
+            }
+            SDL_AtomicSet(&thing->data.logdev.postmix_updated, 1);  /* so this will at least clear the texture later. */
+            SDL_SetAudioPostmixCallback(thing->data.logdev.devid, PostmixCallback, thing);
+        }
+    }
+}
+
+static void LogicalDeviceThing_ondraw(Thing *thing, SDL_Renderer *renderer)
+{
+    if (thing->data.logdev.visualizer_enabled) {
+        SDL_FRect dst;
+        dst.w = thing->rect.w;
+        dst.h = thing->rect.h;
+        dst.x = thing->rect.x + ((thing->rect.w - dst.w) / 2);
+        dst.y = thing->rect.y + ((thing->rect.h - dst.h) / 2);
+
+        if (SDL_AtomicGet(&thing->data.logdev.postmix_updated)) {
+            float *buffer;
+            int channels;
+            int buflen;
+
+            SDL_LockMutex(thing->data.logdev.postmix_lock);
+            channels = thing->data.logdev.postmix_spec.channels;
+            buflen = thing->data.logdev.postmix_buflen;
+            buffer = (float *) SDL_malloc(thing->data.logdev.postmix_buflen);
+            if (buffer) {
+                SDL_memcpy(buffer, thing->data.logdev.postmix_buffer, thing->data.logdev.postmix_buflen);
+                SDL_AtomicSet(&thing->data.logdev.postmix_updated, 0);
+            }
+            SDL_UnlockMutex(thing->data.logdev.postmix_lock);
+
+            UpdateVisualizer(renderer, thing->data.logdev.visualizer, channels, buffer, buflen);
+            SDL_free(buffer);
+        }
+
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 30);
+        SDL_RenderTexture(renderer, thing->data.logdev.visualizer, NULL, &dst);
+    }
+}
+
 static Thing *CreateLogicalDeviceThing(Thing *parent, const SDL_AudioDeviceID which, const float x, const float y)
 {
     static const ThingType can_be_dropped_onto[] = { THING_TRASHCAN, THING_NULL };
@@ -762,9 +922,16 @@ static Thing *CreateLogicalDeviceThing(Thing *parent, const SDL_AudioDeviceID wh
     thing->data.logdev.devid = which;
     thing->data.logdev.iscapture = iscapture;
     thing->data.logdev.physdev = physthing;
+    thing->data.logdev.visualizer = SDL_CreateTexture(state->renderers[0], SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, VISUALIZER_WIDTH, VISUALIZER_HEIGHT);
+    thing->data.logdev.postmix_lock = SDL_CreateMutex();
+    if (thing->data.logdev.visualizer) {
+        SDL_SetTextureBlendMode(thing->data.logdev.visualizer, SDL_BLENDMODE_BLEND);
+    }
     thing->line_connected_to = physthing;
+    thing->ontick = LogicalDeviceThing_ontick;
     thing->ondrag = DeviceThing_ondrag;
     thing->ondrop = LogicalDeviceThing_ondrop;
+    thing->ondraw = LogicalDeviceThing_ondraw;
     thing->can_be_dropped_onto = can_be_dropped_onto;
 
     SetLogicalDeviceTitlebar(thing);
