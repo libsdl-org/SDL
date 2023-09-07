@@ -206,8 +206,6 @@ static Thing *UpdateMouseOver(const float x, const float y)
         SetTitleBar("%s", thing->titlebar);
     }
 
-    mouseover_thing = thing;
-
     return thing;
 }
 
