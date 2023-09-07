@@ -126,6 +126,9 @@ extern SDL_bool SDL_IsJoystickNVIDIASHIELDController(Uint16 vendor_id, Uint16 pr
 /* Function to return whether a joystick is a Steam Controller */
 extern SDL_bool SDL_IsJoystickSteamController(Uint16 vendor_id, Uint16 product_id);
 
+/* Function to return whether a joystick is a Steam Deck */
+extern SDL_bool SDL_IsJoystickSteamDeck(Uint16 vendor_id, Uint16 product_id);
+
 /* Function to return whether a joystick guid comes from the XInput driver */
 extern SDL_bool SDL_IsJoystickXInput(SDL_JoystickGUID guid);
 
