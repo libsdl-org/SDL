@@ -77,6 +77,7 @@ typedef enum
 	ID_CONTROLLER_DEBUG2 = 5,
 	ID_CONTROLLER_SECONDARY_STATE = 6,
 	ID_CONTROLLER_BLE_STATE = 7,
+	ID_CONTROLLER_DECK_STATE = 9,
 	ID_CONTROLLER_MSG_COUNT
 } ValveInReportMessageIDs; 
 
@@ -258,6 +259,66 @@ typedef struct
 	unsigned char ucBatteryLevel;
 } SteamControllerStatusEvent_t;
 
+// Deck State payload
+typedef struct
+{
+	// If packet num matches that on your prior call, then the controller
+	// state hasn't been changed since your last call and there is no need to
+	// process it
+	uint32 unPacketNum;
+
+	// Button bitmask and trigger data.
+	union
+	{
+		uint64 ulButtons;
+		struct
+		{
+			uint32 ulButtonsL;
+			uint32 ulButtonsH;
+		};
+	};
+
+	// Left pad coordinates
+	short sLeftPadX;
+	short sLeftPadY;
+
+	// Right pad coordinates
+	short sRightPadX;
+	short sRightPadY;
+
+	// Accelerometer values
+	short sAccelX;
+	short sAccelY;
+	short sAccelZ;
+
+	// Gyroscope values
+	short sGyroX;
+	short sGyroY;
+	short sGyroZ;
+
+	// Gyro quaternions
+	short sGyroQuatW;
+	short sGyroQuatX;
+	short sGyroQuatY;
+	short sGyroQuatZ;
+
+	// Uncalibrated trigger values
+	short sLeftTrigger;
+	short sRightTrigger;
+
+	// Left stick values
+	short sLeftStickX;
+	short sLeftStickY;
+
+	// Right stick values
+	short sRightStickX;
+	short sRightStickY;
+
+	// Touchpad pressures
+	short sLeftPadPressure;
+	short sRightPadPressure;
+} SteamDeckStatePacket_t;
+
 typedef struct
 {
 	ValveInReportHeader_t header;
@@ -271,6 +332,7 @@ typedef struct
 		ValveControllerRawTrackpadImage_t rawPadImage;
 		SteamControllerWirelessEvent_t wirelessEvent;
 		SteamControllerStatusEvent_t statusEvent;
+		SteamDeckStatePacket_t deckState;
 	} payload;
 	
 } ValveInReport_t;
