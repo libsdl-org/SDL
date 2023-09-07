@@ -595,4 +595,5 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1142 ), k_eControllerType_SteamController, NULL },	// Valve wireless Steam Controller
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1201 ), k_eControllerType_SteamControllerV2, NULL },	// Valve wired Steam Controller (HEADCRAB)
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1202 ), k_eControllerType_SteamControllerV2, NULL },	// Valve Bluetooth Steam Controller (HEADCRAB)
+	{ MAKE_CONTROLLER_ID( 0x28de, 0x1205 ), k_eControllerType_SteamDeck, NULL },	// Valve Steam Deck Builtin Controller
 };
