@@ -46,7 +46,72 @@ typedef struct
     Uint32 update_rate_us;
     Uint32 sensor_timestamp_us;
     Uint64 last_button_state;
+    Uint8 watchdog_counter;
 } SDL_DriverSteamDeck_Context;
+
+static SDL_bool DisableDeckLizardMode(SDL_hid_device *dev)
+{
+    int rc;
+    Uint8 buffer[HID_FEATURE_REPORT_BYTES + 1] = { 0 };
+    FeatureReportMsg *msg = (FeatureReportMsg *)(buffer + 1);
+
+    msg->header.type = ID_CLEAR_DIGITAL_MAPPINGS;
+
+    rc = SDL_hid_send_feature_report(dev, buffer, sizeof(buffer));
+    if (rc != sizeof(buffer))
+        return SDL_FALSE;
+
+    msg->header.type = ID_SET_SETTINGS_VALUES;
+    msg->header.length = 5 * sizeof(WriteDeckRegister);
+    msg->payload.wrDeckRegister.reg[0].addr = SETTING_DECK_RPAD_MARGIN; // disable margin
+    msg->payload.wrDeckRegister.reg[0].val = 0;
+    msg->payload.wrDeckRegister.reg[1].addr = SETTING_DECK_LPAD_MODE; // disable mouse
+    msg->payload.wrDeckRegister.reg[1].val = 7;
+    msg->payload.wrDeckRegister.reg[2].addr = SETTING_DECK_RPAD_MODE; // disable mouse
+    msg->payload.wrDeckRegister.reg[2].val = 7;
+    msg->payload.wrDeckRegister.reg[3].addr = SETTING_DECK_LPAD_CLICK_PRESSURE; // disable clicky pad
+    msg->payload.wrDeckRegister.reg[3].val = 0xFFFF;
+    msg->payload.wrDeckRegister.reg[4].addr = SETTING_DECK_RPAD_CLICK_PRESSURE; // disable clicky pad
+    msg->payload.wrDeckRegister.reg[4].val = 0xFFFF;
+
+    rc = SDL_hid_send_feature_report(dev, buffer, sizeof(buffer));
+    if (rc != sizeof(buffer))
+        return SDL_FALSE;
+
+    // There may be a lingering report read back after changing settings.
+    // Discard it.
+    SDL_hid_get_feature_report(dev, buffer, sizeof(buffer));
+
+    return SDL_TRUE;
+}
+
+static SDL_bool FeedDeckLizardWatchdog(SDL_hid_device *dev)
+{
+    int rc;
+    Uint8 buffer[HID_FEATURE_REPORT_BYTES + 1] = { 0 };
+    FeatureReportMsg *msg = (FeatureReportMsg *)(buffer + 1);
+
+    msg->header.type = ID_CLEAR_DIGITAL_MAPPINGS;
+
+    rc = SDL_hid_send_feature_report(dev, buffer, sizeof(buffer));
+    if (rc != sizeof(buffer))
+        return SDL_FALSE;
+
+    msg->header.type = ID_SET_SETTINGS_VALUES;
+    msg->header.length = 1 * sizeof(WriteDeckRegister);
+    msg->payload.wrDeckRegister.reg[0].addr = SETTING_DECK_RPAD_MODE; // disable mouse
+    msg->payload.wrDeckRegister.reg[0].val = 7;
+
+    rc = SDL_hid_send_feature_report(dev, buffer, sizeof(buffer));
+    if (rc != sizeof(buffer))
+        return SDL_FALSE;
+
+    // There may be a lingering report read back after changing settings.
+    // Discard it.
+    SDL_hid_get_feature_report(dev, buffer, sizeof(buffer));
+
+    return SDL_TRUE;
+}
 
 /*****************************************************************************************************/
 
@@ -105,6 +170,9 @@ static SDL_bool HIDAPI_DriverSteamDeck_InitDevice(SDL_HIDAPI_Device *device)
     if (size == 0)
         return SDL_FALSE;
 
+    if (!DisableDeckLizardMode(device->dev))
+        return SDL_FALSE;
+
     HIDAPI_SetDeviceName(device, "Steam Deck");
 
     return HIDAPI_JoystickConnected(device, NULL);
@@ -135,6 +203,12 @@ static SDL_bool HIDAPI_DriverSteamDeck_UpdateDevice(SDL_HIDAPI_Device *device)
         }
     } else {
         return SDL_FALSE;
+    }
+
+    if (ctx->watchdog_counter++ > 200) {
+        ctx->watchdog_counter = 0;
+        if (!FeedDeckLizardWatchdog(device->dev))
+            return SDL_FALSE;
     }
 
     SDL_memset(data, 0, sizeof(data));
