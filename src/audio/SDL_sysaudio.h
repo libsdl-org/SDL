@@ -214,6 +214,12 @@ struct SDL_LogicalAudioDevice
     // SDL_TRUE if device was opened with SDL_OpenAudioDeviceStream (so it forbids binding changes, etc).
     SDL_bool simplified;
 
+    // If non-NULL, callback into the app that lets them access the final postmix buffer.
+    SDL_AudioPostmixCallback postmix;
+
+    // App-supplied pointer for postmix callback.
+    void *postmix_userdata;
+
     // double-linked list of opened devices on the same physical device.
     SDL_LogicalAudioDevice *next;
     SDL_LogicalAudioDevice *prev;
@@ -264,6 +270,7 @@ struct SDL_AudioDevice
     // Scratch buffers used for mixing.
     Uint8 *work_buffer;
     Uint8 *mix_buffer;
+    float *postmix_buffer;
 
     // Size of work_buffer (and mix_buffer) in bytes.
     int work_buffer_size;
