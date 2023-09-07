@@ -45,6 +45,19 @@ typedef struct
 	ControllerAttribute attributes[ ( HID_FEATURE_REPORT_BYTES - sizeof( FeatureReportHeader ) ) / sizeof( ControllerAttribute ) ];
 } MsgGetAttributes;
 
+// 16bit Steam Deck register with address
+typedef struct
+{
+	uint8_t addr;
+	uint16_t val;
+} WriteDeckRegister;
+
+// Generic Steam Deck write register message
+typedef struct
+{
+	WriteDeckRegister reg[ (HID_FEATURE_REPORT_BYTES - sizeof ( FeatureReportHeader ) ) / sizeof (WriteDeckRegister ) ];
+} MsgWriteDeckRegister;
+
 
 // This is the only message struct that application code should use to interact with feature request messages. Any new
 // messages should be added to the union. The structures defined here should correspond to the ones defined in
@@ -56,6 +69,7 @@ typedef struct
 	union
 	{
 		MsgGetAttributes				getAttributes;
+		MsgWriteDeckRegister			wrDeckRegister;
 	} payload;
 
 } FeatureReportMsg;
