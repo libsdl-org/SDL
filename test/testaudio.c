@@ -110,10 +110,16 @@ static Texture *soundboard_texture = NULL;
 static Texture *soundboard_levels_texture = NULL;
 
 static void DestroyTexture(Texture *tex);
+static void DestroyThing(Thing *thing);
+
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void Quit(int rc)
 {
+    while (things != NULL) {
+        DestroyThing(things);  /* make sure all the audio devices are closed, etc. */
+    }
+
     DestroyTexture(physdev_texture);
     DestroyTexture(logdev_texture);
     DestroyTexture(audio_texture);
@@ -121,6 +127,7 @@ static void Quit(int rc)
     DestroyTexture(soundboard_texture);
     DestroyTexture(soundboard_levels_texture);
     SDLTest_CommonQuit(state);
+
     /* Let 'main()' return normally */
     if (rc != 0) {
         exit(rc);
@@ -199,10 +206,12 @@ static Thing *UpdateMouseOver(const float x, const float y)
         SetTitleBar("%s", thing->titlebar);
     }
 
+    mouseover_thing = thing;
+
     return thing;
 }
 
-static Thing *CreateThing(ThingType what, float x, float y, float z, float w, float h, Texture *texture, char *titlebar)
+static Thing *CreateThing(ThingType what, float x, float y, float z, float w, float h, Texture *texture, const char *titlebar)
 {
     Thing *last = NULL;
     Thing *i;
@@ -232,7 +241,7 @@ static Thing *CreateThing(ThingType what, float x, float y, float z, float w, fl
     thing->scale = 1.0f;
     thing->createticks = SDL_GetTicks();
     thing->texture = texture;
-    thing->titlebar = titlebar;
+    thing->titlebar = titlebar ? xstrdup(titlebar) : NULL;
 
     /* insert in list by Z order (furthest from the "camera" first, so they get drawn over; negative Z is not drawn at all). */
     if (things == NULL) {
@@ -590,7 +599,7 @@ static void StreamThing_ondraw(Thing *thing, SDL_Renderer *renderer)
 static Thing *CreateStreamThing(const SDL_AudioSpec *spec, const Uint8 *buf, const Uint32 buflen, const char *fname, const float x, const float y)
 {
     static const ThingType can_be_dropped_onto[] = { THING_TRASHCAN, THING_LOGDEV, THING_LOGDEV_CAPTURE, THING_NULL };
-    Thing *thing = CreateThing(THING_STREAM, x, y, 0, -1, -1, soundboard_texture, fname ? xstrdup(fname) : NULL);
+    Thing *thing = CreateThing(THING_STREAM, x, y, 0, -1, -1, soundboard_texture, fname);
     SDL_Log("Adding audio stream for %s", fname ? fname : "(null)");
     thing->data.stream.stream = SDL_CreateAudioStream(spec, spec);
     if (buf && buflen) {
@@ -656,6 +665,7 @@ static Thing *LoadWavThing(const char *fname, float x, float y)
 
         SDL_asprintf(&titlebar, "WAV file (\"%s\", %s, %s, %uHz)", nodirs, AudioFmtToString(spec.format), AudioChansToStr(spec.channels), (unsigned int) spec.freq);
         thing = CreateThing(THING_WAV, x - (audio_texture->w / 2), y - (audio_texture->h / 2), 5, -1, -1, audio_texture, titlebar);
+        SDL_free(titlebar);
         SDL_memcpy(&thing->data.wav.spec, &spec, sizeof (SDL_AudioSpec));
         thing->data.wav.buf = buf;
         thing->data.wav.buflen = buflen;
@@ -727,6 +737,7 @@ static void SetLogicalDeviceTitlebar(Thing *thing)
 {
     SDL_AudioSpec *spec = &thing->data.logdev.spec;
     SDL_GetAudioDeviceFormat(thing->data.logdev.devid, spec);
+    SDL_free(thing->titlebar);
     SDL_asprintf(&thing->titlebar, "Logical device #%u (%s, %s, %s, %uHz)", (unsigned int) thing->data.logdev.devid, thing->data.logdev.iscapture ? "CAPTURE" : "OUTPUT", AudioFmtToString(spec->format), AudioChansToStr(spec->channels), (unsigned int) spec->freq);
 }
 
@@ -764,6 +775,7 @@ static void SetPhysicalDeviceTitlebar(Thing *thing)
 {
     SDL_AudioSpec *spec = &thing->data.physdev.spec;
     SDL_GetAudioDeviceFormat(thing->data.physdev.devid, spec);
+    SDL_free(thing->titlebar);
     if (thing->data.physdev.devid == SDL_AUDIO_DEVICE_DEFAULT_CAPTURE) {
         SDL_asprintf(&thing->titlebar, "Default system device (CAPTURE, %s, %s, %uHz)", AudioFmtToString(spec->format), AudioChansToStr(spec->channels), (unsigned int) spec->freq);
     } else if (thing->data.physdev.devid == SDL_AUDIO_DEVICE_DEFAULT_OUTPUT) {
