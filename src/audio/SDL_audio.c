@@ -677,6 +677,13 @@ void SDL_AudioThreadFinalize(SDL_AudioDevice *device)
     SDL_AtomicSet(&device->thread_alive, 0);
 }
 
+static void MixFloat32Audio(float *dst, const float *src, const int buffer_size)
+{
+    if (SDL_MixAudioFormat((Uint8 *) dst, (const Uint8 *) src, SDL_AUDIO_F32, buffer_size, SDL_MIX_MAXVOLUME) < 0) {
+        SDL_assert(!"This shouldn't happen.");
+    }
+}
+
 
 // Output device thread. This is split into chunks, so backends that need to control this directly can use the pieces they need without duplicating effort.
 
@@ -754,11 +761,7 @@ SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
                         retval = SDL_FALSE;
                         break;
                     } else if (br > 0) {  // it's okay if we get less than requested, we mix what we have.
-                        if (SDL_MixAudioFormat((Uint8 *) mix_buffer, device->work_buffer, SDL_AUDIO_F32, br, SDL_MIX_MAXVOLUME) < 0) {  // !!! FIXME: allow streams to specify gain?
-                            SDL_assert(!"This shouldn't happen.");
-                            retval = SDL_FALSE;  // uh...?
-                            break;
-                        }
+                        MixFloat32Audio(mix_buffer, (float *) device->work_buffer, br);
                     }
                 }
             }
