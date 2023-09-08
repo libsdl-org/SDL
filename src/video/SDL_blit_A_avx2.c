@@ -84,10 +84,9 @@ void SDL_TARGETING("avx2") BlitNtoNPixelAlpha_AVX2(SDL_BlitInfo *info)
                 Uint32 *src_ptr = ((Uint32*)(src + (offset * 4)));
                 Uint32 *dst_ptr = ((Uint32*)(dst + (offset * 4)));
                 __m128i c_src = _mm_loadu_si64(src_ptr);
-                c_src = _mm_unpacklo_epi8(_mm_shuffle_epi8(c_src, colorShiftMask), _mm_setzero_si128());
-                __m128i c_dst = _mm_unpacklo_epi8(_mm_loadu_si64(dst_ptr), _mm_setzero_si128());
+                c_src = _mm_shuffle_epi8(c_src, colorShiftMask);
+                __m128i c_dst = _mm_loadu_si64(dst_ptr);
                 __m128i c_mix = MixRGBA_SSE4_1(c_src, c_dst, sse4_1AlphaMask);
-                c_mix = _mm_packus_epi16(c_mix, _mm_setzero_si128());
                 _mm_storeu_si64(dst_ptr, c_mix);
                 remaining_pixels -= 2;
                 offset += 2;
@@ -104,11 +103,7 @@ void SDL_TARGETING("avx2") BlitNtoNPixelAlpha_AVX2(SDL_BlitInfo *info)
                 __m128i c_src = _mm_loadu_si32(&pixel);
                 __m128i c_dst = _mm_loadu_si32(dst_ptr);
                 #endif
-                c_src = _mm_unpacklo_epi8(c_src, _mm_setzero_si128());
-                c_dst = _mm_unpacklo_epi8(c_dst, _mm_setzero_si128());
                 __m128i mixed_pixel = MixRGBA_SSE4_1(c_src, c_dst, sse4_1AlphaMask);
-                mixed_pixel = _mm_srli_epi16(mixed_pixel, 8);
-                mixed_pixel = _mm_unpacklo_epi8(mixed_pixel, _mm_setzero_si128());
                 /* Old GCC has bad or no _mm_storeu_si32 */
                 #if defined(__GNUC__) && (__GNUC__ < 11)
                 *dst_ptr = _mm_extract_epi32(mixed_pixel, 0);
