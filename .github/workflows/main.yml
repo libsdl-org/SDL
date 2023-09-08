@@ -111,7 +111,7 @@ jobs:
         ${{ matrix.platform.source_cmd }}
         set -eu
         export SDL_TESTS_QUICK=1
-        ctest -VV --test-dir build/
+        ctest -VV --test-dir build/ -j2
         if test "${{ runner.os }}" = "Linux"; then
           # This should show us the SDL_REVISION
           strings build/libSDL3.so.0 | grep SDL-
