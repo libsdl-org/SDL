@@ -2,11 +2,11 @@
 #define SDL_SDL_BLIT_A_SSE4_1_H
 
 #ifdef SDL_SSE4_1_INTRINSICS
-Uint32 AlignPixelToSDL_PixelFormat(Uint32 color, const SDL_PixelFormat* srcFormat);
+Uint32 AlignPixelToSDL_PixelFormat(Uint32 color, const SDL_PixelFormat* srcfmt, const SDL_PixelFormat* dstfmt);
 
-__m128i SDL_TARGETING("sse4.1") GetSDL_PixelFormatAlphaMask_SSE4_1(SDL_PixelFormat* dstfmt);
+__m128i SDL_TARGETING("sse4.1") GetSDL_PixelFormatAlphaMask_SSE4_1(const SDL_PixelFormat* dstfmt);
 
-__m128i SDL_TARGETING("sse4.1") GetSDL_PixelFormatShuffleMask(const SDL_PixelFormat* srcFormat, const SDL_PixelFormat* dstFormat);
+__m128i SDL_TARGETING("sse4.1") GetSDL_PixelFormatShuffleMask(const SDL_PixelFormat* srcfmt, const SDL_PixelFormat* dstfmt);
 
 __m128i SDL_TARGETING("sse4.1") MixRGBA_SSE4_1(__m128i src, __m128i dst, __m128i alphaMask);
 

@@ -12,7 +12,7 @@
 /**
  * A helper function to create an alpha mask for use with MixRGBA_SSE4_1 based on pixel format
  */
-__m128i SDL_TARGETING("sse4.1") GetSDL_PixelFormatAlphaMask_SSE4_1(SDL_PixelFormat* dstfmt) {
+__m128i SDL_TARGETING("sse4.1") GetSDL_PixelFormatAlphaMask_SSE4_1(const SDL_PixelFormat* dstfmt) {
     Uint8 index = dstfmt->Ashift / 8;
     /* Handle case where bad input sent */
     if (dstfmt->Ashift == dstfmt->Bshift && dstfmt->Ashift == 0) {
@@ -29,7 +29,7 @@ __m128i SDL_TARGETING("sse4.1") GetSDL_PixelFormatAlphaMask_SSE4_1(SDL_PixelForm
  * @param dst A pointer to two 32-bit pixels of ARGB format to retain visual data for while alpha blending
  * @return A 128-bit wide vector of two alpha-blended pixels in ARGB format
  */
-__m128i SDL_TARGETING("sse4.1") MixRGBA_SSE4_1(__m128i src, __m128i dst, __m128i alphaMask) {
+__m128i SDL_TARGETING("sse4.1") MixRGBA_SSE4_1(const __m128i src, const __m128i dst, const __m128i alphaMask) {
     __m128i src_color = _mm_cvtepu8_epi16(src);
     __m128i dst_color = _mm_cvtepu8_epi16(dst);
     /**
@@ -47,34 +47,43 @@ __m128i SDL_TARGETING("sse4.1") MixRGBA_SSE4_1(__m128i src, __m128i dst, __m128i
     return _mm_add_epi8(reduced, dst);
 }
 
-Uint32 AlignPixelToSDL_PixelFormat(Uint32 color, const SDL_PixelFormat* srcFormat) {
-    Uint8 a = (color >> srcFormat->Ashift) & 0xFF;
-    Uint8 r = (color >> srcFormat->Rshift) & 0xFF;
-    Uint8 g = (color >> srcFormat->Gshift) & 0xFF;
-    Uint8 b = (color >> srcFormat->Bshift) & 0xFF;
+Uint32 AlignPixelToSDL_PixelFormat(Uint32 color, const SDL_PixelFormat* srcfmt, const SDL_PixelFormat* dstfmt) {
+    Uint8 a = (color >> srcfmt->Ashift) & 0xFF;
+    Uint8 r = (color >> srcfmt->Rshift) & 0xFF;
+    Uint8 g = (color >> srcfmt->Gshift) & 0xFF;
+    Uint8 b = (color >> srcfmt->Bshift) & 0xFF;
 
-    return (a << 24) | (r << 16) | (g << 8) | b;
+    /* Handle case where bad input sent */
+    Uint8 aShift = dstfmt->Ashift;
+    if (aShift == dstfmt->Bshift && aShift == 0) {
+        aShift = 24;
+    }
+    return (a << aShift) |
+           (r << dstfmt->Rshift) |
+           (g << dstfmt->Gshift) |
+           (b << dstfmt->Bshift);
 }
 
 /*
  * This helper function converts arbitrary pixel formats into a shuffle mask for _mm_shuffle_epi8
  */
-__m128i SDL_TARGETING("sse4.1") GetSDL_PixelFormatShuffleMask(const SDL_PixelFormat* srcFormat, const SDL_PixelFormat* dstFormat) {
+__m128i SDL_TARGETING("sse4.1") GetSDL_PixelFormatShuffleMask(const SDL_PixelFormat* srcfmt,
+                                                              const SDL_PixelFormat* dstfmt) {
     /* Calculate shuffle indices based on the source and destination SDL_PixelFormat */
     Uint8 shuffleIndices[16];
-    Uint8 dstAshift = dstFormat->Ashift / 8;
-    Uint8 dstRshift = dstFormat->Rshift / 8;
-    Uint8 dstGshift = dstFormat->Gshift / 8;
-    Uint8 dstBshift = dstFormat->Bshift / 8;
+    Uint8 dstAshift = dstfmt->Ashift / 8;
+    Uint8 dstRshift = dstfmt->Rshift / 8;
+    Uint8 dstGshift = dstfmt->Gshift / 8;
+    Uint8 dstBshift = dstfmt->Bshift / 8;
     /* Handle case where bad input sent */
     if (dstAshift == dstBshift && dstAshift == 0) {
         dstAshift = 3;
     }
     for (int i = 0; i < 4; ++i) {
-        shuffleIndices[dstAshift + i * 4] = srcFormat->Ashift / 8 + i * 4;
-        shuffleIndices[dstRshift + i * 4] = srcFormat->Rshift / 8 + i * 4;
-        shuffleIndices[dstGshift + i * 4] = srcFormat->Gshift / 8 + i * 4;
-        shuffleIndices[dstBshift + i * 4] = srcFormat->Bshift / 8 + i * 4;
+        shuffleIndices[dstAshift + i * 4] = srcfmt->Ashift / 8 + i * 4;
+        shuffleIndices[dstRshift + i * 4] = srcfmt->Rshift / 8 + i * 4;
+        shuffleIndices[dstGshift + i * 4] = srcfmt->Gshift / 8 + i * 4;
+        shuffleIndices[dstBshift + i * 4] = srcfmt->Bshift / 8 + i * 4;
     }
 
     /* Create shuffle mask based on the calculated indices */
@@ -135,7 +144,7 @@ void SDL_TARGETING("sse4.1") BlitNtoNPixelAlpha_SSE4_1(SDL_BlitInfo* info) {
             if (remaining_pixels == 1) {
                 Uint32 *src_ptr = ((Uint32*)(src + (offset * 4)));
                 Uint32 *dst_ptr = ((Uint32*)(dst + (offset * 4)));
-                Uint32 pixel = AlignPixelToSDL_PixelFormat(*src_ptr, srcfmt);
+                Uint32 pixel = AlignPixelToSDL_PixelFormat(*src_ptr, srcfmt, dstfmt);
                 /* Old GCC has bad or no _mm_loadu_si32 */
                 #if defined(__GNUC__) && (__GNUC__ < 11)
                 __m128i c_src = _mm_set_epi32(0, 0, 0, pixel);

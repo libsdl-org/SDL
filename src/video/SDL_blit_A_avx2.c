@@ -9,7 +9,7 @@
 #include "SDL_blit.h"
 #include "SDL_blit_A_sse4_1.h"
 
-__m256i SDL_TARGETING("avx2") GetSDL_PixelFormatAlphaMask_AVX2(SDL_PixelFormat* dstfmt) {
+__m256i SDL_TARGETING("avx2") GetSDL_PixelFormatAlphaMask_AVX2(const SDL_PixelFormat* dstfmt) {
     Uint8 index = dstfmt->Ashift / 4;
     /* Handle case where bad input sent */
     if (dstfmt->Ashift == dstfmt->Bshift && dstfmt->Ashift == 0) {
@@ -28,7 +28,7 @@ __m256i SDL_TARGETING("avx2") GetSDL_PixelFormatAlphaMask_AVX2(SDL_PixelFormat* 
  * @param dst A pointer to four 32-bit pixels of ARGB format to retain visual data for while alpha blending
  * @return A 128-bit wide vector of four alpha-blended pixels in ARGB format
  */
-__m128i SDL_TARGETING("avx2") MixRGBA_AVX2(__m128i src, __m128i dst, __m256i alphaMask) {
+__m128i SDL_TARGETING("avx2") MixRGBA_AVX2(const __m128i src, const __m128i dst, const __m256i alphaMask) {
     __m256i src_color = _mm256_cvtepu8_epi16(src);
     __m256i dst_color = _mm256_cvtepu8_epi16(dst);
     __m256i alpha = _mm256_shuffle_epi8(src_color, alphaMask);
@@ -94,7 +94,7 @@ void SDL_TARGETING("avx2") BlitNtoNPixelAlpha_AVX2(SDL_BlitInfo *info)
             if (remaining_pixels == 1) {
                 Uint32 *src_ptr = ((Uint32*)(src + (offset * 4)));
                 Uint32 *dst_ptr = ((Uint32*)(dst + (offset * 4)));
-                Uint32 pixel = AlignPixelToSDL_PixelFormat(*src_ptr, srcfmt);
+                Uint32 pixel = AlignPixelToSDL_PixelFormat(*src_ptr, srcfmt, dstfmt);
                 /* Old GCC has bad or no _mm_loadu_si32 */
                 #if defined(__GNUC__) && (__GNUC__ < 11)
                 __m128i c_src = _mm_set_epi32(0, 0, 0, pixel);
