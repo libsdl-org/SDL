@@ -9,21 +9,29 @@
 #include "SDL_blit.h"
 #include "SDL_blit_A_sse4_1.h"
 
+__m256i SDL_TARGETING("avx2") GetSDL_PixelFormatAlphaMask_AVX2(SDL_PixelFormat* dstfmt) {
+    Uint8 index = dstfmt->Ashift / 4;
+    /* Handle case where bad input sent */
+    if (dstfmt->Ashift == dstfmt->Bshift && dstfmt->Ashift == 0) {
+        index = 6;
+    }
+    return _mm256_set_epi8(
+            -1, index + 24, -1, index + 24, -1, index + 24, -1, index + 24,
+            -1, index + 16, -1, index + 16, -1, index + 16, -1, index + 16,
+            -1, index + 8, -1, index + 8, -1, index + 8, -1, index + 8,
+            -1, index, -1, index, -1, index, -1, index);
+}
+
 /**
  * Using the AVX2 instruction set, blit eight pixels with alpha blending
  * @param src A pointer to four 32-bit pixels of ARGB format to blit into dst
  * @param dst A pointer to four 32-bit pixels of ARGB format to retain visual data for while alpha blending
  * @return A 128-bit wide vector of four alpha-blended pixels in ARGB format
  */
-__m128i SDL_TARGETING("avx2") MixRGBA_AVX2(__m128i src, __m128i dst) {
+__m128i SDL_TARGETING("avx2") MixRGBA_AVX2(__m128i src, __m128i dst, __m256i alphaMask) {
     __m256i src_color = _mm256_cvtepu8_epi16(src);
     __m256i dst_color = _mm256_cvtepu8_epi16(dst);
-    const __m256i SHUFFLE_ALPHA = _mm256_set_epi8(
-         -1, 30, -1, 30, -1, 30, -1, 30,
-         -1, 22, -1, 22, -1, 22, -1, 22,
-         -1, 14, -1, 14, -1, 14, -1, 14,
-         -1, 6, -1, 6, -1, 6, -1, 6);
-    __m256i alpha = _mm256_shuffle_epi8(src_color, SHUFFLE_ALPHA);
+    __m256i alpha = _mm256_shuffle_epi8(src_color, alphaMask);
     __m256i sub = _mm256_sub_epi16(src_color, dst_color);
     __m256i mul = _mm256_mullo_epi16(sub, alpha);
     /**
@@ -51,22 +59,20 @@ void SDL_TARGETING("avx2") BlitNtoNPixelAlpha_AVX2(SDL_BlitInfo *info)
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
     SDL_PixelFormat *srcfmt = info->src_fmt;
+    SDL_PixelFormat *dstfmt = info->dst_fmt;
 
     int chunks = width / 4;
-    Uint8 *buf = SDL_malloc(sizeof(Uint8) * chunks * 16);
+    const __m128i colorShiftMask = GetSDL_PixelFormatShuffleMask(srcfmt, dstfmt);
+    const __m256i alphaMask = GetSDL_PixelFormatAlphaMask_AVX2(dstfmt);
+    const __m128i sse4_1AlphaMask = GetSDL_PixelFormatAlphaMask_SSE4_1(dstfmt);
 
     while (height--) {
         /* Process 4-wide chunks of source color data that may be in wrong format */
         for (int i = 0; i < chunks; i += 1) {
-            __m128i c_src = AlignPixelToSDL_PixelFormat_x4(_mm_loadu_si128((__m128i *) (src + i * 16)), srcfmt);
-            _mm_store_si128((__m128i*)(buf + i * 16), c_src);
-        }
-
-        /* Alpha-blend in 4-wide chunk from src into destination */
-        for (int i = 0; i < chunks; i += 1) {
-            __m128i c_src = _mm_loadu_si128((__m128i*) (buf + i * 16));
+            __m128i c_src = _mm_shuffle_epi8(_mm_loadu_si128((__m128i *) (src + i * 16)), colorShiftMask);
+            /* Alpha-blend in 4-wide chunk from src into destination */
             __m128i c_dst = _mm_loadu_si128((__m128i*) (dst + i * 16));
-            __m128i c_mix = MixRGBA_AVX2(c_src, c_dst);
+            __m128i c_mix = MixRGBA_AVX2(c_src, c_dst, alphaMask);
             _mm_storeu_si128((__m128i*) (dst + i * 16), c_mix);
         }
 
@@ -78,9 +84,9 @@ void SDL_TARGETING("avx2") BlitNtoNPixelAlpha_AVX2(SDL_BlitInfo *info)
                 Uint32 *src_ptr = ((Uint32*)(src + (offset * 4)));
                 Uint32 *dst_ptr = ((Uint32*)(dst + (offset * 4)));
                 __m128i c_src = _mm_loadu_si64(src_ptr);
-                c_src = AlignPixelToSDL_PixelFormat_x4(c_src, srcfmt);
+                c_src = _mm_shuffle_epi8(c_src, colorShiftMask);
                 __m128i c_dst = _mm_loadu_si64(dst_ptr);
-                __m128i c_mix = MixRGBA_SSE4_1(c_src, c_dst);
+                __m128i c_mix = MixRGBA_SSE4_1(c_src, c_dst, sse4_1AlphaMask);
                 _mm_storeu_si64(dst_ptr, c_mix);
                 remaining_pixels -= 2;
                 offset += 2;
@@ -97,7 +103,7 @@ void SDL_TARGETING("avx2") BlitNtoNPixelAlpha_AVX2(SDL_BlitInfo *info)
                 __m128i c_src = _mm_loadu_si32(&pixel);
                 __m128i c_dst = _mm_loadu_si32(dst_ptr);
                 #endif
-                __m128i mixed_pixel = MixRGBA_SSE4_1(c_src, c_dst);
+                __m128i mixed_pixel = MixRGBA_SSE4_1(c_src, c_dst, sse4_1AlphaMask);
                 /* Old GCC has bad or no _mm_storeu_si32 */
                 #if defined(__GNUC__) && (__GNUC__ < 11)
                 *dst_ptr = _mm_extract_epi32(mixed_pixel, 0);
@@ -113,8 +119,6 @@ void SDL_TARGETING("avx2") BlitNtoNPixelAlpha_AVX2(SDL_BlitInfo *info)
         src += srcskip;
         dst += dstskip;
     }
-    SDL_free(buf);
-
 }
 
 #endif
