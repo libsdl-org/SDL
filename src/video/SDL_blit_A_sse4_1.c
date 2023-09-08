@@ -169,6 +169,7 @@ void SDL_TARGETING("sse4.1") BlitNtoNPixelAlpha_SSE4_1(SDL_BlitInfo* info) {
         src += srcskip;
         dst += dstskip;
     }
+    SDL_free(buffer);
 }
 
 #endif
