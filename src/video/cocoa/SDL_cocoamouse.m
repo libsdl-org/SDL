@@ -219,15 +219,11 @@ static int Cocoa_ShowCursor(SDL_Cursor *cursor)
         SDL_VideoDevice *device = SDL_GetVideoDevice();
         SDL_Window *window = (device ? device->windows : NULL);
         for (; window != NULL; window = window->next) {
-            SDL_Mouse *mouse = SDL_GetMouse();
-            if(mouse->focus) {
-                if (mouse->cursor_shown && mouse->cur_cursor && !mouse->relative_mode) {
-                    [(__bridge NSCursor*)mouse->cur_cursor->driverdata set];
-                } else {
-                    [[NSCursor invisibleCursor] set];
-                }
-            } else {
-                [[NSCursor arrowCursor] set];
+            SDL_CocoaWindowData *driverdata = (__bridge SDL_CocoaWindowData *)window->driverdata;
+            if (driverdata) {
+                [driverdata.nswindow performSelectorOnMainThread:@selector(invalidateCursorRectsForView:)
+                                                      withObject:[driverdata.nswindow contentView]
+                                                   waitUntilDone:NO];
             }
         }
         return 0;
