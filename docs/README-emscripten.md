@@ -164,28 +164,24 @@ silence at a regular interval. Once the user approves the request, real
 audio data will flow. If the user denies it, the app is not informed and
 will just continue to receive silence.
 
-SDL3 allows you to open the audio device at any time; it'll just throw away
-audio data until the user interacts with the page, and then start feeding
-the browser seamlessly, but for SDL2, you need to manage this yourself.
-
 Modern web browsers will not permit web pages to produce sound before the
-user has interacted with them; this is for several reasons, not the least
-of which being that no one likes when a random browser tab suddenly starts
-making noise and the user has to scramble to figure out which and silence
-it.
+user has interacted with them (clicked or tapped on them, usually); this is
+for several reasons, not the least of which being that no one likes when a
+random browser tab suddenly starts making noise and the user has to scramble
+to figure out which and silence it.
 
-To solve this, most browsers will refuse to let a web app use the audio
-subsystem at all before the user has interacted with (clicked on) the page
-in a meaningful way. SDL-based apps also have to deal with this problem; if
-the user hasn't interacted with the page, SDL_OpenAudioDevice will fail.
+SDL will allow you to open the audio device for playback in this
+circumstance, and your audio callback will fire, but SDL will throw the audio
+data away until the user interacts with the page. This helps apps that depend
+on the audio callback to make progress, and also keeps audio playback in sync
+once the app is finally allowed to make noise.
 
-There are two reasonable ways to deal with this: if you are writing some
-sort of media player thing, where the user expects there to be a volume
-control when you mouseover the canvas, just default that control to a muted
-state; if the user clicks on the control to unmute it, on this first click,
-open the audio device. This allows the media to play at start, the user can
-reasonably opt-in to listening, and you never get access denied to the audio
-device.
+There are two reasonable ways to deal with the silence at the app level:
+if you are writing some sort of media player thing, where the user expects
+there to be a volume control when you mouseover the canvas, just default
+that control to a muted state; if the user clicks on the control to unmute
+it, on this first click, open the audio device. This allows the media to
+play at start, and the user can reasonably opt-in to listening.
 
 Many games do not have this sort of UI, and are more rigid about starting
 audio along with everything else at the start of the process. For these, your
@@ -198,10 +194,6 @@ all to make it happen.
 
 Please see the discussion at https://github.com/libsdl-org/SDL/issues/6385
 for some Javascript code to steal for this approach.
-
-SDL3 allows you to open the audio device at any time; it'll just throw away
-audio data until the user interacts with the page, and then start feeding
-the browser seamlessly, but for SDL2, you need to manage this yourself.
 
 
 ## Rendering
@@ -323,11 +315,12 @@ When you debug from the browser's tools and hit a breakpoint, you can step
 through the actual C/C++ source code, though, which can be nice.
 
 If you try debugging in Firefox and it doesn't work well for no apparent
-reason, try Chrome, and vice-versa. Sometimes it's just like that.
+reason, try Chrome, and vice-versa. These tools are still relatively new,
+and improving all the time.
 
-SDL_Log() will write to the Javascript console, and honestly I find
-printf-style debugging to be easier than setting up a build for proper
-debugging, so use whatever tools work best for you.
+SDL_Log() (or even plain old printf) will write to the Javascript console,
+and honestly I find printf-style debugging to be easier than setting up a build
+for proper debugging, so use whatever tools work best for you.
 
 
 ## Questions?
