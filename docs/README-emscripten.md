@@ -128,7 +128,7 @@ documentation than this for the finer points).
 
 Even when using threads, your main thread needs to set an Emscripten
 mainloop that runs quickly and returns, or things will fail to work
-correctly. More on this later.
+correctly.
 
 You should definitely read [Emscripten's pthreads docs](https://emscripten.org/docs/porting/pthreads.html)
 for all the finer points. Mostly SDL's thread API will work as expected,
