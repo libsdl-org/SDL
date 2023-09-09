@@ -1877,11 +1877,10 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
 static void data_device_handle_leave(void *data, struct wl_data_device *wl_data_device)
 {
     SDL_WaylandDataDevice *data_device = data;
-    SDL_WaylandDataOffer *offer = NULL;
 
-    if (data_device->selection_offer != NULL) {
-        data_device->selection_offer = NULL;
-        Wayland_data_offer_destroy(offer);
+    if (data_device->drag_offer != NULL) {
+        Wayland_data_offer_destroy(data_device->drag_offer);
+        data_device->drag_offer = NULL;
     }
 }
 
