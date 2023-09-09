@@ -303,6 +303,48 @@ or the app will fail to start on iOS browsers, but this might be a bug that
 goes away in the future.
 
 
+## Data files
+
+Your game probably has data files. Here's how to access them.
+
+Filesystem access works like a Unix filesystem; you have a single directory
+tree, possibly interpolated from several mounted locations, no drive letters,
+'/' for a path separator. You can access them with standard file APIs like
+open() or fopen() or SDL_RWops. You can read or write from the filesystem.
+
+By default, you probably have a "MEMFS" filesystem (all files are stored in
+memory, but access to them is immediate and doesn't need to block). There are
+other options, like "IDBFS" (files are stored in a local database, so they
+don't need to be in RAM all the time and they can persist between runs of the
+program, but access is not synchronous). You can mix and match these file
+systems, mounting a MEMFS filesystem at one place and idbfs elsewhere, etc,
+but that's beyond the scope of this document. Please refer to Emscripten's
+[page on the topic](https://emscripten.org/docs/porting/files/file_systems_overview.html)
+for more info.
+
+The _easiest_ (but not the best) way to get at your data files is to embed
+them in the app itself. Emscripten's linker has support for automating this.
+
+```bash
+emcc -o index.html loopwave.c --embed-file=../test/sample.wav@/sounds/sample.wav
+```
+
+This will pack ../test/sample.wav in your app, and make it available at
+"/sounds/sample.wav" at runtime. Emscripten makes sure this data is available
+before your main() function runs, and since it's in MEMFS, you can just
+read it like you do on other platforms. `--embed-file` can also accept a
+directory to pack an entire tree, and you can specify the argument multiple
+times to pack unrelated things into the final installation.
+
+Note that this is absolutely the best approach if you have a few small
+files to include and shouldn't worry about the issue further. However, if you
+have hundreds of megabytes and/or thousands of files, this is not so great,
+since the user will download it all every time they load your page, and it
+all has to live in memory at runtime.
+
+[Emscripten's documentation on the matter](https://emscripten.org/docs/porting/files/packaging_files.html)
+gives other options and details, and is worth a read.
+
 
 ## Debugging
 
