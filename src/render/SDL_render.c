@@ -2481,7 +2481,7 @@ int SDL_RenderSetClipRect(SDL_Renderer *renderer, const SDL_Rect *rect)
     int retval;
     CHECK_RENDERER_MAGIC(renderer, -1)
 
-    if (rect && rect->w > 0 && rect->h > 0) {
+    if (rect && rect->w >= 0 && rect->h >= 0) {
         renderer->clipping_enabled = SDL_TRUE;
         renderer->clip_rect.x = (double)rect->x * renderer->scale.x;
         renderer->clip_rect.y = (double)rect->y * renderer->scale.y;
