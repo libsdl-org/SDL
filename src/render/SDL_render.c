@@ -89,11 +89,11 @@ this should probably be removed at some point in the future.  --ryan. */
 
 #ifndef SDL_RENDER_DISABLED
 static const SDL_RenderDriver *render_drivers[] = {
-#ifdef SDL_VIDEO_RENDER_D3D12
-    &D3D12_RenderDriver,
-#endif
 #ifdef SDL_VIDEO_RENDER_D3D11
     &D3D11_RenderDriver,
+#endif
+#ifdef SDL_VIDEO_RENDER_D3D12
+    &D3D12_RenderDriver,
 #endif
 #ifdef SDL_VIDEO_RENDER_D3D
     &D3D_RenderDriver,
