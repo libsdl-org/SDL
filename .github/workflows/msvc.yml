@@ -53,7 +53,7 @@ jobs:
       if: "! contains(matrix.platform.name, 'ARM')"
       run: |
         $env:SDL_TESTS_QUICK=1
-        ctest -VV --test-dir build/ -C Release
+        ctest -VV --test-dir build/ -C Release -j2
     - name: Install (CMake)
       run: |
         echo "SDL2_DIR=$Env:GITHUB_WORKSPACE/prefix" >> $Env:GITHUB_ENV
