@@ -4,11 +4,13 @@
 #ifdef SDL_SSE4_1_INTRINSICS
 Uint32 AlignPixelToSDL_PixelFormat(Uint32 color, const SDL_PixelFormat* srcfmt, const SDL_PixelFormat* dstfmt);
 
-__m128i SDL_TARGETING("sse4.1") GetSDL_PixelFormatAlphaMask_SSE4_1(const SDL_PixelFormat* dstfmt);
+__m128i SDL_TARGETING("sse4.1") GetSDL_PixelFormatAlphaSplatMask_SSE4_1(const SDL_PixelFormat* dstfmt);
 
-__m128i SDL_TARGETING("sse4.1") GetSDL_PixelFormatShuffleMask(const SDL_PixelFormat* srcfmt, const SDL_PixelFormat* dstfmt);
+__m128i SDL_TARGETING("sse4.1") GetSDL_PixelFormatAlphaSaturateMask_SSE4_1(const SDL_PixelFormat* dstfmt);
 
-__m128i SDL_TARGETING("sse4.1") MixRGBA_SSE4_1(__m128i src, __m128i dst, __m128i alphaMask);
+__m128i SDL_TARGETING("sse4.1") GetSDL_PixelFormatShuffleMask_SSE4_1(const SDL_PixelFormat* srcfmt, const SDL_PixelFormat* dstfmt);
+
+__m128i SDL_TARGETING("sse4.1") MixRGBA_SSE4_1(__m128i src, __m128i dst, __m128i alpha_splat, __m128i alpha_saturate);
 
 void SDL_TARGETING("sse4.1") BlitNtoNPixelAlpha_SSE4_1(SDL_BlitInfo *info);
 
