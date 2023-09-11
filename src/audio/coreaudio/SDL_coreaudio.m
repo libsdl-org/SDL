@@ -27,7 +27,7 @@
 #include "SDL_coreaudio.h"
 #include "../../thread/SDL_systhread.h"
 
-#define DEBUG_COREAUDIO 1
+#define DEBUG_COREAUDIO 0
 
 #if DEBUG_COREAUDIO
     #define CHECK_RESULT(msg) \
