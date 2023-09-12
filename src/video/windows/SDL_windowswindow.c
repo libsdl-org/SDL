@@ -190,23 +190,9 @@ static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL m
         if (WIN_IsPerMonitorV2DPIAware(SDL_GetVideoDevice())) {
             /* With per-monitor v2, the window border/titlebar size depend on the DPI, so we need to call AdjustWindowRectExForDpi instead of
                AdjustWindowRectEx. */
-            UINT unused;
-            RECT screen_rect;
-            HMONITOR mon;
-
-            screen_rect.left = *x;
-            screen_rect.top = *y;
-            screen_rect.right = (LONG)*x + *width;
-            screen_rect.bottom = (LONG)*y + *height;
-
-            mon = MonitorFromRect(&screen_rect, MONITOR_DEFAULTTONEAREST);
-
             if (videodata != NULL) {
-                /* GetDpiForMonitor docs promise to return the same hdpi / vdpi */
-                if (videodata->GetDpiForMonitor(mon, MDT_EFFECTIVE_DPI, &frame_dpi, &unused) != S_OK) {
-                    frame_dpi = 96;
-                }
-
+                SDL_WindowData *data = window->driverdata;
+                frame_dpi = (data && videodata->GetDpiForWindow) ? videodata->GetDpiForWindow(data->hwnd) : 96;
                 if (videodata->AdjustWindowRectExForDpi(&rect, style, menu, 0, frame_dpi) == 0) {
                     return WIN_SetError("AdjustWindowRectExForDpi()");
                 }
