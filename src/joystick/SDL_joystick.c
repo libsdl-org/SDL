@@ -2496,6 +2496,16 @@ static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
         MAKE_VIDPID(0x044f, 0xb664), /* Thrustmaster TX (initial mode) */
         MAKE_VIDPID(0x044f, 0xb669), /* Thrustmaster TX (active mode) */
         MAKE_VIDPID(0x0483, 0x0522), /* Simagic Wheelbase (including M10, Alpha Mini, Alpha, Alpha U) */
+        MAKE_VIDPID(0x0eb7, 0x0001), /* Fanatec ClubSport Wheel Base V2 */
+        MAKE_VIDPID(0x0eb7, 0x0004), /* Fanatec ClubSport Wheel Base V2.5 */
+        MAKE_VIDPID(0x0eb7, 0x0005), /* Fanatec CSL Elite Wheel Base+ (PS4) */
+        MAKE_VIDPID(0x0eb7, 0x0006), /* Fanatec Podium Wheel Base DD1 */
+        MAKE_VIDPID(0x0eb7, 0x0007), /* Fanatec Podium Wheel Base DD2 */
+        MAKE_VIDPID(0x0eb7, 0x0011), /* Fanatec Forza Motorsport (CSR Wheel / CSR Elite Wheel) */
+        MAKE_VIDPID(0x0eb7, 0x0020), /* Fanatec generic wheel / CSL DD / GT DD Pro */
+        MAKE_VIDPID(0x0eb7, 0x0197), /* Fanatec Porsche Wheel (Turbo / GT3 RS / Turbo S / GT3 V2 / GT2) */
+        MAKE_VIDPID(0x0eb7, 0x038e), /* Fanatec ClubSport Wheel Base V1 */
+        MAKE_VIDPID(0x0eb7, 0x0e03), /* Fanatec CSL Elite Wheel Base */
         MAKE_VIDPID(0x11ff, 0x0511), /* DragonRise Inc. Wired Wheel (initial mode) (also known as PXN V900 (PS3), Superdrive SV-750, or a Genesis Seaborg 400) */
     };
     int i;
