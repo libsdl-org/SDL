@@ -802,7 +802,7 @@ delete $wikifuncs{"Undocumented"};
 
     print FH "## Functions defined in the headers, but not in the wiki\n\n";
     my $header_only_func = 0;
-    foreach (keys %headerfuncs) {
+    foreach (sort keys %headerfuncs) {
         my $fn = $_;
         if (not defined $wikifuncs{$fn}) {
             print FH "- [$fn]($fn)\n";
@@ -817,7 +817,7 @@ delete $wikifuncs{"Undocumented"};
     print FH "## Functions defined in the wiki, but not in the headers\n\n";
 
     my $wiki_only_func = 0;
-    foreach (keys %wikifuncs) {
+    foreach (sort keys %wikifuncs) {
         my $fn = $_;
         if (not defined $headerfuncs{$fn}) {
             print FH "- [$fn]($fn)\n";
