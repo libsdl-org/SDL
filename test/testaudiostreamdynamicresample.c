@@ -226,7 +226,7 @@ static void loop(void)
         if (e.type == SDL_EVENT_KEY_DOWN) {
             SDL_Keycode sym = e.key.keysym.sym;
             if (sym == SDLK_q) {
-                if (SDL_IsAudioDevicePaused(state->audio_id)) {
+                if (SDL_AudioDevicePaused(state->audio_id)) {
                     SDL_ResumeAudioDevice(state->audio_id);
                 } else {
                     SDL_PauseAudioDevice(state->audio_id);
@@ -325,7 +325,7 @@ static void loop(void)
         }
 
         draw_textf(rend, 0, draw_y, "%7s, Loop: %3s, Flush: %3s",
-            SDL_IsAudioDevicePaused(state->audio_id) ? "Paused" : "Playing", auto_loop ? "On" : "Off", auto_flush ? "On" : "Off");
+            SDL_AudioDevicePaused(state->audio_id) ? "Paused" : "Playing", auto_loop ? "On" : "Off", auto_flush ? "On" : "Off");
         draw_y += FONT_LINE_HEIGHT;
 
         draw_textf(rend, 0, draw_y, "Available: %4.2f (%i bytes)", available_seconds, available_bytes);

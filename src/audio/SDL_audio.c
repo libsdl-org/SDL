@@ -1415,7 +1415,7 @@ int SDLCALL SDL_ResumeAudioDevice(SDL_AudioDeviceID devid)
     return SetLogicalAudioDevicePauseState(devid, 0);
 }
 
-SDL_bool SDL_IsAudioDevicePaused(SDL_AudioDeviceID devid)
+SDL_bool SDL_AudioDevicePaused(SDL_AudioDeviceID devid)
 {
     SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid);
     SDL_bool retval = SDL_FALSE;

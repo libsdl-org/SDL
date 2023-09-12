@@ -54,7 +54,7 @@ static void loop(void)
         }
     }
 
-    if (!SDL_IsAudioDevicePaused(devid_in)) {
+    if (!SDL_AudioDevicePaused(devid_in)) {
         SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     } else {
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);

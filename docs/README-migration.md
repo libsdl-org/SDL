@@ -148,7 +148,7 @@ SDL_PauseAudioDevice() no longer takes a second argument; it always pauses the d
 
 Audio devices, opened by SDL_OpenAudioDevice(), no longer start in a paused state, as they don't begin processing audio until a stream is bound.
 
-SDL_GetAudioDeviceStatus() has been removed; there is now SDL_IsAudioDevicePaused().
+SDL_GetAudioDeviceStatus() has been removed; there is now SDL_AudioDevicePaused().
 
 SDL_QueueAudio(), SDL_DequeueAudio, and SDL_ClearQueuedAudio and SDL_GetQueuedAudioSize() have been removed; an SDL_AudioStream bound to a device provides the exact same functionality.
 

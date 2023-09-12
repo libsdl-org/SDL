@@ -309,7 +309,8 @@ extern DECLSPEC SDL_AudioDeviceID *SDLCALL SDL_GetAudioCaptureDevices(int *count
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetNumAudioDevices
+ * \sa SDL_GetAudioOutputDevices
+ * \sa SDL_GetAudioCaptureDevices
  * \sa SDL_GetDefaultAudioInfo
  */
 extern DECLSPEC char *SDLCALL SDL_GetAudioDeviceName(SDL_AudioDeviceID devid);
@@ -440,7 +441,7 @@ extern DECLSPEC SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(SDL_AudioDeviceID 
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ResumeAudioDevice
- * \sa SDL_IsAudioDevicePaused
+ * \sa SDL_AudioDevicePaused
  */
 extern DECLSPEC int SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev);
 
@@ -468,7 +469,7 @@ extern DECLSPEC int SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ResumeAudioDevice
- * \sa SDL_IsAudioDevicePaused
+ * \sa SDL_AudioDevicePaused
  */
 extern DECLSPEC int SDLCALL SDL_ResumeAudioDevice(SDL_AudioDeviceID dev);
 
@@ -491,9 +492,9 @@ extern DECLSPEC int SDLCALL SDL_ResumeAudioDevice(SDL_AudioDeviceID dev);
  *
  * \sa SDL_PauseAudioDevice
  * \sa SDL_ResumeAudioDevice
- * \sa SDL_IsAudioDevicePaused
+ * \sa SDL_AudioDevicePaused
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsAudioDevicePaused(SDL_AudioDeviceID dev);
+extern DECLSPEC SDL_bool SDLCALL SDL_AudioDevicePaused(SDL_AudioDeviceID dev);
 
 /**
  * Close a previously-opened audio device.
@@ -1089,7 +1090,8 @@ extern DECLSPEC void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *stream);
  *
  * Also unlike other functions, the audio device begins paused. This is to map
  * more closely to SDL2-style behavior, and since there is no extra step here
- * to bind a stream to begin audio flowing.
+ * to bind a stream to begin audio flowing. The audio device should be resumed
+ * with SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
  *
  * This function works with both playback and capture devices.
  *
@@ -1123,6 +1125,9 @@ extern DECLSPEC void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *stream);
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetAudioStreamDevice
+ * \sa SDL_ResumeAudioDevice
  */
 extern DECLSPEC SDL_AudioStream *SDLCALL SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec, SDL_AudioStreamCallback callback, void *userdata);
 
