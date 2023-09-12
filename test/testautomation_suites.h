@@ -31,5 +31,6 @@ extern SDLTest_TestSuiteReference surfaceTestSuite;
 extern SDLTest_TestSuiteReference syswmTestSuite;
 extern SDLTest_TestSuiteReference timerTestSuite;
 extern SDLTest_TestSuiteReference videoTestSuite;
+extern SDLTest_TestSuiteReference blitTestSuite;
 
 #endif

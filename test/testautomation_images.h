@@ -34,3 +34,5 @@ SDL_Surface *SDLTest_ImageBlitBlendAll(void);
 SDL_Surface *SDLTest_ImageFace(void);
 SDL_Surface *SDLTest_ImagePrimitives(void);
 SDL_Surface *SDLTest_ImagePrimitivesBlend(void);
+SDL_Surface *SDLTest_ImageBlendingBackground(void);
+SDL_Surface *SDLTest_ImageBlendingSprite(void);

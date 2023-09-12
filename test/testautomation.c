@@ -44,6 +44,7 @@ static SDLTest_TestSuiteReference *testSuites[] = {
     &syswmTestSuite,
     &timerTestSuite,
     &videoTestSuite,
+    &blitTestSuite,
     NULL
 };
 
