@@ -24,8 +24,8 @@
 #include "testautomation_images.h"
 
 /* ====== xoroshiro128+ PRNG engine for deterministic blit input ===== */
-Uint64 rotl(uint64_t x, int k) { return (x << k) | (x >> (-k & 63)); }
-Uint64 next(uint64_t state[2]) {
+Uint64 rotl(Uint64 x, int k) { return (x << k) | (x >> (-k & 63)); }
+Uint64 next(Uint64 state[2]) {
     Uint64 s0 = state[0], s1 = state[1];
     Uint64 result = rotl((s0 + s1) * 9, 29) + s0;
     state[0] = s0 ^ rotl(s1, 29);
