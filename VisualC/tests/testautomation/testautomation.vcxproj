@@ -194,6 +194,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\Test\testautomation.c" />
     <ClCompile Include="..\..\..\test\testautomation_audio.c" />
+    <ClCompile Include="..\..\..\test\testautomation_blit.c" />
     <ClCompile Include="..\..\..\test\testautomation_clipboard.c" />
     <ClCompile Include="..\..\..\test\testautomation_events.c" />
     <ClCompile Include="..\..\..\test\testautomation_guid.c" />
