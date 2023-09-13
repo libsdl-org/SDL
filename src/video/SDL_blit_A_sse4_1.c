@@ -90,9 +90,13 @@ __m128i SDL_TARGETING("sse4.1") MixRGBA_SSE4_1(__m128i src, __m128i dst,
     dst_hi = _mm_add_epi16(_mm_mullo_epi16(_mm_sub_epi16(src_hi, dst_hi), srca_hi),
                            _mm_sub_epi16(_mm_slli_epi16(dst_hi, 8), dst_hi));
 
-    // dst = (dst * 0x8081) >> 23
-    dst_lo = _mm_srli_epi16(_mm_mulhi_epu16(dst_lo, _mm_set1_epi16(-0x7F7F)), 7);
-    dst_hi = _mm_srli_epi16(_mm_mulhi_epu16(dst_hi, _mm_set1_epi16(-0x7F7F)), 7);
+    // dst += 0x1U (use 0x80 to round instead of floor)
+    dst_lo = _mm_add_epi16(dst_lo, _mm_set1_epi16(1));
+    dst_hi = _mm_add_epi16(dst_hi, _mm_set1_epi16(1));
+
+    // dst += dst >> 8;
+    dst_lo = _mm_srli_epi16(_mm_add_epi16(dst_lo, _mm_srli_epi16(dst_lo, 8)), 8);
+    dst_hi = _mm_srli_epi16(_mm_add_epi16(dst_hi, _mm_srli_epi16(dst_hi, 8)), 8);
 
     dst = _mm_packus_epi16(dst_lo, dst_hi);
     return dst;
