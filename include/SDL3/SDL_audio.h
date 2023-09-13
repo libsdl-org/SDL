@@ -328,8 +328,8 @@ extern DECLSPEC char *SDLCALL SDL_GetAudioDeviceName(SDL_AudioDeviceID devid);
  * device.
  *
  * You can also use this to request the current device buffer size. This is
- * specified in sample frames and represents the amount of data SDL will
- * feed to the physical hardware in each chunk. This can be converted to
+ * specified in sample frames and represents the amount of data SDL will feed
+ * to the physical hardware in each chunk. This can be converted to
  * milliseconds of audio with the following equation:
  *
  * `ms = (int) ((((Sint64) frames) * 1000) / spec.freq);`
