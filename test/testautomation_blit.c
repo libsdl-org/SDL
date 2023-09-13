@@ -98,7 +98,7 @@ Uint32 hashSurfacePixels(SDL_Surface * surface) {
 int blit_testExampleApplicationRender(void *arg) {
     const int width = 32;
     const int height = 32;
-    const unsigned long correct_hash = 0xe345d7a7;
+    const Uint32 correct_hash = 0xe345d7a7;
     SDL_Surface* dest_surface = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_ARGB8888);
     SDL_Surface* rainbow_background = SDLTest_ImageBlendingBackground();
     SDL_Surface* gearbrain_sprite = SDLTest_ImageBlendingSprite();
@@ -107,9 +107,10 @@ int blit_testExampleApplicationRender(void *arg) {
     // Blit example game sprite onto "screen"
     SDL_BlitSurface(gearbrain_sprite, NULL, dest_surface, NULL);
     // Check result
-    const unsigned long hash = hashSurfacePixels(dest_surface);
+    const Uint32 hash = hashSurfacePixels(dest_surface);
     SDLTest_AssertCheck(hash == correct_hash,
-                        "Should render identically, expected hash 0x%lx, got 0x%lx", correct_hash, hash);
+                        "Should render identically, expected hash 0x%" SDL_PRIx32 ", got 0x%" SDL_PRIx32,
+                        correct_hash, hash);
     // Clean up
     SDL_DestroySurface(rainbow_background);
     SDL_DestroySurface(gearbrain_sprite);
@@ -124,7 +125,7 @@ int blit_testExampleApplicationRender(void *arg) {
 int blit_testRandomToRandomSVGA(void *arg) {
     const int width = 800;
     const int height = 600;
-    const unsigned long correct_hash = 0x42140c5f;
+    const Uint32 correct_hash = 0x42140c5f;
     // Allocate random buffers
     Uint32 *dest_pixels = getNextRandomBuffer(width, height);
     Uint32 *src_pixels = getNextRandomBuffer(width, height);
@@ -134,9 +135,10 @@ int blit_testRandomToRandomSVGA(void *arg) {
     // Blit surfaces
     SDL_BlitSurface(src_surface, NULL, dest_surface, NULL);
     // Check result
-    const unsigned long hash = hashSurfacePixels(dest_surface);
+    const Uint32 hash = hashSurfacePixels(dest_surface);
     SDLTest_AssertCheck(hash == correct_hash,
-                        "Should render identically, expected hash 0x%lx, got 0x%lx", correct_hash, hash);
+                        "Should render identically, expected hash 0x%" SDL_PRIx32 ", got 0x%" SDL_PRIx32,
+                        correct_hash, hash);
     // Clean up
     SDL_DestroySurface(dest_surface);
     SDL_DestroySurface(src_surface);
@@ -153,7 +155,7 @@ int blit_testRandomToRandomSVGAMultipleIterations(void *arg) {
     const int width = 800;
     const int height = 600;
     int i;
-    const unsigned long correct_hash = 0x5d26be78;
+    const Uint32 correct_hash = 0x5d26be78;
     // Create blank source surface
     SDL_Surface* dest_surface = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_ABGR8888);
 
@@ -173,11 +175,12 @@ int blit_testRandomToRandomSVGAMultipleIterations(void *arg) {
         SDL_free(buf);
     }
     // Check result
-    const unsigned long hash = hashSurfacePixels(dest_surface);
+    const Uint32 hash = hashSurfacePixels(dest_surface);
     // Clean up
     SDL_DestroySurface(dest_surface);
     SDLTest_AssertCheck(hash == correct_hash,
-                        "Should render identically, expected hash 0x%lx, got 0x%lx", correct_hash, hash);
+                        "Should render identically, expected hash 0x%" SDL_PRIx32 ", got 0x%" SDL_PRIx32,
+                        correct_hash, hash);
     return TEST_COMPLETED;
 }
 
