@@ -25,10 +25,6 @@ function(get_clang_tidy_ignored_files OUTVAR)
       # HIDAPI Steam controller
       "controller_constants.h"
       "controller_structs.h"
-      # Nokia Pixman
-      "pixman-arm-asm.h"
-      "pixman-arm-neon-asm.h"
-      "pixman-arm-simd-asm.h"
       # YUV2RGB
       "yuv_rgb.c"
       "yuv_rgb_lsx_func.h"

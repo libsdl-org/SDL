@@ -23,12 +23,6 @@
 #ifndef SDL_blit_h_
 #define SDL_blit_h_
 
-/* pixman ARM blitters are 32 bit only : */
-#if defined(__aarch64__) || defined(_M_ARM64)
-#undef SDL_ARM_SIMD_BLITTERS
-#undef SDL_ARM_NEON_BLITTERS
-#endif
-
 /* Table to do pixel byte expansion */
 extern const Uint8 *SDL_expand_byte[9];
 extern const Uint16 SDL_expand_byte_10[];
