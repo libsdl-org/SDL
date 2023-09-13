@@ -480,8 +480,8 @@ extern DECLSPEC int SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_ResumeAudioDevice
  * \sa SDL_AudioDevicePaused
+ * \sa SDL_PauseAudioDevice
  */
 extern DECLSPEC int SDLCALL SDL_ResumeAudioDevice(SDL_AudioDeviceID dev);
 
@@ -504,7 +504,6 @@ extern DECLSPEC int SDLCALL SDL_ResumeAudioDevice(SDL_AudioDeviceID dev);
  *
  * \sa SDL_PauseAudioDevice
  * \sa SDL_ResumeAudioDevice
- * \sa SDL_AudioDevicePaused
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_AudioDevicePaused(SDL_AudioDeviceID dev);
 
