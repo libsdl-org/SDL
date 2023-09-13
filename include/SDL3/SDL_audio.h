@@ -954,13 +954,22 @@ extern DECLSPEC int SDLCALL SDL_UnlockAudioStream(SDL_AudioStream *stream);
  * before your callback is called, so your callback does not need to
  * manage the lock explicitly.
  *
+ * Two values are offered here: one is the amount of additional data needed
+ * to satisfy the immediate request (which might be zero if the stream
+ * already has enough data queued) and the other is the total amount
+ * being requested. In a Get call triggering a Put callback, these
+ * values can be different. In a Put call triggering a Get callback,
+ * these values are always the same.
+ *
+ * Byte counts might be slightly overestimated due to buffering or
+ * resampling, and may change from call to call.
+ *
  * \param stream The SDL audio stream associated with this callback.
- * \param approx_amount The _approximate_ amount of data, in bytes, that is requested or available.
- *                       This might be slightly overestimated due to buffering or
- *                       resampling, and may change from call to call.
+ * \param additional The amount of data, in bytes, that is needed right now
+ * \param total_amount The total amount of data requested, in bytes, that is requested or available.
  * \param userdata An opaque pointer provided by the app for their personal use.
  */
-typedef void (SDLCALL *SDL_AudioStreamCallback)(void *userdata, SDL_AudioStream *stream, int approx_amount);
+typedef void (SDLCALL *SDL_AudioStreamCallback)(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount);
 
 /**
  * Set a callback that runs when data is requested from an audio stream.

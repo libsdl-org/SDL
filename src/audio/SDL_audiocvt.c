@@ -1342,9 +1342,7 @@ int SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
 
     if ((retval == 0) && stream->put_callback) {
         const int newavail = SDL_GetAudioStreamAvailable(stream) - prev_available;
-        if (newavail > 0) {   // don't call the callback if we can't actually offer new data (still filling future buffer, only added 1 frame but downsampling needs more to produce new sound, etc).
-            stream->put_callback(stream->put_callback_userdata, stream, newavail);
-        }
+        stream->put_callback(stream->put_callback_userdata, stream, newavail, newavail);
     }
 
     SDL_UnlockMutex(stream->lock);
@@ -1647,7 +1645,8 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
 
     // give the callback a chance to fill in more stream data if it wants.
     if (stream->get_callback) {
-        Sint64 approx_request = len / dst_frame_size;  // start with sample frames desired
+        Sint64 total_request = len / dst_frame_size;  // start with sample frames desired
+        Sint64 approx_request = total_request;
 
         const Sint64 available_frames = GetAudioStreamAvailableFrames(stream);
         approx_request -= SDL_min(available_frames, approx_request);
@@ -1655,14 +1654,13 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
         const Sint64 resample_rate = GetStreamResampleRate(stream, stream->src_spec.freq);
 
         if (resample_rate) {
+            total_request = GetResamplerNeededInputFrames((int) total_request, resample_rate, 0);
             approx_request = GetResamplerNeededInputFrames((int) approx_request, resample_rate, 0);
         }
 
+        total_request *= SDL_AUDIO_FRAMESIZE(stream->src_spec);  // convert sample frames to bytes.
         approx_request *= SDL_AUDIO_FRAMESIZE(stream->src_spec);  // convert sample frames to bytes.
-
-        if (approx_request > 0) {  // don't call the callback if we can satisfy this request with existing data.
-            stream->get_callback(stream->get_callback_userdata, stream, (int) SDL_min(approx_request, SDL_INT_MAX));
-        }
+        stream->get_callback(stream->get_callback_userdata, stream, (int) SDL_min(approx_request, SDL_INT_MAX), (int) SDL_min(total_request, SDL_INT_MAX));
     }
 
     const int chunk_size = 4096;

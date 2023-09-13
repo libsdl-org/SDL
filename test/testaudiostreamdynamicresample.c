@@ -356,7 +356,7 @@ static void loop(void)
     }
 }
 
-static void SDLCALL our_get_callback(void *userdata, SDL_AudioStream *strm, int approx_amount)
+static void SDLCALL our_get_callback(void *userdata, SDL_AudioStream *strm, int approx_amount, int total_amount)
 {
     last_get_callback = SDL_GetTicks();
     last_get_amount = approx_amount;
