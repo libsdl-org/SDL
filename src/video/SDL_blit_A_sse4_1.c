@@ -126,11 +126,11 @@ void SDL_TARGETING("sse4.1") BlitNtoNPixelAlpha_SSE4_1(SDL_BlitInfo* info) {
     SDL_PixelFormat *dstfmt = info->dst_fmt;
 
     const int chunks = width / 4;
-    int free_format = 0;
+    SDL_bool free_format = SDL_FALSE;
     /* Handle case when passed invalid format, assume ARGB destination */
     if (dstfmt->Ashift == 0 && dstfmt->Ashift == dstfmt->Bshift) {
         dstfmt = SDL_CreatePixelFormat(SDL_PIXELFORMAT_ARGB8888);
-        free_format = 1;
+        free_format = SDL_TRUE;
     }
     const __m128i shift_mask = GetSDL_PixelFormatShuffleMask_SSE4_1(srcfmt, dstfmt);
     const __m128i splat_mask = GetSDL_PixelFormatAlphaSplatMask_SSE4_1(dstfmt);
