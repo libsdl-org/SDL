@@ -89,9 +89,13 @@ __m256i SDL_TARGETING("avx2") MixRGBA_AVX2(__m256i src, __m256i dst, const __m25
     dst_hi = _mm256_add_epi16(_mm256_mullo_epi16(_mm256_sub_epi16(src_hi, dst_hi), srca_hi),
                               _mm256_sub_epi16(_mm256_slli_epi16(dst_hi, 8), dst_hi));
 
-    // dst = (dst * 0x8081) >> 23
-    dst_lo = _mm256_srli_epi16(_mm256_mulhi_epu16(dst_lo, _mm256_set1_epi16(-0x7F7F)), 7);
-    dst_hi = _mm256_srli_epi16(_mm256_mulhi_epu16(dst_hi, _mm256_set1_epi16(-0x7F7F)), 7);
+    // dst += 0x1U (use 0x80 to round instead of floor)
+    dst_lo = _mm256_add_epi16(dst_lo, _mm256_set1_epi16(1));
+    dst_hi = _mm256_add_epi16(dst_hi, _mm256_set1_epi16(1));
+
+    // dst += dst >> 8
+    dst_lo = _mm256_srli_epi16(_mm256_add_epi16(dst_lo, _mm256_srli_epi16(dst_lo, 8)), 8);
+    dst_hi = _mm256_srli_epi16(_mm256_add_epi16(dst_hi, _mm256_srli_epi16(dst_hi, 8)), 8);
 
     dst = _mm256_packus_epi16(dst_lo, dst_hi);
     return dst;

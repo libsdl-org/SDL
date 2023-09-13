@@ -98,8 +98,7 @@ Uint32 hashSurfacePixels(SDL_Surface * surface) {
 int blit_testExampleApplicationRender(void *arg) {
     const int width = 32;
     const int height = 32;
-    const unsigned long scalar_hash = 0xf47a3f55;
-    const unsigned long x86_simd_hash = 0xe345d7a7;
+    const unsigned long correct_hash = 0xe345d7a7;
     SDL_Surface* dest_surface = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_ARGB8888);
     SDL_Surface* rainbow_background = SDLTest_ImageBlendingBackground();
     SDL_Surface* gearbrain_sprite = SDLTest_ImageBlendingSprite();
@@ -109,9 +108,8 @@ int blit_testExampleApplicationRender(void *arg) {
     SDL_BlitSurface(gearbrain_sprite, NULL, dest_surface, NULL);
     // Check result
     const unsigned long hash = hashSurfacePixels(dest_surface);
-    SDLTest_AssertCheck(hash == scalar_hash || hash == x86_simd_hash,
-                        "Should render identically, expected 0x%lx (scalar) or 0x%lx (x86_simd), got 0x%lx",
-                        scalar_hash, x86_simd_hash, hash);
+    SDLTest_AssertCheck(hash == correct_hash,
+                        "Should render identically, expected hash 0x%lx, got 0x%lx", correct_hash, hash);
     // Clean up
     SDL_DestroySurface(rainbow_background);
     SDL_DestroySurface(gearbrain_sprite);
@@ -126,8 +124,7 @@ int blit_testExampleApplicationRender(void *arg) {
 int blit_testRandomToRandomSVGA(void *arg) {
     const int width = 800;
     const int height = 600;
-    const unsigned long scalar_hash = 0x1f56efad;
-    const unsigned long x86_simd_hash = 0x42140c5f;
+    const unsigned long correct_hash = 0x42140c5f;
     // Allocate random buffers
     Uint32 *dest_pixels = getNextRandomBuffer(width, height);
     Uint32 *src_pixels = getNextRandomBuffer(width, height);
@@ -138,9 +135,8 @@ int blit_testRandomToRandomSVGA(void *arg) {
     SDL_BlitSurface(src_surface, NULL, dest_surface, NULL);
     // Check result
     const unsigned long hash = hashSurfacePixels(dest_surface);
-    SDLTest_AssertCheck(hash == scalar_hash || hash == x86_simd_hash,
-                        "Should render identically, expected 0x%lx (scalar) or 0x%lx (x86_simd), got 0x%lx",
-                        scalar_hash, x86_simd_hash, hash);
+    SDLTest_AssertCheck(hash == correct_hash,
+                        "Should render identically, expected hash 0x%lx, got 0x%lx", correct_hash, hash);
     // Clean up
     SDL_DestroySurface(dest_surface);
     SDL_DestroySurface(src_surface);
@@ -157,8 +153,7 @@ int blit_testRandomToRandomSVGAMultipleIterations(void *arg) {
     const int width = 800;
     const int height = 600;
     int i;
-    const unsigned long x86_simd_hash = 0x2626be78;
-    const unsigned long scalar_hash = 0xfb2a8ee8;
+    const unsigned long correct_hash = 0x5d26be78;
     // Create blank source surface
     SDL_Surface* dest_surface = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_ABGR8888);
 
@@ -180,11 +175,9 @@ int blit_testRandomToRandomSVGAMultipleIterations(void *arg) {
     // Check result
     const unsigned long hash = hashSurfacePixels(dest_surface);
     // Clean up
-    SDL_SaveBMP(dest_surface, "250k_scalar.bmp");
     SDL_DestroySurface(dest_surface);
-    SDLTest_AssertCheck(hash == scalar_hash || hash == x86_simd_hash,
-                        "Should render identically, expected 0x%lx (scalar) or 0x%lx (x86_simd), got 0x%lx",
-                        scalar_hash, x86_simd_hash, hash);
+    SDLTest_AssertCheck(hash == correct_hash,
+                        "Should render identically, expected hash 0x%lx, got 0x%lx", correct_hash, hash);
     return TEST_COMPLETED;
 }
 
