@@ -977,7 +977,7 @@ extern DECLSPEC int SDLCALL SDL_UnlockAudioStream(SDL_AudioStream *stream);
  * resampling, and may change from call to call.
  *
  * \param stream The SDL audio stream associated with this callback.
- * \param additional The amount of data, in bytes, that is needed right now
+ * \param additional_amount The amount of data, in bytes, that is needed right now.
  * \param total_amount The total amount of data requested, in bytes, that is requested or available.
  * \param userdata An opaque pointer provided by the app for their personal use.
  */
