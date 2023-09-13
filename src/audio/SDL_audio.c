@@ -1246,9 +1246,19 @@ static void PrepareAudioFormat(SDL_bool iscapture, SDL_AudioSpec *spec)
     }
 }
 
-static int GetDefaultSampleFramesFromFreq(int freq)
+static int GetDefaultSampleFramesFromFreq(const int freq)
 {
-    return SDL_powerof2((freq / 1000) * 46);  // Pick the closest power-of-two to ~46 ms at desired frequency
+    if (freq <= 11025) {
+        return 512;
+    } else if (freq <= 22050) {
+        return 1024;
+    } else if (freq <= 48000) {
+        return 2048;
+    } else if (freq <= 96000) {
+        return 4096;
+    } else {
+        return 8192;  // shrug
+    }
 }
 
 void SDL_UpdatedAudioDeviceFormat(SDL_AudioDevice *device)
