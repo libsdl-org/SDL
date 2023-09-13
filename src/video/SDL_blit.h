@@ -493,21 +493,30 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         }                                             \
     }
 
+/* Blend a single color channel or alpha value */
+#define ALPHA_BLEND_CHANNEL(sC, dC, sA)                  \
+    do {                                                 \
+        Uint16 x;                                        \
+        x = ((sC - dC) * sA) + ((dC << 8) - dC);         \
+        x += 0x1U;                                       \
+        x += x >> 8;                                     \
+        dC = x >> 8;                                     \
+    } while (0)
 /* Blend the RGB values of two pixels with an alpha value */
 #define ALPHA_BLEND_RGB(sR, sG, sB, A, dR, dG, dB)            \
     do {                                                      \
-        dR = (Uint8)((((int)(sR - dR) * (int)A) / 255) + dR); \
-        dG = (Uint8)((((int)(sG - dG) * (int)A) / 255) + dG); \
-        dB = (Uint8)((((int)(sB - dB) * (int)A) / 255) + dB); \
+        ALPHA_BLEND_CHANNEL(sR, dR, A);                       \
+        ALPHA_BLEND_CHANNEL(sG, dG, A);                       \
+        ALPHA_BLEND_CHANNEL(sB, dB, A);                       \
     } while (0)
 
 /* Blend the RGBA values of two pixels */
-#define ALPHA_BLEND_RGBA(sR, sG, sB, sA, dR, dG, dB, dA)       \
-    do {                                                       \
-        dR = (Uint8)((((int)(sR - dR) * (int)sA) / 255) + dR); \
-        dG = (Uint8)((((int)(sG - dG) * (int)sA) / 255) + dG); \
-        dB = (Uint8)((((int)(sB - dB) * (int)sA) / 255) + dB); \
-        dA = (Uint8)((int)sA + dA - ((int)sA * dA) / 255);     \
+#define ALPHA_BLEND_RGBA(sR, sG, sB, sA, dR, dG, dB, dA) \
+    do {                                                 \
+        ALPHA_BLEND_CHANNEL(sR, dR, sA);                 \
+        ALPHA_BLEND_CHANNEL(sG, dG, sA);                 \
+        ALPHA_BLEND_CHANNEL(sB, dB, sA);                 \
+        ALPHA_BLEND_CHANNEL(255, dA, sA);                \
     } while (0)
 
 /* This is a very useful loop for optimizing blitters */

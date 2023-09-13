@@ -113,11 +113,11 @@ void SDL_TARGETING("avx2") BlitNtoNPixelAlpha_AVX2(SDL_BlitInfo *info)
     SDL_PixelFormat *dstfmt = info->dst_fmt;
 
     int chunks = width / 8;
-    int free_format = 0;
+    SDL_bool free_format = SDL_FALSE;
     /* Handle case when passed invalid format, assume ARGB destination */
     if (dstfmt->Ashift == 0 && dstfmt->Ashift == dstfmt->Bshift) {
         dstfmt = SDL_CreatePixelFormat(SDL_PIXELFORMAT_ARGB8888);
-        free_format = 1;
+        free_format = SDL_TRUE;
     }
     const __m256i shift_mask = GetSDL_PixelFormatShuffleMask_AVX2(srcfmt, dstfmt);
     const __m256i splat_mask = GetSDL_PixelFormatAlphaSplatMask_AVX2(dstfmt);
