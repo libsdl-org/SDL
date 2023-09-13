@@ -2510,6 +2510,26 @@ extern "C" {
  */
 #define SDL_HINT_GDK_TEXTINPUT_MAX_LENGTH "SDL_GDK_TEXTINPUT_MAX_LENGTH"
 
+/**
+ * Set the next device open's buffer size.
+ *
+ * This hint is an integer > 0, that represents the size of the device's
+ * buffer in sample frames (stereo audio data in 16-bit format is 4 bytes
+ * per sample frame, for example).
+ *
+ * SDL3 generally decides this value on behalf of the app, but if for some
+ * reason the app needs to dictate this (because they want either lower
+ * latency or higher throughput AND ARE WILLING TO DEAL WITH what that
+ * might require of the app), they can specify it.
+ *
+ * SDL will try to accomodate this value, but there is no promise you'll
+ * get the buffer size requested. Many platforms won't honor this request
+ * at all, or might adjust it.
+ *
+ * This hint is checked when opening an audio device and can be changed
+ * between calls.
+ */
+#define SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES "SDL_AUDIO_DEVICE_SAMPLE_FRAMES"
 
 /**
  *  \brief  An enumeration of hint priorities
