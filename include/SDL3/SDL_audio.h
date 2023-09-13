@@ -327,8 +327,20 @@ extern DECLSPEC char *SDLCALL SDL_GetAudioDeviceName(SDL_AudioDeviceID devid);
  * reasonable recommendation before opening the system-recommended default
  * device.
  *
+ * You can also use this to request the current device buffer size. This is
+ * specified in sample frames and represents the amount of data SDL will
+ * feed to the physical hardware in each chunk. This can be converted to
+ * milliseconds of audio with the following equation:
+ *
+ * `ms = (int) ((((Sint64) frames) * 1000) / spec.freq);`
+ *
+ * Buffer size is only important if you need low-level control over the audio
+ * playback timing. Most apps do not need this.
+ *
  * \param devid the instance ID of the device to query.
  * \param spec On return, will be filled with device details.
+ * \param sample_frames Pointer to store device buffer size, in sample frames.
+ *                      Can be NULL.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -336,7 +348,7 @@ extern DECLSPEC char *SDLCALL SDL_GetAudioDeviceName(SDL_AudioDeviceID devid);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec);
+extern DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec, int *sample_frames);
 
 
 /**

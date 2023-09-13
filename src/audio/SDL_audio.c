@@ -116,6 +116,30 @@ const char *SDL_GetCurrentAudioDriver(void)
     return current_audio.name;
 }
 
+static int GetDefaultSampleFramesFromFreq(const int freq)
+{
+    const char *hint = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES);
+    if (hint) {
+        const int val = SDL_atoi(hint);
+        if (val > 0) {
+            return val;
+        }
+    }
+
+    if (freq <= 11025) {
+        return 512;
+    } else if (freq <= 22050) {
+        return 1024;
+    } else if (freq <= 48000) {
+        return 2048;
+    } else if (freq <= 96000) {
+        return 4096;
+    }
+
+    return 8192;  // shrug
+}
+
+
 // device management and hotplug...
 
 
@@ -238,6 +262,7 @@ static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, SDL_bool isc
     device->iscapture = iscapture;
     SDL_memcpy(&device->spec, spec, sizeof (SDL_AudioSpec));
     SDL_memcpy(&device->default_spec, spec, sizeof (SDL_AudioSpec));
+    device->sample_frames = GetDefaultSampleFramesFromFreq(device->spec.freq);
     device->silence_value = SDL_GetSilenceValueForFormat(device->spec.format);
     device->handle = handle;
     device->prev = NULL;
@@ -1112,7 +1137,7 @@ char *SDL_GetAudioDeviceName(SDL_AudioDeviceID devid)
     return retval;
 }
 
-int SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec)
+int SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec, int *sample_frames)
 {
     if (!spec) {
         return SDL_InvalidParamError("spec");
@@ -1137,6 +1162,9 @@ int SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec)
     }
 
     SDL_memcpy(spec, &device->spec, sizeof (SDL_AudioSpec));
+    if (sample_frames) {
+        *sample_frames = device->sample_frames;
+    }
     SDL_UnlockMutex(device->lock);
 
     return 0;
@@ -1244,29 +1272,6 @@ static void PrepareAudioFormat(SDL_bool iscapture, SDL_AudioSpec *spec)
         const SDL_AudioFormat val = ParseAudioFormatString(SDL_getenv("SDL_AUDIO_FORMAT"));
         spec->format = (val != 0) ? val : (iscapture ? DEFAULT_AUDIO_CAPTURE_FORMAT : DEFAULT_AUDIO_OUTPUT_FORMAT);
     }
-}
-
-static int GetDefaultSampleFramesFromFreq(const int freq)
-{
-    const char *hint = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES);
-    if (hint) {
-        const int val = SDL_atoi(hint);
-        if (val > 0) {
-            return val;
-        }
-    }
-
-    if (freq <= 11025) {
-        return 512;
-    } else if (freq <= 22050) {
-        return 1024;
-    } else if (freq <= 48000) {
-        return 2048;
-    } else if (freq <= 96000) {
-        return 4096;
-    }
-
-    return 8192;  // shrug
 }
 
 void SDL_UpdatedAudioDeviceFormat(SDL_AudioDevice *device)

@@ -179,7 +179,7 @@ int main(int argc, char **argv)
         exit(1);
     }
     SDL_PauseAudioDevice(device);
-    SDL_GetAudioDeviceFormat(device, &outspec);
+    SDL_GetAudioDeviceFormat(device, &outspec, NULL);
     stream_out = SDL_CreateAudioStream(&outspec, &outspec);
     if (!stream_out) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create an audio stream for playback: %s!\n", SDL_GetError());
@@ -203,7 +203,7 @@ int main(int argc, char **argv)
         exit(1);
     }
     SDL_PauseAudioDevice(device);
-    SDL_GetAudioDeviceFormat(device, &inspec);
+    SDL_GetAudioDeviceFormat(device, &inspec, NULL);
     stream_in = SDL_CreateAudioStream(&inspec, &inspec);
     if (!stream_in) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create an audio stream for capture: %s!\n", SDL_GetError());

@@ -765,9 +765,10 @@ static void DeviceThing_ondrag(Thing *thing, int button, float x, float y)
 static void SetLogicalDeviceTitlebar(Thing *thing)
 {
     SDL_AudioSpec *spec = &thing->data.logdev.spec;
-    SDL_GetAudioDeviceFormat(thing->data.logdev.devid, spec);
+    int frames = 0;
+    SDL_GetAudioDeviceFormat(thing->data.logdev.devid, spec, &frames);
     SDL_free(thing->titlebar);
-    SDL_asprintf(&thing->titlebar, "Logical device #%u (%s, %s, %s, %uHz)", (unsigned int) thing->data.logdev.devid, thing->data.logdev.iscapture ? "CAPTURE" : "OUTPUT", AudioFmtToString(spec->format), AudioChansToStr(spec->channels), (unsigned int) spec->freq);
+    SDL_asprintf(&thing->titlebar, "Logical device #%u (%s, %s, %s, %uHz, %d frames)", (unsigned int) thing->data.logdev.devid, thing->data.logdev.iscapture ? "CAPTURE" : "OUTPUT", AudioFmtToString(spec->format), AudioChansToStr(spec->channels), (unsigned int) spec->freq, frames);
 }
 
 static void LogicalDeviceThing_ondrop(Thing *thing, int button, float x, float y)
@@ -938,15 +939,16 @@ static Thing *CreateLogicalDeviceThing(Thing *parent, const SDL_AudioDeviceID wh
 
 static void SetPhysicalDeviceTitlebar(Thing *thing)
 {
+    int frames = 0;
     SDL_AudioSpec *spec = &thing->data.physdev.spec;
-    SDL_GetAudioDeviceFormat(thing->data.physdev.devid, spec);
+    SDL_GetAudioDeviceFormat(thing->data.physdev.devid, spec, &frames);
     SDL_free(thing->titlebar);
     if (thing->data.physdev.devid == SDL_AUDIO_DEVICE_DEFAULT_CAPTURE) {
-        SDL_asprintf(&thing->titlebar, "Default system device (CAPTURE, %s, %s, %uHz)", AudioFmtToString(spec->format), AudioChansToStr(spec->channels), (unsigned int) spec->freq);
+        SDL_asprintf(&thing->titlebar, "Default system device (CAPTURE, %s, %s, %uHz, %d frames)", AudioFmtToString(spec->format), AudioChansToStr(spec->channels), (unsigned int) spec->freq, frames);
     } else if (thing->data.physdev.devid == SDL_AUDIO_DEVICE_DEFAULT_OUTPUT) {
-        SDL_asprintf(&thing->titlebar, "Default system device (OUTPUT, %s, %s, %uHz)", AudioFmtToString(spec->format), AudioChansToStr(spec->channels), (unsigned int) spec->freq);
+        SDL_asprintf(&thing->titlebar, "Default system device (OUTPUT, %s, %s, %uHz, %d frames)", AudioFmtToString(spec->format), AudioChansToStr(spec->channels), (unsigned int) spec->freq, frames);
     } else {
-        SDL_asprintf(&thing->titlebar, "Physical device #%u (%s, \"%s\", %s, %s, %uHz)", (unsigned int) thing->data.physdev.devid, thing->data.physdev.iscapture ? "CAPTURE" : "OUTPUT", thing->data.physdev.name, AudioFmtToString(spec->format), AudioChansToStr(spec->channels), (unsigned int) spec->freq);
+        SDL_asprintf(&thing->titlebar, "Physical device #%u (%s, \"%s\", %s, %s, %uHz, %d frames)", (unsigned int) thing->data.physdev.devid, thing->data.physdev.iscapture ? "CAPTURE" : "OUTPUT", thing->data.physdev.name, AudioFmtToString(spec->format), AudioChansToStr(spec->channels), (unsigned int) spec->freq, frames);
     }
 }
 
