@@ -133,21 +133,41 @@ typedef enum
     SDL_GAMEPAD_BINDTYPE_HAT
 } SDL_GamepadBindingType;
 
-/**
- *  Get the SDL joystick layer binding for this gamepad button/axis mapping
- */
-typedef struct SDL_GamepadBinding
+typedef struct
 {
-    SDL_GamepadBindingType bindType;
+    SDL_GamepadBindingType inputType;
     union
     {
         int button;
-        int axis;
-        struct {
+
+        struct
+        {
+            int axis;
+            int axis_min;
+            int axis_max;
+        } axis;
+
+        struct
+        {
             int hat;
             int hat_mask;
         } hat;
-    } value;
+
+    } input;
+
+    SDL_GamepadBindingType outputType;
+    union
+    {
+        SDL_GamepadButton button;
+
+        struct
+        {
+            SDL_GamepadAxis axis;
+            int axis_min;
+            int axis_max;
+        } axis;
+
+    } output;
 
 } SDL_GamepadBinding;
 
@@ -764,6 +784,19 @@ extern DECLSPEC void SDLCALL SDL_SetGamepadEventsEnabled(SDL_bool enabled);
 extern DECLSPEC SDL_bool SDLCALL SDL_GamepadEventsEnabled(void);
 
 /**
+ * Get the SDL joystick layer bindings for a gamepad
+ *
+ * \param gamepad a gamepad
+ * \param count a pointer filled in with the number of bindings returned
+ * \returns a NULL terminated array of pointers to bindings which should be
+ *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
+ *          more details.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC SDL_GamepadBinding **SDLCALL SDL_GetGamepadBindings(SDL_Gamepad *gamepad, int *count);
+
+/**
  * Manually pump gamepad updates if not using the loop.
  *
  * This function is called automatically by the event loop if events are
@@ -847,21 +880,6 @@ extern DECLSPEC SDL_GamepadAxis SDLCALL SDL_GetGamepadAxisFromString(const char 
 extern DECLSPEC const char* SDLCALL SDL_GetGamepadStringForAxis(SDL_GamepadAxis axis);
 
 /**
- * Get the SDL joystick layer binding for a gamepad axis mapping.
- *
- * \param gamepad a gamepad
- * \param axis an axis enum value (one of the SDL_GamepadAxis values)
- * \returns a SDL_GamepadBinding describing the bind. On failure (like the
- *          given Controller axis doesn't exist on the device), its
- *          `.bindType` will be `SDL_GAMEPAD_BINDTYPE_NONE`.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetGamepadBindForButton
- */
-extern DECLSPEC SDL_GamepadBinding SDLCALL SDL_GetGamepadBindForAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis);
-
-/**
  * Query whether a gamepad has a given axis.
  *
  * This merely reports whether the gamepad's mapping defined this axis, as
@@ -925,21 +943,6 @@ extern DECLSPEC SDL_GamepadButton SDLCALL SDL_GetGamepadButtonFromString(const c
  * \sa SDL_GetGamepadButtonFromString
  */
 extern DECLSPEC const char* SDLCALL SDL_GetGamepadStringForButton(SDL_GamepadButton button);
-
-/**
- * Get the SDL joystick layer binding for a gamepad button mapping.
- *
- * \param gamepad a gamepad
- * \param button an button enum value (an SDL_GamepadButton value)
- * \returns a SDL_GamepadBinding describing the bind. On failure (like the
- *          given Controller button doesn't exist on the device), its
- *          `.bindType` will be `SDL_GAMEPAD_BINDTYPE_NONE`.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetGamepadBindForAxis
- */
-extern DECLSPEC SDL_GamepadBinding SDLCALL SDL_GetGamepadBindForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button);
 
 /**
  * Query whether a gamepad has a given button.

@@ -411,7 +411,6 @@ The following enums have been renamed:
 
 The following structures have been renamed:
 * SDL_GameController => SDL_Gamepad
-* SDL_GameControllerButtonBind => SDL_GamepadBinding
 
 The following functions have been renamed:
 * SDL_GameControllerAddMapping() => SDL_AddGamepadMapping()
@@ -425,8 +424,6 @@ The following functions have been renamed:
 * SDL_GameControllerGetAttached() => SDL_GamepadConnected()
 * SDL_GameControllerGetAxis() => SDL_GetGamepadAxis()
 * SDL_GameControllerGetAxisFromString() => SDL_GetGamepadAxisFromString()
-* SDL_GameControllerGetBindForAxis() => SDL_GetGamepadBindForAxis()
-* SDL_GameControllerGetBindForButton() => SDL_GetGamepadBindForButton()
 * SDL_GameControllerGetButton() => SDL_GetGamepadButton()
 * SDL_GameControllerGetButtonFromString() => SDL_GetGamepadButtonFromString()
 * SDL_GameControllerGetFirmwareVersion() => SDL_GetGamepadFirmwareVersion()
@@ -469,6 +466,8 @@ The following functions have been renamed:
 
 The following functions have been removed:
 * SDL_GameControllerEventState() - replaced with SDL_SetGamepadEventsEnabled() and SDL_GamepadEventsEnabled()
+* SDL_GameControllerGetBindForAxis() - replaced with SDL_GetGamepadBindings()
+* SDL_GameControllerGetBindForButton() - replaced with SDL_GetGamepadBindings()
 * SDL_GameControllerMappingForDeviceIndex() - replaced with SDL_GetGamepadInstanceMapping()
 * SDL_GameControllerNameForIndex() - replaced with SDL_GetGamepadInstanceName()
 * SDL_GameControllerPathForIndex() - replaced with SDL_GetGamepadInstancePath()

@@ -172,8 +172,7 @@ SDL3_0.0.0 {
     SDL_GetGamepadAppleSFSymbolsNameForButton;
     SDL_GetGamepadAxis;
     SDL_GetGamepadAxisFromString;
-    SDL_GetGamepadBindForAxis;
-    SDL_GetGamepadBindForButton;
+    SDL_GetGamepadBindings;
     SDL_GetGamepadButton;
     SDL_GetGamepadButtonFromString;
     SDL_GetGamepadFirmwareVersion;

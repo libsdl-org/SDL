@@ -1069,11 +1069,6 @@ typedef SDL_GameControllerButton, SDL_GamepadButton;
 - SDL_GameControllerButton
 + SDL_GamepadButton
 @@
-typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
-@@
-- SDL_GameControllerButtonBind
-+ SDL_GamepadBinding
-@@
 @@
 - SDL_GameControllerClose
 + SDL_CloseGamepad
@@ -1112,16 +1107,6 @@ typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
 @@
 - SDL_GameControllerGetAxisFromString
 + SDL_GetGamepadAxisFromString
-  (...)
-@@
-@@
-- SDL_GameControllerGetBindForAxis
-+ SDL_GetGamepadBindForAxis
-  (...)
-@@
-@@
-- SDL_GameControllerGetBindForButton
-+ SDL_GetGamepadBindForButton
   (...)
 @@
 @@
