@@ -475,6 +475,7 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/hidapi/*.c"
   "${SDL3_SOURCE_DIR}/src/libm/*.c"
   "${SDL3_SOURCE_DIR}/src/locale/*.c"
+  "${SDL3_SOURCE_DIR}/src/main/*.c"
   "${SDL3_SOURCE_DIR}/src/misc/*.c"
   "${SDL3_SOURCE_DIR}/src/power/*.c"
   "${SDL3_SOURCE_DIR}/src/render/*.c"
@@ -1383,6 +1384,9 @@ elseif(EMSCRIPTEN)
   # project. Uncomment at will for verbose cross-compiling -I/../ path info.
   sdl_compile_options(PRIVATE "-Wno-warn-absolute-paths")
 
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/emscripten/*.c")
+  set(HAVE_SDL_MAIN_CALLBACKS TRUE)
+
   if(SDL_MISC)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/misc/emscripten/*.c")
     set(HAVE_SDL_MISC TRUE)
@@ -2033,6 +2037,8 @@ elseif(WINDOWS)
 elseif(APPLE)
   # TODO: rework this all for proper macOS, iOS and Darwin support
 
+  # !!! FIXME: all the `if(IOS OR TVOS OR VISIONOS)` checks should get merged into one variable, so we're ready for the next platform (or just WatchOS).
+
   # We always need these libs on macOS at the moment.
   # !!! FIXME: we need Carbon for some very old API calls in
   # !!! FIXME:  src/video/cocoa/SDL_cocoakeyboard.c, but we should figure out
@@ -2043,6 +2049,12 @@ elseif(APPLE)
   endif()
   set(SDL_FRAMEWORK_FOUNDATION 1)
   set(SDL_FRAMEWORK_COREVIDEO 1)
+
+  # iOS can use a CADisplayLink for main callbacks. macOS just uses the generic one atm.
+  if(IOS OR TVOS OR VISIONOS)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/ios/*.m")
+    set(HAVE_SDL_MAIN_CALLBACKS TRUE)
+  endif()
 
   # Requires the darwin file implementation
   if(SDL_FILE)
@@ -2801,6 +2813,11 @@ endif()
 if(NOT HAVE_SDL_TIMERS)
   set(SDL_TIMER_DUMMY 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/dummy/*.c")
+endif()
+
+# Most platforms use this.
+if(NOT HAVE_SDL_MAIN_CALLBACKS)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/generic/*.c")
 endif()
 
 # config variables may contain generator expression, so we need to generate SDL_build_config.h in 2 steps:

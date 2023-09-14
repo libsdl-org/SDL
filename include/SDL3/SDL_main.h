@@ -140,20 +140,44 @@
  *  \endcode
  */
 
-#if defined(SDL_MAIN_NEEDED) || defined(SDL_MAIN_AVAILABLE)
+#if defined(SDL_MAIN_NEEDED) || defined(SDL_MAIN_AVAILABLE) || defined(SDL_MAIN_USE_CALLBACKS)
 #define main    SDL_main
 #endif
+
+#include <SDL3/SDL_events.h>
 
 #include <SDL3/SDL_begin_code.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+typedef int (SDLCALL *SDL_AppInit_func)(int argc, char *argv[]);
+typedef int (SDLCALL *SDL_AppIterate_func)(void);
+typedef int (SDLCALL *SDL_AppEvent_func)(const SDL_Event *event);
+typedef void (SDLCALL *SDL_AppQuit_func)(void);
+
+#ifdef SDL_MAIN_USE_CALLBACKS
+/**
+ *  The prototypes for the application's callbacks.
+ *  These functions are to be supplied by the app instead of an
+ *  SDL_main function if they've defined SDL_MAIN_USE_CALLBACKS
+ *  before including SDL_main.h (but the SDL_main magic might
+ *  still get used below internally, if we're emulating a callback
+ *  mainloop on platforms that don't support it natively, but in that
+ *  case we'll provide SDL_main, not the app.
+ */
+extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppInit(int argc, char *argv[]);
+extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppIterate(void);
+extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppEvent(const SDL_Event *event);
+extern SDLMAIN_DECLSPEC void SDLCALL SDL_AppQuit(void);
+#endif  /* SDL_MAIN_USE_CALLBACKS */
+
+
 /**
  *  The prototype for the application's main() function
  */
-typedef int (*SDL_main_func)(int argc, char *argv[]);
-extern SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[]);
+typedef int (SDLCALL *SDL_main_func)(int argc, char *argv[]);
+extern SDLMAIN_DECLSPEC int SDLCALL SDL_main(int argc, char *argv[]);
 
 
 /**
@@ -197,6 +221,33 @@ extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved);
+
+/**
+ * An entry point for SDL's use in SDL_MAIN_USE_CALLBACKS.
+ *
+ * Generally, you should not call this function directly. This only exists
+ * to hand off work into SDL as soon as possible, where it has a lot more
+ * control and functionality available, and make the inline code in
+ * SDL_main.h as small as possible.
+ *
+ * Not all platforms use this, it's actual use is hidden in a magic
+ * header-only library, and you should not call this directly unless you
+ * _really_ know what you're doing.
+ *
+ * \param argc standard Unix main argc
+ * \param argv standard Unix main argv
+ * \param appinit The application's SDL_AppInit function
+ * \param appiter The application's SDL_AppIterate function
+ * \param appevent The application's SDL_AppEvent function
+ * \param appquit The application's SDL_AppQuit function
+ * \returns standard Unix main return value
+ *
+ * \threadsafety It is not safe to call this anywhere except as the only function call in SDL_main.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit);
+
 
 #if defined(__WIN32__) || defined(__GDK__)
 
@@ -282,7 +333,8 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 
 #if !defined(SDL_MAIN_HANDLED) && !defined(SDL_MAIN_NOIMPL)
 /* include header-only SDL_main implementations */
-#if defined(__WIN32__) || defined(__GDK__) || defined(__IOS__) || defined(__TVOS__) \
+#if defined(SDL_MAIN_USE_CALLBACKS) \
+    || defined(__WIN32__) || defined(__GDK__) || defined(__IOS__) || defined(__TVOS__) \
     || defined(__3DS__) || defined(__NGAGE__) || defined(__PS2__) || defined(__PSP__)
 
 /* platforms which main (-equivalent) can be implemented in plain C */

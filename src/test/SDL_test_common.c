@@ -1560,7 +1560,7 @@ static const char *GamepadButtonName(const SDL_GamepadButton button)
     }
 }
 
-static void SDLTest_PrintEvent(SDL_Event *event)
+static void SDLTest_PrintEvent(const SDL_Event *event)
 {
     switch (event->type) {
     case SDL_EVENT_SYSTEM_THEME_CHANGED:
@@ -2029,7 +2029,7 @@ static void FullscreenTo(SDLTest_CommonState *state, int index, int windowId)
     SDL_free(displays);
 }
 
-void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done)
+int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event *event)
 {
     int i;
 
@@ -2408,20 +2408,27 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
             }
             break;
         case SDLK_ESCAPE:
-            *done = 1;
-            break;
+            return 1;
         default:
             break;
         }
         break;
     }
     case SDL_EVENT_QUIT:
-        *done = 1;
-        break;
+        return 1;
+    }
 
+    return 0;  /* keep going */
+}
+
+void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done)
+{
+    *done = SDLTest_CommonEventMainCallbacks(state, event) ? 1 : 0;
+
+    switch (event->type) {
     case SDL_EVENT_DROP_FILE:
     case SDL_EVENT_DROP_TEXT:
-        SDL_free(event->drop.file);
+        SDL_free(event->drop.file);  // SDL frees these if you use SDL_AppEvent, not us, so explicitly handle it here.
         break;
     }
 }

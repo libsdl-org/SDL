@@ -14,10 +14,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
+#define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
@@ -48,20 +45,12 @@ static SDL_bool suspend_when_occluded;
 /* -1: infinite random moves (default); >=0: enables N deterministic moves */
 static int iterations = -1;
 
-static int done;
-
-/* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
-static void
-quit(int rc)
+void SDL_AppQuit(void)
 {
     SDL_free(sprites);
     SDL_free(positions);
     SDL_free(velocities);
     SDLTest_CommonQuit(state);
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
-    }
 }
 
 static int LoadSprite(const char *file)
@@ -395,17 +384,17 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     SDL_RenderPresent(renderer);
 }
 
-static void loop(void)
+int SDL_AppEvent(const SDL_Event *event)
+{
+    return SDLTest_CommonEventMainCallbacks(state, event);
+}
+
+int SDL_AppIterate(void)
 {
     Uint64 now;
     int i;
     int active_windows = 0;
-    SDL_Event event;
 
-    /* Check for events */
-    while (SDL_PollEvent(&event)) {
-        SDLTest_CommonEvent(state, &event, &done);
-    }
     for (i = 0; i < state->num_windows; ++i) {
         if (state->windows[i] == NULL ||
             (suspend_when_occluded && (SDL_GetWindowFlags(state->windows[i]) & SDL_WINDOW_OCCLUDED))) {
@@ -414,14 +403,9 @@ static void loop(void)
         ++active_windows;
         MoveSprites(state->renderers[i], sprites[i]);
     }
-#ifdef __EMSCRIPTEN__
-    if (done) {
-        emscripten_cancel_main_loop();
-    }
-#endif
 
     /* If all windows are occluded, throttle the event polling to 15hz. */
-    if (!done && !active_windows) {
+    if (!active_windows) {
         SDL_DelayNS(SDL_NS_PER_SECOND / 15);
     }
 
@@ -435,9 +419,11 @@ static void loop(void)
         next_fps_check = now + fps_check_delay;
         frames = 0;
     }
+
+    return 0;  /* keep going */
 }
 
-int main(int argc, char *argv[])
+int SDL_AppInit(int argc, char *argv[])
 {
     int i;
     Uint64 seed;
@@ -449,7 +435,7 @@ int main(int argc, char *argv[])
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (state == NULL) {
-        return 1;
+        return -1;
     }
 
     for (i = 1; i < argc;) {
@@ -532,12 +518,12 @@ int main(int argc, char *argv[])
                 NULL
             };
             SDLTest_CommonLogUsage(state, argv[0], options);
-            quit(1);
+            return -1;
         }
         i += consumed;
     }
     if (!SDLTest_CommonInit(state)) {
-        quit(2);
+        return -1;
     }
 
     /* Create the windows, initialize the renderers, and load the textures */
@@ -545,7 +531,7 @@ int main(int argc, char *argv[])
         (SDL_Texture **)SDL_malloc(state->num_windows * sizeof(*sprites));
     if (sprites == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
-        quit(2);
+        return -1;
     }
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Renderer *renderer = state->renderers[i];
@@ -553,7 +539,7 @@ int main(int argc, char *argv[])
         SDL_RenderClear(renderer);
     }
     if (LoadSprite(icon) < 0) {
-        quit(2);
+        return -1;
     }
 
     /* Allocate memory for the sprite info */
@@ -561,7 +547,7 @@ int main(int argc, char *argv[])
     velocities = (SDL_FRect *)SDL_malloc(num_sprites * sizeof(*velocities));
     if (positions == NULL || velocities == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
-        quit(2);
+        return -1;
     }
 
     /* Position sprites and set their velocities using the fuzzer */
@@ -586,19 +572,10 @@ int main(int argc, char *argv[])
         }
     }
 
-    /* Main render loop */
+    /* Main render loop in SDL_AppIterate will begin when this function returns. */
     frames = 0;
     next_fps_check = SDL_GetTicks() + fps_check_delay;
-    done = 0;
 
-#ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop(loop, 0, 1);
-#else
-    while (!done) {
-        loop();
-    }
-#endif
-
-    quit(0);
     return 0;
 }
+

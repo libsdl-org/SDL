@@ -1,9 +1,4 @@
-#include <stdlib.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
+#define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
@@ -103,7 +98,6 @@ struct Thing
 
 
 static Uint64 app_ready_ticks = 0;
-static int done = 0;
 static SDLTest_CommonState *state = NULL;
 
 static Thing *things = NULL;
@@ -123,51 +117,6 @@ static Texture *audio_texture = NULL;
 static Texture *trashcan_texture = NULL;
 static Texture *soundboard_texture = NULL;
 static Texture *soundboard_levels_texture = NULL;
-
-static void DestroyTexture(Texture *tex);
-static void DestroyThing(Thing *thing);
-
-
-/* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
-static void Quit(int rc)
-{
-    while (things != NULL) {
-        DestroyThing(things);  /* make sure all the audio devices are closed, etc. */
-    }
-
-    DestroyTexture(physdev_texture);
-    DestroyTexture(logdev_texture);
-    DestroyTexture(audio_texture);
-    DestroyTexture(trashcan_texture);
-    DestroyTexture(soundboard_texture);
-    DestroyTexture(soundboard_levels_texture);
-    SDLTest_CommonQuit(state);
-
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
-    }
-}
-
-static char *xstrdup(const char *str)
-{
-    char *ptr = SDL_strdup(str);
-    if (!ptr) {
-        SDL_Log("Out of memory!");
-        Quit(1);
-    }
-    return ptr;
-}
-
-static void *xalloc(const size_t len)
-{
-    void *ptr = SDL_calloc(1, len);
-    if (!ptr) {
-        SDL_Log("Out of memory!");
-        Quit(1);
-    }
-    return ptr;
-}
 
 
 static void SetTitleBar(const char *fmt, ...)
@@ -232,7 +181,12 @@ static Thing *CreateThing(ThingType what, float x, float y, float z, float w, fl
     Thing *i;
     Thing *thing;
 
-    thing = (Thing *) xalloc(sizeof (Thing));
+    thing = (Thing *) SDL_calloc(1, sizeof (Thing));
+    if (!thing) {
+        SDL_Log("Out of memory!");
+        return NULL;
+    }
+
     if ((w < 0) || (h < 0)) {
         SDL_assert(texture != NULL);
         if (w < 0) {
@@ -256,7 +210,7 @@ static Thing *CreateThing(ThingType what, float x, float y, float z, float w, fl
     thing->scale = 1.0f;
     thing->createticks = SDL_GetTicks();
     thing->texture = texture;
-    thing->titlebar = titlebar ? xstrdup(titlebar) : NULL;
+    thing->titlebar = titlebar ? SDL_strdup(titlebar) : NULL;  /* if allocation fails, oh well. */
 
     /* insert in list by Z order (furthest from the "camera" first, so they get drawn over; negative Z is not drawn at all). */
     if (things == NULL) {
@@ -515,12 +469,14 @@ static Thing *CreatePoofThing(Thing *poofing_thing)
     const float centery = poofing_thing->rect.y + (poofing_thing->rect.h / 2);
     const float z = poofing_thing->z;
     Thing *thing = CreateThing(THING_POOF, poofing_thing->rect.x, poofing_thing->rect.y, z, poofing_thing->rect.w, poofing_thing->rect.h, poofing_thing->texture, NULL);
-    thing->data.poof.startw = poofing_thing->rect.w;
-    thing->data.poof.starth = poofing_thing->rect.h;
-    thing->data.poof.centerx = centerx;
-    thing->data.poof.centery = centery;
-    thing->ontick = PoofThing_ontick;
-    thing->ondrag = PoofThing_ondrag;
+    if (thing) {
+        thing->data.poof.startw = poofing_thing->rect.w;
+        thing->data.poof.starth = poofing_thing->rect.h;
+        thing->data.poof.centerx = centerx;
+        thing->data.poof.centery = centery;
+        thing->ontick = PoofThing_ontick;
+        thing->ondrag = PoofThing_ondrag;
+    }
     return thing;
 }
 
@@ -638,18 +594,20 @@ static Thing *CreateStreamThing(const SDL_AudioSpec *spec, const Uint8 *buf, con
 {
     static const ThingType can_be_dropped_onto[] = { THING_TRASHCAN, THING_LOGDEV, THING_LOGDEV_CAPTURE, THING_NULL };
     Thing *thing = CreateThing(THING_STREAM, x, y, 0, -1, -1, soundboard_texture, fname);
-    SDL_Log("Adding audio stream for %s", fname ? fname : "(null)");
-    thing->data.stream.stream = SDL_CreateAudioStream(spec, spec);
-    if (buf && buflen) {
-        SDL_PutAudioStreamData(thing->data.stream.stream, buf, (int) buflen);
-        SDL_FlushAudioStream(thing->data.stream.stream);
-        thing->data.stream.total_bytes = SDL_GetAudioStreamAvailable(thing->data.stream.stream);
+    if (thing) {
+        SDL_Log("Adding audio stream for %s", fname ? fname : "(null)");
+        thing->data.stream.stream = SDL_CreateAudioStream(spec, spec);
+        if (buf && buflen) {
+            SDL_PutAudioStreamData(thing->data.stream.stream, buf, (int) buflen);
+            SDL_FlushAudioStream(thing->data.stream.stream);
+            thing->data.stream.total_bytes = SDL_GetAudioStreamAvailable(thing->data.stream.stream);
+        }
+        thing->ontick = StreamThing_ontick;
+        thing->ondrag = StreamThing_ondrag;
+        thing->ondrop = StreamThing_ondrop;
+        thing->ondraw = StreamThing_ondraw;
+        thing->can_be_dropped_onto = can_be_dropped_onto;
     }
-    thing->ontick = StreamThing_ontick;
-    thing->ondrag = StreamThing_ondrag;
-    thing->ondrop = StreamThing_ondrop;
-    thing->ondraw = StreamThing_ondraw;
-    thing->can_be_dropped_onto = can_be_dropped_onto;
     return thing;
 }
 
@@ -703,13 +661,15 @@ static Thing *LoadWavThing(const char *fname, float x, float y)
 
         SDL_asprintf(&titlebar, "WAV file (\"%s\", %s, %s, %uHz)", nodirs, AudioFmtToString(spec.format), AudioChansToStr(spec.channels), (unsigned int) spec.freq);
         thing = CreateThing(THING_WAV, x - (audio_texture->w / 2), y - (audio_texture->h / 2), 5, -1, -1, audio_texture, titlebar);
-        SDL_free(titlebar);
-        SDL_memcpy(&thing->data.wav.spec, &spec, sizeof (SDL_AudioSpec));
-        thing->data.wav.buf = buf;
-        thing->data.wav.buflen = buflen;
-        thing->can_be_dropped_onto = can_be_dropped_onto;
-        thing->ondrag = WavThing_ondrag;
-        thing->ondrop = WavThing_ondrop;
+        if (thing) {
+            SDL_free(titlebar);
+            SDL_memcpy(&thing->data.wav.spec, &spec, sizeof (SDL_AudioSpec));
+            thing->data.wav.buf = buf;
+            thing->data.wav.buflen = buflen;
+            thing->can_be_dropped_onto = can_be_dropped_onto;
+            thing->ondrag = WavThing_ondrag;
+            thing->ondrop = WavThing_ondrop;
+        }
     }
 
     SDL_free(path);
@@ -743,17 +703,21 @@ static void DestroyTexture(Texture *tex)
 
 static Texture *CreateTexture(const char *fname)
 {
-    Texture *tex = (Texture *) xalloc(sizeof (Texture));
-    int texw, texh;
-    tex->texture = LoadTexture(state->renderers[0], fname, SDL_TRUE, &texw, &texh);
-    if (!tex->texture) {
-        SDL_Log("Failed to load '%s': %s", fname, SDL_GetError());
-        SDL_free(tex);
-        Quit(1);
+    Texture *tex = (Texture *) SDL_calloc(1, sizeof (Texture));
+    if (!tex) {
+        SDL_Log("Out of memory!");
+    } else {
+        int texw, texh;
+        tex->texture = LoadTexture(state->renderers[0], fname, SDL_TRUE, &texw, &texh);
+        if (!tex->texture) {
+            SDL_Log("Failed to load '%s': %s", fname, SDL_GetError());
+            SDL_free(tex);
+            return NULL;
+        }
+        SDL_SetTextureBlendMode(tex->texture, SDL_BLENDMODE_BLEND);
+        tex->w = (float) texw;
+        tex->h = (float) texh;
     }
-    SDL_SetTextureBlendMode(tex->texture, SDL_BLENDMODE_BLEND);
-    tex->w = (float) texw;
-    tex->h = (float) texh;
     return tex;
 }
 
@@ -763,9 +727,11 @@ static void DeviceThing_ondrag(Thing *thing, int button, float x, float y)
 {
     if ((button == SDL_BUTTON_MIDDLE) && (thing->what == THING_LOGDEV_CAPTURE)) {  /* drag out a new stream. This is a UX mess. :/ */
         dragging_thing = CreateStreamThing(&thing->data.logdev.spec, NULL, 0, NULL, x, y);
-        dragging_thing->data.stream.next_level_update = SDL_GetTicks() + 100;
-        SDL_BindAudioStream(thing->data.logdev.devid, dragging_thing->data.stream.stream); /* bind to new device! */
-        dragging_thing->line_connected_to = thing;
+        if (dragging_thing) {
+            dragging_thing->data.stream.next_level_update = SDL_GetTicks() + 100;
+            SDL_BindAudioStream(thing->data.logdev.devid, dragging_thing->data.stream.stream); /* bind to new device! */
+            dragging_thing->line_connected_to = thing;
+        }
     } else if (button == SDL_BUTTON_RIGHT) {  /* drag out a new logical device. */
         const SDL_AudioDeviceID which = ((thing->what == THING_LOGDEV) || (thing->what == THING_LOGDEV_CAPTURE)) ? thing->data.logdev.devid : thing->data.physdev.devid;
         const SDL_AudioDeviceID devid = SDL_OpenAudioDevice(which, NULL);
@@ -929,22 +895,24 @@ static Thing *CreateLogicalDeviceThing(Thing *parent, const SDL_AudioDeviceID wh
 
     SDL_Log("Adding logical audio device %u", (unsigned int) which);
     thing = CreateThing(iscapture ? THING_LOGDEV_CAPTURE : THING_LOGDEV, x, y, 5, -1, -1, logdev_texture, NULL);
-    thing->data.logdev.devid = which;
-    thing->data.logdev.iscapture = iscapture;
-    thing->data.logdev.physdev = physthing;
-    thing->data.logdev.visualizer = SDL_CreateTexture(state->renderers[0], SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, VISUALIZER_WIDTH, VISUALIZER_HEIGHT);
-    thing->data.logdev.postmix_lock = SDL_CreateMutex();
-    if (thing->data.logdev.visualizer) {
-        SDL_SetTextureBlendMode(thing->data.logdev.visualizer, SDL_BLENDMODE_BLEND);
-    }
-    thing->line_connected_to = physthing;
-    thing->ontick = LogicalDeviceThing_ontick;
-    thing->ondrag = DeviceThing_ondrag;
-    thing->ondrop = LogicalDeviceThing_ondrop;
-    thing->ondraw = LogicalDeviceThing_ondraw;
-    thing->can_be_dropped_onto = can_be_dropped_onto;
+    if (thing) {
+        thing->data.logdev.devid = which;
+        thing->data.logdev.iscapture = iscapture;
+        thing->data.logdev.physdev = physthing;
+        thing->data.logdev.visualizer = SDL_CreateTexture(state->renderers[0], SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, VISUALIZER_WIDTH, VISUALIZER_HEIGHT);
+        thing->data.logdev.postmix_lock = SDL_CreateMutex();
+        if (thing->data.logdev.visualizer) {
+            SDL_SetTextureBlendMode(thing->data.logdev.visualizer, SDL_BLENDMODE_BLEND);
+        }
+        thing->line_connected_to = physthing;
+        thing->ontick = LogicalDeviceThing_ontick;
+        thing->ondrag = DeviceThing_ondrag;
+        thing->ondrop = LogicalDeviceThing_ondrop;
+        thing->ondraw = LogicalDeviceThing_ondraw;
+        thing->can_be_dropped_onto = can_be_dropped_onto;
 
-    SetLogicalDeviceTitlebar(thing);
+        SetLogicalDeviceTitlebar(thing);
+    }
     return thing;
 }
 
@@ -1002,21 +970,23 @@ static Thing *CreatePhysicalDeviceThing(const SDL_AudioDeviceID which, const SDL
 
     SDL_Log("Adding physical audio device %u", (unsigned int) which);
     thing = CreateThing(iscapture ? THING_PHYSDEV_CAPTURE : THING_PHYSDEV, next_physdev_x, 170, 5, -1, -1, physdev_texture, NULL);
-    thing->data.physdev.devid = which;
-    thing->data.physdev.iscapture = iscapture;
-    thing->data.physdev.name = SDL_GetAudioDeviceName(which);
-    thing->ondrag = DeviceThing_ondrag;
-    thing->ondrop = PhysicalDeviceThing_ondrop;
-    thing->ontick = PhysicalDeviceThing_ontick;
-    thing->can_be_dropped_onto = can_be_dropped_onto;
+    if (thing) {
+        thing->data.physdev.devid = which;
+        thing->data.physdev.iscapture = iscapture;
+        thing->data.physdev.name = SDL_GetAudioDeviceName(which);
+        thing->ondrag = DeviceThing_ondrag;
+        thing->ondrop = PhysicalDeviceThing_ondrop;
+        thing->ontick = PhysicalDeviceThing_ontick;
+        thing->can_be_dropped_onto = can_be_dropped_onto;
 
-    SetPhysicalDeviceTitlebar(thing);
-    if (SDL_GetTicks() <= (app_ready_ticks + 2000)) {  /* assume this is the initial batch if it happens in the first two seconds. */
-        RepositionRowOfThings(THING_PHYSDEV, 10.0f);  /* don't rearrange them after the initial add. */
-        RepositionRowOfThings(THING_PHYSDEV_CAPTURE, 170.0f);  /* don't rearrange them after the initial add. */
-        next_physdev_x = 0.0f;
-    } else {
-        next_physdev_x += physdev_texture->w * 1.5f;
+        SetPhysicalDeviceTitlebar(thing);
+        if (SDL_GetTicks() <= (app_ready_ticks + 2000)) {  /* assume this is the initial batch if it happens in the first two seconds. */
+            RepositionRowOfThings(THING_PHYSDEV, 10.0f);  /* don't rearrange them after the initial add. */
+            RepositionRowOfThings(THING_PHYSDEV_CAPTURE, 170.0f);  /* don't rearrange them after the initial add. */
+            next_physdev_x = 0.0f;
+        } else {
+            next_physdev_x += physdev_texture->w * 1.5f;
+        }
     }
 
     return thing;
@@ -1066,157 +1036,13 @@ static void WindowResized(const int newwinw, const int newwinh)
     state->window_h = newwinh;
 }
 
-
-static void Loop(void)
-{
-    SDL_Event event;
-    SDL_bool saw_event = SDL_FALSE;
-
-    if (app_ready_ticks == 0) {
-        app_ready_ticks = SDL_GetTicks();
-    }
-
-    while (SDL_PollEvent(&event)) {
-        Thing *thing = NULL;
-
-        saw_event = SDL_TRUE;
-
-        switch (event.type) {
-            case SDL_EVENT_MOUSE_MOTION:
-                thing = UpdateMouseOver(event.motion.x, event.motion.y);
-                if ((dragging_button == -1) && event.motion.state) {
-                    if (event.motion.state & SDL_BUTTON_LMASK) {
-                        /* for people that don't have all three buttons... */
-                        if (ctrl_held) {
-                            dragging_button = SDL_BUTTON_RIGHT;
-                        } else if (alt_held) {
-                            dragging_button = SDL_BUTTON_MIDDLE;
-                        } else {
-                            dragging_button = SDL_BUTTON_LEFT;
-                        }
-                        dragging_button_real = SDL_BUTTON_LEFT;
-                    } else if (event.motion.state & SDL_BUTTON_RMASK) {
-                        dragging_button = SDL_BUTTON_RIGHT;
-                        dragging_button_real = SDL_BUTTON_RIGHT;
-                    } else if (event.motion.state & SDL_BUTTON_MMASK) {
-                        dragging_button = SDL_BUTTON_MIDDLE;
-                        dragging_button_real = SDL_BUTTON_MIDDLE;
-                    }
-
-
-                    if (dragging_button != -1) {
-                        dragging_thing = thing;
-                        if (thing && thing->ondrag) {
-                            thing->ondrag(thing, dragging_button, event.motion.x, event.motion.y);
-                        }
-                    }
-                }
-
-                droppable_highlighted_thing = NULL;
-                if (dragging_thing) {
-                    dragging_thing->rect.x = event.motion.x - (dragging_thing->rect.w / 2);
-                    dragging_thing->rect.y = event.motion.y - (dragging_thing->rect.h / 2);
-                    if (dragging_thing->can_be_dropped_onto) {
-                        thing = FindThingAtPoint(event.motion.x, event.motion.y);
-                        if (thing) {
-                            int i;
-                            for (i = 0; dragging_thing->can_be_dropped_onto[i]; i++) {
-                                if (dragging_thing->can_be_dropped_onto[i] == thing->what) {
-                                    droppable_highlighted_thing = thing;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                break;
-
-            case SDL_EVENT_MOUSE_BUTTON_DOWN:
-                thing = UpdateMouseOver(event.button.x, event.button.y);
-                break;
-
-            case SDL_EVENT_MOUSE_BUTTON_UP:
-                if (dragging_button_real == event.button.button) {
-                    Thing *dropped_thing = dragging_thing;
-                    dragging_thing = NULL;
-                    dragging_button = -1;
-                    dragging_button_real = -1;
-                    if (dropped_thing && dropped_thing->ondrop) {
-                        dropped_thing->ondrop(dropped_thing, event.button.button, event.button.x, event.button.y);
-                    }
-                    droppable_highlighted_thing = NULL;
-                }
-                thing = UpdateMouseOver(event.button.x, event.button.y);
-                break;
-
-            case SDL_EVENT_MOUSE_WHEEL:
-                UpdateMouseOver(event.wheel.mouseX, event.wheel.mouseY);
-                break;
-
-            case SDL_EVENT_KEY_DOWN:
-            case SDL_EVENT_KEY_UP:
-                ctrl_held = ((event.key.keysym.mod & SDL_KMOD_CTRL) != 0) ? SDL_TRUE : SDL_FALSE;
-                alt_held = ((event.key.keysym.mod & SDL_KMOD_ALT) != 0) ? SDL_TRUE : SDL_FALSE;
-                break;
-
-            case SDL_EVENT_DROP_FILE:
-                SDL_Log("Drop file! '%s'", event.drop.file);
-                LoadWavThing(event.drop.file, event.drop.x, event.drop.y);
-                /* SDLTest_CommonEvent will free the string, below. */
-                break;
-
-            case SDL_EVENT_WINDOW_RESIZED:
-                WindowResized(event.window.data1, event.window.data2);
-                break;
-
-            case SDL_EVENT_AUDIO_DEVICE_ADDED:
-                CreatePhysicalDeviceThing(event.adevice.which, event.adevice.iscapture);
-                break;
-
-            case SDL_EVENT_AUDIO_DEVICE_REMOVED: {
-                const SDL_AudioDeviceID which = event.adevice.which;
-                Thing *i, *next;
-                SDL_Log("Removing audio device %u", (unsigned int) which);
-                for (i = things; i != NULL; i = next) {
-                    next = i->next;
-                    if (((i->what == THING_PHYSDEV) || (i->what == THING_PHYSDEV_CAPTURE)) && (i->data.physdev.devid == which)) {
-                        TrashThing(i);
-                        next = things;  /* in case we mangled the list. */
-                    } else if (((i->what == THING_LOGDEV) || (i->what == THING_LOGDEV_CAPTURE)) && (i->data.logdev.devid == which)) {
-                        TrashThing(i);
-                        next = things;  /* in case we mangled the list. */
-                    }
-                }
-                break;
-            }
-
-            default: break;
-        }
-
-        SDLTest_CommonEvent(state, &event, &done);
-    }
-
-    TickThings();
-    Draw();
-
-    if (!saw_event) {
-        SDL_Delay(10);
-    }
-
-    #ifdef __EMSCRIPTEN__
-    if (done) {
-        emscripten_cancel_main_loop();
-    }
-    #endif
-}
-
-int main(int argc, char *argv[])
+int SDL_AppInit(int argc, char *argv[])
 {
     int i;
 
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     if (state == NULL) {
-        Quit(1);
+        return -1;
     }
 
     state->window_flags |= SDL_WINDOW_RESIZABLE;
@@ -1234,13 +1060,13 @@ int main(int argc, char *argv[])
                 NULL
             };
             SDLTest_CommonLogUsage(state, argv[0], options);
-            Quit(1);
+            return -1;
         }
         i += consumed;
     }
 
     if (!SDLTest_CommonInit(state)) {
-        Quit(2);
+        return -1;
     }
 
     if (state->audio_id) {
@@ -1250,27 +1076,174 @@ int main(int argc, char *argv[])
 
     SetDefaultTitleBar();
 
-    physdev_texture = CreateTexture("physaudiodev.bmp");
-    logdev_texture = CreateTexture("logaudiodev.bmp");
-    audio_texture = CreateTexture("audiofile.bmp");
-    trashcan_texture = CreateTexture("trashcan.bmp");
-    soundboard_texture = CreateTexture("soundboard.bmp");
-    soundboard_levels_texture = CreateTexture("soundboard_levels.bmp");
+    if ((physdev_texture = CreateTexture("physaudiodev.bmp")) == NULL) { return -1; }
+    if ((logdev_texture = CreateTexture("logaudiodev.bmp")) == NULL) { return -1; }
+    if ((audio_texture = CreateTexture("audiofile.bmp")) == NULL) { return -1; }
+    if ((trashcan_texture = CreateTexture("trashcan.bmp")) == NULL) { return -1; }
+    if ((soundboard_texture = CreateTexture("soundboard.bmp")) == NULL) { return -1; }
+    if ((soundboard_levels_texture = CreateTexture("soundboard_levels.bmp")) == NULL) { return -1; }
 
     LoadStockWavThings();
     CreateTrashcanThing();
     CreateDefaultPhysicalDevice(SDL_FALSE);
     CreateDefaultPhysicalDevice(SDL_TRUE);
 
-#ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop(Loop, 0, 1);
-#else
-    while (!done) {
-        Loop();
-    }
-#endif
-
-    Quit(0);
     return 0;
+}
+
+
+static SDL_bool saw_event = SDL_FALSE;
+
+int SDL_AppEvent(const SDL_Event *event)
+{
+    Thing *thing = NULL;
+
+    saw_event = SDL_TRUE;
+
+    switch (event->type) {
+        case SDL_EVENT_MOUSE_MOTION:
+            thing = UpdateMouseOver(event->motion.x, event->motion.y);
+            if ((dragging_button == -1) && event->motion.state) {
+                if (event->motion.state & SDL_BUTTON_LMASK) {
+                    /* for people that don't have all three buttons... */
+                    if (ctrl_held) {
+                        dragging_button = SDL_BUTTON_RIGHT;
+                    } else if (alt_held) {
+                        dragging_button = SDL_BUTTON_MIDDLE;
+                    } else {
+                        dragging_button = SDL_BUTTON_LEFT;
+                    }
+                    dragging_button_real = SDL_BUTTON_LEFT;
+                } else if (event->motion.state & SDL_BUTTON_RMASK) {
+                    dragging_button = SDL_BUTTON_RIGHT;
+                    dragging_button_real = SDL_BUTTON_RIGHT;
+                } else if (event->motion.state & SDL_BUTTON_MMASK) {
+                    dragging_button = SDL_BUTTON_MIDDLE;
+                    dragging_button_real = SDL_BUTTON_MIDDLE;
+                }
+
+                if (dragging_button != -1) {
+                    dragging_thing = thing;
+                    if (thing && thing->ondrag) {
+                        thing->ondrag(thing, dragging_button, event->motion.x, event->motion.y);
+                    }
+                }
+            }
+
+            droppable_highlighted_thing = NULL;
+            if (dragging_thing) {
+                dragging_thing->rect.x = event->motion.x - (dragging_thing->rect.w / 2);
+                dragging_thing->rect.y = event->motion.y - (dragging_thing->rect.h / 2);
+                if (dragging_thing->can_be_dropped_onto) {
+                    thing = FindThingAtPoint(event->motion.x, event->motion.y);
+                    if (thing) {
+                        int i;
+                        for (i = 0; dragging_thing->can_be_dropped_onto[i]; i++) {
+                            if (dragging_thing->can_be_dropped_onto[i] == thing->what) {
+                                droppable_highlighted_thing = thing;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            break;
+
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+            thing = UpdateMouseOver(event->button.x, event->button.y);
+            break;
+
+        case SDL_EVENT_MOUSE_BUTTON_UP:
+            if (dragging_button_real == event->button.button) {
+                Thing *dropped_thing = dragging_thing;
+                dragging_thing = NULL;
+                dragging_button = -1;
+                dragging_button_real = -1;
+                if (dropped_thing && dropped_thing->ondrop) {
+                    dropped_thing->ondrop(dropped_thing, event->button.button, event->button.x, event->button.y);
+                }
+                droppable_highlighted_thing = NULL;
+            }
+            thing = UpdateMouseOver(event->button.x, event->button.y);
+            break;
+
+        case SDL_EVENT_MOUSE_WHEEL:
+            UpdateMouseOver(event->wheel.mouseX, event->wheel.mouseY);
+            break;
+
+        case SDL_EVENT_KEY_DOWN:
+        case SDL_EVENT_KEY_UP:
+            ctrl_held = ((event->key.keysym.mod & SDL_KMOD_CTRL) != 0) ? SDL_TRUE : SDL_FALSE;
+            alt_held = ((event->key.keysym.mod & SDL_KMOD_ALT) != 0) ? SDL_TRUE : SDL_FALSE;
+            break;
+
+        case SDL_EVENT_DROP_FILE:
+            SDL_Log("Drop file! '%s'", event->drop.file);
+            LoadWavThing(event->drop.file, event->drop.x, event->drop.y);
+            /* SDL frees event->drop.file for you when you use SDL_AppEvent(). */
+            break;
+
+        case SDL_EVENT_WINDOW_RESIZED:
+            WindowResized(event->window.data1, event->window.data2);
+            break;
+
+        case SDL_EVENT_AUDIO_DEVICE_ADDED:
+            CreatePhysicalDeviceThing(event->adevice.which, event->adevice.iscapture);
+            break;
+
+        case SDL_EVENT_AUDIO_DEVICE_REMOVED: {
+            const SDL_AudioDeviceID which = event->adevice.which;
+            Thing *i, *next;
+            SDL_Log("Removing audio device %u", (unsigned int) which);
+            for (i = things; i != NULL; i = next) {
+                next = i->next;
+                if (((i->what == THING_PHYSDEV) || (i->what == THING_PHYSDEV_CAPTURE)) && (i->data.physdev.devid == which)) {
+                    TrashThing(i);
+                    next = things;  /* in case we mangled the list. */
+                } else if (((i->what == THING_LOGDEV) || (i->what == THING_LOGDEV_CAPTURE)) && (i->data.logdev.devid == which)) {
+                    TrashThing(i);
+                    next = things;  /* in case we mangled the list. */
+                }
+            }
+            break;
+        }
+
+        default: break;
+    }
+
+    return SDLTest_CommonEventMainCallbacks(state, event);
+}
+
+int SDL_AppIterate(void)
+{
+    if (app_ready_ticks == 0) {
+        app_ready_ticks = SDL_GetTicks();
+    }
+
+    TickThings();
+    Draw();
+
+    if (saw_event) {
+        saw_event = SDL_FALSE;  /* reset this so we know when SDL_AppEvent() runs again */
+    } else {
+        SDL_Delay(10);
+    }
+
+    return 0;  /* keep going. */
+}
+
+void SDL_AppQuit(void)
+{
+    while (things != NULL) {
+        DestroyThing(things);  /* make sure all the audio devices are closed, etc. */
+    }
+
+    DestroyTexture(physdev_texture);
+    DestroyTexture(logdev_texture);
+    DestroyTexture(audio_texture);
+    DestroyTexture(trashcan_texture);
+    DestroyTexture(soundboard_texture);
+    DestroyTexture(soundboard_levels_texture);
+    SDLTest_CommonQuit(state);
 }
 

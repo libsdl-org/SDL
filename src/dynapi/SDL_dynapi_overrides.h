@@ -945,3 +945,4 @@
 #define SDL_GetSurfaceProperties SDL_GetSurfaceProperties_REAL
 #define SDL_GetWindowProperties SDL_GetWindowProperties_REAL
 #define SDL_ClearProperty SDL_ClearProperty_REAL
+#define SDL_EnterAppMainCallbacks SDL_EnterAppMainCallbacks_REAL

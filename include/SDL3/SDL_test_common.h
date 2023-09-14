@@ -201,14 +201,26 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state);
 SDL_bool SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, const int argc, char **argv);
 
 /**
- * \brief Common event handler for test windows.
+ * Common event handler for test windows if you use a standard SDL_main.
+ *
+ * This will free data from the event, like the string in a drop event!
  *
  * \param state The common state used to create test window.
  * \param event The event to handle.
  * \param done Flag indicating we are done.
- *
  */
 void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done);
+
+/**
+ * Common event handler for test windows if you use SDL_AppEvent.
+ *
+ * This does _not_ free anything in `event`.
+ *
+ * \param state The common state used to create test window.
+ * \param event The event to handle.
+ * \returns Value suitable for returning from SDL_AppEvent().
+ */
+int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event *event);
 
 /**
  * \brief Close test window.

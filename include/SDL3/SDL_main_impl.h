@@ -41,6 +41,30 @@
 #  undef main
 #endif /* main */
 
+#ifdef SDL_MAIN_USE_CALLBACKS
+
+#if 0
+    /* currently there are no platforms that _need_ a magic entry point here
+       for callbacks, but if one shows up, implement it here. */
+
+#else /* use a standard SDL_main, which the app SHOULD NOT ALSO SUPPLY. */
+
+/* this define makes the normal SDL_main entry point stuff work...we just provide SDL_main() instead of the app. */
+#define SDL_MAIN_CALLBACK_STANDARD 1
+
+int SDL_main(int argc, char **argv)
+{
+    return SDL_EnterAppMainCallbacks(argc, argv, SDL_AppInit, SDL_AppIterate, SDL_AppEvent, SDL_AppQuit);
+}
+
+#endif  /* platform-specific tests */
+
+#endif  /* SDL_MAIN_USE_CALLBACKS */
+
+
+/* set up the usual SDL_main stuff if we're not using callbacks or if we are but need the normal entry point. */
+#if !defined(SDL_MAIN_USE_CALLBACKS) || defined(SDL_MAIN_CALLBACK_STANDARD)
+
 #if defined(__WIN32__) || defined(__GDK__)
 
 /* these defines/typedefs are needed for the WinMain() definition */
@@ -192,6 +216,8 @@ int main(int argc, char *argv[])
 /* end of impls for standard-conforming platforms */
 
 #endif /* __WIN32__ etc */
+
+#endif /* !defined(SDL_MAIN_USE_CALLBACKS) || defined(SDL_MAIN_CALLBACK_STANDARD) */
 
 /* rename users main() function to SDL_main() so it can be called from the wrappers above */
 #define main    SDL_main
