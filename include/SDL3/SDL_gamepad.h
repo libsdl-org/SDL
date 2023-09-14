@@ -125,6 +125,33 @@ typedef enum
     SDL_GAMEPAD_AXIS_MAX
 } SDL_GamepadAxis;
 
+typedef enum
+{
+    SDL_GAMEPAD_BINDTYPE_NONE = 0,
+    SDL_GAMEPAD_BINDTYPE_BUTTON,
+    SDL_GAMEPAD_BINDTYPE_AXIS,
+    SDL_GAMEPAD_BINDTYPE_HAT
+} SDL_GamepadBindingType;
+
+/**
+ *  Get the SDL joystick layer binding for this gamepad button/axis mapping
+ */
+typedef struct SDL_GamepadBinding
+{
+    SDL_GamepadBindingType bindType;
+    union
+    {
+        int button;
+        int axis;
+        struct {
+            int hat;
+            int hat_mask;
+        } hat;
+    } value;
+
+} SDL_GamepadBinding;
+
+
 /**
  * Add support for gamepads that SDL is unaware of or change the binding of an
  * existing gamepad.
@@ -820,6 +847,21 @@ extern DECLSPEC SDL_GamepadAxis SDLCALL SDL_GetGamepadAxisFromString(const char 
 extern DECLSPEC const char* SDLCALL SDL_GetGamepadStringForAxis(SDL_GamepadAxis axis);
 
 /**
+ * Get the SDL joystick layer binding for a gamepad axis mapping.
+ *
+ * \param gamepad a gamepad
+ * \param axis an axis enum value (one of the SDL_GamepadAxis values)
+ * \returns a SDL_GamepadBinding describing the bind. On failure (like the
+ *          given Controller axis doesn't exist on the device), its
+ *          `.bindType` will be `SDL_GAMEPAD_BINDTYPE_NONE`.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetGamepadBindForButton
+ */
+extern DECLSPEC SDL_GamepadBinding SDLCALL SDL_GetGamepadBindForAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis);
+
+/**
  * Query whether a gamepad has a given axis.
  *
  * This merely reports whether the gamepad's mapping defined this axis, as
@@ -883,6 +925,21 @@ extern DECLSPEC SDL_GamepadButton SDLCALL SDL_GetGamepadButtonFromString(const c
  * \sa SDL_GetGamepadButtonFromString
  */
 extern DECLSPEC const char* SDLCALL SDL_GetGamepadStringForButton(SDL_GamepadButton button);
+
+/**
+ * Get the SDL joystick layer binding for a gamepad button mapping.
+ *
+ * \param gamepad a gamepad
+ * \param button an button enum value (an SDL_GamepadButton value)
+ * \returns a SDL_GamepadBinding describing the bind. On failure (like the
+ *          given Controller button doesn't exist on the device), its
+ *          `.bindType` will be `SDL_GAMEPAD_BINDTYPE_NONE`.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetGamepadBindForAxis
+ */
+extern DECLSPEC SDL_GamepadBinding SDLCALL SDL_GetGamepadBindForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button);
 
 /**
  * Query whether a gamepad has a given button.
