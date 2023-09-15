@@ -132,10 +132,7 @@ static int SetSelectionText(_THIS, const char *text, Atom selection_type)
                         X11_GetSDLCutBufferClipboardInternalFormat(display, SDL_X11_CLIPBOARD_MIME_TYPE_STRING), 8, PropModeReplace,
                         (const unsigned char *)text, SDL_strlen(text));
 
-    if (X11_XGetSelectionOwner(display, selection_type) != window) {
-        X11_XSetSelectionOwner(display, selection_type, window, CurrentTime);
-    }
-
+    X11_XSetSelectionOwner(display, selection_type, window, CurrentTime);
     return 0;
 }
 
