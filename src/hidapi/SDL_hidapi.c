@@ -888,8 +888,7 @@ static const struct {
     { 0x057e, 0x0337 } /* Nintendo WUP-028, Wii U/Switch GameCube Adapter */
 };
 
-static SDL_bool
-IsInWhitelist(Uint16 vendor, Uint16 product)
+static SDL_bool IsInWhitelist(Uint16 vendor, Uint16 product)
 {
     int i;
     for (i = 0; i < SDL_arraysize(SDL_libusb_whitelist); i += 1) {
@@ -901,6 +900,10 @@ IsInWhitelist(Uint16 vendor, Uint16 product)
     return SDL_FALSE;
 }
 
+#endif /* HAVE_LIBUSB */
+
+#endif /* !SDL_HIDAPI_DISABLED */
+
 #if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND
 /* We have another way to get HID devices, so use the whitelist to get devices where libusb is preferred */
 #define SDL_HIDAPI_LIBUSB_WHITELIST_DEFAULT SDL_TRUE
@@ -910,10 +913,6 @@ IsInWhitelist(Uint16 vendor, Uint16 product)
 #endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND */
 
 static SDL_bool use_libusb_whitelist = SDL_HIDAPI_LIBUSB_WHITELIST_DEFAULT;
-
-#endif /* HAVE_LIBUSB */
-
-#endif /* !SDL_HIDAPI_DISABLED */
 
 /* Shared HIDAPI Implementation */
 
@@ -1155,9 +1154,9 @@ int SDL_hid_init(void)
     }
 #endif
 
-#ifdef HAVE_LIBUSB
     use_libusb_whitelist = SDL_GetHintBoolean("SDL_HIDAPI_LIBUSB_WHITELIST",
                                               SDL_HIDAPI_LIBUSB_WHITELIST_DEFAULT);
+#ifdef HAVE_LIBUSB
     if (SDL_getenv("SDL_HIDAPI_DISABLE_LIBUSB") != NULL) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                      "libusb disabled by SDL_HIDAPI_DISABLE_LIBUSB");
@@ -1320,154 +1319,168 @@ Uint32 SDL_hid_device_change_count(void)
     return counter;
 }
 
+static void AddDeviceToEnumeration(const char *driver_name, struct hid_device_info *dev, struct SDL_hid_device_info **devs, struct SDL_hid_device_info **last)
+{
+    struct SDL_hid_device_info *new_dev;
+
+#ifdef DEBUG_HIDAPI
+    SDL_Log("Adding %s device to enumeration: %ls %ls 0x%.4hx/0x%.4hx/%d",
+            driver_name, dev->manufacturer_string, dev->product_string, dev->vendor_id, dev->product_id, dev->interface_number);
+#else
+    (void)driver_name;
+#endif
+
+    new_dev = (struct SDL_hid_device_info *)SDL_malloc(sizeof(struct SDL_hid_device_info));
+    if (new_dev == NULL) {
+        /* Don't bother returning an error, get as many devices as possible */
+        return;
+    }
+    CopyHIDDeviceInfo(dev, new_dev);
+
+    if ((*last) != NULL) {
+        (*last)->next = new_dev;
+    } else {
+        *devs = new_dev;
+    }
+    *last = new_dev;
+}
+
+static void RemoveDeviceFromEnumeration(const char *driver_name, struct hid_device_info *dev, struct hid_device_info **devs, void (*free_device_info)(struct hid_device_info *))
+{
+    struct hid_device_info *last = NULL, *curr, *next;
+
+    for (curr = *devs; curr; curr = next) {
+        next = curr->next;
+
+        if (dev->vendor_id == curr->vendor_id &&
+            dev->product_id == curr->product_id &&
+            (dev->interface_number < 0 || curr->interface_number < 0 || dev->interface_number == curr->interface_number)) {
+#ifdef DEBUG_HIDAPI
+            SDL_Log("Skipping %s device: %ls %ls 0x%.4hx/0x%.4hx/%d",
+                    driver_name, curr->manufacturer_string, curr->product_string, curr->vendor_id, curr->product_id, curr->interface_number);
+#else
+            (void)driver_name;
+#endif
+            if (last) {
+                last->next = next;
+            } else {
+                *devs = next;
+            }
+
+            curr->next = NULL;
+            free_device_info(curr);
+            continue;
+        }
+        last = curr;
+    }
+}
+
+#ifdef HAVE_LIBUSB
+static void RemoveNonWhitelistedDevicesFromEnumeration(struct hid_device_info **devs, void (*free_device_info)(struct hid_device_info *))
+{
+    struct hid_device_info *last = NULL, *curr, *next;
+
+    for (curr = *devs; curr; curr = next) {
+        next = curr->next;
+
+        if (!IsInWhitelist(curr->vendor_id, curr->product_id)) {
+#ifdef DEBUG_HIDAPI
+            SDL_Log("Device was not in libusb whitelist, skipping: %ls %ls 0x%.4hx/0x%.4hx/%d",
+                    curr->manufacturer_string, curr->product_string, curr->vendor_id, curr->product_id, curr->interface_number);
+#endif
+            if (last) {
+                last->next = next;
+            } else {
+                *devs = next;
+            }
+
+            curr->next = NULL;
+            free_device_info(curr);
+            continue;
+        }
+        last = curr;
+    }
+}
+#endif /* HAVE_LIBUSB */
+
 struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
-#if defined(HAVE_PLATFORM_BACKEND) || defined(HAVE_DRIVER_BACKEND) || defined(HAVE_LIBUSB)
-#ifdef HAVE_LIBUSB
-    struct hid_device_info *usb_devs = NULL;
-    struct hid_device_info *usb_dev;
-#endif
-#ifdef HAVE_DRIVER_BACKEND
     struct hid_device_info *driver_devs = NULL;
-    struct hid_device_info *driver_dev;
-#endif
-#ifdef HAVE_PLATFORM_BACKEND
+    struct hid_device_info *usb_devs = NULL;
     struct hid_device_info *raw_devs = NULL;
-    struct hid_device_info *raw_dev;
-#endif
-    struct SDL_hid_device_info *devs = NULL, *last = NULL, *new_dev;
+    struct hid_device_info *dev;
+    struct SDL_hid_device_info *devs = NULL, *last = NULL;
 
     if (SDL_hidapi_refcount == 0 && SDL_hid_init() != 0) {
         return NULL;
     }
 
+    /* Collect the available devices */
+#ifdef HAVE_DRIVER_BACKEND
+    driver_devs = DRIVER_hid_enumerate(vendor_id, product_id);
+#endif
+
 #ifdef HAVE_LIBUSB
     if (libusb_ctx.libhandle) {
         usb_devs = LIBUSB_hid_enumerate(vendor_id, product_id);
-#ifdef DEBUG_HIDAPI
-        SDL_Log("libusb devices found:");
-#endif
-        for (usb_dev = usb_devs; usb_dev; usb_dev = usb_dev->next) {
-            if (use_libusb_whitelist) {
-                if (!IsInWhitelist(usb_dev->vendor_id, usb_dev->product_id)) {
-#ifdef DEBUG_HIDAPI
-                    SDL_Log("Device was not in libusb whitelist: %ls %ls 0x%.4hx 0x%.4hx",
-                            usb_dev->manufacturer_string, usb_dev->product_string,
-                            usb_dev->vendor_id, usb_dev->product_id);
-#endif /* DEBUG_HIDAPI */
-                    continue;
-                }
-            }
-            new_dev = (struct SDL_hid_device_info *)SDL_malloc(sizeof(struct SDL_hid_device_info));
-            if (new_dev == NULL) {
-                LIBUSB_hid_free_enumeration(usb_devs);
-                SDL_hid_free_enumeration(devs);
-                SDL_OutOfMemory();
-                return NULL;
-            }
-            CopyHIDDeviceInfo(usb_dev, new_dev);
-#ifdef DEBUG_HIDAPI
-            SDL_Log(" - %ls %ls 0x%.4hx 0x%.4hx",
-                    usb_dev->manufacturer_string, usb_dev->product_string,
-                    usb_dev->vendor_id, usb_dev->product_id);
-#endif
 
-            if (last != NULL) {
-                last->next = new_dev;
-            } else {
-                devs = new_dev;
-            }
-            last = new_dev;
+        if (use_libusb_whitelist) {
+            RemoveNonWhitelistedDevicesFromEnumeration(&usb_devs,  LIBUSB_hid_free_enumeration);
         }
     }
 #endif /* HAVE_LIBUSB */
 
-#ifdef HAVE_DRIVER_BACKEND
-    driver_devs = DRIVER_hid_enumerate(vendor_id, product_id);
-    for (driver_dev = driver_devs; driver_dev; driver_dev = driver_dev->next) {
-        new_dev = (struct SDL_hid_device_info *)SDL_malloc(sizeof(struct SDL_hid_device_info));
-        CopyHIDDeviceInfo(driver_dev, new_dev);
-
-        if (last != NULL) {
-            last->next = new_dev;
-        } else {
-            devs = new_dev;
-        }
-        last = new_dev;
-    }
-#endif /* HAVE_DRIVER_BACKEND */
-
 #ifdef HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
         raw_devs = PLATFORM_hid_enumerate(vendor_id, product_id);
-#ifdef DEBUG_HIDAPI
-        SDL_Log("hidraw devices found:");
+    }
 #endif
-        for (raw_dev = raw_devs; raw_dev; raw_dev = raw_dev->next) {
-            SDL_bool bFound = SDL_FALSE;
-#ifdef DEBUG_HIDAPI
-            SDL_Log(" - %ls %ls 0x%.4hx 0x%.4hx",
-                    raw_dev->manufacturer_string, raw_dev->product_string,
-                    raw_dev->vendor_id, raw_dev->product_id);
-#endif
-#ifdef HAVE_LIBUSB
-            for (usb_dev = usb_devs; usb_dev; usb_dev = usb_dev->next) {
-                if (raw_dev->vendor_id == usb_dev->vendor_id &&
-                    raw_dev->product_id == usb_dev->product_id &&
-                    (raw_dev->interface_number < 0 || raw_dev->interface_number == usb_dev->interface_number)) {
-                    bFound = SDL_TRUE;
-                    break;
-                }
-            }
-#endif
-#ifdef HAVE_DRIVER_BACKEND
-            for (driver_dev = driver_devs; driver_dev; driver_dev = driver_dev->next) {
-                if (raw_dev->vendor_id == driver_dev->vendor_id &&
-                    raw_dev->product_id == driver_dev->product_id &&
-                    (raw_dev->interface_number < 0 || raw_dev->interface_number == driver_dev->interface_number)) {
-                    bFound = SDL_TRUE;
-                    break;
-                }
-            }
-#endif
-            if (!bFound) {
-                new_dev = (struct SDL_hid_device_info *)SDL_malloc(sizeof(struct SDL_hid_device_info));
-                if (new_dev == NULL) {
-#ifdef HAVE_LIBUSB
-                    if (libusb_ctx.libhandle) {
-                        LIBUSB_hid_free_enumeration(usb_devs);
-                    }
-#endif
-                    PLATFORM_hid_free_enumeration(raw_devs);
-                    SDL_hid_free_enumeration(devs);
-                    SDL_OutOfMemory();
-                    return NULL;
-                }
-                CopyHIDDeviceInfo(raw_dev, new_dev);
-                new_dev->next = NULL;
 
-                if (last != NULL) {
-                    last->next = new_dev;
-                } else {
-                    devs = new_dev;
-                }
-                last = new_dev;
-            }
+    /* Highest priority are custom driver devices */
+    for (dev = driver_devs; dev; dev = dev->next) {
+        AddDeviceToEnumeration("driver", dev, &devs, &last);
+#ifdef HAVE_LIBUSB
+        RemoveDeviceFromEnumeration("libusb", dev, &usb_devs, LIBUSB_hid_free_enumeration);
+#endif
+#ifdef HAVE_PLATFORM_BACKEND
+        RemoveDeviceFromEnumeration("raw", dev, &raw_devs, PLATFORM_hid_free_enumeration);
+#endif
+    }
+
+    /* If whitelist is in effect, libusb has priority, otherwise raw devices do */
+    if (use_libusb_whitelist) {
+        for (dev = usb_devs; dev; dev = dev->next) {
+            AddDeviceToEnumeration("libusb", dev, &devs, &last);
+#ifdef HAVE_PLATFORM_BACKEND
+            RemoveDeviceFromEnumeration("raw", dev, &raw_devs, PLATFORM_hid_free_enumeration);
+#endif
         }
-        PLATFORM_hid_free_enumeration(raw_devs);
-    }
-#endif /* HAVE_PLATFORM_BACKEND */
-
+        for (dev = raw_devs; dev; dev = dev->next) {
+            AddDeviceToEnumeration("platform", dev, &devs, &last);
+        }
+    } else {
+        for (dev = raw_devs; dev; dev = dev->next) {
+            AddDeviceToEnumeration("raw", dev, &devs, &last);
 #ifdef HAVE_LIBUSB
-    if (libusb_ctx.libhandle) {
-        LIBUSB_hid_free_enumeration(usb_devs);
-    }
+            RemoveDeviceFromEnumeration("libusb", dev, &usb_devs, LIBUSB_hid_free_enumeration);
 #endif
-    return devs;
+        }
+        for (dev = usb_devs; dev; dev = dev->next) {
+            AddDeviceToEnumeration("libusb", dev, &devs, &last);
+        }
+    }
 
-#else
-    return NULL;
-#endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || HAVE_LIBUSB */
+#ifdef HAVE_DRIVER_BACKEND
+    DRIVER_hid_free_enumeration(driver_devs);
+#endif
+#ifdef HAVE_LIBUSB
+    LIBUSB_hid_free_enumeration(usb_devs);
+#endif
+#ifdef HAVE_PLATFORM_BACKEND
+    PLATFORM_hid_free_enumeration(raw_devs);
+#endif
+
+    return devs;
 }
 
 void SDL_hid_free_enumeration(struct SDL_hid_device_info *devs)
