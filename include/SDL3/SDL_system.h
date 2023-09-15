@@ -582,7 +582,16 @@ extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IsTablet(void);
 
-/* Functions used by iOS application delegates to notify SDL about state changes */
+/* Functions used by iOS app delegates to notify SDL about state changes.
+ *
+ * These functions allow iOS apps that have their own event handling to hook
+ * into SDL to generate SDL events. These map directly to iOS-specific
+ * events, but since they don't do anything iOS-specific internally, they
+ * are available on all platforms, in case they might be useful for some
+ * specific paradigm. Most apps do not need to use these directly; SDL's
+ * internal event code will handle all this for windows created by
+ * SDL_CreateWindow!
+ */
 
 /*
  * \since This function is available since SDL 3.0.0.
