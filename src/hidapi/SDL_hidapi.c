@@ -904,7 +904,7 @@ static SDL_bool IsInWhitelist(Uint16 vendor, Uint16 product)
 
 #endif /* !SDL_HIDAPI_DISABLED */
 
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND
+#if defined(HAVE_PLATFORM_BACKEND) || defined(HAVE_DRIVER_BACKEND)
 /* We have another way to get HID devices, so use the whitelist to get devices where libusb is preferred */
 #define SDL_HIDAPI_LIBUSB_WHITELIST_DEFAULT SDL_TRUE
 #else
@@ -1345,6 +1345,7 @@ static void AddDeviceToEnumeration(const char *driver_name, struct hid_device_in
     *last = new_dev;
 }
 
+#if defined(HAVE_LIBUSB) || defined(HAVE_PLATFORM_BACKEND)
 static void RemoveDeviceFromEnumeration(const char *driver_name, struct hid_device_info *dev, struct hid_device_info **devs, void (*free_device_info)(struct hid_device_info *))
 {
     struct hid_device_info *last = NULL, *curr, *next;
@@ -1374,6 +1375,7 @@ static void RemoveDeviceFromEnumeration(const char *driver_name, struct hid_devi
         last = curr;
     }
 }
+#endif /* HAVE_LIBUSB || HAVE_PLATFORM_BACKEND */
 
 #ifdef HAVE_LIBUSB
 static void RemoveNonWhitelistedDevicesFromEnumeration(struct hid_device_info **devs, void (*free_device_info)(struct hid_device_info *))
