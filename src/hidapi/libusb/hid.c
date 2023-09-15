@@ -1023,6 +1023,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 							libusb_close(handle);
 							handle = NULL;
 						}
+						break;
 					}
 				} /* altsettings */
 			} /* interfaces */
