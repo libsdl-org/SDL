@@ -92,9 +92,7 @@ static int SetSelectionData(SDL_VideoDevice *_this, Atom selection, SDL_Clipboar
     clipboard->mime_count = mime_count;
     clipboard->sequence = sequence;
 
-    if (!clipboard_owner) {
-        X11_XSetSelectionOwner(display, selection, window, CurrentTime);
-    }
+    X11_XSetSelectionOwner(display, selection, window, CurrentTime);
     return 0;
 }
 
