@@ -249,7 +249,7 @@ void UIKit_ForceUpdateHomeIndicator(void)
 {
 #if !TARGET_OS_TV
     /* Force the main SDL window to re-evaluate home indicator state */
-    SDL_Window *focus = SDL_GetFocusWindow();
+    SDL_Window *focus = SDL_GetKeyboardFocus();
     if (focus) {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)focus->driverdata;
         if (data != nil) {

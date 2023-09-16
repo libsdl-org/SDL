@@ -624,7 +624,7 @@ SDL_bool UIKit_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
 int UIKit_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
 {
     @autoreleasepool {
-        SDL_uikitviewcontroller *vc = GetWindowViewController(SDL_GetFocusWindow());
+        SDL_uikitviewcontroller *vc = GetWindowViewController(SDL_GetKeyboardFocus());
         if (vc != nil) {
             vc.textInputRect = *rect;
 

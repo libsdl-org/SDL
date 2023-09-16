@@ -732,7 +732,7 @@ static EM_BOOL Emscripten_HandleFocus(int eventType, const EmscriptenFocusEvent 
     }
 
     sdl_event_type = (eventType == EMSCRIPTEN_EVENT_FOCUS) ? SDL_EVENT_WINDOW_FOCUS_GAINED : SDL_EVENT_WINDOW_FOCUS_LOST;
-    SDL_SendWindowEvent(window_data->window, sdl_event_type, 0, 0);
+    SDL_SetKeyboardFocus(sdl_event_type == SDL_EVENT_WINDOW_FOCUS_GAINED ? window_data->window : NULL);
     return SDL_EventEnabled(sdl_event_type);
 }
 

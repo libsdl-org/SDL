@@ -916,7 +916,7 @@ static int Wayland_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *di
     /* When an emulated, exclusive fullscreen window has focus, treat the mode dimensions as the display bounds. */
     if (display->fullscreen_window &&
         display->fullscreen_window->fullscreen_exclusive &&
-        display->fullscreen_window == SDL_GetFocusWindow() &&
+        display->fullscreen_window->driverdata->active &&
         display->fullscreen_window->current_fullscreen_mode.w != 0 &&
         display->fullscreen_window->current_fullscreen_mode.h != 0) {
         rect->w = display->fullscreen_window->current_fullscreen_mode.w;
