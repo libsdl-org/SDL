@@ -534,6 +534,71 @@ char *SDL_DBus_GetLocalMachineId(void)
 
     return NULL;
 }
+
+/*
+ * Convert file drops with mime type "application/vnd.portal.filetransfer" to file paths
+ * Result must be freed with dbus->free_string_array().
+ * https://flatpak.github.io/xdg-desktop-portal/#gdbus-method-org-freedesktop-portal-FileTransfer.RetrieveFiles
+ */
+char **SDL_DBus_DocumentsPortalRetrieveFiles(const char *key, int *path_count)
+{
+    DBusError err;
+    DBusMessageIter iter, iterDict;
+    char **paths = NULL;
+    DBusMessage *reply = NULL;
+    DBusMessage *msg = dbus.message_new_method_call("org.freedesktop.portal.Documents",    /* Node */
+                                                    "/org/freedesktop/portal/documents",   /* Path */
+                                                    "org.freedesktop.portal.FileTransfer", /* Interface */
+                                                    "RetrieveFiles");                      /* Method */
+
+    /* Make sure we have a connection to the dbus session bus */
+    if (!SDL_DBus_GetContext() || !dbus.session_conn) {
+        /* We either cannot connect to the session bus or were unable to
+         * load the D-Bus library at all. */
+        return NULL;
+    }
+
+    dbus.error_init(&err);
+
+    /* First argument is a "application/vnd.portal.filetransfer" key from a DnD or clipboard event */
+    if (!dbus.message_append_args(msg, DBUS_TYPE_STRING, &key, DBUS_TYPE_INVALID)) {
+        SDL_OutOfMemory();
+        dbus.message_unref(msg);
+        goto failed;
+    }
+
+    /* Second argument is a variant dictionary for options.
+     * The spec doesn't define any entries yet so it's empty. */
+    dbus.message_iter_init_append(msg, &iter);
+    if (!dbus.message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &iterDict) ||
+        !dbus.message_iter_close_container(&iter,  &iterDict)) {
+        SDL_OutOfMemory();
+        dbus.message_unref(msg);
+        goto failed;
+    }
+
+    reply = dbus.connection_send_with_reply_and_block(dbus.session_conn, msg, DBUS_TIMEOUT_USE_DEFAULT, &err);
+    dbus.message_unref(msg);
+
+    if (reply) {
+        dbus.message_get_args(reply, &err, DBUS_TYPE_ARRAY, DBUS_TYPE_STRING, &paths, path_count, DBUS_TYPE_INVALID);
+        dbus.message_unref(reply);
+    }
+
+    if (paths) {
+        return paths;
+    }
+
+failed:
+    if (dbus.error_is_set(&err)) {
+        SDL_SetError("%s: %s", err.name, err.message);
+        dbus.error_free(&err);
+    } else {
+        SDL_SetError("Error retrieving paths for documents portal \"%s\"", key);
+    }
+
+    return NULL;
+}
 #endif
 
 /* vi: set ts=4 sw=4 expandtab: */
