@@ -565,4 +565,57 @@ char *SDL_DBus_GetLocalMachineId(void)
 
     return NULL;
 }
+
+/*
+ * Convert file drops with mime type "application/vnd.portal.filetransfer" to file paths
+ * Result must be freed with dbus->free_string_array().
+ * https://flatpak.github.io/xdg-desktop-portal/#gdbus-method-org-freedesktop-portal-FileTransfer.RetrieveFiles
+ */
+char **SDL_DBus_GetPortalFilePaths(char *token, int *file_path_count) {
+    DBusMessageIter args, dict_iter;
+    DBusError err;
+    char **file_paths = NULL;
+    DBusMessage *msg, *reply;
+
+    dbus.error_init(&err);
+
+    msg = dbus.message_new_method_call("org.freedesktop.portal.Documents",
+                                          "/org/freedesktop/portal/documents",
+                                          "org.freedesktop.portal.FileTransfer",
+                                          "RetrieveFiles");
+    dbus.message_iter_init_append(msg, &args);
+    dbus.message_iter_append_basic(&args, DBUS_TYPE_STRING, &token);
+    if (!dbus.message_iter_open_container(&args, DBUS_TYPE_ARRAY, "{sv}", &dict_iter) || 
+         !dbus.message_iter_close_container(&args, &dict_iter)) {
+        SDL_SetError("Out of memory");
+        dbus.message_unref(msg);
+        dbus.error_free(&err);
+        return NULL;
+    }
+    
+    reply = dbus.connection_send_with_reply_and_block(dbus.session_conn, msg, DBUS_TIMEOUT_USE_DEFAULT, &err);
+
+    dbus.message_unref(msg);
+
+    if (dbus.error_is_set(&err)) {
+        SDL_SetError("%s: %s", err.name, err.message);
+        dbus.message_unref(reply);
+        dbus.error_free(&err);
+        return NULL;
+    }
+
+    dbus.message_get_args(reply, &err, DBUS_TYPE_ARRAY, DBUS_TYPE_STRING, &file_paths, file_path_count, DBUS_TYPE_INVALID);
+    dbus.message_unref(reply);
+
+    if (dbus.error_is_set(&err)) {
+        SDL_SetError("%s: %s", err.name, err.message);
+        dbus.error_free(&err);
+        return NULL;
+    }
+
+    dbus.error_free(&err);
+
+    return file_paths;
+}
+
 #endif

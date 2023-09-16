@@ -1848,16 +1848,26 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
         data_device->drag_offer = wl_data_offer_get_user_data(id);
 
         /* TODO: SDL Support more mime types */
-        has_mime = Wayland_data_offer_has_mime(
-            data_device->drag_offer, FILE_MIME);
-
-        /* If drag_mime is NULL this will decline the offer */
-        wl_data_offer_accept(id, serial,
-                             (has_mime == SDL_TRUE) ? FILE_MIME : NULL);
+#ifdef SDL_USE_LIBDBUS
+        if (Wayland_data_offer_has_mime(
+            data_device->drag_offer, FILE_PORTAL_MIME)) {
+            has_mime = SDL_TRUE;
+            wl_data_offer_accept(id, serial, FILE_PORTAL_MIME);
+        }
+        else
+#endif
+        if (Wayland_data_offer_has_mime(
+            data_device->drag_offer, FILE_MIME)) {
+            has_mime = SDL_TRUE;
+            wl_data_offer_accept(id, serial, FILE_MIME);
+        }
 
         /* SDL only supports "copy" style drag and drop */
         if (has_mime == SDL_TRUE) {
             dnd_action = WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY;
+        } else {
+            /* drag_mime is NULL this will decline the offer */
+            wl_data_offer_accept(id, serial, NULL);
         }
         if (wl_data_offer_get_version(data_device->drag_offer->offer) >= 3) {
             wl_data_offer_set_actions(data_device->drag_offer->offer,
@@ -2041,20 +2051,46 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
     if (data_device->drag_offer != NULL) {
         /* TODO: SDL Support more mime types */
         size_t length;
-        void *buffer = Wayland_data_offer_receive(data_device->drag_offer,
-                                                  FILE_MIME, &length);
-        if (buffer) {
-            char *saveptr = NULL;
-            char *token = SDL_strtok_r((char *)buffer, "\r\n", &saveptr);
-            while (token != NULL) {
-                char *fn = Wayland_URIToLocal(token);
-                if (fn) {
-                    SDL_SendDropFile(data_device->dnd_window, fn);
+        void *buffer = NULL;
+        SDL_bool drop_handled = SDL_FALSE;
+#ifdef SDL_USE_LIBDBUS
+        if (Wayland_data_offer_has_mime(
+            data_device->drag_offer, FILE_PORTAL_MIME)) {
+            buffer = Wayland_data_offer_receive(data_device->drag_offer,
+                                                    FILE_PORTAL_MIME, &length);
+            if (buffer) {
+                int num_files = 0;
+                char **file_paths = SDL_DBus_GetPortalFilePaths(buffer, &num_files);
+                SDL_DBusContext *dbus = SDL_DBus_GetContext();
+                if (file_paths) {
+                    drop_handled = SDL_TRUE;
+                    for (int i = 0; i < num_files; i++) {
+                        SDL_SendDropFile(data_device->dnd_window, file_paths[i]);
+                    }
+                    dbus->free_string_array(file_paths);
+                    SDL_SendDropComplete(data_device->dnd_window);
                 }
-                token = SDL_strtok_r(NULL, "\r\n", &saveptr);
+                SDL_free(buffer);
             }
-            SDL_SendDropComplete(data_device->dnd_window);
-            SDL_free(buffer);
+        }
+#endif
+        if (!drop_handled && Wayland_data_offer_has_mime(
+            data_device->drag_offer, FILE_MIME)) {
+            buffer = Wayland_data_offer_receive(data_device->drag_offer,
+                                                    FILE_MIME, &length);
+            if (buffer) {
+                char *saveptr = NULL;
+                char *token = SDL_strtok_r((char *)buffer, "\r\n", &saveptr);
+                while (token != NULL) {
+                    char *fn = Wayland_URIToLocal(token);
+                    if (fn) {
+                        SDL_SendDropFile(data_device->dnd_window, fn);
+                    }
+                    token = SDL_strtok_r(NULL, "\r\n", &saveptr);
+                }
+                SDL_SendDropComplete(data_device->dnd_window);
+                SDL_free(buffer);
+            }
         }
     }
 }

@@ -101,6 +101,7 @@ extern SDL_bool SDL_DBus_ScreensaverInhibit(SDL_bool inhibit);
 
 extern void SDL_DBus_PumpEvents(void);
 extern char *SDL_DBus_GetLocalMachineId(void);
+extern char **SDL_DBus_GetPortalFilePaths(char *token, int *file_path_count);
 
 #endif /* HAVE_DBUS_DBUS_H */
 
