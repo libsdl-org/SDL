@@ -3561,21 +3561,18 @@ void SDL_OnWindowFocusLost(SDL_Window *window)
     }
 }
 
-/* !!! FIXME: is this different than SDL_GetKeyboardFocus()?
-   !!! FIXME:  Also, SDL_GetKeyboardFocus() is O(1), this isn't. */
-SDL_Window *SDL_GetFocusWindow(void)
+SDL_Window *SDL_GetToplevelForKeyboardFocus()
 {
-    SDL_Window *window;
+    SDL_Window *focus = SDL_GetKeyboardFocus();
 
-    if (_this == NULL) {
-        return NULL;
-    }
-    for (window = _this->windows; window; window = window->next) {
-        if (window->flags & SDL_WINDOW_INPUT_FOCUS) {
-            return window;
+    if (focus) {
+        /* Get the toplevel parent window. */
+        while (focus->parent) {
+            focus = focus->parent;
         }
     }
-    return NULL;
+
+    return focus;
 }
 
 void SDL_DestroyWindow(SDL_Window *window)
@@ -4759,7 +4756,7 @@ void SDL_StartTextInput(void)
 
     /* Then show the on-screen keyboard, if any */
     if (SDL_GetHintBoolean(SDL_HINT_ENABLE_SCREEN_KEYBOARD, SDL_TRUE)) {
-        window = SDL_GetFocusWindow();
+        window = SDL_GetKeyboardFocus();
         if (window && _this && _this->ShowScreenKeyboard) {
             _this->ShowScreenKeyboard(_this, window);
         }
@@ -4803,7 +4800,7 @@ void SDL_StopTextInput(void)
 
     /* Hide the on-screen keyboard, if any */
     if (SDL_GetHintBoolean(SDL_HINT_ENABLE_SCREEN_KEYBOARD, SDL_TRUE)) {
-        window = SDL_GetFocusWindow();
+        window = SDL_GetKeyboardFocus();
         if (window && _this && _this->HideScreenKeyboard) {
             _this->HideScreenKeyboard(_this, window);
         }
@@ -5119,9 +5116,9 @@ void SDL_OnApplicationWillResignActive(void)
     if (_this) {
         SDL_Window *window;
         for (window = _this->windows; window != NULL; window = window->next) {
-            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_FOCUS_LOST, 0, 0);
             SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
         }
+        SDL_SetKeyboardFocus(NULL);
     }
     SDL_SendAppEvent(SDL_EVENT_WILL_ENTER_BACKGROUND);
 }
@@ -5143,7 +5140,7 @@ void SDL_OnApplicationDidBecomeActive(void)
     if (_this) {
         SDL_Window *window;
         for (window = _this->windows; window != NULL; window = window->next) {
-            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_FOCUS_GAINED, 0, 0);
+            SDL_SetKeyboardFocus(window);
             SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
         }
     }

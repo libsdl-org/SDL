@@ -211,7 +211,7 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
     }
 
     /* Leave fullscreen mode, if possible (scary!) */
-    window = SDL_GetFocusWindow();
+    window = SDL_GetToplevelForKeyboardFocus();
     if (window) {
         if (window->fullscreen_exclusive) {
             SDL_MinimizeWindow(window);
