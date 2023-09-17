@@ -369,6 +369,12 @@
 		F31A92C828D4CB39003BFD6A /* SDL_offscreenopengles.h in Headers */ = {isa = PBXBuildFile; fileRef = F31A92C628D4CB39003BFD6A /* SDL_offscreenopengles.h */; };
 		F31A92D228D4CB39003BFD6A /* SDL_offscreenopengles.c in Sources */ = {isa = PBXBuildFile; fileRef = F31A92C728D4CB39003BFD6A /* SDL_offscreenopengles.c */; };
 		F32305FF28939F6400E66D30 /* SDL_hidapi_combined.c in Sources */ = {isa = PBXBuildFile; fileRef = F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */; };
+		F32DDACF2AB795A30041EAA5 /* SDL_audio_channel_converters.h in Headers */ = {isa = PBXBuildFile; fileRef = F32DDAC92AB795A30041EAA5 /* SDL_audio_channel_converters.h */; };
+		F32DDAD02AB795A30041EAA5 /* SDL_audioresample.h in Headers */ = {isa = PBXBuildFile; fileRef = F32DDACA2AB795A30041EAA5 /* SDL_audioresample.h */; };
+		F32DDAD12AB795A30041EAA5 /* SDL_audioqueue.c in Sources */ = {isa = PBXBuildFile; fileRef = F32DDACB2AB795A30041EAA5 /* SDL_audioqueue.c */; };
+		F32DDAD22AB795A30041EAA5 /* SDL_audio_resampler_filter.h in Headers */ = {isa = PBXBuildFile; fileRef = F32DDACC2AB795A30041EAA5 /* SDL_audio_resampler_filter.h */; };
+		F32DDAD32AB795A30041EAA5 /* SDL_audioqueue.h in Headers */ = {isa = PBXBuildFile; fileRef = F32DDACD2AB795A30041EAA5 /* SDL_audioqueue.h */; };
+		F32DDAD42AB795A30041EAA5 /* SDL_audioresample.c in Sources */ = {isa = PBXBuildFile; fileRef = F32DDACE2AB795A30041EAA5 /* SDL_audioresample.c */; };
 		F34B9895291DEFF500AAC96E /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAAC23E2795C00529352 /* SDL_hidapi_steam.c */; };
 		F36C7AD1294BA009004D61C3 /* SDL_runapp.c in Sources */ = {isa = PBXBuildFile; fileRef = F36C7AD0294BA009004D61C3 /* SDL_runapp.c */; };
 		F376F6552559B4E300CFC0BC /* SDL_hidapi.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A81423E2513F00DCD162 /* SDL_hidapi.c */; };
@@ -839,6 +845,12 @@
 		F31A92C628D4CB39003BFD6A /* SDL_offscreenopengles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_offscreenopengles.h; sourceTree = "<group>"; };
 		F31A92C728D4CB39003BFD6A /* SDL_offscreenopengles.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_offscreenopengles.c; sourceTree = "<group>"; };
 		F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_combined.c; sourceTree = "<group>"; };
+		F32DDAC92AB795A30041EAA5 /* SDL_audio_channel_converters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_audio_channel_converters.h; sourceTree = "<group>"; };
+		F32DDACA2AB795A30041EAA5 /* SDL_audioresample.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_audioresample.h; sourceTree = "<group>"; };
+		F32DDACB2AB795A30041EAA5 /* SDL_audioqueue.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_audioqueue.c; sourceTree = "<group>"; };
+		F32DDACC2AB795A30041EAA5 /* SDL_audio_resampler_filter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_audio_resampler_filter.h; sourceTree = "<group>"; };
+		F32DDACD2AB795A30041EAA5 /* SDL_audioqueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_audioqueue.h; sourceTree = "<group>"; };
+		F32DDACE2AB795A30041EAA5 /* SDL_audioresample.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_audioresample.c; sourceTree = "<group>"; };
 		F36C7AD0294BA009004D61C3 /* SDL_runapp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_runapp.c; sourceTree = "<group>"; };
 		F376F6182559B29300CFC0BC /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.1.sdk/System/Library/Frameworks/OpenGLES.framework; sourceTree = DEVELOPER_DIR; };
 		F376F61A2559B2AF00CFC0BC /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/iOSSupport/System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -1783,10 +1795,16 @@
 				A7D8A8AF23E2513F00DCD162 /* disk */,
 				A7D8A87023E2513F00DCD162 /* dummy */,
 				A7D8A87323E2513F00DCD162 /* SDL_audio_c.h */,
+				F32DDAC92AB795A30041EAA5 /* SDL_audio_channel_converters.h */,
+				F32DDACC2AB795A30041EAA5 /* SDL_audio_resampler_filter.h */,
 				A7D8A8B823E2513F00DCD162 /* SDL_audio.c */,
 				A7D8A8A123E2513F00DCD162 /* SDL_audiocvt.c */,
 				A7D8A87723E2513F00DCD162 /* SDL_audiodev_c.h */,
 				A7D8A88F23E2513F00DCD162 /* SDL_audiodev.c */,
+				F32DDACB2AB795A30041EAA5 /* SDL_audioqueue.c */,
+				F32DDACD2AB795A30041EAA5 /* SDL_audioqueue.h */,
+				F32DDACE2AB795A30041EAA5 /* SDL_audioresample.c */,
+				F32DDACA2AB795A30041EAA5 /* SDL_audioresample.h */,
 				A7D8A8A023E2513F00DCD162 /* SDL_audiotypecvt.c */,
 				A7D8A86523E2513F00DCD162 /* SDL_mixer.c */,
 				A7D8A89F23E2513F00DCD162 /* SDL_sysaudio.h */,
@@ -2058,6 +2076,7 @@
 				A7D8AF0023E2514100DCD162 /* SDL_cocoavideo.h in Headers */,
 				A7D8AEE823E2514100DCD162 /* SDL_cocoavulkan.h in Headers */,
 				A7D8AEFA23E2514100DCD162 /* SDL_cocoawindow.h in Headers */,
+				F32DDACF2AB795A30041EAA5 /* SDL_audio_channel_converters.h in Headers */,
 				F3F7D9D12933074E00816151 /* SDL_copying.h in Headers */,
 				A7D8B8CC23E2514400DCD162 /* SDL_coreaudio.h in Headers */,
 				A7D8A96F23E2514000DCD162 /* SDL_coremotionsensor.h in Headers */,
@@ -2073,6 +2092,7 @@
 				A7D8B79423E2514400DCD162 /* SDL_dummyaudio.h in Headers */,
 				A7D8A96323E2514000DCD162 /* SDL_dummysensor.h in Headers */,
 				A7D8AB0A23E2514100DCD162 /* SDL_dynapi.h in Headers */,
+				F32DDAD02AB795A30041EAA5 /* SDL_audioresample.h in Headers */,
 				A7D8AB1023E2514100DCD162 /* SDL_dynapi_overrides.h in Headers */,
 				A7D8AB1C23E2514100DCD162 /* SDL_dynapi_procs.h in Headers */,
 				F3F7D9252933074E00816151 /* SDL_egl.h in Headers */,
@@ -2136,6 +2156,7 @@
 				F3F7D9392933074E00816151 /* SDL_opengles2_gl2ext.h in Headers */,
 				F3F7D9692933074E00816151 /* SDL_opengles2_gl2platform.h in Headers */,
 				F3F7D9092933074E00816151 /* SDL_opengles2_khrplatform.h in Headers */,
+				F32DDAD22AB795A30041EAA5 /* SDL_audio_resampler_filter.h in Headers */,
 				F3F7D9192933074E00816151 /* SDL_pixels.h in Headers */,
 				A7D8B2C023E2514200DCD162 /* SDL_pixels_c.h in Headers */,
 				F3F7D8F12933074E00816151 /* SDL_platform.h in Headers */,
@@ -2242,6 +2263,7 @@
 				A7D8B28423E2514200DCD162 /* vulkan_macos.h in Headers */,
 				A7D8B29623E2514200DCD162 /* vulkan_mir.h in Headers */,
 				A7D8B25A23E2514200DCD162 /* vulkan_vi.h in Headers */,
+				F32DDAD32AB795A30041EAA5 /* SDL_audioqueue.h in Headers */,
 				A7D8B27823E2514200DCD162 /* vulkan_wayland.h in Headers */,
 				A7D8B27E23E2514200DCD162 /* vulkan_win32.h in Headers */,
 				A7D8B29023E2514200DCD162 /* vulkan_xcb.h in Headers */,
@@ -2378,6 +2400,7 @@
 				A7D8B41C23E2514300DCD162 /* SDL_systls.c in Sources */,
 				9846B07C287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */,
 				A7D8BBD923E2574800DCD162 /* SDL_uikitmessagebox.m in Sources */,
+				F32DDAD42AB795A30041EAA5 /* SDL_audioresample.c in Sources */,
 				A7D8AD2923E2514100DCD162 /* SDL_vulkan_utils.c in Sources */,
 				A7D8A95123E2514000DCD162 /* SDL_spinlock.c in Sources */,
 				F34B9895291DEFF500AAC96E /* SDL_hidapi_steam.c in Sources */,
@@ -2457,6 +2480,7 @@
 				A7D8AEE223E2514100DCD162 /* SDL_cocoashape.m in Sources */,
 				A7D8BBD323E2574800DCD162 /* SDL_uikitappdelegate.m in Sources */,
 				A7D8AEB823E2514100DCD162 /* SDL_cocoamouse.m in Sources */,
+				F32DDAD12AB795A30041EAA5 /* SDL_audioqueue.c in Sources */,
 				A7D8B8E423E2514400DCD162 /* SDL_error.c in Sources */,
 				A7D8AD6823E2514100DCD162 /* SDL_blit.c in Sources */,
 				A7D8B5BD23E2514300DCD162 /* SDL_rwops.c in Sources */,
