@@ -3561,7 +3561,7 @@ void SDL_OnWindowFocusLost(SDL_Window *window)
     }
 }
 
-SDL_Window *SDL_GetToplevelForKeyboardFocus()
+SDL_Window *SDL_GetToplevelForKeyboardFocus(void)
 {
     SDL_Window *focus = SDL_GetKeyboardFocus();
 
