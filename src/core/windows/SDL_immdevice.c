@@ -57,8 +57,14 @@ static const PROPERTYKEY SDL_PKEY_AudioEndpoint_GUID = { { 0x1da5d803, 0xd492, 0
 
 static SDL_bool FindByDevIDCallback(SDL_AudioDevice *device, void *userdata)
 {
-    const SDL_IMMDevice_HandleData *handle = (const SDL_IMMDevice_HandleData *) device->handle;
-    return (SDL_wcscmp(handle->immdevice_id, (LPCWSTR) userdata) == 0) ? SDL_TRUE : SDL_FALSE;
+    LPCWSTR devid = (LPCWSTR)userdata;
+    if (devid && device && device->handle) {
+        const SDL_IMMDevice_HandleData *handle = (const SDL_IMMDevice_HandleData *)device->handle;
+        if (handle->immdevice_id && SDL_wcscmp(handle->immdevice_id, devid) == 0) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
 }
 
 static SDL_AudioDevice *SDL_IMMDevice_FindByDevID(LPCWSTR devid)
