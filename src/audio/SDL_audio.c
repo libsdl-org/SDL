@@ -126,17 +126,15 @@ static int GetDefaultSampleFramesFromFreq(const int freq)
         }
     }
 
-    if (freq <= 11025) {
+    if (freq <= 22050) {
         return 512;
-    } else if (freq <= 22050) {
-        return 1024;
     } else if (freq <= 48000) {
-        return 2048;
+        return 1024;
     } else if (freq <= 96000) {
+        return 2048;
+    } else {
         return 4096;
     }
-
-    return 8192;  // shrug
 }
 
 
@@ -659,7 +657,7 @@ void SDL_QuitAudio(void)
     SDL_AtomicSet(&current_audio.output_device_count, 0);
     SDL_AtomicSet(&current_audio.capture_device_count, 0);
     SDL_UnlockRWLock(current_audio.device_list_lock);
-    
+
     // mark all devices for shutdown so all threads can begin to terminate.
     for (SDL_AudioDevice *i = devices; i != NULL; i = i->next) {
         SDL_AtomicSet(&i->shutdown, 1);
