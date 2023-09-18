@@ -20,6 +20,8 @@
 */
 #include "SDL_internal.h"
 
+#include "SDL_sysaudio.h"
+
 /* SDL's resampler uses a "bandlimited interpolation" algorithm:
      https://ccrma.stanford.edu/~jos/resample/ */
 
@@ -182,7 +184,7 @@ static void (*ResampleFrame)(const float *src, float *dst, const float *raw_filt
 
 static float FullResamplerFilter[RESAMPLER_FULL_FILTER_SIZE];
 
-void SDL_SetupAudioResampler()
+void SDL_SetupAudioResampler(void)
 {
     static SDL_bool setup = SDL_FALSE;
     if (setup) {
@@ -233,7 +235,7 @@ Sint64 SDL_GetResampleRate(int src_rate, int dst_rate)
     return sample_rate;
 }
 
-int SDL_GetResamplerHistoryFrames()
+int SDL_GetResamplerHistoryFrames(void)
 {
     // Even if we aren't currently resampling, make sure to keep enough history in case we need to later.
 

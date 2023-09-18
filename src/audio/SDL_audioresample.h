@@ -28,7 +28,7 @@
 
 Sint64 SDL_GetResampleRate(const int src_rate, const int dst_rate);
 
-int SDL_GetResamplerHistoryFrames();
+int SDL_GetResamplerHistoryFrames(void);
 int SDL_GetResamplerPaddingFrames(Sint64 resample_rate);
 
 Sint64 SDL_GetResamplerInputFrames(Sint64 output_frames, Sint64 resample_rate, Sint64 resample_offset);
