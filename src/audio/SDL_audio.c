@@ -1672,10 +1672,12 @@ SDL_AudioStream *SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_Au
 
     if (!stream) {
         SDL_CloseAudioDevice(logdevid);
-    } else if (SDL_BindAudioStream(logdevid, stream) == -1) {
+        return NULL;  // error string should already be set.
+    }
+    if (SDL_BindAudioStream(logdevid, stream) == -1) {
         SDL_DestroyAudioStream(stream);
         SDL_CloseAudioDevice(logdevid);
-        stream = NULL;
+        return NULL;  // error string should already be set.
     }
 
     logdev->simplified = SDL_TRUE;  // forbid further binding changes on this logical device.
