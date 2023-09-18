@@ -102,7 +102,7 @@ typedef struct
     Uint8 rgucAccelX[2];          /* 21 */
     Uint8 rgucAccelY[2];          /* 23 */
     Uint8 rgucAccelZ[2];          /* 25 */
-    Uint8 rgucSensorTimestamp[2]; /* 27 - 16/32 bit little endian */
+    Uint8 rgucSensorTimestamp[4]; /* 27 - 16/32 bit little endian */
 
 } PS5StatePacketCommon_t;
 
