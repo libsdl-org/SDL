@@ -723,7 +723,7 @@ static void HIDAPI_DriverPS5_CheckPendingLEDReset(SDL_HIDAPI_Device *device)
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
     SDL_bool led_reset_complete = SDL_FALSE;
 
-    if (ctx->sensors_supported) {
+    if (ctx->enhanced_mode && ctx->sensors_supported && !ctx->use_alternate_report) {
         const PS5StatePacketCommon_t *packet = &ctx->last_state.state;
 
         /* Check the timer to make sure the Bluetooth connection LED animation is complete */
@@ -1253,6 +1253,9 @@ static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL
                 ctx->timestamp = timestamp;
             }
             ctx->last_timestamp = timestamp;
+
+            /* Sensor timestamp is in 1us units */
+            timestamp_us = ctx->timestamp;
         } else {
             /* 32-bit timestamp */
             Uint32 timestamp;
@@ -1274,10 +1277,10 @@ static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL
                 ctx->timestamp = timestamp;
             }
             ctx->last_timestamp = timestamp;
-        }
 
-        /* Sensor timestamp is in 0.33us units */
-        timestamp_us = ctx->timestamp / 3;
+            /* Sensor timestamp is in 0.33us units */
+            timestamp_us = ctx->timestamp / 3;
+        }
 
         data[0] = HIDAPI_DriverPS5_ApplyCalibrationData(ctx, 0, LOAD16(packet->rgucGyroX[0], packet->rgucGyroX[1]));
         data[1] = HIDAPI_DriverPS5_ApplyCalibrationData(ctx, 1, LOAD16(packet->rgucGyroY[0], packet->rgucGyroY[1]));
