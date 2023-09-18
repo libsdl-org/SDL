@@ -102,7 +102,7 @@ typedef struct
     Uint8 rgucAccelX[2];          /* 21 */
     Uint8 rgucAccelY[2];          /* 23 */
     Uint8 rgucAccelZ[2];          /* 25 */
-    Uint8 rgucSensorTimestamp[4]; /* 27 - 32 bit little endian */
+    Uint8 rgucSensorTimestamp[2]; /* 27 - 16/32 bit little endian */
 
 } PS5StatePacketCommon_t;
 
@@ -154,7 +154,9 @@ typedef struct
     Uint8 rgucAccelX[2];          /* 21 */
     Uint8 rgucAccelY[2];          /* 23 */
     Uint8 rgucAccelZ[2];          /* 25 */
-    Uint8 rgucSensorTimestamp[4]; /* 27 - 32 bit little endian */
+    Uint8 rgucSensorTimestamp[2]; /* 27 - 16 bit little endian */
+    Uint8 ucBatteryLevel;         /* 29 */
+    Uint8 ucUnknown;              /* 30 */
     Uint8 ucTouchpadCounter1;     /* 31 - high bit clear + counter */
     Uint8 rgucTouchpadData1[3];   /* 32 - X/Y, 12 bits per axis */
     Uint8 ucTouchpadCounter2;     /* 35 - high bit clear + counter */
@@ -1229,27 +1231,50 @@ static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
 
     if (ctx->report_sensors) {
-        Uint32 timestamp;
-        Uint64 timestamp_us;
         float data[3];
+        Uint64 timestamp_us;
 
-        timestamp = LOAD32(packet->rgucSensorTimestamp[0],
-                           packet->rgucSensorTimestamp[1],
-                           packet->rgucSensorTimestamp[2],
-                           packet->rgucSensorTimestamp[3]);
-        if (ctx->timestamp) {
-            Uint32 delta;
+        if (ctx->use_alternate_report) {
+            /* 16-bit timestamp */
+            Uint16 timestamp;
 
-            if (ctx->last_timestamp > timestamp) {
-                delta = (SDL_MAX_UINT32 - ctx->last_timestamp + timestamp + 1);
+            timestamp = LOAD16(packet->rgucSensorTimestamp[0],
+                               packet->rgucSensorTimestamp[1]);
+            if (ctx->timestamp) {
+                Uint16 delta;
+
+                if (ctx->last_timestamp > timestamp) {
+                    delta = (SDL_MAX_UINT16 - ctx->last_timestamp + timestamp + 1);
+                } else {
+                    delta = (timestamp - ctx->last_timestamp);
+                }
+                ctx->timestamp += delta;
             } else {
-                delta = (timestamp - ctx->last_timestamp);
+                ctx->timestamp = timestamp;
             }
-            ctx->timestamp += delta;
+            ctx->last_timestamp = timestamp;
         } else {
-            ctx->timestamp = timestamp;
+            /* 32-bit timestamp */
+            Uint32 timestamp;
+
+            timestamp = LOAD32(packet->rgucSensorTimestamp[0],
+                               packet->rgucSensorTimestamp[1],
+                               packet->rgucSensorTimestamp[2],
+                               packet->rgucSensorTimestamp[3]);
+            if (ctx->timestamp) {
+                Uint32 delta;
+
+                if (ctx->last_timestamp > timestamp) {
+                    delta = (SDL_MAX_UINT32 - ctx->last_timestamp + timestamp + 1);
+                } else {
+                    delta = (timestamp - ctx->last_timestamp);
+                }
+                ctx->timestamp += delta;
+            } else {
+                ctx->timestamp = timestamp;
+            }
+            ctx->last_timestamp = timestamp;
         }
-        ctx->last_timestamp = timestamp;
 
         /* Sensor timestamp is in 0.33us units */
         timestamp_us = ctx->timestamp / 3;
