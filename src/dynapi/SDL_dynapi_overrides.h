@@ -931,3 +931,4 @@
 #define SDL_GetAudioStreamFrequencyRatio SDL_GetAudioStreamFrequencyRatio_REAL
 #define SDL_SetAudioStreamFrequencyRatio SDL_SetAudioStreamFrequencyRatio_REAL
 #define SDL_SetAudioPostmixCallback SDL_SetAudioPostmixCallback_REAL
+#define SDL_GetAudioStreamQueued SDL_GetAudioStreamQueued_REAL
