@@ -31,14 +31,14 @@ static struct
     SDL_AudioSpec spec;
     Uint8 *sound;    /* Pointer to wave data */
     Uint32 soundlen; /* Length of wave data */
-    Uint32 soundpos;
 } wave;
 
 static SDL_AudioStream *stream;
 
 static void fillerup(void)
 {
-    if (SDL_GetAudioStreamAvailable(stream) < (int) ((wave.soundlen / 2))) {
+    const int minimum = (wave.soundlen / SDL_AUDIO_FRAMESIZE(wave.spec)) / 2;
+    if (SDL_GetAudioStreamQueued(stream) < minimum) {
         SDL_PutAudioStreamData(stream, wave.sound, wave.soundlen);
     }
 }
