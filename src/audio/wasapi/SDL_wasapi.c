@@ -403,11 +403,10 @@ static Uint8 *WASAPI_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
     // get an endpoint buffer from WASAPI.
     BYTE *buffer = NULL;
 
-    while (RecoverWasapiIfLost(device) && device->hidden->render) {
-        if (!WasapiFailed(device, IAudioRenderClient_GetBuffer(device->hidden->render, device->sample_frames, &buffer))) {
-            return (Uint8 *)buffer;
+    if (RecoverWasapiIfLost(device) && device->hidden->render) {
+        if (WasapiFailed(device, IAudioRenderClient_GetBuffer(device->hidden->render, device->sample_frames, &buffer))) {
+            SDL_assert(buffer == NULL);
         }
-        SDL_assert(buffer == NULL);
     }
 
     return (Uint8 *)buffer;
