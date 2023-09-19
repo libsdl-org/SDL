@@ -74,7 +74,7 @@ static SDL_Cursor *Emscripten_CreateCursor(SDL_Surface *surface, int hot_x, int 
     }
 
     /* *INDENT-OFF* */ /* clang-format off */
-    cursor_url = (const char *)MAIN_THREAD_EM_ASM_INT({
+    cursor_url = (const char *)MAIN_THREAD_EM_ASM_PTR({
         var w = $0;
         var h = $1;
         var hot_x = $2;
