@@ -906,6 +906,7 @@ SDL3_0.0.0 {
     SDL_GetAudioStreamFrequencyRatio;
     SDL_SetAudioStreamFrequencyRatio;
     SDL_SetAudioPostmixCallback;
+    SDL_GetAudioStreamQueued;
     # extra symbols go here (don't modify this line)
   local: *;
 };

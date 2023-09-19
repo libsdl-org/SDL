@@ -858,6 +858,39 @@ extern DECLSPEC int SDLCALL SDL_GetAudioStreamData(SDL_AudioStream *stream, void
  */
 extern DECLSPEC int SDLCALL SDL_GetAudioStreamAvailable(SDL_AudioStream *stream);
 
+
+/**
+ * Get the number of sample frames currently queued.
+ *
+ * Since audio streams can change their input format at any time, even if there
+ * is still data queued in a different format, this reports the queued _sample
+ * frames_, so if you queue two stereo samples in float32 format and then
+ * queue five mono samples in Sint16 format, this will return 6.
+ *
+ * Queued data is not converted until it is consumed by SDL_GetAudioStreamData,
+ * so this value should be representative of the exact data that was put into
+ * the stream.
+ *
+ * If the stream has so much data that it would overflow an int, the return
+ * value is clamped to a maximum value, but no queued data is lost; if there
+ * are gigabytes of data queued, the app might need to read some of it with
+ * SDL_GetAudioStreamData before this function's return value is no longer
+ * clamped.
+ *
+ * \param stream The audio stream to query
+ * \returns the number of sample frames queued.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_PutAudioStreamData
+ * \sa SDL_GetAudioStreamData
+ * \sa SDL_ClearAudioStream
+ */
+extern DECLSPEC int SDLCALL SDL_GetAudioStreamQueued(SDL_AudioStream *stream);
+
+
 /**
  * Tell the stream that you're done sending data, and anything being buffered
  * should be converted/resampled and made available immediately.

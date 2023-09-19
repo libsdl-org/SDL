@@ -173,6 +173,7 @@ struct SDL_AudioStream
     float freq_ratio;
 
     struct SDL_AudioQueue* queue;
+    Uint64 total_frames_queued;
 
     SDL_AudioSpec input_spec; // The spec of input data currently being processed
     Sint64 resample_offset;
