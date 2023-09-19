@@ -185,8 +185,9 @@ typedef enum
     SDL_EVENT_DROP_POSITION,             /**< Position while moving over the window */
 
     /* Audio hotplug events */
-    SDL_EVENT_AUDIO_DEVICE_ADDED = 0x1100, /**< A new audio device is available */
-    SDL_EVENT_AUDIO_DEVICE_REMOVED,        /**< An audio device has been removed. */
+    SDL_EVENT_AUDIO_DEVICE_ADDED = 0x1100,  /**< A new audio device is available */
+    SDL_EVENT_AUDIO_DEVICE_REMOVED,         /**< An audio device has been removed. */
+    SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED,  /**< An audio device's format has been changed by the system. */
 
     /* Sensor events */
     SDL_EVENT_SENSOR_UPDATE = 0x1200,     /**< A sensor was updated */
@@ -491,9 +492,9 @@ typedef struct SDL_GamepadSensorEvent
  */
 typedef struct SDL_AudioDeviceEvent
 {
-    Uint32 type;        /**< ::SDL_EVENT_AUDIO_DEVICE_ADDED, or ::SDL_EVENT_AUDIO_DEVICE_REMOVED */
+    Uint32 type;        /**< ::SDL_EVENT_AUDIO_DEVICE_ADDED, or ::SDL_EVENT_AUDIO_DEVICE_REMOVED, or ::SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_AudioDeviceID which;       /**< SDL_AudioDeviceID for the device being added or removed */
+    SDL_AudioDeviceID which;       /**< SDL_AudioDeviceID for the device being added or removed or changing */
     Uint8 iscapture;    /**< zero if an output device, non-zero if a capture device. */
     Uint8 padding1;
     Uint8 padding2;

@@ -56,6 +56,8 @@ extern void (*SDL_Convert_F32_to_S32)(Sint32 *dst, const float *src, int num_sam
 #define DEFAULT_AUDIO_CAPTURE_CHANNELS 1
 #define DEFAULT_AUDIO_CAPTURE_FREQUENCY 44100
 
+#define AUDIO_SPECS_EQUAL(x, y) (((x).format == (y).format) && ((x).channels == (y).channels) && ((x).freq == (y).freq))
+
 typedef struct SDL_AudioDevice SDL_AudioDevice;
 typedef struct SDL_LogicalAudioDevice SDL_LogicalAudioDevice;
 

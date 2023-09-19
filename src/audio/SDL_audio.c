@@ -1756,6 +1756,7 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
         SDL_AudioSpec spec;
         SDL_bool needs_migration = SDL_FALSE;
         SDL_zero(spec);
+
         for (SDL_LogicalAudioDevice *logdev = current_default_device->logical_devices; logdev != NULL; logdev = logdev->next) {
             if (logdev->opened_as_default) {
                 needs_migration = SDL_TRUE;
@@ -1783,6 +1784,8 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
         }
 
         if (needs_migration) {
+            const SDL_bool spec_changed = !AUDIO_SPECS_EQUAL(current_default_device->spec, new_default_device->spec);
+            const SDL_bool post_fmt_event = (spec_changed && SDL_EventEnabled(SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED)) ? SDL_TRUE : SDL_FALSE;
             SDL_LogicalAudioDevice *next = NULL;
             for (SDL_LogicalAudioDevice *logdev = current_default_device->logical_devices; logdev != NULL; logdev = next) {
                 next = logdev->next;
@@ -1811,6 +1814,17 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
                 logdev->prev = NULL;
                 logdev->next = new_default_device->logical_devices;
                 new_default_device->logical_devices = logdev;
+
+                // Post an event for each logical device we moved.
+                if (post_fmt_event) {
+                    SDL_Event event;
+                    SDL_zero(event);
+                    event.type = SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED;
+                    event.common.timestamp = 0;
+                    event.adevice.iscapture = iscapture ? 1 : 0;
+                    event.adevice.which = logdev->instance_id;
+                    SDL_PushEvent(&event);
+                }
             }
 
             if (current_default_device->logical_devices == NULL) {   // nothing left on the current physical device, close it.
@@ -1839,13 +1853,15 @@ int SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SDL
     const int orig_work_buffer_size = device->work_buffer_size;
     const SDL_bool iscapture = device->iscapture;
 
-    if ((device->spec.format != newspec->format) || (device->spec.channels != newspec->channels) || (device->spec.freq != newspec->freq)) {
-        SDL_memcpy(&device->spec, newspec, sizeof (*newspec));
-        for (SDL_LogicalAudioDevice *logdev = device->logical_devices; !kill_device && (logdev != NULL); logdev = logdev->next) {
-            for (SDL_AudioStream *stream = logdev->bound_streams; !kill_device && (stream != NULL); stream = stream->next_binding) {
-                if (SDL_SetAudioStreamFormat(stream, iscapture ? &device->spec : NULL, iscapture ? NULL : &device->spec) == -1) {
-                    kill_device = SDL_TRUE;
-                }
+    if (AUDIO_SPECS_EQUAL(device->spec, *newspec)) {
+        return 0;  // we're already in that format.
+    }
+
+    SDL_memcpy(&device->spec, newspec, sizeof (*newspec));
+    for (SDL_LogicalAudioDevice *logdev = device->logical_devices; !kill_device && (logdev != NULL); logdev = logdev->next) {
+        for (SDL_AudioStream *stream = logdev->bound_streams; !kill_device && (stream != NULL); stream = stream->next_binding) {
+            if (SDL_SetAudioStreamFormat(stream, iscapture ? &device->spec : NULL, iscapture ? NULL : &device->spec) == -1) {
+                kill_device = SDL_TRUE;
             }
         }
     }
@@ -1876,6 +1892,21 @@ int SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SDL
                     kill_device = SDL_TRUE;
                 }
             }
+        }
+    }
+
+    // Post an event for the physical device, and each logical device on this physical device.
+    if (!kill_device && SDL_EventEnabled(SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED)) {
+        SDL_Event event;
+        SDL_zero(event);
+        event.type = SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED;
+        event.common.timestamp = 0;
+        event.adevice.iscapture = device->iscapture ? 1 : 0;
+        event.adevice.which = device->instance_id;
+        SDL_PushEvent(&event);
+        for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev != NULL; logdev = logdev->next) {
+            event.adevice.which = logdev->instance_id;
+            SDL_PushEvent(&event);
         }
     }
 

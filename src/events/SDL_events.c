@@ -440,6 +440,9 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_EVENT_CASE(SDL_EVENT_AUDIO_DEVICE_REMOVED)
         PRINT_AUDIODEV_EVENT(event);
         break;
+        SDL_EVENT_CASE(SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED)
+        PRINT_AUDIODEV_EVENT(event);
+        break;
 #undef PRINT_AUDIODEV_EVENT
 
         SDL_EVENT_CASE(SDL_EVENT_SENSOR_UPDATE)

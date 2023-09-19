@@ -29,8 +29,6 @@
 #define SDL_INT_MAX ((int)(~0u>>1))
 #endif
 
-#define AUDIO_SPECS_EQUAL(x, y) (((x).format == (y).format) && ((x).channels == (y).channels) && ((x).freq == (y).freq))
-
 /*
  * CHANNEL LAYOUTS AS SDL EXPECTS THEM:
  *
