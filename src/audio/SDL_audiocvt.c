@@ -506,7 +506,7 @@ int SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_s
 
     // Picked mostly arbitrarily.
     static const int min_freq = 4000;
-    static const int max_freq = 192000;
+    static const int max_freq = 384000;
 
     if (src_spec) {
         if (!SDL_IsSupportedAudioFormat(src_spec->format)) {
