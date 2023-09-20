@@ -4,7 +4,7 @@
 
 # shellcheck disable=SC2006,SC2268 # see below for rationale
 
-timestamp='2023-07-20'
+timestamp='2023-08-22'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -155,6 +155,9 @@ Linux|GNU|GNU/*)
 
 	set_cc_for_build
 	cat <<-EOF > "$dummy.c"
+	#if defined(__ANDROID__)
+	LIBC=android
+	#else
 	#include <features.h>
 	#if defined(__UCLIBC__)
 	LIBC=uclibc
@@ -167,6 +170,7 @@ Linux|GNU|GNU/*)
 	/* First heuristic to detect musl libc.  */
 	#ifdef __DEFINED_va_list
 	LIBC=musl
+	#endif
 	#endif
 	#endif
 	EOF
@@ -904,7 +908,7 @@ EOF
 	fi
 	;;
     *:FreeBSD:*:*)
-	UNAME_PROCESSOR=`/usr/bin/uname -p`
+	UNAME_PROCESSOR=`uname -p`
 	case $UNAME_PROCESSOR in
 	    amd64)
 		UNAME_PROCESSOR=x86_64 ;;
