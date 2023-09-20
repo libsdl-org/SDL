@@ -823,7 +823,7 @@ static void pointer_handle_axis(void *data, struct wl_pointer *pointer,
 {
     struct SDL_WaylandInput *input = data;
 
-    if (wl_seat_get_version(input->seat) >= 5) {
+    if (wl_seat_get_version(input->seat) >= WL_POINTER_FRAME_SINCE_VERSION) {
         input->pointer_curr_axis_info.timestamp_ns = Wayland_GetPointerTimestamp(input, time);
         pointer_handle_axis_common(input, AXIS_EVENT_CONTINUOUS, axis, value);
     } else {
