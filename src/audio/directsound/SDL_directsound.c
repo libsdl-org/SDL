@@ -179,7 +179,7 @@ static BOOL CALLBACK FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVO
         if (str != NULL) {
             LPGUID cpyguid = (LPGUID)SDL_malloc(sizeof(GUID));
             if (cpyguid) {
-                SDL_memcpy(cpyguid, guid, sizeof(GUID));
+                SDL_copyp(cpyguid, guid);
 
                 /* Note that spec is NULL, because we are required to connect to the
                  * device before getting the channel mask and output format, making

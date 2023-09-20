@@ -1250,7 +1250,7 @@ int SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec, int *
         return -1;
     }
 
-    SDL_memcpy(spec, &device->spec, sizeof (SDL_AudioSpec));
+    SDL_copyp(spec, &device->spec);
     if (sample_frames) {
         *sample_frames = device->sample_frames;
     }
@@ -1288,7 +1288,7 @@ static void ClosePhysicalAudioDevice(SDL_AudioDevice *device)
     SDL_aligned_free(device->postmix_buffer);
     device->postmix_buffer = NULL;
 
-    SDL_memcpy(&device->spec, &device->default_spec, sizeof (SDL_AudioSpec));
+    SDL_copyp(&device->spec, &device->default_spec);
     device->sample_frames = 0;
     device->silence_value = SDL_GetSilenceValueForFormat(device->spec.format);
     SDL_AtomicSet(&device->shutdown, 0);  // ready to go again.
@@ -1390,7 +1390,7 @@ static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec 
     }
 
     SDL_AudioSpec spec;
-    SDL_memcpy(&spec, inspec ? inspec : &device->default_spec, sizeof (SDL_AudioSpec));
+    SDL_copyp(&spec, inspec ? inspec : &device->default_spec);
     PrepareAudioFormat(device->iscapture, &spec);
 
     /* We allow the device format to change if it's better than the current settings (by various definitions of "better"). This prevents
