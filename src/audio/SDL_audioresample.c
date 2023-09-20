@@ -21,6 +21,7 @@
 #include "SDL_internal.h"
 
 #include "SDL_sysaudio.h"
+#include "SDL_audioresample.h"
 
 /* SDL's resampler uses a "bandlimited interpolation" algorithm:
      https://ccrma.stanford.edu/~jos/resample/ */
