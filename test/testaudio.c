@@ -212,6 +212,8 @@ static Thing *UpdateMouseOver(const float x, const float y)
         thing = FindThingAtPoint(x, y);
     }
 
+    mouseover_thing = thing;
+
     if (!thing) {
         SetDefaultTitleBar();
     } else if (thing->titlebar) {
