@@ -707,6 +707,24 @@ static void MixFloat32Audio(float *dst, const float *src, const int buffer_size)
     }
 }
 
+static int GetAudioStreamDataInFormat(SDL_AudioStream *stream, void *voidbuf, int len, const SDL_AudioSpec *spec)
+{
+    // SDL_SetAudioStreamFormat is just doing this plus a lot of heavy validation we can skip.
+    SDL_LockMutex(stream->lock);
+    SDL_copyp(&stream->dst_spec, spec);
+    SDL_UnlockMutex(stream->lock);
+    return SDL_GetAudioStreamData(stream, voidbuf, len);
+}
+
+static int PutAudioStreamDataInFormat(SDL_AudioStream *stream, void *voidbuf, int len, const SDL_AudioSpec *spec)
+{
+    // SDL_SetAudioStreamFormat is just doing this plus a lot of heavy validation we can skip.
+    SDL_LockMutex(stream->lock);
+    SDL_copyp(&stream->src_spec, spec);
+    SDL_UnlockMutex(stream->lock);
+    return SDL_PutAudioStreamData(stream, voidbuf, len);
+}
+
 
 // Output device thread. This is split into chunks, so backends that need to control this directly can use the pieces they need without duplicating effort.
 
@@ -746,8 +764,8 @@ SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
         if (simple_copy) {
             SDL_LogicalAudioDevice *logdev = device->logical_devices;
             SDL_AudioStream *stream = logdev->bound_streams;
-            SDL_SetAudioStreamFormat(stream, NULL, &device->spec);
-            const int br = SDL_GetAudioStreamData(stream, device_buffer, buffer_size);
+
+            const int br = GetAudioStreamDataInFormat(stream, device_buffer, buffer_size, &device->spec);
             if (br < 0) {  // Probably OOM. Kill the audio device; the whole thing is likely dying soon anyhow.
                 retval = SDL_FALSE;
                 SDL_memset(device_buffer, device->silence_value, buffer_size);  // just supply silence to the device before we die.
@@ -781,13 +799,11 @@ SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
                 }
 
                 for (SDL_AudioStream *stream = logdev->bound_streams; stream != NULL; stream = stream->next_binding) {
-                    SDL_SetAudioStreamFormat(stream, NULL, &outspec);
-
                     /* this will hold a lock on `stream` while getting. We don't explicitly lock the streams
                        for iterating here because the binding linked list can only change while the device lock is held.
                        (we _do_ lock the stream during binding/unbinding to make sure that two threads can't try to bind
                        the same stream to different devices at the same time, though.) */
-                    const int br = SDL_GetAudioStreamData(stream, device->work_buffer, work_buffer_size);
+                    const int br = GetAudioStreamDataInFormat(stream, device->work_buffer, work_buffer_size, &outspec);
                     if (br < 0) {  // Probably OOM. Kill the audio device; the whole thing is likely dying soon anyhow.
                         retval = SDL_FALSE;
                         break;
@@ -903,8 +919,7 @@ SDL_bool SDL_CaptureAudioThreadIterate(SDL_AudioDevice *device)
                        for iterating here because the binding linked list can only change while the device lock is held.
                        (we _do_ lock the stream during binding/unbinding to make sure that two threads can't try to bind
                        the same stream to different devices at the same time, though.) */
-                    SDL_SetAudioStreamFormat(stream, &outspec, NULL);
-                    if (SDL_PutAudioStreamData(stream, output_buffer, br) < 0) {
+                    if (PutAudioStreamDataInFormat(stream, output_buffer, br, &outspec) < 0) {
                         // oh crud, we probably ran out of memory. This is possibly an overreaction to kill the audio device, but it's likely the whole thing is going down in a moment anyhow.
                         retval = SDL_FALSE;
                         break;
@@ -1491,6 +1506,9 @@ int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int
         SDL_UnlockMutex(logdev->physical_device->lock);
         return SDL_SetError("Cannot change stream bindings on device opened with SDL_OpenAudioDeviceStream");
     }
+
+    // !!! FIXME: We'll set the device's side's format below, but maybe we should refuse to bind a stream if the app's side doesn't have a format set yet.
+    // !!! FIXME: Actually, why do we allow there to be an invalid format, again?
 
     // make sure start of list is sane.
     SDL_assert(!logdev->bound_streams || (logdev->bound_streams->prev_binding == NULL));
