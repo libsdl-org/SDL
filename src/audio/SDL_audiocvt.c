@@ -538,6 +538,15 @@ int SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_s
 
     SDL_LockMutex(stream->lock);
 
+    // quietly refuse to change the format of the end currently bound to a device.
+    if (stream->bound_device) {
+        if (stream->bound_device->physical_device->iscapture) {
+            dst_spec = NULL;
+        } else {
+            src_spec = NULL;
+        }
+    }
+
     if (src_spec) {
         SDL_copyp(&stream->src_spec, src_spec);
     }
