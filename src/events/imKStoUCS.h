@@ -3,7 +3,7 @@
 
 /*
 Copyright (C) 2003-2006,2008 Jamey Sharp, Josh Triplett
-Copyright Â© 2009 Red Hat, Inc.
+Copyright © 2009 Red Hat, Inc.
 Copyright 1990-1992,1999,2000,2004,2009,2010 Oracle and/or its affiliates.
 All rights reserved.
 
