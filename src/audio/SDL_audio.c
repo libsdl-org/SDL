@@ -277,8 +277,8 @@ static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, SDL_bool isc
     SDL_AtomicSet(&device->condemned, 0);
     SDL_AtomicSet(&device->zombie, 0);
     device->iscapture = iscapture;
-    SDL_memcpy(&device->spec, spec, sizeof (SDL_AudioSpec));
-    SDL_memcpy(&device->default_spec, spec, sizeof (SDL_AudioSpec));
+    SDL_copyp(&device->spec, spec);
+    SDL_copyp(&device->default_spec, spec);
     device->sample_frames = GetDefaultSampleFramesFromFreq(device->spec.freq);
     device->silence_value = SDL_GetSilenceValueForFormat(device->spec.format);
     device->handle = handle;
