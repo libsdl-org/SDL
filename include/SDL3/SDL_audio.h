@@ -860,12 +860,13 @@ extern DECLSPEC int SDLCALL SDL_GetAudioStreamAvailable(SDL_AudioStream *stream)
 
 
 /**
- * Get the number of sample frames currently queued.
+ * Get the number of bytes currently queued.
  *
- * Since audio streams can change their input format at any time, even if
- * there is still data queued in a different format, this reports the queued
- * _sample frames_, so if you queue two stereo samples in float32 format and
- * then queue five mono samples in Sint16 format, this will return 6.
+ * Note that audio streams can change their input format at any time, even if
+ * there is still data queued in a different format, so the returned byte
+ * count will not necessarily match the number of _sample frames_ available.
+ * Users of this API should be aware of format changes they make when feeding
+ * a stream and plan accordingly.
  *
  * Queued data is not converted until it is consumed by
  * SDL_GetAudioStreamData, so this value should be representative of the exact
@@ -878,7 +879,7 @@ extern DECLSPEC int SDLCALL SDL_GetAudioStreamAvailable(SDL_AudioStream *stream)
  * clamped.
  *
  * \param stream The audio stream to query
- * \returns the number of sample frames queued.
+ * \returns the number of bytes queued.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

@@ -660,7 +660,7 @@ int SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
     }
 
     if (retval == 0) {
-        stream->total_frames_queued += len / SDL_AUDIO_FRAMESIZE(stream->src_spec);
+        stream->total_bytes_queued += len;
         if (stream->put_callback) {
             const int newavail = SDL_GetAudioStreamAvailable(stream) - prev_available;
             stream->put_callback(stream->put_callback_userdata, stream, newavail, newavail);
@@ -863,7 +863,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int ou
             SDL_assert(!"Not enough data in queue (read)");
         }
 
-        stream->total_frames_queued -= output_frames;
+        stream->total_bytes_queued -= input_bytes;
 
         // Even if we aren't currently resampling, we always need to update the history buffer
         UpdateAudioStreamHistoryBuffer(stream, input_buffer, input_bytes, NULL, 0);
@@ -953,7 +953,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int ou
     if (SDL_ReadFromAudioQueue(stream->queue, input_buffer, input_bytes) != 0) {
         SDL_assert(!"Not enough data in queue (resample read)");
     }
-    stream->total_frames_queued -= input_frames;
+    stream->total_bytes_queued -= input_bytes;
 
     // Update the history buffer and fill in the left padding
     UpdateAudioStreamHistoryBuffer(stream, input_buffer, input_bytes, left_padding, padding_bytes);
@@ -1124,7 +1124,7 @@ int SDL_GetAudioStreamQueued(SDL_AudioStream *stream)
     }
 
     SDL_LockMutex(stream->lock);
-    const Uint64 total = stream->total_frames_queued;
+    const Uint64 total = stream->total_bytes_queued;
     SDL_UnlockMutex(stream->lock);
 
     // if this overflows an int, just clamp it to a maximum.
@@ -1142,7 +1142,7 @@ int SDL_ClearAudioStream(SDL_AudioStream *stream)
     SDL_ClearAudioQueue(stream->queue);
     SDL_zero(stream->input_spec);
     stream->resample_offset = 0;
-    stream->total_frames_queued = 0;
+    stream->total_bytes_queued = 0;
 
     SDL_UnlockMutex(stream->lock);
     return 0;
