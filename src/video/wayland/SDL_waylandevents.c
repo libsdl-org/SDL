@@ -1873,11 +1873,15 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
         }
 
         /* find the current window */
-        if (surface && SDL_WAYLAND_own_surface(surface)) {
-           SDL_WindowData *window = (SDL_WindowData *)wl_surface_get_user_data(surface);
-           if (window) {
-              data_device->dnd_window = window->sdlwindow;
-           }
+        if (surface) {
+            if (SDL_WAYLAND_own_surface(surface)) {
+                SDL_WindowData *window = (SDL_WindowData *)wl_surface_get_user_data(surface);
+                if (window) {
+                    data_device->dnd_window = window->sdlwindow;
+                }
+            } else {
+                data_device->dnd_window = NULL;
+            }
         }
     }
 }
@@ -1897,7 +1901,7 @@ static void data_device_handle_motion(void *data, struct wl_data_device *wl_data
 {
     SDL_WaylandDataDevice *data_device = data;
 
-    if (data_device->drag_offer != NULL) {
+    if (data_device->drag_offer != NULL && data_device->dnd_window) {
         /* TODO: SDL Support more mime types */
         size_t length;
         void *buffer = Wayland_data_offer_receive(data_device->drag_offer,
@@ -2046,7 +2050,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
 {
     SDL_WaylandDataDevice *data_device = data;
 
-    if (data_device->drag_offer != NULL) {
+    if (data_device->drag_offer != NULL && data_device->dnd_window) {
         /* TODO: SDL Support more mime types */
         size_t length;
         SDL_bool drop_handled = SDL_FALSE;
@@ -2102,9 +2106,10 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
             WL_DATA_OFFER_FINISH_SINCE_VERSION) {
             wl_data_offer_finish(data_device->drag_offer->offer);
         }
-        Wayland_data_offer_destroy(data_device->drag_offer);
-        data_device->drag_offer = NULL;
     }
+
+    Wayland_data_offer_destroy(data_device->drag_offer);
+    data_device->drag_offer = NULL;
 }
 
 static void data_device_handle_selection(void *data, struct wl_data_device *wl_data_device,
