@@ -137,6 +137,20 @@ static int GetDefaultSampleFramesFromFreq(const int freq)
     }
 }
 
+// device should be locked when calling this.
+static SDL_bool AudioDeviceCanUseSimpleCopy(SDL_AudioDevice *device)
+{
+    SDL_assert(device != NULL);
+    return (
+        device->logical_devices &&  // there's a logical device
+        !device->logical_devices->next &&  // there's only _ONE_ logical device
+        !device->logical_devices->postmix && // there isn't a postmix callback
+        !SDL_AtomicGet(&device->logical_devices->paused) &&  // it isn't paused
+        device->logical_devices->bound_streams &&  // there's a bound stream
+        !device->logical_devices->bound_streams->next_binding  // there's only _ONE_ bound stream.
+    ) ? SDL_TRUE : SDL_FALSE;
+}
+
 
 // device management and hotplug...
 
@@ -197,6 +211,8 @@ static void DestroyLogicalAudioDevice(SDL_LogicalAudioDevice *logdev)
         stream->bound_device = NULL;
         SDL_UnlockMutex(stream->lock);
     }
+
+    logdev->physical_device->simple_copy = AudioDeviceCanUseSimpleCopy(logdev->physical_device);
 
     SDL_free(logdev);
 }
@@ -752,19 +768,12 @@ SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
         retval = SDL_FALSE;
     } else {
         SDL_assert(buffer_size <= device->buffer_size);  // you can ask for less, but not more.
+        SDL_assert(AudioDeviceCanUseSimpleCopy(device) == device->simple_copy);  // make sure this hasn't gotten out of sync.
 
         // can we do a basic copy without silencing/mixing the buffer? This is an extremely likely scenario, so we special-case it.
-        const SDL_bool simple_copy = device->logical_devices &&   // there's a logical device
-                                     !device->logical_devices->next &&  // there's only _ONE_ logical device
-                                     !device->logical_devices->postmix &&  // there isn't a postmix callback
-                                     !SDL_AtomicGet(&device->logical_devices->paused) &&   // it isn't paused
-                                     device->logical_devices->bound_streams &&  // there's a bound stream
-                                     !device->logical_devices->bound_streams->next_binding;  // there's only _ONE_ bound stream.
-
-        if (simple_copy) {
+        if (device->simple_copy) {
             SDL_LogicalAudioDevice *logdev = device->logical_devices;
             SDL_AudioStream *stream = logdev->bound_streams;
-
             const int br = GetAudioStreamDataInFormat(stream, device_buffer, buffer_size, &device->spec);
             if (br < 0) {  // Probably OOM. Kill the audio device; the whole thing is likely dying soon anyhow.
                 retval = SDL_FALSE;
@@ -1423,6 +1432,7 @@ SDL_AudioDeviceID SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSp
                 device->logical_devices->prev = logdev;
             }
             device->logical_devices = logdev;
+            device->simple_copy = AudioDeviceCanUseSimpleCopy(device);
         }
         SDL_UnlockMutex(device->lock);
     }
@@ -1437,6 +1447,7 @@ static int SetLogicalAudioDevicePauseState(SDL_AudioDeviceID devid, int value)
         return -1;  // ObtainLogicalAudioDevice will have set an error.
     }
     SDL_AtomicSet(&logdev->paused, value);
+    logdev->physical_device->simple_copy = AudioDeviceCanUseSimpleCopy(logdev->physical_device);
     SDL_UnlockMutex(logdev->physical_device->lock);
     return 0;
 }
@@ -1481,6 +1492,8 @@ int SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid, SDL_AudioPostmixCallbac
             logdev->postmix = callback;
             logdev->postmix_userdata = userdata;
         }
+
+        device->simple_copy = AudioDeviceCanUseSimpleCopy(device);
 
         SDL_UnlockMutex(device->lock);
     }
@@ -1565,6 +1578,8 @@ int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int
         }
     }
 
+    device->simple_copy = AudioDeviceCanUseSimpleCopy(device);
+
     SDL_UnlockMutex(device->lock);
 
     return retval;
@@ -1635,6 +1650,7 @@ void SDL_UnbindAudioStreams(SDL_AudioStream **streams, int num_streams)
             stream->bound_device = NULL;
             SDL_UnlockMutex(stream->lock);
             if (logdev) {
+                logdev->physical_device->simple_copy = AudioDeviceCanUseSimpleCopy(logdev->physical_device);
                 SDL_UnlockMutex(logdev->physical_device->lock);
             }
         }
@@ -1674,10 +1690,12 @@ SDL_AudioStream *SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_Au
 
     SDL_AudioDevice *physdevice = logdev->physical_device;
     SDL_assert(physdevice != NULL);
-    SDL_UnlockMutex(physdevice->lock);  // we don't need to hold the lock for any of this.
-    const SDL_bool iscapture = physdevice->iscapture;
 
     SDL_AtomicSet(&logdev->paused, 1);   // start the device paused, to match SDL2.
+    physdevice->simple_copy = AudioDeviceCanUseSimpleCopy(physdevice);
+
+    SDL_UnlockMutex(physdevice->lock);  // we don't need to hold the lock for any of this.
+    const SDL_bool iscapture = physdevice->iscapture;
 
     SDL_AudioStream *stream = NULL;
     if (iscapture) {
@@ -1830,6 +1848,9 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
                 logdev->next = new_default_device->logical_devices;
                 new_default_device->logical_devices = logdev;
             }
+
+            current_default_device->simple_copy = AudioDeviceCanUseSimpleCopy(current_default_device);
+            new_default_device->simple_copy = AudioDeviceCanUseSimpleCopy(new_default_device);
 
             if (current_default_device->logical_devices == NULL) {   // nothing left on the current physical device, close it.
                 // !!! FIXME: we _need_ to release this lock, but doing so can cause a race condition if someone opens a device while we're closing it.

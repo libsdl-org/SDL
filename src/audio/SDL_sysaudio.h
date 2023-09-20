@@ -267,6 +267,9 @@ struct SDL_AudioDevice
     // SDL_TRUE if this is a capture device instead of an output device
     SDL_bool iscapture;
 
+    // SDL_TRUE if audio thread can skip silence/mix/convert stages and just do a basic memcpy.
+    SDL_bool simple_copy;
+
     // Scratch buffers used for mixing.
     Uint8 *work_buffer;
     Uint8 *mix_buffer;
