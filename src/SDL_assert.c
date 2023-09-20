@@ -34,7 +34,15 @@
 #endif
 
 #ifdef __EMSCRIPTEN__
-#include <emscripten.h>
+    #include <emscripten.h>
+    /* older Emscriptens don't have this, but we need to for wasm64 compatibility. */
+    #ifndef MAIN_THREAD_EM_ASM_PTR
+        #ifdef __wasm64__
+            #error You need to upgrade your Emscripten compiler to support wasm64
+        #else
+            #define MAIN_THREAD_EM_ASM_PTR MAIN_THREAD_EM_ASM_INT
+        #endif
+    #endif
 #endif
 
 /* The size of the stack buffer to use for rendering assert messages. */
@@ -243,7 +251,7 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
         for (;;) {
             SDL_bool okay = SDL_TRUE;
             /* *INDENT-OFF* */ /* clang-format off */
-            char *buf = (char *) EM_ASM_PTR({
+            char *buf = (char *) MAIN_THREAD_EM_ASM_PTR({
                 var str =
                     UTF8ToString($0) + '\n\n' +
                     'Abort/Retry/Ignore/AlwaysIgnore? [ariA] :';
