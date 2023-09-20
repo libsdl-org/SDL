@@ -430,6 +430,8 @@ SDL_AudioStream *SDL_CreateAudioStream(const SDL_AudioSpec *src_spec, const SDL_
         return NULL;
     }
 
+    OnAudioStreamCreated(retval);
+
     if (SDL_SetAudioStreamFormat(retval, src_spec, dst_spec) == -1) {
         SDL_DestroyAudioStream(retval);
         return NULL;
@@ -1151,6 +1153,8 @@ void SDL_DestroyAudioStream(SDL_AudioStream *stream)
     if (stream == NULL) {
         return;
     }
+
+    OnAudioStreamDestroy(stream);
 
     const SDL_bool simplified = stream->simplified;
     if (simplified) {

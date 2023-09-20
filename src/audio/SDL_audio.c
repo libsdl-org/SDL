@@ -137,6 +137,42 @@ static int GetDefaultSampleFramesFromFreq(const int freq)
     }
 }
 
+void OnAudioStreamCreated(SDL_AudioStream *stream)
+{
+    SDL_assert(SDL_GetCurrentAudioDriver() != NULL);
+    SDL_assert(stream != NULL);
+
+    // this isn't really part of the "device list" but it's a convenient lock to use here.
+    SDL_LockRWLockForWriting(current_audio.device_list_lock);
+    if (current_audio.existing_streams) {
+        current_audio.existing_streams->prev = stream;
+    }
+    stream->prev = NULL;
+    stream->next = current_audio.existing_streams;
+    current_audio.existing_streams = stream;
+    SDL_UnlockRWLock(current_audio.device_list_lock);
+}
+
+void OnAudioStreamDestroy(SDL_AudioStream *stream)
+{
+    SDL_assert(SDL_GetCurrentAudioDriver() != NULL);
+    SDL_assert(stream != NULL);
+
+    // this isn't really part of the "device list" but it's a convenient lock to use here.
+    SDL_LockRWLockForWriting(current_audio.device_list_lock);
+    if (stream->prev) {
+        stream->prev->next = stream->next;
+    }
+    if (stream->next) {
+        stream->next->prev = stream->prev;
+    }
+    if (stream == current_audio.existing_streams) {
+        current_audio.existing_streams = stream->next;
+    }
+    SDL_UnlockRWLock(current_audio.device_list_lock);
+}
+
+
 // device should be locked when calling this.
 static SDL_bool AudioDeviceCanUseSimpleCopy(SDL_AudioDevice *device)
 {
@@ -657,7 +693,10 @@ void SDL_QuitAudio(void)
         return;
     }
 
-    // !!! FIXME: Destroy all known audio streams, too.
+    // Destroy any audio streams that still exist...
+    while (current_audio.existing_streams != NULL) {
+        SDL_DestroyAudioStream(current_audio.existing_streams);
+    }
 
     // merge device lists so we don't have to duplicate work below.
     SDL_LockRWLockForWriting(current_audio.device_list_lock);
