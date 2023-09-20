@@ -246,7 +246,10 @@ static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, SDL_bool isc
 {
     SDL_assert(name != NULL);
 
-    if (SDL_AtomicGet(&current_audio.shutting_down)) {
+    SDL_LockRWLockForReading(current_audio.device_list_lock);
+    const int shutting_down = SDL_AtomicGet(&current_audio.shutting_down);
+    SDL_UnlockRWLock(current_audio.device_list_lock);
+    if (shutting_down) {
         return NULL;  // we're shutting down, don't add any devices that are hotplugged at the last possible moment.
     }
 
