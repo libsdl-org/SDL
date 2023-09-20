@@ -562,9 +562,17 @@ static void check_upower_device(DBusConnection *conn, const char *path, SDL_Powe
             st = SDL_POWERSTATE_UNKNOWN; /* uh oh */
         } else if (ui32 == 1) {          /* 1 == charging */
             st = SDL_POWERSTATE_CHARGING;
-        } else if ((ui32 == 2) || (ui32 == 3)) { /* 2 == discharging, 3 == empty. */
+        } else if ((ui32 == 2) || (ui32 == 3) || (ui32 == 6)) {
+            /* 2 == discharging;
+             * 3 == empty;
+             * 6 == "pending discharge" which GNOME interprets as equivalent
+             * to discharging */
             st = SDL_POWERSTATE_ON_BATTERY;
-        } else if (ui32 == 4) { /* 4 == full */
+        } else if ((ui32 == 4) || (ui32 == 5)) {
+            /* 4 == full;
+             * 5 == "pending charge" which GNOME shows as "Not charging",
+             * used when a battery is configured to stop charging at a
+             * lower than 100% threshold */
             st = SDL_POWERSTATE_CHARGED;
         } else {
             st = SDL_POWERSTATE_UNKNOWN; /* uh oh */
