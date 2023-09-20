@@ -423,7 +423,7 @@ if(WINDOWS_STORE)
   sdl_compile_options(PRIVATE "-ZW")
 endif()
 
-check_linker_flag(C "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym" HAVE_WL_VERSION_SCRIPT)
+check_linker_supports_version_file(HAVE_WL_VERSION_SCRIPT)
 if(HAVE_WL_VERSION_SCRIPT)
   sdl_shared_link_options("-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym")
 else()
