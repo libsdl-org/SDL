@@ -657,6 +657,8 @@ void SDL_QuitAudio(void)
         return;
     }
 
+    // !!! FIXME: Destroy all known audio streams, too.
+
     // merge device lists so we don't have to duplicate work below.
     SDL_LockRWLockForWriting(current_audio.device_list_lock);
     SDL_AtomicSet(&current_audio.shutting_down, 1);
