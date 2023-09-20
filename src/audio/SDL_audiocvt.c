@@ -602,7 +602,7 @@ static int CheckAudioStreamIsFullySetup(SDL_AudioStream *stream)
 int SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
 {
 #if DEBUG_AUDIOSTREAM
-    SDL_Log("AUDIOSTREAM: wants to put %d preconverted bytes", len);
+    SDL_Log("AUDIOSTREAM: wants to put %d bytes", len);
 #endif
 
     if (stream == NULL) {
