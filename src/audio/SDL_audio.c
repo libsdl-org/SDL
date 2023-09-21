@@ -1947,7 +1947,7 @@ int SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SDL
 {
     const int orig_work_buffer_size = device->work_buffer_size;
 
-    if (AUDIO_SPECS_EQUAL(device->spec, *newspec)) {
+    if (AUDIO_SPECS_EQUAL(device->spec, *newspec) && new_sample_frames == device->sample_frames) {
         return 0;  // we're already in that format.
     }
 
