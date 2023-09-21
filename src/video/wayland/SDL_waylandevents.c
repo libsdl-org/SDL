@@ -1902,26 +1902,14 @@ static void data_device_handle_motion(void *data, struct wl_data_device *wl_data
     SDL_WaylandDataDevice *data_device = data;
 
     if (data_device->drag_offer != NULL && data_device->dnd_window) {
-        /* TODO: SDL Support more mime types */
-        size_t length;
-        void *buffer = Wayland_data_offer_receive(data_device->drag_offer,
-                                                  FILE_MIME, &length);
-        if (buffer) {
-            char *saveptr = NULL;
-            char *token = SDL_strtok_r((char *)buffer, "\r\n", &saveptr);
-            while (token != NULL) {
-                char *fn = Wayland_URIToLocal(token);
-                if (fn) {
-                    double dx;
-                    double dy;
-                    dx = wl_fixed_to_double(x);
-                    dy = wl_fixed_to_double(y);
-                    SDL_SendDropPosition(data_device->dnd_window, fn, (float)dx, (float)dy);
-                }
-                token = SDL_strtok_r(NULL, "\r\n", &saveptr);
-            }
-            SDL_free(buffer);
-        }
+        const float dx = (float)wl_fixed_to_double(x);
+        const float dy = (float)wl_fixed_to_double(y);
+
+        /* XXX: Send the filename here if the event system ever starts passing it though.
+         *      Any future implementation should cache the filenames, as otherwise this could
+         *      hammer the DBus interface hundreds or even thousands of times per second.
+         */
+        SDL_SendDropPosition(data_device->dnd_window, NULL, dx, dy);
     }
 }
 
