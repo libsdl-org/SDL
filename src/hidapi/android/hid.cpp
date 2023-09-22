@@ -1031,7 +1031,7 @@ extern "C"
 
 int hid_init(void)
 {
-	if ( !g_initialized )
+	if ( !g_initialized && g_HIDDeviceManagerCallbackHandler )
 	{
 		// HIDAPI doesn't work well with Android < 4.3
 		if (SDL_GetAndroidSDKVersion() >= 18) {
@@ -1039,12 +1039,6 @@ int hid_init(void)
 			JNIEnv *env;
 			g_JVM->AttachCurrentThread( &env, NULL );
 			pthread_setspecific( g_ThreadKey, (void*)env );
-
-			if ( !g_HIDDeviceManagerCallbackHandler )
-			{
-				LOGV( "hid_init() without callback handler" );
-				return -1;
-			}
 
 			// Bluetooth is currently only used for Steam Controllers, so check that hint
 			// before initializing Bluetooth, which will prompt the user for permission.
