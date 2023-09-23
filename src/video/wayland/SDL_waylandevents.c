@@ -2846,35 +2846,6 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
     d->input = NULL;
 }
 
-/* !!! FIXME: just merge these into display_handle_global(). */
-void Wayland_display_add_relative_pointer_manager(SDL_VideoData *d, uint32_t id)
-{
-    d->relative_pointer_manager =
-        wl_registry_bind(d->registry, id,
-                         &zwp_relative_pointer_manager_v1_interface, 1);
-}
-
-void Wayland_display_destroy_relative_pointer_manager(SDL_VideoData *d)
-{
-    if (d->relative_pointer_manager) {
-        zwp_relative_pointer_manager_v1_destroy(d->relative_pointer_manager);
-    }
-}
-
-void Wayland_display_add_pointer_constraints(SDL_VideoData *d, uint32_t id)
-{
-    d->pointer_constraints =
-        wl_registry_bind(d->registry, id,
-                         &zwp_pointer_constraints_v1_interface, 1);
-}
-
-void Wayland_display_destroy_pointer_constraints(SDL_VideoData *d)
-{
-    if (d->pointer_constraints) {
-        zwp_pointer_constraints_v1_destroy(d->pointer_constraints);
-    }
-}
-
 static void relative_pointer_handle_relative_motion(void *data,
                                                     struct zwp_relative_pointer_v1 *pointer,
                                                     uint32_t time_hi,
