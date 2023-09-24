@@ -22,12 +22,15 @@
 int main(int argc, char *argv[])
 {
     Uint64 start;
+    Uint64 prequit;
     (void)argc;
     (void)argv;
     SDL_Init(0);
     start = SDL_GetTicks();
     SDL_GetPrefPath("libsdl", "test_filesystem");
-    SDL_Log("SDL_GetPrefPath took %" SDL_PRIu64 "ms", SDL_GetTicks() - start);
+    prequit = SDL_GetTicks();
+    SDL_Log("SDL_GetPrefPath took %" SDL_PRIu64 "ms", prequit - start);
     SDL_Quit();
+    SDL_Log("SDL_Quit took %" SDL_PRIu64 "ms", SDL_GetTicks() - prequit);
     return 0;
 }
