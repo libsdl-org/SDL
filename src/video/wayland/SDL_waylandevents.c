@@ -279,7 +279,7 @@ static void keyboard_repeat_set(SDL_WaylandKeyboardRepeat *repeat_info, uint32_t
     repeat_info->next_repeat_ns = SDL_MS_TO_NS(repeat_info->repeat_delay_ms);
     repeat_info->scancode = scancode;
     if (has_text) {
-        SDL_memcpy(repeat_info->text, text, 8);
+        SDL_copyp(repeat_info->text, text);
     } else {
         repeat_info->text[0] = '\0';
     }
@@ -297,7 +297,7 @@ static uint32_t keyboard_repeat_get_key(SDL_WaylandKeyboardRepeat *repeat_info)
 static void keyboard_repeat_set_text(SDL_WaylandKeyboardRepeat *repeat_info, const char text[8])
 {
     if (repeat_info->is_initialized) {
-        SDL_memcpy(repeat_info->text, text, 8);
+        SDL_copyp(repeat_info->text, text);
     }
 }
 
