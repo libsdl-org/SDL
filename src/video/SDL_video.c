@@ -3747,12 +3747,11 @@ void SDL_VideoQuit(void)
         SDL_VideoDisplay *display = _this->displays[i];
         SDL_DelVideoDisplay(display->id, SDL_FALSE);
     }
-    if (_this->displays) {
-        SDL_assert(_this->num_displays == 0);
-        SDL_free(_this->displays);
-        _this->displays = NULL;
-        _this->num_displays = 0;
-    }
+
+    SDL_assert(_this->num_displays == 0);
+    SDL_free(_this->displays);
+    _this->displays = NULL;
+
     if (_this->primary_selection_text) {
         SDL_free(_this->primary_selection_text);
         _this->primary_selection_text = NULL;
