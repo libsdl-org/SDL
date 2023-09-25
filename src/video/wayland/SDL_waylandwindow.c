@@ -880,7 +880,7 @@ static void OverrideLibdecorLimits(SDL_Window *window)
     if (libdecor_frame_get_min_content_size == NULL) {
         libdecor_frame_set_min_content_size(window->driverdata->shell_surface.libdecor.frame, window->min_w, window->min_h);
     }
-#elif !defined(SDL_HAVE_LIBDECOR_VER_0_1_2)
+#elif !defined(SDL_HAVE_LIBDECOR_VER_0_2_0)
     libdecor_frame_set_min_content_size(window->driverdata->shell_surface.libdecor.frame, window->min_w, window->min_h);
 #endif
 }
@@ -899,7 +899,7 @@ static void LibdecorGetMinContentSize(struct libdecor_frame *frame, int *min_w, 
     if (libdecor_frame_get_min_content_size != NULL) {
         libdecor_frame_get_min_content_size(frame, min_w, min_h);
     }
-#elif defined(SDL_HAVE_LIBDECOR_VER_0_1_2)
+#elif defined(SDL_HAVE_LIBDECOR_VER_0_2_0)
     libdecor_frame_get_min_content_size(frame, min_w, min_h);
 #endif
 }
@@ -932,7 +932,7 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
         maximized = (window_state & LIBDECOR_WINDOW_STATE_MAXIMIZED) != 0;
         active = (window_state & LIBDECOR_WINDOW_STATE_ACTIVE) != 0;
         tiled = (window_state & tiled_states) != 0;
-#ifdef SDL_HAVE_LIBDECOR_VER_0_1_2
+#ifdef SDL_HAVE_LIBDECOR_VER_0_2_0
         suspended = (window_state & LIBDECOR_WINDOW_STATE_SUSPENDED) != 0;
 #endif
     }

@@ -219,7 +219,7 @@ SDL_WAYLAND_SYM(bool, libdecor_configuration_get_window_state, (struct libdecor_
                                                                 enum libdecor_window_state *))
 SDL_WAYLAND_SYM(int, libdecor_dispatch, (struct libdecor *, int))
 
-#if defined(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR) || defined(SDL_HAVE_LIBDECOR_VER_0_1_2)
+#if defined(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR) || defined(SDL_HAVE_LIBDECOR_VER_0_2_0)
 /* Only found in libdecor 0.1.1 or higher, so failure to load them is not fatal. */
 SDL_WAYLAND_SYM_OPT(void, libdecor_frame_get_min_content_size, (struct libdecor_frame *,\
                                                             int *,\

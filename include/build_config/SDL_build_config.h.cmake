@@ -555,7 +555,7 @@
 #cmakedefine SDL_VIDEO_VITA_PVR @SDL_VIDEO_VITA_PVR@
 #cmakedefine SDL_VIDEO_VITA_PVR_OGL @SDL_VIDEO_VITA_PVR_OGL@
 
-#cmakedefine SDL_HAVE_LIBDECOR_VER_0_1_2 @SDL_HAVE_LIBDECOR_VER_0_1_2@
+#cmakedefine SDL_HAVE_LIBDECOR_VER_0_2_0 @SDL_HAVE_LIBDECOR_VER_0_2_0@
 
 #if !defined(HAVE_STDINT_H) && !defined(_STDINT_H_)
 /* Most everything except Visual Studio 2008 and earlier has stdint.h now */
