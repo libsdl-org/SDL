@@ -29,15 +29,6 @@
 
 /*****************************************************************************************************/
 
-#include <stdint.h>
-
-#define bool  SDL_bool
-#define true  SDL_TRUE
-#define false SDL_FALSE
-
-typedef uint32_t uint32;
-typedef uint64_t uint64;
-
 #include "steam/controller_constants.h"
 #include "steam/controller_structs.h"
 
