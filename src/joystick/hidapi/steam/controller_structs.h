@@ -109,12 +109,12 @@ typedef struct
 {
 	// If packet num matches that on your prior call, then the controller state hasn't been changed since 
 	// your last call and there is no need to process it
-	uint32 unPacketNum;
+	Uint32 unPacketNum;
 	
 	// Button bitmask and trigger data.
 	union
 	{
-		uint64 ulButtons;
+		Uint64 ulButtons;
 		struct
 		{
 			unsigned char _pad0[3];
@@ -158,12 +158,12 @@ typedef struct
 {
 	// If packet num matches that on your prior call, then the controller state hasn't been changed since 
 	// your last call and there is no need to process it
-	uint32 unPacketNum;
+	Uint32 unPacketNum;
 
 	// Button bitmask and trigger data.
 	union
 	{
-		uint64 ulButtons;
+		Uint64 ulButtons;
 		struct
 		{
 			unsigned char _pad0[3];
@@ -279,16 +279,16 @@ typedef struct
 	// If packet num matches that on your prior call, then the controller
 	// state hasn't been changed since your last call and there is no need to
 	// process it
-	uint32 unPacketNum;
+	Uint32 unPacketNum;
 
 	// Button bitmask and trigger data.
 	union
 	{
-		uint64 ulButtons;
+		Uint64 ulButtons;
 		struct
 		{
-			uint32 ulButtonsL;
-			uint32 ulButtonsH;
+			Uint32 ulButtonsL;
+			Uint32 ulButtonsH;
 		};
 	};
 
