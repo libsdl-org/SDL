@@ -946,10 +946,12 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
 
     if (data->pointer_constraints) {
         zwp_pointer_constraints_v1_destroy(data->pointer_constraints);
+        data->pointer_constraints = NULL;
     }
 
     if (data->relative_pointer_manager) {
         zwp_relative_pointer_manager_v1_destroy(data->relative_pointer_manager);
+        data->relative_pointer_manager = NULL;
     }
 
     if (data->activation_manager) {
