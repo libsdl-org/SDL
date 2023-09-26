@@ -2759,7 +2759,11 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
             Wayland_data_offer_destroy(input->data_device->drag_offer);
         }
         if (input->data_device->data_device != NULL) {
-            wl_data_device_release(input->data_device->data_device);
+            if (wl_data_device_get_version(input->data_device->data_device) >= WL_DATA_DEVICE_RELEASE_SINCE_VERSION) {
+                wl_data_device_release(input->data_device->data_device);
+            } else {
+                wl_data_device_destroy(input->data_device->data_device);
+            }
         }
         SDL_free(input->data_device);
     }
