@@ -33,14 +33,9 @@
 
 /*****************************************************************************************************/
 
-#include <stdint.h>
-
 #define bool SDL_bool
 #define true SDL_TRUE
 #define false SDL_FALSE
-
-typedef uint32_t uint32;
-typedef uint64_t uint64;
 
 #include "steam/controller_constants.h"
 #include "steam/controller_structs.h"
@@ -48,14 +43,14 @@ typedef uint64_t uint64;
 typedef struct SteamControllerStateInternal_t
 {
     // Controller Type for this Controller State
-    uint32 eControllerType;
+    Uint32 eControllerType;
 
     // If packet num matches that on your prior call, then the controller state hasn't been changed since
     // your last call and there is no need to process it
-    uint32 unPacketNum;
+    Uint32 unPacketNum;
 
     // bit flags for each of the buttons
-    uint64 ulButtons;
+    Uint64 ulButtons;
 
     // Left pad coordinates
     short sLeftPadX;
