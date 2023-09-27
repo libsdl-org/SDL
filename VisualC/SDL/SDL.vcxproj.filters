@@ -444,6 +444,9 @@
     <ClInclude Include="..\..\src\dynapi\SDL_dynapi_procs.h">
       <Filter>dynapi</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\dynapi\SDL_dynapi_unsupported.h">
+      <Filter>dynapi</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\events\SDL_clipboardevents_c.h">
       <Filter>events</Filter>
     </ClInclude>
