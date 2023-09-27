@@ -248,6 +248,8 @@
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
     </ClCompile>
+    <ClCompile Include="..\src\core\SDL_core_unsupported.c" />
+    <ClCompile Include="..\src\core\SDL_runapp.c" />
     <ClCompile Include="..\src\core\windows\SDL_windows.c" />
     <ClCompile Include="..\src\core\windows\SDL_xinput.c" />
     <ClCompile Include="..\src\core\winrt\SDL_winrtapp_common.cpp">
@@ -381,6 +383,7 @@
     <ClCompile Include="..\src\render\opengles2\SDL_shaders_gles2.c" />
     <ClCompile Include="..\src\render\SDL_d3dmath.c" />
     <ClCompile Include="..\src\render\SDL_render.c" />
+    <ClCompile Include="..\src\render\SDL_render_unsupported.c" />
     <ClCompile Include="..\src\render\SDL_yuv_sw.c" />
     <ClCompile Include="..\src\render\software\SDL_blendfillrect.c" />
     <ClCompile Include="..\src\render\software\SDL_blendline.c" />
@@ -509,6 +512,7 @@
     <ClCompile Include="..\src\video\SDL_stretch.c" />
     <ClCompile Include="..\src\video\SDL_surface.c" />
     <ClCompile Include="..\src\video\SDL_video.c" />
+    <ClCompile Include="..\src\video\SDL_video_unsupported.c" />
     <ClCompile Include="..\src\video\SDL_yuv.c" />
     <ClCompile Include="..\src\video\winrt\SDL_winrtevents.cpp">
       <CompileAsWinRT>true</CompileAsWinRT>
