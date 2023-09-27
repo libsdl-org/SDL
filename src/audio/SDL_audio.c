@@ -173,14 +173,29 @@ void OnAudioStreamDestroy(SDL_AudioStream *stream)
 }
 
 
+// device should be locked when calling this.
+static SDL_bool AudioDeviceCanUseSimpleCopy(SDL_AudioDevice *device)
+{
+    SDL_assert(device != NULL);
+    return (
+        device->logical_devices &&  // there's a logical device
+        !device->logical_devices->next &&  // there's only _ONE_ logical device
+        !device->logical_devices->postmix && // there isn't a postmix callback
+        !SDL_AtomicGet(&device->logical_devices->paused) &&  // it isn't paused
+        device->logical_devices->bound_streams &&  // there's a bound stream
+        !device->logical_devices->bound_streams->next_binding  // there's only _ONE_ bound stream.
+    ) ? SDL_TRUE : SDL_FALSE;
+}
+
 // should hold logdev's physical device's lock before calling.
 static void UpdateAudioStreamFormatsLogical(SDL_LogicalAudioDevice *logdev)
 {
-    const SDL_bool iscapture = logdev->physical_device->iscapture;
+    SDL_AudioDevice *device = logdev->physical_device;
+    const SDL_bool iscapture = device->iscapture;
     SDL_AudioSpec spec;
-    SDL_copyp(&spec, &logdev->physical_device->spec);
-    if (logdev->postmix != NULL) {
-        spec.format = SDL_AUDIO_F32;
+    SDL_copyp(&spec, &device->spec);
+    if (!AudioDeviceCanUseSimpleCopy(device)) {
+        spec.format = SDL_AUDIO_F32;  // mixing and postbuf operates in float32 format.
     }
 
     for (SDL_AudioStream *stream = logdev->bound_streams; stream != NULL; stream = stream->next_binding) {
@@ -200,20 +215,6 @@ static void UpdateAudioStreamFormatsPhysical(SDL_AudioDevice *device)
     }
 }
 
-
-// device should be locked when calling this.
-static SDL_bool AudioDeviceCanUseSimpleCopy(SDL_AudioDevice *device)
-{
-    SDL_assert(device != NULL);
-    return (
-        device->logical_devices &&  // there's a logical device
-        !device->logical_devices->next &&  // there's only _ONE_ logical device
-        !device->logical_devices->postmix && // there isn't a postmix callback
-        !SDL_AtomicGet(&device->logical_devices->paused) &&  // it isn't paused
-        device->logical_devices->bound_streams &&  // there's a bound stream
-        !device->logical_devices->bound_streams->next_binding  // there's only _ONE_ bound stream.
-    ) ? SDL_TRUE : SDL_FALSE;
-}
 
 
 // device management and hotplug...
