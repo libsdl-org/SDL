@@ -818,7 +818,9 @@ SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
     SDL_bool retval = SDL_TRUE;
     int buffer_size = device->buffer_size;
     Uint8 *device_buffer = current_audio.impl.GetDeviceBuf(device, &buffer_size);
-    if (!device_buffer) {
+    if (buffer_size == 0) {
+        // WASAPI (maybe others, later) does this to say "just abandon this iteration and try again next time."
+    } else if (!device_buffer) {
         retval = SDL_FALSE;
     } else {
         SDL_assert(buffer_size <= device->buffer_size);  // you can ask for less, but not more.

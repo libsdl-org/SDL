@@ -265,6 +265,7 @@ static int mgmtthrtask_DetectDevices(void *userdata)
 static void WASAPI_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)
 {
     int rc;
+    // this blocks because it needs to finish before the audio subsystem inits
     mgmtthrtask_DetectDevicesData data = { default_output, default_capture };
     WASAPI_ProxyToManagementThread(mgmtthrtask_DetectDevices, &data, &rc);
 }
@@ -277,21 +278,18 @@ static int mgmtthrtask_DisconnectDevice(void *userdata)
 
 void WASAPI_DisconnectDevice(SDL_AudioDevice *device)
 {
-    // this runs async, so it can hold the device lock from the management thread.
-    WASAPI_ProxyToManagementThread(mgmtthrtask_DisconnectDevice, device, NULL);
+    int rc;  // block on this; don't disconnect while holding the device lock!
+    WASAPI_ProxyToManagementThread(mgmtthrtask_DisconnectDevice, device, &rc);
 }
 
 static SDL_bool WasapiFailed(SDL_AudioDevice *device, const HRESULT err)
 {
     if (err == S_OK) {
         return SDL_FALSE;
-    }
-
-    if (err == AUDCLNT_E_DEVICE_INVALIDATED) {
+    } else if (err == AUDCLNT_E_DEVICE_INVALIDATED) {
         device->hidden->device_lost = SDL_TRUE;
     } else {
-        IAudioClient_Stop(device->hidden->client);
-        WASAPI_DisconnectDevice(device);
+        device->hidden->device_dead = SDL_TRUE;
     }
 
     return SDL_TRUE;
@@ -368,10 +366,13 @@ static int mgmtthrtask_ActivateDevice(void *userdata)
 
 static int ActivateWasapiDevice(SDL_AudioDevice *device)
 {
+    // this blocks because we're either being notified from a background thread or we're running during device open,
+    //  both of which won't deadlock vs the device thread.
     int rc;
     return ((WASAPI_ProxyToManagementThread(mgmtthrtask_ActivateDevice, device, &rc) < 0) || (rc < 0)) ? -1 : 0;
 }
 
+// do not call when holding the device lock!
 static SDL_bool RecoverWasapiDevice(SDL_AudioDevice *device)
 {
     ResetWasapiDevice(device); // dump the lost device's handles.
@@ -387,9 +388,15 @@ static SDL_bool RecoverWasapiDevice(SDL_AudioDevice *device)
     return SDL_TRUE; // okay, carry on with new device details!
 }
 
+// do not call when holding the device lock!
 static SDL_bool RecoverWasapiIfLost(SDL_AudioDevice *device)
 {
     if (SDL_AtomicGet(&device->shutdown)) {
+        return SDL_FALSE; // already failed.
+    } else if (device->hidden->device_dead) {  // had a fatal error elsewhere, clean up and quit
+        IAudioClient_Stop(device->hidden->client);
+        WASAPI_DisconnectDevice(device);
+        SDL_assert(SDL_AtomicGet(&device->shutdown));  // so we don't come back through here.
         return SDL_FALSE; // already failed.
     } else if (!device->hidden->client) {
         return SDL_TRUE; // still waiting for activation.
@@ -403,9 +410,12 @@ static Uint8 *WASAPI_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
     // get an endpoint buffer from WASAPI.
     BYTE *buffer = NULL;
 
-    if (RecoverWasapiIfLost(device) && device->hidden->render) {
+    if (device->hidden->render) {
         if (WasapiFailed(device, IAudioRenderClient_GetBuffer(device->hidden->render, device->sample_frames, &buffer))) {
             SDL_assert(buffer == NULL);
+            if (device->hidden->device_lost) {  // just use an available buffer, we won't be playing it anyhow.
+                *buffer_size = 0;  // we'll recover during WaitDevice and try again.
+            }
         }
     }
 
@@ -423,6 +433,7 @@ static int WASAPI_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int b
 
 static void WASAPI_WaitDevice(SDL_AudioDevice *device)
 {
+    // WaitDevice does not hold the device lock, so check for recovery/disconnect details here.
     while (RecoverWasapiIfLost(device) && device->hidden->client && device->hidden->event) {
         DWORD waitResult = WaitForSingleObjectEx(device->hidden->event, 200, FALSE);
         if (waitResult == WAIT_OBJECT_0) {
@@ -450,10 +461,10 @@ static int WASAPI_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int b
     UINT32 frames = 0;
     DWORD flags = 0;
 
-    while (RecoverWasapiIfLost(device) && device->hidden->capture) {
-        HRESULT ret = IAudioCaptureClient_GetBuffer(device->hidden->capture, &ptr, &frames, &flags, NULL, NULL);
+    while (device->hidden->capture) {
+        const HRESULT ret = IAudioCaptureClient_GetBuffer(device->hidden->capture, &ptr, &frames, &flags, NULL, NULL);
         if (ret == AUDCLNT_S_BUFFER_EMPTY) {
-            return 0;  // in theory we should have waited until there was data, but oh well, we'll go back to waiting. Returning 0 is safe in SDL
+            return 0;  // in theory we should have waited until there was data, but oh well, we'll go back to waiting. Returning 0 is safe in SDL3.
         }
 
         WasapiFailed(device, ret); // mark device lost/failed if necessary.
@@ -472,8 +483,7 @@ static int WASAPI_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int b
                 SDL_memcpy(buffer, ptr, cpy);
             }
 
-            ret = IAudioCaptureClient_ReleaseBuffer(device->hidden->capture, frames);
-            WasapiFailed(device, ret); // mark device lost/failed if necessary.
+            WasapiFailed(device, IAudioCaptureClient_ReleaseBuffer(device->hidden->capture, frames));
 
             return cpy;
         }

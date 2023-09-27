@@ -41,12 +41,13 @@ struct SDL_PrivateAudioData
     SDL_bool coinitialized;
     int framesize;
     SDL_bool device_lost;
+    SDL_bool device_dead;
     void *activation_handler;
 };
 
 /* win32 and winrt implementations call into these. */
 int WASAPI_PrepDevice(SDL_AudioDevice *device);
-void WASAPI_DisconnectDevice(SDL_AudioDevice *device);
+void WASAPI_DisconnectDevice(SDL_AudioDevice *device);  // don't hold the device lock when calling this!
 
 
 // BE CAREFUL: if you are holding the device lock and proxy to the management thread with wait_until_complete, and grab the lock again, you will deadlock.
