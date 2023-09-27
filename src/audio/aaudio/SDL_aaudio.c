@@ -408,37 +408,6 @@ void AAUDIO_ResumeDevices(void)
     }
 }
 
-// !!! FIXME: do we need this now that we use the callback?
-/*
- We can sometimes get into a state where AAudioStream_write() will just block forever until we pause and unpause.
- None of the standard state queries indicate any problem in my testing. And the error callback doesn't actually get called.
- But, AAudioStream_getTimestamp() does return AAUDIO_ERROR_INVALID_STATE
-*/
-static SDL_bool DetectBrokenPlayStatePerDevice(SDL_AudioDevice *device, void *userdata)
-{
-    SDL_assert(device != NULL);
-    if (!device->iscapture && device->hidden != NULL) {
-        struct SDL_PrivateAudioData *hidden = device->hidden;
-        int64_t framePosition, timeNanoseconds;
-        aaudio_result_t res = ctx.AAudioStream_getTimestamp(hidden->stream, CLOCK_MONOTONIC, &framePosition, &timeNanoseconds);
-        if (res == AAUDIO_ERROR_INVALID_STATE) {
-            aaudio_stream_state_t currentState = ctx.AAudioStream_getState(hidden->stream);
-            // AAudioStream_getTimestamp() will also return AAUDIO_ERROR_INVALID_STATE while the stream is still initially starting. But we only care if it silently went invalid while playing.
-            if (currentState == AAUDIO_STREAM_STATE_STARTED) {
-                LOGI("SDL AAUDIO_DetectBrokenPlayState: detected invalid audio device state: AAudioStream_getTimestamp result=%d, framePosition=%lld, timeNanoseconds=%lld, getState=%d", (int)res, (long long)framePosition, (long long)timeNanoseconds, (int)currentState);
-                return SDL_TRUE;  // this guy.
-            }
-        }
-    }
-
-    return SDL_FALSE;  // enumerate more devices.
-}
-
-SDL_bool AAUDIO_DetectBrokenPlayState(void)
-{
-    return (ctx.handle && SDL_FindPhysicalAudioDeviceByCallback(DetectBrokenPlayStatePerDevice, NULL) != NULL) ? SDL_TRUE : SDL_FALSE;
-}
-
 static void AAUDIO_Deinitialize(void)
 {
     Android_StopAudioHotplug();

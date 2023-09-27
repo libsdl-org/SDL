@@ -159,11 +159,6 @@ void Android_PumpEvents_Blocking(SDL_VideoDevice *_this)
             }
         }
     }
-
-    if (AAUDIO_DetectBrokenPlayState()) {
-        AAUDIO_PauseDevices();
-        AAUDIO_ResumeDevices();
-    }
 }
 
 void Android_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
@@ -244,11 +239,6 @@ void Android_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
                 backup_context = 1;
             }
         }
-    }
-
-    if (AAUDIO_DetectBrokenPlayState()) {
-        AAUDIO_PauseDevices();
-        AAUDIO_ResumeDevices();
     }
 }
 
