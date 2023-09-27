@@ -3051,9 +3051,9 @@ SDL_RenderDriver D3D12_RenderDriver = {
 #ifdef __cplusplus
 extern "C"
 #endif
-    /* This function needs to always exist on Windows, for the Dynamic API. */
-    ID3D12Device *
-    SDL_RenderGetD3D12Device(SDL_Renderer *renderer)
+/* This function needs to always exist on Windows, for the Dynamic API. */
+ID3D12Device *
+SDL_RenderGetD3D12Device(SDL_Renderer *renderer)
 {
     ID3D12Device *device = NULL;
 

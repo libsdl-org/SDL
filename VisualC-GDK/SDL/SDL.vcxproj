@@ -557,6 +557,8 @@
     <ClCompile Include="..\..\src\audio\SDL_wave.c" />
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi_win32.c" />
+    <ClCompile Include="..\..\src\core\SDL_core_unsupported.c" />
+    <ClCompile Include="..\..\src\core\SDL_runapp.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_hid.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_immdevice.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_windows.c" />
@@ -699,6 +701,7 @@
     <ClCompile Include="..\..\src\render\opengles2\SDL_shaders_gles2.c" />
     <ClCompile Include="..\..\src\render\SDL_d3dmath.c" />
     <ClCompile Include="..\..\src\render\SDL_render.c" />
+    <ClCompile Include="..\..\src\render\SDL_render_unsupported.c" />
     <ClCompile Include="..\..\src\render\SDL_yuv_sw.c" />
     <ClCompile Include="..\..\src\render\software\SDL_blendfillrect.c" />
     <ClCompile Include="..\..\src\render\software\SDL_blendline.c" />
@@ -767,6 +770,7 @@
     <ClCompile Include="..\..\src\video\SDL_stretch.c" />
     <ClCompile Include="..\..\src\video\SDL_surface.c" />
     <ClCompile Include="..\..\src\video\SDL_video.c" />
+    <ClCompile Include="..\..\src\video\SDL_video_unsupported.c" />
     <ClCompile Include="..\..\src\video\SDL_vulkan_utils.c" />
     <ClCompile Include="..\..\src\video\SDL_yuv.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsclipboard.c" />

@@ -885,6 +885,13 @@
     <ClCompile Include="..\..\src\atomic\SDL_spinlock.c">
       <Filter>atomic</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\core\SDL_core_unsupported.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\SDL_runapp.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Inclu
     <ClCompile Include="..\..\src\core\windows\SDL_hid.c">
       <Filter>core\windows</Filter>
     </ClCompile>
@@ -1182,6 +1189,9 @@
     <ClCompile Include="..\..\src\video\SDL_video.c">
       <Filter>video</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\video\SDL_video_unsupported.c">
+      <Filter>video</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\video\SDL_yuv.c">
       <Filter>video</Filter>
     </ClCompile>
@@ -1306,6 +1316,9 @@
       <Filter>render</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\render\SDL_render.c">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\render\SDL_render_unsupported.c">
       <Filter>render</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\render\SDL_yuv_sw.c">
