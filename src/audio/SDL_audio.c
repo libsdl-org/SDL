@@ -181,7 +181,6 @@ static SDL_bool AudioDeviceCanUseSimpleCopy(SDL_AudioDevice *device)
         device->logical_devices &&  // there's a logical device
         !device->logical_devices->next &&  // there's only _ONE_ logical device
         !device->logical_devices->postmix && // there isn't a postmix callback
-        !SDL_AtomicGet(&device->logical_devices->paused) &&  // it isn't paused
         device->logical_devices->bound_streams &&  // there's a bound stream
         !device->logical_devices->bound_streams->next_binding  // there's only _ONE_ bound stream.
     ) ? SDL_TRUE : SDL_FALSE;
@@ -835,7 +834,7 @@ SDL_bool SDL_OutputAudioThreadIterate(SDL_AudioDevice *device)
             // We should have updated this elsewhere if the format changed!
             SDL_assert(AUDIO_SPECS_EQUAL(stream->dst_spec, device->spec));
 
-            const int br = SDL_GetAudioStreamData(stream, device_buffer, buffer_size);
+            const int br = SDL_AtomicGet(&logdev->paused) ? 0 : SDL_GetAudioStreamData(stream, device_buffer, buffer_size);
             if (br < 0) {  // Probably OOM. Kill the audio device; the whole thing is likely dying soon anyhow.
                 retval = SDL_FALSE;
                 SDL_memset(device_buffer, device->silence_value, buffer_size);  // just supply silence to the device before we die.
