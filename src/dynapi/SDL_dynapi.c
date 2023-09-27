@@ -21,6 +21,7 @@
 
 #include "build_config/SDL_build_config.h"
 #include "SDL_dynapi.h"
+#include "SDL_dynapi_unsupported.h"
 
 #if SDL_DYNAMIC_API
 
