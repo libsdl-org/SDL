@@ -41,6 +41,7 @@ jobs:
             set(CMAKE_SHARED_LINKER_FLAGS "-DEBUG" CACHE STRING "Linker flag for shared libraries")
             cmake_minimum_required(VERSION 3.0...3.25)
             project(sdl_user)
+            enable_testing()
             add_subdirectory("{ srcdir }" SDL)
           """))
     - name: Configure (CMake)
