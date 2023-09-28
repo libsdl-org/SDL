@@ -35,6 +35,10 @@
 #include "SDL_pulseaudio.h"
 #include "../../thread/SDL_systhread.h"
 
+#if (PA_PROTOCOL_VERSION < 28)
+typedef void (*pa_operation_notify_cb_t) (pa_operation *o, void *userdata);
+#endif
+
 /* should we include monitors in the device list? Set at SDL_Init time */
 static SDL_bool include_monitors = SDL_FALSE;
 
