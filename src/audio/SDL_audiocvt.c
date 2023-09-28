@@ -568,7 +568,7 @@ float SDL_GetAudioStreamFrequencyRatio(SDL_AudioStream *stream)
     }
 
     SDL_LockMutex(stream->lock);
-    float freq_ratio = stream->freq_ratio;
+    const float freq_ratio = stream->freq_ratio;
     SDL_UnlockMutex(stream->lock);
 
     return freq_ratio;
@@ -581,8 +581,8 @@ int SDL_SetAudioStreamFrequencyRatio(SDL_AudioStream *stream, float freq_ratio)
     }
 
     // Picked mostly arbitrarily.
-    static const float min_freq_ratio = 0.01f;
-    static const float max_freq_ratio = 100.0f;
+    const float min_freq_ratio = 0.01f;
+    const float max_freq_ratio = 100.0f;
 
     if (freq_ratio < min_freq_ratio) {
         return SDL_SetError("Frequency ratio is too low");
