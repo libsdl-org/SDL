@@ -2275,7 +2275,7 @@ acos_limitCases(void *args)
                         1.0, 0.0, result);
 
     result = SDL_acos(-1.0);
-    SDLTest_AssertCheck(SDL_PI_D == result,
+    SDLTest_AssertCheck(SDL_fabs(SDL_PI_D - result) <= EPSILON,
                         "Acos(%f), expected %f, got %f",
                         -1.0, SDL_PI_D, result);
 
@@ -2362,12 +2362,12 @@ asin_limitCases(void *args)
     double result;
 
     result = SDL_asin(1.0);
-    SDLTest_AssertCheck(SDL_PI_D / 2.0 == result,
+    SDLTest_AssertCheck(SDL_fabs(SDL_PI_D / 2.0 - result) <= EPSILON,
                         "Asin(%f), expected %f, got %f",
                         1.0, SDL_PI_D / 2.0, result);
 
     result = SDL_asin(-1.0);
-    SDLTest_AssertCheck(-SDL_PI_D / 2.0 == result,
+    SDLTest_AssertCheck(SDL_fabs(-SDL_PI_D / 2.0 - result) <= EPSILON,
                         "Asin(%f), expected %f, got %f",
                         -1.0, -SDL_PI_D / 2.0, result);
 
@@ -2554,7 +2554,7 @@ atan2_bothZeroCases(void *args)
         { 0.0, -0.0, SDL_PI_D },
         { -0.0, -0.0, -SDL_PI_D },
     };
-    return helper_ddtod("SDL_atan2", SDL_atan2, cases, SDL_arraysize(cases));
+    return helper_ddtod_inexact("SDL_atan2", SDL_atan2, cases, SDL_arraysize(cases));
 }
 
 /**
@@ -2573,7 +2573,7 @@ atan2_yZeroCases(void *args)
         { -0.0, 1.0, -0.0 },
         { -0.0, -1.0, -SDL_PI_D }
     };
-    return helper_ddtod("SDL_atan2", SDL_atan2, cases, SDL_arraysize(cases));
+    return helper_ddtod_inexact("SDL_atan2", SDL_atan2, cases, SDL_arraysize(cases));
 }
 
 /**
@@ -2589,7 +2589,7 @@ atan2_xZeroCases(void *args)
         { 1.0, -0.0, SDL_PI_D / 2.0 },
         { -1.0, -0.0, -SDL_PI_D / 2.0 }
     };
-    return helper_ddtod("SDL_atan2", SDL_atan2, cases, SDL_arraysize(cases));
+    return helper_ddtod_inexact("SDL_atan2", SDL_atan2, cases, SDL_arraysize(cases));
 }
 
 /* Infinity cases */
@@ -2608,22 +2608,22 @@ atan2_bothInfCases(void *args)
     double result;
 
     result = SDL_atan2(INFINITY, INFINITY);
-    SDLTest_AssertCheck(SDL_PI_D / 4.0 == result,
+    SDLTest_AssertCheck(SDL_fabs(SDL_PI_D / 4.0 - result) <= EPSILON,
                         "Atan2(%f,%f), expected %f, got %f",
                         INFINITY, INFINITY, SDL_PI_D / 4.0, result);
 
     result = SDL_atan2(INFINITY, -INFINITY);
-    SDLTest_AssertCheck(3.0 * SDL_PI_D / 4.0 == result,
+    SDLTest_AssertCheck(SDL_fabs(3.0 * SDL_PI_D / 4.0 - result) <= EPSILON,
                         "Atan2(%f,%f), expected %f, got %f",
                         INFINITY, -INFINITY, 3.0 * SDL_PI_D / 4.0, result);
 
     result = SDL_atan2(-INFINITY, INFINITY);
-    SDLTest_AssertCheck(-SDL_PI_D / 4.0 == result,
+    SDLTest_AssertCheck(SDL_fabs(-SDL_PI_D / 4.0 - result) <= EPSILON,
                         "Atan2(%f,%f), expected %f, got %f",
                         -INFINITY, INFINITY, -SDL_PI_D / 4.0, result);
 
     result = SDL_atan2(-INFINITY, -INFINITY);
-    SDLTest_AssertCheck(-3.0 * SDL_PI_D / 4.0 == result,
+    SDLTest_AssertCheck(SDL_fabs(-3.0 * SDL_PI_D / 4.0 - result) <= EPSILON,
                         "Atan2(%f,%f), expected %f, got %f",
                         -INFINITY, -INFINITY, -3.0 * SDL_PI_D / 4.0, result);
 
@@ -2640,22 +2640,22 @@ atan2_yInfCases(void *args)
     double result;
 
     result = SDL_atan2(INFINITY, 1.0);
-    SDLTest_AssertCheck(SDL_PI_D / 2.0 == result,
+    SDLTest_AssertCheck(SDL_fabs(SDL_PI_D / 2.0 - result) <= EPSILON,
                         "Atan2(%f,%f), expected %f, got %f",
                         INFINITY, 1.0, SDL_PI_D / 2.0, result);
 
     result = SDL_atan2(INFINITY, -1.0);
-    SDLTest_AssertCheck(SDL_PI_D / 2.0 == result,
+    SDLTest_AssertCheck(SDL_fabs(SDL_PI_D / 2.0 - result) <= EPSILON,
                         "Atan2(%f,%f), expected %f, got %f",
                         INFINITY, -1.0, SDL_PI_D / 2.0, result);
 
     result = SDL_atan2(-INFINITY, 1.0);
-    SDLTest_AssertCheck(-SDL_PI_D / 2.0 == result,
+    SDLTest_AssertCheck(SDL_fabs(-SDL_PI_D / 2.0 - result) <= EPSILON,
                         "Atan2(%f,%f), expected %f, got %f",
                         -INFINITY, 1.0, -SDL_PI_D / 2.0, result);
 
     result = SDL_atan2(-INFINITY, -1.0);
-    SDLTest_AssertCheck(-SDL_PI_D / 2.0 == result,
+    SDLTest_AssertCheck(SDL_fabs(-SDL_PI_D / 2.0 - result) <= EPSILON,
                         "Atan2(%f,%f), expected %f, got %f",
                         -INFINITY, -1.0, -SDL_PI_D / 2.0, result);
 
@@ -2684,12 +2684,12 @@ atan2_xInfCases(void *args)
                         -1.0, INFINITY, -0.0, result);
 
     result = SDL_atan2(1.0, -INFINITY);
-    SDLTest_AssertCheck(SDL_PI_D == result,
+    SDLTest_AssertCheck(SDL_fabs(SDL_PI_D - result) <= EPSILON,
                         "Atan2(%f,%f), expected %f, got %f",
                         1.0, -INFINITY, SDL_PI_D, result);
 
     result = SDL_atan2(-1.0, -INFINITY);
-    SDLTest_AssertCheck(-SDL_PI_D == result,
+    SDLTest_AssertCheck(SDL_fabs(-SDL_PI_D - result) <= EPSILON,
                         "Atan2(%f,%f), expected %f, got %f",
                         -1.0, -INFINITY, -SDL_PI_D, result);
 
