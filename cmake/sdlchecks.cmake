@@ -162,7 +162,7 @@ endmacro()
 # - HAVE_SDL_LOADSO opt
 macro(CheckPulseAudio)
   if(SDL_PULSEAUDIO)
-    set(PulseAudio_PKG_CONFIG_SPEC "libpulse>=5.0")
+    set(PulseAudio_PKG_CONFIG_SPEC "libpulse>=0.9.15")
     pkg_check_modules(PC_PULSEAUDIO IMPORTED_TARGET ${PulseAudio_PKG_CONFIG_SPEC})
     if(PC_PULSEAUDIO_FOUND)
       set(HAVE_PULSEAUDIO TRUE)
