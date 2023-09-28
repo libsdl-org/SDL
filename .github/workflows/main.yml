@@ -43,6 +43,7 @@ jobs:
           ${{ matrix.platform.msys-env }}-cc
           ${{ matrix.platform.msys-env }}-cmake
           ${{ matrix.platform.msys-env }}-ninja
+          ${{ matrix.platform.msys-env }}-perl
           ${{ matrix.platform.msys-env }}-pkg-config
           ${{ matrix.platform.msys-env }}-clang-tools-extra
 
