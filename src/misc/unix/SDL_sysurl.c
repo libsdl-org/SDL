@@ -32,6 +32,18 @@ int SDL_SYS_OpenURL(const char *url)
 {
     const pid_t pid1 = fork();
     if (pid1 == 0) { /* child process */
+#ifdef USE_POSIX_SPAWN
+        pid_t pid2;
+        const char *args[] = { "xdg-open", url, NULL };
+        /* Clear LD_PRELOAD so Chrome opens correctly when this application is launched by Steam */
+        unsetenv("LD_PRELOAD");
+        if (posix_spawnp(&pid2, args[0], NULL, NULL, (char **)args, environ) == 0) {
+            /* Child process doesn't wait for possibly-blocking grandchild. */
+            _exit(EXIT_SUCCESS);
+        } else {
+            _exit(EXIT_FAILURE);
+        }
+#else
         pid_t pid2;
         /* Clear LD_PRELOAD so Chrome opens correctly when this application is launched by Steam */
         unsetenv("LD_PRELOAD");
@@ -46,6 +58,7 @@ int SDL_SYS_OpenURL(const char *url)
             /* Child process doesn't wait for possibly-blocking grandchild. */
             _exit(EXIT_SUCCESS);
         }
+#endif /* USE_POSIX_SPAWN */
     } else if (pid1 < 0) {
         return SDL_SetError("fork() failed: %s", strerror(errno));
     } else {
