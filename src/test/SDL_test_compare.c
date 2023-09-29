@@ -52,6 +52,16 @@ GetPixel(Uint8 *p, size_t bytes_per_pixel)
     return ret;
 }
 
+static void
+LogErrorFormat(const char *name, const SDL_PixelFormat *format)
+{
+  SDLTest_LogError("%s: %08" SDL_PRIx32 " %s, %u bits/%u bytes per pixel", name, format->format, SDL_GetPixelFormatName(format->format), format->BitsPerPixel, format->BytesPerPixel);
+  SDLTest_LogError("%s: R mask %08" SDL_PRIx32 ", loss %u, shift %u", name, format->Rmask, format->Rloss, format->Rshift);
+  SDLTest_LogError("%s: G mask %08" SDL_PRIx32 ", loss %u, shift %u", name, format->Gmask, format->Gloss, format->Gshift);
+  SDLTest_LogError("%s: B mask %08" SDL_PRIx32 ", loss %u, shift %u", name, format->Bmask, format->Bloss, format->Bshift);
+  SDLTest_LogError("%s: A mask %08" SDL_PRIx32 ", loss %u, shift %u", name, format->Amask, format->Aloss, format->Ashift);
+}
+
 /* Compare surfaces */
 int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface, int allowable_error)
 {
@@ -130,6 +140,8 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
     _CompareSurfaceCount++;
     if (ret != 0) {
         SDLTest_LogError("Comparison of pixels with allowable error of %i failed %i times.", allowable_error, ret);
+        LogErrorFormat("Reference surface format", referenceSurface->format);
+        LogErrorFormat("Actual surface format   ", surface->format);
         SDLTest_LogError("First detected occurrence at position %i,%i with a squared RGB-difference of %i.", sampleErrorX, sampleErrorY, sampleDist);
         (void)SDL_snprintf(imageFilename, FILENAME_SIZE - 1, "CompareSurfaces%04d_TestOutput.bmp", _CompareSurfaceCount);
         SDL_SaveBMP(surface, imageFilename);
