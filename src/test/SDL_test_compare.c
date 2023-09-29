@@ -36,6 +36,25 @@
 /* Counter for _CompareSurface calls; used for filename creation when comparisons fail */
 static int _CompareSurfaceCount = 0;
 
+static Uint32
+GetPixel(Uint8 *p, size_t bytes_per_pixel)
+{
+    Uint32 ret = 0;
+
+    SDL_assert(bytes_per_pixel <= sizeof(ret));
+
+    /* Fill the appropriate number of least-significant bytes of ret,
+     * leaving the most-significant bytes set to zero, so that ret can
+     * be decoded with SDL_GetRGBA afterwards. */
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    SDL_memcpy(((Uint8 *) &ret) + (sizeof(ret) - bytes_per_pixel), p, bytes_per_pixel);
+#else
+    SDL_memcpy(&ret, p, bytes_per_pixel);
+#endif
+
+    return ret;
+}
+
 /* Compare surfaces */
 int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface, int allowable_error)
 {
@@ -74,11 +93,14 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
     /* Compare image - should be same format. */
     for (j = 0; j < surface->h; j++) {
         for (i = 0; i < surface->w; i++) {
+            Uint32 pixel;
             p = (Uint8 *)surface->pixels + j * surface->pitch + i * bpp;
             p_reference = (Uint8 *)referenceSurface->pixels + j * referenceSurface->pitch + i * bpp_reference;
 
-            SDL_GetRGBA(*(Uint32 *)p, surface->format, &R, &G, &B, &A);
-            SDL_GetRGBA(*(Uint32 *)p_reference, referenceSurface->format, &Rd, &Gd, &Bd, &Ad);
+            pixel = GetPixel(p, bpp);
+            SDL_GetRGBA(pixel, surface->format, &R, &G, &B, &A);
+            pixel = GetPixel(p_reference, bpp_reference);
+            SDL_GetRGBA(pixel, referenceSurface->format, &Rd, &Gd, &Bd, &Ad);
 
             dist = 0;
             dist += (R - Rd) * (R - Rd);
