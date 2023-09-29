@@ -906,6 +906,22 @@ macro(CheckOpenGLES)
 endmacro()
 
 # Requires:
+# - EGL
+macro(CheckQNXScreen)
+  if(QNX AND HAVE_OPENGL_EGL)
+    check_c_source_compiles("
+        #include <screen/screen.h>
+        int main (int argc, char** argv) { return 0; }" HAVE_QNX_SCREEN)
+    if(HAVE_QNX_SCREEN)
+      set(SDL_VIDEO_DRIVER_QNX 1)
+      file(GLOB QNX_VIDEO_SOURCES ${SDL2_SOURCE_DIR}/src/video/qnx/*.c)
+      list(APPEND SOURCE_FILES ${QNX_VIDEO_SOURCES})
+      list(APPEND EXTRA_LIBS screen EGL)
+    endif()
+  endif()
+endmacro()
+
+# Requires:
 # - nada
 # Optional:
 # - THREADS opt
@@ -955,6 +971,8 @@ macro(CheckPTHREAD)
     elseif(EMSCRIPTEN)
       set(PTHREAD_CFLAGS "-D_REENTRANT -pthread")
       set(PTHREAD_LDFLAGS "-pthread")
+    elseif(QNX)
+      # pthread support is baked in
     else()
       set(PTHREAD_CFLAGS "-D_REENTRANT")
       set(PTHREAD_LDFLAGS "-lpthread")
