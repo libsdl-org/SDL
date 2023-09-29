@@ -71,6 +71,8 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
     Uint8 *p, *p_reference;
     int dist;
     int sampleErrorX = 0, sampleErrorY = 0, sampleDist = 0;
+    SDL_Color sampleReference = { 0, 0, 0, 0 };
+    SDL_Color sampleActual = { 0, 0, 0, 0 };
     Uint8 R, G, B, A;
     Uint8 Rd, Gd, Bd, Ad;
     char imageFilename[FILENAME_SIZE];
@@ -128,6 +130,14 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
                     sampleErrorX = i;
                     sampleErrorY = j;
                     sampleDist = dist;
+                    sampleReference.r = Rd;
+                    sampleReference.g = Gd;
+                    sampleReference.b = Bd;
+                    sampleReference.a = Ad;
+                    sampleActual.r = R;
+                    sampleActual.g = G;
+                    sampleActual.b = B;
+                    sampleActual.a = A;
                 }
             }
         }
@@ -143,6 +153,8 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
         LogErrorFormat("Reference surface format", referenceSurface->format);
         LogErrorFormat("Actual surface format   ", surface->format);
         SDLTest_LogError("First detected occurrence at position %i,%i with a squared RGB-difference of %i.", sampleErrorX, sampleErrorY, sampleDist);
+        SDLTest_LogError("Reference pixel: R=%u G=%u B=%u A=%u", sampleReference.r, sampleReference.g, sampleReference.b, sampleReference.a);
+        SDLTest_LogError("Actual pixel   : R=%u G=%u B=%u A=%u", sampleActual.r, sampleActual.g, sampleActual.b, sampleActual.a);
         (void)SDL_snprintf(imageFilename, FILENAME_SIZE - 1, "CompareSurfaces%04d_TestOutput.bmp", _CompareSurfaceCount);
         SDL_SaveBMP(surface, imageFilename);
         (void)SDL_snprintf(referenceFilename, FILENAME_SIZE - 1, "CompareSurfaces%04d_Reference.bmp", _CompareSurfaceCount);
