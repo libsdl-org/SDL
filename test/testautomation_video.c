@@ -278,6 +278,8 @@ int video_createWindowVariousFlags(void *arg)
             break;
         case 2:
             flags = SDL_WINDOW_OPENGL;
+            /* Skip - not every video driver supports OpenGL; comment out next line to run test */
+            continue;
             break;
         case 3:
             flags = SDL_WINDOW_SHOWN;

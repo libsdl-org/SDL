@@ -454,7 +454,7 @@ int SDL_VideoInit(const char *driver_name)
         goto pre_driver_error;
     }
     init_keyboard = SDL_TRUE;
-    if (SDL_MouseInit() < 0) {
+    if (SDL_MousePreInit() < 0) {
         goto pre_driver_error;
     }
     init_mouse = SDL_TRUE;
@@ -549,6 +549,8 @@ int SDL_VideoInit(const char *driver_name)
     if (!SDL_HasScreenKeyboardSupport()) {
         SDL_StartTextInput();
     }
+
+    SDL_MousePostInit();
 
     /* We're ready to go! */
     return 0;
@@ -1335,6 +1337,7 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
 {
     SDL_VideoDisplay *display;
     SDL_Window *other;
+    SDL_bool resized = SDL_FALSE;
 
     CHECK_WINDOW_MAGIC(window, -1);
 
@@ -1443,7 +1446,7 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
             SDL_zero(fullscreen_mode);
 
             if (SDL_GetWindowDisplayMode(other, &fullscreen_mode) == 0) {
-                SDL_bool resized = SDL_TRUE;
+                resized = SDL_TRUE;
 
                 if (other->w == fullscreen_mode.w && other->h == fullscreen_mode.h) {
                     resized = SDL_FALSE;
@@ -1498,11 +1501,18 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
 
     if (_this->SetWindowFullscreen) {
         _this->SetWindowFullscreen(_this, window, display, SDL_FALSE);
+    } else {
+        resized = SDL_TRUE;
     }
     display->fullscreen_window = NULL;
 
-    /* Generate a mode change event here */
-    SDL_OnWindowResized(window);
+    if (!resized) {
+        /* Generate a mode change event here */
+        SDL_OnWindowResized(window);
+    } else {
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED,
+                            window->windowed.w, window->windowed.h);
+    }
 
     /* Restore the cursor position */
     SDL_RestoreMousePosition(window);
@@ -2473,6 +2483,9 @@ void SDL_ShowWindow(SDL_Window *window)
 
     if (_this->ShowWindow) {
         _this->ShowWindow(_this, window);
+    } else {
+        SDL_SetMouseFocus(window);
+        SDL_SetKeyboardFocus(window);
     }
     SDL_SendWindowEvent(window, SDL_WINDOWEVENT_SHOWN, 0, 0);
 }
@@ -2490,6 +2503,9 @@ void SDL_HideWindow(SDL_Window *window)
 
     if (_this->HideWindow) {
         _this->HideWindow(_this, window);
+    } else {
+        SDL_SetMouseFocus(NULL);
+        SDL_SetKeyboardFocus(NULL);
     }
     window->is_hiding = SDL_FALSE;
     SDL_SendWindowEvent(window, SDL_WINDOWEVENT_HIDDEN, 0, 0);
