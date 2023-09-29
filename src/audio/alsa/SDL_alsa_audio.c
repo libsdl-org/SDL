@@ -336,11 +336,16 @@ static void ALSA_WaitDevice(SDL_AudioDevice *device)
     const snd_pcm_sframes_t needed = (snd_pcm_sframes_t)device->sample_frames;
     while (!SDL_AtomicGet(&device->shutdown)) {
         const snd_pcm_sframes_t rc = ALSA_snd_pcm_avail(device->hidden->pcm_handle);
-        if ((rc < 0) && (rc != -EAGAIN)) {
-            /* Hmm, not much we can do - abort */
-            fprintf(stderr, "ALSA snd_pcm_avail failed (unrecoverable): %s\n",
-                    ALSA_snd_strerror(rc));
-            SDL_AudioDeviceDisconnected(device);
+        if (rc < 0 && rc != -EAGAIN) {
+            int status = rc;
+
+            status = ALSA_snd_pcm_recover(device->hidden->pcm_handle, status, 0);
+            if (status < 0) {
+                /* Hmm, not much we can do - abort */
+                fprintf(stderr, "ALSA snd_pcm_avail failed (unrecoverable): %s\n",
+                        ALSA_snd_strerror(rc));
+                SDL_AudioDeviceDisconnected(device);
+            }
             return;
         } else if (rc < needed) {
             const Uint32 delay = ((needed - (SDL_max(rc, 0))) * 1000) / device->spec.freq;
@@ -363,7 +368,6 @@ static int ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buf
     while ((frames_left > 0) && !SDL_AtomicGet(&device->shutdown)) {
         int status = ALSA_snd_pcm_writei(device->hidden->pcm_handle,
                                          sample_buf, frames_left);
-
         if (status < 0) {
             if (status == -EAGAIN) {
                 /* Apparently snd_pcm_recover() doesn't handle this case -
