@@ -784,7 +784,9 @@ static void ALSA_HotplugIteration(SDL_bool *has_default_output, SDL_bool *has_de
                 continue;
             }
 
-            if (SDL_strcmp(name, "default") == 0) {
+            if (SDL_strcmp(name, "default") == 0 ||
+                SDL_strncmp(name, "default:", 8 ) == 0 ||
+                SDL_strncmp(name, "sysdefault:", 11 ) == 0 ) {
                 if (has_default < 0) {
                     has_default = i;
                 }
