@@ -227,11 +227,13 @@ elseif(MSVC_VERSION GREATER 1400) # VisualStudio 8.0+
 elseif(CMAKE_C_COMPILER_ID MATCHES "^Intel$")
   set(OPT_DEF_ASM TRUE)
   set(USE_INTELCC TRUE)
+elseif(CMAKE_C_COMPILER_ID MATCHES "QCC")
+  set(USE_QCC TRUE)
 else()
   set(OPT_DEF_ASM FALSE)
 endif()
 
-if(USE_GCC OR USE_CLANG OR USE_INTELCC)
+if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
   set(OPT_DEF_GCC_ATOMICS ON)
 endif()
 
@@ -569,7 +571,7 @@ if(NOT SDL_FOREGROUNDING_SIGNAL STREQUAL "OFF")
 endif()
 
 # Compiler option evaluation
-if(USE_GCC OR USE_CLANG OR USE_INTELCC)
+if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
   # Check for -Wall first, so later things can override pieces of it.
   # Note: clang-cl treats -Wall as -Weverything (which is very loud),
   #       /W3 as -Wall, and /W4 as -Wall -Wextra.  So: /W3 is enough.
@@ -1456,6 +1458,12 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
         file(GLOB AIX_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/paudio/*.c)
         list(APPEND SOURCE_FILES ${AIX_AUDIO_SOURCES})
         set(HAVE_SDL_AUDIO TRUE)
+    elseif(QNX)
+        set(SDL_AUDIO_DRIVER_QSA 1)
+        file(GLOB QSA_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/qsa/*.c)
+        list(APPEND SOURCE_FILES ${QSA_AUDIO_SOURCES})
+        list(APPEND EXTRA_LIBS asound)
+        set(HAVE_SDL_AUDIO TRUE)
     endif()
     CheckOSS()
     CheckALSA()
@@ -1487,6 +1495,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
       set(SDL_VIDEO_VULKAN 1)
       set(HAVE_VULKAN TRUE)
     endif()
+    CheckQNXScreen()
   endif()
 
   if(UNIX)
@@ -1730,6 +1739,13 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     set(HAVE_RPATH TRUE)
   endif()
 
+  if(QNX)
+    # QNX's *printf() family generates a SIGSEGV if NULL is passed for a string
+    # specifier (on purpose), but SDL expects "(null)". Use the built-in
+    # implementation.
+    set(HAVE_VSNPRINTF 0)
+    set(USE_POSIX_SPAWN 1)
+  endif()
 elseif(WINDOWS)
   find_program(WINDRES windres)
 
