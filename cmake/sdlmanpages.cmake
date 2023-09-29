@@ -19,7 +19,7 @@ function(SDL_generate_manpages)
   endif()
 
   if(NOT ARG_HEADERS_DIR)
-    set(ARG_HEADERS_DIR "${PROJECT_SOURCE_DIR}/include/SDL3")
+    message(FATAL_ERROR "Missing required HEADERS_DIR argument")
   endif()
 
   # FIXME: get rid of SYMBOL and let the perl script figure out the dependencies

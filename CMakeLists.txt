@@ -2804,7 +2804,7 @@ set(SDL_REVISION "" CACHE STRING "Custom SDL revision (overrides SDL_REVISION_SU
 if(NOT SDL_REVISION)
   set(SDL_REVISION_SUFFIX "" CACHE STRING "Suffix for the SDL revision")
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION.txt")
-    # If VERSION exists, it contains the SDL version
+    # If VERSION.txt exists, it contains the SDL version
     file(READ "${CMAKE_CURRENT_SOURCE_DIR}/VERSION.txt" SDL_REVISION_CENTER)
     string(STRIP "${SDL_REVISION_CENTER}" SDL_REVISION_CENTER)
   else()
@@ -3364,6 +3364,7 @@ if(NOT SDL_DISABLE_INSTALL)
 
   if(NOT SDL_DISABLE_INSTALL_DOCS)
     SDL_generate_manpages(
+      HEADERS_DIR "${PROJECT_SOURCE_DIR}/include/SDL3"
       SYMBOL "SDL_Init"
       WIKIHEADERS_PL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/build-scripts/wikiheaders.pl"
       REVISION "${SDL_REVISION}"
