@@ -67,12 +67,19 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
     char referenceFilename[FILENAME_SIZE];
 
     /* Validate input surfaces */
-    if (surface == NULL || referenceSurface == NULL) {
+    if (surface == NULL) {
+        SDLTest_LogError("Cannot compare NULL surface");
+        return -1;
+    }
+
+    if (referenceSurface == NULL) {
+        SDLTest_LogError("Cannot compare NULL reference surface");
         return -1;
     }
 
     /* Make sure surface size is the same. */
     if ((surface->w != referenceSurface->w) || (surface->h != referenceSurface->h)) {
+        SDLTest_LogError("Expected %dx%d surface, got %dx%d", referenceSurface->w, referenceSurface->h, surface->w, surface->h);
         return -2;
     }
 
