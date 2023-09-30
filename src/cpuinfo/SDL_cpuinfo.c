@@ -66,6 +66,10 @@
 #endif
 #endif
 
+#if defined (__FreeBSD__)
+#include <sys/param.h>
+#endif
+
 #if defined(__ANDROID__) && defined(__arm__) && !defined(HAVE_GETAUXVAL)
 #include <cpu-features.h>
 #endif
@@ -840,6 +844,7 @@ static const char *SDL_GetCPUName(void)
 int SDL_GetCPUCacheLineSize(void)
 {
     const char *cpuType = SDL_GetCPUType();
+    int cacheline_size;
     int a, b, c, d;
     (void)a;
     (void)b;
@@ -847,15 +852,31 @@ int SDL_GetCPUCacheLineSize(void)
     (void)d;
     if (SDL_strcmp(cpuType, "GenuineIntel") == 0 || SDL_strcmp(cpuType, "CentaurHauls") == 0 || SDL_strcmp(cpuType, "  Shanghai  ") == 0) {
         cpuid(0x00000001, a, b, c, d);
-        return ((b >> 8) & 0xff) * 8;
+	cacheline_size = ((b >> 8) & 0xff) * 8;
+        return cacheline_size;
     } else if (SDL_strcmp(cpuType, "AuthenticAMD") == 0 || SDL_strcmp(cpuType, "HygonGenuine") == 0) {
         cpuid(0x80000005, a, b, c, d);
-        return c & 0xff;
+	cacheline_size = c & 0xff;
+        return cacheline_size;
     } else {
-#ifdef __LINUX__
-        int failsafe_cacheline_size;
-        if ((failsafe_cacheline_size = sysconf(_SC_LEVEL1_DCACHE_LINESIZE)) != -1)
-            return failsafe_cacheline_size;
+#if defined(__LINUX__) && defined (__GNUC__)
+        if ((cacheline_size = sysconf(_SC_LEVEL1_DCACHE_LINESIZE)) != -1)
+            return cacheline_size;
+#endif
+#if defined(__LINUX__) /* non glibc linux systems */
+        FILE *f = NULL;
+
+        f = fopen("/sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size", "r");
+        if (f) {
+            fscanf(f, "%d", &cacheline_size);
+            fclose(f);
+            return cacheline_size;
+	}
+#elif defined __FreeBSD__
+#ifdef CACHE_LINE_SIZE
+        cacheline_size = CACHE_LINE_SIZE;
+        return cacheline_size;
+#endif
 #endif
         /* Just make a guess here... */
         return SDL_CACHELINE_SIZE;
