@@ -20,8 +20,6 @@
 */
 #include "SDL_internal.h"
 
-// !!! FIXME: Clean out the fprintf and printf calls, replace with SDL_Log
-
 #ifdef SDL_AUDIO_DRIVER_ALSA
 
 #ifndef SDL_ALSA_NON_BLOCKING
@@ -339,8 +337,7 @@ static void ALSA_WaitDevice(SDL_AudioDevice *device)
             const int status = ALSA_snd_pcm_recover(device->hidden->pcm_handle, rc, 0);
             if (status < 0) {
                 // Hmm, not much we can do - abort
-                SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA snd_pcm_avail failed (unrecoverable): %s\n",
-                        ALSA_snd_strerror(rc));
+                SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA: snd_pcm_avail failed (unrecoverable): %s", ALSA_snd_strerror(rc));
                 SDL_AudioDeviceDisconnected(device);
             }
             return;
@@ -365,7 +362,7 @@ static int ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buf
 
     while ((frames_left > 0) && !SDL_AtomicGet(&device->shutdown)) {
         const int rc = ALSA_snd_pcm_writei(device->hidden->pcm_handle, sample_buf, frames_left);
-        //SDL_Log("ALSA PLAYDEVICE: WROTE %d of %d bytes", (rc >= 0) ? ((int) (rc * frame_size)) : rc, (int) (frames_left * frame_size));
+        //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA PLAYDEVICE: WROTE %d of %d bytes", (rc >= 0) ? ((int) (rc * frame_size)) : rc, (int) (frames_left * frame_size));
         SDL_assert(rc != 0);  // assuming this can't happen if we used snd_pcm_wait and queried for available space.
         if (rc < 0) {
             SDL_assert(rc != -EAGAIN);  // assuming this can't happen if we used snd_pcm_wait and queried for available space. snd_pcm_recover won't handle it!
@@ -392,7 +389,7 @@ static Uint8 *ALSA_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
     SDL_assert(requested_frames > 0);
     const int requested_bytes = requested_frames * SDL_AUDIO_FRAMESIZE(device->spec);
     SDL_assert(requested_bytes <= *buffer_size);
-    //SDL_Log("ALSA GETDEVICEBUF: NEED %d BYTES", requested_bytes);
+    //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA GETDEVICEBUF: NEED %d BYTES", requested_bytes);
     *buffer_size = requested_bytes;
     return device->hidden->mixbuf;
 }
@@ -413,7 +410,7 @@ static int ALSA_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buf
         const int status = ALSA_snd_pcm_recover(device->hidden->pcm_handle, rc, 0);
         if (status < 0) {
             // Hmm, not much we can do - abort
-            SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA read failed (unrecoverable): %s\n", ALSA_snd_strerror(rc));
+            SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA read failed (unrecoverable): %s", ALSA_snd_strerror(rc));
             return -1;
         }
         return 0;  // go back to WaitDevice and try again.
@@ -421,7 +418,7 @@ static int ALSA_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buf
         device->hidden->swizzle_func(device, buffer, total_frames - rc);
     }
 
-    //SDL_Log("ALSA: captured %d bytes\n", rc * frame_size);
+    //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA: captured %d bytes", rc * frame_size);
 
     return rc * frame_size;
 }
@@ -492,7 +489,7 @@ static int ALSA_set_buffer_size(SDL_AudioDevice *device, snd_pcm_hw_params_t *pa
         ALSA_snd_pcm_hw_params_get_buffer_size(hwparams, &bufsize);
 
         SDL_LogError(SDL_LOG_CATEGORY_AUDIO,
-                     "ALSA: period size = %ld, periods = %u, buffer size = %lu\n",
+                     "ALSA: period size = %ld, periods = %u, buffer size = %lu",
                      persize, periods, bufsize);
     }
 
@@ -711,7 +708,7 @@ static void add_device(const SDL_bool iscapture, const char *name, void *hint, A
         *ptr = '\0';
     }
 
-    //printf("ALSA: adding %s device '%s' (%s)\n", iscapture ? "capture" : "output", name, desc);
+    //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA: adding %s device '%s' (%s)", iscapture ? "capture" : "output", name, desc);
 
     handle = SDL_strdup(name);
     if (handle == NULL) {
@@ -864,7 +861,7 @@ static void ALSA_HotplugIteration(SDL_bool *has_default_output, SDL_bool *has_de
         // report anything still in unseen as removed.
         ALSA_Device *next = NULL;
         for (ALSA_Device *dev = unseen; dev; dev = next) {
-            //printf("ALSA: removing usb %s device '%s'\n", dev->iscapture ? "capture" : "output", dev->name);
+            //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA: removing %s device '%s'", dev->iscapture ? "capture" : "output", dev->name);
             next = dev->next;
             SDL_AudioDeviceDisconnected(SDL_FindPhysicalAudioDeviceByHandle(dev->name));
             SDL_free(dev->name);
@@ -930,7 +927,7 @@ static void ALSA_Deinitialize(void)
 
     // Shutting down! Clean up any data we've gathered.
     for (dev = hotplug_devices; dev; dev = next) {
-        //printf("ALSA: at shutdown, removing %s device '%s'\n", dev->iscapture ? "capture" : "output", dev->name);
+        //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA: at shutdown, removing %s device '%s'", dev->iscapture ? "capture" : "output", dev->name);
         next = dev->next;
         SDL_free(dev->name);
         SDL_free(dev);
