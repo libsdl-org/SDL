@@ -32,6 +32,9 @@ extern "C" {
 
 #include "../../audio/SDL_sysaudio.h"
 
+// this appears to be broken right now (on Android, not SDL, I think...?).
+#define ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES 0
+
 /* Interface from the SDL library into the Android Java activity */
 extern void Android_JNI_SetActivityTitle(const char *title);
 extern void Android_JNI_SetWindowStyle(SDL_bool fullscreen);

@@ -1006,6 +1006,7 @@ JNIEXPORT void JNICALL
 SDL_JAVA_AUDIO_INTERFACE(addAudioDevice)(JNIEnv *env, jclass jcls, jboolean is_capture,
                                          jstring name, jint device_id)
 {
+#if ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES
     if (SDL_GetCurrentAudioDriver() != NULL) {
         void *handle = (void *)((size_t)device_id);
         if (!SDL_FindPhysicalAudioDeviceByHandle(handle)) {
@@ -1014,16 +1015,19 @@ SDL_JAVA_AUDIO_INTERFACE(addAudioDevice)(JNIEnv *env, jclass jcls, jboolean is_c
             (*env)->ReleaseStringUTFChars(env, name, utf8name);
         }
     }
+#endif
 }
 
 JNIEXPORT void JNICALL
 SDL_JAVA_AUDIO_INTERFACE(removeAudioDevice)(JNIEnv *env, jclass jcls, jboolean is_capture,
                                             jint device_id)
 {
+#if ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES
     if (SDL_GetCurrentAudioDriver() != NULL) {
         SDL_Log("Removing device with handle %d, capture %d", device_id, is_capture);
         SDL_AudioDeviceDisconnected(SDL_FindPhysicalAudioDeviceByHandle((void *)((size_t)device_id)));
     }
+#endif
 }
 
 /* Paddown */
