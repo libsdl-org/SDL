@@ -171,48 +171,40 @@ static void AAUDIO_WaitDevice(SDL_AudioDevice *device)
 
 static int BuildAAudioStream(SDL_AudioDevice *device);
 
-static int RecoverAAudioDeviceIfFailed(SDL_AudioDevice *device)
+static int RecoverAAudioDevice(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *hidden = device->hidden;
-    const aaudio_result_t err = (aaudio_result_t) SDL_AtomicGet(&hidden->error_callback_triggered);
-    if (err) {
-        SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "aaudio: Audio device triggered error %d (%s)", (int) err, ctx.AAudio_convertResultToText(err));
 
-        // attempt to build a new stream, in case there's a new default device.
-        ctx.AAudioStream_requestStop(hidden->stream);
-        ctx.AAudioStream_close(hidden->stream);
-        hidden->stream = NULL;
+    // attempt to build a new stream, in case there's a new default device.
+    ctx.AAudioStream_requestStop(hidden->stream);
+    ctx.AAudioStream_close(hidden->stream);
+    hidden->stream = NULL;
 
-        SDL_aligned_free(hidden->mixbuf);
-        hidden->mixbuf = NULL;
+    SDL_aligned_free(hidden->mixbuf);
+    hidden->mixbuf = NULL;
 
-        SDL_DestroySemaphore(hidden->semaphore);
-        hidden->semaphore = NULL;
+    SDL_DestroySemaphore(hidden->semaphore);
+    hidden->semaphore = NULL;
 
-        const int prev_sample_frames = device->sample_frames;
-        SDL_AudioSpec prevspec;
-        SDL_copyp(&prevspec, &device->spec);
+    const int prev_sample_frames = device->sample_frames;
+    SDL_AudioSpec prevspec;
+    SDL_copyp(&prevspec, &device->spec);
 
-        if (BuildAAudioStream(device) == -1) {
-            return -1;  // oh well, we tried.
-        }
-
-        // we don't know the new device spec until we open the new device, so we saved off the old one and force it back
-        // so SDL_AudioDeviceFormatChanged can set up all the important state if necessary and then set it back to the new spec.
-        const int new_sample_frames = device->sample_frames;
-        SDL_AudioSpec newspec;
-        SDL_copyp(&newspec, &device->spec);
-
-        device->sample_frames = prev_sample_frames;
-        SDL_copyp(&device->spec, &prevspec);
-        if (SDL_AudioDeviceFormatChangedAlreadyLocked(device, &newspec, new_sample_frames) == -1) {
-            return -1;  // ugh
-        }
-
-        // we're recovering from PlayDevice, so wait until the data callback fires so we know we fed the pending buffer to the device.
-        SDL_WaitSemaphore(device->hidden->semaphore);
+    if (BuildAAudioStream(device) < 0) {
+        return -1;  // oh well, we tried.
     }
 
+    // we don't know the new device spec until we open the new device, so we saved off the old one and force it back
+    // so SDL_AudioDeviceFormatChanged can set up all the important state if necessary and then set it back to the new spec.
+    const int new_sample_frames = device->sample_frames;
+    SDL_AudioSpec newspec;
+    SDL_copyp(&newspec, &device->spec);
+
+    device->sample_frames = prev_sample_frames;
+    SDL_copyp(&device->spec, &prevspec);
+    if (SDL_AudioDeviceFormatChangedAlreadyLocked(device, &newspec, new_sample_frames) < 0) {
+        return -1;  // ugh
+    }
     return 0;
 }
 
@@ -222,12 +214,17 @@ static int AAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int b
     struct SDL_PrivateAudioData *hidden = device->hidden;
 
     // AAUDIO_dataCallback picks up our work and unblocks AAUDIO_WaitDevice. But make sure we didn't fail here.
-    if (RecoverAAudioDeviceIfFailed(device) == -1) {
-        return -1;  // oh well, we went down hard.
-    }
+    const aaudio_result_t err = (aaudio_result_t) SDL_AtomicGet(&hidden->error_callback_triggered);
+    if (err) {
+        SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "aaudio: Audio device triggered error %d (%s)", (int) err, ctx.AAudio_convertResultToText(err));
 
-    SDL_MemoryBarrierRelease();
-    hidden->processed_bytes += buflen;
+        if (RecoverAAudioDevice(device) < 0) {
+            return -1;  // oh well, we went down hard.
+        }
+    } else {
+        SDL_MemoryBarrierRelease();
+        hidden->processed_bytes += buflen;
+    }
     return 0;
 }
 
@@ -358,6 +355,8 @@ static int BuildAAudioStream(SDL_AudioDevice *device)
     if (hidden->mixbuf == NULL) {
         return SDL_OutOfMemory();
     }
+    hidden->processed_bytes = 0;
+    hidden->callback_bytes = 0;
 
     hidden->semaphore = SDL_CreateSemaphore(iscapture ? 0 : hidden->num_buffers);
     if (!hidden->semaphore) {
