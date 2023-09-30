@@ -287,18 +287,14 @@ static int BuildAAudioStream(SDL_AudioDevice *device)
         return SDL_SetError("SDL Failed AAudio_createStreamBuilder - builder NULL");
     }
 
-    ctx.AAudioStreamBuilder_setSampleRate(builder, device->spec.freq);
-    ctx.AAudioStreamBuilder_setChannelCount(builder, device->spec.channels);
-
 #if ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES
     const int aaudio_device_id = (int) ((size_t) device->handle);
     LOGI("Opening device id %d", aaudio_device_id);
     ctx.AAudioStreamBuilder_setDeviceId(builder, aaudio_device_id);
 #endif
 
-    const aaudio_direction_t direction = (iscapture ? AAUDIO_DIRECTION_INPUT : AAUDIO_DIRECTION_OUTPUT);
-    ctx.AAudioStreamBuilder_setDirection(builder, direction);
     aaudio_format_t format;
+#ifdef SET_AUDIO_FORMAT
     if ((device->spec.format == SDL_AUDIO_S32) && (SDL_GetAndroidSDKVersion() >= 31)) {
         format = AAUDIO_FORMAT_PCM_I32;
     } else if (device->spec.format == SDL_AUDIO_F32) {
@@ -306,8 +302,13 @@ static int BuildAAudioStream(SDL_AudioDevice *device)
     } else {
         format = AAUDIO_FORMAT_PCM_I16;  // sint16 is a safe bet for everything else.
     }
-
     ctx.AAudioStreamBuilder_setFormat(builder, format);
+    ctx.AAudioStreamBuilder_setSampleRate(builder, device->spec.freq);
+    ctx.AAudioStreamBuilder_setChannelCount(builder, device->spec.channels);
+#endif
+
+    const aaudio_direction_t direction = (iscapture ? AAUDIO_DIRECTION_INPUT : AAUDIO_DIRECTION_OUTPUT);
+    ctx.AAudioStreamBuilder_setDirection(builder, direction);
     ctx.AAudioStreamBuilder_setErrorCallback(builder, AAUDIO_errorCallback, device);
     ctx.AAudioStreamBuilder_setDataCallback(builder, AAUDIO_dataCallback, device);
     ctx.AAudioStreamBuilder_setPerformanceMode(builder, AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
@@ -317,20 +318,18 @@ static int BuildAAudioStream(SDL_AudioDevice *device)
          device->spec.channels, SDL_AUDIO_ISBIGENDIAN(device->spec.format) ? "BE" : "LE", device->sample_frames);
 
     res = ctx.AAudioStreamBuilder_openStream(builder, &hidden->stream);
-
     if (res != AAUDIO_OK) {
         LOGI("SDL Failed AAudioStreamBuilder_openStream %d", res);
         ctx.AAudioStreamBuilder_delete(builder);
         return SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
     }
+    ctx.AAudioStreamBuilder_delete(builder);
 
     device->sample_frames = (int)ctx.AAudioStream_getFramesPerDataCallback(hidden->stream);
     if (device->sample_frames == AAUDIO_UNSPECIFIED) {
         // We'll get variable frames in the callback, make sure we have at least half a buffer available
         device->sample_frames = (int)ctx.AAudioStream_getBufferCapacityInFrames(hidden->stream) / 2;
     }
-
-    ctx.AAudioStreamBuilder_delete(builder);
 
     device->spec.freq = ctx.AAudioStream_getSampleRate(hidden->stream);
     device->spec.channels = ctx.AAudioStream_getChannelCount(hidden->stream);
