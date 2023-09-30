@@ -859,7 +859,7 @@ int SDL_GetCPUCacheLineSize(void)
 	cacheline_size = c & 0xff;
         return cacheline_size;
     } else {
-#if defined(__LINUX__) && defined (__GNUC__)
+#if defined(__LINUX__) && defined (__GLIBC__)
         if ((cacheline_size = sysconf(_SC_LEVEL1_DCACHE_LINESIZE)) != -1)
             return cacheline_size;
 #endif
