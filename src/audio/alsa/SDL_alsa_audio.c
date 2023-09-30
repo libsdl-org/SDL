@@ -387,7 +387,7 @@ static Uint8 *ALSA_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
     snd_pcm_sframes_t rc = ALSA_snd_pcm_avail(device->hidden->pcm_handle);
     if (rc <= 0) {
         // Wait a bit and try again, maybe the hardware isn't quite ready yet?
-        SDL_Delay(10);
+        SDL_Delay(1);
 
         rc = ALSA_snd_pcm_avail(device->hidden->pcm_handle);
         if (rc <= 0) {
