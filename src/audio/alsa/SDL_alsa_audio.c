@@ -337,7 +337,7 @@ static void ALSA_WaitDevice(SDL_AudioDevice *device)
             const int status = ALSA_snd_pcm_recover(device->hidden->pcm_handle, rc, 0);
             if (status < 0) {
                 // Hmm, not much we can do - abort
-                SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA: snd_pcm_avail failed (unrecoverable): %s", ALSA_snd_strerror(rc));
+                SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA: snd_pcm_wait failed (unrecoverable): %s", ALSA_snd_strerror(rc));
                 SDL_AudioDeviceDisconnected(device);
             }
             return;
@@ -384,9 +384,20 @@ static int ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buf
 
 static Uint8 *ALSA_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
-    const snd_pcm_sframes_t rc = ALSA_snd_pcm_avail(device->hidden->pcm_handle);
+    snd_pcm_sframes_t rc = ALSA_snd_pcm_avail(device->hidden->pcm_handle);
+    if (rc <= 0) {
+        // Wait a bit and try again, maybe the hardware isn't quite ready yet?
+        SDL_Delay(10);
+
+        rc = ALSA_snd_pcm_avail(device->hidden->pcm_handle);
+        if (rc <= 0) {
+            // We'll catch it next time
+            *buffer_size = 0;
+            return NULL;
+        }
+    }
+
     const int requested_frames = SDL_min(device->sample_frames, rc);
-    SDL_assert(requested_frames > 0);
     const int requested_bytes = requested_frames * SDL_AUDIO_FRAMESIZE(device->spec);
     SDL_assert(requested_bytes <= *buffer_size);
     //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA GETDEVICEBUF: NEED %d BYTES", requested_bytes);
