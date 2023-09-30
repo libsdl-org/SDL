@@ -867,12 +867,11 @@ int SDL_GetCPUCacheLineSize(void)
 #endif
         f = fopen("/sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size", "r");
         if (f) {
-            if ((fscanf(f, "%d", &cacheline_size)) > 0) {
-                fclose(f);
-                return cacheline_size;
-            }
+            int r = fscanf(f, "%d", &cacheline_size);
             fclose(f);
-	}
+
+            return (r == 1) ? cacheline_size : SDL_CACHELINE_SIZE;
+        }
 #elif defined __FreeBSD__
 #ifdef CACHE_LINE_SIZE
         cacheline_size = CACHE_LINE_SIZE;
