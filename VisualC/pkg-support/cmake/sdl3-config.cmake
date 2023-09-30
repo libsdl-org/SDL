@@ -40,7 +40,7 @@ else()
 endif()
 
 set_and_check(_sdl3_prefix      "${CMAKE_CURRENT_LIST_DIR}/..")
-set(_sdl3_include_dirs          "${_sdl3_prefix}/include;${_sdl3_prefix}/include/SDL3")
+set(_sdl3_include_dirs          "${_sdl3_prefix}/include")
 unset(_sdl3_prefix)
 
 set(SDL3_LIBRARIES      SDL3::SDL3)
