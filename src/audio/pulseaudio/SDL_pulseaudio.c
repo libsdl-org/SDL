@@ -402,7 +402,7 @@ static void PULSEAUDIO_WaitDevice(SDL_AudioDevice *device)
 
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
 
-    while (!SDL_AtomicGet(&device->shutdown) && (h->bytes_requested < (device->buffer_size / 4))) {
+    while (!SDL_AtomicGet(&device->shutdown) && (h->bytes_requested == 0)) {
         /*printf("PULSEAUDIO WAIT IN WAITDEVICE!\n");*/
         PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);
 
