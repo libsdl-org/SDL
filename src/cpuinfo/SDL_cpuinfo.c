@@ -859,12 +859,12 @@ int SDL_GetCPUCacheLineSize(void)
 	cacheline_size = c & 0xff;
         return cacheline_size;
     } else {
+#if defined(HAVE_SYSCONF) && defined(_SC_LEVEL1_DCACHE_LINESIZE)
+        if ((cacheline_size = sysconf(_SC_LEVEL1_DCACHE_LINESIZE)) > 0)
+		return cacheline_size;
+#endif
 #if defined(__LINUX__)
         FILE *f = NULL;
-#if defined(__GLIBC__)
-        if ((cacheline_size = sysconf(_SC_LEVEL1_DCACHE_LINESIZE)) != -1)
-            return cacheline_size;
-#endif
         f = fopen("/sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size", "r");
         if (f) {
             int r = fscanf(f, "%d", &cacheline_size);
@@ -872,13 +872,13 @@ int SDL_GetCPUCacheLineSize(void)
 
             return (r == 1) ? cacheline_size : SDL_CACHELINE_SIZE;
         }
-#elif defined __FreeBSD__
-#ifdef CACHE_LINE_SIZE
+#endif
+#if defined(__FreeBSD__) && defined(CACHE_LINE_SIZE)
         cacheline_size = CACHE_LINE_SIZE;
         return cacheline_size;
 #endif
-#endif
         /* Just make a guess here... */
+	(void) cacheline_size;
         return SDL_CACHELINE_SIZE;
     }
 }
