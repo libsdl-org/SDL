@@ -44,7 +44,7 @@ struct SDL_PrivateAudioData
     size_t processed_bytes;
     SDL_Semaphore *semaphore;
     SDL_AtomicInt error_callback_triggered;
-    int resume;  // Resume device if it was paused automatically
+    SDL_bool resume;  // Resume device if it was paused automatically
 };
 
 // Debug
