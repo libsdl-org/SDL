@@ -859,18 +859,19 @@ int SDL_GetCPUCacheLineSize(void)
 	cacheline_size = c & 0xff;
         return cacheline_size;
     } else {
-#if defined(__LINUX__) && defined (__GLIBC__)
+#if defined(__LINUX__)
+        FILE *f = NULL;
+#if defined(__GLIBC__)
         if ((cacheline_size = sysconf(_SC_LEVEL1_DCACHE_LINESIZE)) != -1)
             return cacheline_size;
 #endif
-#if defined(__LINUX__) /* non glibc linux systems */
-        FILE *f = NULL;
-
         f = fopen("/sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size", "r");
         if (f) {
-            fscanf(f, "%d", &cacheline_size);
+            if ((fscanf(f, "%d", &cacheline_size)) > 0) {
+                fclose(f);
+                return cacheline_size;
+            }
             fclose(f);
-            return cacheline_size;
 	}
 #elif defined __FreeBSD__
 #ifdef CACHE_LINE_SIZE
