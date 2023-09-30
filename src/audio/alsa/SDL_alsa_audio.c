@@ -364,32 +364,22 @@ static int ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buf
     device->hidden->swizzle_func(device, sample_buf, frames_left);
 
     while ((frames_left > 0) && !SDL_AtomicGet(&device->shutdown)) {
-        int status = ALSA_snd_pcm_writei(device->hidden->pcm_handle,
-                                         sample_buf, frames_left);
-        //SDL_Log("ALSA PLAYDEVICE: WROTE %d of %d bytes", (status >= 0) ? ((int) (status * frame_size)) : status, (int) (frames_left * frame_size));
-        if (status < 0) {
-            if (status == -EAGAIN) {  // !!! FIXME: should this happen if we used snd_pcm_wait and queried for available space?!
-                // Apparently snd_pcm_recover() doesn't handle this case - does it assume snd_pcm_wait() above?
-                SDL_Delay(1);
-                continue;
-            }
-            status = ALSA_snd_pcm_recover(device->hidden->pcm_handle, status, 0);
+        const int rc = ALSA_snd_pcm_writei(device->hidden->pcm_handle, sample_buf, frames_left);
+        //SDL_Log("ALSA PLAYDEVICE: WROTE %d of %d bytes", (rc >= 0) ? ((int) (rc * frame_size)) : rc, (int) (frames_left * frame_size));
+        SDL_assert(rc != 0);  // assuming this can't happen if we used snd_pcm_wait and queried for available space.
+        if (rc < 0) {
+            SDL_assert(rc != -EAGAIN);  // assuming this can't happen if we used snd_pcm_wait and queried for available space. snd_pcm_recover won't handle it!
+            const int status = ALSA_snd_pcm_recover(device->hidden->pcm_handle, rc, 0);
             if (status < 0) {
                 // Hmm, not much we can do - abort
-                SDL_LogError(SDL_LOG_CATEGORY_AUDIO,
-                             "ALSA write failed (unrecoverable): %s",
-                             ALSA_snd_strerror(status));
+                SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA write failed (unrecoverable): %s", ALSA_snd_strerror(rc));
                 return -1;
             }
             continue;
-        } else if (status == 0) {
-            // !!! FIXME: should this happen if we used snd_pcm_wait and queried for available space?!
-            // No frames were written (no available space in pcm device). Allow other threads to catch up.
-            SDL_Delay((frames_left / 2 * 1000) / device->spec.freq);
         }
 
-        sample_buf += status * frame_size;
-        frames_left -= status;
+        sample_buf += rc * frame_size;
+        frames_left -= rc;
     }
 
     return 0;
@@ -409,40 +399,31 @@ static Uint8 *ALSA_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 
 static int ALSA_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
 {
-    Uint8 *sample_buf = (Uint8 *)buffer;
     const int frame_size = SDL_AUDIO_FRAMESIZE(device->spec);
-    const int total_frames = buflen / frame_size;
-    snd_pcm_uframes_t frames_left = total_frames;
-
     SDL_assert((buflen % frame_size) == 0);
 
-    while ((frames_left > 0) && !SDL_AtomicGet(&device->shutdown)) {
-        int status = ALSA_snd_pcm_readi(device->hidden->pcm_handle,
-                                        sample_buf, frames_left);
+    const snd_pcm_sframes_t total_available = ALSA_snd_pcm_avail(device->hidden->pcm_handle);
+    const int total_frames = SDL_min(buflen / frame_size, total_available);
 
-        if (status == -EAGAIN) {
-            break;  // Can this even happen? Go back to WaitCaptureDevice, where the device lock isn't held.
-        } else if (status < 0) {
-            //printf("ALSA: capture error %d\n", status);
-            status = ALSA_snd_pcm_recover(device->hidden->pcm_handle, status, 0);
-            if (status < 0) {
-                // Hmm, not much we can do - abort
-                SDL_LogError(SDL_LOG_CATEGORY_AUDIO,
-                             "ALSA read failed (unrecoverable): %s\n",
-                             ALSA_snd_strerror(status));
-                return -1;
-            }
-            break;  // Go back to WaitCaptureDevice, where the device lock isn't held.
+    const int rc = ALSA_snd_pcm_readi(device->hidden->pcm_handle, buffer, total_frames);
+
+    SDL_assert(rc != -EAGAIN);  // assuming this can't happen if we used snd_pcm_wait and queried for available space. snd_pcm_recover won't handle it!
+
+    if (rc < 0) {
+        const int status = ALSA_snd_pcm_recover(device->hidden->pcm_handle, rc, 0);
+        if (status < 0) {
+            // Hmm, not much we can do - abort
+            SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA read failed (unrecoverable): %s\n", ALSA_snd_strerror(rc));
+            return -1;
         }
-
-        //printf("ALSA: captured %d bytes\n", status * frame_size);
-        sample_buf += status * frame_size;
-        frames_left -= status;
+        return 0;  // go back to WaitDevice and try again.
+    } else if (rc > 0) {
+        device->hidden->swizzle_func(device, buffer, total_frames - rc);
     }
 
-    device->hidden->swizzle_func(device, buffer, total_frames - frames_left);
+    //SDL_Log("ALSA: captured %d bytes\n", rc * frame_size);
 
-    return (total_frames - frames_left) * frame_size;
+    return rc * frame_size;
 }
 
 static void ALSA_FlushCapture(SDL_AudioDevice *device)
