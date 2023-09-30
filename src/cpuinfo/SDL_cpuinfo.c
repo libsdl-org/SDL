@@ -840,6 +840,7 @@ static const char *SDL_GetCPUName(void)
 int SDL_GetCPUCacheLineSize(void)
 {
     const char *cpuType = SDL_GetCPUType();
+    int failsafe_cacheline_size;
     int a, b, c, d;
     (void)a;
     (void)b;
@@ -852,6 +853,10 @@ int SDL_GetCPUCacheLineSize(void)
         cpuid(0x80000005, a, b, c, d);
         return c & 0xff;
     } else {
+#ifdef __LINUX__
+        if ((failsafe_cacheline_size = sysconf(_SC_LEVEL1_DCACHE_LINESIZE)) != -1)
+            return failsafe_cacheline_size;
+#endif
         /* Just make a guess here... */
         return SDL_CACHELINE_SIZE;
     }
