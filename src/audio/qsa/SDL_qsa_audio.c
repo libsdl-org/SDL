@@ -233,6 +233,7 @@ static Uint8 *QSA_GetDeviceBuf(_THIS)
 static void QSA_CloseDevice(_THIS)
 {
     if (this->hidden->audio_handle != NULL) {
+#if _NTO_VERSION < 710
         if (!this->iscapture) {
             /* Finish playing available samples */
             snd_pcm_plugin_flush(this->hidden->audio_handle,
@@ -242,6 +243,7 @@ static void QSA_CloseDevice(_THIS)
             snd_pcm_plugin_flush(this->hidden->audio_handle,
                                  SND_PCM_CHANNEL_CAPTURE);
         }
+#endif
         snd_pcm_close(this->hidden->audio_handle);
     }
 
