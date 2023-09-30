@@ -104,6 +104,7 @@ static size_t (*PULSEAUDIO_pa_stream_writable_size)(const pa_stream *);
 static size_t (*PULSEAUDIO_pa_stream_readable_size)(const pa_stream *);
 static int (*PULSEAUDIO_pa_stream_write)(pa_stream *, const void *, size_t,
                                          pa_free_cb_t, int64_t, pa_seek_mode_t);
+static int (*PULSEAUDIO_pa_stream_begin_write)(pa_stream *, void **, size_t *);
 static pa_operation *(*PULSEAUDIO_pa_stream_drain)(pa_stream *,
                                                    pa_stream_success_cb_t, void *);
 static int (*PULSEAUDIO_pa_stream_peek)(pa_stream *, const void **, size_t *);
@@ -216,6 +217,7 @@ static int load_pulseaudio_syms(void)
     SDL_PULSEAUDIO_SYM(pa_stream_get_state);
     SDL_PULSEAUDIO_SYM(pa_stream_writable_size);
     SDL_PULSEAUDIO_SYM(pa_stream_readable_size);
+    SDL_PULSEAUDIO_SYM(pa_stream_begin_write);
     SDL_PULSEAUDIO_SYM(pa_stream_write);
     SDL_PULSEAUDIO_SYM(pa_stream_drain);
     SDL_PULSEAUDIO_SYM(pa_stream_disconnect);
@@ -441,7 +443,16 @@ static int PULSEAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, i
 static Uint8 *PULSEAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
-    *buffer_size = SDL_min(*buffer_size, h->bytes_requested);
+    const size_t reqsize = (size_t) SDL_min(*buffer_size, h->bytes_requested);
+    size_t nbytes = reqsize;
+    void *data = NULL;
+    if (PULSEAUDIO_pa_stream_begin_write(h->stream, &data, &nbytes) == 0) {
+        *buffer_size = (int) nbytes;
+        return (Uint8 *) data;
+    }
+
+    // don't know why this would fail, but we'll fall back just in case.
+    *buffer_size = (int) reqsize;
     return device->hidden->mixbuf;
 }
 
