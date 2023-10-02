@@ -25,12 +25,16 @@
 #include <linux/input.h>
 
 struct SDL_joylist_item;
+struct SDL_sensorlist_item;
 
 /* The private structure used to keep track of a joystick */
 struct joystick_hwdata
 {
     int fd;
+    /* linux driver creates a separate device for gyro/accelerometer */
+    int fd_sensor;
     struct SDL_joylist_item *item;
+    struct SDL_sensorlist_item *item_sensor;
     SDL_JoystickGUID guid;
     char *fname; /* Used in haptic subsystem */
 
@@ -55,6 +59,8 @@ struct joystick_hwdata
     Uint8 abs_map[ABS_MAX];
     SDL_bool has_key[KEY_MAX];
     SDL_bool has_abs[ABS_MAX];
+    SDL_bool has_accelerometer;
+    SDL_bool has_gyro;
 
     /* Support for the classic joystick interface */
     SDL_bool classic;
@@ -74,8 +80,20 @@ struct joystick_hwdata
         float scale;
     } abs_correct[ABS_MAX];
 
+    float accelerometer_scale[3];
+    float gyro_scale[3];
+
+    /* Each axis is read independently, if we don't get all axis this call to
+     * LINUX_JoystickUpdateupdate(), store them for the next one */
+    float gyro_data[3];
+    float accel_data[3];
+    Uint64 sensor_tick;
+    Sint32 last_tick;
+
+    SDL_bool report_sensor;
     SDL_bool fresh;
     SDL_bool recovering_from_dropped;
+    SDL_bool recovering_from_dropped_sensor;
 
     /* Steam Controller support */
     SDL_bool m_bSteamController;
@@ -92,6 +110,7 @@ struct joystick_hwdata
 
     /* Set when gamepad is pending removal due to ENODEV read error */
     SDL_bool gone;
+    SDL_bool sensor_gone;
 };
 
 #endif /* SDL_sysjoystick_c_h_ */
