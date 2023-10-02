@@ -23,6 +23,7 @@
 #include "SDL_sysvideo.h"
 #include "SDL_blit.h"
 #include "SDL_RLEaccel_c.h"
+#include "SDL_surface_pixel_impl.h"
 #include "SDL_pixels_c.h"
 #include "SDL_yuv_c.h"
 #include "../render/SDL_sysrender.h"
@@ -33,6 +34,12 @@ SDL_COMPILE_TIME_ASSERT(surface_size_assumptions,
                         sizeof(int) == sizeof(Sint32) && sizeof(size_t) >= sizeof(Sint32));
 
 SDL_COMPILE_TIME_ASSERT(can_indicate_overflow, SDL_SIZE_MAX > SDL_MAX_SINT32);
+
+int
+SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a)
+{
+    return SDL_ReadSurfacePixel_impl(surface, x, y, r, g, b, a);
+}
 
 /* Public routines */
 
