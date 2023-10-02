@@ -499,6 +499,7 @@ static int mouse_getMouseFocus(void *arg)
     float x, y;
     SDL_Window *window;
     SDL_Window *focusWindow;
+    const SDL_bool video_driver_is_wayland = !SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland");
 
     /* Get focus - focus non-deterministic */
     focusWindow = SDL_GetMouseFocus();
@@ -510,28 +511,33 @@ static int mouse_getMouseFocus(void *arg)
         return TEST_ABORTED;
     }
 
-    /* Mouse to random position inside window */
-    x = (float)SDLTest_RandomIntegerInRange(1, w - 1);
-    y = (float)SDLTest_RandomIntegerInRange(1, h - 1);
-    SDL_WarpMouseInWindow(window, x, y);
-    SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%.f,%.f)", x, y);
+    /* Wayland explicitly disallows warping the mouse pointer, so this test must be skipped. */
+    if (!video_driver_is_wayland) {
+        /* Mouse to random position inside window */
+        x = (float)SDLTest_RandomIntegerInRange(1, w - 1);
+        y = (float)SDLTest_RandomIntegerInRange(1, h - 1);
+        SDL_WarpMouseInWindow(window, x, y);
+        SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%.f,%.f)", x, y);
 
-    /* Pump events to update focus state */
-    SDL_Delay(100);
-    SDL_PumpEvents();
-    SDLTest_AssertPass("SDL_PumpEvents()");
+        /* Pump events to update focus state */
+        SDL_Delay(100);
+        SDL_PumpEvents();
+        SDLTest_AssertPass("SDL_PumpEvents()");
 
-    /* Get focus with explicit window setup - focus deterministic */
-    focusWindow = SDL_GetMouseFocus();
-    SDLTest_AssertPass("SDL_GetMouseFocus()");
-    SDLTest_AssertCheck(focusWindow != NULL, "Check returned window value is not NULL");
-    SDLTest_AssertCheck(focusWindow == window, "Check returned window value is test window");
+        /* Get focus with explicit window setup - focus deterministic */
+        focusWindow = SDL_GetMouseFocus();
+        SDLTest_AssertPass("SDL_GetMouseFocus()");
+        SDLTest_AssertCheck(focusWindow != NULL, "Check returned window value is not NULL");
+        SDLTest_AssertCheck(focusWindow == window, "Check returned window value is test window");
 
-    /* Mouse to random position outside window */
-    x = (float)SDLTest_RandomIntegerInRange(-9, -1);
-    y = (float)SDLTest_RandomIntegerInRange(-9, -1);
-    SDL_WarpMouseInWindow(window, x, y);
-    SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%.f,%.f)", x, y);
+        /* Mouse to random position outside window */
+        x = (float)SDLTest_RandomIntegerInRange(-9, -1);
+        y = (float)SDLTest_RandomIntegerInRange(-9, -1);
+        SDL_WarpMouseInWindow(window, x, y);
+        SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%.f,%.f)", x, y);
+    } else {
+        SDLTest_Log("Skipping mouse warp fcous tests: Wayland does not support warping the mouse pointer");
+    }
 
     /* Clean up test window */
     destroyMouseSuiteTestWindow(window);
