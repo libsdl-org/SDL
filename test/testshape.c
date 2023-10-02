@@ -42,8 +42,7 @@ static void SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode, SDL_Surface *shap
     int x = 0;
     int y = 0;
     Uint8 r = 0, g = 0, b = 0, alpha = 0;
-    Uint8 *pixel = NULL;
-    Uint32 pixel_value = 0, mask_value = 0;
+    Uint32 mask_value = 0;
     size_t bytes_per_scanline = (size_t)(shape->w + (ppb - 1)) / ppb;
     Uint8 *bitmap_scanline;
     SDL_Color key;
@@ -58,23 +57,10 @@ static void SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode, SDL_Surface *shap
         bitmap_scanline = bitmap + y * bytes_per_scanline;
         for (x = 0; x < shape->w; x++) {
             alpha = 0;
-            pixel_value = 0;
-            pixel = (Uint8 *)(shape->pixels) + (y * shape->pitch) + (x * shape->format->BytesPerPixel);
-            switch (shape->format->BytesPerPixel) {
-            case (1):
-                pixel_value = *pixel;
-                break;
-            case (2):
-                pixel_value = *(Uint16 *)pixel;
-                break;
-            case (3):
-                pixel_value = *(Uint32 *)pixel & (~shape->format->Amask);
-                break;
-            case (4):
-                pixel_value = *(Uint32 *)pixel;
-                break;
+            if (SDLTest_ReadSurfacePixel(shape, x, y, &r, &g, &b, &alpha) != 0) {
+                continue;
             }
-            SDL_GetRGBA(pixel_value, shape->format, &r, &g, &b, &alpha);
+
             switch (mode.mode) {
             case (ShapeModeDefault):
                 mask_value = (alpha >= 1 ? 1 : 0);

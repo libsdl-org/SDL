@@ -22,6 +22,7 @@
 
 #include "SDL_sysvideo.h"
 #include "SDL_shape_internals.h"
+#include "SDL_video_c.h"
 
 SDL_Window *SDL_CreateShapedWindow(const char *title, int w, int h, Uint32 flags)
 {
@@ -60,8 +61,7 @@ void SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode, SDL_Surface *shape, Uint
     int x = 0;
     int y = 0;
     Uint8 r = 0, g = 0, b = 0, alpha = 0;
-    Uint8 *pixel = NULL;
-    Uint32 pixel_value = 0, mask_value = 0;
+    Uint32 mask_value = 0;
     size_t bytes_per_scanline = (size_t)(shape->w + (ppb - 1)) / ppb;
     Uint8 *bitmap_scanline;
     SDL_Color key;
@@ -75,24 +75,10 @@ void SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode, SDL_Surface *shape, Uint
     for (y = 0; y < shape->h; y++) {
         bitmap_scanline = bitmap + y * bytes_per_scanline;
         for (x = 0; x < shape->w; x++) {
-            alpha = 0;
-            pixel_value = 0;
-            pixel = (Uint8 *)(shape->pixels) + (y * shape->pitch) + (x * shape->format->BytesPerPixel);
-            switch (shape->format->BytesPerPixel) {
-            case (1):
-                pixel_value = *pixel;
-                break;
-            case (2):
-                pixel_value = *(Uint16 *)pixel;
-                break;
-            case (3):
-                pixel_value = *(Uint32 *)pixel & (~shape->format->Amask);
-                break;
-            case (4):
-                pixel_value = *(Uint32 *)pixel;
-                break;
+            if (SDL_ReadSurfacePixel(shape, x, y, &r, &g, &b, &alpha) != 0) {
+                continue;
             }
-            SDL_GetRGBA(pixel_value, shape->format, &r, &g, &b, &alpha);
+
             switch (mode.mode) {
             case (ShapeModeDefault):
                 mask_value = (alpha >= 1 ? 1 : 0);
@@ -120,8 +106,6 @@ void SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode, SDL_Surface *shape, Uint
 static SDL_ShapeTree *RecursivelyCalculateShapeTree(SDL_WindowShapeMode mode, SDL_Surface *mask, SDL_Rect dimensions)
 {
     int x = 0, y = 0;
-    Uint8 *pixel = NULL;
-    Uint32 pixel_value = 0;
     Uint8 r = 0, g = 0, b = 0, a = 0;
     SDL_bool pixel_opaque = SDL_FALSE;
     int last_opaque = -1;
@@ -136,23 +120,9 @@ static SDL_ShapeTree *RecursivelyCalculateShapeTree(SDL_WindowShapeMode mode, SD
 
     for (y = dimensions.y; y < dimensions.y + dimensions.h; y++) {
         for (x = dimensions.x; x < dimensions.x + dimensions.w; x++) {
-            pixel_value = 0;
-            pixel = (Uint8 *)(mask->pixels) + (y * mask->pitch) + (x * mask->format->BytesPerPixel);
-            switch (mask->format->BytesPerPixel) {
-            case (1):
-                pixel_value = *pixel;
-                break;
-            case (2):
-                pixel_value = *(Uint16 *)pixel;
-                break;
-            case (3):
-                pixel_value = *(Uint32 *)pixel & (~mask->format->Amask);
-                break;
-            case (4):
-                pixel_value = *(Uint32 *)pixel;
-                break;
+            if (SDL_ReadSurfacePixel(mask, x, y, &r, &g, &b, &a) != 0) {
+                continue;
             }
-            SDL_GetRGBA(pixel_value, mask->format, &r, &g, &b, &a);
             switch (mode.mode) {
             case (ShapeModeDefault):
                 pixel_opaque = (a >= 1 ? SDL_TRUE : SDL_FALSE);
