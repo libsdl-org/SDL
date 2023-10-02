@@ -28,28 +28,17 @@
 */
 #include <SDL3/SDL_test.h>
 
+#include "../video/SDL_surface_pixel_impl.h"
+
 #define FILENAME_SIZE 128
 
 /* Counter for _CompareSurface calls; used for filename creation when comparisons fail */
 static int _CompareSurfaceCount = 0;
 
-static Uint32
-GetPixel(Uint8 *p, size_t bytes_per_pixel)
+int
+SDLTest_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a)
 {
-    Uint32 ret = 0;
-
-    SDL_assert(bytes_per_pixel <= sizeof(ret));
-
-    /* Fill the appropriate number of least-significant bytes of ret,
-     * leaving the most-significant bytes set to zero, so that ret can
-     * be decoded with SDL_GetRGBA afterwards. */
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    SDL_memcpy(((Uint8 *) &ret) + (sizeof(ret) - bytes_per_pixel), p, bytes_per_pixel);
-#else
-    SDL_memcpy(&ret, p, bytes_per_pixel);
-#endif
-
-    return ret;
+    return SDL_ReadSurfacePixel_impl(surface, x, y, r, g, b, a);
 }
 
 static void
@@ -67,8 +56,6 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
 {
     int ret;
     int i, j;
-    int bpp, bpp_reference;
-    Uint8 *p, *p_reference;
     int dist;
     int sampleErrorX = 0, sampleErrorY = 0, sampleDist = 0;
     SDL_Color sampleReference = { 0, 0, 0, 0 };
@@ -104,19 +91,24 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
     SDL_LockSurface(referenceSurface);
 
     ret = 0;
-    bpp = surface->format->BytesPerPixel;
-    bpp_reference = referenceSurface->format->BytesPerPixel;
     /* Compare image - should be same format. */
     for (j = 0; j < surface->h; j++) {
         for (i = 0; i < surface->w; i++) {
-            Uint32 pixel;
-            p = (Uint8 *)surface->pixels + j * surface->pitch + i * bpp;
-            p_reference = (Uint8 *)referenceSurface->pixels + j * referenceSurface->pitch + i * bpp_reference;
+            int temp;
 
-            pixel = GetPixel(p, bpp);
-            SDL_GetRGBA(pixel, surface->format, &R, &G, &B, &A);
-            pixel = GetPixel(p_reference, bpp_reference);
-            SDL_GetRGBA(pixel, referenceSurface->format, &Rd, &Gd, &Bd, &Ad);
+            temp = SDLTest_ReadSurfacePixel(surface, i, j, &R, &G, &B, &A);
+            if (temp != 0) {
+                SDLTest_LogError("Failed to retrieve pixel (%d,%d): %s", i, j, SDL_GetError());
+                ret++;
+                continue;
+            }
+
+            temp = SDLTest_ReadSurfacePixel(referenceSurface, i, j, &Rd, &Gd, &Bd, &Ad);
+            if (temp != 0) {
+                SDLTest_LogError("Failed to retrieve reference pixel (%d,%d): %s", i, j, SDL_GetError());
+                ret++;
+                continue;
+            }
 
             dist = 0;
             dist += (R - Rd) * (R - Rd);

@@ -45,6 +45,27 @@ extern "C" {
 #endif
 
 /**
+ * \brief Retrieves a single pixel from a surface.
+ *
+ * This function prioritizes correctness over speed: it is suitable for
+ * unit tests, but is not intended for use in a game engine.
+ *
+ * Like SDL_GetRGBA, this uses the entire 0..255 range when converting
+ * color components from pixel formats with less than 8 bits per RGB
+ * component.
+ *
+ * \param surface The surface
+ * \param x Horizontal coordinate, 0 <= x < width
+ * \param y Vertical coordinate, 0 <= y < height
+ * \param r Pointer to location to store red channel, 0-255
+ * \param g Pointer to location to store green channel, 0-255
+ * \param b Pointer to location to store blue channel, 0-255
+ * \param a Pointer to location to store alpha channel, 0-255
+ * \returns 0 if the surface is valid and the coordinates are in-bounds
+ */
+int SDLTest_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
+
+/**
  * \brief Compares a surface and with reference image data for equality
  *
  * \param surface Surface used in comparison
