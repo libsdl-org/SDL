@@ -875,6 +875,9 @@
     <ClCompile Include="..\src\stdlib\SDL_mslibc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <MASM Include="..\src\stdlib\SDL_mslibc_x64.asm">
+      <Filter>stdlib</Filter>
+    </MASM>
     <ClCompile Include="..\src\core\windows\pch.c">
       <Filter>Source Files</Filter>
     </ClCompile>

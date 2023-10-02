@@ -1375,6 +1375,9 @@
     <ClCompile Include="..\..\src\stdlib\SDL_mslibc.c">
       <Filter>stdlib</Filter>
     </ClCompile>
+    <MASM Include="..\..\src\stdlib\SDL_mslibc_x64.asm">
+      <Filter>stdlib</Filter>
+    </MASM>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\core\windows\version.rc" />

@@ -42,6 +42,8 @@
 #cmakedefine HAVE_GCC_ATOMICS @HAVE_GCC_ATOMICS@
 #cmakedefine HAVE_GCC_SYNC_LOCK_TEST_AND_SET @HAVE_GCC_SYNC_LOCK_TEST_AND_SET@
 
+#cmakedefine SDL_DISABLE_ALLOCA
+
 /* Comment this if you want to build without any C library requirements */
 #cmakedefine HAVE_LIBC 1
 #ifdef HAVE_LIBC
@@ -74,7 +76,6 @@
 #cmakedefine HAVE_CALLOC 1
 #cmakedefine HAVE_REALLOC 1
 #cmakedefine HAVE_FREE 1
-#cmakedefine HAVE_ALLOCA 1
 #ifndef __WIN32__ /* Don't use C runtime versions of these on Windows */
 #cmakedefine HAVE_GETENV 1
 #cmakedefine HAVE_SETENV 1

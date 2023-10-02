@@ -1388,6 +1388,9 @@
     <ClCompile Include="..\..\src\stdlib\SDL_mslibc.c">
       <Filter>stdlib</Filter>
     </ClCompile>
+    <MASM Include="..\..\src\stdlib\SDL_mslibc_x64.asm">
+      <Filter>stdlib</Filter>
+    </MASM>
     <ClCompile Include="..\..\src\core\gdk\SDL_gdk.cpp">
       <Filter>core\gdk</Filter>
     </ClCompile>

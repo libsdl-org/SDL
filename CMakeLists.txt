@@ -486,6 +486,18 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/video/*.c"
   "${SDL3_SOURCE_DIR}/src/video/yuv2rgb/*.c"
 )
+if(MSVC AND TARGET SDL3-shared)
+  if(SDL_CPU_X64)
+    enable_language(ASM_MASM)
+    set(asm_src "${SDL3_SOURCE_DIR}/src/stdlib/SDL_mslibc_x64.asm")
+    target_compile_options(SDL3-shared PRIVATE "$<$<COMPILE_LANGUAGE:ASM_MASM>:/nologo>")
+    set_property(SOURCE "${asm_src}" PROPERTY LANGUAGE "ASM_MASM")
+    target_sources(SDL3-shared PRIVATE "${asm_src}")
+  elseif(SDL_CPU_ARM32 OR DL_CPU_ARM64)
+    # FIXME: ARM assembler (armasm.exe/armasm64.exe) is NOT ASM_MASM, and does currently not work with CMake
+    # (https://gitlab.kitware.com/cmake/cmake/-/issues/18912)
+  endif()
+endif()
 
 if(USE_INTELCC)
   # warning #39: division by zero
@@ -985,12 +997,21 @@ if(NOT HAVE_ARMNEON)
   set(SDL_DISABLE_NEON 1)
 endif()
 
+set(SDL_DISABLE_ALLOCA 0)
+check_include_file("alloca.h" "HAVE_ALLOCA_H")
+if(MSVC)
+  check_include_file("malloc.h" "HAVE_MALLOC")
+  check_symbol_exists("_alloca" "malloc.h" _ALLOCA_IN_MALLOC_H)
+  if(NOT HAVE_ALLOCA_H AND NOT _ALLOCA_IN_MALLOC_H)
+    set(SDL_DISABLE_ALLOCA 1)
+  endif()
+endif()
+
 # TODO: Can't deactivate on FreeBSD? w/o LIBC, SDL_stdinc.h can't define anything.
 if(SDL_LIBC)
   set(available_headers)
   set(HAVE_LIBC TRUE)
   set(headers_to_check
-    alloca.h
     ctype.h
     float.h
     iconv.h
@@ -1022,7 +1043,7 @@ if(SDL_LIBC)
   endforeach()
 
   set(symbols_to_check
-    abs acos acosf alloca asin asinf atan atan2 atan2f atanf atof atoi
+    abs acos acosf asin asinf atan atan2 atan2f atanf atof atoi
     bcopy bsearch
     calloc ceil ceilf copysign copysignf cos cosf
     _Exit exp expf
@@ -1717,7 +1738,7 @@ elseif(WINDOWS)
 
   if(TARGET SDL3-shared AND MSVC AND NOT SDL_LIBC)
     # Prevent codegen that would use the VC runtime libraries.
-    target_compile_options(SDL3-shared PRIVATE "/GS-" "/Gs1048576")
+    target_compile_options(SDL3-shared PRIVATE $<$<COMPILE_LANGUAGE:C,CXX>:/GS-> $<$<COMPILE_LANGUAGE:C,CXX>:/Gs1048576>)
     if(SDL_CPU_X86)
       target_compile_options(SDL3-shared PRIVATE "/arch:SSE")
     endif()

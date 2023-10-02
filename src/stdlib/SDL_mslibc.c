@@ -696,7 +696,79 @@ RETZERO:
     /* *INDENT-ON* */
 }
 
+void __declspec(naked) _chkstk(void)
+{
+    __asm {
+        push        ecx
+        mov         ecx,esp     ; lea         ecx,dword ptr [esp]+4
+        add         ecx,4
+        sub         ecx,eax
+        sbb         eax,eax
+        not         eax
+        and         ecx,eax
+        mov         eax,esp
+        and         eax,0xfffff000
+L1:
+        cmp         ecx,eax
+        jb          short L2
+        mov         eax,ecx
+        pop         ecx
+        xchg        esp,eax
+        mov         eax,dword ptr [eax]
+        mov         dword ptr [esp],eax
+        ret
+L2:
+        sub         eax,0x1000
+        test        dword ptr [eax],eax
+        jmp         short L1
+    }
+}
+
+void __declspec(naked) _alloca_probe_8(void)
+{
+    /* *INDENT-OFF* */
+    __asm {
+        push        ecx
+        mov         ecx,esp     ; lea         ecx,dword ptr [esp]+8
+        add         ecx,8
+        sub         ecx,eax
+        and         ecx,0x7
+        add         eax,ecx
+        sbb         ecx,ecx
+        or          eax,ecx
+        pop         ecx
+        jmp         _chkstk
+    }
+    /* *INDENT-ON* */
+}
+
+void __declspec(naked) _alloca_probe_16(void)
+{
+    /* *INDENT-OFF* */
+    __asm {
+        push        ecx
+        mov         ecx,esp     ; lea         ecx,dword ptr [esp]+8
+        add         ecx,8
+        sub         ecx,eax
+        and         ecx,0xf
+        add         eax,ecx
+        sbb         ecx,ecx
+        or          eax,ecx
+        pop         ecx
+        jmp         _chkstk
+    }
+    /* *INDENT-ON* */
+}
+
 #endif /* _M_IX86 */
+
+#ifdef _M_ARM64
+
+void __chkstk(void);
+void __chkstk() {
+}
+
+#endif
 
 #endif /* MSC_VER */
 
