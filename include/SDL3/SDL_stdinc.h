@@ -37,26 +37,28 @@
 #include <stdint.h>
 #include <wchar.h>
 
-#ifndef alloca
-# ifdef HAVE_ALLOCA_H
-#  include <alloca.h>
-# elif defined(__GNUC__)
-#  define alloca __builtin_alloca
-# elif defined(_MSC_VER)
-#  include <malloc.h>
-#  define alloca _alloca
-# elif defined(__WATCOMC__)
-#  include <malloc.h>
-# elif defined(__BORLANDC__)
-#  include <malloc.h>
-# elif defined(__DMC__)
-#  include <stdlib.h>
-# elif defined(__AIX__)
-#pragma alloca
-# elif defined(__MRC__)
+#ifndef SDL_DISABLE_ALLOCA
+# ifndef alloca
+#  ifdef HAVE_ALLOCA_H
+#   include <alloca.h>
+#  elif defined(__GNUC__)
+#   define alloca __builtin_alloca
+#  elif defined(_MSC_VER)
+#   include <malloc.h>
+#   define alloca _alloca
+#  elif defined(__WATCOMC__)
+#   include <malloc.h>
+#  elif defined(__BORLANDC__)
+#   include <malloc.h>
+#  elif defined(__DMC__)
+#   include <stdlib.h>
+#  elif defined(__AIX__)
+# pragma alloca
+#  elif defined(__MRC__)
 void *alloca(unsigned);
-# else
+#  else
 char *alloca();
+#  endif
 # endif
 #endif
 
@@ -379,7 +381,7 @@ SDL_COMPILE_TIME_ASSERT(enum, sizeof(SDL_DUMMY_ENUM) == sizeof(int));
 extern "C" {
 #endif
 
-#ifdef HAVE_ALLOCA
+#ifndef SDL_DISABLE_ALLOCA
 #define SDL_stack_alloc(type, count)    (type*)alloca(sizeof(type)*(count))
 #define SDL_stack_free(data)
 #else
