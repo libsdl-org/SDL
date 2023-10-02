@@ -536,7 +536,7 @@ static int mouse_getMouseFocus(void *arg)
         SDL_WarpMouseInWindow(window, x, y);
         SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%.f,%.f)", x, y);
     } else {
-        SDLTest_Log("Skipping mouse warp fcous tests: Wayland does not support warping the mouse pointer");
+        SDLTest_Log("Skipping mouse warp focus tests: Wayland does not support warping the mouse pointer");
     }
 
     /* Clean up test window */
