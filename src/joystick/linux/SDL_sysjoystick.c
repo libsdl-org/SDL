@@ -1374,52 +1374,58 @@ static int PrepareJoystickHwdata(SDL_Joystick *joystick, SDL_joylist_item *item,
     return 0;
 }
 
+/* Function to find the secondary evdev sensor matching the
+   provided controller, if one exists.
+   This iterates through previously-identified sensor devices and
+   returns the SDL_sensorlist_item with the same PHYS attribute
+   as the provided SDL_joylist_item, or NULL if no match is found.
+*/
 static SDL_sensorlist_item *GetSensor(SDL_joylist_item *item)
 {
     SDL_sensorlist_item *item_sensor;
-    char uniq_item[128];
+    char phys_item[128];
     int fd_item = -1;
 
     if (item == NULL || SDL_sensorlist == NULL) {
         return NULL;
     }
 
-    SDL_memset(uniq_item, 0, sizeof(uniq_item));
+    SDL_memset(phys_item, 0, sizeof(phys_item));
     fd_item = open(item->path, O_RDONLY | O_CLOEXEC, 0);
     if (fd_item < 0) {
         return NULL;
     }
-    if (ioctl(fd_item, EVIOCGUNIQ(sizeof(uniq_item) - 1), &uniq_item) < 0) {
+    if (ioctl(fd_item, EVIOCGPHYS(sizeof(phys_item) - 1), &phys_item) < 0) {
         return NULL;
     }
     close(fd_item);
 #ifdef DEBUG_INPUT_EVENTS
-    SDL_Log("Joystick UNIQ: %s\n", uniq_item);
+    SDL_Log("Joystick PHYS: %s\n", phys_item);
 #endif /* DEBUG_INPUT_EVENTS */
 
     for (item_sensor = SDL_sensorlist; item_sensor != NULL; item_sensor = item_sensor->next) {
-        char uniq_sensor[128];
+        char phys_sensor[128];
         int fd_sensor = -1;
         if (item_sensor->hwdata != NULL) {
             /* already associated with another joystick */
             continue;
         }
 
-        SDL_memset(uniq_sensor, 0, sizeof(uniq_sensor));
+        SDL_memset(phys_sensor, 0, sizeof(phys_sensor));
         fd_sensor = open(item_sensor->path, O_RDONLY | O_CLOEXEC, 0);
         if (fd_sensor < 0) {
             continue;
         }
-        if (ioctl(fd_sensor, EVIOCGUNIQ(sizeof(uniq_sensor) - 1), &uniq_sensor) < 0) {
+        if (ioctl(fd_sensor, EVIOCGPHYS(sizeof(phys_sensor) - 1), &phys_sensor) < 0) {
             close(fd_sensor);
             continue;
         }
         close(fd_sensor);
 #ifdef DEBUG_INPUT_EVENTS
-        SDL_Log("Sensor UNIQ: %s\n", uniq_sensor);
+        SDL_Log("Sensor PHYS: %s\n", phys_sensor);
 #endif /* DEBUG_INPUT_EVENTS */
 
-        if (SDL_strcmp(uniq_item, uniq_sensor) == 0) {
+        if (SDL_strcmp(phys_item, phys_sensor) == 0) {
             return item_sensor;
         }
     }
