@@ -1565,7 +1565,7 @@ int SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid, SDL_AudioPostmixCallbac
         SDL_AudioDevice *device = logdev->physical_device;
         if (callback && !device->postmix_buffer) {
             device->postmix_buffer = (float *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), device->work_buffer_size);
-            if (device->mix_buffer == NULL) {
+            if (device->postmix_buffer == NULL) {
                 retval = SDL_OutOfMemory();
             }
         }
