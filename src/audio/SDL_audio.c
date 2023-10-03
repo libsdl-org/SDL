@@ -398,8 +398,8 @@ SDL_AudioDevice *SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, 
         // Post the event, if desired
         if (SDL_EventEnabled(SDL_EVENT_AUDIO_DEVICE_ADDED)) {
             SDL_Event event;
+            SDL_zero(event);
             event.type = SDL_EVENT_AUDIO_DEVICE_ADDED;
-            event.common.timestamp = 0;
             event.adevice.which = device->instance_id;
             event.adevice.iscapture = iscapture;
             SDL_PushEvent(&event);
@@ -412,17 +412,20 @@ SDL_AudioDevice *SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, 
 // this _also_ destroys the logical device!
 static void DisconnectLogicalAudioDevice(SDL_LogicalAudioDevice *logdev)
 {
+    SDL_assert(logdev != NULL);  // currently, this is always true.
+
+    const SDL_AudioDeviceID instance_id = logdev->instance_id;
+    const SDL_bool iscapture = logdev->physical_device->iscapture;
+    DestroyLogicalAudioDevice(logdev);
+
     if (SDL_EventEnabled(SDL_EVENT_AUDIO_DEVICE_REMOVED)) {
         SDL_Event event;
         SDL_zero(event);
         event.type = SDL_EVENT_AUDIO_DEVICE_REMOVED;
-        event.common.timestamp = 0;
-        event.adevice.which = logdev->instance_id;
-        event.adevice.iscapture = logdev->physical_device->iscapture ? 1 : 0;
+        event.adevice.which = instance_id;
+        event.adevice.iscapture = iscapture ? 1 : 0;
         SDL_PushEvent(&event);
     }
-
-    DestroyLogicalAudioDevice(logdev);
 }
 
 // Called when a device is removed from the system, or it fails unexpectedly, from any thread, possibly even the audio device's thread.
@@ -495,7 +498,15 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
 
     // if there's an audio thread, don't free until thread is terminating, otherwise free stuff now.
     const SDL_bool should_destroy = SDL_AtomicGet(&device->thread_alive) ? SDL_FALSE : SDL_TRUE;
+
+    const SDL_AudioDeviceID instance_id = device->instance_id;
+    const SDL_bool iscapture = device->iscapture;
+
     SDL_UnlockMutex(device->lock);
+
+    if (should_destroy) {
+        DestroyPhysicalAudioDevice(device);
+    }
 
     // Post the event, if we haven't tried to before and if it's desired
     if (was_live && SDL_EventEnabled(SDL_EVENT_AUDIO_DEVICE_REMOVED)) {
@@ -503,13 +514,9 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
         SDL_zero(event);
         event.type = SDL_EVENT_AUDIO_DEVICE_REMOVED;
         event.common.timestamp = 0;
-        event.adevice.which = device->instance_id;
-        event.adevice.iscapture = device->iscapture ? 1 : 0;
+        event.adevice.which = instance_id;
+        event.adevice.iscapture = iscapture ? 1 : 0;
         SDL_PushEvent(&event);
-    }
-
-    if (should_destroy) {
-        DestroyPhysicalAudioDevice(device);
     }
 }
 
