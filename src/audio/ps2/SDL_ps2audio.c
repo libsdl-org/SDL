@@ -91,9 +91,10 @@ static int PS2AUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int
     return (audsrv_play_audio((char *)buffer, buflen) != buflen) ? -1 : 0;
 }
 
-static void PS2AUDIO_WaitDevice(SDL_AudioDevice *device)
+static int PS2AUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     audsrv_wait_audio(device->buffer_size);
+    return 0;
 }
 
 static Uint8 *PS2AUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)

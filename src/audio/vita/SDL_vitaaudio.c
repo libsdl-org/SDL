@@ -136,12 +136,13 @@ static int VITAAUD_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int 
 }
 
 // This function waits until it is possible to write a full sound buffer
-static void VITAAUD_WaitDevice(SDL_AudioDevice *device)
+static int VITAAUD_WaitDevice(SDL_AudioDevice *device)
 {
     // !!! FIXME: we might just need to sleep roughly as long as playback buffers take to process, based on sample rate, etc.
     while (!SDL_AtomicGet(&device->shutdown) && (sceAudioOutGetRestSample(device->hidden->port) >= device->buffer_size)) {
         SDL_Delay(1);
     }
+    return 0;
 }
 
 static Uint8 *VITAAUD_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
@@ -172,7 +173,7 @@ static void VITAAUD_CloseDevice(SDL_AudioDevice *device)
     }
 }
 
-static void VITAAUD_WaitCaptureDevice(SDL_AudioDevice *device)
+static int VITAAUD_WaitCaptureDevice(SDL_AudioDevice *device)
 {
     // there's only a blocking call to obtain more data, so we'll just sleep as
     //  long as a buffer would run.
@@ -180,6 +181,7 @@ static void VITAAUD_WaitCaptureDevice(SDL_AudioDevice *device)
     while (!SDL_AtomicGet(&device->shutdown) && (SDL_GetTicks() < endticks)) {
         SDL_Delay(1);
     }
+    return 0;
 }
 
 static int VITAAUD_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)

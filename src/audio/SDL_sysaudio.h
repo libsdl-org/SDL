@@ -128,10 +128,10 @@ typedef struct SDL_AudioDriverImpl
     int (*OpenDevice)(SDL_AudioDevice *device);
     void (*ThreadInit)(SDL_AudioDevice *device);   // Called by audio thread at start
     void (*ThreadDeinit)(SDL_AudioDevice *device); // Called by audio thread at end
-    void (*WaitDevice)(SDL_AudioDevice *device);
+    int (*WaitDevice)(SDL_AudioDevice *device);
     int (*PlayDevice)(SDL_AudioDevice *device, const Uint8 *buffer, int buflen);  // buffer and buflen are always from GetDeviceBuf, passed here for convenience.
     Uint8 *(*GetDeviceBuf)(SDL_AudioDevice *device, int *buffer_size);
-    void (*WaitCaptureDevice)(SDL_AudioDevice *device);
+    int (*WaitCaptureDevice)(SDL_AudioDevice *device);
     int (*CaptureFromDevice)(SDL_AudioDevice *device, void *buffer, int buflen);
     void (*FlushCapture)(SDL_AudioDevice *device);
     void (*CloseDevice)(SDL_AudioDevice *device);

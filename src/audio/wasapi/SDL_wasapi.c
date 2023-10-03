@@ -431,7 +431,7 @@ static int WASAPI_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int b
     return 0;
 }
 
-static void WASAPI_WaitDevice(SDL_AudioDevice *device)
+static int WASAPI_WaitDevice(SDL_AudioDevice *device)
 {
     // WaitDevice does not hold the device lock, so check for recovery/disconnect details here.
     while (RecoverWasapiIfLost(device) && device->hidden->client && device->hidden->event) {
@@ -450,9 +450,11 @@ static void WASAPI_WaitDevice(SDL_AudioDevice *device)
         } else if (waitResult != WAIT_TIMEOUT) {
             //SDL_Log("WASAPI FAILED EVENT!");*/
             IAudioClient_Stop(device->hidden->client);
-            WASAPI_DisconnectDevice(device);
+            return -1;
         }
     }
+
+    return 0;
 }
 
 static int WASAPI_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)

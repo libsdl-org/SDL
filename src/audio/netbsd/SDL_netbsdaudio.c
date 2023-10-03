@@ -115,7 +115,7 @@ static void NETBSDAUDIO_Status(SDL_AudioDevice *device)
 #endif // DEBUG_AUDIO
 }
 
-static void NETBSDAUDIO_WaitDevice(SDL_AudioDevice *device)
+static int NETBSDAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     const SDL_bool iscapture = device->iscapture;
     while (!SDL_AtomicGet(&device->shutdown)) {
@@ -127,8 +127,7 @@ static void NETBSDAUDIO_WaitDevice(SDL_AudioDevice *device)
             }
             // Hmm, not much we can do - abort
             fprintf(stderr, "netbsdaudio WaitDevice ioctl failed (unrecoverable): %s\n", strerror(errno));
-            SDL_AudioDeviceDisconnected(device);
-            return;
+            return -1;
         }
         const size_t remain = (size_t)((iscapture ? info.record.seek : info.play.seek) * SDL_AUDIO_BYTESIZE(device->spec.format));
         if (!iscapture && (remain >= device->buffer_size)) {
@@ -139,6 +138,8 @@ static void NETBSDAUDIO_WaitDevice(SDL_AudioDevice *device)
             break; /* ready to go! */
         }
     }
+
+    return 0;
 }
 
 static int NETBSDAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)

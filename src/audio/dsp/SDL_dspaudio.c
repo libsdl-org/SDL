@@ -201,7 +201,7 @@ static int DSP_OpenDevice(SDL_AudioDevice *device)
     return 0;  // We're ready to rock and roll. :-)
 }
 
-static void DSP_WaitDevice(SDL_AudioDevice *device)
+static int DSP_WaitDevice(SDL_AudioDevice *device)
 {
     const unsigned long ioctlreq = device->iscapture ? SNDCTL_DSP_GETISPACE : SNDCTL_DSP_GETOSPACE;
     struct SDL_PrivateAudioData *h = device->hidden;
@@ -215,14 +215,15 @@ static void DSP_WaitDevice(SDL_AudioDevice *device)
             }
             // Hmm, not much we can do - abort
             fprintf(stderr, "dsp WaitDevice ioctl failed (unrecoverable): %s\n", strerror(errno));
-            SDL_AudioDeviceDisconnected(device);
-            return;
+            return -1;
         } else if (info.bytes < device->buffer_size) {
             SDL_Delay(10);
         } else {
             break; // ready to go!
         }
     }
+
+    return 0;
 }
 
 static int DSP_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)

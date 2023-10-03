@@ -326,7 +326,7 @@ static void no_swizzle(SDL_AudioDevice *device, void *buffer, Uint32 bufferlen)
 #endif // SND_CHMAP_API_VERSION
 
 // This function waits until it is possible to write a full sound buffer
-static void ALSA_WaitDevice(SDL_AudioDevice *device)
+static int ALSA_WaitDevice(SDL_AudioDevice *device)
 {
     const int fulldelay = (int) ((((Uint64) device->sample_frames) * 1000) / device->spec.freq);
     const int delay = SDL_max(fulldelay, 10);
@@ -338,9 +338,9 @@ static void ALSA_WaitDevice(SDL_AudioDevice *device)
             if (status < 0) {
                 // Hmm, not much we can do - abort
                 SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA: snd_pcm_wait failed (unrecoverable): %s", ALSA_snd_strerror(rc));
-                SDL_AudioDeviceDisconnected(device);
+                return -1;
             }
-            return;
+            continue;
         }
 
         if (rc > 0) {
@@ -349,6 +349,8 @@ static void ALSA_WaitDevice(SDL_AudioDevice *device)
 
         // Timed out! Make sure we aren't shutting down and then wait again.
     }
+
+    return 0;
 }
 
 static int ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)

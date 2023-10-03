@@ -164,9 +164,10 @@ static Uint8 *AAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *bufsize)
     return &hidden->mixbuf[offset];
 }
 
-static void AAUDIO_WaitDevice(SDL_AudioDevice *device)
+static int AAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     SDL_WaitSemaphore(device->hidden->semaphore);
+    return 0;
 }
 
 static int BuildAAudioStream(SDL_AudioDevice *device);

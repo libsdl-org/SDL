@@ -628,14 +628,14 @@ static int openslES_OpenDevice(SDL_AudioDevice *device)
     return 0;
 }
 
-static void openslES_WaitDevice(SDL_AudioDevice *device)
+static int openslES_WaitDevice(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *audiodata = device->hidden;
 
     LOGV("openslES_WaitDevice()");
 
     // Wait for an audio chunk to finish
-    SDL_WaitSemaphore(audiodata->playsem);
+    return SDL_WaitSemaphore(audiodata->playsem);
 }
 
 static int openslES_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)

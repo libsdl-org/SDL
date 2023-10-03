@@ -200,7 +200,7 @@ static int N3DSAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, in
     return 0;
 }
 
-static void N3DSAUDIO_WaitDevice(SDL_AudioDevice *device)
+static int N3DSAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     contextLock(device);
     while (!device->hidden->isCancelled && !SDL_AtomicGet(&device->shutdown) &&
@@ -208,6 +208,7 @@ static void N3DSAUDIO_WaitDevice(SDL_AudioDevice *device)
         CondVar_Wait(&device->hidden->cv, &device->hidden->lock);
     }
     contextUnlock(device);
+    return 0;
 }
 
 static Uint8 *N3DSAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)

@@ -118,9 +118,9 @@ static int PSPAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int
     return (rc == 0) ? 0 : -1;
 }
 
-static void PSPAUDIO_WaitDevice(SDL_AudioDevice *device)
+static int PSPAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
-    // Because we block when sending audio, there's no need for this function to do anything.
+    return 0;  // Because we block when sending audio, there's no need for this function to do anything.
 }
 
 static Uint8 *PSPAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)

@@ -524,9 +524,9 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
 // stubs for audio drivers that don't need a specific entry point...
 
 static void SDL_AudioThreadDeinit_Default(SDL_AudioDevice *device) { /* no-op. */ }
-static void SDL_AudioWaitDevice_Default(SDL_AudioDevice *device) { /* no-op. */ }
+static int SDL_AudioWaitDevice_Default(SDL_AudioDevice *device) { return 0; /* no-op. */ }
 static int SDL_AudioPlayDevice_Default(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size) { return 0; /* no-op. */ }
-static void SDL_AudioWaitCaptureDevice_Default(SDL_AudioDevice *device) { /* no-op. */ }
+static int SDL_AudioWaitCaptureDevice_Default(SDL_AudioDevice *device) { return 0; /* no-op. */ }
 static void SDL_AudioFlushCapture_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static void SDL_AudioCloseDevice_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static void SDL_AudioDeinitialize_Default(void) { /* no-op. */ }
@@ -938,7 +938,10 @@ static int SDLCALL OutputAudioThread(void *devicep)  // thread entry point
     SDL_assert(!device->iscapture);
     SDL_OutputAudioThreadSetup(device);
     do {
-        current_audio.impl.WaitDevice(device);
+        if (current_audio.impl.WaitDevice(device) < 0) {
+            SDL_AudioDeviceDisconnected(device);  // doh.
+            break;
+        }
     } while (SDL_OutputAudioThreadIterate(device));
 
     SDL_OutputAudioThreadShutdown(device);
@@ -1039,7 +1042,10 @@ static int SDLCALL CaptureAudioThread(void *devicep)  // thread entry point
     SDL_CaptureAudioThreadSetup(device);
 
     do {
-        current_audio.impl.WaitCaptureDevice(device);
+        if (current_audio.impl.WaitCaptureDevice(device) < 0) {
+            SDL_AudioDeviceDisconnected(device);  // doh.
+            break;
+        }
     } while (SDL_CaptureAudioThreadIterate(device));
 
     SDL_CaptureAudioThreadShutdown(device);

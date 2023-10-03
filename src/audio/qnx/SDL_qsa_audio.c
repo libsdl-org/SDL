@@ -86,21 +86,19 @@ static void QSA_InitAudioParams(snd_pcm_channel_params_t * cpars)
 }
 
 // This function waits until it is possible to write a full sound buffer
-static void QSA_WaitDevice(SDL_AudioDevice *device)
+static int QSA_WaitDevice(SDL_AudioDevice *device)
 {
-    int result;
-
     // Setup timeout for playing one fragment equal to 2 seconds
     // If timeout occurred than something wrong with hardware or driver
     // For example, Vortex 8820 audio driver stucks on second DAC because
     // it doesn't exist !
-    result = SDL_IOReady(device->hidden->audio_fd,
-                         device->iscapture ? SDL_IOR_READ : SDL_IOR_WRITE,
-                         2 * 1000);
+    const int result = SDL_IOReady(device->hidden->audio_fd,
+                                   device->iscapture ? SDL_IOR_READ : SDL_IOR_WRITE,
+                                   2 * 1000);
     switch (result) {
     case -1:
-        SDL_SetError("QSA: SDL_IOReady() failed: %s", strerror(errno));  // !!! FIXME: Should we just disconnect the device in this case?
-        break;
+        SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "QSA: SDL_IOReady() failed: %s", strerror(errno));
+        return -1;
     case 0:
         device->hidden->timeout_on_wait = SDL_TRUE;  // !!! FIXME: Should we just disconnect the device in this case?
         break;
@@ -108,6 +106,8 @@ static void QSA_WaitDevice(SDL_AudioDevice *device)
         device->hidden->timeout_on_wait = SDL_FALSE;
         break;
     }
+
+    return 0;
 }
 
 static int QSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)

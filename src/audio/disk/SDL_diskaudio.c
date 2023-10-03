@@ -35,9 +35,10 @@
 #define DISKDEFAULT_INFILE  "sdlaudio-in.raw"
 #define DISKENVR_IODELAY    "SDL_DISKAUDIODELAY"
 
-static void DISKAUDIO_WaitDevice(SDL_AudioDevice *device)
+static int DISKAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     SDL_Delay(device->hidden->io_delay);
+    return 0;
 }
 
 static int DISKAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)

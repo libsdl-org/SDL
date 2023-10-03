@@ -225,7 +225,7 @@ static void DSOUND_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevi
 
 }
 
-static void DSOUND_WaitDevice(SDL_AudioDevice *device)
+static int DSOUND_WaitDevice(SDL_AudioDevice *device)
 {
     /* Semi-busy wait, since we have no way of getting play notification
        on a primary mixing buffer located in hardware (DirectX 5.0)
@@ -251,12 +251,13 @@ static void DSOUND_WaitDevice(SDL_AudioDevice *device)
         }
 
         if ((result != DS_OK) && (result != DSERR_BUFFERLOST)) {
-            SDL_AudioDeviceDisconnected(device);
-            return;
+            return -1;
         }
 
         SDL_Delay(1);  // not ready yet; sleep a bit.
     }
+
+    return 0;
 }
 
 static int DSOUND_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
@@ -328,19 +329,20 @@ static Uint8 *DSOUND_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
     return device->hidden->locked_buf;
 }
 
-static void DSOUND_WaitCaptureDevice(SDL_AudioDevice *device)
+static int DSOUND_WaitCaptureDevice(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
     while (!SDL_AtomicGet(&device->shutdown)) {
         DWORD junk, cursor;
         if (IDirectSoundCaptureBuffer_GetCurrentPosition(h->capturebuf, &junk, &cursor) != DS_OK) {
-            SDL_AudioDeviceDisconnected(device);
-            return;
+            return -1;
         } else if ((cursor / device->buffer_size) != h->lastchunk) {
-            return;
+            break;
         }
         SDL_Delay(1);
     }
+
+    return 0;
 }
 
 static int DSOUND_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)

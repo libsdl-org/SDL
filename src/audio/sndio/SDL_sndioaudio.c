@@ -147,32 +147,31 @@ static int LoadSNDIOLibrary(void)
 
 #endif // SDL_AUDIO_DRIVER_SNDIO_DYNAMIC
 
-static void SNDIO_WaitDevice(SDL_AudioDevice *device)
+static int SNDIO_WaitDevice(SDL_AudioDevice *device)
 {
     const SDL_bool iscapture = device->iscapture;
 
     while (!SDL_AtomicGet(&device->shutdown)) {
         if (SNDIO_sio_eof(device->hidden->dev)) {
-            SDL_AudioDeviceDisconnected(device);
-            return;
+            return -1;
         }
 
         const int nfds = SNDIO_sio_pollfd(device->hidden->dev, device->hidden->pfd, iscapture ? POLLIN : POLLOUT);
         if (nfds <= 0 || poll(device->hidden->pfd, nfds, 10) < 0) {
-            SDL_AudioDeviceDisconnected(device);
-            return;
+            return -1;
         }
 
         const int revents = SNDIO_sio_revents(device->hidden->dev, device->hidden->pfd);
         if (iscapture && (revents & POLLIN)) {
-            return;
+            break;
         } else if (!iscapture && (revents & POLLOUT)) {
-            return;
+            break;
         } else if (revents & POLLHUP) {
-            SDL_AudioDeviceDisconnected(device);
-            return;
+            return -1;
         }
     }
+
+    return 0;
 }
 
 static int SNDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)

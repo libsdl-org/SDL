@@ -396,9 +396,10 @@ static void WriteCallback(pa_stream *p, size_t nbytes, void *userdata)
 }
 
 /* This function waits until it is possible to write a full sound buffer */
-static void PULSEAUDIO_WaitDevice(SDL_AudioDevice *device)
+static int PULSEAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
+    int retval = 0;
 
     /*printf("PULSEAUDIO PLAYDEVICE START! mixlen=%d\n", available);*/
 
@@ -410,11 +411,14 @@ static void PULSEAUDIO_WaitDevice(SDL_AudioDevice *device)
 
         if ((PULSEAUDIO_pa_context_get_state(pulseaudio_context) != PA_CONTEXT_READY) || (PULSEAUDIO_pa_stream_get_state(h->stream) != PA_STREAM_READY)) {
             /*printf("PULSEAUDIO DEVICE FAILURE IN WAITDEVICE!\n");*/
-            SDL_AudioDeviceDisconnected(device);
+            retval = -1;
             break;
         }
     }
+
     PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
+
+    return retval;
 }
 
 static int PULSEAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
@@ -462,13 +466,15 @@ static void ReadCallback(pa_stream *p, size_t nbytes, void *userdata)
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);  /* the capture code queries what it needs, we just need to signal to end any wait */
 }
 
-static void PULSEAUDIO_WaitCaptureDevice(SDL_AudioDevice *device)
+static int PULSEAUDIO_WaitCaptureDevice(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
 
     if (h->capturebuf != NULL) {
-        return;  // there's still data available to read.
+        return 0;  // there's still data available to read.
     }
+
+    int retval = 0;
 
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
 
@@ -476,7 +482,7 @@ static void PULSEAUDIO_WaitCaptureDevice(SDL_AudioDevice *device)
         PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);
         if ((PULSEAUDIO_pa_context_get_state(pulseaudio_context) != PA_CONTEXT_READY) || (PULSEAUDIO_pa_stream_get_state(h->stream) != PA_STREAM_READY)) {
             //printf("PULSEAUDIO DEVICE FAILURE IN WAITCAPTUREDEVICE!\n");
-            SDL_AudioDeviceDisconnected(device);
+            retval = -1;
             break;
         } else if (PULSEAUDIO_pa_stream_readable_size(h->stream) > 0) {
             // a new fragment is available!
@@ -497,6 +503,8 @@ static void PULSEAUDIO_WaitCaptureDevice(SDL_AudioDevice *device)
     }
 
     PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
+
+    return retval;
 }
 
 static int PULSEAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
