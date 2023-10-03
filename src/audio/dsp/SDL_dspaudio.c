@@ -293,7 +293,6 @@ static SDL_bool DSP_Init(SDL_AudioDriverImpl *impl)
     impl->CaptureFromDevice = DSP_CaptureFromDevice;
     impl->FlushCapture = DSP_FlushCapture;
 
-    impl->AllowsArbitraryDeviceNames = SDL_TRUE;
     impl->HasCaptureSupport = SDL_TRUE;
 
     return SDL_TRUE; /* this audio target is available. */

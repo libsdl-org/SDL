@@ -348,7 +348,6 @@ static SDL_bool SNDIO_Init(SDL_AudioDriverImpl *impl)
     impl->Deinitialize = SNDIO_Deinitialize;
     impl->DetectDevices = SNDIO_DetectDevices;
 
-    impl->AllowsArbitraryDeviceNames = SDL_TRUE;
     impl->HasCaptureSupport = SDL_TRUE;
 
     return SDL_TRUE;

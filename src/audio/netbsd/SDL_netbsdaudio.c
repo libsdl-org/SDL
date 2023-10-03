@@ -317,7 +317,6 @@ static SDL_bool NETBSDAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->FlushCapture = NETBSDAUDIO_FlushCapture;
 
     impl->HasCaptureSupport = SDL_TRUE;
-    impl->AllowsArbitraryDeviceNames = SDL_TRUE;
 
     return SDL_TRUE;
 }

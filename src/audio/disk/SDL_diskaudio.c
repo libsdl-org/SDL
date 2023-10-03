@@ -160,7 +160,6 @@ static SDL_bool DISKAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->CloseDevice = DISKAUDIO_CloseDevice;
     impl->DetectDevices = DISKAUDIO_DetectDevices;
 
-    impl->AllowsArbitraryDeviceNames = SDL_TRUE;
     impl->HasCaptureSupport = SDL_TRUE;
 
     return SDL_TRUE;
