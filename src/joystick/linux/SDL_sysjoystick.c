@@ -1261,9 +1261,11 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd, int fd_sensor)
     /* Sensors are only available through the new unified event API */
     if (fd_sensor >= 0 && (ioctl(fd_sensor, EVIOCGBIT(EV_ABS, sizeof(absbit)), absbit) >= 0)) {
         if (test_bit(ABS_X, absbit) && test_bit(ABS_Y, absbit) && test_bit(ABS_Z, absbit)) {
+            joystick->hwdata->has_accelerometer = SDL_TRUE;
             for (i = 0; i < 3; ++i) {
                 struct input_absinfo absinfo;
                 if (ioctl(fd_sensor, EVIOCGABS(ABS_X + i), &absinfo) < 0) {
+                    joystick->hwdata->has_accelerometer = SDL_FALSE;
                     break; /* do not report an accelerometer if we can't read all axes */
                 }
                 joystick->hwdata->accelerometer_scale[i] = absinfo.resolution;
@@ -1274,14 +1276,15 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd, int fd_sensor)
                         absinfo.fuzz, absinfo.flat, absinfo.resolution);
 #endif /* DEBUG_INPUT_EVENTS */
             }
-            joystick->hwdata->has_accelerometer = SDL_TRUE;
         }
 
         if (test_bit(ABS_RX, absbit) && test_bit(ABS_RY, absbit) && test_bit(ABS_RZ, absbit)) {
+            joystick->hwdata->has_gyro = SDL_TRUE;
             for (i = 0; i < 3; ++i) {
                 struct input_absinfo absinfo;
                 if (ioctl(fd_sensor, EVIOCGABS(ABS_RX + i), &absinfo) < 0) {
-                    break; /* do not report an gyro if we can't read all axes */
+                    joystick->hwdata->has_gyro = SDL_FALSE;
+                    break; /* do not report a gyro if we can't read all axes */
                 }
                 joystick->hwdata->gyro_scale[i] = absinfo.resolution;
 #ifdef DEBUG_INPUT_EVENTS
@@ -1291,7 +1294,6 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd, int fd_sensor)
                         absinfo.fuzz, absinfo.flat, absinfo.resolution);
 #endif /* DEBUG_INPUT_EVENTS */
             }
-            joystick->hwdata->has_gyro = SDL_TRUE;
         }
     }
 
