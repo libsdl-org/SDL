@@ -19,8 +19,12 @@
 
 /* Fixture */
 
-static void SDLCALL audioSetUp(void **arg)
-{
+/* Number of times audioSetup had to quit the audio system */
+static int g_audioInitCount;
+/* Original name of the audio driver */
+static const char *g_originalAudioDriver;
+
+static void initAudioSubSystem(void) {
     /* Start SDL audio subsystem */
     bool ret = SDL_InitSubSystem(SDL_INIT_AUDIO);
     SDLTest_AssertPass("Call to SDL_InitSubSystem(SDL_INIT_AUDIO)");
@@ -30,13 +34,39 @@ static void SDLCALL audioSetUp(void **arg)
     }
 }
 
+static void SDLCALL audioSetUp(void **arg)
+{
+    g_audioInitCount = 0;
+    g_originalAudioDriver = SDL_GetCurrentAudioDriver();
+
+    /* Stop SDL audio subsystem */
+    while (SDL_WasInit(SDL_INIT_AUDIO)) {
+        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+        SDLTest_AssertPass("Call to SDL_QuitSubSystem(SDL_INIT_AUDIO)");
+        g_audioInitCount += 1;
+    }
+
+    initAudioSubSystem();
+}
+
 static void SDLCALL audioTearDown(void *arg)
 {
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
     SDLTest_AssertPass("Call to SDL_QuitSubSystem(SDL_INIT_AUDIO)");
 
+    /* Restore audio subsystem in a similar state before the current test */
+    if (g_audioInitCount) {
+        int i;
+        SDL_SetHint(SDL_HINT_AUDIO_DRIVER, g_originalAudioDriver);
+        for (i = 0; i < g_audioInitCount; i++) {
+            int ret = SDL_InitSubSystem(SDL_INIT_AUDIO);
+            SDLTest_AssertPass("Call to SDL_InitSubSystem(SDL_INIT_AUDIO)");
+            SDLTest_AssertCheck(ret == true, "Check result from SDL_InitSubSystem(SDL_INIT_AUDIO) (%s)", ret ? "" : SDL_GetError());
+        }
+    }
+
     /* Remove a possibly created file from SDL disk writer audio driver; ignore errors */
-    (void)remove("sdlaudio.raw");
+    SDL_RemovePath("sdlaudio.raw");
 
     SDLTest_AssertPass("Cleanup of test files completed");
 }
@@ -74,7 +104,7 @@ static int SDLCALL audio_quitInitAudioSubSystem(void *arg)
     SDLTest_AssertPass("Call to SDL_QuitSubSystem(SDL_INIT_AUDIO)");
 
     /* Restart audio again */
-    audioSetUp(NULL);
+    initAudioSubSystem();
 
     return TEST_COMPLETED;
 }
@@ -110,6 +140,8 @@ static int SDLCALL audio_initQuitAudio(void *arg)
             continue;
         }
 
+        SDLTest_AssertCheck(!SDL_WasInit(SDL_INIT_AUDIO), "Validate audio subsystem not initiaized");
+
         /* Call Init */
         SDL_SetHint(SDL_HINT_AUDIO_DRIVER, audioDriver);
         result = SDL_InitSubSystem(SDL_INIT_AUDIO);
@@ -135,7 +167,7 @@ static int SDLCALL audio_initQuitAudio(void *arg)
     SDLTest_AssertPass("Call to SDL_QuitSubSystem(SDL_INIT_AUDIO)");
 
     /* Restart audio again */
-    audioSetUp(NULL);
+    initAudioSubSystem();
 
     return TEST_COMPLETED;
 }
@@ -176,6 +208,7 @@ static int SDLCALL audio_initOpenCloseQuitAudio(void *arg)
 
         /* Change specs */
         for (j = 0; j < 2; j++) {
+            SDLTest_AssertCheck(!SDL_WasInit(SDL_INIT_AUDIO), "Validate audio subsystem not initiaized");
 
             /* Call Init */
             SDL_SetHint(SDL_HINT_AUDIO_DRIVER, audioDriver);
@@ -217,17 +250,15 @@ static int SDLCALL audio_initOpenCloseQuitAudio(void *arg)
                 SDLTest_AssertPass("Call to SDL_CloseAudioDevice(), call %d", k + 1);
             }
 
-            /* Call Quit (maybe multiple times) */
-            for (k = 0; k <= j; k++) {
-                SDL_QuitSubSystem(SDL_INIT_AUDIO);
-                SDLTest_AssertPass("Call to SDL_QuitSubSystem(SDL_INIT_AUDIO), call %d", k + 1);
-            }
+            /* Call Quit */
+            SDL_QuitSubSystem(SDL_INIT_AUDIO);
+            SDLTest_AssertPass("Call to SDL_QuitSubSystem(SDL_INIT_AUDIO)");
 
         } /* spec loop */
     }     /* driver loop */
 
     /* Restart audio again */
-    audioSetUp(NULL);
+    initAudioSubSystem();
 
     return TEST_COMPLETED;
 }
@@ -267,6 +298,7 @@ static int SDLCALL audio_pauseUnpauseAudio(void *arg)
 
         /* Change specs */
         for (j = 0; j < 2; j++) {
+            SDLTest_AssertCheck(!SDL_WasInit(SDL_INIT_AUDIO), "Validate audio subsystem not initiaized");
 
             /* Call Init */
             SDL_SetHint(SDL_HINT_AUDIO_DRIVER, audioDriver);
@@ -353,7 +385,7 @@ static int SDLCALL audio_pauseUnpauseAudio(void *arg)
     }     /* driver loop */
 
     /* Restart audio again */
-    audioSetUp(NULL);
+    initAudioSubSystem();
 
     return TEST_COMPLETED;
 }
