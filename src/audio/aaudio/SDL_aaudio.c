@@ -83,7 +83,7 @@ static void AAUDIO_errorCallback(AAudioStream *stream, void *userData, aaudio_re
     LOGI("SDL AAUDIO_errorCallback: %d - %s", error, ctx.AAudio_convertResultToText(error));
 
     // You MUST NOT close the audio stream from this callback, so we cannot call SDL_AudioDeviceDisconnected here.
-    // Just flag the device so we can kill it in WaitDevice/PlayDevice instead.
+    // Just flag the device so we can kill it in PlayDevice instead.
     SDL_AudioDevice *device = (SDL_AudioDevice *) userData;
     SDL_AtomicSet(&device->hidden->error_callback_triggered, (int) error);  // AAUDIO_OK is zero, so !triggered means no error.
     SDL_PostSemaphore(device->hidden->semaphore);  // in case we're blocking in WaitDevice.
