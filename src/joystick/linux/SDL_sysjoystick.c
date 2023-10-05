@@ -1565,7 +1565,9 @@ static int LINUX_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enab
     }
 
     if (enabled) {
-        SDL_assert(joystick->hwdata->item_sensor);
+        if (joystick->hwdata->item_sensor == NULL) {
+            return SDL_SetError("Sensors unplugged.");
+        }
         joystick->hwdata->fd_sensor = open(joystick->hwdata->item_sensor->path, O_RDONLY | O_CLOEXEC, 0);
         if (joystick->hwdata->fd_sensor < 0) {
             return SDL_SetError("Couldn't open sensor file %s.", joystick->hwdata->item_sensor->path);
