@@ -789,15 +789,20 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
                 continue;
             }
         }
-        if (FORMAT_HAS_ALPHA(dstfmt_val)) {
-            DISEMBLE_RGBA(dst, dstbpp, dst_fmt, dstpixel, dstR, dstG, dstB, dstA);
-        } else if (FORMAT_HAS_NO_ALPHA(dstfmt_val)) {
-            DISEMBLE_RGB(dst, dstbpp, dst_fmt, dstpixel, dstR, dstG, dstB);
-            dstA = 0xFF;
+        if ((flags & (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL))) {
+            if (FORMAT_HAS_ALPHA(dstfmt_val)) {
+                DISEMBLE_RGBA(dst, dstbpp, dst_fmt, dstpixel, dstR, dstG, dstB, dstA);
+            } else if (FORMAT_HAS_NO_ALPHA(dstfmt_val)) {
+                DISEMBLE_RGB(dst, dstbpp, dst_fmt, dstpixel, dstR, dstG, dstB);
+                dstA = 0xFF;
+            } else {
+                /* SDL_PIXELFORMAT_ARGB2101010 */
+                dstpixel = *((Uint32 *) (dst));
+                RGBA_FROM_ARGB2101010(dstpixel, dstR, dstG, dstB, dstA);
+            }
         } else {
-            /* SDL_PIXELFORMAT_ARGB2101010 */
-            dstpixel = *((Uint32 *)(dst));
-            RGBA_FROM_ARGB2101010(dstpixel, dstR, dstG, dstB, dstA);
+            /* don't care */
+            dstR = dstG = dstB = dstA = 0;
         }
 
         if (!is_uniform) {
