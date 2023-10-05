@@ -151,6 +151,9 @@ int main(int argc, char *argv[])
     }
 #endif
 
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+
     SDL_Quit();
     SDLTest_CommonDestroyState(state);
     return 0;
