@@ -170,6 +170,14 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
     JNIEnv *env, jclass cls,
     jint requestCode, jboolean result);
 
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeCreate)(
+    JNIEnv *env, jclass jcls,
+    jstring intent_data);
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeIntentLink)(
+    JNIEnv *env, jclass jcls,
+    jstring link);
+
 static JNINativeMethod SDLActivity_tab[] = {
     { "nativeGetVersion", "()Ljava/lang/String;", SDL_JAVA_INTERFACE(nativeGetVersion) },
     { "nativeSetupJNI", "()I", SDL_JAVA_INTERFACE(nativeSetupJNI) },
@@ -200,7 +208,9 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "nativeSetenv", "(Ljava/lang/String;Ljava/lang/String;)V", SDL_JAVA_INTERFACE(nativeSetenv) },
     { "onNativeOrientationChanged", "(I)V", SDL_JAVA_INTERFACE(onNativeOrientationChanged) },
     { "nativeAddTouch", "(ILjava/lang/String;)V", SDL_JAVA_INTERFACE(nativeAddTouch) },
-    { "nativePermissionResult", "(IZ)V", SDL_JAVA_INTERFACE(nativePermissionResult) }
+    { "nativePermissionResult", "(IZ)V", SDL_JAVA_INTERFACE(nativePermissionResult) },
+    { "onNativeCreate", "(Ljava/lang/String;)V", SDL_JAVA_INTERFACE(onNativeCreate) },
+    { "onNativeIntentLink", "(Ljava/lang/String;)V", SDL_JAVA_INTERFACE(onNativeIntentLink) }
 };
 
 /* Java class SDLInputConnection */
@@ -378,6 +388,9 @@ static void Internal_Android_Create_AssetManager(void);
 static void Internal_Android_Destroy_AssetManager(void);
 static AAssetManager *asset_manager = NULL;
 static jobject javaAssetManagerRef = 0;
+
+/* Intent URI */
+static const char *intentData = NULL;
 
 /*******************************************************************************
                  Functions called by JNI
@@ -872,6 +885,20 @@ retry:
     }
 }
 
+/* takes care of posting unilink events to event queue */
+void Android_CheckSendUnilinkEvent(void)
+{
+    SDL_LockMutex(Android_ActivityMutex);
+    const char *link = intentData;
+    intentData = NULL;
+    SDL_UnlockMutex(Android_ActivityMutex);
+
+    if (link) {
+        SDL_SendUnilink(link);
+        SDL_free(link);
+    }
+}
+
 /* Set screen resolution */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
     JNIEnv *env, jclass jcls,
@@ -931,6 +958,35 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
 {
     bPermissionRequestResult = result;
     SDL_AtomicSet(&bPermissionRequestPending, SDL_FALSE);
+}
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeCreate)(
+    JNIEnv *env, jclass jcls,
+    jstring intent_data)
+{
+    SDL_LockMutex(Android_ActivityMutex);
+
+    // Release any previous intent string if there was any.
+    // This should normally not happen as this method is called only once on startup, but just in case.
+    if (intentData)
+        SDL_free(intentData);
+
+    if (intent_data != NULL) {
+        const char *data = (*env)->GetStringUTFChars(env, intent_data, NULL);
+        intentData = SDL_strdup(data);
+        (*env)->ReleaseStringUTFChars(env, intent_data, data);
+    }
+
+    SDL_UnlockMutex(Android_ActivityMutex);
+}
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeIntentLink)(
+    JNIEnv *env, jclass jcls,
+    jstring link)
+{
+    const char *data = (*env)->GetStringUTFChars(env, link, NULL);
+    SDL_SendUnilink(data);
+    (*env)->ReleaseStringUTFChars(env, link, data);
 }
 
 extern void SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, SDL_AudioSpec *spec, void *handle);
@@ -1234,6 +1290,11 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeQuit)(
     JNIEnv *env, jclass cls)
 {
     const char *str;
+
+    if (intentData) {
+        SDL_free(intentData);
+        intentData = NULL;
+    }
 
     if (Android_ActivityMutex) {
         SDL_DestroyMutex(Android_ActivityMutex);

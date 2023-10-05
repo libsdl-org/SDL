@@ -158,6 +158,9 @@ typedef enum
     /* Sensor events */
     SDL_SENSORUPDATE = 0x1200,     /**< A sensor was updated */
 
+    /* Universal links events */
+    SDL_UNIVERSALLINK = 0x1300,     /**< User clicked on a link associated with application (applies to iOS, MacOS and Android) */
+
     /* Render events */
     SDL_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset and their contents need to be updated */
     SDL_RENDER_DEVICE_RESET, /**< The device has been reset and all textures need to be recreated */
@@ -560,6 +563,20 @@ typedef struct SDL_DropEvent
 
 
 /**
+ *  \brief An event triggered when user clicks on a link associated with the App (applies to MacOS, iOS and Android)
+ *         This is typically used to send users to app instead of website in browser.
+ *         This event is enabled by default, you can disable it with SDL_EventState().
+ *  \note If this event is enabled, you must free the link in the event.
+ */
+typedef struct SDL_UniversalLinkEvent
+{
+    Uint32 type;        /**< ::SDL_UNIVERSALLINK */
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
+    char *link;         /**< The link, which should be freed with SDL_free() */
+} SDL_UniversalLinkEvent;
+
+
+/**
  *  \brief Sensor event structure (event.sensor.*)
  */
 typedef struct SDL_SensorEvent
@@ -655,6 +672,7 @@ typedef union SDL_Event
     SDL_MultiGestureEvent mgesture;         /**< Gesture event data */
     SDL_DollarGestureEvent dgesture;        /**< Gesture event data */
     SDL_DropEvent drop;                     /**< Drag and drop event data */
+    SDL_UniversalLinkEvent unilink;         /**< Universal link event data */
 
     /* This is necessary for ABI compatibility between Visual C++ and GCC.
        Visual C++ will respect the push pack pragma and use 52 bytes (size of

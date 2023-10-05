@@ -515,6 +515,9 @@ static void SDL_LogEvent(const SDL_Event *event)
                            event->sensor.data[0], event->sensor.data[1], event->sensor.data[2],
                            event->sensor.data[3], event->sensor.data[4], event->sensor.data[5]);
         break;
+        SDL_EVENT_CASE(SDL_UNIVERSALLINK)
+        (void)SDL_snprintf(details, sizeof(details), " (link='%s' timestamp=%u)", event->unilink.link, (uint) event->unilink.timestamp);
+        break;
 
 #undef SDL_EVENT_CASE
 

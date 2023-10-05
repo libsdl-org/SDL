@@ -519,6 +519,13 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
 #endif
 
+-(BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray * _Nullable))restorationHandler
+{
+    if ([userActivity.activityType isEqualToString: NSUserActivityTypeBrowsingWeb]) {
+        return SDL_SendUnilink([[userActivity.webpageURL absoluteString] UTF8String]) ? YES : NO;
+    }
+    return NO;
+}
 @end
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
