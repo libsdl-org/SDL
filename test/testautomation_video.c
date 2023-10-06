@@ -28,6 +28,7 @@ SDL_Window *_createVideoSuiteTestWindow(const char *title)
     SDL_Window *window;
     int x, y, w, h;
     SDL_WindowFlags flags;
+    SDL_bool needs_renderer = SDL_FALSE;
 
     /* Standard window */
     x = SDLTest_RandomIntegerInRange(1, 100);
@@ -39,6 +40,35 @@ SDL_Window *_createVideoSuiteTestWindow(const char *title)
     window = SDL_CreateWindow(title, x, y, w, h, flags);
     SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d,%d,%d)", x, y, w, h, flags);
     SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
+
+    /* Wayland and XWayland windows require that a frame be presented before they are fully mapped and visible onscreen.
+     * This is required for the mouse/keyboard grab tests to pass.
+     */
+    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
+        needs_renderer = SDL_TRUE;
+    } else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
+        /* Try to detect if the x11 driver is running under XWayland */
+        const char *session_type = SDL_getenv("XDG_SESSION_TYPE");
+        if (session_type && SDL_strcasecmp(session_type, "wayland") == 0) {
+            needs_renderer = SDL_TRUE;
+        }
+    }
+
+    if (needs_renderer) {
+        SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
+        if (renderer) {
+            SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+            SDL_RenderClear(renderer);
+            SDL_RenderPresent(renderer);
+
+            /* Some desktops don't display the window immediately after presentation,
+             * so delay to give the window time to actually appear on the desktop.
+             */
+            SDL_Delay(100);
+        } else {
+            SDLTest_Log("Unable to create a renderer, some tests may fail on Wayland/XWayland");
+        }
+    }
 
     return window;
 }
@@ -822,12 +852,32 @@ int video_getSetWindowGrab(void *arg)
     const char *title = "video_getSetWindowGrab Test Window";
     SDL_Window *window;
     SDL_bool originalMouseState, originalKeyboardState;
+    SDL_bool hasFocusGained = SDL_FALSE;
 
     /* Call against new test window */
     window = _createVideoSuiteTestWindow(title);
     if (window == NULL) {
         return TEST_ABORTED;
     }
+
+    /* Need to raise the window to have and SDL_EVENT_WINDOW_FOCUS_GAINED,
+     * so that the window gets the flags SDL_WINDOW_INPUT_FOCUS,
+     * so that it can be "grabbed" */
+    SDL_RaiseWindow(window);
+
+    {
+        SDL_Event evt;
+        SDL_zero(evt);
+        while (SDL_PollEvent(&evt)) {
+            if (evt.type == SDL_WINDOWEVENT) {
+                if (evt.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
+                    hasFocusGained = SDL_TRUE;
+                }
+            }
+        }
+    }
+
+    SDLTest_AssertCheck(hasFocusGained == SDL_TRUE, "Expected window with focus");
 
     /* Get state */
     originalMouseState = SDL_GetWindowMouseGrab(window);
@@ -1961,6 +2011,7 @@ int video_setWindowCenteredOnDisplay(void *arg)
             int currentDisplay;
             int expectedDisplay;
             SDL_Rect expectedDisplayRect;
+            SDL_bool video_driver_is_wayland = SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0;
 
             /* xVariation is the display we start on */
             expectedDisplay = xVariation % displayNum;
@@ -1976,16 +2027,42 @@ int video_setWindowCenteredOnDisplay(void *arg)
             SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d,%d,SHOWN)", x, y, w, h);
             SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
 
+            /* Wayland windows require that a frame be presented before they are fully mapped and visible onscreen. */
+            if (video_driver_is_wayland) {
+                SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
+
+                if (renderer) {
+                    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+                    SDL_RenderClear(renderer);
+                    SDL_RenderPresent(renderer);
+
+                    /* Some desktops don't display the window immediately after presentation,
+                     * so delay to give the window time to actually appear on the desktop.
+                     */
+                    SDL_Delay(100);
+                } else {
+                    SDLTest_Log("Unable to create a renderer, tests may fail under Wayland");
+                }
+            }
+
             /* Check the window is centered on the requested display */
             currentDisplay = SDL_GetWindowDisplayIndex(window);
             SDL_GetWindowSize(window, &currentW, &currentH);
             SDL_GetWindowPosition(window, &currentX, &currentY);
 
-            SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display index (current: %d, expected: %d)", currentDisplay, expectedDisplay);
+            if (!video_driver_is_wayland) {
+                SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display index (current: %d, expected: %d)", currentDisplay, expectedDisplay);
+            } else {
+                SDLTest_Log("Skipping display index validation: Wayland driver does not support window positioning");
+            }
             SDLTest_AssertCheck(currentW == w, "Validate width (current: %d, expected: %d)", currentW, w);
             SDLTest_AssertCheck(currentH == h, "Validate height (current: %d, expected: %d)", currentH, h);
-            SDLTest_AssertCheck(currentX == expectedX, "Validate x (current: %d, expected: %d)", currentX, expectedX);
-            SDLTest_AssertCheck(currentY == expectedY, "Validate y (current: %d, expected: %d)", currentY, expectedY);
+            if (!video_driver_is_wayland) {
+                SDLTest_AssertCheck(currentX == expectedX, "Validate x (current: %d, expected: %d)", currentX, expectedX);
+                SDLTest_AssertCheck(currentY == expectedY, "Validate y (current: %d, expected: %d)", currentY, expectedY);
+            } else {
+                SDLTest_Log("Skipping window position validation: Wayland driver does not support window positioning");
+            }
 
             /* Enter fullscreen desktop */
             result = SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
@@ -1996,14 +2073,23 @@ int video_setWindowCenteredOnDisplay(void *arg)
             SDL_GetWindowSize(window, &currentW, &currentH);
             SDL_GetWindowPosition(window, &currentX, &currentY);
 
-            SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display index (current: %d, expected: %d)", currentDisplay, expectedDisplay);
+            if (!video_driver_is_wayland) {
+                SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display index (current: %d, expected: %d)", currentDisplay, expectedDisplay);
+            } else {
+                SDLTest_Log("Skipping display index validation: Wayland driver does not support window positioning");
+            }
             SDLTest_AssertCheck(currentW == expectedDisplayRect.w, "Validate width (current: %d, expected: %d)", currentW, expectedDisplayRect.w);
             SDLTest_AssertCheck(currentH == expectedDisplayRect.h, "Validate height (current: %d, expected: %d)", currentH, expectedDisplayRect.h);
-            SDLTest_AssertCheck(currentX == expectedDisplayRect.x, "Validate x (current: %d, expected: %d)", currentX, expectedDisplayRect.x);
-            SDLTest_AssertCheck(currentY == expectedDisplayRect.y, "Validate y (current: %d, expected: %d)", currentY, expectedDisplayRect.y);
+            if (!video_driver_is_wayland) {
+                SDLTest_AssertCheck(currentX == expectedDisplayRect.x, "Validate x (current: %d, expected: %d)", currentX, expectedDisplayRect.x);
+                SDLTest_AssertCheck(currentY == expectedDisplayRect.y, "Validate y (current: %d, expected: %d)", currentY, expectedDisplayRect.y);
+            } else {
+                SDLTest_Log("Skipping window position validation: Wayland driver does not support window positioning");
+            }
 
             /* Leave fullscreen desktop */
             result = SDL_SetWindowFullscreen(window, 0);
+            SDL_PumpEvents();
             SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
 
             /* Check window was restored correctly */
@@ -2011,11 +2097,19 @@ int video_setWindowCenteredOnDisplay(void *arg)
             SDL_GetWindowSize(window, &currentW, &currentH);
             SDL_GetWindowPosition(window, &currentX, &currentY);
 
-            SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display index (current: %d, expected: %d)", currentDisplay, expectedDisplay);
+            if (!video_driver_is_wayland) {
+                SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display index (current: %d, expected: %d)", currentDisplay, expectedDisplay);
+            } else {
+                SDLTest_Log("Skipping display index validation: Wayland driver does not support window positioning");
+            }
             SDLTest_AssertCheck(currentW == w, "Validate width (current: %d, expected: %d)", currentW, w);
             SDLTest_AssertCheck(currentH == h, "Validate height (current: %d, expected: %d)", currentH, h);
-            SDLTest_AssertCheck(currentX == expectedX, "Validate x (current: %d, expected: %d)", currentX, expectedX);
-            SDLTest_AssertCheck(currentY == expectedY, "Validate y (current: %d, expected: %d)", currentY, expectedY);
+            if (!video_driver_is_wayland) {
+                SDLTest_AssertCheck(currentX == expectedX, "Validate x (current: %d, expected: %d)", currentX, expectedX);
+                SDLTest_AssertCheck(currentY == expectedY, "Validate y (current: %d, expected: %d)", currentY, expectedY);
+            } else {
+                SDLTest_Log("Skipping window position validation: Wayland driver does not support window positioning");
+            }
 
             /* Center on display yVariation, and check window properties */
 
@@ -2031,11 +2125,19 @@ int video_setWindowCenteredOnDisplay(void *arg)
             SDL_GetWindowSize(window, &currentW, &currentH);
             SDL_GetWindowPosition(window, &currentX, &currentY);
 
-            SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display index (current: %d, expected: %d)", currentDisplay, expectedDisplay);
+            if (!video_driver_is_wayland) {
+                SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display index (current: %d, expected: %d)", currentDisplay, expectedDisplay);
+            } else {
+                SDLTest_Log("Skipping display index validation: Wayland driver does not support window positioning");
+            }
             SDLTest_AssertCheck(currentW == w, "Validate width (current: %d, expected: %d)", currentW, w);
             SDLTest_AssertCheck(currentH == h, "Validate height (current: %d, expected: %d)", currentH, h);
-            SDLTest_AssertCheck(currentX == expectedX, "Validate x (current: %d, expected: %d)", currentX, expectedX);
-            SDLTest_AssertCheck(currentY == expectedY, "Validate y (current: %d, expected: %d)", currentY, expectedY);
+            if (!video_driver_is_wayland) {
+                SDLTest_AssertCheck(currentX == expectedX, "Validate x (current: %d, expected: %d)", currentX, expectedX);
+                SDLTest_AssertCheck(currentY == expectedY, "Validate y (current: %d, expected: %d)", currentY, expectedY);
+            } else {
+                SDLTest_Log("Skipping window position validation: Wayland driver does not support window positioning");
+            }
 
             /* Clean up */
             _destroyVideoSuiteTestWindow(window);
