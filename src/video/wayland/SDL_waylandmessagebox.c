@@ -96,6 +96,10 @@ static int get_zenity_version(int *major, int *minor) {
         version_ptr = fgets(version_str, ZENITY_VERSION_LEN, outputfp);
         (void)fclose(outputfp); /* will close underlying fd */
 
+        if (version_ptr == NULL) {
+            return SDL_SetError("failed to read zenity version string");
+        }
+
         /* we expect the version string is in the form of MAJOR.MINOR.MICRO
          * as described in meson.build. We'll ignore everything after that.
          */
