@@ -31,9 +31,10 @@
 #define WINDOW_HEIGHT 480
 
 static SDL_Texture *sprite;
-static SDL_FRect position;
-static SDL_FRect velocity;
+static SDL_FRect *positions;
+static SDL_FRect *velocities;
 static int sprite_w, sprite_h;
+static int num_sprites = 0;
 
 static SDL_Window *window;
 static SDL_Renderer *renderer;
@@ -67,24 +68,34 @@ static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned
 
 static void MoveSprite(void)
 {
-    int max_w, max_h;
+    SDL_Rect viewport;
+    SDL_FRect *position, *velocity;
+    int i;
 
-    SDL_GetCurrentRenderOutputSize(renderer, &max_w, &max_h);
+    SDL_GetRenderViewport(renderer, &viewport);
 
-    /* Move the sprite, bounce at the wall, and draw */
-    position.x += velocity.x;
-    if ((position.x < 0) || (position.x >= (max_w - sprite_w))) {
-        velocity.x = -velocity.x;
-        position.x += velocity.x;
-    }
-    position.y += velocity.y;
-    if ((position.y < 0) || (position.y >= (max_h - sprite_h))) {
-        velocity.y = -velocity.y;
-        position.y += velocity.y;
+    for (i = 0; i < num_sprites; ++i) {
+        position = &positions[i];
+        velocity = &velocities[i];
+        position->x += velocity->x;
+        if ((position->x < 0) || (position->x >= (viewport.w - sprite_w))) {
+            velocity->x = -velocity->x;
+            position->x += velocity->x;
+        }
+        position->y += velocity->y;
+        if ((position->y < 0) || (position->y >= (viewport.h - sprite_h))) {
+            velocity->y = -velocity->y;
+            position->y += velocity->y;
+        }
     }
 
     /* Blit the sprite onto the screen */
-    SDL_RenderTexture(renderer, sprite, NULL, &position);
+    for (i = 0; i < num_sprites; ++i) {
+        position = &positions[i];
+
+        /* Blit the sprite onto the screen */
+        SDL_RenderTexture(renderer, sprite, NULL, position);
+    }
 }
 
 static AVCodecContext *OpenStream(AVFormatContext *ic, int stream)
@@ -366,6 +377,7 @@ static void HandleVideoFrame(AVFrame *frame, double pts)
 
 int main(int argc, char *argv[])
 {
+    const char *file = NULL;
     AVFormatContext *ic = NULL;
     int audio_stream = -1;
     int video_stream = -1;
@@ -374,6 +386,7 @@ int main(int argc, char *argv[])
     AVPacket *pkt = NULL;
     AVFrame *frame = NULL;
     double first_pts = -1.0;
+    int i;
     int result;
     int return_code = -1;
     SDL_bool flushing = SDL_FALSE;
@@ -382,8 +395,18 @@ int main(int argc, char *argv[])
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    if (argc != 2) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Usage: %s video_file\n", argv[0]);
+    for (i = 1; i < argc; ++i) {
+        if (SDL_strcmp(argv[i], "--sprites") == 0 && argv[i+1]) {
+            num_sprites = SDL_atoi(argv[i+1]);
+            ++i;
+        } else {
+            /* We'll try to open this as a media file */
+            file = argv[i];
+            break;
+        }
+    }
+    if (!file) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Usage: %s [--sprites N] video_file\n", argv[0]);
         return_code = 1;
         goto quit;
     }
@@ -398,12 +421,12 @@ int main(int argc, char *argv[])
         goto quit;
     }
 
-    if (SDL_SetWindowTitle(window, argv[1]) < 0) {
+    if (SDL_SetWindowTitle(window, file) < 0) {
         SDL_Log("SDL_SetWindowTitle: %s", SDL_GetError());
     }
 
     /* Open the media file */
-    result = avformat_open_input(&ic, argv[1], NULL, NULL);
+    result = avformat_open_input(&ic, file, NULL, NULL);
     if (result < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open %s: %d", argv[1], result);
         return_code = 4;
@@ -447,19 +470,30 @@ int main(int argc, char *argv[])
         goto quit;
     }
 
-    /* Initialize the sprite position */
-    int max_w, max_h;
-    SDL_GetCurrentRenderOutputSize(renderer, &max_w, &max_h);
+    /* Allocate memory for the sprite info */
+    positions = (SDL_FRect *)SDL_malloc(num_sprites * sizeof(*positions));
+    velocities = (SDL_FRect *)SDL_malloc(num_sprites * sizeof(*velocities));
+    if (positions == NULL || velocities == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
+        return_code = 3;
+        goto quit;
+    }
+
+    /* Position sprites and set their velocities */
+    SDL_Rect viewport;
+    SDL_GetRenderViewport(renderer, &viewport);
     srand((unsigned int)time(NULL));
-    position.x = (float)(rand() % (max_w - sprite_w));
-    position.y = (float)(rand() % (max_h - sprite_h));
-    position.w = (float)sprite_w;
-    position.h = (float)sprite_h;
-    velocity.x = 0.0f;
-    velocity.y = 0.0f;
-    while (!velocity.x || !velocity.y) {
-        velocity.x = (float)((rand() % (2 + 1)) - 1);
-        velocity.y = (float)((rand() % (2 + 1)) - 1);
+    for (i = 0; i < num_sprites; ++i) {
+        positions[i].x = (float)(rand() % (viewport.w - sprite_w));
+        positions[i].y = (float)(rand() % (viewport.h - sprite_h));
+        positions[i].w = (float)sprite_w;
+        positions[i].h = (float)sprite_h;
+        velocities[i].x = 0.0f;
+        velocities[i].y = 0.0f;
+        while (!velocities[i].x || !velocities[i].y) {
+            velocities[i].x = (float)((rand() % (2 + 1)) - 1);
+            velocities[i].y = (float)((rand() % (2 + 1)) - 1);
+        }
     }
 
     /* Main render loop */
@@ -543,6 +577,8 @@ int main(int argc, char *argv[])
     }
     return_code = 0;
 quit:
+    SDL_free(positions);
+    SDL_free(velocities);
     av_frame_free(&frame);
     av_packet_free(&pkt);
     avcodec_free_context(&audio_context);
