@@ -87,6 +87,11 @@ jobs:
       run: |
         cp -rv /vita/dependencies/* ${VITASDK}/arm-vita-eabi
 
+    - name: Fix vita.toolchain.cmake
+      run: |
+        # cache PKG_CONFIG_PATH
+        sed -i -E 's/set\( PKG_CONFIG_EXECUTABLE "\$\{VITASDK}\/bin\/arm-vita-eabi-pkg-config" )/set( PKG_CONFIG_EXECUTABLE "${VITASDK}\/bin\/arm-vita-eabi-pkg-config" CACHE PATH "Path of pkg-config executable" )/' ${VITASDK}/share/vita.toolchain.cmake
+
     - name: Configure (CMake)
       run: |
         cmake -S . -B build -G Ninja \
