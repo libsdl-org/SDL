@@ -184,11 +184,11 @@ endif()
 
 set(FFmpeg_FIND_COMPONENTS AVCODEC AVFORMAT AVUTIL SWSCALE)
 include("${SDL3_SOURCE_DIR}/cmake/FindFFmpeg.cmake")
-if(FFmpeg_FOUND)
+if(FFmpeg_FOUND AND FFmpeg_AVCODEC_VERSION VERSION_GREATER_EQUAL "60")
     add_sdl_test_executable(testffmpeg NO_C90 SOURCES testffmpeg.c ${icon_bmp_header})
     target_link_libraries(testffmpeg PRIVATE ${FFMPEG_LIBRARIES})
 else()
-    message(STATUS "Can't find ffmpeg, skipping testffmpeg")
+    message(STATUS "Can't find ffmpeg 6.0 or newer, skipping testffmpeg")
 endif()
 
 add_sdl_test_executable(checkkeys SOURCES checkkeys.c)
