@@ -173,6 +173,14 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     SDL_VideoData *data;
     struct wl_display *display;
 
+    /* Are we trying to connect to or are currently in a Wayland session? */
+    if (!getenv("WAYLAND_DISPLAY")) {
+        const char *session = getenv("XDG_SESSION_TYPE");
+        if (session && SDL_strcasecmp(session, "wayland")) {
+            return NULL;
+        }
+    }
+
     if (!SDL_WAYLAND_LoadSymbols()) {
         return NULL;
     }
