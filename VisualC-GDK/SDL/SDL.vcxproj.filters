@@ -397,6 +397,7 @@
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\SDL_error_c.h" />
+    <ClInclude Include="..\..\src\SDL_hashtable.h" />
     <ClInclude Include="..\..\src\SDL_list.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_metal.h">
       <Filter>API Headers</Filter>
@@ -845,6 +846,7 @@
     <ClCompile Include="..\..\src\SDL_assert.c" />
     <ClCompile Include="..\..\src\SDL_error.c" />
     <ClCompile Include="..\..\src\SDL_guid.c" />
+    <ClCompile Include="..\..\src\SDL_hashtable.c" />
     <ClCompile Include="..\..\src\SDL_hints.c" />
     <ClCompile Include="..\..\src\SDL_list.c" />
     <ClCompile Include="..\..\src\SDL_utils.c" />

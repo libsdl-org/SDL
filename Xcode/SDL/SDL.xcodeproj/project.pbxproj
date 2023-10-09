@@ -469,6 +469,8 @@
 		F3F7D9E12933074E00816151 /* SDL_begin_code.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8E72933074E00816151 /* SDL_begin_code.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D9E52933074E00816151 /* SDL_system.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8E82933074E00816151 /* SDL_system.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; platformFilters = (ios, maccatalyst, macos, tvos, watchos, ); };
+		000040E76FDC6AE48CBF0000 /* SDL_hashtable.c in Sources */ = {isa = PBXBuildFile; fileRef = 000078E1881E857EBB6C0000 /* SDL_hashtable.c */; };
+		0000CE8F0EF0E7EF781D0000 /* SDL_hashtable.h in Headers */ = {isa = PBXBuildFile; fileRef = 0000B6ADCD88CAD6610F0000 /* SDL_hashtable.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -962,6 +964,8 @@
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
 		F5A2EF3900C6A39A01000001 /* BUGS.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = BUGS.txt; path = ../../BUGS.txt; sourceTree = SOURCE_ROOT; };
 		FA73671C19A540EF004122E4 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		000078E1881E857EBB6C0000 /* SDL_hashtable.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_hashtable.c; path = SDL_hashtable.c; sourceTree = "<group>"; };
+		0000B6ADCD88CAD6610F0000 /* SDL_hashtable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_hashtable.h; path = SDL_hashtable.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1129,6 +1133,8 @@
 				F386F6E52884663E001840AA /* SDL_utils_c.h */,
 				F386F6E62884663E001840AA /* SDL_utils.c */,
 				A7D8A57123E2513D00DCD162 /* SDL.c */,
+				000078E1881E857EBB6C0000 /* SDL_hashtable.c */,
+				0000B6ADCD88CAD6610F0000 /* SDL_hashtable.h */,
 			);
 			name = "Library Source";
 			path = ../../src;
@@ -2584,6 +2590,7 @@
 				A7D8AEA023E2514100DCD162 /* SDL_cocoavulkan.m in Sources */,
 				A7D8AB6123E2514100DCD162 /* SDL_offscreenwindow.c in Sources */,
 				566E26D8246274CC00718109 /* SDL_locale.c in Sources */,
+				000040E76FDC6AE48CBF0000 /* SDL_hashtable.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
