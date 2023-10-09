@@ -438,6 +438,7 @@ sub process_visualstudio {
         $filter = lc(dirname($addpath));
         $filter =~ s/\Asrc\///; # there's no filter for the base "src/" dir, where SDL.c and friends live.
         $filter =~ s/\//\\/g;
+        $filter = '' if $filter eq 'src';
 
         if ($filter ne '') {
             # see if the filter already exists, otherwise add it.
