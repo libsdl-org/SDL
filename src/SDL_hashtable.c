@@ -40,10 +40,10 @@ struct SDL_HashTable
     SDL_HashTable_NukeFn nuke;
 };
 
-SDL_HashTable *SDL_NewHashTable(void *data, const Uint32 num_buckets, const SDL_HashTable_HashFn hashfn,
-                                const SDL_HashTable_KeyMatchFn keymatchfn,
-                                const SDL_HashTable_NukeFn nukefn,
-                                const SDL_bool stackable)
+SDL_HashTable *SDL_CreateHashTable(void *data, const Uint32 num_buckets, const SDL_HashTable_HashFn hashfn,
+                                   const SDL_HashTable_KeyMatchFn keymatchfn,
+                                   const SDL_HashTable_NukeFn nukefn,
+                                   const SDL_bool stackable)
 {
     SDL_HashTable *table;
 
@@ -209,7 +209,7 @@ SDL_bool SDL_IterateHashTableKeys(const SDL_HashTable *table, const void **_key,
     return SDL_TRUE;
 }
 
-void SDL_FreeHashTable(SDL_HashTable *table)
+void SDL_DestroyHashTable(SDL_HashTable *table)
 {
     if (table != NULL) {
         void *data = table->data;

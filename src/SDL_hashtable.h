@@ -29,14 +29,14 @@ typedef Uint32 (*SDL_HashTable_HashFn)(const void *key, void *data);
 typedef SDL_bool (*SDL_HashTable_KeyMatchFn)(const void *a, const void *b, void *data);
 typedef void (*SDL_HashTable_NukeFn)(const void *key, const void *value, void *data);
 
-SDL_HashTable *SDL_NewHashTable(void *data,
-                                const Uint32 num_buckets,
-                                const SDL_HashTable_HashFn hashfn,
-                                const SDL_HashTable_KeyMatchFn keymatchfn,
-                                const SDL_HashTable_NukeFn nukefn,
-                                const SDL_bool stackable);
+SDL_HashTable *SDL_CreateHashTable(void *data,
+                                   const Uint32 num_buckets,
+                                   const SDL_HashTable_HashFn hashfn,
+                                   const SDL_HashTable_KeyMatchFn keymatchfn,
+                                   const SDL_HashTable_NukeFn nukefn,
+                                   const SDL_bool stackable);
 
-void SDL_FreeHashTable(SDL_HashTable *table);
+void SDL_DestroyHashTable(SDL_HashTable *table);
 SDL_bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const void *value);
 SDL_bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key);
 SDL_bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const void **_value);
