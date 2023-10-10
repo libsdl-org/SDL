@@ -978,3 +978,4 @@ SDL_DYNAPI_PROC(float,SDL_GetAudioStreamFrequencyRatio,(SDL_AudioStream *a),(a),
 SDL_DYNAPI_PROC(int,SDL_SetAudioStreamFrequencyRatio,(SDL_AudioStream *a, float b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_SetAudioPostmixCallback,(SDL_AudioDeviceID a, SDL_AudioPostmixCallback b, void *c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_GetAudioStreamQueued,(SDL_AudioStream *a),(a),return)
+SDL_DYNAPI_PROC(IDXGIResource*,SDL_GetTextureDXGIResource,(SDL_Texture *a),(a),return)

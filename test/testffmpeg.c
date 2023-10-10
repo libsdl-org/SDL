@@ -20,10 +20,17 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libavutil/avutil.h>
+#include <libavutil/pixdesc.h>
+
 #ifdef HAVE_EGL
 #include <SDL3/SDL_opengl.h>
 #include <SDL3/SDL_opengles2.h>
 #include <SDL3/SDL_egl.h>
+
+#include <libavutil/hwcontext_drm.h>
 
 #ifndef fourcc_code
 #define fourcc_code(a, b, c, d) ((uint32_t)(a) | ((uint32_t)(b) << 8) | ((uint32_t)(c) << 16) | ((uint32_t)(d) << 24))
@@ -42,86 +49,8 @@
 
 #ifdef __WIN32__
 #define COBJMACROS
-#include <d3d11.h>
-
-struct D3D11_TextureData
-{
-    ID3D11Texture2D *mainTexture;
-    ID3D11ShaderResourceView *mainTextureResourceView;
-    ID3D11RenderTargetView *mainTextureRenderTargetView;
-    ID3D11Texture2D *stagingTexture;
-    int lockedTexturePositionX;
-    int lockedTexturePositionY;
-    D3D11_FILTER scaleMode;
-
-    /* YV12 texture support */
-    SDL_bool yuv;
-    ID3D11Texture2D *mainTextureU;
-    ID3D11ShaderResourceView *mainTextureResourceViewU;
-    ID3D11Texture2D *mainTextureV;
-    ID3D11ShaderResourceView *mainTextureResourceViewV;
-
-    /* NV12 texture support */
-    SDL_bool nv12;
-    ID3D11Texture2D *mainTextureNV;
-    ID3D11ShaderResourceView *mainTextureResourceViewNV;
-
-    Uint8 *pixels;
-    int pitch;
-    SDL_Rect locked_rect;
-};
-
-/* Rendering view state */
-typedef struct SDL_RenderViewState
-{
-    int pixel_w;
-    int pixel_h;
-    SDL_Rect viewport;
-    SDL_Rect clip_rect;
-    SDL_bool clipping_enabled;
-    SDL_FPoint scale;
-
-} SDL_RenderViewState;
-
-struct SDL_Texture
-{
-    const void *magic;
-    Uint32 format;            /**< The pixel format of the texture */
-    int access;               /**< SDL_TextureAccess */
-    int w;                    /**< The width of the texture */
-    int h;                    /**< The height of the texture */
-    int modMode;              /**< The texture modulation mode */
-    SDL_BlendMode blendMode;  /**< The texture blend mode */
-    SDL_ScaleMode scaleMode;  /**< The texture scale mode */
-    SDL_Color color;          /**< Texture modulation values */
-    SDL_RenderViewState view; /**< Target texture view state */
-
-    SDL_Renderer *renderer;
-
-    /* Support for formats not supported directly by the renderer */
-    SDL_Texture *native;
-    void /*SDL_SW_YUVTexture*/ *yuv;
-    void *pixels;
-    int pitch;
-    SDL_Rect locked_rect;
-    SDL_Surface *locked_surface; /**< Locked region exposed as a SDL surface */
-
-    Uint32 last_command_generation; /* last command queue generation this texture was in. */
-
-    struct D3D11_TextureData /*void*/ *driverdata; /**< Driver specific texture representation */
-    void *userdata;
-
-    SDL_Texture *prev;
-    SDL_Texture *next;
-};
-#endif /* __WIN32__ */
-
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libavutil/avutil.h>
 #include <libavutil/hwcontext_d3d11va.h>
-#include <libavutil/hwcontext_drm.h>
-#include <libavutil/pixdesc.h>
+#endif /* __WIN32__ */
 
 #include "icon.h"
 
@@ -152,6 +81,7 @@ static SDL_bool has_videotoolbox_output;
 #ifdef __WIN32__
 static ID3D11Device *d3d11_device;
 static ID3D11DeviceContext *d3d11_context;
+static const GUID SDL_IID_ID3D11Resource = { 0xdc8e63f3, 0xd12b, 0x4952, { 0xb4, 0x7b, 0x5e, 0x45, 0x02, 0x6a, 0x86, 0x2d } };
 #endif
 static int done;
 
@@ -406,6 +336,7 @@ static AVCodecContext *OpenVideoStream(AVFormatContext *ic, int stream, const AV
                 continue;
             }
 
+#ifdef __WIN32__
             if (type == AV_HWDEVICE_TYPE_D3D11VA) {
                 AVD3D11VADeviceContext *device_context;
 
@@ -423,7 +354,9 @@ static AVCodecContext *OpenVideoStream(AVFormatContext *ic, int stream, const AV
                 } else {
                     SDL_Log("Using %s hardware acceleration with pixel format %s\n", av_hwdevice_get_type_name(config->device_type), av_get_pix_fmt_name(config->pix_fmt));
                 }
-            } else {
+            } else
+#endif
+            {
                 result = av_hwdevice_ctx_create(&context->hw_device_ctx, type, NULL, NULL, 0);
                 if (result < 0) {
                     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create hardware device context: %s", av_err2str(result));
@@ -598,6 +531,7 @@ static SDL_bool GetTextureForVAAPIFrame(AVFrame *frame, SDL_Texture **texture)
 static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
 {
 #ifdef __WIN32__
+    int texture_width = 0, texture_height = 0;
     ID3D11Texture2D *pTexture = (ID3D11Texture2D *)frame->data[0];
     UINT iSliceIndex = (UINT)(uintptr_t)frame->data[1];
 
@@ -609,7 +543,10 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
         return SDL_FALSE;
     }
 
-    if (!*texture || (UINT)(*texture)->w != desc.Width || (UINT)(*texture)->h != desc.Height) {
+    if (*texture) {
+        SDL_QueryTexture(*texture, NULL, NULL, &texture_width, &texture_height);
+    }
+    if (!*texture || (UINT)texture_width != desc.Width || (UINT)texture_height != desc.Height) {
         if (*texture) {
             SDL_DestroyTexture(*texture);
         } else {
@@ -621,64 +558,23 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
         if (!*texture) {
             return SDL_FALSE;
         }
-
-        /* Set up the resource views for this texture */
-        struct D3D11_TextureData *pTextureData = (*texture)->driverdata;
-        if (pTextureData->mainTexture) {
-            ID3D11Texture2D_Release(pTextureData->mainTexture);
-            pTextureData->mainTexture = NULL;
-        }
-        if (pTextureData->mainTextureResourceView) {
-            ID3D11ShaderResourceView_Release(pTextureData->mainTextureResourceView);
-            pTextureData->mainTextureResourceView = NULL;
-        }
-        if (pTextureData->mainTextureNV) {
-            ID3D11Texture2D_Release(pTextureData->mainTextureNV);
-            pTextureData->mainTextureNV = NULL;
-        }
-        if (pTextureData->mainTextureResourceViewNV) {
-            ID3D11ShaderResourceView_Release(pTextureData->mainTextureResourceViewNV);
-            pTextureData->mainTextureResourceViewNV = NULL;
-        }
-
-        desc.ArraySize = 1;
-        desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-
-        HRESULT result = ID3D11Device_CreateTexture2D(d3d11_device, &desc, NULL, &pTextureData->mainTexture);
-        if (FAILED(result)) {
-            SDL_SetError("Couldn't create main texture: 0x%x", result);
-            return SDL_FALSE;
-        }
-
-        pTextureData->mainTextureNV = pTextureData->mainTexture;
-        ID3D11Texture2D_AddRef(pTextureData->mainTextureNV);
-
-        D3D11_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
-        resourceViewDesc.Format = DXGI_FORMAT_R8_UNORM;
-        resourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-        resourceViewDesc.Texture2D.MostDetailedMip = 0;
-        resourceViewDesc.Texture2D.MipLevels = 1;
-        result = ID3D11Device_CreateShaderResourceView(d3d11_device,
-                                                       (ID3D11Resource *)pTextureData->mainTexture,
-                                                       &resourceViewDesc,
-                                                       &pTextureData->mainTextureResourceView);
-        if (FAILED(result)) {
-            SDL_SetError("Couldn't create main texture view: 0x%x", result);
-            return SDL_FALSE;
-        }
-
-        resourceViewDesc.Format = DXGI_FORMAT_R8G8_UNORM;
-        result = ID3D11Device_CreateShaderResourceView(d3d11_device,
-                                                       (ID3D11Resource *)pTextureData->mainTexture,
-                                                       &resourceViewDesc,
-                                                       &pTextureData->mainTextureResourceViewNV);
-        if (FAILED(result)) {
-            SDL_SetError("Couldn't create secondary texture view: 0x%x", result);
-            return SDL_FALSE;
-        }
     }
 
-    ID3D11DeviceContext_CopySubresourceRegion(d3d11_context, (ID3D11Resource *)(*texture)->driverdata->mainTexture, 0, 0, 0, 0, (ID3D11Resource *)pTexture, iSliceIndex, NULL);
+    IDXGIResource *dxgi_resource = SDL_GetTextureDXGIResource(*texture);
+    if (!dxgi_resource) {
+        return SDL_FALSE;
+    }
+
+    ID3D11Resource *dx11_resource = NULL;
+    HRESULT result = IDXGIResource_QueryInterface(dxgi_resource, &SDL_IID_ID3D11Resource, (void **)&dx11_resource);
+    IDXGIResource_Release(dxgi_resource);
+    if (FAILED(result)) {
+        SDL_SetError("Couldn't get texture ID3D11Resource interface: 0x%x", result);
+        return SDL_FALSE;
+    }
+    ID3D11DeviceContext_CopySubresourceRegion(d3d11_context, dx11_resource, 0, 0, 0, 0, (ID3D11Resource *)pTexture, iSliceIndex, NULL);
+    ID3D11Resource_Release(dx11_resource);
+
     return SDL_TRUE;
 #else
     return SDL_FALSE;
