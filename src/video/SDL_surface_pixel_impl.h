@@ -23,8 +23,7 @@
 
 /* Internal implementation of SDL_ReadSurfacePixel, shared between SDL_shape
  * and SDLTest */
-static inline int
-SDL_ReadSurfacePixel_impl(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a)
+static int SDL_ReadSurfacePixel_impl(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a)
 {
     Uint32 pixel = 0;
     size_t bytes_per_pixel;
