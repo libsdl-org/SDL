@@ -300,12 +300,12 @@ static void ARTS_Deinitialize(void)
 }
 
 
-static SDL_bool ARTS_Init(SDL_AudioDriverImpl * impl)
+static SDL_bool ARTS_Init(SDL_AudioDriverImpl *impl)
 {
     if (LoadARTSLibrary() < 0) {
         return SDL_FALSE;
     } else {
-        if (SDL_NAME(arts_init) () != NULL) {
+        if (SDL_NAME(arts_init) () != 0) {
             UnloadARTSLibrary();
             SDL_SetError("ARTS: arts_init failed (no audio server?)");
             return SDL_FALSE;
