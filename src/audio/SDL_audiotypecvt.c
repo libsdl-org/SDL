@@ -22,6 +22,10 @@
 
 #include "SDL_audio_c.h"
 
+/* TODO: NEON is disabled until https://github.com/libsdl-org/SDL/issues/8352
+ * can be fixed */
+#undef SDL_NEON_INTRINSICS
+
 #ifndef SDL_CPUINFO_DISABLED
 #if defined(__x86_64__) && defined(SDL_SSE2_INTRINSICS)
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0 /* x86_64 guarantees SSE2. */
