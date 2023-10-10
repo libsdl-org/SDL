@@ -40,9 +40,86 @@
 #include "testffmpeg_videotoolbox.h"
 #endif
 
+#ifdef __WIN32__
+#define COBJMACROS
+#include <d3d11.h>
+
+struct D3D11_TextureData
+{
+    ID3D11Texture2D *mainTexture;
+    ID3D11ShaderResourceView *mainTextureResourceView;
+    ID3D11RenderTargetView *mainTextureRenderTargetView;
+    ID3D11Texture2D *stagingTexture;
+    int lockedTexturePositionX;
+    int lockedTexturePositionY;
+    D3D11_FILTER scaleMode;
+
+    /* YV12 texture support */
+    SDL_bool yuv;
+    ID3D11Texture2D *mainTextureU;
+    ID3D11ShaderResourceView *mainTextureResourceViewU;
+    ID3D11Texture2D *mainTextureV;
+    ID3D11ShaderResourceView *mainTextureResourceViewV;
+
+    /* NV12 texture support */
+    SDL_bool nv12;
+    ID3D11Texture2D *mainTextureNV;
+    ID3D11ShaderResourceView *mainTextureResourceViewNV;
+
+    Uint8 *pixels;
+    int pitch;
+    SDL_Rect locked_rect;
+};
+
+/* Rendering view state */
+typedef struct SDL_RenderViewState
+{
+    int pixel_w;
+    int pixel_h;
+    SDL_Rect viewport;
+    SDL_Rect clip_rect;
+    SDL_bool clipping_enabled;
+    SDL_FPoint scale;
+
+} SDL_RenderViewState;
+
+struct SDL_Texture
+{
+    const void *magic;
+    Uint32 format;            /**< The pixel format of the texture */
+    int access;               /**< SDL_TextureAccess */
+    int w;                    /**< The width of the texture */
+    int h;                    /**< The height of the texture */
+    int modMode;              /**< The texture modulation mode */
+    SDL_BlendMode blendMode;  /**< The texture blend mode */
+    SDL_ScaleMode scaleMode;  /**< The texture scale mode */
+    SDL_Color color;          /**< Texture modulation values */
+    SDL_RenderViewState view; /**< Target texture view state */
+
+    SDL_Renderer *renderer;
+
+    /* Support for formats not supported directly by the renderer */
+    SDL_Texture *native;
+    void /*SDL_SW_YUVTexture*/ *yuv;
+    void *pixels;
+    int pitch;
+    SDL_Rect locked_rect;
+    SDL_Surface *locked_surface; /**< Locked region exposed as a SDL surface */
+
+    Uint32 last_command_generation; /* last command queue generation this texture was in. */
+
+    struct D3D11_TextureData /*void*/ *driverdata; /**< Driver specific texture representation */
+    void *userdata;
+
+    SDL_Texture *prev;
+    SDL_Texture *next;
+};
+#endif /* __WIN32__ */
+
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavutil/avutil.h>
+#include <libavutil/hwcontext_d3d11va.h>
 #include <libavutil/hwcontext_drm.h>
 #include <libavutil/pixdesc.h>
 
@@ -50,6 +127,7 @@
 
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
+
 
 static SDL_Texture *sprite;
 static SDL_FRect *positions;
@@ -71,21 +149,25 @@ static PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOESFunc;
 #ifdef __APPLE__
 static SDL_bool has_videotoolbox_output;
 #endif
+#ifdef __WIN32__
+static ID3D11Device *d3d11_device;
+static ID3D11DeviceContext *d3d11_context;
+#endif
 static int done;
 
-static SDL_bool CreateWindow(Uint32 window_flags, SDL_bool useEGL)
+static SDL_bool CreateWindowAndRenderer(Uint32 window_flags, const char *driver)
 {
     SDL_RendererInfo info;
+    SDL_bool useEGL = (driver && SDL_strcmp(driver, "opengles2") == 0);
 
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, driver);
     if (useEGL) {
-        SDL_SetHint( SDL_HINT_VIDEO_FORCE_EGL, "1" );
-        SDL_SetHint( SDL_HINT_RENDER_DRIVER, "opengles2" );
+        SDL_SetHint(SDL_HINT_VIDEO_FORCE_EGL, "1");
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     } else {
-        SDL_SetHint( SDL_HINT_VIDEO_FORCE_EGL, "0" );
-        SDL_SetHint( SDL_HINT_RENDER_DRIVER, NULL );
+        SDL_SetHint(SDL_HINT_VIDEO_FORCE_EGL, "0");
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
@@ -125,6 +207,13 @@ static SDL_bool CreateWindow(Uint32 window_flags, SDL_bool useEGL)
 
 #ifdef __APPLE__
     has_videotoolbox_output = SetupVideoToolboxOutput(renderer);
+#endif
+
+#ifdef __WIN32__
+    d3d11_device = SDL_GetRenderD3D11Device(renderer);
+    if (d3d11_device) {
+        ID3D11Device_GetImmediateContext(d3d11_device, &d3d11_context);
+    }
 #endif
 
     return SDL_TRUE;
@@ -238,6 +327,11 @@ static SDL_bool SupportedPixelFormat(enum AVPixelFormat format)
         return SDL_TRUE;
     }
 #endif
+#ifdef __WIN32__
+    if (d3d11_device && format == AV_PIX_FMT_D3D11) {
+        return SDL_TRUE;
+    }
+#endif
 
     if (GetTextureFormat(format) != SDL_PIXELFORMAT_UNKNOWN) {
         return SDL_TRUE;
@@ -245,7 +339,7 @@ static SDL_bool SupportedPixelFormat(enum AVPixelFormat format)
     return SDL_FALSE;
 }
 
-static enum AVPixelFormat GetPixelFormat(AVCodecContext *s, const enum AVPixelFormat *pix_fmts)
+static enum AVPixelFormat GetSupportedPixelFormat(AVCodecContext *s, const enum AVPixelFormat *pix_fmts)
 {
     const enum AVPixelFormat *p;
 
@@ -296,29 +390,52 @@ static AVCodecContext *OpenVideoStream(AVFormatContext *ic, int stream, const AV
     i = 0;
     while (!context->hw_device_ctx &&
            (config = avcodec_get_hw_config(codec, i++)) != NULL) {
+#if 0
+        SDL_Log("Found %s hardware acceleration with pixel format %s\n", av_hwdevice_get_type_name(config->device_type), av_get_pix_fmt_name(config->pix_fmt));
+#endif
+
         if (!(config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX) ||
             !SupportedPixelFormat(config->pix_fmt)) {
             continue;
         }
 
         type = AV_HWDEVICE_TYPE_NONE;
-        while (!context->hw_device_ctx && 
+        while (!context->hw_device_ctx &&
                (type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE) {
             if (type != config->device_type) {
                 continue;
             }
 
-            result = av_hwdevice_ctx_create(&context->hw_device_ctx, type, NULL, NULL, 0);
-            if (result < 0) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create hardware device context: %s", av_err2str(result));
+            if (type == AV_HWDEVICE_TYPE_D3D11VA) {
+                AVD3D11VADeviceContext *device_context;
+
+                context->hw_device_ctx = av_hwdevice_ctx_alloc(type);
+
+                device_context = (AVD3D11VADeviceContext *)((AVHWDeviceContext *)context->hw_device_ctx->data)->hwctx;
+                device_context->device = d3d11_device;
+                ID3D11Device_AddRef(device_context->device);
+                device_context->device_context = d3d11_context;
+                ID3D11DeviceContext_AddRef(device_context->device_context);
+
+                result = av_hwdevice_ctx_init(context->hw_device_ctx);
+                if (result < 0) {
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create hardware device context: %s", av_err2str(result));
+                } else {
+                    SDL_Log("Using %s hardware acceleration with pixel format %s\n", av_hwdevice_get_type_name(config->device_type), av_get_pix_fmt_name(config->pix_fmt));
+                }
             } else {
-                SDL_Log("Using %s hardware acceleration with pixel format %s\n", av_hwdevice_get_type_name(config->device_type), av_get_pix_fmt_name(config->pix_fmt));
+                result = av_hwdevice_ctx_create(&context->hw_device_ctx, type, NULL, NULL, 0);
+                if (result < 0) {
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create hardware device context: %s", av_err2str(result));
+                } else {
+                    SDL_Log("Using %s hardware acceleration with pixel format %s\n", av_hwdevice_get_type_name(config->device_type), av_get_pix_fmt_name(config->pix_fmt));
+                }
             }
         }
     }
 
     /* Allow supported hardware accelerated pixel formats */
-    context->get_format = GetPixelFormat;
+    context->get_format = GetSupportedPixelFormat;
 
     result = avcodec_open2(context, codec, NULL);
     if (result < 0) {
@@ -478,6 +595,96 @@ static SDL_bool GetTextureForVAAPIFrame(AVFrame *frame, SDL_Texture **texture)
     return result;
 }
 
+static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
+{
+#ifdef __WIN32__
+    ID3D11Texture2D *pTexture = (ID3D11Texture2D *)frame->data[0];
+    UINT iSliceIndex = (UINT)(uintptr_t)frame->data[1];
+
+    D3D11_TEXTURE2D_DESC desc;
+    SDL_zero(desc);
+    ID3D11Texture2D_GetDesc(pTexture, &desc);
+    if (desc.Format != DXGI_FORMAT_NV12) {
+        SDL_SetError("Unsupported texture format, expected DXGI_FORMAT_NV12, got %d", desc.Format);
+        return SDL_FALSE;
+    }
+
+    if (!*texture || (UINT)(*texture)->w != desc.Width || (UINT)(*texture)->h != desc.Height) {
+        if (*texture) {
+            SDL_DestroyTexture(*texture);
+        } else {
+            /* First time set up for NV12 textures */
+            SetYUVConversionMode(frame);
+        }
+
+        *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_NV12, SDL_TEXTUREACCESS_STATIC, desc.Width, desc.Height);
+        if (!*texture) {
+            return SDL_FALSE;
+        }
+
+        /* Set up the resource views for this texture */
+        struct D3D11_TextureData *pTextureData = (*texture)->driverdata;
+        if (pTextureData->mainTexture) {
+            ID3D11Texture2D_Release(pTextureData->mainTexture);
+            pTextureData->mainTexture = NULL;
+        }
+        if (pTextureData->mainTextureResourceView) {
+            ID3D11ShaderResourceView_Release(pTextureData->mainTextureResourceView);
+            pTextureData->mainTextureResourceView = NULL;
+        }
+        if (pTextureData->mainTextureNV) {
+            ID3D11Texture2D_Release(pTextureData->mainTextureNV);
+            pTextureData->mainTextureNV = NULL;
+        }
+        if (pTextureData->mainTextureResourceViewNV) {
+            ID3D11ShaderResourceView_Release(pTextureData->mainTextureResourceViewNV);
+            pTextureData->mainTextureResourceViewNV = NULL;
+        }
+
+        desc.ArraySize = 1;
+        desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+
+        HRESULT result = ID3D11Device_CreateTexture2D(d3d11_device, &desc, NULL, &pTextureData->mainTexture);
+        if (FAILED(result)) {
+            SDL_SetError("Couldn't create main texture: 0x%x", result);
+            return SDL_FALSE;
+        }
+
+        pTextureData->mainTextureNV = pTextureData->mainTexture;
+        ID3D11Texture2D_AddRef(pTextureData->mainTextureNV);
+
+        D3D11_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
+        resourceViewDesc.Format = DXGI_FORMAT_R8_UNORM;
+        resourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        resourceViewDesc.Texture2D.MostDetailedMip = 0;
+        resourceViewDesc.Texture2D.MipLevels = 1;
+        result = ID3D11Device_CreateShaderResourceView(d3d11_device,
+                                                       (ID3D11Resource *)pTextureData->mainTexture,
+                                                       &resourceViewDesc,
+                                                       &pTextureData->mainTextureResourceView);
+        if (FAILED(result)) {
+            SDL_SetError("Couldn't create main texture view: 0x%x", result);
+            return SDL_FALSE;
+        }
+
+        resourceViewDesc.Format = DXGI_FORMAT_R8G8_UNORM;
+        result = ID3D11Device_CreateShaderResourceView(d3d11_device,
+                                                       (ID3D11Resource *)pTextureData->mainTexture,
+                                                       &resourceViewDesc,
+                                                       &pTextureData->mainTextureResourceViewNV);
+        if (FAILED(result)) {
+            SDL_SetError("Couldn't create secondary texture view: 0x%x", result);
+            return SDL_FALSE;
+        }
+    }
+
+    ID3D11DeviceContext_CopySubresourceRegion(d3d11_context, (ID3D11Resource *)(*texture)->driverdata->mainTexture, 0, 0, 0, 0, (ID3D11Resource *)pTexture, iSliceIndex, NULL);
+    return SDL_TRUE;
+#else
+    return SDL_FALSE;
+#endif
+}
+
 static SDL_bool GetTextureForFrame(AVFrame *frame, SDL_Texture **texture)
 {
     switch (frame->format) {
@@ -485,6 +692,8 @@ static SDL_bool GetTextureForFrame(AVFrame *frame, SDL_Texture **texture)
         return GetTextureForVAAPIFrame(frame, texture);
     case AV_PIX_FMT_DRM_PRIME:
         return GetTextureForDRMFrame(frame, texture);
+    case AV_PIX_FMT_D3D11:
+        return GetTextureForD3D11Frame(frame, texture);
     default:
         return GetTextureForMemoryFrame(frame, texture);
     }
@@ -708,11 +917,25 @@ int main(int argc, char *argv[])
 #endif
 #ifdef HAVE_EGL
     /* Try to create an EGL compatible window for DRM hardware frame support */
-    CreateWindow(window_flags, SDL_TRUE);
+    if (!window) {
+        CreateWindowAndRenderer(window_flags, "opengles2");
+    }
 #endif
-    if (!window && !CreateWindow(window_flags, SDL_FALSE)) {
-        return_code = 2;
-        goto quit;
+#ifdef __APPLE__
+    if (!window) {
+        CreateWindowAndRenderer(window_flags, "metal");
+    }
+#endif
+#ifdef __WIN32__
+    if (!window) {
+        CreateWindowAndRenderer(window_flags, "direct3d11");
+    }
+#endif
+    if (!window) {
+        if (!CreateWindowAndRenderer(window_flags, NULL)) {
+            return_code = 2;
+            goto quit;
+        }
     }
 
     if (SDL_SetWindowTitle(window, file) < 0) {
@@ -876,6 +1099,16 @@ int main(int argc, char *argv[])
 quit:
 #ifdef __APPLE__
     CleanupVideoToolboxOutput();
+#endif
+#ifdef __WIN32__
+    if (d3d11_context) {
+        ID3D11DeviceContext_Release(d3d11_device);
+        d3d11_context = NULL;
+    }
+    if (d3d11_device) {
+        ID3D11Device_Release(d3d11_device);
+        d3d11_device = NULL;
+    }
 #endif
     SDL_free(positions);
     SDL_free(velocities);
