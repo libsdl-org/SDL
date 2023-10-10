@@ -1073,22 +1073,36 @@ static void BlitNtoNPixelAlpha(SDL_BlitInfo *info)
     }
 
     while (height--) {
-        /* *INDENT-OFF* */ /* clang-format off */
-        DUFFS_LOOP4(
-        {
-        DISEMBLE_RGBA(src, srcbpp, srcfmt, Pixel, sR, sG, sB, sA);
-        if (sA) {
-            DISEMBLE_RGBA(dst, dstbpp, dstfmt, Pixel, dR, dG, dB, dA);
-            ALPHA_BLEND_RGBA(sR, sG, sB, sA, dR, dG, dB, dA);
-            ASSEMBLE_RGBA(dst, dstbpp, dstfmt, dR, dG, dB, dA);
+        if (srcbpp == 4 && dstbpp == 4 && dstfmt->Ashift == 24 && dstfmt->Rshift == 16 && dstfmt->Gshift == 8 &&
+            dstfmt->Bshift == 0) {
+            DUFFS_LOOP4(
+            {
+            PIXEL_TO_ARGB_PIXEL(*(Uint32 *) src, srcfmt, Pixel);
+            Uint32 blended = *(Uint32 *) dst;
+            ALPHA_BLEND_ARGB_PIXELS(Pixel, blended);
+            *(Uint32*)dst = blended;
+            src += srcbpp;
+            dst += dstbpp;
+            },
+            width);
+        } else {
+            /* *INDENT-OFF* */ /* clang-format off */
+            DUFFS_LOOP4(
+            {
+            DISEMBLE_RGBA(src, srcbpp, srcfmt, Pixel, sR, sG, sB, sA);
+            if (sA) {
+                DISEMBLE_RGBA(dst, dstbpp, dstfmt, Pixel, dR, dG, dB, dA);
+                ALPHA_BLEND_RGBA(sR, sG, sB, sA, dR, dG, dB, dA);
+                ASSEMBLE_RGBA(dst, dstbpp, dstfmt, dR, dG, dB, dA);
+            }
+            src += srcbpp;
+            dst += dstbpp;
+            },
+            width);
+            /* *INDENT-ON* */ /* clang-format on */
+            src += srcskip;
+            dst += dstskip;
         }
-        src += srcbpp;
-        dst += dstbpp;
-        },
-        width);
-        /* *INDENT-ON* */ /* clang-format on */
-        src += srcskip;
-        dst += dstskip;
     }
     if (freeFormat) {
         SDL_DestroyPixelFormat(dstfmt);
