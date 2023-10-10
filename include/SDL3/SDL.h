@@ -61,6 +61,7 @@
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_platform.h>
 #include <SDL3/SDL_power.h>
+#include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_quit.h>
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>

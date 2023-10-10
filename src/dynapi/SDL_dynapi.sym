@@ -908,6 +908,12 @@ SDL3_0.0.0 {
     SDL_SetAudioPostmixCallback;
     SDL_GetAudioStreamQueued;
     SDL_GetTextureDXGIResource;
+    SDL_CreateProperties;
+    SDL_LockProperties;
+    SDL_UnlockProperties;
+    SDL_SetProperty;
+    SDL_GetProperty;
+    SDL_DestroyProperties;
     # extra symbols go here (don't modify this line)
   local: *;
 };

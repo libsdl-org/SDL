@@ -211,6 +211,7 @@
     <ClCompile Include="..\..\..\test\testautomation_mouse.c" />
     <ClCompile Include="..\..\..\test\testautomation_pixels.c" />
     <ClCompile Include="..\..\..\test\testautomation_platform.c" />
+    <ClCompile Include="..\..\..\test\testautomation_properties.c" />
     <ClCompile Include="..\..\..\test\testautomation_rect.c" />
     <ClCompile Include="..\..\..\test\testautomation_render.c" />
     <ClCompile Include="..\..\..\test\testautomation_rwops.c" />
