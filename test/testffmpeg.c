@@ -69,6 +69,7 @@ static SDL_Renderer *renderer;
 static SDL_AudioStream *audio;
 static SDL_Texture *video_texture;
 static Uint64 video_start;
+static SDL_bool software_only;
 static SDL_bool has_eglCreateImage;
 #ifdef HAVE_EGL
 static SDL_bool has_EGL_EXT_image_dma_buf_import;
@@ -248,20 +249,22 @@ static Uint32 GetTextureFormat(enum AVPixelFormat format)
 
 static SDL_bool SupportedPixelFormat(enum AVPixelFormat format)
 {
-    if (has_eglCreateImage &&
-        (format == AV_PIX_FMT_VAAPI || format == AV_PIX_FMT_DRM_PRIME)) {
-        return SDL_TRUE;
-    }
+    if (!software_only) {
+        if (has_eglCreateImage &&
+            (format == AV_PIX_FMT_VAAPI || format == AV_PIX_FMT_DRM_PRIME)) {
+            return SDL_TRUE;
+        }
 #ifdef __APPLE__
-    if (has_videotoolbox_output && format == AV_PIX_FMT_VIDEOTOOLBOX) {
-        return SDL_TRUE;
-    }
+        if (has_videotoolbox_output && format == AV_PIX_FMT_VIDEOTOOLBOX) {
+            return SDL_TRUE;
+        }
 #endif
 #ifdef __WIN32__
-    if (d3d11_device && format == AV_PIX_FMT_D3D11) {
-        return SDL_TRUE;
-    }
+        if (d3d11_device && format == AV_PIX_FMT_D3D11) {
+            return SDL_TRUE;
+        }
 #endif
+    }
 
     if (GetTextureFormat(format) != SDL_PIXELFORMAT_UNKNOWN) {
         return SDL_TRUE;
@@ -789,6 +792,8 @@ int main(int argc, char *argv[])
         if (SDL_strcmp(argv[i], "--sprites") == 0 && argv[i+1]) {
             num_sprites = SDL_atoi(argv[i+1]);
             ++i;
+        } else if (SDL_strcmp(argv[i], "--software") == 0) {
+            software_only = SDL_TRUE;
         } else {
             /* We'll try to open this as a media file */
             file = argv[i];
