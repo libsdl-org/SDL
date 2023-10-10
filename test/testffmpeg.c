@@ -19,6 +19,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
@@ -765,6 +766,11 @@ static void HandleAudioFrame(AVFrame *frame)
     }
 }
 
+static void print_usage(SDLTest_CommonState *state, const char *argv0) {
+    static const char *options[] = { "[--sprites N]", "[--software]", "video_file", NULL };
+    SDLTest_CommonLogUsage(state, argv0, options);
+}
+
 int main(int argc, char *argv[])
 {
     const char *file = NULL;
@@ -784,24 +790,44 @@ int main(int argc, char *argv[])
     Uint32 window_flags;
     SDL_bool flushing = SDL_FALSE;
     SDL_bool decoded = SDL_FALSE;
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    for (i = 1; i < argc; ++i) {
-        if (SDL_strcmp(argv[i], "--sprites") == 0 && argv[i+1]) {
-            num_sprites = SDL_atoi(argv[i+1]);
-            ++i;
-        } else if (SDL_strcmp(argv[i], "--software") == 0) {
-            software_only = SDL_TRUE;
-        } else {
-            /* We'll try to open this as a media file */
-            file = argv[i];
-            break;
+
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (!consumed) {
+            if (SDL_strcmp(argv[i], "--sprites") == 0 && argv[i+1]) {
+                num_sprites = SDL_atoi(argv[i+1]);
+                consumed = 2;
+            } else if (SDL_strcmp(argv[i], "--software") == 0) {
+                software_only = SDL_TRUE;
+                consumed = 1;
+            } else if (!file) {
+                /* We'll try to open this as a media file */
+                file = argv[i];
+                consumed = 1;
+            }
         }
+        if (consumed <= 0) {
+            print_usage(state, argv[0]);
+            return_code = 1;
+            goto quit;
+        }
+
+        i += consumed;
     }
+
     if (!file) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Usage: %s [--sprites N] video_file\n", argv[0]);
+        print_usage(state, argv[0]);
         return_code = 1;
         goto quit;
     }
@@ -1022,5 +1048,6 @@ quit:
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
     return return_code;
 }
