@@ -1707,7 +1707,7 @@ static int D3D12_UpdateTextureInternal(D3D12_RenderData *rendererData, ID3D12Res
 
     src = (const Uint8 *)pixels;
     dst = textureMemory;
-    length = RowLength;
+    length = (UINT)RowLength;
     if (length == (UINT)pitch && length == RowPitch) {
         SDL_memcpy(dst, src, (size_t)length * NumRows);
     } else {
