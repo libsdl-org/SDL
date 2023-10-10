@@ -726,6 +726,7 @@ static SDL_bool IsPlanarAudioFormat(enum AVSampleFormat format)
 
 static void InterleaveAudio(AVFrame *frame, const SDL_AudioSpec *spec)
 {
+    int c, n;
     int samplesize = SDL_AUDIO_BYTESIZE(spec->format);
     int framesize = SDL_AUDIO_FRAMESIZE(*spec);
     Uint8 *data = (Uint8 *)SDL_malloc(frame->nb_samples * framesize);
@@ -734,10 +735,10 @@ static void InterleaveAudio(AVFrame *frame, const SDL_AudioSpec *spec)
     }
 
     /* This could be optimized with SIMD and not allocating memory each time */
-    for (int c = 0; c < spec->channels; ++c) {
+    for (c = 0; c < spec->channels; ++c) {
         const Uint8 *src = frame->data[c];
         Uint8 *dst = data + c * samplesize;
-        for (int n = frame->nb_samples; n--; ) {
+        for (n = frame->nb_samples; n--; ) {
             SDL_memcpy(dst, src, samplesize);
             src += samplesize;
             dst += framesize;
