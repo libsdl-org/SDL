@@ -6,6 +6,7 @@ jobs:
   freebsd:
     runs-on: macos-12
     name: FreeBSD
+    timeout-minutes: 30
     steps:
     - uses: actions/checkout@v3
     - name: Build
