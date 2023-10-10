@@ -18,7 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
 #include "SDL_internal.h"
 #include "SDL_hashtable.h"
 
@@ -209,6 +208,21 @@ SDL_bool SDL_IterateHashTableKeys(const SDL_HashTable *table, const void **_key,
     return SDL_TRUE;
 }
 
+SDL_bool SDL_HashTableEmpty(SDL_HashTable *table)
+{
+    if (table != NULL) {
+        Uint32 i;
+
+        for (i = 0; i < table->table_len; i++) {
+            SDL_HashItem *item = table->table[i];
+            if (item != NULL) {
+                return SDL_FALSE;
+            }
+        }
+    }
+    return SDL_TRUE;
+}
+
 void SDL_DestroyHashTable(SDL_HashTable *table)
 {
     if (table != NULL) {
@@ -240,10 +254,10 @@ static SDL_INLINE Uint32 hash_string_djbxor(const char *str, size_t len)
     return hash;
 }
 
-Uint32 SDL_HashString(const void *sym, void *data)
+Uint32 SDL_HashString(const void *key, void *data)
 {
-    const char *str = (const char*) sym;
-    return hash_string_djbxor(str, SDL_strlen((const char *) str));
+    const char *str = (const char *)key;
+    return hash_string_djbxor(str, SDL_strlen(str));
 }
 
 SDL_bool SDL_KeyMatchString(const void *a, const void *b, void *data)
@@ -253,7 +267,21 @@ SDL_bool SDL_KeyMatchString(const void *a, const void *b, void *data)
     } else if (!a || !b) {
         return SDL_FALSE;  /* one pointer is NULL (and first test shows they aren't the same pointer), must not match. */
     }
-    return (SDL_strcmp((const char *) a, (const char *) b) == 0) ? SDL_TRUE : SDL_FALSE;  /* Check against actual string contents. */
+    return (SDL_strcmp((const char *)a, (const char *)b) == 0) ? SDL_TRUE : SDL_FALSE;  /* Check against actual string contents. */
 }
 
-/* vi: set ts=4 sw=4 expandtab: */
+/* We assume we can fit the ID in the key directly */
+SDL_COMPILE_TIME_ASSERT(SDL_HashID_KeySize, sizeof(Uint32) <= sizeof(const void *));
+
+Uint32 SDL_HashID(const void *key, void *unused)
+{
+    return (Uint32)(uintptr_t)key;
+}
+
+SDL_bool SDL_KeyMatchID(const void *a, const void *b, void *unused)
+{
+    if (a == b) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}

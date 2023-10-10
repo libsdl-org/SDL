@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -40,14 +40,15 @@ void SDL_DestroyHashTable(SDL_HashTable *table);
 SDL_bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const void *value);
 SDL_bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key);
 SDL_bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const void **_value);
+SDL_bool SDL_HashTableEmpty(SDL_HashTable *table);
 
 SDL_bool SDL_IterateHashTable(const SDL_HashTable *table, const void *key, const void **_value, void **iter);
 SDL_bool SDL_IterateHashTableKeys(const SDL_HashTable *table, const void **_key, void **iter);
 
-Uint32 SDL_HashString(const void *sym, void *unused);
+Uint32 SDL_HashString(const void *key, void *unused);
 SDL_bool SDL_KeyMatchString(const void *a, const void *b, void *unused);
 
+Uint32 SDL_HashID(const void *key, void *unused);
+SDL_bool SDL_KeyMatchID(const void *a, const void *b, void *unused);
+
 #endif /* SDL_hashtable_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
-

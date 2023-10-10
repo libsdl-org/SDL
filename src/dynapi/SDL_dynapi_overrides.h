@@ -933,3 +933,9 @@
 #define SDL_SetAudioPostmixCallback SDL_SetAudioPostmixCallback_REAL
 #define SDL_GetAudioStreamQueued SDL_GetAudioStreamQueued_REAL
 #define SDL_GetTextureDXGIResource SDL_GetTextureDXGIResource_REAL
+#define SDL_CreateProperties SDL_CreateProperties_REAL
+#define SDL_LockProperties SDL_LockProperties_REAL
+#define SDL_UnlockProperties SDL_UnlockProperties_REAL
+#define SDL_SetProperty SDL_SetProperty_REAL
+#define SDL_GetProperty SDL_GetProperty_REAL
+#define SDL_DestroyProperties SDL_DestroyProperties_REAL

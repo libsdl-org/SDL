@@ -38,6 +38,7 @@
 
 #include "SDL_assert_c.h"
 #include "SDL_log_c.h"
+#include "SDL_properties_c.h"
 #include "audio/SDL_audio_c.h"
 #include "video/SDL_video_c.h"
 #include "events/SDL_events_c.h"
@@ -167,6 +168,7 @@ int SDL_InitSubSystem(Uint32 flags)
     }
 
     SDL_InitLog();
+    SDL_InitProperties();
 
     /* Clear the error message */
     SDL_ClearError();
@@ -499,6 +501,7 @@ void SDL_Quit(void)
     SDL_DBus_Quit();
 #endif
 
+    SDL_QuitProperties();
     SDL_QuitLog();
 
     /* Now that every subsystem has been quit, we reset the subsystem refcount

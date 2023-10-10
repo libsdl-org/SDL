@@ -35,6 +35,7 @@ static SDLTest_TestSuiteReference *testSuites[] = {
     &mouseTestSuite,
     &pixelsTestSuite,
     &platformTestSuite,
+    &propertiesTestSuite,
     &rectTestSuite,
     &renderTestSuite,
     &rwopsTestSuite,
