@@ -4186,6 +4186,19 @@ void *SDL_GetRenderMetalCommandEncoder(SDL_Renderer *renderer)
     return NULL;
 }
 
+IDXGIResource *SDL_GetTextureDXGIResource(SDL_Texture *texture)
+{
+    SDL_Renderer *renderer;
+
+    CHECK_TEXTURE_MAGIC(texture, NULL);
+    renderer = texture->renderer;
+    if (renderer && renderer->GetTextureDXGIResource) {
+        return renderer->GetTextureDXGIResource(texture);
+    }
+    SDL_Unsupported();
+    return NULL;
+}
+
 static SDL_BlendMode SDL_GetShortBlendMode(SDL_BlendMode blendMode)
 {
     if (blendMode == SDL_BLENDMODE_NONE_FULL) {

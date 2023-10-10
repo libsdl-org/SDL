@@ -404,6 +404,23 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *renderer, U
  */
 extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface);
 
+typedef struct IDXGIResource IDXGIResource;
+/**
+ * Get the DXGI resource associated with a texture.
+ *
+ * This is available when using the direct3d11 and direct3d12 renderers.
+ *
+ * Once you are done using the resource, you should release it to avoid a
+ * resource leak.
+ *
+ * \param texture the texture from which to get the associated resource
+ * \returns the DXGI resource associated with given texture or NULL if it is
+ *          not available; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC IDXGIResource* SDLCALL SDL_GetTextureDXGIResource(SDL_Texture *texture);
+
 /**
  * Query the attributes of a texture.
  *
