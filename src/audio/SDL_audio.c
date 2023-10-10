@@ -186,31 +186,27 @@ static SDL_bool AudioDeviceCanUseSimpleCopy(SDL_AudioDevice *device)
     ) ? SDL_TRUE : SDL_FALSE;
 }
 
-// should hold logdev's physical device's lock before calling.
-static void UpdateAudioStreamFormatsLogical(SDL_LogicalAudioDevice *logdev)
-{
-    SDL_AudioDevice *device = logdev->physical_device;
-    const SDL_bool iscapture = device->iscapture;
-    SDL_AudioSpec spec;
-    SDL_copyp(&spec, &device->spec);
-    if (!AudioDeviceCanUseSimpleCopy(device)) {
-        spec.format = SDL_AUDIO_F32;  // mixing and postbuf operates in float32 format.
-    }
-
-    for (SDL_AudioStream *stream = logdev->bound_streams; stream != NULL; stream = stream->next_binding) {
-        // set the proper end of the stream to the device's format.
-        // SDL_SetAudioStreamFormat does a ton of validation just to memcpy an audiospec.
-        SDL_LockMutex(stream->lock);
-        SDL_copyp(iscapture ? &stream->src_spec : &stream->dst_spec, &spec);
-        SDL_UnlockMutex(stream->lock);
-    }
-}
-
 // should hold device->lock before calling.
 static void UpdateAudioStreamFormatsPhysical(SDL_AudioDevice *device)
 {
+    const SDL_bool iscapture = device->iscapture;
+    const SDL_bool simple_copy = AudioDeviceCanUseSimpleCopy(device);
+    SDL_AudioSpec spec;
+
+    device->simple_copy = simple_copy;
+    SDL_copyp(&spec, &device->spec);
+    if (!simple_copy) {
+        spec.format = SDL_AUDIO_F32;  // mixing and postbuf operates in float32 format.
+    }
+
     for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev != NULL; logdev = logdev->next) {
-        UpdateAudioStreamFormatsLogical(logdev);
+        for (SDL_AudioStream *stream = logdev->bound_streams; stream != NULL; stream = stream->next_binding) {
+            // set the proper end of the stream to the device's format.
+            // SDL_SetAudioStreamFormat does a ton of validation just to memcpy an audiospec.
+            SDL_LockMutex(stream->lock);
+            SDL_copyp(iscapture ? &stream->src_spec : &stream->dst_spec, &spec);
+            SDL_UnlockMutex(stream->lock);
+        }
     }
 }
 
@@ -276,8 +272,7 @@ static void DestroyLogicalAudioDevice(SDL_LogicalAudioDevice *logdev)
         SDL_UnlockMutex(stream->lock);
     }
 
-    logdev->physical_device->simple_copy = AudioDeviceCanUseSimpleCopy(logdev->physical_device);
-
+    UpdateAudioStreamFormatsPhysical(logdev->physical_device);
     SDL_free(logdev);
 }
 
@@ -1514,7 +1509,7 @@ SDL_AudioDeviceID SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSp
                 device->logical_devices->prev = logdev;
             }
             device->logical_devices = logdev;
-            device->simple_copy = AudioDeviceCanUseSimpleCopy(device);
+            UpdateAudioStreamFormatsPhysical(device);
         }
         SDL_UnlockMutex(device->lock);
     }
@@ -1529,7 +1524,6 @@ static int SetLogicalAudioDevicePauseState(SDL_AudioDeviceID devid, int value)
         return -1;  // ObtainLogicalAudioDevice will have set an error.
     }
     SDL_AtomicSet(&logdev->paused, value);
-    logdev->physical_device->simple_copy = AudioDeviceCanUseSimpleCopy(logdev->physical_device);
     SDL_UnlockMutex(logdev->physical_device->lock);
     return 0;
 }
@@ -1575,9 +1569,7 @@ int SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid, SDL_AudioPostmixCallbac
             logdev->postmix_userdata = userdata;
         }
 
-        UpdateAudioStreamFormatsLogical(logdev);
-        device->simple_copy = AudioDeviceCanUseSimpleCopy(device);
-
+        UpdateAudioStreamFormatsPhysical(device);
         SDL_UnlockMutex(device->lock);
     }
     return retval;
@@ -1649,11 +1641,9 @@ int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int
 
             SDL_UnlockMutex(stream->lock);
         }
-
-        UpdateAudioStreamFormatsLogical(logdev);
     }
 
-    device->simple_copy = AudioDeviceCanUseSimpleCopy(device);
+    UpdateAudioStreamFormatsPhysical(device);
 
     SDL_UnlockMutex(device->lock);
 
@@ -1725,7 +1715,7 @@ void SDL_UnbindAudioStreams(SDL_AudioStream **streams, int num_streams)
             stream->bound_device = NULL;
             SDL_UnlockMutex(stream->lock);
             if (logdev) {
-                logdev->physical_device->simple_copy = AudioDeviceCanUseSimpleCopy(logdev->physical_device);
+                UpdateAudioStreamFormatsPhysical(logdev->physical_device);
                 SDL_UnlockMutex(logdev->physical_device->lock);
             }
         }
@@ -1767,9 +1757,8 @@ SDL_AudioStream *SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_Au
     SDL_assert(physdevice != NULL);
 
     SDL_AtomicSet(&logdev->paused, 1);   // start the device paused, to match SDL2.
-    physdevice->simple_copy = AudioDeviceCanUseSimpleCopy(physdevice);
-
     SDL_UnlockMutex(physdevice->lock);  // we don't need to hold the lock for any of this.
+
     const SDL_bool iscapture = physdevice->iscapture;
 
     SDL_AudioStream *stream = NULL;
@@ -1921,9 +1910,6 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
                 logdev->next = new_default_device->logical_devices;
                 new_default_device->logical_devices = logdev;
 
-                // make sure all our streams are targeting the new device's format.
-                UpdateAudioStreamFormatsLogical(logdev);
-
                 // Post an event for each logical device we moved.
                 if (post_fmt_event) {
                     SDL_Event event;
@@ -1936,8 +1922,8 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
                 }
             }
 
-            current_default_device->simple_copy = AudioDeviceCanUseSimpleCopy(current_default_device);
-            new_default_device->simple_copy = AudioDeviceCanUseSimpleCopy(new_default_device);
+            UpdateAudioStreamFormatsPhysical(current_default_device);
+            UpdateAudioStreamFormatsPhysical(new_default_device);
 
             if (current_default_device->logical_devices == NULL) {   // nothing left on the current physical device, close it.
                 // !!! FIXME: we _need_ to release this lock, but doing so can cause a race condition if someone opens a device while we're closing it.
