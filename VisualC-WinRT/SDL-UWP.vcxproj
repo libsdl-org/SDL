@@ -177,6 +177,8 @@
     <ClInclude Include="..\src\video\dummy\SDL_nullvideo.h" />
     <ClInclude Include="..\src\video\SDL_blit.h" />
     <ClInclude Include="..\src\video\SDL_blit_auto.h" />
+    <ClInclude Include="..\src\video\SDL_blit_A_avx2.h" />
+    <ClInclude Include="..\src\video\SDL_blit_A_sse4_1.h" />
     <ClInclude Include="..\src\video\SDL_blit_copy.h" />
     <ClInclude Include="..\src\video\SDL_blit_slow.h" />
     <ClInclude Include="..\src\video\SDL_clipboard_c.h" />
@@ -533,6 +535,8 @@
     <ClCompile Include="..\src\video\SDL_blit_1.c" />
     <ClCompile Include="..\src\video\SDL_blit_A.c" />
     <ClCompile Include="..\src\video\SDL_blit_auto.c" />
+    <ClCompile Include="..\src\video\SDL_blit_A_avx2.c" />
+    <ClCompile Include="..\src\video\SDL_blit_A_sse4_1.c" />
     <ClCompile Include="..\src\video\SDL_blit_copy.c" />
     <ClCompile Include="..\src\video\SDL_blit_N.c" />
     <ClCompile Include="..\src\video\SDL_blit_slow.c" />
