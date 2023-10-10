@@ -493,6 +493,13 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         }                                             \
     }
 
+/* Convert any 32-bit 4-bpp pixel to ARGB format */
+#define PIXEL_TO_ARGB_PIXEL(src, srcfmt, dst)         \
+    do {                                              \
+        Uint8 a, r, g, b;                         \
+        RGBA_FROM_PIXEL(src, srcfmt, r, g, b, a); \
+        dst = a << 24 | r << 16 | g << 8 | b;     \
+    } while (0)
 /* Blend a single color channel or alpha value */
 #define ALPHA_BLEND_CHANNEL(sC, dC, sA)                  \
     do {                                                 \
@@ -509,7 +516,28 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         ALPHA_BLEND_CHANNEL(sG, dG, A);                       \
         ALPHA_BLEND_CHANNEL(sB, dB, A);                       \
     } while (0)
-
+/* Blend the ARGB values of two 32-bit pixels */
+#define ALPHA_BLEND_ARGB_PIXELS(src, dst)                               \
+    do {                                                                \
+        Uint32 srcA = src >> 24;                                        \
+        src |= 0xFF000000;                                              \
+                                                                        \
+        Uint32 srcRB = src & 0x00FF00FF;                                \
+        Uint32 dstRB = dst & 0x00FF00FF;                                \
+                                                                        \
+        Uint32 srcGA = (src >> 8) & 0x00FF00FF;                         \
+        Uint32 dstGA = (dst >> 8) & 0x00FF00FF;                         \
+                                                                        \
+        Uint32 resRB = ((srcRB - dstRB) * srcA) + (dstRB << 8) - dstRB; \
+        resRB += 0x00010001;                                            \
+        resRB += (resRB >> 8) & 0x00FF00FF;                             \
+        resRB = (resRB >> 8) & 0x00FF00FF;                              \
+        Uint32 resGA = ((srcGA - dstGA) * srcA) + (dstGA << 8) - dstGA; \
+        resGA += 0x00010001;                                            \
+        resGA += (resGA >> 8) & 0x00FF00FF;                             \
+        resGA &= 0xFF00FF00;                                            \
+        dst = resRB | resGA;                                            \
+    } while (0)
 /* Blend the RGBA values of two pixels */
 #define ALPHA_BLEND_RGBA(sR, sG, sB, sA, dR, dG, dB, dA) \
     do {                                                 \
