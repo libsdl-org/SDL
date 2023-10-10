@@ -183,7 +183,7 @@ if(HAVE_LIBUDEV_H)
 endif()
 
 include("${SDL3_SOURCE_DIR}/cmake/FindFFmpeg.cmake")
-if(FFmpeg_FOUND AND (FFmpeg_AVCODEC_VERSION STREQUAL "" OR FFmpeg_AVCODEC_VERSION VERSION_GREATER_EQUAL "60"))
+if(FFmpeg_FOUND AND (FFmpeg_AVCODEC_VERSION STREQUAL "" OR FFmpeg_AVCODEC_VERSION VERSION_GREATER_EQUAL "59.37"))
     if(APPLE)
         add_sdl_test_executable(testffmpeg NO_C90 SOURCES testffmpeg.c testffmpeg_videotoolbox.m ${icon_bmp_header})
         target_link_options(testffmpeg PRIVATE "-Wl,-framework,CoreFoundation" "-Wl,-framework,CoreVideo" "-Wl,-framework,Metal")
@@ -199,7 +199,7 @@ if(FFmpeg_FOUND AND (FFmpeg_AVCODEC_VERSION STREQUAL "" OR FFmpeg_AVCODEC_VERSIO
     endif()
     target_link_libraries(testffmpeg PRIVATE ${FFMPEG_LIBRARIES})
 else()
-    message(STATUS "Can't find ffmpeg 6.0 or newer, skipping testffmpeg")
+    message(STATUS "Can't find ffmpeg 5.1.3 or newer, skipping testffmpeg")
 endif()
 
 add_sdl_test_executable(checkkeys SOURCES checkkeys.c)
