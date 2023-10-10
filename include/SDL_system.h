@@ -617,7 +617,8 @@ extern DECLSPEC int SDLCALL SDL_GDKGetTaskQueue(XTaskQueueHandle * outTaskQueue)
  * This is effectively a synchronous version of XUserAddAsync, which always
  * prefers the default user and allows a sign-in UI.
  *
- * \param outUserHandle a pointer to be filled in with the default user handle.
+ * \param outUserHandle a pointer to be filled in with the default user
+ *                      handle.
  * \returns 0 if success, -1 if any error occurs.
  *
  * \since This function is available since SDL 2.28.0.
