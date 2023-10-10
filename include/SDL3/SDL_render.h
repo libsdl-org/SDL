@@ -405,6 +405,7 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *renderer, U
 extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface);
 
 typedef struct IDXGIResource IDXGIResource;
+
 /**
  * Get the DXGI resource associated with a texture.
  *
