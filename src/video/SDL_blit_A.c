@@ -965,32 +965,32 @@ static void BlitARGBto565PixelAlpha(SDL_BlitInfo *info)
     while (height--) {
         /* *INDENT-OFF* */ /* clang-format off */
         DUFFS_LOOP4({
-                        Uint32 s = *srcp;
-                        unsigned alpha = s >> 27; /* downscale alpha to 5 bits */
-                        /* FIXME: Here we special-case opaque alpha since the
-                           compositioning used (>>8 instead of /255) doesn't handle
-                           it correctly. Also special-case alpha=0 for speed?
-                           Benchmark this! */
-                        if (alpha) {
-                            if (alpha == (SDL_ALPHA_OPAQUE >> 3)) {
-                                *dstp = (Uint16)((s >> 8 & 0xf800) + (s >> 5 & 0x7e0) + (s >> 3  & 0x1f));
-                            } else {
-                                Uint32 d = *dstp;
-                                /*
-                                 * convert source and destination to G0RAB65565
-                                 * and blend all components at the same time
-                                 */
-                                s = ((s & 0xfc00) << 11) + (s >> 8 & 0xf800)
-                                    + (s >> 3 & 0x1f);
-                                d = (d | d << 16) & 0x07e0f81f;
-                                d += (s - d) * alpha >> 5;
-                                d &= 0x07e0f81f;
-                                *dstp = (Uint16)(d | d >> 16);
-                            }
-                        }
-                        srcp++;
-                        dstp++;
-                    }, width);
+        Uint32 s = *srcp;
+        unsigned alpha = s >> 27; /* downscale alpha to 5 bits */
+        /* FIXME: Here we special-case opaque alpha since the
+           compositioning used (>>8 instead of /255) doesn't handle
+           it correctly. Also special-case alpha=0 for speed?
+           Benchmark this! */
+        if (alpha) {
+          if (alpha == (SDL_ALPHA_OPAQUE >> 3)) {
+            *dstp = (Uint16)((s >> 8 & 0xf800) + (s >> 5 & 0x7e0) + (s >> 3  & 0x1f));
+          } else {
+            Uint32 d = *dstp;
+            /*
+             * convert source and destination to G0RAB65565
+             * and blend all components at the same time
+             */
+            s = ((s & 0xfc00) << 11) + (s >> 8 & 0xf800)
+              + (s >> 3 & 0x1f);
+            d = (d | d << 16) & 0x07e0f81f;
+            d += (s - d) * alpha >> 5;
+            d &= 0x07e0f81f;
+            *dstp = (Uint16)(d | d >> 16);
+          }
+        }
+        srcp++;
+        dstp++;
+        }, width);
         /* *INDENT-ON* */ /* clang-format on */
         srcp += srcskip;
         dstp += dstskip;
@@ -1010,33 +1010,33 @@ static void BlitARGBto555PixelAlpha(SDL_BlitInfo *info)
     while (height--) {
         /* *INDENT-OFF* */ /* clang-format off */
         DUFFS_LOOP4({
-                        unsigned alpha;
-                        Uint32 s = *srcp;
-                        alpha = s >> 27; /* downscale alpha to 5 bits */
-                        /* FIXME: Here we special-case opaque alpha since the
-                           compositioning used (>>8 instead of /255) doesn't handle
-                           it correctly. Also special-case alpha=0 for speed?
-                           Benchmark this! */
-                        if (alpha) {
-                            if (alpha == (SDL_ALPHA_OPAQUE >> 3)) {
-                                *dstp = (Uint16)((s >> 9 & 0x7c00) + (s >> 6 & 0x3e0) + (s >> 3  & 0x1f));
-                            } else {
-                                Uint32 d = *dstp;
-                                /*
-                                 * convert source and destination to G0RAB65565
-                                 * and blend all components at the same time
-                                 */
-                                s = ((s & 0xf800) << 10) + (s >> 9 & 0x7c00)
-                                    + (s >> 3 & 0x1f);
-                                d = (d | d << 16) & 0x03e07c1f;
-                                d += (s - d) * alpha >> 5;
-                                d &= 0x03e07c1f;
-                                *dstp = (Uint16)(d | d >> 16);
-                            }
-                        }
-                        srcp++;
-                        dstp++;
-                    }, width);
+        unsigned alpha;
+        Uint32 s = *srcp;
+        alpha = s >> 27; /* downscale alpha to 5 bits */
+        /* FIXME: Here we special-case opaque alpha since the
+           compositioning used (>>8 instead of /255) doesn't handle
+           it correctly. Also special-case alpha=0 for speed?
+           Benchmark this! */
+        if (alpha) {
+          if (alpha == (SDL_ALPHA_OPAQUE >> 3)) {
+            *dstp = (Uint16)((s >> 9 & 0x7c00) + (s >> 6 & 0x3e0) + (s >> 3  & 0x1f));
+          } else {
+            Uint32 d = *dstp;
+            /*
+             * convert source and destination to G0RAB65565
+             * and blend all components at the same time
+             */
+            s = ((s & 0xf800) << 10) + (s >> 9 & 0x7c00)
+              + (s >> 3 & 0x1f);
+            d = (d | d << 16) & 0x03e07c1f;
+            d += (s - d) * alpha >> 5;
+            d &= 0x03e07c1f;
+            *dstp = (Uint16)(d | d >> 16);
+          }
+        }
+        srcp++;
+        dstp++;
+        }, width);
         /* *INDENT-ON* */ /* clang-format on */
         srcp += srcskip;
         dstp += dstskip;
