@@ -36,6 +36,10 @@
 #endif
 #endif
 
+#ifdef __APPLE__
+#include "testffmpeg_videotoolbox.h"
+#endif
+
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavutil/avutil.h>
@@ -64,6 +68,9 @@ static SDL_bool has_EGL_EXT_image_dma_buf_import;
 static PFNGLACTIVETEXTUREARBPROC glActiveTextureARBFunc;
 static PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOESFunc;
 #endif
+#ifdef __APPLE__
+static SDL_bool has_videotoolbox_output;
+#endif
 static int done;
 
 static SDL_bool CreateWindow(Uint32 window_flags, SDL_bool useEGL)
@@ -87,7 +94,7 @@ static SDL_bool CreateWindow(Uint32 window_flags, SDL_bool useEGL)
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
 
-    if (SDL_CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_HIDDEN, &window, &renderer) < 0) {
+    if (SDL_CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, window_flags, &window, &renderer) < 0) {
         return SDL_FALSE;
     }
 
@@ -115,6 +122,10 @@ static SDL_bool CreateWindow(Uint32 window_flags, SDL_bool useEGL)
         }
     }
 #endif /* HAVE_EGL */
+
+#ifdef __APPLE__
+    has_videotoolbox_output = SetupVideoToolboxOutput(renderer);
+#endif
 
     return SDL_TRUE;
 }
@@ -222,6 +233,11 @@ static SDL_bool SupportedPixelFormat(enum AVPixelFormat format)
         (format == AV_PIX_FMT_VAAPI || format == AV_PIX_FMT_DRM_PRIME)) {
         return SDL_TRUE;
     }
+#ifdef __APPLE__
+    if (has_videotoolbox_output && format == AV_PIX_FMT_VIDEOTOOLBOX) {
+        return SDL_TRUE;
+    }
+#endif
 
     if (GetTextureFormat(format) != SDL_PIXELFORMAT_UNKNOWN) {
         return SDL_TRUE;
@@ -474,11 +490,41 @@ static SDL_bool GetTextureForFrame(AVFrame *frame, SDL_Texture **texture)
     }
 }
 
-static void HandleVideoFrame(AVFrame *frame, double pts)
+static void DisplayVideoTexture(AVFrame *frame)
 {
     /* Update the video texture */
     GetTextureForFrame(frame, &video_texture);
 
+    if (frame->linesize[0] < 0) {
+        SDL_RenderTextureRotated(renderer, video_texture, NULL, NULL, 0.0, NULL, SDL_FLIP_VERTICAL);
+    } else {
+        SDL_RenderTexture(renderer, video_texture, NULL, NULL);
+    }
+}
+
+static void DisplayVideoToolbox(AVFrame *frame)
+{
+#ifdef __APPLE__
+    SDL_Rect viewport;
+    SDL_GetRenderViewport(renderer, &viewport);
+    DisplayVideoToolboxFrame(renderer, frame->data[3], 0, 0, frame->width, frame->height, viewport.x, viewport.y, viewport.w, viewport.h);
+#endif
+}
+
+static void DisplayVideoFrame(AVFrame *frame)
+{
+    switch (frame->format) {
+    case AV_PIX_FMT_VIDEOTOOLBOX:
+        DisplayVideoToolbox(frame);
+        break;
+    default:
+        DisplayVideoTexture(frame);
+        break;
+    }
+}
+
+static void HandleVideoFrame(AVFrame *frame, double pts)
+{
     /* Quick and dirty PTS handling */
     if (!video_start) {
         video_start = SDL_GetTicks();
@@ -489,11 +535,7 @@ static void HandleVideoFrame(AVFrame *frame, double pts)
         now = (double)(SDL_GetTicks() - video_start) / 1000.0;
     }
 
-    if (frame->linesize[0] < 0) {
-        SDL_RenderTextureRotated(renderer, video_texture, NULL, NULL, 0.0, NULL, SDL_FLIP_VERTICAL);
-    } else {
-        SDL_RenderTexture(renderer, video_texture, NULL, NULL);
-    }
+    DisplayVideoFrame(frame);
 
     /* Render any bouncing balls */
     MoveSprite();
@@ -658,7 +700,7 @@ int main(int argc, char *argv[])
         goto quit;
     }
 
-    window_flags = SDL_WINDOW_HIDDEN;
+    window_flags = SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 #ifdef __APPLE__
     window_flags |= SDL_WINDOW_METAL;
 #elif !defined(__WIN32__)
@@ -832,6 +874,9 @@ int main(int argc, char *argv[])
     }
     return_code = 0;
 quit:
+#ifdef __APPLE__
+    CleanupVideoToolboxOutput();
+#endif
     SDL_free(positions);
     SDL_free(velocities);
     av_frame_free(&frame);
