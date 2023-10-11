@@ -229,30 +229,52 @@ SDL_RWLock *SDL_CreateRWLock(void)
 
 void SDL_DestroyRWLock(SDL_RWLock *rwlock)
 {
-    SDL_rwlock_impl_active.Destroy(rwlock);
+    if (rwlock) {
+        SDL_rwlock_impl_active.Destroy(rwlock);
+    }
 }
 
 int SDL_LockRWLockForReading(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
+    if (rwlock == NULL) {
+        return 0;
+    }
+
     return SDL_rwlock_impl_active.LockForReading(rwlock);
 }
 
 int SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
+    if (rwlock == NULL) {
+        return 0;
+    }
+
     return SDL_rwlock_impl_active.LockForWriting(rwlock);
 }
 
 int SDL_TryLockRWLockForReading(SDL_RWLock *rwlock)
 {
+    if (rwlock == NULL) {
+        return 0;
+    }
+
     return SDL_rwlock_impl_active.TryLockForReading(rwlock);
 }
 
 int SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
 {
+    if (rwlock == NULL) {
+        return 0;
+    }
+
     return SDL_rwlock_impl_active.TryLockForWriting(rwlock);
 }
 
 int SDL_UnlockRWLock(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
+    if (rwlock == NULL) {
+        return 0;
+    }
+
     return SDL_rwlock_impl_active.Unlock(rwlock);
 }
