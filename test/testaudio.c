@@ -113,6 +113,9 @@ static Thing *mouseover_thing = NULL;
 static Thing *droppable_highlighted_thing = NULL;
 static Thing *dragging_thing = NULL;
 static int dragging_button = -1;
+static int dragging_button_real = -1;
+static SDL_bool ctrl_held = SDL_FALSE;
+static SDL_bool alt_held = SDL_FALSE;
 
 static Texture *physdev_texture = NULL;
 static Texture *logdev_texture = NULL;
@@ -1077,11 +1080,21 @@ static void Loop(void)
                 thing = UpdateMouseOver(event.motion.x, event.motion.y);
                 if ((dragging_button == -1) && event.motion.state) {
                     if (event.motion.state & SDL_BUTTON_LMASK) {
-                        dragging_button = SDL_BUTTON_LEFT;
+                        /* for people that don't have all three buttons... */
+                        if (ctrl_held) {
+                            dragging_button = SDL_BUTTON_RIGHT;
+                        } else if (alt_held) {
+                            dragging_button = SDL_BUTTON_MIDDLE;
+                        } else {
+                            dragging_button = SDL_BUTTON_LEFT;
+                        }
+                        dragging_button_real = SDL_BUTTON_LEFT;
                     } else if (event.motion.state & SDL_BUTTON_RMASK) {
                         dragging_button = SDL_BUTTON_RIGHT;
+                        dragging_button_real = SDL_BUTTON_RIGHT;
                     } else if (event.motion.state & SDL_BUTTON_MMASK) {
                         dragging_button = SDL_BUTTON_MIDDLE;
+                        dragging_button_real = SDL_BUTTON_MIDDLE;
                     }
 
 
@@ -1117,10 +1130,11 @@ static void Loop(void)
                 break;
 
             case SDL_EVENT_MOUSE_BUTTON_UP:
-                if (dragging_button == event.button.button) {
+                if (dragging_button_real == event.button.button) {
                     Thing *dropped_thing = dragging_thing;
                     dragging_thing = NULL;
                     dragging_button = -1;
+                    dragging_button_real = -1;
                     if (dropped_thing && dropped_thing->ondrop) {
                         dropped_thing->ondrop(dropped_thing, event.button.button, event.button.x, event.button.y);
                     }
@@ -1131,6 +1145,12 @@ static void Loop(void)
 
             case SDL_EVENT_MOUSE_WHEEL:
                 UpdateMouseOver(event.wheel.mouseX, event.wheel.mouseY);
+                break;
+
+            case SDL_EVENT_KEY_DOWN:
+            case SDL_EVENT_KEY_UP:
+                ctrl_held = ((event.key.keysym.mod & SDL_KMOD_CTRL) != 0) ? SDL_TRUE : SDL_FALSE;
+                alt_held = ((event.key.keysym.mod & SDL_KMOD_ALT) != 0) ? SDL_TRUE : SDL_FALSE;
                 break;
 
             case SDL_EVENT_DROP_FILE:
