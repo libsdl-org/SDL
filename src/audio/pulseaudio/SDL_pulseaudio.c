@@ -286,13 +286,15 @@ static void WaitForPulseOperation(pa_operation *o)
 
 static void DisconnectFromPulseServer(void)
 {
+    if (pulseaudio_threaded_mainloop != NULL) {
+        PULSEAUDIO_pa_threaded_mainloop_stop(pulseaudio_threaded_mainloop);
+    }
     if (pulseaudio_context) {
         PULSEAUDIO_pa_context_disconnect(pulseaudio_context);
         PULSEAUDIO_pa_context_unref(pulseaudio_context);
         pulseaudio_context = NULL;
     }
     if (pulseaudio_threaded_mainloop != NULL) {
-        PULSEAUDIO_pa_threaded_mainloop_stop(pulseaudio_threaded_mainloop);
         PULSEAUDIO_pa_threaded_mainloop_free(pulseaudio_threaded_mainloop);
         pulseaudio_threaded_mainloop = NULL;
     }
