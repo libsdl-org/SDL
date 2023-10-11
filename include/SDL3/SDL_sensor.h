@@ -30,6 +30,7 @@
 
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
+#include <SDL3/SDL_properties.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
@@ -188,6 +189,19 @@ extern DECLSPEC SDL_Sensor *SDLCALL SDL_OpenSensor(SDL_SensorID instance_id);
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_Sensor *SDLCALL SDL_GetSensorFromInstanceID(SDL_SensorID instance_id);
+
+/**
+ * Get the properties associated with a sensor.
+ *
+ * \param sensor The SDL_Sensor object
+ * \returns a valid property ID on success or 0 on failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetProperty
+ * \sa SDL_SetProperty
+ */
+extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSensorProperties(SDL_Sensor *sensor);
 
 /**
  * Get the implementation dependent name of a sensor

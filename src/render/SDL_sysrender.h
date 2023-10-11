@@ -83,8 +83,9 @@ struct SDL_Texture
 
     Uint32 last_command_generation; /* last command queue generation this texture was in. */
 
+    SDL_PropertiesID props;
+
     void *driverdata; /**< Driver specific texture representation */
-    void *userdata;
 
     SDL_Texture *prev;
     SDL_Texture *next;
@@ -271,6 +272,8 @@ struct SDL_Renderer
     void *vertex_data;
     size_t vertex_data_used;
     size_t vertex_data_allocation;
+
+    SDL_PropertiesID props;
 
     void *driverdata;
 };

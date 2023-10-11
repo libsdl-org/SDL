@@ -168,6 +168,8 @@ struct SDL_AudioStream
 {
     SDL_Mutex* lock;
 
+    SDL_PropertiesID props;
+
     SDL_AudioStreamCallback get_callback;
     void *get_callback_userdata;
     SDL_AudioStreamCallback put_callback;

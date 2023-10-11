@@ -1214,6 +1214,27 @@ SDL_Joystick *SDL_GetJoystickFromPlayerIndex(int player_index)
 }
 
 /*
+ * Get the properties associated with a joystick
+ */
+SDL_PropertiesID SDL_GetJoystickProperties(SDL_Joystick *joystick)
+{
+    SDL_PropertiesID retval;
+
+    SDL_LockJoysticks();
+    {
+        CHECK_JOYSTICK_MAGIC(joystick, 0);
+
+        if (joystick->props == 0) {
+            joystick->props = SDL_CreateProperties();
+        }
+        retval = joystick->props;
+    }
+    SDL_UnlockJoysticks();
+
+    return retval;
+}
+
+/*
  * Get the friendly name of this joystick
  */
 const char *SDL_GetJoystickName(SDL_Joystick *joystick)
@@ -1464,6 +1485,8 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
             SDL_UnlockJoysticks();
             return;
         }
+
+        SDL_DestroyProperties(joystick->props);
 
         if (joystick->rumble_expiration) {
             SDL_RumbleJoystick(joystick, 0, 0, 0);

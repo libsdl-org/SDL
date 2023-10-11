@@ -29,9 +29,10 @@
 #define SDL_surface_h_
 
 #include <SDL3/SDL_stdinc.h>
-#include <SDL3/SDL_pixels.h>
-#include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_blendmode.h>
+#include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_properties.h>
+#include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_rwops.h>
 
 #include <SDL3/SDL_begin_code.h>
@@ -92,7 +93,7 @@ typedef struct SDL_Surface
     void *pixels;               /**< Read-write */
 
     /** Application data associated with the surface */
-    void *userdata;             /**< Read-write */
+    SDL_PropertiesID props;     /**< Read-write */
 
     /** information needed for surfaces requiring locks */
     int locked;                 /**< Read-only */
@@ -188,6 +189,19 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurfaceFrom
  * \sa SDL_LoadBMP_RW
  */
 extern DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
+
+/**
+ * Get the properties associated with a surface.
+ *
+ * \param surface the SDL_Surface structure to query
+ * \returns a valid property ID on success or 0 on failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetProperty
+ * \sa SDL_SetProperty
+ */
+extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSurfaceProperties(SDL_Surface *surface);
 
 /**
  * Set the palette used by a surface.

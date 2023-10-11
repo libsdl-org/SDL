@@ -2925,6 +2925,21 @@ SDL_JoystickID SDL_GetGamepadInstanceID(SDL_Gamepad *gamepad)
     return SDL_GetJoystickInstanceID(joystick);
 }
 
+SDL_PropertiesID SDL_GetGamepadProperties(SDL_Gamepad *gamepad)
+{
+    SDL_PropertiesID retval = 0;
+
+    SDL_LockJoysticks();
+    {
+        CHECK_GAMEPAD_MAGIC(gamepad, 0);
+
+        retval = SDL_GetJoystickProperties(gamepad->joystick);
+    }
+    SDL_UnlockJoysticks();
+
+    return retval;
+}
+
 const char *SDL_GetGamepadName(SDL_Gamepad *gamepad)
 {
     const char *retval = NULL;

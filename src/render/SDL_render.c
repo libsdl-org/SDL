@@ -929,7 +929,7 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 fl
         renderer->hidden = SDL_FALSE;
     }
 
-    SDL_SetWindowData(window, SDL_WINDOWRENDERDATA, renderer);
+    SDL_SetProperty(SDL_GetWindowProperties(window), SDL_WINDOWRENDERDATA, renderer, NULL, NULL);
 
     SDL_SetRenderViewport(renderer, NULL);
 
@@ -994,7 +994,7 @@ SDL_Renderer *SDL_CreateSoftwareRenderer(SDL_Surface *surface)
 
 SDL_Renderer *SDL_GetRenderer(SDL_Window *window)
 {
-    return (SDL_Renderer *)SDL_GetWindowData(window, SDL_WINDOWRENDERDATA);
+    return (SDL_Renderer *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_WINDOWRENDERDATA);
 }
 
 SDL_Window *SDL_GetRenderWindow(SDL_Renderer *renderer)
@@ -1007,8 +1007,18 @@ int SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_RendererInfo *info)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
-    *info = renderer->info;
+    SDL_copyp(info, &renderer->info);
     return 0;
+}
+
+SDL_PropertiesID SDL_GetRendererProperties(SDL_Renderer *renderer)
+{
+    CHECK_RENDERER_MAGIC(renderer, 0);
+
+    if (renderer->props == 0) {
+        renderer->props = SDL_CreateProperties();
+    }
+    return renderer->props;
 }
 
 int SDL_GetRenderOutputSize(SDL_Renderer *renderer, int *w, int *h)
@@ -1365,6 +1375,16 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     return texture;
 }
 
+SDL_PropertiesID SDL_GetTextureProperties(SDL_Texture *texture)
+{
+    CHECK_TEXTURE_MAGIC(texture, 0);
+
+    if (texture->props == 0) {
+        texture->props = SDL_CreateProperties();
+    }
+    return texture->props;
+}
+
 int SDL_QueryTexture(SDL_Texture *texture, Uint32 *format, int *access, int *w, int *h)
 {
     CHECK_TEXTURE_MAGIC(texture, -1);
@@ -1495,21 +1515,6 @@ int SDL_GetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode *scaleMode)
         *scaleMode = texture->scaleMode;
     }
     return 0;
-}
-
-int SDL_SetTextureUserData(SDL_Texture *texture, void *userdata)
-{
-    CHECK_TEXTURE_MAGIC(texture, -1);
-
-    texture->userdata = userdata;
-    return 0;
-}
-
-void *SDL_GetTextureUserData(SDL_Texture *texture)
-{
-    CHECK_TEXTURE_MAGIC(texture, NULL);
-
-    return texture->userdata;
 }
 
 #if SDL_HAVE_YUV
@@ -4021,6 +4026,8 @@ static int SDL_DestroyTextureInternal(SDL_Texture *texture, SDL_bool is_destroyi
 
     CHECK_TEXTURE_MAGIC(texture, -1);
 
+    SDL_DestroyProperties(texture->props);
+
     renderer = texture->renderer;
     if (is_destroying) {
         /* Renderer get destroyed, avoid to queue more commands */
@@ -4103,6 +4110,8 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
 {
     CHECK_RENDERER_MAGIC(renderer,);
 
+    SDL_DestroyProperties(renderer->props);
+
     SDL_DelEventWatch(SDL_RendererEventWatch, renderer);
 
     SDL_DiscardAllCommands(renderer);
@@ -4118,7 +4127,7 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
     SDL_free(renderer->vertex_data);
 
     if (renderer->window) {
-        SDL_SetWindowData(renderer->window, SDL_WINDOWRENDERDATA, NULL);
+        SDL_ClearProperty(SDL_GetWindowProperties(renderer->window), SDL_WINDOWRENDERDATA);
     }
 
     /* It's no longer magical... */

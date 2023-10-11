@@ -31,6 +31,7 @@
 
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
+#include <SDL3/SDL_properties.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
@@ -99,6 +100,7 @@ typedef struct SDL_RWops
 
     Uint32 type;
     Uint32 status;
+    SDL_PropertiesID props;
     union
     {
 #ifdef __ANDROID__
@@ -330,6 +332,19 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_CreateRW(void);
  * \sa SDL_CreateRW
  */
 extern DECLSPEC void SDLCALL SDL_DestroyRW(SDL_RWops *context);
+
+/**
+ * Get the properties associated with an SDL_RWops.
+ *
+ * \param context a pointer to an SDL_RWops structure
+ * \returns a valid property ID on success or 0 on failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetProperty
+ * \sa SDL_SetProperty
+ */
+extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetRWProperties(SDL_RWops *context);
 
 #define SDL_RW_SEEK_SET 0       /**< Seek from the beginning of data */
 #define SDL_RW_SEEK_CUR 1       /**< Seek relative to current read point */

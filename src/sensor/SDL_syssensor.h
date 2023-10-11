@@ -45,6 +45,8 @@ struct SDL_Sensor
 
     struct sensor_hwdata *hwdata _guarded; /* Driver dependent information */
 
+    SDL_PropertiesID props _guarded;
+
     int ref_count _guarded; /* Reference count for multiple opens */
 
     struct SDL_Sensor *next _guarded; /* pointer to next sensor we have allocated */

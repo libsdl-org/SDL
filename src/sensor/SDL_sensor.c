@@ -394,6 +394,27 @@ SDL_Sensor *SDL_GetSensorFromInstanceID(SDL_SensorID instance_id)
 }
 
 /*
+ * Get the properties associated with a sensor.
+ */
+SDL_PropertiesID SDL_GetSensorProperties(SDL_Sensor *sensor)
+{
+    SDL_PropertiesID retval;
+
+    SDL_LockSensors();
+    {
+        CHECK_SENSOR_MAGIC(sensor, 0);
+
+        if (sensor->props == 0) {
+            sensor->props = SDL_CreateProperties();
+        }
+        retval = sensor->props;
+    }
+    SDL_UnlockSensors();
+
+    return retval;
+}
+
+/*
  * Get the friendly name of this sensor
  */
 const char *SDL_GetSensorName(SDL_Sensor *sensor)
@@ -499,6 +520,8 @@ void SDL_CloseSensor(SDL_Sensor *sensor)
             SDL_UnlockSensors();
             return;
         }
+
+        SDL_DestroyProperties(sensor->props);
 
         sensor->driver->Close(sensor);
         sensor->hwdata = NULL;
