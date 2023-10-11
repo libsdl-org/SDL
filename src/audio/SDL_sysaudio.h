@@ -156,6 +156,8 @@ typedef struct SDL_AudioDriver
     SDL_AudioStream *existing_streams;  // a list of all existing SDL_AudioStreams.
     SDL_AudioDeviceID default_output_device_id;
     SDL_AudioDeviceID default_capture_device_id;
+
+    // !!! FIXME: most (all?) of these don't have to be atomic.
     SDL_AtomicInt output_device_count;
     SDL_AtomicInt capture_device_count;
     SDL_AtomicInt last_device_instance_id;  // increments on each device add to provide unique instance IDs
