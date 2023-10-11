@@ -619,6 +619,7 @@ SDL_RWops *SDL_CreateRW(void)
 
 void SDL_DestroyRW(SDL_RWops *context)
 {
+    SDL_DestroyProperties(context->props);
     SDL_free(context);
 }
 
@@ -696,6 +697,19 @@ done:
 void *SDL_LoadFile(const char *file, size_t *datasize)
 {
     return SDL_LoadFile_RW(SDL_RWFromFile(file, "rb"), datasize, SDL_TRUE);
+}
+
+SDL_PropertiesID SDL_GetRWProperties(SDL_RWops *context)
+{
+    if (!context) {
+        SDL_InvalidParamError("context");
+        return 0;
+    }
+
+    if (context->props == 0) {
+        context->props = SDL_CreateProperties();
+    }
+    return context->props;
 }
 
 Sint64 SDL_RWsize(SDL_RWops *context)

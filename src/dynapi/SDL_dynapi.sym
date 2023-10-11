@@ -330,7 +330,6 @@ SDL3_0.0.0 {
     SDL_GetTextureBlendMode;
     SDL_GetTextureColorMod;
     SDL_GetTextureScaleMode;
-    SDL_GetTextureUserData;
     SDL_GetThreadID;
     SDL_GetThreadName;
     SDL_GetTicks;
@@ -342,7 +341,6 @@ SDL3_0.0.0 {
     SDL_GetVersion;
     SDL_GetVideoDriver;
     SDL_GetWindowBordersSize;
-    SDL_GetWindowData;
     SDL_GetWindowDisplayScale;
     SDL_GetWindowFlags;
     SDL_GetWindowFromID;
@@ -601,11 +599,9 @@ SDL3_0.0.0 {
     SDL_SetTextureBlendMode;
     SDL_SetTextureColorMod;
     SDL_SetTextureScaleMode;
-    SDL_SetTextureUserData;
     SDL_SetThreadPriority;
     SDL_SetWindowAlwaysOnTop;
     SDL_SetWindowBordered;
-    SDL_SetWindowData;
     SDL_SetWindowFullscreen;
     SDL_SetWindowFullscreenMode;
     SDL_SetWindowGrab;
@@ -914,6 +910,16 @@ SDL3_0.0.0 {
     SDL_SetProperty;
     SDL_GetProperty;
     SDL_DestroyProperties;
+    SDL_GetAudioStreamProperties;
+    SDL_GetGamepadProperties;
+    SDL_GetJoystickProperties;
+    SDL_GetRendererProperties;
+    SDL_GetTextureProperties;
+    SDL_GetRWProperties;
+    SDL_GetSensorProperties;
+    SDL_GetSurfaceProperties;
+    SDL_GetWindowProperties;
+    SDL_ClearProperty;
     # extra symbols go here (don't modify this line)
   local: *;
 };

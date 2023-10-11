@@ -209,10 +209,25 @@ static Uint32 SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
     return 0;
 }
 
+static void SDL_CleanupWindowTextureData(void *userdata, void *value)
+{
+    SDL_WindowTextureData *data = (SDL_WindowTextureData *)value;
+
+    if (data->texture) {
+        SDL_DestroyTexture(data->texture);
+    }
+    if (data->renderer) {
+        SDL_DestroyRenderer(data->renderer);
+    }
+    SDL_free(data->pixels);
+    SDL_free(data);
+}
+
 static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
     SDL_RendererInfo info;
-    SDL_WindowTextureData *data = SDL_GetWindowData(window, SDL_WINDOWTEXTUREDATA);
+    SDL_PropertiesID props = SDL_GetWindowProperties(window);
+    SDL_WindowTextureData *data = (SDL_WindowTextureData *)SDL_GetProperty(props, SDL_WINDOWTEXTUREDATA);
     const int transparent = (window->flags & SDL_WINDOW_TRANSPARENT) ? SDL_TRUE : SDL_FALSE;
     int i;
     int w, h;
@@ -265,7 +280,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
             SDL_DestroyRenderer(renderer);
             return SDL_OutOfMemory();
         }
-        SDL_SetWindowData(window, SDL_WINDOWTEXTUREDATA, data);
+        SDL_SetProperty(props, SDL_WINDOWTEXTUREDATA, data, SDL_CleanupWindowTextureData, NULL);
 
         data->renderer = renderer;
     } else {
@@ -335,7 +350,7 @@ static int SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window *window, 
 
     SDL_GetWindowSizeInPixels(window, &w, &h);
 
-    data = SDL_GetWindowData(window, SDL_WINDOWTEXTUREDATA);
+    data = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_WINDOWTEXTUREDATA);
     if (data == NULL || !data->texture) {
         return SDL_SetError("No window texture data");
     }
@@ -360,27 +375,14 @@ static int SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window *window, 
 
 static void SDL_DestroyWindowTexture(SDL_VideoDevice *unused, SDL_Window *window)
 {
-    SDL_WindowTextureData *data;
-
-    data = SDL_SetWindowData(window, SDL_WINDOWTEXTUREDATA, NULL);
-    if (data == NULL) {
-        return;
-    }
-    if (data->texture) {
-        SDL_DestroyTexture(data->texture);
-    }
-    if (data->renderer) {
-        SDL_DestroyRenderer(data->renderer);
-    }
-    SDL_free(data->pixels);
-    SDL_free(data);
+    SDL_ClearProperty(SDL_GetWindowProperties(window), SDL_WINDOWTEXTUREDATA);
 }
 
 int SDL_SetWindowTextureVSync(SDL_Window *window, int vsync)
 {
     SDL_WindowTextureData *data;
 
-    data = SDL_GetWindowData(window, SDL_WINDOWTEXTUREDATA);
+    data = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_WINDOWTEXTUREDATA);
     if (data == NULL) {
         return -1;
     }
@@ -2305,6 +2307,16 @@ SDL_Window *SDL_GetWindowParent(SDL_Window *window)
     return window->parent;
 }
 
+SDL_PropertiesID SDL_GetWindowProperties(SDL_Window *window)
+{
+    CHECK_WINDOW_MAGIC(window, 0);
+
+    if (window->props == 0) {
+        window->props = SDL_CreateProperties();
+    }
+    return window->props;
+}
+
 Uint32 SDL_GetWindowFlags(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, 0);
@@ -2358,72 +2370,6 @@ int SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon)
     }
 
     return _this->SetWindowIcon(_this, window, window->icon);
-}
-
-void *SDL_SetWindowData(SDL_Window *window, const char *name, void *userdata)
-{
-    SDL_WindowUserData *prev, *data;
-
-    CHECK_WINDOW_MAGIC(window, NULL);
-
-    /* Input validation */
-    if (name == NULL || name[0] == '\0') {
-        SDL_InvalidParamError("name");
-        return NULL;
-    }
-
-    /* See if the named data already exists */
-    prev = NULL;
-    for (data = window->data; data; prev = data, data = data->next) {
-        if (data->name && SDL_strcmp(data->name, name) == 0) {
-            void *last_value = data->data;
-
-            if (userdata) {
-                /* Set the new value */
-                data->data = userdata;
-            } else {
-                /* Delete this value */
-                if (prev) {
-                    prev->next = data->next;
-                } else {
-                    window->data = data->next;
-                }
-                SDL_free(data->name);
-                SDL_free(data);
-            }
-            return last_value;
-        }
-    }
-
-    /* Add new data to the window */
-    if (userdata) {
-        data = (SDL_WindowUserData *)SDL_malloc(sizeof(*data));
-        data->name = SDL_strdup(name);
-        data->data = userdata;
-        data->next = window->data;
-        window->data = data;
-    }
-    return NULL;
-}
-
-void *SDL_GetWindowData(SDL_Window *window, const char *name)
-{
-    SDL_WindowUserData *data;
-
-    CHECK_WINDOW_MAGIC(window, NULL);
-
-    /* Input validation */
-    if (name == NULL || name[0] == '\0') {
-        SDL_InvalidParamError("name");
-        return NULL;
-    }
-
-    for (data = window->data; data; data = data->next) {
-        if (data->name && SDL_strcmp(data->name, name) == 0) {
-            return data->data;
-        }
-    }
-    return NULL;
 }
 
 int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
@@ -3657,13 +3603,6 @@ void SDL_DestroyWindow(SDL_Window *window)
     /* Free memory associated with the window */
     SDL_free(window->title);
     SDL_DestroySurface(window->icon);
-    while (window->data) {
-        SDL_WindowUserData *data = window->data;
-
-        window->data = data->next;
-        SDL_free(data->name);
-        SDL_free(data);
-    }
 
     /* Unlink the window from the list */
     if (window->next) {

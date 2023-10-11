@@ -354,7 +354,6 @@
 #define SDL_GetTextureBlendMode SDL_GetTextureBlendMode_REAL
 #define SDL_GetTextureColorMod SDL_GetTextureColorMod_REAL
 #define SDL_GetTextureScaleMode SDL_GetTextureScaleMode_REAL
-#define SDL_GetTextureUserData SDL_GetTextureUserData_REAL
 #define SDL_GetThreadID SDL_GetThreadID_REAL
 #define SDL_GetThreadName SDL_GetThreadName_REAL
 #define SDL_GetTicks SDL_GetTicks_REAL
@@ -366,7 +365,6 @@
 #define SDL_GetVersion SDL_GetVersion_REAL
 #define SDL_GetVideoDriver SDL_GetVideoDriver_REAL
 #define SDL_GetWindowBordersSize SDL_GetWindowBordersSize_REAL
-#define SDL_GetWindowData SDL_GetWindowData_REAL
 #define SDL_GetWindowDisplayScale SDL_GetWindowDisplayScale_REAL
 #define SDL_GetWindowFlags SDL_GetWindowFlags_REAL
 #define SDL_GetWindowFromID SDL_GetWindowFromID_REAL
@@ -624,11 +622,9 @@
 #define SDL_SetTextureBlendMode SDL_SetTextureBlendMode_REAL
 #define SDL_SetTextureColorMod SDL_SetTextureColorMod_REAL
 #define SDL_SetTextureScaleMode SDL_SetTextureScaleMode_REAL
-#define SDL_SetTextureUserData SDL_SetTextureUserData_REAL
 #define SDL_SetThreadPriority SDL_SetThreadPriority_REAL
 #define SDL_SetWindowAlwaysOnTop SDL_SetWindowAlwaysOnTop_REAL
 #define SDL_SetWindowBordered SDL_SetWindowBordered_REAL
-#define SDL_SetWindowData SDL_SetWindowData_REAL
 #define SDL_SetWindowFullscreen SDL_SetWindowFullscreen_REAL
 #define SDL_SetWindowFullscreenMode SDL_SetWindowFullscreenMode_REAL
 #define SDL_SetWindowGrab SDL_SetWindowGrab_REAL
@@ -939,3 +935,13 @@
 #define SDL_SetProperty SDL_SetProperty_REAL
 #define SDL_GetProperty SDL_GetProperty_REAL
 #define SDL_DestroyProperties SDL_DestroyProperties_REAL
+#define SDL_GetAudioStreamProperties SDL_GetAudioStreamProperties_REAL
+#define SDL_GetGamepadProperties SDL_GetGamepadProperties_REAL
+#define SDL_GetJoystickProperties SDL_GetJoystickProperties_REAL
+#define SDL_GetRendererProperties SDL_GetRendererProperties_REAL
+#define SDL_GetTextureProperties SDL_GetTextureProperties_REAL
+#define SDL_GetRWProperties SDL_GetRWProperties_REAL
+#define SDL_GetSensorProperties SDL_GetSensorProperties_REAL
+#define SDL_GetSurfaceProperties SDL_GetSurfaceProperties_REAL
+#define SDL_GetWindowProperties SDL_GetWindowProperties_REAL
+#define SDL_ClearProperty SDL_ClearProperty_REAL

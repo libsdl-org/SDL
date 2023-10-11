@@ -265,6 +265,11 @@ void *SDL_GetProperty(SDL_PropertiesID props, const char *name)
     return value;
 }
 
+int SDL_ClearProperty(SDL_PropertiesID props, const char *name)
+{
+    return SDL_SetProperty(props, name, NULL, NULL, NULL);
+}
+
 void SDL_DestroyProperties(SDL_PropertiesID props)
 {
     if (!props) {

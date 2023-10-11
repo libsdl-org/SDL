@@ -42,6 +42,7 @@
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_guid.h>
 #include <SDL3/SDL_mutex.h>
+#include <SDL3/SDL_properties.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
@@ -455,6 +456,19 @@ extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualButton(SDL_Joystick *joystick,
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualHat(SDL_Joystick *joystick, int hat, Uint8 value);
+
+/**
+ * Get the properties associated with a joystick.
+ *
+ * \param joystick the SDL_Joystick obtained from SDL_OpenJoystick()
+ * \returns a valid property ID on success or 0 on failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetProperty
+ * \sa SDL_SetProperty
+ */
+extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetJoystickProperties(SDL_Joystick *joystick);
 
 /**
  * Get the implementation dependent name of a joystick.

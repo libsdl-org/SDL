@@ -30,6 +30,7 @@
 
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_surface.h>
 
@@ -93,7 +94,6 @@ typedef enum
  *  \sa SDL_CreateWindowWithPosition()
  *  \sa SDL_DestroyWindow()
  *  \sa SDL_FlashWindow()
- *  \sa SDL_GetWindowData()
  *  \sa SDL_GetWindowFlags()
  *  \sa SDL_GetWindowGrab()
  *  \sa SDL_GetWindowKeyboardGrab()
@@ -106,7 +106,6 @@ typedef enum
  *  \sa SDL_MinimizeWindow()
  *  \sa SDL_RaiseWindow()
  *  \sa SDL_RestoreWindow()
- *  \sa SDL_SetWindowData()
  *  \sa SDL_SetWindowFullscreen()
  *  \sa SDL_SetWindowGrab()
  *  \sa SDL_SetWindowKeyboardGrab()
@@ -919,6 +918,19 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_GetWindowFromID(SDL_WindowID id);
 extern DECLSPEC SDL_Window *SDLCALL SDL_GetWindowParent(SDL_Window *window);
 
 /**
+ * Get the properties associated with a window.
+ *
+ * \param window the window to query
+ * \returns a valid property ID on success or 0 on failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetProperty
+ * \sa SDL_SetProperty
+ */
+extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window *window);
+
+/**
  * Get the window flags.
  *
  * \param window the window to query
@@ -976,35 +988,6 @@ extern DECLSPEC const char *SDLCALL SDL_GetWindowTitle(SDL_Window *window);
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon);
-
-/**
- * Associate an arbitrary named pointer with a window.
- *
- * `name` is case-sensitive.
- *
- * \param window the window to associate with the pointer
- * \param name the name of the pointer
- * \param userdata the associated pointer
- * \returns the previous value associated with `name`.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetWindowData
- */
-extern DECLSPEC void *SDLCALL SDL_SetWindowData(SDL_Window *window, const char *name, void *userdata);
-
-/**
- * Retrieve the data pointer associated with a window.
- *
- * \param window the window to query
- * \param name the name of the pointer
- * \returns the value associated with `name`.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_SetWindowData
- */
-extern DECLSPEC void *SDLCALL SDL_GetWindowData(SDL_Window *window, const char *name);
 
 /**
  * Set the position of a window.

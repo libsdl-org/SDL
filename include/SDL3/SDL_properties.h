@@ -112,6 +112,21 @@ extern DECLSPEC int SDLCALL SDL_SetProperty(SDL_PropertiesID props, const char *
 extern DECLSPEC void *SDLCALL SDL_GetProperty(SDL_PropertiesID props, const char *name);
 
 /**
+ * Clear a property on a set of properties
+ *
+ * \param props the properties to modify
+ * \param name the name of the property to clear
+ *
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetProperty
+ */
+extern DECLSPEC int SDLCALL SDL_ClearProperty(SDL_PropertiesID props, const char *name);
+
+/**
  * Destroy a set of properties
  *
  * All properties are deleted and their cleanup functions will be called, if any. The set of properties must be unlocked when it is destroyed.

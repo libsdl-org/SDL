@@ -438,6 +438,18 @@ SDL_AudioStream *SDL_CreateAudioStream(const SDL_AudioSpec *src_spec, const SDL_
     return retval;
 }
 
+SDL_PropertiesID SDL_GetAudioStreamProperties(SDL_AudioStream *stream)
+{
+    if (!stream) {
+        SDL_InvalidParamError("stream");
+        return 0;
+    }
+    if (stream->props == 0) {
+        stream->props = SDL_CreateProperties();
+    }
+    return stream->props;
+}
+
 int SDL_SetAudioStreamGetCallback(SDL_AudioStream *stream, SDL_AudioStreamCallback callback, void *userdata)
 {
     if (!stream) {
@@ -1160,6 +1172,8 @@ void SDL_DestroyAudioStream(SDL_AudioStream *stream)
     if (stream == NULL) {
         return;
     }
+
+    SDL_DestroyProperties(stream->props);
 
     OnAudioStreamDestroy(stream);
 

@@ -58,13 +58,6 @@ struct SDL_ShapeDriver
     int (*SetWindowShape)(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowShapeMode *shape_mode);
 };
 
-typedef struct SDL_WindowUserData
-{
-    char *name;
-    void *data;
-    struct SDL_WindowUserData *next;
-} SDL_WindowUserData;
-
 /* Define the SDL window structure, corresponding to toplevel windows */
 struct SDL_Window
 {
@@ -111,7 +104,7 @@ struct SDL_Window
     SDL_HitTest hit_test;
     void *hit_test_data;
 
-    SDL_WindowUserData *data;
+    SDL_PropertiesID props;
 
     SDL_WindowData *driverdata;
 
