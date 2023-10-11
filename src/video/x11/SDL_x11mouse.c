@@ -330,13 +330,16 @@ static void WarpMouseInternal(Window xwindow, const int x, const int y)
     Display *display = videodata->display;
 #if SDL_VIDEO_DRIVER_X11_XINPUT2
     int deviceid = 0;
-    /* It seems XIWarpPointer() doesn't work correctly on multi-head setups:
-     * https://developer.blender.org/rB165caafb99c6846e53d11c4e966990aaffc06cea
-     */
-    if (ScreenCount(display) == 1) {
-        X11_XIGetClientPointer(display, None, &deviceid);
+    if (X11_Xinput2IsInitialized()) {
+        /* It seems XIWarpPointer() doesn't work correctly on multi-head setups:
+         * https://developer.blender.org/rB165caafb99c6846e53d11c4e966990aaffc06cea
+         */
+        if (ScreenCount(display) == 1) {
+            X11_XIGetClientPointer(display, None, &deviceid);
+        }
     }
     if (deviceid != 0) {
+        SDL_assert(SDL_X11_HAVE_XINPUT2);
         X11_XIWarpPointer(display, deviceid, None, xwindow, 0.0, 0.0, 0, 0, (double)x, (double)y);
     } else
 #endif
@@ -369,14 +372,7 @@ static int X11_WarpMouseGlobal(int x, int y)
 
 static int X11_SetRelativeMouseMode(SDL_bool enabled)
 {
-#if SDL_VIDEO_DRIVER_X11_XINPUT2
-    if (X11_Xinput2IsInitialized()) {
-        return 0;
-    }
-#else
-    SDL_Unsupported();
-#endif
-    return -1;
+    return X11_Xinput2IsInitialized() ? 0 : SDL_Unsupported();
 }
 
 static int X11_CaptureMouse(SDL_Window *window)
@@ -414,12 +410,9 @@ static Uint32 X11_GetGlobalMouseState(int *x, int *y)
 
     /* !!! FIXME: should we XSync() here first? */
 
-#if !SDL_VIDEO_DRIVER_X11_XINPUT2
-    videodata->global_mouse_changed = SDL_TRUE;
-#else
-    if (!SDL_X11_HAVE_XINPUT2)
+    if (!X11_Xinput2IsInitialized()) {
         videodata->global_mouse_changed = SDL_TRUE;
-#endif
+    }
 
     /* check if we have this cached since XInput last saw the mouse move. */
     /* !!! FIXME: can we just calculate this from XInput's events? */
