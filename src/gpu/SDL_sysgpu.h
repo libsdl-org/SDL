@@ -55,7 +55,7 @@ struct SDL_GpuShader
 {
     SDL_GpuDevice *device;
     const char *label;
-    SDL_atomic_t refcount;
+    SDL_AtomicInt refcount;
     void *driverdata;
 };
 
@@ -182,9 +182,9 @@ struct SDL_GpuStateCache
 {
     const char *label;
     SDL_GpuDevice *device;
-    SDL_mutex *pipeline_mutex;
+    SDL_Mutex *pipeline_mutex;
     SDL_HashTable *pipeline_cache;
-    SDL_mutex *sampler_mutex;
+    SDL_Mutex *sampler_mutex;
     SDL_HashTable *sampler_cache;
 };
 

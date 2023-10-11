@@ -703,8 +703,8 @@ SDL_CreateGpuStateCache(const char *label, SDL_GpuDevice *device)
             cache->device = device;
             cache->pipeline_mutex = SDL_CreateMutex();
             cache->sampler_mutex = SDL_CreateMutex();
-            cache->pipeline_cache = SDL_NewHashTable(NULL, 128, hash_pipeline, keymatch_pipeline, nuke_pipeline, SDL_FALSE);
-            cache->sampler_cache = SDL_NewHashTable(NULL, 16, hash_sampler, keymatch_sampler, nuke_sampler, SDL_FALSE);
+            cache->pipeline_cache = SDL_CreateHashTable(NULL, 128, hash_pipeline, keymatch_pipeline, nuke_pipeline, SDL_FALSE);
+            cache->sampler_cache = SDL_CreateHashTable(NULL, 16, hash_sampler, keymatch_sampler, nuke_sampler, SDL_FALSE);
             if (!cache->pipeline_mutex || !cache->sampler_mutex || !cache->pipeline_cache || !cache->sampler_cache) {
                 SDL_DestroyGpuStateCache(cache);  /* can clean up half-created objects. */
                 cache = NULL;
@@ -756,9 +756,9 @@ SDL_DestroyGpuStateCache(SDL_GpuStateCache *cache)
 {
     if (cache) {
         SDL_DestroyMutex(cache->pipeline_mutex);
-        SDL_FreeHashTable(cache->pipeline_cache);
+        SDL_DestroyHashTable(cache->pipeline_cache);
         SDL_DestroyMutex(cache->sampler_mutex);
-        SDL_FreeHashTable(cache->sampler_cache);
+        SDL_DestroyHashTable(cache->sampler_cache);
         FREE_AND_NULL_OBJ_WITH_LABEL(cache);
     }
 }
