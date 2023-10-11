@@ -36,13 +36,20 @@ jobs:
         srcdir = r"${{ github.workspace }}".replace("\\", "/")
         builddir = f"{ srcdir }/build"
         os.makedirs(builddir)
+        cmakelists_txt = textwrap.dedent(f"""\
+          # Always build .PDB symbol file
+          set(CMAKE_POLICY_DEFAULT_CMP0141 "NEW" CACHE STRING "MSVC debug information format flags are selected by an abstraction")
+          set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "ProgramDatabase" CACHE STRING "MSVC debug information format")
+          set(CMAKE_EXE_LINKER_FLAGS "-DEBUG" CACHE STRING "Linker flags for executables")
+          set(CMAKE_SHARED_LINKER_FLAGS "-DEBUG" CACHE STRING "Linker flag for shared libraries")
+          cmake_minimum_required(VERSION 3.0...3.25)
+          project(sdl_user)
+          enable_testing()
+          add_subdirectory("{ srcdir }" SDL)
+        """)
+        print(cmakelists_txt)
         with open(f"{ builddir }/CMakeLists.txt", "w") as f:
-          f.write(textwrap.dedent(f"""\
-            cmake_minimum_required(VERSION 3.0...3.25)
-            project(sdl_user)
-            enable_testing()
-            add_subdirectory("{ srcdir }" SDL)
-          """))
+          f.write(cmakelists_txt)
     - name: Configure (CMake)
       run: cmake -S build -B build `
         -Wdeprecated -Wdev -Werror `
