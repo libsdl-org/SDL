@@ -1611,6 +1611,7 @@ int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int
     SDL_assert(!logdev->bound_streams || (logdev->bound_streams->prev_binding == NULL));
 
     SDL_AudioDevice *device = logdev->physical_device;
+    const SDL_bool iscapture = device->iscapture;
     int retval = 0;
 
     // lock all the streams upfront, so we can verify they aren't bound elsewhere and add them all in one block, as this is intended to add everything or nothing.
@@ -1648,7 +1649,9 @@ int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int
             }
             logdev->bound_streams = stream;
 
-            stream->src_spec.format = logdev->postmix ? SDL_AUDIO_F32 : device->spec.format;
+            if (iscapture) {
+                stream->src_spec.format = logdev->postmix ? SDL_AUDIO_F32 : device->spec.format;
+            }
 
             SDL_UnlockMutex(stream->lock);
         }
