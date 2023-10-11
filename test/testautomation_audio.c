@@ -481,6 +481,10 @@ static int audio_buildAudioStream(void *arg)
     SDL_AudioSpec spec2;
     int i, ii, j, jj, k, kk;
 
+    /* Call Quit */
+    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+    SDLTest_AssertPass("Call to SDL_QuitSubSystem(SDL_INIT_AUDIO)");
+
     /* No conversion needed */
     spec1.format = SDL_AUDIO_S16LE;
     spec1.channels = 2;
@@ -527,6 +531,9 @@ static int audio_buildAudioStream(void *arg)
             }
         }
     }
+
+    /* Restart audio again */
+    audioSetUp(NULL);
 
     return TEST_COMPLETED;
 }

@@ -404,10 +404,8 @@ static int UpdateAudioStreamInputSpec(SDL_AudioStream *stream, const SDL_AudioSp
 
 SDL_AudioStream *SDL_CreateAudioStream(const SDL_AudioSpec *src_spec, const SDL_AudioSpec *dst_spec)
 {
-    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
-        SDL_SetError("Audio subsystem is not initialized");
-        return NULL;
-    }
+    SDL_ChooseAudioConverters();
+    SDL_SetupAudioResampler();
 
     SDL_AudioStream *retval = (SDL_AudioStream *)SDL_calloc(1, sizeof(SDL_AudioStream));
     if (retval == NULL) {
