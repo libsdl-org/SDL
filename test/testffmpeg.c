@@ -55,10 +55,6 @@
 
 #include "icon.h"
 
-#define WINDOW_WIDTH  640
-#define WINDOW_HEIGHT 480
-
-
 static SDL_Texture *sprite;
 static SDL_FRect *positions;
 static SDL_FRect *velocities;
@@ -108,7 +104,8 @@ static SDL_bool CreateWindowAndRenderer(Uint32 window_flags, const char *driver)
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
 
-    if (SDL_CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, window_flags, &window, &renderer) < 0) {
+    /* The window will be resized to the video size when it's loaded, in OpenVideoStream() */
+    if (SDL_CreateWindowAndRenderer(320, 200, window_flags, &window, &renderer) < 0) {
         return SDL_FALSE;
     }
 
