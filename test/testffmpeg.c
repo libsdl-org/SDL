@@ -25,6 +25,7 @@
 #include <libavformat/avformat.h>
 #include <libavutil/avutil.h>
 #include <libavutil/pixdesc.h>
+#include <libswscale/swscale.h>
 
 #ifdef HAVE_EGL
 #include <SDL3/SDL_opengl.h>
@@ -81,6 +82,11 @@ static ID3D11Device *d3d11_device;
 static ID3D11DeviceContext *d3d11_context;
 static const GUID SDL_IID_ID3D11Resource = { 0xdc8e63f3, 0xd12b, 0x4952, { 0xb4, 0x7b, 0x5e, 0x45, 0x02, 0x6a, 0x86, 0x2d } };
 #endif
+struct SwsContextContainer
+{
+    struct SwsContext *context;
+};
+static const char *SWS_CONTEXT_CONTAINER_PROPERTY = "SWS_CONTEXT_CONTAINER";
 static int done;
 
 static SDL_bool CreateWindowAndRenderer(Uint32 window_flags, const char *driver)
@@ -278,6 +284,13 @@ static enum AVPixelFormat GetSupportedPixelFormat(AVCodecContext *s, const enum 
     const enum AVPixelFormat *p;
 
     for (p = pix_fmts; *p != AV_PIX_FMT_NONE; p++) {
+        const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(*p);
+
+        if (!(desc->flags & AV_PIX_FMT_FLAG_HWACCEL)) {
+            /* We support all memory formats using swscale */
+            break;
+        }
+
         if (SupportedPixelFormat(*p)) {
             /* We support this format */
             break;
@@ -341,7 +354,7 @@ static AVCodecContext *OpenVideoStream(AVFormatContext *ic, int stream, const AV
             }
 
 #ifdef __WIN32__
-            if (type == AV_HWDEVICE_TYPE_D3D11VA) {
+            if (d3d11_device && type == AV_HWDEVICE_TYPE_D3D11VA) {
                 AVD3D11VADeviceContext *device_context;
 
                 context->hw_device_ctx = av_hwdevice_ctx_alloc(type);
@@ -400,32 +413,69 @@ static void SetYUVConversionMode(AVFrame *frame)
     SDL_SetYUVConversionMode(mode); /* FIXME: no support for linear transfer */
 }
 
+static void SDLCALL FreeSwsContextContainer(void *userdata, void *value)
+{
+    struct SwsContextContainer *sws_container = (struct SwsContextContainer *)value;
+    if (sws_container->context) {
+        sws_freeContext(sws_container->context);
+    }
+    SDL_free(sws_container);
+}
+
 static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
 {
     int texture_width = 0, texture_height = 0;
     Uint32 texture_format = SDL_PIXELFORMAT_UNKNOWN;
     Uint32 frame_format = GetTextureFormat(frame->format);
 
-    if (frame_format == SDL_PIXELFORMAT_UNKNOWN) {
-        SDL_SetError("Unknown pixel format: %s", av_get_pix_fmt_name(frame->format));
-        return SDL_FALSE;
-    }
-
     if (*texture) {
         SDL_QueryTexture(*texture, &texture_format, NULL, &texture_width, &texture_height);
     }
-    if (!*texture || frame_format != texture_format || frame->width != texture_width || frame->height != texture_height) {
+    if (!*texture || texture_width != frame->width || texture_height != frame->height ||
+        (frame_format != SDL_PIXELFORMAT_UNKNOWN && texture_format != frame_format) ||
+        (frame_format == SDL_PIXELFORMAT_UNKNOWN && texture_format != SDL_PIXELFORMAT_ARGB8888)) {
         if (*texture) {
             SDL_DestroyTexture(*texture);
         }
 
-        *texture = SDL_CreateTexture(renderer, frame_format, SDL_TEXTUREACCESS_STREAMING, frame->width, frame->height);
+        if (frame_format == SDL_PIXELFORMAT_UNKNOWN) {
+            *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, frame->width, frame->height);
+        } else {
+            *texture = SDL_CreateTexture(renderer, frame_format, SDL_TEXTUREACCESS_STREAMING, frame->width, frame->height);
+        }
         if (!*texture) {
             return SDL_FALSE;
         }
+        SDL_SetTextureBlendMode(*texture, SDL_BLENDMODE_BLEND);
     }
 
     switch (frame_format) {
+    case SDL_PIXELFORMAT_UNKNOWN:
+    {
+        SDL_PropertiesID props = SDL_GetTextureProperties(*texture);
+        struct SwsContextContainer *sws_container = (struct SwsContextContainer *)SDL_GetProperty(props, SWS_CONTEXT_CONTAINER_PROPERTY);
+        if (!sws_container) {
+            sws_container = (struct SwsContextContainer *)SDL_calloc(1, sizeof(*sws_container));
+            if (!sws_container) {
+                SDL_OutOfMemory();
+                return SDL_FALSE;
+            }
+            SDL_SetProperty(props, SWS_CONTEXT_CONTAINER_PROPERTY, sws_container, FreeSwsContextContainer, NULL);
+        }
+        sws_container->context = sws_getCachedContext(sws_container->context, frame->width, frame->height, frame->format, frame->width, frame->height, AV_PIX_FMT_BGRA, SWS_POINT, NULL, NULL, NULL);
+        if (sws_container->context) {
+            uint8_t *pixels[4];
+            int pitch[4];
+            if (SDL_LockTexture(*texture, NULL, (void **)&pixels[0], &pitch[0]) == 0) {
+                sws_scale(sws_container->context, (const uint8_t * const *)frame->data, frame->linesize, 0, frame->height, pixels, pitch);
+                SDL_UnlockTexture(*texture);
+            }
+        } else {
+            SDL_SetError("Can't initialize the conversion context");
+            return SDL_FALSE;
+        }
+        break;
+    }
     case SDL_PIXELFORMAT_IYUV:
         if (frame->linesize[0] > 0 && frame->linesize[1] > 0 && frame->linesize[2] > 0) {
             SDL_UpdateYUVTexture(*texture, NULL, frame->data[0], frame->linesize[0],
@@ -651,6 +701,9 @@ static void HandleVideoFrame(AVFrame *frame, double pts)
         SDL_Delay(1);
         now = (double)(SDL_GetTicks() - video_start) / 1000.0;
     }
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
 
     DisplayVideoFrame(frame);
 

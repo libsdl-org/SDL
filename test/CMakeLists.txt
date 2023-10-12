@@ -185,6 +185,7 @@ if(HAVE_LIBUDEV_H)
     add_definitions(-DHAVE_LIBUDEV_H)
 endif()
 
+set(FFmpeg_FIND_COMPONENTS AVCODEC AVFORMAT AVUTIL SWSCALE)
 include("${SDL3_SOURCE_DIR}/cmake/FindFFmpeg.cmake")
 if(FFmpeg_FOUND)
     cmake_push_check_state()
