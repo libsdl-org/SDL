@@ -119,9 +119,6 @@ static SDL_bool CreateWindowAndRenderer(Uint32 window_flags, const char *driver)
         SDL_Log("Created renderer %s\n", info.name);
     }
 
-    /* Use linear scaling in case the user resizes the window */
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
-
 #ifdef HAVE_EGL
     if (useEGL) {
         const char *extensions = eglQueryString(eglGetCurrentDisplay(), EGL_EXTENSIONS);
@@ -446,7 +443,13 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
         if (!*texture) {
             return SDL_FALSE;
         }
-        SDL_SetTextureBlendMode(*texture, SDL_BLENDMODE_BLEND);
+
+        if (frame_format == SDL_PIXELFORMAT_UNKNOWN || SDL_ISPIXELFORMAT_ALPHA(frame_format)) {
+            SDL_SetTextureBlendMode(*texture, SDL_BLENDMODE_BLEND);
+        } else {
+            SDL_SetTextureBlendMode(*texture, SDL_BLENDMODE_NONE);
+        }
+        SDL_SetTextureScaleMode(*texture, SDL_SCALEMODE_LINEAR);
     }
 
     switch (frame_format) {
@@ -530,6 +533,8 @@ static SDL_bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
     if (!*texture) {
         return SDL_FALSE;
     }
+    SDL_SetTextureBlendMode(*texture, SDL_BLENDMODE_NONE);
+    SDL_SetTextureScaleMode(*texture, SDL_SCALEMODE_LINEAR);
 
     /* Bind the texture for importing */
     SDL_GL_BindTexture(*texture, NULL, NULL);
