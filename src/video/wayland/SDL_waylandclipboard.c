@@ -107,7 +107,7 @@ int Wayland_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
 {
     SDL_VideoData *video_data = _this->driverdata;
     SDL_WaylandPrimarySelectionDevice *primary_selection_device = NULL;
-    int status = 0;
+    int status = -1;
 
     if (video_data->input != NULL && video_data->input->primary_selection_device != NULL) {
         primary_selection_device = video_data->input->primary_selection_device;
