@@ -406,6 +406,11 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
     Uint32 texture_format = SDL_PIXELFORMAT_UNKNOWN;
     Uint32 frame_format = GetTextureFormat(frame->format);
 
+    if (frame_format == SDL_PIXELFORMAT_UNKNOWN) {
+        SDL_SetError("Unknown pixel format: %s", av_get_pix_fmt_name(frame->format));
+        return SDL_FALSE;
+    }
+
     if (*texture) {
         SDL_QueryTexture(*texture, &texture_format, NULL, &texture_width, &texture_height);
     }
@@ -602,7 +607,10 @@ static SDL_bool GetTextureForFrame(AVFrame *frame, SDL_Texture **texture)
 static void DisplayVideoTexture(AVFrame *frame)
 {
     /* Update the video texture */
-    GetTextureForFrame(frame, &video_texture);
+    if (!GetTextureForFrame(frame, &video_texture)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't get texture for frame: %s\n", SDL_GetError());
+        return;
+    }
 
     if (frame->linesize[0] < 0) {
         SDL_RenderTextureRotated(renderer, video_texture, NULL, NULL, 0.0, NULL, SDL_FLIP_VERTICAL);
@@ -777,8 +785,10 @@ int main(int argc, char *argv[])
     AVFormatContext *ic = NULL;
     int audio_stream = -1;
     int video_stream = -1;
-    const AVCodec *audio_decoder = NULL;
-    const AVCodec *video_decoder = NULL;
+    const char *audio_codec_name = NULL;
+    const char *video_codec_name = NULL;
+    const AVCodec *audio_codec = NULL;
+    const AVCodec *video_codec = NULL;
     AVCodecContext *audio_context = NULL;
     AVCodecContext *video_context = NULL;
     AVPacket *pkt = NULL;
@@ -807,6 +817,12 @@ int main(int argc, char *argv[])
         if (!consumed) {
             if (SDL_strcmp(argv[i], "--sprites") == 0 && argv[i+1]) {
                 num_sprites = SDL_atoi(argv[i+1]);
+                consumed = 2;
+            } else if (SDL_strcmp(argv[i], "--audio-codec") == 0 && argv[i+1]) {
+                audio_codec_name = argv[i+1];
+                consumed = 2;
+            } else if (SDL_strcmp(argv[i], "--video-codec") == 0 && argv[i+1]) {
+                video_codec_name = argv[i+1];
                 consumed = 2;
             } else if (SDL_strcmp(argv[i], "--software") == 0) {
                 software_only = SDL_TRUE;
@@ -877,17 +893,33 @@ int main(int argc, char *argv[])
         return_code = 4;
         goto quit;
     }
-    video_stream = av_find_best_stream(ic, AVMEDIA_TYPE_VIDEO, -1, -1, &video_decoder, 0);
+    video_stream = av_find_best_stream(ic, AVMEDIA_TYPE_VIDEO, -1, -1, &video_codec, 0);
     if (video_stream >= 0) {
-        video_context = OpenVideoStream(ic, video_stream, video_decoder);
+        if (video_codec_name) {
+            video_codec = avcodec_find_decoder_by_name(video_codec_name);
+            if (!video_codec) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find codec '%s'", video_codec_name);
+                return_code = 4;
+                goto quit;
+            }
+        }
+        video_context = OpenVideoStream(ic, video_stream, video_codec);
         if (!video_context) {
             return_code = 4;
             goto quit;
         }
     }
-    audio_stream = av_find_best_stream(ic, AVMEDIA_TYPE_AUDIO, -1, video_stream, &audio_decoder, 0);
+    audio_stream = av_find_best_stream(ic, AVMEDIA_TYPE_AUDIO, -1, video_stream, &audio_codec, 0);
     if (audio_stream >= 0) {
-        audio_context = OpenAudioStream(ic, audio_stream, audio_decoder);
+        if (audio_codec_name) {
+            audio_codec = avcodec_find_decoder_by_name(audio_codec_name);
+            if (!audio_codec) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find codec '%s'", audio_codec_name);
+                return_code = 4;
+                goto quit;
+            }
+        }
+        audio_context = OpenAudioStream(ic, audio_stream, audio_codec);
         if (!audio_context) {
             return_code = 4;
             goto quit;
