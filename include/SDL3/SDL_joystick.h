@@ -461,7 +461,8 @@ extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualHat(SDL_Joystick *joystick, in
  * Get the properties associated with a joystick.
  *
  * \param joystick the SDL_Joystick obtained from SDL_OpenJoystick()
- * \returns a valid property ID on success or 0 on failure; call SDL_GetError() for more information.
+ * \returns a valid property ID on success or 0 on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

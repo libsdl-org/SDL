@@ -194,7 +194,8 @@ extern DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
  * Get the properties associated with a surface.
  *
  * \param surface the SDL_Surface structure to query
- * \returns a valid property ID on success or 0 on failure; call SDL_GetError() for more information.
+ * \returns a valid property ID on success or 0 on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

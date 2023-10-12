@@ -194,7 +194,8 @@ extern DECLSPEC SDL_Sensor *SDLCALL SDL_GetSensorFromInstanceID(SDL_SensorID ins
  * Get the properties associated with a sensor.
  *
  * \param sensor The SDL_Sensor object
- * \returns a valid property ID on success or 0 on failure; call SDL_GetError() for more information.
+ * \returns a valid property ID on success or 0 on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

@@ -921,7 +921,8 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_GetWindowParent(SDL_Window *window);
  * Get the properties associated with a window.
  *
  * \param window the window to query
- * \returns a valid property ID on success or 0 on failure; call SDL_GetError() for more information.
+ * \returns a valid property ID on success or 0 on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

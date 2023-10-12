@@ -680,7 +680,8 @@ extern DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAudioStream(const SDL_AudioSp
  * Get the properties associated with an audio stream.
  *
  * \param stream the SDL_AudioStream to query
- * \returns a valid property ID on success or 0 on failure; call SDL_GetError() for more information.
+ * \returns a valid property ID on success or 0 on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

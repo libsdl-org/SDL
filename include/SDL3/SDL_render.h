@@ -320,7 +320,8 @@ extern DECLSPEC int SDLCALL SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_Rend
  * Get the properties associated with a renderer.
  *
  * \param renderer the rendering context
- * \returns a valid property ID on success or 0 on failure; call SDL_GetError() for more information.
+ * \returns a valid property ID on success or 0 on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -440,7 +441,8 @@ extern DECLSPEC IDXGIResource* SDLCALL SDL_GetTextureDXGIResource(SDL_Texture *t
  * Get the properties associated with a texture.
  *
  * \param texture the texture to query
- * \returns a valid property ID on success or 0 on failure; call SDL_GetError() for more information.
+ * \returns a valid property ID on success or 0 on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

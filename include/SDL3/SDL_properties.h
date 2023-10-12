@@ -42,7 +42,8 @@ typedef Uint32 SDL_PropertiesID;
 /**
  * Create a set of properties
  *
- * \returns an ID for a new set of properties, or 0 on failure; call SDL_GetError() for more information.
+ * \returns an ID for a new set of properties, or 0 on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -53,12 +54,16 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_CreateProperties(void);
 /**
  * Lock a set of properties
  *
- * Obtain a multi-threaded lock for these properties. Other threads will wait while trying to lock these properties until they are unlocked. Properties must be unlocked before they are destroyed.
+ * Obtain a multi-threaded lock for these properties. Other threads will wait
+ * while trying to lock these properties until they are unlocked. Properties
+ * must be unlocked before they are destroyed.
  *
- * The lock is automatically taken when setting individual properties, this function is only needed when you want to set several properties atomically or want to guarantee that properties being queried aren't freed in another thread.
+ * The lock is automatically taken when setting individual properties, this
+ * function is only needed when you want to set several properties atomically
+ * or want to guarantee that properties being queried aren't freed in another
+ * thread.
  *
  * \param props the properties to lock
- *
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -85,9 +90,9 @@ extern DECLSPEC void SDLCALL SDL_UnlockProperties(SDL_PropertiesID props);
  * \param props the properties to modify
  * \param name the name of the property to modify
  * \param value the new value of the property, or NULL to delete the property
- * \param cleanup the function to call when this property is deleted, or NULL if no cleanup is necessary
+ * \param cleanup the function to call when this property is deleted, or NULL
+ *                if no cleanup is necessary
  * \param userdata a pointer that is passed to the cleanup function
- *
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -102,7 +107,6 @@ extern DECLSPEC int SDLCALL SDL_SetProperty(SDL_PropertiesID props, const char *
  *
  * \param props the properties to query
  * \param name the name of the property to query
- *
  * \returns the value of the property, or NULL if it is not set.
  *
  * \since This function is available since SDL 3.0.0.
@@ -116,7 +120,6 @@ extern DECLSPEC void *SDLCALL SDL_GetProperty(SDL_PropertiesID props, const char
  *
  * \param props the properties to modify
  * \param name the name of the property to clear
- *
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -129,7 +132,8 @@ extern DECLSPEC int SDLCALL SDL_ClearProperty(SDL_PropertiesID props, const char
 /**
  * Destroy a set of properties
  *
- * All properties are deleted and their cleanup functions will be called, if any. The set of properties must be unlocked when it is destroyed.
+ * All properties are deleted and their cleanup functions will be called, if
+ * any. The set of properties must be unlocked when it is destroyed.
  *
  * \param props the properties to destroy
  *

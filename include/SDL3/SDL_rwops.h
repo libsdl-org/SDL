@@ -337,7 +337,8 @@ extern DECLSPEC void SDLCALL SDL_DestroyRW(SDL_RWops *context);
  * Get the properties associated with an SDL_RWops.
  *
  * \param context a pointer to an SDL_RWops structure
- * \returns a valid property ID on success or 0 on failure; call SDL_GetError() for more information.
+ * \returns a valid property ID on success or 0 on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
