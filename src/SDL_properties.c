@@ -124,7 +124,11 @@ SDL_PropertiesID SDL_CreateProperties(void)
     }
 
     if (SDL_LockRWLockForWriting(SDL_properties_lock) == 0) {
-        props = ++SDL_last_properties_id;
+        ++SDL_last_properties_id;
+        if (SDL_last_properties_id == 0) {
+            ++SDL_last_properties_id;
+        }
+        props = SDL_last_properties_id;
         if (SDL_InsertIntoHashTable(SDL_properties, (const void *)(uintptr_t)props, properties)) {
             inserted = SDL_TRUE;
         }
