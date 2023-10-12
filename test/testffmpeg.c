@@ -113,6 +113,9 @@ static SDL_bool CreateWindowAndRenderer(Uint32 window_flags, const char *driver)
         SDL_Log("Created renderer %s\n", info.name);
     }
 
+    /* Use linear scaling in case the user resizes the window */
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+
 #ifdef HAVE_EGL
     if (useEGL) {
         const char *extensions = eglQueryString(eglGetCurrentDisplay(), EGL_EXTENSIONS);
@@ -834,7 +837,7 @@ int main(int argc, char *argv[])
         goto quit;
     }
 
-    window_flags = SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+    window_flags = SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 #ifdef __APPLE__
     window_flags |= SDL_WINDOW_METAL;
 #elif !defined(__WIN32__)
