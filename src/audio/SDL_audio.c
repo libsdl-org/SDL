@@ -139,39 +139,46 @@ static int GetDefaultSampleFramesFromFreq(const int freq)
 
 void OnAudioStreamCreated(SDL_AudioStream *stream)
 {
-    SDL_assert(SDL_GetCurrentAudioDriver() != NULL);
     SDL_assert(stream != NULL);
 
-    // this isn't really part of the "device list" but it's a convenient lock to use here.
-    SDL_LockRWLockForWriting(current_audio.device_list_lock);
-    if (current_audio.existing_streams) {
-        current_audio.existing_streams->prev = stream;
+    // NOTE that you can create an audio stream without initializing the audio subsystem,
+    //  but it will not be automatically destroyed during a later call to SDL_Quit!
+    //  You must explicitly destroy it yourself!
+    if (current_audio.device_list_lock) {
+        // this isn't really part of the "device list" but it's a convenient lock to use here.
+        SDL_LockRWLockForWriting(current_audio.device_list_lock);
+        if (current_audio.existing_streams) {
+            current_audio.existing_streams->prev = stream;
+        }
+        stream->prev = NULL;
+        stream->next = current_audio.existing_streams;
+        current_audio.existing_streams = stream;
+        SDL_UnlockRWLock(current_audio.device_list_lock);
     }
-    stream->prev = NULL;
-    stream->next = current_audio.existing_streams;
-    current_audio.existing_streams = stream;
-    SDL_UnlockRWLock(current_audio.device_list_lock);
 }
 
 void OnAudioStreamDestroy(SDL_AudioStream *stream)
 {
-    SDL_assert(SDL_GetCurrentAudioDriver() != NULL);
     SDL_assert(stream != NULL);
 
-    // this isn't really part of the "device list" but it's a convenient lock to use here.
-    SDL_LockRWLockForWriting(current_audio.device_list_lock);
-    if (stream->prev) {
-        stream->prev->next = stream->next;
+    // NOTE that you can create an audio stream without initializing the audio subsystem,
+    //  but it will not be automatically destroyed during a later call to SDL_Quit!
+    //  You must explicitly destroy it yourself!
+    if (current_audio.device_list_lock) {
+        // this isn't really part of the "device list" but it's a convenient lock to use here.
+        SDL_LockRWLockForWriting(current_audio.device_list_lock);
+        if (stream->prev) {
+            stream->prev->next = stream->next;
+        }
+        if (stream->next) {
+            stream->next->prev = stream->prev;
+        }
+        if (stream == current_audio.existing_streams) {
+            current_audio.existing_streams = stream->next;
+        }
+        SDL_UnlockRWLock(current_audio.device_list_lock);
     }
-    if (stream->next) {
-        stream->next->prev = stream->prev;
-    }
-    if (stream == current_audio.existing_streams) {
-        current_audio.existing_streams = stream->next;
-    }
-    SDL_UnlockRWLock(current_audio.device_list_lock);
 }
-
 
 // device should be locked when calling this.
 static SDL_bool AudioDeviceCanUseSimpleCopy(SDL_AudioDevice *device)
