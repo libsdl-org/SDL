@@ -463,32 +463,34 @@ int keyboard_setTextInputRect(void *arg)
  */
 int keyboard_setTextInputRectNegative(void *arg)
 {
+    int platform_sets_error_message = SDL_strcmp(SDL_GetCurrentVideoDriver(), "windows") == 0 ||
+                                      SDL_strcmp(SDL_GetCurrentVideoDriver(), "android") == 0 ||
+                                      SDL_strcmp(SDL_GetCurrentVideoDriver(), "cococa") == 0;
     /* Some platforms set also an error message; prepare for checking it */
-#if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_ANDROID) || defined(SDL_VIDEO_DRIVER_COCOA)
     const char *expectedError = "Parameter 'rect' is invalid";
     const char *error;
 
     SDL_ClearError();
     SDLTest_AssertPass("Call to SDL_ClearError()");
-#endif
 
     /* NULL refRect */
     SDL_SetTextInputRect(NULL);
     SDLTest_AssertPass("Call to SDL_SetTextInputRect(NULL)");
 
     /* Some platforms set also an error message; so check it */
-#if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_ANDROID) || defined(SDL_VIDEO_DRIVER_COCOA)
-    error = SDL_GetError();
-    SDLTest_AssertPass("Call to SDL_GetError()");
-    SDLTest_AssertCheck(error != NULL, "Validate that error message was not NULL");
-    if (error != NULL) {
-        SDLTest_AssertCheck(SDL_strcmp(error, expectedError) == 0,
-                            "Validate error message, expected: '%s', got: '%s'", expectedError, error);
+
+    if (platform_sets_error_message) {
+        error = SDL_GetError();
+        SDLTest_AssertPass("Call to SDL_GetError()");
+        SDLTest_AssertCheck(error != NULL, "Validate that error message was not NULL");
+        if (error != NULL) {
+            SDLTest_AssertCheck(SDL_strcmp(error, expectedError) == 0,
+                                "Validate error message, expected: '%s', got: '%s'", expectedError, error);
+        }
     }
 
     SDL_ClearError();
     SDLTest_AssertPass("Call to SDL_ClearError()");
-#endif
 
     return TEST_COMPLETED;
 }
