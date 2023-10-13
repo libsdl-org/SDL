@@ -833,7 +833,7 @@ static void HandleAudioFrame(AVFrame *frame)
 }
 
 static void print_usage(SDLTest_CommonState *state, const char *argv0) {
-    static const char *options[] = { "[--sprites N]", "[--software]", "video_file", NULL };
+    static const char *options[] = { "[--sprites N]", "[--audio-codec codec]", "[--video-codec codec]", "[--software]", "video_file", NULL };
     SDLTest_CommonLogUsage(state, argv0, options);
 }
 
