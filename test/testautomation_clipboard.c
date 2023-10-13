@@ -176,13 +176,18 @@ static int clipboard_testClipboardDataFunctions(void *arg)
         "Verify has test text data, expected SDL_TRUE, got SDL_FALSE");
     text = SDL_GetClipboardData(test_mime_types[TEST_MIME_TYPE_TEXT], &size);
     SDLTest_AssertCheck(
-        text && text[size] == '\0',
-        "Verify test text data, expected null termination, got %c",
-        text[size]);
-    SDLTest_AssertCheck(
-        text && SDL_strcmp(text, expected_text) == 0,
-        "Verify test text data, expected \"%s\", got \"%s\"",
-        expected_text, text);
+        text != NULL,
+        "Verify has test text data, expected valid result, got NULL");
+    if (text) {
+        SDLTest_AssertCheck(
+            text[size] == '\0',
+            "Verify test text data, expected null termination, got %c",
+            text[size]);
+        SDLTest_AssertCheck(
+            SDL_strcmp(text, expected_text) == 0,
+            "Verify test text data, expected \"%s\", got \"%s\"",
+            expected_text, text);
+    }
     SDLTest_AssertCheck(
         size == SDL_strlen(expected_text),
         "Verify test text size, expected %d, got %d",
@@ -196,13 +201,18 @@ static int clipboard_testClipboardDataFunctions(void *arg)
         "Verify has test text data, expected SDL_TRUE, got SDL_FALSE");
     text = SDL_GetClipboardData(test_mime_types[TEST_MIME_TYPE_CUSTOM_TEXT], &size);
     SDLTest_AssertCheck(
-        text && text[size] == '\0',
-        "Verify test text data, expected null termination, got %c",
-        text[size]);
-    SDLTest_AssertCheck(
-        text && SDL_strcmp(text, expected_text) == 0,
-        "Verify test text data, expected \"%s\", got \"%s\"",
-        expected_text, text);
+        text != NULL,
+        "Verify has test text data, expected valid result, got NULL");
+    if (text) {
+        SDLTest_AssertCheck(
+            text[size] == '\0',
+            "Verify test text data, expected null termination, got %c",
+            text[size]);
+        SDLTest_AssertCheck(
+            SDL_strcmp(text, expected_text) == 0,
+            "Verify test text data, expected \"%s\", got \"%s\"",
+            expected_text, text);
+    }
     SDLTest_AssertCheck(
         size == SDL_strlen(expected_text),
         "Verify test text size, expected %d, got %d",
@@ -215,7 +225,7 @@ static int clipboard_testClipboardDataFunctions(void *arg)
         "Verify has test text data, expected SDL_TRUE, got SDL_FALSE");
     data = SDL_GetClipboardData(test_mime_types[TEST_MIME_TYPE_DATA], &size);
     SDLTest_AssertCheck(
-        SDL_memcmp(data, test_data1.data, test_data1.data_size) == 0,
+        data && SDL_memcmp(data, test_data1.data, test_data1.data_size) == 0,
         "Verify test data");
     SDLTest_AssertCheck(
         size == test_data1.data_size,
@@ -278,13 +288,18 @@ static int clipboard_testClipboardDataFunctions(void *arg)
         "Verify has test text data, expected SDL_TRUE, got SDL_FALSE");
     text = SDL_GetClipboardData(test_mime_types[TEST_MIME_TYPE_TEXT], &size);
     SDLTest_AssertCheck(
-        text && text[size] == '\0',
-        "Verify test text data, expected null termination, got %c",
-        text[size]);
-    SDLTest_AssertCheck(
-        text && SDL_strcmp(text, expected_text) == 0,
-        "Verify test text data, expected \"%s\", got \"%s\"",
-        expected_text, text);
+        text != NULL,
+        "Verify has test text data, expected valid result, got NULL");
+    if (text) {
+        SDLTest_AssertCheck(
+            text[size] == '\0',
+            "Verify test text data, expected null termination, got %c",
+            text[size]);
+        SDLTest_AssertCheck(
+            SDL_strcmp(text, expected_text) == 0,
+            "Verify test text data, expected \"%s\", got \"%s\"",
+            expected_text, text);
+    }
     SDLTest_AssertCheck(
         size == SDL_strlen(expected_text),
         "Verify test text size, expected %d, got %d",
@@ -298,13 +313,18 @@ static int clipboard_testClipboardDataFunctions(void *arg)
         "Verify has test text data, expected SDL_TRUE, got SDL_FALSE");
     text = SDL_GetClipboardData(test_mime_types[TEST_MIME_TYPE_CUSTOM_TEXT], &size);
     SDLTest_AssertCheck(
-        text && text[size] == '\0',
-        "Verify test text data, expected null termination, got %c",
-        text[size]);
-    SDLTest_AssertCheck(
-        text && SDL_strcmp(text, expected_text) == 0,
-        "Verify test text data, expected \"%s\", got \"%s\"",
-        expected_text, text);
+        text != NULL,
+        "Verify has test text data, expected valid result, got NULL");
+    if (text) {
+        SDLTest_AssertCheck(
+            text[size] == '\0',
+            "Verify test text data, expected null termination, got %c",
+            text[size]);
+        SDLTest_AssertCheck(
+            SDL_strcmp(text, expected_text) == 0,
+            "Verify test text data, expected \"%s\", got \"%s\"",
+            expected_text, text);
+    }
     SDLTest_AssertCheck(
         size == SDL_strlen(expected_text),
         "Verify test text size, expected %d, got %d",
@@ -313,7 +333,7 @@ static int clipboard_testClipboardDataFunctions(void *arg)
 
     data = SDL_GetClipboardData(test_mime_types[TEST_MIME_TYPE_DATA], &size);
     SDLTest_AssertCheck(
-        SDL_memcmp(data, test_data2.data, test_data2.data_size) == 0,
+        data && SDL_memcmp(data, test_data2.data, test_data2.data_size) == 0,
         "Verify test data");
     SDLTest_AssertCheck(
         size == test_data2.data_size,
