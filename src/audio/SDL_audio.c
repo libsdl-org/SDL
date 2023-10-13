@@ -453,15 +453,16 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
                 DisconnectLogicalAudioDevice(logdev);
             }
         }
-        SDL_UnlockMutex(device->lock);  // make sure nothing else is messing with the device before continuing.
+        SDL_UnlockMutex(device->lock);
         return;  // done for now. Come back when a new default device is chosen!
     }
 
     SDL_bool was_live = SDL_FALSE;
 
+    SDL_LockMutex(device->lock);  // make sure nothing else is messing with the device before continuing.
+
     // take it out of the device list.
     SDL_LockRWLockForWriting(current_audio.device_list_lock);
-    SDL_LockMutex(device->lock);  // make sure nothing else is messing with the device before continuing.
     if (device == current_audio.output_devices) {
         SDL_assert(device->prev == NULL);
         current_audio.output_devices = device->next;
@@ -487,10 +488,12 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
         SDL_AtomicAdd(device->iscapture ? &current_audio.capture_device_count : &current_audio.output_device_count, -1);
     }
 
+    // Mark device as condemned now that it's not in the device list.
+    SDL_AtomicSet(&device->condemned, 1);
+
     SDL_UnlockRWLock(current_audio.device_list_lock);
 
     // now device is not in the list, and we own it, so no one should be able to find it again, except the audio thread, which holds a pointer!
-    SDL_AtomicSet(&device->condemned, 1);
     SDL_AtomicSet(&device->shutdown, 1);  // tell audio thread to terminate.
 
     // disconnect each attached logical device, so apps won't find their streams still bound if they get the REMOVED event before the device thread cleans up.
@@ -1115,8 +1118,29 @@ static SDL_LogicalAudioDevice *ObtainLogicalAudioDevice(SDL_AudioDeviceID devid)
         const SDL_bool iscapture = (devid & (1<<0)) ? SDL_FALSE : SDL_TRUE;
 
         SDL_LockRWLockForReading(current_audio.device_list_lock);
+        SDL_bool isstack = SDL_FALSE;
+        const int num_devices = SDL_AtomicGet(iscapture ? &current_audio.capture_device_count : &current_audio.output_device_count);
+        SDL_AudioDevice **devices = NULL;
 
-        for (SDL_AudioDevice *device = iscapture ? current_audio.capture_devices : current_audio.output_devices; device != NULL; device = device->next) {
+        if (num_devices) {
+            devices = SDL_small_alloc(SDL_AudioDevice *, num_devices, &isstack);
+            if (!devices) {
+                SDL_UnlockRWLock(current_audio.device_list_lock);
+                SDL_OutOfMemory();
+                return NULL;
+            } else {
+                int i = 0;
+                for (SDL_AudioDevice *device = iscapture ? current_audio.capture_devices : current_audio.output_devices; device != NULL; device = device->next) {
+                    SDL_assert(i < num_devices);
+                    devices[i++] = device;
+                }
+                SDL_assert(i == num_devices);
+            }
+        }
+        SDL_UnlockRWLock(current_audio.device_list_lock);
+
+        for (int i = 0; i < num_devices; i++) {
+            SDL_AudioDevice *device = devices[i];
             SDL_LockMutex(device->lock);  // caller must unlock if we choose a logical device from this guy.
             SDL_assert(!SDL_AtomicGet(&device->condemned));  // shouldn't be in the list if pending deletion.
             for (logdev = device->logical_devices; logdev != NULL; logdev = logdev->next) {
@@ -1130,7 +1154,7 @@ static SDL_LogicalAudioDevice *ObtainLogicalAudioDevice(SDL_AudioDeviceID devid)
             SDL_UnlockMutex(device->lock);  // give up this lock and try the next physical device.
         }
 
-        SDL_UnlockRWLock(current_audio.device_list_lock);
+        SDL_small_free(devices, isstack);
     }
 
     if (!logdev) {
@@ -1167,7 +1191,6 @@ static SDL_AudioDevice *ObtainPhysicalAudioDevice(SDL_AudioDeviceID devid)
 
     for (dev = iscapture ? current_audio.capture_devices : current_audio.output_devices; dev != NULL; dev = dev->next) {
         if (dev->instance_id == devid) {  // found it?
-            SDL_LockMutex(dev->lock);  // caller must unlock.
             SDL_assert(!SDL_AtomicGet(&dev->condemned));  // shouldn't be in the list if pending deletion.
             break;
         }
@@ -1177,6 +1200,8 @@ static SDL_AudioDevice *ObtainPhysicalAudioDevice(SDL_AudioDeviceID devid)
 
     if (!dev) {
         SDL_SetError("Invalid audio device instance ID");
+    } else {
+        SDL_LockMutex(dev->lock);  // caller must unlock.
     }
 
     return dev;
