@@ -416,11 +416,13 @@ static void DrawThings(SDL_Renderer *renderer)
 static void Draw(void)
 {
     SDL_Renderer *renderer = state->renderers[0];
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(renderer, 64, 0, 64, 255);
-    SDL_RenderClear(renderer);
-    DrawThings(renderer);
-    SDL_RenderPresent(renderer);
+    if (renderer) {  /* might be NULL if we're shutting down. */
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+        SDL_SetRenderDrawColor(renderer, 64, 0, 64, 255);
+        SDL_RenderClear(renderer);
+        DrawThings(renderer);
+        SDL_RenderPresent(renderer);
+    }
 }
 
 static void RepositionRowOfThings(const ThingType what, const float y)
