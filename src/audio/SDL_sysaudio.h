@@ -24,6 +24,8 @@
 #ifndef SDL_sysaudio_h_
 #define SDL_sysaudio_h_
 
+#include "../SDL_hashtable.h"
+
 #define DEBUG_AUDIOSTREAM 0
 #define DEBUG_AUDIO_CONVERT 0
 
@@ -142,7 +144,7 @@ typedef struct SDL_AudioDriverImpl
     SDL_bool ProvidesOwnCallbackThread;  // !!! FIXME: rename this, it's not a callback thread anymore.
     SDL_bool HasCaptureSupport;
     SDL_bool OnlyHasDefaultOutputDevice;
-    SDL_bool OnlyHasDefaultCaptureDevice;
+    SDL_bool OnlyHasDefaultCaptureDevice;   // !!! FIXME: is there ever a time where you'd have a default output and not a default capture (or vice versa)?
 } SDL_AudioDriverImpl;
 
 typedef struct SDL_AudioDriver
@@ -150,9 +152,8 @@ typedef struct SDL_AudioDriver
     const char *name;  // The name of this audio driver
     const char *desc;  // The description of this audio driver
     SDL_AudioDriverImpl impl; // the backend's interface
-    SDL_RWLock *device_list_lock;  // A mutex for device detection
-    SDL_AudioDevice *output_devices;  // the list of currently-available audio output devices.
-    SDL_AudioDevice *capture_devices;  // the list of currently-available audio capture devices.
+    SDL_RWLock *device_hash_lock;  // A rwlock that protects `device_hash`
+    SDL_HashTable *device_hash;  // the collection of currently-available audio devices (capture, playback, logical and physical!)
     SDL_AudioStream *existing_streams;  // a list of all existing SDL_AudioStreams.
     SDL_AudioDeviceID default_output_device_id;
     SDL_AudioDeviceID default_capture_device_id;
@@ -302,10 +303,6 @@ struct SDL_AudioDevice
 
     // All logical devices associated with this physical device.
     SDL_LogicalAudioDevice *logical_devices;
-
-    // double-linked list of all physical devices.
-    struct SDL_AudioDevice *prev;
-    struct SDL_AudioDevice *next;
 };
 
 typedef struct AudioBootStrap
