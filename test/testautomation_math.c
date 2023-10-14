@@ -49,6 +49,12 @@ typedef struct
     double expected;
 } dd_to_d;
 
+#define DD_TO_D_CASE(IDX, X, Y, E) do { \
+        cases[IDX].x_input = (X);       \
+        cases[IDX].y_input = (Y);       \
+        cases[IDX].expected = (E);      \
+    } while (0)
+
 /*
     NB: You cannot create an array of these structures containing INFINITY or NAN.
     On platforms such as OS/2, they are defined as 'extern const double' making them
@@ -2605,29 +2611,12 @@ atan2_xZeroCases(void *args)
 static int
 atan2_bothInfCases(void *args)
 {
-    double result;
-
-    result = SDL_atan2(INFINITY, INFINITY);
-    SDLTest_AssertCheck(SDL_fabs(M_PI / 4.0 - result) <= EPSILON,
-                        "Atan2(%f,%f), expected %f, got %f",
-                        INFINITY, INFINITY, M_PI / 4.0, result);
-
-    result = SDL_atan2(INFINITY, -INFINITY);
-    SDLTest_AssertCheck(SDL_fabs(3.0 * M_PI / 4.0 - result) <= EPSILON,
-                        "Atan2(%f,%f), expected %f, got %f",
-                        INFINITY, -INFINITY, 3.0 * M_PI / 4.0, result);
-
-    result = SDL_atan2(-INFINITY, INFINITY);
-    SDLTest_AssertCheck(SDL_fabs(-M_PI / 4.0 - result) <= EPSILON,
-                        "Atan2(%f,%f), expected %f, got %f",
-                        -INFINITY, INFINITY, -M_PI / 4.0, result);
-
-    result = SDL_atan2(-INFINITY, -INFINITY);
-    SDLTest_AssertCheck(SDL_fabs(-3.0 * M_PI / 4.0 - result) <= EPSILON,
-                        "Atan2(%f,%f), expected %f, got %f",
-                        -INFINITY, -INFINITY, -3.0 * M_PI / 4.0, result);
-
-    return TEST_COMPLETED;
+    dd_to_d cases[4];
+    DD_TO_D_CASE(0,  INFINITY,  INFINITY,  1.0 * M_PI / 4.0);
+    DD_TO_D_CASE(1,  INFINITY, -INFINITY,  3.0 * M_PI / 4.0);
+    DD_TO_D_CASE(2, -INFINITY,  INFINITY, -1.0 * M_PI / 4.0);
+    DD_TO_D_CASE(3, -INFINITY, -INFINITY, -3.0 * M_PI / 4.0);
+    return helper_ddtod("SDL_atan2(bothInfCases)", SDL_atan2, cases, SDL_arraysize(cases));
 }
 
 /**
@@ -2637,29 +2626,12 @@ atan2_bothInfCases(void *args)
 static int
 atan2_yInfCases(void *args)
 {
-    double result;
-
-    result = SDL_atan2(INFINITY, 1.0);
-    SDLTest_AssertCheck(SDL_fabs(M_PI / 2.0 - result) <= EPSILON,
-                        "Atan2(%f,%f), expected %f, got %f",
-                        INFINITY, 1.0, M_PI / 2.0, result);
-
-    result = SDL_atan2(INFINITY, -1.0);
-    SDLTest_AssertCheck(SDL_fabs(M_PI / 2.0 - result) <= EPSILON,
-                        "Atan2(%f,%f), expected %f, got %f",
-                        INFINITY, -1.0, M_PI / 2.0, result);
-
-    result = SDL_atan2(-INFINITY, 1.0);
-    SDLTest_AssertCheck(SDL_fabs(-M_PI / 2.0 - result) <= EPSILON,
-                        "Atan2(%f,%f), expected %f, got %f",
-                        -INFINITY, 1.0, -M_PI / 2.0, result);
-
-    result = SDL_atan2(-INFINITY, -1.0);
-    SDLTest_AssertCheck(SDL_fabs(-M_PI / 2.0 - result) <= EPSILON,
-                        "Atan2(%f,%f), expected %f, got %f",
-                        -INFINITY, -1.0, -M_PI / 2.0, result);
-
-    return TEST_COMPLETED;
+    dd_to_d cases[4];
+    DD_TO_D_CASE(0,  INFINITY,  1.0,  1.0 * M_PI / 2.0);
+    DD_TO_D_CASE(1,  INFINITY, -1.0,  1.0 * M_PI / 2.0);
+    DD_TO_D_CASE(2, -INFINITY,  1.0, -1.0 * M_PI / 2.0);
+    DD_TO_D_CASE(3, -INFINITY, -1.0, -1.0 * M_PI / 2.0);
+    return helper_ddtod("SDL_atan2(atan2_yInfCases)", SDL_atan2, cases, SDL_arraysize(cases));
 }
 
 /**
@@ -2671,29 +2643,12 @@ atan2_yInfCases(void *args)
 static int
 atan2_xInfCases(void *args)
 {
-    double result;
-
-    result = SDL_atan2(1.0, INFINITY);
-    SDLTest_AssertCheck(0.0 == result,
-                        "Atan2(%f,%f), expected %f, got %f",
-                        1.0, INFINITY, 0.0, result);
-
-    result = SDL_atan2(-1.0, INFINITY);
-    SDLTest_AssertCheck(-0.0 == result,
-                        "Atan2(%f,%f), expected %f, got %f",
-                        -1.0, INFINITY, -0.0, result);
-
-    result = SDL_atan2(1.0, -INFINITY);
-    SDLTest_AssertCheck(SDL_fabs(M_PI - result) <= EPSILON,
-                        "Atan2(%f,%f), expected %f, got %f",
-                        1.0, -INFINITY, M_PI, result);
-
-    result = SDL_atan2(-1.0, -INFINITY);
-    SDLTest_AssertCheck(SDL_fabs(-M_PI - result) <= EPSILON,
-                        "Atan2(%f,%f), expected %f, got %f",
-                        -1.0, -INFINITY, -M_PI, result);
-
-    return TEST_COMPLETED;
+    dd_to_d cases[4];
+    DD_TO_D_CASE(0,  1.0,  INFINITY,  0.0);
+    DD_TO_D_CASE(1, -1.0,  INFINITY, -0.0);
+    DD_TO_D_CASE(2,  1.0, -INFINITY,  M_PI);
+    DD_TO_D_CASE(3, -1.0, -INFINITY, -M_PI);
+    return helper_ddtod("atan2_xInfCases(atan2_yInfCases)", SDL_atan2, cases, SDL_arraysize(cases));
 }
 
 /* Miscelanious cases */
