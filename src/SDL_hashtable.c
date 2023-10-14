@@ -161,9 +161,9 @@ SDL_bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key)
     return SDL_FALSE;
 }
 
-SDL_bool SDL_IterateHashTable(const SDL_HashTable *table, const void *key, const void **_value, void **iter)
+SDL_bool SDL_IterateHashTableKey(const SDL_HashTable *table, const void *key, const void **_value, void **iter)
 {
-    SDL_HashItem *item = iter ? ((SDL_HashItem *) *iter)->next : table->table[calc_hash(table, key)];
+    SDL_HashItem *item = *iter ? ((SDL_HashItem *) *iter)->next : table->table[calc_hash(table, key)];
 
     while (item != NULL) {
         if (table->keymatch(key, item->key, table->data)) {
@@ -180,7 +180,7 @@ SDL_bool SDL_IterateHashTable(const SDL_HashTable *table, const void *key, const
     return SDL_FALSE;
 }
 
-SDL_bool SDL_IterateHashTableKeys(const SDL_HashTable *table, const void **_key, void **iter)
+SDL_bool SDL_IterateHashTable(const SDL_HashTable *table, const void **_key, const void **_value, void **iter)
 {
     SDL_HashItem *item = (SDL_HashItem *) *iter;
     Uint32 idx = 0;
@@ -189,7 +189,7 @@ SDL_bool SDL_IterateHashTableKeys(const SDL_HashTable *table, const void **_key,
         const SDL_HashItem *orig = item;
         item = item->next;
         if (item == NULL) {
-            idx = calc_hash(table, orig->key) + 1;
+            idx = calc_hash(table, orig->key) + 1;  // !!! FIXME: we probably shouldn't rehash each time.
         }
     }
 
@@ -204,7 +204,9 @@ SDL_bool SDL_IterateHashTableKeys(const SDL_HashTable *table, const void **_key,
     }
 
     *_key = item->key;
+    *_value = item->value;
     *iter = item;
+
     return SDL_TRUE;
 }
 

@@ -42,8 +42,11 @@ SDL_bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key);
 SDL_bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const void **_value);
 SDL_bool SDL_HashTableEmpty(SDL_HashTable *table);
 
-SDL_bool SDL_IterateHashTable(const SDL_HashTable *table, const void *key, const void **_value, void **iter);
-SDL_bool SDL_IterateHashTableKeys(const SDL_HashTable *table, const void **_key, void **iter);
+// iterate all values for a specific key. This only makes sense if the hash is stackable. If not-stackable, just use SDL_FindInHashTable().
+SDL_bool SDL_IterateHashTableKey(const SDL_HashTable *table, const void *key, const void **_value, void **iter);
+
+// iterate all key/value pairs in a hash (stackable hashes can have duplicate keys with multiple values).
+SDL_bool SDL_IterateHashTable(const SDL_HashTable *table, const void **_key, const void **_value, void **iter);
 
 Uint32 SDL_HashString(const void *key, void *unused);
 SDL_bool SDL_KeyMatchString(const void *a, const void *b, void *unused);
