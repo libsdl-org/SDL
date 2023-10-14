@@ -108,7 +108,6 @@ SDL_bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const 
 {
     const Uint32 hash = calc_hash(table, key);
     void *data = table->data;
-    SDL_HashItem *prev = NULL;
     SDL_HashItem *i;
 
     for (i = table->table[hash]; i != NULL; i = i->next) {
@@ -118,8 +117,6 @@ SDL_bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const 
             }
             return SDL_TRUE;
         }
-
-        prev = i;
     }
 
     return SDL_FALSE;
