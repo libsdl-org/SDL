@@ -790,15 +790,20 @@ void SDL_QuitAudio(void)
 
 void SDL_AudioThreadFinalize(SDL_AudioDevice *device)
 {
-    if (SDL_AtomicGet(&device->condemned)) {
+    const SDL_bool condemned = SDL_AtomicGet(&device->condemned) ? SDL_TRUE : SDL_FALSE;
+    if (condemned) {
         if (device->thread) {
             SDL_DetachThread(device->thread);  // no one is waiting for us, just detach ourselves.
             device->thread = NULL;
-            SDL_AtomicSet(&device->thread_alive, 0);
         }
+    }
+
+    // tell the world we're done touching this object (except if condemned, when we're the only thing that _can_ touch it).
+    SDL_AtomicSet(&device->thread_alive, 0);
+
+    if (condemned) {  // nothing is coming to destroy this object, we have to do it as we exit.
         DestroyPhysicalAudioDevice(device);
     }
-    SDL_AtomicSet(&device->thread_alive, 0);
 }
 
 static void MixFloat32Audio(float *dst, const float *src, const int buffer_size)
