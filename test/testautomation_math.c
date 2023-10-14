@@ -138,6 +138,8 @@ helper_ddtod(const char *func_name, dd_to_d_func func,
     Uint32 i;
     for (i = 0; i < cases_size; i++) {
         const double result = func(cases[i].x_input, cases[i].y_input);
+        /* By using the result as input, the compiler is less likely to use higher precision floating point number */
+        (void)SDL_sin(result);
         SDLTest_AssertCheck(result == cases[i].expected,
                             "%s(%f,%f), expected %f, got %f",
                             func_name,
