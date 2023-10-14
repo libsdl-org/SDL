@@ -2017,6 +2017,11 @@ int video_setWindowCenteredOnDisplay(void *arg)
     SDL_Rect display0, display1;
 
     displayNum = SDL_GetNumVideoDisplays();
+    SDLTest_AssertPass("SDL_GetNumVideoDisplays()");
+    SDLTest_AssertCheck(displayNum >= 1, "Validate result (current: %d, expected >= 1)", displayNum);
+    if (displayNum <= 0) {
+        return TEST_ABORTED;
+    }
 
     /* Get display bounds */
     result = SDL_GetDisplayBounds(0 % displayNum, &display0);
