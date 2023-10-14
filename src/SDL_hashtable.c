@@ -116,16 +116,6 @@ SDL_bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const 
             if (_value != NULL) {
                 *_value = i->value;
             }
-
-            /* Matched! Move to the front of list for faster lookup next time.
-               (stackable tables have to remain in the same order, though!) */
-            if ((!table->stackable) && (prev != NULL)) {
-                SDL_assert(prev->next == i);
-                prev->next = i->next;
-                i->next = table->table[hash];
-                table->table[hash] = i;
-            }
-
             return SDL_TRUE;
         }
 
