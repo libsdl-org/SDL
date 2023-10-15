@@ -732,7 +732,9 @@ static void LoadStockWavThings(void)
 static void DestroyTexture(Texture *tex)
 {
     if (tex) {
-        SDL_DestroyTexture(tex->texture);
+        if (state->renderers[0] != NULL) {  /* if the renderer went away, this pointer is already bogus. */
+            SDL_DestroyTexture(tex->texture);
+        }
         SDL_free(tex);
     }
 }
