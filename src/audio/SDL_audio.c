@@ -256,9 +256,12 @@ static SDL_AudioDeviceID AssignAudioDeviceInstanceId(SDL_bool iscapture, SDL_boo
 // this assumes you hold the _physical_ device lock for this logical device! This will not unlock the lock or close the physical device!
 static void DestroyLogicalAudioDevice(SDL_LogicalAudioDevice *logdev)
 {
-    SDL_LockRWLockForWriting(current_audio.device_hash_lock);
-    SDL_RemoveFromHashTable(current_audio.device_hash, (const void *) (uintptr_t) logdev->instance_id);
-    SDL_UnlockRWLock(current_audio.device_hash_lock);
+    // Remove ourselves from the device_hash hashtable.
+    if (current_audio.device_hash) {  // will be NULL while shutting down.
+        SDL_LockRWLockForWriting(current_audio.device_hash_lock);
+        SDL_RemoveFromHashTable(current_audio.device_hash, (const void *) (uintptr_t) logdev->instance_id);
+        SDL_UnlockRWLock(current_audio.device_hash_lock);
+    }
 
     // remove ourselves from the physical device's list of logical devices.
     if (logdev->next) {
@@ -773,9 +776,14 @@ void SDL_QuitAudio(void)
     const void *value;
     void *iter = NULL;
     while (SDL_IterateHashTable(device_hash, &key, &value, &iter)) {
-        SDL_AudioDevice *device = (SDL_AudioDevice *) value;
-        SDL_AtomicSet(&device->shutdown, 1);
-        DestroyPhysicalAudioDevice(device);
+        // bit #1 of devid is set for physical devices and unset for logical.
+        const SDL_AudioDeviceID devid = (SDL_AudioDeviceID) (uintptr_t) key;
+        const SDL_bool isphysical = (devid & (1<<1)) ? SDL_TRUE : SDL_FALSE;
+        if (isphysical) {
+            SDL_AudioDevice *device = (SDL_AudioDevice *) value;
+            SDL_AtomicSet(&device->shutdown, 1);
+            DestroyPhysicalAudioDevice(device);
+        }
     }
 
     // Free the driver data
@@ -1513,12 +1521,14 @@ SDL_AudioDeviceID SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSp
         }
         SDL_UnlockMutex(device->lock);
 
-        SDL_LockRWLockForWriting(current_audio.device_hash_lock);
-        const SDL_bool inserted = SDL_InsertIntoHashTable(current_audio.device_hash, (const void *) (uintptr_t) retval, logdev);
-        SDL_UnlockRWLock(current_audio.device_hash_lock);
-        if (!inserted) {
-            SDL_CloseAudioDevice(retval);
-            retval = 0;
+        if (retval) {
+            SDL_LockRWLockForWriting(current_audio.device_hash_lock);
+            const SDL_bool inserted = SDL_InsertIntoHashTable(current_audio.device_hash, (const void *) (uintptr_t) retval, logdev);
+            SDL_UnlockRWLock(current_audio.device_hash_lock);
+            if (!inserted) {
+                SDL_CloseAudioDevice(retval);
+                retval = 0;
+            }
         }
     }
 
