@@ -46,7 +46,7 @@ SDL_HashTable *SDL_CreateHashTable(void *data, const Uint32 num_buckets, const S
 {
     SDL_HashTable *table;
 
-    /* num_buckets must be a power of two so we get a solid block of bits to mask hash values against. */
+    // num_buckets must be a power of two so we get a solid block of bits to mask hash values against.
     if ((num_buckets == 0) || ((num_buckets & (num_buckets - 1)) != 0)) {
         SDL_SetError("num_buckets must be a power of two");
         return NULL;
@@ -89,7 +89,7 @@ SDL_bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const vo
         return SDL_FALSE;
     }
 
-    /* !!! FIXME: grow and rehash table if it gets too saturated. */
+    // !!! FIXME: grow and rehash table if it gets too saturated.
     item = (SDL_HashItem *) SDL_malloc(sizeof (SDL_HashItem));
     if (item == NULL) {
         SDL_OutOfMemory();
@@ -161,7 +161,7 @@ SDL_bool SDL_IterateHashTableKey(const SDL_HashTable *table, const void *key, co
         item = item->next;
     }
 
-    /* no more matches. */
+    // no more matches.
     *_value = NULL;
     *iter = NULL;
     return SDL_FALSE;
@@ -181,10 +181,10 @@ SDL_bool SDL_IterateHashTable(const SDL_HashTable *table, const void **_key, con
     }
 
     while (!item && (idx < table->table_len)) {
-        item = table->table[idx++];  /* skip empty buckets... */
+        item = table->table[idx++];  // skip empty buckets...
     }
 
-    if (item == NULL) { /* no more matches? */
+    if (item == NULL) {  // no more matches?
         *_key = NULL;
         *iter = NULL;
         return SDL_FALSE;
@@ -233,7 +233,7 @@ void SDL_DestroyHashTable(SDL_HashTable *table)
     }
 }
 
-/* this is djb's xor hashing function. */
+// this is djb's xor hashing function.
 static SDL_INLINE Uint32 hash_string_djbxor(const char *str, size_t len)
 {
     Uint32 hash = 5381;
@@ -252,14 +252,14 @@ Uint32 SDL_HashString(const void *key, void *data)
 SDL_bool SDL_KeyMatchString(const void *a, const void *b, void *data)
 {
     if (a == b) {
-        return SDL_TRUE;  /* same pointer, must match. */
+        return SDL_TRUE;  // same pointer, must match.
     } else if (!a || !b) {
-        return SDL_FALSE;  /* one pointer is NULL (and first test shows they aren't the same pointer), must not match. */
+        return SDL_FALSE;  // one pointer is NULL (and first test shows they aren't the same pointer), must not match.
     }
-    return (SDL_strcmp((const char *)a, (const char *)b) == 0) ? SDL_TRUE : SDL_FALSE;  /* Check against actual string contents. */
+    return (SDL_strcmp((const char *)a, (const char *)b) == 0) ? SDL_TRUE : SDL_FALSE;  // Check against actual string contents.
 }
 
-/* We assume we can fit the ID in the key directly */
+// We assume we can fit the ID in the key directly
 SDL_COMPILE_TIME_ASSERT(SDL_HashID_KeySize, sizeof(Uint32) <= sizeof(const void *));
 
 Uint32 SDL_HashID(const void *key, void *unused)
