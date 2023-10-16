@@ -316,7 +316,9 @@ static void DestroyThing(Thing *thing)
         case THING_LOGDEV:
         case THING_LOGDEV_CAPTURE:
             SDL_CloseAudioDevice(thing->data.logdev.devid);
-            SDL_DestroyTexture(thing->data.logdev.visualizer);
+            if (state->renderers[0] != NULL) {
+                SDL_DestroyTexture(thing->data.logdev.visualizer);
+            }
             SDL_DestroyMutex(thing->data.logdev.postmix_lock);
             SDL_free(thing->data.logdev.postmix_buffer);
             break;
@@ -557,6 +559,7 @@ static void StreamThing_ontick(Thing *thing, Uint64 now)
         SDL_AudioSpec spec;
         if (!available || (SDL_GetAudioStreamFormat(thing->data.stream.stream, NULL, &spec) < 0)) {
             DestroyThingInPoof(thing);
+            return;
         } else {
             const int ticksleft = (int) ((((Uint64) (available / SDL_AUDIO_FRAMESIZE(spec))) * 1000) / spec.freq);
             const float pct = thing->data.stream.total_ticks ? (((float) (ticksleft)) / ((float) thing->data.stream.total_ticks)) : 0.0f;
