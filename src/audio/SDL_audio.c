@@ -422,7 +422,7 @@ static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, SDL_bool isc
     }
     SDL_UnlockRWLock(current_audio.device_hash_lock);
 
-    RefPhysicalAudioDevice(device);  // deref'd on device disconnect.
+    RefPhysicalAudioDevice(device);  // unref'd on device disconnect.
     return device;
 }
 
@@ -1495,7 +1495,7 @@ static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec 
         }
     }
 
-    RefPhysicalAudioDevice(device);  // deref'd when the audio thread terminates (ProvidesOwnCallbackThread implementations should call SDL_AudioThreadFinalize appropriately).
+    RefPhysicalAudioDevice(device);  // unref'd when the audio thread terminates (ProvidesOwnCallbackThread implementations should call SDL_AudioThreadFinalize appropriately).
 
     return 0;
 }
@@ -1546,7 +1546,7 @@ SDL_AudioDeviceID SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSp
         } else if (!device->currently_opened && OpenPhysicalAudioDevice(device, spec) == -1) {  // first thing using this physical device? Open at the OS level...
             SDL_free(logdev);
         } else {
-            RefPhysicalAudioDevice(device);  // deref'd on successful SDL_CloseAudioDevice
+            RefPhysicalAudioDevice(device);  // unref'd on successful SDL_CloseAudioDevice
             SDL_AtomicSet(&logdev->paused, 0);
             retval = logdev->instance_id = AssignAudioDeviceInstanceId(device->iscapture, /*islogical=*/SDL_TRUE);
             logdev->physical_device = device;
