@@ -1708,7 +1708,10 @@ int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int
             logdev->bound_streams = stream;
 
             if (iscapture) {
-                stream->src_spec.format = logdev->postmix ? SDL_AUDIO_F32 : device->spec.format;
+                SDL_copyp(&stream->src_spec, &device->spec);
+                if (logdev->postmix) {
+                    stream->src_spec.format = SDL_AUDIO_F32;
+                }
             }
 
             SDL_UnlockMutex(stream->lock);
