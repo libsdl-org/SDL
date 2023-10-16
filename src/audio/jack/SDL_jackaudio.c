@@ -43,6 +43,8 @@ static const char *(*JACK_jack_port_name)(const jack_port_t *);
 static const char *(*JACK_jack_port_type)(const jack_port_t *);
 static int (*JACK_jack_connect)(jack_client_t *, const char *, const char *);
 static int (*JACK_jack_set_process_callback)(jack_client_t *, JackProcessCallback, void *);
+static int (*JACK_jack_set_sample_rate_callback)(jack_client_t *, JackSampleRateCallback, void *);
+static int (*JACK_jack_set_buffer_size_callback)(jack_client_t *, JackBufferSizeCallback, void *);
 
 static int load_jack_syms(void);
 
@@ -129,6 +131,8 @@ static int load_jack_syms(void)
     SDL_JACK_SYM(jack_port_type);
     SDL_JACK_SYM(jack_connect);
     SDL_JACK_SYM(jack_set_process_callback);
+    SDL_JACK_SYM(jack_set_sample_rate_callback);
+    SDL_JACK_SYM(jack_set_buffer_size_callback);
 
     return 0;
 }
@@ -138,9 +142,30 @@ static void jackShutdownCallback(void *arg) /* JACK went away; device is lost. *
     SDL_AudioDeviceDisconnected((SDL_AudioDevice *)arg);
 }
 
-// !!! FIXME: implement and register these!
-// typedef int(* JackSampleRateCallback)(jack_nframes_t nframes, void *arg)
-// typedef int(* JackBufferSizeCallback)(jack_nframes_t nframes, void *arg)
+static int jackSampleRateCallback(jack_nframes_t nframes, void *arg)
+{
+    //SDL_Log("JACK Sample Rate Callback! %d", (int) nframes);
+    SDL_AudioDevice *device = (SDL_AudioDevice *) arg;
+    SDL_AudioSpec newspec;
+    SDL_copyp(&newspec, &device->spec);
+    newspec.freq = (int) nframes;
+    if (SDL_AudioDeviceFormatChanged(device, &newspec, device->sample_frames) < 0) {
+        SDL_AudioDeviceDisconnected(device);
+    }
+    return 0;
+}
+
+static int jackBufferSizeCallback(jack_nframes_t nframes, void *arg)
+{
+    //SDL_Log("JACK Buffer Size Callback! %d", (int) nframes);
+    SDL_AudioDevice *device = (SDL_AudioDevice *) arg;
+    SDL_AudioSpec newspec;
+    SDL_copyp(&newspec, &device->spec);
+    if (SDL_AudioDeviceFormatChanged(device, &newspec, (int) nframes) < 0) {
+        SDL_AudioDeviceDisconnected(device);
+    }
+    return 0;
+}
 
 static int jackProcessPlaybackCallback(jack_nframes_t nframes, void *arg)
 {
@@ -341,7 +366,13 @@ static int JACK_OpenDevice(SDL_AudioDevice *device)
         }
     }
 
-    if (JACK_jack_set_process_callback(client, callback, device) != 0) {
+    if (JACK_jack_set_buffer_size_callback(client, jackBufferSizeCallback, device) != 0) {
+        SDL_free(audio_ports);
+        return SDL_SetError("JACK: Couldn't set buffer size callback");
+    } else if (JACK_jack_set_sample_rate_callback(client, jackSampleRateCallback, device) != 0) {
+        SDL_free(audio_ports);
+        return SDL_SetError("JACK: Couldn't set sample rate callback");
+    } else if (JACK_jack_set_process_callback(client, callback, device) != 0) {
         SDL_free(audio_ports);
         return SDL_SetError("JACK: Couldn't set process callback");
     }
