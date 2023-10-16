@@ -244,6 +244,17 @@ struct SDL_AudioDevice
     // A mutex for locking access to this struct
     SDL_Mutex *lock;
 
+    // Reference count of the device; logical devices, device threads, etc, add to this.
+    SDL_AtomicInt refcount;
+
+    // These are, initially, set from current_audio, but we might swap them out with Zombie versions on disconnect/failure.
+    int (*WaitDevice)(SDL_AudioDevice *device);
+    int (*PlayDevice)(SDL_AudioDevice *device, const Uint8 *buffer, int buflen);
+    Uint8 *(*GetDeviceBuf)(SDL_AudioDevice *device, int *buffer_size);
+    int (*WaitCaptureDevice)(SDL_AudioDevice *device);
+    int (*CaptureFromDevice)(SDL_AudioDevice *device, void *buffer, int buflen);
+    void (*FlushCapture)(SDL_AudioDevice *device);
+
     // human-readable name of the device. ("SoundBlaster Pro 16")
     char *name;
 
@@ -269,14 +280,8 @@ struct SDL_AudioDevice
     // non-zero if we are signaling the audio thread to end.
     SDL_AtomicInt shutdown;
 
-    // non-zero if we want the device to be destroyed (so audio thread knows to do it on termination).
-    SDL_AtomicInt condemned;
-
     // non-zero if this was a disconnected default device and we're waiting for its replacement.
     SDL_AtomicInt zombie;
-
-    // non-zero if this has a thread running (which might be `thread` or something provided by the backend!)
-    SDL_AtomicInt thread_alive;
 
     // SDL_TRUE if this is a capture device instead of an output device
     SDL_bool iscapture;
