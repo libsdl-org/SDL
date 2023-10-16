@@ -359,8 +359,8 @@ static void DrawOneThing(SDL_Renderer *renderer, Thing *thing)
     if (thing->scale != 1.0f) {
         const float centerx = thing->rect.x + (thing->rect.w / 2);
         const float centery = thing->rect.y + (thing->rect.h / 2);
-        const int w = 0 && thing->texture ? thing->texture->w : 128;
-        const int h = 0 && thing->texture ? thing->texture->h : 128;
+        const int w = thing->texture ? thing->texture->w : 128;
+        const int h = thing->texture ? thing->texture->h : 128;
         dst.w = w * thing->scale;
         dst.h = h * thing->scale;
         dst.x = centerx - (dst.w / 2);
