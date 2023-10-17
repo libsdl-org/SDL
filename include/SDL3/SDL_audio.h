@@ -1281,8 +1281,7 @@ extern DECLSPEC int SDLCALL SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid,
  * audio data allocated by the function is written to `audio_buf` and its
  * length in bytes to `audio_len`. The SDL_AudioSpec members `freq`,
  * `channels`, and `format` are set to the values of the audio data in the
- * buffer. The `samples` member is set to a sane default and all others are
- * set to zero.
+ * buffer.
  *
  * It's necessary to use SDL_free() to free the audio data returned in
  * `audio_buf` when it is no longer used.
