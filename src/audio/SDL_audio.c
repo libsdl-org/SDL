@@ -352,7 +352,7 @@ static void DestroyPhysicalAudioDevice(SDL_AudioDevice *device)
 }
 
 // Don't hold the device lock when calling this, as we may destroy the device!
-static void UnrefPhysicalAudioDevice(SDL_AudioDevice *device)
+void UnrefPhysicalAudioDevice(SDL_AudioDevice *device)
 {
     if (SDL_AtomicDecRef(&device->refcount)) {
         // take it out of the device list.
@@ -365,7 +365,7 @@ static void UnrefPhysicalAudioDevice(SDL_AudioDevice *device)
     }
 }
 
-static void RefPhysicalAudioDevice(SDL_AudioDevice *device)
+void RefPhysicalAudioDevice(SDL_AudioDevice *device)
 {
     SDL_AtomicIncRef(&device->refcount);
 }
@@ -861,6 +861,7 @@ static void MixFloat32Audio(float *dst, const float *src, const int buffer_size)
 void SDL_OutputAudioThreadSetup(SDL_AudioDevice *device)
 {
     SDL_assert(!device->iscapture);
+    RefPhysicalAudioDevice(device);  // unref'd when the audio thread terminates (ProvidesOwnCallbackThread implementations should call SDL_AudioThreadFinalize appropriately).
     current_audio.impl.ThreadInit(device);
 }
 
@@ -1010,6 +1011,7 @@ static int SDLCALL OutputAudioThread(void *devicep)  // thread entry point
 void SDL_CaptureAudioThreadSetup(SDL_AudioDevice *device)
 {
     SDL_assert(device->iscapture);
+    RefPhysicalAudioDevice(device);  // unref'd when the audio thread terminates (ProvidesOwnCallbackThread implementations should call SDL_AudioThreadFinalize appropriately).
     current_audio.impl.ThreadInit(device);
 }
 
@@ -1494,8 +1496,6 @@ static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec 
             return SDL_SetError("Couldn't create audio thread");
         }
     }
-
-    RefPhysicalAudioDevice(device);  // unref'd when the audio thread terminates (ProvidesOwnCallbackThread implementations should call SDL_AudioThreadFinalize appropriately).
 
     return 0;
 }

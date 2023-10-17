@@ -106,6 +106,9 @@ extern void SDL_UpdatedAudioDeviceFormat(SDL_AudioDevice *device);
 // Backends can call this to get a standardized name for a thread to power a specific audio device.
 extern char *SDL_GetAudioThreadName(SDL_AudioDevice *device, char *buf, size_t buflen);
 
+// Backends can call these to change a device's refcount.
+extern void RefPhysicalAudioDevice(SDL_AudioDevice *device);
+extern void UnrefPhysicalAudioDevice(SDL_AudioDevice *device);
 
 // These functions are the heart of the audio threads. Backends can call them directly if they aren't using the SDL-provided thread.
 extern void SDL_OutputAudioThreadSetup(SDL_AudioDevice *device);
