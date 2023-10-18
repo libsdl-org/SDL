@@ -411,9 +411,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_test_memory.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\audio\SDL_audio_c.h">
-      <Filter>audio</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\audio\SDL_audiodev_c.h">
       <Filter>audio</Filter>
     </ClInclude>

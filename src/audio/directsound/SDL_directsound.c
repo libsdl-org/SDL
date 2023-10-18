@@ -22,7 +22,7 @@
 
 #ifdef SDL_AUDIO_DRIVER_DSOUND
 
-#include "../SDL_audio_c.h"
+#include "../SDL_sysaudio.h"
 #include "SDL_directsound.h"
 #include <mmreg.h>
 #ifdef HAVE_MMDEVICEAPI_H

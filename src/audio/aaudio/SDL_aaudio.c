@@ -23,7 +23,6 @@
 #ifdef SDL_AUDIO_DRIVER_AAUDIO
 
 #include "../SDL_sysaudio.h"
-#include "../SDL_audio_c.h"
 #include "SDL_aaudio.h"
 
 #include "../../core/android/SDL_android.h"

@@ -22,7 +22,6 @@
 
 #ifdef SDL_AUDIO_DRIVER_COREAUDIO
 
-#include "../SDL_audio_c.h"
 #include "../SDL_sysaudio.h"
 #include "SDL_coreaudio.h"
 #include "../../thread/SDL_systhread.h"

@@ -39,7 +39,7 @@
 #include "SDL3/SDL_timer.h"
 #include "SDL3/SDL_audio.h"
 #include "../../core/unix/SDL_poll.h"
-#include "../SDL_audio_c.h"
+#include "../SDL_sysaudio.h"
 #include "SDL_qsa_audio.h"
 
 // default channel communication parameters

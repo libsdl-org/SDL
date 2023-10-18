@@ -30,7 +30,6 @@
 
 #include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_immdevice.h"
-#include "../SDL_audio_c.h"
 #include "../SDL_sysaudio.h"
 
 #include <audioclient.h>

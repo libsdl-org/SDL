@@ -25,7 +25,6 @@
 // Output audio to Android (legacy interface)
 
 #include "../SDL_sysaudio.h"
-#include "../SDL_audio_c.h"
 #include "SDL_androidaudio.h"
 
 #include "../../core/android/SDL_android.h"

@@ -36,7 +36,6 @@
 
 extern "C" {
 #include "../../core/windows/SDL_windows.h"
-#include "../SDL_audio_c.h"
 #include "../SDL_sysaudio.h"
 }
 

@@ -34,7 +34,6 @@
 #include <sys/audioio.h>
 
 #include "../../core/unix/SDL_poll.h"
-#include "../SDL_audio_c.h"
 #include "../SDL_audiodev_c.h"
 #include "SDL_netbsdaudio.h"
 

@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL_audio_c.h"
+#include "SDL_sysaudio.h"
 
 // TODO: NEON is disabled until https://github.com/libsdl-org/SDL/issues/8352 can be fixed
 #undef SDL_NEON_INTRINSICS

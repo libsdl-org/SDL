@@ -22,7 +22,7 @@
 
 #ifdef SDL_AUDIO_DRIVER_JACK
 
-#include "../SDL_audio_c.h"
+#include "../SDL_sysaudio.h"
 #include "SDL_jackaudio.h"
 #include "../../thread/SDL_systhread.h"
 

@@ -22,7 +22,7 @@
 
 #ifdef SDL_AUDIO_DRIVER_EMSCRIPTEN
 
-#include "../SDL_audio_c.h"
+#include "../SDL_sysaudio.h"
 #include "SDL_emscriptenaudio.h"
 
 #include <emscripten/emscripten.h>

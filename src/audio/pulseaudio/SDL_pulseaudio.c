@@ -31,7 +31,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include "../SDL_audio_c.h"
+#include "../SDL_sysaudio.h"
 #include "SDL_pulseaudio.h"
 #include "../../thread/SDL_systhread.h"
 

@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#include "../SDL_audio_c.h"
+#include "../SDL_sysaudio.h"
 #include "SDL_ps2audio.h"
 
 #include <kernel.h>

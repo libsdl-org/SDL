@@ -24,7 +24,7 @@
 
 // Output raw audio data to a file.
 
-#include "../SDL_audio_c.h"
+#include "../SDL_sysaudio.h"
 #include "SDL_diskaudio.h"
 
 // !!! FIXME: these should be SDL hints, not environment variables.
