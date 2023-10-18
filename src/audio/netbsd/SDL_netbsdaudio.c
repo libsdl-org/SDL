@@ -135,7 +135,7 @@ static int NETBSDAUDIO_WaitDevice(SDL_AudioDevice *device)
         } else if (iscapture && (remain < device->buffer_size)) {
             SDL_Delay(10);
         } else {
-            break; /* ready to go! */
+            break; // ready to go!
         }
     }
 

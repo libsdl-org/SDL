@@ -27,18 +27,18 @@
 
 struct SDL_PrivateAudioData
 {
-    /* The file descriptor for the audio device */
+    // The file descriptor for the audio device
     int audio_fd;
 
-    /* Raw mixing buffer */
+    // Raw mixing buffer
     Uint8 *mixbuf;
     int mixlen;
 
-    /* Support for audio timing using a timer, in addition to SDL_IOReady() */
+    // Support for audio timing using a timer, in addition to SDL_IOReady()
     float frame_ticks;
     float next_frame;
 };
 
-#define FUDGE_TICKS 10 /* The scheduler overhead ticks per frame */
+#define FUDGE_TICKS 10 // The scheduler overhead ticks per frame
 
-#endif /* SDL_netbsdaudio_h_ */
+#endif // SDL_netbsdaudio_h_

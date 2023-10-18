@@ -45,7 +45,7 @@ struct SDL_PrivateAudioData
     void *activation_handler;
 };
 
-/* win32 and winrt implementations call into these. */
+// win32 and winrt implementations call into these.
 int WASAPI_PrepDevice(SDL_AudioDevice *device);
 void WASAPI_DisconnectDevice(SDL_AudioDevice *device);  // don't hold the device lock when calling this!
 
@@ -54,7 +54,7 @@ void WASAPI_DisconnectDevice(SDL_AudioDevice *device);  // don't hold the device
 typedef int (*ManagementThreadTask)(void *userdata);
 int WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, int *wait_until_complete);
 
-/* These are functions that are implemented differently for Windows vs WinRT. */
+// These are functions that are implemented differently for Windows vs WinRT.
 // UNLESS OTHERWISE NOTED THESE ALL HAPPEN ON THE MANAGEMENT THREAD.
 int WASAPI_PlatformInit(void);
 void WASAPI_PlatformDeinit(void);
@@ -70,4 +70,4 @@ void WASAPI_PlatformFreeDeviceHandle(SDL_AudioDevice *device);
 }
 #endif
 
-#endif /* SDL_wasapi_h_ */
+#endif // SDL_wasapi_h_

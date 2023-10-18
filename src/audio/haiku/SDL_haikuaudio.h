@@ -32,4 +32,4 @@ struct SDL_PrivateAudioData
     int current_buffer_len;
 };
 
-#endif /* SDL_haikuaudio_h_ */
+#endif // SDL_haikuaudio_h_

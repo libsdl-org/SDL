@@ -27,11 +27,11 @@
 
 struct SDL_PrivateAudioData
 {
-    /* The file descriptor for the audio device */
+    // The file descriptor for the audio device
     int audio_fd;
 
-    /* Raw mixing buffer */
+    // Raw mixing buffer
     Uint8 *mixbuf;
 };
 
-#endif /* SDL_dspaudio_h_ */
+#endif // SDL_dspaudio_h_

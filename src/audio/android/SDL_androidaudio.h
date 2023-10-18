@@ -35,4 +35,4 @@ static void ANDROIDAUDIO_PauseDevices(void) {}
 
 #endif
 
-#endif /* SDL_androidaudio_h_ */
+#endif // SDL_androidaudio_h_

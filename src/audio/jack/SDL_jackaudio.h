@@ -32,4 +32,4 @@ struct SDL_PrivateAudioData
     float *iobuffer;
 };
 
-#endif /* SDL_jackaudio_h_ */
+#endif // SDL_jackaudio_h_

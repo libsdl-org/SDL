@@ -25,8 +25,8 @@
 #include "SDL_internal.h"
 #include "SDL_sysaudio.h"
 
-/* Open the audio device for playback, and don't block if busy */
-/* #define USE_BLOCKING_WRITES */
+// Open the audio device for playback, and don't block if busy
+//#define USE_BLOCKING_WRITES
 
 #ifdef USE_BLOCKING_WRITES
 #define OPEN_FLAGS_OUTPUT O_WRONLY
@@ -38,4 +38,4 @@
 
 extern void SDL_EnumUnixAudioDevices(const SDL_bool classic, SDL_bool (*test)(int));
 
-#endif /* SDL_audiodev_c_h_ */
+#endif // SDL_audiodev_c_h_

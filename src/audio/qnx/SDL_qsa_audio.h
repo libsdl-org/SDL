@@ -36,6 +36,5 @@ struct SDL_PrivateAudioData
     Uint8 *pcm_buf;  // Raw mixing buffer
 };
 
-#endif /* __SDL_QSA_AUDIO_H__ */
+#endif // __SDL_QSA_AUDIO_H__
 
-/* vi: set ts=4 sw=4 expandtab: */

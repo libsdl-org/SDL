@@ -22,32 +22,31 @@
 
 #include "SDL_audio_c.h"
 
-/* TODO: NEON is disabled until https://github.com/libsdl-org/SDL/issues/8352
- * can be fixed */
+// TODO: NEON is disabled until https://github.com/libsdl-org/SDL/issues/8352 can be fixed
 #undef SDL_NEON_INTRINSICS
 
 #ifndef SDL_CPUINFO_DISABLED
 #if defined(__x86_64__) && defined(SDL_SSE2_INTRINSICS)
-#define NEED_SCALAR_CONVERTER_FALLBACKS 0 /* x86_64 guarantees SSE2. */
+#define NEED_SCALAR_CONVERTER_FALLBACKS 0 // x86_64 guarantees SSE2.
 #elif defined(__MACOS__) && defined(SDL_SSE2_INTRINSICS)
-#define NEED_SCALAR_CONVERTER_FALLBACKS 0 /* macOS/Intel guarantees SSE2. */
+#define NEED_SCALAR_CONVERTER_FALLBACKS 0 // macOS/Intel guarantees SSE2.
 #elif defined(__ARM_ARCH) && (__ARM_ARCH >= 8) && defined(SDL_NEON_INTRINSICS)
-#define NEED_SCALAR_CONVERTER_FALLBACKS 0 /* ARMv8+ promise NEON. */
+#define NEED_SCALAR_CONVERTER_FALLBACKS 0 // ARMv8+ promise NEON.
 #elif defined(__APPLE__) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7) && defined(SDL_NEON_INTRINSICS)
-#define NEED_SCALAR_CONVERTER_FALLBACKS 0 /* All Apple ARMv7 chips promise NEON support. */
+#define NEED_SCALAR_CONVERTER_FALLBACKS 0 // All Apple ARMv7 chips promise NEON support.
 #endif
 #endif
 
-/* Set to zero if platform is guaranteed to use a SIMD codepath here. */
+// Set to zero if platform is guaranteed to use a SIMD codepath here.
 #if !defined(NEED_SCALAR_CONVERTER_FALLBACKS) || defined(SDL_CPUINFO_DISABLED)
 #define NEED_SCALAR_CONVERTER_FALLBACKS 1
 #endif
 
-#define DIVBY2147483648 0.0000000004656612873077392578125f /* 0x1p-31f */
+#define DIVBY2147483648 0.0000000004656612873077392578125f // 0x1p-31f
 
 #if NEED_SCALAR_CONVERTER_FALLBACKS
 
-/* This code requires that floats are in the IEEE-754 binary32 format */
+// This code requires that floats are in the IEEE-754 binary32 format
 SDL_COMPILE_TIME_ASSERT(float_bits, sizeof(float) == sizeof(Uint32));
 
 union float_bits {
@@ -111,7 +110,7 @@ static void SDL_Convert_S32_to_F32_Scalar(float *dst, const Sint32 *src, int num
     }
 }
 
-/* Create a bit-mask based on the sign-bit. Should optimize to a single arithmetic-shift-right */
+// Create a bit-mask based on the sign-bit. Should optimize to a single arithmetic-shift-right
 #define SIGNMASK(x) (Uint32)(0u - ((Uint32)(x) >> 31))
 
 static void SDL_Convert_F32_to_S8_Scalar(Sint8 *dst, const float *src, int num_samples)
@@ -202,7 +201,7 @@ static void SDL_Convert_F32_to_S32_Scalar(Sint32 *dst, const float *src, int num
 
 #undef SIGNMASK
 
-#endif /* NEED_SCALAR_CONVERTER_FALLBACKS */
+#endif // NEED_SCALAR_CONVERTER_FALLBACKS
 
 #ifdef SDL_SSE2_INTRINSICS
 static void SDL_TARGETING("sse2") SDL_Convert_S8_to_F32_SSE2(float *dst, const Sint8 *src, int num_samples)
@@ -324,7 +323,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_S32_to_F32_SSE2(float *dst, const 
 {
     int i = num_samples;
 
-    /* dst[i] = f32(src[i]) / f32(0x80000000) */
+    // dst[i] = f32(src[i]) / f32(0x80000000)
     const __m128 scaler = _mm_set1_ps(DIVBY2147483648);
 
     LOG_DEBUG_AUDIO_CONVERT("S32", "F32 (using SSE2)");
@@ -543,9 +542,9 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S32_SSE2(Sint32 *dst, const
 #endif
 
 #ifdef SDL_NEON_INTRINSICS
-#define DIVBY128     0.0078125f /* 0x1p-7f */
-#define DIVBY32768   0.000030517578125f /* 0x1p-15f */
-#define DIVBY8388607 0.00000011920930376163766f /* 0x1.000002p-23f */
+#define DIVBY128     0.0078125f // 0x1p-7f
+#define DIVBY32768   0.000030517578125f // 0x1p-15f
+#define DIVBY8388607 0.00000011920930376163766f // 0x1.000002p-23f
 
 static void SDL_Convert_S8_to_F32_NEON(float *dst, const Sint8 *src, int num_samples)
 {
@@ -556,25 +555,25 @@ static void SDL_Convert_S8_to_F32_NEON(float *dst, const Sint8 *src, int num_sam
     src += num_samples - 1;
     dst += num_samples - 1;
 
-    /* Get dst aligned to 16 bytes (since buffer is growing, we don't have to worry about overreading from src) */
+    // Get dst aligned to 16 bytes (since buffer is growing, we don't have to worry about overreading from src)
     for (i = num_samples; i && (((size_t)(dst - 15)) & 15); --i, --src, --dst) {
         *dst = ((float)*src) * DIVBY128;
     }
 
     src -= 15;
-    dst -= 15; /* adjust to read NEON blocks from the start. */
+    dst -= 15; // adjust to read NEON blocks from the start.
     SDL_assert(!i || !(((size_t)dst) & 15));
 
-    /* Make sure src is aligned too. */
+    // Make sure src is aligned too.
     if (!(((size_t)src) & 15)) {
-        /* Aligned! Do NEON blocks as long as we have 16 bytes available. */
+        // Aligned! Do NEON blocks as long as we have 16 bytes available.
         const int8_t *mmsrc = (const int8_t *)src;
         const float32x4_t divby128 = vdupq_n_f32(DIVBY128);
-        while (i >= 16) {                                            /* 16 * 8-bit */
-            const int8x16_t bytes = vld1q_s8(mmsrc);                 /* get 16 sint8 into a NEON register. */
-            const int16x8_t int16hi = vmovl_s8(vget_high_s8(bytes)); /* convert top 8 bytes to 8 int16 */
-            const int16x8_t int16lo = vmovl_s8(vget_low_s8(bytes));  /* convert bottom 8 bytes to 8 int16 */
-            /* split int16 to two int32, then convert to float, then multiply to normalize, store. */
+        while (i >= 16) {                                            // 16 * 8-bit
+            const int8x16_t bytes = vld1q_s8(mmsrc);                 // get 16 sint8 into a NEON register.
+            const int16x8_t int16hi = vmovl_s8(vget_high_s8(bytes)); // convert top 8 bytes to 8 int16
+            const int16x8_t int16lo = vmovl_s8(vget_low_s8(bytes));  // convert bottom 8 bytes to 8 int16
+            // split int16 to two int32, then convert to float, then multiply to normalize, store.
             vst1q_f32(dst, vmulq_f32(vcvtq_f32_s32(vmovl_s16(vget_low_s16(int16lo))), divby128));
             vst1q_f32(dst + 4, vmulq_f32(vcvtq_f32_s32(vmovl_s16(vget_high_s16(int16lo))), divby128));
             vst1q_f32(dst + 8, vmulq_f32(vcvtq_f32_s32(vmovl_s16(vget_low_s16(int16hi))), divby128));
@@ -588,9 +587,9 @@ static void SDL_Convert_S8_to_F32_NEON(float *dst, const Sint8 *src, int num_sam
     }
 
     src += 15;
-    dst += 15; /* adjust for any scalar finishing. */
+    dst += 15; // adjust for any scalar finishing.
 
-    /* Finish off any leftovers with scalar operations. */
+    // Finish off any leftovers with scalar operations.
     while (i) {
         *dst = ((float)*src) * DIVBY128;
         i--;
@@ -608,26 +607,26 @@ static void SDL_Convert_U8_to_F32_NEON(float *dst, const Uint8 *src, int num_sam
     src += num_samples - 1;
     dst += num_samples - 1;
 
-    /* Get dst aligned to 16 bytes (since buffer is growing, we don't have to worry about overreading from src) */
+    // Get dst aligned to 16 bytes (since buffer is growing, we don't have to worry about overreading from src)
     for (i = num_samples; i && (((size_t)(dst - 15)) & 15); --i, --src, --dst) {
         *dst = (((float)*src) * DIVBY128) - 1.0f;
     }
 
     src -= 15;
-    dst -= 15; /* adjust to read NEON blocks from the start. */
+    dst -= 15; // adjust to read NEON blocks from the start.
     SDL_assert(!i || !(((size_t)dst) & 15));
 
-    /* Make sure src is aligned too. */
+    // Make sure src is aligned too.
     if (!(((size_t)src) & 15)) {
-        /* Aligned! Do NEON blocks as long as we have 16 bytes available. */
+        // Aligned! Do NEON blocks as long as we have 16 bytes available.
         const uint8_t *mmsrc = (const uint8_t *)src;
         const float32x4_t divby128 = vdupq_n_f32(DIVBY128);
         const float32x4_t negone = vdupq_n_f32(-1.0f);
-        while (i >= 16) {                                              /* 16 * 8-bit */
-            const uint8x16_t bytes = vld1q_u8(mmsrc);                  /* get 16 uint8 into a NEON register. */
-            const uint16x8_t uint16hi = vmovl_u8(vget_high_u8(bytes)); /* convert top 8 bytes to 8 uint16 */
-            const uint16x8_t uint16lo = vmovl_u8(vget_low_u8(bytes));  /* convert bottom 8 bytes to 8 uint16 */
-            /* split uint16 to two uint32, then convert to float, then multiply to normalize, subtract to adjust for sign, store. */
+        while (i >= 16) {                                              // 16 * 8-bit
+            const uint8x16_t bytes = vld1q_u8(mmsrc);                  // get 16 uint8 into a NEON register.
+            const uint16x8_t uint16hi = vmovl_u8(vget_high_u8(bytes)); // convert top 8 bytes to 8 uint16
+            const uint16x8_t uint16lo = vmovl_u8(vget_low_u8(bytes));  // convert bottom 8 bytes to 8 uint16
+            // split uint16 to two uint32, then convert to float, then multiply to normalize, subtract to adjust for sign, store.
             vst1q_f32(dst, vmlaq_f32(negone, vcvtq_f32_u32(vmovl_u16(vget_low_u16(uint16lo))), divby128));
             vst1q_f32(dst + 4, vmlaq_f32(negone, vcvtq_f32_u32(vmovl_u16(vget_high_u16(uint16lo))), divby128));
             vst1q_f32(dst + 8, vmlaq_f32(negone, vcvtq_f32_u32(vmovl_u16(vget_low_u16(uint16hi))), divby128));
@@ -641,9 +640,9 @@ static void SDL_Convert_U8_to_F32_NEON(float *dst, const Uint8 *src, int num_sam
     }
 
     src += 15;
-    dst += 15; /* adjust for any scalar finishing. */
+    dst += 15; // adjust for any scalar finishing.
 
-    /* Finish off any leftovers with scalar operations. */
+    // Finish off any leftovers with scalar operations.
     while (i) {
         *dst = (((float)*src) * DIVBY128) - 1.0f;
         i--;
@@ -661,22 +660,22 @@ static void SDL_Convert_S16_to_F32_NEON(float *dst, const Sint16 *src, int num_s
     src += num_samples - 1;
     dst += num_samples - 1;
 
-    /* Get dst aligned to 16 bytes (since buffer is growing, we don't have to worry about overreading from src) */
+    // Get dst aligned to 16 bytes (since buffer is growing, we don't have to worry about overreading from src)
     for (i = num_samples; i && (((size_t)(dst - 7)) & 15); --i, --src, --dst) {
         *dst = ((float)*src) * DIVBY32768;
     }
 
     src -= 7;
-    dst -= 7; /* adjust to read NEON blocks from the start. */
+    dst -= 7; // adjust to read NEON blocks from the start.
     SDL_assert(!i || !(((size_t)dst) & 15));
 
-    /* Make sure src is aligned too. */
+    // Make sure src is aligned too.
     if (!(((size_t)src) & 15)) {
-        /* Aligned! Do NEON blocks as long as we have 16 bytes available. */
+        // Aligned! Do NEON blocks as long as we have 16 bytes available.
         const float32x4_t divby32768 = vdupq_n_f32(DIVBY32768);
-        while (i >= 8) {                                            /* 8 * 16-bit */
-            const int16x8_t ints = vld1q_s16((int16_t const *)src); /* get 8 sint16 into a NEON register. */
-            /* split int16 to two int32, then convert to float, then multiply to normalize, store. */
+        while (i >= 8) {                                            // 8 * 16-bit
+            const int16x8_t ints = vld1q_s16((int16_t const *)src); // get 8 sint16 into a NEON register.
+            // split int16 to two int32, then convert to float, then multiply to normalize, store.
             vst1q_f32(dst, vmulq_f32(vcvtq_f32_s32(vmovl_s16(vget_low_s16(ints))), divby32768));
             vst1q_f32(dst + 4, vmulq_f32(vcvtq_f32_s32(vmovl_s16(vget_high_s16(ints))), divby32768));
             i -= 8;
@@ -686,9 +685,9 @@ static void SDL_Convert_S16_to_F32_NEON(float *dst, const Sint16 *src, int num_s
     }
 
     src += 7;
-    dst += 7; /* adjust for any scalar finishing. */
+    dst += 7; // adjust for any scalar finishing.
 
-    /* Finish off any leftovers with scalar operations. */
+    // Finish off any leftovers with scalar operations.
     while (i) {
         *dst = ((float)*src) * DIVBY32768;
         i--;
@@ -703,20 +702,20 @@ static void SDL_Convert_S32_to_F32_NEON(float *dst, const Sint32 *src, int num_s
 
     LOG_DEBUG_AUDIO_CONVERT("S32", "F32 (using NEON)");
 
-    /* Get dst aligned to 16 bytes */
+    // Get dst aligned to 16 bytes
     for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
         *dst = ((float)(*src >> 8)) * DIVBY8388607;
     }
 
     SDL_assert(!i || !(((size_t)dst) & 15));
 
-    /* Make sure src is aligned too. */
+    // Make sure src is aligned too.
     if (!(((size_t)src) & 15)) {
-        /* Aligned! Do NEON blocks as long as we have 16 bytes available. */
+        // Aligned! Do NEON blocks as long as we have 16 bytes available.
         const float32x4_t divby8388607 = vdupq_n_f32(DIVBY8388607);
         const int32_t *mmsrc = (const int32_t *)src;
-        while (i >= 4) { /* 4 * sint32 */
-            /* shift out lowest bits so int fits in a float32. Small precision loss, but much faster. */
+        while (i >= 4) { // 4 * sint32
+            // shift out lowest bits so int fits in a float32. Small precision loss, but much faster.
             vst1q_f32(dst, vmulq_f32(vcvtq_f32_s32(vshrq_n_s32(vld1q_s32(mmsrc), 8)), divby8388607));
             i -= 4;
             mmsrc += 4;
@@ -725,7 +724,7 @@ static void SDL_Convert_S32_to_F32_NEON(float *dst, const Sint32 *src, int num_s
         src = (const Sint32 *)mmsrc;
     }
 
-    /* Finish off any leftovers with scalar operations. */
+    // Finish off any leftovers with scalar operations.
     while (i) {
         *dst = ((float)(*src >> 8)) * DIVBY8388607;
         i--;
@@ -740,7 +739,7 @@ static void SDL_Convert_F32_to_S8_NEON(Sint8 *dst, const float *src, int num_sam
 
     LOG_DEBUG_AUDIO_CONVERT("F32", "S8 (using NEON)");
 
-    /* Get dst aligned to 16 bytes */
+    // Get dst aligned to 16 bytes
     for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
         const float sample = *src;
         if (sample >= 1.0f) {
@@ -754,21 +753,21 @@ static void SDL_Convert_F32_to_S8_NEON(Sint8 *dst, const float *src, int num_sam
 
     SDL_assert(!i || !(((size_t)dst) & 15));
 
-    /* Make sure src is aligned too. */
+    // Make sure src is aligned too.
     if (!(((size_t)src) & 15)) {
-        /* Aligned! Do NEON blocks as long as we have 16 bytes available. */
+        // Aligned! Do NEON blocks as long as we have 16 bytes available.
         const float32x4_t one = vdupq_n_f32(1.0f);
         const float32x4_t negone = vdupq_n_f32(-1.0f);
         const float32x4_t mulby127 = vdupq_n_f32(127.0f);
         int8_t *mmdst = (int8_t *)dst;
-        while (i >= 16) {                                                                                                       /* 16 * float32 */
-            const int32x4_t ints1 = vcvtq_s32_f32(vmulq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src)), one), mulby127));      /* load 4 floats, clamp, convert to sint32 */
-            const int32x4_t ints2 = vcvtq_s32_f32(vmulq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src + 4)), one), mulby127));  /* load 4 floats, clamp, convert to sint32 */
-            const int32x4_t ints3 = vcvtq_s32_f32(vmulq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src + 8)), one), mulby127));  /* load 4 floats, clamp, convert to sint32 */
-            const int32x4_t ints4 = vcvtq_s32_f32(vmulq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src + 12)), one), mulby127)); /* load 4 floats, clamp, convert to sint32 */
-            const int8x8_t i8lo = vmovn_s16(vcombine_s16(vmovn_s32(ints1), vmovn_s32(ints2)));                                  /* narrow to sint16, combine, narrow to sint8 */
-            const int8x8_t i8hi = vmovn_s16(vcombine_s16(vmovn_s32(ints3), vmovn_s32(ints4)));                                  /* narrow to sint16, combine, narrow to sint8 */
-            vst1q_s8(mmdst, vcombine_s8(i8lo, i8hi));                                                                           /* combine to int8x16_t, store out */
+        while (i >= 16) {                                                                                                       // 16 * float32
+            const int32x4_t ints1 = vcvtq_s32_f32(vmulq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src)), one), mulby127));      // load 4 floats, clamp, convert to sint32
+            const int32x4_t ints2 = vcvtq_s32_f32(vmulq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src + 4)), one), mulby127));  // load 4 floats, clamp, convert to sint32
+            const int32x4_t ints3 = vcvtq_s32_f32(vmulq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src + 8)), one), mulby127));  // load 4 floats, clamp, convert to sint32
+            const int32x4_t ints4 = vcvtq_s32_f32(vmulq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src + 12)), one), mulby127)); // load 4 floats, clamp, convert to sint32
+            const int8x8_t i8lo = vmovn_s16(vcombine_s16(vmovn_s32(ints1), vmovn_s32(ints2)));                                  // narrow to sint16, combine, narrow to sint8
+            const int8x8_t i8hi = vmovn_s16(vcombine_s16(vmovn_s32(ints3), vmovn_s32(ints4)));                                  // narrow to sint16, combine, narrow to sint8
+            vst1q_s8(mmdst, vcombine_s8(i8lo, i8hi));                                                                           // combine to int8x16_t, store out
             i -= 16;
             src += 16;
             mmdst += 16;
@@ -776,7 +775,7 @@ static void SDL_Convert_F32_to_S8_NEON(Sint8 *dst, const float *src, int num_sam
         dst = (Sint8 *)mmdst;
     }
 
-    /* Finish off any leftovers with scalar operations. */
+    // Finish off any leftovers with scalar operations.
     while (i) {
         const float sample = *src;
         if (sample >= 1.0f) {
@@ -798,7 +797,7 @@ static void SDL_Convert_F32_to_U8_NEON(Uint8 *dst, const float *src, int num_sam
 
     LOG_DEBUG_AUDIO_CONVERT("F32", "U8 (using NEON)");
 
-    /* Get dst aligned to 16 bytes */
+    // Get dst aligned to 16 bytes
     for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
         const float sample = *src;
         if (sample >= 1.0f) {
@@ -812,21 +811,21 @@ static void SDL_Convert_F32_to_U8_NEON(Uint8 *dst, const float *src, int num_sam
 
     SDL_assert(!i || !(((size_t)dst) & 15));
 
-    /* Make sure src is aligned too. */
+    // Make sure src is aligned too.
     if (!(((size_t)src) & 15)) {
-        /* Aligned! Do NEON blocks as long as we have 16 bytes available. */
+        // Aligned! Do NEON blocks as long as we have 16 bytes available.
         const float32x4_t one = vdupq_n_f32(1.0f);
         const float32x4_t negone = vdupq_n_f32(-1.0f);
         const float32x4_t mulby127 = vdupq_n_f32(127.0f);
         uint8_t *mmdst = (uint8_t *)dst;
-        while (i >= 16) {                                                                                                                         /* 16 * float32 */
-            const uint32x4_t uints1 = vcvtq_u32_f32(vmulq_f32(vaddq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src)), one), one), mulby127));      /* load 4 floats, clamp, convert to uint32 */
-            const uint32x4_t uints2 = vcvtq_u32_f32(vmulq_f32(vaddq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src + 4)), one), one), mulby127));  /* load 4 floats, clamp, convert to uint32 */
-            const uint32x4_t uints3 = vcvtq_u32_f32(vmulq_f32(vaddq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src + 8)), one), one), mulby127));  /* load 4 floats, clamp, convert to uint32 */
-            const uint32x4_t uints4 = vcvtq_u32_f32(vmulq_f32(vaddq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src + 12)), one), one), mulby127)); /* load 4 floats, clamp, convert to uint32 */
-            const uint8x8_t ui8lo = vmovn_u16(vcombine_u16(vmovn_u32(uints1), vmovn_u32(uints2)));                                                /* narrow to uint16, combine, narrow to uint8 */
-            const uint8x8_t ui8hi = vmovn_u16(vcombine_u16(vmovn_u32(uints3), vmovn_u32(uints4)));                                                /* narrow to uint16, combine, narrow to uint8 */
-            vst1q_u8(mmdst, vcombine_u8(ui8lo, ui8hi));                                                                                           /* combine to uint8x16_t, store out */
+        while (i >= 16) {                                                                                                                         // 16 * float32
+            const uint32x4_t uints1 = vcvtq_u32_f32(vmulq_f32(vaddq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src)), one), one), mulby127));      // load 4 floats, clamp, convert to uint32
+            const uint32x4_t uints2 = vcvtq_u32_f32(vmulq_f32(vaddq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src + 4)), one), one), mulby127));  // load 4 floats, clamp, convert to uint32
+            const uint32x4_t uints3 = vcvtq_u32_f32(vmulq_f32(vaddq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src + 8)), one), one), mulby127));  // load 4 floats, clamp, convert to uint32
+            const uint32x4_t uints4 = vcvtq_u32_f32(vmulq_f32(vaddq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src + 12)), one), one), mulby127)); // load 4 floats, clamp, convert to uint32
+            const uint8x8_t ui8lo = vmovn_u16(vcombine_u16(vmovn_u32(uints1), vmovn_u32(uints2)));                                                // narrow to uint16, combine, narrow to uint8
+            const uint8x8_t ui8hi = vmovn_u16(vcombine_u16(vmovn_u32(uints3), vmovn_u32(uints4)));                                                // narrow to uint16, combine, narrow to uint8
+            vst1q_u8(mmdst, vcombine_u8(ui8lo, ui8hi));                                                                                           // combine to uint8x16_t, store out
             i -= 16;
             src += 16;
             mmdst += 16;
@@ -835,7 +834,7 @@ static void SDL_Convert_F32_to_U8_NEON(Uint8 *dst, const float *src, int num_sam
         dst = (Uint8 *)mmdst;
     }
 
-    /* Finish off any leftovers with scalar operations. */
+    // Finish off any leftovers with scalar operations.
     while (i) {
         const float sample = *src;
         if (sample >= 1.0f) {
@@ -857,7 +856,7 @@ static void SDL_Convert_F32_to_S16_NEON(Sint16 *dst, const float *src, int num_s
 
     LOG_DEBUG_AUDIO_CONVERT("F32", "S16 (using NEON)");
 
-    /* Get dst aligned to 16 bytes */
+    // Get dst aligned to 16 bytes
     for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
         const float sample = *src;
         if (sample >= 1.0f) {
@@ -871,17 +870,17 @@ static void SDL_Convert_F32_to_S16_NEON(Sint16 *dst, const float *src, int num_s
 
     SDL_assert(!i || !(((size_t)dst) & 15));
 
-    /* Make sure src is aligned too. */
+    // Make sure src is aligned too.
     if (!(((size_t)src) & 15)) {
-        /* Aligned! Do NEON blocks as long as we have 16 bytes available. */
+        // Aligned! Do NEON blocks as long as we have 16 bytes available.
         const float32x4_t one = vdupq_n_f32(1.0f);
         const float32x4_t negone = vdupq_n_f32(-1.0f);
         const float32x4_t mulby32767 = vdupq_n_f32(32767.0f);
         int16_t *mmdst = (int16_t *)dst;
-        while (i >= 8) {                                                                                                         /* 8 * float32 */
-            const int32x4_t ints1 = vcvtq_s32_f32(vmulq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src)), one), mulby32767));     /* load 4 floats, clamp, convert to sint32 */
-            const int32x4_t ints2 = vcvtq_s32_f32(vmulq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src + 4)), one), mulby32767)); /* load 4 floats, clamp, convert to sint32 */
-            vst1q_s16(mmdst, vcombine_s16(vmovn_s32(ints1), vmovn_s32(ints2)));                                                  /* narrow to sint16, combine, store out. */
+        while (i >= 8) {                                                                                                         // 8 * float32
+            const int32x4_t ints1 = vcvtq_s32_f32(vmulq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src)), one), mulby32767));     // load 4 floats, clamp, convert to sint32
+            const int32x4_t ints2 = vcvtq_s32_f32(vmulq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src + 4)), one), mulby32767)); // load 4 floats, clamp, convert to sint32
+            vst1q_s16(mmdst, vcombine_s16(vmovn_s32(ints1), vmovn_s32(ints2)));                                                  // narrow to sint16, combine, store out.
             i -= 8;
             src += 8;
             mmdst += 8;
@@ -889,7 +888,7 @@ static void SDL_Convert_F32_to_S16_NEON(Sint16 *dst, const float *src, int num_s
         dst = (Sint16 *)mmdst;
     }
 
-    /* Finish off any leftovers with scalar operations. */
+    // Finish off any leftovers with scalar operations.
     while (i) {
         const float sample = *src;
         if (sample >= 1.0f) {
@@ -911,7 +910,7 @@ static void SDL_Convert_F32_to_S32_NEON(Sint32 *dst, const float *src, int num_s
 
     LOG_DEBUG_AUDIO_CONVERT("F32", "S32 (using NEON)");
 
-    /* Get dst aligned to 16 bytes */
+    // Get dst aligned to 16 bytes
     for (i = num_samples; i && (((size_t)dst) & 15); --i, ++src, ++dst) {
         const float sample = *src;
         if (sample >= 1.0f) {
@@ -927,12 +926,12 @@ static void SDL_Convert_F32_to_S32_NEON(Sint32 *dst, const float *src, int num_s
     SDL_assert(!i || !(((size_t)src) & 15));
 
     {
-        /* Aligned! Do NEON blocks as long as we have 16 bytes available. */
+        // Aligned! Do NEON blocks as long as we have 16 bytes available.
         const float32x4_t one = vdupq_n_f32(1.0f);
         const float32x4_t negone = vdupq_n_f32(-1.0f);
         const float32x4_t mulby8388607 = vdupq_n_f32(8388607.0f);
         int32_t *mmdst = (int32_t *)dst;
-        while (i >= 4) { /* 4 * float32 */
+        while (i >= 4) { // 4 * float32
             vst1q_s32(mmdst, vshlq_n_s32(vcvtq_s32_f32(vmulq_f32(vminq_f32(vmaxq_f32(negone, vld1q_f32(src)), one), mulby8388607)), 8));
             i -= 4;
             src += 4;
@@ -941,7 +940,7 @@ static void SDL_Convert_F32_to_S32_NEON(Sint32 *dst, const float *src, int num_s
         dst = (Sint32 *)mmdst;
     }
 
-    /* Finish off any leftovers with scalar operations. */
+    // Finish off any leftovers with scalar operations.
     while (i) {
         const float sample = *src;
         if (sample >= 1.0f) {
@@ -958,7 +957,7 @@ static void SDL_Convert_F32_to_S32_NEON(Sint32 *dst, const float *src, int num_s
 }
 #endif
 
-/* Function pointers set to a CPU-specific implementation. */
+// Function pointers set to a CPU-specific implementation.
 void (*SDL_Convert_S8_to_F32)(float *dst, const Sint8 *src, int num_samples) = NULL;
 void (*SDL_Convert_U8_to_F32)(float *dst, const Uint8 *src, int num_samples) = NULL;
 void (*SDL_Convert_S16_to_F32)(float *dst, const Sint16 *src, int num_samples) = NULL;

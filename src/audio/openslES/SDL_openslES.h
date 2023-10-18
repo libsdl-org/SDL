@@ -35,4 +35,4 @@ static void OPENSLES_PauseDevices(void) {}
 
 #endif
 
-#endif /* SDL_openslesaudio_h_ */
+#endif // SDL_openslesaudio_h_

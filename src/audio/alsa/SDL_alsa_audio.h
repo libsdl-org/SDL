@@ -29,14 +29,14 @@
 
 struct SDL_PrivateAudioData
 {
-    /* The audio device handle */
+    // The audio device handle
     snd_pcm_t *pcm_handle;
 
-    /* Raw mixing buffer */
+    // Raw mixing buffer
     Uint8 *mixbuf;
 
-    /* swizzle function */
+    // swizzle function
     void (*swizzle_func)(SDL_AudioDevice *_this, void *buffer, Uint32 bufferlen);
 };
 
-#endif /* SDL_ALSA_audio_h_ */
+#endif // SDL_ALSA_audio_h_

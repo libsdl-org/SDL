@@ -20,14 +20,14 @@
 */
 #include "SDL_internal.h"
 
-/* Get the name of the audio device we use for output */
+// Get the name of the audio device we use for output
 
 #if defined(SDL_AUDIO_DRIVER_NETBSD) || defined(SDL_AUDIO_DRIVER_OSS)
 
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h> /* For close() */
+#include <unistd.h> // For close()
 
 #include "SDL_audiodev_c.h"
 
@@ -84,7 +84,7 @@ static void SDL_EnumUnixAudioDevices_Internal(const SDL_bool iscapture, const SD
         test = test_stub;
     }
 
-    /* Figure out what our audio device is */
+    // Figure out what our audio device is
     audiodev = SDL_getenv("SDL_PATH_DSP");
     if (audiodev == NULL) {
         audiodev = SDL_getenv("AUDIODEV");
@@ -95,7 +95,7 @@ static void SDL_EnumUnixAudioDevices_Internal(const SDL_bool iscapture, const SD
         } else {
             struct stat sb;
 
-            /* Added support for /dev/sound/\* in Linux 2.4 */
+            // Added support for /dev/sound/\* in Linux 2.4
             if (((stat("/dev/sound", &sb) == 0) && S_ISDIR(sb.st_mode)) && ((stat(SDL_PATH_DEV_DSP24, &sb) == 0) && S_ISCHR(sb.st_mode))) {
                 audiodev = SDL_PATH_DEV_DSP24;
             } else {
@@ -122,4 +122,4 @@ void SDL_EnumUnixAudioDevices(const SDL_bool classic, SDL_bool (*test)(int))
     SDL_EnumUnixAudioDevices_Internal(SDL_FALSE, classic, test);
 }
 
-#endif /* Audio driver selection */
+#endif // Audio device selection

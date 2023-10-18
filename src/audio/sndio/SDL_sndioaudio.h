@@ -35,4 +35,4 @@ struct SDL_PrivateAudioData
     struct pollfd *pfd;  // Polling structures for non-blocking sndio devices
 };
 
-#endif /* SDL_sndioaudio_h_ */
+#endif // SDL_sndioaudio_h_

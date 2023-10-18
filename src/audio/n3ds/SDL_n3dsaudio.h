@@ -24,11 +24,11 @@
 
 #include <3ds.h>
 
-#define NUM_BUFFERS 2 /* -- Don't lower this! */
+#define NUM_BUFFERS 2 // -- Don't lower this!
 
 struct SDL_PrivateAudioData
 {
-    /* Speaker data */
+    // Speaker data
     Uint8 *mixbuf;
     Uint32 nextbuf;
     ndspWaveBuf waveBuf[NUM_BUFFERS];
@@ -37,4 +37,4 @@ struct SDL_PrivateAudioData
     SDL_bool isCancelled;
 };
 
-#endif /* SDL_n3dsaudio_h */
+#endif // SDL_n3dsaudio_h

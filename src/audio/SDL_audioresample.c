@@ -23,13 +23,13 @@
 #include "SDL_sysaudio.h"
 #include "SDL_audioresample.h"
 
-/* SDL's resampler uses a "bandlimited interpolation" algorithm:
-     https://ccrma.stanford.edu/~jos/resample/ */
+// SDL's resampler uses a "bandlimited interpolation" algorithm:
+//     https://ccrma.stanford.edu/~jos/resample/
 
 #include "SDL_audio_resampler_filter.h"
 
-/* For a given srcpos, `srcpos + frame` are sampled, where `-RESAMPLER_ZERO_CROSSINGS < frame <= RESAMPLER_ZERO_CROSSINGS`.
- * Note, when upsampling, it is also possible to start sampling from `srcpos = -1`. */
+// For a given srcpos, `srcpos + frame` are sampled, where `-RESAMPLER_ZERO_CROSSINGS < frame <= RESAMPLER_ZERO_CROSSINGS`.
+// Note, when upsampling, it is also possible to start sampling from `srcpos = -1`.
 #define RESAMPLER_MAX_PADDING_FRAMES (RESAMPLER_ZERO_CROSSINGS + 1)
 
 #define RESAMPLER_FILTER_INTERP_BITS  (32 - RESAMPLER_BITS_PER_ZERO_CROSSING)

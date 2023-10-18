@@ -35,4 +35,4 @@ void AAUDIO_PauseDevices(void);
 
 #endif
 
-#endif /* SDL_aaudio_h_ */
+#endif // SDL_aaudio_h_

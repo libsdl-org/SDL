@@ -39,7 +39,7 @@
 #include <AudioToolbox/AudioToolbox.h>
 #include <AudioUnit/AudioUnit.h>
 
-/* Things named "Master" were renamed to "Main" in macOS 12.0's SDK. */
+// Things named "Master" were renamed to "Main" in macOS 12.0's SDK.
 #ifdef MACOSX_COREAUDIO
 #include <AvailabilityMacros.h>
 #ifndef MAC_OS_VERSION_12_0
@@ -65,4 +65,4 @@ struct SDL_PrivateAudioData
 #endif
 };
 
-#endif /* SDL_coreaudio_h_ */
+#endif // SDL_coreaudio_h_

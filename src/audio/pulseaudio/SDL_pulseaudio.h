@@ -31,16 +31,16 @@ struct SDL_PrivateAudioData
 {
     char *device_name;
 
-    /* pulseaudio structures */
+    // pulseaudio structures
     pa_stream *stream;
 
-    /* Raw mixing buffer */
+    // Raw mixing buffer
     Uint8 *mixbuf;
 
-    int bytes_requested; /* bytes of data the hardware wants _now_. */
+    int bytes_requested; // bytes of data the hardware wants _now_.
 
     const Uint8 *capturebuf;
     int capturelen;
 };
 
-#endif /* SDL_pulseaudio_h_ */
+#endif // SDL_pulseaudio_h_
