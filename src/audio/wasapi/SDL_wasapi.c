@@ -716,7 +716,7 @@ static void WASAPI_FreeDeviceHandle(SDL_AudioDevice *device)
 
 static int mgmtthrtask_DeinitializeStart(void *userdata)
 {
-    WASAPI_PlatformDeinitializeStart(void);
+    WASAPI_PlatformDeinitializeStart();
     return 0;
 }
 
