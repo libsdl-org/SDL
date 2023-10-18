@@ -338,7 +338,7 @@ extern AudioBootStrap COREAUDIO_bootstrap;
 extern AudioBootStrap DISKAUDIO_bootstrap;
 extern AudioBootStrap DUMMYAUDIO_bootstrap;
 extern AudioBootStrap AAUDIO_bootstrap;
-extern AudioBootStrap openslES_bootstrap;  // !!! FIXME: capitalize this to match the others
+extern AudioBootStrap OPENSLES_bootstrap;
 extern AudioBootStrap ANDROIDAUDIO_bootstrap;
 extern AudioBootStrap PS2AUDIO_bootstrap;
 extern AudioBootStrap PSPAUDIO_bootstrap;
