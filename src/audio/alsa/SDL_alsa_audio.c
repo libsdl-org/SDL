@@ -910,10 +910,10 @@ static void ALSA_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevice
     SDL_bool has_default_output = SDL_FALSE, has_default_capture = SDL_FALSE;
     ALSA_HotplugIteration(&has_default_output, &has_default_capture); // run once now before a thread continues to check.
     if (has_default_output) {
-        *default_output = SDL_AddAudioDevice(/*iscapture=*/SDL_FALSE, "ALSA default output device", NULL, SDL_strdup("default"));
+        *default_output = SDL_AddAudioDevice(/*iscapture=*/SDL_FALSE, "ALSA default output device", NULL, "default");
     }
     if (has_default_capture) {
-        *default_capture = SDL_AddAudioDevice(/*iscapture=*/SDL_TRUE, "ALSA default capture device", NULL, SDL_strdup("default"));
+        *default_capture = SDL_AddAudioDevice(/*iscapture=*/SDL_TRUE, "ALSA default capture device", NULL, "default");
     }
 
 #if SDL_ALSA_HOTPLUG_THREAD
