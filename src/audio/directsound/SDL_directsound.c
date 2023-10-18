@@ -623,15 +623,21 @@ static int DSOUND_OpenDevice(SDL_AudioDevice *device)
     return 0; // good to go.
 }
 
-static void DSOUND_Deinitialize(void)
+static void DSOUND_DeinitializeStart(void)
 {
 #ifdef HAVE_MMDEVICEAPI_H
     if (SupportsIMMDevice) {
         SDL_IMMDevice_Quit();
-        SupportsIMMDevice = SDL_FALSE;
     }
 #endif
+}
+
+static void DSOUND_Deinitialize(void)
+{
     DSOUND_Unload();
+#ifdef HAVE_MMDEVICEAPI_H
+    SupportsIMMDevice = SDL_FALSE;
+#endif
 }
 
 static SDL_bool DSOUND_Init(SDL_AudioDriverImpl *impl)
@@ -654,6 +660,7 @@ static SDL_bool DSOUND_Init(SDL_AudioDriverImpl *impl)
     impl->FlushCapture = DSOUND_FlushCapture;
     impl->CloseDevice = DSOUND_CloseDevice;
     impl->FreeDeviceHandle = DSOUND_FreeDeviceHandle;
+    impl->DeinitializeStart = DSOUND_DeinitializeStart;
     impl->Deinitialize = DSOUND_Deinitialize;
 
     impl->HasCaptureSupport = SDL_TRUE;

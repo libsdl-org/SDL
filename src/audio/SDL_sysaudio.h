@@ -141,6 +141,7 @@ typedef struct SDL_AudioDriverImpl
     void (*FlushCapture)(SDL_AudioDevice *device);
     void (*CloseDevice)(SDL_AudioDevice *device);
     void (*FreeDeviceHandle)(SDL_AudioDevice *device); // SDL is done with this device; free the handle from SDL_AddAudioDevice()
+    void (*DeinitializeStart)(void); // SDL calls this, then starts destroying objects, then calls Deinitialize. This is a good place to stop hotplug detection.
     void (*Deinitialize)(void);
 
     // Some flags to push duplicate code into the core and reduce #ifdefs.

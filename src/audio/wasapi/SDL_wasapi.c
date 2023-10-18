@@ -714,6 +714,18 @@ static void WASAPI_FreeDeviceHandle(SDL_AudioDevice *device)
     WASAPI_ProxyToManagementThread(mgmtthrtask_FreeDeviceHandle, device, &rc);
 }
 
+static int mgmtthrtask_DeinitializeStart(void *userdata)
+{
+    WASAPI_PlatformDeinitializeStart(void);
+    return 0;
+}
+
+static void WASAPI_DeinitializeStart(void)
+{
+    int rc;
+    WASAPI_ProxyToManagementThread(mgmtthrtask_DeinitializeStart, NULL, &rc);
+}
+
 static void WASAPI_Deinitialize(void)
 {
     DeinitManagementThread();
@@ -736,6 +748,7 @@ static SDL_bool WASAPI_Init(SDL_AudioDriverImpl *impl)
     impl->CaptureFromDevice = WASAPI_CaptureFromDevice;
     impl->FlushCapture = WASAPI_FlushCapture;
     impl->CloseDevice = WASAPI_CloseDevice;
+    impl->DeinitializeStart = WASAPI_DeinitializeStart;
     impl->Deinitialize = WASAPI_Deinitialize;
     impl->FreeDeviceHandle = WASAPI_FreeDeviceHandle;
 

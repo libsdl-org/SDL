@@ -968,7 +968,7 @@ static void PULSEAUDIO_DetectDevices(SDL_AudioDevice **default_output, SDL_Audio
     SDL_DestroySemaphore(ready_sem);
 }
 
-static void PULSEAUDIO_Deinitialize(void)
+static void PULSEAUDIO_DeinitializeStart(void)
 {
     if (pulseaudio_hotplug_thread) {
         PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
@@ -978,7 +978,10 @@ static void PULSEAUDIO_Deinitialize(void)
         SDL_WaitThread(pulseaudio_hotplug_thread, NULL);
         pulseaudio_hotplug_thread = NULL;
     }
+}
 
+static void PULSEAUDIO_Deinitialize(void)
+{
     DisconnectFromPulseServer();
 
     SDL_free(default_sink_path);
@@ -1010,6 +1013,7 @@ static SDL_bool PULSEAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->WaitDevice = PULSEAUDIO_WaitDevice;
     impl->GetDeviceBuf = PULSEAUDIO_GetDeviceBuf;
     impl->CloseDevice = PULSEAUDIO_CloseDevice;
+    impl->DeinitializeStart = PULSEAUDIO_DeinitializeStart;
     impl->Deinitialize = PULSEAUDIO_Deinitialize;
     impl->WaitCaptureDevice = PULSEAUDIO_WaitCaptureDevice;
     impl->CaptureFromDevice = PULSEAUDIO_CaptureFromDevice;

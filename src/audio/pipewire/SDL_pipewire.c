@@ -1234,10 +1234,16 @@ static void PIPEWIRE_CloseDevice(SDL_AudioDevice *device)
     SDL_AudioThreadFinalize(device);
 }
 
-static void PIPEWIRE_Deinitialize(void)
+static void PIPEWIRE_DeinitializeStart(void)
 {
     if (pipewire_initialized) {
         hotplug_loop_destroy();
+    }
+}
+
+static void PIPEWIRE_Deinitialize(void)
+{
+    if (pipewire_initialized) {
         deinit_pipewire_library();
         pipewire_initialized = SDL_FALSE;
     }
@@ -1261,6 +1267,7 @@ static SDL_bool PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
     /* Set the function pointers */
     impl->DetectDevices = PIPEWIRE_DetectDevices;
     impl->OpenDevice = PIPEWIRE_OpenDevice;
+    impl->DeinitializeStart = PIPEWIRE_DeinitializeStart;
     impl->Deinitialize = PIPEWIRE_Deinitialize;
     impl->PlayDevice = PIPEWIRE_PlayDevice;
     impl->GetDeviceBuf = PIPEWIRE_GetDeviceBuf;

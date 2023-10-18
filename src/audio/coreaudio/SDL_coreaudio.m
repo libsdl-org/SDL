@@ -940,7 +940,7 @@ static int COREAUDIO_OpenDevice(SDL_AudioDevice *device)
     return (device->hidden->thread != NULL) ? 0 : -1;
 }
 
-static void COREAUDIO_Deinitialize(void)
+static void COREAUDIO_DeinitializeStart(void)
 {
 #ifdef MACOSX_COREAUDIO
     AudioObjectRemovePropertyListener(kAudioObjectSystemObject, &devlist_address, DeviceListChangedNotification, NULL);
@@ -958,7 +958,7 @@ static SDL_bool COREAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->CaptureFromDevice = COREAUDIO_CaptureFromDevice;
     impl->FlushCapture = COREAUDIO_FlushCapture;
     impl->CloseDevice = COREAUDIO_CloseDevice;
-    impl->Deinitialize = COREAUDIO_Deinitialize;
+    impl->DeinitializeStart = COREAUDIO_DeinitializeStart;
 
 #ifdef MACOSX_COREAUDIO
     impl->DetectDevices = COREAUDIO_DetectDevices;

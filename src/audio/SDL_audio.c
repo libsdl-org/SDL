@@ -570,6 +570,7 @@ static int SDL_AudioPlayDevice_Default(SDL_AudioDevice *device, const Uint8 *buf
 static int SDL_AudioWaitCaptureDevice_Default(SDL_AudioDevice *device) { return 0; /* no-op. */ }
 static void SDL_AudioFlushCapture_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static void SDL_AudioCloseDevice_Default(SDL_AudioDevice *device) { /* no-op. */ }
+static void SDL_AudioDeinitializeStart_Default(void) { /* no-op. */ }
 static void SDL_AudioDeinitialize_Default(void) { /* no-op. */ }
 static void SDL_AudioFreeDeviceHandle_Default(SDL_AudioDevice *device) { /* no-op. */ }
 
@@ -622,6 +623,7 @@ static void CompleteAudioEntryPoints(void)
     FILL_STUB(FlushCapture);
     FILL_STUB(CloseDevice);
     FILL_STUB(FreeDeviceHandle);
+    FILL_STUB(DeinitializeStart);
     FILL_STUB(Deinitialize);
     #undef FILL_STUB
 }
@@ -807,6 +809,8 @@ void SDL_QuitAudio(void)
     if (!current_audio.name) {  // not initialized?!
         return;
     }
+
+    current_audio.impl.DeinitializeStart();
 
     // Destroy any audio streams that still exist...
     while (current_audio.existing_streams != NULL) {
