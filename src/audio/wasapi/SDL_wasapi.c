@@ -368,7 +368,7 @@ static int ActivateWasapiDevice(SDL_AudioDevice *device)
 {
     // this blocks because we're either being notified from a background thread or we're running during device open,
     //  both of which won't deadlock vs the device thread.
-    int rc;
+    int rc = -1;
     return ((WASAPI_ProxyToManagementThread(mgmtthrtask_ActivateDevice, device, &rc) < 0) || (rc < 0)) ? -1 : 0;
 }
 
