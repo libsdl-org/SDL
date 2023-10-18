@@ -98,7 +98,7 @@ void SDL_QuitProperties(void)
 
 SDL_PropertiesID SDL_CreateProperties(void)
 {
-    SDL_PropertiesID props;
+    SDL_PropertiesID props = 0;
     SDL_Properties *properties = NULL;
     SDL_bool inserted = SDL_FALSE;
 
