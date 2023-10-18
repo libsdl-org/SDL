@@ -1436,6 +1436,12 @@ static int HIDAPI_JoystickOpen(SDL_Joystick *joystick, int device_index)
     device->updating = SDL_FALSE;
     SDL_UnlockMutex(device->dev_lock);
 
+    /* UpdateDevice() may have called HIDAPI_JoystickDisconnected() if the device went away */
+    if (device->num_joysticks == 0) {
+        SDL_free(hwdata);
+        return SDL_SetError("HIDAPI device disconnected while opening");
+    }
+
     if (!device->driver->OpenJoystick(device, joystick)) {
         /* The open failed, mark this device as disconnected and update devices */
         HIDAPI_JoystickDisconnected(device, joystickID);
