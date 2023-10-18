@@ -107,7 +107,7 @@ void Android_PumpEvents_Blocking(SDL_VideoDevice *_this)
 #endif
 
         ANDROIDAUDIO_PauseDevices();
-        openslES_PauseDevices();
+        OPENSLES_PauseDevices();
         AAUDIO_PauseDevices();
 
         if (SDL_WaitSemaphore(Android_ResumeSem) == 0) {
@@ -118,7 +118,7 @@ void Android_PumpEvents_Blocking(SDL_VideoDevice *_this)
             SDL_SendAppEvent(SDL_EVENT_WILL_ENTER_FOREGROUND);
 
             ANDROIDAUDIO_ResumeDevices();
-            openslES_ResumeDevices();
+            OPENSLES_ResumeDevices();
             AAUDIO_ResumeDevices();
 
             /* Restore the GL Context from here, as this operation is thread dependent */
@@ -181,7 +181,7 @@ void Android_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
 
             if (videodata->pauseAudio) {
                 ANDROIDAUDIO_PauseDevices();
-                openslES_PauseDevices();
+                OPENSLES_PauseDevices();
                 AAUDIO_PauseDevices();
             }
 
@@ -197,7 +197,7 @@ void Android_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
 
             if (videodata->pauseAudio) {
                 ANDROIDAUDIO_ResumeDevices();
-                openslES_ResumeDevices();
+                OPENSLES_ResumeDevices();
                 AAUDIO_ResumeDevices();
             }
 
