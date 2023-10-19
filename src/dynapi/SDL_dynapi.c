@@ -275,6 +275,16 @@ static int SDLCALL SDL_asprintf_LOGSDLCALLS(char **strp, SDL_PRINTF_FORMAT_STRIN
     va_end(ap);
     return retval;
 }
+static int SDLCALL SDL_swprintf_LOGSDLCALLS(SDL_OUT_Z_CAP(maxlen) wchar_t *buf, size_t maxlen, SDL_PRINTF_FORMAT_STRING const wchar_t *fmt, ...)
+{
+    int retval;
+    va_list ap;
+    SDL_Log_REAL("SDL3CALL SDL_swprintf");
+    va_start(ap, fmt);
+    retval = SDL_vswprintf_REAL(buf, maxlen, fmt, ap);
+    va_end(ap);
+    return retval;
+}
 static void SDLCALL SDL_Log_LOGSDLCALLS(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
     va_list ap;
