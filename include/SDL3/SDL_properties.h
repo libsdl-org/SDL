@@ -121,9 +121,9 @@ extern DECLSPEC int SDLCALL SDL_SetProperty(SDL_PropertiesID props, const char *
  *
  * \threadsafety It is safe to call this function from any thread, although
  *               the data returned is not protected and could potentially be
- *               freed if you call SDL_SetProperty() or SDL_ClearProperty() on these properties from another thread. If you
- *               need to avoid this, use SDL_LockProperties() and
- *               SDL_UnlockProperties().
+ *               freed if you call SDL_SetProperty() or SDL_ClearProperty() on
+ *               these properties from another thread. If you need to avoid
+ *               this, use SDL_LockProperties() and SDL_UnlockProperties().
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -155,8 +155,9 @@ extern DECLSPEC int SDLCALL SDL_ClearProperty(SDL_PropertiesID props, const char
  *
  * \param props the properties to destroy
  *
- * \threadsafety This function should not be called while these properties are locked or other threads might
- *               be setting or getting values from these properties.
+ * \threadsafety This function should not be called while these properties are
+ *               locked or other threads might be setting or getting values
+ *               from these properties.
  *
  * \since This function is available since SDL 3.0.0.
  *
