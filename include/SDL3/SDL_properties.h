@@ -151,7 +151,7 @@ extern DECLSPEC int SDLCALL SDL_ClearProperty(SDL_PropertiesID props, const char
  * Destroy a set of properties
  *
  * All properties are deleted and their cleanup functions will be called, if
- * any. The set of properties must be unlocked when it is destroyed.
+ * any.
  *
  * \param props the properties to destroy
  *
