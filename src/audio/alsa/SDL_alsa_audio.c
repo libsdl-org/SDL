@@ -813,10 +813,10 @@ static void ALSA_HotplugIteration(SDL_bool *has_default_output, SDL_bool *has_de
                     SDL_bool have_output = SDL_FALSE;
                     SDL_bool have_input = SDL_FALSE;
 
-                    free(ioid);
+                    free(ioid); // This should NOT be SDL_free()
 
                     if (!isoutput && !isinput) {
-                        free(name);
+                        free(name); // This should NOT be SDL_free()
                         continue;
                     }
 
@@ -826,7 +826,7 @@ static void ALSA_HotplugIteration(SDL_bool *has_default_output, SDL_bool *has_de
                         } else if (has_default_capture && isinput) {
                             *has_default_capture = SDL_TRUE;
                         }
-                        free(name);
+                        free(name); // This should NOT be SDL_free()
                         continue;
                     }
 
