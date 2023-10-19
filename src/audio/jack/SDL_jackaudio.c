@@ -300,8 +300,6 @@ static int JACK_OpenDevice(SDL_AudioDevice *device)
         return SDL_OutOfMemory();
     }
 
-    RefPhysicalAudioDevice(device);  // CloseDevice will always unref this through SDL_AudioThreadFinalize, even if we failed to start the thread.
-
     client = JACK_jack_client_open(GetJackAppName(), JackNoStartServer, &status, NULL);
     device->hidden->client = client;
     if (client == NULL) {

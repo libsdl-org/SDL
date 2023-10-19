@@ -848,7 +848,6 @@ void SDL_QuitAudio(void)
 
 void SDL_AudioThreadFinalize(SDL_AudioDevice *device)
 {
-    UnrefPhysicalAudioDevice(device);
 }
 
 static void MixFloat32Audio(float *dst, const float *src, const int buffer_size)
@@ -864,7 +863,6 @@ static void MixFloat32Audio(float *dst, const float *src, const int buffer_size)
 void SDL_OutputAudioThreadSetup(SDL_AudioDevice *device)
 {
     SDL_assert(!device->iscapture);
-    RefPhysicalAudioDevice(device);  // unref'd when the audio thread terminates (ProvidesOwnCallbackThread implementations should call SDL_AudioThreadFinalize appropriately).
     current_audio.impl.ThreadInit(device);
 }
 
@@ -1014,7 +1012,6 @@ static int SDLCALL OutputAudioThread(void *devicep)  // thread entry point
 void SDL_CaptureAudioThreadSetup(SDL_AudioDevice *device)
 {
     SDL_assert(device->iscapture);
-    RefPhysicalAudioDevice(device);  // unref'd when the audio thread terminates (ProvidesOwnCallbackThread implementations should call SDL_AudioThreadFinalize appropriately).
     current_audio.impl.ThreadInit(device);
 }
 
@@ -1354,13 +1351,14 @@ void SDL_CloseAudioDevice(SDL_AudioDeviceID devid)
     if (logdev) {
         SDL_AudioDevice *device = logdev->physical_device;
         DestroyLogicalAudioDevice(logdev);
-        UnrefPhysicalAudioDevice(device);  // one reference for each logical device.
 
         // !!! FIXME: we _need_ to release this lock, but doing so can cause a race condition if someone opens a device while we're closing it.
         SDL_UnlockMutex(device->lock);  // can't hold the lock or the audio thread will deadlock while we WaitThread it. If not closing, we're done anyhow.
         if (device->logical_devices == NULL) {  // no more logical devices? Close the physical device, too.
             ClosePhysicalAudioDevice(device);
         }
+
+        UnrefPhysicalAudioDevice(device);  // one reference for each logical device.
     }
 }
 
