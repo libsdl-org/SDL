@@ -660,7 +660,7 @@ extern DECLSPEC SDL_AudioDeviceID SDLCALL SDL_GetAudioStreamDevice(SDL_AudioStre
  *
  * \param src_spec The format details of the input audio
  * \param dst_spec The format details of the output audio
- * \returns 0 on success, or -1 on error.
+ * \returns a new audio stream on success, or NULL on failure.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
