@@ -1670,6 +1670,8 @@ int SDL_AddGamepadMappingsFromRW(SDL_RWops *src, SDL_bool freesrc)
     }
     line = buf;
 
+    SDL_LockJoysticks();
+
     PushMappingChangeTracking();
 
     while (line < buf + db_size) {
@@ -1701,6 +1703,8 @@ int SDL_AddGamepadMappingsFromRW(SDL_RWops *src, SDL_bool freesrc)
     }
 
     PopMappingChangeTracking();
+
+    SDL_UnlockJoysticks();
 
     SDL_free(buf);
     return gamepads;
