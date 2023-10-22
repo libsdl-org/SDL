@@ -299,6 +299,7 @@ int SDL_UDEV_LoadLibrary(void)
     if (_this->udev_handle == NULL) {
         _this->udev_handle = SDL_LoadObject(SDL_UDEV_DYNAMIC);
         if (_this->udev_handle != NULL) {
+            SDL_ClearError();
             retval = SDL_UDEV_load_syms();
             if (retval < 0) {
                 SDL_UDEV_UnloadLibrary();
@@ -311,6 +312,7 @@ int SDL_UDEV_LoadLibrary(void)
         for (i = 0; i < SDL_arraysize(SDL_UDEV_LIBS); i++) {
             _this->udev_handle = SDL_LoadObject(SDL_UDEV_LIBS[i]);
             if (_this->udev_handle != NULL) {
+                SDL_ClearError();
                 retval = SDL_UDEV_load_syms();
                 if (retval < 0) {
                     SDL_UDEV_UnloadLibrary();
