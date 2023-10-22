@@ -181,6 +181,8 @@ static int EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
         return SDL_OutOfMemory();
     }
 
+    RefPhysicalAudioDevice(device);  // CloseDevice will always unref this through SDL_AudioThreadFinalize, even if we failed to start the thread.
+
     // limit to native freq
     device->spec.freq = EM_ASM_INT({ return Module['SDL3'].audioContext.sampleRate; });
 

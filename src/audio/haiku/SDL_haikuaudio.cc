@@ -111,6 +111,8 @@ static int HAIKUAUDIO_OpenDevice(SDL_AudioDevice *device)
     }
     SDL_zerop(device->hidden);
 
+    RefPhysicalAudioDevice(device);  // CloseDevice will always unref this through SDL_AudioThreadFinalize, even if we failed to start the thread.
+
     // Parse the audio format and fill the Be raw audio format
     media_raw_audio_format format;
     SDL_zero(format);
