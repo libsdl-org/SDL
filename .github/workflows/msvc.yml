@@ -34,7 +34,12 @@ jobs:
         os.makedirs(builddir)
         with open(f"{ builddir }/CMakeLists.txt", "w") as f:
           f.write(textwrap.dedent(f"""\
-            cmake_minimum_required(VERSION 3.0...3.5)
+            # Always build .PDB symbol file
+            set(CMAKE_POLICY_DEFAULT_CMP0141 "NEW" CACHE STRING "MSVC debug information format flags are selected by an abstraction")
+            set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "ProgramDatabase" CACHE STRING "MSVC debug information format")
+            set(CMAKE_EXE_LINKER_FLAGS "-DEBUG" CACHE STRING "Linker flags for executables")
+            set(CMAKE_SHARED_LINKER_FLAGS "-DEBUG" CACHE STRING "Linker flag for shared libraries")
+            cmake_minimum_required(VERSION 3.0...3.25)
             project(sdl_user)
             add_subdirectory("{ srcdir }" SDL)
           """))
