@@ -1321,9 +1321,14 @@ int SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec, int *
 // this expects the device lock to be held.  !!! FIXME: no it doesn't...?
 static void ClosePhysicalAudioDevice(SDL_AudioDevice *device)
 {
-    SDL_AtomicSet(&device->shutdown, 1);
+    SDL_AtomicSet(&device->shutdown, 1);  // alert device thread that it should terminate.
+
     if (device->thread != NULL) {
-        SDL_WaitThread(device->thread, NULL);
+        if (SDL_GetThreadID(device->thread) == SDL_ThreadID()) {
+            SDL_DetachThread(device->thread);  // we _are_ the device thread, just drift off into the ether when finished, nothing is waiting for us.
+        } else {
+            SDL_WaitThread(device->thread, NULL);   // we're not the device thread, wait for it to terminate.
+        }
         device->thread = NULL;
     }
 
@@ -1345,7 +1350,6 @@ static void ClosePhysicalAudioDevice(SDL_AudioDevice *device)
     SDL_copyp(&device->spec, &device->default_spec);
     device->sample_frames = 0;
     device->silence_value = SDL_GetSilenceValueForFormat(device->spec.format);
-    SDL_AtomicSet(&device->shutdown, 0);  // ready to go again.
 }
 
 void SDL_CloseAudioDevice(SDL_AudioDeviceID devid)
@@ -1441,6 +1445,8 @@ static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec 
     if (SDL_AtomicGet(&device->zombie)) {
         return 0;  // Braaaaaaaaains.
     }
+
+    SDL_AtomicSet(&device->shutdown, 0);  // make sure we don't kill the new thread immediately.
 
     // These start with the backend's implementation, but we might swap them out with zombie versions later.
     device->WaitDevice = current_audio.impl.WaitDevice;
