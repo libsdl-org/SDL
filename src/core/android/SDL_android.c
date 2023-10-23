@@ -1939,12 +1939,12 @@ int Android_JNI_FileOpen(SDL_RWops *ctx,
     }
 
     if (asset_manager == NULL) {
-        return -1;
+        return SDL_SetError("Couldn't create asset manager");
     }
 
     asset = AAssetManager_open(asset_manager, fileName, AASSET_MODE_UNKNOWN);
     if (asset == NULL) {
-        return -1;
+        return SDL_SetError("Couldn't open asset '%s'", fileName);
     }
 
     ctx->hidden.androidio.asset = (void *)asset;
