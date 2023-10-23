@@ -724,10 +724,13 @@ static void add_device(const SDL_bool iscapture, const char *name, void *hint, A
     //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA: adding %s device '%s' (%s)", iscapture ? "capture" : "output", name, desc);
 
     handle = SDL_strdup(name);
-    if (handle == NULL) {
+    dev->name = SDL_strdup(name);
+    if (!handle || !dev->name) {
         if (hint) {
             free(desc); // This should NOT be SDL_free()
         }
+        SDL_free(handle);
+        SDL_free(dev->name);
         SDL_free(dev);
         return;
     }
@@ -739,7 +742,7 @@ static void add_device(const SDL_bool iscapture, const char *name, void *hint, A
     if (hint) {
         free(desc); // This should NOT be SDL_free()
     }
-    dev->name = handle;
+
     dev->iscapture = iscapture;
     dev->next = *pSeen;
     *pSeen = dev;
@@ -875,6 +878,7 @@ static void ALSA_HotplugIteration(SDL_bool *has_default_output, SDL_bool *has_de
             //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA: removing %s device '%s'", dev->iscapture ? "capture" : "output", dev->name);
             next = dev->next;
             SDL_AudioDeviceDisconnected(SDL_FindPhysicalAudioDeviceByHandle(dev->name));
+            SDL_free(dev->name);
             SDL_free(dev);
         }
     }
@@ -939,6 +943,7 @@ static void ALSA_DeinitializeStart(void)
     for (dev = hotplug_devices; dev; dev = next) {
         //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA: at shutdown, removing %s device '%s'", dev->iscapture ? "capture" : "output", dev->name);
         next = dev->next;
+        SDL_free(dev->name);
         SDL_free(dev);
     }
     hotplug_devices = NULL;
