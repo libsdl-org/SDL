@@ -29,8 +29,6 @@
 
 struct SDL_PrivateAudioData
 {
-    char *device_name;
-
     // pulseaudio structures
     pa_stream *stream;
 
