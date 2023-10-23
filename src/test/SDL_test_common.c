@@ -1566,8 +1566,8 @@ static void SDLTest_PrintEvent(SDL_Event *event)
     case SDL_EVENT_SYSTEM_THEME_CHANGED:
         SDL_Log("SDL EVENT: System theme changed to %s\n", SystemThemeName());
         break;
-    case SDL_EVENT_DISPLAY_CONNECTED:
-        SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " connected",
+    case SDL_EVENT_DISPLAY_ADDED:
+        SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " attached",
                 event->display.displayID);
         break;
     case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED:
@@ -1585,8 +1585,8 @@ static void SDLTest_PrintEvent(SDL_Event *event)
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed orientation to %s",
                 event->display.displayID, DisplayOrientationName(event->display.data1));
         break;
-    case SDL_EVENT_DISPLAY_DISCONNECTED:
-        SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " disconnected",
+    case SDL_EVENT_DISPLAY_REMOVED:
+        SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " removed",
                 event->display.displayID);
         break;
     case SDL_EVENT_WINDOW_SHOWN:

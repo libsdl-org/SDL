@@ -689,12 +689,12 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send
     }
 
     if (send_event) {
-        SDL_SendDisplayEvent(new_display, SDL_EVENT_DISPLAY_CONNECTED, 0);
+        SDL_SendDisplayEvent(new_display, SDL_EVENT_DISPLAY_ADDED, 0);
     }
     return id;
 }
 
-void SDL_OnDisplayConnected(SDL_VideoDisplay *display)
+void SDL_OnDisplayAdded(SDL_VideoDisplay *display)
 {
     SDL_Window *window;
 
@@ -715,7 +715,7 @@ void SDL_DelVideoDisplay(SDL_DisplayID displayID, SDL_bool send_event)
     display = _this->displays[display_index];
 
     if (send_event) {
-        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_DISCONNECTED, 0);
+        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_REMOVED, 0);
     }
 
     SDL_free(display->name);

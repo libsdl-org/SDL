@@ -92,8 +92,8 @@ typedef enum
     /* Display events */
     /* 0x150 was SDL_DISPLAYEVENT, reserve the number for sdl2-compat */
     SDL_EVENT_DISPLAY_ORIENTATION = 0x151, /**< Display orientation has changed to data1 */
-    SDL_EVENT_DISPLAY_CONNECTED,           /**< Display has been added to the system */
-    SDL_EVENT_DISPLAY_DISCONNECTED,        /**< Display has been removed from the system */
+    SDL_EVENT_DISPLAY_ADDED,               /**< Display has been added to the system */
+    SDL_EVENT_DISPLAY_REMOVED,             /**< Display has been removed from the system */
     SDL_EVENT_DISPLAY_MOVED,               /**< Display has changed position */
     SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED, /**< Display has changed content scale */
     SDL_EVENT_DISPLAY_FIRST = SDL_EVENT_DISPLAY_ORIENTATION,
