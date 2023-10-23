@@ -549,7 +549,7 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
     device->runLoopAttached = SDL_TRUE;
 
     /* Allocate an instance ID for this device */
-    device->instance_id = SDL_GetNextJoystickInstanceID();
+    device->instance_id = SDL_GetNextObjectID();
 
     /* We have to do some storage of the io_service_t for SDL_HapticOpenFromJoystick */
     ioservice = IOHIDDeviceGetService(ioHIDDeviceObject);

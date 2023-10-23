@@ -790,7 +790,7 @@ SDL_bool HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJo
         }
     }
 
-    joystickID = SDL_GetNextJoystickInstanceID();
+    joystickID = SDL_GetNextObjectID();
     HIDAPI_AddJoystickInstanceToDevice(device, joystickID);
 
     for (i = 0; i < device->num_children; ++i) {

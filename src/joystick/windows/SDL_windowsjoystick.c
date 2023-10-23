@@ -453,7 +453,7 @@ static void SDL_StopJoystickThread(void)
 void WINDOWS_AddJoystickDevice(JoyStick_DeviceData *device)
 {
     device->send_add_event = SDL_TRUE;
-    device->nInstanceID = SDL_GetNextJoystickInstanceID();
+    device->nInstanceID = SDL_GetNextObjectID();
     device->pNext = SYS_Joystick;
     SYS_Joystick = device;
 }

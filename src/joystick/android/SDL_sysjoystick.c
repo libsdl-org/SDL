@@ -378,7 +378,7 @@ int Android_AddJoystick(int device_id, const char *name, const char *desc, int v
     }
     item->naxes = naxes;
     item->nhats = nhats;
-    item->device_instance = SDL_GetNextJoystickInstanceID();
+    item->device_instance = SDL_GetNextObjectID();
     if (SDL_joylist_tail == NULL) {
         SDL_joylist = SDL_joylist_tail = item;
     } else {
