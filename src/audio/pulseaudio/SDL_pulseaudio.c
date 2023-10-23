@@ -392,7 +392,7 @@ failed:
 static void WriteCallback(pa_stream *p, size_t nbytes, void *userdata)
 {
     struct SDL_PrivateAudioData *h = (struct SDL_PrivateAudioData *)userdata;
-    //printf("PULSEAUDIO WRITE CALLBACK! nbytes=%u\n", (unsigned int) nbytes);
+    //SDL_Log("PULSEAUDIO WRITE CALLBACK! nbytes=%u", (unsigned int) nbytes);
     h->bytes_requested += nbytes;
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
 }
@@ -403,16 +403,16 @@ static int PULSEAUDIO_WaitDevice(SDL_AudioDevice *device)
     struct SDL_PrivateAudioData *h = device->hidden;
     int retval = 0;
 
-    //printf("PULSEAUDIO PLAYDEVICE START! mixlen=%d\n", available);
+    //SDL_Log("PULSEAUDIO PLAYDEVICE START! mixlen=%d", available);
 
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
 
     while (!SDL_AtomicGet(&device->shutdown) && (h->bytes_requested == 0)) {
-        //printf("PULSEAUDIO WAIT IN WAITDEVICE!\n");
+        //SDL_Log("PULSEAUDIO WAIT IN WAITDEVICE!");
         PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);
 
         if ((PULSEAUDIO_pa_context_get_state(pulseaudio_context) != PA_CONTEXT_READY) || (PULSEAUDIO_pa_stream_get_state(h->stream) != PA_STREAM_READY)) {
-            //printf("PULSEAUDIO DEVICE FAILURE IN WAITDEVICE!\n");
+            //SDL_Log("PULSEAUDIO DEVICE FAILURE IN WAITDEVICE!");
             retval = -1;
             break;
         }
@@ -427,7 +427,7 @@ static int PULSEAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, i
 {
     struct SDL_PrivateAudioData *h = device->hidden;
 
-    //printf("PULSEAUDIO PLAYDEVICE START! mixlen=%d\n", available);
+    //SDL_Log("PULSEAUDIO PLAYDEVICE START! mixlen=%d", available);
 
     SDL_assert(h->bytes_requested >= buffer_size);
 
@@ -439,10 +439,10 @@ static int PULSEAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, i
         return -1;
     }
 
-    //printf("PULSEAUDIO FEED! nbytes=%d\n", buffer_size);
+    //SDL_Log("PULSEAUDIO FEED! nbytes=%d", buffer_size);
     h->bytes_requested -= buffer_size;
 
-    //printf("PULSEAUDIO PLAYDEVICE END! written=%d\n", written);
+    //SDL_Log("PULSEAUDIO PLAYDEVICE END! written=%d", written);
     return 0;
 }
 
@@ -464,7 +464,7 @@ static Uint8 *PULSEAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 
 static void ReadCallback(pa_stream *p, size_t nbytes, void *userdata)
 {
-    //printf("PULSEAUDIO READ CALLBACK! nbytes=%u\n", (unsigned int) nbytes);
+    //SDL_Log("PULSEAUDIO READ CALLBACK! nbytes=%u", (unsigned int) nbytes);
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);  // the capture code queries what it needs, we just need to signal to end any wait
 }
 
@@ -483,7 +483,7 @@ static int PULSEAUDIO_WaitCaptureDevice(SDL_AudioDevice *device)
     while (!SDL_AtomicGet(&device->shutdown)) {
         PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);
         if ((PULSEAUDIO_pa_context_get_state(pulseaudio_context) != PA_CONTEXT_READY) || (PULSEAUDIO_pa_stream_get_state(h->stream) != PA_STREAM_READY)) {
-            //printf("PULSEAUDIO DEVICE FAILURE IN WAITCAPTUREDEVICE!\n");
+            //SDL_Log("PULSEAUDIO DEVICE FAILURE IN WAITCAPTUREDEVICE!");
             retval = -1;
             break;
         } else if (PULSEAUDIO_pa_stream_readable_size(h->stream) > 0) {
@@ -496,7 +496,7 @@ static int PULSEAUDIO_WaitCaptureDevice(SDL_AudioDevice *device)
                 PULSEAUDIO_pa_stream_drop(h->stream);  // drop this fragment.
             } else {
                 // store this fragment's data for use with CaptureFromDevice
-                //printf("PULSEAUDIO: captured %d new bytes\n", (int) nbytes);
+                //SDL_Log("PULSEAUDIO: captured %d new bytes", (int) nbytes);
                 h->capturebuf = (const Uint8 *)data;
                 h->capturelen = nbytes;
                 break;
@@ -516,7 +516,7 @@ static int PULSEAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, i
     if (h->capturebuf != NULL) {
         const int cpy = SDL_min(buflen, h->capturelen);
         if (cpy > 0) {
-            //printf("PULSEAUDIO: fed %d captured bytes\n", cpy);
+            //SDL_Log("PULSEAUDIO: fed %d captured bytes", cpy);
             SDL_memcpy(buffer, h->capturebuf, cpy);
             h->capturebuf += cpy;
             h->capturelen -= cpy;
@@ -550,7 +550,7 @@ static void PULSEAUDIO_FlushCapture(SDL_AudioDevice *device)
     while (!SDL_AtomicGet(&device->shutdown) && (PULSEAUDIO_pa_stream_readable_size(h->stream) > 0)) {
         PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);
         if ((PULSEAUDIO_pa_context_get_state(pulseaudio_context) != PA_CONTEXT_READY) || (PULSEAUDIO_pa_stream_get_state(h->stream) != PA_STREAM_READY)) {
-            //printf("PULSEAUDIO DEVICE FAILURE IN FLUSHCAPTURE!\n");
+            //SDL_Log("PULSEAUDIO DEVICE FAILURE IN FLUSHCAPTURE!");
             SDL_AudioDeviceDisconnected(device);
             break;
         }
@@ -648,7 +648,7 @@ static int PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
     closefmts = SDL_ClosestAudioFormats(device->spec.format);
     while ((test_format = *(closefmts++)) != 0) {
 #ifdef DEBUG_AUDIO
-        fprintf(stderr, "Trying format 0x%4.4x\n", test_format);
+        SDL_Log("pulseaudio: Trying format 0x%4.4x", test_format);
 #endif
         switch (test_format) {
         case SDL_AUDIO_U8:
@@ -843,13 +843,13 @@ static void SourceInfoCallback(pa_context *c, const pa_source_info *i, int is_la
 static void ServerInfoCallback(pa_context *c, const pa_server_info *i, void *data)
 {
     if (!default_sink_path || (SDL_strcmp(i->default_sink_name, default_sink_path) != 0)) {
-        //printf("DEFAULT SINK PATH CHANGED TO '%s'\n", i->default_sink_name);
+        //SDL_Log("DEFAULT SINK PATH CHANGED TO '%s'", i->default_sink_name);
         SDL_free(default_sink_path);
         default_sink_path = SDL_strdup(i->default_sink_name);
     }
 
     if (!default_source_path || (SDL_strcmp(i->default_source_name, default_source_path) != 0)) {
-        //printf("DEFAULT SOURCE PATH CHANGED TO '%s'\n", i->default_source_name);
+        //SDL_Log("DEFAULT SOURCE PATH CHANGED TO '%s'", i->default_source_name);
         SDL_free(default_source_path);
         default_source_path = SDL_strdup(i->default_source_name);
     }
