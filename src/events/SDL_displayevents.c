@@ -54,8 +54,8 @@ int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, 
     }
 
     switch (displayevent) {
-    case SDL_EVENT_DISPLAY_CONNECTED:
-        SDL_OnDisplayConnected(display);
+    case SDL_EVENT_DISPLAY_ADDED:
+        SDL_OnDisplayAdded(display);
         break;
     default:
         break;

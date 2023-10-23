@@ -521,7 +521,7 @@ extern SDL_bool SDL_HasWindows(void);
 extern void SDL_RelativeToGlobalForWindow(SDL_Window *window, int rel_x, int rel_y, int *abs_x, int *abs_y);
 extern void SDL_GlobalToRelativeForWindow(SDL_Window *window, int abs_x, int abs_y, int *rel_x, int *rel_y);
 
-extern void SDL_OnDisplayConnected(SDL_VideoDisplay *display);
+extern void SDL_OnDisplayAdded(SDL_VideoDisplay *display);
 extern void SDL_OnWindowShown(SDL_Window *window);
 extern void SDL_OnWindowHidden(SDL_Window *window);
 extern void SDL_OnWindowMoved(SDL_Window *window);

@@ -677,7 +677,7 @@ void WIN_RefreshDisplays(SDL_VideoDevice *_this)
         SDL_VideoDisplay *display = _this->displays[i];
         SDL_DisplayData *driverdata = display->driverdata;
         if (driverdata->state == DisplayAdded) {
-            SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_CONNECTED, 0);
+            SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ADDED, 0);
         }
     }
 }
