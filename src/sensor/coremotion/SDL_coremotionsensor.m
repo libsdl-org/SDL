@@ -63,12 +63,12 @@ static int SDL_COREMOTION_SensorInit(void)
         i = 0;
         if (SDL_motion_manager.accelerometerAvailable) {
             SDL_sensors[i].type = SDL_SENSOR_ACCEL;
-            SDL_sensors[i].instance_id = SDL_GetNextSensorInstanceID();
+            SDL_sensors[i].instance_id = SDL_GetNextObjectID();
             ++i;
         }
         if (SDL_motion_manager.gyroAvailable) {
             SDL_sensors[i].type = SDL_SENSOR_GYRO;
-            SDL_sensors[i].instance_id = SDL_GetNextSensorInstanceID();
+            SDL_sensors[i].instance_id = SDL_GetNextObjectID();
             ++i;
         }
         SDL_sensors_count = sensors_count;

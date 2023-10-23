@@ -58,7 +58,6 @@ static SDL_AtomicInt SDL_sensor_lock_pending;
 static int SDL_sensors_locked;
 static SDL_bool SDL_sensors_initialized;
 static SDL_Sensor *SDL_sensors SDL_GUARDED_BY(SDL_sensor_lock) = NULL;
-static SDL_AtomicInt SDL_last_sensor_instance_id;
 static char SDL_sensor_magic;
 
 #define CHECK_SENSOR_MAGIC(sensor, retval)              \
@@ -216,15 +215,6 @@ SDL_SensorID *SDL_GetSensors(int *count)
     SDL_UnlockSensors();
 
     return sensors;
-}
-
-/*
- * Return the next available sensor instance ID
- * This may be called by drivers from multiple threads, unprotected by any locks
- */
-SDL_SensorID SDL_GetNextSensorInstanceID(void)
-{
-    return SDL_AtomicIncRef(&SDL_last_sensor_instance_id) + 1;
 }
 
 /*

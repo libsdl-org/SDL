@@ -54,9 +54,9 @@ static int N3DS_SensorInit(void)
     }
 
     N3DS_sensors[0].type = SDL_SENSOR_ACCEL;
-    N3DS_sensors[0].instance_id = SDL_GetNextSensorInstanceID();
+    N3DS_sensors[0].instance_id = SDL_GetNextObjectID();
     N3DS_sensors[1].type = SDL_SENSOR_GYRO;
-    N3DS_sensors[1].instance_id = SDL_GetNextSensorInstanceID();
+    N3DS_sensors[1].instance_id = SDL_GetNextObjectID();
     return 0;
 }
 

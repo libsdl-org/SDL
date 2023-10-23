@@ -31,9 +31,6 @@ struct SDL_SensorDriver;
 
 /* Useful functions and variables from SDL_sensor.c */
 
-/* Function to get the next available sensor instance ID */
-extern SDL_SensorID SDL_GetNextSensorInstanceID(void);
-
 /* Initialization and shutdown functions */
 extern int SDL_InitSensors(void);
 extern void SDL_QuitSensors(void);

@@ -517,7 +517,6 @@ int SDL_VideoInit(const char *driver_name)
     pre_driver_error. */
     _this = video;
     _this->name = bootstrap[i]->name;
-    _this->next_object_id = 1;
     _this->thread = SDL_ThreadID();
 
     /* Set some very sane GL defaults */
@@ -664,7 +663,7 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send
     _this->displays = displays;
     _this->displays[_this->num_displays++] = new_display;
 
-    id = _this->next_object_id++;
+    id = SDL_GetNextObjectID();
     SDL_memcpy(new_display, display, sizeof(*new_display));
     new_display->id = id;
     new_display->device = _this;
@@ -1950,7 +1949,7 @@ static SDL_Window *SDL_CreateWindowInternal(const char *title, int x, int y, int
         return NULL;
     }
     window->magic = &_this->window_magic;
-    window->id = _this->next_object_id++;
+    window->id = SDL_GetNextObjectID();
     window->windowed.x = window->x = x;
     window->windowed.y = window->y = y;
     window->windowed.w = window->w = w;
@@ -2116,7 +2115,7 @@ SDL_Window *SDL_CreateWindowFrom(const void *data)
         return NULL;
     }
     window->magic = &_this->window_magic;
-    window->id = _this->next_object_id++;
+    window->id = SDL_GetNextObjectID();
     window->flags = flags;
     window->is_destroying = SDL_FALSE;
     window->display_scale = 1.0f;

@@ -56,9 +56,9 @@ static int SDL_VITA_SensorInit(void)
     }
 
     SDL_sensors[0].type = SDL_SENSOR_ACCEL;
-    SDL_sensors[0].instance_id = SDL_GetNextSensorInstanceID();
+    SDL_sensors[0].instance_id = SDL_GetNextObjectID();
     SDL_sensors[1].type = SDL_SENSOR_GYRO;
-    SDL_sensors[1].instance_id = SDL_GetNextSensorInstanceID();
+    SDL_sensors[1].instance_id = SDL_GetNextObjectID();
 
     return 0;
 }

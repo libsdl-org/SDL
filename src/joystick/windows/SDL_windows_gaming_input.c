@@ -489,7 +489,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             WindowsGamingInputControllerState *controllers = SDL_realloc(wgi.controllers, sizeof(wgi.controllers[0]) * (wgi.controller_count + 1));
             if (controllers) {
                 WindowsGamingInputControllerState *state = &controllers[wgi.controller_count];
-                SDL_JoystickID joystickID = SDL_GetNextJoystickInstanceID();
+                SDL_JoystickID joystickID = SDL_GetNextObjectID();
 
                 SDL_zerop(state);
                 state->instance_id = joystickID;

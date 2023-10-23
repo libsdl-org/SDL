@@ -152,7 +152,7 @@ static int SDL_ANDROID_SensorInit(void)
 
         for (i = 0; i < sensors_count; ++i) {
             SDL_sensors[i].asensor = sensors[i];
-            SDL_sensors[i].instance_id = SDL_GetNextSensorInstanceID();
+            SDL_sensors[i].instance_id = SDL_GetNextObjectID();
         }
         SDL_sensors_count = sensors_count;
     }

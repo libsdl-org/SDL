@@ -561,7 +561,7 @@ static void IOS_AddJoystickDevice(GCController *controller, SDL_bool acceleromet
     }
 
     device->accelerometer = accelerometer;
-    device->instance_id = SDL_GetNextJoystickInstanceID();
+    device->instance_id = SDL_GetNextObjectID();
 
     if (accelerometer) {
 #ifdef SDL_JOYSTICK_iOS_ACCELEROMETER

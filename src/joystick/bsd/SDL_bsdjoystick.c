@@ -466,7 +466,7 @@ static int MaybeAddDevice(const char *path)
         return -1;
     }
 
-    item->device_instance = SDL_GetNextJoystickInstanceID();
+    item->device_instance = SDL_GetNextObjectID();
     if (SDL_joylist_tail == NULL) {
         SDL_joylist = SDL_joylist_tail = item;
     } else {

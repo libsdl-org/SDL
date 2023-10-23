@@ -315,7 +315,7 @@ static int ConnectSensor(ISensor *sensor)
     ++SDL_num_sensors;
 
     SDL_zerop(new_sensor);
-    new_sensor->id = SDL_GetNextSensorInstanceID();
+    new_sensor->id = SDL_GetNextObjectID();
     new_sensor->sensor = sensor;
     new_sensor->type = type;
     new_sensor->name = name;
