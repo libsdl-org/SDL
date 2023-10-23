@@ -861,6 +861,11 @@ static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
         _this->PumpEvents(_this);
     }
 
+#ifndef SDL_AUDIO_DISABLED
+    extern void SDL_UpdateAudio(void);  // this is internal-only, so it doesn't have a hint and is not a public API.
+    SDL_UpdateAudio();
+#endif
+
 #ifndef SDL_SENSOR_DISABLED
     /* Check for sensor state change */
     if (SDL_update_sensors) {
