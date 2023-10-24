@@ -24,6 +24,7 @@
 
 #include "SDL_events_c.h"
 #include "../SDL_hints_c.h"
+#include "../audio/SDL_audio_c.h"
 #include "../timer/SDL_timer_c.h"
 #ifndef SDL_JOYSTICK_DISABLED
 #include "../joystick/SDL_joystick_c.h"
@@ -862,7 +863,6 @@ static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
     }
 
 #ifndef SDL_AUDIO_DISABLED
-    extern void SDL_UpdateAudio(void);  // this is internal-only, so it doesn't have a hint and is not a public API.
     SDL_UpdateAudio();
 #endif
 
