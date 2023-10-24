@@ -203,11 +203,19 @@ static int LoadALSALibrary(void)
 
 #endif // SDL_AUDIO_DRIVER_ALSA_DYNAMIC
 
+typedef struct ALSA_Device
+{
+    char *name;
+    SDL_bool iscapture;
+    struct ALSA_Device *next;
+} ALSA_Device;
+
 static const char *get_audio_device(void *handle, const int channels)
 {
     SDL_assert(handle != NULL);  // SDL2 used NULL to mean "default" but that's not true in SDL3.
 
-    if (SDL_strcmp((const char *) handle, "default") == 0) {
+    ALSA_Device *dev = (ALSA_Device *)handle;
+    if (SDL_strcmp(dev->name, "default") == 0) {
         const char *device = SDL_getenv("AUDIODEV"); // Is there a standard variable name?
         if (device != NULL) {
             return device;
@@ -219,7 +227,7 @@ static const char *get_audio_device(void *handle, const int channels)
         return "default";
     }
 
-    return (const char *)handle;
+    return dev->name;
 }
 
 // !!! FIXME: is there a channel swizzler in alsalib instead?
@@ -690,7 +698,6 @@ static void add_device(const SDL_bool iscapture, const char *name, void *hint, A
 {
     ALSA_Device *dev = SDL_malloc(sizeof(ALSA_Device));
     char *desc;
-    char *handle = NULL;
     char *ptr;
 
     if (dev == NULL) {
@@ -723,13 +730,11 @@ static void add_device(const SDL_bool iscapture, const char *name, void *hint, A
 
     //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA: adding %s device '%s' (%s)", iscapture ? "capture" : "output", name, desc);
 
-    handle = SDL_strdup(name);
     dev->name = SDL_strdup(name);
-    if (!handle || !dev->name) {
+    if (!dev->name) {
         if (hint) {
             free(desc); // This should NOT be SDL_free()
         }
-        SDL_free(handle);
         SDL_free(dev->name);
         SDL_free(dev);
         return;
@@ -738,7 +743,7 @@ static void add_device(const SDL_bool iscapture, const char *name, void *hint, A
     // Note that spec is NULL, because we are required to open the device before
     //  acquiring the mix format, making this information inaccessible at
     //  enumeration time
-    SDL_AddAudioDevice(iscapture, desc, NULL, handle);
+    SDL_AddAudioDevice(iscapture, desc, NULL, dev);
     if (hint) {
         free(desc); // This should NOT be SDL_free()
     }
@@ -877,7 +882,7 @@ static void ALSA_HotplugIteration(SDL_bool *has_default_output, SDL_bool *has_de
         for (ALSA_Device *dev = unseen; dev; dev = next) {
             //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA: removing %s device '%s'", dev->iscapture ? "capture" : "output", dev->name);
             next = dev->next;
-            SDL_AudioDeviceDisconnected(SDL_FindPhysicalAudioDeviceByHandle(dev->name));
+            SDL_AudioDeviceDisconnected(SDL_FindPhysicalAudioDeviceByHandle(dev));
             SDL_free(dev->name);
             SDL_free(dev);
         }
@@ -949,11 +954,6 @@ static void ALSA_DeinitializeStart(void)
     hotplug_devices = NULL;
 }
 
-static void ALSA_FreeDeviceHandle(SDL_AudioDevice *device)
-{
-    SDL_free(device->handle);
-}
-
 static void ALSA_Deinitialize(void)
 {
     UnloadALSALibrary();
@@ -976,7 +976,6 @@ static SDL_bool ALSA_Init(SDL_AudioDriverImpl *impl)
     impl->WaitCaptureDevice = ALSA_WaitDevice;
     impl->CaptureFromDevice = ALSA_CaptureFromDevice;
     impl->FlushCapture = ALSA_FlushCapture;
-    impl->FreeDeviceHandle = ALSA_FreeDeviceHandle;
 
     impl->HasCaptureSupport = SDL_TRUE;
 
