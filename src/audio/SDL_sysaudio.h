@@ -97,9 +97,6 @@ extern int SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, co
 // Find the SDL_AudioDevice associated with the handle supplied to SDL_AddAudioDevice. NULL if not found. DOES NOT LOCK THE DEVICE.
 extern SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandle(void *handle);
 
-// Find the SDL_AudioDevice associated with the handle as a string supplied to SDL_AddAudioDevice. NULL if not found. DOES NOT LOCK THE DEVICE.
-extern SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandleString(const char *handle);
-
 // Find an SDL_AudioDevice, selected by a callback. NULL if not found. DOES NOT LOCK THE DEVICE.
 extern SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByCallback(SDL_bool (*callback)(SDL_AudioDevice *device, void *userdata), void *userdata);
 
