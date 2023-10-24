@@ -26,9 +26,8 @@
 
 #include "../SDL_systhread.h"
 
-/* N3DS has very limited RAM (128MB), so we put a limit on thread stack size. */
-#define N3DS_THREAD_STACK_SIZE_MAX     (16 * 1024)
-#define N3DS_THREAD_STACK_SIZE_DEFAULT (4 * 1024)
+/* N3DS has very limited RAM (128MB), so we set a low default thread stack size. */
+#define N3DS_THREAD_STACK_SIZE_DEFAULT (80 * 1024)
 
 #define N3DS_THREAD_PRIORITY_LOW           0x3F /**< Minimum priority */
 #define N3DS_THREAD_PRIORITY_MEDIUM        0x2F /**< Slightly higher than main thread (0x30) */
@@ -80,14 +79,6 @@ static size_t GetStackSize(size_t requested_size)
         return N3DS_THREAD_STACK_SIZE_DEFAULT;
     }
 
-    if (requested_size > N3DS_THREAD_STACK_SIZE_MAX) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_SYSTEM,
-                    "Requested a thread size of %zu,"
-                    " falling back to the maximum supported of %zu\n",
-                    requested_size,
-                    N3DS_THREAD_STACK_SIZE_MAX);
-        requested_size = N3DS_THREAD_STACK_SIZE_MAX;
-    }
     return requested_size;
 }
 
