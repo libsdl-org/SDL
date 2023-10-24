@@ -58,8 +58,8 @@ static SDL_AtomicInt pulseaudio_hotplug_thread_active;
 // to the change.
 static char *default_sink_path = NULL;
 static char *default_source_path = NULL;
-static Uint32 default_sink_hash = 0;
-static Uint32 default_source_hash = 0;
+static SDL_bool default_sink_changed = SDL_FALSE;
+static SDL_bool default_source_changed = SDL_FALSE;
 
 
 static const char *(*PULSEAUDIO_pa_get_library_version)(void);
@@ -807,25 +807,21 @@ static void ServerInfoCallback(pa_context *c, const pa_server_info *i, void *dat
 {
     //SDL_Log("PULSEAUDIO ServerInfoCallback!");
 
-    Uint32 hash;  // just hash the strings so we can decide if this is different without having to manage a string copy.
-
-    hash = SDL_HashString(i->default_sink_name, NULL);
-    if (hash != default_sink_hash) {
+    if (!default_sink_path || (SDL_strcmp(default_sink_path, i->default_sink_name) != 0)) {
         char *str = SDL_strdup(i->default_sink_name);
         if (str) {
             SDL_free(default_sink_path);
             default_sink_path = str;
-            default_sink_hash = hash;
+            default_sink_changed = SDL_TRUE;
         }
     }
 
-    hash = SDL_HashString(i->default_source_name, NULL);
-    if (hash != default_source_hash) {
+    if (!default_source_path || (SDL_strcmp(default_source_path, i->default_source_name) != 0)) {
         char *str = SDL_strdup(i->default_source_name);
         if (str) {
             SDL_free(default_source_path);
             default_source_path = str;
-            default_source_hash = hash;
+            default_source_changed = SDL_TRUE;
         }
     }
 
@@ -876,22 +872,25 @@ static void HotplugCallback(pa_context *c, pa_subscription_event_type_t t, uint3
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
 }
 
-static void CheckDefaultDevice(char *new_device_path, Uint32 *prev_hash, Uint32 new_hash)
+static SDL_bool CheckDefaultDevice(const SDL_bool changed, char *device_path)
 {
-    if (new_device_path && (*prev_hash != new_hash)) {
-        SDL_AudioDevice *device = SDL_FindPhysicalAudioDeviceByCallback(FindAudioDeviceByPath, new_device_path);
-        if (device) {  // if NULL, we might still be waiting for a SinkInfoCallback or something, we'll try later.
-            *prev_hash = new_hash;
-            SDL_DefaultAudioDeviceChanged(device);
-        }
+    if (!changed) {
+        return SDL_FALSE;  // nothing's happening, leave the flag marked as unchanged.
+    } else if (!device_path) {
+        return SDL_TRUE;  // check again later, we don't have a device name...
     }
+
+    SDL_AudioDevice *device = SDL_FindPhysicalAudioDeviceByCallback(FindAudioDeviceByPath, device_path);
+    if (device) {  // if NULL, we might still be waiting for a SinkInfoCallback or something, we'll try later.
+        SDL_DefaultAudioDeviceChanged(device);
+        return SDL_FALSE;  // changing complete, set flag to unchanged for future tests.
+    }
+    return SDL_TRUE;  // couldn't find the changed device, leave it marked as changed to try again later.
 }
 
 // this runs as a thread while the Pulse target is initialized to catch hotplug events.
 static int SDLCALL HotplugThread(void *data)
 {
-    Uint32 prev_default_sink_hash = default_sink_hash;
-    Uint32 prev_default_source_hash = default_source_hash;
     pa_operation *op;
 
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_LOW);
@@ -911,27 +910,23 @@ static int SDLCALL HotplugThread(void *data)
         }
 
         // Update default devices; don't hold the pulse lock during this, since it could deadlock vs a playing device that we're about to lock here.
-        char *current_default_sink = default_sink_path;
-        char *current_default_source = default_source_path;
-        default_sink_path = default_source_path = NULL;  // make sure we own these before releasing the lock.
-        const Uint32 current_default_sink_hash = default_sink_hash;
-        const Uint32 current_default_source_hash = default_source_hash;
+        SDL_bool check_default_sink = default_sink_changed;
+        SDL_bool check_default_source = default_source_changed;
+        char *current_default_sink = check_default_sink ? SDL_strdup(default_sink_path) : NULL;
+        char *current_default_source = check_default_source ? SDL_strdup(default_source_path) : NULL;
+        default_sink_changed = default_source_changed = SDL_FALSE;
         PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
-        CheckDefaultDevice(current_default_sink, &prev_default_sink_hash, current_default_sink_hash);
-        CheckDefaultDevice(current_default_source, &prev_default_source_hash, current_default_source_hash);
+        check_default_sink = CheckDefaultDevice(check_default_sink, current_default_sink);
+        check_default_source = CheckDefaultDevice(check_default_source, current_default_source);
         PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
 
-        if (default_sink_path) {
-            SDL_free(current_default_sink);  // uhoh, something else became default while we were unlocked. Dump ours.
-        } else {
-            default_sink_path = current_default_sink;  // put string back for later.
-        }
+        // free our copies (which will be NULL if nothing changed)
+        SDL_free(current_default_sink);
+        SDL_free(current_default_source);
 
-        if (default_source_path) {
-            SDL_free(current_default_source);  // uhoh, something else became default while we were unlocked. Dump ours.
-        } else {
-            default_source_path = current_default_source;  // put string back for later.
-        }
+        // set these to true if we didn't handle the change OR there was _another_ change while we were working unlocked.
+        default_sink_changed = (default_sink_changed || check_default_sink) ? SDL_TRUE : SDL_FALSE;
+        default_source_changed = (default_source_changed || check_default_source) ? SDL_TRUE : SDL_FALSE;
     }
 
     if (op) {
@@ -953,8 +948,13 @@ static void PULSEAUDIO_DetectDevices(SDL_AudioDevice **default_output, SDL_Audio
     WaitForPulseOperation(PULSEAUDIO_pa_context_get_source_info_list(pulseaudio_context, SourceInfoCallback, NULL));
     PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
 
-    *default_output = SDL_FindPhysicalAudioDeviceByCallback(FindAudioDeviceByPath, default_sink_path);
-    *default_capture = SDL_FindPhysicalAudioDeviceByCallback(FindAudioDeviceByPath, default_source_path);
+    if (default_sink_path) {
+        *default_output = SDL_FindPhysicalAudioDeviceByCallback(FindAudioDeviceByPath, default_sink_path);
+    }
+
+    if (default_source_path) {
+        *default_capture = SDL_FindPhysicalAudioDeviceByCallback(FindAudioDeviceByPath, default_source_path);
+    }
 
     // ok, we have a sane list, let's set up hotplug notifications now...
     SDL_AtomicSet(&pulseaudio_hotplug_thread_active, 1);
@@ -988,10 +988,10 @@ static void PULSEAUDIO_Deinitialize(void)
 
     SDL_free(default_sink_path);
     default_sink_path = NULL;
-    default_sink_hash = 0;
+    default_sink_changed = SDL_FALSE;
     SDL_free(default_source_path);
     default_source_path = NULL;
-    default_source_hash = 0;
+    default_source_changed = SDL_FALSE;
 
     UnloadPulseAudioLibrary();
 }
