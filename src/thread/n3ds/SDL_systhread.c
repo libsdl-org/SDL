@@ -49,15 +49,22 @@ static void ThreadEntry(void *arg)
 
 int SDL_SYS_CreateThread(SDL_Thread *thread)
 {
-    s32 priority;
+    s32 priority = 0x30;
+    int cpu = -1;
     size_t stack_size = GetStackSize(thread->stacksize);
+
     svcGetThreadPriority(&priority, CUR_THREAD_HANDLE);
+
+    /* prefer putting audio thread on system core */
+    if (thread->name && SDL_strcmp(thread->name, "SDLAudioP") == 0 && R_SUCCEEDED(APT_SetAppCpuTimeLimit(30))) {
+        cpu = 1;
+    }
 
     thread->handle = threadCreate(ThreadEntry,
                                   thread,
                                   stack_size,
                                   priority,
-                                  -1,
+                                  cpu,
                                   false);
 
     if (thread->handle == NULL) {
