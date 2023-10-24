@@ -32,6 +32,7 @@
 static dspHookCookie dsp_hook;
 static SDL_AudioDevice *audio_device;
 
+// fully local functions related to the wavebufs / DSP, not the same as the `device->lock` SDL_Mutex!
 static SDL_INLINE void contextLock(SDL_AudioDevice *device)
 {
     LightLock_Lock(&device->hidden->lock);
