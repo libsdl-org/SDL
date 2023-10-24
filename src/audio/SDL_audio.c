@@ -1265,6 +1265,21 @@ SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandle(void *handle)
     return SDL_FindPhysicalAudioDeviceByCallback(TestDeviceHandleCallback, handle);
 }
 
+static SDL_bool TestDeviceHandleStringCallback(SDL_AudioDevice *device, void *handle)
+{
+    if (handle && device->handle) {
+        if (SDL_strcmp((char *)handle, (char *)device->handle) == 0) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandleString(const char *handle)
+{
+    return SDL_FindPhysicalAudioDeviceByCallback(TestDeviceHandleStringCallback, (void *)handle);
+}
+
 char *SDL_GetAudioDeviceName(SDL_AudioDeviceID devid)
 {
     SDL_AudioDevice *device = ObtainPhysicalAudioDevice(devid);

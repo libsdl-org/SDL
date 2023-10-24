@@ -877,7 +877,7 @@ static void ALSA_HotplugIteration(SDL_bool *has_default_output, SDL_bool *has_de
         for (ALSA_Device *dev = unseen; dev; dev = next) {
             //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA: removing %s device '%s'", dev->iscapture ? "capture" : "output", dev->name);
             next = dev->next;
-            SDL_AudioDeviceDisconnected(SDL_FindPhysicalAudioDeviceByHandle(dev->name));
+            SDL_AudioDeviceDisconnected(SDL_FindPhysicalAudioDeviceByHandleString(dev->name));
             SDL_free(dev->name);
             SDL_free(dev);
         }
