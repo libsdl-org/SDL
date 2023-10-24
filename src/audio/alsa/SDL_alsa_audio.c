@@ -687,13 +687,6 @@ static int ALSA_OpenDevice(SDL_AudioDevice *device)
     return 0;  // We're ready to rock and roll. :-)
 }
 
-typedef struct ALSA_Device
-{
-    char *name;
-    SDL_bool iscapture;
-    struct ALSA_Device *next;
-} ALSA_Device;
-
 static void add_device(const SDL_bool iscapture, const char *name, void *hint, ALSA_Device **pSeen)
 {
     ALSA_Device *dev = SDL_malloc(sizeof(ALSA_Device));
