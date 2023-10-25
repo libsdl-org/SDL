@@ -210,6 +210,18 @@ typedef struct ALSA_Device
     struct ALSA_Device *next;
 } ALSA_Device;
 
+static const ALSA_Device default_output_handle = {
+    "default",
+    SDL_FALSE,
+    NULL
+};
+
+static const ALSA_Device default_capture_handle = {
+    "default",
+    SDL_TRUE,
+    NULL
+};
+
 static const char *get_audio_device(void *handle, const int channels)
 {
     SDL_assert(handle != NULL);  // SDL2 used NULL to mean "default" but that's not true in SDL3.
@@ -911,10 +923,10 @@ static void ALSA_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevice
     SDL_bool has_default_output = SDL_FALSE, has_default_capture = SDL_FALSE;
     ALSA_HotplugIteration(&has_default_output, &has_default_capture); // run once now before a thread continues to check.
     if (has_default_output) {
-        *default_output = SDL_AddAudioDevice(/*iscapture=*/SDL_FALSE, "ALSA default output device", NULL, SDL_strdup("default"));
+        *default_output = SDL_AddAudioDevice(/*iscapture=*/SDL_FALSE, "ALSA default output device", NULL, (void*)&default_output_handle);
     }
     if (has_default_capture) {
-        *default_capture = SDL_AddAudioDevice(/*iscapture=*/SDL_TRUE, "ALSA default capture device", NULL, SDL_strdup("default"));
+        *default_capture = SDL_AddAudioDevice(/*iscapture=*/SDL_TRUE, "ALSA default capture device", NULL, (void*)&default_capture_handle);
     }
 
 #if SDL_ALSA_HOTPLUG_THREAD
