@@ -30,10 +30,8 @@ struct SDL_RWLock
     SDL_threadID write_owner;
 };
 
-/* Create a rwlock */
 extern "C" SDL_RWLock *SDL_CreateRWLock(void)
 {
-    /* Allocate and initialize the rwlock */
     try {
         SDL_RWLock *rwlock = new SDL_RWLock;
         return rwlock;
@@ -46,7 +44,6 @@ extern "C" SDL_RWLock *SDL_CreateRWLock(void)
     }
 }
 
-/* Free the rwlock */
 extern "C" void SDL_DestroyRWLock(SDL_RWLock *rwlock)
 {
     if (rwlock != NULL) {
@@ -54,77 +51,64 @@ extern "C" void SDL_DestroyRWLock(SDL_RWLock *rwlock)
     }
 }
 
-/* Lock the rwlock */
-extern "C" int SDL_LockRWLockForReading(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+extern "C" void SDL_LockRWLockForReading(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
-    if (!rwlock) {
-        return SDL_InvalidParamError("rwlock");
-    }
-
-    try {
-        rwlock->cpp_mutex.lock_shared();
-        return 0;
-    } catch (std::system_error &ex) {
-        return SDL_SetError("unable to lock a C++ rwlock: code=%d; %s", ex.code(), ex.what());
+    if (rwlock) {
+        try {
+            rwlock->cpp_mutex.lock_shared();
+        } catch (std::system_error &ex) {
+            SDL_assert(!"Error trying to lock rwlock for reading");  // assume we're in a lot of trouble if this assert fails.
+            //return SDL_SetError("unable to lock a C++ rwlock: code=%d; %s", ex.code(), ex.what());
+        }
     }
 }
 
-/* Lock the rwlock for writing */
-extern "C" int SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+extern "C" void SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
-    if (!rwlock) {
-        return SDL_InvalidParamError("rwlock");
-    }
-
-    try {
-        rwlock->cpp_mutex.lock();
-        rwlock->write_owner = SDL_ThreadID();
-        return 0;
-    } catch (std::system_error &ex) {
-        return SDL_SetError("unable to lock a C++ rwlock: code=%d; %s", ex.code(), ex.what());
+    if (rwlock) {
+        try {
+            rwlock->cpp_mutex.lock();
+            rwlock->write_owner = SDL_ThreadID();
+        } catch (std::system_error &ex) {
+            SDL_assert(!"Error trying to lock rwlock for writing");  // assume we're in a lot of trouble if this assert fails.
+            //return SDL_SetError("unable to lock a C++ rwlock: code=%d; %s", ex.code(), ex.what());
+        }
     }
 }
 
-/* TryLock the rwlock for reading */
-int SDL_TryLockRWLockForReading(SDL_RWLock *rwlock)
+extern "C" int SDL_TryLockRWLockForReading(SDL_RWLock *rwlock)
 {
     int retval = 0;
-
-    if (!rwlock) {
-        retval = SDL_InvalidParamError("rwlock");
-    } else if (rwlock->cpp_mutex.try_lock_shared() == false) {
-        retval = SDL_RWLOCK_TIMEDOUT;
+    if (rwlock) {
+        if (rwlock->cpp_mutex.try_lock_shared() == false) {
+            retval = SDL_RWLOCK_TIMEDOUT;
+        }
     }
     return retval;
 }
 
-/* TryLock the rwlock for writing */
-int SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
+extern "C" int SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
 {
     int retval = 0;
-
-    if (!rwlock) {
-        retval = SDL_InvalidParamError("rwlock");
-    } else if (rwlock->cpp_mutex.try_lock() == false) {
-        retval = SDL_RWLOCK_TIMEDOUT;
-    } else {
-        rwlock->write_owner = SDL_ThreadID();
+    if (rwlock) {
+        if (rwlock->cpp_mutex.try_lock() == false) {
+            retval = SDL_RWLOCK_TIMEDOUT;
+        } else {
+            rwlock->write_owner = SDL_ThreadID();
+        }
     }
     return retval;
 }
 
-/* Unlock the rwlock */
-extern "C" int
-SDL_UnlockRWLock(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+extern "C" void SDL_UnlockRWLock(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
-    if (!rwlock) {
-        return SDL_InvalidParamError("rwlock");
-    } else if (rwlock->write_owner == SDL_ThreadID()) {
-        rwlock->write_owner = 0;
-        rwlock->cpp_mutex.unlock();
-    } else {
-        rwlock->cpp_mutex.unlock_shared();
+    if (rwlock) {
+        if (rwlock->write_owner == SDL_ThreadID()) {
+            rwlock->write_owner = 0;
+            rwlock->cpp_mutex.unlock();
+        } else {
+            rwlock->cpp_mutex.unlock_shared();
+        }
     }
-    return 0;
 }
 

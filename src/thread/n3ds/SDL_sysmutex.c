@@ -22,17 +22,13 @@
 
 #ifdef SDL_THREAD_N3DS
 
-/* An implementation of mutexes using libctru's RecursiveLock */
+// An implementation of mutexes using libctru's RecursiveLock
 
 #include "SDL_sysmutex_c.h"
 
-/* Create a mutex */
 SDL_Mutex *SDL_CreateMutex(void)
 {
-    SDL_Mutex *mutex;
-
-    /* Allocate mutex memory */
-    mutex = (SDL_Mutex *)SDL_malloc(sizeof(*mutex));
+    SDL_Mutex *mutex = (SDL_Mutex *)SDL_malloc(sizeof(*mutex));
     if (mutex) {
         RecursiveLock_Init(&mutex->lock);
     } else {
@@ -41,7 +37,6 @@ SDL_Mutex *SDL_CreateMutex(void)
     return mutex;
 }
 
-/* Free the mutex */
 void SDL_DestroyMutex(SDL_Mutex *mutex)
 {
     if (mutex) {
@@ -49,38 +44,23 @@ void SDL_DestroyMutex(SDL_Mutex *mutex)
     }
 }
 
-/* Lock the mutex */
-int SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
-    if (mutex == NULL) {
-        return 0;
+    if (mutex != NULL) {
+        RecursiveLock_Lock(&mutex->lock);
     }
-
-    RecursiveLock_Lock(&mutex->lock);
-
-    return 0;
 }
 
-/* try Lock the mutex */
 int SDL_TryLockMutex(SDL_Mutex *mutex)
 {
-    if (mutex == NULL) {
-        return 0;
-    }
-
-    return RecursiveLock_TryLock(&mutex->lock);
+    return (mutex == NULL) ? 0 : RecursiveLock_TryLock(&mutex->lock);
 }
 
-/* Unlock the mutex */
-int SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
-    if (mutex == NULL) {
-        return 0;
+    if (mutex != NULL) {
+        RecursiveLock_Unlock(&mutex->lock);
     }
-
-    RecursiveLock_Unlock(&mutex->lock);
-
-    return 0;
 }
 
-#endif /* SDL_THREAD_N3DS */
+#endif // SDL_THREAD_N3DS

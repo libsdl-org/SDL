@@ -123,17 +123,16 @@ SDL_PropertiesID SDL_CreateProperties(void)
         goto error;
     }
 
-    if (SDL_LockRWLockForWriting(SDL_properties_lock) == 0) {
+    SDL_LockRWLockForWriting(SDL_properties_lock);
+    ++SDL_last_properties_id;
+    if (SDL_last_properties_id == 0) {
         ++SDL_last_properties_id;
-        if (SDL_last_properties_id == 0) {
-            ++SDL_last_properties_id;
-        }
-        props = SDL_last_properties_id;
-        if (SDL_InsertIntoHashTable(SDL_properties, (const void *)(uintptr_t)props, properties)) {
-            inserted = SDL_TRUE;
-        }
-        SDL_UnlockRWLock(SDL_properties_lock);
     }
+    props = SDL_last_properties_id;
+    if (SDL_InsertIntoHashTable(SDL_properties, (const void *)(uintptr_t)props, properties)) {
+        inserted = SDL_TRUE;
+    }
+    SDL_UnlockRWLock(SDL_properties_lock);
 
     if (inserted) {
         /* All done! */
@@ -152,15 +151,17 @@ int SDL_LockProperties(SDL_PropertiesID props)
     if (!props) {
         return SDL_InvalidParamError("props");
     }
-    if (SDL_LockRWLockForReading(SDL_properties_lock) == 0) {
-        SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-        SDL_UnlockRWLock(SDL_properties_lock);
-    }
+
+    SDL_LockRWLockForReading(SDL_properties_lock);
+    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
+    SDL_UnlockRWLock(SDL_properties_lock);
+
     if (!properties) {
-        SDL_InvalidParamError("props");
-        return -1;
+        return SDL_InvalidParamError("props");
     }
-    return SDL_LockMutex(properties->lock);
+
+    SDL_LockMutex(properties->lock);
+    return 0;
 }
 
 void SDL_UnlockProperties(SDL_PropertiesID props)
@@ -170,13 +171,15 @@ void SDL_UnlockProperties(SDL_PropertiesID props)
     if (!props) {
         return;
     }
-    if (SDL_LockRWLockForReading(SDL_properties_lock) == 0) {
-        SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-        SDL_UnlockRWLock(SDL_properties_lock);
-    }
+
+    SDL_LockRWLockForReading(SDL_properties_lock);
+    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
+    SDL_UnlockRWLock(SDL_properties_lock);
+
     if (!properties) {
         return;
     }
+
     SDL_UnlockMutex(properties->lock);
 }
 
@@ -193,10 +196,10 @@ int SDL_SetProperty(SDL_PropertiesID props, const char *name, void *value, void 
         return SDL_InvalidParamError("name");
     }
 
-    if (SDL_LockRWLockForReading(SDL_properties_lock) == 0) {
-        SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-        SDL_UnlockRWLock(SDL_properties_lock);
-    }
+    SDL_LockRWLockForReading(SDL_properties_lock);
+    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
+    SDL_UnlockRWLock(SDL_properties_lock);
+
     if (!properties) {
         return SDL_InvalidParamError("props");
     }
@@ -242,10 +245,10 @@ void *SDL_GetProperty(SDL_PropertiesID props, const char *name)
         return NULL;
     }
 
-    if (SDL_LockRWLockForReading(SDL_properties_lock) == 0) {
-        SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-        SDL_UnlockRWLock(SDL_properties_lock);
-    }
+    SDL_LockRWLockForReading(SDL_properties_lock);
+    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
+    SDL_UnlockRWLock(SDL_properties_lock);
+
     if (!properties) {
         SDL_InvalidParamError("props");
         return NULL;
@@ -280,8 +283,7 @@ void SDL_DestroyProperties(SDL_PropertiesID props)
         return;
     }
 
-    if (SDL_LockRWLockForWriting(SDL_properties_lock) == 0) {
-        SDL_RemoveFromHashTable(SDL_properties, (const void *)(uintptr_t)props);
-        SDL_UnlockRWLock(SDL_properties_lock);
-    }
+    SDL_LockRWLockForWriting(SDL_properties_lock);
+    SDL_RemoveFromHashTable(SDL_properties, (const void *)(uintptr_t)props);
+    SDL_UnlockRWLock(SDL_properties_lock);
 }

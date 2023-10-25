@@ -707,6 +707,8 @@ The following functions have been renamed:
 
 ## SDL_mutex.h
 
+SDL_LockMutex and SDL_UnlockMutex now return void; if the mutex is valid (including being a NULL pointer, which returns immediately), these functions never fail. If the mutex is invalid or the caller does something illegal, like unlock another thread's mutex, this is considered undefined behavior.
+
 The following functions have been renamed:
 * SDL_CondBroadcast() => SDL_BroadcastCondition()
 * SDL_CondSignal() => SDL_SignalCondition()

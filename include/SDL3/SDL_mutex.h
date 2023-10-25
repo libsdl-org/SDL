@@ -169,13 +169,15 @@ extern DECLSPEC SDL_Mutex *SDLCALL SDL_CreateMutex(void);
  * unlock it the same number of times before it is actually made available for
  * other threads in the system (this is known as a "recursive mutex").
  *
+ * This function does not fail; if mutex is NULL, it will return immediately
+ * having locked nothing. If the mutex is valid, this function will always
+ * block until it can lock the mutex, and return with it locked.
+ *
  * \param mutex the mutex to lock
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_LockMutex(SDL_Mutex *mutex) SDL_ACQUIRE(mutex);
+extern DECLSPEC void SDLCALL SDL_LockMutex(SDL_Mutex *mutex) SDL_ACQUIRE(mutex);
 
 /**
  * Try to lock a mutex without blocking.
@@ -186,9 +188,13 @@ extern DECLSPEC int SDLCALL SDL_LockMutex(SDL_Mutex *mutex) SDL_ACQUIRE(mutex);
  * This technique is useful if you need exclusive access to a resource but
  * don't want to wait for it, and will return to it to try again later.
  *
+ * This function does not fail; if mutex is NULL, it will return 0 immediately
+ * having locked nothing. If the mutex is valid, this function will always
+ * either lock the mutex and return 0, or return SDL_MUTEX_TIMEOUT and lock
+ * nothing.
+ *
  * \param mutex the mutex to try to lock
- * \returns 0, `SDL_MUTEX_TIMEDOUT`, or -1 on error; call SDL_GetError() for
- *          more information.
+ * \returns 0 or `SDL_MUTEX_TIMEDOUT`
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -210,12 +216,10 @@ extern DECLSPEC int SDLCALL SDL_TryLockMutex(SDL_Mutex *mutex) SDL_TRY_ACQUIRE(0
  * thread, and doing so results in undefined behavior.
  *
  * \param mutex the mutex to unlock.
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_UnlockMutex(SDL_Mutex *mutex) SDL_RELEASE(mutex);
+extern DECLSPEC void SDLCALL SDL_UnlockMutex(SDL_Mutex *mutex) SDL_RELEASE(mutex);
 
 /**
  * Destroy a mutex created with SDL_CreateMutex().
@@ -321,15 +325,17 @@ extern DECLSPEC SDL_RWLock *SDLCALL SDL_CreateRWLock(void);
  * lock before requesting a read-only lock. (But, of course, if you have the
  * write lock, you don't need further locks to read in any case.)
  *
+ * This function does not fail; if rwlock is NULL, it will return immediately
+ * having locked nothing. If the rwlock is valid, this function will always
+ * block until it can lock the mutex, and return with it locked.
+ *
  * \param rwlock the read/write lock to lock
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_UnlockRWLock
  */
-extern DECLSPEC int SDLCALL SDL_LockRWLockForReading(SDL_RWLock *rwlock) SDL_ACQUIRE_SHARED(rwlock);
+extern DECLSPEC void SDLCALL SDL_LockRWLockForReading(SDL_RWLock *rwlock) SDL_ACQUIRE_SHARED(rwlock);
 
 /**
  * Lock the read/write lock for _write_ operations.
@@ -348,15 +354,17 @@ extern DECLSPEC int SDLCALL SDL_LockRWLockForReading(SDL_RWLock *rwlock) SDL_ACQ
  * read-only lock. Doing so results in undefined behavior. Unlock the
  * read-only lock before requesting a write lock.
  *
+ * This function does not fail; if rwlock is NULL, it will return immediately
+ * having locked nothing. If the rwlock is valid, this function will always
+ * block until it can lock the mutex, and return with it locked.
+ *
  * \param rwlock the read/write lock to lock
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_UnlockRWLock
  */
-extern DECLSPEC int SDLCALL SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_ACQUIRE(rwlock);
+extern DECLSPEC void SDLCALL SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_ACQUIRE(rwlock);
 
 /**
  * Try to lock a read/write lock _for reading_ without blocking.
@@ -370,9 +378,13 @@ extern DECLSPEC int SDLCALL SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_ACQ
  * Trying to lock for read-only access can succeed if other threads are
  * holding read-only locks, as this won't prevent access.
  *
+ * This function does not fail; if rwlock is NULL, it will return 0 immediately
+ * having locked nothing. If rwlock is valid, this function will always
+ * either lock the rwlock and return 0, or return SDL_RWLOCK_TIMEOUT and lock
+ * nothing.
+ *
  * \param rwlock the rwlock to try to lock
- * \returns 0, `SDL_RWLOCK_TIMEDOUT`, or -1 on error; call SDL_GetError() for
- *          more information.
+ * \returns 0 or `SDL_RWLOCK_TIMEDOUT`
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -400,9 +412,13 @@ extern DECLSPEC int SDLCALL SDL_TryLockRWLockForReading(SDL_RWLock *rwlock) SDL_
  * read-only lock. Doing so results in undefined behavior. Unlock the
  * read-only lock before requesting a write lock.
  *
+ * This function does not fail; if rwlock is NULL, it will return 0 immediately
+ * having locked nothing. If rwlock is valid, this function will always
+ * either lock the rwlock and return 0, or return SDL_RWLOCK_TIMEOUT and lock
+ * nothing.
+ *
  * \param rwlock the rwlock to try to lock
- * \returns 0, `SDL_RWLOCK_TIMEDOUT`, or -1 on error; call SDL_GetError() for
- *          more information.
+ * \returns 0 or `SDL_RWLOCK_TIMEDOUT`
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -428,12 +444,10 @@ extern DECLSPEC int SDLCALL SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock) SDL_
  * thread, and doing so results in undefined behavior.
  *
  * \param rwlock the rwlock to unlock.
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_UnlockRWLock(SDL_RWLock *rwlock) SDL_RELEASE_GENERIC(rwlock);
+extern DECLSPEC void SDLCALL SDL_UnlockRWLock(SDL_RWLock *rwlock) SDL_RELEASE_GENERIC(rwlock);
 
 /**
  * Destroy a read/write lock created with SDL_CreateRWLock().
