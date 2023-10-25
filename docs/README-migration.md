@@ -1358,6 +1358,21 @@ The following symbols have been renamed:
 * SDL_WINDOW_ALLOW_HIGHDPI => SDL_WINDOW_HIGH_PIXEL_DENSITY
 * SDL_WINDOW_INPUT_GRABBED => SDL_WINDOW_MOUSE_GRABBED
 
+The following window operations are now considered to be asynchronous requests and should not be assumed to succeed unless
+a corresponding event has been received:
+* SDL_SetWindowSize() (SDL_EVENT_WINDOW_RESIZED)
+* SDL_SetWindowPosition() (SDL_EVENT_WINDOW_MOVED)
+* SDL_MinimizeWindow() (SDL_EVENT_WINDOW_MINIMIZED)
+* SDL_MaximizeWindow() (SDL_EVENT_WINDOW_MAXIMIZED)
+* SDL_RestoreWindow() (SDL_EVENT_WINDOW_RESTORED)
+* SDL_SetWindowFullscreen() (SDL_EVENT_WINDOW_ENTER_FULLSCREEN / SDL_EVENT_WINDOW_LEAVE_FULLSCREEN)
+
+If it is required that operations be applied immediately after one of the preceeding calls, the `SDL_SyncWindow()` function
+will attempt to wait until all pending window operations have completed. Be aware that this function can potentially block for
+long periods of time, as it may have to wait for window animations to complete. Also note that windowing systems can deny or
+not precisely obey these requests (e.g. windows may not be allowed to be larger than the usable desktop space or placed
+offscreen), so a corresponding event may never arrive or not contain the expected values.
+
 ## SDL_vulkan.h
 
 SDL_Vulkan_GetInstanceExtensions() no longer takes a window parameter, and no longer makes the app allocate query/allocate space for the result, instead returning a static const internal string.

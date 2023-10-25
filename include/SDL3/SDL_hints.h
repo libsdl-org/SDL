@@ -1796,6 +1796,25 @@ extern "C" {
 #define SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP "SDL_VIDEO_WAYLAND_EMULATE_MOUSE_WARP"
 
 /**
+*  Set whether all window operations will block until complete.
+*
+*  Window systems that run asynchronously may not have the results of window operations that resize or move the window
+*  applied immediately upon the return of the requesting function. Setting this hint will cause such operations to block
+*  after every call until the pending operation has completed. Setting this to '1' is the equivalent of calling
+*  SDL_SyncWindow() after every function call.
+*
+*  Be aware that amount of time spent blocking while waiting for window operations to complete can be quite lengthy, as
+*  animations may have to complete, which can take upwards of multiple seconds in some cases.
+*
+*  This variable can be set to the following values:
+*  "0" - Window operations are non-blocking
+*  "1" - Window operations will block until completed
+*
+*  By default SDL will run in non-blocking mode
+ */
+#define SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS "SDL_VIDEO_SYNC_WINDOW_OPERATIONS"
+
+/**
 *  A variable specifying which shader compiler to preload when using the Chrome ANGLE binaries
 *
 *  SDL has EGL and OpenGL ES2 support on Windows via the ANGLE project. It

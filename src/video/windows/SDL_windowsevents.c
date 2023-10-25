@@ -1001,11 +1001,38 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 #endif /* WM_GETMINMAXINFO */
 
     case WM_WINDOWPOSCHANGING:
+    {
+        WINDOWPOS *windowpos = (WINDOWPOS*)lParam;
 
         if (data->expected_resize) {
             returnCode = 0;
         }
-        break;
+
+        if (IsIconic(hwnd)) {
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
+        } else if (IsZoomed(hwnd)) {
+            if (data->window->flags & SDL_WINDOW_MINIMIZED) {
+                /* If going from minimized to maximized, send the restored event first. */
+                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+            }
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
+        } else {
+            SDL_bool was_fixed_size = !!(data->window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED));
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+
+            /* Send the stored floating size if moving from a fixed-size to floating state. */
+            if (was_fixed_size && !(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
+                int fx, fy, fw, fh;
+
+                WIN_AdjustWindowRect(data->window, &fx, &fy, &fw, &fh, SDL_WINDOWRECT_FLOATING);
+                windowpos->x = fx;
+                windowpos->y = fy;
+                windowpos->cx = fw;
+                windowpos->cy = fh;
+                windowpos->flags &= ~(SWP_NOSIZE | SWP_NOMOVE);
+            }
+        }
+    } break;
 
     case WM_WINDOWPOSCHANGED:
     {
@@ -1074,7 +1101,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         for (win = data->window->first_child; win; win = win->next_sibling) {
             /* Don't update hidden child windows, their relative position doesn't change */
             if (!(win->flags & SDL_WINDOW_HIDDEN)) {
-                WIN_SetWindowPositionInternal(win, SWP_NOCOPYBITS | SWP_NOACTIVATE);
+                WIN_SetWindowPositionInternal(win, SWP_NOCOPYBITS | SWP_NOACTIVATE, SDL_WINDOWRECT_CURRENT);
             }
         }
     } break;
@@ -1102,28 +1129,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_EXITMENULOOP:
     {
         KillTimer(hwnd, (UINT_PTR)SDL_IterateMainCallbacks);
-    } break;
-
-    case WM_SIZE:
-    {
-        switch (wParam) {
-        case SIZE_MAXIMIZED:
-            SDL_SendWindowEvent(data->window,
-                                SDL_EVENT_WINDOW_RESTORED, 0, 0);
-            SDL_SendWindowEvent(data->window,
-                                SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
-            break;
-        case SIZE_MINIMIZED:
-            SDL_SendWindowEvent(data->window,
-                                SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
-            break;
-        case SIZE_RESTORED:
-            SDL_SendWindowEvent(data->window,
-                                SDL_EVENT_WINDOW_RESTORED, 0, 0);
-            break;
-        default:
-            break;
-        }
     } break;
 
     case WM_SETCURSOR:

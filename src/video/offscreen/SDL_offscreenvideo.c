@@ -86,6 +86,7 @@ static SDL_VideoDevice *OFFSCREEN_CreateDevice(void)
     /* "Window" */
     device->CreateSDLWindow = OFFSCREEN_CreateWindow;
     device->DestroyWindow = OFFSCREEN_DestroyWindow;
+    device->SetWindowSize = OFFSCREEN_SetWindowSize;
 
     return device;
 }

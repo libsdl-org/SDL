@@ -71,6 +71,11 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
             window->windowed.x = data1;
             window->windowed.y = data2;
+
+            if (!(window->flags & SDL_WINDOW_MAXIMIZED) && !window->state_not_floating) {
+                window->floating.x = data1;
+                window->floating.y = data2;
+            }
         }
         if (data1 == window->x && data2 == window->y) {
             return 0;
@@ -82,6 +87,11 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
             window->windowed.w = data1;
             window->windowed.h = data2;
+
+            if (!(window->flags & SDL_WINDOW_MAXIMIZED) && !window->state_not_floating) {
+                window->floating.w = data1;
+                window->floating.h = data2;
+            }
         }
         if (data1 == window->w && data2 == window->h) {
             SDL_CheckWindowPixelSizeChanged(window);
@@ -152,6 +162,18 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
             return 0;
         }
         window->flags |= SDL_WINDOW_OCCLUDED;
+        break;
+    case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:
+        if (window->flags & SDL_WINDOW_FULLSCREEN) {
+            return 0;
+        }
+        window->flags |= SDL_WINDOW_FULLSCREEN;
+        break;
+    case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:
+        if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+            return 0;
+        }
+        window->flags &= ~SDL_WINDOW_FULLSCREEN;
         break;
     default:
         break;

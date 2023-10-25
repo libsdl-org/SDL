@@ -32,6 +32,8 @@ struct SDL_DisplayData
     int x;
     int y;
 
+    Uint64 mode_switch_deadline_ns;
+
     SDL_bool use_xrandr;
 
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR

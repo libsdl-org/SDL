@@ -843,22 +843,15 @@ static EM_BOOL Emscripten_HandleKeyPress(int eventType, const EmscriptenKeyboard
 static EM_BOOL Emscripten_HandleFullscreenChange(int eventType, const EmscriptenFullscreenChangeEvent *fullscreenChangeEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
-    SDL_VideoDisplay *display;
 
     if (fullscreenChangeEvent->isFullscreen) {
-        window_data->window->flags |= window_data->fullscreen_mode_flags;
-
+        SDL_SendWindowEvent(window_data->window, SDL_EVENT_WINDOW_ENTER_FULLSCREEN, 0, 0);
         window_data->fullscreen_mode_flags = 0;
     } else {
-        window_data->window->flags &= ~SDL_WINDOW_FULLSCREEN;
-
-        /* reset fullscreen window if the browser left fullscreen */
-        display = SDL_GetVideoDisplayForWindow(window_data->window);
-
-        if (display->fullscreen_window == window_data->window) {
-            display->fullscreen_window = NULL;
-        }
+        SDL_SendWindowEvent(window_data->window, SDL_EVENT_WINDOW_LEAVE_FULLSCREEN, 0, 0);
     }
+
+    SDL_UpdateFullscreenMode(window_data->window, fullscreenChangeEvent->isFullscreen, SDL_FALSE);
 
     return 0;
 }
