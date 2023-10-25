@@ -1,20 +1,23 @@
-name: Build (VM Actions)
+name: Build (C/P Actions)
 
 on: [push, pull_request]
 
 jobs:
   freebsd:
-    runs-on: macos-12
+    runs-on: ubuntu-latest
     name: FreeBSD
     timeout-minutes: 30
     steps:
     - uses: actions/checkout@v3
     - name: Build
-      uses: vmactions/freebsd-vm@v0
+      uses: cross-platform-actions/action@v0.19.1
       with:
-        usesh: true
-        prepare: |
-          pkg install -y \
+        operating_system: freebsd
+        version: '13.2'
+        shell: bash
+        run: |
+          sudo pkg update
+          sudo pkg install -y \
               gmake \
               pkgconf \
               libXcursor \
@@ -34,17 +37,15 @@ jobs:
               libinotify \
               alsa-lib \
               jackit \
-              nas \
               pipewire \
               pulseaudio \
               sndio \
               dbus \
               zh-fcitx \
               ibus \
-              libsamplerate \
               libudev-devd
-
-        run: |
           mkdir build_autotools
-          (cd build_autotools && CFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib" ../configure)
+          export CPPFLAGS="-I/usr/local/include"
+          export LDFLAGS="-L/usr/local/lib"
+          (cd build_autotools && ../configure --disable-static)
           gmake -C build_autotools -j`sysctl -n hw.ncpu` V=1
