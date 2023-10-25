@@ -273,6 +273,7 @@ public class HIDDeviceManager {
         final int XB1_IFACE_SUBCLASS = 71;
         final int XB1_IFACE_PROTOCOL = 208;
         final int[] SUPPORTED_VENDORS = {
+            0x03f0, // HP
             0x044f, // Thrustmaster
             0x045e, // Microsoft
             0x0738, // Mad Catz
