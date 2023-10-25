@@ -92,17 +92,18 @@ void HAIKU_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window * window) {
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window * window) {
+int HAIKU_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window * window) {
     BMessage msg(BWIN_MOVE_WINDOW);
-    msg.AddInt32("window-x", window->x);
-    msg.AddInt32("window-y", window->y);
+    msg.AddInt32("window-x", window->floating.x);
+    msg.AddInt32("window-y", window->floating.y);
     _ToBeWin(window)->PostMessage(&msg);
+    return 0;
 }
 
 void HAIKU_SetWindowSize(SDL_VideoDevice *_this, SDL_Window * window) {
     BMessage msg(BWIN_RESIZE_WINDOW);
-    msg.AddInt32("window-w", window->w - 1);
-    msg.AddInt32("window-h", window->h - 1);
+    msg.AddInt32("window-w", window->floating.w - 1);
+    msg.AddInt32("window-h", window->floating.h - 1);
     _ToBeWin(window)->PostMessage(&msg);
 }
 
@@ -148,13 +149,13 @@ void HAIKU_RestoreWindow(SDL_VideoDevice *_this, SDL_Window * window) {
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window * window,
+int HAIKU_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window * window,
         SDL_VideoDisplay * display, SDL_bool fullscreen) {
     /* Haiku tracks all video display information */
     BMessage msg(BWIN_FULLSCREEN);
     msg.AddBool("fullscreen", fullscreen);
     _ToBeWin(window)->PostMessage(&msg);
-
+    return 0;
 }
 
 

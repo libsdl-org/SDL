@@ -962,6 +962,7 @@ SDL3_0.0.0 {
     SDL_GetTouchDeviceName;
     SDL_strnstr;
     SDL_wcsnstr;
+    SDL_SyncWindow;
     # extra symbols go here (don't modify this line)
   local: *;
 };

@@ -154,7 +154,7 @@ static DWORD GetWindowStyleEx(SDL_Window *window)
  * Returns arguments to pass to SetWindowPos - the window rect, including frame, in Windows coordinates.
  * Can be called before we have a HWND.
  */
-static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x, int *y, int *width, int *height, SDL_bool use_current)
+static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x, int *y, int *width, int *height, SDL_WindowRect rect_type)
 {
     SDL_VideoData *videodata = SDL_GetVideoDevice() ? SDL_GetVideoDevice()->driverdata : NULL;
     RECT rect;
@@ -163,12 +163,26 @@ static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL m
 #endif
 
     /* Client rect, in points */
-    SDL_RelativeToGlobalForWindow(window,
-                                  (use_current ? window->x : window->windowed.x),
-                                  (use_current ? window->y : window->windowed.y),
-                                  x, y);
-    *width = (use_current ? window->w : window->windowed.w);
-    *height = (use_current ? window->h : window->windowed.h);
+    switch (rect_type) {
+        case SDL_WINDOWRECT_CURRENT:
+            SDL_RelativeToGlobalForWindow(window,window->x, window->y, x, y);
+            *width = window->w;
+            *height = window->h;
+            break;
+        case SDL_WINDOWRECT_WINDOWED:
+            SDL_RelativeToGlobalForWindow(window,window->windowed.x, window->windowed.y, x, y);
+            *width = window->windowed.w;
+            *height = window->windowed.h;
+            break;
+        case SDL_WINDOWRECT_FLOATING:
+            SDL_RelativeToGlobalForWindow(window,window->floating.x, window->floating.y, x, y);
+            *width = window->floating.w;
+            *height = window->floating.h;
+            break;
+        default:
+            /* Should never be here */
+            SDL_assert_release(SDL_FALSE);
+    }
 
     /* Copy the client size in pixels into this rect structure,
        which we'll then adjust with AdjustWindowRectEx */
@@ -210,16 +224,16 @@ static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL m
 
 #ifdef HIGHDPI_DEBUG
     SDL_Log("WIN_AdjustWindowRectWithStyle: in: %d, %d, %dx%d, returning: %d, %d, %dx%d, used dpi %d for frame calculation",
-            (use_current ? window->x : window->windowed.x),
-            (use_current ? window->y : window->windowed.y),
-            (use_current ? window->w : window->windowed.w),
-            (use_current ? window->h : window->windowed.h),
+            (use_current ? window->requested.x : window->windowed.x),
+            (use_current ? window->requested.y : window->windowed.y),
+            (use_current ? window->requested.w : window->windowed.w),
+            (use_current ? window->requested.h : window->windowed.h),
             *x, *y, *width, *height, frame_dpi);
 #endif
     return 0;
 }
 
-static void WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *height, SDL_bool use_current)
+void WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *height, SDL_WindowRect rect_type)
 {
     SDL_WindowData *data = window->driverdata;
     HWND hwnd = data->hwnd;
@@ -232,10 +246,10 @@ static void WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width,
 #else
     menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
 #endif
-    WIN_AdjustWindowRectWithStyle(window, style, menu, x, y, width, height, use_current);
+    WIN_AdjustWindowRectWithStyle(window, style, menu, x, y, width, height, rect_type);
 }
 
-int WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags)
+int WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags, SDL_WindowRect rect_type)
 {
     SDL_Window *child_window;
     SDL_WindowData *data = window->driverdata;
@@ -252,7 +266,7 @@ int WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags)
         top = HWND_NOTOPMOST;
     }
 
-    WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_TRUE);
+    WIN_AdjustWindowRect(window, &x, &y, &w, &h, rect_type);
 
     data->expected_resize = SDL_TRUE;
     if (SetWindowPos(hwnd, top, x, y, w, h, flags) == 0) {
@@ -262,7 +276,7 @@ int WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags)
 
     /* Update any child windows */
     for (child_window = window->first_child; child_window; child_window = child_window->next_sibling) {
-        if (WIN_SetWindowPositionInternal(child_window, flags) < 0) {
+        if (WIN_SetWindowPositionInternal(child_window, flags, SDL_WINDOWRECT_CURRENT) < 0) {
             result = -1;
         }
     }
@@ -353,7 +367,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
                 /* We tried to create a window larger than the desktop and Windows didn't allow it.  Override! */
                 int x, y;
                 /* Figure out what the window area will be */
-                WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_FALSE);
+                WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_WINDOWRECT_FLOATING);
                 data->expected_resize = SDL_TRUE;
                 SetWindowPos(hwnd, NULL, x, y, w, h, data->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
                 data->expected_resize = SDL_FALSE;
@@ -518,8 +532,8 @@ static void WIN_ConstrainPopup(SDL_Window *window)
         SDL_Window *w;
         SDL_DisplayID displayID;
         SDL_Rect rect;
-        int abs_x = window->x;
-        int abs_y = window->y;
+        int abs_x = window->floating.x;
+        int abs_y = window->floating.y;
         int offset_x = 0, offset_y = 0;
 
         /* Calculate the total offset from the parents */
@@ -536,17 +550,17 @@ static void WIN_ConstrainPopup(SDL_Window *window)
         /* Constrain the popup window to the display of the toplevel parent */
         displayID = SDL_GetDisplayForWindow(w);
         SDL_GetDisplayBounds(displayID, &rect);
-        if (abs_x + window->w > rect.x + rect.w) {
-            abs_x -= (abs_x + window->w) - (rect.x + rect.w);
+        if (abs_x + window->floating.w > rect.x + rect.w) {
+            abs_x -= (abs_x + window->floating.w) - (rect.x + rect.w);
         }
-        if (abs_y + window->h > rect.y + rect.h) {
-            abs_y -= (abs_y + window->h) - (rect.y + rect.h);
+        if (abs_y + window->floating.h > rect.y + rect.h) {
+            abs_y -= (abs_y + window->floating.h) - (rect.y + rect.h);
         }
         abs_x = SDL_max(abs_x, rect.x);
         abs_y = SDL_max(abs_y, rect.y);
 
-        window->x = window->windowed.x = abs_x - offset_x;
-        window->y = window->windowed.y = abs_y - offset_y;
+        window->floating.x = abs_x - offset_x;
+        window->floating.y = abs_y - offset_y;
     }
 }
 
@@ -590,7 +604,7 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
 
         /* Figure out what the window area will be */
         WIN_ConstrainPopup(window);
-        WIN_AdjustWindowRectWithStyle(window, style, FALSE, &x, &y, &w, &h, SDL_FALSE);
+        WIN_AdjustWindowRectWithStyle(window, style, FALSE, &x, &y, &w, &h, SDL_WINDOWRECT_FLOATING);
 
         hwnd = CreateWindowEx(styleEx, SDL_Appname, TEXT(""), style,
                               x, y, w, h, parent, NULL, SDL_Instance, NULL);
@@ -774,13 +788,25 @@ int WIN_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
     /* HighDPI support: removed SWP_NOSIZE. If the move results in a DPI change, we need to allow
      * the window to resize (e.g. AdjustWindowRectExForDpi frame sizes are different).
      */
-    WIN_ConstrainPopup(window);
-    return WIN_SetWindowPositionInternal(window, window->driverdata->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        if (!(window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED))) {
+            WIN_ConstrainPopup(window);
+            return WIN_SetWindowPositionInternal(window,
+                                                 window->driverdata->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER |
+                                                 SWP_NOACTIVATE, SDL_WINDOWRECT_FLOATING);
+        }
+    } else {
+        return SDL_UpdateFullscreenMode(window, SDL_TRUE, SDL_TRUE);
+    }
+
+    return 0;
 }
 
 void WIN_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    WIN_SetWindowPositionInternal(window, window->driverdata->copybits_flag | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
+    if (!(window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED))) {
+        WIN_SetWindowPositionInternal(window, window->driverdata->copybits_flag | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE, SDL_WINDOWRECT_FLOATING);
+    }
 }
 
 int WIN_GetWindowBordersSize(SDL_VideoDevice *_this, SDL_Window *window, int *top, int *left, int *bottom, int *right)
@@ -967,14 +993,24 @@ void WIN_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 void WIN_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    /* Other platforms refuse to maximize a non-resizable window, and with win32,
-       the OS resizes the window weirdly (covering the taskbar) if you don't have
-       the STYLE_RESIZABLE flag set. So just forbid it for now. */
-    if (window->flags & SDL_WINDOW_RESIZABLE) {
-        SDL_WindowData *data = window->driverdata;
-        HWND hwnd = data->hwnd;
+    SDL_WindowData *data = window->driverdata;
+    HWND hwnd = data->hwnd;
+    data->expected_resize = SDL_TRUE;
+    ShowWindow(hwnd, SW_MAXIMIZE);
+    data->expected_resize = SDL_FALSE;
+
+    /* Clamp the maximized window size to the max window size.
+     * This is automatic if maximizing from the window controls.
+     */
+    if (window->max_w || window->max_h) {
+        int fx, fy, fw, fh;
+
+        window->windowed.w = window->max_w ? SDL_min(window->w, window->max_w) : window->windowed.w;
+        window->windowed.h = window->max_h ? SDL_min(window->h, window->max_h) : window->windowed.h;
+        WIN_AdjustWindowRect(window, &fx, &fy, &fw, &fh, SDL_WINDOWRECT_WINDOWED);
+
         data->expected_resize = SDL_TRUE;
-        ShowWindow(hwnd, SW_MAXIMIZE);
+        SetWindowPos(hwnd, HWND_TOP, fx, fy, fw, fh, data->copybits_flag | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
         data->expected_resize = SDL_FALSE;
     }
 }
@@ -997,7 +1033,7 @@ void WIN_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool 
 
     data->in_border_change = SDL_TRUE;
     SetWindowLong(hwnd, GWL_STYLE, style);
-    WIN_SetWindowPositionInternal(window, data->copybits_flag | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
+    WIN_SetWindowPositionInternal(window, data->copybits_flag | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE, SDL_WINDOWRECT_CURRENT);
     data->in_border_change = SDL_FALSE;
 }
 
@@ -1016,7 +1052,7 @@ void WIN_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool
 
 void WIN_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool on_top)
 {
-    WIN_SetWindowPositionInternal(window, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+    WIN_SetWindowPositionInternal(window, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE, SDL_WINDOWRECT_CURRENT);
 }
 
 void WIN_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
@@ -1031,7 +1067,7 @@ void WIN_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 /**
  * Reconfigures the window to fill the given display, if fullscreen is true, otherwise restores the window.
  */
-void WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
+int WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     SDL_DisplayData *displaydata = display->driverdata;
@@ -1043,13 +1079,6 @@ void WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_Vid
     int x, y;
     int w, h;
 
-    if (!fullscreen && (window->flags & SDL_WINDOW_FULLSCREEN)) {
-        /* Resizing the window on hide causes problems restoring it in Wine, and it's unnecessary.
-         * Also, Windows would preview the minimized window with the wrong size.
-         */
-        return;
-    }
-
 #ifdef HIGHDPI_DEBUG
     SDL_Log("WIN_SetWindowFullscreen: %d", (int)fullscreen);
 #endif
@@ -1060,18 +1089,19 @@ void WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_Vid
         top = HWND_NOTOPMOST;
     }
 
-    style = GetWindowLong(hwnd, GWL_STYLE);
-    style &= ~STYLE_MASK;
-    style |= GetWindowStyle(window);
-
     /* Use GetMonitorInfo instead of WIN_GetDisplayBounds because we want the
        monitor bounds in Windows coordinates (pixels) rather than SDL coordinates (points). */
     SDL_zero(minfo);
     minfo.cbSize = sizeof(MONITORINFO);
     if (!GetMonitorInfo(displaydata->MonitorHandle, &minfo)) {
         SDL_SetError("GetMonitorInfo failed");
-        return;
+        return -1;
     }
+
+    SDL_SendWindowEvent(window, fullscreen ? SDL_EVENT_WINDOW_ENTER_FULLSCREEN : SDL_EVENT_WINDOW_LEAVE_FULLSCREEN, 0, 0);
+    style = GetWindowLong(hwnd, GWL_STYLE);
+    style &= ~STYLE_MASK;
+    style |= GetWindowStyle(window);
 
     if (fullscreen) {
         x = minfo.rcMonitor.left;
@@ -1097,11 +1127,14 @@ void WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_Vid
         */
         if (data->windowed_mode_was_maximized && !data->in_window_deactivation) {
             style |= WS_MAXIMIZE;
-            data->windowed_mode_was_maximized = SDL_FALSE;
         }
 
         menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
-        WIN_AdjustWindowRectWithStyle(window, style, menu, &x, &y, &w, &h, SDL_FALSE);
+        WIN_AdjustWindowRectWithStyle(window, style, menu,
+                                      &x, &y,
+                                      &w, &h,
+                                      data->windowed_mode_was_maximized ? SDL_WINDOWRECT_WINDOWED : SDL_WINDOWRECT_FLOATING);
+        data->windowed_mode_was_maximized = SDL_FALSE;
     }
     SetWindowLong(hwnd, GWL_STYLE, style);
     data->expected_resize = SDL_TRUE;
@@ -1113,6 +1146,7 @@ void WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_Vid
 #endif
 
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+    return 0;
 }
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
@@ -1307,7 +1341,7 @@ void WIN_OnWindowEnter(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
-        WIN_SetWindowPositionInternal(window, data->copybits_flag | SWP_NOSIZE | SWP_NOACTIVATE);
+        WIN_SetWindowPositionInternal(window, data->copybits_flag | SWP_NOSIZE | SWP_NOACTIVATE, SDL_WINDOWRECT_CURRENT);
     }
 }
 

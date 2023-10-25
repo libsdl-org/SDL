@@ -1596,13 +1596,13 @@ void KMSDRM_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
         KMSDRM_DirtySurfaces(window);
     }
 }
-void KMSDRM_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
-
+int KMSDRM_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
     SDL_VideoData *viddata = _this->driverdata;
     if (!viddata->vulkan_mode) {
         KMSDRM_DirtySurfaces(window);
     }
+    return 0;
 }
 void KMSDRM_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {

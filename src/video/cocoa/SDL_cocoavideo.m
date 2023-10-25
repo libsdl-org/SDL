@@ -116,6 +116,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->AcceptDragAndDrop = Cocoa_AcceptDragAndDrop;
         device->FlashWindow = Cocoa_FlashWindow;
         device->SetWindowFocusable = Cocoa_SetWindowFocusable;
+        device->SyncWindow = Cocoa_SyncWindow;
 
 #ifdef SDL_VIDEO_OPENGL_CGL
         device->GL_LoadLibrary = Cocoa_GL_LoadLibrary;
@@ -171,8 +172,8 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
 
         device->free = Cocoa_DeleteDevice;
 
-        device->quirk_flags = VIDEO_DEVICE_QUIRK_HAS_POPUP_WINDOW_SUPPORT;
-
+        device->device_caps = VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT |
+                              VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS;
         return device;
     }
 }

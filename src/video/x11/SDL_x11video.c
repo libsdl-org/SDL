@@ -209,6 +209,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->FlashWindow = X11_FlashWindow;
     device->ShowWindowSystemMenu = X11_ShowWindowSystemMenu;
     device->SetWindowFocusable = X11_SetWindowFocusable;
+    device->SyncWindow = X11_SyncWindow;
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     device->SetWindowMouseRect = X11_SetWindowMouseRect;
@@ -274,7 +275,8 @@ static SDL_VideoDevice *X11_CreateDevice(void)
         device->system_theme = SDL_SystemTheme_Get();
 #endif
 
-    device->quirk_flags = VIDEO_DEVICE_QUIRK_HAS_POPUP_WINDOW_SUPPORT;
+    device->device_caps = VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT |
+                          VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS;
 
     return device;
 }

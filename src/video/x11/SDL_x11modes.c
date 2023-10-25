@@ -27,6 +27,11 @@
 
 /* #define X11MODES_DEBUG */
 
+/* Timeout and revert mode switches if the timespan has elapsed without the window becoming fullscreen.
+ * 5 seconds seems good from testing.
+ */
+#define MODE_SWITCH_TIMEOUT_NS SDL_NS_PER_SECOND * 5
+
 /* I'm becoming more and more convinced that the application should never
  * use XRandR, and it's the window manager's responsibility to track and
  * manage display modes for fullscreen windows.  Right now XRandR is completely
@@ -902,6 +907,12 @@ int X11_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SD
     SDL_DisplayData *data = sdl_display->driverdata;
 
     viddata->last_mode_change_deadline = SDL_GetTicks() + (PENDING_FOCUS_TIME * 2);
+
+    if (mode != &sdl_display->desktop_mode) {
+        data->mode_switch_deadline_ns = SDL_GetTicksNS() + MODE_SWITCH_TIMEOUT_NS;
+    } else {
+        data->mode_switch_deadline_ns = 0;
+    }
 
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
     if (data->use_xrandr) {

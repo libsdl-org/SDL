@@ -987,3 +987,4 @@
 #define SDL_GetTouchDeviceName SDL_GetTouchDeviceName_REAL
 #define SDL_strnstr SDL_strnstr_REAL
 #define SDL_wcsnstr SDL_wcsnstr_REAL
+#define SDL_SyncWindow SDL_SyncWindow_REAL

@@ -1744,6 +1744,15 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
     case SDL_EVENT_WINDOW_OCCLUDED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " occluded", event->window.windowID);
         break;
+    case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " entered fullscreen", event->window.windowID);
+        break;
+    case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " left fullscreen", event->window.windowID);
+        break;
+    case SDL_EVENT_WINDOW_DESTROYED:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " destroyed", event->window.windowID);
+        break;
     case SDL_EVENT_KEY_DOWN:
     case SDL_EVENT_KEY_UP: {
         char modstr[64];

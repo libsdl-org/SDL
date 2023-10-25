@@ -241,12 +241,11 @@ static void setWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
     window_impl_t   *impl = (window_impl_t *)window->driverdata;
     int             size[2];
 
-    size[0] = window->w;
-    size[1] = window->h;
+    size[0] = window->floating.w;
+    size[1] = window->floating.h;
 
     screen_set_window_property_iv(impl->window, SCREEN_PROPERTY_SIZE, size);
-    screen_set_window_property_iv(impl->window, SCREEN_PROPERTY_SOURCE_SIZE,
-                                  size);
+    screen_set_window_property_iv(impl->window, SCREEN_PROPERTY_SOURCE_SIZE, size);
 }
 
 /**

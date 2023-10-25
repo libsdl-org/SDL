@@ -2088,6 +2088,7 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         goto error;
     }
 
+    SDL_SyncWindow(window);
     window_flags = SDL_GetWindowFlags(window);
 
     /* OpenGL ES 3.0 is a superset of OpenGL ES 2.0 */

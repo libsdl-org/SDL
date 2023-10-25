@@ -95,9 +95,6 @@ struct SDL_WindowData
     struct wp_viewport *draw_viewport;
     struct wp_fractional_scale_v1 *fractional_scale;
 
-    /* floating dimensions for restoring from maximized and fullscreen */
-    int floating_width, floating_height;
-
     SDL_AtomicInt swap_interval_ready;
 
     SDL_DisplayData **outputs;
@@ -109,18 +106,27 @@ struct SDL_WindowData
     float windowed_scale_factor;
     float pointer_scale_x;
     float pointer_scale_y;
+
+    struct
+    {
+        int width, height;
+    } pending_size_event;
+
+    int last_configure_width, last_configure_height;
     int requested_window_width, requested_window_height;
     int drawable_width, drawable_height;
     int wl_window_width, wl_window_height;
     int system_min_required_width;
     int system_min_required_height;
     SDL_DisplayID last_displayID;
-    SDL_bool floating;
-    SDL_bool suspended;
-    SDL_bool active;
-    SDL_bool is_fullscreen;
-    SDL_bool in_fullscreen_transition;
-    SDL_bool fullscreen_was_positioned;
+    int fullscreen_deadline_count;
+    SDL_bool floating : 1;
+    SDL_bool suspended : 1;
+    SDL_bool active : 1;
+    SDL_bool is_fullscreen : 1;
+    SDL_bool drop_fullscreen_requests : 1;
+    SDL_bool fullscreen_was_positioned : 1;
+    SDL_bool show_hide_sync_required : 1;
 
     SDL_HitTestResult hit_test_result;
 };
@@ -128,7 +134,7 @@ struct SDL_WindowData
 extern void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Wayland_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern void Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window,
+extern int Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window,
                                         SDL_VideoDisplay *_display,
                                         SDL_bool fullscreen);
 extern void Wayland_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
@@ -153,5 +159,6 @@ extern int Wayland_SuspendScreenSaver(SDL_VideoDevice *_this);
 
 extern int Wayland_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 extern int Wayland_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
+extern int Wayland_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
 #endif /* SDL_waylandwindow_h_ */

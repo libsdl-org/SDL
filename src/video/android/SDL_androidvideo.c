@@ -155,6 +155,8 @@ static SDL_VideoDevice *Android_CreateDevice(void)
     device->GetClipboardText = Android_GetClipboardText;
     device->HasClipboardText = Android_HasClipboardText;
 
+    device->device_caps = VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS;
+
     return device;
 }
 

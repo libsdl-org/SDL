@@ -39,6 +39,7 @@
 #include "../../events/SDL_touch_c.h"
 #include "../../core/linux/SDL_system_theme.h"
 #include "../../SDL_utils_c.h"
+#include "../SDL_sysvideo.h"
 
 #include <stdio.h>
 
@@ -1330,8 +1331,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             int y = xevent->xconfigure.y;
 
             SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED,
-                                x, y);
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
 
 #ifdef SDL_USE_IME
             if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
@@ -1342,16 +1342,21 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             for (w = data->window->first_child; w; w = w->next_sibling) {
                 /* Don't update hidden child windows, their relative position doesn't change */
                 if (!(w->flags & SDL_WINDOW_HIDDEN)) {
-                    X11_UpdateWindowPosition(w);
+                    X11_UpdateWindowPosition(w, SDL_TRUE);
                 }
             }
         }
         if (xevent->xconfigure.width != data->last_xconfigure.width ||
             xevent->xconfigure.height != data->last_xconfigure.height) {
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED,
-                                xevent->xconfigure.width,
-                                xevent->xconfigure.height);
+            if (!data->skip_size_count) {
+                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED,
+                                    xevent->xconfigure.width,
+                                    xevent->xconfigure.height);
+            } else {
+                data->skip_size_count--;
+            }
         }
+
         data->last_xconfigure = xevent->xconfigure;
     } break;
 
@@ -1621,17 +1626,60 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 }
             }
 
-            if ((changed & SDL_WINDOW_MAXIMIZED) && ((flags & SDL_WINDOW_MAXIMIZED) && !(flags & SDL_WINDOW_MINIMIZED))) {
-                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
-            }
-            if ((changed & SDL_WINDOW_MINIMIZED) && (flags & SDL_WINDOW_MINIMIZED)) {
-                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
-            }
-            if (((changed & SDL_WINDOW_MAXIMIZED) || (changed & SDL_WINDOW_MINIMIZED)) &&
-                (!(flags & SDL_WINDOW_MAXIMIZED) && !(flags & SDL_WINDOW_MINIMIZED))) {
-                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
-            }
+            if (!SDL_WINDOW_IS_POPUP(data->window)) {
+                if (changed & SDL_WINDOW_FULLSCREEN) {
+                    data->pending_operation &= ~X11_PENDING_OP_FULLSCREEN;
 
+                    if (flags & SDL_WINDOW_FULLSCREEN) {
+                        if (!(flags & SDL_WINDOW_MINIMIZED)) {
+                            const SDL_bool commit = data->requested_fullscreen_mode.displayID == 0 ||
+                                                    SDL_memcmp(&data->window->current_fullscreen_mode, &data->requested_fullscreen_mode, sizeof(SDL_DisplayMode)) != 0;
+
+                            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_ENTER_FULLSCREEN, 0, 0);
+                            if (commit) {
+                                /* This was initiated by the compositor, or the mode was changed between the request and the window
+                             * becoming fullscreen. Switch to the application requested mode if necessary.
+                                 */
+                                SDL_copyp(&data->window->current_fullscreen_mode, &data->window->requested_fullscreen_mode);
+                                SDL_UpdateFullscreenMode(data->window, SDL_TRUE, SDL_TRUE);
+                            } else {
+                                SDL_UpdateFullscreenMode(data->window, SDL_TRUE, SDL_FALSE);
+                            }
+                        }
+                    } else {
+                        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_LEAVE_FULLSCREEN, 0, 0);
+                        SDL_UpdateFullscreenMode(data->window, SDL_FALSE, SDL_TRUE);
+                    }
+
+                    if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
+                        /* Skip the first resize event if the borders are being turned on/off. */
+                        data->skip_size_count = 1;
+                    }
+                }
+                if ((changed & SDL_WINDOW_MAXIMIZED) && ((flags & SDL_WINDOW_MAXIMIZED) && !(flags & SDL_WINDOW_MINIMIZED))) {
+                    data->pending_operation &= ~X11_PENDING_OP_MAXIMIZE;
+                    if ((changed & SDL_WINDOW_MINIMIZED)) {
+                        data->pending_operation &= ~X11_PENDING_OP_RESTORE;
+                        /* If coming out of minimized, send a restore event before sending maximized. */
+                        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+                    }
+                    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
+                }
+                if ((changed & SDL_WINDOW_MINIMIZED) && (flags & SDL_WINDOW_MINIMIZED)) {
+                    data->pending_operation &= ~X11_PENDING_OP_MINIMIZE;
+                    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
+                }
+                if (!(flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED))) {
+                    data->pending_operation &= ~X11_PENDING_OP_RESTORE;
+                    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+
+                    /* Restore the last known floating state if leaving maximized mode */
+                    if (!(flags & SDL_WINDOW_FULLSCREEN)) {
+                        X11_XMoveWindow(display, data->xwindow, data->window->floating.x, data->window->floating.y);
+                        X11_XResizeWindow(display, data->xwindow, data->window->floating.w, data->window->floating.h);
+                    }
+                }
+            }
             if (changed & SDL_WINDOW_OCCLUDED) {
                 SDL_SendWindowEvent(data->window, (flags & SDL_WINDOW_OCCLUDED) ? SDL_EVENT_WINDOW_OCCLUDED : SDL_EVENT_WINDOW_EXPOSED, 0, 0);
             }
@@ -1645,6 +1693,14 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             X11_UpdateKeymap(_this, SDL_TRUE);
         } else if (xevent->xproperty.atom == videodata->_NET_FRAME_EXTENTS) {
             X11_GetBorderValues(data);
+            if (data->border_top != 0 || data->border_left != 0 || data->border_right != 0 || data->border_bottom != 0) {
+                /* Adjust if the window size changed to accommodate the borders. */
+                if (data->window->flags & SDL_WINDOW_MAXIMIZED) {
+                    X11_XResizeWindow(display, data->xwindow, data->window->windowed.w, data->window->windowed.h);
+                } else {
+                    X11_XResizeWindow(display, data->xwindow, data->window->floating.w, data->window->floating.h);
+                }
+            }
         }
     } break;
 
@@ -1823,6 +1879,22 @@ void X11_PumpEvents(SDL_VideoDevice *_this)
     SDL_VideoData *data = _this->driverdata;
     XEvent xevent;
     int i;
+
+    /* Check if a display had the mode changed and is waiting for a window to asynchronously become
+     * fullscreen. If there is no fullscreen window past the elapsed timeout, revert the mode switch.
+     */
+    for (i = 0; i < _this->num_displays; ++i) {
+        if (_this->displays[i]->driverdata->mode_switch_deadline_ns &&
+            SDL_GetTicksNS() >= _this->displays[i]->driverdata->mode_switch_deadline_ns) {
+            if (_this->displays[i]->fullscreen_window) {
+                _this->displays[i]->driverdata->mode_switch_deadline_ns = 0;
+            } else {
+                SDL_LogError(SDL_LOG_CATEGORY_VIDEO,
+                             "Time out elapsed after mode switch on display %" SDL_PRIu32 " with no window becoming fullscreen; reverting", _this->displays[i]->id);
+                SDL_SetDisplayModeForDisplay(_this->displays[i], NULL);
+            }
+        }
+    }
 
     if (data->last_mode_change_deadline) {
         if (SDL_GetTicks() >= data->last_mode_change_deadline) {

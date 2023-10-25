@@ -105,7 +105,7 @@ void Android_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
     Android_JNI_SetActivityTitle(window->title);
 }
 
-void Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
+int Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
     SDL_LockMutex(Android_ActivityMutex);
 
@@ -154,6 +154,7 @@ void Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL
 endfunction:
 
     SDL_UnlockMutex(Android_ActivityMutex);
+    return 0;
 }
 
 void Android_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
