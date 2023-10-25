@@ -1,4 +1,4 @@
-name: Build (VM Actions)
+name: Build (C/P Actions)
 
 on: [push, pull_request]
 
@@ -8,18 +8,19 @@ concurrency:
 
 jobs:
   freebsd:
-    runs-on: macos-12
+    runs-on: ubuntu-latest
     name: FreeBSD
     timeout-minutes: 30
     steps:
     - uses: actions/checkout@v3
     - name: Build
-      uses: vmactions/freebsd-vm@v0
+      uses: cross-platform-actions/action@v0.19.1
       with:
-        mem: 8192
-        usesh: true
-        prepare: |
-          pkg install -y \
+        operating_system: freebsd
+        version: '13.2'
+        run: |
+          sudo pkg update
+          sudo pkg install -y \
               cmake \
               ninja \
               pkgconf \
@@ -46,11 +47,8 @@ jobs:
               dbus \
               zh-fcitx \
               ibus \
-              libsamplerate \
               libudev-devd
-
-        run: |
-          cmake -S . -B build -GNinja \
+          cmake -S . -B build -GNinja  \
             -Wdeprecated -Wdev -Werror \
             -DCMAKE_BUILD_TYPE=Release \
             -DSDL_HIDAPI_LIBUSB=OFF \
