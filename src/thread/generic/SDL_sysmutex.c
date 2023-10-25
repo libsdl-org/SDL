@@ -118,7 +118,7 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
          We set the locking thread id after we obtain the lock
          so unlocks from other threads will fail.
          */
-        retval = SDL_WaitSemaphore(mutex->sem);
+        retval = SDL_TryWaitSemaphore(mutex->sem);
         if (retval == 0) {
             mutex->owner = this_thread;
             mutex->recursive = 0;
