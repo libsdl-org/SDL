@@ -22,7 +22,7 @@
 
 #ifdef SDL_THREAD_PSP
 
-/* An implementation of mutexes using semaphores */
+// An implementation of mutexes using semaphores
 
 #include "SDL_systhread_c.h"
 
@@ -36,17 +36,11 @@ struct SDL_Mutex
     SceLwMutexWorkarea lock;
 };
 
-/* Create a mutex */
 SDL_Mutex *SDL_CreateMutex(void)
 {
-    SDL_Mutex *mutex = NULL;
-    SceInt32 res = 0;
-
-    /* Allocate mutex memory */
-    mutex = (SDL_Mutex *)SDL_malloc(sizeof(*mutex));
+    SDL_Mutex *mutex = (SDL_Mutex *)SDL_malloc(sizeof(*mutex));
     if (mutex) {
-
-        res = sceKernelCreateLwMutex(
+        const SceInt32 res = sceKernelCreateLwMutex(
             &mutex->lock,
             "SDL mutex",
             SCE_KERNEL_MUTEX_ATTR_RECURSIVE,
@@ -54,6 +48,8 @@ SDL_Mutex *SDL_CreateMutex(void)
             NULL);
 
         if (res < 0) {
+            SDL_free(mutex);
+            mutex = NULL;
             SDL_SetError("Error trying to create mutex: %lx", res);
         }
     } else {
@@ -62,7 +58,6 @@ SDL_Mutex *SDL_CreateMutex(void)
     return mutex;
 }
 
-/* Free the mutex */
 void SDL_DestroyMutex(SDL_Mutex *mutex)
 {
     if (mutex) {
@@ -71,75 +66,43 @@ void SDL_DestroyMutex(SDL_Mutex *mutex)
     }
 }
 
-/* Lock the mutex */
-int SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
-#ifdef SDL_THREADS_DISABLED
-    return 0;
-#else
-    SceInt32 res = 0;
-
-    if (mutex == NULL) {
-        return 0;
+#ifndef SDL_THREADS_DISABLED
+    if (mutex != NULL) {
+        const SceInt32 res = sceKernelLockLwMutex(&mutex->lock, 1, NULL);
+        SDL_assert(res == SCE_KERNEL_ERROR_OK);  // assume we're in a lot of trouble if this assert fails.
     }
-
-    res = sceKernelLockLwMutex(&mutex->lock, 1, NULL);
-    if (res != SCE_KERNEL_ERROR_OK) {
-        return SDL_SetError("Error trying to lock mutex: %lx", res);
-    }
-
-    return 0;
-#endif /* SDL_THREADS_DISABLED */
+#endif // SDL_THREADS_DISABLED
 }
 
-/* Try to lock the mutex */
 int SDL_TryLockMutex(SDL_Mutex *mutex)
 {
-#ifdef SDL_THREADS_DISABLED
-    return 0;
-#else
-    SceInt32 res = 0;
-
-    if (mutex == NULL) {
-        return 0;
+    int retval = 0;
+#ifndef SDL_THREADS_DISABLED
+    if (mutex != NULL) {
+        const SceInt32 res = sceKernelTryLockLwMutex(&mutex->lock, 1);
+        if (res == SCE_KERNEL_ERROR_OK) {
+            retval = 0;
+        } else if (res == SCE_KERNEL_ERROR_WAIT_TIMEOUT) {
+            retval = SDL_MUTEX_TIMEDOUT;
+        } else {
+            SDL_assert(!"Error trying to lock mutex");  // assume we're in a lot of trouble if this assert fails.
+            retval = SDL_MUTEX_TIMEDOUT;
+        }
     }
-
-    res = sceKernelTryLockLwMutex(&mutex->lock, 1);
-    switch (res) {
-    case SCE_KERNEL_ERROR_OK:
-        return 0;
-        break;
-    case SCE_KERNEL_ERROR_WAIT_TIMEOUT:
-        return SDL_MUTEX_TIMEDOUT;
-        break;
-    default:
-        return SDL_SetError("Error trying to lock mutex: %lx", res);
-        break;
-    }
-
-    return -1;
-#endif /* SDL_THREADS_DISABLED */
+#endif // SDL_THREADS_DISABLED
+    return retval;
 }
 
-/* Unlock the mutex */
-int SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
-#ifdef SDL_THREADS_DISABLED
-    return 0;
-#else
-    SceInt32 res = 0;
-
-    if (mutex == NULL) {
-        return 0;
+#ifndef SDL_THREADS_DISABLED
+    if (mutex != NULL) {
+        const SceInt32 res = sceKernelUnlockLwMutex(&mutex->lock, 1);
+        SDL_assert(res == 0);  // assume we're in a lot of trouble if this assert fails.
     }
-
-    res = sceKernelUnlockLwMutex(&mutex->lock, 1);
-    if (res != 0) {
-        return SDL_SetError("Error trying to unlock mutex: %lx", res);
-    }
-
-    return 0;
-#endif /* SDL_THREADS_DISABLED */
+#endif // SDL_THREADS_DISABLED
 }
 
-#endif /* SDL_THREAD_PSP */
+#endif // SDL_THREAD_PSP

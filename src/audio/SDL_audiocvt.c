@@ -476,12 +476,20 @@ int SDL_SetAudioStreamPutCallback(SDL_AudioStream *stream, SDL_AudioStreamCallba
 
 int SDL_LockAudioStream(SDL_AudioStream *stream)
 {
-    return stream ? SDL_LockMutex(stream->lock) : SDL_InvalidParamError("stream");
+    if (!stream) {
+        return SDL_InvalidParamError("stream");
+    }
+    SDL_LockMutex(stream->lock);
+    return 0;
 }
 
 int SDL_UnlockAudioStream(SDL_AudioStream *stream)
 {
-    return stream ? SDL_UnlockMutex(stream->lock) : SDL_InvalidParamError("stream");
+    if (!stream) {
+        return SDL_InvalidParamError("stream");
+    }
+    SDL_UnlockMutex(stream->lock);
+    return 0;
 }
 
 int SDL_GetAudioStreamFormat(SDL_AudioStream *stream, SDL_AudioSpec *src_spec, SDL_AudioSpec *dst_spec)

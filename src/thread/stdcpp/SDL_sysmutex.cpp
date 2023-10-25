@@ -27,74 +27,51 @@ extern "C" {
 #include <system_error>
 
 #include "SDL_sysmutex_c.h"
-#include <Windows.h>
+#include <windows.h>
 
-/* Create a mutex */
-extern "C" SDL_Mutex *
-SDL_CreateMutex(void)
+extern "C" SDL_Mutex * SDL_CreateMutex(void)
 {
-    /* Allocate and initialize the mutex */
+    // Allocate and initialize the mutex
     try {
         SDL_Mutex *mutex = new SDL_Mutex;
         return mutex;
     } catch (std::system_error &ex) {
         SDL_SetError("unable to create a C++ mutex: code=%d; %s", ex.code(), ex.what());
-        return NULL;
     } catch (std::bad_alloc &) {
         SDL_OutOfMemory();
-        return NULL;
     }
+    return NULL;
 }
 
-/* Free the mutex */
-extern "C" void
-SDL_DestroyMutex(SDL_Mutex *mutex)
+extern "C" void SDL_DestroyMutex(SDL_Mutex *mutex)
 {
     if (mutex != NULL) {
         delete mutex;
     }
 }
 
-/* Lock the mutex */
-extern "C" int
-SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+extern "C" void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
-    if (mutex == NULL) {
-        return 0;
-    }
-
-    try {
-        mutex->cpp_mutex.lock();
-        return 0;
-    } catch (std::system_error &ex) {
-        return SDL_SetError("unable to lock a C++ mutex: code=%d; %s", ex.code(), ex.what());
+    if (mutex != NULL) {
+        try {
+            mutex->cpp_mutex.lock();
+        } catch (std::system_error &ex) {
+            SDL_assert(!"Error trying to lock mutex");  // assume we're in a lot of trouble if this assert fails.
+            //return SDL_SetError("unable to lock a C++ mutex: code=%d; %s", ex.code(), ex.what());
+        }
     }
 }
 
-/* TryLock the mutex */
-int SDL_TryLockMutex(SDL_Mutex *mutex)
+extern "C" int SDL_TryLockMutex(SDL_Mutex *mutex)
 {
-    int retval = 0;
-
-    if (mutex == NULL) {
-        return 0;
-    }
-
-    if (mutex->cpp_mutex.try_lock() == false) {
-        retval = SDL_MUTEX_TIMEDOUT;
-    }
-    return retval;
+    return ((mutex == NULL) || mutex->cpp_mutex.try_lock()) ? 0 : SDL_MUTEX_TIMEDOUT;
 }
 
 /* Unlock the mutex */
-extern "C" int
-SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+extern "C" void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
-    if (mutex == NULL) {
-        return 0;
+    if (mutex != NULL) {
+        mutex->cpp_mutex.unlock();
     }
-
-    mutex->cpp_mutex.unlock();
-    return 0;
 }
 

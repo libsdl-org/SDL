@@ -33,22 +33,21 @@ static void DoWork(const int workticks)  /* "Work" */
     const SDL_threadID tid = SDL_ThreadID();
     const SDL_bool is_reader = tid != mainthread;
     const char *typestr = is_reader ? "Reader" : "Writer";
-    int rc;
 
     SDL_Log("%s Thread %lu: ready to work\n", typestr, (unsigned long) tid);
-    rc = is_reader ? SDL_LockRWLockForReading(rwlock) : SDL_LockRWLockForWriting(rwlock);
-    if (rc < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s Thread %lu: Couldn't lock rwlock: %s", typestr, (unsigned long) tid, SDL_GetError());
+    if (is_reader) {
+        SDL_LockRWLockForReading(rwlock);
     } else {
-        SDL_Log("%s Thread %lu: start work!\n", typestr, (unsigned long) tid);
-        SDL_Delay(workticks);
-        SDL_Log("%s Thread %lu: work done!\n", typestr, (unsigned long) tid);
-        if (SDL_UnlockRWLock(rwlock) < 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s Thread %lu: Couldn't unlock rwlock: %s", typestr, (unsigned long) tid, SDL_GetError());
-        }
-        /* If this sleep isn't done, then threads may starve */
-        SDL_Delay(10);
+        SDL_LockRWLockForWriting(rwlock);
     }
+
+    SDL_Log("%s Thread %lu: start work!\n", typestr, (unsigned long) tid);
+    SDL_Delay(workticks);
+    SDL_Log("%s Thread %lu: work done!\n", typestr, (unsigned long) tid);
+    SDL_UnlockRWLock(rwlock);
+
+    /* If this sleep isn't done, then threads may starve */
+    SDL_Delay(10);
 }
 
 static int SDLCALL
