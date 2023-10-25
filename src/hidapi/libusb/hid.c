@@ -123,6 +123,7 @@ struct hid_device_ {
 
 	/* Quirks */
 	int skip_output_report_id;
+	int no_skip_output_report_id;
 	int no_output_reports_on_intr_ep;
 
 	/* List of received input reports. */
@@ -1347,6 +1348,7 @@ static int hidapi_initialize_device(hid_device *dev, const struct libusb_interfa
 
 	/* Initialize XBox 360 controllers */
 	if (is_xbox360(desc.idVendor, intf_desc)) {
+		dev->no_skip_output_report_id = 1;
 		init_xbox360(dev->device_handle, desc.idVendor, desc.idProduct, conf_desc);
 	}
 
@@ -1572,7 +1574,7 @@ int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t 
 
 	report_number = data[0];
 
-	if (report_number == 0x0 || dev->skip_output_report_id) {
+	if ((!dev->no_skip_output_report_id && report_number == 0x0) || dev->skip_output_report_id) {
 		data++;
 		length--;
 		skipped_report_id = 1;
