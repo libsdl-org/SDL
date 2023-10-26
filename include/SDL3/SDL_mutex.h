@@ -378,10 +378,10 @@ extern DECLSPEC void SDLCALL SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_AC
  * Trying to lock for read-only access can succeed if other threads are
  * holding read-only locks, as this won't prevent access.
  *
- * This function does not fail; if rwlock is NULL, it will return 0 immediately
- * having locked nothing. If rwlock is valid, this function will always
- * either lock the rwlock and return 0, or return SDL_RWLOCK_TIMEOUT and lock
- * nothing.
+ * This function does not fail; if rwlock is NULL, it will return 0
+ * immediately having locked nothing. If rwlock is valid, this function will
+ * always either lock the rwlock and return 0, or return SDL_RWLOCK_TIMEOUT
+ * and lock nothing.
  *
  * \param rwlock the rwlock to try to lock
  * \returns 0 or `SDL_RWLOCK_TIMEDOUT`
@@ -412,10 +412,10 @@ extern DECLSPEC int SDLCALL SDL_TryLockRWLockForReading(SDL_RWLock *rwlock) SDL_
  * read-only lock. Doing so results in undefined behavior. Unlock the
  * read-only lock before requesting a write lock.
  *
- * This function does not fail; if rwlock is NULL, it will return 0 immediately
- * having locked nothing. If rwlock is valid, this function will always
- * either lock the rwlock and return 0, or return SDL_RWLOCK_TIMEOUT and lock
- * nothing.
+ * This function does not fail; if rwlock is NULL, it will return 0
+ * immediately having locked nothing. If rwlock is valid, this function will
+ * always either lock the rwlock and return 0, or return SDL_RWLOCK_TIMEOUT
+ * and lock nothing.
  *
  * \param rwlock the rwlock to try to lock
  * \returns 0 or `SDL_RWLOCK_TIMEDOUT`
