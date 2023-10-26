@@ -749,8 +749,8 @@ extern DECLSPEC int SDLCALL SDL_WaitCondition(SDL_Condition *cond, SDL_Mutex *mu
  *
  * \param cond the condition variable to wait on
  * \param mutex the mutex used to coordinate thread access
- * \param timeoutMS the maximum time to wait, in milliseconds, or
- *                  -1 to wait indefinitely
+ * \param timeoutMS the maximum time to wait, in milliseconds, or -1 to wait
+ *                  indefinitely
  * \returns 0 if the condition variable is signaled, `SDL_MUTEX_TIMEDOUT` if
  *          the condition is not signaled in the allotted time, or a negative
  *          error code on failure; call SDL_GetError() for more information.
