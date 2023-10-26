@@ -472,7 +472,7 @@ void SDL_DetachThread(SDL_Thread *thread)
 
 int SDL_WaitSemaphore(SDL_Semaphore *sem)
 {
-    return SDL_WaitSemaphoreTimeoutNS(sem, SDL_MUTEX_MAXWAIT);
+    return SDL_WaitSemaphoreTimeoutNS(sem, -1);
 }
 
 int SDL_TryWaitSemaphore(SDL_Semaphore *sem)
@@ -494,7 +494,7 @@ int SDL_WaitSemaphoreTimeout(SDL_Semaphore *sem, Sint32 timeoutMS)
 
 int SDL_WaitCondition(SDL_Condition *cond, SDL_Mutex *mutex)
 {
-    return SDL_WaitConditionTimeoutNS(cond, mutex, SDL_MUTEX_MAXWAIT);
+    return SDL_WaitConditionTimeoutNS(cond, mutex, -1);
 }
 
 int SDL_WaitConditionTimeout(SDL_Condition *cond, SDL_Mutex *mutex, Sint32 timeoutMS)

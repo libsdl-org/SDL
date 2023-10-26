@@ -70,7 +70,7 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
 }
 
 /* TODO: This routine is a bit overloaded.
- * If the timeout is 0 then just poll the semaphore; if it's SDL_MUTEX_MAXWAIT, pass
+ * If the timeout is 0 then just poll the semaphore; if it's -1, pass
  * NULL to sceKernelWaitSema() so that it waits indefinitely; and if the timeout
  * is specified, convert it to microseconds. */
 int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)

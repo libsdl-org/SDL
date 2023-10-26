@@ -114,7 +114,7 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
         return SDL_MUTEX_TIMEOUT;
     }
 
-    if (timeoutNS == SDL_MUTEX_MAXWAIT) {
+    if (timeoutNS == -1) {  // -1 == wait indefinitely.
         WaitAll(sem);
         return 0;
     }

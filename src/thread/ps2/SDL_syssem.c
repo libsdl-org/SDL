@@ -96,7 +96,7 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
         return 0;
     }
 
-    if (timeoutNS != SDL_MUTEX_MAXWAIT) {
+    if (timeoutNS != -1) {  // -1 == wait indefinitely.
         SetTimerAlarm(&alarm, MSec2TimerBusClock(SDL_NS_TO_MS(timeoutNS)), &usercb, (void *)GetThreadId());
     }
 

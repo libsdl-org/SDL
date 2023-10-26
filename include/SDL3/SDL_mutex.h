@@ -121,11 +121,6 @@ extern "C" {
  */
 #define SDL_MUTEX_TIMEDOUT  1
 
-/**
- *  This is the timeout value which corresponds to never time out.
- */
-#define SDL_MUTEX_MAXWAIT   -1
-
 
 /**
  *  \name Mutex functions
@@ -535,7 +530,7 @@ extern DECLSPEC void SDLCALL SDL_DestroySemaphore(SDL_Semaphore *sem);
  * semaphore value.
  *
  * This function is the equivalent of calling SDL_WaitSemaphoreTimeout() with
- * a time length of `SDL_MUTEX_MAXWAIT`.
+ * a time length of -1.
  *
  * \param sem the semaphore wait on
  * \returns 0 on success or a negative error code on failure; call
@@ -722,7 +717,7 @@ extern DECLSPEC int SDLCALL SDL_BroadcastCondition(SDL_Condition *cond);
  * behavior.
  *
  * This function is the equivalent of calling SDL_WaitConditionTimeout() with
- * a time length of `SDL_MUTEX_MAXWAIT`.
+ * a time length of -1.
  *
  * \param cond the condition variable to wait on
  * \param mutex the mutex used to coordinate thread access
@@ -755,7 +750,7 @@ extern DECLSPEC int SDLCALL SDL_WaitCondition(SDL_Condition *cond, SDL_Mutex *mu
  * \param cond the condition variable to wait on
  * \param mutex the mutex used to coordinate thread access
  * \param timeoutMS the maximum time to wait, in milliseconds, or
- *                  `SDL_MUTEX_MAXWAIT` to wait indefinitely
+ *                  -1 to wait indefinitely
  * \returns 0 if the condition variable is signaled, `SDL_MUTEX_TIMEDOUT` if
  *          the condition is not signaled in the allotted time, or a negative
  *          error code on failure; call SDL_GetError() for more information.

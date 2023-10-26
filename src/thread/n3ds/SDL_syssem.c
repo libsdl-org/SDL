@@ -67,7 +67,7 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
         return SDL_InvalidParamError("sem");
     }
 
-    if (timeoutNS == SDL_MUTEX_MAXWAIT) {
+    if (timeoutNS == -1) {  // -1 == wait indefinitely.
         LightSemaphore_Acquire(&sem->semaphore, 1);
         return 0;
     }
