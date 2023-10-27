@@ -133,6 +133,18 @@ static SDL_AudioDevice *SDL_IMMDevice_Add(const SDL_bool iscapture, const char *
 
     // see if we already have this one first.
     SDL_AudioDevice *device = SDL_IMMDevice_FindByDevID(devid);
+    if (device) {
+        if (SDL_AtomicGet(&device->zombie)) {
+            // whoa, it came back! This can happen if you unplug and replug USB headphones while we're still keeping the SDL object alive.
+            // Kill this device's IMMDevice id; the device will go away when the app closes it, or maybe a new default device is chosen
+            // (possibly this reconnected device), so we just want to make sure IMMDevice doesn't try to find the old device by the existing ID string.
+            SDL_IMMDevice_HandleData *handle = (SDL_IMMDevice_HandleData *) device->handle;
+            SDL_free(handle->immdevice_id);
+            handle->immdevice_id = NULL;
+            device = NULL;  // add a new device, below.
+        }
+    }
+
     if (!device) {
         // handle is freed by SDL_IMMDevice_FreeDeviceHandle!
         SDL_IMMDevice_HandleData *handle = SDL_malloc(sizeof(SDL_IMMDevice_HandleData));
