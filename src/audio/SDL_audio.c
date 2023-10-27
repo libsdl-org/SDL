@@ -1353,9 +1353,12 @@ void SDL_CloseAudioDevice(SDL_AudioDeviceID devid)
         SDL_AudioDevice *device = logdev->physical_device;
         DestroyLogicalAudioDevice(logdev);
 
+        const SDL_bool close_physical = (device->logical_devices == NULL); // no more logical devices? Close the physical device, too.
+
         // !!! FIXME: we _need_ to release this lock, but doing so can cause a race condition if someone opens a device while we're closing it.
         SDL_UnlockMutex(device->lock);  // can't hold the lock or the audio thread will deadlock while we WaitThread it. If not closing, we're done anyhow.
-        if (device->logical_devices == NULL) {  // no more logical devices? Close the physical device, too.
+
+        if (close_physical) {
             ClosePhysicalAudioDevice(device);
         }
 
