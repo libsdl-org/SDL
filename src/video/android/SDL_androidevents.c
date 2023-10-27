@@ -74,6 +74,7 @@ static void android_egl_context_restore(SDL_Window *window)
     if (window) {
         SDL_Event event;
         SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+        SDL_GL_MakeCurrent(window, NULL);
         if (SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context) < 0) {
             /* The context is no longer valid, create a new one */
             data->egl_context = (EGLContext)SDL_GL_CreateContext(window);
