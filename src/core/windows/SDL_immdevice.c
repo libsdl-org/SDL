@@ -155,6 +155,10 @@ static SDL_AudioDevice *SDL_IMMDevice_Add(const SDL_bool iscapture, const char *
         spec.format = SDL_WaveFormatExToSDLFormat((WAVEFORMATEX *)fmt);
 
         device = SDL_AddAudioDevice(iscapture, devname, &spec, handle);
+        if (!device) {
+            SDL_free(handle->immdevice_id);
+            SDL_free(handle);
+        }
     }
 
     return device;
