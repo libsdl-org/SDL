@@ -36,7 +36,8 @@
 
 #define MAX_BUTTONS 8 /* Maximum number of buttons supported */
 
-static int run_zenity(const char **args, int fd_pipe[2]) {
+static int run_zenity(const char **args, int fd_pipe[2])
+{
     int status;
     pid_t pid1;
 
@@ -47,6 +48,7 @@ static int run_zenity(const char **args, int fd_pipe[2]) {
         if (dup2(fd_pipe[1], STDOUT_FILENO) == -1) {
             _exit(128);
         }
+        close(fd_pipe[1]);
 
         /* const casting argv is fine:
          * https://pubs.opengroup.org/onlinepubs/9699919799/functions/fexecve.html -> rational
@@ -56,7 +58,6 @@ static int run_zenity(const char **args, int fd_pipe[2]) {
     } else if (pid1 < 0) { /* fork() failed */
         return SDL_SetError("fork() failed: %s", strerror(errno));
     } else { /* parent process */
-        close(fd_pipe[1]); /* no writing to the pipe */
         if (waitpid(pid1, &status, 0) != pid1) {
             return SDL_SetError("Waiting on zenity failed: %s", strerror(errno));
         }
@@ -73,7 +74,8 @@ static int run_zenity(const char **args, int fd_pipe[2]) {
     }
 }
 
-static int get_zenity_version(int *major, int *minor) {
+static int get_zenity_version(int *major, int *minor)
+{
     int fd_pipe[2]; /* fd_pipe[0]: read end of pipe, fd_pipe[1]: write end of pipe */
     const char *argv[] = { "zenity", "--version", NULL };
 
@@ -87,6 +89,7 @@ static int get_zenity_version(int *major, int *minor) {
         char *version_ptr = NULL, *end_ptr = NULL;
         int tmp;
 
+        close(fd_pipe[1]);
         outputfp = fdopen(fd_pipe[0], "r");
         if (outputfp == NULL) {
             close(fd_pipe[0]);
@@ -109,12 +112,16 @@ static int get_zenity_version(int *major, int *minor) {
         }
         *major = tmp;
 
-        version_ptr = end_ptr + 1; /* skip the dot */
-        tmp = (int) SDL_strtol(version_ptr, &end_ptr, 10);
-        if (tmp == 0 && end_ptr == version_ptr) {
-            return SDL_SetError("failed to get zenity minor version number");
+        if (*end_ptr == '.') {
+            version_ptr = end_ptr + 1; /* skip the dot */
+            tmp = (int) SDL_strtol(version_ptr, &end_ptr, 10);
+            if (tmp == 0 && end_ptr == version_ptr) {
+                return SDL_SetError("failed to get zenity minor version number");
+            }
+            *minor = tmp;
+        } else {
+            *minor = 0;
         }
-        *minor = tmp;
 
         return 0; /* success */
     }
@@ -124,13 +131,22 @@ static int get_zenity_version(int *major, int *minor) {
     return -1; /* run_zenity should've called SDL_SetError() */
 }
 
-int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid) {
+int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+{
     int fd_pipe[2]; /* fd_pipe[0]: read end of pipe, fd_pipe[1]: write end of pipe */
     int zenity_major = 0, zenity_minor = 0, output_len = 0;
     int argc = 5, i;
     const char *argv[5 + 2 /* icon name */ + 2 /* title */ + 2 /* message */ + 2 * MAX_BUTTONS + 1 /* NULL */] = {
         "zenity", "--question", "--switch", "--no-wrap", "--no-markup"
     };
+
+    /* Are we trying to connect to or are currently in a Wayland session? */
+    if (!SDL_getenv("WAYLAND_DISPLAY")) {
+        const char *session = SDL_getenv("XDG_SESSION_TYPE");
+        if (session && SDL_strcasecmp(session, "wayland") != 0) {
+            return SDL_SetError("Not on a wayland display");
+        }
+    }
 
     if (messageboxdata->numbuttons > MAX_BUTTONS) {
         return SDL_SetError("Too many buttons (%d max allowed)", MAX_BUTTONS);
