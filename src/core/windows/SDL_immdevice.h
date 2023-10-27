@@ -28,9 +28,13 @@
 
 typedef struct SDL_AudioDevice SDL_AudioDevice; // this is defined in src/audio/SDL_sysaudio.h
 
-typedef void (*SDL_IMMDevice_DefaultAudioDeviceChanged)(SDL_AudioDevice *new_default_device);
+typedef struct SDL_IMMDevice_callbacks
+{
+    void (*audio_device_disconnected)(SDL_AudioDevice *device);
+    void (*default_audio_device_changed)(SDL_AudioDevice *new_default_device);
+} SDL_IMMDevice_callbacks;
 
-int SDL_IMMDevice_Init(SDL_IMMDevice_DefaultAudioDeviceChanged devchanged);
+int SDL_IMMDevice_Init(const SDL_IMMDevice_callbacks *callbacks);
 void SDL_IMMDevice_Quit(void);
 int SDL_IMMDevice_Get(SDL_AudioDevice *device, IMMDevice **immdevice, SDL_bool iscapture);
 void SDL_IMMDevice_EnumerateEndpoints(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture);

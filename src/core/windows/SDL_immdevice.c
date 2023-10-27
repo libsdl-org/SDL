@@ -37,7 +37,7 @@ static const ERole SDL_IMMDevice_role = eConsole; /* !!! FIXME: should this be e
 
 /* This is global to the WASAPI target, to handle hotplug and default device lookup. */
 static IMMDeviceEnumerator *enumerator = NULL;
-static SDL_IMMDevice_DefaultAudioDeviceChanged devchangecallback = NULL;
+static SDL_IMMDevice_callbacks immcallbacks;
 
 /* PropVariantInit() is an inline function/macro in PropIdl.h that calls the C runtime's memset() directly. Use ours instead, to avoid dependency. */
 #ifdef PropVariantInit
@@ -205,9 +205,7 @@ static ULONG STDMETHODCALLTYPE SDLMMNotificationClient_Release(IMMNotificationCl
 static HRESULT STDMETHODCALLTYPE SDLMMNotificationClient_OnDefaultDeviceChanged(IMMNotificationClient *iclient, EDataFlow flow, ERole role, LPCWSTR pwstrDeviceId)
 {
     if (role == SDL_IMMDevice_role) {
-        if (devchangecallback) {
-            devchangecallback(SDL_IMMDevice_FindByDevID(pwstrDeviceId));
-        }
+        immcallbacks.default_audio_device_changed(SDL_IMMDevice_FindByDevID(pwstrDeviceId));
     }
     return S_OK;
 }
@@ -247,7 +245,7 @@ static HRESULT STDMETHODCALLTYPE SDLMMNotificationClient_OnDeviceStateChanged(IM
                         SDL_free(utf8dev);
                     }
                 } else {
-                    SDL_AudioDeviceDisconnected(SDL_IMMDevice_FindByDevID(pwstrDeviceId));
+                    immcallbacks.audio_device_disconnected(SDL_IMMDevice_FindByDevID(pwstrDeviceId));
                 }
             }
             IMMEndpoint_Release(endpoint);
@@ -276,7 +274,7 @@ static const IMMNotificationClientVtbl notification_client_vtbl = {
 
 static SDLMMNotificationClient notification_client = { &notification_client_vtbl, { 1 } };
 
-int SDL_IMMDevice_Init(SDL_IMMDevice_DefaultAudioDeviceChanged devchanged)
+int SDL_IMMDevice_Init(const SDL_IMMDevice_callbacks *callbacks)
 {
     HRESULT ret;
 
@@ -295,7 +293,18 @@ int SDL_IMMDevice_Init(SDL_IMMDevice_DefaultAudioDeviceChanged devchanged)
         return WIN_SetErrorFromHRESULT("IMMDevice CoCreateInstance(MMDeviceEnumerator)", ret);
     }
 
-    devchangecallback = devchanged ? devchanged : SDL_DefaultAudioDeviceChanged;
+    if (callbacks) {
+        SDL_copyp(&immcallbacks, callbacks);
+    } else {
+        SDL_zero(immcallbacks);
+    }
+
+    if (!immcallbacks.audio_device_disconnected) {
+        immcallbacks.audio_device_disconnected = SDL_AudioDeviceDisconnected;
+    }
+    if (!immcallbacks.default_audio_device_changed) {
+        immcallbacks.default_audio_device_changed = SDL_DefaultAudioDeviceChanged;
+    }
 
     return 0;
 }
@@ -308,7 +317,7 @@ void SDL_IMMDevice_Quit(void)
         enumerator = NULL;
     }
 
-    devchangecallback = NULL;
+    SDL_zero(immcallbacks);
 
     WIN_CoUninitialize();
 }
