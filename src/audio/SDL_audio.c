@@ -514,6 +514,7 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
 
     // on default devices, dump any logical devices that explicitly opened this device. Things that opened the system default can stay.
     // on non-default devices, dump everything.
+    // (by "dump" we mean send a REMOVED event; the zombie will keep consuming audio data for these logical devices until explicitly closed.)
     for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev != NULL; logdev = logdev->next) {
         if (!is_default_device || !logdev->opened_as_default) {  // if opened as a default, leave it on the zombie device for later migration.
             SDL_PendingAudioDeviceEvent *p = (SDL_PendingAudioDeviceEvent *) SDL_malloc(sizeof (SDL_PendingAudioDeviceEvent));

@@ -397,6 +397,8 @@ static SDL_bool RecoverWasapiIfLost(SDL_AudioDevice *device)
         WASAPI_DisconnectDevice(device);
         SDL_assert(SDL_AtomicGet(&device->shutdown));  // so we don't come back through here.
         return SDL_FALSE; // already failed.
+    } else if (SDL_AtomicGet(&device->zombie)) {
+        return SDL_FALSE;  // we're already dead, so just leave and let the Zombie implementations take over.
     } else if (!device->hidden->client) {
         return SDL_TRUE; // still waiting for activation.
     }
