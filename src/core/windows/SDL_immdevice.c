@@ -37,6 +37,7 @@ static const ERole SDL_IMMDevice_role = eConsole; /* !!! FIXME: should this be e
 
 /* This is global to the WASAPI target, to handle hotplug and default device lookup. */
 static IMMDeviceEnumerator *enumerator = NULL;
+static SDL_IMMDevice_DefaultAudioDeviceChanged devchangecallback = NULL;
 
 /* PropVariantInit() is an inline function/macro in PropIdl.h that calls the C runtime's memset() directly. Use ours instead, to avoid dependency. */
 #ifdef PropVariantInit
@@ -204,7 +205,9 @@ static ULONG STDMETHODCALLTYPE SDLMMNotificationClient_Release(IMMNotificationCl
 static HRESULT STDMETHODCALLTYPE SDLMMNotificationClient_OnDefaultDeviceChanged(IMMNotificationClient *iclient, EDataFlow flow, ERole role, LPCWSTR pwstrDeviceId)
 {
     if (role == SDL_IMMDevice_role) {
-        SDL_DefaultAudioDeviceChanged(SDL_IMMDevice_FindByDevID(pwstrDeviceId));
+        if (devchangecallback) {
+            devchangecallback(SDL_IMMDevice_FindByDevID(pwstrDeviceId));
+        }
     }
     return S_OK;
 }
@@ -273,7 +276,7 @@ static const IMMNotificationClientVtbl notification_client_vtbl = {
 
 static SDLMMNotificationClient notification_client = { &notification_client_vtbl, { 1 } };
 
-int SDL_IMMDevice_Init(void)
+int SDL_IMMDevice_Init(SDL_IMMDevice_DefaultAudioDeviceChanged devchanged)
 {
     HRESULT ret;
 
@@ -291,6 +294,9 @@ int SDL_IMMDevice_Init(void)
         WIN_CoUninitialize();
         return WIN_SetErrorFromHRESULT("IMMDevice CoCreateInstance(MMDeviceEnumerator)", ret);
     }
+
+    devchangecallback = devchanged ? devchanged : SDL_DefaultAudioDeviceChanged;
+
     return 0;
 }
 
@@ -301,6 +307,8 @@ void SDL_IMMDevice_Quit(void)
         IMMDeviceEnumerator_Release(enumerator);
         enumerator = NULL;
     }
+
+    devchangecallback = NULL;
 
     WIN_CoUninitialize();
 }

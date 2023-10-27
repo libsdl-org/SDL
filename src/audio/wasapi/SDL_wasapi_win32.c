@@ -48,11 +48,22 @@ static SDL_bool immdevice_initialized = SDL_FALSE;
 // Some GUIDs we need to know without linking to libraries that aren't available before Vista.
 static const IID SDL_IID_IAudioClient = { 0x1cb9ad4c, 0xdbfa, 0x4c32, { 0xb1, 0x78, 0xc2, 0xf5, 0x68, 0xa7, 0x03, 0xb2 } };
 
+static int mgmtthrtask_DefaultAudioDeviceChanged(void *userdata)
+{
+    SDL_DefaultAudioDeviceChanged((SDL_AudioDevice *) userdata);
+    return 0;
+}
+
+static void WASAPI_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
+{
+    WASAPI_ProxyToManagementThread(mgmtthrtask_DetectDevices, new_default_device, NULL);  // don't wait on this, IMMDevice's own thread needs to return or everything will deadlock.
+}
+
 int WASAPI_PlatformInit(void)
 {
     if (FAILED(WIN_CoInitialize())) {
         return SDL_SetError("CoInitialize() failed");
-    } else if (SDL_IMMDevice_Init() < 0) {
+    } else if (SDL_IMMDevice_Init(WASAPI_DefaultAudioDeviceChanged) < 0) {
         return -1; // Error string is set by SDL_IMMDevice_Init
     }
 

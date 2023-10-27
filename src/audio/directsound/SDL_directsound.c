@@ -647,7 +647,7 @@ static SDL_bool DSOUND_Init(SDL_AudioDriverImpl *impl)
     }
 
 #ifdef HAVE_MMDEVICEAPI_H
-    SupportsIMMDevice = !(SDL_IMMDevice_Init() < 0);
+    SupportsIMMDevice = !(SDL_IMMDevice_Init(NULL) < 0);
 #endif
 
     impl->DetectDevices = DSOUND_DetectDevices;
