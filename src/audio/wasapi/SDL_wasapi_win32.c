@@ -56,7 +56,8 @@ static int mgmtthrtask_DefaultAudioDeviceChanged(void *userdata)
 
 static void WASAPI_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
 {
-    WASAPI_ProxyToManagementThread(mgmtthrtask_DetectDevices, new_default_device, NULL);  // don't wait on this, IMMDevice's own thread needs to return or everything will deadlock.
+    // don't wait on this, IMMDevice's own thread needs to return or everything will deadlock.
+    WASAPI_ProxyToManagementThread(mgmtthrtask_DefaultAudioDeviceChanged, new_default_device, NULL);
 }
 
 int WASAPI_PlatformInit(void)
