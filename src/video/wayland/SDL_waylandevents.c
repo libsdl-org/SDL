@@ -2989,8 +2989,10 @@ int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input)
         w->locked_pointer = NULL;
     }
 
-    zwp_relative_pointer_v1_destroy(input->relative_pointer);
-    input->relative_pointer = NULL;
+    if (input->relative_pointer) {
+        zwp_relative_pointer_v1_destroy(input->relative_pointer);
+        input->relative_pointer = NULL;
+    }
 
     d->relative_mouse_mode = 0;
 
