@@ -3083,9 +3083,17 @@ else()
   set(sdl_static_libname "SDL2")
 endif()
 
-set(prefix ${CMAKE_INSTALL_PREFIX})
+# CMAKE_PREFIX_PATH and CMAKE_INSTALL_FULL_BINDIR can be a non-absolute path
+# when a master-project does e.g. `set(CMAKE_INSTALL_PREFIX "libs/SDL2" CACHE PATH "prefix" FORCE)`.
+if(NOT IS_ABSOLUTE "${CMAKE_INSTALL_PREFIX}")
+  set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_PREFIX}")
+endif()
+if(NOT IS_ABSOLUTE "${CMAKE_INSTALL_FULL_BINDIR}")
+  set(CMAKE_INSTALL_FULL_BINDIR "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_FULL_BINDIR}")
+endif()
 file(RELATIVE_PATH bin_prefix_relpath "${CMAKE_INSTALL_FULL_BINDIR}" "${CMAKE_INSTALL_PREFIX}")
 
+set(prefix ${CMAKE_INSTALL_PREFIX})
 set(exec_prefix "\${prefix}")
 set(libdir "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
 set(bindir "\${exec_prefix}/${CMAKE_INSTALL_BINDIR}")
