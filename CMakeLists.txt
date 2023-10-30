@@ -2973,6 +2973,10 @@ if(ANDROID)
 endif()
 
 if(APPLE)
+  check_c_compiler_flag(-fobjc-arc COMPILER_SUPPORTS_-fobjc-arc)
+  if(NOT COMPILER_SUPPORTS_-fobjc-arc)
+    message(FATAL_ERROR "Compiler does not support -fobjc-arc: this is required on Apple platforms")
+  endif()
   sdl_compile_options(PRIVATE "-fobjc-arc")
 endif()
 
