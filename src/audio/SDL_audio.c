@@ -1916,6 +1916,13 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
         return;  // this is already the default.
     }
 
+    // Queue up events to push to the queue next time it pumps (presumably
+    //  in a safer thread).
+    // !!! FIXME: this duplicates some code we could probably refactor.
+    SDL_PendingAudioDeviceEvent pending;
+    pending.next = NULL;
+    SDL_PendingAudioDeviceEvent *pending_tail = &pending;
+
     SDL_LockMutex(new_default_device->lock);
 
     SDL_AudioDevice *current_default_device = ObtainPhysicalAudioDevice(current_devid);
@@ -1966,7 +1973,6 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
 
         if (needs_migration) {
             const SDL_bool spec_changed = !AUDIO_SPECS_EQUAL(current_default_device->spec, new_default_device->spec);
-            const SDL_bool post_fmt_event = (spec_changed && SDL_EventEnabled(SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED)) ? SDL_TRUE : SDL_FALSE;
             SDL_LogicalAudioDevice *next = NULL;
             for (SDL_LogicalAudioDevice *logdev = current_default_device->logical_devices; logdev != NULL; logdev = next) {
                 next = logdev->next;
@@ -1995,15 +2001,18 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
                 RefPhysicalAudioDevice(new_default_device);
                 UnrefPhysicalAudioDevice(current_default_device);
 
-                // Post an event for each logical device we moved.
-                if (post_fmt_event) {
-                    SDL_Event event;
-                    SDL_zero(event);
-                    event.type = SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED;
-                    event.common.timestamp = 0;
-                    event.adevice.iscapture = iscapture ? 1 : 0;
-                    event.adevice.which = logdev->instance_id;
-                    SDL_PushEvent(&event);
+                SDL_PendingAudioDeviceEvent *p;
+
+                // Queue an event for each logical device we moved.
+                if (spec_changed) {
+                    p = (SDL_PendingAudioDeviceEvent *)SDL_malloc(sizeof(SDL_PendingAudioDeviceEvent));
+                    if (p) { // if this failed, no event for you, but you have deeper problems anyhow.
+                        p->type = SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED;
+                        p->devid = logdev->instance_id;
+                        p->next = NULL;
+                        pending_tail->next = p;
+                        pending_tail = p;
+                    }
                 }
             }
 
@@ -2026,6 +2035,15 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
     // was current device already dead and just kept around to migrate to a new default device? Now we can kill it. Aim for the brain.
     if (current_default_device && SDL_AtomicGet(&current_default_device->zombie)) {
         UnrefPhysicalAudioDevice(current_default_device);
+    }
+
+    if (pending.next) {
+        SDL_LockRWLockForWriting(current_audio.device_hash_lock);
+        SDL_assert(current_audio.pending_events_tail != NULL);
+        SDL_assert(current_audio.pending_events_tail->next == NULL);
+        current_audio.pending_events_tail->next = pending.next;
+        current_audio.pending_events_tail = pending_tail;
+        SDL_UnlockRWLock(current_audio.device_hash_lock);
     }
 }
 
@@ -2070,17 +2088,43 @@ int SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SDL
     }
 
     // Post an event for the physical device, and each logical device on this physical device.
-    if (!kill_device && SDL_EventEnabled(SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED)) {
-        SDL_Event event;
-        SDL_zero(event);
-        event.type = SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED;
-        event.common.timestamp = 0;
-        event.adevice.iscapture = device->iscapture ? 1 : 0;
-        event.adevice.which = device->instance_id;
-        SDL_PushEvent(&event);
+    if (!kill_device) {
+        // Queue up events to push to the queue next time it pumps (presumably
+        //  in a safer thread).
+        // !!! FIXME: this duplicates some code we could probably refactor.
+        SDL_PendingAudioDeviceEvent pending;
+        pending.next = NULL;
+        SDL_PendingAudioDeviceEvent *pending_tail = &pending;
+
+        SDL_PendingAudioDeviceEvent *p;
+
+        p = (SDL_PendingAudioDeviceEvent *)SDL_malloc(sizeof(SDL_PendingAudioDeviceEvent));
+        if (p) { // if this failed, no event for you, but you have deeper problems anyhow.
+            p->type = SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED;
+            p->devid = device->instance_id;
+            p->next = NULL;
+            pending_tail->next = p;
+            pending_tail = p;
+        }
+
         for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev != NULL; logdev = logdev->next) {
-            event.adevice.which = logdev->instance_id;
-            SDL_PushEvent(&event);
+            p = (SDL_PendingAudioDeviceEvent *)SDL_malloc(sizeof(SDL_PendingAudioDeviceEvent));
+            if (p) { // if this failed, no event for you, but you have deeper problems anyhow.
+                p->type = SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED;
+                p->devid = logdev->instance_id;
+                p->next = NULL;
+                pending_tail->next = p;
+                pending_tail = p;
+            }
+        }
+
+        if (pending.next) {
+            SDL_LockRWLockForWriting(current_audio.device_hash_lock);
+            SDL_assert(current_audio.pending_events_tail != NULL);
+            SDL_assert(current_audio.pending_events_tail->next == NULL);
+            current_audio.pending_events_tail->next = pending.next;
+            current_audio.pending_events_tail = pending_tail;
+            SDL_UnlockRWLock(current_audio.device_hash_lock);
         }
     }
 
