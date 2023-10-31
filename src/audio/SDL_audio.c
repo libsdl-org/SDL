@@ -1689,6 +1689,8 @@ int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int
             SDL_assert((stream->bound_device == NULL) == ((stream->prev_binding == NULL) || (stream->next_binding == NULL)));
             if (stream->bound_device) {
                 retval = SDL_SetError("Stream #%d is already bound to a device", i);
+            } else if (stream->simplified) {  // You can get here if you closed the device instead of destroying the stream.
+                retval = SDL_SetError("Cannot change binding on a stream created with SDL_OpenAudioDeviceStream");
             }
         }
 
