@@ -175,7 +175,6 @@ typedef struct SDL_AudioDriver
     // !!! FIXME: most (all?) of these don't have to be atomic.
     SDL_AtomicInt output_device_count;
     SDL_AtomicInt capture_device_count;
-    SDL_AtomicInt last_device_instance_id;  // increments on each device add to provide unique instance IDs
     SDL_AtomicInt shutting_down;  // non-zero during SDL_Quit, so we known not to accept any last-minute device hotplugs.
 } SDL_AudioDriver;
 

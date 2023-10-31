@@ -275,16 +275,16 @@ static void ClosePhysicalAudioDevice(SDL_AudioDevice *device);
 
 SDL_COMPILE_TIME_ASSERT(check_lowest_audio_default_value, SDL_AUDIO_DEVICE_DEFAULT_CAPTURE < SDL_AUDIO_DEVICE_DEFAULT_OUTPUT);
 
+static SDL_AtomicInt last_device_instance_id;  // increments on each device add to provide unique instance IDs
 static SDL_AudioDeviceID AssignAudioDeviceInstanceId(SDL_bool iscapture, SDL_bool islogical)
 {
     /* Assign an instance id! Start at 2, in case there are things from the SDL2 era that still think 1 is a special value.
-       There's no reasonable scenario where this rolls over, but just in case, we wrap it in a loop.
        Also, make sure we don't assign SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, etc. */
 
     // The bottom two bits of the instance id tells you if it's an output device (1<<0), and if it's a physical device (1<<1).
     const SDL_AudioDeviceID flags = (iscapture ? 0 : (1<<0)) | (islogical ? 0 : (1<<1));
 
-    const SDL_AudioDeviceID instance_id = (((SDL_AudioDeviceID) (SDL_AtomicIncRef(&current_audio.last_device_instance_id) + 1)) << 2) | flags;
+    const SDL_AudioDeviceID instance_id = (((SDL_AudioDeviceID) (SDL_AtomicIncRef(&last_device_instance_id) + 1)) << 2) | flags;
     SDL_assert( (instance_id >= 2) && (instance_id < SDL_AUDIO_DEVICE_DEFAULT_CAPTURE) );
     return instance_id;
 }
@@ -669,6 +669,9 @@ int SDL_InitAudio(const char *driver_name)
         SDL_QuitAudio(); // shutdown driver if already running.
     }
 
+    // make sure device IDs start at 2 (because of SDL2 legacy interface), but don't reset the counter on each init, in case the app is holding an old device ID somewhere.
+    SDL_AtomicCAS(&last_device_instance_id, 0, 2);
+
     SDL_ChooseAudioConverters();
     SDL_SetupAudioResampler();
 
@@ -719,7 +722,6 @@ int SDL_InitAudio(const char *driver_name)
                     tried_to_init = SDL_TRUE;
                     SDL_zero(current_audio);
                     current_audio.pending_events_tail = &current_audio.pending_events;
-                    SDL_AtomicSet(&current_audio.last_device_instance_id, 2);  // start past 1 because of SDL2's legacy interface.
                     current_audio.device_hash_lock = device_hash_lock;
                     current_audio.device_hash = device_hash;
                     if (bootstrap[i]->init(&current_audio.impl)) {
@@ -744,7 +746,6 @@ int SDL_InitAudio(const char *driver_name)
             tried_to_init = SDL_TRUE;
             SDL_zero(current_audio);
             current_audio.pending_events_tail = &current_audio.pending_events;
-            SDL_AtomicSet(&current_audio.last_device_instance_id, 2);  // start past 1 because of SDL2's legacy interface.
             current_audio.device_hash_lock = device_hash_lock;
             current_audio.device_hash = device_hash;
             if (bootstrap[i]->init(&current_audio.impl)) {
