@@ -156,6 +156,7 @@ def main():
             func = re.sub(" SDL_TRY_ACQUIRE_SHARED\(.*\)", "", func);
             func = re.sub(" SDL_RELEASE\(.*\)", "", func);
             func = re.sub(" SDL_RELEASE_SHARED\(.*\)", "", func);
+            func = re.sub(" SDL_RELEASE_GENERIC\(.*\)", "", func);
 
             # Should be a valid function here
             match = reg_parsing_function.match(func)
