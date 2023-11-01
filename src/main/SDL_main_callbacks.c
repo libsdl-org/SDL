@@ -78,7 +78,12 @@ int SDL_IterateMainCallbacks(void)
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         // just empty the queue, EventWatcher sends the events to the app.
-        // !!! FIXME: free dropfile, etc event data.
+        switch (event.type) {
+            case SDL_EVENT_DROP_FILE:
+            case SDL_EVENT_DROP_TEXT:
+                SDL_free(event.drop.file);
+                break;
+        }
     }
 
     int rc = appiter();
