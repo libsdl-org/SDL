@@ -761,9 +761,11 @@ static SDL_AudioDevice *GetFirstAddedAudioDevice(const SDL_bool iscapture)
     void *iter = NULL;
     while (SDL_IterateHashTable(current_audio.device_hash, &key, &value, &iter)) {
         const SDL_AudioDeviceID devid = (SDL_AudioDeviceID) (uintptr_t) key;
+        // bit #0 of devid is set for output devices and unset for capture.
         // bit #1 of devid is set for physical devices and unset for logical.
-        const SDL_bool isphysical = (devid & (1<<1)) ? SDL_TRUE : SDL_FALSE;
-        if (isphysical && (devid < highest)) {
+        const SDL_bool devid_iscapture = (devid & (1 << 0)) ? SDL_FALSE : SDL_TRUE;
+        const SDL_bool isphysical = (devid & (1 << 1)) ? SDL_TRUE : SDL_FALSE;
+        if (isphysical && (devid_iscapture == iscapture) && (devid < highest)) {
             highest = devid;
             retval = (SDL_AudioDevice *) value;
         }
