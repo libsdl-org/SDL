@@ -76,7 +76,8 @@ int SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_
 int SDL_IterateMainCallbacks(void)
 {
     SDL_Event event;
-    while (SDL_PollEvent(&event)) {
+    SDL_PumpEvents();
+    while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) == 1) {
         // just empty the queue, EventWatcher sends the events to the app.
         switch (event.type) {
             case SDL_EVENT_DROP_FILE:
