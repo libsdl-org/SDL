@@ -144,16 +144,15 @@
 #define main    SDL_main
 #endif
 
-#include <SDL3/SDL_events.h>
-
 #include <SDL3/SDL_begin_code.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+union SDL_Event;
 typedef int (SDLCALL *SDL_AppInit_func)(int argc, char *argv[]);
 typedef int (SDLCALL *SDL_AppIterate_func)(void);
-typedef int (SDLCALL *SDL_AppEvent_func)(const SDL_Event *event);
+typedef int (SDLCALL *SDL_AppEvent_func)(const union SDL_Event *event);
 typedef void (SDLCALL *SDL_AppQuit_func)(void);
 
 #ifdef SDL_MAIN_USE_CALLBACKS
