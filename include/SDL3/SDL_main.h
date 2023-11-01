@@ -159,11 +159,8 @@ typedef void (SDLCALL *SDL_AppQuit_func)(void);
 /**
  *  The prototypes for the application's callbacks.
  *  These functions are to be supplied by the app instead of an
- *  SDL_main function if they've defined SDL_MAIN_USE_CALLBACKS
- *  before including SDL_main.h (but the SDL_main magic might
- *  still get used below internally, if we're emulating a callback
- *  mainloop on platforms that don't support it natively, but in that
- *  case we'll provide SDL_main, not the app.
+ *  SDL_main function, if they've defined SDL_MAIN_USE_CALLBACKS
+ *  before including SDL_main.h.
  */
 extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppInit(int argc, char *argv[]);
 extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppIterate(void);
