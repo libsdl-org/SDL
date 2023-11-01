@@ -155,17 +155,185 @@ typedef int (SDLCALL *SDL_AppIterate_func)(void);
 typedef int (SDLCALL *SDL_AppEvent_func)(const union SDL_Event *event);
 typedef void (SDLCALL *SDL_AppQuit_func)(void);
 
-#ifdef SDL_MAIN_USE_CALLBACKS
 /**
- *  The prototypes for the application's callbacks.
- *  These functions are to be supplied by the app instead of an
- *  SDL_main function, if they've defined SDL_MAIN_USE_CALLBACKS
- *  before including SDL_main.h.
+ * You can (optionally!) define SDL_MAIN_USE_CALLBACKS before including
+ * SDL_main.h, and then your application will _not_ have a standard
+ * "main" entry point. Instead, it will operate as a collection of
+ * functions that are called as necessary by the system. On some
+ * platforms, this is just a layer where SDL drives your program
+ * instead of your program driving SDL, on other platforms this might
+ * hook into the OS to manage the lifecycle. Programs on most platforms
+ * can use whichever approach they prefer, but the decision boils down
+ * to:
+ *
+ * - Using a standard "main" function: this works like it always has for
+ *   the past 50+ years in C programming, and your app is in control.
+ * - Using the callback functions: this might clean up some code,
+ *   avoid some #ifdef blocks in your program for some platforms, be more
+ *   resource-friendly to the system, and possibly be the primary way to
+ *   access some future platforms (but none require this at the moment).
+ *
+ * This is up to the app; both approaches are considered valid and supported
+ * ways to write SDL apps.
+ *
+ * If using the callbacks, don't define a "main" function. Instead, implement
+ * the functions listed below in your program.
+ */
+#ifdef SDL_MAIN_USE_CALLBACKS
+
+/**
+ * App-implemented initial entry point for SDL_MAIN_USE_CALLBACKS apps.
+ *
+ * Apps implement this function when using SDL_MAIN_USE_CALLBACKS. If
+ * using a standard "main" function, you should not supply this.
+ *
+ * This function is called by SDL once, at startup. The function should
+ * initialize whatever is necessary, possibly create windows and open
+ * audio devices, etc. The `argc` and `argv` parameters work like they would
+ * with a standard "main" function.
+ *
+ * This function should not go into an infinite mainloop; it should do any
+ * one-time setup it requires and then return.
+ *
+ * If this function returns 0, the app will proceed to normal operation,
+ * and will begin receiving repeated calls to SDL_AppIterate and SDL_AppEvent
+ * for the life of the program. If this function returns < 0, SDL will
+ * call SDL_AppQuit and terminate the process with an exit code that reports
+ * an error to the platform. If it returns > 0, the SDL calls SDL_AppQuit
+ * and terminates with an exit code that reports success to the platform.
+ *
+ * \param argc The standard ANSI C main's argc; number of elements in `argv`
+ * \param argv The standard ANSI C main's argv; array of command line arguments.
+ * \returns -1 to terminate with an error, 1 to terminate with success, 0 to continue.
+ *
+ * \threadsafety This function is not thread safe.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_AppIterate
+ * \sa SDL_AppEvent
+ * \sa SDL_AppQuit
  */
 extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppInit(int argc, char *argv[]);
+
+/**
+ * App-implemented iteration entry point for SDL_MAIN_USE_CALLBACKS apps.
+ *
+ * Apps implement this function when using SDL_MAIN_USE_CALLBACKS. If
+ * using a standard "main" function, you should not supply this.
+ *
+ * This function is called repeatedly by SDL after SDL_AppInit returns 0.
+ * The function should operate as a single iteration the program's primary
+ * loop; it should update whatever state it needs and draw a new frame of
+ * video, usually.
+ *
+ * On some platforms, this function will be called at the refresh rate of
+ * the display (which might change during the life of your app!). There are
+ * no promises made about what frequency this function might run at. You
+ * should use SDL's timer functions if you need to see how much time has
+ * passed since the last iteration.
+ *
+ * There is no need to process the SDL event queue during this function;
+ * SDL will send events as they arrive in SDL_AppEvent, and in most cases
+ * the event queue will be empty when this function runs anyhow.
+ *
+ * This function should not go into an infinite mainloop; it should do one
+ * iteration of whatever the program does and return.
+ *
+ * If this function returns 0, the app will continue normal operation,
+ * receiving repeated calls to SDL_AppIterate and SDL_AppEvent for the life
+ * of the program. If this function returns < 0, SDL will call SDL_AppQuit
+ * and terminate the process with an exit code that reports an error to the
+ * platform. If it returns > 0, the SDL calls SDL_AppQuit and terminates with
+ * an exit code that reports success to the platform.
+ *
+ * \returns -1 to terminate with an error, 1 to terminate with success, 0 to continue.
+ *
+ * \threadsafety This function is not thread safe.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_AppInit
+ * \sa SDL_AppEvent
+ * \sa SDL_AppQuit
+ */
 extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppIterate(void);
+
+/**
+ * App-implemented event entry point for SDL_MAIN_USE_CALLBACKS apps.
+ *
+ * Apps implement this function when using SDL_MAIN_USE_CALLBACKS. If
+ * using a standard "main" function, you should not supply this.
+ *
+ * This function is called as needed by SDL after SDL_AppInit returns 0;
+ * It is called once for each new event.
+ *
+ * There is (currently) no guarantee about what thread this will be called
+ * from; whatever thread pushes an event onto SDL's queue will trigger this
+ * function. SDL is responsible for pumping the event queue between
+ * each call to SDL_AppIterate, so in normal operation one should only
+ * get events in a serial fashion, but be careful if you have a thread that
+ * explicitly calls SDL_PushEvent.
+ *
+ * Events sent to this function are not owned by the app; if you need to
+ * save the data, you should copy it.
+ *
+ * You do not need to free event data (such as the `file` string in
+ * SDL_EVENT_DROP_FILE), as SDL will free it once this function returns.
+ * Note that this is different than one might expect when using a standard
+ * "main" function!
+ *
+ * This function should not go into an infinite mainloop; it should handle
+ * the provided event appropriately and return.
+ *
+ * If this function returns 0, the app will continue normal operation,
+ * receiving repeated calls to SDL_AppIterate and SDL_AppEvent for the life
+ * of the program. If this function returns < 0, SDL will call SDL_AppQuit
+ * and terminate the process with an exit code that reports an error to the
+ * platform. If it returns > 0, the SDL calls SDL_AppQuit and terminates with
+ * an exit code that reports success to the platform.
+ *
+ * \returns -1 to terminate with an error, 1 to terminate with success, 0 to continue.
+ *
+ * \threadsafety This function is not thread safe.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_AppInit
+ * \sa SDL_AppIterate
+ * \sa SDL_AppQuit
+ */
 extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppEvent(const SDL_Event *event);
+
+/**
+ * App-implemented deinit entry point for SDL_MAIN_USE_CALLBACKS apps.
+ *
+ * Apps implement this function when using SDL_MAIN_USE_CALLBACKS. If
+ * using a standard "main" function, you should not supply this.
+ *
+ * This function is called once by SDL before terminating the program.
+ *
+ * This function will be called no matter what, even if SDL_AppInit
+ * requests termination.
+ *
+ * This function should not go into an infinite mainloop; it should
+ * deinitialize any resources necessary, perform whatever shutdown
+ * activities, and return.
+ *
+ * You do not need to call SDL_Quit() in this function, as SDL will call
+ * it after this function returns and before the process terminates, but
+ * it is safe to do so.
+ *
+ * \threadsafety This function is not thread safe.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_AppInit
+ * \sa SDL_AppIterate
+ * \sa SDL_AppEvent
+ */
 extern SDLMAIN_DECLSPEC void SDLCALL SDL_AppQuit(void);
+
 #endif  /* SDL_MAIN_USE_CALLBACKS */
 
 
