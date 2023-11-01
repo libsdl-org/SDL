@@ -31,6 +31,9 @@ int SDL_AppInit(int argc, char **argv)
     const char *devname = NULL;
     int i;
 
+    /* this doesn't have to run very much, so give up tons of CPU time between iterations. */
+    SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "15");
+
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
     if (state == NULL) {
@@ -188,8 +191,6 @@ int SDL_AppIterate(void)
             return -1;   /* quit the app, report failure. */
         }
     }
-
-    SDL_Delay(10);  /* not a lot going on here, give up CPU time. */
 
     return 0;  /* keep app going. */
 }
