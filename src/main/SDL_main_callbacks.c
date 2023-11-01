@@ -44,6 +44,14 @@ int SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_
 
     const int rc = appinit(argc, argv);
     if (SDL_AtomicCAS(&apprc, 0, rc) && (rc == 0)) {  // bounce if SDL_AppInit already said abort, otherwise...
+        // make sure we definitely have events initialized, even if the app didn't do it.
+        if (!SDL_WasInit(SDL_INIT_EVENTS)) {
+            if (SDL_Init(SDL_INIT_EVENTS) == -1) {
+                SDL_AtomicSet(&apprc, -1);
+                return -1;
+            }
+        }
+
         // drain any initial events that might have arrived before we added a watcher.
         SDL_Event event;
         SDL_Event *pending_events = NULL;
