@@ -45,7 +45,7 @@ int SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_
     const int rc = appinit(argc, argv);
     if (SDL_AtomicCAS(&apprc, 0, rc) && (rc == 0)) {  // bounce if SDL_AppInit already said abort, otherwise...
         // make sure we definitely have events initialized, even if the app didn't do it.
-        if (SDL_Init(SDL_INIT_EVENTS) == -1) {
+        if (SDL_InitSubSystem(SDL_INIT_EVENTS) == -1) {
             SDL_AtomicSet(&apprc, -1);
             return -1;
         }
@@ -105,6 +105,10 @@ void SDL_QuitMainCallbacks(void)
 {
     SDL_DelEventWatch(EventWatcher, NULL);
     SDL_main_quit_callback();
+
+    // for symmetry, you should explicitly Quit what you Init, but we might come through here uninitialized and SDL_Quit() will clear everything anyhow.
+    //SDL_QuitSubSystem(SDL_INIT_EVENTS);
+
     SDL_Quit();
 }
 
