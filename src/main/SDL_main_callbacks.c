@@ -22,24 +22,24 @@
 #include "SDL_internal.h"
 #include "SDL_main_callbacks.h"
 
-static SDL_AppEvent_func appevent;
-static SDL_AppIterate_func appiter;
-static SDL_AppQuit_func appquit;
+static SDL_AppEvent_func SDL_main_event_callback;
+static SDL_AppIterate_func SDL_main_iteration_callback;
+static SDL_AppQuit_func SDL_main_quit_callback;
 static SDL_AtomicInt apprc;  // use an atomic, since events might land from any thread and we don't want to wrap this all in a mutex. A CAS makes sure we only move from zero once.
 
 static int SDLCALL EventWatcher(void *userdata, SDL_Event *event)
 {
     if (SDL_AtomicGet(&apprc) == 0) {  // if already quitting, don't send the event to the app.
-        SDL_AtomicCAS(&apprc, 0, appevent(event));
+        SDL_AtomicCAS(&apprc, 0, SDL_main_event_callback(event));
     }
     return 0;
 }
 
 int SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func _appiter, SDL_AppEvent_func _appevent, SDL_AppQuit_func _appquit)
 {
-    appiter = _appiter;
-    appevent = _appevent;
-    appquit = _appquit;
+    SDL_main_iteration_callback = _appiter;
+    SDL_main_event_callback = _appevent;
+    SDL_main_quit_callback = _appquit;
     SDL_AtomicSet(&apprc, 0);
 
     const int rc = appinit(argc, argv);
@@ -87,7 +87,7 @@ int SDL_IterateMainCallbacks(void)
         }
     }
 
-    int rc = appiter();
+    int rc = SDL_main_iteration_callback();
     if (!SDL_AtomicCAS(&apprc, 0, rc)) {
         rc = SDL_AtomicGet(&apprc);  // something else already set a quit result, keep that.
     }
@@ -98,7 +98,7 @@ int SDL_IterateMainCallbacks(void)
 void SDL_QuitMainCallbacks(void)
 {
     SDL_DelEventWatch(EventWatcher, NULL);
-    appquit();
+    SDL_main_quit_callback();
     SDL_Quit();
 }
 
