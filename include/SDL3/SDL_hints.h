@@ -2531,6 +2531,22 @@ extern "C" {
  */
 #define SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES "SDL_AUDIO_DEVICE_SAMPLE_FRAMES"
 
+
+/**
+ * Request SDL_AppIterate() be called at a specific rate.
+ *
+ * This number is in Hz, so "60" means try to iterate 60 times per second.
+ *
+ * On some platforms, or if you are using SDL_main instead of SDL_AppIterate,
+ * this hint is ignored. When the hint can be used, it is allowed to be
+ * changed at any time.
+ *
+ * This defaults to 60, and specifying NULL for the hint's value will restore
+ * the default.
+ */
+#define SDL_HINT_MAIN_CALLBACK_RATE "SDL_MAIN_CALLBACK_RATE"
+
+
 /**
  *  \brief  An enumeration of hint priorities
  */

@@ -47,11 +47,16 @@ if(WINDOWS_STORE)
     target_link_libraries(sdl_test_main_uwp PRIVATE SDL3::Headers)
     target_compile_options(sdl_test_main_uwp PRIVATE "/ZW")
 
+    add_library(sdl_test_main_callbacks_uwp OBJECT main.cpp)
+    target_link_libraries(sdl_test_main_callbacks_uwp PRIVATE SDL3::Headers)
+    target_compile_options(sdl_test_main_callbacks_uwp PRIVATE "/ZW")
+    target_compile_definitions(sdl_test_main_callbacks_uwp PRIVATE "SDL_MAIN_USE_CALLBACKS")
+
     set_source_files_properties(${RESOURCE_FILES} PROPERTIES VS_DEPLOYENT_LOCATION "Assets")
 endif()
 
 macro(add_sdl_test_executable TARGET)
-    cmake_parse_arguments(AST "BUILD_DEPENDENT;NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS;NO_C90" "" "NONINTERACTIVE_TIMEOUT;NONINTERACTIVE_ARGS;SOURCES" ${ARGN})
+    cmake_parse_arguments(AST "BUILD_DEPENDENT;NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS;NO_C90;MAIN_CALLBACKS" "" "NONINTERACTIVE_TIMEOUT;NONINTERACTIVE_ARGS;SOURCES" ${ARGN})
     if(AST_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "Unknown argument(s): ${AST_UNPARSED_ARGUMENTS}")
     endif()
@@ -73,8 +78,14 @@ macro(add_sdl_test_executable TARGET)
             TARGET "${TARGET}"
         )
         set_property(SOURCE "${uwp_bindir}/${TARGET}.appxmanifest" PROPERTY VS_DEPLOYMENT_CONTENT 1)
+
+        if(AST_MAIN_CALLBACKS)
+            list(APPEND EXTRA_SOURCES "$<TARGET_OBJECTS:sdl_test_main_callbacks_uwp>")
+        else()
+            list(APPEND EXTRA_SOURCES "$<TARGET_OBJECTS:sdl_test_main_uwp>")
+        endif()
+
         list(APPEND EXTRA_SOURCES
-            "$<TARGET_OBJECTS:sdl_test_main_uwp>"
             "${uwp_bindir}/${TARGET}.appxmanifest"
             "uwp/logo-50x50.png"
             "uwp/square-44x44.png"
@@ -213,7 +224,7 @@ endif()
 
 add_sdl_test_executable(checkkeys SOURCES checkkeys.c)
 add_sdl_test_executable(checkkeysthreads SOURCES checkkeysthreads.c)
-add_sdl_test_executable(loopwave NEEDS_RESOURCES TESTUTILS SOURCES loopwave.c)
+add_sdl_test_executable(loopwave NEEDS_RESOURCES TESTUTILS MAIN_CALLBACKS SOURCES loopwave.c)
 add_sdl_test_executable(testsurround SOURCES testsurround.c)
 add_sdl_test_executable(testresample NEEDS_RESOURCES SOURCES testresample.c)
 add_sdl_test_executable(testaudioinfo SOURCES testaudioinfo.c)
@@ -223,7 +234,7 @@ file(GLOB TESTAUTOMATION_SOURCE_FILES testautomation*.c)
 add_sdl_test_executable(testautomation NONINTERACTIVE NONINTERACTIVE_TIMEOUT 120 NEEDS_RESOURCES NO_C90 SOURCES ${TESTAUTOMATION_SOURCE_FILES})
 add_sdl_test_executable(testmultiaudio NEEDS_RESOURCES TESTUTILS SOURCES testmultiaudio.c)
 add_sdl_test_executable(testaudiohotplug NEEDS_RESOURCES TESTUTILS SOURCES testaudiohotplug.c)
-add_sdl_test_executable(testaudiocapture SOURCES testaudiocapture.c)
+add_sdl_test_executable(testaudiocapture MAIN_CALLBACKS SOURCES testaudiocapture.c)
 add_sdl_test_executable(testatomic NONINTERACTIVE SOURCES testatomic.c)
 add_sdl_test_executable(testintersections SOURCES testintersections.c)
 add_sdl_test_executable(testrelative SOURCES testrelative.c)
@@ -304,7 +315,7 @@ files2headers(gamepad_image_headers
 )
 files2headers(icon_bmp_header icon.bmp)
 
-add_sdl_test_executable(testaudio NEEDS_RESOURCES TESTUTILS SOURCES testaudio.c)
+add_sdl_test_executable(testaudio MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testaudio.c)
 add_sdl_test_executable(testfile NONINTERACTIVE SOURCES testfile.c)
 add_sdl_test_executable(testcontroller TESTUTILS SOURCES testcontroller.c gamepadutils.c ${gamepad_image_headers})
 add_sdl_test_executable(testgeometry TESTUTILS SOURCES testgeometry.c)
@@ -341,7 +352,7 @@ add_sdl_test_executable(testsem NONINTERACTIVE NONINTERACTIVE_ARGS 10 NONINTERAC
 add_sdl_test_executable(testsensor SOURCES testsensor.c)
 add_sdl_test_executable(testshader NEEDS_RESOURCES TESTUTILS SOURCES testshader.c)
 add_sdl_test_executable(testshape NEEDS_RESOURCES SOURCES testshape.c)
-add_sdl_test_executable(testsprite NEEDS_RESOURCES TESTUTILS SOURCES testsprite.c)
+add_sdl_test_executable(testsprite MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testsprite.c)
 add_sdl_test_executable(testspriteminimal SOURCES testspriteminimal.c ${icon_bmp_header})
 add_sdl_test_executable(teststreaming NEEDS_RESOURCES TESTUTILS SOURCES teststreaming.c)
 add_sdl_test_executable(testtimer NONINTERACTIVE NONINTERACTIVE_ARGS --no-interactive NONINTERACTIVE_TIMEOUT 60 SOURCES testtimer.c)

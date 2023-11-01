@@ -7,6 +7,12 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{68e1b30b-19ed-4612-93e4-6260c5a979e5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="main">
+      <UniqueIdentifier>{00004a2523fc69c7128c60648c860000}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="main\generic">
+      <UniqueIdentifier>{0000318d975e0a2867ab1d5727bf0000}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\SDL3\SDL_begin_code.h">
@@ -269,6 +275,9 @@
     </ClInclude>
     <ClInclude Include="..\src\joystick\windows\SDL_xinputjoystick_c.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\main\SDL_main_callbacks.h">
+      <Filter>main</Filter>
     </ClInclude>
     <ClInclude Include="..\src\render\direct3d11\SDL_render_winrt.h">
       <Filter>Source Files</Filter>
@@ -587,6 +596,12 @@
     </ClCompile>
     <ClCompile Include="..\src\loadso\windows\SDL_sysloadso.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\main\generic\SDL_sysmain_callbacks.c">
+      <Filter>main\generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\main\SDL_main_callbacks.c">
+      <Filter>main</Filter>
     </ClCompile>
     <ClCompile Include="..\src\power\SDL_power.c">
       <Filter>Source Files</Filter>

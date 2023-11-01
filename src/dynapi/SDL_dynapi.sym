@@ -920,6 +920,7 @@ SDL3_0.0.0 {
     SDL_GetSurfaceProperties;
     SDL_GetWindowProperties;
     SDL_ClearProperty;
+    SDL_EnterAppMainCallbacks;
     # extra symbols go here (don't modify this line)
   local: *;
 };

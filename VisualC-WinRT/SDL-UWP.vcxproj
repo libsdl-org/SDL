@@ -133,6 +133,7 @@
     <ClInclude Include="..\src\joystick\windows\SDL_windowsjoystick_c.h" />
     <ClInclude Include="..\src\joystick\windows\SDL_xinputjoystick_c.h" />
     <ClInclude Include="..\src\locale\SDL_syslocale.h" />
+    <ClInclude Include="..\src\main\SDL_main_callbacks.h" />
     <ClInclude Include="..\src\render\direct3d11\SDL_render_winrt.h" />
     <ClInclude Include="..\src\render\direct3d11\SDL_shaders_d3d11.h" />
     <ClInclude Include="..\src\render\opengles2\SDL_gles2funcs.h" />
@@ -337,6 +338,8 @@
     <ClCompile Include="..\src\loadso\windows\SDL_sysloadso.c" />
     <ClCompile Include="..\src\locale\SDL_locale.c" />
     <ClCompile Include="..\src\locale\winrt\SDL_syslocale.c" />
+    <ClCompile Include="..\src\main\generic\SDL_sysmain_callbacks.c" />
+    <ClCompile Include="..\src\main\SDL_main_callbacks.c" />
     <ClCompile Include="..\src\misc\SDL_url.c" />
     <ClCompile Include="..\src\misc\winrt\SDL_sysurl.cpp">
       <CompileAsWinRT>true</CompileAsWinRT>

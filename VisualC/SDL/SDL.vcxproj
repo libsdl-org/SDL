@@ -368,6 +368,7 @@
     <ClInclude Include="..\..\src\libm\math_libm.h" />
     <ClInclude Include="..\..\src\libm\math_private.h" />
     <ClInclude Include="..\..\src\locale\SDL_syslocale.h" />
+    <ClInclude Include="..\..\src\main\SDL_main_callbacks.h" />
     <ClInclude Include="..\..\src\misc\SDL_sysurl.h" />
     <ClInclude Include="..\..\src\power\SDL_syspower.h" />
     <ClInclude Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.h" />
@@ -397,6 +398,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c" />
+    <ClCompile Include="..\..\src\main\SDL_main_callbacks.c" />
     <ClCompile Include="..\..\src\SDL_guid.c" />
     <ClInclude Include="..\..\src\SDL_hashtable.h" />
     <ClInclude Include="..\..\src\SDL_hints_c.h" />

@@ -17,10 +17,7 @@
 */
 #include <stdlib.h>
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
+#define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
@@ -34,68 +31,24 @@ static struct
 } wave;
 
 static SDL_AudioStream *stream;
+static SDLTest_CommonState *state;
 
-static void fillerup(void)
+static int fillerup(void)
 {
     const int minimum = (wave.soundlen / SDL_AUDIO_FRAMESIZE(wave.spec)) / 2;
     if (SDL_GetAudioStreamQueued(stream) < minimum) {
         SDL_PutAudioStreamData(stream, wave.sound, wave.soundlen);
     }
+    return 0;
 }
 
-/* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
-static void
-quit(int rc)
-{
-    SDL_Quit();
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
-    }
-}
-
-static void
-close_audio(void)
-{
-    if (stream) {
-        SDL_DestroyAudioStream(stream);
-        stream = NULL;
-    }
-}
-
-static void
-open_audio(void)
-{
-    stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &wave.spec, NULL, NULL);
-    if (!stream) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create audio stream: %s\n", SDL_GetError());
-        SDL_free(wave.sound);
-        quit(2);
-    }
-    SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
-}
-
-
-static int done = 0;
-
-
-
-#ifdef __EMSCRIPTEN__
-static void loop(void)
-{
-    if (done) {
-        emscripten_cancel_main_loop();
-    } else {
-        fillerup();
-    }
-}
-#endif
-
-int main(int argc, char *argv[])
+int SDL_AppInit(int argc, char *argv[])
 {
     int i;
     char *filename = NULL;
-    SDLTest_CommonState *state;
+
+    /* this doesn't have to run very much, so give up tons of CPU time between iterations. */
+    SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "5");
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -129,21 +82,24 @@ int main(int argc, char *argv[])
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_EVENTS) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        return 1;
+        return -1;
     }
 
     filename = GetResourceFilename(filename, "sample.wav");
 
     if (filename == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
-        quit(1);
+        return -1;
     }
 
     /* Load the wave file into memory */
     if (SDL_LoadWAV(filename, &wave.spec, &wave.sound, &wave.soundlen) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename, SDL_GetError());
-        quit(1);
+        SDL_free(filename);
+        return -1;
     }
+
+    SDL_free(filename);
 
     /* Show the list of available drivers */
     SDL_Log("Available audio drivers:");
@@ -153,30 +109,30 @@ int main(int argc, char *argv[])
 
     SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
 
-    open_audio();
-
-#ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop(loop, 0, 1);
-#else
-    while (!done) {
-        SDL_Event event;
-
-        while (SDL_PollEvent(&event) > 0) {
-            if (event.type == SDL_EVENT_QUIT) {
-                done = 1;
-            }
-        }
-
-        fillerup();
-        SDL_Delay(100);
+    stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &wave.spec, NULL, NULL);
+    if (!stream) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create audio stream: %s\n", SDL_GetError());
+        return -1;
     }
-#endif
+    SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
 
-    /* Clean up on signal */
-    close_audio();
-    SDL_free(wave.sound);
-    SDL_free(filename);
-    SDL_Quit();
-    SDLTest_CommonDestroyState(state);
     return 0;
 }
+
+int SDL_AppEvent(const SDL_Event *event)
+{
+    return (event->type == SDL_EVENT_QUIT) ? 1 : 0;
+}
+
+int SDL_AppIterate(void)
+{
+    return fillerup();
+}
+
+void SDL_AppQuit(void)
+{
+    SDL_DestroyAudioStream(stream);
+    SDL_free(wave.sound);
+    SDLTest_CommonDestroyState(state);
+}
+
