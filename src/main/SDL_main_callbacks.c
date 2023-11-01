@@ -35,11 +35,11 @@ static int SDLCALL EventWatcher(void *userdata, SDL_Event *event)
     return 0;
 }
 
-int SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func _appiter, SDL_AppEvent_func _appevent, SDL_AppQuit_func _appquit)
+int SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
 {
-    SDL_main_iteration_callback = _appiter;
-    SDL_main_event_callback = _appevent;
-    SDL_main_quit_callback = _appquit;
+    SDL_main_iteration_callback = appiter;
+    SDL_main_event_callback = appevent;
+    SDL_main_quit_callback = appquit;
     SDL_AtomicSet(&apprc, 0);
 
     const int rc = appinit(argc, argv);
