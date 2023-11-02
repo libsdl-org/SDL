@@ -36,9 +36,8 @@
 
 int WIN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 void WIN_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
-SDL_bool WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                          unsigned *count,
-                                          const char **names);
+char const* const* WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+                                          Uint32 *count);
 SDL_bool WIN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                   SDL_Window *window,
                                   VkInstance instance,
