@@ -1293,7 +1293,7 @@ The following symbols have been renamed:
 
 ## SDL_vulkan.h
 
-SDL_Vulkan_GetInstanceExtensions() no longer takes a window parameter.
+SDL_Vulkan_GetInstanceExtensions() no longer takes a window parameter, and no longer makes the app allocate query/allocate space for the result, instead returning a static const internal string.
 
 SDL_Vulkan_GetVkGetInstanceProcAddr() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to PFN_vkGetInstanceProcAddr.
 
