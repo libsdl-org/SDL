@@ -134,7 +134,13 @@ def main():
             # Discard if it doesn't contain 'SDLCALL'
             if "SDLCALL" not in func:
                 if args.debug:
-                    print("  Discard: " + func)
+                    print("  Discard, doesn't have SDLCALL: " + func)
+                continue
+
+            # Discard if it contains 'SDLMAIN_DECLSPEC' (these are not SDL symbols).
+            if "SDLMAIN_DECLSPEC" in func:
+                if args.debug:
+                    print("  Discard, has SDLMAIN_DECLSPEC: " + func)
                 continue
 
             if args.debug:
