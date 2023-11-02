@@ -494,7 +494,7 @@ if(MSVC AND TARGET SDL3-shared)
     target_compile_options(SDL3-shared PRIVATE "$<$<COMPILE_LANGUAGE:ASM_MASM>:/nologo>")
     set_property(SOURCE "${asm_src}" PROPERTY LANGUAGE "ASM_MASM")
     target_sources(SDL3-shared PRIVATE "${asm_src}")
-  elseif(SDL_CPU_ARM32 OR DL_CPU_ARM64)
+  elseif(SDL_CPU_ARM32 OR SDL_CPU_ARM64)
     # FIXME: ARM assembler (armasm.exe/armasm64.exe) is NOT ASM_MASM, and does currently not work with CMake
     # (https://gitlab.kitware.com/cmake/cmake/-/issues/18912)
   endif()
