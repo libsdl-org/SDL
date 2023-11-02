@@ -36,9 +36,8 @@
 
 int Cocoa_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 void Cocoa_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
-SDL_bool Cocoa_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                            unsigned *count,
-                                            const char **names);
+char const* const* Cocoa_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+                                                      Uint32 *count);
 SDL_bool Cocoa_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                     SDL_Window *window,
                                     VkInstance instance,
