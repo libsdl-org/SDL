@@ -36,9 +36,8 @@
 
 int UIKit_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 void UIKit_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
-SDL_bool UIKit_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                            unsigned *count,
-                                            const char **names);
+char const* const* UIKit_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+                                            Uint32 *count);
 SDL_bool UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                     SDL_Window *window,
                                     VkInstance instance,
