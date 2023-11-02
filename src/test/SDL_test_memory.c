@@ -43,6 +43,10 @@ typedef BOOL (__stdcall *dbghelp_SymGetLineFromAddr_fn)(HANDLE hProcess, DWORD q
 #endif
 static dbghelp_SymGetLineFromAddr_fn dbghelp_SymGetLineFromAddr;
 
+/* older SDKs might not have this: */
+__declspec(dllimport) USHORT WINAPI RtlCaptureStackBackTrace(ULONG FramesToSkip, ULONG FramesToCapture, PVOID* BackTrace, PULONG BackTraceHash);
+#define CaptureStackBackTrace RtlCaptureStackBackTrace
+
 #endif
 
 /* This is a simple tracking allocator to demonstrate the use of SDL's
@@ -179,7 +183,7 @@ static void SDL_TrackAllocation(void *mem, size_t size)
                     line.LineNumber = 0;
                 }
 
-                SDL_snprintf(entry->stack_names[i], sizeof(entry->stack_names[i]), "%s+0x%llx %s:%u", pSymbol->Name, (unsigned long long)dwDisplacement, line.FileName, (Uint32)line.LineNumber);
+                SDL_snprintf(entry->stack_names[i], sizeof(entry->stack_names[i]), "%s+0x%I64x %s:%u", pSymbol->Name, dwDisplacement, line.FileName, (Uint32)line.LineNumber);
             }
         }
     }
