@@ -1088,8 +1088,6 @@ if(SDL_LIBC)
   cmake_pop_check_state()
 
   if(NOT WINDOWS)
-    check_include_file(linux/input.h HAVE_LINUX_INPUT_H)
-
     check_symbol_exists(getpagesize "unistd.h" HAVE_GETPAGESIZE)
     check_symbol_exists(sigaction "signal.h" HAVE_SIGACTION)
     check_symbol_exists(setjmp "setjmp.h" HAVE_SETJMP)
@@ -1488,7 +1486,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
           #ifndef EVIOCGNAME
           #error EVIOCGNAME() ioctl not available
           #endif
-          int main(int argc, char** argv) { return 0; }" HAVE_INPUT_EVENTS)
+          int main(int argc, char** argv) { return 0; }" HAVE_LINUX_INPUT_H)
     endif()
 
     if(LINUX)
@@ -1525,11 +1523,11 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
           }" HAVE_INPUT_WSCONS)
     endif()
 
-    if(HAVE_INPUT_EVENTS)
+    if(HAVE_LINUX_INPUT_H)
       set(SDL_INPUT_LINUXEV 1)
     endif()
 
-    if(SDL_HAPTIC AND HAVE_INPUT_EVENTS)
+    if(SDL_HAPTIC AND HAVE_LINUX_INPUT_H)
       set(SDL_HAPTIC_LINUX 1)
       sdl_glob_sources("${SDL3_SOURCE_DIR}/src/haptic/linux/*.c")
       set(HAVE_SDL_HAPTIC TRUE)
@@ -1617,7 +1615,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
       sdl_sources("${SDL3_SOURCE_DIR}/src/core/linux/SDL_udev.c")
     endif()
 
-    if(HAVE_INPUT_EVENTS)
+    if(HAVE_LINUX_INPUT_H)
       sdl_sources(
         "${SDL3_SOURCE_DIR}/src/core/linux/SDL_evdev.c"
         "${SDL3_SOURCE_DIR}/src/core/linux/SDL_evdev_kbd.c"
