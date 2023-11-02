@@ -135,24 +135,22 @@ extern DECLSPEC SDL_FunctionPointer SDLCALL SDL_Vulkan_GetVkGetInstanceProcAddr(
 extern DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
 
 /**
- * Get the names of the Vulkan instance extensions needed to create a surface
- * with SDL_Vulkan_CreateSurface.
+ * Get the Vulkan instance extensions needed for vkCreateInstance.
  *
  * This should be called after either calling SDL_Vulkan_LoadLibrary() or
  * creating an SDL_Window with the `SDL_WINDOW_VULKAN` flag.
  *
- * If `pNames` is NULL, then the number of required Vulkan instance extensions
- * is returned in `pCount`. Otherwise, `pCount` must point to a variable set
- * to the number of elements in the `pNames` array, and on return the variable
- * is overwritten with the number of names actually written to `pNames`. If
- * `pCount` is less than the number of required extensions, at most `pCount`
- * structures will be written. If `pCount` is smaller than the number of
- * required extensions, SDL_FALSE will be returned instead of SDL_TRUE, to
- * indicate that not all the required extensions were returned.
+ * On return, the variable pointed to by `pCount` will be set to the number
+ * of elements returned, suitable for using with
+ * VkInstanceCreateInfo::enabledExtensionCount, and the returned array can be
+ * used with VkInstanceCreateInfo::ppEnabledExtensionNames, for calling
+ * Vulkan's vkCreateInstance API.
  *
- * \param pCount A pointer to an unsigned int corresponding to the number of
- *               extensions to be returned
- * \returns SDL_TRUE on success, SDL_FALSE on error.
+ * You should not free the returned array; it is owned by SDL.
+ *
+ * \param pCount A pointer to Uint32 that will be filled with the number of
+ *               extensions returned.
+ * \returns An array of extension name strings on success, NULL on error.
  *
  * \since This function is available since SDL 3.0.0.
  *
