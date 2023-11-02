@@ -112,20 +112,14 @@ void WIN_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-SDL_bool WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                          unsigned *count,
-                                          const char **names)
+char const* const* WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+                                          Uint32 *count)
 {
     static const char *const extensionsForWin32[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME
     };
-    if (!_this->vulkan_config.loader_handle) {
-        SDL_SetError("Vulkan is not loaded");
-        return SDL_FALSE;
-    }
-    return SDL_Vulkan_GetInstanceExtensions_Helper(
-        count, names, SDL_arraysize(extensionsForWin32),
-        extensionsForWin32);
+    if(count) { *count = SDL_arraysize(extensionsForWin32); }
+    return extensionsForWin32;
 }
 
 SDL_bool WIN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
