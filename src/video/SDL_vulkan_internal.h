@@ -63,13 +63,6 @@ extern VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
     PFN_vkEnumerateInstanceExtensionProperties vkEnumerateInstanceExtensionProperties,
     Uint32 *extensionCount); /* free returned list with SDL_free */
 
-/* Implements functionality of SDL_Vulkan_GetInstanceExtensions for a list of
- * names passed in nameCount and names. */
-extern SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount,
-                                                        const char **userNames,
-                                                        unsigned nameCount,
-                                                        const char *const *names);
-
 /* Create a surface directly from a display connected to a physical device
  * using the DisplayKHR extension.
  * This needs to be passed an instance that was created with the VK_KHR_DISPLAY_EXTENSION_NAME

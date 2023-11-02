@@ -5140,14 +5140,9 @@ void SDL_Vulkan_UnloadLibrary(void)
     }
 }
 
-SDL_bool SDL_Vulkan_GetInstanceExtensions(unsigned *count, const char **names)
+char const* const* SDL_Vulkan_GetInstanceExtensions(Uint32 *count)
 {
-    if (count == NULL) {
-        SDL_InvalidParamError("count");
-        return SDL_FALSE;
-    }
-
-    return _this->Vulkan_GetInstanceExtensions(_this, count, names);
+    return _this->Vulkan_GetInstanceExtensions(_this, count);
 }
 
 SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window,

@@ -222,36 +222,15 @@ static void createInstance(void)
 {
     VkApplicationInfo appInfo = { 0 };
     VkInstanceCreateInfo instanceCreateInfo = { 0 };
-    const char **extensions = NULL;
-    unsigned extensionCount = 0;
     VkResult result;
 
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.apiVersion = VK_API_VERSION_1_0;
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceCreateInfo.pApplicationInfo = &appInfo;
-    if (!SDL_Vulkan_GetInstanceExtensions(&extensionCount, NULL)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "SDL_Vulkan_GetInstanceExtensions(): %s\n",
-                     SDL_GetError());
-        quit(2);
-    }
-    extensions = (const char **)SDL_malloc(sizeof(const char *) * extensionCount);
-    if (extensions == NULL) {
-        SDL_OutOfMemory();
-        quit(2);
-    }
-    if (!SDL_Vulkan_GetInstanceExtensions(&extensionCount, extensions)) {
-        SDL_free((void *)extensions);
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "SDL_Vulkan_GetInstanceExtensions(): %s\n",
-                     SDL_GetError());
-        quit(2);
-    }
-    instanceCreateInfo.enabledExtensionCount = extensionCount;
-    instanceCreateInfo.ppEnabledExtensionNames = extensions;
+
+    instanceCreateInfo.ppEnabledExtensionNames = SDL_Vulkan_GetInstanceExtensions(&instanceCreateInfo.enabledExtensionCount);
     result = vkCreateInstance(&instanceCreateInfo, NULL, &vulkanContext->instance);
-    SDL_free((void *)extensions);
     if (result != VK_SUCCESS) {
         vulkanContext->instance = VK_NULL_HANDLE;
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,

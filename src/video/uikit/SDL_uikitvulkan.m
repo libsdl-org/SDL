@@ -169,21 +169,16 @@ void UIKit_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-SDL_bool UIKit_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                            unsigned *count,
-                                            const char **names)
+char const* const* UIKit_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+                                            Uint32 *count)
 {
     static const char *const extensionsForUIKit[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_METAL_SURFACE_EXTENSION_NAME
     };
-    if (!_this->vulkan_config.loader_handle) {
-        SDL_SetError("Vulkan is not loaded");
-        return SDL_FALSE;
+    if(count) {
+        *count = SDL_arraysize(extensionsForUIKit);
     }
-
-    return SDL_Vulkan_GetInstanceExtensions_Helper(
-        count, names, SDL_arraysize(extensionsForUIKit),
-        extensionsForUIKit);
+    return extensionsForUIKit;
 }
 
 SDL_bool UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,

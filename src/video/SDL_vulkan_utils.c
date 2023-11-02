@@ -167,27 +167,6 @@ VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
     return retval;
 }
 
-SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount,
-                                                 const char **userNames,
-                                                 unsigned nameCount,
-                                                 const char *const *names)
-{
-    if (userNames) {
-        unsigned i;
-
-        if (*userCount < nameCount) {
-            SDL_SetError("Output array for SDL_Vulkan_GetInstanceExtensions needs to be at least %d big", nameCount);
-            return SDL_FALSE;
-        }
-
-        for (i = 0; i < nameCount; i++) {
-            userNames[i] = names[i];
-        }
-    }
-    *userCount = nameCount;
-    return SDL_TRUE;
-}
-
 /* Alpha modes, in order of preference */
 static const VkDisplayPlaneAlphaFlagBitsKHR alphaModes[4] = {
     VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR,

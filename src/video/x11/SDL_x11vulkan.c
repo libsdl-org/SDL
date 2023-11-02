@@ -142,29 +142,28 @@ void X11_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-SDL_bool X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                          unsigned *count,
-                                          const char **names)
+char const* const* X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+                                          Uint32 *count)
 {
     SDL_VideoData *videoData = _this->driverdata;
-    if (!_this->vulkan_config.loader_handle) {
-        SDL_SetError("Vulkan is not loaded");
-        return SDL_FALSE;
-    }
     if (videoData->vulkan_xlib_xcb_library) {
         static const char *const extensionsForXCB[] = {
             VK_KHR_SURFACE_EXTENSION_NAME,
             VK_KHR_XCB_SURFACE_EXTENSION_NAME,
         };
-        return SDL_Vulkan_GetInstanceExtensions_Helper(
-            count, names, SDL_arraysize(extensionsForXCB), extensionsForXCB);
+        if(count) {
+            *count = SDL_arraysize(extensionsForXCB);
+        }
+        return extensionsForXCB;
     } else {
         static const char *const extensionsForXlib[] = {
             VK_KHR_SURFACE_EXTENSION_NAME,
             VK_KHR_XLIB_SURFACE_EXTENSION_NAME,
         };
-        return SDL_Vulkan_GetInstanceExtensions_Helper(
-            count, names, SDL_arraysize(extensionsForXlib), extensionsForXlib);
+        if(count) {
+            *count = SDL_arraysize(extensionsForXlib);
+        }
+        return extensionsForXlib;
     }
 }
 
