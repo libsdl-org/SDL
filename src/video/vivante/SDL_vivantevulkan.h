@@ -36,8 +36,7 @@
 int VIVANTE_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 void VIVANTE_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
 char const* const* VIVANTE_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                              unsigned *count,
-                                              const char **names);
+                                              Uint32 *count);
 SDL_bool VIVANTE_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                       SDL_Window *window,
                                       VkInstance instance,
