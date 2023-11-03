@@ -137,7 +137,7 @@ static SDL_bool SDL_ShouldInitSubsystem(Uint32 subsystem)
 {
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     SDL_assert((subsystem_index < 0) || (SDL_SubsystemRefCount[subsystem_index] < 255));
-    return ((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] == 0)) ? SDL_TRUE : SDL_FALSE;
+    return ((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] == 0));
 }
 
 /* Private helper to check if a system needs to be quit. */
@@ -151,7 +151,7 @@ static SDL_bool SDL_ShouldQuitSubsystem(Uint32 subsystem)
     /* If we're in SDL_Quit, we shut down every subsystem, even if refcount
      * isn't zero.
      */
-    return (((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] == 1)) || SDL_bInMainQuit) ? SDL_TRUE : SDL_FALSE;
+    return (((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] == 1)) || SDL_bInMainQuit);
 }
 
 void SDL_SetMainReady(void)

@@ -207,7 +207,7 @@ static SDL_bool SDL_IsSupportedAudioFormat(const SDL_AudioFormat fmt)
 
 static SDL_bool SDL_IsSupportedChannelCount(const int channels)
 {
-    return ((channels >= 1) && (channels <= 8)) ? SDL_TRUE : SDL_FALSE;
+    return ((channels >= 1) && (channels <= 8));
 }
 
 

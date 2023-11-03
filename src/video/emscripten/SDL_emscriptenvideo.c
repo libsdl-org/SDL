@@ -293,7 +293,7 @@ static void Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *w
 
         if (fullscreen) {
             EmscriptenFullscreenStrategy strategy;
-            SDL_bool is_fullscreen_desktop = window->fullscreen_exclusive ? SDL_FALSE : SDL_TRUE;
+            SDL_bool is_fullscreen_desktop = !window->fullscreen_exclusive;
             int res;
 
             strategy.scaleMode = is_fullscreen_desktop ? EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH : EMSCRIPTEN_FULLSCREEN_SCALE_ASPECT;

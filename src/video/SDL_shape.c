@@ -52,7 +52,7 @@ SDL_bool SDL_IsShapedWindow(const SDL_Window *window)
     if (window == NULL) {
         return SDL_FALSE;
     }
-    return (SDL_bool)(window->shaper != NULL);
+    return (window->shaper != NULL);
 }
 
 /* REQUIRES that bitmap point to a w-by-h bitmap with ppb pixels-per-byte. */
@@ -125,17 +125,17 @@ static SDL_ShapeTree *RecursivelyCalculateShapeTree(SDL_WindowShapeMode mode, SD
             }
             switch (mode.mode) {
             case (ShapeModeDefault):
-                pixel_opaque = (a >= 1 ? SDL_TRUE : SDL_FALSE);
+                pixel_opaque = (a >= 1);
                 break;
             case (ShapeModeBinarizeAlpha):
-                pixel_opaque = (a >= mode.parameters.binarizationCutoff ? SDL_TRUE : SDL_FALSE);
+                pixel_opaque = (a >= mode.parameters.binarizationCutoff);
                 break;
             case (ShapeModeReverseBinarizeAlpha):
-                pixel_opaque = (a <= mode.parameters.binarizationCutoff ? SDL_TRUE : SDL_FALSE);
+                pixel_opaque = (a <= mode.parameters.binarizationCutoff);
                 break;
             case (ShapeModeColorKey):
                 key = mode.parameters.colorKey;
-                pixel_opaque = ((key.r != r || key.g != g || key.b != b) ? SDL_TRUE : SDL_FALSE);
+                pixel_opaque = (key.r != r || key.g != g || key.b != b);
                 break;
             }
             if (last_opaque == -1) {

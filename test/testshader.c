@@ -222,7 +222,7 @@ static SDL_bool CompileShaderProgram(ShaderData *data)
     }
     glUseProgramObjectARB(0);
 
-    return (glGetError() == GL_NO_ERROR) ? SDL_TRUE : SDL_FALSE;
+    return (glGetError() == GL_NO_ERROR);
 }
 
 static void DestroyShaderProgram(ShaderData *data)

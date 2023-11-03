@@ -377,7 +377,7 @@ int SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystic
         return SDL_SetError("Failed to obtain XInput device capabilities. Device disconnected?");
     }
     SDL_zero(state);
-    joystick->hwdata->bXInputHaptic = (XINPUTSETSTATE(userId, &state) == ERROR_SUCCESS) ? SDL_TRUE : SDL_FALSE;
+    joystick->hwdata->bXInputHaptic = (XINPUTSETSTATE(userId, &state) == ERROR_SUCCESS);
     joystick->hwdata->userid = userId;
 
     /* The XInput API has a hard coded button/axis mapping, so we just match it */

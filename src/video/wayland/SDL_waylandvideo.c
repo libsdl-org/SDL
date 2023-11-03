@@ -598,7 +598,7 @@ static void display_handle_done(void *data,
 
     if (driverdata->display == 0) {
         /* First time getting display info, create the VideoDisplay */
-        SDL_bool send_event = driverdata->videodata->initializing ? SDL_FALSE : SDL_TRUE;
+        SDL_bool send_event = !driverdata->videodata->initializing;
         if (driverdata->physical_width >= driverdata->physical_height) {
             driverdata->placeholder.natural_orientation = SDL_ORIENTATION_LANDSCAPE;
         } else {

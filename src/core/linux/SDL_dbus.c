@@ -508,7 +508,7 @@ SDL_bool SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
                                      DBUS_TYPE_UINT32, &screensaver_cookie, DBUS_TYPE_INVALID)) {
                 return SDL_FALSE;
             }
-            return (screensaver_cookie != 0) ? SDL_TRUE : SDL_FALSE;
+            return (screensaver_cookie != 0);
         } else {
             if (!SDL_DBus_CallVoidMethod(bus_name, path, interface, "UnInhibit", DBUS_TYPE_UINT32, &screensaver_cookie, DBUS_TYPE_INVALID)) {
                 return SDL_FALSE;

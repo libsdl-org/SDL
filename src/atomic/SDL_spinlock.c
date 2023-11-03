@@ -139,11 +139,11 @@ SDL_bool SDL_AtomicTryLock(SDL_SpinLock *lock)
 
 #elif defined(__SOLARIS__) && defined(_LP64)
     /* Used for Solaris with non-gcc compilers. */
-    return (SDL_bool)((int)atomic_cas_64((volatile uint64_t *)lock, 0, 1) == 0);
+    return ((int)atomic_cas_64((volatile uint64_t *)lock, 0, 1) == 0);
 
 #elif defined(__SOLARIS__) && !defined(_LP64)
     /* Used for Solaris with non-gcc compilers. */
-    return (SDL_bool)((int)atomic_cas_32((volatile uint32_t *)lock, 0, 1) == 0);
+    return ((int)atomic_cas_32((volatile uint32_t *)lock, 0, 1) == 0);
 #elif defined(PS2)
     uint32_t oldintr;
     SDL_bool res = SDL_FALSE;

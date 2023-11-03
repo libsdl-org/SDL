@@ -108,7 +108,7 @@ static void touch_handle_touch(void *data,
     case QtWaylandTouchPointPressed:
     case QtWaylandTouchPointReleased:
         SDL_SendTouch(Wayland_GetTouchTimestamp(viddata->input, time), deviceId, (SDL_FingerID)id,
-                      window, (touchState == QtWaylandTouchPointPressed) ? SDL_TRUE : SDL_FALSE, xf, yf, pressuref);
+                      window, (touchState == QtWaylandTouchPointPressed), xf, yf, pressuref);
         break;
     case QtWaylandTouchPointMoved:
         SDL_SendTouchMotion(Wayland_GetTouchTimestamp(viddata->input, time), deviceId, (SDL_FingerID)id,

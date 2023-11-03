@@ -233,9 +233,9 @@ static void loop(void)
                     SDL_PauseAudioDevice(state->audio_id);
                 }
             } else if (sym == SDLK_w) {
-                auto_loop = auto_loop ? SDL_FALSE : SDL_TRUE;
+                auto_loop = !auto_loop;
             } else if (sym == SDLK_e) {
-                auto_flush = auto_flush ? SDL_FALSE : SDL_TRUE;
+                auto_flush = !auto_flush;
             } else if (sym == SDLK_a) {
                 SDL_ClearAudioStream(stream);
                 SDL_Log("Cleared audio stream");

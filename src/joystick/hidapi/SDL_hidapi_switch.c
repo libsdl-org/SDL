@@ -1192,7 +1192,7 @@ static SDL_bool HIDAPI_DriverSwitch_IsSupportedDevice(SDL_HIDAPI_Device *device,
         return SDL_FALSE;
     }
 
-    return (type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO) ? SDL_TRUE : SDL_FALSE;
+    return (type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO);
 }
 
 static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
@@ -1466,7 +1466,7 @@ static int HIDAPI_DriverSwitch_ActuallyRumbleJoystick(SDL_DriverSwitch_Context *
         SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[1]);
     }
 
-    ctx->m_bRumbleActive = (low_frequency_rumble || high_frequency_rumble) ? SDL_TRUE : SDL_FALSE;
+    ctx->m_bRumbleActive = (low_frequency_rumble || high_frequency_rumble);
 
     if (!WriteRumble(ctx)) {
         return SDL_SetError("Couldn't send rumble packet");

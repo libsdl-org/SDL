@@ -897,7 +897,6 @@ SDL_bool WIN_GL_SetPixelFormatFrom(SDL_VideoDevice *_this, SDL_Window *fromWindo
 {
     HDC hfromdc = fromWindow->driverdata->hdc;
     HDC htodc = toWindow->driverdata->hdc;
-    BOOL result;
 
     /* get the pixel format of the fromWindow */
     int pixel_format = GetPixelFormat(hfromdc);
@@ -906,9 +905,7 @@ SDL_bool WIN_GL_SetPixelFormatFrom(SDL_VideoDevice *_this, SDL_Window *fromWindo
     DescribePixelFormat(hfromdc, pixel_format, sizeof(pfd), &pfd);
 
     /* set the pixel format of the toWindow */
-    result = SetPixelFormat(htodc, pixel_format, &pfd);
-
-    return result ? SDL_TRUE : SDL_FALSE;
+    return SetPixelFormat(htodc, pixel_format, &pfd);
 }
 
 #endif /* SDL_VIDEO_OPENGL_WGL */

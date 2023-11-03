@@ -50,28 +50,28 @@ static void RunBasicTest(void)
     SDL_Log("\natomic -----------------------------------------\n\n");
 
     SDL_AtomicSet(&v, 0);
-    tfret = SDL_AtomicSet(&v, 10) == 0 ? SDL_TRUE : SDL_FALSE;
+    tfret = SDL_AtomicSet(&v, 10) == 0;
     SDL_Log("AtomicSet(10)        tfret=%s val=%d\n", tf(tfret), SDL_AtomicGet(&v));
-    tfret = SDL_AtomicAdd(&v, 10) == 10 ? SDL_TRUE : SDL_FALSE;
+    tfret = SDL_AtomicAdd(&v, 10) == 10;
     SDL_Log("AtomicAdd(10)        tfret=%s val=%d\n", tf(tfret), SDL_AtomicGet(&v));
 
     SDL_AtomicSet(&v, 0);
     SDL_AtomicIncRef(&v);
-    tfret = (SDL_AtomicGet(&v) == 1) ? SDL_TRUE : SDL_FALSE;
+    tfret = (SDL_AtomicGet(&v) == 1);
     SDL_Log("AtomicIncRef()       tfret=%s val=%d\n", tf(tfret), SDL_AtomicGet(&v));
     SDL_AtomicIncRef(&v);
-    tfret = (SDL_AtomicGet(&v) == 2) ? SDL_TRUE : SDL_FALSE;
+    tfret = (SDL_AtomicGet(&v) == 2);
     SDL_Log("AtomicIncRef()       tfret=%s val=%d\n", tf(tfret), SDL_AtomicGet(&v));
-    tfret = (SDL_AtomicDecRef(&v) == SDL_FALSE) ? SDL_TRUE : SDL_FALSE;
+    tfret = (SDL_AtomicDecRef(&v) == SDL_FALSE);
     SDL_Log("AtomicDecRef()       tfret=%s val=%d\n", tf(tfret), SDL_AtomicGet(&v));
-    tfret = (SDL_AtomicDecRef(&v) == SDL_TRUE) ? SDL_TRUE : SDL_FALSE;
+    tfret = (SDL_AtomicDecRef(&v) == SDL_TRUE);
     SDL_Log("AtomicDecRef()       tfret=%s val=%d\n", tf(tfret), SDL_AtomicGet(&v));
 
     SDL_AtomicSet(&v, 10);
-    tfret = (SDL_AtomicCAS(&v, 0, 20) == SDL_FALSE) ? SDL_TRUE : SDL_FALSE;
+    tfret = (SDL_AtomicCAS(&v, 0, 20) == SDL_FALSE);
     SDL_Log("AtomicCAS()          tfret=%s val=%d\n", tf(tfret), SDL_AtomicGet(&v));
     value = SDL_AtomicGet(&v);
-    tfret = (SDL_AtomicCAS(&v, value, 20) == SDL_TRUE) ? SDL_TRUE : SDL_FALSE;
+    tfret = (SDL_AtomicCAS(&v, value, 20) == SDL_TRUE);
     SDL_Log("AtomicCAS()          tfret=%s val=%d\n", tf(tfret), SDL_AtomicGet(&v));
 }
 

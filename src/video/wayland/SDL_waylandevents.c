@@ -2530,13 +2530,13 @@ static void tablet_tool_handle_button(void *data, struct zwp_tablet_tool_v2 *too
     switch (button) {
     /* see %{_includedir}/linux/input-event-codes.h */
     case 0x14b: /* BTN_STYLUS */
-        input->btn_stylus = state == ZWP_TABLET_PAD_V2_BUTTON_STATE_PRESSED ? SDL_TRUE : SDL_FALSE;
+        input->btn_stylus = (state == ZWP_TABLET_PAD_V2_BUTTON_STATE_PRESSED);
         break;
     case 0x14c: /* BTN_STYLUS2 */
-        input->btn_stylus2 = state == ZWP_TABLET_PAD_V2_BUTTON_STATE_PRESSED ? SDL_TRUE : SDL_FALSE;
+        input->btn_stylus2 = (state == ZWP_TABLET_PAD_V2_BUTTON_STATE_PRESSED);
         break;
     case 0x149: /* BTN_STYLUS3 */
-        input->btn_stylus3 = state == ZWP_TABLET_PAD_V2_BUTTON_STATE_PRESSED ? SDL_TRUE : SDL_FALSE;
+        input->btn_stylus3 = (state == ZWP_TABLET_PAD_V2_BUTTON_STATE_PRESSED);
         break;
     }
 

@@ -115,7 +115,7 @@ void SDL_UnlockSensors(void)
 
 SDL_bool SDL_SensorsLocked(void)
 {
-    return (SDL_sensors_locked > 0) ? SDL_TRUE : SDL_FALSE;
+    return (SDL_sensors_locked > 0);
 }
 
 void SDL_AssertSensorsLocked(void)

@@ -230,7 +230,7 @@ SDL_bool GDK_IsTextInputShown(SDL_VideoDevice *_this)
      * just below the text box, so technically
      * this is true whenever the window is shown.
      */
-    return (g_TextBlock != NULL) ? SDL_TRUE : SDL_FALSE;
+    return (g_TextBlock != NULL);
 }
 
 SDL_bool GDK_HasScreenKeyboardSupport(SDL_VideoDevice *_this)

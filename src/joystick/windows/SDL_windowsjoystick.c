@@ -336,7 +336,7 @@ static SDL_bool SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, 
         }
     }
     SDL_LockMutex(mutex);
-    return (lastret != -1) ? SDL_TRUE : SDL_FALSE;
+    return (lastret != -1);
 }
 
 #endif /* !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__) */
@@ -377,7 +377,7 @@ static int SDLCALL SDL_JoystickThread(void *_data)
                 for (userId = 0; userId < XUSER_MAX_COUNT; userId++) {
                     XINPUT_CAPABILITIES capabilities;
                     const DWORD result = XINPUTGETCAPABILITIES(userId, XINPUT_FLAG_GAMEPAD, &capabilities);
-                    const SDL_bool available = (result == ERROR_SUCCESS) ? SDL_TRUE : SDL_FALSE;
+                    const SDL_bool available = (result == ERROR_SUCCESS);
                     if (bOpenedXInputDevices[userId] != available) {
                         s_bWindowsDeviceChanged = SDL_TRUE;
                         bOpenedXInputDevices[userId] = available;

@@ -246,7 +246,7 @@ static SDL_XInput2DeviceInfo *xinput2_get_device_info(SDL_VideoData *videodata, 
     for (i = 0; i < xidevinfo->num_classes; i++) {
         const XIValuatorClassInfo *v = (const XIValuatorClassInfo *)xidevinfo->classes[i];
         if (v->type == XIValuatorClass) {
-            devinfo->relative[axis] = (v->mode == XIModeRelative) ? SDL_TRUE : SDL_FALSE;
+            devinfo->relative[axis] = (v->mode == XIModeRelative);
             devinfo->minval[axis] = v->min;
             devinfo->maxval[axis] = v->max;
             if (++axis >= 2) {

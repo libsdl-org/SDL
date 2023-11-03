@@ -228,7 +228,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
     SDL_RendererInfo info;
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
     SDL_WindowTextureData *data = (SDL_WindowTextureData *)SDL_GetProperty(props, SDL_WINDOWTEXTUREDATA);
-    const int transparent = (window->flags & SDL_WINDOW_TRANSPARENT) ? SDL_TRUE : SDL_FALSE;
+    const SDL_bool transparent = (window->flags & SDL_WINDOW_TRANSPARENT) ? SDL_TRUE : SDL_FALSE;
     int i;
     int w, h;
 
@@ -598,7 +598,7 @@ SDL_VideoDevice *SDL_GetVideoDevice(void)
 
 SDL_bool SDL_OnVideoThread(void)
 {
-    return (_this && SDL_ThreadID() == _this->thread) ? SDL_TRUE : SDL_FALSE;
+    return (_this && SDL_ThreadID() == _this->thread);
 }
 
 SDL_bool SDL_IsVideoContextExternal(void)
@@ -2485,15 +2485,15 @@ int SDL_SetWindowBordered(SDL_Window *window, SDL_bool bordered)
     CHECK_WINDOW_MAGIC(window, -1);
     CHECK_WINDOW_NOT_POPUP(window, -1);
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-        const int want = (bordered != SDL_FALSE); /* normalize the flag. */
-        const int have = !(window->flags & SDL_WINDOW_BORDERLESS);
+        const SDL_bool want = (bordered != SDL_FALSE); /* normalize the flag. */
+        const SDL_bool have = !(window->flags & SDL_WINDOW_BORDERLESS);
         if ((want != have) && (_this->SetWindowBordered)) {
             if (want) {
                 window->flags &= ~SDL_WINDOW_BORDERLESS;
             } else {
                 window->flags |= SDL_WINDOW_BORDERLESS;
             }
-            _this->SetWindowBordered(_this, window, (SDL_bool)want);
+            _this->SetWindowBordered(_this, window, want);
         }
     }
     return 0;
@@ -2504,15 +2504,15 @@ int SDL_SetWindowResizable(SDL_Window *window, SDL_bool resizable)
     CHECK_WINDOW_MAGIC(window, -1);
     CHECK_WINDOW_NOT_POPUP(window, -1);
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-        const int want = (resizable != SDL_FALSE); /* normalize the flag. */
-        const int have = ((window->flags & SDL_WINDOW_RESIZABLE) != 0);
+        const SDL_bool want = (resizable != SDL_FALSE); /* normalize the flag. */
+        const SDL_bool have = ((window->flags & SDL_WINDOW_RESIZABLE) != 0);
         if ((want != have) && (_this->SetWindowResizable)) {
             if (want) {
                 window->flags |= SDL_WINDOW_RESIZABLE;
             } else {
                 window->flags &= ~SDL_WINDOW_RESIZABLE;
             }
-            _this->SetWindowResizable(_this, window, (SDL_bool)want);
+            _this->SetWindowResizable(_this, window, want);
         }
     }
     return 0;
@@ -2523,15 +2523,15 @@ int SDL_SetWindowAlwaysOnTop(SDL_Window *window, SDL_bool on_top)
     CHECK_WINDOW_MAGIC(window, -1);
     CHECK_WINDOW_NOT_POPUP(window, -1);
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-        const int want = (on_top != SDL_FALSE); /* normalize the flag. */
-        const int have = ((window->flags & SDL_WINDOW_ALWAYS_ON_TOP) != 0);
+        const SDL_bool want = (on_top != SDL_FALSE); /* normalize the flag. */
+        const SDL_bool have = ((window->flags & SDL_WINDOW_ALWAYS_ON_TOP) != 0);
         if ((want != have) && (_this->SetWindowAlwaysOnTop)) {
             if (want) {
                 window->flags |= SDL_WINDOW_ALWAYS_ON_TOP;
             } else {
                 window->flags &= ~SDL_WINDOW_ALWAYS_ON_TOP;
             }
-            _this->SetWindowAlwaysOnTop(_this, window, (SDL_bool)want);
+            _this->SetWindowAlwaysOnTop(_this, window, want);
         }
     }
     return 0;
@@ -3154,15 +3154,15 @@ int SDL_SetWindowFocusable(SDL_Window *window, SDL_bool focusable)
 {
     CHECK_WINDOW_MAGIC(window, -1);
 
-    const int want = (focusable != SDL_FALSE); /* normalize the flag. */
-    const int have = !(window->flags & SDL_WINDOW_NOT_FOCUSABLE);
+    const SDL_bool want = (focusable != SDL_FALSE); /* normalize the flag. */
+    const SDL_bool have = !(window->flags & SDL_WINDOW_NOT_FOCUSABLE);
     if ((want != have) && (_this->SetWindowFocusable)) {
         if (want) {
             window->flags &= ~SDL_WINDOW_NOT_FOCUSABLE;
         } else {
             window->flags |= SDL_WINDOW_NOT_FOCUSABLE;
         }
-        _this->SetWindowFocusable(_this, window, (SDL_bool)want);
+        _this->SetWindowFocusable(_this, window, want);
     }
 
     return 0;
@@ -3621,7 +3621,7 @@ SDL_bool SDL_ScreenSaverEnabled(void)
     if (_this == NULL) {
         return SDL_TRUE;
     }
-    return _this->suspend_screensaver ? SDL_FALSE : SDL_TRUE;
+    return !_this->suspend_screensaver;
 }
 
 int SDL_EnableScreenSaver(void)
