@@ -1036,7 +1036,7 @@ int SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *wakeup_window;
     Uint64 start, expiration;
-    SDL_bool include_sentinel = (timeoutNS == 0) ? SDL_TRUE : SDL_FALSE;
+    SDL_bool include_sentinel = (timeoutNS == 0);
     int result;
 
     /* If there isn't a poll sentinel event pending, pump events and add one */

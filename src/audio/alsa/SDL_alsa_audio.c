@@ -818,7 +818,7 @@ static void ALSA_HotplugIteration(SDL_bool *has_default_output, SDL_bool *has_de
                 }
 
                 // only want physical hardware interfaces
-                const SDL_bool is_default = (has_default == i) ? SDL_TRUE : SDL_FALSE;
+                const SDL_bool is_default = (has_default == i);
                 if (is_default || (match != NULL && SDL_strncmp(name, match, match_len) == 0)) {
                     char *ioid = ALSA_snd_device_name_get_hint(hints[i], "IOID");
                     const SDL_bool isoutput = (ioid == NULL) || (SDL_strcmp(ioid, "Output") == 0);

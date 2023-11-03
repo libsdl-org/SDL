@@ -1011,7 +1011,7 @@ SDL_JAVA_AUDIO_INTERFACE(addAudioDevice)(JNIEnv *env, jclass jcls, jboolean is_c
         void *handle = (void *)((size_t)device_id);
         if (!SDL_FindPhysicalAudioDeviceByHandle(handle)) {
             const char *utf8name = (*env)->GetStringUTFChars(env, name, NULL);
-            SDL_AddAudioDevice(is_capture ? SDL_TRUE : SDL_FALSE, SDL_strdup(utf8name), NULL, handle);
+            SDL_AddAudioDevice(is_capture, SDL_strdup(utf8name), NULL, handle);
             (*env)->ReleaseStringUTFChars(env, name, utf8name);
         }
     }
@@ -1072,7 +1072,7 @@ JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     const char *name = (*env)->GetStringUTFChars(env, device_name, NULL);
     const char *desc = (*env)->GetStringUTFChars(env, device_desc, NULL);
 
-    retval = Android_AddJoystick(device_id, name, desc, vendor_id, product_id, is_accelerometer ? SDL_TRUE : SDL_FALSE, button_mask, naxes, axis_mask, nhats);
+    retval = Android_AddJoystick(device_id, name, desc, vendor_id, product_id, is_accelerometer, button_mask, naxes, axis_mask, nhats);
 
     (*env)->ReleaseStringUTFChars(env, device_name, name);
     (*env)->ReleaseStringUTFChars(env, device_desc, desc);
@@ -2057,8 +2057,7 @@ char *Android_JNI_GetClipboardText(void)
 SDL_bool Android_JNI_HasClipboardText(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
-    jboolean retval = (*env)->CallStaticBooleanMethod(env, mActivityClass, midClipboardHasText);
-    return (retval == JNI_TRUE) ? SDL_TRUE : SDL_FALSE;
+    return (*env)->CallStaticBooleanMethod(env, mActivityClass, midClipboardHasText);
 }
 
 /* returns 0 on success or -1 on error (others undefined then)

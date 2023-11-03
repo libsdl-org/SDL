@@ -94,9 +94,9 @@ static SDL_bool HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device
     if (SDL_IsJoystickBluetoothXboxOne(vendor_id, product_id)) {
         return SDL_FALSE;
     }
-    return (type == SDL_GAMEPAD_TYPE_XBOX360 || type == SDL_GAMEPAD_TYPE_XBOXONE) ? SDL_TRUE : SDL_FALSE;
+    return (type == SDL_GAMEPAD_TYPE_XBOX360 || type == SDL_GAMEPAD_TYPE_XBOXONE);
 #else
-    return (type == SDL_GAMEPAD_TYPE_XBOX360) ? SDL_TRUE : SDL_FALSE;
+    return (type == SDL_GAMEPAD_TYPE_XBOX360);
 #endif
 }
 

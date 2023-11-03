@@ -181,7 +181,7 @@ void SDL_UnlockJoysticks(void)
 
 SDL_bool SDL_JoysticksLocked(void)
 {
-    return (SDL_joysticks_locked > 0) ? SDL_TRUE : SDL_FALSE;
+    return (SDL_joysticks_locked > 0);
 }
 
 void SDL_AssertJoysticksLocked(void)

@@ -392,7 +392,7 @@ int SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseI
 {
     if (window && !relative) {
         SDL_Mouse *mouse = SDL_GetMouse();
-        if (!SDL_UpdateMouseFocus(window, x, y, GetButtonState(mouse, SDL_TRUE), (mouseID == SDL_TOUCH_MOUSEID) ? SDL_FALSE : SDL_TRUE)) {
+        if (!SDL_UpdateMouseFocus(window, x, y, GetButtonState(mouse, SDL_TRUE), (mouseID != SDL_TOUCH_MOUSEID))) {
             return 0;
         }
     }
@@ -656,7 +656,7 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
         event.motion.windowID = mouse->focus ? mouse->focus->id : 0;
         event.motion.which = mouseID;
         /* Set us pending (or clear during a normal mouse movement event) as having triggered */
-        mouse->was_touch_mouse_events = (mouseID == SDL_TOUCH_MOUSEID) ? SDL_TRUE : SDL_FALSE;
+        mouse->was_touch_mouse_events = (mouseID == SDL_TOUCH_MOUSEID);
         event.motion.state = GetButtonState(mouse, SDL_TRUE);
         event.motion.x = mouse->x;
         event.motion.y = mouse->y;

@@ -1227,7 +1227,7 @@ static SDL_bool CharacterMatchesSet(char c, const char *set, size_t set_len)
         }
     }
     if (invert) {
-        result = result ? SDL_FALSE : SDL_TRUE;
+        result = !result;
     }
     return result;
 }

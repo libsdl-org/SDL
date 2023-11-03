@@ -185,7 +185,7 @@ static void RefreshPhysicalDevices(void)
 
             CFIndex len = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfstr), kCFStringEncodingUTF8);
             char *name = (char *)SDL_malloc(len + 1);
-            SDL_bool usable = ((name != NULL) && (CFStringGetCString(cfstr, name, len + 1, kCFStringEncodingUTF8))) ? SDL_TRUE : SDL_FALSE;
+            SDL_bool usable = ((name != NULL) && (CFStringGetCString(cfstr, name, len + 1, kCFStringEncodingUTF8)));
 
             CFRelease(cfstr);
 

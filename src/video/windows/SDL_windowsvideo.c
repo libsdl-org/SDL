@@ -717,8 +717,7 @@ SDL_bool WIN_IsPerMonitorV2DPIAware(SDL_VideoDevice *_this)
 
     if (data->AreDpiAwarenessContextsEqual && data->GetThreadDpiAwarenessContext) {
         /* Windows 10, version 1607 */
-        return (SDL_bool)data->AreDpiAwarenessContextsEqual(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2,
-                                                            data->GetThreadDpiAwarenessContext());
+        return data->AreDpiAwarenessContextsEqual(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2, data->GetThreadDpiAwarenessContext());
     }
 #endif
     return SDL_FALSE;

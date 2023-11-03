@@ -43,7 +43,7 @@ static SDL_bool loaded_xinput = SDL_FALSE;
 int SDL_XINPUT_HapticInit(void)
 {
     if (SDL_GetHintBoolean(SDL_HINT_XINPUT_ENABLED, SDL_TRUE)) {
-        loaded_xinput = (WIN_LoadXInputDLL() == 0) ? SDL_TRUE : SDL_FALSE;
+        loaded_xinput = (WIN_LoadXInputDLL() == 0);
     }
 
     /* If the joystick subsystem is active, it will manage adding XInput haptic devices */

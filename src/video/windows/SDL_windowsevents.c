@@ -486,8 +486,8 @@ static void WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
 {
     SDL_WindowData *data = window->driverdata;
     HWND hwnd = data->hwnd;
-    SDL_bool had_focus = (SDL_GetKeyboardFocus() == window) ? SDL_TRUE : SDL_FALSE;
-    SDL_bool has_focus = (GetForegroundWindow() == hwnd) ? SDL_TRUE : SDL_FALSE;
+    SDL_bool had_focus = (SDL_GetKeyboardFocus() == window);
+    SDL_bool has_focus = (GetForegroundWindow() == hwnd);
 
     if (had_focus == has_focus || has_focus != expect_focus) {
         return;

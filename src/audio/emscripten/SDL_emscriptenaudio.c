@@ -321,7 +321,7 @@ static SDL_bool EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl *impl)
             return true;
         }
         return false;
-    }) ? SDL_TRUE : SDL_FALSE;
+    });
 
     if (!available) {
         SDL_SetError("No audio context available");
@@ -334,10 +334,10 @@ static SDL_bool EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl *impl)
             return true;
         }
         return false;
-    }) ? SDL_TRUE : SDL_FALSE;
+    });
 
-    impl->HasCaptureSupport = capture_available ? SDL_TRUE : SDL_FALSE;
-    impl->OnlyHasDefaultCaptureDevice = capture_available ? SDL_TRUE : SDL_FALSE;
+    impl->HasCaptureSupport = capture_available;
+    impl->OnlyHasDefaultCaptureDevice = capture_available;
 
     return available;
 }

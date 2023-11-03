@@ -55,7 +55,7 @@ static Platform::String ^ SDL_PKEY_AudioEngine_DeviceFormat = L"{f19f064d-082c-4
 
 static SDL_bool FindWinRTAudioDeviceCallback(SDL_AudioDevice *device, void *userdata)
 {
-    return (SDL_wcscmp((LPCWSTR) device->handle, (LPCWSTR) userdata) == 0) ? SDL_TRUE : SDL_FALSE;
+    return (SDL_wcscmp((LPCWSTR) device->handle, (LPCWSTR) userdata) == 0);
 }
 
 static SDL_AudioDevice *FindWinRTAudioDevice(LPCWSTR devid)

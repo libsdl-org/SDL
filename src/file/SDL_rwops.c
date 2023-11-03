@@ -952,13 +952,13 @@ SDL_bool SDL_ReadS64BE(SDL_RWops *src, Sint64 *value)
 
 SDL_bool SDL_WriteU8(SDL_RWops *dst, Uint8 value)
 {
-    return (SDL_RWwrite(dst, &value, sizeof(value)) == sizeof(value)) ? SDL_TRUE : SDL_FALSE;
+    return (SDL_RWwrite(dst, &value, sizeof(value)) == sizeof(value));
 }
 
 SDL_bool SDL_WriteU16LE(SDL_RWops *dst, Uint16 value)
 {
     const Uint16 swapped = SDL_SwapLE16(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? SDL_TRUE : SDL_FALSE;
+    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
 SDL_bool SDL_WriteS16LE(SDL_RWops *dst, Sint16 value)
@@ -969,7 +969,7 @@ SDL_bool SDL_WriteS16LE(SDL_RWops *dst, Sint16 value)
 SDL_bool SDL_WriteU16BE(SDL_RWops *dst, Uint16 value)
 {
     const Uint16 swapped = SDL_SwapBE16(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? SDL_TRUE : SDL_FALSE;
+    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
 SDL_bool SDL_WriteS16BE(SDL_RWops *dst, Sint16 value)
@@ -980,7 +980,7 @@ SDL_bool SDL_WriteS16BE(SDL_RWops *dst, Sint16 value)
 SDL_bool SDL_WriteU32LE(SDL_RWops *dst, Uint32 value)
 {
     const Uint32 swapped = SDL_SwapLE32(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? SDL_TRUE : SDL_FALSE;
+    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
 SDL_bool SDL_WriteS32LE(SDL_RWops *dst, Sint32 value)
@@ -991,7 +991,7 @@ SDL_bool SDL_WriteS32LE(SDL_RWops *dst, Sint32 value)
 SDL_bool SDL_WriteU32BE(SDL_RWops *dst, Uint32 value)
 {
     const Uint32 swapped = SDL_SwapBE32(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? SDL_TRUE : SDL_FALSE;
+    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
 SDL_bool SDL_WriteS32BE(SDL_RWops *dst, Sint32 value)
@@ -1002,7 +1002,7 @@ SDL_bool SDL_WriteS32BE(SDL_RWops *dst, Sint32 value)
 SDL_bool SDL_WriteU64LE(SDL_RWops *dst, Uint64 value)
 {
     const Uint64 swapped = SDL_SwapLE64(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? SDL_TRUE : SDL_FALSE;
+    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
 SDL_bool SDL_WriteS64LE(SDL_RWops *dst, Sint64 value)
@@ -1013,7 +1013,7 @@ SDL_bool SDL_WriteS64LE(SDL_RWops *dst, Sint64 value)
 SDL_bool SDL_WriteU64BE(SDL_RWops *dst, Uint64 value)
 {
     const Uint64 swapped = SDL_SwapBE64(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? SDL_TRUE : SDL_FALSE;
+    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
 SDL_bool SDL_WriteS64BE(SDL_RWops *dst, Sint64 value)

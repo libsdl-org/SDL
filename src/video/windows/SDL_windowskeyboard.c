@@ -735,7 +735,7 @@ static void IME_UpdateInputLocale(SDL_VideoData *videodata)
     }
 
     videodata->ime_hkl = hklnext;
-    videodata->ime_candvertical = (PRIMLANG() == LANG_KOREAN || LANG() == LANG_CHS) ? SDL_FALSE : SDL_TRUE;
+    videodata->ime_candvertical = (PRIMLANG() != LANG_KOREAN && LANG() != LANG_CHS);
 }
 
 static void IME_ClearComposition(SDL_VideoData *videodata)
@@ -766,7 +766,7 @@ static SDL_bool IME_IsTextInputShown(SDL_VideoData *videodata)
         return SDL_FALSE;
     }
 
-    return videodata->ime_uicontext != 0 ? SDL_TRUE : SDL_FALSE;
+    return videodata->ime_uicontext != 0;
 }
 
 static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)

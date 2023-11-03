@@ -833,7 +833,7 @@ static void UpdateVisualizer(SDL_Renderer *renderer, SDL_Texture *visualizer, co
 
 static void LogicalDeviceThing_ontick(Thing *thing, Uint64 now)
 {
-    const SDL_bool ismousedover = (thing == mouseover_thing) ? SDL_TRUE : SDL_FALSE;
+    const SDL_bool ismousedover = (thing == mouseover_thing);
 
     if (!thing->data.logdev.visualizer || !thing->data.logdev.postmix_lock) {  /* need these to work, skip if they failed. */
         return;
@@ -1173,8 +1173,8 @@ int SDL_AppEvent(const SDL_Event *event)
 
         case SDL_EVENT_KEY_DOWN:
         case SDL_EVENT_KEY_UP:
-            ctrl_held = ((event->key.keysym.mod & SDL_KMOD_CTRL) != 0) ? SDL_TRUE : SDL_FALSE;
-            alt_held = ((event->key.keysym.mod & SDL_KMOD_ALT) != 0) ? SDL_TRUE : SDL_FALSE;
+            ctrl_held = ((event->key.keysym.mod & SDL_KMOD_CTRL) != 0);
+            alt_held = ((event->key.keysym.mod & SDL_KMOD_ALT) != 0);
             break;
 
         case SDL_EVENT_DROP_FILE:

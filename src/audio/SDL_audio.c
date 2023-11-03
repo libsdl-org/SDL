@@ -190,7 +190,7 @@ static SDL_bool AudioDeviceCanUseSimpleCopy(SDL_AudioDevice *device)
         !device->logical_devices->postmix && // there isn't a postmix callback
         device->logical_devices->bound_streams &&  // there's a bound stream
         !device->logical_devices->bound_streams->next_binding  // there's only _ONE_ bound stream.
-    ) ? SDL_TRUE : SDL_FALSE;
+    );
 }
 
 // should hold device->lock before calling.
@@ -320,7 +320,7 @@ static SDL_LogicalAudioDevice *ObtainLogicalAudioDevice(SDL_AudioDeviceID devid,
     SDL_LogicalAudioDevice *logdev = NULL;
 
     // bit #1 of devid is set for physical devices and unset for logical.
-    const SDL_bool islogical = (devid & (1<<1)) ? SDL_FALSE : SDL_TRUE;
+    const SDL_bool islogical = !(devid & (1<<1));
     if (islogical) {  // don't bother looking if it's not a logical device id value.
         SDL_LockRWLockForReading(current_audio.device_hash_lock);
         SDL_FindInHashTable(current_audio.device_hash, (const void *) (uintptr_t) devid, (const void **) &logdev);
@@ -349,7 +349,7 @@ static SDL_AudioDevice *ObtainPhysicalAudioDevice(SDL_AudioDeviceID devid)  // !
     SDL_AudioDevice *device = NULL;
 
     // bit #1 of devid is set for physical devices and unset for logical.
-    const SDL_bool islogical = (devid & (1<<1)) ? SDL_FALSE : SDL_TRUE;
+    const SDL_bool islogical = !(devid & (1<<1));
     if (islogical) {
         ObtainLogicalAudioDevice(devid, &device);
     } else if (!SDL_GetCurrentAudioDriver()) {  // (the `islogical` path, above, checks this in ObtainLogicalAudioDevice.)
@@ -371,7 +371,7 @@ static SDL_AudioDevice *ObtainPhysicalAudioDevice(SDL_AudioDeviceID devid)  // !
 
 static SDL_AudioDevice *ObtainPhysicalAudioDeviceDefaultAllowed(SDL_AudioDeviceID devid)  // !!! FIXME: SDL_ACQUIRE
 {
-    const SDL_bool wants_default = ((devid == SDL_AUDIO_DEVICE_DEFAULT_OUTPUT) || (devid == SDL_AUDIO_DEVICE_DEFAULT_CAPTURE)) ? SDL_TRUE : SDL_FALSE;
+    const SDL_bool wants_default = ((devid == SDL_AUDIO_DEVICE_DEFAULT_OUTPUT) || (devid == SDL_AUDIO_DEVICE_DEFAULT_CAPTURE));
     if (!wants_default) {
         return ObtainPhysicalAudioDevice(devid);
     }
@@ -623,7 +623,7 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
 
     SDL_LockRWLockForReading(current_audio.device_hash_lock);
     const SDL_AudioDeviceID devid = device->instance_id;
-    const SDL_bool is_default_device = ((devid == current_audio.default_output_device_id) || (devid == current_audio.default_capture_device_id)) ? SDL_TRUE : SDL_FALSE;
+    const SDL_bool is_default_device = ((devid == current_audio.default_output_device_id) || (devid == current_audio.default_capture_device_id));
     SDL_UnlockRWLock(current_audio.device_hash_lock);
 
     const SDL_bool first_disconnect = SDL_AtomicCAS(&device->zombie, 0, 1);
@@ -763,8 +763,8 @@ static SDL_AudioDevice *GetFirstAddedAudioDevice(const SDL_bool iscapture)
         const SDL_AudioDeviceID devid = (SDL_AudioDeviceID) (uintptr_t) key;
         // bit #0 of devid is set for output devices and unset for capture.
         // bit #1 of devid is set for physical devices and unset for logical.
-        const SDL_bool devid_iscapture = (devid & (1 << 0)) ? SDL_FALSE : SDL_TRUE;
-        const SDL_bool isphysical = (devid & (1 << 1)) ? SDL_TRUE : SDL_FALSE;
+        const SDL_bool devid_iscapture = !(devid & (1 << 0));
+        const SDL_bool isphysical = (devid & (1 << 1));
         if (isphysical && (devid_iscapture == iscapture) && (devid < highest)) {
             highest = devid;
             retval = (SDL_AudioDevice *) value;
@@ -784,7 +784,7 @@ static Uint32 HashAudioDeviceID(const void *key, void *data)
 
 static SDL_bool MatchAudioDeviceID(const void *a, const void *b, void *data)
 {
-    return (a == b) ? SDL_TRUE : SDL_FALSE;  // they're simple Uint32 values cast to pointers.
+    return (a == b);
 }
 
 static void NukeAudioDeviceHashItem(const void *key, const void *value, void *data)
@@ -966,7 +966,7 @@ void SDL_QuitAudio(void)
     while (SDL_IterateHashTable(device_hash, &key, &value, &iter)) {
         // bit #1 of devid is set for physical devices and unset for logical.
         const SDL_AudioDeviceID devid = (SDL_AudioDeviceID) (uintptr_t) key;
-        const SDL_bool isphysical = (devid & (1<<1)) ? SDL_TRUE : SDL_FALSE;
+        const SDL_bool isphysical = (devid & (1<<1));
         if (isphysical) {
             DestroyPhysicalAudioDevice((SDL_AudioDevice *) value);
         }
@@ -1273,8 +1273,8 @@ static SDL_AudioDeviceID *GetAudioDevices(int *reqcount, SDL_bool iscapture)
                 const SDL_AudioDeviceID devid = (SDL_AudioDeviceID) (uintptr_t) key;
                 // bit #0 of devid is set for output devices and unset for capture.
                 // bit #1 of devid is set for physical devices and unset for logical.
-                const SDL_bool devid_iscapture = (devid & (1<<0)) ? SDL_FALSE : SDL_TRUE;
-                const SDL_bool isphysical = (devid & (1<<1)) ? SDL_TRUE : SDL_FALSE;
+                const SDL_bool devid_iscapture = !(devid & (1<<0));
+                const SDL_bool isphysical = (devid & (1<<1));
                 if (isphysical && (devid_iscapture == iscapture)) {
                     SDL_assert(devs_seen < num_devices);
                     retval[devs_seen++] = devid;
@@ -1320,7 +1320,7 @@ SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByCallback(SDL_bool (*callback)(SDL_
     while (SDL_IterateHashTable(current_audio.device_hash, &key, &value, &iter)) {
         const SDL_AudioDeviceID devid = (SDL_AudioDeviceID) (uintptr_t) key;
         // bit #1 of devid is set for physical devices and unset for logical.
-        const SDL_bool isphysical = (devid & (1<<1)) ? SDL_TRUE : SDL_FALSE;
+        const SDL_bool isphysical = (devid & (1<<1));
         if (isphysical) {
             SDL_AudioDevice *device = (SDL_AudioDevice *) value;
             if (callback(device, userdata)) {  // found it?
@@ -1577,11 +1577,11 @@ SDL_AudioDeviceID SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSp
         return 0;
     }
 
-    SDL_bool wants_default = ((devid == SDL_AUDIO_DEVICE_DEFAULT_OUTPUT) || (devid == SDL_AUDIO_DEVICE_DEFAULT_CAPTURE)) ? SDL_TRUE : SDL_FALSE;
+    SDL_bool wants_default = ((devid == SDL_AUDIO_DEVICE_DEFAULT_OUTPUT) || (devid == SDL_AUDIO_DEVICE_DEFAULT_CAPTURE));
 
     // this will let you use a logical device to make a new logical device on the parent physical device. Could be useful?
     SDL_AudioDevice *device = NULL;
-    const SDL_bool islogical = (wants_default || (devid & (1<<1))) ? SDL_FALSE : SDL_TRUE;
+    const SDL_bool islogical = (!wants_default && !(devid & (1<<1)));
     if (!islogical) {
         device = ObtainPhysicalAudioDeviceDefaultAllowed(devid);
     } else {
@@ -1700,7 +1700,7 @@ int SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid, SDL_AudioPostmixCallbac
 
 int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int num_streams)
 {
-    const SDL_bool islogical = (devid & (1<<1)) ? SDL_FALSE : SDL_TRUE;
+    const SDL_bool islogical = !(devid & (1<<1));
     SDL_AudioDevice *device = NULL;
     SDL_LogicalAudioDevice *logdev = NULL;
     int retval = 0;
@@ -1969,7 +1969,7 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
     // change the official default over right away, so new opens will go to the new device.
     SDL_LockRWLockForWriting(current_audio.device_hash_lock);
     const SDL_AudioDeviceID current_devid = iscapture ? current_audio.default_capture_device_id : current_audio.default_output_device_id;
-    const SDL_bool is_already_default = (new_default_device->instance_id == current_devid) ? SDL_TRUE : SDL_FALSE;
+    const SDL_bool is_already_default = (new_default_device->instance_id == current_devid);
     if (!is_already_default) {
         if (iscapture) {
             current_audio.default_capture_device_id = new_default_device->instance_id;

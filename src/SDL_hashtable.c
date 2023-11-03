@@ -256,7 +256,7 @@ SDL_bool SDL_KeyMatchString(const void *a, const void *b, void *data)
     } else if (!a || !b) {
         return SDL_FALSE;  // one pointer is NULL (and first test shows they aren't the same pointer), must not match.
     }
-    return (SDL_strcmp((const char *)a, (const char *)b) == 0) ? SDL_TRUE : SDL_FALSE;  // Check against actual string contents.
+    return (SDL_strcmp((const char *)a, (const char *)b) == 0);  // Check against actual string contents.
 }
 
 // We assume we can fit the ID in the key directly

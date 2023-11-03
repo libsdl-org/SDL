@@ -832,14 +832,14 @@ static SDL_bool FindAudioDeviceByIndex(SDL_AudioDevice *device, void *userdata)
 {
     const uint32_t idx = (uint32_t) (uintptr_t) userdata;
     const PulseDeviceHandle *handle = (const PulseDeviceHandle *) device->handle;
-    return (handle->device_index == idx) ? SDL_TRUE : SDL_FALSE;
+    return (handle->device_index == idx);
 }
 
 static SDL_bool FindAudioDeviceByPath(SDL_AudioDevice *device, void *userdata)
 {
     const char *path = (const char *) userdata;
     const PulseDeviceHandle *handle = (const PulseDeviceHandle *) device->handle;
-    return (SDL_strcmp(handle->device_path, path) == 0) ? SDL_TRUE : SDL_FALSE;
+    return (SDL_strcmp(handle->device_path, path) == 0);
 }
 
 // This is called when PulseAudio has a device connected/removed/changed.
@@ -925,8 +925,8 @@ static int SDLCALL HotplugThread(void *data)
         SDL_free(current_default_source);
 
         // set these to true if we didn't handle the change OR there was _another_ change while we were working unlocked.
-        default_sink_changed = (default_sink_changed || check_default_sink) ? SDL_TRUE : SDL_FALSE;
-        default_source_changed = (default_source_changed || check_default_source) ? SDL_TRUE : SDL_FALSE;
+        default_sink_changed = (default_sink_changed || check_default_sink);
+        default_source_changed = (default_source_changed || check_default_source);
     }
 
     if (op) {

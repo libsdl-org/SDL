@@ -331,7 +331,7 @@ static void RAWINPUT_UpdateXInput()
     if (xinput_device_change) {
         for (user_index = 0; user_index < XUSER_MAX_COUNT; user_index++) {
             XINPUT_CAPABILITIES capabilities;
-            xinput_state[user_index].connected = (XINPUTGETCAPABILITIES(user_index, XINPUT_FLAG_GAMEPAD, &capabilities) == ERROR_SUCCESS) ? SDL_TRUE : SDL_FALSE;
+            xinput_state[user_index].connected = (XINPUTGETCAPABILITIES(user_index, XINPUT_FLAG_GAMEPAD, &capabilities) == ERROR_SUCCESS);
         }
         xinput_device_change = SDL_FALSE;
         xinput_state_dirty = SDL_TRUE;

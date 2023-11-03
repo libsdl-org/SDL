@@ -696,7 +696,7 @@ SDL_bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 
     SDL_IBus_UpdateTextRect(NULL);
 
-    return result ? SDL_TRUE : SDL_FALSE;
+    return (result != 0);
 }
 
 void SDL_IBus_UpdateTextRect(const SDL_Rect *rect)

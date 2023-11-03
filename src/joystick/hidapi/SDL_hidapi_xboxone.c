@@ -351,7 +351,7 @@ static SDL_bool HIDAPI_DriverXboxOne_IsSupportedDevice(SDL_HIDAPI_Device *device
         return SDL_FALSE;
     }
 #endif
-    return (type == SDL_GAMEPAD_TYPE_XBOXONE) ? SDL_TRUE : SDL_FALSE;
+    return (type == SDL_GAMEPAD_TYPE_XBOXONE);
 }
 
 static SDL_bool HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)

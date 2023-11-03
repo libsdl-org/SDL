@@ -1346,7 +1346,7 @@ int Wayland_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, SDL_SysW
     } else
 #endif
         if (viddata->shell.xdg && data->shell_surface.xdg.surface != NULL) {
-        SDL_bool popup = (data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) ? SDL_TRUE : SDL_FALSE;
+        SDL_bool popup = (data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP);
         info->info.wl.xdg_surface = data->shell_surface.xdg.surface;
         info->info.wl.xdg_toplevel = popup ? NULL : data->shell_surface.xdg.roleobj.toplevel;
         if (popup) {
@@ -1894,7 +1894,7 @@ void Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window,
 
     /* Don't send redundant fullscreen set/unset events. */
     if (wind->is_fullscreen != fullscreen) {
-        wind->fullscreen_was_positioned = fullscreen ? SDL_TRUE : SDL_FALSE;
+        wind->fullscreen_was_positioned = fullscreen;
         SetFullscreen(window, fullscreen ? output : NULL);
     } else if (wind->is_fullscreen) {
         /*
