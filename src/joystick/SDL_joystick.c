@@ -2479,6 +2479,12 @@ SDL_bool SDL_IsJoystickXboxSeriesX(Uint16 vendor_id, Uint16 product_id)
             return SDL_TRUE;
         }
     }
+    if (vendor_id == USB_VENDOR_HP) {
+        if (product_id == USB_PRODUCT_XBOX_SERIES_X_HP_HYPERX ||
+            product_id == USB_PRODUCT_XBOX_SERIES_X_HP_HYPERX_RGB) {
+            return SDL_TRUE;
+        }
+    }
     if (vendor_id == USB_VENDOR_RAZER) {
         if (product_id == USB_PRODUCT_RAZER_WOLVERINE_V2 ||
             product_id == USB_PRODUCT_RAZER_WOLVERINE_V2_CHROMA) {

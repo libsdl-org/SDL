@@ -868,7 +868,7 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
 	static const int xb1_iface_subclass = 71;
 	static const int xb1_iface_protocol = 208;
 	static const int supported_vendors[] = {
-        0x03f0, /* HP */
+		0x03f0, /* HP */
 		0x044f, /* Thrustmaster */
 		0x045e, /* Microsoft */
 		0x0738, /* Mad Catz */
