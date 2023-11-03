@@ -389,10 +389,10 @@ extern DECLSPEC int SDLCALL SDL_RunApp(int argc, char* argv[], SDL_main_func mai
 /**
  * An entry point for SDL's use in SDL_MAIN_USE_CALLBACKS.
  *
- * Generally, you should not call this function directly. This only exists
- * to hand off work into SDL as soon as possible, where it has a lot more
- * control and functionality available, and make the inline code in
- * SDL_main.h as small as possible.
+ * Generally, you should not call this function directly. This only exists to
+ * hand off work into SDL as soon as possible, where it has a lot more control
+ * and functionality available, and make the inline code in SDL_main.h as
+ * small as possible.
  *
  * Not all platforms use this, it's actual use is hidden in a magic
  * header-only library, and you should not call this directly unless you
@@ -406,7 +406,8 @@ extern DECLSPEC int SDLCALL SDL_RunApp(int argc, char* argv[], SDL_main_func mai
  * \param appquit The application's SDL_AppQuit function
  * \returns standard Unix main return value
  *
- * \threadsafety It is not safe to call this anywhere except as the only function call in SDL_main.
+ * \threadsafety It is not safe to call this anywhere except as the only
+ *               function call in SDL_main.
  *
  * \since This function is available since SDL 3.0.0.
  */

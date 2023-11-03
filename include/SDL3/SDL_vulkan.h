@@ -140,8 +140,8 @@ extern DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  * This should be called after either calling SDL_Vulkan_LoadLibrary() or
  * creating an SDL_Window with the `SDL_WINDOW_VULKAN` flag.
  *
- * On return, the variable pointed to by `pCount` will be set to the number
- * of elements returned, suitable for using with
+ * On return, the variable pointed to by `pCount` will be set to the number of
+ * elements returned, suitable for using with
  * VkInstanceCreateInfo::enabledExtensionCount, and the returned array can be
  * used with VkInstanceCreateInfo::ppEnabledExtensionNames, for calling
  * Vulkan's vkCreateInstance API.
