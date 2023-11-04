@@ -808,6 +808,35 @@ size_t SDL_RWwrite(SDL_RWops *context, const void *ptr, size_t size)
     return bytes;
 }
 
+size_t SDL_RWprintf(SDL_RWops *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
+{
+    va_list ap;
+    int size;
+    char *string = NULL;
+    size_t bytes;
+
+    va_start(ap, fmt);
+    size = SDL_vasprintf(&string, fmt, ap);
+    va_end(ap);
+
+    bytes = SDL_RWwrite(context, string, size);
+    SDL_free(string);
+    return bytes;
+}
+
+size_t SDL_RWvprintf(SDL_RWops *context, const char *fmt, va_list ap)
+{
+    int size;
+    char *string = NULL;
+    size_t bytes;
+
+    size = SDL_vasprintf(&string, fmt, ap);
+
+    bytes = SDL_RWwrite(context, string, size);
+    SDL_free(string);
+    return bytes;
+}
+
 int SDL_RWclose(SDL_RWops *context)
 {
     if (!context) {

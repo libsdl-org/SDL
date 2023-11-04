@@ -43,6 +43,7 @@ SDL_DYNAPI_PROC(int,SDL_asprintf,(char **a, SDL_PRINTF_FORMAT_STRING const char 
 SDL_DYNAPI_PROC(int,SDL_snprintf,(SDL_OUT_Z_CAP(b) char *a, size_t b, SDL_PRINTF_FORMAT_STRING const char *c, ...),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_swprintf,(SDL_OUT_Z_CAP(b) wchar_t *a, size_t b, SDL_PRINTF_FORMAT_STRING const wchar_t *c, ...),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_sscanf,(const char *a, SDL_SCANF_FORMAT_STRING const char *b, ...),(a,b),return)
+SDL_DYNAPI_PROC(size_t,SDL_RWprintf,(SDL_RWops *a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),return)
 #endif
 
 #ifdef SDL_CreateThread
@@ -979,3 +980,4 @@ SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetWindowProperties,(SDL_Window *a),(a),ret
 SDL_DYNAPI_PROC(int,SDL_ClearProperty,(SDL_PropertiesID a, const char *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_EnterAppMainCallbacks,(int a, char *b[], SDL_AppInit_func c, SDL_AppIterate_func d, SDL_AppEvent_func e, SDL_AppQuit_func f),(a,b,c,d,e,f),return)
 SDL_DYNAPI_PROC(void,SDL_CleanupEvent,(SDL_Event *a),(a),)
+SDL_DYNAPI_PROC(size_t,SDL_RWvprintf,(SDL_RWops *a, const char *b, va_list c),(a,b,c),return)
