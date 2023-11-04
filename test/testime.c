@@ -779,6 +779,7 @@ int main(int argc, char *argv[])
                 SDL_strlcpy(markedText, event.edit.text, SDL_TEXTEDITINGEVENT_TEXT_SIZE);
                 cursor = event.edit.start;
                 Redraw();
+                SDL_CleanupEvent(&event);
                 break;
             }
         }

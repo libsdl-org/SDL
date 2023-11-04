@@ -212,26 +212,11 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
         Sint32 start_pos, end_pos;
         size_t text_bytes = Fcitx_GetPreeditString(dbus, msg, &text, &start_pos, &end_pos);
         if (text_bytes) {
-            if (SDL_GetHintBoolean(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, SDL_FALSE)) {
-                if (start_pos == -1) {
-                    Sint32 byte_pos = Fcitx_GetPreeditCursorByte(dbus, msg);
-                    start_pos = byte_pos >= 0 ? SDL_utf8strnlen(text, byte_pos) : -1;
-                }
-                SDL_SendEditingText(text, start_pos, end_pos >= 0 ? end_pos - start_pos : -1);
-            } else {
-                char buf[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
-                size_t i = 0;
-                size_t cursor = 0;
-                while (i < text_bytes) {
-                    const size_t sz = SDL_utf8strlcpy(buf, text + i, sizeof(buf));
-                    const size_t chars = SDL_utf8strlen(buf);
-
-                    SDL_SendEditingText(buf, cursor, chars);
-
-                    i += sz;
-                    cursor += chars;
-                }
+            if (start_pos == -1) {
+                Sint32 byte_pos = Fcitx_GetPreeditCursorByte(dbus, msg);
+                start_pos = byte_pos >= 0 ? SDL_utf8strnlen(text, byte_pos) : -1;
             }
+            SDL_SendEditingText(text, start_pos, end_pos >= 0 ? end_pos - start_pos : -1);
             SDL_free(text);
         } else {
             SDL_SendEditingText("", 0, 0);

@@ -136,7 +136,6 @@ typedef enum
     SDL_EVENT_TEXT_INPUT,              /**< Keyboard text input */
     SDL_EVENT_KEYMAP_CHANGED,          /**< Keymap changed due to a system event such as an
                                             input language or keyboard layout change. */
-    SDL_EVENT_TEXT_EDITING_EXT,        /**< Extended keyboard text editing (composition) */
 
     /* Mouse events */
     SDL_EVENT_MOUSE_MOTION    = 0x400, /**< Mouse moved */
@@ -257,44 +256,35 @@ typedef struct SDL_KeyboardEvent
     SDL_Keysym keysym;  /**< The key that was pressed or released */
 } SDL_KeyboardEvent;
 
-#define SDL_TEXTEDITINGEVENT_TEXT_SIZE (32)
+#define SDL_TEXTEDITINGEVENT_TEXT_SIZE 64
 /**
  *  \brief Keyboard text editing event structure (event.edit.*)
+ *
+ *  \note This event should be cleaned up with SDL_CleanupEvent() after processing.
  */
 typedef struct SDL_TextEditingEvent
 {
     Uint32 type;                                /**< ::SDL_EVENT_TEXT_EDITING */
     Uint64 timestamp;                           /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_WindowID windowID;                        /**< The window with keyboard focus, if any */
-    char text[SDL_TEXTEDITINGEVENT_TEXT_SIZE];  /**< The editing text */
+    SDL_WindowID windowID;                      /**< The window with keyboard focus, if any */
+    char *text;                                 /**< The editing text */
+    char short_text[SDL_TEXTEDITINGEVENT_TEXT_SIZE]; /**< Memory space for short editing text */
     Sint32 start;                               /**< The start cursor of selected editing text */
     Sint32 length;                              /**< The length of selected editing text */
 } SDL_TextEditingEvent;
 
-/**
- *  \brief Extended keyboard text editing event structure (event.editExt.*) when text would be
- *  truncated if stored in the text buffer SDL_TextEditingEvent
- */
-typedef struct SDL_TextEditingExtEvent
-{
-    Uint32 type;                                /**< ::SDL_EVENT_TEXT_EDITING_EXT */
-    Uint64 timestamp;                           /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_WindowID windowID;                        /**< The window with keyboard focus, if any */
-    char* text;                                 /**< The editing text, which should be freed with SDL_free(), and will not be NULL */
-    Sint32 start;                               /**< The start cursor of selected editing text */
-    Sint32 length;                              /**< The length of selected editing text */
-} SDL_TextEditingExtEvent;
-
-#define SDL_TEXTINPUTEVENT_TEXT_SIZE (32)
+#define SDL_TEXTINPUTEVENT_TEXT_SIZE 64
 /**
  *  \brief Keyboard text input event structure (event.text.*)
+ *
+ *  \note This event should be cleaned up with SDL_CleanupEvent() after processing.
  */
 typedef struct SDL_TextInputEvent
 {
-    Uint32 type;                              /**< ::SDL_EVENT_TEXT_INPUT */
-    Uint64 timestamp;                         /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    Uint32 type;                                /**< ::SDL_EVENT_TEXT_INPUT */
+    Uint64 timestamp;                           /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID;                      /**< The window with keyboard focus, if any */
-    char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];  /**< The input text */
+    char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];    /**< The input text */
 } SDL_TextInputEvent;
 
 /**
@@ -520,19 +510,21 @@ typedef struct SDL_TouchFingerEvent
 } SDL_TouchFingerEvent;
 
 
+#define SDL_DROPEVENT_DATA_SIZE 64
 /**
- *  \brief An event used to request a file open by the system (event.drop.*)
- *         This event is enabled by default, you can disable it with SDL_SetEventEnabled().
- *  \note If this event is enabled, you must free the filename in the event.
+ *  \brief An event used to drop text or request a file open by the system (event.drop.*)
+ *
+ *  \note This event should be cleaned up with SDL_CleanupEvent() after processing.
  */
 typedef struct SDL_DropEvent
 {
     Uint32 type;        /**< ::SDL_EVENT_DROP_BEGIN or ::SDL_EVENT_DROP_FILE or ::SDL_EVENT_DROP_TEXT or ::SDL_EVENT_DROP_COMPLETE or ::SDL_EVENT_DROP_POSITION */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    char *file;         /**< The file name, which should be freed with SDL_free(), is NULL on begin/complete */
     SDL_WindowID windowID;    /**< The window that was dropped on, if any */
     float x;            /**< X coordinate, relative to window (not on begin) */
     float y;            /**< Y coordinate, relative to window (not on begin) */
+    char *data;         /**< The text for SDL_EVENT_DROP_TEXT and the file name for SDL_EVENT_DROP_FILE, NULL for other events */
+    char short_data[SDL_DROPEVENT_DATA_SIZE]; /**< Memory space for short data */
 } SDL_DropEvent;
 
 /**
@@ -595,6 +587,8 @@ typedef struct SDL_SysWMmsg SDL_SysWMmsg;
  *  \brief A video driver dependent system event (event.syswm.*)
  *         This event is disabled by default, you can enable it with SDL_SetEventEnabled()
  *
+ *  \note This event should be cleaned up with SDL_CleanupEvent() after processing.
+ *
  *  \note If you want to use this event, you should include SDL_syswm.h.
  */
 typedef struct SDL_SysWMEvent
@@ -615,7 +609,6 @@ typedef union SDL_Event
     SDL_WindowEvent window;                 /**< Window event data */
     SDL_KeyboardEvent key;                  /**< Keyboard event data */
     SDL_TextEditingEvent edit;              /**< Text editing event data */
-    SDL_TextEditingExtEvent editExt;        /**< Extended text editing event data */
     SDL_TextInputEvent text;                /**< Text input event data */
     SDL_MouseMotionEvent motion;            /**< Mouse motion event data */
     SDL_MouseButtonEvent button;            /**< Mouse button event data */
@@ -855,10 +848,8 @@ extern DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetEventFilter
- * \sa SDL_PeepEvents
+ * \sa SDL_CleanupEvent
  * \sa SDL_PushEvent
- * \sa SDL_SetEventFilter
  * \sa SDL_WaitEvent
  * \sa SDL_WaitEventTimeout
  */
@@ -880,8 +871,9 @@ extern DECLSPEC SDL_bool SDLCALL SDL_PollEvent(SDL_Event *event);
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_CleanupEvent
  * \sa SDL_PollEvent
- * \sa SDL_PumpEvents
+ * \sa SDL_PushEvent
  * \sa SDL_WaitEventTimeout
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_WaitEvent(SDL_Event *event);
@@ -908,11 +900,33 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WaitEvent(SDL_Event *event);
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_CleanupEvent
  * \sa SDL_PollEvent
- * \sa SDL_PumpEvents
+ * \sa SDL_PushEvent
  * \sa SDL_WaitEvent
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS);
+
+/**
+ * Clean up dynamically allocated memory for an event.
+ *
+ * Some events have dynamically allocated data that must be cleaned up when the event is processed. If you handle any of these events, you should call SDL_CleanupEvent() after processing them:
+ * SDL_EVENT_DROP_FILE
+ * SDL_EVENT_DROP_TEXT
+ * SDL_EVENT_SYSWM
+ * SDL_EVENT_TEXT_EDITING
+ *
+ * It is safe, but not necessary, to call this function for other event types.
+ *
+ * \param event a pointer to the event that should be cleaned up
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_PollEvent
+ * \sa SDL_WaitEvent
+ * \sa SDL_WaitEventTimeout
+ */
+extern DECLSPEC void SDLCALL SDL_CleanupEvent(SDL_Event *event);
 
 /**
  * Add an event to the event queue.

@@ -1178,9 +1178,9 @@ int SDL_AppEvent(const SDL_Event *event)
             break;
 
         case SDL_EVENT_DROP_FILE:
-            SDL_Log("Drop file! '%s'", event->drop.file);
-            LoadWavThing(event->drop.file, event->drop.x, event->drop.y);
-            /* SDL frees event->drop.file for you when you use SDL_AppEvent(). */
+            SDL_Log("Drop file! '%s'", event->drop.data);
+            LoadWavThing(event->drop.data, event->drop.x, event->drop.y);
+            /* SDL frees event->drop.data for you when you use SDL_AppEvent(). */
             break;
 
         case SDL_EVENT_WINDOW_RESIZED:

@@ -1823,10 +1823,10 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
         SDL_Log("SDL EVENT: Drag and drop beginning");
         break;
     case SDL_EVENT_DROP_FILE:
-        SDL_Log("SDL EVENT: Drag and drop file: '%s'", event->drop.file);
+        SDL_Log("SDL EVENT: Drag and drop file: '%s'", event->drop.data);
         break;
     case SDL_EVENT_DROP_TEXT:
-        SDL_Log("SDL EVENT: Drag and drop text: '%s'", event->drop.file);
+        SDL_Log("SDL EVENT: Drag and drop text: '%s'", event->drop.data);
         break;
     case SDL_EVENT_DROP_COMPLETE:
         SDL_Log("SDL EVENT: Drag and drop ending");
@@ -2425,12 +2425,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
 {
     *done = SDLTest_CommonEventMainCallbacks(state, event) ? 1 : 0;
 
-    switch (event->type) {
-    case SDL_EVENT_DROP_FILE:
-    case SDL_EVENT_DROP_TEXT:
-        SDL_free(event->drop.file);  // SDL frees these if you use SDL_AppEvent, not us, so explicitly handle it here.
-        break;
-    }
+    SDL_CleanupEvent(event);
 }
 
 void SDLTest_CommonQuit(SDLTest_CommonState *state)

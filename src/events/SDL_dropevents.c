@@ -58,7 +58,15 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
         SDL_zero(event);
         event.type = evtype;
         event.common.timestamp = 0;
-        event.drop.file = data ? SDL_strdup(data) : NULL;
+        if (data) {
+            size_t len = SDL_strlen(data);
+            if (len < sizeof(event.drop.short_data)) {
+                SDL_memcpy(event.drop.short_data, data, len + 1);
+                event.drop.data = event.drop.short_data;
+            } else {
+                event.drop.data = SDL_strdup(data);
+            }
+        }
         event.drop.windowID = window ? window->id : 0;
 
         if (evtype == SDL_EVENT_DROP_POSITION) {
