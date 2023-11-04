@@ -67,7 +67,11 @@ int SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_
             total_pending_events++;
         }
 
-        SDL_AddEventWatch(EventWatcher, NULL);  // !!! FIXME: this should really return an error.
+        if (SDL_AddEventWatch(EventWatcher, NULL) == -1) {
+            SDL_free(pending_events);
+            SDL_AtomicSet(&apprc, -1);
+            return -1;
+        }
 
         for (int i = 0; i < total_pending_events; i++) {
             SDL_PushEvent(&pending_events[i]);
