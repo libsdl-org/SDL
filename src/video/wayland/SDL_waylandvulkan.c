@@ -118,12 +118,16 @@ void Wayland_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-char const* const* Wayland_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                              Uint32 *count)
+char const* const* Wayland_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     static const char *const extensionsForWayland[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME
     };
+
+    if (count) {
+        *count = SDL_arraysize(extensionsForWayland);
+    }
+
     return extensionsForWayland;
 }
 
