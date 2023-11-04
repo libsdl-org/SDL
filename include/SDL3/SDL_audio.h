@@ -1427,9 +1427,9 @@ extern DECLSPEC int SDLCALL SDL_LoadWAV(const char *path, SDL_AudioSpec * spec,
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_MixAudioFormat(Uint8 * dst,
-                                                const Uint8 * src,
-                                                SDL_AudioFormat format,
-                                                Uint32 len, int volume);
+                                               const Uint8 * src,
+                                               SDL_AudioFormat format,
+                                               Uint32 len, int volume);
 
 /**
  * Convert some audio data of one format to another format.
