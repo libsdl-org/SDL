@@ -103,7 +103,7 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_IsAndroidTV,(void),(),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_IsChromebook,(void),(),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_IsDeXMode,(void),(),return)
 
-SDL_DYNAPI_PROC(int,SDL_AddEventWatch,(SDL_EventFilter a, void *b),(a,b),)
+SDL_DYNAPI_PROC(int,SDL_AddEventWatch,(SDL_EventFilter a, void *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_AddGamepadMapping,(const char *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_AddGamepadMappingsFromRW,(SDL_RWops *a, SDL_bool b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_AddHintCallback,(const char *a, SDL_HintCallback b, void *c),(a,b,c),return)
