@@ -1327,7 +1327,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 X11_XTranslateCoordinates(display, DefaultRootWindow(display), data->xwindow,
                         root_x, root_y, &window_x, &window_y, &ChildReturn);
 
-                SDL_SendDropPosition(data->window, NULL, (float)window_x, (float)window_y); /* FIXME, can we get the filename ? */
+                SDL_SendDropPosition(data->window, (float)window_x, (float)window_y);
             }
 
             /* reply with status */
@@ -1629,7 +1629,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                         } else if (SDL_strcmp("text/uri-list", name) == 0) {
                             char *fn = X11_URIToLocal(token);
                             if (fn) {
-                                SDL_SendDropFile(data->window, fn);
+                                SDL_SendDropFile(data->window, NULL, fn);
                             }
                         }
                         token = SDL_strtok_r(NULL, "\r\n", &saveptr);

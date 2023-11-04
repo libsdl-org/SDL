@@ -212,7 +212,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
         NSArray *launchimages = [bundle objectForInfoDictionaryKey:@"UILaunchImages"];
         NSString *imagename = nil;
         UIImage *image = nil;
-        
+
 #if TARGET_OS_XR
         int screenw = SDL_XR_SCREENWIDTH;
         int screenh = SDL_XR_SCREENHEIGHT;
@@ -221,7 +221,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
         int screenh = (int)([UIScreen mainScreen].bounds.size.height + 0.5);
 #endif
 
-       
+
 
 #if !TARGET_OS_TV && !TARGET_OS_XR
         UIInterfaceOrientation curorient = [UIApplication sharedApplication].statusBarOrientation;
@@ -505,13 +505,14 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     /* Do nothing. */
 }
 
-- (void)sendDropFileForURL:(NSURL *)url
+- (void)sendDropFileForURL:(NSURL *)url fromSourceApplication:(NSString *)sourceApplication
 {
     NSURL *fileURL = url.filePathURL;
+    char *sourceApplicationCString = sourceApplication ? [sourceApplication UTF8String] : NULL;
     if (fileURL != nil) {
-        SDL_SendDropFile(NULL, fileURL.path.UTF8String);
+        SDL_SendDropFile(NULL, sourceApplicationCString, fileURL.path.UTF8String);
     } else {
-        SDL_SendDropFile(NULL, url.absoluteString.UTF8String);
+        SDL_SendDropFile(NULL, sourceApplicationCString, url.absoluteString.UTF8String);
     }
     SDL_SendDropComplete(NULL);
 }
@@ -521,7 +522,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options
 {
     /* TODO: Handle options */
-    [self sendDropFileForURL:url];
+    [self sendDropFileForURL:url fromSourceApplication:NULL];
     return YES;
 }
 
@@ -529,7 +530,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
 {
-    [self sendDropFileForURL:url];
+    [self sendDropFileForURL:url fromSourceApplication:sourceApplication];
     return YES;
 }
 
