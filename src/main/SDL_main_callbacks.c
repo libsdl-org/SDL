@@ -81,15 +81,22 @@ int SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_
 
 int SDL_IterateMainCallbacks(void)
 {
-    SDL_Event event;
+    // Just pump events and empty the queue, EventWatcher sends the events to the app.
     SDL_PumpEvents();
-    while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) == 1) {
-        // just empty the queue, EventWatcher sends the events to the app.
-        switch (event.type) {
+
+    for (;;) {
+        SDL_Event events[32];
+        int count = SDL_PeepEvents(events, SDL_arraysize(events), SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST);
+        if (count <= 0) {
+            break;
+        }
+        for (int i = 0; i < count; ++i) {
+            switch (events[i].type) {
             case SDL_EVENT_DROP_FILE:
             case SDL_EVENT_DROP_TEXT:
-                SDL_free(event.drop.file);
+                SDL_free(events[i].drop.file);
                 break;
+            }
         }
     }
 
