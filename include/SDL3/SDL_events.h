@@ -731,9 +731,7 @@ typedef enum
  * \sa SDL_PumpEvents
  * \sa SDL_PushEvent
  */
-extern DECLSPEC int SDLCALL SDL_PeepEvents(SDL_Event * events, int numevents,
-                                           SDL_eventaction action,
-                                           Uint32 minType, Uint32 maxType);
+extern DECLSPEC int SDLCALL SDL_PeepEvents(SDL_Event *events, int numevents, SDL_eventaction action, Uint32 minType, Uint32 maxType);
 /* @} */
 
 /**
@@ -852,7 +850,7 @@ extern DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType);
  *
  * \param event the SDL_Event structure to be filled with the next event from
  *              the queue, or NULL
- * \returns 1 if there is a pending event or 0 if there are none available.
+ * \returns SDL_TRUE if this got an event or SDL_FALSE if there are none available.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -863,7 +861,7 @@ extern DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType);
  * \sa SDL_WaitEvent
  * \sa SDL_WaitEventTimeout
  */
-extern DECLSPEC int SDLCALL SDL_PollEvent(SDL_Event * event);
+extern DECLSPEC SDL_bool SDLCALL SDL_PollEvent(SDL_Event *event);
 
 /**
  * Wait indefinitely for the next available event.
@@ -876,7 +874,7 @@ extern DECLSPEC int SDLCALL SDL_PollEvent(SDL_Event * event);
  *
  * \param event the SDL_Event structure to be filled in with the next event
  *              from the queue, or NULL
- * \returns 1 on success or 0 if there was an error while waiting for events;
+ * \returns SDL_TRUE on success or SDL_FALSE if there was an error while waiting for events;
  *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -885,7 +883,7 @@ extern DECLSPEC int SDLCALL SDL_PollEvent(SDL_Event * event);
  * \sa SDL_PumpEvents
  * \sa SDL_WaitEventTimeout
  */
-extern DECLSPEC int SDLCALL SDL_WaitEvent(SDL_Event *event);
+extern DECLSPEC SDL_bool SDLCALL SDL_WaitEvent(SDL_Event *event);
 
 /**
  * Wait until the specified timeout (in milliseconds) for the next available
@@ -904,9 +902,7 @@ extern DECLSPEC int SDLCALL SDL_WaitEvent(SDL_Event *event);
  *              from the queue, or NULL
  * \param timeoutMS the maximum number of milliseconds to wait for the next
  *                  available event
- * \returns 1 on success or 0 if there was an error while waiting for events;
- *          call SDL_GetError() for more information. This also returns 0 if
- *          the timeout elapsed without an event arriving.
+ * \returns SDL_TRUE if this got an event or SDL_FALSE if the timeout elapsed without any events available.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -914,7 +910,7 @@ extern DECLSPEC int SDLCALL SDL_WaitEvent(SDL_Event *event);
  * \sa SDL_PumpEvents
  * \sa SDL_WaitEvent
  */
-extern DECLSPEC int SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS);
+extern DECLSPEC SDL_bool SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS);
 
 /**
  * Add an event to the event queue.
@@ -948,7 +944,7 @@ extern DECLSPEC int SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeou
  * \sa SDL_PollEvent
  * \sa SDL_RegisterEvents
  */
-extern DECLSPEC int SDLCALL SDL_PushEvent(SDL_Event * event);
+extern DECLSPEC int SDLCALL SDL_PushEvent(SDL_Event *event);
 
 /**
  * A function pointer used for callbacks that watch the event queue.
@@ -962,7 +958,7 @@ extern DECLSPEC int SDLCALL SDL_PushEvent(SDL_Event * event);
  * \sa SDL_SetEventFilter
  * \sa SDL_AddEventWatch
  */
-typedef int (SDLCALL * SDL_EventFilter) (void *userdata, SDL_Event * event);
+typedef int (SDLCALL *SDL_EventFilter)(void *userdata, SDL_Event *event);
 
 /**
  * Set up a filter to process all events before they change internal state and
@@ -1006,8 +1002,7 @@ typedef int (SDLCALL * SDL_EventFilter) (void *userdata, SDL_Event * event);
  * \sa SDL_PeepEvents
  * \sa SDL_PushEvent
  */
-extern DECLSPEC void SDLCALL SDL_SetEventFilter(SDL_EventFilter filter,
-                                                void *userdata);
+extern DECLSPEC void SDLCALL SDL_SetEventFilter(SDL_EventFilter filter, void *userdata);
 
 /**
  * Query the current event filter.
@@ -1024,8 +1019,7 @@ extern DECLSPEC void SDLCALL SDL_SetEventFilter(SDL_EventFilter filter,
  *
  * \sa SDL_SetEventFilter
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GetEventFilter(SDL_EventFilter * filter,
-                                                    void **userdata);
+extern DECLSPEC SDL_bool SDLCALL SDL_GetEventFilter(SDL_EventFilter *filter, void **userdata);
 
 /**
  * Add a callback to be triggered when an event is added to the event queue.
@@ -1047,14 +1041,14 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetEventFilter(SDL_EventFilter * filter,
  *
  * \param filter an SDL_EventFilter function to call when an event happens.
  * \param userdata a pointer that is passed to `filter`
+ * \returns 0 on success, or a negative error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DelEventWatch
  * \sa SDL_SetEventFilter
  */
-extern DECLSPEC void SDLCALL SDL_AddEventWatch(SDL_EventFilter filter,
-                                               void *userdata);
+extern DECLSPEC int SDLCALL SDL_AddEventWatch(SDL_EventFilter filter, void *userdata);
 
 /**
  * Remove an event watch callback added with SDL_AddEventWatch().
@@ -1069,8 +1063,7 @@ extern DECLSPEC void SDLCALL SDL_AddEventWatch(SDL_EventFilter filter,
  *
  * \sa SDL_AddEventWatch
  */
-extern DECLSPEC void SDLCALL SDL_DelEventWatch(SDL_EventFilter filter,
-                                               void *userdata);
+extern DECLSPEC void SDLCALL SDL_DelEventWatch(SDL_EventFilter filter, void *userdata);
 
 /**
  * Run a specific filter function on the current event queue, removing any
@@ -1088,8 +1081,7 @@ extern DECLSPEC void SDLCALL SDL_DelEventWatch(SDL_EventFilter filter,
  * \sa SDL_GetEventFilter
  * \sa SDL_SetEventFilter
  */
-extern DECLSPEC void SDLCALL SDL_FilterEvents(SDL_EventFilter filter,
-                                              void *userdata);
+extern DECLSPEC void SDLCALL SDL_FilterEvents(SDL_EventFilter filter, void *userdata);
 
 /**
  * Set the state of processing events by type.

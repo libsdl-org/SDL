@@ -903,7 +903,7 @@ void SDL_PumpEvents(void)
 
 /* Public functions */
 
-int SDL_PollEvent(SDL_Event *event)
+SDL_bool SDL_PollEvent(SDL_Event *event)
 {
     return SDL_WaitEventTimeoutNS(event, 0);
 }
@@ -1014,14 +1014,14 @@ static SDL_Window *SDL_find_active_window(SDL_VideoDevice *_this)
     return NULL;
 }
 
-int SDL_WaitEvent(SDL_Event *event)
+SDL_bool SDL_WaitEvent(SDL_Event *event)
 {
     return SDL_WaitEventTimeoutNS(event, -1);
 }
 
-int SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS)
+SDL_bool SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS)
 {
-    Uint64 timeoutNS;
+    Sint64 timeoutNS;
 
     if (timeoutMS > 0) {
         timeoutNS = SDL_MS_TO_NS(timeoutMS);
@@ -1031,53 +1031,13 @@ int SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS)
     return SDL_WaitEventTimeoutNS(event, timeoutNS);
 }
 
-int SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
+SDL_bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *wakeup_window;
     Uint64 start, expiration;
     SDL_bool include_sentinel = (timeoutNS == 0);
     int result;
-
-    /* If there isn't a poll sentinel event pending, pump events and add one */
-    if (SDL_AtomicGet(&SDL_sentinel_pending) == 0) {
-        SDL_PumpEventsInternal(SDL_TRUE);
-    }
-
-    /* First check for existing events */
-    result = SDL_PeepEventsInternal(event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST, include_sentinel);
-    if (result < 0) {
-        return 0;
-    }
-    if (include_sentinel) {
-        if (event) {
-            if (event->type == SDL_EVENT_POLL_SENTINEL) {
-                /* Reached the end of a poll cycle, and not willing to wait */
-                return 0;
-            }
-        } else {
-            /* Need to peek the next event to check for sentinel */
-            SDL_Event dummy;
-
-            if (SDL_PeepEventsInternal(&dummy, 1, SDL_PEEKEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST, SDL_TRUE) &&
-                dummy.type == SDL_EVENT_POLL_SENTINEL) {
-                SDL_PeepEventsInternal(&dummy, 1, SDL_GETEVENT, SDL_EVENT_POLL_SENTINEL, SDL_EVENT_POLL_SENTINEL, SDL_TRUE);
-                /* Reached the end of a poll cycle, and not willing to wait */
-                return 0;
-            }
-        }
-    }
-    if (result == 0) {
-        if (timeoutNS == 0) {
-            /* No events available, and not willing to wait */
-            return 0;
-        }
-    } else {
-        /* Has existing events */
-        return 1;
-    }
-    /* We should have completely handled timeoutNS == 0 above */
-    SDL_assert(timeoutNS != 0);
 
     if (timeoutNS > 0) {
         start = SDL_GetTicksNS();
@@ -1087,36 +1047,80 @@ int SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
         expiration = 0;
     }
 
+    /* If there isn't a poll sentinel event pending, pump events and add one */
+    if (SDL_AtomicGet(&SDL_sentinel_pending) == 0) {
+        SDL_PumpEventsInternal(SDL_TRUE);
+    }
+
+    /* First check for existing events */
+    result = SDL_PeepEventsInternal(event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST, include_sentinel);
+    if (result < 0) {
+        return SDL_FALSE;
+    }
+    if (include_sentinel) {
+        if (event) {
+            if (event->type == SDL_EVENT_POLL_SENTINEL) {
+                /* Reached the end of a poll cycle, and not willing to wait */
+                return SDL_FALSE;
+            }
+        } else {
+            /* Need to peek the next event to check for sentinel */
+            SDL_Event dummy;
+
+            if (SDL_PeepEventsInternal(&dummy, 1, SDL_PEEKEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST, SDL_TRUE) &&
+                dummy.type == SDL_EVENT_POLL_SENTINEL) {
+                SDL_PeepEventsInternal(&dummy, 1, SDL_GETEVENT, SDL_EVENT_POLL_SENTINEL, SDL_EVENT_POLL_SENTINEL, SDL_TRUE);
+                /* Reached the end of a poll cycle, and not willing to wait */
+                return SDL_FALSE;
+            }
+        }
+    }
+    if (result == 0) {
+        if (timeoutNS == 0) {
+            /* No events available, and not willing to wait */
+            return SDL_FALSE;
+        }
+    } else {
+        /* Has existing events */
+        return SDL_TRUE;
+    }
+    /* We should have completely handled timeoutNS == 0 above */
+    SDL_assert(timeoutNS != 0);
+
     if (_this && _this->WaitEventTimeout && _this->SendWakeupEvent && !SDL_events_need_polling()) {
         /* Look if a shown window is available to send the wakeup event. */
         wakeup_window = SDL_find_active_window(_this);
         if (wakeup_window) {
-            int status = SDL_WaitEventTimeout_Device(_this, wakeup_window, event, start, timeoutNS);
-
-            /* There may be implementation-defined conditions where the backend cannot
-               reliably wait for the next event. If that happens, fall back to polling. */
-            if (status >= 0) {
-                return status;
+            result = SDL_WaitEventTimeout_Device(_this, wakeup_window, event, start, timeoutNS);
+            if (result > 0) {
+                return SDL_TRUE;
+            } else if (result == 0) {
+                return SDL_FALSE;
+            } else {
+                /* There may be implementation-defined conditions where the backend cannot
+                 * reliably wait for the next event. If that happens, fall back to polling.
+                 */
             }
         }
     }
 
     for (;;) {
         SDL_PumpEventsInternal(SDL_TRUE);
-        switch (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST)) {
-        case -1:
-            return 0;
-        case 0:
-            if (timeoutNS > 0 && SDL_GetTicksNS() >= expiration) {
-                /* Timeout expired and no events */
-                return 0;
-            }
-            SDL_Delay(1);
-            break;
-        default:
-            /* Has events */
-            return 1;
+
+        if (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) > 0) {
+            return SDL_TRUE;
         }
+
+        Uint64 delay = SDL_MS_TO_NS(1);
+        if (timeoutNS > 0) {
+            Uint64 now = SDL_GetTicksNS();
+            if (now >= expiration) {
+                /* Timeout expired and no events */
+                return SDL_FALSE;
+            }
+            delay = SDL_min((expiration - now), delay);
+        }
+        SDL_DelayNS(delay);
     }
 }
 
@@ -1200,8 +1204,10 @@ SDL_bool SDL_GetEventFilter(SDL_EventFilter *filter, void **userdata)
     return event_ok.callback ? SDL_TRUE : SDL_FALSE;
 }
 
-void SDL_AddEventWatch(SDL_EventFilter filter, void *userdata)
+int SDL_AddEventWatch(SDL_EventFilter filter, void *userdata)
 {
+    int result = 0;
+
     SDL_LockMutex(SDL_event_watchers_lock);
     {
         SDL_EventWatcher *event_watchers;
@@ -1216,9 +1222,14 @@ void SDL_AddEventWatch(SDL_EventFilter filter, void *userdata)
             watcher->userdata = userdata;
             watcher->removed = SDL_FALSE;
             ++SDL_event_watchers_count;
+        } else {
+            SDL_OutOfMemory();
+            result = -1;
         }
     }
     SDL_UnlockMutex(SDL_event_watchers_lock);
+
+    return result;
 }
 
 void SDL_DelEventWatch(SDL_EventFilter filter, void *userdata)
