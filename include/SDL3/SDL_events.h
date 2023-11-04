@@ -268,7 +268,7 @@ typedef struct SDL_TextEditingEvent
     Uint64 timestamp;                           /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID;                      /**< The window with keyboard focus, if any */
     char *text;                                 /**< The editing text */
-    char short_text[SDL_TEXTEDITINGEVENT_TEXT_SIZE]; /**< Memory space for short editing text */
+    char short_text[SDL_TEXTEDITINGEVENT_TEXT_SIZE]; /**< Memory space for short editing text, use 'text' instead */
     Sint32 start;                               /**< The start cursor of selected editing text */
     Sint32 length;                              /**< The length of selected editing text */
 } SDL_TextEditingEvent;
@@ -524,7 +524,7 @@ typedef struct SDL_DropEvent
     float x;            /**< X coordinate, relative to window (not on begin) */
     float y;            /**< Y coordinate, relative to window (not on begin) */
     char *data;         /**< The text for SDL_EVENT_DROP_TEXT and the file name for SDL_EVENT_DROP_FILE, NULL for other events */
-    char short_data[SDL_DROPEVENT_DATA_SIZE]; /**< Memory space for short data */
+    char short_data[SDL_DROPEVENT_DATA_SIZE]; /**< Memory space for short data, use 'data' instead */
 } SDL_DropEvent;
 
 /**
