@@ -265,9 +265,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, SDL_TRUE);
-    SDL_SetEventEnabled(SDL_EVENT_DROP_TEXT, SDL_TRUE);
-
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Renderer *renderer = state->renderers[i];
         SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);

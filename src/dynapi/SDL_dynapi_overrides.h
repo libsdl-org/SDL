@@ -946,3 +946,4 @@
 #define SDL_GetWindowProperties SDL_GetWindowProperties_REAL
 #define SDL_ClearProperty SDL_ClearProperty_REAL
 #define SDL_EnterAppMainCallbacks SDL_EnterAppMainCallbacks_REAL
+#define SDL_CleanupEvent SDL_CleanupEvent_REAL

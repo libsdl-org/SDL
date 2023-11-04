@@ -978,3 +978,4 @@ SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetSurfaceProperties,(SDL_Surface *a),(a),r
 SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetWindowProperties,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_ClearProperty,(SDL_PropertiesID a, const char *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_EnterAppMainCallbacks,(int a, char *b[], SDL_AppInit_func c, SDL_AppIterate_func d, SDL_AppEvent_func e, SDL_AppQuit_func f),(a,b,c,d,e,f),return)
+SDL_DYNAPI_PROC(void,SDL_CleanupEvent,(SDL_Event *a),(a),)

@@ -252,38 +252,23 @@ static DBusHandlerResult IBus_MessageHandler(DBusConnection *conn, DBusMessage *
         text = IBus_GetVariantText(conn, &iter, dbus);
 
         if (text) {
-            if (SDL_GetHintBoolean(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, SDL_FALSE)) {
-                Uint32 pos, start_pos, end_pos;
-                SDL_bool has_pos = SDL_FALSE;
-                SDL_bool has_dec_pos = SDL_FALSE;
+            Uint32 pos, start_pos, end_pos;
+            SDL_bool has_pos = SDL_FALSE;
+            SDL_bool has_dec_pos = SDL_FALSE;
 
+            dbus->message_iter_init(msg, &iter);
+            has_dec_pos = IBus_GetDecorationPosition(conn, &iter, dbus, &start_pos, &end_pos);
+            if (!has_dec_pos) {
                 dbus->message_iter_init(msg, &iter);
-                has_dec_pos = IBus_GetDecorationPosition(conn, &iter, dbus, &start_pos, &end_pos);
-                if (!has_dec_pos) {
-                    dbus->message_iter_init(msg, &iter);
-                    has_pos = IBus_GetVariantCursorPos(conn, &iter, dbus, &pos);
-                }
+                has_pos = IBus_GetVariantCursorPos(conn, &iter, dbus, &pos);
+            }
 
-                if (has_dec_pos) {
-                    SDL_SendEditingText(text, start_pos, end_pos - start_pos);
-                } else if (has_pos) {
-                    SDL_SendEditingText(text, pos, -1);
-                } else {
-                    SDL_SendEditingText(text, -1, -1);
-                }
+            if (has_dec_pos) {
+                SDL_SendEditingText(text, start_pos, end_pos - start_pos);
+            } else if (has_pos) {
+                SDL_SendEditingText(text, pos, -1);
             } else {
-                char buf[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
-                size_t text_bytes = SDL_strlen(text), i = 0;
-                size_t cursor = 0;
-
-                do {
-                    const size_t sz = SDL_utf8strlcpy(buf, text + i, sizeof(buf));
-                    const size_t chars = SDL_utf8strlen(buf);
-
-                    SDL_SendEditingText(buf, cursor, chars);
-                    i += sz;
-                    cursor += chars;
-                } while (i < text_bytes);
+                SDL_SendEditingText(text, -1, -1);
             }
         }
 

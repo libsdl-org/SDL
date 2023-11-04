@@ -75,16 +75,9 @@ static Uint32 SDL_userevents = SDL_EVENT_USER;
 typedef struct SDL_EventEntry
 {
     SDL_Event event;
-    SDL_SysWMmsg msg;
     struct SDL_EventEntry *prev;
     struct SDL_EventEntry *next;
 } SDL_EventEntry;
-
-typedef struct SDL_SysWMEntry
-{
-    SDL_SysWMmsg msg;
-    struct SDL_SysWMEntry *next;
-} SDL_SysWMEntry;
 
 static struct
 {
@@ -95,9 +88,7 @@ static struct
     SDL_EventEntry *head;
     SDL_EventEntry *tail;
     SDL_EventEntry *free;
-    SDL_SysWMEntry *wmmsg_used;
-    SDL_SysWMEntry *wmmsg_free;
-} SDL_EventQ = { NULL, SDL_FALSE, { 0 }, 0, NULL, NULL, NULL, NULL, NULL };
+} SDL_EventQ = { NULL, SDL_FALSE, { 0 }, 0, NULL, NULL, NULL };
 
 #ifndef SDL_JOYSTICK_DISABLED
 
@@ -419,7 +410,7 @@ static void SDL_LogEvent(const SDL_Event *event)
         break;
 #undef PRINT_FINGER_EVENT
 
-#define PRINT_DROP_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (file='%s' timestamp=%u windowid=%u x=%f y=%f)", event->drop.file, (uint)event->drop.timestamp, (uint)event->drop.windowID, event->drop.x, event->drop.y)
+#define PRINT_DROP_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (data='%s' timestamp=%u windowid=%u x=%f y=%f)", event->drop.data, (uint)event->drop.timestamp, (uint)event->drop.windowID, event->drop.x, event->drop.y)
         SDL_EVENT_CASE(SDL_EVENT_DROP_FILE)
         PRINT_DROP_EVENT(event);
         break;
@@ -484,7 +475,6 @@ void SDL_StopEventLoop(void)
     const char *report = SDL_GetHint("SDL_EVENT_QUEUE_STATISTICS");
     int i;
     SDL_EventEntry *entry;
-    SDL_SysWMEntry *wmmsg;
 
     SDL_LockMutex(SDL_EventQ.lock);
 
@@ -506,24 +496,12 @@ void SDL_StopEventLoop(void)
         SDL_free(entry);
         entry = next;
     }
-    for (wmmsg = SDL_EventQ.wmmsg_used; wmmsg;) {
-        SDL_SysWMEntry *next = wmmsg->next;
-        SDL_free(wmmsg);
-        wmmsg = next;
-    }
-    for (wmmsg = SDL_EventQ.wmmsg_free; wmmsg;) {
-        SDL_SysWMEntry *next = wmmsg->next;
-        SDL_free(wmmsg);
-        wmmsg = next;
-    }
 
     SDL_AtomicSet(&SDL_EventQ.count, 0);
     SDL_EventQ.max_events_seen = 0;
     SDL_EventQ.head = NULL;
     SDL_EventQ.tail = NULL;
     SDL_EventQ.free = NULL;
-    SDL_EventQ.wmmsg_used = NULL;
-    SDL_EventQ.wmmsg_free = NULL;
     SDL_AtomicSet(&SDL_sentinel_pending, 0);
 
     /* Clear disabled event state */
@@ -622,9 +600,6 @@ static int SDL_AddEvent(SDL_Event *event)
     entry->event = *event;
     if (event->type == SDL_EVENT_POLL_SENTINEL) {
         SDL_AtomicAdd(&SDL_sentinel_pending, 1);
-    } else if (event->type == SDL_EVENT_SYSWM) {
-        entry->msg = *event->syswm.msg;
-        entry->event.syswm.msg = &entry->msg;
     }
 
     if (SDL_EventQ.tail) {
@@ -724,20 +699,7 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_eventact
             }
         } else {
             SDL_EventEntry *entry, *next;
-            SDL_SysWMEntry *wmmsg, *wmmsg_next;
             Uint32 type;
-
-            if (action == SDL_GETEVENT) {
-                /* Clean out any used wmmsg data
-                   FIXME: Do we want to retain the data for some period of time?
-                 */
-                for (wmmsg = SDL_EventQ.wmmsg_used; wmmsg; wmmsg = wmmsg_next) {
-                    wmmsg_next = wmmsg->next;
-                    wmmsg->next = SDL_EventQ.wmmsg_free;
-                    SDL_EventQ.wmmsg_free = wmmsg;
-                }
-                SDL_EventQ.wmmsg_used = NULL;
-            }
 
             for (entry = SDL_EventQ.head; entry && (events == NULL || used < numevents); entry = next) {
                 next = entry->next;
@@ -745,22 +707,6 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_eventact
                 if (minType <= type && type <= maxType) {
                     if (events) {
                         events[used] = entry->event;
-                        if (entry->event.type == SDL_EVENT_SYSWM) {
-                            /* We need to copy the wmmsg somewhere safe.
-                               For now we'll guarantee it's valid at least until
-                               the next call to SDL_PeepEvents()
-                             */
-                            if (SDL_EventQ.wmmsg_free) {
-                                wmmsg = SDL_EventQ.wmmsg_free;
-                                SDL_EventQ.wmmsg_free = wmmsg->next;
-                            } else {
-                                wmmsg = (SDL_SysWMEntry *)SDL_malloc(sizeof(*wmmsg));
-                            }
-                            wmmsg->msg = *entry->event.syswm.msg;
-                            wmmsg->next = SDL_EventQ.wmmsg_used;
-                            SDL_EventQ.wmmsg_used = wmmsg;
-                            events[used].syswm.msg = &wmmsg->msg;
-                        }
 
                         if (action == SDL_GETEVENT) {
                             SDL_CutEvent(entry);
@@ -818,9 +764,6 @@ void SDL_FlushEvents(Uint32 minType, Uint32 maxType)
 {
     SDL_EventEntry *entry, *next;
     Uint32 type;
-    /* !!! FIXME: we need to manually SDL_free() the strings in TEXTINPUT and
-       drag'n'drop events if we're flushing them without passing them to the
-       app, but I don't know if this is the right place to do that. */
 
     /* Make sure the events are current */
 #if 0
@@ -842,6 +785,7 @@ void SDL_FlushEvents(Uint32 minType, Uint32 maxType)
             next = entry->next;
             type = entry->event.type;
             if (minType <= type && type <= maxType) {
+                SDL_CleanupEvent(&entry->event);
                 SDL_CutEvent(entry);
             }
         }
@@ -1124,6 +1068,33 @@ SDL_bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
     }
 }
 
+void SDL_CleanupEvent(SDL_Event *event)
+{
+    switch (event->type) {
+    case SDL_EVENT_DROP_FILE:
+    case SDL_EVENT_DROP_TEXT:
+        if (event->drop.data && event->drop.data != event->drop.short_data) {
+            SDL_free(event->drop.data);
+            event->drop.data = NULL;
+        }
+        break;
+    case SDL_EVENT_SYSWM:
+        if (event->syswm.msg) {
+            SDL_free(event->syswm.msg);
+            event->syswm.msg = NULL;
+        }
+        break;
+    case SDL_EVENT_TEXT_EDITING:
+        if (event->edit.text && event->edit.text != event->edit.short_text) {
+            SDL_free(event->edit.text);
+            event->edit.text = NULL;
+        }
+        break;
+    default:
+        break;
+    }
+}
+
 int SDL_PushEvent(SDL_Event *event)
 {
     if (!event->common.timestamp) {
@@ -1380,7 +1351,11 @@ int SDL_SendSysWMEvent(SDL_SysWMmsg *message)
         SDL_memset(&event, 0, sizeof(event));
         event.type = SDL_EVENT_SYSWM;
         event.common.timestamp = 0;
-        event.syswm.msg = message;
+        event.syswm.msg = (SDL_SysWMmsg *)SDL_malloc(sizeof(*message));
+        if (!event.syswm.msg) {
+            return 0;
+        }
+        SDL_copyp(event.syswm.msg, message);
         posted = (SDL_PushEvent(&event) > 0);
     }
     /* Update internal event state */

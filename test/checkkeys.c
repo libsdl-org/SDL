@@ -181,10 +181,7 @@ static void loop(void)
             break;
         case SDL_EVENT_TEXT_EDITING:
             PrintText("EDIT", event.edit.text);
-            break;
-        case SDL_EVENT_TEXT_EDITING_EXT:
-            PrintText("EDIT_EXT", event.editExt.text);
-            SDL_free(event.editExt.text);
+            SDL_CleanupEvent(&event);
             break;
         case SDL_EVENT_TEXT_INPUT:
             PrintText("INPUT", event.text.text);
@@ -260,9 +257,6 @@ int main(int argc, char *argv[])
 
     /* Disable mouse emulation */
     SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
-
-    /* Enable extended text editing events */
-    SDL_SetHint(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, "1");
 
     /* Initialize SDL */
     if (!SDLTest_CommonInit(state)) {
