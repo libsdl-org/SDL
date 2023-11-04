@@ -177,7 +177,7 @@
         float x, y;
         x = point.x;
         y = (sdlwindow->h - point.y);
-        SDL_SendDropPosition(sdlwindow, NULL, x, y); /* FIXME, should we get the filename */
+        SDL_SendDropPosition(sdlwindow, x, y);
         return NSDragOperationGeneric;
     }
 
@@ -242,7 +242,7 @@
                 }
             }
 
-            if (!SDL_SendDropFile(sdlwindow, [[fileURL path] UTF8String])) {
+            if (!SDL_SendDropFile(sdlwindow, NULL, [[fileURL path] UTF8String])) {
                 return NO;
             }
         }

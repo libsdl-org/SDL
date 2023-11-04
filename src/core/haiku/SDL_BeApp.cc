@@ -69,7 +69,7 @@ public:
         entry_ref entryRef;
         for (int32 i = 0; message->FindRef("refs", i, &entryRef) == B_OK; i++) {
             BPath referencePath = BPath(&entryRef);
-            SDL_SendDropFile(NULL, referencePath.Path());
+            SDL_SendDropFile(NULL, NULL, referencePath.Path());
         }
         return;
     }

@@ -1909,7 +1909,7 @@ static void data_device_handle_motion(void *data, struct wl_data_device *wl_data
          *      Any future implementation should cache the filenames, as otherwise this could
          *      hammer the DBus interface hundreds or even thousands of times per second.
          */
-        SDL_SendDropPosition(data_device->dnd_window, NULL, dx, dy);
+        SDL_SendDropPosition(data_device->dnd_window, dx, dy);
     }
 }
 
@@ -2055,7 +2055,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
                     /* If dropped files contain a directory the list is empty */
                     if (paths && path_count > 0) {
                         for (int i = 0; i < path_count; i++) {
-                            SDL_SendDropFile(data_device->dnd_window, paths[i]);
+                            SDL_SendDropFile(data_device->dnd_window, NULL, paths[i]);
                         }
                         dbus->free_string_array(paths);
                         SDL_SendDropComplete(data_device->dnd_window);
@@ -2080,7 +2080,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
                 while (token != NULL) {
                     char *fn = Wayland_URIToLocal(token);
                     if (fn) {
-                        SDL_SendDropFile(data_device->dnd_window, fn);
+                        SDL_SendDropFile(data_device->dnd_window, NULL, fn);
                     }
                     token = SDL_strtok_r(NULL, "\r\n", &saveptr);
                 }

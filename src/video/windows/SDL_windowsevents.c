@@ -1478,7 +1478,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             if (buffer) {
                 if (DragQueryFile(drop, i, buffer, size)) {
                     char *file = WIN_StringToUTF8(buffer);
-                    SDL_SendDropFile(data->window, file);
+                    SDL_SendDropFile(data->window, NULL, file);
                     SDL_free(file);
                 }
                 SDL_small_free(buffer, isstack);

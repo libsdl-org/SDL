@@ -878,7 +878,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
     jstring filename)
 {
     const char *path = (*env)->GetStringUTFChars(env, filename, NULL);
-    SDL_SendDropFile(NULL, path);
+    SDL_SendDropFile(NULL, NULL, path);
     (*env)->ReleaseStringUTFChars(env, filename, path);
     SDL_SendDropComplete(NULL);
 }

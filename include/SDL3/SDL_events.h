@@ -523,6 +523,7 @@ typedef struct SDL_DropEvent
     SDL_WindowID windowID;    /**< The window that was dropped on, if any */
     float x;            /**< X coordinate, relative to window (not on begin) */
     float y;            /**< Y coordinate, relative to window (not on begin) */
+    char *source;       /**< The source app that sent this drop event, or NULL if that isn't available */
     char *data;         /**< The text for SDL_EVENT_DROP_TEXT and the file name for SDL_EVENT_DROP_FILE, NULL for other events */
     char short_data[SDL_DROPEVENT_DATA_SIZE]; /**< Memory space for short data, use 'data' instead */
 } SDL_DropEvent;

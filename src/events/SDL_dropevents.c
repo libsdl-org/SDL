@@ -27,7 +27,7 @@
 
 #include "../video/SDL_sysvideo.h" /* for SDL_Window internals. */
 
-static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const char *data, float x, float y)
+static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const char *source, const char *data, float x, float y)
 {
     static SDL_bool app_is_dropping = SDL_FALSE;
     static float last_drop_x = 0;
@@ -58,6 +58,9 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
         SDL_zero(event);
         event.type = evtype;
         event.common.timestamp = 0;
+        if (source) {
+            event.drop.source = SDL_strdup(source);
+        }
         if (data) {
             size_t len = SDL_strlen(data);
             if (len < sizeof(event.drop.short_data)) {
@@ -91,23 +94,22 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
     return posted;
 }
 
-int SDL_SendDropFile(SDL_Window *window, const char *file)
+int SDL_SendDropFile(SDL_Window *window, const char *source, const char *file)
 {
-    return SDL_SendDrop(window, SDL_EVENT_DROP_FILE, file, 0, 0);
+    return SDL_SendDrop(window, SDL_EVENT_DROP_FILE, source, file, 0, 0);
 }
 
-int SDL_SendDropPosition(SDL_Window *window, const char *file, float x, float y)
+int SDL_SendDropPosition(SDL_Window *window, float x, float y)
 {
-    /* Don't send 'file' since this is an malloc per position, which may be forgotten to be freed */
-    return SDL_SendDrop(window, SDL_EVENT_DROP_POSITION, NULL, x, y);
+    return SDL_SendDrop(window, SDL_EVENT_DROP_POSITION, NULL, NULL, x, y);
 }
 
 int SDL_SendDropText(SDL_Window *window, const char *text)
 {
-    return SDL_SendDrop(window, SDL_EVENT_DROP_TEXT, text, 0, 0);
+    return SDL_SendDrop(window, SDL_EVENT_DROP_TEXT, NULL, text, 0, 0);
 }
 
 int SDL_SendDropComplete(SDL_Window *window)
 {
-    return SDL_SendDrop(window, SDL_EVENT_DROP_COMPLETE, NULL, 0, 0);
+    return SDL_SendDrop(window, SDL_EVENT_DROP_COMPLETE, NULL, NULL, 0, 0);
 }

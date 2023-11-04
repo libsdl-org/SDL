@@ -1073,6 +1073,10 @@ void SDL_CleanupEvent(SDL_Event *event)
     switch (event->type) {
     case SDL_EVENT_DROP_FILE:
     case SDL_EVENT_DROP_TEXT:
+        if (event->drop.source) {
+            SDL_free(event->drop.source);
+            event->drop.data = NULL;
+        }
         if (event->drop.data && event->drop.data != event->drop.short_data) {
             SDL_free(event->drop.data);
             event->drop.data = NULL;

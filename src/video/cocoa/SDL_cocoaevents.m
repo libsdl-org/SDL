@@ -287,7 +287,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename
 {
-    return (BOOL)SDL_SendDropFile(NULL, [filename UTF8String]) && SDL_SendDropComplete(NULL);
+    return (BOOL)SDL_SendDropFile(NULL, NULL, [filename UTF8String]) && SDL_SendDropComplete(NULL);
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
@@ -315,7 +315,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 - (void)handleURLEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
 {
     NSString *path = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
-    SDL_SendDropFile(NULL, [path UTF8String]);
+    SDL_SendDropFile(NULL, NULL, [path UTF8String]);
     SDL_SendDropComplete(NULL);
 }
 
