@@ -468,6 +468,18 @@ static void SDL_LogEvent(const SDL_Event *event)
 #undef uint
 }
 
+static void SDL_CopyEvent(SDL_Event *dst, SDL_Event *src)
+{
+    *dst = *src;
+
+    /* Pointers to internal static data must be updated when copying. */
+    if (src->type == SDL_EVENT_TEXT_EDITING && src->edit.text == src->edit.short_text) {
+        dst->edit.text = dst->edit.short_text;
+    } else if (src->type == SDL_EVENT_DROP_TEXT && src->drop.data == src->drop.short_data) {
+        dst->drop.data = dst->drop.short_data;
+    }
+}
+
 /* Public functions */
 
 void SDL_StopEventLoop(void)
@@ -597,7 +609,7 @@ static int SDL_AddEvent(SDL_Event *event)
         SDL_LogEvent(event);
     }
 
-    entry->event = *event;
+    SDL_CopyEvent(&entry->event, event);
     if (event->type == SDL_EVENT_POLL_SENTINEL) {
         SDL_AtomicAdd(&SDL_sentinel_pending, 1);
     }
@@ -706,7 +718,7 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_eventact
                 type = entry->event.type;
                 if (minType <= type && type <= maxType) {
                     if (events) {
-                        events[used] = entry->event;
+                        SDL_CopyEvent(&events[used], &entry->event);
 
                         if (action == SDL_GETEVENT) {
                             SDL_CutEvent(entry);
