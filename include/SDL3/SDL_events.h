@@ -284,7 +284,8 @@ typedef struct SDL_TextInputEvent
     Uint32 type;                                /**< ::SDL_EVENT_TEXT_INPUT */
     Uint64 timestamp;                           /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID;                      /**< The window with keyboard focus, if any */
-    char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];    /**< The input text */
+    char *text;                                 /**< The input text */
+    char short_text[SDL_TEXTEDITINGEVENT_TEXT_SIZE]; /**< Memory space for short input text, use 'text' instead */
 } SDL_TextInputEvent;
 
 /**

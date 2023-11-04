@@ -1071,19 +1071,19 @@ int SDL_SendKeyboardText(const char *text)
     posted = 0;
     if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
         SDL_Event event;
-        size_t pos = 0, advance, length = SDL_strlen(text);
-
         event.type = SDL_EVENT_TEXT_INPUT;
         event.common.timestamp = 0;
         event.text.windowID = keyboard->focus ? keyboard->focus->id : 0;
-        while (pos < length) {
-            advance = SDL_utf8strlcpy(event.text.text, text + pos, SDL_arraysize(event.text.text));
-            if (!advance) {
-                break;
-            }
-            pos += advance;
-            posted |= (SDL_PushEvent(&event) > 0);
+
+        size_t len = SDL_strlen(text);
+        if (len < sizeof(event.text.short_text)) {
+            SDL_memcpy(event.text.short_text, text, len + 1);
+            event.text.text = event.text.short_text;
+        } else {
+            event.text.text = SDL_strdup(text);
         }
+
+        posted = (SDL_PushEvent(&event) > 0);
     }
     return posted;
 }
