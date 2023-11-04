@@ -174,19 +174,11 @@ Next:
 int SDL_AppEvent(const SDL_Event *event);
 ```
 
-This will be called once for each event pushed into the SDL queue. This may be
-called from any thread, and possibly in parallel to SDL_AppIterate. The fields
-in `event` should not be free'd (as you would normally need to do for
-SDL_EVENT_DROP_FILE, etc), and your app should not call SDL_PollEvent,
-SDL_PumpEvent, etc, as SDL will manage this for you. Return values are the
-same as from SDL_AppIterate(), so you can terminate in response to
-SDL_EVENT_QUIT, etc.
-
-One can still use their own event filters and watchers. Filters set with
-SDL_SetEventFilter will run before SDL_AppEvent, and if it filters out the
-event, SDL_AppEvent will not run at all. Watchers set with SDL_AddEventWatch
-will run in serial to SDL_AppEvent, as SDL_AppEvent itself is built on top of
-an event watcher; which one runs first is not guaranteed.
+This will be called whenever an SDL event arrives, on the thread that runs
+SDL_AppIterate. You don't need to call SDL_CleanupEvent(), and your app
+should not call SDL_PollEvent, SDL_PumpEvent, etc, as SDL will manage this
+for you. Return values are the same as from SDL_AppIterate(), so you can
+terminate in response to SDL_EVENT_QUIT, etc.
 
 
 Finally:
