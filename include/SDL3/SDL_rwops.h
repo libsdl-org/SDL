@@ -490,10 +490,55 @@ extern DECLSPEC size_t SDLCALL SDL_RWread(SDL_RWops *context, void *ptr, size_t 
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
  * \sa SDL_RWFromMem
+ * \sa SDL_RWprint
  * \sa SDL_RWread
  * \sa SDL_RWseek
  */
 extern DECLSPEC size_t SDLCALL SDL_RWwrite(SDL_RWops *context, const void *ptr, size_t size);
+
+/**
+ * Print to an SDL_RWops data stream.
+ *
+ * This function does formatted printing to the stream.
+ *
+ * \param context a pointer to an SDL_RWops structure
+ * \param fmt a printf() style format string
+ * \param ... additional parameters matching % tokens in the `fmt` string, if any
+ * \returns the number of bytes written, or 0 on error; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_RWclose
+ * \sa SDL_RWFromConstMem
+ * \sa SDL_RWFromFile
+ * \sa SDL_RWFromMem
+ * \sa SDL_RWread
+ * \sa SDL_RWseek
+ * \sa SDL_RWwrite
+ */
+extern DECLSPEC size_t SDLCALL SDL_RWprintf(SDL_RWops *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...);
+
+/**
+ * Print to an SDL_RWops data stream.
+ *
+ * This function does formatted printing to the stream.
+ *
+ * \param context a pointer to an SDL_RWops structure
+ * \param fmt a printf() style format string
+ * \param ap a variable argument list
+ * \returns the number of bytes written, or 0 on error; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_RWclose
+ * \sa SDL_RWFromConstMem
+ * \sa SDL_RWFromFile
+ * \sa SDL_RWFromMem
+ * \sa SDL_RWread
+ * \sa SDL_RWseek
+ * \sa SDL_RWwrite
+ */
+extern DECLSPEC size_t SDLCALL SDL_RWvprintf(SDL_RWops *context, const char *fmt, va_list ap);
 
 /**
  * Close and free an allocated SDL_RWops structure.

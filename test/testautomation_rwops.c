@@ -110,11 +110,11 @@ static void testGenericRWopsValidations(SDL_RWops *rw, SDL_bool write)
     SDLTest_AssertPass("Call to SDL_RWseek succeeded");
     SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_RWseek (SDL_RW_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
 
-    /* Test write. */
+    /* Test write */
     s = SDL_RWwrite(rw, RWopsHelloWorldTestString, sizeof(RWopsHelloWorldTestString) - 1);
     SDLTest_AssertPass("Call to SDL_RWwrite succeeded");
     if (write) {
-        SDLTest_AssertCheck(s == sizeof(RWopsHelloWorldTestString) - 1, "Verify result of writing one byte with SDL_RWwrite, expected 1, got %i", (int)s);
+        SDLTest_AssertCheck(s == sizeof(RWopsHelloWorldTestString) - 1, "Verify result of writing with SDL_RWwrite, expected %i, got %i", (int)sizeof(RWopsHelloWorldTestString) - 1, (int)s);
     } else {
         SDLTest_AssertCheck(s == 0, "Verify result of writing with SDL_RWwrite, expected: 0, got %i", (int)s);
     }
@@ -123,6 +123,37 @@ static void testGenericRWopsValidations(SDL_RWops *rw, SDL_bool write)
     i = SDL_RWseek(rw, seekPos, SDL_RW_SEEK_SET);
     SDLTest_AssertPass("Call to SDL_RWseek succeeded");
     SDLTest_AssertCheck(i == (Sint64)seekPos, "Verify seek to %i with SDL_RWseek (SDL_RW_SEEK_SET), expected %i, got %" SDL_PRIs64, seekPos, seekPos, i);
+
+    /* Test seek back to start */
+    i = SDL_RWseek(rw, 0, SDL_RW_SEEK_SET);
+    SDLTest_AssertPass("Call to SDL_RWseek succeeded");
+    SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_RWseek (SDL_RW_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
+
+    /* Test read */
+    s = SDL_RWread(rw, buf, sizeof(RWopsHelloWorldTestString) - 1);
+    SDLTest_AssertPass("Call to SDL_RWread succeeded");
+    SDLTest_AssertCheck(
+        s == (sizeof(RWopsHelloWorldTestString) - 1),
+        "Verify result from SDL_RWread, expected %i, got %i",
+        (int)(sizeof(RWopsHelloWorldTestString) - 1),
+        (int)s);
+    SDLTest_AssertCheck(
+        SDL_memcmp(buf, RWopsHelloWorldTestString, sizeof(RWopsHelloWorldTestString) - 1) == 0,
+        "Verify read bytes match expected string, expected '%s', got '%s'", RWopsHelloWorldTestString, buf);
+
+    /* Test seek back to start */
+    i = SDL_RWseek(rw, 0, SDL_RW_SEEK_SET);
+    SDLTest_AssertPass("Call to SDL_RWseek succeeded");
+    SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_RWseek (SDL_RW_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
+
+    /* Test printf */
+    s = SDL_RWprintf(rw, "%s", RWopsHelloWorldTestString);
+    SDLTest_AssertPass("Call to SDL_RWprintf succeeded");
+    if (write) {
+        SDLTest_AssertCheck(s == sizeof(RWopsHelloWorldTestString) - 1, "Verify result of writing with SDL_RWprintf, expected %i, got %i", (int)sizeof(RWopsHelloWorldTestString) - 1, (int)s);
+    } else {
+        SDLTest_AssertCheck(s == 0, "Verify result of writing with SDL_RWwrite, expected: 0, got %i", (int)s);
+    }
 
     /* Test seek back to start */
     i = SDL_RWseek(rw, 0, SDL_RW_SEEK_SET);
