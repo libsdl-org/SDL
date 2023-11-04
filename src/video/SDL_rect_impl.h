@@ -190,8 +190,8 @@ SDL_bool SDL_ENCLOSEPOINTS(const POINTTYPE *points, int count, const RECTTYPE *c
         SDL_bool added = SDL_FALSE;
         const SCALARTYPE clip_minx = clip->x;
         const SCALARTYPE clip_miny = clip->y;
-        const SCALARTYPE clip_maxx = clip->x + clip->w - 1;
-        const SCALARTYPE clip_maxy = clip->y + clip->h - 1;
+        const SCALARTYPE clip_maxx = clip->x + clip->w;
+        const SCALARTYPE clip_maxy = clip->y + clip->h;
 
         /* Special case for empty rectangle */
         if (SDL_RECTEMPTY(clip)) {
@@ -202,8 +202,8 @@ SDL_bool SDL_ENCLOSEPOINTS(const POINTTYPE *points, int count, const RECTTYPE *c
             x = points[i].x;
             y = points[i].y;
 
-            if (x < clip_minx || x > clip_maxx ||
-                y < clip_miny || y > clip_maxy) {
+            if (x < clip_minx || x >= clip_maxx ||
+                y < clip_miny || y >= clip_maxy) {
                 continue;
             }
             if (!added) {
@@ -262,8 +262,8 @@ SDL_bool SDL_ENCLOSEPOINTS(const POINTTYPE *points, int count, const RECTTYPE *c
     if (result) {
         result->x = minx;
         result->y = miny;
-        result->w = (maxx - minx) + 1;
-        result->h = (maxy - miny) + 1;
+        result->w = OUTSIDE(maxx - minx);
+        result->h = OUTSIDE(maxy - miny);
     }
     return SDL_TRUE;
 }
@@ -322,31 +322,31 @@ SDL_bool SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTY
     y2 = *Y2;
     rectx1 = rect->x;
     recty1 = rect->y;
-    rectx2 = rect->x + rect->w - 1;
-    recty2 = rect->y + rect->h - 1;
+    rectx2 = rect->x + rect->w;
+    recty2 = rect->y + rect->h;
 
     /* Check to see if entire line is inside rect */
-    if (x1 >= rectx1 && x1 <= rectx2 && x2 >= rectx1 && x2 <= rectx2 &&
-        y1 >= recty1 && y1 <= recty2 && y2 >= recty1 && y2 <= recty2) {
+    if (x1 >= rectx1 && x1 < rectx2 && x2 >= rectx1 && x2 < rectx2 &&
+        y1 >= recty1 && y1 < recty2 && y2 >= recty1 && y2 < recty2) {
         return SDL_TRUE;
     }
 
     /* Check to see if entire line is to one side of rect */
-    if ((x1 < rectx1 && x2 < rectx1) || (x1 > rectx2 && x2 > rectx2) ||
-        (y1 < recty1 && y2 < recty1) || (y1 > recty2 && y2 > recty2)) {
+    if ((x1 < rectx1 && x2 < rectx1) || (x1 >= rectx2 && x2 >= rectx2) ||
+        (y1 < recty1 && y2 < recty1) || (y1 >= recty2 && y2 >= recty2)) {
         return SDL_FALSE;
     }
 
     if (y1 == y2) { /* Horizontal line, easy to clip */
         if (x1 < rectx1) {
             *X1 = rectx1;
-        } else if (x1 > rectx2) {
-            *X1 = rectx2;
+        } else if (x1 >= rectx2) {
+            *X1 = INSIDE(rectx2);
         }
         if (x2 < rectx1) {
             *X2 = rectx1;
-        } else if (x2 > rectx2) {
-            *X2 = rectx2;
+        } else if (x2 >= rectx2) {
+            *X2 = INSIDE(rectx2);
         }
         return SDL_TRUE;
     }
@@ -354,13 +354,13 @@ SDL_bool SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTY
     if (x1 == x2) { /* Vertical line, easy to clip */
         if (y1 < recty1) {
             *Y1 = recty1;
-        } else if (y1 > recty2) {
-            *Y1 = recty2;
+        } else if (y1 >= recty2) {
+            *Y1 = INSIDE(recty2);
         }
         if (y2 < recty1) {
             *Y2 = recty1;
-        } else if (y2 > recty2) {
-            *Y2 = recty2;
+        } else if (y2 >= recty2) {
+            *Y2 = INSIDE(recty2);
         }
         return SDL_TRUE;
     }
@@ -427,6 +427,8 @@ SDL_bool SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTY
 #undef RECTTYPE
 #undef POINTTYPE
 #undef SCALARTYPE
+#undef INSIDE
+#undef OUTSIDE
 #undef COMPUTEOUTCODE
 #undef SDL_HASINTERSECTION
 #undef SDL_INTERSECTRECT
