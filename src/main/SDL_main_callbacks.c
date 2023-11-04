@@ -27,10 +27,56 @@ static SDL_AppIterate_func SDL_main_iteration_callback;
 static SDL_AppQuit_func SDL_main_quit_callback;
 static SDL_AtomicInt apprc;  // use an atomic, since events might land from any thread and we don't want to wrap this all in a mutex. A CAS makes sure we only move from zero once.
 
-static int SDLCALL EventWatcher(void *userdata, SDL_Event *event)
+// Return true if this event needs to be processed before returning from the event watcher
+static SDL_bool ShouldDispatchImmediately(SDL_Event *event)
 {
-    if (SDL_AtomicGet(&apprc) == 0) {  // if already quitting, don't send the event to the app.
+    switch (event->type) {
+    case SDL_EVENT_TERMINATING:
+    case SDL_EVENT_LOW_MEMORY:
+    case SDL_EVENT_WILL_ENTER_BACKGROUND:
+    case SDL_EVENT_DID_ENTER_BACKGROUND:
+    case SDL_EVENT_WILL_ENTER_FOREGROUND:
+    case SDL_EVENT_DID_ENTER_FOREGROUND:
+        return SDL_TRUE;
+    default:
+        return SDL_FALSE;
+    }
+}
+
+static void SDL_DispatchMainCallbackEvent(SDL_Event *event)
+{
+    if (SDL_AtomicGet(&apprc) == 0) { // if already quitting, don't send the event to the app.
         SDL_AtomicCAS(&apprc, 0, SDL_main_event_callback(event));
+    }
+    SDL_CleanupEvent(event);
+}
+
+static void SDL_DispatchMainCallbackEvents()
+{
+    SDL_Event events[16];
+
+    for (;;) {
+        int count = SDL_PeepEvents(events, SDL_arraysize(events), SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST);
+        if (count <= 0) {
+            break;
+        }
+        for (int i = 0; i < count; ++i) {
+            SDL_Event *event = &events[i];
+            if (!ShouldDispatchImmediately(event)) {
+                SDL_DispatchMainCallbackEvent(event);
+            }
+        }
+    }
+}
+
+static int SDLCALL SDL_MainCallbackEventWatcher(void *userdata, SDL_Event *event)
+{
+    if (ShouldDispatchImmediately(event)) {
+        // Make sure any currently queued events are processed then dispatch this before continuing
+        SDL_DispatchMainCallbackEvents();
+        SDL_DispatchMainCallbackEvent(event);
+    } else {
+        // We'll process this event later from the main event queue
     }
     return 0;
 }
@@ -50,34 +96,10 @@ int SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_
             return -1;
         }
 
-        // drain any initial events that might have arrived before we added a watcher.
-        SDL_Event event;
-        SDL_Event *pending_events = NULL;
-        int total_pending_events = 0;
-        while (SDL_PollEvent(&event)) {
-            void *ptr = SDL_realloc(pending_events, sizeof (SDL_Event) * (total_pending_events + 1));
-            if (!ptr) {
-                SDL_OutOfMemory();
-                SDL_free(pending_events);
-                SDL_AtomicSet(&apprc, -1);
-                return -1;
-            }
-            pending_events = (SDL_Event *) ptr;
-            SDL_copyp(&pending_events[total_pending_events], &event);
-            total_pending_events++;
-        }
-
-        if (SDL_AddEventWatch(EventWatcher, NULL) == -1) {
-            SDL_free(pending_events);
+        if (SDL_AddEventWatch(SDL_MainCallbackEventWatcher, NULL) < 0) {
             SDL_AtomicSet(&apprc, -1);
             return -1;
         }
-
-        for (int i = 0; i < total_pending_events; i++) {
-            SDL_PushEvent(&pending_events[i]);
-        }
-
-        SDL_free(pending_events);
     }
 
     return SDL_AtomicGet(&apprc);
@@ -85,9 +107,8 @@ int SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_
 
 int SDL_IterateMainCallbacks(void)
 {
-    // Just pump events and empty the queue, EventWatcher sends the events to the app.
     SDL_PumpEvents();
-    SDL_FlushEvents(SDL_EVENT_FIRST, SDL_EVENT_LAST);
+    SDL_DispatchMainCallbackEvents();
 
     int rc = SDL_main_iteration_callback();
     if (!SDL_AtomicCAS(&apprc, 0, rc)) {
@@ -99,7 +120,7 @@ int SDL_IterateMainCallbacks(void)
 
 void SDL_QuitMainCallbacks(void)
 {
-    SDL_DelEventWatch(EventWatcher, NULL);
+    SDL_DelEventWatch(SDL_MainCallbackEventWatcher, NULL);
     SDL_main_quit_callback();
 
     // for symmetry, you should explicitly Quit what you Init, but we might come through here uninitialized and SDL_Quit() will clear everything anyhow.
