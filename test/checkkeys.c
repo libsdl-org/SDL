@@ -186,6 +186,7 @@ static void loop(void)
         case SDL_EVENT_TEXT_INPUT:
             PrintText("INPUT", event.text.text);
             SDLTest_TextWindowAddText(textwin, "%s", event.text.text);
+            SDL_CleanupEvent(&event);
             break;
         case SDL_EVENT_FINGER_DOWN:
             if (SDL_TextInputActive()) {

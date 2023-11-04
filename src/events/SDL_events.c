@@ -470,11 +470,13 @@ static void SDL_LogEvent(const SDL_Event *event)
 
 static void SDL_CopyEvent(SDL_Event *dst, SDL_Event *src)
 {
-    *dst = *src;
+    SDL_copyp(dst, src);
 
     /* Pointers to internal static data must be updated when copying. */
     if (src->type == SDL_EVENT_TEXT_EDITING && src->edit.text == src->edit.short_text) {
         dst->edit.text = dst->edit.short_text;
+    } else if (src->type == SDL_EVENT_TEXT_INPUT && src->text.text == src->text.short_text) {
+        dst->text.text = dst->text.short_text;
     } else if (src->type == SDL_EVENT_DROP_TEXT && src->drop.data == src->drop.short_data) {
         dst->drop.data = dst->drop.short_data;
     }
@@ -1104,6 +1106,12 @@ void SDL_CleanupEvent(SDL_Event *event)
         if (event->edit.text && event->edit.text != event->edit.short_text) {
             SDL_free(event->edit.text);
             event->edit.text = NULL;
+        }
+        break;
+    case SDL_EVENT_TEXT_INPUT:
+        if (event->text.text && event->text.text != event->text.short_text) {
+            SDL_free(event->text.text);
+            event->text.text = NULL;
         }
         break;
     default:

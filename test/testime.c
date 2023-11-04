@@ -770,6 +770,7 @@ int main(int argc, char *argv[])
                 /* is committed */
                 markedText[0] = 0;
                 Redraw();
+                SDL_CleanupEvent(&event);
                 break;
 
             case SDL_EVENT_TEXT_EDITING:
