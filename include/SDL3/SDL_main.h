@@ -24,6 +24,14 @@
 
 #include <SDL3/SDL_stdinc.h>
 
+/*
+ * For details on how SDL_main works, and how to use it, please refer to:
+ *
+ * https://wiki.libsdl.org/SDL3/README/main-functions
+ *
+ * (or docs/README-main-functions.md in the SDL source tree)
+ */
+
 /**
  *  \file SDL_main.h
  *

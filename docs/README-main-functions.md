@@ -29,27 +29,12 @@ SDL's macro magic would quietly rename your function to `SDL_main`, and
 provide its own entry point that called it. Your app was none the wiser and
 your code worked everywhere without changes.
 
-In SDL1, you linked with a static library that had startup code that _had_ to
-run before you hit SDL_main(). For example, on macOS it would do various
-magic to the process to make sure it was in the right state. Windows would
-register win32 window classes and such. Things would break if you tried to
-circumvent this, and you were in for a lot of trouble if you tried to use
-SDL on a platform that needed this when you didn't control the entry point
-(for example, as a plugin, or an SDL binding in a scripting language).
-
-In SDL2, the necessary support code moved into the main library, and the tiny
-static library _only_ handled the basics of getting from the platform's real
-entry point (like WinMain) to SDL_main; if the real entry was _already_
-standard main, the static library and macro magic was unnecessary. The goal
-was to make it so you didn't have to change _your_ code to work on multiple
-platforms and remove the original limitations.
-
-In SDL3, we've taken this much, much further.
 
 ## The main entry point in SDL3
 
-SDL3 still has the same macro tricks, but the static library is gone. Now it's
-supplied by a "single-header library," which is to say you
+Previous versions of SDL had a static library, SDLmain, that you would link
+your app against. SDL3 still has the same macro tricks, but the static library
+is gone. Now it's supplied by a "single-header library," which means you
 `#include <SDL3/SDL_main.h>` and that header will insert a small amount of
 code into the source file that included it, so you no longer have to worry
 about linking against an extra library that you might need on some platforms.
@@ -88,7 +73,7 @@ the SDL API when you are ready.
 ## Main callbacks in SDL3
 
 There is a second option in SDL3 for how to structure your program. This is
-completly optional and you can ignore it if you're happy using a standard
+completely optional and you can ignore it if you're happy using a standard
 "main" function.
 
 Some platforms would rather your program operate in chunks. Most of the time,
@@ -191,11 +176,17 @@ int SDL_AppEvent(const SDL_Event *event);
 
 This will be called once for each event pushed into the SDL queue. This may be
 called from any thread, and possibly in parallel to SDL_AppIterate. The fields
-in `event` do not need to be free'd (as you would normally need to do for
+in `event` should not be free'd (as you would normally need to do for
 SDL_EVENT_DROP_FILE, etc), and your app should not call SDL_PollEvent,
 SDL_PumpEvent, etc, as SDL will manage this for you. Return values are the
 same as from SDL_AppIterate(), so you can terminate in response to
 SDL_EVENT_QUIT, etc.
+
+One can still use their own event filters and watchers. Filters set with
+SDL_SetEventFilter will run before SDL_AppEvent, and if it filters out the
+event, SDL_AppEvent will not run at all. Watchers set with SDL_AddEventWatch
+will run in serial to SDL_AppEvent, as SDL_AppEvent itself is built on top of
+an event watcher; which one runs first is not guaranteed.
 
 
 Finally:
@@ -209,5 +200,4 @@ forcibly killed or crashed--as a last chance to clean up. After this returns,
 SDL will call SDL_Quit so the app doesn't have to (but it's safe for the app
 to call it, too). Process termination proceeds as if the app returned normally
 from main(), so atexit handles will run, if your platform supports that.
-
 
