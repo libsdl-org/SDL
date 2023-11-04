@@ -850,7 +850,8 @@ extern DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType);
  *
  * \param event the SDL_Event structure to be filled with the next event from
  *              the queue, or NULL
- * \returns SDL_TRUE if this got an event or SDL_FALSE if there are none available.
+ * \returns SDL_TRUE if this got an event or SDL_FALSE if there are none
+ *          available.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -874,8 +875,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_PollEvent(SDL_Event *event);
  *
  * \param event the SDL_Event structure to be filled in with the next event
  *              from the queue, or NULL
- * \returns SDL_TRUE on success or SDL_FALSE if there was an error while waiting for events;
- *          call SDL_GetError() for more information.
+ * \returns SDL_TRUE on success or SDL_FALSE if there was an error while
+ *          waiting for events; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -902,7 +903,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WaitEvent(SDL_Event *event);
  *              from the queue, or NULL
  * \param timeoutMS the maximum number of milliseconds to wait for the next
  *                  available event
- * \returns SDL_TRUE if this got an event or SDL_FALSE if the timeout elapsed without any events available.
+ * \returns SDL_TRUE if this got an event or SDL_FALSE if the timeout elapsed
+ *          without any events available.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1041,7 +1043,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetEventFilter(SDL_EventFilter *filter, voi
  *
  * \param filter an SDL_EventFilter function to call when an event happens.
  * \param userdata a pointer that is passed to `filter`
- * \returns 0 on success, or a negative error code on failure; call SDL_GetError() for more information.
+ * \returns 0 on success, or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
