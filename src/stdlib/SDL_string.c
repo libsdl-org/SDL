@@ -2004,6 +2004,7 @@ int SDL_vasprintf(char **strp, const char *fmt, va_list ap)
 
         /* Check error code */
         if (retval < 0) {
+            SDL_free(p);
             return retval;
         }
 
@@ -2025,5 +2026,3 @@ int SDL_vasprintf(char **strp, const char *fmt, va_list ap)
         }
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */
