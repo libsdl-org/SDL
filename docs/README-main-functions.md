@@ -99,7 +99,7 @@ Video targets like Wayland can notify the app when to draw a new frame, to
 save battery life and cooperate with the compositor more closely.
 
 In most cases, you can add special-case code to your program to deal with this
-on different platforms, but SDL3 offers a system to handle transparently on
+on different platforms, but SDL3 offers a system to handle this transparently on
 the app's behalf.
 
 To use this, you have to redesign the highest level of your app a little. Once
