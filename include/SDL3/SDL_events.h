@@ -911,11 +911,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint32 t
 /**
  * Clean up dynamically allocated memory for an event.
  *
- * Some events have dynamically allocated data that must be cleaned up when the event is processed. If you handle any of these events, you should call SDL_CleanupEvent() after processing them:
- * SDL_EVENT_DROP_FILE
- * SDL_EVENT_DROP_TEXT
- * SDL_EVENT_SYSWM
- * SDL_EVENT_TEXT_EDITING
+ * Some events have dynamically allocated data that must be cleaned up when
+ * the event is processed. If you handle any of these events, you should call
+ * SDL_CleanupEvent() after processing them: SDL_EVENT_DROP_FILE
+ * SDL_EVENT_DROP_TEXT SDL_EVENT_SYSWM SDL_EVENT_TEXT_EDITING
  *
  * It is safe, but not necessary, to call this function for other event types.
  *

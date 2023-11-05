@@ -503,8 +503,10 @@ extern DECLSPEC size_t SDLCALL SDL_RWwrite(SDL_RWops *context, const void *ptr, 
  *
  * \param context a pointer to an SDL_RWops structure
  * \param fmt a printf() style format string
- * \param ... additional parameters matching % tokens in the `fmt` string, if any
- * \returns the number of bytes written, or 0 on error; call SDL_GetError() for more information.
+ * \param ... additional parameters matching % tokens in the `fmt` string, if
+ *            any
+ * \returns the number of bytes written, or 0 on error; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -526,7 +528,8 @@ extern DECLSPEC size_t SDLCALL SDL_RWprintf(SDL_RWops *context, SDL_PRINTF_FORMA
  * \param context a pointer to an SDL_RWops structure
  * \param fmt a printf() style format string
  * \param ap a variable argument list
- * \returns the number of bytes written, or 0 on error; call SDL_GetError() for more information.
+ * \returns the number of bytes written, or 0 on error; call SDL_GetError()
+ *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
