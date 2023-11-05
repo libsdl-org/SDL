@@ -122,7 +122,7 @@ find you enjoy structuring your program like this more!
 
 ## How to use main callbacks in SDL3
 
-To enable the callback entry points, you include SDL_main with an extra define
+To enable the callback entry points, you include SDL_main.h with an extra define,
 from a single source file in your project:
 
 ```c
@@ -130,7 +130,7 @@ from a single source file in your project:
 #include <SDL3/SDL_main.h>
 ```
 
-Once you do this, you do not include a "main" function at all (and if you do,
+Once you do this, you do not write a "main" function at all (and if you do,
 the app will likely fail to link). Instead, you provide the following
 functions:
 
