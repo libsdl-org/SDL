@@ -2201,6 +2201,7 @@ int SDL_vasprintf(char **strp, const char *fmt, va_list ap)
 
         /* Check error code */
         if (retval < 0) {
+            SDL_free(p);
             return retval;
         }
 
