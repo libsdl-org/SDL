@@ -123,6 +123,8 @@ void X11_SetNetWMState(SDL_VideoDevice *_this, Window xwindow, Uint32 flags)
     Atom _NET_WM_STATE_MAXIMIZED_HORZ = videodata->_NET_WM_STATE_MAXIMIZED_HORZ;
     Atom _NET_WM_STATE_FULLSCREEN = videodata->_NET_WM_STATE_FULLSCREEN;
     Atom _NET_WM_STATE_ABOVE = videodata->_NET_WM_STATE_ABOVE;
+    Atom _NET_WM_STATE_SKIP_TASKBAR = videodata->_NET_WM_STATE_SKIP_TASKBAR;
+    Atom _NET_WM_STATE_SKIP_PAGER = videodata->_NET_WM_STATE_SKIP_PAGER;
     Atom atoms[16];
     int count = 0;
 
@@ -137,6 +139,10 @@ void X11_SetNetWMState(SDL_VideoDevice *_this, Window xwindow, Uint32 flags)
 
     if (flags & SDL_WINDOW_ALWAYS_ON_TOP) {
         atoms[count++] = _NET_WM_STATE_ABOVE;
+    }
+    if (flags & SDL_WINDOW_UTILITY) {
+        atoms[count++] = _NET_WM_STATE_SKIP_TASKBAR;
+        atoms[count++] = _NET_WM_STATE_SKIP_PAGER;
     }
     if (flags & SDL_WINDOW_INPUT_FOCUS) {
         atoms[count++] = _NET_WM_STATE_FOCUSED;
