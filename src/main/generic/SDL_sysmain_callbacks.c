@@ -80,4 +80,4 @@ int SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, 
     return (rc < 0) ? 1 : 0;
 }
 
-#endif
+#endif // !__IOS__
