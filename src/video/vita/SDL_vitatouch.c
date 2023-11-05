@@ -173,8 +173,18 @@ void VITA_PollTouch(void)
 
 void VITA_ConvertTouchXYToSDLXY(float *sdl_x, float *sdl_y, int vita_x, int vita_y, int port)
 {
-    float x = (vita_x - area_info[port].x) / area_info[port].w;
-    float y = (vita_y - area_info[port].y) / area_info[port].h;
+    float x, y;
+
+    if (area_info[port].w <= 1) {
+        x = 0.5f;
+    } else {
+        x = (vita_x - area_info[port].x) / (area_info[port].w - 1);
+    }
+    if (area_info[port].h <= 1) {
+        y = 0.5f;
+    } else {
+        y = (vita_y - area_info[port].y) / (area_info[port].h - 1);
+    }
 
     x = SDL_max(x, 0.0);
     x = SDL_min(x, 1.0);

@@ -36,8 +36,8 @@
   internally in a portrait disposition so the
   GSP_SCREEN constants are flipped.
 */
-#define TOUCHSCREEN_SCALE_X 1.0f / GSP_SCREEN_HEIGHT_BOTTOM
-#define TOUCHSCREEN_SCALE_Y 1.0f / GSP_SCREEN_WIDTH
+#define TOUCHSCREEN_SCALE_X 1.0f / (GSP_SCREEN_HEIGHT_BOTTOM - 1)
+#define TOUCHSCREEN_SCALE_Y 1.0f / (GSP_SCREEN_WIDTH - 1)
 
 void N3DS_InitTouch(void)
 {
