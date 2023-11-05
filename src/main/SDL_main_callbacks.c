@@ -48,7 +48,6 @@ static void SDL_DispatchMainCallbackEvent(SDL_Event *event)
     if (SDL_AtomicGet(&apprc) == 0) { // if already quitting, don't send the event to the app.
         SDL_AtomicCAS(&apprc, 0, SDL_main_event_callback(event));
     }
-    SDL_CleanupEvent(event);
 }
 
 static void SDL_DispatchMainCallbackEvents()

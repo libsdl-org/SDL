@@ -770,7 +770,6 @@ int main(int argc, char *argv[])
                 /* is committed */
                 markedText[0] = 0;
                 Redraw();
-                SDL_CleanupEvent(&event);
                 break;
 
             case SDL_EVENT_TEXT_EDITING:
@@ -780,7 +779,6 @@ int main(int argc, char *argv[])
                 SDL_strlcpy(markedText, event.edit.text, SDL_TEXTEDITINGEVENT_TEXT_SIZE);
                 cursor = event.edit.start;
                 Redraw();
-                SDL_CleanupEvent(&event);
                 break;
             }
         }

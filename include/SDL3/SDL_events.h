@@ -236,7 +236,7 @@ typedef struct SDL_WindowEvent
 {
     Uint32 type;        /**< ::SDL_WINDOWEVENT_* */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_WindowID windowID;/**< The associated window */
+    SDL_WindowID windowID; /**< The associated window */
     Sint32 data1;       /**< event dependent data */
     Sint32 data2;       /**< event dependent data */
 } SDL_WindowEvent;
@@ -248,7 +248,7 @@ typedef struct SDL_KeyboardEvent
 {
     Uint32 type;        /**< ::SDL_EVENT_KEY_DOWN or ::SDL_EVENT_KEY_UP */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_WindowID windowID;/**< The window with keyboard focus, if any */
+    SDL_WindowID windowID; /**< The window with keyboard focus, if any */
     Uint8 state;        /**< ::SDL_PRESSED or ::SDL_RELEASED */
     Uint8 repeat;       /**< Non-zero if this is a key repeat */
     Uint8 padding2;
@@ -259,33 +259,27 @@ typedef struct SDL_KeyboardEvent
 #define SDL_TEXTEDITINGEVENT_TEXT_SIZE 64
 /**
  *  \brief Keyboard text editing event structure (event.edit.*)
- *
- *  \note This event should be cleaned up with SDL_CleanupEvent() after processing.
  */
 typedef struct SDL_TextEditingEvent
 {
-    Uint32 type;                                /**< ::SDL_EVENT_TEXT_EDITING */
-    Uint64 timestamp;                           /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_WindowID windowID;                      /**< The window with keyboard focus, if any */
-    char *text;                                 /**< The editing text */
-    char short_text[SDL_TEXTEDITINGEVENT_TEXT_SIZE]; /**< Memory space for short editing text, use 'text' instead */
-    Sint32 start;                               /**< The start cursor of selected editing text */
-    Sint32 length;                              /**< The length of selected editing text */
+    Uint32 type;        /**< ::SDL_EVENT_TEXT_EDITING */
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_WindowID windowID; /**< The window with keyboard focus, if any */
+    char *text;         /**< The editing text */
+    Sint32 start;       /**< The start cursor of selected editing text */
+    Sint32 length;      /**< The length of selected editing text */
 } SDL_TextEditingEvent;
 
 #define SDL_TEXTINPUTEVENT_TEXT_SIZE 64
 /**
  *  \brief Keyboard text input event structure (event.text.*)
- *
- *  \note This event should be cleaned up with SDL_CleanupEvent() after processing.
  */
 typedef struct SDL_TextInputEvent
 {
-    Uint32 type;                                /**< ::SDL_EVENT_TEXT_INPUT */
-    Uint64 timestamp;                           /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_WindowID windowID;                      /**< The window with keyboard focus, if any */
-    char *text;                                 /**< The input text */
-    char short_text[SDL_TEXTEDITINGEVENT_TEXT_SIZE]; /**< Memory space for short input text, use 'text' instead */
+    Uint32 type;        /**< ::SDL_EVENT_TEXT_INPUT */
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_WindowID windowID; /**< The window with keyboard focus, if any */
+    char *text;         /**< The input text */
 } SDL_TextInputEvent;
 
 /**
@@ -295,7 +289,7 @@ typedef struct SDL_MouseMotionEvent
 {
     Uint32 type;        /**< ::SDL_EVENT_MOUSE_MOTION */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_WindowID windowID;/**< The window with mouse focus, if any */
+    SDL_WindowID windowID; /**< The window with mouse focus, if any */
     SDL_MouseID which;  /**< The mouse instance id, or SDL_TOUCH_MOUSEID */
     Uint32 state;       /**< The current button state */
     float x;            /**< X coordinate, relative to window */
@@ -311,7 +305,7 @@ typedef struct SDL_MouseButtonEvent
 {
     Uint32 type;        /**< ::SDL_EVENT_MOUSE_BUTTON_DOWN or ::SDL_EVENT_MOUSE_BUTTON_UP */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_WindowID windowID;/**< The window with mouse focus, if any */
+    SDL_WindowID windowID; /**< The window with mouse focus, if any */
     SDL_MouseID which;  /**< The mouse instance id, or SDL_TOUCH_MOUSEID */
     Uint8 button;       /**< The mouse button index */
     Uint8 state;        /**< ::SDL_PRESSED or ::SDL_RELEASED */
@@ -328,7 +322,7 @@ typedef struct SDL_MouseWheelEvent
 {
     Uint32 type;        /**< ::SDL_EVENT_MOUSE_WHEEL */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_WindowID windowID;/**< The window with mouse focus, if any */
+    SDL_WindowID windowID; /**< The window with mouse focus, if any */
     SDL_MouseID which;  /**< The mouse instance id, or SDL_TOUCH_MOUSEID */
     float x;            /**< The amount scrolled horizontally, positive to the right and negative to the left */
     float y;            /**< The amount scrolled vertically, positive away from the user and negative toward the user */
@@ -507,15 +501,13 @@ typedef struct SDL_TouchFingerEvent
     float dx;           /**< Normalized in the range -1...1 */
     float dy;           /**< Normalized in the range -1...1 */
     float pressure;     /**< Normalized in the range 0...1 */
-    SDL_WindowID windowID;/**< The window underneath the finger, if any */
+    SDL_WindowID windowID; /**< The window underneath the finger, if any */
 } SDL_TouchFingerEvent;
 
 
 #define SDL_DROPEVENT_DATA_SIZE 64
 /**
  *  \brief An event used to drop text or request a file open by the system (event.drop.*)
- *
- *  \note This event should be cleaned up with SDL_CleanupEvent() after processing.
  */
 typedef struct SDL_DropEvent
 {
@@ -526,7 +518,6 @@ typedef struct SDL_DropEvent
     float y;            /**< Y coordinate, relative to window (not on begin) */
     char *source;       /**< The source app that sent this drop event, or NULL if that isn't available */
     char *data;         /**< The text for SDL_EVENT_DROP_TEXT and the file name for SDL_EVENT_DROP_FILE, NULL for other events */
-    char short_data[SDL_DROPEVENT_DATA_SIZE]; /**< Memory space for short data, use 'data' instead */
 } SDL_DropEvent;
 
 /**
@@ -545,7 +536,7 @@ typedef struct SDL_SensorEvent
 {
     Uint32 type;        /**< ::SDL_EVENT_SENSOR_UPDATE */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_SensorID which;       /**< The instance ID of the sensor */
+    SDL_SensorID which; /**< The instance ID of the sensor */
     float data[6];      /**< Up to 6 values from the sensor - additional values can be queried using SDL_GetSensorData() */
     Uint64 sensor_timestamp; /**< The timestamp of the sensor reading in nanoseconds, not necessarily synchronized with the system clock */
 } SDL_SensorEvent;
@@ -575,7 +566,7 @@ typedef struct SDL_UserEvent
 {
     Uint32 type;        /**< ::SDL_EVENT_USER through ::SDL_EVENT_LAST-1 */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_WindowID windowID;/**< The associated window if any */
+    SDL_WindowID windowID; /**< The associated window if any */
     Sint32 code;        /**< User defined event code */
     void *data1;        /**< User defined data pointer */
     void *data2;        /**< User defined data pointer */
@@ -588,8 +579,6 @@ typedef struct SDL_SysWMmsg SDL_SysWMmsg;
 /**
  *  \brief A video driver dependent system event (event.syswm.*)
  *         This event is disabled by default, you can enable it with SDL_SetEventEnabled()
- *
- *  \note This event should be cleaned up with SDL_CleanupEvent() after processing.
  *
  *  \note If you want to use this event, you should include SDL_syswm.h.
  */
@@ -641,7 +630,7 @@ typedef union SDL_Event
        largest datatype within the union, which is 8 bytes on 64-bit
        architectures.
 
-       So... we'll add padding to force the size to be 56 bytes for both.
+       So... we'll add padding to force the size to be the same for both.
 
        On architectures where pointers are 16 bytes, this needs rounding up to
        the next multiple of 16, 64, and on architectures where pointers are
@@ -850,7 +839,6 @@ extern DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CleanupEvent
  * \sa SDL_PushEvent
  * \sa SDL_WaitEvent
  * \sa SDL_WaitEventTimeout
@@ -873,7 +861,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_PollEvent(SDL_Event *event);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CleanupEvent
  * \sa SDL_PollEvent
  * \sa SDL_PushEvent
  * \sa SDL_WaitEventTimeout
@@ -902,32 +889,11 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WaitEvent(SDL_Event *event);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CleanupEvent
  * \sa SDL_PollEvent
  * \sa SDL_PushEvent
  * \sa SDL_WaitEvent
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS);
-
-/**
- * Clean up dynamically allocated memory for an event.
- *
- * Some events have dynamically allocated data that must be cleaned up when
- * the event is processed. If you handle any of these events, you should call
- * SDL_CleanupEvent() after processing them: SDL_EVENT_DROP_FILE
- * SDL_EVENT_DROP_TEXT SDL_EVENT_SYSWM SDL_EVENT_TEXT_EDITING
- *
- * It is safe, but not necessary, to call this function for other event types.
- *
- * \param event a pointer to the event that should be cleaned up
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_PollEvent
- * \sa SDL_WaitEvent
- * \sa SDL_WaitEventTimeout
- */
-extern DECLSPEC void SDLCALL SDL_CleanupEvent(SDL_Event *event);
 
 /**
  * Add an event to the event queue.
@@ -1144,6 +1110,20 @@ extern DECLSPEC SDL_bool SDLCALL SDL_EventEnabled(Uint32 type);
  * \sa SDL_PushEvent
  */
 extern DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
+
+/**
+ * Allocate dynamic memory for an SDL event
+ *
+ * You can use this to allocate memory for user events that will be automatically freed after the event is processed.
+ *
+ * \param size the amount of memory to allocate
+ * \returns a pointer to the memory allocated or NULL on failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_FlushEventMemory
+ */
+extern DECLSPEC void * SDLCALL SDL_AllocateEventMemory(size_t size);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

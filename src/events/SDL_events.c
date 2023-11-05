@@ -62,6 +62,7 @@ static int SDL_event_watchers_count = 0;
 static SDL_bool SDL_event_watchers_dispatching = SDL_FALSE;
 static SDL_bool SDL_event_watchers_removed = SDL_FALSE;
 static SDL_AtomicInt SDL_sentinel_pending;
+static Uint32 SDL_last_event_id = 0;
 
 typedef struct
 {
@@ -89,6 +90,77 @@ static struct
     SDL_EventEntry *tail;
     SDL_EventEntry *free;
 } SDL_EventQ = { NULL, SDL_FALSE, { 0 }, 0, NULL, NULL, NULL };
+
+typedef struct SDL_EventMemory
+{
+    Uint32 eventID;
+    void *memory;
+    struct SDL_EventMemory *next;
+} SDL_EventMemory;
+
+static SDL_Mutex *SDL_event_memory_lock;
+static SDL_EventMemory *SDL_event_memory_head;
+static SDL_EventMemory *SDL_event_memory_tail;
+
+void *SDL_AllocateEventMemory(size_t size)
+{
+    void *memory = SDL_malloc(size);
+    if (!memory) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
+    SDL_LockMutex(SDL_event_memory_lock);
+    {
+        SDL_EventMemory *entry = (SDL_EventMemory *)SDL_malloc(sizeof(*entry));
+        if (entry) {
+            entry->eventID = SDL_last_event_id;
+            entry->memory = memory;
+            entry->next = NULL;
+
+            if (SDL_event_memory_tail) {
+                SDL_event_memory_tail->next = entry;
+            } else {
+                SDL_event_memory_head = entry;
+            }
+            SDL_event_memory_tail = entry;
+        } else {
+            SDL_free(memory);
+            memory = NULL;
+            SDL_OutOfMemory();
+        }
+    }
+    SDL_UnlockMutex(SDL_event_memory_lock);
+
+    return memory;
+}
+
+static void SDL_FlushEventMemory(Uint32 eventID)
+{
+    SDL_LockMutex(SDL_event_memory_lock);
+    {
+        if (SDL_event_memory_head) {
+            while (SDL_event_memory_head) {
+                SDL_EventMemory *entry = SDL_event_memory_head;
+
+                if (eventID && (Sint32)(eventID - entry->eventID) < 0) {
+                    break;
+                }
+
+                /* If you crash here, your application has memory corruption
+                 * or freed memory in an event, which is no longer necessary.
+                 */
+                SDL_event_memory_head = entry->next;
+                SDL_free(entry->memory);
+                SDL_free(entry);
+            }
+            if (!SDL_event_memory_head) {
+                SDL_event_memory_tail = NULL;
+            }
+        }
+    }
+    SDL_UnlockMutex(SDL_event_memory_lock);
+}
 
 #ifndef SDL_JOYSTICK_DISABLED
 
@@ -468,22 +540,6 @@ static void SDL_LogEvent(const SDL_Event *event)
 #undef uint
 }
 
-static void SDL_CopyEvent(SDL_Event *dst, SDL_Event *src)
-{
-    SDL_copyp(dst, src);
-
-    /* Pointers to internal static data must be updated when copying. */
-    if (src->type == SDL_EVENT_TEXT_EDITING && src->edit.text == src->edit.short_text) {
-        dst->edit.text = dst->edit.short_text;
-    } else if (src->type == SDL_EVENT_TEXT_INPUT && src->text.text == src->text.short_text) {
-        dst->text.text = dst->text.short_text;
-    } else if ((src->type == SDL_EVENT_DROP_FILE || src->type == SDL_EVENT_DROP_TEXT) && src->drop.data == src->drop.short_data) {
-        dst->drop.data = dst->drop.short_data;
-    }
-}
-
-/* Public functions */
-
 void SDL_StopEventLoop(void)
 {
     const char *report = SDL_GetHint("SDL_EVENT_QUEUE_STATISTICS");
@@ -518,12 +574,18 @@ void SDL_StopEventLoop(void)
     SDL_EventQ.free = NULL;
     SDL_AtomicSet(&SDL_sentinel_pending, 0);
 
+    SDL_FlushEventMemory(0);
+
     /* Clear disabled event state */
     for (i = 0; i < SDL_arraysize(SDL_disabled_events); ++i) {
         SDL_free(SDL_disabled_events[i]);
         SDL_disabled_events[i] = NULL;
     }
 
+    if (SDL_event_memory_lock) {
+        SDL_DestroyMutex(SDL_event_memory_lock);
+        SDL_event_memory_lock = NULL;
+    }
     if (SDL_event_watchers_lock) {
         SDL_DestroyMutex(SDL_event_watchers_lock);
         SDL_event_watchers_lock = NULL;
@@ -565,6 +627,14 @@ int SDL_StartEventLoop(void)
     if (SDL_event_watchers_lock == NULL) {
         SDL_event_watchers_lock = SDL_CreateMutex();
         if (SDL_event_watchers_lock == NULL) {
+            SDL_UnlockMutex(SDL_EventQ.lock);
+            return -1;
+        }
+    }
+
+    if (SDL_event_memory_lock == NULL) {
+        SDL_event_memory_lock = SDL_CreateMutex();
+        if (SDL_event_memory_lock == NULL) {
             SDL_UnlockMutex(SDL_EventQ.lock);
             return -1;
         }
@@ -611,7 +681,7 @@ static int SDL_AddEvent(SDL_Event *event)
         SDL_LogEvent(event);
     }
 
-    SDL_CopyEvent(&entry->event, event);
+    SDL_copyp(&entry->event, event);
     if (event->type == SDL_EVENT_POLL_SENTINEL) {
         SDL_AtomicAdd(&SDL_sentinel_pending, 1);
     }
@@ -633,6 +703,8 @@ static int SDL_AddEvent(SDL_Event *event)
     if (final_count > SDL_EventQ.max_events_seen) {
         SDL_EventQ.max_events_seen = final_count;
     }
+
+    ++SDL_last_event_id;
 
     return 1;
 }
@@ -720,7 +792,7 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_eventact
                 type = entry->event.type;
                 if (minType <= type && type <= maxType) {
                     if (events) {
-                        SDL_CopyEvent(&events[used], &entry->event);
+                        SDL_copyp(&events[used], &entry->event);
 
                         if (action == SDL_GETEVENT) {
                             SDL_CutEvent(entry);
@@ -799,7 +871,6 @@ void SDL_FlushEvents(Uint32 minType, Uint32 maxType)
             next = entry->next;
             type = entry->event.type;
             if (minType <= type && type <= maxType) {
-                SDL_CleanupEvent(&entry->event);
                 SDL_CutEvent(entry);
             }
         }
@@ -811,6 +882,12 @@ void SDL_FlushEvents(Uint32 minType, Uint32 maxType)
 static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
+
+    /* Free old event memory */
+    /*SDL_FlushEventMemory(SDL_last_event_id - SDL_MAX_QUEUED_EVENTS);*/
+    if (SDL_AtomicGet(&SDL_EventQ.count) == 0) {
+        SDL_FlushEventMemory(SDL_last_event_id);
+    }
 
     /* Release any keys held down from last frame */
     SDL_ReleaseAutoReleaseKeys();
@@ -1082,43 +1159,6 @@ SDL_bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
     }
 }
 
-void SDL_CleanupEvent(SDL_Event *event)
-{
-    switch (event->type) {
-    case SDL_EVENT_DROP_FILE:
-    case SDL_EVENT_DROP_TEXT:
-        if (event->drop.source) {
-            SDL_free(event->drop.source);
-            event->drop.data = NULL;
-        }
-        if (event->drop.data && event->drop.data != event->drop.short_data) {
-            SDL_free(event->drop.data);
-            event->drop.data = NULL;
-        }
-        break;
-    case SDL_EVENT_SYSWM:
-        if (event->syswm.msg) {
-            SDL_free(event->syswm.msg);
-            event->syswm.msg = NULL;
-        }
-        break;
-    case SDL_EVENT_TEXT_EDITING:
-        if (event->edit.text && event->edit.text != event->edit.short_text) {
-            SDL_free(event->edit.text);
-            event->edit.text = NULL;
-        }
-        break;
-    case SDL_EVENT_TEXT_INPUT:
-        if (event->text.text && event->text.text != event->text.short_text) {
-            SDL_free(event->text.text);
-            event->text.text = NULL;
-        }
-        break;
-    default:
-        break;
-    }
-}
-
 int SDL_PushEvent(SDL_Event *event)
 {
     if (!event->common.timestamp) {
@@ -1375,7 +1415,7 @@ int SDL_SendSysWMEvent(SDL_SysWMmsg *message)
         SDL_memset(&event, 0, sizeof(event));
         event.type = SDL_EVENT_SYSWM;
         event.common.timestamp = 0;
-        event.syswm.msg = (SDL_SysWMmsg *)SDL_malloc(sizeof(*message));
+        event.syswm.msg = (SDL_SysWMmsg *)SDL_AllocateEventMemory(sizeof(*message));
         if (!event.syswm.msg) {
             return 0;
         }

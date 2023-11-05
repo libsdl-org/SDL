@@ -1728,7 +1728,6 @@ static void loop(void *arg)
                     AddControllerNameText(event.text.text);
                 }
             }
-            SDL_CleanupEvent(&event);
             break;
         case SDL_EVENT_QUIT:
             done = SDL_TRUE;

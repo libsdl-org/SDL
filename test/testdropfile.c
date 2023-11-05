@@ -69,8 +69,6 @@ int main(int argc, char *argv[])
             } else if ((event.type == SDL_EVENT_DROP_FILE) || (event.type == SDL_EVENT_DROP_TEXT)) {
                 const char *typestr = (event.type == SDL_EVENT_DROP_FILE) ? "File" : "Text";
                 SDL_Log("%s dropped on window %u: %s at (%f, %f)", typestr, (unsigned int)event.drop.windowID, event.drop.data, event.drop.x, event.drop.y);
-                /* Normally you'd have to do this, but this is freed in SDLTest_CommonEvent() */
-                /*SDL_CleanupEvent(&event);*/
             } else if (event.type == SDL_EVENT_DROP_POSITION) {
                 is_hover = SDL_TRUE;
                 x = event.drop.x;

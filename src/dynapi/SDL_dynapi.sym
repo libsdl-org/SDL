@@ -921,9 +921,9 @@ SDL3_0.0.0 {
     SDL_GetWindowProperties;
     SDL_ClearProperty;
     SDL_EnterAppMainCallbacks;
-    SDL_CleanupEvent;
     SDL_RWprintf;
     SDL_RWvprintf;
+    SDL_AllocateEventMemory;
     # extra symbols go here (don't modify this line)
   local: *;
 };

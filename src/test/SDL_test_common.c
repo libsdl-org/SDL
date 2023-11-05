@@ -2424,8 +2424,6 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
 void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done)
 {
     *done = SDLTest_CommonEventMainCallbacks(state, event) ? 1 : 0;
-
-    SDL_CleanupEvent(event);
 }
 
 void SDLTest_CommonQuit(SDLTest_CommonState *state)

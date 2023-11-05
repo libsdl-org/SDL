@@ -183,11 +183,9 @@ static void loop(void)
             break;
         case SDL_EVENT_TEXT_EDITING:
             PrintText("EDIT", event.text.text);
-            SDL_CleanupEvent(&event);
             break;
         case SDL_EVENT_TEXT_INPUT:
             PrintText("INPUT", event.text.text);
-            SDL_CleanupEvent(&event);
             break;
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
             /* Left button quits the app, other buttons toggles text input */
