@@ -468,7 +468,56 @@ static void SDL_LogEvent(const SDL_Event *event)
 #undef uint
 }
 
-static void SDL_CopyEvent(SDL_Event *dst, SDL_Event *src)
+/* Reference counted memory allocations for events */
+static void *SDL_AllocEventMemory(size_t size)
+{
+    if (size) {
+        size += sizeof(uintptr_t);
+        uintptr_t *p = SDL_malloc(size);
+
+        if (p) {
+            *p = 1;
+            return p + 1;
+        }
+        SDL_OutOfMemory();
+    }
+
+    return NULL;
+}
+
+static void SDL_EventMemoryAddRef(void *mem)
+{
+    if (mem) {
+        uintptr_t *p = ((uintptr_t *)mem) - 1;
+        ++*p;
+    }
+}
+
+static void SDL_ReleaseEventMemory(void *mem)
+{
+    if (mem) {
+        uintptr_t *p = ((uintptr_t *)mem) - 1;
+        if (--*p == 0) {
+            SDL_free(p);
+        }
+    }
+}
+
+char *SDL_StrDupEventStr(const char *str)
+{
+    if (str) {
+        const size_t len = SDL_strlen(str);
+        char *dststr = SDL_AllocEventMemory(len);
+        if (dststr) {
+            SDL_strlcpy(dststr, str, len);
+            return dststr;
+        }
+    }
+
+    return NULL;
+}
+
+static void SDL_CopyEventNoRef(SDL_Event *dst, const SDL_Event *src)
 {
     SDL_copyp(dst, src);
 
@@ -483,6 +532,38 @@ static void SDL_CopyEvent(SDL_Event *dst, SDL_Event *src)
 }
 
 /* Public functions */
+
+void SDL_CopyEvent(SDL_Event *dst, const SDL_Event *src)
+{
+    if (src && dst) {
+        SDL_copyp(dst, src);
+
+        /* When copying for use in userspace, both pointers to internal static data must
+         * be updated and refcounts for dynamic allocations must be incremented.
+         */
+        if (src->type == SDL_EVENT_TEXT_EDITING) {
+            if (src->edit.text == src->edit.short_text) {
+                dst->edit.text = dst->edit.short_text;
+            } else {
+                SDL_EventMemoryAddRef(dst->edit.text);
+            }
+        } else if (src->type == SDL_EVENT_TEXT_INPUT) {
+            if (src->text.text == src->text.short_text) {
+                dst->text.text = dst->text.short_text;
+            } else {
+                SDL_EventMemoryAddRef(dst->text.text);
+            }
+        } else if ((src->type == SDL_EVENT_DROP_FILE || src->type == SDL_EVENT_DROP_TEXT)) {
+            if (src->drop.data == src->drop.short_data) {
+                dst->drop.data = dst->drop.short_data;
+            } else {
+                SDL_EventMemoryAddRef(dst->drop.data);
+            }
+        } else if (src->type == SDL_EVENT_SYSWM) {
+            SDL_EventMemoryAddRef(dst->syswm.msg);
+        }
+    }
+}
 
 void SDL_StopEventLoop(void)
 {
@@ -611,7 +692,7 @@ static int SDL_AddEvent(SDL_Event *event)
         SDL_LogEvent(event);
     }
 
-    SDL_CopyEvent(&entry->event, event);
+    SDL_CopyEventNoRef(&entry->event, event);
     if (event->type == SDL_EVENT_POLL_SENTINEL) {
         SDL_AtomicAdd(&SDL_sentinel_pending, 1);
     }
@@ -720,7 +801,7 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_eventact
                 type = entry->event.type;
                 if (minType <= type && type <= maxType) {
                     if (events) {
-                        SDL_CopyEvent(&events[used], &entry->event);
+                        SDL_CopyEventNoRef(&events[used], &entry->event);
 
                         if (action == SDL_GETEVENT) {
                             SDL_CutEvent(entry);
@@ -1092,25 +1173,25 @@ void SDL_CleanupEvent(SDL_Event *event)
             event->drop.data = NULL;
         }
         if (event->drop.data && event->drop.data != event->drop.short_data) {
-            SDL_free(event->drop.data);
+            SDL_ReleaseEventMemory(event->drop.data);
             event->drop.data = NULL;
         }
         break;
     case SDL_EVENT_SYSWM:
         if (event->syswm.msg) {
-            SDL_free(event->syswm.msg);
+            SDL_ReleaseEventMemory(event->syswm.msg);
             event->syswm.msg = NULL;
         }
         break;
     case SDL_EVENT_TEXT_EDITING:
         if (event->edit.text && event->edit.text != event->edit.short_text) {
-            SDL_free(event->edit.text);
+            SDL_ReleaseEventMemory(event->edit.text);
             event->edit.text = NULL;
         }
         break;
     case SDL_EVENT_TEXT_INPUT:
         if (event->text.text && event->text.text != event->text.short_text) {
-            SDL_free(event->text.text);
+            SDL_ReleaseEventMemory(event->text.text);
             event->text.text = NULL;
         }
         break;
@@ -1375,7 +1456,7 @@ int SDL_SendSysWMEvent(SDL_SysWMmsg *message)
         SDL_memset(&event, 0, sizeof(event));
         event.type = SDL_EVENT_SYSWM;
         event.common.timestamp = 0;
-        event.syswm.msg = (SDL_SysWMmsg *)SDL_malloc(sizeof(*message));
+        event.syswm.msg = (SDL_SysWMmsg *)SDL_AllocEventMemory(sizeof(*message));
         if (!event.syswm.msg) {
             return 0;
         }

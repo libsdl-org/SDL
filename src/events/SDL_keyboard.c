@@ -1080,7 +1080,7 @@ int SDL_SendKeyboardText(const char *text)
             SDL_memcpy(event.text.short_text, text, len + 1);
             event.text.text = event.text.short_text;
         } else {
-            event.text.text = SDL_strdup(text);
+            event.text.text = SDL_StrDupEventStr(text);
         }
 
         posted = (SDL_PushEvent(&event) > 0);
@@ -1109,7 +1109,7 @@ int SDL_SendEditingText(const char *text, int start, int length)
             SDL_memcpy(event.edit.short_text, text, len + 1);
             event.edit.text = event.edit.short_text;
         } else {
-            event.edit.text = SDL_strdup(text);
+            event.edit.text = SDL_StrDupEventStr(text);
         }
 
         posted = (SDL_PushEvent(&event) > 0);

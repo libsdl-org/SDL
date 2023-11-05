@@ -53,6 +53,8 @@ extern void SDL_QuitEvents(void);
 
 extern void SDL_SendPendingSignalEvents(void);
 
+extern char *SDL_StrDupEventStr(const char *str);
+
 extern int SDL_InitQuit(void);
 extern void SDL_QuitQuit(void);
 

@@ -910,6 +910,25 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WaitEvent(SDL_Event *event);
 extern DECLSPEC SDL_bool SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS);
 
 /**
+ * Copy an event
+ *
+ * Some events have internal state and dynamically allocated data that must be
+ * appropriately handled when copying an event object, which won't be accounted for by
+ * a standard memcpy operation. Use this function when making copies of event objects to
+ * ensure that all internal state and reference counting is handled correctly.
+ *
+ * The guidelines for calling SDL_CleanupEvent() apply to copied events as well.
+ *
+ * \param dst a pointer to the destination event
+ * \param src a pointer to the source event
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CleanupEvent
+ */
+extern DECLSPEC void SDLCALL SDL_CopyEvent(SDL_Event *dst, const SDL_Event *src);
+
+/**
  * Clean up dynamically allocated memory for an event.
  *
  * Some events have dynamically allocated data that must be cleaned up when
@@ -926,6 +945,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint32 t
  * \sa SDL_PollEvent
  * \sa SDL_WaitEvent
  * \sa SDL_WaitEventTimeout
+ * \sa SDL_CopyEvent
  */
 extern DECLSPEC void SDLCALL SDL_CleanupEvent(SDL_Event *event);
 

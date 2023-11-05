@@ -67,7 +67,7 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
                 SDL_memcpy(event.drop.short_data, data, len + 1);
                 event.drop.data = event.drop.short_data;
             } else {
-                event.drop.data = SDL_strdup(data);
+                event.drop.data = SDL_StrDupEventStr(data);
             }
         }
         event.drop.windowID = window ? window->id : 0;
