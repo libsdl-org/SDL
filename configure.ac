@@ -3368,32 +3368,9 @@ asdf
 [AS_HELP_STRING([--enable-xinput], [use Xinput for Windows [default=yes]])],
                                 , enable_xinput=yes)
     if test x$enable_xinput = xyes; then
-        have_xinput_gamepadex=no
-        have_xinput_stateex=no
         AC_CHECK_HEADER(xinput.h, have_xinput=yes)
-        AC_MSG_CHECKING(for struct XINPUT_GAMEPAD_EX)
-        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-#include <windows.h>
-#include <xinput.h>
-XINPUT_GAMEPAD_EX x1;
-            ]],[])], [have_xinput_gamepadex=yes],[])
-        AC_MSG_RESULT($have_xinput_gamepadex)
-        AC_MSG_CHECKING(for struct XINPUT_STATE_EX)
-        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-#include <windows.h>
-#include <xinput.h>
-XINPUT_STATE_EX s1;
-            ]],[])], [have_xinput_stateex=yes],[])
-        AC_MSG_RESULT($have_xinput_stateex)
-
         if test x$have_xinput = xyes; then
             AC_DEFINE(HAVE_XINPUT_H, 1, [ ])
-        fi
-        if test x$have_xinput_gamepadex = xyes; then
-            AC_DEFINE(HAVE_XINPUT_GAMEPAD_EX, 1, [ ])
-        fi
-        if test x$have_xinput_stateex = xyes; then
-            AC_DEFINE(HAVE_XINPUT_STATE_EX, 1, [ ])
         fi
     fi
 

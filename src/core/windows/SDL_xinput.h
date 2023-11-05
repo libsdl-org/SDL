@@ -163,28 +163,8 @@ extern "C" {
 
 /* typedef's for XInput structs we use */
 
-#ifndef HAVE_XINPUT_GAMEPAD_EX
-typedef struct
-{
-    WORD wButtons;
-    BYTE bLeftTrigger;
-    BYTE bRightTrigger;
-    SHORT sThumbLX;
-    SHORT sThumbLY;
-    SHORT sThumbRX;
-    SHORT sThumbRY;
-    DWORD dwPaddingReserved;
-} XINPUT_GAMEPAD_EX;
-#endif
 
-#ifndef HAVE_XINPUT_STATE_EX
-typedef struct
-{
-    DWORD dwPacketNumber;
-    XINPUT_GAMEPAD_EX Gamepad;
-} XINPUT_STATE_EX;
-#endif
-
+/* This is the same as XINPUT_BATTERY_INFORMATION, but always defined instead of just if WIN32_WINNT >= _WIN32_WINNT_WIN8 */
 typedef struct
 {
     BYTE BatteryType;
@@ -206,6 +186,12 @@ typedef struct
 
 typedef struct
 {
+    DWORD dwPacketNumber;
+    XINPUT_GAMEPAD Gamepad;
+} XINPUT_STATE;
+
+typedef struct
+{
     WORD wLeftMotorSpeed;
     WORD wRightMotorSpeed;
 } XINPUT_VIBRATION;
@@ -224,7 +210,7 @@ typedef struct
 /* Forward decl's for XInput API's we load dynamically and use if available */
 typedef DWORD(WINAPI *XInputGetState_t)(
     DWORD dwUserIndex,      /* [in] Index of the gamer associated with the device */
-    XINPUT_STATE_EX *pState /* [out] Receives the current state */
+    XINPUT_STATE *pState    /* [out] Receives the current state */
 );
 
 typedef DWORD(WINAPI *XInputSetState_t)(

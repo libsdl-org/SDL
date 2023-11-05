@@ -321,7 +321,7 @@ static void RAWINPUT_FillMatchState(WindowsMatchState *state, Uint64 match_state
 
 static struct
 {
-    XINPUT_STATE_EX state;
+    XINPUT_STATE state;
     XINPUT_BATTERY_INFORMATION_EX battery;
     SDL_bool connected; /* Currently has an active XInput device */
     SDL_bool used;      /* Is currently mapped to an SDL device */

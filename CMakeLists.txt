@@ -1825,16 +1825,6 @@ elseif(WINDOWS)
       #include <xinput.h>
       int main(int argc, char **argv) { return 0; }" HAVE_XINPUT_H)
     check_c_source_compiles("
-      #include <windows.h>
-      #include <xinput.h>
-      XINPUT_GAMEPAD_EX x1;
-      int main(int argc, char **argv) { return 0; }" HAVE_XINPUT_GAMEPAD_EX)
-    check_c_source_compiles("
-      #include <windows.h>
-      #include <xinput.h>
-      XINPUT_STATE_EX s1;
-      int main(int argc, char **argv) { return 0; }" HAVE_XINPUT_STATE_EX)
-    check_c_source_compiles("
       #define COBJMACROS
       #include <windows.gaming.input.h>
       __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
