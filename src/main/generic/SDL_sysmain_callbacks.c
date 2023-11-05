@@ -23,6 +23,8 @@
 #include "../SDL_main_callbacks.h"
 #include "../../video/SDL_sysvideo.h"
 
+#ifndef __IOS__
+
 static int callback_rate_increment = 0;
 
 static void SDLCALL MainCallbackRateHintChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
@@ -78,3 +80,4 @@ int SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, 
     return (rc < 0) ? 1 : 0;
 }
 
+#endif
