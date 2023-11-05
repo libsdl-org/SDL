@@ -518,7 +518,7 @@ extern DECLSPEC size_t SDLCALL SDL_RWwrite(SDL_RWops *context, const void *ptr, 
  * \sa SDL_RWseek
  * \sa SDL_RWwrite
  */
-extern DECLSPEC size_t SDLCALL SDL_RWprintf(SDL_RWops *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...);
+extern DECLSPEC size_t SDLCALL SDL_RWprintf(SDL_RWops *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)  SDL_PRINTF_VARARG_FUNC(2);
 
 /**
  * Print to an SDL_RWops data stream.
