@@ -188,6 +188,10 @@ static void loop(void)
         SDLTest_CommonEvent(state, &event, &done);
     }
 
+    if (done) {
+        return;
+    }
+
     /* Show the tooltip if the delay period has elapsed */
     if (SDL_GetTicks() > tooltip_timer) {
         if (tooltip.win == NULL) {
