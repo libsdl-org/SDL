@@ -62,13 +62,12 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
             event.drop.source = SDL_strdup(source);
         }
         if (data) {
-            size_t len = SDL_strlen(data);
-            if (len < sizeof(event.drop.short_data)) {
-                SDL_memcpy(event.drop.short_data, data, len + 1);
-                event.drop.data = event.drop.short_data;
-            } else {
-                event.drop.data = SDL_strdup(data);
+            size_t size = SDL_strlen(data) + 1;
+            event.drop.data = (char *)SDL_AllocateEventMemory(size);
+            if (!event.drop.data) {
+                return 0;
             }
+            SDL_memcpy(event.drop.data, data, size);
         }
         event.drop.windowID = window ? window->id : 0;
 

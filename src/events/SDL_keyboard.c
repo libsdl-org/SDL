@@ -1075,13 +1075,12 @@ int SDL_SendKeyboardText(const char *text)
         event.common.timestamp = 0;
         event.text.windowID = keyboard->focus ? keyboard->focus->id : 0;
 
-        size_t len = SDL_strlen(text);
-        if (len < sizeof(event.text.short_text)) {
-            SDL_memcpy(event.text.short_text, text, len + 1);
-            event.text.text = event.text.short_text;
-        } else {
-            event.text.text = SDL_strdup(text);
+        size_t size = SDL_strlen(text) + 1;
+        event.text.text = (char *)SDL_AllocateEventMemory(size);
+        if (!event.text.text) {
+            return 0;
         }
+        SDL_memcpy(event.text.text, text, size);
 
         posted = (SDL_PushEvent(&event) > 0);
     }
@@ -1104,13 +1103,12 @@ int SDL_SendEditingText(const char *text, int start, int length)
         event.edit.start = start;
         event.edit.length = length;
 
-        size_t len = SDL_strlen(text);
-        if (len < sizeof(event.edit.short_text)) {
-            SDL_memcpy(event.edit.short_text, text, len + 1);
-            event.edit.text = event.edit.short_text;
-        } else {
-            event.edit.text = SDL_strdup(text);
+        size_t size = SDL_strlen(text) + 1;
+        event.edit.text = (char *)SDL_AllocateEventMemory(size);
+        if (!event.edit.text) {
+            return 0;
         }
+        SDL_memcpy(event.edit.text, text, size);
 
         posted = (SDL_PushEvent(&event) > 0);
     }

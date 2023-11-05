@@ -298,7 +298,7 @@ The timestamp_us member of the sensor events has been renamed sensor_timestamp a
 
 You should set the event.common.timestamp field before passing an event to SDL_PushEvent(). If the timestamp is 0 it will be filled in with SDL_GetTicksNS().
 
-You should call SDL_CleanupEvent() after handling SDL_EVENT_DROP_FILE, SDL_EVENT_DROP_TEXT, SDL_EVENT_SYSWM, SDL_EVENT_TEXT_EDITING, and SDL_EVENT_TEXT_INPUT. This cleans up the memory associated with those events, and you no longer have to free the data yourself.
+You should not call SDL_free() on the data in SDL_EVENT_DROP_FILE, SDL manages the memory for events internally, you no longer have to free the data yourself.
 
 Mouse events use floating point values for mouse coordinates and relative motion values. You can get sub-pixel motion depending on the platform and display scaling.
 
@@ -559,7 +559,7 @@ The following hints have been removed:
 * SDL_HINT_VIDEO_X11_FORCE_EGL - use SDL_HINT_VIDEO_FORCE_EGL instead
 * SDL_HINT_VIDEO_X11_XINERAMA - Xinerama no longer supported by the X11 backend
 * SDL_HINT_VIDEO_X11_XVIDMODE - Xvidmode no longer supported by the X11 backend
-* SDL_HINT_IME_SUPPORT_EXTENDED_TEXT - the normal text editing event has dynamically allocated text if needed, and should be freed with SDL_CleanupEvent() when processed
+* SDL_HINT_IME_SUPPORT_EXTENDED_TEXT - the normal text editing event has extended text
 
 * Renamed hints SDL_HINT_VIDEODRIVER and SDL_HINT_AUDIODRIVER to SDL_HINT_VIDEO_DRIVER and SDL_HINT_AUDIO_DRIVER
 * Renamed environment variables SDL_VIDEODRIVER and SDL_AUDIODRIVER to SDL_VIDEO_DRIVER and SDL_AUDIO_DRIVER
