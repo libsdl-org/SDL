@@ -64,7 +64,7 @@ they always have.
 
 If you have never controlled your process's entry point (you are using SDL
 as a module from a general-purpose scripting language interpreter, or you're
-SDL in a plugin for some otherwise-unrelated app), then there is nothing
+using SDL in a plugin for some otherwise-unrelated app), then there is nothing
 required of you here; there is no startup code in SDL's entry point code that
 is required, so using SDL_main.h is completely optional. Just start using
 the SDL API when you are ready.
