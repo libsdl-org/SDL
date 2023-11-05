@@ -136,7 +136,8 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
         return SDL_FALSE;
     }
 
-    if (GetRawInputDeviceList(raw_devices, &raw_device_count, sizeof(RAWINPUTDEVICELIST)) == -1) {
+    raw_device_count = GetRawInputDeviceList(raw_devices, &raw_device_count, sizeof(RAWINPUTDEVICELIST));
+    if (raw_device_count == (UINT)-1) {
         SDL_free(raw_devices);
         raw_devices = NULL;
         return SDL_FALSE; /* oh well. */
