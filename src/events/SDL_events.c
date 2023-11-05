@@ -477,7 +477,7 @@ static void SDL_CopyEvent(SDL_Event *dst, SDL_Event *src)
         dst->edit.text = dst->edit.short_text;
     } else if (src->type == SDL_EVENT_TEXT_INPUT && src->text.text == src->text.short_text) {
         dst->text.text = dst->text.short_text;
-    } else if (src->type == SDL_EVENT_DROP_TEXT && src->drop.data == src->drop.short_data) {
+    } else if ((src->type == SDL_EVENT_DROP_FILE || src->type == SDL_EVENT_DROP_TEXT) && src->drop.data == src->drop.short_data) {
         dst->drop.data = dst->drop.short_data;
     }
 }
