@@ -759,8 +759,16 @@ static EM_BOOL Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent 
         }
 
         id = touchEvent->touches[i].identifier;
-        x = touchEvent->touches[i].targetX / client_w;
-        y = touchEvent->touches[i].targetY / client_h;
+        if (client_w <= 1) {
+            x = 0.5f;
+        } else {
+            x = touchEvent->touches[i].targetX / (client_w - 1);
+        }
+        if (client_h <= 1) {
+            y = 0.5f;
+        } else {
+            y = touchEvent->touches[i].targetY / (client_h - 1);
+        }
 
         if (eventType == EMSCRIPTEN_EVENT_TOUCHSTART) {
             SDL_SendTouch(0, deviceId, id, window_data->window, SDL_TRUE, x, y, 1.0f);

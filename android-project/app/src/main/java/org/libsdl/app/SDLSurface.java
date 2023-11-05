@@ -196,6 +196,24 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         return SDLActivity.handleKeyEvent(v, keyCode, event, null);
     }
 
+    private float getNormalizedX(float x)
+    {
+        if (mWidth <= 1) {
+            return 0.5f;
+        } else {
+            return (x / (mWidth - 1));
+        }
+    }
+
+    private float getNormalizedY(float y)
+    {
+        if (mHeight <= 1) {
+            return 0.5f;
+        } else {
+            return (y / (mHeight - 1));
+        }
+    }
+
     // Touch events
     @Override
     public boolean onTouch(View v, MotionEvent event) {
@@ -242,8 +260,8 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 case MotionEvent.ACTION_MOVE:
                     for (i = 0; i < pointerCount; i++) {
                         pointerFingerId = event.getPointerId(i);
-                        x = event.getX(i) / mWidth;
-                        y = event.getY(i) / mHeight;
+                        x = getNormalizedX(event.getX(i));
+                        y = getNormalizedY(event.getY(i));
                         p = event.getPressure(i);
                         if (p > 1.0f) {
                             // may be larger than 1.0f on some devices
@@ -267,8 +285,8 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                     }
 
                     pointerFingerId = event.getPointerId(i);
-                    x = event.getX(i) / mWidth;
-                    y = event.getY(i) / mHeight;
+                    x = getNormalizedX(event.getX(i));
+                    y = getNormalizedY(event.getY(i));
                     p = event.getPressure(i);
                     if (p > 1.0f) {
                         // may be larger than 1.0f on some devices
@@ -281,8 +299,8 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 case MotionEvent.ACTION_CANCEL:
                     for (i = 0; i < pointerCount; i++) {
                         pointerFingerId = event.getPointerId(i);
-                        x = event.getX(i) / mWidth;
-                        y = event.getY(i) / mHeight;
+                        x = getNormalizedX(event.getX(i));
+                        y = getNormalizedY(event.getY(i));
                         p = event.getPressure(i);
                         if (p > 1.0f) {
                             // may be larger than 1.0f on some devices
