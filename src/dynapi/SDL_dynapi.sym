@@ -879,7 +879,6 @@ SDL3_0.0.0 {
     SDL_MixAudioFormat;
     SDL_ConvertAudioSamples;
     SDL_GetSilenceValueForFormat;
-    SDL_LoadWAV;
     SDL_PauseAudioDevice;
     SDL_ResumeAudioDevice;
     SDL_AudioDevicePaused;
