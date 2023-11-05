@@ -132,7 +132,8 @@ static void GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *
         return;
     }
 
-    if (GetRawInputDeviceList(devices, &device_count, sizeof(RAWINPUTDEVICELIST)) == -1) {
+    device_count = GetRawInputDeviceList(devices, &device_count, sizeof(RAWINPUTDEVICELIST));
+    if (device_count == (UINT)-1) {
         SDL_free(devices);
         return; /* oh well. */
     }

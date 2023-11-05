@@ -991,7 +991,8 @@ static void RAWINPUT_DetectDevices(void)
 
         devices = (PRAWINPUTDEVICELIST)SDL_malloc(sizeof(RAWINPUTDEVICELIST) * device_count);
         if (devices) {
-            if (GetRawInputDeviceList(devices, &device_count, sizeof(RAWINPUTDEVICELIST)) != -1) {
+            device_count = GetRawInputDeviceList(devices, &device_count, sizeof(RAWINPUTDEVICELIST));
+            if (device_count != (UINT)-1) {
                 for (i = 0; i < device_count; ++i) {
                     RAWINPUT_AddDevice(devices[i].hDevice);
                 }
