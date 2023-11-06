@@ -2758,6 +2758,8 @@ dnl See if we can use the new unified event interface in Linux 2.4
 CheckInputEvents()
 {
 dnl Check for Linux 2.4 unified input event interface support
+        AC_CHECK_HEADERS(linux/input.h)
+
         AC_MSG_CHECKING(for Linux 2.4 unified input interface)
         use_input_events=no
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
@@ -2769,7 +2771,6 @@ dnl Check for Linux 2.4 unified input event interface support
         ]])], [use_input_events=yes],[])
         AC_MSG_RESULT($use_input_events)
         if test x$use_input_events = xyes; then
-            AC_DEFINE(HAVE_LINUX_INPUT_H, 1, [ ])
             AC_DEFINE(SDL_INPUT_LINUXEV, 1, [ ])
             SUMMARY_input="${SUMMARY_input} linuxev"
         fi

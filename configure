@@ -26399,6 +26399,14 @@ printf "%s\n" "#define SDL_VIDEO_VULKAN 1" >>confdefs.h
 
 CheckInputEvents()
 {
+        ac_fn_c_check_header_compile "$LINENO" "linux/input.h" "ac_cv_header_linux_input_h" "$ac_includes_default"
+if test "x$ac_cv_header_linux_input_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_LINUX_INPUT_H 1" >>confdefs.h
+
+fi
+
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Linux 2.4 unified input interface" >&5
 printf %s "checking for Linux 2.4 unified input interface... " >&6; }
         use_input_events=no
@@ -26427,9 +26435,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $use_input_events" >&5
 printf "%s\n" "$use_input_events" >&6; }
         if test x$use_input_events = xyes; then
-
-printf "%s\n" "#define HAVE_LINUX_INPUT_H 1" >>confdefs.h
-
 
 printf "%s\n" "#define SDL_INPUT_LINUXEV 1" >>confdefs.h
 
