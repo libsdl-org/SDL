@@ -552,6 +552,12 @@ void SDL_XINPUT_JoystickClose(SDL_Joystick *joystick)
 
 void SDL_XINPUT_JoystickQuit(void)
 {
+    int iuserid;
+
+    for (iuserid = 0; iuserid < XUSER_MAX_COUNT; ++iuserid) {
+        DelXInputDevice(iuserid);
+    }
+
     if (s_bXInputEnabled) {
         WIN_UnloadXInputDLL();
     }
