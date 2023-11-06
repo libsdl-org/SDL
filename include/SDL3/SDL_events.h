@@ -259,6 +259,9 @@ typedef struct SDL_KeyboardEvent
 #define SDL_TEXTEDITINGEVENT_TEXT_SIZE 64
 /**
  *  \brief Keyboard text editing event structure (event.edit.*)
+ *
+ *  The `text` is owned by SDL and should be copied if the application
+ *  wants to hold onto it beyond the scope of handling this event.
  */
 typedef struct SDL_TextEditingEvent
 {
@@ -273,6 +276,9 @@ typedef struct SDL_TextEditingEvent
 #define SDL_TEXTINPUTEVENT_TEXT_SIZE 64
 /**
  *  \brief Keyboard text input event structure (event.text.*)
+ *
+ *  The `text` is owned by SDL and should be copied if the application
+ *  wants to hold onto it beyond the scope of handling this event.
  */
 typedef struct SDL_TextInputEvent
 {
@@ -508,6 +514,9 @@ typedef struct SDL_TouchFingerEvent
 #define SDL_DROPEVENT_DATA_SIZE 64
 /**
  *  \brief An event used to drop text or request a file open by the system (event.drop.*)
+ *
+ *  The `data` is owned by SDL and should be copied if the application
+ *  wants to hold onto it beyond the scope of handling this event.
  */
 typedef struct SDL_DropEvent
 {
@@ -579,6 +588,9 @@ typedef struct SDL_SysWMmsg SDL_SysWMmsg;
 /**
  *  \brief A video driver dependent system event (event.syswm.*)
  *         This event is disabled by default, you can enable it with SDL_SetEventEnabled()
+ *
+ *  The `msg` is owned by SDL and should be copied if the application
+ *  wants to hold onto it beyond the scope of handling this event.
  *
  *  \note If you want to use this event, you should include SDL_syswm.h.
  */
