@@ -970,10 +970,10 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
         {
             Uint8 data = (packet->rgucButtonsHatAndCounter[0] >> 4);
 
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_X, (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_A, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_B, (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_Y, (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
         }
         {
             Uint8 data = (packet->rgucButtonsHatAndCounter[0] & 0x0F);

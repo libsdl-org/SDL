@@ -298,10 +298,10 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
 #endif
 
         /* These buttons are part of the original MFi spec */
-        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_A);
-        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_B);
-        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_X);
-        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_Y);
+        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_SOUTH);
+        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_EAST);
+        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_WEST);
+        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_NORTH);
         device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_LEFT_SHOULDER);
         device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER);
         nbuttons += 6;
@@ -472,10 +472,10 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         }
 
         /* These buttons are part of the original MFi spec */
-        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_A);
-        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_B);
-        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_X);
-        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_Y);
+        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_SOUTH);
+        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_EAST);
+        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_WEST);
+        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_NORTH);
         device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_LEFT_SHOULDER);
         device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER);
 #if TARGET_OS_TV
@@ -495,8 +495,8 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
     else if (controller.microGamepad) {
         int nbuttons = 0;
 
-        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_A);
-        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_B); /* Button X on microGamepad */
+        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_SOUTH);
+        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_EAST); /* Button X on microGamepad */
         nbuttons += 2;
 
         device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_START);
@@ -1748,16 +1748,16 @@ const char *IOS_GetAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_Gamepad
             if ([controller respondsToSelector:@selector(physicalInputProfile)]) {
                 NSDictionary<NSString *, GCControllerElement *> *elements = controller.physicalInputProfile.elements;
                 switch (button) {
-                case SDL_GAMEPAD_BUTTON_A:
+                case SDL_GAMEPAD_BUTTON_SOUTH:
                     GetAppleSFSymbolsNameForElement(elements[GCInputButtonA], elementName);
                     break;
-                case SDL_GAMEPAD_BUTTON_B:
+                case SDL_GAMEPAD_BUTTON_EAST:
                     GetAppleSFSymbolsNameForElement(elements[GCInputButtonB], elementName);
                     break;
-                case SDL_GAMEPAD_BUTTON_X:
+                case SDL_GAMEPAD_BUTTON_WEST:
                     GetAppleSFSymbolsNameForElement(elements[GCInputButtonX], elementName);
                     break;
-                case SDL_GAMEPAD_BUTTON_Y:
+                case SDL_GAMEPAD_BUTTON_NORTH:
                     GetAppleSFSymbolsNameForElement(elements[GCInputButtonY], elementName);
                     break;
                 case SDL_GAMEPAD_BUTTON_BACK:

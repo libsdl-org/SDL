@@ -1539,10 +1539,10 @@ static const char *GamepadButtonName(const SDL_GamepadButton button)
     case SDL_GAMEPAD_BUTTON_##btn: \
         return #btn
         BUTTON_CASE(INVALID);
-        BUTTON_CASE(A);
-        BUTTON_CASE(B);
-        BUTTON_CASE(X);
-        BUTTON_CASE(Y);
+        BUTTON_CASE(SOUTH);
+        BUTTON_CASE(EAST);
+        BUTTON_CASE(WEST);
+        BUTTON_CASE(NORTH);
         BUTTON_CASE(BACK);
         BUTTON_CASE(GUIDE);
         BUTTON_CASE(START);

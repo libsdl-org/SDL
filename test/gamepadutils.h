@@ -20,14 +20,6 @@ typedef enum
     CONTROLLER_MODE_BINDING,
 } ControllerDisplayMode;
 
-typedef enum
-{
-    GAMEPAD_IMAGE_FACE_BLANK,
-    GAMEPAD_IMAGE_FACE_ABXY,
-    GAMEPAD_IMAGE_FACE_BAYX,
-    GAMEPAD_IMAGE_FACE_SONY,
-} GamepadImageFaceStyle;
-
 enum
 {
     SDL_GAMEPAD_ELEMENT_INVALID = -1,
@@ -63,8 +55,8 @@ extern GamepadImage *CreateGamepadImage(SDL_Renderer *renderer);
 extern void SetGamepadImagePosition(GamepadImage *ctx, int x, int y);
 extern void GetGamepadImageArea(GamepadImage *ctx, SDL_Rect *area);
 extern void SetGamepadImageShowingFront(GamepadImage *ctx, SDL_bool showing_front);
-extern void SetGamepadImageFaceStyle(GamepadImage *ctx, GamepadImageFaceStyle face_style);
-extern GamepadImageFaceStyle GetGamepadImageFaceStyle(GamepadImage *ctx);
+extern void SetGamepadImageType(GamepadImage *ctx, SDL_GamepadType type);
+extern SDL_GamepadType GetGamepadImageType(GamepadImage *ctx);
 extern void SetGamepadImageDisplayMode(GamepadImage *ctx, ControllerDisplayMode display_mode);
 extern int GetGamepadImageButtonWidth(GamepadImage *ctx);
 extern int GetGamepadImageButtonHeight(GamepadImage *ctx);

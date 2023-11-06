@@ -73,16 +73,16 @@ static int keycode_to_SDL(int keycode)
     switch (keycode) {
     /* Some gamepad buttons (API 9) */
     case AKEYCODE_BUTTON_A:
-        button = SDL_GAMEPAD_BUTTON_A;
+        button = SDL_GAMEPAD_BUTTON_SOUTH;
         break;
     case AKEYCODE_BUTTON_B:
-        button = SDL_GAMEPAD_BUTTON_B;
+        button = SDL_GAMEPAD_BUTTON_EAST;
         break;
     case AKEYCODE_BUTTON_X:
-        button = SDL_GAMEPAD_BUTTON_X;
+        button = SDL_GAMEPAD_BUTTON_WEST;
         break;
     case AKEYCODE_BUTTON_Y:
-        button = SDL_GAMEPAD_BUTTON_Y;
+        button = SDL_GAMEPAD_BUTTON_NORTH;
         break;
     case AKEYCODE_BUTTON_L1:
         button = SDL_GAMEPAD_BUTTON_LEFT_SHOULDER;
@@ -136,7 +136,7 @@ static int keycode_to_SDL(int keycode)
     case AKEYCODE_DPAD_CENTER:
         /* This is handled better by applications as the A button */
         /*button = 19;*/
-        button = SDL_GAMEPAD_BUTTON_A;
+        button = SDL_GAMEPAD_BUTTON_SOUTH;
         break;
 
     /* More gamepad buttons (API 12), these get mapped to 20...35*/
@@ -174,9 +174,9 @@ static int keycode_to_SDL(int keycode)
 static SDL_Scancode button_to_scancode(int button)
 {
     switch (button) {
-    case SDL_GAMEPAD_BUTTON_A:
+    case SDL_GAMEPAD_BUTTON_SOUTH:
         return SDL_SCANCODE_RETURN;
-    case SDL_GAMEPAD_BUTTON_B:
+    case SDL_GAMEPAD_BUTTON_EAST:
         return SDL_SCANCODE_ESCAPE;
     case SDL_GAMEPAD_BUTTON_BACK:
         return SDL_SCANCODE_ESCAPE;

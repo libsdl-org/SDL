@@ -45,6 +45,8 @@
 #define SDL_GAMEPAD_CRC_FIELD_SIZE      4 /* hard-coded for speed */
 #define SDL_GAMEPAD_TYPE_FIELD          "type:"
 #define SDL_GAMEPAD_TYPE_FIELD_SIZE     SDL_strlen(SDL_GAMEPAD_TYPE_FIELD)
+#define SDL_GAMEPAD_FACE_FIELD          "face:"
+#define SDL_GAMEPAD_FACE_FIELD_SIZE     5 /* hard-coded for speed */
 #define SDL_GAMEPAD_PLATFORM_FIELD      "platform:"
 #define SDL_GAMEPAD_PLATFORM_FIELD_SIZE SDL_strlen(SDL_GAMEPAD_PLATFORM_FIELD)
 #define SDL_GAMEPAD_HINT_FIELD          "hint:"
@@ -56,6 +58,15 @@
 
 static SDL_bool SDL_gamepads_initialized;
 static SDL_Gamepad *SDL_gamepads SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
+
+/* The face button style of a gamepad */
+typedef enum
+{
+    SDL_GAMEPAD_FACE_STYLE_UNKNOWN,
+    SDL_GAMEPAD_FACE_STYLE_ABXY,
+    SDL_GAMEPAD_FACE_STYLE_BAYX,
+    SDL_GAMEPAD_FACE_STYLE_SONY,
+} SDL_GamepadFaceStyle;
 
 /* our hard coded list of mapping support */
 typedef enum
@@ -107,6 +118,8 @@ struct SDL_Gamepad
     int ref_count _guarded;
 
     const char *name _guarded;
+    SDL_GamepadType type _guarded;
+    SDL_GamepadFaceStyle face_style _guarded;
     GamepadMapping_t *mapping _guarded;
     int num_bindings _guarded;
     SDL_GamepadBinding *bindings _guarded;
@@ -576,10 +589,10 @@ static void PopMappingChangeTracking(void)
  */
 static GamepadMapping_t *SDL_CreateMappingForAndroidGamepad(SDL_JoystickGUID guid)
 {
-    const int face_button_mask = ((1 << SDL_GAMEPAD_BUTTON_A) |
-                                  (1 << SDL_GAMEPAD_BUTTON_B) |
-                                  (1 << SDL_GAMEPAD_BUTTON_X) |
-                                  (1 << SDL_GAMEPAD_BUTTON_Y));
+    const int face_button_mask = ((1 << SDL_GAMEPAD_BUTTON_SOUTH) |
+                                  (1 << SDL_GAMEPAD_BUTTON_EAST) |
+                                  (1 << SDL_GAMEPAD_BUTTON_WEST) |
+                                  (1 << SDL_GAMEPAD_BUTTON_NORTH));
     SDL_bool existing;
     char mapping_string[1024];
     int button_mask;
@@ -598,20 +611,20 @@ static GamepadMapping_t *SDL_CreateMappingForAndroidGamepad(SDL_JoystickGUID gui
 
     SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
 
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_A)) {
+    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_SOUTH)) {
         SDL_strlcat(mapping_string, "a:b0,", sizeof(mapping_string));
     }
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_B)) {
+    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_EAST)) {
         SDL_strlcat(mapping_string, "b:b1,", sizeof(mapping_string));
     } else if (button_mask & (1 << SDL_GAMEPAD_BUTTON_BACK)) {
         /* Use the back button as "B" for easy UI navigation with TV remotes */
         SDL_strlcat(mapping_string, "b:b4,", sizeof(mapping_string));
         button_mask &= ~(1 << SDL_GAMEPAD_BUTTON_BACK);
     }
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_X)) {
+    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_WEST)) {
         SDL_strlcat(mapping_string, "x:b2,", sizeof(mapping_string));
     }
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_Y)) {
+    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_NORTH)) {
         SDL_strlcat(mapping_string, "y:b3,", sizeof(mapping_string));
     }
     if (button_mask & (1 << SDL_GAMEPAD_BUTTON_BACK)) {
@@ -1059,10 +1072,10 @@ const char *SDL_GetGamepadStringForAxis(SDL_GamepadAxis axis)
 }
 
 static const char *map_StringForGamepadButton[] = {
-    "a",
-    "b",
-    "x",
-    "y",
+    "s",
+    "e",
+    "w",
+    "n",
     "back",
     "guide",
     "start",
@@ -1086,7 +1099,7 @@ SDL_COMPILE_TIME_ASSERT(map_StringForGamepadButton, SDL_arraysize(map_StringForG
 /*
  * convert a string to its enum equivalent
  */
-SDL_GamepadButton SDL_GetGamepadButtonFromString(const char *str)
+SDL_GamepadButton SDL_PrivateGetGamepadButtonFromString(const char *str, SDL_bool baxy)
 {
     int i;
 
@@ -1099,7 +1112,45 @@ SDL_GamepadButton SDL_GetGamepadButtonFromString(const char *str)
             return (SDL_GamepadButton)i;
         }
     }
+
+    if (SDL_strcasecmp(str, "a") == 0) {
+        if (baxy) {
+            return SDL_GAMEPAD_BUTTON_EAST;
+        } else {
+            return SDL_GAMEPAD_BUTTON_SOUTH;
+        }
+    } else if (SDL_strcasecmp(str, "b") == 0) {
+        if (baxy) {
+            return SDL_GAMEPAD_BUTTON_SOUTH;
+        } else {
+            return SDL_GAMEPAD_BUTTON_EAST;
+        }
+    } else if (SDL_strcasecmp(str, "x") == 0) {
+        if (baxy) {
+            return SDL_GAMEPAD_BUTTON_NORTH;
+        } else {
+            return SDL_GAMEPAD_BUTTON_WEST;
+        }
+    } else if (SDL_strcasecmp(str, "y") == 0) {
+        if (baxy) {
+            return SDL_GAMEPAD_BUTTON_WEST;
+        } else {
+            return SDL_GAMEPAD_BUTTON_NORTH;
+        }
+    } else if (SDL_strcasecmp(str, "cross") == 0) {
+        return SDL_GAMEPAD_BUTTON_SOUTH;
+    } else if (SDL_strcasecmp(str, "circle") == 0) {
+        return SDL_GAMEPAD_BUTTON_EAST;
+    } else if (SDL_strcasecmp(str, "square") == 0) {
+        return SDL_GAMEPAD_BUTTON_WEST;
+    } else if (SDL_strcasecmp(str, "triangle") == 0) {
+        return SDL_GAMEPAD_BUTTON_NORTH;
+    }
     return SDL_GAMEPAD_BUTTON_INVALID;
+}
+SDL_GamepadButton SDL_GetGamepadButtonFromString(const char *str)
+{
+    return SDL_PrivateGetGamepadButtonFromString(str, SDL_FALSE);
 }
 
 /*
@@ -1116,7 +1167,7 @@ const char *SDL_GetGamepadStringForButton(SDL_GamepadButton button)
 /*
  * given a gamepad button name and a joystick name update our mapping structure with it
  */
-static int SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szGameButton, const char *szJoystickButton)
+static SDL_bool SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szGameButton, const char *szJoystickButton)
 {
     SDL_GamepadBinding bind;
     SDL_GamepadButton button;
@@ -1124,16 +1175,24 @@ static int SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szGa
     SDL_bool invert_input = SDL_FALSE;
     char half_axis_input = 0;
     char half_axis_output = 0;
+    int i;
     SDL_GamepadBinding *new_bindings;
+    SDL_bool baxy_mapping = SDL_FALSE;
 
     SDL_AssertJoysticksLocked();
+
+    SDL_zero(bind);
 
     if (*szGameButton == '+' || *szGameButton == '-') {
         half_axis_output = *szGameButton++;
     }
 
+    if (SDL_strstr(gamepad->mapping->mapping, ",hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1") != NULL) {
+        baxy_mapping = SDL_TRUE;
+    }
+
     axis = SDL_GetGamepadAxisFromString(szGameButton);
-    button = SDL_GetGamepadButtonFromString(szGameButton);
+    button = SDL_PrivateGetGamepadButtonFromString(szGameButton, baxy_mapping);
     if (axis != SDL_GAMEPAD_AXIS_INVALID) {
         bind.outputType = SDL_GAMEPAD_BINDTYPE_AXIS;
         bind.output.axis.axis = axis;
@@ -1156,7 +1215,7 @@ static int SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szGa
         bind.outputType = SDL_GAMEPAD_BINDTYPE_BUTTON;
         bind.output.button = button;
     } else {
-        return SDL_SetError("Unexpected gamepad element %s", szGameButton);
+        return SDL_FALSE;
     }
 
     if (*szJoystickButton == '+' || *szJoystickButton == '-') {
@@ -1195,7 +1254,14 @@ static int SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szGa
         bind.input.hat.hat = hat;
         bind.input.hat.hat_mask = mask;
     } else {
-        return SDL_SetError("Unexpected joystick element: %s", szJoystickButton);
+        return SDL_FALSE;
+    }
+
+    for (i = 0; i < gamepad->num_bindings; ++i) {
+        if (SDL_memcmp(&gamepad->bindings[i], &bind, sizeof(bind)) == 0) {
+            /* We already have this binding, could be different face button names? */
+            return SDL_TRUE;
+        }
     }
 
     ++gamepad->num_bindings;
@@ -1204,11 +1270,11 @@ static int SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szGa
         SDL_free(gamepad->bindings);
         gamepad->num_bindings = 0;
         gamepad->bindings = NULL;
-        return SDL_OutOfMemory();
+        return SDL_FALSE;
     }
     gamepad->bindings = new_bindings;
     gamepad->bindings[gamepad->num_bindings - 1] = bind;
-    return 0;
+    return SDL_TRUE;
 }
 
 /*
@@ -1261,6 +1327,93 @@ static int SDL_PrivateParseGamepadConfigString(SDL_Gamepad *gamepad, const char 
     return 0;
 }
 
+static void SDL_UpdateGamepadType(SDL_Gamepad *gamepad)
+{
+    char *type_string, *comma;
+
+    SDL_AssertJoysticksLocked();
+
+    gamepad->type = SDL_GAMEPAD_TYPE_UNKNOWN;
+
+    type_string = SDL_strstr(gamepad->mapping->mapping, SDL_GAMEPAD_TYPE_FIELD);
+    if (type_string) {
+        type_string += SDL_GAMEPAD_TYPE_FIELD_SIZE;
+        comma = SDL_strchr(type_string, ',');
+        if (comma) {
+            *comma = '\0';
+            gamepad->type = SDL_GetGamepadTypeFromString(type_string);
+            *comma = ',';
+        } else {
+            gamepad->type = SDL_GetGamepadTypeFromString(type_string);
+        }
+    }
+    if (gamepad->type == SDL_GAMEPAD_TYPE_UNKNOWN) {
+        gamepad->type = SDL_GetRealGamepadInstanceType(gamepad->joystick->instance_id);
+    }
+}
+
+static SDL_GamepadFaceStyle SDL_GetGamepadFaceStyleFromString(const char *string)
+{
+    if (SDL_strcmp(string, "abxy") == 0) {
+        return SDL_GAMEPAD_FACE_STYLE_ABXY;
+    } else if (SDL_strcmp(string, "bayx") == 0) {
+        return SDL_GAMEPAD_FACE_STYLE_BAYX;
+    } else if (SDL_strcmp(string, "sony") == 0) {
+        return SDL_GAMEPAD_FACE_STYLE_SONY;
+    } else {
+        return SDL_GAMEPAD_FACE_STYLE_UNKNOWN;
+    }
+}
+
+static SDL_GamepadFaceStyle SDL_GetGamepadFaceStyleForGamepadType(SDL_GamepadType type)
+{
+    switch (type) {
+    case SDL_GAMEPAD_TYPE_PS3:
+    case SDL_GAMEPAD_TYPE_PS4:
+    case SDL_GAMEPAD_TYPE_PS5:
+        return SDL_GAMEPAD_FACE_STYLE_SONY;
+    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+        return SDL_GAMEPAD_FACE_STYLE_BAYX;
+    default:
+        return SDL_GAMEPAD_FACE_STYLE_ABXY;
+    }
+}
+
+static void SDL_UpdateGamepadFaceStyle(SDL_Gamepad *gamepad)
+{
+    char *face_string, *comma;
+
+    SDL_AssertJoysticksLocked();
+
+    gamepad->face_style = SDL_GAMEPAD_FACE_STYLE_UNKNOWN;
+
+    face_string = SDL_strstr(gamepad->mapping->mapping, SDL_GAMEPAD_FACE_FIELD);
+    if (face_string) {
+        face_string += SDL_GAMEPAD_TYPE_FIELD_SIZE;
+        comma = SDL_strchr(face_string, ',');
+        if (comma) {
+            *comma = '\0';
+            gamepad->face_style = SDL_GetGamepadFaceStyleFromString(face_string);
+            *comma = ',';
+        } else {
+            gamepad->face_style = SDL_GetGamepadFaceStyleFromString(face_string);
+        }
+    }
+
+    if (gamepad->face_style == SDL_GAMEPAD_FACE_STYLE_UNKNOWN &&
+        SDL_strstr(gamepad->mapping->mapping, "SDL_GAMECONTROLLER_USE_BUTTON_LABELS") != NULL) {
+        /* This controller uses Nintendo button style */
+        gamepad->face_style = SDL_GAMEPAD_FACE_STYLE_BAYX;
+    }
+    if (gamepad->face_style == SDL_GAMEPAD_FACE_STYLE_UNKNOWN) {
+        gamepad->face_style = SDL_GetGamepadFaceStyleForGamepadType(gamepad->type);
+    }
+}
+
+
 /*
  * Make a new button mapping struct
  */
@@ -1276,6 +1429,9 @@ static void SDL_PrivateLoadButtonMapping(SDL_Gamepad *gamepad, GamepadMapping_t 
     if (gamepad->joystick->naxes != 0 && gamepad->last_match_axis) {
         SDL_memset(gamepad->last_match_axis, 0, gamepad->joystick->naxes * sizeof(*gamepad->last_match_axis));
     }
+
+    SDL_UpdateGamepadType(gamepad);
+    SDL_UpdateGamepadFaceStyle(gamepad);
 
     SDL_PrivateParseGamepadConfigString(gamepad, pGamepadMapping->mapping);
 
@@ -2246,7 +2402,6 @@ SDL_GamepadType SDL_GetGamepadInstanceType(SDL_JoystickID instance_id)
                     *comma = ',';
                 }
             }
-
         }
     }
     SDL_UnlockJoysticks();
@@ -2659,6 +2814,100 @@ Uint8 SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 }
 
 /**
+ * Get the label of a button on a gamepad.
+ */
+SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForFaceStyle(SDL_GamepadFaceStyle face_style, SDL_GamepadButton button)
+{
+    SDL_GamepadButtonLabel label = SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN;
+
+    switch (face_style) {
+    case SDL_GAMEPAD_FACE_STYLE_ABXY:
+        switch (button) {
+        case SDL_GAMEPAD_BUTTON_SOUTH:
+            label = SDL_GAMEPAD_BUTTON_LABEL_A;
+            break;
+        case SDL_GAMEPAD_BUTTON_EAST:
+            label = SDL_GAMEPAD_BUTTON_LABEL_B;
+            break;
+        case SDL_GAMEPAD_BUTTON_WEST:
+            label = SDL_GAMEPAD_BUTTON_LABEL_X;
+            break;
+        case SDL_GAMEPAD_BUTTON_NORTH:
+            label = SDL_GAMEPAD_BUTTON_LABEL_Y;
+            break;
+        default:
+            break;
+        }
+        break;
+    case SDL_GAMEPAD_FACE_STYLE_BAYX:
+        switch (button) {
+        case SDL_GAMEPAD_BUTTON_SOUTH:
+            label = SDL_GAMEPAD_BUTTON_LABEL_B;
+            break;
+        case SDL_GAMEPAD_BUTTON_EAST:
+            label = SDL_GAMEPAD_BUTTON_LABEL_A;
+            break;
+        case SDL_GAMEPAD_BUTTON_WEST:
+            label = SDL_GAMEPAD_BUTTON_LABEL_Y;
+            break;
+        case SDL_GAMEPAD_BUTTON_NORTH:
+            label = SDL_GAMEPAD_BUTTON_LABEL_X;
+            break;
+        default:
+            break;
+        }
+        break;
+    case SDL_GAMEPAD_FACE_STYLE_SONY:
+        switch (button) {
+        case SDL_GAMEPAD_BUTTON_SOUTH:
+            label = SDL_GAMEPAD_BUTTON_LABEL_CROSS;
+            break;
+        case SDL_GAMEPAD_BUTTON_EAST:
+            label = SDL_GAMEPAD_BUTTON_LABEL_CIRCLE;
+            break;
+        case SDL_GAMEPAD_BUTTON_WEST:
+            label = SDL_GAMEPAD_BUTTON_LABEL_SQUARE;
+            break;
+        case SDL_GAMEPAD_BUTTON_NORTH:
+            label = SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE;
+            break;
+        default:
+            break;
+        }
+        break;
+    default:
+        break;
+    }
+    return label;
+}
+
+/**
+ * Get the label of a button on a gamepad.
+ */
+SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForType(SDL_GamepadType type, SDL_GamepadButton button)
+{
+    return SDL_GetGamepadButtonLabelForFaceStyle(SDL_GetGamepadFaceStyleForGamepadType(type), button);
+}
+
+/**
+ * Get the label of a button on a gamepad.
+ */
+SDL_GamepadButtonLabel SDL_GetGamepadButtonLabel(SDL_Gamepad *gamepad, SDL_GamepadButton button)
+{
+    SDL_GamepadFaceStyle face_style;
+
+    SDL_LockJoysticks();
+    {
+        CHECK_GAMEPAD_MAGIC(gamepad, SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN);
+
+        face_style = gamepad->face_style;
+    }
+    SDL_UnlockJoysticks();
+
+    return SDL_GetGamepadButtonLabelForFaceStyle(face_style, button);
+}
+
+/**
  *  Get the number of touchpads on a gamepad.
  */
 int SDL_GetNumGamepadTouchpads(SDL_Gamepad *gamepad)
@@ -2979,17 +3228,17 @@ const char *SDL_GetGamepadPath(SDL_Gamepad *gamepad)
 
 SDL_GamepadType SDL_GetGamepadType(SDL_Gamepad *gamepad)
 {
-    SDL_JoystickID instance_id = 0;
+    SDL_GamepadType type;
 
     SDL_LockJoysticks();
     {
         CHECK_GAMEPAD_MAGIC(gamepad, SDL_GAMEPAD_TYPE_UNKNOWN);
 
-        instance_id = gamepad->joystick->instance_id;
+        type = gamepad->type;
     }
     SDL_UnlockJoysticks();
 
-    return SDL_GetGamepadInstanceType(instance_id);
+    return type;
 }
 
 SDL_GamepadType SDL_GetRealGamepadType(SDL_Gamepad *gamepad)

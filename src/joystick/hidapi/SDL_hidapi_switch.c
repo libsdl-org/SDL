@@ -931,38 +931,21 @@ static Sint16 ApplySimpleStickCalibration(SDL_DriverSwitch_Context *ctx, int nSt
                                    SDL_MIN_SINT16, SDL_MAX_SINT16);
 }
 
-static void SDLCALL SDL_GameControllerButtonReportingHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)userdata;
-    ctx->m_bUseButtonLabels = SDL_GetStringBoolean(hint, SDL_TRUE);
-}
-
 static Uint8 RemapButton(SDL_DriverSwitch_Context *ctx, Uint8 button)
 {
-    if (!ctx->m_bUseButtonLabels) {
-        /* Use button positions */
-        if (ctx->m_bIsGameCube) {
-            switch (button) {
-            case SDL_GAMEPAD_BUTTON_B:
-                return SDL_GAMEPAD_BUTTON_X;
-            case SDL_GAMEPAD_BUTTON_X:
-                return SDL_GAMEPAD_BUTTON_B;
-            default:
-                break;
-            }
-        } else {
-            switch (button) {
-            case SDL_GAMEPAD_BUTTON_A:
-                return SDL_GAMEPAD_BUTTON_B;
-            case SDL_GAMEPAD_BUTTON_B:
-                return SDL_GAMEPAD_BUTTON_A;
-            case SDL_GAMEPAD_BUTTON_X:
-                return SDL_GAMEPAD_BUTTON_Y;
-            case SDL_GAMEPAD_BUTTON_Y:
-                return SDL_GAMEPAD_BUTTON_X;
-            default:
-                break;
-            }
+    if (ctx->m_bUseButtonLabels) {
+        /* Use button labels instead of positions, e.g. Nintendo Online Classic controllers */
+        switch (button) {
+        case SDL_GAMEPAD_BUTTON_SOUTH:
+            return SDL_GAMEPAD_BUTTON_EAST;
+        case SDL_GAMEPAD_BUTTON_EAST:
+            return SDL_GAMEPAD_BUTTON_SOUTH;
+        case SDL_GAMEPAD_BUTTON_WEST:
+            return SDL_GAMEPAD_BUTTON_NORTH;
+        case SDL_GAMEPAD_BUTTON_NORTH:
+            return SDL_GAMEPAD_BUTTON_WEST;
+        default:
+            break;
         }
     }
     return button;
@@ -1067,6 +1050,7 @@ static SDL_bool AlwaysUsesLabels(int vendor_id, int product_id, ESwitchDeviceInf
 
 static SDL_bool IsGameCubeFormFactor(int vendor_id, int product_id)
 {
+#if 0
     static Uint32 gamecube_formfactor[] = {
         MAKE_VIDPID(0x0e6f, 0x0185), /* PDP Wired Fight Pad Pro for Nintendo Switch */
         MAKE_VIDPID(0x20d6, 0xa711), /* Core (Plus) Wired Controller */
@@ -1079,6 +1063,7 @@ static SDL_bool IsGameCubeFormFactor(int vendor_id, int product_id)
             return SDL_TRUE;
         }
     }
+#endif
     return SDL_FALSE;
 }
 
@@ -1416,9 +1401,6 @@ static SDL_bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
 
     if (AlwaysUsesLabels(device->vendor_id, device->product_id, ctx->m_eControllerType)) {
         ctx->m_bUseButtonLabels = SDL_TRUE;
-    } else {
-        SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
-                            SDL_GameControllerButtonReportingHintChanged, ctx);
     }
 
     /* Initialize player index (needed for setting LEDs) */
@@ -1647,10 +1629,10 @@ static void HandleInputOnlyControllerState(SDL_Joystick *joystick, SDL_DriverSwi
 
     if (packet->rgucButtons[0] != ctx->m_lastInputOnlyState.rgucButtons[0]) {
         Uint8 data = packet->rgucButtons[0];
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_A), (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_B), (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_X), (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_Y), (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_SOUTH), (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_EAST), (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_WEST), (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_NORTH), (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, (data & 0x10) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, (data & 0x20) ? SDL_PRESSED : SDL_RELEASED);
 
@@ -1745,10 +1727,10 @@ static void HandleSimpleControllerState(SDL_Joystick *joystick, SDL_DriverSwitch
 
     if (packet->rgucButtons[0] != ctx->m_lastSimpleState.rgucButtons[0]) {
         Uint8 data = packet->rgucButtons[0];
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_A), (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_B), (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_X), (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_Y), (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_SOUTH), (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_EAST), (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_WEST), (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_NORTH), (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, (data & 0x10) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, (data & 0x20) ? SDL_PRESSED : SDL_RELEASED);
 
@@ -1917,10 +1899,10 @@ static void HandleMiniControllerStateL(Uint64 timestamp, SDL_Joystick *joystick,
 
     if (packet->controllerState.rgucButtons[2] != ctx->m_lastFullState.controllerState.rgucButtons[2]) {
         Uint8 data = packet->controllerState.rgucButtons[2];
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_A), (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_Y), (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_X), (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_B), (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_SOUTH), (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_EAST), (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_WEST), (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_NORTH), (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, (data & 0x10) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, (data & 0x20) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_PADDLE1, (data & 0x40) ? SDL_PRESSED : SDL_RELEASED);
@@ -1942,10 +1924,10 @@ static void HandleCombinedControllerStateR(Uint64 timestamp, SDL_Joystick *joyst
 
     if (packet->controllerState.rgucButtons[0] != ctx->m_lastFullState.controllerState.rgucButtons[0]) {
         Uint8 data = packet->controllerState.rgucButtons[0];
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_A), (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_B), (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_X), (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_Y), (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_SOUTH), (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_EAST), (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_WEST), (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_NORTH), (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1, (data & 0x10) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2, (data & 0x20) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, (data & 0x40) ? SDL_PRESSED : SDL_RELEASED);
@@ -1975,10 +1957,10 @@ static void HandleMiniControllerStateR(Uint64 timestamp, SDL_Joystick *joystick,
 
     if (packet->controllerState.rgucButtons[0] != ctx->m_lastFullState.controllerState.rgucButtons[0]) {
         Uint8 data = packet->controllerState.rgucButtons[0];
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_B), (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_Y), (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_A), (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_X), (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_SOUTH), (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_EAST), (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_WEST), (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_NORTH), (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, (data & 0x10) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, (data & 0x20) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1, (data & 0x40) ? SDL_PRESSED : SDL_RELEASED);
@@ -2022,10 +2004,10 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
 
         if (packet->controllerState.rgucButtons[0] != ctx->m_lastFullState.controllerState.rgucButtons[0]) {
             Uint8 data = packet->controllerState.rgucButtons[0];
-            SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_A), (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_B), (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_X), (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_Y), (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_SOUTH), (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_EAST), (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_WEST), (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_SendJoystickButton(timestamp, joystick, RemapButton(ctx, SDL_GAMEPAD_BUTTON_NORTH), (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
             SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, (data & 0x40) ? SDL_PRESSED : SDL_RELEASED);
             axis = (data & 0x80) ? 32767 : -32768;
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
@@ -2278,9 +2260,6 @@ static void HIDAPI_DriverSwitch_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joy
         /* Restore simple input mode for other applications */
         SetInputMode(ctx, k_eSwitchInputReportIDs_SimpleControllerState);
     }
-
-    SDL_DelHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
-                        SDL_GameControllerButtonReportingHintChanged, ctx);
 
     if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft ||
         ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
