@@ -30,7 +30,7 @@
 #define FORMAT_HAS_NO_ALPHA(format) format < 0
 static int detect_format(SDL_PixelFormat *pf)
 {
-    if (pf->format == SDL_PIXELFORMAT_ARGB2101010) {
+    if (SDL_ISPIXELFORMAT_10BIT(pf->format)) {
         return FORMAT_2101010;
     } else if (pf->Amask) {
         return FORMAT_ALPHA;
@@ -88,9 +88,27 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
                 DISEMBLE_RGB(src, srcbpp, src_fmt, srcpixel, srcR, srcG, srcB);
                 srcA = 0xFF;
             } else {
-                /* SDL_PIXELFORMAT_ARGB2101010 */
+                /* 10-bit pixel format */
                 srcpixel = *((Uint32 *)(src));
-                RGBA_FROM_ARGB2101010(srcpixel, srcR, srcG, srcB, srcA);
+                switch (src_fmt->format) {
+                case SDL_PIXELFORMAT_XRGB2101010:
+                    RGBA_FROM_ARGB2101010(srcpixel, srcR, srcG, srcB, srcA);
+                    srcA = 0xFF;
+                    break;
+                case SDL_PIXELFORMAT_XBGR2101010:
+                    RGBA_FROM_ABGR2101010(srcpixel, srcR, srcG, srcB, srcA);
+                    srcA = 0xFF;
+                    break;
+                case SDL_PIXELFORMAT_ARGB2101010:
+                    RGBA_FROM_ARGB2101010(srcpixel, srcR, srcG, srcB, srcA);
+                    break;
+                case SDL_PIXELFORMAT_ABGR2101010:
+                    RGBA_FROM_ABGR2101010(srcpixel, srcR, srcG, srcB, srcA);
+                    break;
+                default:
+                    srcR = srcG = srcB = srcA = 0;
+                    break;
+                }
             }
 
             if (flags & SDL_COPY_COLORKEY) {
@@ -189,9 +207,25 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
             } else if (FORMAT_HAS_NO_ALPHA(dstfmt_val)) {
                 ASSEMBLE_RGB(dst, dstbpp, dst_fmt, dstR, dstG, dstB);
             } else {
-                /* SDL_PIXELFORMAT_ARGB2101010 */
+                /* 10-bit pixel format */
                 Uint32 pixel;
-                ARGB2101010_FROM_RGBA(pixel, dstR, dstG, dstB, dstA);
+                switch (dst_fmt->format) {
+                case SDL_PIXELFORMAT_XRGB2101010:
+                    dstA = 0xFF;
+                    SDL_FALLTHROUGH;
+                case SDL_PIXELFORMAT_ARGB2101010:
+                    ARGB2101010_FROM_RGBA(pixel, dstR, dstG, dstB, dstA);
+                    break;
+                case SDL_PIXELFORMAT_XBGR2101010:
+                    dstA = 0xFF;
+                    SDL_FALLTHROUGH;
+                case SDL_PIXELFORMAT_ABGR2101010:
+                    ABGR2101010_FROM_RGBA(pixel, dstR, dstG, dstB, dstA);
+                    break;
+                default:
+                    pixel = 0;
+                    break;
+                }
                 *(Uint32 *)dst = pixel;
             }
             posx += incx;

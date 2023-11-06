@@ -117,7 +117,10 @@ const char *SDL_GetPixelFormatName(Uint32 format)
         CASE(SDL_PIXELFORMAT_RGBA8888)
         CASE(SDL_PIXELFORMAT_ABGR8888)
         CASE(SDL_PIXELFORMAT_BGRA8888)
+        CASE(SDL_PIXELFORMAT_XRGB2101010)
+        CASE(SDL_PIXELFORMAT_XBGR2101010)
         CASE(SDL_PIXELFORMAT_ARGB2101010)
+        CASE(SDL_PIXELFORMAT_ABGR2101010)
         CASE(SDL_PIXELFORMAT_YV12)
         CASE(SDL_PIXELFORMAT_IYUV)
         CASE(SDL_PIXELFORMAT_YUY2)
@@ -440,6 +443,20 @@ Uint32 SDL_GetPixelFormatEnumForMasks(int bpp, Uint32 Rmask, Uint32 Gmask, Uint3
 #endif
         }
         break;
+    case 30:
+        if (Rmask == 0x3FF00000 &&
+            Gmask == 0x000FFC00 &&
+            Bmask == 0x000003FF &&
+            Amask == 0x00000000) {
+            return SDL_PIXELFORMAT_XRGB2101010;
+        }
+        if (Rmask == 0x000003FF &&
+            Gmask == 0x000FFC00 &&
+            Bmask == 0x3FF00000 &&
+            Amask == 0x00000000) {
+            return SDL_PIXELFORMAT_XBGR2101010;
+        }
+        break;
     case 32:
         if (Rmask == 0) {
             return SDL_PIXELFORMAT_XRGB8888;
@@ -495,9 +512,28 @@ Uint32 SDL_GetPixelFormatEnumForMasks(int bpp, Uint32 Rmask, Uint32 Gmask, Uint3
         if (Rmask == 0x3FF00000 &&
             Gmask == 0x000FFC00 &&
             Bmask == 0x000003FF &&
+            Amask == 0x00000000) {
+            return SDL_PIXELFORMAT_XRGB2101010;
+        }
+        if (Rmask == 0x000003FF &&
+            Gmask == 0x000FFC00 &&
+            Bmask == 0x3FF00000 &&
+            Amask == 0x00000000) {
+            return SDL_PIXELFORMAT_XBGR2101010;
+        }
+        if (Rmask == 0x3FF00000 &&
+            Gmask == 0x000FFC00 &&
+            Bmask == 0x000003FF &&
             Amask == 0xC0000000) {
             return SDL_PIXELFORMAT_ARGB2101010;
         }
+        if (Rmask == 0x000003FF &&
+            Gmask == 0x000FFC00 &&
+            Bmask == 0x3FF00000 &&
+            Amask == 0xC0000000) {
+            return SDL_PIXELFORMAT_ABGR2101010;
+        }
+        break;
     }
     return SDL_PIXELFORMAT_UNKNOWN;
 }
