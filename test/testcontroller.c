@@ -102,10 +102,10 @@ static SDL_GamepadButton virtual_button_active = SDL_GAMEPAD_BUTTON_INVALID;
 
 static int s_arrBindingOrder[] = {
     /* Standard sequence */
-    SDL_GAMEPAD_BUTTON_A,
-    SDL_GAMEPAD_BUTTON_B,
-    SDL_GAMEPAD_BUTTON_X,
-    SDL_GAMEPAD_BUTTON_Y,
+    SDL_GAMEPAD_BUTTON_SOUTH,
+    SDL_GAMEPAD_BUTTON_EAST,
+    SDL_GAMEPAD_BUTTON_WEST,
+    SDL_GAMEPAD_BUTTON_NORTH,
     SDL_GAMEPAD_BUTTON_DPAD_LEFT,
     SDL_GAMEPAD_BUTTON_DPAD_RIGHT,
     SDL_GAMEPAD_BUTTON_DPAD_UP,
@@ -336,7 +336,7 @@ static void SetCurrentBindingElement(int element, SDL_bool flow)
         last_binding_element = binding_element;
     }
     binding_element = element;
-    binding_flow = flow || (element == SDL_GAMEPAD_BUTTON_A);
+    binding_flow = flow || (element == SDL_GAMEPAD_BUTTON_SOUTH);
     binding_advance_time = 0;
 
     for (i = 0; i < controller->num_axes; ++i) {
@@ -498,8 +498,10 @@ static void CommitBindingElement(const char *binding, SDL_bool force)
     if (!ignore_binding && binding_flow && !force) {
         int existing = GetElementForBinding(mapping, binding);
         if (existing != SDL_GAMEPAD_ELEMENT_INVALID) {
-            if (existing == SDL_GAMEPAD_BUTTON_A) {
-                if (binding_element == SDL_GAMEPAD_BUTTON_A) {
+            SDL_GamepadButton action_forward = SDL_GAMEPAD_BUTTON_SOUTH;
+            SDL_GamepadButton action_backward = SDL_GAMEPAD_BUTTON_EAST;
+            if (existing == action_forward) {
+                if (binding_element == action_forward) {
                     /* Just move on to the next one */
                     ignore_binding = SDL_TRUE;
                     SetNextBindingElement();
@@ -509,9 +511,9 @@ static void CommitBindingElement(const char *binding, SDL_bool force)
                     direction = 1;
                     force = SDL_TRUE;
                 }
-            } else if (existing == SDL_GAMEPAD_BUTTON_B) {
-                if (binding_element != SDL_GAMEPAD_BUTTON_A &&
-                    last_binding_element != SDL_GAMEPAD_BUTTON_A) {
+            } else if (existing == action_backward) {
+                if (binding_element != action_forward &&
+                    last_binding_element != action_forward) {
                     /* Clear the current binding and move to the previous one */
                     binding = NULL;
                     direction = -1;
@@ -521,8 +523,8 @@ static void CommitBindingElement(const char *binding, SDL_bool force)
                 /* We're rebinding the same thing, just move to the next one */
                 ignore_binding = SDL_TRUE;
                 SetNextBindingElement();
-            } else if (binding_element != SDL_GAMEPAD_BUTTON_A &&
-                       binding_element != SDL_GAMEPAD_BUTTON_B) {
+            } else if (binding_element != action_forward &&
+                       binding_element != action_backward) {
                 ignore_binding = SDL_TRUE;
             }
         }
@@ -572,7 +574,7 @@ static void SetDisplayMode(ControllerDisplayMode mode)
         if (MappingHasBindings(backup_mapping)) {
             SetCurrentBindingElement(SDL_GAMEPAD_ELEMENT_INVALID, SDL_FALSE);
         } else {
-            SetCurrentBindingElement(SDL_GAMEPAD_BUTTON_A, SDL_TRUE);
+            SetCurrentBindingElement(SDL_GAMEPAD_BUTTON_SOUTH, SDL_TRUE);
         }
     } else {
         if (backup_mapping) {
@@ -701,30 +703,31 @@ static const char *GetBindingInstruction(void)
     switch (binding_element) {
     case SDL_GAMEPAD_ELEMENT_INVALID:
         return "Select an element to bind from the list on the left";
-    case SDL_GAMEPAD_BUTTON_A:
-        if (GetGamepadImageFaceStyle(image) == GAMEPAD_IMAGE_FACE_SONY) {
-            return "Press the Cross (X) button";
-        } else {
+    case SDL_GAMEPAD_BUTTON_SOUTH:
+    case SDL_GAMEPAD_BUTTON_EAST:
+    case SDL_GAMEPAD_BUTTON_WEST:
+    case SDL_GAMEPAD_BUTTON_NORTH:
+        switch (SDL_GetGamepadButtonLabelForType(GetGamepadImageType(image), (SDL_GamepadButton)binding_element)) {
+        case SDL_GAMEPAD_BUTTON_LABEL_A:
             return "Press the A button";
-        }
-    case SDL_GAMEPAD_BUTTON_B:
-        if (GetGamepadImageFaceStyle(image) == GAMEPAD_IMAGE_FACE_SONY) {
-            return "Press the Circle button";
-        } else {
+        case SDL_GAMEPAD_BUTTON_LABEL_B:
             return "Press the B button";
-        }
-    case SDL_GAMEPAD_BUTTON_X:
-        if (GetGamepadImageFaceStyle(image) == GAMEPAD_IMAGE_FACE_SONY) {
-            return "Press the Square button";
-        } else {
+        case SDL_GAMEPAD_BUTTON_LABEL_X:
             return "Press the X button";
-        }
-    case SDL_GAMEPAD_BUTTON_Y:
-        if (GetGamepadImageFaceStyle(image) == GAMEPAD_IMAGE_FACE_SONY) {
-            return "Press the Triangle button";
-        } else {
+        case SDL_GAMEPAD_BUTTON_LABEL_Y:
             return "Press the Y button";
+        case SDL_GAMEPAD_BUTTON_LABEL_CROSS:
+            return "Press the Cross (X) button";
+        case SDL_GAMEPAD_BUTTON_LABEL_CIRCLE:
+            return "Press the Circle button";
+        case SDL_GAMEPAD_BUTTON_LABEL_SQUARE:
+            return "Press the Square button";
+        case SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE:
+            return "Press the Triangle button";
+        default:
+            return "";
         }
+        break;
     case SDL_GAMEPAD_BUTTON_BACK:
         return "Press the left center button (Back/View/Share)";
     case SDL_GAMEPAD_BUTTON_GUIDE:
@@ -1298,6 +1301,30 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
     }
 }
 
+static const char *GetButtonLabel(SDL_GamepadType type, SDL_GamepadButton button)
+{
+    switch (SDL_GetGamepadButtonLabelForType(type, button)) {
+    case SDL_GAMEPAD_BUTTON_LABEL_A:
+        return "A";
+    case SDL_GAMEPAD_BUTTON_LABEL_B:
+        return "B";
+    case SDL_GAMEPAD_BUTTON_LABEL_X:
+        return "X";
+    case SDL_GAMEPAD_BUTTON_LABEL_Y:
+        return "Y";
+    case SDL_GAMEPAD_BUTTON_LABEL_CROSS:
+        return "Cross (X)";
+    case SDL_GAMEPAD_BUTTON_LABEL_CIRCLE:
+        return "Circle";
+    case SDL_GAMEPAD_BUTTON_LABEL_SQUARE:
+        return "Square";
+    case SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE:
+        return "Triangle";
+    default:
+        return "UNKNOWN";
+    }
+}
+
 static void DrawBindingTips(SDL_Renderer *renderer)
 {
     const char *text;
@@ -1317,7 +1344,6 @@ static void DrawBindingTips(SDL_Renderer *renderer)
     } else {
         Uint8 r, g, b, a;
         SDL_FRect rect;
-        SDL_bool bound_A, bound_B;
 
         y -= (FONT_CHARACTER_SIZE + BUTTON_MARGIN) / 2;
 
@@ -1339,10 +1365,15 @@ static void DrawBindingTips(SDL_Renderer *renderer)
         } else if (binding_element == SDL_GAMEPAD_ELEMENT_TYPE) {
             text = "(press ESC to cancel)";
         } else {
-            bound_A = MappingHasElement(controller->mapping, SDL_GAMEPAD_BUTTON_A);
-            bound_B = MappingHasElement(controller->mapping, SDL_GAMEPAD_BUTTON_B);
-            if (binding_flow && bound_A && bound_B) {
-                text = "(press A to skip, B to go back, and ESC to cancel)";
+            SDL_GamepadType type = GetGamepadImageType(image);
+            SDL_GamepadButton action_forward = SDL_GAMEPAD_BUTTON_SOUTH;
+            SDL_bool bound_forward = MappingHasElement(controller->mapping, action_forward);
+            SDL_GamepadButton action_backward = SDL_GAMEPAD_BUTTON_EAST;
+            SDL_bool bound_backward = MappingHasElement(controller->mapping, action_backward);
+            if (binding_flow && bound_forward && bound_backward) {
+                static char dynamic_text[128];
+                SDL_snprintf(dynamic_text, sizeof(dynamic_text), "(press %s to skip, %s to go back, and ESC to cancel)", GetButtonLabel(type, action_forward), GetButtonLabel(type, action_backward));
+                text = dynamic_text;
             } else {
                 text = "(press SPACE to clear binding and ESC to cancel)";
             }

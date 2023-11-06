@@ -38,10 +38,10 @@ static const struct
     int x;
     int y;
 } button_positions[] = {
-    { 413, 190 }, /* SDL_GAMEPAD_BUTTON_A */
-    { 456, 156 }, /* SDL_GAMEPAD_BUTTON_B */
-    { 372, 159 }, /* SDL_GAMEPAD_BUTTON_X */
-    { 415, 127 }, /* SDL_GAMEPAD_BUTTON_Y */
+    { 413, 190 }, /* SDL_GAMEPAD_BUTTON_SOUTH */
+    { 456, 156 }, /* SDL_GAMEPAD_BUTTON_EAST */
+    { 372, 159 }, /* SDL_GAMEPAD_BUTTON_WEST */
+    { 415, 127 }, /* SDL_GAMEPAD_BUTTON_NORTH */
     { 199, 157 }, /* SDL_GAMEPAD_BUTTON_BACK */
     { 257, 153 }, /* SDL_GAMEPAD_BUTTON_GUIDE */
     { 314, 157 }, /* SDL_GAMEPAD_BUTTON_START */
@@ -120,7 +120,7 @@ struct GamepadImage
     int y;
     SDL_bool showing_front;
     SDL_bool showing_touchpad;
-    GamepadImageFaceStyle face_style;
+    SDL_GamepadType type;
     ControllerDisplayMode display_mode;
 
     SDL_bool elements[SDL_GAMEPAD_ELEMENT_MAX];
@@ -144,29 +144,6 @@ static SDL_Texture *CreateTexture(SDL_Renderer *renderer, unsigned char *data, u
         }
     }
     return texture;
-}
-
-static SDL_GamepadButton GetRemappedButton(GamepadImageFaceStyle face_style, SDL_GamepadButton button)
-{
-    if (face_style == GAMEPAD_IMAGE_FACE_BAYX) {
-        switch (button) {
-        case SDL_GAMEPAD_BUTTON_A:
-            button = SDL_GAMEPAD_BUTTON_B;
-            break;
-        case SDL_GAMEPAD_BUTTON_B:
-            button = SDL_GAMEPAD_BUTTON_A;
-            break;
-        case SDL_GAMEPAD_BUTTON_X:
-            button = SDL_GAMEPAD_BUTTON_Y;
-            break;
-        case SDL_GAMEPAD_BUTTON_Y:
-            button = SDL_GAMEPAD_BUTTON_X;
-            break;
-        default:
-            break;
-        }
-    }
-    return button;
 }
 
 GamepadImage *CreateGamepadImage(SDL_Renderer *renderer)
@@ -241,22 +218,22 @@ void SetGamepadImageShowingFront(GamepadImage *ctx, SDL_bool showing_front)
     ctx->showing_front = showing_front;
 }
 
-void SetGamepadImageFaceStyle(GamepadImage *ctx, GamepadImageFaceStyle face_style)
+void SetGamepadImageFaceButtonType(GamepadImage *ctx, SDL_GamepadType type)
 {
     if (!ctx) {
         return;
     }
 
-    ctx->face_style = face_style;
+    ctx->type = type;
 }
 
-GamepadImageFaceStyle GetGamepadImageFaceStyle(GamepadImage *ctx)
+SDL_GamepadType GetGamepadImageType(GamepadImage *ctx)
 {
     if (!ctx) {
-        return GAMEPAD_IMAGE_FACE_BLANK;
+        return SDL_GAMEPAD_TYPE_UNKNOWN;
     }
 
-    return ctx->face_style;
+    return ctx->type;
 }
 
 void SetGamepadImageDisplayMode(GamepadImage *ctx, ControllerDisplayMode display_mode)
@@ -407,7 +384,7 @@ int GetGamepadImageElementAt(GamepadImage *ctx, float x, float y)
             rect.w = (float)ctx->button_width;
             rect.h = (float)ctx->button_height;
             if (SDL_PointInRectFloat(&point, &rect)) {
-                return GetRemappedButton(ctx->face_style, (SDL_GamepadButton)i);
+                return (SDL_GamepadButton)i;
             }
         }
     }
@@ -440,29 +417,15 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
         return;
     }
 
+    ctx->type = SDL_GetGamepadType(gamepad);
     char *mapping = SDL_GetGamepadMapping(gamepad);
-    SDL_GamepadType gamepad_type = SDL_GetGamepadType(gamepad);
-    switch (gamepad_type) {
-    case SDL_GAMEPAD_TYPE_PS3:
-    case SDL_GAMEPAD_TYPE_PS4:
-    case SDL_GAMEPAD_TYPE_PS5:
-        ctx->face_style = GAMEPAD_IMAGE_FACE_SONY;
-        break;
-    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
-    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
-    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
-    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
-        ctx->face_style = GAMEPAD_IMAGE_FACE_BAYX;
-        break;
-    default:
-        if (mapping && SDL_strstr(mapping, "SDL_GAMECONTROLLER_USE_BUTTON_LABELS")) {
-            ctx->face_style = GAMEPAD_IMAGE_FACE_BAYX;
-        } else {
-            ctx->face_style = GAMEPAD_IMAGE_FACE_ABXY;
+    if (mapping) {
+        if (SDL_strstr(mapping, "SDL_GAMECONTROLLER_USE_BUTTON_LABELS")) {
+            /* Just for display purposes */
+            ctx->type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
         }
-        break;
+        SDL_free(mapping);
     }
-    SDL_free(mapping);
 
     for (i = 0; i < SDL_GAMEPAD_BUTTON_TOUCHPAD; ++i) {
         const SDL_GamepadButton button = (SDL_GamepadButton)i;
@@ -557,7 +520,7 @@ void RenderGamepadImage(GamepadImage *ctx)
 
     for (i = 0; i < SDL_arraysize(button_positions); ++i) {
         if (ctx->elements[i]) {
-            SDL_GamepadButton button_position = GetRemappedButton(ctx->face_style, (SDL_GamepadButton)i);
+            SDL_GamepadButton button_position = (SDL_GamepadButton)i;
             SDL_bool on_front = SDL_TRUE;
 
             if (i >= SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1 && i <= SDL_GAMEPAD_BUTTON_LEFT_PADDLE2) {
@@ -579,14 +542,14 @@ void RenderGamepadImage(GamepadImage *ctx)
         dst.w = (float)ctx->face_width;
         dst.h = (float)ctx->face_height;
 
-        switch (ctx->face_style) {
-        case GAMEPAD_IMAGE_FACE_ABXY:
+        switch (SDL_GetGamepadButtonLabelForType(ctx->type, SDL_GAMEPAD_BUTTON_SOUTH)) {
+        case SDL_GAMEPAD_BUTTON_LABEL_A:
             SDL_RenderTexture(ctx->renderer, ctx->face_abxy_texture, NULL, &dst);
             break;
-        case GAMEPAD_IMAGE_FACE_BAYX:
+        case SDL_GAMEPAD_BUTTON_LABEL_B:
             SDL_RenderTexture(ctx->renderer, ctx->face_bayx_texture, NULL, &dst);
             break;
-        case GAMEPAD_IMAGE_FACE_SONY:
+        case SDL_GAMEPAD_BUTTON_LABEL_CROSS:
             SDL_RenderTexture(ctx->renderer, ctx->face_sony_texture, NULL, &dst);
             break;
         default:
@@ -665,10 +628,10 @@ void DestroyGamepadImage(GamepadImage *ctx)
 
 
 static const char *gamepad_button_names[] = {
-    "A",
-    "B",
-    "X",
-    "Y",
+    "South",
+    "East",
+    "West",
+    "North",
     "Back",
     "Guide",
     "Start",
@@ -801,9 +764,45 @@ static SDL_bool GetBindingString(const char *label, char *mapping, char *text, s
 static SDL_bool GetButtonBindingString(SDL_GamepadButton button, char *mapping, char *text, size_t size)
 {
     char label[32];
+    SDL_bool baxy_mapping = SDL_FALSE;
 
     SDL_snprintf(label, sizeof(label), ",%s:", SDL_GetGamepadStringForButton(button));
-    return GetBindingString(label, mapping, text, size);
+    if (GetBindingString(label, mapping, text, size)) {
+        return SDL_TRUE;
+    }
+
+    /* Try the legacy button names */
+    if (SDL_strstr(mapping, ",hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1") != NULL) {
+        baxy_mapping = SDL_TRUE;
+    }
+    switch (button) {
+    case SDL_GAMEPAD_BUTTON_SOUTH:
+        if (baxy_mapping) {
+            return GetBindingString(",b:", mapping, text, size);
+        } else {
+            return GetBindingString(",a:", mapping, text, size);
+        }
+    case SDL_GAMEPAD_BUTTON_EAST:
+        if (baxy_mapping) {
+            return GetBindingString(",a:", mapping, text, size);
+        } else {
+            return GetBindingString(",b:", mapping, text, size);
+        }
+    case SDL_GAMEPAD_BUTTON_WEST:
+        if (baxy_mapping) {
+            return GetBindingString(",y:", mapping, text, size);
+        } else {
+            return GetBindingString(",x:", mapping, text, size);
+        }
+    case SDL_GAMEPAD_BUTTON_NORTH:
+        if (baxy_mapping) {
+            return GetBindingString(",x:", mapping, text, size);
+        } else {
+            return GetBindingString(",y:", mapping, text, size);
+        }
+    default:
+        return SDL_FALSE;
+    }
 }
 
 static SDL_bool GetAxisBindingString(SDL_GamepadAxis axis, int direction, char *mapping, char *text, size_t size)
@@ -2224,9 +2223,11 @@ static int FindMappingKey(const MappingParts *parts, const char *key)
 {
     int i;
 
-    for (i = 0; i < parts->num_elements; ++i) {
-        if (SDL_strcmp(key, parts->keys[i]) == 0) {
-            return i;
+    if (key) {
+        for (i = 0; i < parts->num_elements; ++i) {
+            if (SDL_strcmp(key, parts->keys[i]) == 0) {
+                return i;
+            }
         }
     }
     return -1;
@@ -2241,6 +2242,79 @@ static void RemoveMappingValueAt(MappingParts *parts, int index)
         SDL_memcpy(&parts->keys[index], &parts->keys[index] + 1, (parts->num_elements - index) * sizeof(parts->keys[index]));
         SDL_memcpy(&parts->values[index], &parts->values[index] + 1, (parts->num_elements - index) * sizeof(parts->values[index]));
     }
+}
+
+static void ConvertBAXYMapping(MappingParts *parts)
+{
+    int i;
+    SDL_bool baxy_mapping = SDL_FALSE;
+
+    for (i = 0; i < parts->num_elements; ++i) {
+        const char *key = parts->keys[i];
+        const char *value = parts->values[i];
+
+        if (SDL_strcmp(key, "hint") == 0 &&
+            SDL_strcmp(value, "SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1") == 0) {
+            baxy_mapping = SDL_TRUE;
+        }
+    }
+
+    if (!baxy_mapping) {
+        return;
+    }
+
+    /* Swap buttons, invert hint */
+    for (i = 0; i < parts->num_elements; ++i) {
+        char *key = parts->keys[i];
+        char *value = parts->values[i];
+
+        if (SDL_strcmp(key, "a") == 0) {
+            parts->keys[i] = SDL_strdup("b");
+            SDL_free(key);
+        } else if (SDL_strcmp(key, "b") == 0) {
+            parts->keys[i] = SDL_strdup("a");
+            SDL_free(key);
+        } else if (SDL_strcmp(key, "x") == 0) {
+            parts->keys[i] = SDL_strdup("y");
+            SDL_free(key);
+        } else if (SDL_strcmp(key, "y") == 0) {
+            parts->keys[i] = SDL_strdup("x");
+            SDL_free(key);
+        } else if (SDL_strcmp(key, "hint") == 0 &&
+                   SDL_strcmp(value, "SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1") == 0) {
+            parts->values[i] = SDL_strdup("!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1");
+            SDL_free(value);
+        }
+    }
+}
+
+static void UseLegacyButtonNames(MappingParts *parts)
+{
+    int i;
+
+    for (i = 0; i < parts->num_elements; ++i) {
+        char *key = parts->keys[i];
+
+        if (SDL_strcmp(key, "s") == 0) {
+            parts->keys[i] = SDL_strdup("a");
+            SDL_free(key);
+        } else if (SDL_strcmp(key, "e") == 0) {
+            parts->keys[i] = SDL_strdup("b");
+            SDL_free(key);
+        } else if (SDL_strcmp(key, "w") == 0) {
+            parts->keys[i] = SDL_strdup("x");
+            SDL_free(key);
+        } else if (SDL_strcmp(key, "n") == 0) {
+            parts->keys[i] = SDL_strdup("y");
+            SDL_free(key);
+        }
+    }
+}
+
+static void UpdateLegacyElements(MappingParts *parts)
+{
+    ConvertBAXYMapping(parts);
+    UseLegacyButtonNames(parts);
 }
 
 static SDL_bool CombineMappingAxes(MappingParts *parts)
@@ -2337,6 +2411,7 @@ static char *JoinMapping(MappingParts *parts)
     const char *name;
     MappingSortEntry *sort_order;
 
+    UpdateLegacyElements(parts);
     CombineMappingAxes(parts);
 
     guid = parts->guid;
@@ -2420,6 +2495,43 @@ static char *RecreateMapping(MappingParts *parts, char *mapping)
     return mapping;
 }
 
+static const char *GetLegacyKey(const char *key, SDL_bool baxy)
+{
+    if (SDL_strcmp(key, SDL_GetGamepadStringForButton(SDL_GAMEPAD_BUTTON_SOUTH)) == 0) {
+        if (baxy) {
+            return "b";
+        } else {
+            return "a";
+        }
+    }
+
+    if (SDL_strcmp(key, SDL_GetGamepadStringForButton(SDL_GAMEPAD_BUTTON_EAST)) == 0) {
+        if (baxy) {
+            return "a";
+        } else {
+            return "b";
+        }
+    }
+
+    if (SDL_strcmp(key, SDL_GetGamepadStringForButton(SDL_GAMEPAD_BUTTON_WEST)) == 0) {
+        if (baxy) {
+            return "y";
+        } else {
+            return "x";
+        }
+    }
+
+    if (SDL_strcmp(key, SDL_GetGamepadStringForButton(SDL_GAMEPAD_BUTTON_NORTH)) == 0) {
+        if (baxy) {
+            return "y";
+        } else {
+            return "x";
+        }
+    }
+
+    return key;
+}
+
 static SDL_bool MappingHasKey(const char *mapping, const char *key)
 {
     int i;
@@ -2428,6 +2540,14 @@ static SDL_bool MappingHasKey(const char *mapping, const char *key)
 
     SplitMapping(mapping, &parts);
     i = FindMappingKey(&parts, key);
+    if (i < 0) {
+        SDL_bool baxy_mapping = SDL_FALSE;
+
+        if (SDL_strstr(mapping, ",hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1") != NULL) {
+            baxy_mapping = SDL_TRUE;
+        }
+        i = FindMappingKey(&parts, GetLegacyKey(key, baxy_mapping));
+    }
     if (i >= 0) {
         result = SDL_TRUE;
     }
@@ -2444,6 +2564,14 @@ static char *GetMappingValue(const char *mapping, const char *key)
 
     SplitMapping(mapping, &parts);
     i = FindMappingKey(&parts, key);
+    if (i < 0) {
+        SDL_bool baxy_mapping = SDL_FALSE;
+
+        if (SDL_strstr(mapping, ",hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1") != NULL) {
+            baxy_mapping = SDL_TRUE;
+        }
+        i = FindMappingKey(&parts, GetLegacyKey(key, baxy_mapping));
+    }
     if (i >= 0) {
         value = parts.values[i];
         parts.values[i] = NULL; /* So we don't free it */

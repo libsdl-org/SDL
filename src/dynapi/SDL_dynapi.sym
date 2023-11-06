@@ -939,6 +939,8 @@ SDL3_0.0.0 {
     SDL_StopVideoCapture;
     SDL_CloseVideoCapture;
     SDL_GetVideoCaptureDevices;
+    SDL_GetGamepadButtonLabelForType;
+    SDL_GetGamepadButtonLabel;
     # extra symbols go here (don't modify this line)
   local: *;
 };

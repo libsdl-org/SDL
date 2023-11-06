@@ -997,3 +997,5 @@ SDL_DYNAPI_PROC(int,SDL_ReleaseVideoCaptureFrame,(SDL_VideoCaptureDevice *a, SDL
 SDL_DYNAPI_PROC(int,SDL_StopVideoCapture,(SDL_VideoCaptureDevice *a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_CloseVideoCapture,(SDL_VideoCaptureDevice *a),(a),)
 SDL_DYNAPI_PROC(SDL_VideoCaptureDeviceID*,SDL_GetVideoCaptureDevices,(int *a),(a),return)
+SDL_DYNAPI_PROC(SDL_GamepadButtonLabel,SDL_GetGamepadButtonLabelForType,(SDL_GamepadType a, SDL_GamepadButton b),(a,b),return)
+SDL_DYNAPI_PROC(SDL_GamepadButtonLabel,SDL_GetGamepadButtonLabel,(SDL_Gamepad *a, SDL_GamepadButton b),(a,b),return)

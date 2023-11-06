@@ -81,10 +81,10 @@ typedef enum
 typedef enum
 {
     SDL_GAMEPAD_BUTTON_INVALID = -1,
-    SDL_GAMEPAD_BUTTON_A,
-    SDL_GAMEPAD_BUTTON_B,
-    SDL_GAMEPAD_BUTTON_X,
-    SDL_GAMEPAD_BUTTON_Y,
+    SDL_GAMEPAD_BUTTON_SOUTH,
+    SDL_GAMEPAD_BUTTON_EAST,
+    SDL_GAMEPAD_BUTTON_WEST,
+    SDL_GAMEPAD_BUTTON_NORTH,
     SDL_GAMEPAD_BUTTON_BACK,
     SDL_GAMEPAD_BUTTON_GUIDE,
     SDL_GAMEPAD_BUTTON_START,
@@ -104,6 +104,26 @@ typedef enum
     SDL_GAMEPAD_BUTTON_TOUCHPAD, /* PS4/PS5 touchpad button */
     SDL_GAMEPAD_BUTTON_MAX
 } SDL_GamepadButton;
+
+/**
+ *  The set of gamepad button labels
+ *
+ *  This isn't a complete set, just the face buttons to make it easy to show button prompts.
+ *
+ *  For a complete set, you should look at the button and gamepad type and have a set of symbols that work well with your art style.
+ */
+typedef enum
+{
+    SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN,
+    SDL_GAMEPAD_BUTTON_LABEL_A,         /**< The south button for Xbox controllers, the east button for Nintendo controllers */
+    SDL_GAMEPAD_BUTTON_LABEL_B,         /**< The east button for Xbox controllers, the south button for Nintendo controllers */
+    SDL_GAMEPAD_BUTTON_LABEL_X,         /**< The west button for Xbox controllers, the north button for Nintendo controllers */
+    SDL_GAMEPAD_BUTTON_LABEL_Y,         /**< The north button for Xbox controllers, the west button for Nintendo controllers */
+    SDL_GAMEPAD_BUTTON_LABEL_CROSS,     /**< The south button for Playstation controllers */
+    SDL_GAMEPAD_BUTTON_LABEL_CIRCLE,    /**< The east button for Playstation controllers */
+    SDL_GAMEPAD_BUTTON_LABEL_SQUARE,    /**< The west button for Playstation controllers */
+    SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE   /**< The north button for Playstation controllers */
+} SDL_GamepadButtonLabel;
 
 /**
  *  The list of axes available on a gamepad
@@ -989,6 +1009,32 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GamepadHasButton(SDL_Gamepad *gamepad, SDL_
  * \sa SDL_GetGamepadAxis
  */
 extern DECLSPEC Uint8 SDLCALL SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button);
+
+/**
+ * Get the label of a button on a gamepad.
+ *
+ * \param type the type of gamepad to check
+ * \param button a button index (one of the SDL_GamepadButton values)
+ * \returns the SDL_GamepadButtonLabel enum corresponding to the button label
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetGamepadButtonLabel
+ */
+extern DECLSPEC SDL_GamepadButtonLabel SDLCALL SDL_GetGamepadButtonLabelForType(SDL_GamepadType type, SDL_GamepadButton button);
+
+/**
+ * Get the label of a button on a gamepad.
+ *
+ * \param gamepad a gamepad
+ * \param button a button index (one of the SDL_GamepadButton values)
+ * \returns the SDL_GamepadButtonLabel enum corresponding to the button label
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetGamepadButtonLabelForType
+ */
+extern DECLSPEC SDL_GamepadButtonLabel SDLCALL SDL_GetGamepadButtonLabel(SDL_Gamepad *gamepad, SDL_GamepadButton button);
 
 /**
  * Get the number of touchpads on a gamepad.

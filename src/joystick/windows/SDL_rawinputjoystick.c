@@ -249,10 +249,10 @@ static void RAWINPUT_FillMatchState(WindowsMatchState *state, Uint64 match_state
         /* Bitwise map .RLDUWVQTS.KYXBA -> YXBA..WVQTKSRLDU */
         (WORD)(match_state << 12 | (match_state & 0x0780) >> 1 | (match_state & 0x0010) << 1 | (match_state & 0x0040) >> 2 | (match_state & 0x7800) >> 11);
     /*  Explicit
-        ((match_state & (1<<SDL_GAMEPAD_BUTTON_A)) ? XINPUT_GAMEPAD_A : 0) |
-        ((match_state & (1<<SDL_GAMEPAD_BUTTON_B)) ? XINPUT_GAMEPAD_B : 0) |
-        ((match_state & (1<<SDL_GAMEPAD_BUTTON_X)) ? XINPUT_GAMEPAD_X : 0) |
-        ((match_state & (1<<SDL_GAMEPAD_BUTTON_Y)) ? XINPUT_GAMEPAD_Y : 0) |
+        ((match_state & (1<<SDL_GAMEPAD_BUTTON_SOUTH)) ? XINPUT_GAMEPAD_A : 0) |
+        ((match_state & (1<<SDL_GAMEPAD_BUTTON_EAST)) ? XINPUT_GAMEPAD_B : 0) |
+        ((match_state & (1<<SDL_GAMEPAD_BUTTON_WEST)) ? XINPUT_GAMEPAD_X : 0) |
+        ((match_state & (1<<SDL_GAMEPAD_BUTTON_NORTH)) ? XINPUT_GAMEPAD_Y : 0) |
         ((match_state & (1<<SDL_GAMEPAD_BUTTON_BACK)) ? XINPUT_GAMEPAD_BACK : 0) |
         ((match_state & (1<<SDL_GAMEPAD_BUTTON_START)) ? XINPUT_GAMEPAD_START : 0) |
         ((match_state & (1<<SDL_GAMEPAD_BUTTON_LEFT_STICK)) ? XINPUT_GAMEPAD_LEFT_THUMB : 0) |
@@ -289,10 +289,10 @@ static void RAWINPUT_FillMatchState(WindowsMatchState *state, Uint64 match_state
         /*  RStick/LStick (QT)         RShould/LShould  (WV)                 DPad R/L/D/U                          YXBA                         bac(K)                      (S)tart */
         (match_state & 0x0180) << 5 | (match_state & 0x0600) << 1 | (match_state & 0x7800) >> 5 | (match_state & 0x000F) << 2 | (match_state & 0x0010) >> 3 | (match_state & 0x0040) >> 6;
     /*  Explicit
-        ((match_state & (1<<SDL_GAMEPAD_BUTTON_A)) ? GamepadButtons_A : 0) |
-        ((match_state & (1<<SDL_GAMEPAD_BUTTON_B)) ? GamepadButtons_B : 0) |
-        ((match_state & (1<<SDL_GAMEPAD_BUTTON_X)) ? GamepadButtons_X : 0) |
-        ((match_state & (1<<SDL_GAMEPAD_BUTTON_Y)) ? GamepadButtons_Y : 0) |
+        ((match_state & (1<<SDL_GAMEPAD_BUTTON_SOUTH)) ? GamepadButtons_A : 0) |
+        ((match_state & (1<<SDL_GAMEPAD_BUTTON_EAST)) ? GamepadButtons_B : 0) |
+        ((match_state & (1<<SDL_GAMEPAD_BUTTON_WEST)) ? GamepadButtons_X : 0) |
+        ((match_state & (1<<SDL_GAMEPAD_BUTTON_NORTH)) ? GamepadButtons_Y : 0) |
         ((match_state & (1<<SDL_GAMEPAD_BUTTON_BACK)) ? GamepadButtons_View : 0) |
         ((match_state & (1<<SDL_GAMEPAD_BUTTON_START)) ? GamepadButtons_Menu : 0) |
         ((match_state & (1<<SDL_GAMEPAD_BUTTON_LEFT_STICK)) ? GamepadButtons_LeftThumbstick : 0) |
@@ -1555,10 +1555,10 @@ static void RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int 
 #ifdef SDL_JOYSTICK_RAWINPUT_MATCHING
     /* Map new buttons and axes into game controller controls */
     static const int button_map[] = {
-        SDL_GAMEPAD_BUTTON_A,
-        SDL_GAMEPAD_BUTTON_B,
-        SDL_GAMEPAD_BUTTON_X,
-        SDL_GAMEPAD_BUTTON_Y,
+        SDL_GAMEPAD_BUTTON_SOUTH,
+        SDL_GAMEPAD_BUTTON_EAST,
+        SDL_GAMEPAD_BUTTON_WEST,
+        SDL_GAMEPAD_BUTTON_NORTH,
         SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,
         SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER,
         SDL_GAMEPAD_BUTTON_BACK,

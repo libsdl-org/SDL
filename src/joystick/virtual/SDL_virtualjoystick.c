@@ -589,22 +589,22 @@ static SDL_bool VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadM
         return SDL_FALSE;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_A))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_SOUTH))) {
         out->a.kind = EMappingKind_Button;
         out->a.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_B))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_EAST))) {
         out->b.kind = EMappingKind_Button;
         out->b.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_X))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_WEST))) {
         out->x.kind = EMappingKind_Button;
         out->x.target = current_button++;
     }
 
-    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_Y))) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_NORTH))) {
         out->y.kind = EMappingKind_Button;
         out->y.target = current_button++;
     }

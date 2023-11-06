@@ -1120,16 +1120,16 @@ static SDL_bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
             Uint64 timestamp = SDL_GetTicksNS();
 
             if (ctx->m_state.ulButtons != ctx->m_last_state.ulButtons) {
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_A,
+                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH,
                                           (ctx->m_state.ulButtons & STEAM_BUTTON_3_MASK) ? SDL_PRESSED : SDL_RELEASED);
 
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_B,
+                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST,
                                           (ctx->m_state.ulButtons & STEAM_BUTTON_1_MASK) ? SDL_PRESSED : SDL_RELEASED);
 
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_X,
+                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST,
                                           (ctx->m_state.ulButtons & STEAM_BUTTON_2_MASK) ? SDL_PRESSED : SDL_RELEASED);
 
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_Y,
+                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH,
                                           (ctx->m_state.ulButtons & STEAM_BUTTON_0_MASK) ? SDL_PRESSED : SDL_RELEASED);
 
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,

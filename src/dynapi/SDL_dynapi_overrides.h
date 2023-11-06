@@ -964,3 +964,5 @@
 #define SDL_StopVideoCapture SDL_StopVideoCapture_REAL
 #define SDL_CloseVideoCapture SDL_CloseVideoCapture_REAL
 #define SDL_GetVideoCaptureDevices SDL_GetVideoCaptureDevices_REAL
+#define SDL_GetGamepadButtonLabelForType SDL_GetGamepadButtonLabelForType_REAL
+#define SDL_GetGamepadButtonLabel SDL_GetGamepadButtonLabel_REAL
