@@ -330,7 +330,7 @@ if test x$enable_libc = xyes; then
 dnl Check for C library headers
 dnl AC_CHECK_INCLUDES_DEFAULT is an autoconf-2.7x thing where AC_HEADER_STDC is deprecated.
     m4_ifdef([AC_CHECK_INCLUDES_DEFAULT], [AC_CHECK_INCLUDES_DEFAULT], [AC_HEADER_STDC])
-    AC_CHECK_HEADERS(sys/types.h stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h strings.h wchar.h inttypes.h stdint.h limits.h ctype.h math.h float.h iconv.h signal.h)
+    AC_CHECK_HEADERS(sys/types.h stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h strings.h wchar.h inttypes.h stdint.h limits.h ctype.h math.h float.h iconv.h signal.h linux/input.h)
 
 dnl Check for typedefs, structures, etc.
     AC_TYPE_SIZE_T
@@ -2769,7 +2769,6 @@ dnl Check for Linux 2.4 unified input event interface support
         ]])], [use_input_events=yes],[])
         AC_MSG_RESULT($use_input_events)
         if test x$use_input_events = xyes; then
-            AC_DEFINE(HAVE_LINUX_INPUT_H, 1, [ ])
             AC_DEFINE(SDL_INPUT_LINUXEV, 1, [ ])
             SUMMARY_input="${SUMMARY_input} linuxev"
         fi
