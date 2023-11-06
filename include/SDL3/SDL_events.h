@@ -1134,8 +1134,6 @@ extern DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_FlushEventMemory
  */
 extern DECLSPEC void * SDLCALL SDL_AllocateEventMemory(size_t size);
 
