@@ -298,7 +298,7 @@ The timestamp_us member of the sensor events has been renamed sensor_timestamp a
 
 You should set the event.common.timestamp field before passing an event to SDL_PushEvent(). If the timestamp is 0 it will be filled in with SDL_GetTicksNS().
 
-You should not call SDL_free() on the data in SDL_EVENT_DROP_FILE, SDL manages the memory for events internally, you no longer have to free the data yourself.
+Event memory is now managed by SDL, so you should not free the data in SDL_EVENT_DROP_FILE, and if you want to hold onto the text in SDL_EVENT_TEXT_EDITING and SDL_EVENT_TEXT_INPUT events, you should make a copy of it.
 
 Mouse events use floating point values for mouse coordinates and relative motion values. You can get sub-pixel motion depending on the platform and display scaling.
 
