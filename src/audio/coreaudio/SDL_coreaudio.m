@@ -532,6 +532,9 @@ static void outputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBuffe
     if (!SDL_AtomicGet(&this->enabled) || SDL_AtomicGet(&this->paused)) {
         /* Supply silence if audio is not enabled or paused */
         SDL_memset(inBuffer->mAudioData, this->spec.silence, inBuffer->mAudioDataBytesCapacity);
+        if (this->stream) {
+            SDL_AudioStreamClear(this->stream);
+        }
     } else if (this->stream) {
         UInt32 remaining = inBuffer->mAudioDataBytesCapacity;
         Uint8 *ptr = (Uint8 *)inBuffer->mAudioData;
