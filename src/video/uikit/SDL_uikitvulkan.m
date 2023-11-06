@@ -184,6 +184,7 @@ char const* const* UIKit_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
 SDL_bool UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                     SDL_Window *window,
                                     VkInstance instance,
+                                    const struct VkAllocationCallbacks *allocator,
                                     VkSurfaceKHR *surface)
 {
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
@@ -222,7 +223,7 @@ SDL_bool UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         createInfo.flags = 0;
         createInfo.pLayer = (__bridge const CAMetalLayer *)
             UIKit_Metal_GetLayer(_this, metalview);
-        result = vkCreateMetalSurfaceEXT(instance, &createInfo, NULL, surface);
+        result = vkCreateMetalSurfaceEXT(instance, &createInfo, allocator, surface);
         if (result != VK_SUCCESS) {
             UIKit_Metal_DestroyView(_this, metalview);
             SDL_SetError("vkCreateMetalSurfaceEXT failed: %s",
@@ -236,7 +237,7 @@ SDL_bool UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         createInfo.flags = 0;
         createInfo.pView = (const void *)metalview;
         result = vkCreateIOSSurfaceMVK(instance, &createInfo,
-                                       NULL, surface);
+                                       allocator, surface);
         if (result != VK_SUCCESS) {
             UIKit_Metal_DestroyView(_this, metalview);
             SDL_SetError("vkCreateIOSSurfaceMVK failed: %s",
