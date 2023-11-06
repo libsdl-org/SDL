@@ -574,14 +574,16 @@ SDL_bool SDL_IBus_Init(void)
             return SDL_FALSE;
         }
 
-        /* !!! FIXME: if ibus_addr_file != NULL, this will overwrite it and leak (twice!) */
-        ibus_addr_file = SDL_strdup(addr_file);
-
         addr = IBus_ReadAddressFromFile(addr_file);
         if (addr == NULL) {
             SDL_free(addr_file);
             return SDL_FALSE;
         }
+
+        if (ibus_addr_file) {
+            SDL_free(ibus_addr_file);
+        }
+        ibus_addr_file = SDL_strdup(addr_file);
 
         if (inotify_fd < 0) {
             inotify_fd = inotify_init();
