@@ -96,7 +96,7 @@ function(SDL_detect_linker)
       set(SDL_CMAKE_C_COMPILER_LINKER_ID "${linker}" CACHE STRING "Linker identification")
       mark_as_advanced(SDL_CMAKE_C_COMPILER_LINKER_ID)
     endif()
-    set(CMAKE_C_COMPILER_LINKER_ID "${SDL_CMAKE_C_COMPILER_LINKER_ID}")
+    set(CMAKE_C_COMPILER_LINKER_ID "${SDL_CMAKE_C_COMPILER_LINKER_ID}" PARENT_SCOPE)
   endif()
 endfunction()
 
