@@ -166,13 +166,13 @@ extern DECLSPEC char const* const* SDLCALL SDL_Vulkan_GetInstanceExtensions(Uint
  * `instance` must have been created with extensions returned by
  * SDL_Vulkan_GetInstanceExtensions() enabled.
  *
- * If `allocator` is NULL, Vulkan will use the system default allocator.
- * This argument is passed directly to Vulkan and isn't used by SDL itself.
+ * If `allocator` is NULL, Vulkan will use the system default allocator. This
+ * argument is passed directly to Vulkan and isn't used by SDL itself.
  *
  * \param window The window to which to attach the Vulkan surface
  * \param instance The Vulkan instance handle
- * \param allocator A VkAllocationCallbacks struct, which lets the app
- *                  set the allocator that creates the surface. Can be NULL.
+ * \param allocator A VkAllocationCallbacks struct, which lets the app set the
+ *                  allocator that creates the surface. Can be NULL.
  * \param surface A pointer to a VkSurfaceKHR handle to output the newly
  *                created surface
  * \returns SDL_TRUE on success, SDL_FALSE on error.
