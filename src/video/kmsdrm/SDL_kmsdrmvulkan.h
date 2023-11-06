@@ -41,6 +41,7 @@ char const* const* KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
 SDL_bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                      SDL_Window *window,
                                      VkInstance instance,
+                                     const struct VkAllocationCallbacks *allocator,
                                      VkSurfaceKHR *surface);
 
 #endif

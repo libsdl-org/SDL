@@ -261,6 +261,7 @@ static void createSurface(void)
 {
     if (!SDL_Vulkan_CreateSurface(vulkanContext->window,
                                   vulkanContext->instance,
+                                  NULL,
                                   &vulkanContext->surface)) {
         vulkanContext->surface = VK_NULL_HANDLE;
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Vulkan_CreateSurface(): %s\n", SDL_GetError());

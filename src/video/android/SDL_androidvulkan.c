@@ -126,6 +126,7 @@ char const* const* Android_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
 SDL_bool Android_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                       SDL_Window *window,
                                       VkInstance instance,
+                                      const struct VkAllocationCallbacks *allocator,
                                       VkSurfaceKHR *surface)
 {
     SDL_WindowData *windowData = window->driverdata;
@@ -153,8 +154,7 @@ SDL_bool Android_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     createInfo.pNext = NULL;
     createInfo.flags = 0;
     createInfo.window = windowData->native_window;
-    result = vkCreateAndroidSurfaceKHR(instance, &createInfo,
-                                       NULL, surface);
+    result = vkCreateAndroidSurfaceKHR(instance, &createInfo, allocator, surface);
     if (result != VK_SUCCESS) {
         SDL_SetError("vkCreateAndroidSurfaceKHR failed: %s",
                      SDL_Vulkan_GetResultString(result));

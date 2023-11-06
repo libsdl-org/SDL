@@ -41,6 +41,7 @@ char const* const* UIKit_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
 SDL_bool UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                     SDL_Window *window,
                                     VkInstance instance,
+                                    const struct VkAllocationCallbacks *allocator,
                                     VkSurfaceKHR *surface);
 
 #endif

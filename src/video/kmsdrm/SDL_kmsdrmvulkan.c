@@ -163,6 +163,7 @@ char const* const* KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
 SDL_bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                      SDL_Window *window,
                                      VkInstance instance,
+                                     const struct VkAllocationCallbacks *allocator,
                                      VkSurfaceKHR *surface)
 {
     VkPhysicalDevice gpu = NULL;
@@ -476,7 +477,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     display_plane_surface_create_info.alphaMode = alpha_mode;
     result = vkCreateDisplayPlaneSurfaceKHR(instance,
                                             &display_plane_surface_create_info,
-                                            NULL,
+                                            allocator,
                                             surface);
     if (result != VK_SUCCESS) {
         SDL_SetError("vkCreateDisplayPlaneSurfaceKHR failed: %s",

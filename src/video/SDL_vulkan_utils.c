@@ -177,6 +177,7 @@ static const VkDisplayPlaneAlphaFlagBitsKHR alphaModes[4] = {
 
 SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
                                           VkInstance instance,
+                                          const struct VkAllocationCallbacks *allocator,
                                           VkSurfaceKHR *surface)
 {
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
@@ -459,7 +460,7 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
     createInfo.transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
     createInfo.globalAlpha = 1.0f;
 
-    result = vkCreateDisplayPlaneSurfaceKHR(instance, &createInfo, NULL, surface);
+    result = vkCreateDisplayPlaneSurfaceKHR(instance, &createInfo, allocator, surface);
     if (result != VK_SUCCESS) {
         SDL_SetError("vkCreateDisplayPlaneSurfaceKHR failed: %s", SDL_Vulkan_GetResultString(result));
         return SDL_FALSE;

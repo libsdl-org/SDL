@@ -69,6 +69,7 @@ extern VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
  * extension. */
 extern SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr,
                                                  VkInstance instance,
+                                                 const struct VkAllocationCallbacks *allocator,
                                                  VkSurfaceKHR *surface);
 #else
 

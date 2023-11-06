@@ -51,6 +51,7 @@ extern "C" {
 
 VK_DEFINE_HANDLE(VkInstance)
 VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkSurfaceKHR)
+struct VkAllocationCallbacks;
 
 #endif /* !NO_SDL_VULKAN_TYPEDEFS */
 
@@ -165,8 +166,13 @@ extern DECLSPEC char const* const* SDLCALL SDL_Vulkan_GetInstanceExtensions(Uint
  * `instance` must have been created with extensions returned by
  * SDL_Vulkan_GetInstanceExtensions() enabled.
  *
+ * If `allocator` is NULL, Vulkan will use the system default allocator.
+ * This argument is passed directly to Vulkan and isn't used by SDL itself.
+ *
  * \param window The window to which to attach the Vulkan surface
  * \param instance The Vulkan instance handle
+ * \param allocator A VkAllocationCallbacks struct, which lets the app
+ *                  set the allocator that creates the surface. Can be NULL.
  * \param surface A pointer to a VkSurfaceKHR handle to output the newly
  *                created surface
  * \returns SDL_TRUE on success, SDL_FALSE on error.
@@ -177,6 +183,7 @@ extern DECLSPEC char const* const* SDLCALL SDL_Vulkan_GetInstanceExtensions(Uint
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
                                                           VkInstance instance,
+                                                          const struct VkAllocationCallbacks *allocator,
                                                           VkSurfaceKHR* surface);
 
 /* @} *//* Vulkan support functions */

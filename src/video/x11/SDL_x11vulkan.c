@@ -170,6 +170,7 @@ char const* const* X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
 SDL_bool X11_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                   SDL_Window *window,
                                   VkInstance instance,
+                                  const struct VkAllocationCallbacks *allocator,
                                   VkSurfaceKHR *surface)
 {
     SDL_VideoData *videoData = _this->driverdata;
@@ -199,8 +200,7 @@ SDL_bool X11_Vulkan_CreateSurface(SDL_VideoDevice *_this,
             return SDL_FALSE;
         }
         createInfo.window = (xcb_window_t)windowData->xwindow;
-        result = vkCreateXcbSurfaceKHR(instance, &createInfo,
-                                       NULL, surface);
+        result = vkCreateXcbSurfaceKHR(instance, &createInfo, allocator, surface);
         if (result != VK_SUCCESS) {
             SDL_SetError("vkCreateXcbSurfaceKHR failed: %s", SDL_Vulkan_GetResultString(result));
             return SDL_FALSE;
@@ -221,8 +221,7 @@ SDL_bool X11_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         createInfo.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
         createInfo.dpy = videoData->display;
         createInfo.window = (xcb_window_t)windowData->xwindow;
-        result = vkCreateXlibSurfaceKHR(instance, &createInfo,
-                                        NULL, surface);
+        result = vkCreateXlibSurfaceKHR(instance, &createInfo, allocator, surface);
         if (result != VK_SUCCESS) {
             SDL_SetError("vkCreateXlibSurfaceKHR failed: %s", SDL_Vulkan_GetResultString(result));
             return SDL_FALSE;

@@ -134,6 +134,7 @@ char const* const* Wayland_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, 
 SDL_bool Wayland_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                       SDL_Window *window,
                                       VkInstance instance,
+                                      const struct VkAllocationCallbacks *allocator,
                                       VkSurfaceKHR *surface)
 {
     SDL_WindowData *windowData = window->driverdata;
@@ -162,8 +163,7 @@ SDL_bool Wayland_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     createInfo.flags = 0;
     createInfo.display = windowData->waylandData->display;
     createInfo.surface = windowData->surface;
-    result = vkCreateWaylandSurfaceKHR(instance, &createInfo,
-                                       NULL, surface);
+    result = vkCreateWaylandSurfaceKHR(instance, &createInfo, allocator, surface);
     if (result != VK_SUCCESS) {
         SDL_SetError("vkCreateWaylandSurfaceKHR failed: %s",
                      SDL_Vulkan_GetResultString(result));

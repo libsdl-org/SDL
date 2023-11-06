@@ -5147,6 +5147,7 @@ char const* const* SDL_Vulkan_GetInstanceExtensions(Uint32 *count)
 
 SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window,
                                   VkInstance instance,
+                                  const struct VkAllocationCallbacks *allocator,
                                   VkSurfaceKHR *surface)
 {
     CHECK_WINDOW_MAGIC(window, SDL_FALSE);
@@ -5166,7 +5167,7 @@ SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window,
         return SDL_FALSE;
     }
 
-    return _this->Vulkan_CreateSurface(_this, window, instance, surface);
+    return _this->Vulkan_CreateSurface(_this, window, instance, allocator, surface);
 }
 
 SDL_MetalView SDL_Metal_CreateView(SDL_Window *window)

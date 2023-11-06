@@ -41,6 +41,7 @@ char const* const* Android_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
 SDL_bool Android_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                       SDL_Window *window,
                                       VkInstance instance,
+                                      const struct VkAllocationCallbacks *allocator,
                                       VkSurfaceKHR *surface);
 
 #endif

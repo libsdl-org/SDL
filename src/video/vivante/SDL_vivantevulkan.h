@@ -40,6 +40,7 @@ char const* const* VIVANTE_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
 SDL_bool VIVANTE_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                       SDL_Window *window,
                                       VkInstance instance,
+                                      const struct VkAllocationCallbacks *allocator,
                                       VkSurfaceKHR *surface);
 
 #endif
