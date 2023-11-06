@@ -22,7 +22,7 @@
 /**
  *  \file SDL_test_random.h
  *
- *  \brief Random number generator related function of SDL test framework.
+ *  Random number generator related function of SDL test framework.
  *
  *  This code is a part of the SDL test library, not the main SDL library.
  */
@@ -68,7 +68,7 @@ extern "C" {
 /* --- Function prototypes */
 
 /**
- *  \brief Initialize random number generator with two integers.
+ *  Initialize random number generator with two integers.
  *
  *  Note: The random sequence of numbers returned by ...Random() is the
  *  same for the same two integers and has a period of 2^31.
@@ -81,7 +81,7 @@ extern "C" {
  void SDLTest_RandomInit(SDLTest_RandomContext *rndContext, unsigned int xi, unsigned int ci);
 
 /**
- *  \brief Initialize random number generator based on current system time.
+ *  Initialize random number generator based on current system time.
  *
  *  \param rndContext     pointer to context structure
  *
@@ -90,7 +90,7 @@ extern "C" {
 
 
 /**
- *  \brief Initialize random number generator based on current system time.
+ *  Initialize random number generator based on current system time.
  *
  *  Note: ...RandomInit() or ...RandomInitTime() must have been called
  *  before using this function.

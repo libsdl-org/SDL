@@ -22,7 +22,7 @@
 /**
  *  \file SDL_keyboard.h
  *
- *  \brief Include file for SDL keyboard event handling
+ *  Include file for SDL keyboard event handling
  */
 
 #ifndef SDL_keyboard_h_
@@ -40,7 +40,7 @@ extern "C" {
 #endif
 
 /**
- *  \brief The SDL keysym structure, used in key events.
+ *  The SDL keysym structure, used in key events.
  *
  *  \note  If you are looking for translated character input, see the ::SDL_EVENT_TEXT_INPUT event.
  */

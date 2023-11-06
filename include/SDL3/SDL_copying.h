@@ -22,5 +22,5 @@
 /**
  *  \file SDL_copying.h
  *
- *  \brief Header file containing SDL's license.
+ *  Header file containing SDL's license.
  */

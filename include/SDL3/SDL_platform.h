@@ -22,7 +22,7 @@
 /**
  *  \file SDL_platform.h
  *
- *  \brief Header file for platform functions.
+ *  Header file for platform functions.
  */
 
 #ifndef SDL_platform_h_

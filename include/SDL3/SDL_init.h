@@ -22,7 +22,7 @@
 /**
  *  \file SDL_init.h
  *
- *  \brief Init and quit header for the SDL library
+ *  Init and quit header for the SDL library
  */
 
 #ifndef SDL_init_h_
@@ -39,7 +39,7 @@ extern "C" {
 /* As of version 0.5, SDL is loaded dynamically into the application */
 
 /**
- *   \brief Initialization flags for SDL_Init and/or SDL_InitSubSystem
+ *   Initialization flags for SDL_Init and/or SDL_InitSubSystem
  *
  * These are the flags which may be passed to SDL_Init().  You should
  * specify the subsystems which you will be using in your application.

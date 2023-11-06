@@ -25,7 +25,7 @@
 /**
  *  \file SDL_power.h
  *
- *  \brief Header for the SDL power management routines.
+ *  Header for the SDL power management routines.
  */
 
 #include <SDL3/SDL_stdinc.h>

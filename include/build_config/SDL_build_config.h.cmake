@@ -22,7 +22,7 @@
 /**
  *  \file SDL_build_config.h
  *
- *  \brief This is a set of defines to configure the SDL features
+ *  This is a set of defines to configure the SDL features
  */
 
 #ifndef SDL_build_config_h_

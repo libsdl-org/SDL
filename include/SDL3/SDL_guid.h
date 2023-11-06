@@ -22,7 +22,7 @@
 /**
  *  \file SDL_guid.h
  *
- *  \brief Include file for handling ::SDL_GUID values.
+ *  Include file for handling ::SDL_GUID values.
  */
 
 #ifndef SDL_guid_h_

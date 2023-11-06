@@ -22,7 +22,7 @@
 /**
  *  \file SDL_mouse.h
  *
- *  \brief Include file for SDL mouse event handling.
+ *  Include file for SDL mouse event handling.
  */
 
 #ifndef SDL_mouse_h_
@@ -43,7 +43,7 @@ typedef Uint32 SDL_MouseID;
 typedef struct SDL_Cursor SDL_Cursor;   /**< Implementation dependent */
 
 /**
- * \brief Cursor types for SDL_CreateSystemCursor().
+ * Cursor types for SDL_CreateSystemCursor().
  */
 typedef enum
 {
@@ -63,7 +63,7 @@ typedef enum
 } SDL_SystemCursor;
 
 /**
- * \brief Scroll direction types for the Scroll event
+ * Scroll direction types for the Scroll event
  */
 typedef enum
 {

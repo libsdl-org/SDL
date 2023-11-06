@@ -22,7 +22,7 @@
 /**
  *  \file SDL_vulkan.h
  *
- *  \brief Header file for functions to creating Vulkan surfaces on SDL windows.
+ *  Header file for functions to creating Vulkan surfaces on SDL windows.
  */
 
 #ifndef SDL_vulkan_h_

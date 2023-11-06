@@ -22,7 +22,7 @@
 /**
  *  \file SDL_bits.h
  *
- *  \brief Functions for fiddling with bits and bitmasks.
+ *  Functions for fiddling with bits and bitmasks.
  */
 
 #ifndef SDL_bits_h_

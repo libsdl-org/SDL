@@ -22,7 +22,7 @@
 /**
  *  \file SDL_test_crc32.h
  *
- *  \brief CRC32 functions of SDL test framework.
+ *  CRC32 functions of SDL test framework.
  *
  *  This code is a part of the SDL test library, not the main SDL library.
  */
@@ -70,7 +70,7 @@ extern "C" {
 /* ---------- Function Prototypes ------------- */
 
 /**
- * \brief Initialize the CRC context
+ * Initialize the CRC context
  *
  * Note: The function initializes the crc table required for all crc calculations.
  *
@@ -83,7 +83,7 @@ extern "C" {
 
 
 /**
- * \brief calculate a crc32 from a data block
+ * calculate a crc32 from a data block
  *
  * \param crcContext         pointer to context variable
  * \param inBuf              input buffer to checksum
@@ -102,7 +102,7 @@ int SDLTest_Crc32CalcBuffer(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, C
 
 
 /**
- * \brief clean up CRC context
+ * clean up CRC context
  *
  * \param crcContext        pointer to context variable
  *

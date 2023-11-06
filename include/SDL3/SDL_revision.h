@@ -22,7 +22,7 @@
 /**
  *  \file SDL_revision.h
  *
- *  \brief Header file containing the SDL revision
+ *  Header file containing the SDL revision
  */
 
 #ifndef SDL_revision_h_

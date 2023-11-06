@@ -22,7 +22,7 @@
 /**
  *  \file SDL_hidapi.h
  *
- *  \brief Header file for SDL HIDAPI functions.
+ *  Header file for SDL HIDAPI functions.
  *
  *  This is an adaptation of the original HIDAPI interface by Alan Ott,
  *  and includes source code licensed under the following BSD license:
@@ -71,13 +71,13 @@ extern "C" {
 #endif
 
 /**
- *  \brief  A handle representing an open HID device
+ *  A handle representing an open HID device
  */
 struct SDL_hid_device_;
 typedef struct SDL_hid_device_ SDL_hid_device; /**< opaque hidapi structure */
 
 /**
- *  \brief HID underlying bus types.
+ *  HID underlying bus types.
  */
 typedef enum {
     /** Unknown bus type */
@@ -109,7 +109,7 @@ typedef enum {
 
 /** hidapi info structure */
 /**
- *  \brief  Information about a connected HID device
+ *  Information about a connected HID device
  */
 typedef struct SDL_hid_device_info
 {

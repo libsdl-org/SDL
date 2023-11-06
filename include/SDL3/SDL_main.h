@@ -35,7 +35,7 @@
 /**
  *  \file SDL_main.h
  *
- *  \brief Redefine main() on some platforms so that it is called by SDL.
+ *  Redefine main() on some platforms so that it is called by SDL.
  */
 
 #ifndef SDL_MAIN_HANDLED

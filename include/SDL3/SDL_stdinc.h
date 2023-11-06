@@ -22,7 +22,7 @@
 /**
  *  \file SDL_stdinc.h
  *
- *  \brief This is a general header that includes C language support.
+ *  This is a general header that includes C language support.
  */
 
 #ifndef SDL_stdinc_h_
@@ -123,57 +123,57 @@ char *alloca();
 /* @{ */
 
 /**
- * \brief A boolean type.
+ * A boolean type.
  */
 #define SDL_FALSE 0
 #define SDL_TRUE 1
 typedef unsigned int SDL_bool;
 
 /**
- * \brief A signed 8-bit integer type.
+ * A signed 8-bit integer type.
  */
 #define SDL_MAX_SINT8   ((Sint8)0x7F)           /* 127 */
 #define SDL_MIN_SINT8   ((Sint8)(~0x7F))        /* -128 */
 typedef int8_t Sint8;
 /**
- * \brief An unsigned 8-bit integer type.
+ * An unsigned 8-bit integer type.
  */
 #define SDL_MAX_UINT8   ((Uint8)0xFF)           /* 255 */
 #define SDL_MIN_UINT8   ((Uint8)0x00)           /* 0 */
 typedef uint8_t Uint8;
 /**
- * \brief A signed 16-bit integer type.
+ * A signed 16-bit integer type.
  */
 #define SDL_MAX_SINT16  ((Sint16)0x7FFF)        /* 32767 */
 #define SDL_MIN_SINT16  ((Sint16)(~0x7FFF))     /* -32768 */
 typedef int16_t Sint16;
 /**
- * \brief An unsigned 16-bit integer type.
+ * An unsigned 16-bit integer type.
  */
 #define SDL_MAX_UINT16  ((Uint16)0xFFFF)        /* 65535 */
 #define SDL_MIN_UINT16  ((Uint16)0x0000)        /* 0 */
 typedef uint16_t Uint16;
 /**
- * \brief A signed 32-bit integer type.
+ * A signed 32-bit integer type.
  */
 #define SDL_MAX_SINT32  ((Sint32)0x7FFFFFFF)    /* 2147483647 */
 #define SDL_MIN_SINT32  ((Sint32)(~0x7FFFFFFF)) /* -2147483648 */
 typedef int32_t Sint32;
 /**
- * \brief An unsigned 32-bit integer type.
+ * An unsigned 32-bit integer type.
  */
 #define SDL_MAX_UINT32  ((Uint32)0xFFFFFFFFu)   /* 4294967295 */
 #define SDL_MIN_UINT32  ((Uint32)0x00000000)    /* 0 */
 typedef uint32_t Uint32;
 
 /**
- * \brief A signed 64-bit integer type.
+ * A signed 64-bit integer type.
  */
 #define SDL_MAX_SINT64  ((Sint64)0x7FFFFFFFFFFFFFFFll)      /* 9223372036854775807 */
 #define SDL_MIN_SINT64  ((Sint64)(~0x7FFFFFFFFFFFFFFFll))   /* -9223372036854775808 */
 typedef int64_t Sint64;
 /**
- * \brief An unsigned 64-bit integer type.
+ * An unsigned 64-bit integer type.
  */
 #define SDL_MAX_UINT64  ((Uint64)0xFFFFFFFFFFFFFFFFull)     /* 18446744073709551615 */
 #define SDL_MIN_UINT64  ((Uint64)(0x0000000000000000ull))   /* 0 */

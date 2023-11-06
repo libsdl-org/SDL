@@ -13,7 +13,7 @@
 /* Test case functions */
 
 /**
- * \brief Call to SDL_GetWindowWMInfo
+ * Call to SDL_GetWindowWMInfo
  */
 static int syswm_getWindowWMInfo(void *arg)
 {

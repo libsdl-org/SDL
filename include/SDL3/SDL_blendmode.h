@@ -22,7 +22,7 @@
 /**
  *  \file SDL_blendmode.h
  *
- *  \brief Header file declaring the SDL_BlendMode enumeration
+ *  Header file declaring the SDL_BlendMode enumeration
  */
 
 #ifndef SDL_blendmode_h_
@@ -35,7 +35,7 @@ extern "C" {
 #endif
 
 /**
- *  \brief The blend mode used in SDL_RenderTexture() and drawing operations.
+ *  The blend mode used in SDL_RenderTexture() and drawing operations.
  */
 typedef enum
 {
@@ -60,7 +60,7 @@ typedef enum
 } SDL_BlendMode;
 
 /**
- *  \brief The blend operation used when combining source and destination pixel components
+ *  The blend operation used when combining source and destination pixel components
  */
 typedef enum
 {
@@ -72,7 +72,7 @@ typedef enum
 } SDL_BlendOperation;
 
 /**
- *  \brief The normalized factor used to multiply pixel components
+ *  The normalized factor used to multiply pixel components
  */
 typedef enum
 {

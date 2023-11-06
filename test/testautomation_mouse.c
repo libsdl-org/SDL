@@ -25,7 +25,7 @@ static int mouseStateCheck(Uint32 state)
 }
 
 /**
- * \brief Check call to SDL_GetMouseState
+ * Check call to SDL_GetMouseState
  *
  */
 static int mouse_getMouseState(void *arg)
@@ -70,7 +70,7 @@ static int mouse_getMouseState(void *arg)
 }
 
 /**
- * \brief Check call to SDL_GetRelativeMouseState
+ * Check call to SDL_GetRelativeMouseState
  *
  */
 static int mouse_getRelativeMouseState(void *arg)
@@ -188,7 +188,7 @@ static SDL_Cursor *initArrowCursor(const char *image[])
 }
 
 /**
- * \brief Check call to SDL_CreateCursor and SDL_DestroyCursor
+ * Check call to SDL_CreateCursor and SDL_DestroyCursor
  *
  * \sa SDL_CreateCursor
  * \sa SDL_DestroyCursor
@@ -213,7 +213,7 @@ static int mouse_createFreeCursor(void *arg)
 }
 
 /**
- * \brief Check call to SDL_CreateColorCursor and SDL_DestroyCursor
+ * Check call to SDL_CreateColorCursor and SDL_DestroyCursor
  *
  * \sa SDL_CreateColorCursor
  * \sa SDL_DestroyCursor
@@ -269,7 +269,7 @@ static void changeCursorVisibility(SDL_bool state)
 }
 
 /**
- * \brief Check call to SDL_ShowCursor
+ * Check call to SDL_ShowCursor
  *
  * \sa SDL_ShowCursor
  */
@@ -294,7 +294,7 @@ static int mouse_showCursor(void *arg)
 }
 
 /**
- * \brief Check call to SDL_SetCursor
+ * Check call to SDL_SetCursor
  *
  * \sa SDL_SetCursor
  */
@@ -326,7 +326,7 @@ static int mouse_setCursor(void *arg)
 }
 
 /**
- * \brief Check call to SDL_GetCursor
+ * Check call to SDL_GetCursor
  *
  * \sa SDL_GetCursor
  */
@@ -343,7 +343,7 @@ static int mouse_getCursor(void *arg)
 }
 
 /**
- * \brief Check call to SDL_GetRelativeMouseMode and SDL_SetRelativeMouseMode
+ * Check call to SDL_GetRelativeMouseMode and SDL_SetRelativeMouseMode
  *
  * \sa SDL_GetRelativeMouseMode
  * \sa SDL_SetRelativeMouseMode
@@ -426,7 +426,7 @@ static void destroyMouseSuiteTestWindow(SDL_Window *window)
 }
 
 /**
- * \brief Check call to SDL_WarpMouseInWindow
+ * Check call to SDL_WarpMouseInWindow
  *
  * \sa SDL_WarpMouseInWindow
  */
@@ -489,7 +489,7 @@ static int mouse_warpMouseInWindow(void *arg)
 }
 
 /**
- * \brief Check call to SDL_GetMouseFocus
+ * Check call to SDL_GetMouseFocus
  *
  * \sa SDL_GetMouseFocus
  */
@@ -555,7 +555,7 @@ static int mouse_getMouseFocus(void *arg)
 }
 
 /**
- * \brief Check call to SDL_GetDefaultCursor
+ * Check call to SDL_GetDefaultCursor
  *
  * \sa SDL_GetDefaultCursor
  */
@@ -572,7 +572,7 @@ static int mouse_getDefaultCursor(void *arg)
 }
 
 /**
- * \brief Check call to SDL_GetGlobalMouseState
+ * Check call to SDL_GetGlobalMouseState
  *
  * \sa SDL_GetGlobalMouseState
  */

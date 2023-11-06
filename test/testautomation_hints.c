@@ -60,7 +60,7 @@ static const int numHintsEnum = SDL_arraysize(HintsEnum);
 /* Test case functions */
 
 /**
- * \brief Call to SDL_GetHint
+ * Call to SDL_GetHint
  */
 static int hints_getHint(void *arg)
 {
@@ -89,7 +89,7 @@ static void SDLCALL hints_testHintChanged(void *userdata, const char *name, cons
 }
 
 /**
- * \brief Call to SDL_SetHint
+ * Call to SDL_SetHint
  */
 static int hints_setHint(void *arg)
 {

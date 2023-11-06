@@ -59,7 +59,7 @@ static SDL_AudioDeviceID g_audio_id = -1;
 /* Test case functions */
 
 /**
- * \brief Stop and restart audio subsystem
+ * Stop and restart audio subsystem
  *
  * \sa SDL_QuitSubSystem
  * \sa SDL_InitSubSystem
@@ -77,7 +77,7 @@ static int audio_quitInitAudioSubSystem(void *arg)
 }
 
 /**
- * \brief Start and stop audio directly
+ * Start and stop audio directly
  *
  * \sa SDL_InitAudio
  * \sa SDL_QuitAudio
@@ -133,7 +133,7 @@ static int audio_initQuitAudio(void *arg)
 }
 
 /**
- * \brief Start, open, close and stop audio
+ * Start, open, close and stop audio
  *
  * \sa SDL_InitAudio
  * \sa SDL_OpenAudioDevice
@@ -219,7 +219,7 @@ static int audio_initOpenCloseQuitAudio(void *arg)
 }
 
 /**
- * \brief Pause and unpause audio
+ * Pause and unpause audio
  *
  * \sa SDL_PauseAudioDevice
  * \sa SDL_PlayAudioDevice
@@ -340,7 +340,7 @@ static int audio_pauseUnpauseAudio(void *arg)
 }
 
 /**
- * \brief Enumerate and name available audio devices (output and capture).
+ * Enumerate and name available audio devices (output and capture).
  *
  * \sa SDL_GetNumAudioDevices
  * \sa SDL_GetAudioDeviceName
@@ -381,7 +381,7 @@ static int audio_enumerateAndNameAudioDevices(void *arg)
 }
 
 /**
- * \brief Negative tests around enumeration and naming of audio devices.
+ * Negative tests around enumeration and naming of audio devices.
  *
  * \sa SDL_GetNumAudioDevices
  * \sa SDL_GetAudioDeviceName
@@ -392,7 +392,7 @@ static int audio_enumerateAndNameAudioDevicesNegativeTests(void *arg)
 }
 
 /**
- * \brief Checks available audio driver names.
+ * Checks available audio driver names.
  *
  * \sa SDL_GetNumAudioDrivers
  * \sa SDL_GetAudioDriver
@@ -423,7 +423,7 @@ static int audio_printAudioDrivers(void *arg)
 }
 
 /**
- * \brief Checks current audio driver name with initialized audio.
+ * Checks current audio driver name with initialized audio.
  *
  * \sa SDL_GetCurrentAudioDriver
  */
@@ -470,7 +470,7 @@ SDL_COMPILE_TIME_ASSERT(SDL_AUDIO_F32LE_FORMAT, SDL_AUDIO_F32LE == (SDL_AUDIO_BI
 SDL_COMPILE_TIME_ASSERT(SDL_AUDIO_F32BE_FORMAT, SDL_AUDIO_F32BE == (SDL_AUDIO_F32LE | SDL_AUDIO_MASK_BIG_ENDIAN));
 
 /**
- * \brief Builds various audio conversion structures
+ * Builds various audio conversion structures
  *
  * \sa SDL_CreateAudioStream
  */
@@ -539,7 +539,7 @@ static int audio_buildAudioStream(void *arg)
 }
 
 /**
- * \brief Checks calls with invalid input to SDL_CreateAudioStream
+ * Checks calls with invalid input to SDL_CreateAudioStream
  *
  * \sa SDL_CreateAudioStream
  */
@@ -619,7 +619,7 @@ static int audio_buildAudioStreamNegative(void *arg)
 }
 
 /**
- * \brief Checks current audio status.
+ * Checks current audio status.
  *
  * \sa SDL_GetAudioDeviceStatus
  */
@@ -629,7 +629,7 @@ static int audio_getAudioStatus(void *arg)
 }
 
 /**
- * \brief Opens, checks current audio status, and closes a device.
+ * Opens, checks current audio status, and closes a device.
  *
  * \sa SDL_GetAudioStatus
  */
@@ -639,7 +639,7 @@ static int audio_openCloseAndGetAudioStatus(void *arg)
 }
 
 /**
- * \brief Locks and unlocks open audio device.
+ * Locks and unlocks open audio device.
  *
  * \sa SDL_LockAudioDevice
  * \sa SDL_UnlockAudioDevice
@@ -650,7 +650,7 @@ static int audio_lockUnlockOpenAudioDevice(void *arg)
 }
 
 /**
- * \brief Convert audio using various conversion structures
+ * Convert audio using various conversion structures
  *
  * \sa SDL_CreateAudioStream
  */
@@ -784,7 +784,7 @@ static int audio_convertAudio(void *arg)
 }
 
 /**
- * \brief Opens, checks current connected status, and closes a device.
+ * Opens, checks current connected status, and closes a device.
  *
  * \sa SDL_AudioDeviceConnected
  */
@@ -806,7 +806,7 @@ static double sine_wave_sample(const Sint64 idx, const Sint64 rate, const Sint64
 }
 
 /**
- * \brief Check signal-to-noise ratio and maximum error of audio resampling.
+ * Check signal-to-noise ratio and maximum error of audio resampling.
  *
  * \sa https://wiki.libsdl.org/SDL_CreateAudioStream
  * \sa https://wiki.libsdl.org/SDL_DestroyAudioStream
@@ -963,7 +963,7 @@ static int audio_resampleLoss(void *arg)
 }
 
 /**
- * \brief Check accuracy converting between audio formats.
+ * Check accuracy converting between audio formats.
  *
  * \sa SDL_ConvertAudioSamples
  */
@@ -1098,7 +1098,7 @@ static int audio_convertAccuracy(void *arg)
 }
 
 /**
- * \brief Check accuracy when switching between formats
+ * Check accuracy when switching between formats
  *
  * \sa SDL_SetAudioStreamFormat
  */

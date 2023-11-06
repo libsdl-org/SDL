@@ -22,7 +22,7 @@
 /**
  *  \file SDL_properties.h
  *
- *  \brief Header file for SDL properties.
+ *  Header file for SDL properties.
  */
 
 #ifndef SDL_properties_h_

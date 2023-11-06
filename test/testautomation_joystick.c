@@ -12,7 +12,7 @@
 /* Test case functions */
 
 /**
- * \brief Check virtual joystick creation
+ * Check virtual joystick creation
  *
  * \sa SDL_AttachVirtualJoystickEx
  */

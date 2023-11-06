@@ -22,7 +22,7 @@
 /**
  *  \file SDL_assert.h
  *
- *  \brief Header file for assertion SDL API functions
+ *  Header file for assertion SDL API functions
  */
 
 #ifndef SDL_assert_h_

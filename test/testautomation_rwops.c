@@ -90,7 +90,7 @@ static void RWopsTearDown(void *arg)
 }
 
 /**
- * \brief Makes sure parameters work properly. Local helper function.
+ * Makes sure parameters work properly. Local helper function.
  *
  * \sa SDL_RWseek
  * \sa SDL_RWread
@@ -245,7 +245,7 @@ static int rwops_testParamNegative(void *arg)
 }
 
 /**
- * \brief Tests opening from memory.
+ * Tests opening from memory.
  *
  * \sa SDL_RWFromMem
  * \sa SDL_RWClose
@@ -284,7 +284,7 @@ static int rwops_testMem(void *arg)
 }
 
 /**
- * \brief Tests opening from memory.
+ * Tests opening from memory.
  *
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWClose
@@ -319,7 +319,7 @@ static int rwops_testConstMem(void *arg)
 }
 
 /**
- * \brief Tests reading from file.
+ * Tests reading from file.
  *
  * \sa SDL_RWFromFile
  * \sa SDL_RWClose
@@ -366,7 +366,7 @@ static int rwops_testFileRead(void *arg)
 }
 
 /**
- * \brief Tests writing from file.
+ * Tests writing from file.
  *
  * \sa SDL_RWFromFile
  * \sa SDL_RWClose
@@ -413,7 +413,7 @@ static int rwops_testFileWrite(void *arg)
 }
 
 /**
- * \brief Tests alloc and free RW context.
+ * Tests alloc and free RW context.
  *
  * \sa SDL_CreateRW
  * \sa SDL_DestroyRW
@@ -441,7 +441,7 @@ static int rwops_testAllocFree(void *arg)
 }
 
 /**
- * \brief Compare memory and file reads
+ * Compare memory and file reads
  *
  * \sa SDL_RWFromMem
  * \sa SDL_RWFromFile
@@ -504,7 +504,7 @@ static int rwops_testCompareRWFromMemWithRWFromFile(void *arg)
 }
 
 /**
- * \brief Tests writing and reading from file using endian aware functions.
+ * Tests writing and reading from file using endian aware functions.
  *
  * \sa SDL_RWFromFile
  * \sa SDL_RWClose

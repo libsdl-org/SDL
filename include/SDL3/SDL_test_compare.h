@@ -22,7 +22,7 @@
 /**
  *  \file SDL_test_compare.h
  *
- *  \brief Comparison function of SDL test framework.
+ *  Comparison function of SDL test framework.
  *
  *  This code is a part of the SDL test library, not the main SDL library.
  */
@@ -45,7 +45,7 @@ extern "C" {
 #endif
 
 /**
- * \brief Retrieves a single pixel from a surface.
+ * Retrieves a single pixel from a surface.
  *
  * This function prioritizes correctness over speed: it is suitable for
  * unit tests, but is not intended for use in a game engine.
@@ -66,7 +66,7 @@ extern "C" {
 int SDLTest_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
 
 /**
- * \brief Compares a surface and with reference image data for equality
+ * Compares a surface and with reference image data for equality
  *
  * \param surface Surface used in comparison
  * \param referenceSurface Test Surface used in comparison

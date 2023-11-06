@@ -209,7 +209,7 @@ static void AssertFileExist(const char *filename)
 /* Test case functions */
 
 /**
- * \brief Tests sprite saving and loading
+ * Tests sprite saving and loading
  */
 static int surface_testSaveLoadBitmap(void *arg)
 {
@@ -389,7 +389,7 @@ static int surface_testCompleteSurfaceConversion(void *arg)
 }
 
 /**
- * \brief Tests sprite loading. A failure case.
+ * Tests sprite loading. A failure case.
  */
 static int surface_testLoadFailure(void *arg)
 {
@@ -400,7 +400,7 @@ static int surface_testLoadFailure(void *arg)
 }
 
 /**
- * \brief Tests some blitting routines.
+ * Tests some blitting routines.
  */
 static int surface_testBlit(void *arg)
 {
@@ -422,7 +422,7 @@ static int surface_testBlit(void *arg)
 }
 
 /**
- * \brief Tests some blitting routines with color mod
+ * Tests some blitting routines with color mod
  */
 static int surface_testBlitColorMod(void *arg)
 {
@@ -444,7 +444,7 @@ static int surface_testBlitColorMod(void *arg)
 }
 
 /**
- * \brief Tests some blitting routines with alpha mod
+ * Tests some blitting routines with alpha mod
  */
 static int surface_testBlitAlphaMod(void *arg)
 {
@@ -466,7 +466,7 @@ static int surface_testBlitAlphaMod(void *arg)
 }
 
 /**
- * \brief Tests some more blitting routines.
+ * Tests some more blitting routines.
  */
 static int surface_testBlitBlendNone(void *arg)
 {
@@ -488,7 +488,7 @@ static int surface_testBlitBlendNone(void *arg)
 }
 
 /**
- * \brief Tests some more blitting routines.
+ * Tests some more blitting routines.
  */
 static int surface_testBlitBlendBlend(void *arg)
 {
@@ -510,7 +510,7 @@ static int surface_testBlitBlendBlend(void *arg)
 }
 
 /**
- * \brief Tests some more blitting routines.
+ * Tests some more blitting routines.
  */
 static int surface_testBlitBlendAdd(void *arg)
 {
@@ -532,7 +532,7 @@ static int surface_testBlitBlendAdd(void *arg)
 }
 
 /**
- * \brief Tests some more blitting routines.
+ * Tests some more blitting routines.
  */
 static int surface_testBlitBlendMod(void *arg)
 {
@@ -554,7 +554,7 @@ static int surface_testBlitBlendMod(void *arg)
 }
 
 /**
- * \brief Tests some more blitting routines with loop
+ * Tests some more blitting routines with loop
  */
 static int surface_testBlitBlendLoop(void *arg)
 {

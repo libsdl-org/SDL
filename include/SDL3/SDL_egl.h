@@ -22,7 +22,7 @@
 /**
  *  \file SDL_egl.h
  *
- *  \brief This is a simple file to encapsulate the EGL API headers.
+ *  This is a simple file to encapsulate the EGL API headers.
  */
 
 #if !defined(_MSC_VER) && !defined(__ANDROID__) && !defined(SDL_USE_BUILTIN_OPENGL_DEFINITIONS)

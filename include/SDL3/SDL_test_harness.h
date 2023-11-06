@@ -22,7 +22,7 @@
 /**
  *  \file SDL_test_harness.h
  *
- *  \brief Test suite related functions of SDL test framework.
+ *  Test suite related functions of SDL test framework.
  *
  *  This code is a part of the SDL test library, not the main SDL library.
  */
@@ -99,7 +99,7 @@ typedef struct SDLTest_TestSuiteReference {
 
 
 /**
- * \brief Generates a random run seed string for the harness. The generated seed will contain alphanumeric characters (0-9A-Z).
+ * Generates a random run seed string for the harness. The generated seed will contain alphanumeric characters (0-9A-Z).
  *
  * Note: The returned string needs to be deallocated by the caller.
  *
@@ -110,7 +110,7 @@ typedef struct SDLTest_TestSuiteReference {
 char *SDLTest_GenerateRunSeed(const int length);
 
 /**
- * \brief Execute a test suite using the given run seed and execution key.
+ * Execute a test suite using the given run seed and execution key.
  *
  * \param testSuites Suites containing the test case.
  * \param userRunSeed Custom run seed provided by user, or NULL to autogenerate one.

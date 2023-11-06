@@ -25,7 +25,7 @@
 /**
  *  \file SDL_timer.h
  *
- *  \brief Header for the SDL time management routines.
+ *  Header for the SDL time management routines.
  */
 
 #include <SDL3/SDL_stdinc.h>

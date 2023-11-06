@@ -22,7 +22,7 @@
 /**
  *  \file SDL_syswm.h
  *
- *  \brief Include file for SDL custom system window manager hooks.
+ *  Include file for SDL custom system window manager hooks.
  */
 
 #ifndef SDL_syswm_h_
@@ -34,7 +34,7 @@
 #include <SDL3/SDL_video.h>
 
 /**
- *  \brief SDL_syswm.h
+ *  SDL_syswm.h
  *
  *  Your application has access to a special type of event ::SDL_EVENT_SYSWM,
  *  which contains window-manager specific information and arrives whenever

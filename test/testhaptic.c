@@ -27,7 +27,7 @@ static void abort_execution(void);
 static void HapticPrintSupported(SDL_Haptic *);
 
 /**
- * \brief The entry point of this force feedback demo.
+ * The entry point of this force feedback demo.
  * \param[in] argc Number of arguments.
  * \param[in] argv Array of argc arguments.
  */

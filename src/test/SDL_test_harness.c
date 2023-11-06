@@ -47,7 +47,7 @@
 /* Final result message format */
 #define SDLTEST_FINAL_RESULT_FORMAT COLOR_YELLOW ">>> %s '%s':" COLOR_END " %s\n"
 
-/* ! \brief Timeout for single test case execution */
+/* ! Timeout for single test case execution */
 static Uint32 SDLTest_TestCaseTimeout = 3600;
 
 /**
@@ -167,7 +167,7 @@ static Uint64 SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName
 }
 
 /**
- * \brief Set timeout handler for test.
+ * Set timeout handler for test.
  *
  * Note: SDL_Init(SDL_INIT_TIMER) will be called if it wasn't done so before.
  *
@@ -211,7 +211,7 @@ static SDL_TimerID SDLTest_SetTestTimeout(int timeout, void(SDLCALL *callback)(v
 }
 
 /**
- * \brief Timeout handler. Aborts test run and exits harness process.
+ * Timeout handler. Aborts test run and exits harness process.
  */
 #ifdef __WATCOMC__
 #pragma aux SDLTest_BailOut aborts;
@@ -223,7 +223,7 @@ static SDL_NORETURN void SDLCALL SDLTest_BailOut(void)
 }
 
 /**
- * \brief Execute a test using the given execution key.
+ * Execute a test using the given execution key.
  *
  * \param testSuite Suite containing the test case.
  * \param testCase Case to execute.
@@ -356,7 +356,7 @@ static float GetClock(void)
 }
 
 /**
- * \brief Execute a test suite using the given run seed and execution key.
+ * Execute a test suite using the given run seed and execution key.
  *
  * The filter string is matched to the suite name (full comparison) to select a single suite,
  * or if no suite matches, it is matched to the test names (full comparison) to select a single test.

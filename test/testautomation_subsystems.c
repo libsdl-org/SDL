@@ -34,7 +34,7 @@ static void subsystemsTearDown(void *arg)
 /* Test case functions */
 
 /**
- * \brief Inits and Quits particular subsystem, checking its Init status.
+ * Inits and Quits particular subsystem, checking its Init status.
  *
  * \sa SDL_InitSubSystem
  * \sa SDL_QuitSubSystem
@@ -83,7 +83,7 @@ static int subsystems_referenceCount()
 }
 
 /**
- * \brief Inits and Quits subsystems that have another as dependency;
+ * Inits and Quits subsystems that have another as dependency;
  *        check that the dependency is not removed before the last of its dependents.
  *
  * \sa SDL_InitSubSystem
@@ -121,7 +121,7 @@ static int subsystems_dependRefCountInitAllQuitByOne()
 }
 
 /**
- * \brief Inits and Quits subsystems that have another as dependency;
+ * Inits and Quits subsystems that have another as dependency;
  *        check that the dependency is not removed before the last of its dependents.
  *
  * \sa SDL_InitSubSystem
@@ -155,7 +155,7 @@ static int subsystems_dependRefCountInitByOneQuitAll()
 }
 
 /**
- * \brief Inits and Quits subsystems that have another as dependency,
+ * Inits and Quits subsystems that have another as dependency,
  *        but also inits that dependency explicitly, giving it extra ref count.
  *        Check that the dependency is not removed before the last reference is gone.
  *

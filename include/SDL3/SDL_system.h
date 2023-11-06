@@ -22,7 +22,7 @@
 /**
  *  \file SDL_system.h
  *
- *  \brief Include file for platform specific SDL API functions
+ *  Include file for platform specific SDL API functions
  */
 
 #ifndef SDL_system_h_
@@ -475,44 +475,44 @@ extern DECLSPEC int SDLCALL SDL_AndroidSendMessage(Uint32 command, int param);
 #ifdef __WINRT__
 
 /**
- *  \brief WinRT / Windows Phone path types
+ *  WinRT / Windows Phone path types
  */
 typedef enum
 {
-    /** \brief The installed app's root directory.
+    /** The installed app's root directory.
         Files here are likely to be read-only. */
     SDL_WINRT_PATH_INSTALLED_LOCATION,
 
-    /** \brief The app's local data store.  Files may be written here */
+    /** The app's local data store.  Files may be written here */
     SDL_WINRT_PATH_LOCAL_FOLDER,
 
-    /** \brief The app's roaming data store.  Unsupported on Windows Phone.
+    /** The app's roaming data store.  Unsupported on Windows Phone.
         Files written here may be copied to other machines via a network
         connection.
     */
     SDL_WINRT_PATH_ROAMING_FOLDER,
 
-    /** \brief The app's temporary data store.  Unsupported on Windows Phone.
+    /** The app's temporary data store.  Unsupported on Windows Phone.
         Files written here may be deleted at any time. */
     SDL_WINRT_PATH_TEMP_FOLDER
 } SDL_WinRT_Path;
 
 
 /**
- *  \brief WinRT Device Family
+ *  WinRT Device Family
  */
 typedef enum
 {
-    /** \brief Unknown family  */
+    /** Unknown family  */
     SDL_WINRT_DEVICEFAMILY_UNKNOWN,
 
-    /** \brief Desktop family*/
+    /** Desktop family*/
     SDL_WINRT_DEVICEFAMILY_DESKTOP,
 
-    /** \brief Mobile family (for example smartphone) */
+    /** Mobile family (for example smartphone) */
     SDL_WINRT_DEVICEFAMILY_MOBILE,
 
-    /** \brief XBox family */
+    /** XBox family */
     SDL_WINRT_DEVICEFAMILY_XBOX,
 } SDL_WinRT_DeviceFamily;
 

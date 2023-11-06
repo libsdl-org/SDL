@@ -3122,7 +3122,7 @@ struct SDLTest_CharTextureCache
 };
 
 /*!
-\brief List of per-renderer caches for 8x8 pixel font textures created at runtime.
+List of per-renderer caches for 8x8 pixel font textures created at runtime.
 */
 static struct SDLTest_CharTextureCache *SDLTest_CharTextureCacheList;
 

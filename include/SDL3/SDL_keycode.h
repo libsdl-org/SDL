@@ -22,7 +22,7 @@
 /**
  *  \file SDL_keycode.h
  *
- *  \brief Defines constants which identify keyboard keys and modifiers.
+ *  Defines constants which identify keyboard keys and modifiers.
  */
 
 #ifndef SDL_keycode_h_
@@ -32,7 +32,7 @@
 #include <SDL3/SDL_scancode.h>
 
 /**
- *  \brief The SDL virtual key representation.
+ *  The SDL virtual key representation.
  *
  *  Values of this type are used to represent keyboard keys using the current
  *  layout of the keyboard.  These values include Unicode values representing
@@ -327,7 +327,7 @@ typedef enum
 } SDL_KeyCode;
 
 /**
- * \brief Enumeration of valid key mods (possibly OR'd together).
+ * Enumeration of valid key mods (possibly OR'd together).
  */
 typedef enum
 {

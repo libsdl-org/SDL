@@ -48,10 +48,10 @@
 #define SDLTEST_ASSERT_SUMMARY_FORMAT    "Assert Summary: Total=%d " COLOR_GREEN "Passed=%d" COLOR_END " " COLOR_RED "Failed=%d" COLOR_END
 #define SDLTEST_ASSERT_SUMMARY_FORMAT_OK "Assert Summary: Total=%d " COLOR_GREEN "Passed=%d" COLOR_END " " COLOR_GREEN "Failed=%d" COLOR_END
 
-/* ! \brief counts the failed asserts */
+/* ! counts the failed asserts */
 static int SDLTest_AssertsFailed = 0;
 
-/* ! \brief counts the passed asserts */
+/* ! counts the passed asserts */
 static int SDLTest_AssertsPassed = 0;
 
 /*

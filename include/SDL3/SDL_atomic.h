@@ -22,7 +22,7 @@
 /**
  * \file SDL_atomic.h
  *
- * \brief Atomic operations.
+ * Atomic operations.
  *
  * IMPORTANT:
  * If you are not an expert in concurrent lockless programming, you should
@@ -263,8 +263,9 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
 
 
 /**
- * \brief A type representing an atomic integer value.  It is a struct
- *        so people don't accidentally use numeric operations on it.
+ * A type representing an atomic integer value.
+ *
+ * It is a struct so people don't accidentally use numeric operations on it.
  */
 typedef struct { int value; } SDL_AtomicInt;
 
@@ -340,14 +341,14 @@ extern DECLSPEC int SDLCALL SDL_AtomicGet(SDL_AtomicInt *a);
 extern DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
 
 /**
- * \brief Increment an atomic variable used as a reference count.
+ * Increment an atomic variable used as a reference count.
  */
 #ifndef SDL_AtomicIncRef
 #define SDL_AtomicIncRef(a)    SDL_AtomicAdd(a, 1)
 #endif
 
 /**
- * \brief Decrement an atomic variable used as a reference count.
+ * Decrement an atomic variable used as a reference count.
  *
  * \return SDL_TRUE if the variable reached zero after decrementing,
  *         SDL_FALSE otherwise

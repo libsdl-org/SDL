@@ -9,7 +9,7 @@
 /* Test case functions */
 
 /**
- * \brief Test basic functionality
+ * Test basic functionality
  */
 static int properties_testBasic(void *arg)
 {
@@ -54,7 +54,7 @@ static int properties_testBasic(void *arg)
 }
 
 /**
- * \brief Test cleanup functionality
+ * Test cleanup functionality
  */
 static void SDLCALL cleanup(void *userdata, void *value)
 {
@@ -91,7 +91,7 @@ static int properties_testCleanup(void *arg)
 }
 
 /**
- * \brief Test locking functionality
+ * Test locking functionality
  */
 struct properties_thread_data
 {

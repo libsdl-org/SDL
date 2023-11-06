@@ -22,7 +22,7 @@
 /**
  *  \file SDL_oldnames.h
  *
- *  \brief Definitions to ease transition from SDL2 code
+ *  Definitions to ease transition from SDL2 code
  */
 
 #ifndef SDL_oldnames_h_

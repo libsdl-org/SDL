@@ -74,7 +74,7 @@ static void ClipboardCleanupCallback(void *userdata)
 /* Test case functions */
 
 /**
- * \brief End-to-end test of SDL_xyzClipboardData functions
+ * End-to-end test of SDL_xyzClipboardData functions
  * \sa SDL_HasClipboardData
  * \sa SDL_GetClipboardData
  * \sa SDL_SetClipboardData
@@ -373,7 +373,7 @@ static int clipboard_testClipboardDataFunctions(void *arg)
 }
 
 /**
- * \brief End-to-end test of SDL_xyzClipboardText functions
+ * End-to-end test of SDL_xyzClipboardText functions
  * \sa SDL_HasClipboardText
  * \sa SDL_GetClipboardText
  * \sa SDL_SetClipboardText
@@ -457,7 +457,7 @@ static int clipboard_testClipboardTextFunctions(void *arg)
 }
 
 /**
- * \brief End-to-end test of SDL_xyzPrimarySelectionText functions
+ * End-to-end test of SDL_xyzPrimarySelectionText functions
  * \sa SDL_HasPrimarySelectionText
  * \sa SDL_GetPrimarySelectionText
  * \sa SDL_SetPrimarySelectionText

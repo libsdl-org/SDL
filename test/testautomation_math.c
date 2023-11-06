@@ -62,7 +62,7 @@ typedef double(SDLCALL *d_to_d_func)(double);
 typedef double(SDLCALL *dd_to_d_func)(double, double);
 
 /**
- * \brief Runs all the cases on a given function with a signature double -> double.
+ * Runs all the cases on a given function with a signature double -> double.
  * The result is expected to be exact.
  *
  * \param func_name a printable name for the tested function.
@@ -88,7 +88,7 @@ helper_dtod(const char *func_name, d_to_d_func func,
 }
 
 /**
- * \brief Runs all the cases on a given function with a signature double -> double.
+ * Runs all the cases on a given function with a signature double -> double.
  * Checks if the result between expected +/- EPSILON.
  *
  * \param func_name a printable name for the tested function.
@@ -117,7 +117,7 @@ helper_dtod_inexact(const char *func_name, d_to_d_func func,
 }
 
 /**
- * \brief Runs all the cases on a given function with a signature
+ * Runs all the cases on a given function with a signature
  * (double, double) -> double. The result is expected to be exact.
  *
  * \param func_name a printable name for the tested function.
@@ -143,7 +143,7 @@ helper_ddtod(const char *func_name, dd_to_d_func func,
 }
 
 /**
- * \brief Runs all the cases on a given function with a signature
+ * Runs all the cases on a given function with a signature
  * (double, double) -> double. Checks if the result between expected +/- EPSILON.
  *
  * \param func_name a printable name for the tested function.
@@ -172,7 +172,7 @@ helper_ddtod_inexact(const char *func_name, dd_to_d_func func,
 }
 
 /**
- * \brief Runs a range of values on a given function with a signature double -> double
+ * Runs a range of values on a given function with a signature double -> double
  *
  * This function is only meant to test functions that returns the input value if it is
  * integral: f(x) -> x for x in N.

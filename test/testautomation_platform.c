@@ -11,7 +11,7 @@
 /* Helper functions */
 
 /**
- * \brief Compare sizes of types.
+ * Compare sizes of types.
  *
  * @note Watcom C flags these as Warning 201: "Unreachable code" if you just
  *  compare them directly, so we push it through a function to keep the
@@ -25,7 +25,7 @@ static int compareSizeOfType(size_t sizeoftype, size_t hardcodetype)
 /* Test case functions */
 
 /**
- * \brief Tests type sizes.
+ * Tests type sizes.
  */
 static int platform_testTypes(void *arg)
 {
@@ -47,7 +47,7 @@ static int platform_testTypes(void *arg)
 }
 
 /**
- * \brief Tests platform endianness and SDL_SwapXY functions.
+ * Tests platform endianness and SDL_SwapXY functions.
  */
 static int platform_testEndianessAndSwap(void *arg)
 {
@@ -118,7 +118,7 @@ static int platform_testEndianessAndSwap(void *arg)
 }
 
 /**
- * \brief Tests SDL_GetXYZ() functions
+ * Tests SDL_GetXYZ() functions
  * \sa SDL_GetPlatform
  * \sa SDL_GetCPUCount
  * \sa SDL_GetRevision
@@ -162,7 +162,7 @@ static int platform_testGetFunctions(void *arg)
 }
 
 /**
- * \brief Tests SDL_HasXYZ() functions
+ * Tests SDL_HasXYZ() functions
  * \sa SDL_HasAltiVec
  * \sa SDL_HasMMX
  * \sa SDL_HasSSE
@@ -204,7 +204,7 @@ static int platform_testHasFunctions(void *arg)
 }
 
 /**
- * \brief Tests SDL_GetVersion
+ * Tests SDL_GetVersion
  * \sa SDL_GetVersion
  */
 static int platform_testGetVersion(void *arg)
@@ -227,7 +227,7 @@ static int platform_testGetVersion(void *arg)
 }
 
 /**
- * \brief Tests SDL_VERSION macro
+ * Tests SDL_VERSION macro
  */
 static int platform_testSDLVersion(void *arg)
 {
@@ -249,7 +249,7 @@ static int platform_testSDLVersion(void *arg)
 }
 
 /**
- * \brief Tests default SDL_Init
+ * Tests default SDL_Init
  */
 static int platform_testDefaultInit(void *arg)
 {
@@ -271,7 +271,7 @@ static int platform_testDefaultInit(void *arg)
 }
 
 /**
- * \brief Tests SDL_Get/Set/ClearError
+ * Tests SDL_Get/Set/ClearError
  * \sa SDL_GetError
  * \sa SDL_SetError
  * \sa SDL_ClearError
@@ -322,7 +322,7 @@ static int platform_testGetSetClearError(void *arg)
 }
 
 /**
- * \brief Tests SDL_SetError with empty input
+ * Tests SDL_SetError with empty input
  * \sa SDL_SetError
  */
 static int platform_testSetErrorEmptyInput(void *arg)
@@ -363,7 +363,7 @@ static int platform_testSetErrorEmptyInput(void *arg)
 #endif
 
 /**
- * \brief Tests SDL_SetError with invalid input
+ * Tests SDL_SetError with invalid input
  * \sa SDL_SetError
  */
 static int platform_testSetErrorInvalidInput(void *arg)
@@ -446,7 +446,7 @@ static int platform_testSetErrorInvalidInput(void *arg)
 #endif
 
 /**
- * \brief Tests SDL_GetPowerInfo
+ * Tests SDL_GetPowerInfo
  * \sa SDL_GetPowerInfo
  */
 static int platform_testGetPowerInfo(void *arg)

@@ -22,7 +22,7 @@
 /**
  *  \file SDL_test_md5.h
  *
- *  \brief MD5 related functions of SDL test framework.
+ *  MD5 related functions of SDL test framework.
  *
  *  This code is a part of the SDL test library, not the main SDL library.
  */
@@ -78,7 +78,7 @@ extern "C" {
 /* ---------- Function Prototypes ------------- */
 
 /**
- * \brief initialize the context
+ * initialize the context
  *
  * \param  mdContext        pointer to context variable
  *
@@ -90,7 +90,7 @@ extern "C" {
 
 
 /**
- * \brief update digest from variable length data
+ * update digest from variable length data
  *
  * \param  mdContext       pointer to context variable
  * \param  inBuf           pointer to data array/string
@@ -106,7 +106,7 @@ extern "C" {
 
 
 /**
- * \brief complete digest computation
+ * complete digest computation
  *
  * \param mdContext     pointer to context variable
  *

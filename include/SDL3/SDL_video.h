@@ -22,7 +22,7 @@
 /**
  *  \file SDL_video.h
  *
- *  \brief Header file for SDL video functions.
+ *  Header file for SDL video functions.
  */
 
 #ifndef SDL_video_h_
@@ -45,7 +45,7 @@ typedef Uint32 SDL_DisplayID;
 typedef Uint32 SDL_WindowID;
 
 /**
- *  \brief System theme
+ *  System theme
  */
 typedef enum
 {
@@ -55,7 +55,7 @@ typedef enum
 } SDL_SystemTheme;
 
 /**
- *  \brief  The structure that defines a display mode
+ *  The structure that defines a display mode
  *
  *  \sa SDL_GetFullscreenDisplayModes()
  *  \sa SDL_GetDesktopDisplayMode()
@@ -75,7 +75,7 @@ typedef struct
 } SDL_DisplayMode;
 
 /**
- *  \brief Display orientation
+ *  Display orientation
  */
 typedef enum
 {
@@ -87,7 +87,7 @@ typedef enum
 } SDL_DisplayOrientation;
 
 /**
- *  \brief The type used to identify a window
+ *  The type used to identify a window
  *
  *  \sa SDL_CreateWindow()
  *  \sa SDL_CreateWindowFrom()
@@ -122,7 +122,7 @@ typedef enum
 typedef struct SDL_Window SDL_Window;
 
 /**
- *  \brief The flags on a window
+ *  The flags on a window
  *
  *  \sa SDL_GetWindowFlags()
  */
@@ -155,7 +155,7 @@ typedef enum
 } SDL_WindowFlags;
 
 /**
- *  \brief Used to indicate that you don't care what the window position is.
+ *  Used to indicate that you don't care what the window position is.
  */
 #define SDL_WINDOWPOS_UNDEFINED_MASK    0x1FFF0000u
 #define SDL_WINDOWPOS_UNDEFINED_DISPLAY(X)  (SDL_WINDOWPOS_UNDEFINED_MASK|(X))
@@ -164,7 +164,7 @@ typedef enum
             (((X)&0xFFFF0000) == SDL_WINDOWPOS_UNDEFINED_MASK)
 
 /**
- *  \brief Used to indicate that the window position should be centered.
+ *  Used to indicate that the window position should be centered.
  */
 #define SDL_WINDOWPOS_CENTERED_MASK    0x2FFF0000u
 #define SDL_WINDOWPOS_CENTERED_DISPLAY(X)  (SDL_WINDOWPOS_CENTERED_MASK|(X))
@@ -173,7 +173,7 @@ typedef enum
             (((X)&0xFFFF0000) == SDL_WINDOWPOS_CENTERED_MASK)
 
 /**
- *  \brief Window flash operation
+ *  Window flash operation
  */
 typedef enum
 {
@@ -183,12 +183,12 @@ typedef enum
 } SDL_FlashOperation;
 
 /**
- *  \brief An opaque handle to an OpenGL context.
+ *  An opaque handle to an OpenGL context.
  */
 typedef void *SDL_GLContext;
 
 /**
- *  \brief Opaque EGL types.
+ *  Opaque EGL types.
  */
 typedef void *SDL_EGLDisplay;
 typedef void *SDL_EGLConfig;
@@ -197,13 +197,13 @@ typedef intptr_t SDL_EGLAttrib;
 typedef int SDL_EGLint;
 
 /**
- *  \brief EGL attribute initialization callback types.
+ *  EGL attribute initialization callback types.
  */
 typedef SDL_EGLAttrib *(SDLCALL *SDL_EGLAttribArrayCallback)(void);
 typedef SDL_EGLint *(SDLCALL *SDL_EGLIntArrayCallback)(void);
 
 /**
- *  \brief OpenGL configuration attributes
+ *  OpenGL configuration attributes
  */
 typedef enum
 {

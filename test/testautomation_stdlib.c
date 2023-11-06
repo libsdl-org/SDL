@@ -8,7 +8,7 @@
 /* Test case functions */
 
 /**
- * \brief Call to SDL_strnlen
+ * Call to SDL_strnlen
  */
 #undef SDL_strnlen
 static int stdlib_strnlen(void *arg)
@@ -36,7 +36,7 @@ static int stdlib_strnlen(void *arg)
 }
 
 /**
- * \brief Call to SDL_strlcpy
+ * Call to SDL_strlcpy
  */
 #undef SDL_strlcpy
 static int stdlib_strlcpy(void *arg)
@@ -71,7 +71,7 @@ static int stdlib_strlcpy(void *arg)
 #endif
 
 /**
- * \brief Call to SDL_snprintf
+ * Call to SDL_snprintf
  */
 #undef SDL_snprintf
 static int stdlib_snprintf(void *arg)
@@ -262,7 +262,7 @@ static int stdlib_snprintf(void *arg)
 }
 
 /**
- * \brief Call to SDL_swprintf
+ * Call to SDL_swprintf
  */
 #undef SDL_swprintf
 static int stdlib_swprintf(void *arg)
@@ -429,7 +429,7 @@ static int stdlib_swprintf(void *arg)
 #endif
 
 /**
- * \brief Call to SDL_getenv and SDL_setenv
+ * Call to SDL_getenv and SDL_setenv
  */
 static int stdlib_getsetenv(void *arg)
 {
@@ -572,7 +572,7 @@ static int stdlib_getsetenv(void *arg)
 #endif
 
 /**
- * \brief Call to SDL_sscanf
+ * Call to SDL_sscanf
  */
 #undef SDL_sscanf
 static int stdlib_sscanf(void *arg)
@@ -741,7 +741,7 @@ static int stdlib_sscanf(void *arg)
 #endif
 
 /**
- * \brief Call to SDL_aligned_alloc
+ * Call to SDL_aligned_alloc
  */
 static int stdlib_aligned_alloc(void *arg)
 {

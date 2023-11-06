@@ -22,7 +22,7 @@
 /**
  *  \file SDL_audio.h
  *
- *  \brief Audio functionality for the SDL library.
+ *  Audio functionality for the SDL library.
  */
 
 #ifndef SDL_audio_h_
@@ -54,7 +54,7 @@ extern "C" {
  */
 
 /**
- *  \brief Audio format flags.
+ *  Audio format flags.
  *
  *  These are what the 16 bits in SDL_AudioFormat currently mean...
  *  (Unspecified bits are always zero).

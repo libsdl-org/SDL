@@ -22,7 +22,7 @@
 /**
  *  \file SDL_test_memory.h
  *
- *  \brief Memory tracking related functions of SDL test framework.
+ *  Memory tracking related functions of SDL test framework.
  *
  *  This code is a part of the SDL test library, not the main SDL library.
  */
@@ -38,21 +38,21 @@ extern "C" {
 
 
 /**
- * \brief Start tracking SDL memory allocations
+ * Start tracking SDL memory allocations
  *
  * \note This should be called before any other SDL functions for complete tracking coverage
  */
 void SDLTest_TrackAllocations(void);
 
 /**
- * \brief Fill allocations with random data
+ * Fill allocations with random data
  *
  * \note This implicitly calls SDLTest_TrackAllocations()
  */
 void SDLTest_RandFillAllocations();
 
 /**
- * \brief Print a log of any outstanding allocations
+ * Print a log of any outstanding allocations
  *
  * \note This can be called after SDL_Quit()
  */

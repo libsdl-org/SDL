@@ -44,7 +44,7 @@ Andreas Schiffler -- aschiffler at ferzkopp dot net
 /* ---- Internally used structures */
 
 /**
-\brief A 32 bit RGBA pixel.
+A 32 bit RGBA pixel.
 */
 typedef struct tColorRGBA
 {
@@ -55,7 +55,7 @@ typedef struct tColorRGBA
 } tColorRGBA;
 
 /**
-\brief A 8bit Y/palette pixel.
+A 8bit Y/palette pixel.
 */
 typedef struct tColorY
 {
@@ -63,7 +63,7 @@ typedef struct tColorY
 } tColorY;
 
 /**
-\brief Number of guard rows added to destination surfaces.
+Number of guard rows added to destination surfaces.
 
 This is a simple but effective workaround for observed issues.
 These rows allocate extra memory and are then hidden from the surface.
@@ -75,7 +75,7 @@ to a situation where the program can segfault.
 #define GUARD_ROWS (2)
 
 /**
-\brief Returns colorkey info for a surface
+Returns colorkey info for a surface
 */
 static Uint32 get_colorkey(SDL_Surface *src)
 {
@@ -100,7 +100,7 @@ static void rotate(double sx, double sy, double sinangle, double cosangle, const
 }
 
 /**
-\brief Internal target surface sizing function for rotations with trig result return.
+Internal target surface sizing function for rotations with trig result return.
 
 \param width The source surface width.
 \param height The source surface height.
@@ -249,7 +249,7 @@ static void transformSurfaceY90(SDL_Surface *src, SDL_Surface *dst, int angle, i
 #undef TRANSFORM_SURFACE_90
 
 /**
-\brief Internal 32 bit rotozoomer with optional anti-aliasing.
+Internal 32 bit rotozoomer with optional anti-aliasing.
 
 Rotates and zooms 32 bit RGBA/ABGR 'src' surface to 'dst' surface based on the control
 parameters by scanning the destination surface and applying optionally anti-aliasing
@@ -391,7 +391,7 @@ static void transformSurfaceRGBA(SDL_Surface *src, SDL_Surface *dst, int isin, i
 
 /**
 
-\brief Rotates and zooms 8 bit palette/Y 'src' surface to 'dst' surface without smoothing.
+Rotates and zooms 8 bit palette/Y 'src' surface to 'dst' surface without smoothing.
 
 Rotates and zooms 8 bit RGBA/ABGR 'src' surface to 'dst' surface based on the control
 parameters by scanning the destination surface.
@@ -462,7 +462,7 @@ static void transformSurfaceY(SDL_Surface *src, SDL_Surface *dst, int isin, int 
 }
 
 /**
-\brief Rotates and zooms a surface with different horizontal and vertival scaling factors and optional anti-aliasing.
+Rotates and zooms a surface with different horizontal and vertival scaling factors and optional anti-aliasing.
 
 Rotates a 32-bit or 8-bit 'src' surface to newly created 'dst' surface.
 'angle' is the rotation in degrees, 'center' the rotation center. If 'smooth' is set

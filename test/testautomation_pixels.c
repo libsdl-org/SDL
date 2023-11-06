@@ -111,7 +111,7 @@ static const char *g_invalidPixelFormatsVerbose[] = {
 /* Test case functions */
 
 /**
- * \brief Call to SDL_CreatePixelFormat and SDL_DestroyPixelFormat
+ * Call to SDL_CreatePixelFormat and SDL_DestroyPixelFormat
  *
  * \sa SDL_CreatePixelFormat
  * \sa SDL_DestroyPixelFormat
@@ -204,7 +204,7 @@ static int pixels_allocFreeFormat(void *arg)
 }
 
 /**
- * \brief Call to SDL_GetPixelFormatName
+ * Call to SDL_GetPixelFormatName
  *
  * \sa SDL_GetPixelFormatName
  */
@@ -271,7 +271,7 @@ static int pixels_getPixelFormatName(void *arg)
 }
 
 /**
- * \brief Call to SDL_CreatePalette and SDL_DestroyPalette
+ * Call to SDL_CreatePalette and SDL_DestroyPalette
  *
  * \sa SDL_CreatePalette
  * \sa SDL_DestroyPalette

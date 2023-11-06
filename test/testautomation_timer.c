@@ -30,7 +30,7 @@ static void timerSetUp(void *arg)
 /* Test case functions */
 
 /**
- * \brief Call to SDL_GetPerformanceCounter
+ * Call to SDL_GetPerformanceCounter
  */
 static int timer_getPerformanceCounter(void *arg)
 {
@@ -44,7 +44,7 @@ static int timer_getPerformanceCounter(void *arg)
 }
 
 /**
- * \brief Call to SDL_GetPerformanceFrequency
+ * Call to SDL_GetPerformanceFrequency
  */
 static int timer_getPerformanceFrequency(void *arg)
 {
@@ -58,7 +58,7 @@ static int timer_getPerformanceFrequency(void *arg)
 }
 
 /**
- * \brief Call to SDL_Delay and SDL_GetTicks
+ * Call to SDL_Delay and SDL_GetTicks
  */
 static int timer_delayAndGetTicks(void *arg)
 {
@@ -116,7 +116,7 @@ static Uint32 SDLCALL timerTestCallback(Uint32 interval, void *param)
 }
 
 /**
- * \brief Call to SDL_AddTimer and SDL_RemoveTimer
+ * Call to SDL_AddTimer and SDL_RemoveTimer
  */
 static int timer_addRemoveTimer(void *arg)
 {

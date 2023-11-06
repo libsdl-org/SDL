@@ -22,7 +22,7 @@
 /**
  *  \file SDL_rect.h
  *
- *  \brief Header file for SDL_rect definition and management functions.
+ *  Header file for SDL_rect definition and management functions.
  */
 
 #ifndef SDL_rect_h_

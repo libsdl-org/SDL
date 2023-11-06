@@ -22,7 +22,7 @@
 /**
  *  \file SDL_surface.h
  *
- *  \brief Header file for ::SDL_Surface definition and management functions.
+ *  Header file for ::SDL_Surface definition and management functions.
  */
 
 #ifndef SDL_surface_h_
@@ -65,7 +65,7 @@ extern "C" {
 typedef struct SDL_BlitMap SDL_BlitMap;  /* this is an opaque type. */
 
 /**
- * \brief A collection of pixels used in software blitting.
+ * A collection of pixels used in software blitting.
  *
  * Pixels are arranged in memory in rows, with the top row first.
  * Each row occupies an amount of memory given by the pitch (sometimes
@@ -112,13 +112,13 @@ typedef struct SDL_Surface
 } SDL_Surface;
 
 /**
- * \brief The type of function used for surface blitting functions.
+ * The type of function used for surface blitting functions.
  */
 typedef int (SDLCALL *SDL_blit) (struct SDL_Surface *src, const SDL_Rect *srcrect,
                                  struct SDL_Surface *dst, const SDL_Rect *dstrect);
 
 /**
- * \brief The formula used for converting between YUV and RGB
+ * The formula used for converting between YUV and RGB
  */
 typedef enum
 {

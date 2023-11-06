@@ -528,7 +528,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlit = {
 };
 
 /**
- * \brief Returns the Blit test image as SDL_Surface.
+ * Returns the Blit test image as SDL_Surface.
  */
 SDL_Surface *SDLTest_ImageBlit(void)
 {
@@ -1000,7 +1000,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitColor = {
 };
 
 /**
- * \brief Returns the BlitColor test image as SDL_Surface.
+ * Returns the BlitColor test image as SDL_Surface.
  */
 SDL_Surface *SDLTest_ImageBlitColor(void)
 {
@@ -1635,7 +1635,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitAlpha = {
 };
 
 /**
- * \brief Returns the BlitAlpha test image as SDL_Surface.
+ * Returns the BlitAlpha test image as SDL_Surface.
  */
 SDL_Surface *SDLTest_ImageBlitAlpha(void)
 {
@@ -2203,7 +2203,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendAdd = {
 };
 
 /**
- * \brief Returns the BlitBlendAdd test image as SDL_Surface.
+ * Returns the BlitBlendAdd test image as SDL_Surface.
  */
 SDL_Surface *SDLTest_ImageBlitBlendAdd(void)
 {
@@ -2792,7 +2792,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlend = {
 };
 
 /**
- * \brief Returns the BlitBlend test image as SDL_Surface.
+ * Returns the BlitBlend test image as SDL_Surface.
  */
 SDL_Surface *SDLTest_ImageBlitBlend(void)
 {
@@ -3211,7 +3211,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendMod = {
 };
 
 /**
- * \brief Returns the BlitBlendMod test image as SDL_Surface.
+ * Returns the BlitBlendMod test image as SDL_Surface.
  */
 SDL_Surface *SDLTest_ImageBlitBlendMod(void)
 {
@@ -4013,7 +4013,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendNone = {
 };
 
 /**
- * \brief Returns the BlitBlendNone test image as SDL_Surface.
+ * Returns the BlitBlendNone test image as SDL_Surface.
  */
 SDL_Surface *SDLTest_ImageBlitBlendNone(void)
 {
@@ -4547,7 +4547,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendAll = {
 };
 
 /**
- * \brief Returns the BlitBlendAll test image as SDL_Surface.
+ * Returns the BlitBlendAll test image as SDL_Surface.
  */
 SDL_Surface *SDLTest_ImageBlitBlendAll(void)
 {
@@ -4758,7 +4758,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageFace = {
 };
 
 /**
- * \brief Returns the Face test image as SDL_Surface.
+ * Returns the Face test image as SDL_Surface.
  */
 SDL_Surface *SDLTest_ImageFace(void)
 {
@@ -5251,7 +5251,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imagePrimitives = {
 };
 
 /**
- * \brief Returns the Primitives test image as SDL_Surface.
+ * Returns the Primitives test image as SDL_Surface.
  */
 SDL_Surface *SDLTest_ImagePrimitives(void)
 {
@@ -5916,7 +5916,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imagePrimitivesBlend = {
 };
 
 /**
- * \brief Returns the PrimitivesBlend test image as SDL_Surface.
+ * Returns the PrimitivesBlend test image as SDL_Surface.
  */
 SDL_Surface *SDLTest_ImagePrimitivesBlend(void)
 {

@@ -22,7 +22,7 @@
 /**
  *  \file SDL_scancode.h
  *
- *  \brief Defines keyboard scancodes.
+ *  Defines keyboard scancodes.
  */
 
 #ifndef SDL_scancode_h_
@@ -31,7 +31,7 @@
 #include <SDL3/SDL_stdinc.h>
 
 /**
- *  \brief The SDL keyboard scancode representation.
+ *  The SDL keyboard scancode representation.
  *
  *  Values of this type are used to represent keyboard keys, among other places
  *  in the \link SDL_Keysym::scancode key.keysym.scancode \endlink field of the

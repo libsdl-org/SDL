@@ -22,7 +22,7 @@
 /**
  *  \file SDL_cpuinfo.h
  *
- *  \brief CPU feature detection for SDL.
+ *  CPU feature detection for SDL.
  */
 
 #ifndef SDL_cpuinfo_h_

@@ -29,7 +29,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 static SDL_Haptic *haptic;
 
 /**
- * \brief The entry point of this force feedback demo.
+ * The entry point of this force feedback demo.
  * \param[in] argc Number of arguments.
  * \param[in] argv Array of argc arguments.
  */

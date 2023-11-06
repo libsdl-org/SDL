@@ -35,7 +35,7 @@
 #include <sys/types.h>
 
 /**
- *  \brief Device type
+ *  Device type
  */
 
 typedef enum

@@ -86,7 +86,7 @@ static void free_arrays(void *dest, void *a, void *b) {
 }
 
 /**
- * \brief Verify element-wise addition of 2 int arrays.
+ * Verify element-wise addition of 2 int arrays.
  */
 static void verify_ints_addition(const Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size, const char *desc) {
     size_t i;
@@ -106,7 +106,7 @@ static void verify_ints_addition(const Sint32 *dest, const Sint32 *a, const Sint
 }
 
 /**
- * \brief Verify element-wise multiplication of 2 int arrays.
+ * Verify element-wise multiplication of 2 int arrays.
  */
 static void verify_ints_multiplication(const Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size, const char *desc) {
     size_t i;
@@ -126,7 +126,7 @@ static void verify_ints_multiplication(const Sint32 *dest, const Sint32 *a, cons
 }
 
 /**
- * \brief Verify element-wise addition of 2 float arrays.
+ * Verify element-wise addition of 2 float arrays.
  */
 static void verify_floats_addition(const float *dest, const float *a, const float *b, size_t size, const char *desc) {
     size_t i;
@@ -147,7 +147,7 @@ static void verify_floats_addition(const float *dest, const float *a, const floa
 }
 
 /**
- * \brief Verify element-wise addition of 2 double arrays.
+ * Verify element-wise addition of 2 double arrays.
  */
 static void verify_doubles_addition(const double *dest, const double *a, const double *b, size_t size, const char *desc) {
     size_t i;

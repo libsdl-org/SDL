@@ -70,7 +70,7 @@ upper_lower_to_bytestring(Uint8 *out, Uint64 upper, Uint64 lower)
 /* Test case functions */
 
 /**
- * \brief Check String-to-GUID conversion
+ * Check String-to-GUID conversion
  *
  * \sa SDL_GUIDFromString
  */
@@ -95,7 +95,7 @@ TestGuidFromString(void *arg)
 }
 
 /**
- * \brief Check GUID-to-String conversion
+ * Check GUID-to-String conversion
  *
  * \sa SDL_GUIDToString
  */
