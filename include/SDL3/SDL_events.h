@@ -1126,10 +1126,12 @@ extern DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
 /**
  * Allocate dynamic memory for an SDL event
  *
- * You can use this to allocate memory for user events that will be automatically freed after the event is processed.
+ * You can use this to allocate memory for user events that will be
+ * automatically freed after the event is processed.
  *
  * \param size the amount of memory to allocate
- * \returns a pointer to the memory allocated or NULL on failure; call SDL_GetError() for more information.
+ * \returns a pointer to the memory allocated or NULL on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
