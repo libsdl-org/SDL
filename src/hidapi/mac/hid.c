@@ -957,7 +957,9 @@ static int return_data(hid_device *dev, unsigned char *data, size_t length)
 	size_t len = 0;
 	if (rpt != NULL) {
 		len = (length < rpt->len)? length: rpt->len;
-		memcpy(data, rpt->data, len);
+		if (data != NULL) {
+			memcpy(data, rpt->data, len);
+		}
 		dev->input_reports = rpt->next;
 		free(rpt->data);
 		free(rpt);
