@@ -2745,3 +2745,8 @@ expression e, n, v;
 @@
 - SDL_SetWindowData(e, n, v)
 + SDL_SetProperty(SDL_GetWindowProperties(e), n, v, NULL, NULL)
+@@
+expression w, i, s;
+@@
+- SDL_Vulkan_CreateSurface(w, i, s)
++ SDL_Vulkan_CreateSurface(w, i, NULL, s)
