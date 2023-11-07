@@ -183,7 +183,7 @@ static SDL_bool DisableUnsetFullscreenOnMinimize(SDL_VideoDevice *_this)
 
 /* Support for framebuffer emulation using an accelerated renderer */
 
-#define SDL_WINDOWTEXTUREDATA "_SDL_WindowTextureData"
+#define SDL_WINDOWTEXTUREDATA "SDL.internal.window.texturedata"
 
 typedef struct
 {

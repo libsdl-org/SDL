@@ -26,7 +26,7 @@
 #include "SDL_n3dsframebuffer_c.h"
 #include "SDL_n3dsvideo.h"
 
-#define N3DS_SURFACE "_SDL_N3DSSurface"
+#define N3DS_SURFACE "SDL.internal.window.surface"
 
 typedef struct
 {

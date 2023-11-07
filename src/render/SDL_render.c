@@ -43,7 +43,7 @@ this should probably be removed at some point in the future.  --ryan. */
 #define DONT_DRAW_WHILE_HIDDEN 0
 #endif
 
-#define SDL_WINDOWRENDERDATA "_SDL_WindowRenderData"
+#define SDL_WINDOWRENDERDATA "SDL.internal.window.renderer"
 
 #define CHECK_RENDERER_MAGIC(renderer, retval)                  \
     if (!(renderer) || (renderer)->magic != &renderer_magic) {  \

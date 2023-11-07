@@ -25,7 +25,7 @@
 #include "../SDL_sysvideo.h"
 #include "SDL_nullframebuffer_c.h"
 
-#define DUMMY_SURFACE "_SDL_DummySurface"
+#define DUMMY_SURFACE "SDL.internal.window.surface"
 
 static void CleanupSurface(void *userdata, void *value)
 {
