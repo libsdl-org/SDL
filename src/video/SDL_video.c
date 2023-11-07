@@ -5138,6 +5138,11 @@ SDL_MetalView SDL_Metal_CreateView(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, NULL);
 
+    if (!_this->Metal_CreateView) {
+        SDL_Unsupported();
+        return NULL;
+    }
+
     if (!(window->flags & SDL_WINDOW_METAL)) {
         /* No problem, we can convert to Metal */
         if (window->flags & SDL_WINDOW_OPENGL) {
