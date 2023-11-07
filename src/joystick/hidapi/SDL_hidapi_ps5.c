@@ -333,7 +333,8 @@ static void SetLightsForPlayerIndex(DS5EffectsState_t *effects, int player_index
         0x04,
         0x0A,
         0x15,
-        0x1B
+        0x1B,
+        0x1F
     };
 
     if (player_index >= 0) {
