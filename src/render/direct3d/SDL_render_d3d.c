@@ -1714,7 +1714,7 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
     data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
     data->drawstate.blend = SDL_BLENDMODE_INVALID;
 
-    SDL_SetProperty(SDL_GetRendererProperties(renderer), "SDL.renderer.d3d9.device", data->device, NULL, NULL);
+    SDL_SetProperty(SDL_GetRendererProperties(renderer), "SDL.renderer.d3d9.device", data->device);
 
     return renderer;
 }

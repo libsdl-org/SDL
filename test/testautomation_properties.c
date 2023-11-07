@@ -26,7 +26,7 @@ static int properties_testBasic(void *arg)
     for (i = 0; i < 10; ++i) {
         SDL_snprintf(key, SDL_arraysize(key), "%c", 'a' + i);
         SDL_snprintf(expected_value, SDL_arraysize(expected_value), "%c", 'a' + i);
-        result = SDL_SetProperty(props, key, expected_value, NULL, NULL);
+        result = SDL_SetProperty(props, key, expected_value);
         SDLTest_AssertPass("Call to SDL_SetProperty()");
         SDLTest_AssertCheck(result == 0,
             "Verify property value was set, got: %d", result);
@@ -38,7 +38,7 @@ static int properties_testBasic(void *arg)
 
     for (i = 0; i < 10; ++i) {
         SDL_snprintf(key, SDL_arraysize(key), "%c", 'a' + i);
-        result = SDL_SetProperty(props, key, NULL, NULL, NULL);
+        result = SDL_SetProperty(props, key, NULL);
         SDLTest_AssertPass("Call to SDL_SetProperty(NULL)");
         SDLTest_AssertCheck(result == 0,
             "Verify property value was set, got: %d", result);
@@ -71,8 +71,8 @@ static int properties_testCleanup(void *arg)
 
     SDLTest_AssertPass("Call to SDL_SetProperty(cleanup)");
     count = 0;
-    SDL_SetProperty(props, "a", "0", cleanup, &count);
-    SDL_SetProperty(props, "a", NULL, cleanup, &count);
+    SDL_SetPropertyWithCleanup(props, "a", "0", cleanup, &count);
+    SDL_SetPropertyWithCleanup(props, "a", NULL, cleanup, &count);
     SDLTest_AssertCheck(count == 1,
         "Verify cleanup for deleting property, got %d, expected 1", count);
 
@@ -81,7 +81,7 @@ static int properties_testCleanup(void *arg)
     for (i = 0; i < 10; ++i) {
         SDL_snprintf(key, SDL_arraysize(key), "%c", 'a' + i);
         SDL_snprintf(expected_value, SDL_arraysize(expected_value), "%c", 'a' + i);
-        SDL_SetProperty(props, key, expected_value, cleanup, &count);
+        SDL_SetPropertyWithCleanup(props, key, expected_value, cleanup, &count);
     }
     SDL_DestroyProperties(props);
     SDLTest_AssertCheck(count == 10,
@@ -104,11 +104,11 @@ static int properties_thread(void *arg)
 
     while (!data->done) {
         SDL_LockProperties(data->props);
-        SDL_SetProperty(data->props, "a", "thread_loop", NULL, NULL);
+        SDL_SetProperty(data->props, "a", "thread_loop");
         SDL_UnlockProperties(data->props);
     }
     SDL_LockProperties(data->props);
-    SDL_SetProperty(data->props, "a", "thread_done", NULL, NULL);
+    SDL_SetProperty(data->props, "a", "thread_done");
     SDL_UnlockProperties(data->props);
     return 0;
 }
@@ -122,7 +122,7 @@ static int properties_testLocking(void *arg)
     data.done = SDL_FALSE;
     data.props = SDL_CreateProperties();
     SDLTest_AssertPass("Setting property to 'init'");
-    SDL_SetProperty(data.props, "a", "init", NULL, NULL);
+    SDL_SetProperty(data.props, "a", "init");
     thread = SDL_CreateThread(properties_thread, "properties_thread", &data);
     if (thread) {
         SDLTest_AssertPass("Waiting for property to change to 'thread_loop'");
@@ -142,7 +142,7 @@ static int properties_testLocking(void *arg)
 
         SDLTest_AssertPass("Setting property to 'main'");
         SDL_LockProperties(data.props);
-        SDL_SetProperty(data.props, "a", "main", NULL, NULL);
+        SDL_SetProperty(data.props, "a", "main");
         SDL_Delay(100);
         value = SDL_GetProperty(data.props, "a");
         SDLTest_AssertCheck(value && SDL_strcmp((const char *)value, "main") == 0,

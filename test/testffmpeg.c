@@ -464,7 +464,7 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
                 SDL_OutOfMemory();
                 return SDL_FALSE;
             }
-            SDL_SetProperty(props, SWS_CONTEXT_CONTAINER_PROPERTY, sws_container, FreeSwsContextContainer, NULL);
+            SDL_SetPropertyWithCleanup(props, SWS_CONTEXT_CONTAINER_PROPERTY, sws_container, FreeSwsContextContainer, NULL);
         }
         sws_container->context = sws_getCachedContext(sws_container->context, frame->width, frame->height, frame->format, frame->width, frame->height, AV_PIX_FMT_BGRA, SWS_POINT, NULL, NULL, NULL);
         if (sws_container->context) {

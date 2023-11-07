@@ -48,7 +48,7 @@ int SDL_DUMMY_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     }
 
     /* Save the info and return! */
-    SDL_SetProperty(SDL_GetWindowProperties(window), DUMMY_SURFACE, surface, CleanupSurface, NULL);
+    SDL_SetPropertyWithCleanup(SDL_GetWindowProperties(window), DUMMY_SURFACE, surface, CleanupSurface, NULL);
     *format = surface_format;
     *pixels = surface->pixels;
     *pitch = surface->pitch;

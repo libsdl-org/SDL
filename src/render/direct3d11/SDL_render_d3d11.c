@@ -668,7 +668,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     ID3D11DeviceContext_VSSetShader(data->d3dContext, data->vertexShader, NULL, 0);
     ID3D11DeviceContext_VSSetConstantBuffers(data->d3dContext, 0, 1, &data->vertexShaderConstants);
 
-    SDL_SetProperty(SDL_GetRendererProperties(renderer), "SDL.renderer.d3d11.device", data->d3dDevice, NULL, NULL);
+    SDL_SetProperty(SDL_GetRendererProperties(renderer), "SDL.renderer.d3d11.device", data->d3dDevice);
 
 done:
     SAFE_RELEASE(d3dDevice);

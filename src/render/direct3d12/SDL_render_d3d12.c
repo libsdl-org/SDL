@@ -1070,7 +1070,7 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
     }
     data->srvPoolHead = &data->srvPoolNodes[0];
 
-    SDL_SetProperty(SDL_GetRendererProperties(renderer), "SDL.renderer.d3d12.device", data->d3dDevice, NULL, NULL);
+    SDL_SetProperty(SDL_GetRendererProperties(renderer), "SDL.renderer.d3d12.device", data->d3dDevice);
 
 done:
     SAFE_RELEASE(d3dDevice);

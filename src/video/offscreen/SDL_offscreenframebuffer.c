@@ -48,7 +48,7 @@ int SDL_OFFSCREEN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wi
     }
 
     /* Save the info and return! */
-    SDL_SetProperty(SDL_GetWindowProperties(window), OFFSCREEN_SURFACE, surface, CleanupSurface, NULL);
+    SDL_SetPropertyWithCleanup(SDL_GetWindowProperties(window), OFFSCREEN_SURFACE, surface, CleanupSurface, NULL);
     *format = surface_format;
     *pixels = surface->pixels;
     *pitch = surface->pitch;
