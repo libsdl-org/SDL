@@ -67,7 +67,7 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
 
     item->naxes = gamepadEvent->numAxes;
     item->nbuttons = gamepadEvent->numButtons;
-    item->device_instance = SDL_GetNextJoystickInstanceID();
+    item->device_instance = SDL_GetNextObjectID();
 
     item->timestamp = gamepadEvent->timestamp;
 
@@ -94,7 +94,6 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Number of joysticks is %d", numjoysticks);
 #endif
-
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Added joystick with index %d", item->index);
 #endif
