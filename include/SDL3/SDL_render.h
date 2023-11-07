@@ -116,16 +116,6 @@ typedef enum
 } SDL_TextureAccess;
 
 /**
- * The texture channel modulation used in SDL_RenderTexture().
- */
-typedef enum
-{
-    SDL_TEXTUREMODULATE_NONE = 0x00000000,     /**< No modulation */
-    SDL_TEXTUREMODULATE_COLOR = 0x00000001,    /**< srcC = srcC * color */
-    SDL_TEXTUREMODULATE_ALPHA = 0x00000002     /**< srcA = srcA * alpha */
-} SDL_TextureModulate;
-
-/**
  * Flip constants for SDL_RenderTextureRotated
  */
 typedef enum
