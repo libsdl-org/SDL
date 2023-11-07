@@ -581,15 +581,6 @@ typedef struct SDL_QuitEvent
 } SDL_QuitEvent;
 
 /**
- *  \brief OS Specific event
- */
-typedef struct SDL_OSEvent
-{
-    Uint32 type;        /**< ::SDL_QUIT */
-    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
-} SDL_OSEvent;
-
-/**
  *  \brief A user-defined event type (event.user.*)
  */
 typedef struct SDL_UserEvent
