@@ -560,15 +560,6 @@ typedef struct SDL_QuitEvent
 } SDL_QuitEvent;
 
 /**
- *  OS Specific event
- */
-typedef struct SDL_OSEvent
-{
-    Uint32 type;        /**< ::SDL_EVENT_QUIT */
-    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-} SDL_OSEvent;
-
-/**
  *  A user-defined event type (event.user.*)
  */
 typedef struct SDL_UserEvent
