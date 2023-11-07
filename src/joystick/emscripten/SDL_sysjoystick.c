@@ -37,7 +37,6 @@ static SDL_joylist_item *JoystickByIndex(int index);
 static SDL_joylist_item *SDL_joylist = NULL;
 static SDL_joylist_item *SDL_joylist_tail = NULL;
 static int numjoysticks = 0;
-static int instance_counter = 0;
 
 static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
 {
@@ -72,7 +71,7 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
 
     item->naxes = gamepadEvent->numAxes;
     item->nbuttons = gamepadEvent->numButtons;
-    item->device_instance = instance_counter++;
+    item->device_instance = SDL_GetNextJoystickInstanceID();
 
     item->timestamp = gamepadEvent->timestamp;
 
@@ -168,7 +167,6 @@ static void EMSCRIPTEN_JoystickQuit(void)
     SDL_joylist = SDL_joylist_tail = NULL;
 
     numjoysticks = 0;
-    instance_counter = 0;
 
     emscripten_set_gamepadconnected_callback(NULL, 0, NULL);
     emscripten_set_gamepaddisconnected_callback(NULL, 0, NULL);
