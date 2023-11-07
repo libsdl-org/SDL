@@ -647,17 +647,6 @@ static int SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection *src)
 
     switch (src->type) {
     case SDL_HAPTIC_POLAR:
-        /* Linux directions start from south.
-                (and range from 0 to 0xFFFF)
-                   Quoting include/linux/input.h, line 926:
-                   Direction of the effect is encoded as follows:
-                        0 deg -> 0x0000 (down)
-                        90 deg -> 0x4000 (left)
-                        180 deg -> 0x8000 (up)
-                        270 deg -> 0xC000 (right)
-                   The force pulls into the direction specified by Linux directions,
-                   i.e. the opposite convention of SDL directions.
-                    */
         tmp = ((src->dir[0] % 36000) * 0x8000) / 18000; /* convert to range [0,0xFFFF] */
         *dest = (Uint16)tmp;
         break;
