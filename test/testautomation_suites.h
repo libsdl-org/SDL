@@ -26,6 +26,7 @@ extern SDLTest_TestSuiteReference renderTestSuite;
 extern SDLTest_TestSuiteReference rwopsTestSuite;
 extern SDLTest_TestSuiteReference sdltestTestSuite;
 extern SDLTest_TestSuiteReference stdlibTestSuite;
+extern SDLTest_TestSuiteReference subsystemsTestSuite;
 extern SDLTest_TestSuiteReference surfaceTestSuite;
 extern SDLTest_TestSuiteReference syswmTestSuite;
 extern SDLTest_TestSuiteReference timerTestSuite;
@@ -54,6 +55,7 @@ SDLTest_TestSuiteReference *testSuites[] = {
     &syswmTestSuite,
     &timerTestSuite,
     &videoTestSuite,
+    &subsystemsTestSuite, /* run last, not interfere with other test enviroment */
     NULL
 };
 

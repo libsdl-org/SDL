@@ -224,6 +224,7 @@
     <ClCompile Include="..\..\..\test\testautomation_syswm.c" />
     <ClCompile Include="..\..\..\test\testautomation_timer.c" />
     <ClCompile Include="..\..\..\test\testautomation_video.c" />
+    <ClCompile Include="..\..\..\test\testautomation_subsystems.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\test\testautomation_suites.h" />

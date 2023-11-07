@@ -151,6 +151,7 @@ testautomation$(EXE): $(srcdir)/testautomation.c \
 		      $(srcdir)/testautomation_rwops.c \
 		      $(srcdir)/testautomation_sdltest.c \
 		      $(srcdir)/testautomation_stdlib.c \
+		      $(srcdir)/testautomation_subsystems.c \
 		      $(srcdir)/testautomation_surface.c \
 		      $(srcdir)/testautomation_syswm.c \
 		      $(srcdir)/testautomation_timer.c \
