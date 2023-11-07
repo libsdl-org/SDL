@@ -117,7 +117,6 @@ static SDL_VideoDevice *Android_CreateDevice(void)
     device->MinimizeWindow = Android_MinimizeWindow;
     device->SetWindowResizable = Android_SetWindowResizable;
     device->DestroyWindow = Android_DestroyWindow;
-    device->GetWindowWMInfo = Android_GetWindowWMInfo;
 
     device->free = Android_DeleteDevice;
 

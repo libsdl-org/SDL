@@ -33,7 +33,6 @@
 #include "SDL_vivantevideo.h"
 
 #include "SDL_vivantevulkan.h"
-#include <SDL3/SDL_syswm.h>
 
 int VIVANTE_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {

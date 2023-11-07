@@ -384,7 +384,6 @@
 #define SDL_GetWindowSizeInPixels SDL_GetWindowSizeInPixels_REAL
 #define SDL_GetWindowSurface SDL_GetWindowSurface_REAL
 #define SDL_GetWindowTitle SDL_GetWindowTitle_REAL
-#define SDL_GetWindowWMInfo SDL_GetWindowWMInfo_REAL
 #define SDL_GetYUVConversionMode SDL_GetYUVConversionMode_REAL
 #define SDL_GetYUVConversionModeForResolution SDL_GetYUVConversionModeForResolution_REAL
 #define SDL_HapticClose SDL_HapticClose_REAL
@@ -947,3 +946,4 @@
 #define SDL_AllocateEventMemory SDL_AllocateEventMemory_REAL
 #define SDL_GetDisplayProperties SDL_GetDisplayProperties_REAL
 #define SDL_SetPropertyWithCleanup SDL_SetPropertyWithCleanup_REAL
+#define SDL_SetX11EventHook SDL_SetX11EventHook_REAL

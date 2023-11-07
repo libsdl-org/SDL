@@ -94,7 +94,6 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->SetWindowFullscreen = UIKit_SetWindowFullscreen;
         device->SetWindowMouseGrab = UIKit_SetWindowMouseGrab;
         device->DestroyWindow = UIKit_DestroyWindow;
-        device->GetWindowWMInfo = UIKit_GetWindowWMInfo;
         device->GetDisplayUsableBounds = UIKit_GetDisplayUsableBounds;
         device->GetWindowSizeInPixels = UIKit_GetWindowSizeInPixels;
 

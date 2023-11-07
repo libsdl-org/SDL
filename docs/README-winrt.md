@@ -63,7 +63,7 @@ Here is a rough list of what works, and what doesn't:
   * using Direct3D 11.x APIs outside of SDL.  Non-XAML / Direct3D-only apps can
     choose to render content directly via Direct3D, using SDL to manage the
     internal WinRT window, as well as input and audio.  (Use
-    SDL_GetWindowWMInfo() to get the WinRT 'CoreWindow', and pass it into
+    the window properties to get the WinRT 'CoreWindow', and pass it into
     IDXGIFactory2::CreateSwapChainForCoreWindow() as appropriate.)
 
 * What partially works:

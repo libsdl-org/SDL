@@ -40,8 +40,6 @@
 #include "../../core/linux/SDL_system_theme.h"
 #include "../../SDL_utils_c.h"
 
-#include <SDL3/SDL_syswm.h>
-
 #include <stdio.h>
 
 /*#define DEBUG_XEVENTS*/
@@ -324,27 +322,25 @@ static char *X11_URIToLocal(char *uri)
     return file;
 }
 
+/* An X11 event hook */
+static SDL_X11EventHook g_X11EventHook = NULL;
+static void *g_X11EventHookData = NULL;
+
+void SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata)
+{
+    g_X11EventHook = callback;
+    g_X11EventHookData = userdata;
+}
+
 #ifdef SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
 static void X11_HandleGenericEvent(SDL_VideoData *videodata, XEvent *xev)
 {
     /* event is a union, so cookie == &event, but this is type safe. */
     XGenericEventCookie *cookie = &xev->xcookie;
     if (X11_XGetEventData(videodata->display, cookie)) {
-        X11_HandleXinput2Event(videodata, cookie);
-
-        /* Send a SDL_EVENT_SYSWM if the application wants them.
-         * Since event data is only available until XFreeEventData is called,
-         * the *only* way for an application to access it is to register an event filter/watcher
-         * and do all the processing on the SDL_EVENT_SYSWM inside the callback. */
-        if (SDL_EventEnabled(SDL_EVENT_SYSWM)) {
-            SDL_SysWMmsg wmmsg;
-
-            wmmsg.version = SDL_SYSWM_CURRENT_VERSION;
-            wmmsg.subsystem = SDL_SYSWM_X11;
-            wmmsg.msg.x11.event = *xev;
-            SDL_SendSysWMEvent(&wmmsg);
+        if (!g_X11EventHook || g_X11EventHook(g_X11EventHookData, xev)) {
+            X11_HandleXinput2Event(videodata, cookie);
         }
-
         X11_XFreeEventData(videodata->display, cookie);
     }
 }
@@ -870,21 +866,18 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     }
 #endif
 
+    /* Calling the event hook for generic events happens in X11_HandleGenericEvent(), where the event data is available */
+    if (g_X11EventHook) {
+        if (!g_X11EventHook(g_X11EventHookData, xevent)) {
+            return;
+        }
+    }
+
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
     if (videodata->xrandr_event_base && (xevent->type == (videodata->xrandr_event_base + RRNotify))) {
         X11_HandleXRandREvent(_this, xevent);
     }
 #endif
-
-    /* Send a SDL_EVENT_SYSWM if the application wants them */
-    if (SDL_EventEnabled(SDL_EVENT_SYSWM)) {
-        SDL_SysWMmsg wmmsg;
-
-        wmmsg.version = SDL_SYSWM_CURRENT_VERSION;
-        wmmsg.subsystem = SDL_SYSWM_X11;
-        wmmsg.msg.x11.event = *xevent;
-        SDL_SendSysWMEvent(&wmmsg);
-    }
 
 #if 0
     printf("type = %d display = %d window = %d\n",

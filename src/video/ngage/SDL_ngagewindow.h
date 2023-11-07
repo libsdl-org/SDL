@@ -24,8 +24,6 @@
 
 #include "../SDL_sysvideo.h"
 
-#include <SDL3/SDL_syswm.h>
-
 #include "SDL_ngagevideo.h"
 
 typedef struct
@@ -34,10 +32,7 @@ typedef struct
 
 } NGAGE_Window;
 
-extern int
-NGAGE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
-
-extern void
-NGAGE_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern int NGAGE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern void NGAGE_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
 #endif /* SDL_ngagewindow */

@@ -28,8 +28,6 @@
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
 
-#include <SDL3/SDL_syswm.h>
-
 /* PSP declarations */
 #include "SDL_pspvideo.h"
 #include "SDL_pspevents_c.h"

@@ -35,7 +35,6 @@
 
 #include "SDL_androidvulkan.h"
 
-#include <SDL3/SDL_syswm.h>
 
 int Android_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {

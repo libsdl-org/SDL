@@ -79,7 +79,6 @@ static SDL_VideoDevice *RISCOS_CreateDevice(void)
 
     device->CreateSDLWindow = RISCOS_CreateWindow;
     device->DestroyWindow = RISCOS_DestroyWindow;
-    device->GetWindowWMInfo = RISCOS_GetWindowWMInfo;
 
     device->CreateWindowFramebuffer = RISCOS_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = RISCOS_UpdateWindowFramebuffer;

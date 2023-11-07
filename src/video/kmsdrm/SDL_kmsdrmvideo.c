@@ -35,8 +35,6 @@
 #include "../../core/openbsd/SDL_wscons.h"
 #endif
 
-#include <SDL3/SDL_syswm.h>
-
 /* KMS/DRM declarations */
 #include "SDL_kmsdrmdyn.h"
 #include "SDL_kmsdrmevents.h"
@@ -295,7 +293,6 @@ static SDL_VideoDevice *KMSDRM_CreateDevice(void)
     device->MinimizeWindow = KMSDRM_MinimizeWindow;
     device->RestoreWindow = KMSDRM_RestoreWindow;
     device->DestroyWindow = KMSDRM_DestroyWindow;
-    device->GetWindowWMInfo = KMSDRM_GetWindowWMInfo;
 
     device->GL_LoadLibrary = KMSDRM_GLES_LoadLibrary;
     device->GL_GetProcAddress = KMSDRM_GLES_GetProcAddress;
@@ -1437,6 +1434,11 @@ int KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     windata->viddata = viddata;
     window->driverdata = windata;
 
+    SDL_PropertiesID props = SDL_GetWindowProperties(window);
+    SDL_SetProperty(props, "SDL.window.kmsdrm.dev_index", (void *)(intptr_t)viddata->devindex);
+    SDL_SetProperty(props, "SDL.window.kmsdrm.drm_fd", (void *)(intptr_t)viddata->drm_fd);
+    SDL_SetProperty(props, "SDL.window.kmsdrm.gbm_dev", viddata->gbm_dev);
+
     if (!is_vulkan && !vulkan_mode) { /* NON-Vulkan block. */
 
         /* Maybe you didn't ask for an OPENGL window, but that's what you will get.
@@ -1593,21 +1595,6 @@ void KMSDRM_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
 }
 void KMSDRM_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-}
-
-/*****************************************************************************/
-/* SDL Window Manager function                                               */
-/*****************************************************************************/
-int KMSDRM_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info)
-{
-    SDL_VideoData *viddata = _this->driverdata;
-
-    info->subsystem = SDL_SYSWM_KMSDRM;
-    info->info.kmsdrm.dev_index = viddata->devindex;
-    info->info.kmsdrm.drm_fd = viddata->drm_fd;
-    info->info.kmsdrm.gbm_dev = viddata->gbm_dev;
-
-    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_KMSDRM */

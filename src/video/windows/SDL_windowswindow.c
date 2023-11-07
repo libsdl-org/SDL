@@ -38,8 +38,6 @@
 /* Dropfile support */
 #include <shellapi.h>
 
-#include <SDL3/SDL_syswm.h>
-
 /* Dark mode support */
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
@@ -439,6 +437,11 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
     }
 
     data->initializing = SDL_FALSE;
+
+    SDL_PropertiesID props = SDL_GetWindowProperties(window);
+    SDL_SetProperty(props, "SDL.window.win32.hwnd", data->hwnd);
+    SDL_SetProperty(props, "SDL.window.win32.hdc", data->hdc);
+    SDL_SetProperty(props, "SDL.window.win32.instance", data->hinstance);
 
     /* All done! */
     return 0;
@@ -1248,18 +1251,6 @@ void WIN_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     CleanupWindowData(_this, window);
-}
-
-int WIN_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, SDL_SysWMinfo *info)
-{
-    const SDL_WindowData *data = (const SDL_WindowData *)window->driverdata;
-
-    info->subsystem = SDL_SYSWM_WINDOWS;
-    info->info.win.window = data->hwnd;
-    info->info.win.hdc = data->hdc;
-    info->info.win.hinstance = data->hinstance;
-
-    return 0;
 }
 
 /*

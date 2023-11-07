@@ -40,13 +40,17 @@ extern "C" {
 #endif
 
 
-/* Platform specific functions for Windows */
+/*
+ * Platform specific functions for Windows
+ */
 #if defined(__WIN32__) || defined(__GDK__)
 
-typedef void (SDLCALL * SDL_WindowsMessageHook)(void *userdata, void *hWnd, unsigned int message, Uint64 wParam, Sint64 lParam);
-
+typedef struct tagMSG MSG;
+typedef SDL_bool (SDLCALL *SDL_WindowsMessageHook)(void *userdata, MSG *msg);
 /**
  * Set a callback for every Windows message, run before TranslateMessage().
+ *
+ * The callback may modify the message, and should return SDL_TRUE if the message should continue to be processed, or SDL_FALSE to prevent further processing.
  *
  * \param callback The SDL_WindowsMessageHook function to call.
  * \param userdata a pointer to pass to every iteration of `callback`
@@ -96,7 +100,27 @@ extern DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, 
 
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
-/* Platform specific functions for Linux */
+/*
+ * Platform specific functions for UNIX
+ */
+
+typedef union _XEvent XEvent;
+typedef SDL_bool (SDLCALL *SDL_X11EventHook)(void *userdata, XEvent *xevent);
+/**
+ * Set a callback for every X11 event
+ *
+ * The callback may modify the event, and should return SDL_TRUE if the event should continue to be processed, or SDL_FALSE to prevent further processing.
+ *
+ * \param callback The SDL_X11EventHook function to call.
+ * \param userdata a pointer to pass to every iteration of `callback`
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata);
+
+/*
+ * Platform specific functions for Linux
+ */
 #ifdef __LINUX__
 
 /**
@@ -130,7 +154,9 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID,
 
 #endif /* __LINUX__ */
 
-/* Platform specific functions for iOS */
+/*
+ * Platform specific functions for iOS
+ */
 #ifdef __IOS__
 
 #define SDL_iOSSetAnimationCallback(window, interval, callback, callbackParam) SDL_iPhoneSetAnimationCallback(window, interval, callback, callbackParam)
@@ -190,7 +216,9 @@ extern DECLSPEC void SDLCALL SDL_iPhoneSetEventPump(SDL_bool enabled);
 #endif /* __IOS__ */
 
 
-/* Platform specific functions for Android */
+/*
+ * Platform specific functions for Android
+ */
 #ifdef __ANDROID__
 
 /**
@@ -419,7 +447,9 @@ extern DECLSPEC int SDLCALL SDL_AndroidSendMessage(Uint32 command, int param);
 
 #endif /* __ANDROID__ */
 
-/* Platform specific functions for WinRT */
+/*
+ * Platform specific functions for WinRT
+ */
 #ifdef __WINRT__
 
 /**
@@ -581,7 +611,9 @@ extern DECLSPEC void SDLCALL SDL_OnApplicationDidBecomeActive(void);
 extern DECLSPEC void SDLCALL SDL_OnApplicationDidChangeStatusBarOrientation(void);
 #endif
 
-/* Functions used only by GDK */
+/*
+ * Functions used only by GDK
+ */
 #ifdef __GDK__
 typedef struct XTaskQueueObject *XTaskQueueHandle;
 typedef struct XUser *XUserHandle;

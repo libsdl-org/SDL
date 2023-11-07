@@ -25,8 +25,6 @@
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_mouse_c.h"
 
-#include <SDL3/SDL_syswm.h>
-
 #include "SDL_riscosvideo.h"
 #include "SDL_riscoswindow.h"
 
@@ -59,12 +57,6 @@ void RISCOS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     SDL_free(driverdata);
     window->driverdata = NULL;
-}
-
-int RISCOS_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info)
-{
-    info->subsystem = SDL_SYSWM_RISCOS;
-    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_RISCOS */

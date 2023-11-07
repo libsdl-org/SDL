@@ -42,7 +42,6 @@ static SDLTest_TestSuiteReference *testSuites[] = {
     &sdltestTestSuite,
     &stdlibTestSuite,
     &surfaceTestSuite,
-    &syswmTestSuite,
     &timerTestSuite,
     &videoTestSuite,
     &subsystemsTestSuite, /* run last, not interfere with other test enviroment */

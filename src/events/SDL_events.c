@@ -33,7 +33,6 @@
 #include "../sensor/SDL_sensor_c.h"
 #endif
 #include "../video/SDL_sysvideo.h"
-#include <SDL3/SDL_syswm.h>
 
 #undef SDL_PRIs64
 #if (defined(__WIN32__) || defined(__GDK__)) && !defined(__CYGWIN__)
@@ -194,7 +193,6 @@ static void SDLCALL SDL_PollSentinelChanged(void *userdata, const char *name, co
  *  - 0: (default) no logging
  *  - 1: logging of most events
  *  - 2: as above, plus mouse and finger motion
- *  - 3: as above, plus SDL_SysWMEvents
  */
 static int SDL_EventLoggingVerbosity = 0;
 
@@ -215,11 +213,6 @@ static void SDL_LogEvent(const SDL_Event *event)
          (event->type == SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION) ||
          (event->type == SDL_EVENT_GAMEPAD_SENSOR_UPDATE) ||
          (event->type == SDL_EVENT_SENSOR_UPDATE))) {
-        return;
-    }
-
-    /* window manager events are even more spammy, and don't provide much useful info. */
-    if ((SDL_EventLoggingVerbosity < 3) && (event->type == SDL_EVENT_SYSWM)) {
         return;
     }
 
@@ -320,11 +313,6 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_OCCLUDED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_DESTROYED);
 #undef SDL_WINDOWEVENT_CASE
-
-        SDL_EVENT_CASE(SDL_EVENT_SYSWM)
-        /* !!! FIXME: we don't delve further at the moment. */
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u)", (uint)event->syswm.timestamp);
-        break;
 
 #define PRINT_KEY_EVENT(event)                                                                                                   \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u state=%s repeat=%s scancode=%u keycode=%u mod=%u)", \
@@ -644,7 +632,6 @@ int SDL_StartEventLoop(void)
     /* Process most event types */
     SDL_SetEventEnabled(SDL_EVENT_TEXT_INPUT, SDL_FALSE);
     SDL_SetEventEnabled(SDL_EVENT_TEXT_EDITING, SDL_FALSE);
-    SDL_SetEventEnabled(SDL_EVENT_SYSWM, SDL_FALSE);
 #if 0 /* Leave these events enabled so apps can respond to items being dragged onto them at startup */
     SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, SDL_FALSE);
     SDL_SetEventEnabled(SDL_EVENT_DROP_TEXT, SDL_FALSE);
@@ -1402,27 +1389,6 @@ int SDL_SendAppEvent(SDL_EventType eventType)
         event.common.timestamp = 0;
         posted = (SDL_PushEvent(&event) > 0);
     }
-    return posted;
-}
-
-int SDL_SendSysWMEvent(SDL_SysWMmsg *message)
-{
-    int posted;
-
-    posted = 0;
-    if (SDL_EventEnabled(SDL_EVENT_SYSWM)) {
-        SDL_Event event;
-        SDL_memset(&event, 0, sizeof(event));
-        event.type = SDL_EVENT_SYSWM;
-        event.common.timestamp = 0;
-        event.syswm.msg = (SDL_SysWMmsg *)SDL_AllocateEventMemory(sizeof(*message));
-        if (!event.syswm.msg) {
-            return 0;
-        }
-        SDL_copyp(event.syswm.msg, message);
-        posted = (SDL_PushEvent(&event) > 0);
-    }
-    /* Update internal event state */
     return posted;
 }
 

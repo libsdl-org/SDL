@@ -32,8 +32,6 @@
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
 
-#include <SDL3/SDL_syswm.h>
-
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
 #include "SDL_render_d3d12_xbox.h"
 #ifndef D3D12_TEXTURE_DATA_PITCH_ALIGNMENT
@@ -1153,7 +1151,6 @@ static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->driverdata;
     IDXGISwapChain1 *swapChain = NULL;
     HRESULT result = S_OK;
-    SDL_SysWMinfo windowinfo;
 
     /* Create a swap chain using the same adapter as the existing Direct3D device. */
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc;
@@ -1175,16 +1172,11 @@ static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT | /* To support SetMaximumFrameLatency */
                           DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;                  /* To support presenting with allow tearing on */
 
-    if (SDL_GetWindowWMInfo(renderer->window, &windowinfo, SDL_SYSWM_CURRENT_VERSION) < 0 ||
-        windowinfo.subsystem != SDL_SYSWM_WINDOWS) {
-        SDL_SetError("Couldn't get window handle");
-        result = E_FAIL;
-        goto done;
-    }
+    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(renderer->window), "SDL.window.win32.hwnd");
 
     result = D3D_CALL(data->dxgiFactory, CreateSwapChainForHwnd,
                       (IUnknown *)data->commandQueue,
-                      windowinfo.info.win.window,
+                      hwnd,
                       &swapChainDesc,
                       NULL,
                       NULL, /* Allow on all displays. */
@@ -1194,7 +1186,7 @@ static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         goto done;
     }
 
-    D3D_CALL(data->dxgiFactory, MakeWindowAssociation, windowinfo.info.win.window, DXGI_MWA_NO_WINDOW_CHANGES);
+    D3D_CALL(data->dxgiFactory, MakeWindowAssociation, hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
 
     result = D3D_CALL(swapChain, QueryInterface, D3D_GUID(SDL_IID_IDXGISwapChain4), (void **)&data->swapChain);
     if (FAILED(result)) {

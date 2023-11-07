@@ -360,7 +360,6 @@ SDL3_0.0.0 {
     SDL_GetWindowSizeInPixels;
     SDL_GetWindowSurface;
     SDL_GetWindowTitle;
-    SDL_GetWindowWMInfo;
     SDL_GetYUVConversionMode;
     SDL_GetYUVConversionModeForResolution;
     SDL_HapticClose;
@@ -922,6 +921,7 @@ SDL3_0.0.0 {
     SDL_AllocateEventMemory;
     SDL_GetDisplayProperties;
     SDL_SetPropertyWithCleanup;
+    SDL_SetX11EventHook;
     # extra symbols go here (don't modify this line)
   local: *;
 };

@@ -201,7 +201,6 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->SetWindowKeyboardGrab = WIN_SetWindowKeyboardGrab;
 #endif
     device->DestroyWindow = WIN_DestroyWindow;
-    device->GetWindowWMInfo = WIN_GetWindowWMInfo;
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     device->CreateWindowFramebuffer = WIN_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = WIN_UpdateWindowFramebuffer;

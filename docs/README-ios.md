@@ -125,26 +125,6 @@ SDL for iPhone supports polling the built in accelerometer as a joystick device.
 The main thing to note when using the accelerometer with SDL is that while the iPhone natively reports accelerometer as floating point values in units of g-force, SDL_GetJoystickAxis() reports joystick values as signed integers.  Hence, in order to convert between the two, some clamping and scaling is necessary on the part of the iPhone SDL joystick driver.  To convert SDL_GetJoystickAxis() reported values BACK to units of g-force, simply multiply the values by SDL_IPHONE_MAX_GFORCE / 0x7FFF.
 
 
-Notes -- OpenGL ES
-==============================================================================
-
-Your SDL application for iOS uses OpenGL ES for video by default.
-
-OpenGL ES for iOS supports several display pixel formats, such as RGBA8 and RGB565, which provide a 32 bit and 16 bit color buffer respectively. By default, the implementation uses RGB565, but you may use RGBA8 by setting each color component to 8 bits in SDL_GL_SetAttribute().
-
-If your application doesn't use OpenGL's depth buffer, you may find significant performance improvement by setting SDL_GL_DEPTH_SIZE to 0.
-
-Finally, if your application completely redraws the screen each frame, you may find significant performance improvement by setting the attribute SDL_GL_RETAINED_BACKING to 0.
-
-OpenGL ES on iOS doesn't use the traditional system-framebuffer setup provided in other operating systems. Special care must be taken because of this:
-
-- The drawable Renderbuffer must be bound to the GL_RENDERBUFFER binding point when SDL_GL_SwapWindow() is called.
-- The drawable Framebuffer Object must be bound while rendering to the screen and when SDL_GL_SwapWindow() is called.
-- If multisample antialiasing (MSAA) is used and glReadPixels is used on the screen, the drawable framebuffer must be resolved to the MSAA resolve framebuffer (via glBlitFramebuffer or glResolveMultisampleFramebufferAPPLE), and the MSAA resolve framebuffer must be bound to the GL_READ_FRAMEBUFFER binding point, before glReadPixels is called.
-
-The above objects can be obtained via SDL_GetWindowWMInfo() (in SDL_syswm.h).
-
-
 Notes -- Keyboard
 ==============================================================================
 

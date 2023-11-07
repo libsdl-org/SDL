@@ -91,7 +91,6 @@ static SDL_VideoDevice * HAIKU_CreateDevice(void)
     device->SetWindowMouseGrab = HAIKU_SetWindowMouseGrab;
     device->SetWindowMinimumSize = HAIKU_SetWindowMinimumSize;
     device->DestroyWindow = HAIKU_DestroyWindow;
-    device->GetWindowWMInfo = HAIKU_GetWindowWMInfo;
     device->CreateWindowFramebuffer = HAIKU_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = HAIKU_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = HAIKU_DestroyWindowFramebuffer;

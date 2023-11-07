@@ -34,8 +34,6 @@
 #include "SDL_kmsdrmdyn.h"
 #include "SDL_kmsdrmvulkan.h"
 
-#include <SDL3/SDL_syswm.h>
-
 #include <sys/ioctl.h>
 
 #ifdef __OpenBSD__

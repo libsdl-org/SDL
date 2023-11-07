@@ -20,6 +20,14 @@
 */
 #include "SDL_internal.h"
 
+#ifndef SDL_VIDEO_DRIVER_X11
+
+DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata)
+{
+}
+
+#endif
+
 #ifndef __LINUX__
 
 DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int priority);

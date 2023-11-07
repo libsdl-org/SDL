@@ -207,7 +207,6 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->CreateWindowFramebuffer = X11_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = X11_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = X11_DestroyWindowFramebuffer;
-    device->GetWindowWMInfo = X11_GetWindowWMInfo;
     device->SetWindowHitTest = X11_SetWindowHitTest;
     device->AcceptDragAndDrop = X11_AcceptDragAndDrop;
     device->FlashWindow = X11_FlashWindow;

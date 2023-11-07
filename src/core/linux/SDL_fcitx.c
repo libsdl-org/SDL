@@ -29,7 +29,6 @@
 #ifdef SDL_VIDEO_DRIVER_X11
 #include "../../video/x11/SDL_x11video.h"
 #endif
-#include <SDL3/SDL_syswm.h>
 
 #define FCITX_DBUS_SERVICE "org.freedesktop.portal.Fcitx"
 
@@ -412,7 +411,6 @@ SDL_bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 void SDL_Fcitx_UpdateTextRect(const SDL_Rect *rect)
 {
     SDL_Window *focused_win = NULL;
-    SDL_SysWMinfo info;
     int x = 0, y = 0;
     SDL_Rect *cursor = &fcitx_client.cursor_rect;
 
@@ -427,17 +425,18 @@ void SDL_Fcitx_UpdateTextRect(const SDL_Rect *rect)
 
     SDL_GetWindowPosition(focused_win, &x, &y);
 
-    if (SDL_GetWindowWMInfo(focused_win, &info, SDL_SYSWM_CURRENT_VERSION) == 0) {
-#ifdef SDL_ENABLE_SYSWM_X11
-        if (info.subsystem == SDL_SYSWM_X11) {
-            Display *x_disp = info.info.x11.display;
-            int x_screen = info.info.x11.screen;
-            Window x_win = info.info.x11.window;
-            Window unused;
+#ifdef SDL_VIDEO_DRIVER_X11
+    {
+        SDL_PropertiesID props = SDL_GetWindowProperties(focused_win);
+        Display *x_disp = (Display *)SDL_GetProperty(props, "SDL.window.x11.display");
+        int x_screen = (int)(intptr_t)SDL_GetProperty(props, "SDL.window.x11.screen");
+        Window x_win = (Window)SDL_GetProperty(props, "SDL.window.x11.window");
+        Window unused;
+        if (x_disp && x_win) {
             X11_XTranslateCoordinates(x_disp, x_win, RootWindow(x_disp, x_screen), 0, 0, &x, &y, &unused);
         }
-#endif
     }
+#endif
 
     if (cursor->x == -1 && cursor->y == -1 && cursor->w == 0 && cursor->h == 0) {
         /* move to bottom left */
