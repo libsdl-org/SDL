@@ -310,8 +310,6 @@
 #define SDL_GetRelativeMouseMode SDL_GetRelativeMouseMode_REAL
 #define SDL_GetRelativeMouseState SDL_GetRelativeMouseState_REAL
 #define SDL_GetRenderClipRect SDL_GetRenderClipRect_REAL
-#define SDL_GetRenderD3D11Device    SDL_GetRenderD3D11Device_REAL
-#define SDL_GetRenderD3D9Device SDL_GetRenderD3D9Device_REAL
 #define SDL_GetRenderDrawBlendMode SDL_GetRenderDrawBlendMode_REAL
 #define SDL_GetRenderDrawColor SDL_GetRenderDrawColor_REAL
 #define SDL_GetRenderDriver SDL_GetRenderDriver_REAL
@@ -546,7 +544,6 @@
 #define SDL_RenderFlush SDL_RenderFlush_REAL
 #define SDL_RenderGeometry SDL_RenderGeometry_REAL
 #define SDL_RenderGeometryRaw SDL_RenderGeometryRaw_REAL
-#define SDL_RenderGetD3D12Device    SDL_RenderGetD3D12Device_REAL
 #define SDL_RenderLine SDL_RenderLine_REAL
 #define SDL_RenderLines SDL_RenderLines_REAL
 #define SDL_RenderPoint SDL_RenderPoint_REAL

@@ -1152,9 +1152,10 @@ The following functions have been renamed:
 
 SDL_AndroidGetExternalStorageState() takes the state as an output parameter and returns 0 if the function succeeds or a negative error code if there was an error.
 
-The following functions have been renamed:
-* SDL_RenderGetD3D11Device() => SDL_GetRenderD3D11Device()
-* SDL_RenderGetD3D9Device() => SDL_GetRenderD3D9Device()
+The following functions have been removed:
+* SDL_RenderGetD3D11Device() - replaced with the "SDL.renderer.d3d11.device" property
+* SDL_RenderGetD3D12Device() - replaced with the "SDL.renderer.d3d12.device" property
+* SDL_RenderGetD3D9Device() - replaced with the "SDL.renderer.d3d9.device" property
 
 ## SDL_syswm.h
 

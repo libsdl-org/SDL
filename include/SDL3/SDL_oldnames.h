@@ -462,10 +462,6 @@
 #define SDL_UpperBlit SDL_BlitSurface
 #define SDL_UpperBlitScaled SDL_BlitSurfaceScaled
 
-/* ##SDL_system.h */
-#define SDL_RenderGetD3D11Device SDL_GetRenderD3D11Device
-#define SDL_RenderGetD3D9Device SDL_GetRenderD3D9Device
-
 /* ##SDL_thread.h */
 #define SDL_TLSCleanup SDL_CleanupTLS
 #define SDL_TLSCreate SDL_CreateTLS
@@ -910,10 +906,6 @@
 #define SDL_SetColorKey SDL_SetColorKey_renamed_SDL_SetSurfaceColorKey
 #define SDL_UpperBlit SDL_UpperBlit_renamed_SDL_BlitSurface
 #define SDL_UpperBlitScaled SDL_UpperBlitScaled_renamed_SDL_BlitSurfaceScaled
-
-/* ##SDL_system.h */
-#define SDL_RenderGetD3D11Device SDL_RenderGetD3D11Device_renamed_SDL_GetRenderD3D11Device
-#define SDL_RenderGetD3D9Device SDL_RenderGetD3D9Device_renamed_SDL_GetRenderD3D9Device
 
 /* ##SDL_thread.h */
 #define SDL_TLSCleanup SDL_TLSCleanup_renamed_SDL_CleanupTLS

@@ -668,6 +668,8 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     ID3D11DeviceContext_VSSetShader(data->d3dContext, data->vertexShader, NULL, 0);
     ID3D11DeviceContext_VSSetConstantBuffers(data->d3dContext, 0, 1, &data->vertexShaderConstants);
 
+    SDL_SetProperty(SDL_GetRendererProperties(renderer), "SDL.renderer.d3d11.device", data->d3dDevice, NULL, NULL);
+
 done:
     SAFE_RELEASE(d3dDevice);
     SAFE_RELEASE(d3dContext);
@@ -2411,6 +2413,7 @@ SDL_Renderer *D3D11_CreateRenderer(SDL_Window *window, Uint32 flags)
         SDL_OutOfMemory();
         return NULL;
     }
+    renderer->magic = &SDL_renderer_magic;
 
     data = (D3D11_RenderData *)SDL_calloc(1, sizeof(*data));
     if (data == NULL) {
@@ -2506,28 +2509,3 @@ SDL_RenderDriver D3D11_RenderDriver = {
 };
 
 #endif /* SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED */
-
-#if defined(__WIN32__) || defined(__WINGDK__)
-/* This function needs to always exist on Windows, for the Dynamic API. */
-ID3D11Device *SDL_GetRenderD3D11Device(SDL_Renderer *renderer)
-{
-    ID3D11Device *device = NULL;
-
-#if defined(SDL_VIDEO_RENDER_D3D11) && !defined(SDL_RENDER_DISABLED)
-    D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
-
-    /* Make sure that this is a D3D renderer */
-    if (renderer->DestroyRenderer != D3D11_DestroyRenderer) {
-        SDL_SetError("Renderer is not a D3D11 renderer");
-        return NULL;
-    }
-
-    device = (ID3D11Device *)data->d3dDevice;
-    if (device) {
-        ID3D11Device_AddRef(device);
-    }
-#endif /* SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED */
-
-    return device;
-}
-#endif /* defined(__WIN32__) || defined(__WINGDK__) */

@@ -46,13 +46,13 @@ this should probably be removed at some point in the future.  --ryan. */
 #define SDL_WINDOWRENDERDATA "SDL.internal.window.renderer"
 
 #define CHECK_RENDERER_MAGIC(renderer, retval)                  \
-    if (!(renderer) || (renderer)->magic != &renderer_magic) {  \
+    if (!(renderer) || (renderer)->magic != &SDL_renderer_magic) { \
         SDL_InvalidParamError("renderer");                      \
         return retval;                                          \
     }
 
 #define CHECK_TEXTURE_MAGIC(texture, retval)                    \
-    if (!(texture) || (texture)->magic != &texture_magic) {     \
+    if (!(texture) || (texture)->magic != &SDL_texture_magic) { \
         SDL_InvalidParamError("texture");                       \
         return retval;                                          \
     }
@@ -122,8 +122,8 @@ static const SDL_RenderDriver *render_drivers[] = {
 };
 #endif /* !SDL_RENDER_DISABLED */
 
-static char renderer_magic;
-static char texture_magic;
+char SDL_renderer_magic;
+char SDL_texture_magic;
 
 static SDL_INLINE void DebugLogRenderCommands(const SDL_RenderCommand *cmd)
 {
@@ -896,7 +896,7 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 fl
     }
 
     renderer->batching = batching;
-    renderer->magic = &renderer_magic;
+    renderer->magic = &SDL_renderer_magic;
     renderer->window = window;
     renderer->target_mutex = SDL_CreateMutex();
     renderer->main_view.viewport.w = -1;
@@ -965,7 +965,7 @@ SDL_Renderer *SDL_CreateSoftwareRenderer(SDL_Surface *surface)
 
     if (renderer) {
         VerifyDrawQueueFunctions(renderer);
-        renderer->magic = &renderer_magic;
+        renderer->magic = &SDL_renderer_magic;
         renderer->target_mutex = SDL_CreateMutex();
         renderer->main_view.pixel_w = surface->w;
         renderer->main_view.pixel_h = surface->h;
@@ -1150,7 +1150,7 @@ SDL_Texture *SDL_CreateTexture(SDL_Renderer *renderer, Uint32 format, int access
         SDL_OutOfMemory();
         return NULL;
     }
-    texture->magic = &texture_magic;
+    texture->magic = &SDL_texture_magic;
     texture->format = format;
     texture->access = access;
     texture->w = w;

@@ -1563,6 +1563,7 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
         SDL_OutOfMemory();
         return NULL;
     }
+    renderer->magic = &SDL_renderer_magic;
 
     data = (D3D_RenderData *)SDL_calloc(1, sizeof(*data));
     if (data == NULL) {
@@ -1713,6 +1714,8 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
     data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
     data->drawstate.blend = SDL_BLENDMODE_INVALID;
 
+    SDL_SetProperty(SDL_GetRendererProperties(renderer), "SDL.renderer.d3d9.device", data->device, NULL, NULL);
+
     return renderer;
 }
 
@@ -1726,28 +1729,3 @@ SDL_RenderDriver D3D_RenderDriver = {
       0 }
 };
 #endif /* SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED */
-
-#if defined(__WIN32__) || defined(__WINGDK__)
-/* This function needs to always exist on Windows, for the Dynamic API. */
-IDirect3DDevice9 *SDL_GetRenderD3D9Device(SDL_Renderer *renderer)
-{
-    IDirect3DDevice9 *device = NULL;
-
-#if defined(SDL_VIDEO_RENDER_D3D) && !defined(SDL_RENDER_DISABLED)
-    D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;
-
-    /* Make sure that this is a D3D renderer */
-    if (renderer->DestroyRenderer != D3D_DestroyRenderer) {
-        SDL_SetError("Renderer is not a D3D renderer");
-        return NULL;
-    }
-
-    device = data->device;
-    if (device) {
-        IDirect3DDevice9_AddRef(device);
-    }
-#endif /* SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED */
-
-    return device;
-}
-#endif /* defined(__WIN32__) || defined(__WINGDK__) */
