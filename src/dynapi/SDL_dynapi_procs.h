@@ -67,14 +67,11 @@ SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a,
 #endif
 
 SDL_DYNAPI_PROC(int,SDL_RegisterApp,(const char *a, Uint32 b, void *c),(a,b,c),return)
-SDL_DYNAPI_PROC(ID3D12Device*,SDL_RenderGetD3D12Device,(SDL_Renderer *a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_SetWindowsMessageHook,(SDL_WindowsMessageHook a, void *b),(a,b),)
 SDL_DYNAPI_PROC(void,SDL_UnregisterApp,(void),(),)
 
 SDL_DYNAPI_PROC(SDL_bool,SDL_DXGIGetOutputInfo,(SDL_DisplayID a, int *b, int *c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_Direct3D9GetAdapterIndex,(SDL_DisplayID a),(a),return)
-SDL_DYNAPI_PROC(ID3D11Device*,SDL_GetRenderD3D11Device,(SDL_Renderer *a),(a),return)
-SDL_DYNAPI_PROC(IDirect3DDevice9*,SDL_GetRenderD3D9Device,(SDL_Renderer *a),(a),return)
 
 SDL_DYNAPI_PROC(int,SDL_GDKGetTaskQueue,(XTaskQueueHandle *a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_GDKSuspendComplete,(void),(),)

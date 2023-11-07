@@ -73,59 +73,7 @@ extern DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook ca
  */
 extern DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID);
 
-typedef struct IDirect3DDevice9 IDirect3DDevice9;
-
-/**
- * Get the D3D9 device associated with a renderer.
- *
- * Once you are done using the device, you should release it to avoid a
- * resource leak.
- *
- * \param renderer the renderer from which to get the associated D3D device
- * \returns the D3D9 device associated with given renderer or NULL if it is
- *          not a D3D9 renderer; call SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC IDirect3DDevice9* SDLCALL SDL_GetRenderD3D9Device(SDL_Renderer * renderer);
-
-typedef struct ID3D11Device ID3D11Device;
-
-/**
- * Get the D3D11 device associated with a renderer.
- *
- * Once you are done using the device, you should release it to avoid a
- * resource leak.
- *
- * \param renderer the renderer from which to get the associated D3D11 device
- * \returns the D3D11 device associated with given renderer or NULL if it is
- *          not a D3D11 renderer; call SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC ID3D11Device* SDLCALL SDL_GetRenderD3D11Device(SDL_Renderer * renderer);
-
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
-
-#if defined(__WIN32__) || defined(__GDK__)
-
-typedef struct ID3D12Device ID3D12Device;
-
-/**
- * Get the D3D12 device associated with a renderer.
- *
- * Once you are done using the device, you should release it to avoid a
- * resource leak.
- *
- * \param renderer the renderer from which to get the associated D3D12 device
- * \returns the D3D12 device associated with given renderer or NULL if it is
- *          not a D3D12 renderer; call SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC ID3D12Device* SDLCALL SDL_RenderGetD3D12Device(SDL_Renderer* renderer);
-
-#endif /* defined(__WIN32__) || defined(__GDK__) */
 
 #if defined(__WIN32__) || defined(__WINGDK__)
 

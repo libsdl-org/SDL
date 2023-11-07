@@ -44,6 +44,8 @@ typedef struct SDL_DRect
 /* The SDL 2D rendering system */
 
 typedef struct SDL_RenderDriver SDL_RenderDriver;
+extern char SDL_renderer_magic;
+extern char SDL_texture_magic;
 
 /* Rendering view state */
 typedef struct SDL_RenderViewState

@@ -1069,6 +1069,9 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
         }
     }
     data->srvPoolHead = &data->srvPoolNodes[0];
+
+    SDL_SetProperty(SDL_GetRendererProperties(renderer), "SDL.renderer.d3d12.device", data->d3dDevice, NULL, NULL);
+
 done:
     SAFE_RELEASE(d3dDevice);
     return result;
@@ -2961,6 +2964,7 @@ SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, Uint32 flags)
         SDL_OutOfMemory();
         return NULL;
     }
+    renderer->magic = &SDL_renderer_magic;
 
     data = (D3D12_RenderData *)SDL_calloc(1, sizeof(*data));
     if (data == NULL) {
@@ -3046,32 +3050,3 @@ SDL_RenderDriver D3D12_RenderDriver = {
 #endif
 
 #endif /* SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED */
-
-#if defined(__WIN32__) || defined(__GDK__)
-#ifdef __cplusplus
-extern "C"
-#endif
-/* This function needs to always exist on Windows, for the Dynamic API. */
-ID3D12Device *
-SDL_RenderGetD3D12Device(SDL_Renderer *renderer)
-{
-    ID3D12Device *device = NULL;
-
-#if defined(SDL_VIDEO_RENDER_D3D12) && !defined(SDL_RENDER_DISABLED)
-    D3D12_RenderData *data = (D3D12_RenderData *)renderer->driverdata;
-
-    /* Make sure that this is a D3D renderer */
-    if (renderer->DestroyRenderer != D3D12_DestroyRenderer) {
-        SDL_SetError("Renderer is not a D3D12 renderer");
-        return NULL;
-    }
-
-    device = (ID3D12Device *)data->d3dDevice;
-    if (device) {
-        D3D_CALL(device, AddRef);
-    }
-#endif /* SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED */
-
-    return device;
-}
-#endif /* defined(__WIN32__) || defined(__GDK__) */

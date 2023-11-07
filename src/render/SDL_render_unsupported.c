@@ -20,30 +20,3 @@
 */
 #include "SDL_internal.h"
 
-#if !(defined(__WIN32__) || defined(__WINGDK__))
-
-DECLSPEC void *SDLCALL SDL_GetRenderD3D9Device(SDL_Renderer *renderer); /* returns IDirect3DDevice9 * */
-void *SDL_GetRenderD3D9Device(SDL_Renderer *renderer)
-{
-    (void)renderer;
-    SDL_Unsupported();
-    return NULL;
-}
-
-DECLSPEC void *SDLCALL SDL_GetRenderD3D11Device(SDL_Renderer *renderer); /* returns ID3D11Device * */
-void *SDL_GetRenderD3D11Device(SDL_Renderer *renderer)
-{
-    (void)renderer;
-    SDL_Unsupported();
-    return NULL;
-}
-
-DECLSPEC void *SDLCALL SDL_RenderGetD3D12Device(SDL_Renderer *renderer); /* return ID3D12Device * */
-void *SDL_RenderGetD3D12Device(SDL_Renderer *renderer)
-{
-    (void)renderer;
-    SDL_Unsupported();
-    return NULL;
-}
-
-#endif
