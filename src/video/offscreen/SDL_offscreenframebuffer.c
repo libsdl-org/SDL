@@ -25,7 +25,7 @@
 #include "../SDL_sysvideo.h"
 #include "SDL_offscreenframebuffer_c.h"
 
-#define OFFSCREEN_SURFACE "_SDL_DummySurface"
+#define OFFSCREEN_SURFACE "SDL.internal.window.surface"
 
 static void CleanupSurface(void *userdata, void *value)
 {

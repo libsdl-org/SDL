@@ -95,6 +95,8 @@ extern DECLSPEC void SDLCALL SDL_UnlockProperties(SDL_PropertiesID props);
 /**
  * Set a property on a set of properties
  *
+ * By convention, the names of properties that SDL exposes on objects will start with "SDL.", and properties that SDL uses internally will start with "SDL.internal.". These should be considered read-only and should not be modified by applications.
+ *
  * \param props the properties to modify
  * \param name the name of the property to modify
  * \param value the new value of the property, or NULL to delete the property
