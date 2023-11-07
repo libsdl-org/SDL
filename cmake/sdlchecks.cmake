@@ -533,11 +533,6 @@ macro(CheckWayland)
         WaylandProtocolGen("${WAYLAND_SCANNER}" "${WAYLAND_SCANNER_CODE_MODE}" "${SDL3_SOURCE_DIR}/wayland-protocols/${_XML}" "${_PROTL}")
       endforeach()
 
-      if(SDL_WAYLAND_QT_TOUCH)
-        set(HAVE_WAYLAND_QT_TOUCH TRUE)
-        set(SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH 1)
-      endif()
-
       if(SDL_WAYLAND_SHARED AND NOT HAVE_SDL_LOADSO)
         message(WARNING "You must have SDL_LoadObject() support for dynamic Wayland loading")
       endif()
