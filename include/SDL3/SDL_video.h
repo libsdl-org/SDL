@@ -340,6 +340,20 @@ extern DECLSPEC SDL_DisplayID *SDLCALL SDL_GetDisplays(int *count);
 extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetPrimaryDisplay(void);
 
 /**
+ * Get the properties associated with a display.
+ *
+ * \param displayID the instance ID of the display to query
+ * \returns a valid property ID on success or 0 on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetProperty
+ * \sa SDL_SetProperty
+ */
+extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetDisplayProperties(SDL_DisplayID displayID);
+
+/**
  * Get the name of a display in UTF-8 encoding.
  *
  * \param displayID the instance ID of the display to query

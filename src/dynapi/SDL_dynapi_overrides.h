@@ -948,3 +948,4 @@
 #define SDL_RWprintf SDL_RWprintf_REAL
 #define SDL_RWvprintf SDL_RWvprintf_REAL
 #define SDL_AllocateEventMemory SDL_AllocateEventMemory_REAL
+#define SDL_GetDisplayProperties SDL_GetDisplayProperties_REAL
