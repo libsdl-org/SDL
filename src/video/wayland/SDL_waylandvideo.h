@@ -35,12 +35,6 @@ struct xkb_context;
 struct SDL_WaylandInput;
 struct SDL_WaylandTabletManager;
 
-#ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
-struct SDL_WaylandTouch;
-struct qt_surface_extension;
-struct qt_windowmanager;
-#endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
-
 typedef struct
 {
     struct wl_cursor_theme *theme;
@@ -83,12 +77,6 @@ struct SDL_VideoData
     struct SDL_WaylandInput *input;
     struct SDL_WaylandTabletManager *tablet_manager;
     struct wl_list output_list;
-
-#ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
-    struct SDL_WaylandTouch *touch;
-    struct qt_surface_extension *surface_extension;
-    struct qt_windowmanager *windowmanager;
-#endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
     int relative_mouse_mode;
 };

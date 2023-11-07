@@ -102,10 +102,6 @@ struct SDL_WindowData
 
     SDL_AtomicInt swap_interval_ready;
 
-#ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
-    struct qt_extended_surface *extended_surface;
-#endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
-
     SDL_DisplayData **outputs;
     int num_outputs;
 

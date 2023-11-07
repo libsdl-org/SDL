@@ -30,7 +30,6 @@
 #include "SDL_waylandevents_c.h"
 #include "SDL_waylandwindow.h"
 #include "SDL_waylandvideo.h"
-#include "SDL_waylandtouch.h"
 #include "../../SDL_hints_c.h"
 
 #include "xdg-shell-client-protocol.h"
@@ -1100,31 +1099,6 @@ static struct libdecor_frame_interface libdecor_frame_interface = {
 };
 #endif
 
-#ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
-static void handle_onscreen_visibility(void *data,
-                                       struct qt_extended_surface *qt_extended_surface, int32_t visible)
-{
-}
-
-static void handle_set_generic_property(void *data,
-                                        struct qt_extended_surface *qt_extended_surface, const char *name,
-                                        struct wl_array *value)
-{
-}
-
-static void handle_close(void *data, struct qt_extended_surface *qt_extended_surface)
-{
-    SDL_WindowData *window = (SDL_WindowData *)data;
-    SDL_SendWindowEvent(window->sdlwindow, SDL_EVENT_WINDOW_CLOSE_REQUESTED, 0, 0);
-}
-
-static const struct qt_extended_surface_listener extended_surface_listener = {
-    handle_onscreen_visibility,
-    handle_set_generic_property,
-    handle_close,
-};
-#endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
-
 static void Wayland_HandlePreferredScaleChanged(SDL_WindowData *window_data, float factor)
 {
     const float old_factor = window_data->windowed_scale_factor;
@@ -1785,92 +1759,6 @@ int Wayland_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOpe
     return 0;
 }
 
-#ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
-static void SDLCALL QtExtendedSurface_OnHintChanged(void *userdata, const char *name,
-                                                    const char *oldValue, const char *newValue)
-{
-    struct qt_extended_surface *qt_extended_surface = userdata;
-    int i;
-
-    static struct
-    {
-        const char *name;
-        int32_t value;
-    } orientations[] = {
-        { "portrait", QT_EXTENDED_SURFACE_ORIENTATION_PRIMARYORIENTATION },
-        { "landscape", QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION },
-        { "inverted-portrait", QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDPORTRAITORIENTATION },
-        { "inverted-landscape", QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION }
-    };
-
-    if (name == NULL) {
-        return;
-    }
-
-    if (SDL_strcmp(name, SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION) == 0) {
-        int32_t orientation = QT_EXTENDED_SURFACE_ORIENTATION_PRIMARYORIENTATION;
-
-        if (newValue != NULL) {
-            const char *value_attempt = newValue;
-
-            orientation = 0;
-            while (value_attempt != NULL && *value_attempt != 0) {
-                const char *value_attempt_end = SDL_strchr(value_attempt, ',');
-                size_t value_attempt_len = (value_attempt_end != NULL) ? (value_attempt_end - value_attempt)
-                                                                       : SDL_strlen(value_attempt);
-
-                for (i = 0; i < SDL_arraysize(orientations); i += 1) {
-                    if ((value_attempt_len == SDL_strlen(orientations[i].name)) &&
-                        (SDL_strncasecmp(orientations[i].name, value_attempt, value_attempt_len) == 0)) {
-                        orientation |= orientations[i].value;
-                        break;
-                    }
-                }
-
-                value_attempt = (value_attempt_end != NULL) ? (value_attempt_end + 1) : NULL;
-            }
-        }
-
-        qt_extended_surface_set_content_orientation(qt_extended_surface, orientation);
-    } else if (SDL_strcmp(name, SDL_HINT_QTWAYLAND_WINDOW_FLAGS) == 0) {
-        uint32_t flags = 0;
-
-        if (newValue != NULL) {
-            char *tmp = SDL_strdup(newValue);
-            char *saveptr = NULL;
-
-            char *flag = SDL_strtok_r(tmp, " ", &saveptr);
-            while (flag) {
-                if (SDL_strcmp(flag, "OverridesSystemGestures") == 0) {
-                    flags |= QT_EXTENDED_SURFACE_WINDOWFLAG_OVERRIDESSYSTEMGESTURES;
-                } else if (SDL_strcmp(flag, "StaysOnTop") == 0) {
-                    flags |= QT_EXTENDED_SURFACE_WINDOWFLAG_STAYSONTOP;
-                } else if (SDL_strcmp(flag, "BypassWindowManager") == 0) {
-                    // See https://github.com/qtproject/qtwayland/commit/fb4267103d
-                    flags |= 4 /* QT_EXTENDED_SURFACE_WINDOWFLAG_BYPASSWINDOWMANAGER */;
-                }
-
-                flag = SDL_strtok_r(NULL, " ", &saveptr);
-            }
-
-            SDL_free(tmp);
-        }
-
-        qt_extended_surface_set_window_flags(qt_extended_surface, flags);
-    }
-}
-
-static void QtExtendedSurface_Subscribe(struct qt_extended_surface *surface, const char *name)
-{
-    SDL_AddHintCallback(name, QtExtendedSurface_OnHintChanged, surface);
-}
-
-static void QtExtendedSurface_Unsubscribe(struct qt_extended_surface *surface, const char *name)
-{
-    SDL_DelHintCallback(name, QtExtendedSurface_OnHintChanged, surface);
-}
-#endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
-
 void Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window,
                                  SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
@@ -2173,16 +2061,6 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     data->surface_frame_callback = wl_surface_frame(data->surface);
     wl_callback_add_listener(data->surface_frame_callback, &surface_frame_listener, data);
 
-#ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
-    if (c->surface_extension) {
-        data->extended_surface = qt_surface_extension_get_extended_surface(
-            c->surface_extension, data->surface);
-
-        QtExtendedSurface_Subscribe(data->extended_surface, SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION);
-        QtExtendedSurface_Subscribe(data->extended_surface, SDL_HINT_QTWAYLAND_WINDOW_FLAGS);
-    }
-#endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
-
     if (window->flags & SDL_WINDOW_TRANSPARENT) {
         if (_this->gl_config.alpha_size == 0) {
             _this->gl_config.alpha_size = 8;
@@ -2201,14 +2079,6 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
         }
 #endif
     }
-
-#ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
-    if (data->extended_surface) {
-        qt_extended_surface_set_user_data(data->extended_surface, data);
-        qt_extended_surface_add_listener(data->extended_surface,
-                                         &extended_surface_listener, data);
-    }
-#endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
     if (c->relative_mouse_mode) {
         Wayland_input_lock_pointer(c->input);
@@ -2434,13 +2304,6 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
             wl_callback_destroy(wind->surface_frame_callback);
         }
 
-#ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
-        if (wind->extended_surface) {
-            QtExtendedSurface_Unsubscribe(wind->extended_surface, SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION);
-            QtExtendedSurface_Unsubscribe(wind->extended_surface, SDL_HINT_QTWAYLAND_WINDOW_FLAGS);
-            qt_extended_surface_destroy(wind->extended_surface);
-        }
-#endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
         wl_surface_destroy(wind->surface);
 
         SDL_free(wind);
