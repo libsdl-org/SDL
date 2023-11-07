@@ -929,7 +929,7 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 fl
         renderer->hidden = SDL_FALSE;
     }
 
-    SDL_SetProperty(SDL_GetWindowProperties(window), SDL_WINDOWRENDERDATA, renderer, NULL, NULL);
+    SDL_SetProperty(SDL_GetWindowProperties(window), SDL_WINDOWRENDERDATA, renderer);
 
     SDL_SetRenderViewport(renderer, NULL);
 

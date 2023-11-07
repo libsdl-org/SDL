@@ -962,7 +962,7 @@ SDL_DYNAPI_PROC(IDXGIResource*,SDL_GetTextureDXGIResource,(SDL_Texture *a),(a),r
 SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_CreateProperties,(void),(),return)
 SDL_DYNAPI_PROC(int,SDL_LockProperties,(SDL_PropertiesID a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_UnlockProperties,(SDL_PropertiesID a),(a),)
-SDL_DYNAPI_PROC(int,SDL_SetProperty,(SDL_PropertiesID a, const char *b, void *c, void (SDLCALL *d)(void *userdata, void *value), void *e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(int,SDL_SetProperty,(SDL_PropertiesID a, const char *b, void *c),(a,b,c),return)
 SDL_DYNAPI_PROC(void*,SDL_GetProperty,(SDL_PropertiesID a, const char *b),(a,b),return)
 SDL_DYNAPI_PROC(void,SDL_DestroyProperties,(SDL_PropertiesID a),(a),)
 SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetAudioStreamProperties,(SDL_AudioStream *a),(a),return)
@@ -979,3 +979,4 @@ SDL_DYNAPI_PROC(int,SDL_EnterAppMainCallbacks,(int a, char *b[], SDL_AppInit_fun
 SDL_DYNAPI_PROC(size_t,SDL_RWvprintf,(SDL_RWops *a, const char *b, va_list c),(a,b,c),return)
 SDL_DYNAPI_PROC(void*,SDL_AllocateEventMemory,(size_t a),(a),return)
 SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetDisplayProperties,(SDL_DisplayID a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_SetPropertyWithCleanup,(SDL_PropertiesID a, const char *b, void *c, void (SDLCALL *d)(void *userdata, void *value), void *e),(a,b,c,d,e),return)

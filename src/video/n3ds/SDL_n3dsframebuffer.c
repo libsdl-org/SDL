@@ -57,7 +57,7 @@ int SDL_N3DS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
         return SDL_OutOfMemory();
     }
 
-    SDL_SetProperty(SDL_GetWindowProperties(window), N3DS_SURFACE, framebuffer, CleanupSurface, NULL);
+    SDL_SetPropertyWithCleanup(SDL_GetWindowProperties(window), N3DS_SURFACE, framebuffer, CleanupSurface, NULL);
     *format = FRAMEBUFFER_FORMAT;
     *pixels = framebuffer->pixels;
     *pitch = framebuffer->pitch;

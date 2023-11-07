@@ -183,7 +183,12 @@ void SDL_UnlockProperties(SDL_PropertiesID props)
     SDL_UnlockMutex(properties->lock);
 }
 
-int SDL_SetProperty(SDL_PropertiesID props, const char *name, void *value, void (SDLCALL *cleanup)(void *userdata, void *value), void *userdata)
+int SDL_SetProperty(SDL_PropertiesID props, const char *name, void *value)
+{
+    return SDL_SetPropertyWithCleanup(props, name, value, NULL, NULL);
+}
+
+int SDL_SetPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, void (SDLCALL *cleanup)(void *userdata, void *value), void *userdata)
 {
     SDL_Properties *properties = NULL;
     SDL_Property *property = NULL;
@@ -274,7 +279,7 @@ void *SDL_GetProperty(SDL_PropertiesID props, const char *name)
 
 int SDL_ClearProperty(SDL_PropertiesID props, const char *name)
 {
-    return SDL_SetProperty(props, name, NULL, NULL, NULL);
+    return SDL_SetProperty(props, name, NULL);
 }
 
 void SDL_DestroyProperties(SDL_PropertiesID props)

@@ -95,7 +95,23 @@ extern DECLSPEC void SDLCALL SDL_UnlockProperties(SDL_PropertiesID props);
 /**
  * Set a property on a set of properties
  *
- * By convention, the names of properties that SDL exposes on objects will start with "SDL.", and properties that SDL uses internally will start with "SDL.internal.". These should be considered read-only and should not be modified by applications.
+ * \param props the properties to modify
+ * \param name the name of the property to modify
+ * \param value the new value of the property, or NULL to delete the property
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetProperty
+ * \sa SDL_SetPropertyWithCleanup
+ */
+extern DECLSPEC int SDLCALL SDL_SetProperty(SDL_PropertiesID props, const char *name, void *value);
+
+/**
+ * Set a property on a set of properties with a cleanup function that is called when the property is deleted
  *
  * \param props the properties to modify
  * \param name the name of the property to modify
@@ -111,11 +127,14 @@ extern DECLSPEC void SDLCALL SDL_UnlockProperties(SDL_PropertiesID props);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetProperty
+ * \sa SDL_SetProperty
  */
-extern DECLSPEC int SDLCALL SDL_SetProperty(SDL_PropertiesID props, const char *name, void *value, void (SDLCALL *cleanup)(void *userdata, void *value), void *userdata);
+extern DECLSPEC int SDLCALL SDL_SetPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, void (SDLCALL *cleanup)(void *userdata, void *value), void *userdata);
 
 /**
  * Get a property on a set of properties
+ *
+ * By convention, the names of properties that SDL exposes on objects will start with "SDL.", and properties that SDL uses internally will start with "SDL.internal.". These should be considered read-only and should not be modified by applications.
  *
  * \param props the properties to query
  * \param name the name of the property to query
