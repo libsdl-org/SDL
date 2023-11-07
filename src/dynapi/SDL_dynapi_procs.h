@@ -443,7 +443,6 @@ SDL_DYNAPI_PROC(int,SDL_GetWindowSize,(SDL_Window *a, int *b, int *c),(a,b,c),re
 SDL_DYNAPI_PROC(int,SDL_GetWindowSizeInPixels,(SDL_Window *a, int *b, int *c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_GetWindowSurface,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetWindowTitle,(SDL_Window *a),(a),return)
-SDL_DYNAPI_PROC(int,SDL_GetWindowWMInfo,(SDL_Window *a, SDL_SysWMinfo *b, Uint32 c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_YUV_CONVERSION_MODE,SDL_GetYUVConversionMode,(void),(),return)
 SDL_DYNAPI_PROC(SDL_YUV_CONVERSION_MODE,SDL_GetYUVConversionModeForResolution,(int a, int b),(a,b),return)
 SDL_DYNAPI_PROC(void,SDL_HapticClose,(SDL_Haptic *a),(a),)
@@ -980,3 +979,4 @@ SDL_DYNAPI_PROC(size_t,SDL_RWvprintf,(SDL_RWops *a, const char *b, va_list c),(a
 SDL_DYNAPI_PROC(void*,SDL_AllocateEventMemory,(size_t a),(a),return)
 SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetDisplayProperties,(SDL_DisplayID a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_SetPropertyWithCleanup,(SDL_PropertiesID a, const char *b, void *c, void (SDLCALL *d)(void *userdata, void *value), void *e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(void,SDL_SetX11EventHook,(SDL_X11EventHook a, void *b),(a,b),)

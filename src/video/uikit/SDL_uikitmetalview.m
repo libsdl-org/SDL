@@ -35,8 +35,6 @@
 #import "SDL_uikitwindow.h"
 #import "SDL_uikitmetalview.h"
 
-#include <SDL3/SDL_syswm.h>
-
 @implementation SDL_uikitmetalview
 
 /* Returns a Metal-compatible layer. */

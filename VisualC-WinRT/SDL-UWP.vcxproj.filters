@@ -147,9 +147,6 @@
     <ClInclude Include="..\include\SDL3\SDL_system.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\SDL3\SDL_syswm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\SDL3\SDL_thread.h">
       <Filter>Header Files</Filter>
     </ClInclude>

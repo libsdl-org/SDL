@@ -32,8 +32,6 @@
 #include "../events/SDL_events_c.h"
 #include "../timer/SDL_timer_c.h"
 
-#include <SDL3/SDL_syswm.h>
-
 #ifdef SDL_VIDEO_OPENGL
 #include <SDL3/SDL_opengl.h>
 #endif /* SDL_VIDEO_OPENGL */
@@ -4671,33 +4669,6 @@ void SDL_WM_SetIcon(SDL_Surface *icon, Uint8 *mask)
 }
 #endif
 
-int SDL_GetWindowWMInfo(SDL_Window *window, struct SDL_SysWMinfo *info, Uint32 version)
-{
-    CHECK_WINDOW_MAGIC(window, -1);
-
-    if (info == NULL) {
-        return SDL_InvalidParamError("info");
-    }
-
-    /* Set the version in the structure to the minimum of our version and the application expected version */
-    version = SDL_min(version, SDL_SYSWM_CURRENT_VERSION);
-
-    if (version == 1) {
-        SDL_memset(info, 0, SDL_SYSWM_INFO_SIZE_V1);
-    } else {
-        return SDL_SetError("Unknown info version");
-    }
-
-    info->subsystem = SDL_SYSWM_UNKNOWN;
-    info->version = version;
-
-    if (_this->GetWindowWMInfo) {
-        return (_this->GetWindowWMInfo(_this, window, info));
-    } else {
-        return 0;
-    }
-}
-
 void SDL_StartTextInput(void)
 {
     SDL_Window *window;
@@ -4827,20 +4798,6 @@ int SDL_GetMessageBoxCount(void)
 #include "vita/SDL_vitamessagebox.h"
 #endif
 
-#if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_WINRT) || defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT) || defined(SDL_VIDEO_DRIVER_X11) || defined(SDL_VIDEO_DRIVER_WAYLAND) || defined(SDL_VIDEO_DRIVER_HAIKU) || defined(SDL_VIDEO_DRIVER_RISCOS)
-static SDL_bool SDL_IsMessageboxValidForDriver(const SDL_MessageBoxData *messageboxdata, SDL_SYSWM_TYPE drivertype)
-{
-    SDL_SysWMinfo info;
-    SDL_Window *window = messageboxdata->window;
-
-    if (window == NULL || SDL_GetWindowWMInfo(window, &info, SDL_SYSWM_CURRENT_VERSION) < 0) {
-        return SDL_TRUE;
-    } else {
-        return info.subsystem == (Uint32)drivertype;
-    }
-}
-#endif
-
 int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
     int dummybutton;
@@ -4894,56 +4851,48 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 #endif
 #if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     if (retval == -1 &&
-        SDL_IsMessageboxValidForDriver(messageboxdata, SDL_SYSWM_WINDOWS) &&
         WIN_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
 #ifdef SDL_VIDEO_DRIVER_WINRT
     if (retval == -1 &&
-        SDL_IsMessageboxValidForDriver(messageboxdata, SDL_SYSWM_WINRT) &&
         WINRT_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
 #ifdef SDL_VIDEO_DRIVER_COCOA
     if (retval == -1 &&
-        SDL_IsMessageboxValidForDriver(messageboxdata, SDL_SYSWM_COCOA) &&
         Cocoa_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
 #ifdef SDL_VIDEO_DRIVER_UIKIT
     if (retval == -1 &&
-        SDL_IsMessageboxValidForDriver(messageboxdata, SDL_SYSWM_UIKIT) &&
         UIKit_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
     if (retval == -1 &&
-        SDL_IsMessageboxValidForDriver(messageboxdata, SDL_SYSWM_WAYLAND) &&
         Wayland_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
 #ifdef SDL_VIDEO_DRIVER_X11
     if (retval == -1 &&
-        SDL_IsMessageboxValidForDriver(messageboxdata, SDL_SYSWM_X11) &&
         X11_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
 #ifdef SDL_VIDEO_DRIVER_HAIKU
     if (retval == -1 &&
-        SDL_IsMessageboxValidForDriver(messageboxdata, SDL_SYSWM_HAIKU) &&
         HAIKU_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
 #ifdef SDL_VIDEO_DRIVER_RISCOS
     if (retval == -1 &&
-        SDL_IsMessageboxValidForDriver(messageboxdata, SDL_SYSWM_RISCOS) &&
         RISCOS_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }

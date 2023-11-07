@@ -348,9 +348,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_system.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_syswm.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_test.h">
       <Filter>API Headers</Filter>
     </ClInclude>

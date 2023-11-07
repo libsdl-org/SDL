@@ -41,6 +41,5 @@ extern void HAIKU_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window,
 extern void HAIKU_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
 extern void HAIKU_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
 extern void HAIKU_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int HAIKU_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info);
 
 #endif

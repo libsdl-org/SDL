@@ -174,7 +174,6 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     device->VideoInit = Wayland_VideoInit;
     device->VideoQuit = Wayland_VideoQuit;
     device->GetDisplayBounds = Wayland_GetDisplayBounds;
-    device->GetWindowWMInfo = Wayland_GetWindowWMInfo;
     device->SuspendScreenSaver = Wayland_SuspendScreenSaver;
 
     device->PumpEvents = Wayland_PumpEvents;

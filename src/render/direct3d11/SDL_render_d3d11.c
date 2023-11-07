@@ -30,8 +30,6 @@
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
 
-#include <SDL3/SDL_syswm.h>
-
 #include <d3d11_1.h>
 
 #include "SDL_shaders_d3d11.h"
@@ -827,18 +825,11 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 #endif
     } else {
 #if defined(__WIN32__) || defined(__WINGDK__)
-        SDL_SysWMinfo windowinfo;
-
-        if (SDL_GetWindowWMInfo(renderer->window, &windowinfo, SDL_SYSWM_CURRENT_VERSION) < 0 ||
-            windowinfo.subsystem != SDL_SYSWM_WINDOWS) {
-            SDL_SetError("Couldn't get window handle");
-            result = E_FAIL;
-            goto done;
-        }
+        HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(renderer->window), "SDL.window.win32.hwnd");
 
         result = IDXGIFactory2_CreateSwapChainForHwnd(data->dxgiFactory,
                                                       (IUnknown *)data->d3dDevice,
-                                                      windowinfo.info.win.window,
+                                                      hwnd,
                                                       &swapChainDesc,
                                                       NULL,
                                                       NULL, /* Allow on all displays. */
@@ -848,7 +839,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
             goto done;
         }
 
-        IDXGIFactory_MakeWindowAssociation(data->dxgiFactory, windowinfo.info.win.window, DXGI_MWA_NO_WINDOW_CHANGES);
+        IDXGIFactory_MakeWindowAssociation(data->dxgiFactory, hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
 #else
         SDL_SetError(__FUNCTION__ ", Unable to find something to attach a swap chain to");
         goto done;

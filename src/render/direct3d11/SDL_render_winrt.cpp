@@ -39,35 +39,14 @@ using namespace Windows::Graphics::Display;
 
 #include <DXGI.h>
 
-#include <SDL3/SDL_syswm.h>
-
 #include "SDL_render_winrt.h"
 
 extern "C" void *
 D3D11_GetCoreWindowFromSDLRenderer(SDL_Renderer *renderer)
 {
-    SDL_Window *sdlWindow = renderer->window;
-    if (renderer->window == NULL) {
-        return NULL;
-    }
-
-    SDL_SysWMinfo sdlWindowInfo;
-    if (SDL_GetWindowWMInfo(sdlWindow, &sdlWindowInfo, SDL_SYSWM_CURRENT_VERSION) < 0 ||
-        sdlWindowInfo.subsystem != SDL_SYSWM_WINRT) {
-        SDL_SetError("Couldn't get window handle");
-        return NULL;
-    }
-
-    if (sdlWindowInfo.subsystem != SDL_SYSWM_WINRT) {
-        return NULL;
-    }
-
-    if (!sdlWindowInfo.info.winrt.window) {
-        return NULL;
-    }
-
+    IInspectable *window = (IInspectable *)SDL_GetProperty(SDL_GetWindowProperties(renderer->window), "SDL.window.winrt.window");
     ABI::Windows::UI::Core::ICoreWindow *coreWindow = NULL;
-    if (FAILED(sdlWindowInfo.info.winrt.window->QueryInterface(&coreWindow))) {
+    if (!window || FAILED(window->QueryInterface(&coreWindow))) {
         return NULL;
     }
 

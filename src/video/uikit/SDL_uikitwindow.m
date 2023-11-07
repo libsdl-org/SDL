@@ -34,8 +34,6 @@
 #include "SDL_uikitview.h"
 #include "SDL_uikitopenglview.h"
 
-#include <SDL3/SDL_syswm.h>
-
 #include <Foundation/Foundation.h>
 
 @implementation SDL_UIKitWindowData
@@ -86,13 +84,13 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow 
     SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
     SDL_UIKitDisplayData *displaydata = (__bridge SDL_UIKitDisplayData *)display->driverdata;
     SDL_uikitview *view;
-   
+
 #if TARGET_OS_XR
     CGRect frame = UIKit_ComputeViewFrame(window);
 #else
     CGRect frame = UIKit_ComputeViewFrame(window, displaydata.uiscreen);
 #endif
-    
+
     int width = (int)frame.size.width;
     int height = (int)frame.size.height;
 
@@ -154,6 +152,10 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow 
     /* Sets this view as the controller's view, and adds the view to the window
      * hierarchy. */
     [view setSDLWindow:window];
+
+    SDL_PropertiesID props = SDL_GetWindowProperties(window);
+    SDL_SetProperty(props, "SDL.window.uikit.window", (__bridge void *)data.uiwindow);
+    SDL_SetProperty(props, "SDL.window.uikit.metal_view_tag", SDL_METALVIEW_TAG);
 
     return 0;
 }
@@ -382,26 +384,6 @@ void UIKit_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int
          * SDL_uikitopenglview. */
         *w = size.width * scale;
         *h = size.height * scale;
-    }
-}
-
-int UIKit_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, SDL_SysWMinfo *info)
-{
-    @autoreleasepool {
-        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
-
-        info->subsystem = SDL_SYSWM_UIKIT;
-        info->info.uikit.window = data.uiwindow;
-
-#if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
-        if ([data.viewcontroller.view isKindOfClass:[SDL_uikitopenglview class]]) {
-            SDL_uikitopenglview *glview = (SDL_uikitopenglview *)data.viewcontroller.view;
-            info->info.uikit.framebuffer = glview.drawableFramebuffer;
-            info->info.uikit.colorbuffer = glview.drawableRenderbuffer;
-            info->info.uikit.resolveFramebuffer = glview.msaaResolveFramebuffer;
-        }
-#endif
-        return 0;
     }
 }
 

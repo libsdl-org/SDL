@@ -135,9 +135,6 @@ void KMSDRM_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
 void KMSDRM_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window);
 void KMSDRM_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
-/* Window manager function */
-int KMSDRM_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info);
-
 /* OpenGL/OpenGL ES functions */
 int KMSDRM_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 SDL_FunctionPointer KMSDRM_GLES_GetProcAddress(SDL_VideoDevice *_this, const char *proc);

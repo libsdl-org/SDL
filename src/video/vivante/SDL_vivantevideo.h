@@ -80,9 +80,6 @@ void VIVANTE_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
 void VIVANTE_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
 void VIVANTE_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
-/* Window manager function */
-int VIVANTE_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info);
-
 /* Event functions */
 void VIVANTE_PumpEvents(SDL_VideoDevice *_this);
 

@@ -33,8 +33,6 @@
 #include "SDL_cocoametalview.h"
 #include "SDL_cocoavulkan.h"
 
-#include <SDL3/SDL_syswm.h>
-
 #include <dlfcn.h>
 
 const char *defaultPaths[] = {

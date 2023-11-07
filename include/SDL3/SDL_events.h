@@ -101,8 +101,8 @@ typedef enum
 
     /* Window events */
     /* 0x200 was SDL_WINDOWEVENT, reserve the number for sdl2-compat */
-    SDL_EVENT_SYSWM     = 0x201,        /**< System specific event */
-    SDL_EVENT_WINDOW_SHOWN,             /**< Window has been shown */
+    /* 0x201 was SDL_EVENT_SYSWM, reserve the number for sdl2-compat */
+    SDL_EVENT_WINDOW_SHOWN = 0x202,     /**< Window has been shown */
     SDL_EVENT_WINDOW_HIDDEN,            /**< Window has been hidden */
     SDL_EVENT_WINDOW_EXPOSED,           /**< Window has been exposed and should be redrawn */
     SDL_EVENT_WINDOW_MOVED,             /**< Window has been moved to data1, data2 */
@@ -573,27 +573,6 @@ typedef struct SDL_UserEvent
 } SDL_UserEvent;
 
 
-struct SDL_SysWMmsg;
-typedef struct SDL_SysWMmsg SDL_SysWMmsg;
-
-/**
- * A video driver dependent system event (event.syswm.*)
- *
- * This event is disabled by default, you can enable it with
- * SDL_SetEventEnabled()
- *
- * The `msg` is owned by SDL and should be copied if the application
- * wants to hold onto it beyond the scope of handling this event.
- *
- * \note If you want to use this event, you should include SDL_syswm.h.
- */
-typedef struct SDL_SysWMEvent
-{
-    Uint32 type;        /**< ::SDL_EVENT_SYSWM */
-    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_SysWMmsg *msg;  /**< driver dependent data, defined in SDL_syswm.h */
-} SDL_SysWMEvent;
-
 /**
  *  General event structure
  */
@@ -623,10 +602,9 @@ typedef union SDL_Event
     SDL_SensorEvent sensor;                 /**< Sensor event data */
     SDL_QuitEvent quit;                     /**< Quit request event data */
     SDL_UserEvent user;                     /**< Custom event data */
-    SDL_SysWMEvent syswm;                   /**< System dependent window event data */
     SDL_TouchFingerEvent tfinger;           /**< Touch finger event data */
     SDL_DropEvent drop;                     /**< Drag and drop event data */
-    SDL_ClipboardEvent clipboard;       /**< Clipboard cancelled event data */
+    SDL_ClipboardEvent clipboard;           /**< Clipboard event data */
 
     /* This is necessary for ABI compatibility between Visual C++ and GCC.
        Visual C++ will respect the push pack pragma and use 52 bytes (size of

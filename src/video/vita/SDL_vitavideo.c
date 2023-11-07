@@ -28,8 +28,6 @@
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
 
-#include <SDL3/SDL_syswm.h>
-
 /* VITA declarations */
 #include <psp2/kernel/processmgr.h>
 #include "SDL_vitavideo.h"

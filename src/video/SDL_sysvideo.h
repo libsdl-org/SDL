@@ -151,9 +151,6 @@ struct SDL_VideoDisplay
     SDL_DisplayData *driverdata;
 };
 
-/* Forward declaration */
-struct SDL_SysWMinfo;
-
 /* Video device flags */
 typedef enum
 {
@@ -266,9 +263,6 @@ struct SDL_VideoDevice
      * Shaped-window functions
      */
     SDL_ShapeDriver shape_driver;
-
-    /* Get some platform dependent window information */
-    int (*GetWindowWMInfo)(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info);
 
     /* * * */
     /*

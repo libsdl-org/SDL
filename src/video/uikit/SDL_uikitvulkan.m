@@ -34,8 +34,6 @@
 #include "SDL_uikitvulkan.h"
 #include "SDL_uikitmetalview.h"
 
-#include <SDL3/SDL_syswm.h>
-
 #include <dlfcn.h>
 
 const char *defaultPaths[] = {

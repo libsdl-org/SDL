@@ -36,8 +36,6 @@
 #include "../SDL_vulkan_internal.h"
 #include "SDL_waylandvulkan.h"
 
-#include <SDL3/SDL_syswm.h>
-
 #ifdef __OpenBSD__
 #define DEFAULT_VULKAN "libvulkan.so"
 #else

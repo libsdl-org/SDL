@@ -29,8 +29,6 @@
 #include "../../events/SDL_touch_c.h"
 #include "../../events/scancodes_windows.h"
 
-#include <SDL3/SDL_syswm.h>
-
 /* Dropfile support */
 #include <shellapi.h>
 
@@ -714,19 +712,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     SDL_WindowData *data;
     LRESULT returnCode = -1;
-
-    /* Send a SDL_EVENT_SYSWM if the application wants them */
-    if (SDL_EventEnabled(SDL_EVENT_SYSWM)) {
-        SDL_SysWMmsg wmmsg;
-
-        wmmsg.version = SDL_SYSWM_CURRENT_VERSION;
-        wmmsg.subsystem = SDL_SYSWM_WINDOWS;
-        wmmsg.msg.win.hwnd = hwnd;
-        wmmsg.msg.win.msg = msg;
-        wmmsg.msg.win.wParam = wParam;
-        wmmsg.msg.win.lParam = lParam;
-        SDL_SendSysWMEvent(&wmmsg);
-    }
 
     /* Get the window data for the window */
     data = WIN_GetWindowDataFromHWND(hwnd);
@@ -1809,7 +1794,9 @@ int WIN_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
                 return 0;
             }
             if (g_WindowsMessageHook) {
-                g_WindowsMessageHook(g_WindowsMessageHookData, msg.hwnd, msg.message, msg.wParam, msg.lParam);
+                if (!g_WindowsMessageHook(g_WindowsMessageHookData, &msg)) {
+                    return 1;
+                }
             }
             /* Always translate the message in case it's a non-SDL window (e.g. with Qt integration) */
             TranslateMessage(&msg);
@@ -1845,7 +1832,9 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
 
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
             if (g_WindowsMessageHook) {
-                g_WindowsMessageHook(g_WindowsMessageHookData, msg.hwnd, msg.message, msg.wParam, msg.lParam);
+                if (!g_WindowsMessageHook(g_WindowsMessageHookData, &msg)) {
+                    continue;
+                }
             }
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)

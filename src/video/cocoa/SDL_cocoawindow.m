@@ -41,7 +41,6 @@
 #include "SDL_cocoaopengl.h"
 #include "SDL_cocoaopengles.h"
 
-#include <SDL3/SDL_syswm.h>
 
 /* #define DEBUG_COCOAWINDOW */
 
@@ -1863,6 +1862,10 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow 
          */
         [nswindow setOneShot:NO];
 
+        SDL_PropertiesID props = SDL_GetWindowProperties(window);
+        SDL_SetProperty(props, "SDL.window.cocoa.window", (__bridge void *)data.nswindow);
+        SDL_SetProperty(props, "SDL.window.cocoa.metal_view_tag", SDL_METALVIEW_TAG);
+
         /* All done! */
         window->driverdata = (SDL_WindowData *)CFBridgingRetain(data);
         return 0;
@@ -2577,17 +2580,6 @@ void Cocoa_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
             }
         }
         window->driverdata = NULL;
-    }
-}
-
-int Cocoa_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, SDL_SysWMinfo *info)
-{
-    @autoreleasepool {
-        NSWindow *nswindow = ((__bridge SDL_CocoaWindowData *)window->driverdata).nswindow;
-
-        info->subsystem = SDL_SYSWM_COCOA;
-        info->info.cocoa.window = nswindow;
-        return 0;
     }
 }
 

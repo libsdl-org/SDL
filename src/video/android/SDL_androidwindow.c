@@ -31,7 +31,6 @@
 #include "SDL_androidvideo.h"
 #include "SDL_androidwindow.h"
 
-#include <SDL3/SDL_syswm.h>
 
 /* Currently only one window */
 SDL_Window *Android_Window = NULL;
@@ -68,12 +67,12 @@ int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     data->native_window = Android_JNI_GetNativeWindow();
-
     if (!data->native_window) {
         SDL_free(data);
         retval = SDL_SetError("Could not fetch native window");
         goto endfunction;
     }
+    SDL_SetProperty(SDL_GetWindowProperties(window), "SDL.window.android.window", data->native_window);
 
     /* Do not create EGLSurface for Vulkan window since it will then make the window
        incompatible with vkCreateAndroidSurfaceKHR */
@@ -88,6 +87,7 @@ int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
             goto endfunction;
         }
     }
+    SDL_SetProperty(SDL_GetWindowProperties(window), "SDL.window.android.surface", data->egl_surface);
 #endif
 
     window->driverdata = data;
@@ -192,20 +192,6 @@ void Android_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     SDL_UnlockMutex(Android_ActivityMutex);
-}
-
-int Android_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, SDL_SysWMinfo *info)
-{
-    SDL_WindowData *data = window->driverdata;
-
-    info->subsystem = SDL_SYSWM_ANDROID;
-    info->info.android.window = data->native_window;
-
-#ifdef SDL_VIDEO_OPENGL_EGL
-    info->info.android.surface = data->egl_surface;
-#endif
-
-    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_ANDROID */

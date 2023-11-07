@@ -30,8 +30,6 @@
 
 #if defined(SDL_VIDEO_DRIVER_COCOA) && (defined(SDL_VIDEO_VULKAN) || defined(SDL_VIDEO_METAL))
 
-#include <SDL3/SDL_syswm.h>
-
 static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 {
     /* Update the drawable size when SDL receives a size changed event for

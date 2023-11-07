@@ -29,6 +29,8 @@
 #include "../SDL_egl_c.h"
 #endif
 
+#define SDL_METALVIEW_TAG 255
+
 @class SDL_CocoaWindowData;
 
 typedef enum
@@ -165,7 +167,6 @@ extern SDL_DisplayID Cocoa_GetDisplayForWindow(SDL_VideoDevice *_this, SDL_Windo
 extern void Cocoa_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Cocoa_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
 extern void Cocoa_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int Cocoa_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info);
 extern int Cocoa_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 extern void Cocoa_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept);
 extern int Cocoa_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);

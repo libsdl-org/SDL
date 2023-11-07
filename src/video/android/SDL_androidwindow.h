@@ -33,7 +33,6 @@ extern void Android_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Android_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable);
 
 extern void Android_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int Android_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info);
 extern SDL_Window *Android_Window;
 
 struct SDL_WindowData

@@ -296,7 +296,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_stdinc.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_surface.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_system.h" />
-    <ClInclude Include="..\..\include\SDL3\SDL_syswm.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_assert.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_common.h" />

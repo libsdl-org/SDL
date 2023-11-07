@@ -35,8 +35,6 @@
 
 #include "SDL_windowsvulkan.h"
 
-#include <SDL3/SDL_syswm.h>
-
 int WIN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;

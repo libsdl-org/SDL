@@ -39,8 +39,6 @@
 #include "SDL_x11opengles.h"
 #endif
 
-#include <SDL3/SDL_syswm.h>
-
 #define _NET_WM_STATE_REMOVE 0l
 #define _NET_WM_STATE_ADD    1l
 
@@ -300,6 +298,7 @@ Uint32 X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwin
 static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w, BOOL created)
 {
     SDL_VideoData *videodata = _this->driverdata;
+    SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
     SDL_WindowData *data;
     int numwindows = videodata->numwindows;
     int windowlistlength = videodata->windowlistlength;
@@ -382,6 +381,13 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w,
 
     /* All done! */
     window->driverdata = data;
+
+    SDL_PropertiesID props = SDL_GetWindowProperties(window);
+    int screen = (displaydata ? displaydata->screen : 0);
+    SDL_SetProperty(props, "SDL.window.x11.display", data->videodata->display);
+    SDL_SetProperty(props, "SDL.window.x11.screen", (void *)(intptr_t)screen);
+    SDL_SetProperty(props, "SDL.window.x11.window", (void *)(uintptr_t)data->xwindow);
+
     return 0;
 }
 
@@ -1846,23 +1852,6 @@ void X11_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
     }
     window->driverdata = NULL;
-}
-
-int X11_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, SDL_SysWMinfo *info)
-{
-    SDL_WindowData *data = window->driverdata;
-    SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
-
-    if (data == NULL) {
-        /* This sometimes happens in SDL_IBus_UpdateTextRect() while creating the window */
-        return SDL_SetError("Window not initialized");
-    }
-
-    info->subsystem = SDL_SYSWM_X11;
-    info->info.x11.display = data->videodata->display;
-    info->info.x11.screen = displaydata->screen;
-    info->info.x11.window = data->xwindow;
-    return 0;
 }
 
 int X11_SetWindowHitTest(SDL_Window *window, SDL_bool enabled)

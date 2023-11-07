@@ -437,7 +437,6 @@
 		F3F7D9352933074E00816151 /* SDL_error.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8BC2933074A00816151 /* SDL_error.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D9392933074E00816151 /* SDL_opengles2_gl2ext.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8BD2933074A00816151 /* SDL_opengles2_gl2ext.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D93D2933074E00816151 /* SDL_endian.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8BE2933074A00816151 /* SDL_endian.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		F3F7D9412933074E00816151 /* SDL_syswm.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8BF2933074A00816151 /* SDL_syswm.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D9452933074E00816151 /* SDL_opengl_glext.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8C02933074A00816151 /* SDL_opengl_glext.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D9492933074E00816151 /* SDL_scancode.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8C12933074B00816151 /* SDL_scancode.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D94D2933074E00816151 /* SDL_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8C22933074B00816151 /* SDL_sensor.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -939,7 +938,6 @@
 		F3F7D8BC2933074A00816151 /* SDL_error.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_error.h; path = SDL3/SDL_error.h; sourceTree = "<group>"; };
 		F3F7D8BD2933074A00816151 /* SDL_opengles2_gl2ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_opengles2_gl2ext.h; path = SDL3/SDL_opengles2_gl2ext.h; sourceTree = "<group>"; };
 		F3F7D8BE2933074A00816151 /* SDL_endian.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_endian.h; path = SDL3/SDL_endian.h; sourceTree = "<group>"; };
-		F3F7D8BF2933074A00816151 /* SDL_syswm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_syswm.h; path = SDL3/SDL_syswm.h; sourceTree = "<group>"; };
 		F3F7D8C02933074A00816151 /* SDL_opengl_glext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_opengl_glext.h; path = SDL3/SDL_opengl_glext.h; sourceTree = "<group>"; };
 		F3F7D8C12933074B00816151 /* SDL_scancode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_scancode.h; path = SDL3/SDL_scancode.h; sourceTree = "<group>"; };
 		F3F7D8C22933074B00816151 /* SDL_sensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_sensor.h; path = SDL3/SDL_sensor.h; sourceTree = "<group>"; };
@@ -1091,7 +1089,6 @@
 				F3F7D8AC2933074900816151 /* SDL_stdinc.h */,
 				F3F7D8BB2933074A00816151 /* SDL_surface.h */,
 				F3F7D8E82933074E00816151 /* SDL_system.h */,
-				F3F7D8BF2933074A00816151 /* SDL_syswm.h */,
 				F3F7D8CD2933074C00816151 /* SDL_thread.h */,
 				F3F7D8B22933074900816151 /* SDL_timer.h */,
 				F3F7D8AF2933074900816151 /* SDL_touch.h */,
@@ -2259,7 +2256,6 @@
 				A7D8B42823E2514300DCD162 /* SDL_systhread_c.h in Headers */,
 				5616CA4D252BB2A6005D5928 /* SDL_sysurl.h in Headers */,
 				A7D8AC3F23E2514100DCD162 /* SDL_sysvideo.h in Headers */,
-				F3F7D9412933074E00816151 /* SDL_syswm.h in Headers */,
 				F3F7D9792933074E00816151 /* SDL_thread.h in Headers */,
 				A7D8B3EC23E2514300DCD162 /* SDL_thread_c.h in Headers */,
 				F3F7D90D2933074E00816151 /* SDL_timer.h in Headers */,

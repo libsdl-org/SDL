@@ -100,7 +100,6 @@ extern void WIN_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window);
 extern void WIN_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
 extern void WIN_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
 extern void WIN_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int WIN_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info);
 extern void WIN_OnWindowEnter(SDL_VideoDevice *_this, SDL_Window *window);
 extern void WIN_UpdateClipCursor(SDL_Window *window);
 extern int WIN_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);

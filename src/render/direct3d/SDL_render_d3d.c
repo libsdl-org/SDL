@@ -28,8 +28,6 @@
 #include "../SDL_d3dmath.h"
 #include "../../video/windows/SDL_windowsvideo.h"
 
-#include <SDL3/SDL_syswm.h>
-
 #ifdef SDL_VIDEO_RENDER_D3D
 #define D3D_DEBUG_INFO
 #include <d3d9.h>
@@ -1542,7 +1540,6 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
 {
     SDL_Renderer *renderer;
     D3D_RenderData *data;
-    SDL_SysWMinfo windowinfo;
     HRESULT result;
     D3DPRESENT_PARAMETERS pparams;
     IDirect3DSwapChain9 *chain;
@@ -1551,12 +1548,6 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
     int w, h;
     SDL_DisplayID displayID;
     const SDL_DisplayMode *fullscreen_mode = NULL;
-
-    if (SDL_GetWindowWMInfo(window, &windowinfo, SDL_SYSWM_CURRENT_VERSION) < 0 ||
-        windowinfo.subsystem != SDL_SYSWM_WINDOWS) {
-        SDL_SetError("Couldn't get window handle");
-        return NULL;
-    }
 
     renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
     if (renderer == NULL) {
@@ -1611,7 +1602,7 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
     }
 
     SDL_zero(pparams);
-    pparams.hDeviceWindow = windowinfo.info.win.window;
+    pparams.hDeviceWindow = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.win32.hwnd");
     pparams.BackBufferWidth = w;
     pparams.BackBufferHeight = h;
     pparams.BackBufferCount = 1;

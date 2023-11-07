@@ -37,7 +37,6 @@
 
 
 /* These headers have system specific definitions, so aren't included above */
-#include <SDL3/SDL_syswm.h>
 #include <SDL3/SDL_vulkan.h>
 
 /* This is the version of the dynamic API. This doesn't match the SDL version

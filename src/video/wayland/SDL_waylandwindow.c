@@ -1301,37 +1301,6 @@ static void SetKeyboardFocus(SDL_Window *window)
     SDL_SetKeyboardFocus(window);
 }
 
-int Wayland_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, SDL_SysWMinfo *info)
-{
-    SDL_VideoData *viddata = _this->driverdata;
-    SDL_WindowData *data = window->driverdata;
-
-    info->subsystem = SDL_SYSWM_WAYLAND;
-    info->info.wl.display = data->waylandData->display;
-    info->info.wl.surface = data->surface;
-    info->info.wl.egl_window = data->egl_window;
-
-#ifdef HAVE_LIBDECOR_H
-    if (data->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
-        if (data->shell_surface.libdecor.frame != NULL) {
-            info->info.wl.xdg_surface = libdecor_frame_get_xdg_surface(data->shell_surface.libdecor.frame);
-            info->info.wl.xdg_toplevel = libdecor_frame_get_xdg_toplevel(data->shell_surface.libdecor.frame);
-        }
-    } else
-#endif
-        if (viddata->shell.xdg && data->shell_surface.xdg.surface != NULL) {
-        SDL_bool popup = (data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP);
-        info->info.wl.xdg_surface = data->shell_surface.xdg.surface;
-        info->info.wl.xdg_toplevel = popup ? NULL : data->shell_surface.xdg.roleobj.toplevel;
-        if (popup) {
-            info->info.wl.xdg_popup = data->shell_surface.xdg.roleobj.popup.popup;
-            info->info.wl.xdg_positioner = data->shell_surface.xdg.roleobj.popup.positioner;
-        }
-    }
-
-    return 0;
-}
-
 int Wayland_SetWindowHitTest(SDL_Window *window, SDL_bool enabled)
 {
     return 0; /* just succeed, the real work is done elsewhere. */
@@ -1380,6 +1349,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *c = _this->driverdata;
     SDL_WindowData *data = window->driverdata;
+    SDL_PropertiesID props = SDL_GetWindowProperties(window);
 
     /* If this is a child window, the parent *must* be in the final shown state,
      * meaning that it has received a configure event, followed by a frame callback.
@@ -1427,13 +1397,17 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         } else {
             libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, data->app_id);
             libdecor_frame_map(data->shell_surface.libdecor.frame);
+
+            SDL_SetProperty(props, "SDL.window.wayland.xdg_surface", libdecor_frame_get_xdg_surface(data->shell_surface.libdecor.frame));
+            SDL_SetProperty(props, "SDL.window.wayland.xdg_toplevel", libdecor_frame_get_xdg_toplevel(data->shell_surface.libdecor.frame));
         }
     } else
 #endif
-        if ((data->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL || data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) && c->shell.xdg) {
+    if ((data->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL || data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) && c->shell.xdg) {
         data->shell_surface.xdg.surface = xdg_wm_base_get_xdg_surface(c->shell.xdg, data->surface);
         xdg_surface_set_user_data(data->shell_surface.xdg.surface, data);
         xdg_surface_add_listener(data->shell_surface.xdg.surface, &shell_surface_listener_xdg, data);
+        SDL_SetProperty(SDL_GetWindowProperties(window), "SDL.window.wayland.xdg_surface", data->shell_surface.xdg.surface);
 
         if (data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
             SDL_Window *parent = window->parent;
@@ -1485,10 +1459,14 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                     SetKeyboardFocus(window);
                 }
             }
+
+            SDL_SetProperty(props, "SDL.window.wayland.xdg_popup", data->shell_surface.xdg.roleobj.popup.popup);
+            SDL_SetProperty(props, "SDL.window.wayland.xdg_positioner", data->shell_surface.xdg.roleobj.popup.positioner);
         } else {
             data->shell_surface.xdg.roleobj.toplevel = xdg_surface_get_toplevel(data->shell_surface.xdg.surface);
             xdg_toplevel_set_app_id(data->shell_surface.xdg.roleobj.toplevel, data->app_id);
             xdg_toplevel_add_listener(data->shell_surface.xdg.roleobj.toplevel, &toplevel_listener_xdg, data);
+            SDL_SetProperty(props, "SDL.window.wayland.xdg_toplevel", data->shell_surface.xdg.roleobj.toplevel);
         }
     }
 
@@ -1624,12 +1602,17 @@ static void Wayland_ReleasePopup(SDL_VideoDevice *_this, SDL_Window *popup)
     xdg_positioner_destroy(popupdata->shell_surface.xdg.roleobj.popup.positioner);
     popupdata->shell_surface.xdg.roleobj.popup.popup = NULL;
     popupdata->shell_surface.xdg.roleobj.popup.positioner = NULL;
+
+    SDL_PropertiesID props = SDL_GetWindowProperties(popup);
+    SDL_SetProperty(props, "SDL.window.wayland.xdg_popup", NULL);
+    SDL_SetProperty(props, "SDL.window.wayland.xdg_positioner", NULL);
 }
 
 void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *data = _this->driverdata;
     SDL_WindowData *wind = window->driverdata;
+    SDL_PropertiesID props = SDL_GetWindowProperties(window);
 
     wind->surface_status = WAYLAND_SURFACE_STATUS_HIDDEN;
 
@@ -1649,19 +1632,24 @@ void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
         if (wind->shell_surface.libdecor.frame) {
             libdecor_frame_unref(wind->shell_surface.libdecor.frame);
             wind->shell_surface.libdecor.frame = NULL;
+
+            SDL_SetProperty(props, "SDL.window.wayland.xdg_surface", NULL);
+            SDL_SetProperty(props, "SDL.window.wayland.xdg_toplevel", NULL);
         }
     } else
 #endif
-        if (data->shell.xdg) {
+    if (data->shell.xdg) {
         if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
             Wayland_ReleasePopup(_this, window);
         } else if (wind->shell_surface.xdg.roleobj.toplevel) {
             xdg_toplevel_destroy(wind->shell_surface.xdg.roleobj.toplevel);
             wind->shell_surface.xdg.roleobj.toplevel = NULL;
+            SDL_SetProperty(props, "SDL.window.wayland.xdg_toplevel", NULL);
         }
         if (wind->shell_surface.xdg.surface) {
             xdg_surface_destroy(wind->shell_surface.xdg.surface);
             wind->shell_surface.xdg.surface = NULL;
+            SDL_SetProperty(props, "SDL.window.wayland.xdg_surface", NULL);
         }
     }
 
@@ -2108,6 +2096,11 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
             data->shell_surface_type = WAYLAND_SURFACE_XDG_TOPLEVEL;
         }
     } /* All other cases will be WAYLAND_SURFACE_UNKNOWN */
+
+    SDL_PropertiesID props = SDL_GetWindowProperties(window);
+    SDL_SetProperty(props, "SDL.window.wayland.display", data->waylandData->display);
+    SDL_SetProperty(props, "SDL.window.wayland.surface", data->surface);
+    SDL_SetProperty(props, "SDL.window.wayland.egl_window", data->egl_window);
 
     return 0;
 }
