@@ -981,3 +981,4 @@ SDL_DYNAPI_PROC(int,SDL_ClearProperty,(SDL_PropertiesID a, const char *b),(a,b),
 SDL_DYNAPI_PROC(int,SDL_EnterAppMainCallbacks,(int a, char *b[], SDL_AppInit_func c, SDL_AppIterate_func d, SDL_AppEvent_func e, SDL_AppQuit_func f),(a,b,c,d,e,f),return)
 SDL_DYNAPI_PROC(size_t,SDL_RWvprintf,(SDL_RWops *a, const char *b, va_list c),(a,b,c),return)
 SDL_DYNAPI_PROC(void*,SDL_AllocateEventMemory,(size_t a),(a),return)
+SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetDisplayProperties,(SDL_DisplayID a),(a),return)

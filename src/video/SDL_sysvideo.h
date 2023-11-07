@@ -146,6 +146,8 @@ struct SDL_VideoDisplay
 
     SDL_VideoDevice *device;
 
+    SDL_PropertiesID props;
+
     SDL_DisplayData *driverdata;
 };
 

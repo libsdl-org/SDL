@@ -717,6 +717,7 @@ void SDL_DelVideoDisplay(SDL_DisplayID displayID, SDL_bool send_event)
         SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_REMOVED, 0);
     }
 
+    SDL_DestroyProperties(display->props);
     SDL_free(display->name);
     SDL_ResetFullscreenDisplayModes(display);
     SDL_free(display->desktop_mode.driverdata);
@@ -818,6 +819,18 @@ SDL_DisplayData *SDL_GetDisplayDriverData(SDL_DisplayID displayID)
 SDL_DisplayData *SDL_GetDisplayDriverDataForWindow(SDL_Window *window)
 {
     return SDL_GetDisplayDriverData(SDL_GetDisplayForWindow(window));
+}
+
+SDL_PropertiesID SDL_GetDisplayProperties(SDL_DisplayID displayID)
+{
+    SDL_VideoDisplay *display = SDL_GetVideoDisplay(displayID);
+
+    CHECK_DISPLAY_MAGIC(display, 0);
+
+    if (display->props == 0) {
+        display->props = SDL_CreateProperties();
+    }
+    return display->props;
 }
 
 const char *SDL_GetDisplayName(SDL_DisplayID displayID)
