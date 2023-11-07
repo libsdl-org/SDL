@@ -3533,6 +3533,8 @@ void SDL_DestroyWindow(SDL_Window *window)
 
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_DESTROYED, 0, 0);
 
+    SDL_DestroyProperties(window->props);
+
     /* If this is a child window, unlink it from its siblings */
     if (window->parent) {
         if (window->next_sibling) {
