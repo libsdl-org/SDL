@@ -1932,8 +1932,8 @@ elseif(WINDOWS)
         vccorlib$<$<CONFIG:Debug>:d>.lib
         msvcrt$<$<CONFIG:Debug>:d>.lib
       LINK_OPTIONS
-        -nodefaultlib:vccorlib$<$<CONFIG:Debug>:d>
-        -nodefaultlib:msvcrt$<$<CONFIG:Debug>:d>
+        /nodefaultlib:vccorlib$<$<CONFIG:Debug>:d>
+        /nodefaultlib:msvcrt$<$<CONFIG:Debug>:d>
     )
   endif()
 
@@ -2988,6 +2988,24 @@ if(PS2)
   sdl_compile_options(PRIVATE "-Wno-error=declaration-after-statement")
 endif()
 
+if(NOT SDL_LIBC)
+  if(MSVC)
+    set(saved_CMAKE_TRY_COMPILE_TARGET_TYPE "${CMAKE_TRY_COMPILE_TARGET_TYPE}")
+    cmake_push_check_state(RESET)
+    set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
+    check_c_compiler_flag("/Zl" COMPILER_SUPPORTS_Zl)
+    cmake_pop_check_state()
+    set(CMAKE_TRY_COMPILE_TARGET_TYPE "${saved_CMAKE_TRY_COMPILE_TARGET_TYPE}")
+    if(COMPILER_SUPPORTS_Zl)
+      # /Zl omits the default C runtime library name from the .obj file.
+      sdl_compile_options(PRIVATE "$<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:/Zl>")
+      if(TARGET SDL3_test)
+        target_compile_options(SDL3_test PRIVATE "/Zl")
+      endif()
+    endif()
+  endif()
+endif()
+
 if(APPLE)
   get_property(sources TARGET SDL3-collector PROPERTY INTERFACE_SOURCES)
   foreach(SOURCE_FILE IN LISTS sources)
@@ -3058,9 +3076,15 @@ if(SDL_SHARED)
     )
   endif()
   if(NOT SDL_LIBC)
-    if(MSVC AND SDL_CPU_X86)
-      # FIXME: should be added for all architectures (missing symbols for ARM)
-      target_link_libraries(SDL3-shared PRIVATE "-nodefaultlib:MSVCRT")
+    if(MSVC AND (NOT MSVC_CLANG AND NOT WINDOWS_STORE))
+      # Don't try to link with the default set of libraries.
+      # Note: The clang toolset for Visual Studio does not support /NODEFAULTLIB.
+      target_link_options(SDL3-shared PRIVATE "/NODEFAULTLIB")
+      if(SDL_CPU_ARM32)
+        # linking to msvcrt.lib avoid unresolved external symbols
+        # (__rt_sdiv, __rt_udiv, __rt_sdiv64, _rt_udiv64, __dtou64, __u64tod, __i64tos)
+        target_link_libraries(SDL3-shared PRIVATE msvcrt.lib)
+      endif()
     endif()
     if(HAS_Q_NO_USE_LIBIRC)
       target_compile_options(SDL3-shared PRIVATE /Q_no-use-libirc)
@@ -3093,14 +3117,6 @@ if(SDL_SHARED)
       set_target_properties(SDL3-shared PROPERTIES
         PREFIX ""
       )
-    endif()
-  endif()
-  # Note: The clang toolset for Visual Studio does not support /NODEFAULTLIB.
-  if(MSVC AND NOT SDL_LIBC AND NOT MSVC_CLANG AND NOT SDL_CPU_ARM32)
-    # Don't try to link with the default set of libraries.
-    if(NOT WINDOWS_STORE)
-      # FIXME: is this needed? "-nodefaultlib:MSVCRT" ia already added when SDL_LIBC is false
-      target_link_options(SDL3-shared PRIVATE "/NODEFAULTLIB")
     endif()
   endif()
   target_link_libraries(SDL3-shared PRIVATE ${SDL_CMAKE_DEPENDS})
