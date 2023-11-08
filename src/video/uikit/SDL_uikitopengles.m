@@ -83,7 +83,7 @@ int UIKit_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     /* We shouldn't pass a path to this function, since we've already loaded the
      * library. */
-    if (path != NULL) {
+    if (path) {
         return SDL_SetError("iOS GL Load Library just here for compatibility");
     }
     return 0;
@@ -207,7 +207,7 @@ void UIKit_GL_RestoreCurrentContext(void)
          app may crash or have other nasty symptoms when Dictation is used.
          */
         EAGLContext *context = (__bridge EAGLContext *)SDL_GL_GetCurrentContext();
-        if (context != NULL && [EAGLContext currentContext] != context) {
+        if (context && [EAGLContext currentContext] != context) {
             [EAGLContext setCurrentContext:context];
         }
     }

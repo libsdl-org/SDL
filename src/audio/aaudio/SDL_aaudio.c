@@ -282,7 +282,7 @@ static int BuildAAudioStream(SDL_AudioDevice *device)
     if (res != AAUDIO_OK) {
         LOGI("SDL Failed AAudio_createStreamBuilder %d", res);
         return SDL_SetError("SDL Failed AAudio_createStreamBuilder %d", res);
-    } else if (builder == NULL) {
+    } else if (!builder) {
         LOGI("SDL Failed AAudio_createStreamBuilder - builder NULL");
         return SDL_SetError("SDL Failed AAudio_createStreamBuilder - builder NULL");
     }
@@ -354,7 +354,7 @@ static int BuildAAudioStream(SDL_AudioDevice *device)
     hidden->num_buffers = 2;
     hidden->mixbuf_bytes = (hidden->num_buffers * device->buffer_size);
     hidden->mixbuf = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), hidden->mixbuf_bytes);
-    if (hidden->mixbuf == NULL) {
+    if (!hidden->mixbuf) {
         return SDL_OutOfMemory();
     }
     hidden->processed_bytes = 0;
@@ -384,7 +384,7 @@ static int BuildAAudioStream(SDL_AudioDevice *device)
 static int AAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
 #if ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES
-    SDL_assert(device->handle != NULL);  // AAUDIO_UNSPECIFIED is zero, so legit devices should all be non-zero.
+    SDL_assert(device->handle);  // AAUDIO_UNSPECIFIED is zero, so legit devices should all be non-zero.
 #endif
 
     LOGI(__func__);
@@ -397,7 +397,7 @@ static int AAUDIO_OpenDevice(SDL_AudioDevice *device)
     }
 
     device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
-    if (device->hidden == NULL) {
+    if (!device->hidden) {
         return SDL_OutOfMemory();
     }
 
@@ -407,7 +407,7 @@ static int AAUDIO_OpenDevice(SDL_AudioDevice *device)
 static SDL_bool PauseOneDevice(SDL_AudioDevice *device, void *userdata)
 {
     struct SDL_PrivateAudioData *hidden = (struct SDL_PrivateAudioData *)device->hidden;
-    if (hidden != NULL) {
+    if (hidden) {
         if (hidden->stream) {
             aaudio_result_t res;
 
@@ -433,7 +433,7 @@ static SDL_bool PauseOneDevice(SDL_AudioDevice *device, void *userdata)
 // Pause (block) all non already paused audio devices by taking their mixer lock
 void AAUDIO_PauseDevices(void)
 {
-    if (ctx.handle != NULL) {  // AAUDIO driver is used?
+    if (ctx.handle) {  // AAUDIO driver is used?
         (void) SDL_FindPhysicalAudioDeviceByCallback(PauseOneDevice, NULL);
     }
 }
@@ -442,7 +442,7 @@ void AAUDIO_PauseDevices(void)
 static SDL_bool ResumeOneDevice(SDL_AudioDevice *device, void *userdata)
 {
     struct SDL_PrivateAudioData *hidden = device->hidden;
-    if (hidden != NULL) {
+    if (hidden) {
         if (hidden->resume) {
             hidden->resume = SDL_FALSE;
             SDL_UnlockMutex(device->lock);
@@ -461,7 +461,7 @@ static SDL_bool ResumeOneDevice(SDL_AudioDevice *device, void *userdata)
 
 void AAUDIO_ResumeDevices(void)
 {
-    if (ctx.handle != NULL) {  // AAUDIO driver is used?
+    if (ctx.handle) {  // AAUDIO driver is used?
         (void) SDL_FindPhysicalAudioDeviceByCallback(ResumeOneDevice, NULL);
     }
 }
@@ -495,7 +495,7 @@ static SDL_bool AAUDIO_Init(SDL_AudioDriverImpl *impl)
     SDL_zero(ctx);
 
     ctx.handle = SDL_LoadObject(LIB_AAUDIO_SO);
-    if (ctx.handle == NULL) {
+    if (!ctx.handle) {
         LOGI("SDL couldn't find " LIB_AAUDIO_SO);
         return SDL_FALSE;
     }

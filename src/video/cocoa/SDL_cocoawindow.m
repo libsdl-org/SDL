@@ -102,7 +102,7 @@
      */
     if ([menuItem action] == @selector(toggleFullScreen:)) {
         SDL_Window *window = [self findSDLWindow];
-        if (window == NULL) {
+        if (!window) {
             return NO;
         } else if (window->flags & SDL_WINDOW_FULLSCREEN) {
             return NO;
@@ -553,7 +553,7 @@ static void Cocoa_SetKeyboardFocus(SDL_Window *window)
     SDL_CocoaWindowData* topmost_data;
 
     /* Find the topmost parent */
-    while (topmost->parent != NULL) {
+    while (topmost->parent) {
         topmost = topmost->parent;
     }
 
@@ -2225,7 +2225,7 @@ void Cocoa_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 SDL_Window *new_focus = window->parent;
 
                 /* Find the highest level window that isn't being hidden or destroyed. */
-                while (new_focus->parent != NULL && (new_focus->is_hiding || new_focus->is_destroying)) {
+                while (new_focus->parent && (new_focus->is_hiding || new_focus->is_destroying)) {
                     new_focus = new_focus->parent;
                 }
 
@@ -2500,7 +2500,7 @@ SDL_DisplayID Cocoa_GetDisplayForWindow(SDL_VideoDevice *_this, SDL_Window *wind
 
             for (i = 0; i < _this->num_displays; i++) {
                 SDL_DisplayData *displaydata = _this->displays[i]->driverdata;
-                if (displaydata != NULL && displaydata->display == displayid) {
+                if (displaydata && displaydata->display == displayid) {
                     return _this->displays[i]->id;
                 }
             }

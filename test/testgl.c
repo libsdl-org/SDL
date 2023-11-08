@@ -220,7 +220,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -413,7 +413,7 @@ int main(int argc, char *argv[])
 
         for (i = 0; i < state->num_windows; ++i) {
             int w, h;
-            if (state->windows[i] == NULL ||
+            if (!state->windows[i] ||
                 (suspend_when_occluded && (SDL_GetWindowFlags(state->windows[i]) & SDL_WINDOW_OCCLUDED))) {
                 continue;
             }

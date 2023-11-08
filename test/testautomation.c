@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 

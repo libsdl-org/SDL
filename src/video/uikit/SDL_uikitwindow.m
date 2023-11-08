@@ -337,7 +337,7 @@ void UIKit_UpdatePointerLock(SDL_VideoDevice *_this, SDL_Window *window)
 void UIKit_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
-        if (window->driverdata != NULL) {
+        if (window->driverdata) {
             SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
             NSArray *views = nil;
 
@@ -425,7 +425,7 @@ UIKit_GetSupportedOrientations(SDL_Window *window)
             validOrientations = [app supportedInterfaceOrientationsForWindow:data.uiwindow];
         }
 
-        if (hint != NULL) {
+        if (hint) {
             NSArray *orientations = [@(hint) componentsSeparatedByString:@" "];
 
             if ([orientations containsObject:@"LandscapeLeft"]) {

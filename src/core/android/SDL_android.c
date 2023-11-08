@@ -414,7 +414,7 @@ static SDL_AtomicInt bAllowRecreateActivity;
  * in Android 2.0 (Eclair) and higher you can use pthread_key_create to define a destructor function that will be
  * called before the thread exits, and call DetachCurrentThread from there. (Use that key with pthread_setspecific
  * to store the JNIEnv in thread-local-storage; that way it'll be passed into your destructor as the argument.)
- * Note: The destructor is not called unless the stored value is != NULL
+ * Note: The destructor is not called unless the stored value is not NULL
  * Note: You can call this function any number of times for the same thread, there's no harm in it
  *       (except for some lost CPU cycles)
  */
@@ -434,12 +434,12 @@ JNIEnv *Android_JNI_GetEnv(void)
 {
     /* Get JNIEnv from the Thread local storage */
     JNIEnv *env = pthread_getspecific(mThreadKey);
-    if (env == NULL) {
+    if (!env) {
         /* If it fails, try to attach ! (e.g the thread isn't created with SDL_CreateThread() */
         int status;
 
         /* There should be a JVM */
-        if (mJavaVM == NULL) {
+        if (!mJavaVM) {
             __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed, there is no JavaVM");
             return NULL;
         }
@@ -468,7 +468,7 @@ int Android_JNI_SetupThread(void)
     int status;
 
     /* There should be a JVM */
-    if (mJavaVM == NULL) {
+    if (!mJavaVM) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed, there is no JavaVM");
         return 0;
     }
@@ -494,7 +494,7 @@ static void Android_JNI_ThreadDestroyed(void *value)
 {
     /* The thread is being destroyed, detach it from the Java VM and set the mThreadKey value to NULL as required */
     JNIEnv *env = (JNIEnv *)value;
-    if (env != NULL) {
+    if (env) {
         (*mJavaVM)->DetachCurrentThread(mJavaVM);
         Android_JNI_SetEnv(NULL);
     }
@@ -520,7 +520,7 @@ static void Android_JNI_CreateKey_once(void)
 static void register_methods(JNIEnv *env, const char *classname, JNINativeMethod *methods, int nb)
 {
     jclass clazz = (*env)->FindClass(env, classname);
-    if (clazz == NULL || (*env)->RegisterNatives(env, clazz, methods, nb) < 0) {
+    if (!clazz || (*env)->RegisterNatives(env, clazz, methods, nb) < 0) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to register methods of %s", classname);
         return;
     }
@@ -582,28 +582,28 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     /* Save JNIEnv of SDLActivity */
     Android_JNI_SetEnv(env);
 
-    if (mJavaVM == NULL) {
+    if (!mJavaVM) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to found a JavaVM");
     }
 
     /* Use a mutex to prevent concurrency issues between Java Activity and Native thread code, when using 'Android_Window'.
      * (Eg. Java sending Touch events, while native code is destroying the main SDL_Window. )
      */
-    if (Android_ActivityMutex == NULL) {
+    if (!Android_ActivityMutex) {
         Android_ActivityMutex = SDL_CreateMutex(); /* Could this be created twice if onCreate() is called a second time ? */
     }
 
-    if (Android_ActivityMutex == NULL) {
+    if (!Android_ActivityMutex) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_ActivityMutex mutex");
     }
 
     Android_PauseSem = SDL_CreateSemaphore(0);
-    if (Android_PauseSem == NULL) {
+    if (!Android_PauseSem) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_PauseSem semaphore");
     }
 
     Android_ResumeSem = SDL_CreateSemaphore(0);
-    if (Android_ResumeSem == NULL) {
+    if (!Android_ResumeSem) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_ResumeSem semaphore");
     }
 
@@ -792,7 +792,7 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
     library_file = (*env)->GetStringUTFChars(env, library, NULL);
     library_handle = dlopen(library_file, RTLD_GLOBAL);
 
-    if (library_handle == NULL) {
+    if (!library_handle) {
         /* When deploying android app bundle format uncompressed native libs may not extract from apk to filesystem.
            In this case we should use lib name without path. https://bugzilla.libsdl.org/show_bug.cgi?id=4739 */
         const char *library_name = SDL_strrchr(library_file, '/');
@@ -834,7 +834,7 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
                     }
                     (*env)->DeleteLocalRef(env, string);
                 }
-                if (arg == NULL) {
+                if (!arg) {
                     arg = SDL_strdup("");
                 }
                 argv[argc++] = arg;
@@ -1007,7 +1007,7 @@ SDL_JAVA_AUDIO_INTERFACE(addAudioDevice)(JNIEnv *env, jclass jcls, jboolean is_c
                                          jstring name, jint device_id)
 {
 #if ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES
-    if (SDL_GetCurrentAudioDriver() != NULL) {
+    if (SDL_GetCurrentAudioDriver()) {
         void *handle = (void *)((size_t)device_id);
         if (!SDL_FindPhysicalAudioDeviceByHandle(handle)) {
             const char *utf8name = (*env)->GetStringUTFChars(env, name, NULL);
@@ -1023,7 +1023,7 @@ SDL_JAVA_AUDIO_INTERFACE(removeAudioDevice)(JNIEnv *env, jclass jcls, jboolean i
                                             jint device_id)
 {
 #if ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES
-    if (SDL_GetCurrentAudioDriver() != NULL) {
+    if (SDL_GetCurrentAudioDriver()) {
         SDL_Log("Removing device with handle %d, capture %d", device_id, is_capture);
         SDL_AudioDeviceDisconnected(SDL_FindPhysicalAudioDeviceByHandle((void *)((size_t)device_id)));
     }
@@ -1115,7 +1115,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceCreated)(JNIEnv *env, j
         SDL_WindowData *data = Android_Window->driverdata;
 
         data->native_window = Android_JNI_GetNativeWindow();
-        if (data->native_window == NULL) {
+        if (!data->native_window) {
             SDL_SetError("Could not fetch native window from UI thread");
         }
     }
@@ -1614,7 +1614,7 @@ int Android_JNI_OpenAudioDevice(SDL_AudioDevice *device)
         __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device for output");
         result = (*env)->CallStaticObjectMethod(env, mAudioManagerClass, midAudioOpen, spec->freq, audioformat, spec->channels, device->sample_frames, device_id);
     }
-    if (result == NULL) {
+    if (!result) {
         /* Error during audio initialization, error printed from Java */
         return SDL_SetError("Java-side initialization failed");
     }
@@ -1675,7 +1675,7 @@ int Android_JNI_OpenAudioDevice(SDL_AudioDevice *device)
         return SDL_SetError("Unexpected audio format from Java: %d\n", audioformat);
     }
 
-    if (jbufobj == NULL) {
+    if (!jbufobj) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: could not allocate an audio buffer");
         return SDL_OutOfMemory();
     }
@@ -1878,7 +1878,7 @@ static SDL_bool Android_JNI_ExceptionOccurred(SDL_bool silent)
     SDL_assert(SDL_AtomicGet(&s_active) > 0);
 
     exception = (*env)->ExceptionOccurred(env);
-    if (exception != NULL) {
+    if (exception) {
         jmethodID mid;
 
         /* Until this happens most JNI operations have undefined behaviour */
@@ -1898,7 +1898,7 @@ static SDL_bool Android_JNI_ExceptionOccurred(SDL_bool silent)
             mid = (*env)->GetMethodID(env, exceptionClass, "getMessage", "()Ljava/lang/String;");
             exceptionMessage = (jstring)(*env)->CallObjectMethod(env, exception, mid);
 
-            if (exceptionMessage != NULL) {
+            if (exceptionMessage) {
                 const char *exceptionMessageUTF8 = (*env)->GetStringUTFChars(env, exceptionMessage, 0);
                 SDL_SetError("%s: %s", exceptionNameUTF8, exceptionMessageUTF8);
                 (*env)->ReleaseStringUTFChars(env, exceptionMessage, exceptionMessageUTF8);
@@ -1946,7 +1946,7 @@ static void Internal_Android_Create_AssetManager()
     javaAssetManagerRef = (*env)->NewGlobalRef(env, javaAssetManager);
     asset_manager = AAssetManager_fromJava(env, javaAssetManagerRef);
 
-    if (asset_manager == NULL) {
+    if (!asset_manager) {
         (*env)->DeleteGlobalRef(env, javaAssetManagerRef);
         Android_JNI_ExceptionOccurred(SDL_TRUE);
     }
@@ -1970,16 +1970,16 @@ int Android_JNI_FileOpen(SDL_RWops *ctx,
     AAsset *asset = NULL;
     ctx->hidden.androidio.asset = NULL;
 
-    if (asset_manager == NULL) {
+    if (!asset_manager) {
         Internal_Android_Create_AssetManager();
     }
 
-    if (asset_manager == NULL) {
+    if (!asset_manager) {
         return SDL_SetError("Couldn't create asset manager");
     }
 
     asset = AAssetManager_open(asset_manager, fileName, AASSET_MODE_UNKNOWN);
-    if (asset == NULL) {
+    if (!asset) {
         return SDL_SetError("Couldn't open asset '%s'", fileName);
     }
 
@@ -2051,7 +2051,7 @@ char *Android_JNI_GetClipboardText(void)
         (*env)->DeleteLocalRef(env, string);
     }
 
-    return (text == NULL) ? SDL_strdup("") : text;
+    return (!text) ? SDL_strdup("") : text;
 }
 
 SDL_bool Android_JNI_HasClipboardText(void)
@@ -2371,7 +2371,7 @@ void *SDL_AndroidGetActivity(void)
     /* See SDL_system.h for caveats on using this function. */
 
     JNIEnv *env = Android_JNI_GetEnv();
-    if (env == NULL) {
+    if (!env) {
         return NULL;
     }
 
@@ -2425,7 +2425,7 @@ const char *SDL_AndroidGetInternalStoragePath(void)
 {
     static char *s_AndroidInternalFilesPath = NULL;
 
-    if (s_AndroidInternalFilesPath == NULL) {
+    if (!s_AndroidInternalFilesPath) {
         struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
         jmethodID mid;
         jobject context;
@@ -2524,7 +2524,7 @@ const char *SDL_AndroidGetExternalStoragePath(void)
 {
     static char *s_AndroidExternalFilesPath = NULL;
 
-    if (s_AndroidExternalFilesPath == NULL) {
+    if (!s_AndroidExternalFilesPath) {
         struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
         jmethodID mid;
         jobject context;
@@ -2680,16 +2680,16 @@ int Android_JNI_GetLocale(char *buf, size_t buflen)
     /* Need to re-create the asset manager if locale has changed (SDL_EVENT_LOCALE_CHANGED) */
     Internal_Android_Destroy_AssetManager();
 
-    if (asset_manager == NULL) {
+    if (!asset_manager) {
         Internal_Android_Create_AssetManager();
     }
 
-    if (asset_manager == NULL) {
+    if (!asset_manager) {
         return -1;
     }
 
     cfg = AConfiguration_new();
-    if (cfg == NULL) {
+    if (!cfg) {
         return -1;
     }
 

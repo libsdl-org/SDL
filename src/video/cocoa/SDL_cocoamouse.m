@@ -218,7 +218,7 @@ static int Cocoa_ShowCursor(SDL_Cursor *cursor)
     @autoreleasepool {
         SDL_VideoDevice *device = SDL_GetVideoDevice();
         SDL_Window *window = (device ? device->windows : NULL);
-        for (; window != NULL; window = window->next) {
+        for (; window; window = window->next) {
             SDL_CocoaWindowData *driverdata = (__bridge SDL_CocoaWindowData *)window->driverdata;
             if (driverdata) {
                 [driverdata.nswindow performSelectorOnMainThread:@selector(invalidateCursorRectsForView:)
@@ -368,7 +368,7 @@ int Cocoa_InitMouse(SDL_VideoDevice *_this)
     NSPoint location;
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_MouseData *driverdata = (SDL_MouseData *)SDL_calloc(1, sizeof(SDL_MouseData));
-    if (driverdata == NULL) {
+    if (!driverdata) {
         return SDL_OutOfMemory();
     }
 
@@ -398,7 +398,7 @@ static void Cocoa_HandleTitleButtonEvent(SDL_VideoDevice *_this, NSEvent *event)
 
     /* You might land in this function before SDL_Init if showing a message box.
        Don't dereference a NULL pointer if that happens. */
-    if (_this == NULL) {
+    if (!_this) {
         return;
     }
 

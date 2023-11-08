@@ -279,7 +279,7 @@ static void UpdatePointerLock(void)
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *window;
 
-    for (window = _this->windows; window != NULL; window = window->next) {
+    for (window = _this->windows; window; window = window->next) {
         UIKit_UpdatePointerLock(_this, window);
     }
 }

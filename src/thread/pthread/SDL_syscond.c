@@ -63,7 +63,7 @@ int SDL_SignalCondition(SDL_Condition *cond)
 {
     int retval;
 
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -79,7 +79,7 @@ int SDL_BroadcastCondition(SDL_Condition *cond)
 {
     int retval;
 
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -98,7 +98,7 @@ int SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 tim
 #endif
     struct timespec abstime;
 
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
 

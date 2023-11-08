@@ -53,13 +53,13 @@ SDL_HashTable *SDL_CreateHashTable(void *data, const Uint32 num_buckets, const S
     }
 
     table = (SDL_HashTable *) SDL_calloc(1, sizeof (SDL_HashTable));
-    if (table == NULL) {
+    if (!table) {
         SDL_OutOfMemory();
         return NULL;
     }
 
     table->table = (SDL_HashItem **) SDL_calloc(num_buckets, sizeof (SDL_HashItem *));
-    if (table->table == NULL) {
+    if (!table->table) {
         SDL_free(table);
         SDL_OutOfMemory();
         return NULL;
@@ -91,7 +91,7 @@ SDL_bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const vo
 
     // !!! FIXME: grow and rehash table if it gets too saturated.
     item = (SDL_HashItem *) SDL_malloc(sizeof (SDL_HashItem));
-    if (item == NULL) {
+    if (!item) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
@@ -110,9 +110,9 @@ SDL_bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const 
     void *data = table->data;
     SDL_HashItem *i;
 
-    for (i = table->table[hash]; i != NULL; i = i->next) {
+    for (i = table->table[hash]; i; i = i->next) {
         if (table->keymatch(key, i->key, data)) {
-            if (_value != NULL) {
+            if (_value) {
                 *_value = i->value;
             }
             return SDL_TRUE;
@@ -129,9 +129,9 @@ SDL_bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key)
     SDL_HashItem *prev = NULL;
     void *data = table->data;
 
-    for (item = table->table[hash]; item != NULL; item = item->next) {
+    for (item = table->table[hash]; item; item = item->next) {
         if (table->keymatch(key, item->key, data)) {
-            if (prev != NULL) {
+            if (prev) {
                 prev->next = item->next;
             } else {
                 table->table[hash] = item->next;
@@ -152,7 +152,7 @@ SDL_bool SDL_IterateHashTableKey(const SDL_HashTable *table, const void *key, co
 {
     SDL_HashItem *item = *iter ? ((SDL_HashItem *) *iter)->next : table->table[calc_hash(table, key)];
 
-    while (item != NULL) {
+    while (item) {
         if (table->keymatch(key, item->key, table->data)) {
             *_value = item->value;
             *iter = item;
@@ -172,10 +172,10 @@ SDL_bool SDL_IterateHashTable(const SDL_HashTable *table, const void **_key, con
     SDL_HashItem *item = (SDL_HashItem *) *iter;
     Uint32 idx = 0;
 
-    if (item != NULL) {
+    if (item) {
         const SDL_HashItem *orig = item;
         item = item->next;
-        if (item == NULL) {
+        if (!item) {
             idx = calc_hash(table, orig->key) + 1;  // !!! FIXME: we probably shouldn't rehash each time.
         }
     }
@@ -184,7 +184,7 @@ SDL_bool SDL_IterateHashTable(const SDL_HashTable *table, const void **_key, con
         item = table->table[idx++];  // skip empty buckets...
     }
 
-    if (item == NULL) {  // no more matches?
+    if (!item) {  // no more matches?
         *_key = NULL;
         *iter = NULL;
         return SDL_FALSE;
@@ -199,12 +199,12 @@ SDL_bool SDL_IterateHashTable(const SDL_HashTable *table, const void **_key, con
 
 SDL_bool SDL_HashTableEmpty(SDL_HashTable *table)
 {
-    if (table != NULL) {
+    if (table) {
         Uint32 i;
 
         for (i = 0; i < table->table_len; i++) {
             SDL_HashItem *item = table->table[i];
-            if (item != NULL) {
+            if (item) {
                 return SDL_FALSE;
             }
         }
@@ -214,13 +214,13 @@ SDL_bool SDL_HashTableEmpty(SDL_HashTable *table)
 
 void SDL_DestroyHashTable(SDL_HashTable *table)
 {
-    if (table != NULL) {
+    if (table) {
         void *data = table->data;
         Uint32 i;
 
         for (i = 0; i < table->table_len; i++) {
             SDL_HashItem *item = table->table[i];
-            while (item != NULL) {
+            while (item) {
                 SDL_HashItem *next = item->next;
                 table->nuke(item->key, item->value, data);
                 SDL_free(item);

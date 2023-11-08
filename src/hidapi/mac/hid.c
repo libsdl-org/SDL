@@ -145,7 +145,7 @@ struct hid_device_ {
 static hid_device *new_hid_device(void)
 {
 	hid_device *dev = (hid_device*) calloc(1, sizeof(hid_device));
-	if (dev == NULL) {
+	if (!dev) {
 		return NULL;
 	}
 
@@ -218,7 +218,7 @@ static wchar_t *utf8_to_wchar_t(const char *utf8)
 			return wcsdup(L"");
 		}
 		ret = (wchar_t*) calloc(wlen+1, sizeof(wchar_t));
-		if (ret == NULL) {
+		if (!ret) {
 			/* as much as we can do at this point */
 			return NULL;
 		}
@@ -301,7 +301,7 @@ static void register_device_error_format(hid_device *dev, const char *format, ..
 static CFArrayRef get_array_property(IOHIDDeviceRef device, CFStringRef key)
 {
 	CFTypeRef ref = IOHIDDeviceGetProperty(device, key);
-	if (ref != NULL && CFGetTypeID(ref) == CFArrayGetTypeID()) {
+	if (ref && CFGetTypeID(ref) == CFArrayGetTypeID()) {
 		return (CFArrayRef)ref;
 	} else {
 		return NULL;
@@ -552,7 +552,7 @@ static hid_bus_type get_bus_type(IOHIDDeviceRef dev)
 
 	CFTypeRef transport_prop = IOHIDDeviceGetProperty(dev, CFSTR(kIOHIDTransportKey));
 
-	if (transport_prop != NULL && CFGetTypeID(transport_prop) == CFStringGetTypeID()) {
+	if (transport_prop && CFGetTypeID(transport_prop) == CFStringGetTypeID()) {
 		if (CFStringCompare((CFStringRef)transport_prop, CFSTR(kIOHIDTransportUSBValue), 0) == kCFCompareEqualTo) {
 			bus_type = HID_API_BUS_USB;
 		} else if (CFStringHasPrefix((CFStringRef)transport_prop, CFSTR(kIOHIDTransportBluetoothValue))) {
@@ -580,12 +580,12 @@ static struct hid_device_info *create_device_info_with_usage(IOHIDDeviceRef dev,
 	kern_return_t res;
 	uint64_t entry_id = 0;
 
-	if (dev == NULL) {
+	if (!dev) {
 		return NULL;
 	}
 
 	cur_dev = (struct hid_device_info *)calloc(1, sizeof(struct hid_device_info));
-	if (cur_dev == NULL) {
+	if (!cur_dev) {
 		return NULL;
 	}
 
@@ -614,12 +614,12 @@ static struct hid_device_info *create_device_info_with_usage(IOHIDDeviceRef dev,
 		   9+1+20+1=31 bytes buffer, but allocate 32 for simple alignment */
 		const size_t path_len = 32;
 		cur_dev->path = calloc(1, path_len);
-		if (cur_dev->path != NULL) {
+		if (cur_dev->path) {
 			snprintf(cur_dev->path, path_len, "DevSrvsID:%llu", entry_id);
 		}
 	}
 
-	if (cur_dev->path == NULL) {
+	if (!cur_dev->path) {
 		/* for whatever reason, trying to keep it a non-NULL string */
 		cur_dev->path = strdup("");
 	}
@@ -649,7 +649,7 @@ static struct hid_device_info *create_device_info_with_usage(IOHIDDeviceRef dev,
 	/* Bus Type */
 	transport_prop = IOHIDDeviceGetProperty(dev, CFSTR(kIOHIDTransportKey));
 
-	if (transport_prop != NULL && CFGetTypeID(transport_prop) == CFStringGetTypeID()) {
+	if (transport_prop && CFGetTypeID(transport_prop) == CFStringGetTypeID()) {
 		if (CFStringCompare((CFStringRef)transport_prop, CFSTR(kIOHIDTransportUSBValue), 0) == kCFCompareEqualTo) {
 			int32_t interface_number = -1;
 			cur_dev->bus_type = HID_API_BUS_USB;
@@ -694,7 +694,7 @@ static struct hid_device_info *create_device_info(IOHIDDeviceRef device)
 
 	CFArrayRef usage_pairs = get_usage_pairs(device);
 
-	if (usage_pairs != NULL) {
+	if (usage_pairs) {
 		struct hid_device_info *next = NULL;
 		for (CFIndex i = 0; i < CFArrayGetCount(usage_pairs); i++) {
 			CFTypeRef dict = CFArrayGetValueAtIndex(usage_pairs, i);
@@ -718,7 +718,7 @@ static struct hid_device_info *create_device_info(IOHIDDeviceRef device)
 
 			next = create_device_info_with_usage(device, usage_page, usage);
 			cur->next = next;
-			if (next != NULL) {
+			if (next) {
 				cur = next;
 			}
 		}
@@ -761,7 +761,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		}
 	}
 	IOHIDManagerSetDeviceMatching(hid_mgr, matching);
-	if (matching != NULL) {
+	if (matching) {
 		CFRelease(matching);
 	}
 
@@ -769,7 +769,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 
 	IOHIDDeviceRef *device_array = NULL;
 
-	if (device_set != NULL) {
+	if (device_set) {
 		/* Convert the list into a C array so we can iterate easily. */
 		num_devices = CFSetGetCount(device_set);
 		device_array = (IOHIDDeviceRef*) calloc(num_devices, sizeof(IOHIDDeviceRef));
@@ -799,7 +799,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 #endif
 
 		struct hid_device_info *tmp = create_device_info(dev);
-		if (tmp == NULL) {
+		if (!tmp) {
 			continue;
 		}
 
@@ -812,16 +812,16 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		cur_dev = tmp;
 
 		/* move the pointer to the tail of returned list */
-		while (cur_dev->next != NULL) {
+		while (cur_dev->next) {
 			cur_dev = cur_dev->next;
 		}
 	}
 
 	free(device_array);
-	if (device_set != NULL)
+	if (device_set)
 		CFRelease(device_set);
 
-	if (root == NULL) {
+	if (!root) {
 		if (vendor_id == 0 && product_id == 0) {
 			register_global_error("No HID devices found in the system.");
 		} else {
@@ -857,7 +857,7 @@ hid_device * HID_API_EXPORT hid_open(unsigned short vendor_id, unsigned short pr
 
 	/* register_global_error: global error is reset by hid_enumerate/hid_init */
 	devs = hid_enumerate(vendor_id, product_id);
-	if (devs == NULL) {
+	if (!devs) {
 		/* register_global_error: global error is already set by hid_enumerate */
 		return NULL;
 	}
@@ -930,7 +930,7 @@ static void hid_report_callback(void *context, IOReturn result, void *sender,
 	pthread_mutex_lock(&dev->mutex);
 
 	/* Attach the new report object to the end of the list. */
-	if (dev->input_reports == NULL) {
+	if (!dev->input_reports) {
 		/* The list is empty. Put it at the root. */
 		dev->input_reports = rpt;
 	}
@@ -938,7 +938,7 @@ static void hid_report_callback(void *context, IOReturn result, void *sender,
 		/* Find the end of the list and attach. */
 		struct input_report *cur = dev->input_reports;
 		int num_queued = 0;
-		while (cur->next != NULL) {
+		while (cur->next) {
 			cur = cur->next;
 			num_queued++;
 		}
@@ -1040,7 +1040,7 @@ static void *read_thread(void *param)
 */
 static io_registry_entry_t hid_open_service_registry_from_path(const char *path)
 {
-	if (path == NULL)
+	if (!path)
 		return MACH_PORT_NULL;
 
 	/* Get the IORegistry entry for the given path */
@@ -1088,7 +1088,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path)
 
 	/* Create an IOHIDDevice for the entry */
 	dev->device_handle = IOHIDDeviceCreate(kCFAllocatorDefault, entry);
-	if (dev->device_handle == NULL) {
+	if (!dev->device_handle) {
 		/* Error creating the HID device */
 		register_global_error("hid_open_path: failed to create IOHIDDevice from the mach entry");
 		goto return_error;
@@ -1127,7 +1127,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path)
 	return dev;
 
 return_error:
-	if (dev->device_handle != NULL)
+	if (dev->device_handle)
 		CFRelease(dev->device_handle);
 
 	if (entry != MACH_PORT_NULL)
@@ -1230,7 +1230,7 @@ static int return_data(hid_device *dev, unsigned char *data, size_t length)
 	   return buffer (data), and delete the liked list item. */
 	struct input_report *rpt = dev->input_reports;
 	size_t len = (length < rpt->len)? length: rpt->len;
-	if (data != NULL) {
+	if (data) {
 		memcpy(data, rpt->data, len);
 	}
 	dev->input_reports = rpt->next;
@@ -1557,13 +1557,13 @@ int HID_API_EXPORT_CALL hid_darwin_is_device_open_exclusive(hid_device *dev)
 int HID_API_EXPORT_CALL hid_get_report_descriptor(hid_device *dev, unsigned char *buf, size_t buf_size)
 {
 	CFTypeRef ref = IOHIDDeviceGetProperty(dev->device_handle, CFSTR(kIOHIDReportDescriptorKey));
-	if (ref != NULL && CFGetTypeID(ref) == CFDataGetTypeID()) {
+	if (ref && CFGetTypeID(ref) == CFDataGetTypeID()) {
 		CFDataRef report_descriptor = (CFDataRef) ref;
 		const UInt8 *descriptor_buf = CFDataGetBytePtr(report_descriptor);
 		CFIndex descriptor_buf_len = CFDataGetLength(report_descriptor);
 		size_t copy_len = (size_t) descriptor_buf_len;
 
-		if (descriptor_buf == NULL || descriptor_buf_len < 0) {
+		if (!descriptor_buf || descriptor_buf_len < 0) {
 			register_device_error(dev, "Zero buffer/length");
 			return -1;
 		}
@@ -1584,12 +1584,12 @@ int HID_API_EXPORT_CALL hid_get_report_descriptor(hid_device *dev, unsigned char
 HID_API_EXPORT const wchar_t * HID_API_CALL  hid_error(hid_device *dev)
 {
 	if (dev) {
-		if (dev->last_error_str == NULL)
+		if (!dev->last_error_str)
 			return L"Success";
 		return dev->last_error_str;
 	}
 
-	if (last_global_error_str == NULL)
+	if (!last_global_error_str)
 		return L"Success";
 	return last_global_error_str;
 }

@@ -158,7 +158,7 @@ static void skip_audio(float amount)
     num_frames = (int)(new_spec.freq * ((speed * amount) / 100.0f));
     buf = SDL_malloc(num_frames);
 
-    if (buf != NULL) {
+    if (buf) {
         retval = SDL_GetAudioStreamData(stream, buf, num_frames);
         SDL_free(buf);
     }
@@ -374,7 +374,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_AUDIO | SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 

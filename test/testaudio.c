@@ -146,7 +146,7 @@ static Thing *FindThingAtPoint(const float x, const float y)
     const SDL_FPoint pt = { x, y };
     Thing *retval = NULL;
     Thing *i;
-    for (i = things; i != NULL; i = i->next) {
+    for (i = things; i; i = i->next) {
         if ((i != dragging_thing) && SDL_PointInRectFloat(&pt, &i->rect)) {
             retval = i;  /* keep going, though, because things drawn on top are later in the list. */
         }
@@ -188,7 +188,7 @@ static Thing *CreateThing(ThingType what, float x, float y, float z, float w, fl
     }
 
     if ((w < 0) || (h < 0)) {
-        SDL_assert(texture != NULL);
+        SDL_assert(texture);
         if (w < 0) {
             w = texture->w;
         }
@@ -213,12 +213,12 @@ static Thing *CreateThing(ThingType what, float x, float y, float z, float w, fl
     thing->titlebar = titlebar ? SDL_strdup(titlebar) : NULL;  /* if allocation fails, oh well. */
 
     /* insert in list by Z order (furthest from the "camera" first, so they get drawn over; negative Z is not drawn at all). */
-    if (things == NULL) {
+    if (!things) {
         things = thing;
         return thing;
     }
 
-    for (i = things; i != NULL; i = i->next) {
+    for (i = things; i; i = i->next) {
         if (z > i->z) {  /* insert here. */
             thing->next = i;
             thing->prev = i->prev;
@@ -270,7 +270,7 @@ static void DestroyThing(Thing *thing)
         case THING_LOGDEV:
         case THING_LOGDEV_CAPTURE:
             SDL_CloseAudioDevice(thing->data.logdev.devid);
-            if (state->renderers[0] != NULL) {
+            if (state->renderers[0]) {
                 SDL_DestroyTexture(thing->data.logdev.visualizer);
             }
             SDL_DestroyMutex(thing->data.logdev.postmix_lock);
@@ -389,7 +389,7 @@ static void RepositionRowOfThings(const ThingType what, const float y)
     float texh = 0.0f;
     Thing *i;
 
-    for (i = things; i != NULL; i = i->next) {
+    for (i = things; i; i = i->next) {
         if (i->what == what) {
             texw = i->rect.w;
             texh = i->rect.h;
@@ -402,7 +402,7 @@ static void RepositionRowOfThings(const ThingType what, const float y)
         SDL_GetWindowSize(state->windows[0], &w, &h);
         const float spacing = w / ((float) total_things);
         float x = (spacing - texw) / 2.0f;
-        for (i = things; i != NULL; i = i->next) {
+        for (i = things; i; i = i->next) {
             if (i->what == what) {
                 i->rect.x = x;
                 i->rect.y = (y >= 0.0f) ? y : ((h + y) - texh);
@@ -494,7 +494,7 @@ static void DestroyThingInPoof(Thing *thing)
 static void TrashThing(Thing *thing)
 {
     Thing *i, *next;
-    for (i = things; i != NULL; i = next) {
+    for (i = things; i; i = next) {
         next = i->next;
         if (i->line_connected_to == thing) {
             TrashThing(i);
@@ -694,7 +694,7 @@ static void LoadStockWavThings(void)
 static void DestroyTexture(Texture *tex)
 {
     if (tex) {
-        if (state->renderers[0] != NULL) {  /* if the renderer went away, this pointer is already bogus. */
+        if (state->renderers[0]) {  /* if the renderer went away, this pointer is already bogus. */
             SDL_DestroyTexture(tex->texture);
         }
         SDL_free(tex);
@@ -1009,7 +1009,7 @@ static void TickThings(void)
     Thing *i;
     Thing *next;
     const Uint64 now = SDL_GetTicks();
-    for (i = things; i != NULL; i = next) {
+    for (i = things; i; i = next) {
         next = i->next;  /* in case this deletes itself. */
         if (i->ontick) {
             i->ontick(i, now);
@@ -1024,7 +1024,7 @@ static void WindowResized(const int newwinw, const int newwinh)
     const float newh = (float) newwinh;
     const float oldw = (float) state->window_w;
     const float oldh = (float) state->window_h;
-    for (i = things; i != NULL; i = i->next) {
+    for (i = things; i; i = i->next) {
         const float halfw = i->rect.w / 2.0f;
         const float halfh = i->rect.h / 2.0f;
         const float x = (i->rect.x + halfw) / oldw;
@@ -1041,7 +1041,7 @@ int SDL_AppInit(int argc, char *argv[])
     int i;
 
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    if (state == NULL) {
+    if (!state) {
         return -1;
     }
 
@@ -1195,7 +1195,7 @@ int SDL_AppEvent(const SDL_Event *event)
             const SDL_AudioDeviceID which = event->adevice.which;
             Thing *i, *next;
             SDL_Log("Removing audio device %u", (unsigned int) which);
-            for (i = things; i != NULL; i = next) {
+            for (i = things; i; i = next) {
                 next = i->next;
                 if (((i->what == THING_PHYSDEV) || (i->what == THING_PHYSDEV_CAPTURE)) && (i->data.physdev.devid == which)) {
                     TrashThing(i);
@@ -1234,7 +1234,7 @@ int SDL_AppIterate(void)
 
 void SDL_AppQuit(void)
 {
-    while (things != NULL) {
+    while (things) {
         DestroyThing(things);  /* make sure all the audio devices are closed, etc. */
     }
 

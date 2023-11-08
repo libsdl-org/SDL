@@ -172,7 +172,7 @@ class SDL_BLooper : public BLooper
     {
         int32 i;
         for (i = 0; i < _GetNumWindowSlots(); ++i) {
-            if (GetSDLWindow(i) == NULL) {
+            if (!GetSDLWindow(i)) {
                 _SetSDLWindow(win, i);
                 return i;
             }

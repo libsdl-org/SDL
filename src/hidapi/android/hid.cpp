@@ -797,7 +797,7 @@ static void ThreadDestroyed(void* value)
 {
 	/* The thread is being destroyed, detach it from the Java VM and set the g_ThreadKey value to NULL as required */
 	JNIEnv *env = (JNIEnv*) value;
-	if (env != NULL) {
+	if (env) {
 		g_JVM->DetachCurrentThread();
 		pthread_setspecific(g_ThreadKey, NULL);
 	}
@@ -844,7 +844,7 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceRegisterCallba
 		__android_log_print(ANDROID_LOG_ERROR, TAG, "Error initializing pthread key");
 	}
 
-	if ( g_HIDDeviceManagerCallbackHandler != NULL )
+	if (g_HIDDeviceManagerCallbackHandler)
 	{
 		env->DeleteGlobalRef( g_HIDDeviceManagerCallbackClass );
 		g_HIDDeviceManagerCallbackClass = NULL;
@@ -1031,7 +1031,7 @@ extern "C"
 
 int hid_init(void)
 {
-	if ( !g_initialized && g_HIDDeviceManagerCallbackHandler )
+	if (!g_initialized && g_HIDDeviceManagerCallbackHandler )
 	{
 		// HIDAPI doesn't work well with Android < 4.3
 		if (SDL_GetAndroidSDKVersion() >= 18) {
@@ -1085,7 +1085,7 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 
 void  HID_API_EXPORT HID_API_CALL hid_free_enumeration(struct hid_device_info *devs)
 {
-	while ( devs )
+	while (devs )
 	{
 		struct hid_device_info *next = devs->next;
 		FreeHIDDeviceInfo( devs );
@@ -1112,7 +1112,7 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path)
 			if ( SDL_strcmp( pCurr->GetDeviceInfo()->path, path ) == 0 )
 			{
 				hid_device *pValue = pCurr->GetDevice();
-				if ( pValue )
+				if (pValue )
 				{
 					++pValue->m_nDeviceRefCount;
 					LOGD("Incrementing device %d (%p), refCount = %d\n", pValue->m_nId, pValue, pValue->m_nDeviceRefCount);
@@ -1125,7 +1125,7 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path)
 			}
 		}
 	}
-	if ( pDevice && pDevice->BOpen() )
+	if (pDevice && pDevice->BOpen() )
 	{
 		return pDevice->GetDevice();
 	}
@@ -1134,11 +1134,11 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path)
 
 int  HID_API_EXPORT HID_API_CALL hid_write(hid_device *device, const unsigned char *data, size_t length)
 {
-	if ( device )
+	if (device )
 	{
 		LOGV( "hid_write id=%d length=%u", device->m_nId, length );
 		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
-		if ( pDevice )
+		if (pDevice )
 		{
 			return pDevice->WriteReport( data, length, false );
 		}
@@ -1174,11 +1174,11 @@ static void delayms(uint32_t ms)
 
 int HID_API_EXPORT HID_API_CALL hid_read_timeout(hid_device *device, unsigned char *data, size_t length, int milliseconds)
 {
-	if ( device )
+	if (device )
 	{
 //		LOGV( "hid_read_timeout id=%d length=%u timeout=%d", device->m_nId, length, milliseconds );
 		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
-		if ( pDevice )
+		if (pDevice )
 		{
 			int nResult = pDevice->GetInput( data, length );
 			if ( nResult == 0 && milliseconds > 0 )
@@ -1212,11 +1212,11 @@ int  HID_API_EXPORT HID_API_CALL hid_set_nonblocking(hid_device *device, int non
 
 int HID_API_EXPORT HID_API_CALL hid_send_feature_report(hid_device *device, const unsigned char *data, size_t length)
 {
-	if ( device )
+	if (device )
 	{
 		LOGV( "hid_send_feature_report id=%d length=%u", device->m_nId, length );
 		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
-		if ( pDevice )
+		if (pDevice )
 		{
 			return pDevice->WriteReport( data, length, true );
 		}
@@ -1228,11 +1228,11 @@ int HID_API_EXPORT HID_API_CALL hid_send_feature_report(hid_device *device, cons
 // Synchronous operation. Will block until completed.
 int HID_API_EXPORT HID_API_CALL hid_get_feature_report(hid_device *device, unsigned char *data, size_t length)
 {
-	if ( device )
+	if (device )
 	{
 		LOGV( "hid_get_feature_report id=%d length=%u", device->m_nId, length );
 		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
-		if ( pDevice )
+		if (pDevice )
 		{
 			return pDevice->ReadReport( data, length, true );
 		}
@@ -1244,11 +1244,11 @@ int HID_API_EXPORT HID_API_CALL hid_get_feature_report(hid_device *device, unsig
 // Synchronous operation. Will block until completed.
 int HID_API_EXPORT HID_API_CALL hid_get_input_report(hid_device *device, unsigned char *data, size_t length)
 {
-	if ( device )
+	if (device )
 	{
 		LOGV( "hid_get_input_report id=%d length=%u", device->m_nId, length );
 		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
-		if ( pDevice )
+		if (pDevice )
 		{
 			return pDevice->ReadReport( data, length, false );
 		}
@@ -1259,7 +1259,7 @@ int HID_API_EXPORT HID_API_CALL hid_get_input_report(hid_device *device, unsigne
 
 void HID_API_EXPORT HID_API_CALL hid_close(hid_device *device)
 {
-	if ( device )
+	if (device )
 	{
 		LOGV( "hid_close id=%d", device->m_nId );
 		hid_mutex_guard r( &g_DevicesRefCountMutex );
@@ -1267,7 +1267,7 @@ void HID_API_EXPORT HID_API_CALL hid_close(hid_device *device)
 		if ( --device->m_nDeviceRefCount == 0 )
 		{
 			hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
-			if ( pDevice )
+			if (pDevice )
 			{
 				pDevice->Close( true );
 			}
@@ -1282,10 +1282,10 @@ void HID_API_EXPORT HID_API_CALL hid_close(hid_device *device)
 
 int HID_API_EXPORT_CALL hid_get_manufacturer_string(hid_device *device, wchar_t *string, size_t maxlen)
 {
-	if ( device )
+	if (device )
 	{
 		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
-		if ( pDevice )
+		if (pDevice )
 		{
 			wcsncpy( string, pDevice->GetDeviceInfo()->manufacturer_string, maxlen );
 			return 0;
@@ -1296,10 +1296,10 @@ int HID_API_EXPORT_CALL hid_get_manufacturer_string(hid_device *device, wchar_t 
 
 int HID_API_EXPORT_CALL hid_get_product_string(hid_device *device, wchar_t *string, size_t maxlen)
 {
-	if ( device )
+	if (device )
 	{
 		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
-		if ( pDevice )
+		if (pDevice )
 		{
 			wcsncpy( string, pDevice->GetDeviceInfo()->product_string, maxlen );
 			return 0;
@@ -1310,10 +1310,10 @@ int HID_API_EXPORT_CALL hid_get_product_string(hid_device *device, wchar_t *stri
 
 int HID_API_EXPORT_CALL hid_get_serial_number_string(hid_device *device, wchar_t *string, size_t maxlen)
 {
-	if ( device )
+	if (device )
 	{
 		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
-		if ( pDevice )
+		if (pDevice )
 		{
 			wcsncpy( string, pDevice->GetDeviceInfo()->serial_number, maxlen );
 			return 0;
@@ -1329,10 +1329,10 @@ int HID_API_EXPORT_CALL hid_get_indexed_string(hid_device *device, int string_in
 
 struct hid_device_info *hid_get_device_info(hid_device *device)
 {
-	if ( device )
+	if (device )
 	{
 		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
-		if ( pDevice )
+		if (pDevice )
 		{
             return pDevice->GetDeviceInfo();
 		}

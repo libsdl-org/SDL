@@ -69,7 +69,7 @@ void SDL_DestroyMutex(SDL_Mutex *mutex)
 void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
 #ifndef SDL_THREADS_DISABLED
-    if (mutex != NULL) {
+    if (mutex) {
         const SceInt32 res = sceKernelLockLwMutex(&mutex->lock, 1, NULL);
         SDL_assert(res == SCE_KERNEL_ERROR_OK);  // assume we're in a lot of trouble if this assert fails.
     }
@@ -80,7 +80,7 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
 {
     int retval = 0;
 #ifndef SDL_THREADS_DISABLED
-    if (mutex != NULL) {
+    if (mutex) {
         const SceInt32 res = sceKernelTryLockLwMutex(&mutex->lock, 1);
         if (res == SCE_KERNEL_ERROR_OK) {
             retval = 0;
@@ -98,7 +98,7 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
 void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
 #ifndef SDL_THREADS_DISABLED
-    if (mutex != NULL) {
+    if (mutex) {
         const SceInt32 res = sceKernelUnlockLwMutex(&mutex->lock, 1);
         SDL_assert(res == 0);  // assume we're in a lot of trouble if this assert fails.
     }

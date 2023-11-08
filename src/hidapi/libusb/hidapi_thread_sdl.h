@@ -33,7 +33,7 @@ typedef struct _SDL_ThreadBarrier
 
 static int SDL_CreateThreadBarrier(SDL_ThreadBarrier *barrier, Uint32 count)
 {
-    SDL_assert(barrier != NULL);
+    SDL_assert(barrier);
     SDL_assert(count != 0);
 
     barrier->mutex = SDL_CreateMutex();

@@ -829,7 +829,7 @@ static void AddController(SDL_JoystickID id, SDL_bool verbose)
     }
 
     new_controllers = (Controller *)SDL_realloc(controllers, (num_controllers + 1) * sizeof(*controllers));
-    if (new_controllers == NULL) {
+    if (!new_controllers) {
         return;
     }
 
@@ -878,7 +878,7 @@ static void DelController(SDL_JoystickID id)
         controllers[i].trigger_effect = -1;
         CyclePS5TriggerEffect(&controllers[i]);
     }
-    SDL_assert(controllers[i].gamepad == NULL);
+    SDL_assert(!controllers[i].gamepad);
     if (controllers[i].axis_state) {
         SDL_free(controllers[i].axis_state);
     }
@@ -1084,7 +1084,7 @@ static void OpenVirtualGamepad(void)
         SDL_Log("Couldn't attach virtual device: %s\n", SDL_GetError());
     } else {
         virtual_joystick = SDL_OpenJoystick(virtual_id);
-        if (virtual_joystick == NULL) {
+        if (!virtual_joystick) {
             SDL_Log("Couldn't open virtual device: %s\n", SDL_GetError());
         }
     }
@@ -1810,7 +1810,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -1882,13 +1882,13 @@ int main(int argc, char *argv[])
     screen_width = (int)SDL_ceilf(SCREEN_WIDTH * content_scale);
     screen_height = (int)SDL_ceilf(SCREEN_HEIGHT * content_scale);
     window = SDL_CreateWindow("SDL Controller Test", screen_width, screen_height, 0);
-    if (window == NULL) {
+    if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s\n", SDL_GetError());
         return 2;
     }
 
     screen = SDL_CreateRenderer(window, NULL, 0);
-    if (screen == NULL) {
+    if (!screen) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
         return 2;
@@ -1915,7 +1915,7 @@ int main(int argc, char *argv[])
     type_area.y = (float)TITLE_HEIGHT / 2 - type_area.h / 2;
 
     image = CreateGamepadImage(screen);
-    if (image == NULL) {
+    if (!image) {
         SDL_DestroyRenderer(screen);
         SDL_DestroyWindow(window);
         return 2;

@@ -39,7 +39,7 @@ extern "C"
 
 static Uint8 *HAIKUAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
-    SDL_assert(device->hidden->current_buffer != NULL);
+    SDL_assert(device->hidden->current_buffer);
     SDL_assert(device->hidden->current_buffer_len > 0);
     *buffer_size = device->hidden->current_buffer_len;
     return device->hidden->current_buffer;
@@ -48,7 +48,7 @@ static Uint8 *HAIKUAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 static int HAIKUAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
     // We already wrote our output right into the BSoundPlayer's callback's stream. Just clean up our stuff.
-    SDL_assert(device->hidden->current_buffer != NULL);
+    SDL_assert(device->hidden->current_buffer);
     SDL_assert(device->hidden->current_buffer_len > 0);
     device->hidden->current_buffer = NULL;
     device->hidden->current_buffer_len = 0;
@@ -59,7 +59,7 @@ static int HAIKUAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, i
 static void FillSound(void *data, void *stream, size_t len, const media_raw_audio_format & format)
 {
     SDL_AudioDevice *device = (SDL_AudioDevice *)data;
-    SDL_assert(device->hidden->current_buffer == NULL);
+    SDL_assert(!device->hidden->current_buffer);
     SDL_assert(device->hidden->current_buffer_len == 0);
     device->hidden->current_buffer = (Uint8 *) stream;
     device->hidden->current_buffer_len = (int) len;
@@ -106,7 +106,7 @@ static int HAIKUAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     // Initialize all variables that we clean on shutdown
     device->hidden = new SDL_PrivateAudioData;
-    if (device->hidden == NULL) {
+    if (!device->hidden) {
         return SDL_OutOfMemory();
     }
     SDL_zerop(device->hidden);

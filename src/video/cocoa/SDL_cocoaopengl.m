@@ -228,10 +228,10 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 int Cocoa_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     /* Load the OpenGL library */
-    if (path == NULL) {
+    if (!path) {
         path = SDL_getenv("SDL_OPENGL_LIBRARY");
     }
-    if (path == NULL) {
+    if (!path) {
         path = DEFAULT_OPENGL;
     }
     _this->gl_config.dll_handle = SDL_LoadObject(path);
@@ -406,7 +406,7 @@ SDL_GLContext Cocoa_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
             }
 
             glversion = (const char *)glGetStringFunc(GL_VERSION);
-            if (glversion == NULL) {
+            if (!glversion) {
                 SDL_GL_DeleteContext(sdlcontext);
                 SDL_SetError("Failed getting OpenGL context version");
                 return NULL;

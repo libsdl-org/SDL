@@ -43,7 +43,7 @@ SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
     }
 
     sem = (SDL_Semaphore *)SDL_malloc(sizeof(*sem));
-    if (sem == NULL) {
+    if (!sem) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -63,7 +63,7 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
 
 int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -99,7 +99,7 @@ int WaitOnSemaphoreFor(SDL_Semaphore *sem, Sint64 timeout)
 
 Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
-    if (sem == NULL) {
+    if (!sem) {
         SDL_InvalidParamError("sem");
         return 0;
     }
@@ -108,7 +108,7 @@ Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 
 int SDL_PostSemaphore(SDL_Semaphore *sem)
 {
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
     LightSemaphore_Release(&sem->semaphore, 1);

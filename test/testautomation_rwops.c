@@ -47,7 +47,7 @@ static void RWopsSetUp(void *arg)
     /* Create a test file */
     handle = fopen(RWopsReadTestFilename, "w");
     SDLTest_AssertCheck(handle != NULL, "Verify creation of file '%s' returned non NULL handle", RWopsReadTestFilename);
-    if (handle == NULL) {
+    if (!handle) {
         return;
     }
 
@@ -61,7 +61,7 @@ static void RWopsSetUp(void *arg)
     /* Create a second test file */
     handle = fopen(RWopsAlphabetFilename, "w");
     SDLTest_AssertCheck(handle != NULL, "Verify creation of file '%s' returned non NULL handle", RWopsAlphabetFilename);
-    if (handle == NULL) {
+    if (!handle) {
         return;
     }
 
@@ -265,7 +265,7 @@ static int rwops_testMem(void *arg)
     SDLTest_AssertCheck(rw != NULL, "Verify opening memory with SDL_RWFromMem does not return NULL");
 
     /* Bail out if NULL */
-    if (rw == NULL) {
+    if (!rw) {
         return TEST_ABORTED;
     }
 
@@ -300,7 +300,7 @@ static int rwops_testConstMem(void *arg)
     SDLTest_AssertCheck(rw != NULL, "Verify opening memory with SDL_RWFromConstMem does not return NULL");
 
     /* Bail out if NULL */
-    if (rw == NULL) {
+    if (!rw) {
         return TEST_ABORTED;
     }
 
@@ -335,7 +335,7 @@ static int rwops_testFileRead(void *arg)
     SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_RWFromFile in read mode does not return NULL");
 
     /* Bail out if NULL */
-    if (rw == NULL) {
+    if (!rw) {
         return TEST_ABORTED;
     }
 
@@ -382,7 +382,7 @@ static int rwops_testFileWrite(void *arg)
     SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_RWFromFile in write mode does not return NULL");
 
     /* Bail out if NULL */
-    if (rw == NULL) {
+    if (!rw) {
         return TEST_ABORTED;
     }
 
@@ -424,7 +424,7 @@ static int rwops_testAllocFree(void *arg)
     SDL_RWops *rw = SDL_CreateRW();
     SDLTest_AssertPass("Call to SDL_CreateRW() succeeded");
     SDLTest_AssertCheck(rw != NULL, "Validate result from SDL_CreateRW() is not NULL");
-    if (rw == NULL) {
+    if (!rw) {
         return TEST_ABORTED;
     }
 
@@ -571,7 +571,7 @@ static int rwops_testFileWriteReadEndian(void *arg)
         SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_RWFromFile in write mode does not return NULL");
 
         /* Bail out if NULL */
-        if (rw == NULL) {
+        if (!rw) {
             return TEST_ABORTED;
         }
 

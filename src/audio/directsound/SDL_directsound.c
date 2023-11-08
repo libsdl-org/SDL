@@ -62,7 +62,7 @@ static void DSOUND_Unload(void)
     pDirectSoundCaptureEnumerateW = NULL;
     pGetDeviceID = NULL;
 
-    if (DSoundDLL != NULL) {
+    if (DSoundDLL) {
         SDL_UnloadObject(DSoundDLL);
         DSoundDLL = NULL;
     }
@@ -75,7 +75,7 @@ static int DSOUND_Load(void)
     DSOUND_Unload();
 
     DSoundDLL = SDL_LoadObject("DSOUND.DLL");
-    if (DSoundDLL == NULL) {
+    if (!DSoundDLL) {
         SDL_SetError("DirectSound: failed to load DSOUND.DLL");
     } else {
 // Now make sure we have DirectX 8 or better...
@@ -174,9 +174,9 @@ typedef struct FindAllDevsData
 static BOOL CALLBACK FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVOID userdata)
 {
     FindAllDevsData *data = (FindAllDevsData *) userdata;
-    if (guid != NULL) { // skip default device
+    if (guid) { // skip default device
         char *str = WIN_LookupAudioDeviceName(desc, guid);
-        if (str != NULL) {
+        if (str) {
             LPGUID cpyguid = (LPGUID)SDL_malloc(sizeof(GUID));
             if (cpyguid) {
                 SDL_copyp(cpyguid, guid);
@@ -358,7 +358,7 @@ static int DSOUND_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int b
     }
 
     SDL_assert(ptr1len == (DWORD)buflen);
-    SDL_assert(ptr2 == NULL);
+    SDL_assert(!ptr2);
     SDL_assert(ptr2len == 0);
 
     SDL_memcpy(buffer, ptr1, ptr1len);
@@ -384,18 +384,18 @@ static void DSOUND_FlushCapture(SDL_AudioDevice *device)
 static void DSOUND_CloseDevice(SDL_AudioDevice *device)
 {
     if (device->hidden) {
-        if (device->hidden->mixbuf != NULL) {
+        if (device->hidden->mixbuf) {
             IDirectSoundBuffer_Stop(device->hidden->mixbuf);
             IDirectSoundBuffer_Release(device->hidden->mixbuf);
         }
-        if (device->hidden->sound != NULL) {
+        if (device->hidden->sound) {
             IDirectSound_Release(device->hidden->sound);
         }
-        if (device->hidden->capturebuf != NULL) {
+        if (device->hidden->capturebuf) {
             IDirectSoundCaptureBuffer_Stop(device->hidden->capturebuf);
             IDirectSoundCaptureBuffer_Release(device->hidden->capturebuf);
         }
-        if (device->hidden->capture != NULL) {
+        if (device->hidden->capture) {
             IDirectSoundCapture_Release(device->hidden->capture);
         }
         SDL_free(device->hidden);
@@ -491,7 +491,7 @@ static int DSOUND_OpenDevice(SDL_AudioDevice *device)
 {
     // Initialize all variables that we clean on shutdown
     device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
-    if (device->hidden == NULL) {
+    if (!device->hidden) {
         return SDL_OutOfMemory();
     }
 
@@ -506,7 +506,7 @@ static int DSOUND_OpenDevice(SDL_AudioDevice *device)
         guid = (LPGUID) device->handle;
     }
 
-    SDL_assert(guid != NULL);
+    SDL_assert(guid);
 
     HRESULT result;
     if (device->iscapture) {

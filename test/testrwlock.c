@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
     SDL_AtomicSet(&doterminate, 0);
 
     rwlock = SDL_CreateRWLock();
-    if (rwlock == NULL) {
+    if (!rwlock) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create rwlock: %s\n", SDL_GetError());
         SDL_Quit();
         SDLTest_CommonDestroyState(state);
@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
         char name[64];
         (void)SDL_snprintf(name, sizeof(name), "Reader%d", i);
         threads[i] = SDL_CreateThread(ReaderRun, name, NULL);
-        if (threads[i] == NULL) {
+        if (!threads[i]) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create reader thread! %s\n", SDL_GetError());
         }
     }

@@ -64,7 +64,7 @@ char *HAIKU_GetClipboardText(SDL_VideoDevice *_this) {
         be_clipboard->Unlock();
     }
 
-    if (text == NULL) {
+    if (!text) {
         result = SDL_strdup("");
     } else {
         /* Copy the data and pass on to SDL */

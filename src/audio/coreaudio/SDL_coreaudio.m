@@ -185,7 +185,7 @@ static void RefreshPhysicalDevices(void)
 
             CFIndex len = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfstr), kCFStringEncodingUTF8);
             char *name = (char *)SDL_malloc(len + 1);
-            SDL_bool usable = ((name != NULL) && (CFStringGetCString(cfstr, name, len + 1, kCFStringEncodingUTF8)));
+            SDL_bool usable = (name && (CFStringGetCString(cfstr, name, len + 1, kCFStringEncodingUTF8)));
 
             CFRelease(cfstr);
 
@@ -317,7 +317,7 @@ static void ResumeAudioDevices(void)
 
 static void InterruptionBegin(SDL_AudioDevice *device)
 {
-    if (device != NULL && device->hidden->audioQueue != NULL) {
+    if (device && device->hidden->audioQueue) {
         device->hidden->interrupted = SDL_TRUE;
         AudioQueuePause(device->hidden->audioQueue);
     }
@@ -325,7 +325,7 @@ static void InterruptionBegin(SDL_AudioDevice *device)
 
 static void InterruptionEnd(SDL_AudioDevice *device)
 {
-    if (device != NULL && device->hidden != NULL && device->hidden->audioQueue != NULL && device->hidden->interrupted && AudioQueueStart(device->hidden->audioQueue, NULL) == AVAudioSessionErrorCodeNone) {
+    if (device && device->hidden && device->hidden->audioQueue && device->hidden->interrupted && AudioQueueStart(device->hidden->audioQueue, NULL) == AVAudioSessionErrorCodeNone) {
         device->hidden->interrupted = SDL_FALSE;
     }
 }
@@ -368,7 +368,7 @@ typedef struct
 static SDL_bool CountOpenAudioDevices(SDL_AudioDevice *device, void *userdata)
 {
     CountOpenAudioDevicesData *data = (CountOpenAudioDevicesData *) userdata;
-    if (device->hidden != NULL) {  // assume it's open if hidden != NULL
+    if (device->hidden) {  // assume it's open if hidden is not NULL
         if (device->iscapture) {
             data->capture++;
         } else {
@@ -527,7 +527,7 @@ static SDL_bool UpdateAudioSession(SDL_AudioDevice *device, SDL_bool open, SDL_b
 static int COREAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
     AudioQueueBufferRef current_buffer = device->hidden->current_buffer;
-    SDL_assert(current_buffer != NULL);  // should have been called from OutputBufferReadyCallback
+    SDL_assert(current_buffer);  // should have been called from OutputBufferReadyCallback
     SDL_assert(buffer == (Uint8 *) current_buffer->mAudioData);
     current_buffer->mAudioDataByteSize = current_buffer->mAudioDataBytesCapacity;
     device->hidden->current_buffer = NULL;
@@ -538,8 +538,8 @@ static int COREAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, in
 static Uint8 *COREAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     AudioQueueBufferRef current_buffer = device->hidden->current_buffer;
-    SDL_assert(current_buffer != NULL);  // should have been called from OutputBufferReadyCallback
-    SDL_assert(current_buffer->mAudioData != NULL);
+    SDL_assert(current_buffer);  // should have been called from OutputBufferReadyCallback
+    SDL_assert(current_buffer->mAudioData);
     *buffer_size = (int) current_buffer->mAudioDataBytesCapacity;
     return (Uint8 *) current_buffer->mAudioData;
 }
@@ -547,11 +547,11 @@ static Uint8 *COREAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 static void OutputBufferReadyCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffer)
 {
     SDL_AudioDevice *device = (SDL_AudioDevice *)inUserData;
-    SDL_assert(inBuffer != NULL);  // ...right?
-    SDL_assert(device->hidden->current_buffer == NULL);  // shouldn't have anything pending
+    SDL_assert(inBuffer);  // ...right?
+    SDL_assert(!device->hidden->current_buffer);  // shouldn't have anything pending
     device->hidden->current_buffer = inBuffer;
     const SDL_bool okay = SDL_OutputAudioThreadIterate(device);
-    SDL_assert((device->hidden->current_buffer == NULL) || !okay);  // PlayDevice should have enqueued and cleaned it out, unless we failed or shutdown.
+    SDL_assert(!device->hidden->current_buffer || !okay);  // PlayDevice should have enqueued and cleaned it out, unless we failed or shutdown.
 
     // buffer is unexpectedly here? We're probably dying, but try to requeue this buffer with silence.
     if (device->hidden->current_buffer) {
@@ -565,8 +565,8 @@ static void OutputBufferReadyCallback(void *inUserData, AudioQueueRef inAQ, Audi
 static int COREAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
 {
     AudioQueueBufferRef current_buffer = device->hidden->current_buffer;
-    SDL_assert(current_buffer != NULL);  // should have been called from InputBufferReadyCallback
-    SDL_assert(current_buffer->mAudioData != NULL);
+    SDL_assert(current_buffer);  // should have been called from InputBufferReadyCallback
+    SDL_assert(current_buffer->mAudioData);
     SDL_assert(buflen >= (int) current_buffer->mAudioDataByteSize);  // `cpy` makes sure this won't overflow a buffer, but we _will_ drop samples if this assertion fails!
     const int cpy = SDL_min(buflen, (int) current_buffer->mAudioDataByteSize);
     SDL_memcpy(buffer, current_buffer->mAudioData, cpy);
@@ -578,7 +578,7 @@ static int COREAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, in
 static void COREAUDIO_FlushCapture(SDL_AudioDevice *device)
 {
     AudioQueueBufferRef current_buffer = device->hidden->current_buffer;
-    if (current_buffer != NULL) {  // also gets called at shutdown, when no buffer is available.
+    if (current_buffer) {  // also gets called at shutdown, when no buffer is available.
         // just requeue the current buffer without reading from it, so it can be refilled with new data later.
         device->hidden->current_buffer = NULL;
         AudioQueueEnqueueBuffer(device->hidden->audioQueue, current_buffer, 0, NULL);
@@ -591,11 +591,11 @@ static void InputBufferReadyCallback(void *inUserData, AudioQueueRef inAQ, Audio
 {
     SDL_AudioDevice *device = (SDL_AudioDevice *)inUserData;
     SDL_assert(inAQ == device->hidden->audioQueue);
-    SDL_assert(inBuffer != NULL);  // ...right?
-    SDL_assert(device->hidden->current_buffer == NULL);  // shouldn't have anything pending
+    SDL_assert(inBuffer);  // ...right?
+    SDL_assert(!device->hidden->current_buffer);  // shouldn't have anything pending
     device->hidden->current_buffer = inBuffer;
     SDL_CaptureAudioThreadIterate(device);
-    SDL_assert(device->hidden->current_buffer == NULL);  // CaptureFromDevice/FlushCapture should have enqueued and cleaned it out.
+    SDL_assert(!device->hidden->current_buffer);  // CaptureFromDevice/FlushCapture should have enqueued and cleaned it out.
 }
 
 static void COREAUDIO_CloseDevice(SDL_AudioDevice *device)
@@ -634,7 +634,7 @@ static void COREAUDIO_CloseDevice(SDL_AudioDevice *device)
 static int PrepareDevice(SDL_AudioDevice *device)
 {
     void *handle = device->handle;
-    SDL_assert(handle != NULL);  // this meant "system default" in SDL2, but doesn't anymore
+    SDL_assert(handle);  // this meant "system default" in SDL2, but doesn't anymore
 
     const AudioDeviceID devid = (AudioDeviceID)((size_t)handle);
     OSStatus result = noErr;
@@ -768,7 +768,7 @@ static int PrepareAudioQueue(SDL_AudioDevice *device)
 
     device->hidden->numAudioBuffers = numAudioBuffers;
     device->hidden->audioBuffer = SDL_calloc(numAudioBuffers, sizeof(AudioQueueBufferRef));
-    if (device->hidden->audioBuffer == NULL) {
+    if (!device->hidden->audioBuffer) {
         return SDL_OutOfMemory();
     }
 
@@ -832,7 +832,7 @@ static int COREAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     // Initialize all variables that we clean on shutdown
     device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
-    if (device->hidden == NULL) {
+    if (!device->hidden) {
         return SDL_OutOfMemory();
     }
 
@@ -930,7 +930,7 @@ static int COREAUDIO_OpenDevice(SDL_AudioDevice *device)
     SDL_DestroySemaphore(device->hidden->ready_semaphore);
     device->hidden->ready_semaphore = NULL;
 
-    if ((device->hidden->thread != NULL) && (device->hidden->thread_error != NULL)) {
+    if (device->hidden->thread && device->hidden->thread_error) {
         SDL_WaitThread(device->hidden->thread, NULL);
         device->hidden->thread = NULL;
         return SDL_SetError("%s", device->hidden->thread_error);

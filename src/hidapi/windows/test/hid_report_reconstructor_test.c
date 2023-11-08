@@ -509,7 +509,7 @@ int main(int argc, char* argv[])
 	printf("Checking: '%s' / '%s'\n", argv[1], argv[2]);
 
 	hidp_preparsed_data *pp_data = alloc_preparsed_data_from_file(argv[1]);
-	if (pp_data == NULL) {
+	if (!pp_data) {
 		return EXIT_FAILURE;
 	}
 

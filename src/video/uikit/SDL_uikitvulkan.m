@@ -88,12 +88,12 @@ int UIKit_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
             numPaths = SDL_arraysize(defaultPaths);
         }
 
-        for (i = 0; i < numPaths && _this->vulkan_config.loader_handle == NULL; i++) {
+        for (i = 0; i < numPaths && !_this->vulkan_config.loader_handle; i++) {
             foundPath = paths[i];
             _this->vulkan_config.loader_handle = SDL_LoadObject(foundPath);
         }
 
-        if (_this->vulkan_config.loader_handle == NULL) {
+        if (!_this->vulkan_config.loader_handle) {
             return SDL_SetError("Failed to load Vulkan Portability library");
         }
 
@@ -212,7 +212,7 @@ SDL_bool UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     }
 
     metalview = UIKit_Metal_CreateView(_this, window);
-    if (metalview == NULL) {
+    if (!metalview) {
         return SDL_FALSE;
     }
 

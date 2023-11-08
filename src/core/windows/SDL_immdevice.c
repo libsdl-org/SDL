@@ -342,11 +342,11 @@ int SDL_IMMDevice_Get(SDL_AudioDevice *device, IMMDevice **immdevice, SDL_bool i
 {
     const Uint64 timeout = SDL_GetTicks() + 8000;  /* intel's audio drivers can fail for up to EIGHT SECONDS after a device is connected or we wake from sleep. */
 
-    SDL_assert(device != NULL);
-    SDL_assert(immdevice != NULL);
+    SDL_assert(device);
+    SDL_assert(immdevice);
 
     LPCWSTR devid = SDL_IMMDevice_GetDevID(device);
-    SDL_assert(devid != NULL);
+    SDL_assert(devid);
 
     HRESULT ret;
     while ((ret = IMMDeviceEnumerator_GetDevice(enumerator, devid, immdevice)) == E_NOTFOUND) {

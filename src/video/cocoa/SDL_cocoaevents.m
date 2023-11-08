@@ -194,7 +194,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     }
 
     /* Don't do anything if this was not an SDL window that was closed */
-    if (FindSDLWindowForNSWindow(win) == NULL) {
+    if (!FindSDLWindowForNSWindow(win)) {
         return;
     }
 
@@ -246,7 +246,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     /* Don't do anything if the application already has a key window
      * that is not an SDL window.
      */
-    if ([NSApp keyWindow] && FindSDLWindowForNSWindow([NSApp keyWindow]) == NULL) {
+    if ([NSApp keyWindow] && !FindSDLWindowForNSWindow([NSApp keyWindow])) {
         return;
     }
 

@@ -140,13 +140,13 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     }
 
     display = WAYLAND_wl_display_connect(NULL);
-    if (display == NULL) {
+    if (!display) {
         SDL_WAYLAND_UnloadSymbols();
         return NULL;
     }
 
     data = SDL_calloc(1, sizeof(*data));
-    if (data == NULL) {
+    if (!data) {
         WAYLAND_wl_display_disconnect(display);
         SDL_WAYLAND_UnloadSymbols();
         SDL_OutOfMemory();
@@ -159,7 +159,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
 
     /* Initialize all variables that we clean on shutdown */
     device = SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
+    if (!device) {
         SDL_free(data);
         WAYLAND_wl_display_disconnect(display);
         SDL_WAYLAND_UnloadSymbols();
@@ -415,7 +415,7 @@ static void display_handle_geometry(void *data,
     driverdata->physical_height = physical_height;
 
     /* The model is only used for the output name if wl_output or xdg-output haven't provided a description. */
-    if (driverdata->display == 0 && driverdata->placeholder.name == NULL) {
+    if (driverdata->display == 0 && !driverdata->placeholder.name) {
         driverdata->placeholder.name = SDL_strdup(model);
     }
 
@@ -574,7 +574,7 @@ static void display_handle_done(void *data,
     SDL_SetDesktopDisplayMode(dpy, &desktop_mode);
 
     /* Expose the unscaled, native resolution if the scale is 1.0 or viewports are available... */
-    if (driverdata->scale_factor == 1.0f || video->viewporter != NULL) {
+    if (driverdata->scale_factor == 1.0f || video->viewporter) {
         SDL_AddFullscreenDisplayMode(dpy, &native_mode);
     } else {
         /* ...otherwise expose the integer scaled variants of the desktop resolution down to 1. */
@@ -651,7 +651,7 @@ static int Wayland_add_display(SDL_VideoData *d, uint32_t id, uint32_t version)
     SDL_DisplayData *data;
 
     output = wl_registry_bind(d->registry, id, &wl_output_interface, version);
-    if (output == NULL) {
+    if (!output) {
         return SDL_SetError("Failed to retrieve output.");
     }
     data = (SDL_DisplayData *)SDL_calloc(1, sizeof(*data));
@@ -838,7 +838,7 @@ static SDL_bool should_use_libdecor(SDL_VideoData *data, SDL_bool ignore_xdg)
 SDL_bool Wayland_LoadLibdecor(SDL_VideoData *data, SDL_bool ignore_xdg)
 {
 #ifdef HAVE_LIBDECOR_H
-    if (data->shell.libdecor != NULL) {
+    if (data->shell.libdecor) {
         return SDL_TRUE; /* Already loaded! */
     }
     if (should_use_libdecor(data, ignore_xdg)) {
@@ -859,7 +859,7 @@ int Wayland_VideoInit(SDL_VideoDevice *_this)
     }
 
     data->registry = wl_display_get_registry(data->display);
-    if (data->registry == NULL) {
+    if (!data->registry) {
         return SDL_SetError("Failed to get the Wayland registry");
     }
 

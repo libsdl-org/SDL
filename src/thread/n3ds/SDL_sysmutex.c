@@ -46,19 +46,19 @@ void SDL_DestroyMutex(SDL_Mutex *mutex)
 
 void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
-    if (mutex != NULL) {
+    if (mutex) {
         RecursiveLock_Lock(&mutex->lock);
     }
 }
 
 int SDL_TryLockMutex(SDL_Mutex *mutex)
 {
-    return (mutex == NULL) ? 0 : RecursiveLock_TryLock(&mutex->lock);
+    return (!mutex) ? 0 : RecursiveLock_TryLock(&mutex->lock);
 }
 
 void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
-    if (mutex != NULL) {
+    if (mutex) {
         RecursiveLock_Unlock(&mutex->lock);
     }
 }

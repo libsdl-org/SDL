@@ -99,7 +99,7 @@ static char *HIDAPI_ConvertString(const wchar_t *wide_string)
 
     if (wide_string) {
         string = SDL_iconv_string("UTF-8", "WCHAR_T", (char *)wide_string, (SDL_wcslen(wide_string) + 1) * sizeof(wchar_t));
-        if (string == NULL) {
+        if (!string) {
             switch (sizeof(wchar_t)) {
             case 2:
                 string = SDL_iconv_string("UTF-8", "UCS-2-INTERNAL", (char *)wide_string, (SDL_wcslen(wide_string) + 1) * sizeof(wchar_t));
@@ -472,7 +472,7 @@ static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, SDL_bool *remove
                 for (curr = SDL_HIDAPI_devices; curr && curr != device; curr = curr->next) {
                     continue;
                 }
-                if (curr == NULL) {
+                if (!curr) {
                     *removed = SDL_TRUE;
                     if (dev) {
                         SDL_hid_close(dev);
@@ -494,7 +494,7 @@ static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, SDL_bool *remove
             dev = SDL_hid_open_path(device->path);
 #endif
 
-            if (dev == NULL) {
+            if (!dev) {
                 SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                              "HIDAPI_SetupDeviceDriver() couldn't open %s: %s\n",
                              device->path, SDL_GetError());
@@ -567,7 +567,7 @@ static int HIDAPI_JoystickInit(void)
 
 #ifdef SDL_USE_LIBUDEV
     if (linux_enumeration_method == ENUMERATION_UNSET) {
-        if (SDL_getenv("SDL_HIDAPI_JOYSTICK_DISABLE_UDEV") != NULL) {
+        if (SDL_getenv("SDL_HIDAPI_JOYSTICK_DISABLE_UDEV")) {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "udev disabled by SDL_HIDAPI_JOYSTICK_DISABLE_UDEV");
             linux_enumeration_method = ENUMERATION_FALLBACK;
@@ -608,7 +608,7 @@ static int HIDAPI_JoystickInit(void)
 static SDL_bool HIDAPI_AddJoystickInstanceToDevice(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID)
 {
     SDL_JoystickID *joysticks = (SDL_JoystickID *)SDL_realloc(device->joysticks, (device->num_joysticks + 1) * sizeof(*device->joysticks));
-    if (joysticks == NULL) {
+    if (!joysticks) {
         return SDL_FALSE;
     }
 
@@ -730,7 +730,7 @@ SDL_bool HIDAPI_HasConnectedUSBDevice(const char *serial)
 
     SDL_AssertJoysticksLocked();
 
-    if (serial == NULL) {
+    if (!serial) {
         return SDL_FALSE;
     }
 
@@ -756,7 +756,7 @@ void HIDAPI_DisconnectBluetoothDevice(const char *serial)
 
     SDL_AssertJoysticksLocked();
 
-    if (serial == NULL) {
+    if (!serial) {
         return;
     }
 
@@ -866,7 +866,7 @@ static SDL_HIDAPI_Device *HIDAPI_AddDevice(const struct SDL_hid_device_info *inf
     }
 
     device = (SDL_HIDAPI_Device *)SDL_calloc(1, sizeof(*device));
-    if (device == NULL) {
+    if (!device) {
         return NULL;
     }
     device->magic = &SDL_HIDAPI_device_magic;
@@ -1038,7 +1038,7 @@ static SDL_bool HIDAPI_CreateCombinedJoyCons(void)
         if (joycons[0] && joycons[1]) {
             SDL_hid_device_info info;
             SDL_HIDAPI_Device **children = (SDL_HIDAPI_Device **)SDL_malloc(2 * sizeof(SDL_HIDAPI_Device *));
-            if (children == NULL) {
+            if (!children) {
                 return SDL_FALSE;
             }
             children[0] = joycons[0];
@@ -1423,13 +1423,13 @@ static int HIDAPI_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     SDL_AssertJoysticksLocked();
 
-    if (device == NULL || !device->driver) {
+    if (!device || !device->driver) {
         /* This should never happen - validated before being called */
         return SDL_SetError("Couldn't find HIDAPI device at index %d\n", device_index);
     }
 
     hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof(*hwdata));
-    if (hwdata == NULL) {
+    if (!hwdata) {
         return SDL_OutOfMemory();
     }
     hwdata->device = device;
@@ -1468,7 +1468,7 @@ static SDL_bool HIDAPI_GetJoystickDevice(SDL_Joystick *joystick, SDL_HIDAPI_Devi
 
     if (joystick && joystick->hwdata) {
         *device = joystick->hwdata->device;
-        if (*device && (*device)->magic == &SDL_HIDAPI_device_magic && (*device)->driver != NULL) {
+        if (*device && (*device)->magic == &SDL_HIDAPI_device_magic && (*device)->driver) {
             return SDL_TRUE;
         }
     }

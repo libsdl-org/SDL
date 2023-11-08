@@ -46,7 +46,7 @@ extern "C" SDL_RWLock *SDL_CreateRWLock(void)
 
 extern "C" void SDL_DestroyRWLock(SDL_RWLock *rwlock)
 {
-    if (rwlock != NULL) {
+    if (rwlock) {
         delete rwlock;
     }
 }

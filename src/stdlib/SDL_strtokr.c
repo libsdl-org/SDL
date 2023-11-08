@@ -49,10 +49,10 @@ char *SDL_strtok_r(char *s1, const char *s2, char **ptr)
 
     if (!s2 || !ptr || (!s1 && !*ptr)) return NULL;
 
-    if (s1 != NULL) {  /* new string */
+    if (s1) {  /* new string */
         *ptr = s1;
     } else { /* old string continued */
-        if (*ptr == NULL) {
+        if (!*ptr) {
         /* No old string, no new string, nothing to do */
             return NULL;
         }
@@ -70,7 +70,7 @@ char *SDL_strtok_r(char *s1, const char *s2, char **ptr)
         ++p;
     }
 
-    if (! *s1) { /* no more to parse */
+    if (!*s1) { /* no more to parse */
         *ptr = s1;
         return NULL;
     }

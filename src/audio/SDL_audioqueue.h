@@ -56,14 +56,14 @@ int SDL_WriteToAudioQueue(SDL_AudioQueue *queue, const SDL_AudioSpec *spec, cons
 SDL_AudioTrack *SDL_CreateChunkedAudioTrack(const SDL_AudioSpec *spec, const Uint8 *data, size_t len, size_t chunk_size);
 
 // Add a track to the end of the queue
-// REQUIRES: `track != NULL`
+// REQUIRES: `track not NULL`
 void SDL_AddTrackToAudioQueue(SDL_AudioQueue *queue, SDL_AudioTrack *track);
 
 // Iterate over the tracks in the queue
 void *SDL_BeginAudioQueueIter(SDL_AudioQueue *queue);
 
 // Query and update the track iterator
-// REQUIRES: `*inout_iter != NULL` (a valid iterator)
+// REQUIRES: `*inout_iter not NULL` (a valid iterator)
 size_t SDL_NextAudioQueueIter(SDL_AudioQueue *queue, void **inout_iter, SDL_AudioSpec *out_spec, SDL_bool *out_flushed);
 
 // Read data from the start of the queue

@@ -63,7 +63,7 @@ static void SDLCALL GDK_InternalHintCallback(
     const char *oldValue,
     const char *newValue)
 {
-    if (userdata == NULL) {
+    if (!userdata) {
         return;
     }
 
@@ -72,7 +72,7 @@ static void SDLCALL GDK_InternalHintCallback(
 
     if (userdata == &g_TextInputScope || userdata == &g_MaxTextLength) {
         /* int32 hint */
-        Sint32 intValue = (newValue == NULL || newValue[0] == '\0') ? 0 : SDL_atoi(newValue);
+        Sint32 intValue = (!newValue || newValue[0] == '\0') ? 0 : SDL_atoi(newValue);
         if (userdata == &g_MaxTextLength && intValue <= 0) {
             intValue = g_DefaultMaxTextLength;
         } else if (userdata == &g_TextInputScope && intValue < 0) {
@@ -82,13 +82,13 @@ static void SDLCALL GDK_InternalHintCallback(
         *(Sint32 *)userdata = intValue;
     } else {
         /* string hint */
-        if (newValue == NULL || newValue[0] == '\0') {
+        if (!newValue || newValue[0] == '\0') {
             /* treat empty or NULL strings as just NULL for this impl */
             SDL_free(*(char **)userdata);
             *(char **)userdata = NULL;
         } else {
             char *newString = SDL_strdup(newValue);
-            if (newString == NULL) {
+            if (!newString) {
                 /* couldn't strdup, oh well */
                 SDL_OutOfMemory();
             } else {
@@ -102,7 +102,7 @@ static void SDLCALL GDK_InternalHintCallback(
 
 static int GDK_InternalEnsureTaskQueue(void)
 {
-    if (g_TextTaskQueue == NULL) {
+    if (!g_TextTaskQueue) {
         if (SDL_GDKGetTaskQueue(&g_TextTaskQueue) < 0) {
             /* SetError will be done for us. */
             return -1;
@@ -128,7 +128,7 @@ static void CALLBACK GDK_InternalTextEntryCallback(XAsyncBlock *asyncBlock)
     } else if (resultSize > 0) {
         /* +1 to be super sure that the buffer will be null terminated */
         resultBuffer = (char *)SDL_calloc(sizeof(*resultBuffer), 1 + (size_t)resultSize);
-        if (resultBuffer == NULL) {
+        if (!resultBuffer) {
             SDL_OutOfMemory();
         } else {
             /* still pass the original size that we got from ResultSize */
@@ -230,7 +230,7 @@ SDL_bool GDK_IsTextInputShown(SDL_VideoDevice *_this)
      * just below the text box, so technically
      * this is true whenever the window is shown.
      */
-    return (g_TextBlock != NULL);
+    return (g_TextBlock);
 }
 
 SDL_bool GDK_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
@@ -251,7 +251,7 @@ void GDK_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 
     HRESULT hR = S_OK;
 
-    if (g_TextBlock != NULL) {
+    if (g_TextBlock) {
         /* already showing the keyboard */
         return;
     }
@@ -262,7 +262,7 @@ void GDK_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     g_TextBlock = (XAsyncBlock *)SDL_calloc(1, sizeof(*g_TextBlock));
-    if (g_TextBlock == NULL) {
+    if (!g_TextBlock) {
         SDL_OutOfMemory();
         return;
     }
@@ -285,7 +285,7 @@ void GDK_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 
 void GDK_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    if (g_TextBlock != NULL) {
+    if (g_TextBlock) {
         XAsyncCancel(g_TextBlock);
         /* the completion callback will free the block */
     }

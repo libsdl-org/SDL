@@ -221,7 +221,7 @@ MainWindow::create()
 long
 MainWindow::onConnect(FXObject *sender, FXSelector sel, void *ptr)
 {
-	if (connected_device != NULL)
+	if (connected_device)
 		return 1;
 	
 	FXint cur_item = device_list->getCurrentItem();

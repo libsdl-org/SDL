@@ -73,7 +73,7 @@ class SDL_BView : public BView
 
     void Draw(BRect dirty)
     {
-        if (fBitmap != NULL)
+        if (fBitmap)
             DrawBitmap(fBitmap, B_ORIGIN);
     }
 
@@ -117,7 +117,7 @@ class SDL_BWin : public BWindow
     {
         Lock();
 
-        if (_SDL_View != NULL && _SDL_View != _cur_view) {
+        if (_SDL_View && _SDL_View != _cur_view) {
             delete _SDL_View;
             _SDL_View = NULL;
         }
@@ -145,10 +145,10 @@ class SDL_BWin : public BWindow
     void SetCurrentView(BView *view)
     {
         if (_cur_view != view) {
-            if (_cur_view != NULL)
+            if (_cur_view)
                 RemoveChild(_cur_view);
             _cur_view = view;
-            if (_cur_view != NULL)
+            if (_cur_view)
                 AddChild(_cur_view);
         }
     }
@@ -156,11 +156,11 @@ class SDL_BWin : public BWindow
     void UpdateCurrentView()
     {
 #ifdef SDL_VIDEO_OPENGL
-        if (_SDL_GLView != NULL) {
+        if (_SDL_GLView) {
             SetCurrentView(_SDL_GLView);
         } else
 #endif
-        if (_SDL_View != NULL) {
+        if (_SDL_View) {
             SetCurrentView(_SDL_View);
         } else {
             SetCurrentView(NULL);
@@ -170,7 +170,7 @@ class SDL_BWin : public BWindow
     SDL_BView *CreateView()
     {
         Lock();
-        if (_SDL_View == NULL) {
+        if (!_SDL_View) {
             _SDL_View = new SDL_BView(Bounds(), "SDL View", B_FOLLOW_ALL_SIDES);
             UpdateCurrentView();
         }
@@ -181,7 +181,7 @@ class SDL_BWin : public BWindow
     void RemoveView()
     {
         Lock();
-        if (_SDL_View != NULL) {
+        if (_SDL_View) {
             SDL_BView *oldView = _SDL_View;
             _SDL_View = NULL;
             UpdateCurrentView();
@@ -195,7 +195,7 @@ class SDL_BWin : public BWindow
     BGLView *CreateGLView(Uint32 gl_flags)
     {
         Lock();
-        if (_SDL_GLView == NULL) {
+        if (!_SDL_GLView) {
             _SDL_GLView = new BGLView(Bounds(), "SDL GLView",
                                       B_FOLLOW_ALL_SIDES,
                                       (B_WILL_DRAW | B_FRAME_EVENTS),
@@ -210,7 +210,7 @@ class SDL_BWin : public BWindow
     void RemoveGLView()
     {
         Lock();
-        if (_SDL_GLView != NULL) {
+        if (_SDL_GLView) {
             if (SDL_Looper->GetCurrentContext() == _SDL_GLView)
                 SDL_Looper->SetCurrentContext(NULL);
             _SDL_GLView = NULL;
@@ -456,13 +456,13 @@ class SDL_BWin : public BWindow
                 MessageQueue()->RemoveMessage(pendingMessage);
                 delete pendingMessage;
             }
-            if (_bitmap != NULL) {
+            if (_bitmap) {
 #ifdef SDL_VIDEO_OPENGL
-                if (_SDL_GLView != NULL && _cur_view == _SDL_GLView) {
+                if (_SDL_GLView && _cur_view == _SDL_GLView) {
                     _SDL_GLView->CopyPixelsIn(_bitmap, B_ORIGIN);
                 } else
 #endif
-                if (_SDL_View != NULL && _cur_view == _SDL_View) {
+                if (_SDL_View && _cur_view == _SDL_View) {
                     _SDL_View->Draw(Bounds());
                 }
             }
@@ -496,7 +496,7 @@ class SDL_BWin : public BWindow
     void SetBitmap(BBitmap *bitmap)
     {
         _bitmap = bitmap;
-        if (_SDL_View != NULL)
+        if (_SDL_View)
             _SDL_View->SetBitmap(bitmap);
     }
 
@@ -574,7 +574,7 @@ class SDL_BWin : public BWindow
         BMessage msg(BAPP_KEY);
         msg.AddInt32("key-state", keyState);
         msg.AddInt32("key-scancode", keyCode);
-        if (keyUtf8 != NULL) {
+        if (keyUtf8) {
             msg.AddData("key-utf8", B_INT8_TYPE, (const void *)keyUtf8, len);
         }
         SDL_Looper->PostMessage(&msg);
@@ -680,7 +680,7 @@ class SDL_BWin : public BWindow
             Show();
         } else if (_fullscreen) {
 
-        } else if (_prev_frame != NULL) { /* Zoomed */
+        } else if (_prev_frame) { /* Zoomed */
             MoveTo(_prev_frame->left, _prev_frame->top);
             ResizeTo(_prev_frame->Width(), _prev_frame->Height());
         }

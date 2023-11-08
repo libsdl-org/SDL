@@ -128,7 +128,7 @@ int SDL_InitSensors(void)
     int i, status;
 
     /* Create the sensor list lock */
-    if (SDL_sensor_lock == NULL) {
+    if (!SDL_sensor_lock) {
         SDL_sensor_lock = SDL_CreateMutex();
     }
 
@@ -164,7 +164,7 @@ SDL_bool SDL_SensorsOpened(void)
 
     SDL_LockSensors();
     {
-        if (SDL_sensors != NULL) {
+        if (SDL_sensors) {
             opened = SDL_TRUE;
         } else {
             opened = SDL_FALSE;
@@ -329,7 +329,7 @@ SDL_Sensor *SDL_OpenSensor(SDL_SensorID instance_id)
 
     /* Create and initialize the sensor */
     sensor = (SDL_Sensor *)SDL_calloc(sizeof(*sensor), 1);
-    if (sensor == NULL) {
+    if (!sensor) {
         SDL_OutOfMemory();
         SDL_UnlockSensors();
         return NULL;

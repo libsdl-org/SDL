@@ -171,7 +171,7 @@ static void X11_ConstrainPopup(SDL_Window *window)
         int offset_x = 0, offset_y = 0;
 
         /* Calculate the total offset from the parents */
-        for (w = window->parent; w->parent != NULL; w = w->parent) {
+        for (w = window->parent; w->parent; w = w->parent) {
             offset_x += w->x;
             offset_y += w->y;
         }
@@ -203,7 +203,7 @@ static void X11_SetKeyboardFocus(SDL_Window *window)
     SDL_Window *topmost = window;
 
     /* Find the topmost parent */
-    while (topmost->parent != NULL) {
+    while (topmost->parent) {
         topmost = topmost->parent;
     }
 
@@ -307,7 +307,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w,
 
     /* Allocate the window data */
     data = (SDL_WindowData *)SDL_calloc(1, sizeof(*data));
-    if (data == NULL) {
+    if (!data) {
         return SDL_OutOfMemory();
     }
     data->window = window;
@@ -331,7 +331,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w,
         videodata->numwindows++;
     } else {
         windowlist = (SDL_WindowData **)SDL_realloc(windowlist, (numwindows + 1) * sizeof(*windowlist));
-        if (windowlist == NULL) {
+        if (!windowlist) {
             SDL_free(data);
             return SDL_OutOfMemory();
         }
@@ -445,7 +445,7 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     const int transparent = (window->flags & SDL_WINDOW_TRANSPARENT) ? SDL_TRUE : SDL_FALSE;
     const char *forced_visual_id = SDL_GetHint(SDL_HINT_VIDEO_X11_WINDOW_VISUALID);
 
-    if (forced_visual_id != NULL && forced_visual_id[0] != '\0') {
+    if (forced_visual_id && forced_visual_id[0] != '\0') {
         XVisualInfo *vi, template;
         int nvis;
 
@@ -479,7 +479,7 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
         }
 
-        if (vinfo == NULL) {
+        if (!vinfo) {
             return -1;
         }
         visual = vinfo->visual;
@@ -516,7 +516,7 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
         /* OK, we got a colormap, now fill it in as best as we can */
         colorcells = SDL_malloc(visual->map_entries * sizeof(XColor));
-        if (colorcells == NULL) {
+        if (!colorcells) {
             return SDL_OutOfMemory();
         }
         ncolors = visual->map_entries;
@@ -663,7 +663,7 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
         wintype_name = "_NET_WM_WINDOW_TYPE_TOOLTIP";
     } else if (window->flags & SDL_WINDOW_POPUP_MENU) {
         wintype_name = "_NET_WM_WINDOW_TYPE_POPUP_MENU";
-    } else if (hint != NULL && *hint) {
+    } else if (hint && *hint) {
         wintype_name = hint;
     } else {
         wintype_name = "_NET_WM_WINDOW_TYPE_NORMAL";
@@ -978,7 +978,7 @@ int X11_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *i
 
     X11_XFlush(display);
 
-    if (prevHandler != NULL) {
+    if (prevHandler) {
         X11_XSetErrorHandler(prevHandler);
         caught_x11_error = SDL_FALSE;
     }
@@ -1014,7 +1014,7 @@ void X11_UpdateWindowPosition(SDL_Window *window)
     /* Send MOVED/RESIZED event, if needed. Compare with initial/expected position. Timeout 100 */
     X11_WaitAndSendWindowEvents(window, 100, COMPARE_POSITION, orig_x, orig_y, dest_x, dest_y, 0, 0, 0, 0);
 
-    for (w = window->first_child; w != NULL; w = w->next_sibling) {
+    for (w = window->first_child; w; w = w->next_sibling) {
         X11_UpdateWindowPosition(w);
     }
 }
@@ -1369,7 +1369,7 @@ void X11_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
             SDL_Window *new_focus = window->parent;
 
             /* Find the highest level window that isn't being hidden or destroyed. */
-            while (new_focus->parent != NULL && (new_focus->is_hiding || new_focus->is_destroying)) {
+            while (new_focus->parent && (new_focus->is_hiding || new_focus->is_destroying)) {
                 new_focus = new_focus->parent;
             }
 
@@ -1652,7 +1652,7 @@ static void X11_ReadProperty(SDL_x11Prop *p, Display *disp, Window w, Atom prop)
     int bytes_fetch = 0;
 
     do {
-        if (ret != NULL) {
+        if (ret) {
             X11_XFree(ret);
         }
         X11_XGetWindowProperty(disp, w, prop, 0, bytes_fetch, False, AnyPropertyType, &type, &fmt, &count, &bytes_left, &ret);
@@ -1702,7 +1702,7 @@ void *X11_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t
     }
 
     ret_icc_profile_data = SDL_malloc(real_nitems);
-    if (ret_icc_profile_data == NULL) {
+    if (!ret_icc_profile_data) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -1719,7 +1719,7 @@ void X11_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool
     SDL_WindowData *data = window->driverdata;
     Display *display;
 
-    if (data == NULL) {
+    if (!data) {
         return;
     }
     data->mouse_grabbed = SDL_FALSE;
@@ -1774,7 +1774,7 @@ void X11_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_b
     SDL_WindowData *data = window->driverdata;
     Display *display;
 
-    if (data == NULL) {
+    if (!data) {
         return;
     }
 
@@ -1853,7 +1853,7 @@ int X11_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, SDL_SysWMinf
     SDL_WindowData *data = window->driverdata;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
 
-    if (data == NULL) {
+    if (!data) {
         /* This sometimes happens in SDL_IBus_UpdateTextRect() while creating the window */
         return SDL_SetError("Window not initialized");
     }
@@ -1892,7 +1892,7 @@ int X11_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperati
     XWMHints *wmhints;
 
     wmhints = X11_XGetWMHints(display, data->xwindow);
-    if (wmhints == NULL) {
+    if (!wmhints) {
         return SDL_SetError("Couldn't get WM hints");
     }
 
@@ -1995,7 +1995,7 @@ int X11_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool 
     XWMHints *wmhints;
 
     wmhints = X11_XGetWMHints(display, data->xwindow);
-    if (wmhints == NULL) {
+    if (!wmhints) {
         return SDL_SetError("Couldn't get WM hints");
     }
 

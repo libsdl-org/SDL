@@ -168,7 +168,7 @@ static int IsMetalAvailable(const SDL_SysWMinfo *syswm)
 
     // this checks a weak symbol.
 #if (defined(__MACOS__) && (MAC_OS_X_VERSION_MIN_REQUIRED < 101100))
-    if (MTLCreateSystemDefaultDevice == NULL) { // probably on 10.10 or lower.
+    if (!MTLCreateSystemDefaultDevice) { // probably on 10.10 or lower.
         return SDL_SetError("Metal framework not available on this system");
     }
 #endif
@@ -370,7 +370,7 @@ static void MakePipelineCache(METAL_RenderData *data, METAL_PipelineCache *cache
 
 static void DestroyPipelineCache(METAL_PipelineCache *cache)
 {
-    if (cache != NULL) {
+    if (cache) {
         for (int i = 0; i < cache->count; i++) {
             CFBridgingRelease(cache->states[i].pipe);
         }
@@ -405,7 +405,7 @@ static METAL_ShaderPipelines *ChooseShaderPipelines(METAL_RenderData *data, MTLP
 
     allpipelines = SDL_realloc(allpipelines, (count + 1) * sizeof(METAL_ShaderPipelines));
 
-    if (allpipelines == NULL) {
+    if (!allpipelines) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -420,7 +420,7 @@ static METAL_ShaderPipelines *ChooseShaderPipelines(METAL_RenderData *data, MTLP
 
 static void DestroyAllPipelines(METAL_ShaderPipelines *allpipelines, int count)
 {
-    if (allpipelines != NULL) {
+    if (allpipelines) {
         for (int i = 0; i < count; i++) {
             for (int cache = 0; cache < SDL_METAL_FRAGMENT_COUNT; cache++) {
                 DestroyPipelineCache(&allpipelines[i].caches[cache]);
@@ -453,7 +453,7 @@ static SDL_bool METAL_ActivateRenderCommandEncoder(SDL_Renderer *renderer, MTLLo
     if (data.mtlcmdencoder == nil) {
         id<MTLTexture> mtltexture = nil;
 
-        if (renderer->target != NULL) {
+        if (renderer->target) {
             METAL_TextureData *texdata = (__bridge METAL_TextureData *)renderer->target->driverdata;
             mtltexture = texdata.mtltexture;
         } else {
@@ -1782,7 +1782,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, Uint32 flags)
             view = SDL_Metal_CreateView(window);
         }
 
-        if (view == NULL) {
+        if (!view) {
             SDL_free(renderer);
             return NULL;
         }

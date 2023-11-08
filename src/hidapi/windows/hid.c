@@ -128,12 +128,12 @@ static void free_library_handles()
 static int lookup_functions()
 {
 	hid_lib_handle = LoadLibraryW(L"hid.dll");
-	if (hid_lib_handle == NULL) {
+	if (!hid_lib_handle) {
 		goto err;
 	}
 
 	cfgmgr32_lib_handle = LoadLibraryW(L"cfgmgr32.dll");
-	if (cfgmgr32_lib_handle == NULL) {
+	if (!cfgmgr32_lib_handle) {
 		goto err;
 	}
 
@@ -216,7 +216,7 @@ static hid_device *new_hid_device()
 {
 	hid_device *dev = (hid_device*) calloc(1, sizeof(hid_device));
 
-	if (dev == NULL) {
+	if (!dev) {
 		return NULL;
 	}
 
@@ -798,7 +798,7 @@ static char *hid_internal_UTF16toUTF8(const wchar_t *src)
 	int len = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, src, -1, NULL, 0, NULL, NULL);
 	if (len) {
 		dst = (char*)calloc(len, sizeof(char));
-		if (dst == NULL) {
+		if (!dst) {
 			return NULL;
 		}
 		WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, src, -1, dst, len, NULL, NULL);
@@ -813,7 +813,7 @@ static wchar_t *hid_internal_UTF8toUTF16(const char *src)
 	int len = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, src, -1, NULL, 0);
 	if (len) {
 		dst = (wchar_t*)calloc(len, sizeof(wchar_t));
-		if (dst == NULL) {
+		if (!dst) {
 			return NULL;
 		}
 		MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, src, -1, dst, len);
@@ -833,7 +833,7 @@ static struct hid_device_info *hid_internal_get_device_info(const wchar_t *path,
 	/* Create the record. */
 	dev = (struct hid_device_info*)calloc(1, sizeof(struct hid_device_info));
 
-	if (dev == NULL) {
+	if (!dev) {
 		return NULL;
 	}
 
@@ -935,7 +935,7 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 			break;
 		}
 
-		if (device_interface_list != NULL) {
+		if (device_interface_list) {
 			free(device_interface_list);
 		}
 
@@ -1149,7 +1149,7 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path)
 
 	dev = new_hid_device();
 
-	if (dev == NULL) {
+	if (!dev) {
 		register_global_error(L"hid_device allocation error");
 		goto end_of_function;
 	}
@@ -1219,7 +1219,7 @@ int HID_API_EXPORT HID_API_CALL hid_write(hid_device *dev, const unsigned char *
 		/* The user passed the right number of bytes. Use the buffer as-is. */
 		buf = (unsigned char *) data;
 	} else {
-		if (dev->write_buf == NULL)
+		if (!dev->write_buf)
 			dev->write_buf = (unsigned char *) malloc(dev->output_report_length);
 		buf = dev->write_buf;
 		memcpy(buf, data, length);
@@ -1384,7 +1384,7 @@ int HID_API_EXPORT HID_API_CALL hid_send_feature_report(hid_device *dev, const u
 		buf = (unsigned char *) data;
 		length_to_send = length;
 	} else {
-		if (dev->feature_buf == NULL)
+		if (!dev->feature_buf)
 			dev->feature_buf = (unsigned char *) malloc(dev->feature_report_length);
 		buf = dev->feature_buf;
 		memcpy(buf, data, length);
@@ -1631,7 +1631,7 @@ int HID_API_EXPORT_CALL hid_get_report_descriptor(hid_device *dev, unsigned char
 {
 	PHIDP_PREPARSED_DATA pp_data = NULL;
 
-	if (!HidD_GetPreparsedData(dev->device_handle, &pp_data) || pp_data == NULL) {
+	if (!HidD_GetPreparsedData(dev->device_handle, &pp_data) || !pp_data) {
 		register_string_error(dev, L"HidD_GetPreparsedData");
 		return -1;
 	}
@@ -1646,12 +1646,12 @@ int HID_API_EXPORT_CALL hid_get_report_descriptor(hid_device *dev, unsigned char
 HID_API_EXPORT const wchar_t * HID_API_CALL  hid_error(hid_device *dev)
 {
 	if (dev) {
-		if (dev->last_error_str == NULL)
+		if (!dev->last_error_str)
 			return L"Success";
 		return (wchar_t*)dev->last_error_str;
 	}
 
-	if (last_global_error_str == NULL)
+	if (!last_global_error_str)
 		return L"Success";
 	return last_global_error_str;
 }

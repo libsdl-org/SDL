@@ -117,7 +117,7 @@ int Emscripten_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
     SDL_Window *window;
 
     /* remove the context from its window */
-    for (window = _this->windows; window != NULL; window = window->next) {
+    for (window = _this->windows; window; window = window->next) {
         SDL_WindowData *window_data = window->driverdata;
 
         if (window_data->gl_context == context) {

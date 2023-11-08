@@ -115,12 +115,12 @@ SDL_bool SDL_SystemTheme_Init(void)
 
     system_theme_data.theme = SDL_SYSTEM_THEME_UNKNOWN;
     system_theme_data.dbus = dbus;
-    if (dbus == NULL) {
+    if (!dbus) {
         return SDL_FALSE;
     }
 
     msg = dbus->message_new_method_call(PORTAL_DESTINATION, PORTAL_PATH, PORTAL_INTERFACE, PORTAL_METHOD);
-    if (msg != NULL) {
+    if (msg) {
         if (dbus->message_append_args(msg, DBUS_TYPE_STRING, &namespace, DBUS_TYPE_STRING, &key, DBUS_TYPE_INVALID)) {
             DBusMessage *reply = dbus->connection_send_with_reply_and_block(dbus->session_conn, msg, 300, NULL);
             if (reply) {

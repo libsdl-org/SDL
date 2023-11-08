@@ -201,7 +201,7 @@ int main(int argc, char* argv[])
 	print_hid_report_descriptor_from_device(handle);
 
 	struct hid_device_info* info = hid_get_device_info(handle);
-	if (info == NULL) {
+	if (!info) {
 		printf("Unable to get device info\n");
 	} else {
 		print_devices(info);

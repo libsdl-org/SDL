@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -116,7 +116,7 @@ int main(int argc, char **argv)
 
     /* write out a WAV header... */
     io = SDL_RWFromFile(file_out, "wb");
-    if (io == NULL) {
+    if (!io) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fopen('%s') failed: %s\n", file_out, SDL_GetError());
         ret = 5;
         goto end;

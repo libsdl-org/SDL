@@ -48,7 +48,7 @@ int SDL_BlitTriangle(SDL_Surface *src, const SDL_Point srcpoints[3], SDL_Surface
     int i;
     SDL_Point points[6];
 
-    if (src == NULL || dst == NULL) {
+    if (!src || !dst) {
         return -1;
     }
 
@@ -74,7 +74,7 @@ int SDL_FillTriangle(SDL_Surface *dst, const SDL_Point points[3], Uint32 color)
 {
     int i;
     SDL_Point points_tmp[3];
-    if (dst == NULL) {
+    if (!dst) {
         return -1;
     }
     for (i = 0; i < 3; i++) {
@@ -219,7 +219,7 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
 
     SDL_Surface *tmp = NULL;
 
-    if (dst == NULL) {
+    if (!dst) {
         return -1;
     }
 
@@ -271,7 +271,7 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
 
         /* Use an intermediate surface */
         tmp = SDL_CreateSurface(dstrect.w, dstrect.h, format);
-        if (tmp == NULL) {
+        if (!tmp) {
             ret = -1;
             goto end;
         }
@@ -459,7 +459,7 @@ int SDL_SW_BlitTriangle(
 
     int has_modulation;
 
-    if (src == NULL || dst == NULL) {
+    if (!src || !dst) {
         return -1;
     }
 

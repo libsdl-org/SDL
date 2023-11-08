@@ -92,7 +92,7 @@ static wchar_t *last_global_error_str = NULL;
 static hid_device *new_hid_device(void)
 {
 	hid_device *dev = (hid_device*) calloc(1, sizeof(hid_device));
-	if (dev == NULL) {
+	if (!dev) {
 		return NULL;
 	}
 
@@ -116,7 +116,7 @@ static wchar_t *utf8_to_wchar_t(const char *utf8)
 			return wcsdup(L"");
 		}
 		ret = (wchar_t*) calloc(wlen+1, sizeof(wchar_t));
-		if (ret == NULL) {
+		if (!ret) {
 			/* as much as we can do at this point */
 			return NULL;
 		}
@@ -481,7 +481,7 @@ static int parse_hid_vid_pid_from_uevent(const char *uevent, unsigned *bus_type,
 	char *value;
 
 	line = strtok_r(tmp, "\n", &saveptr);
-	while (line != NULL) {
+	while (line) {
 		/* line: "KEY=value" */
 		key = line;
 		value = strchr(line, '=');
@@ -602,7 +602,7 @@ static int parse_uevent_info(const char *uevent, unsigned *bus_type,
 	int found_name = 0;
 
 	line = strtok_r(tmp, "\n", &saveptr);
-	while (line != NULL) {
+	while (line) {
 		/* line: "KEY=value" */
 		key = line;
 		value = strchr(line, '=');
@@ -768,7 +768,7 @@ static struct hid_device_info * create_device_info_for_device(struct udev_device
 
 	/* Fill out the record */
 	cur_dev->next = NULL;
-	cur_dev->path = dev_path? strdup(dev_path): NULL;
+	cur_dev->path = dev_path ? strdup(dev_path): NULL;
 
 	/* VID/PID */
 	cur_dev->vendor_id = dev_vid;
@@ -886,14 +886,14 @@ static struct hid_device_info * create_device_info_for_device(struct udev_device
 			cur_dev = tmp;
 
 			/* Update fields */
-			cur_dev->path = dev_path? strdup(dev_path): NULL;
+			cur_dev->path = dev_path ? strdup(dev_path): NULL;
 			cur_dev->vendor_id = dev_vid;
 			cur_dev->product_id = dev_pid;
-			cur_dev->serial_number = prev_dev->serial_number? wcsdup(prev_dev->serial_number): NULL;
+			cur_dev->serial_number = prev_dev->serial_number ? wcsdup(prev_dev->serial_number): NULL;
 			cur_dev->release_number = prev_dev->release_number;
 			cur_dev->interface_number = prev_dev->interface_number;
-			cur_dev->manufacturer_string = prev_dev->manufacturer_string? wcsdup(prev_dev->manufacturer_string): NULL;
-			cur_dev->product_string = prev_dev->product_string? wcsdup(prev_dev->product_string): NULL;
+			cur_dev->manufacturer_string = prev_dev->manufacturer_string ? wcsdup(prev_dev->manufacturer_string): NULL;
+			cur_dev->product_string = prev_dev->product_string ? wcsdup(prev_dev->product_string): NULL;
 			cur_dev->usage_page = page;
 			cur_dev->usage = usage;
 			cur_dev->bus_type = prev_dev->bus_type;
@@ -1062,7 +1062,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 			cur_dev = tmp;
 
 			/* move the pointer to the tail of returned list */
-			while (cur_dev->next != NULL) {
+			while (cur_dev->next) {
 				cur_dev = cur_dev->next;
 			}
 		}
@@ -1073,7 +1073,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 	udev_enumerate_unref(enumerate);
 	udev_unref(udev);
 
-	if (root == NULL) {
+	if (!root) {
 		if (vendor_id == 0 && product_id == 0) {
 			register_global_error("No HID devices found in the system.");
 		} else {
@@ -1106,7 +1106,7 @@ hid_device * hid_open(unsigned short vendor_id, unsigned short product_id, const
 
 	/* register_global_error: global error is reset by hid_enumerate/hid_init */
 	devs = hid_enumerate(vendor_id, product_id);
-	if (devs == NULL) {
+	if (!devs) {
 		/* register_global_error: global error is already set by hid_enumerate */
 		return NULL;
 	}
@@ -1472,12 +1472,12 @@ int HID_API_EXPORT_CALL hid_get_report_descriptor(hid_device *dev, unsigned char
 HID_API_EXPORT const wchar_t * HID_API_CALL  hid_error(hid_device *dev)
 {
 	if (dev) {
-		if (dev->last_error_str == NULL)
+		if (!dev->last_error_str)
 			return L"Success";
 		return dev->last_error_str;
 	}
 
-	if (last_global_error_str == NULL)
+	if (!last_global_error_str)
 		return L"Success";
 	return last_global_error_str;
 }

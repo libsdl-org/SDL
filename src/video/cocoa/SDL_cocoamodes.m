@@ -88,7 +88,7 @@ static float GetDisplayModeRefreshRate(CGDisplayModeRef vidmode, CVDisplayLinkRe
     double refreshRate = CGDisplayModeGetRefreshRate(vidmode);
 
     /* CGDisplayModeGetRefreshRate can return 0 (eg for built-in displays). */
-    if (refreshRate == 0 && link != NULL) {
+    if (refreshRate == 0 && link) {
         CVTime time = CVDisplayLinkGetNominalOutputVideoRefreshPeriod(link);
         if ((time.flags & kCVTimeIsIndefinite) == 0 && time.timeValue != 0) {
             refreshRate = (double)time.timeScale / time.timeValue;
@@ -174,7 +174,7 @@ static SDL_bool GetDisplayMode(SDL_VideoDevice *_this, CGDisplayModeRef vidmode,
     pixelW = CGDisplayModeGetPixelWidth(vidmode);
     pixelH = CGDisplayModeGetPixelHeight(vidmode);
 
-    if (modelist != NULL) {
+    if (modelist) {
         CFIndex modescount = CFArrayGetCount(modelist);
         int i;
 

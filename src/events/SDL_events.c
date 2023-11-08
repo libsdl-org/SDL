@@ -618,23 +618,23 @@ int SDL_StartEventLoop(void)
 #ifndef SDL_THREADS_DISABLED
     if (!SDL_EventQ.lock) {
         SDL_EventQ.lock = SDL_CreateMutex();
-        if (SDL_EventQ.lock == NULL) {
+        if (!SDL_EventQ.lock) {
             return -1;
         }
     }
     SDL_LockMutex(SDL_EventQ.lock);
 
-    if (SDL_event_watchers_lock == NULL) {
+    if (!SDL_event_watchers_lock) {
         SDL_event_watchers_lock = SDL_CreateMutex();
-        if (SDL_event_watchers_lock == NULL) {
+        if (!SDL_event_watchers_lock) {
             SDL_UnlockMutex(SDL_EventQ.lock);
             return -1;
         }
     }
 
-    if (SDL_event_memory_lock == NULL) {
+    if (!SDL_event_memory_lock) {
         SDL_event_memory_lock = SDL_CreateMutex();
-        if (SDL_event_memory_lock == NULL) {
+        if (!SDL_event_memory_lock) {
             SDL_UnlockMutex(SDL_EventQ.lock);
             return -1;
         }
@@ -667,9 +667,9 @@ static int SDL_AddEvent(SDL_Event *event)
         return 0;
     }
 
-    if (SDL_EventQ.free == NULL) {
+    if (!SDL_EventQ.free) {
         entry = (SDL_EventEntry *)SDL_malloc(sizeof(*entry));
-        if (entry == NULL) {
+        if (!entry) {
             return 0;
         }
     } else {
@@ -720,11 +720,11 @@ static void SDL_CutEvent(SDL_EventEntry *entry)
     }
 
     if (entry == SDL_EventQ.head) {
-        SDL_assert(entry->prev == NULL);
+        SDL_assert(!entry->prev);
         SDL_EventQ.head = entry->next;
     }
     if (entry == SDL_EventQ.tail) {
-        SDL_assert(entry->next == NULL);
+        SDL_assert(!entry->next);
         SDL_EventQ.tail = entry->prev;
     }
 
@@ -741,7 +741,7 @@ static void SDL_CutEvent(SDL_EventEntry *entry)
 static int SDL_SendWakeupEvent(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    if (_this == NULL || !_this->SendWakeupEvent) {
+    if (!_this || !_this->SendWakeupEvent) {
         return 0;
     }
 
@@ -787,7 +787,7 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_eventact
             SDL_EventEntry *entry, *next;
             Uint32 type;
 
-            for (entry = SDL_EventQ.head; entry && (events == NULL || used < numevents); entry = next) {
+            for (entry = SDL_EventQ.head; entry && (!events || used < numevents); entry = next) {
                 next = entry->next;
                 type = entry->event.type;
                 if (minType <= type && type <= maxType) {
@@ -804,7 +804,7 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_eventact
                             /* Skip it, we don't want to include it */
                             continue;
                         }
-                        if (events == NULL || action != SDL_GETEVENT) {
+                        if (!events || action != SDL_GETEVENT) {
                             ++sentinels_expected;
                         }
                         if (SDL_AtomicGet(&SDL_sentinel_pending) > sentinels_expected) {

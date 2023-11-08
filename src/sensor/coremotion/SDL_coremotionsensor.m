@@ -117,7 +117,7 @@ static int SDL_COREMOTION_SensorOpen(SDL_Sensor *sensor, int device_index)
     struct sensor_hwdata *hwdata;
 
     hwdata = (struct sensor_hwdata *)SDL_calloc(1, sizeof(*hwdata));
-    if (hwdata == NULL) {
+    if (!hwdata) {
         return SDL_OutOfMemory();
     }
     sensor->hwdata = hwdata;

@@ -87,7 +87,7 @@ static void loop(void)
         SDLTest_CommonEvent(state, &event, &done);
     }
     for (i = 0; i < state->num_windows; ++i) {
-        if (state->windows[i] == NULL) {
+        if (!state->windows[i]) {
             continue;
         }
         Draw(&drawstates[i]);
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 

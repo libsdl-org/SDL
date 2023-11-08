@@ -84,7 +84,7 @@ static SDL_Condition *SDL_CreateCondition_cv(void)
 
     /* Relies on CONDITION_VARIABLE_INIT == 0. */
     cond = (SDL_cond_cv *)SDL_calloc(1, sizeof(*cond));
-    if (cond == NULL) {
+    if (!cond) {
         SDL_OutOfMemory();
     }
 
@@ -93,7 +93,7 @@ static SDL_Condition *SDL_CreateCondition_cv(void)
 
 static void SDL_DestroyCondition_cv(SDL_Condition *cond)
 {
-    if (cond != NULL) {
+    if (cond) {
         /* There are no kernel allocated resources */
         SDL_free(cond);
     }
@@ -102,7 +102,7 @@ static void SDL_DestroyCondition_cv(SDL_Condition *cond)
 static int SDL_SignalCondition_cv(SDL_Condition *_cond)
 {
     SDL_cond_cv *cond = (SDL_cond_cv *)_cond;
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -114,7 +114,7 @@ static int SDL_SignalCondition_cv(SDL_Condition *_cond)
 static int SDL_BroadcastCondition_cv(SDL_Condition *_cond)
 {
     SDL_cond_cv *cond = (SDL_cond_cv *)_cond;
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -129,10 +129,10 @@ static int SDL_WaitConditionTimeoutNS_cv(SDL_Condition *_cond, SDL_Mutex *_mutex
     DWORD timeout;
     int ret;
 
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
-    if (_mutex == NULL) {
+    if (!_mutex) {
         return SDL_InvalidParamError("mutex");
     }
 
@@ -208,13 +208,13 @@ static const SDL_cond_impl_t SDL_cond_impl_generic = {
 
 SDL_Condition *SDL_CreateCondition(void)
 {
-    if (SDL_cond_impl_active.Create == NULL) {
+    if (!SDL_cond_impl_active.Create) {
         const SDL_cond_impl_t *impl = NULL;
 
         if (SDL_mutex_impl_active.Type == SDL_MUTEX_INVALID) {
             /* The mutex implementation isn't decided yet, trigger it */
             SDL_Mutex *mutex = SDL_CreateMutex();
-            if (mutex == NULL) {
+            if (!mutex) {
                 return NULL;
             }
             SDL_DestroyMutex(mutex);

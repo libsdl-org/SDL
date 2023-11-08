@@ -3165,14 +3165,14 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
     ci = c;
 
     /* Search for this renderer's cache */
-    for (cache = SDLTest_CharTextureCacheList; cache != NULL; cache = cache->next) {
+    for (cache = SDLTest_CharTextureCacheList; cache; cache = cache->next) {
         if (cache->renderer == renderer) {
             break;
         }
     }
 
     /* Allocate a new cache for this renderer if needed */
-    if (cache == NULL) {
+    if (!cache) {
         cache = (struct SDLTest_CharTextureCache *)SDL_calloc(1, sizeof(struct SDLTest_CharTextureCache));
         cache->renderer = renderer;
         cache->next = SDLTest_CharTextureCacheList;
@@ -3182,12 +3182,12 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
     /*
      * Create new charWidth x charHeight bitmap surface if not already present.
      */
-    if (cache->charTextureCache[ci] == NULL) {
+    if (!cache->charTextureCache[ci]) {
         /*
          * Redraw character into surface
          */
         character = SDL_CreateSurface(charWidth, charHeight, SDL_PIXELFORMAT_RGBA8888);
-        if (character == NULL) {
+        if (!character) {
             return -1;
         }
 
@@ -3219,7 +3219,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c)
         /*
          * Check pointer
          */
-        if (cache->charTextureCache[ci] == NULL) {
+        if (!cache->charTextureCache[ci]) {
             return -1;
         }
 
@@ -3357,7 +3357,7 @@ SDLTest_TextWindow *SDLTest_TextWindowCreate(float x, float y, float w, float h)
 {
     SDLTest_TextWindow *textwin = (SDLTest_TextWindow *)SDL_malloc(sizeof(*textwin));
 
-    if (textwin == NULL) {
+    if (!textwin) {
         return NULL;
     }
 

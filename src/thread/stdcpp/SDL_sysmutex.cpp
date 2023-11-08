@@ -45,14 +45,14 @@ extern "C" SDL_Mutex * SDL_CreateMutex(void)
 
 extern "C" void SDL_DestroyMutex(SDL_Mutex *mutex)
 {
-    if (mutex != NULL) {
+    if (mutex) {
         delete mutex;
     }
 }
 
 extern "C" void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
-    if (mutex != NULL) {
+    if (mutex) {
         try {
             mutex->cpp_mutex.lock();
         } catch (std::system_error &ex) {
@@ -64,13 +64,13 @@ extern "C" void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  /
 
 extern "C" int SDL_TryLockMutex(SDL_Mutex *mutex)
 {
-    return ((mutex == NULL) || mutex->cpp_mutex.try_lock()) ? 0 : SDL_MUTEX_TIMEDOUT;
+    return ((!mutex) || mutex->cpp_mutex.try_lock()) ? 0 : SDL_MUTEX_TIMEDOUT;
 }
 
 /* Unlock the mutex */
 extern "C" void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
-    if (mutex != NULL) {
+    if (mutex) {
         mutex->cpp_mutex.unlock();
     }
 }

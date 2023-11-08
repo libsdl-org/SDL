@@ -52,7 +52,7 @@ int SDL_AppInit(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -87,7 +87,7 @@ int SDL_AppInit(int argc, char *argv[])
 
     filename = GetResourceFilename(filename, "sample.wav");
 
-    if (filename == NULL) {
+    if (!filename) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return -1;
     }

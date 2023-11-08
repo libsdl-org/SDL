@@ -419,7 +419,7 @@ static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
     void *retval = NULL;
     if (lib) {
         retval = (void *) GetProcAddress(lib, sym);
-        if (retval == NULL) {
+        if (!retval) {
             FreeLibrary(lib);
         }
     }
@@ -432,9 +432,9 @@ static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 {
     void *lib = dlopen(fname, RTLD_NOW | RTLD_LOCAL);
     void *retval = NULL;
-    if (lib != NULL) {
+    if (lib) {
         retval = dlsym(lib, sym);
-        if (retval == NULL) {
+        if (!retval) {
             dlclose(lib);
         }
     }

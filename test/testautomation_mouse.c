@@ -201,7 +201,7 @@ static int mouse_createFreeCursor(void *arg)
     cursor = initArrowCursor(g_mouseArrowData);
     SDLTest_AssertPass("Call to SDL_CreateCursor()");
     SDLTest_AssertCheck(cursor != NULL, "Validate result from SDL_CreateCursor() is not NULL");
-    if (cursor == NULL) {
+    if (!cursor) {
         return TEST_ABORTED;
     }
 
@@ -226,7 +226,7 @@ static int mouse_createFreeColorCursor(void *arg)
     /* Get sample surface */
     face = SDLTest_ImageFace();
     SDLTest_AssertCheck(face != NULL, "Validate sample input image is not NULL");
-    if (face == NULL) {
+    if (!face) {
         return TEST_ABORTED;
     }
 
@@ -234,7 +234,7 @@ static int mouse_createFreeColorCursor(void *arg)
     cursor = SDL_CreateColorCursor(face, 0, 0);
     SDLTest_AssertPass("Call to SDL_CreateColorCursor()");
     SDLTest_AssertCheck(cursor != NULL, "Validate result from SDL_CreateColorCursor() is not NULL");
-    if (cursor == NULL) {
+    if (!cursor) {
         SDL_DestroySurface(face);
         return TEST_ABORTED;
     }
@@ -306,7 +306,7 @@ static int mouse_setCursor(void *arg)
     cursor = initArrowCursor(g_mouseArrowData);
     SDLTest_AssertPass("Call to SDL_CreateCursor()");
     SDLTest_AssertCheck(cursor != NULL, "Validate result from SDL_CreateCursor() is not NULL");
-    if (cursor == NULL) {
+    if (!cursor) {
         return TEST_ABORTED;
     }
 
@@ -418,7 +418,7 @@ static SDL_Window *createMouseSuiteTestWindow(void)
  */
 static void destroyMouseSuiteTestWindow(SDL_Window *window)
 {
-    if (window != NULL) {
+    if (window) {
         SDL_DestroyWindow(window);
         window = NULL;
         SDLTest_AssertPass("SDL_DestroyWindow()");
@@ -454,7 +454,7 @@ static int mouse_warpMouseInWindow(void *arg)
     yPositions[5] = (float)h + 1;
     /* Create test window */
     window = createMouseSuiteTestWindow();
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
@@ -507,7 +507,7 @@ static int mouse_getMouseFocus(void *arg)
 
     /* Create test window */
     window = createMouseSuiteTestWindow();
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 

@@ -190,7 +190,7 @@ static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL m
         if (WIN_IsPerMonitorV2DPIAware(SDL_GetVideoDevice())) {
             /* With per-monitor v2, the window border/titlebar size depend on the DPI, so we need to call AdjustWindowRectExForDpi instead of
                AdjustWindowRectEx. */
-            if (videodata != NULL) {
+            if (videodata) {
                 SDL_WindowData *data = window->driverdata;
                 frame_dpi = (data && videodata->GetDpiForWindow) ? videodata->GetDpiForWindow(data->hwnd) : 96;
                 if (videodata->AdjustWindowRectExForDpi(&rect, style, menu, 0, frame_dpi) == 0) {
@@ -264,7 +264,7 @@ int WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags)
     data->expected_resize = SDL_FALSE;
 
     /* Update any child windows */
-    for (child_window = window->first_child; child_window != NULL; child_window = child_window->next_sibling) {
+    for (child_window = window->first_child; child_window; child_window = child_window->next_sibling) {
         if (WIN_SetWindowPositionInternal(child_window, flags) < 0) {
             result = -1;
         }
@@ -285,7 +285,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
 
     /* Allocate the window data */
     data = (SDL_WindowData *)SDL_calloc(1, sizeof(*data));
-    if (data == NULL) {
+    if (!data) {
         return SDL_OutOfMemory();
     }
     data->window = window;
@@ -468,7 +468,7 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
             }
         } else {
             /* Restore any original event handler... */
-            if (data->wndproc != NULL) {
+            if (data->wndproc) {
 #ifdef GWLP_WNDPROC
                 SetWindowLongPtr(data->hwnd, GWLP_WNDPROC,
                                  (LONG_PTR)data->wndproc);
@@ -495,7 +495,7 @@ static void WIN_ConstrainPopup(SDL_Window *window)
         int offset_x = 0, offset_y = 0;
 
         /* Calculate the total offset from the parents */
-        for (w = window->parent; w->parent != NULL; w = w->parent) {
+        for (w = window->parent; w->parent; w = w->parent) {
             offset_x += w->x;
             offset_y += w->y;
         }
@@ -527,7 +527,7 @@ static void WIN_SetKeyboardFocus(SDL_Window *window)
     SDL_Window *topmost = window;
 
     /* Find the topmost parent */
-    while (topmost->parent != NULL) {
+    while (topmost->parent) {
         topmost = topmost->parent;
     }
 
@@ -681,7 +681,7 @@ int WIN_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, const void 
             (void)SDL_sscanf(hint, "%p", (void **)&otherWindow);
 
             /* Do some error checking on the pointer */
-            if (otherWindow != NULL && otherWindow->magic == &_this->window_magic) {
+            if (otherWindow && otherWindow->magic == &_this->window_magic) {
                 /* If the otherWindow has SDL_WINDOW_OPENGL set, set it for the new window as well */
                 if (otherWindow->flags & SDL_WINDOW_OPENGL) {
                     window->flags |= SDL_WINDOW_OPENGL;
@@ -760,7 +760,7 @@ int WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *i
 
     SDL_small_free(icon_bmp, isstack);
 
-    if (hicon == NULL) {
+    if (!hicon) {
         retval = SDL_SetError("SetWindowIcon() failed, error %08X", (unsigned int)GetLastError());
     }
 
@@ -913,7 +913,7 @@ void WIN_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
             SDL_Window *new_focus = window->parent;
 
             /* Find the highest level window that isn't being hidden or destroyed. */
-            while (new_focus->parent != NULL && (new_focus->is_hiding || new_focus->is_destroying)) {
+            while (new_focus->parent && (new_focus->is_hiding || new_focus->is_destroying)) {
                 new_focus = new_focus->parent;
             }
 
@@ -1159,7 +1159,7 @@ void *WIN_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t
     filename_utf8 = WIN_StringToUTF8(data->ICMFileName);
     if (filename_utf8) {
         iccProfileData = SDL_LoadFile(filename_utf8, size);
-        if (iccProfileData == NULL) {
+        if (!iccProfileData) {
             SDL_SetError("Could not open ICC profile");
         }
         SDL_free(filename_utf8);
@@ -1271,7 +1271,7 @@ int SDL_HelperWindowCreate(void)
     WNDCLASS wce;
 
     /* Make sure window isn't created twice. */
-    if (SDL_HelperWindow != NULL) {
+    if (SDL_HelperWindow) {
         return 0;
     }
 
@@ -1294,7 +1294,7 @@ int SDL_HelperWindowCreate(void)
                                       CW_USEDEFAULT, CW_USEDEFAULT,
                                       CW_USEDEFAULT, HWND_MESSAGE, NULL,
                                       hInstance, NULL);
-    if (SDL_HelperWindow == NULL) {
+    if (!SDL_HelperWindow) {
         UnregisterClass(SDL_HelperWindowClassName, hInstance);
         return WIN_SetError("Unable to create Helper Window");
     }
@@ -1310,7 +1310,7 @@ void SDL_HelperWindowDestroy(void)
     HINSTANCE hInstance = GetModuleHandle(NULL);
 
     /* Destroy the window. */
-    if (SDL_HelperWindow != NULL) {
+    if (SDL_HelperWindow) {
         if (DestroyWindow(SDL_HelperWindow) == 0) {
             WIN_SetError("Unable to destroy Helper Window");
             return;
@@ -1333,7 +1333,7 @@ void WIN_OnWindowEnter(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
 
-    if (data == NULL || !data->hwnd) {
+    if (!data || !data->hwnd) {
         /* The window wasn't fully initialized */
         return;
     }

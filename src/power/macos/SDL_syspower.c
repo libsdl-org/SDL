@@ -144,9 +144,9 @@ SDL_bool SDL_GetPowerInfo_MacOSX(SDL_PowerState *state, int *seconds, int *perce
     *percent = -1;
     *state = SDL_POWERSTATE_UNKNOWN;
 
-    if (blob != NULL) {
+    if (blob) {
         CFArrayRef list = IOPSCopyPowerSourcesList(blob);
-        if (list != NULL) {
+        if (list) {
             /* don't CFRelease() the list items, or dictionaries! */
             SDL_bool have_ac = SDL_FALSE;
             SDL_bool have_battery = SDL_FALSE;
@@ -157,7 +157,7 @@ SDL_bool SDL_GetPowerInfo_MacOSX(SDL_PowerState *state, int *seconds, int *perce
                 CFTypeRef ps = (CFTypeRef)CFArrayGetValueAtIndex(list, i);
                 CFDictionaryRef dict =
                     IOPSGetPowerSourceDescription(blob, ps);
-                if (dict != NULL) {
+                if (dict) {
                     checkps(dict, &have_ac, &have_battery, &charging,
                             seconds, percent);
                 }

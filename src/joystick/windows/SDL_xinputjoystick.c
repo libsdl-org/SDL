@@ -128,7 +128,7 @@ static void GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *
     }
 
     devices = (PRAWINPUTDEVICELIST)SDL_malloc(sizeof(RAWINPUTDEVICELIST) * device_count);
-    if (devices == NULL) {
+    if (!devices) {
         return;
     }
 
@@ -275,7 +275,7 @@ static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pC
     }
 
     pNewJoystick = (JoyStick_DeviceData *)SDL_calloc(1, sizeof(JoyStick_DeviceData));
-    if (pNewJoystick == NULL) {
+    if (!pNewJoystick) {
         return; /* better luck next time? */
     }
 

@@ -171,10 +171,10 @@ int X11_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     }
 
     /* Load the OpenGL library */
-    if (path == NULL) {
+    if (!path) {
         path = SDL_getenv("SDL_OPENGL_LIBRARY");
     }
-    if (path == NULL) {
+    if (!path) {
         path = DEFAULT_OPENGL;
     }
     _this->gl_config.dll_handle = GL_LoadObject(path);
@@ -624,7 +624,7 @@ XVisualInfo *X11_GL_GetVisual(SDL_VideoDevice *_this, Display *display, int scre
 
         X11_GL_GetAttributes(_this, display, screen, attribs, 64, SDL_TRUE, &pvistypeattr, transparent);
         framebuffer_config = _this->gl_data->glXChooseFBConfig(display, screen, attribs, &fbcount);
-        if (!framebuffer_config && (pvistypeattr != NULL)) {
+        if (!framebuffer_config && pvistypeattr) {
             *pvistypeattr = None;
             framebuffer_config = _this->gl_data->glXChooseFBConfig(display, screen, attribs, &fbcount);
         }
@@ -657,7 +657,7 @@ XVisualInfo *X11_GL_GetVisual(SDL_VideoDevice *_this, Display *display, int scre
         X11_GL_GetAttributes(_this, display, screen, attribs, 64, SDL_FALSE, &pvistypeattr, transparent);
         vinfo = _this->gl_data->glXChooseVisual(display, screen, attribs);
 
-        if (!vinfo && (pvistypeattr != NULL)) {
+        if (!vinfo && pvistypeattr) {
             *pvistypeattr = None;
             vinfo = _this->gl_data->glXChooseVisual(display, screen, attribs);
         }
@@ -695,7 +695,7 @@ static int X11_GL_ErrorHandler(Display *d, XErrorEvent *e)
 
 SDL_bool X11_GL_UseEGL(SDL_VideoDevice *_this)
 {
-    SDL_assert(_this->gl_data != NULL);
+    SDL_assert(_this->gl_data);
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
         /* use of EGL has been requested, even for desktop GL */
         return SDL_TRUE;
@@ -803,7 +803,7 @@ SDL_GLContext X11_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
                                                                            DefaultScreen(display), glxAttribs,
                                                                            &fbcount);
 
-                    if (!framebuffer_config && (pvistypeattr != NULL)) {
+                    if (!framebuffer_config && pvistypeattr) {
                         *pvistypeattr = None;
                         framebuffer_config = _this->gl_data->glXChooseFBConfig(display,
                                                                                DefaultScreen(display), glxAttribs,

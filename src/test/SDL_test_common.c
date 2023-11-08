@@ -102,7 +102,7 @@ SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, Uint32 flags)
     }
 
     state = (SDLTest_CommonState *)SDL_calloc(1, sizeof(*state));
-    if (state == NULL) {
+    if (!state) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -702,7 +702,7 @@ void SDLTest_CommonLogUsage(SDLTest_CommonState *state, const char *argv0, const
     }
 
     if (options) {
-        for (i = 0; options[i] != NULL; i++) {
+        for (i = 0; options[i]; i++) {
             SDL_Log("    %s", options[i]);
         }
     }
@@ -1090,7 +1090,7 @@ static SDL_Surface *SDLTest_LoadIcon(const char *file)
 
     /* Load the icon surface */
     icon = SDL_LoadBMP(file);
-    if (icon == NULL) {
+    if (!icon) {
         SDL_Log("Couldn't load %s: %s\n", file, SDL_GetError());
         return NULL;
     }
@@ -1919,7 +1919,7 @@ static void SDLTest_CopyScreenShot(SDL_Renderer *renderer)
     };
     SDLTest_ClipboardData *clipboard_data;
 
-    if (renderer == NULL) {
+    if (!renderer) {
         return;
     }
 
@@ -1927,7 +1927,7 @@ static void SDLTest_CopyScreenShot(SDL_Renderer *renderer)
 
     surface = SDL_CreateSurface(viewport.w, viewport.h, SDL_PIXELFORMAT_BGR24);
 
-    if (surface == NULL) {
+    if (!surface) {
         SDL_Log("Couldn't create surface: %s\n", SDL_GetError());
         return;
     }

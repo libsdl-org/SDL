@@ -43,7 +43,7 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
 {
     int posted;
 
-    if (window == NULL) {
+    if (!window) {
         return 0;
     }
     if (window->is_destroying && windowevent != SDL_EVENT_WINDOW_DESTROYED) {
@@ -222,11 +222,11 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         break;
     }
 
-    if (windowevent == SDL_EVENT_WINDOW_CLOSE_REQUESTED && window->parent == NULL) {
+    if (windowevent == SDL_EVENT_WINDOW_CLOSE_REQUESTED && !window->parent) {
         int toplevel_count = 0;
         SDL_Window *n;
-        for (n = SDL_GetVideoDevice()->windows; n != NULL; n = n->next) {
-            if (n->parent == NULL) {
+        for (n = SDL_GetVideoDevice()->windows; n; n = n->next) {
+            if (!n->parent) {
                 ++toplevel_count;
             }
         }

@@ -30,29 +30,29 @@
 #include <unistd.h>
 #endif
 #ifdef HAVE_SYSCTLBYNAME
-#include <sys/types.h>
 #include <sys/sysctl.h>
+#include <sys/types.h>
 #endif
 #if defined(__MACOS__) && (defined(__ppc__) || defined(__ppc64__))
 #include <sys/sysctl.h> /* For AltiVec check */
 #elif defined(__OpenBSD__) && defined(__powerpc__)
-#include <sys/types.h>
-#include <sys/sysctl.h> /* For AltiVec check */
 #include <machine/cpu.h>
+#include <sys/sysctl.h> /* For AltiVec check */
+#include <sys/types.h>
 #elif defined(__FreeBSD__) && defined(__powerpc__)
 #include <machine/cpu.h>
 #include <sys/auxv.h>
 #elif defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP)
-#include <signal.h>
 #include <setjmp.h>
+#include <signal.h>
 #endif
 
 #if (defined(__LINUX__) || defined(__ANDROID__)) && defined(__arm__)
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <elf.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 /*#include <asm/hwcap.h>*/
 #ifndef AT_HWCAP

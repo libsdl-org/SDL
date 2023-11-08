@@ -701,7 +701,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -715,7 +715,7 @@ int main(int argc, char *argv[])
 
     RunBasicTest();
 
-    if (SDL_getenv("SDL_TESTS_QUICK") != NULL) {
+    if (SDL_getenv("SDL_TESTS_QUICK")) {
         SDL_Log("Not running slower tests");
         return 0;
     }

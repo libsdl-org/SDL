@@ -414,7 +414,7 @@ static void WIN_InitDPIAwareness(SDL_VideoDevice *_this)
 {
     const char *hint = SDL_GetHint("SDL_WINDOWS_DPI_AWARENESS");
 
-    if (hint == NULL || SDL_strcmp(hint, "permonitorv2") == 0) {
+    if (!hint || SDL_strcmp(hint, "permonitorv2") == 0) {
         WIN_DeclareDPIAwarePerMonitorV2(_this);
     } else if (SDL_strcmp(hint, "permonitor") == 0) {
         WIN_DeclareDPIAwarePerMonitor(_this);
@@ -550,7 +550,7 @@ int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
         SDL_DisplayData *pData = SDL_GetDisplayDriverData(displayID);
         int adapterIndex = D3DADAPTER_DEFAULT;
 
-        if (pData == NULL) {
+        if (!pData) {
             SDL_SetError("Invalid display index");
             adapterIndex = -1; /* make sure we return something invalid */
         } else {
@@ -633,12 +633,12 @@ SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *
     IDXGIAdapter *pDXGIAdapter;
     IDXGIOutput *pDXGIOutput;
 
-    if (adapterIndex == NULL) {
+    if (!adapterIndex) {
         SDL_InvalidParamError("adapterIndex");
         return SDL_FALSE;
     }
 
-    if (outputIndex == NULL) {
+    if (!outputIndex) {
         SDL_InvalidParamError("outputIndex");
         return SDL_FALSE;
     }
@@ -646,7 +646,7 @@ SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *
     *adapterIndex = -1;
     *outputIndex = -1;
 
-    if (pData == NULL) {
+    if (!pData) {
         SDL_SetError("Invalid display index");
         return SDL_FALSE;
     }

@@ -35,7 +35,7 @@ int RISCOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData *driverdata;
 
     driverdata = (SDL_WindowData *)SDL_calloc(1, sizeof(*driverdata));
-    if (driverdata == NULL) {
+    if (!driverdata) {
         return SDL_OutOfMemory();
     }
     driverdata->window = window;
@@ -53,7 +53,7 @@ void RISCOS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *driverdata = window->driverdata;
 
-    if (driverdata == NULL) {
+    if (!driverdata) {
         return;
     }
 

@@ -66,7 +66,7 @@ void SDL_DestroyMutex(SDL_Mutex *mutex)
 void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
 #ifndef SDL_THREADS_DISABLED
-    if (mutex != NULL) {
+    if (mutex) {
         SDL_threadID this_thread = SDL_ThreadID();
         if (mutex->owner == this_thread) {
             ++mutex->recursive;
@@ -87,7 +87,7 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
 {
     int retval = 0;
 #ifndef SDL_THREADS_DISABLED
-    if (mutex != NULL) {
+    if (mutex) {
         SDL_threadID this_thread = SDL_ThreadID();
         if (mutex->owner == this_thread) {
             ++mutex->recursive;
@@ -110,7 +110,7 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
 void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
 #ifndef SDL_THREADS_DISABLED
-    if (mutex != NULL) {
+    if (mutex) {
         // If we don't own the mutex, we can't unlock it
         if (SDL_ThreadID() != mutex->owner) {
             SDL_assert(!"Tried to unlock a mutex we don't own!");

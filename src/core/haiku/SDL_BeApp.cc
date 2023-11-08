@@ -108,13 +108,13 @@ static int StartBeLooper()
 {
     if (!be_app) {
         SDL_AppThread = SDL_CreateThreadInternal(StartBeApp, "SDLApplication", 0, NULL);
-        if (SDL_AppThread == NULL) {
+        if (!SDL_AppThread) {
             return SDL_SetError("Couldn't create BApplication thread");
         }
 
         do {
             SDL_Delay(10);
-        } while ((be_app == NULL) || be_app->IsLaunching());
+        } while ((!be_app) || be_app->IsLaunching());
     }
 
      /* Change working directory to that of executable */
@@ -167,8 +167,8 @@ void SDL_QuitBeApp(void)
         SDL_Looper->Lock();
         SDL_Looper->Quit();
         SDL_Looper = NULL;
-        if (SDL_AppThread != NULL) {
-            if (be_app != NULL) {       /* Not tested */
+        if (SDL_AppThread) {
+            if (be_app) {       /* Not tested */
                 be_app->PostMessage(B_QUIT_REQUESTED);
             }
             SDL_WaitThread(SDL_AppThread, NULL);
@@ -186,7 +186,7 @@ void SDL_QuitBeApp(void)
 void SDL_BLooper::ClearID(SDL_BWin *bwin) {
     _SetSDLWindow(NULL, bwin->GetID());
     int32 i = _GetNumWindowSlots() - 1;
-    while (i >= 0 && GetSDLWindow(i) == NULL) {
+    while (i >= 0 && !GetSDLWindow(i)) {
         _PopBackWindow();
         --i;
     }

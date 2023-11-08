@@ -716,7 +716,7 @@ static void invasive_fill_device_info_usage(struct hid_device_info *cur_dev, lib
 static struct hid_device_info * create_device_info_for_device(libusb_device *device, libusb_device_handle *handle, struct libusb_device_descriptor *desc, int config_number, int interface_num, int interface_class, int interface_subclass, int interface_protocol)
 {
 	struct hid_device_info *cur_dev = calloc(1, sizeof(struct hid_device_info));
-	if (cur_dev == NULL) {
+	if (!cur_dev) {
 		return NULL;
 	}
 
@@ -1104,7 +1104,7 @@ static void LIBUSB_CALL read_callback(struct libusb_transfer *transfer)
 		hidapi_thread_mutex_lock(&dev->thread_state);
 
 		/* Attach the new report object to the end of the list. */
-		if (dev->input_reports == NULL) {
+		if (!dev->input_reports) {
 			/* The list is empty. Put it at the root. */
 			dev->input_reports = rpt;
 			hidapi_thread_cond_signal(&dev->thread_state);
@@ -1113,7 +1113,7 @@ static void LIBUSB_CALL read_callback(struct libusb_transfer *transfer)
 			/* Find the end of the list and attach. */
 			struct input_report *cur = dev->input_reports;
 			int num_queued = 0;
-			while (cur->next != NULL) {
+			while (cur->next) {
 				cur = cur->next;
 				num_queued++;
 			}

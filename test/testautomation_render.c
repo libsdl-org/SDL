@@ -54,7 +54,7 @@ static void InitCreateRenderer(void *arg)
     window = SDL_CreateWindow("render_testCreateRenderer", width, height, 0);
     SDLTest_AssertPass("SDL_CreateWindow()");
     SDLTest_AssertCheck(window != NULL, "Check SDL_CreateWindow result");
-    if (window == NULL) {
+    if (!window) {
         return;
     }
 
@@ -65,7 +65,7 @@ static void InitCreateRenderer(void *arg)
     renderer = SDL_CreateRenderer(window, NULL, renderer_flags);
     SDLTest_AssertPass("SDL_CreateRenderer()");
     SDLTest_AssertCheck(renderer != NULL, "Check SDL_CreateRenderer result");
-    if (renderer == NULL) {
+    if (!renderer) {
         SDL_DestroyWindow(window);
         return;
     }
@@ -76,13 +76,13 @@ static void InitCreateRenderer(void *arg)
  */
 static void CleanupDestroyRenderer(void *arg)
 {
-    if (renderer != NULL) {
+    if (renderer) {
         SDL_DestroyRenderer(renderer);
         renderer = NULL;
         SDLTest_AssertPass("SDL_DestroyRenderer()");
     }
 
-    if (window != NULL) {
+    if (window) {
         SDL_DestroyWindow(window);
         window = NULL;
         SDLTest_AssertPass("SDL_DestroyWindow");
@@ -358,7 +358,7 @@ static int render_testBlit(void *arg)
     /* Create face surface. */
     tface = loadTestFace();
     SDLTest_AssertCheck(tface != NULL, "Verify loadTestFace() result");
-    if (tface == NULL) {
+    if (!tface) {
         return TEST_ABORTED;
     }
 
@@ -424,7 +424,7 @@ static int render_testBlitColor(void *arg)
     /* Create face surface. */
     tface = loadTestFace();
     SDLTest_AssertCheck(tface != NULL, "Verify loadTestFace() result");
-    if (tface == NULL) {
+    if (!tface) {
         return TEST_ABORTED;
     }
 
@@ -501,7 +501,7 @@ static int render_testBlitAlpha(void *arg)
     /* Create face surface. */
     tface = loadTestFace();
     SDLTest_AssertCheck(tface != NULL, "Verify loadTestFace() result");
-    if (tface == NULL) {
+    if (!tface) {
         return TEST_ABORTED;
     }
 
@@ -631,7 +631,7 @@ static int render_testBlitBlend(void *arg)
     /* Create face surface. */
     tface = loadTestFace();
     SDLTest_AssertCheck(tface != NULL, "Verify loadTestFace() result");
-    if (tface == NULL) {
+    if (!tface) {
         return TEST_ABORTED;
     }
 
@@ -1054,12 +1054,12 @@ loadTestFace(void)
     SDL_Texture *tface;
 
     face = SDLTest_ImageFace();
-    if (face == NULL) {
+    if (!face) {
         return NULL;
     }
 
     tface = SDL_CreateTextureFromSurface(renderer, face);
-    if (tface == NULL) {
+    if (!tface) {
         SDLTest_LogError("SDL_CreateTextureFromSurface() failed with error: %s", SDL_GetError());
     }
 
@@ -1085,7 +1085,7 @@ hasTexColor(void)
 
     /* Get test face. */
     tface = loadTestFace();
-    if (tface == NULL) {
+    if (!tface) {
         return 0;
     }
 
@@ -1128,7 +1128,7 @@ hasTexAlpha(void)
 
     /* Get test face. */
     tface = loadTestFace();
-    if (tface == NULL) {
+    if (!tface) {
         return 0;
     }
 
@@ -1175,7 +1175,7 @@ compare(SDL_Surface *referenceSurface, int allowable_error)
    /* Read pixels. */
    pixels = (Uint8 *)SDL_malloc(4*TESTRENDER_SCREEN_W*TESTRENDER_SCREEN_H);
    SDLTest_AssertCheck(pixels != NULL, "Validate allocated temp pixel buffer");
-   if (pixels == NULL) {
+   if (!pixels) {
       return;
    }
 

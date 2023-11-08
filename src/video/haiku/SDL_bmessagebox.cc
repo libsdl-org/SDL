@@ -131,7 +131,7 @@ class HAIKU_SDL_MessageBox : public BAlert
 	void
 	ParseSdlMessageBoxData(const SDL_MessageBoxData *aMessageBoxData)
 	{
-		if (aMessageBoxData == NULL) {
+		if (!aMessageBoxData) {
 			SetTitle(HAIKU_SDL_DefTitle);
 			SetMessageText(HAIKU_SDL_DefMessage);
 			AddButton(HAIKU_SDL_DefButton);
@@ -144,7 +144,7 @@ class HAIKU_SDL_MessageBox : public BAlert
 			AddSdlButtons(aMessageBoxData->buttons, aMessageBoxData->numbuttons);
 		}
 
-		if (aMessageBoxData->colorScheme != NULL) {
+		if (aMessageBoxData->colorScheme) {
 			fCustomColorScheme = true;
 			ApplyAndParseColorScheme(aMessageBoxData->colorScheme);
 		}
@@ -356,15 +356,15 @@ int HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid
 	// "You need a valid BApplication object before interacting with the app_server."
 	// "2 BApplication objects were created. Only one is allowed."
 	std::unique_ptr<BApplication> application;
-	if (be_app == NULL) {
+	if (!be_app) {
 		application = std::unique_ptr<BApplication>(new(std::nothrow) BApplication(SDL_signature));
-		if (application == NULL) {
+		if (!application) {
 			return SDL_SetError("Cannot create the BApplication object. Lack of memory?");
 		}
 	}
 
 	HAIKU_SDL_MessageBox *SDL_MessageBox = new(std::nothrow) HAIKU_SDL_MessageBox(messageboxdata);
-	if (SDL_MessageBox == NULL) {
+	if (!SDL_MessageBox) {
 		return SDL_SetError("Cannot create the HAIKU_SDL_MessageBox (BAlert inheritor) object. Lack of memory?");
 	}
 	const int closeButton = SDL_MessageBox->GetCloseButtonId();
@@ -377,7 +377,7 @@ int HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid
 
 	// It's deleted by itself after the "Go()" method was executed.
 	/*
-	if (messageBox != NULL) {
+	if (messageBox) {
 		delete messageBox;
 	}
 	*/

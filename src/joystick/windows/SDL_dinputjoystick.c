@@ -271,7 +271,7 @@ static SDL_bool QueryDeviceName(LPDIRECTINPUTDEVICE8 device, char **device_name)
 {
     DIPROPSTRING dipstr;
 
-    if (!device || device_name == NULL) {
+    if (!device || !device_name) {
         return SDL_FALSE;
     }
 
@@ -293,7 +293,7 @@ static SDL_bool QueryDevicePath(LPDIRECTINPUTDEVICE8 device, char **device_path)
 {
     DIPROPGUIDANDPATH dippath;
 
-    if (!device || device_path == NULL) {
+    if (!device || !device_path) {
         return SDL_FALSE;
     }
 
@@ -318,7 +318,7 @@ static SDL_bool QueryDeviceInfo(LPDIRECTINPUTDEVICE8 device, Uint16 *vendor_id, 
 {
     DIPROPDWORD dipdw;
 
-    if (!device || vendor_id == NULL || product_id == NULL) {
+    if (!device || !vendor_id || !product_id) {
         return SDL_FALSE;
     }
 
@@ -340,7 +340,7 @@ static SDL_bool QueryDeviceInfo(LPDIRECTINPUTDEVICE8 device, Uint16 *vendor_id, 
 
 void FreeRumbleEffectData(DIEFFECT *effect)
 {
-    if (effect == NULL) {
+    if (!effect) {
         return;
     }
     SDL_free(effect->rgdwAxes);
@@ -356,7 +356,7 @@ DIEFFECT *CreateRumbleEffectData(Sint16 magnitude)
 
     /* Create the effect */
     effect = (DIEFFECT *)SDL_calloc(1, sizeof(*effect));
-    if (effect == NULL) {
+    if (!effect) {
         return NULL;
     }
     effect->dwSize = sizeof(*effect);
@@ -380,7 +380,7 @@ DIEFFECT *CreateRumbleEffectData(Sint16 magnitude)
     effect->dwFlags |= DIEFF_CARTESIAN;
 
     periodic = (DIPERIODIC *)SDL_calloc(1, sizeof(*periodic));
-    if (periodic == NULL) {
+    if (!periodic) {
         FreeRumbleEffectData(effect);
         return NULL;
     }
@@ -420,7 +420,7 @@ int SDL_DINPUT_JoystickInit(void)
 
     /* Because we used CoCreateInstance, we need to Initialize it, first. */
     instance = GetModuleHandle(NULL);
-    if (instance == NULL) {
+    if (!instance) {
         IDirectInput8_Release(dinput);
         dinput = NULL;
         return SDL_SetError("GetModuleHandle() failed with error code %lu.", GetLastError());
@@ -543,7 +543,7 @@ err:
 
 void SDL_DINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
 {
-    if (dinput == NULL) {
+    if (!dinput) {
         return;
     }
 
@@ -595,7 +595,7 @@ SDL_bool SDL_DINPUT_JoystickPresent(Uint16 vendor_id, Uint16 product_id, Uint16 
 {
     Joystick_PresentData data;
 
-    if (dinput == NULL) {
+    if (!dinput) {
         return SDL_FALSE;
     }
 
@@ -1151,7 +1151,7 @@ void SDL_DINPUT_JoystickClose(SDL_Joystick *joystick)
 
 void SDL_DINPUT_JoystickQuit(void)
 {
-    if (dinput != NULL) {
+    if (dinput) {
         IDirectInput8_Release(dinput);
         dinput = NULL;
     }

@@ -47,7 +47,7 @@ extern "C" void *
 D3D11_GetCoreWindowFromSDLRenderer(SDL_Renderer *renderer)
 {
     SDL_Window *sdlWindow = renderer->window;
-    if (renderer->window == NULL) {
+    if (!renderer->window) {
         return NULL;
     }
 

@@ -91,12 +91,12 @@ int Cocoa_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
             numPaths = SDL_arraysize(defaultPaths);
         }
 
-        for (i = 0; i < numPaths && _this->vulkan_config.loader_handle == NULL; i++) {
+        for (i = 0; i < numPaths && !_this->vulkan_config.loader_handle; i++) {
             foundPath = paths[i];
             _this->vulkan_config.loader_handle = SDL_LoadObject(foundPath);
         }
 
-        if (_this->vulkan_config.loader_handle == NULL) {
+        if (!_this->vulkan_config.loader_handle) {
             return SDL_SetError("Failed to load Vulkan Portability library");
         }
 
@@ -185,7 +185,7 @@ static SDL_bool Cocoa_Vulkan_CreateSurfaceViaMetalView(SDL_VideoDevice *_this,
 {
     VkResult result;
     SDL_MetalView metalview = Cocoa_Metal_CreateView(_this, window);
-    if (metalview == NULL) {
+    if (!metalview) {
         return SDL_FALSE;
     }
 

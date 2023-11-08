@@ -263,7 +263,7 @@ void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_output, SDL_AudioDevice
 class SDL_WasapiActivationHandler : public RuntimeClass<RuntimeClassFlags<ClassicCom>, FtmBase, IActivateAudioInterfaceCompletionHandler>
 {
 public:
-    SDL_WasapiActivationHandler() : completion_semaphore(SDL_CreateSemaphore(0)) { SDL_assert(completion_semaphore != NULL); }
+    SDL_WasapiActivationHandler() : completion_semaphore(SDL_CreateSemaphore(0)) { SDL_assert(completion_semaphore); }
     STDMETHOD(ActivateCompleted)(IActivateAudioInterfaceAsyncOperation *operation);
     void WaitForCompletion();
 private:
@@ -295,7 +295,7 @@ void WASAPI_PlatformDeleteActivationHandler(void *handler)
 int WASAPI_ActivateDevice(SDL_AudioDevice *device)
 {
     LPCWSTR devid = (LPCWSTR) device->handle;
-    SDL_assert(devid != NULL);
+    SDL_assert(devid);
 
     ComPtr<SDL_WasapiActivationHandler> handler = Make<SDL_WasapiActivationHandler>();
     if (handler == nullptr) {

@@ -999,7 +999,7 @@ SDL_RWops *SDL_RWFromFP(void *fp, SDL_bool autoclose)
     SDL_RWops *rwops = NULL;
 
     rwops = SDL_CreateRW();
-    if (rwops != NULL) {
+    if (rwops) {
         rwops->seek = stdio_seek;
         rwops->read = stdio_read;
         rwops->write = stdio_write;

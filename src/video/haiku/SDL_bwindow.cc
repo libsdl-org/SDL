@@ -67,7 +67,7 @@ static int _InitWindow(SDL_VideoDevice *_this, SDL_Window *window) {
     }
 
     SDL_BWin *bwin = new(std::nothrow) SDL_BWin(bounds, look, flags);
-    if (bwin == NULL) {
+    if (!bwin) {
         return -1;
     }
 

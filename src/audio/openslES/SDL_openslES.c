@@ -122,13 +122,13 @@ static void OPENSLES_DestroyEngine(void)
     LOGI("OPENSLES_DestroyEngine()");
 
     // destroy output mix object, and invalidate all associated interfaces
-    if (outputMixObject != NULL) {
+    if (outputMixObject) {
         (*outputMixObject)->Destroy(outputMixObject);
         outputMixObject = NULL;
     }
 
     // destroy engine object, and invalidate all associated interfaces
-    if (engineObject != NULL) {
+    if (engineObject) {
         (*engineObject)->Destroy(engineObject);
         engineObject = NULL;
         engineEngine = NULL;
@@ -203,7 +203,7 @@ static void OPENSLES_DestroyPCMRecorder(SDL_AudioDevice *device)
     SLresult result;
 
     // stop recording
-    if (recorderRecord != NULL) {
+    if (recorderRecord) {
         result = (*recorderRecord)->SetRecordState(recorderRecord, SL_RECORDSTATE_STOPPED);
         if (SL_RESULT_SUCCESS != result) {
             LOGE("SetRecordState stopped: %d", result);
@@ -211,7 +211,7 @@ static void OPENSLES_DestroyPCMRecorder(SDL_AudioDevice *device)
     }
 
     // destroy audio recorder object, and invalidate all associated interfaces
-    if (recorderObject != NULL) {
+    if (recorderObject) {
         (*recorderObject)->Destroy(recorderObject);
         recorderObject = NULL;
         recorderRecord = NULL;
@@ -327,7 +327,7 @@ static int OPENSLES_CreatePCMRecorder(SDL_AudioDevice *device)
 
     // Create the sound buffers
     audiodata->mixbuff = (Uint8 *)SDL_malloc(NUM_BUFFERS * device->buffer_size);
-    if (audiodata->mixbuff == NULL) {
+    if (!audiodata->mixbuff) {
         LOGE("mixbuffer allocate - out of memory");
         goto failed;
     }
@@ -379,7 +379,7 @@ static void OPENSLES_DestroyPCMPlayer(SDL_AudioDevice *device)
     struct SDL_PrivateAudioData *audiodata = device->hidden;
 
     // set the player's state to 'stopped'
-    if (bqPlayerPlay != NULL) {
+    if (bqPlayerPlay) {
         const SLresult result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_STOPPED);
         if (SL_RESULT_SUCCESS != result) {
             LOGE("SetPlayState stopped failed: %d", result);
@@ -387,7 +387,7 @@ static void OPENSLES_DestroyPCMPlayer(SDL_AudioDevice *device)
     }
 
     // destroy buffer queue audio player object, and invalidate all associated interfaces
-    if (bqPlayerObject != NULL) {
+    if (bqPlayerObject) {
         (*bqPlayerObject)->Destroy(bqPlayerObject);
 
         bqPlayerObject = NULL;
@@ -574,7 +574,7 @@ static int OPENSLES_CreatePCMPlayer(SDL_AudioDevice *device)
 
     // Create the sound buffers
     audiodata->mixbuff = (Uint8 *)SDL_malloc(NUM_BUFFERS * device->buffer_size);
-    if (audiodata->mixbuff == NULL) {
+    if (!audiodata->mixbuff) {
         LOGE("mixbuffer allocate - out of memory");
         goto failed;
     }
@@ -599,7 +599,7 @@ failed:
 static int OPENSLES_OpenDevice(SDL_AudioDevice *device)
 {
     device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
-    if (device->hidden == NULL) {
+    if (!device->hidden) {
         return SDL_OutOfMemory();
     }
 
@@ -759,7 +759,7 @@ AudioBootStrap OPENSLES_bootstrap = {
 
 void OPENSLES_ResumeDevices(void)
 {
-    if (bqPlayerPlay != NULL) {
+    if (bqPlayerPlay) {
         // set the player's state to 'playing'
         SLresult result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PLAYING);
         if (SL_RESULT_SUCCESS != result) {
@@ -770,7 +770,7 @@ void OPENSLES_ResumeDevices(void)
 
 void OPENSLES_PauseDevices(void)
 {
-    if (bqPlayerPlay != NULL) {
+    if (bqPlayerPlay) {
         // set the player's state to 'paused'
         SLresult result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PAUSED);
         if (SL_RESULT_SUCCESS != result) {

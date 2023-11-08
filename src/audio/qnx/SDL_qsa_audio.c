@@ -176,7 +176,7 @@ static Uint8 *QSA_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 static void QSA_CloseDevice(SDL_AudioDevice *device)
 {
     if (device->hidden) {
-        if (device->hidden->audio_handle != NULL) {
+        if (device->hidden->audio_handle) {
             #if _NTO_VERSION < 710
             // Finish playing available samples or cancel unread samples during capture
             snd_pcm_plugin_flush(device->hidden->audio_handle, device->iscapture ? SND_PCM_CHANNEL_CAPTURE : SND_PCM_CHANNEL_PLAYBACK);
@@ -196,7 +196,7 @@ static int QSA_OpenDevice(SDL_AudioDevice *device)
         return SDL_SetError("SDL capture support isn't available on QNX atm"); // !!! FIXME: most of this code has support for capture devices, but there's no CaptureFromDevice, etc functions. Fill them in!
     }
 
-    SDL_assert(device->handle != NULL);  // NULL used to mean "system default device" in SDL2; it does not mean that in SDL3.
+    SDL_assert(device->handle);  // NULL used to mean "system default device" in SDL2; it does not mean that in SDL3.
     const Uint32 sdlhandle = (Uint32) ((size_t) device->handle);
     const uint32_t cardno = (uint32_t) (sdlhandle & 0xFFFF);
     const uint32_t deviceno = (uint32_t) ((sdlhandle >> 16) & 0xFFFF);
@@ -205,7 +205,7 @@ static int QSA_OpenDevice(SDL_AudioDevice *device)
 
     // Initialize all variables that we clean on shutdown
     device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, (sizeof (struct SDL_PrivateAudioData)));
-    if (device->hidden == NULL) {
+    if (!device->hidden) {
         return SDL_OutOfMemory();
     }
 
@@ -274,7 +274,7 @@ static int QSA_OpenDevice(SDL_AudioDevice *device)
     SDL_UpdatedAudioDeviceFormat(device);
 
     device->hidden->pcm_buf = (Uint8 *) SDL_malloc(device->buffer_size);
-    if (device->hidden->pcm_buf == NULL) {
+    if (!device->hidden->pcm_buf) {
         return SDL_OutOfMemory();
     }
     SDL_memset(device->hidden->pcm_buf, device->silence_value, device->buffer_size);

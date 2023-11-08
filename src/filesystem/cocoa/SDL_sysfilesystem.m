@@ -37,7 +37,7 @@ char *SDL_GetBasePath(void)
         const char *base = NULL;
         char *retval = NULL;
 
-        if (baseType == NULL) {
+        if (!baseType) {
             baseType = "resource";
         }
         if (SDL_strcasecmp(baseType, "bundle") == 0) {
@@ -52,7 +52,7 @@ char *SDL_GetBasePath(void)
         if (base) {
             const size_t len = SDL_strlen(base) + 2;
             retval = (char *)SDL_malloc(len);
-            if (retval == NULL) {
+            if (!retval) {
                 SDL_OutOfMemory();
             } else {
                 SDL_snprintf(retval, len, "%s/", base);
@@ -105,7 +105,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
             if (base) {
                 const size_t len = SDL_strlen(base) + SDL_strlen(org) + SDL_strlen(app) + 4;
                 retval = (char *)SDL_malloc(len);
-                if (retval == NULL) {
+                if (!retval) {
                     SDL_OutOfMemory();
                 } else {
                     char *ptr;
@@ -220,7 +220,7 @@ char *SDL_GetUserFolder(SDL_Folder folder)
         }
 
         retval = SDL_strdup(base);
-        if (retval == NULL) {
+        if (!retval) {
             SDL_OutOfMemory();
             return NULL;
         }

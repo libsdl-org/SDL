@@ -131,7 +131,7 @@ static SDL_JoystickDeviceItem *GetDeviceForIndex(int device_index)
     int i = 0;
 
     while (i < device_index) {
-        if (device == NULL) {
+        if (!device) {
             return NULL;
         }
         device = device->next;
@@ -548,7 +548,7 @@ static void IOS_AddJoystickDevice(GCController *controller, SDL_bool acceleromet
     }
 #endif
 
-    while (device != NULL) {
+    while (device) {
         if (device->controller == controller) {
             return;
         }
@@ -556,7 +556,7 @@ static void IOS_AddJoystickDevice(GCController *controller, SDL_bool acceleromet
     }
 
     device = (SDL_JoystickDeviceItem *)SDL_calloc(1, sizeof(SDL_JoystickDeviceItem));
-    if (device == NULL) {
+    if (!device) {
         return;
     }
 
@@ -588,11 +588,11 @@ static void IOS_AddJoystickDevice(GCController *controller, SDL_bool acceleromet
 #endif /* SDL_JOYSTICK_MFI */
     }
 
-    if (deviceList == NULL) {
+    if (!deviceList) {
         deviceList = device;
     } else {
         SDL_JoystickDeviceItem *lastdevice = deviceList;
-        while (lastdevice->next != NULL) {
+        while (lastdevice->next) {
             lastdevice = lastdevice->next;
         }
         lastdevice->next = device;
@@ -610,13 +610,13 @@ static SDL_JoystickDeviceItem *IOS_RemoveJoystickDevice(SDL_JoystickDeviceItem *
     SDL_JoystickDeviceItem *next = NULL;
     SDL_JoystickDeviceItem *item = deviceList;
 
-    if (device == NULL) {
+    if (!device) {
         return NULL;
     }
 
     next = device->next;
 
-    while (item != NULL) {
+    while (item) {
         if (item == device) {
             break;
         }
@@ -660,7 +660,7 @@ static SDL_JoystickDeviceItem *IOS_RemoveJoystickDevice(SDL_JoystickDeviceItem *
 #if TARGET_OS_TV
 static void SDLCALL SDL_AppleTVRemoteRotationHintChanged(void *udata, const char *name, const char *oldValue, const char *newValue)
 {
-    BOOL allowRotation = newValue != NULL && *newValue != '0';
+    BOOL allowRotation = newValue && *newValue != '0';
 
     @autoreleasepool {
         for (GCController *controller in [GCController controllers]) {
@@ -734,7 +734,7 @@ static int IOS_JoystickInit(void)
                                                GCController *controller = note.object;
                                                SDL_JoystickDeviceItem *device;
                                                SDL_LockJoysticks();
-                                               for (device = deviceList; device != NULL; device = device->next) {
+                                               for (device = deviceList; device; device = device->next) {
                                                    if (device->controller == controller) {
                                                        IOS_RemoveJoystickDevice(device);
                                                        break;
@@ -810,7 +810,7 @@ static SDL_JoystickID IOS_JoystickGetDeviceInstanceID(int device_index)
 static int IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     SDL_JoystickDeviceItem *device = GetDeviceForIndex(device_index);
-    if (device == NULL) {
+    if (!device) {
         return SDL_SetError("Could not open Joystick: no hardware device for the specified index");
     }
 
@@ -998,7 +998,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             Uint8 *buttons = SDL_small_alloc(Uint8, joystick->nbuttons, &isstack);
             int button_count = 0;
 
-            if (buttons == NULL) {
+            if (!buttons) {
                 SDL_OutOfMemory();
                 return;
             }
@@ -1128,7 +1128,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             Uint8 *buttons = SDL_small_alloc(Uint8, joystick->nbuttons, &isstack);
             int button_count = 0;
 
-            if (buttons == NULL) {
+            if (!buttons) {
                 SDL_OutOfMemory();
                 return;
             }
@@ -1439,7 +1439,7 @@ static int IOS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
 #ifdef ENABLE_MFI_RUMBLE
     SDL_JoystickDeviceItem *device = joystick->hwdata;
 
-    if (device == NULL) {
+    if (!device) {
         return SDL_SetError("Controller is no longer connected");
     }
 
@@ -1468,7 +1468,7 @@ static int IOS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble
 #ifdef ENABLE_MFI_RUMBLE
     SDL_JoystickDeviceItem *device = joystick->hwdata;
 
-    if (device == NULL) {
+    if (!device) {
         return SDL_SetError("Controller is no longer connected");
     }
 
@@ -1500,7 +1500,7 @@ static Uint32 IOS_JoystickGetCapabilities(SDL_Joystick *joystick)
     @autoreleasepool {
         SDL_JoystickDeviceItem *device = joystick->hwdata;
 
-        if (device == NULL) {
+        if (!device) {
             return 0;
         }
 
@@ -1536,7 +1536,7 @@ static int IOS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Ui
     @autoreleasepool {
         SDL_JoystickDeviceItem *device = joystick->hwdata;
 
-        if (device == NULL) {
+        if (!device) {
             return SDL_SetError("Controller is no longer connected");
         }
 
@@ -1567,7 +1567,7 @@ static int IOS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enable
     @autoreleasepool {
         SDL_JoystickDeviceItem *device = joystick->hwdata;
 
-        if (device == NULL) {
+        if (!device) {
             return SDL_SetError("Controller is no longer connected");
         }
 
@@ -1589,7 +1589,7 @@ static void IOS_JoystickUpdate(SDL_Joystick *joystick)
 {
     SDL_JoystickDeviceItem *device = joystick->hwdata;
 
-    if (device == NULL) {
+    if (!device) {
         return;
     }
 
@@ -1604,7 +1604,7 @@ static void IOS_JoystickClose(SDL_Joystick *joystick)
 {
     SDL_JoystickDeviceItem *device = joystick->hwdata;
 
-    if (device == NULL) {
+    if (!device) {
         return;
     }
 
@@ -1672,7 +1672,7 @@ static void IOS_JoystickQuit(void)
 #endif /* TARGET_OS_TV */
 #endif /* SDL_JOYSTICK_MFI */
 
-        while (deviceList != NULL) {
+        while (deviceList) {
             IOS_RemoveJoystickDevice(deviceList);
         }
 

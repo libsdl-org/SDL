@@ -80,7 +80,7 @@ int RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, U
     regs.r[5] = h;
     regs.r[6] = sprite_mode;
     error = _kernel_swi(OS_SpriteOp, &regs, &regs);
-    if (error != NULL) {
+    if (error) {
         SDL_free(driverdata->fb_area);
         return SDL_SetError("Unable to create sprite: %s (%i)", error->errmess, error->errnum);
     }
@@ -106,7 +106,7 @@ int RISCOS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, c
     regs.r[6] = 0;
     regs.r[7] = 0;
     error = _kernel_swi(OS_SpriteOp, &regs, &regs);
-    if (error != NULL) {
+    if (error) {
         return SDL_SetError("OS_SpriteOp 52 failed: %s (%i)", error->errmess, error->errnum);
     }
 

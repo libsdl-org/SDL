@@ -122,7 +122,7 @@ static int UIKit_AllocateDisplayModeData(SDL_DisplayMode *mode,
 
 static void UIKit_FreeDisplayModeData(SDL_DisplayMode *mode)
 {
-    if (mode->driverdata != NULL) {
+    if (mode->driverdata) {
         CFRelease(mode->driverdata);
         mode->driverdata = NULL;
     }
@@ -273,13 +273,13 @@ int UIKit_AddDisplay(SDL_bool send_event){
     mode.pixel_density = 1;
     mode.format = SDL_PIXELFORMAT_ABGR8888;
     mode.refresh_rate = 60;
-    
+
     display.natural_orientation = SDL_ORIENTATION_LANDSCAPE;
 
     display.desktop_mode = mode;
-    
+
     SDL_UIKitDisplayData *data = [[SDL_UIKitDisplayData alloc] init];
-    
+
     if (!data) {
         UIKit_FreeDisplayModeData(&display.desktop_mode);
         return SDL_OutOfMemory();
@@ -341,7 +341,7 @@ int UIKit_InitModes(SDL_VideoDevice *_this)
             }
         }
 #endif
-        
+
 #if !TARGET_OS_TV && !TARGET_OS_XR
         SDL_OnApplicationDidChangeStatusBarOrientation();
 #endif
@@ -463,7 +463,7 @@ void UIKit_QuitModes(SDL_VideoDevice *_this)
                 UIKit_FreeDisplayModeData(mode);
             }
 
-            if (display->driverdata != NULL) {
+            if (display->driverdata) {
                 CFRelease(display->driverdata);
                 display->driverdata = NULL;
             }

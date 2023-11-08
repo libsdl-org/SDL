@@ -111,13 +111,13 @@ static SDL_VideoDevice *WINRT_CreateDevice(void)
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
+    if (!device) {
         SDL_OutOfMemory();
         return 0;
     }
 
     data = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
-    if (data == NULL) {
+    if (!data) {
         SDL_OutOfMemory();
         SDL_free(device);
         return 0;
@@ -175,9 +175,9 @@ static void SDLCALL WINRT_SetDisplayOrientationsPreference(void *userdata, const
      * from being changed on startup, by detecting when SDL_HINT_ORIENTATIONS
      * is getting registered.
      *
-     * TODO, WinRT: consider reading in an app's .appxmanifest file, and apply its orientation when 'newValue == NULL'.
+     * TODO, WinRT: consider reading in an app's .appxmanifest file, and apply its orientation when 'newValue is NULL'.
      */
-    if ((oldValue == NULL) && (newValue == NULL)) {
+    if ((!oldValue) && (!newValue)) {
         return;
     }
 
@@ -324,7 +324,7 @@ static int WINRT_AddDisplaysForOutput(SDL_VideoDevice *_this, IDXGIAdapter1 *dxg
         }
 
         dxgiModes = (DXGI_MODE_DESC *)SDL_calloc(numModes, sizeof(DXGI_MODE_DESC));
-        if (dxgiModes == NULL) {
+        if (!dxgiModes) {
             SDL_OutOfMemory();
             goto done;
         }
@@ -589,7 +589,7 @@ int WINRT_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     // Make sure that only one window gets created, at least until multimonitor
     // support is added.
-    if (WINRT_GlobalSDLWindow != NULL) {
+    if (WINRT_GlobalSDLWindow) {
         return SDL_SetError("WinRT only supports one window");
     }
 
@@ -644,7 +644,7 @@ int WINRT_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 _this->egl_data->egl_display,
                 _this->egl_data->egl_config,
                 cpp_winrtEglWindow, NULL);
-            if (data->egl_surface == NULL) {
+            if (!data->egl_surface) {
                 return SDL_EGL_SetError("unable to create EGL native-window surface", "eglCreateWindowSurface");
             }
         } else if (data->coreWindow.Get() != nullptr) {
@@ -657,7 +657,7 @@ int WINRT_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 _this->egl_data->egl_config,
                 (NativeWindowType)coreWindowAsIInspectable,
                 NULL);
-            if (data->egl_surface == NULL) {
+            if (!data->egl_surface) {
                 return SDL_EGL_SetError("unable to create EGL native-window surface", "eglCreateWindowSurface");
             }
         } else {

@@ -57,7 +57,7 @@ static void BlitNto1SurfaceAlpha(SDL_BlitInfo *info)
         dG &= 0xff;
         dB &= 0xff;
         /* Pack RGB into 8bit pixel */
-        if ( palmap == NULL ) {
+        if (!palmap) {
             *dst = (Uint8)(((dR>>5)<<(3+2))|((dG>>5)<<(2))|((dB>>6)<<(0)));
         } else {
             *dst = palmap[((dR>>5)<<(3+2))|((dG>>5)<<(2))|((dB>>6)<<(0))];
@@ -102,7 +102,7 @@ static void BlitNto1PixelAlpha(SDL_BlitInfo *info)
         dG &= 0xff;
         dB &= 0xff;
         /* Pack RGB into 8bit pixel */
-        if ( palmap == NULL ) {
+        if (!palmap) {
             *dst = (Uint8)(((dR>>5)<<(3+2))|((dG>>5)<<(2))|((dB>>6)<<(0)));
         } else {
             *dst = palmap[((dR>>5)<<(3+2))|((dG>>5)<<(2))|((dB>>6)<<(0))];
@@ -150,7 +150,7 @@ static void BlitNto1SurfaceAlphaKey(SDL_BlitInfo *info)
             dG &= 0xff;
             dB &= 0xff;
             /* Pack RGB into 8bit pixel */
-            if ( palmap == NULL ) {
+            if (!palmap) {
                 *dst = (Uint8)(((dR>>5)<<(3+2))|((dG>>5)<<(2))|((dB>>6)<<(0)));
             } else {
                 *dst = palmap[((dR>>5)<<(3+2))|((dG>>5)<<(2))|((dB>>6)<<(0))];
@@ -1326,7 +1326,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
         /* Per-pixel alpha blits */
         switch (df->BytesPerPixel) {
         case 1:
-            if (df->palette != NULL) {
+            if (df->palette) {
                 return BlitNto1PixelAlpha;
             } else {
                 /* RGB332 has no palette ! */
@@ -1397,7 +1397,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
             /* Per-surface alpha blits */
             switch (df->BytesPerPixel) {
             case 1:
-                if (df->palette != NULL) {
+                if (df->palette) {
                     return BlitNto1SurfaceAlpha;
                 } else {
                     /* RGB332 has no palette ! */
@@ -1452,7 +1452,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
         if (sf->Amask == 0) {
             if (df->BytesPerPixel == 1) {
 
-                if (df->palette != NULL) {
+                if (df->palette) {
                     return BlitNto1SurfaceAlphaKey;
                 } else {
                     /* RGB332 has no palette ! */

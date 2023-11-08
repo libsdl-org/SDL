@@ -55,7 +55,7 @@ static int ValidHaptic(SDL_Haptic *haptic)
     SDL_Haptic *hapticlist;
 
     valid = 0;
-    if (haptic != NULL) {
+    if (haptic) {
         hapticlist = SDL_haptics;
         while (hapticlist) {
             if (hapticlist == haptic) {
@@ -124,7 +124,7 @@ SDL_Haptic *SDL_HapticOpen(int device_index)
 
     /* Create the haptic device */
     haptic = (SDL_Haptic *)SDL_malloc(sizeof(*haptic));
-    if (haptic == NULL) {
+    if (!haptic) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -296,7 +296,7 @@ SDL_Haptic *SDL_HapticOpenFromJoystick(SDL_Joystick *joystick)
 
         /* Create the haptic device */
         haptic = (SDL_Haptic *)SDL_malloc(sizeof(*haptic));
-        if (haptic == NULL) {
+        if (!haptic) {
             SDL_OutOfMemory();
             SDL_UnlockJoysticks();
             return NULL;
@@ -344,7 +344,7 @@ void SDL_HapticClose(SDL_Haptic *haptic)
 
     /* Close it, properly removing effects if needed */
     for (i = 0; i < haptic->neffects; i++) {
-        if (haptic->effects[i].hweffect != NULL) {
+        if (haptic->effects[i].hweffect) {
             SDL_HapticDestroyEffect(haptic, i);
         }
     }
@@ -466,7 +466,7 @@ int SDL_HapticNewEffect(SDL_Haptic *haptic, SDL_HapticEffect *effect)
 
     /* See if there's a free slot */
     for (i = 0; i < haptic->neffects; i++) {
-        if (haptic->effects[i].hweffect == NULL) {
+        if (!haptic->effects[i].hweffect) {
 
             /* Now let the backend create the real effect */
             if (SDL_SYS_HapticNewEffect(haptic, &haptic->effects[i], effect) != 0) {
@@ -564,7 +564,7 @@ void SDL_HapticDestroyEffect(SDL_Haptic *haptic, int effect)
     }
 
     /* Not allocated */
-    if (haptic->effects[effect].hweffect == NULL) {
+    if (!haptic->effects[effect].hweffect) {
         return;
     }
 
@@ -609,7 +609,7 @@ int SDL_HapticSetGain(SDL_Haptic *haptic, int gain)
 
     /* We use the envvar to get the maximum gain. */
     env = SDL_getenv("SDL_HAPTIC_GAIN_MAX");
-    if (env != NULL) {
+    if (env) {
         max_gain = SDL_atoi(env);
 
         /* Check for sanity. */

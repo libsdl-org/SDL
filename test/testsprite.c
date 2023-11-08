@@ -396,7 +396,7 @@ int SDL_AppIterate(void)
     int active_windows = 0;
 
     for (i = 0; i < state->num_windows; ++i) {
-        if (state->windows[i] == NULL ||
+        if (!state->windows[i] ||
             (suspend_when_occluded && (SDL_GetWindowFlags(state->windows[i]) & SDL_WINDOW_OCCLUDED))) {
             continue;
         }
@@ -434,7 +434,7 @@ int SDL_AppInit(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return -1;
     }
 
@@ -529,7 +529,7 @@ int SDL_AppInit(int argc, char *argv[])
     /* Create the windows, initialize the renderers, and load the textures */
     sprites =
         (SDL_Texture **)SDL_malloc(state->num_windows * sizeof(*sprites));
-    if (sprites == NULL) {
+    if (!sprites) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         return -1;
     }
@@ -545,7 +545,7 @@ int SDL_AppInit(int argc, char *argv[])
     /* Allocate memory for the sprite info */
     positions = (SDL_FRect *)SDL_malloc(num_sprites * sizeof(*positions));
     velocities = (SDL_FRect *)SDL_malloc(num_sprites * sizeof(*velocities));
-    if (positions == NULL || velocities == NULL) {
+    if (!positions || !velocities) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         return -1;
     }

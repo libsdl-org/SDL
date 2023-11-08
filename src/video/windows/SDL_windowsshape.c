@@ -28,7 +28,7 @@
 SDL_WindowShaper *Win32_CreateShaper(SDL_Window *window)
 {
     SDL_WindowShaper *result = (SDL_WindowShaper *)SDL_malloc(sizeof(SDL_WindowShaper));
-    if (result == NULL) {
+    if (!result) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -53,7 +53,7 @@ static void CombineRectRegions(SDL_ShapeTree *node, void *closure)
     if (node->kind == OpaqueShape) {
         /* Win32 API regions exclude their outline, so we widen the region by one pixel in each direction to include the real outline. */
         temp_region = CreateRectRgn(node->data.shape.x, node->data.shape.y, node->data.shape.x + node->data.shape.w + 1, node->data.shape.y + node->data.shape.h + 1);
-        if (mask_region != NULL) {
+        if (mask_region) {
             CombineRgn(mask_region, mask_region, temp_region, RGN_OR);
             DeleteObject(temp_region);
         } else {
@@ -67,20 +67,20 @@ int Win32_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_Windo
     SDL_ShapeData *data;
     HRGN mask_region = NULL;
 
-    if ((shaper == NULL) ||
-        (shape == NULL) ||
+    if ((!shaper) ||
+        (!shape) ||
         ((shape->format->Amask == 0) && (shape_mode->mode != ShapeModeColorKey))) {
         return SDL_INVALID_SHAPE_ARGUMENT;
     }
 
     data = (SDL_ShapeData *)shaper->driverdata;
-    if (data->mask_tree != NULL) {
+    if (data->mask_tree) {
         SDL_FreeShapeTree(&data->mask_tree);
     }
     data->mask_tree = SDL_CalculateShapeTree(*shape_mode, shape);
 
     SDL_TraverseShapeTree(data->mask_tree, &CombineRectRegions, &mask_region);
-    SDL_assert(mask_region != NULL);
+    SDL_assert(mask_region);
 
     SetWindowRgn(shaper->window->driverdata->hwnd, mask_region, TRUE);
 

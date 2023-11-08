@@ -490,7 +490,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     if (_this) {
         SDL_Window *window = NULL;
-        for (window = _this->windows; window != NULL; window = window->next) {
+        for (window = _this->windows; window; window = window->next) {
             SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
             if (data != nil) {
                 return data.uiwindow;

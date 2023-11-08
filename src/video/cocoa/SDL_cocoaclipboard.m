@@ -62,7 +62,7 @@ provideDataForType:(NSPasteboardType)type
         mimeType = UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)type, kUTTagClassMIMEType);
         callbackData = m_callback(m_userdata, [(__bridge NSString *)mimeType UTF8String], &size);
         CFRelease(mimeType);
-        if (callbackData == NULL || size == 0) {
+        if (!callbackData || size == 0) {
             return;
         }
         data = [NSData dataWithBytes: callbackData length: size];

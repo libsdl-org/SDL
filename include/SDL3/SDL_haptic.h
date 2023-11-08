@@ -41,7 +41,7 @@
  *
  *    // Open the device
  *    haptic = SDL_HapticOpen( 0 );
- *    if (haptic == NULL)
+ *    if (!haptic)
  *       return -1;
  *
  *    // Initialize simple rumble
@@ -66,7 +66,7 @@
  *
  *    // Open the device
  *    haptic = SDL_HapticOpenFromJoystick( joystick );
- *    if (haptic == NULL) return -1; // Most likely joystick isn't haptic
+ *    if (!haptic) return -1; // Most likely joystick isn't haptic
  *
  *    // See if it can do sine waves
  *    if ((SDL_HapticQuery(haptic) & SDL_HAPTIC_SINE)==0) {

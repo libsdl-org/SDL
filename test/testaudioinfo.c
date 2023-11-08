@@ -22,7 +22,7 @@ print_devices(SDL_bool iscapture)
     int frames;
     SDL_AudioDeviceID *devices = iscapture ? SDL_GetAudioCaptureDevices(&n) : SDL_GetAudioOutputDevices(&n);
 
-    if (devices == NULL) {
+    if (!devices) {
         SDL_Log("  Driver failed to report %s devices: %s\n\n", typestr, SDL_GetError());
     } else if (n == 0) {
         SDL_Log("  No %s devices found.\n\n", typestr);
@@ -31,7 +31,7 @@ print_devices(SDL_bool iscapture)
         SDL_Log("Found %d %s device%s:\n", n, typestr, n != 1 ? "s" : "");
         for (i = 0; i < n; i++) {
             char *name = SDL_GetAudioDeviceName(devices[i]);
-            if (name != NULL) {
+            if (name) {
                 SDL_Log("  %d: %s\n", i, name);
                 SDL_free(name);
             } else {
@@ -60,7 +60,7 @@ int main(int argc, char **argv)
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 

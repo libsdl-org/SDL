@@ -106,7 +106,7 @@ static void checkInvalidScancodeError(void)
     error = SDL_GetError();
     SDLTest_AssertPass("Call to SDL_GetError()");
     SDLTest_AssertCheck(error != NULL, "Validate that error message was not NULL");
-    if (error != NULL) {
+    if (error) {
         SDLTest_AssertCheck(SDL_strcmp(error, expectedError) == 0,
                             "Validate error message, expected: '%s', got: '%s'", expectedError, error);
         SDL_ClearError();
@@ -478,7 +478,7 @@ static int keyboard_setTextInputRectNegative(void *arg)
     error = SDL_GetError();
     SDLTest_AssertPass("Call to SDL_GetError()");
     SDLTest_AssertCheck(error != NULL, "Validate that error message was not NULL");
-    if (error != NULL) {
+    if (error) {
         SDLTest_AssertCheck(SDL_strcmp(error, expectedError) == 0,
                             "Validate error message, expected: '%s', got: '%s'", expectedError, error);
     }
@@ -576,7 +576,7 @@ static void checkInvalidNameError(void)
     error = SDL_GetError();
     SDLTest_AssertPass("Call to SDL_GetError()");
     SDLTest_AssertCheck(error != NULL, "Validate that error message was not NULL");
-    if (error != NULL) {
+    if (error) {
         SDLTest_AssertCheck(SDL_strcmp(error, expectedError) == 0,
                             "Validate error message, expected: '%s', got: '%s'", expectedError, error);
         SDL_ClearError();
@@ -602,7 +602,7 @@ static int keyboard_getScancodeFromNameNegative(void *arg)
     /* Random string input */
     name = SDLTest_RandomAsciiStringOfSize(32);
     SDLTest_Assert(name != NULL, "Check that random name is not NULL");
-    if (name == NULL) {
+    if (!name) {
         return TEST_ABORTED;
     }
     scancode = SDL_GetScancodeFromName(name);

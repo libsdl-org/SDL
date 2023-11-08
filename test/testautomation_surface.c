@@ -41,7 +41,7 @@ static void surfaceSetUp(void *arg)
     referenceSurface = SDLTest_ImageBlit(); /* For size info */
     testSurface = SDL_CreateSurface(referenceSurface->w, referenceSurface->h, SDL_PIXELFORMAT_RGBA32);
     SDLTest_AssertCheck(testSurface != NULL, "Check that testSurface is not NULL");
-    if (testSurface != NULL) {
+    if (testSurface) {
         /* Disable blend mode for target surface */
         result = SDL_SetSurfaceBlendMode(testSurface, blendMode);
         SDLTest_AssertCheck(result == 0, "Validate result from SDL_SetSurfaceBlendMode, expected: 0, got: %i", result);
@@ -93,14 +93,14 @@ static void testBlitBlendMode(int mode)
 
     /* Check test surface */
     SDLTest_AssertCheck(testSurface != NULL, "Verify testSurface is not NULL");
-    if (testSurface == NULL) {
+    if (!testSurface) {
         return;
     }
 
     /* Create sample surface */
     face = SDLTest_ImageFace();
     SDLTest_AssertCheck(face != NULL, "Verify face surface is not NULL");
-    if (face == NULL) {
+    if (!face) {
         return;
     }
 
@@ -221,7 +221,7 @@ static int surface_testSaveLoadBitmap(void *arg)
     /* Create sample surface */
     face = SDLTest_ImageFace();
     SDLTest_AssertCheck(face != NULL, "Verify face surface is not NULL");
-    if (face == NULL) {
+    if (!face) {
         return TEST_ABORTED;
     }
 
@@ -238,7 +238,7 @@ static int surface_testSaveLoadBitmap(void *arg)
     rface = SDL_LoadBMP(sampleFilename);
     SDLTest_AssertPass("Call to SDL_LoadBMP()");
     SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadBMP is not NULL");
-    if (rface != NULL) {
+    if (rface) {
         SDLTest_AssertCheck(face->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", face->w, rface->w);
         SDLTest_AssertCheck(face->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", face->h, rface->h);
     }
@@ -266,7 +266,7 @@ static int surface_testSurfaceConversion(void *arg)
     /* Create sample surface */
     face = SDLTest_ImageFace();
     SDLTest_AssertCheck(face != NULL, "Verify face surface is not NULL");
-    if (face == NULL) {
+    if (!face) {
         return TEST_ABORTED;
     }
 
@@ -339,7 +339,7 @@ static int surface_testCompleteSurfaceConversion(void *arg)
     /* Create sample surface */
     face = SDLTest_ImageFace();
     SDLTest_AssertCheck(face != NULL, "Verify face surface is not NULL");
-    if (face == NULL) {
+    if (!face) {
         return TEST_ABORTED;
     }
 

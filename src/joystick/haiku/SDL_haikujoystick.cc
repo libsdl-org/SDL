@@ -131,7 +131,7 @@ extern "C"
         joystick->instance_id = device_index;
         joystick->hwdata = (struct joystick_hwdata *)
             SDL_malloc(sizeof(*joystick->hwdata));
-        if (joystick->hwdata == NULL) {
+        if (!joystick->hwdata) {
             return SDL_OutOfMemory();
         }
         SDL_memset(joystick->hwdata, 0, sizeof(*joystick->hwdata));

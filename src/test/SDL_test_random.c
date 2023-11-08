@@ -36,7 +36,7 @@
 
 void SDLTest_RandomInit(SDLTest_RandomContext *rndContext, unsigned int xi, unsigned int ci)
 {
-    if (rndContext == NULL) {
+    if (!rndContext) {
         return;
     }
 
@@ -64,7 +64,7 @@ void SDLTest_RandomInitTime(SDLTest_RandomContext *rndContext)
 {
     int a, b;
 
-    if (rndContext == NULL) {
+    if (!rndContext) {
         return;
     }
 
@@ -81,7 +81,7 @@ unsigned int SDLTest_Random(SDLTest_RandomContext *rndContext)
 {
     unsigned int xh, xl;
 
-    if (rndContext == NULL) {
+    if (!rndContext) {
         return -1;
     }
 

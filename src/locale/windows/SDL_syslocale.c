@@ -61,11 +61,11 @@ static int SDL_SYS_GetPreferredLocales_vista(char *buf, size_t buflen)
     ULONG wbuflen = 0;
     SDL_bool isstack;
 
-    SDL_assert(pGetUserPreferredUILanguages != NULL);
+    SDL_assert(pGetUserPreferredUILanguages);
     pGetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numlangs, NULL, &wbuflen);
 
     wbuf = SDL_small_alloc(WCHAR, wbuflen, &isstack);
-    if (wbuf == NULL) {
+    if (!wbuf) {
         return SDL_OutOfMemory();
     }
 
@@ -102,7 +102,7 @@ int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
         }
     }
 
-    if (pGetUserPreferredUILanguages == NULL) {
+    if (!pGetUserPreferredUILanguages) {
         SDL_SYS_GetPreferredLocales_winxp(buf, buflen); /* this is always available */
     } else {
         SDL_SYS_GetPreferredLocales_vista(buf, buflen); /* available on Vista and later. */

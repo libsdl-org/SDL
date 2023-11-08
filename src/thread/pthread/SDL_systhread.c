@@ -118,10 +118,10 @@ void SDL_SYS_SetupThread(const char *name)
     int i;
     sigset_t mask;
 
-    if (name != NULL) {
+    if (name) {
 #if (defined(__MACOS__) || defined(__IOS__) || defined(__LINUX__)) && defined(HAVE_DLOPEN)
         SDL_assert(checked_setname);
-        if (ppthread_setname_np != NULL) {
+        if (ppthread_setname_np) {
 #if defined(__MACOS__) || defined(__IOS__)
             ppthread_setname_np(name);
 #elif defined(__LINUX__)

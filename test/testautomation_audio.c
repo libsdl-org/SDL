@@ -367,7 +367,7 @@ static int audio_enumerateAndNameAudioDevices(void *arg)
                 name = SDL_GetAudioDeviceName(devices[i]);
                 SDLTest_AssertPass("Call to SDL_GetAudioDeviceName(%i)", i);
                 SDLTest_AssertCheck(name != NULL, "Verify result from SDL_GetAudioDeviceName(%i) is not NULL", i);
-                if (name != NULL) {
+                if (name) {
                     SDLTest_AssertCheck(name[0] != '\0', "verify result from SDL_GetAudioDeviceName(%i) is not empty, got: '%s'", i, name);
                     SDL_free(name);
                 }
@@ -413,7 +413,7 @@ static int audio_printAudioDrivers(void *arg)
             name = SDL_GetAudioDriver(i);
             SDLTest_AssertPass("Call to SDL_GetAudioDriver(%i)", i);
             SDLTest_AssertCheck(name != NULL, "Verify returned name is not NULL");
-            if (name != NULL) {
+            if (name) {
                 SDLTest_AssertCheck(name[0] != '\0', "Verify returned name is not empty, got: '%s'", name);
             }
         }
@@ -433,7 +433,7 @@ static int audio_printCurrentAudioDriver(void *arg)
     const char *name = SDL_GetCurrentAudioDriver();
     SDLTest_AssertPass("Call to SDL_GetCurrentAudioDriver()");
     SDLTest_AssertCheck(name != NULL, "Verify returned name is not NULL");
-    if (name != NULL) {
+    if (name) {
         SDLTest_AssertCheck(name[0] != '\0', "Verify returned name is not empty, got: '%s'", name);
     }
 
@@ -524,7 +524,7 @@ static int audio_buildAudioStream(void *arg)
                 SDLTest_AssertPass("Call to SDL_CreateAudioStream(format[%i]=%s(%i),channels[%i]=%i,freq[%i]=%i ==> format[%i]=%s(%i),channels[%i]=%i,freq[%i]=%i)",
                                    i, g_audioFormatsVerbose[i], spec1.format, j, spec1.channels, k, spec1.freq, ii, g_audioFormatsVerbose[ii], spec2.format, jj, spec2.channels, kk, spec2.freq);
                 SDLTest_AssertCheck(stream != NULL, "Verify stream value; expected: != NULL, got: %p", (void *)stream);
-                if (stream == NULL) {
+                if (!stream) {
                     SDLTest_LogError("%s", SDL_GetError());
                 }
                 SDL_DestroyAudioStream(stream);
@@ -710,7 +710,7 @@ static int audio_convertAudio(void *arg)
                     SDLTest_AssertPass("Call to SDL_CreateAudioStream(format[%i]=%s(%i),channels[%i]=%i,freq[%i]=%i ==> format[%i]=%s(%i),channels[%i]=%i,freq[%i]=%i)",
                                        i, g_audioFormatsVerbose[i], spec1.format, j, spec1.channels, k, spec1.freq, ii, g_audioFormatsVerbose[ii], spec2.format, jj, spec2.channels, kk, spec2.freq);
                     SDLTest_AssertCheck(stream != NULL, "Verify stream value; expected: != NULL, got: %p", (void *)stream);
-                    if (stream == NULL) {
+                    if (!stream) {
                         SDLTest_LogError("%s", SDL_GetError());
                     } else {
                         Uint8 *dst_buf = NULL, *src_buf = NULL;
@@ -726,7 +726,7 @@ static int audio_convertAudio(void *arg)
                         SDLTest_Log("Creating dummy sample buffer of %i length (%i bytes)", l, src_len);
                         src_buf = (Uint8 *)SDL_malloc(src_len);
                         SDLTest_AssertCheck(src_buf != NULL, "Check src data buffer to convert is not NULL");
-                        if (src_buf == NULL) {
+                        if (!src_buf) {
                             return TEST_ABORTED;
                         }
 
@@ -736,7 +736,7 @@ static int audio_convertAudio(void *arg)
                         dst_len = ((int)((((Sint64)l * spec2.freq) - 1) / spec1.freq) + 1) * dst_framesize;
                         dst_buf = (Uint8 *)SDL_malloc(dst_len);
                         SDLTest_AssertCheck(dst_buf != NULL, "Check dst data buffer to convert is not NULL");
-                        if (dst_buf == NULL) {
+                        if (!dst_buf) {
                             return TEST_ABORTED;
                         }
 
@@ -874,13 +874,13 @@ static int audio_resampleLoss(void *arg)
     stream = SDL_CreateAudioStream(&tmpspec1, &tmpspec2);
     SDLTest_AssertPass("Call to SDL_CreateAudioStream(SDL_AUDIO_F32, 1, %i, SDL_AUDIO_F32, 1, %i)", spec->rate_in, spec->rate_out);
     SDLTest_AssertCheck(stream != NULL, "Expected SDL_CreateAudioStream to succeed.");
-    if (stream == NULL) {
+    if (!stream) {
       return TEST_ABORTED;
     }
 
     buf_in = (float *)SDL_malloc(len_in);
     SDLTest_AssertCheck(buf_in != NULL, "Expected input buffer to be created.");
-    if (buf_in == NULL) {
+    if (!buf_in) {
       SDL_DestroyAudioStream(stream);
       return TEST_ABORTED;
     }
@@ -913,7 +913,7 @@ static int audio_resampleLoss(void *arg)
 
     buf_out = (float *)SDL_malloc(len_target);
     SDLTest_AssertCheck(buf_out != NULL, "Expected output buffer to be created.");
-    if (buf_out == NULL) {
+    if (!buf_out) {
       SDL_DestroyAudioStream(stream);
       return TEST_ABORTED;
     }
@@ -978,7 +978,7 @@ static int audio_convertAccuracy(void *arg)
     int i, j;
 
     SDLTest_AssertCheck(src_data != NULL, "Expected source buffer to be created.");
-    if (src_data == NULL) {
+    if (!src_data) {
         return TEST_ABORTED;
     }
 
