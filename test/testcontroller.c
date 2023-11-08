@@ -981,6 +981,14 @@ static void HandleGamepadAdded(SDL_JoystickID id, SDL_bool verbose)
                 SDL_SetGamepadSensorEnabled(gamepad, sensor, SDL_TRUE);
             }
         }
+
+        if (verbose) {
+            char *mapping = SDL_GetGamepadMapping(gamepad);
+            if (mapping) {
+                SDL_Log("Mapping: %s\n", mapping);
+                SDL_free(mapping);
+            }
+        }
     } else {
         SDL_Log("Couldn't open gamepad: %s", SDL_GetError());
     }
