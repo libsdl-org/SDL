@@ -40,6 +40,19 @@ extern "C" {
 typedef Uint32 SDL_PropertiesID;
 
 /**
+ * Get the global SDL properties
+ *
+ * \returns a valid property ID on success or 0 on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetProperty
+ * \sa SDL_SetProperty
+ */
+extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGlobalProperties(void);
+
+/**
  * Create a set of properties
  *
  * All properties are automatically destroyed when SDL_Quit() is called.
