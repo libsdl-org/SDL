@@ -467,6 +467,10 @@ static void k_shift(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_
     }
 }
 
+void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, SDL_bool muted)
+{
+}
+
 void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, int down)
 {
     keymap_t key_map;
