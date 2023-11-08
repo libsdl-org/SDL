@@ -313,7 +313,7 @@ int SDL_SetSurfaceRLE(SDL_Surface *surface, int flag)
     int flags;
 
     if (surface == NULL) {
-        return -1;
+        return SDL_InvalidParamError("surface");
     }
 
     flags = surface->map->info.flags;
@@ -496,7 +496,7 @@ int SDL_SetSurfaceColorMod(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b)
     int flags;
 
     if (surface == NULL) {
-        return -1;
+        return SDL_InvalidParamError("surface");
     }
 
     surface->map->info.r = r;
@@ -518,7 +518,7 @@ int SDL_SetSurfaceColorMod(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b)
 int SDL_GetSurfaceColorMod(SDL_Surface *surface, Uint8 *r, Uint8 *g, Uint8 *b)
 {
     if (surface == NULL) {
-        return -1;
+        return SDL_InvalidParamError("surface");
     }
 
     if (r) {
@@ -538,7 +538,7 @@ int SDL_SetSurfaceAlphaMod(SDL_Surface *surface, Uint8 alpha)
     int flags;
 
     if (surface == NULL) {
-        return -1;
+        return SDL_InvalidParamError("surface");
     }
 
     surface->map->info.a = alpha;
@@ -558,7 +558,7 @@ int SDL_SetSurfaceAlphaMod(SDL_Surface *surface, Uint8 alpha)
 int SDL_GetSurfaceAlphaMod(SDL_Surface *surface, Uint8 *alpha)
 {
     if (surface == NULL) {
-        return -1;
+        return SDL_InvalidParamError("surface");
     }
 
     if (alpha) {
@@ -572,7 +572,7 @@ int SDL_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode)
     int flags, status;
 
     if (surface == NULL) {
-        return -1;
+        return SDL_InvalidParamError("surface");
     }
 
     status = 0;
@@ -609,7 +609,7 @@ int SDL_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode)
 int SDL_GetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode *blendMode)
 {
     if (surface == NULL) {
-        return -1;
+        return SDL_InvalidParamError("surface");
     }
 
     if (blendMode == NULL) {
