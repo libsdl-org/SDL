@@ -30,6 +30,7 @@
 
 extern int SDL_EVDEV_Init(void);
 extern void SDL_EVDEV_Quit(void);
+extern int SDL_EVDEV_GetDeviceCount(int device_class);
 extern void SDL_EVDEV_Poll(void);
 
 #endif /* SDL_INPUT_LINUXEV */
