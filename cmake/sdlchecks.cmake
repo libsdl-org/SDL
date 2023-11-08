@@ -471,7 +471,9 @@ macro(CheckX11)
       list(APPEND SOURCE_FILES ${X11_SOURCES})
       set(SDL_VIDEO_DRIVER_X11 1)
 
-      # !!! FIXME: why is this disabled for Apple?
+      # Note: Disabled on Apple because the dynamic mode backend for X11 doesn't
+      # work properly on Apple during several issues like inconsistent paths
+      # among platforms. See #6778 (https://github.com/libsdl-org/SDL/issues/6778)
       if(APPLE)
         set(SDL_X11_SHARED OFF)
       endif()
