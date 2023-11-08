@@ -323,6 +323,10 @@ static void D3D12_ReleaseAll(SDL_Renderer *renderer)
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->driverdata;
     SDL_Texture *texture = NULL;
 
+    SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
+    SDL_SetProperty(props, "SDL.renderer.d3d12.device", NULL);
+    SDL_SetProperty(props, "SDL.renderer.d3d12.command_queue", NULL);
+
     /* Release all textures */
     for (texture = renderer->textures; texture; texture = texture->next) {
         D3D12_DestroyTexture(renderer, texture);
@@ -1068,7 +1072,9 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
     }
     data->srvPoolHead = &data->srvPoolNodes[0];
 
-    SDL_SetProperty(SDL_GetRendererProperties(renderer), "SDL.renderer.d3d12.device", data->d3dDevice);
+    SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
+    SDL_SetProperty(props, "SDL.renderer.d3d12.device", data->d3dDevice);
+    SDL_SetProperty(props, "SDL.renderer.d3d12.command_queue", data->commandQueue);
 
 done:
     SAFE_RELEASE(d3dDevice);
