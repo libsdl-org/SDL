@@ -313,6 +313,7 @@ extern DECLSPEC int SDLCALL SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_Rend
  * "SDL.renderer.d3d9.device" - the IDirect3DDevice9 associated with the renderer
  * "SDL.renderer.d3d11.device" - the ID3D11Device associated with the renderer
  * "SDL.renderer.d3d12.device" - the ID3D12Device associated with the renderer
+ * "SDL.renderer.d3d12.command_queue" - the ID3D12CommandQueue associated with the renderer
  *
  * \param renderer the rendering context
  * \returns a valid property ID on success or 0 on failure; call
