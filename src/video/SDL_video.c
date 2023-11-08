@@ -828,6 +828,9 @@ void SDL_SetCurrentDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode 
 
 void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode)
 {
+    if (display->desktop_mode.driverdata) {
+        SDL_free(display->desktop_mode.driverdata);
+    }
     SDL_memcpy(&display->desktop_mode, mode, sizeof(*mode));
 }
 
