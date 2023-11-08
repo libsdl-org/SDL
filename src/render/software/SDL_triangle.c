@@ -339,12 +339,7 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
     if (is_uniform) {
         Uint32 color;
         if (tmp) {
-            if (dst->format->Amask) {
-                color = SDL_MapRGBA(tmp->format, c0.r, c0.g, c0.b, c0.a);
-            } else {
-                // color = SDL_MapRGB(tmp->format, c0.r, c0.g, c0.b);
-                color = SDL_MapRGBA(tmp->format, c0.r, c0.g, c0.b, c0.a);
-            }
+            color = SDL_MapRGBA(tmp->format, c0.r, c0.g, c0.b, c0.a);
         } else {
             color = SDL_MapRGBA(dst->format, c0.r, c0.g, c0.b, c0.a);
         }
