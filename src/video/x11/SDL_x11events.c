@@ -756,7 +756,7 @@ static int XLookupStringAsUTF8(XKeyEvent *event_struct, char *buffer_return, int
 {
     int result = X11_XLookupString(event_struct, buffer_return, bytes_buffer, keysym_return, status_in_out);
     if (IsHighLatin1(buffer_return, result)) {
-        char *utf8_text = SDL_iconv_string("UTF-8", "ISO-8859-1", buffer_return, result);
+        char *utf8_text = SDL_iconv_string("UTF-8", "ISO-8859-1", buffer_return, result + 1);
         if (utf8_text) {
             SDL_strlcpy(buffer_return, utf8_text, bytes_buffer);
             SDL_free(utf8_text);
