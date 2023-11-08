@@ -830,6 +830,7 @@ SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
 void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, SDL_bool muted)
 {
 }
+
 void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *state, unsigned int keycode, int down)
 {
 }
