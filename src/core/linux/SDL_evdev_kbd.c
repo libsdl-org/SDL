@@ -84,6 +84,7 @@ static fn_handler_fn *fn_handler[] = {
 struct SDL_EVDEV_keyboard_state
 {
     int console_fd;
+    SDL_bool muted;
     int old_kbd_mode;
     unsigned short **key_maps;
     unsigned char shift_down[NR_SHIFT]; /* shift state counters.. */
@@ -332,20 +333,6 @@ SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
         ioctl(kbd->console_fd, KDSKBMODE, K_UNICODE);
     }
 
-    /* Allow inhibiting keyboard mute with env. variable for debugging etc. */
-    if (SDL_getenv("SDL_INPUT_LINUX_KEEP_KBD") == NULL) {
-        /* Mute the keyboard so keystrokes only generate evdev events
-         * and do not leak through to the console
-         */
-        ioctl(kbd->console_fd, KDSKBMODE, K_OFF);
-
-        /* Make sure to restore keyboard if application fails to call
-         * SDL_Quit before exit or fatal signal is raised.
-         */
-        if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, SDL_FALSE)) {
-            kbd_register_emerg_cleanup(kbd);
-        }
-    }
     return kbd;
 }
 
@@ -355,12 +342,9 @@ void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state)
         return;
     }
 
-    kbd_unregister_emerg_cleanup();
+    SDL_EVDEV_kbd_set_muted(state, SDL_FALSE);
 
     if (state->console_fd >= 0) {
-        /* Restore the original keyboard mode */
-        ioctl(state->console_fd, KDSKBMODE, state->old_kbd_mode);
-
         close(state->console_fd);
         state->console_fd = -1;
     }
@@ -376,6 +360,39 @@ void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state)
     }
 
     SDL_free(state);
+}
+
+void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, SDL_bool muted)
+{
+    if (state == NULL) {
+        return;
+    }
+
+    if (muted == state->muted) {
+        return;
+    }
+
+    if (muted) {
+        /* Allow inhibiting keyboard mute with env. variable for debugging etc. */
+        if (SDL_getenv("SDL_INPUT_LINUX_KEEP_KBD") == NULL) {
+            /* Mute the keyboard so keystrokes only generate evdev events
+             * and do not leak through to the console
+             */
+            ioctl(state->console_fd, KDSKBMODE, K_OFF);
+
+            /* Make sure to restore keyboard if application fails to call
+             * SDL_Quit before exit or fatal signal is raised.
+             */
+            if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, SDL_FALSE)) {
+                kbd_register_emerg_cleanup(state);
+            }
+        }
+    } else {
+        kbd_unregister_emerg_cleanup();
+
+        /* Restore the original keyboard mode */
+        ioctl(state->console_fd, KDSKBMODE, state->old_kbd_mode);
+    }
 }
 
 /*

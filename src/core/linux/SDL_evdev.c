@@ -73,6 +73,7 @@ typedef struct SDL_evdevlist_item
 {
     char *path;
     int fd;
+    int udev_class;
 
     /* TODO: use this for every device, not just touchscreen */
     SDL_bool out_of_sync;
@@ -155,6 +156,15 @@ static int SDL_EVDEV_SetRelativeMouseMode(SDL_bool enabled)
     return 0;
 }
 
+static void SDL_EVDEV_UpdateKeyboardMute(void)
+{
+    if (SDL_EVDEV_GetDeviceCount(SDL_UDEV_DEVICE_KEYBOARD) > 0) {
+        SDL_EVDEV_kbd_set_muted(_this->kbd, SDL_TRUE);
+    } else {
+        SDL_EVDEV_kbd_set_muted(_this->kbd, SDL_FALSE);
+    }
+}
+
 int SDL_EVDEV_Init(void)
 {
     if (_this == NULL) {
@@ -208,6 +218,8 @@ int SDL_EVDEV_Init(void)
 #endif /* SDL_USE_LIBUDEV */
 
         _this->kbd = SDL_EVDEV_kbd_init();
+
+        SDL_EVDEV_UpdateKeyboardMute();
     }
 
     SDL_GetMouse()->SetRelativeMouseMode = SDL_EVDEV_SetRelativeMouseMode;
@@ -231,12 +243,12 @@ void SDL_EVDEV_Quit(void)
         SDL_UDEV_Quit();
 #endif /* SDL_USE_LIBUDEV */
 
-        SDL_EVDEV_kbd_quit(_this->kbd);
-
         /* Remove existing devices */
         while (_this->first != NULL) {
             SDL_EVDEV_device_removed(_this->first->path);
         }
+
+        SDL_EVDEV_kbd_quit(_this->kbd);
 
         SDL_assert(_this->first == NULL);
         SDL_assert(_this->last == NULL);
@@ -275,6 +287,19 @@ static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_cl
     }
 }
 #endif /* SDL_USE_LIBUDEV */
+
+int SDL_EVDEV_GetDeviceCount(int device_class)
+{
+    SDL_evdevlist_item *item;
+    int count = 0;
+
+    for (item = _this->first; item != NULL; item = item->next) {
+        if ((item->udev_class & device_class) == device_class) {
+            ++count;
+        }
+    }
+    return count;
+}
 
 void SDL_EVDEV_Poll(void)
 {
@@ -864,6 +889,8 @@ static int SDL_EVDEV_device_added(const char *dev_path, int udev_class)
         return SDL_OutOfMemory();
     }
 
+    item->udev_class = udev_class;
+
     if (ioctl(item->fd, EVIOCGBIT(EV_REL, sizeof(relbit)), relbit) >= 0) {
         item->relative_mouse = test_bit(REL_X, relbit) && test_bit(REL_Y, relbit);
         item->high_res_wheel = test_bit(REL_WHEEL_HI_RES, relbit);
@@ -900,6 +927,8 @@ static int SDL_EVDEV_device_added(const char *dev_path, int udev_class)
 
     SDL_EVDEV_sync_device(item);
 
+    SDL_EVDEV_UpdateKeyboardMute();
+
     return _this->num_devices++;
 }
 
@@ -926,6 +955,7 @@ static int SDL_EVDEV_device_removed(const char *dev_path)
             close(item->fd);
             SDL_free(item->path);
             SDL_free(item);
+            SDL_EVDEV_UpdateKeyboardMute();
             _this->num_devices--;
             return 0;
         }
