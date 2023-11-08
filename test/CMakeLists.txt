@@ -571,7 +571,7 @@ if(SDL_INSTALL_TESTS)
     endif()
     if(MSVC)
         foreach(test IN LISTS SDL_TEST_EXECUTABLES)
-            install(FILES $<TARGET_PDB_FILE:${test}> DESTINATION "${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3" OPTIONAL)
+            SDL_install_pdb(${test} "${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3")
         endforeach()
     endif()
     install(

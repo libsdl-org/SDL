@@ -3310,7 +3310,7 @@ if(NOT SDL_DISABLE_INSTALL)
       RESOURCE DESTINATION "${SDL_SDL_INSTALL_RESOURCEDIR}"
     )
     if(MSVC)
-      install(FILES $<TARGET_PDB_FILE:SDL3-shared> DESTINATION "${CMAKE_INSTALL_BINDIR}" OPTIONAL)
+      SDL_install_pdb(SDL3-shared "${CMAKE_INSTALL_BINDIR}")
     endif()
   endif()
 
@@ -3320,6 +3320,9 @@ if(NOT SDL_DISABLE_INSTALL)
       FRAMEWORK DESTINATION "."
       RESOURCE DESTINATION "${SDL_SDLstatic_INSTALL_RESOURCEDIR}"
     )
+    if(MSVC)
+      SDL_install_pdb(SDL3-static "${CMAKE_INSTALL_LIBDIR}")
+    endif()
   endif()
 
   if(SDL_TEST_LIBRARY)
@@ -3328,6 +3331,9 @@ if(NOT SDL_DISABLE_INSTALL)
       FRAMEWORK DESTINATION "."
       RESOURCE DESTINATION "${SDL_SDLtest_INSTALL_RESOURCEDIR}"
     )
+    if(MSVC)
+      SDL_install_pdb(SDL3_test "${CMAKE_INSTALL_LIBDIR}")
+    endif()
   endif()
 
   ##### Install CMake Targets #####
