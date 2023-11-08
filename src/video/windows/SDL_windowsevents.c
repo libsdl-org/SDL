@@ -28,6 +28,7 @@
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_touch_c.h"
 #include "../../events/scancodes_windows.h"
+#include "../../main/SDL_main_callbacks.h"
 
 /* Dropfile support */
 #include <shellapi.h>
@@ -104,6 +105,10 @@
 #endif
 #ifndef IS_SURROGATE_PAIR
 #define IS_SURROGATE_PAIR(h, l) (IS_HIGH_SURROGATE(h) && IS_LOW_SURROGATE(l))
+#endif
+
+#ifndef USER_TIMER_MINIMUM
+#define USER_TIMER_MINIMUM 0x0000000A
 #endif
 
 /* Used to compare Windows message timestamps */
@@ -1281,6 +1286,31 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 WIN_SetWindowPositionInternal(win, SWP_NOCOPYBITS | SWP_NOACTIVATE);
             }
         }
+    } break;
+
+    case WM_ENTERSIZEMOVE:
+    case WM_ENTERMENULOOP:
+    {
+        SetTimer(hwnd, (UINT_PTR)SDL_IterateMainCallbacks, USER_TIMER_MINIMUM, NULL);
+    } break;
+
+    case WM_TIMER:
+    {
+        if (wParam == (UINT_PTR)SDL_IterateMainCallbacks) {
+            if (SDL_HasMainCallbacks()) {
+                SDL_IterateMainCallbacks(SDL_FALSE);
+            } else {
+                // Send an expose event so the application can redraw
+                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
+            }
+            return 0;
+        }
+    } break;
+
+    case WM_EXITSIZEMOVE:
+    case WM_EXITMENULOOP:
+    {
+        KillTimer(hwnd, (UINT_PTR)SDL_IterateMainCallbacks);
     } break;
 
     case WM_SIZE:

@@ -22,8 +22,9 @@
 #ifndef SDL_main_callbacks_h_
 #define SDL_main_callbacks_h_
 
-int SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func _appiter, SDL_AppEvent_func _appevent, SDL_AppQuit_func _appquit);
-int SDL_IterateMainCallbacks(void);
+SDL_bool SDL_HasMainCallbacks();
+int SDL_InitMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, SDL_AppIterate_func _appiter, SDL_AppEvent_func _appevent, SDL_AppQuit_func _appquit);
+int SDL_IterateMainCallbacks(SDL_bool pump_events);
 void SDL_QuitMainCallbacks(void);
 
 #endif // SDL_main_callbacks_h_

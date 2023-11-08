@@ -80,6 +80,14 @@ static int SDLCALL SDL_MainCallbackEventWatcher(void *userdata, SDL_Event *event
     return 0;
 }
 
+SDL_bool SDL_HasMainCallbacks()
+{
+    if (SDL_main_iteration_callback) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
 int SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
 {
     SDL_main_iteration_callback = appiter;
@@ -104,16 +112,20 @@ int SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_
     return SDL_AtomicGet(&apprc);
 }
 
-int SDL_IterateMainCallbacks(void)
+int SDL_IterateMainCallbacks(SDL_bool pump_events)
 {
-    SDL_PumpEvents();
+    if (pump_events) {
+        SDL_PumpEvents();
+    }
     SDL_DispatchMainCallbackEvents();
 
-    int rc = SDL_main_iteration_callback();
-    if (!SDL_AtomicCAS(&apprc, 0, rc)) {
-        rc = SDL_AtomicGet(&apprc);  // something else already set a quit result, keep that.
+    int rc = SDL_AtomicGet(&apprc);
+    if (rc == 0) {
+        rc = SDL_main_iteration_callback();
+        if (!SDL_AtomicCAS(&apprc, 0, rc)) {
+            rc = SDL_AtomicGet(&apprc); // something else already set a quit result, keep that.
+        }
     }
-
     return rc;
 }
 
