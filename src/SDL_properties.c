@@ -82,14 +82,6 @@ int SDL_InitProperties(void)
             return -1;
         }
     }
-
-    /* Create the global properties here to avoid race conditions later */
-    if (!SDL_global_properties) {
-        SDL_global_properties = SDL_CreateProperties();
-        if (!SDL_global_properties) {
-            return -1;
-        }
-    }
     return 0;
 }
 
@@ -111,8 +103,8 @@ void SDL_QuitProperties(void)
 
 SDL_PropertiesID SDL_GetGlobalProperties(void)
 {
-    if (!SDL_properties && SDL_InitProperties() < 0) {
-        return 0;
+    if (!SDL_global_properties) {
+        SDL_global_properties = SDL_CreateProperties();
     }
     return SDL_global_properties;
 }

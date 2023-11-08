@@ -185,6 +185,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     SDL_InitLog();
     SDL_InitProperties();
+    SDL_GetGlobalProperties();
 
     /* Clear the error message */
     SDL_ClearError();
