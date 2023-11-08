@@ -392,22 +392,30 @@ void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     SDL_RenderPresent(renderer);
 }
 
-void loop()
+static void MoveAllSprites()
 {
-    Uint32 now;
     int i;
-    SDL_Event event;
 
-    /* Check for events */
-    while (SDL_PollEvent(&event)) {
-        SDLTest_CommonEvent(state, &event, &done);
-    }
     for (i = 0; i < state->num_windows; ++i) {
         if (state->windows[i] == NULL) {
             continue;
         }
         MoveSprites(state->renderers[i], sprites[i]);
     }
+}
+
+void loop()
+{
+    Uint32 now;
+    SDL_Event event;
+
+    /* Check for events */
+    while (SDL_PollEvent(&event)) {
+        SDLTest_CommonEvent(state, &event, &done);
+    }
+
+    MoveAllSprites();
+
 #ifdef __EMSCRIPTEN__
     if (done) {
         emscripten_cancel_main_loop();
@@ -424,6 +432,14 @@ void loop()
         next_fps_check = now + fps_check_delay;
         frames = 0;
     }
+}
+
+static int SDLCALL ExposeEventWatcher(void *userdata, SDL_Event *event)
+{
+    if (event->type == SDL_WINDOWEVENT && event->window.event == SDL_WINDOWEVENT_EXPOSED) {
+        MoveAllSprites();
+    }
+    return 0;
 }
 
 int main(int argc, char *argv[])
@@ -567,6 +583,9 @@ int main(int argc, char *argv[])
             velocities[i].y = SDLTest_RandomIntegerInRange(-MAX_SPEED, MAX_SPEED);
         }
     }
+
+    /* Add an event watcher to redraw from within modal window resize/move loops */
+    SDL_AddEventWatch(ExposeEventWatcher, NULL);
 
     /* Main render loop */
     frames = 0;
