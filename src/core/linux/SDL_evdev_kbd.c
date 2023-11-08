@@ -100,6 +100,10 @@ struct SDL_EVDEV_keyboard_state
     char shift_state;
     char text[128];
     unsigned int text_len;
+    void (*vt_release_callback)(void *);
+    void *vt_release_callback_data;
+    void (*vt_acquire_callback)(void *);
+    void *vt_acquire_callback_data;
 };
 
 #ifdef DUMP_ACCENTS
@@ -297,6 +301,126 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
     }
 }
 
+enum {
+    VT_SIGNAL_NONE,
+    VT_SIGNAL_RELEASE,
+    VT_SIGNAL_ACQUIRE,
+};
+static int vt_release_signal;
+static int vt_acquire_signal;
+static SDL_atomic_t vt_signal_pending;
+
+typedef void (*signal_handler)(int signum);
+
+static void kbd_vt_release_signal_action(int signum)
+{
+    SDL_AtomicSet(&vt_signal_pending, VT_SIGNAL_RELEASE);
+}
+
+static void kbd_vt_acquire_signal_action(int signum)
+{
+    SDL_AtomicSet(&vt_signal_pending, VT_SIGNAL_ACQUIRE);
+}
+
+static SDL_bool setup_vt_signal(int signum, signal_handler handler)
+{
+    struct sigaction *old_action_p;
+    struct sigaction new_action;
+    old_action_p = &(old_sigaction[signum]);
+    SDL_zero(new_action);
+    new_action.sa_handler = handler;
+    new_action.sa_flags = SA_RESTART;
+    if (sigaction(signum, &new_action, old_action_p) < 0) {
+        return SDL_FALSE;
+    }
+    if (old_action_p->sa_handler != SIG_DFL) {
+        /* This signal is already in use */
+        sigaction(signum, old_action_p, NULL);
+        return SDL_FALSE;
+    }
+    return SDL_TRUE;
+}
+
+static int find_free_signal(signal_handler handler)
+{
+#ifdef SIGRTMIN
+    int i;
+
+    for (i = SIGRTMIN + 2; i <= SIGRTMAX; ++i) {
+        if (setup_vt_signal(i, handler)) {
+            return i;
+        }
+    }
+#endif
+    if (setup_vt_signal(SIGUSR1, handler)) {
+        return SIGUSR1;
+    }
+    if (setup_vt_signal(SIGUSR2, handler)) {
+        return SIGUSR2;
+    }
+    return 0;
+}
+
+static void kbd_vt_quit(int console_fd)
+{
+    struct vt_mode mode;
+
+    if (vt_release_signal) {
+        sigaction(vt_release_signal, &old_sigaction[vt_release_signal], NULL);
+        vt_release_signal = 0;
+    }
+    if (vt_acquire_signal) {
+        sigaction(vt_acquire_signal, &old_sigaction[vt_acquire_signal], NULL);
+        vt_acquire_signal = 0;
+    }
+
+    SDL_zero(mode);
+    mode.mode = VT_AUTO;
+    ioctl(console_fd, VT_SETMODE, &mode);
+}
+
+static int kbd_vt_init(int console_fd)
+{
+    struct vt_mode mode;
+
+    vt_release_signal = find_free_signal(kbd_vt_release_signal_action);
+    vt_acquire_signal = find_free_signal(kbd_vt_acquire_signal_action);
+    if (!vt_release_signal || !vt_acquire_signal ) {
+        kbd_vt_quit(console_fd);
+        return -1;
+    }
+
+    SDL_zero(mode);
+    mode.mode = VT_PROCESS;
+    mode.relsig = vt_release_signal;
+    mode.acqsig = vt_acquire_signal;
+    mode.frsig = SIGIO;
+    if (ioctl(console_fd, VT_SETMODE, &mode) < 0) {
+        kbd_vt_quit(console_fd);
+        return -1;
+    }
+    return 0;
+}
+
+static void kbd_vt_update(SDL_EVDEV_keyboard_state *state)
+{
+    int signal_pending = SDL_AtomicGet(&vt_signal_pending);
+    if (signal_pending != VT_SIGNAL_NONE) {
+        if (signal_pending == VT_SIGNAL_RELEASE) {
+            if (state->vt_release_callback) {
+                state->vt_release_callback(state->vt_release_callback_data);
+            }
+            ioctl(state->console_fd, VT_RELDISP, 1);
+        } else {
+            if (state->vt_acquire_callback) {
+                state->vt_acquire_callback(state->vt_acquire_callback_data);
+            }
+            ioctl(state->console_fd, VT_RELDISP, VT_ACKACQ);
+        }
+        SDL_AtomicCAS(&vt_signal_pending, signal_pending, VT_SIGNAL_NONE);
+    }
+}
+
 SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
 {
     SDL_EVDEV_keyboard_state *kbd;
@@ -334,33 +458,9 @@ SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
         ioctl(kbd->console_fd, KDSKBMODE, K_UNICODE);
     }
 
+    kbd_vt_init(kbd->console_fd);
+
     return kbd;
-}
-
-void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state)
-{
-    if (state == NULL) {
-        return;
-    }
-
-    SDL_EVDEV_kbd_set_muted(state, SDL_FALSE);
-
-    if (state->console_fd >= 0) {
-        close(state->console_fd);
-        state->console_fd = -1;
-    }
-
-    if (state->key_maps && state->key_maps != default_key_maps) {
-        int i;
-        for (i = 0; i < MAX_NR_KEYMAPS; ++i) {
-            if (state->key_maps[i]) {
-                SDL_free(state->key_maps[i]);
-            }
-        }
-        SDL_free(state->key_maps);
-    }
-
-    SDL_free(state);
 }
 
 void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, SDL_bool muted)
@@ -395,6 +495,55 @@ void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, SDL_bool muted)
         ioctl(state->console_fd, KDSKBMODE, state->old_kbd_mode);
     }
     state->muted = muted;
+}
+
+void SDL_EVDEV_kbd_set_vt_switch_callbacks(SDL_EVDEV_keyboard_state *state, void (*release_callback)(void*), void *release_callback_data, void (*acquire_callback)(void*), void *acquire_callback_data)
+{
+    if (state == NULL) {
+        return;
+    }
+
+    state->vt_release_callback = release_callback;
+    state->vt_release_callback_data = release_callback_data;
+    state->vt_acquire_callback = acquire_callback;
+    state->vt_acquire_callback_data = acquire_callback_data;
+}
+
+void SDL_EVDEV_kbd_update(SDL_EVDEV_keyboard_state *state)
+{
+    if (!state) {
+        return;
+    }
+
+    kbd_vt_update(state);
+}
+
+void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state)
+{
+    if (state == NULL) {
+        return;
+    }
+
+    SDL_EVDEV_kbd_set_muted(state, SDL_FALSE);
+
+    kbd_vt_quit(state->console_fd);
+
+    if (state->console_fd >= 0) {
+        close(state->console_fd);
+        state->console_fd = -1;
+    }
+
+    if (state->key_maps && state->key_maps != default_key_maps) {
+        int i;
+        for (i = 0; i < MAX_NR_KEYMAPS; ++i) {
+            if (state->key_maps[i]) {
+                SDL_free(state->key_maps[i]);
+            }
+        }
+        SDL_free(state->key_maps);
+    }
+
+    SDL_free(state);
 }
 
 /*
@@ -828,6 +977,14 @@ SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
 }
 
 void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, SDL_bool muted)
+{
+}
+
+void SDL_EVDEV_kbd_set_vt_switch_callbacks(SDL_EVDEV_keyboard_state *state, void (*release_callback)(void*), void *release_callback_data, void (*acquire_callback)(void*), void *acquire_callback_data)
+{
+}
+
+void SDL_EVDEV_kbd_update(SDL_EVDEV_keyboard_state *state)
 {
 }
 
