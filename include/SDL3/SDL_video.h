@@ -967,6 +967,7 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_GetWindowParent(SDL_Window *window);
  * "SDL.window.win32.instance" - the HINSTANCE associated with the window
  *
  * On Wayland:
+ * "SDL.window.wayland.registry" - the wl_registry associated with the window
  * "SDL.window.wayland.display" - the wl_display associated with the window
  * "SDL.window.wayland.surface" - the wl_surface associated with the window
  * "SDL.window.wayland.egl_window" - the wl_egl_window associated with the window
