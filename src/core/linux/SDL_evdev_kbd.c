@@ -394,6 +394,7 @@ void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, SDL_bool muted)
         /* Restore the original keyboard mode */
         ioctl(state->console_fd, KDSKBMODE, state->old_kbd_mode);
     }
+    state->muted = muted;
 }
 
 /*
