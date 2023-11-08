@@ -2503,13 +2503,10 @@ SDL_bool SDL_IsJoystickXboxSeriesX(Uint16 vendor_id, Uint16 product_id)
         }
     }
     if (vendor_id == USB_VENDOR_8BITDO) {
-        /* 8BitDo started making Xbox form factor controllers after the Series X
-         * release, so we'll assume for now that they all have the share button.
-         *
-         * We know for sure that the Ultimate Wired Controller for Xbox (0x2002)
-         * and the Ultimate Wireless / Pro 2 Wired Controller (0x3106) have them.
-         */
-        return SDL_TRUE;
+        if (product_id == USB_PRODUCT_8BITDO_XBOX_CONTROLLER1 ||
+            product_id == USB_PRODUCT_8BITDO_XBOX_CONTROLLER2) {
+            return SDL_TRUE;
+        }
     }
     if (vendor_id == USB_VENDOR_GAMESIR) {
         if (product_id == USB_PRODUCT_GAMESIR_G7) {

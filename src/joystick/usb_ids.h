@@ -55,6 +55,8 @@
 #define USB_VENDOR_VALVE        0x28de
 #define USB_VENDOR_ZEROPLUS     0x0c12
 
+#define USB_PRODUCT_8BITDO_XBOX_CONTROLLER1               0x2002 /* Ultimate Wired Controller for Xbox */
+#define USB_PRODUCT_8BITDO_XBOX_CONTROLLER2               0x3106 /* Ultimate Wireless / Pro 2 Wired Controller */
 #define USB_PRODUCT_AMAZON_LUNA_CONTROLLER                0x0419
 #define USB_PRODUCT_ASTRO_C40_XBOX360                     0x0024
 #define USB_PRODUCT_BACKBONE_ONE_IOS                      0x0103
