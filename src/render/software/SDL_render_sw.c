@@ -980,8 +980,12 @@ static void SW_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
 static void SW_DestroyRenderer(SDL_Renderer *renderer)
 {
+    SDL_Window *window = renderer->window;
     SW_RenderData *data = (SW_RenderData *)renderer->driverdata;
 
+    if (window) {
+        SDL_DestroyWindowSurface(window);
+    }
     SDL_free(data);
     SDL_free(renderer);
 }
@@ -1034,8 +1038,6 @@ SDL_Renderer *SW_CreateRendererForSurface(SDL_Surface *surface)
     renderer->DestroyRenderer = SW_DestroyRenderer;
     renderer->info = SW_RenderDriver.info;
     renderer->driverdata = data;
-
-    SW_ActivateRenderer(renderer);
 
     return renderer;
 }
