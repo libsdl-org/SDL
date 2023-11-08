@@ -922,6 +922,7 @@ SDL3_0.0.0 {
     SDL_GetDisplayProperties;
     SDL_SetPropertyWithCleanup;
     SDL_SetX11EventHook;
+    SDL_GetGlobalProperties;
     # extra symbols go here (don't modify this line)
   local: *;
 };

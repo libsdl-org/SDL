@@ -947,3 +947,4 @@
 #define SDL_GetDisplayProperties SDL_GetDisplayProperties_REAL
 #define SDL_SetPropertyWithCleanup SDL_SetPropertyWithCleanup_REAL
 #define SDL_SetX11EventHook SDL_SetX11EventHook_REAL
+#define SDL_GetGlobalProperties SDL_GetGlobalProperties_REAL

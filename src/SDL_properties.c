@@ -39,6 +39,7 @@ typedef struct
 static SDL_HashTable *SDL_properties;
 static SDL_RWLock *SDL_properties_lock;
 static SDL_PropertiesID SDL_last_properties_id;
+static SDL_PropertiesID SDL_global_properties;
 
 
 static void SDL_FreeProperty(const void *key, const void *value, void *data)
@@ -81,11 +82,23 @@ int SDL_InitProperties(void)
             return -1;
         }
     }
+
+    /* Create the global properties here to avoid race conditions later */
+    if (!SDL_global_properties) {
+        SDL_global_properties = SDL_CreateProperties();
+        if (!SDL_global_properties) {
+            return -1;
+        }
+    }
     return 0;
 }
 
 void SDL_QuitProperties(void)
 {
+    if (SDL_global_properties) {
+        SDL_DestroyProperties(SDL_global_properties);
+        SDL_global_properties = 0;
+    }
     if (SDL_properties) {
         SDL_DestroyHashTable(SDL_properties);
         SDL_properties = NULL;
@@ -94,6 +107,14 @@ void SDL_QuitProperties(void)
         SDL_DestroyRWLock(SDL_properties_lock);
         SDL_properties_lock = NULL;
     }
+}
+
+SDL_PropertiesID SDL_GetGlobalProperties(void)
+{
+    if (!SDL_properties && SDL_InitProperties() < 0) {
+        return 0;
+    }
+    return SDL_global_properties;
 }
 
 SDL_PropertiesID SDL_CreateProperties(void)
