@@ -320,6 +320,18 @@ void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *kbd)
     SDL_free(kbd);
 }
 
+void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, SDL_bool muted)
+{
+}
+
+void SDL_EVDEV_kbd_set_vt_switch_callbacks(SDL_EVDEV_keyboard_state *state, void (*release_callback)(void*), void *release_callback_data, void (*acquire_callback)(void*), void *acquire_callback_data)
+{
+}
+
+void SDL_EVDEV_kbd_update(SDL_EVDEV_keyboard_state *state)
+{
+}
+
 /*
  * Helper Functions.
  */
@@ -465,10 +477,6 @@ static void k_shift(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_
         put_utf8(kbd, kbd->npadch);
         kbd->npadch = -1;
     }
-}
-
-void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, SDL_bool muted)
-{
 }
 
 void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, int down)

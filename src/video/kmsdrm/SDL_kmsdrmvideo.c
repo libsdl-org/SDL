@@ -1223,6 +1223,36 @@ cleanup:
     return ret;
 }
 
+static void KMSDRM_ReleaseVT(void *userdata)
+{
+    SDL_VideoDevice *_this = (SDL_VideoDevice *)userdata;
+    SDL_VideoData *viddata = _this->driverdata;
+    int i;
+
+    for (i = 0; i < viddata->num_windows; i++) {
+        SDL_Window *window = viddata->windows[i];
+        if (!(window->flags & SDL_WINDOW_VULKAN)) {
+            KMSDRM_DestroySurfaces(_this, window);
+        }
+    }
+    KMSDRM_drmDropMaster(viddata->drm_fd);
+}
+
+static void KMSDRM_AcquireVT(void *userdata)
+{
+    SDL_VideoDevice *_this = (SDL_VideoDevice *)userdata;
+    SDL_VideoData *viddata = _this->driverdata;
+    int i;
+
+    KMSDRM_drmSetMaster(viddata->drm_fd);
+    for (i = 0; i < viddata->num_windows; i++) {
+        SDL_Window *window = viddata->windows[i];
+        if (!(window->flags & SDL_WINDOW_VULKAN)) {
+            KMSDRM_CreateSurfaces(_this, window);
+        }
+    }
+}
+
 int KMSDRM_VideoInit(SDL_VideoDevice *_this)
 {
     int ret = 0;
@@ -1243,6 +1273,7 @@ int KMSDRM_VideoInit(SDL_VideoDevice *_this)
 
 #ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Init();
+    SDL_EVDEV_SetVTSwitchCallbacks(KMSDRM_ReleaseVT, _this, KMSDRM_AcquireVT, _this);
 #elif defined(SDL_INPUT_WSCONS)
     SDL_WSCONS_Init();
 #endif
@@ -1261,6 +1292,7 @@ void KMSDRM_VideoQuit(SDL_VideoDevice *_this)
     KMSDRM_DeinitDisplays(_this);
 
 #ifdef SDL_INPUT_LINUXEV
+    SDL_EVDEV_SetVTSwitchCallbacks(NULL, NULL, NULL, NULL);
     SDL_EVDEV_Quit();
 #elif defined(SDL_INPUT_WSCONS)
     SDL_WSCONS_Quit();
