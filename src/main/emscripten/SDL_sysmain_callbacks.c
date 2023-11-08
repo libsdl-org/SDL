@@ -26,7 +26,7 @@
 
 static void EmscriptenInternalMainloop(void)
 {
-    const int rc = SDL_IterateMainCallbacks();
+    const int rc = SDL_IterateMainCallbacks(SDL_TRUE);
     if (rc != 0) {
         SDL_QuitMainCallbacks();
         emscripten_cancel_main_loop();  // kill" the mainloop, so it stops calling back into it.
