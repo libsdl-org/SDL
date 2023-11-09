@@ -313,13 +313,11 @@ typedef void (*signal_handler)(int signum);
 
 static void kbd_vt_release_signal_action(int signum)
 {
-printf("kbd_vt_release_signal_action\n");
     SDL_AtomicSet(&vt_signal_pending, VT_SIGNAL_RELEASE);
 }
 
 static void kbd_vt_acquire_signal_action(int signum)
 {
-printf("kbd_vt_acquire_signal_action\n");
     SDL_AtomicSet(&vt_signal_pending, VT_SIGNAL_ACQUIRE);
 }
 
