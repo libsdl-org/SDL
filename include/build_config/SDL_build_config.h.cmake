@@ -244,10 +244,14 @@
 
 #cmakedefine USE_POSIX_SPAWN @USE_POSIX_SPAWN@
 
+#cmakedefine HAVE_COREMEDIA
+
 /* SDL internal assertion support */
 #if @SDL_DEFAULT_ASSERT_LEVEL_CONFIGURED@
 #cmakedefine SDL_DEFAULT_ASSERT_LEVEL @SDL_DEFAULT_ASSERT_LEVEL@
 #endif
+
+#cmakedefine SDL_VIDEO_CAPTURE
 
 /* Allow disabling of core subsystems */
 #cmakedefine SDL_ATOMIC_DISABLED @SDL_ATOMIC_DISABLED@

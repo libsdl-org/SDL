@@ -197,6 +197,8 @@
 #define SDL_VIDEO_METAL 1
 #endif
 
+#define HAVE_COREMEDIA  1
+
 /* Enable system power support */
 #define SDL_POWER_UIKIT 1
 

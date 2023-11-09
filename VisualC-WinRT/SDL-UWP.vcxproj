@@ -89,6 +89,7 @@
     <ClInclude Include="..\include\SDL3\SDL_types.h" />
     <ClInclude Include="..\include\SDL3\SDL_version.h" />
     <ClInclude Include="..\include\SDL3\SDL_video.h" />
+    <ClInclude Include="..\include\SDL3\SDL_video_capture.h" />
     <ClInclude Include="..\src\audio\disk\SDL_diskaudio.h" />
     <ClInclude Include="..\src\audio\dummy\SDL_dummyaudio.h" />
     <ClInclude Include="..\src\audio\SDL_audiodev_c.h" />
@@ -180,6 +181,7 @@
     <ClInclude Include="..\src\video\SDL_RLEaccel_c.h" />
     <ClInclude Include="..\src\video\SDL_shape_internals.h" />
     <ClInclude Include="..\src\video\SDL_sysvideo.h" />
+    <ClInclude Include="..\src\video\SDL_sysvidocapture.h" />
     <ClInclude Include="..\src\video\SDL_yuv_c.h" />
     <ClInclude Include="..\src\video\winrt\SDL_winrtevents_c.h" />
     <ClInclude Include="..\src\video\winrt\SDL_winrtgamebar_cpp.h" />
@@ -520,6 +522,7 @@
     <ClCompile Include="..\src\video\SDL_stretch.c" />
     <ClCompile Include="..\src\video\SDL_surface.c" />
     <ClCompile Include="..\src\video\SDL_video.c" />
+    <ClCompile Include="..\src\video\SDL_video_capture.c" />
     <ClCompile Include="..\src\video\SDL_video_unsupported.c" />
     <ClCompile Include="..\src\video\SDL_yuv.c" />
     <ClCompile Include="..\src\video\winrt\SDL_winrtevents.cpp">
