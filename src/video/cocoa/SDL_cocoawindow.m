@@ -1018,10 +1018,6 @@ static void Cocoa_SendExposedEventIfVisible(SDL_Window *window)
     if (SDL_GetKeyboardFocus() == _data.window) {
         SDL_SetKeyboardFocus(NULL);
     }
-
-    if (isFullscreenSpace) {
-        [NSMenu setMenuBarVisible:YES];
-    }
 }
 
 - (void)windowDidChangeBackingProperties:(NSNotification *)aNotification
@@ -1181,7 +1177,6 @@ static void Cocoa_SendExposedEventIfVisible(SDL_Window *window)
         } else {
             [nswindow setCollectionBehavior:NSWindowCollectionBehaviorManaged];
         }
-        [NSMenu setMenuBarVisible:YES];
 
         pendingWindowOperation = PENDING_OPERATION_NONE;
 
@@ -2552,9 +2547,6 @@ void Cocoa_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 #endif /* SDL_VIDEO_OPENGL */
 
-            if ([data.listener isInFullscreenSpace]) {
-                [NSMenu setMenuBarVisible:YES];
-            }
             [data.listener close];
             data.listener = nil;
             if (data.created) {
@@ -2634,6 +2626,8 @@ SDL_bool Cocoa_SetWindowFullscreenSpace(SDL_Window *window, SDL_bool state)
             }
             /* Return TRUE to prevent non-space fullscreen logic from running */
             succeeded = SDL_TRUE;
+
+            [NSMenu setMenuBarVisible:YES];
         }
         data.inWindowFullscreenTransition = SDL_FALSE;
 
