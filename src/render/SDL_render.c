@@ -2452,17 +2452,6 @@ int SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *event
         if (window == renderer->window) {
             SDL_RenderCoordinatesFromWindow(renderer, event->wheel.mouseX, event->wheel.mouseY, &event->wheel.mouseX, &event->wheel.mouseY);
         }
-    } else if (event->type == SDL_EVENT_FINGER_DOWN ||
-               event->type == SDL_EVENT_FINGER_UP ||
-               event->type == SDL_EVENT_FINGER_MOTION) {
-        /* FIXME: Are these events guaranteed to be window relative? */
-        if (renderer->window) {
-            int w, h;
-            if (SDL_GetWindowSize(renderer->window, &w, &h) < 0) {
-                return -1;
-            }
-            SDL_RenderCoordinatesFromWindow(renderer, event->tfinger.x * w, event->tfinger.y * h, &event->tfinger.x, &event->tfinger.y);
-        }
     }
     return 0;
 }

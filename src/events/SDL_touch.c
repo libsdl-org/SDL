@@ -228,6 +228,22 @@ static int SDL_DelFinger(SDL_Touch *touch, SDL_FingerID fingerid)
     return 0;
 }
 
+static void touch_coordinates_to_renderer(SDL_Window *window, float x, float y, float *out_x, float *out_y)
+{
+    /* FIXME: Are these events guaranteed to be window relative? */
+    if (window) {
+        SDL_Renderer *renderer = SDL_GetRenderer(window);
+        if (renderer) {
+            int w, h;
+            if (SDL_GetWindowSize(window, &w, &h) < 0) {
+                /* Nothing to do */
+           } else {
+                SDL_RenderCoordinatesFromWindow(renderer, x * w, y * h, out_x, out_y);
+            }
+        }
+    }
+}
+
 int SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window, SDL_bool down, float x, float y, float pressure)
 {
     int posted;
@@ -303,6 +319,9 @@ int SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_W
 
     finger = SDL_GetFinger(touch, fingerid);
     if (down) {
+
+        touch_coordinates_to_renderer(window, x, y, &x, &y);
+
         if (finger) {
             /* This finger is already down.
                Assume the finger-up for the previous touch was lost, and send it. */
@@ -424,6 +443,8 @@ int SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid,
 #endif
         return 0;
     }
+
+    touch_coordinates_to_renderer(window, x, y, &x, &y);
 
     /* Update internal touch coordinates */
     finger->x = x;
