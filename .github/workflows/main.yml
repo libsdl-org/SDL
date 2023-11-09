@@ -25,10 +25,10 @@ jobs:
         - { name: Windows (clang64),              os: windows-latest, shell: 'msys2 {0}', msystem: clang64, msys-env: mingw-w64-clang-x86_64, artifact: 'SDL-msys2-clang64' }
         - { name: Windows (ucrt64),               os: windows-latest, shell: 'msys2 {0}', msystem: ucrt64,  msys-env: mingw-w64-ucrt-x86_64, artifact: 'SDL-msys2-ucrt64' }
         - { name: Ubuntu 20.04,                   os: ubuntu-20.04,   shell: sh, artifact: 'SDL-ubuntu20.04' }
-        #- { name: Intel oneAPI (Ubuntu 20.04),    os: ubuntu-20.04,   shell: bash, artifact: 'SDL-ubuntu20.04-oneapi', intel: true,
-        #    source_cmd: 'source /opt/intel/oneapi/setvars.sh; export CC=icx; export CXX=icx;'}
-        #- { name: Intel Compiler (Ubuntu 20.04),  os: ubuntu-20.04,   shell: bash, artifact: 'SDL-ubuntu20.04-icc', intel: true, cmake: '-DSDL_CLANG_TIDY=OFF',
-        #    source_cmd: 'source /opt/intel/oneapi/setvars.sh; export CC=icc; export CXX=icpc; export CFLAGS=-diag-disable=10441; export CXXFLAGS=-diag-disable=10441; '}
+        - { name: Intel oneAPI (Ubuntu 20.04),    os: ubuntu-20.04,   shell: bash, artifact: 'SDL-ubuntu20.04-oneapi', intel: true,
+            source_cmd: 'source /opt/intel/oneapi/setvars.sh; export CC=icx; export CXX=icx;'}
+        - { name: Intel Compiler (Ubuntu 20.04),  os: ubuntu-20.04,   shell: bash, artifact: 'SDL-ubuntu20.04-icc', intel: true, cmake: '-DSDL_CLANG_TIDY=OFF',
+            source_cmd: 'source /opt/intel/oneapi/setvars.sh; export CC=icc; export CXX=icpc; export CFLAGS=-diag-disable=10441; export CXXFLAGS=-diag-disable=10441; '}
         - { name: Ubuntu 22.04,                   os: ubuntu-22.04,   shell: sh, artifact: 'SDL-ubuntu22.04' }
         - { name: MacOS (Framework),              os: macos-latest,   shell: sh,    cmake: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DSDL_FRAMEWORK=ON -DSDL_CLANG_TIDY=OFF', skip_test_pkgconfig: true, artifact: 'SDL-macos-framework', no-static: true }
         - { name: MacOS (GNU prefix),             os: macos-latest,   shell: sh,    cmake: '-DCMAKE_OSX_ARCHITECTURES="x86_64" -DCLANG_TIDY_BINARY="$(brew --prefix llvm)/bin/clang-tidy"', artifact: 'SDL-macos-gnu' }
@@ -74,12 +74,16 @@ jobs:
     - name: Setup Intel oneAPI
       if: matrix.platform.intel
       run: |
-        # Setup oneAPI repo
-        wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-        sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-        sudo echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+        # Download the key to system keyring
+        wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+          | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+
+        # Add signed entry to apt sources and configure the APT client to use Intel repository:
+        echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+
+        # Update package list
         sudo apt-get update -y
-        
+
         # Install oneAPI
         sudo apt-get install -y intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
 
