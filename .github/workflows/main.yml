@@ -22,10 +22,10 @@ jobs:
         - { name: Windows (ucrt64),               os: windows-latest, shell: 'msys2 {0}', msystem: ucrt64,  msys-env: mingw-w64-ucrt-x86_64 }
         - { name: Ubuntu 20.04 (CMake),           os: ubuntu-20.04,   shell: sh }
         - { name: Ubuntu 20.04 (autotools),       os: ubuntu-20.04,   shell: sh,    autotools: true }
-        #- { name: Intel oneAPI (Ubuntu 20.04),    os: ubuntu-20.04,   shell: bash, artifact: 'SDL-ubuntu20.04-oneapi', intel: true,
-        #    source_cmd: 'source /opt/intel/oneapi/setvars.sh; export CC=icx; export CXX=icx;'}
-        #- { name: Intel Compiler (Ubuntu 20.04),  os: ubuntu-20.04,   shell: bash, artifact: 'SDL-ubuntu20.04-icc', intel: true, cmake: '-DSDL_CLANG_TIDY=OFF',
-        #     source_cmd: 'source /opt/intel/oneapi/setvars.sh; export CC=icc; export CXX=icpc; export CFLAGS=-diag-disable=10441; export CXXFLAGS=-diag-disable=10441; '}
+        - { name: Intel oneAPI (Ubuntu 20.04),    os: ubuntu-20.04,   shell: bash, artifact: 'SDL-ubuntu20.04-oneapi', intel: true,
+            source_cmd: 'source /opt/intel/oneapi/setvars.sh; export CC=icx; export CXX=icx;'}
+        - { name: Intel Compiler (Ubuntu 20.04),  os: ubuntu-20.04,   shell: bash, artifact: 'SDL-ubuntu20.04-icc', intel: true, cmake: '-DSDL_CLANG_TIDY=OFF',
+             source_cmd: 'source /opt/intel/oneapi/setvars.sh; export CC=icc; export CXX=icpc; export CFLAGS=-diag-disable=10441; export CXXFLAGS=-diag-disable=10441; '}
 
         - { name: Ubuntu 22.04 (CMake),           os: ubuntu-22.04,   shell: sh }
         - { name: Ubuntu 22.04 (autotools),       os: ubuntu-22.04,   shell: sh,    autotools: true }
@@ -70,10 +70,14 @@ jobs:
     - name: Setup Intel oneAPI
       if: matrix.platform.intel
       run: |
-        # Setup oneAPI repo
-        wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-        sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-        sudo echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+        # Download the key to system keyring
+        wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+          | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+
+        # Add signed entry to apt sources and configure the APT client to use Intel repository:
+        echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+
+        # Update package list
         sudo apt-get update -y
 
         # Install oneAPI
