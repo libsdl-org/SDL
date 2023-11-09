@@ -923,6 +923,22 @@ SDL3_0.0.0 {
     SDL_SetPropertyWithCleanup;
     SDL_SetX11EventHook;
     SDL_GetGlobalProperties;
+    SDL_OpenVideoCapture;
+    SDL_SetVideoCaptureSpec;
+    SDL_OpenVideoCaptureWithSpec;
+    SDL_GetVideoCaptureDeviceName;
+    SDL_GetVideoCaptureSpec;
+    SDL_GetVideoCaptureFormat;
+    SDL_GetNumVideoCaptureFormats;
+    SDL_GetVideoCaptureFrameSize;
+    SDL_GetNumVideoCaptureFrameSizes;
+    SDL_GetVideoCaptureStatus;
+    SDL_StartVideoCapture;
+    SDL_AcquireVideoCaptureFrame;
+    SDL_ReleaseVideoCaptureFrame;
+    SDL_StopVideoCapture;
+    SDL_CloseVideoCapture;
+    SDL_GetVideoCaptureDevices;
     # extra symbols go here (don't modify this line)
   local: *;
 };

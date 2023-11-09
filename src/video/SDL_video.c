@@ -31,6 +31,7 @@
 #include "SDL_video_c.h"
 #include "../events/SDL_events_c.h"
 #include "../timer/SDL_timer_c.h"
+#include "SDL_video_capture_c.h"
 
 #ifdef SDL_VIDEO_OPENGL
 #include <SDL3/SDL_opengl.h>
@@ -443,6 +444,7 @@ int SDL_VideoInit(const char *driver_name)
     SDL_bool init_keyboard = SDL_FALSE;
     SDL_bool init_mouse = SDL_FALSE;
     SDL_bool init_touch = SDL_FALSE;
+    SDL_bool init_video_capture = SDL_FALSE;
     int i = 0;
 
     /* Check to make sure we don't overwrite '_this' */
@@ -471,6 +473,10 @@ int SDL_VideoInit(const char *driver_name)
         goto pre_driver_error;
     }
     init_touch = SDL_TRUE;
+    if (SDL_VideoCaptureInit() < 0) {
+        goto pre_driver_error;
+    }
+    init_video_capture = SDL_TRUE;
 
     /* Select the proper video driver */
     video = NULL;
@@ -565,6 +571,9 @@ int SDL_VideoInit(const char *driver_name)
 
 pre_driver_error:
     SDL_assert(_this == NULL);
+    if (init_video_capture) {
+        SDL_QuitVideoCapture();
+    }
     if (init_touch) {
         SDL_QuitTouch();
     }
@@ -3684,6 +3693,7 @@ void SDL_VideoQuit(void)
     SDL_ClearClipboardData();
 
     /* Halt event processing before doing anything else */
+    SDL_QuitVideoCapture();
     SDL_QuitTouch();
     SDL_QuitMouse();
     SDL_QuitKeyboard();

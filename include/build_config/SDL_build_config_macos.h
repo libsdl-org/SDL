@@ -260,6 +260,8 @@
 #endif
 #endif
 
+#define HAVE_COREMEDIA  1
+
 /* Enable system power support */
 #define SDL_POWER_MACOSX 1
 

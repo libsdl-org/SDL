@@ -1185,6 +1185,9 @@
     <ClCompile Include="..\..\src\video\SDL_video_unsupported.c">
       <Filter>video</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\video\SDL_video_capture.c">
+      <Filter>video</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\video\SDL_yuv.c">
       <Filter>video</Filter>
     </ClCompile>
