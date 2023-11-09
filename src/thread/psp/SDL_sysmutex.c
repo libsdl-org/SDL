@@ -80,7 +80,7 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
 {
     int retval = 0;
 #ifndef SDL_THREADS_DISABLED
-    if (mutex != NULL) {
+    if (mutex) {
         const SceInt32 res = sceKernelTryLockLwMutex(&mutex->lock, 1);
         if (res == SCE_KERNEL_ERROR_OK) {
             retval = 0;

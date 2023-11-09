@@ -231,7 +231,7 @@ static void MoveSprites(SDL_Renderer *renderer)
          }
 
          tmp = SDL_CreateTextureFromSurface(renderer, MooseYUVSurfaces[i]);
-         if (tmp == NULL) {
+         if (!tmp) {
              SDL_Log("Error %s", SDL_GetError());
              quit(7);
          }
@@ -326,7 +326,7 @@ int main(int argc, char **argv)
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -430,20 +430,20 @@ int main(int argc, char **argv)
     }
 
     RawMooseData = (Uint8 *)SDL_malloc(MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
-    if (RawMooseData == NULL) {
+    if (!RawMooseData) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't allocate memory for movie !\n");
         quit(1);
     }
 
     /* load the trojan moose images */
     filename = GetResourceFilename(NULL, "moose.dat");
-    if (filename == NULL) {
+    if (!filename) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory\n");
         quit(2);
     }
     handle = SDL_RWFromFile(filename, "rb");
     SDL_free(filename);
-    if (handle == NULL) {
+    if (!handle) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't find the file moose.dat !\n");
         quit(2);
     }
@@ -466,7 +466,7 @@ int main(int argc, char **argv)
 
         if (streaming) {
             MooseTexture = SDL_CreateTexture(renderer, yuv_format, SDL_TEXTUREACCESS_STREAMING, MOOSEPIC_W, MOOSEPIC_H);
-            if (MooseTexture == NULL) {
+            if (!MooseTexture) {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create texture: %s\n", SDL_GetError());
                 quit(5);
             }
@@ -479,7 +479,7 @@ int main(int argc, char **argv)
     for (i = 0; i < MOOSEFRAMES_COUNT; i++) {
         /* Create RGB SDL_Surface */
         SDL_Surface *mooseRGBSurface = SDL_CreateSurface(MOOSEPIC_W, MOOSEPIC_H, SDL_PIXELFORMAT_RGB24);
-        if (mooseRGBSurface == NULL) {
+        if (!mooseRGBSurface) {
             quit(6);
         }
 

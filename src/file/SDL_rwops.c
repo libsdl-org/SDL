@@ -389,7 +389,7 @@ static SDL_RWops *SDL_RWFromFP(void *fp, SDL_bool autoclose)
     SDL_RWops *rwops = NULL;
 
     rwops = SDL_CreateRW();
-    if (rwops != NULL) {
+    if (rwops) {
         rwops->seek = stdio_seek;
         rwops->read = stdio_read;
         rwops->write = stdio_write;
@@ -462,7 +462,7 @@ static size_t SDLCALL mem_write(SDL_RWops *context, const void *ptr, size_t size
 SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
 {
     SDL_RWops *rwops = NULL;
-    if (file == NULL || !*file || mode == NULL || !*mode) {
+    if (!file || !*file || !mode || !*mode) {
         SDL_SetError("SDL_RWFromFile(): No file or no mode specified");
         return NULL;
     }
@@ -495,7 +495,7 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
 
     /* Try to open the file from the asset system */
     rwops = SDL_CreateRW();
-    if (rwops == NULL) {
+    if (!rwops) {
         return NULL; /* SDL_SetError already setup by SDL_CreateRW() */
     }
 
@@ -512,7 +512,7 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
 
 #elif defined(__WIN32__) || defined(__GDK__) || defined(__WINRT__)
     rwops = SDL_CreateRW();
-    if (rwops == NULL) {
+    if (!rwops) {
         return NULL; /* SDL_SetError already setup by SDL_CreateRW() */
     }
 
@@ -538,7 +538,7 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
 #else
         FILE *fp = fopen(file, mode);
 #endif
-        if (fp == NULL) {
+        if (!fp) {
             SDL_SetError("Couldn't open %s", file);
         } else {
             rwops = SDL_RWFromFP(fp, SDL_TRUE);
@@ -555,7 +555,7 @@ SDL_RWops *SDL_RWFromMem(void *mem, size_t size)
 {
     SDL_RWops *rwops = NULL;
 
-    if (mem == NULL) {
+    if (!mem) {
         SDL_InvalidParamError("mem");
         return NULL;
     }
@@ -565,7 +565,7 @@ SDL_RWops *SDL_RWFromMem(void *mem, size_t size)
     }
 
     rwops = SDL_CreateRW();
-    if (rwops != NULL) {
+    if (rwops) {
         rwops->size = mem_size;
         rwops->seek = mem_seek;
         rwops->read = mem_read;
@@ -582,7 +582,7 @@ SDL_RWops *SDL_RWFromConstMem(const void *mem, size_t size)
 {
     SDL_RWops *rwops = NULL;
 
-    if (mem == NULL) {
+    if (!mem) {
         SDL_InvalidParamError("mem");
         return NULL;
     }
@@ -592,7 +592,7 @@ SDL_RWops *SDL_RWFromConstMem(const void *mem, size_t size)
     }
 
     rwops = SDL_CreateRW();
-    if (rwops != NULL) {
+    if (rwops) {
         rwops->size = mem_size;
         rwops->seek = mem_seek;
         rwops->read = mem_read;
@@ -609,7 +609,7 @@ SDL_RWops *SDL_CreateRW(void)
     SDL_RWops *context;
 
     context = (SDL_RWops *)SDL_calloc(1, sizeof(*context));
-    if (context == NULL) {
+    if (!context) {
         SDL_OutOfMemory();
     } else {
         context->type = SDL_RWOPS_UNKNOWN;
@@ -632,7 +632,7 @@ void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, SDL_bool freesrc)
     char *data = NULL, *newdata;
     SDL_bool loading_chunks = SDL_FALSE;
 
-    if (src == NULL) {
+    if (!src) {
         SDL_InvalidParamError("src");
         return NULL;
     }
@@ -662,7 +662,7 @@ void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, SDL_bool freesrc)
                 } else {
                     newdata = SDL_realloc(data, (size_t)(size + 1));
                 }
-                if (newdata == NULL) {
+                if (!newdata) {
                     SDL_free(data);
                     data = NULL;
                     SDL_OutOfMemory();

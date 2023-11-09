@@ -188,10 +188,10 @@ static void xinput2_remove_device_info(SDL_VideoData *videodata, const int devic
     SDL_XInput2DeviceInfo *prev = NULL;
     SDL_XInput2DeviceInfo *devinfo;
 
-    for (devinfo = videodata->mouse_device_info; devinfo != NULL; devinfo = devinfo->next) {
+    for (devinfo = videodata->mouse_device_info; devinfo; devinfo = devinfo->next) {
         if (devinfo->device_id == device_id) {
-            SDL_assert((devinfo == videodata->mouse_device_info) == (prev == NULL));
-            if (prev == NULL) {
+            SDL_assert((devinfo == videodata->mouse_device_info) == (!prev));
+            if (!prev) {
                 videodata->mouse_device_info = devinfo->next;
             } else {
                 prev->next = devinfo->next;
@@ -212,10 +212,10 @@ static SDL_XInput2DeviceInfo *xinput2_get_device_info(SDL_VideoData *videodata, 
     int axis = 0;
     int i;
 
-    for (devinfo = videodata->mouse_device_info; devinfo != NULL; devinfo = devinfo->next) {
+    for (devinfo = videodata->mouse_device_info; devinfo; devinfo = devinfo->next) {
         if (devinfo->device_id == device_id) {
-            SDL_assert((devinfo == videodata->mouse_device_info) == (prev == NULL));
-            if (prev != NULL) { /* move this to the front of the list, assuming we'll get more from this one. */
+            SDL_assert((devinfo == videodata->mouse_device_info) == (!prev));
+            if (prev) { /* move this to the front of the list, assuming we'll get more from this one. */
                 prev->next = devinfo->next;
                 devinfo->next = videodata->mouse_device_info;
                 videodata->mouse_device_info = devinfo;
@@ -227,13 +227,13 @@ static SDL_XInput2DeviceInfo *xinput2_get_device_info(SDL_VideoData *videodata, 
 
     /* don't know about this device yet, query and cache it. */
     devinfo = (SDL_XInput2DeviceInfo *)SDL_calloc(1, sizeof(SDL_XInput2DeviceInfo));
-    if (devinfo == NULL) {
+    if (!devinfo) {
         SDL_OutOfMemory();
         return NULL;
     }
 
     xidevinfo = X11_XIQueryDevice(videodata->display, device_id, &i);
-    if (xidevinfo == NULL) {
+    if (!xidevinfo) {
         SDL_free(devinfo);
         return NULL;
     }
@@ -287,7 +287,7 @@ int X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie
         }
 
         devinfo = xinput2_get_device_info(videodata, rawev->deviceid);
-        if (devinfo == NULL) {
+        if (!devinfo) {
             return 0; /* oh well. */
         }
 

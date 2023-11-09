@@ -74,7 +74,7 @@ static int createWindow(SDL_VideoDevice *_this, SDL_Window *window)
     int             usage;
 
     impl = SDL_calloc(1, sizeof(*impl));
-    if (impl == NULL) {
+    if (!impl) {
         return -1;
     }
 
@@ -310,7 +310,7 @@ static SDL_VideoDevice *createDevice()
     SDL_VideoDevice *device;
 
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
+    if (!device) {
         return NULL;
     }
 

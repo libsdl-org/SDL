@@ -104,7 +104,7 @@ static int PS2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     GSTEXTURE *ps2_tex = (GSTEXTURE *)SDL_calloc(1, sizeof(GSTEXTURE));
 
-    if (ps2_tex == NULL) {
+    if (!ps2_tex) {
         return SDL_OutOfMemory();
     }
 
@@ -201,7 +201,7 @@ static int PS2_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, c
     gs_rgbaq rgbaq;
     int i;
 
-    if (vertices == NULL) {
+    if (!vertices) {
         return -1;
     }
 
@@ -236,7 +236,7 @@ static int PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
         GSPRIMUVPOINT *vertices = (GSPRIMUVPOINT *) SDL_AllocateRenderVertices(renderer, count * sizeof(GSPRIMUVPOINT), 4, &cmd->data.draw.first);
         GSTEXTURE *ps2_tex = (GSTEXTURE *) texture->driverdata;
 
-        if (vertices == NULL) {
+        if (!vertices) {
             return -1;
         }
 
@@ -269,7 +269,7 @@ static int PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
     } else {
         GSPRIMPOINT *vertices = (GSPRIMPOINT *)SDL_AllocateRenderVertices(renderer, count * sizeof(GSPRIMPOINT), 4, &cmd->data.draw.first);
 
-        if (vertices == NULL) {
+        if (!vertices) {
             return -1;
         }
 
@@ -530,11 +530,11 @@ static void PS2_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->driverdata;
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
 
-    if (data == NULL) {
+    if (!data) {
         return;
     }
 
-    if (ps2_texture == NULL) {
+    if (!ps2_texture) {
         return;
     }
 
@@ -583,13 +583,13 @@ static SDL_Renderer *PS2_CreateRenderer(SDL_Window *window, Uint32 flags)
     SDL_bool dynamicVsync;
 
     renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
-    if (renderer == NULL) {
+    if (!renderer) {
         SDL_OutOfMemory();
         return NULL;
     }
 
     data = (PS2_RenderData *)SDL_calloc(1, sizeof(*data));
-    if (data == NULL) {
+    if (!data) {
         PS2_DestroyRenderer(renderer);
         SDL_OutOfMemory();
         return NULL;

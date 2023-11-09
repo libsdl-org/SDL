@@ -40,9 +40,9 @@ int VITA_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     char *default_path = "app0:module";
     char target_path[MAX_PATH];
 
-    if (skip_init == NULL) { // we don't care about actual value
+    if (!skip_init) { // we don't care about actual value
 
-        if (override != NULL) {
+        if (override) {
             default_path = override;
         }
 

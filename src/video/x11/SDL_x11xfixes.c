@@ -120,7 +120,7 @@ int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const
         X11_DestroyPointerBarrier(_this, data->active_cursor_confined_window);
     }
 
-    SDL_assert(window != NULL);
+    SDL_assert(window);
     wdata = window->driverdata;
 
     /* If user did not specify an area to confine, destroy the barrier that was/is assigned to

@@ -91,7 +91,7 @@ static int get_zenity_version(int *major, int *minor)
 
         close(fd_pipe[1]);
         outputfp = fdopen(fd_pipe[0], "r");
-        if (outputfp == NULL) {
+        if (!outputfp) {
             close(fd_pipe[0]);
             return SDL_SetError("failed to open pipe for reading: %s", strerror(errno));
         }
@@ -99,7 +99,7 @@ static int get_zenity_version(int *major, int *minor)
         version_ptr = fgets(version_str, ZENITY_VERSION_LEN, outputfp);
         (void)fclose(outputfp); /* will close underlying fd */
 
-        if (version_ptr == NULL) {
+        if (!version_ptr) {
             return SDL_SetError("failed to read zenity version string");
         }
 
@@ -213,7 +213,7 @@ int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
         char *output = NULL;
         char *tmp = NULL;
 
-        if (buttonid == NULL) {
+        if (!buttonid) {
             /* if we don't need buttonid, we can return immediately */
             close(fd_pipe[0]);
             return 0; /* success */
@@ -221,14 +221,14 @@ int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
         *buttonid = -1;
 
         output = SDL_malloc(output_len + 1);
-        if (output == NULL) {
+        if (!output) {
             close(fd_pipe[0]);
             return SDL_OutOfMemory();
         }
         output[0] = '\0';
 
         outputfp = fdopen(fd_pipe[0], "r");
-        if (outputfp == NULL) {
+        if (!outputfp) {
             SDL_free(output);
             close(fd_pipe[0]);
             return SDL_SetError("Couldn't open pipe for reading: %s", strerror(errno));
@@ -236,20 +236,20 @@ int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
         tmp = fgets(output, output_len + 1, outputfp);
         (void)fclose(outputfp);
 
-        if ((tmp == NULL) || (*tmp == '\0') || (*tmp == '\n')) {
+        if ((!tmp) || (*tmp == '\0') || (*tmp == '\n')) {
             SDL_free(output);
             return 0; /* User simply closed the dialog */
         }
 
         /* It likes to add a newline... */
         tmp = SDL_strrchr(output, '\n');
-        if (tmp != NULL) {
+        if (tmp) {
             *tmp = '\0';
         }
 
         /* Check which button got pressed */
         for (i = 0; i < messageboxdata->numbuttons; i += 1) {
-            if (messageboxdata->buttons[i].text != NULL) {
+            if (messageboxdata->buttons[i].text) {
                 if (SDL_strcmp(output, messageboxdata->buttons[i].text) == 0) {
                     *buttonid = messageboxdata->buttons[i].buttonid;
                     break;

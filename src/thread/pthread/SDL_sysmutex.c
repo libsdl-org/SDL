@@ -88,7 +88,7 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
 {
     int retval = 0;
 
-    if (mutex != NULL) {
+    if (mutex) {
 #ifdef FAKE_RECURSIVE_MUTEX
         pthread_t this_thread = pthread_self();
         if (mutex->owner == this_thread) {

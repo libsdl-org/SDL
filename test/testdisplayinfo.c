@@ -21,7 +21,7 @@
 static void
 print_mode(const char *prefix, const SDL_DisplayMode *mode)
 {
-    if (mode == NULL) {
+    if (!mode) {
         return;
     }
 
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 

@@ -87,7 +87,7 @@ static void DrawObject(SDL_Renderer *renderer, Object *object)
 static void DrawObjects(SDL_Renderer *renderer)
 {
     Object *next = objects;
-    while (next != NULL) {
+    while (next) {
         DrawObject(renderer, next);
         next = next->next;
     }
@@ -97,7 +97,7 @@ static void AppendObject(Object *object)
 {
     if (objects) {
         Object *next = objects;
-        while (next->next != NULL) {
+        while (next->next) {
             next = next->next;
         }
         next->next = object;
@@ -133,7 +133,7 @@ static void loop(void *arg)
             break;
 
         case SDL_EVENT_MOUSE_MOTION:
-            if (active == NULL) {
+            if (!active) {
                 break;
             }
 
@@ -142,7 +142,7 @@ static void loop(void *arg)
             break;
 
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
-            if (active == NULL) {
+            if (!active) {
                 active = SDL_calloc(1, sizeof(*active));
                 active->x1 = active->x2 = event.button.x;
                 active->y1 = active->y2 = event.button.y;
@@ -176,7 +176,7 @@ static void loop(void *arg)
             break;
 
         case SDL_EVENT_MOUSE_BUTTON_UP:
-            if (active == NULL) {
+            if (!active) {
                 break;
             }
 
@@ -259,7 +259,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 

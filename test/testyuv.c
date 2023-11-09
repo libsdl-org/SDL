@@ -73,7 +73,7 @@ static SDL_bool verify_yuv_data(Uint32 format, const Uint8 *yuv, int yuv_pitch, 
     SDL_bool result = SDL_FALSE;
 
     rgb = (Uint8 *)SDL_malloc(size);
-    if (rgb == NULL) {
+    if (!rgb) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory");
         return SDL_FALSE;
     }
@@ -124,7 +124,7 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
     int yuv1_pitch, yuv2_pitch;
     int result = -1;
 
-    if (pattern == NULL || yuv1 == NULL || yuv2 == NULL) {
+    if (!pattern || !yuv1 || !yuv2) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't allocate test surfaces");
         goto done;
     }
@@ -263,7 +263,7 @@ int main(int argc, char **argv)
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -372,7 +372,7 @@ int main(int argc, char **argv)
     bmp = SDL_LoadBMP(filename);
     original = SDL_ConvertSurfaceFormat(bmp, SDL_PIXELFORMAT_RGB24);
     SDL_DestroySurface(bmp);
-    if (original == NULL) {
+    if (!original) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename, SDL_GetError());
         return 3;
     }
@@ -384,7 +384,7 @@ int main(int argc, char **argv)
     pitch = CalculateYUVPitch(yuv_format, original->w);
 
     converted = SDL_CreateSurface(original->w, original->h, rgb_format);
-    if (converted == NULL) {
+    if (!converted) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create converted surface: %s\n", SDL_GetError());
         return 3;
     }
@@ -397,13 +397,13 @@ int main(int argc, char **argv)
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%d iterations in %" SDL_PRIu64 " ms, %.2fms each\n", iterations, (now - then), (float)(now - then) / iterations);
 
     window = SDL_CreateWindow("YUV test", original->w, original->h, 0);
-    if (window == NULL) {
+    if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s\n", SDL_GetError());
         return 4;
     }
 
     renderer = SDL_CreateRenderer(window, NULL, 0);
-    if (renderer == NULL) {
+    if (!renderer) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
         return 4;
     }

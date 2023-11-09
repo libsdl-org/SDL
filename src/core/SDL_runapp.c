@@ -32,7 +32,7 @@ SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
 
     (void)reserved;
 
-    if(argv == NULL)
+    if(!argv)
     {
         argc = 0;
         /* make sure argv isn't NULL, in case some user code doesn't like that */

@@ -1237,7 +1237,7 @@ int SDL_vsscanf(const char *text, const char *fmt, va_list ap)
 {
     int retval = 0;
 
-    if (text == NULL || !*text) {
+    if (!text || !*text) {
         return -1;
     }
 
@@ -1641,7 +1641,7 @@ static size_t SDL_PrintString(char *text, size_t maxlen, SDL_FormatInfo *info, c
     size_t length = 0;
     size_t slen, sz;
 
-    if (string == NULL) {
+    if (!string) {
         string = "(null)";
     }
 
@@ -1701,7 +1701,7 @@ static void SDL_IntPrecisionAdjust(char *num, size_t maxlen, SDL_FormatInfo *inf
 { /* left-pad num with zeroes. */
     size_t sz, pad, have_sign;
 
-    if (info == NULL) {
+    if (!info) {
         return;
     }
 
@@ -2189,7 +2189,7 @@ int SDL_vasprintf(char **strp, const char *fmt, va_list ap)
     *strp = NULL;
 
     p = (char *)SDL_malloc(size);
-    if (p == NULL) {
+    if (!p) {
         return -1;
     }
 
@@ -2215,7 +2215,7 @@ int SDL_vasprintf(char **strp, const char *fmt, va_list ap)
         size = retval + 1; /* Precisely what is needed */
 
         np = (char *)SDL_realloc(p, size);
-        if (np == NULL) {
+        if (!np) {
             SDL_free(p);
             return -1;
         } else {

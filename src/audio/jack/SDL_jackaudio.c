@@ -57,7 +57,7 @@ static void *jack_handle = NULL;
 static int load_jack_sym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(jack_handle, fn);
-    if (*addr == NULL) {
+    if (!*addr) {
         // Don't call SDL_SetError(): SDL_LoadFunction already did.
         return 0;
     }
@@ -72,7 +72,7 @@ static int load_jack_sym(const char *fn, void **addr)
 
 static void UnloadJackLibrary(void)
 {
-    if (jack_handle != NULL) {
+    if (jack_handle) {
         SDL_UnloadObject(jack_handle);
         jack_handle = NULL;
     }
@@ -81,9 +81,9 @@ static void UnloadJackLibrary(void)
 static int LoadJackLibrary(void)
 {
     int retval = 0;
-    if (jack_handle == NULL) {
+    if (!jack_handle) {
         jack_handle = SDL_LoadObject(jack_library);
-        if (jack_handle == NULL) {
+        if (!jack_handle) {
             retval = -1;
             // Don't call SDL_SetError(): SDL_LoadObject already did.
         } else {
@@ -296,18 +296,18 @@ static int JACK_OpenDevice(SDL_AudioDevice *device)
 
     // Initialize all variables that we clean on shutdown
     device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
-    if (device->hidden == NULL) {
+    if (!device->hidden) {
         return SDL_OutOfMemory();
     }
 
     client = JACK_jack_client_open(GetJackAppName(), JackNoStartServer, &status, NULL);
     device->hidden->client = client;
-    if (client == NULL) {
+    if (!client) {
         return SDL_SetError("Can't open JACK client");
     }
 
     devports = JACK_jack_get_ports(client, NULL, NULL, JackPortIsPhysical | sysportflags);
-    if (devports == NULL || !devports[0]) {
+    if (!devports || !devports[0]) {
         return SDL_SetError("No physical JACK ports available");
     }
 
@@ -349,7 +349,7 @@ static int JACK_OpenDevice(SDL_AudioDevice *device)
 
     // Build SDL's ports, which we will connect to the device ports.
     device->hidden->sdlports = (jack_port_t **)SDL_calloc(channels, sizeof(jack_port_t *));
-    if (device->hidden->sdlports == NULL) {
+    if (!device->hidden->sdlports) {
         SDL_free(audio_ports);
         return SDL_OutOfMemory();
     }
@@ -414,7 +414,7 @@ static SDL_bool JACK_Init(SDL_AudioDriverImpl *impl)
         // Make sure a JACK server is running and available.
         jack_status_t status;
         jack_client_t *client = JACK_jack_client_open("SDL", JackNoStartServer, &status, NULL);
-        if (client == NULL) {
+        if (!client) {
             UnloadJackLibrary();
             return SDL_FALSE;
         }

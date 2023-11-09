@@ -216,7 +216,7 @@ static int GL_CheckAllErrors(const char *prefix, SDL_Renderer *renderer, const c
     for (;;) {
         GLenum error = data->glGetError();
         if (error != GL_NO_ERROR) {
-            if (prefix == NULL || prefix[0] == '\0') {
+            if (!prefix || prefix[0] == '\0') {
                 prefix = "generic";
             }
             SDL_SetError("%s: %s (%d): %s %s (0x%X)", prefix, file, line, function, GL_TranslateError(error), error);
@@ -269,7 +269,7 @@ static GLES2_FBOList *GLES2_GetFBO(GLES2_RenderData *data, Uint32 w, Uint32 h)
     while ((result) && ((result->w != w) || (result->h != h))) {
         result = result->next;
     }
-    if (result == NULL) {
+    if (!result) {
         result = SDL_malloc(sizeof(GLES2_FBOList));
         result->w = w;
         result->h = h;
@@ -415,7 +415,7 @@ static GLES2_ProgramCacheEntry *GLES2_CacheProgram(GLES2_RenderData *data, GLuin
 
     /* Create a program cache entry */
     entry = (GLES2_ProgramCacheEntry *)SDL_calloc(1, sizeof(GLES2_ProgramCacheEntry));
-    if (entry == NULL) {
+    if (!entry) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -476,7 +476,7 @@ static GLES2_ProgramCacheEntry *GLES2_CacheProgram(GLES2_RenderData *data, GLuin
     if (data->program_cache.count > GLES2_MAX_CACHED_PROGRAMS) {
         data->glDeleteProgram(data->program_cache.tail->id);
         data->program_cache.tail = data->program_cache.tail->prev;
-        if (data->program_cache.tail != NULL) {
+        if (data->program_cache.tail) {
             SDL_free(data->program_cache.tail->next);
             data->program_cache.tail->next = NULL;
         }
@@ -493,7 +493,7 @@ static GLuint GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, G
     const GLchar *shader_src_list[3];
     const GLchar *shader_body = GLES2_GetShader(type);
 
-    if (shader_body == NULL) {
+    if (!shader_body) {
         SDL_SetError("No shader body src");
         return 0;
     }
@@ -703,7 +703,7 @@ static int GLES2_SelectProgram(GLES2_RenderData *data, GLES2_ImageSource source,
 
     /* Generate a matching program */
     program = GLES2_CacheProgram(data, vertex, fragment);
-    if (program == NULL) {
+    if (!program) {
         goto fault;
     }
 
@@ -736,7 +736,7 @@ static int GLES2_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
     color.b = cmd->data.draw.b;
     color.a = cmd->data.draw.a;
 
-    if (verts == NULL) {
+    if (!verts) {
         return -1;
     }
 
@@ -769,7 +769,7 @@ static int GLES2_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
     color.b = cmd->data.draw.b;
     color.a = cmd->data.draw.a;
 
-    if (verts == NULL) {
+    if (!verts) {
         return -1;
     }
 
@@ -827,7 +827,7 @@ static int GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
 
     if (texture) {
         SDL_Vertex *verts = (SDL_Vertex *)SDL_AllocateRenderVertices(renderer, count * sizeof(*verts), 0, &cmd->data.draw.first);
-        if (verts == NULL) {
+        if (!verts) {
             return -1;
         }
 
@@ -867,7 +867,7 @@ static int GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
 
     } else {
         SDL_VertexSolid *verts = (SDL_VertexSolid *)SDL_AllocateRenderVertices(renderer, count * sizeof(*verts), 0, &cmd->data.draw.first);
-        if (verts == NULL) {
+        if (!verts) {
             return -1;
         }
 
@@ -947,7 +947,7 @@ static int SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, co
     }
 
     if ((texture != NULL) != data->drawstate.texturing) {
-        if (texture == NULL) {
+        if (!texture) {
             data->glDisableVertexAttribArray((GLenum)GLES2_ATTRIBUTE_TEXCOORD);
             data->drawstate.texturing = SDL_FALSE;
         } else {
@@ -1270,7 +1270,7 @@ static int GLES2_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
                     SDL_RenderCommand *nextcmd = cmd->next;
                     SDL_BlendMode thisblend = cmd->data.draw.blend;
 
-                    while (nextcmd != NULL) {
+                    while (nextcmd) {
                         const SDL_RenderCommandType nextcmdtype = nextcmd->command;
                         if (nextcmdtype != SDL_RENDERCMD_DRAW_LINES) {
                             break; /* can't go any further on this draw call, different render command up next. */
@@ -1304,7 +1304,7 @@ static int GLES2_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
             SDL_RenderCommand *nextcmd = cmd->next;
             size_t count = cmd->data.draw.count;
             int ret;
-            while (nextcmd != NULL) {
+            while (nextcmd) {
                 const SDL_RenderCommandType nextcmdtype = nextcmd->command;
                 if (nextcmdtype != thiscmdtype) {
                     break; /* can't go any further on this draw call, different render command up next. */
@@ -1443,7 +1443,7 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
     /* Allocate a texture struct */
     data = (GLES2_TextureData *)SDL_calloc(1, sizeof(GLES2_TextureData));
-    if (data == NULL) {
+    if (!data) {
         return SDL_OutOfMemory();
     }
     data->texture = 0;
@@ -1578,7 +1578,7 @@ static int GLES2_TexSubImage2D(GLES2_RenderData *data, GLenum target, GLint xoff
     src = (Uint8 *)pixels;
     if ((size_t)pitch != src_pitch) {
         blob = (Uint8 *)SDL_malloc(src_pitch * height);
-        if (blob == NULL) {
+        if (!blob) {
             return SDL_OutOfMemory();
         }
         src = blob;
@@ -1595,7 +1595,7 @@ static int GLES2_TexSubImage2D(GLES2_RenderData *data, GLenum target, GLint xoff
         int i;
         Uint32 *src32 = (Uint32 *)src;
         blob2 = (Uint32 *)SDL_malloc(src_pitch * height);
-        if (blob2 == NULL) {
+        if (!blob2) {
             if (blob) {
                 SDL_free(blob);
             }
@@ -1856,7 +1856,7 @@ static int GLES2_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 
     data->drawstate.viewport_dirty = SDL_TRUE;
 
-    if (texture == NULL) {
+    if (!texture) {
         data->glBindFramebuffer(GL_FRAMEBUFFER, data->window_framebuffer);
     } else {
         texturedata = (GLES2_TextureData *)texture->driverdata;
@@ -1922,7 +1922,7 @@ static int GLES2_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
     }
 
     temp_pixels = SDL_malloc(buflen);
-    if (temp_pixels == NULL) {
+    if (!temp_pixels) {
         return SDL_OutOfMemory();
     }
 
@@ -2088,13 +2088,13 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
 
     /* Create the renderer struct */
     renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(SDL_Renderer));
-    if (renderer == NULL) {
+    if (!renderer) {
         SDL_OutOfMemory();
         goto error;
     }
 
     data = (GLES2_RenderData *)SDL_calloc(1, sizeof(GLES2_RenderData));
-    if (data == NULL) {
+    if (!data) {
         SDL_free(renderer);
         SDL_OutOfMemory();
         goto error;

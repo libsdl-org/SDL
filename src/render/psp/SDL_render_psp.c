@@ -281,11 +281,11 @@ static int TextureSwizzle(PSP_TextureData *psp_texture, void *dst)
     src = (unsigned int *)psp_texture->data;
 
     data = dst;
-    if (data == NULL) {
+    if (!data) {
         data = SDL_malloc(psp_texture->size);
     }
 
-    if (data == NULL) {
+    if (!data) {
         return SDL_OutOfMemory();
     }
 
@@ -343,11 +343,11 @@ static int TextureUnswizzle(PSP_TextureData *psp_texture, void *dst)
 
     data = dst;
 
-    if (data == NULL) {
+    if (!data) {
         data = SDL_malloc(psp_texture->size);
     }
 
-    if (data == NULL) {
+    if (!data) {
         return SDL_OutOfMemory();
     }
 
@@ -391,7 +391,7 @@ static int TextureSpillToSram(PSP_RenderData *data, PSP_TextureData *psp_texture
     if (psp_texture->swizzled) {
         // Texture was swizzled in vram, just copy to system memory
         void *sdata = SDL_malloc(psp_texture->size);
-        if (sdata == NULL) {
+        if (!sdata) {
             return SDL_OutOfMemory();
         }
 
@@ -483,7 +483,7 @@ static int PSP_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     PSP_RenderData *data = renderer->driverdata;
     PSP_TextureData *psp_texture = (PSP_TextureData *)SDL_calloc(1, sizeof(*psp_texture));
 
-    if (psp_texture == NULL) {
+    if (!psp_texture) {
         return SDL_OutOfMemory();
     }
 
@@ -629,7 +629,7 @@ static int PSP_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, c
     VertV *verts = (VertV *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertV), 4, &cmd->data.draw.first);
     int i;
 
-    if (verts == NULL) {
+    if (!verts) {
         return -1;
     }
 
@@ -655,10 +655,10 @@ static int PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
     cmd->data.draw.count = count;
     size_indices = indices ? size_indices : 0;
 
-    if (texture == NULL) {
+    if (!texture) {
         VertCV *verts;
         verts = (VertCV *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertCV), 4, &cmd->data.draw.first);
-        if (verts == NULL) {
+        if (!verts) {
             return -1;
         }
 
@@ -691,7 +691,7 @@ static int PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
         PSP_TextureData *psp_texture = (PSP_TextureData *)texture->driverdata;
         VertTCV *verts;
         verts = (VertTCV *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertTCV), 4, &cmd->data.draw.first);
-        if (verts == NULL) {
+        if (!verts) {
             return -1;
         }
 
@@ -736,7 +736,7 @@ static int PSP_QueueFillRects(SDL_Renderer *renderer, SDL_RenderCommand *cmd, co
     VertV *verts = (VertV *)SDL_AllocateRenderVertices(renderer, count * 2 * sizeof(VertV), 4, &cmd->data.draw.first);
     int i;
 
-    if (verts == NULL) {
+    if (!verts) {
         return -1;
     }
 
@@ -772,7 +772,7 @@ static int PSP_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
 
     if ((MathAbs(u1) - MathAbs(u0)) < 64.0f) {
         verts = (VertTV *)SDL_AllocateRenderVertices(renderer, 2 * sizeof(VertTV), 4, &cmd->data.draw.first);
-        if (verts == NULL) {
+        if (!verts) {
             return -1;
         }
 
@@ -808,7 +808,7 @@ static int PSP_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
         cmd->data.draw.count = count;
 
         verts = (VertTV *)SDL_AllocateRenderVertices(renderer, count * 2 * sizeof(VertTV), 4, &cmd->data.draw.first);
-        if (verts == NULL) {
+        if (!verts) {
             return -1;
         }
 
@@ -859,7 +859,7 @@ static int PSP_QueueCopyEx(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_T
     float u1 = srcrect->x + srcrect->w;
     float v1 = srcrect->y + srcrect->h;
 
-    if (verts == NULL) {
+    if (!verts) {
         return -1;
     }
 
@@ -1010,7 +1010,7 @@ static void PSP_SetBlendState(PSP_RenderData *data, PSP_BlendState *state)
     }
 
     if (state->texture != current->texture) {
-        if (state->texture != NULL) {
+        if (state->texture) {
             TextureActivate(state->texture);
             sceGuEnable(GU_TEXTURE_2D);
         } else {
@@ -1034,7 +1034,7 @@ static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
        rendering backends report a reasonable maximum, so the higher level can flush
        if we appear to be exceeding that. */
     gpumem = (Uint8 *)sceGuGetMemory(vertsize);
-    if (gpumem == NULL) {
+    if (!gpumem) {
         return SDL_SetError("Couldn't obtain a %d-byte vertex buffer!", (int)vertsize);
     }
     SDL_memcpy(gpumem, vertices, vertsize);
@@ -1176,7 +1176,7 @@ static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
         case SDL_RENDERCMD_GEOMETRY:
         {
             const size_t count = cmd->data.draw.count;
-            if (cmd->data.draw.texture == NULL) {
+            if (!cmd->data.draw.texture) {
                 const VertCV *verts = (VertCV *)(gpumem + cmd->data.draw.first);
                 sceGuDisable(GU_TEXTURE_2D);
                 /* In GU_SMOOTH mode */
@@ -1244,11 +1244,11 @@ static void PSP_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     PSP_RenderData *renderdata = (PSP_RenderData *)renderer->driverdata;
     PSP_TextureData *psp_texture = (PSP_TextureData *)texture->driverdata;
 
-    if (renderdata == NULL) {
+    if (!renderdata) {
         return;
     }
 
-    if (psp_texture == NULL) {
+    if (!psp_texture) {
         return;
     }
 
@@ -1299,13 +1299,13 @@ SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, Uint32 flags)
     void *doublebuffer = NULL;
 
     renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
-    if (renderer == NULL) {
+    if (!renderer) {
         SDL_OutOfMemory();
         return NULL;
     }
 
     data = (PSP_RenderData *)SDL_calloc(1, sizeof(*data));
-    if (data == NULL) {
+    if (!data) {
         PSP_DestroyRenderer(renderer);
         SDL_OutOfMemory();
         return NULL;

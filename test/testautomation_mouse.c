@@ -418,7 +418,7 @@ static SDL_Window *createMouseSuiteTestWindow(void)
  */
 static void destroyMouseSuiteTestWindow(SDL_Window *window)
 {
-    if (window != NULL) {
+    if (window) {
         SDL_DestroyWindow(window);
         window = NULL;
         SDLTest_AssertPass("SDL_DestroyWindow()");
@@ -454,7 +454,7 @@ static int mouse_warpMouseInWindow(void *arg)
     yPositions[5] = (float)h + 1;
     /* Create test window */
     window = createMouseSuiteTestWindow();
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
@@ -507,7 +507,7 @@ static int mouse_getMouseFocus(void *arg)
 
     /* Create test window */
     window = createMouseSuiteTestWindow();
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 

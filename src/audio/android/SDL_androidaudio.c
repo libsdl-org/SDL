@@ -42,7 +42,7 @@ static SDL_AudioDevice *captureDevice = NULL;
 static int ANDROIDAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
-    if (device->hidden == NULL) {
+    if (!device->hidden) {
         return SDL_OutOfMemory();
     }
 
@@ -131,13 +131,13 @@ void ANDROIDAUDIO_PauseDevices(void)
 {
     // TODO: Handle multiple devices?
     struct SDL_PrivateAudioData *hidden;
-    if (audioDevice != NULL && audioDevice->hidden != NULL) {
+    if (audioDevice && audioDevice->hidden) {
         hidden = (struct SDL_PrivateAudioData *)audioDevice->hidden;
         SDL_LockMutex(audioDevice->lock);
         hidden->resume = SDL_TRUE;
     }
 
-    if (captureDevice != NULL && captureDevice->hidden != NULL) {
+    if (captureDevice && captureDevice->hidden) {
         hidden = (struct SDL_PrivateAudioData *)captureDevice->hidden;
         SDL_LockMutex(captureDevice->lock);
         hidden->resume = SDL_TRUE;
@@ -149,7 +149,7 @@ void ANDROIDAUDIO_ResumeDevices(void)
 {
     // TODO: Handle multiple devices?
     struct SDL_PrivateAudioData *hidden;
-    if (audioDevice != NULL && audioDevice->hidden != NULL) {
+    if (audioDevice && audioDevice->hidden) {
         hidden = (struct SDL_PrivateAudioData *)audioDevice->hidden;
         if (hidden->resume) {
             hidden->resume = SDL_FALSE;
@@ -157,7 +157,7 @@ void ANDROIDAUDIO_ResumeDevices(void)
         }
     }
 
-    if (captureDevice != NULL && captureDevice->hidden != NULL) {
+    if (captureDevice && captureDevice->hidden) {
         hidden = (struct SDL_PrivateAudioData *)captureDevice->hidden;
         if (hidden->resume) {
             hidden->resume = SDL_FALSE;

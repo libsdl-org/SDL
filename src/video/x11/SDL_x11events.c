@@ -100,7 +100,7 @@ static void X11_ReadProperty(SDL_x11Prop *p, Display *disp, Window w, Atom prop)
     int bytes_fetch = 0;
 
     do {
-        if (ret != NULL) {
+        if (ret) {
             X11_XFree(ret);
         }
         X11_XGetWindowProperty(disp, w, prop, 0, bytes_fetch, False, AnyPropertyType, &type, &fmt, &count, &bytes_left, &ret);
@@ -222,7 +222,7 @@ static int X11_URIDecode(char *buf, int len)
 {
     int ri, wi, di;
     char decode = '\0';
-    if (buf == NULL || len < 0) {
+    if (!buf || len < 0) {
         errno = EINVAL;
         return -1;
     }
@@ -298,7 +298,7 @@ static char *X11_URIToLocal(char *uri)
     /* got a hostname? */
     if (!local && uri[0] == '/' && uri[2] != '/') {
         char *hostname_end = SDL_strchr(uri + 1, '/');
-        if (hostname_end != NULL) {
+        if (hostname_end) {
             char hostname[257];
             if (gethostname(hostname, 255) == 0) {
                 hostname[256] = '\0';
@@ -685,7 +685,7 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
                     /* FIXME: We don't support the X11 INCR protocol for large clipboards. Do we want that? - Yes, yes we do. */
                     /* This is a safe cast, XChangeProperty() doesn't take a const value, but it doesn't modify the data */
                     seln_data = (unsigned char *)clipboard->callback(clipboard->userdata, mime_type, &seln_length);
-                    if (seln_data != NULL) {
+                    if (seln_data) {
                         X11_XChangeProperty(display, req->requestor, req->property,
                                             req->target, 8, PropModeReplace,
                                             seln_data, seln_length);
@@ -821,7 +821,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     XClientMessageEvent m;
     int i;
 
-    SDL_assert(videodata != NULL);
+    SDL_assert(videodata);
     display = videodata->display;
 
     /* Save the original keycode for dead keys, which are filtered out by
@@ -921,7 +921,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             }
         }
     }
-    if (data == NULL) {
+    if (!data) {
         /* The window for KeymapNotify, etc events is 0 */
         if (xevent->type == KeymapNotify) {
 #ifdef DEBUG_XEVENTS
@@ -1257,7 +1257,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 SDL_IME_UpdateTextRect(NULL);
             }
 #endif
-            for (w = data->window->first_child; w != NULL; w = w->next_sibling) {
+            for (w = data->window->first_child; w; w = w->next_sibling) {
                 /* Don't update hidden child windows, their relative position doesn't change */
                 if (!(w->flags & SDL_WINDOW_HIDDEN)) {
                     X11_UpdateWindowPosition(w);
@@ -1616,7 +1616,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 char *name = X11_XGetAtomName(display, target);
                 if (name) {
                     char *token = SDL_strtok_r((char *)p.data, "\r\n", &saveptr);
-                    while (token != NULL) {
+                    while (token) {
                         if (SDL_strcmp("text/plain", name) == 0) {
                             SDL_SendDropText(data->window, token);
                         } else if (SDL_strcmp("text/uri-list", name) == 0) {

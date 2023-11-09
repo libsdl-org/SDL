@@ -112,7 +112,7 @@ static SDL_bool IBus_EnterVariant(DBusConnection *conn, DBusMessageIter *iter, S
     }
 
     dbus->message_iter_get_basic(inside, &struct_id);
-    if (struct_id == NULL || SDL_strncmp(struct_id, struct_id, id_size) != 0) {
+    if (!struct_id || SDL_strncmp(struct_id, struct_id, id_size) != 0) {
         return SDL_FALSE;
     }
     return SDL_TRUE;
@@ -291,7 +291,7 @@ static char *IBus_ReadAddressFromFile(const char *file_path)
     FILE *addr_file;
 
     addr_file = fopen(file_path, "r");
-    if (addr_file == NULL) {
+    if (!addr_file) {
         return NULL;
     }
 
@@ -336,7 +336,7 @@ static char *IBus_GetDBusAddressFilename(void)
     }
 
     dbus = SDL_DBus_GetContext();
-    if (dbus == NULL) {
+    if (!dbus) {
         return NULL;
     }
 
@@ -350,7 +350,7 @@ static char *IBus_GetDBusAddressFilename(void)
        and look up the address from a filepath using all those bits, eek. */
     disp_env = SDL_getenv("DISPLAY");
 
-    if (disp_env == NULL || !*disp_env) {
+    if (!disp_env || !*disp_env) {
         display = SDL_strdup(":0.0");
     } else {
         display = SDL_strdup(disp_env);
@@ -360,7 +360,7 @@ static char *IBus_GetDBusAddressFilename(void)
     disp_num = SDL_strrchr(display, ':');
     screen_num = SDL_strrchr(display, '.');
 
-    if (disp_num == NULL) {
+    if (!disp_num) {
         SDL_free(display);
         return NULL;
     }
@@ -374,7 +374,7 @@ static char *IBus_GetDBusAddressFilename(void)
 
     if (!*host) {
         const char *session = SDL_getenv("XDG_SESSION_TYPE");
-        if (session != NULL && SDL_strcmp(session, "wayland") == 0) {
+        if (session && SDL_strcmp(session, "wayland") == 0) {
             host = "unix-wayland";
         } else {
             host = "unix";
@@ -388,7 +388,7 @@ static char *IBus_GetDBusAddressFilename(void)
         SDL_strlcpy(config_dir, conf_env, sizeof(config_dir));
     } else {
         const char *home_env = SDL_getenv("HOME");
-        if (home_env == NULL || !*home_env) {
+        if (!home_env || !*home_env) {
             SDL_free(display);
             return NULL;
         }
@@ -397,7 +397,7 @@ static char *IBus_GetDBusAddressFilename(void)
 
     key = SDL_DBus_GetLocalMachineId();
 
-    if (key == NULL) {
+    if (!key) {
         SDL_free(display);
         return NULL;
     }
@@ -458,7 +458,7 @@ static SDL_bool IBus_SetupConnection(SDL_DBusContext *dbus, const char *addr)
         ibus_input_interface = IBUS_INPUT_INTERFACE;
         ibus_conn = dbus->connection_open_private(addr, NULL);
 
-        if (ibus_conn == NULL) {
+        if (!ibus_conn) {
             return SDL_FALSE; /* oh well. */
         }
 
@@ -498,7 +498,7 @@ static SDL_bool IBus_SetupConnection(SDL_DBusContext *dbus, const char *addr)
 
 static SDL_bool IBus_CheckConnection(SDL_DBusContext *dbus)
 {
-    if (dbus == NULL) {
+    if (!dbus) {
         return SDL_FALSE;
     }
 
@@ -518,7 +518,7 @@ static SDL_bool IBus_CheckConnection(SDL_DBusContext *dbus)
                 struct inotify_event *event = (struct inotify_event *)p;
                 if (event->len > 0) {
                     char *addr_file_no_path = SDL_strrchr(ibus_addr_file, '/');
-                    if (addr_file_no_path == NULL) {
+                    if (!addr_file_no_path) {
                         return SDL_FALSE;
                     }
 
@@ -555,12 +555,12 @@ SDL_bool SDL_IBus_Init(void)
         char *addr;
         char *addr_file_dir;
 
-        if (addr_file == NULL) {
+        if (!addr_file) {
             return SDL_FALSE;
         }
 
         addr = IBus_ReadAddressFromFile(addr_file);
-        if (addr == NULL) {
+        if (!addr) {
             SDL_free(addr_file);
             return SDL_FALSE;
         }
@@ -646,7 +646,7 @@ static void IBus_SimpleMessage(const char *method)
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
-    if ((input_ctx_path != NULL) && (IBus_CheckConnection(dbus))) {
+    if ((input_ctx_path) && (IBus_CheckConnection(dbus))) {
         SDL_DBus_CallVoidMethodOnConnection(ibus_conn, ibus_service, input_ctx_path, ibus_input_interface, method, DBUS_TYPE_INVALID);
     }
 }
@@ -696,7 +696,7 @@ void SDL_IBus_UpdateTextRect(const SDL_Rect *rect)
     }
 
     focused_win = SDL_GetKeyboardFocus();
-    if (focused_win == NULL) {
+    if (!focused_win) {
         return;
     }
 

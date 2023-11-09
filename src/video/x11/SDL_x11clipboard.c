@@ -99,9 +99,9 @@ static int SetSelectionData(SDL_VideoDevice *_this, Atom selection, SDL_Clipboar
 static void *CloneDataBuffer(const void *buffer, size_t *len)
 {
     void *clone = NULL;
-    if (*len > 0 && buffer != NULL) {
+    if (*len > 0 && buffer) {
         clone = SDL_malloc((*len)+sizeof(Uint32));
-        if (clone == NULL) {
+        if (!clone) {
             SDL_OutOfMemory();
         } else {
             SDL_memcpy(clone, buffer, *len);
@@ -228,7 +228,7 @@ SDL_bool X11_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
     size_t length;
     void *data;
     data = X11_GetClipboardData(_this, mime_type, &length);
-    if (data != NULL) {
+    if (data) {
         SDL_free(data);
     }
     return length > 0;

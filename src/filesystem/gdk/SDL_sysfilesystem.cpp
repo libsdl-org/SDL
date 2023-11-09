@@ -44,7 +44,7 @@ SDL_GetBasePath(void)
 
     while (SDL_TRUE) {
         void *ptr = SDL_realloc(path, buflen * sizeof(CHAR));
-        if (ptr == NULL) {
+        if (!ptr) {
             SDL_free(path);
             SDL_OutOfMemory();
             return NULL;
@@ -90,13 +90,13 @@ SDL_GetPrefPath(const char *org, const char *app)
     HRESULT result;
     const char *csid = SDL_GetHint("SDL_GDK_SERVICE_CONFIGURATION_ID");
     
-    if (app == NULL) {
+    if (!app) {
         SDL_InvalidParamError("app");
         return NULL;
     }
 
     /* This should be set before calling SDL_GetPrefPath! */
-    if (csid == NULL) {
+    if (!csid) {
         SDL_LogWarn(SDL_LOG_CATEGORY_SYSTEM, "Set SDL_GDK_SERVICE_CONFIGURATION_ID before calling SDL_GetPrefPath!");
         return SDL_strdup("T:\\");
     }

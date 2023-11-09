@@ -127,7 +127,7 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
     }
 
     raw_devices = (PRAWINPUTDEVICELIST)SDL_malloc(sizeof(RAWINPUTDEVICELIST) * raw_device_count);
-    if (raw_devices == NULL) {
+    if (!raw_devices) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
@@ -349,7 +349,7 @@ typedef struct RawGameControllerDelegate
 
 static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_QueryInterface(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This, REFIID riid, void **ppvObject)
 {
-    if (ppvObject == NULL) {
+    if (!ppvObject) {
         return E_INVALIDARG;
     }
 
@@ -439,7 +439,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             }
             __x_ABI_CWindows_CGaming_CInput_CIRawGameController2_Release(controller2);
         }
-        if (name == NULL) {
+        if (!name) {
             name = SDL_strdup("");
         }
 
@@ -719,7 +719,7 @@ static int WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
     boolean wireless = SDL_FALSE;
 
     hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof(*hwdata));
-    if (hwdata == NULL) {
+    if (!hwdata) {
         return SDL_OutOfMemory();
     }
     joystick->hwdata = hwdata;

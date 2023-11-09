@@ -26,7 +26,7 @@ int SDL_GUIDToString(SDL_GUID guid, char *pszGUID, int cbGUID)
     static const char k_rgchHexToASCII[] = "0123456789abcdef";
     int i;
 
-    if (pszGUID == NULL) {
+    if (!pszGUID) {
         return SDL_InvalidParamError("pszGUID");
     }
     if (cbGUID <= 0) {

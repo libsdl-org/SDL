@@ -102,18 +102,18 @@ static int SDL3_SetWindowShape(SDL_Window *window, SDL_Surface *shape, SDL_Windo
         g_shape_surface = NULL;
     }
 
-    if (shape == NULL) {
+    if (!shape) {
         return SDL_SetError("shape");
     }
 
-    if (shape_mode == NULL) {
+    if (!shape_mode) {
         return SDL_SetError("shape_mode");
     }
 
     g_bitmap_w = shape->w;
     g_bitmap_h = shape->h;
     g_bitmap = (Uint8*) SDL_malloc(shape->w * shape->h);
-    if (g_bitmap == NULL) {
+    if (!g_bitmap) {
         return SDL_OutOfMemory();
     }
 
@@ -170,7 +170,7 @@ static void render(SDL_Renderer *renderer, SDL_Texture *texture)
                 SDL_SetRenderDrawColor(renderer, r, g, b, a);
             }
         } else {
-            if (g_shape_texture == NULL) {
+            if (!g_shape_texture) {
                 SDL_BlendMode bm;
 
                 g_shape_texture = SDL_CreateTextureFromSurface(renderer, g_shape_surface);
@@ -212,7 +212,7 @@ int main(int argc, char **argv)
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -294,13 +294,13 @@ int main(int argc, char **argv)
     }
 
     window = SDL_CreateWindow("SDL_Shape test", SHAPED_WINDOW_DIMENSION, SHAPED_WINDOW_DIMENSION, SDL_WINDOW_TRANSPARENT);
-    if (window == NULL) {
+    if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create shaped window for SDL_Shape.");
         rc = -4;
         goto ret;
     }
     renderer = SDL_CreateRenderer(window, NULL, 0);
-    if (renderer == NULL) {
+    if (!renderer) {
         SDL_DestroyWindow(window);
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create rendering context for SDL_Shape window.");
         rc = -4;

@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
                 keepGoing = SDL_FALSE;
                 break;
             case SDL_EVENT_JOYSTICK_ADDED:
-                if (joystick != NULL) {
+                if (joystick) {
                     SDL_Log("Only one joystick supported by this test\n");
                 } else {
                     joystick = SDL_OpenJoystick(event.jdevice.which);

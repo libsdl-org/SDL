@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 
     sprite = CreateTexture(renderer, icon_bmp, icon_bmp_len, &sprite_w, &sprite_h);
 
-    if (sprite == NULL) {
+    if (!sprite) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture (%s)", SDL_GetError());
         return_code = 3;
         goto quit;

@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -87,7 +87,7 @@ int main(int argc, char **argv)
     }
     if (SDL_NumHaptics() > 0) {
         /* We'll just use index or the first force feedback device found */
-        if (name == NULL) {
+        if (!name) {
             i = (index != -1) ? index : 0;
         }
         /* Try to find matching device */
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
         }
 
         haptic = SDL_HapticOpen(i);
-        if (haptic == NULL) {
+        if (!haptic) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to create the haptic device: %s\n",
                          SDL_GetError());
             return 1;
@@ -297,7 +297,7 @@ int main(int argc, char **argv)
     }
 
     /* Quit */
-    if (haptic != NULL) {
+    if (haptic) {
         SDL_HapticClose(haptic);
     }
     SDL_Quit();

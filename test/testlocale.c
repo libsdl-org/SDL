@@ -16,7 +16,7 @@
 static void log_locales(void)
 {
     SDL_Locale *locales = SDL_GetPreferredLocales();
-    if (locales == NULL) {
+    if (!locales) {
         SDL_Log("Couldn't determine locales: %s", SDL_GetError());
     } else {
         SDL_Locale *l;
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 

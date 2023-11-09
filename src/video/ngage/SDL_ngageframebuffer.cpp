@@ -57,7 +57,7 @@ int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     /* Create a new one */
     SDL_GetWindowSizeInPixels(window, &w, &h);
     surface = SDL_CreateSurface(w, h, surface_format);
-    if (surface == NULL) {
+    if (!surface) {
         return -1;
     }
 
@@ -149,7 +149,7 @@ int SDL_NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     SDL_Surface *surface;
 
     surface = (SDL_Surface *)SDL_GetWindowData(window, NGAGE_SURFACE);
-    if (surface == NULL) {
+    if (!surface) {
         return SDL_SetError("Couldn't find ngage surface for window");
     }
 

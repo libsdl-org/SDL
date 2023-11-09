@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 
     alive = 1;
     thread = SDL_CreateThread(ThreadFunc, "One", "#1");
-    if (thread == NULL) {
+    if (!thread) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread: %s\n", SDL_GetError());
         quit(1);
     }
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
     alive = 1;
     (void)signal(SIGTERM, killed);
     thread = SDL_CreateThread(ThreadFunc, "Two", "#2");
-    if (thread == NULL) {
+    if (!thread) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread: %s\n", SDL_GetError());
         quit(1);
     }

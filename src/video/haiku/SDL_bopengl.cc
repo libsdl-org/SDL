@@ -65,7 +65,7 @@ int HAIKU_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 
 SDL_FunctionPointer HAIKU_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc)
 {
-    if (_this->gl_config.dll_handle != NULL) {
+    if (_this->gl_config.dll_handle) {
         void *location = NULL;
         status_t err;
         if ((err =
@@ -92,8 +92,8 @@ int HAIKU_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window * window) {
 int HAIKU_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window * window, SDL_GLContext context) {
     BGLView* glView = (BGLView*)context;
     // printf("HAIKU_GL_MakeCurrent(%llx), win = %llx, thread = %d\n", (uint64)context, (uint64)window, find_thread(NULL));
-    if (glView != NULL) {
-        if ((glView->Window() == NULL) || (window == NULL) || (_ToBeWin(window)->GetGLView() != glView)) {
+    if (glView) {
+        if ((glView->Window() == NULL) || (!window) || (_ToBeWin(window)->GetGLView() != glView)) {
             return SDL_SetError("MakeCurrent failed");
         }
     }
@@ -146,7 +146,7 @@ int HAIKU_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context) {
     // printf("HAIKU_GL_DeleteContext(%llx), thread = %d\n", (uint64)context, find_thread(NULL));
     BGLView* glView = (BGLView*)context;
     SDL_BWin *bwin = (SDL_BWin*)glView->Window();
-    if (bwin == NULL) {
+    if (!bwin) {
         delete glView;
     } else {
         bwin->RemoveGLView();
