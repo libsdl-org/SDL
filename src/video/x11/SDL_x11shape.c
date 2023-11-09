@@ -36,7 +36,7 @@ SDL_WindowShaper *X11_CreateShaper(SDL_Window *window)
 
     if (SDL_X11_HAVE_XSHAPE) { /* Make sure X server supports it. */
         result = SDL_malloc(sizeof(SDL_WindowShaper));
-        if (result == NULL) {
+        if (!result) {
             SDL_OutOfMemory();
             return NULL;
         }
@@ -44,7 +44,7 @@ SDL_WindowShaper *X11_CreateShaper(SDL_Window *window)
         result->mode.mode = ShapeModeDefault;
         result->mode.parameters.binarizationCutoff = 1;
         data = SDL_malloc(sizeof(SDL_ShapeData));
-        if (data == NULL) {
+        if (!data) {
             SDL_free(result);
             SDL_OutOfMemory();
             return NULL;
@@ -67,7 +67,7 @@ int X11_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowS
     Pixmap shapemask;
 #endif
 
-    if (shaper == NULL || shape == NULL || shaper->driverdata == NULL) {
+    if (!shaper || !shape || !shaper->driverdata) {
         return -1;
     }
 

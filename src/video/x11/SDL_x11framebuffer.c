@@ -127,7 +127,7 @@ int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint
 #endif /* not NO_SHARED_MEMORY */
 
     *pixels = SDL_malloc((size_t)h * (*pitch));
-    if (*pixels == NULL) {
+    if (!*pixels) {
         return SDL_OutOfMemory();
     }
 
@@ -226,7 +226,7 @@ void X11_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData *data = window->driverdata;
     Display *display;
 
-    if (data == NULL) {
+    if (!data) {
         /* The window wasn't fully initialized */
         return;
     }

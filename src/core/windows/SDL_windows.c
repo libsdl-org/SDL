@@ -283,7 +283,7 @@ char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
     }
 
     strw = (WCHAR *)SDL_malloc(len + sizeof(WCHAR));
-    if (strw == NULL) {
+    if (!strw) {
         RegCloseKey(hkey);
         return WIN_StringToUTF8(name); /* oh well. */
     }
@@ -388,7 +388,7 @@ DECLSPEC int MINGW32_FORCEALIGN SDL_RunApp(int _argc, char* _argv[], SDL_main_fu
     (void)_argc; (void)_argv; (void)reserved;
 
     argvw = CommandLineToArgvW(GetCommandLineW(), &argc);
-    if (argvw == NULL) {
+    if (!argvw) {
         return OutOfMemory();
     }
 
@@ -399,13 +399,13 @@ DECLSPEC int MINGW32_FORCEALIGN SDL_RunApp(int _argc, char* _argv[], SDL_main_fu
 
     /* Parse it into argv and argc */
     argv = (char **)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof(*argv));
-    if (argv == NULL) {
+    if (!argv) {
         return OutOfMemory();
     }
     for (i = 0; i < argc; ++i) {
         DWORD len;
         char *arg = WIN_StringToUTF8W(argvw[i]);
-        if (arg == NULL) {
+        if (!arg) {
             return OutOfMemory();
         }
         len = (DWORD)SDL_strlen(arg);

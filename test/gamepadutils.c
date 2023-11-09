@@ -2658,7 +2658,7 @@ SDL_GamepadType GetMappingType(const char *mapping)
 char *SetMappingType(char *mapping, SDL_GamepadType type)
 {
     const char *type_string = SDL_GetGamepadStringForType(type);
-    if (type_string == NULL || type == SDL_GAMEPAD_TYPE_UNKNOWN) {
+    if (!type_string || type == SDL_GAMEPAD_TYPE_UNKNOWN) {
         return RemoveMappingValue(mapping, "type");
     } else {
         return SetMappingValue(mapping, "type", type_string);

@@ -88,7 +88,7 @@ typedef struct SDL_rwlock_srw
 static SDL_RWLock *SDL_CreateRWLock_srw(void)
 {
     SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *)SDL_calloc(1, sizeof(*rwlock));
-    if (rwlock == NULL) {
+    if (!rwlock) {
         SDL_OutOfMemory();
     }
     pInitializeSRWLock(&rwlock->srw);
@@ -125,7 +125,7 @@ static int SDL_TryLockRWLockForReading_srw(SDL_RWLock *_rwlock)
 {
     SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *) _rwlock;
     int retval = 0;
-    if (rwlock != NULL) {
+    if (rwlock) {
         retval = pTryAcquireSRWLockShared(&rwlock->srw) ? 0 : SDL_RWLOCK_TIMEDOUT;
     }
     return retval;
@@ -135,7 +135,7 @@ static int SDL_TryLockRWLockForWriting_srw(SDL_RWLock *_rwlock)
 {
     SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *) _rwlock;
     int retval = 0;
-    if (rwlock != NULL) {
+    if (rwlock) {
         retval = pTryAcquireSRWLockExclusive(&rwlock->srw) ? 0 : SDL_RWLOCK_TIMEDOUT;
     }
     return retval;
@@ -182,7 +182,7 @@ static const SDL_rwlock_impl_t SDL_rwlock_impl_generic = {
 
 SDL_RWLock *SDL_CreateRWLock(void)
 {
-    if (SDL_rwlock_impl_active.Create == NULL) {
+    if (!SDL_rwlock_impl_active.Create) {
         const SDL_rwlock_impl_t *impl;
 
 #ifdef __WINRT__

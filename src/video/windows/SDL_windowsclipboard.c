@@ -288,7 +288,7 @@ void *WIN_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t
                 WIN_CloseClipboard();
             }
         }
-        if (text == NULL) {
+        if (!text) {
             text = SDL_strdup("");
         }
         data = text;

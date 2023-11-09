@@ -84,7 +84,7 @@ int glGetConfig(EGLConfig *pconf, int *pformat)
 
     // Allocate enough memory for all configurations.
     egl_configs = SDL_malloc(egl_num_configs * sizeof(*egl_configs));
-    if (egl_configs == NULL) {
+    if (!egl_configs) {
         return -1;
     }
 

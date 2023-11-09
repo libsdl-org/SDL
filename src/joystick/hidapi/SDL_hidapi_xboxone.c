@@ -359,7 +359,7 @@ static SDL_bool HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
     SDL_DriverXboxOne_Context *ctx;
 
     ctx = (SDL_DriverXboxOne_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (ctx == NULL) {
+    if (!ctx) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
@@ -1401,7 +1401,7 @@ static SDL_bool HIDAPI_GIP_DispatchPacket(SDL_Joystick *joystick, SDL_DriverXbox
             /* Ignore this packet */
             break;
         case GIP_CMD_VIRTUAL_KEY:
-            if (joystick == NULL) {
+            if (!joystick) {
                 break;
             }
             HIDAPI_DriverXboxOne_HandleModePacket(joystick, ctx, data, size);
@@ -1436,13 +1436,13 @@ static SDL_bool HIDAPI_GIP_DispatchPacket(SDL_Joystick *joystick, SDL_DriverXbox
 #endif
                 break;
             }
-            if (joystick == NULL) {
+            if (!joystick) {
                 break;
             }
             HIDAPI_DriverXboxOne_HandleStatePacket(joystick, ctx, data, size);
             break;
         case GIP_CMD_UNMAPPED_STATE:
-            if (joystick == NULL) {
+            if (!joystick) {
                 break;
             }
             HIDAPI_DriverXboxOne_HandleUnmappedStatePacket(joystick, ctx, data, size);
@@ -1568,7 +1568,7 @@ static SDL_bool HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
         if (device->is_bluetooth) {
             switch (data[0]) {
             case 0x01:
-                if (joystick == NULL) {
+                if (!joystick) {
                     break;
                 }
                 if (size >= 16) {
@@ -1580,13 +1580,13 @@ static SDL_bool HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
                 }
                 break;
             case 0x02:
-                if (joystick == NULL) {
+                if (!joystick) {
                     break;
                 }
                 HIDAPI_DriverXboxOneBluetooth_HandleGuidePacket(joystick, ctx, data, size);
                 break;
             case 0x04:
-                if (joystick == NULL) {
+                if (!joystick) {
                     break;
                 }
                 HIDAPI_DriverXboxOneBluetooth_HandleBatteryPacket(joystick, ctx, data, size);

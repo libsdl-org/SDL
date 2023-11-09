@@ -176,7 +176,7 @@ static Uint8 *QSA_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 static void QSA_CloseDevice(SDL_AudioDevice *device)
 {
     if (device->hidden) {
-        if (device->hidden->audio_handle != NULL) {
+        if (device->hidden->audio_handle) {
             #if _NTO_VERSION < 710
             // Finish playing available samples or cancel unread samples during capture
             snd_pcm_plugin_flush(device->hidden->audio_handle, device->iscapture ? SND_PCM_CHANNEL_CAPTURE : SND_PCM_CHANNEL_PLAYBACK);

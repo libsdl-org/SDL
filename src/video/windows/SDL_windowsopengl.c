@@ -218,7 +218,7 @@ SDL_FunctionPointer WIN_GL_GetProcAddress(SDL_VideoDevice *_this, const char *pr
 
     /* This is to pick up extensions */
     func = _this->gl_data->wglGetProcAddress(proc);
-    if (func == NULL) {
+    if (!func) {
         /* This is probably a normal GL function */
         func = GetProcAddress(_this->gl_config.dll_handle, proc);
     }
@@ -380,7 +380,7 @@ static SDL_bool HasExtension(const char *extension, const char *extensions)
         return SDL_FALSE;
     }
 
-    if (extensions == NULL) {
+    if (!extensions) {
         return SDL_FALSE;
     }
 
@@ -392,7 +392,7 @@ static SDL_bool HasExtension(const char *extension, const char *extensions)
 
     for (;;) {
         where = SDL_strstr(start, extension);
-        if (where == NULL) {
+        if (!where) {
             break;
         }
 
@@ -689,7 +689,7 @@ int WIN_GL_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 SDL_bool WIN_GL_UseEGL(SDL_VideoDevice *_this)
 {
-    SDL_assert(_this->gl_data != NULL);
+    SDL_assert(_this->gl_data);
     SDL_assert(_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES);
 
     return SDL_GetHintBoolean(SDL_HINT_OPENGL_ES_DRIVER, SDL_FALSE) || _this->gl_config.major_version == 1 || _this->gl_config.major_version > _this->gl_data->es_profile_max_supported_version.major || (_this->gl_config.major_version == _this->gl_data->es_profile_max_supported_version.major && _this->gl_config.minor_version > _this->gl_data->es_profile_max_supported_version.minor); /* No WGL extension for OpenGL ES 1.x profiles. */
@@ -829,15 +829,15 @@ int WIN_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext
     }
 
     /* sanity check that higher level handled this. */
-    SDL_assert(window || (window == NULL && !context));
+    SDL_assert(window || (!window && !context));
 
     /* Some Windows drivers freak out if hdc is NULL, even when context is
        NULL, against spec. Since hdc is _supposed_ to be ignored if context
        is NULL, we either use the current GL window, or do nothing if we
        already have no current context. */
-    if (window == NULL) {
+    if (!window) {
         window = SDL_GL_GetCurrentWindow();
-        if (window == NULL) {
+        if (!window) {
             SDL_assert(SDL_GL_GetCurrentContext() == NULL);
             return 0; /* already done. */
         }

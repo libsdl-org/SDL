@@ -211,7 +211,7 @@ int SDL_BlendFillRect(SDL_Surface *dst, const SDL_Rect *rect,
 {
     SDL_Rect clipped;
 
-    if (dst == NULL) {
+    if (!dst) {
         return SDL_InvalidParamError("SDL_BlendFillRect(): dst");
     }
 
@@ -281,7 +281,7 @@ int SDL_BlendFillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
                 SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a) = NULL;
     int status = 0;
 
-    if (dst == NULL) {
+    if (!dst) {
         return SDL_InvalidParamError("SDL_BlendFillRects(): dst");
     }
 
@@ -325,7 +325,7 @@ int SDL_BlendFillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
         break;
     }
 
-    if (func == NULL) {
+    if (!func) {
         if (!dst->format->Amask) {
             func = SDL_BlendFillRect_RGB;
         } else {

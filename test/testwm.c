@@ -205,7 +205,7 @@ static void loop(void)
         }
         if (event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
             SDL_Window *window = SDL_GetMouseFocus();
-            if (highlighted_mode != NULL && window != NULL) {
+            if (highlighted_mode && window) {
                 SDL_memcpy(&state->fullscreen_mode, highlighted_mode, sizeof(state->fullscreen_mode));
                 SDL_SetWindowFullscreenMode(window, highlighted_mode);
             }
@@ -215,7 +215,7 @@ static void loop(void)
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Window *window = state->windows[i];
         SDL_Renderer *renderer = state->renderers[i];
-        if (window != NULL && renderer != NULL) {
+        if (window && renderer) {
             float y = 0.0f;
             SDL_Rect viewport;
             SDL_FRect menurect;
@@ -251,7 +251,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 

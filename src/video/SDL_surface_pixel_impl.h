@@ -29,7 +29,7 @@ static int SDL_ReadSurfacePixel_impl(SDL_Surface *surface, int x, int y, Uint8 *
     size_t bytes_per_pixel;
     void *p;
 
-    if (surface == NULL || surface->format == NULL || surface->pixels == NULL) {
+    if (!surface || !surface->format || !surface->pixels) {
         return SDL_InvalidParamError("surface");
     }
 
@@ -41,19 +41,19 @@ static int SDL_ReadSurfacePixel_impl(SDL_Surface *surface, int x, int y, Uint8 *
         return SDL_InvalidParamError("y");
     }
 
-    if (r == NULL) {
+    if (!r) {
         return SDL_InvalidParamError("r");
     }
 
-    if (g == NULL) {
+    if (!g) {
         return SDL_InvalidParamError("g");
     }
 
-    if (b == NULL) {
+    if (!b) {
         return SDL_InvalidParamError("b");
     }
 
-    if (a == NULL) {
+    if (!a) {
         return SDL_InvalidParamError("a");
     }
 

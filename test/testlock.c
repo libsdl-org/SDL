@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
     SDL_AtomicSet(&doterminate, 0);
 
     mutex = SDL_CreateMutex();
-    if (mutex == NULL) {
+    if (!mutex) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create mutex: %s\n", SDL_GetError());
         exit(1);
     }

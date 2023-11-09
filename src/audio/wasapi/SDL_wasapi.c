@@ -93,7 +93,7 @@ static void ManagementThreadMainloop(void)
 int WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, int *wait_on_result)
 {
     // We want to block for a result, but we are already running from the management thread! Just run the task now so we don't deadlock.
-    if ((wait_on_result != NULL) && (SDL_ThreadID() == SDL_GetThreadID(ManagementThread))) {
+    if ((wait_on_result) && (SDL_ThreadID() == SDL_GetThreadID(ManagementThread))) {
         *wait_on_result = task(userdata);
         return 0;  // completed!
     }
@@ -124,11 +124,11 @@ int WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, in
 
     // add to end of task list.
     ManagementThreadPendingTask *prev = NULL;
-    for (ManagementThreadPendingTask *i = SDL_AtomicGetPtr((void **) &ManagementThreadPendingTasks); i != NULL; i = i->next) {
+    for (ManagementThreadPendingTask *i = SDL_AtomicGetPtr((void **) &ManagementThreadPendingTasks); i; i = i->next) {
         prev = i;
     }
 
-    if (prev != NULL) {
+    if (prev) {
         prev->next = pending;
     } else {
         SDL_AtomicSetPtr((void **) &ManagementThreadPendingTasks, pending);
@@ -413,7 +413,7 @@ static Uint8 *WASAPI_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 
     if (device->hidden->render) {
         if (WasapiFailed(device, IAudioRenderClient_GetBuffer(device->hidden->render, device->sample_frames, &buffer))) {
-            SDL_assert(buffer == NULL);
+            SDL_assert(!buffer);
             if (device->hidden->device_lost) {  // just use an available buffer, we won't be playing it anyhow.
                 *buffer_size = 0;  // we'll recover during WaitDevice and try again.
             }
@@ -425,7 +425,7 @@ static Uint8 *WASAPI_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 
 static int WASAPI_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
-    if (device->hidden->render != NULL) { // definitely activated?
+    if (device->hidden->render) { // definitely activated?
         // WasapiFailed() will mark the device for reacquisition or removal elsewhere.
         WasapiFailed(device, IAudioRenderClient_ReleaseBuffer(device->hidden->render, device->sample_frames, 0));
     }
@@ -542,7 +542,7 @@ static int mgmtthrtask_PrepDevice(void *userdata)
     const AUDCLNT_SHAREMODE sharemode = AUDCLNT_SHAREMODE_SHARED;
 
     IAudioClient *client = device->hidden->client;
-    SDL_assert(client != NULL);
+    SDL_assert(client);
 
 #if defined(__WINRT__) || defined(__GDK__) // CreateEventEx() arrived in Vista, so we need an #ifdef for XP.
     device->hidden->event = CreateEventEx(NULL, NULL, 0, EVENT_ALL_ACCESS);
@@ -550,7 +550,7 @@ static int mgmtthrtask_PrepDevice(void *userdata)
     device->hidden->event = CreateEventW(NULL, 0, 0, NULL);
 #endif
 
-    if (device->hidden->event == NULL) {
+    if (!device->hidden->event) {
         return WIN_SetError("WASAPI can't create an event handle");
     }
 
@@ -561,7 +561,7 @@ static int mgmtthrtask_PrepDevice(void *userdata)
     if (FAILED(ret)) {
         return WIN_SetErrorFromHRESULT("WASAPI can't determine mix format", ret);
     }
-    SDL_assert(waveformat != NULL);
+    SDL_assert(waveformat);
     device->hidden->waveformat = waveformat;
 
     SDL_AudioSpec newspec;
@@ -642,7 +642,7 @@ static int mgmtthrtask_PrepDevice(void *userdata)
             return WIN_SetErrorFromHRESULT("WASAPI can't get capture client service", ret);
         }
 
-        SDL_assert(capture != NULL);
+        SDL_assert(capture);
         device->hidden->capture = capture;
         ret = IAudioClient_Start(client);
         if (FAILED(ret)) {
@@ -657,7 +657,7 @@ static int mgmtthrtask_PrepDevice(void *userdata)
             return WIN_SetErrorFromHRESULT("WASAPI can't get render client service", ret);
         }
 
-        SDL_assert(render != NULL);
+        SDL_assert(render);
         device->hidden->render = render;
         ret = IAudioClient_Start(client);
         if (FAILED(ret)) {
@@ -679,7 +679,7 @@ static int WASAPI_OpenDevice(SDL_AudioDevice *device)
 {
     // Initialize all variables that we clean on shutdown
     device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
-    if (device->hidden == NULL) {
+    if (!device->hidden) {
         return SDL_OutOfMemory();
     } else if (ActivateWasapiDevice(device) < 0) {
         return -1; // already set error.

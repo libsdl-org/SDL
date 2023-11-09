@@ -1326,7 +1326,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
         /* Per-pixel alpha blits */
         switch (df->BytesPerPixel) {
         case 1:
-            if (df->palette != NULL) {
+            if (df->palette) {
                 return BlitNto1PixelAlpha;
             } else {
                 /* RGB332 has no palette ! */
@@ -1397,7 +1397,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
             /* Per-surface alpha blits */
             switch (df->BytesPerPixel) {
             case 1:
-                if (df->palette != NULL) {
+                if (df->palette) {
                     return BlitNto1SurfaceAlpha;
                 } else {
                     /* RGB332 has no palette ! */
@@ -1452,7 +1452,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
         if (sf->Amask == 0) {
             if (df->BytesPerPixel == 1) {
 
-                if (df->palette != NULL) {
+                if (df->palette) {
                     return BlitNto1SurfaceAlphaKey;
                 } else {
                     /* RGB332 has no palette ! */

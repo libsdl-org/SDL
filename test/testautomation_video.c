@@ -542,7 +542,7 @@ static int video_getSetWindowGrab(void *arg)
 
     /* Call against new test window */
     window = createVideoSuiteTestWindow(title);
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
@@ -703,7 +703,7 @@ static int video_getWindowId(void *arg)
 
     /* Call against new test window */
     window = createVideoSuiteTestWindow(title);
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
@@ -758,7 +758,7 @@ static int video_getWindowPixelFormat(void *arg)
 
     /* Call against new test window */
     window = createVideoSuiteTestWindow(title);
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
@@ -828,7 +828,7 @@ static int video_getSetWindowPosition(void *arg)
 
     /* Call against new test window */
     window = createVideoSuiteTestWindow(title);
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
@@ -1000,7 +1000,7 @@ static int video_getSetWindowSize(void *arg)
 
     /* Call against new test window */
     window = createVideoSuiteTestWindow(title);
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
@@ -1183,7 +1183,7 @@ static int video_getSetWindowMinimumSize(void *arg)
 
     /* Call against new test window */
     window = createVideoSuiteTestWindow(title);
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
@@ -1325,7 +1325,7 @@ static int video_getSetWindowMaximumSize(void *arg)
 
     /* Call against new test window */
     window = createVideoSuiteTestWindow(title);
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
@@ -1463,30 +1463,30 @@ static int video_getSetWindowData(void *arg)
 
     /* Call against new test window */
     window = createVideoSuiteTestWindow(title);
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
     /* Create testdata */
     datasize = SDLTest_RandomIntegerInRange(1, 32);
     referenceUserdata = SDLTest_RandomAsciiStringOfSize(datasize);
-    if (referenceUserdata == NULL) {
+    if (!referenceUserdata) {
         returnValue = TEST_ABORTED;
         goto cleanup;
     }
     userdata = SDL_strdup(referenceUserdata);
-    if (userdata == NULL) {
+    if (!userdata) {
         returnValue = TEST_ABORTED;
         goto cleanup;
     }
     datasize = SDLTest_RandomIntegerInRange(1, 32);
     referenceUserdata2 = SDLTest_RandomAsciiStringOfSize(datasize);
-    if (referenceUserdata2 == NULL) {
+    if (!referenceUserdata2) {
         returnValue = TEST_ABORTED;
         goto cleanup;
     }
     userdata2 = SDL_strdup(referenceUserdata2);
-    if (userdata2 == NULL) {
+    if (!userdata2) {
         returnValue = TEST_ABORTED;
         goto cleanup;
     }

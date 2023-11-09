@@ -57,7 +57,7 @@ SDL_RunApp(int argc_, char* argv_[], SDL_main_func mainFunction, void * reserved
 
     newHeap = User::ChunkHeap(NULL, heapSize, heapSize, KMinHeapGrowBy);
 
-    if (newHeap == NULL) {
+    if (!newHeap) {
         ret = 3;
         goto cleanup;
     } else {

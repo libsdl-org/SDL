@@ -269,7 +269,7 @@ static SDL_bool SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID
 
     if (player_index >= SDL_joystick_player_count) {
         SDL_JoystickID *new_players = (SDL_JoystickID *)SDL_realloc(SDL_joystick_players, (player_index + 1) * sizeof(*SDL_joystick_players));
-        if (new_players == NULL) {
+        if (!new_players) {
             SDL_OutOfMemory();
             return SDL_FALSE;
         }
@@ -447,7 +447,7 @@ const char *SDL_GetJoystickInstancePath(SDL_JoystickID instance_id)
     SDL_UnlockJoysticks();
 
     /* FIXME: Really we should reference count this path so it doesn't go away after unlock */
-    if (path == NULL) {
+    if (!path) {
         SDL_Unsupported();
     }
     return path;
@@ -754,7 +754,7 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
 
     /* Create and initialize the joystick */
     joystick = (SDL_Joystick *)SDL_calloc(sizeof(*joystick), 1);
-    if (joystick == NULL) {
+    if (!joystick) {
         SDL_OutOfMemory();
         SDL_UnlockJoysticks();
         return NULL;
@@ -2145,10 +2145,10 @@ char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_n
         return SDL_strdup(custom_name);
     }
 
-    if (vendor_name == NULL) {
+    if (!vendor_name) {
         vendor_name = "";
     }
-    if (product_name == NULL) {
+    if (!product_name) {
         product_name = "";
     }
 
@@ -2191,7 +2191,7 @@ char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_n
         default:
             len = (6 + 1 + 6 + 1);
             name = (char *)SDL_malloc(len);
-            if (name != NULL) {
+            if (name) {
                 (void)SDL_snprintf(name, len, "0x%.4x/0x%.4x", vendor, product);
             }
             break;
@@ -2200,7 +2200,7 @@ char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_n
         name = SDL_strdup("Controller");
     }
 
-    if (name == NULL) {
+    if (!name) {
         return NULL;
     }
 
@@ -2264,7 +2264,7 @@ SDL_JoystickGUID SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 produc
 
     SDL_zero(guid);
 
-    if (name == NULL) {
+    if (!name) {
         name = "";
     }
 
@@ -3367,7 +3367,7 @@ void SDL_LoadVIDPIDListFromHint(const char *hint, SDL_vidpid_list *list)
         spot = (char *)hint;
     }
 
-    if (spot == NULL) {
+    if (!spot) {
         return;
     }
 
@@ -3375,7 +3375,7 @@ void SDL_LoadVIDPIDListFromHint(const char *hint, SDL_vidpid_list *list)
         entry = (Uint16)SDL_strtol(spot, &spot, 0);
         entry <<= 16;
         spot = SDL_strstr(spot, "0x");
-        if (spot == NULL) {
+        if (!spot) {
             break;
         }
         entry |= (Uint16)SDL_strtol(spot, &spot, 0);
@@ -3383,7 +3383,7 @@ void SDL_LoadVIDPIDListFromHint(const char *hint, SDL_vidpid_list *list)
         if (list->num_entries == list->max_entries) {
             int max_entries = list->max_entries + 16;
             Uint32 *entries = (Uint32 *)SDL_realloc(list->entries, max_entries * sizeof(*list->entries));
-            if (entries == NULL) {
+            if (!entries) {
                 /* Out of memory, go with what we have already */
                 break;
             }

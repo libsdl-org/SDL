@@ -96,7 +96,7 @@ static void *alsa_handle = NULL;
 static int load_alsa_sym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(alsa_handle, fn);
-    if (*addr == NULL) {
+    if (!*addr) {
         // Don't call SDL_SetError(): SDL_LoadFunction already did.
         return 0;
     }
@@ -165,7 +165,7 @@ static int load_alsa_syms(void)
 
 static void UnloadALSALibrary(void)
 {
-    if (alsa_handle != NULL) {
+    if (alsa_handle) {
         SDL_UnloadObject(alsa_handle);
         alsa_handle = NULL;
     }
@@ -174,9 +174,9 @@ static void UnloadALSALibrary(void)
 static int LoadALSALibrary(void)
 {
     int retval = 0;
-    if (alsa_handle == NULL) {
+    if (!alsa_handle) {
         alsa_handle = SDL_LoadObject(alsa_library);
-        if (alsa_handle == NULL) {
+        if (!alsa_handle) {
             retval = -1;
             // Don't call SDL_SetError(): SDL_LoadObject already did.
         } else {
@@ -224,12 +224,12 @@ static const ALSA_Device default_capture_handle = {
 
 static const char *get_audio_device(void *handle, const int channels)
 {
-    SDL_assert(handle != NULL);  // SDL2 used NULL to mean "default" but that's not true in SDL3.
+    SDL_assert(handle);  // SDL2 used NULL to mean "default" but that's not true in SDL3.
 
     ALSA_Device *dev = (ALSA_Device *)handle;
     if (SDL_strcmp(dev->name, "default") == 0) {
         const char *device = SDL_getenv("AUDIODEV"); // Is there a standard variable name?
-        if (device != NULL) {
+        if (device) {
             return device;
         } else if (channels == 6) {
             return "plug:surround51";
@@ -536,7 +536,7 @@ static int ALSA_OpenDevice(SDL_AudioDevice *device)
 
     // Initialize all variables that we clean on shutdown
     device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
-    if (device->hidden == NULL) {
+    if (!device->hidden) {
         return SDL_OutOfMemory();
     }
 
@@ -682,7 +682,7 @@ static int ALSA_OpenDevice(SDL_AudioDevice *device)
     // Allocate mixing buffer
     if (!iscapture) {
         device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
-        if (device->hidden->mixbuf == NULL) {
+        if (!device->hidden->mixbuf) {
             return SDL_OutOfMemory();
         }
         SDL_memset(device->hidden->mixbuf, device->silence_value, device->buffer_size);
@@ -705,7 +705,7 @@ static void add_device(const SDL_bool iscapture, const char *name, void *hint, A
     char *desc;
     char *ptr;
 
-    if (dev == NULL) {
+    if (!dev) {
         return;
     }
 
@@ -715,7 +715,7 @@ static void add_device(const SDL_bool iscapture, const char *name, void *hint, A
     //  Make sure not to free the storage associated with desc in this case
     if (hint) {
         desc = ALSA_snd_device_name_get_hint(hint, "DESC");
-        if (desc == NULL) {
+        if (!desc) {
             SDL_free(dev);
             return;
         }
@@ -723,13 +723,13 @@ static void add_device(const SDL_bool iscapture, const char *name, void *hint, A
         desc = (char *)name;
     }
 
-    SDL_assert(name != NULL);
+    SDL_assert(name);
 
     // some strings have newlines, like "HDA NVidia, HDMI 0\nHDMI Audio Output".
     //  just chop the extra lines off, this seems to get a reasonable device
     //  name without extra details.
     ptr = SDL_strchr(desc, '\n');
-    if (ptr != NULL) {
+    if (ptr) {
         *ptr = '\0';
     }
 
@@ -784,7 +784,7 @@ static void ALSA_HotplugIteration(SDL_bool *has_default_output, SDL_bool *has_de
         //  if we can find a preferred prefix for the system.
         for (int i = 0; hints[i]; i++) {
             char *name = ALSA_snd_device_name_get_hint(hints[i], "NAME");
-            if (name == NULL) {
+            if (!name) {
                 continue;
             }
 
@@ -813,16 +813,16 @@ static void ALSA_HotplugIteration(SDL_bool *has_default_output, SDL_bool *has_de
         if (match || (has_default >= 0)) {  // did we find a device name prefix we like at all...?
             for (int i = 0; hints[i]; i++) {
                 char *name = ALSA_snd_device_name_get_hint(hints[i], "NAME");
-                if (name == NULL) {
+                if (!name) {
                     continue;
                 }
 
                 // only want physical hardware interfaces
                 const SDL_bool is_default = (has_default == i);
-                if (is_default || (match != NULL && SDL_strncmp(name, match, match_len) == 0)) {
+                if (is_default || (match && SDL_strncmp(name, match, match_len) == 0)) {
                     char *ioid = ALSA_snd_device_name_get_hint(hints[i], "IOID");
-                    const SDL_bool isoutput = (ioid == NULL) || (SDL_strcmp(ioid, "Output") == 0);
-                    const SDL_bool isinput = (ioid == NULL) || (SDL_strcmp(ioid, "Input") == 0);
+                    const SDL_bool isoutput = (!ioid) || (SDL_strcmp(ioid, "Output") == 0);
+                    const SDL_bool isinput = (!ioid) || (SDL_strcmp(ioid, "Input") == 0);
                     SDL_bool have_output = SDL_FALSE;
                     SDL_bool have_input = SDL_FALSE;
 
@@ -942,7 +942,7 @@ static void ALSA_DeinitializeStart(void)
     ALSA_Device *next;
 
 #if SDL_ALSA_HOTPLUG_THREAD
-    if (ALSA_hotplug_thread != NULL) {
+    if (ALSA_hotplug_thread) {
         SDL_AtomicSet(&ALSA_hotplug_shutdown, 1);
         SDL_WaitThread(ALSA_hotplug_thread, NULL);
         ALSA_hotplug_thread = NULL;

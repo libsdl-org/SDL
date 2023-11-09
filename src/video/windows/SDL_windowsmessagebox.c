@@ -265,7 +265,7 @@ static INT_PTR CALLBACK MessageBoxDialogProc(HWND hDlg, UINT iMessage, WPARAM wP
         if (GetButtonIndex(messageboxdata, SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, &buttonindex)) {
             /* Focus on the first default return-key button */
             HWND buttonctl = GetDlgItem(hDlg, (int)(IDBUTTONINDEX0 + buttonindex));
-            if (buttonctl == NULL) {
+            if (!buttonctl) {
                 EndDialog(hDlg, IDINVALPTRDLGITEM);
             }
             PostMessage(hDlg, WM_NEXTDLGCTL, (WPARAM)buttonctl, TRUE);
@@ -276,7 +276,7 @@ static INT_PTR CALLBACK MessageBoxDialogProc(HWND hDlg, UINT iMessage, WPARAM wP
         return FALSE;
     case WM_SETFOCUS:
         messageboxdata = (const SDL_MessageBoxData *)GetWindowLongPtr(hDlg, GWLP_USERDATA);
-        if (messageboxdata == NULL) {
+        if (!messageboxdata) {
             EndDialog(hDlg, IDINVALPTRSETFOCUS);
             return TRUE;
         }
@@ -288,7 +288,7 @@ static INT_PTR CALLBACK MessageBoxDialogProc(HWND hDlg, UINT iMessage, WPARAM wP
         return TRUE;
     case WM_COMMAND:
         messageboxdata = (const SDL_MessageBoxData *)GetWindowLongPtr(hDlg, GWLP_USERDATA);
-        if (messageboxdata == NULL) {
+        if (!messageboxdata) {
             EndDialog(hDlg, IDINVALPTRCOMMAND);
             return TRUE;
         }
@@ -344,7 +344,7 @@ static SDL_bool ExpandDialogSpace(WIN_DialogData *dialog, size_t space)
 
     if (size > dialog->size) {
         void *data = SDL_realloc(dialog->data, size);
-        if (data == NULL) {
+        if (!data) {
             SDL_OutOfMemory();
             return SDL_FALSE;
         }
@@ -387,12 +387,12 @@ static SDL_bool AddDialogString(WIN_DialogData *dialog, const char *string)
     size_t count;
     SDL_bool status;
 
-    if (string == NULL) {
+    if (!string) {
         string = "";
     }
 
     wstring = WIN_UTF8ToStringW(string);
-    if (wstring == NULL) {
+    if (!wstring) {
         return SDL_FALSE;
     }
 
@@ -448,7 +448,7 @@ static SDL_bool AddDialogControl(WIN_DialogData *dialog, WORD type, DWORD style,
     if (!AddDialogData(dialog, &type, sizeof(type))) {
         return SDL_FALSE;
     }
-    if (type == DLGITEMTYPEBUTTON || (type == DLGITEMTYPESTATIC && caption != NULL)) {
+    if (type == DLGITEMTYPEBUTTON || (type == DLGITEMTYPESTATIC && caption)) {
         if (!AddDialogString(dialog, caption)) {
             return SDL_FALSE;
         }
@@ -521,7 +521,7 @@ static WIN_DialogData *CreateDialogData(int w, int h, const char *caption)
     Vec2ToDLU(&dialogTemplate.cx, &dialogTemplate.cy);
 
     dialog = (WIN_DialogData *)SDL_calloc(1, sizeof(*dialog));
-    if (dialog == NULL) {
+    if (!dialog) {
         return NULL;
     }
 
@@ -623,7 +623,7 @@ static const char *EscapeAmpersands(char **dst, size_t *dstlen, const char *src)
     size_t ampcount = 0;
     size_t srclen = 0;
 
-    if (src == NULL) {
+    if (!src) {
         return NULL;
     }
 
@@ -642,7 +642,7 @@ static const char *EscapeAmpersands(char **dst, size_t *dstlen, const char *src)
     if (SIZE_MAX - srclen < ampcount) {
         return NULL;
     }
-    if (*dst == NULL || *dstlen < srclen + ampcount) {
+    if (!*dst || *dstlen < srclen + ampcount) {
         /* Allocating extra space in case the next strings are a bit longer. */
         size_t extraspace = SIZE_MAX - (srclen + ampcount);
         if (extraspace > 512) {
@@ -652,7 +652,7 @@ static const char *EscapeAmpersands(char **dst, size_t *dstlen, const char *src)
         SDL_free(*dst);
         *dst = NULL;
         newdst = SDL_malloc(*dstlen);
-        if (newdst == NULL) {
+        if (!newdst) {
             return NULL;
         }
         *dst = newdst;
@@ -817,7 +817,7 @@ static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *
     Size.cy += ButtonHeight + TextMargin;
 
     dialog = CreateDialogData(Size.cx, Size.cy, messageboxdata->title);
-    if (dialog == NULL) {
+    if (!dialog) {
         return -1;
     }
 
@@ -858,7 +858,7 @@ static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *
         buttontext = EscapeAmpersands(&ampescape, &ampescapesize, sdlButton->text);
         /* Make sure to provide the correct ID to keep buttons indexed in the
          * same order as how they are in messageboxdata. */
-        if (buttontext == NULL || !AddDialogButton(dialog, x, y, ButtonWidth, ButtonHeight, buttontext, IDBUTTONINDEX0 + (int)(sdlButton - messageboxdata->buttons), isdefault)) {
+        if (!buttontext || !AddDialogButton(dialog, x, y, ButtonWidth, ButtonHeight, buttontext, IDBUTTONINDEX0 + (int)(sdlButton - messageboxdata->buttons), isdefault)) {
             FreeDialogData(dialog);
             SDL_free(ampescape);
             return -1;
@@ -932,7 +932,7 @@ int WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
     /* If we cannot load comctl32.dll use the old messagebox! */
     hComctl32 = LoadLibrary(TEXT("comctl32.dll"));
-    if (hComctl32 == NULL) {
+    if (!hComctl32) {
         return WIN_ShowOldMessageBox(messageboxdata, buttonid);
     }
 
@@ -944,7 +944,7 @@ int WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
        pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0'  processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
      */
     pfnTaskDialogIndirect = (TASKDIALOGINDIRECTPROC)GetProcAddress(hComctl32, "TaskDialogIndirect");
-    if (pfnTaskDialogIndirect == NULL) {
+    if (!pfnTaskDialogIndirect) {
         FreeLibrary(hComctl32);
         return WIN_ShowOldMessageBox(messageboxdata, buttonid);
     }
@@ -992,7 +992,7 @@ int WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
             pButton->nButtonID = IDBUTTONINDEX0 + i;
         }
         buttontext = EscapeAmpersands(&ampescape, &ampescapesize, messageboxdata->buttons[i].text);
-        if (buttontext == NULL) {
+        if (!buttontext) {
             int j;
             FreeLibrary(hComctl32);
             SDL_free(ampescape);

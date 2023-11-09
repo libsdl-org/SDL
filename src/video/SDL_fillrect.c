@@ -231,12 +231,12 @@ static void SDL_FillSurfaceRect4(Uint8 *pixels, int pitch, Uint32 color, int w, 
  */
 int SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
 {
-    if (dst == NULL) {
+    if (!dst) {
         return SDL_InvalidParamError("SDL_FillSurfaceRect(): dst");
     }
 
     /* If 'rect' == NULL, then fill the whole surface */
-    if (rect == NULL) {
+    if (!rect) {
         rect = &dst->clip_rect;
         /* Don't attempt to fill if the surface's clip_rect is empty */
         if (SDL_RectEmpty(rect)) {
@@ -304,7 +304,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     void (*fill_function)(Uint8 * pixels, int pitch, Uint32 color, int w, int h) = NULL;
     int i;
 
-    if (dst == NULL) {
+    if (!dst) {
         return SDL_InvalidParamError("SDL_FillSurfaceRects(): dst");
     }
 
@@ -318,7 +318,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
         return SDL_SetError("SDL_FillSurfaceRects(): You must lock the surface");
     }
 
-    if (rects == NULL) {
+    if (!rects) {
         return SDL_InvalidParamError("SDL_FillSurfaceRects(): rects");
     }
 
@@ -340,7 +340,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     }
 
 #ifdef SDL_ARM_NEON_BLITTERS
-    if (SDL_HasNEON() && dst->format->BytesPerPixel != 3 && fill_function == NULL) {
+    if (SDL_HasNEON() && dst->format->BytesPerPixel != 3 && !fill_function) {
         switch (dst->format->BytesPerPixel) {
         case 1:
             fill_function = fill_8_neon;
@@ -355,7 +355,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     }
 #endif
 #ifdef SDL_ARM_SIMD_BLITTERS
-    if (SDL_HasARMSIMD() && dst->format->BytesPerPixel != 3 && fill_function == NULL) {
+    if (SDL_HasARMSIMD() && dst->format->BytesPerPixel != 3 && !fill_function) {
         switch (dst->format->BytesPerPixel) {
         case 1:
             fill_function = fill_8_simd;
@@ -370,7 +370,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     }
 #endif
 
-    if (fill_function == NULL) {
+    if (!fill_function) {
         switch (dst->format->BytesPerPixel) {
         case 1:
         {

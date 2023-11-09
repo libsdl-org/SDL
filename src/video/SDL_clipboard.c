@@ -58,7 +58,7 @@ int SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanu
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     size_t i;
 
-    if (_this == NULL) {
+    if (!_this) {
         return SDL_SetError("Video subsystem must be initialized to set clipboard text");
     }
 
@@ -168,7 +168,7 @@ void *SDL_GetClipboardData(const char *mime_type, size_t *size)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
-    if (_this == NULL) {
+    if (!_this) {
         SDL_SetError("Video subsystem must be initialized to get clipboard data");
         return NULL;
     }
@@ -215,7 +215,7 @@ SDL_bool SDL_HasClipboardData(const char *mime_type)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
-    if (_this == NULL) {
+    if (!_this) {
         SDL_SetError("Video subsystem must be initialized to check clipboard data");
         return SDL_FALSE;
     }
@@ -272,7 +272,7 @@ int SDL_SetClipboardText(const char *text)
     size_t num_mime_types;
     const char **text_mime_types;
 
-    if (_this == NULL) {
+    if (!_this) {
         return SDL_SetError("Video subsystem must be initialized to set clipboard text");
     }
 
@@ -293,7 +293,7 @@ char *SDL_GetClipboardText(void)
     size_t length;
     char *text = NULL;
 
-    if (_this == NULL) {
+    if (!_this) {
         SDL_SetError("Video subsystem must be initialized to get clipboard text");
         return SDL_strdup("");
     }
@@ -318,7 +318,7 @@ SDL_bool SDL_HasClipboardText(void)
     size_t i, num_mime_types;
     const char **text_mime_types;
 
-    if (_this == NULL) {
+    if (!_this) {
         SDL_SetError("Video subsystem must be initialized to check clipboard text");
         return SDL_FALSE;
     }
@@ -338,11 +338,11 @@ int SDL_SetPrimarySelectionText(const char *text)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
-    if (_this == NULL) {
+    if (!_this) {
         return SDL_SetError("Video subsystem must be initialized to set primary selection text");
     }
 
-    if (text == NULL) {
+    if (!text) {
         text = "";
     }
     if (_this->SetPrimarySelectionText) {
@@ -362,7 +362,7 @@ char *SDL_GetPrimarySelectionText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
-    if (_this == NULL) {
+    if (!_this) {
         SDL_SetError("Video subsystem must be initialized to get primary selection text");
         return SDL_strdup("");
     }
@@ -371,7 +371,7 @@ char *SDL_GetPrimarySelectionText(void)
         return _this->GetPrimarySelectionText(_this);
     } else {
         const char *text = _this->primary_selection_text;
-        if (text == NULL) {
+        if (!text) {
             text = "";
         }
         return SDL_strdup(text);
@@ -382,7 +382,7 @@ SDL_bool SDL_HasPrimarySelectionText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
-    if (_this == NULL) {
+    if (!_this) {
         SDL_SetError("Video subsystem must be initialized to check primary selection text");
         return SDL_FALSE;
     }

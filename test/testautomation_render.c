@@ -76,13 +76,13 @@ static void InitCreateRenderer(void *arg)
  */
 static void CleanupDestroyRenderer(void *arg)
 {
-    if (renderer != NULL) {
+    if (renderer) {
         SDL_DestroyRenderer(renderer);
         renderer = NULL;
         SDLTest_AssertPass("SDL_DestroyRenderer()");
     }
 
-    if (window != NULL) {
+    if (window) {
         SDL_DestroyWindow(window);
         window = NULL;
         SDLTest_AssertPass("SDL_DestroyWindow");
@@ -1054,12 +1054,12 @@ loadTestFace(void)
     SDL_Texture *tface;
 
     face = SDLTest_ImageFace();
-    if (face == NULL) {
+    if (!face) {
         return NULL;
     }
 
     tface = SDL_CreateTextureFromSurface(renderer, face);
-    if (tface == NULL) {
+    if (!tface) {
         SDLTest_LogError("SDL_CreateTextureFromSurface() failed with error: %s", SDL_GetError());
     }
 
@@ -1085,7 +1085,7 @@ hasTexColor(void)
 
     /* Get test face. */
     tface = loadTestFace();
-    if (tface == NULL) {
+    if (!tface) {
         return 0;
     }
 
@@ -1128,7 +1128,7 @@ hasTexAlpha(void)
 
     /* Get test face. */
     tface = loadTestFace();
-    if (tface == NULL) {
+    if (!tface) {
         return 0;
     }
 

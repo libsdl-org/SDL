@@ -45,7 +45,7 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     }
 
     item = (SDL_joylist_item *)SDL_malloc(sizeof(SDL_joylist_item));
-    if (item == NULL) {
+    if (!item) {
         return 1;
     }
 
@@ -53,13 +53,13 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     item->index = gamepadEvent->index;
 
     item->name = SDL_CreateJoystickName(0, 0, NULL, gamepadEvent->id);
-    if (item->name == NULL) {
+    if (!item->name) {
         SDL_free(item);
         return 1;
     }
 
     item->mapping = SDL_strdup(gamepadEvent->mapping);
-    if (item->mapping == NULL) {
+    if (!item->mapping) {
         SDL_free(item->name);
         SDL_free(item);
         return 1;
@@ -80,7 +80,7 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
         item->digitalButton[i] = gamepadEvent->digitalButton[i];
     }
 
-    if (SDL_joylist_tail == NULL) {
+    if (!SDL_joylist_tail) {
         SDL_joylist = SDL_joylist_tail = item;
     } else {
         SDL_joylist_tail->next = item;
@@ -106,7 +106,7 @@ static EM_BOOL Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGa
     SDL_joylist_item *item = SDL_joylist;
     SDL_joylist_item *prev = NULL;
 
-    while (item != NULL) {
+    while (item) {
         if (item->index == gamepadEvent->index) {
             break;
         }
@@ -114,7 +114,7 @@ static EM_BOOL Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGa
         item = item->next;
     }
 
-    if (item == NULL) {
+    if (!item) {
         return 1;
     }
 
@@ -122,7 +122,7 @@ static EM_BOOL Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGa
         item->joystick->hwdata = NULL;
     }
 
-    if (prev != NULL) {
+    if (prev) {
         prev->next = item->next;
     } else {
         SDL_assert(SDL_joylist == item);
@@ -240,7 +240,7 @@ static SDL_joylist_item *JoystickByIndex(int index)
         return NULL;
     }
 
-    while (item != NULL) {
+    while (item) {
         if (item->index == index) {
             break;
         }
@@ -292,11 +292,11 @@ static int EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     SDL_joylist_item *item = JoystickByDeviceIndex(device_index);
 
-    if (item == NULL) {
+    if (!item) {
         return SDL_SetError("No such device");
     }
 
-    if (item->joystick != NULL) {
+    if (item->joystick) {
         return SDL_SetError("Joystick already opened");
     }
 

@@ -146,7 +146,7 @@ int main(int argc, char **argv)
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -184,7 +184,7 @@ int main(int argc, char **argv)
     filename = GetResourceFilename(filename, "sample.wav");
 
     devices = SDL_GetAudioOutputDevices(&devcount);
-    if (devices == NULL) {
+    if (!devices) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Don't see any specific audio devices!");
     } else {
         /* Load the wave file into memory */

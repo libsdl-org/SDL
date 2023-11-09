@@ -235,7 +235,7 @@ SDL_Surface *SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc)
 
     /* Make sure we are passed a valid data source */
     surface = NULL;
-    if (src == NULL) {
+    if (!src) {
         SDL_InvalidParamError("src");
         goto done;
     }
@@ -442,7 +442,7 @@ SDL_Surface *SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc)
         format = SDL_GetPixelFormatEnumForMasks(biBitCount, Rmask, Gmask, Bmask, Amask);
         surface = SDL_CreateSurface(biWidth, biHeight, format);
 
-        if (surface == NULL) {
+        if (!surface) {
             goto done;
         }
     }
@@ -695,7 +695,7 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, SDL_bool freedst)
         }
 #endif /* SAVE_32BIT_BMP */
 
-        if (surface->format->palette != NULL && !save32bit) {
+        if (surface->format->palette && !save32bit) {
             if (surface->format->BitsPerPixel == 8) {
                 intermediate_surface = surface;
             } else {
@@ -726,7 +726,7 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, SDL_bool freedst)
                 pixel_format = SDL_PIXELFORMAT_BGR24;
             }
             intermediate_surface = SDL_ConvertSurfaceFormat(surface, pixel_format);
-            if (intermediate_surface == NULL) {
+            if (!intermediate_surface) {
                 SDL_SetError("Couldn't convert image to %d bpp",
                              (int)SDL_BITSPERPIXEL(pixel_format));
                 goto done;

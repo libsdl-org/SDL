@@ -42,7 +42,7 @@ int Emscripten_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *windo
     SDL_GetWindowSizeInPixels(window, &w, &h);
 
     surface = SDL_CreateSurface(w, h, surface_format);
-    if (surface == NULL) {
+    if (!surface) {
         return -1;
     }
 
@@ -60,7 +60,7 @@ int Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *windo
 
     SDL_WindowData *data = window->driverdata;
     surface = data->surface;
-    if (surface == NULL) {
+    if (!surface) {
         return SDL_SetError("Couldn't find framebuffer surface for window");
     }
 

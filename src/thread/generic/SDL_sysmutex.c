@@ -87,7 +87,7 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
 {
     int retval = 0;
 #ifndef SDL_THREADS_DISABLED
-    if (mutex != NULL) {
+    if (mutex) {
         SDL_threadID this_thread = SDL_ThreadID();
         if (mutex->owner == this_thread) {
             ++mutex->recursive;

@@ -66,7 +66,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread)
                                   cpu,
                                   false);
 
-    if (thread->handle == NULL) {
+    if (!thread->handle) {
         return SDL_SetError("Couldn't create thread");
     }
 

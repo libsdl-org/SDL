@@ -135,7 +135,7 @@ static SDL_bool HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
 #endif
 
     ctx = (SDL_DriverGameCube_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (ctx == NULL) {
+    if (!ctx) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
@@ -245,7 +245,7 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
     }
 
     joystick = SDL_GetJoystickFromInstanceID(ctx->joysticks[i]);
-    if (joystick == NULL) {
+    if (!joystick) {
         /* Hasn't been opened yet, skip */
         return;
     }
@@ -322,7 +322,7 @@ static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device
             joystick = SDL_GetJoystickFromInstanceID(ctx->joysticks[i]);
 
             /* Hasn't been opened yet, skip */
-            if (joystick == NULL) {
+            if (!joystick) {
                 continue;
             }
         } else {

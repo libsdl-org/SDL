@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -123,25 +123,25 @@ int main(int argc, char *argv[])
         RWOP_ERR_QUIT(rwops);
     }
     rwops = SDL_RWFromFile(FBASENAME2, "wb");
-    if (rwops == NULL) {
+    if (!rwops) {
         RWOP_ERR_QUIT(rwops);
     }
     SDL_RWclose(rwops);
     unlink(FBASENAME2);
     rwops = SDL_RWFromFile(FBASENAME2, "wb+");
-    if (rwops == NULL) {
+    if (!rwops) {
         RWOP_ERR_QUIT(rwops);
     }
     SDL_RWclose(rwops);
     unlink(FBASENAME2);
     rwops = SDL_RWFromFile(FBASENAME2, "ab");
-    if (rwops == NULL) {
+    if (!rwops) {
         RWOP_ERR_QUIT(rwops);
     }
     SDL_RWclose(rwops);
     unlink(FBASENAME2);
     rwops = SDL_RWFromFile(FBASENAME2, "ab+");
-    if (rwops == NULL) {
+    if (!rwops) {
         RWOP_ERR_QUIT(rwops);
     }
     SDL_RWclose(rwops);
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
                 test : w mode, r mode, w+ mode
      */
     rwops = SDL_RWFromFile(FBASENAME1, "wb"); /* write only */
-    if (rwops == NULL) {
+    if (!rwops) {
         RWOP_ERR_QUIT(rwops);
     }
     if (10 != SDL_RWwrite(rwops, "1234567890", 10)) {
@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
     SDL_RWclose(rwops);
 
     rwops = SDL_RWFromFile(FBASENAME1, "rb"); /* read mode, file must exist */
-    if (rwops == NULL) {
+    if (!rwops) {
         RWOP_ERR_QUIT(rwops);
     }
     if (0 != SDL_RWseek(rwops, 0L, SDL_RW_SEEK_SET)) {
@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
 
     /* test 3: same with w+ mode */
     rwops = SDL_RWFromFile(FBASENAME1, "wb+"); /* write + read + truncation */
-    if (rwops == NULL) {
+    if (!rwops) {
         RWOP_ERR_QUIT(rwops);
     }
     if (10 != SDL_RWwrite(rwops, "1234567890", 10)) {
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
 
     /* test 4: same in r+ mode */
     rwops = SDL_RWFromFile(FBASENAME1, "rb+"); /* write + read + file must exists, no truncation */
-    if (rwops == NULL) {
+    if (!rwops) {
         RWOP_ERR_QUIT(rwops);
     }
     if (10 != SDL_RWwrite(rwops, "1234567890", 10)) {
@@ -314,7 +314,7 @@ int main(int argc, char *argv[])
 
     /* test5 : append mode */
     rwops = SDL_RWFromFile(FBASENAME1, "ab+"); /* write + read + append */
-    if (rwops == NULL) {
+    if (!rwops) {
         RWOP_ERR_QUIT(rwops);
     }
     if (10 != SDL_RWwrite(rwops, "1234567890", 10)) {

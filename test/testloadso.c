@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -88,13 +88,13 @@ int main(int argc, char *argv[])
     }
 
     lib = SDL_LoadObject(libname);
-    if (lib == NULL) {
+    if (!lib) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_LoadObject('%s') failed: %s\n",
                      libname, SDL_GetError());
         retval = 3;
     } else {
         fn = (fntype)SDL_LoadFunction(lib, symname);
-        if (fn == NULL) {
+        if (!fn) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_LoadFunction('%s') failed: %s\n",
                          symname, SDL_GetError());
             retval = 4;

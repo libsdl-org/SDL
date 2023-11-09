@@ -31,7 +31,7 @@ static SDL_Locale *build_locales_from_csv_string(char *csv)
     SDL_Locale *loc;
     SDL_Locale *retval;
 
-    if (csv == NULL || !csv[0]) {
+    if (!csv || !csv[0]) {
         return NULL; /* nothing to report */
     }
 
@@ -47,7 +47,7 @@ static SDL_Locale *build_locales_from_csv_string(char *csv)
     alloclen = slen + (num_locales * sizeof(SDL_Locale));
 
     loc = retval = (SDL_Locale *)SDL_calloc(1, alloclen);
-    if (retval == NULL) {
+    if (!retval) {
         SDL_OutOfMemory();
         return NULL; /* oh well */
     }

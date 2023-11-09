@@ -87,7 +87,7 @@ static void DISKAUDIO_FlushCapture(SDL_AudioDevice *device)
 static void DISKAUDIO_CloseDevice(SDL_AudioDevice *device)
 {
     if (device->hidden) {
-        if (device->hidden->io != NULL) {
+        if (device->hidden->io) {
             SDL_RWclose(device->hidden->io);
         }
         SDL_free(device->hidden->mixbuf);
@@ -99,7 +99,7 @@ static void DISKAUDIO_CloseDevice(SDL_AudioDevice *device)
 static const char *get_filename(const SDL_bool iscapture)
 {
     const char *devname = SDL_getenv(iscapture ? DISKENVR_INFILE : DISKENVR_OUTFILE);
-    if (devname == NULL) {
+    if (!devname) {
         devname = iscapture ? DISKDEFAULT_INFILE : DISKDEFAULT_OUTFILE;
     }
     return devname;
@@ -112,11 +112,11 @@ static int DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
     const char *envr = SDL_getenv(DISKENVR_IODELAY);
 
     device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
-    if (device->hidden == NULL) {
+    if (!device->hidden) {
         return SDL_OutOfMemory();
     }
 
-    if (envr != NULL) {
+    if (envr) {
         device->hidden->io_delay = SDL_atoi(envr);
     } else {
         device->hidden->io_delay = ((device->sample_frames * 1000) / device->spec.freq);
@@ -124,14 +124,14 @@ static int DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     // Open the "audio device"
     device->hidden->io = SDL_RWFromFile(fname, iscapture ? "rb" : "wb");
-    if (device->hidden->io == NULL) {
+    if (!device->hidden->io) {
         return -1;
     }
 
     // Allocate mixing buffer
     if (!iscapture) {
         device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
-        if (device->hidden->mixbuf == NULL) {
+        if (!device->hidden->mixbuf) {
             return SDL_OutOfMemory();
         }
         SDL_memset(device->hidden->mixbuf, device->silence_value, device->buffer_size);

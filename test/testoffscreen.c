@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -125,14 +125,14 @@ int main(int argc, char *argv[])
     /* If OPENGL fails to init it will fallback to using a framebuffer for rendering */
     window = SDL_CreateWindow("Offscreen Test", width, height, 0);
 
-    if (window == NULL) {
+    if (!window) {
         SDL_Log("Couldn't create window: %s\n", SDL_GetError());
         return SDL_FALSE;
     }
 
     renderer = SDL_CreateRenderer(window, NULL, 0);
 
-    if (renderer == NULL) {
+    if (!renderer) {
         SDL_Log("Couldn't create renderer: %s\n",
                 SDL_GetError());
         return SDL_FALSE;
