@@ -126,8 +126,8 @@ extern DECLSPEC SDL_VideoCaptureDeviceID *SDLCALL SDL_GetVideoCaptureDevices(int
  * Open a Video Capture device
  *
  * \param instance_id the video capture device instance ID
- * \returns device, or NULL on failure; call
- *          SDL_GetError() for more information.
+ * \returns device, or NULL on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -165,8 +165,8 @@ extern DECLSPEC int SDLCALL SDL_SetVideoCaptureSpec(SDL_VideoCaptureDevice *devi
  * \param desired desired video capture spec
  * \param obtained obtained video capture spec
  * \param allowed_changes allow changes or not
- * \returns device, or NULL on failure; call
- *          SDL_GetError() for more information.
+ * \returns device, or NULL on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -178,6 +178,7 @@ extern DECLSPEC SDL_VideoCaptureDevice *SDLCALL SDL_OpenVideoCaptureWithSpec(SDL
                                                                               const SDL_VideoCaptureSpec *desired,
                                                                               SDL_VideoCaptureSpec *obtained,
                                                                               int allowed_changes);
+
 /**
  * Get device name
  *
@@ -208,6 +209,7 @@ extern DECLSPEC int SDLCALL SDL_GetVideoCaptureSpec(SDL_VideoCaptureDevice *devi
 
 /**
  * Get frame format of video capture device.
+ *
  * The value can be used to fill SDL_VideoCaptureSpec structure.
  *
  * \param device opened video capture device
@@ -240,6 +242,7 @@ extern DECLSPEC int SDLCALL SDL_GetNumVideoCaptureFormats(SDL_VideoCaptureDevice
 
 /**
  * Get frame sizes of the device and the specified input format.
+ *
  * The value can be used to fill SDL_VideoCaptureSpec structure.
  *
  * \param device opened video capture device
@@ -300,11 +303,13 @@ extern DECLSPEC int SDLCALL SDL_StartVideoCapture(SDL_VideoCaptureDevice *device
 
 /**
  * Acquire a frame.
- * The frame is a memory pointer to the image data, whose size and format
- * are given by the the obtained spec.
  *
- * Non blocking API. If there is a frame available, frame->num_planes is non 0.
- * If frame->num_planes is 0 and returned code is 0, there is no frame at that time.
+ * The frame is a memory pointer to the image data, whose size and format are
+ * given by the the obtained spec.
+ *
+ * Non blocking API. If there is a frame available, frame->num_planes is non
+ * 0. If frame->num_planes is 0 and returned code is 0, there is no frame at
+ * that time.
  *
  * After used, the frame should be released with SDL_ReleaseVideoCaptureFrame
  *
@@ -320,7 +325,9 @@ extern DECLSPEC int SDLCALL SDL_StartVideoCapture(SDL_VideoCaptureDevice *device
 extern DECLSPEC int SDLCALL SDL_AcquireVideoCaptureFrame(SDL_VideoCaptureDevice *device, SDL_VideoCaptureFrame *frame);
 
 /**
- * Release a frame. Let the back-end re-use the internal buffer for video capture.
+ * Release a frame.
+ *
+ * Let the back-end re-use the internal buffer for video capture.
  *
  * All acquired frames should be released before closing the device.
  *
@@ -349,7 +356,8 @@ extern DECLSPEC int SDLCALL SDL_ReleaseVideoCaptureFrame(SDL_VideoCaptureDevice 
 extern DECLSPEC int SDLCALL SDL_StopVideoCapture(SDL_VideoCaptureDevice *device);
 
 /**
- * Use this function to shut down video_capture processing and close the video_capture device.
+ * Use this function to shut down video_capture processing and close the
+ * video_capture device.
  *
  * \param device opened video capture device
  *

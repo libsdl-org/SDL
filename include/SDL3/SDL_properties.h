@@ -124,7 +124,8 @@ extern DECLSPEC void SDLCALL SDL_UnlockProperties(SDL_PropertiesID props);
 extern DECLSPEC int SDLCALL SDL_SetProperty(SDL_PropertiesID props, const char *name, void *value);
 
 /**
- * Set a property on a set of properties with a cleanup function that is called when the property is deleted
+ * Set a property on a set of properties with a cleanup function that is
+ * called when the property is deleted
  *
  * \param props the properties to modify
  * \param name the name of the property to modify
@@ -147,7 +148,10 @@ extern DECLSPEC int SDLCALL SDL_SetPropertyWithCleanup(SDL_PropertiesID props, c
 /**
  * Get a property on a set of properties
  *
- * By convention, the names of properties that SDL exposes on objects will start with "SDL.", and properties that SDL uses internally will start with "SDL.internal.". These should be considered read-only and should not be modified by applications.
+ * By convention, the names of properties that SDL exposes on objects will
+ * start with "SDL.", and properties that SDL uses internally will start with
+ * "SDL.internal.". These should be considered read-only and should not be
+ * modified by applications.
  *
  * \param props the properties to query
  * \param name the name of the property to query

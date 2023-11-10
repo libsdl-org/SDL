@@ -47,10 +47,13 @@ extern "C" {
 
 typedef struct tagMSG MSG;
 typedef SDL_bool (SDLCALL *SDL_WindowsMessageHook)(void *userdata, MSG *msg);
+
 /**
  * Set a callback for every Windows message, run before TranslateMessage().
  *
- * The callback may modify the message, and should return SDL_TRUE if the message should continue to be processed, or SDL_FALSE to prevent further processing.
+ * The callback may modify the message, and should return SDL_TRUE if the
+ * message should continue to be processed, or SDL_FALSE to prevent further
+ * processing.
  *
  * \param callback The SDL_WindowsMessageHook function to call.
  * \param userdata a pointer to pass to every iteration of `callback`
@@ -106,10 +109,13 @@ extern DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, 
 
 typedef union _XEvent XEvent;
 typedef SDL_bool (SDLCALL *SDL_X11EventHook)(void *userdata, XEvent *xevent);
+
 /**
  * Set a callback for every X11 event
  *
- * The callback may modify the event, and should return SDL_TRUE if the event should continue to be processed, or SDL_FALSE to prevent further processing.
+ * The callback may modify the event, and should return SDL_TRUE if the event
+ * should continue to be processed, or SDL_FALSE to prevent further
+ * processing.
  *
  * \param callback The SDL_X11EventHook function to call.
  * \param userdata a pointer to pass to every iteration of `callback`
