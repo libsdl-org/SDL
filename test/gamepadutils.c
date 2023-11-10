@@ -766,6 +766,10 @@ static SDL_bool GetButtonBindingString(SDL_GamepadButton button, char *mapping, 
     char label[32];
     SDL_bool baxy_mapping = SDL_FALSE;
 
+    if (!mapping) {
+        return SDL_FALSE;
+    }
+
     SDL_snprintf(label, sizeof(label), ",%s:", SDL_GetGamepadStringForButton(button));
     if (GetBindingString(label, mapping, text, size)) {
         return SDL_TRUE;
@@ -2543,7 +2547,7 @@ static SDL_bool MappingHasKey(const char *mapping, const char *key)
     if (i < 0) {
         SDL_bool baxy_mapping = SDL_FALSE;
 
-        if (SDL_strstr(mapping, ",hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1") != NULL) {
+        if (mapping && SDL_strstr(mapping, ",hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1") != NULL) {
             baxy_mapping = SDL_TRUE;
         }
         i = FindMappingKey(&parts, GetLegacyKey(key, baxy_mapping));
@@ -2567,7 +2571,7 @@ static char *GetMappingValue(const char *mapping, const char *key)
     if (i < 0) {
         SDL_bool baxy_mapping = SDL_FALSE;
 
-        if (SDL_strstr(mapping, ",hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1") != NULL) {
+        if (mapping && SDL_strstr(mapping, ",hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1") != NULL) {
             baxy_mapping = SDL_TRUE;
         }
         i = FindMappingKey(&parts, GetLegacyKey(key, baxy_mapping));
