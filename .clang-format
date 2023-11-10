@@ -46,7 +46,7 @@ Cpp11BracedListStyle: false
 # Never format includes
 IncludeBlocks: Preserve
 # clang-format version 4.0 through 12.0:
-#SortIncludes: false
+SortIncludes: false
 # clang-format version 13.0+:
 #SortIncludes: Never
 
