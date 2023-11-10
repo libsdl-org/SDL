@@ -270,13 +270,13 @@ static void write_converter(const int fromchans, const int tochans)
 
     if (convert_backwards) {  /* must convert backwards when growing the output in-place. */
         printf("    // convert backwards, since output is growing in-place.\n");
-        printf("    src += (num_frames-1)");
+        printf("    src += (num_frames - 1)");
         if (fromchans != 1) {
             printf(" * %d", fromchans);
         }
         printf(";\n");
 
-        printf("    dst += (num_frames-1)");
+        printf("    dst += (num_frames - 1)");
         if (tochans != 1) {
             printf(" * %d", tochans);
         }
@@ -396,7 +396,7 @@ static void write_converter(const int fromchans, const int tochans)
         printf("    }\n");
     }
 
-    printf("\n}\n\n");
+    printf("}\n\n");
 }
 
 int main(void)
@@ -438,7 +438,8 @@ int main(void)
         }
     }
 
-    printf("static const SDL_AudioChannelConverter channel_converters[%d][%d] = {   /* [from][to] */\n", NUM_CHANNELS, NUM_CHANNELS);
+    printf("/* [from][to] */\n");
+    printf("static const SDL_AudioChannelConverter channel_converters[%d][%d] = {\n", NUM_CHANNELS, NUM_CHANNELS);
     for (ini = 1; ini <= NUM_CHANNELS; ini++) {
         const char *comma = "";
         printf("    {");
@@ -455,7 +456,7 @@ int main(void)
         printf(" }%s\n", (ini == NUM_CHANNELS) ? "" : ",");
     }
 
-    printf("};\n\n");
+    printf("};\n");
 
     return 0;
 }
