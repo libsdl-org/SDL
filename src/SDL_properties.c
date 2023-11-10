@@ -119,7 +119,7 @@ SDL_PropertiesID SDL_CreateProperties(void)
         return 0;
     }
 
-    properties = SDL_malloc(sizeof(*properties));
+    properties = SDL_calloc(1, sizeof(*properties));
     if (!properties) {
         goto error;
     }
