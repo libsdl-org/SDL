@@ -65,6 +65,7 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
             size_t size = SDL_strlen(data) + 1;
             event.drop.data = (char *)SDL_AllocateEventMemory(size);
             if (!event.drop.data) {
+                SDL_free(event.drop.source);
                 return 0;
             }
             SDL_memcpy(event.drop.data, data, size);
