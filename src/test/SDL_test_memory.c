@@ -307,7 +307,7 @@ void SDLTest_TrackAllocations(void)
 #else
             dbghelp_SymGetLineFromAddr = (dbghelp_SymGetLineFromAddr_fn)SDL_LoadFunction(s_dbghelp, "SymGetLineFromAddr");
 #endif
-            if (!dbghelp_SymFromAddr || !dbghelp_SymFromAddr || !dbghelp_SymGetLineFromAddr) {
+            if (!dbghelp_SymInitialize || !dbghelp_SymFromAddr || !dbghelp_SymGetLineFromAddr) {
                 SDL_UnloadObject(s_dbghelp);
                 s_dbghelp = NULL;
             } else {
