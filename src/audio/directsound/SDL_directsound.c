@@ -173,7 +173,7 @@ typedef struct FindAllDevsData
 
 static BOOL CALLBACK FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVOID userdata)
 {
-    FindAllDevsData *data = (FindAllDevsData *) userdata;
+    FindAllDevsData *data = (FindAllDevsData *)userdata;
     if (guid != NULL) { // skip default device
         char *str = WIN_LookupAudioDeviceName(desc, guid);
         if (str) {
@@ -187,7 +187,7 @@ static BOOL CALLBACK FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVO
                  */
                 SDL_AudioDevice *device = SDL_AddAudioDevice(data->iscapture, str, NULL, cpyguid);
                 if (device && data->default_device && data->default_device_guid) {
-                    if (SDL_memcmp(cpyguid, data->default_device_guid, sizeof (GUID)) == 0) {
+                    if (SDL_memcmp(cpyguid, data->default_device_guid, sizeof(GUID)) == 0) {
                         *data->default_device = device;
                     }
                 }
@@ -222,7 +222,6 @@ static void DSOUND_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevi
         data.default_device_guid = (pGetDeviceID(&DSDEVID_DefaultPlayback, &guid) == DS_OK) ? &guid : NULL;
         pDirectSoundEnumerateW(FindAllDevs, &data);
     }
-
 }
 
 static int DSOUND_WaitDevice(SDL_AudioDevice *device)
@@ -246,7 +245,7 @@ static int DSOUND_WaitDevice(SDL_AudioDevice *device)
             // Find out where we are playing
             result = IDirectSoundBuffer_GetCurrentPosition(device->hidden->mixbuf, &junk, &cursor);
             if ((result == DS_OK) && ((cursor / device->buffer_size) != device->hidden->lastchunk)) {
-                break;  // ready for next chunk!
+                break; // ready for next chunk!
             }
         }
 
@@ -254,7 +253,7 @@ static int DSOUND_WaitDevice(SDL_AudioDevice *device)
             return -1;
         }
 
-        SDL_Delay(1);  // not ready yet; sleep a bit.
+        SDL_Delay(1); // not ready yet; sleep a bit.
     }
 
     return 0;
@@ -264,7 +263,7 @@ static int DSOUND_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int b
 {
     // Unlock the buffer, allowing it to play
     SDL_assert(buflen == device->buffer_size);
-    if (IDirectSoundBuffer_Unlock(device->hidden->mixbuf, (LPVOID) buffer, buflen, NULL, 0) != DS_OK) {
+    if (IDirectSoundBuffer_Unlock(device->hidden->mixbuf, (LPVOID)buffer, buflen, NULL, 0) != DS_OK) {
         return -1;
     }
     return 0;
@@ -369,7 +368,7 @@ static int DSOUND_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int b
 
     h->lastchunk = (h->lastchunk + 1) % h->num_buffers;
 
-    return (int) ptr1len;
+    return (int)ptr1len;
 }
 
 static void DSOUND_FlushCapture(SDL_AudioDevice *device)
@@ -441,7 +440,7 @@ static int CreateSecondary(SDL_AudioDevice *device, const DWORD bufsize, WAVEFOR
                                   (LPVOID)pvAudioPtr2, dwAudioBytes2);
     }
 
-    return 0;  // We're ready to go
+    return 0; // We're ready to go
 }
 
 /* This function tries to create a capture buffer, and returns the
@@ -503,7 +502,7 @@ static int DSOUND_OpenDevice(SDL_AudioDevice *device)
     } else
 #endif
     {
-        guid = (LPGUID) device->handle;
+        guid = (LPGUID)device->handle;
     }
 
     SDL_assert(guid != NULL);

@@ -33,15 +33,17 @@
 
 #if defined(__linux__) && !defined(__ANDROID__)
 
-enum io_method {
+enum io_method
+{
     IO_METHOD_READ,
     IO_METHOD_MMAP,
     IO_METHOD_USERPTR
 };
 
-struct buffer {
-    void   *start;
-    size_t  length;
+struct buffer
+{
+    void *start;
+    size_t length;
     int available; /* Is available in userspace */
 };
 
@@ -57,7 +59,7 @@ struct SDL_PrivateVideoCaptureData
 
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include <fcntl.h>              /* low-level i/o */
+#include <fcntl.h> /* low-level i/o */
 #include <errno.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -87,109 +89,107 @@ acquire_frame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
     size_t size = _this->hidden->buffers[0].length;
 
     switch (io) {
-        case IO_METHOD_READ:
-            if (read(fd, _this->hidden->buffers[0].start, size) == -1) {
-                switch (errno) {
-                    case EAGAIN:
-                        return 0;
+    case IO_METHOD_READ:
+        if (read(fd, _this->hidden->buffers[0].start, size) == -1) {
+            switch (errno) {
+            case EAGAIN:
+                return 0;
 
-                    case EIO:
-                        /* Could ignore EIO, see spec. */
+            case EIO:
+                /* Could ignore EIO, see spec. */
 
-                        /* fall through */
+                /* fall through */
 
-                    default:
-                        return SDL_SetError("read");
-                }
+            default:
+                return SDL_SetError("read");
             }
+        }
 
-            frame->num_planes = 1;
-            frame->data[0] = _this->hidden->buffers[0].start;
-            frame->pitch[0] = _this->hidden->driver_pitch;
-            break;
+        frame->num_planes = 1;
+        frame->data[0] = _this->hidden->buffers[0].start;
+        frame->pitch[0] = _this->hidden->driver_pitch;
+        break;
 
-        case IO_METHOD_MMAP:
-            SDL_zero(buf);
+    case IO_METHOD_MMAP:
+        SDL_zero(buf);
 
-            buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-            buf.memory = V4L2_MEMORY_MMAP;
+        buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        buf.memory = V4L2_MEMORY_MMAP;
 
-            if (xioctl(fd, VIDIOC_DQBUF, &buf) == -1) {
-                switch (errno) {
-                    case EAGAIN:
-                        return 0;
+        if (xioctl(fd, VIDIOC_DQBUF, &buf) == -1) {
+            switch (errno) {
+            case EAGAIN:
+                return 0;
 
-                    case EIO:
-                        /* Could ignore EIO, see spec. */
+            case EIO:
+                /* Could ignore EIO, see spec. */
 
-                        /* fall through */
+                /* fall through */
 
-                    default:
-                        return SDL_SetError("VIDIOC_DQBUF: %d", errno);
-                }
+            default:
+                return SDL_SetError("VIDIOC_DQBUF: %d", errno);
             }
+        }
 
-            if ((int)buf.index < 0 || (int)buf.index >= _this->hidden->nb_buffers) {
-                return SDL_SetError("invalid buffer index");
-            }
+        if ((int)buf.index < 0 || (int)buf.index >= _this->hidden->nb_buffers) {
+            return SDL_SetError("invalid buffer index");
+        }
 
-            frame->num_planes = 1;
-            frame->data[0] = _this->hidden->buffers[buf.index].start;
-            frame->pitch[0] = _this->hidden->driver_pitch;
-            _this->hidden->buffers[buf.index].available = 1;
+        frame->num_planes = 1;
+        frame->data[0] = _this->hidden->buffers[buf.index].start;
+        frame->pitch[0] = _this->hidden->driver_pitch;
+        _this->hidden->buffers[buf.index].available = 1;
 
 #if DEBUG_VIDEO_CAPTURE_CAPTURE
-            SDL_Log("debug mmap: image %d/%d  num_planes:%d data[0]=%p", buf.index, _this->hidden->nb_buffers, frame->num_planes, (void*)frame->data[0]);
+        SDL_Log("debug mmap: image %d/%d  num_planes:%d data[0]=%p", buf.index, _this->hidden->nb_buffers, frame->num_planes, (void *)frame->data[0]);
 #endif
-            break;
+        break;
 
-        case IO_METHOD_USERPTR:
-            SDL_zero(buf);
+    case IO_METHOD_USERPTR:
+        SDL_zero(buf);
 
-            buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-            buf.memory = V4L2_MEMORY_USERPTR;
+        buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        buf.memory = V4L2_MEMORY_USERPTR;
 
-            if (xioctl(fd, VIDIOC_DQBUF, &buf) == -1) {
-                switch (errno) {
-                    case EAGAIN:
-                        return 0;
+        if (xioctl(fd, VIDIOC_DQBUF, &buf) == -1) {
+            switch (errno) {
+            case EAGAIN:
+                return 0;
 
-                    case EIO:
-                        /* Could ignore EIO, see spec. */
+            case EIO:
+                /* Could ignore EIO, see spec. */
 
-                        /* fall through */
+                /* fall through */
 
-                    default:
-                        return SDL_SetError("VIDIOC_DQBUF");
-                }
+            default:
+                return SDL_SetError("VIDIOC_DQBUF");
             }
+        }
 
-            for (i = 0; i < _this->hidden->nb_buffers; ++i) {
-                if (buf.m.userptr == (unsigned long)_this->hidden->buffers[i].start && buf.length == size) {
-                    break;
-                }
+        for (i = 0; i < _this->hidden->nb_buffers; ++i) {
+            if (buf.m.userptr == (unsigned long)_this->hidden->buffers[i].start && buf.length == size) {
+                break;
             }
+        }
 
-            if (i >= _this->hidden->nb_buffers) {
-                return SDL_SetError("invalid buffer index");
-            }
+        if (i >= _this->hidden->nb_buffers) {
+            return SDL_SetError("invalid buffer index");
+        }
 
-            frame->num_planes = 1;
-            frame->data[0] = (void*)buf.m.userptr;
-            frame->pitch[0] = _this->hidden->driver_pitch;
-            _this->hidden->buffers[i].available = 1;
+        frame->num_planes = 1;
+        frame->data[0] = (void *)buf.m.userptr;
+        frame->pitch[0] = _this->hidden->driver_pitch;
+        _this->hidden->buffers[i].available = 1;
 #if DEBUG_VIDEO_CAPTURE_CAPTURE
-            SDL_Log("debug userptr: image %d/%d  num_planes:%d data[0]=%p", buf.index, _this->hidden->nb_buffers, frame->num_planes, (void*)frame->data[0]);
+        SDL_Log("debug userptr: image %d/%d  num_planes:%d data[0]=%p", buf.index, _this->hidden->nb_buffers, frame->num_planes, (void *)frame->data[0]);
 #endif
-            break;
+        break;
     }
 
     return 1;
 }
 
-
-int
-ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
+int ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
 {
     struct v4l2_buffer buf;
     int i;
@@ -207,44 +207,42 @@ ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
     }
 
     switch (io) {
-        case IO_METHOD_READ:
-            break;
+    case IO_METHOD_READ:
+        break;
 
-        case IO_METHOD_MMAP:
-            SDL_zero(buf);
+    case IO_METHOD_MMAP:
+        SDL_zero(buf);
 
-            buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-            buf.memory = V4L2_MEMORY_MMAP;
-            buf.index = i;
+        buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        buf.memory = V4L2_MEMORY_MMAP;
+        buf.index = i;
 
-            if (xioctl(fd, VIDIOC_QBUF, &buf) == -1) {
-                return SDL_SetError("VIDIOC_QBUF");
-            }
-            _this->hidden->buffers[i].available = 0;
-            break;
+        if (xioctl(fd, VIDIOC_QBUF, &buf) == -1) {
+            return SDL_SetError("VIDIOC_QBUF");
+        }
+        _this->hidden->buffers[i].available = 0;
+        break;
 
-        case IO_METHOD_USERPTR:
-            SDL_zero(buf);
+    case IO_METHOD_USERPTR:
+        SDL_zero(buf);
 
-            buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-            buf.memory = V4L2_MEMORY_USERPTR;
-            buf.index = i;
-            buf.m.userptr = (unsigned long)frame->data[0];
-            buf.length = (int) _this->hidden->buffers[i].length;
+        buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        buf.memory = V4L2_MEMORY_USERPTR;
+        buf.index = i;
+        buf.m.userptr = (unsigned long)frame->data[0];
+        buf.length = (int)_this->hidden->buffers[i].length;
 
-            if (xioctl(fd, VIDIOC_QBUF, &buf) == -1) {
-                return SDL_SetError("VIDIOC_QBUF");
-            }
-            _this->hidden->buffers[i].available = 0;
-            break;
+        if (xioctl(fd, VIDIOC_QBUF, &buf) == -1) {
+            return SDL_SetError("VIDIOC_QBUF");
+        }
+        _this->hidden->buffers[i].available = 0;
+        break;
     }
 
     return 0;
 }
 
-
-int
-AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
+int AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
 {
     fd_set fds;
     struct timeval tv;
@@ -282,7 +280,7 @@ AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
         return -1;
     }
 
-    if (ret == 1){
+    if (ret == 1) {
         frame->timestampNS = SDL_GetTicksNS();
     } else if (ret == 0) {
 #if DEBUG_VIDEO_CAPTURE_CAPTURE
@@ -294,25 +292,23 @@ AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
     return 0;
 }
 
-
-int
-StopCapture(SDL_VideoCaptureDevice *_this)
+int StopCapture(SDL_VideoCaptureDevice *_this)
 {
     enum v4l2_buf_type type;
     int fd = _this->hidden->fd;
     enum io_method io = _this->hidden->io;
 
     switch (io) {
-        case IO_METHOD_READ:
-            break;
+    case IO_METHOD_READ:
+        break;
 
-        case IO_METHOD_MMAP:
-        case IO_METHOD_USERPTR:
-            type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-            if (xioctl(fd, VIDIOC_STREAMOFF, &type) == -1) {
-                return SDL_SetError("VIDIOC_STREAMOFF");
-            }
-            break;
+    case IO_METHOD_MMAP:
+    case IO_METHOD_USERPTR:
+        type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        if (xioctl(fd, VIDIOC_STREAMOFF, &type) == -1) {
+            return SDL_SetError("VIDIOC_STREAMOFF");
+        }
+        break;
     }
 
     return 0;
@@ -325,44 +321,44 @@ enqueue_buffers(SDL_VideoCaptureDevice *_this)
     int fd = _this->hidden->fd;
     enum io_method io = _this->hidden->io;
     switch (io) {
-        case IO_METHOD_READ:
-            break;
+    case IO_METHOD_READ:
+        break;
 
-        case IO_METHOD_MMAP:
-            for (i = 0; i < _this->hidden->nb_buffers; ++i) {
-                if (_this->hidden->buffers[i].available == 0) {
-                    struct v4l2_buffer buf;
+    case IO_METHOD_MMAP:
+        for (i = 0; i < _this->hidden->nb_buffers; ++i) {
+            if (_this->hidden->buffers[i].available == 0) {
+                struct v4l2_buffer buf;
 
-                    SDL_zero(buf);
-                    buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-                    buf.memory = V4L2_MEMORY_MMAP;
-                    buf.index = i;
+                SDL_zero(buf);
+                buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+                buf.memory = V4L2_MEMORY_MMAP;
+                buf.index = i;
 
-                    if (xioctl(fd, VIDIOC_QBUF, &buf) == -1) {
-                        return SDL_SetError("VIDIOC_QBUF");
-                    }
+                if (xioctl(fd, VIDIOC_QBUF, &buf) == -1) {
+                    return SDL_SetError("VIDIOC_QBUF");
                 }
             }
-            break;
+        }
+        break;
 
-        case IO_METHOD_USERPTR:
-            for (i = 0; i < _this->hidden->nb_buffers; ++i) {
-                if (_this->hidden->buffers[i].available == 0) {
-                    struct v4l2_buffer buf;
+    case IO_METHOD_USERPTR:
+        for (i = 0; i < _this->hidden->nb_buffers; ++i) {
+            if (_this->hidden->buffers[i].available == 0) {
+                struct v4l2_buffer buf;
 
-                    SDL_zero(buf);
-                    buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-                    buf.memory = V4L2_MEMORY_USERPTR;
-                    buf.index = i;
-                    buf.m.userptr = (unsigned long)_this->hidden->buffers[i].start;
-                    buf.length = (int) _this->hidden->buffers[i].length;
+                SDL_zero(buf);
+                buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+                buf.memory = V4L2_MEMORY_USERPTR;
+                buf.index = i;
+                buf.m.userptr = (unsigned long)_this->hidden->buffers[i].start;
+                buf.length = (int)_this->hidden->buffers[i].length;
 
-                    if (xioctl(fd, VIDIOC_QBUF, &buf) == -1) {
-                        return SDL_SetError("VIDIOC_QBUF");
-                    }
+                if (xioctl(fd, VIDIOC_QBUF, &buf) == -1) {
+                    return SDL_SetError("VIDIOC_QBUF");
                 }
             }
-            break;
+        }
+        break;
     }
     return 0;
 }
@@ -375,60 +371,56 @@ pre_enqueue_buffers(SDL_VideoCaptureDevice *_this)
     enum io_method io = _this->hidden->io;
 
     switch (io) {
-        case IO_METHOD_READ:
-            break;
+    case IO_METHOD_READ:
+        break;
 
-        case IO_METHOD_MMAP:
-            {
-                SDL_zero(req);
-                req.count = _this->hidden->nb_buffers;
-                req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-                req.memory = V4L2_MEMORY_MMAP;
+    case IO_METHOD_MMAP:
+    {
+        SDL_zero(req);
+        req.count = _this->hidden->nb_buffers;
+        req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        req.memory = V4L2_MEMORY_MMAP;
 
-                if (xioctl(fd, VIDIOC_REQBUFS, &req) == -1) {
-                    if (errno == EINVAL) {
-                        return SDL_SetError("Does not support memory mapping");
-                    } else {
-                        return SDL_SetError("VIDIOC_REQBUFS");
-                    }
-                }
-
-                if (req.count < 2) {
-                    return SDL_SetError("Insufficient buffer memory");
-                }
-
-                _this->hidden->nb_buffers = req.count;
+        if (xioctl(fd, VIDIOC_REQBUFS, &req) == -1) {
+            if (errno == EINVAL) {
+                return SDL_SetError("Does not support memory mapping");
+            } else {
+                return SDL_SetError("VIDIOC_REQBUFS");
             }
-            break;
+        }
 
-        case IO_METHOD_USERPTR:
-            {
-                SDL_zero(req);
-                req.count  = _this->hidden->nb_buffers;
-                req.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-                req.memory = V4L2_MEMORY_USERPTR;
+        if (req.count < 2) {
+            return SDL_SetError("Insufficient buffer memory");
+        }
 
-                if (xioctl(fd, VIDIOC_REQBUFS, &req) == -1) {
-                    if (errno == EINVAL) {
-                        return SDL_SetError("Does not support user pointer i/o");
-                    } else {
-                        return SDL_SetError("VIDIOC_REQBUFS");
-                    }
-                }
+        _this->hidden->nb_buffers = req.count;
+    } break;
+
+    case IO_METHOD_USERPTR:
+    {
+        SDL_zero(req);
+        req.count = _this->hidden->nb_buffers;
+        req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        req.memory = V4L2_MEMORY_USERPTR;
+
+        if (xioctl(fd, VIDIOC_REQBUFS, &req) == -1) {
+            if (errno == EINVAL) {
+                return SDL_SetError("Does not support user pointer i/o");
+            } else {
+                return SDL_SetError("VIDIOC_REQBUFS");
             }
-            break;
+        }
+    } break;
     }
     return 0;
 }
 
-int
-StartCapture(SDL_VideoCaptureDevice *_this)
+int StartCapture(SDL_VideoCaptureDevice *_this)
 {
     enum v4l2_buf_type type;
 
     int fd = _this->hidden->fd;
     enum io_method io = _this->hidden->io;
-
 
     if (_this->hidden->first_start == 0) {
         _this->hidden->first_start = 1;
@@ -453,16 +445,16 @@ StartCapture(SDL_VideoCaptureDevice *_this)
     }
 
     switch (io) {
-        case IO_METHOD_READ:
-            break;
+    case IO_METHOD_READ:
+        break;
 
-        case IO_METHOD_MMAP:
-        case IO_METHOD_USERPTR:
-            type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-            if (xioctl(fd, VIDIOC_STREAMON, &type) == -1) {
-                return SDL_SetError("VIDIOC_STREAMON");
-            }
-            break;
+    case IO_METHOD_MMAP:
+    case IO_METHOD_USERPTR:
+        type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        if (xioctl(fd, VIDIOC_STREAMON, &type) == -1) {
+            return SDL_SetError("VIDIOC_STREAMON");
+        }
+        break;
     }
 
     return 0;
@@ -489,9 +481,9 @@ alloc_buffer_mmap(SDL_VideoCaptureDevice *_this)
 
         SDL_zero(buf);
 
-        buf.type        = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-        buf.memory      = V4L2_MEMORY_MMAP;
-        buf.index       = i;
+        buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        buf.memory = V4L2_MEMORY_MMAP;
+        buf.index = i;
 
         if (xioctl(fd, VIDIOC_QUERYBUF, &buf) == -1) {
             return SDL_SetError("VIDIOC_QUERYBUF");
@@ -500,10 +492,10 @@ alloc_buffer_mmap(SDL_VideoCaptureDevice *_this)
         _this->hidden->buffers[i].length = buf.length;
         _this->hidden->buffers[i].start =
             mmap(NULL /* start anywhere */,
-                    buf.length,
-                    PROT_READ | PROT_WRITE /* required */,
-                    MAP_SHARED /* recommended */,
-                    fd, buf.m.offset);
+                 buf.length,
+                 PROT_READ | PROT_WRITE /* required */,
+                 MAP_SHARED /* recommended */,
+                 fd, buf.m.offset);
 
         if (MAP_FAILED == _this->hidden->buffers[i].start) {
             return SDL_SetError("mmap");
@@ -531,13 +523,15 @@ static Uint32
 format_v4l2_2_sdl(Uint32 fmt)
 {
     switch (fmt) {
-#define CASE(x, y)  case x: return y
+#define CASE(x, y) \
+    case x:        \
+        return y
         CASE(V4L2_PIX_FMT_YUYV, SDL_PIXELFORMAT_YUY2);
         CASE(V4L2_PIX_FMT_MJPEG, SDL_PIXELFORMAT_UNKNOWN);
 #undef CASE
-        default:
-            SDL_Log("Unknown format V4L2_PIX_FORMAT '%d'", fmt);
-            return SDL_PIXELFORMAT_UNKNOWN;
+    default:
+        SDL_Log("Unknown format V4L2_PIX_FORMAT '%d'", fmt);
+        return SDL_PIXELFORMAT_UNKNOWN;
     }
 }
 
@@ -545,17 +539,18 @@ static Uint32
 format_sdl_2_v4l2(Uint32 fmt)
 {
     switch (fmt) {
-#define CASE(y, x)  case x: return y
+#define CASE(y, x) \
+    case x:        \
+        return y
         CASE(V4L2_PIX_FMT_YUYV, SDL_PIXELFORMAT_YUY2);
         CASE(V4L2_PIX_FMT_MJPEG, SDL_PIXELFORMAT_UNKNOWN);
 #undef CASE
-        default:
-            return 0;
+    default:
+        return 0;
     }
 }
 
-int
-GetNumFormats(SDL_VideoCaptureDevice *_this)
+int GetNumFormats(SDL_VideoCaptureDevice *_this)
 {
     int fd = _this->hidden->fd;
     int i = 0;
@@ -563,15 +558,14 @@ GetNumFormats(SDL_VideoCaptureDevice *_this)
 
     SDL_zero(fmtdesc);
     fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    while (ioctl(fd,VIDIOC_ENUM_FMT,&fmtdesc) == 0) {
+    while (ioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc) == 0) {
         fmtdesc.index++;
         i++;
     }
     return i;
 }
 
-int
-GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
+int GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
 {
     int fd = _this->hidden->fd;
     struct v4l2_fmtdesc fmtdesc;
@@ -579,7 +573,7 @@ GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
     SDL_zero(fmtdesc);
     fmtdesc.index = index;
     fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    if (ioctl(fd,VIDIOC_ENUM_FMT,&fmtdesc) == 0) {
+    if (ioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc) == 0) {
         *format = format_v4l2_2_sdl(fmtdesc.pixelformat);
 
 #if DEBUG_VIDEO_CAPTURE_CAPTURE
@@ -596,8 +590,7 @@ GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
     return -1;
 }
 
-int
-GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format)
+int GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format)
 {
     int fd = _this->hidden->fd;
     int i = 0;
@@ -606,13 +599,12 @@ GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format)
     SDL_zero(frmsizeenum);
     frmsizeenum.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     frmsizeenum.pixel_format = format_sdl_2_v4l2(format);
-    while (ioctl(fd,VIDIOC_ENUM_FRAMESIZES, &frmsizeenum) == 0) {
+    while (ioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frmsizeenum) == 0) {
         frmsizeenum.index++;
         if (frmsizeenum.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
             i++;
         } else if (frmsizeenum.type == V4L2_FRMSIZE_TYPE_STEPWISE) {
-            i += (1 + (frmsizeenum.stepwise.max_width - frmsizeenum.stepwise.min_width) / frmsizeenum.stepwise.step_width)
-                * (1 + (frmsizeenum.stepwise.max_height - frmsizeenum.stepwise.min_height) / frmsizeenum.stepwise.step_height);
+            i += (1 + (frmsizeenum.stepwise.max_width - frmsizeenum.stepwise.min_width) / frmsizeenum.stepwise.step_width) * (1 + (frmsizeenum.stepwise.max_height - frmsizeenum.stepwise.min_height) / frmsizeenum.stepwise.step_height);
         } else if (frmsizeenum.type == V4L2_FRMSIZE_TYPE_CONTINUOUS) {
             SDL_SetError("V4L2_FRMSIZE_TYPE_CONTINUOUS not handled");
         }
@@ -620,8 +612,7 @@ GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format)
     return i;
 }
 
-int
-GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width, int *height)
+int GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width, int *height)
 {
     int fd = _this->hidden->fd;
     struct v4l2_frmsizeenum frmsizeenum;
@@ -630,7 +621,7 @@ GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width
     SDL_zero(frmsizeenum);
     frmsizeenum.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     frmsizeenum.pixel_format = format_sdl_2_v4l2(format);
-    while (ioctl(fd,VIDIOC_ENUM_FRAMESIZES, &frmsizeenum) == 0) {
+    while (ioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frmsizeenum) == 0) {
         frmsizeenum.index++;
 
         if (frmsizeenum.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
@@ -660,19 +651,17 @@ GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width
     return -1;
 }
 
-
-
 static void
-dbg_v4l2_pixelformat(const char *str, int f) {
+dbg_v4l2_pixelformat(const char *str, int f)
+{
     SDL_Log("%s  V4L2_format=%d  %c%c%c%c", str, f,
-                (f >> 0) & 0xff,
-                (f >> 8) & 0xff,
-                (f >> 16) & 0xff,
-                (f >> 24) & 0xff);
+            (f >> 0) & 0xff,
+            (f >> 8) & 0xff,
+            (f >> 16) & 0xff,
+            (f >> 24) & 0xff);
 }
 
-int
-GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec)
+int GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec)
 {
     struct v4l2_format fmt;
     int fd = _this->hidden->fd;
@@ -696,16 +685,15 @@ GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec)
         fmt.fmt.pix.sizeimage = min;
     }
 
-    //spec->width = fmt.fmt.pix.width;
-    //spec->height = fmt.fmt.pix.height;
+    // spec->width = fmt.fmt.pix.width;
+    // spec->height = fmt.fmt.pix.height;
     _this->hidden->driver_pitch = fmt.fmt.pix.bytesperline;
-    //spec->format = format_v4l2_2_sdl(fmt.fmt.pix.pixelformat);
+    // spec->format = format_v4l2_2_sdl(fmt.fmt.pix.pixelformat);
 
     return 0;
 }
 
-int
-InitDevice(SDL_VideoCaptureDevice *_this)
+int InitDevice(SDL_VideoCaptureDevice *_this)
 {
     struct v4l2_cropcap cropcap;
     struct v4l2_crop crop;
@@ -725,31 +713,29 @@ InitDevice(SDL_VideoCaptureDevice *_this)
 
         if (xioctl(fd, VIDIOC_S_CROP, &crop) == -1) {
             switch (errno) {
-                case EINVAL:
-                    /* Cropping not supported. */
-                    break;
-                default:
-                    /* Errors ignored. */
-                    break;
+            case EINVAL:
+                /* Cropping not supported. */
+                break;
+            default:
+                /* Errors ignored. */
+                break;
             }
         }
     } else {
         /* Errors ignored. */
     }
 
-
     {
         struct v4l2_format fmt;
         SDL_zero(fmt);
 
         fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-        fmt.fmt.pix.width       = _this->spec.width;
-        fmt.fmt.pix.height      = _this->spec.height;
-
+        fmt.fmt.pix.width = _this->spec.width;
+        fmt.fmt.pix.height = _this->spec.height;
 
         fmt.fmt.pix.pixelformat = format_sdl_2_v4l2(_this->spec.format);
         //    fmt.fmt.pix.field       = V4L2_FIELD_INTERLACED;
-        fmt.fmt.pix.field       = V4L2_FIELD_ANY;
+        fmt.fmt.pix.field = V4L2_FIELD_ANY;
 
 #if DEBUG_VIDEO_CAPTURE_CAPTURE
         SDL_Log("set SDL format %s", SDL_GetPixelFormatName(_this->spec.format));
@@ -779,17 +765,17 @@ InitDevice(SDL_VideoCaptureDevice *_this)
         SDL_CalculateSize(_this->spec.format, _this->spec.width, _this->spec.height, &size, &pitch, SDL_FALSE);
 
         switch (io) {
-            case IO_METHOD_READ:
-                ret = alloc_buffer_read(_this, size);
-                break;
+        case IO_METHOD_READ:
+            ret = alloc_buffer_read(_this, size);
+            break;
 
-            case IO_METHOD_MMAP:
-                ret = alloc_buffer_mmap(_this);
-                break;
+        case IO_METHOD_MMAP:
+            ret = alloc_buffer_mmap(_this);
+            break;
 
-            case IO_METHOD_USERPTR:
-                ret = alloc_buffer_userp(_this, size);
-                break;
+        case IO_METHOD_USERPTR:
+            ret = alloc_buffer_userp(_this, size);
+            break;
         }
     }
 
@@ -800,8 +786,7 @@ InitDevice(SDL_VideoCaptureDevice *_this)
     return 0;
 }
 
-void
-CloseDevice(SDL_VideoCaptureDevice *_this)
+void CloseDevice(SDL_VideoCaptureDevice *_this)
 {
     if (!_this) {
         return;
@@ -813,23 +798,23 @@ CloseDevice(SDL_VideoCaptureDevice *_this)
             enum io_method io = _this->hidden->io;
 
             switch (io) {
-                case IO_METHOD_READ:
-                    SDL_free(_this->hidden->buffers[0].start);
-                    break;
+            case IO_METHOD_READ:
+                SDL_free(_this->hidden->buffers[0].start);
+                break;
 
-                case IO_METHOD_MMAP:
-                    for (i = 0; i < _this->hidden->nb_buffers; ++i) {
-                        if (munmap(_this->hidden->buffers[i].start, _this->hidden->buffers[i].length) == -1) {
-                            SDL_SetError("munmap");
-                        }
+            case IO_METHOD_MMAP:
+                for (i = 0; i < _this->hidden->nb_buffers; ++i) {
+                    if (munmap(_this->hidden->buffers[i].start, _this->hidden->buffers[i].length) == -1) {
+                        SDL_SetError("munmap");
                     }
-                    break;
+                }
+                break;
 
-                case IO_METHOD_USERPTR:
-                    for (i = 0; i < _this->hidden->nb_buffers; ++i) {
-                        SDL_free(_this->hidden->buffers[i].start);
-                    }
-                    break;
+            case IO_METHOD_USERPTR:
+                for (i = 0; i < _this->hidden->nb_buffers; ++i) {
+                    SDL_free(_this->hidden->buffers[i].start);
+                }
+                break;
             }
 
             SDL_free(_this->hidden->buffers);
@@ -846,16 +831,14 @@ CloseDevice(SDL_VideoCaptureDevice *_this)
     }
 }
 
-
-int
-OpenDevice(SDL_VideoCaptureDevice *_this)
+int OpenDevice(SDL_VideoCaptureDevice *_this)
 {
     struct stat st;
     struct v4l2_capability cap;
     int fd;
     enum io_method io;
 
-    _this->hidden = (struct SDL_PrivateVideoCaptureData *) SDL_calloc(1, sizeof (struct SDL_PrivateVideoCaptureData));
+    _this->hidden = (struct SDL_PrivateVideoCaptureData *)SDL_calloc(1, sizeof(struct SDL_PrivateVideoCaptureData));
     if (_this->hidden == NULL) {
         SDL_OutOfMemory();
         return -1;
@@ -881,9 +864,9 @@ OpenDevice(SDL_VideoCaptureDevice *_this)
 
     _this->hidden->fd = fd;
     _this->hidden->io = IO_METHOD_MMAP;
-//    _this->hidden->io = IO_METHOD_USERPTR;
-//    _this->hidden->io = IO_METHOD_READ;
-//
+    //    _this->hidden->io = IO_METHOD_USERPTR;
+    //    _this->hidden->io = IO_METHOD_READ;
+    //
     if (_this->hidden->io == IO_METHOD_READ) {
         _this->hidden->nb_buffers = 1;
     } else {
@@ -913,42 +896,37 @@ OpenDevice(SDL_VideoCaptureDevice *_this)
 #endif
 
     switch (io) {
-        case IO_METHOD_READ:
-            if (!(cap.capabilities & V4L2_CAP_READWRITE)) {
-                return SDL_SetError("%s does not support read i/o", _this->dev_name);
-            }
-            break;
+    case IO_METHOD_READ:
+        if (!(cap.capabilities & V4L2_CAP_READWRITE)) {
+            return SDL_SetError("%s does not support read i/o", _this->dev_name);
+        }
+        break;
 
-        case IO_METHOD_MMAP:
-        case IO_METHOD_USERPTR:
-            if (!(cap.capabilities & V4L2_CAP_STREAMING)) {
-                return SDL_SetError("%s does not support streaming i/o", _this->dev_name);
-            }
-            break;
+    case IO_METHOD_MMAP:
+    case IO_METHOD_USERPTR:
+        if (!(cap.capabilities & V4L2_CAP_STREAMING)) {
+            return SDL_SetError("%s does not support streaming i/o", _this->dev_name);
+        }
+        break;
     }
-
-
-
 
     return 0;
 }
 
-
-
-int
-GetDeviceName(int index, char *buf, int size) {
+int GetDeviceName(int index, char *buf, int size)
+{
     SDL_snprintf(buf, size, "/dev/video%d", index);
     return 0;
 }
 
-int
-GetNumDevices(void) {
+int GetNumDevices(void)
+{
     int num;
     for (num = 0; num < 128; num++) {
         static char buf[256];
         buf[0] = 0;
         buf[255] = 0;
-        GetDeviceName(num, buf, sizeof (buf));
+        GetDeviceName(num, buf, sizeof(buf));
         SDL_RWops *src = SDL_RWFromFile(buf, "rb");
         if (src == NULL) {
             // When file does not exist, an error is set. Clear it.

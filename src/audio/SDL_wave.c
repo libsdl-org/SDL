@@ -1712,7 +1712,7 @@ static int WaveCheckFormat(WaveFile *file, size_t datalength)
 
         /* All supported formats must have a proper block size. */
         if (format->blockalign == 0) {
-            format->blockalign = 1;  /* force it to 1 if it was unset. */
+            format->blockalign = 1; /* force it to 1 if it was unset. */
         }
 
         /* If the fact chunk is valid and the appropriate hint is set, the
@@ -2082,7 +2082,7 @@ int SDL_LoadWAV_RW(SDL_RWops *src, SDL_bool freesrc, SDL_AudioSpec *spec, Uint8 
 
     /* Make sure we are passed a valid data source */
     if (!src) {
-        goto done;  /* Error may come from RWops. */
+        goto done; /* Error may come from RWops. */
     } else if (!spec) {
         SDL_InvalidParamError("spec");
         goto done;
@@ -2126,4 +2126,3 @@ int SDL_LoadWAV(const char *path, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32
 {
     return SDL_LoadWAV_RW(SDL_RWFromFile(path, "rb"), 1, spec, audio_buf, audio_len);
 }
-

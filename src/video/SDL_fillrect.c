@@ -296,12 +296,12 @@ static void fill_32_simd(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
 #endif
 
 int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
-                  Uint32 color)
+                         Uint32 color)
 {
     SDL_Rect clipped;
     Uint8 *pixels;
     const SDL_Rect *rect;
-    void (*fill_function)(Uint8 * pixels, int pitch, Uint32 color, int w, int h) = NULL;
+    void (*fill_function)(Uint8 *pixels, int pitch, Uint32 color, int w, int h) = NULL;
     int i;
 
     if (!dst) {

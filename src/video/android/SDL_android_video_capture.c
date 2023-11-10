@@ -60,7 +60,6 @@
 
 #include "../../core/android/SDL_android.h"
 
-
 static ACameraManager *cameraMgr = NULL;
 static ACameraIdList *cameraIdList = NULL;
 
@@ -109,14 +108,16 @@ struct SDL_PrivateVideoCaptureData
     int count_formats[6]; // see format_2_id
 };
 
-
 /**/
 #define FORMAT_SDL SDL_PIXELFORMAT_NV12
 
 static int
-format_2_id(int fmt) {
-     switch (fmt) {
-#define CASE(x, y)  case x: return y
+format_2_id(int fmt)
+{
+    switch (fmt) {
+#define CASE(x, y) \
+    case x:        \
+        return y
         CASE(FORMAT_SDL, 0);
         CASE(SDL_PIXELFORMAT_RGB565, 1);
         CASE(SDL_PIXELFORMAT_RGB888, 2);
@@ -124,15 +125,18 @@ format_2_id(int fmt) {
         CASE(SDL_PIXELFORMAT_RGBX8888, 4);
         CASE(SDL_PIXELFORMAT_UNKNOWN, 5);
 #undef CASE
-        default:
-                return 5;
+    default:
+        return 5;
     }
 }
 
 static int
-id_2_format(int fmt) {
-     switch (fmt) {
-#define CASE(x, y)  case y: return x
+id_2_format(int fmt)
+{
+    switch (fmt) {
+#define CASE(x, y) \
+    case y:        \
+        return x
         CASE(FORMAT_SDL, 0);
         CASE(SDL_PIXELFORMAT_RGB565, 1);
         CASE(SDL_PIXELFORMAT_RGB888, 2);
@@ -140,8 +144,8 @@ id_2_format(int fmt) {
         CASE(SDL_PIXELFORMAT_RGBX8888, 4);
         CASE(SDL_PIXELFORMAT_UNKNOWN, 5);
 #undef CASE
-        default:
-            return SDL_PIXELFORMAT_UNKNOWN;
+    default:
+        return SDL_PIXELFORMAT_UNKNOWN;
     }
 }
 
@@ -149,20 +153,22 @@ static Uint32
 format_android_2_sdl(Uint32 fmt)
 {
     switch (fmt) {
-#define CASE(x, y)  case x: return y
+#define CASE(x, y) \
+    case x:        \
+        return y
         CASE(AIMAGE_FORMAT_YUV_420_888, FORMAT_SDL);
-        CASE(AIMAGE_FORMAT_RGB_565,     SDL_PIXELFORMAT_RGB565);
-        CASE(AIMAGE_FORMAT_RGB_888,     SDL_PIXELFORMAT_RGB888);
-        CASE(AIMAGE_FORMAT_RGBA_8888,   SDL_PIXELFORMAT_RGBA8888);
-        CASE(AIMAGE_FORMAT_RGBX_8888,   SDL_PIXELFORMAT_RGBX8888);
+        CASE(AIMAGE_FORMAT_RGB_565, SDL_PIXELFORMAT_RGB565);
+        CASE(AIMAGE_FORMAT_RGB_888, SDL_PIXELFORMAT_RGB888);
+        CASE(AIMAGE_FORMAT_RGBA_8888, SDL_PIXELFORMAT_RGBA8888);
+        CASE(AIMAGE_FORMAT_RGBX_8888, SDL_PIXELFORMAT_RGBX8888);
 
-        CASE(AIMAGE_FORMAT_RGBA_FP16,   SDL_PIXELFORMAT_UNKNOWN); // 64bits
+        CASE(AIMAGE_FORMAT_RGBA_FP16, SDL_PIXELFORMAT_UNKNOWN); // 64bits
         CASE(AIMAGE_FORMAT_RAW_PRIVATE, SDL_PIXELFORMAT_UNKNOWN);
-        CASE(AIMAGE_FORMAT_JPEG,        SDL_PIXELFORMAT_UNKNOWN);
+        CASE(AIMAGE_FORMAT_JPEG, SDL_PIXELFORMAT_UNKNOWN);
 #undef CASE
-        default:
-            SDL_Log("Unknown format AIMAGE_FORMAT '%d'", fmt);
-            return SDL_PIXELFORMAT_UNKNOWN;
+    default:
+        SDL_Log("Unknown format AIMAGE_FORMAT '%d'", fmt);
+        return SDL_PIXELFORMAT_UNKNOWN;
     }
 }
 
@@ -170,18 +176,19 @@ static Uint32
 format_sdl_2_android(Uint32 fmt)
 {
     switch (fmt) {
-#define CASE(x, y)  case y: return x
+#define CASE(x, y) \
+    case y:        \
+        return x
         CASE(AIMAGE_FORMAT_YUV_420_888, FORMAT_SDL);
-        CASE(AIMAGE_FORMAT_RGB_565,     SDL_PIXELFORMAT_RGB565);
-        CASE(AIMAGE_FORMAT_RGB_888,     SDL_PIXELFORMAT_RGB888);
-        CASE(AIMAGE_FORMAT_RGBA_8888,   SDL_PIXELFORMAT_RGBA8888);
-        CASE(AIMAGE_FORMAT_RGBX_8888,   SDL_PIXELFORMAT_RGBX8888);
+        CASE(AIMAGE_FORMAT_RGB_565, SDL_PIXELFORMAT_RGB565);
+        CASE(AIMAGE_FORMAT_RGB_888, SDL_PIXELFORMAT_RGB888);
+        CASE(AIMAGE_FORMAT_RGBA_8888, SDL_PIXELFORMAT_RGBA8888);
+        CASE(AIMAGE_FORMAT_RGBX_8888, SDL_PIXELFORMAT_RGBX8888);
 #undef CASE
-        default:
-            return 0;
+    default:
+        return 0;
     }
 }
-
 
 static void
 onDisconnected(void *context, ACameraDevice *device)
@@ -197,30 +204,28 @@ onError(void *context, ACameraDevice *device, int error)
     SDL_Log("CB onError");
 }
 
-
 static void
-onClosed(void* context, ACameraCaptureSession *session)
+onClosed(void *context, ACameraCaptureSession *session)
 {
     // SDL_VideoCaptureDevice *_this = (SDL_VideoCaptureDevice *) context;
     SDL_Log("CB onClosed");
 }
 
 static void
-onReady(void* context, ACameraCaptureSession *session)
+onReady(void *context, ACameraCaptureSession *session)
 {
     // SDL_VideoCaptureDevice *_this = (SDL_VideoCaptureDevice *) context;
     SDL_Log("CB onReady");
 }
 
 static void
-onActive(void* context, ACameraCaptureSession *session)
+onActive(void *context, ACameraCaptureSession *session)
 {
     // SDL_VideoCaptureDevice *_this = (SDL_VideoCaptureDevice *) context;
     SDL_Log("CB onActive");
 }
 
-int
-OpenDevice(SDL_VideoCaptureDevice *_this)
+int OpenDevice(SDL_VideoCaptureDevice *_this)
 {
     camera_status_t res;
 
@@ -236,14 +241,14 @@ OpenDevice(SDL_VideoCaptureDevice *_this)
         return SDL_SetError("A camera is already playing");
     }
 
-    _this->hidden = (struct SDL_PrivateVideoCaptureData *) SDL_calloc(1, sizeof (struct SDL_PrivateVideoCaptureData));
+    _this->hidden = (struct SDL_PrivateVideoCaptureData *)SDL_calloc(1, sizeof(struct SDL_PrivateVideoCaptureData));
     if (_this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
 
     create_cameraMgr();
 
-    _this->hidden->dev_callbacks.context = (void *) _this;
+    _this->hidden->dev_callbacks.context = (void *)_this;
     _this->hidden->dev_callbacks.onDisconnected = onDisconnected;
     _this->hidden->dev_callbacks.onError = onError;
 
@@ -255,8 +260,7 @@ OpenDevice(SDL_VideoCaptureDevice *_this)
     return 0;
 }
 
-void
-CloseDevice(SDL_VideoCaptureDevice *_this)
+void CloseDevice(SDL_VideoCaptureDevice *_this)
 {
     if (_this && _this->hidden) {
         if (_this->hidden->session) {
@@ -285,8 +289,7 @@ CloseDevice(SDL_VideoCaptureDevice *_this)
     }
 }
 
-int
-InitDevice(SDL_VideoCaptureDevice *_this)
+int InitDevice(SDL_VideoCaptureDevice *_this)
 {
     size_t size, pitch;
     SDL_CalculateSize(_this->spec.format, _this->spec.width, _this->spec.height, &size, &pitch, SDL_FALSE);
@@ -294,8 +297,7 @@ InitDevice(SDL_VideoCaptureDevice *_this)
     return 0;
 }
 
-int
-GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec)
+int GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec)
 {
     if (spec) {
         *spec = _this->spec;
@@ -304,8 +306,7 @@ GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec)
     return -1;
 }
 
-int
-StartCapture(SDL_VideoCaptureDevice *_this)
+int StartCapture(SDL_VideoCaptureDevice *_this)
 {
     camera_status_t res;
     media_status_t res2;
@@ -323,9 +324,7 @@ StartCapture(SDL_VideoCaptureDevice *_this)
     if (res2 != AMEDIA_OK) {
         SDL_SetError("Error AImageReader_new");
         goto error;
-
     }
-
 
     res = ACaptureSessionOutput_create(window, &sessionOutput);
     if (res != ACAMERA_OK) {
@@ -343,13 +342,11 @@ StartCapture(SDL_VideoCaptureDevice *_this)
         goto error;
     }
 
-
     res = ACameraOutputTarget_create(window, &outputTarget);
     if (res != ACAMERA_OK) {
         SDL_SetError("Error ACameraOutputTarget_create");
         goto error;
     }
-
 
     res = ACameraDevice_createCaptureRequest(_this->hidden->device, TEMPLATE_RECORD, &request);
     if (res != ACAMERA_OK) {
@@ -363,16 +360,15 @@ StartCapture(SDL_VideoCaptureDevice *_this)
         goto error;
     }
 
-
-    _this->hidden->capture_callbacks.context = (void *) _this;
+    _this->hidden->capture_callbacks.context = (void *)_this;
     _this->hidden->capture_callbacks.onClosed = onClosed;
     _this->hidden->capture_callbacks.onReady = onReady;
     _this->hidden->capture_callbacks.onActive = onActive;
 
     res = ACameraDevice_createCaptureSession(_this->hidden->device,
-            _this->hidden->sessionOutputContainer,
-            &_this->hidden->capture_callbacks,
-            &_this->hidden->session);
+                                             _this->hidden->sessionOutputContainer,
+                                             &_this->hidden->capture_callbacks,
+                                             &_this->hidden->session);
     if (res != ACAMERA_OK) {
         SDL_SetError("Error ACameraDevice_createCaptureSession");
         goto error;
@@ -390,16 +386,14 @@ error:
     return -1;
 }
 
-int
-StopCapture(SDL_VideoCaptureDevice *_this)
+int StopCapture(SDL_VideoCaptureDevice *_this)
 {
     ACameraCaptureSession_close(_this->hidden->session);
     _this->hidden->session = NULL;
     return 0;
 }
 
-int
-AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
+int AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
 {
     media_status_t res;
     AImage *image;
@@ -407,14 +401,14 @@ AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
     /* We could also use this one:
     res = AImageReader_acquireLatestImage(_this->hidden->reader, &image);
     */
-    if (res == AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE ) {
+    if (res == AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE) {
 
         SDL_Delay(20); // TODO fix some delay
 #if DEBUG_VIDEO_CAPTURE_CAPTURE
 //        SDL_Log("AImageReader_acquireNextImage: AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE");
 #endif
         return 0;
-    } else if (res == AMEDIA_OK ) {
+    } else if (res == AMEDIA_OK) {
         int i = 0;
         int32_t numPlanes = 0;
         AImage_getNumberOfPlanes(image, &numPlanes);
@@ -443,7 +437,7 @@ AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
             }
         }
 
-        frame->internal = (void*)image;
+        frame->internal = (void *)image;
         return 0;
     } else if (res == AMEDIA_IMGREADER_MAX_IMAGES_ACQUIRED) {
         SDL_SetError("AMEDIA_IMGREADER_MAX_IMAGES_ACQUIRED");
@@ -454,17 +448,15 @@ AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
     return -1;
 }
 
-int
-ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
+int ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
 {
-    if (frame->internal){
+    if (frame->internal) {
         AImage_delete((AImage *)frame->internal);
     }
     return 0;
 }
 
-int
-GetNumFormats(SDL_VideoCaptureDevice *_this)
+int GetNumFormats(SDL_VideoCaptureDevice *_this)
 {
     camera_status_t res;
     int i;
@@ -512,24 +504,28 @@ GetNumFormats(SDL_VideoCaptureDevice *_this)
     }
 
 #if DEBUG_VIDEO_CAPTURE_CAPTURE
-        if (unknown) {
-            SDL_Log("Got unknown android");
-        }
+    if (unknown) {
+        SDL_Log("Got unknown android");
+    }
 #endif
 
-
-    if ( _this->hidden->count_formats[0]) _this->hidden->num_formats += 1;
-    if ( _this->hidden->count_formats[1]) _this->hidden->num_formats += 1;
-    if ( _this->hidden->count_formats[2]) _this->hidden->num_formats += 1;
-    if ( _this->hidden->count_formats[3]) _this->hidden->num_formats += 1;
-    if ( _this->hidden->count_formats[4]) _this->hidden->num_formats += 1;
-    if ( _this->hidden->count_formats[5]) _this->hidden->num_formats += 1;
+    if (_this->hidden->count_formats[0])
+        _this->hidden->num_formats += 1;
+    if (_this->hidden->count_formats[1])
+        _this->hidden->num_formats += 1;
+    if (_this->hidden->count_formats[2])
+        _this->hidden->num_formats += 1;
+    if (_this->hidden->count_formats[3])
+        _this->hidden->num_formats += 1;
+    if (_this->hidden->count_formats[4])
+        _this->hidden->num_formats += 1;
+    if (_this->hidden->count_formats[5])
+        _this->hidden->num_formats += 1;
 
     return _this->hidden->num_formats;
 }
 
-int
-GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
+int GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
 {
     int i;
     int i2 = 0;
@@ -552,13 +548,11 @@ GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
         }
 
         i2++;
-
     }
     return 0;
 }
 
-int
-GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format)
+int GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format)
 {
     int i, i2 = 0, index;
     if (_this->hidden->num_formats == 0) {
@@ -583,8 +577,7 @@ GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format)
     return -1;
 }
 
-int
-GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width, int *height)
+int GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width, int *height)
 {
     camera_status_t res;
     int i, i2 = 0;
@@ -616,7 +609,6 @@ GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width
             continue;
         }
 
-
         fmt = format_android_2_sdl(f);
         if (fmt != format) {
             continue;
@@ -633,8 +625,7 @@ GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width
     return -1;
 }
 
-int
-GetDeviceName(int index, char *buf, int size)
+int GetDeviceName(int index, char *buf, int size)
 {
     create_cameraMgr();
 
@@ -652,8 +643,7 @@ GetDeviceName(int index, char *buf, int size)
     return -1;
 }
 
-int
-GetNumDevices(void)
+int GetNumDevices(void)
 {
     camera_status_t res;
     create_cameraMgr();
@@ -674,5 +664,3 @@ GetNumDevices(void)
 }
 
 #endif
-
-

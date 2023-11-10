@@ -99,4 +99,3 @@ void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang do
         rmutex.Signal();
     }
 }
-

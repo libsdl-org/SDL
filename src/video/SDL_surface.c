@@ -676,7 +676,7 @@ int SDL_BlitSurfaceUnchecked(SDL_Surface *src, const SDL_Rect *srcrect,
 }
 
 int SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect,
-                  SDL_Surface *dst, SDL_Rect *dstrect)
+                    SDL_Surface *dst, SDL_Rect *dstrect)
 {
     SDL_Rect fulldst;
     int srcx, srcy, w, h;
@@ -778,13 +778,13 @@ int SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect,
 }
 
 int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
-                        SDL_Surface *dst, SDL_Rect *dstrect)
+                          SDL_Surface *dst, SDL_Rect *dstrect)
 {
     return SDL_PrivateBlitSurfaceScaled(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
 }
 
 int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
-                               SDL_Surface *dst, SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
+                                 SDL_Surface *dst, SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
 {
     double src_x0, src_y0, src_x1, src_y1;
     double dst_x0, dst_y0, dst_x1, dst_y1;

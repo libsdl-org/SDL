@@ -761,14 +761,14 @@ static Bool isReparentNotify(Display *display, XEvent *ev, XPointer arg)
 
 static SDL_bool IsHighLatin1(const char *string, int length)
 {
-	while (length-- > 0) {
-		Uint8 ch = (Uint8)*string;
-		if (ch >= 0x80) {
-			return SDL_TRUE;
-		}
-		++string;
-	}
-	return SDL_FALSE;
+    while (length-- > 0) {
+        Uint8 ch = (Uint8)*string;
+        if (ch >= 0x80) {
+            return SDL_TRUE;
+        }
+        ++string;
+    }
+    return SDL_FALSE;
 }
 
 static int XLookupStringAsUTF8(XKeyEvent *event_struct, char *buffer_return, int bytes_buffer, KeySym *keysym_return, XComposeStatus *status_in_out)
@@ -886,19 +886,19 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     if (SDL_X11_HAVE_XFIXES &&
-            xevent->type == X11_GetXFixesSelectionNotifyEvent()) {
-        XFixesSelectionNotifyEvent *ev = (XFixesSelectionNotifyEvent *) xevent;
+        xevent->type == X11_GetXFixesSelectionNotifyEvent()) {
+        XFixesSelectionNotifyEvent *ev = (XFixesSelectionNotifyEvent *)xevent;
 
         /* !!! FIXME: cache atoms */
         Atom XA_CLIPBOARD = X11_XInternAtom(display, "CLIPBOARD", 0);
 
 #ifdef DEBUG_XEVENTS
         printf("window CLIPBOARD: XFixesSelectionNotify (selection = %s)\n",
-                X11_XGetAtomName(display, ev->selection));
+               X11_XGetAtomName(display, ev->selection));
 #endif
 
         if (ev->selection == XA_PRIMARY ||
-                (XA_CLIPBOARD != None && ev->selection == XA_CLIPBOARD)) {
+            (XA_CLIPBOARD != None && ev->selection == XA_CLIPBOARD)) {
             SDL_SendClipboardUpdate();
             return;
         }
@@ -1318,7 +1318,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 root_y = xevent->xclient.data.l[2] & 0xffff;
                 /* Translate from root to current window position */
                 X11_XTranslateCoordinates(display, DefaultRootWindow(display), data->xwindow,
-                        root_x, root_y, &window_x, &window_y, &ChildReturn);
+                                          root_x, root_y, &window_x, &window_y, &ChildReturn);
 
                 SDL_SendDropPosition(data->window, (float)window_x, (float)window_y);
             }

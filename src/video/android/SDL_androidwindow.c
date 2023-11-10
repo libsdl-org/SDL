@@ -31,7 +31,6 @@
 #include "SDL_androidvideo.h"
 #include "SDL_androidwindow.h"
 
-
 /* Currently only one window */
 SDL_Window *Android_Window = NULL;
 

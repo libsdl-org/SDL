@@ -73,13 +73,13 @@ void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang does
                so unlocks from other threads will fail.
              */
             const int rc = pthread_mutex_lock(&mutex->id);
-            SDL_assert(rc == 0);  // assume we're in a lot of trouble if this assert fails.
+            SDL_assert(rc == 0); // assume we're in a lot of trouble if this assert fails.
             mutex->owner = this_thread;
             mutex->recursive = 0;
         }
 #else
         const int rc = pthread_mutex_lock(&mutex->id);
-        SDL_assert(rc == 0);  // assume we're in a lot of trouble if this assert fails.
+        SDL_assert(rc == 0); // assume we're in a lot of trouble if this assert fails.
 #endif
     }
 }
@@ -105,7 +105,7 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
             } else if (result == EBUSY) {
                 retval = SDL_MUTEX_TIMEDOUT;
             } else {
-                SDL_assert(!"Error trying to lock mutex");  // assume we're in a lot of trouble if this assert fails.
+                SDL_assert(!"Error trying to lock mutex"); // assume we're in a lot of trouble if this assert fails.
                 retval = SDL_MUTEX_TIMEDOUT;
             }
         }
@@ -115,7 +115,7 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
             if (result == EBUSY) {
                 retval = SDL_MUTEX_TIMEDOUT;
             } else {
-                SDL_assert(!"Error trying to lock mutex");  // assume we're in a lot of trouble if this assert fails.
+                SDL_assert(!"Error trying to lock mutex"); // assume we're in a lot of trouble if this assert fails.
                 retval = SDL_MUTEX_TIMEDOUT;
             }
         }
@@ -148,8 +148,7 @@ void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang do
 
 #else
         const int rc = pthread_mutex_unlock(&mutex->id);
-        SDL_assert(rc == 0);  // assume we're in a lot of trouble if this assert fails.
+        SDL_assert(rc == 0); // assume we're in a lot of trouble if this assert fails.
 #endif // FAKE_RECURSIVE_MUTEX
     }
 }
-

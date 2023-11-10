@@ -35,7 +35,6 @@
 
 #include "SDL_androidvulkan.h"
 
-
 int Android_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
@@ -110,13 +109,13 @@ void Android_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-char const* const* Android_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                              Uint32 *count)
+char const *const *Android_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+                                                        Uint32 *count)
 {
     static const char *const extensionsForAndroid[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_ANDROID_SURFACE_EXTENSION_NAME
     };
-    if(count) {
+    if (count) {
         *count = SDL_arraysize(extensionsForAndroid);
     }
     return extensionsForAndroid;

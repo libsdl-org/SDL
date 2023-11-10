@@ -28,7 +28,7 @@
 int (*WINRT_SDLAppEntryPoint)(int, char **) = NULL;
 
 extern "C" DECLSPEC int
-SDL_RunApp(int, char**, SDL_main_func mainFunction, void * xamlBackgroundPanel)
+SDL_RunApp(int, char **, SDL_main_func mainFunction, void *xamlBackgroundPanel)
 {
     if (xamlBackgroundPanel) {
         return SDL_WinRTInitXAMLApp(mainFunction, xamlBackgroundPanel);

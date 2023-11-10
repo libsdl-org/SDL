@@ -31,13 +31,13 @@ static void SDLCALL MainCallbackRateHintChanged(void *userdata, const char *name
 {
     const int callback_rate = newValue ? SDL_atoi(newValue) : 60;
     if (callback_rate > 0) {
-        callback_rate_increment = ((Uint64) 1000000000) / ((Uint64) callback_rate);
+        callback_rate_increment = ((Uint64)1000000000) / ((Uint64)callback_rate);
     } else {
         callback_rate_increment = 0;
     }
 }
 
-int SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
+int SDL_EnterAppMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
 {
     int rc = SDL_InitMainCallbacks(argc, argv, appinit, appiter, appevent, appquit);
     if (rc == 0) {

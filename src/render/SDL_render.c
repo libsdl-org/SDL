@@ -45,10 +45,10 @@ this should probably be removed at some point in the future.  --ryan. */
 
 #define SDL_WINDOWRENDERDATA "SDL.internal.window.renderer"
 
-#define CHECK_RENDERER_MAGIC(renderer, retval)                  \
+#define CHECK_RENDERER_MAGIC(renderer, retval)                     \
     if (!(renderer) || (renderer)->magic != &SDL_renderer_magic) { \
-        SDL_InvalidParamError("renderer");                      \
-        return retval;                                          \
+        SDL_InvalidParamError("renderer");                         \
+        return retval;                                             \
     }
 
 #define CHECK_TEXTURE_MAGIC(texture, retval)                    \
@@ -670,7 +670,6 @@ static void UpdateMainViewDimensions(SDL_Renderer *renderer)
 
 static int UpdateLogicalPresentation(SDL_Renderer *renderer);
 
-
 int SDL_GetNumRenderDrivers(void)
 {
 #ifndef SDL_RENDER_DISABLED
@@ -685,7 +684,7 @@ const char *SDL_GetRenderDriver(int index)
 #ifndef SDL_RENDER_DISABLED
     if (index < 0 || index >= SDL_GetNumRenderDrivers()) {
         SDL_SetError("index must be in the range of 0 - %d",
-                            SDL_GetNumRenderDrivers() - 1);
+                     SDL_GetNumRenderDrivers() - 1);
         return NULL;
     }
     return render_drivers[index]->info.name;
@@ -2000,7 +1999,7 @@ static void SDL_UnlockTextureNative(SDL_Texture *texture)
 
 void SDL_UnlockTexture(SDL_Texture *texture)
 {
-    CHECK_TEXTURE_MAGIC(texture,);
+    CHECK_TEXTURE_MAGIC(texture, );
 
     if (texture->access != SDL_TEXTUREACCESS_STREAMING) {
         return;
@@ -2814,7 +2813,7 @@ static int RenderLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x2, i
 }
 
 static int RenderLinesWithRectsF(SDL_Renderer *renderer,
-                                     const SDL_FPoint *points, const int count)
+                                 const SDL_FPoint *points, const int count)
 {
     const float scale_x = renderer->view->scale.x;
     const float scale_y = renderer->view->scale.y;
@@ -2870,7 +2869,7 @@ static int RenderLinesWithRectsF(SDL_Renderer *renderer,
             }
         } else {
             retval += RenderLineBresenham(renderer, (int)SDL_roundf(points[i].x), (int)SDL_roundf(points[i].y),
-                                              (int)SDL_roundf(points[i + 1].x), (int)SDL_roundf(points[i + 1].y), draw_last);
+                                          (int)SDL_roundf(points[i + 1].x), (int)SDL_roundf(points[i + 1].y), draw_last);
         }
         drew_line = SDL_TRUE;
     }
@@ -2952,10 +2951,10 @@ int SDL_RenderLines(SDL_Renderer *renderer, const SDL_FPoint *points, int count)
                 *ptr_xy++ = q.x;
                 *ptr_xy++ = q.y + scale_y;
 
-#define ADD_TRIANGLE(i1, i2, i3)        \
-    *ptr_indices++ = cur_index + (i1);  \
-    *ptr_indices++ = cur_index + (i2);  \
-    *ptr_indices++ = cur_index + (i3);  \
+#define ADD_TRIANGLE(i1, i2, i3)       \
+    *ptr_indices++ = cur_index + (i1); \
+    *ptr_indices++ = cur_index + (i2); \
+    *ptr_indices++ = cur_index + (i3); \
     num_indices += 3;
 
                 /* closed polyline, don´t draw twice the point */
@@ -3253,8 +3252,8 @@ int SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FR
 }
 
 int SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
-                      const SDL_FRect *srcrect, const SDL_FRect *dstrect,
-                      const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
+                             const SDL_FRect *srcrect, const SDL_FRect *dstrect,
+                             const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
 {
     SDL_FRect real_srcrect;
     SDL_FRect real_dstrect;
@@ -3995,7 +3994,7 @@ int SDL_RenderPresent(SDL_Renderer *renderer)
         presented = SDL_FALSE;
     } else
 #endif
-    if (renderer->RenderPresent(renderer) < 0) {
+        if (renderer->RenderPresent(renderer) < 0) {
         presented = SDL_FALSE;
     }
 
@@ -4098,7 +4097,7 @@ static void SDL_DiscardAllCommands(SDL_Renderer *renderer)
 
 void SDL_DestroyRenderer(SDL_Renderer *renderer)
 {
-    CHECK_RENDERER_MAGIC(renderer,);
+    CHECK_RENDERER_MAGIC(renderer, );
 
     SDL_DestroyProperties(renderer->props);
 

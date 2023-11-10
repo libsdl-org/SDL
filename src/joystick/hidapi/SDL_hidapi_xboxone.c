@@ -36,9 +36,9 @@
 /*#define DEBUG_XBOX_PROTOCOL*/
 
 #if defined(__WIN32__) || defined(__WINGDK__)
-#define XBOX_ONE_DRIVER_ACTIVE  1
+#define XBOX_ONE_DRIVER_ACTIVE 1
 #else
-#define XBOX_ONE_DRIVER_ACTIVE  0
+#define XBOX_ONE_DRIVER_ACTIVE 0
 #endif
 
 #define CONTROLLER_IDENTIFY_TIMEOUT_MS      100
@@ -1149,34 +1149,35 @@ static SDL_bool HIDAPI_DriverXboxOne_UpdateInitState(SDL_DriverXboxOne_Context *
 #define GIP_HEADER_MIN_LENGTH 3
 
 /* Internal commands */
-#define GIP_CMD_ACKNOWLEDGE     0x01
-#define GIP_CMD_ANNOUNCE        0x02
-#define GIP_CMD_STATUS          0x03
-#define GIP_CMD_IDENTIFY        0x04
-#define GIP_CMD_POWER           0x05
-#define GIP_CMD_AUTHENTICATE    0x06
-#define GIP_CMD_VIRTUAL_KEY     0x07
-#define GIP_CMD_AUDIO_CONTROL   0x08
-#define GIP_CMD_LED             0x0A
-#define GIP_CMD_HID_REPORT      0x0B
-#define GIP_CMD_FIRMWARE        0x0C
-#define GIP_CMD_SERIAL_NUMBER   0x1E
-#define GIP_CMD_AUDIO_SAMPLES   0x60
+#define GIP_CMD_ACKNOWLEDGE   0x01
+#define GIP_CMD_ANNOUNCE      0x02
+#define GIP_CMD_STATUS        0x03
+#define GIP_CMD_IDENTIFY      0x04
+#define GIP_CMD_POWER         0x05
+#define GIP_CMD_AUTHENTICATE  0x06
+#define GIP_CMD_VIRTUAL_KEY   0x07
+#define GIP_CMD_AUDIO_CONTROL 0x08
+#define GIP_CMD_LED           0x0A
+#define GIP_CMD_HID_REPORT    0x0B
+#define GIP_CMD_FIRMWARE      0x0C
+#define GIP_CMD_SERIAL_NUMBER 0x1E
+#define GIP_CMD_AUDIO_SAMPLES 0x60
 
 /* External commands */
-#define GIP_CMD_RUMBLE          0x09
-#define GIP_CMD_UNMAPPED_STATE  0x0C
-#define GIP_CMD_INPUT           0x20
+#define GIP_CMD_RUMBLE         0x09
+#define GIP_CMD_UNMAPPED_STATE 0x0C
+#define GIP_CMD_INPUT          0x20
 
 /* Header option flags */
-#define GIP_OPT_ACKNOWLEDGE     0x10
-#define GIP_OPT_INTERNAL        0x20
-#define GIP_OPT_CHUNK_START     0x40
-#define GIP_OPT_CHUNK           0x80
+#define GIP_OPT_ACKNOWLEDGE 0x10
+#define GIP_OPT_INTERNAL    0x20
+#define GIP_OPT_CHUNK_START 0x40
+#define GIP_OPT_CHUNK       0x80
 
 #pragma pack(push, 1)
 
-struct gip_header {
+struct gip_header
+{
     Uint8 command;
     Uint8 options;
     Uint8 sequence;
@@ -1184,7 +1185,8 @@ struct gip_header {
     Uint32 chunk_offset;
 };
 
-struct gip_pkt_acknowledge {
+struct gip_pkt_acknowledge
+{
     Uint8 unknown;
     Uint8 command;
     Uint8 options;

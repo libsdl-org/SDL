@@ -37,7 +37,7 @@
 #include "../SDL_audiodev_c.h"
 #include "SDL_netbsdaudio.h"
 
-//#define DEBUG_AUDIO
+// #define DEBUG_AUDIO
 
 static void NETBSDAUDIO_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)
 {
@@ -145,7 +145,7 @@ static int NETBSDAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, 
 {
     struct SDL_PrivateAudioData *h = device->hidden;
     const int written = write(h->audio_fd, buffer, buflen);
-    if (written != buflen) {  // Treat even partial writes as fatal errors.
+    if (written != buflen) { // Treat even partial writes as fatal errors.
         return -1;
     }
 
@@ -214,7 +214,7 @@ static int NETBSDAUDIO_OpenDevice(SDL_AudioDevice *device)
     struct audio_prinfo *prinfo = iscapture ? &info.record : &info.play;
 
     // Initialize all variables that we clean on shutdown
-    device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
+    device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
         return SDL_OutOfMemory();
     }
@@ -301,7 +301,7 @@ static int NETBSDAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     NETBSDAUDIO_Status(device);
 
-    return 0;  // We're ready to rock and roll. :-)
+    return 0; // We're ready to rock and roll. :-)
 }
 
 static SDL_bool NETBSDAUDIO_Init(SDL_AudioDriverImpl *impl)

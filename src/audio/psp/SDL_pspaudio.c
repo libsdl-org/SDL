@@ -40,7 +40,7 @@ static inline SDL_bool isBasicAudioConfig(const SDL_AudioSpec *spec)
 
 static int PSPAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
-    device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
+    device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
         return SDL_OutOfMemory();
     }
@@ -70,7 +70,7 @@ static int PSPAUDIO_OpenDevice(SDL_AudioDevice *device)
         case 32000:
         case 44100:
         case 48000:
-            break;  // acceptable, keep it
+            break; // acceptable, keep it
         default:
             device->spec.freq = 48000;
             break;
@@ -110,16 +110,16 @@ static int PSPAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int
     int rc;
     if (!isBasicAudioConfig(&device->spec)) {
         SDL_assert(device->spec.channels == 2);
-        rc = sceAudioSRCOutputBlocking(PSP_AUDIO_VOLUME_MAX, (void *) buffer);
+        rc = sceAudioSRCOutputBlocking(PSP_AUDIO_VOLUME_MAX, (void *)buffer);
     } else {
-        rc = sceAudioOutputPannedBlocking(device->hidden->channel, PSP_AUDIO_VOLUME_MAX, PSP_AUDIO_VOLUME_MAX, (void *) buffer);
+        rc = sceAudioOutputPannedBlocking(device->hidden->channel, PSP_AUDIO_VOLUME_MAX, PSP_AUDIO_VOLUME_MAX, (void *)buffer);
     }
     return (rc == 0) ? 0 : -1;
 }
 
 static int PSPAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
-    return 0;  // Because we block when sending audio, there's no need for this function to do anything.
+    return 0; // Because we block when sending audio, there's no need for this function to do anything.
 }
 
 static Uint8 *PSPAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
@@ -171,8 +171,8 @@ static SDL_bool PSPAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->CloseDevice = PSPAUDIO_CloseDevice;
     impl->ThreadInit = PSPAUDIO_ThreadInit;
     impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
-    //impl->HasCaptureSupport = SDL_TRUE;
-    //impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
+    // impl->HasCaptureSupport = SDL_TRUE;
+    // impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
     return SDL_TRUE;
 }
 

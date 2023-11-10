@@ -64,7 +64,7 @@ static struct UnifontGlyph
 {
     Uint8 width;
     Uint8 data[32];
-} * unifontGlyph;
+} *unifontGlyph;
 static SDL_Texture **unifontTexture;
 static Uint8 unifontTextureLoaded[UNIFONT_NUM_TEXTURES] = { 0 };
 

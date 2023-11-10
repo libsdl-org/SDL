@@ -33,10 +33,10 @@
  * suffixed
  */
 #ifndef SDL_THREAD_GENERIC_COND_SUFFIX
-#define SDL_CreateCondition_generic      SDL_CreateCondition
-#define SDL_DestroyCondition_generic     SDL_DestroyCondition
-#define SDL_SignalCondition_generic      SDL_SignalCondition
-#define SDL_BroadcastCondition_generic   SDL_BroadcastCondition
+#define SDL_CreateCondition_generic        SDL_CreateCondition
+#define SDL_DestroyCondition_generic       SDL_DestroyCondition
+#define SDL_SignalCondition_generic        SDL_SignalCondition
+#define SDL_BroadcastCondition_generic     SDL_BroadcastCondition
 #define SDL_WaitConditionTimeoutNS_generic SDL_WaitConditionTimeoutNS
 #endif
 

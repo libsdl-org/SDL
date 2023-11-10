@@ -25,7 +25,6 @@
 #include "SDL_events_c.h"
 #include "SDL_mouse_c.h"
 
-
 static int SDLCALL RemoveSupercededWindowEvents(void *userdata, SDL_Event *event)
 {
     SDL_Event *new_event = (SDL_Event *)userdata;

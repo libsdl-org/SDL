@@ -42,7 +42,7 @@
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 #endif
-typedef HRESULT (WINAPI *DwmSetWindowAttribute_t)(HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
+typedef HRESULT(WINAPI *DwmSetWindowAttribute_t)(HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
 
 /* Transparent window support */
 #ifndef DWM_BB_ENABLE
@@ -600,7 +600,7 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
                    We can use (-1, -1, 0, 0) boundary to make sure no pixels are being blurred
                 */
                 HRGN rgn = CreateRectRgn(-1, -1, 0, 0);
-                DWM_BLURBEHIND bb = {DWM_BB_ENABLE | DWM_BB_BLURREGION, TRUE, rgn, FALSE};
+                DWM_BLURBEHIND bb = { DWM_BB_ENABLE | DWM_BB_BLURREGION, TRUE, rgn, FALSE };
                 DwmEnableBlurBehindWindowFunc(hwnd, &bb);
                 DeleteObject(rgn);
             }

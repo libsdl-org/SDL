@@ -62,7 +62,7 @@ static void WASAPI_AudioDeviceDisconnected(SDL_AudioDevice *device)
 
 static int mgmtthrtask_DefaultAudioDeviceChanged(void *userdata)
 {
-    SDL_DefaultAudioDeviceChanged((SDL_AudioDevice *) userdata);
+    SDL_DefaultAudioDeviceChanged((SDL_AudioDevice *)userdata);
     return 0;
 }
 
@@ -134,7 +134,6 @@ void WASAPI_PlatformThreadInit(SDL_AudioDevice *device)
     } else {
         SDL_SetThreadPriority(device->iscapture ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_TIME_CRITICAL);
     }
-
 }
 
 void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *device)

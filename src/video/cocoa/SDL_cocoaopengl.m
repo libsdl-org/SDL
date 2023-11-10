@@ -177,7 +177,9 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
         if ([NSThread isMainThread]) {
             [self setView:nil];
         } else {
-            dispatch_sync(dispatch_get_main_queue(), ^{ [self setView:nil]; });
+            dispatch_sync(dispatch_get_main_queue(), ^{
+              [self setView:nil];
+            });
         }
     }
 }

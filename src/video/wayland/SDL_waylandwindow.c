@@ -43,7 +43,6 @@
 #include <libdecor.h>
 #endif
 
-
 static SDL_bool FloatEqual(float a, float b)
 {
     const float diff = SDL_fabsf(a - b);
@@ -358,7 +357,7 @@ static void ConfigureWindowGeometry(SDL_Window *window)
         }
 
         window_size_changed = window_width != window->w || window_height != window->h ||
-            data->wl_window_width != output_width || data->wl_window_height != output_height;
+                              data->wl_window_width != output_width || data->wl_window_height != output_height;
 
         if (window_size_changed || drawable_size_changed) {
             if (WindowNeedsViewport(window)) {
@@ -1409,7 +1408,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         }
     } else
 #endif
-    if ((data->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL || data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) && c->shell.xdg) {
+        if ((data->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL || data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) && c->shell.xdg) {
         data->shell_surface.xdg.surface = xdg_wm_base_get_xdg_surface(c->shell.xdg, data->surface);
         xdg_surface_set_user_data(data->shell_surface.xdg.surface, data);
         xdg_surface_add_listener(data->shell_surface.xdg.surface, &shell_surface_listener_xdg, data);
@@ -1427,7 +1426,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 parent_xdg_surface = libdecor_frame_get_xdg_surface(parent_data->shell_surface.libdecor.frame);
             } else
 #endif
-            if (parent_data->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL ||
+                if (parent_data->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL ||
                     parent_data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
                 parent_xdg_surface = parent_data->shell_surface.xdg.surface;
             }
@@ -1544,7 +1543,6 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     Wayland_SetWindowResizable(_this, window, !!(window->flags & SDL_WINDOW_RESIZABLE));
     Wayland_SetWindowBordered(_this, window, !(window->flags & SDL_WINDOW_BORDERLESS));
 
-
     /* We're finally done putting the window together, raise if possible */
     if (c->activation_manager) {
         /* Note that we don't check for empty strings, as that is still
@@ -1644,7 +1642,7 @@ void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
         }
     } else
 #endif
-    if (data->shell.xdg) {
+        if (data->shell.xdg) {
         if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
             Wayland_ReleasePopup(_this, window);
         } else if (wind->shell_surface.xdg.roleobj.toplevel) {
@@ -1706,7 +1704,7 @@ static const struct xdg_activation_token_v1_listener activation_listener_xdg = {
  */
 static void Wayland_activate_window(SDL_VideoData *data, SDL_WindowData *target_wind, SDL_bool set_serial)
 {
-    struct SDL_WaylandInput * input = data->input;
+    struct SDL_WaylandInput *input = data->input;
     SDL_Window *focus = SDL_GetKeyboardFocus();
     struct wl_surface *requesting_surface = focus ? focus->driverdata->surface : NULL;
 
@@ -2214,7 +2212,7 @@ void Wayland_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
         }
     } else
 #endif
-    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
+        if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
         if (wind->shell_surface.xdg.roleobj.toplevel) {
             xdg_toplevel_show_window_menu(wind->shell_surface.xdg.roleobj.toplevel, wind->waylandData->input->seat, wind->waylandData->input->last_implicit_grab_serial, x, y);
         }

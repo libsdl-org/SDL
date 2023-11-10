@@ -58,7 +58,7 @@ extern int UIKit_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay
 // because visionOS does not have a screen
 // we create a fake 1080p display to maintain compatibility.
 #if TARGET_OS_XR
-#define SDL_XR_SCREENWIDTH 1920
+#define SDL_XR_SCREENWIDTH  1920
 #define SDL_XR_SCREENHEIGHT 1080
 #endif
 

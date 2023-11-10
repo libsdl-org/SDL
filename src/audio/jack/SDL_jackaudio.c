@@ -144,11 +144,11 @@ static void jackShutdownCallback(void *arg) // JACK went away; device is lost.
 
 static int jackSampleRateCallback(jack_nframes_t nframes, void *arg)
 {
-    //SDL_Log("JACK Sample Rate Callback! %d", (int) nframes);
-    SDL_AudioDevice *device = (SDL_AudioDevice *) arg;
+    // SDL_Log("JACK Sample Rate Callback! %d", (int) nframes);
+    SDL_AudioDevice *device = (SDL_AudioDevice *)arg;
     SDL_AudioSpec newspec;
     SDL_copyp(&newspec, &device->spec);
-    newspec.freq = (int) nframes;
+    newspec.freq = (int)nframes;
     if (SDL_AudioDeviceFormatChanged(device, &newspec, device->sample_frames) < 0) {
         SDL_AudioDeviceDisconnected(device);
     }
@@ -157,11 +157,11 @@ static int jackSampleRateCallback(jack_nframes_t nframes, void *arg)
 
 static int jackBufferSizeCallback(jack_nframes_t nframes, void *arg)
 {
-    //SDL_Log("JACK Buffer Size Callback! %d", (int) nframes);
-    SDL_AudioDevice *device = (SDL_AudioDevice *) arg;
+    // SDL_Log("JACK Buffer Size Callback! %d", (int) nframes);
+    SDL_AudioDevice *device = (SDL_AudioDevice *)arg;
     SDL_AudioSpec newspec;
     SDL_copyp(&newspec, &device->spec);
-    if (SDL_AudioDeviceFormatChanged(device, &newspec, (int) nframes) < 0) {
+    if (SDL_AudioDeviceFormatChanged(device, &newspec, (int)nframes) < 0) {
         SDL_AudioDeviceDisconnected(device);
     }
     return 0;
@@ -176,11 +176,11 @@ static int jackProcessPlaybackCallback(jack_nframes_t nframes, void *arg)
 
 static int JACK_PlayDevice(SDL_AudioDevice *device, const Uint8 *ui8buffer, int buflen)
 {
-    const float *buffer = (float *) ui8buffer;
+    const float *buffer = (float *)ui8buffer;
     jack_port_t **ports = device->hidden->sdlports;
     const int total_channels = device->spec.channels;
     const int total_frames = device->sample_frames;
-    const jack_nframes_t nframes = (jack_nframes_t) device->sample_frames;
+    const jack_nframes_t nframes = (jack_nframes_t)device->sample_frames;
 
     for (int channelsi = 0; channelsi < total_channels; channelsi++) {
         float *dst = (float *)JACK_jack_port_get_buffer(ports[channelsi], nframes);
@@ -210,11 +210,11 @@ static int jackProcessCaptureCallback(jack_nframes_t nframes, void *arg)
 
 static int JACK_CaptureFromDevice(SDL_AudioDevice *device, void *vbuffer, int buflen)
 {
-    float *buffer = (float *) vbuffer;
+    float *buffer = (float *)vbuffer;
     jack_port_t **ports = device->hidden->sdlports;
     const int total_channels = device->spec.channels;
     const int total_frames = device->sample_frames;
-    const jack_nframes_t nframes = (jack_nframes_t) device->sample_frames;
+    const jack_nframes_t nframes = (jack_nframes_t)device->sample_frames;
 
     for (int channelsi = 0; channelsi < total_channels; channelsi++) {
         const float *src = (const float *)JACK_jack_port_get_buffer(ports[channelsi], nframes);

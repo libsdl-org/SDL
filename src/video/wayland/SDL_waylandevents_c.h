@@ -71,15 +71,15 @@ struct SDL_WaylandTabletInput
 
 typedef struct
 {
-    int32_t repeat_rate;      /* Repeat rate in range of [1, 1000] character(s) per second */
-    int32_t repeat_delay_ms;  /* Time to first repeat event in milliseconds */
+    int32_t repeat_rate;     /* Repeat rate in range of [1, 1000] character(s) per second */
+    int32_t repeat_delay_ms; /* Time to first repeat event in milliseconds */
     SDL_bool is_initialized;
 
     SDL_bool is_key_down;
     uint32_t key;
-    Uint64 wl_press_time_ns;   /* Key press time as reported by the Wayland API */
-    Uint64 sdl_press_time_ns;  /* Key press time expressed in SDL ticks */
-    Uint64 next_repeat_ns;     /* Next repeat event in nanoseconds */
+    Uint64 wl_press_time_ns;  /* Key press time as reported by the Wayland API */
+    Uint64 sdl_press_time_ns; /* Key press time expressed in SDL ticks */
+    Uint64 next_repeat_ns;    /* Next repeat event in nanoseconds */
     uint32_t scancode;
     char text[8];
 } SDL_WaylandKeyboardRepeat;

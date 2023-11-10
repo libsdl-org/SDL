@@ -73,15 +73,15 @@ static ASCIIKeyInfo SDL_ASCIIKeyInfoTable[] = {
     /*  36 */ { SDL_SCANCODE_4, SDL_KMOD_SHIFT },          /* plus shift modifier '$' */
     /*  37 */ { SDL_SCANCODE_5, SDL_KMOD_SHIFT },          /* plus shift modifier '%' */
     /*  38 */ { SDL_SCANCODE_7, SDL_KMOD_SHIFT },          /* plus shift modifier '&' */
-    /*  39 */ { SDL_SCANCODE_APOSTROPHE, 0 },          /* '''                     */
+    /*  39 */ { SDL_SCANCODE_APOSTROPHE, 0 },              /* '''                     */
     /*  40 */ { SDL_SCANCODE_9, SDL_KMOD_SHIFT },          /* plus shift modifier '(' */
     /*  41 */ { SDL_SCANCODE_0, SDL_KMOD_SHIFT },          /* plus shift modifier ')' */
     /*  42 */ { SDL_SCANCODE_8, SDL_KMOD_SHIFT },          /* '*'                     */
     /*  43 */ { SDL_SCANCODE_EQUALS, SDL_KMOD_SHIFT },     /* plus shift modifier '+' */
-    /*  44 */ { SDL_SCANCODE_COMMA, 0 },               /* ','                     */
-    /*  45 */ { SDL_SCANCODE_MINUS, 0 },               /* '-'                     */
-    /*  46 */ { SDL_SCANCODE_PERIOD, 0 },              /* '.'                     */
-    /*  47 */ { SDL_SCANCODE_SLASH, 0 },               /* '/'                     */
+    /*  44 */ { SDL_SCANCODE_COMMA, 0 },                   /* ','                     */
+    /*  45 */ { SDL_SCANCODE_MINUS, 0 },                   /* '-'                     */
+    /*  46 */ { SDL_SCANCODE_PERIOD, 0 },                  /* '.'                     */
+    /*  47 */ { SDL_SCANCODE_SLASH, 0 },                   /* '/'                     */
     /*  48 */ { SDL_SCANCODE_0, 0 },
     /*  49 */ { SDL_SCANCODE_1, 0 },
     /*  50 */ { SDL_SCANCODE_2, 0 },

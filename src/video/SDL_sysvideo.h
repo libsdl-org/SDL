@@ -73,8 +73,8 @@ struct SDL_Window
     Uint32 flags;
     Uint32 pending_flags;
     float display_scale;
-    SDL_bool fullscreen_exclusive;  /* The window is currently fullscreen exclusive */
-    SDL_DisplayID last_fullscreen_exclusive_display;  /* The last fullscreen_exclusive display */
+    SDL_bool fullscreen_exclusive;                   /* The window is currently fullscreen exclusive */
+    SDL_DisplayID last_fullscreen_exclusive_display; /* The last fullscreen_exclusive display */
     SDL_DisplayID last_displayID;
 
     /* Stored position and size for windowed mode */
@@ -116,19 +116,19 @@ struct SDL_Window
     SDL_Window *prev_sibling;
     SDL_Window *next_sibling;
 };
-#define SDL_WINDOW_FULLSCREEN_VISIBLE(W)        \
-    ((((W)->flags & SDL_WINDOW_FULLSCREEN) != 0) &&   \
-     (((W)->flags & SDL_WINDOW_HIDDEN) == 0) && \
+#define SDL_WINDOW_FULLSCREEN_VISIBLE(W)            \
+    ((((W)->flags & SDL_WINDOW_FULLSCREEN) != 0) && \
+     (((W)->flags & SDL_WINDOW_HIDDEN) == 0) &&     \
      (((W)->flags & SDL_WINDOW_MINIMIZED) == 0))
 
-#define SDL_WINDOW_IS_POPUP(W)                   \
-    ((((W)->flags & SDL_WINDOW_TOOLTIP) != 0) || \
-    (((W)->flags & SDL_WINDOW_POPUP_MENU) != 0)) \
-                                                 \
-/*
- * Define the SDL display structure.
- * This corresponds to physical monitors attached to the system.
- */
+#define SDL_WINDOW_IS_POPUP(W)                                           \
+    ((((W)->flags & SDL_WINDOW_TOOLTIP) != 0) ||                         \
+     (((W)->flags & SDL_WINDOW_POPUP_MENU) != 0))                        \
+                                                                         \
+        /*                                                               \
+         * Define the SDL display structure.                             \
+         * This corresponds to physical monitors attached to the system. \
+         */
 struct SDL_VideoDisplay
 {
     SDL_DisplayID id;
@@ -286,7 +286,7 @@ struct SDL_VideoDevice
      */
     int (*Vulkan_LoadLibrary)(SDL_VideoDevice *_this, const char *path);
     void (*Vulkan_UnloadLibrary)(SDL_VideoDevice *_this);
-    char const* const* (*Vulkan_GetInstanceExtensions)(SDL_VideoDevice *_this, Uint32 *count);
+    char const *const *(*Vulkan_GetInstanceExtensions)(SDL_VideoDevice *_this, Uint32 *count);
     SDL_bool (*Vulkan_CreateSurface)(SDL_VideoDevice *_this, SDL_Window *window, VkInstance instance, const struct VkAllocationCallbacks *allocator, VkSurfaceKHR *surface);
 
     /* * * */

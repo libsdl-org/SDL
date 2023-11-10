@@ -140,13 +140,13 @@ static void UpdateN3DSCircle(Uint64 timestamp, SDL_Joystick *joystick)
     hidCircleRead(&current_state);
     if (previous_state.dx != current_state.dx) {
         SDL_SendJoystickAxis(timestamp, joystick,
-                                0,
-                                CORRECT_AXIS_X(current_state.dx));
+                             0,
+                             CORRECT_AXIS_X(current_state.dx));
     }
     if (previous_state.dy != current_state.dy) {
         SDL_SendJoystickAxis(timestamp, joystick,
-                                1,
-                                CORRECT_AXIS_Y(current_state.dy));
+                             1,
+                             CORRECT_AXIS_Y(current_state.dy));
     }
     previous_state = current_state;
 }
@@ -158,13 +158,13 @@ static void UpdateN3DSCStick(Uint64 timestamp, SDL_Joystick *joystick)
     hidCstickRead(&current_state);
     if (previous_state.dx != current_state.dx) {
         SDL_SendJoystickAxis(timestamp, joystick,
-                                2,
-                                CORRECT_AXIS_X(current_state.dx));
+                             2,
+                             CORRECT_AXIS_X(current_state.dx));
     }
     if (previous_state.dy != current_state.dy) {
         SDL_SendJoystickAxis(timestamp, joystick,
-                                3,
-                                CORRECT_AXIS_Y(current_state.dy));
+                             3,
+                             CORRECT_AXIS_Y(current_state.dy));
     }
     previous_state = current_state;
 }

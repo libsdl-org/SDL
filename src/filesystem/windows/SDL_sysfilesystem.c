@@ -179,7 +179,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
 
 char *SDL_GetUserFolder(SDL_Folder folder)
 {
-    typedef HRESULT (WINAPI *pfnSHGetKnownFolderPath)(REFGUID /* REFKNOWNFOLDERID */, DWORD, HANDLE, PWSTR*);
+    typedef HRESULT(WINAPI * pfnSHGetKnownFolderPath)(REFGUID /* REFKNOWNFOLDERID */, DWORD, HANDLE, PWSTR *);
     HMODULE lib = LoadLibrary(L"Shell32.dll");
     pfnSHGetKnownFolderPath pSHGetKnownFolderPath = NULL;
     char *retval = NULL;

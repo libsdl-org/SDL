@@ -48,7 +48,7 @@ static int DISKAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, in
         return -1;
     }
 #ifdef DEBUG_AUDIO
-    SDL_Log("DISKAUDIO: Wrote %d bytes of audio data", (int) written);
+    SDL_Log("DISKAUDIO: Wrote %d bytes of audio data", (int)written);
 #endif
     return 0;
 }
@@ -111,7 +111,7 @@ static int DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
     const char *fname = get_filename(iscapture);
     const char *envr = SDL_getenv(DISKENVR_IODELAY);
 
-    device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
+    device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
         return SDL_OutOfMemory();
     }
@@ -140,7 +140,7 @@ static int DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
     SDL_LogCritical(SDL_LOG_CATEGORY_AUDIO, "You are using the SDL disk i/o audio driver!");
     SDL_LogCritical(SDL_LOG_CATEGORY_AUDIO, " %s file [%s].\n", iscapture ? "Reading from" : "Writing to", fname);
 
-    return 0;  // We're ready to rock and roll. :-)
+    return 0; // We're ready to rock and roll. :-)
 }
 
 static void DISKAUDIO_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)

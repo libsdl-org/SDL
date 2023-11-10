@@ -191,7 +191,8 @@ static int SDL_UpperSoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
 // OK with clang 12.0.0 / Xcode
 __attribute__((noinline))
 #endif
-static void get_scaler_datas(int src_nb, int dst_nb, int *fp_start, int *fp_step, int *left_pad, int *right_pad)
+static void
+get_scaler_datas(int src_nb, int dst_nb, int *fp_start, int *fp_step, int *left_pad, int *right_pad)
 {
 
     int step = FIXED_POINT(src_nb) / (dst_nb); /* source step in fixed point */
@@ -332,8 +333,8 @@ static int scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch,
 }
 
 #ifdef SDL_NEON_INTRINSICS
-#define CAST_uint8x8_t       (uint8x8_t)
-#define CAST_uint32x2_t      (uint32x2_t)
+#define CAST_uint8x8_t  (uint8x8_t)
+#define CAST_uint32x2_t (uint32x2_t)
 #endif
 
 #if defined(__WINRT__) || defined(_MSC_VER)

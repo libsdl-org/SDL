@@ -22,7 +22,7 @@
 #include "../../SDL_internal.h"
 #include "SDL_qnx.h"
 
-static EGLDisplay   egl_disp;
+static EGLDisplay egl_disp;
 
 /**
  * Detertmines the pixel format to use based on the current display and EGL
@@ -39,21 +39,21 @@ static int chooseFormat(EGLConfig egl_conf)
     eglGetConfigAttrib(egl_disp, egl_conf, EGL_ALPHA_SIZE, &alpha_bit_depth);
 
     switch (buffer_bit_depth) {
-        case 32:
-            return SCREEN_FORMAT_RGBX8888;
-        case 24:
-            return SDL_PIXELFORMAT_RGB24;
-        case 16:
-            switch (alpha_bit_depth) {
-                case 4:
-                    return SCREEN_FORMAT_RGBX4444;
-                case 1:
-                    return SCREEN_FORMAT_RGBA5551;
-                default:
-                    return SCREEN_FORMAT_RGB565;
-            }
+    case 32:
+        return SCREEN_FORMAT_RGBX8888;
+    case 24:
+        return SDL_PIXELFORMAT_RGB24;
+    case 16:
+        switch (alpha_bit_depth) {
+        case 4:
+            return SCREEN_FORMAT_RGBX4444;
+        case 1:
+            return SCREEN_FORMAT_RGBA5551;
         default:
-            return 0;
+            return SCREEN_FORMAT_RGB565;
+        }
+    default:
+        return 0;
     }
 }
 
@@ -132,7 +132,7 @@ int glGetConfig(EGLConfig *pconf, int *pformat)
  */
 int glLoadLibrary(SDL_VideoDevice *_this, const char *name)
 {
-    EGLNativeDisplayType    disp_id = EGL_DEFAULT_DISPLAY;
+    EGLNativeDisplayType disp_id = EGL_DEFAULT_DISPLAY;
 
     egl_disp = eglGetDisplay(disp_id);
     if (egl_disp == EGL_NO_DISPLAY) {
@@ -165,11 +165,12 @@ SDL_FunctionPointer glGetProcAddress(SDL_VideoDevice *_this, const char *proc)
  */
 SDL_GLContext glCreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    window_impl_t   *impl = (window_impl_t *)window->driverdata;
-    EGLContext      context;
-    EGLSurface      surface;
+    window_impl_t *impl = (window_impl_t *)window->driverdata;
+    EGLContext context;
+    EGLSurface surface;
 
-    struct {
+    struct
+    {
         EGLint client_version[2];
         EGLint none;
     } egl_ctx_attr = {
@@ -177,7 +178,8 @@ SDL_GLContext glCreateContext(SDL_VideoDevice *_this, SDL_Window *window)
         .none = EGL_NONE
     };
 
-    struct {
+    struct
+    {
         EGLint render_buffer[2];
         EGLint none;
     } egl_surf_attr = {
@@ -228,7 +230,7 @@ int glSetSwapInterval(SDL_VideoDevice *_this, int interval)
 int glSwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     /* !!! FIXME: should we migrate this all over to use SDL_egl.c? */
-    window_impl_t   *impl = (window_impl_t *)window->driverdata;
+    window_impl_t *impl = (window_impl_t *)window->driverdata;
     return eglSwapBuffers(egl_disp, impl->surface) == EGL_TRUE ? 0 : -1;
 }
 
@@ -241,8 +243,8 @@ int glSwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
  */
 int glMakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
-    window_impl_t   *impl;
-    EGLSurface      surface = NULL;
+    window_impl_t *impl;
+    EGLSurface surface = NULL;
 
     if (window) {
         impl = (window_impl_t *)window->driverdata;

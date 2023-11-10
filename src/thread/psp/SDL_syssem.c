@@ -75,7 +75,7 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
  * is specified, convert it to microseconds. */
 int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
-	SceUInt timeoutUS;
+    SceUInt timeoutUS;
     SceUInt *pTimeout;
     int res;
 

@@ -138,7 +138,7 @@ char *SDL_GetUserFolder(SDL_Folder folder)
         return NULL;
 #else
         char *retval = NULL;
-        const char* base;
+        const char *base;
         NSArray *array;
         NSSearchPathDirectory dir;
         NSString *str;
@@ -201,7 +201,7 @@ char *SDL_GetUserFolder(SDL_Folder folder)
             break;
 
         default:
-            SDL_SetError("Invalid SDL_Folder: %d", (int) folder);
+            SDL_SetError("Invalid SDL_Folder: %d", (int)folder);
             return NULL;
         };
 

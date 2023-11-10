@@ -24,25 +24,25 @@
 
 /* Enable to have color in logs */
 #if 1
-#define COLOR_RED       "\033[0;31m"
-#define COLOR_GREEN     "\033[0;32m"
-#define COLOR_YELLOW    "\033[0;93m"
-#define COLOR_BLUE      "\033[0;94m"
-#define COLOR_END       "\033[0m"
+#define COLOR_RED    "\033[0;31m"
+#define COLOR_GREEN  "\033[0;32m"
+#define COLOR_YELLOW "\033[0;93m"
+#define COLOR_BLUE   "\033[0;94m"
+#define COLOR_END    "\033[0m"
 #else
-#define COLOR_RED       ""
-#define COLOR_GREEN     ""
-#define COLOR_BLUE      ""
-#define COLOR_YELLOW    ""
-#define COLOR_END       ""
+#define COLOR_RED    ""
+#define COLOR_GREEN  ""
+#define COLOR_BLUE   ""
+#define COLOR_YELLOW ""
+#define COLOR_END    ""
 #endif
 
 /* Invalid test name/description message format */
 #define SDLTEST_INVALID_NAME_FORMAT "(Invalid)"
 
 /* Log summary message format */
-#define SDLTEST_LOG_SUMMARY_FORMAT     "%s Summary: Total=%d " COLOR_GREEN "Passed=%d" COLOR_END " " COLOR_RED "Failed=%d" COLOR_END " " COLOR_BLUE "Skipped=%d" COLOR_END
-#define SDLTEST_LOG_SUMMARY_FORMAT_OK  "%s Summary: Total=%d " COLOR_GREEN "Passed=%d" COLOR_END " " COLOR_GREEN "Failed=%d" COLOR_END " " COLOR_BLUE "Skipped=%d" COLOR_END
+#define SDLTEST_LOG_SUMMARY_FORMAT    "%s Summary: Total=%d " COLOR_GREEN "Passed=%d" COLOR_END " " COLOR_RED "Failed=%d" COLOR_END " " COLOR_BLUE "Skipped=%d" COLOR_END
+#define SDLTEST_LOG_SUMMARY_FORMAT_OK "%s Summary: Total=%d " COLOR_GREEN "Passed=%d" COLOR_END " " COLOR_GREEN "Failed=%d" COLOR_END " " COLOR_BLUE "Skipped=%d" COLOR_END
 
 /* Final result message format */
 #define SDLTEST_FINAL_RESULT_FORMAT COLOR_YELLOW ">>> %s '%s':" COLOR_END " %s\n"

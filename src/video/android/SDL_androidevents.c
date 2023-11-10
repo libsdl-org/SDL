@@ -28,7 +28,6 @@
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
 
-
 #include "../../audio/android/SDL_androidaudio.h"
 #include "../../audio/aaudio/SDL_aaudio.h"
 #include "../../audio/openslES/SDL_openslES.h"
@@ -59,7 +58,6 @@ static void android_egl_context_restore(SDL_Window *window)
         if (data->has_swap_interval) {
             SDL_GL_SetSwapInterval(data->swap_interval);
         }
-
     }
 }
 

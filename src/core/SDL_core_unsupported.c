@@ -135,7 +135,7 @@ void *SDL_AndroidGetActivity()
 }
 
 DECLSPEC const char *SDLCALL SDL_AndroidGetExternalStoragePath(void);
-const char* SDL_AndroidGetExternalStoragePath()
+const char *SDL_AndroidGetExternalStoragePath()
 {
     SDL_Unsupported();
     return NULL;
@@ -177,8 +177,8 @@ int SDL_AndroidSendMessage(Uint32 command, int param)
     return SDL_Unsupported();
 }
 
-DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int duration, int gravity, int xoffset, int yoffset);
-int SDL_AndroidShowToast(const char* message, int duration, int gravity, int xoffset, int yoffset)
+DECLSPEC int SDLCALL SDL_AndroidShowToast(const char *message, int duration, int gravity, int xoffset, int yoffset);
+int SDL_AndroidShowToast(const char *message, int duration, int gravity, int xoffset, int yoffset)
 {
     (void)message;
     (void)duration;

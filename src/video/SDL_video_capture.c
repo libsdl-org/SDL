@@ -29,7 +29,6 @@
 
 #define DEBUG_VIDEO_CAPTURE_CAPTURE 1
 
-
 #ifdef SDL_VIDEO_CAPTURE
 /* list node entries to share frames between SDL and user app */
 typedef struct entry_t
@@ -71,7 +70,7 @@ close_device(SDL_VideoCaptureDevice *device)
     {
         entry_t *entry = NULL;
         while (device->buffer_queue != NULL) {
-            SDL_ListPop(&device->buffer_queue, (void**)&entry);
+            SDL_ListPop(&device->buffer_queue, (void **)&entry);
             if (entry) {
                 SDL_VideoCaptureFrame f = entry->frame;
                 /* Release frames not acquired, if any */
@@ -117,11 +116,9 @@ SDL_bool check_device_playing(void)
     return SDL_FALSE;
 }
 
-
 #endif /* SDL_VIDEO_CAPTURE */
 
-void
-SDL_CloseVideoCapture(SDL_VideoCaptureDevice *device)
+void SDL_CloseVideoCapture(SDL_VideoCaptureDevice *device)
 {
 #ifdef SDL_VIDEO_CAPTURE
     if (!device) {
@@ -132,8 +129,7 @@ SDL_CloseVideoCapture(SDL_VideoCaptureDevice *device)
 #endif
 }
 
-int
-SDL_StartVideoCapture(SDL_VideoCaptureDevice *device)
+int SDL_StartVideoCapture(SDL_VideoCaptureDevice *device)
 {
 #ifdef SDL_VIDEO_CAPTURE
     SDL_VideoCaptureStatus status;
@@ -164,8 +160,7 @@ SDL_StartVideoCapture(SDL_VideoCaptureDevice *device)
 #endif
 }
 
-int
-SDL_GetVideoCaptureSpec(SDL_VideoCaptureDevice *device, SDL_VideoCaptureSpec *spec)
+int SDL_GetVideoCaptureSpec(SDL_VideoCaptureDevice *device, SDL_VideoCaptureSpec *spec)
 {
 #ifdef SDL_VIDEO_CAPTURE
     if (!device) {
@@ -184,8 +179,7 @@ SDL_GetVideoCaptureSpec(SDL_VideoCaptureDevice *device, SDL_VideoCaptureSpec *sp
 #endif
 }
 
-int
-SDL_StopVideoCapture(SDL_VideoCaptureDevice *device)
+int SDL_StopVideoCapture(SDL_VideoCaptureDevice *device)
 {
 #ifdef SDL_VIDEO_CAPTURE
     SDL_VideoCaptureStatus status;
@@ -299,7 +293,6 @@ prepare_video_capturespec(SDL_VideoCaptureDevice *device, const SDL_VideoCapture
             SDL_SetError("Invalid frame size");
             return -1;
         }
-
     }
 
     return 0;
@@ -321,7 +314,7 @@ SDL_GetVideoCaptureDeviceName(SDL_VideoCaptureDeviceID instance_id)
         return NULL;
     }
 
-    if (GetDeviceName(index, buf, sizeof (buf)) < 0) {
+    if (GetDeviceName(index, buf, sizeof(buf)) < 0) {
         buf[0] = 0;
     }
     return buf;
@@ -330,7 +323,6 @@ SDL_GetVideoCaptureDeviceName(SDL_VideoCaptureDeviceID instance_id)
     return NULL;
 #endif
 }
-
 
 SDL_VideoCaptureDeviceID *
 SDL_GetVideoCaptureDevices(int *count)
@@ -373,12 +365,11 @@ static int SDLCALL
 SDL_CaptureVideoThread(void *devicep)
 {
     const int delay = 20;
-    SDL_VideoCaptureDevice *device = (SDL_VideoCaptureDevice *) devicep;
+    SDL_VideoCaptureDevice *device = (SDL_VideoCaptureDevice *)devicep;
 
 #if DEBUG_VIDEO_CAPTURE_CAPTURE
     SDL_Log("Start thread 'SDL_CaptureVideo'");
 #endif
-
 
 #ifdef SDL_VIDEO_DRIVER_ANDROID
     // TODO
@@ -427,8 +418,7 @@ SDL_CaptureVideoThread(void *devicep)
             f.num_planes = 0;
         }
 
-
-        entry = SDL_malloc(sizeof (entry_t));
+        entry = SDL_malloc(sizeof(entry_t));
         if (entry == NULL) {
             goto error_mem;
         }
@@ -513,13 +503,12 @@ SDL_OpenVideoCapture(SDL_VideoCaptureDeviceID instance_id)
         goto error;
     }
 
-    device = (SDL_VideoCaptureDevice *) SDL_calloc(1, sizeof (SDL_VideoCaptureDevice));
+    device = (SDL_VideoCaptureDevice *)SDL_calloc(1, sizeof(SDL_VideoCaptureDevice));
     if (device == NULL) {
         SDL_OutOfMemory();
         goto error;
     }
     device->dev_name = SDL_strdup(device_name);
-
 
     SDL_AtomicSet(&device->shutdown, 0);
     SDL_AtomicSet(&device->enabled, 0);
@@ -542,15 +531,14 @@ SDL_OpenVideoCapture(SDL_VideoCaptureDeviceID instance_id)
 
     /* empty */
     device->buffer_queue = NULL;
-    open_devices[id] = device;  /* add it to our list of open devices. */
-
+    open_devices[id] = device; /* add it to our list of open devices. */
 
     /* Start the video_capture thread */
     {
         const size_t stacksize = 64 * 1024;
         char threadname[64];
 
-        SDL_snprintf(threadname, sizeof (threadname), "SDLVideoC%d", id);
+        SDL_snprintf(threadname, sizeof(threadname), "SDLVideoC%d", id);
         device->thread = SDL_CreateThreadInternal(SDL_CaptureVideoThread, threadname, stacksize, device);
 
         if (device->thread == NULL) {
@@ -570,11 +558,10 @@ error:
 #endif /* SDL_VIDEO_CAPTURE */
 }
 
-int
-SDL_SetVideoCaptureSpec(SDL_VideoCaptureDevice *device,
-        const SDL_VideoCaptureSpec *desired,
-        SDL_VideoCaptureSpec *obtained,
-        int allowed_changes)
+int SDL_SetVideoCaptureSpec(SDL_VideoCaptureDevice *device,
+                            const SDL_VideoCaptureSpec *desired,
+                            SDL_VideoCaptureSpec *obtained,
+                            int allowed_changes)
 {
 #ifdef SDL_VIDEO_CAPTURE
     SDL_VideoCaptureSpec _obtained;
@@ -627,8 +614,7 @@ SDL_SetVideoCaptureSpec(SDL_VideoCaptureDevice *device,
 #endif /* SDL_VIDEO_CAPTURE */
 }
 
-int
-SDL_AcquireVideoCaptureFrame(SDL_VideoCaptureDevice *device, SDL_VideoCaptureFrame *frame)
+int SDL_AcquireVideoCaptureFrame(SDL_VideoCaptureDevice *device, SDL_VideoCaptureFrame *frame)
 {
 #ifdef SDL_VIDEO_CAPTURE
     if (!device) {
@@ -655,7 +641,7 @@ SDL_AcquireVideoCaptureFrame(SDL_VideoCaptureDevice *device, SDL_VideoCaptureFra
         entry_t *entry = NULL;
 
         SDL_LockMutex(device->device_lock);
-        SDL_ListPop(&device->buffer_queue, (void**)&entry);
+        SDL_ListPop(&device->buffer_queue, (void **)&entry);
         SDL_UnlockMutex(device->device_lock);
 
         if (entry) {
@@ -666,7 +652,6 @@ SDL_AcquireVideoCaptureFrame(SDL_VideoCaptureDevice *device, SDL_VideoCaptureFra
             if (frame->num_planes == 0 && frame->timestampNS == 0) {
                 return SDL_SetError("error from acquisition thread");
             }
-
 
         } else {
             /* Queue is empty. Not an error. */
@@ -679,8 +664,7 @@ SDL_AcquireVideoCaptureFrame(SDL_VideoCaptureDevice *device, SDL_VideoCaptureFra
 #endif /* SDL_VIDEO_CAPTURE */
 }
 
-int
-SDL_ReleaseVideoCaptureFrame(SDL_VideoCaptureDevice *device, SDL_VideoCaptureFrame *frame)
+int SDL_ReleaseVideoCaptureFrame(SDL_VideoCaptureDevice *device, SDL_VideoCaptureFrame *frame)
 {
 #ifdef SDL_VIDEO_CAPTURE
     if (!device) {
@@ -703,8 +687,7 @@ SDL_ReleaseVideoCaptureFrame(SDL_VideoCaptureDevice *device, SDL_VideoCaptureFra
 #endif /* SDL_VIDEO_CAPTURE */
 }
 
-int
-SDL_GetNumVideoCaptureFormats(SDL_VideoCaptureDevice *device)
+int SDL_GetNumVideoCaptureFormats(SDL_VideoCaptureDevice *device)
 {
 #ifdef SDL_VIDEO_CAPTURE
     if (!device) {
@@ -716,8 +699,7 @@ SDL_GetNumVideoCaptureFormats(SDL_VideoCaptureDevice *device)
 #endif /* SDL_VIDEO_CAPTURE */
 }
 
-int
-SDL_GetVideoCaptureFormat(SDL_VideoCaptureDevice *device, int index, Uint32 *format)
+int SDL_GetVideoCaptureFormat(SDL_VideoCaptureDevice *device, int index, Uint32 *format)
 {
 #ifdef SDL_VIDEO_CAPTURE
     if (!device) {
@@ -733,8 +715,7 @@ SDL_GetVideoCaptureFormat(SDL_VideoCaptureDevice *device, int index, Uint32 *for
 #endif /* SDL_VIDEO_CAPTURE */
 }
 
-int
-SDL_GetNumVideoCaptureFrameSizes(SDL_VideoCaptureDevice *device, Uint32 format)
+int SDL_GetNumVideoCaptureFrameSizes(SDL_VideoCaptureDevice *device, Uint32 format)
 {
 #ifdef SDL_VIDEO_CAPTURE
     if (!device) {
@@ -746,8 +727,7 @@ SDL_GetNumVideoCaptureFrameSizes(SDL_VideoCaptureDevice *device, Uint32 format)
 #endif /* SDL_VIDEO_CAPTURE */
 }
 
-int
-SDL_GetVideoCaptureFrameSize(SDL_VideoCaptureDevice *device, Uint32 format, int index, int *width, int *height)
+int SDL_GetVideoCaptureFrameSize(SDL_VideoCaptureDevice *device, Uint32 format, int index, int *width, int *height)
 {
 #ifdef SDL_VIDEO_CAPTURE
     if (!device) {
@@ -769,10 +749,10 @@ SDL_GetVideoCaptureFrameSize(SDL_VideoCaptureDevice *device, Uint32 format, int 
 
 SDL_VideoCaptureDevice *
 SDL_OpenVideoCaptureWithSpec(
-        SDL_VideoCaptureDeviceID instance_id,
-        const SDL_VideoCaptureSpec *desired,
-        SDL_VideoCaptureSpec *obtained,
-        int allowed_changes)
+    SDL_VideoCaptureDeviceID instance_id,
+    const SDL_VideoCaptureSpec *desired,
+    SDL_VideoCaptureSpec *obtained,
+    int allowed_changes)
 {
 #ifdef SDL_VIDEO_CAPTURE
     SDL_VideoCaptureDevice *device;
@@ -818,8 +798,7 @@ SDL_GetVideoCaptureStatus(SDL_VideoCaptureDevice *device)
 #endif
 }
 
-int
-SDL_VideoCaptureInit(void)
+int SDL_VideoCaptureInit(void)
 {
 #ifdef SDL_VIDEO_CAPTURE
     SDL_zeroa(open_devices);
@@ -829,8 +808,7 @@ SDL_VideoCaptureInit(void)
 #endif
 }
 
-void
-SDL_QuitVideoCapture(void)
+void SDL_QuitVideoCapture(void)
 {
 #ifdef SDL_VIDEO_CAPTURE
     int i, n = SDL_arraysize(open_devices);
@@ -857,20 +835,17 @@ SDL_QuitVideoCapture(void)
 /* See SDL_video_capture_apple.m */
 #else
 
-int
-OpenDevice(SDL_VideoCaptureDevice *_this)
+int OpenDevice(SDL_VideoCaptureDevice *_this)
 {
     return SDL_SetError("not implemented");
 }
 
-void
-CloseDevice(SDL_VideoCaptureDevice *_this)
+void CloseDevice(SDL_VideoCaptureDevice *_this)
 {
     return;
 }
 
-int
-InitDevice(SDL_VideoCaptureDevice *_this)
+int InitDevice(SDL_VideoCaptureDevice *_this)
 {
     size_t size, pitch;
     SDL_CalculateSize(_this->spec.format, _this->spec.width, _this->spec.height, &size, &pitch, SDL_FALSE);
@@ -878,68 +853,57 @@ InitDevice(SDL_VideoCaptureDevice *_this)
     return -1;
 }
 
-int
-GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec)
+int GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec)
 {
     return SDL_Unsupported();
 }
 
-int
-StartCapture(SDL_VideoCaptureDevice *_this)
+int StartCapture(SDL_VideoCaptureDevice *_this)
 {
     return SDL_Unsupported();
 }
 
-int
-StopCapture(SDL_VideoCaptureDevice *_this)
+int StopCapture(SDL_VideoCaptureDevice *_this)
 {
     return -1;
 }
 
-int
-AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
+int AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
 {
     return -1;
 }
 
-int
-ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
+int ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
 {
     return -1;
 }
 
-int
-GetNumFormats(SDL_VideoCaptureDevice *_this)
+int GetNumFormats(SDL_VideoCaptureDevice *_this)
 {
     return -1;
 }
 
-int
-GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
+int GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
 {
     return -1;
 }
 
-int
-GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format)
+int GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format)
 {
     return -1;
 }
 
-int
-GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width, int *height)
+int GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width, int *height)
 {
     return -1;
 }
 
-int
-GetDeviceName(int index, char *buf, int size)
+int GetDeviceName(int index, char *buf, int size)
 {
     return -1;
 }
 
-int
-GetNumDevices(void)
+int GetNumDevices(void)
 {
     return -1;
 }

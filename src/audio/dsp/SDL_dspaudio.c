@@ -69,7 +69,7 @@ static int DSP_OpenDevice(SDL_AudioDevice *device)
     }
 
     // Initialize all variables that we clean on shutdown
-    device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
+    device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
         return SDL_OutOfMemory();
     }
@@ -197,7 +197,7 @@ static int DSP_OpenDevice(SDL_AudioDevice *device)
         SDL_memset(device->hidden->mixbuf, device->silence_value, device->buffer_size);
     }
 
-    return 0;  // We're ready to rock and roll. :-)
+    return 0; // We're ready to rock and roll. :-)
 }
 
 static int DSP_WaitDevice(SDL_AudioDevice *device)

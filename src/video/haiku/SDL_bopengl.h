@@ -30,12 +30,12 @@ extern "C" {
 
 #include "../SDL_sysvideo.h"
 
-extern int HAIKU_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);      /* FIXME */
+extern int HAIKU_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);                    /* FIXME */
 extern SDL_FunctionPointer HAIKU_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc); /* FIXME */
-extern void HAIKU_GL_UnloadLibrary(SDL_VideoDevice *_this);                     /* TODO */
+extern void HAIKU_GL_UnloadLibrary(SDL_VideoDevice *_this);                                   /* TODO */
 extern int HAIKU_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window,
                                 SDL_GLContext context);
-extern int HAIKU_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval); /* TODO */
+extern int HAIKU_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval);  /* TODO */
 extern int HAIKU_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval); /* TODO */
 extern int HAIKU_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern SDL_GLContext HAIKU_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);

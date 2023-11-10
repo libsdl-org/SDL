@@ -28,5 +28,3 @@ int SDL_IterateMainCallbacks(SDL_bool pump_events);
 void SDL_QuitMainCallbacks(void);
 
 #endif // SDL_main_callbacks_h_
-
-

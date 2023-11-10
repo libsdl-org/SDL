@@ -25,7 +25,7 @@
 static SDL_AppEvent_func SDL_main_event_callback;
 static SDL_AppIterate_func SDL_main_iteration_callback;
 static SDL_AppQuit_func SDL_main_quit_callback;
-static SDL_AtomicInt apprc;  // use an atomic, since events might land from any thread and we don't want to wrap this all in a mutex. A CAS makes sure we only move from zero once.
+static SDL_AtomicInt apprc; // use an atomic, since events might land from any thread and we don't want to wrap this all in a mutex. A CAS makes sure we only move from zero once.
 
 // Return true if this event needs to be processed before returning from the event watcher
 static SDL_bool ShouldDispatchImmediately(SDL_Event *event)
@@ -88,7 +88,7 @@ SDL_bool SDL_HasMainCallbacks()
     return SDL_FALSE;
 }
 
-int SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
+int SDL_InitMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
 {
     SDL_main_iteration_callback = appiter;
     SDL_main_event_callback = appevent;
@@ -96,7 +96,7 @@ int SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_
     SDL_AtomicSet(&apprc, 0);
 
     const int rc = appinit(argc, argv);
-    if (SDL_AtomicCAS(&apprc, 0, rc) && (rc == 0)) {  // bounce if SDL_AppInit already said abort, otherwise...
+    if (SDL_AtomicCAS(&apprc, 0, rc) && (rc == 0)) { // bounce if SDL_AppInit already said abort, otherwise...
         // make sure we definitely have events initialized, even if the app didn't do it.
         if (SDL_InitSubSystem(SDL_INIT_EVENTS) == -1) {
             SDL_AtomicSet(&apprc, -1);
@@ -135,8 +135,7 @@ void SDL_QuitMainCallbacks(void)
     SDL_main_quit_callback();
 
     // for symmetry, you should explicitly Quit what you Init, but we might come through here uninitialized and SDL_Quit() will clear everything anyhow.
-    //SDL_QuitSubSystem(SDL_INIT_EVENTS);
+    // SDL_QuitSubSystem(SDL_INIT_EVENTS);
 
     SDL_Quit();
 }
-

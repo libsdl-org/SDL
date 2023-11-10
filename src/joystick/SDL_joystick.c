@@ -109,7 +109,7 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifndef SDL_THREAD_SAFETY_ANALYSIS
 static
 #endif
-SDL_Mutex *SDL_joystick_lock = NULL; /* This needs to support recursive locks */
+    SDL_Mutex *SDL_joystick_lock = NULL; /* This needs to support recursive locks */
 static SDL_AtomicInt SDL_joystick_lock_pending;
 static int SDL_joysticks_locked;
 static SDL_bool SDL_joysticks_initialized;
@@ -121,11 +121,11 @@ static SDL_JoystickID *SDL_joystick_players SDL_GUARDED_BY(SDL_joystick_lock) = 
 static SDL_bool SDL_joystick_allows_background_events = SDL_FALSE;
 char SDL_joystick_magic;
 
-#define CHECK_JOYSTICK_MAGIC(joystick, retval)             \
+#define CHECK_JOYSTICK_MAGIC(joystick, retval)                 \
     if (!joystick || joystick->magic != &SDL_joystick_magic) { \
-        SDL_InvalidParamError("joystick");                 \
-        SDL_UnlockJoysticks();                             \
-        return retval;                                     \
+        SDL_InvalidParamError("joystick");                     \
+        SDL_UnlockJoysticks();                                 \
+        return retval;                                         \
     }
 
 SDL_bool SDL_JoysticksInitialized(void)
@@ -1468,7 +1468,7 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
 
     SDL_LockJoysticks();
     {
-        CHECK_JOYSTICK_MAGIC(joystick,);
+        CHECK_JOYSTICK_MAGIC(joystick, );
 
         /* First decrement ref count */
         if (--joystick->ref_count > 0) {

@@ -25,7 +25,6 @@
 
 #include "SDL_sysvideo.h"
 
-
 /* Return true if the mime type is valid clipboard text */
 extern SDL_bool SDL_IsTextMimeType(const char *mime_type);
 

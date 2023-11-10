@@ -28,7 +28,6 @@
 #include <timer.h>
 #include <sys/time.h>
 
-
 Uint64 SDL_GetPerformanceCounter(void)
 {
     return GetTimerSystemTime();

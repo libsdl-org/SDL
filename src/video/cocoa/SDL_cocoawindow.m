@@ -26,7 +26,7 @@
 #error SDL for macOS must be built with a 10.9 SDK or above.
 #endif /* MAC_OS_X_VERSION_MAX_ALLOWED < 1090 */
 
-#include <float.h>              /* For FLT_MAX */
+#include <float.h> /* For FLT_MAX */
 
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_keyboard_c.h"
@@ -40,7 +40,6 @@
 #include "SDL_cocoamouse.h"
 #include "SDL_cocoaopengl.h"
 #include "SDL_cocoaopengles.h"
-
 
 /* #define DEBUG_COCOAWINDOW */
 
@@ -301,7 +300,8 @@ static CGFloat SqDistanceToRect(const NSPoint *point, const NSRect *rect)
     return delta.x * delta.x + delta.y * delta.y;
 }
 
-static NSScreen *ScreenForPoint(const NSPoint *point) {
+static NSScreen *ScreenForPoint(const NSPoint *point)
+{
     NSScreen *screen;
 
     /* Do a quick check first to see if the point lies on a specific screen*/
@@ -329,7 +329,8 @@ static NSScreen *ScreenForPoint(const NSPoint *point) {
     return screen;
 }
 
-static NSScreen *ScreenForRect(const NSRect *rect) {
+static NSScreen *ScreenForRect(const NSRect *rect)
+{
     NSPoint center = NSMakePoint(NSMidX(*rect), NSMidY(*rect));
     return ScreenForPoint(&center);
 }
@@ -549,7 +550,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
 static void Cocoa_SetKeyboardFocus(SDL_Window *window)
 {
     SDL_Window *topmost = window;
-    SDL_CocoaWindowData* topmost_data;
+    SDL_CocoaWindowData *topmost_data;
 
     /* Find the topmost parent */
     while (topmost->parent != NULL) {
@@ -563,7 +564,7 @@ static void Cocoa_SetKeyboardFocus(SDL_Window *window)
 
 static void Cocoa_SendExposedEventIfVisible(SDL_Window *window)
 {
-    NSWindow *nswindow = ((__bridge SDL_CocoaWindowData*)window->driverdata).nswindow;
+    NSWindow *nswindow = ((__bridge SDL_CocoaWindowData *)window->driverdata).nswindow;
     if ([nswindow occlusionState] & NSWindowOcclusionStateVisible) {
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
     }
@@ -875,7 +876,7 @@ static void Cocoa_SendExposedEventIfVisible(SDL_Window *window)
 
         if (blockMove) {
             /* Cocoa is adjusting the window in response to a mode change */
-            SDL_RelativeToGlobalForWindow(window, window->x, window->y, &x, &y );
+            SDL_RelativeToGlobalForWindow(window, window->x, window->y, &x, &y);
             rect.origin.x = x;
             rect.origin.y = y;
             ConvertNSRect(fullscreen, &rect);

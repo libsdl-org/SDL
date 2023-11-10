@@ -158,7 +158,7 @@ class SDL_BWin : public BWindow
             SetCurrentView(_SDL_GLView);
         } else
 #endif
-        if (_SDL_View != NULL) {
+            if (_SDL_View != NULL) {
             SetCurrentView(_SDL_View);
         } else {
             SetCurrentView(NULL);
@@ -460,7 +460,7 @@ class SDL_BWin : public BWindow
                     _SDL_GLView->CopyPixelsIn(_bitmap, B_ORIGIN);
                 } else
 #endif
-                if (_SDL_View != NULL && _cur_view == _SDL_View) {
+                    if (_SDL_View != NULL && _cur_view == _SDL_View) {
                     _SDL_View->Draw(Bounds());
                 }
             }

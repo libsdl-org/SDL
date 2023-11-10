@@ -202,7 +202,7 @@ int X11_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         (Bool(*)(Display *, int *, int *))
             GL_LoadFunction(handle, "glXQueryExtension");
     _this->gl_data->glXGetProcAddress =
-        (__GLXextFuncPtr (*)(const GLubyte *))
+        (__GLXextFuncPtr(*)(const GLubyte *))
             GL_LoadFunction(handle, "glXGetProcAddressARB");
     _this->gl_data->glXChooseVisual =
         (XVisualInfo * (*)(Display *, int, int *))

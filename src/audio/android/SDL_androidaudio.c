@@ -30,10 +30,9 @@
 #include "../../core/android/SDL_android.h"
 #include <android/log.h>
 
-
 struct SDL_PrivateAudioData
 {
-    int resume;  // Resume device if it was paused automatically
+    int resume; // Resume device if it was paused automatically
 };
 
 static SDL_AudioDevice *audioDevice = NULL;

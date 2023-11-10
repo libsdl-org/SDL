@@ -532,44 +532,44 @@ static void HIDAPI_ShutdownDiscovery(void)
 
 #define HIDAPI_USING_SDL_RUNTIME
 #define HIDAPI_IGNORE_DEVICE(BUS, VID, PID, USAGE_PAGE, USAGE) \
-        SDL_HIDAPI_ShouldIgnoreDevice(BUS, VID, PID, USAGE_PAGE, USAGE)
+    SDL_HIDAPI_ShouldIgnoreDevice(BUS, VID, PID, USAGE_PAGE, USAGE)
 
 struct PLATFORM_hid_device_;
 typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
 
-#define api_version                  PLATFORM_api_version
+#define api_version                   PLATFORM_api_version
 #define create_device_info_for_device PLATFORM_create_device_info_for_device
-#define free_hid_device              PLATFORM_free_hid_device
-#define hid_close                    PLATFORM_hid_close
-#define hid_device                   PLATFORM_hid_device
-#define hid_device_                  PLATFORM_hid_device_
-#define hid_enumerate                PLATFORM_hid_enumerate
-#define hid_error                    PLATFORM_hid_error
-#define hid_exit                     PLATFORM_hid_exit
-#define hid_free_enumeration         PLATFORM_hid_free_enumeration
-#define hid_get_device_info          PLATFORM_hid_get_device_info
-#define hid_get_feature_report       PLATFORM_hid_get_feature_report
-#define hid_get_indexed_string       PLATFORM_hid_get_indexed_string
-#define hid_get_input_report         PLATFORM_hid_get_input_report
-#define hid_get_manufacturer_string  PLATFORM_hid_get_manufacturer_string
-#define hid_get_product_string       PLATFORM_hid_get_product_string
-#define hid_get_report_descriptor    PLATFORM_hid_get_report_descriptor
-#define hid_get_serial_number_string PLATFORM_hid_get_serial_number_string
-#define hid_init                     PLATFORM_hid_init
-#define hid_open_path                PLATFORM_hid_open_path
-#define hid_open                     PLATFORM_hid_open
-#define hid_read                     PLATFORM_hid_read
-#define hid_read_timeout             PLATFORM_hid_read_timeout
-#define hid_send_feature_report      PLATFORM_hid_send_feature_report
-#define hid_set_nonblocking          PLATFORM_hid_set_nonblocking
-#define hid_version                  PLATFORM_hid_version
-#define hid_version_str              PLATFORM_hid_version_str
-#define hid_write                    PLATFORM_hid_write
-#define input_report                 PLATFORM_input_report
-#define make_path                    PLATFORM_make_path
-#define new_hid_device               PLATFORM_new_hid_device
-#define read_thread                  PLATFORM_read_thread
-#define return_data                  PLATFORM_return_data
+#define free_hid_device               PLATFORM_free_hid_device
+#define hid_close                     PLATFORM_hid_close
+#define hid_device                    PLATFORM_hid_device
+#define hid_device_                   PLATFORM_hid_device_
+#define hid_enumerate                 PLATFORM_hid_enumerate
+#define hid_error                     PLATFORM_hid_error
+#define hid_exit                      PLATFORM_hid_exit
+#define hid_free_enumeration          PLATFORM_hid_free_enumeration
+#define hid_get_device_info           PLATFORM_hid_get_device_info
+#define hid_get_feature_report        PLATFORM_hid_get_feature_report
+#define hid_get_indexed_string        PLATFORM_hid_get_indexed_string
+#define hid_get_input_report          PLATFORM_hid_get_input_report
+#define hid_get_manufacturer_string   PLATFORM_hid_get_manufacturer_string
+#define hid_get_product_string        PLATFORM_hid_get_product_string
+#define hid_get_report_descriptor     PLATFORM_hid_get_report_descriptor
+#define hid_get_serial_number_string  PLATFORM_hid_get_serial_number_string
+#define hid_init                      PLATFORM_hid_init
+#define hid_open_path                 PLATFORM_hid_open_path
+#define hid_open                      PLATFORM_hid_open
+#define hid_read                      PLATFORM_hid_read
+#define hid_read_timeout              PLATFORM_hid_read_timeout
+#define hid_send_feature_report       PLATFORM_hid_send_feature_report
+#define hid_set_nonblocking           PLATFORM_hid_set_nonblocking
+#define hid_version                   PLATFORM_hid_version
+#define hid_version_str               PLATFORM_hid_version_str
+#define hid_write                     PLATFORM_hid_write
+#define input_report                  PLATFORM_input_report
+#define make_path                     PLATFORM_make_path
+#define new_hid_device                PLATFORM_new_hid_device
+#define read_thread                   PLATFORM_read_thread
+#define return_data                   PLATFORM_return_data
 
 #ifdef __LINUX__
 #include "SDL_hidapi_linux.h"
@@ -881,7 +881,8 @@ typedef struct LIBUSB_hid_device_ LIBUSB_hid_device;
  * via libusb; these are typically devices that look like HIDs but have a
  * quirk that requires direct access to the hardware.
  */
-static const struct {
+static const struct
+{
     Uint16 vendor;
     Uint16 product;
 } SDL_libusb_whitelist[] = {
@@ -1098,7 +1099,7 @@ SDL_bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product
             /* Ignore the mouse/keyboard interface on Steam Controllers */
             if (
 #ifdef __WIN32__
-                /* Check the usage page and usage on both USB and Bluetooth */
+            /* Check the usage page and usage on both USB and Bluetooth */
 #else
                 /* Only check the usage page and usage on USB */
                 bus == HID_API_BUS_USB &&
@@ -1179,35 +1180,35 @@ int SDL_hid_init(void)
 #define LOAD_LIBUSB_SYMBOL(type, func) \
     libusb_ctx.func = libusb_##func;
 #endif
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_context **), init)
-            LOAD_LIBUSB_SYMBOL(void (LIBUSB_CALL *)(libusb_context *), exit)
-            LOAD_LIBUSB_SYMBOL(ssize_t (LIBUSB_CALL *)(libusb_context *, libusb_device ***), get_device_list)
-            LOAD_LIBUSB_SYMBOL(void (LIBUSB_CALL *)(libusb_device **, int), free_device_list)
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device *, struct libusb_device_descriptor *), get_device_descriptor)
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device *, struct libusb_config_descriptor **), get_active_config_descriptor)
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device *, uint8_t, struct libusb_config_descriptor **), get_config_descriptor)
-            LOAD_LIBUSB_SYMBOL(void (LIBUSB_CALL *)(struct libusb_config_descriptor *), free_config_descriptor)
-            LOAD_LIBUSB_SYMBOL(uint8_t (LIBUSB_CALL *)(libusb_device *), get_bus_number)
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device *dev, uint8_t *port_numbers, int port_numbers_len), get_port_numbers)
-            LOAD_LIBUSB_SYMBOL(uint8_t (LIBUSB_CALL *)(libusb_device *), get_device_address)
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device *, libusb_device_handle **), open)
-            LOAD_LIBUSB_SYMBOL(void (LIBUSB_CALL *)(libusb_device_handle *), close)
-            LOAD_LIBUSB_SYMBOL(libusb_device * (LIBUSB_CALL *)(libusb_device_handle *dev_handle), get_device)
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, int), claim_interface)
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, int), release_interface)
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, int), kernel_driver_active)
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, int), detach_kernel_driver)
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, int), attach_kernel_driver)
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, int, int), set_interface_alt_setting)
+            LOAD_LIBUSB_SYMBOL(int(LIBUSB_CALL *)(libusb_context **), init)
+            LOAD_LIBUSB_SYMBOL(void(LIBUSB_CALL *)(libusb_context *), exit)
+            LOAD_LIBUSB_SYMBOL(ssize_t(LIBUSB_CALL *)(libusb_context *, libusb_device ***), get_device_list)
+            LOAD_LIBUSB_SYMBOL(void(LIBUSB_CALL *)(libusb_device **, int), free_device_list)
+            LOAD_LIBUSB_SYMBOL(int(LIBUSB_CALL *)(libusb_device *, struct libusb_device_descriptor *), get_device_descriptor)
+            LOAD_LIBUSB_SYMBOL(int(LIBUSB_CALL *)(libusb_device *, struct libusb_config_descriptor **), get_active_config_descriptor)
+            LOAD_LIBUSB_SYMBOL(int(LIBUSB_CALL *)(libusb_device *, uint8_t, struct libusb_config_descriptor **), get_config_descriptor)
+            LOAD_LIBUSB_SYMBOL(void(LIBUSB_CALL *)(struct libusb_config_descriptor *), free_config_descriptor)
+            LOAD_LIBUSB_SYMBOL(uint8_t(LIBUSB_CALL *)(libusb_device *), get_bus_number)
+            LOAD_LIBUSB_SYMBOL(int(LIBUSB_CALL *)(libusb_device * dev, uint8_t * port_numbers, int port_numbers_len), get_port_numbers)
+            LOAD_LIBUSB_SYMBOL(uint8_t(LIBUSB_CALL *)(libusb_device *), get_device_address)
+            LOAD_LIBUSB_SYMBOL(int(LIBUSB_CALL *)(libusb_device *, libusb_device_handle **), open)
+            LOAD_LIBUSB_SYMBOL(void(LIBUSB_CALL *)(libusb_device_handle *), close)
+            LOAD_LIBUSB_SYMBOL(libusb_device * (LIBUSB_CALL *)(libusb_device_handle * dev_handle), get_device)
+            LOAD_LIBUSB_SYMBOL(int(LIBUSB_CALL *)(libusb_device_handle *, int), claim_interface)
+            LOAD_LIBUSB_SYMBOL(int(LIBUSB_CALL *)(libusb_device_handle *, int), release_interface)
+            LOAD_LIBUSB_SYMBOL(int(LIBUSB_CALL *)(libusb_device_handle *, int), kernel_driver_active)
+            LOAD_LIBUSB_SYMBOL(int(LIBUSB_CALL *)(libusb_device_handle *, int), detach_kernel_driver)
+            LOAD_LIBUSB_SYMBOL(int(LIBUSB_CALL *)(libusb_device_handle *, int), attach_kernel_driver)
+            LOAD_LIBUSB_SYMBOL(int(LIBUSB_CALL *)(libusb_device_handle *, int, int), set_interface_alt_setting)
             LOAD_LIBUSB_SYMBOL(struct libusb_transfer * (LIBUSB_CALL *)(int), alloc_transfer)
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(struct libusb_transfer *), submit_transfer)
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(struct libusb_transfer *), cancel_transfer)
-            LOAD_LIBUSB_SYMBOL(void (LIBUSB_CALL *)(struct libusb_transfer *), free_transfer)
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, uint8_t, uint8_t, uint16_t, uint16_t, unsigned char *, uint16_t, unsigned int), control_transfer)
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, unsigned char, unsigned char *, int, int *, unsigned int), interrupt_transfer)
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_context *), handle_events)
-            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_context *, int *), handle_events_completed)
-            LOAD_LIBUSB_SYMBOL(const char * (LIBUSB_CALL *)(int), error_name)
+            LOAD_LIBUSB_SYMBOL(int(LIBUSB_CALL *)(struct libusb_transfer *), submit_transfer)
+            LOAD_LIBUSB_SYMBOL(int(LIBUSB_CALL *)(struct libusb_transfer *), cancel_transfer)
+            LOAD_LIBUSB_SYMBOL(void(LIBUSB_CALL *)(struct libusb_transfer *), free_transfer)
+            LOAD_LIBUSB_SYMBOL(int(LIBUSB_CALL *)(libusb_device_handle *, uint8_t, uint8_t, uint16_t, uint16_t, unsigned char *, uint16_t, unsigned int), control_transfer)
+            LOAD_LIBUSB_SYMBOL(int(LIBUSB_CALL *)(libusb_device_handle *, unsigned char, unsigned char *, int, int *, unsigned int), interrupt_transfer)
+            LOAD_LIBUSB_SYMBOL(int(LIBUSB_CALL *)(libusb_context *), handle_events)
+            LOAD_LIBUSB_SYMBOL(int(LIBUSB_CALL *)(libusb_context *, int *), handle_events_completed)
+            LOAD_LIBUSB_SYMBOL(const char *(LIBUSB_CALL *)(int), error_name)
 #undef LOAD_LIBUSB_SYMBOL
 
             if (!loaded) {
@@ -1427,7 +1428,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
         usb_devs = LIBUSB_hid_enumerate(vendor_id, product_id);
 
         if (use_libusb_whitelist) {
-            RemoveNonWhitelistedDevicesFromEnumeration(&usb_devs,  LIBUSB_hid_free_enumeration);
+            RemoveNonWhitelistedDevicesFromEnumeration(&usb_devs, LIBUSB_hid_free_enumeration);
         }
     }
 #endif /* HAVE_LIBUSB */

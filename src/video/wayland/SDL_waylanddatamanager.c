@@ -263,8 +263,8 @@ void Wayland_data_source_set_callback(SDL_WaylandDataSource *source,
 }
 
 void Wayland_primary_selection_source_set_callback(SDL_WaylandPrimarySelectionSource *source,
-                                                  SDL_ClipboardDataCallback callback,
-                                                  void *userdata)
+                                                   SDL_ClipboardDataCallback callback,
+                                                   void *userdata)
 {
     if (source) {
         source->callback = callback;
@@ -277,7 +277,7 @@ static void *Wayland_clone_data_buffer(const void *buffer, size_t *len)
 {
     void *clone = NULL;
     if (*len > 0 && buffer) {
-        clone = SDL_malloc((*len)+sizeof(Uint32));
+        clone = SDL_malloc((*len) + sizeof(Uint32));
         if (!clone) {
             SDL_OutOfMemory();
         } else {

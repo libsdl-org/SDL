@@ -31,10 +31,9 @@
 struct SDL_PrivateAudioData
 {
     snd_pcm_t *audio_handle;  // The audio device handle
-    int audio_fd;  // The audio file descriptor, for selecting on
+    int audio_fd;             // The audio file descriptor, for selecting on
     SDL_bool timeout_on_wait; // Select timeout status
-    Uint8 *pcm_buf;  // Raw mixing buffer
+    Uint8 *pcm_buf;           // Raw mixing buffer
 };
 
 #endif // __SDL_QSA_AUDIO_H__
-

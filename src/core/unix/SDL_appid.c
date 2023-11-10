@@ -30,7 +30,7 @@ const char *SDL_GetExeName()
 
     /* TODO: Use a fallback if BSD has no mounted procfs (OpenBSD has no procfs at all) */
     if (!proc_name) {
-#if defined(__LINUX__) || defined(__FREEBSD__) || defined (__NETBSD__)
+#if defined(__LINUX__) || defined(__FREEBSD__) || defined(__NETBSD__)
         static char linkfile[1024];
         int linksize;
 

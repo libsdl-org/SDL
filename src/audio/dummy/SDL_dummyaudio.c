@@ -38,19 +38,19 @@ static int DUMMYAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     const char *envr = SDL_getenv(DUMMYENVR_IODELAY);
 
-    device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
+    device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
         return SDL_OutOfMemory();
     }
 
     if (!device->iscapture) {
-        device->hidden->mixbuf = (Uint8 *) SDL_malloc(device->buffer_size);
+        device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
         if (!device->hidden->mixbuf) {
             return SDL_OutOfMemory();
         }
     }
 
-    device->hidden->io_delay = (Uint32) (envr ? SDL_atoi(envr) : ((device->sample_frames * 1000) / device->spec.freq));
+    device->hidden->io_delay = (Uint32)(envr ? SDL_atoi(envr) : ((device->sample_frames * 1000) / device->spec.freq));
 
     return 0; // we're good; don't change reported device format.
 }

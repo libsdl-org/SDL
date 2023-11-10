@@ -233,8 +233,8 @@ static int PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
     size_indices = indices ? size_indices : 0;
 
     if (texture) {
-        GSPRIMUVPOINT *vertices = (GSPRIMUVPOINT *) SDL_AllocateRenderVertices(renderer, count * sizeof(GSPRIMUVPOINT), 4, &cmd->data.draw.first);
-        GSTEXTURE *ps2_tex = (GSTEXTURE *) texture->driverdata;
+        GSPRIMUVPOINT *vertices = (GSPRIMUVPOINT *)SDL_AllocateRenderVertices(renderer, count * sizeof(GSPRIMUVPOINT), 4, &cmd->data.draw.first);
+        GSTEXTURE *ps2_tex = (GSTEXTURE *)texture->driverdata;
 
         if (!vertices) {
             return -1;
@@ -401,7 +401,7 @@ static int PS2_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_Render
     PS2_SetBlendMode(data, cmd->data.draw.blend);
 
     if (cmd->data.draw.texture) {
-        const GSPRIMUVPOINT *verts = (GSPRIMUVPOINT *) (vertices + cmd->data.draw.first);
+        const GSPRIMUVPOINT *verts = (GSPRIMUVPOINT *)(vertices + cmd->data.draw.first);
         GSTEXTURE *ps2_tex = (GSTEXTURE *)cmd->data.draw.texture->driverdata;
 
         gsKit_TexManager_bind(data->gsGlobal, ps2_tex);

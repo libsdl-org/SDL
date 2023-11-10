@@ -28,17 +28,17 @@
 
 /* Enable to have color in logs */
 #if 1
-#define COLOR_RED       "\033[0;31m"
-#define COLOR_GREEN     "\033[0;32m"
-#define COLOR_YELLOW    "\033[0;93m"
-#define COLOR_BLUE      "\033[0;94m"
-#define COLOR_END       "\033[0m"
+#define COLOR_RED    "\033[0;31m"
+#define COLOR_GREEN  "\033[0;32m"
+#define COLOR_YELLOW "\033[0;93m"
+#define COLOR_BLUE   "\033[0;94m"
+#define COLOR_END    "\033[0m"
 #else
-#define COLOR_RED       ""
-#define COLOR_GREEN     ""
-#define COLOR_BLUE      ""
-#define COLOR_YELLOW    ""
-#define COLOR_END       ""
+#define COLOR_RED    ""
+#define COLOR_GREEN  ""
+#define COLOR_BLUE   ""
+#define COLOR_YELLOW ""
+#define COLOR_END    ""
 #endif
 
 /* Assert check message format */

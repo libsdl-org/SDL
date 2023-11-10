@@ -130,7 +130,7 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
     retval = 0;
     while ((sem->count == 0) && (retval != SDL_MUTEX_TIMEDOUT)) {
         retval = SDL_WaitConditionTimeoutNS(sem->count_nonzero,
-                                     sem->count_lock, timeoutNS);
+                                            sem->count_lock, timeoutNS);
     }
     --sem->waiters_count;
     if (retval == 0) {

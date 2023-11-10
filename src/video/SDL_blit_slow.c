@@ -131,7 +131,7 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
                     dstA = 0xFF;
                 } else {
                     /* SDL_PIXELFORMAT_ARGB2101010 */
-                    dstpixel = *((Uint32 *) (dst));
+                    dstpixel = *((Uint32 *)(dst));
                     RGBA_FROM_ARGB2101010(dstpixel, dstR, dstG, dstB, dstA);
                 }
             } else {

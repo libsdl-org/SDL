@@ -288,11 +288,11 @@ static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_cl
 }
 #endif /* SDL_USE_LIBUDEV */
 
-void SDL_EVDEV_SetVTSwitchCallbacks(void (*release_callback)(void*), void *release_callback_data,
-                                    void (*acquire_callback)(void*), void *acquire_callback_data)
+void SDL_EVDEV_SetVTSwitchCallbacks(void (*release_callback)(void *), void *release_callback_data,
+                                    void (*acquire_callback)(void *), void *acquire_callback_data)
 {
     SDL_EVDEV_kbd_set_vt_switch_callbacks(_this->kbd,
-                                          release_callback, release_callback_data, 
+                                          release_callback, release_callback_data,
                                           acquire_callback, acquire_callback_data);
 }
 
@@ -510,8 +510,8 @@ void SDL_EVDEV_Poll(void)
                                 screen_h = mode->h;
                             }
                             SDL_SendMouseMotion(SDL_EVDEV_GetEventTimestamp(event), mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse,
-                                (float)(item->mouse_x - item->min_x) * screen_w / item->range_x,
-                                (float)(item->mouse_y - item->min_y) * screen_h / item->range_y);
+                                                (float)(item->mouse_x - item->min_x) * screen_w / item->range_x,
+                                                (float)(item->mouse_y - item->min_y) * screen_h / item->range_y);
                         }
 
                         if (item->mouse_wheel != 0 || item->mouse_hwheel != 0) {

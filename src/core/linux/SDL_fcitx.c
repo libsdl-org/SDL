@@ -81,10 +81,10 @@ static char *GetAppName(void)
 }
 
 static size_t Fcitx_GetPreeditString(SDL_DBusContext *dbus,
-                       DBusMessage *msg,
-                       char **ret,
-                       Sint32 *start_pos,
-                       Sint32 *end_pos)
+                                     DBusMessage *msg,
+                                     char **ret,
+                                     Sint32 *start_pos,
+                                     Sint32 *end_pos)
 {
     char *text = NULL, *subtext;
     size_t text_bytes = 0;

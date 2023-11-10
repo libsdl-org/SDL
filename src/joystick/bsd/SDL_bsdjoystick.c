@@ -92,10 +92,10 @@
 #define HUG_DPAD_RIGHT 0x92
 #define HUG_DPAD_LEFT  0x93
 
-#define HAT_UP        0x01
-#define HAT_RIGHT     0x02
-#define HAT_DOWN      0x04
-#define HAT_LEFT      0x08
+#define HAT_UP    0x01
+#define HAT_RIGHT 0x02
+#define HAT_DOWN  0x04
+#define HAT_LEFT  0x08
 
 #endif
 
@@ -686,15 +686,15 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                     } else if (usage == HUG_HAT_SWITCH) {
                         v = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
                         SDL_SendJoystickHat(timestamp, joy, 0,
-                                               hatval_to_sdl(v) -
-                                                   hitem.logical_minimum);
+                                            hatval_to_sdl(v) -
+                                                hitem.logical_minimum);
                     }
 #ifdef __OpenBSD__
                     /* here D-pad directions are reported like separate buttons.
                      * calculate the SDL hat value from the 4 separate values.
                      */
                     switch (usage) {
-	            case HUG_DPAD_UP:
+                    case HUG_DPAD_UP:
                         dpad[0] = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
                         break;
                     case HUG_DPAD_DOWN:
@@ -706,13 +706,10 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                     case HUG_DPAD_LEFT:
                         dpad[3] = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
                         break;
-                    //default:
-	                // no-op
+                        // default:
+                        //  no-op
                     }
-                    SDL_PrivateJoystickHat(joy, 0, (dpad[0] * HAT_UP) |
-                                                   (dpad[1] * HAT_DOWN) |
-                                                   (dpad[2] * HAT_RIGHT) |
-                                                   (dpad[3] * HAT_LEFT) );
+                    SDL_PrivateJoystickHat(joy, 0, (dpad[0] * HAT_UP) | (dpad[1] * HAT_DOWN) | (dpad[2] * HAT_RIGHT) | (dpad[3] * HAT_LEFT));
 #endif
                     break;
                 }

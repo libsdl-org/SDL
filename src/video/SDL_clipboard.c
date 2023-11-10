@@ -24,7 +24,6 @@
 #include "SDL_sysvideo.h"
 #include "../events/SDL_clipboardevents_c.h"
 
-
 void SDL_CancelClipboardData(Uint32 sequence)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
@@ -397,4 +396,3 @@ SDL_bool SDL_HasPrimarySelectionText(void)
         }
     }
 }
-

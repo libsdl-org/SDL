@@ -110,16 +110,16 @@ static int N3DSAUDIO_OpenDevice(SDL_AudioDevice *device)
     SDL_AudioFormat test_format;
     const SDL_AudioFormat *closefmts = SDL_ClosestAudioFormats(device->spec.format);
     while ((test_format = *(closefmts++)) != 0) {
-        if (test_format == SDL_AUDIO_S8) {  // Signed 8-bit audio supported
+        if (test_format == SDL_AUDIO_S8) { // Signed 8-bit audio supported
             format = (device->spec.channels == 2) ? NDSP_FORMAT_STEREO_PCM8 : NDSP_FORMAT_MONO_PCM8;
             break;
-        } else if (test_format == SDL_AUDIO_S16) {  // Signed 16-bit audio supported
+        } else if (test_format == SDL_AUDIO_S16) { // Signed 16-bit audio supported
             format = (device->spec.channels == 2) ? NDSP_FORMAT_STEREO_PCM16 : NDSP_FORMAT_MONO_PCM16;
             break;
         }
     }
 
-    if (!test_format) {      // shouldn't happen, but just in case...
+    if (!test_format) { // shouldn't happen, but just in case...
         return SDL_SetError("No supported audio format found.");
     }
 
@@ -186,7 +186,7 @@ static int N3DSAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, in
     if (device->hidden->isCancelled ||
         device->hidden->waveBuf[nextbuf].status != NDSP_WBUF_FREE) {
         contextUnlock(device);
-        return 0;  // !!! FIXME: is this a fatal error? If so, this should return -1.
+        return 0; // !!! FIXME: is this a fatal error? If so, this should return -1.
     }
 
     device->hidden->nextbuf = (nextbuf + 1) % NUM_BUFFERS;

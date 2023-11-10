@@ -80,7 +80,6 @@
 #define XKB_MOD_NAME_MODE "Mod5"
 #endif
 
-
 struct SDL_WaylandTouchPoint
 {
     SDL_TouchID id;
@@ -832,19 +831,19 @@ static void pointer_handle_axis(void *data, struct wl_pointer *pointer,
 }
 
 static void pointer_handle_axis_relative_direction(void *data, struct wl_pointer *pointer,
-                    uint32_t axis, uint32_t axis_relative_direction)
+                                                   uint32_t axis, uint32_t axis_relative_direction)
 {
     struct SDL_WaylandInput *input = data;
     if (axis != WL_POINTER_AXIS_VERTICAL_SCROLL) {
         return;
     }
     switch (axis_relative_direction) {
-        case WL_POINTER_AXIS_RELATIVE_DIRECTION_IDENTICAL:
-            input->pointer_curr_axis_info.direction = SDL_MOUSEWHEEL_NORMAL;
-            break;
-        case WL_POINTER_AXIS_RELATIVE_DIRECTION_INVERTED:
-            input->pointer_curr_axis_info.direction = SDL_MOUSEWHEEL_FLIPPED;
-            break;
+    case WL_POINTER_AXIS_RELATIVE_DIRECTION_IDENTICAL:
+        input->pointer_curr_axis_info.direction = SDL_MOUSEWHEEL_NORMAL;
+        break;
+    case WL_POINTER_AXIS_RELATIVE_DIRECTION_INVERTED:
+        input->pointer_curr_axis_info.direction = SDL_MOUSEWHEEL_FLIPPED;
+        break;
     }
 }
 
@@ -928,11 +927,11 @@ static const struct wl_pointer_listener pointer_listener = {
     pointer_handle_motion,
     pointer_handle_button,
     pointer_handle_axis,
-    pointer_handle_frame,         /* Version 5 */
-    pointer_handle_axis_source,   /* Version 5 */
-    pointer_handle_axis_stop,     /* Version 5 */
-    pointer_handle_axis_discrete, /* Version 5 */
-    pointer_handle_axis_value120,  /* Version 8 */
+    pointer_handle_frame,                  /* Version 5 */
+    pointer_handle_axis_source,            /* Version 5 */
+    pointer_handle_axis_stop,              /* Version 5 */
+    pointer_handle_axis_discrete,          /* Version 5 */
+    pointer_handle_axis_value120,          /* Version 8 */
     pointer_handle_axis_relative_direction /* Version 9 */
 };
 
@@ -2054,7 +2053,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
         SDL_bool drop_handled = SDL_FALSE;
 #ifdef SDL_USE_LIBDBUS
         if (Wayland_data_offer_has_mime(
-            data_device->drag_offer, FILE_PORTAL_MIME)) {
+                data_device->drag_offer, FILE_PORTAL_MIME)) {
             void *buffer = Wayland_data_offer_receive(data_device->drag_offer,
                                                       FILE_PORTAL_MIME, &length);
             if (buffer) {
@@ -2081,7 +2080,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
          * non paths that are not visible to the application
          */
         if (!drop_handled && Wayland_data_offer_has_mime(
-                                                         data_device->drag_offer, FILE_MIME)) {
+                                 data_device->drag_offer, FILE_MIME)) {
             void *buffer = Wayland_data_offer_receive(data_device->drag_offer,
                                                       FILE_MIME, &length);
             if (buffer) {
@@ -2101,7 +2100,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
         }
 
         if (drop_handled && wl_data_offer_get_version(data_device->drag_offer->offer) >=
-            WL_DATA_OFFER_FINISH_SINCE_VERSION) {
+                                WL_DATA_OFFER_FINISH_SINCE_VERSION) {
             wl_data_offer_finish(data_device->drag_offer->offer);
         }
     }
@@ -2514,7 +2513,7 @@ static void tablet_tool_handle_tilt(void *data, struct zwp_tablet_tool_v2 *tool,
 
 static void tablet_tool_handle_button(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t serial, uint32_t button, uint32_t state)
 {
-    struct SDL_WaylandTabletInput *input = (struct SDL_WaylandTabletInput*)data;
+    struct SDL_WaylandTabletInput *input = (struct SDL_WaylandTabletInput *)data;
 
     if (input->is_down) {
         tablet_tool_handle_up(data, tool);
@@ -2808,7 +2807,8 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
             wl_touch_destroy(input->touch);
         }
 
-        wl_list_for_each_safe (tp, tmp, &touch_points, link) {
+        wl_list_for_each_safe(tp, tmp, &touch_points, link)
+        {
             WAYLAND_wl_list_remove(&tp->link);
             SDL_free(tp);
         }

@@ -1825,14 +1825,14 @@ static size_t SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, do
                 /* Carry the one... */
                 size_t i;
 
-                for (i = length; i--; ) {
+                for (i = length; i--;) {
                     if (num[i] == decimal_separator) {
                         continue;
                     }
                     if (num[i] == '9') {
                         num[i] = '0';
                         if (i == 0 || num[i - 1] == '-' || num[i - 1] == '+') {
-                            SDL_memmove(&num[i+1], &num[i], length - i);
+                            SDL_memmove(&num[i + 1], &num[i], length - i);
                             num[i] = '1';
                             ++length;
                             break;
@@ -2149,7 +2149,7 @@ int SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, SDL_PRINTF
     retval = SDL_vsnprintf(text_utf8, maxlen * 4, fmt_utf8, ap);
 
     if (retval >= 0) {
-        wchar_t *text_wchar =  (wchar_t *)SDL_iconv_string("WCHAR_T", "UTF-8", text_utf8, SDL_strlen(text_utf8) + 1);
+        wchar_t *text_wchar = (wchar_t *)SDL_iconv_string("WCHAR_T", "UTF-8", text_utf8, SDL_strlen(text_utf8) + 1);
         if (text_wchar) {
             if (text) {
                 SDL_wcslcpy(text, text_wchar, maxlen);

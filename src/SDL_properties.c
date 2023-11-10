@@ -22,11 +22,10 @@
 #include "SDL_hashtable.h"
 #include "SDL_properties_c.h"
 
-
 typedef struct
 {
     void *value;
-    void (SDLCALL *cleanup)(void *userdata, void *value);
+    void(SDLCALL *cleanup)(void *userdata, void *value);
     void *userdata;
 } SDL_Property;
 
@@ -40,7 +39,6 @@ static SDL_HashTable *SDL_properties;
 static SDL_RWLock *SDL_properties_lock;
 static SDL_PropertiesID SDL_last_properties_id;
 static SDL_PropertiesID SDL_global_properties;
-
 
 static void SDL_FreeProperty(const void *key, const void *value, void *data)
 {
@@ -201,7 +199,7 @@ int SDL_SetProperty(SDL_PropertiesID props, const char *name, void *value)
     return SDL_SetPropertyWithCleanup(props, name, value, NULL, NULL);
 }
 
-int SDL_SetPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, void (SDLCALL *cleanup)(void *userdata, void *value), void *userdata)
+int SDL_SetPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, void(SDLCALL *cleanup)(void *userdata, void *value), void *userdata)
 {
     SDL_Properties *properties = NULL;
     SDL_Property *property = NULL;

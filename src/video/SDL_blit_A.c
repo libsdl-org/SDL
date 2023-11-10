@@ -334,7 +334,7 @@ static void SDL_TARGETING("mmx") BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo *info)
     __m64 src1, dst1, mm_alpha, mm_zero, mm_alpha2, mm_one_alpha;
 
     mm_zero = _mm_setzero_si64(); /* 0 -> mm_zero */
-    if (amask == 0xFF000000) { /* 1 in the alpha channel -> mm_one_alpha */
+    if (amask == 0xFF000000) {    /* 1 in the alpha channel -> mm_one_alpha */
         mm_one_alpha = _mm_set_pi16(1, 0, 0, 0);
     } else if (amask == 0x00FF0000) {
         mm_one_alpha = _mm_set_pi16(0, 1, 0, 0);

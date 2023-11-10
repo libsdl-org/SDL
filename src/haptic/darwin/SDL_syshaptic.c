@@ -1259,7 +1259,7 @@ int SDL_SYS_HapticGetEffectStatus(SDL_Haptic *haptic,
     ret = FFEffectGetEffectStatus(effect->hweffect->ref, &status);
     if (ret != FF_OK) {
         return SDL_SetError("Haptic: Unable to get effect status: %s.",
-                     FFStrError(ret));
+                            FFStrError(ret));
     }
 
     if (status == 0) {

@@ -228,9 +228,9 @@ SDL_SystemTheme Cocoa_GetSystemTheme(void)
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101400 /* Added in the 10.14.0 SDK. */
     if ([[NSApplication sharedApplication] respondsToSelector:@selector(effectiveAppearance)]) {
-        NSAppearance* appearance = [[NSApplication sharedApplication] effectiveAppearance];
+        NSAppearance *appearance = [[NSApplication sharedApplication] effectiveAppearance];
 
-        if ([appearance.name containsString: @"Dark"]) {
+        if ([appearance.name containsString:@"Dark"]) {
             return SDL_SYSTEM_THEME_DARK;
         }
     }

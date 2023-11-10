@@ -272,10 +272,10 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_EVENT_CASE(SDL_EVENT_RENDER_DEVICE_RESET)
         break;
 
-#define SDL_DISPLAYEVENT_CASE(x)               \
-    case x:                                    \
-        SDL_strlcpy(name, #x, sizeof(name));   \
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u display=%u event=%s data1=%d)", \
+#define SDL_DISPLAYEVENT_CASE(x)                                                                                             \
+    case x:                                                                                                                  \
+        SDL_strlcpy(name, #x, sizeof(name));                                                                                 \
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u display=%u event=%s data1=%d)",                         \
                            (uint)event->display.timestamp, (uint)event->display.displayID, name, (int)event->display.data1); \
         break
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_ORIENTATION);
@@ -285,10 +285,10 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED);
 #undef SDL_DISPLAYEVENT_CASE
 
-#define SDL_WINDOWEVENT_CASE(x)                \
-    case x:                                    \
-        SDL_strlcpy(name, #x, sizeof(name)); \
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u event=%s data1=%d data2=%d)", \
+#define SDL_WINDOWEVENT_CASE(x)                                                                                                                    \
+    case x:                                                                                                                                        \
+        SDL_strlcpy(name, #x, sizeof(name));                                                                                                       \
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u event=%s data1=%d data2=%d)",                                     \
                            (uint)event->window.timestamp, (uint)event->window.windowID, name, (int)event->window.data1, (int)event->window.data2); \
         break
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_SHOWN);

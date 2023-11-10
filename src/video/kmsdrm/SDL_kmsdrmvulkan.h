@@ -36,8 +36,8 @@
 
 int KMSDRM_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 void KMSDRM_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
-char const* const* KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                             Uint32 *count);
+char const *const *KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+                                                       Uint32 *count);
 SDL_bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                      SDL_Window *window,
                                      VkInstance instance,

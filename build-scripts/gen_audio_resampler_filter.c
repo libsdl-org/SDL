@@ -42,14 +42,14 @@ gcc -o genfilter build-scripts/gen_audio_resampler_filter.c -lm && ./genfilter >
 #include <math.h>
 
 #ifndef M_PI
-    #define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846
 #endif
 
-#define RESAMPLER_ZERO_CROSSINGS 5
-#define RESAMPLER_BITS_PER_SAMPLE 16
-#define RESAMPLER_BITS_PER_ZERO_CROSSING  ((RESAMPLER_BITS_PER_SAMPLE / 2) + 1)
-#define RESAMPLER_SAMPLES_PER_ZERO_CROSSING  (1 << RESAMPLER_BITS_PER_ZERO_CROSSING)
-#define RESAMPLER_FILTER_SIZE (RESAMPLER_SAMPLES_PER_ZERO_CROSSING * RESAMPLER_ZERO_CROSSINGS)
+#define RESAMPLER_ZERO_CROSSINGS            5
+#define RESAMPLER_BITS_PER_SAMPLE           16
+#define RESAMPLER_BITS_PER_ZERO_CROSSING    ((RESAMPLER_BITS_PER_SAMPLE / 2) + 1)
+#define RESAMPLER_SAMPLES_PER_ZERO_CROSSING (1 << RESAMPLER_BITS_PER_ZERO_CROSSING)
+#define RESAMPLER_FILTER_SIZE               (RESAMPLER_SAMPLES_PER_ZERO_CROSSING * RESAMPLER_ZERO_CROSSINGS)
 
 /* This is a "modified" bessel function, so you can't use POSIX j0() */
 static double
@@ -67,7 +67,7 @@ bessel(const double x)
         }
         i0 += diff;
         i++;
-        f *= (double) i;
+        f *= (double)i;
     }
 
     return i0;
@@ -84,7 +84,7 @@ kaiser_and_sinc(double *table, const int tablelen, const double beta)
 
     for (i = 1; i < tablelen; i++) {
         const double kaiser = bessel(beta * sqrt(1.0 - pow((double)i / (double)(tablelen), 2.0))) / bessel_beta;
-        const double x = (((double) i) / ((double) RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) * M_PI;
+        const double x = (((double)i) / ((double)RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) * M_PI;
         table[i] = kaiser * (sin(x) / x);
     }
 }
@@ -135,8 +135,8 @@ int main(void)
         "#define RESAMPLER_BITS_PER_ZERO_CROSSING    ((RESAMPLER_BITS_PER_SAMPLE / 2) + 1)\n"
         "#define RESAMPLER_SAMPLES_PER_ZERO_CROSSING (1 << RESAMPLER_BITS_PER_ZERO_CROSSING)\n"
         "#define RESAMPLER_FILTER_SIZE               (RESAMPLER_SAMPLES_PER_ZERO_CROSSING * RESAMPLER_ZERO_CROSSINGS)\n"
-        "\n", RESAMPLER_ZERO_CROSSINGS, RESAMPLER_BITS_PER_SAMPLE
-    );
+        "\n",
+        RESAMPLER_ZERO_CROSSINGS, RESAMPLER_BITS_PER_SAMPLE);
 
     printf("static const float ResamplerFilter[RESAMPLER_FILTER_SIZE] = {");
     for (i = 0; i < RESAMPLER_FILTER_SIZE; i++) {

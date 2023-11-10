@@ -31,20 +31,20 @@
 
 static void *s_dbghelp;
 
-typedef BOOL (__stdcall *dbghelp_SymInitialize_fn)(HANDLE hProcess, PCSTR UserSearchPath, BOOL fInvadeProcess);
+typedef BOOL(__stdcall *dbghelp_SymInitialize_fn)(HANDLE hProcess, PCSTR UserSearchPath, BOOL fInvadeProcess);
 
-typedef BOOL (__stdcall *dbghelp_SymFromAddr_fn)(HANDLE hProcess, DWORD64 Address, PDWORD64 Displacement, PSYMBOL_INFO Symbol);
+typedef BOOL(__stdcall *dbghelp_SymFromAddr_fn)(HANDLE hProcess, DWORD64 Address, PDWORD64 Displacement, PSYMBOL_INFO Symbol);
 static dbghelp_SymFromAddr_fn dbghelp_SymFromAddr;
 
 #ifdef _WIN64
-typedef BOOL (__stdcall *dbghelp_SymGetLineFromAddr_fn)(HANDLE hProcess, DWORD64 qwAddr, PDWORD pdwDisplacement, PIMAGEHLP_LINE64 Line);
+typedef BOOL(__stdcall *dbghelp_SymGetLineFromAddr_fn)(HANDLE hProcess, DWORD64 qwAddr, PDWORD pdwDisplacement, PIMAGEHLP_LINE64 Line);
 #else
-typedef BOOL (__stdcall *dbghelp_SymGetLineFromAddr_fn)(HANDLE hProcess, DWORD qwAddr, PDWORD pdwDisplacement, PIMAGEHLP_LINE Line);
+typedef BOOL(__stdcall *dbghelp_SymGetLineFromAddr_fn)(HANDLE hProcess, DWORD qwAddr, PDWORD pdwDisplacement, PIMAGEHLP_LINE Line);
 #endif
 static dbghelp_SymGetLineFromAddr_fn dbghelp_SymGetLineFromAddr;
 
 /* older SDKs might not have this: */
-__declspec(dllimport) USHORT WINAPI RtlCaptureStackBackTrace(ULONG FramesToSkip, ULONG FramesToCapture, PVOID* BackTrace, PULONG BackTraceHash);
+__declspec(dllimport) USHORT WINAPI RtlCaptureStackBackTrace(ULONG FramesToSkip, ULONG FramesToCapture, PVOID *BackTrace, PULONG BackTraceHash);
 #define CaptureStackBackTrace RtlCaptureStackBackTrace
 
 #endif
@@ -85,7 +85,7 @@ static unsigned int get_allocation_bucket(void *mem)
     return index;
 }
 
-static SDL_tracked_allocation* SDL_GetTrackedAllocation(void *mem)
+static SDL_tracked_allocation *SDL_GetTrackedAllocation(void *mem)
 {
     SDL_tracked_allocation *entry;
     int index = get_allocation_bucket(mem);
@@ -213,9 +213,9 @@ static void SDL_UntrackAllocation(void *mem)
     }
 }
 
-static void rand_fill_memory(void* ptr, size_t start, size_t end)
+static void rand_fill_memory(void *ptr, size_t start, size_t end)
 {
-    Uint8* mem = (Uint8*) ptr;
+    Uint8 *mem = (Uint8 *)ptr;
     size_t i;
 
     if (!s_randfill_allocations)
@@ -254,8 +254,8 @@ static void *SDLCALL SDLTest_TrackedRealloc(void *ptr, size_t size)
     void *mem;
     size_t old_size = 0;
     if (ptr) {
-         old_size = SDL_GetTrackedAllocationSize(ptr);
-         SDL_assert(old_size != SIZE_MAX);
+        old_size = SDL_GetTrackedAllocationSize(ptr);
+        SDL_assert(old_size != SIZE_MAX);
     }
     mem = SDL_realloc_orig(ptr, size);
     if (ptr) {

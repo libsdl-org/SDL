@@ -938,7 +938,7 @@ static Uint8 *PIPEWIRE_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
     }
 
     device->hidden->pw_buf = pw_buf;
-    return (Uint8 *) spa_buf->datas[0].data;
+    return (Uint8 *)spa_buf->datas[0].data;
 }
 
 static int PIPEWIRE_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
@@ -965,7 +965,7 @@ static void PIPEWIRE_FlushCapture(SDL_AudioDevice *device)
 {
     struct pw_stream *stream = device->hidden->stream;
     struct pw_buffer *pw_buf = PIPEWIRE_pw_stream_dequeue_buffer(stream);
-    if (pw_buf) {  // just requeue it without any further thought.
+    if (pw_buf) { // just requeue it without any further thought.
         PIPEWIRE_pw_stream_queue_buffer(stream, pw_buf);
     }
 }
@@ -987,9 +987,9 @@ static int PIPEWIRE_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int
     const Uint8 *src = (const Uint8 *)spa_buf->datas[0].data;
     const Uint32 offset = SPA_MIN(spa_buf->datas[0].chunk->offset, spa_buf->datas[0].maxsize);
     const Uint32 size = SPA_MIN(spa_buf->datas[0].chunk->size, spa_buf->datas[0].maxsize - offset);
-    const int cpy = SDL_min(buflen, (int) size);
+    const int cpy = SDL_min(buflen, (int)size);
 
-    SDL_assert(size <= buflen);  // We'll have to reengineer some stuff if this turns out to not be true.
+    SDL_assert(size <= buflen); // We'll have to reengineer some stuff if this turns out to not be true.
 
     SDL_memcpy(buffer, src + offset, cpy);
     PIPEWIRE_pw_stream_queue_buffer(stream, pw_buf);
@@ -1004,7 +1004,7 @@ static void input_callback(void *data)
 
 static void stream_add_buffer_callback(void *data, struct pw_buffer *buffer)
 {
-    SDL_AudioDevice *device = (SDL_AudioDevice *) data;
+    SDL_AudioDevice *device = (SDL_AudioDevice *)data;
 
     if (device->iscapture == SDL_FALSE) {
         /* Clamp the output spec samples and size to the max size of the Pipewire buffer.
@@ -1023,7 +1023,7 @@ static void stream_add_buffer_callback(void *data, struct pw_buffer *buffer)
 
 static void stream_state_changed_callback(void *data, enum pw_stream_state old, enum pw_stream_state state, const char *error)
 {
-    SDL_AudioDevice *device = (SDL_AudioDevice *) data;
+    SDL_AudioDevice *device = (SDL_AudioDevice *)data;
 
     if (state == PW_STREAM_STATE_STREAMING) {
         device->hidden->stream_init_status |= PW_READY_FLAG_STREAM_READY;
@@ -1151,7 +1151,7 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_LATENCY, "%u/%i", device->sample_frames, device->spec.freq);
     PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_RATE, "1/%u", device->spec.freq);
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_ALWAYS_PROCESS, "true");
-    PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_DONT_RECONNECT, "true");  // Requesting a specific device, don't migrate to new default hardware.
+    PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_DONT_RECONNECT, "true"); // Requesting a specific device, don't migrate to new default hardware.
 
     /*
      * Pipewire 0.3.44 introduced PW_KEY_TARGET_OBJECT that takes either a path

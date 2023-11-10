@@ -150,7 +150,7 @@ typedef struct GLES2_RenderData
 
     SDL_bool GL_EXT_blend_minmax_supported;
 
-#define SDL_PROC(ret, func, params) ret (APIENTRY *func) params;
+#define SDL_PROC(ret, func, params) ret(APIENTRY *func) params;
 #include "SDL_gles2funcs.h"
 #undef SDL_PROC
     GLES2_FBOList *framebuffers;
@@ -251,7 +251,7 @@ static int GLES2_LoadFunctions(GLES2_RenderData *data)
 #else
 #define SDL_PROC(ret, func, params)                                                            \
     do {                                                                                       \
-        data->func = (ret (APIENTRY *) params)SDL_GL_GetProcAddress(#func);                                             \
+        data->func = (ret(APIENTRY *) params)SDL_GL_GetProcAddress(#func);                     \
         if (!data->func) {                                                                     \
             return SDL_SetError("Couldn't load GLES2 function %s: %s", #func, SDL_GetError()); \
         }                                                                                      \

@@ -97,8 +97,8 @@ static int key_to_sdl[] = {
  */
 void handleKeyboardEvent(screen_event_t event)
 {
-    int             val;
-    SDL_Scancode    scancode;
+    int val;
+    SDL_Scancode scancode;
 
     // Get the key value.
     if (screen_get_event_property_iv(event, SCREEN_PROPERTY_SYM, &val) < 0) {

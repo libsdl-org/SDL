@@ -132,12 +132,12 @@ struct SDL_Gamepad
 
 #undef _guarded
 
-#define CHECK_GAMEPAD_MAGIC(gamepad, retval)                   \
+#define CHECK_GAMEPAD_MAGIC(gamepad, retval)            \
     if (!gamepad || gamepad->magic != &gamepad_magic || \
-        !SDL_IsJoystickValid(gamepad->joystick)) {               \
-        SDL_InvalidParamError("gamepad");                             \
-        SDL_UnlockJoysticks();                                               \
-        return retval;                                                       \
+        !SDL_IsJoystickValid(gamepad->joystick)) {      \
+        SDL_InvalidParamError("gamepad");               \
+        SDL_UnlockJoysticks();                          \
+        return retval;                                  \
     }
 
 static SDL_vidpid_list SDL_allowed_gamepads;
@@ -1413,7 +1413,6 @@ static void SDL_UpdateGamepadFaceStyle(SDL_Gamepad *gamepad)
     }
 }
 
-
 /*
  * Make a new button mapping struct
  */
@@ -1740,8 +1739,8 @@ static void SDL_PrivateAppendToMappingString(char *mapping_string,
 }
 
 static GamepadMapping_t *SDL_PrivateGenerateAutomaticGamepadMapping(const char *name,
-                                                                          SDL_JoystickGUID guid,
-                                                                          SDL_GamepadMapping *raw_map)
+                                                                    SDL_JoystickGUID guid,
+                                                                    SDL_GamepadMapping *raw_map)
 {
     SDL_bool existing;
     char name_string[128];
@@ -2322,7 +2321,7 @@ SDL_JoystickID *SDL_GetGamepads(int *count)
             if (SDL_IsGamepad(joysticks[i])) {
                 ++num_gamepads;
             } else {
-                SDL_memmove(&joysticks[i], &joysticks[i+1], (num_gamepads + 1) * sizeof(joysticks[i]));
+                SDL_memmove(&joysticks[i], &joysticks[i + 1], (num_gamepads + 1) * sizeof(joysticks[i]));
             }
         }
     }
@@ -3315,7 +3314,7 @@ Uint16 SDL_GetGamepadFirmwareVersion(SDL_Gamepad *gamepad)
     return SDL_GetJoystickFirmwareVersion(joystick);
 }
 
-const char * SDL_GetGamepadSerial(SDL_Gamepad *gamepad)
+const char *SDL_GetGamepadSerial(SDL_Gamepad *gamepad)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
@@ -3758,7 +3757,7 @@ void SDL_GamepadHandleDelayedGuideButton(SDL_Joystick *joystick)
 const char *SDL_GetGamepadAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 {
 #ifdef SDL_JOYSTICK_MFI
-    const char *IOS_GetAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button);
+    const char *IOS_GetAppleSFSymbolsNameForButton(SDL_Gamepad * gamepad, SDL_GamepadButton button);
     const char *retval;
 
     SDL_LockJoysticks();
@@ -3778,7 +3777,7 @@ const char *SDL_GetGamepadAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_
 const char *SDL_GetGamepadAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
 {
 #ifdef SDL_JOYSTICK_MFI
-    const char *IOS_GetAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis);
+    const char *IOS_GetAppleSFSymbolsNameForAxis(SDL_Gamepad * gamepad, SDL_GamepadAxis axis);
     const char *retval;
 
     SDL_LockJoysticks();

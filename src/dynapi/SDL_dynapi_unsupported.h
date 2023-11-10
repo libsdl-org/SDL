@@ -22,7 +22,6 @@
 #ifndef SDL_dynapi_unsupported_h_
 #define SDL_dynapi_unsupported_h_
 
-
 #if !(defined(__WIN32__) || defined(__GDK__))
 typedef struct ID3D12Device ID3D12Device;
 typedef void *SDL_WindowsMessageHook;
