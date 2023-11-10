@@ -532,7 +532,7 @@ static void display_handle_done(void *data,
             /* ...and the compositor scales the logical viewport... */
             if (video->viewporter) {
                 /* ...and viewports are supported, calculate the true scale of the output. */
-                driverdata->scale_factor = (float) native_mode.w / (float)driverdata->screen_width;
+                driverdata->scale_factor = (float)native_mode.w / (float)driverdata->screen_width;
             } else {
                 /* ...otherwise, the 'native' pixel values are a multiple of the logical screen size. */
                 driverdata->pixel_width = driverdata->screen_width * (int)driverdata->scale_factor;
@@ -636,11 +636,11 @@ static void display_handle_description(void *data, struct wl_output *wl_output, 
 }
 
 static const struct wl_output_listener output_listener = {
-    display_handle_geometry, /* Version 1 */
-    display_handle_mode, /* Version 1 */
-    display_handle_done, /* Version 2 */
-    display_handle_scale, /* Version 2 */
-    display_handle_name, /* Version 4 */
+    display_handle_geometry,   /* Version 1 */
+    display_handle_mode,       /* Version 1 */
+    display_handle_done,       /* Version 2 */
+    display_handle_scale,      /* Version 2 */
+    display_handle_name,       /* Version 4 */
     display_handle_description /* Version 4 */
 };
 
@@ -703,7 +703,7 @@ static void Wayland_free_display(SDL_VideoDisplay *display)
 static void Wayland_init_xdg_output(SDL_VideoData *d)
 {
     SDL_DisplayData *node;
-    wl_list_for_each(node, &d->output_list, link) {
+    wl_list_for_each (node, &d->output_list, link) {
         node->xdg_output = zxdg_output_manager_v1_get_xdg_output(node->videodata->xdg_output_manager, node->output);
         zxdg_output_v1_add_listener(node->xdg_output, &xdg_output_listener, node);
     }
@@ -791,7 +791,7 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
 static void display_remove_global(void *data, struct wl_registry *registry, uint32_t id)
 {
     SDL_VideoData *d = data;
-    SDL_DisplayData  *node;
+    SDL_DisplayData *node;
 
     /* We don't get an interface, just an ID, so assume it's a wl_output :shrug: */
     wl_list_for_each (node, &d->output_list, link) {

@@ -28,7 +28,6 @@ struct SDL_RWLock
     pthread_rwlock_t id;
 };
 
-
 SDL_RWLock *SDL_CreateRWLock(void)
 {
     SDL_RWLock *rwlock;
@@ -55,19 +54,19 @@ void SDL_DestroyRWLock(SDL_RWLock *rwlock)
     }
 }
 
-void SDL_LockRWLockForReading(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+void SDL_LockRWLockForReading(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
     if (rwlock) {
         const int rc = pthread_rwlock_rdlock(&rwlock->id);
-        SDL_assert(rc == 0);  // assume we're in a lot of trouble if this assert fails.
+        SDL_assert(rc == 0); // assume we're in a lot of trouble if this assert fails.
     }
 }
 
-void SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+void SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
     if (rwlock) {
         const int rc = pthread_rwlock_wrlock(&rwlock->id);
-        SDL_assert(rc == 0);  // assume we're in a lot of trouble if this assert fails.
+        SDL_assert(rc == 0); // assume we're in a lot of trouble if this assert fails.
     }
 }
 
@@ -80,7 +79,7 @@ int SDL_TryLockRWLockForReading(SDL_RWLock *rwlock)
         if (result != 0) {
             retval = SDL_RWLOCK_TIMEDOUT;
             if (result != EBUSY) {
-                SDL_assert(!"Error trying to lock rwlock for reading");  // assume we're in a lot of trouble if this assert fails.
+                SDL_assert(!"Error trying to lock rwlock for reading"); // assume we're in a lot of trouble if this assert fails.
             }
         }
     }
@@ -97,7 +96,7 @@ int SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
         if (result != 0) {
             retval = SDL_RWLOCK_TIMEDOUT;
             if (result != EBUSY) {
-                SDL_assert(!"Error trying to lock rwlock for writing");  // assume we're in a lot of trouble if this assert fails.
+                SDL_assert(!"Error trying to lock rwlock for writing"); // assume we're in a lot of trouble if this assert fails.
             }
         }
     }
@@ -105,11 +104,10 @@ int SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
     return retval;
 }
 
-void SDL_UnlockRWLock(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+void SDL_UnlockRWLock(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
     if (rwlock) {
         const int rc = pthread_rwlock_unlock(&rwlock->id);
-        SDL_assert(rc == 0);  // assume we're in a lot of trouble if this assert fails.
+        SDL_assert(rc == 0); // assume we're in a lot of trouble if this assert fails.
     }
 }
-

@@ -34,7 +34,6 @@ extern void SDL_QuitBeApp(void);
 /* Be Application Signature*/
 extern const char *SDL_signature;
 
-
 #ifdef __cplusplus
 }
 #endif

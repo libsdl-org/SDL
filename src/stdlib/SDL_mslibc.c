@@ -765,7 +765,8 @@ void __declspec(naked) _alloca_probe_16(void)
 #ifdef _M_ARM64
 
 void __chkstk(void);
-void __chkstk() {
+void __chkstk()
+{
 }
 
 #endif

@@ -226,13 +226,13 @@ void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::Po
         Windows::Foundation::Point windowPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position, TransformToSDLWindowSize);
 
         SDL_SendTouch(0,
-            WINRT_TouchID,
-            (SDL_FingerID)pointerPoint->PointerId,
-            window,
-            SDL_TRUE,
-            normalizedPoint.X,
-            normalizedPoint.Y,
-            pointerPoint->Properties->Pressure);
+                      WINRT_TouchID,
+                      (SDL_FingerID)pointerPoint->PointerId,
+                      window,
+                      SDL_TRUE,
+                      normalizedPoint.X,
+                      normalizedPoint.Y,
+                      pointerPoint->Properties->Pressure);
     }
 }
 
@@ -255,12 +255,12 @@ void WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::Poin
         SDL_SendMouseMotion(0, window, 0, 0, windowPoint.X, windowPoint.Y);
     } else {
         SDL_SendTouchMotion(0,
-            WINRT_TouchID,
-            (SDL_FingerID)pointerPoint->PointerId,
-            window,
-            normalizedPoint.X,
-            normalizedPoint.Y,
-            pointerPoint->Properties->Pressure);
+                            WINRT_TouchID,
+                            (SDL_FingerID)pointerPoint->PointerId,
+                            window,
+                            normalizedPoint.X,
+                            normalizedPoint.Y,
+                            pointerPoint->Properties->Pressure);
     }
 }
 
@@ -279,13 +279,13 @@ void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::P
         Windows::Foundation::Point normalizedPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position, NormalizeZeroToOne);
 
         SDL_SendTouch(0,
-            WINRT_TouchID,
-            (SDL_FingerID)pointerPoint->PointerId,
-            window,
-            SDL_FALSE,
-            normalizedPoint.X,
-            normalizedPoint.Y,
-            pointerPoint->Properties->Pressure);
+                      WINRT_TouchID,
+                      (SDL_FingerID)pointerPoint->PointerId,
+                      window,
+                      SDL_FALSE,
+                      normalizedPoint.X,
+                      normalizedPoint.Y,
+                      pointerPoint->Properties->Pressure);
     }
 }
 
@@ -384,11 +384,11 @@ void WINRT_ProcessMouseMovedEvent(SDL_Window *window, Windows::Devices::Input::M
     const Windows::Foundation::Point mouseDeltaInDIPs((float)args->MouseDelta.X, (float)args->MouseDelta.Y);
     const Windows::Foundation::Point mouseDeltaInSDLWindowCoords = WINRT_TransformCursorPosition(window, mouseDeltaInDIPs, TransformToSDLWindowSize);
     SDL_SendMouseMotion(0,
-        window,
-        0,
-        1,
-        mouseDeltaInSDLWindowCoords.X,
-        mouseDeltaInSDLWindowCoords.Y);
+                        window,
+                        0,
+                        1,
+                        mouseDeltaInSDLWindowCoords.X,
+                        mouseDeltaInSDLWindowCoords.Y);
 }
 
 #endif // SDL_VIDEO_DRIVER_WINRT

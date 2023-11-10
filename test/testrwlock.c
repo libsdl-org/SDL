@@ -28,22 +28,22 @@ static int writerworktime = 100;
 static int timeout = 10000;
 static SDLTest_CommonState *state;
 
-static void DoWork(const int workticks)  /* "Work" */
+static void DoWork(const int workticks) /* "Work" */
 {
     const SDL_threadID tid = SDL_ThreadID();
     const SDL_bool is_reader = tid != mainthread;
     const char *typestr = is_reader ? "Reader" : "Writer";
 
-    SDL_Log("%s Thread %lu: ready to work\n", typestr, (unsigned long) tid);
+    SDL_Log("%s Thread %lu: ready to work\n", typestr, (unsigned long)tid);
     if (is_reader) {
         SDL_LockRWLockForReading(rwlock);
     } else {
         SDL_LockRWLockForWriting(rwlock);
     }
 
-    SDL_Log("%s Thread %lu: start work!\n", typestr, (unsigned long) tid);
+    SDL_Log("%s Thread %lu: start work!\n", typestr, (unsigned long)tid);
     SDL_Delay(workticks);
-    SDL_Log("%s Thread %lu: work done!\n", typestr, (unsigned long) tid);
+    SDL_Log("%s Thread %lu: work done!\n", typestr, (unsigned long)tid);
     SDL_UnlockRWLock(rwlock);
 
     /* If this sleep isn't done, then threads may starve */
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
             } else if (SDL_strcmp(argv[i], "--timeout") == 0) {
                 if (argv[i + 1]) {
                     char *endptr;
-                    timeout = (Uint64) SDL_strtol(argv[i + 1], &endptr, 0);
+                    timeout = (Uint64)SDL_strtol(argv[i + 1], &endptr, 0);
                     if (endptr != argv[i + 1] && *endptr == '\0' && timeout > 0) {
                         consumed = 2;
                     }
@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
         i += consumed;
     }
 
-    threads = SDL_malloc(nb_threads * sizeof(SDL_Thread*));
+    threads = SDL_malloc(nb_threads * sizeof(SDL_Thread *));
 
     /* Load the SDL library */
     if (SDL_Init(0) < 0) {
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    while (!SDL_AtomicGet(&doterminate) && (SDL_GetTicks() < ((Uint64) timeout))) {
+    while (!SDL_AtomicGet(&doterminate) && (SDL_GetTicks() < ((Uint64)timeout))) {
         DoWork(writerworktime);
     }
 

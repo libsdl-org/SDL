@@ -12,17 +12,17 @@
 
 /* Simple program: picks the offscreen backend and renders each frame to a bmp */
 
-#include <stdlib.h>
-#include <time.h>
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test.h>
 #include <SDL3/SDL_opengl.h>
+#include <SDL3/SDL_test.h>
+
+#include <stdlib.h>
+#include <time.h>
 
 static SDL_Renderer *renderer = NULL;
 static SDL_Window *window = NULL;
@@ -52,7 +52,7 @@ static void draw(void)
 
 static void save_surface_to_bmp(void)
 {
-    SDL_Surface* surface;
+    SDL_Surface *surface;
     Uint32 pixel_format;
     char file[128];
 

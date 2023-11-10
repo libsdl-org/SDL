@@ -66,12 +66,12 @@ void SDL_DestroyMutex(SDL_Mutex *mutex)
     }
 }
 
-void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
 #ifndef SDL_THREADS_DISABLED
     if (mutex != NULL) {
         const SceInt32 res = sceKernelLockLwMutex(&mutex->lock, 1, NULL);
-        SDL_assert(res == SCE_KERNEL_ERROR_OK);  // assume we're in a lot of trouble if this assert fails.
+        SDL_assert(res == SCE_KERNEL_ERROR_OK); // assume we're in a lot of trouble if this assert fails.
     }
 #endif // SDL_THREADS_DISABLED
 }
@@ -87,7 +87,7 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
         } else if (res == SCE_KERNEL_ERROR_WAIT_TIMEOUT) {
             retval = SDL_MUTEX_TIMEDOUT;
         } else {
-            SDL_assert(!"Error trying to lock mutex");  // assume we're in a lot of trouble if this assert fails.
+            SDL_assert(!"Error trying to lock mutex"); // assume we're in a lot of trouble if this assert fails.
             retval = SDL_MUTEX_TIMEDOUT;
         }
     }
@@ -95,12 +95,12 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
     return retval;
 }
 
-void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
 #ifndef SDL_THREADS_DISABLED
     if (mutex != NULL) {
         const SceInt32 res = sceKernelUnlockLwMutex(&mutex->lock, 1);
-        SDL_assert(res == 0);  // assume we're in a lot of trouble if this assert fails.
+        SDL_assert(res == 0); // assume we're in a lot of trouble if this assert fails.
     }
 #endif // SDL_THREADS_DISABLED
 }

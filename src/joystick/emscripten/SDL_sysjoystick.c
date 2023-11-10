@@ -346,7 +346,7 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
                     if (item->axis[i] != gamepadState.axis[i]) {
                         /* do we need to do conversion? */
                         SDL_SendJoystickAxis(timestamp, item->joystick, i,
-                                                (Sint16)(32767. * gamepadState.axis[i]));
+                                             (Sint16)(32767. * gamepadState.axis[i]));
                     }
 
                     /* store to compare in next update */

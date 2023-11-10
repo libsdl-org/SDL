@@ -587,7 +587,7 @@ int SDL_InitFormat(SDL_PixelFormat *format, Uint32 pixel_format)
     Uint32 mask;
 
     if (!SDL_GetMasksForPixelFormatEnum(pixel_format, &bpp,
-                                    &Rmask, &Gmask, &Bmask, &Amask)) {
+                                        &Rmask, &Gmask, &Bmask, &Amask)) {
         return -1;
     }
 
@@ -904,7 +904,7 @@ Uint32 SDL_MapRGB(const SDL_PixelFormat *format, Uint8 r, Uint8 g, Uint8 b)
 
 /* Find the pixel value corresponding to an RGBA quadruple */
 Uint32 SDL_MapRGBA(const SDL_PixelFormat *format, Uint8 r, Uint8 g, Uint8 b,
-            Uint8 a)
+                   Uint8 a)
 {
     if (!format) {
         SDL_InvalidParamError("format");

@@ -11,16 +11,16 @@
 */
 /* Simple program:  Check viewports */
 
-#include <stdlib.h>
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
 
+#include "testutils.h"
+#include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_test_common.h>
-#include <SDL3/SDL_main.h>
-#include "testutils.h"
+
+#include <stdlib.h>
 
 static SDLTest_CommonState *state;
 

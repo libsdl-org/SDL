@@ -98,7 +98,7 @@ int Wayland_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
         return SDL_SetError("EGL not initialized");
     }
 
-    *interval =_this->egl_data->egl_swapinterval;
+    *interval = _this->egl_data->egl_swapinterval;
     return 0;
 }
 

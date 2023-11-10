@@ -52,7 +52,7 @@ static void UIKit_VideoQuit(SDL_VideoDevice *_this);
 static void UIKit_DeleteDevice(SDL_VideoDevice *device)
 {
     @autoreleasepool {
-        if (device->driverdata){
+        if (device->driverdata) {
             CFRelease(device->driverdata);
         }
         SDL_free(device);
@@ -200,7 +200,8 @@ SDL_SystemTheme UIKit_GetSystemTheme(void)
 }
 
 #if TARGET_OS_XR
-CGRect UIKit_ComputeViewFrame(SDL_Window *window){
+CGRect UIKit_ComputeViewFrame(SDL_Window *window)
+{
     return CGRectMake(window->x, window->y, window->w, window->h);
 }
 #else
@@ -227,7 +228,7 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
      * https://forums.developer.apple.com/thread/65337 */
     UIInterfaceOrientation orient = [UIApplication sharedApplication].statusBarOrientation;
     BOOL landscape = UIInterfaceOrientationIsLandscape(orient) ||
-                    !(UIKit_GetSupportedOrientations(window) & (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown));
+                     !(UIKit_GetSupportedOrientations(window) & (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown));
     BOOL fullscreen = CGRectEqualToRect(screen.bounds, frame);
 
     /* The orientation flip doesn't make sense when the window is smaller

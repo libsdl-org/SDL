@@ -60,7 +60,6 @@ struct SDL_VideoData
     TPoint NGAGE_ScreenOffset;
 
     CFbsBitGc::TGraphicsOrientation NGAGE_ScreenOrientation;
-
 };
 
 #endif /* SDL_ngagevideo_h */

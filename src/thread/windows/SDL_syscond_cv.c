@@ -194,7 +194,6 @@ static const SDL_cond_impl_t SDL_cond_impl_cv = {
     &SDL_WaitConditionTimeoutNS_cv,
 };
 
-
 #ifndef __WINRT__
 /* Generic Condition Variable implementation using SDL_Mutex and SDL_Semaphore */
 static const SDL_cond_impl_t SDL_cond_impl_generic = {

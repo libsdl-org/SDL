@@ -12,15 +12,16 @@
 
 /* Simple program:  draw as many random objects on the screen as possible */
 
-#include <stdlib.h>
-#include <time.h>
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
 
-#include <SDL3/SDL_test_common.h>
+#include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test_common.h>
+
+#include <stdlib.h>
+#include <time.h>
 
 #define SWAP(typ, a, b) \
     do {                \
@@ -209,7 +210,7 @@ static void loop(void *arg)
 {
     int i;
     SDL_Event event;
-    int *done = (int*)arg;
+    int *done = (int *)arg;
 
     /* Check for events */
     while (SDL_PollEvent(&event)) {
@@ -288,7 +289,7 @@ int main(int argc, char *argv[])
     int done;
 
     /* Initialize parameters */
-    num_objects = -1;  /* -1 means not initialized */
+    num_objects = -1; /* -1 means not initialized */
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);

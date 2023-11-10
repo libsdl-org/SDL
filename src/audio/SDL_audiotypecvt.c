@@ -49,7 +49,8 @@
 // This code requires that floats are in the IEEE-754 binary32 format
 SDL_COMPILE_TIME_ASSERT(float_bits, sizeof(float) == sizeof(Uint32));
 
-union float_bits {
+union float_bits
+{
     Uint32 u32;
     float f32;
 };
@@ -382,7 +383,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S8_SSE2(Sint8 *dst, const f
 
         const __m128i bytes = _mm_packus_epi16(shorts1, shorts2);
 
-        _mm_storeu_si128((__m128i*)dst, bytes);
+        _mm_storeu_si128((__m128i *)dst, bytes);
 
         i -= 16;
         src += 16;
@@ -428,7 +429,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_U8_SSE2(Uint8 *dst, const f
 
         const __m128i bytes = _mm_packus_epi16(shorts1, shorts2);
 
-        _mm_storeu_si128((__m128i*)dst, bytes);
+        _mm_storeu_si128((__m128i *)dst, bytes);
 
         i -= 16;
         src += 16;
@@ -472,8 +473,8 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S16_SSE2(Sint16 *dst, const
         const __m128i shorts1 = _mm_packs_epi32(ints1, ints2);
         const __m128i shorts2 = _mm_packs_epi32(ints3, ints4);
 
-        _mm_storeu_si128((__m128i*)&dst[0], shorts1);
-        _mm_storeu_si128((__m128i*)&dst[8], shorts2);
+        _mm_storeu_si128((__m128i *)&dst[0], shorts1);
+        _mm_storeu_si128((__m128i *)&dst[8], shorts2);
 
         i -= 16;
         src += 16;
@@ -518,10 +519,10 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S32_SSE2(Sint32 *dst, const
         const __m128i ints3 = _mm_xor_si128(_mm_cvttps_epi32(values3), _mm_castps_si128(_mm_cmpge_ps(values3, limit)));
         const __m128i ints4 = _mm_xor_si128(_mm_cvttps_epi32(values4), _mm_castps_si128(_mm_cmpge_ps(values4, limit)));
 
-        _mm_storeu_si128((__m128i*)&dst[0], ints1);
-        _mm_storeu_si128((__m128i*)&dst[4], ints2);
-        _mm_storeu_si128((__m128i*)&dst[8], ints3);
-        _mm_storeu_si128((__m128i*)&dst[12], ints4);
+        _mm_storeu_si128((__m128i *)&dst[0], ints1);
+        _mm_storeu_si128((__m128i *)&dst[4], ints2);
+        _mm_storeu_si128((__m128i *)&dst[8], ints3);
+        _mm_storeu_si128((__m128i *)&dst[12], ints4);
 
         i -= 16;
         src += 16;
@@ -542,8 +543,8 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S32_SSE2(Sint32 *dst, const
 #endif
 
 #ifdef SDL_NEON_INTRINSICS
-#define DIVBY128     0.0078125f // 0x1p-7f
-#define DIVBY32768   0.000030517578125f // 0x1p-15f
+#define DIVBY128     0.0078125f                 // 0x1p-7f
+#define DIVBY32768   0.000030517578125f         // 0x1p-15f
 #define DIVBY8388607 0.00000011920930376163766f // 0x1.000002p-23f
 
 static void SDL_Convert_S8_to_F32_NEON(float *dst, const Sint8 *src, int num_samples)
@@ -974,13 +975,13 @@ void SDL_ChooseAudioConverters(void)
         return;
     }
 
-#define SET_CONVERTER_FUNCS(fntype) \
-    SDL_Convert_S8_to_F32 = SDL_Convert_S8_to_F32_##fntype; \
-    SDL_Convert_U8_to_F32 = SDL_Convert_U8_to_F32_##fntype; \
+#define SET_CONVERTER_FUNCS(fntype)                           \
+    SDL_Convert_S8_to_F32 = SDL_Convert_S8_to_F32_##fntype;   \
+    SDL_Convert_U8_to_F32 = SDL_Convert_U8_to_F32_##fntype;   \
     SDL_Convert_S16_to_F32 = SDL_Convert_S16_to_F32_##fntype; \
     SDL_Convert_S32_to_F32 = SDL_Convert_S32_to_F32_##fntype; \
-    SDL_Convert_F32_to_S8 = SDL_Convert_F32_to_S8_##fntype; \
-    SDL_Convert_F32_to_U8 = SDL_Convert_F32_to_U8_##fntype; \
+    SDL_Convert_F32_to_S8 = SDL_Convert_F32_to_S8_##fntype;   \
+    SDL_Convert_F32_to_U8 = SDL_Convert_F32_to_U8_##fntype;   \
     SDL_Convert_F32_to_S16 = SDL_Convert_F32_to_S16_##fntype; \
     SDL_Convert_F32_to_S32 = SDL_Convert_F32_to_S32_##fntype; \
     converters_chosen = SDL_TRUE

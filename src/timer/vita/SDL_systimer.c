@@ -28,7 +28,6 @@
 #include <sys/time.h>
 #include <psp2/kernel/processmgr.h>
 
-
 Uint64 SDL_GetPerformanceCounter(void)
 {
     return sceKernelGetProcessTimeWide();

@@ -79,7 +79,7 @@ static void CheckMonotonicTime(void)
         has_monotonic_time = SDL_TRUE;
     }
 #endif
-    checked_monotonic_time = SDL_TRUE;
+        checked_monotonic_time = SDL_TRUE;
 }
 
 Uint64 SDL_GetPerformanceCounter(void)

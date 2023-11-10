@@ -33,11 +33,11 @@
 
 /* older Emscriptens don't have this, but we need to for wasm64 compatibility. */
 #ifndef MAIN_THREAD_EM_ASM_PTR
-    #ifdef __wasm64__
-        #error You need to upgrade your Emscripten compiler to support wasm64
-    #else
-        #define MAIN_THREAD_EM_ASM_PTR MAIN_THREAD_EM_ASM_INT
-    #endif
+#ifdef __wasm64__
+#error You need to upgrade your Emscripten compiler to support wasm64
+#else
+#define MAIN_THREAD_EM_ASM_PTR MAIN_THREAD_EM_ASM_INT
+#endif
 #endif
 
 static SDL_Cursor *Emscripten_CreateCursorFromString(const char *cursor_str, SDL_bool is_custom)

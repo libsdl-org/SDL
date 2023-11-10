@@ -121,14 +121,14 @@ LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent,
                 switch (temp->format->BitsPerPixel) {
                 case 15:
                     SDL_SetSurfaceColorKey(temp, SDL_TRUE,
-                                    (*(Uint16 *)temp->pixels) & 0x00007FFF);
+                                           (*(Uint16 *)temp->pixels) & 0x00007FFF);
                     break;
                 case 16:
                     SDL_SetSurfaceColorKey(temp, SDL_TRUE, *(Uint16 *)temp->pixels);
                     break;
                 case 24:
                     SDL_SetSurfaceColorKey(temp, SDL_TRUE,
-                                    (*(Uint32 *)temp->pixels) & 0x00FFFFFF);
+                                           (*(Uint32 *)temp->pixels) & 0x00FFFFFF);
                     break;
                 case 32:
                     SDL_SetSurfaceColorKey(temp, SDL_TRUE, *(Uint32 *)temp->pixels);

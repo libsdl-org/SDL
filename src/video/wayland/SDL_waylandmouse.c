@@ -75,13 +75,13 @@ static void Wayland_FreeCursorThemes(SDL_VideoData *vdata)
 
 #include "../../core/linux/SDL_dbus.h"
 
-#define CURSOR_NODE "org.freedesktop.portal.Desktop"
-#define CURSOR_PATH "/org/freedesktop/portal/desktop"
-#define CURSOR_INTERFACE "org.freedesktop.portal.Settings"
-#define CURSOR_NAMESPACE "org.gnome.desktop.interface"
+#define CURSOR_NODE        "org.freedesktop.portal.Desktop"
+#define CURSOR_PATH        "/org/freedesktop/portal/desktop"
+#define CURSOR_INTERFACE   "org.freedesktop.portal.Settings"
+#define CURSOR_NAMESPACE   "org.gnome.desktop.interface"
 #define CURSOR_SIGNAL_NAME "SettingChanged"
-#define CURSOR_SIZE_KEY "cursor-size"
-#define CURSOR_THEME_KEY "cursor-theme"
+#define CURSOR_SIZE_KEY    "cursor-size"
+#define CURSOR_THEME_KEY   "cursor-theme"
 
 static DBusMessage *Wayland_ReadDBusProperty(SDL_DBusContext *dbus, const char *key)
 {
@@ -241,8 +241,9 @@ static void Wayland_DBusInitCursorProperties(SDL_VideoData *vdata)
     /* Only add the filter if at least one of the settings we want is present. */
     if (add_filter) {
         dbus->bus_add_match(dbus->session_conn,
-                            "type='signal', interface='"CURSOR_INTERFACE"',"
-                            "member='"CURSOR_SIGNAL_NAME"', arg0='"CURSOR_NAMESPACE"'", NULL);
+                            "type='signal', interface='" CURSOR_INTERFACE "',"
+                            "member='" CURSOR_SIGNAL_NAME "', arg0='" CURSOR_NAMESPACE "'",
+                            NULL);
         dbus->connection_add_filter(dbus->session_conn, &Wayland_DBusCursorMessageFilter, vdata, NULL);
         dbus->connection_flush(dbus->session_conn);
     }

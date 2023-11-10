@@ -1,13 +1,14 @@
 /**
  * Automated SDL subsystems management test.
  *
- * Written by J�rgen Tjern� "jorgenpt"
+ * Written by Jørgen Tjernø "jorgenpt"
  *
  * Released under Public Domain.
  */
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+
 #include "testautomation_suites.h"
 
 /**

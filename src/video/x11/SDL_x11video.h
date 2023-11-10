@@ -131,7 +131,6 @@ struct SDL_VideoData
     /* Used to interact with the on-screen keyboard */
     SDL_bool is_steam_deck;
     SDL_bool steam_keyboard_open;
-
 };
 
 extern SDL_bool X11_UseDirectColorVisuals(void);

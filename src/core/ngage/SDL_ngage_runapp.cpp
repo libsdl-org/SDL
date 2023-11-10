@@ -16,11 +16,12 @@
 #include <w32std.h>
 #include <apgtask.h>
 
-
 DECLSPEC int
-SDL_RunApp(int argc_, char* argv_[], SDL_main_func mainFunction, void * reserved)
+SDL_RunApp(int argc_, char *argv_[], SDL_main_func mainFunction, void *reserved)
 {
-    (void)argc_; (void)argv_; (void)reserved;
+    (void)argc_;
+    (void)argv_;
+    (void)reserved;
     /*  Get the clean-up stack */
     CTrapCleanup *cleanup = CTrapCleanup::New();
 

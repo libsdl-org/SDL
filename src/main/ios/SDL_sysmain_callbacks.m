@@ -60,13 +60,13 @@ static SDLIosMainCallbacksDisplayLink *globalDisplayLink;
 
 // SDL_RunApp will land in UIApplicationMain, which calls SDL_main from postFinishLaunch, which calls this.
 // When we return from here, we're living in the RunLoop, and a CADisplayLink is firing regularly for us.
-int SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
+int SDL_EnterAppMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
 {
     const int rc = SDL_InitMainCallbacks(argc, argv, appinit, appiter, appevent, appquit);
     if (rc == 0) {
         globalDisplayLink = [[SDLIosMainCallbacksDisplayLink alloc] init:appiter quitfunc:appquit];
         if (globalDisplayLink != nil) {
-            return 0;  // this will fall all the way out of SDL_main, where UIApplicationMain will keep running the RunLoop.
+            return 0; // this will fall all the way out of SDL_main, where UIApplicationMain will keep running the RunLoop.
         }
     }
 
@@ -74,9 +74,7 @@ int SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, 
     SDL_QuitMainCallbacks();
     exit((rc < 0) ? 1 : 0);
 
-    return 1;  // just in case.
+    return 1; // just in case.
 }
 
 #endif
-
-

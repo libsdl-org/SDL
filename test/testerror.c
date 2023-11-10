@@ -12,11 +12,11 @@
 
 /* Simple test of the SDL threading code and error handling */
 
-#include <stdlib.h>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
+#include <stdlib.h>
 
 static int alive = 0;
 

@@ -33,7 +33,7 @@
 #define TEXT_FORMAT CF_TEXT
 #endif
 
-#define IMAGE_FORMAT CF_DIB
+#define IMAGE_FORMAT    CF_DIB
 #define IMAGE_MIME_TYPE "image/bmp"
 
 /* Assume we can directly read and write BMP fields without byte swapping */

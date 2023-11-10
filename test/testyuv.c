@@ -9,11 +9,11 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
+#include "testutils.h"
+#include "testyuv_cvt.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
-#include "testyuv_cvt.h"
-#include "testutils.h"
 
 /* 422 (YUY2, etc) formats are the largest */
 #define MAX_YUV_SURFACE_SIZE(W, H, P) (H * 4 * (W + P + 1) / 2)

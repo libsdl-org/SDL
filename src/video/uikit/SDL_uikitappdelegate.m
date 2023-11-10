@@ -47,7 +47,7 @@ static int forward_argc;
 static char **forward_argv;
 static int exit_status;
 
-int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
+int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserved)
 {
     int i;
 
@@ -220,8 +220,6 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
         int screenw = (int)([UIScreen mainScreen].bounds.size.width + 0.5);
         int screenh = (int)([UIScreen mainScreen].bounds.size.height + 0.5);
 #endif
-
-
 
 #if !TARGET_OS_TV && !TARGET_OS_XR
         UIInterfaceOrientation curorient = [UIApplication sharedApplication].statusBarOrientation;

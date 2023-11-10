@@ -61,9 +61,9 @@ void X11_InitXfixes(SDL_VideoDevice *_this)
     /* Selection tracking is available in all versions of XFixes */
     xfixes_selection_notify_event = event + XFixesSelectionNotify;
     X11_XFixesSelectSelectionInput(data->display, DefaultRootWindow(data->display),
-            XA_CLIPBOARD, XFixesSetSelectionOwnerNotifyMask);
+                                   XA_CLIPBOARD, XFixesSetSelectionOwnerNotifyMask);
     X11_XFixesSelectSelectionInput(data->display, DefaultRootWindow(data->display),
-            XA_PRIMARY, XFixesSetSelectionOwnerNotifyMask);
+                                   XA_PRIMARY, XFixesSetSelectionOwnerNotifyMask);
 
     /* We need at least 5.0 for barriers. */
     version = query_xfixes_version(data->display, 5, 0);
@@ -81,7 +81,7 @@ int X11_XfixesIsInitialized(void)
 
 int X11_GetXFixesSelectionNotifyEvent()
 {
-	return xfixes_selection_notify_event;
+    return xfixes_selection_notify_event;
 }
 
 void X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)

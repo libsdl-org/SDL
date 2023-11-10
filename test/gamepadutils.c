@@ -9,28 +9,28 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test_font.h>
 
-#include "gamepadutils.h"
-#include "gamepad_front.h"
+#include "gamepad_axis.h"
+#include "gamepad_axis_arrow.h"
 #include "gamepad_back.h"
+#include "gamepad_battery_empty.h"
+#include "gamepad_battery_full.h"
+#include "gamepad_battery_low.h"
+#include "gamepad_battery_medium.h"
+#include "gamepad_battery_unknown.h"
+#include "gamepad_battery_wired.h"
+#include "gamepad_button.h"
+#include "gamepad_button_background.h"
+#include "gamepad_button_small.h"
 #include "gamepad_face_abxy.h"
 #include "gamepad_face_bayx.h"
 #include "gamepad_face_sony.h"
-#include "gamepad_battery_unknown.h"
-#include "gamepad_battery_empty.h"
-#include "gamepad_battery_low.h"
-#include "gamepad_battery_medium.h"
-#include "gamepad_battery_full.h"
-#include "gamepad_battery_wired.h"
+#include "gamepad_front.h"
 #include "gamepad_touchpad.h"
-#include "gamepad_button.h"
-#include "gamepad_button_small.h"
-#include "gamepad_axis.h"
-#include "gamepad_axis_arrow.h"
-#include "gamepad_button_background.h"
-
+#include "gamepadutils.h"
 
 /* This is indexed by gamepad element */
 static const struct
@@ -45,7 +45,7 @@ static const struct
     { 199, 157 }, /* SDL_GAMEPAD_BUTTON_BACK */
     { 257, 153 }, /* SDL_GAMEPAD_BUTTON_GUIDE */
     { 314, 157 }, /* SDL_GAMEPAD_BUTTON_START */
-    {  98, 177 }, /* SDL_GAMEPAD_BUTTON_LEFT_STICK */
+    { 98, 177 },  /* SDL_GAMEPAD_BUTTON_LEFT_STICK */
     { 331, 254 }, /* SDL_GAMEPAD_BUTTON_RIGHT_STICK */
     { 102, 65 },  /* SDL_GAMEPAD_BUTTON_LEFT_SHOULDER */
     { 421, 61 },  /* SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER */
@@ -626,7 +626,6 @@ void DestroyGamepadImage(GamepadImage *ctx)
     }
 }
 
-
 static const char *gamepad_button_names[] = {
     "South",
     "East",
@@ -892,7 +891,6 @@ int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float 
             !SDL_GamepadHasButton(gamepad, button)) {
             continue;
         }
-
 
         if (SDL_PointInRectFloat(&point, &rect)) {
             return i;
@@ -1438,7 +1436,6 @@ void DestroyGamepadTypeDisplay(GamepadTypeDisplay *ctx)
     SDL_free(ctx);
 }
 
-
 struct JoystickDisplay
 {
     SDL_Renderer *renderer;
@@ -1873,7 +1870,6 @@ void DestroyJoystickDisplay(JoystickDisplay *ctx)
     SDL_free(ctx);
 }
 
-
 struct GamepadButton
 {
     SDL_Renderer *renderer;
@@ -2076,7 +2072,6 @@ void DestroyGamepadButton(GamepadButton *ctx)
     SDL_free(ctx->label);
     SDL_free(ctx);
 }
-
 
 typedef struct
 {
@@ -2350,7 +2345,7 @@ static SDL_bool CombineMappingAxes(MappingParts *parts)
                             SDL_memmove(current_value, current_value + 1, SDL_strlen(current_value));
                         } else {
                             /* Invert the bound axis */
-                            SDL_memmove(current_value, current_value + 1, SDL_strlen(current_value)-1);
+                            SDL_memmove(current_value, current_value + 1, SDL_strlen(current_value) - 1);
                             current_value[SDL_strlen(current_value) - 1] = '~';
                         }
                         SDL_memmove(key, key + 1, SDL_strlen(key));
@@ -2390,11 +2385,11 @@ static void MoveSortedEntry(const char *key, MappingSortEntry *sort_order, int n
         if (SDL_strcmp(key, entry->parts->keys[entry->index]) == 0) {
             if (front && i != 0) {
                 MappingSortEntry tmp = sort_order[i];
-                SDL_memmove(&sort_order[1], &sort_order[0], sizeof(*sort_order)*i);
+                SDL_memmove(&sort_order[1], &sort_order[0], sizeof(*sort_order) * i);
                 sort_order[0] = tmp;
             } else if (!front && i != (num_elements - 1)) {
                 MappingSortEntry tmp = sort_order[i];
-                SDL_memmove(&sort_order[i], &sort_order[i + 1], sizeof(*sort_order)*(num_elements - i - 1));
+                SDL_memmove(&sort_order[i], &sort_order[i + 1], sizeof(*sort_order) * (num_elements - i - 1));
                 sort_order[num_elements - 1] = tmp;
             }
             break;
@@ -2750,7 +2745,6 @@ char *SetMappingName(char *mapping, const char *name)
     parts.name = new_name;
     return RecreateMapping(&parts, mapping);
 }
-
 
 const char *GetGamepadTypeString(SDL_GamepadType type)
 {

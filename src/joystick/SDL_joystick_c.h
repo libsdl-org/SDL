@@ -146,17 +146,17 @@ extern SDL_bool SDL_IsJoystickBeingAdded(void);
 extern void SDL_PrivateJoystickRemoved(SDL_JoystickID instance_id);
 extern void SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick);
 extern int SDL_SendJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick,
-                                   Uint8 axis, Sint16 value);
+                                Uint8 axis, Sint16 value);
 extern int SDL_SendJoystickHat(Uint64 timestamp, SDL_Joystick *joystick,
-                                  Uint8 hat, Uint8 value);
+                               Uint8 hat, Uint8 value);
 extern int SDL_SendJoystickButton(Uint64 timestamp, SDL_Joystick *joystick,
-                                     Uint8 button, Uint8 state);
+                                  Uint8 button, Uint8 state);
 extern int SDL_SendJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick,
-                                       int touchpad, int finger, Uint8 state, float x, float y, float pressure);
+                                    int touchpad, int finger, Uint8 state, float x, float y, float pressure);
 extern int SDL_SendJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick,
-                                     SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values);
+                                  SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values);
 extern void SDL_SendJoystickBatteryLevel(SDL_Joystick *joystick,
-                                            SDL_JoystickPowerLevel ePowerLevel);
+                                         SDL_JoystickPowerLevel ePowerLevel);
 
 /* Internal sanity checking functions */
 extern SDL_bool SDL_IsJoystickValid(SDL_Joystick *joystick);
@@ -208,7 +208,6 @@ typedef struct SDL_GamepadMapping
 /* Function to get autodetected gamepad controller mapping from the driver */
 extern SDL_bool SDL_PrivateJoystickGetAutoGamepadMapping(SDL_JoystickID instance_id,
                                                          SDL_GamepadMapping *out);
-
 
 typedef struct
 {

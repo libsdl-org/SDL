@@ -104,7 +104,7 @@ SDL_EGL_SwapWindow_impl(WIN)
 SDL_EGL_MakeCurrent_impl(WIN)
 /* *INDENT-ON* */ /* clang-format on */
 
-int WIN_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
+    int WIN_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     /* The current context is lost in here; save it and reset it. */
     SDL_WindowData *windowdata = window->driverdata;

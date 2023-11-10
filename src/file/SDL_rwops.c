@@ -235,8 +235,8 @@ static size_t SDLCALL windows_file_write(SDL_RWops *context, const void *ptr, si
 
     if (context->hidden.windowsio.buffer.left) {
         if (!SetFilePointer(context->hidden.windowsio.h,
-                       -(LONG)context->hidden.windowsio.buffer.left, NULL,
-                       FILE_CURRENT)) {
+                            -(LONG)context->hidden.windowsio.buffer.left, NULL,
+                            FILE_CURRENT)) {
             SDL_Error(SDL_EFSEEK);
             return 0;
         }

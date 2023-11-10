@@ -163,7 +163,6 @@ extern "C" {
 
 /* typedef's for XInput structs we use */
 
-
 /* This is the same as XINPUT_BATTERY_INFORMATION, but always defined instead of just if WIN32_WINNT >= _WIN32_WINNT_WIN8 */
 typedef struct
 {
@@ -209,8 +208,8 @@ typedef struct
 
 /* Forward decl's for XInput API's we load dynamically and use if available */
 typedef DWORD(WINAPI *XInputGetState_t)(
-    DWORD dwUserIndex,      /* [in] Index of the gamer associated with the device */
-    XINPUT_STATE *pState    /* [out] Receives the current state */
+    DWORD dwUserIndex,   /* [in] Index of the gamer associated with the device */
+    XINPUT_STATE *pState /* [out] Receives the current state */
 );
 
 typedef DWORD(WINAPI *XInputSetState_t)(

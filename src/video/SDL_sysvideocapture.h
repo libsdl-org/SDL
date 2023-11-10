@@ -83,7 +83,6 @@ extern int GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index,
 extern int GetDeviceName(int index, char *buf, int size);
 extern int GetNumDevices(void);
 
-
 extern SDL_bool check_all_device_closed(void);
 extern SDL_bool check_device_playing(void);
 

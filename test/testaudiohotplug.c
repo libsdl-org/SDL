@@ -22,10 +22,10 @@
 #include <emscripten/emscripten.h>
 #endif
 
+#include "testutils.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
-#include "testutils.h"
 
 static SDL_AudioSpec spec;
 static Uint8 *sound = NULL; /* Pointer to wave data */
@@ -69,7 +69,7 @@ static void iteration(void)
                 done = 1;
             }
         } else if (e.type == SDL_EVENT_AUDIO_DEVICE_ADDED) {
-            const SDL_AudioDeviceID which = (SDL_AudioDeviceID) e.adevice.which;
+            const SDL_AudioDeviceID which = (SDL_AudioDeviceID)e.adevice.which;
             const SDL_bool iscapture = e.adevice.iscapture ? SDL_TRUE : SDL_FALSE;
             char *name = SDL_GetAudioDeviceName(which);
             if (name) {
@@ -82,9 +82,9 @@ static void iteration(void)
             if (!iscapture) {
                 SDL_AudioStream *stream = SDL_OpenAudioDeviceStream(which, &spec, NULL, NULL);
                 if (!stream) {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to create/bind an audio stream to %u ('%s'): %s", (unsigned int) which, name, SDL_GetError());
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to create/bind an audio stream to %u ('%s'): %s", (unsigned int)which, name, SDL_GetError());
                 } else {
-                    SDL_Log("Opened '%s' as %u\n", name, (unsigned int) which);
+                    SDL_Log("Opened '%s' as %u\n", name, (unsigned int)which);
                     /* !!! FIXME: laziness, this used to loop the audio, but we'll just play it once for now on each connect. */
                     SDL_PutAudioStreamData(stream, sound, soundlen);
                     SDL_FlushAudioStream(stream);

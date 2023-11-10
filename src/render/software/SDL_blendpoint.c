@@ -76,7 +76,7 @@ static int SDL_BlendPoint_RGB565(SDL_Surface *dst, int x, int y, SDL_BlendMode b
 }
 
 static int SDL_BlendPoint_XRGB8888(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
-                                 Uint8 g, Uint8 b, Uint8 a)
+                                   Uint8 g, Uint8 b, Uint8 a)
 {
     unsigned inva = 0xff - a;
 
@@ -273,7 +273,7 @@ int SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count,
     int maxx, maxy;
     int i;
     int x, y;
-    int (*func)(SDL_Surface * dst, int x, int y,
+    int (*func)(SDL_Surface *dst, int x, int y,
                 SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a) = NULL;
     int status = 0;
 

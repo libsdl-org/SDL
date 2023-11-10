@@ -12,11 +12,11 @@
 
 /* Simple program to test the SDL joystick hotplugging */
 
-#include <stdlib.h>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
+#include <stdlib.h>
 
 int main(int argc, char *argv[])
 {

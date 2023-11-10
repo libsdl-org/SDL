@@ -36,7 +36,7 @@
 /* We'll use the C library from this DLL */
 #include <process.h>
 typedef uintptr_t(__cdecl *pfnSDL_CurrentBeginThread)(void *, unsigned,
-                                                      unsigned(__stdcall *func)(void*),
+                                                      unsigned(__stdcall *func)(void *),
                                                       void *arg, unsigned,
                                                       unsigned *threadID);
 typedef void(__cdecl *pfnSDL_CurrentEndThread)(unsigned code);

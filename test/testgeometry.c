@@ -12,16 +12,17 @@
 
 /* Simple program:  draw a RGB triangle, with texture  */
 
-#include <stdlib.h>
-#include <time.h>
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
 
-#include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test_common.h>
+
 #include "testutils.h"
+
+#include <stdlib.h>
+#include <time.h>
 
 static SDLTest_CommonState *state;
 static SDL_bool use_texture = SDL_FALSE;

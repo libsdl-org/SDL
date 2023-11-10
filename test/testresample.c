@@ -14,7 +14,8 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
-static void log_usage(char *progname, SDLTest_CommonState *state) {
+static void log_usage(char *progname, SDLTest_CommonState *state)
+{
     static const char *options[] = { "in.wav", "out.wav", "newfreq", "newchan", NULL };
     SDLTest_CommonLogUsage(state, progname, options);
 }
@@ -66,7 +67,7 @@ int main(int argc, char **argv)
                 consumed = 1;
             } else if (argpos == 2) {
                 char *endp;
-                cvtspec.freq  = (int)SDL_strtoul(argv[i], &endp, 0);
+                cvtspec.freq = (int)SDL_strtoul(argv[i], &endp, 0);
                 if (endp != argv[i] && *endp == '\0') {
                     argpos++;
                     consumed = 1;

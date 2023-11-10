@@ -51,14 +51,14 @@ extern "C" void SDL_DestroyRWLock(SDL_RWLock *rwlock)
     }
 }
 
-extern "C" void SDL_LockRWLockForReading(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+extern "C" void SDL_LockRWLockForReading(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
     if (rwlock) {
         try {
             rwlock->cpp_mutex.lock_shared();
         } catch (std::system_error &ex) {
-            SDL_assert(!"Error trying to lock rwlock for reading");  // assume we're in a lot of trouble if this assert fails.
-            //return SDL_SetError("unable to lock a C++ rwlock: code=%d; %s", ex.code(), ex.what());
+            SDL_assert(!"Error trying to lock rwlock for reading"); // assume we're in a lot of trouble if this assert fails.
+            // return SDL_SetError("unable to lock a C++ rwlock: code=%d; %s", ex.code(), ex.what());
         }
     }
 }
@@ -70,8 +70,8 @@ extern "C" void SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFET
             rwlock->cpp_mutex.lock();
             rwlock->write_owner = SDL_ThreadID();
         } catch (std::system_error &ex) {
-            SDL_assert(!"Error trying to lock rwlock for writing");  // assume we're in a lot of trouble if this assert fails.
-            //return SDL_SetError("unable to lock a C++ rwlock: code=%d; %s", ex.code(), ex.what());
+            SDL_assert(!"Error trying to lock rwlock for writing"); // assume we're in a lot of trouble if this assert fails.
+            // return SDL_SetError("unable to lock a C++ rwlock: code=%d; %s", ex.code(), ex.what());
         }
     }
 }
@@ -100,7 +100,7 @@ extern "C" int SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
     return retval;
 }
 
-extern "C" void SDL_UnlockRWLock(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+extern "C" void SDL_UnlockRWLock(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
     if (rwlock) {
         if (rwlock->write_owner == SDL_ThreadID()) {
@@ -111,4 +111,3 @@ extern "C" void SDL_UnlockRWLock(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYS
         }
     }
 }
-

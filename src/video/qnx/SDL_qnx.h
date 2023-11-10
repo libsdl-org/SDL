@@ -29,8 +29,8 @@
 typedef struct
 {
     screen_window_t window;
-    EGLSurface      surface;
-    EGLConfig       conf;
+    EGLSurface surface;
+    EGLConfig conf;
 } window_impl_t;
 
 extern void handleKeyboardEvent(screen_event_t event);
@@ -41,7 +41,7 @@ extern SDL_FunctionPointer glGetProcAddress(SDL_VideoDevice *_this, const char *
 extern SDL_GLContext glCreateContext(SDL_VideoDevice *_this, SDL_Window *window);
 extern int glSetSwapInterval(SDL_VideoDevice *_this, int interval);
 extern int glSwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int glMakeCurrent(SDL_VideoDevice *_this, SDL_Window * window, SDL_GLContext context);
+extern int glMakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
 extern void glDeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
 extern void glUnloadLibrary(SDL_VideoDevice *_this);
 

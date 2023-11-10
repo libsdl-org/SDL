@@ -1581,7 +1581,7 @@ static void RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int 
     };
     Uint64 match_state = ctx->match_state;
     /* Update match_state with button bit, then fall through */
-#define SDL_SendJoystickButton(timestamp, joystick, button, state)                  \
+#define SDL_SendJoystickButton(timestamp, joystick, button, state)          \
     if (button < SDL_arraysize(button_map)) {                               \
         Uint64 button_bit = 1ull << button_map[button];                     \
         match_state = (match_state & ~button_bit) | (button_bit * (state)); \
@@ -1594,8 +1594,8 @@ static void RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int 
         match_state = (match_state & ~(0xFull << (4 * axis + 16))) | ((value)&0xF000ull) << (4 * axis + 4); \
     }
 #define SDL_SendJoystickAxis(timestamp, joystick, axis, value) \
-    if (axis < 4)                                      \
-        AddAxisToMatchState(axis, value);              \
+    if (axis < 4)                                              \
+        AddAxisToMatchState(axis, value);                      \
     SDL_SendJoystickAxis(timestamp, joystick, axis, value)
 #endif
 #endif /* SDL_JOYSTICK_RAWINPUT_MATCHING */

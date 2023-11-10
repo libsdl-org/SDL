@@ -163,7 +163,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(doLoop:)];
 
 #if TARGET_OS_XR
-    displayLink.preferredFramesPerSecond = 90 / animationInterval;      //TODO: Get frame max frame rate on visionOS
+    displayLink.preferredFramesPerSecond = 90 / animationInterval; // TODO: Get frame max frame rate on visionOS
 #elif defined(__IPHONE_10_3)
     SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
 

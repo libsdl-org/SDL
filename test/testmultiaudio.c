@@ -9,6 +9,7 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
@@ -30,7 +31,6 @@ static Uint32 soundlen = 0; /* Length of wave data */
 /* these have to be in globals so the Emscripten port can see them in the mainloop.  :/  */
 static SDL_AudioStream *stream = NULL;
 
-
 #ifdef __EMSCRIPTEN__
 static void loop(void)
 {
@@ -51,7 +51,7 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
     SDL_AudioStream **streams = NULL;
     int i;
 
-#ifdef __ANDROID__  /* !!! FIXME: maybe always create a window, in the SDLTest layer, so these #ifdefs don't have to be here? */
+#ifdef __ANDROID__ /* !!! FIXME: maybe always create a window, in the SDLTest layer, so these #ifdefs don't have to be here? */
     SDL_Event event;
 
     /* Create a Window to get fully initialized event processing for testing pause on Android. */
@@ -61,7 +61,7 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
     for (i = 0; i < devcount; i++) {
         char *devname = SDL_GetAudioDeviceName(devices[i]);
 
-        SDL_Log("Playing on device #%d of %d: id=%u, name='%s'...", i, devcount, (unsigned int) devices[i], devname);
+        SDL_Log("Playing on device #%d of %d: id=%u, name='%s'...", i, devcount, (unsigned int)devices[i], devname);
 
         if ((stream = SDL_OpenAudioDeviceStream(devices[i], &spec, NULL, NULL)) == NULL) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Audio stream creation failed: %s", SDL_GetError());
@@ -90,7 +90,7 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
 
     /* note that Emscripten currently doesn't run this part (but maybe only has a single audio device anyhow?) */
     SDL_Log("Playing on all devices...\n");
-    streams = (SDL_AudioStream **) SDL_calloc(devcount, sizeof (SDL_AudioStream *));
+    streams = (SDL_AudioStream **)SDL_calloc(devcount, sizeof(SDL_AudioStream *));
     if (!streams) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
     } else {
@@ -120,7 +120,8 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
             }
 #ifdef __ANDROID__
             /* Empty queue, some application events would prevent pause. */
-            while (SDL_PollEvent(&event)) {}
+            while (SDL_PollEvent(&event)) {
+            }
 #endif
 
             SDL_Delay(100);
@@ -205,4 +206,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-

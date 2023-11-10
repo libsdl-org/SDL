@@ -11,5 +11,5 @@
 */
 
 extern SDL_bool SetupVideoToolboxOutput(SDL_Renderer *renderer);
-extern SDL_bool DisplayVideoToolboxFrame(SDL_Renderer *renderer, void *buffer, int srcX, int srcY, int srcW, int srcH, int dstX, int dstY, int dstW, int dstH );
+extern SDL_bool DisplayVideoToolboxFrame(SDL_Renderer *renderer, void *buffer, int srcX, int srcY, int srcW, int srcH, int dstX, int dstY, int dstW, int dstH);
 extern void CleanupVideoToolboxOutput();

@@ -52,15 +52,14 @@ using namespace Microsoft::WRL;
 
 static Platform::String ^ SDL_PKEY_AudioEngine_DeviceFormat = L"{f19f064d-082c-4e27-bc73-6882a1bb8e4c} 0";
 
-
 static SDL_bool FindWinRTAudioDeviceCallback(SDL_AudioDevice *device, void *userdata)
 {
-    return (SDL_wcscmp((LPCWSTR) device->handle, (LPCWSTR) userdata) == 0);
+    return (SDL_wcscmp((LPCWSTR)device->handle, (LPCWSTR)userdata) == 0);
 }
 
 static SDL_AudioDevice *FindWinRTAudioDevice(LPCWSTR devid)
 {
-    return SDL_FindPhysicalAudioDeviceByCallback(FindWinRTAudioDeviceCallback, (void *) devid);
+    return SDL_FindPhysicalAudioDeviceByCallback(FindWinRTAudioDeviceCallback, (void *)devid);
 }
 
 class SDL_WasapiDeviceEventHandler
@@ -237,7 +236,6 @@ void WASAPI_PlatformDeinitializeStart(void)
     StopWasapiHotplug();
 }
 
-
 void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)
 {
     Platform::String ^ defdevid;
@@ -262,11 +260,13 @@ void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_output, SDL_AudioDevice
 
 class SDL_WasapiActivationHandler : public RuntimeClass<RuntimeClassFlags<ClassicCom>, FtmBase, IActivateAudioInterfaceCompletionHandler>
 {
-public:
+  public:
     SDL_WasapiActivationHandler() : completion_semaphore(SDL_CreateSemaphore(0)) { SDL_assert(completion_semaphore != NULL); }
-    STDMETHOD(ActivateCompleted)(IActivateAudioInterfaceAsyncOperation *operation);
+    STDMETHOD(ActivateCompleted)
+    (IActivateAudioInterfaceAsyncOperation *operation);
     void WaitForCompletion();
-private:
+
+  private:
     SDL_Semaphore *completion_semaphore;
 };
 
@@ -294,7 +294,7 @@ void WASAPI_PlatformDeleteActivationHandler(void *handler)
 
 int WASAPI_ActivateDevice(SDL_AudioDevice *device)
 {
-    LPCWSTR devid = (LPCWSTR) device->handle;
+    LPCWSTR devid = (LPCWSTR)device->handle;
     SDL_assert(devid != NULL);
 
     ComPtr<SDL_WasapiActivationHandler> handler = Make<SDL_WasapiActivationHandler>();
@@ -317,7 +317,7 @@ int WASAPI_ActivateDevice(SDL_AudioDevice *device)
     }
 
     // !!! FIXME: the problems in SDL2 that needed this to be synchronous are _probably_ solved by SDL3, and this can block indefinitely if a user prompt is shown to get permission to use a microphone.
-    handler.Get()->WaitForCompletion();  // block here until we have an answer, so this is synchronous to us after all.
+    handler.Get()->WaitForCompletion(); // block here until we have an answer, so this is synchronous to us after all.
 
     HRESULT activateRes = S_OK;
     IUnknown *iunknown = nullptr;

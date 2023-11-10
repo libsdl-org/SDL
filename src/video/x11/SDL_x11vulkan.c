@@ -142,8 +142,8 @@ void X11_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-char const* const* X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                          Uint32 *count)
+char const *const *X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+                                                    Uint32 *count)
 {
     SDL_VideoData *videoData = _this->driverdata;
     if (videoData->vulkan_xlib_xcb_library) {
@@ -151,7 +151,7 @@ char const* const* X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
             VK_KHR_SURFACE_EXTENSION_NAME,
             VK_KHR_XCB_SURFACE_EXTENSION_NAME,
         };
-        if(count) {
+        if (count) {
             *count = SDL_arraysize(extensionsForXCB);
         }
         return extensionsForXCB;
@@ -160,7 +160,7 @@ char const* const* X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
             VK_KHR_SURFACE_EXTENSION_NAME,
             VK_KHR_XLIB_SURFACE_EXTENSION_NAME,
         };
-        if(count) {
+        if (count) {
             *count = SDL_arraysize(extensionsForXlib);
         }
         return extensionsForXlib;

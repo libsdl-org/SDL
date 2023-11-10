@@ -12,11 +12,11 @@
 
 /* Program to test querying of display info */
 
-#include <stdlib.h>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
+#include <stdlib.h>
 
 static void
 print_mode(const char *prefix, const SDL_DisplayMode *mode)
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
             (void)SDL_snprintf(prefix, sizeof(prefix), "    MODE %d", m);
             print_mode(prefix, modes[m]);
         }
-        SDL_free((void*)modes);
+        SDL_free((void *)modes);
 
         SDL_Log("\n");
     }

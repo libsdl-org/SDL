@@ -14,9 +14,6 @@
  * For a more complete video example, see ffplay.c in the ffmpeg sources.
  */
 
-#include <stdlib.h>
-#include <time.h>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
@@ -27,10 +24,13 @@
 #include <libavutil/pixdesc.h>
 #include <libswscale/swscale.h>
 
+#include <stdlib.h>
+#include <time.h>
+
 #ifdef HAVE_EGL
+#include <SDL3/SDL_egl.h>
 #include <SDL3/SDL_opengl.h>
 #include <SDL3/SDL_opengles2.h>
-#include <SDL3/SDL_egl.h>
 
 #include <libavutil/hwcontext_drm.h>
 
@@ -155,7 +155,8 @@ static SDL_bool CreateWindowAndRenderer(Uint32 window_flags, const char *driver)
     return SDL_TRUE;
 }
 
-static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned int len, int *w, int *h) {
+static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned int len, int *w, int *h)
+{
     SDL_Texture *texture = NULL;
     SDL_Surface *surface;
     SDL_RWops *src = SDL_RWFromConstMem(data, len);
@@ -471,7 +472,7 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
             uint8_t *pixels[4];
             int pitch[4];
             if (SDL_LockTexture(*texture, NULL, (void **)&pixels[0], &pitch[0]) == 0) {
-                sws_scale(sws_container->context, (const uint8_t * const *)frame->data, frame->linesize, 0, frame->height, pixels, pitch);
+                sws_scale(sws_container->context, (const uint8_t *const *)frame->data, frame->linesize, 0, frame->height, pixels, pitch);
                 SDL_UnlockTexture(*texture);
             }
         } else {
@@ -483,12 +484,12 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
     case SDL_PIXELFORMAT_IYUV:
         if (frame->linesize[0] > 0 && frame->linesize[1] > 0 && frame->linesize[2] > 0) {
             SDL_UpdateYUVTexture(*texture, NULL, frame->data[0], frame->linesize[0],
-                                                   frame->data[1], frame->linesize[1],
-                                                   frame->data[2], frame->linesize[2]);
+                                 frame->data[1], frame->linesize[1],
+                                 frame->data[2], frame->linesize[2]);
         } else if (frame->linesize[0] < 0 && frame->linesize[1] < 0 && frame->linesize[2] < 0) {
-            SDL_UpdateYUVTexture(*texture, NULL, frame->data[0] + frame->linesize[0] * (frame->height                    - 1), -frame->linesize[0],
-                                                   frame->data[1] + frame->linesize[1] * (AV_CEIL_RSHIFT(frame->height, 1) - 1), -frame->linesize[1],
-                                                   frame->data[2] + frame->linesize[2] * (AV_CEIL_RSHIFT(frame->height, 1) - 1), -frame->linesize[2]);
+            SDL_UpdateYUVTexture(*texture, NULL, frame->data[0] + frame->linesize[0] * (frame->height - 1), -frame->linesize[0],
+                                 frame->data[1] + frame->linesize[1] * (AV_CEIL_RSHIFT(frame->height, 1) - 1), -frame->linesize[1],
+                                 frame->data[2] + frame->linesize[2] * (AV_CEIL_RSHIFT(frame->height, 1) - 1), -frame->linesize[2]);
         }
         SetYUVConversionMode(frame);
         break;
@@ -545,16 +546,16 @@ static SDL_bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
     for (i = 0; i < desc->nb_layers; ++i) {
         const AVDRMLayerDescriptor *layer = &desc->layers[i];
         for (j = 0; j < layer->nb_planes; ++j) {
-            static const uint32_t formats[ 2 ] = { DRM_FORMAT_R8, DRM_FORMAT_GR88 };
+            static const uint32_t formats[2] = { DRM_FORMAT_R8, DRM_FORMAT_GR88 };
             const AVDRMPlaneDescriptor *plane = &layer->planes[j];
             const AVDRMObjectDescriptor *object = &desc->objects[plane->object_index];
             EGLAttrib img_attr[] = {
-                EGL_LINUX_DRM_FOURCC_EXT,      formats[i],
-                EGL_WIDTH,                     frame->width  / ( image_index + 1 ),  /* half size for chroma */
-                EGL_HEIGHT,                    frame->height / ( image_index + 1 ),
-                EGL_DMA_BUF_PLANE0_FD_EXT,     object->fd,
+                EGL_LINUX_DRM_FOURCC_EXT, formats[i],
+                EGL_WIDTH, frame->width / (image_index + 1), /* half size for chroma */
+                EGL_HEIGHT, frame->height / (image_index + 1),
+                EGL_DMA_BUF_PLANE0_FD_EXT, object->fd,
                 EGL_DMA_BUF_PLANE0_OFFSET_EXT, plane->offset,
-                EGL_DMA_BUF_PLANE0_PITCH_EXT,  plane->pitch,
+                EGL_DMA_BUF_PLANE0_PITCH_EXT, plane->pitch,
                 EGL_NONE
             };
             EGLImage pImage = eglCreateImage(display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, img_attr);
@@ -809,7 +810,7 @@ static void InterleaveAudio(AVFrame *frame, const SDL_AudioSpec *spec)
     for (c = 0; c < spec->channels; ++c) {
         const Uint8 *src = frame->data[c];
         Uint8 *dst = data + c * samplesize;
-        for (n = frame->nb_samples; n--; ) {
+        for (n = frame->nb_samples; n--;) {
             SDL_memcpy(dst, src, samplesize);
             src += samplesize;
             dst += framesize;
@@ -833,7 +834,8 @@ static void HandleAudioFrame(AVFrame *frame)
     }
 }
 
-static void print_usage(SDLTest_CommonState *state, const char *argv0) {
+static void print_usage(SDLTest_CommonState *state, const char *argv0)
+{
     static const char *options[] = { "[--sprites N]", "[--audio-codec codec]", "[--video-codec codec]", "[--software]", "video_file", NULL };
     SDLTest_CommonLogUsage(state, argv0, options);
 }
@@ -867,21 +869,20 @@ int main(int argc, char *argv[])
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-
     /* Parse commandline */
     for (i = 1; i < argc;) {
         int consumed;
 
         consumed = SDLTest_CommonArg(state, i);
         if (!consumed) {
-            if (SDL_strcmp(argv[i], "--sprites") == 0 && argv[i+1]) {
-                num_sprites = SDL_atoi(argv[i+1]);
+            if (SDL_strcmp(argv[i], "--sprites") == 0 && argv[i + 1]) {
+                num_sprites = SDL_atoi(argv[i + 1]);
                 consumed = 2;
-            } else if (SDL_strcmp(argv[i], "--audio-codec") == 0 && argv[i+1]) {
-                audio_codec_name = argv[i+1];
+            } else if (SDL_strcmp(argv[i], "--audio-codec") == 0 && argv[i + 1]) {
+                audio_codec_name = argv[i + 1];
                 consumed = 2;
-            } else if (SDL_strcmp(argv[i], "--video-codec") == 0 && argv[i+1]) {
-                video_codec_name = argv[i+1];
+            } else if (SDL_strcmp(argv[i], "--video-codec") == 0 && argv[i + 1]) {
+                video_codec_name = argv[i + 1];
                 consumed = 2;
             } else if (SDL_strcmp(argv[i], "--software") == 0) {
                 software_only = SDL_TRUE;
@@ -907,7 +908,7 @@ int main(int argc, char *argv[])
         goto quit;
     }
 
-    if (SDL_Init(SDL_INIT_AUDIO|SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) < 0) {
         return_code = 2;
         goto quit;
     }

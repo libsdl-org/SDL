@@ -121,7 +121,6 @@ static int HIDAPI_DriverStadia_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     if (ctx->rumble_supported) {
         Uint8 rumble_packet[] = { 0x05, 0x00, 0x00, 0x00, 0x00 };
 
-
         rumble_packet[1] = (low_frequency_rumble & 0xFF);
         rumble_packet[2] = (low_frequency_rumble >> 8);
         rumble_packet[3] = (high_frequency_rumble & 0xFF);

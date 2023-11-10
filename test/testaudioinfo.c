@@ -9,6 +9,7 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
@@ -119,4 +120,3 @@ int main(int argc, char **argv)
     SDLTest_CommonDestroyState(state);
     return 0;
 }
-

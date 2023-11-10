@@ -170,7 +170,7 @@ static void bounding_rect(const SDL_Point *a, const SDL_Point *b, const SDL_Poin
     int srcx = (int)(((Sint64)w0 * s2s0_x + (Sint64)w1 * s2s1_x + s2_x_area.x) / area); \
     int srcy = (int)(((Sint64)w0 * s2s0_y + (Sint64)w1 * s2s1_y + s2_x_area.y) / area);
 
-#define TRIANGLE_GET_MAPPED_COLOR                                                      \
+#define TRIANGLE_GET_MAPPED_COLOR                                                          \
     Uint8 r = (Uint8)(((Sint64)w0 * c0.r + (Sint64)w1 * c1.r + (Sint64)w2 * c2.r) / area); \
     Uint8 g = (Uint8)(((Sint64)w0 * c0.g + (Sint64)w1 * c1.g + (Sint64)w2 * c2.g) / area); \
     Uint8 b = (Uint8)(((Sint64)w0 * c0.b + (Sint64)w1 * c1.b + (Sint64)w2 * c2.b) / area); \
@@ -791,7 +791,7 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
                 dstA = 0xFF;
             } else {
                 /* SDL_PIXELFORMAT_ARGB2101010 */
-                dstpixel = *((Uint32 *) (dst));
+                dstpixel = *((Uint32 *)(dst));
                 RGBA_FROM_ARGB2101010(dstpixel, dstR, dstG, dstB, dstA);
             }
         } else {

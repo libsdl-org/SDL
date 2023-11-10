@@ -73,15 +73,13 @@ enum ToSDL
     BAPP_SCREEN_CHANGED
 };
 
-
 extern "C" SDL_BLooper *SDL_Looper;
-
 
 /* Create a descendant of BLooper */
 class SDL_BLooper : public BLooper
 {
   public:
-    SDL_BLooper(const char* name) : BLooper(name)
+    SDL_BLooper(const char *name) : BLooper(name)
     {
 #ifdef SDL_VIDEO_OPENGL
         _current_context = NULL;

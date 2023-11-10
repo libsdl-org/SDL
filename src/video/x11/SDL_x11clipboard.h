@@ -25,7 +25,8 @@
 
 #include <X11/Xlib.h>
 
-typedef struct X11_ClipboardData {
+typedef struct X11_ClipboardData
+{
     SDL_ClipboardDataCallback callback;
     void *userdata;
     const char **mime_types;

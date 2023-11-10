@@ -42,7 +42,7 @@ static int run_zenity(const char **args, int fd_pipe[2])
     pid_t pid1;
 
     pid1 = fork();
-    if (pid1 == 0) { /* child process */
+    if (pid1 == 0) {       /* child process */
         close(fd_pipe[0]); /* no reading from pipe */
         /* write stdout in pipe */
         if (dup2(fd_pipe[1], STDOUT_FILENO) == -1) {
@@ -106,7 +106,7 @@ static int get_zenity_version(int *major, int *minor)
         /* we expect the version string is in the form of MAJOR.MINOR.MICRO
          * as described in meson.build. We'll ignore everything after that.
          */
-        tmp = (int) SDL_strtol(version_ptr, &end_ptr, 10);
+        tmp = (int)SDL_strtol(version_ptr, &end_ptr, 10);
         if (tmp == 0 && end_ptr == version_ptr) {
             return SDL_SetError("failed to get zenity major version number");
         }
@@ -114,7 +114,7 @@ static int get_zenity_version(int *major, int *minor)
 
         if (*end_ptr == '.') {
             version_ptr = end_ptr + 1; /* skip the dot */
-            tmp = (int) SDL_strtol(version_ptr, &end_ptr, 10);
+            tmp = (int)SDL_strtol(version_ptr, &end_ptr, 10);
             if (tmp == 0 && end_ptr == version_ptr) {
                 return SDL_SetError("failed to get zenity minor version number");
             }

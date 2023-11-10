@@ -1718,7 +1718,7 @@ static int D3D12_UpdateTextureInternal(D3D12_RenderData *rendererData, ID3D12Res
         if (length > RowPitch) {
             length = RowPitch;
         }
-        for (row = NumRows; row--; ) {
+        for (row = NumRows; row--;) {
             SDL_memcpy(dst, src, length);
             src += pitch;
             dst += RowPitch;

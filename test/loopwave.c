@@ -15,13 +15,15 @@
 /* loopwaves.c is much more robust in handling WAVE files --
     This is only for simple WAVEs
 */
-#include <stdlib.h>
 
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
 #include "testutils.h"
+
+#include <stdlib.h>
 
 static struct
 {
@@ -135,4 +137,3 @@ void SDL_AppQuit(void)
     SDL_free(wave.sound);
     SDLTest_CommonDestroyState(state);
 }
-

@@ -52,13 +52,13 @@ SDL_HashTable *SDL_CreateHashTable(void *data, const Uint32 num_buckets, const S
         return NULL;
     }
 
-    table = (SDL_HashTable *) SDL_calloc(1, sizeof (SDL_HashTable));
+    table = (SDL_HashTable *)SDL_calloc(1, sizeof(SDL_HashTable));
     if (!table) {
         SDL_OutOfMemory();
         return NULL;
     }
 
-    table->table = (SDL_HashItem **) SDL_calloc(num_buckets, sizeof (SDL_HashItem *));
+    table->table = (SDL_HashItem **)SDL_calloc(num_buckets, sizeof(SDL_HashItem *));
     if (!table->table) {
         SDL_free(table);
         SDL_OutOfMemory();
@@ -79,18 +79,17 @@ static SDL_INLINE Uint32 calc_hash(const SDL_HashTable *table, const void *key)
     return table->hash(key, table->data) & (table->table_len - 1);
 }
 
-
 SDL_bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const void *value)
 {
     SDL_HashItem *item;
     const Uint32 hash = calc_hash(table, key);
 
-    if ( (!table->stackable) && (SDL_FindInHashTable(table, key, NULL)) ) {
+    if ((!table->stackable) && (SDL_FindInHashTable(table, key, NULL))) {
         return SDL_FALSE;
     }
 
     // !!! FIXME: grow and rehash table if it gets too saturated.
-    item = (SDL_HashItem *) SDL_malloc(sizeof (SDL_HashItem));
+    item = (SDL_HashItem *)SDL_malloc(sizeof(SDL_HashItem));
     if (!item) {
         SDL_OutOfMemory();
         return SDL_FALSE;
@@ -150,7 +149,7 @@ SDL_bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key)
 
 SDL_bool SDL_IterateHashTableKey(const SDL_HashTable *table, const void *key, const void **_value, void **iter)
 {
-    SDL_HashItem *item = *iter ? ((SDL_HashItem *) *iter)->next : table->table[calc_hash(table, key)];
+    SDL_HashItem *item = *iter ? ((SDL_HashItem *)*iter)->next : table->table[calc_hash(table, key)];
 
     while (item) {
         if (table->keymatch(key, item->key, table->data)) {
@@ -169,22 +168,22 @@ SDL_bool SDL_IterateHashTableKey(const SDL_HashTable *table, const void *key, co
 
 SDL_bool SDL_IterateHashTable(const SDL_HashTable *table, const void **_key, const void **_value, void **iter)
 {
-    SDL_HashItem *item = (SDL_HashItem *) *iter;
+    SDL_HashItem *item = (SDL_HashItem *)*iter;
     Uint32 idx = 0;
 
     if (item) {
         const SDL_HashItem *orig = item;
         item = item->next;
         if (!item) {
-            idx = calc_hash(table, orig->key) + 1;  // !!! FIXME: we probably shouldn't rehash each time.
+            idx = calc_hash(table, orig->key) + 1; // !!! FIXME: we probably shouldn't rehash each time.
         }
     }
 
     while (!item && (idx < table->table_len)) {
-        item = table->table[idx++];  // skip empty buckets...
+        item = table->table[idx++]; // skip empty buckets...
     }
 
-    if (!item) {  // no more matches?
+    if (!item) { // no more matches?
         *_key = NULL;
         *iter = NULL;
         return SDL_FALSE;
@@ -252,11 +251,11 @@ Uint32 SDL_HashString(const void *key, void *data)
 SDL_bool SDL_KeyMatchString(const void *a, const void *b, void *data)
 {
     if (a == b) {
-        return SDL_TRUE;  // same pointer, must match.
+        return SDL_TRUE; // same pointer, must match.
     } else if (!a || !b) {
-        return SDL_FALSE;  // one pointer is NULL (and first test shows they aren't the same pointer), must not match.
+        return SDL_FALSE; // one pointer is NULL (and first test shows they aren't the same pointer), must not match.
     }
-    return (SDL_strcmp((const char *)a, (const char *)b) == 0);  // Check against actual string contents.
+    return (SDL_strcmp((const char *)a, (const char *)b) == 0); // Check against actual string contents.
 }
 
 // We assume we can fit the ID in the key directly

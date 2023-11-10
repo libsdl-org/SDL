@@ -9,15 +9,17 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include "SDL3/SDL_main.h"
-#include "SDL3/SDL.h"
-#include "SDL3/SDL_test.h"
-#include "SDL3/SDL_video_capture.h"
-#include <stdio.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
+
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
+#include <SDL3/SDL_video_capture.h>
+
+#include <stdio.h>
 
 int main(int argc, char **argv)
 {
@@ -25,7 +27,7 @@ int main(int argc, char **argv)
     SDL_Renderer *renderer = NULL;
     SDL_Event evt;
     int quit = 0;
-    SDLTest_CommonState  *state = NULL;
+    SDLTest_CommonState *state = NULL;
 
     SDL_VideoCaptureDevice *device = NULL;
     SDL_VideoCaptureSpec obtained;
@@ -95,19 +97,18 @@ int main(int argc, char **argv)
     while (!quit) {
         while (SDL_PollEvent(&evt)) {
             int sym = 0;
-            switch (evt.type)
+            switch (evt.type) {
+            case SDL_EVENT_KEY_DOWN:
             {
-                case SDL_EVENT_KEY_DOWN:
-                    {
-                        sym = evt.key.keysym.sym;
-                        break;
-                    }
+                sym = evt.key.keysym.sym;
+                break;
+            }
 
-                case SDL_EVENT_QUIT:
-                    {
-                        quit = 1;
-                        SDL_Log("Ctlr+C : Quit!");
-                    }
+            case SDL_EVENT_QUIT:
+            {
+                quit = 1;
+                SDL_Log("Ctlr+C : Quit!");
+            }
             }
 
             if (sym == SDLK_ESCAPE || sym == SDLK_AC_BACK) {
@@ -149,15 +150,15 @@ int main(int argc, char **argv)
             /* Use software data */
             if (frame_current.num_planes == 1) {
                 SDL_UpdateTexture(texture, NULL,
-                        frame_current.data[0], frame_current.pitch[0]);
+                                  frame_current.data[0], frame_current.pitch[0]);
             } else if (frame_current.num_planes == 2) {
                 SDL_UpdateNVTexture(texture, NULL,
-                        frame_current.data[0], frame_current.pitch[0],
-                        frame_current.data[1], frame_current.pitch[1]);
+                                    frame_current.data[0], frame_current.pitch[0],
+                                    frame_current.data[1], frame_current.pitch[1]);
             } else if (frame_current.num_planes == 3) {
                 SDL_UpdateYUVTexture(texture, NULL, frame_current.data[0], frame_current.pitch[0],
-                        frame_current.data[1], frame_current.pitch[1],
-                        frame_current.data[2], frame_current.pitch[2]);
+                                     frame_current.data[1], frame_current.pitch[1],
+                                     frame_current.data[2], frame_current.pitch[2]);
             }
             texture_updated = 1;
         }
@@ -171,11 +172,11 @@ int main(int argc, char **argv)
             SDL_GetRenderOutputSize(renderer, &win_w, &win_h);
             w = win_w;
             if (tw > w - 20) {
-                float scale = (float) (w - 20) / (float) tw;
+                float scale = (float)(w - 20) / (float)tw;
                 tw = w - 20;
-                th = (int)((float) th * scale);
+                th = (int)((float)th * scale);
             }
-            d.x = (float)(10 );
+            d.x = (float)(10);
             d.y = (float)(win_h - th);
             d.w = (float)tw;
             d.h = (float)(th - 10);

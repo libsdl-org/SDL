@@ -13,15 +13,16 @@
 /* Test program to test dynamic loading with the loadso subsystem.
  */
 
-#include <stdio.h>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
+#include <stdio.h>
+
 typedef int (*fntype)(const char *);
 
-static void log_usage(char *progname, SDLTest_CommonState *state) {
+static void log_usage(char *progname, SDLTest_CommonState *state)
+{
     static const char *options[] = { "library", "functionname|--hello", NULL };
     SDLTest_CommonLogUsage(state, progname, options);
     SDL_Log("USAGE: %s <library> <functionname>\n", progname);

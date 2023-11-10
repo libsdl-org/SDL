@@ -69,7 +69,7 @@ static int SDL_ReadSurfacePixel_impl(SDL_Surface *surface, int x, int y, Uint8 *
     /* Fill the appropriate number of least-significant bytes of pixel,
      * leaving the most-significant bytes set to zero */
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    SDL_memcpy(((Uint8 *) &pixel) + (sizeof(pixel) - bytes_per_pixel), p, bytes_per_pixel);
+    SDL_memcpy(((Uint8 *)&pixel) + (sizeof(pixel) - bytes_per_pixel), p, bytes_per_pixel);
 #else
     SDL_memcpy(&pixel, p, bytes_per_pixel);
 #endif

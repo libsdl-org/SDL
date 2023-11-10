@@ -56,16 +56,16 @@ static void prepare_IOP()
 
 static void init_drivers()
 {
-	init_ps2_filesystem_driver();
+    init_ps2_filesystem_driver();
 }
 
 static void deinit_drivers()
 {
-	deinit_ps2_filesystem_driver();
+    deinit_ps2_filesystem_driver();
 }
 
 DECLSPEC int
-SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
+SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserved)
 {
     int res;
     (void)reserved;

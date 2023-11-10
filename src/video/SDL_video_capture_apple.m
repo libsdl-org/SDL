@@ -38,45 +38,59 @@
 #endif
 
 #ifndef HAVE_COREMEDIA
-int InitDevice(SDL_VideoCaptureDevice *_this) {
+int InitDevice(SDL_VideoCaptureDevice *_this)
+{
     return -1;
 }
-int OpenDevice(SDL_VideoCaptureDevice *_this) {
+int OpenDevice(SDL_VideoCaptureDevice *_this)
+{
     return -1;
 }
-int AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame) {
+int AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
+{
     return -1;
 }
-void CloseDevice(SDL_VideoCaptureDevice *_this) {
+void CloseDevice(SDL_VideoCaptureDevice *_this)
+{
 }
-int GetDeviceName(int index, char *buf, int size) {
+int GetDeviceName(int index, char *buf, int size)
+{
     return -1;
 }
-int GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec) {
+int GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec)
+{
     return -1;
 }
-int GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format) {
+int GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
+{
     return -1;
 }
-int GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width, int *height) {
+int GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width, int *height)
+{
     return -1;
 }
-int GetNumDevices(void) {
+int GetNumDevices(void)
+{
     return 0;
 }
-int GetNumFormats(SDL_VideoCaptureDevice *_this) {
+int GetNumFormats(SDL_VideoCaptureDevice *_this)
+{
     return 0;
 }
-int GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format) {
+int GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format)
+{
     return 0;
 }
-int ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame) {
+int ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
+{
     return 0;
 }
-int StartCapture(SDL_VideoCaptureDevice *_this) {
+int StartCapture(SDL_VideoCaptureDevice *_this)
+{
     return 0;
 }
-int StopCapture(SDL_VideoCaptureDevice *_this) {
+int StopCapture(SDL_VideoCaptureDevice *_this)
+{
     return 0;
 }
 
@@ -125,12 +139,12 @@ fourcc_to_nstring(Uint32 code)
 static NSArray<AVCaptureDevice *> *
 discover_devices()
 {
-    NSArray *deviceType = @[AVCaptureDeviceTypeBuiltInWideAngleCamera];
+    NSArray *deviceType = @[ AVCaptureDeviceTypeBuiltInWideAngleCamera ];
 
     AVCaptureDeviceDiscoverySession *discoverySession = [AVCaptureDeviceDiscoverySession
-                    discoverySessionWithDeviceTypes:deviceType
-                    mediaType:AVMediaTypeVideo
-                    position:AVCaptureDevicePositionUnspecified];
+        discoverySessionWithDeviceTypes:deviceType
+                              mediaType:AVMediaTypeVideo
+                               position:AVCaptureDevicePositionUnspecified];
 
     NSArray<AVCaptureDevice *> *devices = discoverySession.devices;
 
@@ -158,7 +172,7 @@ get_device_by_name(const char *dev_name)
         char buf[1024];
         NSString *cameraID = [device localizedName];
         const char *str = [cameraID UTF8String];
-        SDL_snprintf(buf, sizeof (buf) - 1, "%s", str);
+        SDL_snprintf(buf, sizeof(buf) - 1, "%s", str);
         if (SDL_strcmp(buf, dev_name) == 0) {
             return device;
         }
@@ -169,74 +183,82 @@ get_device_by_name(const char *dev_name)
 static Uint32
 nsfourcc_to_sdlformat(NSString *nsfourcc)
 {
-  const char *str = [nsfourcc UTF8String];
+    const char *str = [nsfourcc UTF8String];
 
-  /* FIXME
-   * on IOS this mode gives 2 planes, and it's NV12
-   * on macos, 1 plane/ YVYU
-   *
-   */
+    /* FIXME
+     * on IOS this mode gives 2 planes, and it's NV12
+     * on macos, 1 plane/ YVYU
+     *
+     */
 #ifdef __MACOS__
-  if (SDL_strcmp("420v", str) == 0)  return SDL_PIXELFORMAT_YVYU;
+    if (SDL_strcmp("420v", str) == 0)
+        return SDL_PIXELFORMAT_YVYU;
 #else
-  if (SDL_strcmp("420v", str) == 0)  return SDL_PIXELFORMAT_NV12;
+    if (SDL_strcmp("420v", str) == 0)
+        return SDL_PIXELFORMAT_NV12;
 #endif
-  if (SDL_strcmp("yuvs", str) == 0)  return SDL_PIXELFORMAT_UYVY;
-  if (SDL_strcmp("420f", str) == 0)  return SDL_PIXELFORMAT_UNKNOWN;
+    if (SDL_strcmp("yuvs", str) == 0)
+        return SDL_PIXELFORMAT_UYVY;
+    if (SDL_strcmp("420f", str) == 0)
+        return SDL_PIXELFORMAT_UNKNOWN;
 
-  SDL_Log("Unknown format '%s'", str);
+    SDL_Log("Unknown format '%s'", str);
 
-  return SDL_PIXELFORMAT_UNKNOWN;
+    return SDL_PIXELFORMAT_UNKNOWN;
 }
 
 static NSString *
 sdlformat_to_nsfourcc(Uint32 fmt)
 {
-  const char *str = "";
-  NSString *result;
+    const char *str = "";
+    NSString *result;
 
 #ifdef __MACOS__
-  if (fmt == SDL_PIXELFORMAT_YVYU)  str = "420v";
+    if (fmt == SDL_PIXELFORMAT_YVYU)
+        str = "420v";
 #else
-  if (fmt == SDL_PIXELFORMAT_NV12)  str = "420v";
+    if (fmt == SDL_PIXELFORMAT_NV12)
+        str = "420v";
 #endif
-  if (fmt == SDL_PIXELFORMAT_UYVY)  str = "yuvs";
+    if (fmt == SDL_PIXELFORMAT_UYVY)
+        str = "yuvs";
 
-  result = [[NSString alloc] initWithUTF8String: str];
+    result = [[NSString alloc] initWithUTF8String:str];
 
-  return result;
+    return result;
 }
 
-
-@interface MySampleBufferDelegate : NSObject<AVCaptureVideoDataOutputSampleBufferDelegate>
-    @property struct SDL_PrivateVideoCaptureData *hidden;
-    - (void) set: (struct SDL_PrivateVideoCaptureData *) val;
+@interface MySampleBufferDelegate : NSObject <AVCaptureVideoDataOutputSampleBufferDelegate>
+@property struct SDL_PrivateVideoCaptureData *hidden;
+- (void)set:(struct SDL_PrivateVideoCaptureData *)val;
 @end
 
 @implementation MySampleBufferDelegate
 
-    - (void) set: (struct SDL_PrivateVideoCaptureData *) val {
-        _hidden = val;
-    }
+- (void)set:(struct SDL_PrivateVideoCaptureData *)val
+{
+    _hidden = val;
+}
 
-    - (void) captureOutput:(AVCaptureOutput *)output
-        didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
-        fromConnection:(AVCaptureConnection *) connection {
-            CFRetain(sampleBuffer);
-            CMSimpleQueueEnqueue(_hidden->frame_queue, sampleBuffer);
-        }
+- (void)captureOutput:(AVCaptureOutput *)output
+    didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
+           fromConnection:(AVCaptureConnection *)connection
+{
+    CFRetain(sampleBuffer);
+    CMSimpleQueueEnqueue(_hidden->frame_queue, sampleBuffer);
+}
 
-    - (void)captureOutput:(AVCaptureOutput *)output
-        didDropSampleBuffer:(CMSampleBufferRef)sampleBuffer
-        fromConnection:(AVCaptureConnection *)connection {
-            SDL_Log("Drop frame..");
-        }
+- (void)captureOutput:(AVCaptureOutput *)output
+    didDropSampleBuffer:(CMSampleBufferRef)sampleBuffer
+         fromConnection:(AVCaptureConnection *)connection
+{
+    SDL_Log("Drop frame..");
+}
 @end
 
-int
-OpenDevice(SDL_VideoCaptureDevice *_this)
+int OpenDevice(SDL_VideoCaptureDevice *_this)
 {
-    _this->hidden = (struct SDL_PrivateVideoCaptureData *) SDL_calloc(1, sizeof (struct SDL_PrivateVideoCaptureData));
+    _this->hidden = (struct SDL_PrivateVideoCaptureData *)SDL_calloc(1, sizeof(struct SDL_PrivateVideoCaptureData));
     if (_this->hidden == NULL) {
         SDL_OutOfMemory();
         goto error;
@@ -248,8 +270,7 @@ error:
     return -1;
 }
 
-void
-CloseDevice(SDL_VideoCaptureDevice *_this)
+void CloseDevice(SDL_VideoCaptureDevice *_this)
 {
     if (!_this) {
         return;
@@ -263,7 +284,7 @@ CloseDevice(SDL_VideoCaptureDevice *_this)
             AVCaptureVideoDataOutput *output;
             input = [session.inputs objectAtIndex:0];
             [session removeInput:input];
-            output = (AVCaptureVideoDataOutput*)[session.outputs objectAtIndex:0];
+            output = (AVCaptureVideoDataOutput *)[session.outputs objectAtIndex:0];
             [session removeOutput:output];
             // TODO more cleanup ?
         }
@@ -277,8 +298,7 @@ CloseDevice(SDL_VideoCaptureDevice *_this)
     }
 }
 
-int
-InitDevice(SDL_VideoCaptureDevice *_this)
+int InitDevice(SDL_VideoCaptureDevice *_this)
 {
     NSString *fmt = sdlformat_to_nsfourcc(_this->spec.format);
     int w = _this->spec.width;
@@ -358,13 +378,12 @@ InitDevice(SDL_VideoCaptureDevice *_this)
     // Specify the pixel format
     output.videoSettings =
         [NSDictionary dictionaryWithObject:
-        [NSNumber numberWithInt:kCVPixelFormatType_422YpCbCr8]
-            forKey:(id)kCVPixelBufferPixelFormatTypeKey];
+                          [NSNumber numberWithInt:kCVPixelFormatType_422YpCbCr8]
+                                    forKey:(id)kCVPixelBufferPixelFormatTypeKey];
 #endif
 
     _this->hidden->delegate = [[MySampleBufferDelegate alloc] init];
     [_this->hidden->delegate set:_this->hidden];
-
 
     CMSimpleQueueCreate(kCFAllocatorDefault, 30 /* buffers */, &_this->hidden->frame_queue);
     if (_this->hidden->frame_queue == nil) {
@@ -374,15 +393,14 @@ InitDevice(SDL_VideoCaptureDevice *_this)
     _this->hidden->queue = dispatch_queue_create("my_queue", NULL);
     [output setSampleBufferDelegate:_this->hidden->delegate queue:_this->hidden->queue];
 
-
-    if ([_this->hidden->session canAddInput:input] ){
+    if ([_this->hidden->session canAddInput:input]) {
         [_this->hidden->session addInput:input];
     } else {
         SDL_SetError("Cannot add AVCaptureDeviceInput");
         goto error;
     }
 
-    if ([_this->hidden->session canAddOutput:output] ){
+    if ([_this->hidden->session canAddOutput:output]) {
         [_this->hidden->session addOutput:output];
     } else {
         SDL_SetError("Cannot add AVCaptureVideoDataOutput");
@@ -397,8 +415,7 @@ error:
     return -1;
 }
 
-int
-GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec)
+int GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec)
 {
     if (spec) {
         *spec = _this->spec;
@@ -407,22 +424,19 @@ GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec)
     return -1;
 }
 
-int
-StartCapture(SDL_VideoCaptureDevice *_this)
+int StartCapture(SDL_VideoCaptureDevice *_this)
 {
     [_this->hidden->session startRunning];
     return 0;
 }
 
-int
-StopCapture(SDL_VideoCaptureDevice *_this)
+int StopCapture(SDL_VideoCaptureDevice *_this)
 {
     [_this->hidden->session stopRunning];
     return 0;
 }
 
-int
-AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
+int AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
 {
     if (CMSimpleQueueGetCount(_this->hidden->frame_queue) > 0) {
         int i, numPlanes, planar;
@@ -430,7 +444,7 @@ AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
         CVImageBufferRef image;
 
         sampleBuffer = (CMSampleBufferRef)CMSimpleQueueDequeue(_this->hidden->frame_queue);
-        frame->internal = (void *) sampleBuffer;
+        frame->internal = (void *)sampleBuffer;
         frame->timestampNS = SDL_GetTicksNS();
 
         i = 0;
@@ -474,11 +488,10 @@ AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
     return 0;
 }
 
-int
-ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
+int ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
 {
-    if (frame->internal){
-        CMSampleBufferRef sampleBuffer = (CMSampleBufferRef) frame->internal;
+    if (frame->internal) {
+        CMSampleBufferRef sampleBuffer = (CMSampleBufferRef)frame->internal;
 
         CVImageBufferRef image = CMSampleBufferGetImageBuffer(sampleBuffer);
         CVPixelBufferUnlockBaseAddress(image, 0);
@@ -488,8 +501,7 @@ ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
     return 0;
 }
 
-int
-GetNumFormats(SDL_VideoCaptureDevice *_this)
+int GetNumFormats(SDL_VideoCaptureDevice *_this)
 {
     AVCaptureDevice *device = get_device_by_name(_this->dev_name);
     if (device) {
@@ -499,7 +511,7 @@ GetNumFormats(SDL_VideoCaptureDevice *_this)
         for (AVCaptureDeviceFormat *format in formats) {
             // NSLog(@"%@", formats);
             CMFormatDescriptionRef formatDescription = [format formatDescription];
-            //NSLog(@"%@", formatDescription);
+            // NSLog(@"%@", formatDescription);
             FourCharCode mediaSubType = CMFormatDescriptionGetMediaSubType(formatDescription);
             NSString *str = fourcc_to_nstring(mediaSubType);
             [array_formats addObject:str];
@@ -509,8 +521,7 @@ GetNumFormats(SDL_VideoCaptureDevice *_this)
     return 0;
 }
 
-int
-GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
+int GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
 {
     AVCaptureDevice *device = get_device_by_name(_this->dev_name);
     if (device) {
@@ -537,8 +548,7 @@ GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
     return -1;
 }
 
-int
-GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format)
+int GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format)
 {
     AVCaptureDevice *device = get_device_by_name(_this->dev_name);
     if (device) {
@@ -560,8 +570,7 @@ GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format)
     return 0;
 }
 
-int
-GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width, int *height)
+int GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width, int *height)
 {
     AVCaptureDevice *device = get_device_by_name(_this->dev_name);
     if (device) {
@@ -588,8 +597,7 @@ GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width
     return -1;
 }
 
-int
-GetDeviceName(int index, char *buf, int size)
+int GetDeviceName(int index, char *buf, int size)
 {
     NSArray<AVCaptureDevice *> *devices = discover_devices();
     if (index < [devices count]) {
@@ -602,8 +610,7 @@ GetDeviceName(int index, char *buf, int size)
     return -1;
 }
 
-int
-GetNumDevices(void)
+int GetNumDevices(void)
 {
     NSArray<AVCaptureDevice *> *devices = discover_devices();
     return [devices count];
@@ -612,4 +619,3 @@ GetNumDevices(void)
 #endif /* HAVE_COREMEDIA */
 
 #endif /* SDL_VIDEO_CAPTURE */
-

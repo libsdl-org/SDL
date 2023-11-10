@@ -1,8 +1,10 @@
 /**
  * Standard C library routine test suite
  */
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+
 #include "testautomation_suites.h"
 
 /* Test case functions */
@@ -748,8 +750,8 @@ static int stdlib_aligned_alloc(void *arg)
     size_t i, alignment;
     void *ptr;
 
-    for (i = 0; i < 2*sizeof(void *); ++i) {
-        SDLTest_AssertPass("Call to SDL_aligned_alloc(%"SIZE_FORMAT")", i);
+    for (i = 0; i < 2 * sizeof(void *); ++i) {
+        SDLTest_AssertPass("Call to SDL_aligned_alloc(%" SIZE_FORMAT ")", i);
         ptr = SDL_aligned_alloc(i, 1);
         if (i < sizeof(void *)) {
             alignment = sizeof(void *);
@@ -757,7 +759,7 @@ static int stdlib_aligned_alloc(void *arg)
             alignment = i;
         }
         SDLTest_AssertCheck(ptr != NULL, "Check output, expected non-NULL, got: %p", ptr);
-        SDLTest_AssertCheck((((size_t)ptr) % alignment) == 0, "Check output, expected aligned pointer, actual offset: %"SIZE_FORMAT, (((size_t)ptr) % alignment));
+        SDLTest_AssertCheck((((size_t)ptr) % alignment) == 0, "Check output, expected aligned pointer, actual offset: %" SIZE_FORMAT, (((size_t)ptr) % alignment));
         SDLTest_AssertPass("Filling memory to alignment value");
         SDL_memset(ptr, 0xAA, alignment);
         SDL_aligned_free(ptr);

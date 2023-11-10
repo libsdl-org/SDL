@@ -52,7 +52,6 @@ struct SDL_VideoData
     /* Even if we have several displays, we only have to
        open 1 FD and create 1 gbm device. */
     SDL_bool gbm_init;
-
 };
 
 struct SDL_DisplayModeData

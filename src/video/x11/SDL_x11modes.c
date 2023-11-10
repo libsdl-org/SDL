@@ -41,12 +41,12 @@
 
 #ifdef SDL_USE_LIBDBUS
 
-#define SCALE_FACTOR_NODE "org.freedesktop.portal.Desktop"
-#define SCALE_FACTOR_PATH "/org/freedesktop/portal/desktop"
-#define SCALE_FACTOR_INTERFACE "org.freedesktop.portal.Settings"
-#define SCALE_FACTOR_NAMESPACE "org.gnome.desktop.interface"
+#define SCALE_FACTOR_NODE        "org.freedesktop.portal.Desktop"
+#define SCALE_FACTOR_PATH        "/org/freedesktop/portal/desktop"
+#define SCALE_FACTOR_INTERFACE   "org.freedesktop.portal.Settings"
+#define SCALE_FACTOR_NAMESPACE   "org.gnome.desktop.interface"
 #define SCALE_FACTOR_SIGNAL_NAME "SettingChanged"
-#define SCALE_FACTOR_KEY "text-scaling-factor"
+#define SCALE_FACTOR_KEY         "text-scaling-factor"
 
 static DBusMessage *ReadDBusSetting(SDL_DBusContext *dbus, const char *key)
 {
@@ -176,8 +176,7 @@ static float GetGlobalContentScale(SDL_VideoDevice *_this)
 
         /* Next try the settings portal via D-Bus for the text scaling factor (aka 'Global Scale' on KDE) */
 #ifdef SDL_USE_LIBDBUS
-        if (scale_factor <= 0.0)
-        {
+        if (scale_factor <= 0.0) {
             DBusMessage *reply;
             SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
@@ -186,9 +185,10 @@ static float GetGlobalContentScale(SDL_VideoDevice *_this)
                     if (ParseDBusReply(dbus, reply, DBUS_TYPE_DOUBLE, &scale_factor)) {
                         /* If the setting exists, register a listener for scale changes. */
                         dbus->bus_add_match(dbus->session_conn,
-                                            "type='signal', interface='"SCALE_FACTOR_INTERFACE"',"
-                                            "member='"SCALE_FACTOR_SIGNAL_NAME"', arg0='"SCALE_FACTOR_NAMESPACE"',"
-                                            "arg1='"SCALE_FACTOR_KEY"'", NULL);
+                                            "type='signal', interface='" SCALE_FACTOR_INTERFACE "',"
+                                            "member='" SCALE_FACTOR_SIGNAL_NAME "', arg0='" SCALE_FACTOR_NAMESPACE "',"
+                                            "arg1='" SCALE_FACTOR_KEY "'",
+                                            NULL);
                         dbus->connection_add_filter(dbus->session_conn, &DBus_MessageFilter, &scale_factor, NULL);
                         dbus->connection_flush(dbus->session_conn);
                     }
@@ -199,8 +199,7 @@ static float GetGlobalContentScale(SDL_VideoDevice *_this)
 #endif
 
         /* If that failed, try "Xft.dpi" from the XResourcesDatabase... */
-        if (scale_factor <= 0.0)
-        {
+        if (scale_factor <= 0.0) {
             SDL_VideoData *data = _this->driverdata;
             Display *display = data->display;
             char *resource_manager;
@@ -218,7 +217,7 @@ static float GetGlobalContentScale(SDL_VideoDevice *_this)
                 if (X11_XrmGetResource(db, "Xft.dpi", "String", &type, &value)) {
                     if (value.addr && type && SDL_strcmp(type, "String") == 0) {
                         int dpi = SDL_atoi(value.addr);
-                        scale_factor  = dpi / 96.0;
+                        scale_factor = dpi / 96.0;
                     }
                 }
                 X11_XrmDestroyDatabase(db);
@@ -226,8 +225,7 @@ static float GetGlobalContentScale(SDL_VideoDevice *_this)
         }
 
         /* If that failed, try the GDK_SCALE envvar... */
-        if (scale_factor <= 0.0)
-        {
+        if (scale_factor <= 0.0) {
             const char *scale_str = SDL_getenv("GDK_SCALE");
             if (scale_str) {
                 scale_factor = SDL_atoi(scale_str);

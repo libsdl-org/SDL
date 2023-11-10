@@ -1556,10 +1556,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 point.y = winpoint.y;
                 rc = window->hit_test(window, &point, window->hit_test_data);
                 switch (rc) {
-#define POST_HIT_TEST(ret)                                                 \
-    {                                                                      \
+#define POST_HIT_TEST(ret)                                                  \
+    {                                                                       \
         SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0); \
-        return ret;                                                        \
+        return ret;                                                         \
     }
                 case SDL_HITTEST_DRAGGABLE:
                     POST_HIT_TEST(HTCAPTION);

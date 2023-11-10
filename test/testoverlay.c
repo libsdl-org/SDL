@@ -16,16 +16,18 @@
  *                                                                              *
  ********************************************************************************/
 
-#include <stdlib.h>
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
 
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_test_common.h>
-#include <SDL3/SDL_main.h>
+
 #include "testutils.h"
+
+#include <stdlib.h>
 
 #define MOOSEPIC_W 64
 #define MOOSEPIC_H 88
@@ -172,14 +174,14 @@ quit(int rc)
     SDL_free(RawMooseData);
 
     for (i = 0; i < MOOSEFRAMES_COUNT; i++) {
-         SDL_DestroySurface(MooseYUVSurfaces[i]);
+        SDL_DestroySurface(MooseYUVSurfaces[i]);
     }
 
     SDLTest_CommonQuit(state);
 
     /* Let 'main()' return normally */
     if (rc != 0) {
-         exit(rc);
+        exit(rc);
     }
 }
 
@@ -188,61 +190,60 @@ static void MoveSprites(SDL_Renderer *renderer)
     static int i = 0;
 
     if (streaming) {
-         if (!paused) {
-             i = (i + 1) % MOOSEFRAMES_COUNT;
-             /* Test both upload paths for NV12/NV21 formats */
-             if ((yuv_format == SDL_PIXELFORMAT_NV12 || yuv_format == SDL_PIXELFORMAT_NV21) &&
-                 (i % 2) == 0) {
+        if (!paused) {
+            i = (i + 1) % MOOSEFRAMES_COUNT;
+            /* Test both upload paths for NV12/NV21 formats */
+            if ((yuv_format == SDL_PIXELFORMAT_NV12 || yuv_format == SDL_PIXELFORMAT_NV21) &&
+                (i % 2) == 0) {
 #ifdef TEST_RECT_UPDATE
-                 SDL_Rect rect;
+                SDL_Rect rect;
 
-                 if (i == 0) {
-                     rect.x = 0;
-                     rect.y = 0;
-                     rect.w = MOOSEPIC_W;
-                     rect.h = MOOSEPIC_H;
-                 } else {
-                     rect.x = MOOSEPIC_W / 4;
-                     rect.y = MOOSEPIC_H / 4;
-                     rect.w = MOOSEPIC_W / 2;
-                     rect.h = MOOSEPIC_H / 2;
-                 }
-                 SDL_UpdateNVTexture(MooseTexture, &rect,
-                                     (Uint8 *)MooseYUVSurfaces[i]->pixels + rect.y * MooseYUVSurfaces[i]->pitch + rect.x, MooseYUVSurfaces[i]->pitch,
-                                     (Uint8 *)MooseYUVSurfaces[i]->pixels + MOOSEFRAME_SIZE + (rect.y + 1) / 2 * MooseYUVSurfaces[i]->pitch + (rect.x + 1) / 2, MooseYUVSurfaces[i]->pitch);
+                if (i == 0) {
+                    rect.x = 0;
+                    rect.y = 0;
+                    rect.w = MOOSEPIC_W;
+                    rect.h = MOOSEPIC_H;
+                } else {
+                    rect.x = MOOSEPIC_W / 4;
+                    rect.y = MOOSEPIC_H / 4;
+                    rect.w = MOOSEPIC_W / 2;
+                    rect.h = MOOSEPIC_H / 2;
+                }
+                SDL_UpdateNVTexture(MooseTexture, &rect,
+                                    (Uint8 *)MooseYUVSurfaces[i]->pixels + rect.y * MooseYUVSurfaces[i]->pitch + rect.x, MooseYUVSurfaces[i]->pitch,
+                                    (Uint8 *)MooseYUVSurfaces[i]->pixels + MOOSEFRAME_SIZE + (rect.y + 1) / 2 * MooseYUVSurfaces[i]->pitch + (rect.x + 1) / 2, MooseYUVSurfaces[i]->pitch);
 #else
-                 SDL_UpdateNVTexture(MooseTexture, NULL,
-                                     MooseYUVSurfaces[i]->pixels, MooseYUVSurfaces[i]->pitch,
-                                     (Uint8 *)MooseYUVSurfaces[i]->pixels + MOOSEFRAME_SIZE, MooseYUVSurfaces[i]->pitch);
+                SDL_UpdateNVTexture(MooseTexture, NULL,
+                                    MooseYUVSurfaces[i]->pixels, MooseYUVSurfaces[i]->pitch,
+                                    (Uint8 *)MooseYUVSurfaces[i]->pixels + MOOSEFRAME_SIZE, MooseYUVSurfaces[i]->pitch);
 #endif
-             } else {
-                 SDL_UpdateTexture(MooseTexture, NULL, MooseYUVSurfaces[i]->pixels, MooseYUVSurfaces[i]->pitch);
-             }
-         }
-         SDL_RenderClear(renderer);
-         SDL_RenderTexture(renderer, MooseTexture, NULL, &displayrect);
-         SDL_RenderPresent(renderer);
+            } else {
+                SDL_UpdateTexture(MooseTexture, NULL, MooseYUVSurfaces[i]->pixels, MooseYUVSurfaces[i]->pitch);
+            }
+        }
+        SDL_RenderClear(renderer);
+        SDL_RenderTexture(renderer, MooseTexture, NULL, &displayrect);
+        SDL_RenderPresent(renderer);
     } else {
-         SDL_Texture *tmp;
+        SDL_Texture *tmp;
 
-         /* Test SDL_CreateTextureFromSurface */
-         if (!paused) {
-             i = (i + 1) % MOOSEFRAMES_COUNT;
-         }
+        /* Test SDL_CreateTextureFromSurface */
+        if (!paused) {
+            i = (i + 1) % MOOSEFRAMES_COUNT;
+        }
 
-         tmp = SDL_CreateTextureFromSurface(renderer, MooseYUVSurfaces[i]);
-         if (!tmp) {
-             SDL_Log("Error %s", SDL_GetError());
-             quit(7);
-         }
+        tmp = SDL_CreateTextureFromSurface(renderer, MooseYUVSurfaces[i]);
+        if (!tmp) {
+            SDL_Log("Error %s", SDL_GetError());
+            quit(7);
+        }
 
-         SDL_RenderClear(renderer);
-         SDL_RenderTexture(renderer, tmp, NULL, &displayrect);
-         SDL_RenderPresent(renderer);
-         SDL_DestroyTexture(tmp);
+        SDL_RenderClear(renderer);
+        SDL_RenderTexture(renderer, tmp, NULL, &displayrect);
+        SDL_RenderPresent(renderer);
+        SDL_DestroyTexture(tmp);
     }
 }
-
 
 static void loop(void)
 {
@@ -312,7 +313,6 @@ static void loop(void)
         frames = 0;
     }
 }
-
 
 int main(int argc, char **argv)
 {
@@ -404,7 +404,6 @@ int main(int argc, char **argv)
                     quit(10);
                 }
             }
-
         }
         if (consumed < 0) {
             static const char *options[] = {

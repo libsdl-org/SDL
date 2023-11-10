@@ -1,9 +1,11 @@
 /**
  * Events test suite
  */
-#include "testautomation_suites.h"
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+
+#include "testautomation_suites.h"
 
 /* ================= Test Case Implementation ================== */
 

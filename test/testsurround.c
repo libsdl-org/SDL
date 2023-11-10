@@ -108,9 +108,9 @@ static void SDLCALL fill_buffer(void *userdata, SDL_AudioStream *stream, int len
         return;
     }
 
-    buffer = (Sint16 *) SDL_calloc(samples, sizeof(Sint16));
+    buffer = (Sint16 *)SDL_calloc(samples, sizeof(Sint16));
     if (!buffer) {
-        return;  /* oh well. */
+        return; /* oh well. */
     }
 
     /* Play a sine wave on the active channel only */
@@ -138,7 +138,7 @@ static void SDLCALL fill_buffer(void *userdata, SDL_AudioStream *stream, int len
         }
     }
 
-    SDL_PutAudioStreamData(stream, buffer, samples * sizeof (Sint16));
+    SDL_PutAudioStreamData(stream, buffer, samples * sizeof(Sint16));
 
     SDL_free(buffer);
 }

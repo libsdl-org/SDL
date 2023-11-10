@@ -235,7 +235,7 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
         display.natural_orientation = SDL_ORIENTATION_PORTRAIT;
     } else
 #endif
-    if (UIKit_IsDisplayLandscape(uiscreen)) {
+        if (UIKit_IsDisplayLandscape(uiscreen)) {
         display.natural_orientation = SDL_ORIENTATION_LANDSCAPE;
     } else {
         display.natural_orientation = SDL_ORIENTATION_PORTRAIT;
@@ -262,7 +262,8 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
 #endif
 
 #if TARGET_OS_XR
-int UIKit_AddDisplay(SDL_bool send_event){
+int UIKit_AddDisplay(SDL_bool send_event)
+{
     CGSize size = CGSizeMake(SDL_XR_SCREENWIDTH, SDL_XR_SCREENHEIGHT);
     SDL_VideoDisplay display;
     SDL_DisplayMode mode;
@@ -273,13 +274,13 @@ int UIKit_AddDisplay(SDL_bool send_event){
     mode.pixel_density = 1;
     mode.format = SDL_PIXELFORMAT_ABGR8888;
     mode.refresh_rate = 60;
-    
+
     display.natural_orientation = SDL_ORIENTATION_LANDSCAPE;
 
     display.desktop_mode = mode;
-    
+
     SDL_UIKitDisplayData *data = [[SDL_UIKitDisplayData alloc] init];
-    
+
     if (!data) {
         UIKit_FreeDisplayModeData(&display.desktop_mode);
         return SDL_OutOfMemory();
@@ -341,7 +342,7 @@ int UIKit_InitModes(SDL_VideoDevice *_this)
             }
         }
 #endif
-        
+
 #if !TARGET_OS_TV && !TARGET_OS_XR
         SDL_OnApplicationDidChangeStatusBarOrientation();
 #endif

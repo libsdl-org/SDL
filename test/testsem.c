@@ -12,11 +12,11 @@
 
 /* Simple test of the SDL semaphore code */
 
-#include <signal.h>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
+#include <signal.h>
 
 #define NUM_THREADS 10
 /* This value should be smaller than the maximum count of the */
@@ -36,7 +36,8 @@ typedef struct Thread_State
     int content_count;
 } Thread_State;
 
-static void log_usage(char *progname, SDLTest_CommonState *state) {
+static void log_usage(char *progname, SDLTest_CommonState *state)
+{
     static const char *options[] = { "init_value", NULL };
     SDLTest_CommonLogUsage(state, progname, options);
 }

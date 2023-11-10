@@ -175,7 +175,7 @@
         Uint8 *src = from;                                       \
         Uint8 *dst = to;                                         \
         for (i = 0; i < (int)(length); i++) {                    \
-            Uint32 s = 0, d = 0;                                         \
+            Uint32 s = 0, d = 0;                                 \
             unsigned rs, gs, bs, rd, gd, bd;                     \
             switch (bpp) {                                       \
             case 2:                                              \
@@ -1111,15 +1111,15 @@ static int RLEAlphaSurface(SDL_Surface *surface)
         Uint8 *lastline = dst; /* end of last non-blank line */
 
         /* opaque counts are 8 or 16 bits, depending on target depth */
-#define ADD_OPAQUE_COUNTS(n, m)           \
-    if (df->BytesPerPixel == 4) {         \
-        ((Uint16 *)dst)[0] = (Uint16)n;   \
-        ((Uint16 *)dst)[1] = (Uint16)m;   \
-        dst += 4;                         \
-    } else {                              \
-        dst[0] = (Uint8)n;                \
-        dst[1] = (Uint8)m;                \
-        dst += 2;                         \
+#define ADD_OPAQUE_COUNTS(n, m)         \
+    if (df->BytesPerPixel == 4) {       \
+        ((Uint16 *)dst)[0] = (Uint16)n; \
+        ((Uint16 *)dst)[1] = (Uint16)m; \
+        dst += 4;                       \
+    } else {                            \
+        dst[0] = (Uint8)n;              \
+        dst[1] = (Uint8)m;              \
+        dst += 2;                       \
     }
 
         /* translucent counts are always 16 bit */

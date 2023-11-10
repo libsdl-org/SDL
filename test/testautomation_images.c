@@ -9,7 +9,9 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
+
 #include <SDL3/SDL.h>
+
 #include "testautomation_images.h"
 
 /* GIMP RGB C-Source image dump (blit.c) */

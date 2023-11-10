@@ -682,11 +682,11 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(JNIEnv *env, jcl
     mAudioManagerClass = (jclass)((*env)->NewGlobalRef(env, cls));
 
     midRegisterAudioDeviceCallback = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                                         "registerAudioDeviceCallback",
-                                                         "()V");
+                                                               "registerAudioDeviceCallback",
+                                                               "()V");
     midUnregisterAudioDeviceCallback = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                                         "unregisterAudioDeviceCallback",
-                                                         "()V");
+                                                                 "unregisterAudioDeviceCallback",
+                                                                 "()V");
     midAudioOpen = (*env)->GetStaticMethodID(env, mAudioManagerClass,
                                              "audioOpen", "(IIIII)[I");
     midAudioWriteByteBuffer = (*env)->GetStaticMethodID(env, mAudioManagerClass,
@@ -1571,7 +1571,7 @@ void Android_StartAudioHotplug(SDL_AudioDevice **default_output, SDL_AudioDevice
     JNIEnv *env = Android_JNI_GetEnv();
     // this will fire the callback for each existing device right away (which will eventually SDL_AddAudioDevice), and again later when things change.
     (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midRegisterAudioDeviceCallback);
-    *default_output = *default_capture = NULL;  // !!! FIXME: how do you decide the default device id?
+    *default_output = *default_capture = NULL; // !!! FIXME: how do you decide the default device id?
 }
 
 void Android_StopAudioHotplug(void)
@@ -1584,7 +1584,7 @@ int Android_JNI_OpenAudioDevice(SDL_AudioDevice *device)
 {
     const SDL_bool iscapture = device->iscapture;
     SDL_AudioSpec *spec = &device->spec;
-    const int device_id = (int) ((size_t) device->handle);
+    const int device_id = (int)((size_t)device->handle);
     int audioformat;
     jobject jbufobj = NULL;
     jobject result;
@@ -1864,7 +1864,7 @@ static void Android_JNI_AudioSetThreadPriority(int iscapture, int device_id)
 
 void Android_AudioThreadInit(SDL_AudioDevice *device)
 {
-    Android_JNI_AudioSetThreadPriority((int) device->iscapture, (int)device->instance_id);
+    Android_JNI_AudioSetThreadPriority((int)device->iscapture, (int)device->instance_id);
 }
 
 /* Test for an exception and call SDL_SetError with its detail if one occurs */

@@ -1460,7 +1460,7 @@ static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
 }
 
 static int METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
-                       Uint32 pixel_format, void *pixels, int pitch)
+                                  Uint32 pixel_format, void *pixels, int pitch)
 {
     @autoreleasepool {
         METAL_RenderData *data = (__bridge METAL_RenderData *)renderer->driverdata;

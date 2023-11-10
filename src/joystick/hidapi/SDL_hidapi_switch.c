@@ -975,7 +975,7 @@ static ESwitchDeviceInfoControllerType ReadJoyConControllerType(SDL_HIDAPI_Devic
         ctx->m_bSyncWrite = SDL_TRUE;
         ctx->m_nMaxWriteAttempts = GetMaxWriteAttempts(device);
 
-        for ( ; ; ) {
+        for (;;) {
             ++attempts;
             if (device->is_bluetooth) {
                 SwitchSubcommandInputPacket_t *reply = NULL;

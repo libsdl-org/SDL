@@ -84,7 +84,7 @@ OutOfMemory(void)
 /* Gets the arguments with GetCommandLine, converts them to argc and argv
    and calls SDL_main */
 extern "C" DECLSPEC int
-SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
+SDL_RunApp(int, char **, SDL_main_func mainFunction, void *reserved)
 {
     LPWSTR *argvw;
     char **argv;

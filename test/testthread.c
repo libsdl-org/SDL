@@ -12,12 +12,12 @@
 
 /* Simple test of the SDL threading code */
 
-#include <stdlib.h>
-#include <signal.h>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
+#include <signal.h>
+#include <stdlib.h>
 
 static SDL_TLSID tls;
 static int alive = 0;

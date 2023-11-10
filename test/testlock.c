@@ -14,12 +14,12 @@
    Also exercises the system's signal/thread interaction
 */
 
-#include <signal.h>
-#include <stdlib.h> /* for atexit() */
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
+#include <signal.h>
+#include <stdlib.h> /* for atexit() */
 
 static SDL_Mutex *mutex = NULL;
 static SDL_threadID mainthread;
@@ -98,7 +98,8 @@ Run(void *data)
 }
 
 #ifndef _WIN32
-static Uint32 hit_timeout(Uint32 interval, void *param) {
+static Uint32 hit_timeout(Uint32 interval, void *param)
+{
     SDL_Log("Hit timeout! Sending SIGINT!");
     kill(0, SIGINT);
     return 0;
@@ -170,7 +171,7 @@ int main(int argc, char *argv[])
         i += consumed;
     }
 
-    threads = SDL_malloc(nb_threads * sizeof(SDL_Thread*));
+    threads = SDL_malloc(nb_threads * sizeof(SDL_Thread *));
 
     /* Load the SDL library */
     if (SDL_Init(0) < 0) {

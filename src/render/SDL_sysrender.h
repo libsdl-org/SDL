@@ -63,14 +63,14 @@ typedef struct SDL_RenderViewState
 struct SDL_Texture
 {
     const void *magic;
-    Uint32 format;              /**< The pixel format of the texture */
-    int access;                 /**< SDL_TextureAccess */
-    int w;                      /**< The width of the texture */
-    int h;                      /**< The height of the texture */
-    SDL_BlendMode blendMode;    /**< The texture blend mode */
-    SDL_ScaleMode scaleMode;    /**< The texture scale mode */
-    SDL_Color color;            /**< Texture modulation values */
-    SDL_RenderViewState view;   /**< Target texture view state */
+    Uint32 format;            /**< The pixel format of the texture */
+    int access;               /**< SDL_TextureAccess */
+    int w;                    /**< The width of the texture */
+    int h;                    /**< The height of the texture */
+    SDL_BlendMode blendMode;  /**< The texture blend mode */
+    SDL_ScaleMode scaleMode;  /**< The texture scale mode */
+    SDL_Color color;          /**< Texture modulation values */
+    SDL_RenderViewState view; /**< Target texture view state */
 
     SDL_Renderer *renderer;
 

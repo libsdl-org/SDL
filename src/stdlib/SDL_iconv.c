@@ -43,8 +43,8 @@ int SDL_iconv_close(SDL_iconv_t cd)
 }
 
 size_t SDL_iconv(SDL_iconv_t cd,
-          const char **inbuf, size_t *inbytesleft,
-          char **outbuf, size_t *outbytesleft)
+                 const char **inbuf, size_t *inbytesleft,
+                 char **outbuf, size_t *outbytesleft)
 {
     /* iconv's second parameter may or may not be `const char const *` depending on the
        C runtime's whims. Casting to void * seems to make everyone happy, though. */
@@ -226,8 +226,8 @@ SDL_iconv_t SDL_iconv_open(const char *tocode, const char *fromcode)
 }
 
 size_t SDL_iconv(SDL_iconv_t cd,
-          const char **inbuf, size_t *inbytesleft,
-          char **outbuf, size_t *outbytesleft)
+                 const char **inbuf, size_t *inbytesleft,
+                 char **outbuf, size_t *outbytesleft)
 {
     /* For simplicity, we'll convert everything to and from UCS-4 */
     const char *src;

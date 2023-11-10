@@ -13,13 +13,15 @@
 /* Test program to check the resolution of the SDL timer on the current
    platform
 */
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
 #define DEFAULT_RESOLUTION 1
 
-static int test_sdl_delay_within_bounds(void) {
+static int test_sdl_delay_within_bounds(void)
+{
     const int testDelay = 100;
     const int marginOfError = 25;
     Uint64 result;
@@ -70,7 +72,7 @@ int main(int argc, char *argv[])
     SDL_TimerID t1, t2, t3;
     Uint64 start, now;
     Uint64 start_perf, now_perf;
-    SDLTest_CommonState  *state;
+    SDLTest_CommonState *state;
     SDL_bool run_interactive_tests = SDL_TRUE;
     int return_code = 0;
 

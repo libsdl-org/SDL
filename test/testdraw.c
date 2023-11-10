@@ -12,9 +12,6 @@
 
 /* Simple program:  draw as many random objects on the screen as possible */
 
-#include <stdlib.h>
-#include <time.h>
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
@@ -22,6 +19,9 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test_common.h>
+
+#include <stdlib.h>
+#include <time.h>
 
 #define NUM_OBJECTS 100
 

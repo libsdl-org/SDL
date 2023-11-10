@@ -69,7 +69,7 @@ int sdl_psp_setup_callbacks(void)
 }
 
 DECLSPEC int
-SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
+SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserved)
 {
     (void)reserved;
     sdl_psp_setup_callbacks();

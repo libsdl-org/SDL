@@ -146,18 +146,19 @@ SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, Uint32 flags)
     return state;
 }
 
-void SDLTest_CommonDestroyState(SDLTest_CommonState *state) {
+void SDLTest_CommonDestroyState(SDLTest_CommonState *state)
+{
     SDL_free(state);
     SDLTest_LogAllocations();
 }
 
-#define SEARCHARG(dim)                  \
-    while (*(dim) && *(dim) != ',') {   \
-        ++(dim);                        \
-    }                                   \
-    if (!*(dim)) {                      \
-        return -1;                      \
-    }                                   \
+#define SEARCHARG(dim)                \
+    while (*(dim) && *(dim) != ',') { \
+        ++(dim);                      \
+    }                                 \
+    if (!*(dim)) {                    \
+        return -1;                    \
+    }                                 \
     *(dim)++ = '\0';
 
 int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
@@ -242,8 +243,8 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             }
             if (SDL_strcasecmp(argv[index], "all") == 0) {
                 state->verbose |=
-                        (VERBOSE_VIDEO | VERBOSE_MODES | VERBOSE_RENDER |
-                         VERBOSE_EVENT);
+                    (VERBOSE_VIDEO | VERBOSE_MODES | VERBOSE_RENDER |
+                     VERBOSE_EVENT);
                 return 2;
             }
             if (SDL_strcasecmp(argv[index], "video") == 0) {
@@ -302,7 +303,7 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
         }
         if (SDL_strcasecmp(argv[index], "--windows") == 0) {
             ++index;
-            if (!argv[index] || !SDL_isdigit((unsigned char) *argv[index])) {
+            if (!argv[index] || !SDL_isdigit((unsigned char)*argv[index])) {
                 return -1;
             }
             if (!(state->window_flags & SDL_WINDOW_FULLSCREEN)) {
@@ -517,7 +518,7 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             if (!argv[index]) {
                 return -1;
             }
-            state->scale = (float) SDL_atof(argv[index]);
+            state->scale = (float)SDL_atof(argv[index]);
             return 2;
         }
         if (SDL_strcasecmp(argv[index], "--depth") == 0) {
@@ -533,7 +534,7 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             if (!argv[index]) {
                 return -1;
             }
-            state->refresh_rate = (float) SDL_atof(argv[index]);
+            state->refresh_rate = (float)SDL_atof(argv[index]);
             return 2;
         }
         if (SDL_strcasecmp(argv[index], "--vsync") == 0) {
@@ -668,7 +669,7 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             if (!argv[index]) {
                 return -1;
             }
-            state->audio_channels = (Uint8) SDL_atoi(argv[index]);
+            state->audio_channels = (Uint8)SDL_atoi(argv[index]);
             return 2;
         }
     }
@@ -1240,7 +1241,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
 
                 mode = SDL_GetDesktopDisplayMode(displayID);
                 SDL_GetMasksForPixelFormatEnum(mode->format, &bpp, &Rmask, &Gmask,
-                                           &Bmask, &Amask);
+                                               &Bmask, &Amask);
                 SDL_Log("  Desktop mode: %dx%d@%gx %gHz, %d bits-per-pixel (%s)\n",
                         mode->w, mode->h, mode->pixel_density, mode->refresh_rate, bpp,
                         SDL_GetPixelFormatName(mode->format));
@@ -1262,7 +1263,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
                     for (j = 0; j < m; ++j) {
                         mode = modes[j];
                         SDL_GetMasksForPixelFormatEnum(mode->format, &bpp, &Rmask,
-                                                   &Gmask, &Bmask, &Amask);
+                                                       &Gmask, &Bmask, &Amask);
                         SDL_Log("    Mode %d: %dx%d@%gx %gHz, %d bits-per-pixel (%s)\n",
                                 j, mode->w, mode->h, mode->pixel_density, mode->refresh_rate, bpp,
                                 SDL_GetPixelFormatName(mode->format));
@@ -1484,7 +1485,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
 static const char *SystemThemeName(void)
 {
     switch (SDL_GetSystemTheme()) {
-#define CASE(X)               \
+#define CASE(X)                \
     case SDL_SYSTEM_THEME_##X: \
         return #X
         CASE(UNKNOWN);
@@ -1516,7 +1517,7 @@ static const char *DisplayOrientationName(int orientation)
 static const char *GamepadAxisName(const SDL_GamepadAxis axis)
 {
     switch (axis) {
-#define AXIS_CASE(ax)              \
+#define AXIS_CASE(ax)           \
     case SDL_GAMEPAD_AXIS_##ax: \
         return #ax
         AXIS_CASE(INVALID);
@@ -1535,7 +1536,7 @@ static const char *GamepadAxisName(const SDL_GamepadAxis axis)
 static const char *GamepadButtonName(const SDL_GamepadButton button)
 {
     switch (button) {
-#define BUTTON_CASE(btn)              \
+#define BUTTON_CASE(btn)           \
     case SDL_GAMEPAD_BUTTON_##btn: \
         return #btn
         BUTTON_CASE(INVALID);
@@ -1571,12 +1572,11 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
                 event->display.displayID);
         break;
     case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED:
-        {
-            float scale = SDL_GetDisplayContentScale(event->display.displayID);
-            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed content scale to %d%%",
-                    event->display.displayID, (int)(scale * 100.0f));
-        }
-        break;
+    {
+        float scale = SDL_GetDisplayContentScale(event->display.displayID);
+        SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed content scale to %d%%",
+                event->display.displayID, (int)(scale * 100.0f));
+    } break;
     case SDL_EVENT_DISPLAY_MOVED:
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed position",
                 event->display.displayID);
@@ -2347,7 +2347,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 if (window) {
                     Uint32 flags = SDL_GetWindowFlags(window);
                     if (!(flags & SDL_WINDOW_FULLSCREEN) ||
-						!SDL_GetWindowFullscreenMode(window)) {
+                        !SDL_GetWindowFullscreenMode(window)) {
                         SDL_SetWindowFullscreenMode(window, &state->fullscreen_mode);
                         SDL_SetWindowFullscreen(window, SDL_TRUE);
                     } else {
@@ -2360,7 +2360,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 if (window) {
                     Uint32 flags = SDL_GetWindowFlags(window);
                     if (!(flags & SDL_WINDOW_FULLSCREEN) ||
-						SDL_GetWindowFullscreenMode(window)) {
+                        SDL_GetWindowFullscreenMode(window)) {
                         SDL_SetWindowFullscreenMode(window, NULL);
                         SDL_SetWindowFullscreen(window, SDL_TRUE);
                     } else {
@@ -2421,7 +2421,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
         return 1;
     }
 
-    return 0;  /* keep going */
+    return 0; /* keep going */
 }
 
 void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done)

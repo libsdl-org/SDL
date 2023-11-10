@@ -33,7 +33,6 @@
 #include <SLES/OpenSLES_Android.h>
 #include <android/log.h>
 
-
 #define NUM_BUFFERS 2 // -- Don't lower this!
 
 struct SDL_PrivateAudioData
@@ -249,7 +248,7 @@ static int OPENSLES_CreatePCMRecorder(SDL_AudioDevice *device)
     // Just go with signed 16-bit audio as it's the most compatible
     device->spec.format = SDL_AUDIO_S16;
     device->spec.channels = 1;
-    //device->spec.freq = SL_SAMPLINGRATE_16 / 1000;*/
+    // device->spec.freq = SL_SAMPLINGRATE_16 / 1000;*/
 
     // Update the fragment size as size in bytes
     SDL_UpdatedAudioDeviceFormat(device);

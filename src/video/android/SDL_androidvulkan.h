@@ -36,8 +36,8 @@
 
 int Android_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 void Android_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
-char const* const* Android_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                              Uint32 *count);
+char const *const *Android_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+                                                        Uint32 *count);
 SDL_bool Android_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                       SDL_Window *window,
                                       VkInstance instance,

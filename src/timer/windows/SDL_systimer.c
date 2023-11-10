@@ -24,7 +24,6 @@
 
 #include "../../core/windows/SDL_windows.h"
 
-
 #ifdef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
 static void SDL_CleanupWaitableTimer(void *timer)
 {

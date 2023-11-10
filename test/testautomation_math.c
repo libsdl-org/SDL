@@ -2,12 +2,13 @@
  * Math test suite
  */
 
-#include <float.h>
-#include <math.h>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+
 #include "testautomation_suites.h"
+
+#include <float.h>
+#include <math.h>
 
 /* ================= Test Constants ================== */
 

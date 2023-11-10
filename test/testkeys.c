@@ -12,11 +12,11 @@
 
 /* Print out all the scancodes we have, just to verify them */
 
-#include <stdlib.h>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
+#include <stdlib.h>
 
 int main(int argc, char *argv[])
 {

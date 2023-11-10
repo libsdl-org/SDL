@@ -31,7 +31,6 @@ static TUint start_tick = 0;
 extern "C" {
 #endif
 
-
 Uint64 SDL_GetPerformanceCounter(void)
 {
     /* FIXME: Need to account for 32-bit wrapping */

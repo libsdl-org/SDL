@@ -133,25 +133,25 @@ static VideoBootStrap *bootstrap[] = {
     NULL
 };
 
-#define CHECK_WINDOW_MAGIC(window, retval)                              \
-    if (!_this) {                                                       \
-        SDL_UninitializedVideo();                                       \
-        return retval;                                                  \
-    }                                                                   \
-    if (!(window) || (window)->magic != &_this->window_magic) {         \
-        SDL_SetError("Invalid window");                                 \
-        return retval;                                                  \
+#define CHECK_WINDOW_MAGIC(window, retval)                      \
+    if (!_this) {                                               \
+        SDL_UninitializedVideo();                               \
+        return retval;                                          \
+    }                                                           \
+    if (!(window) || (window)->magic != &_this->window_magic) { \
+        SDL_SetError("Invalid window");                         \
+        return retval;                                          \
     }
 
-#define CHECK_DISPLAY_MAGIC(display, retval)                            \
-    if (!display) {                                                     \
-        return retval;                                                  \
-    }                                                                   \
+#define CHECK_DISPLAY_MAGIC(display, retval) \
+    if (!display) {                          \
+        return retval;                       \
+    }
 
-#define CHECK_WINDOW_NOT_POPUP(window, retval)                          \
-    if (SDL_WINDOW_IS_POPUP(window)) {                                  \
-        SDL_SetError("Operation invalid on popup windows");             \
-        return retval;                                                  \
+#define CHECK_WINDOW_NOT_POPUP(window, retval)              \
+    if (SDL_WINDOW_IS_POPUP(window)) {                      \
+        SDL_SetError("Operation invalid on popup windows"); \
+        return retval;                                      \
     }
 
 #if defined(__MACOS__) && defined(SDL_VIDEO_DRIVER_COCOA)
@@ -488,7 +488,7 @@ int SDL_VideoInit(const char *driver_name)
         while (driver_attempt && *driver_attempt != 0 && !video) {
             const char *driver_attempt_end = SDL_strchr(driver_attempt, ',');
             size_t driver_attempt_len = (driver_attempt_end) ? (driver_attempt_end - driver_attempt)
-                                                                     : SDL_strlen(driver_attempt);
+                                                             : SDL_strlen(driver_attempt);
 
             for (i = 0; bootstrap[i]; ++i) {
                 if ((driver_attempt_len == SDL_strlen(bootstrap[i]->name)) &&
@@ -2057,12 +2057,12 @@ static SDL_Window *SDL_CreateWindowInternal(const char *title, int x, int y, int
 
 SDL_Window *SDL_CreateWindow(const char *title, int w, int h, Uint32 flags)
 {
-    return SDL_CreateWindowInternal(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w , h, NULL, flags);
+    return SDL_CreateWindowInternal(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w, h, NULL, flags);
 }
 
 SDL_Window *SDL_CreateWindowWithPosition(const char *title, int x, int y, int w, int h, Uint32 flags)
 {
-    return SDL_CreateWindowInternal(title, x, y, w , h, NULL, flags);
+    return SDL_CreateWindowInternal(title, x, y, w, h, NULL, flags);
 }
 
 SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, Uint32 flags)
@@ -3545,7 +3545,7 @@ SDL_Window *SDL_GetToplevelForKeyboardFocus(void)
 
 void SDL_DestroyWindow(SDL_Window *window)
 {
-    CHECK_WINDOW_MAGIC(window,);
+    CHECK_WINDOW_MAGIC(window, );
 
     window->is_destroying = SDL_TRUE;
 
@@ -3707,7 +3707,7 @@ void SDL_VideoQuit(void)
     }
     _this->VideoQuit(_this);
 
-    for (i = _this->num_displays; i--; ) {
+    for (i = _this->num_displays; i--;) {
         SDL_VideoDisplay *display = _this->displays[i];
         SDL_DelVideoDisplay(display->id, SDL_FALSE);
     }
@@ -3814,11 +3814,11 @@ void SDL_GL_UnloadLibrary(void)
 }
 
 #if defined(SDL_VIDEO_OPENGL) || defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
-typedef GLenum (APIENTRY* PFNGLGETERRORPROC) (void);
-typedef void (APIENTRY* PFNGLGETINTEGERVPROC) (GLenum pname, GLint *params);
-typedef const GLubyte *(APIENTRY* PFNGLGETSTRINGPROC) (GLenum name);
+typedef GLenum(APIENTRY *PFNGLGETERRORPROC)(void);
+typedef void(APIENTRY *PFNGLGETINTEGERVPROC)(GLenum pname, GLint *params);
+typedef const GLubyte *(APIENTRY *PFNGLGETSTRINGPROC)(GLenum name);
 #ifndef SDL_VIDEO_OPENGL
-typedef const GLubyte *(APIENTRY* PFNGLGETSTRINGIPROC) (GLenum name, GLuint index);
+typedef const GLubyte *(APIENTRY *PFNGLGETSTRINGIPROC)(GLenum name, GLuint index);
 #endif
 
 static SDL_INLINE SDL_bool isAtLeastGL3(const char *verstr)
@@ -4338,7 +4338,7 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
     if (attachmentattrib && isAtLeastGL3((const char *)glGetStringFunc(GL_VERSION))) {
         /* glGetFramebufferAttachmentParameteriv needs to operate on the window framebuffer for this, so bind FBO 0 if necessary. */
         GLint current_fbo = 0;
-        PFNGLGETINTEGERVPROC glGetIntegervFunc = (PFNGLGETINTEGERVPROC) SDL_GL_GetProcAddress("glGetIntegerv");
+        PFNGLGETINTEGERVPROC glGetIntegervFunc = (PFNGLGETINTEGERVPROC)SDL_GL_GetProcAddress("glGetIntegerv");
         PFNGLBINDFRAMEBUFFERPROC glBindFramebufferFunc = (PFNGLBINDFRAMEBUFFERPROC)SDL_GL_GetProcAddress("glBindFramebuffer");
         if (glGetIntegervFunc && glBindFramebufferFunc) {
             glGetIntegervFunc(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
@@ -4538,19 +4538,22 @@ int SDL_GL_SetSwapInterval(int interval)
 int SDL_GL_GetSwapInterval(int *interval)
 {
     if (!interval) {
-       return SDL_InvalidParamError("interval");
+        return SDL_InvalidParamError("interval");
     }
 
     *interval = 0;
 
     if (!_this) {
-        return SDL_SetError("no video driver");;
+        return SDL_SetError("no video driver");
+        ;
     } else if (SDL_GL_GetCurrentContext() == NULL) {
-        return SDL_SetError("no current context");;
+        return SDL_SetError("no current context");
+        ;
     } else if (_this->GL_GetSwapInterval) {
         return _this->GL_GetSwapInterval(_this, interval);
     } else {
-        return SDL_SetError("not implemented");;
+        return SDL_SetError("not implemented");
+        ;
     }
 }
 
@@ -4572,7 +4575,7 @@ int SDL_GL_SwapWindow(SDL_Window *window)
 int SDL_GL_DeleteContext(SDL_GLContext context)
 {
     if (!_this) {
-        return SDL_UninitializedVideo();                                       \
+        return SDL_UninitializedVideo();
     }
     if (!context) {
         return SDL_InvalidParamError("context");
@@ -4957,7 +4960,7 @@ int SDL_ShowSimpleMessageBox(Uint32 flags, const char *title, const char *messag
     EM_ASM({
         alert(UTF8ToString($0) + "\n\n" + UTF8ToString($1));
     },
-            title, message);
+           title, message);
     return 0;
 #else
     SDL_MessageBoxData data;
@@ -5117,7 +5120,7 @@ void SDL_Vulkan_UnloadLibrary(void)
     }
 }
 
-char const* const* SDL_Vulkan_GetInstanceExtensions(Uint32 *count)
+char const *const *SDL_Vulkan_GetInstanceExtensions(Uint32 *count)
 {
     return _this->Vulkan_GetInstanceExtensions(_this, count);
 }

@@ -480,13 +480,13 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
                          */
                         SDL_Surface *src_rotated_rgb;
                         int f = SDL_GetPixelFormatEnumForMasks(src_rotated->format->BitsPerPixel,
-                                                           src_rotated->format->Rmask,
-                                                           src_rotated->format->Gmask,
-                                                           src_rotated->format->Bmask,
-                                                           0);
+                                                               src_rotated->format->Rmask,
+                                                               src_rotated->format->Gmask,
+                                                               src_rotated->format->Bmask,
+                                                               0);
 
                         src_rotated_rgb = SDL_CreateSurfaceFrom(src_rotated->pixels, src_rotated->w, src_rotated->h,
-                                                                   src_rotated->pitch, f);
+                                                                src_rotated->pitch, f);
                         if (!src_rotated_rgb) {
                             retval = -1;
                         } else {

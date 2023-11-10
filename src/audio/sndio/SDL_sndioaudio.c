@@ -72,7 +72,7 @@ static int load_sndio_sym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(sndio_handle, fn);
     if (!*addr) {
-        return 0;  // Don't call SDL_SetError(): SDL_LoadFunction already did.
+        return 0; // Don't call SDL_SetError(): SDL_LoadFunction already did.
     }
 
     return 1;
@@ -122,7 +122,7 @@ static int LoadSNDIOLibrary(void)
     if (!sndio_handle) {
         sndio_handle = SDL_LoadObject(sndio_library);
         if (!sndio_handle) {
-            retval = -1;  // Don't call SDL_SetError(): SDL_LoadObject already did.
+            retval = -1; // Don't call SDL_SetError(): SDL_LoadObject already did.
         } else {
             retval = load_sndio_syms();
             if (retval < 0) {
@@ -179,7 +179,7 @@ static int SNDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int bu
     // !!! FIXME: this should be non-blocking so we can check device->shutdown.
     // this is set to blocking, because we _have_ to send the entire buffer down, but hopefully WaitDevice took most of the delay time.
     if (SNDIO_sio_write(device->hidden->dev, buffer, buflen) != buflen) {
-        return -1;  // If we couldn't write, assume fatal error for now
+        return -1; // If we couldn't write, assume fatal error for now
     }
 #ifdef DEBUG_AUDIO
     fprintf(stderr, "Wrote %d bytes of audio data\n", written);
@@ -194,7 +194,7 @@ static int SNDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int bu
     if ((br == 0) && SNDIO_sio_eof(device->hidden->dev)) {
         return -1;
     }
-    return (int) br;
+    return (int)br;
 }
 
 static void SNDIO_FlushCapture(SDL_AudioDevice *device)
@@ -226,7 +226,7 @@ static void SNDIO_CloseDevice(SDL_AudioDevice *device)
 
 static int SNDIO_OpenDevice(SDL_AudioDevice *device)
 {
-    device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
+    device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
         return SDL_OutOfMemory();
     }
@@ -316,7 +316,7 @@ static int SNDIO_OpenDevice(SDL_AudioDevice *device)
         return SDL_SetError("sio_start() failed");
     }
 
-    return 0;  // We're ready to rock and roll. :-)
+    return 0; // We're ready to rock and roll. :-)
 }
 
 static void SNDIO_Deinitialize(void)

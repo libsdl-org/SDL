@@ -15,12 +15,13 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#include <stdio.h>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
 #include "testutils.h"
+
+#include <stdio.h>
 
 static size_t
 widelen(char *data)

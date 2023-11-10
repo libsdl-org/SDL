@@ -11,14 +11,15 @@
 */
 /* Simple program:  Move N sprites around on the screen as fast as possible */
 
+#define SDL_MAIN_USE_CALLBACKS 1
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
+
+#include "testutils.h"
+
 #include <stdlib.h>
 #include <time.h>
-
-#define SDL_MAIN_USE_CALLBACKS 1
-#include <SDL3/SDL_test.h>
-#include <SDL3/SDL_test_common.h>
-#include <SDL3/SDL_main.h>
-#include "testutils.h"
 
 #define NUM_SPRITES 100
 #define MAX_SPEED   1
@@ -192,9 +193,9 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     /* Test diagonal lines */
     SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
     SDL_RenderLine(renderer, sprite_w, sprite_h,
-                       viewport.w - sprite_w - 2, viewport.h - sprite_h - 2);
+                   viewport.w - sprite_w - 2, viewport.h - sprite_h - 2);
     SDL_RenderLine(renderer, viewport.w - sprite_w - 2, sprite_h,
-                       sprite_w, viewport.h - sprite_h - 2);
+                   sprite_w, viewport.h - sprite_h - 2);
 
     /* Conditionally move the sprites, bounce at the wall */
     if (iterations == -1 || iterations > 0) {
@@ -420,7 +421,7 @@ int SDL_AppIterate(void)
         frames = 0;
     }
 
-    return 0;  /* keep going */
+    return 0; /* keep going */
 }
 
 int SDL_AppInit(int argc, char *argv[])
@@ -480,7 +481,7 @@ int SDL_AppInit(int argc, char *argv[])
             } else if (SDL_strcasecmp(argv[i], "--cyclealpha") == 0) {
                 cycle_alpha = SDL_TRUE;
                 consumed = 1;
-            } else if(SDL_strcasecmp(argv[i], "--suspend-when-occluded") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--suspend-when-occluded") == 0) {
                 suspend_when_occluded = SDL_TRUE;
                 consumed = 1;
             } else if (SDL_strcasecmp(argv[i], "--use-rendergeometry") == 0) {
@@ -578,4 +579,3 @@ int SDL_AppInit(int argc, char *argv[])
 
     return 0;
 }
-

@@ -140,10 +140,10 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         b = SDL_expand_byte[3][(Pixel & 0x001F)];         \
     }
 #define RGB_FROM_XRGB8888(Pixel, r, g, b) \
-    {                                   \
-        r = ((Pixel & 0xFF0000) >> 16); \
-        g = ((Pixel & 0xFF00) >> 8);    \
-        b = (Pixel & 0xFF);             \
+    {                                     \
+        r = ((Pixel & 0xFF0000) >> 16);   \
+        g = ((Pixel & 0xFF00) >> 8);      \
+        b = (Pixel & 0xFF);               \
     }
 #define RETRIEVE_RGB_PIXEL(buf, bpp, Pixel)                \
     do {                                                   \
@@ -224,15 +224,15 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
                 ((b >> fmt->Bloss) << fmt->Bshift) | \
                 fmt->Amask;                          \
     }
-#define RGB565_FROM_RGB(Pixel, r, g, b)                        \
-    {                                                          \
+#define RGB565_FROM_RGB(Pixel, r, g, b)                                  \
+    {                                                                    \
         Pixel = (Uint16)(((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)); \
     }
-#define RGB555_FROM_RGB(Pixel, r, g, b)                        \
-    {                                                          \
+#define RGB555_FROM_RGB(Pixel, r, g, b)                                  \
+    {                                                                    \
         Pixel = (Uint16)(((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3)); \
     }
-#define XRGB8888_FROM_RGB(Pixel, r, g, b)   \
+#define XRGB8888_FROM_RGB(Pixel, r, g, b) \
     {                                     \
         Pixel = (r << 16) | (g << 8) | b; \
     }

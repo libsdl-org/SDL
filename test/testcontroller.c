@@ -28,14 +28,14 @@
 #define DEBUG_AXIS_MAPPING
 #endif
 
-#define TITLE_HEIGHT 48
-#define PANEL_SPACING 25
-#define PANEL_WIDTH 250
+#define TITLE_HEIGHT         48
+#define PANEL_SPACING        25
+#define PANEL_WIDTH          250
 #define MINIMUM_BUTTON_WIDTH 96
-#define BUTTON_MARGIN 16
-#define BUTTON_PADDING 12
-#define GAMEPAD_WIDTH 512
-#define GAMEPAD_HEIGHT 480
+#define BUTTON_MARGIN        16
+#define BUTTON_PADDING       12
+#define GAMEPAD_WIDTH        512
+#define GAMEPAD_HEIGHT       480
 
 #define SCREEN_WIDTH  (PANEL_WIDTH + PANEL_SPACING + GAMEPAD_WIDTH + PANEL_SPACING + PANEL_WIDTH)
 #define SCREEN_HEIGHT (TITLE_HEIGHT + GAMEPAD_HEIGHT)
@@ -137,7 +137,6 @@ static int s_arrBindingOrder[] = {
     SDL_GAMEPAD_BUTTON_LEFT_PADDLE2,
     SDL_GAMEPAD_ELEMENT_INVALID,
 };
-
 
 static const char *GetSensorName(SDL_SensorType sensor)
 {
@@ -1579,7 +1578,7 @@ static void loop(void *arg)
         case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
             SDL_Log("Gamepad %" SDL_PRIu32 " sensor %s: %.2f, %.2f, %.2f (%" SDL_PRIu64 ")\n",
                     event.gsensor.which,
-                    GetSensorName((SDL_SensorType) event.gsensor.sensor),
+                    GetSensorName((SDL_SensorType)event.gsensor.sensor),
                     event.gsensor.data[0],
                     event.gsensor.data[1],
                     event.gsensor.data[2],
@@ -1596,7 +1595,7 @@ static void loop(void *arg)
             }
             SDL_Log("Gamepad %" SDL_PRIu32 " axis %s changed to %d\n",
                     event.gaxis.which,
-                    SDL_GetGamepadStringForAxis((SDL_GamepadAxis) event.gaxis.axis),
+                    SDL_GetGamepadStringForAxis((SDL_GamepadAxis)event.gaxis.axis),
                     event.gaxis.value);
             break;
 #endif /* VERBOSE_AXES */
@@ -1611,7 +1610,7 @@ static void loop(void *arg)
 #ifdef VERBOSE_BUTTONS
             SDL_Log("Gamepad %" SDL_PRIu32 " button %s %s\n",
                     event.gbutton.which,
-                    SDL_GetGamepadStringForButton((SDL_GamepadButton) event.gbutton.button),
+                    SDL_GetGamepadStringForButton((SDL_GamepadButton)event.gbutton.button),
                     event.gbutton.state ? "pressed" : "released");
 #endif /* VERBOSE_BUTTONS */
 
@@ -1941,7 +1940,6 @@ int main(int argc, char *argv[])
     SDL_SetRenderLogicalPresentation(screen, SCREEN_WIDTH, SCREEN_HEIGHT,
                                      SDL_LOGICAL_PRESENTATION_LETTERBOX,
                                      SDL_SCALEMODE_LINEAR);
-
 
     title_area.w = (float)GAMEPAD_WIDTH;
     title_area.h = (float)FONT_CHARACTER_SIZE + 2 * BUTTON_MARGIN;

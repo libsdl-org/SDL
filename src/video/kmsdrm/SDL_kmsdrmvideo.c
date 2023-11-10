@@ -1562,7 +1562,6 @@ int KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
         }
         viddata->windows = new_windows;
         viddata->max_windows = new_max_windows;
-
     }
 
     viddata->windows[viddata->num_windows++] = window;

@@ -27,8 +27,8 @@
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandwindow.h"
 
-#define TEXT_MIME "text/plain;charset=utf-8"
-#define FILE_MIME "text/uri-list"
+#define TEXT_MIME        "text/plain;charset=utf-8"
+#define FILE_MIME        "text/uri-list"
 #define FILE_PORTAL_MIME "application/vnd.portal.filetransfer"
 
 typedef struct
@@ -110,9 +110,9 @@ extern ssize_t Wayland_data_source_send(SDL_WaylandDataSource *source,
 extern ssize_t Wayland_primary_selection_source_send(SDL_WaylandPrimarySelectionSource *source,
                                                      const char *mime_type, int fd);
 extern void Wayland_data_source_set_callback(SDL_WaylandDataSource *source,
-                                            SDL_ClipboardDataCallback callback,
-                                            void *userdata,
-                                            Uint32 sequence);
+                                             SDL_ClipboardDataCallback callback,
+                                             void *userdata,
+                                             Uint32 sequence);
 extern void Wayland_primary_selection_source_set_callback(SDL_WaylandPrimarySelectionSource *source,
                                                           SDL_ClipboardDataCallback callback,
                                                           void *userdata);

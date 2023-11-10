@@ -1,8 +1,10 @@
 /**
  * New/updated tests: aschiffler at ferzkopp dot net
  */
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+
 #include "testautomation_suites.h"
 
 /* ================= Test Case Implementation ================== */
@@ -412,7 +414,6 @@ static int clipboard_testClipboardTextFunctions(void *arg)
         "Verify clipboard update unchanged, got %d",
         clipboard_update_count - last_clipboard_update_count);
 
-
     /* Set clipboard text  */
     last_clipboard_update_count = clipboard_update_count;
     intResult = SDL_SetClipboardText(text);
@@ -555,7 +556,7 @@ static const SDLTest_TestCaseReference clipboardTest3 = {
 
 /* Sequence of Clipboard test cases */
 static const SDLTest_TestCaseReference *clipboardTests[] = {
-    &clipboardTest1, &clipboardTest2, &clipboardTest3,  NULL
+    &clipboardTest1, &clipboardTest2, &clipboardTest3, NULL
 };
 
 /* Clipboard test suite (global) */
