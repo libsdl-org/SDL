@@ -294,6 +294,14 @@ static SDL_bool WasapiFailed(SDL_AudioDevice *device, const HRESULT err)
     return SDL_TRUE;
 }
 
+static int mgmtthrtask_StopAndReleaseClient(void *userdata)
+{
+    IAudioClient *client = (IAudioClient *) userdata;
+    IAudioClient_Stop(client);
+    IAudioClient_Release(client);
+    return 0;
+}
+
 static int mgmtthrtask_ReleaseCaptureClient(void *userdata)
 {
     IAudioCaptureClient_Release((IAudioCaptureClient *)userdata);
@@ -306,56 +314,68 @@ static int mgmtthrtask_ReleaseRenderClient(void *userdata)
     return 0;
 }
 
-static int mgmtthrtask_ResetWasapiDevice(void *userdata)
+static int mgmtthrtask_CoTaskMemFree(void *userdata)
 {
-    SDL_AudioDevice *device = (SDL_AudioDevice *)userdata;
+    CoTaskMemFree(userdata);
+    return 0;
+}
 
-    if (!device || !device->hidden) {
-        return 0;
-    }
+static int mgmtthrtask_PlatformDeleteActivationHandler(void *userdata)
+{
+    WASAPI_PlatformDeleteActivationHandler(userdata);
+    return 0;
+}
 
-    if (device->hidden->client) {
-        IAudioClient_Stop(device->hidden->client);
-        IAudioClient_Release(device->hidden->client);
-        device->hidden->client = NULL;
-    }
-
-    if (device->hidden->render) {
-        // this is silly, but this will block indefinitely if you call it from SDLMMNotificationClient_OnDefaultDeviceChanged, so
-        //  proxy this to the management thread to be released later.
-        WASAPI_ProxyToManagementThread(mgmtthrtask_ReleaseRenderClient, device->hidden->render, NULL);
-        device->hidden->render = NULL;
-    }
-
-    if (device->hidden->capture) {
-        // this is silly, but this will block indefinitely if you call it from SDLMMNotificationClient_OnDefaultDeviceChanged, so
-        //  proxy this to the management thread to be released later.
-        WASAPI_ProxyToManagementThread(mgmtthrtask_ReleaseCaptureClient, device->hidden->capture, NULL);
-        device->hidden->capture = NULL;
-    }
-
-    if (device->hidden->waveformat) {
-        CoTaskMemFree(device->hidden->waveformat);
-        device->hidden->waveformat = NULL;
-    }
-
-    if (device->hidden->activation_handler) {
-        WASAPI_PlatformDeleteActivationHandler(device->hidden->activation_handler);
-        device->hidden->activation_handler = NULL;
-    }
-
-    if (device->hidden->event) {
-        CloseHandle(device->hidden->event);
-        device->hidden->event = NULL;
-    }
-
+static int mgmtthrtask_CloseHandle(void *userdata)
+{
+    CloseHandle((HANDLE) userdata);
     return 0;
 }
 
 static void ResetWasapiDevice(SDL_AudioDevice *device)
 {
-    int rc;
-    WASAPI_ProxyToManagementThread(mgmtthrtask_ResetWasapiDevice, device, &rc);
+    if (!device || !device->hidden) {
+        return;
+    }
+
+    // just queue up all the tasks in the management thread and don't block.
+    // We don't care when any of these actually get free'd.
+
+    if (device->hidden->client) {
+        IAudioClient *client = device->hidden->client;
+        device->hidden->client = NULL;
+        WASAPI_ProxyToManagementThread(mgmtthrtask_StopAndReleaseClient, client, NULL);
+    }
+
+    if (device->hidden->render) {
+        IAudioRenderClient *render = device->hidden->render;
+        device->hidden->render = NULL;
+        WASAPI_ProxyToManagementThread(mgmtthrtask_ReleaseRenderClient, render, NULL);
+    }
+
+    if (device->hidden->capture) {
+        IAudioCaptureClient *capture = device->hidden->capture;
+        device->hidden->capture = NULL;
+        WASAPI_ProxyToManagementThread(mgmtthrtask_ReleaseCaptureClient, capture, NULL);
+    }
+
+    if (device->hidden->waveformat) {
+        void *ptr = device->hidden->waveformat;
+        device->hidden->waveformat = NULL;
+        WASAPI_ProxyToManagementThread(mgmtthrtask_CoTaskMemFree, ptr, NULL);
+    }
+
+    if (device->hidden->activation_handler) {
+        void *activation_handler = device->hidden->activation_handler;
+        device->hidden->activation_handler = NULL;
+        WASAPI_ProxyToManagementThread(mgmtthrtask_PlatformDeleteActivationHandler, activation_handler, NULL);
+    }
+
+    if (device->hidden->event) {
+        HANDLE event = device->hidden->event;
+        device->hidden->event = NULL;
+        WASAPI_ProxyToManagementThread(mgmtthrtask_CloseHandle, (void *) event, NULL);
+    }
 }
 
 static int mgmtthrtask_ActivateDevice(void *userdata)
