@@ -245,8 +245,8 @@ void SDL_EVDEV_Quit(void)
 
         SDL_EVDEV_kbd_quit(_this->kbd);
 
-        SDL_assert(!_this->first);
-        SDL_assert(!_this->last);
+        SDL_assert(_this->first == NULL);
+        SDL_assert(_this->last == NULL);
         SDL_assert(_this->num_devices == 0);
 
         SDL_free(_this);
@@ -287,7 +287,7 @@ void SDL_EVDEV_SetVTSwitchCallbacks(void (*release_callback)(void*), void *relea
                                     void (*acquire_callback)(void*), void *acquire_callback_data)
 {
     SDL_EVDEV_kbd_set_vt_switch_callbacks(_this->kbd,
-                                          release_callback, release_callback_data, 
+                                          release_callback, release_callback_data,
                                           acquire_callback, acquire_callback_data);
 }
 
