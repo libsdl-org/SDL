@@ -1124,6 +1124,7 @@ static int SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szGa
     SDL_bool invert_input = SDL_FALSE;
     char half_axis_input = 0;
     char half_axis_output = 0;
+    SDL_GamepadBinding *new_bindings;
 
     SDL_AssertJoysticksLocked();
 
@@ -1198,11 +1199,14 @@ static int SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szGa
     }
 
     ++gamepad->num_bindings;
-    gamepad->bindings = (SDL_GamepadBinding *)SDL_realloc(gamepad->bindings, gamepad->num_bindings * sizeof(*gamepad->bindings));
-    if (!gamepad->bindings) {
+    new_bindings = (SDL_GamepadBinding *)SDL_realloc(gamepad->bindings, gamepad->num_bindings * sizeof(*gamepad->bindings));
+    if (!new_bindings) {
+        SDL_free(gamepad->bindings);
         gamepad->num_bindings = 0;
+        gamepad->bindings = NULL;
         return SDL_OutOfMemory();
     }
+    gamepad->bindings = new_bindings;
     gamepad->bindings[gamepad->num_bindings - 1] = bind;
     return 0;
 }

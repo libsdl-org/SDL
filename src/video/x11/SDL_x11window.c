@@ -329,11 +329,12 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w,
         windowlist[numwindows] = data;
         videodata->numwindows++;
     } else {
-        windowlist = (SDL_WindowData **)SDL_realloc(windowlist, (numwindows + 1) * sizeof(*windowlist));
-        if (!windowlist) {
+        SDL_WindowData ** new_windowlist = (SDL_WindowData **)SDL_realloc(windowlist, (numwindows + 1) * sizeof(*windowlist));
+        if (!new_windowlist) {
             SDL_free(data);
             return SDL_OutOfMemory();
         }
+        windowlist = new_windowlist;
         windowlist[numwindows] = data;
         videodata->numwindows++;
         videodata->windowlistlength++;
