@@ -249,7 +249,7 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
     }
 
     joystick = SDL_JoystickFromInstanceID(ctx->joysticks[i]);
-    if (joystick == NULL) {
+    if (!joystick) {
         /* Hasn't been opened yet, skip */
         return;
     }

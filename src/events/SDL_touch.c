@@ -413,7 +413,7 @@ int SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *windo
     }
 
     finger = SDL_GetFinger(touch, fingerid);
-    if (finger == NULL) {
+    if (!finger) {
         return SDL_SendTouch(id, fingerid, window, SDL_TRUE, x, y, pressure);
     }
 

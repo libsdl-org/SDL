@@ -129,7 +129,7 @@ static void *pipewire_handle = NULL;
 static int pipewire_dlsym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(pipewire_handle, fn);
-    if (*addr == NULL) {
+    if (!*addr) {
         /* Don't call SDL_SetError(): SDL_LoadFunction already did. */
         return 0;
     }
@@ -347,10 +347,10 @@ static void io_list_sort()
 
     /* Find and move the default nodes to the beginning of the list */
     spa_list_for_each_safe (n, temp, &hotplug_io_list, link) {
-        if (pipewire_default_sink_id != NULL && SDL_strcmp(n->path, pipewire_default_sink_id) == 0) {
+        if (pipewire_default_sink_id && SDL_strcmp(n->path, pipewire_default_sink_id) == 0) {
             default_sink = n;
             spa_list_remove(&n->link);
-        } else if (pipewire_default_source_id != NULL && SDL_strcmp(n->path, pipewire_default_source_id) == 0) {
+        } else if (pipewire_default_source_id && SDL_strcmp(n->path, pipewire_default_source_id) == 0) {
             default_source = n;
             spa_list_remove(&n->link);
         }
@@ -648,15 +648,15 @@ static int metadata_property(void *object, Uint32 subject, const char *key, cons
 {
     struct node_object *node = object;
 
-    if (subject == PW_ID_CORE && key != NULL && value != NULL) {
+    if (subject == PW_ID_CORE && key && value) {
         if (!SDL_strcmp(key, "default.audio.sink")) {
-            if (pipewire_default_sink_id != NULL) {
+            if (pipewire_default_sink_id) {
                 SDL_free(pipewire_default_sink_id);
             }
             pipewire_default_sink_id = get_name_from_json(value);
             node->persist = SDL_TRUE;
         } else if (!SDL_strcmp(key, "default.audio.source")) {
-            if (pipewire_default_source_id != NULL) {
+            if (pipewire_default_source_id) {
                 SDL_free(pipewire_default_source_id);
             }
             pipewire_default_source_id = get_name_from_json(value);
@@ -961,7 +961,7 @@ static void output_callback(void *data)
 
     /* See if a buffer is available */
     pw_buf = PIPEWIRE_pw_stream_dequeue_buffer(stream);
-    if (pw_buf == NULL) {
+    if (!pw_buf) {
         return;
     }
 
@@ -1025,13 +1025,13 @@ static void input_callback(void *data)
     }
 
     pw_buf = PIPEWIRE_pw_stream_dequeue_buffer(stream);
-    if (pw_buf == NULL) {
+    if (!pw_buf) {
         return;
     }
 
     spa_buf = pw_buf->buffer;
     (src = (Uint8 *)spa_buf->datas[0].data);
-    if (src == NULL) {
+    if (!src) {
         return;
     }
 
@@ -1079,7 +1079,7 @@ static void stream_add_buffer_callback(void *data, struct pw_buffer *buffer)
             this->spec.samples = buffer->buffer->datas[0].maxsize / this->hidden->stride;
             this->spec.size = buffer->buffer->datas[0].maxsize;
         }
-    } else if (this->hidden->buffer == NULL) {
+    } else if (!this->hidden->buffer) {
         /*
          * The latency of source nodes can change, so buffering is always required.
          *
@@ -1137,7 +1137,7 @@ static int PIPEWIRE_OpenDevice(_THIS, const char *devname)
     struct SDL_PrivateAudioData *priv;
     struct pw_properties *props;
     const char *app_name, *stream_name, *stream_role, *error;
-    Uint32 node_id = this->handle == NULL ? PW_ID_ANY : PW_HANDLE_TO_ID(this->handle);
+    Uint32 node_id = !this->handle ? PW_ID_ANY : PW_HANDLE_TO_ID(this->handle);
     SDL_bool iscapture = this->iscapture;
     int res;
 
@@ -1163,20 +1163,20 @@ static int PIPEWIRE_OpenDevice(_THIS, const char *devname)
      * but 'Game' seems more appropriate for the majority of SDL applications.
      */
     stream_role = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_ROLE);
-    if (stream_role == NULL || *stream_role == '\0') {
+    if (!stream_role || *stream_role == '\0') {
         stream_role = "Game";
     }
 
     /* Initialize the Pipewire stream info from the SDL audio spec */
     initialize_spa_info(&this->spec, &spa_info);
     params = spa_format_audio_raw_build(&b, SPA_PARAM_EnumFormat, &spa_info);
-    if (params == NULL) {
+    if (!params) {
         return SDL_SetError("Pipewire: Failed to set audio format parameters");
     }
 
     priv = SDL_calloc(1, sizeof(struct SDL_PrivateAudioData));
     this->hidden = priv;
-    if (priv == NULL) {
+    if (!priv) {
         return SDL_OutOfMemory();
     }
 
@@ -1190,23 +1190,23 @@ static int PIPEWIRE_OpenDevice(_THIS, const char *devname)
 
     (void)SDL_snprintf(thread_name, sizeof(thread_name), "SDLAudio%c%ld", (iscapture) ? 'C' : 'P', (long)this->handle);
     priv->loop = PIPEWIRE_pw_thread_loop_new(thread_name, NULL);
-    if (priv->loop == NULL) {
+    if (!priv->loop) {
         return SDL_SetError("Pipewire: Failed to create stream loop (%i)", errno);
     }
 
     /* Load the realtime module so Pipewire can set the loop thread to the appropriate priority. */
     props = PIPEWIRE_pw_properties_new(PW_KEY_CONFIG_NAME, "client-rt.conf", NULL);
-    if (props == NULL) {
+    if (!props) {
         return SDL_SetError("Pipewire: Failed to create stream context properties (%i)", errno);
     }
 
     priv->context = PIPEWIRE_pw_context_new(PIPEWIRE_pw_thread_loop_get_loop(priv->loop), props, 0);
-    if (priv->context == NULL) {
+    if (!priv->context) {
         return SDL_SetError("Pipewire: Failed to create stream context (%i)", errno);
     }
 
     props = PIPEWIRE_pw_properties_new(NULL, NULL);
-    if (props == NULL) {
+    if (!props) {
         return SDL_SetError("Pipewire: Failed to create stream properties (%i)", errno);
     }
 
@@ -1244,7 +1244,7 @@ static int PIPEWIRE_OpenDevice(_THIS, const char *devname)
     /* Create the new stream */
     priv->stream = PIPEWIRE_pw_stream_new_simple(PIPEWIRE_pw_thread_loop_get_loop(priv->loop), stream_name, props,
                                                  iscapture ? &stream_input_events : &stream_output_events, this);
-    if (priv->stream == NULL) {
+    if (!priv->stream) {
         return SDL_SetError("Pipewire: Failed to create stream (%i)", errno);
     }
 
@@ -1272,7 +1272,7 @@ static int PIPEWIRE_OpenDevice(_THIS, const char *devname)
     }
 
     /* If this is a capture stream, make sure the intermediate buffer was successfully allocated. */
-    if (iscapture && priv->buffer == NULL) {
+    if (iscapture && !priv->buffer) {
         return SDL_SetError("Pipewire: Failed to allocate source buffer");
     }
 
@@ -1313,13 +1313,13 @@ static int PIPEWIRE_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int is
     PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
 
     if (iscapture) {
-        if (pipewire_default_source_id == NULL) {
+        if (!pipewire_default_source_id) {
             ret = SDL_SetError("PipeWire could not find a default source");
             goto failed;
         }
         target = pipewire_default_source_id;
     } else {
-        if (pipewire_default_sink_id == NULL) {
+        if (!pipewire_default_sink_id) {
             ret = SDL_SetError("PipeWire could not find a default sink");
             goto failed;
         }
@@ -1327,12 +1327,12 @@ static int PIPEWIRE_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int is
     }
 
     node = io_list_get_by_path(target);
-    if (node == NULL) {
+    if (!node) {
         ret = SDL_SetError("PipeWire device list is out of sync with defaults");
         goto failed;
     }
 
-    if (name != NULL) {
+    if (name) {
         *name = SDL_strdup(node->name);
     }
     SDL_copyp(spec, &node->spec);

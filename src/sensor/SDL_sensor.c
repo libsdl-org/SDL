@@ -297,7 +297,7 @@ static int SDL_PrivateSensorValid(SDL_Sensor *sensor)
 {
     int valid;
 
-    if (sensor == NULL) {
+    if (!sensor) {
         SDL_SetError("Sensor hasn't been opened yet");
         valid = 0;
     } else {

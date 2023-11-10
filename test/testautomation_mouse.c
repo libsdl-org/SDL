@@ -458,7 +458,7 @@ int mouse_warpMouseInWindow(void *arg)
     yPositions[5] = h + 1;
     /* Create test window */
     window = _createMouseSuiteTestWindow();
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
@@ -511,7 +511,7 @@ int mouse_getMouseFocus(void *arg)
 
     /* Create test window */
     window = _createMouseSuiteTestWindow();
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 

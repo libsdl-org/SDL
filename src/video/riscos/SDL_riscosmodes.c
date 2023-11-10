@@ -237,13 +237,13 @@ void RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
     regs.r[6] = 0;
     regs.r[7] = 0;
     error = _kernel_swi(OS_ScreenMode, &regs, &regs);
-    if (error != NULL) {
+    if (error) {
         SDL_SetError("Unable to enumerate screen modes: %s (%i)", error->errmess, error->errnum);
         return;
     }
 
     block = SDL_malloc(-regs.r[7]);
-    if (block == NULL) {
+    if (!block) {
         SDL_OutOfMemory();
         return;
     }
@@ -251,7 +251,7 @@ void RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
     regs.r[6] = (int)block;
     regs.r[7] = -regs.r[7];
     error = _kernel_swi(OS_ScreenMode, &regs, &regs);
-    if (error != NULL) {
+    if (error) {
         SDL_free(block);
         SDL_SetError("Unable to enumerate screen modes: %s (%i)", error->errmess, error->errnum);
         return;

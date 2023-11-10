@@ -29,7 +29,7 @@ void SDL_GUIDToString(SDL_GUID guid, char *pszGUID, int cbGUID)
     static const char k_rgchHexToASCII[] = "0123456789abcdef";
     int i;
 
-    if ((pszGUID == NULL) || (cbGUID <= 0)) {
+    if ((!pszGUID) || (cbGUID <= 0)) {
         return;
     }
 

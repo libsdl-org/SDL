@@ -346,7 +346,7 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
     src_clone = SDL_CreateRGBSurfaceFrom(src->pixels, src->w, src->h, src->format->BitsPerPixel, src->pitch,
                                          src->format->Rmask, src->format->Gmask,
                                          src->format->Bmask, src->format->Amask);
-    if (src_clone == NULL) {
+    if (!src_clone) {
         if (SDL_MUSTLOCK(src)) {
             SDL_UnlockSurface(src);
         }
@@ -390,7 +390,7 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
     if (blendmode == SDL_BLENDMODE_NONE && !isOpaque) {
         mask = SDL_CreateRGBSurface(0, final_rect->w, final_rect->h, 32,
                                     0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
-        if (mask == NULL) {
+        if (!mask) {
             retval = -1;
         } else {
             SDL_SetSurfaceBlendMode(mask, SDL_BLENDMODE_MOD);
@@ -404,7 +404,7 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
         SDL_Rect scale_rect = tmp_rect;
         src_scaled = SDL_CreateRGBSurface(0, final_rect->w, final_rect->h, 32,
                                           0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
-        if (src_scaled == NULL) {
+        if (!src_scaled) {
             retval = -1;
         } else {
             SDL_SetSurfaceBlendMode(src_clone, SDL_BLENDMODE_NONE);
@@ -487,7 +487,7 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
                                                                    src_rotated->format->BitsPerPixel, src_rotated->pitch,
                                                                    src_rotated->format->Rmask, src_rotated->format->Gmask,
                                                                    src_rotated->format->Bmask, 0);
-                        if (src_rotated_rgb == NULL) {
+                        if (!src_rotated_rgb) {
                             retval = -1;
                         } else {
                             SDL_SetSurfaceBlendMode(src_rotated_rgb, SDL_BLENDMODE_ADD);
@@ -499,7 +499,7 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
                 }
                 SDL_FreeSurface(mask_rotated);
             }
-            if (src_rotated != NULL) {
+            if (src_rotated) {
                 SDL_FreeSurface(src_rotated);
             }
         }
@@ -508,10 +508,10 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
     if (SDL_MUSTLOCK(src)) {
         SDL_UnlockSurface(src);
     }
-    if (mask != NULL) {
+    if (mask) {
         SDL_FreeSurface(mask);
     }
-    if (src_clone != NULL) {
+    if (src_clone) {
         SDL_FreeSurface(src_clone);
     }
     return retval;
@@ -712,7 +712,7 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
                 SetDrawState(surface, &drawstate);
 
                 /* Apply viewport */
-                if (drawstate.viewport != NULL && (drawstate.viewport->x || drawstate.viewport->y)) {
+                if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
                     int i;
                     for (i = 0; i < count; i++) {
                         verts[i].x += drawstate.viewport->x;
@@ -739,7 +739,7 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
                 SetDrawState(surface, &drawstate);
 
                 /* Apply viewport */
-                if (drawstate.viewport != NULL && (drawstate.viewport->x || drawstate.viewport->y)) {
+                if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
                     int i;
                     for (i = 0; i < count; i++) {
                         verts[i].x += drawstate.viewport->x;
@@ -766,7 +766,7 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
                 SetDrawState(surface, &drawstate);
 
                 /* Apply viewport */
-                if (drawstate.viewport != NULL && (drawstate.viewport->x || drawstate.viewport->y)) {
+                if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
                     int i;
                     for (i = 0; i < count; i++) {
                         verts[i].x += drawstate.viewport->x;
@@ -794,7 +794,7 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
                 PrepTextureForCopy(cmd);
 
                 /* Apply viewport */
-                if (drawstate.viewport != NULL && (drawstate.viewport->x || drawstate.viewport->y)) {
+                if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
                     dstrect->x += drawstate.viewport->x;
                     dstrect->y += drawstate.viewport->y;
                 }
@@ -852,7 +852,7 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
                 PrepTextureForCopy(cmd);
 
                 /* Apply viewport */
-                if (drawstate.viewport != NULL && (drawstate.viewport->x || drawstate.viewport->y)) {
+                if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
                     copydata->dstrect.x += drawstate.viewport->x;
                     copydata->dstrect.y += drawstate.viewport->y;
                 }
@@ -880,7 +880,7 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
                     PrepTextureForCopy(cmd);
 
                     /* Apply viewport */
-                    if (drawstate.viewport != NULL && (drawstate.viewport->x || drawstate.viewport->y)) {
+                    if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
                         SDL_Point vp;
                         vp.x = drawstate.viewport->x;
                         vp.y = drawstate.viewport->y;
@@ -903,7 +903,7 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
                     GeometryFillData *ptr = (GeometryFillData *) verts;
 
                     /* Apply viewport */
-                    if (drawstate.viewport != NULL && (drawstate.viewport->x || drawstate.viewport->y)) {
+                    if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
                         SDL_Point vp;
                         vp.x = drawstate.viewport->x;
                         vp.y = drawstate.viewport->y;

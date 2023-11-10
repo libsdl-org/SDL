@@ -120,14 +120,14 @@ SDL_TLSData *SDL_Generic_GetTLSData(void)
     SDL_TLSData *storage = NULL;
 
 #if !SDL_THREADS_DISABLED
-    if (SDL_generic_TLS_mutex == NULL) {
+    if (!SDL_generic_TLS_mutex) {
         static SDL_SpinLock tls_lock;
         SDL_AtomicLock(&tls_lock);
-        if (SDL_generic_TLS_mutex == NULL) {
+        if (!SDL_generic_TLS_mutex) {
             SDL_mutex *mutex = SDL_CreateMutex();
             SDL_MemoryBarrierRelease();
             SDL_generic_TLS_mutex = mutex;
-            if (SDL_generic_TLS_mutex == NULL) {
+            if (!SDL_generic_TLS_mutex) {
                 SDL_AtomicUnlock(&tls_lock);
                 return NULL;
             }
@@ -262,7 +262,7 @@ SDL_error *SDL_GetErrBuf(void)
         /* Mark that we're in the middle of allocating our buffer */
         SDL_TLSSet(tls_errbuf, ALLOCATION_IN_PROGRESS, NULL);
         errbuf = (SDL_error *)realloc_func(NULL, sizeof(*errbuf));
-        if (errbuf == NULL) {
+        if (!errbuf) {
             SDL_TLSSet(tls_errbuf, NULL, NULL);
             return SDL_GetStaticErrBuf();
         }

@@ -437,7 +437,7 @@ void SDL_ResetAssertionReport(void)
 {
     SDL_assert_data *next = NULL;
     SDL_assert_data *item;
-    for (item = triggered_assertions; item != NULL; item = next) {
+    for (item = triggered_assertions; item; item = next) {
         next = (SDL_assert_data *)item->next;
         item->always_ignore = SDL_FALSE;
         item->trigger_count = 0;

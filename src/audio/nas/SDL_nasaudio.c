@@ -59,7 +59,7 @@ static void *nas_handle = NULL;
 static int load_nas_sym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(nas_handle, fn);
-    if (*addr == NULL) {
+    if (!*addr) {
         return 0;
     }
     return 1;
@@ -94,7 +94,7 @@ static int load_nas_syms(void)
 
 static void UnloadNASLibrary(void)
 {
-    if (nas_handle != NULL) {
+    if (nas_handle) {
         SDL_UnloadObject(nas_handle);
         nas_handle = NULL;
     }
@@ -103,9 +103,9 @@ static void UnloadNASLibrary(void)
 static int LoadNASLibrary(void)
 {
     int retval = 0;
-    if (nas_handle == NULL) {
+    if (!nas_handle) {
         nas_handle = SDL_LoadObject(nas_library);
-        if (nas_handle == NULL) {
+        if (!nas_handle) {
             /* Copy error string so we can use it in a new SDL_SetError(). */
             const char *origerr = SDL_GetError();
             const size_t len = SDL_strlen(origerr) + 1;
@@ -305,7 +305,7 @@ static int NAS_OpenDevice(_THIS, const char *devname)
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)SDL_malloc(sizeof(*this->hidden));
-    if (this->hidden == NULL) {
+    if (!this->hidden) {
         return SDL_OutOfMemory();
     }
     SDL_zerop(this->hidden);
@@ -389,7 +389,7 @@ static int NAS_OpenDevice(_THIS, const char *devname)
     if (!iscapture) {
         this->hidden->mixlen = this->spec.size;
         this->hidden->mixbuf = (Uint8 *) SDL_malloc(this->hidden->mixlen);
-        if (this->hidden->mixbuf == NULL) {
+        if (!this->hidden->mixbuf) {
             return SDL_OutOfMemory();
         }
         SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);
@@ -410,7 +410,7 @@ static SDL_bool NAS_Init(SDL_AudioDriverImpl * impl)
         return SDL_FALSE;
     } else {
         AuServer *aud = NAS_AuOpenServer("", 0, NULL, 0, NULL, NULL);
-        if (aud == NULL) {
+        if (!aud) {
             SDL_SetError("NAS: AuOpenServer() failed (no audio server?)");
             return SDL_FALSE;
         }

@@ -352,7 +352,7 @@ static int QueueCmdSetViewport(SDL_Renderer *renderer)
     if (!renderer->viewport_queued || (SDL_memcmp(&renderer->viewport, &renderer->last_queued_viewport, sizeof(SDL_DRect)) != 0)) {
         SDL_RenderCommand *cmd = AllocateRenderCommand(renderer);
         retval = -1;
-        if (cmd != NULL) {
+        if (cmd) {
             cmd->command = SDL_RENDERCMD_SETVIEWPORT;
             cmd->data.viewport.first = 0; /* render backend will fill this in. */
             /* Convert SDL_DRect to SDL_Rect */
@@ -379,7 +379,7 @@ static int QueueCmdSetClipRect(SDL_Renderer *renderer)
         (renderer->clipping_enabled != renderer->last_queued_cliprect_enabled) ||
         (SDL_memcmp(&renderer->clip_rect, &renderer->last_queued_cliprect, sizeof(SDL_DRect)) != 0)) {
         SDL_RenderCommand *cmd = AllocateRenderCommand(renderer);
-        if (cmd == NULL) {
+        if (!cmd) {
             retval = -1;
         } else {
             cmd->command = SDL_RENDERCMD_SETCLIPRECT;
@@ -986,7 +986,7 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, int index, Uint32 flags)
             }
         }
 
-        if (renderer == NULL) {
+        if (!renderer) {
             for (index = 0; index < n; ++index) {
                 const SDL_RenderDriver *driver = render_drivers[index];
 
@@ -1000,7 +1000,7 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, int index, Uint32 flags)
                 }
             }
         }
-        if (renderer == NULL) {
+        if (!renderer) {
             SDL_SetError("Couldn't find matching render driver");
             goto error;
         }
@@ -1013,7 +1013,7 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, int index, Uint32 flags)
         /* Create a new renderer instance */
         renderer = render_drivers[index]->CreateRenderer(window, flags);
         batching = SDL_FALSE;
-        if (renderer == NULL) {
+        if (!renderer) {
             goto error;
         }
     }
@@ -1228,7 +1228,7 @@ static SDL_ScaleMode SDL_GetScaleMode(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY);
 
-    if (hint == NULL || SDL_strcasecmp(hint, "nearest") == 0) {
+    if (!hint || SDL_strcasecmp(hint, "nearest") == 0) {
         return SDL_ScaleModeNearest;
     } else if (SDL_strcasecmp(hint, "linear") == 0) {
         return SDL_ScaleModeLinear;
@@ -1468,7 +1468,7 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
 
         /* Set up a destination surface for the texture update */
         dst_fmt = SDL_AllocFormat(format);
-        if (dst_fmt == NULL) {
+        if (!dst_fmt) {
             SDL_DestroyTexture(texture);
             return NULL;
         }
@@ -2096,7 +2096,7 @@ int SDL_LockTextureToSurface(SDL_Texture *texture, const SDL_Rect *rect,
     }
 
     texture->locked_surface = SDL_CreateRGBSurfaceWithFormatFrom(pixels, real_rect.w, real_rect.h, 0, pitch, texture->format);
-    if (texture->locked_surface == NULL) {
+    if (!texture->locked_surface) {
         SDL_UnlockTexture(texture);
         return -1;
     }
@@ -2172,7 +2172,7 @@ void SDL_UnlockTexture(SDL_Texture *texture)
 
 SDL_bool SDL_RenderTargetSupported(SDL_Renderer *renderer)
 {
-    if (renderer == NULL || !renderer->SetRenderTarget) {
+    if (!renderer || !renderer->SetRenderTarget) {
         return SDL_FALSE;
     }
     return (renderer->info.flags & SDL_RENDERER_TARGETTEXTURE) != 0;
@@ -2660,7 +2660,7 @@ static int RenderDrawPointsWithRects(SDL_Renderer *renderer,
     }
 
     frects = SDL_small_alloc(SDL_FRect, count, &isstack);
-    if (frects == NULL) {
+    if (!frects) {
         return SDL_OutOfMemory();
     }
 
@@ -2688,7 +2688,7 @@ int SDL_RenderDrawPoints(SDL_Renderer *renderer,
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
-    if (points == NULL) {
+    if (!points) {
         return SDL_InvalidParamError("SDL_RenderDrawPoints(): points");
     }
     if (count < 1) {
@@ -2706,7 +2706,7 @@ int SDL_RenderDrawPoints(SDL_Renderer *renderer,
         retval = RenderDrawPointsWithRects(renderer, points, count);
     } else {
         fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
-        if (fpoints == NULL) {
+        if (!fpoints) {
             return SDL_OutOfMemory();
         }
         for (i = 0; i < count; ++i) {
@@ -2759,7 +2759,7 @@ int SDL_RenderDrawPointsF(SDL_Renderer *renderer,
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
-    if (points == NULL) {
+    if (!points) {
         return SDL_InvalidParamError("SDL_RenderDrawPointsF(): points");
     }
     if (count < 1) {
@@ -2964,7 +2964,7 @@ int SDL_RenderDrawLines(SDL_Renderer *renderer,
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
-    if (points == NULL) {
+    if (!points) {
         return SDL_InvalidParamError("SDL_RenderDrawLines(): points");
     }
     if (count < 2) {
@@ -2979,7 +2979,7 @@ int SDL_RenderDrawLines(SDL_Renderer *renderer,
 #endif
 
     fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
-    if (fpoints == NULL) {
+    if (!fpoints) {
         return SDL_OutOfMemory();
     }
 
@@ -3002,7 +3002,7 @@ int SDL_RenderDrawLinesF(SDL_Renderer *renderer,
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
-    if (points == NULL) {
+    if (!points) {
         return SDL_InvalidParamError("SDL_RenderDrawLinesF(): points");
     }
     if (count < 2) {
@@ -3171,7 +3171,7 @@ int SDL_RenderDrawRectF(SDL_Renderer *renderer, const SDL_FRect *rect)
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     /* If 'rect' == NULL, then outline the whole surface */
-    if (rect == NULL) {
+    if (!rect) {
         RenderGetViewportSize(renderer, &frect);
         rect = &frect;
     }
@@ -3196,7 +3196,7 @@ int SDL_RenderDrawRects(SDL_Renderer *renderer,
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
-    if (rects == NULL) {
+    if (!rects) {
         return SDL_InvalidParamError("SDL_RenderDrawRects(): rects");
     }
     if (count < 1) {
@@ -3225,7 +3225,7 @@ int SDL_RenderDrawRectsF(SDL_Renderer *renderer,
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
-    if (rects == NULL) {
+    if (!rects) {
         return SDL_InvalidParamError("SDL_RenderDrawRectsF(): rects");
     }
     if (count < 1) {
@@ -3272,7 +3272,7 @@ int SDL_RenderFillRectF(SDL_Renderer *renderer, const SDL_FRect *rect)
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     /* If 'rect' == NULL, then outline the whole surface */
-    if (rect == NULL) {
+    if (!rect) {
         RenderGetViewportSize(renderer, &frect);
         rect = &frect;
     }
@@ -3331,7 +3331,7 @@ int SDL_RenderFillRectsF(SDL_Renderer *renderer,
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
-    if (rects == NULL) {
+    if (!rects) {
         return SDL_InvalidParamError("SDL_RenderFillRectsF(): rects");
     }
     if (count < 1) {
@@ -3346,7 +3346,7 @@ int SDL_RenderFillRectsF(SDL_Renderer *renderer,
 #endif
 
     frects = SDL_small_alloc(SDL_FRect, count, &isstack);
-    if (frects == NULL) {
+    if (!frects) {
         return SDL_OutOfMemory();
     }
     for (i = 0; i < count; ++i) {

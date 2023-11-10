@@ -109,13 +109,13 @@ static int StartBeLooper()
 {
     if (!be_app) {
         SDL_AppThread = SDL_CreateThreadInternal(StartBeApp, "SDLApplication", 0, NULL);
-        if (SDL_AppThread == NULL) {
+        if (!SDL_AppThread) {
             return SDL_SetError("Couldn't create BApplication thread");
         }
 
         do {
             SDL_Delay(10);
-        } while ((be_app == NULL) || be_app->IsLaunching());
+        } while ((!be_app) || be_app->IsLaunching());
     }
 
      /* Change working directory to that of executable */
@@ -168,7 +168,7 @@ void SDL_QuitBeApp(void)
         SDL_Looper->Lock();
         SDL_Looper->Quit();
         SDL_Looper = NULL;
-        if (SDL_AppThread != NULL) {
+        if (SDL_AppThread) {
             if (be_app != NULL) {       /* Not tested */
                 be_app->PostMessage(B_QUIT_REQUESTED);
             }

@@ -41,7 +41,7 @@ void SDL_OS2TLSAlloc(void)
 {
     ULONG ulRC;
 
-    if (cTLSAlloc == 0 || ppSDLTLSData == NULL) {
+    if (cTLSAlloc == 0 || !ppSDLTLSData) {
         /* First call - allocate the thread local memory (1 DWORD) */
         ulRC = DosAllocThreadLocalMemory(1, (PULONG *)&ppSDLTLSData);
         if (ulRC != NO_ERROR) {
@@ -59,7 +59,7 @@ void SDL_OS2TLSFree(void)
     if (cTLSAlloc != 0)
         cTLSAlloc--;
 
-    if (cTLSAlloc == 0 && ppSDLTLSData != NULL) {
+    if (cTLSAlloc == 0 && ppSDLTLSData) {
         /* Last call - free the thread local memory */
         ulRC = DosFreeThreadLocalMemory((PULONG)ppSDLTLSData);
         if (ulRC != NO_ERROR) {
@@ -72,7 +72,7 @@ void SDL_OS2TLSFree(void)
 
 SDL_TLSData *SDL_SYS_GetTLSData(void)
 {
-    return (ppSDLTLSData == NULL)? NULL : *ppSDLTLSData;
+    return (!ppSDLTLSData)? NULL : *ppSDLTLSData;
 }
 
 int SDL_SYS_SetTLSData(SDL_TLSData *data)

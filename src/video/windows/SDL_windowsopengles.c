@@ -51,7 +51,7 @@ int WIN_GLES_LoadLibrary(_THIS, const char *path)
 #endif
     }
 
-    if (_this->egl_data == NULL) {
+    if (!_this->egl_data) {
         return SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, 0);
     }
 

@@ -269,7 +269,7 @@ int Wayland_WaitEventTimeout(_THIS, int timeout)
     WAYLAND_wl_display_flush(d->display);
 
 #ifdef SDL_USE_IME
-    if (d->text_input_manager == NULL && SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
+    if (!d->text_input_manager && SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
         SDL_IME_PumpEvents();
     }
 #endif
@@ -338,7 +338,7 @@ void Wayland_PumpEvents(_THIS)
     int err;
 
 #ifdef SDL_USE_IME
-    if (d->text_input_manager == NULL && SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
+    if (!d->text_input_manager && SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
         SDL_IME_PumpEvents();
     }
 #endif
@@ -1728,7 +1728,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
 {
     SDL_WaylandDataDevice *data_device = data;
 
-    if (data_device->drag_offer != NULL) {
+    if (data_device->drag_offer) {
         /* TODO: SDL Support more mime types */
         size_t length;
         SDL_bool drop_handled = SDL_FALSE;
@@ -1761,13 +1761,13 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
          * non paths that are not visible to the application
          */
         if (!drop_handled && Wayland_data_offer_has_mime(
-            data_device->drag_offer, FILE_MIME)) {
+                                                         data_device->drag_offer, FILE_MIME)) {
             void *buffer = Wayland_data_offer_receive(data_device->drag_offer,
                                                       &length, FILE_MIME, SDL_TRUE);
             if (buffer) {
                 char *saveptr = NULL;
                 char *token = SDL_strtokr((char *)buffer, "\r\n", &saveptr);
-                while (token != NULL) {
+                while (token) {
                     char *fn = Wayland_URIToLocal(token);
                     if (fn) {
                         SDL_SendDropFile(data_device->dnd_window, fn);
@@ -2146,7 +2146,7 @@ static void tablet_tool_handle_down(void *data, struct zwp_tablet_tool_v2 *tool,
     struct SDL_WaylandTabletInput *input = data;
     SDL_WindowData *window = input->tool_focus;
     input->is_down = SDL_TRUE;
-    if (window == NULL) {
+    if (!window) {
         /* tablet_tool_handle_proximity_out gets called when moving over the libdecoration csd.
          * that sets input->tool_focus (window) to NULL, but handle_{down,up} events are still
          * received. To prevent SIGSEGV this returns when this is the case.
@@ -2427,28 +2427,28 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
         return;
     }
 
-    if (input->data_device != NULL) {
+    if (input->data_device) {
         Wayland_data_device_clear_selection(input->data_device);
-        if (input->data_device->selection_offer != NULL) {
+        if (input->data_device->selection_offer) {
             Wayland_data_offer_destroy(input->data_device->selection_offer);
         }
-        if (input->data_device->drag_offer != NULL) {
+        if (input->data_device->drag_offer) {
             Wayland_data_offer_destroy(input->data_device->drag_offer);
         }
-        if (input->data_device->data_device != NULL) {
+        if (input->data_device->data_device) {
             wl_data_device_release(input->data_device->data_device);
         }
         SDL_free(input->data_device);
     }
 
-    if (input->primary_selection_device != NULL) {
-        if (input->primary_selection_device->selection_offer != NULL) {
+    if (input->primary_selection_device) {
+        if (input->primary_selection_device->selection_offer) {
             Wayland_primary_selection_offer_destroy(input->primary_selection_device->selection_offer);
         }
         SDL_free(input->primary_selection_device);
     }
 
-    if (input->text_input != NULL) {
+    if (input->text_input) {
         zwp_text_input_v3_destroy(input->text_input->text_input);
         SDL_free(input->text_input);
     }

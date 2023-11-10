@@ -115,7 +115,7 @@ static SDL_bool wayland_dbus_read_cursor_size(int *size)
     DBusMessage *reply;
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
-    if (dbus == NULL || size == NULL) {
+    if (!dbus || !size) {
         return SDL_FALSE;
     }
 
@@ -137,7 +137,7 @@ static SDL_bool wayland_dbus_read_cursor_theme(char **theme)
     DBusMessage *reply;
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
-    if (dbus == NULL || theme == NULL) {
+    if (!dbus || !theme) {
         return SDL_FALSE;
     }
 
@@ -204,19 +204,19 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
             break;
         }
     }
-    if (theme == NULL) {
+    if (!theme) {
         char *xcursor_theme = NULL;
         SDL_bool free_theme_str = SDL_FALSE;
 
         vdata->cursor_themes = SDL_realloc(vdata->cursor_themes,
                                            sizeof(SDL_WaylandCursorTheme) * (vdata->num_cursor_themes + 1));
-        if (vdata->cursor_themes == NULL) {
+        if (!vdata->cursor_themes) {
             SDL_OutOfMemory();
             return SDL_FALSE;
         }
         xcursor_theme = SDL_getenv("XCURSOR_THEME");
 #if SDL_USE_LIBDBUS
-        if (xcursor_theme == NULL) {
+        if (!xcursor_theme) {
             /* Allocates the string with SDL_strdup, which must be freed. */
             free_theme_str = wayland_dbus_read_cursor_theme(&xcursor_theme);
         }

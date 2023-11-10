@@ -248,7 +248,7 @@ static ssize_t Wayland_source_send(SDL_MimeDataList *mime_data, const char *mime
     size_t written_bytes = 0;
     ssize_t status = 0;
 
-    if (mime_data == NULL || mime_data->data == NULL) {
+    if (!mime_data || !mime_data->data) {
         status = SDL_SetError("Invalid mime type");
         close(fd);
     } else {
@@ -306,7 +306,7 @@ SDL_bool Wayland_data_source_has_mime(SDL_WaylandDataSource *source,
 {
     SDL_bool found = SDL_FALSE;
 
-    if (source != NULL) {
+    if (source) {
         found = mime_data_list_find(&source->mimes, mime_type) != NULL;
     }
     return found;
@@ -317,7 +317,7 @@ SDL_bool Wayland_primary_selection_source_has_mime(SDL_WaylandPrimarySelectionSo
 {
     SDL_bool found = SDL_FALSE;
 
-    if (source != NULL) {
+    if (source) {
         found = mime_data_list_find(&source->mimes, mime_type) != NULL;
     }
     return found;
@@ -329,14 +329,14 @@ static void *Wayland_source_get_data(SDL_MimeDataList *mime_data,
 {
     void *buffer = NULL;
 
-    if (mime_data != NULL && mime_data->length > 0) {
+    if (mime_data && mime_data->length > 0) {
         size_t buffer_length = mime_data->length;
 
         if (null_terminate == SDL_TRUE) {
             ++buffer_length;
         }
         buffer = SDL_malloc(buffer_length);
-        if (buffer == NULL) {
+        if (!buffer) {
             *length = SDL_OutOfMemory();
         } else {
             *length = mime_data->length;
@@ -358,7 +358,7 @@ void *Wayland_data_source_get_data(SDL_WaylandDataSource *source,
     void *buffer = NULL;
     *length = 0;
 
-    if (source == NULL) {
+    if (!source) {
         SDL_SetError("Invalid data source");
     } else {
         mime_data = mime_data_list_find(&source->mimes, mime_type);

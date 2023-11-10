@@ -248,7 +248,7 @@ int SDL_JoystickDetachVirtualInner(int device_index)
 {
     SDL_JoystickID instance_id;
     joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
-    if (hwdata == NULL) {
+    if (!hwdata) {
         return SDL_SetError("Virtual joystick data not found");
     }
     instance_id = hwdata->instance_id;
@@ -390,7 +390,7 @@ static SDL_JoystickGUID VIRTUAL_JoystickGetDeviceGUID(int device_index)
 static SDL_JoystickID VIRTUAL_JoystickGetDeviceInstanceID(int device_index)
 {
     joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
-    if (hwdata == NULL) {
+    if (!hwdata) {
         return -1;
     }
     return hwdata->instance_id;

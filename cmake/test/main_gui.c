@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
             640, 480,
             SDL_WINDOW_SHOWN
     );
-    if (window == NULL) {
+    if (!window) {
         fprintf(stderr, "could not create window: %s\n", SDL_GetError());
         return 1;
     }

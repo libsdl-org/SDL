@@ -93,7 +93,7 @@ int SDL_DirectFB_LoadLibrary(void)
 
 void SDL_DirectFB_UnLoadLibrary(void)
 {
-    if (handle != NULL) {
+    if (handle) {
         SDL_UnloadObject(handle);
         handle = NULL;
     }

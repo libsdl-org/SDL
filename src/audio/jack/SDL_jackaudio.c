@@ -58,7 +58,7 @@ static void *jack_handle = NULL;
 static int load_jack_sym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(jack_handle, fn);
-    if (*addr == NULL) {
+    if (!*addr) {
         /* Don't call SDL_SetError(): SDL_LoadFunction already did. */
         return 0;
     }
@@ -341,7 +341,7 @@ static int JACK_OpenDevice(_THIS, const char *devname)
 
     /* Build SDL's ports, which we will connect to the device ports. */
     this->hidden->sdlports = (jack_port_t **)SDL_calloc(channels, sizeof(jack_port_t *));
-    if (this->hidden->sdlports == NULL) {
+    if (!this->hidden->sdlports) {
         SDL_free(audio_ports);
         return SDL_OutOfMemory();
     }

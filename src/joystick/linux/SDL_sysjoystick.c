@@ -436,13 +436,13 @@ static void MaybeAddDevice(const char *path)
         item->name = name;
         item->guid = guid;
 
-        if ((item->path == NULL) || (item->name == NULL)) {
+        if ((!item->path) || (!item->name)) {
             FreeJoylistItem(item);
             goto done;
         }
 
         item->device_instance = SDL_GetNextJoystickInstanceID();
-        if (SDL_joylist_tail == NULL) {
+        if (!SDL_joylist_tail) {
             SDL_joylist = SDL_joylist_tail = item;
         } else {
             SDL_joylist_tail->next = item;
@@ -617,14 +617,14 @@ static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickG
     item->guid = guid;
     item->m_bSteamController = SDL_TRUE;
 
-    if ((item->path == NULL) || (item->name == NULL)) {
+    if ((!item->path) || (!item->name)) {
         FreeJoylistItem(item);
         return SDL_FALSE;
     }
 
     *device_instance = item->device_instance = SDL_GetNextJoystickInstanceID();
     SDL_LockJoysticks();
-    if (SDL_joylist_tail == NULL) {
+    if (!SDL_joylist_tail) {
         SDL_joylist = SDL_joylist_tail = item;
     } else {
         SDL_joylist_tail->next = item;
@@ -1063,7 +1063,7 @@ static int allocate_balldata(SDL_Joystick *joystick)
     joystick->hwdata->balls =
         (struct hwdata_ball *)SDL_malloc(joystick->nballs *
                                          sizeof(struct hwdata_ball));
-    if (joystick->hwdata->balls == NULL) {
+    if (!joystick->hwdata->balls) {
         return -1;
     }
     for (i = 0; i < joystick->nballs; ++i) {
@@ -1486,14 +1486,14 @@ static int LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
     SDL_AssertJoysticksLocked();
 
     item = JoystickByDevIndex(device_index);
-    if (item == NULL) {
+    if (!item) {
         return SDL_SetError("No such device");
     }
 
     joystick->instance_id = item->device_instance;
     joystick->hwdata = (struct joystick_hwdata *)
         SDL_calloc(1, sizeof(*joystick->hwdata));
-    if (joystick->hwdata == NULL) {
+    if (!joystick->hwdata) {
         return SDL_OutOfMemory();
     }
 

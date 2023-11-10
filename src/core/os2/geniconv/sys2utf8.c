@@ -95,7 +95,7 @@ char *StrUTF8New(int to_utf8, char *str, int c_str)
     int   c_newstr = (((c_str > 4) ? c_str : 4) + 1) * 2;
     char *  newstr = (char *) SDL_malloc(c_newstr);
 
-    if (newstr == NULL) {
+    if (!newstr) {
         return NULL;
     }
 

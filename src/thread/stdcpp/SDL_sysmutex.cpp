@@ -77,7 +77,7 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
 {
     int retval = 0;
 
-    if (mutex == NULL) {
+    if (!mutex) {
         return 0;
     }
 

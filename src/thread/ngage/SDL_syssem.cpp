@@ -134,7 +134,7 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
 
 int SDL_SemTryWait(SDL_sem *sem)
 {
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 

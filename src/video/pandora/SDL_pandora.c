@@ -48,7 +48,7 @@ static int PND_available(void)
 
 static void PND_destroy(SDL_VideoDevice * device)
 {
-    if (device->driverdata != NULL) {
+    if (device->driverdata) {
         SDL_free(device->driverdata);
         device->driverdata = NULL;
     }
@@ -70,14 +70,14 @@ static SDL_VideoDevice *PND_create()
 
     /* Initialize SDL_VideoDevice structure */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
+    if (!device) {
         SDL_OutOfMemory();
         return NULL;
     }
 
     /* Initialize internal Pandora specific data */
     phdata = (SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
-    if (phdata == NULL) {
+    if (!phdata) {
         SDL_OutOfMemory();
         SDL_free(device);
         return NULL;
@@ -196,7 +196,7 @@ int PND_createwindow(_THIS, SDL_Window * window)
 
     /* Allocate window internal data */
     wdata = (SDL_WindowData *) SDL_calloc(1, sizeof(SDL_WindowData));
-    if (wdata == NULL) {
+    if (!wdata) {
         return SDL_OutOfMemory();
     }
 
@@ -297,15 +297,15 @@ SDL_bool PND_getwindowwminfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *i
 int PND_gl_loadlibrary(_THIS, const char *path)
 {
     /* Check if OpenGL ES library is specified for GF driver */
-    if (path == NULL) {
+    if (!path) {
         path = SDL_getenv("SDL_OPENGL_LIBRARY");
-        if (path == NULL) {
+        if (!path) {
             path = SDL_getenv("SDL_OPENGLES_LIBRARY");
         }
     }
 
     /* Check if default library loading requested */
-    if (path == NULL) {
+    if (!path) {
         /* Already linked with GF library which provides egl* subset of  */
         /* functions, use Common profile of OpenGL ES library by default */
 #ifdef WIZ_GLES_LITE
@@ -336,7 +336,7 @@ void *PND_gl_getprocaddres(_THIS, const char *proc)
 
     /* Try to get function address through the egl interface */
     function_address = eglGetProcAddress(proc);
-    if (function_address != NULL) {
+    if (function_address) {
         return function_address;
     }
 
@@ -344,7 +344,7 @@ void *PND_gl_getprocaddres(_THIS, const char *proc)
     if (_this->gl_config.dll_handle) {
         function_address =
             SDL_LoadFunction(_this->gl_config.dll_handle, proc);
-        if (function_address != NULL) {
+        if (function_address) {
             return function_address;
         }
     }
@@ -586,7 +586,7 @@ SDL_GLContext PND_gl_createcontext(_THIS, SDL_Window * window)
     }
 
 #ifdef WIZ_GLES_LITE
-    if( !hNativeWnd ) {
+    if(!hNativeWnd) {
     hNativeWnd = (NativeWindowType)SDL_malloc(16*1024);
 
     if(!hNativeWnd)
@@ -683,7 +683,7 @@ int PND_gl_makecurrent(_THIS, SDL_Window * window, SDL_GLContext context)
         return SDL_SetError("PND: GF initialization failed, no OpenGL ES support");
     }
 
-    if ((window == NULL) && (context == NULL)) {
+    if ((!window) && (!context)) {
         status =
             eglMakeCurrent(phdata->egl_display, EGL_NO_SURFACE,
                            EGL_NO_SURFACE, EGL_NO_CONTEXT);

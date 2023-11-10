@@ -208,7 +208,7 @@ void loop()
         }
         if (event.type == SDL_MOUSEBUTTONUP) {
             SDL_Window *window = SDL_GetMouseFocus();
-            if (highlighted_mode != -1 && window != NULL) {
+            if (highlighted_mode != -1 && window) {
                 const int display_index = SDL_GetWindowDisplayIndex(window);
                 SDL_DisplayMode mode;
                 if (0 != SDL_GetDisplayMode(display_index, highlighted_mode, &mode)) {
@@ -223,7 +223,7 @@ void loop()
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Window *window = state->windows[i];
         SDL_Renderer *renderer = state->renderers[i];
-        if (window != NULL && renderer != NULL) {
+        if (window && renderer) {
             int y = 0;
             SDL_Rect viewport, menurect;
 
@@ -262,7 +262,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 

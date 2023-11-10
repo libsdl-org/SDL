@@ -69,17 +69,17 @@ int X11_ResizeWindowShape(SDL_Window *window)
 {
     SDL_ShapeData *data = window->shaper->driverdata;
     unsigned int bitmapsize = window->w / 8;
-    SDL_assert(data != NULL);
+    SDL_assert(data);
 
     if (window->w % 8 > 0) {
         bitmapsize += 1;
     }
     bitmapsize *= window->h;
-    if (data->bitmapsize != bitmapsize || data->bitmap == NULL) {
+    if (data->bitmapsize != bitmapsize || !data->bitmap) {
         data->bitmapsize = bitmapsize;
         SDL_free(data->bitmap);
         data->bitmap = SDL_malloc(data->bitmapsize);
-        if (data->bitmap == NULL) {
+        if (!data->bitmap) {
             return SDL_OutOfMemory();
         }
     }

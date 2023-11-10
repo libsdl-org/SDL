@@ -59,9 +59,9 @@ static int SDL_ANDROID_SensorInit(void)
     }
 
     SDL_sensor_looper = ALooper_forThread();
-    if (SDL_sensor_looper == NULL) {
+    if (!SDL_sensor_looper) {
         SDL_sensor_looper = ALooper_prepare(ALOOPER_PREPARE_ALLOW_NON_CALLBACKS);
-        if (SDL_sensor_looper == NULL) {
+        if (!SDL_sensor_looper) {
             return SDL_SetError("Couldn't create sensor event loop");
         }
     }
@@ -125,7 +125,7 @@ static int SDL_ANDROID_SensorOpen(SDL_Sensor *sensor, int device_index)
     int delay_us, min_delay_us;
 
     hwdata = (struct sensor_hwdata *)SDL_calloc(1, sizeof(*hwdata));
-    if (hwdata == NULL) {
+    if (!hwdata) {
         return SDL_OutOfMemory();
     }
 

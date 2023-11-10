@@ -491,13 +491,13 @@ static int MaybeAddDevice(const char *path)
     item->name = name;
     item->guid = guid;
 
-    if ((item->path == NULL) || (item->name == NULL)) {
+    if ((!item->path) || (!item->name)) {
         FreeJoylistItem(item);
         return -1;
     }
 
     item->device_instance = SDL_GetNextJoystickInstanceID();
-    if (SDL_joylist_tail == NULL) {
+    if (!SDL_joylist_tail) {
         SDL_joylist = SDL_joylist_tail = item;
     } else {
         SDL_joylist_tail->next = item;

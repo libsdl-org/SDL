@@ -132,7 +132,7 @@ void Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *di
         }
 
         data = (SDL_WindowData *)window->driverdata;
-        if (data == NULL || !data->native_window) {
+        if (!data || !data->native_window) {
             if (data && !data->native_window) {
                 SDL_SetError("Missing native window");
             }

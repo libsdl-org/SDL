@@ -179,7 +179,7 @@ static void WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL 
 
             mon = MonitorFromRect(&screen_rect, MONITOR_DEFAULTTONEAREST);
 
-            if (videodata != NULL) {
+            if (videodata) {
                 /* GetDpiForMonitor docs promise to return the same hdpi / vdpi */
                 if (videodata->GetDpiForMonitor(mon, MDT_EFFECTIVE_DPI, &frame_dpi, &unused) != S_OK) {
                     frame_dpi = 96;

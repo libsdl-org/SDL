@@ -109,7 +109,7 @@ static SDL_GameControllerButton virtual_button_active = SDL_CONTROLLER_BUTTON_IN
 
 static void UpdateWindowTitle()
 {
-    if (window == NULL) {
+    if (!window) {
         return;
     }
 
@@ -201,13 +201,13 @@ static void AddController(int device_index, SDL_bool verbose)
     }
 
     controller = SDL_GameControllerOpen(device_index);
-    if (controller == NULL) {
+    if (!controller) {
         SDL_Log("Couldn't open controller: %s\n", SDL_GetError());
         return;
     }
 
     controllers = (SDL_GameController **)SDL_realloc(gamecontrollers, (num_controllers + 1) * sizeof(*controllers));
-    if (controllers == NULL) {
+    if (!controllers) {
         SDL_GameControllerClose(controller);
         return;
     }
@@ -413,7 +413,7 @@ static void OpenVirtualController()
         SDL_Log("Couldn't open virtual device: %s\n", SDL_GetError());
     } else {
         virtual_joystick = SDL_JoystickOpen(virtual_index);
-        if (virtual_joystick == NULL) {
+        if (!virtual_joystick) {
             SDL_Log("Couldn't open virtual device: %s\n", SDL_GetError());
         }
     }
@@ -624,7 +624,8 @@ void loop(void *arg)
             if (event.type == SDL_CONTROLLERBUTTONDOWN) {
                 SetController(event.cbutton.which);
             }
-            SDL_Log("Controller %" SDL_PRIs32 " button %s %s\n", event.cbutton.which, SDL_GameControllerGetStringForButton((SDL_GameControllerButton)event.cbutton.button), event.cbutton.state ? "pressed" : "released");
+            SDL_Log("Controller %" SDL_PRIs32 " button %s %s\n", event.cbutton.which, SDL_GameControllerGetStringForButton((SDL_GameControllerButton)event.cbutton.button),
+                    event.cbutton.state ? "pressed" : "released");
 
             /* Cycle PS5 trigger effects when the microphone button is pressed */
             if (event.type == SDL_CONTROLLERBUTTONDOWN &&
@@ -896,13 +897,13 @@ int main(int argc, char *argv[])
     window = SDL_CreateWindow("Game Controller Test", SDL_WINDOWPOS_CENTERED,
                               SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH,
                               SCREEN_HEIGHT, 0);
-    if (window == NULL) {
+    if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s\n", SDL_GetError());
         return 2;
     }
 
     screen = SDL_CreateRenderer(window, -1, 0);
-    if (screen == NULL) {
+    if (!screen) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
         return 2;
@@ -920,7 +921,7 @@ int main(int argc, char *argv[])
     button_texture = LoadTexture(screen, "button.bmp", SDL_TRUE, NULL, NULL);
     axis_texture = LoadTexture(screen, "axis.bmp", SDL_TRUE, NULL, NULL);
 
-    if (background_front == NULL || background_back == NULL || button_texture == NULL || axis_texture == NULL) {
+    if (!background_front || !background_back || !button_texture || !axis_texture) {
         SDL_DestroyRenderer(screen);
         SDL_DestroyWindow(window);
         return 2;

@@ -116,14 +116,14 @@ void Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *driverdata = _this->driverdata;
 
-    if (rect == NULL) {
+    if (!rect) {
         SDL_InvalidParamError("rect");
         return;
     }
 
     if (driverdata->text_input_manager) {
         struct SDL_WaylandInput *input = driverdata->input;
-        if (input != NULL && input->text_input) {
+        if (input && input->text_input) {
             if (!SDL_RectEquals(rect, &input->text_input->cursor_rect)) {
                 SDL_copyp(&input->text_input->cursor_rect, rect);
                 zwp_text_input_v3_set_cursor_rectangle(input->text_input->text_input,

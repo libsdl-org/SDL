@@ -1284,7 +1284,7 @@ SDL_Cursor *SDL_CreateCursor(const Uint8 *data, const Uint8 *mask,
                                    0x0000FF00,
                                    0x000000FF,
                                    0xFF000000);
-    if (surface == NULL) {
+    if (!surface) {
         return NULL;
     }
     for (y = 0; y < h; ++y) {
@@ -1331,7 +1331,7 @@ SDL_Cursor *SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
 
     if (surface->format->format != SDL_PIXELFORMAT_ARGB8888) {
         temp = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
-        if (temp == NULL) {
+        if (!temp) {
             return NULL;
         }
         surface = temp;
@@ -1398,7 +1398,7 @@ void SDL_SetCursor(SDL_Cursor *cursor)
                     break;
                 }
             }
-            if (found == NULL) {
+            if (!found) {
                 SDL_SetError("Cursor not associated with the current mouse");
                 return;
             }
@@ -1483,7 +1483,7 @@ int SDL_ShowCursor(int toggle)
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_bool shown;
 
-    if (mouse == NULL) {
+    if (!mouse) {
         return 0;
     }
 

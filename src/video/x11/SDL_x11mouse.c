@@ -419,7 +419,7 @@ static Uint32 X11_GetGlobalMouseState(int *x, int *y)
     if (videodata->global_mouse_changed) {
         for (i = 0; i < num_screens; i++) {
             SDL_DisplayData *data = (SDL_DisplayData *)SDL_GetDisplayDriverData(i);
-            if (data != NULL) {
+            if (data) {
                 Window root, child;
                 int rootx, rooty, winx, winy;
                 unsigned int mask;

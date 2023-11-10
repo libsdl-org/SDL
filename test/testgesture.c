@@ -131,7 +131,7 @@ DrawScreen(SDL_Window *window)
     SDL_Surface *screen = SDL_GetWindowSurface(window);
     int i;
 
-    if (screen == NULL) {
+    if (!screen) {
         return;
     }
 
@@ -272,7 +272,7 @@ loop(void)
 int main(int argc, char *argv[])
 {
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 

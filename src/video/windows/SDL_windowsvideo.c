@@ -385,7 +385,7 @@ static void WIN_InitDPIAwareness(_THIS)
 {
     const char *hint = SDL_GetHint(SDL_HINT_WINDOWS_DPI_AWARENESS);
 
-    if (hint != NULL) {
+    if (hint) {
         if (SDL_strcmp(hint, "permonitorv2") == 0) {
             WIN_DeclareDPIAwarePerMonitorV2(_this);
         } else if (SDL_strcmp(hint, "permonitor") == 0) {

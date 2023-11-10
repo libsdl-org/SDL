@@ -50,7 +50,7 @@ SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
     ee_sema_t sema;
 
     sem = (SDL_sem *)SDL_malloc(sizeof(*sem));
-    if (sem != NULL) {
+    if (sem) {
         /* TODO: Figure out the limit on the maximum value. */
         sema.init_count = initial_value;
         sema.max_count = 255;

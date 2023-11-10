@@ -236,7 +236,7 @@ static void createInstance(void)
         quit(2);
     }
     extensions = (const char **)SDL_malloc(sizeof(const char *) * extensionCount);
-    if (extensions == NULL) {
+    if (!extensions) {
         SDL_OutOfMemory();
         quit(2);
     }

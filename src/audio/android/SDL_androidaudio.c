@@ -41,8 +41,8 @@ static int ANDROIDAUDIO_OpenDevice(_THIS, const char *devname)
     SDL_AudioFormat test_format;
     SDL_bool iscapture = this->iscapture;
 
-    SDL_assert((captureDevice == NULL) || !iscapture);
-    SDL_assert((audioDevice == NULL) || iscapture);
+    SDL_assert((!captureDevice) || !iscapture);
+    SDL_assert((!audioDevice) || iscapture);
 
     if (iscapture) {
         captureDevice = this;
@@ -51,7 +51,7 @@ static int ANDROIDAUDIO_OpenDevice(_THIS, const char *devname)
     }
 
     this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*this->hidden));
-    if (this->hidden == NULL) {
+    if (!this->hidden) {
         return SDL_OutOfMemory();
     }
 
@@ -71,7 +71,7 @@ static int ANDROIDAUDIO_OpenDevice(_THIS, const char *devname)
 
     {
         int audio_device_id = 0;
-        if (devname != NULL) {
+        if (devname) {
             audio_device_id = SDL_atoi(devname);
         }
         if (Android_JNI_OpenAudioDevice(iscapture, audio_device_id, &this->spec) < 0) {
@@ -149,7 +149,7 @@ void ANDROIDAUDIO_PauseDevices(void)
 {
     /* TODO: Handle multiple devices? */
     struct SDL_PrivateAudioData *private;
-    if (audioDevice != NULL && audioDevice->hidden != NULL) {
+    if (audioDevice && audioDevice->hidden) {
         private = (struct SDL_PrivateAudioData *)audioDevice->hidden;
         if (SDL_AtomicGet(&audioDevice->paused)) {
             /* The device is already paused, leave it alone */
@@ -161,7 +161,7 @@ void ANDROIDAUDIO_PauseDevices(void)
         }
     }
 
-    if (captureDevice != NULL && captureDevice->hidden != NULL) {
+    if (captureDevice && captureDevice->hidden) {
         private = (struct SDL_PrivateAudioData *)captureDevice->hidden;
         if (SDL_AtomicGet(&captureDevice->paused)) {
             /* The device is already paused, leave it alone */
@@ -179,7 +179,7 @@ void ANDROIDAUDIO_ResumeDevices(void)
 {
     /* TODO: Handle multiple devices? */
     struct SDL_PrivateAudioData *private;
-    if (audioDevice != NULL && audioDevice->hidden != NULL) {
+    if (audioDevice && audioDevice->hidden) {
         private = (struct SDL_PrivateAudioData *)audioDevice->hidden;
         if (private->resume) {
             SDL_AtomicSet(&audioDevice->paused, 0);
@@ -188,7 +188,7 @@ void ANDROIDAUDIO_ResumeDevices(void)
         }
     }
 
-    if (captureDevice != NULL && captureDevice->hidden != NULL) {
+    if (captureDevice && captureDevice->hidden) {
         private = (struct SDL_PrivateAudioData *)captureDevice->hidden;
         if (private->resume) {
             SDL_AtomicSet(&captureDevice->paused, 0);

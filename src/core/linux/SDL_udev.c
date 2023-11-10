@@ -158,7 +158,7 @@ void SDL_UDEV_Quit(void)
 {
     SDL_UDEV_CallbackList *item;
 
-    if (_this == NULL) {
+    if (!_this) {
         return;
     }
 
@@ -166,17 +166,17 @@ void SDL_UDEV_Quit(void)
 
     if (_this->ref_count < 1) {
 
-        if (_this->udev_mon != NULL) {
+        if (_this->udev_mon) {
             _this->syms.udev_monitor_unref(_this->udev_mon);
             _this->udev_mon = NULL;
         }
-        if (_this->udev != NULL) {
+        if (_this->udev) {
             _this->syms.udev_unref(_this->udev);
             _this->udev = NULL;
         }
 
         /* Remove existing devices */
-        while (_this->first != NULL) {
+        while (_this->first) {
             item = _this->first;
             _this->first = _this->first->next;
             SDL_free(item);
@@ -194,12 +194,12 @@ void SDL_UDEV_Scan(void)
     struct udev_list_entry *devs = NULL;
     struct udev_list_entry *item = NULL;
 
-    if (_this == NULL) {
+    if (!_this) {
         return;
     }
 
     enumerate = _this->syms.udev_enumerate_new(_this->udev);
-    if (enumerate == NULL) {
+    if (!enumerate) {
         SDL_UDEV_Quit();
         SDL_SetError("udev_enumerate_new() failed");
         return;
@@ -213,7 +213,7 @@ void SDL_UDEV_Scan(void)
     for (item = devs; item; item = _this->syms.udev_list_entry_get_next(item)) {
         const char *path = _this->syms.udev_list_entry_get_name(item);
         struct udev_device *dev = _this->syms.udev_device_new_from_syspath(_this->udev, path);
-        if (dev != NULL) {
+        if (dev) {
             device_event(SDL_UDEV_DEVICEADDED, dev);
             _this->syms.udev_device_unref(dev);
         }
@@ -229,12 +229,12 @@ SDL_bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16
     struct udev_list_entry *item = NULL;
     SDL_bool found = SDL_FALSE;
 
-    if (_this == NULL) {
+    if (!_this) {
         return SDL_FALSE;
     }
 
     enumerate = _this->syms.udev_enumerate_new(_this->udev);
-    if (enumerate == NULL) {
+    if (!enumerate) {
         SDL_SetError("udev_enumerate_new() failed");
         return SDL_FALSE;
     }
@@ -244,7 +244,7 @@ SDL_bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16
     for (item = devs; item && !found; item = _this->syms.udev_list_entry_get_next(item)) {
         const char *path = _this->syms.udev_list_entry_get_name(item);
         struct udev_device *dev = _this->syms.udev_device_new_from_syspath(_this->udev, path);
-        if (dev != NULL) {
+        if (dev) {
             const char *val = NULL;
             const char *existing_path;
 
@@ -253,17 +253,17 @@ SDL_bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16
                 found = SDL_TRUE;
 
                 val = _this->syms.udev_device_get_property_value(dev, "ID_VENDOR_ID");
-                if (val != NULL) {
+                if (val) {
                     *vendor = (Uint16)SDL_strtol(val, NULL, 16);
                 }
 
                 val = _this->syms.udev_device_get_property_value(dev, "ID_MODEL_ID");
-                if (val != NULL) {
+                if (val) {
                     *product = (Uint16)SDL_strtol(val, NULL, 16);
                 }
 
                 val = _this->syms.udev_device_get_property_value(dev, "ID_REVISION");
-                if (val != NULL) {
+                if (val) {
                     *version = (Uint16)SDL_strtol(val, NULL, 16);
                 }
             }
@@ -281,7 +281,7 @@ void SDL_UDEV_UnloadLibrary(void)
         return;
     }
 
-    if (_this->udev_handle != NULL) {
+    if (_this->udev_handle) {
         SDL_UnloadObject(_this->udev_handle);
         _this->udev_handle = NULL;
     }
@@ -441,14 +441,14 @@ static void device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
            Ref: http://cgit.freedesktop.org/systemd/systemd/tree/src/udev/udev-builtin-input_id.c#n183
         */
         val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_KEY");
-        if (val != NULL && SDL_strcmp(val, "1") == 0) {
+        if (val && SDL_strcmp(val, "1") == 0) {
             devclass |= SDL_UDEV_DEVICE_KEYBOARD;
         }
 
         if (devclass == 0) {
             /* Fall back to old style input classes */
             val = _this->syms.udev_device_get_property_value(dev, "ID_CLASS");
-            if (val != NULL) {
+            if (val) {
                 if (SDL_strcmp(val, "joystick") == 0) {
                     devclass = SDL_UDEV_DEVICE_JOYSTICK;
                 } else if (SDL_strcmp(val, "mouse") == 0) {

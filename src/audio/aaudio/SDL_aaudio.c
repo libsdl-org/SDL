@@ -77,8 +77,8 @@ static int aaudio_OpenDevice(_THIS, const char *devname)
     aaudio_result_t res;
     LOGI(__func__);
 
-    SDL_assert((captureDevice == NULL) || !iscapture);
-    SDL_assert((audioDevice == NULL) || iscapture);
+    SDL_assert((!captureDevice) || !iscapture);
+    SDL_assert((!audioDevice) || iscapture);
 
     if (iscapture) {
         if (!Android_JNI_RequestPermission("android.permission.RECORD_AUDIO")) {
@@ -94,14 +94,14 @@ static int aaudio_OpenDevice(_THIS, const char *devname)
     }
 
     this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*this->hidden));
-    if (this->hidden == NULL) {
+    if (!this->hidden) {
         return SDL_OutOfMemory();
     }
     private = this->hidden;
 
     ctx.AAudioStreamBuilder_setSampleRate(ctx.builder, this->spec.freq);
     ctx.AAudioStreamBuilder_setChannelCount(ctx.builder, this->spec.channels);
-    if(devname != NULL) {
+    if(devname) {
         int aaudio_device_id = SDL_atoi(devname);
         LOGI("Opening device id %d", aaudio_device_id);
         ctx.AAudioStreamBuilder_setDeviceId(ctx.builder, aaudio_device_id);
@@ -153,7 +153,7 @@ static int aaudio_OpenDevice(_THIS, const char *devname)
     if (!iscapture) {
         private->mixlen = this->spec.size;
         private->mixbuf = (Uint8 *)SDL_malloc(private->mixlen);
-        if (private->mixbuf == NULL) {
+        if (!private->mixbuf) {
             return SDL_OutOfMemory();
         }
         SDL_memset(private->mixbuf, this->spec.silence, this->spec.size);
@@ -300,7 +300,7 @@ static SDL_bool aaudio_Init(SDL_AudioDriverImpl *impl)
         goto failure;
     }
 
-    if (ctx.builder == NULL) {
+    if (!ctx.builder) {
         LOGI("SDL Failed AAudio_createStreamBuilder - builder NULL");
         goto failure;
     }
@@ -344,7 +344,7 @@ void aaudio_PauseDevices(void)
 {
     /* TODO: Handle multiple devices? */
     struct SDL_PrivateAudioData *private;
-    if (audioDevice != NULL && audioDevice->hidden != NULL) {
+    if (audioDevice && audioDevice->hidden) {
         private = (struct SDL_PrivateAudioData *)audioDevice->hidden;
 
         if (private->stream) {
@@ -365,7 +365,7 @@ void aaudio_PauseDevices(void)
         }
     }
 
-    if (captureDevice != NULL && captureDevice->hidden != NULL) {
+    if (captureDevice && captureDevice->hidden) {
         private = (struct SDL_PrivateAudioData *)captureDevice->hidden;
 
         if (private->stream) {
@@ -393,7 +393,7 @@ void aaudio_ResumeDevices(void)
 {
     /* TODO: Handle multiple devices? */
     struct SDL_PrivateAudioData *private;
-    if (audioDevice != NULL && audioDevice->hidden != NULL) {
+    if (audioDevice && audioDevice->hidden) {
         private = (struct SDL_PrivateAudioData *)audioDevice->hidden;
 
         if (private->resume) {
@@ -411,7 +411,7 @@ void aaudio_ResumeDevices(void)
         }
     }
 
-    if (captureDevice != NULL && captureDevice->hidden != NULL) {
+    if (captureDevice && captureDevice->hidden) {
         private = (struct SDL_PrivateAudioData *)captureDevice->hidden;
 
         if (private->resume) {
@@ -441,7 +441,7 @@ SDL_bool aaudio_DetectBrokenPlayState(void)
     int64_t framePosition, timeNanoseconds;
     aaudio_result_t res;
 
-    if (audioDevice == NULL || !audioDevice->hidden) {
+    if (!audioDevice || !audioDevice->hidden) {
         return SDL_FALSE;
     }
 

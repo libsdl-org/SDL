@@ -66,7 +66,7 @@ SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPr
                 return SDL_FALSE;
             }
             if (hint->value != value &&
-                (value == NULL || !hint->value || SDL_strcmp(hint->value, value) != 0)) {
+                (!value || !hint->value || SDL_strcmp(hint->value, value) != 0)) {
                 for (entry = hint->callbacks; entry;) {
                     /* Save the next entry in case this one is deleted */
                     SDL_HintWatch *next = entry->next;
@@ -196,7 +196,7 @@ void SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *user
     SDL_HintWatch *entry;
     const char *value;
 
-    if (name == NULL || !*name) {
+    if (!name || !*name) {
         SDL_InvalidParamError("name");
         return;
     }
@@ -208,7 +208,7 @@ void SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *user
     SDL_DelHintCallback(name, callback, userdata);
 
     entry = (SDL_HintWatch *)SDL_malloc(sizeof(*entry));
-    if (entry == NULL) {
+    if (!entry) {
         SDL_OutOfMemory();
         return;
     }
@@ -220,10 +220,10 @@ void SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *user
             break;
         }
     }
-    if (hint == NULL) {
+    if (!hint) {
         /* Need to add a hint entry for this watcher */
         hint = (SDL_Hint *)SDL_malloc(sizeof(*hint));
-        if (hint == NULL) {
+        if (!hint) {
             SDL_OutOfMemory();
             SDL_free(entry);
             return;

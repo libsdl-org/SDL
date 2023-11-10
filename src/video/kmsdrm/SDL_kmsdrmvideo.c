@@ -1580,7 +1580,7 @@ int KMSDRM_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
     SDL_VideoDisplay *disp = SDL_GetDisplayForWindow(window);
     SDL_DisplayData* dispdata = (SDL_DisplayData*)disp->driverdata;
     Uint16* tempRamp = SDL_calloc(3 * sizeof(Uint16), 256);
-    if (tempRamp == NULL)
+    if (!tempRamp)
     {
         return SDL_OutOfMemory();
     }

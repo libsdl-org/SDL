@@ -410,14 +410,14 @@ static void X11_HandleXRandROutputChange(_THIS, const XRROutputChangeNotifyEvent
         }
     }
 
-    SDL_assert((displayidx == -1) == (display == NULL));
+    SDL_assert((displayidx == -1) == (!display));
 
     if (ev->connection == RR_Disconnected) { /* output is going away */
-        if (display != NULL) {
+        if (display) {
             SDL_DelVideoDisplay(displayidx);
         }
     } else if (ev->connection == RR_Connected) { /* output is coming online */
-        if (display != NULL) {
+        if (display) {
             /* !!! FIXME: update rotation or current mode of existing display? */
         } else {
             Display *dpy = ev->display;
@@ -525,7 +525,7 @@ static int GetXftDPI(Display *dpy)
 
     xdefault_resource = X11_XGetDefault(dpy, "Xft", "dpi");
 
-    if (xdefault_resource == NULL) {
+    if (!xdefault_resource) {
         return 0;
     }
 

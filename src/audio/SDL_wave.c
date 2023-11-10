@@ -2085,16 +2085,16 @@ SDL_AudioSpec *SDL_LoadWAV_RW(SDL_RWops *src, int freesrc, SDL_AudioSpec *spec, 
     SDL_zero(file);
 
     /* Make sure we are passed a valid data source */
-    if (src == NULL) {
+    if (!src) {
         /* Error may come from RWops. */
         return NULL;
-    } else if (spec == NULL) {
+    } else if (!spec) {
         SDL_InvalidParamError("spec");
         return NULL;
-    } else if (audio_buf == NULL) {
+    } else if (!audio_buf) {
         SDL_InvalidParamError("audio_buf");
         return NULL;
-    } else if (audio_len == NULL) {
+    } else if (!audio_len) {
         SDL_InvalidParamError("audio_len");
         return NULL;
     }

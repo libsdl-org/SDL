@@ -45,7 +45,7 @@ SDL_cond *SDL_CreateCond(void)
     SDL_cond *cond;
 
     cond = (SDL_cond *)SDL_malloc(sizeof(SDL_cond));
-    if (cond != NULL) {
+    if (cond) {
         cond->lock = SDL_CreateMutex();
         cond->wait_sem = SDL_CreateSemaphore(0);
         cond->wait_done = SDL_CreateSemaphore(0);

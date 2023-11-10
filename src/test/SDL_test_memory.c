@@ -171,7 +171,7 @@ static void *SDLCALL SDLTest_TrackedRealloc(void *ptr, size_t size)
 {
     void *mem;
 
-    SDL_assert(ptr == NULL || SDL_IsAllocationTracked(ptr));
+    SDL_assert(!ptr || SDL_IsAllocationTracked(ptr));
     mem = SDL_realloc_orig(ptr, size);
     if (mem && mem != ptr) {
         if (ptr) {

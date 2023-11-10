@@ -616,7 +616,7 @@ void SDL_FreeFormat(SDL_PixelFormat *format)
 {
     SDL_PixelFormat *prev;
 
-    if (format == NULL) {
+    if (!format) {
         SDL_InvalidParamError("format");
         return;
     }
@@ -734,7 +734,7 @@ int SDL_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors,
 
 void SDL_FreePalette(SDL_Palette *palette)
 {
-    if (palette == NULL) {
+    if (!palette) {
         SDL_InvalidParamError("palette");
         return;
     }
@@ -1144,7 +1144,7 @@ void SDL_CalculateGammaRamp(float gamma, Uint16 * ramp)
       SDL_InvalidParamError("gamma");
       return;
     }
-    if (ramp == NULL) {
+    if (!ramp) {
       SDL_InvalidParamError("ramp");
       return;
     }

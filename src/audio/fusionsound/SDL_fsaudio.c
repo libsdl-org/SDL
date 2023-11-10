@@ -79,7 +79,7 @@ static struct
 
 static void UnloadFusionSoundLibrary()
 {
-    if (fs_handle != NULL) {
+    if (fs_handle) {
         SDL_UnloadObject(fs_handle);
         fs_handle = NULL;
     }
@@ -89,9 +89,9 @@ static int LoadFusionSoundLibrary(void)
 {
     int i, retval = -1;
 
-    if (fs_handle == NULL) {
+    if (!fs_handle) {
         fs_handle = SDL_LoadObject(fs_library);
-        if (fs_handle != NULL) {
+        if (fs_handle) {
             retval = 0;
             for (i = 0; i < SDL_arraysize(fs_functions); ++i) {
                 *fs_functions[i].func =
@@ -175,7 +175,7 @@ static int SDL_FS_OpenDevice(_THIS, const char *devname)
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)SDL_malloc(sizeof(*this->hidden));
-    if (this->hidden == NULL) {
+    if (!this->hidden) {
         return SDL_OutOfMemory();
     }
     SDL_zerop(this->hidden);
@@ -250,7 +250,7 @@ static int SDL_FS_OpenDevice(_THIS, const char *devname)
     /* Allocate mixing buffer */
     this->hidden->mixlen = this->spec.size;
     this->hidden->mixbuf = (Uint8 *) SDL_malloc(this->hidden->mixlen);
-    if (this->hidden->mixbuf == NULL) {
+    if (!this->hidden->mixbuf) {
         return SDL_OutOfMemory();
     }
     SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);

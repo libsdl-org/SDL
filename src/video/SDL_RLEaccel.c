@@ -1492,7 +1492,7 @@ static SDL_bool UnRLEAlpha(SDL_Surface *surface)
     }
 
     surface->pixels = SDL_SIMDAlloc((size_t)surface->h * surface->pitch);
-    if (surface->pixels == NULL) {
+    if (!surface->pixels) {
         return SDL_FALSE;
     }
     surface->flags |= SDL_SIMD_ALIGNED;
@@ -1558,7 +1558,7 @@ void SDL_UnRLESurface(SDL_Surface *surface, int recode)
 
                 /* re-create the original surface */
                 surface->pixels = SDL_SIMDAlloc((size_t)surface->h * surface->pitch);
-                if (surface->pixels == NULL) {
+                if (!surface->pixels) {
                     /* Oh crap... */
                     surface->flags |= SDL_RLEACCEL;
                     return;

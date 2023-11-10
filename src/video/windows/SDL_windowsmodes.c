@@ -521,7 +521,7 @@ int WIN_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi_out, float *
         float hinches, vinches;
 
         hdc = GetDC(NULL);
-        if (hdc == NULL) {
+        if (!hdc) {
             return SDL_SetError("GetDC failed");
         }
         hdpi_int = GetDeviceCaps(hdc, LOGPIXELSX);
@@ -603,7 +603,7 @@ void WIN_ScreenPointFromSDL(int *x, int *y, int *dpiOut)
         *dpiOut = 96;
     }
 
-    if (videodevice == NULL || !videodevice->driverdata) {
+    if (!videodevice || !videodevice->driverdata) {
         return;
     }
 
@@ -656,7 +656,7 @@ void WIN_ScreenPointToSDL(int *x, int *y)
     float ddpi, hdpi, vdpi;
     int x_pixels, y_pixels;
 
-    if (videodevice == NULL || !videodevice->driverdata) {
+    if (!videodevice || !videodevice->driverdata) {
         return;
     }
 

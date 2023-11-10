@@ -310,13 +310,13 @@ static int KMSDRM_ShowCursor(SDL_Cursor *cursor)
     /* Get the mouse focused window, if any. */
 
     mouse = SDL_GetMouse();
-    if (mouse == NULL) {
+    if (!mouse) {
         return SDL_SetError("No mouse.");
     }
 
     window = mouse->focus;
 
-    if (window == NULL || cursor == NULL) {
+    if (!window || !cursor) {
 
         /* If no window is focused by mouse or cursor is NULL,
            since we have no window (no mouse->focus) and hence

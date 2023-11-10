@@ -89,7 +89,7 @@ static int N3DSAUDIO_OpenDevice(_THIS, const char *devname)
     float mix[12];
     this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*this->hidden));
 
-    if (this->hidden == NULL) {
+    if (!this->hidden) {
         return SDL_OutOfMemory();
     }
 
@@ -127,14 +127,14 @@ static int N3DSAUDIO_OpenDevice(_THIS, const char *devname)
 
     this->hidden->mixlen = this->spec.size;
     this->hidden->mixbuf = (Uint8 *)SDL_malloc(this->spec.size);
-    if (this->hidden->mixbuf == NULL) {
+    if (!this->hidden->mixbuf) {
         return SDL_OutOfMemory();
     }
 
     SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);
 
     data_vaddr = (Uint8 *)linearAlloc(this->hidden->mixlen * NUM_BUFFERS);
-    if (data_vaddr == NULL) {
+    if (!data_vaddr) {
         return SDL_OutOfMemory();
     }
 

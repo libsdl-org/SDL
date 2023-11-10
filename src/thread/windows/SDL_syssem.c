@@ -138,7 +138,7 @@ static int SDL_SemWait_atom(SDL_sem *_sem)
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
     LONG count;
 
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -169,7 +169,7 @@ static int SDL_SemWaitTimeout_atom(SDL_sem *_sem, Uint32 timeout)
         return SDL_SemWait_atom(_sem);
     }
 
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 

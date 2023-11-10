@@ -46,7 +46,7 @@ static void PSP_Destroy(SDL_VideoDevice *device)
 {
     /*    SDL_VideoData *phdata = (SDL_VideoData *) device->driverdata; */
 
-    if (device->driverdata != NULL) {
+    if (device->driverdata) {
         device->driverdata = NULL;
     }
 }

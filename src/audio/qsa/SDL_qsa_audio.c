@@ -232,7 +232,7 @@ static Uint8 *QSA_GetDeviceBuf(_THIS)
 
 static void QSA_CloseDevice(_THIS)
 {
-    if (this->hidden->audio_handle != NULL) {
+    if (this->hidden->audio_handle) {
 #if _NTO_VERSION < 710
         if (!this->iscapture) {
             /* Finish playing available samples */
@@ -267,14 +267,14 @@ static int QSA_OpenDevice(_THIS, const char *devname)
                                                    (sizeof
                                                     (struct
                                                      SDL_PrivateAudioData)));
-    if (this->hidden == NULL) {
+    if (!this->hidden) {
         return SDL_OutOfMemory();
     }
 
     /* Initialize channel transfer parameters to default */
     QSA_InitAudioParams(&cparams);
 
-    if (device != NULL) {
+    if (device) {
         /* Open requested audio device */
         this->hidden->deviceno = device->deviceno;
         this->hidden->cardno = device->cardno;
@@ -387,7 +387,7 @@ static int QSA_OpenDevice(_THIS, const char *devname)
      */
     this->hidden->pcm_buf =
         (Uint8 *) SDL_malloc(this->hidden->pcm_len);
-    if (this->hidden->pcm_buf == NULL) {
+    if (!this->hidden->pcm_buf) {
         return SDL_OutOfMemory();
     }
     SDL_memset(this->hidden->pcm_buf, this->spec.silence,

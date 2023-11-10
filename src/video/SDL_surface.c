@@ -125,7 +125,7 @@ SDL_Surface *SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height,
     if (SDL_ISPIXELFORMAT_INDEXED(surface->format->format)) {
         SDL_Palette *palette =
             SDL_AllocPalette((1 << surface->format->BitsPerPixel));
-        if (palette == NULL) {
+        if (!palette) {
             SDL_FreeSurface(surface);
             return NULL;
         }
@@ -238,7 +238,7 @@ SDL_Surface *SDL_CreateRGBSurfaceFrom(void *pixels,
     }
 
     surface = SDL_CreateRGBSurfaceWithFormat(0, 0, 0, depth, format);
-    if (surface != NULL) {
+    if (surface) {
         surface->flags |= SDL_PREALLOC;
         surface->pixels = pixels;
         surface->w = width;
@@ -284,7 +284,7 @@ SDL_Surface *SDL_CreateRGBSurfaceWithFormatFrom(void *pixels,
     }
 
     surface = SDL_CreateRGBSurfaceWithFormat(0, 0, 0, depth, format);
-    if (surface != NULL) {
+    if (surface) {
         surface->flags |= SDL_PREALLOC;
         surface->pixels = pixels;
         surface->w = width;
@@ -297,7 +297,7 @@ SDL_Surface *SDL_CreateRGBSurfaceWithFormatFrom(void *pixels,
 
 int SDL_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette)
 {
-    if (surface == NULL) {
+    if (!surface) {
         return SDL_InvalidParamError("SDL_SetSurfacePalette(): surface");
     }
     if (SDL_SetPixelFormatPalette(surface->format, palette) < 0) {
@@ -312,7 +312,7 @@ int SDL_SetSurfaceRLE(SDL_Surface *surface, int flag)
 {
     int flags;
 
-    if (surface == NULL) {
+    if (!surface) {
         return SDL_InvalidParamError("surface");
     }
 
@@ -330,7 +330,7 @@ int SDL_SetSurfaceRLE(SDL_Surface *surface, int flag)
 
 SDL_bool SDL_HasSurfaceRLE(SDL_Surface *surface)
 {
-    if (surface == NULL) {
+    if (!surface) {
         return SDL_FALSE;
     }
 
@@ -345,7 +345,7 @@ int SDL_SetColorKey(SDL_Surface *surface, int flag, Uint32 key)
 {
     int flags;
 
-    if (surface == NULL) {
+    if (!surface) {
         return SDL_InvalidParamError("surface");
     }
 
@@ -373,7 +373,7 @@ int SDL_SetColorKey(SDL_Surface *surface, int flag, Uint32 key)
 
 SDL_bool SDL_HasColorKey(SDL_Surface *surface)
 {
-    if (surface == NULL) {
+    if (!surface) {
         return SDL_FALSE;
     }
 
@@ -406,7 +406,7 @@ static void SDL_ConvertColorkeyToAlpha(SDL_Surface *surface, SDL_bool ignore_alp
 {
     int x, y, bpp;
 
-    if (surface == NULL) {
+    if (!surface) {
         return;
     }
 
@@ -517,7 +517,7 @@ int SDL_SetSurfaceColorMod(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b)
 
 int SDL_GetSurfaceColorMod(SDL_Surface *surface, Uint8 *r, Uint8 *g, Uint8 *b)
 {
-    if (surface == NULL) {
+    if (!surface) {
         return SDL_InvalidParamError("surface");
     }
 
@@ -612,7 +612,7 @@ int SDL_GetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode *blendMode)
         return SDL_InvalidParamError("surface");
     }
 
-    if (blendMode == NULL) {
+    if (!blendMode) {
         return 0;
     }
 
@@ -705,7 +705,7 @@ int SDL_UpperBlit(SDL_Surface *src, const SDL_Rect *srcrect,
     int srcx, srcy, w, h;
 
     /* Make sure the surfaces aren't locked */
-    if (src == NULL || dst == NULL) {
+    if (!src || !dst) {
         return SDL_InvalidParamError("SDL_UpperBlit(): src/dst");
     }
     if (src->locked || dst->locked) {
@@ -817,14 +817,14 @@ int SDL_PrivateUpperBlitScaled(SDL_Surface *src, const SDL_Rect *srcrect,
     int dst_w, dst_h;
 
     /* Make sure the surfaces aren't locked */
-    if (src == NULL || dst == NULL) {
+    if (!src || !dst) {
         return SDL_InvalidParamError("SDL_UpperBlitScaled(): src/dst");
     }
     if (src->locked || dst->locked) {
         return SDL_SetError("Surfaces must not be locked during blit");
     }
 
-    if (srcrect == NULL) {
+    if (!srcrect) {
         src_w = src->w;
         src_h = src->h;
     } else {
@@ -1174,7 +1174,7 @@ SDL_Surface *SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * f
                                    format->BitsPerPixel, format->Rmask,
                                    format->Gmask, format->Bmask,
                                    format->Amask);
-    if (convert == NULL) {
+    if (!convert) {
         return NULL;
     }
 

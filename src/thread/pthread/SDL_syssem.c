@@ -45,7 +45,7 @@ struct SDL_semaphore
 SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
 {
     SDL_sem *sem = (SDL_sem *)SDL_malloc(sizeof(SDL_sem));
-    if (sem != NULL) {
+    if (sem) {
         if (sem_init(&sem->sem, 0, initial_value) < 0) {
             SDL_SetError("sem_init() failed");
             SDL_free(sem);
@@ -69,7 +69,7 @@ int SDL_SemTryWait(SDL_sem *sem)
 {
     int retval;
 
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
     retval = SDL_MUTEX_TIMEDOUT;
@@ -83,7 +83,7 @@ int SDL_SemWait(SDL_sem *sem)
 {
     int retval;
 
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 

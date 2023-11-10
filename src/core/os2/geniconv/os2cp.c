@@ -357,7 +357,7 @@ unsigned long os2cpFromName(char *cp)
     PCHAR pcEnd;
     CHAR  acBuf[64];
 
-    if (cp == NULL) {
+    if (!cp) {
         ULONG aulCP[3];
         ULONG cCP;
         return (DosQueryCp(sizeof(aulCP), aulCP, &cCP) != NO_ERROR)? 0 : aulCP[0];
@@ -368,7 +368,7 @@ unsigned long os2cpFromName(char *cp)
     }
 
     pcEnd = SDL_strchr(cp, ' ');
-    if (pcEnd == NULL) {
+    if (!pcEnd) {
         pcEnd = SDL_strchr(cp, '\0');
     }
     ulNext = pcEnd - cp;

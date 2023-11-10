@@ -1570,7 +1570,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
                 char *name = X11_XGetAtomName(display, target);
                 if (name) {
                     char *token = SDL_strtokr((char *)p.data, "\r\n", &saveptr);
-                    while (token != NULL) {
+                    while (token) {
                         if (SDL_strcmp("text/plain", name) == 0) {
                             SDL_SendDropText(data->window, token);
                         } else if (SDL_strcmp("text/uri-list", name) == 0) {

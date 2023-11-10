@@ -279,7 +279,7 @@ static int WINMM_OpenDevice(_THIS, const char *devname)
     UINT devId = WAVE_MAPPER;  /* WAVE_MAPPER == choose system's default */
     UINT i;
 
-    if (handle != NULL) {  /* specific device requested? */
+    if (handle) {  /* specific device requested? */
         /* -1 because we increment the original value to avoid NULL. */
         const size_t val = ((size_t) handle) - 1;
         devId = (UINT) val;
@@ -287,7 +287,7 @@ static int WINMM_OpenDevice(_THIS, const char *devname)
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)SDL_malloc(sizeof(*this->hidden));
-    if (this->hidden == NULL) {
+    if (!this->hidden) {
         return SDL_OutOfMemory();
     }
     SDL_zerop(this->hidden);
@@ -365,14 +365,14 @@ static int WINMM_OpenDevice(_THIS, const char *devname)
 
     /* Create the audio buffer semaphore */
     this->hidden->audio_sem = CreateSemaphore(NULL, iscapture ? 0 : NUM_BUFFERS - 1, NUM_BUFFERS, NULL);
-    if (this->hidden->audio_sem == NULL) {
+    if (!this->hidden->audio_sem) {
         return SDL_SetError("Couldn't create semaphore");
     }
 
     /* Create the sound buffers */
     this->hidden->mixbuf =
         (Uint8 *) SDL_malloc(NUM_BUFFERS * this->spec.size);
-    if (this->hidden->mixbuf == NULL) {
+    if (!this->hidden->mixbuf) {
         return SDL_OutOfMemory();
     }
 

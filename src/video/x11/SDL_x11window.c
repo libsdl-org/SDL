@@ -284,7 +284,7 @@ static int SetupWindowData(_THIS, SDL_Window *window, Window w, BOOL created)
                                            (numwindows +
                                             1) *
                                                sizeof(*windowlist));
-        if (windowlist == NULL) {
+        if (!windowlist) {
             SDL_free(data);
             return SDL_OutOfMemory();
         }
@@ -416,7 +416,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
         if (((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
              SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE))
 #if SDL_VIDEO_OPENGL_GLX
-            && ( !_this->gl_data || X11_GL_UseEGL(_this) )
+            && (!_this->gl_data || X11_GL_UseEGL(_this) )
 #endif
         ) {
             vinfo = X11_GLES_GetVisual(_this, display, screen);
@@ -639,7 +639,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
         ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
          SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE))
 #if SDL_VIDEO_OPENGL_GLX
-        && ( !_this->gl_data || X11_GL_UseEGL(_this) )
+        && (!_this->gl_data || X11_GL_UseEGL(_this) )
 #endif
     ) {
 #if SDL_VIDEO_OPENGL_EGL
@@ -1813,7 +1813,7 @@ SDL_bool X11_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display;
 
-    if (data == NULL) {
+    if (!data) {
         /* This sometimes happens in SDL_IBus_UpdateTextRect() while creating the window */
         SDL_SetError("Window not initialized");
         return SDL_FALSE;

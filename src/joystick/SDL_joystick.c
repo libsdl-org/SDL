@@ -1474,7 +1474,7 @@ static void UpdateEventsForDeviceRemoval(int device_index, Uint32 type)
     }
 
     events = SDL_small_alloc(SDL_Event, num_events, &isstack);
-    if (events == NULL) {
+    if (!events) {
         return;
     }
 

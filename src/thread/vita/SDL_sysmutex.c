@@ -41,7 +41,7 @@ SDL_mutex *SDL_CreateMutex(void)
 
     /* Allocate mutex memory */
     mutex = (SDL_mutex *)SDL_malloc(sizeof(*mutex));
-    if (mutex != NULL) {
+    if (mutex) {
 
         res = sceKernelCreateLwMutex(
             &mutex->lock,
@@ -97,7 +97,7 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
 #else
     SceInt32 res = 0;
 
-    if (mutex == NULL) {
+    if (!mutex) {
         return 0;
     }
 

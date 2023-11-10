@@ -141,7 +141,7 @@ tryagain:
  */
 int SDL_CondWait(SDL_cond *cond, SDL_mutex *mutex)
 {
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     } else if (pthread_cond_wait(&cond->cond, &mutex->id) != 0) {
         return SDL_SetError("pthread_cond_wait() failed");

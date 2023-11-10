@@ -619,7 +619,7 @@ static void RAWINPUT_UpdateWindowsGamingInput()
                                 return;
                             }
                             gamepad_state = SDL_calloc(1, sizeof(*gamepad_state));
-                            if (gamepad_state == NULL) {
+                            if (!gamepad_state) {
                                 SDL_OutOfMemory();
                                 return;
                             }

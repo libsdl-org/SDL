@@ -1198,7 +1198,7 @@ void *SDL_SIMDRealloc(void *mem, const size_t len)
 
     ptr = (Uint8 *)SDL_realloc(mem, to_allocate);
 
-    if (ptr == NULL) {
+    if (!ptr) {
         return NULL; /* Out of memory, bail! */
     }
 

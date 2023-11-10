@@ -3190,7 +3190,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c)
         character = SDL_CreateRGBSurface(SDL_SWSURFACE,
             charWidth, charHeight, 32,
             0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
-        if (character == NULL) {
+        if (!character) {
             return -1;
         }
 

@@ -120,13 +120,13 @@ void SDL_UNIONRECT(const RECTTYPE *A, const RECTTYPE *B, RECTTYPE *result)
 {
     SCALARTYPE Amin, Amax, Bmin, Bmax;
 
-    if (A == NULL) {
+    if (!A) {
         SDL_InvalidParamError("A");
         return;
-    } else if (B == NULL) {
+    } else if (!B) {
         SDL_InvalidParamError("B");
         return;
-    } else if (result == NULL) {
+    } else if (!result) {
         SDL_InvalidParamError("result");
         return;
     } else if (SDL_RECTEMPTY(A)) { /* Special cases for empty Rects */

@@ -451,7 +451,7 @@ void X11_StopTextInput(_THIS)
 
 void X11_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
-    if (rect == NULL) {
+    if (!rect) {
         SDL_InvalidParamError("rect");
         return;
     }

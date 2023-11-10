@@ -78,11 +78,11 @@ static int OpenUserDefinedDevice(char *path, int maxlen, int flags)
     if ((audiodev = SDL_getenv("SDL_PATH_DSP")) == NULL) {
         audiodev = SDL_getenv("AUDIODEV");
     }
-    if (audiodev == NULL) {
+    if (!audiodev) {
         return -1;
     }
     fd = open(audiodev, flags, 0);
-    if (path != NULL) {
+    if (path) {
         SDL_strlcpy(path, audiodev, maxlen);
         path[maxlen - 1] = '\0';
     }
@@ -110,7 +110,7 @@ static int OpenAudioPath(char *path, int maxlen, int flags, int classic)
         if (stat(audiopath, &sb) == 0) {
             fd = open(audiopath, flags, 0);
             if (fd >= 0) {
-                if (path != NULL) {
+                if (path) {
                     SDL_strlcpy(path, audiopath, maxlen);
                 }
                 return fd;
@@ -232,7 +232,7 @@ static int PAUDIO_OpenDevice(_THIS, const char *devname)
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)SDL_malloc(sizeof(*this->hidden));
-    if (this->hidden == NULL) {
+    if (!this->hidden) {
         return SDL_OutOfMemory();
     }
     SDL_zerop(this->hidden);
@@ -403,7 +403,7 @@ static int PAUDIO_OpenDevice(_THIS, const char *devname)
     /* Allocate mixing buffer */
     this->hidden->mixlen = this->spec.size;
     this->hidden->mixbuf = (Uint8 *) SDL_malloc(this->hidden->mixlen);
-    if (this->hidden->mixbuf == NULL) {
+    if (!this->hidden->mixbuf) {
         return SDL_OutOfMemory();
     }
     SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);
@@ -445,7 +445,7 @@ static int PAUDIO_OpenDevice(_THIS, const char *devname)
     }
 
     /* Check to see if we need to use SDL_IOReady() workaround */
-    if (workaround != NULL) {
+    if (workaround) {
         this->hidden->frame_ticks = (float) (this->spec.samples * 1000) /
             this->spec.freq;
         this->hidden->next_frame = SDL_GetTicks() + this->hidden->frame_ticks;

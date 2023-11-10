@@ -139,26 +139,26 @@ static int RPI_ShowCursor(SDL_Cursor *cursor)
         global_cursor = cursor;
     }
 
-    if (cursor == NULL) {
+    if (!cursor) {
         return 0;
     }
 
     curdata = (RPI_CursorData *)cursor->driverdata;
-    if (curdata == NULL) {
+    if (!curdata) {
         return -1;
     }
 
-    if (mouse->focus == NULL) {
+    if (!mouse->focus) {
         return -1;
     }
 
     display = SDL_GetDisplayForWindow(mouse->focus);
-    if (display == NULL) {
+    if (!display) {
         return -1;
     }
 
     data = (SDL_DisplayData *)display->driverdata;
-    if (data == NULL) {
+    if (!data) {
         return -1;
     }
 

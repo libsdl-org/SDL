@@ -220,14 +220,14 @@ static const SDL_cond_impl_t SDL_cond_impl_generic = {
 
 SDL_cond *SDL_CreateCond(void)
 {
-    if (SDL_cond_impl_active.Create == NULL) {
+    if (!SDL_cond_impl_active.Create) {
         /* Default to generic implementation, works with all mutex implementations */
         const SDL_cond_impl_t *impl = &SDL_cond_impl_generic;
 
         if (SDL_mutex_impl_active.Type == SDL_MUTEX_INVALID) {
             /* The mutex implementation isn't decided yet, trigger it */
             SDL_mutex *mutex = SDL_CreateMutex();
-            if (mutex == NULL) {
+            if (!mutex) {
                 return NULL;
             }
             SDL_DestroyMutex(mutex);

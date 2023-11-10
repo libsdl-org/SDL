@@ -107,25 +107,25 @@ int main(int argc, char *argv[])
         RWOP_ERR_QUIT(rwops);
     }
     rwops = SDL_RWFromFile(FBASENAME2, "wb");
-    if (rwops == NULL) {
+    if (!rwops) {
         RWOP_ERR_QUIT(rwops);
     }
     rwops->close(rwops);
     unlink(FBASENAME2);
     rwops = SDL_RWFromFile(FBASENAME2, "wb+");
-    if (rwops == NULL) {
+    if (!rwops) {
         RWOP_ERR_QUIT(rwops);
     }
     rwops->close(rwops);
     unlink(FBASENAME2);
     rwops = SDL_RWFromFile(FBASENAME2, "ab");
-    if (rwops == NULL) {
+    if (!rwops) {
         RWOP_ERR_QUIT(rwops);
     }
     rwops->close(rwops);
     unlink(FBASENAME2);
     rwops = SDL_RWFromFile(FBASENAME2, "ab+");
-    if (rwops == NULL) {
+    if (!rwops) {
         RWOP_ERR_QUIT(rwops);
     }
     rwops->close(rwops);
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
     rwops->close(rwops);
 
     rwops = SDL_RWFromFile(FBASENAME1, "rb"); /* read mode, file must exists */
-    if (rwops == NULL) {
+    if (!rwops) {
         RWOP_ERR_QUIT(rwops);
     }
     if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {

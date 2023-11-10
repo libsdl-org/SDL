@@ -385,7 +385,7 @@ static int kbd_vt_init(int console_fd)
 
     vt_release_signal = find_free_signal(kbd_vt_release_signal_action);
     vt_acquire_signal = find_free_signal(kbd_vt_acquire_signal_action);
-    if (!vt_release_signal || !vt_acquire_signal ) {
+    if (!vt_release_signal || !vt_acquire_signal) {
         kbd_vt_quit(console_fd);
         return -1;
     }
@@ -499,7 +499,7 @@ void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, SDL_bool muted)
 
 void SDL_EVDEV_kbd_set_vt_switch_callbacks(SDL_EVDEV_keyboard_state *state, void (*release_callback)(void*), void *release_callback_data, void (*acquire_callback)(void*), void *acquire_callback_data)
 {
-    if (state == NULL) {
+    if (!state) {
         return;
     }
 
@@ -520,7 +520,7 @@ void SDL_EVDEV_kbd_update(SDL_EVDEV_keyboard_state *state)
 
 void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state)
 {
-    if (state == NULL) {
+    if (!state) {
         return;
     }
 

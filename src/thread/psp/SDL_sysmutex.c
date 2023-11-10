@@ -101,7 +101,7 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
 #else
     SceInt32 res = 0;
 
-    if (mutex == NULL) {
+    if (!mutex) {
         return 0;
     }
 

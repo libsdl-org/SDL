@@ -308,7 +308,7 @@ static void ProcessInputEvent(_THIS, DFBInputEvent * ievt)
 
     if (!devdata->use_linux_input) {
         if (ievt->type == DIET_AXISMOTION) {
-            if ((grabbed_window != NULL) && (ievt->flags & DIEF_AXISREL)) {
+            if ((grabbed_window) && (ievt->flags & DIEF_AXISREL)) {
                 if (ievt->axis == DIAI_X)
                     SDL_SendMouseMotion_ex(grabbed_window, ievt->device_id, 1,
                                         ievt->axisrel, 0, 0);
@@ -405,7 +405,7 @@ void DirectFB_PumpEventsWindow(_THIS)
     DFBInputEvent ievt;
     SDL_Window *w;
 
-    for (w = devdata->firstwin; w != NULL; w = w->next) {
+    for (w = devdata->firstwin; w; w = w->next) {
         SDL_DFB_WINDOWDATA(w);
         DFBWindowEvent evt;
 
