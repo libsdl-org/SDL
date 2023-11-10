@@ -61,7 +61,7 @@ static void SDL_SYS_GetPreferredLocales_vista(char *buf, size_t buflen)
     ULONG wbuflen = 0;
     SDL_bool isstack;
 
-    SDL_assert(pGetUserPreferredUILanguages);
+    SDL_assert(pGetUserPreferredUILanguages != NULL);
     pGetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numlangs, NULL, &wbuflen);
 
     wbuf = SDL_small_alloc(WCHAR, wbuflen, &isstack);

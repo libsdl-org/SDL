@@ -237,7 +237,7 @@ SDL_ShapeTree *SDL_CalculateShapeTree(SDL_WindowShapeMode mode, SDL_Surface *sha
 
 void SDL_TraverseShapeTree(SDL_ShapeTree *tree, SDL_TraversalFunction function, void *closure)
 {
-    SDL_assert(tree);
+    SDL_assert(tree != NULL);
     if (tree->kind == QuadShape) {
         SDL_TraverseShapeTree((SDL_ShapeTree *)tree->data.children.upleft, function, closure);
         SDL_TraverseShapeTree((SDL_ShapeTree *)tree->data.children.upright, function, closure);

@@ -70,7 +70,7 @@ static SDL_hapticlist_item *HapticByOrder(int index)
         return NULL;
     }
     while (index > 0) {
-        SDL_assert(item);
+        SDL_assert(item != NULL);
         --index;
         item = item->next;
     }

@@ -735,7 +735,7 @@ static void add_device(const int iscapture, const char *name, void *hint, ALSA_D
         desc = (char *)name;
     }
 
-    SDL_assert(name);
+    SDL_assert(name != NULL);
 
     /* some strings have newlines, like "HDA NVidia, HDMI 0\nHDMI Audio Output".
        just chop the extra lines off, this seems to get a reasonable device

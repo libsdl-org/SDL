@@ -144,7 +144,7 @@ static SDL_DataQueuePacket *AllocateDataQueuePacket(SDL_DataQueue *queue)
 {
     SDL_DataQueuePacket *packet;
 
-    SDL_assert(queue);
+    SDL_assert(queue != NULL);
 
     packet = queue->pool;
     if (packet) {

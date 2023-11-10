@@ -500,7 +500,7 @@ static SDL_joylist_item *JoystickByDevIndex(int device_index)
     }
 
     while (device_index > 0) {
-        SDL_assert(item);
+        SDL_assert(item != NULL);
         device_index--;
         item = item->next;
     }

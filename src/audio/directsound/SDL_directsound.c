@@ -354,7 +354,7 @@ static int DSOUND_CaptureFromDevice(_THIS, void *buffer, int buflen)
     }
 
     SDL_assert(ptr1len == this->spec.size);
-    SDL_assert(!ptr2);
+    SDL_assert(ptr2 == NULL);
     SDL_assert(ptr2len == 0);
 
     SDL_memcpy(buffer, ptr1, ptr1len);

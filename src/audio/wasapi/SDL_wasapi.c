@@ -181,7 +181,7 @@ static Uint8 *WASAPI_GetDeviceBuf(_THIS)
         if (!WasapiFailed(this, IAudioRenderClient_GetBuffer(this->hidden->render, this->spec.samples, &buffer))) {
             return (Uint8 *)buffer;
         }
-        SDL_assert(!buffer);
+        SDL_assert(buffer == NULL);
     }
 
     return (Uint8 *)buffer;
@@ -407,7 +407,7 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     HRESULT ret = S_OK;
     DWORD streamflags = 0;
 
-    SDL_assert(client);
+    SDL_assert(client != NULL);
 
 #if defined(__WINRT__) || defined(__GDK__) /* CreateEventEx() arrived in Vista, so we need an #ifdef for XP. */
     this->hidden->event = CreateEventEx(NULL, NULL, 0, EVENT_ALL_ACCESS);
@@ -424,7 +424,7 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
         return WIN_SetErrorFromHRESULT("WASAPI can't determine mix format", ret);
     }
 
-    SDL_assert(waveformat);
+    SDL_assert(waveformat != NULL);
     this->hidden->waveformat = waveformat;
 
     this->spec.channels = (Uint8)waveformat->nChannels;
@@ -502,7 +502,7 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
             return WIN_SetErrorFromHRESULT("WASAPI can't get capture client service", ret);
         }
 
-        SDL_assert(capture);
+        SDL_assert(capture != NULL);
         this->hidden->capture = capture;
         ret = IAudioClient_Start(client);
         if (FAILED(ret)) {
@@ -516,7 +516,7 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
             return WIN_SetErrorFromHRESULT("WASAPI can't get render client service", ret);
         }
 
-        SDL_assert(render);
+        SDL_assert(render != NULL);
         this->hidden->render = render;
         ret = IAudioClient_Start(client);
         if (FAILED(ret)) {

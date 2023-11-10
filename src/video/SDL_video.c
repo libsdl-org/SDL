@@ -267,7 +267,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
             }
         }
 
-        SDL_assert(renderer); /* should have explicitly checked this above. */
+        SDL_assert(renderer != NULL); /* should have explicitly checked this above. */
 
         /* Create the data after we successfully create the renderer (bug #1116) */
         data = (SDL_WindowTextureData *)SDL_calloc(1, sizeof(*data));
@@ -556,7 +556,7 @@ int SDL_VideoInit(const char *driver_name)
     return 0;
 
 pre_driver_error:
-    SDL_assert(!_this);
+    SDL_assert(_this == NULL);
     if (init_touch) {
         SDL_TouchQuit();
     }

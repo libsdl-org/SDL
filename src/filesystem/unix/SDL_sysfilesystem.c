@@ -97,7 +97,7 @@ static char *search_path_for_binary(const char *bin)
         return NULL;
     }
 
-    SDL_assert(bin);
+    SDL_assert(bin != NULL);
 
     alloc_size = SDL_strlen(bin) + SDL_strlen(envr) + 2;
     exe = (char *)SDL_malloc(alloc_size);
