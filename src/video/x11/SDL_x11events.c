@@ -821,7 +821,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     XClientMessageEvent m;
     int i;
 
-    SDL_assert(videodata);
+    SDL_assert(videodata != NULL);
     display = videodata->display;
 
     /* Save the original keycode for dead keys, which are filtered out by

@@ -139,7 +139,7 @@ static int GetDefaultSampleFramesFromFreq(const int freq)
 
 void OnAudioStreamCreated(SDL_AudioStream *stream)
 {
-    SDL_assert(stream);
+    SDL_assert(stream != NULL);
 
     // NOTE that you can create an audio stream without initializing the audio subsystem,
     //  but it will not be automatically destroyed during a later call to SDL_Quit!
@@ -159,7 +159,7 @@ void OnAudioStreamCreated(SDL_AudioStream *stream)
 
 void OnAudioStreamDestroy(SDL_AudioStream *stream)
 {
-    SDL_assert(stream);
+    SDL_assert(stream != NULL);
 
     // NOTE that you can create an audio stream without initializing the audio subsystem,
     //  but it will not be automatically destroyed during a later call to SDL_Quit!
@@ -500,7 +500,7 @@ void RefPhysicalAudioDevice(SDL_AudioDevice *device)
 
 static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, SDL_bool iscapture, const SDL_AudioSpec *spec, void *handle, SDL_AtomicInt *device_count)
 {
-    SDL_assert(name);
+    SDL_assert(name != NULL);
 
     SDL_LockRWLockForReading(current_audio.device_hash_lock);
     const int shutting_down = SDL_AtomicGet(&current_audio.shutting_down);
@@ -1127,7 +1127,7 @@ void SDL_OutputAudioThreadShutdown(SDL_AudioDevice *device)
 static int SDLCALL OutputAudioThread(void *devicep)  // thread entry point
 {
     SDL_AudioDevice *device = (SDL_AudioDevice *)devicep;
-    SDL_assert(device);
+    SDL_assert(device != NULL);
     SDL_assert(!device->iscapture);
     SDL_OutputAudioThreadSetup(device);
 
@@ -1233,7 +1233,7 @@ void SDL_CaptureAudioThreadShutdown(SDL_AudioDevice *device)
 static int SDLCALL CaptureAudioThread(void *devicep)  // thread entry point
 {
     SDL_AudioDevice *device = (SDL_AudioDevice *)devicep;
-    SDL_assert(device);
+    SDL_assert(device != NULL);
     SDL_assert(device->iscapture);
     SDL_CaptureAudioThreadSetup(device);
 
@@ -1892,7 +1892,7 @@ SDL_AudioStream *SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_Au
     } else {
         SDL_AtomicSet(&logdev->paused, 1);   // start the device paused, to match SDL2.
 
-        SDL_assert(device);
+        SDL_assert(device != NULL);
         const SDL_bool iscapture = device->iscapture;
 
         if (iscapture) {

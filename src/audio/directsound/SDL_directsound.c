@@ -358,7 +358,7 @@ static int DSOUND_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int b
     }
 
     SDL_assert(ptr1len == (DWORD)buflen);
-    SDL_assert(!ptr2);
+    SDL_assert(ptr2 == NULL);
     SDL_assert(ptr2len == 0);
 
     SDL_memcpy(buffer, ptr1, ptr1len);
