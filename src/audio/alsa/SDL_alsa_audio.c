@@ -166,7 +166,7 @@ static int load_alsa_syms(void)
 
 static void UnloadALSALibrary(void)
 {
-    if (alsa_handle != NULL) {
+    if (alsa_handle) {
         SDL_UnloadObject(alsa_handle);
         alsa_handle = NULL;
     }
@@ -175,9 +175,9 @@ static void UnloadALSALibrary(void)
 static int LoadALSALibrary(void)
 {
     int retval = 0;
-    if (alsa_handle == NULL) {
+    if (!alsa_handle) {
         alsa_handle = SDL_LoadObject(alsa_library);
-        if (alsa_handle == NULL) {
+        if (!alsa_handle) {
             retval = -1;
             /* Don't call SDL_SetError(): SDL_LoadObject already did. */
         } else {
@@ -717,7 +717,7 @@ static void add_device(const int iscapture, const char *name, void *hint, ALSA_D
     char *handle = NULL;
     char *ptr;
 
-    if (dev == NULL) {
+    if (!dev) {
         return;
     }
 
@@ -727,7 +727,7 @@ static void add_device(const int iscapture, const char *name, void *hint, ALSA_D
        Make sure not to free the storage associated with desc in this case */
     if (hint) {
         desc = ALSA_snd_device_name_get_hint(hint, "DESC");
-        if (desc == NULL) {
+        if (!desc) {
             SDL_free(dev);
             return;
         }
@@ -800,7 +800,7 @@ static void ALSA_HotplugIteration(void)
            if we can find a preferred prefix for the system. */
         for (i = 0; hints[i]; i++) {
             char *name = ALSA_snd_device_name_get_hint(hints[i], "NAME");
-            if (name == NULL) {
+            if (!name) {
                 continue;
             }
 
@@ -940,7 +940,7 @@ static void ALSA_Deinitialize(void)
     ALSA_Device *next;
 
 #if SDL_ALSA_HOTPLUG_THREAD
-    if (ALSA_hotplug_thread != NULL) {
+    if (ALSA_hotplug_thread) {
         SDL_AtomicSet(&ALSA_hotplug_shutdown, 1);
         SDL_WaitThread(ALSA_hotplug_thread, NULL);
         ALSA_hotplug_thread = NULL;

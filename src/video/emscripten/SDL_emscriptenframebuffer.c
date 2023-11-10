@@ -64,7 +64,7 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect
 
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     surface = data->surface;
-    if (surface == NULL) {
+    if (!surface) {
         return SDL_SetError("Couldn't find framebuffer surface for window");
     }
 

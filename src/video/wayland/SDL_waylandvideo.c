@@ -186,13 +186,13 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     }
 
     display = WAYLAND_wl_display_connect(NULL);
-    if (display == NULL) {
+    if (!display) {
         SDL_WAYLAND_UnloadSymbols();
         return NULL;
     }
 
     data = SDL_calloc(1, sizeof(*data));
-    if (data == NULL) {
+    if (!data) {
         WAYLAND_wl_display_disconnect(display);
         SDL_WAYLAND_UnloadSymbols();
         SDL_OutOfMemory();
@@ -204,7 +204,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
 
     /* Initialize all variables that we clean on shutdown */
     device = SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
+    if (!device) {
         SDL_free(data);
         WAYLAND_wl_display_disconnect(display);
         SDL_WAYLAND_UnloadSymbols();
@@ -937,7 +937,7 @@ int Wayland_VideoInit(_THIS)
     }
 
     data->registry = wl_display_get_registry(data->display);
-    if (data->registry == NULL) {
+    if (!data->registry) {
         return SDL_SetError("Failed to get the Wayland registry");
     }
 

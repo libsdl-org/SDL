@@ -141,13 +141,13 @@ int main(int argc, char **argv)
 
     /* load the moose images */
     filename = GetResourceFilename(NULL, "moose.dat");
-    if (filename == NULL) {
+    if (!filename) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory\n");
         return -1;
     }
     handle = SDL_RWFromFile(filename, "rb");
     SDL_free(filename);
-    if (handle == NULL) {
+    if (!handle) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't find the file moose.dat !\n");
         quit(2);
     }

@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 
     alive = 1;
     thread = SDL_CreateThread(ThreadFunc, NULL, "#1");
-    if (thread == NULL) {
+    if (!thread) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread: %s\n", SDL_GetError());
         quit(1);
     }

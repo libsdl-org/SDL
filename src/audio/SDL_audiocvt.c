@@ -1315,7 +1315,7 @@ int SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, int len)
 
 int SDL_AudioStreamFlush(SDL_AudioStream *stream)
 {
-    if (stream == NULL) {
+    if (!stream) {
         return SDL_InvalidParamError("stream");
     }
 

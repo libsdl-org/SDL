@@ -144,7 +144,7 @@ int KMSDRM_GLES_SwapWindow(_THIS, SDL_Window *window)
 
     /* Get an actual usable fb for the next front buffer. */
     fb_info = KMSDRM_FBFromBO(_this, windata->next_bo);
-    if (fb_info == NULL) {
+    if (!fb_info) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not get a framebuffer");
         return 0;
     }

@@ -53,7 +53,7 @@ static char *readSymLink(const char *path)
 
     while (1) {
         char *ptr = (char *)SDL_realloc(retval, (size_t)len);
-        if (ptr == NULL) {
+        if (!ptr) {
             SDL_OutOfMemory();
             break;
         }
@@ -86,18 +86,18 @@ static char *search_path_for_binary(const char *bin)
     char *start = envr;
     char *ptr;
 
-    if (envr == NULL) {
+    if (!envr) {
         SDL_SetError("No $PATH set");
         return NULL;
     }
 
     envr = SDL_strdup(envr);
-    if (envr == NULL) {
+    if (!envr) {
         SDL_OutOfMemory();
         return NULL;
     }
 
-    SDL_assert(bin != NULL);
+    SDL_assert(bin);
 
     alloc_size = SDL_strlen(bin) + SDL_strlen(envr) + 2;
     exe = (char *)SDL_malloc(alloc_size);
@@ -118,7 +118,7 @@ static char *search_path_for_binary(const char *bin)
             }
         }
         start = ptr + 1; /* start points to beginning of next element. */
-    } while (ptr != NULL);
+    } while (ptr);
 
     SDL_free(envr);
     SDL_free(exe);
@@ -138,7 +138,7 @@ char *SDL_GetBasePath(void)
     const int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1 };
     if (sysctl(mib, SDL_arraysize(mib), fullpath, &buflen, NULL, 0) != -1) {
         retval = SDL_strdup(fullpath);
-        if (retval == NULL) {
+        if (!retval) {
             SDL_OutOfMemory();
             return NULL;
         }
@@ -152,13 +152,13 @@ char *SDL_GetBasePath(void)
     if (sysctl(mib, 4, NULL, &len, NULL, 0) != -1) {
         char *exe, *pwddst;
         char *realpathbuf = (char *)SDL_malloc(PATH_MAX + 1);
-        if (realpathbuf == NULL) {
+        if (!realpathbuf) {
             SDL_OutOfMemory();
             return NULL;
         }
 
         cmdline = SDL_malloc(len);
-        if (cmdline == NULL) {
+        if (!cmdline) {
             SDL_free(realpathbuf);
             SDL_OutOfMemory();
             return NULL;
@@ -180,7 +180,7 @@ char *SDL_GetBasePath(void)
         }
 
         if (exe) {
-            if (pwddst == NULL) {
+            if (!pwddst) {
                 if (realpath(exe, realpathbuf) != NULL) {
                     retval = realpathbuf;
                 }
@@ -196,7 +196,7 @@ char *SDL_GetBasePath(void)
             }
         }
 
-        if (retval == NULL) {
+        if (!retval) {
             SDL_free(realpathbuf);
         }
 
@@ -205,7 +205,7 @@ char *SDL_GetBasePath(void)
 #endif
 
     /* is a Linux-style /proc filesystem available? */
-    if (retval == NULL && (access("/proc", F_OK) == 0)) {
+    if (!retval && (access("/proc", F_OK) == 0)) {
         /* !!! FIXME: after 2.0.6 ships, let's delete this code and just
                       use the /proc/%llu version. There's no reason to have
                       two copies of this plus all the #ifdefs. --ryan. */
@@ -219,7 +219,7 @@ char *SDL_GetBasePath(void)
         retval = SDL_LoadFile("/proc/self/exefile", NULL);
 #else
         retval = readSymLink("/proc/self/exe"); /* linux. */
-        if (retval == NULL) {
+        if (!retval) {
             /* older kernels don't have /proc/self ... try PID version... */
             char path[64];
             const int rc = SDL_snprintf(path, sizeof(path),
@@ -248,9 +248,9 @@ char *SDL_GetBasePath(void)
     /* If we had access to argv[0] here, we could check it for a path,
         or troll through $PATH looking for it, too. */
 
-    if (retval != NULL) { /* chop off filename. */
+    if (retval) { /* chop off filename. */
         char *ptr = SDL_strrchr(retval, '/');
-        if (ptr != NULL) {
+        if (ptr) {
             *(ptr + 1) = '\0';
         } else { /* shouldn't happen, but just in case... */
             SDL_free(retval);
@@ -258,10 +258,10 @@ char *SDL_GetBasePath(void)
         }
     }
 
-    if (retval != NULL) {
+    if (retval) {
         /* try to shrink buffer... */
         char *ptr = (char *)SDL_realloc(retval, SDL_strlen(retval) + 1);
-        if (ptr != NULL) {
+        if (ptr) {
             retval = ptr; /* oh well if it failed. */
         }
     }
@@ -284,18 +284,18 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     char *ptr = NULL;
     size_t len = 0;
 
-    if (app == NULL) {
+    if (!app) {
         SDL_InvalidParamError("app");
         return NULL;
     }
-    if (org == NULL) {
+    if (!org) {
         org = "";
     }
 
-    if (envr == NULL) {
+    if (!envr) {
         /* You end up with "$HOME/.local/share/Game Name 2" */
         envr = SDL_getenv("HOME");
-        if (envr == NULL) {
+        if (!envr) {
             /* we could take heroic measures with /etc/passwd, but oh well. */
             SDL_SetError("neither XDG_DATA_HOME nor HOME environment is set");
             return NULL;
@@ -312,7 +312,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
 
     len += SDL_strlen(append) + SDL_strlen(org) + SDL_strlen(app) + 3;
     retval = (char *)SDL_malloc(len);
-    if (retval == NULL) {
+    if (!retval) {
         SDL_OutOfMemory();
         return NULL;
     }

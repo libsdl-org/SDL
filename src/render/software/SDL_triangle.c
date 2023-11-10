@@ -220,7 +220,7 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
 
     SDL_Surface *tmp = NULL;
 
-    if (dst == NULL) {
+    if (!dst) {
         return -1;
     }
 
@@ -460,7 +460,7 @@ int SDL_SW_BlitTriangle(
 
     int has_modulation;
 
-    if (src == NULL || dst == NULL) {
+    if (!src || !dst) {
         return -1;
     }
 

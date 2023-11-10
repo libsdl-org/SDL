@@ -219,10 +219,10 @@ int stdlib_getsetenv(void *arg)
 
         text = SDL_getenv(name);
         SDLTest_AssertPass("Call to SDL_getenv('%s')", name);
-        if (text != NULL) {
+        if (text) {
             SDLTest_Log("Expected: NULL, Got: '%s' (%i)", text, (int)SDL_strlen(text));
         }
-    } while (text != NULL);
+    } while (text);
 
     /* Create random values to set */
     value1 = SDLTest_RandomAsciiStringOfSize(10);

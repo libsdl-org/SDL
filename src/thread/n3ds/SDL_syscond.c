@@ -54,7 +54,7 @@ void SDL_DestroyCond(SDL_cond *cond)
 /* Restart one of the threads that are waiting on the condition variable */
 int SDL_CondSignal(SDL_cond *cond)
 {
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -65,7 +65,7 @@ int SDL_CondSignal(SDL_cond *cond)
 /* Restart all threads that are waiting on the condition variable */
 int SDL_CondBroadcast(SDL_cond *cond)
 {
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -98,10 +98,10 @@ int SDL_CondWaitTimeout(SDL_cond *cond, SDL_mutex *mutex, Uint32 ms)
 {
     Result res;
 
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
-    if (mutex == NULL) {
+    if (!mutex) {
         return SDL_InvalidParamError("mutex");
     }
 

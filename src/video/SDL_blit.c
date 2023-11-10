@@ -251,7 +251,7 @@ int SDL_CalculateBlit(SDL_Surface *surface)
     }
 #endif
 #if SDL_HAVE_BLIT_AUTO
-    if (blit == NULL) {
+    if (!blit) {
         Uint32 src_format = surface->format->format;
         Uint32 dst_format = dst->format->format;
 
@@ -262,7 +262,7 @@ int SDL_CalculateBlit(SDL_Surface *surface)
 #endif
 
 #ifndef TEST_SLOW_BLIT
-    if (blit == NULL)
+    if (!blit)
 #endif
     {
         Uint32 src_format = surface->format->format;
@@ -278,7 +278,7 @@ int SDL_CalculateBlit(SDL_Surface *surface)
     map->data = blit;
 
     /* Make sure we have a blit function */
-    if (blit == NULL) {
+    if (!blit) {
         SDL_InvalidateMap(map);
         return SDL_SetError("Blit combination not supported");
     }

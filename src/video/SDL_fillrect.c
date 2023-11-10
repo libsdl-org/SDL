@@ -372,7 +372,7 @@ int SDL_FillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     }
 #endif
 
-    if (fill_function == NULL) {
+    if (!fill_function) {
         switch (dst->format->BytesPerPixel) {
         case 1:
         {

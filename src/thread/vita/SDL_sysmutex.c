@@ -62,7 +62,7 @@ SDL_mutex *SDL_CreateMutex(void)
 /* Free the mutex */
 void SDL_DestroyMutex(SDL_mutex *mutex)
 {
-    if (mutex != NULL) {
+    if (mutex) {
         sceKernelDeleteLwMutex(&mutex->lock);
         SDL_free(mutex);
     }
@@ -76,7 +76,7 @@ int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn
 #else
     SceInt32 res = 0;
 
-    if (mutex == NULL) {
+    if (!mutex) {
         return 0;
     }
 

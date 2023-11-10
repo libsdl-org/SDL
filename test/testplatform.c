@@ -366,7 +366,7 @@ int Test64Bit(SDL_bool verbose)
     LL_Test *t;
     int failed = 0;
 
-    for (t = LL_Tests; t->routine != NULL; t++) {
+    for (t = LL_Tests; t->routine; t++) {
         unsigned long long result = 0;
         unsigned int *al = (unsigned int *)&t->a;
         unsigned int *bl = (unsigned int *)&t->b;

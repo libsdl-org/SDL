@@ -54,7 +54,7 @@ void Android_OnTouch(SDL_Window *window, int touch_device_id_in, int pointer_fin
     SDL_TouchID touchDeviceId = 0;
     SDL_FingerID fingerId = 0;
 
-    if (window == NULL) {
+    if (!window) {
         return;
     }
 

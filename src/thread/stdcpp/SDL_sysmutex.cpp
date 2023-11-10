@@ -51,7 +51,7 @@ SDL_CreateMutex(void)
 extern "C" void
 SDL_DestroyMutex(SDL_mutex *mutex)
 {
-    if (mutex != NULL) {
+    if (mutex) {
         delete mutex;
     }
 }

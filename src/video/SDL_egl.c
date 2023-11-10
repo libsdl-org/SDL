@@ -178,7 +178,7 @@ SDL_bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const char *ext
     const char *ext_start;
 
     /* Invalid extensions can be rejected early */
-    if (ext == NULL || *ext == 0 || SDL_strchr(ext, ' ') != NULL) {
+    if (!ext || *ext == 0 || SDL_strchr(ext, ' ') != NULL) {
         /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "SDL_EGL_HasExtension: Invalid EGL extension"); */
         return SDL_FALSE;
     }
@@ -191,7 +191,7 @@ SDL_bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const char *ext
      *  1     If set, the client extension is masked and not present to SDL.
      */
     ext_override = SDL_getenv(ext);
-    if (ext_override != NULL) {
+    if (ext_override) {
         int disable_ext = SDL_atoi(ext_override);
         if (disable_ext & 0x01 && type == SDL_EGL_DISPLAY_EXTENSION) {
             return SDL_FALSE;
@@ -217,12 +217,12 @@ SDL_bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const char *ext
         return SDL_FALSE;
     }
 
-    if (egl_extstr != NULL) {
+    if (egl_extstr) {
         ext_start = egl_extstr;
 
         while (*ext_start) {
             ext_start = SDL_strstr(ext_start, ext);
-            if (ext_start == NULL) {
+            if (!ext_start) {
                 return SDL_FALSE;
             }
             /* Check if the match is not just a substring of one of the extensions */
@@ -336,17 +336,17 @@ static int SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
 #if !defined(SDL_VIDEO_STATIC_ANGLE) && !defined(SDL_VIDEO_DRIVER_VITA)
     /* A funny thing, loading EGL.so first does not work on the Raspberry, so we load libGL* first */
     path = SDL_getenv("SDL_VIDEO_GL_DRIVER");
-    if (path != NULL) {
+    if (path) {
         opengl_dll_handle = SDL_LoadObject(path);
     }
 
-    if (opengl_dll_handle == NULL) {
+    if (!opengl_dll_handle) {
         if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
             if (_this->gl_config.major_version > 1) {
                 path = DEFAULT_OGL_ES2;
                 opengl_dll_handle = SDL_LoadObject(path);
 #ifdef ALT_OGL_ES2
-                if (opengl_dll_handle == NULL && !vc4) {
+                if (!opengl_dll_handle && !vc4) {
                     path = ALT_OGL_ES2;
                     opengl_dll_handle = SDL_LoadObject(path);
                 }
@@ -355,12 +355,12 @@ static int SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
             } else {
                 path = DEFAULT_OGL_ES;
                 opengl_dll_handle = SDL_LoadObject(path);
-                if (opengl_dll_handle == NULL) {
+                if (!opengl_dll_handle) {
                     path = DEFAULT_OGL_ES_PVR;
                     opengl_dll_handle = SDL_LoadObject(path);
                 }
 #ifdef ALT_OGL_ES2
-                if (opengl_dll_handle == NULL && !vc4) {
+                if (!opengl_dll_handle && !vc4) {
                     path = ALT_OGL_ES2;
                     opengl_dll_handle = SDL_LoadObject(path);
                 }
@@ -372,7 +372,7 @@ static int SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
             path = DEFAULT_OGL;
             opengl_dll_handle = SDL_LoadObject(path);
 #ifdef ALT_OGL
-            if (opengl_dll_handle == NULL) {
+            if (!opengl_dll_handle) {
                 path = ALT_OGL;
                 opengl_dll_handle = SDL_LoadObject(path);
             }
@@ -382,34 +382,34 @@ static int SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
     }
     _this->egl_data->opengl_dll_handle = opengl_dll_handle;
 
-    if (opengl_dll_handle == NULL) {
+    if (!opengl_dll_handle) {
         return SDL_SetError("Could not initialize OpenGL / GLES library");
     }
 
     /* Loading libGL* in the previous step took care of loading libEGL.so, but we future proof by double checking */
-    if (egl_path != NULL) {
+    if (egl_path) {
         egl_dll_handle = SDL_LoadObject(egl_path);
     }
     /* Try loading a EGL symbol, if it does not work try the default library paths */
-    if (egl_dll_handle == NULL || SDL_LoadFunction(egl_dll_handle, "eglChooseConfig") == NULL) {
-        if (egl_dll_handle != NULL) {
+    if (!egl_dll_handle || SDL_LoadFunction(egl_dll_handle, "eglChooseConfig") == NULL) {
+        if (egl_dll_handle) {
             SDL_UnloadObject(egl_dll_handle);
         }
         path = SDL_getenv("SDL_VIDEO_EGL_DRIVER");
-        if (path == NULL) {
+        if (!path) {
             path = DEFAULT_EGL;
         }
         egl_dll_handle = SDL_LoadObject(path);
 
 #ifdef ALT_EGL
-        if (egl_dll_handle == NULL && !vc4) {
+        if (!egl_dll_handle && !vc4) {
             path = ALT_EGL;
             egl_dll_handle = SDL_LoadObject(path);
         }
 #endif
 
-        if (egl_dll_handle == NULL || SDL_LoadFunction(egl_dll_handle, "eglChooseConfig") == NULL) {
-            if (egl_dll_handle != NULL) {
+        if (!egl_dll_handle || SDL_LoadFunction(egl_dll_handle, "eglChooseConfig") == NULL) {
+            if (egl_dll_handle) {
                 SDL_UnloadObject(egl_dll_handle);
             }
             return SDL_SetError("Could not load EGL library");
@@ -578,11 +578,11 @@ int SDL_EGL_InitializeOffscreen(_THIS, int device)
     }
 
     /* Check for all extensions that are optional until used and fail if any is missing */
-    if (_this->egl_data->eglQueryDevicesEXT == NULL) {
+    if (!_this->egl_data->eglQueryDevicesEXT) {
         return SDL_SetError("eglQueryDevicesEXT is missing (EXT_device_enumeration not supported by the drivers?)");
     }
 
-    if (_this->egl_data->eglGetPlatformDisplayEXT == NULL) {
+    if (!_this->egl_data->eglGetPlatformDisplayEXT) {
         return SDL_SetError("eglGetPlatformDisplayEXT is missing (EXT_platform_base not supported by the drivers?)");
     }
 

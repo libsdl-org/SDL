@@ -195,7 +195,7 @@ static SDL_hapticlist_item *HapticByDevIndex(int device_index)
     }
 
     while (device_index > 0) {
-        SDL_assert(item != NULL);
+        SDL_assert(item);
         --device_index;
         item = item->next;
     }
@@ -206,7 +206,7 @@ static SDL_hapticlist_item *HapticByDevIndex(int device_index)
 #if SDL_USE_LIBUDEV
 static void haptic_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath)
 {
-    if (devpath == NULL || !(udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
+    if (!devpath || !(udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
         return;
     }
 
@@ -232,7 +232,7 @@ static int MaybeAddDevice(const char *path)
     int success;
     SDL_hapticlist_item *item;
 
-    if (path == NULL) {
+    if (!path) {
         return -1;
     }
 
@@ -242,7 +242,7 @@ static int MaybeAddDevice(const char *path)
     }
 
     /* check for duplicates */
-    for (item = SDL_hapticlist; item != NULL; item = item->next) {
+    for (item = SDL_hapticlist; item; item = item->next) {
         if (item->dev_num == sb.st_rdev) {
             return -1; /* duplicate. */
         }
@@ -266,12 +266,12 @@ static int MaybeAddDevice(const char *path)
     }
 
     item = (SDL_hapticlist_item *)SDL_calloc(1, sizeof(SDL_hapticlist_item));
-    if (item == NULL) {
+    if (!item) {
         return -1;
     }
 
     item->fname = SDL_strdup(path);
-    if (item->fname == NULL) {
+    if (!item->fname) {
         SDL_free(item);
         return -1;
     }
@@ -279,7 +279,7 @@ static int MaybeAddDevice(const char *path)
     item->dev_num = sb.st_rdev;
 
     /* TODO: should we add instance IDs? */
-    if (SDL_hapticlist_tail == NULL) {
+    if (!SDL_hapticlist_tail) {
         SDL_hapticlist = SDL_hapticlist_tail = item;
     } else {
         SDL_hapticlist_tail->next = item;
@@ -299,16 +299,16 @@ static int MaybeRemoveDevice(const char *path)
     SDL_hapticlist_item *item;
     SDL_hapticlist_item *prev = NULL;
 
-    if (path == NULL) {
+    if (!path) {
         return -1;
     }
 
-    for (item = SDL_hapticlist; item != NULL; item = item->next) {
+    for (item = SDL_hapticlist; item; item = item->next) {
         /* found it, remove it. */
         if (SDL_strcmp(path, item->fname) == 0) {
             const int retval = item->haptic ? item->haptic->index : -1;
 
-            if (prev != NULL) {
+            if (prev) {
                 prev->next = item->next;
             } else {
                 SDL_assert(SDL_hapticlist == item);
@@ -365,7 +365,7 @@ const char *SDL_SYS_HapticName(int index)
     if (fd >= 0) {
 
         name = SDL_SYS_HapticNameFromFD(fd);
-        if (name == NULL) {
+        if (!name) {
             /* No name found, return device character device */
             name = item->fname;
         }
@@ -383,7 +383,7 @@ static int SDL_SYS_HapticOpenFromFD(SDL_Haptic *haptic, int fd)
     /* Allocate the hwdata */
     haptic->hwdata = (struct haptic_hwdata *)
         SDL_malloc(sizeof(*haptic->hwdata));
-    if (haptic->hwdata == NULL) {
+    if (!haptic->hwdata) {
         SDL_OutOfMemory();
         goto open_err;
     }
@@ -403,7 +403,7 @@ static int SDL_SYS_HapticOpenFromFD(SDL_Haptic *haptic, int fd)
     haptic->nplaying = haptic->neffects; /* Linux makes no distinction. */
     haptic->effects = (struct haptic_effect *)
         SDL_malloc(sizeof(struct haptic_effect) * haptic->neffects);
-    if (haptic->effects == NULL) {
+    if (!haptic->effects) {
         SDL_OutOfMemory();
         goto open_err;
     }
@@ -416,7 +416,7 @@ static int SDL_SYS_HapticOpenFromFD(SDL_Haptic *haptic, int fd)
     /* Error handling */
 open_err:
     close(fd);
-    if (haptic->hwdata != NULL) {
+    if (haptic->hwdata) {
         SDL_free(haptic->hwdata);
         haptic->hwdata = NULL;
     }
@@ -911,7 +911,7 @@ int SDL_SYS_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
     /* Allocate the hardware effect */
     effect->hweffect = (struct haptic_hweffect *)
         SDL_malloc(sizeof(struct haptic_hweffect));
-    if (effect->hweffect == NULL) {
+    if (!effect->hweffect) {
         return SDL_OutOfMemory();
     }
 

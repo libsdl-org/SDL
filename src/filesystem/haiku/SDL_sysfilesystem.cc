@@ -52,11 +52,11 @@ char *SDL_GetBasePath(void)
     rc = path.GetParent(&path); /* chop filename, keep directory. */
     SDL_assert(rc == B_OK);
     const char *str = path.Path();
-    SDL_assert(str != NULL);
+    SDL_assert(str);
 
     const size_t len = SDL_strlen(str);
     char *retval = (char *) SDL_malloc(len + 2);
-    if (retval == NULL) {
+    if (!retval) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -75,11 +75,11 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     const char *append = "/config/settings/";
     size_t len = SDL_strlen(home);
 
-    if (app == NULL) {
+    if (!app) {
         SDL_InvalidParamError("app");
         return NULL;
     }
-    if (org == NULL) {
+    if (!org) {
         org = "";
     }
 
@@ -88,7 +88,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     }
     len += SDL_strlen(append) + SDL_strlen(org) + SDL_strlen(app) + 3;
     char *retval = (char *) SDL_malloc(len);
-    if (retval == NULL) {
+    if (!retval) {
         SDL_OutOfMemory();
     } else {
         if (*org) {

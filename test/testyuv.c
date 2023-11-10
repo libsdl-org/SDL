@@ -75,7 +75,7 @@ static SDL_bool verify_yuv_data(Uint32 format, const Uint8 *yuv, int yuv_pitch, 
     SDL_bool result = SDL_FALSE;
 
     rgb = (Uint8 *)SDL_malloc(size);
-    if (rgb == NULL) {
+    if (!rgb) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory");
         return SDL_FALSE;
     }
@@ -126,7 +126,7 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
     int yuv1_pitch, yuv2_pitch;
     int result = -1;
 
-    if (pattern == NULL || yuv1 == NULL || yuv2 == NULL) {
+    if (!pattern || !yuv1 || !yuv2) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't allocate test surfaces");
         goto done;
     }

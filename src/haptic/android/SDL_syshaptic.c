@@ -70,7 +70,7 @@ static SDL_hapticlist_item *HapticByOrder(int index)
         return NULL;
     }
     while (index > 0) {
-        SDL_assert(item != NULL);
+        SDL_assert(item);
         --index;
         item = item->next;
     }
@@ -80,7 +80,7 @@ static SDL_hapticlist_item *HapticByOrder(int index)
 static SDL_hapticlist_item *HapticByDevId(int device_id)
 {
     SDL_hapticlist_item *item;
-    for (item = SDL_hapticlist; item != NULL; item = item->next) {
+    for (item = SDL_hapticlist; item; item = item->next) {
         if (device_id == item->device_id) {
             /*SDL_Log("=+=+=+=+=+= HapticByDevId id [%d]", device_id);*/
             return item;
@@ -92,7 +92,7 @@ static SDL_hapticlist_item *HapticByDevId(int device_id)
 const char *SDL_SYS_HapticName(int index)
 {
     SDL_hapticlist_item *item = HapticByOrder(index);
-    if (item == NULL) {
+    if (!item) {
         SDL_SetError("No such device");
         return NULL;
     }
@@ -101,11 +101,11 @@ const char *SDL_SYS_HapticName(int index)
 
 static SDL_hapticlist_item *OpenHaptic(SDL_Haptic *haptic, SDL_hapticlist_item *item)
 {
-    if (item == NULL) {
+    if (!item) {
         SDL_SetError("No such device");
         return NULL;
     }
-    if (item->haptic != NULL) {
+    if (item->haptic) {
         SDL_SetError("Haptic already opened");
         return NULL;
     }
@@ -117,7 +117,7 @@ static SDL_hapticlist_item *OpenHaptic(SDL_Haptic *haptic, SDL_hapticlist_item *
     haptic->neffects = 1;
     haptic->nplaying = haptic->neffects;
     haptic->effects = (struct haptic_effect *)SDL_malloc(sizeof(struct haptic_effect) * haptic->neffects);
-    if (haptic->effects == NULL) {
+    if (!haptic->effects) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -149,7 +149,7 @@ int SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
 {
     SDL_hapticlist_item *item;
     item = HapticByDevId(((joystick_hwdata *)joystick->hwdata)->device_id);
-    return (item != NULL) ? 1 : 0;
+    return (item) ? 1 : 0;
 }
 
 int SDL_SYS_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick)
@@ -257,18 +257,18 @@ int Android_AddHaptic(int device_id, const char *name)
 {
     SDL_hapticlist_item *item;
     item = (SDL_hapticlist_item *)SDL_calloc(1, sizeof(SDL_hapticlist_item));
-    if (item == NULL) {
+    if (!item) {
         return -1;
     }
 
     item->device_id = device_id;
     item->name = SDL_strdup(name);
-    if (item->name == NULL) {
+    if (!item->name) {
         SDL_free(item);
         return -1;
     }
 
-    if (SDL_hapticlist_tail == NULL) {
+    if (!SDL_hapticlist_tail) {
         SDL_hapticlist = SDL_hapticlist_tail = item;
     } else {
         SDL_hapticlist_tail->next = item;
@@ -284,12 +284,12 @@ int Android_RemoveHaptic(int device_id)
     SDL_hapticlist_item *item;
     SDL_hapticlist_item *prev = NULL;
 
-    for (item = SDL_hapticlist; item != NULL; item = item->next) {
+    for (item = SDL_hapticlist; item; item = item->next) {
         /* found it, remove it. */
         if (device_id == item->device_id) {
             const int retval = item->haptic ? item->haptic->index : -1;
 
-            if (prev != NULL) {
+            if (prev) {
                 prev->next = item->next;
             } else {
                 SDL_assert(SDL_hapticlist == item);

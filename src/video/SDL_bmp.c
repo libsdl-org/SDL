@@ -667,7 +667,7 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
         }
 #endif /* SAVE_32BIT_BMP */
 
-        if (surface->format->palette != NULL && !save32bit) {
+        if (surface->format->palette && !save32bit) {
             if (surface->format->BitsPerPixel == 8) {
                 intermediate_surface = surface;
             } else {

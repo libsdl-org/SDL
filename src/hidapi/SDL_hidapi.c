@@ -29,11 +29,11 @@
  */
 #include "../SDL_internal.h"
 
-#include "SDL_loadso.h"
 #include "SDL_hidapi.h"
+#include "SDL_hidapi_c.h"
+#include "SDL_loadso.h"
 #include "SDL_thread.h"
 #include "SDL_timer.h"
-#include "SDL_hidapi_c.h"
 
 #if !SDL_HIDAPI_DISABLED
 
@@ -42,12 +42,12 @@
 #endif
 
 #if defined(__MACOSX__)
+#include <AvailabilityMacros.h>
 #include <CoreFoundation/CoreFoundation.h>
-#include <mach/mach.h>
 #include <IOKit/IOKitLib.h>
 #include <IOKit/hid/IOHIDDevice.h>
 #include <IOKit/usb/USBSpec.h>
-#include <AvailabilityMacros.h>
+#include <mach/mach.h>
 /* Things named "Master" were renamed to "Main" in macOS 12.0's SDK. */
 #if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
 #define kIOMainPortDefault kIOMasterPortDefault
@@ -56,16 +56,16 @@
 
 #include "../core/linux/SDL_udev.h"
 #ifdef SDL_USE_LIBUDEV
-#include <poll.h>
 #include "../core/linux/SDL_sandbox.h"
+#include <poll.h>
 #endif
 
 #ifdef HAVE_INOTIFY
-#include <unistd.h>  /* just in case we didn't use that SDL_USE_LIBUDEV block... */
-#include <errno.h>              /* errno, strerror */
+#include <errno.h> /* errno, strerror */
 #include <fcntl.h>
 #include <limits.h> /* For the definition of NAME_MAX */
 #include <sys/inotify.h>
+#include <unistd.h> /* just in case we didn't use that SDL_USE_LIBUDEV block... */
 #endif
 
 #if defined(SDL_USE_LIBUDEV) || defined(HAVE_INOTIFY)
@@ -165,7 +165,6 @@ static LRESULT CALLBACK ControllerWndProc(HWND hwnd, UINT message, WPARAM wParam
     return DefWindowProc(hwnd, message, wParam, lParam);
 }
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
-
 
 #if defined(__MACOSX__)
 static void CallbackIOServiceFunc(void *context, io_iterator_t portIterator)
@@ -594,7 +593,7 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 /* The implementation for Android is in a separate .cpp file */
 #include "hidapi/hidapi.h"
 #define HAVE_PLATFORM_BACKEND 1
-#define udev_ctx 1
+#define udev_ctx              1
 #elif __IPHONEOS__ || __TVOS__
 /* The implementation for iOS and tvOS is in a separate .m file */
 #include "hidapi/hidapi.h"
@@ -809,8 +808,8 @@ static struct
 /* this is awkwardly inlined, so we need to re-implement it here
  * so we can override the libusb_control_transfer call */
 static int SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
-                                 uint8_t descriptor_index, uint16_t lang_id,
-                                 unsigned char *data, int length)
+                                            uint8_t descriptor_index, uint16_t lang_id,
+                                            unsigned char *data, int length)
 {
     return libusb_control_transfer(dev, LIBUSB_ENDPOINT_IN | 0x0, LIBUSB_REQUEST_GET_DESCRIPTOR, (LIBUSB_DT_STRING << 8) | descriptor_index, lang_id,
                                    data, (uint16_t)length, 1000); /* Endpoint 0 IN */

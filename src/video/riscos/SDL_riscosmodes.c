@@ -166,7 +166,7 @@ static void *convert_mode_block(const int *block)
     }
 
     dst = SDL_malloc(40);
-    if (dst == NULL) {
+    if (!dst) {
         return NULL;
     }
 
@@ -207,7 +207,7 @@ int RISCOS_InitModes(_THIS)
 
     regs.r[0] = 1;
     error = _kernel_swi(OS_ScreenMode, &regs, &regs);
-    if (error != NULL) {
+    if (error) {
         return SDL_SetError("Unable to retrieve the current screen mode: %s (%i)", error->errmess, error->errnum);
     }
 
@@ -290,7 +290,7 @@ int RISCOS_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mod
     regs.r[0] = 0;
     regs.r[1] = (int)mode->driverdata;
     error = _kernel_swi(OS_ScreenMode, &regs, &regs);
-    if (error != NULL) {
+    if (error) {
         return SDL_SetError("Unable to set the current screen mode: %s (%i)", error->errmess, error->errnum);
     }
 

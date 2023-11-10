@@ -29,7 +29,7 @@ SDL_WindowShaper *Win32_CreateShaper(SDL_Window *window)
 {
     int resized_properly;
     SDL_WindowShaper *result = (SDL_WindowShaper *)SDL_malloc(sizeof(SDL_WindowShaper));
-    if (result == NULL) {
+    if (!result) {
         SDL_OutOfMemory();
         return NULL;
     }

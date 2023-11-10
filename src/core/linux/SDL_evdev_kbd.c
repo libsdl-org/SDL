@@ -174,7 +174,7 @@ static int fatal_signals[] = {
 static void kbd_cleanup(void)
 {
     SDL_EVDEV_keyboard_state *kbd = kbd_cleanup_state;
-    if (kbd == NULL) {
+    if (!kbd) {
         return;
     }
     kbd_cleanup_state = NULL;
@@ -259,7 +259,7 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
 {
     int tabidx, signum;
 
-    if (kbd_cleanup_state != NULL) {
+    if (kbd_cleanup_state) {
         return;
     }
     kbd_cleanup_state = kbd;
@@ -429,7 +429,7 @@ SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
     char shift_state[sizeof(long)] = { TIOCL_GETSHIFTSTATE, 0 };
 
     kbd = (SDL_EVDEV_keyboard_state *)SDL_calloc(1, sizeof(*kbd));
-    if (kbd == NULL) {
+    if (!kbd) {
         return NULL;
     }
 
@@ -465,7 +465,7 @@ SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
 
 void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, SDL_bool muted)
 {
-    if (state == NULL) {
+    if (!state) {
         return;
     }
 
@@ -893,7 +893,7 @@ void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *state, unsigned int keycode
     unsigned short *key_map;
     unsigned short keysym;
 
-    if (state == NULL) {
+    if (!state) {
         return;
     }
 
@@ -901,7 +901,7 @@ void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *state, unsigned int keycode
 
     shift_final = (state->shift_state | state->slockstate) ^ state->lockstate;
     key_map = state->key_maps[shift_final];
-    if (key_map == NULL) {
+    if (!key_map) {
         /* Unsupported shift state (e.g. ctrl = 4, alt = 8), just reset to the default state */
         state->shift_state = 0;
         state->slockstate = 0;

@@ -140,7 +140,7 @@ static int load_pulseaudio_sym(const char *fn, void **addr)
 
 static void UnloadPulseAudioLibrary(void)
 {
-    if (pulseaudio_handle != NULL) {
+    if (pulseaudio_handle) {
         SDL_UnloadObject(pulseaudio_handle);
         pulseaudio_handle = NULL;
     }
@@ -149,9 +149,9 @@ static void UnloadPulseAudioLibrary(void)
 static int LoadPulseAudioLibrary(void)
 {
     int retval = 0;
-    if (pulseaudio_handle == NULL) {
+    if (!pulseaudio_handle) {
         pulseaudio_handle = SDL_LoadObject(pulseaudio_library);
-        if (pulseaudio_handle == NULL) {
+        if (!pulseaudio_handle) {
             retval = -1;
             /* Don't call SDL_SetError(): SDL_LoadObject already did. */
         } else {
@@ -286,7 +286,7 @@ static void WaitForPulseOperation(pa_operation *o)
 
 static void DisconnectFromPulseServer(void)
 {
-    if (pulseaudio_threaded_mainloop != NULL) {
+    if (pulseaudio_threaded_mainloop) {
         PULSEAUDIO_pa_threaded_mainloop_stop(pulseaudio_threaded_mainloop);
     }
     if (pulseaudio_context) {
@@ -294,7 +294,7 @@ static void DisconnectFromPulseServer(void)
         PULSEAUDIO_pa_context_unref(pulseaudio_context);
         pulseaudio_context = NULL;
     }
-    if (pulseaudio_threaded_mainloop != NULL) {
+    if (pulseaudio_threaded_mainloop) {
         PULSEAUDIO_pa_threaded_mainloop_free(pulseaudio_threaded_mainloop);
         pulseaudio_threaded_mainloop = NULL;
     }
@@ -310,8 +310,8 @@ static int ConnectToPulseServer(void)
     pa_mainloop_api *mainloop_api = NULL;
     int state = 0;
 
-    SDL_assert(pulseaudio_threaded_mainloop == NULL);
-    SDL_assert(pulseaudio_context == NULL);
+    SDL_assert(!pulseaudio_threaded_mainloop);
+    SDL_assert(!pulseaudio_context);
 
     /* Set up a new main loop */
     if (!(pulseaudio_threaded_mainloop = PULSEAUDIO_pa_threaded_mainloop_new())) {
@@ -334,7 +334,7 @@ static int ConnectToPulseServer(void)
     SDL_assert(mainloop_api); /* this never fails, right? */
 
     pulseaudio_context = PULSEAUDIO_pa_context_new(mainloop_api, getAppName());
-    if (pulseaudio_context == NULL) {
+    if (!pulseaudio_context) {
         SDL_SetError("pa_context_new() failed");
         goto failed;
     }
@@ -501,7 +501,7 @@ static void PULSEAUDIO_FlushCapture(_THIS)
 
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
 
-    if (h->capturebuf != NULL) {
+    if (h->capturebuf) {
         PULSEAUDIO_pa_stream_drop(h->stream);
         h->capturebuf = NULL;
         h->capturelen = 0;

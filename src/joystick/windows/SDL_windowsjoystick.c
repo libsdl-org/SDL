@@ -182,7 +182,7 @@ static DWORD CALLBACK SDL_DeviceNotificationFunc(HCMNOTIFICATION hNotify, PVOID 
 static void SDL_CleanupDeviceNotificationFunc(void)
 {
     if (cfgmgr32_lib_handle) {
-        if (s_DeviceNotificationFuncHandle != NULL && CM_Unregister_Notification != NULL) {
+        if (s_DeviceNotificationFuncHandle != NULL && CM_Unregister_Notification) {
             CM_Unregister_Notification(s_DeviceNotificationFuncHandle);
             s_DeviceNotificationFuncHandle = NULL;
         }
@@ -300,7 +300,7 @@ static int SDL_CreateDeviceNotification(SDL_DeviceNotificationData *data)
     }
 
     data->messageWindow = CreateWindowEx(0, TEXT("Message"), NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
-    if (data->messageWindow == NULL) {
+    if (!data->messageWindow) {
         WIN_SetError("Failed to create message window for joystick autodetect");
         SDL_CleanupDeviceNotification(data);
         return -1;
@@ -429,7 +429,7 @@ static int SDL_StartJoystickThread(void)
 
 static void SDL_StopJoystickThread(void)
 {
-    if (s_joystickThread == NULL) {
+    if (!s_joystickThread) {
         return;
     }
 
@@ -678,7 +678,7 @@ static int WINDOWS_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->instance_id = device->nInstanceID;
     joystick->hwdata =
         (struct joystick_hwdata *)SDL_malloc(sizeof(struct joystick_hwdata));
-    if (joystick->hwdata == NULL) {
+    if (!joystick->hwdata) {
         return SDL_OutOfMemory();
     }
     SDL_zerop(joystick->hwdata);

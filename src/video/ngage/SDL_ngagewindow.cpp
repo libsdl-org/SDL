@@ -36,7 +36,7 @@ int NGAGE_CreateWindow(_THIS, SDL_Window *window)
 {
     NGAGE_Window *ngage_window = (NGAGE_Window *)SDL_calloc(1, sizeof(NGAGE_Window));
 
-    if (ngage_window == NULL) {
+    if (!ngage_window) {
         return SDL_OutOfMemory();
     }
 

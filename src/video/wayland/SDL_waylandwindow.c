@@ -198,7 +198,7 @@ static void SetDrawSurfaceViewport(SDL_Window *window, int src_width, int src_he
     SDL_VideoData *video = wind->waylandData;
 
     if (video->viewporter) {
-        if (wind->draw_viewport == NULL) {
+        if (!wind->draw_viewport) {
             wind->draw_viewport = wp_viewporter_get_viewport(video->viewporter, wind->surface);
         }
 
@@ -404,7 +404,7 @@ static void SetFullscreen(SDL_Window *window, struct wl_output *output)
 
 #ifdef HAVE_LIBDECOR_H
     if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
-        if (wind->shell_surface.libdecor.frame == NULL) {
+        if (!wind->shell_surface.libdecor.frame) {
             return; /* Can't do anything yet, wait for ShowWindow */
         }
         if (output) {
@@ -1269,10 +1269,10 @@ int Wayland_SetWindowModalFor(_THIS, SDL_Window *modal_window, SDL_Window *paren
 
 #ifdef HAVE_LIBDECOR_H
     if (viddata->shell.libdecor) {
-        if (modal_data->shell_surface.libdecor.frame == NULL) {
+        if (!modal_data->shell_surface.libdecor.frame) {
             return SDL_SetError("Modal window was hidden");
         }
-        if (parent_data->shell_surface.libdecor.frame == NULL) {
+        if (!parent_data->shell_surface.libdecor.frame) {
             return SDL_SetError("Parent window was hidden");
         }
         libdecor_frame_set_parent(modal_data->shell_surface.libdecor.frame,
@@ -1325,7 +1325,7 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
                                                                data->surface,
                                                                &libdecor_frame_interface,
                                                                data);
-        if (data->shell_surface.libdecor.frame == NULL) {
+        if (!data->shell_surface.libdecor.frame) {
             SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to create libdecor frame!");
         } else {
             libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, c->classname);
@@ -1486,11 +1486,11 @@ static void Wayland_ReleasePopup(_THIS, SDL_Window *popup)
     SDL_WindowData *popupdata;
 
     /* Basic sanity checks to weed out the weird popup closures */
-    if (popup == NULL || popup->magic != &_this->window_magic) {
+    if (!popup || popup->magic != &_this->window_magic) {
         return;
     }
     popupdata = popup->driverdata;
-    if (popupdata == NULL) {
+    if (!popupdata) {
         return;
     }
 
@@ -1817,7 +1817,7 @@ void Wayland_RestoreWindow(_THIS, SDL_Window *window)
 
 #ifdef HAVE_LIBDECOR_H
     if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
-        if (wind->shell_surface.libdecor.frame == NULL) {
+        if (!wind->shell_surface.libdecor.frame) {
             return; /* Can't do anything yet, wait for ShowWindow */
         }
         libdecor_frame_unset_maximized(wind->shell_surface.libdecor.frame);
@@ -1862,7 +1862,7 @@ void Wayland_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable)
     const SDL_WindowData *wind = window->driverdata;
 
     if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
-        if (wind->shell_surface.libdecor.frame == NULL) {
+        if (!wind->shell_surface.libdecor.frame) {
             return; /* Can't do anything yet, wait for ShowWindow */
         }
         if (resizable) {
@@ -1897,7 +1897,7 @@ void Wayland_MaximizeWindow(_THIS, SDL_Window *window)
 
 #ifdef HAVE_LIBDECOR_H
     if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
-        if (wind->shell_surface.libdecor.frame == NULL) {
+        if (!wind->shell_surface.libdecor.frame) {
             return; /* Can't do anything yet, wait for ShowWindow */
         }
         libdecor_frame_set_maximized(wind->shell_surface.libdecor.frame);
@@ -1924,7 +1924,7 @@ void Wayland_MinimizeWindow(_THIS, SDL_Window *window)
 
 #ifdef HAVE_LIBDECOR_H
     if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
-        if (wind->shell_surface.libdecor.frame == NULL) {
+        if (!wind->shell_surface.libdecor.frame) {
             return; /* Can't do anything yet, wait for ShowWindow */
         }
         libdecor_frame_set_minimized(wind->shell_surface.libdecor.frame);
@@ -1987,7 +1987,7 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     SDL_VideoData *c;
 
     data = SDL_calloc(1, sizeof(*data));
-    if (data == NULL) {
+    if (!data) {
         return SDL_OutOfMemory();
     }
 
@@ -2198,7 +2198,7 @@ void Wayland_SetWindowTitle(_THIS, SDL_Window *window)
 
 #ifdef HAVE_LIBDECOR_H
     if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
-        if (wind->shell_surface.libdecor.frame == NULL) {
+        if (!wind->shell_surface.libdecor.frame) {
             return; /* Can't do anything yet, wait for ShowWindow */
         }
         libdecor_frame_set_title(wind->shell_surface.libdecor.frame, title);

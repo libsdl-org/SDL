@@ -55,7 +55,7 @@ static int ValidHaptic(SDL_Haptic *haptic)
     SDL_Haptic *hapticlist;
 
     valid = 0;
-    if (haptic != NULL) {
+    if (haptic) {
         hapticlist = SDL_haptics;
         while (hapticlist) {
             if (hapticlist == haptic) {
@@ -124,7 +124,7 @@ SDL_Haptic *SDL_HapticOpen(int device_index)
 
     /* Create the haptic device */
     haptic = (SDL_Haptic *)SDL_malloc(sizeof(*haptic));
-    if (haptic == NULL) {
+    if (!haptic) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -296,7 +296,7 @@ SDL_Haptic *SDL_HapticOpenFromJoystick(SDL_Joystick *joystick)
 
         /* Create the haptic device */
         haptic = (SDL_Haptic *)SDL_malloc(sizeof(*haptic));
-        if (haptic == NULL) {
+        if (!haptic) {
             SDL_OutOfMemory();
             SDL_UnlockJoysticks();
             return NULL;
@@ -609,7 +609,7 @@ int SDL_HapticSetGain(SDL_Haptic *haptic, int gain)
 
     /* We use the envvar to get the maximum gain. */
     env = SDL_getenv("SDL_HAPTIC_GAIN_MAX");
-    if (env != NULL) {
+    if (env) {
         max_gain = SDL_atoi(env);
 
         /* Check for sanity. */

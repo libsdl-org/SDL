@@ -73,7 +73,7 @@ static int load_jack_sym(const char *fn, void **addr)
 
 static void UnloadJackLibrary(void)
 {
-    if (jack_handle != NULL) {
+    if (jack_handle) {
         SDL_UnloadObject(jack_handle);
         jack_handle = NULL;
     }
@@ -82,9 +82,9 @@ static void UnloadJackLibrary(void)
 static int LoadJackLibrary(void)
 {
     int retval = 0;
-    if (jack_handle == NULL) {
+    if (!jack_handle) {
         jack_handle = SDL_LoadObject(jack_library);
-        if (jack_handle == NULL) {
+        if (!jack_handle) {
             retval = -1;
             /* Don't call SDL_SetError(): SDL_LoadObject already did. */
         } else {
@@ -400,7 +400,7 @@ static SDL_bool JACK_Init(SDL_AudioDriverImpl *impl)
         /* Make sure a JACK server is running and available. */
         jack_status_t status;
         jack_client_t *client = JACK_jack_client_open("SDL", JackNoStartServer, &status, NULL);
-        if (client == NULL) {
+        if (!client) {
             UnloadJackLibrary();
             return SDL_FALSE;
         }

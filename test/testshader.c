@@ -135,7 +135,7 @@ static SDL_bool CompileShader(GLhandleARB shader, const char *source)
 
         glGetObjectParameterivARB(shader, GL_OBJECT_INFO_LOG_LENGTH_ARB, &length);
         info = (char *)SDL_malloc((size_t)length + 1);
-        if (info == NULL) {
+        if (!info) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         } else {
             glGetInfoLogARB(shader, length, NULL, info);
@@ -163,7 +163,7 @@ static SDL_bool LinkProgram(ShaderData *data)
 
         glGetObjectParameterivARB(data->program, GL_OBJECT_INFO_LOG_LENGTH_ARB, &length);
         info = (char *)SDL_malloc((size_t)length + 1);
-        if (info == NULL) {
+        if (!info) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         } else {
             glGetInfoLogARB(data->program, length, NULL, info);

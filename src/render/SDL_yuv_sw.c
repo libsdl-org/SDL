@@ -47,7 +47,7 @@ SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(Uint32 format, int w, int h)
     }
 
     swdata = (SDL_SW_YUVTexture *)SDL_calloc(1, sizeof(*swdata));
-    if (swdata == NULL) {
+    if (!swdata) {
         SDL_OutOfMemory();
         return NULL;
     }

@@ -139,7 +139,7 @@ static void Android_DestroyEmptyCursor()
 
 static int Android_ShowCursor(SDL_Cursor *cursor)
 {
-    if (cursor == NULL) {
+    if (!cursor) {
         cursor = Android_CreateEmptyCursor();
     }
     if (cursor) {
@@ -216,7 +216,7 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
     int changes;
     Uint8 button;
 
-    if (window == NULL) {
+    if (!window) {
         return;
     }
 

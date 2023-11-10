@@ -50,7 +50,7 @@ void VITA_InitKeyboard(void)
 void VITA_PollKeyboard(void)
 {
     // We skip polling keyboard if no window is created
-    if (Vita_Window == NULL) {
+    if (!Vita_Window) {
         return;
     }
 

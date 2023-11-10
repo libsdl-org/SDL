@@ -83,7 +83,7 @@ void DrawObject(SDL_Renderer *renderer, Object *object)
 void DrawObjects(SDL_Renderer *renderer)
 {
     Object *next = objects;
-    while (next != NULL) {
+    while (next) {
         DrawObject(renderer, next);
         next = next->next;
     }
@@ -93,7 +93,7 @@ void AppendObject(Object *object)
 {
     if (objects) {
         Object *next = objects;
-        while (next->next != NULL) {
+        while (next->next) {
             next = next->next;
         }
         next->next = object;

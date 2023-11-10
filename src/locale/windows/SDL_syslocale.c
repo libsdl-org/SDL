@@ -102,7 +102,7 @@ void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
         }
     }
 
-    if (pGetUserPreferredUILanguages == NULL) {
+    if (!pGetUserPreferredUILanguages) {
         SDL_SYS_GetPreferredLocales_winxp(buf, buflen); /* this is always available */
     } else {
         SDL_SYS_GetPreferredLocales_vista(buf, buflen); /* available on Vista and later. */

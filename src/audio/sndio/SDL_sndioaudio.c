@@ -113,7 +113,7 @@ static int load_sndio_syms(void)
 
 static void UnloadSNDIOLibrary(void)
 {
-    if (sndio_handle != NULL) {
+    if (sndio_handle) {
         SDL_UnloadObject(sndio_handle);
         sndio_handle = NULL;
     }

@@ -438,7 +438,7 @@ void SDL_Fcitx_UpdateTextRect(const SDL_Rect *rect)
     }
 
     focused_win = SDL_GetKeyboardFocus();
-    if (focused_win == NULL) {
+    if (!focused_win) {
         return;
     }
 

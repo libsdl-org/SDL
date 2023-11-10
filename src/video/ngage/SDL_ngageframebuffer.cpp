@@ -149,7 +149,7 @@ int SDL_NGAGE_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect 
     SDL_Surface *surface;
 
     surface = (SDL_Surface *)SDL_GetWindowData(window, NGAGE_SURFACE);
-    if (surface == NULL) {
+    if (!surface) {
         return SDL_SetError("Couldn't find ngage surface for window");
     }
 

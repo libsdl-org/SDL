@@ -42,7 +42,7 @@ SDL_WSCONS_mouse_input_data *SDL_WSCONS_Init_Mouse()
 #endif
     SDL_WSCONS_mouse_input_data *mouseInputData = SDL_calloc(1, sizeof(SDL_WSCONS_mouse_input_data));
 
-    if (mouseInputData == NULL) {
+    if (!mouseInputData) {
         return NULL;
     }
     mouseInputData->fd = open("/dev/wsmouse", O_RDWR | O_NONBLOCK | O_CLOEXEC);
@@ -126,7 +126,7 @@ void updateMouse(SDL_WSCONS_mouse_input_data *inputData)
 
 void SDL_WSCONS_Quit_Mouse(SDL_WSCONS_mouse_input_data *inputData)
 {
-    if (inputData == NULL) {
+    if (!inputData) {
         return;
     }
     close(inputData->fd);

@@ -977,7 +977,7 @@ static SDL_bool HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
     SDL_DriverSteam_Context *ctx;
 
     ctx = (SDL_DriverSteam_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (ctx == NULL) {
+    if (!ctx) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
@@ -1109,7 +1109,7 @@ static SDL_bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
             break;
         }
 
-        if (joystick == NULL) {
+        if (!joystick) {
             continue;
         }
 

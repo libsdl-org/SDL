@@ -699,12 +699,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     /* Get the window data for the window */
     data = WIN_GetWindowDataFromHWND(hwnd);
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-    if (data == NULL) {
+    if (!data) {
         /* Fallback */
         data = (SDL_WindowData *)GetProp(hwnd, TEXT("SDL_WindowData"));
     }
 #endif
-    if (data == NULL) {
+    if (!data) {
         return CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
     }
 
@@ -1809,7 +1809,7 @@ int WIN_WaitEventTimeout(_THIS, int timeout)
             message_result = GetMessage(&msg, 0, 0, 0);
         }
         if (message_result) {
-            if (msg.message == WM_TIMER && msg.hwnd == NULL && msg.wParam == timer_id) {
+            if (msg.message == WM_TIMER && !msg.hwnd && msg.wParam == timer_id) {
                 return 0;
             }
             if (g_WindowsMessageHook) {
@@ -1898,7 +1898,7 @@ void WIN_PumpEvents(_THIS)
        not grabbing the keyboard. Note: If we *are* grabbing the keyboard, GetKeyState()
        will return inaccurate results for VK_LWIN and VK_RWIN but we don't need it anyway. */
     focusWindow = SDL_GetKeyboardFocus();
-    if (focusWindow == NULL || !(focusWindow->flags & SDL_WINDOW_KEYBOARD_GRABBED)) {
+    if (!focusWindow || !(focusWindow->flags & SDL_WINDOW_KEYBOARD_GRABBED)) {
         if ((keystate[SDL_SCANCODE_LGUI] == SDL_PRESSED) && !(GetKeyState(VK_LWIN) & 0x8000)) {
             SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LGUI);
         }
@@ -1952,8 +1952,8 @@ int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
         ++app_registered;
         return 0;
     }
-    SDL_assert(SDL_Appname == NULL);
-    if (name == NULL) {
+    SDL_assert(!SDL_Appname);
+    if (!name) {
         name = "SDL_app";
 #if defined(CS_BYTEALIGNCLIENT) || defined(CS_OWNDC)
         style = (CS_BYTEALIGNCLIENT | CS_OWNDC);

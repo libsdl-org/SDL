@@ -224,7 +224,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
 
     SDL_GetWindowSizeInPixels(window, &w, &h);
 
-    if (data == NULL) {
+    if (!data) {
         SDL_Renderer *renderer = NULL;
         const char *hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
         const SDL_bool specific_accelerated_renderer = (hint && *hint != '0' && *hint != '1' &&
@@ -262,16 +262,16 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
                     }
                 }
             }
-            if (renderer == NULL) {
+            if (!renderer) {
                 return SDL_SetError("No hardware accelerated renderers available");
             }
         }
 
-        SDL_assert(renderer != NULL); /* should have explicitly checked this above. */
+        SDL_assert(renderer); /* should have explicitly checked this above. */
 
         /* Create the data after we successfully create the renderer (bug #1116) */
         data = (SDL_WindowTextureData *)SDL_calloc(1, sizeof(*data));
-        if (data == NULL) {
+        if (!data) {
             SDL_DestroyRenderer(renderer);
             return SDL_OutOfMemory();
         }
@@ -437,7 +437,7 @@ int SDL_VideoInit(const char *driver_name)
     int i = 0;
 
     /* Check to make sure we don't overwrite '_this' */
-    if (_this != NULL) {
+    if (_this) {
         SDL_VideoQuit();
     }
 
@@ -483,17 +483,17 @@ int SDL_VideoInit(const char *driver_name)
                 }
             }
 
-            driver_attempt = (driver_attempt_end != NULL) ? (driver_attempt_end + 1) : NULL;
+            driver_attempt = (driver_attempt_end) ? (driver_attempt_end + 1) : NULL;
         }
     } else {
         for (i = 0; bootstrap[i]; ++i) {
             video = bootstrap[i]->create();
-            if (video != NULL) {
+            if (video) {
                 break;
             }
         }
     }
-    if (video == NULL) {
+    if (!video) {
         if (driver_name) {
             SDL_SetError("%s not available", driver_name);
             goto pre_driver_error;
@@ -574,7 +574,7 @@ pre_driver_error:
 
 const char *SDL_GetCurrentVideoDriver()
 {
-    if (_this == NULL) {
+    if (!_this) {
         SDL_UninitializedVideo();
         return NULL;
     }
@@ -737,7 +737,7 @@ int SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rect *rect)
 
     CHECK_DISPLAY_INDEX(displayIndex, -1);
 
-    if (rect == NULL) {
+    if (!rect) {
         return SDL_InvalidParamError("rect");
     }
 
@@ -1601,14 +1601,14 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
     SDL_Window *window;
     Uint32 type_flags, graphics_flags;
 
-    if (_this == NULL) {
+    if (!_this) {
         /* Initialize the video system if needed */
         if (SDL_Init(SDL_INIT_VIDEO) < 0) {
             return NULL;
         }
 
         /* Make clang-tidy happy */
-        if (_this == NULL) {
+        if (!_this) {
             return NULL;
         }
     }
@@ -1690,7 +1690,7 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
     }
 
     window = (SDL_Window *)SDL_calloc(1, sizeof(*window));
-    if (window == NULL) {
+    if (!window) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -3437,7 +3437,7 @@ void *SDL_GL_GetProcAddress(const char *proc)
 
 void SDL_GL_UnloadLibrary(void)
 {
-    if (_this == NULL) {
+    if (!_this) {
         SDL_UninitializedVideo();
         return;
     }
@@ -4115,7 +4115,7 @@ int SDL_GL_SetSwapInterval(int interval)
 
 int SDL_GL_GetSwapInterval(void)
 {
-    if (_this == NULL) {
+    if (!_this) {
         return 0;
     } else if (SDL_GL_GetCurrentContext() == NULL) {
         return 0;
@@ -4705,7 +4705,7 @@ int SDL_Vulkan_LoadLibrary(const char *path)
 
 void *SDL_Vulkan_GetVkGetInstanceProcAddr(void)
 {
-    if (_this == NULL) {
+    if (!_this) {
         SDL_UninitializedVideo();
         return NULL;
     }
@@ -4718,7 +4718,7 @@ void *SDL_Vulkan_GetVkGetInstanceProcAddr(void)
 
 void SDL_Vulkan_UnloadLibrary(void)
 {
-    if (_this == NULL) {
+    if (!_this) {
         SDL_UninitializedVideo();
         return;
     }
@@ -4767,7 +4767,7 @@ SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window,
         return SDL_FALSE;
     }
 
-    if (surface == NULL) {
+    if (!surface) {
         SDL_InvalidParamError("surface");
         return SDL_FALSE;
     }

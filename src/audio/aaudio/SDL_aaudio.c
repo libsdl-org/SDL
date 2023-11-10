@@ -285,7 +285,7 @@ static SDL_bool aaudio_Init(SDL_AudioDriverImpl *impl)
     SDL_zero(ctx);
 
     ctx.handle = SDL_LoadObject(LIB_AAUDIO_SO);
-    if (ctx.handle == NULL) {
+    if (!ctx.handle) {
         LOGI("SDL couldn't find " LIB_AAUDIO_SO);
         goto failure;
     }

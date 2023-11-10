@@ -51,7 +51,7 @@ SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPr
     SDL_Hint *hint;
     SDL_HintWatch *entry;
 
-    if (name == NULL) {
+    if (!name) {
         return SDL_FALSE;
     }
 
@@ -83,7 +83,7 @@ SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPr
 
     /* Couldn't find the hint, add a new one */
     hint = (SDL_Hint *)SDL_malloc(sizeof(*hint));
-    if (hint == NULL) {
+    if (!hint) {
         return SDL_FALSE;
     }
     hint->name = SDL_strdup(name);
@@ -101,16 +101,16 @@ SDL_bool SDL_ResetHint(const char *name)
     SDL_Hint *hint;
     SDL_HintWatch *entry;
 
-    if (name == NULL) {
+    if (!name) {
         return SDL_FALSE;
     }
 
     env = SDL_getenv(name);
     for (hint = SDL_hints; hint; hint = hint->next) {
         if (SDL_strcmp(name, hint->name) == 0) {
-            if ((env == NULL && hint->value != NULL) ||
-                (env != NULL && hint->value == NULL) ||
-                (env != NULL && SDL_strcmp(env, hint->value) != 0)) {
+            if ((!env && hint->value) ||
+                (env && !hint->value) ||
+                (env && SDL_strcmp(env, hint->value) != 0)) {
                 for (entry = hint->callbacks; entry;) {
                     /* Save the next entry in case this one is deleted */
                     SDL_HintWatch *next = entry->next;
@@ -135,9 +135,9 @@ void SDL_ResetHints(void)
 
     for (hint = SDL_hints; hint; hint = hint->next) {
         env = SDL_getenv(hint->name);
-        if ((env == NULL && hint->value != NULL) ||
-            (env != NULL && hint->value == NULL) ||
-            (env != NULL && SDL_strcmp(env, hint->value) != 0)) {
+        if ((!env && hint->value) ||
+            (env && !hint->value) ||
+            (env && SDL_strcmp(env, hint->value) != 0)) {
             for (entry = hint->callbacks; entry;) {
                 /* Save the next entry in case this one is deleted */
                 SDL_HintWatch *next = entry->next;
@@ -164,7 +164,7 @@ const char *SDL_GetHint(const char *name)
     env = SDL_getenv(name);
     for (hint = SDL_hints; hint; hint = hint->next) {
         if (SDL_strcmp(name, hint->name) == 0) {
-            if (env == NULL || hint->priority == SDL_HINT_OVERRIDE) {
+            if (!env || hint->priority == SDL_HINT_OVERRIDE) {
                 return hint->value;
             }
             break;
@@ -175,7 +175,7 @@ const char *SDL_GetHint(const char *name)
 
 SDL_bool SDL_GetStringBoolean(const char *value, SDL_bool default_value)
 {
-    if (value == NULL || !*value) {
+    if (!value || !*value) {
         return default_value;
     }
     if (*value == '0' || SDL_strcasecmp(value, "false") == 0) {

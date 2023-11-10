@@ -256,7 +256,7 @@ static int SetupWindowData(_THIS, SDL_Window *window, Window w, BOOL created)
 
     /* Allocate the window data */
     data = (SDL_WindowData *)SDL_calloc(1, sizeof(*data));
-    if (data == NULL) {
+    if (!data) {
         return SDL_OutOfMemory();
     }
     data->window = window;
@@ -394,7 +394,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
 #if SDL_VIDEO_OPENGL_GLX || SDL_VIDEO_OPENGL_EGL
     const char *forced_visual_id = SDL_GetHint(SDL_HINT_VIDEO_X11_WINDOW_VISUALID);
 
-    if (forced_visual_id != NULL && forced_visual_id[0] != '\0') {
+    if (forced_visual_id && forced_visual_id[0] != '\0') {
         XVisualInfo *vi, template;
         int nvis;
 
@@ -428,7 +428,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
 #endif
         }
 
-        if (vinfo == NULL) {
+        if (!vinfo) {
             return -1;
         }
         visual = vinfo->visual;
@@ -465,7 +465,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
 
         /* OK, we got a colormap, now fill it in as best as we can */
         colorcells = SDL_malloc(visual->map_entries * sizeof(XColor));
-        if (colorcells == NULL) {
+        if (!colorcells) {
             return SDL_OutOfMemory();
         }
         ncolors = visual->map_entries;
@@ -592,7 +592,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
         wintype_name = "_NET_WM_WINDOW_TYPE_TOOLTIP";
     } else if (window->flags & SDL_WINDOW_POPUP_MENU) {
         wintype_name = "_NET_WM_WINDOW_TYPE_POPUP_MENU";
-    } else if (hint != NULL && *hint) {
+    } else if (hint && *hint) {
         wintype_name = hint;
     } else {
         wintype_name = "_NET_WM_WINDOW_TYPE_NORMAL";
@@ -1612,7 +1612,7 @@ static void X11_ReadProperty(SDL_x11Prop *p, Display *disp, Window w, Atom prop)
     int bytes_fetch = 0;
 
     do {
-        if (ret != NULL) {
+        if (ret) {
             X11_XFree(ret);
         }
         X11_XGetWindowProperty(disp, w, prop, 0, bytes_fetch, False, AnyPropertyType, &type, &fmt, &count, &bytes_left, &ret);
@@ -1662,7 +1662,7 @@ void *X11_GetWindowICCProfile(_THIS, SDL_Window *window, size_t *size)
     }
 
     ret_icc_profile_data = SDL_malloc(real_nitems);
-    if (ret_icc_profile_data == NULL) {
+    if (!ret_icc_profile_data) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -1679,7 +1679,7 @@ void X11_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     Display *display;
 
-    if (data == NULL) {
+    if (!data) {
         return;
     }
     data->mouse_grabbed = SDL_FALSE;
@@ -1734,7 +1734,7 @@ void X11_SetWindowKeyboardGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     Display *display;
 
-    if (data == NULL) {
+    if (!data) {
         return;
     }
 
@@ -1860,7 +1860,7 @@ int X11_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation)
     XWMHints *wmhints;
 
     wmhints = X11_XGetWMHints(display, data->xwindow);
-    if (wmhints == NULL) {
+    if (!wmhints) {
         return SDL_SetError("Couldn't get WM hints");
     }
 

@@ -526,7 +526,7 @@ static int SDLCALL mem_close(SDL_RWops *context)
 SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
 {
     SDL_RWops *rwops = NULL;
-    if (file == NULL || !*file || mode == NULL || !*mode) {
+    if (!file || !*file || !mode || !*mode) {
         SDL_SetError("SDL_RWFromFile(): No file or no mode specified");
         return NULL;
     }
@@ -602,7 +602,7 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
 #else
         FILE *fp = fopen(file, mode);
 #endif
-        if (fp == NULL) {
+        if (!fp) {
             SDL_SetError("Couldn't open %s", file);
         } else {
             rwops = SDL_RWFromFP(fp, SDL_TRUE);
@@ -721,7 +721,7 @@ void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, int freesrc)
     size_t size_read, size_total;
     void *data = NULL, *newdata;
 
-    if (src == NULL) {
+    if (!src) {
         SDL_InvalidParamError("src");
         return NULL;
     }

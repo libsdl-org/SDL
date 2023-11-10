@@ -84,7 +84,7 @@ static void SDL_TrackAllocation(void *mem, size_t size)
         return;
     }
     entry = (SDL_tracked_allocation *)SDL_malloc_orig(sizeof(*entry));
-    if (entry == NULL) {
+    if (!entry) {
         return;
     }
     entry->mem = mem;
@@ -184,7 +184,7 @@ static void *SDLCALL SDLTest_TrackedRealloc(void *ptr, size_t size)
 
 static void SDLCALL SDLTest_TrackedFree(void *ptr)
 {
-    if (ptr == NULL) {
+    if (!ptr) {
         return;
     }
 

@@ -145,7 +145,7 @@ static int pipewire_dlsym(const char *fn, void **addr)
 static int load_pipewire_library()
 {
     pipewire_handle = SDL_LoadObject(pipewire_library);
-    return pipewire_handle != NULL ? 0 : -1;
+    return pipewire_handle ? 0 : -1;
 }
 
 static void unload_pipewire_library()
@@ -442,7 +442,7 @@ static void *node_object_new(Uint32 id, const char *type, Uint32 version, const 
 
     /* Create the proxy object */
     proxy = pw_registry_bind(hotplug_registry, id, type, version, sizeof(struct node_object));
-    if (proxy == NULL) {
+    if (!proxy) {
         SDL_SetError("Pipewire: Failed to create proxy object (%i)", errno);
         return NULL;
     }
@@ -701,7 +701,7 @@ static void registry_event_global_callback(void *object, uint32_t id, uint32_t p
 
             if (node_desc && node_path) {
                 node = node_object_new(id, type, version, &interface_node_events, &interface_core_events);
-                if (node == NULL) {
+                if (!node) {
                     SDL_SetError("Pipewire: Failed to allocate interface node");
                     return;
                 }
@@ -710,7 +710,7 @@ static void registry_event_global_callback(void *object, uint32_t id, uint32_t p
                 desc_buffer_len = SDL_strlen(node_desc) + 1;
                 path_buffer_len = SDL_strlen(node_path) + 1;
                 node->userdata = io = SDL_calloc(1, sizeof(struct io_node) + desc_buffer_len + path_buffer_len);
-                if (io == NULL) {
+                if (!io) {
                     node_object_destroy(node);
                     SDL_OutOfMemory();
                     return;
@@ -731,7 +731,7 @@ static void registry_event_global_callback(void *object, uint32_t id, uint32_t p
         }
     } else if (!SDL_strcmp(type, PW_TYPE_INTERFACE_Metadata)) {
         node = node_object_new(id, type, version, &metadata_node_events, &metadata_core_events);
-        if (node == NULL) {
+        if (!node) {
             SDL_SetError("Pipewire: Failed to allocate metadata node");
             return;
         }
@@ -759,22 +759,22 @@ static int hotplug_loop_init()
     spa_list_init(&hotplug_io_list);
 
     hotplug_loop = PIPEWIRE_pw_thread_loop_new("SDLAudioHotplug", NULL);
-    if (hotplug_loop == NULL) {
+    if (!hotplug_loop) {
         return SDL_SetError("Pipewire: Failed to create hotplug detection loop (%i)", errno);
     }
 
     hotplug_context = PIPEWIRE_pw_context_new(PIPEWIRE_pw_thread_loop_get_loop(hotplug_loop), NULL, 0);
-    if (hotplug_context == NULL) {
+    if (!hotplug_context) {
         return SDL_SetError("Pipewire: Failed to create hotplug detection context (%i)", errno);
     }
 
     hotplug_core = PIPEWIRE_pw_context_connect(hotplug_context, NULL, 0);
-    if (hotplug_core == NULL) {
+    if (!hotplug_core) {
         return SDL_SetError("Pipewire: Failed to connect hotplug detection context (%i)", errno);
     }
 
     hotplug_registry = pw_core_get_registry(hotplug_core, PW_VERSION_REGISTRY, 0);
-    if (hotplug_registry == NULL) {
+    if (!hotplug_registry) {
         return SDL_SetError("Pipewire: Failed to acquire hotplug detection registry (%i)", errno);
     }
 
@@ -806,11 +806,11 @@ static void hotplug_loop_destroy()
     hotplug_init_complete = SDL_FALSE;
     hotplug_events_enabled = SDL_FALSE;
 
-    if (pipewire_default_sink_id != NULL) {
+    if (pipewire_default_sink_id) {
         SDL_free(pipewire_default_sink_id);
         pipewire_default_sink_id = NULL;
     }
-    if (pipewire_default_source_id != NULL) {
+    if (pipewire_default_source_id) {
         SDL_free(pipewire_default_source_id);
         pipewire_default_source_id = NULL;
     }
@@ -1146,15 +1146,15 @@ static int PIPEWIRE_OpenDevice(_THIS, const char *devname)
 
     /* Get the hints for the application name, stream name and role */
     app_name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_APP_NAME);
-    if (app_name == NULL || *app_name == '\0') {
+    if (!app_name || *app_name == '\0') {
         app_name = SDL_GetHint(SDL_HINT_APP_NAME);
-        if (app_name == NULL || *app_name == '\0') {
+        if (!app_name || *app_name == '\0') {
             app_name = "SDL Application";
         }
     }
 
     stream_name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_NAME);
-    if (stream_name == NULL || *stream_name == '\0') {
+    if (!stream_name || *stream_name == '\0') {
         stream_name = "Audio Stream";
     }
 
@@ -1232,7 +1232,7 @@ static int PIPEWIRE_OpenDevice(_THIS, const char *devname)
 
             PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
             node = io_list_get_by_id(node_id);
-            if (node != NULL) {
+            if (node) {
                 PIPEWIRE_pw_properties_set(props, PW_KEY_TARGET_OBJECT, node->path);
             }
             PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);

@@ -500,7 +500,7 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
     double sangleinv, cangleinv;
 
     /* Sanity check */
-    if (src == NULL) {
+    if (!src) {
         return NULL;
     }
 
@@ -540,7 +540,7 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
     }
 
     /* Check target */
-    if (rz_dst == NULL) {
+    if (!rz_dst) {
         return NULL;
     }
 

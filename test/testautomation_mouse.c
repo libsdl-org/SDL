@@ -423,7 +423,7 @@ SDL_Window *_createMouseSuiteTestWindow()
  */
 void _destroyMouseSuiteTestWindow(SDL_Window *window)
 {
-    if (window != NULL) {
+    if (window) {
         SDL_DestroyWindow(window);
         window = NULL;
         SDLTest_AssertPass("SDL_DestroyWindow()");

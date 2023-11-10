@@ -94,7 +94,7 @@ int HAIKU_CreateWindowFramebuffer(_THIS, SDL_Window * window,
 
 int HAIKU_UpdateWindowFramebuffer(_THIS, SDL_Window * window,
                                       const SDL_Rect * rects, int numrects) {
-    if (window == NULL) {
+    if (!window) {
         return 0;
     }
 

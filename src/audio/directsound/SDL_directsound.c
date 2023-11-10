@@ -64,7 +64,7 @@ static void DSOUND_Unload(void)
     pDirectSoundCaptureCreate8 = NULL;
     pDirectSoundCaptureEnumerateW = NULL;
 
-    if (DSoundDLL != NULL) {
+    if (DSoundDLL) {
         SDL_UnloadObject(DSoundDLL);
         DSoundDLL = NULL;
     }
@@ -77,7 +77,7 @@ static int DSOUND_Load(void)
     DSOUND_Unload();
 
     DSoundDLL = SDL_LoadObject("DSOUND.DLL");
-    if (DSoundDLL == NULL) {
+    if (!DSoundDLL) {
         SDL_SetError("DirectSound: failed to load DSOUND.DLL");
     } else {
 /* Now make sure we have DirectX 8 or better... */
@@ -172,7 +172,7 @@ static BOOL CALLBACK FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVO
     const int iscapture = (int)((size_t)data);
     if (guid != NULL) { /* skip default device */
         char *str = WIN_LookupAudioDeviceName(desc, guid);
-        if (str != NULL) {
+        if (str) {
             LPGUID cpyguid = (LPGUID)SDL_malloc(sizeof(GUID));
             SDL_memcpy(cpyguid, guid, sizeof(GUID));
 

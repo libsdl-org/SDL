@@ -66,7 +66,7 @@ CreateWindowNative(int w, int h)
         CreateWindow("SDL Test", "", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
                      CW_USEDEFAULT, w, h, NULL, NULL, GetModuleHandle(NULL),
                      NULL);
-    if (hwnd == NULL) {
+    if (!hwnd) {
         MessageBox(NULL, "Window Creation Failed!", "Error!",
                    MB_ICONEXCLAMATION | MB_OK);
         return 0;

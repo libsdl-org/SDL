@@ -64,7 +64,7 @@ char *SDLTest_GenerateRunSeed(const int length)
 
     /* Allocate output buffer */
     seed = (char *)SDL_malloc((length + 1) * sizeof(char));
-    if (seed == NULL) {
+    if (!seed) {
         SDLTest_LogError("SDL_malloc for run seed output buffer failed.");
         SDL_Error(SDL_ENOMEM);
         return NULL;
@@ -108,17 +108,17 @@ static Uint64 SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName
     size_t entireStringLength;
     char *buffer;
 
-    if (runSeed == NULL || runSeed[0] == '\0') {
+    if (!runSeed || runSeed[0] == '\0') {
         SDLTest_LogError("Invalid runSeed string.");
         return -1;
     }
 
-    if (suiteName == NULL || suiteName[0] == '\0') {
+    if (!suiteName || suiteName[0] == '\0') {
         SDLTest_LogError("Invalid suiteName string.");
         return -1;
     }
 
-    if (testName == NULL || testName[0] == '\0') {
+    if (!testName || testName[0] == '\0') {
         SDLTest_LogError("Invalid testName string.");
         return -1;
     }
@@ -139,7 +139,7 @@ static Uint64 SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName
     iterationStringLength = SDL_strlen(iterationString);
     entireStringLength = runSeedLength + suiteNameLength + testNameLength + iterationStringLength + 1;
     buffer = (char *)SDL_malloc(entireStringLength);
-    if (buffer == NULL) {
+    if (!buffer) {
         SDLTest_LogError("Failed to allocate buffer for execKey generation.");
         SDL_Error(SDL_ENOMEM);
         return 0;
@@ -171,7 +171,7 @@ static SDL_TimerID SDLTest_SetTestTimeout(int timeout, void(SDLCALL *callback)(v
     Uint32 timeoutInMilliseconds;
     SDL_TimerID timerID;
 
-    if (callback == NULL) {
+    if (!callback) {
         SDLTest_LogError("Timeout callback can't be NULL");
         return -1;
     }
@@ -229,7 +229,7 @@ static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_
     int testResult = 0;
     int fuzzerCount;
 
-    if (testSuite == NULL || testCase == NULL || testSuite->name == NULL || testCase->name == NULL) {
+    if (!testSuite || !testCase || !testSuite->name || !testCase->name) {
         SDLTest_LogError("Setup failure: testSuite or testCase references NULL");
         return TEST_RESULT_SETUP_FAILURE;
     }
@@ -402,9 +402,9 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
     }
 
     /* Generate run see if we don't have one already */
-    if (userRunSeed == NULL || userRunSeed[0] == '\0') {
+    if (!userRunSeed || userRunSeed[0] == '\0') {
         char *tmp = SDLTest_GenerateRunSeed(16);
-        if (tmp == NULL) {
+        if (!tmp) {
             SDLTest_LogError("Generating a random seed failed");
             return 2;
         }
@@ -445,20 +445,20 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
     /* Pre-allocate an array for tracking failed tests (potentially all test cases) */
     failedTests = (const SDLTest_TestCaseReference **)SDL_malloc(totalNumberOfTests * sizeof(SDLTest_TestCaseReference *));
-    if (failedTests == NULL) {
+    if (!failedTests) {
         SDLTest_LogError("Unable to allocate cache for failed tests");
         SDL_Error(SDL_ENOMEM);
         return -1;
     }
 
     /* Initialize filtering */
-    if (filter != NULL && filter[0] != '\0') {
+    if (filter && filter[0] != '\0') {
         /* Loop over all suites to check if we have a filter match */
         suiteCounter = 0;
         while (testSuites[suiteCounter] && suiteFilter == 0) {
             testSuite = testSuites[suiteCounter];
             suiteCounter++;
-            if (testSuite->name != NULL && SDL_strcasecmp(filter, testSuite->name) == 0) {
+            if (testSuite->name && SDL_strcasecmp(filter, testSuite->name) == 0) {
                 /* Matched a suite name */
                 suiteFilter = 1;
                 suiteFilterName = testSuite->name;
@@ -471,7 +471,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
             while (testSuite->testCases[testCounter] && testFilter == 0) {
                 testCase = testSuite->testCases[testCounter];
                 testCounter++;
-                if (testCase->name != NULL && SDL_strcasecmp(filter, testCase->name) == 0) {
+                if (testCase->name && SDL_strcasecmp(filter, testCase->name) == 0) {
                     /* Matched a test name */
                     suiteFilter = 1;
                     suiteFilterName = testSuite->name;
@@ -487,7 +487,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
             SDLTest_LogError("Filter '%s' did not match any test suite/case.", filter);
             for (suiteCounter = 0; testSuites[suiteCounter]; ++suiteCounter) {
                 testSuite = testSuites[suiteCounter];
-                if (testSuite->name != NULL) {
+                if (testSuite->name) {
                     SDLTest_Log("Test suite: %s", testSuite->name);
                 }
 
@@ -511,7 +511,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
         suiteCounter++;
 
         /* Filter suite if flag set and we have a name */
-        if (suiteFilter == 1 && suiteFilterName != NULL && testSuite->name != NULL &&
+        if (suiteFilter == 1 && suiteFilterName && testSuite->name &&
             SDL_strcasecmp(suiteFilterName, testSuite->name) != 0) {
             /* Skip suite */
             SDLTest_Log("===== Test Suite %i: '%s' skipped\n",
@@ -540,7 +540,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                 testCounter++;
 
                 /* Filter tests if flag set and we have a name */
-                if (testFilter == 1 && testFilterName != NULL && testCase->name != NULL &&
+                if (testFilter == 1 && testFilterName && testCase->name &&
                     SDL_strcasecmp(testFilterName, testCase->name) != 0) {
                     /* Skip test */
                     SDLTest_Log("===== Test Case %i.%i: '%s' skipped\n",
@@ -562,7 +562,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                                 suiteCounter,
                                 testCounter,
                                 currentTestName);
-                    if (testCase->description != NULL && testCase->description[0] != '\0') {
+                    if (testCase->description && testCase->description[0] != '\0') {
                         SDLTest_Log("Test Description: '%s'",
                                     (testCase->description) ? testCase->description : SDLTEST_INVALID_NAME_FORMAT);
                     }

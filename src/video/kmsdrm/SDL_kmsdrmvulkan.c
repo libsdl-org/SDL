@@ -56,10 +56,10 @@ int KMSDRM_Vulkan_LoadLibrary(_THIS, const char *path)
     }
 
     /* Load the Vulkan library */
-    if (path == NULL) {
+    if (!path) {
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
     }
-    if (path == NULL) {
+    if (!path) {
         path = DEFAULT_VULKAN;
     }
 
@@ -93,7 +93,7 @@ int KMSDRM_Vulkan_LoadLibrary(_THIS, const char *path)
             _this->vulkan_config.vkEnumerateInstanceExtensionProperties,
         &extensionCount);
 
-    if (extensions == NULL) {
+    if (!extensions) {
         goto fail;
     }
 

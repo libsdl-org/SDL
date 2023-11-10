@@ -216,7 +216,7 @@ int SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(SDL_HIDAPI_Device *device, const 
     }
 
     request = (SDL_HIDAPI_RumbleRequest *)SDL_calloc(1, sizeof(*request));
-    if (request == NULL) {
+    if (!request) {
         SDL_HIDAPI_UnlockRumble();
         return SDL_OutOfMemory();
     }

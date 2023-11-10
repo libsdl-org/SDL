@@ -116,13 +116,13 @@ static SDL_VideoDevice *WINRT_CreateDevice(void)
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
+    if (!device) {
         SDL_OutOfMemory();
         return 0;
     }
 
     data = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
-    if (data == NULL) {
+    if (!data) {
         SDL_OutOfMemory();
         SDL_free(device);
         return 0;
@@ -182,7 +182,7 @@ static void SDLCALL WINRT_SetDisplayOrientationsPreference(void *userdata, const
      *
      * TODO, WinRT: consider reading in an app's .appxmanifest file, and apply its orientation when 'newValue == NULL'.
      */
-    if ((oldValue == NULL) && (newValue == NULL)) {
+    if ((!oldValue) && (!newValue)) {
         return;
     }
 
@@ -337,7 +337,7 @@ static int WINRT_AddDisplaysForOutput(_THIS, IDXGIAdapter1 *dxgiAdapter1, int ou
         }
 
         dxgiModes = (DXGI_MODE_DESC *)SDL_calloc(numModes, sizeof(DXGI_MODE_DESC));
-        if (dxgiModes == NULL) {
+        if (!dxgiModes) {
             SDL_OutOfMemory();
             goto done;
         }

@@ -72,7 +72,7 @@ SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, Uint32 flags)
     }
 
     state = (SDLTest_CommonState *)SDL_calloc(1, sizeof(*state));
-    if (state == NULL) {
+    if (!state) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -992,7 +992,7 @@ static SDL_Surface *SDLTest_LoadIcon(const char *file)
 
     /* Load the icon surface */
     icon = SDL_LoadBMP(file);
-    if (icon == NULL) {
+    if (!icon) {
         SDL_Log("Couldn't load %s: %s\n", file, SDL_GetError());
         return NULL;
     }
@@ -1757,7 +1757,7 @@ static void SDLTest_ScreenShot(SDL_Renderer *renderer)
     SDL_Rect viewport;
     SDL_Surface *surface;
 
-    if (renderer == NULL) {
+    if (!renderer) {
         return;
     }
 

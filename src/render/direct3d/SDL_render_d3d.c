@@ -443,7 +443,7 @@ static int D3D_CreateStagingTexture(IDirect3DDevice9 *device, D3D_TextureRep *te
 {
     HRESULT result;
 
-    if (texture->staging == NULL) {
+    if (!texture->staging) {
         result = IDirect3DDevice9_CreateTexture(device, texture->w, texture->h, 1, 0,
                                                 texture->d3dfmt, D3DPOOL_SYSTEMMEM, &texture->staging, NULL);
         if (FAILED(result)) {
@@ -535,7 +535,7 @@ static int D3D_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     DWORD usage;
 
     texturedata = (D3D_TextureData *)SDL_calloc(1, sizeof(*texturedata));
-    if (texturedata == NULL) {
+    if (!texturedata) {
         return SDL_OutOfMemory();
     }
     texturedata->scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? D3DTEXF_POINT : D3DTEXF_LINEAR;
@@ -573,7 +573,7 @@ static int D3D_RecreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;
     D3D_TextureData *texturedata = (D3D_TextureData *)texture->driverdata;
 
-    if (texturedata == NULL) {
+    if (!texturedata) {
         return 0;
     }
 
@@ -600,7 +600,7 @@ static int D3D_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;
     D3D_TextureData *texturedata = (D3D_TextureData *)texture->driverdata;
 
-    if (texturedata == NULL) {
+    if (!texturedata) {
         return SDL_SetError("Texture is not currently available");
     }
 
@@ -636,7 +636,7 @@ static int D3D_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
     D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;
     D3D_TextureData *texturedata = (D3D_TextureData *)texture->driverdata;
 
-    if (texturedata == NULL) {
+    if (!texturedata) {
         return SDL_SetError("Texture is not currently available");
     }
 
@@ -660,7 +660,7 @@ static int D3D_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     D3D_TextureData *texturedata = (D3D_TextureData *)texture->driverdata;
     IDirect3DDevice9 *device = data->device;
 
-    if (texturedata == NULL) {
+    if (!texturedata) {
         return SDL_SetError("Texture is not currently available");
     }
 #if SDL_HAVE_YUV
@@ -710,7 +710,7 @@ static void D3D_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;
     D3D_TextureData *texturedata = (D3D_TextureData *)texture->driverdata;
 
-    if (texturedata == NULL) {
+    if (!texturedata) {
         return;
     }
 #if SDL_HAVE_YUV
@@ -738,7 +738,7 @@ static void D3D_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture
 {
     D3D_TextureData *texturedata = (D3D_TextureData *)texture->driverdata;
 
-    if (texturedata == NULL) {
+    if (!texturedata) {
         return;
     }
 
@@ -754,18 +754,18 @@ static int D3D_SetRenderTargetInternal(SDL_Renderer *renderer, SDL_Texture *text
     IDirect3DDevice9 *device = data->device;
 
     /* Release the previous render target if it wasn't the default one */
-    if (data->currentRenderTarget != NULL) {
+    if (data->currentRenderTarget) {
         IDirect3DSurface9_Release(data->currentRenderTarget);
         data->currentRenderTarget = NULL;
     }
 
-    if (texture == NULL) {
+    if (!texture) {
         IDirect3DDevice9_SetRenderTarget(data->device, 0, data->defaultRenderTarget);
         return 0;
     }
 
     texturedata = (D3D_TextureData *)texture->driverdata;
-    if (texturedata == NULL) {
+    if (!texturedata) {
         return SDL_SetError("Texture is not currently available");
     }
 
@@ -820,7 +820,7 @@ static int D3D_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, c
     Vertex *verts = (Vertex *)SDL_AllocateRenderVertices(renderer, vertslen, 0, &cmd->data.draw.first);
     int i;
 
-    if (verts == NULL) {
+    if (!verts) {
         return -1;
     }
 
@@ -845,7 +845,7 @@ static int D3D_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
     int count = indices ? num_indices : num_vertices;
     Vertex *verts = (Vertex *)SDL_AllocateRenderVertices(renderer, count * sizeof(Vertex), 0, &cmd->data.draw.first);
 
-    if (verts == NULL) {
+    if (!verts) {
         return -1;
     }
 
@@ -939,9 +939,9 @@ static int SetupTextureState(D3D_RenderData *data, SDL_Texture *texture, LPDIREC
 {
     D3D_TextureData *texturedata = (D3D_TextureData *)texture->driverdata;
 
-    SDL_assert(*shader == NULL);
+    SDL_assert(!*shader);
 
-    if (texturedata == NULL) {
+    if (!texturedata) {
         return SDL_SetError("Texture is not currently available");
     }
 
@@ -993,11 +993,11 @@ static int SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
         LPDIRECT3DPIXELSHADER9 shader = NULL;
 
         /* disable any enabled textures we aren't going to use, let SetupTextureState() do the rest. */
-        if (texture == NULL) {
+        if (!texture) {
             IDirect3DDevice9_SetTexture(data->device, 0, NULL);
         }
 #if SDL_HAVE_YUV
-        if ((newtexturedata == NULL || !newtexturedata->yuv) && (oldtexturedata && oldtexturedata->yuv)) {
+        if ((!newtexturedata || !newtexturedata->yuv) && (oldtexturedata && oldtexturedata->yuv)) {
             IDirect3DDevice9_SetTexture(data->device, 1, NULL);
             IDirect3DDevice9_SetTexture(data->device, 2, NULL);
         }
@@ -1391,7 +1391,7 @@ static void D3D_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 #endif
     }
 
-    if (data == NULL) {
+    if (!data) {
         return;
     }
 
@@ -1417,7 +1417,7 @@ static void D3D_DestroyRenderer(SDL_Renderer *renderer)
             IDirect3DSurface9_Release(data->defaultRenderTarget);
             data->defaultRenderTarget = NULL;
         }
-        if (data->currentRenderTarget != NULL) {
+        if (data->currentRenderTarget) {
             IDirect3DSurface9_Release(data->currentRenderTarget);
             data->currentRenderTarget = NULL;
         }
@@ -1468,7 +1468,7 @@ static int D3D_Reset(SDL_Renderer *renderer)
         IDirect3DSurface9_Release(data->defaultRenderTarget);
         data->defaultRenderTarget = NULL;
     }
-    if (data->currentRenderTarget != NULL) {
+    if (data->currentRenderTarget) {
         IDirect3DSurface9_Release(data->currentRenderTarget);
         data->currentRenderTarget = NULL;
     }

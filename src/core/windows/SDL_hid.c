@@ -58,9 +58,9 @@ int WIN_LoadHIDDLL(void)
     SDL_HidP_GetValueCaps = (HidP_GetValueCaps_t)GetProcAddress(s_pHIDDLL, "HidP_GetValueCaps");
     SDL_HidP_MaxDataListLength = (HidP_MaxDataListLength_t)GetProcAddress(s_pHIDDLL, "HidP_MaxDataListLength");
     SDL_HidP_GetData = (HidP_GetData_t)GetProcAddress(s_pHIDDLL, "HidP_GetData");
-    if (SDL_HidD_GetManufacturerString == NULL || SDL_HidD_GetProductString == NULL ||
-        SDL_HidP_GetCaps == NULL || SDL_HidP_GetButtonCaps == NULL ||
-        SDL_HidP_GetValueCaps == NULL || SDL_HidP_MaxDataListLength == NULL || SDL_HidP_GetData == NULL) {
+    if (!SDL_HidD_GetManufacturerString || !SDL_HidD_GetProductString ||
+        !SDL_HidP_GetCaps || !SDL_HidP_GetButtonCaps ||
+        !SDL_HidP_GetValueCaps || !SDL_HidP_MaxDataListLength || !SDL_HidP_GetData) {
         WIN_UnloadHIDDLL();
         return -1;
     }

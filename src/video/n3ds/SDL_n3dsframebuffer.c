@@ -47,7 +47,7 @@ int SDL_N3DS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, 
     FreePreviousWindowFramebuffer(window);
     framebuffer = CreateNewWindowFramebuffer(window);
 
-    if (framebuffer == NULL) {
+    if (!framebuffer) {
         return SDL_OutOfMemory();
     }
 

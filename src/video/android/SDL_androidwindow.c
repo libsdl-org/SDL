@@ -65,7 +65,7 @@ int Android_CreateWindow(_THIS, SDL_Window *window)
     SDL_SetKeyboardFocus(window);
 
     data = (SDL_WindowData *)SDL_calloc(1, sizeof(*data));
-    if (data == NULL) {
+    if (!data) {
         retval = SDL_OutOfMemory();
         goto endfunction;
     }

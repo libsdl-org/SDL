@@ -94,7 +94,7 @@ quit(int rc)
 {
     int i;
 
-    if (context != NULL) {
+    if (context) {
         for (i = 0; i < state->num_windows; i++) {
             if (context[i]) {
                 SDL_GL_DeleteContext(context[i]);
@@ -445,7 +445,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
     for (i = 1; i < argc;) {
@@ -502,7 +502,7 @@ int main(int argc, char *argv[])
     }
 
     context = (SDL_GLContext *)SDL_calloc(state->num_windows, sizeof(*context));
-    if (context == NULL) {
+    if (!context) {
         SDL_Log("Out of memory!\n");
         quit(2);
     }
@@ -543,17 +543,17 @@ int main(int argc, char *argv[])
 #if 1
         path = GetNearbyFilename(f);
 
-        if (path == NULL) {
+        if (!path) {
             path = SDL_strdup(f);
         }
 
-        if (path == NULL) {
+        if (!path) {
             SDL_Log("out of memory\n");
             exit(-1);
         }
 
         tmp = SDL_LoadBMP(path);
-        if (tmp == NULL) {
+        if (!tmp) {
             SDL_Log("missing image file: %s", path);
             exit(-1);
         } else {

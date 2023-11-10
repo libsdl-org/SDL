@@ -120,7 +120,7 @@ int SDL_SemTryWait(SDL_sem *sem)
 {
     int retval;
 
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -184,7 +184,7 @@ Uint32 SDL_SemValue(SDL_sem *sem)
 
 int SDL_SemPost(SDL_sem *sem)
 {
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 
