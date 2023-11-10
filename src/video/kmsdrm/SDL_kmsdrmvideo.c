@@ -1555,13 +1555,14 @@ int KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
        extra window as a dummy surface when working with multiple contexts */
     if (viddata->num_windows >= viddata->max_windows) {
         unsigned int new_max_windows = viddata->max_windows + 1;
-        viddata->windows = (SDL_Window **)SDL_realloc(viddata->windows,
-                                                      new_max_windows * sizeof(SDL_Window *));
-        viddata->max_windows = new_max_windows;
-
-        if (!viddata->windows) {
+        SDL_Window **new_windows = (SDL_Window **)SDL_realloc(viddata->windows,
+                                                              new_max_windows * sizeof(SDL_Window *));
+        if (!new_windows) {
             return SDL_OutOfMemory();
         }
+        viddata->windows = new_windows;
+        viddata->max_windows = new_max_windows;
+
     }
 
     viddata->windows[viddata->num_windows++] = window;

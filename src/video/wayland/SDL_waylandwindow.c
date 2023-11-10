@@ -1196,13 +1196,18 @@ static void handle_surface_enter(void *data, struct wl_surface *surface,
 {
     SDL_WindowData *window = data;
     SDL_DisplayData *driverdata = wl_output_get_user_data(output);
+    SDL_DisplayData **new_outputs;
 
     if (!SDL_WAYLAND_own_output(output) || !SDL_WAYLAND_own_surface(surface)) {
         return;
     }
 
-    window->outputs = SDL_realloc(window->outputs,
-                                  sizeof(SDL_DisplayData *) * (window->num_outputs + 1));
+    new_outputs = SDL_realloc(window->outputs,
+                              sizeof(SDL_DisplayData *) * (window->num_outputs + 1));
+    if (!new_outputs) {
+        return;
+    }
+    window->outputs = new_outputs;
     window->outputs[window->num_outputs++] = driverdata;
 
     /* Update the scale factor after the move so that fullscreen outputs are updated. */

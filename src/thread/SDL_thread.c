@@ -54,13 +54,15 @@ int SDL_SetTLS(SDL_TLSID id, const void *value, void(SDLCALL *destructor)(void *
     storage = SDL_SYS_GetTLSData();
     if (!storage || (id > storage->limit)) {
         unsigned int i, oldlimit, newlimit;
+        SDL_TLSData *new_storage;
 
         oldlimit = storage ? storage->limit : 0;
         newlimit = (id + TLS_ALLOC_CHUNKSIZE);
-        storage = (SDL_TLSData *)SDL_realloc(storage, sizeof(*storage) + (newlimit - 1) * sizeof(storage->array[0]));
-        if (!storage) {
+        new_storage = (SDL_TLSData *)SDL_realloc(storage, sizeof(*storage) + (newlimit - 1) * sizeof(storage->array[0]));
+        if (!new_storage) {
             return SDL_OutOfMemory();
         }
+        storage = new_storage;
         storage->limit = newlimit;
         for (i = oldlimit; i < newlimit; ++i) {
             storage->array[i].data = NULL;

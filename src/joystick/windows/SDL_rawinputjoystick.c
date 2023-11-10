@@ -615,16 +615,18 @@ static int RAWINPUT_UpdateWindowsGamingInput()
                         if (!found) {
                             /* New device, add it */
                             WindowsGamingInputGamepadState *gamepad_state;
-
-                            wgi_state.per_gamepad_count++;
-                            wgi_state.per_gamepad = SDL_realloc(wgi_state.per_gamepad, sizeof(wgi_state.per_gamepad[0]) * wgi_state.per_gamepad_count);
-                            if (!wgi_state.per_gamepad) {
-                                return SDL_OutOfMemory();
-                            }
+                            WindowsGamingInputGamepadState **new_per_gamepad;
                             gamepad_state = SDL_calloc(1, sizeof(*gamepad_state));
                             if (!gamepad_state) {
                                 return SDL_OutOfMemory();
                             }
+                            new_per_gamepad = SDL_realloc(wgi_state.per_gamepad, sizeof(wgi_state.per_gamepad[0]) * (wgi_state.per_gamepad_count + 1));
+                            if (!new_per_gamepad) {
+                                SDL_free(gamepad_state);
+                                return SDL_OutOfMemory();
+                            }
+                            wgi_state.per_gamepad = new_per_gamepad;
+                            wgi_state.per_gamepad_count++;
                             wgi_state.per_gamepad[wgi_state.per_gamepad_count - 1] = gamepad_state;
                             gamepad_state->gamepad = gamepad;
                             gamepad_state->connected = SDL_TRUE;

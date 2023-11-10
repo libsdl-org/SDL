@@ -297,12 +297,13 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
     if (!theme) {
         const char *xcursor_theme = dbus_cursor_theme;
 
-        vdata->cursor_themes = SDL_realloc(vdata->cursor_themes,
-                                           sizeof(SDL_WaylandCursorTheme) * (vdata->num_cursor_themes + 1));
-        if (!vdata->cursor_themes) {
+        SDL_WaylandCursorTheme *new_cursor_themes = SDL_realloc(vdata->cursor_themes,
+                                                                sizeof(SDL_WaylandCursorTheme) * (vdata->num_cursor_themes + 1));
+        if (!new_cursor_themes) {
             SDL_OutOfMemory();
             return SDL_FALSE;
         }
+        vdata->cursor_themes = new_cursor_themes;
 
         /* Fallback envvar if the DBus properties don't exist */
         if (!xcursor_theme) {
