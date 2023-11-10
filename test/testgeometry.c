@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
     for (i = 1; i < argc;) {
@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
     /* Create the windows, initialize the renderers, and load the textures */
     sprites =
         (SDL_Texture **)SDL_malloc(state->num_windows * sizeof(*sprites));
-    if (sprites == NULL) {
+    if (!sprites) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         quit(2);
     }

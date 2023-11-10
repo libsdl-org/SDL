@@ -193,7 +193,7 @@ static SDL_Cursor * HAIKU_CreateCursor(SDL_Surface * surface, int hot_x, int hot
     SDL_Surface *converted;
 
     converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
-    if (converted == NULL) {
+    if (!converted) {
         return NULL;
     }
 
@@ -215,7 +215,7 @@ static int HAIKU_ShowCursor(SDL_Cursor *cursor)
 {
 	SDL_Mouse *mouse = SDL_GetMouse();
 
-	if (mouse == NULL) {
+	if (!mouse) {
 		return 0;
 	}
 
@@ -234,7 +234,7 @@ static int HAIKU_ShowCursor(SDL_Cursor *cursor)
 static int HAIKU_SetRelativeMouseMode(SDL_bool enabled)
 {
     SDL_Window *window = SDL_GetMouseFocus();
-    if (window == NULL) {
+    if (!window) {
       return 0;
     }
 
@@ -254,7 +254,7 @@ static int HAIKU_SetRelativeMouseMode(SDL_bool enabled)
 static void HAIKU_MouseInit(_THIS)
 {
 	SDL_Mouse *mouse = SDL_GetMouse();
-	if (mouse == NULL) {
+	if (!mouse) {
 		return;
 	}
 	mouse->CreateCursor = HAIKU_CreateCursor;

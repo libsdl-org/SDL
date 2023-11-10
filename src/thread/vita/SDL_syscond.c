@@ -45,7 +45,7 @@ SDL_cond *SDL_CreateCond(void)
     SDL_cond *cond;
 
     cond = (SDL_cond *)SDL_malloc(sizeof(SDL_cond));
-    if (cond != NULL) {
+    if (cond) {
         cond->lock = SDL_CreateMutex();
         cond->wait_sem = SDL_CreateSemaphore(0);
         cond->wait_done = SDL_CreateSemaphore(0);
@@ -63,7 +63,7 @@ SDL_cond *SDL_CreateCond(void)
 /* Destroy a condition variable */
 void SDL_DestroyCond(SDL_cond *cond)
 {
-    if (cond != NULL) {
+    if (cond) {
         if (cond->wait_sem) {
             SDL_DestroySemaphore(cond->wait_sem);
         }
@@ -80,7 +80,7 @@ void SDL_DestroyCond(SDL_cond *cond)
 /* Restart one of the threads that are waiting on the condition variable */
 int SDL_CondSignal(SDL_cond *cond)
 {
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -103,7 +103,7 @@ int SDL_CondSignal(SDL_cond *cond)
 /* Restart all threads that are waiting on the condition variable */
 int SDL_CondBroadcast(SDL_cond *cond)
 {
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -158,7 +158,7 @@ int SDL_CondWaitTimeout(SDL_cond *cond, SDL_mutex *mutex, Uint32 ms)
 {
     int retval;
 
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
 

@@ -27,12 +27,12 @@ static void normalize_locale_str(char *dst, char *str, size_t buflen)
     char *ptr;
 
     ptr = SDL_strchr(str, '.'); /* chop off encoding if specified. */
-    if (ptr != NULL) {
+    if (ptr) {
         *ptr = '\0';
     }
 
     ptr = SDL_strchr(str, '@'); /* chop off extra bits if specified. */
-    if (ptr != NULL) {
+    if (ptr) {
         *ptr = '\0';
     }
 
@@ -71,7 +71,7 @@ void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 
     SDL_assert(buflen > 0);
     tmp = SDL_small_alloc(char, buflen, &isstack);
-    if (tmp == NULL) {
+    if (!tmp) {
         SDL_OutOfMemory();
         return;
     }

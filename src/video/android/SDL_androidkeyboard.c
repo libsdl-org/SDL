@@ -361,7 +361,7 @@ void Android_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
 
-    if (rect == NULL) {
+    if (!rect) {
         SDL_InvalidParamError("rect");
         return;
     }

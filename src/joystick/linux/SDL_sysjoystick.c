@@ -282,7 +282,7 @@ static int IsJoystick(const char *path, int fd, char **name_return, SDL_Joystick
     }
 
     name = SDL_CreateJoystickName(inpid.vendor, inpid.product, NULL, product_string);
-    if (name == NULL) {
+    if (!name) {
         return 0;
     }
 
@@ -331,7 +331,7 @@ static int IsSensor(const char *path, int fd)
 #if SDL_USE_LIBUDEV
 static void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath)
 {
-    if (devpath == NULL) {
+    if (!devpath) {
         return;
     }
 
@@ -389,7 +389,7 @@ static void MaybeAddDevice(const char *path)
     SDL_joylist_item *item;
     SDL_sensorlist_item *item_sensor;
 
-    if (path == NULL) {
+    if (!path) {
         return;
     }
 
@@ -400,12 +400,12 @@ static void MaybeAddDevice(const char *path)
     SDL_LockJoysticks();
 
     /* Check to make sure it's not already in list. */
-    for (item = SDL_joylist; item != NULL; item = item->next) {
+    for (item = SDL_joylist; item; item = item->next) {
         if (sb.st_rdev == item->devnum) {
             goto done; /* already have this one */
         }
     }
-    for (item_sensor = SDL_sensorlist; item_sensor != NULL; item_sensor = item_sensor->next) {
+    for (item_sensor = SDL_sensorlist; item_sensor; item_sensor = item_sensor->next) {
         if (sb.st_rdev == item_sensor->devnum) {
             goto done; /* already have this one */
         }
@@ -426,7 +426,7 @@ static void MaybeAddDevice(const char *path)
 #endif
         close(fd);
         item = (SDL_joylist_item *)SDL_calloc(1, sizeof(SDL_joylist_item));
-        if (item == NULL) {
+        if (!item) {
             SDL_free(name);
             goto done;
         }
@@ -436,13 +436,13 @@ static void MaybeAddDevice(const char *path)
         item->name = name;
         item->guid = guid;
 
-        if ((item->path == NULL) || (item->name == NULL)) {
+        if ((!item->path) || (!item->name)) {
             FreeJoylistItem(item);
             goto done;
         }
 
         item->device_instance = SDL_GetNextJoystickInstanceID();
-        if (SDL_joylist_tail == NULL) {
+        if (!SDL_joylist_tail) {
             SDL_joylist = SDL_joylist_tail = item;
         } else {
             SDL_joylist_tail->next = item;
@@ -462,13 +462,13 @@ static void MaybeAddDevice(const char *path)
 #endif
         close(fd);
         item_sensor = (SDL_sensorlist_item *)SDL_calloc(1, sizeof(SDL_sensorlist_item));
-        if (item_sensor == NULL) {
+        if (!item_sensor) {
             goto done;
         }
         item_sensor->devnum = sb.st_rdev;
         item_sensor->path = SDL_strdup(path);
 
-        if (item_sensor->path == NULL) {
+        if (!item_sensor->path) {
             FreeSensorlistItem(item_sensor);
             goto done;
         }
@@ -491,7 +491,7 @@ static void RemoveJoylistItem(SDL_joylist_item *item, SDL_joylist_item *prev)
         item->hwdata->item = NULL;
     }
 
-    if (prev != NULL) {
+    if (prev) {
         prev->next = item->next;
     } else {
         SDL_assert(SDL_joylist == item);
@@ -517,7 +517,7 @@ static void RemoveSensorlistItem(SDL_sensorlist_item *item, SDL_sensorlist_item 
         item->hwdata->item_sensor = NULL;
     }
 
-    if (prev != NULL) {
+    if (prev) {
         prev->next = item->next;
     } else {
         SDL_assert(SDL_sensorlist == item);
@@ -536,12 +536,12 @@ static void MaybeRemoveDevice(const char *path)
     SDL_sensorlist_item *item_sensor;
     SDL_sensorlist_item *prev_sensor = NULL;
 
-    if (path == NULL) {
+    if (!path) {
         return;
     }
 
     SDL_LockJoysticks();
-    for (item = SDL_joylist; item != NULL; item = item->next) {
+    for (item = SDL_joylist; item; item = item->next) {
         /* found it, remove it. */
         if (SDL_strcmp(path, item->path) == 0) {
             RemoveJoylistItem(item, prev);
@@ -549,7 +549,7 @@ static void MaybeRemoveDevice(const char *path)
         }
         prev = item;
     }
-    for (item_sensor = SDL_sensorlist; item_sensor != NULL; item_sensor = item_sensor->next) {
+    for (item_sensor = SDL_sensorlist; item_sensor; item_sensor = item_sensor->next) {
         /* found it, remove it. */
         if (SDL_strcmp(path, item_sensor->path) == 0) {
             RemoveSensorlistItem(item_sensor, prev_sensor);
@@ -571,11 +571,11 @@ static void HandlePendingRemovals(void)
     SDL_AssertJoysticksLocked();
 
     item = SDL_joylist;
-    while (item != NULL) {
+    while (item) {
         if (item->hwdata && item->hwdata->gone) {
             RemoveJoylistItem(item, prev);
 
-            if (prev != NULL) {
+            if (prev) {
                 item = prev->next;
             } else {
                 item = SDL_joylist;
@@ -587,11 +587,11 @@ static void HandlePendingRemovals(void)
     }
 
     item_sensor = SDL_sensorlist;
-    while (item_sensor != NULL) {
+    while (item_sensor) {
         if (item_sensor->hwdata && item_sensor->hwdata->sensor_gone) {
             RemoveSensorlistItem(item_sensor, prev_sensor);
 
-            if (prev_sensor != NULL) {
+            if (prev_sensor) {
                 item_sensor = prev_sensor->next;
             } else {
                 item_sensor = SDL_sensorlist;
@@ -608,7 +608,7 @@ static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickG
     SDL_joylist_item *item;
 
     item = (SDL_joylist_item *)SDL_calloc(1, sizeof(SDL_joylist_item));
-    if (item == NULL) {
+    if (!item) {
         return SDL_FALSE;
     }
 
@@ -617,14 +617,14 @@ static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickG
     item->guid = guid;
     item->m_bSteamController = SDL_TRUE;
 
-    if ((item->path == NULL) || (item->name == NULL)) {
+    if ((!item->path) || (!item->name)) {
         FreeJoylistItem(item);
         return SDL_FALSE;
     }
 
     *device_instance = item->device_instance = SDL_GetNextJoystickInstanceID();
     SDL_LockJoysticks();
-    if (SDL_joylist_tail == NULL) {
+    if (!SDL_joylist_tail) {
         SDL_joylist = SDL_joylist_tail = item;
     } else {
         SDL_joylist_tail->next = item;
@@ -646,7 +646,7 @@ static void SteamControllerDisconnectedCallback(int device_instance)
     SDL_joylist_item *prev = NULL;
 
     SDL_LockJoysticks();
-    for (item = SDL_joylist; item != NULL; item = item->next) {
+    for (item = SDL_joylist; item; item = item->next) {
         /* found it, remove it. */
         if (item->device_instance == device_instance) {
             RemoveJoylistItem(item, prev);
@@ -891,13 +891,13 @@ static int LINUX_JoystickInit(void)
     enumeration_method = ENUMERATION_UNSET;
 
     /* First see if the user specified one or more joysticks to use */
-    if (devices != NULL) {
+    if (devices) {
         char *envcopy, *envpath, *delim;
         envcopy = SDL_strdup(devices);
         envpath = envcopy;
-        while (envpath != NULL) {
+        while (envpath) {
             delim = SDL_strchr(envpath, ':');
-            if (delim != NULL) {
+            if (delim) {
                 *delim++ = '\0';
             }
             MaybeAddDevice(envpath);
@@ -997,7 +997,7 @@ static SDL_joylist_item *JoystickByDevIndex(int device_index)
 
     item = SDL_joylist;
     while (device_index > 0) {
-        SDL_assert(item != NULL);
+        SDL_assert(item);
         device_index--;
         item = item->next;
     }
@@ -1044,7 +1044,7 @@ static int allocate_hatdata(SDL_Joystick *joystick)
     joystick->hwdata->hats =
         (struct hwdata_hat *)SDL_malloc(joystick->nhats *
                                         sizeof(struct hwdata_hat));
-    if (joystick->hwdata->hats == NULL) {
+    if (!joystick->hwdata->hats) {
         return -1;
     }
     for (i = 0; i < joystick->nhats; ++i) {
@@ -1063,7 +1063,7 @@ static int allocate_balldata(SDL_Joystick *joystick)
     joystick->hwdata->balls =
         (struct hwdata_ball *)SDL_malloc(joystick->nballs *
                                          sizeof(struct hwdata_ball));
-    if (joystick->hwdata->balls == NULL) {
+    if (!joystick->hwdata->balls) {
         return -1;
     }
     for (i = 0; i < joystick->nballs; ++i) {
@@ -1082,7 +1082,7 @@ static SDL_bool GuessIfAxesAreDigitalHat(struct input_absinfo *absinfo_x, struct
      * other continuous analog axis, so we have to guess. */
 
     /* If both axes are missing, they're not anything. */
-    if (absinfo_x == NULL && absinfo_y == NULL) {
+    if (!absinfo_x && !absinfo_y) {
         return SDL_FALSE;
     }
 
@@ -1092,12 +1092,12 @@ static SDL_bool GuessIfAxesAreDigitalHat(struct input_absinfo *absinfo_x, struct
     }
 
     /* If both axes have ranges constrained between -1 and 1, they're definitely digital. */
-    if ((absinfo_x == NULL || (absinfo_x->minimum == -1 && absinfo_x->maximum == 1)) && (absinfo_y == NULL || (absinfo_y->minimum == -1 && absinfo_y->maximum == 1))) {
+    if ((!absinfo_x || (absinfo_x->minimum == -1 && absinfo_x->maximum == 1)) && (!absinfo_y || (absinfo_y->minimum == -1 && absinfo_y->maximum == 1))) {
         return SDL_TRUE;
     }
 
     /* If both axes lack fuzz, flat, and resolution values, they're probably digital. */
-    if ((absinfo_x == NULL || (!absinfo_x->fuzz && !absinfo_x->flat && !absinfo_x->resolution)) && (absinfo_y == NULL || (!absinfo_y->fuzz && !absinfo_y->flat && !absinfo_y->resolution))) {
+    if ((!absinfo_x || (!absinfo_x->fuzz && !absinfo_x->flat && !absinfo_x->resolution)) && (!absinfo_y || (!absinfo_y->fuzz && !absinfo_y->flat && !absinfo_y->resolution))) {
         return SDL_TRUE;
     }
 
@@ -1392,14 +1392,14 @@ static int PrepareJoystickHwdata(SDL_Joystick *joystick, SDL_joylist_item *item,
             return SDL_SetError("Unable to open %s", item->path);
         }
         /* If opening sensor fail, continue with buttons and axes only */
-        if (item_sensor != NULL) {
+        if (item_sensor) {
             fd_sensor = open(item_sensor->path, O_RDONLY | O_CLOEXEC, 0);
         }
 
         joystick->hwdata->fd = fd;
         joystick->hwdata->fd_sensor = fd_sensor;
         joystick->hwdata->fname = SDL_strdup(item->path);
-        if (joystick->hwdata->fname == NULL) {
+        if (!joystick->hwdata->fname) {
             close(fd);
             if (fd_sensor >= 0) {
                 close(fd_sensor);
@@ -1427,7 +1427,7 @@ static SDL_sensorlist_item *GetSensor(SDL_joylist_item *item)
 
     SDL_AssertJoysticksLocked();
 
-    if (item == NULL || SDL_sensorlist == NULL) {
+    if (!item || !SDL_sensorlist) {
         return NULL;
     }
 
@@ -1444,10 +1444,10 @@ static SDL_sensorlist_item *GetSensor(SDL_joylist_item *item)
     SDL_Log("Joystick UNIQ: %s\n", uniq_item);
 #endif /* DEBUG_INPUT_EVENTS */
 
-    for (item_sensor = SDL_sensorlist; item_sensor != NULL; item_sensor = item_sensor->next) {
+    for (item_sensor = SDL_sensorlist; item_sensor; item_sensor = item_sensor->next) {
         char uniq_sensor[128];
         int fd_sensor = -1;
-        if (item_sensor->hwdata != NULL) {
+        if (item_sensor->hwdata) {
             /* already associated with another joystick */
             continue;
         }
@@ -1486,14 +1486,14 @@ static int LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
     SDL_AssertJoysticksLocked();
 
     item = JoystickByDevIndex(device_index);
-    if (item == NULL) {
+    if (!item) {
         return SDL_SetError("No such device");
     }
 
     joystick->instance_id = item->device_instance;
     joystick->hwdata = (struct joystick_hwdata *)
         SDL_calloc(1, sizeof(*joystick->hwdata));
-    if (joystick->hwdata == NULL) {
+    if (!joystick->hwdata) {
         return SDL_OutOfMemory();
     }
 
@@ -1504,10 +1504,10 @@ static int LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
         return -1; /* SDL_SetError will already have been called */
     }
 
-    SDL_assert(item->hwdata == NULL);
-    SDL_assert(!item_sensor || item_sensor->hwdata == NULL);
+    SDL_assert(!item->hwdata);
+    SDL_assert(!item_sensor || !item_sensor->hwdata);
     item->hwdata = joystick->hwdata;
-    if (item_sensor != NULL) {
+    if (item_sensor) {
         item_sensor->hwdata = joystick->hwdata;
     }
 
@@ -1612,7 +1612,7 @@ static int LINUX_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enab
     }
 
     if (enabled) {
-        if (joystick->hwdata->item_sensor == NULL) {
+        if (!joystick->hwdata->item_sensor) {
             return SDL_SetError("Sensors unplugged.");
         }
         joystick->hwdata->fd_sensor = open(joystick->hwdata->item_sensor->path, O_RDONLY | O_CLOEXEC, 0);
@@ -2191,7 +2191,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     /* We temporarily open the device to check how it's configured. Make
        a fake SDL_Joystick object to do so. */
     joystick = (SDL_Joystick *)SDL_calloc(sizeof(*joystick), 1);
-    if (joystick == NULL) {
+    if (!joystick) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
@@ -2200,7 +2200,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
 
     joystick->hwdata = (struct joystick_hwdata *)
         SDL_calloc(1, sizeof(*joystick->hwdata));
-    if (joystick->hwdata == NULL) {
+    if (!joystick->hwdata) {
         SDL_free(joystick);
         SDL_OutOfMemory();
         return SDL_FALSE;

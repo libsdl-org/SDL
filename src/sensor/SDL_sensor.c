@@ -237,7 +237,7 @@ SDL_Sensor *SDL_SensorOpen(int device_index)
 
     /* Create and initialize the sensor */
     sensor = (SDL_Sensor *)SDL_calloc(sizeof(*sensor), 1);
-    if (sensor == NULL) {
+    if (!sensor) {
         SDL_OutOfMemory();
         SDL_UnlockSensors();
         return NULL;
@@ -297,7 +297,7 @@ static int SDL_PrivateSensorValid(SDL_Sensor *sensor)
 {
     int valid;
 
-    if (sensor == NULL) {
+    if (!sensor) {
         SDL_SetError("Sensor hasn't been opened yet");
         valid = 0;
     } else {

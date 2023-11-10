@@ -120,11 +120,11 @@ int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
     IMMDevice_Release(device);
 
     if (FAILED(ret)) {
-        SDL_assert(this->hidden->client == NULL);
+        SDL_assert(!this->hidden->client);
         return WIN_SetErrorFromHRESULT("WASAPI can't activate audio endpoint", ret);
     }
 
-    SDL_assert(this->hidden->client != NULL);
+    SDL_assert(this->hidden->client);
     if (WASAPI_PrepDevice(this, isrecovery) == -1) { /* not async, fire it right away. */
         return -1;
     }

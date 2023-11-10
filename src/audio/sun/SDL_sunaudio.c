@@ -194,16 +194,16 @@ static int SUNAUDIO_OpenDevice(_THIS, const char *devname)
 
     /* We don't care what the devname is...we'll try to open anything. */
     /*  ...but default to first name in the list... */
-    if (devname == NULL) {
+    if (!devname) {
         devname = SDL_GetAudioDeviceName(0, iscapture);
-        if (devname == NULL) {
+        if (!devname) {
             return SDL_SetError("No such audio device");
         }
     }
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)SDL_malloc(sizeof(*this->hidden));
-    if (this->hidden == NULL) {
+    if (!this->hidden) {
         return SDL_OutOfMemory();
     }
     SDL_zerop(this->hidden);
@@ -305,7 +305,7 @@ static int SUNAUDIO_OpenDevice(_THIS, const char *devname)
             (this->spec.freq / 8);
         this->hidden->frequency = 8;
         this->hidden->ulaw_buf = (Uint8 *) SDL_malloc(this->hidden->fragsize);
-        if (this->hidden->ulaw_buf == NULL) {
+        if (!this->hidden->ulaw_buf) {
             return SDL_OutOfMemory();
         }
         this->spec.channels = 1;
@@ -325,7 +325,7 @@ static int SUNAUDIO_OpenDevice(_THIS, const char *devname)
 
     /* Allocate mixing buffer */
     this->hidden->mixbuf = (Uint8 *) SDL_malloc(this->spec.size);
-    if (this->hidden->mixbuf == NULL) {
+    if (!this->hidden->mixbuf) {
         return SDL_OutOfMemory();
     }
     SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);

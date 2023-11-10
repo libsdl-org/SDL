@@ -138,7 +138,7 @@ Draw(DrawState *s)
     SDL_RenderGetViewport(s->renderer, &viewport);
 
     target = SDL_CreateTexture(s->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, viewport.w, viewport.h);
-    if (target == NULL) {
+    if (!target) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create render target texture: %s\n", SDL_GetError());
         return SDL_FALSE;
     }
@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
     for (i = 1; i < argc;) {

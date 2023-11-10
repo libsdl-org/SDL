@@ -265,7 +265,7 @@ static SDL_bool SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID
 
     if (player_index >= SDL_joystick_player_count) {
         SDL_JoystickID *new_players = (SDL_JoystickID *)SDL_realloc(SDL_joystick_players, (player_index + 1) * sizeof(*SDL_joystick_players));
-        if (new_players == NULL) {
+        if (!new_players) {
             SDL_OutOfMemory();
             return SDL_FALSE;
         }
@@ -406,7 +406,7 @@ const char *SDL_JoystickPathForIndex(int device_index)
     SDL_UnlockJoysticks();
 
     /* FIXME: Really we should reference count this path so it doesn't go away after unlock */
-    if (path == NULL) {
+    if (!path) {
         SDL_Unsupported();
     }
     return path;
@@ -509,7 +509,7 @@ SDL_Joystick *SDL_JoystickOpen(int device_index)
 
     /* Create and initialize the joystick */
     joystick = (SDL_Joystick *)SDL_calloc(sizeof(*joystick), 1);
-    if (joystick == NULL) {
+    if (!joystick) {
         SDL_OutOfMemory();
         SDL_UnlockJoysticks();
         return NULL;
@@ -1474,7 +1474,7 @@ static void UpdateEventsForDeviceRemoval(int device_index, Uint32 type)
     }
 
     events = SDL_small_alloc(SDL_Event, num_events, &isstack);
-    if (events == NULL) {
+    if (!events) {
         return;
     }
 
@@ -1980,10 +1980,10 @@ char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_n
         return SDL_strdup(custom_name);
     }
 
-    if (vendor_name == NULL) {
+    if (!vendor_name) {
         vendor_name = "";
     }
-    if (product_name == NULL) {
+    if (!product_name) {
         product_name = "";
     }
 
@@ -2026,7 +2026,7 @@ char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_n
         default:
             len = (6 + 1 + 6 + 1);
             name = (char *)SDL_malloc(len);
-            if (name != NULL) {
+            if (name) {
                 (void)SDL_snprintf(name, len, "0x%.4x/0x%.4x", vendor, product);
             }
             break;
@@ -2035,7 +2035,7 @@ char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_n
         name = SDL_strdup("Controller");
     }
 
-    if (name == NULL) {
+    if (!name) {
         return NULL;
     }
 
@@ -2099,7 +2099,7 @@ SDL_JoystickGUID SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 produc
 
     SDL_zero(guid);
 
-    if (name == NULL) {
+    if (!name) {
         name = "";
     }
 

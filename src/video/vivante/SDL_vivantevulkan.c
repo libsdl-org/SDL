@@ -47,10 +47,10 @@ int VIVANTE_Vulkan_LoadLibrary(_THIS, const char *path)
     }
 
     /* Load the Vulkan loader library */
-    if (path == NULL) {
+    if (!path) {
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
     }
-    if (path == NULL) {
+    if (!path) {
         /* If no path set, try Vivante fb vulkan driver explicitly */
         path = "libvulkan-fb.so";
         _this->vulkan_config.loader_handle = SDL_LoadObject(path);
@@ -84,7 +84,7 @@ int VIVANTE_Vulkan_LoadLibrary(_THIS, const char *path)
         (PFN_vkEnumerateInstanceExtensionProperties)
             _this->vulkan_config.vkEnumerateInstanceExtensionProperties,
         &extensionCount);
-    if (extensions == NULL) {
+    if (!extensions) {
         goto fail;
     }
     for (i = 0; i < extensionCount; i++) {

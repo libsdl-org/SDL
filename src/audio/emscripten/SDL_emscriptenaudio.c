@@ -70,7 +70,7 @@ static void HandleAudioProcess(_THIS)
         return;
     }
 
-    if (this->stream == NULL) { /* no conversion necessary. */
+    if (!this->stream) { /* no conversion necessary. */
         SDL_assert(this->spec.size == stream_len);
         callback(this->callbackspec.userdata, this->work_buffer, stream_len);
     } else { /* streaming/converting */
@@ -130,7 +130,7 @@ static void HandleCaptureProcess(_THIS)
 
     /* okay, we've got an interleaved float32 array in C now. */
 
-    if (this->stream == NULL) { /* no conversion necessary. */
+    if (!this->stream) { /* no conversion necessary. */
         SDL_assert(this->spec.size == stream_len);
         callback(this->callbackspec.userdata, this->work_buffer, stream_len);
     } else { /* streaming/converting */

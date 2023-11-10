@@ -99,7 +99,7 @@ static void touch_handle_touch(void *data,
     /* FIXME: This should be the window the given wayland surface is associated
      * with, but how do we get the wayland surface? */
     window = SDL_GetMouseFocus();
-    if (window == NULL) {
+    if (!window) {
         window = SDL_GetKeyboardFocus();
     }
 

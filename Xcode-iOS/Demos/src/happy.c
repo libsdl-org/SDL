@@ -108,7 +108,7 @@ initializeTexture(SDL_Renderer *renderer)
     SDL_Surface *bmp_surface;
     /* load the bmp */
     bmp_surface = SDL_LoadBMP("icon.bmp");
-    if (bmp_surface == NULL) {
+    if (!bmp_surface) {
         fatalError("could not load bmp");
     }
     /* set white to transparent on the happyface */
@@ -117,7 +117,7 @@ initializeTexture(SDL_Renderer *renderer)
 
     /* convert RGBA surface to texture */
     texture = SDL_CreateTextureFromSurface(renderer, bmp_surface);
-    if (texture == NULL) {
+    if (!texture) {
         fatalError("could not create texture");
     }
     SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);

@@ -46,7 +46,7 @@ static void PSP_Destroy(SDL_VideoDevice *device)
 {
     /*    SDL_VideoData *phdata = (SDL_VideoData *) device->driverdata; */
 
-    if (device->driverdata != NULL) {
+    if (device->driverdata) {
         device->driverdata = NULL;
     }
 }
@@ -59,21 +59,21 @@ static SDL_VideoDevice *PSP_Create()
 
     /* Initialize SDL_VideoDevice structure */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
+    if (!device) {
         SDL_OutOfMemory();
         return NULL;
     }
 
     /* Initialize internal PSP specific data */
     phdata = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
-    if (phdata == NULL) {
+    if (!phdata) {
         SDL_OutOfMemory();
         SDL_free(device);
         return NULL;
     }
 
     gldata = (SDL_GLDriverData *)SDL_calloc(1, sizeof(SDL_GLDriverData));
-    if (gldata == NULL) {
+    if (!gldata) {
         SDL_OutOfMemory();
         SDL_free(device);
         SDL_free(phdata);
@@ -202,7 +202,7 @@ int PSP_CreateWindow(_THIS, SDL_Window *window)
 
     /* Allocate window internal data */
     wdata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
-    if (wdata == NULL) {
+    if (!wdata) {
         return SDL_OutOfMemory();
     }
 

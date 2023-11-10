@@ -42,7 +42,7 @@ static recDevice *gpDeviceList = NULL;
 
 void FreeRumbleEffectData(FFEFFECT *effect)
 {
-    if (effect == NULL) {
+    if (!effect) {
         return;
     }
     SDL_free(effect->rgdwAxes);
@@ -58,7 +58,7 @@ FFEFFECT *CreateRumbleEffectData(Sint16 magnitude)
 
     /* Create the effect */
     effect = (FFEFFECT *)SDL_calloc(1, sizeof(*effect));
-    if (effect == NULL) {
+    if (!effect) {
         return NULL;
     }
     effect->dwSize = sizeof(*effect);
@@ -82,7 +82,7 @@ FFEFFECT *CreateRumbleEffectData(Sint16 magnitude)
     effect->dwFlags |= FFEFF_CARTESIAN;
 
     periodic = (FFPERIODIC *)SDL_calloc(1, sizeof(*periodic));
-    if (periodic == NULL) {
+    if (!periodic) {
         FreeRumbleEffectData(effect);
         return NULL;
     }
@@ -508,7 +508,7 @@ static SDL_bool JoystickAlreadyKnown(IOHIDDeviceRef ioHIDDeviceObject)
     }
 #endif
 
-    for (i = gpDeviceList; i != NULL; i = i->pNext) {
+    for (i = gpDeviceList; i; i = i->pNext) {
         if (i->deviceRef == ioHIDDeviceObject) {
             return SDL_TRUE;
         }
@@ -530,7 +530,7 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
     }
 
     device = (recDevice *)SDL_calloc(1, sizeof(recDevice));
-    if (device == NULL) {
+    if (!device) {
         SDL_OutOfMemory();
         return;
     }
@@ -563,13 +563,13 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
     }
 
     /* Add device to the end of the list */
-    if (gpDeviceList == NULL) {
+    if (!gpDeviceList) {
         gpDeviceList = device;
     } else {
         recDevice *curdevice;
 
         curdevice = gpDeviceList;
-        while (curdevice->pNext != NULL) {
+        while (curdevice->pNext) {
             curdevice = curdevice->pNext;
         }
         curdevice->pNext = device;
@@ -854,7 +854,7 @@ static int DARWIN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_ru
     /* Scale and average the two rumble strengths */
     Sint16 magnitude = (Sint16)(((low_frequency_rumble / 2) + (high_frequency_rumble / 2)) / 2);
 
-    if (device == NULL) {
+    if (!device) {
         return SDL_SetError("Rumble failed, device disconnected");
     }
 
@@ -895,7 +895,7 @@ static Uint32 DARWIN_JoystickGetCapabilities(SDL_Joystick *joystick)
     recDevice *device = joystick->hwdata;
     Uint32 result = 0;
 
-    if (device == NULL) {
+    if (!device) {
         return 0;
     }
 
@@ -928,7 +928,7 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     SInt32 value, range;
     int i, goodRead = SDL_FALSE;
 
-    if (device == NULL) {
+    if (!device) {
         return;
     }
 

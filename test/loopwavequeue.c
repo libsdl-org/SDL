@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 
     filename = GetResourceFilename(argc > 1 ? argv[1] : NULL, "sample.wav");
 
-    if (filename == NULL) {
+    if (!filename) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         quit(1);
     }

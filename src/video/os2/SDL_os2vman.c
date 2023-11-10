@@ -143,7 +143,7 @@ static PRECTL _getRectlArray(PVODATA pVOData, ULONG cRects)
         return pVOData->pRectl;
 
     pRectl = SDL_realloc(pVOData->pRectl, cRects * sizeof(RECTL));
-    if (pRectl == NULL)
+    if (!pRectl)
         return NULL;
 
     pVOData->pRectl = pRectl;
@@ -159,7 +159,7 @@ static PBLTRECT _getBltRectArray(PVODATA pVOData, ULONG cRects)
         return pVOData->pBltRect;
 
     pBltRect = SDL_realloc(pVOData->pBltRect, cRects * sizeof(BLTRECT));
-    if (pBltRect == NULL)
+    if (!pBltRect)
         return NULL;
 
     pVOData->pBltRect = pBltRect;
@@ -200,7 +200,7 @@ static PVODATA voOpen(void)
         return NULL;
 
     pVOData = SDL_calloc(1, sizeof(VODATA));
-    if (pVOData == NULL) {
+    if (!pVOData) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -210,10 +210,10 @@ static PVODATA voOpen(void)
 
 static VOID voClose(PVODATA pVOData)
 {
-    if (pVOData->pRectl != NULL)
+    if (pVOData->pRectl)
         SDL_free(pVOData->pRectl);
 
-    if (pVOData->pBltRect != NULL)
+    if (pVOData->pBltRect)
         SDL_free(pVOData->pBltRect);
 
     voVideoBufFree(pVOData);
@@ -253,7 +253,7 @@ static BOOL voSetVisibleRegion(PVODATA pVOData, HWND hwnd,
         WinQueryWindowRect(hwnd, &pVOData->rectlWin);
         WinMapWindowPoints(hwnd, HWND_DESKTOP, (PPOINTL)&pVOData->rectlWin, 2);
 
-        if (pSDLDisplayMode != NULL) {
+        if (pSDLDisplayMode) {
             pVOData->ulScreenHeight = pSDLDisplayMode->h;
             pVOData->ulScreenBytesPerLine =
                      ((MODEDATA *)pSDLDisplayMode->driverdata)->ulScanLineBytes;
@@ -302,7 +302,7 @@ static VOID voVideoBufFree(PVODATA pVOData)
 {
     ULONG ulRC;
 
-    if (pVOData->pBuffer == NULL)
+    if (!pVOData->pBuffer)
         return;
 
     ulRC = DosFreeMem(pVOData->pBuffer);
@@ -329,7 +329,7 @@ static BOOL voUpdate(PVODATA pVOData, HWND hwnd, SDL_Rect *pSDLRects,
     BITBLTINFO  sBitbltInfo;
     ULONG       ulIdx;
 
-    if (pVOData->pBuffer == NULL)
+    if (!pVOData->pBuffer)
         return FALSE;
 
     if (pVOData->hrgnVisible == NULLHANDLE)
@@ -366,7 +366,7 @@ static BOOL voUpdate(PVODATA pVOData, HWND hwnd, SDL_Rect *pSDLRects,
     /* Make list of destination rectangles (prectlDst) list from the source
      * list (prectl).  */
     prectlDst = _getRectlArray(pVOData, cSDLRects);
-    if (prectlDst == NULL) {
+    if (!prectlDst) {
         debug_os2("Not enough memory");
         return FALSE;
     }
@@ -400,7 +400,7 @@ static BOOL voUpdate(PVODATA pVOData, HWND hwnd, SDL_Rect *pSDLRects,
     }
     /* We don't need prectlDst, use it again to store update regions */
     prectlDst = _getRectlArray(pVOData, rgnCtl.crcReturned);
-    if (prectlDst == NULL) {
+    if (!prectlDst) {
         debug_os2("Not enough memory");
         GpiDestroyRegion(hps, hrgnUpdate);
         WinReleasePS(hps);
@@ -418,7 +418,7 @@ static BOOL voUpdate(PVODATA pVOData, HWND hwnd, SDL_Rect *pSDLRects,
 
     /* Make lists for blitting from update regions */
     pbrDst = _getBltRectArray(pVOData, cSDLRects);
-    if (pbrDst == NULL) {
+    if (!pbrDst) {
         debug_os2("Not enough memory");
         return FALSE;
     }

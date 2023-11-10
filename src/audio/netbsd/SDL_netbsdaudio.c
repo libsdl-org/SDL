@@ -202,16 +202,16 @@ static int NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
 
     /* We don't care what the devname is...we'll try to open anything. */
     /*  ...but default to first name in the list... */
-    if (devname == NULL) {
+    if (!devname) {
         devname = SDL_GetAudioDeviceName(0, iscapture);
-        if (devname == NULL) {
+        if (!devname) {
             return SDL_SetError("No such audio device");
         }
     }
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *) SDL_malloc(sizeof(*this->hidden));
-    if (this->hidden == NULL) {
+    if (!this->hidden) {
         return SDL_OutOfMemory();
     }
     SDL_zerop(this->hidden);
@@ -296,7 +296,7 @@ static int NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
         /* Allocate mixing buffer */
         this->hidden->mixlen = this->spec.size;
         this->hidden->mixbuf = (Uint8 *)SDL_malloc(this->hidden->mixlen);
-        if (this->hidden->mixbuf == NULL) {
+        if (!this->hidden->mixbuf) {
             return SDL_OutOfMemory();
         }
         SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);

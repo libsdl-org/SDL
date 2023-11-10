@@ -125,7 +125,7 @@ static int X11_SafetyNetErrHandler(Display *d, XErrorEvent *e)
     if (!safety_net_triggered) {
         safety_net_triggered = SDL_TRUE;
         device = SDL_GetVideoDevice();
-        if (device != NULL) {
+        if (device) {
             int i;
             for (i = 0; i < device->num_displays; i++) {
                 SDL_VideoDisplay *display = &device->displays[i];
@@ -137,7 +137,7 @@ static int X11_SafetyNetErrHandler(Display *d, XErrorEvent *e)
         }
     }
 
-    if (orig_x11_errhandler != NULL) {
+    if (orig_x11_errhandler) {
         return orig_x11_errhandler(d, e); /* probably terminate. */
     }
 
@@ -162,19 +162,19 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     /* Open the display first to be sure that X11 is available */
     x11_display = X11_XOpenDisplay(display);
 
-    if (x11_display == NULL) {
+    if (!x11_display) {
         SDL_X11_UnloadSymbols();
         return NULL;
     }
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
+    if (!device) {
         SDL_OutOfMemory();
         return NULL;
     }
     data = (struct SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
-    if (data == NULL) {
+    if (!data) {
         SDL_free(device);
         SDL_OutOfMemory();
         return NULL;
@@ -189,7 +189,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 
     data->display = x11_display;
     data->request_display = X11_XOpenDisplay(display);
-    if (data->request_display == NULL) {
+    if (!data->request_display) {
         X11_XCloseDisplay(data->display);
         SDL_free(device->driverdata);
         SDL_free(device);

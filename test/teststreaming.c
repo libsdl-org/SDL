@@ -141,13 +141,13 @@ int main(int argc, char **argv)
 
     /* load the moose images */
     filename = GetResourceFilename(NULL, "moose.dat");
-    if (filename == NULL) {
+    if (!filename) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory\n");
         return -1;
     }
     handle = SDL_RWFromFile(filename, "rb");
     SDL_free(filename);
-    if (handle == NULL) {
+    if (!handle) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't find the file moose.dat !\n");
         quit(2);
     }
@@ -160,19 +160,19 @@ int main(int argc, char **argv)
                               SDL_WINDOWPOS_UNDEFINED,
                               MOOSEPIC_W * 4, MOOSEPIC_H * 4,
                               SDL_WINDOW_RESIZABLE);
-    if (window == NULL) {
+    if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create window: %s\n", SDL_GetError());
         quit(3);
     }
 
     renderer = SDL_CreateRenderer(window, -1, 0);
-    if (renderer == NULL) {
+    if (!renderer) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create renderer: %s\n", SDL_GetError());
         quit(4);
     }
 
     MooseTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, MOOSEPIC_W, MOOSEPIC_H);
-    if (MooseTexture == NULL) {
+    if (!MooseTexture) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create texture: %s\n", SDL_GetError());
         quit(5);
     }

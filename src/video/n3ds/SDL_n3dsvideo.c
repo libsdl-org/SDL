@@ -57,7 +57,7 @@ static void N3DS_DeleteDevice(SDL_VideoDevice *device)
 static SDL_VideoDevice *N3DS_CreateDevice(void)
 {
     SDL_VideoDevice *device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
+    if (!device) {
         SDL_OutOfMemory();
         return 0;
     }
@@ -108,7 +108,7 @@ AddN3DSDisplay(gfxScreen_t screen)
     SDL_DisplayMode mode;
     SDL_VideoDisplay display;
     DisplayDriverData *display_driver_data = SDL_calloc(1, sizeof(DisplayDriverData));
-    if (display_driver_data == NULL) {
+    if (!display_driver_data) {
         SDL_OutOfMemory();
         return;
     }
@@ -150,7 +150,7 @@ static void N3DS_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 static int N3DS_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     DisplayDriverData *driver_data = (DisplayDriverData *)display->driverdata;
-    if (driver_data == NULL) {
+    if (!driver_data) {
         return -1;
     }
     rect->x = 0;
@@ -165,7 +165,7 @@ static int N3DS_CreateWindow(_THIS, SDL_Window *window)
 {
     DisplayDriverData *display_data;
     SDL_WindowData *window_data = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
-    if (window_data == NULL) {
+    if (!window_data) {
         return SDL_OutOfMemory();
     }
     display_data = (DisplayDriverData *)SDL_GetDisplayDriverData(window->display_index);
@@ -177,7 +177,7 @@ static int N3DS_CreateWindow(_THIS, SDL_Window *window)
 
 static void N3DS_DestroyWindow(_THIS, SDL_Window *window)
 {
-    if (window == NULL) {
+    if (!window) {
         return;
     }
     SDL_free(window->driverdata);

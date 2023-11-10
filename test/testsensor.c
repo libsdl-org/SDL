@@ -36,7 +36,7 @@ static const char *GetSensorTypeString(SDL_SensorType type)
 static void HandleSensorEvent(SDL_SensorEvent *event)
 {
     SDL_Sensor *sensor = SDL_SensorFromInstanceID(event->which);
-    if (sensor == NULL) {
+    if (!sensor) {
         SDL_Log("Couldn't get sensor for sensor event\n");
         return;
     }
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 
         if (SDL_SensorGetDeviceType(i) != SDL_SENSOR_UNKNOWN) {
             SDL_Sensor *sensor = SDL_SensorOpen(i);
-            if (sensor == NULL) {
+            if (!sensor) {
                 SDL_Log("Couldn't open sensor %" SDL_PRIs32 ": %s\n", SDL_SensorGetDeviceInstanceID(i), SDL_GetError());
             } else {
                 ++num_opened;

@@ -97,7 +97,7 @@ static SDL_sem *SDL_CreateSemaphore_atom(Uint32 initial_value)
     SDL_sem_atom *sem;
 
     sem = (SDL_sem_atom *)SDL_malloc(sizeof(*sem));
-    if (sem != NULL) {
+    if (sem) {
         sem->count = initial_value;
     } else {
         SDL_OutOfMemory();
@@ -107,7 +107,7 @@ static SDL_sem *SDL_CreateSemaphore_atom(Uint32 initial_value)
 
 static void SDL_DestroySemaphore_atom(SDL_sem *sem)
 {
-    if (sem != NULL) {
+    if (sem) {
         SDL_free(sem);
     }
 }
@@ -117,7 +117,7 @@ static int SDL_SemTryWait_atom(SDL_sem *_sem)
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
     LONG count;
 
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -138,7 +138,7 @@ static int SDL_SemWait_atom(SDL_sem *_sem)
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
     LONG count;
 
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -169,7 +169,7 @@ static int SDL_SemWaitTimeout_atom(SDL_sem *_sem, Uint32 timeout)
         return SDL_SemWait_atom(_sem);
     }
 
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -211,7 +211,7 @@ static Uint32 SDL_SemValue_atom(SDL_sem *_sem)
 {
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
 
-    if (sem == NULL) {
+    if (!sem) {
         SDL_InvalidParamError("sem");
         return 0;
     }
@@ -223,7 +223,7 @@ static int SDL_SemPost_atom(SDL_sem *_sem)
 {
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
 
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -261,7 +261,7 @@ static SDL_sem *SDL_CreateSemaphore_kern(Uint32 initial_value)
 
     /* Allocate sem memory */
     sem = (SDL_sem_kern *)SDL_malloc(sizeof(*sem));
-    if (sem != NULL) {
+    if (sem) {
         /* Create the semaphore, with max value 32K */
 #if __WINRT__
         sem->id = CreateSemaphoreEx(NULL, initial_value, 32 * 1024, NULL, 0, SEMAPHORE_ALL_ACCESS);
@@ -284,7 +284,7 @@ static SDL_sem *SDL_CreateSemaphore_kern(Uint32 initial_value)
 static void SDL_DestroySemaphore_kern(SDL_sem *_sem)
 {
     SDL_sem_kern *sem = (SDL_sem_kern *)_sem;
-    if (sem != NULL) {
+    if (sem) {
         if (sem->id) {
             CloseHandle(sem->id);
             sem->id = 0;
@@ -299,7 +299,7 @@ static int SDL_SemWaitTimeout_kern(SDL_sem *_sem, Uint32 timeout)
     int retval;
     DWORD dwMilliseconds;
 
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -337,7 +337,7 @@ static int SDL_SemWait_kern(SDL_sem *sem)
 static Uint32 SDL_SemValue_kern(SDL_sem *_sem)
 {
     SDL_sem_kern *sem = (SDL_sem_kern *)_sem;
-    if (sem == NULL) {
+    if (!sem) {
         SDL_InvalidParamError("sem");
         return 0;
     }
@@ -347,7 +347,7 @@ static Uint32 SDL_SemValue_kern(SDL_sem *_sem)
 static int SDL_SemPost_kern(SDL_sem *_sem)
 {
     SDL_sem_kern *sem = (SDL_sem_kern *)_sem;
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
     /* Increase the counter in the first place, because
@@ -379,7 +379,7 @@ static const SDL_sem_impl_t SDL_sem_impl_kern = {
 
 SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
 {
-    if (SDL_sem_impl_active.Create == NULL) {
+    if (!SDL_sem_impl_active.Create) {
         /* Default to fallback implementation */
         const SDL_sem_impl_t *impl = &SDL_sem_impl_kern;
 

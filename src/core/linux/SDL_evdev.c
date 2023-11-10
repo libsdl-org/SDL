@@ -162,9 +162,9 @@ static void SDL_EVDEV_UpdateKeyboardMute(void)
 
 int SDL_EVDEV_Init(void)
 {
-    if (_this == NULL) {
+    if (!_this) {
         _this = (SDL_EVDEV_PrivateData *)SDL_calloc(1, sizeof(*_this));
-        if (_this == NULL) {
+        if (!_this) {
             return SDL_OutOfMemory();
         }
 
@@ -226,7 +226,7 @@ int SDL_EVDEV_Init(void)
 
 void SDL_EVDEV_Quit(void)
 {
-    if (_this == NULL) {
+    if (!_this) {
         return;
     }
 
@@ -239,14 +239,14 @@ void SDL_EVDEV_Quit(void)
 #endif /* SDL_USE_LIBUDEV */
 
         /* Remove existing devices */
-        while (_this->first != NULL) {
+        while (_this->first) {
             SDL_EVDEV_device_removed(_this->first->path);
         }
 
         SDL_EVDEV_kbd_quit(_this->kbd);
 
-        SDL_assert(_this->first == NULL);
-        SDL_assert(_this->last == NULL);
+        SDL_assert(!_this->first);
+        SDL_assert(!_this->last);
         SDL_assert(_this->num_devices == 0);
 
         SDL_free(_this);
@@ -258,7 +258,7 @@ void SDL_EVDEV_Quit(void)
 static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_class,
                                     const char *dev_path)
 {
-    if (dev_path == NULL) {
+    if (!dev_path) {
         return;
     }
 
@@ -296,7 +296,7 @@ int SDL_EVDEV_GetDeviceCount(int device_class)
     SDL_evdevlist_item *item;
     int count = 0;
 
-    for (item = _this->first; item != NULL; item = item->next) {
+    for (item = _this->first; item; item = item->next) {
         if ((item->udev_class & device_class) == device_class) {
             ++count;
         }
@@ -326,7 +326,7 @@ void SDL_EVDEV_Poll(void)
 
     mouse = SDL_GetMouse();
 
-    for (item = _this->first; item != NULL; item = item->next) {
+    for (item = _this->first; item; item = item->next) {
         while ((len = read(item->fd, events, sizeof(events))) > 0) {
             len /= sizeof(events[0]);
             for (i = 0; i < len; ++i) {
@@ -625,7 +625,7 @@ static int SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
     }
 
     item->touchscreen_data = SDL_calloc(1, sizeof(*item->touchscreen_data));
-    if (item->touchscreen_data == NULL) {
+    if (!item->touchscreen_data) {
         return SDL_OutOfMemory();
     }
 
@@ -636,7 +636,7 @@ static int SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
     }
 
     item->touchscreen_data->name = SDL_strdup(name);
-    if (item->touchscreen_data->name == NULL) {
+    if (!item->touchscreen_data->name) {
         SDL_free(item->touchscreen_data);
         return SDL_OutOfMemory();
     }
@@ -691,7 +691,7 @@ static int SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
     item->touchscreen_data->slots = SDL_calloc(
         item->touchscreen_data->max_slots,
         sizeof(*item->touchscreen_data->slots));
-    if (item->touchscreen_data->slots == NULL) {
+    if (!item->touchscreen_data->slots) {
         SDL_free(item->touchscreen_data->name);
         SDL_free(item->touchscreen_data);
         return SDL_OutOfMemory();
@@ -752,7 +752,7 @@ static void SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
                   sizeof(*mt_req_values) * item->touchscreen_data->max_slots;
 
     mt_req_code = SDL_calloc(1, mt_req_size);
-    if (mt_req_code == NULL) {
+    if (!mt_req_code) {
         return;
     }
 
@@ -858,14 +858,14 @@ static int SDL_EVDEV_device_added(const char *dev_path, int udev_class)
     unsigned long relbit[NBITS(REL_MAX)] = { 0 };
 
     /* Check to make sure it's not already in list. */
-    for (item = _this->first; item != NULL; item = item->next) {
+    for (item = _this->first; item; item = item->next) {
         if (SDL_strcmp(dev_path, item->path) == 0) {
             return -1; /* already have this one */
         }
     }
 
     item = (SDL_evdevlist_item *)SDL_calloc(1, sizeof(SDL_evdevlist_item));
-    if (item == NULL) {
+    if (!item) {
         return SDL_OutOfMemory();
     }
 
@@ -876,7 +876,7 @@ static int SDL_EVDEV_device_added(const char *dev_path, int udev_class)
     }
 
     item->path = SDL_strdup(dev_path);
-    if (item->path == NULL) {
+    if (!item->path) {
         close(item->fd);
         SDL_free(item);
         return SDL_OutOfMemory();
@@ -910,7 +910,7 @@ static int SDL_EVDEV_device_added(const char *dev_path, int udev_class)
         }
     }
 
-    if (_this->last == NULL) {
+    if (!_this->last) {
         _this->first = _this->last = item;
     } else {
         _this->last->next = item;
@@ -929,10 +929,10 @@ static int SDL_EVDEV_device_removed(const char *dev_path)
     SDL_evdevlist_item *item;
     SDL_evdevlist_item *prev = NULL;
 
-    for (item = _this->first; item != NULL; item = item->next) {
+    for (item = _this->first; item; item = item->next) {
         /* found it, remove it. */
         if (SDL_strcmp(dev_path, item->path) == 0) {
-            if (prev != NULL) {
+            if (prev) {
                 prev->next = item->next;
             } else {
                 SDL_assert(_this->first == item);

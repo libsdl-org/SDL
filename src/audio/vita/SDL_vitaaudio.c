@@ -67,7 +67,7 @@ static int VITAAUD_OpenDevice(_THIS, const char *devname)
 
     this->hidden = (struct SDL_PrivateAudioData *)
         SDL_malloc(sizeof(*this->hidden));
-    if (this->hidden == NULL) {
+    if (!this->hidden) {
         return SDL_OutOfMemory();
     }
     SDL_memset(this->hidden, 0, sizeof(*this->hidden));
@@ -98,7 +98,7 @@ static int VITAAUD_OpenDevice(_THIS, const char *devname)
        64, so spec->size should be a multiple of 64 as well. */
     mixlen = this->spec.size * NUM_BUFFERS;
     this->hidden->rawbuf = (Uint8 *)memalign(64, mixlen);
-    if (this->hidden->rawbuf == NULL) {
+    if (!this->hidden->rawbuf) {
         return SDL_SetError("Couldn't allocate mixing buffer");
     }
 
@@ -162,7 +162,7 @@ static void VITAAUD_CloseDevice(_THIS)
         this->hidden->port = -1;
     }
 
-    if (!this->iscapture && this->hidden->rawbuf != NULL) {
+    if (!this->iscapture && this->hidden->rawbuf) {
         free(this->hidden->rawbuf); /* this uses memalign(), not SDL_malloc(). */
         this->hidden->rawbuf = NULL;
     }

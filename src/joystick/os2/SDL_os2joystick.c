@@ -731,7 +731,7 @@ static int joyGetEnv(struct _joycfg * joydata)
     char tempnumber[5]; /* Temporary place to put numeric texts */
 
     joyenv = SDL_getenv("SDL_OS2_JOYSTICK");
-    if (joyenv == NULL) {
+    if (!joyenv) {
         return 0;
     }
 

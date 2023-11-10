@@ -369,21 +369,21 @@ int surface_testCompleteSurfaceConversion(void *arg)
     for (i = 0; i < SDL_arraysize(pixel_formats); ++i) {
         for (j = 0; j < SDL_arraysize(pixel_formats); ++j) {
             fmt1 = SDL_AllocFormat(pixel_formats[i]);
-            SDL_assert(fmt1 != NULL);
+            SDL_assert(fmt1);
             cvt1 = SDL_ConvertSurface(face, fmt1, 0);
-            SDL_assert(cvt1 != NULL);
+            SDL_assert(cvt1);
 
             fmt2 = SDL_AllocFormat(pixel_formats[j]);
-            SDL_assert(fmt1 != NULL);
+            SDL_assert(fmt1);
             cvt2 = SDL_ConvertSurface(cvt1, fmt2, 0);
-            SDL_assert(cvt2 != NULL);
+            SDL_assert(cvt2);
 
             if ( fmt1->BytesPerPixel == face->format->BytesPerPixel &&
                  fmt2->BytesPerPixel == face->format->BytesPerPixel &&
                  (fmt1->Amask != 0) == (face->format->Amask != 0) &&
                  (fmt2->Amask != 0) == (face->format->Amask != 0) ) {
                 final = SDL_ConvertSurface( cvt2, face->format, 0 );
-                SDL_assert(final != NULL);
+                SDL_assert(final);
 
                 /* Compare surface. */
                 ret = SDLTest_CompareSurfaces(face, final, 0);

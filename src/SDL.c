@@ -533,7 +533,7 @@ void SDL_GetVersion(SDL_version *ver)
     static SDL_bool check_hint = SDL_TRUE;
     static SDL_bool legacy_version = SDL_FALSE;
 
-    if (ver == NULL) {
+    if (!ver) {
         return;
     }
 

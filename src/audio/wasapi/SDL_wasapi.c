@@ -114,7 +114,7 @@ static int UpdateAudioStream(_THIS, const SDL_AudioSpec *oldspec)
     /* make sure our scratch buffer can cover the new device spec. */
     if (this->spec.size > this->work_buffer_len) {
         Uint8 *ptr = (Uint8 *)SDL_realloc(this->work_buffer, this->spec.size);
-        if (ptr == NULL) {
+        if (!ptr) {
             return SDL_OutOfMemory();
         }
         this->work_buffer = ptr;
@@ -181,7 +181,7 @@ static Uint8 *WASAPI_GetDeviceBuf(_THIS)
         if (!WasapiFailed(this, IAudioRenderClient_GetBuffer(this->hidden->render, this->spec.samples, &buffer))) {
             return (Uint8 *)buffer;
         }
-        SDL_assert(buffer == NULL);
+        SDL_assert(!buffer);
     }
 
     return (Uint8 *)buffer;
@@ -189,7 +189,7 @@ static Uint8 *WASAPI_GetDeviceBuf(_THIS)
 
 static void WASAPI_PlayDevice(_THIS)
 {
-    if (this->hidden->render != NULL) { /* definitely activated? */
+    if (this->hidden->render) { /* definitely activated? */
         /* WasapiFailed() will mark the device for reacquisition or removal elsewhere. */
         WasapiFailed(this, IAudioRenderClient_ReleaseBuffer(this->hidden->render, this->spec.samples, 0));
     }
@@ -407,7 +407,7 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     HRESULT ret = S_OK;
     DWORD streamflags = 0;
 
-    SDL_assert(client != NULL);
+    SDL_assert(client);
 
 #if defined(__WINRT__) || defined(__GDK__) /* CreateEventEx() arrived in Vista, so we need an #ifdef for XP. */
     this->hidden->event = CreateEventEx(NULL, NULL, 0, EVENT_ALL_ACCESS);
@@ -415,7 +415,7 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     this->hidden->event = CreateEventW(NULL, 0, 0, NULL);
 #endif
 
-    if (this->hidden->event == NULL) {
+    if (!this->hidden->event) {
         return WIN_SetError("WASAPI can't create an event handle");
     }
 
@@ -424,7 +424,7 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
         return WIN_SetErrorFromHRESULT("WASAPI can't determine mix format", ret);
     }
 
-    SDL_assert(waveformat != NULL);
+    SDL_assert(waveformat);
     this->hidden->waveformat = waveformat;
 
     this->spec.channels = (Uint8)waveformat->nChannels;
@@ -502,7 +502,7 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
             return WIN_SetErrorFromHRESULT("WASAPI can't get capture client service", ret);
         }
 
-        SDL_assert(capture != NULL);
+        SDL_assert(capture);
         this->hidden->capture = capture;
         ret = IAudioClient_Start(client);
         if (FAILED(ret)) {
@@ -516,7 +516,7 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
             return WIN_SetErrorFromHRESULT("WASAPI can't get render client service", ret);
         }
 
-        SDL_assert(render != NULL);
+        SDL_assert(render);
         this->hidden->render = render;
         ret = IAudioClient_Start(client);
         if (FAILED(ret)) {
@@ -537,7 +537,7 @@ static int WASAPI_OpenDevice(_THIS, const char *devname)
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *) SDL_malloc(sizeof(*this->hidden));
-    if (this->hidden == NULL) {
+    if (!this->hidden) {
         return SDL_OutOfMemory();
     }
     SDL_zerop(this->hidden);

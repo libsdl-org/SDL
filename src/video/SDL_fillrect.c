@@ -233,12 +233,12 @@ static void SDL_FillRect4(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
  */
 int SDL_FillRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
 {
-    if (dst == NULL) {
+    if (!dst) {
         return SDL_InvalidParamError("SDL_FillRect(): dst");
     }
 
     /* If 'rect' == NULL, then fill the whole surface */
-    if (rect == NULL) {
+    if (!rect) {
         rect = &dst->clip_rect;
         /* Don't attempt to fill if the surface's clip_rect is empty */
         if (SDL_RectEmpty(rect)) {
@@ -306,7 +306,7 @@ int SDL_FillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     void (*fill_function)(Uint8 * pixels, int pitch, Uint32 color, int w, int h) = NULL;
     int i;
 
-    if (dst == NULL) {
+    if (!dst) {
         return SDL_InvalidParamError("SDL_FillRects(): dst");
     }
 
@@ -320,7 +320,7 @@ int SDL_FillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
         return SDL_SetError("SDL_FillRects(): You must lock the surface");
     }
 
-    if (rects == NULL) {
+    if (!rects) {
         return SDL_InvalidParamError("SDL_FillRects(): rects");
     }
 
@@ -342,7 +342,7 @@ int SDL_FillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     }
 
 #if SDL_ARM_NEON_BLITTERS
-    if (SDL_HasNEON() && dst->format->BytesPerPixel != 3 && fill_function == NULL) {
+    if (SDL_HasNEON() && dst->format->BytesPerPixel != 3 && !fill_function) {
         switch (dst->format->BytesPerPixel) {
         case 1:
             fill_function = fill_8_neon;
@@ -357,7 +357,7 @@ int SDL_FillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     }
 #endif
 #if SDL_ARM_SIMD_BLITTERS
-    if (SDL_HasARMSIMD() && dst->format->BytesPerPixel != 3 && fill_function == NULL) {
+    if (SDL_HasARMSIMD() && dst->format->BytesPerPixel != 3 && !fill_function) {
         switch (dst->format->BytesPerPixel) {
         case 1:
             fill_function = fill_8_simd;
@@ -372,7 +372,7 @@ int SDL_FillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     }
 #endif
 
-    if (fill_function == NULL) {
+    if (!fill_function) {
         switch (dst->format->BytesPerPixel) {
         case 1:
         {

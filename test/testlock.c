@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     SDL_AtomicSet(&doterminate, 0);
 
     mutex = SDL_CreateMutex();
-    if (mutex == NULL) {
+    if (!mutex) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create mutex: %s\n", SDL_GetError());
         exit(1);
     }

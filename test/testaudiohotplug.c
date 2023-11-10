@@ -96,7 +96,7 @@ iteration()
             int index = e.adevice.which;
             int iscapture = e.adevice.iscapture;
             const char *name = SDL_GetAudioDeviceName(index, iscapture);
-            if (name != NULL) {
+            if (name) {
                 SDL_Log("New %s audio device at index %u: %s\n", devtypestr(iscapture), (unsigned int)index, name);
             } else {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Got new %s device at index %u, but failed to get the name: %s\n",
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
 
     filename = GetResourceFilename(argc > 1 ? argv[1] : NULL, "sample.wav");
 
-    if (filename == NULL) {
+    if (!filename) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         quit(1);
     }

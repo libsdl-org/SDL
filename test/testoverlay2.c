@@ -311,21 +311,21 @@ int main(int argc, char **argv)
     }
 
     RawMooseData = (Uint8 *)SDL_malloc(MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
-    if (RawMooseData == NULL) {
+    if (!RawMooseData) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't allocate memory for movie !\n");
         quit(1);
     }
 
     /* load the trojan moose images */
     filename = GetResourceFilename(NULL, "moose.dat");
-    if (filename == NULL) {
+    if (!filename) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory\n");
         SDL_free(RawMooseData);
         return -1;
     }
     handle = SDL_RWFromFile(filename, "rb");
     SDL_free(filename);
-    if (handle == NULL) {
+    if (!handle) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't find the file moose.dat !\n");
         SDL_free(RawMooseData);
         quit(2);
@@ -343,21 +343,21 @@ int main(int argc, char **argv)
                               SDL_WINDOWPOS_UNDEFINED,
                               window_w, window_h,
                               SDL_WINDOW_RESIZABLE);
-    if (window == NULL) {
+    if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create window: %s\n", SDL_GetError());
         SDL_free(RawMooseData);
         quit(4);
     }
 
     renderer = SDL_CreateRenderer(window, -1, 0);
-    if (renderer == NULL) {
+    if (!renderer) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create renderer: %s\n", SDL_GetError());
         SDL_free(RawMooseData);
         quit(4);
     }
 
     MooseTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_STREAMING, MOOSEPIC_W, MOOSEPIC_H);
-    if (MooseTexture == NULL) {
+    if (!MooseTexture) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create texture: %s\n", SDL_GetError());
         SDL_free(RawMooseData);
         quit(5);

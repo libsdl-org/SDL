@@ -84,7 +84,7 @@ int SDL_XINPUT_HapticMaybeAddDevice(const DWORD dwUserid)
     }
 
     item = (SDL_hapticlist_item *)SDL_malloc(sizeof(SDL_hapticlist_item));
-    if (item == NULL) {
+    if (!item) {
         return SDL_OutOfMemory();
     }
 
@@ -119,7 +119,7 @@ int SDL_XINPUT_HapticMaybeRemoveDevice(const DWORD dwUserid)
         return -1;
     }
 
-    for (item = SDL_hapticlist; item != NULL; item = item->next) {
+    for (item = SDL_hapticlist; item; item = item->next) {
         if (item->bXInputHaptic && item->userid == userid) {
             /* found it, remove it. */
             return SDL_SYS_RemoveHapticDevice(prev, item);
@@ -178,7 +178,7 @@ static int SDL_XINPUT_HapticOpenFromUserIndex(SDL_Haptic *haptic, const Uint8 us
     /* Prepare effects memory. */
     haptic->effects = (struct haptic_effect *)
         SDL_malloc(sizeof(struct haptic_effect) * haptic->neffects);
-    if (haptic->effects == NULL) {
+    if (!haptic->effects) {
         return SDL_OutOfMemory();
     }
     /* Clear the memory */
@@ -186,7 +186,7 @@ static int SDL_XINPUT_HapticOpenFromUserIndex(SDL_Haptic *haptic, const Uint8 us
                sizeof(struct haptic_effect) * haptic->neffects);
 
     haptic->hwdata = (struct haptic_hwdata *)SDL_malloc(sizeof(*haptic->hwdata));
-    if (haptic->hwdata == NULL) {
+    if (!haptic->hwdata) {
         SDL_free(haptic->effects);
         haptic->effects = NULL;
         return SDL_OutOfMemory();
@@ -197,7 +197,7 @@ static int SDL_XINPUT_HapticOpenFromUserIndex(SDL_Haptic *haptic, const Uint8 us
     haptic->hwdata->userid = userid;
 
     haptic->hwdata->mutex = SDL_CreateMutex();
-    if (haptic->hwdata->mutex == NULL) {
+    if (!haptic->hwdata->mutex) {
         SDL_free(haptic->effects);
         SDL_free(haptic->hwdata);
         haptic->effects = NULL;
@@ -207,7 +207,7 @@ static int SDL_XINPUT_HapticOpenFromUserIndex(SDL_Haptic *haptic, const Uint8 us
     (void)SDL_snprintf(threadName, sizeof(threadName), "SDLXInputDev%d", userid);
     haptic->hwdata->thread = SDL_CreateThreadInternal(SDL_RunXInputHaptic, threadName, 64 * 1024, haptic->hwdata);
 
-    if (haptic->hwdata->thread == NULL) {
+    if (!haptic->hwdata->thread) {
         SDL_DestroyMutex(haptic->hwdata->mutex);
         SDL_free(haptic->effects);
         SDL_free(haptic->hwdata);
@@ -234,7 +234,7 @@ int SDL_XINPUT_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick
     int index = 0;
 
     /* Since it comes from a joystick we have to try to match it with a haptic device on our haptic list. */
-    for (item = SDL_hapticlist; item != NULL; item = item->next) {
+    for (item = SDL_hapticlist; item; item = item->next) {
         if (item->bXInputHaptic && item->userid == joystick->hwdata->userid) {
             haptic->index = index;
             return SDL_XINPUT_HapticOpenFromUserIndex(haptic, joystick->hwdata->userid);

@@ -59,7 +59,7 @@ static void FillSound(void *device, void *stream, size_t len,
     } else {
         SDL_assert(audio->spec.size == len);
 
-        if (audio->stream == NULL) {  /* no conversion necessary. */
+        if (!audio->stream) {  /* no conversion necessary. */
             callback(audio->callbackspec.userdata, (Uint8 *) stream, len);
         } else {  /* streaming/converting */
             const int stream_len = audio->callbackspec.size;

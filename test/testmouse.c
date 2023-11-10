@@ -83,7 +83,7 @@ void DrawObject(SDL_Renderer *renderer, Object *object)
 void DrawObjects(SDL_Renderer *renderer)
 {
     Object *next = objects;
-    while (next != NULL) {
+    while (next) {
         DrawObject(renderer, next);
         next = next->next;
     }
@@ -93,7 +93,7 @@ void AppendObject(Object *object)
 {
     if (objects) {
         Object *next = objects;
-        while (next->next != NULL) {
+        while (next->next) {
             next = next->next;
         }
         next->next = object;
@@ -130,7 +130,7 @@ void loop(void *arg)
             break;
 
         case SDL_MOUSEMOTION:
-            if (active == NULL) {
+            if (!active) {
                 break;
             }
 
@@ -139,7 +139,7 @@ void loop(void *arg)
             break;
 
         case SDL_MOUSEBUTTONDOWN:
-            if (active == NULL) {
+            if (!active) {
                 active = SDL_calloc(1, sizeof(*active));
                 active->x1 = active->x2 = event.button.x;
                 active->y1 = active->y2 = event.button.y;
@@ -173,7 +173,7 @@ void loop(void *arg)
             break;
 
         case SDL_MOUSEBUTTONUP:
-            if (active == NULL) {
+            if (!active) {
                 break;
             }
 
@@ -266,13 +266,13 @@ int main(int argc, char *argv[])
     window = SDL_CreateWindow("Mouse Test", SDL_WINDOWPOS_CENTERED,
                               SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH,
                               SCREEN_HEIGHT, 0);
-    if (window == NULL) {
+    if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s\n", SDL_GetError());
         return SDL_FALSE;
     }
 
     renderer = SDL_CreateRenderer(window, -1, 0);
-    if (renderer == NULL) {
+    if (!renderer) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
         return SDL_FALSE;

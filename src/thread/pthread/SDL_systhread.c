@@ -127,10 +127,10 @@ void SDL_SYS_SetupThread(const char *name)
     sigset_t mask;
 #endif /* !__NACL__ */
 
-    if (name != NULL) {
+    if (name) {
         #if (defined(__MACOSX__) || defined(__IPHONEOS__) || defined(__LINUX__)) && defined(HAVE_DLOPEN)
         SDL_assert(checked_setname);
-        if (ppthread_setname_np != NULL) {
+        if (ppthread_setname_np) {
             #if defined(__MACOSX__) || defined(__IPHONEOS__)
             ppthread_setname_np(name);
 #elif defined(__LINUX__)

@@ -405,7 +405,7 @@ static void WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVE
     }
 
     devidlist = (DevIdList *)SDL_malloc(sizeof(*devidlist));
-    if (devidlist == NULL) {
+    if (!devidlist) {
         return; /* oh well. */
     }
 

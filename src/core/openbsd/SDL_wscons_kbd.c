@@ -423,7 +423,7 @@ static SDL_WSCONS_input_data *SDL_WSCONS_Init_Keyboard(const char *dev)
 #endif
     SDL_WSCONS_input_data *input = (SDL_WSCONS_input_data *)SDL_calloc(1, sizeof(SDL_WSCONS_input_data));
 
-    if (input == NULL) {
+    if (!input) {
         return input;
     }
     input->fd = open(dev, O_RDWR | O_NONBLOCK | O_CLOEXEC);
@@ -433,7 +433,7 @@ static SDL_WSCONS_input_data *SDL_WSCONS_Init_Keyboard(const char *dev)
         return NULL;
     }
     input->keymap.map = SDL_calloc(sizeof(struct wscons_keymap), KS_NUMKEYCODES);
-    if (input->keymap.map == NULL) {
+    if (!input->keymap.map) {
         free(input);
         return NULL;
     }
@@ -583,7 +583,7 @@ static void updateKeyboard(SDL_WSCONS_input_data *input)
     keysym_t *group;
     keysym_t ksym, result;
 
-    if (input == NULL) {
+    if (!input) {
         return;
     }
     if ((n = read(input->fd, events, sizeof(events))) > 0) {
@@ -927,7 +927,7 @@ void SDL_WSCONS_PumpEvents()
     for (i = 0; i < 4; i++) {
         updateKeyboard(inputs[i]);
     }
-    if (mouseInputData != NULL) {
+    if (mouseInputData) {
         updateMouse(mouseInputData);
     }
 }

@@ -20,7 +20,7 @@
 static void
 print_mode(const char *prefix, const SDL_DisplayMode *mode)
 {
-    if (mode == NULL) {
+    if (!mode) {
         return;
     }
 

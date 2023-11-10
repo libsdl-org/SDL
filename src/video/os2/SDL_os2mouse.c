@@ -46,7 +46,7 @@ static SDL_Cursor* OS2_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
         return NULL;
 
     pSDLCursor = SDL_calloc(1, sizeof(SDL_Cursor));
-    if (pSDLCursor == NULL) {
+    if (!pSDLCursor) {
         WinDestroyPointer(hptr);
         SDL_OutOfMemory();
         return NULL;
@@ -91,7 +91,7 @@ static SDL_Cursor* OS2_CreateSystemCursor(SDL_SystemCursor id)
     }
 
     pSDLCursor = SDL_calloc(1, sizeof(SDL_Cursor));
-    if (pSDLCursor == NULL) {
+    if (!pSDLCursor) {
         WinDestroyPointer(hptr);
         SDL_OutOfMemory();
         return NULL;
@@ -111,7 +111,7 @@ static void OS2_FreeCursor(SDL_Cursor *cursor)
 
 static int OS2_ShowCursor(SDL_Cursor *cursor)
 {
-    hptrCursor = (cursor != NULL)? (HPOINTER)cursor->driverdata : NULLHANDLE;
+    hptrCursor = (cursor)? (HPOINTER)cursor->driverdata : NULLHANDLE;
     return ((SDL_GetMouseFocus() == NULL) ||
              WinSetPointer(HWND_DESKTOP, hptrCursor))? 0 : -1;
 }
@@ -137,7 +137,7 @@ static int OS2_WarpMouseGlobal(int x, int y)
 
 static int OS2_CaptureMouse(SDL_Window *window)
 {
-    return WinSetCapture(HWND_DESKTOP, (window == NULL)? NULLHANDLE :
+    return WinSetCapture(HWND_DESKTOP, (!window)? NULLHANDLE :
                                          ((WINDATA *)window->driverdata)->hwnd)? 0 : -1;
 }
 
@@ -182,7 +182,7 @@ void OS2_QuitMouse(_THIS)
 {
     SDL_Mouse   *pSDLMouse = SDL_GetMouse();
 
-    if (pSDLMouse->def_cursor != NULL) {
+    if (pSDLMouse->def_cursor) {
         SDL_free(pSDLMouse->def_cursor);
         pSDLMouse->def_cursor = NULL;
         pSDLMouse->cur_cursor = NULL;

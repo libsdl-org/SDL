@@ -59,23 +59,23 @@ static void *WAYLAND_GetSym(const char *fnname, int *pHasModule, SDL_bool requir
     void *fn = NULL;
     waylanddynlib *dynlib;
     for (dynlib = waylandlibs; dynlib->libname; dynlib++) {
-        if (dynlib->lib != NULL) {
+        if (dynlib->lib) {
             fn = SDL_LoadFunction(dynlib->lib, fnname);
-            if (fn != NULL) {
+            if (fn) {
                 break;
             }
         }
     }
 
 #if DEBUG_DYNAMIC_WAYLAND
-    if (fn != NULL) {
+    if (fn) {
         SDL_Log("WAYLAND: Found '%s' in %s (%p)\n", fnname, dynlib->libname, fn);
     } else {
         SDL_Log("WAYLAND: Symbol '%s' NOT FOUND!\n", fnname);
     }
 #endif
 
-    if (fn == NULL && required) {
+    if (!fn && required) {
         *pHasModule = 0; /* kill this module. */
     }
 
@@ -115,7 +115,7 @@ void SDL_WAYLAND_UnloadSymbols(void)
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
             for (i = 0; i < SDL_TABLESIZE(waylandlibs); i++) {
-                if (waylandlibs[i].lib != NULL) {
+                if (waylandlibs[i].lib) {
                     SDL_UnloadObject(waylandlibs[i].lib);
                     waylandlibs[i].lib = NULL;
                 }
@@ -136,7 +136,7 @@ int SDL_WAYLAND_LoadSymbols(void)
         int i;
         int *thismod = NULL;
         for (i = 0; i < SDL_TABLESIZE(waylandlibs); i++) {
-            if (waylandlibs[i].libname != NULL) {
+            if (waylandlibs[i].libname) {
                 waylandlibs[i].lib = SDL_LoadObject(waylandlibs[i].libname);
             }
         }

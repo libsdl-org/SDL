@@ -32,13 +32,13 @@ SDL_Window *SDL_CreateShapedWindow(const char *title, unsigned int x, unsigned i
 {
     SDL_Window *result = NULL;
     result = SDL_CreateWindow(title, -1000, -1000, w, h, (flags | SDL_WINDOW_BORDERLESS) & (~SDL_WINDOW_FULLSCREEN) & (~SDL_WINDOW_RESIZABLE) /* & (~SDL_WINDOW_SHOWN) */);
-    if (result != NULL) {
+    if (result) {
         if (SDL_GetVideoDevice()->shape_driver.CreateShaper == NULL) {
             SDL_DestroyWindow(result);
             return NULL;
         }
         result->shaper = SDL_GetVideoDevice()->shape_driver.CreateShaper(result);
-        if (result->shaper != NULL) {
+        if (result->shaper) {
             result->shaper->userx = x;
             result->shaper->usery = y;
             result->shaper->mode.mode = ShapeModeDefault;
@@ -136,7 +136,7 @@ static SDL_ShapeTree *RecursivelyCalculateShapeTree(SDL_WindowShapeMode mode, SD
     SDL_ShapeTree *result = (SDL_ShapeTree *)SDL_malloc(sizeof(SDL_ShapeTree));
     SDL_Rect next = { 0, 0, 0, 0 };
 
-    if (result == NULL) {
+    if (!result) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -237,7 +237,7 @@ SDL_ShapeTree *SDL_CalculateShapeTree(SDL_WindowShapeMode mode, SDL_Surface *sha
 
 void SDL_TraverseShapeTree(SDL_ShapeTree *tree, SDL_TraversalFunction function, void *closure)
 {
-    SDL_assert(tree != NULL);
+    SDL_assert(tree);
     if (tree->kind == QuadShape) {
         SDL_TraverseShapeTree((SDL_ShapeTree *)tree->data.children.upleft, function, closure);
         SDL_TraverseShapeTree((SDL_ShapeTree *)tree->data.children.upright, function, closure);
@@ -265,16 +265,16 @@ int SDL_SetWindowShape(SDL_Window *window, SDL_Surface *shape, SDL_WindowShapeMo
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     int result;
 
-    if (window == NULL || !SDL_IsShapedWindow(window)) {
+    if (!window || !SDL_IsShapedWindow(window)) {
         /* The window given was not a shapeable window. */
         return SDL_NONSHAPEABLE_WINDOW;
     }
-    if (shape == NULL) {
+    if (!shape) {
         /* Invalid shape argument. */
         return SDL_INVALID_SHAPE_ARGUMENT;
     }
 
-    if (shape_mode != NULL) {
+    if (shape_mode) {
         window->shaper->mode = *shape_mode;
     }
     result = _this->shape_driver.SetWindowShape(window->shaper, shape, shape_mode);
@@ -317,7 +317,7 @@ int SDL_SetWindowShape(SDL_Window *window, SDL_Surface *shape, SDL_WindowShapeMo
 
 static SDL_bool SDL_WindowHasAShape(SDL_Window *window)
 {
-    if (window == NULL || !SDL_IsShapedWindow(window)) {
+    if (!window || !SDL_IsShapedWindow(window)) {
         return SDL_FALSE;
     }
     return window->shaper->hasshape;
@@ -325,8 +325,8 @@ static SDL_bool SDL_WindowHasAShape(SDL_Window *window)
 
 int SDL_GetShapedWindowMode(SDL_Window *window, SDL_WindowShapeMode *shape_mode)
 {
-    if (window != NULL && SDL_IsShapedWindow(window)) {
-        if (shape_mode == NULL) {
+    if (window && SDL_IsShapedWindow(window)) {
+        if (!shape_mode) {
             if (SDL_WindowHasAShape(window)) {
                 return 0; /* The window given has a shape. */
             } else {

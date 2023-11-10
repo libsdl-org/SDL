@@ -385,7 +385,7 @@ static void WIN_InitDPIAwareness(_THIS)
 {
     const char *hint = SDL_GetHint(SDL_HINT_WINDOWS_DPI_AWARENESS);
 
-    if (hint != NULL) {
+    if (hint) {
         if (SDL_strcmp(hint, "permonitorv2") == 0) {
             WIN_DeclareDPIAwarePerMonitorV2(_this);
         } else if (SDL_strcmp(hint, "permonitor") == 0) {
@@ -540,7 +540,7 @@ int SDL_Direct3D9GetAdapterIndex(int displayIndex)
         SDL_DisplayData *pData = (SDL_DisplayData *)SDL_GetDisplayDriverData(displayIndex);
         int adapterIndex = D3DADAPTER_DEFAULT;
 
-        if (pData == NULL) {
+        if (!pData) {
             SDL_SetError("Invalid display index");
             adapterIndex = -1; /* make sure we return something invalid */
         } else {
@@ -623,12 +623,12 @@ SDL_bool SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputI
     IDXGIAdapter *pDXGIAdapter;
     IDXGIOutput *pDXGIOutput;
 
-    if (adapterIndex == NULL) {
+    if (!adapterIndex) {
         SDL_InvalidParamError("adapterIndex");
         return SDL_FALSE;
     }
 
-    if (outputIndex == NULL) {
+    if (!outputIndex) {
         SDL_InvalidParamError("outputIndex");
         return SDL_FALSE;
     }
@@ -636,7 +636,7 @@ SDL_bool SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputI
     *adapterIndex = -1;
     *outputIndex = -1;
 
-    if (pData == NULL) {
+    if (!pData) {
         SDL_SetError("Invalid display index");
         return SDL_FALSE;
     }

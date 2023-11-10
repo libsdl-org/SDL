@@ -64,7 +64,7 @@ static void DSOUND_Unload(void)
     pDirectSoundCaptureCreate8 = NULL;
     pDirectSoundCaptureEnumerateW = NULL;
 
-    if (DSoundDLL != NULL) {
+    if (DSoundDLL) {
         SDL_UnloadObject(DSoundDLL);
         DSoundDLL = NULL;
     }
@@ -77,7 +77,7 @@ static int DSOUND_Load(void)
     DSOUND_Unload();
 
     DSoundDLL = SDL_LoadObject("DSOUND.DLL");
-    if (DSoundDLL == NULL) {
+    if (!DSoundDLL) {
         SDL_SetError("DirectSound: failed to load DSOUND.DLL");
     } else {
 /* Now make sure we have DirectX 8 or better... */
@@ -172,7 +172,7 @@ static BOOL CALLBACK FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVO
     const int iscapture = (int)((size_t)data);
     if (guid != NULL) { /* skip default device */
         char *str = WIN_LookupAudioDeviceName(desc, guid);
-        if (str != NULL) {
+        if (str) {
             LPGUID cpyguid = (LPGUID)SDL_malloc(sizeof(GUID));
             SDL_memcpy(cpyguid, guid, sizeof(GUID));
 
@@ -354,7 +354,7 @@ static int DSOUND_CaptureFromDevice(_THIS, void *buffer, int buflen)
     }
 
     SDL_assert(ptr1len == this->spec.size);
-    SDL_assert(ptr2 == NULL);
+    SDL_assert(!ptr2);
     SDL_assert(ptr2len == 0);
 
     SDL_memcpy(buffer, ptr1, ptr1len);
@@ -379,18 +379,18 @@ static void DSOUND_FlushCapture(_THIS)
 
 static void DSOUND_CloseDevice(_THIS)
 {
-    if (this->hidden->mixbuf != NULL) {
+    if (this->hidden->mixbuf) {
         IDirectSoundBuffer_Stop(this->hidden->mixbuf);
         IDirectSoundBuffer_Release(this->hidden->mixbuf);
     }
-    if (this->hidden->sound != NULL) {
+    if (this->hidden->sound) {
         IDirectSound_Release(this->hidden->sound);
     }
-    if (this->hidden->capturebuf != NULL) {
+    if (this->hidden->capturebuf) {
         IDirectSoundCaptureBuffer_Stop(this->hidden->capturebuf);
         IDirectSoundCaptureBuffer_Release(this->hidden->capturebuf);
     }
-    if (this->hidden->capture != NULL) {
+    if (this->hidden->capture) {
         IDirectSoundCapture_Release(this->hidden->capture);
     }
     SDL_free(this->hidden);
@@ -493,7 +493,7 @@ static int DSOUND_OpenDevice(_THIS, const char *devname)
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)SDL_malloc(sizeof(*this->hidden));
-    if (this->hidden == NULL) {
+    if (!this->hidden) {
         return SDL_OutOfMemory();
     }
     SDL_zerop(this->hidden);

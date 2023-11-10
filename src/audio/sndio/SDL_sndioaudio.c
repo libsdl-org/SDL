@@ -73,7 +73,7 @@ static void *sndio_handle = NULL;
 static int load_sndio_sym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(sndio_handle, fn);
-    if (*addr == NULL) {
+    if (!*addr) {
         /* Don't call SDL_SetError(): SDL_LoadFunction already did. */
         return 0;
     }
@@ -113,7 +113,7 @@ static int load_sndio_syms(void)
 
 static void UnloadSNDIOLibrary(void)
 {
-    if (sndio_handle != NULL) {
+    if (sndio_handle) {
         SDL_UnloadObject(sndio_handle);
         sndio_handle = NULL;
     }
@@ -122,9 +122,9 @@ static void UnloadSNDIOLibrary(void)
 static int LoadSNDIOLibrary(void)
 {
     int retval = 0;
-    if (sndio_handle == NULL) {
+    if (!sndio_handle) {
         sndio_handle = SDL_LoadObject(sndio_library);
-        if (sndio_handle == NULL) {
+        if (!sndio_handle) {
             retval = -1;
             /* Don't call SDL_SetError(): SDL_LoadObject already did. */
         } else {
@@ -211,10 +211,10 @@ static Uint8 *SNDIO_GetDeviceBuf(_THIS)
 
 static void SNDIO_CloseDevice(_THIS)
 {
-    if (this->hidden->pfd != NULL) {
+    if (this->hidden->pfd) {
         SDL_free(this->hidden->pfd);
     }
-    if (this->hidden->dev != NULL) {
+    if (this->hidden->dev) {
         SNDIO_sio_stop(this->hidden->dev);
         SNDIO_sio_close(this->hidden->dev);
     }
@@ -230,7 +230,7 @@ static int SNDIO_OpenDevice(_THIS, const char *devname)
 
     this->hidden = (struct SDL_PrivateAudioData *)
         SDL_malloc(sizeof(*this->hidden));
-    if (this->hidden == NULL) {
+    if (!this->hidden) {
         return SDL_OutOfMemory();
     }
     SDL_zerop(this->hidden);
@@ -238,16 +238,16 @@ static int SNDIO_OpenDevice(_THIS, const char *devname)
     this->hidden->mixlen = this->spec.size;
 
     /* Capture devices must be non-blocking for SNDIO_FlushCapture */
-    this->hidden->dev = SNDIO_sio_open(devname != NULL ? devname : SIO_DEVANY,
+    this->hidden->dev = SNDIO_sio_open(devname ? devname : SIO_DEVANY,
                                        iscapture ? SIO_REC : SIO_PLAY, iscapture);
-    if (this->hidden->dev == NULL) {
+    if (!this->hidden->dev) {
         return SDL_SetError("sio_open() failed");
     }
 
     /* Allocate the pollfd array for capture devices */
     if (iscapture) {
         this->hidden->pfd = SDL_malloc(sizeof(struct pollfd) * SNDIO_sio_nfds(this->hidden->dev));
-        if (this->hidden->pfd == NULL) {
+        if (!this->hidden->pfd) {
             return SDL_OutOfMemory();
         }
     }
@@ -315,7 +315,7 @@ static int SNDIO_OpenDevice(_THIS, const char *devname)
     /* Allocate mixing buffer */
     this->hidden->mixlen = this->spec.size;
     this->hidden->mixbuf = (Uint8 *)SDL_malloc(this->hidden->mixlen);
-    if (this->hidden->mixbuf == NULL) {
+    if (!this->hidden->mixbuf) {
         return SDL_OutOfMemory();
     }
     SDL_memset(this->hidden->mixbuf, this->spec.silence, this->hidden->mixlen);

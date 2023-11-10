@@ -320,7 +320,7 @@ static int openslES_CreatePCMRecorder(_THIS)
 
     /* Create the sound buffers */
     audiodata->mixbuff = (Uint8 *)SDL_malloc(NUM_BUFFERS * this->spec.size);
-    if (audiodata->mixbuff == NULL) {
+    if (!audiodata->mixbuff) {
         LOGE("mixbuffer allocate - out of memory");
         goto failed;
     }
@@ -566,7 +566,7 @@ static int openslES_CreatePCMPlayer(_THIS)
 
     /* Create the sound buffers */
     audiodata->mixbuff = (Uint8 *)SDL_malloc(NUM_BUFFERS * this->spec.size);
-    if (audiodata->mixbuff == NULL) {
+    if (!audiodata->mixbuff) {
         LOGE("mixbuffer allocate - out of memory");
         goto failed;
     }
@@ -591,7 +591,7 @@ failed:
 static int openslES_OpenDevice(_THIS, const char *devname)
 {
     this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*this->hidden));
-    if (this->hidden == NULL) {
+    if (!this->hidden) {
         return SDL_OutOfMemory();
     }
 

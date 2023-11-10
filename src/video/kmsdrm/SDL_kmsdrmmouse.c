@@ -152,7 +152,7 @@ static int KMSDRM_DumpCursorToBO(SDL_VideoDisplay *display, SDL_Cursor *cursor)
     int i;
     int ret;
 
-    if (curdata == NULL || !dispdata->cursor_bo) {
+    if (!curdata || !dispdata->cursor_bo) {
         return SDL_SetError("Cursor or display not initialized properly.");
     }
 
@@ -163,7 +163,7 @@ static int KMSDRM_DumpCursorToBO(SDL_VideoDisplay *display, SDL_Cursor *cursor)
 
     ready_buffer = (uint8_t *)SDL_calloc(1, bufsize);
 
-    if (ready_buffer == NULL) {
+    if (!ready_buffer) {
         ret = SDL_OutOfMemory();
         goto cleanup;
     }
@@ -241,12 +241,12 @@ static SDL_Cursor *KMSDRM_CreateCursor(SDL_Surface *surface, int hot_x, int hot_
     ret = NULL;
 
     cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
-    if (cursor == NULL) {
+    if (!cursor) {
         SDL_OutOfMemory();
         goto cleanup;
     }
     curdata = (KMSDRM_CursorData *)SDL_calloc(1, sizeof(*curdata));
-    if (curdata == NULL) {
+    if (!curdata) {
         SDL_OutOfMemory();
         goto cleanup;
     }
@@ -282,7 +282,7 @@ static SDL_Cursor *KMSDRM_CreateCursor(SDL_Surface *surface, int hot_x, int hot_
     ret = cursor;
 
 cleanup:
-    if (ret == NULL) {
+    if (!ret) {
         if (curdata) {
             if (curdata->buffer) {
                 SDL_free(curdata->buffer);
@@ -310,13 +310,13 @@ static int KMSDRM_ShowCursor(SDL_Cursor *cursor)
     /* Get the mouse focused window, if any. */
 
     mouse = SDL_GetMouse();
-    if (mouse == NULL) {
+    if (!mouse) {
         return SDL_SetError("No mouse.");
     }
 
     window = mouse->focus;
 
-    if (window == NULL || cursor == NULL) {
+    if (!window || !cursor) {
 
         /* If no window is focused by mouse or cursor is NULL,
            since we have no window (no mouse->focus) and hence

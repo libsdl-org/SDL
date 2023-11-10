@@ -264,7 +264,7 @@ static void WaveDebugDumpFormat(WaveFile *file, Uint32 rifflen, Uint32 fmtlen, U
     int res;
 
     dumpstr = SDL_malloc(bufsize);
-    if (dumpstr == NULL) {
+    if (!dumpstr) {
         return;
     }
     dumpstr[0] = 0;
@@ -441,7 +441,7 @@ static int MS_ADPCM_Init(WaveFile *file, size_t datalength)
 
     coeffdata = (MS_ADPCM_CoeffData *)SDL_malloc(sizeof(MS_ADPCM_CoeffData) + coeffcount * 4);
     file->decoderdata = coeffdata; /* Freed in cleanup. */
-    if (coeffdata == NULL) {
+    if (!coeffdata) {
         return SDL_OutOfMemory();
     }
     coeffdata->coeff = &coeffdata->aligndummy;
@@ -684,7 +684,7 @@ static int MS_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
     state.output.pos = 0;
     state.output.size = outputsize / sizeof(Sint16);
     state.output.data = (Sint16 *)SDL_calloc(1, outputsize);
-    if (state.output.data == NULL) {
+    if (!state.output.data) {
         return SDL_OutOfMemory();
     }
 
@@ -1075,12 +1075,12 @@ static int IMA_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len
     state.output.pos = 0;
     state.output.size = outputsize / sizeof(Sint16);
     state.output.data = (Sint16 *)SDL_malloc(outputsize);
-    if (state.output.data == NULL) {
+    if (!state.output.data) {
         return SDL_OutOfMemory();
     }
 
     cstate = (Sint8 *)SDL_calloc(state.channels, sizeof(Sint8));
-    if (cstate == NULL) {
+    if (!cstate) {
         SDL_free(state.output.data);
         return SDL_OutOfMemory();
     }
@@ -1235,7 +1235,7 @@ static int LAW_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
 
     /* 1 to avoid allocating zero bytes, to keep static analysis happy. */
     src = (Uint8 *)SDL_realloc(chunk->data, expanded_len ? expanded_len : 1);
-    if (src == NULL) {
+    if (!src) {
         return SDL_OutOfMemory();
     }
     chunk->data = NULL;
@@ -1366,7 +1366,7 @@ static int PCM_ConvertSint24ToSint32(WaveFile *file, Uint8 **audio_buf, Uint32 *
 
     /* 1 to avoid allocating zero bytes, to keep static analysis happy. */
     ptr = (Uint8 *)SDL_realloc(chunk->data, expanded_len ? expanded_len : 1);
-    if (ptr == NULL) {
+    if (!ptr) {
         return SDL_OutOfMemory();
     }
 
@@ -1442,7 +1442,7 @@ static WaveRiffSizeHint WaveGetRiffSizeHint()
 {
     const char *hint = SDL_GetHint(SDL_HINT_WAVE_RIFF_CHUNK_SIZE);
 
-    if (hint != NULL) {
+    if (hint) {
         if (SDL_strcmp(hint, "force") == 0) {
             return RiffSizeForce;
         } else if (SDL_strcmp(hint, "ignore") == 0) {
@@ -1461,7 +1461,7 @@ static WaveTruncationHint WaveGetTruncationHint()
 {
     const char *hint = SDL_GetHint(SDL_HINT_WAVE_TRUNCATION);
 
-    if (hint != NULL) {
+    if (hint) {
         if (SDL_strcmp(hint, "verystrict") == 0) {
             return TruncVeryStrict;
         } else if (SDL_strcmp(hint, "strict") == 0) {
@@ -1480,7 +1480,7 @@ static WaveFactChunkHint WaveGetFactChunkHint()
 {
     const char *hint = SDL_GetHint(SDL_HINT_WAVE_FACT_CHUNK);
 
-    if (hint != NULL) {
+    if (hint) {
         if (SDL_strcmp(hint, "truncate") == 0) {
             return FactTruncate;
         } else if (SDL_strcmp(hint, "strict") == 0) {
@@ -1497,7 +1497,7 @@ static WaveFactChunkHint WaveGetFactChunkHint()
 
 static void WaveFreeChunkData(WaveChunk *chunk)
 {
-    if (chunk->data != NULL) {
+    if (chunk->data) {
         SDL_free(chunk->data);
         chunk->data = NULL;
     }
@@ -1546,7 +1546,7 @@ static int WaveReadPartialChunkData(SDL_RWops *src, WaveChunk *chunk, size_t len
 
     if (length > 0) {
         chunk->data = (Uint8 *)SDL_malloc(length);
-        if (chunk->data == NULL) {
+        if (!chunk->data) {
             return SDL_OutOfMemory();
         }
 
@@ -1612,7 +1612,7 @@ static int WaveReadFormat(WaveFile *file)
         return SDL_SetError("Data of WAVE fmt chunk too big");
     }
     fmtsrc = SDL_RWFromConstMem(chunk->data, (int)chunk->size);
-    if (fmtsrc == NULL) {
+    if (!fmtsrc) {
         return SDL_OutOfMemory();
     }
 
@@ -1787,7 +1787,7 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
     SDL_zero(datachunk);
 
     envchunkcountlimit = SDL_getenv("SDL_WAVE_CHUNK_LIMIT");
-    if (envchunkcountlimit != NULL) {
+    if (envchunkcountlimit) {
         unsigned int count;
         if (SDL_sscanf(envchunkcountlimit, "%u", &count) == 1) {
             chunkcountlimit = count <= SDL_MAX_UINT32 ? count : SDL_MAX_UINT32;
@@ -2085,16 +2085,16 @@ SDL_AudioSpec *SDL_LoadWAV_RW(SDL_RWops *src, int freesrc, SDL_AudioSpec *spec, 
     SDL_zero(file);
 
     /* Make sure we are passed a valid data source */
-    if (src == NULL) {
+    if (!src) {
         /* Error may come from RWops. */
         return NULL;
-    } else if (spec == NULL) {
+    } else if (!spec) {
         SDL_InvalidParamError("spec");
         return NULL;
-    } else if (audio_buf == NULL) {
+    } else if (!audio_buf) {
         SDL_InvalidParamError("audio_buf");
         return NULL;
-    } else if (audio_len == NULL) {
+    } else if (!audio_len) {
         SDL_InvalidParamError("audio_len");
         return NULL;
     }

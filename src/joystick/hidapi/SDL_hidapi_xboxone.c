@@ -368,7 +368,7 @@ static SDL_bool HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
     SDL_DriverXboxOne_Context *ctx;
 
     ctx = (SDL_DriverXboxOne_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (ctx == NULL) {
+    if (!ctx) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
@@ -1159,7 +1159,7 @@ static SDL_bool HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
         if (ctx->bluetooth) {
             switch (data[0]) {
             case 0x01:
-                if (joystick == NULL) {
+                if (!joystick) {
                     break;
                 }
                 if (size >= 16) {
@@ -1171,13 +1171,13 @@ static SDL_bool HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
                 }
                 break;
             case 0x02:
-                if (joystick == NULL) {
+                if (!joystick) {
                     break;
                 }
                 HIDAPI_DriverXboxOneBluetooth_HandleGuidePacket(joystick, ctx, data, size);
                 break;
             case 0x04:
-                if (joystick == NULL) {
+                if (!joystick) {
                     break;
                 }
                 HIDAPI_DriverXboxOneBluetooth_HandleBatteryPacket(joystick, ctx, data, size);
@@ -1225,7 +1225,7 @@ static SDL_bool HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
                 break;
             case 0x03:
                 /* Controller status update */
-                if (joystick == NULL) {
+                if (!joystick) {
                     /* We actually want to handle this packet any time it arrives */
                     /*break;*/
                 }
@@ -1238,13 +1238,13 @@ static SDL_bool HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
                 /* Unknown chatty controller information, sent by both sides */
                 break;
             case 0x07:
-                if (joystick == NULL) {
+                if (!joystick) {
                     break;
                 }
                 HIDAPI_DriverXboxOne_HandleModePacket(joystick, ctx, data, size);
                 break;
             case 0x0C:
-                if (joystick == NULL) {
+                if (!joystick) {
                     break;
                 }
                 HIDAPI_DriverXboxOne_HandleUnmappedStatePacket(joystick, ctx, data, size);
@@ -1259,7 +1259,7 @@ static SDL_bool HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
                    The controller sends that in response to this request:
                     0x1E 0x30 0x07 0x01 0x04
                 */
-                if (joystick == NULL) {
+                if (!joystick) {
                     break;
                 }
 #ifdef SET_SERIAL_AFTER_OPEN
@@ -1278,7 +1278,7 @@ static SDL_bool HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
 #endif
                     break;
                 }
-                if (joystick == NULL) {
+                if (!joystick) {
                     break;
                 }
                 HIDAPI_DriverXboxOne_HandleStatePacket(joystick, ctx, data, size);

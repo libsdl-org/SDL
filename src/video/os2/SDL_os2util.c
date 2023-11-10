@@ -41,7 +41,7 @@ HPOINTER utilCreatePointer(SDL_Surface *surface, ULONG ulHotX, ULONG ulHotY)
     }
 
     pulBitmap = (PULONG) SDL_malloc(surface->h * surface->w * 2 * sizeof(ULONG));
-    if (pulBitmap == NULL) {
+    if (!pulBitmap) {
         SDL_OutOfMemory();
         return NULLHANDLE;
     }

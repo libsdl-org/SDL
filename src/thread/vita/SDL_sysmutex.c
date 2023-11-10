@@ -41,7 +41,7 @@ SDL_mutex *SDL_CreateMutex(void)
 
     /* Allocate mutex memory */
     mutex = (SDL_mutex *)SDL_malloc(sizeof(*mutex));
-    if (mutex != NULL) {
+    if (mutex) {
 
         res = sceKernelCreateLwMutex(
             &mutex->lock,
@@ -62,7 +62,7 @@ SDL_mutex *SDL_CreateMutex(void)
 /* Free the mutex */
 void SDL_DestroyMutex(SDL_mutex *mutex)
 {
-    if (mutex != NULL) {
+    if (mutex) {
         sceKernelDeleteLwMutex(&mutex->lock);
         SDL_free(mutex);
     }
@@ -76,7 +76,7 @@ int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn
 #else
     SceInt32 res = 0;
 
-    if (mutex == NULL) {
+    if (!mutex) {
         return 0;
     }
 
@@ -97,7 +97,7 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
 #else
     SceInt32 res = 0;
 
-    if (mutex == NULL) {
+    if (!mutex) {
         return 0;
     }
 

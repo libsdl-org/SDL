@@ -497,7 +497,7 @@ GL_ShaderContext *GL_CreateShaderContext(void)
     int i;
 
     ctx = (GL_ShaderContext *)SDL_calloc(1, sizeof(*ctx));
-    if (ctx == NULL) {
+    if (!ctx) {
         return NULL;
     }
 

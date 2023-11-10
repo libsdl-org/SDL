@@ -117,7 +117,7 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
     pthread_t this_thread;
 #endif
 
-    if (mutex == NULL) {
+    if (!mutex) {
         return 0;
     }
 

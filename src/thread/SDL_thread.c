@@ -39,7 +39,7 @@ void *SDL_TLSGet(SDL_TLSID id)
     SDL_TLSData *storage;
 
     storage = SDL_SYS_GetTLSData();
-    if (storage == NULL || id == 0 || id > storage->limit) {
+    if (!storage || id == 0 || id > storage->limit) {
         return NULL;
     }
     return storage->array[id - 1].data;
@@ -54,13 +54,13 @@ int SDL_TLSSet(SDL_TLSID id, const void *value, void(SDLCALL *destructor)(void *
     }
 
     storage = SDL_SYS_GetTLSData();
-    if (storage == NULL || (id > storage->limit)) {
+    if (!storage || (id > storage->limit)) {
         unsigned int i, oldlimit, newlimit;
 
         oldlimit = storage ? storage->limit : 0;
         newlimit = (id + TLS_ALLOC_CHUNKSIZE);
         storage = (SDL_TLSData *)SDL_realloc(storage, sizeof(*storage) + (newlimit - 1) * sizeof(storage->array[0]));
-        if (storage == NULL) {
+        if (!storage) {
             return SDL_OutOfMemory();
         }
         storage->limit = newlimit;
@@ -120,14 +120,14 @@ SDL_TLSData *SDL_Generic_GetTLSData(void)
     SDL_TLSData *storage = NULL;
 
 #if !SDL_THREADS_DISABLED
-    if (SDL_generic_TLS_mutex == NULL) {
+    if (!SDL_generic_TLS_mutex) {
         static SDL_SpinLock tls_lock;
         SDL_AtomicLock(&tls_lock);
-        if (SDL_generic_TLS_mutex == NULL) {
+        if (!SDL_generic_TLS_mutex) {
             SDL_mutex *mutex = SDL_CreateMutex();
             SDL_MemoryBarrierRelease();
             SDL_generic_TLS_mutex = mutex;
-            if (SDL_generic_TLS_mutex == NULL) {
+            if (!SDL_generic_TLS_mutex) {
                 SDL_AtomicUnlock(&tls_lock);
                 return NULL;
             }
@@ -161,10 +161,10 @@ int SDL_Generic_SetTLSData(SDL_TLSData *data)
     prev = NULL;
     for (entry = SDL_generic_TLS; entry; entry = entry->next) {
         if (entry->thread == thread) {
-            if (data != NULL) {
+            if (data) {
                 entry->storage = data;
             } else {
-                if (prev != NULL) {
+                if (prev) {
                     prev->next = entry->next;
                 } else {
                     SDL_generic_TLS = entry->next;
@@ -175,7 +175,7 @@ int SDL_Generic_SetTLSData(SDL_TLSData *data)
         }
         prev = entry;
     }
-    if (entry == NULL) {
+    if (!entry) {
         entry = (SDL_TLSEntry *)SDL_malloc(sizeof(*entry));
         if (entry) {
             entry->thread = thread;
@@ -186,7 +186,7 @@ int SDL_Generic_SetTLSData(SDL_TLSData *data)
     }
     SDL_UnlockMutex(SDL_generic_TLS_mutex);
 
-    if (entry == NULL) {
+    if (!entry) {
         return SDL_OutOfMemory();
     }
     return 0;
@@ -251,7 +251,7 @@ SDL_error *SDL_GetErrBuf(void)
     if (errbuf == ALLOCATION_IN_PROGRESS) {
         return SDL_GetStaticErrBuf();
     }
-    if (errbuf == NULL) {
+    if (!errbuf) {
         /* Get the original memory functions for this allocation because the lifetime
          * of the error buffer may span calls to SDL_SetMemoryFunctions() by the app
          */
@@ -262,7 +262,7 @@ SDL_error *SDL_GetErrBuf(void)
         /* Mark that we're in the middle of allocating our buffer */
         SDL_TLSSet(tls_errbuf, ALLOCATION_IN_PROGRESS, NULL);
         errbuf = (SDL_error *)realloc_func(NULL, sizeof(*errbuf));
-        if (errbuf == NULL) {
+        if (!errbuf) {
             SDL_TLSSet(tls_errbuf, NULL, NULL);
             return SDL_GetStaticErrBuf();
         }
@@ -330,7 +330,7 @@ SDL_Thread *SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
 
     /* Allocate memory for the thread info structure */
     thread = (SDL_Thread *)SDL_calloc(1, sizeof(*thread));
-    if (thread == NULL) {
+    if (!thread) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -338,9 +338,9 @@ SDL_Thread *SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
     SDL_AtomicSet(&thread->state, SDL_THREAD_STATE_ALIVE);
 
     /* Set up the arguments for the thread */
-    if (name != NULL) {
+    if (name) {
         thread->name = SDL_strdup(name);
-        if (thread->name == NULL) {
+        if (!thread->name) {
             SDL_OutOfMemory();
             SDL_free(thread);
             return NULL;
@@ -383,7 +383,7 @@ DECLSPEC SDL_Thread *SDLCALL SDL_CreateThread(int(SDLCALL *fn)(void *),
     size_t stacksize = 0;
 
     /* If the SDL_HINT_THREAD_STACK_SIZE exists, use it */
-    if (stackhint != NULL) {
+    if (stackhint) {
         char *endp = NULL;
         const Sint64 hintval = SDL_strtoll(stackhint, &endp, 10);
         if ((*stackhint != '\0') && (*endp == '\0')) { /* a valid number? */
@@ -452,7 +452,7 @@ void SDL_WaitThread(SDL_Thread *thread, int *status)
 
 void SDL_DetachThread(SDL_Thread *thread)
 {
-    if (thread == NULL) {
+    if (!thread) {
         return;
     }
 

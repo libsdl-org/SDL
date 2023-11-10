@@ -117,7 +117,7 @@ void loop(void *arg)
 
         case SDL_JOYDEVICEADDED:
             SDL_Log("Joystick device %d added.\n", (int)event.jdevice.which);
-            if (joystick == NULL) {
+            if (!joystick) {
                 joystick = SDL_JoystickOpen(event.jdevice.which);
                 if (joystick) {
                     PrintJoystick(joystick);
@@ -296,13 +296,13 @@ int main(int argc, char *argv[])
     window = SDL_CreateWindow("Joystick Test", SDL_WINDOWPOS_CENTERED,
                               SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH,
                               SCREEN_HEIGHT, 0);
-    if (window == NULL) {
+    if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s\n", SDL_GetError());
         return SDL_FALSE;
     }
 
     screen = SDL_CreateRenderer(window, -1, 0);
-    if (screen == NULL) {
+    if (!screen) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
         return SDL_FALSE;

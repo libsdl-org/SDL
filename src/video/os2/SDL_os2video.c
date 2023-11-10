@@ -171,7 +171,7 @@ static SDL_DisplayMode *_getDisplayModeForSDLWindow(SDL_Window *window)
 {
     SDL_VideoDisplay *pSDLDisplay = SDL_GetDisplayForWindow(window);
 
-    if (pSDLDisplay == NULL) {
+    if (!pSDLDisplay) {
         debug_os2("No display for the window");
         return FALSE;
     }
@@ -201,19 +201,19 @@ static VOID _setVisibleRegion(WINDATA *pWinData, BOOL fVisible)
 {
     SDL_VideoDisplay *pSDLDisplay;
 
-    if (! pWinData->pVOData)
+    if (!pWinData->pVOData)
         return;
 
      pSDLDisplay = (fVisible)? SDL_GetDisplayForWindow(pWinData->window) : NULL;
      pWinData->pOutput->SetVisibleRegion(pWinData->pVOData, pWinData->hwnd,
-                                         (pSDLDisplay == NULL) ?
-                                            NULL : &pSDLDisplay->current_mode,
+                                         (!pSDLDisplay) ?
+                                         NULL : &pSDLDisplay->current_mode,
                                          pWinData->hrgnShape, fVisible);
 }
 
 static VOID _wmPaint(WINDATA *pWinData, HWND hwnd)
 {
-    if (pWinData->pVOData == NULL ||
+    if (!pWinData->pVOData ||
         !pWinData->pOutput->Update(pWinData->pVOData, hwnd, NULL, 0)) {
         RECTL   rectl;
         HPS     hps;
@@ -438,7 +438,7 @@ static MRESULT EXPENTRY wndFrameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
     HWND    hwndClient = WinQueryWindow(hwnd, QW_BOTTOM);
     WINDATA * pWinData = (WINDATA *)WinQueryWindowULong(hwndClient, 0);
 
-    if (pWinData == NULL)
+    if (!pWinData)
         return WinDefWindowProc(hwnd, msg, mp1, mp2);
 
     /* Send a SDL_SYSWMEVENT if the application wants them */
@@ -544,7 +544,7 @@ static MRESULT EXPENTRY wndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
     WINDATA *pWinData = (WINDATA *)WinQueryWindowULong(hwnd, 0);
 
-    if (pWinData == NULL)
+    if (!pWinData)
         return WinDefWindowProc(hwnd, msg, mp1, mp2);
 
     /* Send a SDL_SYSWMEVENT if the application wants them */
@@ -565,7 +565,7 @@ static MRESULT EXPENTRY wndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case WM_CLOSE:
     case WM_QUIT:
         SDL_SendWindowEvent(pWinData->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
-        if (pWinData->fnUserWndProc == NULL)
+        if (!pWinData->fnUserWndProc)
             return (MRESULT)FALSE;
         break;
 
@@ -642,7 +642,7 @@ static MRESULT EXPENTRY wndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case WM_TRANSLATEACCEL:
         /* ALT and acceleration keys not allowed (must be processed in WM_CHAR) */
-        if (mp1 == NULL || ((PQMSG)mp1)->msg != WM_CHAR)
+        if (!mp1 || ((PQMSG)mp1)->msg != WM_CHAR)
             break;
         return (MRESULT)FALSE;
 
@@ -690,7 +690,7 @@ static MRESULT EXPENTRY wndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         return _wmDrop(pWinData, (PDRAGINFO)PVOIDFROMMP(mp1));
     }
 
-    return (pWinData->fnUserWndProc != NULL)?
+    return (pWinData->fnUserWndProc)?
             pWinData->fnUserWndProc(hwnd, msg, mp1, mp2) :
             WinDefWindowProc(hwnd, msg, mp1, mp2);
 }
@@ -715,7 +715,7 @@ static WINDATA *_setupWindow(_THIS, SDL_Window *window, HWND hwndFrame,
     SDL_VideoData *pVData = (SDL_VideoData *)_this->driverdata;
     WINDATA       *pWinData = SDL_calloc(1, sizeof(WINDATA));
 
-    if (pWinData == NULL) {
+    if (!pWinData) {
         SDL_OutOfMemory();
         return NULL;
      }
@@ -745,7 +745,7 @@ static int OS2_CreateWindow(_THIS, SDL_Window *window)
     ULONG            ulSWPFlags   = SWP_SIZE | SWP_SHOW | SWP_ZORDER | SWP_ACTIVATE;
     WINDATA         *pWinData;
 
-    if (pSDLDisplayMode == NULL)
+    if (!pSDLDisplayMode)
         return -1;
 
     /* Create a PM window */
@@ -766,7 +766,7 @@ static int OS2_CreateWindow(_THIS, SDL_Window *window)
 
     /* Setup window data and frame window procedure */
     pWinData = _setupWindow(_this, window, hwndFrame, hwnd);
-    if (pWinData == NULL) {
+    if (!pWinData) {
         WinDestroyWindow(hwndFrame);
         return -1;
     }
@@ -809,7 +809,7 @@ static int OS2_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
     POINTL           pointl;
 
     debug_os2("Enter");
-    if (pSDLDisplayMode == NULL)
+    if (!pSDLDisplayMode)
         return -1;
 
     /* User can accept client OR frame window handle.
@@ -892,7 +892,7 @@ static int OS2_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
 
     /* Setup window data and frame window procedure */
     pWinData = _setupWindow(_this, window, hwndFrame, hwnd);
-    if (pWinData == NULL) {
+    if (!pWinData) {
         SDL_free(window->title);
         window->title = NULL;
         return -1;
@@ -911,7 +911,7 @@ static void OS2_DestroyWindow(_THIS, SDL_Window * window)
     WINDATA       *pWinData = (WINDATA *)window->driverdata;
 
     debug_os2("Enter");
-    if (pWinData == NULL)
+    if (!pWinData)
         return;
 
     if (pWinData->hrgnShape != NULLHANDLE) {
@@ -925,7 +925,7 @@ static void OS2_DestroyWindow(_THIS, SDL_Window * window)
         window->shaper = NULL;
     }
 
-    if (pWinData->fnUserWndProc == NULL) {
+    if (!pWinData->fnUserWndProc) {
         /* Window was created by SDL (OS2_CreateWindow()),
          * not by user (OS2_CreateWindowFrom()) */
         WinDestroyWindow(pWinData->hwndFrame);
@@ -933,7 +933,7 @@ static void OS2_DestroyWindow(_THIS, SDL_Window * window)
         WinSetWindowULong(pWinData->hwnd, 0, 0);
     }
 
-    if ((pVData != NULL) && (pWinData->pVOData != NULL)) {
+    if ((pVData) && (pWinData->pVOData)) {
         pVData->pOutput->Close(pWinData->pVOData);
         pWinData->pVOData = NULL;
     }
@@ -949,7 +949,7 @@ static void OS2_DestroyWindow(_THIS, SDL_Window * window)
 
 static void OS2_SetWindowTitle(_THIS, SDL_Window *window)
 {
-    PSZ pszTitle = (window->title == NULL)? NULL : OS2_UTF8ToSys(window->title);
+    PSZ pszTitle = (!window->title)? NULL : OS2_UTF8ToSys(window->title);
 
     WinSetWindowText(((WINDATA *)window->driverdata)->hwndFrame, pszTitle);
     SDL_free(pszTitle);
@@ -982,7 +982,7 @@ static void OS2_SetWindowPosition(_THIS, SDL_Window *window)
     SDL_DisplayMode *pSDLDisplayMode = _getDisplayModeForSDLWindow(window);
 
     debug_os2("Enter");
-    if (pSDLDisplayMode == NULL)
+    if (!pSDLDisplayMode)
         return;
 
     rectl.xLeft = 0;
@@ -1102,7 +1102,7 @@ static void OS2_SetWindowFullscreen(_THIS, SDL_Window *window,
 
     debug_os2("Enter, fullscreen: %u", fullscreen);
 
-    if (pSDLDisplayMode == NULL)
+    if (!pSDLDisplayMode)
         return;
 
     if (SDL_ShouldAllowTopmost() &&
@@ -1189,7 +1189,7 @@ static void _combineRectRegions(SDL_ShapeTree *node, void *closure)
     /* Expand rectangles list */
     if ((pShapeRects->cRects & 0x0F) == 0) {
         pRect = SDL_realloc(pShapeRects->pRects, (pShapeRects->cRects + 0x10) * sizeof(RECTL));
-        if (pRect == NULL)
+        if (!pRect)
             return;
         pShapeRects->pRects = pRect;
     }
@@ -1235,13 +1235,13 @@ static int OS2_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape,
     HPS            hps;
 
     debug_os2("Enter");
-    if (shaper == NULL || shape == NULL ||
+    if (!shaper || !shape ||
         (shape->format->Amask == 0 && shape_mode->mode != ShapeModeColorKey) ||
         shape->w != shaper->window->w || shape->h != shaper->window->h) {
         return SDL_INVALID_SHAPE_ARGUMENT;
     }
 
-    if (shaper->driverdata != NULL)
+    if (shaper->driverdata)
         SDL_FreeShapeTree((SDL_ShapeTree **)&shaper->driverdata);
 
     pShapeTree = SDL_CalculateShapeTree(*shape_mode, shape);
@@ -1257,7 +1257,7 @@ static int OS2_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape,
     if (pWinData->hrgnShape != NULLHANDLE)
         GpiDestroyRegion(hps, pWinData->hrgnShape);
 
-    pWinData->hrgnShape = (stShapeRects.pRects == NULL) ? NULLHANDLE :
+    pWinData->hrgnShape = (!stShapeRects.pRects) ? NULLHANDLE :
                                 GpiCreateRegion(hps, stShapeRects.cRects, stShapeRects.pRects);
 
     WinReleasePS(hps);
@@ -1270,11 +1270,11 @@ static int OS2_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape,
 static int OS2_ResizeWindowShape(SDL_Window *window)
 {
     debug_os2("Enter");
-    if (window == NULL)
+    if (!window)
         return -1;
 
     if (window->x != -1000) {
-        if (window->shaper->driverdata != NULL)
+        if (window->shaper->driverdata)
             SDL_FreeShapeTree((SDL_ShapeTree **)window->shaper->driverdata);
 
         if (window->shaper->hasshape == SDL_TRUE) {
@@ -1295,7 +1295,7 @@ static void OS2_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
     WINDATA *pWinData = (WINDATA *)window->driverdata;
 
     debug_os2("Enter");
-    if (pWinData != NULL && pWinData->pVOData != NULL)
+    if (pWinData && pWinData->pVOData)
         pWinData->pOutput->VideoBufFree(pWinData->pVOData);
 }
 
@@ -1310,14 +1310,14 @@ static int OS2_CreateWindowFramebuffer(_THIS, SDL_Window *window,
     ULONG             ulWidth, ulHeight;
 
     debug_os2("Enter");
-    if (pSDLDisplay == NULL) {
+    if (!pSDLDisplay) {
         debug_os2("No display for the window");
         return -1;
     }
 
     pSDLDisplayMode = &pSDLDisplay->current_mode;
     pModeData = (MODEDATA *)pSDLDisplayMode->driverdata;
-    if (pModeData == NULL)
+    if (!pModeData)
         return SDL_SetError("No mode data for the display");
 
     SDL_GetWindowSize(window, (int *)&ulWidth, (int *)&ulHeight);
@@ -1326,7 +1326,7 @@ static int OS2_CreateWindowFramebuffer(_THIS, SDL_Window *window,
     *pixels = pWinData->pOutput->VideoBufAlloc(
                         pWinData->pVOData, ulWidth, ulHeight, pModeData->ulDepth,
                         pModeData->fccColorEncoding, (PULONG)pitch);
-    if (*pixels == NULL)
+    if (!*pixels)
         return -1;
 
     *format = pSDLDisplayMode->format;
@@ -1353,13 +1353,13 @@ static int OS2_SetClipboardText(_THIS, const char *text)
 {
     SDL_VideoData *pVData = (SDL_VideoData *)_this->driverdata;
     PSZ   pszClipboard;
-    PSZ   pszText = (text == NULL)? NULL : OS2_UTF8ToSys(text);
+    PSZ   pszText = (!text)? NULL : OS2_UTF8ToSys(text);
     ULONG cbText;
     ULONG ulRC;
     BOOL  fSuccess;
 
     debug_os2("Enter");
-    if (pszText == NULL)
+    if (!pszText)
         return -1;
     cbText = SDL_strlen(pszText) + 1;
 
@@ -1408,7 +1408,7 @@ static char *OS2_GetClipboardText(_THIS)
         WinCloseClipbrd(pVData->hab);
     }
 
-    return (pszClipboard == NULL) ? SDL_strdup("") : pszClipboard;
+    return (!pszClipboard) ? SDL_strdup("") : pszClipboard;
 }
 
 static SDL_bool OS2_HasClipboardText(_THIS)
@@ -1438,7 +1438,7 @@ static int OS2_VideoInit(_THIS)
 
     /* Create SDL video driver private data */
     pVData = SDL_calloc(1, sizeof(SDL_VideoData));
-    if (pVData == NULL)
+    if (!pVData)
         return SDL_OutOfMemory();
 
     /* Change process type code for use Win* API from VIO session */
@@ -1493,7 +1493,7 @@ static int OS2_VideoInit(_THIS)
         stSDLDisplayMode.driverdata = NULL;
 
         pModeData = SDL_malloc(sizeof(MODEDATA));
-        if (pModeData != NULL) {
+        if (pModeData) {
             pModeData->ulDepth = stVOInfo.ulBPP;
             pModeData->fccColorEncoding = stVOInfo.fccColorEncoding;
             pModeData->ulScanLineBytes = stVOInfo.ulScanLineSize;
@@ -1507,7 +1507,7 @@ static int OS2_VideoInit(_THIS)
         stSDLDisplay.num_display_modes = 0;
 
         pDisplayData = SDL_malloc(sizeof(DISPLAYDATA));
-        if (pDisplayData != NULL) {
+        if (pDisplayData) {
             HPS hps = WinGetPS(HWND_DESKTOP);
             HDC hdc = GpiQueryDevice(hps);
 
@@ -1566,14 +1566,14 @@ static int OS2_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi,
     DISPLAYDATA *pDisplayData = (DISPLAYDATA *)display->driverdata;
 
     debug_os2("Enter");
-    if (pDisplayData == NULL)
+    if (!pDisplayData)
         return -1;
 
-    if (ddpi != NULL)
+    if (ddpi)
         *hdpi = pDisplayData->ulDPIDiag;
-    if (hdpi != NULL)
+    if (hdpi)
         *hdpi = pDisplayData->ulDPIHor;
-    if (vdpi != NULL)
+    if (vdpi)
         *vdpi = pDisplayData->ulDPIVer;
 
     return 0;

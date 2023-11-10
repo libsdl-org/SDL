@@ -977,7 +977,7 @@ static void Blit_RGB888_index8(SDL_BlitInfo *info)
     dstskip = info->dst_skip;
     map = info->table;
 
-    if (map == NULL) {
+    if (!map) {
         while (height--) {
 #ifdef USE_DUFFS_LOOP
             /* *INDENT-OFF* */ /* clang-format off */
@@ -1091,7 +1091,7 @@ static void Blit_RGB101010_index8(SDL_BlitInfo *info)
     dstskip = info->dst_skip;
     map = info->table;
 
-    if (map == NULL) {
+    if (!map) {
         while (height--) {
 #ifdef USE_DUFFS_LOOP
             /* *INDENT-OFF* */ /* clang-format off */
@@ -2115,7 +2115,7 @@ static void BlitNto1(SDL_BlitInfo *info)
     srcfmt = info->src_fmt;
     srcbpp = srcfmt->BytesPerPixel;
 
-    if (map == NULL) {
+    if (!map) {
         while (height--) {
 #ifdef USE_DUFFS_LOOP
             /* *INDENT-OFF* */ /* clang-format off */
@@ -2513,7 +2513,7 @@ static void BlitNto1Key(SDL_BlitInfo *info)
     srcbpp = srcfmt->BytesPerPixel;
     ckey &= rgbmask;
 
-    if (palmap == NULL) {
+    if (!palmap) {
         while (height--) {
             /* *INDENT-OFF* */ /* clang-format off */
             DUFFS_LOOP(

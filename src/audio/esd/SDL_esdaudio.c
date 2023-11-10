@@ -66,7 +66,7 @@ static struct
 
 static void UnloadESDLibrary()
 {
-    if (esd_handle != NULL) {
+    if (esd_handle) {
         SDL_UnloadObject(esd_handle);
         esd_handle = NULL;
     }
@@ -76,7 +76,7 @@ static int LoadESDLibrary(void)
 {
     int i, retval = -1;
 
-    if (esd_handle == NULL) {
+    if (!esd_handle) {
         esd_handle = SDL_LoadObject(esd_library);
         if (esd_handle) {
             retval = 0;
@@ -185,7 +185,7 @@ static char *get_progname(void)
     if (fp != NULL) {
         if (fgets(temp, sizeof(temp) - 1, fp)) {
             progname = SDL_strrchr(temp, '/');
-            if (progname == NULL) {
+            if (!progname) {
                 progname = temp;
             } else {
                 progname = progname + 1;
@@ -206,7 +206,7 @@ static int ESD_OpenDevice(_THIS, const char *devname)
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)SDL_malloc(sizeof(*this->hidden));
-    if (this->hidden == NULL) {
+    if (!this->hidden) {
         return SDL_OutOfMemory();
     }
     SDL_zerop(this->hidden);
@@ -264,7 +264,7 @@ static int ESD_OpenDevice(_THIS, const char *devname)
     /* Allocate mixing buffer */
     this->hidden->mixlen = this->spec.size;
     this->hidden->mixbuf = (Uint8 *) SDL_malloc(this->hidden->mixlen);
-    if (this->hidden->mixbuf == NULL) {
+    if (!this->hidden->mixbuf) {
         return SDL_OutOfMemory();
     }
     SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);

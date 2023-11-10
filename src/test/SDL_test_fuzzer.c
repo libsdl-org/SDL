@@ -488,7 +488,7 @@ char *SDLTest_RandomAsciiStringOfSize(int size)
     }
 
     string = (char *)SDL_malloc((size + 1) * sizeof(char));
-    if (string == NULL) {
+    if (!string) {
         return NULL;
     }
 

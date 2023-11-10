@@ -23,7 +23,7 @@
 
 int SDL_OpenURL(const char *url)
 {
-    if (url == NULL) {
+    if (!url) {
         return SDL_InvalidParamError("url");
     }
     return SDL_SYS_OpenURL(url);

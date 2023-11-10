@@ -500,7 +500,7 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
     double sangleinv, cangleinv;
 
     /* Sanity check */
-    if (src == NULL) {
+    if (!src) {
         return NULL;
     }
 
@@ -524,7 +524,7 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
     if (is8bit) {
         /* Target surface is 8 bit */
         rz_dst = SDL_CreateRGBSurfaceWithFormat(0, rect_dest->w, rect_dest->h + GUARD_ROWS, 8, src->format->format);
-        if (rz_dst != NULL) {
+        if (rz_dst) {
             if (src->format->palette) {
                 for (i = 0; i < src->format->palette->ncolors; i++) {
                     rz_dst->format->palette->colors[i] = src->format->palette->colors[i];
@@ -540,7 +540,7 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
     }
 
     /* Check target */
-    if (rz_dst == NULL) {
+    if (!rz_dst) {
         return NULL;
     }
 

@@ -57,7 +57,7 @@ int SDL_NGAGE_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format,
     /* Create a new one */
     SDL_GetWindowSizeInPixels(window, &w, &h);
     surface = SDL_CreateRGBSurfaceWithFormat(0, w, h, 0, surface_format);
-    if (surface == NULL) {
+    if (!surface) {
         return -1;
     }
 
@@ -149,7 +149,7 @@ int SDL_NGAGE_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect 
     SDL_Surface *surface;
 
     surface = (SDL_Surface *)SDL_GetWindowData(window, NGAGE_SURFACE);
-    if (surface == NULL) {
+    if (!surface) {
         return SDL_SetError("Couldn't find ngage surface for window");
     }
 

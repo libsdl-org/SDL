@@ -28,7 +28,7 @@
 int SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
     /* Ignore call if invalid format pointer was passed */
-    if (fmt != NULL) {
+    if (fmt) {
         va_list ap;
         int result;
         SDL_error *error = SDL_GetErrBuf();

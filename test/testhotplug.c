@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
                 keepGoing = SDL_FALSE;
                 break;
             case SDL_JOYDEVICEADDED:
-                if (joystick != NULL) {
+                if (joystick) {
                     SDL_Log("Only one joystick supported by this test\n");
                 } else {
                     joystick = SDL_JoystickOpen(event.jdevice.which);

@@ -113,7 +113,7 @@ static unsigned char MD5PADDING[64] = {
 
 void SDLTest_Md5Init(SDLTest_Md5Context *mdContext)
 {
-    if (mdContext == NULL) {
+    if (!mdContext) {
         return;
     }
 
@@ -141,10 +141,10 @@ void SDLTest_Md5Update(SDLTest_Md5Context *mdContext, unsigned char *inBuf,
     int mdi;
     unsigned int i, ii;
 
-    if (mdContext == NULL) {
+    if (!mdContext) {
         return;
     }
-    if (inBuf == NULL || inLen < 1) {
+    if (!inBuf || inLen < 1) {
         return;
     }
 
@@ -193,7 +193,7 @@ void SDLTest_Md5Final(SDLTest_Md5Context *mdContext)
     unsigned int i, ii;
     unsigned int padLen;
 
-    if (mdContext == NULL) {
+    if (!mdContext) {
         return;
     }
 

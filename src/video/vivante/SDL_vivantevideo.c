@@ -41,7 +41,7 @@
 
 static void VIVANTE_Destroy(SDL_VideoDevice *device)
 {
-    if (device->driverdata != NULL) {
+    if (device->driverdata) {
         SDL_free(device->driverdata);
         device->driverdata = NULL;
     }
@@ -54,14 +54,14 @@ static SDL_VideoDevice *VIVANTE_Create()
 
     /* Initialize SDL_VideoDevice structure */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
+    if (!device) {
         SDL_OutOfMemory();
         return NULL;
     }
 
     /* Initialize internal data */
     data = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
-    if (data == NULL) {
+    if (!data) {
         SDL_OutOfMemory();
         SDL_free(device);
         return NULL;
@@ -133,7 +133,7 @@ static int VIVANTE_AddVideoDisplays(_THIS)
     unsigned long pixels = 0;
 
     data = (SDL_DisplayData *)SDL_calloc(1, sizeof(SDL_DisplayData));
-    if (data == NULL) {
+    if (!data) {
         return SDL_OutOfMemory();
     }
 
@@ -265,7 +265,7 @@ int VIVANTE_CreateWindow(_THIS, SDL_Window *window)
 
     /* Allocate window internal data */
     data = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
-    if (data == NULL) {
+    if (!data) {
         return SDL_OutOfMemory();
     }
 

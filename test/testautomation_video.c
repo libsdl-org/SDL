@@ -78,7 +78,7 @@ SDL_Window *_createVideoSuiteTestWindow(const char *title)
  */
 void _destroyVideoSuiteTestWindow(SDL_Window *window)
 {
-    if (window != NULL) {
+    if (window) {
         SDL_DestroyWindow(window);
         window = NULL;
         SDLTest_AssertPass("Call to SDL_DestroyWindow()");
@@ -608,7 +608,7 @@ int video_getWindowDisplayMode(void *arg)
 
     /* Call against new test window */
     window = _createVideoSuiteTestWindow(title);
-    if (window != NULL) {
+    if (window) {
         result = SDL_GetWindowDisplayMode(window, &mode);
         SDLTest_AssertPass("Call to SDL_GetWindowDisplayMode()");
         SDLTest_AssertCheck(result == 0, "Validate result value; expected: 0, got: %d", result);
@@ -702,7 +702,7 @@ video_getWindowGammaRamp(void *arg)
 
   /* Call against new test window */
   window = _createVideoSuiteTestWindow(title);
-  if (window == NULL) return TEST_ABORTED;
+  if (!window) return TEST_ABORTED;
 
   /* Retrieve no channel */
   result = SDL_GetWindowGammaRamp(window, NULL, NULL, NULL);
@@ -856,7 +856,7 @@ int video_getSetWindowGrab(void *arg)
 
     /* Call against new test window */
     window = _createVideoSuiteTestWindow(title);
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
@@ -1019,7 +1019,7 @@ int video_getWindowId(void *arg)
 
     /* Call against new test window */
     window = _createVideoSuiteTestWindow(title);
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
@@ -1074,7 +1074,7 @@ int video_getWindowPixelFormat(void *arg)
 
     /* Call against new test window */
     window = _createVideoSuiteTestWindow(title);
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
@@ -1144,7 +1144,7 @@ int video_getSetWindowPosition(void *arg)
 
     /* Call against new test window */
     window = _createVideoSuiteTestWindow(title);
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
@@ -1316,7 +1316,7 @@ int video_getSetWindowSize(void *arg)
 
     /* Call against new test window */
     window = _createVideoSuiteTestWindow(title);
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
@@ -1499,7 +1499,7 @@ int video_getSetWindowMinimumSize(void *arg)
 
     /* Call against new test window */
     window = _createVideoSuiteTestWindow(title);
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
@@ -1641,7 +1641,7 @@ int video_getSetWindowMaximumSize(void *arg)
 
     /* Call against new test window */
     window = _createVideoSuiteTestWindow(title);
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
@@ -1779,30 +1779,30 @@ int video_getSetWindowData(void *arg)
 
     /* Call against new test window */
     window = _createVideoSuiteTestWindow(title);
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
     /* Create testdata */
     datasize = SDLTest_RandomIntegerInRange(1, 32);
     referenceUserdata = SDLTest_RandomAsciiStringOfSize(datasize);
-    if (referenceUserdata == NULL) {
+    if (!referenceUserdata) {
         returnValue = TEST_ABORTED;
         goto cleanup;
     }
     userdata = SDL_strdup(referenceUserdata);
-    if (userdata == NULL) {
+    if (!userdata) {
         returnValue = TEST_ABORTED;
         goto cleanup;
     }
     datasize = SDLTest_RandomIntegerInRange(1, 32);
     referenceUserdata2 = SDLTest_RandomAsciiStringOfSize(datasize);
-    if (referenceUserdata2 == NULL) {
+    if (!referenceUserdata2) {
         returnValue = TEST_ABORTED;
         goto cleanup;
     }
     userdata2 = SDL_strdup(referenceUserdata2);
-    if (userdata2 == NULL) {
+    if (!userdata2) {
         returnValue = TEST_ABORTED;
         goto cleanup;
     }

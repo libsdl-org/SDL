@@ -33,11 +33,11 @@ int Wayland_SetClipboardText(_THIS, const char *text)
 
     int status = 0;
 
-    if (_this == NULL || _this->driverdata == NULL) {
+    if (!_this || !_this->driverdata) {
         status = SDL_SetError("Video driver uninitialized");
     } else {
         video_data = _this->driverdata;
-        if (video_data->input != NULL && video_data->input->data_device != NULL) {
+        if (video_data->input && video_data->input->data_device) {
             data_device = video_data->input->data_device;
             if (text[0] != '\0') {
                 SDL_WaylandDataSource *source = Wayland_data_source_create(_this);
@@ -64,11 +64,11 @@ int Wayland_SetPrimarySelectionText(_THIS, const char *text)
 
     int status = 0;
 
-    if (_this == NULL || _this->driverdata == NULL) {
+    if (!_this || !_this->driverdata) {
         status = SDL_SetError("Video driver uninitialized");
     } else {
         video_data = _this->driverdata;
-        if (video_data->input != NULL && video_data->input->primary_selection_device != NULL) {
+        if (video_data->input && video_data->input->primary_selection_device) {
             primary_selection_device = video_data->input->primary_selection_device;
             if (text[0] != '\0') {
                 SDL_WaylandPrimarySelectionSource *source = Wayland_primary_selection_source_create(_this);
@@ -97,11 +97,11 @@ char *Wayland_GetClipboardText(_THIS)
     char *text = NULL;
     size_t length = 0;
 
-    if (_this == NULL || _this->driverdata == NULL) {
+    if (!_this || !_this->driverdata) {
         SDL_SetError("Video driver uninitialized");
     } else {
         video_data = _this->driverdata;
-        if (video_data->input != NULL && video_data->input->data_device != NULL) {
+        if (video_data->input && video_data->input->data_device) {
             data_device = video_data->input->data_device;
             /* Prefer own selection, if not canceled */
             if (Wayland_data_source_has_mime(
@@ -116,7 +116,7 @@ char *Wayland_GetClipboardText(_THIS)
         }
     }
 
-    if (text == NULL) {
+    if (!text) {
         text = SDL_strdup("");
     }
 
@@ -131,11 +131,11 @@ char *Wayland_GetPrimarySelectionText(_THIS)
     char *text = NULL;
     size_t length = 0;
 
-    if (_this == NULL || _this->driverdata == NULL) {
+    if (!_this || !_this->driverdata) {
         SDL_SetError("Video driver uninitialized");
     } else {
         video_data = _this->driverdata;
-        if (video_data->input != NULL && video_data->input->primary_selection_device != NULL) {
+        if (video_data->input && video_data->input->primary_selection_device) {
             primary_selection_device = video_data->input->primary_selection_device;
             /* Prefer own selection, if not canceled */
             if (Wayland_primary_selection_source_has_mime(
@@ -150,7 +150,7 @@ char *Wayland_GetPrimarySelectionText(_THIS)
         }
     }
 
-    if (text == NULL) {
+    if (!text) {
         text = SDL_strdup("");
     }
 
@@ -163,11 +163,11 @@ SDL_bool Wayland_HasClipboardText(_THIS)
     SDL_WaylandDataDevice *data_device = NULL;
 
     SDL_bool result = SDL_FALSE;
-    if (_this == NULL || _this->driverdata == NULL) {
+    if (!_this || !_this->driverdata) {
         SDL_SetError("Video driver uninitialized");
     } else {
         video_data = _this->driverdata;
-        if (video_data->input != NULL && video_data->input->data_device != NULL) {
+        if (video_data->input && video_data->input->data_device) {
             data_device = video_data->input->data_device;
             result = result ||
                      Wayland_data_source_has_mime(data_device->selection_source, TEXT_MIME) ||
@@ -183,11 +183,11 @@ SDL_bool Wayland_HasPrimarySelectionText(_THIS)
     SDL_WaylandPrimarySelectionDevice *primary_selection_device = NULL;
 
     SDL_bool result = SDL_FALSE;
-    if (_this == NULL || _this->driverdata == NULL) {
+    if (!_this || !_this->driverdata) {
         SDL_SetError("Video driver uninitialized");
     } else {
         video_data = _this->driverdata;
-        if (video_data->input != NULL && video_data->input->primary_selection_device != NULL) {
+        if (video_data->input && video_data->input->primary_selection_device) {
             primary_selection_device = video_data->input->primary_selection_device;
             result = result ||
                      Wayland_primary_selection_source_has_mime(

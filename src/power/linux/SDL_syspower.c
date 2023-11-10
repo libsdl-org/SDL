@@ -46,7 +46,7 @@ static int open_power_file(const char *base, const char *node, const char *key)
     int fd;
     const size_t pathlen = SDL_strlen(base) + SDL_strlen(node) + SDL_strlen(key) + 3;
     char *path = SDL_stack_alloc(char, pathlen);
-    if (path == NULL) {
+    if (!path) {
         return -1; /* oh well. */
     }
 
@@ -242,7 +242,7 @@ SDL_bool SDL_GetPowerInfo_Linux_proc_acpi(SDL_PowerState *state, int *seconds, i
     *state = SDL_POWERSTATE_UNKNOWN;
 
     dirp = opendir(proc_acpi_battery_path);
-    if (dirp == NULL) {
+    if (!dirp) {
         return SDL_FALSE; /* can't use this interface. */
     } else {
         while ((dent = readdir(dirp)) != NULL) {
@@ -254,7 +254,7 @@ SDL_bool SDL_GetPowerInfo_Linux_proc_acpi(SDL_PowerState *state, int *seconds, i
     }
 
     dirp = opendir(proc_acpi_ac_adapter_path);
-    if (dirp == NULL) {
+    if (!dirp) {
         return SDL_FALSE; /* can't use this interface. */
     } else {
         while ((dent = readdir(dirp)) != NULL) {
@@ -425,7 +425,7 @@ SDL_bool SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, in
     DIR *dirp;
 
     dirp = opendir(base);
-    if (dirp == NULL) {
+    if (!dirp) {
         return SDL_FALSE;
     }
 
@@ -616,7 +616,7 @@ SDL_bool SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, in
     char **paths = NULL;
     int i, numpaths = 0;
 
-    if (dbus == NULL || !SDL_DBus_CallMethodOnConnection(dbus->system_conn, UPOWER_DBUS_NODE, UPOWER_DBUS_PATH, UPOWER_DBUS_INTERFACE, "EnumerateDevices",
+    if (!dbus || !SDL_DBus_CallMethodOnConnection(dbus->system_conn, UPOWER_DBUS_NODE, UPOWER_DBUS_PATH, UPOWER_DBUS_INTERFACE, "EnumerateDevices",
                                                          DBUS_TYPE_INVALID,
                                                          DBUS_TYPE_ARRAY, DBUS_TYPE_OBJECT_PATH, &paths, &numpaths, DBUS_TYPE_INVALID)) {
         return SDL_FALSE; /* try a different approach than UPower. */

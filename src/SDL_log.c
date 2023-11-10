@@ -106,7 +106,7 @@ static int SDL_android_priority[SDL_NUM_LOG_PRIORITIES] = {
 
 void SDL_LogInit(void)
 {
-    if (log_function_mutex == NULL) {
+    if (!log_function_mutex) {
         /* if this fails we'll try to continue without it. */
         log_function_mutex = SDL_CreateMutex();
     }
@@ -299,7 +299,7 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va
         return;
     }
 
-    if (log_function_mutex == NULL) {
+    if (!log_function_mutex) {
         /* this mutex creation can race if you log from two threads at startup. You should have called SDL_Init first! */
         log_function_mutex = SDL_CreateMutex();
     }
@@ -317,7 +317,7 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va
     if (len >= sizeof(stack_buf) && SDL_size_add_overflow(len, 1, &len_plus_term) == 0) {
         /* Allocate exactly what we need, including the zero-terminator */
         message = (char *)SDL_malloc(len_plus_term);
-        if (message == NULL) {
+        if (!message) {
             return;
         }
         va_copy(aq, ap);
@@ -453,7 +453,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
     {
         FILE *pFile;
         pFile = fopen("SDL_Log.txt", "a");
-        if (pFile != NULL) {
+        if (pFile) {
             (void)fprintf(pFile, "%s: %s\n", SDL_priority_prefixes[priority], message);
             (void)fclose(pFile);
         }
@@ -462,7 +462,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
     {
         FILE *pFile;
         pFile = fopen("ux0:/data/SDL_Log.txt", "a");
-        if (pFile != NULL) {
+        if (pFile) {
             (void)fprintf(pFile, "%s: %s\n", SDL_priority_prefixes[priority], message);
             (void)fclose(pFile);
         }
@@ -471,7 +471,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
     {
         FILE *pFile;
         pFile = fopen("sdmc:/3ds/SDL_Log.txt", "a");
-        if (pFile != NULL) {
+        if (pFile) {
             (void)fprintf(pFile, "%s: %s\n", SDL_priority_prefixes[priority], message);
             (void)fclose(pFile);
         }

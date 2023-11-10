@@ -58,7 +58,7 @@ TInt E32Main()
 
     newHeap = User::ChunkHeap(NULL, heapSize, heapSize, KMinHeapGrowBy);
 
-    if (newHeap == NULL) {
+    if (!newHeap) {
         ret = 3;
         goto cleanup;
     } else {

@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
 
     sprite = LoadTexture(state->renderers[0], "icon.bmp", SDL_TRUE, &sprite_w, &sprite_h);
 
-    if (sprite == NULL) {
+    if (!sprite) {
         quit(2);
     }
 

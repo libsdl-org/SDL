@@ -106,7 +106,7 @@ int main(int argc, char **argv)
                 if (e.key.keysym.sym == SDLK_ESCAPE) {
                     done = 1;
                 } else if (e.key.keysym.sym == SDLK_x) {
-                    if (areas == NULL) {
+                    if (!areas) {
                         areas = drag_areas;
                         numareas = SDL_arraysize(drag_areas);
                     } else {

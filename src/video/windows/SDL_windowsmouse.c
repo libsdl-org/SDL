@@ -114,7 +114,7 @@ static SDL_Cursor *WIN_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 
     maskbitslen = ((surface->w + (pad - (surface->w % pad))) / 8) * surface->h;
     maskbits = SDL_small_alloc(Uint8, maskbitslen, &isstack);
-    if (maskbits == NULL) {
+    if (!maskbits) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -249,7 +249,7 @@ static void WIN_FreeCursor(SDL_Cursor *cursor)
 
 static int WIN_ShowCursor(SDL_Cursor *cursor)
 {
-    if (cursor == NULL) {
+    if (!cursor) {
         cursor = SDL_blank_cursor;
     }
     if (cursor) {

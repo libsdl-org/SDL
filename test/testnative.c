@@ -47,7 +47,7 @@ static void
 quit(int rc)
 {
     SDL_VideoQuit();
-    if (native_window != NULL && factory != NULL) {
+    if (native_window && factory) {
         factory->DestroyNativeWindow(native_window);
     }
     exit(rc);
@@ -119,19 +119,19 @@ int main(int argc, char *argv[])
             break;
         }
     }
-    if (factory == NULL) {
+    if (!factory) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find native window code for %s driver\n",
                      driver);
         quit(2);
     }
     SDL_Log("Creating native window for %s driver\n", driver);
     native_window = factory->CreateNativeWindow(WINDOW_W, WINDOW_H);
-    if (native_window == NULL) {
+    if (!native_window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create native window\n");
         quit(3);
     }
     window = SDL_CreateWindowFrom(native_window);
-    if (window == NULL) {
+    if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create SDL window: %s\n", SDL_GetError());
         quit(4);
     }
@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 
     /* Create the renderer */
     renderer = SDL_CreateRenderer(window, -1, 0);
-    if (renderer == NULL) {
+    if (!renderer) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
         quit(5);
     }
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
     SDL_RenderClear(renderer);
 
     sprite = LoadTexture(renderer, "icon.bmp", SDL_TRUE, NULL, NULL);
-    if (sprite == NULL) {
+    if (!sprite) {
         quit(6);
     }
 
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
     SDL_QueryTexture(sprite, NULL, NULL, &sprite_w, &sprite_h);
     positions = (SDL_Rect *)SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
     velocities = (SDL_Rect *)SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
-    if (positions == NULL || velocities == NULL) {
+    if (!positions || !velocities) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         quit(2);
     }

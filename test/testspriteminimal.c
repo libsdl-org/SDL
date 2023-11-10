@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
 
     sprite = LoadTexture(renderer, "icon.bmp", SDL_TRUE, &sprite_w, &sprite_h);
 
-    if (sprite == NULL) {
+    if (!sprite) {
         quit(2);
     }
 

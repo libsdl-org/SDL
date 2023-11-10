@@ -962,7 +962,7 @@ int SDL_AudioInit(const char *driver_name)
                 }
             }
 
-            driver_attempt = (driver_attempt_end != NULL) ? (driver_attempt_end + 1) : NULL;
+            driver_attempt = (driver_attempt_end) ? (driver_attempt_end + 1) : NULL;
         }
     } else {
         for (i = 0; (!initialized) && (bootstrap[i]); ++i) {

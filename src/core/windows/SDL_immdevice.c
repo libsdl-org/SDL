@@ -136,7 +136,7 @@ static void SDL_IMMDevice_Add(const SDL_bool iscapture, const char *devname, WAV
     }
 
     devidlist = (DevIdList *)SDL_malloc(sizeof(*devidlist));
-    if (devidlist == NULL) {
+    if (!devidlist) {
         return; /* oh well. */
     }
 
@@ -361,10 +361,10 @@ int SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_bool iscapture)
     const Uint64 timeout = SDL_GetTicks64() + 8000;  /* intel's audio drivers can fail for up to EIGHT SECONDS after a device is connected or we wake from sleep. */
     HRESULT ret;
 
-    SDL_assert(device != NULL);
+    SDL_assert(device);
 
     while (SDL_TRUE) {
-        if (devid == NULL) {
+        if (!devid) {
             const EDataFlow dataflow = iscapture ? eCapture : eRender;
             ret = IMMDeviceEnumerator_GetDefaultAudioEndpoint(enumerator, dataflow, SDL_IMMDevice_role, device);
         } else {
@@ -443,7 +443,7 @@ static void EnumerateEndpointsForFlow(const SDL_bool iscapture)
     }
 
     items = (EndpointItem *)SDL_calloc(total, sizeof(EndpointItem));
-    if (items == NULL) {
+    if (!items) {
         return; /* oh well. */
     }
 
@@ -496,11 +496,11 @@ int SDL_IMMDevice_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int isca
     HRESULT ret = IMMDeviceEnumerator_GetDefaultAudioEndpoint(enumerator, dataflow, SDL_IMMDevice_role, &device);
 
     if (FAILED(ret)) {
-        SDL_assert(device == NULL);
+        SDL_assert(!device);
         return WIN_SetErrorFromHRESULT("WASAPI can't find default audio endpoint", ret);
     }
 
-    if (name == NULL) {
+    if (!name) {
         name = &filler;
     }
 

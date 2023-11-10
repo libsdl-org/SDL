@@ -243,7 +243,7 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
     SDL_JoystickType joystick_type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
 
     ctx = (SDL_DriverPS4_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (ctx == NULL) {
+    if (!ctx) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
@@ -1145,7 +1145,7 @@ static SDL_bool HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
         ++packet_count;
         ctx->last_packet = now;
 
-        if (joystick == NULL) {
+        if (!joystick) {
             continue;
         }
 

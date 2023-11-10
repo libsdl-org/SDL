@@ -54,14 +54,14 @@ static int SDL_ANDROID_SensorInit(void)
     ASensorList sensors;
 
     SDL_sensor_manager = ASensorManager_getInstance();
-    if (SDL_sensor_manager == NULL) {
+    if (!SDL_sensor_manager) {
         return SDL_SetError("Couldn't create sensor manager");
     }
 
     SDL_sensor_looper = ALooper_forThread();
-    if (SDL_sensor_looper == NULL) {
+    if (!SDL_sensor_looper) {
         SDL_sensor_looper = ALooper_prepare(ALOOPER_PREPARE_ALLOW_NON_CALLBACKS);
-        if (SDL_sensor_looper == NULL) {
+        if (!SDL_sensor_looper) {
             return SDL_SetError("Couldn't create sensor event loop");
         }
     }
@@ -70,7 +70,7 @@ static int SDL_ANDROID_SensorInit(void)
     sensors_count = ASensorManager_getSensorList(SDL_sensor_manager, &sensors);
     if (sensors_count > 0) {
         SDL_sensors = (SDL_AndroidSensor *)SDL_calloc(sensors_count, sizeof(*SDL_sensors));
-        if (SDL_sensors == NULL) {
+        if (!SDL_sensors) {
             return SDL_OutOfMemory();
         }
 
@@ -125,7 +125,7 @@ static int SDL_ANDROID_SensorOpen(SDL_Sensor *sensor, int device_index)
     int delay_us, min_delay_us;
 
     hwdata = (struct sensor_hwdata *)SDL_calloc(1, sizeof(*hwdata));
-    if (hwdata == NULL) {
+    if (!hwdata) {
         return SDL_OutOfMemory();
     }
 

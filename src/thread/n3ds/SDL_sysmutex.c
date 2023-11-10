@@ -64,7 +64,7 @@ int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn
 /* try Lock the mutex */
 int SDL_TryLockMutex(SDL_mutex *mutex)
 {
-    if (mutex == NULL) {
+    if (!mutex) {
         return 0;
     }
 

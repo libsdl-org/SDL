@@ -62,7 +62,7 @@ static SDL_mutex *SDL_CreateMutex_srw(void)
 
     /* Relies on SRWLOCK_INIT == 0. */
     mutex = (SDL_mutex_srw *)SDL_calloc(1, sizeof(*mutex));
-    if (mutex == NULL) {
+    if (!mutex) {
         SDL_OutOfMemory();
     }
 
@@ -153,7 +153,7 @@ static SDL_mutex *SDL_CreateMutex_cs(void)
 
     /* Allocate mutex memory */
     mutex = (SDL_mutex_cs *)SDL_malloc(sizeof(*mutex));
-    if (mutex != NULL) {
+    if (mutex) {
         /* Initialize */
         /* On SMP systems, a non-zero spin count generally helps performance */
 #if __WINRT__
@@ -221,7 +221,7 @@ static const SDL_mutex_impl_t SDL_mutex_impl_cs = {
 
 SDL_mutex *SDL_CreateMutex(void)
 {
-    if (SDL_mutex_impl_active.Create == NULL) {
+    if (!SDL_mutex_impl_active.Create) {
         /* Default to fallback implementation */
         const SDL_mutex_impl_t *impl = &SDL_mutex_impl_cs;
 
@@ -260,7 +260,7 @@ void SDL_DestroyMutex(SDL_mutex *mutex)
 
 int SDL_LockMutex(SDL_mutex *mutex)
 {
-    if (mutex == NULL) {
+    if (!mutex) {
         return 0;
     }
 
@@ -269,7 +269,7 @@ int SDL_LockMutex(SDL_mutex *mutex)
 
 int SDL_TryLockMutex(SDL_mutex *mutex)
 {
-    if (mutex == NULL) {
+    if (!mutex) {
         return 0;
     }
 
@@ -278,7 +278,7 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
 
 int SDL_UnlockMutex(SDL_mutex *mutex)
 {
-    if (mutex == NULL) {
+    if (!mutex) {
         return 0;
     }
 

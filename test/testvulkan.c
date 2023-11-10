@@ -236,7 +236,7 @@ static void createInstance(void)
         quit(2);
     }
     extensions = (const char **)SDL_malloc(sizeof(const char *) * extensionCount);
-    if (extensions == NULL) {
+    if (!extensions) {
         SDL_OutOfMemory();
         quit(2);
     }
@@ -312,7 +312,7 @@ static void findPhysicalDevice(void)
         quit(2);
     }
     physicalDevices = (VkPhysicalDevice *)SDL_malloc(sizeof(VkPhysicalDevice) * physicalDeviceCount);
-    if (physicalDevices == NULL) {
+    if (!physicalDevices) {
         SDL_OutOfMemory();
         quit(2);
     }
@@ -346,7 +346,7 @@ static void findPhysicalDevice(void)
             SDL_free(queueFamiliesProperties);
             queueFamiliesPropertiesAllocatedSize = queueFamiliesCount;
             queueFamiliesProperties = (VkQueueFamilyProperties *)SDL_malloc(sizeof(VkQueueFamilyProperties) * queueFamiliesPropertiesAllocatedSize);
-            if (queueFamiliesProperties == NULL) {
+            if (!queueFamiliesProperties) {
                 SDL_free(physicalDevices);
                 SDL_free(deviceExtensions);
                 SDL_OutOfMemory();
@@ -408,7 +408,7 @@ static void findPhysicalDevice(void)
             SDL_free(deviceExtensions);
             deviceExtensionsAllocatedSize = deviceExtensionCount;
             deviceExtensions = SDL_malloc(sizeof(VkExtensionProperties) * deviceExtensionsAllocatedSize);
-            if (deviceExtensions == NULL) {
+            if (!deviceExtensions) {
                 SDL_free(physicalDevices);
                 SDL_free(queueFamiliesProperties);
                 SDL_OutOfMemory();
@@ -929,7 +929,7 @@ static void initVulkan(void)
     SDL_Vulkan_LoadLibrary(NULL);
 
     vulkanContexts = (VulkanContext *)SDL_calloc(state->num_windows, sizeof(VulkanContext));
-    if (vulkanContexts == NULL) {
+    if (!vulkanContexts) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         quit(2);
     }
@@ -1092,7 +1092,7 @@ int main(int argc, char **argv)
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 

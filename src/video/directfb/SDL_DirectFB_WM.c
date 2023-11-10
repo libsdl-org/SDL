@@ -79,13 +79,13 @@ static void LoadFont(_THIS, SDL_Window * window)
     SDL_DFB_DEVICEDATA(_this);
     SDL_DFB_WINDOWDATA(window);
 
-    if (windata->font != NULL) {
+    if (windata->font) {
         SDL_DFB_RELEASE(windata->font);
         windata->font = NULL;
         SDL_DFB_CHECK(windata->window_surface->SetFont(windata->window_surface, windata->font));
     }
 
-    if (windata->theme.font != NULL)
+    if (windata->theme.font)
     {
         DFBFontDescription fdesc;
 
@@ -317,7 +317,7 @@ int DirectFB_WM_ProcessEvent(_THIS, SDL_Window * window, DFBWindowEvent * evt)
                 SDL_FALLTHROUGH;
             default:
                 windata->wm_grab = pos;
-                if (grabbed_window != NULL)
+                if (grabbed_window)
                     DirectFB_SetWindowMouseGrab(_this, grabbed_window, SDL_FALSE);
                 DirectFB_SetWindowMouseGrab(_this, window, SDL_TRUE);
                 windata->wm_lastx = evt->cx;
@@ -350,7 +350,7 @@ int DirectFB_WM_ProcessEvent(_THIS, SDL_Window * window, DFBWindowEvent * evt)
                 }
             }
             DirectFB_SetWindowMouseGrab(_this, window, SDL_FALSE);
-            if (grabbed_window != NULL)
+            if (grabbed_window)
                 DirectFB_SetWindowMouseGrab(_this, grabbed_window, SDL_TRUE);
             windata->wm_grab = WM_POS_NONE;
             return 1;

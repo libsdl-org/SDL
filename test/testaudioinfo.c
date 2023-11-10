@@ -29,7 +29,7 @@ print_devices(int iscapture)
         int i;
         for (i = 0; i < n; i++) {
             const char *name = SDL_GetAudioDeviceName(i, iscapture);
-            if (name != NULL) {
+            if (name) {
                 SDL_Log("  %d: %s\n", i, name);
             } else {
                 SDL_Log("  %d Error: %s\n", i, SDL_GetError());
@@ -81,7 +81,7 @@ int main(int argc, char **argv)
     if (SDL_GetDefaultAudioInfo(&deviceName, &spec, 0) < 0) {
         SDL_Log("Error when calling SDL_GetDefaultAudioInfo: %s\n", SDL_GetError());
     } else {
-        SDL_Log("Default Output Name: %s\n", deviceName != NULL ? deviceName : "unknown");
+        SDL_Log("Default Output Name: %s\n", deviceName ? deviceName : "unknown");
         SDL_free(deviceName);
         SDL_Log("Sample Rate: %d\n", spec.freq);
         SDL_Log("Channels: %d\n", spec.channels);
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
     if (SDL_GetDefaultAudioInfo(&deviceName, &spec, 1) < 0) {
         SDL_Log("Error when calling SDL_GetDefaultAudioInfo: %s\n", SDL_GetError());
     } else {
-        SDL_Log("Default Capture Name: %s\n", deviceName != NULL ? deviceName : "unknown");
+        SDL_Log("Default Capture Name: %s\n", deviceName ? deviceName : "unknown");
         SDL_free(deviceName);
         SDL_Log("Sample Rate: %d\n", spec.freq);
         SDL_Log("Channels: %d\n", spec.channels);

@@ -29,7 +29,7 @@ SDL_WindowShaper *Win32_CreateShaper(SDL_Window *window)
 {
     int resized_properly;
     SDL_WindowShaper *result = (SDL_WindowShaper *)SDL_malloc(sizeof(SDL_WindowShaper));
-    if (result == NULL) {
+    if (!result) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -77,8 +77,8 @@ int Win32_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_Windo
     SDL_ShapeData *data;
     HRGN mask_region = NULL;
 
-    if ((shaper == NULL) ||
-        (shape == NULL) ||
+    if ((!shaper) ||
+        (!shape) ||
         ((shape->format->Amask == 0) && (shape_mode->mode != ShapeModeColorKey)) ||
         (shape->w != shaper->window->w) ||
         (shape->h != shaper->window->h)) {
@@ -86,7 +86,7 @@ int Win32_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_Windo
     }
 
     data = (SDL_ShapeData *)shaper->driverdata;
-    if (data->mask_tree != NULL) {
+    if (data->mask_tree) {
         SDL_FreeShapeTree(&data->mask_tree);
     }
     data->mask_tree = SDL_CalculateShapeTree(*shape_mode, shape);
@@ -103,15 +103,15 @@ int Win32_ResizeWindowShape(SDL_Window *window)
 {
     SDL_ShapeData *data;
 
-    if (window == NULL) {
+    if (!window) {
         return -1;
     }
     data = (SDL_ShapeData *)window->shaper->driverdata;
-    if (data == NULL) {
+    if (!data) {
         return -1;
     }
 
-    if (data->mask_tree != NULL) {
+    if (data->mask_tree) {
         SDL_FreeShapeTree(&data->mask_tree);
     }
     if (window->shaper->hasshape == SDL_TRUE) {

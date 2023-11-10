@@ -76,14 +76,14 @@ static SDL_VideoDevice *VITA_Create()
 #endif
     /* Initialize SDL_VideoDevice structure */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
+    if (!device) {
         SDL_OutOfMemory();
         return NULL;
     }
 
     /* Initialize internal VITA specific data */
     phdata = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
-    if (phdata == NULL) {
+    if (!phdata) {
         SDL_OutOfMemory();
         SDL_free(device);
         return NULL;
@@ -91,7 +91,7 @@ static SDL_VideoDevice *VITA_Create()
 #if SDL_VIDEO_VITA_PIB
 
     gldata = (SDL_GLDriverData *)SDL_calloc(1, sizeof(SDL_GLDriverData));
-    if (gldata == NULL) {
+    if (!gldata) {
         SDL_OutOfMemory();
         SDL_free(device);
         SDL_free(phdata);
@@ -258,7 +258,7 @@ int VITA_CreateWindow(_THIS, SDL_Window *window)
 
     /* Allocate window internal data */
     wdata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
-    if (wdata == NULL) {
+    if (!wdata) {
         return SDL_OutOfMemory();
     }
 
@@ -266,7 +266,7 @@ int VITA_CreateWindow(_THIS, SDL_Window *window)
     window->driverdata = wdata;
 
     // Vita can only have one window
-    if (Vita_Window != NULL) {
+    if (Vita_Window) {
         return SDL_SetError("Only one window supported");
     }
 

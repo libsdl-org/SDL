@@ -95,7 +95,7 @@ void SDL_DestroyCond_generic(SDL_cond *_cond)
 int SDL_CondSignal_generic(SDL_cond *_cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -119,7 +119,7 @@ int SDL_CondSignal_generic(SDL_cond *_cond)
 int SDL_CondBroadcast_generic(SDL_cond *_cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -175,7 +175,7 @@ int SDL_CondWaitTimeout_generic(SDL_cond *_cond, SDL_mutex *mutex, Uint32 ms)
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     int retval;
 
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
 

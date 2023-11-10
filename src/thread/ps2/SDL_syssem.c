@@ -50,7 +50,7 @@ SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
     ee_sema_t sema;
 
     sem = (SDL_sem *)SDL_malloc(sizeof(*sem));
-    if (sem != NULL) {
+    if (sem) {
         /* TODO: Figure out the limit on the maximum value. */
         sema.init_count = initial_value;
         sema.max_count = 255;
@@ -72,7 +72,7 @@ SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
 /* Free the semaphore */
 void SDL_DestroySemaphore(SDL_sem *sem)
 {
-    if (sem != NULL) {
+    if (sem) {
         if (sem->semid > 0) {
             DeleteSema(sem->semid);
             sem->semid = 0;
@@ -88,7 +88,7 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
     struct timer_alarm_t alarm;
     InitializeTimerAlarm(&alarm);
 
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -127,7 +127,7 @@ Uint32 SDL_SemValue(SDL_sem *sem)
 {
     ee_sema_t info;
 
-    if (sem == NULL) {
+    if (!sem) {
         SDL_InvalidParamError("sem");
         return 0;
     }
@@ -143,7 +143,7 @@ int SDL_SemPost(SDL_sem *sem)
 {
     int res;
 
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 
