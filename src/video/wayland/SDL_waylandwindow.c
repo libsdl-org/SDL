@@ -661,6 +661,7 @@ static void handle_configure_xdg_toplevel(void *data,
             break;
         case XDG_TOPLEVEL_STATE_SUSPENDED:
             suspended = SDL_TRUE;
+            break;
         default:
             break;
         }
