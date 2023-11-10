@@ -77,14 +77,31 @@ typedef enum
 
 /**
  *  The list of buttons available on a gamepad
+ *
+ *  For controllers that use a diamond pattern for the face buttons,
+ *  the south/east/west/north buttons below correspond to the locations
+ *  in the diamond pattern. For Xbox controllers, this would be A/B/X/Y,
+ *  for Nintendo Switch controllers, this would be B/A/Y/X, for
+ *  PlayStation controllers this would be Cross/Circle/Square/Triangle.
+ *
+ *  For controllers that don't use a diamond pattern for the face buttons,
+ *  the south/east/west/north buttons indicate the buttons labeled A, B,
+ *  C, D, or 1, 2, 3, 4, or for controllers that aren't labeled, they are
+ *  the primary, secondary, etc. buttons.
+ *
+ *  The activate action is often the south button and the cancel action
+ *  is often the east button, but in some regions this is reversed, so
+ *  your game should allow remapping actions based on user preferences.
+ *
+ *  You can query the labels for the face buttons using SDL_GetGamepadButtonLabel()
  */
 typedef enum
 {
     SDL_GAMEPAD_BUTTON_INVALID = -1,
-    SDL_GAMEPAD_BUTTON_SOUTH,
-    SDL_GAMEPAD_BUTTON_EAST,
-    SDL_GAMEPAD_BUTTON_WEST,
-    SDL_GAMEPAD_BUTTON_NORTH,
+    SDL_GAMEPAD_BUTTON_SOUTH,           /* Bottom face button (e.g. Xbox A button) */
+    SDL_GAMEPAD_BUTTON_EAST,            /* Right face button (e.g. Xbox B button) */
+    SDL_GAMEPAD_BUTTON_WEST,            /* Left face button (e.g. Xbox X button) */
+    SDL_GAMEPAD_BUTTON_NORTH,           /* Top face button (e.g. Xbox Y button) */
     SDL_GAMEPAD_BUTTON_BACK,
     SDL_GAMEPAD_BUTTON_GUIDE,
     SDL_GAMEPAD_BUTTON_START,
@@ -96,12 +113,12 @@ typedef enum
     SDL_GAMEPAD_BUTTON_DPAD_DOWN,
     SDL_GAMEPAD_BUTTON_DPAD_LEFT,
     SDL_GAMEPAD_BUTTON_DPAD_RIGHT,
-    SDL_GAMEPAD_BUTTON_MISC1,    /* Additional button (e.g. Xbox Series X share button, PS5 microphone button, Nintendo Switch Pro capture button, Amazon Luna microphone button) */
-    SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1,  /* Upper or primary paddle, under your right hand (e.g. Xbox Elite paddle P1) */
-    SDL_GAMEPAD_BUTTON_LEFT_PADDLE1,   /* Upper or primary paddle, under your left hand (e.g. Xbox Elite paddle P3) */
-    SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2,  /* Lower or secondary paddle, under your right hand (e.g. Xbox Elite paddle P2) */
-    SDL_GAMEPAD_BUTTON_LEFT_PADDLE2,   /* Lower or secondary paddle, under your left hand (e.g. Xbox Elite paddle P4) */
-    SDL_GAMEPAD_BUTTON_TOUCHPAD, /* PS4/PS5 touchpad button */
+    SDL_GAMEPAD_BUTTON_MISC1,           /* Additional button (e.g. Xbox Series X share button, PS5 microphone button, Nintendo Switch Pro capture button, Amazon Luna microphone button) */
+    SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1,   /* Upper or primary paddle, under your right hand (e.g. Xbox Elite paddle P1) */
+    SDL_GAMEPAD_BUTTON_LEFT_PADDLE1,    /* Upper or primary paddle, under your left hand (e.g. Xbox Elite paddle P3) */
+    SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2,   /* Lower or secondary paddle, under your right hand (e.g. Xbox Elite paddle P2) */
+    SDL_GAMEPAD_BUTTON_LEFT_PADDLE2,    /* Lower or secondary paddle, under your left hand (e.g. Xbox Elite paddle P4) */
+    SDL_GAMEPAD_BUTTON_TOUCHPAD,        /* PS4/PS5 touchpad button */
     SDL_GAMEPAD_BUTTON_MAX
 } SDL_GamepadButton;
 
@@ -115,14 +132,14 @@ typedef enum
 typedef enum
 {
     SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN,
-    SDL_GAMEPAD_BUTTON_LABEL_A,         /**< The south button for Xbox controllers, the east button for Nintendo controllers */
-    SDL_GAMEPAD_BUTTON_LABEL_B,         /**< The east button for Xbox controllers, the south button for Nintendo controllers */
-    SDL_GAMEPAD_BUTTON_LABEL_X,         /**< The west button for Xbox controllers, the north button for Nintendo controllers */
-    SDL_GAMEPAD_BUTTON_LABEL_Y,         /**< The north button for Xbox controllers, the west button for Nintendo controllers */
-    SDL_GAMEPAD_BUTTON_LABEL_CROSS,     /**< The south button for Playstation controllers */
-    SDL_GAMEPAD_BUTTON_LABEL_CIRCLE,    /**< The east button for Playstation controllers */
-    SDL_GAMEPAD_BUTTON_LABEL_SQUARE,    /**< The west button for Playstation controllers */
-    SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE   /**< The north button for Playstation controllers */
+    SDL_GAMEPAD_BUTTON_LABEL_A,
+    SDL_GAMEPAD_BUTTON_LABEL_B,
+    SDL_GAMEPAD_BUTTON_LABEL_X,
+    SDL_GAMEPAD_BUTTON_LABEL_Y,
+    SDL_GAMEPAD_BUTTON_LABEL_CROSS,
+    SDL_GAMEPAD_BUTTON_LABEL_CIRCLE,
+    SDL_GAMEPAD_BUTTON_LABEL_SQUARE,
+    SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE
 } SDL_GamepadButtonLabel;
 
 /**
