@@ -9,8 +9,10 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include <SDL3/SDL_test_common.h>
+
+#include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test_common.h>
 
 #ifdef HAVE_OPENGL
 
@@ -20,7 +22,7 @@
 
 typedef struct GL_Context
 {
-#define SDL_PROC(ret, func, params) ret (APIENTRY *func) params;
+#define SDL_PROC(ret, func, params) ret(APIENTRY *func) params;
 #include "../src/render/opengl/SDL_glfuncs.h"
 #undef SDL_PROC
 } GL_Context;
@@ -46,7 +48,7 @@ static int LoadContext(GL_Context *data)
 #else
 #define SDL_PROC(ret, func, params)                                                         \
     do {                                                                                    \
-        data->func = (ret (APIENTRY *) params)SDL_GL_GetProcAddress(#func);                 \
+        data->func = (ret(APIENTRY *) params)SDL_GL_GetProcAddress(#func);                  \
         if (!data->func) {                                                                  \
             return SDL_SetError("Couldn't load GL function %s: %s", #func, SDL_GetError()); \
         }                                                                                   \
@@ -238,7 +240,7 @@ int main(int argc, char *argv[])
             } else if (SDL_strcasecmp(argv[i], "--accel") == 0 && i + 1 < argc) {
                 accel = SDL_atoi(argv[i + 1]);
                 consumed = 2;
-            } else if(SDL_strcasecmp(argv[i], "--suspend-when-occluded") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--suspend-when-occluded") == 0) {
                 suspend_when_occluded = SDL_TRUE;
                 consumed = 1;
             } else {
@@ -306,9 +308,9 @@ int main(int argc, char *argv[])
 
     ret_interval = SDL_GL_GetSwapInterval(&interval);
     if (ret_interval < 0) {
-       SDL_Log("Swap Interval : %d error: %s\n", interval, SDL_GetError());
+        SDL_Log("Swap Interval : %d error: %s\n", interval, SDL_GetError());
     } else {
-       SDL_Log("Swap Interval : %d\n", interval);
+        SDL_Log("Swap Interval : %d\n", interval);
     }
 
     SDL_GetWindowSize(state->windows[0], &dw, &dh);

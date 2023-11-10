@@ -11,9 +11,6 @@
 */
 /* Simple program:  Move N sprites around on the screen as fast as possible */
 
-#include <stdlib.h>
-#include <time.h>
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
@@ -22,6 +19,9 @@
 #include <SDL3/SDL_main.h>
 
 #include "icon.h"
+
+#include <stdlib.h>
+#include <time.h>
 
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
@@ -36,7 +36,8 @@ static int sprite_w, sprite_h;
 static SDL_Renderer *renderer;
 static int done;
 
-static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned int len, int *w, int *h) {
+static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned int len, int *w, int *h)
+{
     SDL_Texture *texture = NULL;
     SDL_Surface *surface;
     SDL_RWops *src = SDL_RWFromConstMem(data, len);

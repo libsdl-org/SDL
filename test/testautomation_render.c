@@ -2,8 +2,10 @@
  * Original code: automated SDL platform test written by Edgar Simo "bobbens"
  * Extended and extensively updated by aschiffler at ferzkopp dot net
  */
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+
 #include "testautomation_images.h"
 #include "testautomation_suites.h"
 
@@ -12,21 +14,20 @@
 #define TESTRENDER_SCREEN_W 80
 #define TESTRENDER_SCREEN_H 60
 
-
 #define RENDER_COMPARE_FORMAT SDL_PIXELFORMAT_ARGB8888
-#define RENDER_COLOR_CLEAR  0xFF000000
-#define RENDER_COLOR_GREEN  0xFF00FF00
+#define RENDER_COLOR_CLEAR    0xFF000000
+#define RENDER_COLOR_GREEN    0xFF00FF00
 
 #define ALLOWABLE_ERROR_OPAQUE  0
 #define ALLOWABLE_ERROR_BLENDED 64
 
-#define CHECK_FUNC(FUNC, PARAMS)    \
-{                                   \
-    int result = FUNC PARAMS;       \
-    if (result != 0) {              \
-        SDLTest_AssertCheck(result == 0, "Validate result from %s, expected: 0, got: %i, %s", #FUNC, result, SDL_GetError()); \
-    }                               \
-}
+#define CHECK_FUNC(FUNC, PARAMS)                                                                                                  \
+    {                                                                                                                             \
+        int result = FUNC PARAMS;                                                                                                 \
+        if (result != 0) {                                                                                                        \
+            SDLTest_AssertCheck(result == 0, "Validate result from %s, expected: 0, got: %i, %s", #FUNC, result, SDL_GetError()); \
+        }                                                                                                                         \
+    }
 
 /* Test window and renderer */
 static SDL_Window *window = NULL;
@@ -842,8 +843,8 @@ static int render_testLogicalSize(void *arg)
     /* Set the logical size and do a fill operation */
     CHECK_FUNC(SDL_GetCurrentRenderOutputSize, (renderer, &w, &h))
     CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, w / factor, h / factor,
-                                           SDL_LOGICAL_PRESENTATION_LETTERBOX,
-                                           SDL_SCALEMODE_NEAREST))
+                                                  SDL_LOGICAL_PRESENTATION_LETTERBOX,
+                                                  SDL_SCALEMODE_NEAREST))
     CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
     rect.x = (float)viewport.x / factor;
     rect.y = (float)viewport.y / factor;
@@ -851,8 +852,8 @@ static int render_testLogicalSize(void *arg)
     rect.h = (float)viewport.h / factor;
     CHECK_FUNC(SDL_RenderFillRect, (renderer, &rect))
     CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, 0, 0,
-                                           SDL_LOGICAL_PRESENTATION_DISABLED,
-                                           SDL_SCALEMODE_NEAREST))
+                                                  SDL_LOGICAL_PRESENTATION_DISABLED,
+                                                  SDL_SCALEMODE_NEAREST))
 
     /* Check to see if final image matches. */
     compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
@@ -863,8 +864,8 @@ static int render_testLogicalSize(void *arg)
     /* Set the logical size and viewport and do a fill operation */
     CHECK_FUNC(SDL_GetCurrentRenderOutputSize, (renderer, &w, &h))
     CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, w / factor, h / factor,
-                                           SDL_LOGICAL_PRESENTATION_LETTERBOX,
-                                           SDL_SCALEMODE_NEAREST))
+                                                  SDL_LOGICAL_PRESENTATION_LETTERBOX,
+                                                  SDL_SCALEMODE_NEAREST))
     viewport.x = (TESTRENDER_SCREEN_W / 4) / factor;
     viewport.y = (TESTRENDER_SCREEN_H / 4) / factor;
     viewport.w = (TESTRENDER_SCREEN_W / 2) / factor;
@@ -874,8 +875,8 @@ static int render_testLogicalSize(void *arg)
     CHECK_FUNC(SDL_RenderFillRect, (renderer, NULL))
     CHECK_FUNC(SDL_SetRenderViewport, (renderer, NULL))
     CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, 0, 0,
-                                           SDL_LOGICAL_PRESENTATION_DISABLED,
-                                           SDL_SCALEMODE_NEAREST))
+                                                  SDL_LOGICAL_PRESENTATION_DISABLED,
+                                                  SDL_SCALEMODE_NEAREST))
 
     /* Check to see if final image matches. */
     compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
@@ -899,15 +900,15 @@ static int render_testLogicalSize(void *arg)
     /* Set the logical size and do a fill operation */
     CHECK_FUNC(SDL_GetCurrentRenderOutputSize, (renderer, &w, &h))
     CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer,
-                                           w - 2 * (TESTRENDER_SCREEN_W / 4),
-                                           h,
-                                           SDL_LOGICAL_PRESENTATION_LETTERBOX,
-                                           SDL_SCALEMODE_LINEAR))
+                                                  w - 2 * (TESTRENDER_SCREEN_W / 4),
+                                                  h,
+                                                  SDL_LOGICAL_PRESENTATION_LETTERBOX,
+                                                  SDL_SCALEMODE_LINEAR))
     CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
     CHECK_FUNC(SDL_RenderFillRect, (renderer, NULL))
     CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, 0, 0,
-                                           SDL_LOGICAL_PRESENTATION_DISABLED,
-                                           SDL_SCALEMODE_NEAREST))
+                                                  SDL_LOGICAL_PRESENTATION_DISABLED,
+                                                  SDL_SCALEMODE_NEAREST))
 
     /* Check to see if final image matches. */
     compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
@@ -1167,36 +1168,36 @@ hasTexAlpha(void)
 static void
 compare(SDL_Surface *referenceSurface, int allowable_error)
 {
-   int ret;
-   SDL_Rect rect;
-   Uint8 *pixels;
-   SDL_Surface *testSurface;
+    int ret;
+    SDL_Rect rect;
+    Uint8 *pixels;
+    SDL_Surface *testSurface;
 
-   /* Read pixels. */
-   pixels = (Uint8 *)SDL_malloc(4*TESTRENDER_SCREEN_W*TESTRENDER_SCREEN_H);
-   SDLTest_AssertCheck(pixels != NULL, "Validate allocated temp pixel buffer");
-   if (pixels == NULL) {
-      return;
-   }
+    /* Read pixels. */
+    pixels = (Uint8 *)SDL_malloc(4 * TESTRENDER_SCREEN_W * TESTRENDER_SCREEN_H);
+    SDLTest_AssertCheck(pixels != NULL, "Validate allocated temp pixel buffer");
+    if (pixels == NULL) {
+        return;
+    }
 
-   /* Explicitly specify the rect in case the window isn't the expected size... */
-   rect.x = 0;
-   rect.y = 0;
-   rect.w = TESTRENDER_SCREEN_W;
-   rect.h = TESTRENDER_SCREEN_H;
-   CHECK_FUNC(SDL_RenderReadPixels, (renderer, &rect, RENDER_COMPARE_FORMAT, pixels, 80*4 ))
+    /* Explicitly specify the rect in case the window isn't the expected size... */
+    rect.x = 0;
+    rect.y = 0;
+    rect.w = TESTRENDER_SCREEN_W;
+    rect.h = TESTRENDER_SCREEN_H;
+    CHECK_FUNC(SDL_RenderReadPixels, (renderer, &rect, RENDER_COMPARE_FORMAT, pixels, 80 * 4))
 
-   /* Create surface. */
-   testSurface = SDL_CreateSurfaceFrom(pixels, TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, TESTRENDER_SCREEN_W*4, RENDER_COMPARE_FORMAT);
-   SDLTest_AssertCheck(testSurface != NULL, "Verify result from SDL_CreateSurfaceFrom is not NULL");
+    /* Create surface. */
+    testSurface = SDL_CreateSurfaceFrom(pixels, TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, TESTRENDER_SCREEN_W * 4, RENDER_COMPARE_FORMAT);
+    SDLTest_AssertCheck(testSurface != NULL, "Verify result from SDL_CreateSurfaceFrom is not NULL");
 
-   /* Compare surface. */
-   ret = SDLTest_CompareSurfaces( testSurface, referenceSurface, allowable_error );
-   SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
+    /* Compare surface. */
+    ret = SDLTest_CompareSurfaces(testSurface, referenceSurface, allowable_error);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
-   /* Clean up. */
-   SDL_free(pixels);
-   SDL_DestroySurface(testSurface);
+    /* Clean up. */
+    SDL_free(pixels);
+    SDL_DestroySurface(testSurface);
 }
 
 /**

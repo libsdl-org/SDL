@@ -27,7 +27,6 @@ static SDL_Renderer *renderer;
 static SDL_Surface *surface;
 static int done;
 
-
 static void DrawChessBoard(void)
 {
     int row = 0, column = 0, x = 0;

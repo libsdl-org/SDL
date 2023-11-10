@@ -8,6 +8,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_intrin.h>
 #include <SDL3/SDL_test.h>
+
 #include "testautomation_suites.h"
 
 // FIXME: missing tests for loongarch lsx/lasx
@@ -17,7 +18,8 @@
 
 /* Helper functions */
 
-static int allocate_random_int_arrays(Sint32 **dest, Sint32 **a, Sint32 **b, size_t *size) {
+static int allocate_random_int_arrays(Sint32 **dest, Sint32 **a, Sint32 **b, size_t *size)
+{
     size_t i;
 
     *size = (size_t)SDLTest_RandomIntegerInRange(127, 999);
@@ -37,7 +39,8 @@ static int allocate_random_int_arrays(Sint32 **dest, Sint32 **a, Sint32 **b, siz
     return 0;
 }
 
-static int allocate_random_float_arrays(float **dest, float **a, float **b, size_t *size) {
+static int allocate_random_float_arrays(float **dest, float **a, float **b, size_t *size)
+{
     size_t i;
 
     *size = (size_t)SDLTest_RandomIntegerInRange(127, 999);
@@ -58,7 +61,8 @@ static int allocate_random_float_arrays(float **dest, float **a, float **b, size
     return 0;
 }
 
-static int allocate_random_double_arrays(double **dest, double **a, double **b, size_t *size) {
+static int allocate_random_double_arrays(double **dest, double **a, double **b, size_t *size)
+{
     size_t i;
 
     *size = (size_t)SDLTest_RandomIntegerInRange(127, 999);
@@ -79,7 +83,8 @@ static int allocate_random_double_arrays(double **dest, double **a, double **b, 
     return 0;
 }
 
-static void free_arrays(void *dest, void *a, void *b) {
+static void free_arrays(void *dest, void *a, void *b)
+{
     SDL_free(dest);
     SDL_free(a);
     SDL_free(b);
@@ -88,14 +93,15 @@ static void free_arrays(void *dest, void *a, void *b) {
 /**
  * Verify element-wise addition of 2 int arrays.
  */
-static void verify_ints_addition(const Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size, const char *desc) {
+static void verify_ints_addition(const Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size, const char *desc)
+{
     size_t i;
     int all_good = 1;
 
     for (i = 0; i < size; ++i) {
         Sint32 expected = a[i] + b[i];
         if (dest[i] != expected) {
-            SDLTest_AssertCheck(SDL_FALSE, "%"SDL_PRIs32" + %"SDL_PRIs32" = %"SDL_PRIs32", expected %"SDL_PRIs32" ([%"SDL_PRIu32"/%"SDL_PRIu32"] %s)",
+            SDLTest_AssertCheck(SDL_FALSE, "%" SDL_PRIs32 " + %" SDL_PRIs32 " = %" SDL_PRIs32 ", expected %" SDL_PRIs32 " ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
                                 a[i], b[i], dest[i], expected, (Uint32)i, (Uint32)size, desc);
             all_good = 0;
         }
@@ -108,14 +114,15 @@ static void verify_ints_addition(const Sint32 *dest, const Sint32 *a, const Sint
 /**
  * Verify element-wise multiplication of 2 int arrays.
  */
-static void verify_ints_multiplication(const Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size, const char *desc) {
+static void verify_ints_multiplication(const Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size, const char *desc)
+{
     size_t i;
     int all_good = 1;
 
     for (i = 0; i < size; ++i) {
         Sint32 expected = a[i] * b[i];
         if (dest[i] != expected) {
-            SDLTest_AssertCheck(SDL_FALSE, "%"SDL_PRIs32" * %"SDL_PRIs32" = %"SDL_PRIs32", expected %"SDL_PRIs32" ([%"SDL_PRIu32"/%"SDL_PRIu32"] %s)",
+            SDLTest_AssertCheck(SDL_FALSE, "%" SDL_PRIs32 " * %" SDL_PRIs32 " = %" SDL_PRIs32 ", expected %" SDL_PRIs32 " ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
                                 a[i], b[i], dest[i], expected, (Uint32)i, (Uint32)size, desc);
             all_good = 0;
         }
@@ -128,7 +135,8 @@ static void verify_ints_multiplication(const Sint32 *dest, const Sint32 *a, cons
 /**
  * Verify element-wise addition of 2 float arrays.
  */
-static void verify_floats_addition(const float *dest, const float *a, const float *b, size_t size, const char *desc) {
+static void verify_floats_addition(const float *dest, const float *a, const float *b, size_t size, const char *desc)
+{
     size_t i;
     int all_good = 1;
 
@@ -136,8 +144,8 @@ static void verify_floats_addition(const float *dest, const float *a, const floa
         float expected = a[i] + b[i];
         float abs_error = SDL_fabsf(dest[i] - expected);
         if (abs_error > 1.0e-5f) {
-            SDLTest_AssertCheck(SDL_FALSE, "%g + %g = %g, expected %g (error = %g) ([%"SDL_PRIu32"/%"SDL_PRIu32"] %s)",
-                                a[i], b[i], dest[i], expected, abs_error, (Uint32) i, (Uint32) size, desc);
+            SDLTest_AssertCheck(SDL_FALSE, "%g + %g = %g, expected %g (error = %g) ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
+                                a[i], b[i], dest[i], expected, abs_error, (Uint32)i, (Uint32)size, desc);
             all_good = 0;
         }
     }
@@ -149,7 +157,8 @@ static void verify_floats_addition(const float *dest, const float *a, const floa
 /**
  * Verify element-wise addition of 2 double arrays.
  */
-static void verify_doubles_addition(const double *dest, const double *a, const double *b, size_t size, const char *desc) {
+static void verify_doubles_addition(const double *dest, const double *a, const double *b, size_t size, const char *desc)
+{
     size_t i;
     int all_good = 1;
 
@@ -157,8 +166,8 @@ static void verify_doubles_addition(const double *dest, const double *a, const d
         double expected = a[i] + b[i];
         double abs_error = SDL_fabs(dest[i] - expected);
         if (abs_error > 1.0e-5) {
-            SDLTest_AssertCheck(abs_error < 1.0e-5f, "%g + %g = %g, expected %g (error = %g) ([%"SDL_PRIu32"/%"SDL_PRIu32"] %s)",
-                                a[i], b[i], dest[i], expected, abs_error, (Uint32) i, (Uint32) size, desc);
+            SDLTest_AssertCheck(abs_error < 1.0e-5f, "%g + %g = %g, expected %g (error = %g) ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
+                                a[i], b[i], dest[i], expected, abs_error, (Uint32)i, (Uint32)size, desc);
             all_good = SDL_FALSE;
         }
     }
@@ -169,34 +178,40 @@ static void verify_doubles_addition(const double *dest, const double *a, const d
 
 /* Intrinsic kernels */
 
-static void kernel_ints_add_cpu(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
+static void kernel_ints_add_cpu(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size)
+{
     for (; size; --size, ++dest, ++a, ++b) {
         *dest = *a + *b;
     }
 }
 
-static void kernel_ints_mul_cpu(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
+static void kernel_ints_mul_cpu(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size)
+{
     for (; size; --size, ++dest, ++a, ++b) {
         *dest = *a * *b;
     }
 }
 
-static void kernel_floats_add_cpu(float *dest, const float *a, const float *b, size_t size) {
+static void kernel_floats_add_cpu(float *dest, const float *a, const float *b, size_t size)
+{
     for (; size; --size, ++dest, ++a, ++b) {
         *dest = *a + *b;
     }
 }
 
-static void kernel_doubles_add_cpu(double *dest, const double *a, const double *b, size_t size) {
+static void kernel_doubles_add_cpu(double *dest, const double *a, const double *b, size_t size)
+{
     for (; size; --size, ++dest, ++a, ++b) {
         *dest = *a + *b;
     }
 }
 
 #ifdef SDL_MMX_INTRINSICS
-SDL_TARGETING("mmx") static void kernel_ints_add_mmx(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
+SDL_TARGETING("mmx")
+static void kernel_ints_add_mmx(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size)
+{
     for (; size >= 2; size -= 2, dest += 2, a += 2, b += 2) {
-        *(__m64*)dest = _mm_add_pi32(*(__m64*)a, *(__m64*)b);
+        *(__m64 *)dest = _mm_add_pi32(*(__m64 *)a, *(__m64 *)b);
     }
     if (size) {
         *dest = *a + *b;
@@ -206,9 +221,11 @@ SDL_TARGETING("mmx") static void kernel_ints_add_mmx(Sint32 *dest, const Sint32 
 #endif
 
 #ifdef SDL_SSE_INTRINSICS
-SDL_TARGETING("sse") static void kernel_floats_add_sse(float *dest, const float *a, const float *b, size_t size) {
+SDL_TARGETING("sse")
+static void kernel_floats_add_sse(float *dest, const float *a, const float *b, size_t size)
+{
     for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
-        _mm_storeu_ps(dest, _mm_add_ps(_mm_loadu_ps(a), _mm_loadu_ps (b)));
+        _mm_storeu_ps(dest, _mm_add_ps(_mm_loadu_ps(a), _mm_loadu_ps(b)));
     }
     for (; size; size--, ++dest, ++a, ++b) {
         *dest = *a + *b;
@@ -217,7 +234,9 @@ SDL_TARGETING("sse") static void kernel_floats_add_sse(float *dest, const float 
 #endif
 
 #ifdef SDL_SSE2_INTRINSICS
-SDL_TARGETING("sse2") static void kernel_doubles_add_sse2(double *dest, const double *a, const double *b, size_t size) {
+SDL_TARGETING("sse2")
+static void kernel_doubles_add_sse2(double *dest, const double *a, const double *b, size_t size)
+{
     for (; size >= 2; size -= 2, dest += 2, a += 2, b += 2) {
         _mm_storeu_pd(dest, _mm_add_pd(_mm_loadu_pd(a), _mm_loadu_pd(b)));
     }
@@ -228,48 +247,54 @@ SDL_TARGETING("sse2") static void kernel_doubles_add_sse2(double *dest, const do
 #endif
 
 #ifdef SDL_SSE3_INTRINSICS
-SDL_TARGETING("sse3") static void kernel_ints_add_sse3(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
+SDL_TARGETING("sse3")
+static void kernel_ints_add_sse3(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size)
+{
     for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
-        _mm_storeu_si128((__m128i*)dest, _mm_add_epi32(_mm_lddqu_si128((__m128i*)a), _mm_lddqu_si128((__m128i*)b)));
+        _mm_storeu_si128((__m128i *)dest, _mm_add_epi32(_mm_lddqu_si128((__m128i *)a), _mm_lddqu_si128((__m128i *)b)));
     }
-    for (;size; --size, ++dest, ++a, ++b) {
+    for (; size; --size, ++dest, ++a, ++b) {
         *dest = *a + *b;
     }
 }
 #endif
 
 #ifdef SDL_SSE4_1_INTRINSICS
-SDL_TARGETING("sse4.1") static void kernel_ints_mul_sse4_1(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
+SDL_TARGETING("sse4.1")
+static void kernel_ints_mul_sse4_1(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size)
+{
     for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
-        _mm_storeu_si128((__m128i*)dest, _mm_mullo_epi32(_mm_lddqu_si128((__m128i*)a), _mm_lddqu_si128((__m128i*)b)));
+        _mm_storeu_si128((__m128i *)dest, _mm_mullo_epi32(_mm_lddqu_si128((__m128i *)a), _mm_lddqu_si128((__m128i *)b)));
     }
-    for (;size; --size, ++dest, ++a, ++b) {
+    for (; size; --size, ++dest, ++a, ++b) {
         *dest = *a * *b;
     }
 }
 #endif
 
 #ifdef SDL_SSE4_2_INTRINSICS
-SDL_TARGETING("sse4.2") static Uint32 calculate_crc32c_sse4_2(const char *text) {
+SDL_TARGETING("sse4.2")
+static Uint32 calculate_crc32c_sse4_2(const char *text)
+{
     Uint32 crc32c = ~0;
     size_t len = SDL_strlen(text);
 
 #if defined(__x86_64__) || defined(_M_X64)
     for (; len >= 8; len -= 8, text += 8) {
-        crc32c = (Uint32)_mm_crc32_u64(crc32c, *(Sint64*)text);
+        crc32c = (Uint32)_mm_crc32_u64(crc32c, *(Sint64 *)text);
     }
     if (len >= 4) {
-        crc32c = (Uint32)_mm_crc32_u32(crc32c, *(Sint32*)text);
+        crc32c = (Uint32)_mm_crc32_u32(crc32c, *(Sint32 *)text);
         len -= 4;
         text += 4;
     }
 #else
     for (; len >= 4; len -= 4, text += 4) {
-        crc32c = (Uint32)_mm_crc32_u32(crc32c, *(Sint32*)text);
+        crc32c = (Uint32)_mm_crc32_u32(crc32c, *(Sint32 *)text);
     }
 #endif
     if (len >= 2) {
-        crc32c = (Uint32)_mm_crc32_u16(crc32c, *(Sint16*)text);
+        crc32c = (Uint32)_mm_crc32_u16(crc32c, *(Sint16 *)text);
         len -= 2;
         text += 2;
     }
@@ -281,7 +306,9 @@ SDL_TARGETING("sse4.2") static Uint32 calculate_crc32c_sse4_2(const char *text) 
 #endif
 
 #ifdef SDL_AVX_INTRINSICS
-SDL_TARGETING("avx") static void kernel_floats_add_avx(float *dest, const float *a, const float *b, size_t size) {
+SDL_TARGETING("avx")
+static void kernel_floats_add_avx(float *dest, const float *a, const float *b, size_t size)
+{
     for (; size >= 8; size -= 8, dest += 8, a += 8, b += 8) {
         _mm256_storeu_ps(dest, _mm256_add_ps(_mm256_loadu_ps(a), _mm256_loadu_ps(b)));
     }
@@ -292,9 +319,11 @@ SDL_TARGETING("avx") static void kernel_floats_add_avx(float *dest, const float 
 #endif
 
 #ifdef SDL_AVX2_INTRINSICS
-SDL_TARGETING("avx2") static void kernel_ints_add_avx2(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size) {
+SDL_TARGETING("avx2")
+static void kernel_ints_add_avx2(Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size)
+{
     for (; size >= 8; size -= 8, dest += 8, a += 8, b += 8) {
-        _mm256_storeu_si256((__m256i*)dest, _mm256_add_epi32(_mm256_loadu_si256((__m256i*)a), _mm256_loadu_si256((__m256i*)b)));
+        _mm256_storeu_si256((__m256i *)dest, _mm256_add_epi32(_mm256_loadu_si256((__m256i *)a), _mm256_loadu_si256((__m256i *)b)));
     }
     for (; size; size--, ++dest, ++a, ++b) {
         *dest = *a + *b;
@@ -303,7 +332,9 @@ SDL_TARGETING("avx2") static void kernel_ints_add_avx2(Sint32 *dest, const Sint3
 #endif
 
 #ifdef SDL_AVX512F_INTRINSICS
-SDL_TARGETING("avx512f") static void kernel_floats_add_avx512f(float *dest, const float *a, const float *b, size_t size) {
+SDL_TARGETING("avx512f")
+static void kernel_floats_add_avx512f(float *dest, const float *a, const float *b, size_t size)
+{
     for (; size >= 16; size -= 16, dest += 16, a += 16, b += 16) {
         _mm512_storeu_ps(dest, _mm512_add_ps(_mm512_loadu_ps(a), _mm512_loadu_ps(b)));
     }
@@ -506,13 +537,17 @@ static int intrinsics_testSSE4_2(void *arg)
         SDLTest_AssertCheck(SDL_TRUE, "CPU of test machine has SSE4.2 support.");
 #ifdef SDL_SSE4_2_INTRINSICS
         {
-            struct {
+            struct
+            {
                 const char *input;
                 Uint32 crc32c;
             } references[] = {
-                {"", 0x00000000},
-                {"Hello world", 0x72b51f78},
-                {"Simple DirectMedia Layer", 0x56f85341, },
+                { "", 0x00000000 },
+                { "Hello world", 0x72b51f78 },
+                {
+                    "Simple DirectMedia Layer",
+                    0x56f85341,
+                },
             };
             size_t i;
 

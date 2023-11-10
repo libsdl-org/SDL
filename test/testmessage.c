@@ -12,11 +12,11 @@
 
 /* Simple test of the SDL MessageBox API */
 
-#include <stdlib.h>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
+#include <stdlib.h>
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void

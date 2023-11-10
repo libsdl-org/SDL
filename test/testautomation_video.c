@@ -1,8 +1,10 @@
 /**
  * Video test suite
  */
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
+
 #include "testautomation_suites.h"
 
 /* Private helpers */
@@ -780,7 +782,6 @@ static int video_getWindowPixelFormat(void *arg)
     return TEST_COMPLETED;
 }
 
-
 static SDL_bool getPositionFromEvent(int *x, int *y)
 {
     SDL_bool ret = SDL_FALSE;
@@ -1090,7 +1091,6 @@ static int video_getSetWindowSize(void *arg)
                     SDLTest_AssertCheck(desiredH == currentH, "Verify returned height is the one from SDL event; expected: %d, got: %d", desiredH, currentH);
                 }
             }
-
 
             /* Get just width */
             currentW = desiredW + 1;
@@ -1506,7 +1506,7 @@ static int video_getSetWindowData(void *arg)
     /* Get data (twice) */
     for (iteration = 1; iteration <= 2; iteration++) {
         result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window),
-                                          name);
+                                         name);
         SDLTest_AssertPass("Call to SDL_GetWindowData(..,%s) [iteration %d]", name, iteration);
         SDLTest_AssertCheck(SDL_strcmp(referenceUserdata, result) == 0, "Validate that correct result was returned; expected: %s, got: %s", referenceUserdata, result);
         SDLTest_AssertCheck(SDL_strcmp(referenceName, name) == 0, "Validate that name was not changed, expected: %s, got: %s", referenceName, name);

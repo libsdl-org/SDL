@@ -19,8 +19,8 @@
 #include "SDL_ttf.h"
 #endif
 
-#include <SDL3/SDL_test_common.h>
 #include "testutils.h"
+#include <SDL3/SDL_test_common.h>
 
 #ifdef HAVE_SDL_TTF
 #define DEFAULT_PTSIZE 30
@@ -403,7 +403,6 @@ static char *utf8_next(char *p)
     return p;
 }
 
-
 static char *utf8_advance(char *p, size_t distance)
 {
     size_t i = 0;
@@ -652,8 +651,8 @@ int main(int argc, char *argv[])
 
         consumed = SDLTest_CommonArg(state, i);
         if (SDL_strcmp(argv[i], "--font") == 0) {
-            if (*argv[i+1]) {
-                fontname = argv[i+1];
+            if (*argv[i + 1]) {
+                fontname = argv[i + 1];
                 consumed = 2;
             }
         }

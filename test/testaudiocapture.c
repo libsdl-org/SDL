@@ -138,7 +138,7 @@ int SDL_AppInit(int argc, char **argv)
         return -1;
     }
 
-    SDL_SetAudioStreamFormat(stream_in, NULL, &outspec);  /* make sure we output at the playback format. */
+    SDL_SetAudioStreamFormat(stream_in, NULL, &outspec); /* make sure we output at the playback format. */
 
     SDL_Log("Ready! Hold down mouse or finger to record!\n");
 
@@ -148,25 +148,25 @@ int SDL_AppInit(int argc, char **argv)
 int SDL_AppEvent(const SDL_Event *event)
 {
     if (event->type == SDL_EVENT_QUIT) {
-        return 1;  /* terminate as success. */
+        return 1; /* terminate as success. */
     } else if (event->type == SDL_EVENT_KEY_DOWN) {
         if (event->key.keysym.sym == SDLK_ESCAPE) {
-            return 1;  /* terminate as success. */
+            return 1; /* terminate as success. */
         }
     } else if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
         if (event->button.button == 1) {
             SDL_PauseAudioDevice(SDL_GetAudioStreamDevice(stream_out));
-            SDL_FlushAudioStream(stream_out);  /* so no samples are held back for resampling purposes. */
+            SDL_FlushAudioStream(stream_out); /* so no samples are held back for resampling purposes. */
             SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream_in));
         }
     } else if (event->type == SDL_EVENT_MOUSE_BUTTON_UP) {
         if (event->button.button == 1) {
             SDL_PauseAudioDevice(SDL_GetAudioStreamDevice(stream_in));
-            SDL_FlushAudioStream(stream_in);  /* so no samples are held back for resampling purposes. */
+            SDL_FlushAudioStream(stream_in); /* so no samples are held back for resampling purposes. */
             SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream_out));
         }
     }
-    return 0;  /* keep going. */
+    return 0; /* keep going. */
 }
 
 int SDL_AppIterate(void)
@@ -185,14 +185,14 @@ int SDL_AppIterate(void)
         const int br = SDL_GetAudioStreamData(stream_in, buf, sizeof(buf));
         if (br < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to read from input audio stream: %s\n", SDL_GetError());
-            return -1;   /* quit the app, report failure. */
+            return -1; /* quit the app, report failure. */
         } else if (SDL_PutAudioStreamData(stream_out, buf, br) < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to write to output audio stream: %s\n", SDL_GetError());
-            return -1;   /* quit the app, report failure. */
+            return -1; /* quit the app, report failure. */
         }
     }
 
-    return 0;  /* keep app going. */
+    return 0; /* keep app going. */
 }
 
 void SDL_AppQuit(void)
@@ -200,7 +200,7 @@ void SDL_AppQuit(void)
     SDL_Log("Shutting down.\n");
     const SDL_AudioDeviceID devid_in = SDL_GetAudioStreamDevice(stream_in);
     const SDL_AudioDeviceID devid_out = SDL_GetAudioStreamDevice(stream_out);
-    SDL_CloseAudioDevice(devid_in);  /* !!! FIXME: use SDL_OpenAudioDeviceStream instead so we can dump this. */
+    SDL_CloseAudioDevice(devid_in); /* !!! FIXME: use SDL_OpenAudioDeviceStream instead so we can dump this. */
     SDL_CloseAudioDevice(devid_out);
     SDL_DestroyAudioStream(stream_in);
     SDL_DestroyAudioStream(stream_out);
@@ -209,5 +209,3 @@ void SDL_AppQuit(void)
     SDLTest_CommonDestroyState(state);
     SDL_Quit();
 }
-
-

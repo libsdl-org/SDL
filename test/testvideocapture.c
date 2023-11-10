@@ -9,15 +9,17 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include "SDL3/SDL_main.h"
-#include "SDL3/SDL.h"
-#include "SDL3/SDL_test.h"
-#include "SDL3/SDL_video_capture.h"
-#include <stdio.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
+
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
+#include <SDL3/SDL_video_capture.h>
+
+#include <stdio.h>
 
 static const char *usage = "\
  \n\
@@ -36,7 +38,8 @@ Use keyboards:\n\
  \n\
 ";
 
-typedef struct {
+typedef struct
+{
     Uint64 next_check;
     int frame_counter;
     int check_delay;
@@ -56,7 +59,7 @@ update_fps(measure_fps_t *m)
     if (now >= deadline) {
         /* Print out some timing information */
         const Uint64 then = m->next_check - m->check_delay;
-        m->last_fps = ((double) m->frame_counter * 1000) / (now - then);
+        m->last_fps = ((double)m->frame_counter * 1000) / (now - then);
         m->next_check = now + m->check_delay;
         m->frame_counter = 0;
     }
@@ -78,8 +81,8 @@ static void load_average(float *val)
 }
 #endif
 
-
-struct data_capture_t {
+struct data_capture_t
+{
     SDL_VideoCaptureDevice *device;
     SDL_VideoCaptureSpec obtained;
     int stopped;
@@ -89,30 +92,26 @@ struct data_capture_t {
     int texture_updated;
 };
 
-#define SAVE_CAPTURE_STATE(x)                                               \
-    data_capture_tab[(x)].device = device;                                  \
-    data_capture_tab[(x)].obtained = obtained;                              \
-    data_capture_tab[(x)].stopped = stopped;                                \
-    data_capture_tab[(x)].frame_current = frame_current;                    \
-    data_capture_tab[(x)].fps_capture = fps_capture;                        \
-    data_capture_tab[(x)].texture = texture;                                \
-    data_capture_tab[(x)].texture_updated = texture_updated;                \
+#define SAVE_CAPTURE_STATE(x)                            \
+    data_capture_tab[(x)].device = device;               \
+    data_capture_tab[(x)].obtained = obtained;           \
+    data_capture_tab[(x)].stopped = stopped;             \
+    data_capture_tab[(x)].frame_current = frame_current; \
+    data_capture_tab[(x)].fps_capture = fps_capture;     \
+    data_capture_tab[(x)].texture = texture;             \
+    data_capture_tab[(x)].texture_updated = texture_updated;
 
+#define RESTORE_CAPTURE_STATE(x)                         \
+    device = data_capture_tab[(x)].device;               \
+    obtained = data_capture_tab[(x)].obtained;           \
+    stopped = data_capture_tab[(x)].stopped;             \
+    frame_current = data_capture_tab[(x)].frame_current; \
+    fps_capture = data_capture_tab[(x)].fps_capture;     \
+    texture = data_capture_tab[(x)].texture;             \
+    texture_updated = data_capture_tab[(x)].texture_updated;
 
-#define RESTORE_CAPTURE_STATE(x)                                            \
-    device = data_capture_tab[(x)].device;                                  \
-    obtained = data_capture_tab[(x)].obtained;                              \
-    stopped = data_capture_tab[(x)].stopped;                                \
-    frame_current = data_capture_tab[(x)].frame_current;                    \
-    fps_capture = data_capture_tab[(x)].fps_capture;                        \
-    texture = data_capture_tab[(x)].texture;                                \
-    texture_updated = data_capture_tab[(x)].texture_updated;                \
-
-
-
-
-
-static SDL_VideoCaptureDeviceID get_instance_id(int index) {
+static SDL_VideoCaptureDeviceID get_instance_id(int index)
+{
     int ret = 0;
     int num = 0;
     SDL_VideoCaptureDeviceID *devices;
@@ -131,8 +130,6 @@ static SDL_VideoCaptureDeviceID get_instance_id(int index) {
     return ret;
 }
 
-
-
 int main(int argc, char **argv)
 {
     SDL_Window *window = NULL;
@@ -140,11 +137,10 @@ int main(int argc, char **argv)
     SDL_Event evt;
     int quit = 0;
 
-    SDLTest_CommonState  *state;
+    SDLTest_CommonState *state;
 
     int current_dev = 0;
     measure_fps_t fps_main;
-
 
     SDL_FRect r_playstop = { 50, 50, 120, 50 };
     SDL_FRect r_close = { 50 + (120 + 50) * 1, 50, 120, 50 };
@@ -199,7 +195,7 @@ int main(int argc, char **argv)
 
             consumed = SDLTest_CommonArg(state, i);
             if (consumed <= 0) {
-                static const char *options[] = {NULL};
+                static const char *options[] = { NULL };
                 SDLTest_CommonLogUsage(state, argv[0], options);
                 SDLTest_CommonDestroyState(state);
                 return 1;
@@ -326,33 +322,29 @@ int main(int argc, char **argv)
 
             SDL_ConvertEventToRenderCoordinates(renderer, &evt);
 
-            switch (evt.type)
+            switch (evt.type) {
+            case SDL_EVENT_KEY_DOWN:
             {
-                case SDL_EVENT_KEY_DOWN:
-                    {
-                        sym = evt.key.keysym.sym;
-                        break;
-                    }
-                case SDL_EVENT_QUIT:
-                    {
-                        quit = 1;
-                        SDL_Log("Ctlr+C : Quit!");
-                    }
-                    break;
+                sym = evt.key.keysym.sym;
+                break;
+            }
+            case SDL_EVENT_QUIT:
+            {
+                quit = 1;
+                SDL_Log("Ctlr+C : Quit!");
+            } break;
 
-                case SDL_EVENT_FINGER_DOWN:
-                    {
-                        pt.x = evt.tfinger.x;
-                        pt.y = evt.tfinger.y;
-                    }
-                    break;
+            case SDL_EVENT_FINGER_DOWN:
+            {
+                pt.x = evt.tfinger.x;
+                pt.y = evt.tfinger.y;
+            } break;
 
-                case SDL_EVENT_MOUSE_BUTTON_DOWN:
-                    {
-                        pt.x = evt.button.x;
-                        pt.y = evt.button.y;
-                    }
-                    break;
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
+            {
+                pt.x = evt.button.x;
+                pt.y = evt.button.y;
+            } break;
             }
 
             if (pt.x != 0 && pt.y != 0) {
@@ -379,12 +371,10 @@ int main(int argc, char **argv)
                 }
             }
 
-
             if (r) {
                 SDL_SetRenderDrawColor(renderer, 0x33, 0, 0, 255);
                 SDL_RenderFillRect(renderer, r);
             }
-
 
             if (sym == SDLK_c) {
                 if (frame_current.num_planes) {
@@ -420,7 +410,7 @@ int main(int argc, char **argv)
                     texture = NULL;
                 }
 
-                SDL_Log("Open device:%p %s", (void*)device, SDL_GetError());
+                SDL_Log("Open device:%p %s", (void *)device, SDL_GetError());
                 stopped = 0;
             }
 
@@ -439,7 +429,7 @@ int main(int argc, char **argv)
                 SAVE_CAPTURE_STATE(current_dev);
 
                 current_dev += 1;
-                if (current_dev == num || current_dev >= (int) SDL_arraysize(data_capture_tab)) {
+                if (current_dev == num || current_dev >= (int)SDL_arraysize(data_capture_tab)) {
                     current_dev = 0;
                 }
 
@@ -449,9 +439,15 @@ int main(int argc, char **argv)
 
             if (sym == SDLK_i) {
                 SDL_VideoCaptureStatus status = SDL_GetVideoCaptureStatus(device);
-                if (status == SDL_VIDEO_CAPTURE_STOPPED) { SDL_Log("STOPPED"); }
-                if (status == SDL_VIDEO_CAPTURE_PLAYING) { SDL_Log("PLAYING"); }
-                if (status == SDL_VIDEO_CAPTURE_INIT) { SDL_Log("INIT"); }
+                if (status == SDL_VIDEO_CAPTURE_STOPPED) {
+                    SDL_Log("STOPPED");
+                }
+                if (status == SDL_VIDEO_CAPTURE_PLAYING) {
+                    SDL_Log("PLAYING");
+                }
+                if (status == SDL_VIDEO_CAPTURE_INIT) {
+                    SDL_Log("INIT");
+                }
             }
 
             if (sym == SDLK_s) {
@@ -500,7 +496,6 @@ int main(int argc, char **argv)
             }
         }
 
-
         SAVE_CAPTURE_STATE(current_dev);
 
         {
@@ -523,7 +518,7 @@ int main(int argc, char **argv)
                     }
 #if 1
                     if (frame_next.num_planes) {
-                        SDL_Log("dev[%d] frame: %p  at %" SDL_PRIu64, i, (void*)frame_next.data[0], frame_next.timestampNS);
+                        SDL_Log("dev[%d] frame: %p  at %" SDL_PRIu64, i, (void *)frame_next.data[0], frame_next.timestampNS);
                     }
 #endif
 
@@ -546,10 +541,7 @@ int main(int argc, char **argv)
             }
         }
 
-
         RESTORE_CAPTURE_STATE(current_dev);
-
-
 
         /* Moving square */
         SDL_SetRenderDrawColor(renderer, 0, 0xff, 0, 255);
@@ -567,7 +559,6 @@ int main(int argc, char **argv)
         }
 
         SDL_SetRenderDrawColor(renderer, 0x33, 0x33, 0x33, 255);
-
 
         SAVE_CAPTURE_STATE(current_dev);
 
@@ -593,15 +584,15 @@ int main(int argc, char **argv)
                         /* Use software data */
                         if (frame_current.num_planes == 1) {
                             SDL_UpdateTexture(texture, NULL,
-                                    frame_current.data[0], frame_current.pitch[0]);
+                                              frame_current.data[0], frame_current.pitch[0]);
                         } else if (frame_current.num_planes == 2) {
                             SDL_UpdateNVTexture(texture, NULL,
-                                    frame_current.data[0], frame_current.pitch[0],
-                                    frame_current.data[1], frame_current.pitch[1]);
+                                                frame_current.data[0], frame_current.pitch[0],
+                                                frame_current.data[1], frame_current.pitch[1]);
                         } else if (frame_current.num_planes == 3) {
                             SDL_UpdateYUVTexture(texture, NULL, frame_current.data[0], frame_current.pitch[0],
-                                    frame_current.data[1], frame_current.pitch[1],
-                                    frame_current.data[2], frame_current.pitch[2]);
+                                                 frame_current.data[1], frame_current.pitch[1],
+                                                 frame_current.data[2], frame_current.pitch[2]);
                         }
                         texture_updated = 1;
                     }
@@ -610,7 +601,6 @@ int main(int argc, char **argv)
                 SAVE_CAPTURE_STATE(i);
             }
         }
-
 
         RESTORE_CAPTURE_STATE(current_dev);
 
@@ -627,7 +617,6 @@ int main(int argc, char **argv)
 
             SDL_GetRenderOutputSize(renderer, &win_w, &win_h);
 
-
             for (i = 0; i < n; i++) {
                 RESTORE_CAPTURE_STATE(i);
                 /* RenderCopy the SDL_Texture */
@@ -642,9 +631,9 @@ int main(int argc, char **argv)
                     w = win_w / total_texture_updated;
 
                     if (tw > w - 20) {
-                        float scale = (float) (w - 20) / (float) tw;
+                        float scale = (float)(w - 20) / (float)tw;
                         tw = w - 20;
-                        th = (int)((float) th * scale);
+                        th = (int)((float)th * scale);
                     }
                     d.x = (float)(10 + curr_texture_updated * w);
                     d.y = (float)(win_h - th);
@@ -655,11 +644,9 @@ int main(int argc, char **argv)
                     curr_texture_updated += 1;
                 }
             }
-
         }
 
         RESTORE_CAPTURE_STATE(current_dev);
-
 
         /* display status and FPS */
         if (!device) {
@@ -691,7 +678,6 @@ int main(int argc, char **argv)
                 } else if (s == SDL_VIDEO_CAPTURE_FAIL) {
                     status = "failed";
                 }
-
             }
 
             /* capture device, capture fps, capture status */
@@ -705,7 +691,6 @@ int main(int argc, char **argv)
             /* video fps */
             SDL_snprintf(buf, sizeof(buf), "%2.2f fps", fps_main.last_fps);
             SDLTest_DrawString(renderer, x_offset + 10, 30, buf);
-
         }
 
         /* display last error */
@@ -726,15 +711,11 @@ int main(int argc, char **argv)
         }
 #endif
 
-
         SDL_Delay(20);
         SDL_RenderPresent(renderer);
 
         update_fps(&fps_main);
-
     }
-
-
 
     SAVE_CAPTURE_STATE(current_dev);
 

@@ -12,15 +12,16 @@
 
 /* Simple program:  Test relative mouse motion */
 
-#include <stdlib.h>
-#include <time.h>
-
-#include <SDL3/SDL_test_common.h>
-#include <SDL3/SDL_main.h>
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
+
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test_common.h>
+
+#include <stdlib.h>
+#include <time.h>
 
 static SDLTest_CommonState *state;
 static int i, done;

@@ -12,10 +12,10 @@
 
 /* !!! FIXME: this code is not up to standards for SDL3 test apps. Someone should improve this. */
 
+#include "testutils.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
-#include "testutils.h"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
@@ -23,7 +23,7 @@
 
 #include <stdlib.h>
 
-#define SLIDER_WIDTH_PERC 500.f / 600.f
+#define SLIDER_WIDTH_PERC  500.f / 600.f
 #define SLIDER_HEIGHT_PERC 70.f / 480.f
 
 static int done;
@@ -58,9 +58,9 @@ typedef struct Slider
 Slider sliders[NUM_SLIDERS];
 static int active_slider = -1;
 
-static void init_slider(int index, const char* fmtlabel, int flags, float value, float min, float max)
+static void init_slider(int index, const char *fmtlabel, int flags, float value, float min, float max)
 {
-    Slider* slider = &sliders[index];
+    Slider *slider = &sliders[index];
 
     slider->area.x = state->window_w * (1.f - SLIDER_WIDTH_PERC) / 2;
     slider->area.y = state->window_h * (0.2f + (index * SLIDER_HEIGHT_PERC * 1.4f));
@@ -86,13 +86,13 @@ static float lerp(float v0, float v1, float t)
     return (1 - t) * v0 + t * v1;
 }
 
-static void draw_text(SDL_Renderer* renderer, int x, int y, const char* text)
+static void draw_text(SDL_Renderer *renderer, int x, int y, const char *text)
 {
     SDL_SetRenderDrawColor(renderer, 0xFD, 0xF6, 0xE3, 0xFF);
-    SDLTest_DrawString(renderer, (float) x, (float) y, text);
+    SDLTest_DrawString(renderer, (float)x, (float)y, text);
 }
 
-static void draw_textf(SDL_Renderer* renderer, int x, int y, const char* fmt, ...)
+static void draw_textf(SDL_Renderer *renderer, int x, int y, const char *fmt, ...)
 {
     char text[256];
     va_list ap;
@@ -106,14 +106,14 @@ static void draw_textf(SDL_Renderer* renderer, int x, int y, const char* fmt, ..
 
 static void queue_audio()
 {
-    Uint8* new_data = NULL;
+    Uint8 *new_data = NULL;
     int new_len = 0;
     int retval = 0;
     SDL_AudioSpec new_spec;
 
     new_spec.format = spec.format;
-    new_spec.channels = (int) sliders[2].value;
-    new_spec.freq = (int) sliders[1].value;
+    new_spec.channels = (int)sliders[2].value;
+    new_spec.freq = (int)sliders[1].value;
 
     SDL_Log("Converting audio from %i to %i", spec.freq, new_spec.freq);
 
@@ -140,7 +140,7 @@ static void skip_audio(float amount)
     SDL_AudioSpec dst_spec, new_spec;
     int num_frames;
     int retval = 0;
-    void* buf = NULL;
+    void *buf = NULL;
 
     SDL_LockAudioStream(stream);
 
@@ -178,7 +178,9 @@ static void skip_audio(float amount)
 static const char *AudioFmtToString(const SDL_AudioFormat fmt)
 {
     switch (fmt) {
-        #define FMTCASE(x) case SDL_AUDIO_##x: return #x
+#define FMTCASE(x)      \
+    case SDL_AUDIO_##x: \
+        return #x
         FMTCASE(U8);
         FMTCASE(S8);
         FMTCASE(S16LE);
@@ -187,7 +189,7 @@ static const char *AudioFmtToString(const SDL_AudioFormat fmt)
         FMTCASE(S32BE);
         FMTCASE(F32LE);
         FMTCASE(F32BE);
-        #undef FMTCASE
+#undef FMTCASE
     }
     return "?";
 }
@@ -195,15 +197,24 @@ static const char *AudioFmtToString(const SDL_AudioFormat fmt)
 static const char *AudioChansToStr(const int channels)
 {
     switch (channels) {
-        case 1: return "Mono";
-        case 2: return "Stereo";
-        case 3: return "2.1";
-        case 4: return "Quad";
-        case 5: return "4.1";
-        case 6: return "5.1";
-        case 7: return "6.1";
-        case 8: return "7.1";
-        default: break;
+    case 1:
+        return "Mono";
+    case 2:
+        return "Stereo";
+    case 3:
+        return "2.1";
+    case 4:
+        return "Quad";
+    case 5:
+        return "4.1";
+    case 6:
+        return "5.1";
+    case 7:
+        return "6.1";
+    case 8:
+        return "7.1";
+    default:
+        break;
     }
     return "?";
 }
@@ -264,7 +275,7 @@ static void loop(void)
     }
 
     if (active_slider != -1) {
-        Slider* slider = &sliders[active_slider];
+        Slider *slider = &sliders[active_slider];
 
         float value = (p.x - slider->area.x) / slider->area.w;
         value = SDL_clamp(value, 0.0f, 1.0f);
@@ -276,8 +287,8 @@ static void loop(void)
         } else {
             value = (value * 2.0f) - 1.0f;
             value = (value >= 0)
-                ? lerp(slider->mid, slider->max, value)
-                : lerp(slider->mid, slider->min, -value);
+                        ? lerp(slider->mid, slider->max, value)
+                        : lerp(slider->mid, slider->min, -value);
         }
 
         if (value != slider->value) {
@@ -303,13 +314,13 @@ static void loop(void)
 
     for (i = 0; i < state->num_windows; i++) {
         int draw_y = 0;
-        SDL_Renderer* rend = state->renderers[i];
+        SDL_Renderer *rend = state->renderers[i];
 
         SDL_SetRenderDrawColor(rend, 0x00, 0x2B, 0x36, 0xFF);
         SDL_RenderClear(rend);
 
         for (j = 0; j < NUM_SLIDERS; ++j) {
-            Slider* slider = &sliders[j];
+            Slider *slider = &sliders[j];
             SDL_FRect area;
 
             SDL_copyp(&area, &slider->area);
@@ -323,11 +334,11 @@ static void loop(void)
             SDL_RenderFillRect(rend, &area);
 
             draw_textf(rend, (int)slider->area.x, (int)slider->area.y, slider->fmtlabel,
-                (slider->flags & 2) ? ((float)(int)slider->value) : slider->value);
+                       (slider->flags & 2) ? ((float)(int)slider->value) : slider->value);
         }
 
         draw_textf(rend, 0, draw_y, "%7s, Loop: %3s, Flush: %3s",
-            SDL_AudioDevicePaused(state->audio_id) ? "Paused" : "Playing", auto_loop ? "On" : "Off", auto_flush ? "On" : "Off");
+                   SDL_AudioDevicePaused(state->audio_id) ? "Paused" : "Playing", auto_loop ? "On" : "Off", auto_flush ? "On" : "Off");
         draw_y += FONT_LINE_HEIGHT;
 
         draw_textf(rend, 0, draw_y, "Available: %4.2f (%i bytes)", available_seconds, available_bytes);
@@ -336,7 +347,7 @@ static void loop(void)
         SDL_LockAudioStream(stream);
 
         draw_textf(rend, 0, draw_y, "Get Callback: %i/%i bytes, %2i ms ago",
-            last_get_amount_additional, last_get_amount_total, (int)(SDL_GetTicks() - last_get_callback));
+                   last_get_amount_additional, last_get_amount_total, (int)(SDL_GetTicks() - last_get_callback));
         draw_y += FONT_LINE_HEIGHT;
 
         SDL_UnlockAudioStream(stream);
@@ -344,15 +355,15 @@ static void loop(void)
         draw_y = state->window_h - FONT_LINE_HEIGHT * 3;
 
         draw_textf(rend, 0, draw_y, "Wav: %6s/%6s/%i",
-            AudioFmtToString(spec.format), AudioChansToStr(spec.channels), spec.freq);
+                   AudioFmtToString(spec.format), AudioChansToStr(spec.channels), spec.freq);
         draw_y += FONT_LINE_HEIGHT;
 
         draw_textf(rend, 0, draw_y, "Src: %6s/%6s/%i",
-            AudioFmtToString(src_spec.format), AudioChansToStr(src_spec.channels), src_spec.freq);
+                   AudioFmtToString(src_spec.format), AudioChansToStr(src_spec.channels), src_spec.freq);
         draw_y += FONT_LINE_HEIGHT;
 
         draw_textf(rend, 0, draw_y, "Dst: %6s/%6s/%i",
-            AudioFmtToString(dst_spec.format), AudioChansToStr(dst_spec.channels), dst_spec.freq);
+                   AudioFmtToString(dst_spec.format), AudioChansToStr(dst_spec.channels), dst_spec.freq);
         draw_y += FONT_LINE_HEIGHT;
 
         SDL_RenderPresent(rend);
@@ -446,4 +457,3 @@ int main(int argc, char *argv[])
     SDLTest_CommonQuit(state);
     return 0;
 }
-

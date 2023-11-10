@@ -9,14 +9,16 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include <stdlib.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
 
-#include <SDL3/SDL_test_common.h>
+#include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test_common.h>
+
+#include <stdlib.h>
 
 #if defined(__IOS__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__) || defined(__WINDOWS__) || defined(__LINUX__)
 #define HAVE_OPENGLES2
@@ -28,7 +30,7 @@
 
 typedef struct GLES2_Context
 {
-#define SDL_PROC(ret, func, params) ret (APIENTRY *func) params;
+#define SDL_PROC(ret, func, params) ret(APIENTRY *func) params;
 #include "../src/render/opengles2/SDL_gles2funcs.h"
 #undef SDL_PROC
 } GLES2_Context;
@@ -81,7 +83,7 @@ static int LoadContext(GLES2_Context *data)
 #else
 #define SDL_PROC(ret, func, params)                                                            \
     do {                                                                                       \
-        data->func = (ret (APIENTRY *) params)SDL_GL_GetProcAddress(#func);                    \
+        data->func = (ret(APIENTRY *) params)SDL_GL_GetProcAddress(#func);                     \
         if (!data->func) {                                                                     \
             return SDL_SetError("Couldn't load GLES2 function %s: %s", #func, SDL_GetError()); \
         }                                                                                      \
@@ -698,7 +700,7 @@ int main(int argc, char *argv[])
             } else if (SDL_strcasecmp(argv[i], "--threaded") == 0) {
                 ++threaded;
                 consumed = 1;
-            } else if(SDL_strcasecmp(argv[i], "--suspend-when-occluded") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--suspend-when-occluded") == 0) {
                 suspend_when_occluded = SDL_TRUE;
                 consumed = 1;
             } else if (SDL_strcasecmp(argv[i], "--zdepth") == 0) {
@@ -719,7 +721,7 @@ int main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            static const char *options[] = { "[--fsaa]", "[--accel]", "[--zdepth %d]", "[--threaded]", "[--suspend-when-occluded]",NULL };
+            static const char *options[] = { "[--fsaa]", "[--accel]", "[--zdepth %d]", "[--threaded]", "[--suspend-when-occluded]", NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             quit(1);
         }

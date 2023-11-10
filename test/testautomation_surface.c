@@ -11,16 +11,17 @@
 #define _CRT_NONSTDC_NO_DEPRECATE
 #endif
 
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_test.h>
+
+#include "testautomation_images.h"
+#include "testautomation_suites.h"
+
 #include <stdio.h>
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
 #include <sys/stat.h>
-
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_test.h>
-#include "testautomation_suites.h"
-#include "testautomation_images.h"
 
 /* ================= Test Case Implementation ================== */
 

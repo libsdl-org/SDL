@@ -9,11 +9,12 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include <stdlib.h>
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
+#include <stdlib.h>
 
 #define SHAPED_WINDOW_DIMENSION 640
 
@@ -31,7 +32,8 @@ static int g_bitmap_w = 0, g_bitmap_h = 0;
 static SDL_Surface *g_shape_surface = NULL;
 static SDL_Texture *g_shape_texture = NULL;
 
-static void log_usage(SDLTest_CommonState *state, char *progname) {
+static void log_usage(SDLTest_CommonState *state, char *progname)
+{
     static const char *options[] = { "sample1.bmp [sample2.bmp [sample3.bmp ...]]", NULL };
     SDLTest_CommonLogUsage(state, progname, options);
 }
@@ -112,7 +114,7 @@ static int SDL3_SetWindowShape(SDL_Window *window, SDL_Surface *shape, SDL_Windo
 
     g_bitmap_w = shape->w;
     g_bitmap_h = shape->h;
-    g_bitmap = (Uint8*) SDL_malloc(shape->w * shape->h);
+    g_bitmap = (Uint8 *)SDL_malloc(shape->w * shape->h);
     if (!g_bitmap) {
         return SDL_OutOfMemory();
     }
@@ -177,8 +179,8 @@ static void render(SDL_Renderer *renderer, SDL_Texture *texture)
 
                 /* if Alpha is 0, set all to 0, else leave unchanged. */
                 bm = SDL_ComposeCustomBlendMode(
-                        SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDOPERATION_ADD,
-                        SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDOPERATION_ADD);
+                    SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDOPERATION_ADD,
+                    SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDOPERATION_ADD);
 
                 SDL_SetTextureBlendMode(g_shape_texture, bm);
             }
@@ -265,7 +267,7 @@ int main(int argc, char **argv)
     }
 
     /* Allocate an array of LoadedPicture pointers for convenience accesses. */
-    pictures = (LoadedPicture **)SDL_malloc(sizeof(LoadedPicture*) * num_pictures);
+    pictures = (LoadedPicture **)SDL_malloc(sizeof(LoadedPicture *) * num_pictures);
     if (!pictures) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not allocate memory.");
         rc = 1;
@@ -358,7 +360,7 @@ int main(int argc, char **argv)
 
 ret:
     /* Free the textures + original surfaces backing the textures. */
-    for (pic_i = picture_linked_list; pic_i; ) {
+    for (pic_i = picture_linked_list; pic_i;) {
         LoadedPicture *next = pic_i->next;
         if (pic_i->texture) {
             SDL_DestroyTexture(pic_i->texture);
