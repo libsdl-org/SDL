@@ -2853,7 +2853,7 @@ int SDL_SetWindowGammaRamp(SDL_Window * window, const Uint16 * red,
         if (SDL_GetWindowGammaRamp(window, NULL, NULL, NULL) < 0) {
             return -1;
         }
-        SDL_assert(window->gamma);
+        SDL_assert(window->gamma != NULL);
     }
 
     if (red) {

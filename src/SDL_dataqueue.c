@@ -194,7 +194,7 @@ int SDL_WriteToDataQueue(SDL_DataQueue *queue, const void *_data, const size_t _
 
     while (len > 0) {
         SDL_DataQueuePacket *packet = queue->tail;
-        SDL_assert(!packet || (packet->datalen <= packet_size));
+        SDL_assert(packet == NULL || (packet->datalen <= packet_size));
         if (!packet || (packet->datalen >= packet_size)) {
             /* tail packet missing or completely full; we need a new packet. */
             packet = AllocateDataQueuePacket(queue);
@@ -286,7 +286,7 @@ SDL_ReadFromDataQueue(SDL_DataQueue *queue, void *_buf, const size_t _len)
 
         if (packet->startpos == packet->datalen) { /* packet is done, put it in the pool. */
             queue->head = packet->next;
-            SDL_assert((packet->next) || (packet == queue->tail));
+            SDL_assert((packet->next != NULL) || (packet == queue->tail));
             packet->next = queue->pool;
             queue->pool = packet;
         }
