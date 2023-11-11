@@ -1367,7 +1367,7 @@ int SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec, int *
     }
 
     int retval = -1;
-    SDL_AudioDevice *device = ObtainPhysicalAudioDeviceDefaultAllowed(devid);  // !!! FIXME: this needs an ObtainBlahDefaultAllowed to catch default device changes.
+    SDL_AudioDevice *device = ObtainPhysicalAudioDeviceDefaultAllowed(devid);
     if (device) {
         SDL_copyp(spec, &device->spec);
         if (sample_frames) {
