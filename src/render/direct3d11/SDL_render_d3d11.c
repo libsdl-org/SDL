@@ -138,6 +138,7 @@ typedef struct
     ID3D11SamplerState *nearestPixelSampler;
     ID3D11SamplerState *linearSampler;
     D3D_FEATURE_LEVEL featureLevel;
+    SDL_bool pixelSizeChanged;
 
     /* Rasterizers */
     ID3D11RasterizerState *mainRasterizer;
@@ -1036,8 +1037,10 @@ void D3D11_Trim(SDL_Renderer *renderer)
 
 static void D3D11_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 {
+    D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
+
     if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
-        D3D11_UpdateForWindowSizeChange(renderer);
+        data->pixelSizeChanged = SDL_TRUE;
     }
 }
 
@@ -2093,6 +2096,11 @@ static int D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->driverdata;
     const int viewportRotation = D3D11_GetRotationForCurrentRenderTarget(renderer);
+
+    if (rendererData->pixelSizeChanged) {
+        D3D11_UpdateForWindowSizeChange(renderer);
+        rendererData->pixelSizeChanged = SDL_FALSE;
+    }
 
     if (rendererData->currentViewportRotation != viewportRotation) {
         rendererData->currentViewportRotation = viewportRotation;

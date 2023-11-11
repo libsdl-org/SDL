@@ -174,6 +174,7 @@ typedef struct
     ID3D12GraphicsCommandList2 *commandList;
     DXGI_SWAP_EFFECT swapEffect;
     UINT swapFlags;
+    SDL_bool pixelSizeChanged;
 
     /* Descriptor heaps */
     ID3D12DescriptorHeap *rtvDescriptorHeap;
@@ -1386,8 +1387,10 @@ static HRESULT D3D12_UpdateForWindowSizeChange(SDL_Renderer *renderer)
 
 static void D3D12_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 {
+    D3D12_RenderData *data = (D3D12_RenderData *)renderer->driverdata;
+
     if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
-        D3D12_UpdateForWindowSizeChange(renderer);
+        data->pixelSizeChanged = SDL_TRUE;
     }
 }
 
@@ -2561,6 +2564,11 @@ static int D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
 {
     D3D12_RenderData *rendererData = (D3D12_RenderData *)renderer->driverdata;
     const int viewportRotation = D3D12_GetRotationForCurrentRenderTarget(renderer);
+
+    if (rendererData->pixelSizeChanged) {
+        D3D12_UpdateForWindowSizeChange(renderer);
+        rendererData->pixelSizeChanged = SDL_FALSE;
+    }
 
     if (rendererData->currentViewportRotation != viewportRotation) {
         rendererData->currentViewportRotation = viewportRotation;
