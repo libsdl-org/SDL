@@ -275,7 +275,7 @@ static const char *getAppName(void)
 static void WaitForPulseOperation(pa_operation *o)
 {
     /* This checks for NO errors currently. Either fix that, check results elsewhere, or do things you don't care about. */
-    SDL_assert(pulseaudio_threaded_mainloop);
+    SDL_assert(pulseaudio_threaded_mainloop != NULL);
     if (o) {
         while (PULSEAUDIO_pa_operation_get_state(o) == PA_OPERATION_RUNNING) {
             PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);  /* this releases the lock and blocks on an internal condition variable. */
@@ -310,8 +310,8 @@ static int ConnectToPulseServer(void)
     pa_mainloop_api *mainloop_api = NULL;
     int state = 0;
 
-    SDL_assert(!pulseaudio_threaded_mainloop);
-    SDL_assert(!pulseaudio_context);
+    SDL_assert(pulseaudio_threaded_mainloop == NULL);
+    SDL_assert(pulseaudio_context == NULL);
 
     /* Set up a new main loop */
     if (!(pulseaudio_threaded_mainloop = PULSEAUDIO_pa_threaded_mainloop_new())) {
@@ -331,7 +331,7 @@ static int ConnectToPulseServer(void)
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
 
     mainloop_api = PULSEAUDIO_pa_threaded_mainloop_get_api(pulseaudio_threaded_mainloop);
-    SDL_assert(mainloop_api); /* this never fails, right? */
+    SDL_assert(mainloop_api != NULL); /* this never fails, right? */
 
     pulseaudio_context = PULSEAUDIO_pa_context_new(mainloop_api, getAppName());
     if (!pulseaudio_context) {
@@ -596,8 +596,8 @@ static int PULSEAUDIO_OpenDevice(_THIS, const char *devname)
     int format = PA_SAMPLE_INVALID;
     int retval = 0;
 
-    SDL_assert(pulseaudio_threaded_mainloop);
-    SDL_assert(pulseaudio_context);
+    SDL_assert(pulseaudio_threaded_mainloop != NULL);
+    SDL_assert(pulseaudio_context != NULL);
 
     /* Initialize all variables that we clean on shutdown */
     h = this->hidden = (struct SDL_PrivateAudioData *)SDL_malloc(sizeof(*this->hidden));

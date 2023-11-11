@@ -196,7 +196,7 @@ static SDL_hapticlist_item *HapticByDevIndex(int device_index)
     }
 
     while (device_index > 0) {
-        SDL_assert(item);
+        SDL_assert(item != NULL);
         --device_index;
         item = item->next;
     }

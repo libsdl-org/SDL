@@ -777,7 +777,7 @@ void SDL_SetKeyboardFocus(SDL_Window *window)
     if (keyboard->focus && keyboard->focus != window) {
 
         /* new window shouldn't think it has mouse captured. */
-        SDL_assert(!window || !(window->flags & SDL_WINDOW_MOUSE_CAPTURE));
+        SDL_assert(window == NULL || !(window->flags & SDL_WINDOW_MOUSE_CAPTURE));
 
         /* old window must lose an existing mouse capture. */
         if (keyboard->focus->flags & SDL_WINDOW_MOUSE_CAPTURE) {

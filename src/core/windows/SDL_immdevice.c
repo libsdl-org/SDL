@@ -361,7 +361,7 @@ int SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_bool iscapture)
     const Uint64 timeout = SDL_GetTicks64() + 8000;  /* intel's audio drivers can fail for up to EIGHT SECONDS after a device is connected or we wake from sleep. */
     HRESULT ret;
 
-    SDL_assert(device);
+    SDL_assert(device != NULL);
 
     while (SDL_TRUE) {
         if (!devid) {
@@ -496,7 +496,7 @@ int SDL_IMMDevice_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int isca
     HRESULT ret = IMMDeviceEnumerator_GetDefaultAudioEndpoint(enumerator, dataflow, SDL_IMMDevice_role, &device);
 
     if (FAILED(ret)) {
-        SDL_assert(!device);
+        SDL_assert(device == NULL);
         return WIN_SetErrorFromHRESULT("WASAPI can't find default audio endpoint", ret);
     }
 

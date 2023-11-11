@@ -237,7 +237,7 @@ static int FlushRenderCommands(SDL_Renderer *renderer)
 {
     int retval;
 
-    SDL_assert((!renderer->render_commands) == (!renderer->render_commands_tail));
+    SDL_assert((renderer->render_commands == NULL) == (renderer->render_commands_tail == NULL));
 
     if (!renderer->render_commands) { /* nothing to do! */
         SDL_assert(renderer->vertex_data_used == 0);
@@ -335,7 +335,7 @@ static SDL_RenderCommand *AllocateRenderCommand(SDL_Renderer *renderer)
         }
     }
 
-    SDL_assert((!renderer->render_commands) == (!renderer->render_commands_tail));
+    SDL_assert((renderer->render_commands == NULL) == (renderer->render_commands_tail == NULL));
     if (renderer->render_commands_tail) {
         renderer->render_commands_tail->next = retval;
     } else {
@@ -883,13 +883,13 @@ static SDL_INLINE void VerifyDrawQueueFunctions(const SDL_Renderer *renderer)
 {
     /* all of these functions are required to be implemented, even as no-ops, so we don't
         have to check that they aren't NULL over and over. */
-    SDL_assert(renderer->QueueSetViewport);
-    SDL_assert(renderer->QueueSetDrawColor);
-    SDL_assert(renderer->QueueDrawPoints);
-    SDL_assert(renderer->QueueDrawLines || renderer->QueueGeometry);
-    SDL_assert(renderer->QueueFillRects || renderer->QueueGeometry);
-    SDL_assert(renderer->QueueCopy || renderer->QueueGeometry);
-    SDL_assert(renderer->RunCommandQueue);
+    SDL_assert(renderer->QueueSetViewport != NULL);
+    SDL_assert(renderer->QueueSetDrawColor != NULL);
+    SDL_assert(renderer->QueueDrawPoints != NULL);
+    SDL_assert(renderer->QueueDrawLines != NULL || renderer->QueueGeometry != NULL);
+    SDL_assert(renderer->QueueFillRects != NULL || renderer->QueueGeometry != NULL);
+    SDL_assert(renderer->QueueCopy != NULL || renderer->QueueGeometry != NULL);
+    SDL_assert(renderer->RunCommandQueue != NULL);
 }
 
 static SDL_RenderLineMethod SDL_GetRenderLineMethod()

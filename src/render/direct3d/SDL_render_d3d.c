@@ -939,7 +939,7 @@ static int SetupTextureState(D3D_RenderData *data, SDL_Texture *texture, LPDIREC
 {
     D3D_TextureData *texturedata = (D3D_TextureData *)texture->driverdata;
 
-    SDL_assert(!*shader);
+    SDL_assert(*shader == NULL);
 
     if (!texturedata) {
         return SDL_SetError("Texture is not currently available");

@@ -410,7 +410,7 @@ static void X11_HandleXRandROutputChange(_THIS, const XRROutputChangeNotifyEvent
         }
     }
 
-    SDL_assert((displayidx == -1) == (!display));
+    SDL_assert((displayidx == -1) == (display == NULL));
 
     if (ev->connection == RR_Disconnected) { /* output is going away */
         if (display) {

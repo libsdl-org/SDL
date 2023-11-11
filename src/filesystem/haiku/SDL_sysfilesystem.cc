@@ -52,7 +52,7 @@ char *SDL_GetBasePath(void)
     rc = path.GetParent(&path); /* chop filename, keep directory. */
     SDL_assert(rc == B_OK);
     const char *str = path.Path();
-    SDL_assert(str);
+    SDL_assert(str != NULL);
 
     const size_t len = SDL_strlen(str);
     char *retval = (char *) SDL_malloc(len + 2);

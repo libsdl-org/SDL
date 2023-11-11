@@ -77,8 +77,8 @@ static int aaudio_OpenDevice(_THIS, const char *devname)
     aaudio_result_t res;
     LOGI(__func__);
 
-    SDL_assert((!captureDevice) || !iscapture);
-    SDL_assert((!audioDevice) || iscapture);
+    SDL_assert((captureDevice == NULL) || !iscapture);
+    SDL_assert((audioDevice == NULL) || iscapture);
 
     if (iscapture) {
         if (!Android_JNI_RequestPermission("android.permission.RECORD_AUDIO")) {
