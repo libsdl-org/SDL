@@ -1966,6 +1966,7 @@ char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_n
         { "HORI CO.,LTD", "HORI" },
         { "HORI CO.,LTD.", "HORI" },
         { "Mad Catz Inc.", "Mad Catz" },
+        { "Nintendo Co., Ltd.", "Nintendo" },
         { "NVIDIA Corporation ", "" },
         { "Performance Designed Products", "PDP" },
         { "QANBA USA, LLC", "Qanba" },
