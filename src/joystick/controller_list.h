@@ -567,7 +567,7 @@ static const ControllerDescription_t arrControllers[] = {
 	// The first two, at least, shouldn't have their buttons remapped, and since we
 	// can't tell which model we're actually using, we won't do any button remapping
 	// for any of them.
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00dc ), k_eControllerType_XInputSwitchController, NULL },	 // HORIPAD S - Looks like a Switch controller but uses the Xbox 360 controller protocol
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00dc ), k_eControllerType_XInputSwitchController, NULL },	 // HORIPAD S - Looks like a Switch controller but uses the Xbox 360 controller protocol, there is also a version of this that looks like a GameCube controller
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0180 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PDP Faceoff Wired Pro Controller for Nintendo Switch
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0181 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PDP Faceoff Deluxe Wired Pro Controller for Nintendo Switch
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0184 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PDP Faceoff Wired Deluxe+ Audio Controller
