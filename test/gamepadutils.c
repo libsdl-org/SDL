@@ -1710,7 +1710,7 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
             highlight.h = (float)ctx->button_height;
             RenderJoystickButtonHighlight(ctx, i, &highlight);
 
-            SDL_snprintf(text, sizeof(text), "%2.d:", i);
+            SDL_snprintf(text, sizeof(text), "%2d:", i);
             SDLTest_DrawString(ctx->renderer, x, y, text);
 
             if (SDL_GetJoystickButton(joystick, (Uint8)i)) {
