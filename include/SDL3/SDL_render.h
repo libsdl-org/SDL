@@ -309,12 +309,13 @@ extern DECLSPEC int SDLCALL SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_Rend
 /**
  * Get the properties associated with a renderer.
  *
- * The following properties are provided by SDL: "SDL.renderer.d3d9.device" -
- * the IDirect3DDevice9 associated with the renderer
+ * The following properties are provided by SDL:
+ * ```
+ * "SDL.renderer.d3d9.device" - the IDirect3DDevice9 associated with the renderer
  * "SDL.renderer.d3d11.device" - the ID3D11Device associated with the renderer
  * "SDL.renderer.d3d12.device" - the ID3D12Device associated with the renderer
- * "SDL.renderer.d3d12.command_queue" - the ID3D12CommandQueue associated with
- * the renderer
+ * "SDL.renderer.d3d12.command_queue" - the ID3D12CommandQueue associated with the renderer
+ * ```
  *
  * \param renderer the rendering context
  * \returns a valid property ID on success or 0 on failure; call
@@ -416,26 +417,41 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *renderer, U
  */
 extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface);
 
-typedef struct IDXGIResource IDXGIResource;
-
-/**
- * Get the DXGI resource associated with a texture.
- *
- * This is available when using the direct3d11 and direct3d12 renderers.
- *
- * Once you are done using the resource, you should release it to avoid a
- * resource leak.
- *
- * \param texture the texture from which to get the associated resource
- * \returns the DXGI resource associated with given texture or NULL if it is
- *          not available; call SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC IDXGIResource* SDLCALL SDL_GetTextureDXGIResource(SDL_Texture *texture);
-
 /**
  * Get the properties associated with a texture.
+ *
+ * The following properties are provided by SDL:
+ *
+ * With the direct3d11 renderer:
+ * ```
+ * "SDL.texture.d3d11.texture" - the ID3D11Texture2D associated with the texture
+ * "SDL.texture.d3d11.texture_u" - the ID3D11Texture2D associated with the U plane of a YUV texture
+ * "SDL.texture.d3d11.texture_v" - the ID3D11Texture2D associated with the V plane of a YUV texture
+ * ```
+ *
+ * With the direct3d12 renderer:
+ * ```
+ * "SDL.texture.d3d12.texture" - the ID3D12Resource associated with the texture
+ * "SDL.texture.d3d12.texture_u" - the ID3D12Resource associated with the U plane of a YUV texture
+ * "SDL.texture.d3d12.texture_v" - the ID3D12Resource associated with the V plane of a YUV texture
+ * ```
+ *
+ * With the opengl renderer:
+ * ```
+ * "SDL.texture.opengl.texture" - the GLuint texture associated with the texture
+ * "SDL.texture.opengl.texture_u" - the GLuint texture associated with the U plane of a YUV texture
+ * "SDL.texture.opengl.texture_v" - the GLuint texture associated with the V plane of a YUV texture
+ * "SDL.texture.opengl.tex_w" - the 16.16 fixed point texture coordinate width of the texture
+ * "SDL.texture.opengl.tex_h" - the 16.16 fixed point texture coordinate height of the texture
+ * ```
+ *
+ * With the opengles2 renderer:
+ * ```
+ * "SDL.texture.opengles2.texture" - the GLuint texture associated with the texture
+ * "SDL.texture.opengles2.texture_uv" - the GLuint texture associated with the UV plane of an NV12 texture
+ * "SDL.texture.opengles2.texture_u" - the GLuint texture associated with the U plane of a YUV texture
+ * "SDL.texture.opengles2.texture_v" - the GLuint texture associated with the V plane of a YUV texture
+ * ```
  *
  * \param texture the texture to query
  * \returns a valid property ID on success or 0 on failure; call
