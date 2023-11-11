@@ -2368,6 +2368,10 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR) {
         type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR;
 
+    } else if (forUI && SDL_IsJoystickGameCube(vendor, product)) {
+        /* We don't have a type for the Nintendo GameCube controller */
+        type = SDL_GAMEPAD_TYPE_STANDARD;
+
     } else {
         switch (GuessControllerType(vendor, product)) {
         case k_eControllerType_XBox360Controller:
@@ -2593,6 +2597,23 @@ SDL_bool SDL_IsJoystickNintendoSwitchJoyConGrip(Uint16 vendor_id, Uint16 product
 SDL_bool SDL_IsJoystickNintendoSwitchJoyConPair(Uint16 vendor_id, Uint16 product_id)
 {
     return vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR;
+}
+
+SDL_bool SDL_IsJoystickGameCube(Uint16 vendor_id, Uint16 product_id)
+{
+    static Uint32 gamecube_formfactor[] = {
+        MAKE_VIDPID(0x0e6f, 0x0185), /* PDP Wired Fight Pad Pro for Nintendo Switch */
+        MAKE_VIDPID(0x20d6, 0xa711), /* PowerA Wired Controller Nintendo GameCube Style */
+    };
+    Uint32 id = MAKE_VIDPID(vendor_id, product_id);
+    int i;
+
+    for (i = 0; i < SDL_arraysize(gamecube_formfactor); ++i) {
+        if (id == gamecube_formfactor[i]) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
 }
 
 SDL_bool SDL_IsJoystickAmazonLunaController(Uint16 vendor_id, Uint16 product_id)

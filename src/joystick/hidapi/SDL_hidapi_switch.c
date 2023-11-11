@@ -263,7 +263,6 @@ typedef struct
     SDL_HIDAPI_Device *device;
     SDL_Joystick *joystick;
     SDL_bool m_bInputOnly;
-    SDL_bool m_bIsGameCube;
     SDL_bool m_bUseButtonLabels;
     SDL_bool m_bPlayerLights;
     int m_nPlayerIndex;
@@ -909,8 +908,7 @@ static Sint16 ApplyStickCalibration(SDL_DriverSwitch_Context *ctx, int nStick, i
         ctx->m_StickExtents[nStick].axis[nAxis].sMin = sRawValue;
     }
 
-    return (Sint16)HIDAPI_RemapVal(sRawValue, ctx->m_StickExtents[nStick].axis[nAxis].sMin, ctx->m_StickExtents[nStick].axis[nAxis].sMax,
-                                   SDL_MIN_SINT16, SDL_MAX_SINT16);
+    return (Sint16)HIDAPI_RemapVal(sRawValue, ctx->m_StickExtents[nStick].axis[nAxis].sMin, ctx->m_StickExtents[nStick].axis[nAxis].sMax, SDL_MIN_SINT16, SDL_MAX_SINT16);
 }
 
 static Sint16 ApplySimpleStickCalibration(SDL_DriverSwitch_Context *ctx, int nStick, int nAxis, Sint16 sRawValue)
@@ -927,8 +925,7 @@ static Sint16 ApplySimpleStickCalibration(SDL_DriverSwitch_Context *ctx, int nSt
         ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMin = sRawValue;
     }
 
-    return (Sint16)HIDAPI_RemapVal(sRawValue, ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMin, ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMax,
-                                   SDL_MIN_SINT16, SDL_MAX_SINT16);
+    return (Sint16)HIDAPI_RemapVal(sRawValue, ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMin, ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMax, SDL_MIN_SINT16, SDL_MAX_SINT16);
 }
 
 static Uint8 RemapButton(SDL_DriverSwitch_Context *ctx, Uint8 button)
@@ -1034,7 +1031,10 @@ static SDL_bool HasHomeLED(SDL_DriverSwitch_Context *ctx)
 
 static SDL_bool AlwaysUsesLabels(int vendor_id, int product_id, ESwitchDeviceInfoControllerType eControllerType)
 {
-    /* These controllers don't have a diamond button configuration, so always use labels */
+    /* Some controllers don't have a diamond button configuration, so should always use labels */
+    if (SDL_IsJoystickGameCube(vendor_id, product_id)) {
+        return SDL_TRUE;
+    }
     switch (eControllerType) {
     case k_eSwitchDeviceInfoControllerType_HVCLeft:
     case k_eSwitchDeviceInfoControllerType_HVCRight:
@@ -1046,25 +1046,6 @@ static SDL_bool AlwaysUsesLabels(int vendor_id, int product_id, ESwitchDeviceInf
     default:
         return SDL_FALSE;
     }
-}
-
-static SDL_bool IsGameCubeFormFactor(int vendor_id, int product_id)
-{
-#if 0
-    static Uint32 gamecube_formfactor[] = {
-        MAKE_VIDPID(0x0e6f, 0x0185), /* PDP Wired Fight Pad Pro for Nintendo Switch */
-        MAKE_VIDPID(0x20d6, 0xa711), /* Core (Plus) Wired Controller */
-    };
-    Uint32 id = MAKE_VIDPID(vendor_id, product_id);
-    int i;
-
-    for (i = 0; i < SDL_arraysize(gamecube_formfactor); ++i) {
-        if (id == gamecube_formfactor[i]) {
-            return SDL_TRUE;
-        }
-    }
-#endif
-    return SDL_FALSE;
 }
 
 static void HIDAPI_DriverNintendoClassic_RegisterHints(SDL_HintCallback callback, void *userdata)
@@ -1183,73 +1164,80 @@ static SDL_bool HIDAPI_DriverSwitch_IsSupportedDevice(SDL_HIDAPI_Device *device,
 static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
-    char serial[18];
 
-    switch (ctx->m_eControllerType) {
-    case k_eSwitchDeviceInfoControllerType_JoyConLeft:
-        HIDAPI_SetDeviceName(device, "Nintendo Switch Joy-Con (L)");
-        HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT);
-        device->type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT;
-        break;
-    case k_eSwitchDeviceInfoControllerType_JoyConRight:
-        HIDAPI_SetDeviceName(device, "Nintendo Switch Joy-Con (R)");
-        HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT);
-        device->type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
-        break;
-    case k_eSwitchDeviceInfoControllerType_ProController:
-    case k_eSwitchDeviceInfoControllerType_LicProController:
-        HIDAPI_SetDeviceName(device, "Nintendo Switch Pro Controller");
-        HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_PRO);
-        device->type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
-        break;
-    case k_eSwitchDeviceInfoControllerType_HVCLeft:
-        HIDAPI_SetDeviceName(device, "Nintendo HVC Controller (1)");
-        device->type = SDL_GAMEPAD_TYPE_STANDARD;
-        break;
-    case k_eSwitchDeviceInfoControllerType_HVCRight:
-        HIDAPI_SetDeviceName(device, "Nintendo HVC Controller (2)");
-        device->type = SDL_GAMEPAD_TYPE_STANDARD;
-        break;
-    case k_eSwitchDeviceInfoControllerType_NESLeft:
-        HIDAPI_SetDeviceName(device, "Nintendo NES Controller (L)");
-        device->type = SDL_GAMEPAD_TYPE_STANDARD;
-        break;
-    case k_eSwitchDeviceInfoControllerType_NESRight:
-        HIDAPI_SetDeviceName(device, "Nintendo NES Controller (R)");
-        device->type = SDL_GAMEPAD_TYPE_STANDARD;
-        break;
-    case k_eSwitchDeviceInfoControllerType_SNES:
-        HIDAPI_SetDeviceName(device, "Nintendo SNES Controller");
-        HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SNES_CONTROLLER);
-        device->type = SDL_GAMEPAD_TYPE_STANDARD;
-        break;
-    case k_eSwitchDeviceInfoControllerType_N64:
-        HIDAPI_SetDeviceName(device, "Nintendo N64 Controller");
-        HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_N64_CONTROLLER);
-        device->type = SDL_GAMEPAD_TYPE_STANDARD;
-        break;
-    case k_eSwitchDeviceInfoControllerType_SEGA_Genesis:
-        HIDAPI_SetDeviceName(device, "Nintendo SEGA Genesis Controller");
-        HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER);
-        device->type = SDL_GAMEPAD_TYPE_STANDARD;
-        break;
-    case k_eSwitchDeviceInfoControllerType_Unknown:
-        /* We couldn't read the device info for this controller, might not be fully compliant */
-        return;
-    default:
-        device->type = SDL_GAMEPAD_TYPE_STANDARD;
-        break;
+    if (ctx->m_bInputOnly) {
+        if (SDL_IsJoystickGameCube(device->vendor_id, device->product_id)) {
+            device->type = SDL_GAMEPAD_TYPE_STANDARD;
+        }
+    } else {
+        char serial[18];
+
+        switch (ctx->m_eControllerType) {
+        case k_eSwitchDeviceInfoControllerType_JoyConLeft:
+            HIDAPI_SetDeviceName(device, "Nintendo Switch Joy-Con (L)");
+            HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT);
+            device->type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT;
+            break;
+        case k_eSwitchDeviceInfoControllerType_JoyConRight:
+            HIDAPI_SetDeviceName(device, "Nintendo Switch Joy-Con (R)");
+            HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT);
+            device->type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
+            break;
+        case k_eSwitchDeviceInfoControllerType_ProController:
+        case k_eSwitchDeviceInfoControllerType_LicProController:
+            HIDAPI_SetDeviceName(device, "Nintendo Switch Pro Controller");
+            HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_PRO);
+            device->type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
+            break;
+        case k_eSwitchDeviceInfoControllerType_HVCLeft:
+            HIDAPI_SetDeviceName(device, "Nintendo HVC Controller (1)");
+            device->type = SDL_GAMEPAD_TYPE_STANDARD;
+            break;
+        case k_eSwitchDeviceInfoControllerType_HVCRight:
+            HIDAPI_SetDeviceName(device, "Nintendo HVC Controller (2)");
+            device->type = SDL_GAMEPAD_TYPE_STANDARD;
+            break;
+        case k_eSwitchDeviceInfoControllerType_NESLeft:
+            HIDAPI_SetDeviceName(device, "Nintendo NES Controller (L)");
+            device->type = SDL_GAMEPAD_TYPE_STANDARD;
+            break;
+        case k_eSwitchDeviceInfoControllerType_NESRight:
+            HIDAPI_SetDeviceName(device, "Nintendo NES Controller (R)");
+            device->type = SDL_GAMEPAD_TYPE_STANDARD;
+            break;
+        case k_eSwitchDeviceInfoControllerType_SNES:
+            HIDAPI_SetDeviceName(device, "Nintendo SNES Controller");
+            HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SNES_CONTROLLER);
+            device->type = SDL_GAMEPAD_TYPE_STANDARD;
+            break;
+        case k_eSwitchDeviceInfoControllerType_N64:
+            HIDAPI_SetDeviceName(device, "Nintendo N64 Controller");
+            HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_N64_CONTROLLER);
+            device->type = SDL_GAMEPAD_TYPE_STANDARD;
+            break;
+        case k_eSwitchDeviceInfoControllerType_SEGA_Genesis:
+            HIDAPI_SetDeviceName(device, "Nintendo SEGA Genesis Controller");
+            HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER);
+            device->type = SDL_GAMEPAD_TYPE_STANDARD;
+            break;
+        case k_eSwitchDeviceInfoControllerType_Unknown:
+            /* We couldn't read the device info for this controller, might not be fully compliant */
+            return;
+        default:
+            device->type = SDL_GAMEPAD_TYPE_STANDARD;
+            break;
+        }
+        device->guid.data[15] = ctx->m_eControllerType;
+
+        (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+                           ctx->m_rgucMACAddress[0],
+                           ctx->m_rgucMACAddress[1],
+                           ctx->m_rgucMACAddress[2],
+                           ctx->m_rgucMACAddress[3],
+                           ctx->m_rgucMACAddress[4],
+                           ctx->m_rgucMACAddress[5]);
+        HIDAPI_SetDeviceSerial(device, serial);
     }
-    device->guid.data[15] = ctx->m_eControllerType;
-
-    (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
-                       ctx->m_rgucMACAddress[0],
-                       ctx->m_rgucMACAddress[1],
-                       ctx->m_rgucMACAddress[2],
-                       ctx->m_rgucMACAddress[3],
-                       ctx->m_rgucMACAddress[4],
-                       ctx->m_rgucMACAddress[5]);
-    HIDAPI_SetDeviceSerial(device, serial);
 }
 
 static SDL_bool HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
@@ -1267,11 +1255,6 @@ static SDL_bool HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
     ctx->m_nMaxWriteAttempts = GetMaxWriteAttempts(device);
     ctx->m_bSyncWrite = SDL_TRUE;
 
-    if (IsGameCubeFormFactor(device->vendor_id, device->product_id)) {
-        /* This is a controller shaped like a GameCube controller, with a large central A button */
-        ctx->m_bIsGameCube = SDL_TRUE;
-    }
-
     /* Find out whether or not we can send output reports */
     ctx->m_bInputOnly = SDL_IsJoystickNintendoSwitchProInputOnly(device->vendor_id, device->product_id);
     if (!ctx->m_bInputOnly) {
@@ -1280,8 +1263,8 @@ static SDL_bool HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
         SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[1]);
 
         BReadDeviceInfo(ctx);
-        UpdateDeviceIdentity(device);
     }
+    UpdateDeviceIdentity(device);
 
     /* Prefer the USB device over the Bluetooth device */
     if (device->is_bluetooth) {

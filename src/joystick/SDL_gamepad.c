@@ -798,31 +798,23 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_JoystickGUID guid
                 /* The original SHIELD controller has a touchpad as well */
                 SDL_strlcat(mapping_string, "touchpad:b16,", sizeof(mapping_string));
             }
-        } else {
-            switch (SDL_GetGamepadTypeFromGUID(guid, NULL)) {
-            case SDL_GAMEPAD_TYPE_PS4:
-                /* PS4 controllers have an additional touchpad button */
-                SDL_strlcat(mapping_string, "touchpad:b15,", sizeof(mapping_string));
-                break;
-            case SDL_GAMEPAD_TYPE_PS5:
-                /* PS5 controllers have a microphone button and an additional touchpad button */
-                SDL_strlcat(mapping_string, "touchpad:b15,misc1:b16,", sizeof(mapping_string));
-                /* DualSense Edge controllers have paddles */
-                if (SDL_IsJoystickDualSenseEdge(vendor, product)) {
-                    SDL_strlcat(mapping_string, "paddle1:b20,paddle2:b19,paddle3:b18,paddle4:b17,", sizeof(mapping_string));
-                }
-                break;
-            case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
-                /* Nintendo Switch Pro controllers have a screenshot button */
-                SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
-                break;
-            default:
-                if (vendor == 0 && product == 0) {
-                    /* This is a Bluetooth Nintendo Switch Pro controller */
-                    SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
-                }
-                break;
+        } else if (SDL_IsJoystickPS4(vendor, product)) {
+            /* PS4 controllers have an additional touchpad button */
+            SDL_strlcat(mapping_string, "touchpad:b15,", sizeof(mapping_string));
+        } else if (SDL_IsJoystickPS5(vendor, product)) {
+            /* PS5 controllers have a microphone button and an additional touchpad button */
+            SDL_strlcat(mapping_string, "touchpad:b15,misc1:b16,", sizeof(mapping_string));
+            /* DualSense Edge controllers have paddles */
+            if (SDL_IsJoystickDualSenseEdge(vendor, product)) {
+                SDL_strlcat(mapping_string, "paddle1:b20,paddle2:b19,paddle3:b18,paddle4:b17,", sizeof(mapping_string));
             }
+        } else if (SDL_IsJoystickNintendoSwitchPro(vendor, product) ||
+                   SDL_IsJoystickNintendoSwitchProInputOnly(vendor, product)) {
+            /* Nintendo Switch Pro controllers have a screenshot button */
+            SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+        } else if (vendor == 0 && product == 0) {
+            /* This is a Bluetooth Nintendo Switch Pro controller */
+            SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
         }
     }
 
