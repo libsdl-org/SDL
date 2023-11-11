@@ -78,7 +78,9 @@ static SDL_bool HIDAPI_DriverGameCube_IsSupportedDevice(SDL_HIDAPI_Device *devic
         /* Nintendo Co., Ltd.  Wii U GameCube Controller Adapter */
         return SDL_TRUE;
     }
-    if (vendor_id == USB_VENDOR_DRAGONRISE && product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER) {
+    if (vendor_id == USB_VENDOR_DRAGONRISE &&
+        (product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1 ||
+         product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2)) {
         /* EVORETRO GameCube Controller Adapter */
         return SDL_TRUE;
     }
