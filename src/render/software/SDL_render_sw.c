@@ -641,7 +641,7 @@ static void SetDrawState(SDL_Surface *surface, SW_DrawStateCache *drawstate)
     if (drawstate->surface_cliprect_dirty) {
         const SDL_Rect *viewport = drawstate->viewport;
         const SDL_Rect *cliprect = drawstate->cliprect;
-        SDL_assert_release(viewport); /* the higher level should have forced a SDL_RENDERCMD_SETVIEWPORT */
+        SDL_assert_release(viewport != NULL); /* the higher level should have forced a SDL_RENDERCMD_SETVIEWPORT */
 
         if (cliprect) {
             SDL_Rect clip_rect;

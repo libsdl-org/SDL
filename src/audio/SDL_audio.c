@@ -139,7 +139,7 @@ static int GetDefaultSampleFramesFromFreq(const int freq)
 
 void OnAudioStreamCreated(SDL_AudioStream *stream)
 {
-    SDL_assert(stream);
+    SDL_assert(stream != NULL);
 
     // NOTE that you can create an audio stream without initializing the audio subsystem,
     //  but it will not be automatically destroyed during a later call to SDL_Quit!
@@ -159,7 +159,7 @@ void OnAudioStreamCreated(SDL_AudioStream *stream)
 
 void OnAudioStreamDestroy(SDL_AudioStream *stream)
 {
-    SDL_assert(stream);
+    SDL_assert(stream != NULL);
 
     // NOTE that you can create an audio stream without initializing the audio subsystem,
     //  but it will not be automatically destroyed during a later call to SDL_Quit!
@@ -500,7 +500,7 @@ void RefPhysicalAudioDevice(SDL_AudioDevice *device)
 
 static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, SDL_bool iscapture, const SDL_AudioSpec *spec, void *handle, SDL_AtomicInt *device_count)
 {
-    SDL_assert(name);
+    SDL_assert(name != NULL);
 
     SDL_LockRWLockForReading(current_audio.device_hash_lock);
     const int shutting_down = SDL_AtomicGet(&current_audio.shutting_down);
@@ -593,8 +593,8 @@ SDL_AudioDevice *SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, 
             p->devid = device->instance_id;
             p->next = NULL;
             SDL_LockRWLockForWriting(current_audio.device_hash_lock);
-            SDL_assert(current_audio.pending_events_tail);
-            SDL_assert(!current_audio.pending_events_tail->next);
+            SDL_assert(current_audio.pending_events_tail != NULL);
+            SDL_assert(current_audio.pending_events_tail->next == NULL);
             current_audio.pending_events_tail->next = p;
             current_audio.pending_events_tail = p;
             SDL_UnlockRWLock(current_audio.device_hash_lock);
@@ -670,8 +670,8 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
     if (first_disconnect) {
         if (pending.next) {  // NULL if event is disabled or disaster struck.
             SDL_LockRWLockForWriting(current_audio.device_hash_lock);
-            SDL_assert(current_audio.pending_events_tail);
-            SDL_assert(!current_audio.pending_events_tail->next);
+            SDL_assert(current_audio.pending_events_tail != NULL);
+            SDL_assert(current_audio.pending_events_tail->next == NULL);
             current_audio.pending_events_tail->next = pending.next;
             current_audio.pending_events_tail = pending_tail;
             SDL_UnlockRWLock(current_audio.device_hash_lock);
@@ -1127,7 +1127,7 @@ void SDL_OutputAudioThreadShutdown(SDL_AudioDevice *device)
 static int SDLCALL OutputAudioThread(void *devicep)  // thread entry point
 {
     SDL_AudioDevice *device = (SDL_AudioDevice *)devicep;
-    SDL_assert(device);
+    SDL_assert(device != NULL);
     SDL_assert(!device->iscapture);
     SDL_OutputAudioThreadSetup(device);
 
@@ -1233,7 +1233,7 @@ void SDL_CaptureAudioThreadShutdown(SDL_AudioDevice *device)
 static int SDLCALL CaptureAudioThread(void *devicep)  // thread entry point
 {
     SDL_AudioDevice *device = (SDL_AudioDevice *)devicep;
-    SDL_assert(device);
+    SDL_assert(device != NULL);
     SDL_assert(device->iscapture);
     SDL_CaptureAudioThreadSetup(device);
 
@@ -1726,7 +1726,7 @@ int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int
         // !!! FIXME: Actually, why do we allow there to be an invalid format, again?
 
         // make sure start of list is sane.
-        SDL_assert(!logdev->bound_streams || (!logdev->bound_streams->prev_binding));
+        SDL_assert(!logdev->bound_streams || (logdev->bound_streams->prev_binding == NULL));
 
         // lock all the streams upfront, so we can verify they aren't bound elsewhere and add them all in one block, as this is intended to add everything or nothing.
         for (int i = 0; i < num_streams; i++) {
@@ -1735,7 +1735,7 @@ int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int
                 retval = SDL_SetError("Stream #%d is NULL", i);
             } else {
                 SDL_LockMutex(stream->lock);
-                SDL_assert((!stream->bound_device) == ((!stream->prev_binding) || (!stream->next_binding)));
+                SDL_assert((stream->bound_device == NULL) == ((stream->prev_binding == NULL) || (stream->next_binding == NULL)));
                 if (stream->bound_device) {
                     retval = SDL_SetError("Stream #%d is already bound to a device", i);
                 } else if (stream->simplified) {  // You can get here if you closed the device instead of destroying the stream.
@@ -1892,7 +1892,7 @@ SDL_AudioStream *SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_Au
     } else {
         SDL_AtomicSet(&logdev->paused, 1);   // start the device paused, to match SDL2.
 
-        SDL_assert(device);
+        SDL_assert(device != NULL);
         const SDL_bool iscapture = device->iscapture;
 
         if (iscapture) {
@@ -2105,8 +2105,8 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
 
     if (pending.next) {
         SDL_LockRWLockForWriting(current_audio.device_hash_lock);
-        SDL_assert(current_audio.pending_events_tail);
-        SDL_assert(!current_audio.pending_events_tail->next);
+        SDL_assert(current_audio.pending_events_tail != NULL);
+        SDL_assert(current_audio.pending_events_tail->next == NULL);
         current_audio.pending_events_tail->next = pending.next;
         current_audio.pending_events_tail = pending_tail;
         SDL_UnlockRWLock(current_audio.device_hash_lock);
@@ -2186,8 +2186,8 @@ int SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SDL
 
         if (pending.next) {
             SDL_LockRWLockForWriting(current_audio.device_hash_lock);
-            SDL_assert(current_audio.pending_events_tail);
-            SDL_assert(!current_audio.pending_events_tail->next);
+            SDL_assert(current_audio.pending_events_tail != NULL);
+            SDL_assert(current_audio.pending_events_tail->next == NULL);
             current_audio.pending_events_tail->next = pending.next;
             current_audio.pending_events_tail = pending_tail;
             SDL_UnlockRWLock(current_audio.device_hash_lock);

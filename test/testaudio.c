@@ -188,7 +188,7 @@ static Thing *CreateThing(ThingType what, float x, float y, float z, float w, fl
     }
 
     if ((w < 0) || (h < 0)) {
-        SDL_assert(texture);
+        SDL_assert(texture != NULL);
         if (w < 0) {
             w = texture->w;
         }

@@ -153,7 +153,7 @@ static int WriteToChunkedAudioTrack(void *ctx, const Uint8 *data, size_t len)
             return SDL_OutOfMemory();
         }
 
-        SDL_assert((!track->head) && (!track->tail) && (track->queued_bytes == 0));
+        SDL_assert((track->head == NULL) && (track->tail == NULL) && (track->queued_bytes == 0));
         track->head = chunk;
         track->tail = chunk;
     }
@@ -423,7 +423,7 @@ void *SDL_BeginAudioQueueIter(SDL_AudioQueue *queue)
 size_t SDL_NextAudioQueueIter(SDL_AudioQueue *queue, void **inout_iter, SDL_AudioSpec *out_spec, SDL_bool *out_flushed)
 {
     SDL_AudioTrack *iter = *inout_iter;
-    SDL_assert(iter);
+    SDL_assert(iter != NULL);
 
     SDL_copyp(out_spec, &iter->spec);
 

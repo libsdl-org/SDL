@@ -433,7 +433,7 @@ static Uint8 *WASAPI_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 
     if (device->hidden->render) {
         if (WasapiFailed(device, IAudioRenderClient_GetBuffer(device->hidden->render, device->sample_frames, &buffer))) {
-            SDL_assert(!buffer);
+            SDL_assert(buffer == NULL);
             if (device->hidden->device_lost) {  // just use an available buffer, we won't be playing it anyhow.
                 *buffer_size = 0;  // we'll recover during WaitDevice and try again.
             }
@@ -562,7 +562,7 @@ static int mgmtthrtask_PrepDevice(void *userdata)
     const AUDCLNT_SHAREMODE sharemode = AUDCLNT_SHAREMODE_SHARED;
 
     IAudioClient *client = device->hidden->client;
-    SDL_assert(client);
+    SDL_assert(client != NULL);
 
 #if defined(__WINRT__) || defined(__GDK__) // CreateEventEx() arrived in Vista, so we need an #ifdef for XP.
     device->hidden->event = CreateEventEx(NULL, NULL, 0, EVENT_ALL_ACCESS);
@@ -581,7 +581,7 @@ static int mgmtthrtask_PrepDevice(void *userdata)
     if (FAILED(ret)) {
         return WIN_SetErrorFromHRESULT("WASAPI can't determine mix format", ret);
     }
-    SDL_assert(waveformat);
+    SDL_assert(waveformat != NULL);
     device->hidden->waveformat = waveformat;
 
     SDL_AudioSpec newspec;
@@ -662,7 +662,7 @@ static int mgmtthrtask_PrepDevice(void *userdata)
             return WIN_SetErrorFromHRESULT("WASAPI can't get capture client service", ret);
         }
 
-        SDL_assert(capture);
+        SDL_assert(capture != NULL);
         device->hidden->capture = capture;
         ret = IAudioClient_Start(client);
         if (FAILED(ret)) {
@@ -677,7 +677,7 @@ static int mgmtthrtask_PrepDevice(void *userdata)
             return WIN_SetErrorFromHRESULT("WASAPI can't get render client service", ret);
         }
 
-        SDL_assert(render);
+        SDL_assert(render != NULL);
         device->hidden->render = render;
         ret = IAudioClient_Start(client);
         if (FAILED(ret)) {

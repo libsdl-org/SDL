@@ -221,8 +221,8 @@ static SDL_bool SDL_IsSupportedChannelCount(const int channels)
 void ConvertAudio(int num_frames, const void *src, SDL_AudioFormat src_format, int src_channels,
                   void *dst, SDL_AudioFormat dst_format, int dst_channels, void* scratch)
 {
-    SDL_assert(src);
-    SDL_assert(dst);
+    SDL_assert(src != NULL);
+    SDL_assert(dst != NULL);
     SDL_assert(SDL_IsSupportedAudioFormat(src_format));
     SDL_assert(SDL_IsSupportedAudioFormat(dst_format));
     SDL_assert(SDL_IsSupportedChannelCount(src_channels));
@@ -313,7 +313,7 @@ void ConvertAudio(int num_frames, const void *src, SDL_AudioFormat src_format, i
         SDL_assert(dst_channels <= SDL_arraysize(channel_converters[0]));
 
         channel_converter = channel_converters[src_channels - 1][dst_channels - 1];
-        SDL_assert(channel_converter);
+        SDL_assert(channel_converter != NULL);
 
         // swap in some SIMD versions for a few of these.
         if (channel_converter == SDL_ConvertStereoToMono) {

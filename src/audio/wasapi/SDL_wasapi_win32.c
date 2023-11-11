@@ -164,11 +164,11 @@ int WASAPI_ActivateDevice(SDL_AudioDevice *device)
     IMMDevice_Release(immdevice);
 
     if (FAILED(ret)) {
-        SDL_assert(!device->hidden->client);
+        SDL_assert(device->hidden->client == NULL);
         return WIN_SetErrorFromHRESULT("WASAPI can't activate audio endpoint", ret);
     }
 
-    SDL_assert(device->hidden->client);
+    SDL_assert(device->hidden->client != NULL);
     if (WASAPI_PrepDevice(device) == -1) { // not async, fire it right away.
         return -1;
     }

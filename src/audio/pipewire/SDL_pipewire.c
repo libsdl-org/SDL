@@ -361,7 +361,7 @@ static struct io_node *io_list_get_by_id(Uint32 id)
 
 static void node_object_destroy(struct node_object *node)
 {
-    SDL_assert(node);
+    SDL_assert(node != NULL);
 
     spa_list_remove(&node->link);
     spa_hook_remove(&node->node_listener);
@@ -373,7 +373,7 @@ static void node_object_destroy(struct node_object *node)
 // The pending node list
 static void pending_list_add(struct node_object *node)
 {
-    SDL_assert(node);
+    SDL_assert(node != NULL);
     spa_list_append(&hotplug_pending_list, &node->link);
 }
 

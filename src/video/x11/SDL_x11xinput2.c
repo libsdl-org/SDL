@@ -190,7 +190,7 @@ static void xinput2_remove_device_info(SDL_VideoData *videodata, const int devic
 
     for (devinfo = videodata->mouse_device_info; devinfo; devinfo = devinfo->next) {
         if (devinfo->device_id == device_id) {
-            SDL_assert((devinfo == videodata->mouse_device_info) == (!prev));
+            SDL_assert((devinfo == videodata->mouse_device_info) == (prev == NULL));
             if (!prev) {
                 videodata->mouse_device_info = devinfo->next;
             } else {
@@ -214,7 +214,7 @@ static SDL_XInput2DeviceInfo *xinput2_get_device_info(SDL_VideoData *videodata, 
 
     for (devinfo = videodata->mouse_device_info; devinfo; devinfo = devinfo->next) {
         if (devinfo->device_id == device_id) {
-            SDL_assert((devinfo == videodata->mouse_device_info) == (!prev));
+            SDL_assert((devinfo == videodata->mouse_device_info) == (prev == NULL));
             if (prev) { /* move this to the front of the list, assuming we'll get more from this one. */
                 prev->next = devinfo->next;
                 devinfo->next = videodata->mouse_device_info;

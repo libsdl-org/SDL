@@ -1001,7 +1001,7 @@ static SDL_joylist_item *GetJoystickByDevIndex(int device_index)
 
     item = SDL_joylist;
     while (device_index > 0) {
-        SDL_assert(item);
+        SDL_assert(item != NULL);
         device_index--;
         item = item->next;
     }
@@ -1481,8 +1481,8 @@ static int LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
         return -1; /* SDL_SetError will already have been called */
     }
 
-    SDL_assert(!item->hwdata);
-    SDL_assert(!item_sensor || !item_sensor->hwdata);
+    SDL_assert(item->hwdata == NULL);
+    SDL_assert(!item_sensor || item_sensor->hwdata == NULL);
     item->hwdata = joystick->hwdata;
     if (item_sensor) {
         item_sensor->hwdata = joystick->hwdata;

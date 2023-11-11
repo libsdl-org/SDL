@@ -224,7 +224,7 @@ static const ALSA_Device default_capture_handle = {
 
 static const char *get_audio_device(void *handle, const int channels)
 {
-    SDL_assert(handle);  // SDL2 used NULL to mean "default" but that's not true in SDL3.
+    SDL_assert(handle != NULL);  // SDL2 used NULL to mean "default" but that's not true in SDL3.
 
     ALSA_Device *dev = (ALSA_Device *)handle;
     if (SDL_strcmp(dev->name, "default") == 0) {
@@ -723,7 +723,7 @@ static void add_device(const SDL_bool iscapture, const char *name, void *hint, A
         desc = (char *)name;
     }
 
-    SDL_assert(name);
+    SDL_assert(name != NULL);
 
     // some strings have newlines, like "HDA NVidia, HDMI 0\nHDMI Audio Output".
     //  just chop the extra lines off, this seems to get a reasonable device
