@@ -214,8 +214,6 @@ struct SDL_Renderer
     void *(*GetMetalLayer)(SDL_Renderer *renderer);
     void *(*GetMetalCommandEncoder)(SDL_Renderer *renderer);
 
-    IDXGIResource *(*GetTextureDXGIResource)(SDL_Texture *texture);
-
     /* The current renderer info */
     SDL_RendererInfo info;
 

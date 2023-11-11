@@ -625,20 +625,12 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
         }
     }
 
-    IDXGIResource *dxgi_resource = SDL_GetTextureDXGIResource(*texture);
-    if (!dxgi_resource) {
-        return SDL_FALSE;
-    }
-
-    ID3D11Resource *dx11_resource = NULL;
-    HRESULT result = IDXGIResource_QueryInterface(dxgi_resource, &SDL_IID_ID3D11Resource, (void **)&dx11_resource);
-    IDXGIResource_Release(dxgi_resource);
-    if (FAILED(result)) {
-        SDL_SetError("Couldn't get texture ID3D11Resource interface: 0x%x", result);
+    ID3D11Resource *dx11_resource = SDL_GetProperty(SDL_GetTextureProperties(*texture), "SDL.texture.d3d11.texture");
+    if (!dx11_resource) {
+        SDL_SetError("Couldn't get texture ID3D11Resource interface");
         return SDL_FALSE;
     }
     ID3D11DeviceContext_CopySubresourceRegion(d3d11_context, dx11_resource, 0, 0, 0, 0, (ID3D11Resource *)pTexture, iSliceIndex, NULL);
-    ID3D11Resource_Release(dx11_resource);
 
     return SDL_TRUE;
 #else

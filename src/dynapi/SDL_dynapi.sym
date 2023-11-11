@@ -898,7 +898,6 @@ SDL3_0.0.0 {
     SDL_SetAudioStreamFrequencyRatio;
     SDL_SetAudioPostmixCallback;
     SDL_GetAudioStreamQueued;
-    SDL_GetTextureDXGIResource;
     SDL_CreateProperties;
     SDL_LockProperties;
     SDL_UnlockProperties;

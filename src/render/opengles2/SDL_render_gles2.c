@@ -1499,6 +1499,7 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         renderdata->glTexImage2D(data->texture_type, 0, format, (texture->w + 1) / 2, (texture->h + 1) / 2, 0, format, type, NULL);
+        SDL_SetProperty(SDL_GetTextureProperties(texture), "SDL.texture.opengles2.texture_v", (void *)(uintptr_t)data->texture_v);
 
         renderdata->glGenTextures(1, &data->texture_u);
         if (GL_CheckError("glGenTexures()", renderer) < 0) {
@@ -1514,6 +1515,8 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         if (GL_CheckError("glTexImage2D()", renderer) < 0) {
             return -1;
         }
+        SDL_SetProperty(SDL_GetTextureProperties(texture), "SDL.texture.opengles2.texture_u", (void *)(uintptr_t)data->texture_u);
+
     } else if (data->nv12) {
         renderdata->glGenTextures(1, &data->texture_u);
         if (GL_CheckError("glGenTexures()", renderer) < 0) {
@@ -1529,6 +1532,7 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         if (GL_CheckError("glTexImage2D()", renderer) < 0) {
             return -1;
         }
+        SDL_SetProperty(SDL_GetTextureProperties(texture), "SDL.texture.opengles2.texture_uv", (void *)(uintptr_t)data->texture_u);
     }
 #endif
 
@@ -1549,6 +1553,7 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
             return -1;
         }
     }
+    SDL_SetProperty(SDL_GetTextureProperties(texture), "SDL.texture.opengles2.texture", (void *)(uintptr_t)data->texture);
 
     if (texture->access == SDL_TEXTUREACCESS_TARGET) {
         data->fbo = GLES2_GetFBO(renderer->driverdata, texture->w, texture->h);
@@ -1995,9 +2000,6 @@ static int GLES2_SetVSync(SDL_Renderer *renderer, const int vsync)
 /*************************************************************************************************
  * Bind/unbinding of textures
  *************************************************************************************************/
-static int GLES2_BindTexture(SDL_Renderer *renderer, SDL_Texture *texture, float *texw, float *texh);
-static int GLES2_UnbindTexture(SDL_Renderer *renderer, SDL_Texture *texture);
-
 static int GLES2_BindTexture(SDL_Renderer *renderer, SDL_Texture *texture, float *texw, float *texh)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->driverdata;
