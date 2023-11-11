@@ -2035,24 +2035,26 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, ~axis);
     }
 
-    /* High nibble of battery/connection byte is battery level, low nibble is connection status
-     * LSB of connection nibble is USB/Switch connection status
-     */
-    if (packet->controllerState.ucBatteryAndConnection & 0x1) {
-        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_WIRED);
-    } else {
-        /* LSB of the battery nibble is used to report charging.
-         * The battery level is reported from 0(empty)-8(full)
+    if (ctx->device->is_bluetooth) {
+        /* High nibble of battery/connection byte is battery level, low nibble is connection status
+         * LSB of connection nibble is USB/Switch connection status
          */
-        int level = (packet->controllerState.ucBatteryAndConnection & 0xE0) >> 4;
-        if (level == 0) {
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
-        } else if (level <= 2) {
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
-        } else if (level <= 6) {
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
+        if (packet->controllerState.ucBatteryAndConnection & 0x1) {
+            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_WIRED);
         } else {
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
+            /* LSB of the battery nibble is used to report charging.
+             * The battery level is reported from 0(empty)-8(full)
+             */
+            int level = (packet->controllerState.ucBatteryAndConnection & 0xE0) >> 4;
+            if (level == 0) {
+                SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
+            } else if (level <= 2) {
+                SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
+            } else if (level <= 6) {
+                SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
+            } else {
+                SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
+            }
         }
     }
 
