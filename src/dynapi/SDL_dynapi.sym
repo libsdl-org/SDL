@@ -956,6 +956,14 @@ SDL3_0.0.0 {
     SDL_GetPenName;
     SDL_GetPenCapabilities;
     SDL_GetPenType;
+    SDL_SetStringProperty;
+    SDL_SetNumberProperty;
+    SDL_SetFloatProperty;
+    SDL_GetPropertyType;
+    SDL_GetStringProperty;
+    SDL_GetNumberProperty;
+    SDL_GetFloatProperty;
+    SDL_EnumerateProperties;
     # extra symbols go here (don't modify this line)
   local: *;
 };

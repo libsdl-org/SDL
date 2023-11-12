@@ -1626,9 +1626,9 @@ static int METAL_SetVSync(SDL_Renderer *renderer, const int vsync)
 static SDL_MetalView GetWindowView(SDL_Window *window)
 {
 #ifdef SDL_VIDEO_DRIVER_COCOA
-    NSWindow *nswindow = (__bridge NSWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.cocoa.window");
-    NSInteger tag = (NSInteger)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.cocoa.metal_view_tag");
-    if (nswindow) {
+    NSWindow *nswindow = (__bridge NSWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.cocoa.window", NULL);
+    NSInteger tag = (NSInteger)SDL_GetNumberProperty(SDL_GetWindowProperties(window), "SDL.window.cocoa.metal_view_tag", 0);
+    if (nswindow && tag) {
         NSView *view = nswindow.contentView;
         if (view.subviews.count > 0) {
             view = view.subviews[0];
@@ -1640,9 +1640,9 @@ static SDL_MetalView GetWindowView(SDL_Window *window)
 #endif
 
 #ifdef SDL_VIDEO_DRIVER_UIKIT
-    UIWindow *uiwindow = (__bridge UIWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.uikit.window");
-    NSInteger tag = (NSInteger)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.uikit.metal_view_tag");
-    if (uiwindow) {
+    UIWindow *uiwindow = (__bridge UIWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.uikit.window", NULL);
+    NSInteger tag = (NSInteger)SDL_GetNumberProperty(SDL_GetWindowProperties(window), "SDL.window.uikit.metal_view_tag", 0);
+    if (uiwindow && tag) {
         UIView *view = uiwindow.rootViewController.view;
         if (view.tag == tag) {
             return (SDL_MetalView)CFBridgingRetain(view);

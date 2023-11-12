@@ -1178,7 +1178,7 @@ static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT | /* To support SetMaximumFrameLatency */
                           DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;                  /* To support presenting with allow tearing on */
 
-    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(renderer->window), "SDL.window.win32.hwnd");
+    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(renderer->window), "SDL.window.win32.hwnd", NULL);
 
     result = D3D_CALL(data->dxgiFactory, CreateSwapChainForHwnd,
                       (IUnknown *)data->commandQueue,

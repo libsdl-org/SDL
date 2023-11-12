@@ -1864,7 +1864,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow 
 
         SDL_PropertiesID props = SDL_GetWindowProperties(window);
         SDL_SetProperty(props, "SDL.window.cocoa.window", (__bridge void *)data.nswindow);
-        SDL_SetProperty(props, "SDL.window.cocoa.metal_view_tag", SDL_METALVIEW_TAG);
+        SDL_SetNumberProperty(props, "SDL.window.cocoa.metal_view_tag", SDL_METALVIEW_TAG);
 
         /* All done! */
         window->driverdata = (SDL_WindowData *)CFBridgingRetain(data);

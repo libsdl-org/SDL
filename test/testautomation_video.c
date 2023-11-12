@@ -1492,7 +1492,7 @@ static int video_getSetWindowData(void *arg)
     }
 
     /* Get non-existent data */
-    result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), name);
+    result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), name, NULL);
     SDLTest_AssertPass("Call to SDL_GetWindowData(..,%s)", name);
     SDLTest_AssertCheck(result == NULL, "Validate that result is NULL");
     SDLTest_AssertCheck(SDL_strcmp(referenceName, name) == 0, "Validate that name was not changed, expected: %s, got: %s", referenceName, name);
@@ -1505,8 +1505,7 @@ static int video_getSetWindowData(void *arg)
 
     /* Get data (twice) */
     for (iteration = 1; iteration <= 2; iteration++) {
-        result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window),
-                                          name);
+        result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), name, NULL);
         SDLTest_AssertPass("Call to SDL_GetWindowData(..,%s) [iteration %d]", name, iteration);
         SDLTest_AssertCheck(SDL_strcmp(referenceUserdata, result) == 0, "Validate that correct result was returned; expected: %s, got: %s", referenceUserdata, result);
         SDLTest_AssertCheck(SDL_strcmp(referenceName, name) == 0, "Validate that name was not changed, expected: %s, got: %s", referenceName, name);
@@ -1521,7 +1520,7 @@ static int video_getSetWindowData(void *arg)
     }
 
     /* Get data again */
-    result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), name);
+    result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), name, NULL);
     SDLTest_AssertPass("Call to SDL_GetWindowData(..,%s) [again]", name);
     SDLTest_AssertCheck(SDL_strcmp(referenceUserdata, result) == 0, "Validate that correct result was returned; expected: %s, got: %s", referenceUserdata, result);
     SDLTest_AssertCheck(SDL_strcmp(referenceName, name) == 0, "Validate that name was not changed, expected: %s, got: %s", referenceName, name);
@@ -1541,7 +1540,7 @@ static int video_getSetWindowData(void *arg)
     SDLTest_AssertCheck(SDL_strcmp(referenceUserdata2, userdata2) == 0, "Validate that userdata2 was not changed, expected: %s, got: %s", referenceUserdata2, userdata2);
 
     /* Get new data */
-    result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), name);
+    result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), name, NULL);
     SDLTest_AssertPass("Call to SDL_GetWindowData(..,%s)", name);
     SDLTest_AssertCheck(SDL_strcmp(referenceUserdata2, result) == 0, "Validate that correct result was returned; expected: %s, got: %s", referenceUserdata2, result);
     SDLTest_AssertCheck(SDL_strcmp(referenceName, name) == 0, "Validate that name was not changed, expected: %s, got: %s", referenceName, name);
@@ -1561,13 +1560,13 @@ static int video_getSetWindowData(void *arg)
     SDLTest_AssertCheck(SDL_strcmp(referenceUserdata2, userdata2) == 0, "Validate that userdata2 was not changed, expected: %s, got: %s", referenceUserdata2, userdata2);
 
     /* Get non-existent data */
-    result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), name);
+    result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), name, NULL);
     SDLTest_AssertPass("Call to SDL_GetWindowData(..,%s)", name);
     SDLTest_AssertCheck(result == NULL, "Validate that result is NULL");
     SDLTest_AssertCheck(SDL_strcmp(referenceName, name) == 0, "Validate that name was not changed, expected: %s, got: %s", referenceName, name);
 
     /* Get non-existent data new name */
-    result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), name2);
+    result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), name2, NULL);
     SDLTest_AssertPass("Call to SDL_GetWindowData(..,%s)", name2);
     SDLTest_AssertCheck(result == NULL, "Validate that result is NULL");
     SDLTest_AssertCheck(SDL_strcmp(referenceName2, name2) == 0, "Validate that name2 was not changed, expected: %s, got: %s", referenceName2, name2);
@@ -1579,7 +1578,7 @@ static int video_getSetWindowData(void *arg)
     SDLTest_AssertCheck(SDL_strcmp(referenceUserdata, userdata) == 0, "Validate that userdata was not changed, expected: %s, got: %s", referenceUserdata, userdata);
 
     /* Get data (again) */
-    result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), name);
+    result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), name, NULL);
     SDLTest_AssertPass("Call to SDL_GetWindowData(..,%s) [again, after clear]", name);
     SDLTest_AssertCheck(SDL_strcmp(referenceUserdata, result) == 0, "Validate that correct result was returned; expected: %s, got: %s", referenceUserdata, result);
     SDLTest_AssertCheck(SDL_strcmp(referenceName, name) == 0, "Validate that name was not changed, expected: %s, got: %s", referenceName, name);
@@ -1605,13 +1604,13 @@ static int video_getSetWindowData(void *arg)
     checkInvalidParameterError();
 
     /* Get data with NULL name */
-    result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), NULL);
+    result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), NULL, NULL);
     SDLTest_AssertPass("Call to SDL_GetWindowData(name=NULL)");
     SDLTest_AssertCheck(result == NULL, "Validate that result is NULL");
     checkInvalidParameterError();
 
     /* Get data with empty name */
-    result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), "");
+    result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), "", NULL);
     SDLTest_AssertPass("Call to SDL_GetWindowData(name='')");
     SDLTest_AssertCheck(result == NULL, "Validate that result is NULL");
     checkInvalidParameterError();

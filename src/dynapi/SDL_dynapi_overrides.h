@@ -981,3 +981,11 @@
 #define SDL_GetPenName SDL_GetPenName_REAL
 #define SDL_GetPenCapabilities SDL_GetPenCapabilities_REAL
 #define SDL_GetPenType SDL_GetPenType_REAL
+#define SDL_SetStringProperty SDL_SetStringProperty_REAL
+#define SDL_SetNumberProperty SDL_SetNumberProperty_REAL
+#define SDL_SetFloatProperty SDL_SetFloatProperty_REAL
+#define SDL_GetPropertyType SDL_GetPropertyType_REAL
+#define SDL_GetStringProperty SDL_GetStringProperty_REAL
+#define SDL_GetNumberProperty SDL_GetNumberProperty_REAL
+#define SDL_GetFloatProperty SDL_GetFloatProperty_REAL
+#define SDL_EnumerateProperties SDL_EnumerateProperties_REAL

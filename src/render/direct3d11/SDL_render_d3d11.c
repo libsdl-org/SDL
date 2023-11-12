@@ -825,7 +825,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 #endif
     } else {
 #if defined(__WIN32__) || defined(__WINGDK__)
-        HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(renderer->window), "SDL.window.win32.hwnd");
+        HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(renderer->window), "SDL.window.win32.hwnd", NULL);
 
         result = IDXGIFactory2_CreateSwapChainForHwnd(data->dxgiFactory,
                                                       (IUnknown *)data->d3dDevice,
