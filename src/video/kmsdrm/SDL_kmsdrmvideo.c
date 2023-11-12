@@ -1223,6 +1223,7 @@ cleanup:
     return ret;
 }
 
+#ifdef SDL_INPUT_LINUXEV
 static void KMSDRM_ReleaseVT(void *userdata)
 {
     SDL_VideoDevice *_this = (SDL_VideoDevice *)userdata;
@@ -1252,6 +1253,7 @@ static void KMSDRM_AcquireVT(void *userdata)
         }
     }
 }
+#endif
 
 int KMSDRM_VideoInit(SDL_VideoDevice *_this)
 {

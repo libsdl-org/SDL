@@ -406,6 +406,8 @@ void X11_QuitKeyboard(SDL_VideoDevice *_this)
         X11_XkbFreeKeyboard(data->xkb, 0, True);
         data->xkb = NULL;
     }
+#else
+    (void)data;
 #endif
 
 #ifdef SDL_USE_IME
