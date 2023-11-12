@@ -619,17 +619,17 @@ static void display_handle_done(void *data,
 
     /* Calculate the display DPI */
     if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
-        driverdata->hdpi = driverdata->physical_height ? (((float)driverdata->height) * 25.4f / driverdata->physical_height) : 0.0f;
-        driverdata->vdpi = driverdata->physical_width ? (((float)driverdata->width) * 25.4f / driverdata->physical_width) : 0.0f;
-        driverdata->ddpi = SDL_ComputeDiagonalDPI(driverdata->height,
-                                                  driverdata->width,
+        driverdata->hdpi = driverdata->physical_height ? (((float)driverdata->native_height) * 25.4f / driverdata->physical_height) : 0.0f;
+        driverdata->vdpi = driverdata->physical_width ? (((float)driverdata->native_width) * 25.4f / driverdata->physical_width) : 0.0f;
+        driverdata->ddpi = SDL_ComputeDiagonalDPI(driverdata->native_height,
+                                                  driverdata->native_width,
                                                   ((float)driverdata->physical_height) / 25.4f,
                                                   ((float)driverdata->physical_width) / 25.4f);
     } else {
-        driverdata->hdpi = driverdata->physical_width ? (((float)driverdata->width) * 25.4f / driverdata->physical_width) : 0.0f;
-        driverdata->vdpi = driverdata->physical_height ? (((float)driverdata->height) * 25.4f / driverdata->physical_height) : 0.0f;
-        driverdata->ddpi = SDL_ComputeDiagonalDPI(driverdata->width,
-                                                  driverdata->height,
+        driverdata->hdpi = driverdata->physical_width ? (((float)driverdata->native_width) * 25.4f / driverdata->physical_width) : 0.0f;
+        driverdata->vdpi = driverdata->physical_height ? (((float)driverdata->native_height) * 25.4f / driverdata->physical_height) : 0.0f;
+        driverdata->ddpi = SDL_ComputeDiagonalDPI(driverdata->native_width,
+                                                  driverdata->native_height,
                                                   ((float)driverdata->physical_width) / 25.4f,
                                                   ((float)driverdata->physical_height) / 25.4f);
     }
