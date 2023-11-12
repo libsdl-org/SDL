@@ -373,6 +373,9 @@ dep_option(SDL_INSTALL_TESTS   "Install test-cases" OFF "NOT SDL_DISABLE_INSTALL
 dep_option(SDL_TESTS_LINK_SHARED "link tests to shared SDL library" "${SDL_SHARED}" "SDL_SHARED;SDL_STATIC" "${SDL_SHARED}")
 set(SDL_TESTS_TIMEOUT_MULTIPLIER "1" CACHE STRING "Timeout multiplier to account for really slow machines")
 
+set(SDL_DEFINE_OVERRIDES "" CACHE STRING "Overrides SDL_build_config.h defines. Use only for testing!")
+mark_as_advanced(SDL_DEFINE_OVERRIDES)
+
 if(VITA)
   set_option(VIDEO_VITA_PIB  "Build with PSVita piglet gles2 support" OFF)
   set_option(VIDEO_VITA_PVR  "Build with PSVita PVR gles/gles2 support" OFF)
@@ -2818,6 +2821,18 @@ endif()
 if(NOT HAVE_SDL_MAIN_CALLBACKS)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/generic/*.c")
 endif()
+
+foreach(option IN LISTS SDL_DEFINE_OVERRIDES)
+  if(option MATCHES "^([A-Z_]+)=(.*)")
+    message(WARNING "Overriding ${CMAKE_MATCH_1} with \"${CMAKE_MATCH_2}\"")
+    set(${CMAKE_MATCH_1} ${CMAKE_MATCH_2})
+    if(NOT CMAKE_MATCH_1 IN_LIST SDL_CONFIG_OPTIONS)
+      message(WARNING "Unknown key: ${CMAKE_MATCH_1}.")
+    endif()
+  else()
+    message(WARNING "Cannot decode \"${option}\".\nSDL_DEFINE_OVERRIDES expects list of KEY=VALUE")
+  endif()
+endforeach()
 
 # config variables may contain generator expression, so we need to generate SDL_build_config.h in 2 steps:
 # 1. replace all `#cmakedefine`'s and `@abc@`
