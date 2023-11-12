@@ -114,8 +114,6 @@ typedef enum
     SDL_EVENT_WINDOW_RESTORED,          /**< Window has been restored to normal size and position */
     SDL_EVENT_WINDOW_MOUSE_ENTER,       /**< Window has gained mouse focus */
     SDL_EVENT_WINDOW_MOUSE_LEAVE,       /**< Window has lost mouse focus */
-    SDL_EVENT_WINDOW_PEN_ENTER,         /**< Window has gained focus of the pressure-sensitive pen with ID "data1" */
-    SDL_EVENT_WINDOW_PEN_LEAVE,         /**< Window has lost focus of the pressure-sensitive pen with ID "data1" */
     SDL_EVENT_WINDOW_FOCUS_GAINED,      /**< Window has gained keyboard focus */
     SDL_EVENT_WINDOW_FOCUS_LOST,        /**< Window has lost keyboard focus */
     SDL_EVENT_WINDOW_CLOSE_REQUESTED,   /**< The window manager requests that the window be closed */
@@ -129,8 +127,10 @@ typedef enum
                                              in an event watcher, the window handle is still valid and can still be used to retrieve any userdata
                                              associated with the window. Otherwise, the handle has already been destroyed and all resources
                                              associated with it are invalid */
+    SDL_EVENT_WINDOW_PEN_ENTER,         /**< Window has gained focus of the pressure-sensitive pen with ID "data1" */
+    SDL_EVENT_WINDOW_PEN_LEAVE,         /**< Window has lost focus of the pressure-sensitive pen with ID "data1" */
     SDL_EVENT_WINDOW_FIRST = SDL_EVENT_WINDOW_SHOWN,
-    SDL_EVENT_WINDOW_LAST = SDL_EVENT_WINDOW_DESTROYED,
+    SDL_EVENT_WINDOW_LAST = SDL_EVENT_WINDOW_PEN_LEAVE,
 
     /* Keyboard events */
     SDL_EVENT_KEY_DOWN        = 0x300, /**< Key pressed */
