@@ -55,6 +55,11 @@ include("${SDL3_SOURCE_DIR}/cmake/CheckCPUArchitecture.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/GetGitRevisionDescription.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/3rdparty.cmake")
 
+include("${SDL3_SOURCE_DIR}/cmake/sdlconfigvariables.cmake")
+foreach(option IN LISTS SDL_CONFIG_OPTIONS)
+  unset(${option})
+endforeach()
+
 SDL_DetectCompiler()
 SDL_DetectCPUArchitecture()
 
