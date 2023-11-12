@@ -11,12 +11,28 @@
 /**
  * Test basic functionality
  */
+static void SDLCALL count_properties(void *userdata, SDL_PropertiesID props, const char *name)
+{
+    int *count = (int *)userdata;
+    ++(*count);
+}
+static void SDLCALL count_foo_properties(void *userdata, SDL_PropertiesID props, const char *name)
+{
+    int *count = (int *)userdata;
+    if (SDL_strcmp(name, "foo") == 0) {
+        ++(*count);
+    }
+}
 static int properties_testBasic(void *arg)
 {
     SDL_PropertiesID props;
     char key[2], expected_value[2];
+    SDL_PropertyType type;
     void *value;
-    int i, result;
+    const char *value_string;
+    Sint64 value_number;
+    float value_float;
+    int i, result, count;
 
     props = SDL_CreateProperties();
     SDLTest_AssertPass("Call to SDL_CreateProperties()");
@@ -30,11 +46,16 @@ static int properties_testBasic(void *arg)
         SDLTest_AssertPass("Call to SDL_SetProperty()");
         SDLTest_AssertCheck(result == 0,
             "Verify property value was set, got: %d", result);
-        value = SDL_GetProperty(props, key);
+        value = SDL_GetProperty(props, key, NULL);
         SDLTest_AssertPass("Call to SDL_GetProperty()");
         SDLTest_AssertCheck(value && SDL_strcmp((const char *)value, expected_value) == 0,
             "Verify property value was set, got %s, expected %s", value ? (const char *)value : "NULL", expected_value);
     }
+
+    count = 0;
+    SDL_EnumerateProperties(props, count_properties, &count);
+    SDLTest_AssertCheck(count == 10,
+            "Verify property count, expected 10, got: %d", count);
 
     for (i = 0; i < 10; ++i) {
         SDL_snprintf(key, SDL_arraysize(key), "%c", 'a' + i);
@@ -42,11 +63,112 @@ static int properties_testBasic(void *arg)
         SDLTest_AssertPass("Call to SDL_SetProperty(NULL)");
         SDLTest_AssertCheck(result == 0,
             "Verify property value was set, got: %d", result);
-        value = SDL_GetProperty(props, key);
+        value = SDL_GetProperty(props, key, NULL);
         SDLTest_AssertPass("Call to SDL_GetProperty()");
         SDLTest_AssertCheck(value == NULL,
             "Verify property value was set, got %s, expected NULL", (const char *)value);
     }
+
+    count = 0;
+    SDL_EnumerateProperties(props, count_properties, &count);
+    SDLTest_AssertCheck(count == 0,
+            "Verify property count, expected 0, got: %d", count);
+
+    /* Check default values */
+    value = SDL_GetProperty(props, "foo", (void *)0xabcd);
+    SDLTest_AssertCheck(value == (void *)0xabcd,
+            "Verify property, expected 0xabcd, got: %p", value);
+    value_string = SDL_GetStringProperty(props, "foo", "abcd");
+    SDLTest_AssertCheck(value_string && SDL_strcmp(value_string, "abcd") == 0,
+            "Verify string property, expected \"abcd\", got: %s", value_string);
+    value_number = SDL_GetNumberProperty(props, "foo", 1234);
+    SDLTest_AssertCheck(value_number == 1234,
+            "Verify number property, expected 1234, got: %" SDL_PRIu64 "", value_number);
+    value_float = SDL_GetFloatProperty(props, "foo", 1234.0f);
+    SDLTest_AssertCheck(value_float == 1234.0f,
+            "Verify float property, expected 1234, got: %f", value_float);
+
+    /* Check data value */
+    SDLTest_AssertPass("Call to SDL_SetProperty(\"foo\", 0x01)");
+    SDL_SetProperty(props, "foo", (void *)0x01);
+    type = SDL_GetPropertyType(props, "foo");
+    SDLTest_AssertCheck(type == SDL_PROPERTY_TYPE_POINTER,
+            "Verify property type, expected %d, got: %d", SDL_PROPERTY_TYPE_POINTER, type);
+    value = SDL_GetProperty(props, "foo", NULL);
+    SDLTest_AssertCheck(value == (void *)0x01,
+            "Verify property, expected 0x01, got: %p", value);
+    value_string = SDL_GetStringProperty(props, "foo", NULL);
+    SDLTest_AssertCheck(value_string == NULL,
+            "Verify string property, expected NULL, got: %s", value_string);
+    value_number = SDL_GetNumberProperty(props, "foo", 0);
+    SDLTest_AssertCheck(value_number == 0,
+            "Verify number property, expected 0, got: %" SDL_PRIu64 "", value_number);
+    value_float = SDL_GetFloatProperty(props, "foo", 0.0f);
+    SDLTest_AssertCheck(value_float == 0.0f,
+            "Verify float property, expected 0, got: %f", value_float);
+
+    /* Check string value */
+    SDLTest_AssertPass("Call to SDL_SetStringProperty(\"foo\", \"bar\")");
+    SDL_SetStringProperty(props, "foo", "bar");
+    type = SDL_GetPropertyType(props, "foo");
+    SDLTest_AssertCheck(type == SDL_PROPERTY_TYPE_STRING,
+            "Verify property type, expected %d, got: %d", SDL_PROPERTY_TYPE_STRING, type);
+    value = SDL_GetProperty(props, "foo", NULL);
+    SDLTest_AssertCheck(value == NULL,
+            "Verify property, expected NULL, got: %p", value);
+    value_string = SDL_GetStringProperty(props, "foo", NULL);
+    SDLTest_AssertCheck(value_string != NULL && SDL_strcmp(value_string, "bar") == 0,
+            "Verify string property, expected \"bar\", got: %s", value_string);
+    value_number = SDL_GetNumberProperty(props, "foo", 0);
+    SDLTest_AssertCheck(value_number == 0,
+            "Verify number property, expected 0, got: %" SDL_PRIu64 "", value_number);
+    value_float = SDL_GetFloatProperty(props, "foo", 0.0f);
+    SDLTest_AssertCheck(value_float == 0.0f,
+            "Verify float property, expected 0, got: %f", value_float);
+
+    /* Check number value */
+    SDLTest_AssertPass("Call to SDL_SetNumberProperty(\"foo\", 1)");
+    SDL_SetNumberProperty(props, "foo", 1);
+    type = SDL_GetPropertyType(props, "foo");
+    SDLTest_AssertCheck(type == SDL_PROPERTY_TYPE_NUMBER,
+            "Verify property type, expected %d, got: %d", SDL_PROPERTY_TYPE_NUMBER, type);
+    value = SDL_GetProperty(props, "foo", NULL);
+    SDLTest_AssertCheck(value == NULL,
+            "Verify property, expected NULL, got: %p", value);
+    value_string = SDL_GetStringProperty(props, "foo", NULL);
+    SDLTest_AssertCheck(value_string == NULL,
+            "Verify string property, expected NULL, got: %s", value_string);
+    value_number = SDL_GetNumberProperty(props, "foo", 0);
+    SDLTest_AssertCheck(value_number == 1,
+            "Verify number property, expected 1, got: %" SDL_PRIu64 "", value_number);
+    value_float = SDL_GetFloatProperty(props, "foo", 0.0f);
+    SDLTest_AssertCheck(value_float == 0.0f,
+            "Verify float property, expected 0, got: %f", value_float);
+
+    /* Check float value */
+    SDLTest_AssertPass("Call to SDL_SetNumberProperty(\"foo\", 1)");
+    SDL_SetFloatProperty(props, "foo", 1.0f);
+    type = SDL_GetPropertyType(props, "foo");
+    SDLTest_AssertCheck(type == SDL_PROPERTY_TYPE_FLOAT,
+            "Verify property type, expected %d, got: %d", SDL_PROPERTY_TYPE_FLOAT, type);
+    value = SDL_GetProperty(props, "foo", NULL);
+    SDLTest_AssertCheck(value == NULL,
+            "Verify property, expected NULL, got: %p", value);
+    value_string = SDL_GetStringProperty(props, "foo", NULL);
+    SDLTest_AssertCheck(value_string == NULL,
+            "Verify string property, expected NULL, got: %s", value_string);
+    value_number = SDL_GetNumberProperty(props, "foo", 0);
+    SDLTest_AssertCheck(value_number == 0,
+            "Verify number property, expected 0, got: %" SDL_PRIu64 "", value_number);
+    value_float = SDL_GetFloatProperty(props, "foo", 0.0f);
+    SDLTest_AssertCheck(value_float == 1.0f,
+            "Verify string property, expected 1, got: %f", value_float);
+
+    /* Make sure we have exactly one property named foo */
+    count = 0;
+    SDL_EnumerateProperties(props, count_foo_properties, &count);
+    SDLTest_AssertCheck(count == 1,
+            "Verify foo property count, expected 1, got: %d", count);
 
     SDL_DestroyProperties(props);
 
@@ -130,7 +252,7 @@ static int properties_testLocking(void *arg)
         {
             SDL_Delay(10);
             SDL_LockProperties(data.props);
-            value = SDL_GetProperty(data.props, "a");
+            value = SDL_GetProperty(data.props, "a", NULL);
             SDL_UnlockProperties(data.props);
 
             if (!value || SDL_strcmp((const char *)value, "thread_loop") == 0) {
@@ -144,7 +266,7 @@ static int properties_testLocking(void *arg)
         SDL_LockProperties(data.props);
         SDL_SetProperty(data.props, "a", "main");
         SDL_Delay(100);
-        value = SDL_GetProperty(data.props, "a");
+        value = SDL_GetProperty(data.props, "a", NULL);
         SDLTest_AssertCheck(value && SDL_strcmp((const char *)value, "main") == 0,
             "After 100ms sleep, property is %s, expected 'main'", value ? (const char *)value : "NULL");
         SDL_UnlockProperties(data.props);
@@ -152,7 +274,7 @@ static int properties_testLocking(void *arg)
         data.done = SDL_TRUE;
         SDL_WaitThread(thread, NULL);
 
-        value = SDL_GetProperty(data.props, "a");
+        value = SDL_GetProperty(data.props, "a", NULL);
         SDLTest_AssertCheck(value && SDL_strcmp((const char *)value, "thread_done") == 0,
             "After thread complete, property is %s, expected 'thread_done'", value ? (const char *)value : "NULL");
     }

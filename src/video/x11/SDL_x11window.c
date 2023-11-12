@@ -386,8 +386,8 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w,
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
     int screen = (displaydata ? displaydata->screen : 0);
     SDL_SetProperty(props, "SDL.window.x11.display", data->videodata->display);
-    SDL_SetProperty(props, "SDL.window.x11.screen", (void *)(intptr_t)screen);
-    SDL_SetProperty(props, "SDL.window.x11.window", (void *)(uintptr_t)data->xwindow);
+    SDL_SetNumberProperty(props, "SDL.window.x11.screen", screen);
+    SDL_SetNumberProperty(props, "SDL.window.x11.window", data->xwindow);
 
     return 0;
 }

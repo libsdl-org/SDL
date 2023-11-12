@@ -519,9 +519,9 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         data->texh = (GLfloat)texture->h / texture_h;
     }
     SDL_PropertiesID props = SDL_GetTextureProperties(texture);
-    SDL_SetProperty(props, "SDL.texture.opengl.texture", (void *)(uintptr_t)data->texture);
-    SDL_SetProperty(props, "SDL.texture.opengl.tex_w", (void *)(uintptr_t)(Uint32)(data->texw * 65536));
-    SDL_SetProperty(props, "SDL.texture.opengl.tex_h", (void *)(uintptr_t)(Uint32)(data->texh * 65536));
+    SDL_SetNumberProperty(props, "SDL.texture.opengl.texture", data->texture);
+    SDL_SetFloatProperty(props, "SDL.texture.opengl.tex_w", data->texw);
+    SDL_SetFloatProperty(props, "SDL.texture.opengl.tex_h", data->texh);
 
     data->format = format;
     data->formattype = type;
@@ -594,7 +594,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
                                     GL_CLAMP_TO_EDGE);
         renderdata->glTexImage2D(textype, 0, internalFormat, (texture_w + 1) / 2,
                                  (texture_h + 1) / 2, 0, format, type, NULL);
-        SDL_SetProperty(props, "SDL.texture.opengl.texture_u", (void *)(uintptr_t)data->utexture);
+        SDL_SetNumberProperty(props, "SDL.texture.opengl.texture_u", data->utexture);
 
         renderdata->glBindTexture(textype, data->vtexture);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER,
@@ -607,7 +607,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
                                     GL_CLAMP_TO_EDGE);
         renderdata->glTexImage2D(textype, 0, internalFormat, (texture_w + 1) / 2,
                                  (texture_h + 1) / 2, 0, format, type, NULL);
-        SDL_SetProperty(props, "SDL.texture.opengl.texture_v", (void *)(uintptr_t)data->vtexture);
+        SDL_SetNumberProperty(props, "SDL.texture.opengl.texture_v", data->vtexture);
     }
 
     if (texture->format == SDL_PIXELFORMAT_NV12 ||
