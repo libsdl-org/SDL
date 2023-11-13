@@ -81,7 +81,7 @@ static int properties_testBasic(void *arg)
             "Verify property, expected 0xabcd, got: %p", value);
     value_string = SDL_GetStringProperty(props, "foo", "abcd");
     SDLTest_AssertCheck(value_string && SDL_strcmp(value_string, "abcd") == 0,
-            "Verify string property, expected \"abcd\", got: %s", value_string);
+            "Verify string property, expected abcd, got: %s", value_string);
     value_number = SDL_GetNumberProperty(props, "foo", 1234);
     SDLTest_AssertCheck(value_number == 1234,
             "Verify number property, expected 1234, got: %" SDL_PRIu64 "", value_number);
@@ -125,7 +125,7 @@ static int properties_testBasic(void *arg)
             "Verify property, expected NULL, got: %p", value);
     value_string = SDL_GetStringProperty(props, "foo", NULL);
     SDLTest_AssertCheck(value_string != NULL && SDL_strcmp(value_string, "bar") == 0,
-            "Verify string property, expected \"bar\", got: %s", value_string);
+            "Verify string property, expected bar, got: %s", value_string);
     value_number = SDL_GetNumberProperty(props, "foo", 0);
     SDLTest_AssertCheck(value_number == 0,
             "Verify number property, expected 0, got: %" SDL_PRIu64 "", value_number);
@@ -133,8 +133,8 @@ static int properties_testBasic(void *arg)
     SDLTest_AssertCheck(value_float == 0.0f,
             "Verify float property, expected 0, got: %f", value_float);
     value_bool = SDL_GetBooleanProperty(props, "foo", SDL_FALSE);
-    SDLTest_AssertCheck(value_bool == SDL_FALSE,
-            "Verify boolean property, expected SDL_FALSE, got: %s", value_bool ? "SDL_TRUE" : "SDL_FALSE");
+    SDLTest_AssertCheck(value_bool == SDL_TRUE,
+            "Verify boolean property, expected SDL_TRUE, got: %s", value_bool ? "SDL_TRUE" : "SDL_FALSE");
 
     /* Check number value */
     SDLTest_AssertPass("Call to SDL_SetNumberProperty(\"foo\", 1)");
@@ -146,21 +146,21 @@ static int properties_testBasic(void *arg)
     SDLTest_AssertCheck(value == NULL,
             "Verify property, expected NULL, got: %p", value);
     value_string = SDL_GetStringProperty(props, "foo", NULL);
-    SDLTest_AssertCheck(value_string == NULL,
-            "Verify string property, expected NULL, got: %s", value_string);
+    SDLTest_AssertCheck(value_string && SDL_strcmp(value_string, "1") == 0,
+            "Verify string property, expected 1, got: %s", value_string);
     value_number = SDL_GetNumberProperty(props, "foo", 0);
     SDLTest_AssertCheck(value_number == 1,
             "Verify number property, expected 1, got: %" SDL_PRIu64 "", value_number);
     value_float = SDL_GetFloatProperty(props, "foo", 0.0f);
-    SDLTest_AssertCheck(value_float == 0.0f,
-            "Verify float property, expected 0, got: %f", value_float);
+    SDLTest_AssertCheck(value_float == 1.0f,
+            "Verify float property, expected 1, got: %f", value_float);
     value_bool = SDL_GetBooleanProperty(props, "foo", SDL_FALSE);
-    SDLTest_AssertCheck(value_bool == SDL_FALSE,
-            "Verify boolean property, expected SDL_FALSE, got: %s", value_bool ? "SDL_TRUE" : "SDL_FALSE");
+    SDLTest_AssertCheck(value_bool == SDL_TRUE,
+            "Verify boolean property, expected SDL_TRUE, got: %s", value_bool ? "SDL_TRUE" : "SDL_FALSE");
 
     /* Check float value */
     SDLTest_AssertPass("Call to SDL_SetFloatProperty(\"foo\", 1)");
-    SDL_SetFloatProperty(props, "foo", 1.0f);
+    SDL_SetFloatProperty(props, "foo", 1.75f);
     type = SDL_GetPropertyType(props, "foo");
     SDLTest_AssertCheck(type == SDL_PROPERTY_TYPE_FLOAT,
             "Verify property type, expected %d, got: %d", SDL_PROPERTY_TYPE_FLOAT, type);
@@ -168,21 +168,21 @@ static int properties_testBasic(void *arg)
     SDLTest_AssertCheck(value == NULL,
             "Verify property, expected NULL, got: %p", value);
     value_string = SDL_GetStringProperty(props, "foo", NULL);
-    SDLTest_AssertCheck(value_string == NULL,
-            "Verify string property, expected NULL, got: %s", value_string);
+    SDLTest_AssertCheck(value_string && SDL_strcmp(value_string, "1.750000") == 0,
+            "Verify string property, expected 1.750000, got: %s", value_string);
     value_number = SDL_GetNumberProperty(props, "foo", 0);
-    SDLTest_AssertCheck(value_number == 0,
-            "Verify number property, expected 0, got: %" SDL_PRIu64 "", value_number);
+    SDLTest_AssertCheck(value_number == 2,
+            "Verify number property, expected 2, got: %" SDL_PRIu64 "", value_number);
     value_float = SDL_GetFloatProperty(props, "foo", 0.0f);
-    SDLTest_AssertCheck(value_float == 1.0f,
-            "Verify string property, expected 1, got: %f", value_float);
+    SDLTest_AssertCheck(value_float == 1.75f,
+            "Verify float property, expected 1.75, got: %f", value_float);
     value_bool = SDL_GetBooleanProperty(props, "foo", SDL_FALSE);
-    SDLTest_AssertCheck(value_bool == SDL_FALSE,
-            "Verify boolean property, expected SDL_FALSE, got: %s", value_bool ? "SDL_TRUE" : "SDL_FALSE");
+    SDLTest_AssertCheck(value_bool == SDL_TRUE,
+            "Verify boolean property, expected SDL_TRUE, got: %s", value_bool ? "SDL_TRUE" : "SDL_FALSE");
 
     /* Check boolean value */
     SDLTest_AssertPass("Call to SDL_SetBooleanProperty(\"foo\", SDL_TRUE)");
-    SDL_SetBooleanProperty(props, "foo", SDL_TRUE);
+    SDL_SetBooleanProperty(props, "foo", 3); /* Note we're testing non-true/false value here */
     type = SDL_GetPropertyType(props, "foo");
     SDLTest_AssertCheck(type == SDL_PROPERTY_TYPE_BOOLEAN,
             "Verify property type, expected %d, got: %d", SDL_PROPERTY_TYPE_BOOLEAN, type);
@@ -190,14 +190,14 @@ static int properties_testBasic(void *arg)
     SDLTest_AssertCheck(value == NULL,
             "Verify property, expected NULL, got: %p", value);
     value_string = SDL_GetStringProperty(props, "foo", NULL);
-    SDLTest_AssertCheck(value_string == NULL,
-            "Verify string property, expected NULL, got: %s", value_string);
+    SDLTest_AssertCheck(value_string && SDL_strcmp(value_string, "true") == 0,
+            "Verify string property, expected true, got: %s", value_string);
     value_number = SDL_GetNumberProperty(props, "foo", 0);
-    SDLTest_AssertCheck(value_number == 0,
-            "Verify number property, expected 0, got: %" SDL_PRIu64 "", value_number);
+    SDLTest_AssertCheck(value_number == 1,
+            "Verify number property, expected 1, got: %" SDL_PRIu64 "", value_number);
     value_float = SDL_GetFloatProperty(props, "foo", 0.0f);
-    SDLTest_AssertCheck(value_float == 0.0f,
-            "Verify string property, expected 0, got: %f", value_float);
+    SDLTest_AssertCheck(value_float == 1.0f,
+            "Verify float property, expected 1, got: %f", value_float);
     value_bool = SDL_GetBooleanProperty(props, "foo", SDL_FALSE);
     SDLTest_AssertCheck(value_bool == SDL_TRUE,
             "Verify boolean property, expected SDL_TRUE, got: %s", value_bool ? "SDL_TRUE" : "SDL_FALSE");
