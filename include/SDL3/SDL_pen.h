@@ -72,15 +72,15 @@ typedef Uint32 SDL_PenID; /**< SDL_PenIDs identify pens uniquely within a sessio
  * Not all pens/backends support all axes: unsupported entries are always "0.0f".
  *
  * To convert angles for tilt and rotation into vector representation, use
- * \link SDL_sinf \endlink on the XTILT, YTILT, or ROTATION component, e.g., "SDL_sinf(xtilt * SDL_PI_F / 180.0)".
+ * SDL_sinf on the XTILT, YTILT, or ROTATION component, e.g., "SDL_sinf(xtilt * SDL_PI_F / 180.0)".
  */
 typedef enum
 {
     SDL_PEN_AXIS_PRESSURE = 0,               /**< Pen pressure.  Unidirectional: 0..1.0 */
     SDL_PEN_AXIS_XTILT,                      /**< Pen horizontal tilt angle.  Bidirectional: -90.0..90.0 (left-to-right).
-						The physical max/min tilt may be smaller than -90.0 / 90.0, cf. \link SDL_PenCapabilityInfo \endlink */
+						The physical max/min tilt may be smaller than -90.0 / 90.0, cf. SDL_PenCapabilityInfo */
     SDL_PEN_AXIS_YTILT,                      /**< Pen vertical tilt angle.  Bidirectional: -90.0..90.0 (top-to-down).
-						The physical max/min tilt may be smaller than -90.0 / 90.0, cf. \link SDL_PenCapabilityInfo \endlink */
+						The physical max/min tilt may be smaller than -90.0 / 90.0, cf. SDL_PenCapabilityInfo */
     SDL_PEN_AXIS_DISTANCE,                   /**< Pen distance to drawing surface.  Unidirectional: 0.0..1.0 */
     SDL_PEN_AXIS_ROTATION,                   /**< Pen barrel rotation.  Bidirectional: -180..179.9 (clockwise, 0 is facing up, -180.0 is facing down). */
     SDL_PEN_AXIS_SLIDER,                     /**< Pen finger wheel or slider (e.g., Airbrush Pen).  Unidirectional: 0..1.0 */
@@ -256,7 +256,7 @@ typedef struct SDL_PenCapabilityInfo
  * \param instance_id The pen to query.
  * \param[out] capabilities Detail information about pen capabilities, such as the number of buttons
  *
- * \returns a set of capability flags, cf. \link SDL_PEN_CAPABILITIES \endlink.  Returns 0 on error
+ * \returns a set of capability flags, cf. SDL_PEN_CAPABILITIES.  Returns 0 on error
  *     (cf. ::SDL_GetError())
  *
  * \since This function is available since SDL 3.TBD
