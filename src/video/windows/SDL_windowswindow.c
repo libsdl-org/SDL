@@ -347,7 +347,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
             int w = rect.right;
             int h = rect.bottom;
 
-            if (window->flags & SDL_WINDOW_FOREIGN) {
+            if (window->flags & SDL_WINDOW_EXTERNAL) {
                 window->windowed.w = window->w = w;
                 window->windowed.h = window->h = h;
             } else if ((window->windowed.w && window->windowed.w != w) || (window->windowed.h && window->windowed.h != h)) {
@@ -370,7 +370,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
         point.x = 0;
         point.y = 0;
         if (ClientToScreen(hwnd, &point)) {
-            if (window->flags & SDL_WINDOW_FOREIGN) {
+            if (window->flags & SDL_WINDOW_EXTERNAL) {
                 window->windowed.x = point.x;
                 window->windowed.y = point.y;
             }
@@ -443,7 +443,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
 
     data->initializing = SDL_FALSE;
 
-    if (window->flags & SDL_WINDOW_FOREIGN) {
+    if (window->flags & SDL_WINDOW_EXTERNAL) {
         /* Query the title from the existing window */
         LPTSTR title;
         int titleLen;
@@ -490,7 +490,7 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
         ReleaseDC(data->hwnd, data->hdc);
         RemoveProp(data->hwnd, TEXT("SDL_WindowData"));
 #endif
-        if (!(window->flags & SDL_WINDOW_FOREIGN)) {
+        if (!(window->flags & SDL_WINDOW_EXTERNAL)) {
             DestroyWindow(data->hwnd);
             if (data->destroy_parent_with_window && data->parent) {
                 DestroyWindow(data->parent);
@@ -566,10 +566,10 @@ static void WIN_SetKeyboardFocus(SDL_Window *window)
 
 int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
-    HWND hwnd = (HWND)SDL_GetProperty(create_props, "native.win32.hwnd", SDL_GetProperty(create_props, "native.data", NULL));
+    HWND hwnd = (HWND)SDL_GetProperty(create_props, "win32.hwnd", SDL_GetProperty(create_props, "sdl2-compat.external_window", NULL));
     HWND parent = NULL;
     if (hwnd) {
-        window->flags |= SDL_WINDOW_FOREIGN;
+        window->flags |= SDL_WINDOW_EXTERNAL;
 
         if (SetupWindowData(_this, window, hwnd, parent) < 0) {
             return -1;
@@ -643,7 +643,7 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
         }
     }
 
-    HWND share_hwnd = (HWND)SDL_GetProperty(create_props, "native.win32.pixel_format_hwnd", NULL);
+    HWND share_hwnd = (HWND)SDL_GetProperty(create_props, "win32.pixel_format_hwnd", NULL);
     if (share_hwnd) {
         HDC hdc = GetDC(share_hwnd);
         int pixel_format = GetPixelFormat(hdc);

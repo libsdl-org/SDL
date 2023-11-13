@@ -783,8 +783,8 @@ static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, Uint32 flag)
     case SDL_WINDOW_MOUSE_FOCUS:
         SDL_snprintfcat(text, maxlen, "MOUSE_FOCUS");
         break;
-    case SDL_WINDOW_FOREIGN:
-        SDL_snprintfcat(text, maxlen, "FOREIGN");
+    case SDL_WINDOW_EXTERNAL:
+        SDL_snprintfcat(text, maxlen, "EXTERNAL");
         break;
     case SDL_WINDOW_HIGH_PIXEL_DENSITY:
         SDL_snprintfcat(text, maxlen, "HIGH_PIXEL_DENSITY");
@@ -835,7 +835,7 @@ static void SDLTest_PrintWindowFlags(char *text, size_t maxlen, Uint32 flags)
         SDL_WINDOW_MOUSE_GRABBED,
         SDL_WINDOW_INPUT_FOCUS,
         SDL_WINDOW_MOUSE_FOCUS,
-        SDL_WINDOW_FOREIGN,
+        SDL_WINDOW_EXTERNAL,
         SDL_WINDOW_HIGH_PIXEL_DENSITY,
         SDL_WINDOW_MOUSE_CAPTURE,
         SDL_WINDOW_ALWAYS_ON_TOP,

@@ -138,7 +138,7 @@ typedef enum
     SDL_WINDOW_MOUSE_GRABBED        = 0x00000100,   /**< window has grabbed mouse input */
     SDL_WINDOW_INPUT_FOCUS          = 0x00000200,   /**< window has input focus */
     SDL_WINDOW_MOUSE_FOCUS          = 0x00000400,   /**< window has mouse focus */
-    SDL_WINDOW_FOREIGN              = 0x00000800,   /**< window not created by SDL */
+    SDL_WINDOW_EXTERNAL             = 0x00000800,   /**< window not created by SDL */
     SDL_WINDOW_HIGH_PIXEL_DENSITY   = 0x00002000,   /**< window uses high pixel density back buffer if possible */
     SDL_WINDOW_MOUSE_CAPTURE        = 0x00004000,   /**< window has mouse captured (unrelated to MOUSE_GRABBED) */
     SDL_WINDOW_ALWAYS_ON_TOP        = 0x00008000,   /**< window should always be above others */
@@ -827,17 +827,17 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, in
  *
  * On macOS:
  *
- * - "native.cocoa.window" (pointer) - the (__unsafe_unretained) NSWindow associated with the window, if you want to wrap an existing window.
- * - "native.cocoa.view" (pointer) - the (__unsafe_unretained) NSView associated with the window, defaults to [window contentView]
+ * - "cocoa.window" (pointer) - the (__unsafe_unretained) NSWindow associated with the window, if you want to wrap an existing window.
+ * - "cocoa.view" (pointer) - the (__unsafe_unretained) NSView associated with the window, defaults to [window contentView]
  *
  * On Windows:
  *
- * - "native.win32.hwnd" (pointer) - the HWND associated with the window, if you want to wrap an existing window.
- * - "native.win32.pixel_format_hwnd" (pointer) - optional, another window to share pixel format with, useful for OpenGL windows
+ * - "win32.hwnd" (pointer) - the HWND associated with the window, if you want to wrap an existing window.
+ * - "win32.pixel_format_hwnd" (pointer) - optional, another window to share pixel format with, useful for OpenGL windows
  *
  * On X11:
  *
- * - "native.x11.window" (number) - the X11 Window associated with the window, if you want to wrap an existing window.
+ * - "x11.window" (number) - the X11 Window associated with the window, if you want to wrap an existing window.
  *
  * The SDL_Window is implicitly shown if the "hidden" property is not set.
  *
