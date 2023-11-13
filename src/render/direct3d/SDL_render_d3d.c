@@ -517,7 +517,7 @@ static void D3D_DestroyTextureRep(D3D_TextureRep *texture)
     }
 }
 
-static int D3D_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
+static int D3D_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;
     D3D_TextureData *texturedata;
@@ -1493,7 +1493,7 @@ static int D3D_Reset(SDL_Renderer *renderer)
     /* Allocate application render targets */
     for (texture = renderer->textures; texture; texture = texture->next) {
         if (texture->access == SDL_TEXTUREACCESS_TARGET) {
-            D3D_CreateTexture(renderer, texture);
+            D3D_CreateTexture(renderer, texture, 0);
         }
     }
 
@@ -1536,7 +1536,7 @@ static int D3D_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
+SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_Renderer *renderer;
     D3D_RenderData *data;
@@ -1617,7 +1617,7 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
         pparams.BackBufferFormat = D3DFMT_UNKNOWN;
         pparams.FullScreen_RefreshRateInHz = 0;
     }
-    if (flags & SDL_RENDERER_PRESENTVSYNC) {
+    if (SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE)) {
         pparams.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
     } else {
         pparams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;

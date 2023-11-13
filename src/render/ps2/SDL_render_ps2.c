@@ -100,7 +100,7 @@ static void PS2_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event
 {
 }
 
-static int PS2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
+static int PS2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     GSTEXTURE *ps2_tex = (GSTEXTURE *)SDL_calloc(1, sizeof(GSTEXTURE));
 
@@ -574,7 +574,7 @@ static int PS2_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-static SDL_Renderer *PS2_CreateRenderer(SDL_Window *window, Uint32 flags)
+static SDL_Renderer *PS2_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_Renderer *renderer;
     PS2_RenderData *data;
@@ -634,7 +634,9 @@ static SDL_Renderer *PS2_CreateRenderer(SDL_Window *window, Uint32 flags)
 
     data->gsGlobal = gsGlobal;
     dynamicVsync = SDL_GetHintBoolean(SDL_HINT_PS2_DYNAMIC_VSYNC, SDL_FALSE);
-    data->vsync = flags & SDL_RENDERER_PRESENTVSYNC ? (dynamicVsync ? 2 : 1) : 0;
+    if (SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE)) {
+        data->vsync = (dynamicVsync ? 2 : 1);
+    }
 
     renderer->WindowEvent = PS2_WindowEvent;
     renderer->CreateTexture = PS2_CreateTexture;
@@ -655,9 +657,13 @@ static SDL_Renderer *PS2_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->DestroyRenderer = PS2_DestroyRenderer;
     renderer->SetVSync = PS2_SetVSync;
     renderer->info = PS2_RenderDriver.info;
+    renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
     renderer->window = window;
 
+    if (data->vsync) {
+        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+    }
     return renderer;
 }
 

@@ -42,13 +42,13 @@
 #include <psp2/sysmodule.h>
 #endif
 
-static SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags);
+static SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props);
 
 static void VITA_GXM_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event);
 
 static SDL_bool VITA_GXM_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode);
 
-static int VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture);
+static int VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props);
 
 static int VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const SDL_Rect *rect, const void *pixels, int pitch);
@@ -209,7 +209,7 @@ static int VITA_GXM_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
+SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_Renderer *renderer;
     VITA_GXM_RenderData *data;
@@ -258,8 +258,9 @@ SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
 
     data->initialized = SDL_TRUE;
 
-    if (flags & SDL_RENDERER_PRESENTVSYNC) {
+    if (SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE)) {
         data->displayData.wait_vblank = SDL_TRUE;
+        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     } else {
         data->displayData.wait_vblank = SDL_FALSE;
     }
@@ -288,7 +289,7 @@ static SDL_bool VITA_GXM_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode
     return SDL_FALSE;
 }
 
-static int VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
+static int VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
     VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)SDL_calloc(1, sizeof(VITA_GXM_TextureData));

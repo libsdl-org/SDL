@@ -97,7 +97,7 @@ static int SW_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
     return SDL_SetError("Software renderer doesn't have an output surface");
 }
 
-static int SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
+static int SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     SDL_Surface *surface = SDL_CreateSurface(texture->w, texture->h, texture->format);
 
@@ -1147,7 +1147,7 @@ SDL_Renderer *SW_CreateRendererForSurface(SDL_Surface *surface)
     return renderer;
 }
 
-static SDL_Renderer *SW_CreateRenderer(SDL_Window *window, Uint32 flags)
+static SDL_Renderer *SW_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
 {
     const char *hint;
     SDL_Surface *surface;
@@ -1162,7 +1162,11 @@ static SDL_Renderer *SW_CreateRenderer(SDL_Window *window, Uint32 flags)
     }
 
     if (no_hint_set) {
-        SDL_SetHint(SDL_HINT_RENDER_VSYNC, (flags & SDL_RENDERER_PRESENTVSYNC) ? "1" : "0");
+        if (SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE)) {
+            SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
+        } else {
+            SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
+        }
     }
 
     surface = SDL_GetWindowSurface(window);

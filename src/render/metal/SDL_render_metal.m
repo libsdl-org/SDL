@@ -544,7 +544,7 @@ static SDL_bool METAL_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode bl
     return SDL_TRUE;
 }
 
-static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
+static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     @autoreleasepool {
         METAL_RenderData *data = (__bridge METAL_RenderData *)renderer->driverdata;
@@ -1653,7 +1653,7 @@ static SDL_MetalView GetWindowView(SDL_Window *window)
     return nil;
 }
 
-static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, Uint32 flags)
+static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
 {
     @autoreleasepool {
         SDL_Renderer *renderer = NULL;
@@ -1921,7 +1921,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, Uint32 flags)
 
 #if (defined(__MACOS__) && defined(MAC_OS_X_VERSION_10_13)) || TARGET_OS_MACCATALYST
         if (@available(macOS 10.13, *)) {
-            data.mtllayer.displaySyncEnabled = (flags & SDL_RENDERER_PRESENTVSYNC) != 0;
+            data.mtllayer.displaySyncEnabled = SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE);
             if (data.mtllayer.displaySyncEnabled) {
                 renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
             }

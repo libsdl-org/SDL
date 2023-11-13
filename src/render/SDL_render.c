@@ -804,14 +804,22 @@ static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Wind
 
 #endif /* !SDL_RENDER_DISABLED */
 
-SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 flags)
+
+SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
 {
 #ifndef SDL_RENDER_DISABLED
+    SDL_Window *window = SDL_GetProperty(props, "window", NULL);
+    SDL_Surface *surface = SDL_GetProperty(props, "surface", NULL);
+    const char *name = SDL_GetStringProperty(props, "name", NULL);
     SDL_Renderer *renderer = NULL;
     const int n = SDL_GetNumRenderDrivers();
     SDL_bool batching = SDL_TRUE;
     const char *hint;
     int i;
+
+    if (!window && surface) {
+        return SDL_CreateSoftwareRenderer(surface);
+    }
 
 #ifdef __ANDROID__
     Android_ActivityMutex_Lock_Running();
@@ -834,11 +842,7 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 fl
 
     hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
     if (hint && *hint) {
-        if (SDL_GetHintBoolean(SDL_HINT_RENDER_VSYNC, SDL_TRUE)) {
-            flags |= SDL_RENDERER_PRESENTVSYNC;
-        } else {
-            flags &= ~SDL_RENDERER_PRESENTVSYNC;
-        }
+        SDL_SetBooleanProperty(props, "present_vsync", SDL_GetHintBoolean(SDL_HINT_RENDER_VSYNC, SDL_TRUE));
     }
 
     if (!name) {
@@ -850,7 +854,7 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 fl
             const SDL_RenderDriver *driver = render_drivers[i];
             if (SDL_strcasecmp(name, driver->info.name) == 0) {
                 /* Create a new renderer instance */
-                renderer = driver->CreateRenderer(window, flags);
+                renderer = driver->CreateRenderer(window, props);
                 if (renderer) {
                     batching = SDL_FALSE;
                 }
@@ -860,13 +864,11 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 fl
     } else {
         for (i = 0; i < n; i++) {
             const SDL_RenderDriver *driver = render_drivers[i];
-            if ((driver->info.flags & flags) == flags) {
-                /* Create a new renderer instance */
-                renderer = driver->CreateRenderer(window, flags);
-                if (renderer) {
-                    /* Yay, we got one! */
-                    break;
-                }
+            /* Create a new renderer instance */
+            renderer = driver->CreateRenderer(window, props);
+            if (renderer) {
+                /* Yay, we got one! */
+                break;
             }
         }
     }
@@ -876,7 +878,7 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 fl
         goto error;
     }
 
-    if (flags & SDL_RENDERER_PRESENTVSYNC) {
+    if (SDL_GetBooleanProperty(props, "present_vsync", SDL_FALSE)) {
         renderer->wanted_vsync = SDL_TRUE;
 
         if (!(renderer->info.flags & SDL_RENDERER_PRESENTVSYNC)) {
@@ -954,6 +956,24 @@ error:
     SDL_SetError("SDL not built with rendering support");
     return NULL;
 #endif
+}
+
+SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 flags)
+{
+    SDL_Renderer *renderer;
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetProperty(props, "window", window);
+    if (flags & SDL_RENDERER_SOFTWARE) {
+        SDL_SetStringProperty(props, "name", "software");
+    } else {
+        SDL_SetStringProperty(props, "name", name);
+    }
+    if (flags & SDL_RENDERER_PRESENTVSYNC) {
+        SDL_SetBooleanProperty(props, "present_vsync", SDL_TRUE);
+    }
+    renderer = SDL_CreateRendererWithProperties(props);
+    SDL_DestroyProperties(props);
+    return renderer;
 }
 
 SDL_Renderer *SDL_CreateSoftwareRenderer(SDL_Surface *surface)
@@ -1116,9 +1136,13 @@ static SDL_ScaleMode SDL_GetScaleMode(void)
     }
 }
 
-SDL_Texture *SDL_CreateTexture(SDL_Renderer *renderer, Uint32 format, int access, int w, int h)
+SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_PropertiesID props)
 {
     SDL_Texture *texture;
+    Uint32 format = (Uint32)SDL_GetNumberProperty(props, "format", SDL_PIXELFORMAT_UNKNOWN);
+    int access = (int)SDL_GetNumberProperty(props, "access", SDL_TEXTUREACCESS_STATIC);
+    int w = (int)SDL_GetNumberProperty(props, "width", 0);
+    int h = (int)SDL_GetNumberProperty(props, "height", 0);
     SDL_bool texture_is_fourcc_and_target;
 
     CHECK_RENDERER_MAGIC(renderer, NULL);
@@ -1177,7 +1201,7 @@ SDL_Texture *SDL_CreateTexture(SDL_Renderer *renderer, Uint32 format, int access
     texture_is_fourcc_and_target = (access == SDL_TEXTUREACCESS_TARGET && SDL_ISPIXELFORMAT_FOURCC(texture->format));
 
     if (texture_is_fourcc_and_target == SDL_FALSE && IsSupportedFormat(renderer, format)) {
-        if (renderer->CreateTexture(renderer, texture) < 0) {
+        if (renderer->CreateTexture(renderer, texture, props) < 0) {
             SDL_DestroyTexture(texture);
             return NULL;
         }
@@ -1229,6 +1253,19 @@ SDL_Texture *SDL_CreateTexture(SDL_Renderer *renderer, Uint32 format, int access
             }
         }
     }
+    return texture;
+}
+
+SDL_Texture *SDL_CreateTexture(SDL_Renderer *renderer, Uint32 format, int access, int w, int h)
+{
+    SDL_Texture *texture;
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetNumberProperty(props, "format", format);
+    SDL_SetNumberProperty(props, "access", access);
+    SDL_SetNumberProperty(props, "width", w);
+    SDL_SetNumberProperty(props, "height", h);
+    texture = SDL_CreateTextureWithProperties(renderer, props);
+    SDL_DestroyProperties(props);
     return texture;
 }
 

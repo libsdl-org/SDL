@@ -1432,7 +1432,19 @@ static void D3D12_FreeSRVIndex(SDL_Renderer *renderer, SIZE_T index)
     rendererData->srvPoolHead = &rendererData->srvPoolNodes[index];
 }
 
-static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
+static int GetTextureProperty(SDL_PropertiesID props, const char *name, ID3D12Resource **texture)
+{
+    IUnknown *unknown = SDL_GetProperty(props, name, NULL);
+    if (unknown) {
+        HRESULT result = D3D_CALL(unknown, QueryInterface, D3D_GUID(SDL_IID_ID3D12Resource), (void **)texture);
+        if (FAILED(result)) {
+            return WIN_SetErrorFromHRESULT(name, result);
+        }
+    }
+    return 0;
+}
+
+static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     D3D12_RenderData *rendererData = (D3D12_RenderData *)renderer->driverdata;
     D3D12_TextureData *textureData;
@@ -1476,19 +1488,24 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     heapProps.CreationNodeMask = 1;
     heapProps.VisibleNodeMask = 1;
 
-    result = D3D_CALL(rendererData->d3dDevice, CreateCommittedResource,
-                      &heapProps,
-                      D3D12_HEAP_FLAG_NONE,
-                      &textureDesc,
-                      D3D12_RESOURCE_STATE_COPY_DEST,
-                      NULL,
-                      D3D_GUID(SDL_IID_ID3D12Resource),
-                      (void **)&textureData->mainTexture);
-    textureData->mainResourceState = D3D12_RESOURCE_STATE_COPY_DEST;
-    if (FAILED(result)) {
-        D3D12_DestroyTexture(renderer, texture);
-        return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateCommittedResource [texture]"), result);
+    if (GetTextureProperty(create_props, "d3d12.texture", &textureData->mainTexture) < 0) {
+        return -1;
     }
+    if (!textureData->mainTexture) {
+        result = D3D_CALL(rendererData->d3dDevice, CreateCommittedResource,
+                          &heapProps,
+                          D3D12_HEAP_FLAG_NONE,
+                          &textureDesc,
+                          D3D12_RESOURCE_STATE_COPY_DEST,
+                          NULL,
+                          D3D_GUID(SDL_IID_ID3D12Resource),
+                          (void **)&textureData->mainTexture);
+        if (FAILED(result)) {
+            D3D12_DestroyTexture(renderer, texture);
+            return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateCommittedResource [texture]"), result);
+        }
+    }
+    textureData->mainResourceState = D3D12_RESOURCE_STATE_COPY_DEST;
     SDL_SetProperty(SDL_GetTextureProperties(texture), "SDL.texture.d3d12.texture", textureData->mainTexture);
 #if SDL_HAVE_YUV
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
@@ -1498,34 +1515,44 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         textureDesc.Width = (textureDesc.Width + 1) / 2;
         textureDesc.Height = (textureDesc.Height + 1) / 2;
 
-        result = D3D_CALL(rendererData->d3dDevice, CreateCommittedResource,
-                          &heapProps,
-                          D3D12_HEAP_FLAG_NONE,
-                          &textureDesc,
-                          D3D12_RESOURCE_STATE_COPY_DEST,
-                          NULL,
-                          D3D_GUID(SDL_IID_ID3D12Resource),
-                          (void **)&textureData->mainTextureU);
-        textureData->mainResourceStateU = D3D12_RESOURCE_STATE_COPY_DEST;
-        if (FAILED(result)) {
-            D3D12_DestroyTexture(renderer, texture);
-            return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateCommittedResource [texture]"), result);
+        if (GetTextureProperty(create_props, "d3d12.texture_u", &textureData->mainTextureU) < 0) {
+            return -1;
         }
+        if (!textureData->mainTextureU) {
+            result = D3D_CALL(rendererData->d3dDevice, CreateCommittedResource,
+                              &heapProps,
+                              D3D12_HEAP_FLAG_NONE,
+                              &textureDesc,
+                              D3D12_RESOURCE_STATE_COPY_DEST,
+                              NULL,
+                              D3D_GUID(SDL_IID_ID3D12Resource),
+                              (void **)&textureData->mainTextureU);
+            if (FAILED(result)) {
+                D3D12_DestroyTexture(renderer, texture);
+                return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateCommittedResource [texture]"), result);
+            }
+        }
+        textureData->mainResourceStateU = D3D12_RESOURCE_STATE_COPY_DEST;
         SDL_SetProperty(SDL_GetTextureProperties(texture), "SDL.texture.d3d12.texture_u", textureData->mainTextureU);
 
-        result = D3D_CALL(rendererData->d3dDevice, CreateCommittedResource,
-                          &heapProps,
-                          D3D12_HEAP_FLAG_NONE,
-                          &textureDesc,
-                          D3D12_RESOURCE_STATE_COPY_DEST,
-                          NULL,
-                          D3D_GUID(SDL_IID_ID3D12Resource),
-                          (void **)&textureData->mainTextureV);
-        textureData->mainResourceStateV = D3D12_RESOURCE_STATE_COPY_DEST;
-        if (FAILED(result)) {
-            D3D12_DestroyTexture(renderer, texture);
-            return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateCommittedResource [texture]"), result);
+        if (GetTextureProperty(create_props, "d3d12.texture_v", &textureData->mainTextureV) < 0) {
+            return -1;
         }
+        if (!textureData->mainTextureV) {
+            result = D3D_CALL(rendererData->d3dDevice, CreateCommittedResource,
+                              &heapProps,
+                              D3D12_HEAP_FLAG_NONE,
+                              &textureDesc,
+                              D3D12_RESOURCE_STATE_COPY_DEST,
+                              NULL,
+                              D3D_GUID(SDL_IID_ID3D12Resource),
+                              (void **)&textureData->mainTextureV);
+            if (FAILED(result)) {
+                D3D12_DestroyTexture(renderer, texture);
+                return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateCommittedResource [texture]"), result);
+            }
+        }
+        textureData->mainResourceStateV = D3D12_RESOURCE_STATE_COPY_DEST;
         SDL_SetProperty(SDL_GetTextureProperties(texture), "SDL.texture.d3d12.texture_v", textureData->mainTextureV);
     }
 
@@ -2943,7 +2970,7 @@ static int D3D12_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, Uint32 flags)
+SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_Renderer *renderer;
     D3D12_RenderData *data;
@@ -2990,7 +3017,7 @@ SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
 
-    if (flags & SDL_RENDERER_PRESENTVSYNC) {
+    if (SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE)) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     }
     renderer->SetVSync = D3D12_SetVSync;

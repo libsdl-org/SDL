@@ -478,7 +478,7 @@ static void PSP_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event
 {
 }
 
-static int PSP_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
+static int PSP_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     PSP_RenderData *data = renderer->driverdata;
     PSP_TextureData *psp_texture = (PSP_TextureData *)SDL_calloc(1, sizeof(*psp_texture));
@@ -1290,9 +1290,8 @@ static int PSP_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, Uint32 flags)
+SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
 {
-
     SDL_Renderer *renderer;
     PSP_RenderData *data;
     int pixelformat;
@@ -1341,7 +1340,7 @@ SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, Uint32 flags)
     data->most_recent_target = NULL;
     data->least_recent_target = NULL;
 
-    if (flags & SDL_RENDERER_PRESENTVSYNC) {
+    if (SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE)) {
         data->vsync = SDL_TRUE;
     } else {
         data->vsync = SDL_FALSE;
@@ -1400,6 +1399,9 @@ SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, Uint32 flags)
     sceKernelRegisterSubIntrHandler(PSP_VBLANK_INT, 0, psp_on_vblank, data);
     sceKernelEnableSubIntr(PSP_VBLANK_INT, 0);
 
+    if (data->vsync) {
+        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+    }
     return renderer;
 }
 
