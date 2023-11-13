@@ -151,11 +151,13 @@ typedef enum
  * throughout a session. To track pens across sessions (program restart), use
  * ::SDL_GUID .
  *
+ * \param count The number of pens in the array (number of array elements minus 1, i.e., not
+ *     counting the terminator 0).
  * \returns A 0 terminated array of ::SDL_PenID values, or NULL on error. The
  *          array must be freed with ::SDL_free(). On a NULL return,
  *          ::SDL_GetError() is set.
  *
- * \since This function is available since SDL 3.TBD
+ * \since This function is available since SDL 3.0.0
  */
 extern DECLSPEC SDL_PenID *SDLCALL SDL_GetPens(int *count);
 
@@ -166,13 +168,16 @@ extern DECLSPEC SDL_PenID *SDLCALL SDL_GetPens(int *count);
  * default values.
  *
  * \param instance_id The pen to query.
+ * \param x Out-mode parameter for pen x coordinate.  May be NULL.
+ * \param y Out-mode parameter for pen y coordinate.  May be NULL.
+ * \param axes Out-mode parameter for axis information.  May be null.  The axes are in the same order as ::SDL_PenAxis.
  * \param num_axes Maximum number of axes to write to "axes".
  * \returns a bit mask with the current pen button states (::SDL_BUTTON_LMASK
  *          etc.), possibly ::SDL_PEN_DOWN_MASK, and exactly one of
  *          ::SDL_PEN_INK_MASK or ::SDL_PEN_ERASER_MASK , or 0 on error (see
  *          ::SDL_GetError()).
  *
- * \since This function is available since SDL 3.TBD
+ * \since This function is available since SDL 3.0.0
  */
 extern DECLSPEC Uint32 SDLCALL SDL_GetPenStatus(SDL_PenID instance_id, float *x, float *y, float *axes, size_t num_axes);
 
@@ -183,7 +188,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetPenStatus(SDL_PenID instance_id, float *x,
  * \returns A valid ::SDL_PenID, or ::SDL_PEN_INVALID if there is no matching
  *          SDL_PenID.
  *
- * \since This function is available since SDL 3.TBD
+ * \since This function is available since SDL 3.0.0
  *
  * \sa SDL_GUID
  */
@@ -196,7 +201,7 @@ extern DECLSPEC SDL_PenID SDLCALL SDL_GetPenFromGUID(SDL_GUID guid);
  * \returns The corresponding pen GUID; persistent across multiple sessions.
  *          If "instance_id" is ::SDL_PEN_INVALID, returns an all-zeroes GUID.
  *
- * \since This function is available since SDL 3.TBD
+ * \since This function is available since SDL 3.0.0
  *
  * \sa SDL_PenForID
  */
@@ -212,7 +217,7 @@ extern DECLSPEC SDL_GUID SDLCALL SDL_GetPenGUID(SDL_PenID instance_id);
  * \returns SDL_TRUE if "instance_id" is valid and the corresponding pen is
  *          attached, or SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 3.TBD
+ * \since This function is available since SDL 3.0.0
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_PenConnected(SDL_PenID instance_id);
 
@@ -228,7 +233,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_PenConnected(SDL_PenID instance_id);
  *          deallocated. The pointer remains valid until SDL is shut down.
  *          Returns NULL on error (cf. ::SDL_GetError())
  *
- * \since This function is available since SDL 3.TBD
+ * \since This function is available since SDL 3.0.0
  */
 extern DECLSPEC const char *SDLCALL SDL_GetPenName(SDL_PenID instance_id);
 
@@ -246,9 +251,10 @@ typedef struct SDL_PenCapabilityInfo
  * Retrieves capability flags for a given ::SDL_PenID.
  *
  * \param instance_id The pen to query.
- * \returns a set of capability flags, cf. \link SDL_PEN_CAPABILITIES
+ * \param capabilities Detail information about pen capabilities, such as the number of buttons
+ * \returns a set of capability flags, cf. SDL_PEN_CAPABILITIES
  *
- * \since This function is available since SDL 3.TBD
+ * \since This function is available since SDL 3.0.0
  */
 extern DECLSPEC Uint32 SDLCALL SDL_GetPenCapabilities(SDL_PenID instance_id, SDL_PenCapabilityInfo *capabilities);
 
@@ -263,7 +269,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetPenCapabilities(SDL_PenID instance_id, SDL
  *          pen tip on ::SDL_EVENT_PEN_DOWN, or the flag ::SDL_PEN_ERASER_MASK
  *          in the pen state.
  *
- * \since This function is available since SDL 3.TBD
+ * \since This function is available since SDL 3.0.0
  */
 extern DECLSPEC SDL_PenSubtype SDLCALL SDL_GetPenType(SDL_PenID instance_id);
 
