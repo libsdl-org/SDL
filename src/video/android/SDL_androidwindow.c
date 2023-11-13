@@ -35,7 +35,7 @@
 /* Currently only one window */
 SDL_Window *Android_Window = NULL;
 
-int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_WindowData *data;
     int retval = 0;

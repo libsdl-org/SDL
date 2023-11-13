@@ -141,8 +141,7 @@ typedef enum
 #endif
 @end
 
-extern int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int Cocoa_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
+extern int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void Cocoa_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 extern int Cocoa_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon);
 extern int Cocoa_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);

@@ -181,7 +181,6 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->SendWakeupEvent = X11_SendWakeupEvent;
 
     device->CreateSDLWindow = X11_CreateWindow;
-    device->CreateSDLWindowFrom = X11_CreateWindowFrom;
     device->SetWindowTitle = X11_SetWindowTitle;
     device->SetWindowIcon = X11_SetWindowIcon;
     device->SetWindowPosition = X11_SetWindowPosition;

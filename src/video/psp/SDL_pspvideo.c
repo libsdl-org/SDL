@@ -185,7 +185,7 @@ int PSP_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Di
         }                                      \
     } while (0)
 
-int PSP_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+int PSP_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_WindowData *wdata;
 

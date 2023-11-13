@@ -89,42 +89,41 @@ typedef enum
 /**
  *  The type used to identify a window
  *
- *  \sa SDL_CreateWindow()
- *  \sa SDL_CreateWindowFrom()
- *  \sa SDL_CreateWindowWithPosition()
- *  \sa SDL_DestroyWindow()
- *  \sa SDL_FlashWindow()
- *  \sa SDL_GetWindowFlags()
- *  \sa SDL_GetWindowGrab()
- *  \sa SDL_GetWindowKeyboardGrab()
- *  \sa SDL_GetWindowMouseGrab()
- *  \sa SDL_GetWindowPosition()
- *  \sa SDL_GetWindowSize()
- *  \sa SDL_GetWindowTitle()
- *  \sa SDL_HideWindow()
- *  \sa SDL_MaximizeWindow()
- *  \sa SDL_MinimizeWindow()
- *  \sa SDL_RaiseWindow()
- *  \sa SDL_RestoreWindow()
- *  \sa SDL_SetWindowFullscreen()
- *  \sa SDL_SetWindowGrab()
- *  \sa SDL_SetWindowKeyboardGrab()
- *  \sa SDL_SetWindowMouseGrab()
- *  \sa SDL_SetWindowIcon()
- *  \sa SDL_SetWindowPosition()
- *  \sa SDL_SetWindowSize()
- *  \sa SDL_SetWindowBordered()
- *  \sa SDL_SetWindowResizable()
- *  \sa SDL_SetWindowTitle()
- *  \sa SDL_ShowWindow()
- *  \sa SDL_ShowWindowSystemMenu()
+ *  \sa SDL_CreateWindow
+ *  \sa SDL_CreateWindowWithProperties
+ *  \sa SDL_DestroyWindow
+ *  \sa SDL_FlashWindow
+ *  \sa SDL_GetWindowFlags
+ *  \sa SDL_GetWindowGrab
+ *  \sa SDL_GetWindowKeyboardGrab
+ *  \sa SDL_GetWindowMouseGrab
+ *  \sa SDL_GetWindowPosition
+ *  \sa SDL_GetWindowSize
+ *  \sa SDL_GetWindowTitle
+ *  \sa SDL_HideWindow
+ *  \sa SDL_MaximizeWindow
+ *  \sa SDL_MinimizeWindow
+ *  \sa SDL_RaiseWindow
+ *  \sa SDL_RestoreWindow
+ *  \sa SDL_SetWindowFullscreen
+ *  \sa SDL_SetWindowGrab
+ *  \sa SDL_SetWindowKeyboardGrab
+ *  \sa SDL_SetWindowMouseGrab
+ *  \sa SDL_SetWindowIcon
+ *  \sa SDL_SetWindowPosition
+ *  \sa SDL_SetWindowSize
+ *  \sa SDL_SetWindowBordered
+ *  \sa SDL_SetWindowResizable
+ *  \sa SDL_SetWindowTitle
+ *  \sa SDL_ShowWindow
+ *  \sa SDL_ShowWindowSystemMenu
  */
 typedef struct SDL_Window SDL_Window;
 
 /**
  *  The flags on a window
  *
- *  \sa SDL_GetWindowFlags()
+ *  \sa SDL_GetWindowFlags
  */
 typedef enum
 {
@@ -144,8 +143,8 @@ typedef enum
     SDL_WINDOW_MOUSE_CAPTURE        = 0x00004000,   /**< window has mouse captured (unrelated to MOUSE_GRABBED) */
     SDL_WINDOW_ALWAYS_ON_TOP        = 0x00008000,   /**< window should always be above others */
     SDL_WINDOW_UTILITY              = 0x00020000,   /**< window should be treated as a utility window, not showing in the task bar and window list */
-    SDL_WINDOW_TOOLTIP              = 0x00040000,   /**< window should be treated as a tooltip and must be created using SDL_CreatePopupWindow() */
-    SDL_WINDOW_POPUP_MENU           = 0x00080000,   /**< window should be treated as a popup menu and must be created using SDL_CreatePopupWindow() */
+    SDL_WINDOW_TOOLTIP              = 0x00040000,   /**< window should be treated as a tooltip */
+    SDL_WINDOW_POPUP_MENU           = 0x00080000,   /**< window should be treated as a popup menu */
     SDL_WINDOW_KEYBOARD_GRABBED     = 0x00100000,   /**< window has grabbed keyboard input */
     SDL_WINDOW_VULKAN               = 0x10000000,   /**< window usable for Vulkan surface */
     SDL_WINDOW_METAL                = 0x20000000,   /**< window usable for Metal view */
@@ -713,11 +712,6 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
  * window is created and should be queried again if you get an
  * SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event.
  *
- * If the window is set fullscreen, the width and height parameters `w` and
- * `h` will not be used. However, invalid size parameters (e.g. too large) may
- * still fail. Window size is actually limited to 16384 x 16384 for all
- * platforms at window creation.
- *
  * If the window is created with any of the SDL_WINDOW_OPENGL or
  * SDL_WINDOW_VULKAN flags, then the corresponding LoadLibrary function
  * (SDL_GL_LoadLibrary or SDL_Vulkan_LoadLibrary) is called and the
@@ -743,78 +737,10 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreatePopupWindow
- * \sa SDL_CreateWindowFrom
- * \sa SDL_CreateWindowWithPosition
+ * \sa SDL_CreateWindowWithProperties
  * \sa SDL_DestroyWindow
  */
 extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int w, int h, Uint32 flags);
-
-/**
- * Create a window with the specified position, dimensions, and flags.
- *
- * `flags` may be any of the following OR'd together:
- *
- * - `SDL_WINDOW_FULLSCREEN`: fullscreen window at desktop resolution
- * - `SDL_WINDOW_OPENGL`: window usable with an OpenGL context
- * - `SDL_WINDOW_VULKAN`: window usable with a Vulkan instance
- * - `SDL_WINDOW_METAL`: window usable with a Metal instance
- * - `SDL_WINDOW_HIDDEN`: window is not visible
- * - `SDL_WINDOW_BORDERLESS`: no window decoration
- * - `SDL_WINDOW_RESIZABLE`: window can be resized
- * - `SDL_WINDOW_MINIMIZED`: window is minimized
- * - `SDL_WINDOW_MAXIMIZED`: window is maximized
- * - `SDL_WINDOW_MOUSE_GRABBED`: window has grabbed mouse focus
- *
- * The SDL_Window is implicitly shown if SDL_WINDOW_HIDDEN is not set.
- *
- * On Apple's macOS, you **must** set the NSHighResolutionCapable Info.plist
- * property to YES, otherwise you will not receive a High-DPI OpenGL canvas.
- *
- * The window pixel size may differ from its window coordinate size if the
- * window is on a high pixel density display. Use SDL_GetWindowSize() to query
- * the client area's size in window coordinates, and
- * SDL_GetWindowSizeInPixels() or SDL_GetRenderOutputSize() to query the
- * drawable size in pixels. Note that the drawable size can vary after the
- * window is created and should be queried again if you get an
- * SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event.
- *
- * If the window is set fullscreen, the width and height parameters `w` and
- * `h` will not be used. However, invalid size parameters (e.g. too large) may
- * still fail. Window size is actually limited to 16384 x 16384 for all
- * platforms at window creation.
- *
- * If the window is created with any of the SDL_WINDOW_OPENGL or
- * SDL_WINDOW_VULKAN flags, then the corresponding LoadLibrary function
- * (SDL_GL_LoadLibrary or SDL_Vulkan_LoadLibrary) is called and the
- * corresponding UnloadLibrary function is called by SDL_DestroyWindow().
- *
- * If SDL_WINDOW_VULKAN is specified and there isn't a working Vulkan driver,
- * SDL_CreateWindow() will fail because SDL_Vulkan_LoadLibrary() will fail.
- *
- * If SDL_WINDOW_METAL is specified on an OS that does not support Metal,
- * SDL_CreateWindow() will fail.
- *
- * On non-Apple devices, SDL requires you to either not link to the Vulkan
- * loader or link to a dynamic library version. This limitation may be removed
- * in a future version of SDL.
- *
- * \param title the title of the window, in UTF-8 encoding
- * \param x the x position of the window, or `SDL_WINDOWPOS_CENTERED`
- * \param y the y position of the window, or `SDL_WINDOWPOS_CENTERED`
- * \param w the width of the window
- * \param h the height of the window
- * \param flags 0, or one or more SDL_WindowFlags OR'd together
- * \returns the window that was created or NULL on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_CreatePopupWindow
- * \sa SDL_CreateWindow
- * \sa SDL_CreateWindowFrom
- * \sa SDL_DestroyWindow
- */
-extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowWithPosition(const char *title, int x, int y, int w, int h, Uint32 flags);
 
 /**
  * Create a child popup window of the specified parent window.
@@ -824,10 +750,12 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowWithPosition(const char *tit
  * input events. - 'SDL_WINDOW_POPUP_MENU': The popup window is a popup menu.
  * The topmost popup menu will implicitly gain the keyboard focus.
  *
- * The following flags are not relevant to popup window creation and will be
- * ignored: - 'SDL_WINDOW_MINIMIZED' - 'SDL_WINDOW_MAXIMIZED' -
- * 'SDL_WINDOW_FULLSCREEN' - 'SDL_WINDOW_BORDERLESS' -
- * 'SDL_WINDOW_SKIP_TASKBAR'
+ * The following flags are not relevant to popup window creation and will be ignored:
+ *
+ * - 'SDL_WINDOW_MINIMIZED'
+ * - 'SDL_WINDOW_MAXIMIZED'
+ * - 'SDL_WINDOW_FULLSCREEN'
+ * - 'SDL_WINDOW_BORDERLESS'
  *
  * The parent parameter **must** be non-null and a valid window. The parent of
  * a popup window can be either a regular, toplevel window, or another popup
@@ -862,45 +790,60 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowWithPosition(const char *tit
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateWindow
+ * \sa SDL_CreateWindowWithProperties
  * \sa SDL_DestroyWindow
  * \sa SDL_GetWindowParent
  */
 extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, Uint32 flags);
 
 /**
- * Create an SDL window from properties representing an existing native
- * window.
+ * Create a window with the specified properties.
  *
  * These are the supported properties:
  *
+ * - "always-on-top" (boolean) - true if the window should be always on top
+ * - "borderless" (boolean) - true if the window has no window decoration
+ * - "focusable" (boolean) - true if the window should accept keyboard input (defaults true)
+ * - "fullscreen" (boolean) - true if the window should start in fullscreen mode at desktop resolution
+ * - "height" (number) - the height of the window
+ * - "hidden" (boolean) - true if the window should start hidden
+ * - "high-pixel-density" (boolean) - true if the window uses a high pixel density buffer if possible
+ * - "maximized" (boolean) - true if the window should start maximized
+ * - "menu" (boolean) - true if the window is a popup menu
+ * - "metal" (string) - true if the window will be used with Metal rendering
+ * - "minimized" (boolean) - true if the window should start minimized
+ * - "mouse-grabbed" (boolean) - true if the window starts with grabbed mouse focus
+ * - "opengl" (boolean) - true if the window will be used with OpenGL rendering
+ * - "parent" (pointer) - an SDL_Window that will be the parent of this window, required for windows with the "toolip" and "menu" properties
+ * - "resizable" (boolean) - true if the window should be resizable
+ * - "title" (string) - the title of the window, in UTF-8 encoding
+ * - "transparent" (string) - true if the window show transparent in the areas with alpha of 0
+ * - "tooltip" (boolean) - true if the window is a tooltip
+ * - "utility" (boolean) - true if the window is a utility window, not showing in the task bar and window list
+ * - "vulkan" (string) - true if the window will be used with Vulkan rendering
+ * - "width" (number) - the width of the window
+ * - "x" (number) - the x position of the window, or `SDL_WINDOWPOS_CENTERED`, defaults to `SDL_WINDOWPOS_UNDEFINED`. This is relative to the parent for windows with the "parent" property set.
+ * - "y" (number) - the y position of the window, or `SDL_WINDOWPOS_CENTERED`, defaults to `SDL_WINDOWPOS_UNDEFINED`. This is relative to the parent for windows with the "parent" property set.
+ *
  * On macOS:
  *
- * ```
- * "cocoa.window" (pointer) - the (__unsafe_unretained) NSWindow associated with the window
- * "cocoa.view" (pointer) - optional, the (__unsafe_unretained) NSView associated with the window, defaults to [window contentView]
- * ```
+ * - "native.cocoa.window" (pointer) - the (__unsafe_unretained) NSWindow associated with the window, if you want to wrap an existing window.
+ * - "native.cocoa.view" (pointer) - the (__unsafe_unretained) NSView associated with the window, defaults to [window contentView]
  *
  * On Windows:
  *
- * ```
- * "win32.hwnd" (pointer) - the HWND associated with the window
- * "win32.pixel_format_hwnd" (pointer) - optional, another window to share pixel format with, useful for OpenGL windows
- * ```
+ * - "native.win32.hwnd" (pointer) - the HWND associated with the window, if you want to wrap an existing window.
+ * - "native.win32.pixel_format_hwnd" (pointer) - optional, another window to share pixel format with, useful for OpenGL windows
  *
  * On X11:
  *
- * ```
- * "x11.window" (number) - the X11 Window associated with the window
- * ```
+ * - "native.x11.window" (number) - the X11 Window associated with the window, if you want to wrap an existing window.
  *
- * On all platforms:
+ * The SDL_Window is implicitly shown if the "hidden" property is not set.
  *
- * ```
- * "opengl" (boolean) - optional, true if the window will be used with OpenGL rendering
- * "vulkan" (boolean) - optional, true if the window will be used with Vulkan rendering
- * ```
+ * Windows with the "tooltip" and "menu" properties are popup windows and have the behaviors and guidelines outlined in `SDL_CreatePopupWindow()`.
  *
- * \param props a set of properties describing the native window and options
+ * \param props the properties to use
  * \returns the window that was created or NULL on failure; call
  *          SDL_GetError() for more information.
  *
@@ -909,7 +852,7 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, in
  * \sa SDL_CreateWindow
  * \sa SDL_DestroyWindow
  */
-extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowFrom(SDL_PropertiesID props);
+extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowWithProperties(SDL_PropertiesID props);
 
 /**
  * Get the numeric ID of a window.
@@ -1912,8 +1855,9 @@ extern DECLSPEC int SDLCALL SDL_FlashWindow(SDL_Window *window, SDL_FlashOperati
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_CreatePopupWindow
  * \sa SDL_CreateWindow
- * \sa SDL_CreateWindowFrom
+ * \sa SDL_CreateWindowWithProperties
  */
 extern DECLSPEC void SDLCALL SDL_DestroyWindow(SDL_Window *window);
 

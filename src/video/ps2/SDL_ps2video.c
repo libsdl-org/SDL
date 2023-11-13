@@ -55,7 +55,7 @@ static void PS2_DeleteDevice(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
-static int PS2_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+static int PS2_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_SetKeyboardFocus(window);
 

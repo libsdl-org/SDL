@@ -36,7 +36,7 @@ static int AddN3DSDisplay(gfxScreen_t screen);
 static int N3DS_VideoInit(SDL_VideoDevice *_this);
 static void N3DS_VideoQuit(SDL_VideoDevice *_this);
 static int N3DS_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
-static int N3DS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
+static int N3DS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 static void N3DS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
 struct SDL_DisplayData
@@ -150,7 +150,7 @@ static int N3DS_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *displ
     return 0;
 }
 
-static int N3DS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+static int N3DS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_DisplayData *display_data;
     SDL_WindowData *window_data = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));

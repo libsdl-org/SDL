@@ -74,7 +74,7 @@ static int WINRT_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *displa
 static void WINRT_VideoQuit(SDL_VideoDevice *_this);
 
 /* Window functions */
-static int WINRT_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
+static int WINRT_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 static void WINRT_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
 static void WINRT_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
 static void WINRT_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
@@ -581,7 +581,7 @@ static bool WINRT_IsCoreWindowActive(CoreWindow ^ coreWindow)
     return true;
 }
 
-int WINRT_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+int WINRT_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     // Make sure that only one window gets created, at least until multimonitor
     // support is added.

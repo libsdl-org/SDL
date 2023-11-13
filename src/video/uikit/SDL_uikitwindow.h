@@ -26,7 +26,7 @@
 #import "SDL_uikitview.h"
 #import "SDL_uikitviewcontroller.h"
 
-extern int UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern int UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void UIKit_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 extern void UIKit_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void UIKit_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);

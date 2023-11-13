@@ -148,8 +148,8 @@ int main(int argc, char *argv[])
         quit(3);
     }
     props = SDL_CreateProperties();
-    SDL_SetProperty(props, "data", native_window);
-    window = SDL_CreateWindowFrom(props);
+    SDL_SetProperty(props, "native.data", native_window);
+    window = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);
     if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create SDL window: %s\n", SDL_GetError());

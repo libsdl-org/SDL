@@ -1844,9 +1844,59 @@ static int SDL_DllNotSupported(const char *name)
     return SDL_SetError("No dynamic %s support in current SDL video driver (%s)", name, _this->name);
 }
 
-static SDL_Window *SDL_CreateWindowInternal(const char *title, int x, int y, int w, int h, SDL_Window *parent, Uint32 flags)
+static struct {
+    const char *property_name;
+    Uint32 flag;
+    SDL_bool invert_value;
+} SDL_WindowFlagProperties[] = {
+    { "always-on-top",      SDL_WINDOW_ALWAYS_ON_TOP,       SDL_FALSE },
+    { "borderless",         SDL_WINDOW_BORDERLESS,          SDL_FALSE },
+    { "focusable",          SDL_WINDOW_NOT_FOCUSABLE,       SDL_TRUE },
+    { "fullscreen",         SDL_WINDOW_FULLSCREEN,          SDL_FALSE },
+    { "hidden",             SDL_WINDOW_HIDDEN,              SDL_FALSE },
+    { "high-pixel-density", SDL_WINDOW_HIGH_PIXEL_DENSITY,  SDL_FALSE },
+    { "maximized",          SDL_WINDOW_MAXIMIZED,           SDL_FALSE },
+    { "menu",               SDL_WINDOW_POPUP_MENU,          SDL_FALSE },
+    { "metal",              SDL_WINDOW_METAL,               SDL_FALSE },
+    { "minimized",          SDL_WINDOW_MINIMIZED,           SDL_FALSE },
+    { "mouse-grabbed",      SDL_WINDOW_MOUSE_GRABBED,       SDL_FALSE },
+    { "opengl",             SDL_WINDOW_OPENGL,              SDL_FALSE },
+    { "resizable",          SDL_WINDOW_RESIZABLE,           SDL_FALSE },
+    { "transparent",        SDL_WINDOW_TRANSPARENT,         SDL_FALSE },
+    { "tooltip",            SDL_WINDOW_TOOLTIP,             SDL_FALSE },
+    { "utility",            SDL_WINDOW_UTILITY,             SDL_FALSE },
+    { "vulkan",             SDL_WINDOW_VULKAN,              SDL_FALSE }
+};
+
+static Uint32 SDL_GetWindowFlagProperties(SDL_PropertiesID props)
+{
+    unsigned i;
+    Uint32 flags = (Uint32)SDL_GetNumberProperty(props, "flags", 0);
+
+    for (i = 0; i < SDL_arraysize(SDL_WindowFlagProperties); ++i) {
+        if (SDL_WindowFlagProperties[i].invert_value) {
+            if (!SDL_GetBooleanProperty(props, SDL_WindowFlagProperties[i].property_name, SDL_TRUE)) {
+                flags |= SDL_WindowFlagProperties[i].flag;
+            }
+        } else {
+            if (SDL_GetBooleanProperty(props, SDL_WindowFlagProperties[i].property_name, SDL_FALSE)) {
+                flags |= SDL_WindowFlagProperties[i].flag;
+            }
+        }
+    }
+    return flags;
+}
+
+SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
 {
     SDL_Window *window;
+    const char *title = SDL_GetStringProperty(props, "title", NULL);
+    int x = (int)SDL_GetNumberProperty(props, "x", SDL_WINDOWPOS_UNDEFINED);
+    int y = (int)SDL_GetNumberProperty(props, "y", SDL_WINDOWPOS_UNDEFINED);
+    int w = (int)SDL_GetNumberProperty(props, "width", 0);
+    int h = (int)SDL_GetNumberProperty(props, "height", 0);
+    SDL_Window *parent = SDL_GetProperty(props, "parent", NULL);
+    Uint32 flags = SDL_GetWindowFlagProperties(props);
     Uint32 type_flags, graphics_flags;
     SDL_bool undefined_x = SDL_FALSE;
     SDL_bool undefined_y = SDL_FALSE;
@@ -1863,22 +1913,32 @@ static SDL_Window *SDL_CreateWindowInternal(const char *title, int x, int y, int
         }
     }
 
-    /* Make sure the display list is up to date for window placement */
-    if (_this->RefreshDisplays) {
-        _this->RefreshDisplays(_this);
+    if ((flags & (SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU)) != 0) {
+        if (!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_HAS_POPUP_WINDOW_SUPPORT)) {
+            SDL_Unsupported();
+            return NULL;
+        }
+
+        /* Tooltip and popup menu window must specify a parent window */
+        if (!parent || parent->magic != &_this->window_magic) {
+            SDL_SetError("Tooltip and popup menu windows must specify a parent window");
+            return NULL;
+        }
+
+        /* Remove invalid flags */
+        flags &= ~(SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS);
     }
 
-    /* ensure no more than one of these flags is set */
+    /* Ensure no more than one of these flags is set */
     type_flags = flags & (SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU);
     if (type_flags & (type_flags - 1)) {
         SDL_SetError("Conflicting window type flags specified: 0x%.8x", (unsigned int)type_flags);
         return NULL;
     }
 
-    /* Tooltip and popup menu window must specify a parent window */
-    if (!parent && ((type_flags & SDL_WINDOW_TOOLTIP) || (type_flags & SDL_WINDOW_POPUP_MENU))) {
-        SDL_SetError("Tooltip and popup menu windows must specify a parent window");
-        return NULL;
+    /* Make sure the display list is up to date for window placement */
+    if (_this->RefreshDisplays) {
+        _this->RefreshDisplays(_this);
     }
 
     /* Some platforms can't create zero-sized windows */
@@ -1887,14 +1947,6 @@ static SDL_Window *SDL_CreateWindowInternal(const char *title, int x, int y, int
     }
     if (h < 1) {
         h = 1;
-    }
-
-    /* Some platforms blow up if the windows are too large. Raise it later? */
-    if (w > 16384) {
-        w = 16384;
-    }
-    if (h > 16384) {
-        h = 16384;
     }
 
     if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISUNDEFINED(y) ||
@@ -2013,7 +2065,7 @@ static SDL_Window *SDL_CreateWindowInternal(const char *title, int x, int y, int
         parent->first_child = window;
     }
 
-    if (_this->CreateSDLWindow && _this->CreateSDLWindow(_this, window) < 0) {
+    if (_this->CreateSDLWindow && _this->CreateSDLWindow(_this, window, props) < 0) {
         SDL_DestroyWindow(window);
         return NULL;
     }
@@ -2057,28 +2109,23 @@ static SDL_Window *SDL_CreateWindowInternal(const char *title, int x, int y, int
 
 SDL_Window *SDL_CreateWindow(const char *title, int w, int h, Uint32 flags)
 {
-    return SDL_CreateWindowInternal(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w , h, NULL, flags);
-}
-
-SDL_Window *SDL_CreateWindowWithPosition(const char *title, int x, int y, int w, int h, Uint32 flags)
-{
-    return SDL_CreateWindowInternal(title, x, y, w , h, NULL, flags);
+    SDL_Window *window;
+    SDL_PropertiesID props = SDL_CreateProperties();
+    if (title && *title) {
+        SDL_SetStringProperty(props, "title", title);
+    }
+    SDL_SetNumberProperty(props, "width", w);
+    SDL_SetNumberProperty(props, "height", h);
+    SDL_SetNumberProperty(props, "flags", flags);
+    window = SDL_CreateWindowWithProperties(props);
+    SDL_DestroyProperties(props);
+    return window;
 }
 
 SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, Uint32 flags)
 {
-    if (!_this) {
-        SDL_UninitializedVideo();
-        return NULL;
-    }
-
-    if (!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_HAS_POPUP_WINDOW_SUPPORT)) {
-        SDL_Unsupported();
-        return NULL;
-    }
-
-    /* Parent must be a valid window */
-    CHECK_WINDOW_MAGIC(parent, NULL);
+    SDL_Window *window;
+    SDL_PropertiesID props = SDL_CreateProperties();
 
     /* Popups must specify either the tooltip or popup menu window flags */
     if (!(flags & (SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU))) {
@@ -2086,81 +2133,14 @@ SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y
         return NULL;
     }
 
-    /* Remove invalid flags */
-    flags &= ~(SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS);
-
-    return SDL_CreateWindowInternal(NULL, offset_x, offset_y, w, h, parent, flags);
-}
-
-SDL_Window *SDL_CreateWindowFrom(SDL_PropertiesID props)
-{
-    SDL_Window *window;
-    Uint32 flags = SDL_WINDOW_FOREIGN;
-
-    if (!props) {
-        SDL_InvalidParamError("props");
-        return NULL;
-    }
-    if (!_this) {
-        SDL_UninitializedVideo();
-        return NULL;
-    }
-    if (!_this->CreateSDLWindowFrom) {
-        SDL_Unsupported();
-        return NULL;
-    }
-
-    if (SDL_GetBooleanProperty(props, "opengl", SDL_FALSE)) {
-        if (!_this->GL_CreateContext) {
-            SDL_ContextNotSupported("OpenGL");
-            return NULL;
-        }
-        if (SDL_GL_LoadLibrary(NULL) < 0) {
-            return NULL;
-        }
-        flags |= SDL_WINDOW_OPENGL;
-    }
-
-    if (SDL_GetBooleanProperty(props, "vulkan", SDL_FALSE)) {
-        if (!_this->Vulkan_CreateSurface) {
-            SDL_ContextNotSupported("Vulkan");
-            return NULL;
-        }
-        if (flags & SDL_WINDOW_OPENGL) {
-            SDL_SetError("Vulkan and OpenGL not supported on same window");
-            return NULL;
-        }
-        if (SDL_Vulkan_LoadLibrary(NULL) < 0) {
-            return NULL;
-        }
-        flags |= SDL_WINDOW_VULKAN;
-    }
-
-    window = (SDL_Window *)SDL_calloc(1, sizeof(*window));
-    if (!window) {
-        SDL_OutOfMemory();
-        return NULL;
-    }
-    window->magic = &_this->window_magic;
-    window->id = SDL_GetNextObjectID();
-    window->flags = flags;
-    window->is_destroying = SDL_FALSE;
-    window->display_scale = 1.0f;
-    window->opacity = 1.0f;
-    window->next = _this->windows;
-    if (_this->windows) {
-        _this->windows->prev = window;
-    }
-    _this->windows = window;
-
-    if (_this->CreateSDLWindowFrom(_this, window, props) < 0) {
-        SDL_DestroyWindow(window);
-        return NULL;
-    }
-
-    window->last_displayID = SDL_GetDisplayForWindow(window);
-    PrepareDragAndDropSupport(window);
-
+    SDL_SetProperty(props, "parent", parent);
+    SDL_SetNumberProperty(props, "x", offset_x);
+    SDL_SetNumberProperty(props, "y", offset_y);
+    SDL_SetNumberProperty(props, "width", w);
+    SDL_SetNumberProperty(props, "height", h);
+    SDL_SetNumberProperty(props, "flags", flags);
+    window = SDL_CreateWindowWithProperties(props);
+    SDL_DestroyProperties(props);
     return window;
 }
 
@@ -2265,7 +2245,7 @@ int SDL_RecreateWindow(SDL_Window *window, Uint32 flags)
     window->is_destroying = SDL_FALSE;
 
     if (_this->CreateSDLWindow && !(flags & SDL_WINDOW_FOREIGN)) {
-        if (_this->CreateSDLWindow(_this, window) < 0) {
+        if (_this->CreateSDLWindow(_this, window, 0) < 0) {
             if (loaded_opengl) {
                 SDL_GL_UnloadLibrary();
                 window->flags &= ~SDL_WINDOW_OPENGL;

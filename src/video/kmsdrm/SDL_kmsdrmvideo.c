@@ -1443,7 +1443,7 @@ void KMSDRM_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 /* reflect it: if it's fullscreen, KMSDRM_SetWindwoFullscreen() will  */
 /* be called by SDL later, and we can manage it there.                */
 /**********************************************************************/
-int KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+int KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_WindowData *windata = NULL;
     SDL_VideoData *viddata = _this->driverdata;

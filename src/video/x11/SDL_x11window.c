@@ -295,7 +295,7 @@ Uint32 X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwin
     return flags;
 }
 
-static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w, BOOL created)
+static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w)
 {
     SDL_VideoData *videodata = _this->driverdata;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
@@ -320,7 +320,6 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w,
                           NULL);
     }
 #endif
-    data->created = created;
     data->videodata = videodata;
 
     /* Associate the data with the window */
@@ -380,8 +379,10 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w,
         }
     }
 
-    /* All done! */
-    window->driverdata = data;
+    if (window->flags & SDL_WINDOW_FOREIGN) {
+        /* Query the title from the existing window */
+        window->title = X11_GetWindowTitle(_this, w);
+    }
 
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
     int screen = (displaydata ? displaydata->screen : 0);
@@ -389,6 +390,8 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w,
     SDL_SetNumberProperty(props, "SDL.window.x11.screen", screen);
     SDL_SetNumberProperty(props, "SDL.window.x11.window", data->xwindow);
 
+    /* All done! */
+    window->driverdata = data;
     return 0;
 }
 
@@ -422,8 +425,18 @@ static void SetWindowBordered(Display *display, int screen, Window window, SDL_b
     }
 }
 
-int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
+    Window w = (Window)SDL_GetNumberProperty(create_props, "native.x11.window", (Window)SDL_GetProperty(create_props, "native.data", NULL));
+    if (w) {
+        window->flags |= SDL_WINDOW_FOREIGN;
+
+        if (SetupWindowData(_this, window, w) < 0) {
+            return -1;
+        }
+        return 0;
+    }
+
     SDL_VideoData *data = _this->driverdata;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
     const SDL_bool force_override_redirect = SDL_GetHintBoolean(SDL_HINT_X11_FORCE_OVERRIDE_REDIRECT, SDL_FALSE);
@@ -433,7 +446,6 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     Visual *visual;
     int depth;
     XSetWindowAttributes xattr;
-    Window w;
     XSizeHints *sizehints;
     XWMHints *wmhints;
     XClassHint *classhints;
@@ -706,7 +718,7 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
         X11_XSetWMProtocols(display, w, protocols, proto_count);
     }
 
-    if (SetupWindowData(_this, window, w, SDL_TRUE) < 0) {
+    if (SetupWindowData(_this, window, w) < 0) {
         X11_XDestroyWindow(display, w);
         return -1;
     }
@@ -774,21 +786,6 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     X11_XFlush(display);
 
-    return 0;
-}
-
-int X11_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
-{
-    Window w = (Window)SDL_GetNumberProperty(props, "x11.window", (Window)SDL_GetProperty(props, "data", NULL));
-    if (!w) {
-        return SDL_SetError("Couldn't find property x11.window");
-    }
-
-    window->title = X11_GetWindowTitle(_this, w);
-
-    if (SetupWindowData(_this, window, w, SDL_FALSE) < 0) {
-        return -1;
-    }
     return 0;
 }
 
@@ -1848,7 +1845,7 @@ void X11_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
             X11_XDestroyIC(data->ic);
         }
 #endif
-        if (data->created) {
+        if (!(window->flags & SDL_WINDOW_FOREIGN)) {
             X11_XDestroyWindow(display, data->xwindow);
             X11_XFlush(display);
         }

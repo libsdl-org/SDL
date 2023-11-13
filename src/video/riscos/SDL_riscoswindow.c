@@ -28,7 +28,7 @@
 #include "SDL_riscosvideo.h"
 #include "SDL_riscoswindow.h"
 
-int RISCOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+int RISCOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_WindowData *driverdata;
 
