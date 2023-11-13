@@ -20,6 +20,7 @@
 */
 #include "SDL_internal.h"
 #include "SDL_hashtable.h"
+#include "SDL_hints_c.h"
 #include "SDL_properties_c.h"
 
 
@@ -34,6 +35,8 @@ typedef struct
         float float_value;
         SDL_bool boolean_value;
     } value;
+
+    char *string_storage;
 
     void (SDLCALL *cleanup)(void *userdata, void *value);
     void *userdata;
@@ -66,6 +69,9 @@ static void SDL_FreeProperty(const void *key, const void *value, void *data)
             break;
         default:
             break;
+        }
+        if (property->string_storage) {
+            SDL_free(property->string_storage);
         }
     }
     SDL_free((void *)key);
@@ -342,7 +348,7 @@ int SDL_SetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bool va
         return SDL_OutOfMemory();
     }
     property->type = SDL_PROPERTY_TYPE_BOOLEAN;
-    property->value.boolean_value = value;
+    property->value.boolean_value = value ? SDL_TRUE : SDL_FALSE;
     return SDL_PrivateSetProperty(props, name, property);
 }
 
@@ -461,10 +467,40 @@ const char *SDL_GetStringProperty(SDL_PropertiesID props, const char *name, cons
     {
         SDL_Property *property = NULL;
         if (SDL_FindInHashTable(properties->props, name, (const void **)&property)) {
-            if (property->type == SDL_PROPERTY_TYPE_STRING) {
+            switch (property->type) {
+            case SDL_PROPERTY_TYPE_STRING:
                 value = property->value.string_value;
-            } else {
+                break;
+            case SDL_PROPERTY_TYPE_NUMBER:
+                if (property->string_storage) {
+                    value = property->string_storage;
+                } else {
+                    SDL_asprintf(&property->string_storage, "%" SDL_PRIs64 "", property->value.number_value);
+                    if (property->string_storage) {
+                        value = property->string_storage;
+                    } else {
+                        SDL_OutOfMemory();
+                    }
+                }
+                break;
+            case SDL_PROPERTY_TYPE_FLOAT:
+                if (property->string_storage) {
+                    value = property->string_storage;
+                } else {
+                    SDL_asprintf(&property->string_storage, "%f", property->value.float_value);
+                    if (property->string_storage) {
+                        value = property->string_storage;
+                    } else {
+                        SDL_OutOfMemory();
+                    }
+                }
+                break;
+            case SDL_PROPERTY_TYPE_BOOLEAN:
+                value = property->value.boolean_value ? "true" : "false";
+                break;
+            default:
                 SDL_SetError("Property %s isn't a string value", name);
+                break;
             }
         } else {
             SDL_SetError("Couldn't find property named %s", name);
@@ -502,10 +538,22 @@ Sint64 SDL_GetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 de
     {
         SDL_Property *property = NULL;
         if (SDL_FindInHashTable(properties->props, name, (const void **)&property)) {
-            if (property->type == SDL_PROPERTY_TYPE_NUMBER) {
+            switch (property->type) {
+            case SDL_PROPERTY_TYPE_STRING:
+                value = SDL_strtoll(property->value.string_value, NULL, 0);
+                break;
+            case SDL_PROPERTY_TYPE_NUMBER:
                 value = property->value.number_value;
-            } else {
-                SDL_SetError("Property %s isn't a string value", name);
+                break;
+            case SDL_PROPERTY_TYPE_FLOAT:
+                value = (Sint64)SDL_round((double)property->value.float_value);
+                break;
+            case SDL_PROPERTY_TYPE_BOOLEAN:
+                value = property->value.boolean_value;
+                break;
+            default:
+                SDL_SetError("Property %s isn't a number value", name);
+                break;
             }
         } else {
             SDL_SetError("Couldn't find property named %s", name);
@@ -543,10 +591,22 @@ float SDL_GetFloatProperty(SDL_PropertiesID props, const char *name, float defau
     {
         SDL_Property *property = NULL;
         if (SDL_FindInHashTable(properties->props, name, (const void **)&property)) {
-            if (property->type == SDL_PROPERTY_TYPE_FLOAT) {
+            switch (property->type) {
+            case SDL_PROPERTY_TYPE_STRING:
+                value = (float)SDL_atof(property->value.string_value);
+                break;
+            case SDL_PROPERTY_TYPE_NUMBER:
+                value = (float)property->value.number_value;
+                break;
+            case SDL_PROPERTY_TYPE_FLOAT:
                 value = property->value.float_value;
-            } else {
+                break;
+            case SDL_PROPERTY_TYPE_BOOLEAN:
+                value = (float)property->value.boolean_value;
+                break;
+            default:
                 SDL_SetError("Property %s isn't a float value", name);
+                break;
             }
         } else {
             SDL_SetError("Couldn't find property named %s", name);
@@ -584,10 +644,22 @@ SDL_bool SDL_GetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bo
     {
         SDL_Property *property = NULL;
         if (SDL_FindInHashTable(properties->props, name, (const void **)&property)) {
-            if (property->type == SDL_PROPERTY_TYPE_BOOLEAN) {
+            switch (property->type) {
+            case SDL_PROPERTY_TYPE_STRING:
+                value = SDL_GetStringBoolean(property->value.string_value, default_value);
+                break;
+            case SDL_PROPERTY_TYPE_NUMBER:
+                value = (property->value.number_value != 0);
+                break;
+            case SDL_PROPERTY_TYPE_FLOAT:
+                value = (property->value.float_value != 0.0f);
+                break;
+            case SDL_PROPERTY_TYPE_BOOLEAN:
                 value = property->value.boolean_value;
-            } else {
+                break;
+            default:
                 SDL_SetError("Property %s isn't a boolean value", name);
+                break;
             }
         } else {
             SDL_SetError("Couldn't find property named %s", name);
