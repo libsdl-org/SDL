@@ -989,3 +989,5 @@
 #define SDL_GetNumberProperty SDL_GetNumberProperty_REAL
 #define SDL_GetFloatProperty SDL_GetFloatProperty_REAL
 #define SDL_EnumerateProperties SDL_EnumerateProperties_REAL
+#define SDL_SetBooleanProperty SDL_SetBooleanProperty_REAL
+#define SDL_GetBooleanProperty SDL_GetBooleanProperty_REAL

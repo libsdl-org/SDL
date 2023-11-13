@@ -1014,3 +1014,5 @@ SDL_DYNAPI_PROC(const char*,SDL_GetStringProperty,(SDL_PropertiesID a, const cha
 SDL_DYNAPI_PROC(Sint64,SDL_GetNumberProperty,(SDL_PropertiesID a, const char *b, Sint64 c),(a,b,c),return)
 SDL_DYNAPI_PROC(float,SDL_GetFloatProperty,(SDL_PropertiesID a, const char *b, float c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_EnumerateProperties,(SDL_PropertiesID a, SDL_EnumeratePropertiesCallback b, void *c),(a,b,c),return)
+SDL_DYNAPI_PROC(int,SDL_SetBooleanProperty,(SDL_PropertiesID a, const char *b, SDL_bool c),(a,b,c),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_GetBooleanProperty,(SDL_PropertiesID a, const char *b, SDL_bool c),(a,b,c),return)

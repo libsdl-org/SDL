@@ -49,6 +49,7 @@ typedef enum
     SDL_PROPERTY_TYPE_STRING,
     SDL_PROPERTY_TYPE_NUMBER,
     SDL_PROPERTY_TYPE_FLOAT,
+    SDL_PROPERTY_TYPE_BOOLEAN,
 } SDL_PropertyType;
 
 /**
@@ -209,6 +210,23 @@ extern DECLSPEC int SDLCALL SDL_SetNumberProperty(SDL_PropertiesID props, const 
 extern DECLSPEC int SDLCALL SDL_SetFloatProperty(SDL_PropertiesID props, const char *name, float value);
 
 /**
+ * Set a boolean property on a set of properties
+ *
+ * \param props the properties to modify
+ * \param name the name of the property to modify
+ * \param value the new value of the property
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetBooleanProperty
+ */
+extern DECLSPEC int SDLCALL SDL_SetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bool value);
+
+/**
  * Get the type of a property on a set of properties
  *
  * \param props the properties to query
@@ -301,6 +319,25 @@ extern DECLSPEC Sint64 SDLCALL SDL_GetNumberProperty(SDL_PropertiesID props, con
  * \sa SDL_SetFloatProperty
  */
 extern DECLSPEC float SDLCALL SDL_GetFloatProperty(SDL_PropertiesID props, const char *name, float default_value);
+
+/**
+ * Get a boolean property on a set of properties
+ *
+ * You can use SDL_GetPropertyType() to query whether the property exists and is a boolean property.
+ *
+ * \param props the properties to query
+ * \param name the name of the property to query
+ * \param default_value the default value of the property
+ * \returns the value of the property, or `default_value` if it is not set or not a float property.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetPropertyType
+ * \sa SDL_SetBooleanProperty
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_GetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bool default_value);
 
 /**
  * Clear a property on a set of properties
