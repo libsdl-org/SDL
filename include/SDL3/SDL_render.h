@@ -310,6 +310,7 @@ extern DECLSPEC int SDLCALL SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_Rend
  * Get the properties associated with a renderer.
  *
  * The following properties are provided by SDL:
+ *
  * ```
  * "SDL.renderer.d3d9.device" (pointer) - the IDirect3DDevice9 associated with the renderer
  * "SDL.renderer.d3d11.device" (pointer) - the ID3D11Device associated with the renderer
@@ -423,6 +424,7 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *
  * The following properties are provided by SDL:
  *
  * With the direct3d11 renderer:
+ *
  * ```
  * "SDL.texture.d3d11.texture" (pointer) - the ID3D11Texture2D associated with the texture
  * "SDL.texture.d3d11.texture_u" (pointer) - the ID3D11Texture2D associated with the U plane of a YUV texture
@@ -430,6 +432,7 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *
  * ```
  *
  * With the direct3d12 renderer:
+ *
  * ```
  * "SDL.texture.d3d12.texture" (pointer) - the ID3D12Resource associated with the texture
  * "SDL.texture.d3d12.texture_u" (pointer) - the ID3D12Resource associated with the U plane of a YUV texture
@@ -437,6 +440,7 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *
  * ```
  *
  * With the opengl renderer:
+ *
  * ```
  * "SDL.texture.opengl.texture" (number) - the GLuint texture associated with the texture
  * "SDL.texture.opengl.texture_u" (number) - the GLuint texture associated with the U plane of a YUV texture
@@ -446,6 +450,7 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *
  * ```
  *
  * With the opengles2 renderer:
+ *
  * ```
  * "SDL.texture.opengles2.texture" (number) - the GLuint texture associated with the texture
  * "SDL.texture.opengles2.texture_uv" (number) - the GLuint texture associated with the UV plane of an NV12 texture

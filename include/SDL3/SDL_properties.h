@@ -231,7 +231,8 @@ extern DECLSPEC int SDLCALL SDL_SetBooleanProperty(SDL_PropertiesID props, const
  *
  * \param props the properties to query
  * \param name the name of the property to query
- * \returns the type of the property, or SDL_PROPERTY_TYPE_INVALID if it is not set.
+ * \returns the type of the property, or SDL_PROPERTY_TYPE_INVALID if it is
+ *          not set.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -250,7 +251,8 @@ extern DECLSPEC SDL_PropertyType SDLCALL SDL_GetPropertyType(SDL_PropertiesID pr
  * \param props the properties to query
  * \param name the name of the property to query
  * \param default_value the default value of the property
- * \returns the value of the property, or `default_value` if it is not set or not a pointer property.
+ * \returns the value of the property, or `default_value` if it is not set or
+ *          not a pointer property.
  *
  * \threadsafety It is safe to call this function from any thread, although
  *               the data returned is not protected and could potentially be
@@ -271,7 +273,8 @@ extern DECLSPEC void *SDLCALL SDL_GetProperty(SDL_PropertiesID props, const char
  * \param props the properties to query
  * \param name the name of the property to query
  * \param default_value the default value of the property
- * \returns the value of the property, or `default_value` if it is not set or not a string property.
+ * \returns the value of the property, or `default_value` if it is not set or
+ *          not a string property.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -285,12 +288,14 @@ extern DECLSPEC const char *SDLCALL SDL_GetStringProperty(SDL_PropertiesID props
 /**
  * Get a number property on a set of properties
  *
- * You can use SDL_GetPropertyType() to query whether the property exists and is a number property.
+ * You can use SDL_GetPropertyType() to query whether the property exists and
+ * is a number property.
  *
  * \param props the properties to query
  * \param name the name of the property to query
  * \param default_value the default value of the property
- * \returns the value of the property, or `default_value` if it is not set or not a number property.
+ * \returns the value of the property, or `default_value` if it is not set or
+ *          not a number property.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -304,12 +309,14 @@ extern DECLSPEC Sint64 SDLCALL SDL_GetNumberProperty(SDL_PropertiesID props, con
 /**
  * Get a floating point property on a set of properties
  *
- * You can use SDL_GetPropertyType() to query whether the property exists and is a floating point property.
+ * You can use SDL_GetPropertyType() to query whether the property exists and
+ * is a floating point property.
  *
  * \param props the properties to query
  * \param name the name of the property to query
  * \param default_value the default value of the property
- * \returns the value of the property, or `default_value` if it is not set or not a float property.
+ * \returns the value of the property, or `default_value` if it is not set or
+ *          not a float property.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -323,12 +330,14 @@ extern DECLSPEC float SDLCALL SDL_GetFloatProperty(SDL_PropertiesID props, const
 /**
  * Get a boolean property on a set of properties
  *
- * You can use SDL_GetPropertyType() to query whether the property exists and is a boolean property.
+ * You can use SDL_GetPropertyType() to query whether the property exists and
+ * is a boolean property.
  *
  * \param props the properties to query
  * \param name the name of the property to query
  * \param default_value the default value of the property
- * \returns the value of the property, or `default_value` if it is not set or not a float property.
+ * \returns the value of the property, or `default_value` if it is not set or
+ *          not a float property.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -356,10 +365,12 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetBooleanProperty(SDL_PropertiesID props, 
 extern DECLSPEC int SDLCALL SDL_ClearProperty(SDL_PropertiesID props, const char *name);
 
 typedef void (SDLCALL *SDL_EnumeratePropertiesCallback)(void *userdata, SDL_PropertiesID props, const char *name);
+
 /**
  * Enumerate the properties on a set of properties
  *
- * The callback function is called for each property on the set of properties. The properties are locked during enumeration.
+ * The callback function is called for each property on the set of properties.
+ * The properties are locked during enumeration.
  *
  * \param props the properties to query
  * \param callback the function to call for each property

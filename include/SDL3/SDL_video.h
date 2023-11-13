@@ -868,28 +868,33 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowWithPosition(const char *tit
 extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, Uint32 flags);
 
 /**
- * Create an SDL window from properties representing an existing native window.
+ * Create an SDL window from properties representing an existing native
+ * window.
  *
  * These are the supported properties:
  *
  * On macOS:
+ *
  * ```
  * "cocoa.window" (pointer) - the (__unsafe_unretained) NSWindow associated with the window
  * "cocoa.view" (pointer) - optional, the (__unsafe_unretained) NSView associated with the window, defaults to [window contentView]
  * ```
  *
  * On Windows:
+ *
  * ```
  * "win32.hwnd" (pointer) - the HWND associated with the window
  * "win32.pixel_format_hwnd" (pointer) - optional, another window to share pixel format with, useful for OpenGL windows
  * ```
  *
  * On X11:
+ *
  * ```
  * "x11.window" (number) - the X11 Window associated with the window
  * ```
  *
  * On all platforms:
+ *
  * ```
  * "opengl" (boolean) - optional, true if the window will be used with OpenGL rendering
  * "vulkan" (boolean) - optional, true if the window will be used with Vulkan rendering
@@ -957,18 +962,21 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_GetWindowParent(SDL_Window *window);
  * The following properties are provided by SDL:
  *
  * On Android:
+ *
  * ```
  * "SDL.window.android.window" (pointer) - the ANativeWindow associated with the window
  * "SDL.window.android.surface" (pointer) - the EGLSurface associated with the window
  * ```
  *
  * On iOS:
+ *
  * ```
  * "SDL.window.uikit.window" (pointer) - the (__unsafe_unretained) UIWindow associated with the window
  * "SDL.window.uikit.metal_view_tag" (number) - the NSInteger tag assocated with metal views on the window
  * ```
  *
  * On KMS/DRM:
+ *
  * ```
  * "SDL.window.kmsdrm.dev_index" (number) - the device index associated with the window (e.g. the X in /dev/dri/cardX)
  * "SDL.window.kmsdrm.drm_fd" (number) - the DRM FD associated with the window
@@ -976,12 +984,14 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_GetWindowParent(SDL_Window *window);
  * ```
  *
  * On macOS:
+ *
  * ```
  * "SDL.window.cocoa.window" (pointer) - the (__unsafe_unretained) NSWindow associated with the window
  * "SDL.window.cocoa.metal_view_tag" (number) - the NSInteger tag assocated with metal views on the window
  * ```
  *
  * On Vivante:
+ *
  * ```
  * "SDL.window.vivante.display" (pointer) - the EGLNativeDisplayType associated with the window
  * "SDL.window.vivante.window" (pointer) - the EGLNativeWindowType associated with the window
@@ -989,11 +999,13 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_GetWindowParent(SDL_Window *window);
  * ```
  *
  * On UWP:
+ *
  * ```
  * "SDL.window.winrt.window" (pointer) - the IInspectable CoreWindow associated with the window
  * ```
  *
  * On Windows:
+ *
  * ```
  * "SDL.window.win32.hwnd" (pointer) - the HWND associated with the window
  * "SDL.window.win32.hdc" (pointer) - the HDC associated with the window
@@ -1001,6 +1013,7 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_GetWindowParent(SDL_Window *window);
  * ```
  *
  * On Wayland:
+ *
  * ```
  * "SDL.window.wayland.registry" (pointer) - the wl_registry associated with the window
  * "SDL.window.wayland.display" (pointer) - the wl_display associated with the window
@@ -1012,10 +1025,12 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_GetWindowParent(SDL_Window *window);
  * "SDL.window.wayland.xdg_positioner" (pointer) - the xdg_positioner associated with the window, in popup mode
  * ```
  *
- * Note: The xdg_* window objects do not internally persist across window show/hide calls.
- *       They will be null if the window is hidden and must be queried each time it is shown.
+ * Note: The xdg_* window objects do not internally persist across window
+ * show/hide calls. They will be null if the window is hidden and must be
+ * queried each time it is shown.
  *
  * On X11:
+ *
  * ```
  * "SDL.window.x11.display" (pointer) - the X11 Display associated with the window
  * "SDL.window.x11.screen" (number) - the screen number associated with the window
