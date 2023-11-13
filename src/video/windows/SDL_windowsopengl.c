@@ -893,21 +893,6 @@ int WIN_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
     return 0;
 }
 
-SDL_bool WIN_GL_SetPixelFormatFrom(SDL_VideoDevice *_this, SDL_Window *fromWindow, SDL_Window *toWindow)
-{
-    HDC hfromdc = fromWindow->driverdata->hdc;
-    HDC htodc = toWindow->driverdata->hdc;
-
-    /* get the pixel format of the fromWindow */
-    int pixel_format = GetPixelFormat(hfromdc);
-    PIXELFORMATDESCRIPTOR pfd;
-    SDL_memset(&pfd, 0, sizeof(pfd));
-    DescribePixelFormat(hfromdc, pixel_format, sizeof(pfd), &pfd);
-
-    /* set the pixel format of the toWindow */
-    return SetPixelFormat(htodc, pixel_format, &pfd);
-}
-
 #endif /* SDL_VIDEO_OPENGL_WGL */
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */

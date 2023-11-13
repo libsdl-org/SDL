@@ -100,6 +100,7 @@ int main(int argc, char *argv[])
 {
     int i, done;
     const char *driver;
+    SDL_PropertiesID props;
     SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_Texture *sprite;
@@ -146,7 +147,10 @@ int main(int argc, char *argv[])
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create native window\n");
         quit(3);
     }
-    window = SDL_CreateWindowFrom(native_window);
+    props = SDL_CreateProperties();
+    SDL_SetProperty(props, "data", native_window);
+    window = SDL_CreateWindowFrom(props);
+    SDL_DestroyProperties(props);
     if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create SDL window: %s\n", SDL_GetError());
         quit(4);

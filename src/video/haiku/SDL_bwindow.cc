@@ -86,39 +86,6 @@ int HAIKU_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window) {
     return 0;
 }
 
-int HAIKU_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window * window, const void *data) {
-
-    SDL_BWin *otherBWin = (SDL_BWin*)data;
-    if (!otherBWin->LockLooper()) {
-        return -1;
-    }
-
-    /* Create the new window and initialize its members */
-    window->x = (int)otherBWin->Frame().left;
-    window->y = (int)otherBWin->Frame().top;
-    window->w = (int)otherBWin->Frame().Width();
-    window->h = (int)otherBWin->Frame().Height();
-
-    /* Set SDL flags */
-    if (!(otherBWin->Flags() & B_NOT_RESIZABLE)) {
-        window->flags |= SDL_WINDOW_RESIZABLE;
-    }
-
-    /* If we are out of memory, return the error code */
-    if (_InitWindow(_this, window) < 0) {
-        return -1;
-    }
-
-    /* TODO: Add any other SDL-supported window attributes here */
-    _ToBeWin(window)->SetTitle(otherBWin->Title());
-
-    /* Start window loop and unlock the other window */
-    _ToBeWin(window)->Show();
-
-    otherBWin->UnlockLooper();
-    return 0;
-}
-
 void HAIKU_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window * window) {
     BMessage msg(BWIN_SET_TITLE);
     msg.AddString("window-title", window->title);

@@ -89,7 +89,6 @@ static SDL_VideoDevice *PSP_Create()
     device->GetDisplayModes = PSP_GetDisplayModes;
     device->SetDisplayMode = PSP_SetDisplayMode;
     device->CreateSDLWindow = PSP_CreateWindow;
-    device->CreateSDLWindowFrom = PSP_CreateWindowFrom;
     device->SetWindowTitle = PSP_SetWindowTitle;
     device->SetWindowPosition = PSP_SetWindowPosition;
     device->SetWindowSize = PSP_SetWindowSize;
@@ -203,11 +202,6 @@ int PSP_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     /* Window has been successfully created */
     return 0;
-}
-
-int PSP_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, const void *data)
-{
-    return SDL_Unsupported();
 }
 
 void PSP_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)

@@ -85,7 +85,7 @@ extern void X11_SetNetWMState(SDL_VideoDevice *_this, Window xwindow, Uint32 fla
 extern Uint32 X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwindow);
 
 extern int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int X11_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, const void *data);
+extern int X11_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
 extern char *X11_GetWindowTitle(SDL_VideoDevice *_this, Window xwindow);
 extern void X11_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 extern int X11_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon);
