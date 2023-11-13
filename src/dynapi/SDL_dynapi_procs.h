@@ -1015,3 +1015,5 @@ SDL_DYNAPI_PROC(float,SDL_GetFloatProperty,(SDL_PropertiesID a, const char *b, f
 SDL_DYNAPI_PROC(int,SDL_EnumerateProperties,(SDL_PropertiesID a, SDL_EnumeratePropertiesCallback b, void *c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_SetBooleanProperty,(SDL_PropertiesID a, const char *b, SDL_bool c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_GetBooleanProperty,(SDL_PropertiesID a, const char *b, SDL_bool c),(a,b,c),return)
+SDL_DYNAPI_PROC(SDL_Texture*,SDL_CreateTextureWithProperties,(SDL_Renderer *a, SDL_PropertiesID b),(a,b),return)
+SDL_DYNAPI_PROC(SDL_Renderer*,SDL_CreateRendererWithProperties,(SDL_PropertiesID a),(a),return)

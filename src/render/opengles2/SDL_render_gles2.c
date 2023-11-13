@@ -61,6 +61,7 @@ struct GLES2_FBOList
 typedef struct GLES2_TextureData
 {
     GLuint texture;
+    SDL_bool texture_external;
     GLenum texture_type;
     GLenum pixel_format;
     GLenum pixel_type;
@@ -71,7 +72,9 @@ typedef struct GLES2_TextureData
     SDL_bool yuv;
     SDL_bool nv12;
     GLuint texture_v;
+    GLuint texture_v_external;
     GLuint texture_u;
+    GLuint texture_u_external;
 #endif
     GLES2_FBOList *fbo;
 } GLES2_TextureData;
@@ -1396,7 +1399,7 @@ static void GLES2_DestroyRenderer(SDL_Renderer *renderer)
     SDL_free(renderer);
 }
 
-static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
+static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     GLES2_RenderData *renderdata = (GLES2_RenderData *)renderer->driverdata;
     GLES2_TextureData *data;
@@ -1488,9 +1491,14 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
 #if SDL_HAVE_YUV
     if (data->yuv) {
-        renderdata->glGenTextures(1, &data->texture_v);
-        if (GL_CheckError("glGenTexures()", renderer) < 0) {
-            return -1;
+        data->texture_v = (GLuint)SDL_GetNumberProperty(create_props, "opengles2.texture_v", 0);
+        if (data->texture_v) {
+            data->texture_v_external = SDL_TRUE;
+        } else {
+            renderdata->glGenTextures(1, &data->texture_v);
+            if (GL_CheckError("glGenTexures()", renderer) < 0) {
+                return -1;
+            }
         }
         renderdata->glActiveTexture(GL_TEXTURE2);
         renderdata->glBindTexture(data->texture_type, data->texture_v);
@@ -1501,9 +1509,14 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         renderdata->glTexImage2D(data->texture_type, 0, format, (texture->w + 1) / 2, (texture->h + 1) / 2, 0, format, type, NULL);
         SDL_SetNumberProperty(SDL_GetTextureProperties(texture), "SDL.texture.opengles2.texture_v", data->texture_v);
 
-        renderdata->glGenTextures(1, &data->texture_u);
-        if (GL_CheckError("glGenTexures()", renderer) < 0) {
-            return -1;
+        data->texture_u = (GLuint)SDL_GetNumberProperty(create_props, "opengles2.texture_u", 0);
+        if (data->texture_u) {
+            data->texture_u_external = SDL_TRUE;
+        } else {
+            renderdata->glGenTextures(1, &data->texture_u);
+            if (GL_CheckError("glGenTexures()", renderer) < 0) {
+                return -1;
+            }
         }
         renderdata->glActiveTexture(GL_TEXTURE1);
         renderdata->glBindTexture(data->texture_type, data->texture_u);
@@ -1518,9 +1531,14 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         SDL_SetNumberProperty(SDL_GetTextureProperties(texture), "SDL.texture.opengles2.texture_u", data->texture_u);
 
     } else if (data->nv12) {
-        renderdata->glGenTextures(1, &data->texture_u);
-        if (GL_CheckError("glGenTexures()", renderer) < 0) {
-            return -1;
+        data->texture_u = (GLuint)SDL_GetNumberProperty(create_props, "opengles2.texture_uv", 0);
+        if (data->texture_u) {
+            data->texture_u_external = SDL_TRUE;
+        } else {
+            renderdata->glGenTextures(1, &data->texture_u);
+            if (GL_CheckError("glGenTexures()", renderer) < 0) {
+                return -1;
+            }
         }
         renderdata->glActiveTexture(GL_TEXTURE1);
         renderdata->glBindTexture(data->texture_type, data->texture_u);
@@ -1536,9 +1554,14 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     }
 #endif
 
-    renderdata->glGenTextures(1, &data->texture);
-    if (GL_CheckError("glGenTexures()", renderer) < 0) {
-        return -1;
+    data->texture = (GLuint)SDL_GetNumberProperty(create_props, "opengles2.texture", 0);
+    if (data->texture) {
+        data->texture_external = SDL_TRUE;
+    } else {
+        renderdata->glGenTextures(1, &data->texture);
+        if (GL_CheckError("glGenTexures()", renderer) < 0) {
+            return -1;
+        }
     }
     texture->driverdata = data;
     renderdata->glActiveTexture(GL_TEXTURE0);
@@ -1893,12 +1916,14 @@ static void GLES2_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
     /* Destroy the texture */
     if (tdata) {
-        data->glDeleteTextures(1, &tdata->texture);
+        if (tdata->texture && !tdata->texture_external) {
+            data->glDeleteTextures(1, &tdata->texture);
+        }
 #if SDL_HAVE_YUV
-        if (tdata->texture_v) {
+        if (tdata->texture_v && !tdata->texture_v_external) {
             data->glDeleteTextures(1, &tdata->texture_v);
         }
-        if (tdata->texture_u) {
+        if (tdata->texture_u && !tdata->texture_u_external) {
             data->glDeleteTextures(1, &tdata->texture_u);
         }
 #endif
@@ -2052,7 +2077,7 @@ static int GLES2_UnbindTexture(SDL_Renderer *renderer, SDL_Texture *texture)
  * Renderer instantiation                                                                        *
  *************************************************************************************************/
 
-static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
+static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_Renderer *renderer;
     GLES2_RenderData *data;
@@ -2139,10 +2164,10 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
      * is turned on.  Not doing so will freeze the screen's contents to that
      * of the first drawn frame.
      */
-    flags |= SDL_RENDERER_PRESENTVSYNC;
+    SDL_SetBooleanProperty(create_props, "present_vsync", SDL_TRUE);
 #endif
 
-    if (flags & SDL_RENDERER_PRESENTVSYNC) {
+    if (SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE)) {
         SDL_GL_SetSwapInterval(1);
     } else {
         SDL_GL_SetSwapInterval(0);

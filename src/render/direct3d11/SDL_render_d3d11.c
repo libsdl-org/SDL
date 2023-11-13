@@ -1062,7 +1062,19 @@ static SDL_bool D3D11_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode bl
     return SDL_TRUE;
 }
 
-static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
+static int GetTextureProperty(SDL_PropertiesID props, const char *name, ID3D11Texture2D **texture)
+{
+    IUnknown *unknown = SDL_GetProperty(props, name, NULL);
+    if (unknown) {
+        HRESULT result = IUnknown_QueryInterface(unknown, &SDL_IID_ID3D11Texture2D, (void **)texture);
+        if (FAILED(result)) {
+            return WIN_SetErrorFromHRESULT(name, result);
+        }
+    }
+    return 0;
+}
+
+static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->driverdata;
     D3D11_TextureData *textureData;
@@ -1109,13 +1121,18 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
     }
 
-    result = ID3D11Device_CreateTexture2D(rendererData->d3dDevice,
-                                          &textureDesc,
-                                          NULL,
-                                          &textureData->mainTexture);
-    if (FAILED(result)) {
-        D3D11_DestroyTexture(renderer, texture);
-        return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateTexture2D"), result);
+    if (GetTextureProperty(create_props, "d3d11.texture", &textureData->mainTexture) < 0) {
+        return -1;
+    }
+    if (!textureData->mainTexture) {
+        result = ID3D11Device_CreateTexture2D(rendererData->d3dDevice,
+                                              &textureDesc,
+                                              NULL,
+                                              &textureData->mainTexture);
+        if (FAILED(result)) {
+            D3D11_DestroyTexture(renderer, texture);
+            return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateTexture2D"), result);
+        }
     }
     SDL_SetProperty(SDL_GetTextureProperties(texture), "SDL.texture.d3d11.texture", textureData->mainTexture);
 #if SDL_HAVE_YUV
@@ -1126,23 +1143,33 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         textureDesc.Width = (textureDesc.Width + 1) / 2;
         textureDesc.Height = (textureDesc.Height + 1) / 2;
 
-        result = ID3D11Device_CreateTexture2D(rendererData->d3dDevice,
-                                              &textureDesc,
-                                              NULL,
-                                              &textureData->mainTextureU);
-        if (FAILED(result)) {
-            D3D11_DestroyTexture(renderer, texture);
-            return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateTexture2D"), result);
+        if (GetTextureProperty(create_props, "d3d11.texture_u", &textureData->mainTextureU) < 0) {
+            return -1;
+        }
+        if (!textureData->mainTextureU) {
+            result = ID3D11Device_CreateTexture2D(rendererData->d3dDevice,
+                                                  &textureDesc,
+                                                  NULL,
+                                                  &textureData->mainTextureU);
+            if (FAILED(result)) {
+                D3D11_DestroyTexture(renderer, texture);
+                return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateTexture2D"), result);
+            }
         }
         SDL_SetProperty(SDL_GetTextureProperties(texture), "SDL.texture.d3d11.texture_u", textureData->mainTextureU);
 
-        result = ID3D11Device_CreateTexture2D(rendererData->d3dDevice,
-                                              &textureDesc,
-                                              NULL,
-                                              &textureData->mainTextureV);
-        if (FAILED(result)) {
-            D3D11_DestroyTexture(renderer, texture);
-            return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateTexture2D"), result);
+        if (GetTextureProperty(create_props, "d3d11.texture_v", &textureData->mainTextureV) < 0) {
+            return -1;
+        }
+        if (!textureData->mainTextureV) {
+            result = ID3D11Device_CreateTexture2D(rendererData->d3dDevice,
+                                                  &textureDesc,
+                                                  NULL,
+                                                  &textureData->mainTextureV);
+            if (FAILED(result)) {
+                D3D11_DestroyTexture(renderer, texture);
+                return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateTexture2D"), result);
+            }
         }
         SDL_SetProperty(SDL_GetTextureProperties(texture), "SDL.texture.d3d11.texture_v", textureData->mainTextureV);
     }
@@ -2384,7 +2411,7 @@ static int D3D11_SetVSync(SDL_Renderer *renderer, const int vsync)
 }
 #endif
 
-SDL_Renderer *D3D11_CreateRenderer(SDL_Window *window, Uint32 flags)
+SDL_Renderer *D3D11_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_Renderer *renderer;
     D3D11_RenderData *data;
@@ -2445,7 +2472,7 @@ SDL_Renderer *D3D11_CreateRenderer(SDL_Window *window, Uint32 flags)
      */
     renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
 #else
-    if (flags & SDL_RENDERER_PRESENTVSYNC) {
+    if (SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE)) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     }
     renderer->SetVSync = D3D11_SetVSync;

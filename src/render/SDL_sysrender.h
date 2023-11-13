@@ -160,7 +160,7 @@ struct SDL_Renderer
     void (*WindowEvent)(SDL_Renderer *renderer, const SDL_WindowEvent *event);
     int (*GetOutputSize)(SDL_Renderer *renderer, int *w, int *h);
     SDL_bool (*SupportsBlendMode)(SDL_Renderer *renderer, SDL_BlendMode blendMode);
-    int (*CreateTexture)(SDL_Renderer *renderer, SDL_Texture *texture);
+    int (*CreateTexture)(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props);
     int (*QueueSetViewport)(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
     int (*QueueSetDrawColor)(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
     int (*QueueDrawPoints)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points,
@@ -280,7 +280,7 @@ struct SDL_Renderer
 /* Define the SDL render driver structure */
 struct SDL_RenderDriver
 {
-    SDL_Renderer *(*CreateRenderer)(SDL_Window *window, Uint32 flags);
+    SDL_Renderer *(*CreateRenderer)(SDL_Window *window, SDL_PropertiesID props);
 
     /* Info about the renderer capabilities */
     SDL_RendererInfo info;

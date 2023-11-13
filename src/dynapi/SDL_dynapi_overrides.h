@@ -990,3 +990,5 @@
 #define SDL_EnumerateProperties SDL_EnumerateProperties_REAL
 #define SDL_SetBooleanProperty SDL_SetBooleanProperty_REAL
 #define SDL_GetBooleanProperty SDL_GetBooleanProperty_REAL
+#define SDL_CreateTextureWithProperties SDL_CreateTextureWithProperties_REAL
+#define SDL_CreateRendererWithProperties SDL_CreateRendererWithProperties_REAL
