@@ -233,7 +233,7 @@ static int video_createWindowVariousFlags(void *arg)
             flags = SDL_WINDOW_MOUSE_FOCUS;
             break;
         case 12:
-            flags = SDL_WINDOW_FOREIGN;
+            flags = SDL_WINDOW_EXTERNAL;
             break;
         case 13:
             flags = SDL_WINDOW_KEYBOARD_GRABBED;

@@ -379,7 +379,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w)
         }
     }
 
-    if (window->flags & SDL_WINDOW_FOREIGN) {
+    if (window->flags & SDL_WINDOW_EXTERNAL) {
         /* Query the title from the existing window */
         window->title = X11_GetWindowTitle(_this, w);
     }
@@ -427,9 +427,10 @@ static void SetWindowBordered(Display *display, int screen, Window window, SDL_b
 
 int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
-    Window w = (Window)SDL_GetNumberProperty(create_props, "native.x11.window", (Window)SDL_GetProperty(create_props, "native.data", NULL));
+    Window w = (Window)SDL_GetNumberProperty(create_props, "x11.window",
+                (Window)SDL_GetProperty(create_props, "sdl2-compat.external_window", NULL));
     if (w) {
-        window->flags |= SDL_WINDOW_FOREIGN;
+        window->flags |= SDL_WINDOW_EXTERNAL;
 
         if (SetupWindowData(_this, window, w) < 0) {
             return -1;
@@ -1335,7 +1336,7 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         /* Blocking wait for "MapNotify" event.
          * We use X11_XIfEvent because pXWindowEvent takes a mask rather than a type,
          * and XCheckTypedWindowEvent doesn't block */
-        if (!(window->flags & SDL_WINDOW_FOREIGN)) {
+        if (!(window->flags & SDL_WINDOW_EXTERNAL)) {
             X11_XIfEvent(display, &event, &isMapNotify, (XPointer)&data->xwindow);
         }
         X11_XFlush(display);
@@ -1371,7 +1372,7 @@ void X11_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
     if (X11_IsWindowMapped(_this, window)) {
         X11_XWithdrawWindow(display, data->xwindow, displaydata->screen);
         /* Blocking wait for "UnmapNotify" event */
-        if (!(window->flags & SDL_WINDOW_FOREIGN)) {
+        if (!(window->flags & SDL_WINDOW_EXTERNAL)) {
             X11_XIfEvent(display, &event, &isUnmapNotify, (XPointer)&data->xwindow);
         }
         X11_XFlush(display);
@@ -1845,7 +1846,7 @@ void X11_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
             X11_XDestroyIC(data->ic);
         }
 #endif
-        if (!(window->flags & SDL_WINDOW_FOREIGN)) {
+        if (!(window->flags & SDL_WINDOW_EXTERNAL)) {
             X11_XDestroyWindow(display, data->xwindow);
             X11_XFlush(display);
         }

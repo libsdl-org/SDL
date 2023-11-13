@@ -1861,7 +1861,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow 
          */
         [nswindow setOneShot:NO];
 
-        if (window->flags & SDL_WINDOW_FOREIGN) {
+        if (window->flags & SDL_WINDOW_EXTERNAL) {
             /* Query the title from the existing window */
             NSString *title = [nswindow title];
             if (title) {
@@ -1883,7 +1883,7 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
 {
     @autoreleasepool {
         SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)_this->driverdata;
-        const void *data = SDL_GetProperty(create_props, "native.data", NULL);
+        const void *data = SDL_GetProperty(create_props, "sdl2-compat.external_window", NULL);
         NSWindow *nswindow = nil;
         NSView *nsview = nil;
 
@@ -1896,8 +1896,8 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
                 SDL_assert(false);
             }
         } else {
-            nswindow = (__bridge NSWindow *)SDL_GetProperty(create_props, "native.cocoa.window", NULL);
-            nsview = (__bridge NSView *)SDL_GetProperty(create_props, "native.cocoa.view", NULL);
+            nswindow = (__bridge NSWindow *)SDL_GetProperty(create_props, "cocoa.window", NULL);
+            nsview = (__bridge NSView *)SDL_GetProperty(create_props, "cocoa.view", NULL);
         }
         if (nswindow && !nsview) {
             nsview = [nswindow contentView];
@@ -1906,7 +1906,7 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
             nswindow = [nsview window];
         }
         if (nswindow) {
-            window->flags |= SDL_WINDOW_FOREIGN;
+            window->flags |= SDL_WINDOW_EXTERNAL;
         } else {
             int x, y;
             NSScreen *screen;

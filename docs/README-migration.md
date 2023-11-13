@@ -562,7 +562,7 @@ The following hints have been removed:
 * SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL - replaced with the "opengl" property in SDL_CreateWindowWithProperties()
 * SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN - replaced with the "vulkan" property in SDL_CreateWindowWithProperties()
 * SDL_HINT_VIDEO_HIGHDPI_DISABLED - high DPI support is always enabled
-* SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT - replaced with the "native.win32.pixel_format_hwnd" in SDL_CreateWindowWithProperties()
+* SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT - replaced with the "win32.pixel_format_hwnd" in SDL_CreateWindowWithProperties()
 * SDL_HINT_VIDEO_X11_FORCE_EGL - use SDL_HINT_VIDEO_FORCE_EGL instead
 * SDL_HINT_VIDEO_X11_XINERAMA - Xinerama no longer supported by the X11 backend
 * SDL_HINT_VIDEO_X11_XVIDMODE - Xvidmode no longer supported by the X11 backend
@@ -1330,7 +1330,7 @@ The following functions have been removed:
 * SDL_GetNumVideoDisplays() - replaced with SDL_GetDisplays()
 * SDL_GetWindowData() - use SDL_GetWindowProperties() instead
 * SDL_SetWindowData() - use SDL_GetWindowProperties() instead
-* SDL_CreateWindowFrom() - use SDL_CreateWindowWithProperties() with "native.*" properties instead
+* SDL_CreateWindowFrom() - use SDL_CreateWindowWithProperties() with the properties that allow you to wrap an existing window
 
 SDL_Window id type is named SDL_WindowID
 

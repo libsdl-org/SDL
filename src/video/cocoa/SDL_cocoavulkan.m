@@ -256,7 +256,7 @@ SDL_bool Cocoa_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         return SDL_FALSE;
     }
 
-    if (window->flags & SDL_WINDOW_FOREIGN) {
+    if (window->flags & SDL_WINDOW_EXTERNAL) {
         @autoreleasepool {
             SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;
             if (![data.sdlContentView.layer isKindOfClass:[CAMetalLayer class]]) {
