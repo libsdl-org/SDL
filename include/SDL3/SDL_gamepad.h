@@ -977,7 +977,7 @@ extern DECLSPEC Sint16 SDLCALL SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_Game
  *
  * \param str string representing a SDL_Gamepad axis
  * \returns the SDL_GamepadButton enum corresponding to the input string, or
- *          `SDL_GAMEPAD_AXIS_INVALID` if no match was found.
+ *          `SDL_GAMEPAD_BUTTON_INVALID` if no match was found.
  *
  * \since This function is available since SDL 3.0.0.
  */
