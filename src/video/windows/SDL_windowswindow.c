@@ -644,15 +644,19 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     return 0;
 }
 
-int WIN_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, const void *data)
+int WIN_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return -1;
 #else
-    HWND hwnd = (HWND)data;
+    HWND hwnd = (HWND)SDL_GetProperty(props, "win32.hwnd", SDL_GetProperty(props, "data", NULL));
     LPTSTR title;
     int titleLen;
     SDL_bool isstack;
+
+    if (!hwnd) {
+        return SDL_SetError("Couldn't find property win32.hwnd");
+    }
 
     /* Query the title from the existing window */
     titleLen = GetWindowTextLength(hwnd);
@@ -675,23 +679,18 @@ int WIN_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, const void 
 
 #ifdef SDL_VIDEO_OPENGL_WGL
     {
-        const char *hint = SDL_GetHint(SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT);
-        if (hint) {
-            /* This hint is a pointer (in string form) of the address of
-               the window to share a pixel format with
-            */
-            SDL_Window *otherWindow = NULL;
-            (void)SDL_sscanf(hint, "%p", (void **)&otherWindow);
+        HWND share_hwnd = (HWND)SDL_GetProperty(props, "win32.pixel_format_hwnd", NULL);
+        if (share_hwnd) {
+            HDC hdc = GetDC(share_hwnd);
+            int pixel_format = GetPixelFormat(hdc);
+            PIXELFORMATDESCRIPTOR pfd;
 
-            /* Do some error checking on the pointer */
-            if (otherWindow && otherWindow->magic == &_this->window_magic) {
-                /* If the otherWindow has SDL_WINDOW_OPENGL set, set it for the new window as well */
-                if (otherWindow->flags & SDL_WINDOW_OPENGL) {
-                    window->flags |= SDL_WINDOW_OPENGL;
-                    if (!WIN_GL_SetPixelFormatFrom(_this, otherWindow, window)) {
-                        return -1;
-                    }
-                }
+            SDL_zero(pfd);
+            DescribePixelFormat(hdc, pixel_format, sizeof(pfd), &pfd);
+            ReleaseDC(share_hwnd, hdc);
+
+            if (!SetPixelFormat(window->driverdata->hdc, pixel_format, &pfd)) {
+                return WIN_SetError("SetPixelFormat()");
             }
         } else if (window->flags & SDL_WINDOW_OPENGL) {
             /* Try to set up the pixel format, if it hasn't been set by the application */

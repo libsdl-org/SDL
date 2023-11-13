@@ -281,7 +281,6 @@ static SDL_VideoDevice *KMSDRM_CreateDevice(void)
     device->GetDisplayModes = KMSDRM_GetDisplayModes;
     device->SetDisplayMode = KMSDRM_SetDisplayMode;
     device->CreateSDLWindow = KMSDRM_CreateWindow;
-    device->CreateSDLWindowFrom = KMSDRM_CreateWindowFrom;
     device->SetWindowTitle = KMSDRM_SetWindowTitle;
     device->SetWindowPosition = KMSDRM_SetWindowPosition;
     device->SetWindowSize = KMSDRM_SetWindowSize;
@@ -1582,11 +1581,6 @@ int KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
        and KMSDRM_DestroyWindow() will be called by SDL_CreateWindow()
        if we return error on any of the previous returns of the function. */
     return ret;
-}
-
-int KMSDRM_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, const void *data)
-{
-    return -1;
 }
 
 void KMSDRM_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)

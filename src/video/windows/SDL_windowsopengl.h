@@ -115,7 +115,6 @@ extern int WIN_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
 extern int WIN_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern int WIN_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
 extern void WIN_GL_InitExtensions(SDL_VideoDevice *_this);
-extern SDL_bool WIN_GL_SetPixelFormatFrom(SDL_VideoDevice *_this, SDL_Window *fromWindow, SDL_Window *toWindow);
 
 #ifndef WGL_ARB_pixel_format
 #define WGL_NUMBER_PIXEL_FORMATS_ARB    0x2000

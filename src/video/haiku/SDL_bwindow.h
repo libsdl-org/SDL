@@ -25,7 +25,6 @@
 #include "../SDL_sysvideo.h"
 
 extern int HAIKU_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int HAIKU_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, const void *data);
 extern void HAIKU_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 extern int HAIKU_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
 extern void HAIKU_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);

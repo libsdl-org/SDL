@@ -2092,11 +2092,15 @@ SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y
     return SDL_CreateWindowInternal(NULL, offset_x, offset_y, w, h, parent, flags);
 }
 
-SDL_Window *SDL_CreateWindowFrom(const void *data)
+SDL_Window *SDL_CreateWindowFrom(SDL_PropertiesID props)
 {
     SDL_Window *window;
     Uint32 flags = SDL_WINDOW_FOREIGN;
 
+    if (!props) {
+        SDL_InvalidParamError("props");
+        return NULL;
+    }
     if (!_this) {
         SDL_UninitializedVideo();
         return NULL;
@@ -2106,7 +2110,7 @@ SDL_Window *SDL_CreateWindowFrom(const void *data)
         return NULL;
     }
 
-    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL, SDL_FALSE)) {
+    if (SDL_GetBooleanProperty(props, "opengl", SDL_FALSE)) {
         if (!_this->GL_CreateContext) {
             SDL_ContextNotSupported("OpenGL");
             return NULL;
@@ -2117,7 +2121,7 @@ SDL_Window *SDL_CreateWindowFrom(const void *data)
         flags |= SDL_WINDOW_OPENGL;
     }
 
-    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN, SDL_FALSE)) {
+    if (SDL_GetBooleanProperty(props, "vulkan", SDL_FALSE)) {
         if (!_this->Vulkan_CreateSurface) {
             SDL_ContextNotSupported("Vulkan");
             return NULL;
@@ -2149,7 +2153,7 @@ SDL_Window *SDL_CreateWindowFrom(const void *data)
     }
     _this->windows = window;
 
-    if (_this->CreateSDLWindowFrom(_this, window, data) < 0) {
+    if (_this->CreateSDLWindowFrom(_this, window, props) < 0) {
         SDL_DestroyWindow(window);
         return NULL;
     }

@@ -2007,22 +2007,35 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-int Cocoa_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, const void *data)
+int Cocoa_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     @autoreleasepool {
-        NSView *nsview = nil;
+        const void *data = SDL_GetProperty(props, "data", NULL);
         NSWindow *nswindow = nil;
+        NSView *nsview = nil;
         NSString *title;
         BOOL highdpi;
 
-        if ([(__bridge id)data isKindOfClass:[NSWindow class]]) {
-            nswindow = (__bridge NSWindow *)data;
-            nsview = [nswindow contentView];
-        } else if ([(__bridge id)data isKindOfClass:[NSView class]]) {
-            nsview = (__bridge NSView *)data;
-            nswindow = [nsview window];
+        if (data) {
+            if ([(__bridge id)data isKindOfClass:[NSWindow class]]) {
+                nswindow = (__bridge NSWindow *)data;
+            } else if ([(__bridge id)data isKindOfClass:[NSView class]]) {
+                nsview = (__bridge NSView *)data;
+            } else {
+                SDL_assert(false);
+            }
         } else {
-            SDL_assert(false);
+            nswindow = (__bridge NSWindow *)SDL_GetProperty(props, "cocoa.window", NULL);
+            nsview = (__bridge NSView *)SDL_GetProperty(props, "cocoa.view", NULL);
+        }
+        if (nswindow && !nsview) {
+            nsview = [nswindow contentView];
+        }
+        if (nsview && !nswindow) {
+            nswindow = [nsview window];
+        }
+        if (!nswindow) {
+            return SDL_SetError("Couldn't find property cocoa.window");
         }
 
         /* Query the title from the existing window */

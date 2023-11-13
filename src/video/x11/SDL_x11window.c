@@ -777,9 +777,12 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
     return 0;
 }
 
-int X11_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, const void *data)
+int X11_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
-    Window w = (Window)data;
+    Window w = (Window)SDL_GetNumberProperty(props, "x11.window", (Window)SDL_GetProperty(props, "data", NULL));
+    if (!w) {
+        return SDL_SetError("Couldn't find property x11.window");
+    }
 
     window->title = X11_GetWindowTitle(_this, w);
 

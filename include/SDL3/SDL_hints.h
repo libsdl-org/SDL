@@ -1802,47 +1802,6 @@ extern "C" {
 #define SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP "SDL_VIDEO_WAYLAND_EMULATE_MOUSE_WARP"
 
 /**
-*  A variable that is the address of another SDL_Window* (as a hex string formatted with "%p").
-*
-*  If this hint is set before SDL_CreateWindowFrom() and the SDL_Window* it is set to has
-*  SDL_WINDOW_OPENGL set (and running on WGL only, currently), then two things will occur on the newly
-*  created SDL_Window:
-*
-*  1. Its pixel format will be set to the same pixel format as this SDL_Window.  This is
-*  needed for example when sharing an OpenGL context across multiple windows.
-*
-*  2. The flag SDL_WINDOW_OPENGL will be set on the new window so it can be used for
-*  OpenGL rendering.
-*
-*  This variable can be set to the following values:
-*    The address (as a string "%p") of the SDL_Window* that new windows created with SDL_CreateWindowFrom() should
-*    share a pixel format with.
-*/
-#define SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT    "SDL_VIDEO_WINDOW_SHARE_PIXEL_FORMAT"
-
-/**
- *  When calling SDL_CreateWindowFrom(), make the window compatible with OpenGL.
- *
- * This variable can be set to the following values:
- * "0" - Don't add any graphics flags to the SDL_WindowFlags
- * "1" - Add SDL_WINDOW_OPENGL to the SDL_WindowFlags
- *
- * By default SDL will not make the foreign window compatible with OpenGL.
- */
-#define SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL "SDL_VIDEO_FOREIGN_WINDOW_OPENGL"
-
-/**
- *  When calling SDL_CreateWindowFrom(), make the window compatible with Vulkan.
- *
- * This variable can be set to the following values:
- * "0" - Don't add any graphics flags to the SDL_WindowFlags
- * "1" - Add SDL_WINDOW_VULKAN to the SDL_WindowFlags
- *
- * By default SDL will not make the foreign window compatible with Vulkan.
- */
-#define SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN "SDL_VIDEO_FOREIGN_WINDOW_VULKAN"
-
-/**
 *  A variable specifying which shader compiler to preload when using the Chrome ANGLE binaries
 *
 *  SDL has EGL and OpenGL ES2 support on Windows via the ANGLE project. It

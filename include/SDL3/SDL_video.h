@@ -868,14 +868,34 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowWithPosition(const char *tit
 extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, Uint32 flags);
 
 /**
- * Create an SDL window from an existing native window.
+ * Create an SDL window from properties representing an existing native window.
  *
- * In some cases (e.g. OpenGL) and on some platforms (e.g. Microsoft Windows)
- * the hint `SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT` needs to be configured
- * before using SDL_CreateWindowFrom().
+ * These are the supported properties:
  *
- * \param data a pointer to driver-dependent window creation data, typically
- *             your native window cast to a void*
+ * On macOS:
+ * ```
+ * "cocoa.window" (pointer) - the (__unsafe_unretained) NSWindow associated with the window
+ * "cocoa.view" (pointer) - optional, the (__unsafe_unretained) NSView associated with the window, defaults to [window contentView]
+ * ```
+ *
+ * On Windows:
+ * ```
+ * "win32.hwnd" (pointer) - the HWND associated with the window
+ * "win32.pixel_format_hwnd" (pointer) - optional, another window to share pixel format with, useful for OpenGL windows
+ * ```
+ *
+ * On X11:
+ * ```
+ * "x11.window" (number) - the X11 Window associated with the window
+ * ```
+ *
+ * On all platforms:
+ * ```
+ * "opengl" (boolean) - optional, true if the window will be used with OpenGL rendering
+ * "vulkan" (boolean) - optional, true if the window will be used with Vulkan rendering
+ * ```
+ *
+ * \param props a set of properties describing the native window and options
  * \returns the window that was created or NULL on failure; call
  *          SDL_GetError() for more information.
  *
@@ -884,7 +904,7 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, in
  * \sa SDL_CreateWindow
  * \sa SDL_DestroyWindow
  */
-extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowFrom(const void *data);
+extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowFrom(SDL_PropertiesID props);
 
 /**
  * Get the numeric ID of a window.
