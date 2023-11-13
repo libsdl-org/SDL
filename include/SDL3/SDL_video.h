@@ -902,7 +902,7 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_GetWindowParent(SDL_Window *window);
 /**
  * Get the properties associated with a window.
  *
- * The following properties are provided by SDL:
+ * The following read-only properties are provided by SDL:
  *
  * On Android:
  *
