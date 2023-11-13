@@ -176,7 +176,6 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
 #endif
 
     device->CreateSDLWindow = WIN_CreateWindow;
-    device->CreateSDLWindowFrom = WIN_CreateWindowFrom;
     device->SetWindowTitle = WIN_SetWindowTitle;
     device->SetWindowIcon = WIN_SetWindowIcon;
     device->SetWindowPosition = WIN_SetWindowPosition;

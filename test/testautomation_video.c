@@ -1676,6 +1676,7 @@ static int video_setWindowCenteredOnDisplay(void *arg)
                 int currentDisplay;
                 int expectedDisplay;
                 SDL_Rect expectedDisplayRect;
+                SDL_PropertiesID props;
 
                 /* xVariation is the display we start on */
                 expectedDisplay = displays[xVariation % displayNum];
@@ -1687,7 +1688,14 @@ static int video_setWindowCenteredOnDisplay(void *arg)
                 expectedX = (expectedDisplayRect.x + ((expectedDisplayRect.w - w) / 2));
                 expectedY = (expectedDisplayRect.y + ((expectedDisplayRect.h - h) / 2));
 
-                window = SDL_CreateWindowWithPosition(title, x, y, w, h, 0);
+                props = SDL_CreateProperties();
+                SDL_SetStringProperty(props, "title", title);
+                SDL_SetNumberProperty(props, "x", x);
+                SDL_SetNumberProperty(props, "w", y);
+                SDL_SetNumberProperty(props, "width", w);
+                SDL_SetNumberProperty(props, "height", h);
+                window = SDL_CreateWindowWithProperties(props);
+                SDL_DestroyProperties(props);
                 SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d,%d,SHOWN)", x, y, w, h);
                 SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
 

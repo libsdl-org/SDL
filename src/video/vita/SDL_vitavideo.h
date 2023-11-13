@@ -62,7 +62,7 @@ int VITA_VideoInit(SDL_VideoDevice *_this);
 void VITA_VideoQuit(SDL_VideoDevice *_this);
 int VITA_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
 int VITA_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-int VITA_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
+int VITA_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 void VITA_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 int VITA_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
 void VITA_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);

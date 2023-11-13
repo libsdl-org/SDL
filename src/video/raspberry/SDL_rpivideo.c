@@ -216,7 +216,7 @@ static void RPI_vsync_callback(DISPMANX_UPDATE_HANDLE_T u, void *data)
     SDL_UnlockMutex(wdata->vsync_cond_mutex);
 }
 
-int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_WindowData *wdata;
     SDL_VideoDisplay *display;

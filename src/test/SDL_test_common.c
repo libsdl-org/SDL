@@ -1347,6 +1347,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
         for (i = 0; i < state->num_windows; ++i) {
             char title[1024];
             SDL_Rect r;
+            SDL_PropertiesID props;
 
             r.x = state->window_x;
             r.y = state->window_y;
@@ -1369,7 +1370,15 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
             } else {
                 SDL_strlcpy(title, state->window_title, SDL_arraysize(title));
             }
-            state->windows[i] = SDL_CreateWindowWithPosition(title, r.x, r.y, r.w, r.h, state->window_flags);
+            props = SDL_CreateProperties();
+            SDL_SetStringProperty(props, "title", title);
+            SDL_SetNumberProperty(props, "x", r.x);
+            SDL_SetNumberProperty(props, "y", r.y);
+            SDL_SetNumberProperty(props, "width", r.w);
+            SDL_SetNumberProperty(props, "height", r.h);
+            SDL_SetNumberProperty(props, "flags", state->window_flags);
+            state->windows[i] = SDL_CreateWindowWithProperties(props);
+            SDL_DestroyProperties(props);
             if (!state->windows[i]) {
                 SDL_Log("Couldn't create window: %s\n",
                         SDL_GetError());

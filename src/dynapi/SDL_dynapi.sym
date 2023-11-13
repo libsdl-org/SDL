@@ -69,8 +69,7 @@ SDL3_0.0.0 {
     SDL_CreateThreadWithStackSize;
     SDL_CreateWindow;
     SDL_CreateWindowAndRenderer;
-    SDL_CreateWindowFrom;
-    SDL_CreateWindowWithPosition;
+    SDL_CreateWindowWithProperties;
     SDL_CursorVisible;
     SDL_DXGIGetOutputInfo;
     SDL_DelEventWatch;

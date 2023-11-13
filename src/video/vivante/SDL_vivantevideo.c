@@ -238,7 +238,7 @@ void VIVANTE_VideoQuit(SDL_VideoDevice *_this)
 #endif
 }
 
-int VIVANTE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+int VIVANTE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_VideoData *videodata = _this->driverdata;
     SDL_DisplayData *displaydata;

@@ -40,7 +40,7 @@ static int Emscripten_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *d
 static void Emscripten_VideoQuit(SDL_VideoDevice *_this);
 static int Emscripten_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
 
-static int Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
+static int Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
 static void Emscripten_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h);
 static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
@@ -171,7 +171,7 @@ static void Emscripten_PumpEvents(SDL_VideoDevice *_this)
     /* do nothing. */
 }
 
-static int Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+static int Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     SDL_WindowData *wdata;
     double scaled_w, scaled_h;

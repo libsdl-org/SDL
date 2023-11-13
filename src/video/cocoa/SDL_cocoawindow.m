@@ -1752,7 +1752,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
 
 @end
 
-static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow *nswindow, NSView *nsview, SDL_bool created)
+static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow *nswindow, NSView *nsview)
 {
     @autoreleasepool {
         SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)_this->driverdata;
@@ -1765,7 +1765,6 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow 
         }
         data.window = window;
         data.nswindow = nswindow;
-        data.created = created;
         data.videodata = videodata;
         data.window_number = nswindow.windowNumber;
         data.nscontexts = [[NSMutableArray alloc] init];
@@ -1862,6 +1861,14 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow 
          */
         [nswindow setOneShot:NO];
 
+        if (window->flags & SDL_WINDOW_FOREIGN) {
+            /* Query the title from the existing window */
+            NSString *title = [nswindow title];
+            if (title) {
+                window->title = SDL_strdup([title UTF8String]);
+            }
+        }
+
         SDL_PropertiesID props = SDL_GetWindowProperties(window);
         SDL_SetProperty(props, "SDL.window.cocoa.window", (__bridge void *)data.nswindow);
         SDL_SetNumberProperty(props, "SDL.window.cocoa.metal_view_tag", SDL_METALVIEW_TAG);
@@ -1872,69 +1879,99 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow 
     }
 }
 
-int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     @autoreleasepool {
         SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)_this->driverdata;
-        NSWindow *nswindow;
-        int x, y;
-        NSScreen *screen;
-        NSRect rect, screenRect;
-        BOOL fullscreen;
-        NSUInteger style;
-        SDLView *contentView;
-        BOOL highdpi;
+        const void *data = SDL_GetProperty(create_props, "native.data", NULL);
+        NSWindow *nswindow = nil;
+        NSView *nsview = nil;
 
-        SDL_RelativeToGlobalForWindow(window, window->x, window->y, &x, &y);
-        rect.origin.x = x;
-        rect.origin.y = y;
-        rect.size.width = window->w;
-        rect.size.height = window->h;
-        fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
-        ConvertNSRect(fullscreen, &rect);
-
-        style = GetWindowStyle(window);
-
-        /* Figure out which screen to place this window */
-        screen = ScreenForRect(&rect);
-        screenRect = [screen frame];
-        rect.origin.x -= screenRect.origin.x;
-        rect.origin.y -= screenRect.origin.y;
-
-        /* Constrain the popup */
-        if (SDL_WINDOW_IS_POPUP(window)) {
-            if (rect.origin.x + rect.size.width > screenRect.origin.x + screenRect.size.width) {
-                rect.origin.x -= (rect.origin.x + rect.size.width) - (screenRect.origin.x + screenRect.size.width);
+        if (data) {
+            if ([(__bridge id)data isKindOfClass:[NSWindow class]]) {
+                nswindow = (__bridge NSWindow *)data;
+            } else if ([(__bridge id)data isKindOfClass:[NSView class]]) {
+                nsview = (__bridge NSView *)data;
+            } else {
+                SDL_assert(false);
             }
-            if (rect.origin.y + rect.size.height > screenRect.origin.y + screenRect.size.height) {
-                rect.origin.y -= (rect.origin.y + rect.size.height) - (screenRect.origin.y + screenRect.size.height);
+        } else {
+            nswindow = (__bridge NSWindow *)SDL_GetProperty(create_props, "native.cocoa.window", NULL);
+            nsview = (__bridge NSView *)SDL_GetProperty(create_props, "native.cocoa.view", NULL);
+        }
+        if (nswindow && !nsview) {
+            nsview = [nswindow contentView];
+        }
+        if (nsview && !nswindow) {
+            nswindow = [nsview window];
+        }
+        if (nswindow) {
+            window->flags |= SDL_WINDOW_FOREIGN;
+        } else {
+            int x, y;
+            NSScreen *screen;
+            NSRect rect, screenRect;
+            BOOL fullscreen;
+            NSUInteger style;
+            SDLView *contentView;
+
+            SDL_RelativeToGlobalForWindow(window, window->x, window->y, &x, &y);
+            rect.origin.x = x;
+            rect.origin.y = y;
+            rect.size.width = window->w;
+            rect.size.height = window->h;
+            fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
+            ConvertNSRect(fullscreen, &rect);
+
+            style = GetWindowStyle(window);
+
+            /* Figure out which screen to place this window */
+            screen = ScreenForRect(&rect);
+            screenRect = [screen frame];
+            rect.origin.x -= screenRect.origin.x;
+            rect.origin.y -= screenRect.origin.y;
+
+            /* Constrain the popup */
+            if (SDL_WINDOW_IS_POPUP(window)) {
+                if (rect.origin.x + rect.size.width > screenRect.origin.x + screenRect.size.width) {
+                    rect.origin.x -= (rect.origin.x + rect.size.width) - (screenRect.origin.x + screenRect.size.width);
+                }
+                if (rect.origin.y + rect.size.height > screenRect.origin.y + screenRect.size.height) {
+                    rect.origin.y -= (rect.origin.y + rect.size.height) - (screenRect.origin.y + screenRect.size.height);
+                }
+                rect.origin.x = SDL_max(rect.origin.x, screenRect.origin.x);
+                rect.origin.y = SDL_max(rect.origin.y, screenRect.origin.y);
             }
-            rect.origin.x = SDL_max(rect.origin.x, screenRect.origin.x);
-            rect.origin.y = SDL_max(rect.origin.y, screenRect.origin.y);
-        }
 
-        @try {
-            nswindow = [[SDLWindow alloc] initWithContentRect:rect styleMask:style backing:NSBackingStoreBuffered defer:NO screen:screen];
-        }
-        @catch (NSException *e) {
-            return SDL_SetError("%s", [[e reason] UTF8String]);
-        }
+            @try {
+                nswindow = [[SDLWindow alloc] initWithContentRect:rect styleMask:style backing:NSBackingStoreBuffered defer:NO screen:screen];
+            }
+            @catch (NSException *e) {
+                return SDL_SetError("%s", [[e reason] UTF8String]);
+            }
 
-        [nswindow setColorSpace:[NSColorSpace sRGBColorSpace]];
+            [nswindow setColorSpace:[NSColorSpace sRGBColorSpace]];
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101200 /* Added in the 10.12.0 SDK. */
-        /* By default, don't allow users to make our window tabbed in 10.12 or later */
-        if ([nswindow respondsToSelector:@selector(setTabbingMode:)]) {
-            [nswindow setTabbingMode:NSWindowTabbingModeDisallowed];
-        }
+            /* By default, don't allow users to make our window tabbed in 10.12 or later */
+            if ([nswindow respondsToSelector:@selector(setTabbingMode:)]) {
+                [nswindow setTabbingMode:NSWindowTabbingModeDisallowed];
+            }
 #endif
 
-        if (videodata.allow_spaces) {
-            /* we put fullscreen desktop windows in their own Space, without a toggle button or menubar, later */
-            if (window->flags & SDL_WINDOW_RESIZABLE) {
-                /* resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar. */
-                [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+            if (videodata.allow_spaces) {
+                /* we put fullscreen desktop windows in their own Space, without a toggle button or menubar, later */
+                if (window->flags & SDL_WINDOW_RESIZABLE) {
+                    /* resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar. */
+                    [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+                }
             }
+
+            /* Create a default view for this window */
+            rect = [nswindow contentRectForFrameRect:[nswindow frame]];
+            contentView = [[SDLView alloc] initWithFrame:rect];
+            [contentView setSDLWindow:window];
+            nsview = contentView;
         }
 
         if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
@@ -1947,11 +1984,6 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
             nswindow.backgroundColor = [NSColor clearColor];
         }
 
-        /* Create a default view for this window */
-        rect = [nswindow contentRectForFrameRect:[nswindow frame]];
-        contentView = [[SDLView alloc] initWithFrame:rect];
-        [contentView setSDLWindow:window];
-
 /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -1959,8 +1991,8 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
         /* Note: as of the macOS 10.15 SDK, this defaults to YES instead of NO when
          * the NSHighResolutionCapable boolean is set in Info.plist. */
-        highdpi = (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) ? YES : NO;
-        [contentView setWantsBestResolutionOpenGLSurface:highdpi];
+        BOOL highdpi = (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) ? YES : NO;
+        [nsview setWantsBestResolutionOpenGLSurface:highdpi];
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
@@ -1969,19 +2001,19 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 #ifdef SDL_VIDEO_OPENGL_EGL
         if ((window->flags & SDL_WINDOW_OPENGL) &&
             _this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
-            [contentView setWantsLayer:TRUE];
+            [nsview setWantsLayer:TRUE];
             if ((window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) &&
                 [nswindow.screen respondsToSelector:@selector(backingScaleFactor)]) {
-                contentView.layer.contentsScale = nswindow.screen.backingScaleFactor;
+                nsview.layer.contentsScale = nswindow.screen.backingScaleFactor;
             } else {
-                contentView.layer.contentsScale = 1;
+                nsview.layer.contentsScale = 1;
             }
         }
 #endif /* SDL_VIDEO_OPENGL_EGL */
 #endif /* SDL_VIDEO_OPENGL_ES2 */
-        [nswindow setContentView:contentView];
+        [nswindow setContentView:nsview];
 
-        if (SetupWindowData(_this, window, nswindow, contentView, SDL_TRUE) < 0) {
+        if (SetupWindowData(_this, window, nswindow, nsview) < 0) {
             return -1;
         }
 
@@ -2004,60 +2036,6 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
         }
 #endif /* SDL_VIDEO_OPENGL_ES2 */
         return 0;
-    }
-}
-
-int Cocoa_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
-{
-    @autoreleasepool {
-        const void *data = SDL_GetProperty(props, "data", NULL);
-        NSWindow *nswindow = nil;
-        NSView *nsview = nil;
-        NSString *title;
-        BOOL highdpi;
-
-        if (data) {
-            if ([(__bridge id)data isKindOfClass:[NSWindow class]]) {
-                nswindow = (__bridge NSWindow *)data;
-            } else if ([(__bridge id)data isKindOfClass:[NSView class]]) {
-                nsview = (__bridge NSView *)data;
-            } else {
-                SDL_assert(false);
-            }
-        } else {
-            nswindow = (__bridge NSWindow *)SDL_GetProperty(props, "cocoa.window", NULL);
-            nsview = (__bridge NSView *)SDL_GetProperty(props, "cocoa.view", NULL);
-        }
-        if (nswindow && !nsview) {
-            nsview = [nswindow contentView];
-        }
-        if (nsview && !nswindow) {
-            nswindow = [nsview window];
-        }
-        if (!nswindow) {
-            return SDL_SetError("Couldn't find property cocoa.window");
-        }
-
-        /* Query the title from the existing window */
-        title = [nswindow title];
-        if (title) {
-            window->title = SDL_strdup([title UTF8String]);
-        }
-
-/* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#endif
-        /* Note: as of the macOS 10.15 SDK, this defaults to YES instead of NO when
-         * the NSHighResolutionCapable boolean is set in Info.plist. */
-        highdpi = (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) ? YES : NO;
-        [nsview setWantsBestResolutionOpenGLSurface:highdpi];
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
-        return SetupWindowData(_this, window, nswindow, nsview, SDL_FALSE);
     }
 }
 

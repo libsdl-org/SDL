@@ -63,7 +63,7 @@ int RPI_VideoInit(SDL_VideoDevice *_this);
 void RPI_VideoQuit(SDL_VideoDevice *_this);
 int RPI_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
 int RPI_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
+int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 void RPI_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 int RPI_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
 void RPI_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);

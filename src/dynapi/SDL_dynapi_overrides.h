@@ -93,8 +93,7 @@
 #define SDL_CreateThreadWithStackSize   SDL_CreateThreadWithStackSize_REAL
 #define SDL_CreateWindow SDL_CreateWindow_REAL
 #define SDL_CreateWindowAndRenderer SDL_CreateWindowAndRenderer_REAL
-#define SDL_CreateWindowFrom SDL_CreateWindowFrom_REAL
-#define SDL_CreateWindowWithPosition SDL_CreateWindowWithPosition_REAL
+#define SDL_CreateWindowWithProperties SDL_CreateWindowWithProperties_REAL
 #define SDL_CursorVisible SDL_CursorVisible_REAL
 #define SDL_DXGIGetOutputInfo   SDL_DXGIGetOutputInfo_REAL
 #define SDL_DelEventWatch SDL_DelEventWatch_REAL

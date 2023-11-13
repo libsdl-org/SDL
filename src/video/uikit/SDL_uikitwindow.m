@@ -160,7 +160,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow 
     return 0;
 }
 
-int UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+int UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     @autoreleasepool {
         SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);

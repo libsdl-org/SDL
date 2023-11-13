@@ -1981,7 +1981,7 @@ void Wayland_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, S
     }
 }
 
-int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_WindowData *data;
     SDL_VideoData *c;

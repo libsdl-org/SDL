@@ -218,7 +218,7 @@ void VITA_VideoQuit(SDL_VideoDevice *_this)
     VITA_QuitTouch();
 }
 
-int VITA_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+int VITA_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_WindowData *wdata;
 #ifdef SDL_VIDEO_VITA_PVR

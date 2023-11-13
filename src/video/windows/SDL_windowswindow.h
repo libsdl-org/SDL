@@ -45,7 +45,6 @@ struct SDL_WindowData
     HBITMAP hbm;
     WNDPROC wndproc;
     HHOOK keyboard_hook;
-    SDL_bool created;
     WPARAM mouse_button_flags;
     LPARAM last_pointer_update;
     WCHAR high_surrogate;
@@ -75,8 +74,7 @@ struct SDL_WindowData
     UINT copybits_flag;
 };
 
-extern int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int WIN_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
+extern int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void WIN_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 extern int WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon);
 extern int WIN_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);

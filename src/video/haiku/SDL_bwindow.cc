@@ -76,7 +76,7 @@ static int _InitWindow(SDL_VideoDevice *_this, SDL_Window *window) {
     return 0;
 }
 
-int HAIKU_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window) {
+int HAIKU_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props) {
     if (_InitWindow(_this, window) < 0) {
         return -1;
     }

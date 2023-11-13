@@ -121,7 +121,7 @@ int KMSDRM_VideoInit(SDL_VideoDevice *_this);
 void KMSDRM_VideoQuit(SDL_VideoDevice *_this);
 int KMSDRM_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
 int KMSDRM_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-int KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
+int KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 void KMSDRM_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 int KMSDRM_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
 void KMSDRM_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);

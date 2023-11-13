@@ -26,7 +26,7 @@
 #include "../../core/android/SDL_android.h"
 #include "../SDL_egl_c.h"
 
-extern int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void Android_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
 extern void Android_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
