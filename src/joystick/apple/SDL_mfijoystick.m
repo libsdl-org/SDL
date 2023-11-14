@@ -271,31 +271,115 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
     }
 #endif
 
+    BOOL is_xbox = IsControllerXbox(controller);
+    BOOL is_ps4 = IsControllerPS4(controller);
+    BOOL is_ps5 = IsControllerPS5(controller);
+    BOOL is_switch_pro = IsControllerSwitchPro(controller);
+    BOOL is_switch_joycon_pair = IsControllerSwitchJoyConPair(controller);
+    BOOL is_stadia = IsControllerStadia(controller);
+    BOOL is_backbone_one = IsControllerBackboneOne(controller);
+    BOOL is_switch_joyconL = IsControllerSwitchJoyConL(controller);
+    BOOL is_switch_joyconR = IsControllerSwitchJoyConR(controller);
+#ifdef SDL_JOYSTICK_HIDAPI
+    if ((is_xbox && HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_XBOXONE)) ||
+        (is_ps4 && HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_PS4)) ||
+        (is_ps5 && HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_PS5)) ||
+        (is_switch_pro && HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO)) ||
+        (is_switch_joycon_pair && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR, 0, "")) ||
+        (is_stadia && HIDAPI_IsDevicePresent(USB_VENDOR_GOOGLE, USB_PRODUCT_GOOGLE_STADIA_CONTROLLER, 0, "")) ||
+        (is_switch_joyconL && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT, 0, "")) ||
+        (is_switch_joyconR && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT, 0, ""))) {
+        /* The HIDAPI driver is taking care of this device */
+        return FALSE;
+    }
+#else
+    (void)is_stadia;
+    (void)is_switch_joyconL;
+    (void)is_switch_joyconR;
+#endif
+
+    if (is_backbone_one) {
+        vendor = USB_VENDOR_BACKBONE;
+        if (is_ps5) {
+            product = USB_PRODUCT_BACKBONE_ONE_IOS_PS5;
+        } else {
+            product = USB_PRODUCT_BACKBONE_ONE_IOS;
+        }
+        subtype = 0;
+    } else if (is_xbox) {
+        vendor = USB_VENDOR_MICROSOFT;
+        if (device->has_xbox_paddles) {
+            /* Assume Xbox One Elite Series 2 Controller unless/until GCController flows VID/PID */
+            product = USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH;
+            subtype = 1;
+        } else if (device->has_xbox_share_button) {
+            /* Assume Xbox Series X Controller unless/until GCController flows VID/PID */
+            product = USB_PRODUCT_XBOX_SERIES_X_BLE;
+            subtype = 1;
+        } else {
+            /* Assume Xbox One S Bluetooth Controller unless/until GCController flows VID/PID */
+            product = USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH;
+            subtype = 0;
+        }
+    } else if (is_ps4) {
+        /* Assume DS4 Slim unless/until GCController flows VID/PID */
+        vendor = USB_VENDOR_SONY;
+        product = USB_PRODUCT_SONY_DS4_SLIM;
+        if (device->has_dualshock_touchpad) {
+            subtype = 1;
+        } else {
+            subtype = 0;
+        }
+    } else if (is_ps5) {
+        vendor = USB_VENDOR_SONY;
+        product = USB_PRODUCT_SONY_DS5;
+        subtype = 0;
+    } else if (is_switch_pro) {
+        vendor = USB_VENDOR_NINTENDO;
+        product = USB_PRODUCT_NINTENDO_SWITCH_PRO;
+        subtype = 0;
+    } else if (is_switch_joycon_pair) {
+        vendor = USB_VENDOR_NINTENDO;
+        product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR;
+        subtype = 0;
+    } else if (is_switch_joyconL) {
+        vendor = USB_VENDOR_NINTENDO;
+        product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT;
+        subtype = 0;
+    } else if (is_switch_joyconR) {
+        vendor = USB_VENDOR_NINTENDO;
+        product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT;
+        subtype = 0;
+    } else if (controller.extendedGamepad) {
+        vendor = USB_VENDOR_APPLE;
+        product = 1;
+        subtype = 1;
+    } else if (controller.gamepad) {
+        vendor = USB_VENDOR_APPLE;
+        product = 2;
+        subtype = 2;
+#if TARGET_OS_TV
+    } else if (controller.microGamepad) {
+        vendor = USB_VENDOR_APPLE;
+        product = 3;
+        subtype = 3;
+#endif
+#ifdef ENABLE_PHYSICAL_INPUT_PROFILE
+    } else if ([controller respondsToSelector:@selector(physicalInputProfile)]) {
+        vendor = USB_VENDOR_APPLE;
+        product = 4;
+        subtype = 4;
+#endif
+    } else {
+        vendor = USB_VENDOR_APPLE;
+        product = 5;
+        subtype = 5;
+    }
+
     if (controller.extendedGamepad) {
         GCExtendedGamepad *gamepad = controller.extendedGamepad;
-        BOOL is_xbox = IsControllerXbox(controller);
-        BOOL is_ps4 = IsControllerPS4(controller);
-        BOOL is_ps5 = IsControllerPS5(controller);
-        BOOL is_switch_pro = IsControllerSwitchPro(controller);
-        BOOL is_switch_joycon_pair = IsControllerSwitchJoyConPair(controller);
-        BOOL is_stadia = IsControllerStadia(controller);
-        BOOL is_backbone_one = IsControllerBackboneOne(controller);
         int nbuttons = 0;
         BOOL has_direct_menu;
-
-#ifdef SDL_JOYSTICK_HIDAPI
-        if ((is_xbox && HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_XBOXONE)) ||
-            (is_ps4 && HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_PS4)) ||
-            (is_ps5 && HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_PS5)) ||
-            (is_switch_pro && HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO)) ||
-            (is_switch_joycon_pair && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR, 0, "")) ||
-            (is_stadia && HIDAPI_IsDevicePresent(USB_VENDOR_GOOGLE, USB_PRODUCT_GOOGLE_STADIA_CONTROLLER, 0, ""))) {
-            /* The HIDAPI driver is taking care of this device */
-            return FALSE;
-        }
-#else
-        (void)is_stadia;
-#endif
 
         /* These buttons are part of the original MFi spec */
         device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_SOUTH);
@@ -379,56 +463,6 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
 #pragma clang diagnostic pop
 
         if (is_backbone_one) {
-            vendor = USB_VENDOR_BACKBONE;
-            if (is_ps5) {
-                product = USB_PRODUCT_BACKBONE_ONE_IOS_PS5;
-            } else {
-                product = USB_PRODUCT_BACKBONE_ONE_IOS;
-            }
-            subtype = 0;
-        } else if (is_xbox) {
-            vendor = USB_VENDOR_MICROSOFT;
-            if (device->has_xbox_paddles) {
-                /* Assume Xbox One Elite Series 2 Controller unless/until GCController flows VID/PID */
-                product = USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH;
-                subtype = 1;
-            } else if (device->has_xbox_share_button) {
-                /* Assume Xbox Series X Controller unless/until GCController flows VID/PID */
-                product = USB_PRODUCT_XBOX_SERIES_X_BLE;
-                subtype = 1;
-            } else {
-                /* Assume Xbox One S Bluetooth Controller unless/until GCController flows VID/PID */
-                product = USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH;
-                subtype = 0;
-            }
-        } else if (is_ps4) {
-            /* Assume DS4 Slim unless/until GCController flows VID/PID */
-            vendor = USB_VENDOR_SONY;
-            product = USB_PRODUCT_SONY_DS4_SLIM;
-            if (device->has_dualshock_touchpad) {
-                subtype = 1;
-            } else {
-                subtype = 0;
-            }
-        } else if (is_ps5) {
-            vendor = USB_VENDOR_SONY;
-            product = USB_PRODUCT_SONY_DS5;
-            subtype = 0;
-        } else if (is_switch_pro) {
-            vendor = USB_VENDOR_NINTENDO;
-            product = USB_PRODUCT_NINTENDO_SWITCH_PRO;
-            subtype = 0;
-        } else if (is_switch_joycon_pair) {
-            vendor = USB_VENDOR_NINTENDO;
-            product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR;
-            subtype = 0;
-        } else {
-            vendor = USB_VENDOR_APPLE;
-            product = 1;
-            subtype = 1;
-        }
-
-        if (is_backbone_one) {
             /* The Backbone app uses share button */
             if ((device->button_mask & (1 << SDL_GAMEPAD_BUTTON_MISC1)) != 0) {
                 device->button_mask &= ~(1 << SDL_GAMEPAD_BUTTON_MISC1);
@@ -442,34 +476,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         device->nbuttons = nbuttons;
 
     } else if (controller.gamepad) {
-        BOOL is_switch_joyconL = IsControllerSwitchJoyConL(controller);
-        BOOL is_switch_joyconR = IsControllerSwitchJoyConR(controller);
         int nbuttons = 0;
-
-#ifdef SDL_JOYSTICK_HIDAPI
-        if ((is_switch_joyconL && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT, 0, "")) ||
-            (is_switch_joyconR && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT, 0, ""))) {
-            /* The HIDAPI driver is taking care of this device */
-            return FALSE;
-        }
-#else
-        (void)is_switch_joyconL;
-        (void)is_switch_joyconR;
-#endif
-
-        if (is_switch_joyconL) {
-            vendor = USB_VENDOR_NINTENDO;
-            product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT;
-            subtype = 0;
-        } else if (is_switch_joyconR) {
-            vendor = USB_VENDOR_NINTENDO;
-            product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT;
-            subtype = 0;
-        } else {
-            vendor = USB_VENDOR_APPLE;
-            product = 2;
-            subtype = 2;
-        }
 
         /* These buttons are part of the original MFi spec */
         device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_SOUTH);
@@ -503,16 +510,29 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         ++nbuttons;
         device->uses_pause_handler = SDL_TRUE;
 
-        vendor = USB_VENDOR_APPLE;
-        product = 3;
-        subtype = 3;
         device->naxes = 2; /* treat the touch surface as two axes */
         device->nhats = 0; /* apparently the touch surface-as-dpad is buggy */
         device->nbuttons = nbuttons;
 
         controller.microGamepad.allowsRotation = SDL_GetHintBoolean(SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION, SDL_FALSE);
     }
-#endif /* TARGET_OS_TV */
+#endif
+#ifdef ENABLE_PHYSICAL_INPUT_PROFILE
+    else if ([controller respondsToSelector:@selector(physicalInputProfile)]) {
+        device->use_physical_profile = SDL_TRUE;
+        device->axes = [controller.physicalInputProfile.axes allKeys];
+        device->naxes = controller.physicalInputProfile.axes.count;
+        device->dpads = [controller.physicalInputProfile.dpads allKeys];
+        device->nhats = controller.physicalInputProfile.dpads.count;
+        device->buttons = [controller.physicalInputProfile.buttons allKeys];
+        device->nbuttons = controller.physicalInputProfile.buttons.count;
+        subtype = 4;
+    }
+#endif
+    else {
+        /* We can't detect any inputs on this */
+        return SDL_FALSE;
+    }
 
     if (vendor == USB_VENDOR_APPLE) {
         /* Note that this is an MFI controller and what subtype it is */
@@ -957,7 +977,8 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 {
 #ifdef SDL_JOYSTICK_MFI
     @autoreleasepool {
-        GCController *controller = joystick->hwdata->controller;
+        SDL_JoystickDeviceItem *device = joystick->hwdata;
+        GCController *controller = device->controller;
         Uint8 hatstate = SDL_HAT_CENTERED;
         int i;
         int pause_button_index = 0;
@@ -976,11 +997,39 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
                     if (axis.value != 0.0f)
                         NSLog(@"Axis %@ = %g\n", key, axis.value);
                 }
+                for (id key in controller.physicalInputProfile.dpads) {
+                    GCControllerDirectionPad *dpad = controller.physicalInputProfile.dpads[key];
+                    if (dpad.up.isPressed || dpad.down.isPressed || dpad.left.isPressed || dpad.right.isPressed) {
+                        NSLog(@"Hat %@ =%s%s%s%s\n", key,
+                            dpad.up.isPressed ? " UP" : "",
+                            dpad.down.isPressed ? " DOWN" : "",
+                            dpad.left.isPressed ? " LEFT" : "",
+                            dpad.right.isPressed ? " RIGHT" : "");
+                    }
+                }
             }
         }
 #endif
 
-        if (controller.extendedGamepad) {
+        if (device->use_physical_profile) {
+            int axis = 0;
+            for (id key in device->axes) {
+                Sint16 value = (Sint16)(controller.physicalInputProfile.axes[key].value * 32767);
+                SDL_SendJoystickAxis(timestamp, joystick, axis++, value);
+            }
+
+            int button = 0;
+            for (id key in device->buttons) {
+                Uint8 value = controller.physicalInputProfile.buttons[key].isPressed;
+                SDL_SendJoystickButton(timestamp, joystick, button++, value);
+            }
+
+            int hat = 0;
+            for (id key in device->dpads) {
+                hatstate = IOS_MFIJoystickHatStateForDPad(controller.physicalInputProfile.dpads[key]);
+                SDL_SendJoystickHat(timestamp, joystick, hat++, hatstate);
+            }
+        } else if (controller.extendedGamepad) {
             SDL_bool isstack;
             GCExtendedGamepad *gamepad = controller.extendedGamepad;
 
@@ -1014,21 +1063,21 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             /* These buttons are available on some newer controllers */
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability-new"
-            if (joystick->hwdata->button_mask & (1 << SDL_GAMEPAD_BUTTON_LEFT_STICK)) {
+            if (device->button_mask & (1 << SDL_GAMEPAD_BUTTON_LEFT_STICK)) {
                 buttons[button_count++] = gamepad.leftThumbstickButton.isPressed;
             }
-            if (joystick->hwdata->button_mask & (1 << SDL_GAMEPAD_BUTTON_RIGHT_STICK)) {
+            if (device->button_mask & (1 << SDL_GAMEPAD_BUTTON_RIGHT_STICK)) {
                 buttons[button_count++] = gamepad.rightThumbstickButton.isPressed;
             }
-            if (joystick->hwdata->button_mask & (1 << SDL_GAMEPAD_BUTTON_BACK)) {
+            if (device->button_mask & (1 << SDL_GAMEPAD_BUTTON_BACK)) {
                 buttons[button_count++] = gamepad.buttonOptions.isPressed;
             }
-            if (joystick->hwdata->button_mask & (1 << SDL_GAMEPAD_BUTTON_GUIDE)) {
+            if (device->button_mask & (1 << SDL_GAMEPAD_BUTTON_GUIDE)) {
                 buttons[button_count++] = gamepad.buttonHome.isPressed;
             }
             /* This must be the last button, so we can optionally handle it with pause_button_index below */
-            if (joystick->hwdata->button_mask & (1 << SDL_GAMEPAD_BUTTON_START)) {
-                if (joystick->hwdata->uses_pause_handler) {
+            if (device->button_mask & (1 << SDL_GAMEPAD_BUTTON_START)) {
+                if (device->uses_pause_handler) {
                     pause_button_index = button_count;
                     buttons[button_count++] = joystick->delayed_guide_button;
                 } else {
@@ -1037,7 +1086,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             }
 
 #ifdef ENABLE_PHYSICAL_INPUT_PROFILE
-            if (joystick->hwdata->has_dualshock_touchpad) {
+            if (device->has_dualshock_touchpad) {
                 GCControllerDirectionPad *dpad;
                 buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputDualShockTouchpadButton].isPressed;
 
@@ -1056,17 +1105,17 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
                 }
             }
 
-            if (joystick->hwdata->has_xbox_paddles) {
-                if (joystick->hwdata->button_mask & (1 << SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1)) {
+            if (device->has_xbox_paddles) {
+                if (device->button_mask & (1 << SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1)) {
                     buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxPaddleOne].isPressed;
                 }
-                if (joystick->hwdata->button_mask & (1 << SDL_GAMEPAD_BUTTON_LEFT_PADDLE1)) {
+                if (device->button_mask & (1 << SDL_GAMEPAD_BUTTON_LEFT_PADDLE1)) {
                     buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxPaddleTwo].isPressed;
                 }
-                if (joystick->hwdata->button_mask & (1 << SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2)) {
+                if (device->button_mask & (1 << SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2)) {
                     buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxPaddleThree].isPressed;
                 }
-                if (joystick->hwdata->button_mask & (1 << SDL_GAMEPAD_BUTTON_LEFT_PADDLE2)) {
+                if (device->button_mask & (1 << SDL_GAMEPAD_BUTTON_LEFT_PADDLE2)) {
                     buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxPaddleFour].isPressed;
                 }
 
@@ -1079,7 +1128,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
                 */
             }
 
-            if (joystick->hwdata->has_xbox_share_button) {
+            if (device->has_xbox_share_button) {
                 buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxShareButton].isPressed;
             }
 #endif
@@ -1170,8 +1219,8 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability-new"
             /* This must be the last button, so we can optionally handle it with pause_button_index below */
-            if (joystick->hwdata->button_mask & (1 << SDL_GAMEPAD_BUTTON_START)) {
-                if (joystick->hwdata->uses_pause_handler) {
+            if (device->button_mask & (1 << SDL_GAMEPAD_BUTTON_START)) {
+                if (device->uses_pause_handler) {
                     pause_button_index = button_count;
                     buttons[button_count++] = joystick->delayed_guide_button;
                 } else {
@@ -1186,16 +1235,16 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
         }
 #endif /* TARGET_OS_TV */
 
-        if (joystick->nhats > 0) {
+        if (joystick->nhats > 0 && !device->use_physical_profile) {
             SDL_SendJoystickHat(timestamp, joystick, 0, hatstate);
         }
 
-        if (joystick->hwdata->uses_pause_handler) {
-            for (i = 0; i < joystick->hwdata->num_pause_presses; i++) {
+        if (device->uses_pause_handler) {
+            for (i = 0; i < device->num_pause_presses; i++) {
                 SDL_SendJoystickButton(timestamp, joystick, pause_button_index, SDL_PRESSED);
                 SDL_SendJoystickButton(timestamp, joystick, pause_button_index, SDL_RELEASED);
             }
-            joystick->hwdata->num_pause_presses = 0;
+            device->num_pause_presses = 0;
         }
 
 #ifdef ENABLE_MFI_BATTERY
@@ -1730,6 +1779,10 @@ static GCControllerDirectionPad *GetDirectionalPadForController(GCController *co
 
     if (controller.microGamepad) {
         return controller.microGamepad.dpad;
+    }
+
+    if ([controller respondsToSelector:@selector(physicalInputProfile)]) {
+        return controller.physicalInputProfile.dpads[GCInputDirectionPad];
     }
 
     return nil;

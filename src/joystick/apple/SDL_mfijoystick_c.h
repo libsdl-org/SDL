@@ -25,6 +25,8 @@
 
 #include "../SDL_sysjoystick.h"
 
+#include <CoreFoundation/CoreFoundation.h>
+
 @class GCController;
 
 typedef struct joystick_hwdata
@@ -50,6 +52,11 @@ typedef struct joystick_hwdata
     SDL_bool has_dualshock_touchpad;
     SDL_bool has_xbox_paddles;
     SDL_bool has_xbox_share_button;
+
+    SDL_bool use_physical_profile;
+    NSArray *axes;
+    NSArray *dpads;
+    NSArray *buttons;
 
     struct joystick_hwdata *next;
 } joystick_hwdata;
