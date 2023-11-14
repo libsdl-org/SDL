@@ -1745,7 +1745,7 @@ static SDL_bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
 #if defined(SDL_JOYSTICK_MFI) && defined(__MACOS__)
 SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
 {
-    if (!connectObserver) {
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_MFI, SDL_TRUE)) {
         return SDL_FALSE;
     }
 
