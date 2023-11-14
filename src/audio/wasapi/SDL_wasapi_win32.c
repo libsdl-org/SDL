@@ -50,26 +50,36 @@ static const IID SDL_IID_IAudioClient = { 0x1cb9ad4c, 0xdbfa, 0x4c32, { 0xb1, 0x
 
 static int mgmtthrtask_AudioDeviceDisconnected(void *userdata)
 {
-    SDL_AudioDeviceDisconnected((SDL_AudioDevice *)userdata);
+    SDL_AudioDevice *device = (SDL_AudioDevice *) userdata;
+    SDL_AudioDeviceDisconnected(device);
+    UnrefPhysicalAudioDevice(device);  // make sure this lived until the task completes.
     return 0;
 }
 
 static void WASAPI_AudioDeviceDisconnected(SDL_AudioDevice *device)
 {
     // don't wait on this, IMMDevice's own thread needs to return or everything will deadlock.
-    WASAPI_ProxyToManagementThread(mgmtthrtask_AudioDeviceDisconnected, device, NULL);
+    if (device) {
+        RefPhysicalAudioDevice(device);  // make sure this lives until the task completes.
+        WASAPI_ProxyToManagementThread(mgmtthrtask_AudioDeviceDisconnected, device, NULL);
+    }
 }
 
 static int mgmtthrtask_DefaultAudioDeviceChanged(void *userdata)
 {
-    SDL_DefaultAudioDeviceChanged((SDL_AudioDevice *) userdata);
+    SDL_AudioDevice *device = (SDL_AudioDevice *) userdata;
+    SDL_DefaultAudioDeviceChanged(device);
+    UnrefPhysicalAudioDevice(device);  // make sure this lived until the task completes.
     return 0;
 }
 
 static void WASAPI_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
 {
     // don't wait on this, IMMDevice's own thread needs to return or everything will deadlock.
-    WASAPI_ProxyToManagementThread(mgmtthrtask_DefaultAudioDeviceChanged, new_default_device, NULL);
+    if (new_default_device) {
+        RefPhysicalAudioDevice(new_default_device);  // make sure this lives until the task completes.
+        WASAPI_ProxyToManagementThread(mgmtthrtask_DefaultAudioDeviceChanged, new_default_device, NULL);
+    }
 }
 
 int WASAPI_PlatformInit(void)
