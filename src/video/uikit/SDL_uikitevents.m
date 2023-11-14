@@ -257,6 +257,31 @@ static int mice_connected = 0;
 static id mouse_connect_observer = nil;
 static id mouse_disconnect_observer = nil;
 static bool mouse_relative_mode = SDL_FALSE;
+static SDL_MouseWheelDirection mouse_scroll_direction = SDL_MOUSEWHEEL_NORMAL;
+
+static void UpdateScrollDirection(void)
+{
+#if 0 /* This code doesn't work for some reason */
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    if ([userDefaults boolForKey:@"com.apple.swipescrolldirection"]) {
+        mouse_scroll_direction = SDL_MOUSEWHEEL_FLIPPED;
+    } else {
+        mouse_scroll_direction = SDL_MOUSEWHEEL_NORMAL;
+    }
+#else
+    Boolean keyExistsAndHasValidFormat = NO;
+    Boolean naturalScrollDirection = CFPreferencesGetAppBooleanValue(CFSTR("com.apple.swipescrolldirection"), kCFPreferencesAnyApplication, &keyExistsAndHasValidFormat);
+    if (!keyExistsAndHasValidFormat) {
+        /* Couldn't read the preference, assume natural scrolling direction */
+        naturalScrollDirection = YES;
+    }
+    if (naturalScrollDirection) {    
+        mouse_scroll_direction = SDL_MOUSEWHEEL_FLIPPED;
+    } else {
+        mouse_scroll_direction = SDL_MOUSEWHEEL_NORMAL;
+    }
+#endif
+}
 
 static void UpdatePointerLock()
 {
@@ -313,10 +338,22 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
         }
     };
 
-    mouse.mouseInput.scroll.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue)
-    {
-        SDL_SendMouseWheel(SDL_GetMouseFocus(), 0, xValue, yValue, SDL_MOUSEWHEEL_NORMAL);
+    mouse.mouseInput.scroll.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
+        /* Raw scroll values come in here, vertical values in the first axis, horizontal values in the second axis.
+         * The vertical values are negative moving the mouse wheel up and positive moving it down.
+         * The horizontal values are negative moving the mouse wheel left and positive moving it right.
+         * The vertical values are inverted compared to SDL, and the horizontal values are as expected.
+         */
+        float vertical = -xValue;
+        float horizontal = yValue;
+        if (mouse_scroll_direction == SDL_MOUSEWHEEL_FLIPPED) {
+            /* Since these are raw values, we need to flip them ourselves */
+            vertical = -vertical;
+            horizontal = -horizontal;
+        }
+        SDL_SendMouseWheel(SDL_GetMouseFocus(), mouseID, horizontal, vertical, mouse_scroll_direction);
     };
+    UpdateScrollDirection();
 
     dispatch_queue_t queue = dispatch_queue_create( "org.libsdl.input.mouse", DISPATCH_QUEUE_SERIAL );
     dispatch_set_target_queue( queue, dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0 ) );
