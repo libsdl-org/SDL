@@ -935,7 +935,7 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMappingForGUID(SDL_JoystickGUID gu
 
     /* Try harder to get the best match, or create a mapping */
 
-    if (vendor && product) {
+    if (SDL_JoystickGUIDUsesVersion(guid)) {
         /* Try again, ignoring the version */
         if (crc) {
             mapping = SDL_PrivateMatchGamepadMappingForGUID(guid, SDL_TRUE, SDL_FALSE);
@@ -1720,7 +1720,11 @@ static void SDL_PrivateAppendToMappingString(char *mapping_string,
         (void)SDL_snprintf(buffer, sizeof(buffer), "b%i", mapping->target);
         break;
     case EMappingKind_Axis:
-        (void)SDL_snprintf(buffer, sizeof(buffer), "a%i", mapping->target);
+        (void)SDL_snprintf(buffer, sizeof(buffer), "%sa%i%s",
+            mapping->half_axis_positive ? "+" :
+            mapping->half_axis_negative ? "-" : "",
+            mapping->target,
+            mapping->axis_reversed ? "~" : "");
         break;
     case EMappingKind_Hat:
         (void)SDL_snprintf(buffer, sizeof(buffer), "h%i.%i", mapping->target >> 4, mapping->target & 0x0F);
@@ -1780,6 +1784,7 @@ static GamepadMapping_t *SDL_PrivateGenerateAutomaticGamepadMapping(const char *
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "righty", &raw_map->righty);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "lefttrigger", &raw_map->lefttrigger);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "righttrigger", &raw_map->righttrigger);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "touchpad", &raw_map->touchpad);
 
     return SDL_PrivateAddMappingForGUID(guid, mapping, &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
 }
