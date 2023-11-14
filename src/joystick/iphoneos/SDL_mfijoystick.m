@@ -663,6 +663,10 @@ static void SDLCALL SDL_AppleTVRemoteRotationHintChanged(void *udata, const char
 
 static int IOS_JoystickInit(void)
 {
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_MFI, SDL_TRUE)) {
+        return 0;
+    }
+
 #if defined(__MACOSX__)
 #if _SDL_HAS_BUILTIN(__builtin_available)
     if (@available(macOS 10.16, *)) {
@@ -1680,6 +1684,10 @@ static SDL_bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
 #if defined(SDL_JOYSTICK_MFI) && defined(__MACOSX__)
 SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
 {
+    if (!connectObserver) {
+        return SDL_FALSE;
+    }
+
     if (@available(macOS 10.16, *)) {
         const int MAX_ATTEMPTS = 3;
         for (int attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {

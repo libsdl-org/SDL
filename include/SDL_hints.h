@@ -966,6 +966,24 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED "SDL_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED"
 
 /**
+  *  A variable controlling whether IOKit should be used for controller handling.
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - IOKit is not used
+  *    "1"       - IOKit is used (the default)
+  */
+#define SDL_HINT_JOYSTICK_IOKIT "SDL_JOYSTICK_IOKIT"
+
+/**
+  *  A variable controlling whether GCController should be used for controller handling.
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - GCController is not used
+  *    "1"       - GCController is used (the default)
+  */
+#define SDL_HINT_JOYSTICK_MFI "SDL_JOYSTICK_MFI"
+
+/**
   *  \brief  A variable controlling whether the RAWINPUT joystick drivers should be used for better handling XInput-capable devices.
   *
   *  This variable can be set to the following values:
