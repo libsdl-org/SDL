@@ -2800,6 +2800,7 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
     };
 
     static Uint32 rog_chakram_list[] = {
+        MAKE_VIDPID(0x0b05, 0x1906), /* ROG Pugio II */
         MAKE_VIDPID(0x0b05, 0x1958), /* ROG Chakram Core Mouse */
         MAKE_VIDPID(0x0b05, 0x18e3), /* ROG Chakram (wired) Mouse */
         MAKE_VIDPID(0x0b05, 0x18e5), /* ROG Chakram (wireless) Mouse */
