@@ -257,6 +257,9 @@ struct SDL_AudioDevice
     // A mutex for locking access to this struct
     SDL_Mutex *lock;
 
+    // A condition variable to protect device close, where we can't hold the device lock forever.
+    SDL_Condition *close_cond;
+
     // Reference count of the device; logical devices, device threads, etc, add to this.
     SDL_AtomicInt refcount;
 
