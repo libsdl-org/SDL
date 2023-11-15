@@ -2065,6 +2065,8 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
                 RefPhysicalAudioDevice(new_default_device);
                 UnrefPhysicalAudioDevice(current_default_device);
 
+                SDL_SetAudioPostmixCallback(logdev->instance_id, logdev->postmix, logdev->postmix_userdata);
+
                 SDL_PendingAudioDeviceEvent *p;
 
                 // Queue an event for each logical device we moved.
