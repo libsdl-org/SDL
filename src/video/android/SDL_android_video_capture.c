@@ -443,6 +443,15 @@ AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
             }
         }
 
+#if __ANDROID_API__ >= 26
+        {
+            AHardwareBuffer *buffer = NULL;
+            AImage_getHardwareBuffer(image, &buffer);
+            if (buffer && eglGetNativeClientBufferANDROID) {
+                frame->clientbuffer = eglGetNativeClientBufferANDROID(buffer);
+            }
+        }
+#endif
         frame->internal = (void*)image;
         return 0;
     } else if (res == AMEDIA_IMGREADER_MAX_IMAGES_ACQUIRED) {

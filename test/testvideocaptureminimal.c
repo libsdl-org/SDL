@@ -15,6 +15,15 @@
 #include "SDL3/SDL_video_capture.h"
 #include <stdio.h>
 
+/* Enable DMABUF to compile (linux + v4l2) */
+#define USE_DMABUF 0
+
+#if USE_DMABUF
+#  include "SDL_egl.h"
+#  include "SDL_opengles2.h"
+#  include "drm/drm_fourcc.h"
+#endif
+
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
@@ -31,6 +40,33 @@ int main(int argc, char **argv)
     SDL_VideoCaptureSpec obtained;
 
     SDL_VideoCaptureFrame frame_current;
+
+#if USE_DMABUF
+    EGLDisplay display;
+
+    typedef EGLDisplay (*eglGetCurrentDisplay_t)();
+    typedef EGLImageKHR (*eglCreateImageKHR_t)(EGLDisplay dpy, EGLContext ctx, EGLenum target, EGLClientBuffer buffer, const EGLint *attrib_list);
+    typedef EGLBoolean (*eglDestroyImageKHR_t)(EGLDisplay dpy, EGLImageKHR image);
+    typedef void (*glActiveTexture_t)(GLenum texture);
+    typedef void (*glEGLImageTargetTexture2DOES_t)(GLenum target, GLeglImageOES image);
+    typedef EGLint (*eglGetError_t)(void);
+
+    eglGetCurrentDisplay_t eglGetCurrentDisplay;
+    eglCreateImageKHR_t eglCreateImageKHR;
+    eglDestroyImageKHR_t eglDestroyImageKHR;
+    glActiveTexture_t glActiveTexture;
+    glEGLImageTargetTexture2DOES_t glEGLImageTargetTexture2DOES;
+    eglGetError_t eglGetError;
+
+
+#endif
+
+#if USE_DMABUF
+    int use_sw = 0;
+#else
+    int use_sw = 1;
+#endif
+
     SDL_Texture *texture = NULL;
     int texture_updated = 0;
 
@@ -52,6 +88,13 @@ int main(int argc, char **argv)
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
+
+#if USE_DMABUF
+    SDL_SetHint("SDL_RENDER_OPENGL_NV12_RG_SHADER", "1");
+    SDL_SetHint("SDL_VIDEO_X11_FORCE_EGL", "1"); /* Don't use GLX */
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
+#endif
+
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
@@ -64,6 +107,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
+
     SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
 
     renderer = SDL_CreateRenderer(window, NULL, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
@@ -71,6 +115,32 @@ int main(int argc, char **argv)
         /* SDL_Log("Couldn't create renderer: %s", SDL_GetError()); */
         return 1;
     }
+
+
+#if USE_DMABUF
+
+#define LOAL_FUNC(f)                            \
+    f = (f ##_t)SDL_GL_GetProcAddress(#f);      \
+    if (f == NULL) {                            \
+        SDL_Log("Cannot load function: " #f );  \
+        return 0;                               \
+    }                                           \
+
+    LOAL_FUNC(eglGetError)
+    LOAL_FUNC(eglGetCurrentDisplay)
+    LOAL_FUNC(eglCreateImageKHR)
+    LOAL_FUNC(eglDestroyImageKHR)
+    LOAL_FUNC(glActiveTexture)
+    LOAL_FUNC(glEGLImageTargetTexture2DOES)
+
+    display = eglGetCurrentDisplay();
+    if (display == EGL_NO_DISPLAY) {
+        SDL_Log("no dispay");
+        return 0;
+    }
+#endif
+
+
 
     device = SDL_OpenVideoCaptureWithSpec(0, NULL, &obtained, SDL_VIDEO_CAPTURE_ALLOW_ANY_CHANGE);
     if (!device) {
@@ -85,11 +155,28 @@ int main(int argc, char **argv)
 
     /* Create texture with appropriate format */
     if (texture == NULL) {
+#if USE_DMABUF
+
+        SDL_PropertiesID props = SDL_CreateProperties();
+        SDL_SetNumberProperty(props, "format", SDL_PIXELFORMAT_EXTERNAL_OES);
+        SDL_SetNumberProperty(props, "access", SDL_TEXTUREACCESS_STATIC);
+        SDL_SetNumberProperty(props, "width", obtained.width);
+        SDL_SetNumberProperty(props, "height", obtained.height);
+//>??        SDL_SetNumberProperty(props, "opengles2.texture", 1);
+        texture = SDL_CreateTextureWithProperties(renderer, props);
+        if (texture == NULL) {
+            SDL_Log("Couldn't create texture with properties: %s", SDL_GetError());
+            return 1;
+        }
+        SDL_DestroyProperties(props);
+#else
         texture = SDL_CreateTexture(renderer, obtained.format, SDL_TEXTUREACCESS_STATIC, obtained.width, obtained.height);
         if (texture == NULL) {
             SDL_Log("Couldn't create texture: %s", SDL_GetError());
             return 1;
         }
+#endif
+
     }
 
     while (!quit) {
@@ -146,20 +233,70 @@ int main(int argc, char **argv)
 
         /* Update SDL_Texture with last video frame (only once per new frame) */
         if (frame_current.num_planes && texture_updated == 0) {
+
             /* Use software data */
-            if (frame_current.num_planes == 1) {
-                SDL_UpdateTexture(texture, NULL,
-                        frame_current.data[0], frame_current.pitch[0]);
-            } else if (frame_current.num_planes == 2) {
-                SDL_UpdateNVTexture(texture, NULL,
-                        frame_current.data[0], frame_current.pitch[0],
-                        frame_current.data[1], frame_current.pitch[1]);
-            } else if (frame_current.num_planes == 3) {
-                SDL_UpdateYUVTexture(texture, NULL, frame_current.data[0], frame_current.pitch[0],
-                        frame_current.data[1], frame_current.pitch[1],
-                        frame_current.data[2], frame_current.pitch[2]);
+            if (use_sw) {
+                if (frame_current.num_planes == 1) {
+                    SDL_UpdateTexture(texture, NULL,
+                            frame_current.data[0], frame_current.pitch[0]);
+                } else if (frame_current.num_planes == 2) {
+                    SDL_UpdateNVTexture(texture, NULL,
+                            frame_current.data[0], frame_current.pitch[0],
+                            frame_current.data[1], frame_current.pitch[1]);
+                } else if (frame_current.num_planes == 3) {
+                    SDL_UpdateYUVTexture(texture, NULL, frame_current.data[0], frame_current.pitch[0],
+                            frame_current.data[1], frame_current.pitch[1],
+                            frame_current.data[2], frame_current.pitch[2]);
+                }
+                texture_updated = 1;
+            } else {
+                /* Use DMABUF */
+#if USE_DMABUF
+                int j = 0;
+                EGLImage image;
+                EGLint img_attr[64];
+
+#if __ANDROID__
+                img_attr[j] = EGL_NONE;
+                image = eglCreateImageKHR(display, EGL_NO_CONTEXT, EGL_NATIVE_BUFFER_ANDROID, frame_current.clientbuffer, img_attr);
+#else
+                /* V4L2_PIX_FMT_YUYV / SDL_PIXELFORMAT_EXTERNAL_OES */
+                img_attr[j++] = EGL_WIDTH;
+                img_attr[j++] = obtained.width;
+
+                img_attr[j++] = EGL_HEIGHT;
+                img_attr[j++] = obtained.height;
+
+                img_attr[j++] = EGL_LINUX_DRM_FOURCC_EXT;
+                img_attr[j++] = DRM_FORMAT_YUYV;
+
+                img_attr[j++] = EGL_DMA_BUF_PLANE0_FD_EXT;
+                img_attr[j++] = frame_current.fd;
+                img_attr[j++] = EGL_DMA_BUF_PLANE0_OFFSET_EXT;
+                img_attr[j++] = 0;
+                img_attr[j++] = EGL_DMA_BUF_PLANE0_PITCH_EXT;
+                img_attr[j++] = frame_current.pitch[0];
+
+                img_attr[j++] = EGL_NONE;
+
+                image = eglCreateImageKHR(display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, img_attr);
+#endif
+
+                if (image == EGL_NO_IMAGE_KHR) {
+                    SDL_Log("error eglCreateImageKHR : eglGetError: %08" SDL_PRIx32 "", eglGetError());
+                } else {
+                    SDL_Log("ImageKHR: %p fd: %" SDL_PRIu32 "", image, frame_current.fd);
+
+                    SDL_GL_BindTexture(texture, NULL, NULL);
+                    glActiveTexture(GL_TEXTURE0);
+                    glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, image);
+                    SDL_GL_UnbindTexture(texture);
+
+                    eglDestroyImageKHR(display, image);
+                    texture_updated = 1;
+                }
+#endif
             }
-            texture_updated = 1;
         }
 
         SDL_SetRenderDrawColor(renderer, 0x99, 0x99, 0x99, 255);
