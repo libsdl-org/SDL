@@ -50,7 +50,6 @@
 
 static id connectObserver = nil;
 static id disconnectObserver = nil;
-static NSString *GCInputXboxShareButton = @"Button Share";
 
 #include <Availability.h>
 #include <objc/message.h>
@@ -420,7 +419,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         if (controller.physicalInputProfile.buttons[GCInputXboxPaddleOne] != nil) {
             device->has_xbox_paddles = SDL_TRUE;
         }
-        if (controller.physicalInputProfile.buttons[GCInputXboxShareButton] != nil) {
+        if (controller.physicalInputProfile.buttons[@"Button Share"] != nil) {
             device->has_xbox_share_button = SDL_TRUE;
         }
     }
@@ -627,7 +626,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
                 device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_LEFT_PADDLE2);
                 ++nbuttons;
             }
-            if (controller.physicalInputProfile.buttons[GCInputXboxShareButton] != nil) {
+            if (controller.physicalInputProfile.buttons[@"Button Share"] != nil) {
                 device->has_xbox_share_button = SDL_TRUE;
                 device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_MISC1);
                 ++nbuttons;
@@ -1271,7 +1270,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             }
 
             if (device->has_xbox_share_button) {
-                buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputXboxShareButton].isPressed;
+                buttons[button_count++] = controller.physicalInputProfile.buttons[@"Button Share"].isPressed;
             }
 #endif
 #pragma clang diagnostic pop
