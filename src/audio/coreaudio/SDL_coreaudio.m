@@ -231,7 +231,7 @@ static OSStatus DeviceListChangedNotification(AudioObjectID systemObj, UInt32 nu
 static OSStatus DefaultAudioDeviceChangedNotification(AudioObjectID inObjectID, const AudioObjectPropertyAddress *addr)
 {
     AudioDeviceID devid;
-    Uint32 size = sizeof(devid);
+    UInt32 size = sizeof(devid);
     if (AudioObjectGetPropertyData(inObjectID, addr, 0, NULL, &size, &devid) == noErr) {
         SDL_DefaultAudioDeviceChanged(SDL_FindPhysicalAudioDeviceByHandle((void *)((size_t)devid)));
     }
