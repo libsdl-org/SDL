@@ -2292,33 +2292,9 @@ static void ConvertBAXYMapping(MappingParts *parts)
     }
 }
 
-static void UseLegacyButtonNames(MappingParts *parts)
-{
-    int i;
-
-    for (i = 0; i < parts->num_elements; ++i) {
-        char *key = parts->keys[i];
-
-        if (SDL_strcmp(key, "s") == 0) {
-            parts->keys[i] = SDL_strdup("a");
-            SDL_free(key);
-        } else if (SDL_strcmp(key, "e") == 0) {
-            parts->keys[i] = SDL_strdup("b");
-            SDL_free(key);
-        } else if (SDL_strcmp(key, "w") == 0) {
-            parts->keys[i] = SDL_strdup("x");
-            SDL_free(key);
-        } else if (SDL_strcmp(key, "n") == 0) {
-            parts->keys[i] = SDL_strdup("y");
-            SDL_free(key);
-        }
-    }
-}
-
 static void UpdateLegacyElements(MappingParts *parts)
 {
     ConvertBAXYMapping(parts);
-    UseLegacyButtonNames(parts);
 }
 
 static SDL_bool CombineMappingAxes(MappingParts *parts)

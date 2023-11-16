@@ -1066,10 +1066,10 @@ const char *SDL_GetGamepadStringForAxis(SDL_GamepadAxis axis)
 }
 
 static const char *map_StringForGamepadButton[] = {
-    "s",
-    "e",
-    "w",
-    "n",
+    "a",
+    "b",
+    "x",
+    "y",
     "back",
     "guide",
     "start",
@@ -1103,42 +1103,23 @@ SDL_GamepadButton SDL_PrivateGetGamepadButtonFromString(const char *str, SDL_boo
 
     for (i = 0; i < SDL_arraysize(map_StringForGamepadButton); ++i) {
         if (SDL_strcasecmp(str, map_StringForGamepadButton[i]) == 0) {
+            if (baxy) {
+                /* Need to swap face buttons */
+                switch (i) {
+                case SDL_GAMEPAD_BUTTON_SOUTH:
+                    return SDL_GAMEPAD_BUTTON_EAST;
+                case SDL_GAMEPAD_BUTTON_EAST:
+                    return SDL_GAMEPAD_BUTTON_SOUTH;
+                case SDL_GAMEPAD_BUTTON_WEST:
+                    return SDL_GAMEPAD_BUTTON_NORTH;
+                case SDL_GAMEPAD_BUTTON_NORTH:
+                    return SDL_GAMEPAD_BUTTON_WEST;
+                default:
+                    break;
+                }
+            }
             return (SDL_GamepadButton)i;
         }
-    }
-
-    if (SDL_strcasecmp(str, "a") == 0) {
-        if (baxy) {
-            return SDL_GAMEPAD_BUTTON_EAST;
-        } else {
-            return SDL_GAMEPAD_BUTTON_SOUTH;
-        }
-    } else if (SDL_strcasecmp(str, "b") == 0) {
-        if (baxy) {
-            return SDL_GAMEPAD_BUTTON_SOUTH;
-        } else {
-            return SDL_GAMEPAD_BUTTON_EAST;
-        }
-    } else if (SDL_strcasecmp(str, "x") == 0) {
-        if (baxy) {
-            return SDL_GAMEPAD_BUTTON_NORTH;
-        } else {
-            return SDL_GAMEPAD_BUTTON_WEST;
-        }
-    } else if (SDL_strcasecmp(str, "y") == 0) {
-        if (baxy) {
-            return SDL_GAMEPAD_BUTTON_WEST;
-        } else {
-            return SDL_GAMEPAD_BUTTON_NORTH;
-        }
-    } else if (SDL_strcasecmp(str, "cross") == 0) {
-        return SDL_GAMEPAD_BUTTON_SOUTH;
-    } else if (SDL_strcasecmp(str, "circle") == 0) {
-        return SDL_GAMEPAD_BUTTON_EAST;
-    } else if (SDL_strcasecmp(str, "square") == 0) {
-        return SDL_GAMEPAD_BUTTON_WEST;
-    } else if (SDL_strcasecmp(str, "triangle") == 0) {
-        return SDL_GAMEPAD_BUTTON_NORTH;
     }
     return SDL_GAMEPAD_BUTTON_INVALID;
 }
