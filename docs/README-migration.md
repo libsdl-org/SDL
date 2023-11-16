@@ -1175,7 +1175,7 @@ The information previously available in SDL_GetWindowWMInfo() is now available a
 ```c
     HWND hwnd = NULL;
     SDL_SysWMinfo info;
-    SDL_VERSION(&info);
+    SDL_VERSION(&info.version);
     if (SDL_GetWindowWMInfo(window, &info) && info.subsystem == SDL_SYSWM_WINDOWS) {
         hwnd = info.info.win.window;
     }
