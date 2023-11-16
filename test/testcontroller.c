@@ -849,9 +849,12 @@ static void AddController(SDL_JoystickID id, SDL_bool verbose)
     joystick = new_controller->joystick;
     if (joystick) {
         if (verbose && !SDL_IsGamepad(id)) {
-            const char *name = SDL_GetJoystickName(new_controller->joystick);
-            const char *path = SDL_GetJoystickPath(new_controller->joystick);
+            const char *name = SDL_GetJoystickName(joystick);
+            const char *path = SDL_GetJoystickPath(joystick);
+            char guid[33];
             SDL_Log("Opened joystick %s%s%s\n", name, path ? ", " : "", path ? path : "");
+            SDL_GetJoystickGUIDString(SDL_GetJoystickGUID(joystick), guid, sizeof(guid));
+            SDL_Log("No gamepad mapping for %s\n", guid);
         }
     } else {
         SDL_Log("Couldn't open joystick: %s", SDL_GetError());
