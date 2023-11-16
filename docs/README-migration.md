@@ -1191,11 +1191,6 @@ becomes:
     }
 ```
 
-### SDL_GetWindowWMInfo
-
-This function now returns a standard int result instead of SDL_bool, returning 0 if the function succeeds or a negative error code if there was an error. You should also pass SDL_SYSWM_CURRENT_VERSION as the new third version parameter. The version member of the info structure will be filled in with the version of data that is returned, the minimum of the version you requested and the version supported by the runtime SDL library.
-
-
 ## SDL_thread.h
 
 The following functions have been renamed:
