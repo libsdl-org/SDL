@@ -231,17 +231,19 @@ static BOOL IsControllerBackboneOne(GCController *controller)
     }
     return FALSE;
 }
-static BOOL IsControllerSiriRemote(GCController *controller)
+static void CheckControllerSiriRemote(GCController *controller, int *is_siri_remote)
 {
     if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
         if ([controller.productCategory hasPrefix:@"Siri Remote"]) {
-            return TRUE;
+            *is_siri_remote = 1;
+            SDL_sscanf(controller.productCategory.UTF8String, "Siri Remote (%i%*s Generation)", is_siri_remote);
+            return;
         }
     }
-    return FALSE;
+    *is_siri_remote = 0;
 }
 
-static BOOL ElementAlreadyHandled(NSString *element, NSDictionary<NSString *, GCControllerElement *> *elements)
+static BOOL ElementAlreadyHandled(SDL_JoystickDeviceItem *device, NSString *element, NSDictionary<NSString *, GCControllerElement *> *elements)
 {
     if ([element isEqualToString:@"Left Thumbstick Left"] ||
         [element isEqualToString:@"Left Thumbstick Right"]) {
@@ -267,15 +269,42 @@ static BOOL ElementAlreadyHandled(NSString *element, NSDictionary<NSString *, GC
             return TRUE;
         }
     }
-    if ([element isEqualToString:@"Direction Pad X Axis"]) {
-        if (elements[@"Direction Pad Left"] &&
-            elements[@"Direction Pad Right"]) {
+    if (device->is_siri_remote) {
+        if ([element isEqualToString:@"Direction Pad Left"] ||
+            [element isEqualToString:@"Direction Pad Right"]) {
+            if (elements[@"Direction Pad X Axis"]) {
+                return TRUE;
+            }
+        }
+        if ([element isEqualToString:@"Direction Pad Up"] ||
+            [element isEqualToString:@"Direction Pad Down"]) {
+            if (elements[@"Direction Pad Y Axis"]) {
+                return TRUE;
+            }
+        }
+    } else {
+        if ([element isEqualToString:@"Direction Pad X Axis"]) {
+            if (elements[@"Direction Pad Left"] &&
+                elements[@"Direction Pad Right"]) {
+                return TRUE;
+            }
+        }
+        if ([element isEqualToString:@"Direction Pad Y Axis"]) {
+            if (elements[@"Direction Pad Up"] &&
+                elements[@"Direction Pad Down"]) {
+                return TRUE;
+            }
+        }
+    }
+    if ([element isEqualToString:@"Cardinal Direction Pad X Axis"]) {
+        if (elements[@"Cardinal Direction Pad Left"] &&
+            elements[@"Cardinal Direction Pad Right"]) {
             return TRUE;
         }
     }
-    if ([element isEqualToString:@"Direction Pad Y Axis"]) {
-        if (elements[@"Direction Pad Up"] &&
-            elements[@"Direction Pad Down"]) {
+    if ([element isEqualToString:@"Cardinal Direction Pad Y Axis"]) {
+        if (elements[@"Cardinal Direction Pad Up"] &&
+            elements[@"Cardinal Direction Pad Down"]) {
             return TRUE;
         }
     }
@@ -376,7 +405,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
     (void)is_switch_joyconL;
     (void)is_switch_joyconR;
 #endif
-    device->is_siri_remote = IsControllerSiriRemote(controller);
+    CheckControllerSiriRemote(controller, &device->is_siri_remote);
 
 #ifdef ENABLE_PHYSICAL_INPUT_PROFILE
     if ([controller respondsToSelector:@selector(physicalInputProfile)]) {
@@ -471,7 +500,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         device->use_physical_profile = SDL_TRUE;
         device->axes = [[[elements allKeys] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)]
                                          filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id object, NSDictionary *bindings) {
-            if (ElementAlreadyHandled((NSString *)object, elements)) {
+            if (ElementAlreadyHandled(device, (NSString *)object, elements)) {
                 return NO;
             }
 
@@ -484,10 +513,10 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
             }
             return NO;
         }]];
-        device->naxes = device->axes.count;
+        device->naxes = (int)device->axes.count;
         device->buttons = [[[elements allKeys] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)]
                                             filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id object, NSDictionary *bindings) {
-            if (ElementAlreadyHandled((NSString *)object, elements)) {
+            if (ElementAlreadyHandled(device, (NSString *)object, elements)) {
                 return NO;
             }
 
@@ -497,7 +526,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
             }
             return NO;
         }]];
-        device->nbuttons = device->buttons.count;
+        device->nbuttons = (int)device->buttons.count;
         subtype = 4;
 
 #ifdef DEBUG_CONTROLLER_PROFILE
@@ -1143,7 +1172,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
                 }
             }
         }
-#endif
+#endif /* DEBUG_CONTROLLER_STATE */
 
         if (device->use_physical_profile) {
             NSDictionary<NSString *, GCControllerElement *> *elements = controller.physicalInputProfile.elements;
@@ -1871,10 +1900,12 @@ static SDL_bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
 
     int axis = 0;
     for (id key in device->axes) {
-        if ([(NSString *)key isEqualToString:@"Left Thumbstick X Axis"]) {
+        if ([(NSString *)key isEqualToString:@"Left Thumbstick X Axis"] ||
+            [(NSString *)key isEqualToString:@"Direction Pad X Axis"]) {
             out->leftx.kind = EMappingKind_Axis;
             out->leftx.target = axis;
-        } else if ([(NSString *)key isEqualToString:@"Left Thumbstick Y Axis"]) {
+        } else if ([(NSString *)key isEqualToString:@"Left Thumbstick Y Axis"] ||
+                   [(NSString *)key isEqualToString:@"Direction Pad Y Axis"]) {
             out->lefty.kind = EMappingKind_Axis;
             out->lefty.target = axis;
             out->lefty.axis_reversed = SDL_TRUE;
@@ -1893,22 +1924,6 @@ static SDL_bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
             out->righttrigger.kind = EMappingKind_Axis;
             out->righttrigger.target = axis;
             out->righttrigger.half_axis_positive = SDL_TRUE;
-        } else if ([(NSString *)key isEqualToString:@"Direction Pad Left"] && device->is_siri_remote) {
-            out->dpleft.kind = EMappingKind_Axis;
-            out->dpleft.target = axis;
-            out->dpleft.half_axis_positive = SDL_TRUE;
-        } else if ([(NSString *)key isEqualToString:@"Direction Pad Right"] && device->is_siri_remote) {
-            out->dpright.kind = EMappingKind_Axis;
-            out->dpright.target = axis;
-            out->dpright.half_axis_positive = SDL_TRUE;
-        } else if ([(NSString *)key isEqualToString:@"Direction Pad Up"] && device->is_siri_remote) {
-            out->dpup.kind = EMappingKind_Axis;
-            out->dpup.target = axis;
-            out->dpup.half_axis_positive = SDL_TRUE;
-        } else if ([(NSString *)key isEqualToString:@"Direction Pad Down"] && device->is_siri_remote) {
-            out->dpdown.kind = EMappingKind_Axis;
-            out->dpdown.target = axis;
-            out->dpdown.half_axis_positive = SDL_TRUE;
         }
         ++axis;
     }
@@ -1918,7 +1933,9 @@ static SDL_bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
         SDL_InputMapping *mapping = NULL;
 
         if ([(NSString *)key isEqualToString:GCInputButtonA]) {
-            if (device->has_nintendo_buttons) {
+            if (device->is_siri_remote > 1) {
+                /* GCInputButtonA is triggered for any D-Pad press, ignore it in favor of "Button Center" */
+            } else if (device->has_nintendo_buttons) {
                 mapping = &out->b;
             } else {
                 mapping = &out->a;
@@ -1945,13 +1962,21 @@ static SDL_bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
             } else {
                 mapping = &out->y;
             }
-        } else if ([(NSString *)key isEqualToString:@"Direction Pad Left"] && !device->is_siri_remote) {
+        } else if ([(NSString *)key isEqualToString:@"Direction Pad Left"]) {
             mapping = &out->dpleft;
-        } else if ([(NSString *)key isEqualToString:@"Direction Pad Right"] && !device->is_siri_remote) {
+        } else if ([(NSString *)key isEqualToString:@"Direction Pad Right"]) {
             mapping = &out->dpright;
-        } else if ([(NSString *)key isEqualToString:@"Direction Pad Up"] && !device->is_siri_remote) {
+        } else if ([(NSString *)key isEqualToString:@"Direction Pad Up"]) {
             mapping = &out->dpup;
-        } else if ([(NSString *)key isEqualToString:@"Direction Pad Down"] && !device->is_siri_remote) {
+        } else if ([(NSString *)key isEqualToString:@"Direction Pad Down"]) {
+            mapping = &out->dpdown;
+        } else if ([(NSString *)key isEqualToString:@"Cardinal Direction Pad Left"]) {
+            mapping = &out->dpleft;
+        } else if ([(NSString *)key isEqualToString:@"Cardinal Direction Pad Right"]) {
+            mapping = &out->dpright;
+        } else if ([(NSString *)key isEqualToString:@"Cardinal Direction Pad Up"]) {
+            mapping = &out->dpup;
+        } else if ([(NSString *)key isEqualToString:@"Cardinal Direction Pad Down"]) {
             mapping = &out->dpdown;
         } else if ([(NSString *)key isEqualToString:GCInputLeftShoulder]) {
             mapping = &out->leftshoulder;
@@ -1987,6 +2012,8 @@ static SDL_bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
             mapping = &out->righttrigger;
         } else if ([(NSString *)key isEqualToString:GCInputDualShockTouchpadButton]) {
             mapping = &out->touchpad;
+        } else if ([(NSString *)key isEqualToString:@"Button Center"]) {
+            mapping = &out->a;
         }
         if (mapping && mapping->kind == EMappingKind_None) {
             mapping->kind = EMappingKind_Button;

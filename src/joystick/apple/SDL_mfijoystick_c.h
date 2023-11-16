@@ -52,7 +52,7 @@ typedef struct joystick_hwdata
     SDL_bool has_xbox_share_button;
     SDL_bool has_nintendo_buttons;
     SDL_bool is_single_joycon;
-    SDL_bool is_siri_remote;
+    int is_siri_remote;
 
     SDL_bool use_physical_profile;
     NSArray *axes;
