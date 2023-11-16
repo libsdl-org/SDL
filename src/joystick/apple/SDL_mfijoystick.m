@@ -1118,7 +1118,6 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
         int i;
         Uint64 timestamp = SDL_GetTicksNS();
 
-#define DEBUG_CONTROLLER_STATE
 #ifdef DEBUG_CONTROLLER_STATE
         if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
             if (controller.physicalInputProfile) {
