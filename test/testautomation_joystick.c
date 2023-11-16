@@ -97,7 +97,7 @@ static int TestVirtualJoystick(void *arg)
                 SDLTest_AssertCheck(SDL_GetGamepadButton(gamepad, SDL_GAMEPAD_BUTTON_SOUTH) == SDL_RELEASED, "SDL_GetGamepadButton(SDL_GAMEPAD_BUTTON_SOUTH) == SDL_RELEASED");
 
                 /* Set an explicit mapping with PS4 style buttons */
-                SDL_SetGamepadMapping(SDL_GetJoystickInstanceID(joystick), "ff0013db5669727475616c2043007601,Virtual PS4 Gamepad,type:ps4,cross:b0,circle:b1,square:b2,triangle:b3,back:b4,guide:b5,start:b6,leftstick:b7,rightstick:b8,leftshoulder:b9,rightshoulder:b10,dpup:b11,dpdown:b12,dpleft:b13,dpright:b14,misc1:b15,paddle1:b16,paddle2:b17,paddle3:b18,paddle4:b19,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,");
+                SDL_SetGamepadMapping(SDL_GetJoystickInstanceID(joystick), "ff0013db5669727475616c2043007601,Virtual PS4 Gamepad,type:ps4,a:b0,b:b1,x:b2,y:b3,back:b4,guide:b5,start:b6,leftstick:b7,rightstick:b8,leftshoulder:b9,rightshoulder:b10,dpup:b11,dpdown:b12,dpleft:b13,dpright:b14,misc1:b15,paddle1:b16,paddle2:b17,paddle3:b18,paddle4:b19,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,");
                 SDLTest_AssertCheck(SDL_strcmp(SDL_GetGamepadName(gamepad), "Virtual PS4 Gamepad") == 0, "SDL_GetGamepadName() == Virtual PS4 Gamepad");
                 SDLTest_AssertCheck(SDL_GetGamepadButtonLabel(gamepad, SDL_GAMEPAD_BUTTON_SOUTH) == SDL_GAMEPAD_BUTTON_LABEL_CROSS, "SDL_GetGamepadButtonLabel(SDL_GAMEPAD_BUTTON_SOUTH) == SDL_GAMEPAD_BUTTON_LABEL_CROSS");
 
