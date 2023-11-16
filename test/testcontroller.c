@@ -1402,7 +1402,7 @@ static void DrawBindingTips(SDL_Renderer *renderer)
                 if (binding_element != action_delete && bound_delete) {
                     SDL_snprintf(dynamic_text, sizeof(dynamic_text), "(press %s to skip, %s to go back, %s to delete, and ESC to cancel)", GetButtonLabel(type, action_forward), GetButtonLabel(type, action_backward), GetButtonLabel(type, action_delete));
                 } else {
-                    SDL_snprintf(dynamic_text, sizeof(dynamic_text), "(press %s to skip, %s to go back, SPACE to delete, and ESC to cancel)", GetButtonLabel(type, action_forward), GetButtonLabel(type, action_backward), GetButtonLabel(type, action_delete));
+                    SDL_snprintf(dynamic_text, sizeof(dynamic_text), "(press %s to skip, %s to go back, SPACE to delete, and ESC to cancel)", GetButtonLabel(type, action_forward), GetButtonLabel(type, action_backward));
                 }
                 text = dynamic_text;
             } else {
