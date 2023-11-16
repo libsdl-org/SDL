@@ -407,6 +407,11 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
 #endif
     CheckControllerSiriRemote(controller, &device->is_siri_remote);
 
+    if (device->is_siri_remote && !SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, SDL_TRUE)) {
+        /* Ignore remotes, they'll be handled as keyboard input */
+        return SDL_FALSE;
+    }
+
 #ifdef ENABLE_PHYSICAL_INPUT_PROFILE
     if ([controller respondsToSelector:@selector(physicalInputProfile)]) {
         if (controller.physicalInputProfile.buttons[GCInputDualShockTouchpadButton] != nil) {
@@ -717,15 +722,6 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
 static void IOS_AddJoystickDevice(GCController *controller, SDL_bool accelerometer)
 {
     SDL_JoystickDeviceItem *device = deviceList;
-
-#if TARGET_OS_TV
-    if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, SDL_TRUE)) {
-        /* Ignore devices that aren't actually controllers (e.g. remotes), they'll be handled as keyboard input */
-        if (controller && !controller.extendedGamepad && !controller.gamepad && controller.microGamepad) {
-            return;
-        }
-    }
-#endif
 
     while (device != NULL) {
         if (device->controller == controller) {
