@@ -638,8 +638,8 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         int nbuttons = 0;
 
         device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_SOUTH);
-        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_EAST); /* Button X on microGamepad */
-        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_START);
+        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_WEST); /* Button X on microGamepad */
+        device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_EAST);
         nbuttons += 3;
         device->pause_button_index = (nbuttons - 1);
 
@@ -1965,7 +1965,11 @@ static SDL_bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
         } else if ([(NSString *)key isEqualToString:GCInputButtonHome]) {
             mapping = &out->guide;
         } else if ([(NSString *)key isEqualToString:GCInputButtonMenu]) {
-            mapping = &out->start;
+            if (device->is_siri_remote) {
+                mapping = &out->b;
+            } else {
+                mapping = &out->start;
+            }
         } else if ([(NSString *)key isEqualToString:GCInputButtonOptions]) {
             mapping = &out->back;
         } else if ([(NSString *)key isEqualToString:GCInputButtonShare]) {
