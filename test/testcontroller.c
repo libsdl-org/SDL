@@ -86,6 +86,7 @@ static SDL_JoystickID mapping_controller = 0;
 static int binding_element = SDL_GAMEPAD_ELEMENT_INVALID;
 static int last_binding_element = SDL_GAMEPAD_ELEMENT_INVALID;
 static SDL_bool binding_flow = SDL_FALSE;
+static int binding_flow_direction = 0;
 static Uint64 binding_advance_time = 0;
 static SDL_FRect title_area;
 static SDL_bool title_highlighted;
@@ -331,6 +332,7 @@ static void SetCurrentBindingElement(int element, SDL_bool flow)
     }
 
     if (element == SDL_GAMEPAD_ELEMENT_INVALID) {
+        binding_flow_direction = 0;
         last_binding_element = SDL_GAMEPAD_ELEMENT_INVALID;
     } else {
         last_binding_element = binding_element;
@@ -356,6 +358,7 @@ static void SetNextBindingElement(void)
 
     for (i = 0; i < SDL_arraysize(s_arrBindingOrder); ++i) {
         if (binding_element == s_arrBindingOrder[i]) {
+            binding_flow_direction = 1;
             SetCurrentBindingElement(s_arrBindingOrder[i + 1], SDL_TRUE);
             return;
         }
@@ -373,6 +376,7 @@ static void SetPrevBindingElement(void)
 
     for (i = 1; i < SDL_arraysize(s_arrBindingOrder); ++i) {
         if (binding_element == s_arrBindingOrder[i]) {
+            binding_flow_direction = -1;
             SetCurrentBindingElement(s_arrBindingOrder[i - 1], SDL_TRUE);
             return;
         }
@@ -500,32 +504,48 @@ static void CommitBindingElement(const char *binding, SDL_bool force)
         if (existing != SDL_GAMEPAD_ELEMENT_INVALID) {
             SDL_GamepadButton action_forward = SDL_GAMEPAD_BUTTON_SOUTH;
             SDL_GamepadButton action_backward = SDL_GAMEPAD_BUTTON_EAST;
-            if (existing == action_forward) {
-                if (binding_element == action_forward) {
-                    /* Just move on to the next one */
+            SDL_GamepadButton action_delete = SDL_GAMEPAD_BUTTON_WEST;
+            if (binding_element == action_forward) {
+                /* Bind it! */
+            } else if (binding_element == action_backward) {
+                if (existing == action_forward) {
+                    SDL_bool bound_backward = MappingHasElement(controller->mapping, action_backward);
+                    if (bound_backward) {
+                        /* Just move on to the next one */
+                        ignore_binding = SDL_TRUE;
+                        SetNextBindingElement();
+                    } else {
+                        /* You can't skip the backward action, go back and start over */
+                        ignore_binding = SDL_TRUE;
+                        SetPrevBindingElement();
+                    }
+                } else if (existing == action_backward && binding_flow_direction == -1) {
+                    /* Keep going backwards */
                     ignore_binding = SDL_TRUE;
-                    SetNextBindingElement();
+                    SetPrevBindingElement();
                 } else {
-                    /* Clear the current binding and move to the next one */
-                    binding = NULL;
-                    direction = 1;
-                    force = SDL_TRUE;
+                    /* Bind it! */
                 }
+            } else if (existing == action_forward) {
+                /* Just move on to the next one */
+                ignore_binding = SDL_TRUE;
+                SetNextBindingElement();
             } else if (existing == action_backward) {
-                if (binding_element != action_forward &&
-                    last_binding_element != action_forward) {
-                    /* Clear the current binding and move to the previous one */
-                    binding = NULL;
-                    direction = -1;
-                    force = SDL_TRUE;
-                }
+                ignore_binding = SDL_TRUE;
+                SetPrevBindingElement();
             } else if (existing == binding_element) {
                 /* We're rebinding the same thing, just move to the next one */
                 ignore_binding = SDL_TRUE;
                 SetNextBindingElement();
+            } else if (existing == action_delete) {
+                /* Clear the current binding and move to the next one */
+                binding = NULL;
+                direction = 1;
+                force = SDL_TRUE;
             } else if (binding_element != action_forward &&
                        binding_element != action_backward) {
-                ignore_binding = SDL_TRUE;
+                /* Actually, we'll just clear the existing binding */
+                /*ignore_binding = SDL_TRUE;*/
             }
         }
     }
@@ -1347,6 +1367,12 @@ static void DrawBindingTips(SDL_Renderer *renderer)
     } else {
         Uint8 r, g, b, a;
         SDL_FRect rect;
+        SDL_GamepadButton action_forward = SDL_GAMEPAD_BUTTON_SOUTH;
+        SDL_bool bound_forward = MappingHasElement(controller->mapping, action_forward);
+        SDL_GamepadButton action_backward = SDL_GAMEPAD_BUTTON_EAST;
+        SDL_bool bound_backward = MappingHasElement(controller->mapping, action_backward);
+        SDL_GamepadButton action_delete = SDL_GAMEPAD_BUTTON_WEST;
+        SDL_bool bound_delete = MappingHasElement(controller->mapping, action_delete);
 
         y -= (FONT_CHARACTER_SIZE + BUTTON_MARGIN) / 2;
 
@@ -1365,20 +1391,22 @@ static void DrawBindingTips(SDL_Renderer *renderer)
 
         if (binding_element == SDL_GAMEPAD_ELEMENT_NAME) {
             text = "(press RETURN to complete)";
-        } else if (binding_element == SDL_GAMEPAD_ELEMENT_TYPE) {
+        } else if (binding_element == SDL_GAMEPAD_ELEMENT_TYPE ||
+                   binding_element == action_forward ||
+                   binding_element == action_backward) {
             text = "(press ESC to cancel)";
         } else {
+            static char dynamic_text[128];
             SDL_GamepadType type = GetGamepadImageType(image);
-            SDL_GamepadButton action_forward = SDL_GAMEPAD_BUTTON_SOUTH;
-            SDL_bool bound_forward = MappingHasElement(controller->mapping, action_forward);
-            SDL_GamepadButton action_backward = SDL_GAMEPAD_BUTTON_EAST;
-            SDL_bool bound_backward = MappingHasElement(controller->mapping, action_backward);
             if (binding_flow && bound_forward && bound_backward) {
-                static char dynamic_text[128];
-                SDL_snprintf(dynamic_text, sizeof(dynamic_text), "(press %s to skip, %s to go back, and ESC to cancel)", GetButtonLabel(type, action_forward), GetButtonLabel(type, action_backward));
+                if (binding_element != action_delete && bound_delete) {
+                    SDL_snprintf(dynamic_text, sizeof(dynamic_text), "(press %s to skip, %s to go back, %s to delete, and ESC to cancel)", GetButtonLabel(type, action_forward), GetButtonLabel(type, action_backward), GetButtonLabel(type, action_delete));
+                } else {
+                    SDL_snprintf(dynamic_text, sizeof(dynamic_text), "(press %s to skip, %s to go back, SPACE to delete, and ESC to cancel)", GetButtonLabel(type, action_forward), GetButtonLabel(type, action_backward), GetButtonLabel(type, action_delete));
+                }
                 text = dynamic_text;
             } else {
-                text = "(press SPACE to clear binding and ESC to cancel)";
+                text = "(press SPACE to delete and ESC to cancel)";
             }
         }
         SDLTest_DrawString(renderer, (float)x - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2, (float)y, text);
