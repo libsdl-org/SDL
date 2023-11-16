@@ -1992,7 +1992,7 @@ static SDL_bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
             }
         } else if ([(NSString *)key isEqualToString:GCInputButtonOptions]) {
             mapping = &out->back;
-        } else if ([(NSString *)key isEqualToString:GCInputButtonShare]) {
+        } else if ([(NSString *)key isEqualToString:@"Button Share"]) {
             mapping = &out->misc1;
         } else if ([(NSString *)key isEqualToString:GCInputXboxPaddleOne]) {
             mapping = &out->right_paddle1;
