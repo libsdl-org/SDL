@@ -322,7 +322,7 @@ static int GLES_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     GLES_ActivateRenderer(renderer);
 
     switch (texture->format) {
-    case SDL_PIXELFORMAT_ABGR8888:
+    case SDL_PIXELFORMAT_RGBA32:
         internalFormat = GL_RGBA;
         format = GL_RGBA;
         type = GL_UNSIGNED_BYTE;
@@ -900,7 +900,7 @@ static int GLES_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
                                  Uint32 pixel_format, void *pixels, int pitch)
 {
     GLES_RenderData *data = (GLES_RenderData *)renderer->driverdata;
-    Uint32 temp_format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_ABGR8888;
+    Uint32 temp_format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_RGBA32;
     void *temp_pixels;
     int temp_pitch;
     Uint8 *src, *dst, *tmp;
@@ -1210,7 +1210,7 @@ SDL_RenderDriver GLES_RenderDriver = {
     { "opengles",
       (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
       1,
-      { SDL_PIXELFORMAT_ABGR8888 },
+      { SDL_PIXELFORMAT_RGBA32 },
       0,
       0 }
 };
