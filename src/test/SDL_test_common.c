@@ -852,6 +852,12 @@ static void SDLTest_PrintPixelFormat(char *text, size_t maxlen, Uint32 format)
     case SDL_PIXELFORMAT_INDEX1MSB:
         SDL_snprintfcat(text, maxlen, "Index1MSB");
         break;
+    case SDL_PIXELFORMAT_INDEX2LSB:
+        SDL_snprintfcat(text, maxlen, "Index2LSB");
+        break;
+    case SDL_PIXELFORMAT_INDEX2MSB:
+        SDL_snprintfcat(text, maxlen, "Index2MSB");
+        break;
     case SDL_PIXELFORMAT_INDEX4LSB:
         SDL_snprintfcat(text, maxlen, "Index4LSB");
         break;
