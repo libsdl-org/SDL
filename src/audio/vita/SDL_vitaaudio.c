@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_VITA
+#ifdef SDL_AUDIO_DRIVER_VITA
 
 #include <stdio.h>
 #include <string.h>

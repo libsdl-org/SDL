@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_THREAD_PSP
+#ifdef SDL_THREAD_PSP
 
 /* An implementation of mutexes using semaphores */
 
@@ -75,7 +75,7 @@ void SDL_DestroyMutex(SDL_mutex *mutex)
 /* Lock the mutex */
 int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
-#if SDL_THREADS_DISABLED
+#ifdef SDL_THREADS_DISABLED
     return 0;
 #else
     SceInt32 res = 0;
@@ -96,7 +96,7 @@ int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn
 /* Try to lock the mutex */
 int SDL_TryLockMutex(SDL_mutex *mutex)
 {
-#if SDL_THREADS_DISABLED
+#ifdef SDL_THREADS_DISABLED
     return 0;
 #else
     SceInt32 res = 0;
@@ -125,7 +125,7 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
 /* Unlock the mutex */
 int SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
-#if SDL_THREADS_DISABLED
+#ifdef SDL_THREADS_DISABLED
     return 0;
 #else
     SceInt32 res = 0;

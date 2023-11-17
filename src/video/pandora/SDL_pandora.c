@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_PANDORA
+#ifdef SDL_VIDEO_DRIVER_PANDORA
 
 /* SDL internals */
 #include "../SDL_sysvideo.h"

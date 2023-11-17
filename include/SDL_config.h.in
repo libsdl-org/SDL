@@ -53,7 +53,7 @@
 
 /* Comment this if you want to build without any C library requirements */
 #undef HAVE_LIBC
-#if HAVE_LIBC
+#ifdef HAVE_LIBC
 
 /* Useful headers */
 #undef STDC_HEADERS

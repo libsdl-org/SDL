@@ -26,7 +26,7 @@
 #include "SDL_stdinc.h"
 #include "SDL_thread.h"
 
-#if !SDL_THREADS_DISABLED
+#ifndef SDL_THREADS_DISABLED
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <pthread.h>
@@ -44,7 +44,7 @@
 
 #include "SDL_dbus.h"
 
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
 #include <sched.h>
 
 /* d-bus queries to org.freedesktop.RealtimeKit1. */
@@ -256,14 +256,14 @@ static SDL_bool rtkit_setpriority_realtime(pid_t thread, int rt_priority)
 /* this is a public symbol, so it has to exist even if threads are disabled. */
 int SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
 {
-#if SDL_THREADS_DISABLED
+#ifdef SDL_THREADS_DISABLED
     return SDL_Unsupported();
 #else
     if (setpriority(PRIO_PROCESS, (id_t)threadID, priority) == 0) {
         return 0;
     }
 
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
     /* Note that this fails you most likely:
          * Have your process's scheduler incorrectly configured.
            See the requirements at:
@@ -288,7 +288,7 @@ int SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
 /* this is a public symbol, so it has to exist even if threads are disabled. */
 int SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
 {
-#if SDL_THREADS_DISABLED
+#ifdef SDL_THREADS_DISABLED
     return SDL_Unsupported();
 #else
     int osPriority;
@@ -319,7 +319,7 @@ int SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int sc
         }
     }
 
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
     /* Note that this fails you most likely:
      * Have your process's scheduler incorrectly configured.
        See the requirements at:

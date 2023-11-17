@@ -21,7 +21,7 @@
 #include "../../SDL_internal.h"
 
 #ifndef SDL_POWER_DISABLED
-#if SDL_POWER_EMSCRIPTEN
+#ifdef SDL_POWER_EMSCRIPTEN
 
 #include <emscripten/html5.h>
 

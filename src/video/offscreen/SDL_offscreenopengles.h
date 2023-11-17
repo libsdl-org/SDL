@@ -23,7 +23,7 @@
 #ifndef _SDL_offscreenopengles_h
 #define _SDL_offscreenopengles_h
 
-#if SDL_VIDEO_DRIVER_OFFSCREEN && SDL_VIDEO_OPENGL_EGL
+#if defined(SDL_VIDEO_DRIVER_OFFSCREEN) && defined(SDL_VIDEO_OPENGL_EGL)
 
 #include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"

@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WINRT && SDL_VIDEO_OPENGL_EGL
+#if defined(SDL_VIDEO_DRIVER_WINRT) && defined(SDL_VIDEO_OPENGL_EGL)
 
 /* EGL implementation of SDL OpenGL support */
 
@@ -144,7 +144,7 @@ WINRT_GLES_LoadLibrary(_THIS, const char *path)
             return SDL_EGL_SetError("Could not retrieve ANGLE/WinRT display function(s)", "eglGetProcAddress");
         }
 
-#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP)
+#if !SDL_WINAPI_FAMILY_PHONE
         /* Try initializing EGL at D3D11 Feature Level 10_0+ (which is not
          * supported on WinPhone 8.x.
          */

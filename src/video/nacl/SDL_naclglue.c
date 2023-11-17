@@ -20,5 +20,5 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_NACL
+#ifdef SDL_VIDEO_DRIVER_NACL
 #endif /* SDL_VIDEO_DRIVER_NACL */

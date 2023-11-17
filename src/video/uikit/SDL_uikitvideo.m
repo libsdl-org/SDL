@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_UIKIT
+#ifdef SDL_VIDEO_DRIVER_UIKIT
 
 #import <UIKit/UIKit.h>
 
@@ -99,7 +99,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->GetDisplayDPI = UIKit_GetDisplayDPI;
         device->GetWindowSizeInPixels = UIKit_GetWindowSizeInPixels;
 
-#if SDL_IPHONE_KEYBOARD
+#ifdef SDL_IPHONE_KEYBOARD
         device->HasScreenKeyboardSupport = UIKit_HasScreenKeyboardSupport;
         device->ShowScreenKeyboard = UIKit_ShowScreenKeyboard;
         device->HideScreenKeyboard = UIKit_HideScreenKeyboard;
@@ -112,7 +112,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->HasClipboardText = UIKit_HasClipboardText;
 
         /* OpenGL (ES) functions */
-#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
         device->GL_MakeCurrent      = UIKit_GL_MakeCurrent;
         device->GL_GetDrawableSize  = UIKit_GL_GetDrawableSize;
         device->GL_SwapWindow       = UIKit_GL_SwapWindow;
@@ -123,7 +123,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
 #endif
         device->free = UIKit_DeleteDevice;
 
-#if SDL_VIDEO_VULKAN
+#ifdef SDL_VIDEO_VULKAN
         device->Vulkan_LoadLibrary = UIKit_Vulkan_LoadLibrary;
         device->Vulkan_UnloadLibrary = UIKit_Vulkan_UnloadLibrary;
         device->Vulkan_GetInstanceExtensions
@@ -132,7 +132,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->Vulkan_GetDrawableSize = UIKit_Vulkan_GetDrawableSize;
 #endif
 
-#if SDL_VIDEO_METAL
+#ifdef SDL_VIDEO_METAL
         device->Metal_CreateView = UIKit_Metal_CreateView;
         device->Metal_DestroyView = UIKit_Metal_DestroyView;
         device->Metal_GetLayer = UIKit_Metal_GetLayer;

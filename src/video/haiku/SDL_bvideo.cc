@@ -22,7 +22,7 @@
 #include "../../SDL_internal.h"
 #include "../../main/haiku/SDL_BApp.h"
 
-#if SDL_VIDEO_DRIVER_HAIKU
+#ifdef SDL_VIDEO_DRIVER_HAIKU
 
 #include "SDL_BWin.h"
 #include <Url.h>
@@ -104,7 +104,7 @@ static SDL_VideoDevice * HAIKU_CreateDevice(void)
     device->shape_driver.SetWindowShape = NULL;
     device->shape_driver.ResizeWindowShape = NULL;
 
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
     device->GL_LoadLibrary = HAIKU_GL_LoadLibrary;
     device->GL_GetProcAddress = HAIKU_GL_GetProcAddress;
     device->GL_UnloadLibrary = HAIKU_GL_UnloadLibrary;
@@ -281,7 +281,7 @@ int HAIKU_VideoInit(_THIS)
 
     HAIKU_MouseInit(_this);
 
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
         /* testgl application doesn't load library, just tries to load symbols */
         /* is it correct? if so we have to load library here */
     HAIKU_GL_LoadLibrary(_this, NULL);

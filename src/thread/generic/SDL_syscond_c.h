@@ -25,7 +25,7 @@
 #ifndef SDL_syscond_generic_h_
 #define SDL_syscond_generic_h_
 
-#if SDL_THREAD_GENERIC_COND_SUFFIX
+#ifdef SDL_THREAD_GENERIC_COND_SUFFIX
 
 SDL_cond *SDL_CreateCond_generic(void);
 void SDL_DestroyCond_generic(SDL_cond *cond);

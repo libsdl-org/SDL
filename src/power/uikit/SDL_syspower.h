@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_POWER_UIKIT
+#ifdef SDL_POWER_UIKIT
 
 #include "SDL_power.h"
 

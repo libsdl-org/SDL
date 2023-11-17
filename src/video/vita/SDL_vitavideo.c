@@ -21,7 +21,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_VITA
+#ifdef SDL_VIDEO_DRIVER_VITA
 
 /* SDL internals */
 #include "../SDL_sysvideo.h"
@@ -71,7 +71,7 @@ static SDL_VideoDevice *VITA_Create()
 {
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;
-#if SDL_VIDEO_VITA_PIB
+#ifdef SDL_VIDEO_VITA_PIB
     SDL_GLDriverData *gldata;
 #endif
     /* Initialize SDL_VideoDevice structure */
@@ -88,7 +88,7 @@ static SDL_VideoDevice *VITA_Create()
         SDL_free(device);
         return NULL;
     }
-#if SDL_VIDEO_VITA_PIB
+#ifdef SDL_VIDEO_VITA_PIB
 
     gldata = (SDL_GLDriverData *)SDL_calloc(1, sizeof(SDL_GLDriverData));
     if (!gldata) {

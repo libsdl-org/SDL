@@ -21,7 +21,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_KMSDRM
+#ifdef SDL_VIDEO_DRIVER_KMSDRM
 
 #include "SDL_log.h"
 #include "SDL_timer.h"
@@ -41,7 +41,7 @@ void KMSDRM_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
 {
     /* if SDL was _also_ built with the Raspberry Pi driver (so we're
        definitely a Pi device), default to GLES2. */
-#if SDL_VIDEO_DRIVER_RPI
+#ifdef SDL_VIDEO_DRIVER_RPI
     *mask = SDL_GL_CONTEXT_PROFILE_ES;
     *major = 2;
     *minor = 0;

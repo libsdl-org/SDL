@@ -20,16 +20,16 @@
  */
 #include "../SDL_internal.h"
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
 
-#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT
+#if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_WINRT)
 #include "../core/windows/SDL_windows.h"
 #endif
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
 #include <android/native_window.h>
 #include "../video/android/SDL_androidvideo.h"
 #endif
-#if SDL_VIDEO_DRIVER_RPI
+#ifdef SDL_VIDEO_DRIVER_RPI
 #include <unistd.h>
 #endif
 
@@ -57,7 +57,7 @@
 #define EGL_PRESENT_OPAQUE_EXT 0x31DF
 #endif /* EGL_EXT_present_opaque */
 
-#if SDL_VIDEO_DRIVER_RPI
+#ifdef SDL_VIDEO_DRIVER_RPI
 /* Raspbian places the OpenGL ES/EGL binaries in a non standard path */
 #define DEFAULT_EGL        (vc4 ? "libEGL.so.1" : "libbrcmEGL.so")
 #define DEFAULT_OGL_ES2    (vc4 ? "libGLESv2.so.2" : "libbrcmGLESv2.so")
@@ -66,21 +66,21 @@
 #define DEFAULT_OGL_ES_PVR (vc4 ? "libGLES_CM.so.1" : "libbrcmGLESv2.so")
 #define DEFAULT_OGL_ES     (vc4 ? "libGLESv1_CM.so.1" : "libbrcmGLESv2.so")
 
-#elif SDL_VIDEO_DRIVER_ANDROID || SDL_VIDEO_DRIVER_VIVANTE
+#elif defined(SDL_VIDEO_DRIVER_ANDROID) || defined(SDL_VIDEO_DRIVER_VIVANTE)
 /* Android */
 #define DEFAULT_EGL        "libEGL.so"
 #define DEFAULT_OGL_ES2    "libGLESv2.so"
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.so"
 #define DEFAULT_OGL_ES     "libGLESv1_CM.so"
 
-#elif SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT
+#elif defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_WINRT)
 /* EGL AND OpenGL ES support via ANGLE */
 #define DEFAULT_EGL "libEGL.dll"
 #define DEFAULT_OGL_ES2 "libGLESv2.dll"
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.dll"
 #define DEFAULT_OGL_ES     "libGLESv1_CM.dll"
 
-#elif SDL_VIDEO_DRIVER_COCOA
+#elif defined(SDL_VIDEO_DRIVER_COCOA)
 /* EGL AND OpenGL ES support via ANGLE */
 #define DEFAULT_EGL        "libEGL.dylib"
 #define DEFAULT_OGL_ES2    "libGLESv2.dylib"
@@ -105,7 +105,7 @@
 #define DEFAULT_OGL_ES     "libGLESv1_CM.so.1"
 #endif /* SDL_VIDEO_DRIVER_RPI */
 
-#if SDL_VIDEO_OPENGL && !SDL_VIDEO_VITA_PVR_OGL
+#if defined(SDL_VIDEO_OPENGL) && !defined(SDL_VIDEO_VITA_PVR_OGL)
 #include "SDL_opengl.h"
 #endif
 
@@ -295,14 +295,14 @@ static int SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
 {
     void *egl_dll_handle = NULL, *opengl_dll_handle = NULL;
     const char *path = NULL;
-#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT
+#if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_WINRT)
     const char *d3dcompiler;
 #endif
-#if SDL_VIDEO_DRIVER_RPI
+#ifdef SDL_VIDEO_DRIVER_RPI
     SDL_bool vc4 = (0 == access("/sys/module/vc4/", F_OK));
 #endif
 
-#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT
+#if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_WINRT)
     d3dcompiler = SDL_GetHint(SDL_HINT_VIDEO_WIN_D3DCOMPILER);
     if (d3dcompiler) {
         if (SDL_strcasecmp(d3dcompiler, "none") != 0) {
@@ -419,7 +419,7 @@ static int SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
 #endif
 
     _this->egl_data->egl_dll_handle = egl_dll_handle;
-#if SDL_VIDEO_DRIVER_VITA
+#ifdef SDL_VIDEO_DRIVER_VITA
     _this->egl_data->opengl_dll_handle = opengl_dll_handle;
 #endif
 
@@ -954,7 +954,7 @@ SDL_GLContext SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
         share_context = (EGLContext)SDL_GL_GetCurrentContext();
     }
 
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
     if (_this->gl_config.flags & SDL_GL_CONTEXT_DEBUG_FLAG) {
         /* If SDL_GL_CONTEXT_DEBUG_FLAG is set but EGL_KHR_debug unsupported, unset.
          * This is required because some Android devices like to complain about it
@@ -1065,7 +1065,7 @@ SDL_GLContext SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
             if (SDL_GL_ExtensionSupported("GL_OES_surfaceless_context")) {
                 _this->gl_allow_no_surface = SDL_TRUE;
             }
-#if SDL_VIDEO_OPENGL && !defined(SDL_VIDEO_DRIVER_VITA)
+#if defined(SDL_VIDEO_OPENGL) && !defined(SDL_VIDEO_DRIVER_VITA)
         } else {
             /* Desktop OpenGL supports it by default from version 3.0 on. */
             void(APIENTRY * glGetIntegervFunc)(GLenum pname, GLint * params);
@@ -1179,7 +1179,7 @@ void SDL_EGL_DeleteContext(_THIS, SDL_GLContext context)
 
 EGLSurface *SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
 {
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
     EGLint format_wanted;
     EGLint format_got;
 #endif
@@ -1193,7 +1193,7 @@ EGLSurface *SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
         return EGL_NO_SURFACE;
     }
 
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
     /* On Android, EGL_NATIVE_VISUAL_ID is an attribute of the EGLConfig that is
      * guaranteed to be accepted by ANativeWindow_setBuffersGeometry(). */
     _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,
@@ -1235,7 +1235,7 @@ EGLSurface *SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
         SDL_EGL_SetError("unable to create an EGL window surface", "eglCreateWindowSurface");
     }
 
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
     format_got = ANativeWindow_getFormat(nw);
     Android_SetFormat(format_wanted, format_got);
 #endif

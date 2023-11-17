@@ -23,7 +23,7 @@
 #include "SDL_vulkan_internal.h"
 #include "SDL_error.h"
 
-#if SDL_VIDEO_VULKAN
+#ifdef SDL_VIDEO_VULKAN
 
 const char *SDL_Vulkan_GetResultString(VkResult result)
 {

@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_VITA && SDL_VIDEO_VITA_PIB
+#if defined(SDL_VIDEO_DRIVER_VITA) && defined(SDL_VIDEO_VITA_PIB)
 #include <stdlib.h>
 #include <string.h>
 

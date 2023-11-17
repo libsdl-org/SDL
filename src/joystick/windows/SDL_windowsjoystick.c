@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_JOYSTICK_DINPUT || SDL_JOYSTICK_XINPUT
+#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
 
 /* DirectInput joystick driver; written by Glenn Maynard, based on Andrei de
  * A. Formiga's WINMM driver.
@@ -252,7 +252,7 @@ static LRESULT CALLBACK SDL_PrivateJoystickDetectProc(HWND hwnd, UINT msg, WPARA
         break;
     }
 
-#if SDL_JOYSTICK_RAWINPUT
+#ifdef SDL_JOYSTICK_RAWINPUT
     return CallWindowProc(RAWINPUT_WindowProc, hwnd, msg, wParam, lParam);
 #else
     return CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
@@ -261,7 +261,7 @@ static LRESULT CALLBACK SDL_PrivateJoystickDetectProc(HWND hwnd, UINT msg, WPARA
 
 static void SDL_CleanupDeviceNotification(SDL_DeviceNotificationData *data)
 {
-#if SDL_JOYSTICK_RAWINPUT
+#ifdef SDL_JOYSTICK_RAWINPUT
     RAWINPUT_UnregisterNotifications();
 #endif
 
@@ -318,7 +318,7 @@ static int SDL_CreateDeviceNotification(SDL_DeviceNotificationData *data)
         return -1;
     }
 
-#if SDL_JOYSTICK_RAWINPUT
+#ifdef SDL_JOYSTICK_RAWINPUT
     RAWINPUT_RegisterNotifications(data->messageWindow);
 #endif
     return 0;
@@ -356,7 +356,7 @@ static SDL_DeviceNotificationData s_notification_data;
 /* Function/thread to scan the system for joysticks. */
 static int SDLCALL SDL_JoystickThread(void *_data)
 {
-#if SDL_JOYSTICK_XINPUT
+#ifdef SDL_JOYSTICK_XINPUT
     SDL_bool bOpenedXInputDevices[XUSER_MAX_COUNT];
     SDL_zeroa(bOpenedXInputDevices);
 #endif
@@ -374,7 +374,7 @@ static int SDLCALL SDL_JoystickThread(void *_data)
 #else
         {
 #endif
-#if SDL_JOYSTICK_XINPUT
+#ifdef SDL_JOYSTICK_XINPUT
             /* WM_DEVICECHANGE not working, poll for new XINPUT controllers */
             SDL_CondWaitTimeout(s_condJoystickThread, s_mutexJoyStickEnum, 1000);
             if (SDL_XINPUT_Enabled() && XINPUTGETCAPABILITIES) {
@@ -558,11 +558,11 @@ void WINDOWS_JoystickDetect(void)
         JoyStick_DeviceData *pListNext = NULL;
 
         if (pCurList->bXInputDevice) {
-#if SDL_HAPTIC_XINPUT
+#ifdef SDL_HAPTIC_XINPUT
             SDL_XINPUT_HapticMaybeRemoveDevice(pCurList->XInputUserId);
 #endif
         } else {
-#if SDL_HAPTIC_DINPUT
+#ifdef SDL_HAPTIC_DINPUT
             SDL_DINPUT_HapticMaybeRemoveDevice(&pCurList->dxdevice);
 #endif
         }
@@ -578,11 +578,11 @@ void WINDOWS_JoystickDetect(void)
     for (pCurList = SYS_Joystick; pCurList; pCurList = pCurList->pNext) {
         if (pCurList->send_add_event) {
             if (pCurList->bXInputDevice) {
-#if SDL_HAPTIC_XINPUT
+#ifdef SDL_HAPTIC_XINPUT
                 SDL_XINPUT_HapticMaybeAddDevice(pCurList->XInputUserId);
 #endif
             } else {
-#if SDL_HAPTIC_DINPUT
+#ifdef SDL_HAPTIC_DINPUT
                 SDL_DINPUT_HapticMaybeAddDevice(&pCurList->dxdevice);
 #endif
             }
@@ -824,9 +824,9 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver = {
 
 #else
 
-#if SDL_JOYSTICK_RAWINPUT
+#ifdef SDL_JOYSTICK_RAWINPUT
 /* The RAWINPUT driver needs the device notification setup above */
-#error SDL_JOYSTICK_RAWINPUT requires SDL_JOYSTICK_DINPUT || SDL_JOYSTICK_XINPUT
+#error SDL_JOYSTICK_RAWINPUT requires SDL_JOYSTICK_DINPUT || defined(SDL_JOYSTICK_XINPUT)
 #endif
 
 #endif /* SDL_JOYSTICK_DINPUT || SDL_JOYSTICK_XINPUT */

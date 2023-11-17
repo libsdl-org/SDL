@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_RISCOS
+#ifdef SDL_VIDEO_DRIVER_RISCOS
 
 #include "SDL_video.h"
 #include "SDL_mouse.h"

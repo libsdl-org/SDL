@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_OGL && !SDL_RENDER_DISABLED
+#if defined(SDL_VIDEO_RENDER_OGL) && !defined(SDL_RENDER_DISABLED)
 
 #include "SDL_stdinc.h"
 #include "SDL_opengl.h"

@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_OGL_ES && !SDL_RENDER_DISABLED
+#if defined(SDL_VIDEO_RENDER_OGL_ES) && !defined(SDL_RENDER_DISABLED)
 
 #include "SDL_hints.h"
 #include "../../video/SDL_sysvideo.h" /* For SDL_GL_SwapWindowWithResult */
@@ -150,11 +150,11 @@ static int GLES_SetError(const char *prefix, GLenum result)
 
 static int GLES_LoadFunctions(GLES_RenderData *data)
 {
-#if SDL_VIDEO_DRIVER_UIKIT
+#ifdef SDL_VIDEO_DRIVER_UIKIT
 #define __SDL_NOGETPROCADDR__
-#elif SDL_VIDEO_DRIVER_ANDROID
+#elif defined(SDL_VIDEO_DRIVER_ANDROID)
 #define __SDL_NOGETPROCADDR__
-#elif SDL_VIDEO_DRIVER_PANDORA
+#elif defined(SDL_VIDEO_DRIVER_PANDORA)
 #define __SDL_NOGETPROCADDR__
 #endif
 

@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_UIKIT
+#ifdef SDL_VIDEO_DRIVER_UIKIT
 
 #include "SDL_video.h"
 #include "SDL_hints.h"
@@ -70,7 +70,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
     void (*animationCallback)(void*);
     void *animationCallbackParam;
 
-#if SDL_IPHONE_KEYBOARD
+#ifdef SDL_IPHONE_KEYBOARD
     UITextField *textField;
     BOOL hardwareKeyboard;
     BOOL showingKeyboard;
@@ -88,7 +88,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
     if (self = [super initWithNibName:nil bundle:nil]) {
         self.window = _window;
 
-#if SDL_IPHONE_KEYBOARD
+#ifdef SDL_IPHONE_KEYBOARD
         [self initKeyboard];
         hardwareKeyboard = NO;
         showingKeyboard = NO;
@@ -113,7 +113,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 
 - (void)dealloc
 {
-#if SDL_IPHONE_KEYBOARD
+#ifdef SDL_IPHONE_KEYBOARD
     [self deinitKeyboard];
 #endif
 
@@ -178,7 +178,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
     /* Don't run the game loop while a messagebox is up */
     if (!UIKit_ShowingMessageBox()) {
         /* See the comment in the function definition. */
-#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
         UIKit_GL_RestoreCurrentContext();
 #endif
 
@@ -249,7 +249,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 /*
  ---- Keyboard related functionality below this line ----
  */
-#if SDL_IPHONE_KEYBOARD
+#ifdef SDL_IPHONE_KEYBOARD
 
 @synthesize textInputRect;
 @synthesize keyboardHeight;
@@ -551,7 +551,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 @end
 
 /* iPhone keyboard addition functions */
-#if SDL_IPHONE_KEYBOARD
+#ifdef SDL_IPHONE_KEYBOARD
 
 static SDL_uikitviewcontroller *GetWindowViewController(SDL_Window * window)
 {

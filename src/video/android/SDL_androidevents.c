@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
 
 #include "SDL_androidevents.h"
 #include "SDL_events.h"
@@ -32,7 +32,7 @@
 /* Can't include sysaudio "../../audio/android/SDL_androidaudio.h"
  * because of THIS redefinition */
 
-#if !SDL_AUDIO_DISABLED && SDL_AUDIO_DRIVER_ANDROID
+#if !defined(SDL_AUDIO_DISABLED) && defined(SDL_AUDIO_DRIVER_ANDROID)
 extern void ANDROIDAUDIO_ResumeDevices(void);
 extern void ANDROIDAUDIO_PauseDevices(void);
 #else
@@ -40,7 +40,7 @@ static void ANDROIDAUDIO_ResumeDevices(void) {}
 static void ANDROIDAUDIO_PauseDevices(void) {}
 #endif
 
-#if !SDL_AUDIO_DISABLED && SDL_AUDIO_DRIVER_OPENSLES
+#if !defined(SDL_AUDIO_DISABLED) && defined(SDL_AUDIO_DRIVER_OPENSLES)
 extern void openslES_ResumeDevices(void);
 extern void openslES_PauseDevices(void);
 #else
@@ -50,7 +50,7 @@ static void openslES_ResumeDevices(void)
 static void openslES_PauseDevices(void) {}
 #endif
 
-#if !SDL_AUDIO_DISABLED && SDL_AUDIO_DRIVER_AAUDIO
+#if !defined(SDL_AUDIO_DISABLED) && defined(SDL_AUDIO_DRIVER_AAUDIO)
 extern void aaudio_ResumeDevices(void);
 extern void aaudio_PauseDevices(void);
 SDL_bool aaudio_DetectBrokenPlayState(void);
@@ -68,7 +68,7 @@ static int SDL_NumberOfEvents(Uint32 type)
     return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, type, type);
 }
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
 static void android_egl_context_restore(SDL_Window *window)
 {
     if (window) {
@@ -113,7 +113,7 @@ void Android_PumpEvents_Blocking(_THIS)
     if (videodata->isPaused) {
         SDL_bool isContextExternal = SDL_IsVideoContextExternal();
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
         /* Make sure this is the last thing we do before pausing */
         if (!isContextExternal) {
             SDL_LockMutex(Android_ActivityMutex);
@@ -140,7 +140,7 @@ void Android_PumpEvents_Blocking(_THIS)
             aaudio_ResumeDevices();
 
             /* Restore the GL Context from here, as this operation is thread dependent */
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
             if (!isContextExternal && !SDL_HasEvent(SDL_QUIT)) {
                 SDL_LockMutex(Android_ActivityMutex);
                 android_egl_context_restore(Android_Window);
@@ -191,7 +191,7 @@ void Android_PumpEvents_NonBlocking(_THIS)
         SDL_bool isContextExternal = SDL_IsVideoContextExternal();
         if (backup_context) {
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
             if (!isContextExternal) {
                 SDL_LockMutex(Android_ActivityMutex);
                 android_egl_context_backup(Android_Window);
@@ -223,7 +223,7 @@ void Android_PumpEvents_NonBlocking(_THIS)
                 aaudio_ResumeDevices();
             }
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
             /* Restore the GL Context from here, as this operation is thread dependent */
             if (!isContextExternal && !SDL_HasEvent(SDL_QUIT)) {
                 SDL_LockMutex(Android_ActivityMutex);

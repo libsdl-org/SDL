@@ -25,7 +25,7 @@
 
 #include <pthread.h>
 
-#if HAVE_PTHREAD_NP_H
+#ifdef HAVE_PTHREAD_NP_H
 #include <pthread_np.h>
 #endif
 
@@ -141,7 +141,7 @@ void SDL_SYS_SetupThread(const char *name)
             }
 #endif
         }
-#elif HAVE_PTHREAD_SETNAME_NP
+#elif defined(HAVE_PTHREAD_SETNAME_NP)
 #if defined(__NETBSD__)
         pthread_setname_np(pthread_self(), "%s", name);
 #else
@@ -151,7 +151,7 @@ void SDL_SYS_SetupThread(const char *name)
             pthread_setname_np(pthread_self(), namebuf);
         }
 #endif
-#elif HAVE_PTHREAD_SET_NAME_NP
+#elif defined(HAVE_PTHREAD_SET_NAME_NP)
         pthread_set_name_np(pthread_self(), name);
 #elif defined(__HAIKU__)
         /* The docs say the thread name can't be longer than B_OS_NAME_LENGTH. */
@@ -188,7 +188,7 @@ SDL_threadID SDL_ThreadID(void)
 
 int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
-#if __NACL__ || __RISCOS__ || __OS2__
+#if defined(__NACL__) || defined(__RISCOS__) || defined(__OS2__)
     /* FIXME: Setting thread priority does not seem to be supported in NACL */
     return 0;
 #else
@@ -246,7 +246,7 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         policy = pri_policy;
     }
 
-#if __LINUX__
+#ifdef __LINUX__
     {
         pid_t linuxTid = syscall(SYS_gettid);
         return SDL_LinuxSetThreadPriorityAndPolicy(linuxTid, priority, policy);

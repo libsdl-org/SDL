@@ -26,25 +26,25 @@
 #include "SDL_thread.h"
 
 /* Need the definitions of SYS_ThreadHandle */
-#if SDL_THREADS_DISABLED
+#ifdef SDL_THREADS_DISABLED
 #include "generic/SDL_systhread_c.h"
-#elif SDL_THREAD_PTHREAD
+#elif defined(SDL_THREAD_PTHREAD)
 #include "pthread/SDL_systhread_c.h"
-#elif SDL_THREAD_WINDOWS
+#elif defined(SDL_THREAD_WINDOWS)
 #include "windows/SDL_systhread_c.h"
-#elif SDL_THREAD_PS2
+#elif defined(SDL_THREAD_PS2)
 #include "ps2/SDL_systhread_c.h"
-#elif SDL_THREAD_PSP
+#elif defined(SDL_THREAD_PSP)
 #include "psp/SDL_systhread_c.h"
-#elif SDL_THREAD_VITA
+#elif defined(SDL_THREAD_VITA)
 #include "vita/SDL_systhread_c.h"
-#elif SDL_THREAD_N3DS
+#elif defined(SDL_THREAD_N3DS)
 #include "n3ds/SDL_systhread_c.h"
-#elif SDL_THREAD_STDCPP
+#elif defined(SDL_THREAD_STDCPP)
 #include "stdcpp/SDL_systhread_c.h"
-#elif SDL_THREAD_OS2
+#elif defined(SDL_THREAD_OS2)
 #include "os2/SDL_systhread_c.h"
-#elif SDL_THREAD_NGAGE
+#elif defined(SDL_THREAD_NGAGE)
 #include "ngage/SDL_systhread_c.h"
 #else
 #error Need thread implementation for this platform

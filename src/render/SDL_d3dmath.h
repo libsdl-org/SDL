@@ -20,7 +20,7 @@
 */
 #include "../SDL_internal.h"
 
-#if (SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11 || SDL_VIDEO_RENDER_D3D12) && !SDL_RENDER_DISABLED
+#if (defined(SDL_VIDEO_RENDER_D3D) || defined(SDL_VIDEO_RENDER_D3D11) || defined(SDL_VIDEO_RENDER_D3D12)) && !defined(SDL_RENDER_DISABLED)
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus

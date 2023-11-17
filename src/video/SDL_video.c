@@ -34,20 +34,20 @@
 
 #include "SDL_syswm.h"
 
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
 #include "SDL_opengl.h"
 #endif /* SDL_VIDEO_OPENGL */
 
-#if SDL_VIDEO_OPENGL_ES && !SDL_VIDEO_OPENGL
+#if defined(SDL_VIDEO_OPENGL_ES) && !defined(SDL_VIDEO_OPENGL)
 #include "SDL_opengles.h"
 #endif /* SDL_VIDEO_OPENGL_ES && !SDL_VIDEO_OPENGL */
 
 /* GL and GLES2 headers conflict on Linux 32 bits */
-#if SDL_VIDEO_OPENGL_ES2 && !SDL_VIDEO_OPENGL
+#if defined(SDL_VIDEO_OPENGL_ES2) && !defined(SDL_VIDEO_OPENGL)
 #include "SDL_opengles2.h"
 #endif /* SDL_VIDEO_OPENGL_ES2 && !SDL_VIDEO_OPENGL */
 
-#if !SDL_VIDEO_OPENGL
+#ifndef SDL_VIDEO_OPENGL
 #ifndef GL_CONTEXT_RELEASE_BEHAVIOR_KHR
 #define GL_CONTEXT_RELEASE_BEHAVIOR_KHR 0x82FB
 #endif
@@ -65,82 +65,82 @@
 
 /* Available video drivers */
 static VideoBootStrap *bootstrap[] = {
-#if SDL_VIDEO_DRIVER_COCOA
+#ifdef SDL_VIDEO_DRIVER_COCOA
     &COCOA_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_X11
+#ifdef SDL_VIDEO_DRIVER_X11
     &X11_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_WAYLAND
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
     &Wayland_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_VIVANTE
+#ifdef SDL_VIDEO_DRIVER_VIVANTE
     &VIVANTE_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_DIRECTFB
+#ifdef SDL_VIDEO_DRIVER_DIRECTFB
     &DirectFB_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_WINDOWS
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
     &WINDOWS_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_WINRT
+#ifdef SDL_VIDEO_DRIVER_WINRT
     &WINRT_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_HAIKU
+#ifdef SDL_VIDEO_DRIVER_HAIKU
     &HAIKU_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_PANDORA
+#ifdef SDL_VIDEO_DRIVER_PANDORA
     &PND_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_UIKIT
+#ifdef SDL_VIDEO_DRIVER_UIKIT
     &UIKIT_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
     &Android_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_PS2
+#ifdef SDL_VIDEO_DRIVER_PS2
     &PS2_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_PSP
+#ifdef SDL_VIDEO_DRIVER_PSP
     &PSP_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_VITA
+#ifdef SDL_VIDEO_DRIVER_VITA
     &VITA_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_N3DS
+#ifdef SDL_VIDEO_DRIVER_N3DS
     &N3DS_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_KMSDRM
+#ifdef SDL_VIDEO_DRIVER_KMSDRM
     &KMSDRM_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_RISCOS
+#ifdef SDL_VIDEO_DRIVER_RISCOS
     &RISCOS_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_RPI
+#ifdef SDL_VIDEO_DRIVER_RPI
     &RPI_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_NACL
+#ifdef SDL_VIDEO_DRIVER_NACL
     &NACL_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_EMSCRIPTEN
+#ifdef SDL_VIDEO_DRIVER_EMSCRIPTEN
     &Emscripten_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_QNX
+#ifdef SDL_VIDEO_DRIVER_QNX
     &QNX_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_OS2
+#ifdef SDL_VIDEO_DRIVER_OS2
     &OS2DIVE_bootstrap,
     &OS2VMAN_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_NGAGE
+#ifdef SDL_VIDEO_DRIVER_NGAGE
     &NGAGE_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_OFFSCREEN
+#ifdef SDL_VIDEO_DRIVER_OFFSCREEN
     &OFFSCREEN_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_DUMMY
+#ifdef SDL_VIDEO_DRIVER_DUMMY
     &DUMMY_bootstrap,
-#if SDL_INPUT_LINUXEV
+#ifdef SDL_INPUT_LINUXEV
     &DUMMY_evdev_bootstrap,
 #endif
 #endif
@@ -202,12 +202,12 @@ typedef struct
 
 static Uint32 SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
 {
-#if (SDL_VIDEO_OPENGL && __MACOSX__) || (__IPHONEOS__ && !TARGET_OS_MACCATALYST) || __ANDROID__ || __NACL__
+#if (defined(SDL_VIDEO_OPENGL) && defined(__MACOSX__)) || (defined(__IPHONEOS__) && !TARGET_OS_MACCATALYST) || defined(__ANDROID__) || defined(__NACL__)
     if (_this->GL_CreateContext) {
         return SDL_WINDOW_OPENGL;
     }
 #endif
-#if SDL_VIDEO_METAL && (TARGET_OS_MACCATALYST || __MACOSX__ || __IPHONEOS__)
+#if defined(SDL_VIDEO_METAL) && (TARGET_OS_MACCATALYST || defined(__MACOSX__) || defined(__IPHONEOS__))
     if (_this->Metal_CreateView) {
         return SDL_WINDOW_METAL;
     }
@@ -441,7 +441,7 @@ int SDL_VideoInit(const char *driver_name)
         SDL_VideoQuit();
     }
 
-#if !SDL_TIMERS_DISABLED
+#ifndef SDL_TIMERS_DISABLED
     SDL_TicksInit();
 #endif
 
@@ -1332,7 +1332,7 @@ static void SDL_RestoreMousePosition(SDL_Window *window)
     }
 }
 
-#if __WINRT__
+#ifdef __WINRT__
 extern Uint32 WINRT_DetectWindowFlags(SDL_Window *window);
 #endif
 
@@ -1379,7 +1379,7 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
             return 0;
         }
     }
-#elif __WINRT__ && (NTDDI_VERSION < NTDDI_WIN10)
+#elif defined(__WINRT__) && (NTDDI_VERSION < NTDDI_WIN10)
     /* HACK: WinRT 8.x apps can't choose whether or not they are fullscreen
        or not.  The user can choose this, via OS-provided UI, but this can't
        be set programmatically.
@@ -1779,7 +1779,7 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
     }
 #endif
 
-#if __WINRT__ && (NTDDI_VERSION < NTDDI_WIN10)
+#if defined(__WINRT__) && (NTDDI_VERSION < NTDDI_WIN10)
     /* HACK: WinRT 8.x apps can't choose whether or not they are fullscreen
        or not.  The user can choose this, via OS-provided UI, but this can't
        be set programmatically.
@@ -3454,7 +3454,7 @@ void SDL_GL_UnloadLibrary(void)
     }
 }
 
-#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if defined(SDL_VIDEO_OPENGL) || defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
 static SDL_INLINE SDL_bool isAtLeastGL3(const char *verstr)
 {
     return verstr && (SDL_atoi(verstr) >= 3);
@@ -3463,7 +3463,7 @@ static SDL_INLINE SDL_bool isAtLeastGL3(const char *verstr)
 
 SDL_bool SDL_GL_ExtensionSupported(const char *extension)
 {
-#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if defined(SDL_VIDEO_OPENGL) || defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
     const GLubyte *(APIENTRY * glGetStringFunc)(GLenum);
     const char *extensions;
     const char *start;
@@ -3557,7 +3557,7 @@ void SDL_GL_DeduceMaxSupportedESProfile(int *major, int *minor)
 {
 /* THIS REQUIRES AN EXISTING GL CONTEXT THAT HAS BEEN MADE CURRENT. */
 /*  Please refer to https://bugzilla.libsdl.org/show_bug.cgi?id=3725 for discussion. */
-#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if defined(SDL_VIDEO_OPENGL) || defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
     /* XXX This is fragile; it will break in the event of release of
      * new versions of OpenGL ES.
      */
@@ -3602,15 +3602,15 @@ void SDL_GL_ResetAttributes()
     _this->gl_config.retained_backing = 1;
     _this->gl_config.accelerated = -1; /* accelerated or not, both are fine */
 
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
     _this->gl_config.major_version = 2;
     _this->gl_config.minor_version = 1;
     _this->gl_config.profile_mask = 0;
-#elif SDL_VIDEO_OPENGL_ES2
+#elif defined(SDL_VIDEO_OPENGL_ES2)
     _this->gl_config.major_version = 2;
     _this->gl_config.minor_version = 0;
     _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
-#elif SDL_VIDEO_OPENGL_ES
+#elif defined(SDL_VIDEO_OPENGL_ES)
     _this->gl_config.major_version = 1;
     _this->gl_config.minor_version = 1;
     _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
@@ -3633,7 +3633,7 @@ void SDL_GL_ResetAttributes()
 
 int SDL_GL_SetAttribute(SDL_GLattr attr, int value)
 {
-#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if defined(SDL_VIDEO_OPENGL) || defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
     int retval;
 
     if (!_this) {
@@ -3756,7 +3756,7 @@ int SDL_GL_SetAttribute(SDL_GLattr attr, int value)
 
 int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
 {
-#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if defined(SDL_VIDEO_OPENGL) || defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
     GLenum(APIENTRY * glGetErrorFunc)(void);
     GLenum attrib = 0;
     GLenum error = 0;
@@ -3767,7 +3767,7 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
      * the enums we use for the former function don't exist in OpenGL ES 2, and
      * the function itself doesn't exist prior to OpenGL 3 and OpenGL ES 2.
      */
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
     const GLubyte *(APIENTRY * glGetStringFunc)(GLenum name);
     void(APIENTRY * glGetFramebufferAttachmentParameterivFunc)(GLenum target, GLenum attachment, GLenum pname, GLint * params);
     GLenum attachment = GL_BACK_LEFT;
@@ -3787,31 +3787,31 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
 
     switch (attr) {
     case SDL_GL_RED_SIZE:
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
         attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE;
 #endif
         attrib = GL_RED_BITS;
         break;
     case SDL_GL_BLUE_SIZE:
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
         attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE;
 #endif
         attrib = GL_BLUE_BITS;
         break;
     case SDL_GL_GREEN_SIZE:
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
         attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE;
 #endif
         attrib = GL_GREEN_BITS;
         break;
     case SDL_GL_ALPHA_SIZE:
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
         attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE;
 #endif
         attrib = GL_ALPHA_BITS;
         break;
     case SDL_GL_DOUBLEBUFFER:
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
         attrib = GL_DOUBLEBUFFER;
         break;
 #else
@@ -3822,20 +3822,20 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
         return 0;
 #endif
     case SDL_GL_DEPTH_SIZE:
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
         attachment = GL_DEPTH;
         attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE;
 #endif
         attrib = GL_DEPTH_BITS;
         break;
     case SDL_GL_STENCIL_SIZE:
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
         attachment = GL_STENCIL;
         attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE;
 #endif
         attrib = GL_STENCIL_BITS;
         break;
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
     case SDL_GL_ACCUM_RED_SIZE:
         attrib = GL_ACCUM_RED_BITS;
         break;
@@ -3868,7 +3868,7 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
         attrib = GL_SAMPLES;
         break;
     case SDL_GL_CONTEXT_RELEASE_BEHAVIOR:
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
         attrib = GL_CONTEXT_RELEASE_BEHAVIOR;
 #else
         attrib = GL_CONTEXT_RELEASE_BEHAVIOR_KHR;
@@ -3955,7 +3955,7 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
         return SDL_SetError("Unknown OpenGL attribute");
     }
 
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
     glGetStringFunc = SDL_GL_GetProcAddress("glGetString");
     if (!glGetStringFunc) {
         return -1;
@@ -4369,41 +4369,41 @@ int SDL_GetMessageBoxCount(void)
     return SDL_AtomicGet(&SDL_messagebox_count);
 }
 
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
 #include "android/SDL_androidmessagebox.h"
 #endif
-#if SDL_VIDEO_DRIVER_WINDOWS
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
 #include "windows/SDL_windowsmessagebox.h"
 #endif
-#if SDL_VIDEO_DRIVER_WINRT
+#ifdef SDL_VIDEO_DRIVER_WINRT
 #include "winrt/SDL_winrtmessagebox.h"
 #endif
-#if SDL_VIDEO_DRIVER_COCOA
+#ifdef SDL_VIDEO_DRIVER_COCOA
 #include "cocoa/SDL_cocoamessagebox.h"
 #endif
-#if SDL_VIDEO_DRIVER_UIKIT
+#ifdef SDL_VIDEO_DRIVER_UIKIT
 #include "uikit/SDL_uikitmessagebox.h"
 #endif
-#if SDL_VIDEO_DRIVER_X11
+#ifdef SDL_VIDEO_DRIVER_X11
 #include "x11/SDL_x11messagebox.h"
 #endif
-#if SDL_VIDEO_DRIVER_WAYLAND
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
 #include "wayland/SDL_waylandmessagebox.h"
 #endif
-#if SDL_VIDEO_DRIVER_HAIKU
+#ifdef SDL_VIDEO_DRIVER_HAIKU
 #include "haiku/SDL_bmessagebox.h"
 #endif
-#if SDL_VIDEO_DRIVER_OS2
+#ifdef SDL_VIDEO_DRIVER_OS2
 #include "os2/SDL_os2messagebox.h"
 #endif
-#if SDL_VIDEO_DRIVER_RISCOS
+#ifdef SDL_VIDEO_DRIVER_RISCOS
 #include "riscos/SDL_riscosmessagebox.h"
 #endif
-#if SDL_VIDEO_DRIVER_VITA
+#ifdef SDL_VIDEO_DRIVER_VITA
 #include "vita/SDL_vitamessagebox.h"
 #endif
 
-#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT || SDL_VIDEO_DRIVER_COCOA || SDL_VIDEO_DRIVER_UIKIT || SDL_VIDEO_DRIVER_X11 || SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_HAIKU || SDL_VIDEO_DRIVER_OS2 || SDL_VIDEO_DRIVER_RISCOS
+#if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_WINRT) || defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT) || defined(SDL_VIDEO_DRIVER_X11) || defined(SDL_VIDEO_DRIVER_WAYLAND) || defined(SDL_VIDEO_DRIVER_HAIKU) || defined(SDL_VIDEO_DRIVER_OS2) || defined(SDL_VIDEO_DRIVER_RISCOS)
 static SDL_bool SDL_MessageboxValidForDriver(const SDL_MessageBoxData *messageboxdata, SDL_SYSWM_TYPE drivertype)
 {
     SDL_SysWMinfo info;
@@ -4466,76 +4466,76 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     }
 
     /* It's completely fine to call this function before video is initialized */
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
     if (retval == -1 &&
         Android_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
-#if SDL_VIDEO_DRIVER_WINDOWS && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_WINDOWS) &&
         WIN_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
-#if SDL_VIDEO_DRIVER_WINRT
+#ifdef SDL_VIDEO_DRIVER_WINRT
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_WINRT) &&
         WINRT_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
-#if SDL_VIDEO_DRIVER_COCOA
+#ifdef SDL_VIDEO_DRIVER_COCOA
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_COCOA) &&
         Cocoa_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
-#if SDL_VIDEO_DRIVER_UIKIT
+#ifdef SDL_VIDEO_DRIVER_UIKIT
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_UIKIT) &&
         UIKit_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
-#if SDL_VIDEO_DRIVER_X11
+#ifdef SDL_VIDEO_DRIVER_X11
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_X11) &&
         X11_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
-#if SDL_VIDEO_DRIVER_WAYLAND
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_WAYLAND) &&
         Wayland_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
-#if SDL_VIDEO_DRIVER_HAIKU
+#ifdef SDL_VIDEO_DRIVER_HAIKU
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_HAIKU) &&
         HAIKU_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
-#if SDL_VIDEO_DRIVER_OS2
+#ifdef SDL_VIDEO_DRIVER_OS2
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_OS2) &&
         OS2_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
-#if SDL_VIDEO_DRIVER_RISCOS
+#ifdef SDL_VIDEO_DRIVER_RISCOS
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_RISCOS) &&
         RISCOS_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
-#if SDL_VIDEO_DRIVER_VITA
+#ifdef SDL_VIDEO_DRIVER_VITA
     if (retval == -1 &&
         VITA_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;

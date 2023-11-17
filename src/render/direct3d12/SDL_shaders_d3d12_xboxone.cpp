@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED && defined(__XBOXONE__)
+#if defined(SDL_VIDEO_RENDER_D3D12) && !defined(SDL_RENDER_DISABLED) && defined(__XBOXONE__)
 
 #error "This is a placeholder Xbox file, as the real one is under NDA. See README-gdk.md for more info."
 

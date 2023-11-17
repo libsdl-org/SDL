@@ -20,14 +20,14 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_DIRECTFB
+#ifdef SDL_VIDEO_DRIVER_DIRECTFB
 
 #include "SDL_DirectFB_video.h"
 #include "SDL_DirectFB_modes.h"
 #include "SDL_DirectFB_window.h"
 #include "SDL_DirectFB_shape.h"
 
-#if SDL_DIRECTFB_OPENGL
+#ifdef SDL_DIRECTFB_OPENGL
 #include "SDL_DirectFB_opengl.h"
 #endif
 
@@ -402,7 +402,7 @@ void DirectFB_DestroyWindow(_THIS, SDL_Window * window)
     SDL_DFB_CHECK(windata->dfbwin->UngrabPointer(windata->dfbwin));
     SDL_DFB_CHECK(windata->dfbwin->UngrabKeyboard(windata->dfbwin));
 
-#if SDL_DIRECTFB_OPENGL
+#ifdef SDL_DIRECTFB_OPENGL
     DirectFB_GL_DestroyWindowContexts(_this, window);
 #endif
 
@@ -495,7 +495,7 @@ void DirectFB_AdjustWindowSurface(SDL_Window * window)
     }
 
     if (adjust) {
-#if SDL_DIRECTFB_OPENGL
+#ifdef SDL_DIRECTFB_OPENGL
         DirectFB_GL_FreeWindowContexts(SDL_GetVideoDevice(), window);
 #endif
 
@@ -524,7 +524,7 @@ void DirectFB_AdjustWindowSurface(SDL_Window * window)
 #endif
         DirectFB_WM_RedrawLayout(SDL_GetVideoDevice(), window);
 
-#if SDL_DIRECTFB_OPENGL
+#ifdef SDL_DIRECTFB_OPENGL
         DirectFB_GL_ReAllocWindowContexts(SDL_GetVideoDevice(), window);
 #endif
    }

@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_HAIKU
+#ifdef SDL_AUDIO_DRIVER_HAIKU
 
 /* Allow access to the audio stream on Haiku */
 

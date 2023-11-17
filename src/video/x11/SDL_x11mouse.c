@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_X11
+#ifdef SDL_VIDEO_DRIVER_X11
 
 #include <X11/cursorfont.h>
 #include "SDL_x11video.h"
@@ -80,7 +80,7 @@ static SDL_Cursor *X11_CreateDefaultCursor()
     return cursor;
 }
 
-#if SDL_VIDEO_DRIVER_X11_XCURSOR
+#ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
 static Cursor X11_CreateXCursorCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
     Display *display = GetDisplay();
@@ -204,7 +204,7 @@ static SDL_Cursor *X11_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
     if (cursor) {
         Cursor x11_cursor = None;
 
-#if SDL_VIDEO_DRIVER_X11_XCURSOR
+#ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
         if (SDL_X11_HAVE_XCURSOR) {
             x11_cursor = X11_CreateXCursorCursor(surface, hot_x, hot_y);
         }
@@ -328,7 +328,7 @@ static void WarpMouseInternal(Window xwindow, const int x, const int y)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)SDL_GetVideoDevice()->driverdata;
     Display *display = videodata->display;
-#if SDL_VIDEO_DRIVER_X11_XINPUT2
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     int deviceid = 0;
     if (X11_Xinput2IsInitialized()) {
         /* It seems XIWarpPointer() doesn't work correctly on multi-head setups:
@@ -354,7 +354,7 @@ static void X11_WarpMouse(SDL_Window *window, int x, int y)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     /* If we have no barrier, we need to warp */
     if (data->pointer_barrier_active == SDL_FALSE) {
         WarpMouseInternal(data->xwindow, x, y);

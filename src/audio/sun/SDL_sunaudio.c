@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_SUNAUDIO
+#ifdef SDL_AUDIO_DRIVER_SUNAUDIO
 
 /* Allow access to a raw mixing buffer */
 
@@ -281,7 +281,7 @@ static int SUNAUDIO_OpenDevice(_THIS, const char *devname)
             break;              /* try again */
 
         case AUDIO_ENCODING_LINEAR:
-            /* linear 16bit didn't work either, resort to µ-law */
+            /* linear 16bit didn't work either, resort to ï¿½-law */
             enc = AUDIO_ENCODING_ULAW;
             this->spec.channels = 1;
             this->spec.freq = 8000;

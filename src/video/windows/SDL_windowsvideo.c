@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WINDOWS
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
 
 #include "SDL_main.h"
 #include "SDL_video.h"
@@ -215,7 +215,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->shape_driver.ResizeWindowShape = Win32_ResizeWindowShape;
 #endif
 
-#if SDL_VIDEO_OPENGL_WGL
+#ifdef SDL_VIDEO_OPENGL_WGL
     device->GL_LoadLibrary = WIN_GL_LoadLibrary;
     device->GL_GetProcAddress = WIN_GL_GetProcAddress;
     device->GL_UnloadLibrary = WIN_GL_UnloadLibrary;
@@ -225,7 +225,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->GL_GetSwapInterval = WIN_GL_GetSwapInterval;
     device->GL_SwapWindow = WIN_GL_SwapWindow;
     device->GL_DeleteContext = WIN_GL_DeleteContext;
-#elif SDL_VIDEO_OPENGL_EGL
+#elif defined(SDL_VIDEO_OPENGL_EGL)
     /* Use EGL based functions */
     device->GL_LoadLibrary = WIN_GLES_LoadLibrary;
     device->GL_GetProcAddress = WIN_GLES_GetProcAddress;
@@ -237,7 +237,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->GL_SwapWindow = WIN_GLES_SwapWindow;
     device->GL_DeleteContext = WIN_GLES_DeleteContext;
 #endif
-#if SDL_VIDEO_VULKAN
+#ifdef SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = WIN_Vulkan_LoadLibrary;
     device->Vulkan_UnloadLibrary = WIN_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = WIN_Vulkan_GetInstanceExtensions;

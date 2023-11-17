@@ -23,7 +23,7 @@
 #ifndef SDL_VIRTUALJOYSTICK_C_H
 #define SDL_VIRTUALJOYSTICK_C_H
 
-#if SDL_JOYSTICK_VIRTUAL
+#ifdef SDL_JOYSTICK_VIRTUAL
 
 #include "SDL_joystick.h"
 

@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_THREAD_PSP
+#ifdef SDL_THREAD_PSP
 
 /* Semaphore functions for the PSP. */
 

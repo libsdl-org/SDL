@@ -20,14 +20,14 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_HAIKU
+#ifdef SDL_VIDEO_DRIVER_HAIKU
 
 #include <AppKit.h>
 #include <InterfaceKit.h>
 #include "SDL_bmodes.h"
 #include "SDL_BWin.h"
 
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
 #include "SDL_bopengl.h"
 #endif
 
@@ -288,7 +288,7 @@ int HAIKU_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode
     
     free(bmode_list); /* This should not be SDL_free() */
     
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
     /* FIXME: Is there some way to reboot the OpenGL context?  This doesn't
        help */
 //    HAIKU_GL_RebootContexts(_this);

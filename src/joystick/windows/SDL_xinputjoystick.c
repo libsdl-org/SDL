@@ -22,7 +22,7 @@
 
 #include "../SDL_sysjoystick.h"
 
-#if SDL_JOYSTICK_XINPUT
+#ifdef SDL_JOYSTICK_XINPUT
 
 #include "SDL_hints.h"
 #include "SDL_timer.h"

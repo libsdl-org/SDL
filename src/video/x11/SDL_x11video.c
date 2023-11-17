@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_X11
+#ifdef SDL_VIDEO_DRIVER_X11
 
 #include <unistd.h> /* For getpid() and readlink() */
 
@@ -38,7 +38,7 @@
 #include "SDL_x11xinput2.h"
 #include "SDL_x11xfixes.h"
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
 #include "SDL_x11opengles.h"
 #endif
 
@@ -183,7 +183,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 
     data->global_mouse_changed = SDL_TRUE;
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     data->active_cursor_confined_window = NULL;
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
 
@@ -261,7 +261,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->AcceptDragAndDrop = X11_AcceptDragAndDrop;
     device->FlashWindow = X11_FlashWindow;
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     device->SetWindowMouseRect = X11_SetWindowMouseRect;
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
 
@@ -269,7 +269,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->shape_driver.SetWindowShape = X11_SetWindowShape;
     device->shape_driver.ResizeWindowShape = X11_ResizeWindowShape;
 
-#if SDL_VIDEO_OPENGL_GLX
+#ifdef SDL_VIDEO_OPENGL_GLX
     device->GL_LoadLibrary = X11_GL_LoadLibrary;
     device->GL_GetProcAddress = X11_GL_GetProcAddress;
     device->GL_UnloadLibrary = X11_GL_UnloadLibrary;
@@ -280,8 +280,8 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->GL_SwapWindow = X11_GL_SwapWindow;
     device->GL_DeleteContext = X11_GL_DeleteContext;
 #endif
-#if SDL_VIDEO_OPENGL_EGL
-#if SDL_VIDEO_OPENGL_GLX
+#ifdef SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_GLX
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE)) {
 #endif
         device->GL_LoadLibrary = X11_GLES_LoadLibrary;
@@ -293,7 +293,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
         device->GL_GetSwapInterval = X11_GLES_GetSwapInterval;
         device->GL_SwapWindow = X11_GLES_SwapWindow;
         device->GL_DeleteContext = X11_GLES_DeleteContext;
-#if SDL_VIDEO_OPENGL_GLX
+#ifdef SDL_VIDEO_OPENGL_GLX
     }
 #endif
 #endif
@@ -314,7 +314,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 
     device->free = X11_DeleteDevice;
 
-#if SDL_VIDEO_VULKAN
+#ifdef SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = X11_Vulkan_LoadLibrary;
     device->Vulkan_UnloadLibrary = X11_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = X11_Vulkan_GetInstanceExtensions;

@@ -27,7 +27,7 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
-#if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
+#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
 #include <X11/XKBlib.h>
 #endif
 
@@ -46,25 +46,25 @@
 #include <X11/extensions/XShm.h>
 #endif
 
-#if SDL_VIDEO_DRIVER_X11_XCURSOR
+#ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
 #include <X11/Xcursor/Xcursor.h>
 #endif
-#if SDL_VIDEO_DRIVER_X11_XDBE
+#ifdef SDL_VIDEO_DRIVER_X11_XDBE
 #include <X11/extensions/Xdbe.h>
 #endif
-#if SDL_VIDEO_DRIVER_X11_XINPUT2 || SDL_VIDEO_DRIVER_X11_XFIXES
+#if defined(SDL_VIDEO_DRIVER_X11_XINPUT2) || defined(SDL_VIDEO_DRIVER_X11_XFIXES)
 #include <X11/extensions/XInput2.h>
 #endif
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
 #include <X11/extensions/Xfixes.h>
 #endif
-#if SDL_VIDEO_DRIVER_X11_XRANDR
+#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
 #include <X11/extensions/Xrandr.h>
 #endif
-#if SDL_VIDEO_DRIVER_X11_XSCRNSAVER
+#ifdef SDL_VIDEO_DRIVER_X11_XSCRNSAVER
 #include <X11/extensions/scrnsaver.h>
 #endif
-#if SDL_VIDEO_DRIVER_X11_XSHAPE
+#ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
 #include <X11/extensions/shape.h>
 #endif
 

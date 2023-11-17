@@ -62,7 +62,7 @@
 #include "SDL_system.h"
 #endif
 
-#if __NACL__
+#ifdef __NACL__
 #include "nacl_io/nacl_io.h"
 #endif
 
@@ -590,14 +590,14 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
     rwops->write = windows_file_write;
     rwops->close = windows_file_close;
     rwops->type = SDL_RWOPS_WINFILE;
-#elif HAVE_STDIO_H
+#elif defined(HAVE_STDIO_H)
     {
-#if __APPLE__ && !SDL_FILE_DISABLED // TODO: add dummy?
+#if defined(__APPLE__) && !defined(SDL_FILE_DISABLED) // TODO: add dummy?
         FILE *fp = SDL_OpenFPFromBundleOrFallback(file, mode);
-#elif __WINRT__
+#elif defined(__WINRT__)
         FILE *fp = NULL;
         fopen_s(&fp, file, mode);
-#elif __3DS__
+#elif defined(__3DS__)
         FILE *fp = N3DS_FileOpen(file, mode);
 #else
         FILE *fp = fopen(file, mode);

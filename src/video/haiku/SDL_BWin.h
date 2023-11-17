@@ -39,7 +39,7 @@ extern "C" {
 #include <AppKit.h>
 #include <Cursor.h>
 #include <InterfaceKit.h>
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
 #include <opengl/GLView.h>
 #endif
 #include "SDL_events.h"
@@ -99,7 +99,7 @@ class SDL_BWin : public BWindow
         _cur_view = NULL;
         _SDL_View = NULL;
 
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
         _SDL_GLView = NULL;
         _gl_type = 0;
 #endif
@@ -123,7 +123,7 @@ class SDL_BWin : public BWindow
             _SDL_View = NULL;
         }
 
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
         if (_SDL_GLView) {
             if (SDL_Looper->GetCurrentContext() == _SDL_GLView)
                 SDL_Looper->SetCurrentContext(NULL);
@@ -189,7 +189,7 @@ class SDL_BWin : public BWindow
     }
 
     /* * * * * OpenGL functionality * * * * */
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
     BGLView *CreateGLView(Uint32 gl_flags)
     {
         Lock();
@@ -476,7 +476,7 @@ class SDL_BWin : public BWindow
     BBitmap *GetBitmap() { return _bitmap; }
     BView *GetCurView() { return _cur_view; }
     SDL_BView *GetView() { return _SDL_View; }
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
     BGLView *GetGLView()
     {
         return _SDL_GLView;
@@ -712,7 +712,7 @@ class SDL_BWin : public BWindow
 
     BView *_cur_view;
     SDL_BView *_SDL_View;
-#if SDL_VIDEO_OPENGL
+#ifdef SDL_VIDEO_OPENGL
     BGLView *_SDL_GLView;
     Uint32 _gl_type;
 #endif

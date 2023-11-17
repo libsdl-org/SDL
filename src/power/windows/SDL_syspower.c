@@ -21,7 +21,7 @@
 #include "../../SDL_internal.h"
 
 #ifndef SDL_POWER_DISABLED
-#if SDL_POWER_WINDOWS
+#ifdef SDL_POWER_WINDOWS
 
 #include "../../core/windows/SDL_windows.h"
 

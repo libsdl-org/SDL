@@ -54,7 +54,7 @@
 
 /* Useful headers */
 #define HAVE_DXGI_H 1
-#if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
+#if !SDL_WINAPI_FAMILY_PHONE
 #define HAVE_XINPUT_H 1
 #endif
 
@@ -161,7 +161,7 @@
 #define SDL_AUDIO_DRIVER_DUMMY  1
 
 /* Enable various input drivers */
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if SDL_WINAPI_FAMILY_PHONE
 #define SDL_JOYSTICK_DISABLED 1
 #define SDL_HAPTIC_DISABLED 1
 #else
@@ -208,9 +208,9 @@
 #define SDL_VIDEO_RENDER_D3D11  1
 
 /* Disable D3D12 as it's not implemented for WinRT */
-#define SDL_VIDEO_RENDER_D3D12  0
+/* #undef SDL_VIDEO_RENDER_D3D12 */
 
-#if SDL_VIDEO_OPENGL_ES2
+#ifdef SDL_VIDEO_OPENGL_ES2
 #define SDL_VIDEO_RENDER_OGL_ES2 1
 #endif
 

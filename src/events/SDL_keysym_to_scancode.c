@@ -21,7 +21,7 @@
 
 #include "../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_X11
+#if defined(SDL_VIDEO_DRIVER_WAYLAND) || defined(SDL_VIDEO_DRIVER_X11)
 
 #include "SDL_keyboard_c.h"
 #include "SDL_scancode_tables_c.h"

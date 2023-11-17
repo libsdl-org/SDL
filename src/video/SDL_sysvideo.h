@@ -433,11 +433,11 @@ struct SDL_VideoDevice
     void *driverdata;
     struct SDL_GLDriverData *gl_data;
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     struct SDL_EGL_VideoData *egl_data;
 #endif
 
-#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
     struct SDL_PrivateGLESData *gles_data;
 #endif
 

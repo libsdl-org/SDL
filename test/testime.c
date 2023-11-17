@@ -29,7 +29,7 @@
 #ifdef HAVE_SDL_TTF
 #ifdef __MACOSX__
 #define DEFAULT_FONT "/System/Library/Fonts/华文细黑.ttf"
-#elif __WIN32__
+#elif defined(__WIN32__)
 /* Some japanese font present on at least Windows 8.1. */
 #define DEFAULT_FONT "C:\\Windows\\Fonts\\yugothic.ttf"
 #else

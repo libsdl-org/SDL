@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_NACL
+#ifdef SDL_VIDEO_DRIVER_NACL
 
 #include "SDL.h"
 #include "../../events/SDL_events_c.h"

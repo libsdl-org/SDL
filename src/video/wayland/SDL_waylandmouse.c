@@ -21,7 +21,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WAYLAND
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
 
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -179,7 +179,7 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
     if ((xcursor_size = SDL_getenv("XCURSOR_SIZE"))) {
         size = SDL_atoi(xcursor_size);
     }
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
     if (size <= 0) {
         wayland_dbus_read_cursor_size(&size);
     }
@@ -215,7 +215,7 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
             return SDL_FALSE;
         }
         xcursor_theme = SDL_getenv("XCURSOR_THEME");
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
         if (!xcursor_theme) {
             /* Allocates the string with SDL_strdup, which must be freed. */
             free_theme_str = wayland_dbus_read_cursor_theme(&xcursor_theme);

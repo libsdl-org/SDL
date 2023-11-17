@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WINRT
+#ifdef SDL_VIDEO_DRIVER_WINRT
 
 /* SDL includes */
 #include "SDL_winrtevents_c.h"
@@ -78,7 +78,7 @@ WINRT_TransformCursorPosition(SDL_Window *window,
     // Compute coordinates normalized from 0..1.
     // If the coordinates need to be sized to the SDL window,
     // we'll do that after.
-#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION > NTDDI_WIN8)
+#if !SDL_WINAPI_FAMILY_PHONE || (NTDDI_VERSION > NTDDI_WIN8)
     outputPosition.X = rawPosition.X / nativeWindow->Bounds.Width;
     outputPosition.Y = rawPosition.Y / nativeWindow->Bounds.Height;
 #else
@@ -116,7 +116,7 @@ SDL_bool WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^ pt
 {
     using namespace Windows::UI::Input;
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if SDL_WINAPI_FAMILY_PHONE
     *button = SDL_BUTTON_LEFT;
     return SDL_TRUE;
 #else
@@ -197,7 +197,7 @@ SDL_bool WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^ pt
 
 static bool WINRT_IsTouchEvent(Windows::UI::Input::PointerPoint ^ pointerPoint)
 {
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if SDL_WINAPI_FAMILY_PHONE
     return true;
 #else
     using namespace Windows::Devices::Input;

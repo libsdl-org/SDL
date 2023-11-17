@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_UIKIT
+#ifdef SDL_VIDEO_DRIVER_UIKIT
 
 #include "../SDL_sysvideo.h"
 #include "SDL_hints.h"
@@ -408,7 +408,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 {
     NSBundle *bundle = [NSBundle mainBundle];
 
-#if SDL_IPHONE_LAUNCHSCREEN
+#ifdef SDL_IPHONE_LAUNCHSCREEN
     /* The normal launch screen is displayed until didFinishLaunching returns,
      * but SDL_main is called after that happens and there may be a noticeable
      * delay between the start of SDL_main and when the first real frame is

@@ -21,7 +21,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_THREAD_OS2
+#ifdef SDL_THREAD_OS2
 
 #include "../SDL_thread_c.h"
 

@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_THREAD_OS2
+#ifdef SDL_THREAD_OS2
 
 /* An implementation of mutexes for OS/2 */
 

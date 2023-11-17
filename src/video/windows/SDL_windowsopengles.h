@@ -23,7 +23,7 @@
 #ifndef SDL_winopengles_h_
 #define SDL_winopengles_h_
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
 
 #include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"

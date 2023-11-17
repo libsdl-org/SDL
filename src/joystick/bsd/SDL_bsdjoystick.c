@@ -782,7 +782,7 @@ static int report_alloc(struct report *r, struct report_desc *rd, int repind)
 
 #ifdef __DragonFly__
     len = hid_report_size(rd, repinfo[repind].kind, r->rid);
-#elif __FREEBSD__
+#elif defined(__FREEBSD__)
 #if (__FreeBSD_kernel_version >= 460000) || defined(__FreeBSD_kernel__)
 #if (__FreeBSD_kernel_version <= 500111)
     len = hid_report_size(rd, r->rid, repinfo[repind].kind);

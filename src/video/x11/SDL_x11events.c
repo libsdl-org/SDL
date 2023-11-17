@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_X11
+#ifdef SDL_VIDEO_DRIVER_X11
 
 #include <sys/types.h>
 #include <sys/time.h>
@@ -324,7 +324,7 @@ static char *X11_URIToLocal(char *uri)
     return file;
 }
 
-#if SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
+#ifdef SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
 static void X11_HandleGenericEvent(SDL_VideoData *videodata, XEvent *xev)
 {
     /* event is a union, so cookie == &event, but this is type safe. */
@@ -841,14 +841,14 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
         return;
     }
 
-#if SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
+#ifdef SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
     if (xevent->type == GenericEvent) {
         X11_HandleGenericEvent(videodata, xevent);
         return;
     }
 #endif
 
-#if SDL_VIDEO_DRIVER_X11_XRANDR
+#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
     if (videodata->xrandr_event_base && (xevent->type == (videodata->xrandr_event_base + RRNotify))) {
         X11_HandleXRandREvent(_this, xevent);
     }
@@ -981,7 +981,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
         mouse->last_x = xevent->xcrossing.x;
         mouse->last_y = xevent->xcrossing.y;
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
         {
             /* Only create the barriers if we have input focus */
             SDL_WindowData *windowdata = (SDL_WindowData *)data->window->driverdata;
@@ -1093,7 +1093,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_TIME;
         }
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
         /* Disable confinement if it is activated. */
         if (data->pointer_barrier_active == SDL_TRUE) {
             X11_ConfineCursorWithFlags(_this, data->window, NULL, X11_BARRIER_HANDLED_BY_EVENT);
@@ -1180,7 +1180,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             X11_DispatchUnmapNotify(data);
         }
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
         /* Disable confinement if the window gets hidden. */
         if (data->pointer_barrier_active == SDL_TRUE) {
             X11_ConfineCursorWithFlags(_this, data->window, NULL, X11_BARRIER_HANDLED_BY_EVENT);
@@ -1196,7 +1196,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 #endif
         X11_DispatchMapNotify(data);
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
         /* Enable confinement if it was activated. */
         if (data->pointer_barrier_active == SDL_TRUE) {
             X11_ConfineCursorWithFlags(_this, data->window, &data->barrier_rect, X11_BARRIER_HANDLED_BY_EVENT);
@@ -1738,7 +1738,7 @@ void X11_PumpEvents(_THIS)
             SDL_TICKS_PASSED(now, data->screensaver_activity + 30000)) {
             X11_XResetScreenSaver(data->display);
 
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
             SDL_DBus_ScreensaverTickle();
 #endif
 
@@ -1774,13 +1774,13 @@ void X11_PumpEvents(_THIS)
 
 void X11_SuspendScreenSaver(_THIS)
 {
-#if SDL_VIDEO_DRIVER_X11_XSCRNSAVER
+#ifdef SDL_VIDEO_DRIVER_X11_XSCRNSAVER
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
     int dummy;
     int major_version, minor_version;
 #endif /* SDL_VIDEO_DRIVER_X11_XSCRNSAVER */
 
-#if SDL_USE_LIBDBUS
+#ifdef SDL_USE_LIBDBUS
     if (SDL_DBus_ScreensaverInhibit(_this->suspend_screensaver)) {
         return;
     }
@@ -1790,7 +1790,7 @@ void X11_SuspendScreenSaver(_THIS)
     }
 #endif
 
-#if SDL_VIDEO_DRIVER_X11_XSCRNSAVER
+#ifdef SDL_VIDEO_DRIVER_X11_XSCRNSAVER
     if (SDL_X11_HAVE_XSS) {
         /* X11_XScreenSaverSuspend was introduced in MIT-SCREEN-SAVER 1.1 */
         if (!X11_XScreenSaverQueryExtension(data->display, &dummy, &dummy) ||

@@ -20,19 +20,19 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_VITA
+#ifdef SDL_VIDEO_DRIVER_VITA
 
 #include "SDL_vitavideo.h"
 #include "SDL_vitamessagebox.h"
 #include <psp2/message_dialog.h>
 
-#if SDL_VIDEO_RENDER_VITA_GXM
+#ifdef SDL_VIDEO_RENDER_VITA_GXM
 #include "../../render/vitagxm/SDL_render_vita_gxm_tools.h"
 #endif /* SDL_VIDEO_RENDER_VITA_GXM */
 
 int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
-#if SDL_VIDEO_RENDER_VITA_GXM
+#ifdef SDL_VIDEO_RENDER_VITA_GXM
     SceMsgDialogParam param;
     SceMsgDialogUserMessageParam msgParam;
     SceMsgDialogButtonsParam buttonParam;

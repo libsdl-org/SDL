@@ -34,7 +34,7 @@
  * will be chosen at runtime), the function names need to be
  * suffixed
  */
-#if !SDL_THREAD_GENERIC_COND_SUFFIX
+#ifndef SDL_THREAD_GENERIC_COND_SUFFIX
 #define SDL_CreateCond_generic      SDL_CreateCond
 #define SDL_DestroyCond_generic     SDL_DestroyCond
 #define SDL_CondSignal_generic      SDL_CondSignal

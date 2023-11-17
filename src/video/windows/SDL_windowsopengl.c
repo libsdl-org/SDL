@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WINDOWS
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
 
 #include "SDL_loadso.h"
 #include "SDL_windowsvideo.h"
@@ -29,7 +29,7 @@
 
 /* WGL implementation of SDL OpenGL support */
 
-#if SDL_VIDEO_OPENGL_WGL
+#ifdef SDL_VIDEO_OPENGL_WGL
 #include "SDL_opengl.h"
 
 #define DEFAULT_OPENGL "OPENGL32.DLL"
@@ -97,7 +97,7 @@ typedef HGLRC(APIENTRYP PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC hDC,
                                                            const int
                                                                *attribList);
 
-#if __XBOXONE__ || __XBOXSERIES__
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
 #define GetDC(hwnd)          (HDC) hwnd
 #define ReleaseDC(hwnd, hdc) 1
 #define SwapBuffers          _this->gl_data->wglSwapBuffers
@@ -145,7 +145,7 @@ int WIN_GL_LoadLibrary(_THIS, const char *path)
         SDL_LoadFunction(handle, "wglShareLists");
     /* *INDENT-ON* */ /* clang-format on */
 
-#if __XBOXONE__ || __XBOXSERIES__
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
     _this->gl_data->wglSwapBuffers = (BOOL(WINAPI *)(HDC))
         SDL_LoadFunction(handle, "wglSwapBuffers");
     _this->gl_data->wglDescribePixelFormat = (int(WINAPI *)(HDC, int, UINT, LPPIXELFORMATDESCRIPTOR))
@@ -162,7 +162,7 @@ int WIN_GL_LoadLibrary(_THIS, const char *path)
         !_this->gl_data->wglCreateContext ||
         !_this->gl_data->wglDeleteContext ||
         !_this->gl_data->wglMakeCurrent
-#if __XBOXONE__ || __XBOXSERIES__
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
         || !_this->gl_data->wglSwapBuffers ||
         !_this->gl_data->wglDescribePixelFormat ||
         !_this->gl_data->wglChoosePixelFormat ||
@@ -702,7 +702,7 @@ SDL_GLContext WIN_GL_CreateContext(_THIS, SDL_Window *window)
     HGLRC context, share_context;
 
     if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES && WIN_GL_UseEGL(_this)) {
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
         /* Switch to EGL based functions */
         WIN_GL_UnloadLibrary(_this);
         _this->GL_LoadLibrary = WIN_GLES_LoadLibrary;

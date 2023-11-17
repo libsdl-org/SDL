@@ -26,7 +26,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_KMSDRM
+#if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_KMSDRM)
 
 #include "SDL_kmsdrmvideo.h"
 #include "SDL_kmsdrmdyn.h"

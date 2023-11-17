@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_EMSCRIPTEN
+#ifdef SDL_VIDEO_DRIVER_EMSCRIPTEN
 
 #include "SDL_video.h"
 #include "SDL_mouse.h"
@@ -106,7 +106,7 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
     device->UpdateWindowFramebuffer = Emscripten_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = Emscripten_DestroyWindowFramebuffer;
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     device->GL_LoadLibrary = Emscripten_GLES_LoadLibrary;
     device->GL_GetProcAddress = Emscripten_GLES_GetProcAddress;
     device->GL_UnloadLibrary = Emscripten_GLES_UnloadLibrary;
@@ -247,7 +247,7 @@ static int Emscripten_CreateWindow(_THIS, SDL_Window *window)
         }
     }
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     if (window->flags & SDL_WINDOW_OPENGL) {
         if (!_this->egl_data) {
             if (SDL_GL_LoadLibrary(NULL) < 0) {
@@ -314,7 +314,7 @@ static void Emscripten_DestroyWindow(_THIS, SDL_Window *window)
         data = (SDL_WindowData *)window->driverdata;
 
         Emscripten_UnregisterEventHandlers(data);
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
         if (data->egl_surface != EGL_NO_SURFACE) {
             SDL_EGL_DestroySurface(_this, data->egl_surface);
             data->egl_surface = EGL_NO_SURFACE;

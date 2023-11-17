@@ -585,6 +585,11 @@ if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
     endif()
   endif()
 
+  check_c_compiler_flag(-Wundef HAVE_GCC_WUNDEF)
+  if(HAVE_GCC_WUNDEF)
+    list(APPEND EXTRA_CFLAGS "-Wundef")
+  endif()
+
   check_c_compiler_flag(-fno-strict-aliasing HAVE_GCC_NO_STRICT_ALIASING)
   if(HAVE_GCC_NO_STRICT_ALIASING)
     list(APPEND EXTRA_CFLAGS "-fno-strict-aliasing")

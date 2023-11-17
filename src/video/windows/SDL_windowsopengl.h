@@ -23,9 +23,9 @@
 #ifndef SDL_windowsopengl_h_
 #define SDL_windowsopengl_h_
 
-#if SDL_VIDEO_OPENGL_WGL
+#ifdef SDL_VIDEO_OPENGL_WGL
 
-#if __XBOXONE__ || __XBOXSERIES__
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
 typedef struct tagPIXELFORMATDESCRIPTOR
 {
     WORD nSize;
@@ -85,7 +85,7 @@ struct SDL_GLDriverData
     BOOL (WINAPI *wglGetPixelFormatAttribivARB)(HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, const int *piAttributes, int *piValues);
     BOOL (WINAPI *wglSwapIntervalEXT)(int interval);
     int (WINAPI *wglGetSwapIntervalEXT)(void);
-#if __XBOXONE__ || __XBOXSERIES__
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
     BOOL (WINAPI *wglSwapBuffers)(HDC hdc);
     int (WINAPI *wglDescribePixelFormat)(HDC hdc,
                                          int iPixelFormat,

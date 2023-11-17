@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_THREAD_PS2
+#ifdef SDL_THREAD_PS2
 
 /* Semaphore functions for the PS2. */
 

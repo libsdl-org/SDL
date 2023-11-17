@@ -39,7 +39,7 @@ using namespace Windows::System;
 using namespace Windows::UI::Core;
 using namespace Windows::UI::Input;
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if SDL_WINAPI_FAMILY_PHONE
 using namespace Windows::Phone::UI::Input;
 #endif
 
@@ -64,7 +64,7 @@ extern "C" {
 #include "SDL_winrtapp_common.h"
 #include "SDL_winrtapp_direct3d.h"
 
-#if SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED
+#if defined(SDL_VIDEO_RENDER_D3D11) && !defined(SDL_RENDER_DISABLED)
 /* Calling IDXGIDevice3::Trim on the active Direct3D 11.x device is necessary
  * when Windows 8.1 apps are about to get suspended.
  */
@@ -126,7 +126,7 @@ static void WINRT_ProcessWindowSizeChange() // TODO: Pass an SDL_Window-identify
             int w = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Width);
             int h = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Height);
 
-#if (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP) && (NTDDI_VERSION == NTDDI_WIN8)
+#if SDL_WINAPI_FAMILY_PHONE && (NTDDI_VERSION == NTDDI_WIN8)
             /* WinPhone 8.0 always keeps its native window size in portrait,
                regardless of orientation.  This changes in WinPhone 8.1,
                in which the native window's size changes along with
@@ -227,7 +227,7 @@ void SDL_WinRTApp::OnOrientationChanged(Object ^ sender)
 
     WINRT_ProcessWindowSizeChange();
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if SDL_WINAPI_FAMILY_PHONE
     // HACK: Make sure that orientation changes
     // lead to the Direct3D renderer's viewport getting updated:
     //
@@ -273,7 +273,7 @@ void SDL_WinRTApp::SetWindow(CoreWindow ^ window)
     window->Closed +=
         ref new TypedEventHandler<CoreWindow ^, CoreWindowEventArgs ^>(this, &SDL_WinRTApp::OnWindowClosed);
 
-#if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
+#if !SDL_WINAPI_FAMILY_PHONE
     window->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
 #endif
 
@@ -295,7 +295,7 @@ void SDL_WinRTApp::SetWindow(CoreWindow ^ window)
     window->PointerWheelChanged +=
         ref new TypedEventHandler<CoreWindow ^, PointerEventArgs ^>(this, &SDL_WinRTApp::OnPointerWheelChanged);
 
-#if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
+#if !SDL_WINAPI_FAMILY_PHONE
     // Retrieves relative-only mouse movements:
     Windows::Devices::Input::MouseDevice::GetForCurrentView()->MouseMoved +=
         ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &SDL_WinRTApp::OnMouseMoved);
@@ -313,7 +313,7 @@ void SDL_WinRTApp::SetWindow(CoreWindow ^ window)
 #if NTDDI_VERSION >= NTDDI_WIN10
     Windows::UI::Core::SystemNavigationManager::GetForCurrentView()->BackRequested +=
         ref new EventHandler<BackRequestedEventArgs ^>(this, &SDL_WinRTApp::OnBackButtonPressed);
-#elif WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#elif SDL_WINAPI_FAMILY_PHONE
     HardwareButtons::BackPressed +=
         ref new EventHandler<BackPressedEventArgs ^>(this, &SDL_WinRTApp::OnBackButtonPressed);
 #endif
@@ -555,7 +555,7 @@ void SDL_WinRTApp::OnWindowActivated(CoreWindow ^ sender, WindowActivatedEventAr
                Don't do it on WinPhone 8.0 though, as CoreWindow's 'PointerPosition'
                property isn't available.
              */
-#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION >= NTDDI_WINBLUE)
+#if !SDL_WINAPI_FAMILY_PHONE || (NTDDI_VERSION >= NTDDI_WINBLUE)
             Point cursorPos = WINRT_TransformCursorPosition(window, sender->PointerPosition, TransformToSDLWindowSize);
             SDL_SendMouseMotion(window, 0, 0, (int)cursorPos.X, (int)cursorPos.Y);
 #endif
@@ -628,7 +628,7 @@ void SDL_WinRTApp::OnSuspending(Platform::Object ^ sender, SuspendingEventArgs ^
         // Let the Direct3D 11 renderer prepare for the app to be backgrounded.
         // This is necessary for Windows 8.1, possibly elsewhere in the future.
         // More details at: http://msdn.microsoft.com/en-us/library/windows/apps/Hh994929.aspx
-#if SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED
+#if defined(SDL_VIDEO_RENDER_D3D11) && !defined(SDL_RENDER_DISABLED)
         if (WINRT_GlobalSDLWindow) {
             SDL_Renderer *renderer = SDL_GetRenderer(WINRT_GlobalSDLWindow);
             if (renderer && (SDL_strcmp(renderer->info.name, "direct3d11") == 0)) {
@@ -762,7 +762,7 @@ void SDL_WinRTApp::OnBackButtonPressed(Platform::Object ^ sender, Windows::UI::C
 {
     WINRT_OnBackButtonPressed(args);
 }
-#elif WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#elif SDL_WINAPI_FAMILY_PHONE
 void SDL_WinRTApp::OnBackButtonPressed(Platform::Object ^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^ args)
 
 {

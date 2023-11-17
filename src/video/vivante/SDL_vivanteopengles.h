@@ -23,7 +23,7 @@
 #ifndef SDL_vivanteopengles_h_
 #define SDL_vivanteopengles_h_
 
-#if SDL_VIDEO_DRIVER_VIVANTE && SDL_VIDEO_OPENGL_EGL
+#if defined(SDL_VIDEO_DRIVER_VIVANTE) && defined(SDL_VIDEO_OPENGL_EGL)
 
 #include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"

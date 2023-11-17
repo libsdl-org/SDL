@@ -27,7 +27,7 @@
 int main(void)
 {
     char    acBuf[128];
-    char   *inbuf = "Тест - проверка"; /* KOI8-R string */
+    char   *inbuf = "\xf4\xc5\xd3\xd4\x20\x2d\x20\xd0\xd2\xcf\xd7\xc5\xd2\xcb\xc1"; /* KOI8-R encoding of "п╒п╣я│я┌ - п©я─п╬п╡п╣я─п╨п╟" */
     size_t  inbytesleft = strlen(inbuf);
     char   *outbuf = acBuf;
     size_t  outbytesleft = sizeof(acBuf);

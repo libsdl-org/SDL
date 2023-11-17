@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_PANDORA
+#ifdef SDL_VIDEO_DRIVER_PANDORA
 
 /* Being a null driver, there's no event stream. We just define stubs for
    most of the API. */

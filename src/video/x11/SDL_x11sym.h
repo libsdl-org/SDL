@@ -156,7 +156,7 @@ SDL_X11_SYM(int,XQueryTree,(Display* a,Window b,Window* c,Window* d,Window** e,u
 SDL_X11_SYM(Bool,XSupportsLocale,(void),(),return)
 SDL_X11_SYM(Status,XmbTextListToTextProperty,(Display* a,char** b,int c,XICCEncodingStyle d,XTextProperty* e),(a,b,c,d,e),return)
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
 SDL_X11_MODULE(XFIXES)
 SDL_X11_SYM(PointerBarrier, XFixesCreatePointerBarrier, (Display* a, Window b, int c, int d, int e, int f, int g, int h, int *i),(a,b,c,d,e,f,g,h,i),return)
 SDL_X11_SYM(void, XFixesDestroyPointerBarrier, (Display* a, PointerBarrier b), (a,b),)
@@ -165,12 +165,12 @@ SDL_X11_SYM(Status, XFixesQueryVersion,(Display* a, int* b, int* c), (a,b,c), re
 SDL_X11_SYM(Status, XFixesSelectSelectionInput, (Display* a, Window b, Atom c, unsigned long d), (a,b,c,d), return)
 #endif
 
-#if SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
+#ifdef SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
 SDL_X11_SYM(Bool,XGetEventData,(Display* a,XGenericEventCookie* b),(a,b),return)
 SDL_X11_SYM(void,XFreeEventData,(Display* a,XGenericEventCookie* b),(a,b),)
 #endif
 
-#if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
+#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
 SDL_X11_SYM(Bool,XkbQueryExtension,(Display* a,int * b,int * c,int * d,int * e, int *f),(a,b,c,d,e,f),return)
 #if NeedWidePrototypes
 SDL_X11_SYM(KeySym,XkbKeycodeToKeysym,(Display* a,unsigned int b,int c,int d),(a,b,c,d),return)
@@ -248,7 +248,7 @@ SDL_X11_SYM(int,ipUnallocateAndSendData,(ChannelPtr a,IPCard b),(a,b),return)
 #endif
 
 /* XCursor support */
-#if SDL_VIDEO_DRIVER_X11_XCURSOR
+#ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
 SDL_X11_MODULE(XCURSOR)
 SDL_X11_SYM(XcursorImage*,XcursorImageCreate,(int a,int b),(a,b),return)
 SDL_X11_SYM(void,XcursorImageDestroy,(XcursorImage *a),(a),)
@@ -256,7 +256,7 @@ SDL_X11_SYM(Cursor,XcursorImageLoadCursor,(Display *a,const XcursorImage *b),(a,
 #endif
 
 /* Xdbe support */
-#if SDL_VIDEO_DRIVER_X11_XDBE
+#ifdef SDL_VIDEO_DRIVER_X11_XDBE
 SDL_X11_MODULE(XDBE)
 SDL_X11_SYM(Status,XdbeQueryExtension,(Display *dpy,int *major_version_return,int *minor_version_return),(dpy,major_version_return,minor_version_return),return)
 SDL_X11_SYM(XdbeBackBuffer,XdbeAllocateBackBufferName,(Display *dpy,Window window,XdbeSwapAction swap_action),(dpy,window,swap_action),return)
@@ -270,7 +270,7 @@ SDL_X11_SYM(XdbeBackBufferAttributes*,XdbeGetBackBufferAttributes,(Display *dpy,
 #endif
 
 /* XInput2 support for multiple mice, tablets, etc. */
-#if SDL_VIDEO_DRIVER_X11_XINPUT2
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
 SDL_X11_MODULE(XINPUT2)
 SDL_X11_SYM(XIDeviceInfo*,XIQueryDevice,(Display *a,int b,int *c),(a,b,c),return)
 SDL_X11_SYM(void,XIFreeDeviceInfo,(XIDeviceInfo *a),(a),)
@@ -284,7 +284,7 @@ SDL_X11_SYM(Bool,XIWarpPointer,(Display *a,int b,Window c,Window d,double e,doub
 #endif
 
 /* XRandR support */
-#if SDL_VIDEO_DRIVER_X11_XRANDR
+#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
 SDL_X11_MODULE(XRANDR)
 SDL_X11_SYM(Status,XRRQueryVersion,(Display *dpy,int *major_versionp,int *minor_versionp),(dpy,major_versionp,minor_versionp),return)
 SDL_X11_SYM(Bool,XRRQueryExtension,(Display *dpy,int *event_base_return,int *error_base_return),(dpy,event_base_return,error_base_return),return);
@@ -313,14 +313,14 @@ SDL_X11_SYM(void,XRRSelectInput,(Display *dpy, Window window, int mask),(dpy,win
 #endif
 
 /* MIT-SCREEN-SAVER support */
-#if SDL_VIDEO_DRIVER_X11_XSCRNSAVER
+#ifdef SDL_VIDEO_DRIVER_X11_XSCRNSAVER
 SDL_X11_MODULE(XSS)
 SDL_X11_SYM(Bool,XScreenSaverQueryExtension,(Display *dpy,int *event_base,int *error_base),(dpy,event_base,error_base),return)
 SDL_X11_SYM(Status,XScreenSaverQueryVersion,(Display *dpy,int *major_versionp,int *minor_versionp),(dpy,major_versionp,minor_versionp),return)
 SDL_X11_SYM(void,XScreenSaverSuspend,(Display *dpy,Bool suspend),(dpy,suspend),return)
 #endif
 
-#if SDL_VIDEO_DRIVER_X11_XSHAPE
+#ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
 SDL_X11_MODULE(XSHAPE)
 SDL_X11_SYM(void,XShapeCombineMask,(Display *dpy,Window dest,int dest_kind,int x_off,int y_off,Pixmap src,int op),(dpy,dest,dest_kind,x_off,y_off,src,op),)
 #endif

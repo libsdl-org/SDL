@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_METAL && !SDL_RENDER_DISABLED
+#if defined(SDL_VIDEO_RENDER_METAL) && !defined(SDL_RENDER_DISABLED)
 
 #include "SDL_hints.h"
 #include "SDL_syswm.h"

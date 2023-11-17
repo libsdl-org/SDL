@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_DSOUND
+#ifdef SDL_AUDIO_DRIVER_DSOUND
 
 /* Allow access to a raw mixing buffer */
 
@@ -30,7 +30,7 @@
 #include "../SDL_audio_c.h"
 #include "SDL_directsound.h"
 #include <mmreg.h>
-#if HAVE_MMDEVICEAPI_H
+#ifdef HAVE_MMDEVICEAPI_H
 #include "../../core/windows/SDL_immdevice.h"
 #endif /* HAVE_MMDEVICEAPI_H */
 
@@ -39,7 +39,7 @@
 #endif
 
 /* For Vista+, we can enumerate DSound devices with IMMDevice */
-#if HAVE_MMDEVICEAPI_H
+#ifdef HAVE_MMDEVICEAPI_H
 static SDL_bool SupportsIMMDevice = SDL_FALSE;
 #endif /* HAVE_MMDEVICEAPI_H */
 
@@ -159,7 +159,7 @@ static void DSOUND_FreeDeviceHandle(void *handle)
 
 static int DSOUND_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
 {
-#if HAVE_MMDEVICEAPI_H
+#ifdef HAVE_MMDEVICEAPI_H
     if (SupportsIMMDevice) {
         return SDL_IMMDevice_GetDefaultAudioInfo(name, spec, iscapture);
     }
@@ -189,14 +189,14 @@ static BOOL CALLBACK FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVO
 
 static void DSOUND_DetectDevices(void)
 {
-#if HAVE_MMDEVICEAPI_H
+#ifdef HAVE_MMDEVICEAPI_H
     if (SupportsIMMDevice) {
         SDL_IMMDevice_EnumerateEndpoints(SDL_TRUE);
     } else {
 #endif /* HAVE_MMDEVICEAPI_H */
         pDirectSoundCaptureEnumerateW(FindAllDevs, (void *)((size_t)1));
         pDirectSoundEnumerateW(FindAllDevs, (void *)((size_t)0));
-#if HAVE_MMDEVICEAPI_H
+#ifdef HAVE_MMDEVICEAPI_H
     }
 #endif /* HAVE_MMDEVICEAPI_H*/
 }
@@ -612,7 +612,7 @@ static int DSOUND_OpenDevice(_THIS, const char *devname)
 
 static void DSOUND_Deinitialize(void)
 {
-#if HAVE_MMDEVICEAPI_H
+#ifdef HAVE_MMDEVICEAPI_H
     if (SupportsIMMDevice) {
         SDL_IMMDevice_Quit();
         SupportsIMMDevice = SDL_FALSE;
@@ -627,7 +627,7 @@ static SDL_bool DSOUND_Init(SDL_AudioDriverImpl *impl)
         return SDL_FALSE;
     }
 
-#if HAVE_MMDEVICEAPI_H
+#ifdef HAVE_MMDEVICEAPI_H
     SupportsIMMDevice = !(SDL_IMMDevice_Init() < 0);
 #endif /* HAVE_MMDEVICEAPI_H */
 

@@ -22,7 +22,7 @@
 #include "../../SDL_internal.h"
 #include "SDL_hints.h"
 
-#if SDL_AUDIO_DRIVER_PIPEWIRE
+#ifdef SDL_AUDIO_DRIVER_PIPEWIRE
 
 #include "SDL_audio.h"
 #include "SDL_loadso.h"

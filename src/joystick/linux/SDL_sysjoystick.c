@@ -263,7 +263,7 @@ static int IsJoystick(const char *path, int fd, char **name_return, SDL_Joystick
 
     if (ioctl(fd, JSIOCGNAME(sizeof(product_string)), product_string) >= 0) {
         SDL_zero(inpid);
-#if SDL_USE_LIBUDEV
+#ifdef SDL_USE_LIBUDEV
         SDL_UDEV_GetProductInfo(path, &inpid.vendor, &inpid.product, &inpid.version);
 #endif
     } else {
@@ -328,7 +328,7 @@ static int IsSensor(const char *path, int fd)
     return GuessIsSensor(fd);
 }
 
-#if SDL_USE_LIBUDEV
+#ifdef SDL_USE_LIBUDEV
 static void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath)
 {
     if (!devpath) {
@@ -863,7 +863,7 @@ static void LINUX_FallbackJoystickDetect(void)
 
 static void LINUX_JoystickDetect(void)
 {
-#if SDL_USE_LIBUDEV
+#ifdef SDL_USE_LIBUDEV
     if (enumeration_method == ENUMERATION_LIBUDEV) {
         SDL_UDEV_Poll();
     } else
@@ -916,7 +916,7 @@ static int LINUX_JoystickInit(void)
     /* Manually scan first, since we sort by device number and udev doesn't */
     LINUX_JoystickDetect();
 
-#if SDL_USE_LIBUDEV
+#ifdef SDL_USE_LIBUDEV
     if (enumeration_method == ENUMERATION_UNSET) {
         if (SDL_GetHintBoolean("SDL_JOYSTICK_DISABLE_UDEV", SDL_FALSE)) {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
@@ -2141,7 +2141,7 @@ static void LINUX_JoystickQuit(void)
 
     numjoysticks = 0;
 
-#if SDL_USE_LIBUDEV
+#ifdef SDL_USE_LIBUDEV
     if (enumeration_method == ENUMERATION_LIBUDEV) {
         SDL_UDEV_DelCallback(joystick_udev_callback);
         SDL_UDEV_Quit();

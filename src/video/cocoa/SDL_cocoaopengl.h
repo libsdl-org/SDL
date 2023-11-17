@@ -23,7 +23,7 @@
 #ifndef SDL_cocoaopengl_h_
 #define SDL_cocoaopengl_h_
 
-#if SDL_VIDEO_OPENGL_CGL
+#ifdef SDL_VIDEO_OPENGL_CGL
 
 #include "SDL_atomic.h"
 #import <Cocoa/Cocoa.h>

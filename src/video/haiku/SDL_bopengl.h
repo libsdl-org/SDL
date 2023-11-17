@@ -22,7 +22,7 @@
 #ifndef SDL_BOPENGL_H
 #define SDL_BOPENGL_H
 
-#if SDL_VIDEO_DRIVER_HAIKU && SDL_VIDEO_OPENGL
+#if defined(SDL_VIDEO_DRIVER_HAIKU) && defined(SDL_VIDEO_OPENGL)
 
 #ifdef __cplusplus
 extern "C" {

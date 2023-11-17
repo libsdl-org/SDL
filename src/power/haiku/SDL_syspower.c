@@ -24,7 +24,7 @@
 /* !!! FIXME: does this thing even work on Haiku? */
 
 #ifndef SDL_POWER_DISABLED
-#if SDL_POWER_HAIKU
+#ifdef SDL_POWER_HAIKU
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -29,7 +29,7 @@
 */
 #define PENDING_FOCUS_TIME 200
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
 #include <EGL/egl.h>
 #endif
 
@@ -70,10 +70,10 @@ typedef struct
     Window xdnd_source;
     SDL_bool flashing_window;
     Uint32 flash_cancel_time;
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     SDL_bool pointer_barrier_active;
     PointerBarrier barrier[4];
     SDL_Rect barrier_rect;

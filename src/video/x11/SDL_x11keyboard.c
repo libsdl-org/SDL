@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_X11
+#ifdef SDL_VIDEO_DRIVER_X11
 
 #include "SDL_hints.h"
 #include "SDL_misc.h"
@@ -100,7 +100,7 @@ X11_KeyCodeToSym(_THIS, KeyCode keycode, unsigned char group)
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
     KeySym keysym;
 
-#if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
+#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     if (data->xkb) {
         int num_groups = XkbKeyNumGroups(data->xkb, keycode);
         unsigned char info = XkbKeyGroupInfo(data->xkb, keycode);
@@ -155,7 +155,7 @@ int X11_InitKeyboard(_THIS)
     int distance;
     Bool xkb_repeat = 0;
 
-#if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
+#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     {
         int xkb_major = XkbMajorVersion;
         int xkb_minor = XkbMinorVersion;
@@ -347,7 +347,7 @@ void X11_UpdateKeymap(_THIS, SDL_bool send_event)
 
     SDL_GetDefaultKeymap(keymap);
 
-#if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
+#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     if (data->xkb) {
         XkbStateRec state;
         X11_XkbGetUpdatedMap(data->display, XkbAllClientInfoMask, data->xkb);
@@ -403,7 +403,7 @@ void X11_QuitKeyboard(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
-#if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
+#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     if (data->xkb) {
         X11_XkbFreeKeyboard(data->xkb, 0, True);
         data->xkb = NULL;

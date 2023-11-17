@@ -20,7 +20,7 @@
 */
 #include "../SDL_internal.h"
 
-#if SDL_INPUT_LINUXEV || SDL_VIDEO_DRIVER_DIRECTFB || SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_X11
+#if defined(SDL_INPUT_LINUXEV) || defined(SDL_VIDEO_DRIVER_DIRECTFB) || defined(SDL_VIDEO_DRIVER_WAYLAND) || defined(SDL_VIDEO_DRIVER_X11)
 
 #include "SDL_scancode_tables_c.h"
 

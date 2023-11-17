@@ -25,7 +25,7 @@
 //  is in SDL_wasapi_win32.c. The code in SDL_wasapi.c is used by both standard
 //  Windows and WinRT builds to deal with audio and calls into these functions.
 
-#if SDL_AUDIO_DRIVER_WASAPI && defined(__WINRT__)
+#if defined(SDL_AUDIO_DRIVER_WASAPI) && defined(__WINRT__)
 
 #include <Windows.h>
 #include <windows.ui.core.h>

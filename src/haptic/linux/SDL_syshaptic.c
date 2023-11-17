@@ -46,7 +46,7 @@
 #define MAX_HAPTICS  32         /* It's doubtful someone has more then 32 evdev */
 
 static int MaybeAddDevice(const char *path);
-#if SDL_USE_LIBUDEV
+#ifdef SDL_USE_LIBUDEV
 static int MaybeRemoveDevice(const char *path);
 static void haptic_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath);
 #endif /* SDL_USE_LIBUDEV */
@@ -164,7 +164,7 @@ int SDL_SYS_HapticInit(void)
         MaybeAddDevice(path);
     }
 
-#if SDL_USE_LIBUDEV
+#ifdef SDL_USE_LIBUDEV
     if (SDL_UDEV_Init() < 0) {
         return SDL_SetError("Could not initialize UDEV");
     }
@@ -203,7 +203,7 @@ static SDL_hapticlist_item *HapticByDevIndex(int device_index)
     return item;
 }
 
-#if SDL_USE_LIBUDEV
+#ifdef SDL_USE_LIBUDEV
 static void haptic_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath)
 {
     if (!devpath || !(udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
@@ -293,7 +293,7 @@ static int MaybeAddDevice(const char *path)
     return numhaptics;
 }
 
-#if SDL_USE_LIBUDEV
+#ifdef SDL_USE_LIBUDEV
 static int MaybeRemoveDevice(const char *path)
 {
     SDL_hapticlist_item *item;
@@ -608,7 +608,7 @@ void SDL_SYS_HapticQuit(void)
         SDL_free(item);
     }
 
-#if SDL_USE_LIBUDEV
+#ifdef SDL_USE_LIBUDEV
     SDL_UDEV_DelCallback(haptic_udev_callback);
     SDL_UDEV_Quit();
 #endif /* SDL_USE_LIBUDEV */

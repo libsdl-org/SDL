@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_COREAUDIO
+#ifdef SDL_AUDIO_DRIVER_COREAUDIO
 
 /* !!! FIXME: clean out some of the macro salsa in here. */
 
@@ -48,7 +48,7 @@
     }
 #endif
 
-#if MACOSX_COREAUDIO
+#ifdef MACOSX_COREAUDIO
 static const AudioObjectPropertyAddress devlist_address = {
     kAudioHardwarePropertyDevices,
     kAudioObjectPropertyScopeGlobal,
@@ -289,7 +289,7 @@ static int open_capture_devices;
 static int num_open_devices;
 static SDL_AudioDevice **open_devices;
 
-#if !MACOSX_COREAUDIO
+#ifndef MACOSX_COREAUDIO
 
 static BOOL session_active = NO;
 
@@ -630,7 +630,7 @@ static void inputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBuffer
     AudioQueueEnqueueBuffer(this->hidden->audioQueue, inBuffer, 0, NULL);
 }
 
-#if MACOSX_COREAUDIO
+#ifdef MACOSX_COREAUDIO
 static const AudioObjectPropertyAddress alive_address = {
     kAudioDevicePropertyDeviceIsAlive,
     kAudioObjectPropertyScopeGlobal,
@@ -684,7 +684,7 @@ static void COREAUDIO_CloseDevice(_THIS)
 
 /* !!! FIXME: what does iOS do when a bluetooth audio device vanishes? Headphones unplugged? */
 /* !!! FIXME: (we only do a "default" device on iOS right now...can we do more?) */
-#if MACOSX_COREAUDIO
+#ifdef MACOSX_COREAUDIO
     if (this->handle != NULL) { /* we don't register this listener for default devices. */
         AudioObjectRemovePropertyListener(this->hidden->deviceID, &alive_address, device_unplugged, this);
     }
@@ -711,7 +711,7 @@ static void COREAUDIO_CloseDevice(_THIS)
         open_playback_devices--;
     }
 
-#if !MACOSX_COREAUDIO
+#ifndef MACOSX_COREAUDIO
     update_audio_session(this, SDL_FALSE, SDL_TRUE);
 #endif
 
@@ -740,7 +740,7 @@ static void COREAUDIO_CloseDevice(_THIS)
     SDL_free(this->hidden);
 }
 
-#if MACOSX_COREAUDIO
+#ifdef MACOSX_COREAUDIO
 static int prepare_device(_THIS)
 {
     void *handle = this->handle;
@@ -833,7 +833,7 @@ static int prepare_audioqueue(_THIS)
         CHECK_RESULT("AudioQueueNewOutput");
     }
 
-#if MACOSX_COREAUDIO
+#ifdef MACOSX_COREAUDIO
     if (!assign_device_to_audioqueue(this)) {
         return 0;
     }
@@ -941,7 +941,7 @@ static int audioqueue_thread(void *arg)
     SDL_AudioDevice *this = (SDL_AudioDevice *)arg;
     int rc;
 
-#if MACOSX_COREAUDIO
+#ifdef MACOSX_COREAUDIO
     const AudioObjectPropertyAddress default_device_address = {
         this->iscapture ? kAudioHardwarePropertyDefaultInputDevice : kAudioHardwarePropertyDefaultOutputDevice,
         kAudioObjectPropertyScopeGlobal,
@@ -969,7 +969,7 @@ static int audioqueue_thread(void *arg)
     while (!SDL_AtomicGet(&this->shutdown)) {
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.10, 1);
 
-#if MACOSX_COREAUDIO
+#ifdef MACOSX_COREAUDIO
         if ((this->handle == NULL) && SDL_AtomicGet(&this->hidden->device_change_flag)) {
             const AudioDeviceID prev_devid = this->hidden->deviceID;
             SDL_AtomicSet(&this->hidden->device_change_flag, 0);
@@ -1002,7 +1002,7 @@ static int audioqueue_thread(void *arg)
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, secs, 0);
     }
 
-#if MACOSX_COREAUDIO
+#ifdef MACOSX_COREAUDIO
     if (this->handle == NULL) {
         /* we don't care if this fails; we just won't change to new default devices, but we still otherwise function in this case. */
         AudioObjectRemovePropertyListener(kAudioObjectSystemObject, &default_device_address, default_device_changed, this);
@@ -1040,7 +1040,7 @@ static int COREAUDIO_OpenDevice(_THIS, const char *devname)
         open_devices[num_open_devices++] = this;
     }
 
-#if !MACOSX_COREAUDIO
+#ifndef MACOSX_COREAUDIO
     if (!update_audio_session(this, SDL_TRUE, SDL_TRUE)) {
         return -1;
     }
@@ -1109,7 +1109,7 @@ static int COREAUDIO_OpenDevice(_THIS, const char *devname)
     strdesc->mBytesPerFrame = strdesc->mChannelsPerFrame * strdesc->mBitsPerChannel / 8;
     strdesc->mBytesPerPacket = strdesc->mBytesPerFrame * strdesc->mFramesPerPacket;
 
-#if MACOSX_COREAUDIO
+#ifdef MACOSX_COREAUDIO
     if (!prepare_device(this)) {
         return -1;
     }
@@ -1137,7 +1137,7 @@ static int COREAUDIO_OpenDevice(_THIS, const char *devname)
     return (this->hidden->thread != NULL) ? 0 : -1;
 }
 
-#if !MACOSX_COREAUDIO
+#ifndef MACOSX_COREAUDIO
 static int COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
 {
     AVAudioSession *session = [AVAudioSession sharedInstance];
@@ -1275,7 +1275,7 @@ static int COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int i
 
 static void COREAUDIO_Deinitialize(void)
 {
-#if MACOSX_COREAUDIO
+#ifdef MACOSX_COREAUDIO
     AudioObjectRemovePropertyListener(kAudioObjectSystemObject, &devlist_address, device_list_changed, NULL);
     free_audio_device_list(&capture_devs);
     free_audio_device_list(&output_devs);
@@ -1290,7 +1290,7 @@ static SDL_bool COREAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->Deinitialize = COREAUDIO_Deinitialize;
     impl->GetDefaultAudioInfo = COREAUDIO_GetDefaultAudioInfo;
 
-#if MACOSX_COREAUDIO
+#ifdef MACOSX_COREAUDIO
     impl->DetectDevices = COREAUDIO_DetectDevices;
     AudioObjectAddPropertyListener(kAudioObjectSystemObject, &devlist_address, device_list_changed, NULL);
 #else

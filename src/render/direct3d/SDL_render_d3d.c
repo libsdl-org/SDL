@@ -23,7 +23,7 @@
 #include "SDL_render.h"
 #include "SDL_system.h"
 
-#if SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED
+#if defined(SDL_VIDEO_RENDER_D3D) && !defined(SDL_RENDER_DISABLED)
 
 #include "../../core/windows/SDL_windows.h"
 
@@ -34,7 +34,7 @@
 #include "../SDL_d3dmath.h"
 #include "../../video/windows/SDL_windowsvideo.h"
 
-#if SDL_VIDEO_RENDER_D3D
+#ifdef SDL_VIDEO_RENDER_D3D
 #define D3D_DEBUG_INFO
 #include <d3d9.h>
 #endif
@@ -1739,7 +1739,7 @@ IDirect3DDevice9 *SDL_RenderGetD3D9Device(SDL_Renderer *renderer)
 {
     IDirect3DDevice9 *device = NULL;
 
-#if SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED
+#if defined(SDL_VIDEO_RENDER_D3D) && !defined(SDL_RENDER_DISABLED)
     D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;
 
     /* Make sure that this is a D3D renderer */

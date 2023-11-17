@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if !SDL_HIDAPI_DISABLED
+#ifndef SDL_HIDAPI_DISABLED
 
 #include "SDL_hints.h"
 
@@ -131,7 +131,7 @@ static void RingBuffer_init( RingBuffer *this )
     this->_last = 0;
     pthread_mutex_init( &this->accessLock, 0 );
 }
-	
+
 static bool RingBuffer_write( RingBuffer *this, const uint8_t *src )
 {
     pthread_mutex_lock( &this->accessLock );
@@ -290,7 +290,7 @@ typedef enum
 {
 	static uint64_t s_unLastUpdateTick = 0;
 	static mach_timebase_info_data_t s_timebase_info;
-	
+
 	if ( self.centralManager == nil )
     {
 		return 0;
@@ -300,11 +300,11 @@ typedef enum
 	{
 		mach_timebase_info( &s_timebase_info );
 	}
-	
+
 	uint64_t ticksNow = mach_approximate_time();
 	if ( !bForce && ( ( (ticksNow - s_unLastUpdateTick) * s_timebase_info.numer ) / s_timebase_info.denom ) < (5ull * NSEC_PER_SEC) )
 		return (int)self.deviceMap.count;
-	
+
 	// we can see previously connected BLE peripherals but can't connect until the CBCentralManager
 	// is fully powered up - only do work when we are in that state
 	if ( self.centralManager.state != CBManagerStatePoweredOn )
@@ -312,7 +312,7 @@ typedef enum
 
 	// only update our last-check-time if we actually did work, otherwise there can be a long delay during initial power-up
 	s_unLastUpdateTick = mach_approximate_time();
-	
+
 	// if a pair is in-flight, the central manager may still give it back via retrieveConnected... and
 	// cause the SDL layer to attempt to initialize it while some of its endpoints haven't yet been established
 	if ( self.nPendingPairs > 0 )
@@ -324,7 +324,7 @@ typedef enum
 		// we already know this peripheral
 		if ( [self.deviceMap objectForKey: peripheral] != nil )
 			continue;
-		
+
 		NSLog( @"connected peripheral: %@", peripheral );
 		if ( [peripheral.name isEqualToString:@"SteamController"] )
 		{
@@ -392,7 +392,7 @@ typedef enum
 		case CBCentralManagerStatePoweredOn:
 		{
 			NSLog( @"CoreBluetooth BLE hardware is powered on and ready" );
-			
+
 			// at startup, if we have no already attached peripherals, do a 20s scan for new unpaired devices,
 			// otherwise callers should occaisionally do additional scans. we don't want to continuously be
 			// scanning because it drains battery, causes other nearby people to have a hard time pairing their
@@ -408,23 +408,23 @@ typedef enum
 			}
 			break;
 		}
-			
+
 		case CBCentralManagerStatePoweredOff:
 			NSLog( @"CoreBluetooth BLE hardware is powered off" );
 			break;
-			
+
 		case CBCentralManagerStateUnauthorized:
 			NSLog( @"CoreBluetooth BLE state is unauthorized" );
 			break;
-			
+
 		case CBCentralManagerStateUnknown:
 			NSLog( @"CoreBluetooth BLE state is unknown" );
 			break;
-			
+
 		case CBCentralManagerStateUnsupported:
 			NSLog( @"CoreBluetooth BLE hardware is unsupported on this platform" );
 			break;
-		
+
 		case CBCentralManagerStateResetting:
 			NSLog( @"CoreBluetooth BLE manager is resetting" );
 			break;
@@ -449,7 +449,7 @@ typedef enum
 {
 	NSString *localName = [advertisementData objectForKey:CBAdvertisementDataLocalNameKey];
 	NSString *log = [NSString stringWithFormat:@"Found '%@'", localName];
-	
+
 	if ( [localName isEqualToString:@"SteamController"] )
 	{
 		NSLog( @"%@ : %@ - %@", log, peripheral, advertisementData );
@@ -552,7 +552,7 @@ static void process_pending_events()
 {
 #if FEATURE_REPORT_LOGGING
 	uint8_t *reportBytes = (uint8_t *)report;
-	
+
 	NSLog( @"HIDBLE:send_feature_report (%02zu/19) [%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x]", GetBluetoothSegmentSize( report->segment ),
 		  reportBytes[1], reportBytes[2], reportBytes[3], reportBytes[4], reportBytes[5], reportBytes[6],
 		  reportBytes[7], reportBytes[8], reportBytes[9], reportBytes[10], reportBytes[11], reportBytes[12],
@@ -568,7 +568,7 @@ static void process_pending_events()
 	// fire-and-forget - we are going to not wait for the response here because all Steam Controller BLE send_feature_report's are ignored,
 	//  except errors.
 	[_bleSteamController writeValue:[NSData dataWithBytes:&report->segment length:sendSize] forCharacteristic:_bleCharacteristicReport type:CBCharacteristicWriteWithResponse];
-	
+
 	// pretend we received a result anybody cares about
 	return 19;
 
@@ -578,18 +578,18 @@ static void process_pending_events()
 	_waitStateForWriteFeatureReport = BLEDeviceWaitState_Waiting;
 	[_bleSteamController writeValue:[NSData dataWithBytes:&report->segment length:sendSize
 									 ] forCharacteristic:_bleCharacteristicReport type:CBCharacteristicWriteWithResponse];
-	
+
 	while ( _waitStateForWriteFeatureReport == BLEDeviceWaitState_Waiting )
 	{
 		process_pending_events();
 	}
-	
+
 	if ( _waitStateForWriteFeatureReport == BLEDeviceWaitState_Error )
 	{
 		_waitStateForWriteFeatureReport = BLEDeviceWaitState_None;
 		return -1;
 	}
-	
+
 	_waitStateForWriteFeatureReport = BLEDeviceWaitState_None;
 	return 19;
 #endif
@@ -599,20 +599,20 @@ static void process_pending_events()
 {
 	_waitStateForReadFeatureReport = BLEDeviceWaitState_Waiting;
 	[_bleSteamController readValueForCharacteristic:_bleCharacteristicReport];
-	
+
 	while ( _waitStateForReadFeatureReport == BLEDeviceWaitState_Waiting )
 		process_pending_events();
-	
+
 	if ( _waitStateForReadFeatureReport == BLEDeviceWaitState_Error )
 	{
 		_waitStateForReadFeatureReport = BLEDeviceWaitState_None;
 		return -1;
 	}
-	
+
 	memcpy( buffer, _featureReport, sizeof(_featureReport) );
-	
+
 	_waitStateForReadFeatureReport = BLEDeviceWaitState_None;
-	
+
 #if FEATURE_REPORT_LOGGING
 	NSLog( @"HIDBLE:get_feature_report (19) [%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x]",
 		  buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6],
@@ -657,7 +657,7 @@ static void process_pending_events()
 		for (CBCharacteristic *aChar in service.characteristics)
 		{
 			NSLog( @"Found Characteristic %@", aChar );
-			
+
 			if ( [aChar.UUID isEqual:[CBUUID UUIDWithString:VALVE_INPUT_CHAR]] )
 			{
 				self.bleCharacteristicInput = aChar;
@@ -704,7 +704,7 @@ static void process_pending_events()
 	else if ( [characteristic.UUID isEqual:_bleCharacteristicReport.UUID] )
 	{
 		memset( _featureReport, 0, sizeof(_featureReport) );
-		
+
 		if ( error != nil )
 		{
 			NSLog( @"HIDBLE: get_feature_report error: %@", error );
@@ -789,13 +789,13 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path( const char *path, int bE
 	NSString *nssPath = [NSString stringWithUTF8String:path];
 	HIDBLEManager *bleManager = HIDBLEManager.sharedInstance;
 	NSEnumerator<HIDBLEDevice *> *devices = [bleManager.deviceMap objectEnumerator];
-	
+
 	for ( HIDBLEDevice *device in devices )
 	{
 		// we have the device but it hasn't found its service or characteristics until it is connected
 		if ( !device.ready || !device.connected || !device.bleCharacteristicInput )
 			continue;
-		
+
 		if ( [device.bleSteamController.identifier.UUIDString isEqualToString:nssPath] )
 		{
 			result = (hid_device *)malloc( sizeof( hid_device ) );
@@ -829,7 +829,7 @@ int HID_API_EXPORT hid_set_nonblocking(hid_device *dev, int nonblock)
 {
 	/* All Nonblocking operation is handled by the library. */
 	dev->blocking = !nonblock;
-	
+
 	return 0;
 }
 
@@ -953,7 +953,7 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 		return -1;
 
 	size_t written = [device_handle get_feature_report:data[0] into:data];
-	
+
 	return written == length-1 ? (int)length : (int)written;
 }
 
@@ -973,7 +973,7 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 
 	if ( !device_handle.connected )
 		return -1;
-	
+
 	if ( milliseconds != 0 )
 	{
 		NSLog( @"hid_read_timeout with non-zero wait" );

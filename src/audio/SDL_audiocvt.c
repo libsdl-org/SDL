@@ -93,7 +93,7 @@
  * 8 channels (7.1) layout: FL+FR+FC+LFE+BL+BR+SL+SR
  */
 
-#if HAVE_SSE3_INTRINSICS
+#ifdef HAVE_SSE3_INTRINSICS
 /* Convert from stereo to mono. Average left and right. */
 static void SDLCALL SDL_ConvertStereoToMono_SSE3(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
@@ -130,7 +130,7 @@ static void SDLCALL SDL_ConvertStereoToMono_SSE3(SDL_AudioCVT *cvt, SDL_AudioFor
 }
 #endif
 
-#if HAVE_SSE_INTRINSICS
+#ifdef HAVE_SSE_INTRINSICS
 /* Convert from mono to stereo. Duplicate to stereo left and right. */
 static void SDLCALL SDL_ConvertMonoToStereo_SSE(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
@@ -473,10 +473,12 @@ static void SDL_ResampleCVT_SRC(SDL_AudioCVT *cvt, const int chans, const SDL_Au
 
     result = SRC_src_simple(&data, SRC_converter, chans); /* Simple API converts the whole buffer at once.  No need for initialization. */
 /* !!! FIXME: Handle library failures? */
-#ifdef DEBUG_CONVERT
+#if DEBUG_CONVERT
     if (result != 0) {
         SDL_Log("src_simple() failed: %s", SRC_src_strerror(result));
     }
+#else
+    (void)result;
 #endif
 
     cvt->len_cvt = data.output_frames_gen * framelen;
@@ -789,7 +791,7 @@ int SDL_BuildAudioCVT(SDL_AudioCVT *cvt,
         /* swap in some SIMD versions for a few of these. */
         if (channel_converter == SDL_ConvertStereoToMono) {
             SDL_AudioFilter filter = NULL;
-#if HAVE_SSE3_INTRINSICS
+#ifdef HAVE_SSE3_INTRINSICS
             if (!filter && SDL_HasSSE3()) {
                 filter = SDL_ConvertStereoToMono_SSE3;
             }
@@ -799,7 +801,7 @@ int SDL_BuildAudioCVT(SDL_AudioCVT *cvt,
             }
         } else if (channel_converter == SDL_ConvertMonoToStereo) {
             SDL_AudioFilter filter = NULL;
-#if HAVE_SSE_INTRINSICS
+#ifdef HAVE_SSE_INTRINSICS
             if (!filter && SDL_HasSSE()) {
                 filter = SDL_ConvertMonoToStereo_SSE;
             }

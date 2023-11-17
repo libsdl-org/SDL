@@ -32,7 +32,7 @@
 #include "../SDL_vulkan_internal.h"
 #include "../SDL_sysvideo.h"
 
-#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_VIVANTE
+#if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_VIVANTE)
 
 int VIVANTE_Vulkan_LoadLibrary(_THIS, const char *path);
 void VIVANTE_Vulkan_UnloadLibrary(_THIS);

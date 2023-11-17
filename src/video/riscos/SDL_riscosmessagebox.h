@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_RISCOS
+#ifdef SDL_VIDEO_DRIVER_RISCOS
 
 extern int RISCOS_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 

@@ -464,7 +464,7 @@ int keyboard_setTextInputRect(void *arg)
 int keyboard_setTextInputRectNegative(void *arg)
 {
     /* Some platforms set also an error message; prepare for checking it */
-#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_ANDROID || SDL_VIDEO_DRIVER_COCOA
+#if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_ANDROID) || defined(SDL_VIDEO_DRIVER_COCOA)
     const char *expectedError = "Parameter 'rect' is invalid";
     const char *error;
 
@@ -477,7 +477,7 @@ int keyboard_setTextInputRectNegative(void *arg)
     SDLTest_AssertPass("Call to SDL_SetTextInputRect(NULL)");
 
     /* Some platforms set also an error message; so check it */
-#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_ANDROID || SDL_VIDEO_DRIVER_COCOA
+#if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_ANDROID) || defined(SDL_VIDEO_DRIVER_COCOA)
     error = SDL_GetError();
     SDLTest_AssertPass("Call to SDL_GetError()");
     SDLTest_AssertCheck(error != NULL, "Validate that error message was not NULL");

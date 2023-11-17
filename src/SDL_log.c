@@ -31,7 +31,7 @@
 #include "SDL_mutex.h"
 #include "SDL_log_c.h"
 
-#if HAVE_STDIO_H
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
 
@@ -477,10 +477,10 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         }
     }
 #endif
-#if HAVE_STDIO_H && \
+#if defined(HAVE_STDIO_H) && \
     !(defined(__APPLE__) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT)))
     fprintf(stderr, "%s: %s\n", SDL_priority_prefixes[priority], message);
-#if __NACL__
+#ifdef __NACL__
     fflush(stderr);
 #endif
 #endif

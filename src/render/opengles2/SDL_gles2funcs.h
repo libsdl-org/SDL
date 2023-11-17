@@ -53,7 +53,7 @@ SDL_PROC(void, glPixelStorei, (GLenum, GLint))
 SDL_PROC(void, glReadPixels, (GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, GLvoid *))
 SDL_PROC(void, glScissor, (GLint, GLint, GLsizei, GLsizei))
 SDL_PROC(void, glShaderBinary, (GLsizei, const GLuint *, GLenum, const void *, GLsizei))
-#if __NACL__
+#ifdef __NACL__
 SDL_PROC(void, glShaderSource, (GLuint, GLsizei, const GLchar **, const GLint *))
 #else
 SDL_PROC(void, glShaderSource, (GLuint, GLsizei, const GLchar* const*, const GLint *))

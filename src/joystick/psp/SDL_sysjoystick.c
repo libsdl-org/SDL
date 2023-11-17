@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_JOYSTICK_PSP
+#ifdef SDL_JOYSTICK_PSP
 
 /* This is the PSP implementation of the SDL joystick API */
 #include <pspctrl.h>

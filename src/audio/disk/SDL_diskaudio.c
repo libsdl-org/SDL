@@ -20,11 +20,11 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_DISK
+#ifdef SDL_AUDIO_DRIVER_DISK
 
 /* Output raw audio data to a file. */
 
-#if HAVE_STDIO_H
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
 

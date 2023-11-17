@@ -26,7 +26,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_UIKIT
+#if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_UIKIT)
 
 #include "SDL_uikitvideo.h"
 #include "SDL_uikitwindow.h"

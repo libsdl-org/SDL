@@ -195,7 +195,7 @@ static SDL_DYNAPI_jump_table jump_table = {
         SDL_InitDynamicAPI();                      \
         ret jump_table.fn args;                    \
     }
-#define SDL_DYNAPI_PROC_NO_VARARGS 1
+#define SDL_DYNAPI_PROC_NO_VARARGS
 #include "SDL_dynapi_procs.h"
 #undef SDL_DYNAPI_PROC
 #undef SDL_DYNAPI_PROC_NO_VARARGS
@@ -212,7 +212,7 @@ SDL_DYNAPI_VARARGS(static, _DEFAULT, SDL_InitDynamicAPI())
     {                                              \
         ret jump_table.fn args;                    \
     }
-#define SDL_DYNAPI_PROC_NO_VARARGS 1
+#define SDL_DYNAPI_PROC_NO_VARARGS
 #include "SDL_dynapi_procs.h"
 #undef SDL_DYNAPI_PROC
 #undef SDL_DYNAPI_PROC_NO_VARARGS
@@ -295,7 +295,7 @@ SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Error, ERROR)
 SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Critical, CRITICAL)
 #define SDL_DYNAPI_PROC(rc,fn,params,args,ret) \
     rc SDLCALL fn##_LOGSDLCALLS params { SDL_Log_REAL("SDL2CALL %s", #fn); ret fn##_REAL args; }
-#define SDL_DYNAPI_PROC_NO_VARARGS 1
+#define SDL_DYNAPI_PROC_NO_VARARGS
 #include "SDL_dynapi_procs.h"
 #undef SDL_DYNAPI_PROC
 #undef SDL_DYNAPI_PROC_NO_VARARGS
@@ -505,7 +505,7 @@ static void SDL_InitDynamicAPI(void)
     /* SDL_AtomicLock calls SDL mutex functions to emulate if
        SDL_ATOMIC_DISABLED, which we can't do here, so in such a
        configuration, you're on your own. */
-    #if !SDL_ATOMIC_DISABLED
+    #ifndef SDL_ATOMIC_DISABLED
     static SDL_SpinLock lock = 0;
     SDL_AtomicLock_REAL(&lock);
     #endif
@@ -515,7 +515,7 @@ static void SDL_InitDynamicAPI(void)
         already_initialized = SDL_TRUE;
     }
 
-    #if !SDL_ATOMIC_DISABLED
+    #ifndef SDL_ATOMIC_DISABLED
     SDL_AtomicUnlock_REAL(&lock);
     #endif
 }

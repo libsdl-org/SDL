@@ -23,7 +23,7 @@
 #include "SDL_render.h"
 #include "SDL_system.h"
 
-#if SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED
+#if defined(SDL_VIDEO_RENDER_D3D11) && !defined(SDL_RENDER_DISABLED)
 
 #define COBJMACROS
 #include "../../core/windows/SDL_windows.h"
@@ -758,7 +758,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     swapChainDesc.SampleDesc.Quality = 0;
     swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     swapChainDesc.BufferCount = 2; /* Use double-buffering to minimize latency. */
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if SDL_WINAPI_FAMILY_PHONE
     swapChainDesc.Scaling = DXGI_SCALING_STRETCH;        /* On phone, only stretch and aspect-ratio stretch scaling are allowed. */
     swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD; /* On phone, no swap effects are supported. */
     /* TODO, WinRT: see if Win 8.x DXGI_SWAP_CHAIN_DESC1 settings are available on Windows Phone 8.1, and if there's any advantage to having them on */
@@ -907,7 +907,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
 
     if (data->swapChain) {
         /* IDXGISwapChain::ResizeBuffers is not available on Windows Phone 8. */
-#if !defined(__WINRT__) || (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP)
+#if !defined(__WINRT__) || !SDL_WINAPI_FAMILY_PHONE
         /* If the swap chain already exists, resize it. */
         result = IDXGISwapChain_ResizeBuffers(data->swapChain,
                                               0,
@@ -934,7 +934,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
         }
     }
 
-#if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
+#if !SDL_WINAPI_FAMILY_PHONE
     /* Set the proper rotation for the swap chain.
      *
      * To note, the call for this, IDXGISwapChain1::SetRotation, is not necessary
@@ -2237,7 +2237,7 @@ static int D3D11_RenderPresent(SDL_Renderer *renderer)
 
     SDL_zero(parameters);
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if SDL_WINAPI_FAMILY_PHONE
     syncInterval = 1;
     presentFlags = 0;
     result = IDXGISwapChain_Present(data->swapChain, syncInterval, presentFlags);
@@ -2285,7 +2285,7 @@ static int D3D11_RenderPresent(SDL_Renderer *renderer)
     return 0;
 }
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if SDL_WINAPI_FAMILY_PHONE
 /* no-op. */
 #else
 static int D3D11_SetVSync(SDL_Renderer *renderer, const int vsync)
@@ -2348,7 +2348,7 @@ SDL_Renderer *D3D11_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     renderer->driverdata = data;
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if SDL_WINAPI_FAMILY_PHONE
     /* VSync is required in Windows Phone, at least for Win Phone 8.0 and 8.1.
      * Failure to use it seems to either result in:
      *
@@ -2415,7 +2415,7 @@ ID3D11Device *SDL_RenderGetD3D11Device(SDL_Renderer *renderer)
 {
     ID3D11Device *device = NULL;
 
-#if SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED
+#if defined(SDL_VIDEO_RENDER_D3D11) && !defined(SDL_RENDER_DISABLED)
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
 
     /* Make sure that this is a D3D renderer */

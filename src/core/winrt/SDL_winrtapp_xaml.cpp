@@ -88,7 +88,7 @@ static void WINRT_OnRenderViaXAML(_In_ Platform::Object ^ sender, _In_ Platform:
 
 int SDL_WinRTInitXAMLApp(int (*mainFunction)(int, char **), void *backgroundPanelAsIInspectable)
 {
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if SDL_WINAPI_FAMILY_PHONE
     return SDL_SetError("XAML support is not yet available in Windows Phone.");
 #else
     // Declare C++/CX namespaces:
@@ -143,5 +143,5 @@ int SDL_WinRTInitXAMLApp(int (*mainFunction)(int, char **), void *backgroundPane
 
     // All done, for now.
     return 0;
-#endif // WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP  /  else
+#endif // SDL_WINAPI_FAMILY_PHONE  /  else
 }

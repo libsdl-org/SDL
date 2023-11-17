@@ -21,7 +21,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_DIRECTFB
+#if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_DIRECTFB)
 
 #include "SDL_DirectFB_window.h"
 

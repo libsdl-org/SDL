@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifdef SDL_VIDEO_DRIVER_ANDROID
 
 #include "SDL_syswm.h"
 #include "../SDL_sysvideo.h"
@@ -80,7 +80,7 @@ int Android_CreateWindow(_THIS, SDL_Window *window)
 
     /* Do not create EGLSurface for Vulkan window since it will then make the window
        incompatible with vkCreateAndroidSurfaceKHR */
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     if (window->flags & SDL_WINDOW_OPENGL) {
         data->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType)data->native_window);
 
@@ -180,7 +180,7 @@ void Android_DestroyWindow(_THIS, SDL_Window *window)
         if (window->driverdata) {
             SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
             if (data->egl_surface != EGL_NO_SURFACE) {
                 SDL_EGL_DestroySurface(_this, data->egl_surface);
             }
@@ -205,7 +205,7 @@ SDL_bool Android_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
         info->subsystem = SDL_SYSWM_ANDROID;
         info->info.android.window = data->native_window;
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
         info->info.android.surface = data->egl_surface;
 #endif
 

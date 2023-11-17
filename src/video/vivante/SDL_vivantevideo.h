@@ -27,7 +27,7 @@
 
 #include "SDL_egl.h"
 
-#if SDL_VIDEO_DRIVER_VIVANTE_VDK
+#ifdef SDL_VIDEO_DRIVER_VIVANTE_VDK
 #include <gc_vdk.h>
 #else
 #include <EGL/egl.h>
@@ -35,7 +35,7 @@
 
 typedef struct SDL_VideoData
 {
-#if SDL_VIDEO_DRIVER_VIVANTE_VDK
+#ifdef SDL_VIDEO_DRIVER_VIVANTE_VDK
     vdkPrivate vdk_private;
 #else
     void *egl_handle; /* EGL shared library handle */

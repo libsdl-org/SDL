@@ -21,7 +21,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_NACL
+#ifdef SDL_AUDIO_DRIVER_NACL
 
 #include "SDL_naclaudio.h"
 

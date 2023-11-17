@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_COCOA
+#ifdef SDL_VIDEO_DRIVER_COCOA
 
 #if !__has_feature(objc_arc)
 #error SDL must be built with Objective-C ARC (automatic reference counting) enabled
@@ -127,7 +127,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
     device->shape_driver.SetWindowShape = Cocoa_SetWindowShape;
     device->shape_driver.ResizeWindowShape = Cocoa_ResizeWindowShape;
 
-#if SDL_VIDEO_OPENGL_CGL
+#ifdef SDL_VIDEO_OPENGL_CGL
     device->GL_LoadLibrary = Cocoa_GL_LoadLibrary;
     device->GL_GetProcAddress = Cocoa_GL_GetProcAddress;
     device->GL_UnloadLibrary = Cocoa_GL_UnloadLibrary;
@@ -137,7 +137,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
     device->GL_GetSwapInterval = Cocoa_GL_GetSwapInterval;
     device->GL_SwapWindow = Cocoa_GL_SwapWindow;
     device->GL_DeleteContext = Cocoa_GL_DeleteContext;
-#elif SDL_VIDEO_OPENGL_EGL
+#elif defined(SDL_VIDEO_OPENGL_EGL)
     device->GL_LoadLibrary = Cocoa_GLES_LoadLibrary;
     device->GL_GetProcAddress = Cocoa_GLES_GetProcAddress;
     device->GL_UnloadLibrary = Cocoa_GLES_UnloadLibrary;
@@ -149,7 +149,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
     device->GL_DeleteContext = Cocoa_GLES_DeleteContext;
 #endif
 
-#if SDL_VIDEO_VULKAN
+#ifdef SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = Cocoa_Vulkan_LoadLibrary;
     device->Vulkan_UnloadLibrary = Cocoa_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = Cocoa_Vulkan_GetInstanceExtensions;
@@ -157,7 +157,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
     device->Vulkan_GetDrawableSize = Cocoa_Vulkan_GetDrawableSize;
 #endif
 
-#if SDL_VIDEO_METAL
+#ifdef SDL_VIDEO_METAL
     device->Metal_CreateView = Cocoa_Metal_CreateView;
     device->Metal_DestroyView = Cocoa_Metal_DestroyView;
     device->Metal_GetLayer = Cocoa_Metal_GetLayer;

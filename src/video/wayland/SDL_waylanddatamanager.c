@@ -21,7 +21,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WAYLAND
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -55,7 +55,7 @@ static ssize_t write_pipe(int fd, const void *buffer, size_t total_length, size_
     sigemptyset(&sig_set);
     sigaddset(&sig_set, SIGPIPE);
 
-#if SDL_THREADS_DISABLED
+#ifdef SDL_THREADS_DISABLED
     sigprocmask(SIG_BLOCK, &sig_set, &old_sig_set);
 #else
     pthread_sigmask(SIG_BLOCK, &sig_set, &old_sig_set);
@@ -77,7 +77,7 @@ static ssize_t write_pipe(int fd, const void *buffer, size_t total_length, size_
 
     sigtimedwait(&sig_set, 0, &zerotime);
 
-#if SDL_THREADS_DISABLED
+#ifdef SDL_THREADS_DISABLED
     sigprocmask(SIG_SETMASK, &old_sig_set, NULL);
 #else
     pthread_sigmask(SIG_SETMASK, &old_sig_set, NULL);

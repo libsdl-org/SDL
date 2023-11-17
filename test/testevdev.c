@@ -18,7 +18,7 @@
 
 static int run_test(void);
 
-#if HAVE_LIBUDEV_H || defined(SDL_JOYSTICK_LINUX)
+#if defined(HAVE_LIBUDEV_H) || defined(SDL_JOYSTICK_LINUX)
 
 #include <stdint.h>
 

@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WINRT
+#ifdef SDL_VIDEO_DRIVER_WINRT
 
 /* WinRT SDL video driver implementation
 
@@ -406,7 +406,7 @@ static int WINRT_AddDisplaysForAdapter(_THIS, IDXGIFactory2 *dxgiFactory2, int a
             if (adapterIndex == 0 && outputIndex == 0) {
                 SDL_VideoDisplay display;
                 SDL_DisplayMode mode;
-#if SDL_WINRT_USE_APPLICATIONVIEW
+#ifdef SDL_WINRT_USE_APPLICATIONVIEW
                 ApplicationView ^ appView = ApplicationView::GetForCurrentView();
 #endif
                 CoreWindow ^ coreWin = CoreWindow::GetForCurrentThread();
@@ -421,7 +421,7 @@ static int WINRT_AddDisplaysForAdapter(_THIS, IDXGIFactory2 *dxgiFactory2, int a
                    failing test), whereas CoreWindow might not.  -- DavidL
                 */
 
-#if (NTDDI_VERSION >= NTDDI_WIN10) || (SDL_WINRT_USE_APPLICATIONVIEW && WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+#if (NTDDI_VERSION >= NTDDI_WIN10) || (defined(SDL_WINRT_USE_APPLICATIONVIEW) && SDL_WINAPI_FAMILY_PHONE)
                 mode.w = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Width);
                 mode.h = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Height);
 #else
@@ -500,11 +500,11 @@ WINRT_DetectWindowFlags(SDL_Window *window)
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     bool is_fullscreen = false;
 
-#if SDL_WINRT_USE_APPLICATIONVIEW
+#ifdef SDL_WINRT_USE_APPLICATIONVIEW
     if (data->appView) {
         is_fullscreen = data->appView->IsFullScreenMode;
     }
-#elif (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION == NTDDI_WIN8)
+#elif SDL_WINAPI_FAMILY_PHONE || (NTDDI_VERSION == NTDDI_WIN8)
     is_fullscreen = true;
 #endif
 
@@ -514,13 +514,13 @@ WINRT_DetectWindowFlags(SDL_Window *window)
             int w = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Width);
             int h = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Height);
 
-#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION > NTDDI_WIN8)
+#if !SDL_WINAPI_FAMILY_PHONE || (NTDDI_VERSION > NTDDI_WIN8)
             // On all WinRT platforms, except for WinPhone 8.0, rotate the
             // window size.  This is needed to properly calculate
             // fullscreen vs. maximized.
             const DisplayOrientations currentOrientation = WINRT_DISPLAY_PROPERTY(CurrentOrientation);
             switch (currentOrientation) {
-#if (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+#if SDL_WINAPI_FAMILY_PHONE
             case DisplayOrientations::Landscape:
             case DisplayOrientations::LandscapeFlipped:
 #else
@@ -548,7 +548,7 @@ WINRT_DetectWindowFlags(SDL_Window *window)
             latestFlags |= SDL_WINDOW_HIDDEN;
         }
 
-#if (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP) && (NTDDI_VERSION < NTDDI_WINBLUE)
+#if SDL_WINAPI_FAMILY_PHONE && (NTDDI_VERSION < NTDDI_WINBLUE)
         // data->coreWindow->PointerPosition is not supported on WinPhone 8.0
         latestFlags |= SDL_WINDOW_MOUSE_FOCUS;
 #else
@@ -622,7 +622,7 @@ int WINRT_CreateWindow(_THIS, SDL_Window *window)
     */
     if (!WINRT_XAMLWasEnabled) {
         data->coreWindow = CoreWindow::GetForCurrentThread();
-#if SDL_WINRT_USE_APPLICATIONVIEW
+#ifdef SDL_WINRT_USE_APPLICATIONVIEW
         data->appView = ApplicationView::GetForCurrentView();
 #endif
     }
@@ -630,7 +630,7 @@ int WINRT_CreateWindow(_THIS, SDL_Window *window)
     /* Make note of the requested window flags, before they start getting changed. */
     const Uint32 requestedFlags = window->flags;
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     /* Setup the EGL surface, but only if OpenGL ES 2 was requested. */
     if (!(window->flags & SDL_WINDOW_OPENGL)) {
         /* OpenGL ES 2 wasn't requested.  Don't set up an EGL surface. */
@@ -685,7 +685,7 @@ int WINRT_CreateWindow(_THIS, SDL_Window *window)
         SDL_WINDOW_BORDERLESS |
         SDL_WINDOW_RESIZABLE;
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     if (data->egl_surface) {
         window->flags |= SDL_WINDOW_OPENGL;
     }

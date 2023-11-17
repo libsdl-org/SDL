@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_THREAD_WINDOWS
+#ifdef SDL_THREAD_WINDOWS
 
 /**
  * Semaphore functions using the Win32 API
@@ -68,14 +68,8 @@ static SDL_sem_impl_t SDL_sem_impl_active = { 0 };
 /* APIs not available on WinPhone 8.1 */
 /* https://www.microsoft.com/en-us/download/details.aspx?id=47328 */
 
-#if (HAVE_WINAPIFAMILY_H) && defined(WINAPI_FAMILY_PHONE_APP)
-#define SDL_WINAPI_FAMILY_PHONE (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
-#else
-#define SDL_WINAPI_FAMILY_PHONE 0
-#endif
-
 #if !SDL_WINAPI_FAMILY_PHONE
-#if __WINRT__
+#ifdef __WINRT__
 /* Functions are guaranteed to be available */
 #define pWaitOnAddress       WaitOnAddress
 #define pWakeByAddressSingle WakeByAddressSingle
@@ -263,7 +257,7 @@ static SDL_sem *SDL_CreateSemaphore_kern(Uint32 initial_value)
     sem = (SDL_sem_kern *)SDL_malloc(sizeof(*sem));
     if (sem) {
         /* Create the semaphore, with max value 32K */
-#if __WINRT__
+#ifdef __WINRT__
         sem->id = CreateSemaphoreEx(NULL, initial_value, 32 * 1024, NULL, 0, SEMAPHORE_ALL_ACCESS);
 #else
         sem->id = CreateSemaphore(NULL, initial_value, 32 * 1024, NULL);
@@ -385,7 +379,7 @@ SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
 
 #if !SDL_WINAPI_FAMILY_PHONE
         if (!SDL_GetHintBoolean(SDL_HINT_WINDOWS_FORCE_SEMAPHORE_KERNEL, SDL_FALSE)) {
-#if __WINRT__
+#ifdef __WINRT__
             /* Link statically on this platform */
             impl = &SDL_sem_impl_atom;
 #else

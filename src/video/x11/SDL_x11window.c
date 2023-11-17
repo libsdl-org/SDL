@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_X11
+#ifdef SDL_VIDEO_DRIVER_X11
 
 #include "SDL_hints.h"
 #include "../SDL_sysvideo.h"
@@ -35,7 +35,7 @@
 #include "SDL_x11xinput2.h"
 #include "SDL_x11xfixes.h"
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
 #include "SDL_x11opengles.h"
 #endif
 
@@ -391,7 +391,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
     long fevent = 0;
     const char *hint = NULL;
 
-#if SDL_VIDEO_OPENGL_GLX || SDL_VIDEO_OPENGL_EGL
+#if defined(SDL_VIDEO_OPENGL_GLX) || defined(SDL_VIDEO_OPENGL_EGL)
     const char *forced_visual_id = SDL_GetHint(SDL_HINT_VIDEO_X11_WINDOW_VISUALID);
 
     if (forced_visual_id && forced_visual_id[0] != '\0') {
@@ -412,10 +412,10 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
                !SDL_getenv("SDL_VIDEO_X11_VISUALID")) {
         XVisualInfo *vinfo = NULL;
 
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
         if (((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
              SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE))
-#if SDL_VIDEO_OPENGL_GLX
+#ifdef SDL_VIDEO_OPENGL_GLX
             && (!_this->gl_data || X11_GL_UseEGL(_this) )
 #endif
         ) {
@@ -423,7 +423,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
         } else
 #endif
         {
-#if SDL_VIDEO_OPENGL_GLX
+#ifdef SDL_VIDEO_OPENGL_GLX
             vinfo = X11_GL_GetVisual(_this, display, screen);
 #endif
         }
@@ -634,15 +634,15 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
     }
     windowdata = (SDL_WindowData *)window->driverdata;
 
-#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2 || SDL_VIDEO_OPENGL_EGL
+#if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2) || defined(SDL_VIDEO_OPENGL_EGL)
     if ((window->flags & SDL_WINDOW_OPENGL) &&
         ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
          SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE))
-#if SDL_VIDEO_OPENGL_GLX
+#ifdef SDL_VIDEO_OPENGL_GLX
         && (!_this->gl_data || X11_GL_UseEGL(_this) )
 #endif
     ) {
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
         if (!_this->egl_data) {
             return -1;
         }
@@ -1798,7 +1798,7 @@ void X11_DestroyWindow(_THIS, SDL_Window *window)
         }
         SDL_free(data);
 
-#if SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XFIXES
         /* If the pointer barriers are active for this, deactivate it.*/
         if (videodata->active_cursor_confined_window == window) {
             X11_DestroyPointerBarrier(_this, window);

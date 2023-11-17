@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WINRT
+#ifdef SDL_VIDEO_DRIVER_WINRT
 
 extern int WINRT_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 

@@ -28,7 +28,7 @@
 typedef struct
 {
     SDL_Window *sdl_window;
-#if SDL_VIDEO_OPENGL_EGL
+#ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif
 
