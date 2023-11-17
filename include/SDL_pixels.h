@@ -61,7 +61,10 @@ typedef enum
     SDL_PIXELTYPE_ARRAYU16,
     SDL_PIXELTYPE_ARRAYU32,
     SDL_PIXELTYPE_ARRAYF16,
-    SDL_PIXELTYPE_ARRAYF32
+    SDL_PIXELTYPE_ARRAYF32,
+
+    /* This must be at the end of the list to avoid breaking the existing ABI */
+    SDL_PIXELTYPE_INDEX2
 } SDL_PixelType;
 
 /** Bitmap pixel order, high bit -> low bit. */
@@ -134,6 +137,7 @@ typedef enum
 #define SDL_ISPIXELFORMAT_INDEXED(format)   \
     (!SDL_ISPIXELFORMAT_FOURCC(format) && \
      ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_INDEX1) || \
+      (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_INDEX2) || \
       (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_INDEX4) || \
       (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_INDEX8)))
 
@@ -177,6 +181,12 @@ typedef enum
     SDL_PIXELFORMAT_INDEX1MSB =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX1, SDL_BITMAPORDER_1234, 0,
                                1, 0),
+    SDL_PIXELFORMAT_INDEX2LSB =
+        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX2, SDL_BITMAPORDER_4321, 0,
+                               2, 0),
+    SDL_PIXELFORMAT_INDEX2MSB =
+        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX2, SDL_BITMAPORDER_1234, 0,
+                               2, 0),
     SDL_PIXELFORMAT_INDEX4LSB =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX4, SDL_BITMAPORDER_4321, 0,
                                4, 0),
