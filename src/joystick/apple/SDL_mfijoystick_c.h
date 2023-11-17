@@ -47,24 +47,24 @@ typedef struct joystick_hwdata
     int nbuttons;
     int nhats;
     Uint32 button_mask;
-    BOOL is_xbox;
-    BOOL is_ps4;
-    BOOL is_ps5;
-    BOOL is_switch_pro;
-    BOOL is_switch_joycon_pair;
-    BOOL is_switch_joyconL;
-    BOOL is_switch_joyconR;
-    BOOL is_stadia;
-    BOOL is_backbone_one;
+    SDL_bool is_xbox;
+    SDL_bool is_ps4;
+    SDL_bool is_ps5;
+    SDL_bool is_switch_pro;
+    SDL_bool is_switch_joycon_pair;
+    SDL_bool is_switch_joyconL;
+    SDL_bool is_switch_joyconR;
+    SDL_bool is_stadia;
+    SDL_bool is_backbone_one;
     int is_siri_remote;
 
     NSArray *axes;
     NSArray *buttons;
 
-    BOOL has_dualshock_touchpad;
-    BOOL has_xbox_paddles;
-    BOOL has_xbox_share_button;
-    BOOL has_nintendo_buttons;
+    SDL_bool has_dualshock_touchpad;
+    SDL_bool has_xbox_paddles;
+    SDL_bool has_xbox_share_button;
+    SDL_bool has_nintendo_buttons;
 
     struct joystick_hwdata *next;
 } joystick_hwdata;
