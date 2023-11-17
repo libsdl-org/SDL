@@ -281,7 +281,9 @@ typedef uint64_t Uint64;
 #define SDL_PRINTF_FORMAT_STRING
 #define SDL_SCANF_FORMAT_STRING
 #define SDL_PRINTF_VARARG_FUNC( fmtargnumber )
+#define SDL_PRINTF_VARARG_FUNCV( fmtargnumber )
 #define SDL_SCANF_VARARG_FUNC( fmtargnumber )
+#define SDL_SCANF_VARARG_FUNCV( fmtargnumber )
 #define SDL_WPRINTF_VARARG_FUNC( fmtargnumber )
 #define SDL_WSCANF_VARARG_FUNC( fmtargnumber )
 #else
@@ -309,12 +311,16 @@ typedef uint64_t Uint64;
 #endif
 #ifdef __GNUC__
 #define SDL_PRINTF_VARARG_FUNC( fmtargnumber ) __attribute__ (( format( __printf__, fmtargnumber, fmtargnumber+1 )))
+#define SDL_PRINTF_VARARG_FUNCV( fmtargnumber ) __attribute__(( format( __printf__, fmtargnumber, 0 )))
 #define SDL_SCANF_VARARG_FUNC( fmtargnumber ) __attribute__ (( format( __scanf__, fmtargnumber, fmtargnumber+1 )))
+#define SDL_SCANF_VARARG_FUNCV( fmtargnumber ) __attribute__(( format( __scanf__, fmtargnumber, 0 )))
 #define SDL_WPRINTF_VARARG_FUNC( fmtargnumber ) /* __attribute__ (( format( __wprintf__, fmtargnumber, fmtargnumber+1 ))) */
 #define SDL_WSCANF_VARARG_FUNC( fmtargnumber ) /* __attribute__ (( format( __wscanf__, fmtargnumber, fmtargnumber+1 ))) */
 #else
 #define SDL_PRINTF_VARARG_FUNC( fmtargnumber )
+#define SDL_PRINTF_VARARG_FUNCV( fmtargnumber )
 #define SDL_SCANF_VARARG_FUNC( fmtargnumber )
+#define SDL_SCANF_VARARG_FUNCV( fmtargnumber )
 #define SDL_WPRINTF_VARARG_FUNC( fmtargnumber )
 #define SDL_WSCANF_VARARG_FUNC( fmtargnumber )
 #endif
@@ -580,13 +586,13 @@ extern DECLSPEC int SDLCALL SDL_strcasecmp(const char *str1, const char *str2);
 extern DECLSPEC int SDLCALL SDL_strncasecmp(const char *str1, const char *str2, size_t len);
 
 extern DECLSPEC int SDLCALL SDL_sscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, ...) SDL_SCANF_VARARG_FUNC(2);
-extern DECLSPEC int SDLCALL SDL_vsscanf(const char *text, const char *fmt, va_list ap);
+extern DECLSPEC int SDLCALL SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_list ap) SDL_SCANF_VARARG_FUNCV(2);
 extern DECLSPEC int SDLCALL SDL_snprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ... ) SDL_PRINTF_VARARG_FUNC(3);
 extern DECLSPEC int SDLCALL SDL_swprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const wchar_t *fmt, ... ) SDL_WPRINTF_VARARG_FUNC(3);
-extern DECLSPEC int SDLCALL SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap);
+extern DECLSPEC int SDLCALL SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(3);
 extern DECLSPEC int SDLCALL SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, const wchar_t *fmt, va_list ap);
 extern DECLSPEC int SDLCALL SDL_asprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
-extern DECLSPEC int SDLCALL SDL_vasprintf(char **strp, const char *fmt, va_list ap);
+extern DECLSPEC int SDLCALL SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
 
 #ifndef SDL_PI_D
 #define SDL_PI_D   3.141592653589793238462643383279502884       /**< pi (double) */

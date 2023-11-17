@@ -150,8 +150,12 @@ def main():
             func = func.replace(" SDL_PRINTF_VARARG_FUNC(1)", "");
             func = func.replace(" SDL_PRINTF_VARARG_FUNC(2)", "");
             func = func.replace(" SDL_PRINTF_VARARG_FUNC(3)", "");
+            func = func.replace(" SDL_PRINTF_VARARG_FUNCV(1)", "");
+            func = func.replace(" SDL_PRINTF_VARARG_FUNCV(2)", "");
+            func = func.replace(" SDL_PRINTF_VARARG_FUNCV(3)", "");
             func = func.replace(" SDL_WPRINTF_VARARG_FUNC(3)", "");
             func = func.replace(" SDL_SCANF_VARARG_FUNC(2)", "");
+            func = func.replace(" SDL_SCANF_VARARG_FUNCV(2)", "");
             func = func.replace(" __attribute__((analyzer_noreturn))", "");
             func = func.replace(" SDL_MALLOC", "");
             func = func.replace(" SDL_ALLOC_SIZE2(1, 2)", "");

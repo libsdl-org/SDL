@@ -541,7 +541,7 @@ extern DECLSPEC size_t SDLCALL SDL_RWprintf(SDL_RWops *context, SDL_PRINTF_FORMA
  * \sa SDL_RWseek
  * \sa SDL_RWwrite
  */
-extern DECLSPEC size_t SDLCALL SDL_RWvprintf(SDL_RWops *context, const char *fmt, va_list ap);
+extern DECLSPEC size_t SDLCALL SDL_RWvprintf(SDL_RWops *context, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
 
 /**
  * Close and free an allocated SDL_RWops structure.
