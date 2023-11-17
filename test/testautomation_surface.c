@@ -660,6 +660,34 @@ static int surface_testOverflow(void *arg)
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_DestroySurface(surface);
 
+    /* SDL_PIXELFORMAT_INDEX2* needs 1 byte per 4 pixels. */
+    surface = SDL_CreateSurfaceFrom(buf, 12, 1, 3, SDL_PIXELFORMAT_INDEX2LSB);
+    SDLTest_AssertCheck(surface != NULL, "12px * 2 bits per px fits in 3 bytes: %s",
+                        surface != NULL ? "(success)" : SDL_GetError());
+    SDL_DestroySurface(surface);
+    surface = SDL_CreateSurfaceFrom(buf, 12, 1, 3, SDL_PIXELFORMAT_INDEX2MSB);
+    SDLTest_AssertCheck(surface != NULL, "12px * 2 bits per px fits in 3 bytes: %s",
+                        surface != NULL ? "(success)" : SDL_GetError());
+    SDL_DestroySurface(surface);
+
+    surface = SDL_CreateSurfaceFrom(buf, 13, 1, 3, SDL_PIXELFORMAT_INDEX2LSB);
+    SDLTest_AssertCheck(surface == NULL, "Should detect pitch < width * bpp (%d)", surface ? surface->pitch : 0);
+    SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                        "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+    surface = SDL_CreateSurfaceFrom(buf, 13, 1, 3, SDL_PIXELFORMAT_INDEX2MSB);
+    SDLTest_AssertCheck(surface == NULL, "Should detect pitch < width * bpp");
+    SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                        "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+
+    surface = SDL_CreateSurfaceFrom(buf, 13, 1, 4, SDL_PIXELFORMAT_INDEX2LSB);
+    SDLTest_AssertCheck(surface != NULL, "13px * 2 bits per px fits in 4 bytes: %s",
+                        surface != NULL ? "(success)" : SDL_GetError());
+    SDL_DestroySurface(surface);
+    surface = SDL_CreateSurfaceFrom(buf, 13, 1, 4, SDL_PIXELFORMAT_INDEX2MSB);
+    SDLTest_AssertCheck(surface != NULL, "13px * 2 bits per px fits in 4 bytes: %s",
+                        surface != NULL ? "(success)" : SDL_GetError());
+    SDL_DestroySurface(surface);
+
     /* SDL_PIXELFORMAT_INDEX1* needs 1 byte per 8 pixels. */
     surface = SDL_CreateSurfaceFrom(buf, 16, 1, 2, SDL_PIXELFORMAT_INDEX1LSB);
     SDLTest_AssertCheck(surface != NULL, "16px * 1 bit per px fits in 2 bytes: %s",

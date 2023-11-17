@@ -89,6 +89,8 @@ const char *SDL_GetPixelFormatName(Uint32 format)
 
         CASE(SDL_PIXELFORMAT_INDEX1LSB)
         CASE(SDL_PIXELFORMAT_INDEX1MSB)
+        CASE(SDL_PIXELFORMAT_INDEX2LSB)
+        CASE(SDL_PIXELFORMAT_INDEX2MSB)
         CASE(SDL_PIXELFORMAT_INDEX4LSB)
         CASE(SDL_PIXELFORMAT_INDEX4MSB)
         CASE(SDL_PIXELFORMAT_INDEX8)
@@ -309,6 +311,9 @@ Uint32 SDL_GetPixelFormatEnumForMasks(int bpp, Uint32 Rmask, Uint32 Gmask, Uint3
     case 1:
         /* SDL defaults to MSB ordering */
         return SDL_PIXELFORMAT_INDEX1MSB;
+    case 2:
+        /* SDL defaults to MSB ordering */
+        return SDL_PIXELFORMAT_INDEX2MSB;
     case 4:
         /* SDL defaults to MSB ordering */
         return SDL_PIXELFORMAT_INDEX4MSB;
