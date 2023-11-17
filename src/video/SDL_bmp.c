@@ -197,7 +197,6 @@ SDL_Surface *SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc)
 {
     SDL_bool was_error = SDL_TRUE;
     Sint64 fp_offset = 0;
-    int bmpPitch;
     int i, pad;
     SDL_Surface *surface;
     Uint32 Rmask = 0;
@@ -208,7 +207,6 @@ SDL_Surface *SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc)
     Uint8 *bits;
     Uint8 *top, *end;
     SDL_bool topDown;
-    int ExpandBMP;
     SDL_bool haveRGBMasks = SDL_FALSE;
     SDL_bool haveAlphaMask = SDL_FALSE;
     SDL_bool correctAlpha = SDL_FALSE;
@@ -365,14 +363,8 @@ SDL_Surface *SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc)
         goto done;
     }
 
-    /* Expand 1, 2 and 4 bit bitmaps to 8 bits per pixel */
+    /* Reject invalid bit depths */
     switch (biBitCount) {
-    case 1:
-    case 2:
-    case 4:
-        ExpandBMP = biBitCount;
-        biBitCount = 8;
-        break;
     case 0:
     case 3:
     case 5:
@@ -381,7 +373,6 @@ SDL_Surface *SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc)
         SDL_SetError("%d-bpp BMP images are not supported", biBitCount);
         goto done;
     default:
-        ExpandBMP = 0;
         break;
     }
 
@@ -514,89 +505,49 @@ SDL_Surface *SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc)
     }
     top = (Uint8 *)surface->pixels;
     end = (Uint8 *)surface->pixels + (surface->h * surface->pitch);
-    switch (ExpandBMP) {
-    case 1:
-        bmpPitch = (biWidth + 7) >> 3;
-        pad = (((bmpPitch) % 4) ? (4 - ((bmpPitch) % 4)) : 0);
-        break;
-    case 2:
-        bmpPitch = (biWidth + 3) >> 2;
-        pad = (((bmpPitch) % 4) ? (4 - ((bmpPitch) % 4)) : 0);
-        break;
-    case 4:
-        bmpPitch = (biWidth + 1) >> 1;
-        pad = (((bmpPitch) % 4) ? (4 - ((bmpPitch) % 4)) : 0);
-        break;
-    default:
-        pad = ((surface->pitch % 4) ? (4 - (surface->pitch % 4)) : 0);
-        break;
-    }
+    pad = ((surface->pitch % 4) ? (4 - (surface->pitch % 4)) : 0);
     if (topDown) {
         bits = top;
     } else {
         bits = end - surface->pitch;
     }
     while (bits >= top && bits < end) {
-        switch (ExpandBMP) {
-        case 1:
-        case 2:
-        case 4:
-        {
-            Uint8 pixel = 0;
-            int shift = (8 - ExpandBMP);
+        if (SDL_RWread(src, bits, surface->pitch) != (size_t)surface->pitch) {
+            goto done;
+        }
+        if (biBitCount == 8 && palette && biClrUsed < (1u << biBitCount)) {
             for (i = 0; i < surface->w; ++i) {
-                if (i % (8 / ExpandBMP) == 0) {
-                    if (!SDL_ReadU8(src, &pixel)) {
-                        goto done;
-                    }
-                }
-                bits[i] = (pixel >> shift);
                 if (bits[i] >= biClrUsed) {
                     SDL_SetError("A BMP image contains a pixel with a color out of the palette");
                     goto done;
                 }
-                pixel <<= ExpandBMP;
             }
-        } break;
-
-        default:
-            if (SDL_RWread(src, bits, surface->pitch) != (size_t)surface->pitch) {
-                goto done;
-            }
-            if (biBitCount == 8 && palette && biClrUsed < (1u << biBitCount)) {
-                for (i = 0; i < surface->w; ++i) {
-                    if (bits[i] >= biClrUsed) {
-                        SDL_SetError("A BMP image contains a pixel with a color out of the palette");
-                        goto done;
-                    }
-                }
-            }
+        }
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-            /* Byte-swap the pixels if needed. Note that the 24bpp
-               case has already been taken care of above. */
-            switch (biBitCount) {
-            case 15:
-            case 16:
-            {
-                Uint16 *pix = (Uint16 *)bits;
-                for (i = 0; i < surface->w; i++) {
-                    pix[i] = SDL_Swap16(pix[i]);
-                }
-                break;
+        /* Byte-swap the pixels if needed. Note that the 24bpp
+           case has already been taken care of above. */
+        switch (biBitCount) {
+        case 15:
+        case 16:
+        {
+            Uint16 *pix = (Uint16 *)bits;
+            for (i = 0; i < surface->w; i++) {
+                pix[i] = SDL_Swap16(pix[i]);
             }
-
-            case 32:
-            {
-                Uint32 *pix = (Uint32 *)bits;
-                for (i = 0; i < surface->w; i++) {
-                    pix[i] = SDL_Swap32(pix[i]);
-                }
-                break;
-            }
-            }
-#endif
             break;
         }
+
+        case 32:
+        {
+            Uint32 *pix = (Uint32 *)bits;
+            for (i = 0; i < surface->w; i++) {
+                pix[i] = SDL_Swap32(pix[i]);
+            }
+            break;
+        }
+        }
+#endif
+
         /* Skip padding bytes, ugh */
         if (pad) {
             Uint8 padbyte;

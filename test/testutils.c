@@ -116,7 +116,12 @@ LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent,
         /* Set transparent pixel as the pixel at (0,0) */
         if (transparent) {
             if (temp->format->palette) {
-                SDL_SetSurfaceColorKey(temp, SDL_TRUE, *(Uint8 *)temp->pixels);
+                const Uint8 bpp = temp->format->BitsPerPixel;
+                const Uint8 mask = (1 << bpp) - 1;
+                if (SDL_PIXELORDER(temp->format->format) == SDL_BITMAPORDER_4321)
+                    SDL_SetSurfaceColorKey(temp, SDL_TRUE, (*(Uint8 *)temp->pixels) & mask);
+                else
+                    SDL_SetSurfaceColorKey(temp, SDL_TRUE, ((*(Uint8 *)temp->pixels) >> (8 - bpp)) & mask);
             } else {
                 switch (temp->format->BitsPerPixel) {
                 case 15:
