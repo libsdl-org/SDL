@@ -72,7 +72,12 @@ init_color_cursor(const char *file)
     SDL_Surface *surface = SDL_LoadBMP(file);
     if (surface) {
         if (surface->format->palette) {
-            SDL_SetSurfaceColorKey(surface, 1, *(Uint8 *)surface->pixels);
+            const Uint8 bpp = surface->format->BitsPerPixel;
+            const Uint8 mask = (1 << bpp) - 1;
+            if (SDL_PIXELORDER(surface->format->format) == SDL_BITMAPORDER_4321)
+                SDL_SetSurfaceColorKey(surface, 1, (*(Uint8 *)surface->pixels) & mask);
+            else
+                SDL_SetSurfaceColorKey(surface, 1, ((*(Uint8 *)surface->pixels) >> (8 - bpp)) & mask);
         } else {
             switch (surface->format->BitsPerPixel) {
             case 15:
