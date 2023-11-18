@@ -1667,6 +1667,9 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
     case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " display scale changed to %d%%", event->window.windowID, (int)(SDL_GetWindowDisplayScale(SDL_GetWindowFromID(event->window.windowID)) * 100.0f));
         break;
+    case SDL_EVENT_WINDOW_OCCLUDED:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " occluded", event->window.windowID);
+        break;
     case SDL_EVENT_KEY_DOWN:
         SDL_Log("SDL EVENT: Keyboard: key pressed  in window %" SDL_PRIu32 ": scancode 0x%08X = %s, keycode 0x%08" SDL_PRIX32 " = %s",
                 event->key.windowID,
