@@ -31,6 +31,12 @@
 
 #define _THIS SDL_AudioDevice *_this
 
+typedef struct AudioThreadStartupData
+{
+    SDL_AudioDevice *device;
+    SDL_sem *startup_semaphore;
+} AudioThreadStartupData;
+
 static SDL_AudioDriver current_audio;
 static SDL_AudioDevice *open_devices[16];
 
@@ -663,9 +669,10 @@ extern void Android_JNI_AudioSetThreadPriority(int, int);
 #endif
 
 /* The general mixing thread function */
-static int SDLCALL SDL_RunAudio(void *devicep)
+static int SDLCALL SDL_RunAudio(void *userdata)
 {
-    SDL_AudioDevice *device = (SDL_AudioDevice *)devicep;
+    const AudioThreadStartupData *startup_data = (const AudioThreadStartupData *) userdata;
+    SDL_AudioDevice *device = startup_data->device;
     void *udata = device->callbackspec.userdata;
     SDL_AudioCallback callback = device->callbackspec.callback;
     int data_len = 0;
@@ -685,6 +692,9 @@ static int SDLCALL SDL_RunAudio(void *devicep)
 
     /* Perform any thread setup */
     device->threadid = SDL_ThreadID();
+
+    SDL_SemPost(startup_data->startup_semaphore);  /* SDL_OpenAudioDevice may now continue. */
+
     current_audio.impl.ThreadInit(device);
 
     /* Loop, filling the audio buffers */
@@ -761,9 +771,10 @@ static int SDLCALL SDL_RunAudio(void *devicep)
 
 /* !!! FIXME: this needs to deal with device spec changes. */
 /* The general capture thread function */
-static int SDLCALL SDL_CaptureAudio(void *devicep)
+static int SDLCALL SDL_CaptureAudio(void *userdata)
 {
-    SDL_AudioDevice *device = (SDL_AudioDevice *)devicep;
+    const AudioThreadStartupData *startup_data = (const AudioThreadStartupData *) userdata;
+    SDL_AudioDevice *device = startup_data->device;
     const int silence = (int)device->spec.silence;
     const Uint32 delay = ((device->spec.samples * 1000) / device->spec.freq);
     const int data_len = device->spec.size;
@@ -785,6 +796,9 @@ static int SDLCALL SDL_CaptureAudio(void *devicep)
 
     /* Perform any thread setup */
     device->threadid = SDL_ThreadID();
+
+    SDL_SemPost(startup_data->startup_semaphore);  /* SDL_OpenAudioDevice may now continue. */
+
     current_audio.impl.ThreadInit(device);
 
     /* Loop, filling the audio buffers */
@@ -1500,16 +1514,30 @@ static SDL_AudioDeviceID open_audio_device(const char *devname, int iscapture,
     if (!current_audio.impl.ProvidesOwnCallbackThread) {
         /* Start the audio thread */
         char threadname[64];
+        AudioThreadStartupData startup_data;
+
+        startup_data.device = device;
+        startup_data.startup_semaphore = SDL_CreateSemaphore(0);
+        if (!startup_data.startup_semaphore) {
+            close_audio_device(device);
+            SDL_SetError("Couldn't create audio thread startup semaphore");
+            SDL_UnlockMutex(current_audio.detectionLock);
+            return 0;
+        }
 
         (void)SDL_snprintf(threadname, sizeof(threadname), "SDLAudio%c%" SDL_PRIu32, (iscapture) ? 'C' : 'P', device->id);
-        device->thread = SDL_CreateThreadInternal(iscapture ? SDL_CaptureAudio : SDL_RunAudio, threadname, 0, device);
 
+        device->thread = SDL_CreateThreadInternal(iscapture ? SDL_CaptureAudio : SDL_RunAudio, threadname, 0, &startup_data);
         if (device->thread == NULL) {
+            SDL_DestroySemaphore(startup_data.startup_semaphore);
             close_audio_device(device);
             SDL_SetError("Couldn't create audio thread");
             SDL_UnlockMutex(current_audio.detectionLock);
             return 0;
         }
+
+        SDL_SemWait(startup_data.startup_semaphore);
+        SDL_DestroySemaphore(startup_data.startup_semaphore);
     }
     SDL_UnlockMutex(current_audio.detectionLock);
 
