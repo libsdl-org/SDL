@@ -16,7 +16,7 @@
 #include <stdio.h>
 
 /* Enable DMABUF to compile (linux + v4l2) */
-#define USE_DMABUF 0
+#define USE_DMABUF 1
 
 #if USE_DMABUF
 #  include "SDL_egl.h"
@@ -27,6 +27,32 @@
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
+
+#define CASE_STR( value ) case value: return #value;
+static const char* eglGetErrorString( EGLint error )
+{
+    switch (error)
+    {
+            CASE_STR( EGL_SUCCESS )
+            CASE_STR( EGL_NOT_INITIALIZED )
+            CASE_STR( EGL_BAD_ACCESS )
+            CASE_STR( EGL_BAD_ALLOC )
+            CASE_STR( EGL_BAD_ATTRIBUTE )
+            CASE_STR( EGL_BAD_CONTEXT )
+            CASE_STR( EGL_BAD_CONFIG )
+            CASE_STR( EGL_BAD_CURRENT_SURFACE )
+            CASE_STR( EGL_BAD_DISPLAY )
+            CASE_STR( EGL_BAD_SURFACE )
+            CASE_STR( EGL_BAD_MATCH )
+            CASE_STR( EGL_BAD_PARAMETER )
+            CASE_STR( EGL_BAD_NATIVE_PIXMAP )
+            CASE_STR( EGL_BAD_NATIVE_WINDOW )
+            CASE_STR( EGL_CONTEXT_LOST )
+        default: return "Unknown";
+    }
+}
+#undef CASE_STR
+
 
 int main(int argc, char **argv)
 {
@@ -91,7 +117,7 @@ int main(int argc, char **argv)
 
 #if USE_DMABUF
     SDL_SetHint("SDL_RENDER_OPENGL_NV12_RG_SHADER", "1");
-    SDL_SetHint("SDL_VIDEO_X11_FORCE_EGL", "1"); /* Don't use GLX */
+    SDL_SetHint(SDL_HINT_VIDEO_FORCE_EGL, "1"); /* Don't use GLX */
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
 #endif
 
@@ -152,6 +178,7 @@ int main(int argc, char **argv)
         SDL_Log("error SDL_StartVideoCapture(): %s", SDL_GetError());
         return 1;
     }
+
 
     /* Create texture with appropriate format */
     if (texture == NULL) {
@@ -265,7 +292,7 @@ int main(int argc, char **argv)
                 img_attr[j++] = obtained.width;
 
                 img_attr[j++] = EGL_HEIGHT;
-                img_attr[j++] = obtained.height;
+                img_attr[j++] = obtained.height / 2; /* FIXME: probably wrong */
 
                 img_attr[j++] = EGL_LINUX_DRM_FOURCC_EXT;
                 img_attr[j++] = DRM_FORMAT_YUYV;
@@ -275,15 +302,18 @@ int main(int argc, char **argv)
                 img_attr[j++] = EGL_DMA_BUF_PLANE0_OFFSET_EXT;
                 img_attr[j++] = 0;
                 img_attr[j++] = EGL_DMA_BUF_PLANE0_PITCH_EXT;
-                img_attr[j++] = frame_current.pitch[0];
+                img_attr[j++] = frame_current.pitch[0] * 2; /* FIXME: probably wrong */
 
                 img_attr[j++] = EGL_NONE;
+
 
                 image = eglCreateImageKHR(display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, img_attr);
 #endif
 
                 if (image == EGL_NO_IMAGE_KHR) {
-                    SDL_Log("error eglCreateImageKHR : eglGetError: %08" SDL_PRIx32 "", eglGetError());
+                    int err = eglGetError();
+                    SDL_Log("error eglCreateImageKHR : eglGetError: %08" SDL_PRIx32 "", err);
+                    SDL_Log("width: %d height: %d pitch: %d  EGL Error: %s", obtained.width, obtained.height, frame_current.pitch[0], eglGetErrorString(err));
                 } else {
                     SDL_Log("ImageKHR: %p fd: %" SDL_PRIu32 "", image, frame_current.fd);
 
