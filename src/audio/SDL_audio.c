@@ -1261,7 +1261,6 @@ static SDL_AudioDeviceID open_audio_device(const char *devname, int iscapture,
                                            const SDL_AudioSpec *desired, SDL_AudioSpec *obtained,
                                            int allowed_changes, int min_id)
 {
-    const SDL_bool is_internal_thread = (desired->callback == NULL);
     SDL_AudioDeviceID id = 0;
     SDL_AudioSpec _obtained;
     SDL_AudioDevice *device;
@@ -1500,13 +1499,10 @@ static SDL_AudioDeviceID open_audio_device(const char *devname, int iscapture,
     /* Start the audio thread if necessary */
     if (!current_audio.impl.ProvidesOwnCallbackThread) {
         /* Start the audio thread */
-        /* !!! FIXME: we don't force the audio thread stack size here if it calls into user code, but maybe we should? */
-        /* buffer queueing callback only needs a few bytes, so make the stack tiny. */
-        const size_t stacksize = is_internal_thread ? 64 * 1024 : 0;
         char threadname[64];
 
         (void)SDL_snprintf(threadname, sizeof(threadname), "SDLAudio%c%" SDL_PRIu32, (iscapture) ? 'C' : 'P', device->id);
-        device->thread = SDL_CreateThreadInternal(iscapture ? SDL_CaptureAudio : SDL_RunAudio, threadname, stacksize, device);
+        device->thread = SDL_CreateThreadInternal(iscapture ? SDL_CaptureAudio : SDL_RunAudio, threadname, 0, device);
 
         if (device->thread == NULL) {
             close_audio_device(device);
