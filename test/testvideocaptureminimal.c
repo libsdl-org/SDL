@@ -16,7 +16,7 @@
 #include <stdio.h>
 
 /* Enable DMABUF to compile (linux + v4l2) */
-#define USE_DMABUF 1
+#define USE_DMABUF 0
 
 #if USE_DMABUF
 #  include "SDL_egl.h"
@@ -28,6 +28,7 @@
 #include <emscripten/emscripten.h>
 #endif
 
+#if USE_DMABUF
 #define CASE_STR( value ) case value: return #value;
 static const char* eglGetErrorString( EGLint error )
 {
@@ -52,7 +53,7 @@ static const char* eglGetErrorString( EGLint error )
     }
 }
 #undef CASE_STR
-
+#endif
 
 int main(int argc, char **argv)
 {
