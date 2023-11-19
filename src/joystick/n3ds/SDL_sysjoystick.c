@@ -31,12 +31,12 @@
 #define NB_BUTTONS 23
 
 /*
-  N3DS sticks values are roughly within +/-160
+  N3DS sticks values are roughly within +/-170
   which is too small to pass the jitter tolerance.
   This correction is applied to axis values
   so they fit better in SDL's value range.
 */
-#define CORRECT_AXIS_X(X) ((X * SDL_JOYSTICK_AXIS_MAX) / 160)
+#define CORRECT_AXIS_X(X) ((X * SDL_JOYSTICK_AXIS_MAX) / 170)
 
 /*
   The Y axis needs to be flipped because SDL's "up"
