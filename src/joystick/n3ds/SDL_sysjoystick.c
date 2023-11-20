@@ -73,7 +73,7 @@ static SDL_JoystickGUID N3DS_JoystickGetDeviceGUID(int device_index)
 
 static SDL_JoystickID N3DS_JoystickGetDeviceInstanceID(int device_index)
 {
-    return device_index;
+    return device_index + 1;
 }
 
 static int N3DS_JoystickOpen(SDL_Joystick *joystick, int device_index)

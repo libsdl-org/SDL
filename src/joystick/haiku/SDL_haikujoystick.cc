@@ -113,7 +113,7 @@ extern "C"
 /* Function to perform the mapping from device index to the instance id for this index */
     static SDL_JoystickID HAIKU_JoystickGetDeviceInstanceID(int device_index)
     {
-        return device_index;
+        return device_index + 1;
     }
 
     static void HAIKU_JoystickClose(SDL_Joystick *joystick);
