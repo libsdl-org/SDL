@@ -505,7 +505,9 @@ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
     if (window && window->hit_test) {
         const SDL_Point point = { wl_fixed_to_int(sx_w), wl_fixed_to_int(sy_w) };
         SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
-        if (rc == window_data->hit_test_result) return;
+        if (rc == window_data->hit_test_result) {
+            return;
+        }
 
         Wayland_SetHitTestCursor(rc);
         window_data->hit_test_result = rc;

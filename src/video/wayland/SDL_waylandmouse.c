@@ -817,8 +817,11 @@ void Wayland_FiniMouse(SDL_VideoData *data)
 
 void Wayland_SetHitTestCursor(SDL_HitTestResult rc)
 {
-    if (rc == SDL_HITTEST_NORMAL || rc == SDL_HITTEST_DRAGGABLE) SDL_SetCursor(NULL);
-    else Wayland_ShowCursor(sys_cursors[rc]);
+    if (rc == SDL_HITTEST_NORMAL || rc == SDL_HITTEST_DRAGGABLE) {
+        SDL_SetCursor(NULL);
+    } else {
+        Wayland_ShowCursor(sys_cursors[rc]);
+    }
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */

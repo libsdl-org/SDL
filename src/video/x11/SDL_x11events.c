@@ -565,7 +565,9 @@ SDL_bool X11_ProcessHitTest(SDL_VideoDevice *_this, SDL_WindowData *data, const 
     if (!window->hit_test) return SDL_FALSE;
     const SDL_Point point = { x, y };
     SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
-    if (!force_new_result && rc == data->hit_test_result) return SDL_TRUE;
+    if (!force_new_result && rc == data->hit_test_result) {
+        return SDL_TRUE;
+    }
     X11_SetHitTestCursor(rc);
     data->hit_test_result = rc;
     return SDL_TRUE;
