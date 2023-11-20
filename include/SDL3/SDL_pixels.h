@@ -88,7 +88,6 @@ typedef enum
 {
     SDL_PIXELTYPE_UNKNOWN,
     SDL_PIXELTYPE_INDEX1,
-    SDL_PIXELTYPE_INDEX2,
     SDL_PIXELTYPE_INDEX4,
     SDL_PIXELTYPE_INDEX8,
     SDL_PIXELTYPE_PACKED8,
@@ -98,7 +97,9 @@ typedef enum
     SDL_PIXELTYPE_ARRAYU16,
     SDL_PIXELTYPE_ARRAYU32,
     SDL_PIXELTYPE_ARRAYF16,
-    SDL_PIXELTYPE_ARRAYF32
+    SDL_PIXELTYPE_ARRAYF32,
+    /* appended at the end for compatibility with sdl2-compat:  */
+    SDL_PIXELTYPE_INDEX2
 } SDL_PixelType;
 
 /** Bitmap pixel order, high bit -> low bit. */
