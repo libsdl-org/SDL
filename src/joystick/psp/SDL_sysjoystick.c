@@ -140,7 +140,7 @@ static SDL_JoystickGUID PSP_JoystickGetDeviceGUID(int device_index)
 /* Function to perform the mapping from device index to the instance id for this index */
 static SDL_JoystickID PSP_JoystickGetDeviceInstanceID(int device_index)
 {
-    return device_index;
+    return device_index + 1;
 }
 
 /* Function to open a joystick for use.
