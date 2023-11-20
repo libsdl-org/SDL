@@ -179,7 +179,7 @@ static SDL_JoystickGUID PS2_JoystickGetDeviceGUID(int device_index)
 /* Function to get the current instance id of the joystick located at device_index */
 static SDL_JoystickID PS2_JoystickGetDeviceInstanceID(int device_index)
 {
-    return device_index;
+    return device_index + 1;
 }
 
 /*  Function to open a joystick for use.
