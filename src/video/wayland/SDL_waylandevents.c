@@ -32,6 +32,7 @@
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandevents_c.h"
 #include "SDL_waylandwindow.h"
+#include "SDL_waylandmouse.h"
 
 #include "pointer-constraints-unstable-v1-client-protocol.h"
 #include "relative-pointer-unstable-v1-client-protocol.h"
@@ -490,13 +491,24 @@ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
                                   uint32_t time, wl_fixed_t sx_w, wl_fixed_t sy_w)
 {
     struct SDL_WaylandInput *input = data;
-    SDL_WindowData *window = input->pointer_focus;
+    SDL_WindowData *window_data = input->pointer_focus;
+    SDL_Window *window = window_data ? window_data->sdlwindow : NULL;
+
     input->sx_w = sx_w;
     input->sy_w = sy_w;
     if (input->pointer_focus) {
-        float sx = (float)(wl_fixed_to_double(sx_w) * window->pointer_scale_x);
-        float sy = (float)(wl_fixed_to_double(sy_w) * window->pointer_scale_y);
-        SDL_SendMouseMotion(Wayland_GetPointerTimestamp(input, time), window->sdlwindow, 0, 0, sx, sy);
+        float sx = (float)(wl_fixed_to_double(sx_w) * window_data->pointer_scale_x);
+        float sy = (float)(wl_fixed_to_double(sy_w) * window_data->pointer_scale_y);
+        SDL_SendMouseMotion(Wayland_GetPointerTimestamp(input, time), window_data->sdlwindow, 0, 0, sx, sy);
+    }
+
+    if (window && window->hit_test) {
+        const SDL_Point point = { wl_fixed_to_int(sx_w), wl_fixed_to_int(sy_w) };
+        SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
+        if (rc == window_data->hit_test_result) return;
+
+        Wayland_SetHitTestCursor(rc);
+        window_data->hit_test_result = rc;
     }
 }
 
@@ -540,7 +552,7 @@ static void pointer_handle_enter(void *data, struct wl_pointer *pointer,
         /* If the cursor was changed while our window didn't have pointer
          * focus, we might need to trigger another call to
          * wl_pointer_set_cursor() for the new cursor to be displayed. */
-        SDL_SetCursor(NULL);
+        Wayland_SetHitTestCursor(window->hit_test_result);
     }
 }
 
@@ -580,9 +592,6 @@ static SDL_bool ProcessHitTest(SDL_WindowData *window_data,
     SDL_Window *window = window_data->sdlwindow;
 
     if (window->hit_test) {
-        const SDL_Point point = { wl_fixed_to_int(sx_w), wl_fixed_to_int(sy_w) };
-        const SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
-
         static const uint32_t directions[] = {
             XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT, XDG_TOPLEVEL_RESIZE_EDGE_TOP,
             XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT, XDG_TOPLEVEL_RESIZE_EDGE_RIGHT,
@@ -599,12 +608,14 @@ static SDL_bool ProcessHitTest(SDL_WindowData *window_data,
         };
 #endif
 
-        switch (rc) {
+        switch (window_data->hit_test_result) {
         case SDL_HITTEST_DRAGGABLE:
 #ifdef HAVE_LIBDECOR_H
             if (window_data->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
                 if (window_data->shell_surface.libdecor.frame) {
-                    libdecor_frame_move(window_data->shell_surface.libdecor.frame, seat, serial);
+                    libdecor_frame_move(window_data->shell_surface.libdecor.frame,
+                                        seat,
+                                        serial);
                 }
             } else
 #endif
@@ -628,7 +639,10 @@ static SDL_bool ProcessHitTest(SDL_WindowData *window_data,
 #ifdef HAVE_LIBDECOR_H
             if (window_data->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
                 if (window_data->shell_surface.libdecor.frame) {
-                    libdecor_frame_resize(window_data->shell_surface.libdecor.frame, seat, serial, directions_libdecor[rc - SDL_HITTEST_RESIZE_TOPLEFT]);
+                    libdecor_frame_resize(window_data->shell_surface.libdecor.frame,
+                                          seat,
+                                          serial,
+                                          directions_libdecor[window_data->hit_test_result - SDL_HITTEST_RESIZE_TOPLEFT]);
                 }
             } else
 #endif
@@ -637,7 +651,7 @@ static SDL_bool ProcessHitTest(SDL_WindowData *window_data,
                     xdg_toplevel_resize(window_data->shell_surface.xdg.roleobj.toplevel,
                                         seat,
                                         serial,
-                                        directions[rc - SDL_HITTEST_RESIZE_TOPLEFT]);
+                                        directions[window_data->hit_test_result - SDL_HITTEST_RESIZE_TOPLEFT]);
                 }
             }
             return SDL_TRUE;

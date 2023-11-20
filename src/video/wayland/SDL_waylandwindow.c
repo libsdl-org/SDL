@@ -2109,6 +2109,8 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     SDL_SetProperty(props, "SDL.window.wayland.surface", data->surface);
     SDL_SetProperty(props, "SDL.window.wayland.egl_window", data->egl_window);
 
+    data->hit_test_result = SDL_HITTEST_NORMAL;
+
     return 0;
 }
 

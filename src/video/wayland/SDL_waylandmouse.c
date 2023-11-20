@@ -41,6 +41,8 @@
 
 #include "../../SDL_hints_c.h"
 
+static SDL_Cursor *sys_cursors[SDL_HITTEST_RESIZE_LEFT + 1];
+
 static int Wayland_SetRelativeMouseMode(SDL_bool enabled);
 
 typedef struct
@@ -315,43 +317,44 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
         vdata->cursor_themes[vdata->num_cursor_themes++].theme = theme;
     }
 
-    /* Next, find the cursor from the theme... */
+    /* Next, find the cursor from the theme. Names taken from: */
+    /*   https://www.freedesktop.org/wiki/Specifications/cursor-spec/ */
     switch (cdata->system_cursor) {
     case SDL_SYSTEM_CURSOR_ARROW:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "left_ptr");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "default");
         break;
     case SDL_SYSTEM_CURSOR_IBEAM:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "xterm");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "text");
         break;
     case SDL_SYSTEM_CURSOR_WAIT:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "watch");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "wait");
         break;
     case SDL_SYSTEM_CURSOR_CROSSHAIR:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "tcross");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "crosshair");
         break;
     case SDL_SYSTEM_CURSOR_WAITARROW:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "watch");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "progress");
         break;
     case SDL_SYSTEM_CURSOR_SIZENWSE:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "top_left_corner");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "nw-resize");
         break;
     case SDL_SYSTEM_CURSOR_SIZENESW:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "top_right_corner");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "ne-resize");
         break;
     case SDL_SYSTEM_CURSOR_SIZEWE:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "sb_h_double_arrow");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "e-resize");
         break;
     case SDL_SYSTEM_CURSOR_SIZENS:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "sb_v_double_arrow");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "n-resize");
         break;
     case SDL_SYSTEM_CURSOR_SIZEALL:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "fleur");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "fleur");  // ?
         break;
     case SDL_SYSTEM_CURSOR_NO:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "pirate");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "not-allowed");
         break;
     case SDL_SYSTEM_CURSOR_HAND:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "hand2");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "pointer");
         break;
     default:
         SDL_assert(0);
@@ -771,6 +774,23 @@ void Wayland_InitMouse(void)
     input->relative_mode_override = SDL_FALSE;
     input->cursor_visible = SDL_TRUE;
 
+    SDL_HitTestResult r = SDL_HITTEST_NORMAL;
+    while (r <= SDL_HITTEST_RESIZE_LEFT) {
+        switch (r) {
+        case SDL_HITTEST_NORMAL: sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW); break;
+        case SDL_HITTEST_DRAGGABLE: sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW); break;
+        case SDL_HITTEST_RESIZE_TOPLEFT: sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE); break;
+        case SDL_HITTEST_RESIZE_TOP: sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS); break;
+        case SDL_HITTEST_RESIZE_TOPRIGHT: sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW); break;
+        case SDL_HITTEST_RESIZE_RIGHT: sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE); break;
+        case SDL_HITTEST_RESIZE_BOTTOMRIGHT: sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE); break;
+        case SDL_HITTEST_RESIZE_BOTTOM: sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS); break;
+        case SDL_HITTEST_RESIZE_BOTTOMLEFT: sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW); break;
+        case SDL_HITTEST_RESIZE_LEFT: sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE); break;
+        }
+        r++;
+    }
+
 #ifdef SDL_USE_LIBDBUS
     Wayland_DBusInitCursorProperties(d);
 #endif
@@ -793,6 +813,12 @@ void Wayland_FiniMouse(SDL_VideoData *data)
 
     SDL_DelHintCallback(SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP,
                         Wayland_EmulateMouseWarpChanged, input);
+}
+
+void Wayland_SetHitTestCursor(SDL_HitTestResult rc)
+{
+    if (rc == SDL_HITTEST_NORMAL || rc == SDL_HITTEST_DRAGGABLE) SDL_SetCursor(NULL);
+    else Wayland_ShowCursor(sys_cursors[rc]);
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */

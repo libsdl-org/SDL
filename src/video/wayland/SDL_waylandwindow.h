@@ -121,6 +121,8 @@ struct SDL_WindowData
     SDL_bool is_fullscreen;
     SDL_bool in_fullscreen_transition;
     SDL_bool fullscreen_was_positioned;
+
+    SDL_HitTestResult hit_test_result;
 };
 
 extern void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
