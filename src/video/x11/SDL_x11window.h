@@ -79,6 +79,7 @@ struct SDL_WindowData
     PointerBarrier barrier[4];
     SDL_Rect barrier_rect;
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
+    SDL_HitTestResult hit_test_result;
 };
 
 extern void X11_SetNetWMState(SDL_VideoDevice *_this, Window xwindow, Uint32 flags);

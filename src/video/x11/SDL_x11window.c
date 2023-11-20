@@ -317,6 +317,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w)
     }
     data->window = window;
     data->xwindow = w;
+    data->hit_test_result = SDL_HITTEST_NORMAL;
 
 #ifdef X_HAVE_UTF8_STRING
     if (SDL_X11_HAVE_UTF8 && videodata->im) {

@@ -395,11 +395,10 @@ int X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
 		/* button 1 is the pen tip */
 		if (pressed && SDL_PenPerformHitTest()) {
 		    /* Check whether we should handle window resize / move events */
-		    const SDL_WindowData *windowdata = X11_FindWindow(_this, xev->event);
-
-		    if (X11_ProcessHitTest(_this, windowdata, pen->last.x, pen->last.y)) {
-			SDL_SendWindowEvent(windowdata->window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0);
-			return 1; /* Don't pass on this event */
+		    SDL_WindowData *windowdata = X11_FindWindow(_this, xev->event);
+		    if (windowdata && X11_TriggerHitTestAction(_this, windowdata, pen->last.x, pen->last.y)) {
+                SDL_SendWindowEvent(windowdata->window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0);
+                return 1; /* Don't pass on this event */
 		    }
 		}
 		SDL_SendPenTipEvent(0, pen->header.id,
@@ -467,6 +466,7 @@ int X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
                 SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
                 if (window) {
+                    X11_ProcessHitTest(_this, window->driverdata, (float)xev->event_x, (float)xev->event_y, SDL_FALSE);
                     SDL_SendMouseMotion(0, window, 0, 0, (float)xev->event_x, (float)xev->event_y);
                 }
             }

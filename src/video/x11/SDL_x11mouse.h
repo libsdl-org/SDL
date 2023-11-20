@@ -35,5 +35,6 @@ typedef struct SDL_XInput2DeviceInfo
 
 extern void X11_InitMouse(SDL_VideoDevice *_this);
 extern void X11_QuitMouse(SDL_VideoDevice *_this);
+extern void X11_SetHitTestCursor(SDL_HitTestResult rc);
 
 #endif /* SDL_x11mouse_h_ */

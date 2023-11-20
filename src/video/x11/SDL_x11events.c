@@ -559,13 +559,26 @@ static void InitiateWindowResize(SDL_VideoDevice *_this, const SDL_WindowData *d
     X11_XSync(display, 0);
 }
 
-SDL_bool X11_ProcessHitTest(SDL_VideoDevice *_this, const SDL_WindowData *data, const float x, const float y)
+SDL_bool X11_ProcessHitTest(SDL_VideoDevice *_this, SDL_WindowData *data, const float x, const float y, SDL_bool force_new_result)
+{
+    SDL_Window *window = data->window;
+    if (!window->hit_test) return SDL_FALSE;
+    const SDL_Point point = { x, y };
+    SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
+    if (!force_new_result && rc == data->hit_test_result) {
+        return SDL_TRUE;
+    }
+    X11_SetHitTestCursor(rc);
+    data->hit_test_result = rc;
+    return SDL_TRUE;
+}
+
+SDL_bool X11_TriggerHitTestAction(SDL_VideoDevice *_this, const SDL_WindowData *data, const float x, const float y)
 {
     SDL_Window *window = data->window;
 
     if (window->hit_test) {
         const SDL_Point point = { x, y };
-        const SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
         static const int directions[] = {
             _NET_WM_MOVERESIZE_SIZE_TOPLEFT, _NET_WM_MOVERESIZE_SIZE_TOP,
             _NET_WM_MOVERESIZE_SIZE_TOPRIGHT, _NET_WM_MOVERESIZE_SIZE_RIGHT,
@@ -573,7 +586,7 @@ SDL_bool X11_ProcessHitTest(SDL_VideoDevice *_this, const SDL_WindowData *data, 
             _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT, _NET_WM_MOVERESIZE_SIZE_LEFT
         };
 
-        switch (rc) {
+        switch (data->hit_test_result) {
         case SDL_HITTEST_DRAGGABLE:
             InitiateWindowMove(_this, data, &point);
             return SDL_TRUE;
@@ -586,7 +599,7 @@ SDL_bool X11_ProcessHitTest(SDL_VideoDevice *_this, const SDL_WindowData *data, 
         case SDL_HITTEST_RESIZE_BOTTOM:
         case SDL_HITTEST_RESIZE_BOTTOMLEFT:
         case SDL_HITTEST_RESIZE_LEFT:
-            InitiateWindowResize(_this, data, &point, directions[rc - SDL_HITTEST_RESIZE_TOPLEFT]);
+            InitiateWindowResize(_this, data, &point, directions[data->hit_test_result - SDL_HITTEST_RESIZE_TOPLEFT]);
             return SDL_TRUE;
 
         default:
@@ -819,7 +832,7 @@ void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, i
     } else {
         SDL_bool ignore_click = SDL_FALSE;
         if (button == Button1) {
-            if (X11_ProcessHitTest(_this, windowdata, x, y)) {
+            if (X11_TriggerHitTestAction(_this, windowdata, x, y)) {
                 SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0);
                 return; /* don't pass this event on to app. */
             }
@@ -1078,6 +1091,8 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
         /* We ungrab in LeaveNotify, so we may need to grab again here */
         SDL_UpdateWindowGrab(data->window);
+
+        X11_ProcessHitTest(_this, data, mouse->last_x, mouse->last_y, SDL_TRUE);
     } break;
         /* Losing mouse coverage? */
     case LeaveNotify:
@@ -1483,6 +1498,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             printf("window %p: X11 motion: %d,%d\n", data, xevent->xmotion.x, xevent->xmotion.y);
 #endif
 
+            X11_ProcessHitTest(_this, data, (float)xevent->xmotion.x, (float)xevent->xmotion.y, SDL_FALSE);
             SDL_SendMouseMotion(0, data->window, 0, 0, (float)xevent->xmotion.x, (float)xevent->xmotion.y);
         }
     } break;

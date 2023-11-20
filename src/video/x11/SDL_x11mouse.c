@@ -31,6 +31,8 @@
 /* FIXME: Find a better place to put this... */
 static Cursor x11_empty_cursor = None;
 
+static SDL_Cursor *sys_cursors[SDL_HITTEST_RESIZE_LEFT + 1];
+
 static Display *GetDisplay(void)
 {
     return SDL_GetVideoDevice()->driverdata->display;
@@ -472,6 +474,23 @@ void X11_InitMouse(SDL_VideoDevice *_this)
     mouse->CaptureMouse = X11_CaptureMouse;
     mouse->GetGlobalMouseState = X11_GetGlobalMouseState;
 
+    SDL_HitTestResult r = SDL_HITTEST_NORMAL;
+    while (r <= SDL_HITTEST_RESIZE_LEFT) {
+        switch (r) {
+        case SDL_HITTEST_NORMAL: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW); break;
+        case SDL_HITTEST_DRAGGABLE: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW); break;
+        case SDL_HITTEST_RESIZE_TOPLEFT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE); break;
+        case SDL_HITTEST_RESIZE_TOP: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS); break;
+        case SDL_HITTEST_RESIZE_TOPRIGHT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW); break;
+        case SDL_HITTEST_RESIZE_RIGHT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE); break;
+        case SDL_HITTEST_RESIZE_BOTTOMRIGHT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE); break;
+        case SDL_HITTEST_RESIZE_BOTTOM: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS); break;
+        case SDL_HITTEST_RESIZE_BOTTOMLEFT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW); break;
+        case SDL_HITTEST_RESIZE_LEFT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE); break;
+        }
+        r++;
+    }
+
     SDL_SetDefaultCursor(X11_CreateDefaultCursor());
 }
 
@@ -488,6 +507,15 @@ void X11_QuitMouse(SDL_VideoDevice *_this)
     data->mouse_device_info = NULL;
 
     X11_DestroyEmptyCursor();
+}
+
+void X11_SetHitTestCursor(SDL_HitTestResult rc)
+{
+    if (rc == SDL_HITTEST_NORMAL || rc == SDL_HITTEST_DRAGGABLE) {
+        SDL_SetCursor(NULL);
+    } else {
+        X11_ShowCursor(sys_cursors[rc]);
+    }
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */
