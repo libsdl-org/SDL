@@ -251,6 +251,30 @@ static SDL_Cursor *WIN_CreateSystemCursor(SDL_SystemCursor id)
     case SDL_SYSTEM_CURSOR_HAND:
         name = IDC_HAND;
         break;
+    case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT:
+        name = IDC_SIZENWSE;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_TOP:
+        name = IDC_SIZENS;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT:
+        name = IDC_SIZENESW;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_RIGHT:
+        name = IDC_SIZEWE;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT:
+        name = IDC_SIZENWSE;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM:
+        name = IDC_SIZENS;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT:
+        name = IDC_SIZENESW;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_LEFT:
+        name = IDC_SIZEWE;
+        break;
     }
 
     cursor = SDL_calloc(1, sizeof(*cursor));

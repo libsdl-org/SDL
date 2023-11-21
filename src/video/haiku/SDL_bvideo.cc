@@ -152,6 +152,14 @@ static SDL_Cursor * HAIKU_CreateSystemCursor(SDL_SystemCursor id)
     case SDL_SYSTEM_CURSOR_SIZEALL:   cursorId = B_CURSOR_ID_MOVE; break;
     case SDL_SYSTEM_CURSOR_NO:        cursorId = B_CURSOR_ID_NOT_ALLOWED; break;
     case SDL_SYSTEM_CURSOR_HAND:      cursorId = B_CURSOR_ID_FOLLOW_LINK; break;
+    case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT:     cursorId = B_CURSOR_ID_RESIZE_NORTH_WEST_SOUTH_EAST; break;
+    case SDL_SYSTEM_CURSOR_WINDOW_TOP:         cursorId = B_CURSOR_ID_RESIZE_NORTH_SOUTH; break;
+    case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT:    cursorId = B_CURSOR_ID_RESIZE_NORTH_EAST_SOUTH_WEST; break;
+    case SDL_SYSTEM_CURSOR_WINDOW_RIGHT:       cursorId = B_CURSOR_ID_RESIZE_EAST_WEST; break;
+    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT: cursorId = B_CURSOR_ID_RESIZE_NORTH_WEST_SOUTH_EAST; break;
+    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM:      cursorId = B_CURSOR_ID_RESIZE_NORTH_SOUTH; break;
+    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT:  cursorId = B_CURSOR_ID_RESIZE_NORTH_EAST_SOUTH_WEST; break;
+    case SDL_SYSTEM_CURSOR_WINDOW_LEFT:        cursorId = B_CURSOR_ID_RESIZE_EAST_WEST; break;
     }
 
     cursor = (SDL_Cursor *) SDL_calloc(1, sizeof(*cursor));

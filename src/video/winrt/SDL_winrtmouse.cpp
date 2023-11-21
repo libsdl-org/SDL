@@ -90,6 +90,30 @@ static SDL_Cursor *WINRT_CreateSystemCursor(SDL_SystemCursor id)
     case SDL_SYSTEM_CURSOR_HAND:
         cursorType = CoreCursorType::Hand;
         break;
+    case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT:
+        cursorType = CoreCursorType::SizeNorthwestSoutheast;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_TOP:
+        cursorType = CoreCursorType::SizeNorthSouth;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT:
+        cursorType = CoreCursorType::SizeNortheastSouthwest;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_RIGHT:
+        cursorType = CoreCursorType::SizeWestEast;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT:
+        cursorType = CoreCursorType::SizeNorthwestSoutheast;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM:
+        cursorType = CoreCursorType::SizeNorthSouth;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT:
+        cursorType = CoreCursorType::SizeNortheastSouthwest;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_LEFT:
+        cursorType = CoreCursorType::SizeWestEast;
+        break;
     }
 
     cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
