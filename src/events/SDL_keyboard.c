@@ -1062,8 +1062,8 @@ int SDL_SendKeyboardText(const char *text)
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
 
-    /* Don't post text events for unprintable characters */
-    if ((unsigned char)*text < ' ' || *text == 127) {
+    /* Don't post text events for control characters */
+    if (SDL_iscntrl((int)*text)) {
         return 0;
     }
 
