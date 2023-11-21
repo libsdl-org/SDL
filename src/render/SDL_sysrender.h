@@ -254,8 +254,6 @@ struct SDL_Renderer
     SDL_Color color;         /**< Color for drawing operations values */
     SDL_BlendMode blendMode; /**< The drawing blend mode */
 
-    SDL_bool always_batch;
-    SDL_bool batching;
     SDL_RenderCommand *render_commands;
     SDL_RenderCommand *render_commands_tail;
     SDL_RenderCommand *render_commands_pool;

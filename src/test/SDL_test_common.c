@@ -228,7 +228,6 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             }
             state->renderdriver = argv[index];
             SDL_SetHint(SDL_HINT_RENDER_DRIVER, state->renderdriver);
-            SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
             return 2;
         }
         if (SDL_strcasecmp(argv[index], "--gldebug") == 0) {

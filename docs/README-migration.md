@@ -559,6 +559,7 @@ The following hints have been removed:
 * SDL_HINT_IME_SUPPORT_EXTENDED_TEXT - the normal text editing event has extended text
 * SDL_HINT_MOUSE_RELATIVE_SCALING - mouse coordinates are no longer automatically scaled by the SDL renderer
 * SDL_HINT_RENDER_LOGICAL_SIZE_MODE - the logical size mode is explicitly set with SDL_SetRenderLogicalPresentation()
+* SDL_HINT_RENDER_BATCHING - Render batching is always enabled, apps should call SDL_FlushRenderer() before calling into a lower-level graphics API.
 * SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL - replaced with the "opengl" property in SDL_CreateWindowWithProperties()
 * SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN - replaced with the "vulkan" property in SDL_CreateWindowWithProperties()
 * SDL_HINT_VIDEO_HIGHDPI_DISABLED - high DPI support is always enabled
@@ -810,6 +811,13 @@ The following functions have been renamed:
 * SDL_UnionRect() => SDL_GetRectUnion()
 
 ## SDL_render.h
+
+The 2D renderer API always uses batching in SDL3. There is no magic to turn
+it on and off; it doesn't matter if you select a specific renderer or try to
+use any hint. This means that all apps that use SDL3's 2D renderer and also
+want to call directly into the platform's lower-layer graphics API _must_ call
+SDL_RenderFlush() before doing so. This will make sure any pending rendering
+work from SDL is done before the app starts directly drawing.
 
 SDL_GetRenderDriverInfo() has been removed, since most of the information it reported were
 estimates and could not be accurate before creating a renderer. Often times this function
