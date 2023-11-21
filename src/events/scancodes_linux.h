@@ -174,8 +174,8 @@ static SDL_Scancode const linux_scancode_table[] = {
     /* 145, 0x091 */    SDL_SCANCODE_UNKNOWN,           /* KEY_SENDFILE */
     /* 146, 0x092 */    SDL_SCANCODE_UNKNOWN,           /* KEY_DELETEFILE */
     /* 147, 0x093 */    SDL_SCANCODE_UNKNOWN,           /* KEY_XFER */
-    /* 148, 0x094 */    SDL_SCANCODE_APP1,              /* KEY_PROG1 */
-    /* 149, 0x095 */    SDL_SCANCODE_APP2,              /* KEY_PROG2 */
+    /* 148, 0x094 */    SDL_SCANCODE_UNKNOWN,           /* KEY_PROG1 */
+    /* 149, 0x095 */    SDL_SCANCODE_UNKNOWN,           /* KEY_PROG2 */
     /* 150, 0x096 */    SDL_SCANCODE_WWW,               /* KEY_WWW */
     /* 151, 0x097 */    SDL_SCANCODE_UNKNOWN,           /* KEY_MSDOS */
     /* 152, 0x098 */    SDL_SCANCODE_UNKNOWN,           /* KEY_COFFEE */

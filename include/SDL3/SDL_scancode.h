@@ -37,8 +37,8 @@
  *  in the \link SDL_Keysym::scancode key.keysym.scancode \endlink field of the
  *  SDL_Event structure.
  *
- *  The values in this enumeration are based on the USB usage page standard:
- *  https://www.usb.org/sites/default/files/documents/hut1_12v2.pdf
+ *  The values in this enumeration are based on the HID Usage Tables document:
+ *  https://usb.org/document-library/hid-usage-tables-14
  */
 typedef enum
 {
@@ -208,9 +208,7 @@ typedef enum
                                         *   in a Swiss German, German, or French
                                         *   layout. */
     SDL_SCANCODE_APPLICATION = 101, /**< windows contextual menu, compose */
-    SDL_SCANCODE_POWER = 102, /**< The USB document says this is a status flag,
-                               *   not a physical key - but some Mac keyboards
-                               *   do have a power key. */
+    SDL_SCANCODE_POWER = 102,   /**< System Power Down */
     SDL_SCANCODE_KP_EQUALS = 103,
     SDL_SCANCODE_F13 = 104,
     SDL_SCANCODE_F14 = 105,
@@ -224,24 +222,21 @@ typedef enum
     SDL_SCANCODE_F22 = 113,
     SDL_SCANCODE_F23 = 114,
     SDL_SCANCODE_F24 = 115,
+
     SDL_SCANCODE_EXECUTE = 116,
-    SDL_SCANCODE_HELP = 117,    /**< AL Integrated Help Center */
-    SDL_SCANCODE_MENU = 118,    /**< Menu (show menu) */
+    SDL_SCANCODE_HELP = 117,
+    SDL_SCANCODE_MENU = 118,
     SDL_SCANCODE_SELECT = 119,
-    SDL_SCANCODE_STOP = 120,    /**< AC Stop */
-    SDL_SCANCODE_AGAIN = 121,   /**< AC Redo/Repeat */
-    SDL_SCANCODE_UNDO = 122,    /**< AC Undo */
-    SDL_SCANCODE_CUT = 123,     /**< AC Cut */
-    SDL_SCANCODE_COPY = 124,    /**< AC Copy */
-    SDL_SCANCODE_PASTE = 125,   /**< AC Paste */
-    SDL_SCANCODE_FIND = 126,    /**< AC Find */
+    SDL_SCANCODE_STOP = 120,
+    SDL_SCANCODE_AGAIN = 121,
+    SDL_SCANCODE_UNDO = 122,
+    SDL_SCANCODE_CUT = 123,
+    SDL_SCANCODE_COPY = 124,
+    SDL_SCANCODE_PASTE = 125,
+    SDL_SCANCODE_FIND = 126,
     SDL_SCANCODE_MUTE = 127,
     SDL_SCANCODE_VOLUMEUP = 128,
     SDL_SCANCODE_VOLUMEDOWN = 129,
-/* not sure whether there's a reason to enable these */
-/*     SDL_SCANCODE_LOCKINGCAPSLOCK = 130,  */
-/*     SDL_SCANCODE_LOCKINGNUMLOCK = 131, */
-/*     SDL_SCANCODE_LOCKINGSCROLLLOCK = 132, */
     SDL_SCANCODE_KP_COMMA = 133,
     SDL_SCANCODE_KP_EQUALSAS400 = 134,
 
@@ -267,7 +262,7 @@ typedef enum
 
     SDL_SCANCODE_ALTERASE = 153,    /**< Erase-Eaze */
     SDL_SCANCODE_SYSREQ = 154,
-    SDL_SCANCODE_CANCEL = 155,      /**< AC Cancel */
+    SDL_SCANCODE_CANCEL = 155,
     SDL_SCANCODE_CLEAR = 156,
     SDL_SCANCODE_PRIOR = 157,
     SDL_SCANCODE_RETURN2 = 158,
@@ -342,10 +337,9 @@ typedef enum
     /* @} *//* Usage page 0x07 */
 
     /**
-     *  \name Usage page 0x0C
+     *  \name Additional keys
      *
-     *  These values are mapped from usage page 0x0C (USB consumer page).
-     *  See https://usb.org/sites/default/files/hut1_2.pdf
+     *  These values are mapped from various places in HID spec.
      *
      *  There are way more keys in the spec than we can represent in the
      *  current scancode range, so pick the ones that commonly come up in
@@ -353,59 +347,34 @@ typedef enum
      */
     /* @{ */
 
-    SDL_SCANCODE_AUDIONEXT = 258,
-    SDL_SCANCODE_AUDIOPREV = 259,
-    SDL_SCANCODE_AUDIOSTOP = 260,
-    SDL_SCANCODE_AUDIOPLAY = 261,
-    SDL_SCANCODE_AUDIOMUTE = 262,
-    SDL_SCANCODE_MEDIASELECT = 263,
-    SDL_SCANCODE_WWW = 264,             /**< AL Internet Browser */
-    SDL_SCANCODE_MAIL = 265,
-    SDL_SCANCODE_CALCULATOR = 266,      /**< AL Calculator */
-    SDL_SCANCODE_COMPUTER = 267,
-    SDL_SCANCODE_AC_SEARCH = 268,       /**< AC Search */
-    SDL_SCANCODE_AC_HOME = 269,         /**< AC Home */
-    SDL_SCANCODE_AC_BACK = 270,         /**< AC Back */
-    SDL_SCANCODE_AC_FORWARD = 271,      /**< AC Forward */
-    SDL_SCANCODE_AC_STOP = 272,         /**< AC Stop */
-    SDL_SCANCODE_AC_REFRESH = 273,      /**< AC Refresh */
-    SDL_SCANCODE_AC_BOOKMARKS = 274,    /**< AC Bookmarks */
+    SDL_SCANCODE_AUDIONEXT = 258,        /**< 0x000c00b5 Scan Next Track */
+    SDL_SCANCODE_AUDIOPREV = 259,        /**< 0x000c00b6 Scan Previous Track */
+    SDL_SCANCODE_AUDIOSTOP = 260,        /**< 0x000c00b7 Stop */
+    SDL_SCANCODE_AUDIOPLAY = 261,        /**< 0x000c00cd Play/Pause */
+    SDL_SCANCODE_MEDIASELECT = 263,      /**< 0x000c0183 AL Consumer Control Configuration */
+    SDL_SCANCODE_WWW = 264,              /**< 0x000c0196 AL Internet Browser */
+    SDL_SCANCODE_MAIL = 265,             /**< 0x000c018a AL Email Reader */
+    SDL_SCANCODE_CALCULATOR = 266,       /**< 0x000c0192 AL Calculator */
+    SDL_SCANCODE_COMPUTER = 267,         /**< 0x000c0194 AL Local Machine Browser */
+    SDL_SCANCODE_AC_SEARCH = 268,        /**< 0x000c0221 AC Search */
+    SDL_SCANCODE_AC_HOME = 269,          /**< 0x000c0223 AC Home */
+    SDL_SCANCODE_AC_BACK = 270,          /**< 0x000c0224 AC Back */
+    SDL_SCANCODE_AC_FORWARD = 271,       /**< 0x000c0225 AC Forward */
+    SDL_SCANCODE_AC_STOP = 272,          /**< 0x000c0226 AC Stop */
+    SDL_SCANCODE_AC_REFRESH = 273,       /**< 0x000c0227 AC Refresh */
+    SDL_SCANCODE_AC_BOOKMARKS = 274,     /**< 0x000c022a AC Bookmarks */
+    SDL_SCANCODE_BRIGHTNESSDOWN = 275,   /**< 0x000c0070 Display Brightness Decrement */
+    SDL_SCANCODE_BRIGHTNESSUP = 276,     /**< 0x000c006f Display Brightness Increment */
+    SDL_SCANCODE_DISPLAYSWITCH = 277,    /**< 0x000100b5 System Display Toggle Int/Ext Mode */
+    SDL_SCANCODE_KBDILLUMTOGGLE = 278,   /**< 0x000c007c Keyboard Backlight OOC */
+    SDL_SCANCODE_KBDILLUMDOWN = 279,     /**< 0x000c007a Keyboard Brightness Decrement */
+    SDL_SCANCODE_KBDILLUMUP = 280,       /**< 0x000c0079 Keyboard Brightness Increment */
+    SDL_SCANCODE_EJECT = 281,            /**< 0x000c00b8 Eject */
+    SDL_SCANCODE_SLEEP = 282,            /**< 0x000c0032 System Sleep */
+    SDL_SCANCODE_AUDIOREWIND = 285,      /**< 0x000c00b4 Rewind */
+    SDL_SCANCODE_AUDIOFASTFORWARD = 286, /**< 0x000c00b3 Fast Forward */
 
-    /* @} *//* Usage page 0x0C */
-
-    /**
-     *  \name Walther keys
-     *
-     *  These are values that Christian Walther added (for mac keyboard?).
-     */
-    /* @{ */
-
-    SDL_SCANCODE_BRIGHTNESSDOWN = 275,
-    SDL_SCANCODE_BRIGHTNESSUP = 276,
-    SDL_SCANCODE_DISPLAYSWITCH = 277, /**< display mirroring/dual display
-                                           switch, video mode switch */
-    SDL_SCANCODE_KBDILLUMTOGGLE = 278,
-    SDL_SCANCODE_KBDILLUMDOWN = 279,
-    SDL_SCANCODE_KBDILLUMUP = 280,
-    SDL_SCANCODE_EJECT = 281,
-    SDL_SCANCODE_SLEEP = 282,           /**< SC System Sleep */
-
-    SDL_SCANCODE_APP1 = 283,
-    SDL_SCANCODE_APP2 = 284,
-
-    /* @} *//* Walther keys */
-
-    /**
-     *  \name Usage page 0x0C (additional media keys)
-     *
-     *  These values are mapped from usage page 0x0C (USB consumer page).
-     */
-    /* @{ */
-
-    SDL_SCANCODE_AUDIOREWIND = 285,
-    SDL_SCANCODE_AUDIOFASTFORWARD = 286,
-
-    /* @} *//* Usage page 0x0C (additional media keys) */
+    /* @} *//* Additional keys */
 
     /**
      *  \name Mobile keys
