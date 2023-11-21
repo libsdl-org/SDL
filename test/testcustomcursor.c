@@ -215,6 +215,30 @@ static void loop(void)
                 case SDL_SYSTEM_CURSOR_HAND:
                     SDL_Log("Hand");
                     break;
+                case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT:
+                    SDL_Log("Window resize top-left");
+                    break;
+                case SDL_SYSTEM_CURSOR_WINDOW_TOP:
+                    SDL_Log("Window resize top");
+                    break;
+                case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT:
+                    SDL_Log("Window resize top-right");
+                    break;
+                case SDL_SYSTEM_CURSOR_WINDOW_RIGHT:
+                    SDL_Log("Window resize right");
+                    break;
+                case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT:
+                    SDL_Log("Window resize bottom-right");
+                    break;
+                case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM:
+                    SDL_Log("Window resize bottom");
+                    break;
+                case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT:
+                    SDL_Log("Window resize bottom-left");
+                    break;
+                case SDL_SYSTEM_CURSOR_WINDOW_LEFT:
+                    SDL_Log("Window resize left");
+                    break;
                 default:
                     SDL_Log("UNKNOWN CURSOR TYPE, FIX THIS PROGRAM.");
                     break;

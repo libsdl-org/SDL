@@ -161,6 +161,30 @@ static SDL_Cursor *Emscripten_CreateSystemCursor(SDL_SystemCursor id)
     case SDL_SYSTEM_CURSOR_HAND:
         cursor_name = "pointer";
         break;
+    case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT:
+        cursor_name = "nwse-resize";
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_TOP:
+        cursor_name = "ns-resize";
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT:
+        cursor_name = "nesw-resize";
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_RIGHT:
+        cursor_name = "ew-resize";
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT:
+        cursor_name = "nwse-resize";
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM:
+        cursor_name = "ns-resize";
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT:
+        cursor_name = "nesw-resize";
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_LEFT:
+        cursor_name = "ew-resize";
+        break;
     default:
         SDL_assert(0);
         return NULL;
