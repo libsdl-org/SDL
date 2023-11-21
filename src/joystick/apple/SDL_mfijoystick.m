@@ -554,7 +554,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
     if (controller.extendedGamepad) {
         GCExtendedGamepad *gamepad = controller.extendedGamepad;
         int nbuttons = 0;
-        BOOL has_direct_menu;
+        BOOL has_direct_menu = FALSE;
 
         /* These buttons are part of the original MFi spec */
         device->button_mask |= (1 << SDL_GAMEPAD_BUTTON_SOUTH);
