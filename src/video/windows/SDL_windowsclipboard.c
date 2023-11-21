@@ -35,11 +35,10 @@
 
 #define IMAGE_FORMAT CF_DIB
 #define IMAGE_MIME_TYPE "image/bmp"
+#define BFT_BITMAP 0x4d42 /* 'BM' */
 
 /* Assume we can directly read and write BMP fields without byte swapping */
 SDL_COMPILE_TIME_ASSERT(verify_byte_order, SDL_BYTEORDER == SDL_LIL_ENDIAN);
-
-static const char bmp_magic[2] = { 'B', 'M' };
 
 static BOOL WIN_OpenClipboard(SDL_VideoDevice *_this)
 {
@@ -69,7 +68,7 @@ static HANDLE WIN_ConvertBMPtoDIB(const void *bmp, size_t bmp_size)
 {
     HANDLE hMem = NULL;
 
-    if (bmp && bmp_size > sizeof(BITMAPFILEHEADER) && SDL_memcmp(bmp, bmp_magic, sizeof(bmp_magic)) == 0) {
+    if (bmp && bmp_size > sizeof(BITMAPFILEHEADER) && ((BITMAPFILEHEADER *)bmp)->bfType == BFT_BITMAP) {
         BITMAPFILEHEADER *pbfh = (BITMAPFILEHEADER *)bmp;
         BITMAPINFOHEADER *pbih = (BITMAPINFOHEADER *)((Uint8 *)bmp + sizeof(BITMAPFILEHEADER));
         size_t bih_size = pbih->biSize + pbih->biClrUsed * sizeof(RGBQUAD);
@@ -119,7 +118,7 @@ static void *WIN_ConvertDIBtoBMP(HANDLE hMem, size_t *size)
                 bmp = SDL_malloc(bmp_size);
                 if (bmp) {
                     BITMAPFILEHEADER *pbfh = (BITMAPFILEHEADER *)bmp;
-                    pbfh->bfType = 0x4d42; /* bmp_magic */
+                    pbfh->bfType = BFT_BITMAP;
                     pbfh->bfSize = (DWORD)bmp_size;
                     pbfh->bfReserved1 = 0;
                     pbfh->bfReserved2 = 0;
