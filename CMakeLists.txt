@@ -1624,6 +1624,13 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
       sdl_sources("${SDL3_SOURCE_DIR}/src/core/freebsd/SDL_evdev_kbd_freebsd.c")
     endif()
 
+    if(HAVE_INPUT_WSCONS)
+      sdl_sources(
+        "${SDL3_SOURCE_DIR}/src/core/openbsd/SDL_wscons_kbd.c"
+        "${SDL3_SOURCE_DIR}/src/core/openbsd/SDL_wscons_mouse.c"
+      )
+    endif()
+
     # Always compiled for Linux, unconditionally:
     sdl_sources(
       "${SDL3_SOURCE_DIR}/src/core/linux/SDL_evdev_capabilities.c"
