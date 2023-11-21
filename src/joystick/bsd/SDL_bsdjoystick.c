@@ -694,7 +694,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                      * calculate the SDL hat value from the 4 separate values.
                      */
                     switch (usage) {
-	            case HUG_DPAD_UP:
+                    case HUG_DPAD_UP:
                         dpad[0] = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
                         break;
                     case HUG_DPAD_DOWN:
@@ -707,7 +707,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                         dpad[3] = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
                         break;
                     //default:
-	                // no-op
+                        // no-op
                     }
                     SDL_PrivateJoystickHat(joy, 0, (dpad[0] * HAT_UP) |
                                                    (dpad[1] * HAT_DOWN) |
@@ -763,7 +763,7 @@ static int report_alloc(struct report *r, struct report_desc *rd, int repind)
 
 #ifdef __DragonFly__
     len = hid_report_size(rd, repinfo[repind].kind, r->rid);
-#elif __FREEBSD__
+#elif defined __FREEBSD__
 #if (__FreeBSD_kernel_version >= 460000) || defined(__FreeBSD_kernel__)
 #if (__FreeBSD_kernel_version <= 500111)
     len = hid_report_size(rd, r->rid, repinfo[repind].kind);
