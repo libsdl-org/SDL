@@ -2285,6 +2285,22 @@ SDL_GameControllerType SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGUI
     return type;
 }
 
+SDL_bool SDL_JoystickGUIDUsesVersion(SDL_JoystickGUID guid)
+{
+    Uint16 vendor, product;
+
+    if (SDL_IsJoystickMFI(guid)) {
+        /* The version bits are used as button capability mask */
+        return SDL_FALSE;
+    }
+
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
+    if (vendor && product) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
 SDL_bool SDL_IsJoystickXboxOne(Uint16 vendor_id, Uint16 product_id)
 {
     EControllerType eType = GuessControllerType(vendor_id, product_id);
@@ -2461,6 +2477,11 @@ SDL_bool SDL_IsJoystickWGI(SDL_JoystickGUID guid)
 SDL_bool SDL_IsJoystickHIDAPI(SDL_JoystickGUID guid)
 {
     return (guid.data[14] == 'h') ? SDL_TRUE : SDL_FALSE;
+}
+
+SDL_bool SDL_IsJoystickMFI(SDL_JoystickGUID guid)
+{
+    return (guid.data[14] == 'm') ? SDL_TRUE : SDL_FALSE;
 }
 
 SDL_bool SDL_IsJoystickRAWINPUT(SDL_JoystickGUID guid)
