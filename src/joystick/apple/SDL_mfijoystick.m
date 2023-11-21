@@ -2102,12 +2102,10 @@ const char *IOS_GetAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_Gamepad
                     GetAppleSFSymbolsNameForElement(elements[GCInputXboxPaddleOne], elementName);
                     break;
                 case SDL_GAMEPAD_BUTTON_LEFT_PADDLE1:
-                    /* TODO: Is this right? SDL_gamepad.h says P2 is the lower right */
-                    GetAppleSFSymbolsNameForElement(elements[GCInputXboxPaddleTwo], elementName);
+                    GetAppleSFSymbolsNameForElement(elements[GCInputXboxPaddleThree], elementName);
                     break;
                 case SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2:
-                    /* TODO: Is this right? SDL_gamepad.h says P3 is the upper left */
-                    GetAppleSFSymbolsNameForElement(elements[GCInputXboxPaddleThree], elementName);
+                    GetAppleSFSymbolsNameForElement(elements[GCInputXboxPaddleTwo], elementName);
                     break;
                 case SDL_GAMEPAD_BUTTON_LEFT_PADDLE2:
                     GetAppleSFSymbolsNameForElement(elements[GCInputXboxPaddleFour], elementName);
