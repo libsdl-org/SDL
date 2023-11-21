@@ -1917,8 +1917,6 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         renderer->info = METAL_RenderDriver.info;
         renderer->info.flags = SDL_RENDERER_ACCELERATED;
 
-        renderer->always_batch = SDL_TRUE;
-
 #if (defined(__MACOS__) && defined(MAC_OS_X_VERSION_10_13)) || TARGET_OS_MACCATALYST
         if (@available(macOS 10.13, *)) {
             data.mtllayer.displaySyncEnabled = SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE);

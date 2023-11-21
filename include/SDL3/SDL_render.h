@@ -1559,20 +1559,12 @@ extern DECLSPEC void SDLCALL SDL_DestroyRenderer(SDL_Renderer *renderer);
  * are planning to call into OpenGL/Direct3D/Metal/whatever directly in
  * addition to using an SDL_Renderer.
  *
- * This is for a very-specific case: if you are using SDL's render API, you
- * asked for a specific renderer backend (OpenGL, Direct3D, etc), you set
- * SDL_HINT_RENDER_BATCHING to "1", and you plan to make OpenGL/D3D/whatever
- * calls in addition to SDL render API calls. If all of this applies, you
- * should call SDL_RenderFlush() between calls to SDL's render API and the
- * low-level API you're using in cooperation.
+ * This is for a very-specific case: if you are using SDL's render API, and
+ * you plan to make OpenGL/D3D/whatever calls in addition to SDL render API
+ * calls. If this applies, you should call SDL_RenderFlush() between calls to
+ * SDL's render API and the low-level API you're using in cooperation.
  *
- * In all other cases, you can ignore this function. This is only here to get
- * maximum performance out of a specific situation. In all other cases, SDL
- * will do the right thing, perhaps at a performance loss.
- *
- * This function is first available in SDL 2.0.10, and is not needed in 2.0.9
- * and earlier, as earlier versions did not queue rendering commands at all,
- * instead flushing them to the OS immediately.
+ * In all other cases, you can ignore this function.
  *
  * \param renderer the rendering context
  * \returns 0 on success or a negative error code on failure; call
