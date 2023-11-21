@@ -114,15 +114,16 @@ static HBITMAP CreateColorBitmap(SDL_Surface *surface)
 static HBITMAP CreateMaskBitmap(SDL_Surface *surface)
 {
     HBITMAP bitmap;
+    SDL_bool isstack;
     void *pixels;
     int x, y;
     Uint8 *src, *dst;
-    const int pitch = (((surface->w + 15) & ~15) / 8);
+    const int pitch = ((surface->w + 15) & ~15) / 8;
     static const unsigned char masks[] = { 0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1 };
 
     SDL_assert(surface->format->format == SDL_PIXELFORMAT_ARGB8888);
 
-    pixels = SDL_stack_alloc(Uint8, pitch * surface->h);
+    pixels = SDL_small_alloc(Uint8, pitch * surface->h, &isstack);
     if (!pixels) {
         SDL_OutOfMemory();
         return NULL;
@@ -148,7 +149,7 @@ static HBITMAP CreateMaskBitmap(SDL_Surface *surface)
     SDL_UnlockSurface(surface);
 
     bitmap = CreateBitmap(surface->w, surface->h, 1, 1, pixels);
-    SDL_stack_free(pixels);
+    SDL_small_free(pixels, isstack);
     if (!bitmap) {
         WIN_SetError("CreateBitmap()");
         return NULL;
