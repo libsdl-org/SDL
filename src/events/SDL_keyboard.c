@@ -1063,7 +1063,7 @@ int SDL_SendKeyboardText(const char *text)
     int posted;
 
     /* Don't post text events for unprintable characters */
-    if ((unsigned char)*text < ' ' || *text == 127) {
+    if (SDL_iscntrl((int)*text)) {
         return 0;
     }
 
