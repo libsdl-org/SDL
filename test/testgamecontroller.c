@@ -221,6 +221,7 @@ static void AddController(int device_index, SDL_bool verbose)
         const char *name = SDL_GameControllerName(gamecontroller);
         const char *path = SDL_GameControllerPath(gamecontroller);
         SDL_Log("Opened game controller %s%s%s\n", name, path ? ", " : "", path ? path : "");
+        SDL_Log("Mapping: %s\n", SDL_GameControllerMapping(gamecontroller));
     }
 
     firmware_version = SDL_GameControllerGetFirmwareVersion(gamecontroller);
