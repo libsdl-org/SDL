@@ -336,19 +336,33 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
         cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "progress");
         break;
     case SDL_SYSTEM_CURSOR_SIZENWSE:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "nw-resize");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "nwse-resize");
+        if (!cursor) {
+            /* only a single arrow */
+            cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "nw-resize");
+        }
         break;
     case SDL_SYSTEM_CURSOR_SIZENESW:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "ne-resize");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "nesw-resize");
+        if (!cursor) {
+            /* only a single arrow */
+            cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "ne-resize");
+        }
         break;
     case SDL_SYSTEM_CURSOR_SIZEWE:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "e-resize");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "ew-resize");
+        if (!cursor) {
+            cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "col-resize");
+        }
         break;
     case SDL_SYSTEM_CURSOR_SIZENS:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "n-resize");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "ns-resize");
+        if (!cursor) {
+            cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "row-resize");
+        }
         break;
     case SDL_SYSTEM_CURSOR_SIZEALL:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "fleur");  // ?
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "all-scroll");
         break;
     case SDL_SYSTEM_CURSOR_NO:
         cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "not-allowed");
