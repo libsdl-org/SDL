@@ -659,12 +659,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
     } else {
         signature = device->button_mask;
     }
-    if (vendor == USB_VENDOR_APPLE) {
-        /* Note that this is an MFI controller and what subtype it is */
-        device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor, product, signature, name, 'm', subtype);
-    } else {
-        device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor, product, signature, name, 0, subtype);
-    }
+    device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor, product, signature, name, 'm', subtype);
 
     /* This will be set when the first button press of the controller is
      * detected. */
