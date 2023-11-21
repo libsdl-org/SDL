@@ -678,10 +678,14 @@ static void HIDAPI_DriverPS4_TickleBluetooth(SDL_HIDAPI_Device *device)
             SDL_HIDAPI_SendRumbleAndUnlock(device, data, sizeof(data));
         }
     } else {
+#if 0 /* The 8BitDo Zero 2 has perfect emulation of a PS4 controllers, except it
+       * only sends reports when the state changes, so we can't disconnect here.
+       */
         /* We can't even send an invalid effects packet, or it will put the controller in enhanced mode */
         if (device->num_joysticks > 0) {
             HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
         }
+#endif
     }
 }
 
