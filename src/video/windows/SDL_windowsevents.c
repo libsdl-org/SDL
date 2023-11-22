@@ -23,7 +23,6 @@
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
 
 #include "SDL_windowsvideo.h"
-#include "SDL_windowsshape.h"
 #include "SDL_vkeys.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_touch_c.h"

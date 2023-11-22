@@ -138,9 +138,6 @@
     <ClInclude Include="..\include\SDL3\SDL_scancode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\SDL3\SDL_shape.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\SDL3\SDL_stdinc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -403,9 +400,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\video\SDL_RLEaccel_c.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\video\SDL_shape_internals.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\video\SDL_sysvideo.h">
@@ -805,9 +799,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\video\SDL_RLEaccel.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\video\SDL_shape.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\video\SDL_stretch.c">

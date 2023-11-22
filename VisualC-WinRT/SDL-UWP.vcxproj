@@ -80,7 +80,6 @@
     <ClInclude Include="..\include\SDL3\SDL_rwops.h" />
     <ClInclude Include="..\include\SDL3\SDL_scancode.h" />
     <ClInclude Include="..\include\SDL3\SDL_sensor.h" />
-    <ClInclude Include="..\include\SDL3\SDL_shape.h" />
     <ClInclude Include="..\include\SDL3\SDL_stdinc.h" />
     <ClInclude Include="..\include\SDL3\SDL_surface.h" />
     <ClInclude Include="..\include\SDL3\SDL_system.h" />
@@ -180,7 +179,6 @@
     <ClInclude Include="..\src\video\SDL_pixels_c.h" />
     <ClInclude Include="..\src\video\SDL_rect_c.h" />
     <ClInclude Include="..\src\video\SDL_RLEaccel_c.h" />
-    <ClInclude Include="..\src\video\SDL_shape_internals.h" />
     <ClInclude Include="..\src\video\SDL_sysvideo.h" />
     <ClInclude Include="..\src\video\SDL_sysvidocapture.h" />
     <ClInclude Include="..\src\video\SDL_yuv_c.h" />
@@ -520,7 +518,6 @@
     <ClCompile Include="..\src\video\SDL_pixels.c" />
     <ClCompile Include="..\src\video\SDL_rect.c" />
     <ClCompile Include="..\src\video\SDL_RLEaccel.c" />
-    <ClCompile Include="..\src\video\SDL_shape.c" />
     <ClCompile Include="..\src\video\SDL_stretch.c" />
     <ClCompile Include="..\src\video\SDL_surface.c" />
     <ClCompile Include="..\src\video\SDL_video.c" />
