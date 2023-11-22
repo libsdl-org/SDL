@@ -41,6 +41,12 @@
 # ifndef alloca
 #  ifdef HAVE_ALLOCA_H
 #   include <alloca.h>
+#  elif defined(__NETBSD__)
+#   if defined(__STRICT_ANSI__)
+#    define SDL_DISABLE_ALLOCA
+#   else
+#    include <stdlib.h>
+#   endif
 #  elif defined(__GNUC__)
 #   define alloca __builtin_alloca
 #  elif defined(_MSC_VER)
