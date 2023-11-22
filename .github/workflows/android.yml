@@ -23,6 +23,7 @@ jobs:
       - uses: nttld/setup-ndk@v1
         id: setup_ndk
         with:
+          local-cache: true
           ndk-version: r21e
       - name: Build (Android.mk)
         if: ${{ matrix.platform.name == 'Android.mk' }}
