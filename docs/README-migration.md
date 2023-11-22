@@ -1084,6 +1084,10 @@ The following functions have been removed:
 * SDL_SensorGetDeviceType() - replaced with SDL_GetSensorInstanceType()
 * SDL_UnlockSensors()
 
+## SDL_shape.h
+
+This header has been removed. You can create a window with the SDL_WINDOW_TRANSPARENT flag and then render using the alpha channel to achieve a similar effect. You can see an example of this in test/testshape.c
+
 ## SDL_stdinc.h
 
 The standard C headers like stdio.h and stdlib.h are no longer included, you should include them directly in your project if you use non-SDL C runtime functions.

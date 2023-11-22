@@ -30,7 +30,6 @@
 
 #include "SDL_x11framebuffer.h"
 #include "SDL_x11pen.h"
-#include "SDL_x11shape.h"
 #include "SDL_x11touch.h"
 #include "SDL_x11video.h"
 #include "SDL_x11xfixes.h"
@@ -216,9 +215,6 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     device->SetWindowMouseRect = X11_SetWindowMouseRect;
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
-
-    device->shape_driver.CreateShaper = X11_CreateShaper;
-    device->shape_driver.SetWindowShape = X11_SetWindowShape;
 
 #ifdef SDL_VIDEO_OPENGL_GLX
     device->GL_LoadLibrary = X11_GL_LoadLibrary;

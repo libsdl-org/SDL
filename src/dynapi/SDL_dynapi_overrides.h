@@ -81,7 +81,6 @@
 #define SDL_CreateRWLock SDL_CreateRWLock_REAL
 #define SDL_CreateRenderer SDL_CreateRenderer_REAL
 #define SDL_CreateSemaphore SDL_CreateSemaphore_REAL
-#define SDL_CreateShapedWindow SDL_CreateShapedWindow_REAL
 #define SDL_CreateSoftwareRenderer SDL_CreateSoftwareRenderer_REAL
 #define SDL_CreateSurface SDL_CreateSurface_REAL
 #define SDL_CreateSurfaceFrom SDL_CreateSurfaceFrom_REAL
@@ -338,7 +337,6 @@
 #define SDL_GetSensorNonPortableType SDL_GetSensorNonPortableType_REAL
 #define SDL_GetSensorType SDL_GetSensorType_REAL
 #define SDL_GetSensors SDL_GetSensors_REAL
-#define SDL_GetShapedWindowMode SDL_GetShapedWindowMode_REAL
 #define SDL_GetSurfaceAlphaMod SDL_GetSurfaceAlphaMod_REAL
 #define SDL_GetSurfaceBlendMode SDL_GetSurfaceBlendMode_REAL
 #define SDL_GetSurfaceClipRect SDL_GetSurfaceClipRect_REAL
@@ -444,7 +442,6 @@
 #define SDL_IsDeXMode   SDL_IsDeXMode_REAL
 #define SDL_IsGamepad SDL_IsGamepad_REAL
 #define SDL_IsJoystickVirtual SDL_IsJoystickVirtual_REAL
-#define SDL_IsShapedWindow SDL_IsShapedWindow_REAL
 #define SDL_IsTablet SDL_IsTablet_REAL
 #define SDL_JoystickConnected SDL_JoystickConnected_REAL
 #define SDL_JoystickEventsEnabled SDL_JoystickEventsEnabled_REAL
@@ -635,7 +632,6 @@
 #define SDL_SetWindowOpacity SDL_SetWindowOpacity_REAL
 #define SDL_SetWindowPosition SDL_SetWindowPosition_REAL
 #define SDL_SetWindowResizable SDL_SetWindowResizable_REAL
-#define SDL_SetWindowShape SDL_SetWindowShape_REAL
 #define SDL_SetWindowSize SDL_SetWindowSize_REAL
 #define SDL_SetWindowTitle SDL_SetWindowTitle_REAL
 #define SDL_SetWindowsMessageHook   SDL_SetWindowsMessageHook_REAL

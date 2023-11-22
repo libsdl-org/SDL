@@ -31,7 +31,6 @@
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsframebuffer.h"
-#include "SDL_windowsshape.h"
 #include "SDL_windowsvulkan.h"
 
 #ifdef SDL_GDK_TEXTINPUT
@@ -210,9 +209,6 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->FlashWindow = WIN_FlashWindow;
     device->ShowWindowSystemMenu = WIN_ShowWindowSystemMenu;
     device->SetWindowFocusable = WIN_SetWindowFocusable;
-
-    device->shape_driver.CreateShaper = Win32_CreateShaper;
-    device->shape_driver.SetWindowShape = Win32_SetWindowShape;
 #endif
 
 #ifdef SDL_VIDEO_OPENGL_WGL
