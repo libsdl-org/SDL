@@ -23,5 +23,7 @@
 
 extern void PSP_InitOSKeymap(_THIS);
 extern void PSP_PumpEvents(_THIS);
+extern int PSP_EventInit(_THIS);
+extern void PSP_EventQuit(_THIS);
 
 /* end of SDL_pspevents_c.h ... */
