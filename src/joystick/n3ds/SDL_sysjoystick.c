@@ -31,7 +31,7 @@
 #define NB_BUTTONS 23
 
 /*
-  N3DS sticks values are roughly within +/-170
+  N3DS sticks values are roughly within +/-160
   which is too small to pass the jitter tolerance.
   This correction is applied to axis values
   so they fit better in SDL's value range.
