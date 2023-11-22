@@ -1642,7 +1642,7 @@ Optional Features:
                           Use gcc -MMD -MT dependency tracking [default=yes]
   --enable-libc           Use the system C library [default=yes]
   --enable-system-iconv   Use iconv() from system-installed libraries
-                          [default=yes]
+                          [default=no for windows, yes for others]
   --enable-libiconv       Prefer iconv() from libiconv, if available, over
                           libc version [default=no]
   --enable-gcc-atomics    Use gcc builtin atomics [default=yes]
@@ -18823,12 +18823,18 @@ else $as_nop
 fi
 
 
+enable_system_iconv_default=yes
+case "$host" in
+  *-*-cygwin*|*-*-mingw*)
+    enable_system_iconv_default=no
+    ;;
+esac
 # Check whether --enable-system-iconv was given.
 if test ${enable_system_iconv+y}
 then :
   enableval=$enable_system_iconv;
 else $as_nop
-  enable_system_iconv=yes
+  enable_system_iconv=$enable_system_iconv_default
 fi
 
 # Check whether --enable-libiconv was given.

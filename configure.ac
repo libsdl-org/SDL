@@ -320,9 +320,15 @@ AC_ARG_ENABLE(libc,
               , enable_libc=yes)
 
 dnl See whether we are allowed to use system iconv
+enable_system_iconv_default=yes
+case "$host" in
+  *-*-cygwin*|*-*-mingw*)
+    enable_system_iconv_default=no
+    ;;
+esac
 AC_ARG_ENABLE(system-iconv,
-[AS_HELP_STRING([--enable-system-iconv], [Use iconv() from system-installed libraries [default=yes]])],
-              , enable_system_iconv=yes)
+[AS_HELP_STRING([--enable-system-iconv], [Use iconv() from system-installed libraries [default=no for windows, yes for others]])],
+              , enable_system_iconv=$enable_system_iconv_default)
 dnl See whether we prefer libiconv over libc
 AC_ARG_ENABLE(libiconv,
 [AS_HELP_STRING([--enable-libiconv], [Prefer iconv() from libiconv, if available, over libc version [default=no]])],
