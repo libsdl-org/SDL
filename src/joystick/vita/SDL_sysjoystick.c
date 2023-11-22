@@ -151,7 +151,7 @@ void VITA_JoystickDetect()
 /* Function to perform the mapping from device index to the instance id for this index */
 SDL_JoystickID VITA_JoystickGetDeviceInstanceID(int device_index)
 {
-    return device_index + 1;
+    return device_index;
 }
 
 const char *VITA_JoystickGetDeviceName(int index)
