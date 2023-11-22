@@ -27,15 +27,14 @@
 DECLSPEC int
 SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
 {
-    char empty[1] = {0};
-    char* argvdummy[2] = { empty, NULL };
-
     (void)reserved;
 
     if(!argv)
     {
-        argc = 0;
         /* make sure argv isn't NULL, in case some user code doesn't like that */
+        static char dummyargv0[] = { 'S', 'D', 'L', '_', 'a', 'p', 'p', '\0' };
+        static char* argvdummy[2] = { dummyargv0, NULL };
+        argc = 1;
         argv = argvdummy;
     }
 
