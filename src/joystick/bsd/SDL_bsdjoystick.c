@@ -69,7 +69,7 @@
 #include <sys/joystick.h>
 #endif
 
-#if SDL_HAVE_MACHINE_JOYSTICK_H
+#ifdef SDL_HAVE_MACHINE_JOYSTICK_H
 #include <machine/joystick.h>
 #endif
 
