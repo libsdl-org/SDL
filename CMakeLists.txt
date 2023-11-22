@@ -1646,6 +1646,11 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
       list(APPEND SOURCE_FILES "${SDL2_SOURCE_DIR}/src/core/freebsd/SDL_evdev_kbd_freebsd.c")
     endif()
 
+    if(HAVE_INPUT_WSCONS)
+      list(APPEND SOURCE_FILES "${SDL2_SOURCE_DIR}/src/core/openbsd/SDL_wscons_kbd.c")
+      list(APPEND SOURCE_FILES "${SDL2_SOURCE_DIR}/src/core/openbsd/SDL_wscons_mouse.c")
+    endif()
+
     # Always compiled for Linux, unconditionally:
     list(APPEND SOURCE_FILES "${SDL2_SOURCE_DIR}/src/core/linux/SDL_evdev_capabilities.c")
     list(APPEND SOURCE_FILES "${SDL2_SOURCE_DIR}/src/core/linux/SDL_threadprio.c")
