@@ -44,9 +44,6 @@ static SDL_bool IME_IsTextInputShown(SDL_VideoData *videodata);
 #ifndef MAPVK_VSC_TO_VK
 #define MAPVK_VSC_TO_VK 1
 #endif
-#ifndef MAPVK_VK_TO_CHAR
-#define MAPVK_VK_TO_CHAR 2
-#endif
 
 /* Alphabetic scancodes for PC keyboards */
 void WIN_InitKeyboard(SDL_VideoDevice *_this)
@@ -120,6 +117,7 @@ void WIN_UpdateKeymap(SDL_bool send_event)
     SDL_Keycode keymap[SDL_NUM_SCANCODES];
 
     SDL_GetDefaultKeymap(keymap);
+    WIN_ResetDeadKeys();
 
     for (i = 0; i < SDL_arraysize(windows_scancode_table); i++) {
         int vk;
@@ -130,20 +128,44 @@ void WIN_UpdateKeymap(SDL_bool send_event)
         }
 
         /* If this key is one of the non-mappable keys, ignore it */
-        /* Uncomment the second part re-enable the behavior of not mapping the "`"(grave) key to the users actual keyboard layout */
-        if ((keymap[scancode] & SDLK_SCANCODE_MASK) /*|| scancode == SDL_SCANCODE_GRAVE*/) {
+        /* Uncomment the third part to re-enable the behavior of not mapping the "`"(grave) key to the users actual keyboard layout */
+        if ((keymap[scancode] & SDLK_SCANCODE_MASK) || scancode == SDL_SCANCODE_DELETE /*|| scancode == SDL_SCANCODE_GRAVE*/) {
             continue;
         }
 
         vk = MapVirtualKey(i, MAPVK_VSC_TO_VK);
-        if (vk) {
-            int ch = (MapVirtualKey(vk, MAPVK_VK_TO_CHAR) & 0x7FFF);
+        if (!vk) {
+            continue;
+        }
+
+        /* Always map VK_A..VK_Z to SDLK_a..SDLK_z codes.
+         * This was behavior with MapVirtualKey(MAPVK_VK_TO_CHAR). */
+        //if (vk >= 'A' && vk <= 'Z') {
+        //    keymap[scancode] = SDLK_a + (vk - 'A');
+        //} else {
+        {
+            BYTE keyboardState[256] = { 0 };
+            WCHAR buffer[16] = { 0 };
+            Uint32 *ch = 0;
+            int result = ToUnicode(vk, i, keyboardState, buffer, 16, 0);
+            buffer[SDL_abs(result) + 1] = 0;
+
+            /* Convert UTF-16 to UTF-32 code points */
+            ch = (Uint32 *)SDL_iconv_string("UTF-32LE", "UTF-16LE", (const char *)buffer, (SDL_abs(result) + 1) * sizeof(WCHAR));
             if (ch) {
-                if (ch >= 'A' && ch <= 'Z') {
-                    keymap[scancode] = SDLK_a + (ch - 'A');
+                if (ch[0] != 0 && ch[1] != 0) {
+                    /* We have several UTF-32 code points on a single key press.
+                     * Cannot fit into single SDL_Keycode in keymap.
+                     * See https://kbdlayout.info/features/ligatures */
+                    keymap[scancode] = 0xfffd; /* U+FFFD REPLACEMENT CHARACTER */
                 } else {
-                    keymap[scancode] = ch;
+                    keymap[scancode] = ch[0];
                 }
+                SDL_free(ch);
+            }
+
+            if (result < 0) {
+                WIN_ResetDeadKeys();
             }
         }
     }
@@ -186,7 +208,7 @@ void WIN_ResetDeadKeys()
     }
 
     for (i = 0; i < 5; i++) {
-        result = ToUnicode(keycode, scancode, keyboardState, (LPWSTR)buffer, 16, 0);
+        result = ToUnicode(keycode, scancode, keyboardState, buffer, 16, 0);
         if (result > 0) {
             /* success */
             return;
