@@ -583,7 +583,7 @@ if(SDL_INSTALL_TESTS)
     )
 endif()
 
-if(ANDROID AND TARGET SDL3-jar)
+if(ANDROID AND TARGET SDL3::Jar)
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../cmake/android")
     find_package(SdlAndroid MODULE)
     if(SdlAndroid_FOUND)
@@ -640,14 +640,14 @@ if(ANDROID AND TARGET SDL3-jar)
                 COMMAND ${CMAKE_COMMAND} -E make_directory "${classes_path}"
                 COMMAND ${Java_JAVAC_EXECUTABLE}
                     -source 1.8 -target 1.8
-                    -bootclasspath "$<TARGET_PROPERTY:SDL3-jar,OUTPUT>"
+                    -bootclasspath "$<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>"
                     "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java"
                     "${JAVA_PACKAGE_DIR}/SDLTestActivity.java"
                     $<TARGET_PROPERTY:${TEST}-apk-linked,JAVA_R>
-                    -cp "$<TARGET_PROPERTY:SDL3-jar,OUTPUT>:${path_android_jar}"
+                    -cp "$<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>:${SDL_ANDROID_PLATFORM_ANDROID_JAR}"
                     -d "${classes_path}"
                 COMMAND ${Java_JAR_EXECUTABLE} cf "${OUT_JAR}" -C "${classes_path}" .
-                DEPENDS $<TARGET_PROPERTY:${TEST}-apk-linked,OUTPUTS> "$<TARGET_PROPERTY:SDL3-jar,OUTPUT>" "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java"
+                DEPENDS $<TARGET_PROPERTY:${TEST}-apk-linked,OUTPUTS> "$<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>" "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java"
             )
             add_custom_target(${TEST}-jar DEPENDS "${OUT_JAR}")
             set_property(TARGET ${TEST}-jar PROPERTY OUTPUT "${OUT_JAR}")
@@ -663,10 +663,10 @@ if(ANDROID AND TARGET SDL3-jar)
                 OUTPUT "${classes_dex}"
                 COMMAND SdlAndroid::d8
                     $<TARGET_PROPERTY:${TEST}-jar,OUTPUT>
-                    $<TARGET_PROPERTY:SDL3-jar,OUTPUT>
-                    --lib "${path_android_jar}"
+                    $<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>
+                    --lib "${SDL_ANDROID_PLATFORM_ANDROID_JAR}"
                     --output "${dexworkdir}"
-                DEPENDS $<TARGET_PROPERTY:${TEST}-jar,OUTPUT> $<TARGET_PROPERTY:SDL3-jar,OUTPUT>
+                DEPENDS $<TARGET_PROPERTY:${TEST}-jar,OUTPUT> $<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>
             )
             add_custom_target(${TEST}-dex DEPENDS "${classes_dex}")
             set_property(TARGET ${TEST}-dex PROPERTY OUTPUT "${classes_dex}")

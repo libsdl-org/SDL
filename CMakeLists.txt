@@ -1350,6 +1350,10 @@ if(ANDROID)
         VERSION "${SDL3_VERSION}"
       )
       set_property(TARGET SDL3-jar PROPERTY OUTPUT "${SDL3_BINARY_DIR}/SDL3-${SDL3_VERSION}.jar")
+      add_library(SDL3__Jar INTERFACE)
+      add_library(SDL3::Jar ALIAS SDL3__Jar)
+      get_property(sdl3_jar_location TARGET SDL3-jar PROPERTY JAR_FILE)
+      set_property(TARGET SDL3__Jar PROPERTY JAR_FILE "${sdl3_jar_location}")
       set(javasourcesjar "${SDL3_BINARY_DIR}/SDL3-${SDL3_VERSION}-sources.jar")
       string(REGEX REPLACE "${android_java_sources_root}/" "" sdl_relative_java_sources "${SDL_JAVA_SOURCES}")
       add_custom_command(
@@ -3292,6 +3296,7 @@ sdl_cmake_config_find_pkg_config_commands(SDL_TEST_FIND_PKG_CONFIG_COMMANDS
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(cmake/SDL3Config.cmake.in SDL3Config.cmake
+  NO_SET_AND_CHECK_MACRO
   PATH_VARS CMAKE_INSTALL_PREFIX
   INSTALL_DESTINATION "${SDL_SDL_INSTALL_CMAKEDIR}"
 )
@@ -3421,10 +3426,19 @@ if(NOT SDL_DISABLE_INSTALL)
   endif()
 
   if(ANDROID)
-    set(SDL_INSTALL_JAVADIR "${CMAKE_INSTALL_DATAROOTDIR}/java" CACHE PATH "Path where to install java clases + java sources")
     if(TARGET SDL3-jar)
-      install(FILES "${SDL3_BINARY_DIR}/SDL3.jar"  "${SDL3_BINARY_DIR}/SDL3-${SDL3_VERSION}.jar"
+      set(SDL_INSTALL_JAVADIR "${CMAKE_INSTALL_DATAROOTDIR}/java" CACHE PATH "Path where to install java clases + java sources")
+      install(FILES $<TARGET_PROPERTY:SDL3-jar,INSTALL_FILES>
         DESTINATION "${SDL_INSTALL_JAVADIR}/SDL3")
+      configure_package_config_file(cmake/SDL3jarTargets.cmake.in SDL3jarTargets.cmake
+        INSTALL_DESTINATION "${SDL_SDL_INSTALL_CMAKEDIR}"
+        PATH_VARS SDL_INSTALL_JAVADIR
+        NO_CHECK_REQUIRED_COMPONENTS_MACRO
+        INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}"
+      )
+      install(FILES "${CMAKE_CURRENT_BINARY_DIR}/SDL3jarTargets.cmake"
+        DESTINATION "${SDL_SDL_INSTALL_CMAKEDIR}"
+      )
     endif()
     if(TARGET SDL3-javasources)
       install(FILES  "${SDL3_BINARY_DIR}/SDL3-${SDL3_VERSION}-sources.jar"

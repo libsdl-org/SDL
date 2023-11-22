@@ -48,6 +48,11 @@ else()
   endif()
 endif()
 
+if(ANDROID AND EXISTS "${CMAKE_CURRENT_LIST_DIR}/SDL3jarTargets.cmake")
+  include("${CMAKE_CURRENT_LIST_DIR}/SDL3jarTargets.cmake")
+  set(SDL3_Jar_FOUND TRUE)
+endif()
+
 if(SDL3_SDL3-shared_FOUND OR SDL3_SDL3-static_FOUND)
   set(SDL3_SDL3_FOUND TRUE)
 endif()

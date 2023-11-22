@@ -93,4 +93,8 @@ find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3)
 add_executable(gui-whatever WIN32 main_gui.c)
 target_link_libraries(gui-whatever PRIVATE SDL3::SDL3)
 
+if(ANDROID)
+    find_package(SDL3 REQUIRED CONFIG COMPONENTS Jar)
+endif()
+
 feature_summary(WHAT ALL)
