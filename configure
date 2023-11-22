@@ -845,6 +845,7 @@ enable_assertions
 enable_dependency_tracking
 enable_libc
 enable_system_iconv
+enable_libiconv
 enable_gcc_atomics
 enable_atomic
 enable_audio
@@ -1642,6 +1643,8 @@ Optional Features:
   --enable-libc           Use the system C library [default=yes]
   --enable-system-iconv   Use iconv() from system-installed libraries
                           [default=yes]
+  --enable-libiconv       Prefer iconv() from libiconv, if available, over
+                          libc version [default=no]
   --enable-gcc-atomics    Use gcc builtin atomics [default=yes]
   --enable-atomic         Enable the atomic operations subsystem [default=yes]
   --enable-audio          Enable the audio subsystem [default=yes]
@@ -18828,6 +18831,14 @@ else $as_nop
   enable_system_iconv=yes
 fi
 
+# Check whether --enable-libiconv was given.
+if test ${enable_libiconv+y}
+then :
+  enableval=$enable_libiconv;
+else $as_nop
+  enable_libiconv=no
+fi
+
 
 if test x$enable_libc = xyes; then
 
@@ -20043,53 +20054,92 @@ fi
 
 
     if test x$enable_system_iconv = xyes; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for iconv_open in -liconv" >&5
-printf %s "checking for iconv_open in -liconv... " >&6; }
-if test ${ac_cv_lib_iconv_iconv_open+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-liconv  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for iconv in libc" >&5
+printf %s "checking for iconv in libc... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-char iconv_open ();
+         #define LIBICONV_PLUG 1 /* in case libiconv header is in include path */
+         #include <stddef.h>
+         #include <iconv.h>
+
 int
 main (void)
 {
-return iconv_open ();
+
+         iconv_open(NULL,NULL);
+
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
-  ac_cv_lib_iconv_iconv_open=yes
+  have_libc_iconv=yes
 else $as_nop
-  ac_cv_lib_iconv_iconv_open=no
+  have_libc_iconv=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_iconv_iconv_open" >&5
-printf "%s\n" "$ac_cv_lib_iconv_iconv_open" >&6; }
-if test "x$ac_cv_lib_iconv_iconv_open" = xyes
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_libc_iconv" >&5
+printf "%s\n" "$have_libc_iconv" >&6; }
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for iconv in libiconv" >&5
+printf %s "checking for iconv in libiconv... " >&6; }
+        save_LIBS="$LIBS"
+        LIBS="$LIBS -liconv"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+         #include <stddef.h>
+         #include <iconv.h>
+
+int
+main (void)
+{
+
+         iconv_open(NULL,NULL);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
 then :
-  LIBS="$LIBS -liconv"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"
+  have_libiconv=yes
+else $as_nop
+  have_libiconv=no
 fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        LIBS="$save_LIBS"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_libiconv" >&5
+printf "%s\n" "$have_libiconv" >&6; }
 
-        ac_fn_c_check_func "$LINENO" "iconv" "ac_cv_func_iconv"
-if test "x$ac_cv_func_iconv" = xyes
-then :
-  printf "%s\n" "#define HAVE_ICONV 1" >>confdefs.h
+        if test x$have_libc_iconv = xyes || test x$have_libiconv = xyes; then
 
-fi
+printf "%s\n" "#define HAVE_ICONV 1" >>confdefs.h
 
+
+           if test x$have_libiconv = xyes; then
+              if test x$have_libc_iconv != xyes; then
+                 use_libiconv=yes
+              elif test x$enable_libiconv = xyes; then
+                 use_libiconv=yes
+              fi
+           fi
+           if test x$use_libiconv = xyes; then
+              { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: -- Using iconv() from libiconv" >&5
+printf "%s\n" "-- Using iconv() from libiconv" >&6; }
+
+printf "%s\n" "#define SDL_USE_LIBICONV 1" >>confdefs.h
+
+              EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"
+           else
+              { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: -- Using iconv() from libc" >&5
+printf "%s\n" "-- Using iconv() from libc" >&6; }
+           fi
+        fi
     fi
 
     ac_fn_c_check_member "$LINENO" "struct sigaction" "sa_sigaction" "ac_cv_member_struct_sigaction_sa_sigaction" "#include <signal.h>
@@ -27629,6 +27679,7 @@ if test "x$ac_cv_header_xinput_h" = xyes
 then :
   have_xinput=yes
 fi
+
         if test x$have_xinput = xyes; then
 
 printf "%s\n" "#define HAVE_XINPUT_H 1" >>confdefs.h

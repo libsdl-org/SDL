@@ -421,6 +421,7 @@ dep_option(SDL_DIRECTFB_SHARED     "Dynamically load directfb support" ON "SDL_D
 set_option(SDL_DUMMYVIDEO          "Use dummy video driver" ON)
 dep_option(SDL_IBUS                "Enable IBus support" ON ${UNIX_SYS} OFF)
 set_option(SDL_SYSTEM_ICONV        "Use iconv() from system-installed libraries" ON)
+set_option(SDL_LIBICONV            "Prefer iconv() from libiconv, if available, over libc version" OFF)
 set_option(SDL_OPENGL              "Include OpenGL support" ON)
 set_option(SDL_OPENGLES            "Include OpenGL ES support" ON)
 set_option(SDL_PTHREADS            "Use POSIX threads for multi-threading" ${SDL_PTHREADS_ENABLED_BY_DEFAULT})
@@ -1123,16 +1124,31 @@ if(SDL_LIBC)
     endif()
 
     if(SDL_SYSTEM_ICONV)
-      check_library_exists(iconv iconv_open "" HAVE_LIBICONV)
-      if(HAVE_LIBICONV)
-        list(APPEND EXTRA_LIBS iconv)
+      check_c_source_compiles("
+        #define LIBICONV_PLUG 1 /* in case libiconv header is in include path */
+        #include <stddef.h>
+        #include <iconv.h>
+        int main(int argc, char **argv) {
+            return iconv_open(NULL,NULL);
+        }" ICONV_IN_LIBC)
+
+      cmake_push_check_state()
+      list(APPEND CMAKE_REQUIRED_LIBRARIES iconv)
+      check_c_source_compiles("
+        #include <stddef.h>
+        #include <iconv.h>
+        int main(int argc, char **argv) {
+            return iconv_open(NULL,NULL);
+        }" ICONV_IN_LIBICONV)
+      cmake_pop_check_state()
+
+      if(ICONV_IN_LIBC OR ICONV_IN_LIBICONV)
         set(HAVE_ICONV 1)
         set(HAVE_SYSTEM_ICONV TRUE)
-      else()
-        check_library_exists(c iconv_open "" HAVE_BUILTIN_ICONV)
-        if(HAVE_BUILTIN_ICONV)
-          set(HAVE_ICONV 1)
-          set(HAVE_SYSTEM_ICONV TRUE)
+        if(ICONV_IN_LIBICONV AND (SDL_LIBICONV OR (NOT ICONV_IN_LIBC)))
+          set(SDL_USE_LIBICONV 1)
+          set(HAVE_LIBICONV TRUE)
+          list(APPEND EXTRA_LIBS iconv)
         endif()
       endif()
     endif()

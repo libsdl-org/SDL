@@ -200,6 +200,7 @@
 #cmakedefine HAVE_GETPAGESIZE 1
 #cmakedefine HAVE_MPROTECT 1
 #cmakedefine HAVE_ICONV 1
+#cmakedefine SDL_USE_LIBICONV 1
 #cmakedefine HAVE_PTHREAD_SETNAME_NP 1
 #cmakedefine HAVE_PTHREAD_SET_NAME_NP 1
 #cmakedefine HAVE_SEM_TIMEDWAIT 1
@@ -240,7 +241,7 @@
 
 #cmakedefine HAVE_LIBUDEV_H 1
 #cmakedefine HAVE_LIBSAMPLERATE_H 1
-#cmakedefine HAVE_LIBDECOR_H  1
+#cmakedefine HAVE_LIBDECOR_H 1
 
 #cmakedefine HAVE_D3D_H @HAVE_D3D_H@
 #cmakedefine HAVE_D3D11_H @HAVE_D3D11_H@
@@ -524,7 +525,7 @@
 #cmakedefine SDL_ARM_NEON_BLITTERS @SDL_ARM_NEON_BLITTERS@
 
 /* Whether SDL_DYNAMIC_API needs dlopen */
-#cmakedefine DYNAPI_NEEDS_DLOPEN  @DYNAPI_NEEDS_DLOPEN@
+#cmakedefine DYNAPI_NEEDS_DLOPEN @DYNAPI_NEEDS_DLOPEN@
 
 /* Enable dynamic libsamplerate support */
 #cmakedefine SDL_LIBSAMPLERATE_DYNAMIC @SDL_LIBSAMPLERATE_DYNAMIC@

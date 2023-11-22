@@ -319,10 +319,14 @@ AC_ARG_ENABLE(libc,
 [AS_HELP_STRING([--enable-libc], [Use the system C library [default=yes]])],
               , enable_libc=yes)
 
-dnl See whether we are allowed to use libiconv
+dnl See whether we are allowed to use system iconv
 AC_ARG_ENABLE(system-iconv,
 [AS_HELP_STRING([--enable-system-iconv], [Use iconv() from system-installed libraries [default=yes]])],
               , enable_system_iconv=yes)
+dnl See whether we prefer libiconv over libc
+AC_ARG_ENABLE(libiconv,
+[AS_HELP_STRING([--enable-libiconv], [Prefer iconv() from libiconv, if available, over libc version [default=no]])],
+              , enable_libiconv=no)
 
 if test x$enable_libc = xyes; then
     AC_DEFINE(HAVE_LIBC, 1, [ ])
@@ -355,8 +359,46 @@ dnl Checks for library functions.
     AC_CHECK_FUNCS(acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf copysign copysignf cos cosf exp expf fabs fabsf floor floorf trunc truncf fmod fmodf log logf log10 log10f lround lroundf pow powf round roundf scalbn scalbnf sin sinf sqrt sqrtf tan tanf)
 
     if test x$enable_system_iconv = xyes; then
-        AC_CHECK_LIB(iconv, iconv_open, [LIBS="$LIBS -liconv"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"])
-        AC_CHECK_FUNCS(iconv)
+        AC_MSG_CHECKING(for iconv in libc)
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+         #define LIBICONV_PLUG 1 /* in case libiconv header is in include path */
+         #include <stddef.h>
+         #include <iconv.h>
+        ]],[[
+         iconv_open(NULL,NULL);
+        ]])], [have_libc_iconv=yes],[have_libc_iconv=no])
+        AC_MSG_RESULT($have_libc_iconv)
+
+        AC_MSG_CHECKING(for iconv in libiconv)
+        save_LIBS="$LIBS"
+        LIBS="$LIBS -liconv"
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+         #include <stddef.h>
+         #include <iconv.h>
+        ]],[[
+         iconv_open(NULL,NULL);
+        ]])], [have_libiconv=yes],[have_libiconv=no])
+        LIBS="$save_LIBS"
+        AC_MSG_RESULT($have_libiconv)
+
+        if test x$have_libc_iconv = xyes || test x$have_libiconv = xyes; then
+           AC_DEFINE(HAVE_ICONV,1,[ ])
+
+           if test x$have_libiconv = xyes; then
+              if test x$have_libc_iconv != xyes; then
+                 use_libiconv=yes
+              elif test x$enable_libiconv = xyes; then
+                 use_libiconv=yes
+              fi
+           fi
+           if test x$use_libiconv = xyes; then
+              AC_MSG_RESULT([-- Using iconv() from libiconv])
+              AC_DEFINE(SDL_USE_LIBICONV,1,[ ])
+              EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"
+           else
+              AC_MSG_RESULT([-- Using iconv() from libc])
+           fi
+        fi
     fi
 
     AC_CHECK_MEMBER(struct sigaction.sa_sigaction,[AC_DEFINE([HAVE_SA_SIGACTION], 1, [ ])], ,[#include <signal.h>])
