@@ -1058,6 +1058,7 @@ int SDL_PenModifyForWacomID(SDL_Pen *pen, Uint32 wacom_devicetype_id, Uint32 *ax
     }
 
     if (!name) {
+        *axis_flags = 0;
         return SDL_FALSE;
     }
 
