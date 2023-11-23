@@ -68,8 +68,9 @@ function(hidapi_configure_pc PC_IN_FILE)
     get_filename_component(PC_IN_FILENAME "${PC_IN_FILE}" NAME_WE)
     set(PC_FILE "${CMAKE_CURRENT_BINARY_DIR}/pc/${PC_IN_FILENAME}.pc")
     configure_file("${PC_IN_FILE}" "${PC_FILE}" @ONLY)
-
-    install(FILES "${PC_FILE}" DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig/")
+    if(HIDAPI_INSTALL_TARGETS)
+        install(FILES "${PC_FILE}" DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig/")
+    endif()
 endfunction()
 
 # The library
