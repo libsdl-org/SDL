@@ -257,7 +257,7 @@ typedef uint64_t Uint64;
 #define SDL_PRIs64 PRIs64
 #elif defined(__WIN32__) || defined(__GDK__)
 #define SDL_PRIs64 "I64d"
-#elif defined(__LINUX__) && defined(__LP64__)
+#elif defined(__LP64__) && !defined(__APPLE__)
 #define SDL_PRIs64 "ld"
 #else
 #define SDL_PRIs64 "lld"
@@ -268,7 +268,7 @@ typedef uint64_t Uint64;
 #define SDL_PRIu64 PRIu64
 #elif defined(__WIN32__) || defined(__GDK__)
 #define SDL_PRIu64 "I64u"
-#elif defined(__LINUX__) && defined(__LP64__)
+#elif defined(__LP64__) && !defined(__APPLE__)
 #define SDL_PRIu64 "lu"
 #else
 #define SDL_PRIu64 "llu"
@@ -279,7 +279,7 @@ typedef uint64_t Uint64;
 #define SDL_PRIx64 PRIx64
 #elif defined(__WIN32__) || defined(__GDK__)
 #define SDL_PRIx64 "I64x"
-#elif defined(__LINUX__) && defined(__LP64__)
+#elif defined(__LP64__) && !defined(__APPLE__)
 #define SDL_PRIx64 "lx"
 #else
 #define SDL_PRIx64 "llx"
@@ -290,7 +290,7 @@ typedef uint64_t Uint64;
 #define SDL_PRIX64 PRIX64
 #elif defined(__WIN32__) || defined(__GDK__)
 #define SDL_PRIX64 "I64X"
-#elif defined(__LINUX__) && defined(__LP64__)
+#elif defined(__LP64__) && !defined(__APPLE__)
 #define SDL_PRIX64 "lX"
 #else
 #define SDL_PRIX64 "llX"
