@@ -1701,7 +1701,7 @@ static int GL_SetVSync(SDL_Renderer *renderer, const int vsync)
         return retval;
     }
 
-    if (interval > 0) {
+    if (interval != 0) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     } else {
         renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
@@ -1850,10 +1850,8 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
         int interval = 0;
         if (SDL_GL_GetSwapInterval(&interval) < 0) {
             /* Error */
-        } else {
-            if (interval > 0) {
-                renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-            }
+        } else if (interval != 0) {
+            renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
         }
     }
 
