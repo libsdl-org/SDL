@@ -241,6 +241,8 @@ int X11_GL_LoadLibrary(_THIS, const char *path)
         return SDL_SetError("GLX is not supported");
     }
 
+    _this->gl_data->swap_interval_tear_behavior = SDL_SWAPINTERVALTEAR_UNTESTED;
+
     /* Initialize extensions */
     /* See lengthy comment about the inc/dec in
        ../windows/SDL_windowsopengl.c. */
@@ -889,7 +891,6 @@ int X11_GL_SetSwapInterval(_THIS, int interval)
         int currentInterval = X11_GL_GetSwapInterval(_this);
         _this->gl_data->glXSwapIntervalEXT(display, drawable, currentInterval);
         _this->gl_data->glXSwapIntervalEXT(display, drawable, interval);
-
         status = 0;
         swapinterval = interval;
     } else if (_this->gl_data->glXSwapIntervalMESA) {
@@ -912,6 +913,53 @@ int X11_GL_SetSwapInterval(_THIS, int interval)
     return status;
 }
 
+static SDL_GLSwapIntervalTearBehavior CheckSwapIntervalTearBehavior(SDL_VideoDevice *_this, Window drawable, unsigned int current_val, unsigned int current_allow_late)
+{
+    /* Mesa and Nvidia interpret GLX_EXT_swap_control_tear differently, as of this writing, so
+        figure out which behavior we have.
+       Technical details: https://github.com/libsdl-org/SDL/issues/8004#issuecomment-1819603282 */
+    if (_this->gl_data->swap_interval_tear_behavior == SDL_SWAPINTERVALTEAR_UNTESTED) {
+        if (!_this->gl_data->HAS_GLX_EXT_swap_control_tear) {
+            _this->gl_data->swap_interval_tear_behavior = SDL_SWAPINTERVALTEAR_UNKNOWN;
+        } else {
+            Display *display = ((SDL_VideoData *)_this->driverdata)->display;
+            unsigned int allow_late_swap_tearing = 22;
+            int original_val = (int) current_val;
+
+            /*
+             * This is a workaround for a bug in NVIDIA drivers. Bug has been reported
+             * and will be fixed in a future release (probably 319.xx).
+             *
+             * There's a bug where glXSetSwapIntervalEXT ignores updates because
+             * it has the wrong value cached. To work around it, we just run a no-op
+             * update to the current value.
+             */
+            _this->gl_data->glXSwapIntervalEXT(display, drawable, current_val);
+
+            /* set it to no swap interval and see how it affects GLX_LATE_SWAPS_TEAR_EXT... */
+            _this->gl_data->glXSwapIntervalEXT(display, drawable, 0);
+            _this->gl_data->glXQueryDrawable(display, drawable, GLX_LATE_SWAPS_TEAR_EXT, &allow_late_swap_tearing);
+
+            if (allow_late_swap_tearing == 0) { /* GLX_LATE_SWAPS_TEAR_EXT says whether late swapping is currently in use */
+                _this->gl_data->swap_interval_tear_behavior = SDL_SWAPINTERVALTEAR_NVIDIA;
+                if (current_allow_late) {
+                    original_val = -original_val;
+                }
+            } else if (allow_late_swap_tearing == 1) {  /* GLX_LATE_SWAPS_TEAR_EXT says whether the Drawable can use late swapping at all */
+                _this->gl_data->swap_interval_tear_behavior = SDL_SWAPINTERVALTEAR_MESA;
+            } else {  /* unexpected outcome! */
+                _this->gl_data->swap_interval_tear_behavior = SDL_SWAPINTERVALTEAR_UNKNOWN;
+            }
+
+            /* set us back to what it was originally... */
+            _this->gl_data->glXSwapIntervalEXT(display, drawable, original_val);
+        }
+    }
+
+    return _this->gl_data->swap_interval_tear_behavior;
+}
+
+
 int X11_GL_GetSwapInterval(_THIS)
 {
     if (_this->gl_data->glXSwapIntervalEXT) {
@@ -924,6 +972,7 @@ int X11_GL_GetSwapInterval(_THIS)
         unsigned int interval = 0;
 
         if (_this->gl_data->HAS_GLX_EXT_swap_control_tear) {
+            allow_late_swap_tearing = 22;  /* set this to nonsense. */
             _this->gl_data->glXQueryDrawable(display, drawable,
                                              GLX_LATE_SWAPS_TEAR_EXT,
                                              &allow_late_swap_tearing);
@@ -932,11 +981,19 @@ int X11_GL_GetSwapInterval(_THIS)
         _this->gl_data->glXQueryDrawable(display, drawable,
                                          GLX_SWAP_INTERVAL_EXT, &interval);
 
-        if ((allow_late_swap_tearing) && (interval > 0)) {
-            return -((int)interval);
+        switch (CheckSwapIntervalTearBehavior(_this, drawable, interval, allow_late_swap_tearing)) {
+            case SDL_SWAPINTERVALTEAR_MESA:
+                return (int)interval;  /* unsigned int cast to signed that generates negative value if necessary. */
+
+            case SDL_SWAPINTERVALTEAR_NVIDIA:
+            default:
+                if ((allow_late_swap_tearing) && (interval > 0)) {
+                    return -((int)interval);
+                }
+                return (int)interval;
         }
 
-        return (int)interval;
+        return (int)interval;  /* shouldn't hit this, but just in case. */
     } else if (_this->gl_data->glXGetSwapIntervalMESA) {
         return _this->gl_data->glXGetSwapIntervalMESA();
     } else {

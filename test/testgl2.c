@@ -205,6 +205,11 @@ Render()
     ctx.glRotatef(5.0, 1.0, 1.0, 1.0);
 }
 
+static void LogSwapInterval(void)
+{
+    SDL_Log("Swap Interval : %d\n", SDL_GL_GetSwapInterval());
+}
+
 int main(int argc, char *argv[])
 {
     int fsaa, accel;
@@ -300,7 +305,9 @@ int main(int argc, char *argv[])
 
     SDL_GetCurrentDisplayMode(0, &mode);
     SDL_Log("Screen BPP    : %" SDL_PRIu32 "\n", SDL_BITSPERPIXEL(mode.format));
-    SDL_Log("Swap Interval : %d\n", SDL_GL_GetSwapInterval());
+
+    LogSwapInterval();
+
     SDL_GetWindowSize(state->windows[0], &dw, &dh);
     SDL_Log("Window Size   : %d,%d\n", dw, dh);
     SDL_GL_GetDrawableSize(state->windows[0], &dw, &dh);
@@ -408,6 +415,7 @@ int main(int argc, char *argv[])
             SDL_GL_MakeCurrent(state->windows[i], context);
             if (update_swap_interval) {
                 SDL_GL_SetSwapInterval(swap_interval);
+                LogSwapInterval();
             }
             SDL_GL_GetDrawableSize(state->windows[i], &w, &h);
             ctx.glViewport(0, 0, w, h);

@@ -27,6 +27,14 @@
 #include "SDL_opengl.h"
 #include <GL/glx.h>
 
+typedef enum SDL_GLSwapIntervalTearBehavior
+{
+    SDL_SWAPINTERVALTEAR_UNTESTED,
+    SDL_SWAPINTERVALTEAR_UNKNOWN,
+    SDL_SWAPINTERVALTEAR_MESA,
+    SDL_SWAPINTERVALTEAR_NVIDIA
+} SDL_GLSwapIntervalTearBehavior;
+
 struct SDL_GLDriverData
 {
     int errorBase, eventBase;
@@ -47,6 +55,8 @@ struct SDL_GLDriverData
         int major;
         int minor;
     } es_profile_max_supported_version;
+
+    SDL_GLSwapIntervalTearBehavior swap_interval_tear_behavior;
 
     Bool (*glXQueryExtension)(Display *, int *, int *);
     void *(*glXGetProcAddress)(const GLubyte *);
