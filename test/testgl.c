@@ -199,6 +199,17 @@ static void Render(void)
     ctx.glRotatef(5.0, 1.0, 1.0, 1.0);
 }
 
+static void LogSwapInterval(void)
+{
+    int interval = 0;
+    const int ret_interval = SDL_GL_GetSwapInterval(&interval);
+    if (ret_interval < 0) {
+       SDL_Log("Swap Interval : %d error: %s\n", interval, SDL_GetError());
+    } else {
+       SDL_Log("Swap Interval : %d\n", interval);
+    }
+}
+
 int main(int argc, char *argv[])
 {
     int fsaa, accel;
@@ -211,8 +222,6 @@ int main(int argc, char *argv[])
     int status;
     int dw, dh;
     int swap_interval = 0;
-    int interval = 0;
-    int ret_interval = 0;
 
     /* Initialize parameters */
     fsaa = 0;
@@ -304,12 +313,7 @@ int main(int argc, char *argv[])
         SDL_Log("Screen BPP    : %" SDL_PRIu32 "\n", SDL_BITSPERPIXEL(mode->format));
     }
 
-    ret_interval = SDL_GL_GetSwapInterval(&interval);
-    if (ret_interval < 0) {
-       SDL_Log("Swap Interval : %d error: %s\n", interval, SDL_GetError());
-    } else {
-       SDL_Log("Swap Interval : %d\n", interval);
-    }
+    LogSwapInterval();
 
     SDL_GetWindowSize(state->windows[0], &dw, &dh);
     SDL_Log("Window Size   : %d,%d\n", dw, dh);
@@ -421,6 +425,7 @@ int main(int argc, char *argv[])
             SDL_GL_MakeCurrent(state->windows[i], context);
             if (update_swap_interval) {
                 SDL_GL_SetSwapInterval(swap_interval);
+                LogSwapInterval();
             }
             SDL_GetWindowSizeInPixels(state->windows[i], &w, &h);
             ctx.glViewport(0, 0, w, h);
