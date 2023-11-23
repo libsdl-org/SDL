@@ -295,6 +295,7 @@ dep_option(SDL_LASX                "Use LASX assembly routines" ON "SDL_ASSEMBLY
 
 set_option(SDL_LIBC                "Use the system C library" ${SDL_LIBC_DEFAULT})
 set_option(SDL_SYSTEM_ICONV        "Use iconv() from system-installed libraries" ${SDL_SYSTEM_ICONV_DEFAULT})
+set_option(SDL_LIBICONV            "Prefer iconv() from libiconv, if available, over libc version" OFF)
 set_option(SDL_GCC_ATOMICS         "Use gcc builtin atomics" ${SDL_GCC_ATOMICS_DEFAULT})
 dep_option(SDL_DBUS                "Enable D-Bus support" ON ${UNIX_SYS} OFF)
 set_option(SDL_DISKAUDIO           "Support the disk writer audio driver" ON)
@@ -1099,24 +1100,31 @@ if(SDL_LIBC)
     check_symbol_exists(poll "poll.h" HAVE_POLL)
 
     if(SDL_SYSTEM_ICONV)
-      check_library_exists(iconv iconv_open "" HAVE_LIBICONV)
-      if(HAVE_LIBICONV)
-        find_package(Iconv)
-        if(Iconv_FOUND AND NOT Iconv_IS_BUILT_IN)
-          set(HAVE_ICONV 1)
-          set(HAVE_SYSTEM_ICONV TRUE)
-          pkg_check_modules(PC_ICONV iconv)
-          if(PC_ICONV_FOUND)
-            sdl_link_dependency(iconv LIBS Iconv::Iconv CMAKE_MODULE Iconv PKG_CONFIG_SPECS iconv)
-          else()
-            sdl_link_dependency(iconv LIBS Iconv::Iconv CMAKE_MODULE Iconv PKG_CONFIG_LIBS iconv)
-          endif()
-        endif()
-      else()
-        check_library_exists(c iconv_open "" HAVE_BUILTIN_ICONV)
-        if(HAVE_BUILTIN_ICONV)
-          set(HAVE_ICONV 1)
-          set(HAVE_SYSTEM_ICONV TRUE)
+      check_c_source_compiles("
+        #define LIBICONV_PLUG 1 /* in case libiconv header is in include path */
+        #include <stddef.h>
+        #include <iconv.h>
+        int main(int argc, char **argv) {
+            return iconv_open(NULL,NULL);
+        }" ICONV_IN_LIBC)
+
+      cmake_push_check_state()
+      list(APPEND CMAKE_REQUIRED_LIBRARIES iconv)
+      check_c_source_compiles("
+        #include <stddef.h>
+        #include <iconv.h>
+        int main(int argc, char **argv) {
+            return iconv_open(NULL,NULL);
+        }" ICONV_IN_LIBICONV)
+      cmake_pop_check_state()
+
+      if(ICONV_IN_LIBC OR ICONV_IN_LIBICONV)
+        set(HAVE_ICONV 1)
+        set(HAVE_SYSTEM_ICONV TRUE)
+        if(ICONV_IN_LIBICONV AND (SDL_LIBICONV OR (NOT ICONV_IN_LIBC)))
+          sdl_link_dependency(iconv LIBS iconv)
+          set(SDL_USE_LIBICONV 1)
+          set(HAVE_LIBICONV TRUE)
         endif()
       endif()
     endif()
