@@ -149,7 +149,7 @@ int PSP_VideoInit(SDL_VideoDevice *_this)
     return 0;
 }
 
-void PSP_VideoQuit(_THIS)
+void PSP_VideoQuit(SDL_VideoDevice *_this)
 {
     PSP_EventQuit(_this);
 }
