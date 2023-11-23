@@ -120,7 +120,7 @@ static void free_library_handles()
 	cfgmgr32_lib_handle = NULL;
 }
 
-#if defined(__GNUC__)
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wcast-function-type"
 #endif
@@ -170,7 +170,7 @@ err:
 	return -1;
 }
 
-#if defined(__GNUC__)
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 # pragma GCC diagnostic pop
 #endif
 
@@ -325,7 +325,7 @@ static void register_winapi_error_to_buffer(wchar_t **error_buffer, const WCHAR 
 #endif
 }
 
-#if defined(__GNUC__)
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
@@ -355,7 +355,7 @@ static void register_string_error_to_buffer(wchar_t **error_buffer, const WCHAR 
 #endif /* HIDAPI_USING_SDL_RUNTIME */
 }
 
-#if defined(__GNUC__)
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 # pragma GCC diagnostic pop
 #endif
 
@@ -1462,7 +1462,7 @@ int HID_API_EXPORT HID_API_CALL hid_get_input_report(hid_device *dev, unsigned c
 	return hid_get_report(dev, IOCTL_HID_GET_INPUT_REPORT, data, length);
 }
 
-#if defined(__GNUC__)
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wcast-function-type"
 #endif
@@ -1486,7 +1486,7 @@ void HID_API_EXPORT HID_API_CALL hid_close(hid_device *dev)
 	}
 	free_hid_device(dev);
 }
-#if defined(__GNUC__)
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 # pragma GCC diagnostic pop
 #endif
 

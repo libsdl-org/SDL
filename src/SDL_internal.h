@@ -40,6 +40,10 @@
 #define SDL_VARIABLE_LENGTH_ARRAY
 #endif
 
+#if (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))) || defined(__clang__)
+#define HAVE_GCC_DIAGNOSTIC_PRAGMA 1
+#endif
+
 #define SDL_MAX_SMALL_ALLOC_STACKSIZE          128
 #define SDL_small_alloc(type, count, pisstack) ((*(pisstack) = ((sizeof(type) * (count)) < SDL_MAX_SMALL_ALLOC_STACKSIZE)), (*(pisstack) ? SDL_stack_alloc(type, count) : (type *)SDL_malloc(sizeof(type) * (count))))
 #define SDL_small_free(ptr, isstack) \
