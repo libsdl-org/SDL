@@ -11,7 +11,11 @@ set(SDL_TESTS_NEEDS_ESOURCES)
 
 macro(add_sdl_test_executable TARGET)
     cmake_parse_arguments(AST "NONINTERACTIVE;NEEDS_RESOURCES" "" "" ${ARGN})
-    add_executable(${TARGET} ${AST_UNPARSED_ARGUMENTS})
+    if(ANDROID)
+        add_library(${TARGET} SHARED ${AST_UNPARSED_ARGUMENTS})
+    else()
+        add_executable(${TARGET} ${AST_UNPARSED_ARGUMENTS})
+    endif()
 
     list(APPEND SDL_TEST_EXECUTABLES ${TARGET})
     if(AST_NONINTERACTIVE)
