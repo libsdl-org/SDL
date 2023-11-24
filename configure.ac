@@ -398,11 +398,11 @@ dnl Checks for library functions.
               fi
            fi
            if test x$use_libiconv = xyes; then
-              AC_MSG_RESULT([-- Using iconv() from libiconv])
               AC_DEFINE(SDL_USE_LIBICONV,1,[ ])
               EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"
+              echo "-- Using iconv from libiconv"
            else
-              AC_MSG_RESULT([-- Using iconv() from libc])
+              echo "-- Using iconv from libc"
            fi
         fi
     fi

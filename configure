@@ -19219,13 +19219,15 @@ then :
   ac_cv_func_alloca_works=yes
 else $as_nop
   ac_cv_func_alloca_works=no
+
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
 fi
+
+fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_alloca_works" >&5
 printf "%s\n" "$ac_cv_func_alloca_works" >&6; }
-fi
 
 if test $ac_cv_func_alloca_works = yes; then
 
@@ -20135,15 +20137,13 @@ printf "%s\n" "#define HAVE_ICONV 1" >>confdefs.h
               fi
            fi
            if test x$use_libiconv = xyes; then
-              { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: -- Using iconv() from libiconv" >&5
-printf "%s\n" "-- Using iconv() from libiconv" >&6; }
 
 printf "%s\n" "#define SDL_USE_LIBICONV 1" >>confdefs.h
 
               EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"
+              echo "-- Using iconv from libiconv"
            else
-              { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: -- Using iconv() from libc" >&5
-printf "%s\n" "-- Using iconv() from libc" >&6; }
+              echo "-- Using iconv from libc"
            fi
         fi
     fi
