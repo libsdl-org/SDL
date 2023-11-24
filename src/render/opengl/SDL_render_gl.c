@@ -450,6 +450,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
     GL_ActivateRenderer(renderer);
 
     renderdata->drawstate.texture = NULL; /* we trash this state. */
+    renderdata->drawstate.texturing = SDL_FALSE; /* we trash this state. */
 
     if (texture->access == SDL_TEXTUREACCESS_TARGET &&
         !renderdata->GL_EXT_framebuffer_object_supported) {
