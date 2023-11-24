@@ -1021,7 +1021,7 @@ macro(CheckHIDAPI)
     if(SDL_HIDAPI_LIBUSB)
       set(HAVE_LIBUSB FALSE)
 
-      set(LibUSB_PKG_CONFIG_SPEC libusb-1.0)
+      set(LibUSB_PKG_CONFIG_SPEC libusb-1.0>=1.0.16)
       pkg_check_modules(PC_LIBUSB IMPORTED_TARGET ${LibUSB_PKG_CONFIG_SPEC})
       if(PC_LIBUSB_FOUND)
         cmake_push_check_state()
