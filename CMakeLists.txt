@@ -1134,7 +1134,7 @@ if(SDL_LIBC)
         #include <stddef.h>
         #include <iconv.h>
         int main(int argc, char **argv) {
-            return iconv_open(NULL,NULL);
+            return !iconv_open(NULL,NULL);
         }" ICONV_IN_LIBC)
 
       cmake_push_check_state()
@@ -1143,7 +1143,7 @@ if(SDL_LIBC)
         #include <stddef.h>
         #include <iconv.h>
         int main(int argc, char **argv) {
-            return iconv_open(NULL,NULL);
+            return !iconv_open(NULL,NULL);
         }" ICONV_IN_LIBICONV)
       cmake_pop_check_state()
 
