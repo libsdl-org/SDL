@@ -378,16 +378,16 @@ SDL_bool SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTY
         if (outcode1) {
             if (outcode1 & CODE_TOP) {
                 y = recty1;
-                x = x1 + ((x2 - x1) * (y - y1)) / (y2 - y1);
+                x = (SCALARTYPE) (x1 + ((BIGSCALARTYPE)(x2 - x1) * (y - y1)) / (y2 - y1));
             } else if (outcode1 & CODE_BOTTOM) {
                 y = recty2;
-                x = x1 + ((x2 - x1) * (y - y1)) / (y2 - y1);
+                x = (SCALARTYPE) (x1 + ((BIGSCALARTYPE)(x2 - x1) * (y - y1)) / (y2 - y1));
             } else if (outcode1 & CODE_LEFT) {
                 x = rectx1;
-                y = y1 + ((y2 - y1) * (x - x1)) / (x2 - x1);
+                y = (SCALARTYPE) (y1 + ((BIGSCALARTYPE)(y2 - y1) * (x - x1)) / (x2 - x1));
             } else if (outcode1 & CODE_RIGHT) {
                 x = rectx2;
-                y = y1 + ((y2 - y1) * (x - x1)) / (x2 - x1);
+                y = (SCALARTYPE) (y1 + ((BIGSCALARTYPE)(y2 - y1) * (x - x1)) / (x2 - x1));
             }
             x1 = x;
             y1 = y;
@@ -396,23 +396,23 @@ SDL_bool SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTY
             if (outcode2 & CODE_TOP) {
                 SDL_assert(y2 != y1); /* if equal: division by zero. */
                 y = recty1;
-                x = x1 + ((x2 - x1) * (y - y1)) / (y2 - y1);
+                x = (SCALARTYPE) (x1 + ((BIGSCALARTYPE)(x2 - x1) * (y - y1)) / (y2 - y1));
             } else if (outcode2 & CODE_BOTTOM) {
                 SDL_assert(y2 != y1); /* if equal: division by zero. */
                 y = recty2;
-                x = x1 + ((x2 - x1) * (y - y1)) / (y2 - y1);
+                x = (SCALARTYPE) (x1 + ((BIGSCALARTYPE)(x2 - x1) * (y - y1)) / (y2 - y1));
             } else if (outcode2 & CODE_LEFT) {
                 /* If this assertion ever fires, here's the static analysis that warned about it:
                    http://buildbot.libsdl.org/sdl-static-analysis/sdl-macosx-static-analysis/sdl-macosx-static-analysis-1101/report-b0d01a.html#EndPath */
                 SDL_assert(x2 != x1); /* if equal: division by zero. */
                 x = rectx1;
-                y = y1 + ((y2 - y1) * (x - x1)) / (x2 - x1);
+                y = (SCALARTYPE) (y1 + ((BIGSCALARTYPE)(y2 - y1) * (x - x1)) / (x2 - x1));
             } else if (outcode2 & CODE_RIGHT) {
                 /* If this assertion ever fires, here's the static analysis that warned about it:
                    http://buildbot.libsdl.org/sdl-static-analysis/sdl-macosx-static-analysis/sdl-macosx-static-analysis-1101/report-39b114.html#EndPath */
                 SDL_assert(x2 != x1); /* if equal: division by zero. */
                 x = rectx2;
-                y = y1 + ((y2 - y1) * (x - x1)) / (x2 - x1);
+                y = (SCALARTYPE) (y1 + ((BIGSCALARTYPE)(y2 - y1) * (x - x1)) / (x2 - x1));
             }
             x2 = x;
             y2 = y;
@@ -429,6 +429,7 @@ SDL_bool SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTY
 #undef RECTTYPE
 #undef POINTTYPE
 #undef SCALARTYPE
+#undef BIGSCALARTYPE
 #undef COMPUTEOUTCODE
 #undef SDL_HASINTERSECTION
 #undef SDL_INTERSECTRECT

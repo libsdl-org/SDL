@@ -89,6 +89,7 @@ SDL_bool SDL_GetSpanEnclosingRect(int width, int height,
 #define RECTTYPE                 SDL_Rect
 #define POINTTYPE                SDL_Point
 #define SCALARTYPE               int
+#define BIGSCALARTYPE            Sint64
 #define COMPUTEOUTCODE           ComputeOutCode
 #define SDL_HASINTERSECTION      SDL_HasIntersection
 #define SDL_INTERSECTRECT        SDL_IntersectRect
@@ -101,6 +102,7 @@ SDL_bool SDL_GetSpanEnclosingRect(int width, int height,
 #define RECTTYPE                 SDL_FRect
 #define POINTTYPE                SDL_FPoint
 #define SCALARTYPE               float
+#define BIGSCALARTYPE            double
 #define COMPUTEOUTCODE           ComputeOutCodeF
 #define SDL_HASINTERSECTION      SDL_HasIntersectionF
 #define SDL_INTERSECTRECT        SDL_IntersectFRect
