@@ -126,7 +126,9 @@ if(CMAKE_VERSION VERSION_LESS 3.13.0)
 endif()
 
 # CMP0087: install(CODE) and install(SCRIPT) support generator expressions.
-cmake_policy(SET CMP0087 NEW)
+if(POLICY CMP0087)
+  cmake_policy(SET CMP0087 NEW)
+endif()
 function(SDL_install_pdb TARGET DIRECTORY)
   get_property(type TARGET ${TARGET} PROPERTY TYPE)
   if(type MATCHES "^(SHARED_LIBRARY|EXECUTABLE)$")
