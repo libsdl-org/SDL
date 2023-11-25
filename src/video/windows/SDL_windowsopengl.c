@@ -548,6 +548,13 @@ static int WIN_GL_ChoosePixelFormatARB(_THIS, int *iAttribs, float *fAttribs)
                                                     &matching);
         }
 
+        //Check whether we actually got an SRGB capable buffer
+        int qAttrib = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+        int srgb = 0;
+
+        _this->gl_data->wglGetPixelFormatAttribivARB(hdc, pixel_format, 0, 1, &qAttrib, &srgb);
+        _this->gl_config.framebuffer_srgb_capable = srgb;
+
         _this->gl_data->wglMakeCurrent(hdc, NULL);
         _this->gl_data->wglDeleteContext(hglrc);
     }
