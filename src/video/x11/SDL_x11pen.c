@@ -402,7 +402,7 @@ static SDL_bool xinput2_device_is_pen(const XIDeviceInfo *dev)
             XIValuatorClassInfo *val_classinfo = (XIValuatorClassInfo *)classinfo;
             Atom vname = val_classinfo->label;
 
-            if (vname == pen_atoms.abs_pressure) {
+            if (vname != None && vname == pen_atoms.abs_pressure) {
                 return SDL_TRUE;
             }
         }
@@ -482,12 +482,14 @@ void X11_InitPen(SDL_VideoDevice *_this)
                 float min = val_classinfo->min;
                 float max = val_classinfo->max;
 
-                if (vname == pen_atoms.abs_pressure) {
-                    axis = SDL_PEN_AXIS_PRESSURE;
-                } else if (vname == pen_atoms.abs_tilt_x) {
-                    axis = SDL_PEN_AXIS_XTILT;
-                } else if (vname == pen_atoms.abs_tilt_y) {
-                    axis = SDL_PEN_AXIS_YTILT;
+                if (vname != None) {
+                    if (vname == pen_atoms.abs_pressure) {
+                        axis = SDL_PEN_AXIS_PRESSURE;
+                    } else if (vname == pen_atoms.abs_tilt_x) {
+                        axis = SDL_PEN_AXIS_XTILT;
+                    } else if (vname == pen_atoms.abs_tilt_y) {
+                        axis = SDL_PEN_AXIS_YTILT;
+                    }
                 }
 
                 if (axis == -1 && valuator_nr == 5) {
