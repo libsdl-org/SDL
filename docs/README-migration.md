@@ -816,7 +816,7 @@ The 2D renderer API always uses batching in SDL3. There is no magic to turn
 it on and off; it doesn't matter if you select a specific renderer or try to
 use any hint. This means that all apps that use SDL3's 2D renderer and also
 want to call directly into the platform's lower-layer graphics API _must_ call
-SDL_RenderFlush() before doing so. This will make sure any pending rendering
+SDL_FlushRenderer() before doing so. This will make sure any pending rendering
 work from SDL is done before the app starts directly drawing.
 
 SDL_GetRenderDriverInfo() has been removed, since most of the information it reported were
@@ -868,6 +868,7 @@ The following functions have been renamed:
 * SDL_RenderDrawRectsF() => SDL_RenderRects()
 * SDL_RenderFillRectF() => SDL_RenderFillRect()
 * SDL_RenderFillRectsF() => SDL_RenderFillRects()
+* SDL_RenderFlush() => SDL_FlushRenderer()
 * SDL_RenderGetClipRect() => SDL_GetRenderClipRect()
 * SDL_RenderGetIntegerScale() => SDL_GetRenderIntegerScale()
 * SDL_RenderGetLogicalSize() => SDL_GetRenderLogicalPresentation()

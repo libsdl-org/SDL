@@ -265,9 +265,13 @@ static int FlushRenderCommandsIfTextureNeeded(SDL_Texture *texture)
     return 0;
 }
 
-int SDL_RenderFlush(SDL_Renderer *renderer)
+int SDL_FlushRenderer(SDL_Renderer *renderer)
 {
-    return FlushRenderCommands(renderer);
+    if (FlushRenderCommands(renderer) == -1) {
+        return -1;
+    }
+    renderer->InvalidateCachedState(renderer);
+    return 0;
 }
 
 void *SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, const size_t alignment, size_t *offset)

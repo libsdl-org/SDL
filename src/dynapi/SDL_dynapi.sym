@@ -107,6 +107,7 @@ SDL3_0.0.0 {
     SDL_FlashWindow;
     SDL_FlushEvent;
     SDL_FlushEvents;
+    SDL_FlushRenderer;
     SDL_GDKGetTaskQueue;
     SDL_GDKSuspendComplete;
     SDL_GL_BindTexture;
@@ -512,7 +513,6 @@ SDL3_0.0.0 {
     SDL_RenderCoordinatesToWindow;
     SDL_RenderFillRect;
     SDL_RenderFillRects;
-    SDL_RenderFlush;
     SDL_RenderGeometry;
     SDL_RenderGeometryRaw;
     SDL_RenderLine;
