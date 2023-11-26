@@ -66,6 +66,8 @@ jobs:
     - name: Setup Macos dependencies
       if: runner.os == 'macOS'
       run: |
+        export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+        brew update
         brew install \
           ninja \
           pkg-config \
