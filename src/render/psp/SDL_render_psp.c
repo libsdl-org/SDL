@@ -1021,6 +1021,11 @@ static void PSP_SetBlendState(PSP_RenderData *data, PSP_BlendState *state)
     *current = *state;
 }
 
+static void PSP_InvalidateCachedState(SDL_Renderer *renderer)
+{
+    /* currently this doesn't do anything. If this needs to do something (and someone is mixing their own rendering calls in!), update this. */
+}
+
 static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
@@ -1325,6 +1330,7 @@ SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
     renderer->QueueFillRects = PSP_QueueFillRects;
     renderer->QueueCopy = PSP_QueueCopy;
     renderer->QueueCopyEx = PSP_QueueCopyEx;
+    renderer->InvalidateCachedState = PSP_InvalidateCachedState;
     renderer->RunCommandQueue = PSP_RunCommandQueue;
     renderer->RenderReadPixels = PSP_RenderReadPixels;
     renderer->RenderPresent = PSP_RenderPresent;

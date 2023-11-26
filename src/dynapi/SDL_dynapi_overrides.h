@@ -131,6 +131,7 @@
 #define SDL_FlashWindow SDL_FlashWindow_REAL
 #define SDL_FlushEvent SDL_FlushEvent_REAL
 #define SDL_FlushEvents SDL_FlushEvents_REAL
+#define SDL_FlushRenderer SDL_FlushRenderer_REAL
 #define SDL_GDKGetTaskQueue SDL_GDKGetTaskQueue_REAL
 #define SDL_GDKSuspendComplete  SDL_GDKSuspendComplete_REAL
 #define SDL_GL_BindTexture SDL_GL_BindTexture_REAL
@@ -536,7 +537,6 @@
 #define SDL_RenderCoordinatesToWindow SDL_RenderCoordinatesToWindow_REAL
 #define SDL_RenderFillRect SDL_RenderFillRect_REAL
 #define SDL_RenderFillRects SDL_RenderFillRects_REAL
-#define SDL_RenderFlush SDL_RenderFlush_REAL
 #define SDL_RenderGeometry SDL_RenderGeometry_REAL
 #define SDL_RenderGeometryRaw SDL_RenderGeometryRaw_REAL
 #define SDL_RenderLine SDL_RenderLine_REAL

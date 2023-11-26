@@ -1552,19 +1552,28 @@ extern DECLSPEC void SDLCALL SDL_DestroyTexture(SDL_Texture *texture);
 extern DECLSPEC void SDLCALL SDL_DestroyRenderer(SDL_Renderer *renderer);
 
 /**
- * Force the rendering context to flush any pending commands to the underlying
- * rendering API.
+ * Force the rendering context to flush any pending commands and state.
  *
  * You do not need to (and in fact, shouldn't) call this function unless you
- * are planning to call into OpenGL/Direct3D/Metal/whatever directly in
+ * are planning to call into OpenGL/Direct3D/Metal/whatever directly, in
  * addition to using an SDL_Renderer.
  *
  * This is for a very-specific case: if you are using SDL's render API, and
  * you plan to make OpenGL/D3D/whatever calls in addition to SDL render API
- * calls. If this applies, you should call SDL_RenderFlush() between calls to
+ * calls. If this applies, you should call this function between calls to
  * SDL's render API and the low-level API you're using in cooperation.
  *
  * In all other cases, you can ignore this function.
+ *
+ * This call makes SDL flush any pending rendering work it was queueing up
+ * to do later in a single batch, and marks any internal cached state as
+ * invalid, so it'll prepare all its state again later, from scratch.
+ *
+ * This means you do not need to save state in your rendering code to protect
+ * the SDL renderer. However, there lots of arbitrary pieces of Direct3D
+ * and OpenGL state that can confuse things; you should use your best
+ * judgement and be prepared to make changes if specific state needs to be
+ * protected.
  *
  * \param renderer the rendering context
  * \returns 0 on success or a negative error code on failure; call
@@ -1572,7 +1581,7 @@ extern DECLSPEC void SDLCALL SDL_DestroyRenderer(SDL_Renderer *renderer);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderFlush(SDL_Renderer *renderer);
+extern DECLSPEC int SDLCALL SDL_FlushRenderer(SDL_Renderer *renderer);
 
 
 /**

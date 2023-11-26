@@ -1310,6 +1310,11 @@ static SDL_bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cm
     return SDL_TRUE;
 }
 
+static void METAL_InvalidateCachedState(SDL_Renderer *renderer)
+{
+    // METAL_DrawStateCache only exists during a run of METAL_RunCommandQueue, so there's nothing to invalidate!
+}
+
 static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     @autoreleasepool {
@@ -1905,6 +1910,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         renderer->QueueDrawPoints = METAL_QueueDrawPoints;
         renderer->QueueDrawLines = METAL_QueueDrawLines;
         renderer->QueueGeometry = METAL_QueueGeometry;
+        renderer->InvalidateCachedState = METAL_InvalidateCachedState;
         renderer->RunCommandQueue = METAL_RunCommandQueue;
         renderer->RenderReadPixels = METAL_RenderReadPixels;
         renderer->RenderPresent = METAL_RenderPresent;

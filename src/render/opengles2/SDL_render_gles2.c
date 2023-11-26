@@ -138,7 +138,9 @@ typedef struct
     SDL_bool cliprect_dirty;
     SDL_Rect cliprect;
     SDL_bool texturing;
+    SDL_bool texturing_dirty;
     Uint32 clear_color;
+    SDL_bool clear_color_dirty;
     int drawablew;
     int drawableh;
     GLES2_ProgramCacheEntry *program;
@@ -949,7 +951,7 @@ static int SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, co
         data->drawstate.cliprect_dirty = SDL_FALSE;
     }
 
-    if ((texture != NULL) != data->drawstate.texturing) {
+    if (data->drawstate.texturing_dirty || ((texture != NULL) != data->drawstate.texturing)) {
         if (!texture) {
             data->glDisableVertexAttribArray((GLenum)GLES2_ATTRIBUTE_TEXCOORD);
             data->drawstate.texturing = SDL_FALSE;
@@ -957,6 +959,7 @@ static int SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, co
             data->glEnableVertexAttribArray((GLenum)GLES2_ATTRIBUTE_TEXCOORD);
             data->drawstate.texturing = SDL_TRUE;
         }
+        data->drawstate.texturing_dirty = SDL_FALSE;
     }
 
     if (texture) {
@@ -1150,6 +1153,21 @@ static int SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, vo
     return ret;
 }
 
+static void GLES2_InvalidateCachedState(SDL_Renderer *renderer)
+{
+    GLES2_DrawStateCache *cache = &((GLES2_RenderData *)renderer->driverdata)->drawstate;
+    cache->viewport_dirty = SDL_TRUE;
+    cache->texture = NULL;
+    cache->blend = SDL_BLENDMODE_INVALID;
+    cache->cliprect_enabled_dirty = SDL_TRUE;
+    cache->cliprect_dirty = SDL_TRUE;
+    cache->texturing_dirty = SDL_TRUE;
+    cache->clear_color_dirty = SDL_TRUE;
+    cache->drawablew = 0;
+    cache->drawableh = 0;
+    cache->program = NULL;
+}
+
 static int GLES2_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->driverdata;
@@ -1233,13 +1251,14 @@ static int GLES2_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
             const Uint8 b = colorswap ? cmd->data.color.r : cmd->data.color.b;
             const Uint8 a = cmd->data.color.a;
             const Uint32 color = (((Uint32)a << 24) | (r << 16) | (g << 8) | b);
-            if (color != data->drawstate.clear_color) {
+            if (data->drawstate.clear_color_dirty || (color != data->drawstate.clear_color)) {
                 const GLfloat fr = ((GLfloat)r) * inv255f;
                 const GLfloat fg = ((GLfloat)g) * inv255f;
                 const GLfloat fb = ((GLfloat)b) * inv255f;
                 const GLfloat fa = ((GLfloat)a) * inv255f;
                 data->glClearColor(fr, fg, fb, fa);
                 data->drawstate.clear_color = color;
+                data->drawstate.clear_color_dirty = SDL_FALSE;
             }
 
             if (data->drawstate.cliprect_enabled || data->drawstate.cliprect_enabled_dirty) {
@@ -2196,6 +2215,7 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
     renderer->QueueDrawPoints = GLES2_QueueDrawPoints;
     renderer->QueueDrawLines = GLES2_QueueDrawLines;
     renderer->QueueGeometry = GLES2_QueueGeometry;
+    renderer->InvalidateCachedState = GLES2_InvalidateCachedState;
     renderer->RunCommandQueue = GLES2_RunCommandQueue;
     renderer->RenderReadPixels = GLES2_RenderReadPixels;
     renderer->RenderPresent = GLES2_RenderPresent;
