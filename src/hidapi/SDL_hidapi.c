@@ -573,6 +573,8 @@ typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
 
 #ifdef __LINUX__
 #include "SDL_hidapi_linux.h"
+#elif defined(__NETBSD__)
+#include "SDL_hidapi_netbsd.h"
 #elif defined(__MACOS__)
 #include "SDL_hidapi_mac.h"
 #elif defined(__WINDOWS__) || defined(__WINGDK__)
