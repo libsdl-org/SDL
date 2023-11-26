@@ -114,9 +114,9 @@ static void pen_atoms_ensure_initialized(SDL_VideoDevice *_this)
     pen_atoms.device_product_id = X11_XInternAtom(data->display, "Device Product ID", False);
     pen_atoms.wacom_serial_ids = X11_XInternAtom(data->display, "Wacom Serial IDs", False);
     pen_atoms.wacom_tool_type = X11_XInternAtom(data->display, "Wacom Tool Type", False);
-    pen_atoms.abs_pressure = X11_XInternAtom(data->display, "Abs Pressure", True);
-    pen_atoms.abs_tilt_x = X11_XInternAtom(data->display, "Abs Tilt X", True);
-    pen_atoms.abs_tilt_y = X11_XInternAtom(data->display, "Abs Tilt Y", True);
+    pen_atoms.abs_pressure = X11_XInternAtom(data->display, "Abs Pressure", False);
+    pen_atoms.abs_tilt_x = X11_XInternAtom(data->display, "Abs Tilt X", False);
+    pen_atoms.abs_tilt_y = X11_XInternAtom(data->display, "Abs Tilt Y", False);
 
     pen_atoms.initialized = 1;
 }
@@ -390,9 +390,12 @@ static void xinput2_vendor_peninfo(SDL_VideoDevice *_this, const XIDeviceInfo *d
 }
 
 /* Does this device have a valuator for pressure sensitivity? */
-static SDL_bool xinput2_device_is_pen(const XIDeviceInfo *dev)
+static SDL_bool xinput2_device_is_pen(SDL_VideoDevice *_this, const XIDeviceInfo *dev)
 {
     int classct;
+
+    pen_atoms_ensure_initialized(_this);
+
     for (classct = 0; classct < dev->num_classes; ++classct) {
         const XIAnyClassInfo *classinfo = dev->classes[classct];
 
@@ -445,8 +448,8 @@ void X11_InitPen(SDL_VideoDevice *_this)
         int old_num_pens_known = pen_map.num_pens_known;
         int k;
 
-        /* Only track physical devices that are enabled */
-        if (dev->use != XISlavePointer || dev->enabled == 0 || !xinput2_device_is_pen(dev)) {
+        /* Only track physical devices that are enabled and look like pens */
+        if (dev->use != XISlavePointer || dev->enabled == 0 || !xinput2_device_is_pen(_this, dev)) {
             continue;
         }
 
