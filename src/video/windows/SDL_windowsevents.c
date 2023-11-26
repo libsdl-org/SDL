@@ -130,6 +130,11 @@ static SDL_Scancode VKeytoScancodeFallback(WPARAM vkey)
 static SDL_Scancode VKeytoScancode(WPARAM vkey)
 {
     switch (vkey) {
+    case VK_BACK:
+        return SDL_SCANCODE_BACKSPACE;
+    case VK_CAPITAL:
+        return SDL_SCANCODE_CAPSLOCK;
+
     case VK_MODECHANGE:
         return SDL_SCANCODE_MODE;
     case VK_SELECT:
