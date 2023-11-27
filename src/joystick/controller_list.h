@@ -141,6 +141,8 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2303 ), k_eControllerType_XInputPS4Controller, NULL },	// Qanba Obsidian Arcade Joystick
 	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2500 ), k_eControllerType_PS4Controller, NULL },	// Qanba Dragon
 	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2503 ), k_eControllerType_XInputPS4Controller, NULL },	// Qanba Dragon Arcade Joystick
+	{ MAKE_CONTROLLER_ID( 0x3285, 0x0d16 ), k_eControllerType_PS4Controller, NULL },	// NACON Revolution 5 Pro (PS4 mode with dongle)
+	{ MAKE_CONTROLLER_ID( 0x3285, 0x0d17 ), k_eControllerType_PS4Controller, NULL },	// NACON Revolution 5 Pro (PS4 mode wired)
 	{ MAKE_CONTROLLER_ID( 0x7545, 0x0104 ), k_eControllerType_PS4Controller, NULL },	// Armor 3 or Level Up Cobra - At least one variant has gyro
     { MAKE_CONTROLLER_ID (0x9886, 0x0024 ), k_eControllerType_XInputPS4Controller, NULL },  // Astro C40 in Xbox 360 mode
 	{ MAKE_CONTROLLER_ID( 0x9886, 0x0025 ), k_eControllerType_PS4Controller, NULL },	// Astro C40
@@ -154,6 +156,8 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0184 ), k_eControllerType_PS5Controller, NULL },	// Hori Fighting Stick α
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x100b ), k_eControllerType_PS5Controller, NULL },	// Razer Wolverine V2 Pro (Wired)
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x100c ), k_eControllerType_PS5Controller, NULL },	// Razer Wolverine V2 Pro (Wireless)
+	{ MAKE_CONTROLLER_ID( 0x3285, 0x0d18 ), k_eControllerType_PS5Controller, NULL },	// NACON Revolution 5 Pro (PS5 mode with dongle)
+	{ MAKE_CONTROLLER_ID( 0x3285, 0x0d19 ), k_eControllerType_PS5Controller, NULL },	// NACON Revolution 5 Pro (PS5 mode wired)
 	{ MAKE_CONTROLLER_ID( 0x358a, 0x0104 ), k_eControllerType_PS5Controller, NULL },	// Backbone One PlayStation Edition for iOS
 
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x0006 ), k_eControllerType_UnknownNonSteamController, NULL },	// DragonRise Generic USB PCB, sometimes configured as a PC Twin Shock Controller - looks like a DS3 but the face buttons are 1-4 instead of symbols

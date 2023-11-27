@@ -217,6 +217,7 @@ typedef struct
 {
     SDL_HIDAPI_Device *device;
     SDL_Joystick *joystick;
+    SDL_bool is_nacon_dongle;
     SDL_bool use_alternate_report;
     SDL_bool sensors_supported;
     SDL_bool lightbar_supported;
@@ -246,6 +247,7 @@ typedef struct
     {
         PS5SimpleStatePacket_t simple;
         PS5StatePacketCommon_t state;
+        PS5StatePacketAlt_t alt_state;
         PS5StatePacket_t full_state;
         Uint8 data[64];
     } last_state;
@@ -483,16 +485,28 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
             }
 
             ctx->use_alternate_report = SDL_TRUE;
+
+            if (device->vendor_id == USB_VENDOR_NACON_ALT &&
+                (device->product_id == USB_PRODUCT_NACON_REVOLUTION_5_PRO_PS5_WIRED ||
+                 device->product_id == USB_PRODUCT_NACON_REVOLUTION_5_PRO_PS5_WIRELESS)) {
+                /* This doesn't report vibration capability, but it can do rumble */
+                ctx->vibration_supported = SDL_TRUE;
+            }
         } else if (device->vendor_id == USB_VENDOR_RAZER &&
                    (device->product_id == USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_PS5_WIRED ||
                     device->product_id == USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_PS5_WIRELESS)) {
-            /* The Razer Wolverine V2 Pro doesn't respond to the detection protocol, but has a touchpad and sensors, but no vibration */
+            /* The Razer Wolverine V2 Pro doesn't respond to the detection protocol, but has a touchpad and sensors and no vibration */
             ctx->sensors_supported = SDL_TRUE;
             ctx->touchpad_supported = SDL_TRUE;
             ctx->use_alternate_report = SDL_TRUE;
         }
     }
     ctx->effects_supported = (ctx->lightbar_supported || ctx->vibration_supported || ctx->playerled_supported);
+
+    if (device->vendor_id == USB_VENDOR_NACON_ALT &&
+        device->product_id == USB_PRODUCT_NACON_REVOLUTION_5_PRO_PS5_WIRELESS) {
+        ctx->is_nacon_dongle = SDL_TRUE;
+    }
 
     device->joystick_type = joystick_type;
     device->type = SDL_CONTROLLER_TYPE_PS5;
@@ -504,6 +518,11 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
         }
     }
     HIDAPI_SetDeviceSerial(device, serial);
+
+    if (ctx->is_nacon_dongle) {
+        /* We don't know if this is connected yet, wait for reports */
+        return SDL_TRUE;
+    }
 
     /* Prefer the USB device over the Bluetooth device */
     if (device->is_bluetooth) {
@@ -1378,6 +1397,20 @@ static SDL_bool HIDAPI_DriverPS5_IsPacketValid(SDL_DriverPS5_Context *ctx, Uint8
 {
     switch (data[0]) {
     case k_EPS5ReportIdState:
+        if (ctx->is_nacon_dongle && size >= (1 + sizeof(PS5StatePacketAlt_t))) {
+            /* The report timestamp doesn't change when the controller isn't connected */
+            PS5StatePacketAlt_t *packet = (PS5StatePacketAlt_t *)&data[1];
+            if (SDL_memcmp(packet->rgucPacketSequence, ctx->last_state.state.rgucPacketSequence, sizeof(packet->rgucPacketSequence)) == 0) {
+                return SDL_FALSE;
+            }
+            if (ctx->last_state.alt_state.rgucAccelX[0] == 0 && ctx->last_state.alt_state.rgucAccelX[1] == 0 &&
+                ctx->last_state.alt_state.rgucAccelY[0] == 0 && ctx->last_state.alt_state.rgucAccelY[1] == 0 &&
+                ctx->last_state.alt_state.rgucAccelZ[0] == 0 && ctx->last_state.alt_state.rgucAccelZ[1] == 0) {
+                /* We don't have any state to compare yet, go ahead and copy it */
+                SDL_memcpy(&ctx->last_state, &data[1], sizeof(PS5StatePacketAlt_t));
+                return SDL_FALSE;
+            }
+        }
         return SDL_TRUE;
 
     case k_EPS5ReportIdBluetoothState:
@@ -1471,7 +1504,22 @@ static SDL_bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
         }
     }
 
-    if (size < 0 && device->num_joysticks > 0) {
+    if (ctx->is_nacon_dongle) {
+        if (packet_count == 0) {
+            if (device->num_joysticks > 0) {
+                /* Check to see if it looks like the device disconnected */
+                if (SDL_TICKS_PASSED(now, ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
+                    HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
+                }
+            }
+        } else {
+            if (device->num_joysticks == 0) {
+                HIDAPI_JoystickConnected(device, NULL);
+            }
+        }
+    }
+
+    if (packet_count == 0 && size < 0 && device->num_joysticks > 0) {
         /* Read error, device is disconnected */
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
