@@ -633,9 +633,12 @@ GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width
     return -1;
 }
 
+static int GetNumDevices(void);
+
 int
-GetDeviceName(int index, char *buf, int size)
+GetDeviceName(SDL_VideoCaptureDeviceID instance_id, char *buf, int size)
 {
+    int index = instance_id - 1;
     create_cameraMgr();
 
     if (cameraIdList == NULL) {
@@ -652,7 +655,7 @@ GetDeviceName(int index, char *buf, int size)
     return -1;
 }
 
-int
+static int
 GetNumDevices(void)
 {
     camera_status_t res;
@@ -672,6 +675,38 @@ GetNumDevices(void)
     }
     return -1;
 }
+
+SDL_VideoCaptureDeviceID *GetVideoCaptureDevices(int *count)
+{
+    /* hard-coded list of ID */
+    int i;
+    int num = GetNumDevices();
+    SDL_VideoCaptureDeviceID *ret;
+
+    ret = (SDL_VideoCaptureDeviceID *)SDL_malloc((num + 1) * sizeof(*ret));
+
+    if (ret == NULL) {
+        SDL_OutOfMemory();
+        *count = 0;
+        return NULL;
+    }
+
+    for (i = 0; i < num; i++) {
+        ret[i] = i + 1;
+    }
+    ret[num] = 0;
+    *count = num;
+    return ret;
+}
+
+int SDL_SYS_VideoCaptureInit(void) {
+    return 0;
+}
+
+int SDL_SYS_VideoCaptureQuit(void) {
+    return 0;
+}
+
 
 #endif
 

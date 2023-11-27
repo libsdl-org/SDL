@@ -139,6 +139,7 @@ int SDL_UDEV_Init(void)
 
         _this->syms.udev_monitor_filter_add_match_subsystem_devtype(_this->udev_mon, "input", NULL);
         _this->syms.udev_monitor_filter_add_match_subsystem_devtype(_this->udev_mon, "sound", NULL);
+        _this->syms.udev_monitor_filter_add_match_subsystem_devtype(_this->udev_mon, "video4linux", NULL);
         _this->syms.udev_monitor_enable_receiving(_this->udev_mon);
 
         /* Do an initial scan of existing devices */
@@ -200,6 +201,7 @@ int SDL_UDEV_Scan(void)
 
     _this->syms.udev_enumerate_add_match_subsystem(enumerate, "input");
     _this->syms.udev_enumerate_add_match_subsystem(enumerate, "sound");
+    _this->syms.udev_enumerate_add_match_subsystem(enumerate, "video4linux");
 
     _this->syms.udev_enumerate_scan_devices(enumerate);
     devs = _this->syms.udev_enumerate_get_list_entry(enumerate);
@@ -405,8 +407,16 @@ static void device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
     }
 
     subsystem = _this->syms.udev_device_get_subsystem(dev);
+
     if (SDL_strcmp(subsystem, "sound") == 0) {
         devclass = SDL_UDEV_DEVICE_SOUND;
+    } else if (SDL_strcmp(subsystem, "video4linux") == 0) {
+        devclass = SDL_UDEV_DEVICE_VIDEO_CAPTURE;
+
+        val = _this->syms.udev_device_get_property_value(dev, "ID_V4L_CAPABILITIES");
+        if (!val || !SDL_strcasestr(val, "capture")) {
+            return;
+        }
     } else if (SDL_strcmp(subsystem, "input") == 0) {
         /* udev rules reference: http://cgit.freedesktop.org/systemd/systemd/tree/src/udev/udev-builtin-input_id.c */
 

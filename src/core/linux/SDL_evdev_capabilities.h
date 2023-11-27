@@ -53,6 +53,7 @@ typedef enum
     SDL_UDEV_DEVICE_ACCELEROMETER = 0x0020,
     SDL_UDEV_DEVICE_TOUCHPAD = 0x0040,
     SDL_UDEV_DEVICE_HAS_KEYS = 0x0080,
+    SDL_UDEV_DEVICE_VIDEO_CAPTURE = 0x0100,
 } SDL_UDEV_deviceclass;
 
 #define BITS_PER_LONG        (sizeof(unsigned long) * 8)
