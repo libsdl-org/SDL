@@ -220,6 +220,12 @@ if(VITA OR PSP OR PS2 OR N3DS OR RISCOS)
   set(SDL_LOADSO_DEFAULT OFF)
 endif()
 
+if((RISCOS OR UNIX_SYS) AND NOT (LINUX OR NETBSD OR FREEBSD))
+  set(SDL_OSS_DEFAULT ON)
+else()
+  set(SDL_OSS_DEFAULT OFF)
+endif()
+
 if(SDL_SHARED_DEFAULT AND SDL_STATIC_DEFAULT AND SDL_SHARED_AVAILABLE)
   if(DEFINED BUILD_SHARED_LIBS)
     # When defined, use BUILD_SHARED_LIBS as default
@@ -306,7 +312,7 @@ dep_option(SDL_OPENGL              "Include OpenGL support" ON "NOT VISIONOS" OF
 dep_option(SDL_OPENGLES            "Include OpenGL ES support" ON "NOT VISIONOS" OFF)
 set_option(SDL_PTHREADS            "Use POSIX threads for multi-threading" ${SDL_PTHREADS_DEFAULT})
 dep_option(SDL_PTHREADS_SEM        "Use pthread semaphores" ON "SDL_PTHREADS" OFF)
-dep_option(SDL_OSS                 "Support the OSS audio API" ON "UNIX_SYS OR RISCOS" OFF)
+dep_option(SDL_OSS                 "Support the OSS audio API" ${SDL_OSS_DEFAULT} "UNIX_SYS OR RISCOS" OFF)
 set_option(SDL_ALSA                "Support the ALSA audio API" ${UNIX_SYS})
 dep_option(SDL_ALSA_SHARED         "Dynamically load ALSA audio support" ON "SDL_ALSA" OFF)
 set_option(SDL_JACK                "Support the JACK audio API" ${UNIX_SYS})
