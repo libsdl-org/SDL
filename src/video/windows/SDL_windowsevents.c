@@ -98,12 +98,6 @@
 #ifndef IS_HIGH_SURROGATE
 #define IS_HIGH_SURROGATE(x) (((x) >= 0xd800) && ((x) <= 0xdbff))
 #endif
-#ifndef IS_LOW_SURROGATE
-#define IS_LOW_SURROGATE(x) (((x) >= 0xdc00) && ((x) <= 0xdfff))
-#endif
-#ifndef IS_SURROGATE_PAIR
-#define IS_SURROGATE_PAIR(h, l) (IS_HIGH_SURROGATE(h) && IS_LOW_SURROGATE(l))
-#endif
 
 #ifndef USER_TIMER_MINIMUM
 #define USER_TIMER_MINIMUM 0x0000000A
@@ -393,39 +387,6 @@ static void WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
     }
 }
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
-
-static BOOL WIN_ConvertUTF32toUTF8(UINT32 codepoint, char *text)
-{
-    if (codepoint <= 0x7F) {
-        text[0] = (char)codepoint;
-        text[1] = '\0';
-    } else if (codepoint <= 0x7FF) {
-        text[0] = 0xC0 | (char)((codepoint >> 6) & 0x1F);
-        text[1] = 0x80 | (char)(codepoint & 0x3F);
-        text[2] = '\0';
-    } else if (codepoint <= 0xFFFF) {
-        text[0] = 0xE0 | (char)((codepoint >> 12) & 0x0F);
-        text[1] = 0x80 | (char)((codepoint >> 6) & 0x3F);
-        text[2] = 0x80 | (char)(codepoint & 0x3F);
-        text[3] = '\0';
-    } else if (codepoint <= 0x10FFFF) {
-        text[0] = 0xF0 | (char)((codepoint >> 18) & 0x0F);
-        text[1] = 0x80 | (char)((codepoint >> 12) & 0x3F);
-        text[2] = 0x80 | (char)((codepoint >> 6) & 0x3F);
-        text[3] = 0x80 | (char)(codepoint & 0x3F);
-        text[4] = '\0';
-    } else {
-        return SDL_FALSE;
-    }
-    return SDL_TRUE;
-}
-
-static BOOL WIN_ConvertUTF16toUTF8(UINT32 high_surrogate, UINT32 low_surrogate, char *text)
-{
-    const UINT32 SURROGATE_OFFSET = 0x10000U - (0xD800 << 10) - 0xDC00;
-    const UINT32 codepoint = (high_surrogate << 10) + low_surrogate + SURROGATE_OFFSET;
-    return WIN_ConvertUTF32toUTF8(codepoint, text);
-}
 
 static SDL_bool ShouldGenerateWindowCloseOnAltF4(void)
 {
@@ -885,7 +846,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             returnCode = 1;
         } else {
             char text[5];
-            if (WIN_ConvertUTF32toUTF8((UINT32)wParam, text)) {
+            if (SDL_UCS4ToUTF8((Uint32)wParam, text) != text) {
                 SDL_SendKeyboardText(text);
             }
             returnCode = 0;
@@ -893,31 +854,27 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
 
     case WM_CHAR:
-        /* When a user enters a Unicode code point defined in the Basic Multilingual Plane, Windows sends a WM_CHAR
-           message with the code point encoded as UTF-16. When a user enters a Unicode code point from a Supplementary
-           Plane, Windows sends the code point in two separate WM_CHAR messages: The first message includes the UTF-16
-           High Surrogate and the second the UTF-16 Low Surrogate. The High and Low Surrogates cannot be individually
-           converted to valid UTF-8, therefore, we must save the High Surrogate from the first WM_CHAR message and
-           concatenate it with the Low Surrogate from the second WM_CHAR message. At that point, we have a valid
-           UTF-16 surrogate pair ready to re-encode as UTF-8. */
+        /* Characters outside Unicode Basic Multilingual Plane (BMP)
+         * are coded as so called "surrogate pair" in two separate character events.
+         * Cache high surrogate until next character event. */
         if (IS_HIGH_SURROGATE(wParam)) {
             data->high_surrogate = (WCHAR)wParam;
-        } else if (IS_SURROGATE_PAIR(data->high_surrogate, wParam)) {
-            /* The code point is in a Supplementary Plane.
-               Here wParam is the Low Surrogate. */
-            char text[5];
-            if (WIN_ConvertUTF16toUTF8((UINT32)data->high_surrogate, (UINT32)wParam, text)) {
-                SDL_SendKeyboardText(text);
-            }
-            data->high_surrogate = 0;
         } else {
-            /* The code point is in the Basic Multilingual Plane.
-               It's numerically equal to UTF-32. */
-            char text[5];
-            if (WIN_ConvertUTF32toUTF8((UINT32)wParam, text)) {
-                SDL_SendKeyboardText(text);
+            WCHAR utf16[] = {
+                data->high_surrogate ? data->high_surrogate : (WCHAR)wParam,
+                data->high_surrogate ? (WCHAR)wParam : L'\0',
+                L'\0'
+            };
+
+            char utf8[5];
+            int result = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, utf16, -1, utf8, sizeof(utf8), NULL, NULL);
+            if (result > 0) {
+                SDL_SendKeyboardText(utf8);
             }
+
+            data->high_surrogate = L'\0';
         }
+
         returnCode = 0;
         break;
 
