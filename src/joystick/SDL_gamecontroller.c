@@ -45,6 +45,8 @@
 
 #define SDL_CONTROLLER_CRC_FIELD           "crc:"
 #define SDL_CONTROLLER_CRC_FIELD_SIZE      4 /* hard-coded for speed */
+#define SDL_CONTROLLER_TYPE_FIELD          "type:"
+#define SDL_CONTROLLER_TYPE_FIELD_SIZE     SDL_strlen(SDL_CONTROLLER_TYPE_FIELD)
 #define SDL_CONTROLLER_PLATFORM_FIELD      "platform:"
 #define SDL_CONTROLLER_PLATFORM_FIELD_SIZE SDL_strlen(SDL_CONTROLLER_PLATFORM_FIELD)
 #define SDL_CONTROLLER_HINT_FIELD          "hint:"
@@ -133,6 +135,7 @@ struct _SDL_GameController
     int ref_count _guarded;
 
     const char *name _guarded;
+    SDL_GameControllerType type _guarded;
     ControllerMapping_t *mapping _guarded;
     int num_bindings _guarded;
     SDL_ExtendedGameControllerBind *bindings _guarded;
@@ -850,6 +853,47 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
     return mapping;
 }
 
+static const char *map_StringForGameControllerType[] = {
+    "unknown",
+    "xbox360",
+    "xboxone",
+    "ps3",
+    "ps4",
+    "switchpro",
+    "virtual",
+    "ps5",
+    "amazonluna",
+    "googlestadia",
+    "nvidiashield",
+    "joyconleft",
+    "joyconright",
+    "joyconpair"
+};
+SDL_COMPILE_TIME_ASSERT(map_StringForGameControllerType, SDL_arraysize(map_StringForGameControllerType) == SDL_CONTROLLER_TYPE_MAX);
+
+/*
+ * convert a string to its enum equivalent
+ */
+static SDL_GameControllerType SDL_GetGameControllerTypeFromString(const char *str)
+{
+    int i;
+
+    if (!str || str[0] == '\0') {
+        return SDL_CONTROLLER_TYPE_UNKNOWN;
+    }
+
+    if (*str == '+' || *str == '-') {
+        ++str;
+    }
+
+    for (i = 0; i < SDL_arraysize(map_StringForGameControllerType); ++i) {
+        if (SDL_strcasecmp(str, map_StringForGameControllerType[i]) == 0) {
+            return (SDL_GameControllerType)i;
+        }
+    }
+    return SDL_CONTROLLER_TYPE_UNKNOWN;
+}
+
 static const char *map_StringForControllerAxis[] = {
     "leftx",
     "lefty",
@@ -1095,6 +1139,31 @@ static void SDL_PrivateGameControllerParseControllerConfigString(SDL_GameControl
     }
 }
 
+static void SDL_UpdateGameControllerType(SDL_GameController *gamecontroller)
+{
+    char *type_string, *comma;
+
+    SDL_AssertJoysticksLocked();
+
+    gamecontroller->type = SDL_CONTROLLER_TYPE_UNKNOWN;
+
+    type_string = SDL_strstr(gamecontroller->mapping->mapping, SDL_CONTROLLER_TYPE_FIELD);
+    if (type_string) {
+        type_string += SDL_CONTROLLER_TYPE_FIELD_SIZE;
+        comma = SDL_strchr(type_string, ',');
+        if (comma) {
+            *comma = '\0';
+            gamecontroller->type = SDL_GetGameControllerTypeFromString(type_string);
+            *comma = ',';
+        } else {
+            gamecontroller->type = SDL_GetGameControllerTypeFromString(type_string);
+        }
+    }
+    if (gamecontroller->type == SDL_CONTROLLER_TYPE_UNKNOWN) {
+        gamecontroller->type = SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGetGUID(gamecontroller->joystick), SDL_JoystickName(gamecontroller->joystick));
+    }
+}
+
 /*
  * Make a new button mapping struct
  */
@@ -1112,6 +1181,8 @@ static void SDL_PrivateLoadButtonMapping(SDL_GameController *gamecontroller, Con
     }
 
     SDL_PrivateGameControllerParseControllerConfigString(gamecontroller, pControllerMapping->mapping);
+
+    SDL_UpdateGameControllerType(gamecontroller);
 
     /* Set the zero point for triggers */
     for (i = 0; i < gamecontroller->num_bindings; ++i) {
@@ -1976,7 +2047,26 @@ const char *SDL_GameControllerPathForIndex(int joystick_index)
  */
 SDL_GameControllerType SDL_GameControllerTypeForIndex(int joystick_index)
 {
-    return SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGetDeviceGUID(joystick_index), SDL_JoystickNameForIndex(joystick_index));
+    SDL_JoystickGUID joystick_guid = SDL_JoystickGetDeviceGUID(joystick_index);
+    const char *mapping = SDL_GameControllerMappingForGUID(joystick_guid);
+    char *type_string, *comma;
+    SDL_GameControllerType type;
+    if (mapping) {
+        type_string = SDL_strstr(mapping, SDL_CONTROLLER_TYPE_FIELD);
+        if (type_string) {
+            type_string += SDL_CONTROLLER_TYPE_FIELD_SIZE;
+            comma = SDL_strchr(type_string, ',');
+            if (comma) {
+                *comma = '\0';
+                type = SDL_GetGameControllerTypeFromString(type_string);
+                *comma = ',';
+            } else {
+                type = SDL_GetGameControllerTypeFromString(type_string);
+            }
+            return type;
+        }
+    }
+    return SDL_GetJoystickGameControllerTypeFromGUID(joystick_guid, SDL_JoystickNameForIndex(joystick_index));
 }
 
 /**
@@ -2674,6 +2764,9 @@ SDL_GameControllerType SDL_GameControllerGetType(SDL_GameController *gamecontrol
 
     if (!joystick) {
         return SDL_CONTROLLER_TYPE_UNKNOWN;
+    }
+    if (gamecontroller->type != SDL_CONTROLLER_TYPE_UNKNOWN) {
+        return gamecontroller->type;
     }
     return SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGetGUID(joystick), SDL_JoystickName(joystick));
 }
