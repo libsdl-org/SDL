@@ -829,6 +829,19 @@ void SDL_PenInit(void)
 #endif
 }
 
+void SDL_PenQuit(void)
+{
+    SDL_DelHintCallback(SDL_HINT_PEN_NOT_MOUSE,
+                        SDL_PenUpdateHint, &pen_mouse_emulation_mode);
+
+    SDL_DelHintCallback(SDL_HINT_PEN_DELAY_MOUSE_BUTTON,
+                        SDL_PenUpdateHint, &pen_delay_mouse_button_mode);
+#ifndef SDL_THREADS_DISABLED
+    SDL_DestroyMutex(SDL_pen_access_lock);
+    SDL_pen_access_lock = NULL;
+#endif
+}
+
 SDL_bool SDL_PenPerformHitTest(void)
 {
     return pen_mouse_emulation_mode == PEN_MOUSE_EMULATE;

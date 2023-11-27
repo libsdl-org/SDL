@@ -898,6 +898,7 @@ void SDL_QuitMouse(void)
     }
     SDL_SetRelativeMouseMode(SDL_FALSE);
     SDL_ShowCursor();
+    SDL_PenQuit();
 
     if (mouse->def_cursor) {
         SDL_SetDefaultCursor(NULL);

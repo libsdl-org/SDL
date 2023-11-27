@@ -331,6 +331,11 @@ extern int SDL_SendPenWindowEvent(Uint64 timestamp, SDL_PenID instance_id, SDL_W
  */
 extern void SDL_PenInit(void);
 
+/**
+ * De-initialises the pen subsystem.
+ */
+extern void SDL_PenQuit(void);
+
 #endif /* SDL_pen_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

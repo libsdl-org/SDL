@@ -54,6 +54,7 @@
 #define SDL_SendPenWindowEvent       SDL_SUT_SendPenWindowEvent
 #define SDL_PenPerformHitTest        SDL_SUT_PenPerformHitTest
 #define SDL_PenInit                  SDL_SUT_PenInit
+#define SDL_PenQuit                  SDL_SUT_PenQuit
 
 /* ================= Mock API ================== */
 
