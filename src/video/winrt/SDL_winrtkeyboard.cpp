@@ -34,6 +34,8 @@ extern "C" {
 #include "../../events/SDL_keyboard_c.h"
 }
 
+#include "SDL_winrtvideo_cpp.h"
+
 static SDL_Scancode WINRT_TranslateKeycode(Windows::System::VirtualKey virtualKey, const Windows::UI::Core::CorePhysicalKeyStatus& keyStatus)
 {
     SDL_Scancode code;
@@ -78,20 +80,33 @@ void WINRT_ProcessAcceleratorKeyActivated(Windows::UI::Core::AcceleratorKeyEvent
     SDL_SendKeyboardKey(0, state, code);
 }
 
-void WINRT_ProcessCharacterReceivedEvent(Windows::UI::Core::CharacterReceivedEventArgs ^ args)
+void WINRT_ProcessCharacterReceivedEvent(SDL_Window *window, Windows::UI::Core::CharacterReceivedEventArgs ^ args)
 {
-    wchar_t src_ucs2[2];
-    char dest_utf8[16];
-    int result;
+    if (!window) {
+        return;
+    }
 
-    /* Setup src */
-    src_ucs2[0] = args->KeyCode;
-    src_ucs2[1] = L'\0';
+    SDL_WindowData *data = window->driverdata;
 
-    /* Convert the text, then send an SDL_EVENT_TEXT_INPUT event. */
-    result = WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)&src_ucs2, -1, (LPSTR)dest_utf8, sizeof(dest_utf8), NULL, NULL);
-    if (result > 0) {
-        SDL_SendKeyboardText(dest_utf8);
+    /* Characters outside Unicode Basic Multilingual Plane (BMP)
+     * are coded as so called "surrogate pair" in two separate UTF-16 character events.
+     * Cache high surrogate until next character event. */
+    if (IS_HIGH_SURROGATE(args->KeyCode)) {
+        data->high_surrogate = (WCHAR)args->KeyCode;
+    } else {
+        WCHAR utf16[] = {
+            data->high_surrogate ? data->high_surrogate : (WCHAR)args->KeyCode,
+            data->high_surrogate ? (WCHAR)args->KeyCode : L'\0',
+            L'\0'
+        };
+
+        char utf8[5];
+        int result = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, utf16, -1, utf8, sizeof(utf8), NULL, NULL);
+        if (result > 0) {
+            SDL_SendKeyboardText(utf8);
+        }
+
+        data->high_surrogate = L'\0';
     }
 }
 

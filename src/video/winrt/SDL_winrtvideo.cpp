@@ -595,6 +595,7 @@ int WINRT_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
     }
     window->driverdata = data;
     data->sdlWindow = window;
+    data->high_surrogate = L'\0';
 
     /* To note, when XAML support is enabled, access to the CoreWindow will not
        be possible, at least not via the SDL/XAML thread.  Attempts to access it

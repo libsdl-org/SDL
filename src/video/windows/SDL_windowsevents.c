@@ -855,7 +855,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_CHAR:
         /* Characters outside Unicode Basic Multilingual Plane (BMP)
-         * are coded as so called "surrogate pair" in two separate character events.
+         * are coded as so called "surrogate pair" in two separate UTF-16 character events.
          * Cache high surrogate until next character event. */
         if (IS_HIGH_SURROGATE(wParam)) {
             data->high_surrogate = (WCHAR)wParam;
