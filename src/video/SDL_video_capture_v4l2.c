@@ -28,10 +28,40 @@
 #include "SDL_video_capture_c.h"
 #include "SDL_pixels_c.h"
 #include "../thread/SDL_systhread.h"
+#include "../../core/linux/SDL_evdev_capabilities.h"
+#include "../../core/linux/SDL_udev.h"
+#include <limits.h>      /* INT_MAX */
 
 #define DEBUG_VIDEO_CAPTURE_CAPTURE 1
 
 #if defined(__linux__) && !defined(__ANDROID__)
+
+
+#define MAX_CAPTURE_DEVICES 128 /* It's doubtful someone has more than that */
+
+static int MaybeAddDevice(const char *path);
+#ifdef SDL_USE_LIBUDEV
+static int MaybeRemoveDevice(const char *path);
+static void capture_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath);
+#endif /* SDL_USE_LIBUDEV */
+
+/*
+ * List of available capture devices.
+ */
+typedef struct SDL_capturelist_item
+{
+    char *fname;        /* Dev path name (like /dev/video0) */
+    char *bus_info;     /* don't add two paths with same bus_info (eg /dev/video0 and /dev/video1 */
+    SDL_VideoCaptureDeviceID instance_id;
+    SDL_VideoCaptureDevice *device; /* Associated device */
+    struct SDL_capturelist_item *next;
+} SDL_capturelist_item;
+
+static SDL_capturelist_item *SDL_capturelist = NULL;
+static SDL_capturelist_item *SDL_capturelist_tail = NULL;
+static int num_video_captures = 0;
+
+
 
 enum io_method {
     IO_METHOD_READ,
@@ -933,32 +963,252 @@ OpenDevice(SDL_VideoCaptureDevice *_this)
     return 0;
 }
 
-
-
 int
-GetDeviceName(int index, char *buf, int size) {
-    SDL_snprintf(buf, size, "/dev/video%d", index);
+GetDeviceName(SDL_VideoCaptureDeviceID instance_id, char *buf, int size)
+{
+    SDL_capturelist_item *item;
+    for (item = SDL_capturelist; item; item = item->next) {
+        if (item->instance_id == instance_id) {
+            SDL_snprintf(buf, size, "%s", item->fname);
+            return 0;
+        }
+    }
+
+    /* unknown instance_id */
+    return -1;
+}
+
+
+SDL_VideoCaptureDeviceID *GetVideoCaptureDevices(int *count)
+{
+    /* real list of ID */
+    int i = 0;
+    int num = num_video_captures;
+    SDL_VideoCaptureDeviceID *ret;
+    SDL_capturelist_item *item;
+
+    ret = (SDL_VideoCaptureDeviceID *)SDL_malloc((num + 1) * sizeof(*ret));
+
+    if (ret == NULL) {
+        SDL_OutOfMemory();
+        *count = 0;
+        return NULL;
+    }
+
+    for (item = SDL_capturelist; item; item = item->next) {
+        ret[i] = item->instance_id;
+        i++;
+    }
+
+    ret[num] = 0;
+    *count = num;
+    return ret;
+}
+
+
+/*
+ * Initializes the subsystem by finding available devices.
+ */
+int SDL_SYS_VideoCaptureInit(void)
+{
+    const char pattern[] = "/dev/video%d";
+    char path[PATH_MAX];
+    int i, j;
+
+    /*
+     * Limit amount of checks to MAX_CAPTURE_DEVICES since we may or may not have
+     * permission to some or all devices.
+     */
+    i = 0;
+    for (j = 0; j < MAX_CAPTURE_DEVICES; ++j) {
+        (void)SDL_snprintf(path, PATH_MAX, pattern, i++);
+        if (MaybeAddDevice(path) == -2) {
+            break;
+        }
+    }
+
+#ifdef SDL_USE_LIBUDEV
+    if (SDL_UDEV_Init() < 0) {
+        return SDL_SetError("Could not initialize UDEV");
+    }
+
+    if (SDL_UDEV_AddCallback(capture_udev_callback) < 0) {
+        SDL_UDEV_Quit();
+        return SDL_SetError("Could not setup Video Capture <-> udev callback");
+    }
+
+    /* Force a scan to build the initial device list */
+    SDL_UDEV_Scan();
+#endif /* SDL_USE_LIBUDEV */
+
+    return num_video_captures;
+}
+
+
+int SDL_SYS_VideoCaptureQuit(void)
+{
+    SDL_capturelist_item *item;
+    for (item = SDL_capturelist; item; ) {
+        SDL_capturelist_item *tmp = item->next;
+
+        SDL_free(item->fname);
+        SDL_free(item->bus_info);
+        SDL_free(item);
+        item = tmp;
+    }
+
+    num_video_captures = 0;
+    SDL_capturelist = NULL;
+    SDL_capturelist_tail = NULL;
+
+    return SDL_FALSE;
+}
+
+#ifdef SDL_USE_LIBUDEV
+static void capture_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath)
+{
+    if (!devpath || !(udev_class & SDL_UDEV_DEVICE_VIDEO_CAPTURE)) {
+        return;
+    }
+
+    switch (udev_type) {
+    case SDL_UDEV_DEVICEADDED:
+        MaybeAddDevice(devpath);
+        break;
+
+    case SDL_UDEV_DEVICEREMOVED:
+        MaybeRemoveDevice(devpath);
+        break;
+
+    default:
+        break;
+    }
+}
+#endif /* SDL_USE_LIBUDEV */
+
+static SDL_bool DeviceExists(const char *path, const char *bus_info) {
+    SDL_capturelist_item *item;
+
+    for (item = SDL_capturelist; item; item = item->next) {
+        /* found same dev name */
+        if (SDL_strcmp(path, item->fname) == 0) {
+            return SDL_TRUE;
+        }
+        /* found same bus_info */
+        if (SDL_strcmp(bus_info, item->bus_info) == 0) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+static int MaybeAddDevice(const char *path)
+{
+    char *bus_info = NULL;
+    struct v4l2_capability vcap;
+    int err;
+    int fd;
+    SDL_capturelist_item *item;
+
+    if (!path) {
+        return -1;
+    }
+
+    fd = open(path, O_RDWR);
+    if (fd < 0) {
+        return -2; /* stop iterating /dev/video%d */
+    }
+    err = ioctl(fd, VIDIOC_QUERYCAP, &vcap);
+    close(fd);
+    if (err) {
+        return -1;
+    }
+
+    bus_info = SDL_strdup((char *)vcap.bus_info);
+
+    if (DeviceExists(path, bus_info)) {
+        SDL_free(bus_info);
+        return 0;
+    }
+
+
+    /* Add new item */
+    item = (SDL_capturelist_item *)SDL_calloc(1, sizeof(SDL_capturelist_item));
+    if (!item) {
+        SDL_free(bus_info);
+        return -1;
+    }
+
+    item->fname = SDL_strdup(path);
+    if (!item->fname) {
+        SDL_free(item);
+        SDL_free(bus_info);
+        return -1;
+    }
+
+    item->fname = SDL_strdup(path);
+    item->bus_info = bus_info;
+    item->instance_id = SDL_GetNextObjectID();
+
+
+    if (!SDL_capturelist_tail) {
+        SDL_capturelist = SDL_capturelist_tail = item;
+    } else {
+        SDL_capturelist_tail->next = item;
+        SDL_capturelist_tail = item;
+    }
+
+    ++num_video_captures;
+
+    /* !!! TODO: Send a add event? */
+#if DEBUG_VIDEO_CAPTURE_CAPTURE
+    SDL_Log("Added video capture ID: %d %s (%s) (total: %d)", item->instance_id, path, bus_info, num_video_captures);
+#endif
     return 0;
 }
 
-int
-GetNumDevices(void) {
-    int num;
-    for (num = 0; num < 128; num++) {
-        static char buf[256];
-        buf[0] = 0;
-        buf[255] = 0;
-        GetDeviceName(num, buf, sizeof (buf));
-        SDL_RWops *src = SDL_RWFromFile(buf, "rb");
-        if (src == NULL) {
-            // When file does not exist, an error is set. Clear it.
-            SDL_ClearError();
-            return num;
-        }
-        SDL_RWclose(src);
+#ifdef SDL_USE_LIBUDEV
+static int MaybeRemoveDevice(const char *path)
+{
+
+    SDL_capturelist_item *item;
+    SDL_capturelist_item *prev = NULL;
+#if DEBUG_VIDEO_CAPTURE_CAPTURE
+    SDL_Log("Remove video capture %s", path);
+#endif
+    if (!path) {
+        return -1;
     }
-    return num;
+
+    for (item = SDL_capturelist; item; item = item->next) {
+        /* found it, remove it. */
+        if (SDL_strcmp(path, item->fname) == 0) {
+            if (prev) {
+                prev->next = item->next;
+            } else {
+                SDL_assert(SDL_capturelist == item);
+                SDL_capturelist = item->next;
+            }
+            if (item == SDL_capturelist_tail) {
+                SDL_capturelist_tail = prev;
+            }
+
+            /* Need to decrement the count */
+            --num_video_captures;
+            /* !!! TODO: Send a remove event? */
+
+            SDL_free(item->fname);
+            SDL_free(item->bus_info);
+            SDL_free(item);
+            return 0;
+        }
+        prev = item;
+    }
+    return 0;
 }
+#endif /* SDL_USE_LIBUDEV */
+
+
 
 #endif
 

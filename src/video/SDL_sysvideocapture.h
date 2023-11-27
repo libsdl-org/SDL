@@ -61,6 +61,9 @@ struct SDL_VideoCaptureDevice
     struct SDL_PrivateVideoCaptureData *hidden;
 };
 
+extern int SDL_SYS_VideoCaptureInit(void);
+extern int SDL_SYS_VideoCaptureQuit(void);
+
 extern int OpenDevice(SDL_VideoCaptureDevice *_this);
 extern void CloseDevice(SDL_VideoCaptureDevice *_this);
 
@@ -80,9 +83,8 @@ extern int GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format);
 extern int GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format);
 extern int GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width, int *height);
 
-extern int GetDeviceName(int index, char *buf, int size);
-extern int GetNumDevices(void);
-
+extern int GetDeviceName(SDL_VideoCaptureDeviceID instance_id, char *buf, int size);
+extern SDL_VideoCaptureDeviceID *GetVideoCaptureDevices(int *count);
 
 extern SDL_bool check_all_device_closed(void);
 extern SDL_bool check_device_playing(void);

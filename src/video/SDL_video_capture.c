@@ -311,7 +311,6 @@ const char *
 SDL_GetVideoCaptureDeviceName(SDL_VideoCaptureDeviceID instance_id)
 {
 #ifdef SDL_VIDEO_CAPTURE
-    int index = instance_id - 1;
     static char buf[256];
     buf[0] = 0;
     buf[255] = 0;
@@ -321,7 +320,7 @@ SDL_GetVideoCaptureDeviceName(SDL_VideoCaptureDeviceID instance_id)
         return NULL;
     }
 
-    if (GetDeviceName(index, buf, sizeof (buf)) < 0) {
+    if (GetDeviceName(instance_id, buf, sizeof (buf)) < 0) {
         buf[0] = 0;
     }
     return buf;
@@ -336,14 +335,21 @@ SDL_VideoCaptureDeviceID *
 SDL_GetVideoCaptureDevices(int *count)
 {
 
-    int i;
-#ifdef SDL_VIDEO_CAPTURE
-    int num = GetNumDevices();
-#else
     int num = 0;
+    SDL_VideoCaptureDeviceID *ret = NULL;
+#ifdef SDL_VIDEO_CAPTURE
+    ret = GetVideoCaptureDevices(&num);
 #endif
-    SDL_VideoCaptureDeviceID *ret;
 
+    if (ret) {
+        if (count) {
+            *count = num;
+        }
+        return ret;
+    }
+
+    /* return list of 0 ID, null terminated */
+    num = 0;
     ret = (SDL_VideoCaptureDeviceID *)SDL_malloc((num + 1) * sizeof(*ret));
 
     if (ret == NULL) {
@@ -354,11 +360,7 @@ SDL_GetVideoCaptureDevices(int *count)
         return NULL;
     }
 
-    for (i = 0; i < num; i++) {
-        ret[i] = i + 1;
-    }
     ret[num] = 0;
-
     if (count) {
         *count = num;
     }
@@ -501,6 +503,8 @@ SDL_OpenVideoCapture(SDL_VideoCaptureDeviceID instance_id)
         }
     }
 
+#if 0
+    // FIXME do we need this ?
     /* Let the user override. */
     {
         const char *dev = SDL_getenv("SDL_VIDEO_CAPTURE_DEVICE_NAME");
@@ -508,6 +512,7 @@ SDL_OpenVideoCapture(SDL_VideoCaptureDeviceID instance_id)
             device_name = dev;
         }
     }
+#endif
 
     if (device_name == NULL) {
         goto error;
@@ -823,6 +828,8 @@ SDL_VideoCaptureInit(void)
 {
 #ifdef SDL_VIDEO_CAPTURE
     SDL_zeroa(open_devices);
+
+    SDL_SYS_VideoCaptureInit();
     return 0;
 #else
     return 0;
@@ -839,6 +846,8 @@ SDL_QuitVideoCapture(void)
     }
 
     SDL_zeroa(open_devices);
+
+    SDL_SYS_VideoCaptureQuit();
 #endif
 }
 
@@ -856,6 +865,16 @@ SDL_QuitVideoCapture(void)
 
 /* See SDL_video_capture_apple.m */
 #else
+
+int SDL_SYS_VideoCaptureInit(void)
+{
+    return 0;
+}
+
+int SDL_SYS_VideoCaptureQuit(void)
+{
+    return 0;
+}
 
 int
 OpenDevice(SDL_VideoCaptureDevice *_this)
@@ -933,16 +952,17 @@ GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width
 }
 
 int
-GetDeviceName(int index, char *buf, int size)
+GetDeviceName(SDL_VideoCaptureDeviceID instance_id, char *buf, int size)
 {
     return -1;
 }
 
-int
-GetNumDevices(void)
+SDL_VideoCaptureDeviceID *
+GetVideoCaptureDevices(int *count)
 {
-    return -1;
+    return NULL;
 }
+
 #endif
 
 #endif /* SDL_VIDEO_CAPTURE */

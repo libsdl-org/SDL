@@ -125,7 +125,7 @@ static SDL_VideoCaptureDeviceID get_instance_id(int index) {
     }
 
     if (ret == 0) {
-        SDL_Log("invalid index");
+/*        SDL_Log("invalid index"); */
     }
 
     return ret;
@@ -212,7 +212,7 @@ int main(int argc, char **argv)
     SDL_Log("%s", usage);
 
     /* Load the SDL library */
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) { /* FIXME: SDL_INIT_JOYSTICK needed for add/removing devices at runtime */
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }
@@ -439,7 +439,7 @@ int main(int argc, char **argv)
                 SAVE_CAPTURE_STATE(current_dev);
 
                 current_dev += 1;
-                if (current_dev == num || current_dev >= (int) SDL_arraysize(data_capture_tab)) {
+                if (current_dev >= num || current_dev >= (int) SDL_arraysize(data_capture_tab)) {
                     current_dev = 0;
                 }
 
