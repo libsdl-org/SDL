@@ -842,6 +842,7 @@ void Wayland_InitMouse(void)
 void Wayland_FiniMouse(SDL_VideoData *data)
 {
     struct SDL_WaylandInput *input = data->input;
+    int i;
 
     Wayland_FreeCursorThemes(data);
 
@@ -851,6 +852,11 @@ void Wayland_FiniMouse(SDL_VideoData *data)
 
     SDL_DelHintCallback(SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP,
                         Wayland_EmulateMouseWarpChanged, input);
+
+    for (i = 0; i < SDL_arraysize(sys_cursors); i++) {
+        Wayland_FreeCursor(sys_cursors[i]);
+        sys_cursors[i] = NULL;
+    }
 }
 
 void Wayland_SetHitTestCursor(SDL_HitTestResult rc)
