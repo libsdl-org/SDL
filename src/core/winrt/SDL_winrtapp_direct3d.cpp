@@ -724,7 +724,7 @@ void SDL_WinRTApp::OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher ^
 
 void SDL_WinRTApp::OnCharacterReceived(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::CharacterReceivedEventArgs ^ args)
 {
-    WINRT_ProcessCharacterReceivedEvent(args);
+    WINRT_ProcessCharacterReceivedEvent(WINRT_GlobalSDLWindow, args);
 }
 
 template <typename BackButtonEventArgs>

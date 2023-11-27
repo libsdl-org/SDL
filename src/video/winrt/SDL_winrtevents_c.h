@@ -64,7 +64,7 @@ extern void WINRT_ProcessMouseMovedEvent(SDL_Window *window, Windows::Devices::I
 
 /* Keyboard */
 extern void WINRT_ProcessAcceleratorKeyActivated(Windows::UI::Core::AcceleratorKeyEventArgs ^ args);
-extern void WINRT_ProcessCharacterReceivedEvent(Windows::UI::Core::CharacterReceivedEventArgs ^ args);
+extern void WINRT_ProcessCharacterReceivedEvent(SDL_Window *window, Windows::UI::Core::CharacterReceivedEventArgs ^ args);
 
 #if NTDDI_VERSION >= NTDDI_WIN10
 extern void WINTRT_InitialiseInputPaneEvents(SDL_VideoDevice *_this);

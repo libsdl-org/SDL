@@ -100,6 +100,7 @@ struct SDL_WindowData
 #if SDL_WINRT_USE_APPLICATIONVIEW
     Windows::UI::ViewManagement::ApplicationView ^ appView;
 #endif
+    WCHAR high_surrogate;
 };
 
 #endif // ifdef __cplusplus_winrt
