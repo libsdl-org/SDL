@@ -28,10 +28,10 @@ int main(int argc, char **argv)
     int quit = 0;
     SDLTest_CommonState  *state = NULL;
 
-    SDL_VideoCaptureDevice *device = NULL;
-    SDL_VideoCaptureSpec obtained;
+    SDL_CameraDevice *device = NULL;
+    SDL_CameraSpec obtained;
 
-    SDL_VideoCaptureFrame frame_current;
+    SDL_CameraFrame frame_current;
     SDL_Texture *texture = NULL;
     int texture_updated = 0;
 
@@ -73,14 +73,14 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    device = SDL_OpenVideoCaptureWithSpec(0, NULL, &obtained, SDL_VIDEO_CAPTURE_ALLOW_ANY_CHANGE);
+    device = SDL_OpenCameraWithSpec(0, NULL, &obtained, SDL_CAMERA_ALLOW_ANY_CHANGE);
     if (!device) {
-        SDL_Log("No video capture? %s", SDL_GetError());
+        SDL_Log("No camera? %s", SDL_GetError());
         return 1;
     }
 
-    if (SDL_StartVideoCapture(device) < 0) {
-        SDL_Log("error SDL_StartVideoCapture(): %s", SDL_GetError());
+    if (SDL_StartCamera(device) < 0) {
+        SDL_Log("error SDL_StartCamera(): %s", SDL_GetError());
         return 1;
     }
 
@@ -118,11 +118,11 @@ int main(int argc, char **argv)
         }
 
         {
-            SDL_VideoCaptureFrame frame_next;
+            SDL_CameraFrame frame_next;
             SDL_zero(frame_next);
 
-            if (SDL_AcquireVideoCaptureFrame(device, &frame_next) < 0) {
-                SDL_Log("err SDL_AcquireVideoCaptureFrame: %s", SDL_GetError());
+            if (SDL_AcquireCameraFrame(device, &frame_next) < 0) {
+                SDL_Log("err SDL_AcquireCameraFrame: %s", SDL_GetError());
             }
 #if 0
             if (frame_next.num_planes) {
@@ -132,8 +132,8 @@ int main(int argc, char **argv)
 
             if (frame_next.num_planes) {
                 if (frame_current.num_planes) {
-                    if (SDL_ReleaseVideoCaptureFrame(device, &frame_current) < 0) {
-                        SDL_Log("err SDL_ReleaseVideoCaptureFrame: %s", SDL_GetError());
+                    if (SDL_ReleaseCameraFrame(device, &frame_current) < 0) {
+                        SDL_Log("err SDL_ReleaseCameraFrame: %s", SDL_GetError());
                     }
                 }
 
@@ -186,13 +186,13 @@ int main(int argc, char **argv)
         SDL_RenderPresent(renderer);
     }
 
-    if (SDL_StopVideoCapture(device) < 0) {
-        SDL_Log("error SDL_StopVideoCapture(): %s", SDL_GetError());
+    if (SDL_StopCamera(device) < 0) {
+        SDL_Log("error SDL_StopCamera(): %s", SDL_GetError());
     }
     if (frame_current.num_planes) {
-        SDL_ReleaseVideoCaptureFrame(device, &frame_current);
+        SDL_ReleaseCameraFrame(device, &frame_current);
     }
-    SDL_CloseVideoCapture(device);
+    SDL_CloseCamera(device);
 
     if (texture) {
         SDL_DestroyTexture(texture);

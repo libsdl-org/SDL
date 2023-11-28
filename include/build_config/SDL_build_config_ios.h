@@ -212,4 +212,7 @@
 /* enable filesystem support */
 #define SDL_FILESYSTEM_COCOA   1
 
+/* enable camera support */
+#define SDL_CAMERA_APPLE 1
+
 #endif /* SDL_build_config_ios_h_ */

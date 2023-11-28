@@ -27,20 +27,18 @@
 #include "../video/SDL_pixels_c.h"
 #include "../thread/SDL_systhread.h"
 
-#define DEBUG_VIDEO_CAPTURE_CAPTURE 0
+#define DEBUG_CAMERA 1
 
-
-#ifdef SDL_VIDEO_CAPTURE
 /* list node entries to share frames between SDL and user app */
 typedef struct entry_t
 {
-    SDL_VideoCaptureFrame frame;
+    SDL_CameraFrame frame;
 } entry_t;
 
-static SDL_VideoCaptureDevice *open_devices[16];
+static SDL_CameraDevice *open_devices[16];
 
 static void
-close_device(SDL_VideoCaptureDevice *device)
+close_device(SDL_CameraDevice *device)
 {
     if (!device) {
         return;
@@ -73,7 +71,7 @@ close_device(SDL_VideoCaptureDevice *device)
         while (device->buffer_queue != NULL) {
             SDL_ListPop(&device->buffer_queue, (void**)&entry);
             if (entry) {
-                SDL_VideoCaptureFrame f = entry->frame;
+                SDL_CameraFrame f = entry->frame;
                 /* Release frames not acquired, if any */
                 if (f.timestampNS) {
                     ReleaseFrame(device, &f);
@@ -109,7 +107,7 @@ SDL_bool check_device_playing(void)
     int i, n = SDL_arraysize(open_devices);
     for (i = 0; i < n; i++) {
         if (open_devices[i]) {
-            if (SDL_GetVideoCaptureStatus(open_devices[i]) == SDL_VIDEO_CAPTURE_PLAYING) {
+            if (SDL_GetCameraStatus(open_devices[i]) == SDL_CAMERA_PLAYING) {
                 return SDL_TRUE;
             }
         }
@@ -117,26 +115,20 @@ SDL_bool check_device_playing(void)
     return SDL_FALSE;
 }
 
-
-#endif /* SDL_VIDEO_CAPTURE */
-
 void
-SDL_CloseVideoCapture(SDL_VideoCaptureDevice *device)
+SDL_CloseCamera(SDL_CameraDevice *device)
 {
-#ifdef SDL_VIDEO_CAPTURE
     if (!device) {
         SDL_InvalidParamError("device");
         return;
     }
     close_device(device);
-#endif
 }
 
 int
-SDL_StartVideoCapture(SDL_VideoCaptureDevice *device)
+SDL_StartCamera(SDL_CameraDevice *device)
 {
-#ifdef SDL_VIDEO_CAPTURE
-    SDL_VideoCaptureStatus status;
+    SDL_CameraStatus status;
     int result;
     if (!device) {
         return SDL_InvalidParamError("device");
@@ -146,12 +138,12 @@ SDL_StartVideoCapture(SDL_VideoCaptureDevice *device)
         return SDL_SetError("no spec set");
     }
 
-    status = SDL_GetVideoCaptureStatus(device);
-    if (status != SDL_VIDEO_CAPTURE_INIT) {
+    status = SDL_GetCameraStatus(device);
+    if (status != SDL_CAMERA_INIT) {
         return SDL_SetError("invalid state");
     }
 
-    result = StartCapture(device);
+    result = StartCamera(device);
     if (result < 0) {
         return result;
     }
@@ -159,15 +151,11 @@ SDL_StartVideoCapture(SDL_VideoCaptureDevice *device)
     SDL_AtomicSet(&device->enabled, 1);
 
     return 0;
-#else
-    return SDL_Unsupported();
-#endif
 }
 
 int
-SDL_GetVideoCaptureSpec(SDL_VideoCaptureDevice *device, SDL_VideoCaptureSpec *spec)
+SDL_GetCameraSpec(SDL_CameraDevice *device, SDL_CameraSpec *spec)
 {
-#ifdef SDL_VIDEO_CAPTURE
     if (!device) {
         return SDL_InvalidParamError("device");
     }
@@ -179,24 +167,20 @@ SDL_GetVideoCaptureSpec(SDL_VideoCaptureDevice *device, SDL_VideoCaptureSpec *sp
     SDL_zerop(spec);
 
     return GetDeviceSpec(device, spec);
-#else
-    return SDL_Unsupported();
-#endif
 }
 
 int
-SDL_StopVideoCapture(SDL_VideoCaptureDevice *device)
+SDL_StopCamera(SDL_CameraDevice *device)
 {
-#ifdef SDL_VIDEO_CAPTURE
-    SDL_VideoCaptureStatus status;
+    SDL_CameraStatus status;
     int ret;
     if (!device) {
         return SDL_InvalidParamError("device");
     }
 
-    status = SDL_GetVideoCaptureStatus(device);
+    status = SDL_GetCameraStatus(device);
 
-    if (status != SDL_VIDEO_CAPTURE_PLAYING) {
+    if (status != SDL_CAMERA_PLAYING) {
         return SDL_SetError("invalid state");
     }
 
@@ -204,7 +188,7 @@ SDL_StopVideoCapture(SDL_VideoCaptureDevice *device)
     SDL_AtomicSet(&device->shutdown, 1);
 
     SDL_LockMutex(device->acquiring_lock);
-    ret = StopCapture(device);
+    ret = StopCamera(device);
     SDL_UnlockMutex(device->acquiring_lock);
 
     if (ret < 0) {
@@ -212,25 +196,20 @@ SDL_StopVideoCapture(SDL_VideoCaptureDevice *device)
     }
 
     return 0;
-#else
-    return SDL_Unsupported();
-#endif
 }
-
-#ifdef SDL_VIDEO_CAPTURE
 
 /* Check spec has valid format and frame size */
 static int
-prepare_video_capturespec(SDL_VideoCaptureDevice *device, const SDL_VideoCaptureSpec *desired, SDL_VideoCaptureSpec *obtained, int allowed_changes)
+prepare_cameraspec(SDL_CameraDevice *device, const SDL_CameraSpec *desired, SDL_CameraSpec *obtained, int allowed_changes)
 {
     /* Check format */
     {
-        int i, num = SDL_GetNumVideoCaptureFormats(device);
+        int i, num = SDL_GetNumCameraFormats(device);
         int is_format_valid = 0;
 
         for (i = 0; i < num; i++) {
             Uint32 format;
-            if (SDL_GetVideoCaptureFormat(device, i, &format) == 0) {
+            if (SDL_GetCameraFormat(device, i, &format) == 0) {
                 if (format == desired->format && format != SDL_PIXELFORMAT_UNKNOWN) {
                     is_format_valid = 1;
                     obtained->format = format;
@@ -243,7 +222,7 @@ prepare_video_capturespec(SDL_VideoCaptureDevice *device, const SDL_VideoCapture
             if (allowed_changes) {
                 for (i = 0; i < num; i++) {
                     Uint32 format;
-                    if (SDL_GetVideoCaptureFormat(device, i, &format) == 0) {
+                    if (SDL_GetCameraFormat(device, i, &format) == 0) {
                         if (format != SDL_PIXELFORMAT_UNKNOWN) {
                             obtained->format = format;
                             is_format_valid = 1;
@@ -266,12 +245,12 @@ prepare_video_capturespec(SDL_VideoCaptureDevice *device, const SDL_VideoCapture
 
     /* Check frame size */
     {
-        int i, num = SDL_GetNumVideoCaptureFrameSizes(device, obtained->format);
+        int i, num = SDL_GetNumCameraFrameSizes(device, obtained->format);
         int is_framesize_valid = 0;
 
         for (i = 0; i < num; i++) {
             int w, h;
-            if (SDL_GetVideoCaptureFrameSize(device, obtained->format, i, &w, &h) == 0) {
+            if (SDL_GetCameraFrameSize(device, obtained->format, i, &w, &h) == 0) {
                 if (desired->width == w && desired->height == h) {
                     is_framesize_valid = 1;
                     obtained->width = w;
@@ -284,7 +263,7 @@ prepare_video_capturespec(SDL_VideoCaptureDevice *device, const SDL_VideoCapture
         if (!is_framesize_valid) {
             if (allowed_changes) {
                 int w, h;
-                if (SDL_GetVideoCaptureFrameSize(device, obtained->format, 0, &w, &h) == 0) {
+                if (SDL_GetCameraFrameSize(device, obtained->format, 0, &w, &h) == 0) {
                     is_framesize_valid = 1;
                     obtained->width = w;
                     obtained->height = h;
@@ -305,12 +284,9 @@ prepare_video_capturespec(SDL_VideoCaptureDevice *device, const SDL_VideoCapture
     return 0;
 }
 
-#endif /* SDL_VIDEO_CAPTURE */
-
 const char *
-SDL_GetVideoCaptureDeviceName(SDL_VideoCaptureDeviceID instance_id)
+SDL_GetCameraDeviceName(SDL_CameraDeviceID instance_id)
 {
-#ifdef SDL_VIDEO_CAPTURE
     static char buf[256];
     buf[0] = 0;
     buf[255] = 0;
@@ -320,26 +296,19 @@ SDL_GetVideoCaptureDeviceName(SDL_VideoCaptureDeviceID instance_id)
         return NULL;
     }
 
-    if (GetDeviceName(instance_id, buf, sizeof (buf)) < 0) {
+    if (GetCameraDeviceName(instance_id, buf, sizeof (buf)) < 0) {
         buf[0] = 0;
     }
     return buf;
-#else
-    SDL_Unsupported();
-    return NULL;
-#endif
 }
 
 
-SDL_VideoCaptureDeviceID *
-SDL_GetVideoCaptureDevices(int *count)
+SDL_CameraDeviceID *
+SDL_GetCameraDevices(int *count)
 {
 
     int num = 0;
-    SDL_VideoCaptureDeviceID *ret = NULL;
-#ifdef SDL_VIDEO_CAPTURE
-    ret = GetVideoCaptureDevices(&num);
-#endif
+    SDL_CameraDeviceID *ret = GetCameraDevices(&num);
 
     if (ret) {
         if (count) {
@@ -350,7 +319,7 @@ SDL_GetVideoCaptureDevices(int *count)
 
     /* return list of 0 ID, null terminated */
     num = 0;
-    ret = (SDL_VideoCaptureDeviceID *)SDL_malloc((num + 1) * sizeof(*ret));
+    ret = (SDL_CameraDeviceID *)SDL_malloc((num + 1) * sizeof(*ret));
 
     if (ret == NULL) {
         SDL_OutOfMemory();
@@ -368,17 +337,15 @@ SDL_GetVideoCaptureDevices(int *count)
     return ret;
 }
 
-#ifdef SDL_VIDEO_CAPTURE
-
-/* Video capture thread function */
+/* Camera thread function */
 static int SDLCALL
-SDL_CaptureVideoThread(void *devicep)
+SDL_CameraThread(void *devicep)
 {
     const int delay = 20;
-    SDL_VideoCaptureDevice *device = (SDL_VideoCaptureDevice *) devicep;
+    SDL_CameraDevice *device = (SDL_CameraDevice *) devicep;
 
-#if DEBUG_VIDEO_CAPTURE_CAPTURE
-    SDL_Log("Start thread 'SDL_CaptureVideo'");
+#if DEBUG_CAMERA
+    SDL_Log("Start thread 'SDL_CameraThread'");
 #endif
 
 
@@ -387,11 +354,11 @@ SDL_CaptureVideoThread(void *devicep)
     /*
     {
         // Set thread priority to THREAD_PRIORITY_VIDEO
-        extern void Android_JNI_VideoCaptureSetThreadPriority(int, int);
-        Android_JNI_VideoCaptureSetThreadPriority(device->iscapture, device);
+        extern void Android_JNI_CameraSetThreadPriority(int, int);
+        Android_JNI_CameraSetThreadPriority(device->iscapture, device);
     }*/
 #else
-    /* The video_capture mixing is always a high priority thread */
+    /* The camera capture is always a high priority thread */
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
 #endif
 
@@ -403,9 +370,9 @@ SDL_CaptureVideoThread(void *devicep)
         SDL_Delay(delay);
     }
 
-    /* Loop, filling the video_capture buffers */
+    /* Loop, filling the camera buffers */
     while (!SDL_AtomicGet(&device->shutdown)) {
-        SDL_VideoCaptureFrame f;
+        SDL_CameraFrame f;
         int ret;
         entry_t *entry;
 
@@ -423,7 +390,7 @@ SDL_CaptureVideoThread(void *devicep)
 
         if (ret < 0) {
             /* Flag it as an error */
-#if DEBUG_VIDEO_CAPTURE_CAPTURE
+#if DEBUG_CAMERA
             SDL_Log("dev[%p] error AcquireFrame: %d %s", (void *)device, ret, SDL_GetError());
 #endif
             f.num_planes = 0;
@@ -447,28 +414,26 @@ SDL_CaptureVideoThread(void *devicep)
         }
     }
 
-#if DEBUG_VIDEO_CAPTURE_CAPTURE
-    SDL_Log("dev[%p] End thread 'SDL_CaptureVideo'", (void *)device);
+#if DEBUG_CAMERA
+    SDL_Log("dev[%p] End thread 'SDL_CameraThread'", (void *)device);
 #endif
     return 0;
 
 error_mem:
-#if DEBUG_VIDEO_CAPTURE_CAPTURE
-    SDL_Log("dev[%p] End thread 'SDL_CaptureVideo' with error: %s", (void *)device, SDL_GetError());
+#if DEBUG_CAMERA
+    SDL_Log("dev[%p] End thread 'SDL_CameraThread' with error: %s", (void *)device, SDL_GetError());
 #endif
     SDL_AtomicSet(&device->shutdown, 1);
     SDL_OutOfMemory();
     return 0;
 }
-#endif
 
-SDL_VideoCaptureDevice *
-SDL_OpenVideoCapture(SDL_VideoCaptureDeviceID instance_id)
+SDL_CameraDevice *
+SDL_OpenCamera(SDL_CameraDeviceID instance_id)
 {
-#ifdef SDL_VIDEO_CAPTURE
     int i, n = SDL_arraysize(open_devices);
     int id = -1;
-    SDL_VideoCaptureDevice *device = NULL;
+    SDL_CameraDevice *device = NULL;
     const char *device_name = NULL;
 
     if (!SDL_WasInit(SDL_INIT_VIDEO)) {
@@ -486,19 +451,19 @@ SDL_OpenVideoCapture(SDL_VideoCaptureDeviceID instance_id)
     }
 
     if (id == -1) {
-        SDL_SetError("Too many open video capture devices");
+        SDL_SetError("Too many open camera devices");
         goto error;
     }
 
     if (instance_id != 0) {
-        device_name = SDL_GetVideoCaptureDeviceName(instance_id);
+        device_name = SDL_GetCameraDeviceName(instance_id);
         if (device_name == NULL) {
             goto error;
         }
     } else {
-        SDL_VideoCaptureDeviceID *devices = SDL_GetVideoCaptureDevices(NULL);
+        SDL_CameraDeviceID *devices = SDL_GetCameraDevices(NULL);
         if (devices && devices[0]) {
-            device_name = SDL_GetVideoCaptureDeviceName(devices[0]);
+            device_name = SDL_GetCameraDeviceName(devices[0]);
             SDL_free(devices);
         }
     }
@@ -507,7 +472,7 @@ SDL_OpenVideoCapture(SDL_VideoCaptureDeviceID instance_id)
     // FIXME do we need this ?
     /* Let the user override. */
     {
-        const char *dev = SDL_getenv("SDL_VIDEO_CAPTURE_DEVICE_NAME");
+        const char *dev = SDL_getenv("SDL_CAMERA_DEVICE_NAME");
         if (dev && dev[0]) {
             device_name = dev;
         }
@@ -518,7 +483,7 @@ SDL_OpenVideoCapture(SDL_VideoCaptureDeviceID instance_id)
         goto error;
     }
 
-    device = (SDL_VideoCaptureDevice *) SDL_calloc(1, sizeof (SDL_VideoCaptureDevice));
+    device = (SDL_CameraDevice *) SDL_calloc(1, sizeof (SDL_CameraDevice));
     if (device == NULL) {
         SDL_OutOfMemory();
         goto error;
@@ -550,16 +515,16 @@ SDL_OpenVideoCapture(SDL_VideoCaptureDeviceID instance_id)
     open_devices[id] = device;  /* add it to our list of open devices. */
 
 
-    /* Start the video_capture thread */
+    /* Start the camera thread */
     {
         const size_t stacksize = 64 * 1024;
         char threadname[64];
 
-        SDL_snprintf(threadname, sizeof (threadname), "SDLVideoC%d", id);
-        device->thread = SDL_CreateThreadInternal(SDL_CaptureVideoThread, threadname, stacksize, device);
+        SDL_snprintf(threadname, sizeof (threadname), "SDLCamera%d", id);
+        device->thread = SDL_CreateThreadInternal(SDL_CameraThread, threadname, stacksize, device);
 
         if (device->thread == NULL) {
-            SDL_SetError("Couldn't create video_capture thread");
+            SDL_SetError("Couldn't create camera thread");
             goto error;
         }
     }
@@ -569,21 +534,16 @@ SDL_OpenVideoCapture(SDL_VideoCaptureDeviceID instance_id)
 error:
     close_device(device);
     return NULL;
-#else
-    SDL_Unsupported();
-    return NULL;
-#endif /* SDL_VIDEO_CAPTURE */
 }
 
 int
-SDL_SetVideoCaptureSpec(SDL_VideoCaptureDevice *device,
-        const SDL_VideoCaptureSpec *desired,
-        SDL_VideoCaptureSpec *obtained,
+SDL_SetCameraSpec(SDL_CameraDevice *device,
+        const SDL_CameraSpec *desired,
+        SDL_CameraSpec *obtained,
         int allowed_changes)
 {
-#ifdef SDL_VIDEO_CAPTURE
-    SDL_VideoCaptureSpec _obtained;
-    SDL_VideoCaptureSpec _desired;
+    SDL_CameraSpec _obtained;
+    SDL_CameraSpec _desired;
     int result;
 
     if (!device) {
@@ -597,7 +557,7 @@ SDL_SetVideoCaptureSpec(SDL_VideoCaptureDevice *device,
     if (!desired) {
         SDL_zero(_desired);
         desired = &_desired;
-        allowed_changes = SDL_VIDEO_CAPTURE_ALLOW_ANY_CHANGE;
+        allowed_changes = SDL_CAMERA_ALLOW_ANY_CHANGE;
     } else {
         /* in case desired == obtained */
         _desired = *desired;
@@ -610,7 +570,7 @@ SDL_SetVideoCaptureSpec(SDL_VideoCaptureDevice *device,
 
     SDL_zerop(obtained);
 
-    if (prepare_video_capturespec(device, desired, obtained, allowed_changes) < 0) {
+    if (prepare_cameraspec(device, desired, obtained, allowed_changes) < 0) {
         return -1;
     }
 
@@ -626,16 +586,11 @@ SDL_SetVideoCaptureSpec(SDL_VideoCaptureDevice *device,
     device->is_spec_set = SDL_TRUE;
 
     return 0;
-#else
-    SDL_zero(*obtained);
-    return SDL_Unsupported();
-#endif /* SDL_VIDEO_CAPTURE */
 }
 
 int
-SDL_AcquireVideoCaptureFrame(SDL_VideoCaptureDevice *device, SDL_VideoCaptureFrame *frame)
+SDL_AcquireCameraFrame(SDL_CameraDevice *device, SDL_CameraFrame *frame)
 {
-#ifdef SDL_VIDEO_CAPTURE
     if (!device) {
         return SDL_InvalidParamError("device");
     }
@@ -679,15 +634,11 @@ SDL_AcquireVideoCaptureFrame(SDL_VideoCaptureDevice *device, SDL_VideoCaptureFra
     }
 
     return 0;
-#else
-    return SDL_Unsupported();
-#endif /* SDL_VIDEO_CAPTURE */
 }
 
 int
-SDL_ReleaseVideoCaptureFrame(SDL_VideoCaptureDevice *device, SDL_VideoCaptureFrame *frame)
+SDL_ReleaseCameraFrame(SDL_CameraDevice *device, SDL_CameraFrame *frame)
 {
-#ifdef SDL_VIDEO_CAPTURE
     if (!device) {
         return SDL_InvalidParamError("device");
     }
@@ -703,28 +654,20 @@ SDL_ReleaseVideoCaptureFrame(SDL_VideoCaptureDevice *device, SDL_VideoCaptureFra
     SDL_zerop(frame);
 
     return 0;
-#else
-    return SDL_Unsupported();
-#endif /* SDL_VIDEO_CAPTURE */
 }
 
 int
-SDL_GetNumVideoCaptureFormats(SDL_VideoCaptureDevice *device)
+SDL_GetNumCameraFormats(SDL_CameraDevice *device)
 {
-#ifdef SDL_VIDEO_CAPTURE
     if (!device) {
         return SDL_InvalidParamError("device");
     }
     return GetNumFormats(device);
-#else
-    return 0;
-#endif /* SDL_VIDEO_CAPTURE */
 }
 
 int
-SDL_GetVideoCaptureFormat(SDL_VideoCaptureDevice *device, int index, Uint32 *format)
+SDL_GetCameraFormat(SDL_CameraDevice *device, int index, Uint32 *format)
 {
-#ifdef SDL_VIDEO_CAPTURE
     if (!device) {
         return SDL_InvalidParamError("device");
     }
@@ -733,28 +676,20 @@ SDL_GetVideoCaptureFormat(SDL_VideoCaptureDevice *device, int index, Uint32 *for
     }
     *format = 0;
     return GetFormat(device, index, format);
-#else
-    return SDL_Unsupported();
-#endif /* SDL_VIDEO_CAPTURE */
 }
 
 int
-SDL_GetNumVideoCaptureFrameSizes(SDL_VideoCaptureDevice *device, Uint32 format)
+SDL_GetNumCameraFrameSizes(SDL_CameraDevice *device, Uint32 format)
 {
-#ifdef SDL_VIDEO_CAPTURE
     if (!device) {
         return SDL_InvalidParamError("device");
     }
     return GetNumFrameSizes(device, format);
-#else
-    return 0;
-#endif /* SDL_VIDEO_CAPTURE */
 }
 
 int
-SDL_GetVideoCaptureFrameSize(SDL_VideoCaptureDevice *device, Uint32 format, int index, int *width, int *height)
+SDL_GetCameraFrameSize(SDL_CameraDevice *device, Uint32 format, int index, int *width, int *height)
 {
-#ifdef SDL_VIDEO_CAPTURE
     if (!device) {
         return SDL_InvalidParamError("device");
     }
@@ -767,79 +702,61 @@ SDL_GetVideoCaptureFrameSize(SDL_VideoCaptureDevice *device, Uint32 format, int 
     *width = 0;
     *height = 0;
     return GetFrameSize(device, format, index, width, height);
-#else
-    return SDL_Unsupported();
-#endif
 }
 
-SDL_VideoCaptureDevice *
-SDL_OpenVideoCaptureWithSpec(
-        SDL_VideoCaptureDeviceID instance_id,
-        const SDL_VideoCaptureSpec *desired,
-        SDL_VideoCaptureSpec *obtained,
+SDL_CameraDevice *
+SDL_OpenCameraWithSpec(
+        SDL_CameraDeviceID instance_id,
+        const SDL_CameraSpec *desired,
+        SDL_CameraSpec *obtained,
         int allowed_changes)
 {
-#ifdef SDL_VIDEO_CAPTURE
-    SDL_VideoCaptureDevice *device;
+    SDL_CameraDevice *device;
 
-    if ((device = SDL_OpenVideoCapture(instance_id)) == NULL) {
+    if ((device = SDL_OpenCamera(instance_id)) == NULL) {
         return NULL;
     }
 
-    if (SDL_SetVideoCaptureSpec(device, desired, obtained, allowed_changes) < 0) {
-        SDL_CloseVideoCapture(device);
+    if (SDL_SetCameraSpec(device, desired, obtained, allowed_changes) < 0) {
+        SDL_CloseCamera(device);
         return NULL;
     }
     return device;
-#else
-    SDL_Unsupported();
-    return NULL;
-#endif
 }
 
-SDL_VideoCaptureStatus
-SDL_GetVideoCaptureStatus(SDL_VideoCaptureDevice *device)
+SDL_CameraStatus
+SDL_GetCameraStatus(SDL_CameraDevice *device)
 {
-#ifdef SDL_VIDEO_CAPTURE
     if (device == NULL) {
-        return SDL_VIDEO_CAPTURE_INIT;
+        return SDL_CAMERA_INIT;
     }
 
     if (device->is_spec_set == SDL_FALSE) {
-        return SDL_VIDEO_CAPTURE_INIT;
+        return SDL_CAMERA_INIT;
     }
 
     if (SDL_AtomicGet(&device->shutdown)) {
-        return SDL_VIDEO_CAPTURE_STOPPED;
+        return SDL_CAMERA_STOPPED;
     }
 
     if (SDL_AtomicGet(&device->enabled)) {
-        return SDL_VIDEO_CAPTURE_PLAYING;
+        return SDL_CAMERA_PLAYING;
     }
-    return SDL_VIDEO_CAPTURE_INIT;
-#else
-    SDL_Unsupported();
-    return SDL_VIDEO_CAPTURE_FAIL;
-#endif
+    return SDL_CAMERA_INIT;
 }
 
 int
-SDL_VideoCaptureInit(void)
+SDL_CameraInit(void)
 {
-#ifdef SDL_VIDEO_CAPTURE
     SDL_zeroa(open_devices);
 
-    SDL_SYS_VideoCaptureInit();
+    SDL_SYS_CameraInit();
     return 0;
-#else
-    return 0;
-#endif
 }
 
 void
-SDL_QuitVideoCapture(void)
+SDL_QuitCamera(void)
 {
-#ifdef SDL_VIDEO_CAPTURE
     int i, n = SDL_arraysize(open_devices);
     for (i = 0; i < n; i++) {
         close_device(open_devices[i]);
@@ -847,122 +764,6 @@ SDL_QuitVideoCapture(void)
 
     SDL_zeroa(open_devices);
 
-    SDL_SYS_VideoCaptureQuit();
-#endif
+    SDL_SYS_CameraQuit();
 }
 
-#ifdef SDL_VIDEO_CAPTURE
-
-#if defined(SDL_PLATFORM_LINUX) && !defined(SDL_PLATFORM_ANDROID)
-
-/* See SDL_video_capture_v4l2.c */
-
-#elif defined(SDL_PLATFORM_ANDROID) && __ANDROID_API__ >= 24
-
-/* See SDL_android_video_capture.c */
-
-#elif defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_MACOS)
-
-/* See SDL_video_capture_apple.m */
-#else
-
-int SDL_SYS_VideoCaptureInit(void)
-{
-    return 0;
-}
-
-int SDL_SYS_VideoCaptureQuit(void)
-{
-    return 0;
-}
-
-int
-OpenDevice(SDL_VideoCaptureDevice *_this)
-{
-    return SDL_SetError("not implemented");
-}
-
-void
-CloseDevice(SDL_VideoCaptureDevice *_this)
-{
-    return;
-}
-
-int
-InitDevice(SDL_VideoCaptureDevice *_this)
-{
-    size_t size, pitch;
-    SDL_CalculateSize(_this->spec.format, _this->spec.width, _this->spec.height, &size, &pitch, SDL_FALSE);
-    SDL_Log("Buffer size: %d x %d", _this->spec.width, _this->spec.height);
-    return -1;
-}
-
-int
-GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec)
-{
-    return SDL_Unsupported();
-}
-
-int
-StartCapture(SDL_VideoCaptureDevice *_this)
-{
-    return SDL_Unsupported();
-}
-
-int
-StopCapture(SDL_VideoCaptureDevice *_this)
-{
-    return -1;
-}
-
-int
-AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
-{
-    return -1;
-}
-
-int
-ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
-{
-    return -1;
-}
-
-int
-GetNumFormats(SDL_VideoCaptureDevice *_this)
-{
-    return -1;
-}
-
-int
-GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
-{
-    return -1;
-}
-
-int
-GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format)
-{
-    return -1;
-}
-
-int
-GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width, int *height)
-{
-    return -1;
-}
-
-int
-GetDeviceName(SDL_VideoCaptureDeviceID instance_id, char *buf, int size)
-{
-    return -1;
-}
-
-SDL_VideoCaptureDeviceID *
-GetVideoCaptureDevices(int *count)
-{
-    return NULL;
-}
-
-#endif
-
-#endif /* SDL_VIDEO_CAPTURE */

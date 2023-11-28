@@ -253,8 +253,6 @@
 #cmakedefine SDL_DEFAULT_ASSERT_LEVEL @SDL_DEFAULT_ASSERT_LEVEL@
 #endif
 
-#cmakedefine SDL_VIDEO_CAPTURE
-
 /* Allow disabling of major subsystems */
 #cmakedefine SDL_AUDIO_DISABLED @SDL_AUDIO_DISABLED@
 #cmakedefine SDL_JOYSTICK_DISABLED @SDL_JOYSTICK_DISABLED@
@@ -265,6 +263,7 @@
 #cmakedefine SDL_THREADS_DISABLED @SDL_THREADS_DISABLED@
 #cmakedefine SDL_VIDEO_DISABLED @SDL_VIDEO_DISABLED@
 #cmakedefine SDL_POWER_DISABLED @SDL_POWER_DISABLED@
+#cmakedefine SDL_CAMERA_DISABLED @SDL_CAMERA_DISABLED@
 
 /* Enable various audio drivers */
 #cmakedefine SDL_AUDIO_DRIVER_ALSA @SDL_AUDIO_DRIVER_ALSA@
@@ -466,6 +465,12 @@
 #cmakedefine SDL_FILESYSTEM_PSP @SDL_FILESYSTEM_PSP@
 #cmakedefine SDL_FILESYSTEM_PS2 @SDL_FILESYSTEM_PS2@
 #cmakedefine SDL_FILESYSTEM_N3DS @SDL_FILESYSTEM_N3DS@
+
+/* Enable camera subsystem */
+#cmakedefine SDL_CAMERA_DUMMY @SDL_CAMERA_DUMMY@
+#cmakedefine SDL_CAMERA_V4L2 @SDL_CAMERA_V4L2@
+#cmakedefine SDL_CAMERA_APPLE @SDL_CAMERA_APPLE@
+#cmakedefine SDL_CAMERA_ANDROID @SDL_CAMERA_ANDROID@
 
 /* Enable misc subsystem */
 #cmakedefine SDL_MISC_DUMMY @SDL_MISC_DUMMY@

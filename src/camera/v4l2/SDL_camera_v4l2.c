@@ -20,46 +20,41 @@
 */
 #include "SDL_internal.h"
 
-#ifdef SDL_VIDEO_CAPTURE
+#ifdef SDL_CAMERA_V4L2
 
-#include "SDL3/SDL.h"
-#include "SDL3/SDL_video_capture.h"
-#include "SDL_sysvideocapture.h"
-#include "SDL_video_capture_c.h"
-#include "SDL_pixels_c.h"
-#include "../thread/SDL_systhread.h"
+#include "../SDL_syscamera.h"
+#include "../SDL_camera_c.h"
+#include "../../video/SDL_pixels_c.h"
+#include "../../thread/SDL_systhread.h"
 #include "../../core/linux/SDL_evdev_capabilities.h"
 #include "../../core/linux/SDL_udev.h"
 #include <limits.h>      /* INT_MAX */
 
-#define DEBUG_VIDEO_CAPTURE_CAPTURE 0
+#define DEBUG_CAMERA 1
 
-#if defined(SDL_PLATFORM_LINUX) && !defined(SDL_PLATFORM_ANDROID)
-
-
-#define MAX_CAPTURE_DEVICES 128 /* It's doubtful someone has more than that */
+#define MAX_CAMERA_DEVICES 128 /* It's doubtful someone has more than that */
 
 static int MaybeAddDevice(const char *path);
 #ifdef SDL_USE_LIBUDEV
 static int MaybeRemoveDevice(const char *path);
-static void capture_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath);
+static void camera_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath);
 #endif /* SDL_USE_LIBUDEV */
 
 /*
- * List of available capture devices.
+ * List of available camera devices.
  */
-typedef struct SDL_capturelist_item
+typedef struct SDL_cameralist_item
 {
     char *fname;        /* Dev path name (like /dev/video0) */
     char *bus_info;     /* don't add two paths with same bus_info (eg /dev/video0 and /dev/video1 */
-    SDL_VideoCaptureDeviceID instance_id;
-    SDL_VideoCaptureDevice *device; /* Associated device */
-    struct SDL_capturelist_item *next;
-} SDL_capturelist_item;
+    SDL_CameraDeviceID instance_id;
+    SDL_CameraDevice *device; /* Associated device */
+    struct SDL_cameralist_item *next;
+} SDL_cameralist_item;
 
-static SDL_capturelist_item *SDL_capturelist = NULL;
-static SDL_capturelist_item *SDL_capturelist_tail = NULL;
-static int num_video_captures = 0;
+static SDL_cameralist_item *SDL_cameralist = NULL;
+static SDL_cameralist_item *SDL_cameralist_tail = NULL;
+static int num_cameras = 0;
 
 
 
@@ -75,7 +70,7 @@ struct buffer {
     int available; /* Is available in userspace */
 };
 
-struct SDL_PrivateVideoCaptureData
+struct SDL_PrivateCameraData
 {
     int fd;
     enum io_method io;
@@ -107,7 +102,7 @@ xioctl(int fh, int request, void *arg)
 
 /* -1:error  1:frame 0:no frame*/
 static int
-acquire_frame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
+acquire_frame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 {
     struct v4l2_buffer buf;
     int i;
@@ -168,7 +163,7 @@ acquire_frame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
             frame->pitch[0] = _this->hidden->driver_pitch;
             _this->hidden->buffers[buf.index].available = 1;
 
-#if DEBUG_VIDEO_CAPTURE_CAPTURE
+#if DEBUG_CAMERA
             SDL_Log("debug mmap: image %d/%d  num_planes:%d data[0]=%p", buf.index, _this->hidden->nb_buffers, frame->num_planes, (void*)frame->data[0]);
 #endif
             break;
@@ -208,7 +203,7 @@ acquire_frame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
             frame->data[0] = (void*)buf.m.userptr;
             frame->pitch[0] = _this->hidden->driver_pitch;
             _this->hidden->buffers[i].available = 1;
-#if DEBUG_VIDEO_CAPTURE_CAPTURE
+#if DEBUG_CAMERA
             SDL_Log("debug userptr: image %d/%d  num_planes:%d data[0]=%p", buf.index, _this->hidden->nb_buffers, frame->num_planes, (void*)frame->data[0]);
 #endif
             break;
@@ -219,7 +214,7 @@ acquire_frame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
 
 
 int
-ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
+ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 {
     struct v4l2_buffer buf;
     int i;
@@ -274,7 +269,7 @@ ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
 
 
 int
-AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
+AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 {
     fd_set fds;
     struct timeval tv;
@@ -293,7 +288,7 @@ AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
 
     if (ret == -1) {
         if (errno == EINTR) {
-#if DEBUG_VIDEO_CAPTURE_CAPTURE
+#if DEBUG_CAMERA
             SDL_Log("continue ..");
 #endif
             return 0;
@@ -315,7 +310,7 @@ AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
     if (ret == 1){
         frame->timestampNS = SDL_GetTicksNS();
     } else if (ret == 0) {
-#if DEBUG_VIDEO_CAPTURE_CAPTURE
+#if DEBUG_CAMERA
         SDL_Log("No frame continue: %s", SDL_GetError());
 #endif
     }
@@ -326,7 +321,7 @@ AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
 
 
 int
-StopCapture(SDL_VideoCaptureDevice *_this)
+StopCamera(SDL_CameraDevice *_this)
 {
     enum v4l2_buf_type type;
     int fd = _this->hidden->fd;
@@ -349,7 +344,7 @@ StopCapture(SDL_VideoCaptureDevice *_this)
 }
 
 static int
-enqueue_buffers(SDL_VideoCaptureDevice *_this)
+enqueue_buffers(SDL_CameraDevice *_this)
 {
     int i;
     int fd = _this->hidden->fd;
@@ -398,7 +393,7 @@ enqueue_buffers(SDL_VideoCaptureDevice *_this)
 }
 
 static int
-pre_enqueue_buffers(SDL_VideoCaptureDevice *_this)
+pre_enqueue_buffers(SDL_CameraDevice *_this)
 {
     struct v4l2_requestbuffers req;
     int fd = _this->hidden->fd;
@@ -452,7 +447,7 @@ pre_enqueue_buffers(SDL_VideoCaptureDevice *_this)
 }
 
 int
-StartCapture(SDL_VideoCaptureDevice *_this)
+StartCamera(SDL_CameraDevice *_this)
 {
     enum v4l2_buf_type type;
 
@@ -498,7 +493,7 @@ StartCapture(SDL_VideoCaptureDevice *_this)
     return 0;
 }
 
-static int alloc_buffer_read(SDL_VideoCaptureDevice *_this, size_t buffer_size)
+static int alloc_buffer_read(SDL_CameraDevice *_this, size_t buffer_size)
 {
     _this->hidden->buffers[0].length = buffer_size;
     _this->hidden->buffers[0].start = SDL_calloc(1, buffer_size);
@@ -510,7 +505,7 @@ static int alloc_buffer_read(SDL_VideoCaptureDevice *_this, size_t buffer_size)
 }
 
 static int
-alloc_buffer_mmap(SDL_VideoCaptureDevice *_this)
+alloc_buffer_mmap(SDL_CameraDevice *_this)
 {
     int fd = _this->hidden->fd;
     int i;
@@ -543,7 +538,7 @@ alloc_buffer_mmap(SDL_VideoCaptureDevice *_this)
 }
 
 static int
-alloc_buffer_userp(SDL_VideoCaptureDevice *_this, size_t buffer_size)
+alloc_buffer_userp(SDL_CameraDevice *_this, size_t buffer_size)
 {
     int i;
     for (i = 0; i < _this->hidden->nb_buffers; ++i) {
@@ -585,7 +580,7 @@ format_sdl_2_v4l2(Uint32 fmt)
 }
 
 int
-GetNumFormats(SDL_VideoCaptureDevice *_this)
+GetNumFormats(SDL_CameraDevice *_this)
 {
     int fd = _this->hidden->fd;
     int i = 0;
@@ -601,7 +596,7 @@ GetNumFormats(SDL_VideoCaptureDevice *_this)
 }
 
 int
-GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
+GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format)
 {
     int fd = _this->hidden->fd;
     struct v4l2_fmtdesc fmtdesc;
@@ -612,7 +607,7 @@ GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
     if (ioctl(fd,VIDIOC_ENUM_FMT,&fmtdesc) == 0) {
         *format = format_v4l2_2_sdl(fmtdesc.pixelformat);
 
-#if DEBUG_VIDEO_CAPTURE_CAPTURE
+#if DEBUG_CAMERA
         if (fmtdesc.flags & V4L2_FMT_FLAG_EMULATED) {
             SDL_Log("%s format emulated", SDL_GetPixelFormatName(*format));
         }
@@ -627,7 +622,7 @@ GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
 }
 
 int
-GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format)
+GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format)
 {
     int fd = _this->hidden->fd;
     int i = 0;
@@ -651,7 +646,7 @@ GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format)
 }
 
 int
-GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width, int *height)
+GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int *height)
 {
     int fd = _this->hidden->fd;
     struct v4l2_frmsizeenum frmsizeenum;
@@ -704,7 +699,7 @@ dbg_v4l2_pixelformat(const char *str, int f) {
 #endif
 
 int
-GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec)
+GetDeviceSpec(SDL_CameraDevice *_this, SDL_CameraSpec *spec)
 {
     struct v4l2_format fmt;
     int fd = _this->hidden->fd;
@@ -737,7 +732,7 @@ GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec)
 }
 
 int
-InitDevice(SDL_VideoCaptureDevice *_this)
+InitDevice(SDL_CameraDevice *_this)
 {
     struct v4l2_cropcap cropcap;
     struct v4l2_crop crop;
@@ -783,7 +778,7 @@ InitDevice(SDL_VideoCaptureDevice *_this)
         //    fmt.fmt.pix.field       = V4L2_FIELD_INTERLACED;
         fmt.fmt.pix.field       = V4L2_FIELD_ANY;
 
-#if DEBUG_VIDEO_CAPTURE_CAPTURE
+#if DEBUG_CAMERA
         SDL_Log("set SDL format %s", SDL_GetPixelFormatName(_this->spec.format));
         dbg_v4l2_pixelformat("set format", fmt.fmt.pix.pixelformat);
 #endif
@@ -833,7 +828,7 @@ InitDevice(SDL_VideoCaptureDevice *_this)
 }
 
 void
-CloseDevice(SDL_VideoCaptureDevice *_this)
+CloseDevice(SDL_CameraDevice *_this)
 {
     if (!_this) {
         return;
@@ -869,7 +864,7 @@ CloseDevice(SDL_VideoCaptureDevice *_this)
 
         if (_this->hidden->fd != -1) {
             if (close(_this->hidden->fd)) {
-                SDL_SetError("close video capture device");
+                SDL_SetError("close camera device");
             }
         }
         SDL_free(_this->hidden);
@@ -880,14 +875,14 @@ CloseDevice(SDL_VideoCaptureDevice *_this)
 
 
 int
-OpenDevice(SDL_VideoCaptureDevice *_this)
+OpenDevice(SDL_CameraDevice *_this)
 {
     struct stat st;
     struct v4l2_capability cap;
     int fd;
     enum io_method io;
 
-    _this->hidden = (struct SDL_PrivateVideoCaptureData *) SDL_calloc(1, sizeof (struct SDL_PrivateVideoCaptureData));
+    _this->hidden = (struct SDL_PrivateCameraData *) SDL_calloc(1, sizeof (struct SDL_PrivateCameraData));
     if (_this->hidden == NULL) {
         SDL_OutOfMemory();
         return -1;
@@ -966,10 +961,10 @@ OpenDevice(SDL_VideoCaptureDevice *_this)
 }
 
 int
-GetDeviceName(SDL_VideoCaptureDeviceID instance_id, char *buf, int size)
+GetCameraDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size)
 {
-    SDL_capturelist_item *item;
-    for (item = SDL_capturelist; item; item = item->next) {
+    SDL_cameralist_item *item;
+    for (item = SDL_cameralist; item; item = item->next) {
         if (item->instance_id == instance_id) {
             SDL_snprintf(buf, size, "%s", item->fname);
             return 0;
@@ -981,15 +976,15 @@ GetDeviceName(SDL_VideoCaptureDeviceID instance_id, char *buf, int size)
 }
 
 
-SDL_VideoCaptureDeviceID *GetVideoCaptureDevices(int *count)
+SDL_CameraDeviceID *GetCameraDevices(int *count)
 {
     /* real list of ID */
     int i = 0;
-    int num = num_video_captures;
-    SDL_VideoCaptureDeviceID *ret;
-    SDL_capturelist_item *item;
+    int num = num_cameras;
+    SDL_CameraDeviceID *ret;
+    SDL_cameralist_item *item;
 
-    ret = (SDL_VideoCaptureDeviceID *)SDL_malloc((num + 1) * sizeof(*ret));
+    ret = (SDL_CameraDeviceID *)SDL_malloc((num + 1) * sizeof(*ret));
 
     if (ret == NULL) {
         SDL_OutOfMemory();
@@ -997,7 +992,7 @@ SDL_VideoCaptureDeviceID *GetVideoCaptureDevices(int *count)
         return NULL;
     }
 
-    for (item = SDL_capturelist; item; item = item->next) {
+    for (item = SDL_cameralist; item; item = item->next) {
         ret[i] = item->instance_id;
         i++;
     }
@@ -1011,18 +1006,18 @@ SDL_VideoCaptureDeviceID *GetVideoCaptureDevices(int *count)
 /*
  * Initializes the subsystem by finding available devices.
  */
-int SDL_SYS_VideoCaptureInit(void)
+int SDL_SYS_CameraInit(void)
 {
     const char pattern[] = "/dev/video%d";
     char path[PATH_MAX];
     int i, j;
 
     /*
-     * Limit amount of checks to MAX_CAPTURE_DEVICES since we may or may not have
+     * Limit amount of checks to MAX_CAMERA_DEVICES since we may or may not have
      * permission to some or all devices.
      */
     i = 0;
-    for (j = 0; j < MAX_CAPTURE_DEVICES; ++j) {
+    for (j = 0; j < MAX_CAMERA_DEVICES; ++j) {
         (void)SDL_snprintf(path, PATH_MAX, pattern, i++);
         if (MaybeAddDevice(path) == -2) {
             break;
@@ -1034,7 +1029,7 @@ int SDL_SYS_VideoCaptureInit(void)
         return SDL_SetError("Could not initialize UDEV");
     }
 
-    if (SDL_UDEV_AddCallback(capture_udev_callback) < 0) {
+    if (SDL_UDEV_AddCallback(camera_udev_callback) < 0) {
         SDL_UDEV_Quit();
         return SDL_SetError("Could not setup Video Capture <-> udev callback");
     }
@@ -1043,15 +1038,15 @@ int SDL_SYS_VideoCaptureInit(void)
     SDL_UDEV_Scan();
 #endif /* SDL_USE_LIBUDEV */
 
-    return num_video_captures;
+    return num_cameras;
 }
 
 
-int SDL_SYS_VideoCaptureQuit(void)
+int SDL_SYS_CameraQuit(void)
 {
-    SDL_capturelist_item *item;
-    for (item = SDL_capturelist; item; ) {
-        SDL_capturelist_item *tmp = item->next;
+    SDL_cameralist_item *item;
+    for (item = SDL_cameralist; item; ) {
+        SDL_cameralist_item *tmp = item->next;
 
         SDL_free(item->fname);
         SDL_free(item->bus_info);
@@ -1059,15 +1054,15 @@ int SDL_SYS_VideoCaptureQuit(void)
         item = tmp;
     }
 
-    num_video_captures = 0;
-    SDL_capturelist = NULL;
-    SDL_capturelist_tail = NULL;
+    num_cameras = 0;
+    SDL_cameralist = NULL;
+    SDL_cameralist_tail = NULL;
 
     return SDL_FALSE;
 }
 
 #ifdef SDL_USE_LIBUDEV
-static void capture_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath)
+static void camera_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath)
 {
     if (!devpath || !(udev_class & SDL_UDEV_DEVICE_VIDEO_CAPTURE)) {
         return;
@@ -1089,9 +1084,9 @@ static void capture_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class
 #endif /* SDL_USE_LIBUDEV */
 
 static SDL_bool DeviceExists(const char *path, const char *bus_info) {
-    SDL_capturelist_item *item;
+    SDL_cameralist_item *item;
 
-    for (item = SDL_capturelist; item; item = item->next) {
+    for (item = SDL_cameralist; item; item = item->next) {
         /* found same dev name */
         if (SDL_strcmp(path, item->fname) == 0) {
             return SDL_TRUE;
@@ -1110,7 +1105,7 @@ static int MaybeAddDevice(const char *path)
     struct v4l2_capability vcap;
     int err;
     int fd;
-    SDL_capturelist_item *item;
+    SDL_cameralist_item *item;
 
     if (!path) {
         return -1;
@@ -1135,7 +1130,7 @@ static int MaybeAddDevice(const char *path)
 
 
     /* Add new item */
-    item = (SDL_capturelist_item *)SDL_calloc(1, sizeof(SDL_capturelist_item));
+    item = (SDL_cameralist_item *)SDL_calloc(1, sizeof(SDL_cameralist_item));
     if (!item) {
         SDL_free(bus_info);
         return -1;
@@ -1153,18 +1148,18 @@ static int MaybeAddDevice(const char *path)
     item->instance_id = SDL_GetNextObjectID();
 
 
-    if (!SDL_capturelist_tail) {
-        SDL_capturelist = SDL_capturelist_tail = item;
+    if (!SDL_cameralist_tail) {
+        SDL_cameralist = SDL_cameralist_tail = item;
     } else {
-        SDL_capturelist_tail->next = item;
-        SDL_capturelist_tail = item;
+        SDL_cameralist_tail->next = item;
+        SDL_cameralist_tail = item;
     }
 
-    ++num_video_captures;
+    ++num_cameras;
 
     /* !!! TODO: Send a add event? */
-#if DEBUG_VIDEO_CAPTURE_CAPTURE
-    SDL_Log("Added video capture ID: %d %s (%s) (total: %d)", item->instance_id, path, bus_info, num_video_captures);
+#if DEBUG_CAMERA
+    SDL_Log("Added video camera ID: %d %s (%s) (total: %d)", item->instance_id, path, bus_info, num_cameras);
 #endif
     return 0;
 }
@@ -1173,30 +1168,30 @@ static int MaybeAddDevice(const char *path)
 static int MaybeRemoveDevice(const char *path)
 {
 
-    SDL_capturelist_item *item;
-    SDL_capturelist_item *prev = NULL;
-#if DEBUG_VIDEO_CAPTURE_CAPTURE
-    SDL_Log("Remove video capture %s", path);
+    SDL_cameralist_item *item;
+    SDL_cameralist_item *prev = NULL;
+#if DEBUG_CAMERA
+    SDL_Log("Remove video camera %s", path);
 #endif
     if (!path) {
         return -1;
     }
 
-    for (item = SDL_capturelist; item; item = item->next) {
+    for (item = SDL_cameralist; item; item = item->next) {
         /* found it, remove it. */
         if (SDL_strcmp(path, item->fname) == 0) {
             if (prev) {
                 prev->next = item->next;
             } else {
-                SDL_assert(SDL_capturelist == item);
-                SDL_capturelist = item->next;
+                SDL_assert(SDL_cameralist == item);
+                SDL_cameralist = item->next;
             }
-            if (item == SDL_capturelist_tail) {
-                SDL_capturelist_tail = prev;
+            if (item == SDL_cameralist_tail) {
+                SDL_cameralist_tail = prev;
             }
 
             /* Need to decrement the count */
-            --num_video_captures;
+            --num_cameras;
             /* !!! TODO: Send a remove event? */
 
             SDL_free(item->fname);
@@ -1210,8 +1205,4 @@ static int MaybeRemoveDevice(const char *path)
 }
 #endif /* SDL_USE_LIBUDEV */
 
-
-
-#endif
-
-#endif /* SDL_VIDEO_CAPTURE */
+#endif /* SDL_CAMERA_V4L2 */

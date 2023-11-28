@@ -236,4 +236,7 @@
 /* Use the (inferior) GDK text input method for GDK platforms */
 #define SDL_GDK_TEXTINPUT 1
 
+/* Enable the camera driver (src/camera/dummy/\*.c) */
+#define SDL_CAMERA_DUMMY  1
+
 #endif /* SDL_build_config_wingdk_h_ */
