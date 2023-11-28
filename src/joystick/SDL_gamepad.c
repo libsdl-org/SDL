@@ -705,7 +705,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_JoystickGUID guid
          (product == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1 ||
           product == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2))) {
         /* GameCube driver has 12 buttons and 6 axes */
-        SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:b6,dpleft:b4,dpright:b5,dpup:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b9,righttrigger:a5,rightx:a2,righty:a3,start:b8,x:b2,y:b3,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:b6,dpleft:b4,dpright:b5,dpup:b7,lefttrigger:a4,leftx:a0,lefty:a1~,rightshoulder:b9,righttrigger:a5,rightx:a2,righty:a3~,start:b8,x:b2,y:b3,", sizeof(mapping_string));
     } else if (vendor == USB_VENDOR_NINTENDO &&
                (guid.data[15] == k_eSwitchDeviceInfoControllerType_HVCLeft ||
                 guid.data[15] == k_eSwitchDeviceInfoControllerType_HVCRight ||
