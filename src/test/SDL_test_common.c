@@ -2485,7 +2485,6 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, in
 
     SDL_SetRenderDrawColor(renderer, 170, 170, 170, 255);
 
-    flags = SDL_GetMouseState(&x, &y);
     (void)SDL_snprintf(text, sizeof(text), "SDL_GetModState: ");
     SDLTest_PrintModState(text, sizeof(text), SDL_GetModState());
     SDLTest_DrawString(renderer, 0, textY, text);
