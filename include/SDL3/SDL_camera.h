@@ -20,13 +20,13 @@
 */
 
 /**
- *  \file SDL_video_capture.h
+ *  \file SDL_camera.h
  *
  *  Video Capture for the SDL library.
  */
 
-#ifndef SDL_video_capture_h_
-#define SDL_video_capture_h_
+#ifndef SDL_camera_h_
+#define SDL_camera_h_
 
 #include "SDL3/SDL_video.h"
 
@@ -356,8 +356,8 @@ extern DECLSPEC int SDLCALL SDL_ReleaseVideoCaptureFrame(SDL_VideoCaptureDevice 
 extern DECLSPEC int SDLCALL SDL_StopVideoCapture(SDL_VideoCaptureDevice *device);
 
 /**
- * Use this function to shut down video_capture processing and close the
- * video_capture device.
+ * Use this function to shut down camera processing and close the
+ * camera device.
  *
  * \param device opened video capture device
  *
@@ -374,4 +374,4 @@ extern DECLSPEC void SDLCALL SDL_CloseVideoCapture(SDL_VideoCaptureDevice *devic
 #endif
 #include <SDL3/SDL_close_code.h>
 
-#endif /* SDL_video_capture_h_ */
+#endif /* SDL_camera_h_ */

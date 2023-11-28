@@ -12,7 +12,7 @@
 #include "SDL3/SDL_main.h"
 #include "SDL3/SDL.h"
 #include "SDL3/SDL_test.h"
-#include "SDL3/SDL_video_capture.h"
+#include "SDL3/SDL_camera.h"
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten/emscripten.h>

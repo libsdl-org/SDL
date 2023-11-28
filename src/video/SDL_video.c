@@ -33,7 +33,7 @@
 #include "../SDL_hints_c.h"
 #include "../SDL_properties_c.h"
 #include "../timer/SDL_timer_c.h"
-#include "SDL_video_capture_c.h"
+#include "../camera/SDL_camera_c.h"
 
 #ifdef SDL_VIDEO_OPENGL
 #include <SDL3/SDL_opengl.h>

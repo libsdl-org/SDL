@@ -21,10 +21,10 @@
 #include "SDL_internal.h"
 
 #include "SDL3/SDL.h"
-#include "SDL3/SDL_video_capture.h"
-#include "SDL_sysvideocapture.h"
-#include "SDL_video_capture_c.h"
-#include "SDL_pixels_c.h"
+#include "SDL3/SDL_camera.h"
+#include "SDL_syscamera.h"
+#include "SDL_camera_c.h"
+#include "../video/SDL_pixels_c.h"
 #include "../thread/SDL_systhread.h"
 
 #define DEBUG_VIDEO_CAPTURE_CAPTURE 0
