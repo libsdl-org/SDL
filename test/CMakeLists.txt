@@ -32,11 +32,35 @@ add_library(sdltests_utils OBJECT
 target_link_libraries(sdltests_utils PRIVATE SDL3::Headers)
 
 file(GLOB RESOURCE_FILES *.bmp *.wav *.hex moose.dat utf8.txt)
+
+if(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+    set(test_bin_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    if(NOT IS_ABSOLUTE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+        set(test_bin_dir "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    endif()
+else()
+    set(test_bin_dir "${CMAKE_CURRENT_BINARY_DIR}")
+endif()
+if(NOT CMAKE_VERSION VERSION_LESS 3.20)
+    get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+    set(test_bin_dir "${test_bin_dir}$<$<BOOL:${is_multi_config}>:/$<CONFIG>>")
+endif()
+
 set(RESOURCE_FILE_NAMES)
-foreach(RESOURCE_FILE IN LISTS RESOURCE_FILES)
-    get_filename_component(res_file_name ${RESOURCE_FILE} NAME)
+set(RESOURCE_FILES_BINDIR)
+foreach(resource_file IN LISTS RESOURCE_FILES)
+    get_filename_component(res_file_name ${resource_file} NAME)
     list(APPEND RESOURCE_FILE_NAMES "${res_file_name}")
+    set(resource_file_bindir "${test_bin_dir}/${res_file_name}")
+    add_custom_command(OUTPUT "${resource_file_bindir}"
+        COMMAND "${CMAKE_COMMAND}" -E copy "${resource_file}" "${resource_file_bindir}"
+        DEPENDS "${resource_file}"
+    )
+    list(APPEND RESOURCE_FILES_BINDIR "${resource_file_bindir}")
 endforeach()
+add_custom_target(copy-sdl-test-resources
+    DEPENDS "${RESOURCE_FILES_BINDIR}"
+)
 
 define_property(TARGET PROPERTY SDL_NONINTERACTIVE BRIEF_DOCS "If true, target is a non-interactive test executable." FULL_DOCS "If true, target is a noninteractive test executable.")
 define_property(TARGET PROPERTY SDL_NONINTERACTIVE_ARGUMENTS BRIEF_DOCS "Argument(s) to run executable in non-interactive mode." FULL_DOCS "Argument(s) to run executable in non-interactive mode.")
@@ -134,8 +158,7 @@ macro(add_sdl_test_executable TARGET)
             )
             add_dependencies(${TARGET} zzz-resources-copy-${TARGET})
         else()
-            add_custom_command(TARGET ${TARGET} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILES} $<TARGET_FILE_DIR:${TARGET}>)
+            add_dependencies(${TARGET} copy-sdl-test-resources)
         endif()
         if(APPLE)
             # Make sure resource files get installed into macOS/iOS .app bundles.
