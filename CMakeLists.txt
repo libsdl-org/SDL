@@ -453,6 +453,7 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/*.c"
   "${SDL3_SOURCE_DIR}/src/atomic/*.c"
   "${SDL3_SOURCE_DIR}/src/audio/*.c"
+  "${SDL3_SOURCE_DIR}/src/camera/*.c"
   "${SDL3_SOURCE_DIR}/src/core/*.c"
   "${SDL3_SOURCE_DIR}/src/cpuinfo/*.c"
   "${SDL3_SOURCE_DIR}/src/dynapi/*.c"
@@ -2019,7 +2020,7 @@ elseif(APPLE)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/file/cocoa/*.m")
 
   if(IOS OR TVOS OR MACOSX OR DARWIN)
-    sdl_sources("${SDL3_SOURCE_DIR}/src/video/SDL_video_capture_apple.m")
+    sdl_sources("${SDL3_SOURCE_DIR}/src/camera/apple/SDL_camera_apple.m")
   endif()
 
   if(IOS OR TVOS OR VISIONOS)
