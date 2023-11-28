@@ -20,22 +20,22 @@
 */
 #include "../SDL_internal.h"
 
-#ifndef SDL_sysvideocapture_h_
-#define SDL_sysvideocapture_h_
+#ifndef SDL_syscamera_h_
+#define SDL_syscamera_h_
 
 #include "../SDL_list.h"
 
-/* The SDL video_capture driver */
-typedef struct SDL_VideoCaptureDevice SDL_VideoCaptureDevice;
+/* The SDL camera driver */
+typedef struct SDL_CameraDevice SDL_CameraDevice;
 
-/* Define the SDL video_capture driver structure */
-struct SDL_VideoCaptureDevice
+/* Define the SDL camera driver structure */
+struct SDL_CameraDevice
 {
     /* * * */
     /* Data common to all devices */
 
-    /* The device's current video_capture specification */
-    SDL_VideoCaptureSpec spec;
+    /* The device's current camera specification */
+    SDL_CameraSpec spec;
 
     /* Device name */
     char *dev_name;
@@ -49,7 +49,7 @@ struct SDL_VideoCaptureDevice
     SDL_Mutex *device_lock;
     SDL_Mutex *acquiring_lock;
 
-    /* A thread to feed the video_capture device */
+    /* A thread to feed the camera device */
     SDL_Thread *thread;
     SDL_ThreadID threadid;
 
@@ -58,35 +58,35 @@ struct SDL_VideoCaptureDevice
 
     /* * * */
     /* Data private to this driver */
-    struct SDL_PrivateVideoCaptureData *hidden;
+    struct SDL_PrivateCameraData *hidden;
 };
 
-extern int SDL_SYS_VideoCaptureInit(void);
-extern int SDL_SYS_VideoCaptureQuit(void);
+extern int SDL_SYS_CameraInit(void);
+extern int SDL_SYS_CameraQuit(void);
 
-extern int OpenDevice(SDL_VideoCaptureDevice *_this);
-extern void CloseDevice(SDL_VideoCaptureDevice *_this);
+extern int OpenDevice(SDL_CameraDevice *_this);
+extern void CloseDevice(SDL_CameraDevice *_this);
 
-extern int InitDevice(SDL_VideoCaptureDevice *_this);
+extern int InitDevice(SDL_CameraDevice *_this);
 
-extern int GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec);
+extern int GetDeviceSpec(SDL_CameraDevice *_this, SDL_CameraSpec *spec);
 
-extern int StartCapture(SDL_VideoCaptureDevice *_this);
-extern int StopCapture(SDL_VideoCaptureDevice *_this);
+extern int StartCamera(SDL_CameraDevice *_this);
+extern int StopCamera(SDL_CameraDevice *_this);
 
-extern int AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame);
-extern int ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame);
+extern int AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame);
+extern int ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame);
 
-extern int GetNumFormats(SDL_VideoCaptureDevice *_this);
-extern int GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format);
+extern int GetNumFormats(SDL_CameraDevice *_this);
+extern int GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format);
 
-extern int GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format);
-extern int GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width, int *height);
+extern int GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format);
+extern int GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int *height);
 
-extern int GetDeviceName(SDL_VideoCaptureDeviceID instance_id, char *buf, int size);
-extern SDL_VideoCaptureDeviceID *GetVideoCaptureDevices(int *count);
+extern int GetCameraDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size);
+extern SDL_CameraDeviceID *GetCameraDevices(int *count);
 
 extern SDL_bool check_all_device_closed(void);
 extern SDL_bool check_device_playing(void);
 
-#endif /* SDL_sysvideocapture_h_ */
+#endif /* SDL_syscamera_h_ */

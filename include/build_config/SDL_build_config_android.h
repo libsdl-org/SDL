@@ -190,4 +190,7 @@
 /* Enable the filesystem driver */
 #define SDL_FILESYSTEM_ANDROID   1
 
+/* Enable the camera driver */
+#define SDL_CAMERA_ANDROID 1
+
 #endif /* SDL_build_config_android_h_ */

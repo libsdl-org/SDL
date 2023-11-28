@@ -269,6 +269,9 @@
 /* enable filesystem support */
 #define SDL_FILESYSTEM_COCOA   1
 
+/* enable camera support */
+#define SDL_CAMERA_APPLE 1
+
 /* Enable assembly routines */
 #ifdef __ppc__
 #define SDL_ALTIVEC_BLITTERS    1

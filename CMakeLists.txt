@@ -331,7 +331,7 @@ set_option(SDL_METAL               "Enable Metal support" ${APPLE})
 set_option(SDL_KMSDRM              "Use KMS DRM video driver" ${UNIX_SYS})
 dep_option(SDL_KMSDRM_SHARED       "Dynamically load KMS DRM support" ON "SDL_KMSDRM" OFF)
 set_option(SDL_OFFSCREEN           "Use offscreen video driver" ON)
-dep_option(SDL_VIDEO_CAPTURE       "Enable video capturing" ON SDL_VIDEO OFF)
+dep_option(SDL_CAMERA              "Enable camera support" ON SDL_VIDEO OFF)
 option_string(SDL_BACKGROUNDING_SIGNAL "number to use for magic backgrounding signal or 'OFF'" OFF)
 option_string(SDL_FOREGROUNDING_SIGNAL "number to use for magic foregrounding signal or 'OFF'" OFF)
 dep_option(SDL_HIDAPI              "Enable the HIDAPI subsystem" ON "NOT VISIONOS" OFF)
@@ -1289,6 +1289,12 @@ if(ANDROID)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/sensor/android/*.c")
   endif()
 
+  if(SDL_CAMERA)
+    set(SDL_CAMERA_ANDROID 1)
+    set(HAVE_CAMERA TRUE)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/camera/android/*.c")
+  endif()
+
   if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_ANDROID 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/android/*.c")
@@ -1498,6 +1504,9 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
               ioctl(0, KDGKBENT, &kbe);
               return 0;
           }" HAVE_INPUT_KD)
+      check_c_source_compiles("
+          #include <linux/videodev2.h>
+          int main(int argc, char** argv) { return 0; }" HAVE_LINUX_VIDEODEV2_H)
     elseif(FREEBSD)
       check_c_source_compiles("
           #include <sys/kbio.h>
@@ -1519,6 +1528,12 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
               ioctl(0, WSKBDIO_GETMAP, &data);
               return 0;
           }" HAVE_INPUT_WSCONS)
+    endif()
+
+    if(SDL_CAMERA AND HAVE_LINUX_VIDEODEV2_H)
+      set(SDL_CAMERA_V4L2 1)
+      set(HAVE_CAMERA TRUE)
+      sdl_glob_sources("${SDL3_SOURCE_DIR}/src/camera/v4l2/*.c")
     endif()
 
     if(HAVE_LINUX_INPUT_H)
@@ -2020,6 +2035,8 @@ elseif(APPLE)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/file/cocoa/*.m")
 
   if(IOS OR TVOS OR MACOSX OR DARWIN)
+    set(SDL_CAMERA_APPLE TRUE)
+    set(HAVE_CAMERA TRUE)
     sdl_sources("${SDL3_SOURCE_DIR}/src/camera/apple/SDL_camera_apple.m")
   endif()
 
@@ -2720,6 +2737,10 @@ endif()
 if(NOT HAVE_SDL_MISC)
   set(SDL_MISC_DUMMY 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/misc/dummy/*.c")
+endif()
+if(NOT HAVE_CAMERA)
+  set(SDL_CAMERA_DUMMY 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/camera/dummy/*.c")
 endif()
 
 # We always need to have threads and timers around

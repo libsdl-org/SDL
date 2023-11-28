@@ -20,12 +20,10 @@
 */
 #include "SDL_internal.h"
 
-#ifdef SDL_VIDEO_CAPTURE
+#ifdef SDL_CAMERA_APPLE
 
-#include "SDL3/SDL.h"
-#include "SDL3/SDL_video_capture.h"
-#include "SDL_sysvideocapture.h"
-#include "SDL_video_capture_c.h"
+#include "../SDL_syscamera.h"
+#include "../SDL_camera_c.h"
 #include "../thread/SDL_systhread.h"
 
 #if defined(HAVE_COREMEDIA) && defined(SDL_PLATFORM_MACOS) && (__MAC_OS_X_VERSION_MAX_ALLOWED < 101500)
@@ -37,52 +35,52 @@
 #undef HAVE_COREMEDIA
 #endif
 
-#ifndef HAVE_COREMEDIA
-int InitDevice(SDL_VideoCaptureDevice *_this) {
+#ifndef HAVE_COREMEDIA  /* !!! FIXME: use the dummy driver. */
+int InitDevice(SDL_CameraDevice *_this) {
     return -1;
 }
-int OpenDevice(SDL_VideoCaptureDevice *_this) {
+int OpenDevice(SDL_CameraDevice *_this) {
     return -1;
 }
-int AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame) {
+int AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame) {
     return -1;
 }
-void CloseDevice(SDL_VideoCaptureDevice *_this) {
+void CloseDevice(SDL_CameraDevice *_this) {
 }
-int GetDeviceName(SDL_VideoCaptureDeviceID instance_id, char *buf, int size) {
+int GetCameraDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size) {
     return -1;
 }
-int GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec) {
+int GetDeviceSpec(SDL_CameraDevice *_this, SDL_CameraSpec *spec) {
     return -1;
 }
-int GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format) {
+int GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format) {
     return -1;
 }
-int GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width, int *height) {
+int GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int *height) {
     return -1;
 }
-SDL_VideoCaptureDeviceID *GetVideoCaptureDevices(int *count) {
+SDL_CameraDeviceID *GetCameraDevices(int *count) {
     return NULL;
 }
-int GetNumFormats(SDL_VideoCaptureDevice *_this) {
+int GetNumFormats(SDL_CameraDevice *_this) {
     return 0;
 }
-int GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format) {
+int GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format) {
     return 0;
 }
-int ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame) {
+int ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame) {
     return 0;
 }
-int StartCapture(SDL_VideoCaptureDevice *_this) {
+int StartCapture(SDL_CameraDevice *_this) {
     return 0;
 }
-int StopCapture(SDL_VideoCaptureDevice *_this) {
+int StopCapture(SDL_CameraDevice *_this) {
     return 0;
 }
-int SDL_SYS_VideoCaptureInit(void) {
+int SDL_SYS_CameraInit(void) {
     return 0;
 }
-int SDL_SYS_VideoCaptureQuit(void) {
+int SDL_SYS_CameraQuit(void) {
     return 0;
 }
 
@@ -107,13 +105,13 @@ int SDL_SYS_VideoCaptureQuit(void) {
  * IOS:
  *
  * - Need to link with:: CoreMedia CoreVideo
- * - Add #define SDL_VIDEO_CAPTURE 1
+ * - Add #define SDL_CAMERA 1
  *   to SDL_build_config_ios.h
  */
 
 @class MySampleBufferDelegate;
 
-struct SDL_PrivateVideoCaptureData
+struct SDL_PrivateCameraData
 {
     dispatch_queue_t queue;
     MySampleBufferDelegate *delegate;
@@ -216,13 +214,13 @@ sdlformat_to_nsfourcc(Uint32 fmt)
 
 
 @interface MySampleBufferDelegate : NSObject<AVCaptureVideoDataOutputSampleBufferDelegate>
-    @property struct SDL_PrivateVideoCaptureData *hidden;
-    - (void) set: (struct SDL_PrivateVideoCaptureData *) val;
+    @property struct SDL_PrivateCameraData *hidden;
+    - (void) set: (struct SDL_PrivateCameraData *) val;
 @end
 
 @implementation MySampleBufferDelegate
 
-    - (void) set: (struct SDL_PrivateVideoCaptureData *) val {
+    - (void) set: (struct SDL_PrivateCameraData *) val {
         _hidden = val;
     }
 
@@ -241,9 +239,9 @@ sdlformat_to_nsfourcc(Uint32 fmt)
 @end
 
 int
-OpenDevice(SDL_VideoCaptureDevice *_this)
+OpenDevice(SDL_CameraDevice *_this)
 {
-    _this->hidden = (struct SDL_PrivateVideoCaptureData *) SDL_calloc(1, sizeof (struct SDL_PrivateVideoCaptureData));
+    _this->hidden = (struct SDL_PrivateCameraData *) SDL_calloc(1, sizeof (struct SDL_PrivateCameraData));
     if (_this->hidden == NULL) {
         SDL_OutOfMemory();
         goto error;
@@ -256,7 +254,7 @@ error:
 }
 
 void
-CloseDevice(SDL_VideoCaptureDevice *_this)
+CloseDevice(SDL_CameraDevice *_this)
 {
     if (!_this) {
         return;
@@ -285,7 +283,7 @@ CloseDevice(SDL_VideoCaptureDevice *_this)
 }
 
 int
-InitDevice(SDL_VideoCaptureDevice *_this)
+InitDevice(SDL_CameraDevice *_this)
 {
     NSString *fmt = sdlformat_to_nsfourcc(_this->spec.format);
     int w = _this->spec.width;
@@ -405,7 +403,7 @@ error:
 }
 
 int
-GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec)
+GetDeviceSpec(SDL_CameraDevice *_this, SDL_CameraSpec *spec)
 {
     if (spec) {
         *spec = _this->spec;
@@ -415,21 +413,21 @@ GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec)
 }
 
 int
-StartCapture(SDL_VideoCaptureDevice *_this)
+StartCamera(SDL_CameraDevice *_this)
 {
     [_this->hidden->session startRunning];
     return 0;
 }
 
 int
-StopCapture(SDL_VideoCaptureDevice *_this)
+StopCamera(SDL_CameraDevice *_this)
 {
     [_this->hidden->session stopRunning];
     return 0;
 }
 
 int
-AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
+AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 {
     if (CMSimpleQueueGetCount(_this->hidden->frame_queue) > 0) {
         int i, numPlanes, planar;
@@ -482,7 +480,7 @@ AcquireFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
 }
 
 int
-ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
+ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 {
     if (frame->internal){
         CMSampleBufferRef sampleBuffer = (CMSampleBufferRef) frame->internal;
@@ -496,7 +494,7 @@ ReleaseFrame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
 }
 
 int
-GetNumFormats(SDL_VideoCaptureDevice *_this)
+GetNumFormats(SDL_CameraDevice *_this)
 {
     AVCaptureDevice *device = get_device_by_name(_this->dev_name);
     if (device) {
@@ -517,7 +515,7 @@ GetNumFormats(SDL_VideoCaptureDevice *_this)
 }
 
 int
-GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
+GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format)
 {
     AVCaptureDevice *device = get_device_by_name(_this->dev_name);
     if (device) {
@@ -545,7 +543,7 @@ GetFormat(SDL_VideoCaptureDevice *_this, int index, Uint32 *format)
 }
 
 int
-GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format)
+GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format)
 {
     AVCaptureDevice *device = get_device_by_name(_this->dev_name);
     if (device) {
@@ -568,7 +566,7 @@ GetNumFrameSizes(SDL_VideoCaptureDevice *_this, Uint32 format)
 }
 
 int
-GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width, int *height)
+GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int *height)
 {
     AVCaptureDevice *device = get_device_by_name(_this->dev_name);
     if (device) {
@@ -596,7 +594,7 @@ GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width
 }
 
 int
-GetDeviceName(SDL_VideoCaptureDeviceID instance_id, char *buf, int size)
+GetCameraDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size)
 {
     int index = instance_id - 1;
     NSArray<AVCaptureDevice *> *devices = discover_devices();
@@ -617,14 +615,14 @@ GetNumDevices(void)
     return [devices count];
 }
 
-SDL_VideoCaptureDeviceID *GetVideoCaptureDevices(int *count)
+SDL_CameraDeviceID *GetCameraDevices(int *count)
 {
     /* hard-coded list of ID */
     int i;
     int num = GetNumDevices();
-    SDL_VideoCaptureDeviceID *ret;
+    SDL_CameraDeviceID *ret;
 
-    ret = (SDL_VideoCaptureDeviceID *)SDL_malloc((num + 1) * sizeof(*ret));
+    ret = (SDL_CameraDeviceID *)SDL_malloc((num + 1) * sizeof(*ret));
 
     if (ret == NULL) {
         SDL_OutOfMemory();
@@ -640,20 +638,17 @@ SDL_VideoCaptureDeviceID *GetVideoCaptureDevices(int *count)
     return ret;
 }
 
-int SDL_SYS_VideoCaptureInit(void)
+int SDL_SYS_CameraInit(void)
 {
     return 0;
 }
 
-int SDL_SYS_VideoCaptureQuit(void)
+int SDL_SYS_CameraQuit(void)
 {
     return 0;
 }
-
-
-
 
 #endif /* HAVE_COREMEDIA */
 
-#endif /* SDL_VIDEO_CAPTURE */
+#endif /* SDL_CAMERA_APPLE */
 

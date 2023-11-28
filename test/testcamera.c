@@ -12,7 +12,7 @@
 #include "SDL3/SDL_main.h"
 #include "SDL3/SDL.h"
 #include "SDL3/SDL_test.h"
-#include "SDL3/SDL_video_capture.h"
+#include "SDL3/SDL_camera.h"
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten/emscripten.h>
@@ -25,8 +25,8 @@ static const char *usage = "\
  =========================================================================\n\
  \n\
 Use keyboards:\n\
- o: open first video capture device. (close previously opened)\n\
- l: switch to, and list video capture devices\n\
+ o: open first camera device. (close previously opened)\n\
+ l: switch to, and list camera devices\n\
  i: information about status (Init, Playing, Stopped)\n\
  f: formats and resolutions available\n\
  s: start / stop capture\n\
@@ -81,10 +81,10 @@ static void load_average(float *val)
 
 
 struct data_capture_t {
-    SDL_VideoCaptureDevice *device;
-    SDL_VideoCaptureSpec obtained;
+    SDL_CameraDevice *device;
+    SDL_CameraSpec obtained;
     int stopped;
-    SDL_VideoCaptureFrame frame_current;
+    SDL_CameraFrame frame_current;
     measure_fps_t fps_capture;
     SDL_Texture *texture;
     int texture_updated;
@@ -113,11 +113,11 @@ struct data_capture_t {
 
 
 
-static SDL_VideoCaptureDeviceID get_instance_id(int index) {
+static SDL_CameraDeviceID get_instance_id(int index) {
     int ret = 0;
     int num = 0;
-    SDL_VideoCaptureDeviceID *devices;
-    devices = SDL_GetVideoCaptureDevices(&num);
+    SDL_CameraDeviceID *devices;
+    devices = SDL_GetCameraDevices(&num);
     if (devices) {
         if (index >= 0 && index < num) {
             ret = devices[index];
@@ -155,10 +155,10 @@ int main(int argc, char **argv)
     SDL_FRect r_format = { 50 + (120 + 50) * 3, 50, 120, 50 };
     SDL_FRect r_listdev = { 50 + (120 + 50) * 4, 50, 120, 50 };
 
-    SDL_VideoCaptureDevice *device;
-    SDL_VideoCaptureSpec obtained;
+    SDL_CameraDevice *device;
+    SDL_CameraSpec obtained;
     int stopped = 0;
-    SDL_VideoCaptureFrame frame_current;
+    SDL_CameraFrame frame_current;
     measure_fps_t fps_capture;
     SDL_Texture *texture = NULL;
     int texture_updated = 0;
@@ -234,24 +234,24 @@ int main(int argc, char **argv)
 
     SDL_LogSetAllPriority(SDL_LOG_PRIORITY_INFO);
 
-    device = SDL_OpenVideoCapture(0);
+    device = SDL_OpenCamera(0);
 
     if (!device) {
-        SDL_Log("Error SDL_OpenVideoCapture: %s", SDL_GetError());
+        SDL_Log("Error SDL_OpenCamera: %s", SDL_GetError());
     }
 
     {
         /* List formats */
-        int i, num = SDL_GetNumVideoCaptureFormats(device);
+        int i, num = SDL_GetNumCameraFormats(device);
         for (i = 0; i < num; i++) {
             Uint32 format;
-            SDL_GetVideoCaptureFormat(device, i, &format);
+            SDL_GetCameraFormat(device, i, &format);
             SDL_Log("format %d/%d: %s", i, num, SDL_GetPixelFormatName(format));
             {
                 int w, h;
-                int j, num2 = SDL_GetNumVideoCaptureFrameSizes(device, format);
+                int j, num2 = SDL_GetNumCameraFrameSizes(device, format);
                 for (j = 0; j < num2; j++) {
-                    SDL_GetVideoCaptureFrameSize(device, format, j, &w, &h);
+                    SDL_GetCameraFrameSize(device, format, j, &w, &h);
                     SDL_Log("  framesizes %d/%d :  %d x %d", j, num2, w, h);
                 }
             }
@@ -262,24 +262,24 @@ int main(int argc, char **argv)
     {
         int ret;
         /* forced_format */
-        SDL_VideoCaptureSpec desired;
+        SDL_CameraSpec desired;
         SDL_zero(desired);
         desired.width = 640 * 2;
         desired.height = 360 * 2;
         desired.format = SDL_PIXELFORMAT_NV12;
-        ret = SDL_SetVideoCaptureSpec(device, &desired, &obtained, SDL_VIDEO_CAPTURE_ALLOW_ANY_CHANGE);
+        ret = SDL_SetCameraSpec(device, &desired, &obtained, SDL_CAMERA_ALLOW_ANY_CHANGE);
 
         if (ret < 0) {
-            SDL_SetVideoCaptureSpec(device, NULL, &obtained, 0);
+            SDL_SetCameraSpec(device, NULL, &obtained, 0);
         }
     }
 
-    SDL_Log("Open capture video device. Obtained spec: size=%d x %d format=%s",
+    SDL_Log("Open camera device. Obtained spec: size=%d x %d format=%s",
             obtained.width, obtained.height, SDL_GetPixelFormatName(obtained.format));
 
     {
-        SDL_VideoCaptureSpec spec;
-        if (SDL_GetVideoCaptureSpec(device, &spec) == 0) {
+        SDL_CameraSpec spec;
+        if (SDL_GetCameraSpec(device, &spec) == 0) {
             SDL_Log("Read spec: size=%d x %d format=%s",
                     spec.width, spec.height, SDL_GetPixelFormatName(spec.format));
         } else {
@@ -287,8 +287,8 @@ int main(int argc, char **argv)
         }
     }
 
-    if (SDL_StartVideoCapture(device) < 0) {
-        SDL_Log("error SDL_StartVideoCapture(): %s", SDL_GetError());
+    if (SDL_StartCamera(device) < 0) {
+        SDL_Log("error SDL_StartCamera(): %s", SDL_GetError());
     }
 
     while (!quit) {
@@ -389,9 +389,9 @@ int main(int argc, char **argv)
 
             if (sym == SDLK_c) {
                 if (frame_current.num_planes) {
-                    SDL_ReleaseVideoCaptureFrame(device, &frame_current);
+                    SDL_ReleaseCameraFrame(device, &frame_current);
                 }
-                SDL_CloseVideoCapture(device);
+                SDL_CloseCamera(device);
                 device = NULL;
                 SDL_Log("Close");
             }
@@ -400,20 +400,20 @@ int main(int argc, char **argv)
                 if (device) {
                     SDL_Log("Close previous ..");
                     if (frame_current.num_planes) {
-                        SDL_ReleaseVideoCaptureFrame(device, &frame_current);
+                        SDL_ReleaseCameraFrame(device, &frame_current);
                     }
-                    SDL_CloseVideoCapture(device);
+                    SDL_CloseCamera(device);
                 }
 
                 texture_updated = 0;
 
                 SDL_ClearError();
 
-                SDL_Log("Try to open:%s", SDL_GetVideoCaptureDeviceName(get_instance_id(current_dev)));
+                SDL_Log("Try to open:%s", SDL_GetCameraDeviceName(get_instance_id(current_dev)));
 
                 obtained.width = 640 * 2;
                 obtained.height = 360 * 2;
-                device = SDL_OpenVideoCaptureWithSpec(get_instance_id(current_dev), &obtained, &obtained, SDL_VIDEO_CAPTURE_ALLOW_ANY_CHANGE);
+                device = SDL_OpenCameraWithSpec(get_instance_id(current_dev), &obtained, &obtained, SDL_CAMERA_ALLOW_ANY_CHANGE);
 
                 /* spec may have changed because of re-open */
                 if (texture) {
@@ -427,13 +427,13 @@ int main(int argc, char **argv)
 
             if (sym == SDLK_l) {
                 int num = 0;
-                SDL_VideoCaptureDeviceID *devices;
+                SDL_CameraDeviceID *devices;
                 int i;
-                devices = SDL_GetVideoCaptureDevices(&num);
+                devices = SDL_GetCameraDevices(&num);
 
                 SDL_Log("Num devices : %d", num);
                 for (i = 0; i < num; i++) {
-                    SDL_Log("Device %d/%d : %s", i, num, SDL_GetVideoCaptureDeviceName(devices[i]));
+                    SDL_Log("Device %d/%d : %s", i, num, SDL_GetCameraDeviceName(devices[i]));
                 }
                 SDL_free(devices);
 
@@ -449,19 +449,19 @@ int main(int argc, char **argv)
             }
 
             if (sym == SDLK_i) {
-                SDL_VideoCaptureStatus status = SDL_GetVideoCaptureStatus(device);
-                if (status == SDL_VIDEO_CAPTURE_STOPPED) { SDL_Log("STOPPED"); }
-                if (status == SDL_VIDEO_CAPTURE_PLAYING) { SDL_Log("PLAYING"); }
-                if (status == SDL_VIDEO_CAPTURE_INIT) { SDL_Log("INIT"); }
+                SDL_CameraStatus status = SDL_GetCameraStatus(device);
+                if (status == SDL_CAMERA_STOPPED) { SDL_Log("STOPPED"); }
+                if (status == SDL_CAMERA_PLAYING) { SDL_Log("PLAYING"); }
+                if (status == SDL_CAMERA_INIT) { SDL_Log("INIT"); }
             }
 
             if (sym == SDLK_s) {
                 if (stopped) {
                     SDL_Log("Stop");
-                    SDL_StopVideoCapture(device);
+                    SDL_StopCamera(device);
                 } else {
                     SDL_Log("Start");
-                    SDL_StartVideoCapture(device);
+                    SDL_StartCamera(device);
                 }
                 stopped = !stopped;
             }
@@ -470,21 +470,21 @@ int main(int argc, char **argv)
                 SDL_Log("List formats");
 
                 if (!device) {
-                    device = SDL_OpenVideoCapture(get_instance_id(current_dev));
+                    device = SDL_OpenCamera(get_instance_id(current_dev));
                 }
 
                 /* List formats */
                 {
-                    int i, num = SDL_GetNumVideoCaptureFormats(device);
+                    int i, num = SDL_GetNumCameraFormats(device);
                     for (i = 0; i < num; i++) {
                         Uint32 format;
-                        SDL_GetVideoCaptureFormat(device, i, &format);
+                        SDL_GetCameraFormat(device, i, &format);
                         SDL_Log("format %d/%d : %s", i, num, SDL_GetPixelFormatName(format));
                         {
                             int w, h;
-                            int j, num2 = SDL_GetNumVideoCaptureFrameSizes(device, format);
+                            int j, num2 = SDL_GetNumCameraFrameSizes(device, format);
                             for (j = 0; j < num2; j++) {
-                                SDL_GetVideoCaptureFrameSize(device, format, j, &w, &h);
+                                SDL_GetCameraFrameSize(device, format, j, &w, &h);
                                 SDL_Log("  framesizes %d/%d :  %d x %d", j, num2, w, h);
                             }
                         }
@@ -515,12 +515,12 @@ int main(int argc, char **argv)
                     texture_updated = 0;
                 } else {
                     int ret;
-                    SDL_VideoCaptureFrame frame_next;
+                    SDL_CameraFrame frame_next;
                     SDL_zero(frame_next);
 
-                    ret = SDL_AcquireVideoCaptureFrame(device, &frame_next);
+                    ret = SDL_AcquireCameraFrame(device, &frame_next);
                     if (ret < 0) {
-                        SDL_Log("dev[%d] err SDL_AcquireVideoCaptureFrame: %s", i, SDL_GetError());
+                        SDL_Log("dev[%d] err SDL_AcquireCameraFrame: %s", i, SDL_GetError());
                     }
 #if 1
                     if (frame_next.num_planes) {
@@ -533,9 +533,9 @@ int main(int argc, char **argv)
                         update_fps(&fps_capture);
 
                         if (frame_current.num_planes) {
-                            ret = SDL_ReleaseVideoCaptureFrame(device, &frame_current);
+                            ret = SDL_ReleaseCameraFrame(device, &frame_current);
                             if (ret < 0) {
-                                SDL_Log("dev[%d] err SDL_ReleaseVideoCaptureFrame: %s", i, SDL_GetError());
+                                SDL_Log("dev[%d] err SDL_ReleaseCameraFrame: %s", i, SDL_GetError());
                             }
                         }
                         frame_current = frame_next;
@@ -670,7 +670,7 @@ int main(int argc, char **argv)
             const float x_offset = 0;
 #endif
             char buf[256];
-            SDL_snprintf(buf, 256, "Device %d (%s) is not opened", current_dev, SDL_GetVideoCaptureDeviceName(get_instance_id(current_dev)));
+            SDL_snprintf(buf, 256, "Device %d (%s) is not opened", current_dev, SDL_GetCameraDeviceName(get_instance_id(current_dev)));
             SDLTest_DrawString(renderer, x_offset + 10, 10, buf);
         } else {
 #ifdef SDL_PLATFORM_IOS
@@ -682,14 +682,14 @@ int main(int argc, char **argv)
             char buf[256];
 
             if (device) {
-                SDL_VideoCaptureStatus s = SDL_GetVideoCaptureStatus(device);
-                if (s == SDL_VIDEO_CAPTURE_INIT) {
+                SDL_CameraStatus s = SDL_GetCameraStatus(device);
+                if (s == SDL_CAMERA_INIT) {
                     status = "init";
-                } else if (s == SDL_VIDEO_CAPTURE_PLAYING) {
+                } else if (s == SDL_CAMERA_PLAYING) {
                     status = "playing";
-                } else if (s == SDL_VIDEO_CAPTURE_STOPPED) {
+                } else if (s == SDL_CAMERA_STOPPED) {
                     status = "stopped";
-                } else if (s == SDL_VIDEO_CAPTURE_FAIL) {
+                } else if (s == SDL_CAMERA_FAIL) {
                     status = "failed";
                 }
 
@@ -745,13 +745,13 @@ int main(int argc, char **argv)
             RESTORE_CAPTURE_STATE(i);
 
             if (device) {
-                if (SDL_StopVideoCapture(device) < 0) {
-                    SDL_Log("error SDL_StopVideoCapture(): %s", SDL_GetError());
+                if (SDL_StopCamera(device) < 0) {
+                    SDL_Log("error SDL_StopCamera(): %s", SDL_GetError());
                 }
                 if (frame_current.num_planes) {
-                    SDL_ReleaseVideoCaptureFrame(device, &frame_current);
+                    SDL_ReleaseCameraFrame(device, &frame_current);
                 }
-                SDL_CloseVideoCapture(device);
+                SDL_CloseCamera(device);
             }
 
             if (texture) {

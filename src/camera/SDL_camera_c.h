@@ -19,15 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "../SDL_internal.h"
-#include "../../include/SDL3/SDL_camera.h"
 
-#ifndef SDL_video_capture_c_h_
-#define SDL_video_capture_c_h_
+#ifndef SDL_camera_c_h_
+#define SDL_camera_c_h_
 
-/* Initialize the video_capture subsystem */
-int SDL_VideoCaptureInit(void);
+/* Initialize the camera subsystem */
+int SDL_CameraInit(void);
 
-/* Shutdown the video_capture subsystem */
-void SDL_QuitVideoCapture(void);
+/* Shutdown the camera subsystem */
+void SDL_QuitCamera(void);
 
-#endif /* SDL_video_capture_c_h_ */
+#endif /* SDL_camera_c_h_ */

@@ -311,4 +311,7 @@ typedef unsigned int uintptr_t;
 /* Enable filesystem support */
 #define SDL_FILESYSTEM_WINDOWS  1
 
+/* Enable the camera driver (src/camera/dummy/\*.c) */  /* !!! FIXME */
+#define SDL_CAMERA_DUMMY  1
+
 #endif /* SDL_build_config_windows_h_ */
