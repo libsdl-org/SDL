@@ -290,8 +290,8 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
         joystick,                                                                                                                                                                  \
         axis, axis_value);
     READ_AXIS(3, SDL_CONTROLLER_AXIS_LEFTX, 0)
-    READ_AXIS(4, SDL_CONTROLLER_AXIS_LEFTY, 0)
-    READ_AXIS(6, SDL_CONTROLLER_AXIS_RIGHTX, 1)
+    READ_AXIS(4, SDL_CONTROLLER_AXIS_LEFTY, 1)
+    READ_AXIS(6, SDL_CONTROLLER_AXIS_RIGHTX, 0)
     READ_AXIS(5, SDL_CONTROLLER_AXIS_RIGHTY, 1)
     READ_AXIS(7, SDL_CONTROLLER_AXIS_TRIGGERLEFT, 0)
     READ_AXIS(8, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, 0)
@@ -342,8 +342,8 @@ static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device
         RemapButton(ctx, button),      \
         (curSlot[off] & flag) ? SDL_PRESSED : SDL_RELEASED);
         READ_BUTTON(1, 0x01, 0) /* A */
-        READ_BUTTON(1, 0x04, 1) /* B */
-        READ_BUTTON(1, 0x02, 2) /* X */
+        READ_BUTTON(1, 0x02, 1) /* B */
+        READ_BUTTON(1, 0x04, 2) /* X */
         READ_BUTTON(1, 0x08, 3) /* Y */
         READ_BUTTON(1, 0x10, 4) /* DPAD_LEFT */
         READ_BUTTON(1, 0x20, 5) /* DPAD_RIGHT */
@@ -387,7 +387,7 @@ static SDL_bool HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
     /* Read input packet */
     while ((size = SDL_hid_read_timeout(device->dev, packet, sizeof(packet), 0)) > 0) {
 #ifdef DEBUG_GAMECUBE_PROTOCOL
-        // HIDAPI_DumpPacket("Nintendo GameCube packet: size = %d", packet, size);
+        HIDAPI_DumpPacket("Nintendo GameCube packet: size = %d", packet, size);
 #endif
         if (ctx->pc_mode) {
             HIDAPI_DriverGameCube_HandleJoystickPacket(device, ctx, packet, size);
