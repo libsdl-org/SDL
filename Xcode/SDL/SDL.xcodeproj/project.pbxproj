@@ -52,7 +52,7 @@
 		566E26D8246274CC00718109 /* SDL_locale.c in Sources */ = {isa = PBXBuildFile; fileRef = 566E26CD246274CB00718109 /* SDL_locale.c */; };
 		566E26E1246274CC00718109 /* SDL_syslocale.h in Headers */ = {isa = PBXBuildFile; fileRef = 566E26CE246274CC00718109 /* SDL_syslocale.h */; };
 		56A2373329F9C113003CCA5F /* SDL_sysrwlock.c in Sources */ = {isa = PBXBuildFile; fileRef = 56A2373229F9C113003CCA5F /* SDL_sysrwlock.c */; };
-		63134A222A7902CF0021E9A6 /* SDL_pen.h in Headers */ = {isa = PBXBuildFile; fileRef = 63134A212A7902CF0021E9A6 /* SDL_pen.h */; };
+		63134A222A7902CF0021E9A6 /* SDL_pen.h in Headers */ = {isa = PBXBuildFile; fileRef = 63134A212A7902CF0021E9A6 /* SDL_pen.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		63134A252A7902FD0021E9A6 /* SDL_pen_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 63134A232A7902FD0021E9A6 /* SDL_pen_c.h */; };
 		63134A262A7902FD0021E9A6 /* SDL_pen.c in Sources */ = {isa = PBXBuildFile; fileRef = 63134A242A7902FD0021E9A6 /* SDL_pen.c */; };
 		75E0915A241EA924004729E1 /* SDL_virtualjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = 75E09158241EA924004729E1 /* SDL_virtualjoystick.c */; };
