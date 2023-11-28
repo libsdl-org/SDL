@@ -7,7 +7,7 @@ include(CMakePushCheckState)
 
 set(SDL_TEST_EXECUTABLES)
 set(SDL_TESTS_NONINTERACTIVE)
-set(SDL_TESTS_NEEDS_ESOURCES)
+set(SDL_TESTS_NEEDS_RESOURCES)
 
 macro(add_sdl_test_executable TARGET)
     cmake_parse_arguments(AST "NONINTERACTIVE;NEEDS_RESOURCES" "" "" ${ARGN})
@@ -22,7 +22,7 @@ macro(add_sdl_test_executable TARGET)
         list(APPEND SDL_TESTS_NONINTERACTIVE ${TARGET})
     endif()
     if(AST_NEEDS_RESOURCES)
-        list(APPEND SDL_TESTS_NEEDS_ESOURCES ${TARGET})
+        list(APPEND SDL_TESTS_NEEDS_RESOURCES ${TARGET})
     endif()
 
     if(HAVE_GCC_WDOCUMENTATION)
@@ -90,7 +90,7 @@ if(PSP)
         psppower
     )
 elseif(PS2)
-link_libraries(
+    link_libraries(
         SDL2main
         SDL2_test
         SDL2-static
@@ -98,7 +98,7 @@ link_libraries(
         gskit
         dmakit
         ps2_drivers
-)
+    )
 else()
     link_libraries(SDL2::SDL2test SDL2::SDL2-static)
 endif()
@@ -128,7 +128,7 @@ if(NOT MSVC OR NOT CMAKE_GENERATOR_PLATFORM STREQUAL "ARM64")
 endif()
 
 if (OPENGL_FOUND)
-add_definitions(-DHAVE_OPENGL)
+    add_definitions(-DHAVE_OPENGL)
 endif()
 
 add_sdl_test_executable(checkkeys checkkeys.c)
@@ -254,18 +254,18 @@ endif()
 cmake_pop_check_state()
 
 if(SDL_DUMMYAUDIO)
-  list(APPEND SDL_TESTS_NONINTERACTIVE
-    testaudioinfo
-    testsurround
-  )
+    list(APPEND SDL_TESTS_NONINTERACTIVE
+        testaudioinfo
+        testsurround
+    )
 endif()
 
 if(SDL_DUMMYVIDEO)
-  list(APPEND SDL_TESTS_NONINTERACTIVE
-    testkeys
-    testbounds
-    testdisplayinfo
-  )
+    list(APPEND SDL_TESTS_NONINTERACTIVE
+        testkeys
+        testbounds
+        testdisplayinfo
+    )
 endif()
 
 if(OPENGL_FOUND)
@@ -291,7 +291,7 @@ file(COPY ${RESOURCE_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 if(PSP)
     # Build EBOOT files if building for PSP
     set(BUILD_EBOOT
-        ${SDL_TESTS_NEEDS_ESOURCES}
+        ${SDL_TESTS_NEEDS_RESOURCES}
         testatomic
         testaudiocapture
         testaudioinfo
@@ -400,14 +400,41 @@ if(RISCOS)
     endforeach()
 endif()
 
+if(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+    set(test_bin_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    if(NOT IS_ABSOLUTE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+        set(test_bin_dir "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    endif()
+else()
+    set(test_bin_dir "${CMAKE_CURRENT_BINARY_DIR}")
+endif()
+if(NOT CMAKE_VERSION VERSION_LESS 3.20)
+    get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+    set(test_bin_dir "${test_bin_dir}$<$<BOOL:${is_multi_config}>:/$<CONFIG>>")
+endif()
+
+set(RESOURCE_FILES_BINDIR)
+foreach(resource_file IN LISTS RESOURCE_FILES)
+    get_filename_component(res_file_name ${resource_file} NAME)
+    set(resource_file_bindir "${test_bin_dir}/${res_file_name}")
+    add_custom_command(OUTPUT "${resource_file_bindir}"
+        COMMAND "${CMAKE_COMMAND}" -E copy "${resource_file}" "${resource_file_bindir}"
+        DEPENDS "${resource_file}"
+    )
+    list(APPEND RESOURCE_FILES_BINDIR "${resource_file_bindir}")
+endforeach()
+add_custom_target(copy-sdl-test-resources
+    DEPENDS "${RESOURCE_FILES_BINDIR}"
+)
+
 foreach(APP IN LISTS SDL_TESTS_NEEDS_RESOURCES)
-    foreach(RESOURCE_FILE ${RESOURCE_FILES})
-        if(PSP OR PS2)
+    if(PSP OR PS2)
+        foreach(RESOURCE_FILE ${RESOURCE_FILES})
             add_custom_command(TARGET ${APP} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILE} $<TARGET_FILE_DIR:${APP}>/sdl-${APP})
-        else()
-            add_custom_command(TARGET ${APP} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILE} $<TARGET_FILE_DIR:${APP}>)
-        endif()
-    endforeach(RESOURCE_FILE)
+        endforeach()
+    else()
+        add_dependencies(${APP} copy-sdl-test-resources)
+    endif()
     if(APPLE)
         # Make sure resource files get installed into macOS/iOS .app bundles.
         target_sources(${APP} PRIVATE "${RESOURCE_FILES}")
