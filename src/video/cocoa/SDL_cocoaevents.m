@@ -310,6 +310,14 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     SDL_SendDropComplete(NULL);
 }
 
+- (BOOL)application:(NSApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<NSUserActivityRestoring>> *restorableObjects))restorationHandler
+{
+    if ([userActivity.activityType isEqualToString: NSUserActivityTypeBrowsingWeb]) {
+        return SDL_SendUnilink([[userActivity.webpageURL absoluteString] UTF8String]) ? YES : NO;
+    }
+    return NO;
+}
+
 @end
 
 static SDLAppDelegate *appDelegate = nil;

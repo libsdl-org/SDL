@@ -426,6 +426,22 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 Log.v(TAG, "Got filename: " + filename);
                 SDLActivity.onNativeDropFile(filename);
             }
+
+            Log.v(TAG, "Got intent link: " + intent.getDataString());
+            SDLActivity.onNativeCreate(intent.getDataString());
+        } else {
+            SDLActivity.onNativeCreate(null);
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        Intent appIntent = getIntent();
+        if (appIntent != null && appIntent.getDataString() != null) {
+            Log.v(TAG, "Got new intent link: " + appIntent.getDataString());
+            SDLActivity.onNativeIntentLink(appIntent.getDataString());
         }
     }
 
@@ -930,6 +946,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void onNativeOrientationChanged(int orientation);
     public static native void nativeAddTouch(int touchId, String name);
     public static native void nativePermissionResult(int requestCode, boolean result);
+    public static native void onNativeCreate(String intent_data);
+    public static native void onNativeIntentLink(String link);
     public static native void onNativeLocaleChanged();
 
     /**

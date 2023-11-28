@@ -108,6 +108,8 @@ static void android_egl_context_backup(SDL_Window *window)
 
 void Android_PumpEvents_Blocking(_THIS)
 {
+    Android_CheckSendUnilinkEvent();
+
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
 
     if (videodata->isPaused) {
@@ -183,6 +185,8 @@ void Android_PumpEvents_Blocking(_THIS)
 
 void Android_PumpEvents_NonBlocking(_THIS)
 {
+    Android_CheckSendUnilinkEvent();
+
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     static int backup_context = 0;
 
