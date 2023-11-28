@@ -34,16 +34,16 @@ extern "C" {
 #include "../../events/SDL_keyboard_c.h"
 }
 
-static SDL_Scancode WINRT_TranslateKeycode(Windows::UI::Core::KeyEventArgs ^ args)
+static SDL_Scancode WINRT_TranslateKeycode(Windows::System::VirtualKey virtualKey, const Windows::UI::Core::CorePhysicalKeyStatus& keyStatus)
 {
     SDL_Scancode code;
     Uint8 index;
-    Uint16 scanCode = args->KeyStatus.ScanCode | (args->KeyStatus.IsExtendedKey ? 0xe000 : 0);
+    Uint16 scanCode = keyStatus.ScanCode | (keyStatus.IsExtendedKey ? 0xe000 : 0);
 
     /* Pause/Break key have a special scan code with 0xe1 prefix
      * that is not properly reported under UWP.
      * Use Pause scan code that is used in Win32. */
-    if (args->VirtualKey == Windows::System::VirtualKey::Pause) {
+    if (virtualKey == Windows::System::VirtualKey::Pause) {
         scanCode = 0xe046;
     }
 
@@ -54,55 +54,28 @@ static SDL_Scancode WINRT_TranslateKeycode(Windows::UI::Core::KeyEventArgs ^ arg
     return code;
 }
 
-void WINRT_ProcessKeyDownEvent(Windows::UI::Core::KeyEventArgs ^ args)
+void WINRT_ProcessAcceleratorKeyActivated(Windows::UI::Core::AcceleratorKeyEventArgs ^ args)
 {
-    SDL_Scancode sdlScancode = WINRT_TranslateKeycode(args);
+    using namespace Windows::UI::Core;
 
-#if 0
-    SDL_Keycode keycode = SDL_GetKeyFromScancode(sdlScancode);
-    SDL_Log("key down, handled=%s, ext?=%s, released?=%s, menu key down?=%s, "
-            "repeat count=%d, native scan code=0x%x, was down?=%s, vkey=%d, "
-            "sdl scan code=%d (%s), sdl key code=%d (%s)\n",
-        (args->Handled ? "1" : "0"),
-        (args->KeyStatus.IsExtendedKey ? "1" : "0"),
-        (args->KeyStatus.IsKeyReleased ? "1" : "0"),
-        (args->KeyStatus.IsMenuKeyDown ? "1" : "0"),
-        args->KeyStatus.RepeatCount,
-        args->KeyStatus.ScanCode,
-        (args->KeyStatus.WasKeyDown ? "1" : "0"),
-        args->VirtualKey,
-        sdlScancode,
-        SDL_GetScancodeName(sdlScancode),
-        keycode,
-        SDL_GetKeyName(keycode));
-    //args->Handled = true;
-#endif
-    SDL_SendKeyboardKey(0, SDL_PRESSED, sdlScancode);
-}
+    Uint8 state;
+    SDL_Scancode code;
 
-void WINRT_ProcessKeyUpEvent(Windows::UI::Core::KeyEventArgs ^ args)
-{
-    SDL_Scancode sdlScancode = WINRT_TranslateKeycode(args);
-#if 0
-    SDL_Keycode keycode = SDL_GetKeyFromScancode(sdlScancode);
-    SDL_Log("key up, handled=%s, ext?=%s, released?=%s, menu key down?=%s, "
-            "repeat count=%d, native scan code=0x%x, was down?=%s, vkey=%d, "
-            "sdl scan code=%d (%s), sdl key code=%d (%s)\n",
-        (args->Handled ? "1" : "0"),
-        (args->KeyStatus.IsExtendedKey ? "1" : "0"),
-        (args->KeyStatus.IsKeyReleased ? "1" : "0"),
-        (args->KeyStatus.IsMenuKeyDown ? "1" : "0"),
-        args->KeyStatus.RepeatCount,
-        args->KeyStatus.ScanCode,
-        (args->KeyStatus.WasKeyDown ? "1" : "0"),
-        args->VirtualKey,
-        sdlScancode,
-        SDL_GetScancodeName(sdlScancode),
-        keycode,
-        SDL_GetKeyName(keycode));
-    //args->Handled = true;
-#endif
-    SDL_SendKeyboardKey(0, SDL_RELEASED, sdlScancode);
+    switch (args->EventType) {
+    case CoreAcceleratorKeyEventType::SystemKeyDown:
+    case CoreAcceleratorKeyEventType::KeyDown:
+        state = SDL_PRESSED;
+        break;
+    case CoreAcceleratorKeyEventType::SystemKeyUp:
+    case CoreAcceleratorKeyEventType::KeyUp:
+        state = SDL_RELEASED;
+        break;
+    default:
+        return;
+    }
+
+    code = WINRT_TranslateKeycode(args->VirtualKey, args->KeyStatus);
+    SDL_SendKeyboardKey(0, state, code);
 }
 
 void WINRT_ProcessCharacterReceivedEvent(Windows::UI::Core::CharacterReceivedEventArgs ^ args)
