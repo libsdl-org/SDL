@@ -125,10 +125,10 @@ static void loop(void *arg)
                 /* "positive to the right and negative to the left"  */
                 wheel_x += event.wheel.x * 10.0f;
             }
-            if (event.wheel.x != 0.0f) {
+            if (event.wheel.y != 0.0f) {
                 wheel_y_active = SDL_TRUE;
                 /* "positive away from the user and negative towards the user" */
-                wheel_y -= event.wheel.x * 10.0f;
+                wheel_y -= event.wheel.y * 10.0f;
             }
             break;
 
