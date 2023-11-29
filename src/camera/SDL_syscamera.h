@@ -25,44 +25,42 @@
 
 #include "../SDL_list.h"
 
-/* The SDL camera driver */
+// The SDL camera driver
 typedef struct SDL_CameraDevice SDL_CameraDevice;
 
-/* Define the SDL camera driver structure */
+// Define the SDL camera driver structure
 struct SDL_CameraDevice
 {
-    /* * * */
-    /* Data common to all devices */
-
-    /* The device's current camera specification */
+    // The device's current camera specification
     SDL_CameraSpec spec;
 
-    /* Device name */
+    // Device name
     char *dev_name;
 
-    /* Current state flags */
+    // Current state flags
     SDL_AtomicInt shutdown;
     SDL_AtomicInt enabled;
     SDL_bool is_spec_set;
 
-    /* A mutex for locking the queue buffers */
+    // A mutex for locking the queue buffers
     SDL_Mutex *device_lock;
     SDL_Mutex *acquiring_lock;
 
-    /* A thread to feed the camera device */
+    // A thread to feed the camera device
     SDL_Thread *thread;
     SDL_ThreadID threadid;
 
-    /* Queued buffers (if app not using callback). */
+    // Queued buffers (if app not using callback).
     SDL_ListNode *buffer_queue;
 
-    /* * * */
-    /* Data private to this driver */
+    // Data private to this driver
     struct SDL_PrivateCameraData *hidden;
 };
 
 extern int SDL_SYS_CameraInit(void);
 extern int SDL_SYS_CameraQuit(void);
+
+// !!! FIXME: These names need to be made camera-specific.
 
 extern int OpenDevice(SDL_CameraDevice *_this);
 extern void CloseDevice(SDL_CameraDevice *_this);
@@ -86,7 +84,7 @@ extern int GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *
 extern int GetCameraDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size);
 extern SDL_CameraDeviceID *GetCameraDevices(int *count);
 
-extern SDL_bool check_all_device_closed(void);
-extern SDL_bool check_device_playing(void);
+extern SDL_bool CheckAllDeviceClosed(void);
+extern SDL_bool CheckDevicePlaying(void);
 
-#endif /* SDL_syscamera_h_ */
+#endif // SDL_syscamera_h_

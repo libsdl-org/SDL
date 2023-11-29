@@ -62,8 +62,7 @@
 static ACameraManager *cameraMgr = NULL;
 static ACameraIdList *cameraIdList = NULL;
 
-static void
-create_cameraMgr(void)
+static void create_cameraMgr(void)
 {
     if (cameraMgr == NULL) {
         #if 0  // !!! FIXME: this is getting replaced in a different branch.
@@ -81,8 +80,7 @@ create_cameraMgr(void)
     }
 }
 
-static void
-delete_cameraMgr(void)
+static void delete_cameraMgr(void)
 {
     if (cameraIdList) {
         ACameraManager_deleteCameraIdList(cameraIdList);
@@ -104,50 +102,46 @@ struct SDL_PrivateCameraData
     ACaptureSessionOutputContainer *sessionOutputContainer;
     AImageReader *reader;
     int num_formats;
-    int count_formats[6]; // see format_2_id
+    int count_formats[6]; // see format_to_id
 };
 
 
-/**/
 #define FORMAT_SDL SDL_PIXELFORMAT_NV12
 
-static int
-format_2_id(int fmt) {
+static int format_to_id(int fmt) {
      switch (fmt) {
-#define CASE(x, y)  case x: return y
+        #define CASE(x, y)  case x: return y
         CASE(FORMAT_SDL, 0);
         CASE(SDL_PIXELFORMAT_RGB565, 1);
         CASE(SDL_PIXELFORMAT_XRGB8888, 2);
         CASE(SDL_PIXELFORMAT_RGBA8888, 3);
         CASE(SDL_PIXELFORMAT_RGBX8888, 4);
         CASE(SDL_PIXELFORMAT_UNKNOWN, 5);
-#undef CASE
+        #undef CASE
         default:
-                return 5;
+            return 5;
     }
 }
 
-static int
-id_2_format(int fmt) {
+static int id_to_format(int fmt) {
      switch (fmt) {
-#define CASE(x, y)  case y: return x
+        #define CASE(x, y)  case y: return x
         CASE(FORMAT_SDL, 0);
         CASE(SDL_PIXELFORMAT_RGB565, 1);
         CASE(SDL_PIXELFORMAT_XRGB8888, 2);
         CASE(SDL_PIXELFORMAT_RGBA8888, 3);
         CASE(SDL_PIXELFORMAT_RGBX8888, 4);
         CASE(SDL_PIXELFORMAT_UNKNOWN, 5);
-#undef CASE
+        #undef CASE
         default:
             return SDL_PIXELFORMAT_UNKNOWN;
     }
 }
 
-static Uint32
-format_android_2_sdl(Uint32 fmt)
+static Uint32 format_android_to_sdl(Uint32 fmt)
 {
     switch (fmt) {
-#define CASE(x, y)  case x: return y
+        #define CASE(x, y)  case x: return y
         CASE(AIMAGE_FORMAT_YUV_420_888, FORMAT_SDL);
         CASE(AIMAGE_FORMAT_RGB_565,     SDL_PIXELFORMAT_RGB565);
         CASE(AIMAGE_FORMAT_RGB_888,     SDL_PIXELFORMAT_XRGB8888);
@@ -157,71 +151,72 @@ format_android_2_sdl(Uint32 fmt)
         CASE(AIMAGE_FORMAT_RGBA_FP16,   SDL_PIXELFORMAT_UNKNOWN); // 64bits
         CASE(AIMAGE_FORMAT_RAW_PRIVATE, SDL_PIXELFORMAT_UNKNOWN);
         CASE(AIMAGE_FORMAT_JPEG,        SDL_PIXELFORMAT_UNKNOWN);
-#undef CASE
+        #undef CASE
         default:
             SDL_Log("Unknown format AIMAGE_FORMAT '%d'", fmt);
             return SDL_PIXELFORMAT_UNKNOWN;
     }
 }
 
-static Uint32
-format_sdl_2_android(Uint32 fmt)
+static Uint32 format_sdl_to_android(Uint32 fmt)
 {
     switch (fmt) {
-#define CASE(x, y)  case y: return x
+        #define CASE(x, y)  case y: return x
         CASE(AIMAGE_FORMAT_YUV_420_888, FORMAT_SDL);
         CASE(AIMAGE_FORMAT_RGB_565,     SDL_PIXELFORMAT_RGB565);
         CASE(AIMAGE_FORMAT_RGB_888,     SDL_PIXELFORMAT_XRGB8888);
         CASE(AIMAGE_FORMAT_RGBA_8888,   SDL_PIXELFORMAT_RGBA8888);
         CASE(AIMAGE_FORMAT_RGBX_8888,   SDL_PIXELFORMAT_RGBX8888);
-#undef CASE
+        #undef CASE
         default:
             return 0;
     }
 }
 
 
-static void
-onDisconnected(void *context, ACameraDevice *device)
+static void onDisconnected(void *context, ACameraDevice *device)
 {
     // SDL_CameraDevice *_this = (SDL_CameraDevice *) context;
+    #if DEBUG_CAMERA
     SDL_Log("CB onDisconnected");
+    #endif
 }
 
-static void
-onError(void *context, ACameraDevice *device, int error)
+static void onError(void *context, ACameraDevice *device, int error)
 {
     // SDL_CameraDevice *_this = (SDL_CameraDevice *) context;
+    #if DEBUG_CAMERA
     SDL_Log("CB onError");
+    #endif
 }
 
 
-static void
-onClosed(void* context, ACameraCaptureSession *session)
+static void onClosed(void* context, ACameraCaptureSession *session)
 {
     // SDL_CameraDevice *_this = (SDL_CameraDevice *) context;
+    #if DEBUG_CAMERA
     SDL_Log("CB onClosed");
+    #endif
 }
 
-static void
-onReady(void* context, ACameraCaptureSession *session)
+static void onReady(void* context, ACameraCaptureSession *session)
 {
     // SDL_CameraDevice *_this = (SDL_CameraDevice *) context;
+    #if DEBUG_CAMERA
     SDL_Log("CB onReady");
+    #endif
 }
 
-static void
-onActive(void* context, ACameraCaptureSession *session)
+static void onActive(void* context, ACameraCaptureSession *session)
 {
     // SDL_CameraDevice *_this = (SDL_CameraDevice *) context;
+    #if DEBUG_CAMERA
     SDL_Log("CB onActive");
+    #endif
 }
 
-int
-OpenDevice(SDL_CameraDevice *_this)
+int OpenDevice(SDL_CameraDevice *_this)
 {
-    camera_status_t res;
-
     /* Cannot open a second camera, while the first one is opened.
      * If you want to play several camera, they must all be opened first, then played.
      *
@@ -230,7 +225,7 @@ OpenDevice(SDL_CameraDevice *_this)
      * before configuring sessions on any of the camera devices.  * "
      *
      */
-    if (check_device_playing()) {
+    if (CheckDevicePlaying()) {
         return SDL_SetError("A camera is already playing");
     }
 
@@ -245,7 +240,7 @@ OpenDevice(SDL_CameraDevice *_this)
     _this->hidden->dev_callbacks.onDisconnected = onDisconnected;
     _this->hidden->dev_callbacks.onError = onError;
 
-    res = ACameraManager_openCamera(cameraMgr, _this->dev_name, &_this->hidden->dev_callbacks, &_this->hidden->device);
+    camera_status_t res = ACameraManager_openCamera(cameraMgr, _this->dev_name, &_this->hidden->dev_callbacks, &_this->hidden->device);
     if (res != ACAMERA_OK) {
         return SDL_SetError("Failed to open camera");
     }
@@ -253,8 +248,7 @@ OpenDevice(SDL_CameraDevice *_this)
     return 0;
 }
 
-void
-CloseDevice(SDL_CameraDevice *_this)
+void CloseDevice(SDL_CameraDevice *_this)
 {
     if (_this && _this->hidden) {
         if (_this->hidden->session) {
@@ -278,13 +272,13 @@ CloseDevice(SDL_CameraDevice *_this)
         _this->hidden = NULL;
     }
 
-    if (check_all_device_closed()) {
+    // !!! FIXME: just refcount this?
+    if (CheckAllDeviceClosed()) {
         delete_cameraMgr();
     }
 }
 
-int
-InitDevice(SDL_CameraDevice *_this)
+int InitDevice(SDL_CameraDevice *_this)
 {
     size_t size, pitch;
     SDL_CalculateSize(_this->spec.format, _this->spec.width, _this->spec.height, &size, &pitch, SDL_FALSE);
@@ -292,19 +286,19 @@ InitDevice(SDL_CameraDevice *_this)
     return 0;
 }
 
-int
-GetDeviceSpec(SDL_CameraDevice *_this, SDL_CameraSpec *spec)
+int GetDeviceSpec(SDL_CameraDevice *_this, SDL_CameraSpec *spec)
 {
+    // !!! FIXME: catch NULLs at higher level
     if (spec) {
-        *spec = _this->spec;
+        SDL_copyp(spec, &_this->spec);
         return 0;
     }
     return -1;
 }
 
-int
-StartCamera(SDL_CameraDevice *_this)
+int StartCamera(SDL_CameraDevice *_this)
 {
+    // !!! FIXME: maybe log the error code in SDL_SetError
     camera_status_t res;
     media_status_t res2;
     ANativeWindow *window = NULL;
@@ -312,7 +306,7 @@ StartCamera(SDL_CameraDevice *_this)
     ACameraOutputTarget *outputTarget;
     ACaptureRequest *request;
 
-    res2 = AImageReader_new(_this->spec.width, _this->spec.height, format_sdl_2_android(_this->spec.format), 10 /* nb buffers */, &_this->hidden->reader);
+    res2 = AImageReader_new(_this->spec.width, _this->spec.height, format_sdl_to_android(_this->spec.format), 10 /* nb buffers */, &_this->hidden->reader);
     if (res2 != AMEDIA_OK) {
         SDL_SetError("Error AImageReader_new");
         goto error;
@@ -321,9 +315,7 @@ StartCamera(SDL_CameraDevice *_this)
     if (res2 != AMEDIA_OK) {
         SDL_SetError("Error AImageReader_new");
         goto error;
-
     }
-
 
     res = ACaptureSessionOutput_create(window, &sessionOutput);
     if (res != ACAMERA_OK) {
@@ -341,13 +333,11 @@ StartCamera(SDL_CameraDevice *_this)
         goto error;
     }
 
-
     res = ACameraOutputTarget_create(window, &outputTarget);
     if (res != ACAMERA_OK) {
         SDL_SetError("Error ACameraOutputTarget_create");
         goto error;
     }
-
 
     res = ACameraDevice_createCaptureRequest(_this->hidden->device, TEMPLATE_RECORD, &request);
     if (res != ACAMERA_OK) {
@@ -360,7 +350,6 @@ StartCamera(SDL_CameraDevice *_this)
         SDL_SetError("Error ACaptureRequest_addTarget");
         goto error;
     }
-
 
     _this->hidden->capture_callbacks.context = (void *) _this;
     _this->hidden->capture_callbacks.onClosed = onClosed;
@@ -388,16 +377,14 @@ error:
     return -1;
 }
 
-int
-StopCamera(SDL_CameraDevice *_this)
+int StopCamera(SDL_CameraDevice *_this)
 {
     ACameraCaptureSession_close(_this->hidden->session);
     _this->hidden->session = NULL;
     return 0;
 }
 
-int
-AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
+int AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 {
     media_status_t res;
     AImage *image;
@@ -406,20 +393,17 @@ AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
     res = AImageReader_acquireLatestImage(_this->hidden->reader, &image);
     */
     if (res == AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE ) {
-
         SDL_Delay(20); // TODO fix some delay
-#if DEBUG_CAMERA
-//        SDL_Log("AImageReader_acquireNextImage: AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE");
-#endif
-        return 0;
+        #if DEBUG_CAMERA
+        //SDL_Log("AImageReader_acquireNextImage: AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE");
+        #endif
     } else if (res == AMEDIA_OK ) {
-        int i = 0;
         int32_t numPlanes = 0;
         AImage_getNumberOfPlanes(image, &numPlanes);
 
         frame->timestampNS = SDL_GetTicksNS();
 
-        for (i = 0; i < numPlanes && i < 3; i++) {
+        for (int i = 0; i < numPlanes && i < 3; i++) {
             int dataLength = 0;
             int rowStride = 0;
             uint8_t *data = NULL;
@@ -442,18 +426,16 @@ AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
         }
 
         frame->internal = (void*)image;
-        return 0;
     } else if (res == AMEDIA_IMGREADER_MAX_IMAGES_ACQUIRED) {
-        SDL_SetError("AMEDIA_IMGREADER_MAX_IMAGES_ACQUIRED");
+        return SDL_SetError("AMEDIA_IMGREADER_MAX_IMAGES_ACQUIRED");
     } else {
-        SDL_SetError("AImageReader_acquireNextImage: %d", res);
+        return SDL_SetError("AImageReader_acquireNextImage: %d", res);
     }
 
-    return -1;
+    return 0;
 }
 
-int
-ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
+int ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 {
     if (frame->internal){
         AImage_delete((AImage *)frame->internal);
@@ -461,12 +443,10 @@ ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
     return 0;
 }
 
-int
-GetNumFormats(SDL_CameraDevice *_this)
+int GetNumFormats(SDL_CameraDevice *_this)
 {
     camera_status_t res;
-    int i;
-    int unknown = 0;
+    SDL_bool unknown = SDL_FALSE;
     ACameraMetadata *metadata;
     ACameraMetadata_const_entry entry;
 
@@ -486,34 +466,33 @@ GetNumFormats(SDL_CameraDevice *_this)
 
     SDL_Log("got entry ACAMERA_SCALER_AVAILABLE_STREAM_CONFIGURATIONS");
 
-    for (i = 0; i < entry.count; i += 4) {
-        int32_t format = entry.data.i32[i + 0];
-        int32_t type = entry.data.i32[i + 3];
-        Uint32 fmt;
+    for (int i = 0; i < entry.count; i += 4) {
+        const int32_t format = entry.data.i32[i + 0];
+        const int32_t type = entry.data.i32[i + 3];
 
         if (type == ACAMERA_SCALER_AVAILABLE_STREAM_CONFIGURATIONS_INPUT) {
             continue;
         }
 
-        fmt = format_android_2_sdl(format);
-        _this->hidden->count_formats[format_2_id(fmt)] += 1;
+        const Uint32 fmt = format_android_to_sdl(format);
+        _this->hidden->count_formats[format_to_id(fmt)] += 1;
 
-#if DEBUG_CAMERA
+        #if DEBUG_CAMERA
         if (fmt != SDL_PIXELFORMAT_UNKNOWN) {
             int w = entry.data.i32[i + 1];
             int h = entry.data.i32[i + 2];
             SDL_Log("Got format android 0x%08x -> %s %d x %d", format, SDL_GetPixelFormatName(fmt), w, h);
         } else {
-            unknown += 1;
+            unknown = SDL_TRUE;
         }
-#endif
+        #endif
     }
 
-#if DEBUG_CAMERA
-        if (unknown) {
-            SDL_Log("Got unknown android");
-        }
-#endif
+    #if DEBUG_CAMERA
+    if (unknown) {
+        SDL_Log("Got unknown android");
+    }
+    #endif
 
 
     if ( _this->hidden->count_formats[0]) _this->hidden->num_formats += 1;
@@ -526,10 +505,8 @@ GetNumFormats(SDL_CameraDevice *_this)
     return _this->hidden->num_formats;
 }
 
-int
-GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format)
+int GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format)
 {
-    int i;
     int i2 = 0;
 
     if (_this->hidden->num_formats == 0) {
@@ -537,16 +514,17 @@ GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format)
     }
 
     if (index < 0 || index >= _this->hidden->num_formats) {
+        // !!! FIXME: call SDL_SetError()?
         return -1;
     }
 
-    for (i = 0; i < SDL_arraysize(_this->hidden->count_formats); i++) {
+    for (int i = 0; i < SDL_arraysize(_this->hidden->count_formats); i++) {
         if (_this->hidden->count_formats[i] == 0) {
             continue;
         }
 
         if (i2 == index) {
-            *format = id_2_format(i);
+            *format = id_to_format(i);
         }
 
         i2++;
@@ -555,17 +533,17 @@ GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format)
     return 0;
 }
 
-int
-GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format)
+int GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format)
 {
-    int i, i2 = 0, index;
+    // !!! FIXME: call SDL_SetError()?
     if (_this->hidden->num_formats == 0) {
         GetNumFormats(_this);
     }
 
-    index = format_2_id(format);
+    const int index = format_to_id(format);
 
-    for (i = 0; i < SDL_arraysize(_this->hidden->count_formats); i++) {
+    int i2 = 0;
+    for (int i = 0; i < SDL_arraysize(_this->hidden->count_formats); i++) {
         if (_this->hidden->count_formats[i] == 0) {
             continue;
         }
@@ -581,11 +559,10 @@ GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format)
     return -1;
 }
 
-int
-GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int *height)
+int GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int *height)
 {
+    // !!! FIXME: call SDL_SetError()?
     camera_status_t res;
-    int i, i2 = 0;
     ACameraMetadata *metadata;
     ACameraMetadata_const_entry entry;
 
@@ -603,19 +580,18 @@ GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int 
         return -1;
     }
 
-    for (i = 0; i < entry.count; i += 4) {
+    int i2 = 0;
+    for (int i = 0; i < entry.count; i += 4) {
         int32_t f = entry.data.i32[i + 0];
-        int w = entry.data.i32[i + 1];
-        int h = entry.data.i32[i + 2];
+        const int w = entry.data.i32[i + 1];
+        const int h = entry.data.i32[i + 2];
         int32_t type = entry.data.i32[i + 3];
-        Uint32 fmt;
 
         if (type == ACAMERA_SCALER_AVAILABLE_STREAM_CONFIGURATIONS_INPUT) {
             continue;
         }
 
-
-        fmt = format_android_2_sdl(f);
+        Uint32 fmt = format_android_to_sdl(f);
         if (fmt != format) {
             continue;
         }
@@ -628,33 +604,11 @@ GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int 
 
         i2++;
     }
-    return -1;
-}
-
-static int GetNumDevices(void);
-
-int
-GetCameraDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size)
-{
-    int index = instance_id - 1;
-    create_cameraMgr();
-
-    if (cameraIdList == NULL) {
-        GetNumDevices();
-    }
-
-    if (cameraIdList) {
-        if (index >= 0 && index < cameraIdList->numCameras) {
-            SDL_snprintf(buf, size, "%s", cameraIdList->cameraIds[index]);
-            return 0;
-        }
-    }
 
     return -1;
 }
 
-static int
-GetNumDevices(void)
+static int GetNumDevices(void)
 {
     camera_status_t res;
     create_cameraMgr();
@@ -674,37 +628,55 @@ GetNumDevices(void)
     return -1;
 }
 
+int GetCameraDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size)
+{
+    // !!! FIXME: call SDL_SetError()?
+    int index = instance_id - 1;
+    create_cameraMgr();
+
+    if (cameraIdList == NULL) {
+        GetNumDevices();
+    }
+
+    if (cameraIdList) {
+        if (index >= 0 && index < cameraIdList->numCameras) {
+            SDL_snprintf(buf, size, "%s", cameraIdList->cameraIds[index]);
+            return 0;
+        }
+    }
+
+    return -1;
+}
+
 SDL_CameraDeviceID *GetCameraDevices(int *count)
 {
-    /* hard-coded list of ID */
-    int i;
-    int num = GetNumDevices();
-    SDL_CameraDeviceID *ret;
+    // hard-coded list of ID
+    const int num = GetNumDevices();
+    SDL_CameraDeviceID *retval = (SDL_CameraDeviceID *)SDL_malloc((num + 1) * sizeof(*ret));
 
-    ret = (SDL_CameraDeviceID *)SDL_malloc((num + 1) * sizeof(*ret));
-
-    if (ret == NULL) {
+    if (retval == NULL) {
         SDL_OutOfMemory();
         *count = 0;
         return NULL;
     }
 
-    for (i = 0; i < num; i++) {
-        ret[i] = i + 1;
+    for (int i = 0; i < num; i++) {
+        retval[i] = i + 1;
     }
-    ret[num] = 0;
+    retval[num] = 0;
     *count = num;
-    return ret;
+    return retval;
 }
 
-int SDL_SYS_CameraInit(void) {
+int SDL_SYS_CameraInit(void)
+{
     return 0;
 }
 
-int SDL_SYS_CameraQuit(void) {
+int SDL_SYS_CameraQuit(void)
+{
     return 0;
 }
 
 #endif
-
 
