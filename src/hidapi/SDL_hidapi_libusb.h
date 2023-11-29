@@ -37,7 +37,9 @@
 #pragma push_macro("strdup")
 #pragma push_macro("strncpy")
 #pragma push_macro("tolower")
+#pragma push_macro("wcscmp")
 #pragma push_macro("wcsdup")
+#pragma push_macro("wcsncpy")
 
 #undef calloc
 #undef malloc
@@ -53,7 +55,9 @@
 #undef strdup
 #undef strncpy
 #undef tolower
+#undef wcscmp
 #undef wcsdup
+#undef wcsncpy
 
 #define calloc          SDL_calloc
 #define malloc          SDL_malloc
@@ -73,7 +77,9 @@
 #define strdup          SDL_strdup
 #define strncpy         SDL_strlcpy
 #define tolower         SDL_tolower
+#define wcscmp          SDL_wcscmp
 #define wcsdup          SDL_wcsdup
+#define wcsncpy         SDL_wcslcpy
 
 
 #ifndef SDL_PLATFORM_FREEBSD
@@ -123,4 +129,6 @@ static int SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
 #pragma pop_macro("strdup")
 #pragma pop_macro("strncpy")
 #pragma pop_macro("tolower")
+#pragma pop_macro("wcscmp")
 #pragma pop_macro("wcsdup")
+#pragma pop_macro("wcsncpy")
