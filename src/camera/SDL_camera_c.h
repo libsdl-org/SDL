@@ -23,10 +23,10 @@
 #ifndef SDL_camera_c_h_
 #define SDL_camera_c_h_
 
-/* Initialize the camera subsystem */
+// Initialize the camera subsystem
 int SDL_CameraInit(void);
 
-/* Shutdown the camera subsystem */
+// Shutdown the camera subsystem
 void SDL_QuitCamera(void);
 
-#endif /* SDL_camera_c_h_ */
+#endif // SDL_camera_c_h_

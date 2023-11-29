@@ -28,27 +28,25 @@
 #include "../../thread/SDL_systhread.h"
 #include "../../core/linux/SDL_evdev_capabilities.h"
 #include "../../core/linux/SDL_udev.h"
-#include <limits.h>      /* INT_MAX */
+#include <limits.h>      // INT_MAX
 
 #define DEBUG_CAMERA 1
 
-#define MAX_CAMERA_DEVICES 128 /* It's doubtful someone has more than that */
+#define MAX_CAMERA_DEVICES 128 // It's doubtful someone has more than that
 
 static int MaybeAddDevice(const char *path);
 #ifdef SDL_USE_LIBUDEV
 static int MaybeRemoveDevice(const char *path);
-static void camera_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath);
-#endif /* SDL_USE_LIBUDEV */
+static void CameraUdevCallback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath);
+#endif // SDL_USE_LIBUDEV
 
-/*
- * List of available camera devices.
- */
+// List of available camera devices.
 typedef struct SDL_cameralist_item
 {
-    char *fname;        /* Dev path name (like /dev/video0) */
-    char *bus_info;     /* don't add two paths with same bus_info (eg /dev/video0 and /dev/video1 */
+    char *fname;        // Dev path name (like /dev/video0)
+    char *bus_info;     // don't add two paths with same bus_info (eg /dev/video0 and /dev/video1
     SDL_CameraDeviceID instance_id;
-    SDL_CameraDevice *device; /* Associated device */
+    SDL_CameraDevice *device; // Associated device
     struct SDL_cameralist_item *next;
 } SDL_cameralist_item;
 
@@ -67,7 +65,7 @@ enum io_method {
 struct buffer {
     void   *start;
     size_t  length;
-    int available; /* Is available in userspace */
+    int available; // Is available in userspace
 };
 
 struct SDL_PrivateCameraData
@@ -82,34 +80,30 @@ struct SDL_PrivateCameraData
 
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include <fcntl.h>              /* low-level i/o */
+#include <fcntl.h>              // low-level i/o
 #include <errno.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <linux/videodev2.h>
 
-static int
-xioctl(int fh, int request, void *arg)
+static int xioctl(int fh, int request, void *arg)
 {
     int r;
 
     do {
         r = ioctl(fh, request, arg);
-    } while (r == -1 && errno == EINTR);
+    } while ((r == -1) && (errno == EINTR));
 
     return r;
 }
 
-/* -1:error  1:frame 0:no frame*/
-static int
-acquire_frame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
+// -1:error  1:frame 0:no frame
+static int acquire_frame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 {
-    struct v4l2_buffer buf;
-    int i;
-
-    int fd = _this->hidden->fd;
+    const int fd = _this->hidden->fd;
     enum io_method io = _this->hidden->io;
     size_t size = _this->hidden->buffers[0].length;
+    struct v4l2_buffer buf;
 
     switch (io) {
         case IO_METHOD_READ:
@@ -119,9 +113,8 @@ acquire_frame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
                         return 0;
 
                     case EIO:
-                        /* Could ignore EIO, see spec. */
-
-                        /* fall through */
+                        // Could ignore EIO, see spec.
+                        // fall through
 
                     default:
                         return SDL_SetError("read");
@@ -145,9 +138,8 @@ acquire_frame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
                         return 0;
 
                     case EIO:
-                        /* Could ignore EIO, see spec. */
-
-                        /* fall through */
+                        // Could ignore EIO, see spec.
+                        // fall through
 
                     default:
                         return SDL_SetError("VIDIOC_DQBUF: %d", errno);
@@ -180,15 +172,16 @@ acquire_frame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
                         return 0;
 
                     case EIO:
-                        /* Could ignore EIO, see spec. */
+                        // Could ignore EIO, see spec.
 
-                        /* fall through */
+                        // fall through
 
                     default:
                         return SDL_SetError("VIDIOC_DQBUF");
                 }
             }
 
+            int i;
             for (i = 0; i < _this->hidden->nb_buffers; ++i) {
                 if (buf.m.userptr == (unsigned long)_this->hidden->buffers[i].start && buf.length == size) {
                     break;
@@ -213,13 +206,12 @@ acquire_frame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 }
 
 
-int
-ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
+int ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 {
     struct v4l2_buffer buf;
-    int i;
-    int fd = _this->hidden->fd;
+    const int fd = _this->hidden->fd;
     enum io_method io = _this->hidden->io;
+    int i;
 
     for (i = 0; i < _this->hidden->nb_buffers; ++i) {
         if (frame->num_planes && frame->data[0] == _this->hidden->buffers[i].start) {
@@ -268,25 +260,23 @@ ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 }
 
 
-int
-AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
+int AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 {
     fd_set fds;
     struct timeval tv;
-    int ret;
 
-    int fd = _this->hidden->fd;
+    const int fd = _this->hidden->fd;
 
     FD_ZERO(&fds);
     FD_SET(fd, &fds);
 
-    /* Timeout. */
+    // Timeout.
     tv.tv_sec = 0;
     tv.tv_usec = 300 * 1000;
 
-    ret = select(fd + 1, &fds, NULL, NULL, &tv);
+    int retval = select(fd + 1, &fds, NULL, NULL, &tv);
 
-    if (ret == -1) {
+    if (retval == -1) {
         if (errno == EINTR) {
 #if DEBUG_CAMERA
             SDL_Log("continue ..");
@@ -296,35 +286,34 @@ AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
         return SDL_SetError("select");
     }
 
-    if (ret == 0) {
-        /* Timeout. Not an error */
+    if (retval == 0) {
+        // Timeout. Not an error
         SDL_SetError("timeout select");
         return 0;
     }
 
-    ret = acquire_frame(_this, frame);
-    if (ret < 0) {
+    retval = acquire_frame(_this, frame);
+    if (retval < 0) {
         return -1;
     }
 
-    if (ret == 1){
+    if (retval == 1){
         frame->timestampNS = SDL_GetTicksNS();
-    } else if (ret == 0) {
+    } else if (retval == 0) {
 #if DEBUG_CAMERA
         SDL_Log("No frame continue: %s", SDL_GetError());
 #endif
     }
 
-    /* EAGAIN - continue select loop. */
+    // EAGAIN - continue select loop.
     return 0;
 }
 
 
-int
-StopCamera(SDL_CameraDevice *_this)
+int StopCamera(SDL_CameraDevice *_this)
 {
     enum v4l2_buf_type type;
-    int fd = _this->hidden->fd;
+    const int fd = _this->hidden->fd;
     enum io_method io = _this->hidden->io;
 
     switch (io) {
@@ -343,18 +332,16 @@ StopCamera(SDL_CameraDevice *_this)
     return 0;
 }
 
-static int
-enqueue_buffers(SDL_CameraDevice *_this)
+static int EnqueueBuffers(SDL_CameraDevice *_this)
 {
-    int i;
-    int fd = _this->hidden->fd;
+    const int fd = _this->hidden->fd;
     enum io_method io = _this->hidden->io;
     switch (io) {
         case IO_METHOD_READ:
             break;
 
         case IO_METHOD_MMAP:
-            for (i = 0; i < _this->hidden->nb_buffers; ++i) {
+            for (int i = 0; i < _this->hidden->nb_buffers; ++i) {
                 if (_this->hidden->buffers[i].available == 0) {
                     struct v4l2_buffer buf;
 
@@ -371,7 +358,7 @@ enqueue_buffers(SDL_CameraDevice *_this)
             break;
 
         case IO_METHOD_USERPTR:
-            for (i = 0; i < _this->hidden->nb_buffers; ++i) {
+            for (int i = 0; i < _this->hidden->nb_buffers; ++i) {
                 if (_this->hidden->buffers[i].available == 0) {
                     struct v4l2_buffer buf;
 
@@ -392,11 +379,10 @@ enqueue_buffers(SDL_CameraDevice *_this)
     return 0;
 }
 
-static int
-pre_enqueue_buffers(SDL_CameraDevice *_this)
+static int PreEnqueueBuffers(SDL_CameraDevice *_this)
 {
     struct v4l2_requestbuffers req;
-    int fd = _this->hidden->fd;
+    const int fd = _this->hidden->fd;
     enum io_method io = _this->hidden->io;
 
     switch (io) {
@@ -404,41 +390,37 @@ pre_enqueue_buffers(SDL_CameraDevice *_this)
             break;
 
         case IO_METHOD_MMAP:
-            {
-                SDL_zero(req);
-                req.count = _this->hidden->nb_buffers;
-                req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-                req.memory = V4L2_MEMORY_MMAP;
+            SDL_zero(req);
+            req.count = _this->hidden->nb_buffers;
+            req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+            req.memory = V4L2_MEMORY_MMAP;
 
-                if (xioctl(fd, VIDIOC_REQBUFS, &req) == -1) {
-                    if (errno == EINVAL) {
-                        return SDL_SetError("Does not support memory mapping");
-                    } else {
-                        return SDL_SetError("VIDIOC_REQBUFS");
-                    }
+            if (xioctl(fd, VIDIOC_REQBUFS, &req) == -1) {
+                if (errno == EINVAL) {
+                    return SDL_SetError("Does not support memory mapping");
+                } else {
+                    return SDL_SetError("VIDIOC_REQBUFS");
                 }
-
-                if (req.count < 2) {
-                    return SDL_SetError("Insufficient buffer memory");
-                }
-
-                _this->hidden->nb_buffers = req.count;
             }
+
+            if (req.count < 2) {
+                return SDL_SetError("Insufficient buffer memory");
+            }
+
+            _this->hidden->nb_buffers = req.count;
             break;
 
         case IO_METHOD_USERPTR:
-            {
-                SDL_zero(req);
-                req.count  = _this->hidden->nb_buffers;
-                req.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-                req.memory = V4L2_MEMORY_USERPTR;
+            SDL_zero(req);
+            req.count  = _this->hidden->nb_buffers;
+            req.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+            req.memory = V4L2_MEMORY_USERPTR;
 
-                if (xioctl(fd, VIDIOC_REQBUFS, &req) == -1) {
-                    if (errno == EINVAL) {
-                        return SDL_SetError("Does not support user pointer i/o");
-                    } else {
-                        return SDL_SetError("VIDIOC_REQBUFS");
-                    }
+            if (xioctl(fd, VIDIOC_REQBUFS, &req) == -1) {
+                if (errno == EINVAL) {
+                    return SDL_SetError("Does not support user pointer i/o");
+                } else {
+                    return SDL_SetError("VIDIOC_REQBUFS");
                 }
             }
             break;
@@ -446,34 +428,31 @@ pre_enqueue_buffers(SDL_CameraDevice *_this)
     return 0;
 }
 
-int
-StartCamera(SDL_CameraDevice *_this)
+int StartCamera(SDL_CameraDevice *_this)
 {
     enum v4l2_buf_type type;
 
-    int fd = _this->hidden->fd;
+    const int fd = _this->hidden->fd;
     enum io_method io = _this->hidden->io;
 
 
     if (_this->hidden->first_start == 0) {
         _this->hidden->first_start = 1;
     } else {
-        int old = _this->hidden->nb_buffers;
+        const int old = _this->hidden->nb_buffers;
         // TODO mmap; doesn't work with stop->start
 #if 1
-        /* Can change nb_buffers for mmap */
-        if (pre_enqueue_buffers(_this) < 0) {
+        // Can change nb_buffers for mmap
+        if (PreEnqueueBuffers(_this) < 0) {
             return -1;
-        }
-        if (old != _this->hidden->nb_buffers) {
-            SDL_SetError("different nb of buffers requested");
-            return -1;
+        } else if (old != _this->hidden->nb_buffers) {
+            return SDL_SetError("different nb of buffers requested");
         }
 #endif
         _this->hidden->first_start = 1;
     }
 
-    if (enqueue_buffers(_this) < 0) {
+    if (EnqueueBuffers(_this) < 0) {
         return -1;
     }
 
@@ -493,7 +472,7 @@ StartCamera(SDL_CameraDevice *_this)
     return 0;
 }
 
-static int alloc_buffer_read(SDL_CameraDevice *_this, size_t buffer_size)
+static int AllocBufferRead(SDL_CameraDevice *_this, size_t buffer_size)
 {
     _this->hidden->buffers[0].length = buffer_size;
     _this->hidden->buffers[0].start = SDL_calloc(1, buffer_size);
@@ -505,7 +484,7 @@ static int alloc_buffer_read(SDL_CameraDevice *_this, size_t buffer_size)
 }
 
 static int
-alloc_buffer_mmap(SDL_CameraDevice *_this)
+AllocBufferMmap(SDL_CameraDevice *_this)
 {
     int fd = _this->hidden->fd;
     int i;
@@ -538,7 +517,7 @@ alloc_buffer_mmap(SDL_CameraDevice *_this)
 }
 
 static int
-alloc_buffer_userp(SDL_CameraDevice *_this, size_t buffer_size)
+AllocBufferUserPtr(SDL_CameraDevice *_this, size_t buffer_size)
 {
     int i;
     for (i = 0; i < _this->hidden->nb_buffers; ++i) {
@@ -708,12 +687,12 @@ GetDeviceSpec(SDL_CameraDevice *_this, SDL_CameraSpec *spec)
     SDL_zero(fmt);
     fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
-    /* Preserve original settings as set by v4l2-ctl for example */
+    // Preserve original settings as set by v4l2-ctl for example
     if (xioctl(fd, VIDIOC_G_FMT, &fmt) == -1) {
         return SDL_SetError("Error VIDIOC_G_FMT");
     }
 
-    /* Buggy driver paranoia. */
+    // Buggy driver paranoia.
     min = fmt.fmt.pix.width * 2;
     if (fmt.fmt.pix.bytesperline < min) {
         fmt.fmt.pix.bytesperline = min;
@@ -739,29 +718,29 @@ InitDevice(SDL_CameraDevice *_this)
 
     int fd = _this->hidden->fd;
     enum io_method io = _this->hidden->io;
-    int ret = -1;
+    int retval = -1;
 
-    /* Select video input, video standard and tune here. */
+    // Select video input, video standard and tune here.
     SDL_zero(cropcap);
 
     cropcap.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
     if (xioctl(fd, VIDIOC_CROPCAP, &cropcap) == 0) {
         crop.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-        crop.c = cropcap.defrect; /* reset to default */
+        crop.c = cropcap.defrect; // reset to default
 
         if (xioctl(fd, VIDIOC_S_CROP, &crop) == -1) {
             switch (errno) {
                 case EINVAL:
-                    /* Cropping not supported. */
+                    // Cropping not supported.
                     break;
                 default:
-                    /* Errors ignored. */
+                    // Errors ignored.
                     break;
             }
         }
     } else {
-        /* Errors ignored. */
+        // Errors ignored.
     }
 
 
@@ -790,7 +769,7 @@ InitDevice(SDL_CameraDevice *_this)
 
     GetDeviceSpec(_this, &_this->spec);
 
-    if (pre_enqueue_buffers(_this) < 0) {
+    if (PreEnqueueBuffers(_this) < 0) {
         return -1;
     }
 
@@ -807,28 +786,23 @@ InitDevice(SDL_CameraDevice *_this)
 
         switch (io) {
             case IO_METHOD_READ:
-                ret = alloc_buffer_read(_this, size);
+                retval = AllocBufferRead(_this, size);
                 break;
 
             case IO_METHOD_MMAP:
-                ret = alloc_buffer_mmap(_this);
+                retval = AllocBufferMmap(_this);
                 break;
 
             case IO_METHOD_USERPTR:
-                ret = alloc_buffer_userp(_this, size);
+                retval = AllocBufferUserPtr(_this, size);
                 break;
         }
     }
 
-    if (ret < 0) {
-        return -1;
-    }
-
-    return 0;
+    return (retval < 0) ? -1 : 0;
 }
 
-void
-CloseDevice(SDL_CameraDevice *_this)
+void CloseDevice(SDL_CameraDevice *_this)
 {
     if (!_this) {
         return;
@@ -836,7 +810,6 @@ CloseDevice(SDL_CameraDevice *_this)
 
     if (_this->hidden) {
         if (_this->hidden->buffers) {
-            int i;
             enum io_method io = _this->hidden->io;
 
             switch (io) {
@@ -845,7 +818,7 @@ CloseDevice(SDL_CameraDevice *_this)
                     break;
 
                 case IO_METHOD_MMAP:
-                    for (i = 0; i < _this->hidden->nb_buffers; ++i) {
+                    for (int i = 0; i < _this->hidden->nb_buffers; ++i) {
                         if (munmap(_this->hidden->buffers[i].start, _this->hidden->buffers[i].length) == -1) {
                             SDL_SetError("munmap");
                         }
@@ -853,7 +826,7 @@ CloseDevice(SDL_CameraDevice *_this)
                     break;
 
                 case IO_METHOD_USERPTR:
-                    for (i = 0; i < _this->hidden->nb_buffers; ++i) {
+                    for (int i = 0; i < _this->hidden->nb_buffers; ++i) {
                         SDL_free(_this->hidden->buffers[i].start);
                     }
                     break;
@@ -864,7 +837,7 @@ CloseDevice(SDL_CameraDevice *_this)
 
         if (_this->hidden->fd != -1) {
             if (close(_this->hidden->fd)) {
-                SDL_SetError("close camera device");
+                SDL_SetError("close camera device");  // !!! FIXME: we probably won't ever see this error
             }
         }
         SDL_free(_this->hidden);
@@ -874,13 +847,12 @@ CloseDevice(SDL_CameraDevice *_this)
 }
 
 
-int
-OpenDevice(SDL_CameraDevice *_this)
+int OpenDevice(SDL_CameraDevice *_this)
 {
     struct stat st;
     struct v4l2_capability cap;
-    int fd;
     enum io_method io;
+    int fd;
 
     _this->hidden = (struct SDL_PrivateCameraData *) SDL_calloc(1, sizeof (struct SDL_PrivateCameraData));
     if (_this->hidden == NULL) {
@@ -891,19 +863,11 @@ OpenDevice(SDL_CameraDevice *_this)
     _this->hidden->fd = -1;
 
     if (stat(_this->dev_name, &st) == -1) {
-        SDL_SetError("Cannot identify '%s': %d, %s", _this->dev_name, errno, strerror(errno));
-        return -1;
-    }
-
-    if (!S_ISCHR(st.st_mode)) {
-        SDL_SetError("%s is no device", _this->dev_name);
-        return -1;
-    }
-
-    fd = open(_this->dev_name, O_RDWR /* required */ | O_NONBLOCK, 0);
-    if (fd == -1) {
-        SDL_SetError("Cannot open '%s': %d, %s", _this->dev_name, errno, strerror(errno));
-        return -1;
+        return SDL_SetError("Cannot identify '%s': %d, %s", _this->dev_name, errno, strerror(errno));
+    } else if (!S_ISCHR(st.st_mode)) {
+        return SDL_SetError("%s is no device", _this->dev_name);
+    } else if ((fd = open(_this->dev_name, O_RDWR /* required */ | O_NONBLOCK, 0)) == -1) {
+        return SDL_SetError("Cannot open '%s': %d, %s", _this->dev_name, errno, strerror(errno));
     }
 
     _this->hidden->fd = fd;
@@ -914,7 +878,7 @@ OpenDevice(SDL_CameraDevice *_this)
     if (_this->hidden->io == IO_METHOD_READ) {
         _this->hidden->nb_buffers = 1;
     } else {
-        _this->hidden->nb_buffers = 8; /* Number of image as internal buffer, */
+        _this->hidden->nb_buffers = 8; // Number of image as internal buffer,
     }
     io = _this->hidden->io;
 
@@ -954,14 +918,10 @@ OpenDevice(SDL_CameraDevice *_this)
             break;
     }
 
-
-
-
     return 0;
 }
 
-int
-GetCameraDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size)
+int GetCameraDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size)
 {
     SDL_cameralist_item *item;
     for (item = SDL_cameralist; item; item = item->next) {
@@ -971,54 +931,46 @@ GetCameraDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size)
         }
     }
 
-    /* unknown instance_id */
+    // unknown instance_id
     return -1;
 }
 
 
 SDL_CameraDeviceID *GetCameraDevices(int *count)
 {
-    /* real list of ID */
-    int i = 0;
-    int num = num_cameras;
-    SDL_CameraDeviceID *ret;
-    SDL_cameralist_item *item;
+    // real list of ID
+    const int num = num_cameras;
+    SDL_CameraDeviceID *retval = (SDL_CameraDeviceID *)SDL_malloc((num + 1) * sizeof(*retval));
 
-    ret = (SDL_CameraDeviceID *)SDL_malloc((num + 1) * sizeof(*ret));
-
-    if (ret == NULL) {
+    if (retval == NULL) {
         SDL_OutOfMemory();
         *count = 0;
         return NULL;
     }
 
-    for (item = SDL_cameralist; item; item = item->next) {
-        ret[i] = item->instance_id;
-        i++;
+    int i = 0;
+    for (SDL_cameralist_item *item = SDL_cameralist; item; item = item->next) {
+        retval[i++] = item->instance_id;
     }
 
-    ret[num] = 0;
+    retval[num] = 0;
     *count = num;
-    return ret;
+    return retval;
 }
 
 
-/*
- * Initializes the subsystem by finding available devices.
- */
+// Initializes the subsystem by finding available devices.
 int SDL_SYS_CameraInit(void)
 {
     const char pattern[] = "/dev/video%d";
     char path[PATH_MAX];
-    int i, j;
 
     /*
      * Limit amount of checks to MAX_CAMERA_DEVICES since we may or may not have
      * permission to some or all devices.
      */
-    i = 0;
-    for (j = 0; j < MAX_CAMERA_DEVICES; ++j) {
-        (void)SDL_snprintf(path, PATH_MAX, pattern, i++);
+    for (int i = 0; i < MAX_CAMERA_DEVICES; i++) {
+        (void)SDL_snprintf(path, PATH_MAX, pattern, i);
         if (MaybeAddDevice(path) == -2) {
             break;
         }
@@ -1027,27 +979,22 @@ int SDL_SYS_CameraInit(void)
 #ifdef SDL_USE_LIBUDEV
     if (SDL_UDEV_Init() < 0) {
         return SDL_SetError("Could not initialize UDEV");
-    }
-
-    if (SDL_UDEV_AddCallback(camera_udev_callback) < 0) {
+    } else if (SDL_UDEV_AddCallback(CameraUdevCallback) < 0) {
         SDL_UDEV_Quit();
         return SDL_SetError("Could not setup Video Capture <-> udev callback");
     }
 
-    /* Force a scan to build the initial device list */
+    // Force a scan to build the initial device list
     SDL_UDEV_Scan();
-#endif /* SDL_USE_LIBUDEV */
+#endif // SDL_USE_LIBUDEV
 
     return num_cameras;
 }
 
-
 int SDL_SYS_CameraQuit(void)
 {
-    SDL_cameralist_item *item;
-    for (item = SDL_cameralist; item; ) {
+    for (SDL_cameralist_item *item = SDL_cameralist; item; ) {
         SDL_cameralist_item *tmp = item->next;
-
         SDL_free(item->fname);
         SDL_free(item->bus_info);
         SDL_free(item);
@@ -1062,7 +1009,7 @@ int SDL_SYS_CameraQuit(void)
 }
 
 #ifdef SDL_USE_LIBUDEV
-static void camera_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath)
+static void CameraUdevCallback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath)
 {
     if (!devpath || !(udev_class & SDL_UDEV_DEVICE_VIDEO_CAPTURE)) {
         return;
@@ -1081,17 +1028,15 @@ static void camera_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class,
         break;
     }
 }
-#endif /* SDL_USE_LIBUDEV */
+#endif // SDL_USE_LIBUDEV
 
 static SDL_bool DeviceExists(const char *path, const char *bus_info) {
-    SDL_cameralist_item *item;
-
-    for (item = SDL_cameralist; item; item = item->next) {
-        /* found same dev name */
+    for (SDL_cameralist_item *item = SDL_cameralist; item; item = item->next) {
+        // found same dev name
         if (SDL_strcmp(path, item->fname) == 0) {
             return SDL_TRUE;
         }
-        /* found same bus_info */
+        // found same bus_info
         if (SDL_strcmp(bus_info, item->bus_info) == 0) {
             return SDL_TRUE;
         }
@@ -1113,7 +1058,7 @@ static int MaybeAddDevice(const char *path)
 
     fd = open(path, O_RDWR);
     if (fd < 0) {
-        return -2; /* stop iterating /dev/video%d */
+        return -2; // stop iterating /dev/video%d
     }
     err = ioctl(fd, VIDIOC_QUERYCAP, &vcap);
     close(fd);
@@ -1129,7 +1074,7 @@ static int MaybeAddDevice(const char *path)
     }
 
 
-    /* Add new item */
+    // Add new item
     item = (SDL_cameralist_item *)SDL_calloc(1, sizeof(SDL_cameralist_item));
     if (!item) {
         SDL_free(bus_info);
@@ -1157,7 +1102,7 @@ static int MaybeAddDevice(const char *path)
 
     ++num_cameras;
 
-    /* !!! TODO: Send a add event? */
+    // !!! TODO: Send a add event?
 #if DEBUG_CAMERA
     SDL_Log("Added video camera ID: %d %s (%s) (total: %d)", item->instance_id, path, bus_info, num_cameras);
 #endif
@@ -1178,7 +1123,7 @@ static int MaybeRemoveDevice(const char *path)
     }
 
     for (item = SDL_cameralist; item; item = item->next) {
-        /* found it, remove it. */
+        // found it, remove it.
         if (SDL_strcmp(path, item->fname) == 0) {
             if (prev) {
                 prev->next = item->next;
@@ -1190,9 +1135,9 @@ static int MaybeRemoveDevice(const char *path)
                 SDL_cameralist_tail = prev;
             }
 
-            /* Need to decrement the count */
+            // Need to decrement the count
             --num_cameras;
-            /* !!! TODO: Send a remove event? */
+            // !!! TODO: Send a remove event?
 
             SDL_free(item->fname);
             SDL_free(item->bus_info);
@@ -1203,6 +1148,7 @@ static int MaybeRemoveDevice(const char *path)
     }
     return 0;
 }
-#endif /* SDL_USE_LIBUDEV */
+#endif // SDL_USE_LIBUDEV
 
-#endif /* SDL_CAMERA_V4L2 */
+#endif // SDL_CAMERA_V4L2
+

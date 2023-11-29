@@ -20,8 +20,6 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL3/SDL.h"
-#include "SDL3/SDL_camera.h"
 #include "SDL_syscamera.h"
 #include "SDL_camera_c.h"
 #include "../video/SDL_pixels_c.h"
@@ -29,16 +27,16 @@
 
 #define DEBUG_CAMERA 1
 
-/* list node entries to share frames between SDL and user app */
+// list node entries to share frames between SDL and user app
+// !!! FIXME: do we need this struct?
 typedef struct entry_t
 {
     SDL_CameraFrame frame;
 } entry_t;
 
-static SDL_CameraDevice *open_devices[16];
+static SDL_CameraDevice *open_devices[16];  // !!! FIXME: remove limit
 
-static void
-close_device(SDL_CameraDevice *device)
+static void CloseCameraDevice(SDL_CameraDevice *device)
 {
     if (!device) {
         return;
@@ -57,27 +55,23 @@ close_device(SDL_CameraDevice *device)
         SDL_DestroyMutex(device->acquiring_lock);
     }
 
-    {
-        int i, n = SDL_arraysize(open_devices);
-        for (i = 0; i < n; i++) {
-            if (open_devices[i] == device) {
-                open_devices[i] = NULL;
-            }
+    const int n = SDL_arraysize(open_devices);
+    for (int i = 0; i < n; i++) {
+        if (open_devices[i] == device) {
+            open_devices[i] = NULL;
         }
     }
 
-    {
-        entry_t *entry = NULL;
-        while (device->buffer_queue != NULL) {
-            SDL_ListPop(&device->buffer_queue, (void**)&entry);
-            if (entry) {
-                SDL_CameraFrame f = entry->frame;
-                /* Release frames not acquired, if any */
-                if (f.timestampNS) {
-                    ReleaseFrame(device, &f);
-                }
-                SDL_free(entry);
+    entry_t *entry = NULL;
+    while (device->buffer_queue != NULL) {
+        SDL_ListPop(&device->buffer_queue, (void**)&entry);
+        if (entry) {
+            SDL_CameraFrame f = entry->frame;
+            // Release frames not acquired, if any
+            if (f.timestampNS) {
+                ReleaseFrame(device, &f);
             }
+            SDL_free(entry);
         }
     }
 
@@ -87,12 +81,12 @@ close_device(SDL_CameraDevice *device)
     SDL_free(device);
 }
 
-/* Tell if all device are closed */
-SDL_bool check_all_device_closed(void)
+// Tell if all devices are closed
+SDL_bool CheckAllDeviceClosed(void)
 {
-    int i, n = SDL_arraysize(open_devices);
+    const int n = SDL_arraysize(open_devices);
     int all_closed = SDL_TRUE;
-    for (i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         if (open_devices[i]) {
             all_closed = SDL_FALSE;
             break;
@@ -101,11 +95,11 @@ SDL_bool check_all_device_closed(void)
     return all_closed;
 }
 
-/* Tell if at least one device is in playing state */
-SDL_bool check_device_playing(void)
+// Tell if at least one device is in playing state
+SDL_bool CheckDevicePlaying(void)
 {
-    int i, n = SDL_arraysize(open_devices);
-    for (i = 0; i < n; i++) {
+    const int n = SDL_arraysize(open_devices);
+    for (int i = 0; i < n; i++) {
         if (open_devices[i]) {
             if (SDL_GetCameraStatus(open_devices[i]) == SDL_CAMERA_PLAYING) {
                 return SDL_TRUE;
@@ -115,35 +109,26 @@ SDL_bool check_device_playing(void)
     return SDL_FALSE;
 }
 
-void
-SDL_CloseCamera(SDL_CameraDevice *device)
+void SDL_CloseCamera(SDL_CameraDevice *device)
 {
     if (!device) {
         SDL_InvalidParamError("device");
-        return;
+    } else {
+        CloseCameraDevice(device);
     }
-    close_device(device);
 }
 
-int
-SDL_StartCamera(SDL_CameraDevice *device)
+int SDL_StartCamera(SDL_CameraDevice *device)
 {
-    SDL_CameraStatus status;
-    int result;
     if (!device) {
         return SDL_InvalidParamError("device");
-    }
-
-    if (device->is_spec_set == SDL_FALSE) {
+    } else if (device->is_spec_set == SDL_FALSE) {
         return SDL_SetError("no spec set");
-    }
-
-    status = SDL_GetCameraStatus(device);
-    if (status != SDL_CAMERA_INIT) {
+    } else if (SDL_GetCameraStatus(device) != SDL_CAMERA_INIT) {
         return SDL_SetError("invalid state");
     }
 
-    result = StartCamera(device);
+    const int result = StartCamera(device);
     if (result < 0) {
         return result;
     }
@@ -153,34 +138,23 @@ SDL_StartCamera(SDL_CameraDevice *device)
     return 0;
 }
 
-int
-SDL_GetCameraSpec(SDL_CameraDevice *device, SDL_CameraSpec *spec)
+int SDL_GetCameraSpec(SDL_CameraDevice *device, SDL_CameraSpec *spec)
 {
     if (!device) {
         return SDL_InvalidParamError("device");
-    }
-
-    if (!spec) {
+    } else if (!spec) {
         return SDL_InvalidParamError("spec");
     }
 
     SDL_zerop(spec);
-
     return GetDeviceSpec(device, spec);
 }
 
-int
-SDL_StopCamera(SDL_CameraDevice *device)
+int SDL_StopCamera(SDL_CameraDevice *device)
 {
-    SDL_CameraStatus status;
-    int ret;
     if (!device) {
         return SDL_InvalidParamError("device");
-    }
-
-    status = SDL_GetCameraStatus(device);
-
-    if (status != SDL_CAMERA_PLAYING) {
+    } else if (SDL_GetCameraStatus(device) != SDL_CAMERA_PLAYING) {
         return SDL_SetError("invalid state");
     }
 
@@ -188,104 +162,88 @@ SDL_StopCamera(SDL_CameraDevice *device)
     SDL_AtomicSet(&device->shutdown, 1);
 
     SDL_LockMutex(device->acquiring_lock);
-    ret = StopCamera(device);
+    const int retval = StopCamera(device);
     SDL_UnlockMutex(device->acquiring_lock);
 
-    if (ret < 0) {
-        return -1;
-    }
-
-    return 0;
+    return (retval < 0) ? -1 : 0;
 }
 
-/* Check spec has valid format and frame size */
-static int
-prepare_cameraspec(SDL_CameraDevice *device, const SDL_CameraSpec *desired, SDL_CameraSpec *obtained, int allowed_changes)
+// Check spec has valid format and frame size
+static int prepare_cameraspec(SDL_CameraDevice *device, const SDL_CameraSpec *desired, SDL_CameraSpec *obtained, int allowed_changes)
 {
-    /* Check format */
-    {
-        int i, num = SDL_GetNumCameraFormats(device);
-        int is_format_valid = 0;
+    // Check format
+    const int numfmts = SDL_GetNumCameraFormats(device);
+    SDL_bool is_format_valid = SDL_FALSE;
 
-        for (i = 0; i < num; i++) {
-            Uint32 format;
-            if (SDL_GetCameraFormat(device, i, &format) == 0) {
-                if (format == desired->format && format != SDL_PIXELFORMAT_UNKNOWN) {
-                    is_format_valid = 1;
-                    obtained->format = format;
-                    break;
-                }
+    for (int i = 0; i < numfmts; i++) {
+        Uint32 format;
+        if (SDL_GetCameraFormat(device, i, &format) == 0) {
+            if (format == desired->format && format != SDL_PIXELFORMAT_UNKNOWN) {
+                is_format_valid = SDL_TRUE;
+                obtained->format = format;
+                break;
             }
         }
+    }
 
-        if (!is_format_valid) {
-            if (allowed_changes) {
-                for (i = 0; i < num; i++) {
-                    Uint32 format;
-                    if (SDL_GetCameraFormat(device, i, &format) == 0) {
-                        if (format != SDL_PIXELFORMAT_UNKNOWN) {
-                            obtained->format = format;
-                            is_format_valid = 1;
-                            break;
-                        }
+    if (!is_format_valid) {
+        if (allowed_changes) {
+            for (int i = 0; i < numfmts; i++) {
+                Uint32 format;
+                if (SDL_GetCameraFormat(device, i, &format) == 0) {
+                    if (format != SDL_PIXELFORMAT_UNKNOWN) {
+                        obtained->format = format;
+                        is_format_valid = SDL_TRUE;
+                        break;
                     }
                 }
-
-            } else {
-                SDL_SetError("Not allowed to change the format");
-                return -1;
             }
-        }
-
-        if (!is_format_valid) {
-            SDL_SetError("Invalid format");
-            return -1;
+        } else {
+            return SDL_SetError("Not allowed to change the format");
         }
     }
 
-    /* Check frame size */
-    {
-        int i, num = SDL_GetNumCameraFrameSizes(device, obtained->format);
-        int is_framesize_valid = 0;
+    if (!is_format_valid) {
+        return SDL_SetError("Invalid format");
+    }
 
-        for (i = 0; i < num; i++) {
+    // Check frame size
+    const int numsizes = SDL_GetNumCameraFrameSizes(device, obtained->format);
+    SDL_bool is_framesize_valid = SDL_FALSE;
+
+    for (int i = 0; i < numsizes; i++) {
+        int w, h;
+        if (SDL_GetCameraFrameSize(device, obtained->format, i, &w, &h) == 0) {
+            if (desired->width == w && desired->height == h) {
+                is_framesize_valid = SDL_TRUE;
+                obtained->width = w;
+                obtained->height = h;
+                break;
+            }
+        }
+    }
+
+    if (!is_framesize_valid) {
+        if (allowed_changes) {
             int w, h;
-            if (SDL_GetCameraFrameSize(device, obtained->format, i, &w, &h) == 0) {
-                if (desired->width == w && desired->height == h) {
-                    is_framesize_valid = 1;
-                    obtained->width = w;
-                    obtained->height = h;
-                    break;
-                }
+            if (SDL_GetCameraFrameSize(device, obtained->format, 0, &w, &h) == 0) {
+                is_framesize_valid = SDL_TRUE;
+                obtained->width = w;
+                obtained->height = h;
             }
+        } else {
+            return SDL_SetError("Not allowed to change the frame size");
         }
+    }
 
-        if (!is_framesize_valid) {
-            if (allowed_changes) {
-                int w, h;
-                if (SDL_GetCameraFrameSize(device, obtained->format, 0, &w, &h) == 0) {
-                    is_framesize_valid = 1;
-                    obtained->width = w;
-                    obtained->height = h;
-                }
-            } else {
-                SDL_SetError("Not allowed to change the frame size");
-                return -1;
-            }
-        }
-
-        if (!is_framesize_valid) {
-            SDL_SetError("Invalid frame size");
-            return -1;
-        }
-
+    if (!is_framesize_valid) {
+        return SDL_SetError("Invalid frame size");
     }
 
     return 0;
 }
 
-const char *
-SDL_GetCameraDeviceName(SDL_CameraDeviceID instance_id)
+const char *SDL_GetCameraDeviceName(SDL_CameraDeviceID instance_id)
 {
     static char buf[256];
     buf[0] = 0;
@@ -299,47 +257,41 @@ SDL_GetCameraDeviceName(SDL_CameraDeviceID instance_id)
     if (GetCameraDeviceName(instance_id, buf, sizeof (buf)) < 0) {
         buf[0] = 0;
     }
+
     return buf;
 }
 
 
-SDL_CameraDeviceID *
-SDL_GetCameraDevices(int *count)
+SDL_CameraDeviceID *SDL_GetCameraDevices(int *count)
 {
-
-    int num = 0;
-    SDL_CameraDeviceID *ret = GetCameraDevices(&num);
-
-    if (ret) {
-        if (count) {
-            *count = num;
-        }
-        return ret;
+    int dummycount = 0;
+    if (!count) {
+        count = &dummycount;
     }
 
-    /* return list of 0 ID, null terminated */
-    num = 0;
-    ret = (SDL_CameraDeviceID *)SDL_malloc((num + 1) * sizeof(*ret));
+    int num = 0;
+    SDL_CameraDeviceID *retval = GetCameraDevices(&num);
+    if (retval) {
+        *count = num;
+        return retval;
+    }
 
-    if (ret == NULL) {
+    // return list of 0 ID, null terminated
+    retval = (SDL_CameraDeviceID *)SDL_calloc(1, sizeof(*retval));
+    if (retval == NULL) {
         SDL_OutOfMemory();
-        if (count) {
-            *count = 0;
-        }
+        *count = 0;
         return NULL;
     }
 
-    ret[num] = 0;
-    if (count) {
-        *count = num;
-    }
+    retval[0] = 0;
+    *count = 0;
 
-    return ret;
+    return retval;
 }
 
-/* Camera thread function */
-static int SDLCALL
-SDL_CameraThread(void *devicep)
+// Camera thread function
+static int SDLCALL SDL_CameraThread(void *devicep)
 {
     const int delay = 20;
     SDL_CameraDevice *device = (SDL_CameraDevice *) devicep;
@@ -358,23 +310,23 @@ SDL_CameraThread(void *devicep)
         Android_JNI_CameraSetThreadPriority(device->iscapture, device);
     }*/
 #else
-    /* The camera capture is always a high priority thread */
+    // The camera capture is always a high priority thread
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
 #endif
 
-    /* Perform any thread setup */
+    // Perform any thread setup
     device->threadid = SDL_GetCurrentThreadID();
 
-    /* Init state */
+    // Init state
+    // !!! FIXME: use a semaphore or something
     while (!SDL_AtomicGet(&device->enabled)) {
         SDL_Delay(delay);
     }
 
-    /* Loop, filling the camera buffers */
+    // Loop, filling the camera buffers
     while (!SDL_AtomicGet(&device->shutdown)) {
         SDL_CameraFrame f;
         int ret;
-        entry_t *entry;
 
         SDL_zero(f);
 
@@ -389,7 +341,7 @@ SDL_CameraThread(void *devicep)
         }
 
         if (ret < 0) {
-            /* Flag it as an error */
+            // Flag it as an error
 #if DEBUG_CAMERA
             SDL_Log("dev[%p] error AcquireFrame: %d %s", (void *)device, ret, SDL_GetError());
 #endif
@@ -397,7 +349,7 @@ SDL_CameraThread(void *devicep)
         }
 
 
-        entry = SDL_malloc(sizeof (entry_t));
+        entry_t *entry = SDL_malloc(sizeof (entry_t));
         if (entry == NULL) {
             goto error_mem;
         }
@@ -424,26 +376,25 @@ error_mem:
     SDL_Log("dev[%p] End thread 'SDL_CameraThread' with error: %s", (void *)device, SDL_GetError());
 #endif
     SDL_AtomicSet(&device->shutdown, 1);
-    SDL_OutOfMemory();
+    SDL_OutOfMemory();  // !!! FIXME: this error isn't accessible since the thread is about to terminate
     return 0;
 }
 
-SDL_CameraDevice *
-SDL_OpenCamera(SDL_CameraDeviceID instance_id)
+SDL_CameraDevice *SDL_OpenCamera(SDL_CameraDeviceID instance_id)
 {
-    int i, n = SDL_arraysize(open_devices);
-    int id = -1;
+    const int n = SDL_arraysize(open_devices);
     SDL_CameraDevice *device = NULL;
     const char *device_name = NULL;
+    int id = -1;
 
     if (!SDL_WasInit(SDL_INIT_VIDEO)) {
         SDL_SetError("Video subsystem is not initialized");
         goto error;
     }
 
-    /* !!! FIXME: there is a race condition here if two devices open from two threads at once. */
-    /* Find an available device ID... */
-    for (i = 0; i < n; i++) {
+    // !!! FIXME: there is a race condition here if two devices open from two threads at once.
+    // Find an available device ID...
+    for (int i = 0; i < n; i++) {
         if (open_devices[i] == NULL) {
             id = i;
             break;
@@ -470,7 +421,7 @@ SDL_OpenCamera(SDL_CameraDeviceID instance_id)
 
 #if 0
     // FIXME do we need this ?
-    /* Let the user override. */
+    // Let the user override.
     {
         const char *dev = SDL_getenv("SDL_CAMERA_DEVICE_NAME");
         if (dev && dev[0]) {
@@ -489,7 +440,6 @@ SDL_OpenCamera(SDL_CameraDeviceID instance_id)
         goto error;
     }
     device->dev_name = SDL_strdup(device_name);
-
 
     SDL_AtomicSet(&device->shutdown, 0);
     SDL_AtomicSet(&device->enabled, 0);
@@ -510,37 +460,28 @@ SDL_OpenCamera(SDL_CameraDeviceID instance_id)
         goto error;
     }
 
-    /* empty */
+    // empty
     device->buffer_queue = NULL;
-    open_devices[id] = device;  /* add it to our list of open devices. */
+    open_devices[id] = device;  // add it to our list of open devices.
 
 
-    /* Start the camera thread */
-    {
-        const size_t stacksize = 64 * 1024;
-        char threadname[64];
-
-        SDL_snprintf(threadname, sizeof (threadname), "SDLCamera%d", id);
-        device->thread = SDL_CreateThreadInternal(SDL_CameraThread, threadname, stacksize, device);
-
-        if (device->thread == NULL) {
-            SDL_SetError("Couldn't create camera thread");
-            goto error;
-        }
+    // Start the camera thread
+    char threadname[64];
+    SDL_snprintf(threadname, sizeof (threadname), "SDLCamera%d", id);
+    device->thread = SDL_CreateThreadInternal(SDL_CameraThread, threadname, 0, device);
+    if (device->thread == NULL) {
+        SDL_SetError("Couldn't create camera thread");
+        goto error;
     }
 
     return device;
 
 error:
-    close_device(device);
+    CloseCameraDevice(device);
     return NULL;
 }
 
-int
-SDL_SetCameraSpec(SDL_CameraDevice *device,
-        const SDL_CameraSpec *desired,
-        SDL_CameraSpec *obtained,
-        int allowed_changes)
+int SDL_SetCameraSpec(SDL_CameraDevice *device, const SDL_CameraSpec *desired, SDL_CameraSpec *obtained, int allowed_changes)
 {
     SDL_CameraSpec _obtained;
     SDL_CameraSpec _desired;
@@ -548,9 +489,7 @@ SDL_SetCameraSpec(SDL_CameraDevice *device,
 
     if (!device) {
         return SDL_InvalidParamError("device");
-    }
-
-    if (device->is_spec_set == SDL_TRUE) {
+    } else if (device->is_spec_set == SDL_TRUE) {
         return SDL_SetError("already configured");
     }
 
@@ -559,7 +498,7 @@ SDL_SetCameraSpec(SDL_CameraDevice *device,
         desired = &_desired;
         allowed_changes = SDL_CAMERA_ALLOW_ANY_CHANGE;
     } else {
-        /* in case desired == obtained */
+        // in case desired == obtained
         _desired = *desired;
         desired = &_desired;
     }
@@ -588,14 +527,11 @@ SDL_SetCameraSpec(SDL_CameraDevice *device,
     return 0;
 }
 
-int
-SDL_AcquireCameraFrame(SDL_CameraDevice *device, SDL_CameraFrame *frame)
+int SDL_AcquireCameraFrame(SDL_CameraDevice *device, SDL_CameraFrame *frame)
 {
     if (!device) {
         return SDL_InvalidParamError("device");
-    }
-
-    if (!frame) {
+    } else if (!frame) {
         return SDL_InvalidParamError("frame");
     }
 
@@ -604,7 +540,7 @@ SDL_AcquireCameraFrame(SDL_CameraDevice *device, SDL_CameraFrame *frame)
     if (device->thread == NULL) {
         int ret;
 
-        /* Wait for a frame */
+        // Wait for a frame
         while ((ret = AcquireFrame(device, frame)) == 0) {
             if (frame->num_planes) {
                 return 0;
@@ -622,42 +558,33 @@ SDL_AcquireCameraFrame(SDL_CameraDevice *device, SDL_CameraFrame *frame)
             *frame = entry->frame;
             SDL_free(entry);
 
-            /* Error from thread */
+            // Error from thread
             if (frame->num_planes == 0 && frame->timestampNS == 0) {
                 return SDL_SetError("error from acquisition thread");
             }
-
-
         } else {
-            /* Queue is empty. Not an error. */
+            // Queue is empty. Not an error.
         }
     }
 
     return 0;
 }
 
-int
-SDL_ReleaseCameraFrame(SDL_CameraDevice *device, SDL_CameraFrame *frame)
+int SDL_ReleaseCameraFrame(SDL_CameraDevice *device, SDL_CameraFrame *frame)
 {
     if (!device) {
         return SDL_InvalidParamError("device");
-    }
-
-    if (frame == NULL) {
+    } else if (frame == NULL) {
         return SDL_InvalidParamError("frame");
-    }
-
-    if (ReleaseFrame(device, frame) < 0) {
+    } else if (ReleaseFrame(device, frame) < 0) {
         return -1;
     }
 
     SDL_zerop(frame);
-
     return 0;
 }
 
-int
-SDL_GetNumCameraFormats(SDL_CameraDevice *device)
+int SDL_GetNumCameraFormats(SDL_CameraDevice *device)
 {
     if (!device) {
         return SDL_InvalidParamError("device");
@@ -665,21 +592,18 @@ SDL_GetNumCameraFormats(SDL_CameraDevice *device)
     return GetNumFormats(device);
 }
 
-int
-SDL_GetCameraFormat(SDL_CameraDevice *device, int index, Uint32 *format)
+int SDL_GetCameraFormat(SDL_CameraDevice *device, int index, Uint32 *format)
 {
     if (!device) {
         return SDL_InvalidParamError("device");
-    }
-    if (!format) {
+    } else if (!format) {
         return SDL_InvalidParamError("format");
     }
     *format = 0;
     return GetFormat(device, index, format);
 }
 
-int
-SDL_GetNumCameraFrameSizes(SDL_CameraDevice *device, Uint32 format)
+int SDL_GetNumCameraFrameSizes(SDL_CameraDevice *device, Uint32 format)
 {
     if (!device) {
         return SDL_InvalidParamError("device");
@@ -687,29 +611,20 @@ SDL_GetNumCameraFrameSizes(SDL_CameraDevice *device, Uint32 format)
     return GetNumFrameSizes(device, format);
 }
 
-int
-SDL_GetCameraFrameSize(SDL_CameraDevice *device, Uint32 format, int index, int *width, int *height)
+int SDL_GetCameraFrameSize(SDL_CameraDevice *device, Uint32 format, int index, int *width, int *height)
 {
     if (!device) {
         return SDL_InvalidParamError("device");
-    }
-    if (!width) {
+    } else if (!width) {
         return SDL_InvalidParamError("width");
-    }
-    if (!height) {
+    } else if (!height) {
         return SDL_InvalidParamError("height");
     }
-    *width = 0;
-    *height = 0;
+    *width = *height = 0;
     return GetFrameSize(device, format, index, width, height);
 }
 
-SDL_CameraDevice *
-SDL_OpenCameraWithSpec(
-        SDL_CameraDeviceID instance_id,
-        const SDL_CameraSpec *desired,
-        SDL_CameraSpec *obtained,
-        int allowed_changes)
+SDL_CameraDevice *SDL_OpenCameraWithSpec(SDL_CameraDeviceID instance_id, const SDL_CameraSpec *desired, SDL_CameraSpec *obtained, int allowed_changes)
 {
     SDL_CameraDevice *device;
 
@@ -724,42 +639,32 @@ SDL_OpenCameraWithSpec(
     return device;
 }
 
-SDL_CameraStatus
-SDL_GetCameraStatus(SDL_CameraDevice *device)
+SDL_CameraStatus SDL_GetCameraStatus(SDL_CameraDevice *device)
 {
     if (device == NULL) {
         return SDL_CAMERA_INIT;
-    }
-
-    if (device->is_spec_set == SDL_FALSE) {
+    } else if (device->is_spec_set == SDL_FALSE) {
         return SDL_CAMERA_INIT;
-    }
-
-    if (SDL_AtomicGet(&device->shutdown)) {
+    } else if (SDL_AtomicGet(&device->shutdown)) {
         return SDL_CAMERA_STOPPED;
-    }
-
-    if (SDL_AtomicGet(&device->enabled)) {
+    } else if (SDL_AtomicGet(&device->enabled)) {
         return SDL_CAMERA_PLAYING;
     }
     return SDL_CAMERA_INIT;
 }
 
-int
-SDL_CameraInit(void)
+int SDL_CameraInit(void)
 {
     SDL_zeroa(open_devices);
-
     SDL_SYS_CameraInit();
     return 0;
 }
 
-void
-SDL_QuitCamera(void)
+void SDL_QuitCamera(void)
 {
-    int i, n = SDL_arraysize(open_devices);
-    for (i = 0; i < n; i++) {
-        close_device(open_devices[i]);
+    const int n = SDL_arraysize(open_devices);
+    for (int i = 0; i < n; i++) {
+        CloseCameraDevice(open_devices[i]);
     }
 
     SDL_zeroa(open_devices);
