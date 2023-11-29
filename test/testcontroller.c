@@ -1876,6 +1876,7 @@ int main(int argc, char *argv[])
     int screen_width, screen_height;
     SDL_Rect area;
     int gamepad_index = -1;
+    SDL_bool show_mappings = SDL_FALSE;
     SDLTest_CommonState *state;
 
     /* Initialize test framework */
@@ -1902,16 +1903,7 @@ int main(int argc, char *argv[])
         consumed = SDLTest_CommonArg(state, i);
         if (!consumed) {
             if (SDL_strcmp(argv[i], "--mappings") == 0) {
-                int map_i;
-                SDL_Log("Supported mappings:\n");
-                for (map_i = 0; map_i < SDL_GetNumGamepadMappings(); ++map_i) {
-                    char *mapping = SDL_GetGamepadMappingForIndex(map_i);
-                    if (mapping) {
-                        SDL_Log("\t%s\n", mapping);
-                        SDL_free(mapping);
-                    }
-                }
-                SDL_Log("\n");
+                show_mappings = SDL_TRUE;
                 consumed = 1;
             } else if (SDL_strcmp(argv[i], "--virtual") == 0) {
                 OpenVirtualGamepad();
@@ -1943,6 +1935,19 @@ int main(int argc, char *argv[])
     }
 
     SDL_AddGamepadMappingsFromFile("gamecontrollerdb.txt");
+
+    if (show_mappings) {
+        int map_i;
+        SDL_Log("Supported mappings:\n");
+        for (map_i = 0; map_i < SDL_GetNumGamepadMappings(); ++map_i) {
+            char *mapping = SDL_GetGamepadMappingForIndex(map_i);
+            if (mapping) {
+                SDL_Log("\t%s\n", mapping);
+                SDL_free(mapping);
+            }
+        }
+        SDL_Log("\n");
+    }
 
     /* Create a window to display gamepad state */
     content_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
