@@ -189,7 +189,6 @@ SDL3_0.0.0 {
     SDL_GetGamepadJoystick;
     SDL_GetGamepadMapping;
     SDL_GetGamepadMappingForGUID;
-    SDL_GetGamepadMappingForIndex;
     SDL_GetGamepadName;
     SDL_GetGamepadPath;
     SDL_GetGamepadPlayerIndex;
@@ -250,7 +249,6 @@ SDL3_0.0.0 {
     SDL_GetMouseState;
     SDL_GetNaturalDisplayOrientation;
     SDL_GetNumAllocations;
-    SDL_GetNumGamepadMappings;
     SDL_GetNumGamepadTouchpadFingers;
     SDL_GetNumGamepadTouchpads;
     SDL_GetNumJoystickAxes;
@@ -963,6 +961,7 @@ SDL3_0.0.0 {
     SDL_GetBooleanProperty;
     SDL_CreateTextureWithProperties;
     SDL_CreateRendererWithProperties;
+    SDL_GetGamepadMappings;
     # extra symbols go here (don't modify this line)
   local: *;
 };

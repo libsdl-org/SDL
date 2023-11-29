@@ -1871,12 +1871,12 @@ static void loop(void *arg)
 
 int main(int argc, char *argv[])
 {
+    SDL_bool show_mappings = SDL_FALSE;
     int i;
     float content_scale;
     int screen_width, screen_height;
     SDL_Rect area;
     int gamepad_index = -1;
-    SDL_bool show_mappings = SDL_FALSE;
     SDLTest_CommonState *state;
 
     /* Initialize test framework */
@@ -1937,16 +1937,15 @@ int main(int argc, char *argv[])
     SDL_AddGamepadMappingsFromFile("gamecontrollerdb.txt");
 
     if (show_mappings) {
+        int count = 0;
+        char **mappings = SDL_GetGamepadMappings(&count);
         int map_i;
         SDL_Log("Supported mappings:\n");
-        for (map_i = 0; map_i < SDL_GetNumGamepadMappings(); ++map_i) {
-            char *mapping = SDL_GetGamepadMappingForIndex(map_i);
-            if (mapping) {
-                SDL_Log("\t%s\n", mapping);
-                SDL_free(mapping);
-            }
+        for (map_i = 0; map_i < count; ++map_i) {
+            SDL_Log("\t%s\n", mappings[map_i]);
         }
         SDL_Log("\n");
+        SDL_free(mappings);
     }
 
     /* Create a window to display gamepad state */
