@@ -74,7 +74,7 @@ typedef struct SDL_Finger
  *
  * This was fixed for Android in SDL 2.0.1.
  *
- * \param count a pointer filled in with the number of devices returned
+ * \param count a pointer filled in with the number of devices returned, can be NULL.
  * \returns a 0 terminated array of touch device IDs which should be
  *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
  *          more details.
