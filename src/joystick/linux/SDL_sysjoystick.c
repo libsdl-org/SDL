@@ -282,18 +282,20 @@ static int IsJoystick(const char *path, int fd, char **name_return, Uint16 *vend
     struct input_id inpid;
     char *name;
     char product_string[128];
+    int class = 0;
 
-    if (ioctl(fd, JSIOCGNAME(sizeof(product_string)), product_string) >= 0) {
-        SDL_zero(inpid);
+    SDL_zero(inpid);
 #ifdef SDL_USE_LIBUDEV
-        SDL_UDEV_GetProductInfo(path, &inpid.vendor, &inpid.product, &inpid.version);
+    SDL_UDEV_GetProductInfo(path, &inpid.vendor, &inpid.product, &inpid.version, &class);
 #endif
-    } else {
+    if (ioctl(fd, JSIOCGNAME(sizeof(product_string)), product_string) <= 0) {
         /* When udev is enabled we only get joystick devices here, so there's no need to test them */
-        if (enumeration_method != ENUMERATION_LIBUDEV && !GuessIsJoystick(fd)) {
+        if (enumeration_method != ENUMERATION_LIBUDEV &&
+            !(class & SDL_UDEV_DEVICE_JOYSTICK) && ( class || !GuessIsJoystick(fd))) {
             return 0;
         }
 
+        /* Could have vendor and product already from udev, but should agree with evdev */
         if (ioctl(fd, EVIOCGID, &inpid) < 0) {
             return 0;
         }
