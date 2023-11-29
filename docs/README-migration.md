@@ -1240,6 +1240,13 @@ If you were using this macro for other things besides SDL ticks values, you can 
 
 SDL_GetNumTouchFingers() returns a negative error code if there was an error.
 
+SDL_GetTouchName is replaced with SDL_GetTouchDeviceName(), which takes an SDL_TouchID instead of an index.
+
+The following functions have been removed:
+* SDL_GetNumTouchDevices() - replaced with SDL_GetTouchDevices()
+* SDL_GetTouchDevice() - replaced with SDL_GetTouchDevices()
+
+
 ## SDL_version.h
 
 SDL_GetRevisionNumber() has been removed from the API, it always returned 0 in SDL 2.0.

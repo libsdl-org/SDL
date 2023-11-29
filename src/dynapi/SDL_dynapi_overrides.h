@@ -279,7 +279,6 @@
 #define SDL_GetNumJoystickButtons SDL_GetNumJoystickButtons_REAL
 #define SDL_GetNumJoystickHats SDL_GetNumJoystickHats_REAL
 #define SDL_GetNumRenderDrivers SDL_GetNumRenderDrivers_REAL
-#define SDL_GetNumTouchDevices SDL_GetNumTouchDevices_REAL
 #define SDL_GetNumTouchFingers SDL_GetNumTouchFingers_REAL
 #define SDL_GetNumVideoDrivers SDL_GetNumVideoDrivers_REAL
 #define SDL_GetOriginalMemoryFunctions SDL_GetOriginalMemoryFunctions_REAL
@@ -352,10 +351,8 @@
 #define SDL_GetThreadName SDL_GetThreadName_REAL
 #define SDL_GetTicks SDL_GetTicks_REAL
 #define SDL_GetTicksNS SDL_GetTicksNS_REAL
-#define SDL_GetTouchDevice SDL_GetTouchDevice_REAL
 #define SDL_GetTouchDeviceType SDL_GetTouchDeviceType_REAL
 #define SDL_GetTouchFinger SDL_GetTouchFinger_REAL
-#define SDL_GetTouchName SDL_GetTouchName_REAL
 #define SDL_GetVersion SDL_GetVersion_REAL
 #define SDL_GetVideoDriver SDL_GetVideoDriver_REAL
 #define SDL_GetWindowBordersSize SDL_GetWindowBordersSize_REAL
@@ -987,3 +984,5 @@
 #define SDL_CreateTextureWithProperties SDL_CreateTextureWithProperties_REAL
 #define SDL_CreateRendererWithProperties SDL_CreateRendererWithProperties_REAL
 #define SDL_GetGamepadMappings SDL_GetGamepadMappings_REAL
+#define SDL_GetTouchDevices SDL_GetTouchDevices_REAL
+#define SDL_GetTouchDeviceName SDL_GetTouchDeviceName_REAL

@@ -44,27 +44,32 @@ int SDL_InitTouch(void)
     return 0;
 }
 
-int SDL_GetNumTouchDevices(void)
+SDL_bool SDL_TouchDevicesAvailable(void)
 {
-    return SDL_num_touch;
+    return SDL_num_touch > 0;
 }
 
-SDL_TouchID SDL_GetTouchDevice(int index)
+SDL_TouchID *SDL_GetTouchDevices(int *count)
 {
-    if (index < 0 || index >= SDL_num_touch) {
-        SDL_SetError("Unknown touch device index %d", index);
-        return 0;
+    if (count) {
+        *count = 0;
     }
-    return SDL_touchDevices[index]->id;
-}
 
-const char *SDL_GetTouchName(int index)
-{
-    if (index < 0 || index >= SDL_num_touch) {
-        SDL_SetError("Unknown touch device");
-        return NULL;
+    const int total = SDL_num_touch;
+    SDL_TouchID *retval = (SDL_TouchID *) SDL_malloc(sizeof (SDL_TouchID) * (total + 1));
+    if (!retval) {
+        SDL_OutOfMemory();
+    } else {
+        for (int i = 0; i < total; i++) {
+            retval[i] = SDL_touchDevices[i]->id;
+        }
+        retval[total] = 0;
+        if (count) {
+            *count = SDL_num_touch;
+        }
     }
-    return SDL_touchDevices[index]->name;
+
+    return retval;
 }
 
 static int SDL_GetTouchIndex(SDL_TouchID id)
@@ -96,13 +101,16 @@ SDL_Touch *SDL_GetTouch(SDL_TouchID id)
     return SDL_touchDevices[index];
 }
 
+const char *SDL_GetTouchDeviceName(SDL_TouchID id)
+{
+    SDL_Touch *touch = SDL_GetTouch(id);
+    return touch ? touch->name : NULL;
+}
+
 SDL_TouchDeviceType SDL_GetTouchDeviceType(SDL_TouchID id)
 {
     SDL_Touch *touch = SDL_GetTouch(id);
-    if (touch) {
-        return touch->type;
-    }
-    return SDL_TOUCH_DEVICE_INVALID;
+    return touch ? touch->type : SDL_TOUCH_DEVICE_INVALID;
 }
 
 static int SDL_GetFingerIndex(const SDL_Touch *touch, SDL_FingerID fingerid)

@@ -255,7 +255,6 @@ SDL3_0.0.0 {
     SDL_GetNumJoystickButtons;
     SDL_GetNumJoystickHats;
     SDL_GetNumRenderDrivers;
-    SDL_GetNumTouchDevices;
     SDL_GetNumTouchFingers;
     SDL_GetNumVideoDrivers;
     SDL_GetOriginalMemoryFunctions;
@@ -328,10 +327,8 @@ SDL3_0.0.0 {
     SDL_GetThreadName;
     SDL_GetTicks;
     SDL_GetTicksNS;
-    SDL_GetTouchDevice;
     SDL_GetTouchDeviceType;
     SDL_GetTouchFinger;
-    SDL_GetTouchName;
     SDL_GetVersion;
     SDL_GetVideoDriver;
     SDL_GetWindowBordersSize;
@@ -962,6 +959,8 @@ SDL3_0.0.0 {
     SDL_CreateTextureWithProperties;
     SDL_CreateRendererWithProperties;
     SDL_GetGamepadMappings;
+    SDL_GetTouchDevices;
+    SDL_GetTouchDeviceName;
     # extra symbols go here (don't modify this line)
   local: *;
 };

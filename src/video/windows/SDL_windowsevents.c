@@ -668,7 +668,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         if (inp.header.dwType == RIM_TYPEMOUSE) {
             SDL_MouseID mouseID;
             RAWMOUSE *rawmouse;
-            if (SDL_GetNumTouchDevices() > 0 &&
+            if (SDL_TouchDevicesAvailable() &&
                 (GetMouseMessageSource() == SDL_MOUSE_EVENT_SOURCE_TOUCH || (GetMessageExtraInfo() & 0x82) == 0x82)) {
                 break;
             }
