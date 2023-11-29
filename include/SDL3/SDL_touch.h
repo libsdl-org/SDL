@@ -65,46 +65,36 @@ typedef struct SDL_Finger
 
 
 /**
- * Get the number of registered touch devices.
+ * Get a list of registered touch devices.
  *
  * On some platforms SDL first sees the touch device if it was actually used.
- * Therefore SDL_GetNumTouchDevices() may return 0 although devices are
+ * Therefore the returned list might be empty, although devices are
  * available. After using all devices at least once the number will be
  * correct.
  *
  * This was fixed for Android in SDL 2.0.1.
  *
- * \returns the number of registered touch devices.
+ * \param count a pointer filled in with the number of devices returned
+ * \returns a 0 terminated array of touch device IDs which should be
+ *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
+ *          more details.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetTouchDevice
  */
-extern DECLSPEC int SDLCALL SDL_GetNumTouchDevices(void);
+extern DECLSPEC SDL_TouchID *SDLCALL SDL_GetTouchDevices(int *count);
 
 /**
- * Get the touch ID with the given index.
+ * Get the touch device name as reported from the driver.
  *
- * \param index the touch device index
- * \returns the touch ID with the given index on success or 0 if the index is
- *          invalid; call SDL_GetError() for more information.
+ * You do not own the returned string, do not modify or free it.
  *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetNumTouchDevices
- */
-extern DECLSPEC SDL_TouchID SDLCALL SDL_GetTouchDevice(int index);
-
-/**
- * Get the touch device name as reported from the driver or NULL if the index
- * is invalid.
- *
- * \param index the touch device index
- * \returns touch device name
+ * \param touchID the touch device instance ID.
+ * \returns touch device name, or NULL on error; call SDL_GetError() for
+ *          more details.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC const char* SDLCALL SDL_GetTouchName(int index);
+extern DECLSPEC const char* SDLCALL SDL_GetTouchDeviceName(SDL_TouchID touchID);
 
 /**
  * Get the type of the given touch device.
