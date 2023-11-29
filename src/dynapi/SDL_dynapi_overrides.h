@@ -213,7 +213,6 @@
 #define SDL_GetGamepadJoystick SDL_GetGamepadJoystick_REAL
 #define SDL_GetGamepadMapping SDL_GetGamepadMapping_REAL
 #define SDL_GetGamepadMappingForGUID SDL_GetGamepadMappingForGUID_REAL
-#define SDL_GetGamepadMappingForIndex SDL_GetGamepadMappingForIndex_REAL
 #define SDL_GetGamepadName SDL_GetGamepadName_REAL
 #define SDL_GetGamepadPath SDL_GetGamepadPath_REAL
 #define SDL_GetGamepadPlayerIndex SDL_GetGamepadPlayerIndex_REAL
@@ -274,7 +273,6 @@
 #define SDL_GetMouseState SDL_GetMouseState_REAL
 #define SDL_GetNaturalDisplayOrientation SDL_GetNaturalDisplayOrientation_REAL
 #define SDL_GetNumAllocations SDL_GetNumAllocations_REAL
-#define SDL_GetNumGamepadMappings SDL_GetNumGamepadMappings_REAL
 #define SDL_GetNumGamepadTouchpadFingers SDL_GetNumGamepadTouchpadFingers_REAL
 #define SDL_GetNumGamepadTouchpads SDL_GetNumGamepadTouchpads_REAL
 #define SDL_GetNumJoystickAxes SDL_GetNumJoystickAxes_REAL
@@ -988,3 +986,4 @@
 #define SDL_GetBooleanProperty SDL_GetBooleanProperty_REAL
 #define SDL_CreateTextureWithProperties SDL_CreateTextureWithProperties_REAL
 #define SDL_CreateRendererWithProperties SDL_CreateRendererWithProperties_REAL
+#define SDL_GetGamepadMappings SDL_GetGamepadMappings_REAL

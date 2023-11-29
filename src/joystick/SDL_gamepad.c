@@ -2003,29 +2003,6 @@ int SDL_AddGamepadMapping(const char *mapping)
 }
 
 /*
- *  Get the number of mappings installed
- */
-int SDL_GetNumGamepadMappings(void)
-{
-    int num_mappings = 0;
-
-    SDL_LockJoysticks();
-    {
-        GamepadMapping_t *mapping;
-
-        for (mapping = s_pSupportedGamepads; mapping; mapping = mapping->next) {
-            if (SDL_memcmp(&mapping->guid, &s_zeroGUID, sizeof(mapping->guid)) == 0) {
-                continue;
-            }
-            ++num_mappings;
-        }
-    }
-    SDL_UnlockJoysticks();
-
-    return num_mappings;
-}
-
-/*
  * Create a mapping string for a mapping
  */
 static char *CreateMappingString(GamepadMapping_t *mapping, SDL_JoystickGUID guid)
@@ -2081,33 +2058,82 @@ static char *CreateMappingString(GamepadMapping_t *mapping, SDL_JoystickGUID gui
     return pMappingString;
 }
 
-/*
- *  Get the mapping at a particular index.
- */
-char *SDL_GetGamepadMappingForIndex(int mapping_index)
+char **SDL_GetGamepadMappings(int *count)
 {
-    char *retval = NULL;
+    int num_mappings = 0;
+    char **retval = NULL;
+    char **mappings = NULL;
+
+    if (count) {
+        *count = 0;
+    }
 
     SDL_LockJoysticks();
-    {
-        GamepadMapping_t *mapping;
 
-        for (mapping = s_pSupportedGamepads; mapping; mapping = mapping->next) {
+    for (GamepadMapping_t *mapping = s_pSupportedGamepads; mapping; mapping = mapping->next) {
+        if (SDL_memcmp(&mapping->guid, &s_zeroGUID, sizeof(mapping->guid)) == 0) {
+            continue;
+        }
+        num_mappings++;
+    }
+
+    size_t final_allocation = sizeof (char *);  // for the NULL terminator element.
+    SDL_bool failed = SDL_FALSE;
+    mappings = (char **) SDL_calloc(num_mappings + 1, sizeof (char *));
+    if (!mappings) {
+        failed = SDL_TRUE;
+        SDL_OutOfMemory();
+    } else {
+        size_t i = 0;
+        for (GamepadMapping_t *mapping = s_pSupportedGamepads; mapping; mapping = mapping->next) {
             if (SDL_memcmp(&mapping->guid, &s_zeroGUID, sizeof(mapping->guid)) == 0) {
                 continue;
             }
-            if (mapping_index == 0) {
-                retval = CreateMappingString(mapping, mapping->guid);
-                break;
+
+            char *mappingstr = CreateMappingString(mapping, mapping->guid);
+            if (!mappingstr) {
+                failed = SDL_TRUE;
+                break;  // error string is already set.
             }
-            --mapping_index;
+
+            SDL_assert(i < num_mappings);
+            mappings[i++] = mappingstr;
+
+            final_allocation += SDL_strlen(mappingstr) + 1 + sizeof (char *);
         }
     }
+
     SDL_UnlockJoysticks();
 
-    if (!retval) {
-        SDL_SetError("Mapping not available");
+    if (!failed) {
+        retval = (char **) SDL_malloc(final_allocation);
+        if (!retval) {
+            SDL_OutOfMemory();
+        } else {
+            final_allocation -= (sizeof (char *) * num_mappings + 1);
+            char *strptr = (char *) (retval + (num_mappings + 1));
+            for (int i = 0; i < num_mappings; i++) {
+                retval[i] = strptr;
+                const size_t slen = SDL_strlcpy(strptr, mappings[i], final_allocation) + 1;
+                SDL_assert(final_allocation >= slen);
+                final_allocation -= slen;
+                strptr += slen;
+            }
+            retval[num_mappings] = NULL;
+
+            if (count) {
+                *count = num_mappings;
+            }
+        }
     }
+
+    if (mappings) {
+        for (int i = 0; i < num_mappings; i++) {
+            SDL_free(mappings[i]);
+        }
+        SDL_free(mappings);
+    }
+
     return retval;
 }
 

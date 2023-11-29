@@ -468,9 +468,7 @@ The following functions have been renamed:
 * SDL_GameControllerIsSensorEnabled() => SDL_GamepadSensorEnabled()
 * SDL_GameControllerMapping() => SDL_GetGamepadMapping()
 * SDL_GameControllerMappingForGUID() => SDL_GetGamepadMappingForGUID()
-* SDL_GameControllerMappingForIndex() => SDL_GetGamepadMappingForIndex()
 * SDL_GameControllerName() => SDL_GetGamepadName()
-* SDL_GameControllerNumMappings() => SDL_GetNumGamepadMappings()
 * SDL_GameControllerOpen() => SDL_OpenGamepad()
 * SDL_GameControllerPath() => SDL_GetGamepadPath()
 * SDL_GameControllerRumble() => SDL_RumbleGamepad()
@@ -490,6 +488,8 @@ The following functions have been removed:
 * SDL_GameControllerNameForIndex() - replaced with SDL_GetGamepadInstanceName()
 * SDL_GameControllerPathForIndex() - replaced with SDL_GetGamepadInstancePath()
 * SDL_GameControllerTypeForIndex() - replaced with SDL_GetGamepadInstanceType()
+* SDL_GameControllerNumMappings() - replaced with SDL_GetGamepadMappings()
+* SDL_GameControllerMappingForIndex() replaced with SDL_GetGamepadMappings()
 
 The following symbols have been renamed:
 * SDL_CONTROLLER_AXIS_INVALID => SDL_GAMEPAD_AXIS_INVALID

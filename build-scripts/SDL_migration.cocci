@@ -1240,18 +1240,8 @@ typedef SDL_GameControllerButton, SDL_GamepadButton;
   (...)
 @@
 @@
-- SDL_GameControllerMappingForIndex
-+ SDL_GetGamepadMappingForIndex
-  (...)
-@@
-@@
 - SDL_GameControllerName
 + SDL_GetGamepadName
-  (...)
-@@
-@@
-- SDL_GameControllerNumMappings
-+ SDL_GetNumGamepadMappings
   (...)
 @@
 @@
