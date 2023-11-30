@@ -435,9 +435,19 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
     case NSEventTypeKeyUp:
         SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_RELEASED, code);
         break;
-    case NSEventTypeFlagsChanged:
-        HandleModifiers(_this, code, (unsigned int)[event modifierFlags]);
+    case NSEventTypeFlagsChanged: {
+        // see if the new modifierFlags mean any existing keys should be pressed/released...
+        const unsigned int modflags = (unsigned int)[event modifierFlags];
+        HandleModifiers(_this, SDL_SCANCODE_LSHIFT, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_LCTRL, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_LALT, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_LGUI, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_RSHIFT, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_RCTRL, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_RALT, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_RGUI, modflags);
         break;
+    }
     default: /* just to avoid compiler warnings */
         break;
     }
