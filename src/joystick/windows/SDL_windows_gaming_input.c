@@ -57,9 +57,6 @@ typedef struct WindowsGamingInputControllerState
     char *name;
     SDL_JoystickGUID guid;
     SDL_JoystickType type;
-    int naxes;
-    int nhats;
-    int nbuttons;
 } WindowsGamingInputControllerState;
 
 typedef HRESULT(WINAPI *CoIncrementMTAUsage_t)(PVOID *pCookie);
@@ -462,10 +459,6 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
                 state->guid = guid;
                 state->type = type;
 
-                __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_ButtonCount(controller, &state->nbuttons);
-                __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_AxisCount(controller, &state->naxes);
-                __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_SwitchCount(controller, &state->nhats);
-
                 __x_ABI_CWindows_CGaming_CInput_CIRawGameController_AddRef(controller);
 
                 ++wgi.controller_count;
@@ -708,9 +701,9 @@ static int WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
     }
 
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = state->nbuttons;
-    joystick->naxes = state->naxes;
-    joystick->nhats = state->nhats;
+    __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_ButtonCount(hwdata->controller, &joystick->nbuttons);
+    __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_AxisCount(hwdata->controller, &joystick->naxes);
+    __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_SwitchCount(hwdata->controller, &joystick->nhats);
     joystick->epowerlevel = wireless ? SDL_JOYSTICK_POWER_UNKNOWN : SDL_JOYSTICK_POWER_WIRED;
 
     if (wireless && hwdata->battery) {
