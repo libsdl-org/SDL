@@ -69,7 +69,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
         if (!device) {
             return NULL;
-        ]
+        }
 
         data = [SDL_UIKitVideoData new];
 
