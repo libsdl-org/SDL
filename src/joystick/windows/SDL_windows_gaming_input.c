@@ -87,7 +87,7 @@ static struct
     WindowsGamingInputControllerState *controllers;
 } wgi;
 
-/* WinRT headers in official Windows SDL contain only declarations, and we have to define these GUIDs ourselves.
+/* WinRT headers in official Windows SDK contain only declarations, and we have to define these GUIDs ourselves.
  * https://stackoverflow.com/a/55605485/1795050
  */
 DEFINE_GUID(IID___FIEventHandler_1_Windows__CGaming__CInput__CRawGameController, 0x00621c22, 0x42e8, 0x529f, 0x92, 0x70, 0x83, 0x6b, 0x32, 0x93, 0x1d, 0x72);
