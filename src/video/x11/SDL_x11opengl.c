@@ -193,7 +193,7 @@ int X11_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
                                               sizeof(struct
                                                      SDL_GLDriverData));
     if (!_this->gl_data) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     /* Load function pointers */

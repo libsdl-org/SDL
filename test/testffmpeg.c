@@ -461,7 +461,6 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
         if (!sws_container) {
             sws_container = (struct SwsContextContainer *)SDL_calloc(1, sizeof(*sws_container));
             if (!sws_container) {
-                SDL_OutOfMemory();
                 return SDL_FALSE;
             }
             SDL_SetPropertyWithCleanup(props, SWS_CONTEXT_CONTAINER_PROPERTY, sws_container, FreeSwsContextContainer, NULL);
@@ -587,8 +586,6 @@ static SDL_bool GetTextureForVAAPIFrame(AVFrame *frame, SDL_Texture **texture)
             SDL_SetError("Couldn't map hardware frame");
         }
         av_frame_free(&drm_frame);
-    } else {
-        SDL_OutOfMemory();
     }
     return result;
 }

@@ -125,7 +125,7 @@ int WIN_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     /* Allocate OpenGL memory */
     _this->gl_data = (struct SDL_GLDriverData *)SDL_calloc(1, sizeof(struct SDL_GLDriverData));
     if (!_this->gl_data) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     /* Load function pointers */

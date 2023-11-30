@@ -43,7 +43,7 @@ static int ANDROIDAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     const SDL_bool iscapture = device->iscapture;

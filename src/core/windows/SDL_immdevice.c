@@ -149,12 +149,10 @@ static SDL_AudioDevice *SDL_IMMDevice_Add(const SDL_bool iscapture, const char *
         // handle is freed by SDL_IMMDevice_FreeDeviceHandle!
         SDL_IMMDevice_HandleData *handle = SDL_malloc(sizeof(SDL_IMMDevice_HandleData));
         if (!handle) {
-            SDL_OutOfMemory();
             return NULL;
         }
         handle->immdevice_id = SDL_wcsdup(devid);
         if (!handle->immdevice_id) {
-            SDL_OutOfMemory();
             SDL_free(handle);
             return NULL;
         }

@@ -689,7 +689,6 @@ static void registry_event_global_callback(void *object, uint32_t id, uint32_t p
                 node->userdata = io = SDL_calloc(1, sizeof(struct io_node) + desc_buffer_len + path_buffer_len);
                 if (!io) {
                     node_object_destroy(node);
-                    SDL_OutOfMemory();
                     return;
                 }
 
@@ -1105,7 +1104,7 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     priv = SDL_calloc(1, sizeof(struct SDL_PrivateAudioData));
     device->hidden = priv;
     if (!priv) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     // Size of a single audio frame in bytes

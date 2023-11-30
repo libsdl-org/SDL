@@ -237,7 +237,6 @@ static SDL_XInput2DeviceInfo *xinput2_get_device_info(SDL_VideoData *videodata, 
     /* don't know about this device yet, query and cache it. */
     devinfo = (SDL_XInput2DeviceInfo *)SDL_calloc(1, sizeof(SDL_XInput2DeviceInfo));
     if (!devinfo) {
-        SDL_OutOfMemory();
         return NULL;
     }
 

@@ -355,7 +355,7 @@ static int BuildAAudioStream(SDL_AudioDevice *device)
     hidden->mixbuf_bytes = (hidden->num_buffers * device->buffer_size);
     hidden->mixbuf = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), hidden->mixbuf_bytes);
     if (!hidden->mixbuf) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     hidden->processed_bytes = 0;
     hidden->callback_bytes = 0;
@@ -398,7 +398,7 @@ static int AAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     return BuildAAudioStream(device);

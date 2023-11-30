@@ -52,7 +52,6 @@ char *SDL_GetBasePath(void)
     const size_t len = SDL_strlen(str);
     char *retval = (char *) SDL_malloc(len + 2);
     if (!retval) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -83,9 +82,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     }
     len += SDL_strlen(append) + SDL_strlen(org) + SDL_strlen(app) + 3;
     char *retval = (char *) SDL_malloc(len);
-    if (!retval) {
-        SDL_OutOfMemory();
-    } else {
+    if (retval) {
         if (*org) {
             SDL_snprintf(retval, len, "%s%s%s/%s/", home, append, org, app);
         } else {
@@ -110,24 +107,16 @@ char *SDL_GetUserFolder(SDL_Folder folder)
 
     switch (folder) {
     case SDL_FOLDER_HOME:
-        retval = SDL_strdup(home);
-
-        if (!retval) {
-            SDL_OutOfMemory();
-        }
-
-        return retval;
+        return SDL_strdup(home);
 
         /* TODO: Is Haiku's desktop folder always ~/Desktop/ ? */
     case SDL_FOLDER_DESKTOP:
         retval = (char *) SDL_malloc(SDL_strlen(home) + 10);
 
-        if (!retval) {
-            SDL_OutOfMemory();
+        if (retval) {
+            SDL_strlcpy(retval, home, SDL_strlen(home) + 10);
+            SDL_strlcat(retval, "/Desktop/", SDL_strlen(home) + 10);
         }
-
-        SDL_strlcpy(retval, home, SDL_strlen(home) + 10);
-        SDL_strlcat(retval, "/Desktop/", SDL_strlen(home) + 10);
 
         return retval;
 

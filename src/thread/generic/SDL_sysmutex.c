@@ -45,8 +45,6 @@ SDL_Mutex *SDL_CreateMutex(void)
             SDL_free(mutex);
             mutex = NULL;
         }
-    } else {
-        SDL_OutOfMemory();
     }
 #endif // !SDL_THREADS_DISABLED
 

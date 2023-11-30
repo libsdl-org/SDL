@@ -218,14 +218,12 @@ SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, SDL_PropertiesID creat
 
     renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
     data = (VITA_GXM_RenderData *)SDL_calloc(1, sizeof(VITA_GXM_RenderData));
     if (!data) {
         SDL_free(renderer);
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -298,7 +296,7 @@ static int VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, 
     VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)SDL_calloc(1, sizeof(VITA_GXM_TextureData));
 
     if (!vita_texture) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     vita_texture->tex = create_gxm_texture(
@@ -1111,7 +1109,7 @@ static int VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rec
 
     temp_pixels = SDL_malloc(buflen);
     if (!temp_pixels) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     SDL_GetCurrentRenderOutputSize(renderer, &w, &h);

@@ -147,7 +147,7 @@ static int SDL_ANDROID_SensorInit(void)
     if (sensors_count > 0) {
         SDL_sensors = (SDL_AndroidSensor *)SDL_calloc(sensors_count, sizeof(*SDL_sensors));
         if (!SDL_sensors) {
-            return SDL_OutOfMemory();
+            return -1;
         }
 
         for (i = 0; i < sensors_count; ++i) {

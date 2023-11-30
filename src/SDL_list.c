@@ -28,7 +28,7 @@ int SDL_ListAdd(SDL_ListNode **head, void *ent)
     SDL_ListNode *node = SDL_malloc(sizeof(*node));
 
     if (!node) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     node->entry = ent;

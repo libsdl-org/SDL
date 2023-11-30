@@ -245,7 +245,7 @@ static int X11_MessageBoxInitPositions(SDL_MessageBoxDataX11 *data)
         TextLineData *plinedata = (TextLineData *)SDL_malloc(sizeof(TextLineData) * linecount);
 
         if (!plinedata) {
-            return SDL_OutOfMemory();
+            return -1;
         }
 
         data->linedata = plinedata;
@@ -763,7 +763,7 @@ static int X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int 
     if (origlocale) {
         origlocale = SDL_strdup(origlocale);
         if (!origlocale) {
-            return SDL_OutOfMemory();
+            return -1;
         }
         (void)setlocale(LC_ALL, "");
     }

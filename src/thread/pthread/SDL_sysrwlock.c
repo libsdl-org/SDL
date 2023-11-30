@@ -41,8 +41,6 @@ SDL_RWLock *SDL_CreateRWLock(void)
             SDL_free(rwlock);
             rwlock = NULL;
         }
-    } else {
-        SDL_OutOfMemory();
     }
     return rwlock;
 }

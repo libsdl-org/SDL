@@ -293,7 +293,6 @@ void *SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, 
         ptr = SDL_realloc(renderer->vertex_data, newsize);
 
         if (!ptr) {
-            SDL_OutOfMemory();
             return NULL;
         }
         renderer->vertex_data = ptr;
@@ -321,7 +320,6 @@ static SDL_RenderCommand *AllocateRenderCommand(SDL_Renderer *renderer)
     } else {
         retval = SDL_calloc(1, sizeof(*retval));
         if (!retval) {
-            SDL_OutOfMemory();
             return NULL;
         }
     }
@@ -1158,7 +1156,6 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     }
     texture = (SDL_Texture *)SDL_calloc(1, sizeof(*texture));
     if (!texture) {
-        SDL_OutOfMemory();
         return NULL;
     }
     texture->magic = &SDL_texture_magic;
@@ -1566,7 +1563,7 @@ static int SDL_UpdateTextureYUV(SDL_Texture *texture, const SDL_Rect *rect,
         if (alloclen > 0) {
             void *temp_pixels = SDL_malloc(alloclen);
             if (!temp_pixels) {
-                return SDL_OutOfMemory();
+                return -1;
             }
             SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
                                 rect->w, rect->h, temp_pixels, temp_pitch);
@@ -1606,7 +1603,7 @@ static int SDL_UpdateTextureNative(SDL_Texture *texture, const SDL_Rect *rect,
         if (alloclen > 0) {
             void *temp_pixels = SDL_malloc(alloclen);
             if (!temp_pixels) {
-                return SDL_OutOfMemory();
+                return -1;
             }
             SDL_ConvertPixels(rect->w, rect->h,
                               texture->format, pixels, pitch,
@@ -1699,7 +1696,7 @@ static int SDL_UpdateTextureYUVPlanar(SDL_Texture *texture, const SDL_Rect *rect
         if (alloclen > 0) {
             void *temp_pixels = SDL_malloc(alloclen);
             if (!temp_pixels) {
-                return SDL_OutOfMemory();
+                return -1;
             }
             SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
                                 rect->w, rect->h, temp_pixels, temp_pitch);
@@ -1749,7 +1746,7 @@ static int SDL_UpdateTextureNVPlanar(SDL_Texture *texture, const SDL_Rect *rect,
         if (alloclen > 0) {
             void *temp_pixels = SDL_malloc(alloclen);
             if (!temp_pixels) {
-                return SDL_OutOfMemory();
+                return -1;
             }
             SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
                                 rect->w, rect->h, temp_pixels, temp_pitch);
@@ -2694,7 +2691,7 @@ static int RenderPointsWithRects(SDL_Renderer *renderer, const SDL_FPoint *fpoin
 
     frects = SDL_small_alloc(SDL_FRect, count, &isstack);
     if (!frects) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     for (i = 0; i < count; ++i) {
@@ -2814,7 +2811,7 @@ static int RenderLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x2, i
 
     points = SDL_small_alloc(SDL_FPoint, numpixels, &isstack);
     if (!points) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     for (i = 0; i < numpixels; ++i) {
         points[i].x = (float)x;
@@ -2857,7 +2854,7 @@ static int RenderLinesWithRectsF(SDL_Renderer *renderer,
 
     frects = SDL_small_alloc(SDL_FRect, count - 1, &isstack);
     if (!frects) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     for (i = 0; i < count - 1; ++i) {
@@ -3160,7 +3157,7 @@ int SDL_RenderFillRects(SDL_Renderer *renderer, const SDL_FRect *rects, int coun
 
     frects = SDL_small_alloc(SDL_FRect, count, &isstack);
     if (!frects) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     for (i = 0; i < count; ++i) {
         frects[i].x = rects[i].x * renderer->view->scale.x;

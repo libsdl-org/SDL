@@ -291,13 +291,10 @@ int SDL_SYS_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
     int result;
 
     /* Alloc the effect. */
-    effect->hweffect = (struct haptic_hweffect *)
-        SDL_malloc(sizeof(struct haptic_hweffect));
+    effect->hweffect = (struct haptic_hweffect *) SDL_calloc(1, sizeof(struct haptic_hweffect));
     if (!effect->hweffect) {
-        SDL_OutOfMemory();
         return -1;
     }
-    SDL_zerop(effect->hweffect);
 
     if (haptic->hwdata->bXInputHaptic) {
         result = SDL_XINPUT_HapticNewEffect(haptic, effect, base);

@@ -57,9 +57,7 @@ SDL_TouchID *SDL_GetTouchDevices(int *count)
 
     const int total = SDL_num_touch;
     SDL_TouchID *retval = (SDL_TouchID *) SDL_malloc(sizeof (SDL_TouchID) * (total + 1));
-    if (!retval) {
-        SDL_OutOfMemory();
-    } else {
+    if (retval) {
         for (int i = 0; i < total; i++) {
             retval[i] = SDL_touchDevices[i]->id;
         }
@@ -169,7 +167,7 @@ int SDL_AddTouch(SDL_TouchID touchID, SDL_TouchDeviceType type, const char *name
     touchDevices = (SDL_Touch **)SDL_realloc(SDL_touchDevices,
                                              (SDL_num_touch + 1) * sizeof(*touchDevices));
     if (!touchDevices) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     SDL_touchDevices = touchDevices;
@@ -177,7 +175,7 @@ int SDL_AddTouch(SDL_TouchID touchID, SDL_TouchDeviceType type, const char *name
 
     SDL_touchDevices[index] = (SDL_Touch *)SDL_malloc(sizeof(*SDL_touchDevices[index]));
     if (!SDL_touchDevices[index]) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     /* Added touch to list */
@@ -202,12 +200,12 @@ static int SDL_AddFinger(SDL_Touch *touch, SDL_FingerID fingerid, float x, float
         SDL_Finger **new_fingers;
         new_fingers = (SDL_Finger **)SDL_realloc(touch->fingers, (touch->max_fingers + 1) * sizeof(*touch->fingers));
         if (!new_fingers) {
-            return SDL_OutOfMemory();
+            return -1;
         }
         touch->fingers = new_fingers;
         touch->fingers[touch->max_fingers] = (SDL_Finger *)SDL_malloc(sizeof(*finger));
         if (!touch->fingers[touch->max_fingers]) {
-            return SDL_OutOfMemory();
+            return -1;
         }
         touch->max_fingers++;
     }

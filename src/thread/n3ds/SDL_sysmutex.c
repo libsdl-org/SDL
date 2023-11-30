@@ -31,8 +31,6 @@ SDL_Mutex *SDL_CreateMutex(void)
     SDL_Mutex *mutex = (SDL_Mutex *)SDL_malloc(sizeof(*mutex));
     if (mutex) {
         RecursiveLock_Init(&mutex->lock);
-    } else {
-        SDL_OutOfMemory();
     }
     return mutex;
 }

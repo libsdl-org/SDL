@@ -375,12 +375,10 @@ static int SDL_SYS_HapticOpenFromFD(SDL_Haptic *haptic, int fd)
 {
     /* Allocate the hwdata */
     haptic->hwdata = (struct haptic_hwdata *)
-        SDL_malloc(sizeof(*haptic->hwdata));
+        SDL_calloc(1, sizeof(*haptic->hwdata));
     if (!haptic->hwdata) {
-        SDL_OutOfMemory();
         goto open_err;
     }
-    SDL_memset(haptic->hwdata, 0, sizeof(*haptic->hwdata));
 
     /* Set the data. */
     haptic->hwdata->fd = fd;
@@ -397,7 +395,6 @@ static int SDL_SYS_HapticOpenFromFD(SDL_Haptic *haptic, int fd)
     haptic->effects = (struct haptic_effect *)
         SDL_malloc(sizeof(struct haptic_effect) * haptic->neffects);
     if (!haptic->effects) {
-        SDL_OutOfMemory();
         goto open_err;
     }
     /* Clear the memory */
@@ -903,9 +900,9 @@ int SDL_SYS_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
 
     /* Allocate the hardware effect */
     effect->hweffect = (struct haptic_hweffect *)
-        SDL_malloc(sizeof(struct haptic_hweffect));
+        SDL_calloc(1, sizeof(struct haptic_hweffect));
     if (!effect->hweffect) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     /* Prepare the ff_effect */

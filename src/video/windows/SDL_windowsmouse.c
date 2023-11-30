@@ -72,13 +72,9 @@ static int ToggleRawInput(SDL_bool enabled)
 
 static SDL_Cursor *WIN_CreateDefaultCursor()
 {
-    SDL_Cursor *cursor;
-
-    cursor = SDL_calloc(1, sizeof(*cursor));
+    SDL_Cursor *cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
         cursor->driverdata = LoadCursor(NULL, IDC_ARROW);
-    } else {
-        SDL_OutOfMemory();
     }
 
     return cursor;
@@ -125,7 +121,6 @@ static HBITMAP CreateMaskBitmap(SDL_Surface *surface)
 
     pixels = SDL_small_alloc(Uint8, pitch * surface->h, &isstack);
     if (!pixels) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -190,7 +185,6 @@ static SDL_Cursor *WIN_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
         cursor->driverdata = hcursor;
     } else {
         DestroyCursor(hcursor);
-        SDL_OutOfMemory();
     }
 
     return cursor;
@@ -285,8 +279,6 @@ static SDL_Cursor *WIN_CreateSystemCursor(SDL_SystemCursor id)
         hcursor = LoadCursor(NULL, name);
 
         cursor->driverdata = hcursor;
-    } else {
-        SDL_OutOfMemory();
     }
 
     return cursor;

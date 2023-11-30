@@ -46,7 +46,6 @@ SDL_GetBasePath(void)
         void *ptr = SDL_realloc(path, buflen * sizeof(CHAR));
         if (!ptr) {
             SDL_free(path);
-            SDL_OutOfMemory();
             return NULL;
         }
 

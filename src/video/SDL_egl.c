@@ -476,7 +476,7 @@ int SDL_EGL_LoadLibraryOnly(SDL_VideoDevice *_this, const char *egl_path)
 
     _this->egl_data = (struct SDL_EGL_VideoData *)SDL_calloc(1, sizeof(SDL_EGL_VideoData));
     if (!_this->egl_data) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     if (SDL_EGL_LoadLibraryInternal(_this, egl_path) < 0) {

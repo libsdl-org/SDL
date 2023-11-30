@@ -339,7 +339,6 @@ static id<MTLRenderPipelineState> MakePipelineState(METAL_RenderData *data, META
         return (__bridge id<MTLRenderPipelineState>)pipeline.pipe;
     } else {
         CFBridgingRelease(pipeline.pipe);
-        SDL_OutOfMemory();
         return NULL;
     }
 }
@@ -401,7 +400,6 @@ static METAL_ShaderPipelines *ChooseShaderPipelines(METAL_RenderData *data, MTLP
     allpipelines = SDL_realloc(allpipelines, (count + 1) * sizeof(METAL_ShaderPipelines));
 
     if (allpipelines == NULL) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -1507,7 +1505,7 @@ static int METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
         temp_pitch = rect->w * 4UL;
         temp_pixels = SDL_malloc(temp_pitch * rect->h);
         if (!temp_pixels) {
-            return SDL_OutOfMemory();
+            return -1;
         }
 
         [mtltexture getBytes:temp_pixels bytesPerRow:temp_pitch fromRegion:mtlregion mipmapLevel:0];
@@ -1747,7 +1745,6 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
 
         renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
         if (!renderer) {
-            SDL_OutOfMemory();
             return NULL;
         }
 

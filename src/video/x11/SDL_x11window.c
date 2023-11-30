@@ -312,7 +312,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w)
     /* Allocate the window data */
     data = (SDL_WindowData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     data->window = window;
     data->xwindow = w;
@@ -337,7 +337,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w)
         SDL_WindowData ** new_windowlist = (SDL_WindowData **)SDL_realloc(windowlist, (numwindows + 1) * sizeof(*windowlist));
         if (!new_windowlist) {
             SDL_free(data);
-            return SDL_OutOfMemory();
+            return -1;
         }
         windowlist = new_windowlist;
         windowlist[numwindows] = data;
@@ -543,7 +543,7 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
         /* OK, we got a colormap, now fill it in as best as we can */
         colorcells = SDL_malloc(visual->map_entries * sizeof(XColor));
         if (!colorcells) {
-            return SDL_OutOfMemory();
+            return -1;
         }
         ncolors = visual->map_entries;
         rmax = 0xffff;
@@ -971,7 +971,7 @@ int X11_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *i
         propdata = SDL_malloc(propsize * sizeof(long));
 
         if (!propdata) {
-            return SDL_OutOfMemory();
+            return -1;
         }
 
         X11_XSync(display, False);
@@ -1723,7 +1723,6 @@ void *X11_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t
 
     ret_icc_profile_data = SDL_malloc(real_nitems);
     if (!ret_icc_profile_data) {
-        SDL_OutOfMemory();
         return NULL;
     }
 

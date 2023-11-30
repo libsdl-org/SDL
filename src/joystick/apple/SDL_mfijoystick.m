@@ -1165,7 +1165,6 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             int button_count = 0;
 
             if (buttons == NULL) {
-                SDL_OutOfMemory();
                 return;
             }
 
@@ -1222,7 +1221,6 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             int button_count = 0;
 
             if (buttons == NULL) {
-                SDL_OutOfMemory();
                 return;
             }
 

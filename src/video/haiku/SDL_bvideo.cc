@@ -165,8 +165,6 @@ static SDL_Cursor * HAIKU_CreateSystemCursor(SDL_SystemCursor id)
     cursor = (SDL_Cursor *) SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
         cursor->driverdata = (void *)new BCursor(cursorId);
-    } else {
-        SDL_OutOfMemory();
     }
 
     return cursor;

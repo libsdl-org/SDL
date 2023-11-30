@@ -489,7 +489,7 @@ int SDL_SetMouseSystemScale(int num_values, const float *values)
 
     v = (float *)SDL_realloc(mouse->system_scale_values, num_values * sizeof(*values));
     if (!v) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     SDL_memcpy(v, values, num_values * sizeof(*values));
 
@@ -1300,9 +1300,6 @@ SDL_Cursor *SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
         cursor = mouse->CreateCursor(surface, hot_x, hot_y);
     } else {
         cursor = SDL_calloc(1, sizeof(*cursor));
-        if (!cursor) {
-            SDL_OutOfMemory();
-        }
     }
     if (cursor) {
         cursor->next = mouse->cursors;

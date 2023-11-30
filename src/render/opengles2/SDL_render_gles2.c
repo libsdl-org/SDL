@@ -421,7 +421,6 @@ static GLES2_ProgramCacheEntry *GLES2_CacheProgram(GLES2_RenderData *data, GLuin
     /* Create a program cache entry */
     entry = (GLES2_ProgramCacheEntry *)SDL_calloc(1, sizeof(GLES2_ProgramCacheEntry));
     if (!entry) {
-        SDL_OutOfMemory();
         return NULL;
     }
     entry->vertex_shader = vertex;
@@ -1466,7 +1465,7 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
     /* Allocate a texture struct */
     data = (GLES2_TextureData *)SDL_calloc(1, sizeof(GLES2_TextureData));
     if (!data) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     data->texture = 0;
 #ifdef GL_TEXTURE_EXTERNAL_OES
@@ -1501,7 +1500,7 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         data->pixel_data = SDL_calloc(1, size);
         if (!data->pixel_data) {
             SDL_free(data);
-            return SDL_OutOfMemory();
+            return -1;
         }
     }
 
@@ -1623,7 +1622,7 @@ static int GLES2_TexSubImage2D(GLES2_RenderData *data, GLenum target, GLint xoff
     if ((size_t)pitch != src_pitch) {
         blob = (Uint8 *)SDL_malloc(src_pitch * height);
         if (!blob) {
-            return SDL_OutOfMemory();
+            return -1;
         }
         src = blob;
         for (y = 0; y < height; ++y) {
@@ -1946,7 +1945,7 @@ static int GLES2_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
 
     temp_pixels = SDL_malloc(buflen);
     if (!temp_pixels) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     SDL_GetCurrentRenderOutputSize(renderer, &w, &h);
@@ -2109,14 +2108,12 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
     /* Create the renderer struct */
     renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(SDL_Renderer));
     if (!renderer) {
-        SDL_OutOfMemory();
         goto error;
     }
 
     data = (GLES2_RenderData *)SDL_calloc(1, sizeof(GLES2_RenderData));
     if (!data) {
         SDL_free(renderer);
-        SDL_OutOfMemory();
         goto error;
     }
     renderer->info = GLES2_RenderDriver.info;

@@ -1081,7 +1081,7 @@ static int RLEAlphaSurface(SDL_Surface *surface)
     maxsize += sizeof(RLEDestFormat);
     rlebuf = (Uint8 *)SDL_malloc(maxsize);
     if (!rlebuf) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     {
         /* save the destination format so we can undo the encoding later */
@@ -1300,7 +1300,7 @@ static int RLEColorkeySurface(SDL_Surface *surface)
 
     rlebuf = (Uint8 *)SDL_malloc(maxsize);
     if (!rlebuf) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     /* Set up the conversion */

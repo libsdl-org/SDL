@@ -66,7 +66,7 @@ static int SDL_SYS_GetPreferredLocales_vista(char *buf, size_t buflen)
 
     wbuf = SDL_small_alloc(WCHAR, wbuflen, &isstack);
     if (!wbuf) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     if (!pGetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numlangs, wbuf, &wbuflen)) {

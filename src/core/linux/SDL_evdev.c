@@ -170,7 +170,7 @@ int SDL_EVDEV_Init(void)
     if (!_this) {
         _this = (SDL_EVDEV_PrivateData *)SDL_calloc(1, sizeof(*_this));
         if (!_this) {
-            return SDL_OutOfMemory();
+            return -1;
         }
 
 #ifdef SDL_USE_LIBUDEV
@@ -644,7 +644,7 @@ static int SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
 
     item->touchscreen_data = SDL_calloc(1, sizeof(*item->touchscreen_data));
     if (!item->touchscreen_data) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     ret = ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
@@ -656,7 +656,7 @@ static int SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
     item->touchscreen_data->name = SDL_strdup(name);
     if (!item->touchscreen_data->name) {
         SDL_free(item->touchscreen_data);
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     ret = ioctl(item->fd, EVIOCGABS(ABS_MT_SLOT), &abs_info);
@@ -712,7 +712,7 @@ static int SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
     if (!item->touchscreen_data->slots) {
         SDL_free(item->touchscreen_data->name);
         SDL_free(item->touchscreen_data);
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     for (i = 0; i < item->touchscreen_data->max_slots; i++) {
@@ -883,7 +883,7 @@ static int SDL_EVDEV_device_added(const char *dev_path, int udev_class)
 
     item = (SDL_evdevlist_item *)SDL_calloc(1, sizeof(SDL_evdevlist_item));
     if (!item) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     item->fd = open(dev_path, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
@@ -896,7 +896,7 @@ static int SDL_EVDEV_device_added(const char *dev_path, int udev_class)
     if (!item->path) {
         close(item->fd);
         SDL_free(item);
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     item->udev_class = udev_class;

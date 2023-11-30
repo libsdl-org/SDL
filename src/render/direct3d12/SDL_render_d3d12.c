@@ -644,7 +644,6 @@ static D3D12_PipelineState *D3D12_CreatePipelineState(SDL_Renderer *renderer,
     pipelineStates = (D3D12_PipelineState *)SDL_realloc(data->pipelineStates, (data->pipelineStateCount + 1) * sizeof(*pipelineStates));
     if (!pipelineStates) {
         SAFE_RELEASE(pipelineState);
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -1460,7 +1459,6 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 
     textureData = (D3D12_TextureData *)SDL_calloc(1, sizeof(*textureData));
     if (!textureData) {
-        SDL_OutOfMemory();
         return -1;
     }
     textureData->scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? D3D12_FILTER_MIN_MAG_MIP_POINT : D3D12_FILTER_MIN_MAG_MIP_LINEAR;
@@ -1910,7 +1908,7 @@ static int D3D12_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
             textureData->pitch = texture->w;
             textureData->pixels = (Uint8 *)SDL_malloc((texture->h * textureData->pitch * 3) / 2);
             if (!textureData->pixels) {
-                return SDL_OutOfMemory();
+                return -1;
             }
         }
         textureData->lockedRect = *rect;
@@ -2987,7 +2985,6 @@ SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_p
 
     renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
-        SDL_OutOfMemory();
         return NULL;
     }
     renderer->magic = &SDL_renderer_magic;
@@ -2995,7 +2992,6 @@ SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_p
     data = (D3D12_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
         SDL_free(renderer);
-        SDL_OutOfMemory();
         return NULL;
     }
 

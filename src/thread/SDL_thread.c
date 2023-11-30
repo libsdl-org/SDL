@@ -60,7 +60,7 @@ int SDL_SetTLS(SDL_TLSID id, const void *value, void(SDLCALL *destructor)(void *
         newlimit = (id + TLS_ALLOC_CHUNKSIZE);
         new_storage = (SDL_TLSData *)SDL_realloc(storage, sizeof(*storage) + (newlimit - 1) * sizeof(storage->array[0]));
         if (!new_storage) {
-            return SDL_OutOfMemory();
+            return -1;
         }
         storage = new_storage;
         storage->limit = newlimit;
@@ -186,10 +186,7 @@ int SDL_Generic_SetTLSData(SDL_TLSData *data)
     }
     SDL_UnlockMutex(SDL_generic_TLS_mutex);
 
-    if (!entry) {
-        return SDL_OutOfMemory();
-    }
-    return 0;
+    return entry ? 0 : -1;
 }
 
 /* Non-thread-safe global error variable */
@@ -331,7 +328,6 @@ SDL_Thread *SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
     /* Allocate memory for the thread info structure */
     thread = (SDL_Thread *)SDL_calloc(1, sizeof(*thread));
     if (!thread) {
-        SDL_OutOfMemory();
         return NULL;
     }
     thread->status = -1;
@@ -341,7 +337,6 @@ SDL_Thread *SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
     if (name) {
         thread->name = SDL_strdup(name);
         if (!thread->name) {
-            SDL_OutOfMemory();
             SDL_free(thread);
             return NULL;
         }

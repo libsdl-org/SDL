@@ -52,8 +52,6 @@ SDL_Mutex *SDL_CreateMutex(void)
             mutex = NULL;
             SDL_SetError("Error trying to create mutex: %lx", res);
         }
-    } else {
-        SDL_OutOfMemory();
     }
     return mutex;
 }

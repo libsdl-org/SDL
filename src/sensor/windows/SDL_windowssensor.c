@@ -296,7 +296,7 @@ static int ConnectSensor(ISensor *sensor)
         SysFreeString(bstr_name);
     }
     if (!name) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     SDL_LockSensors();
@@ -304,7 +304,7 @@ static int ConnectSensor(ISensor *sensor)
     if (!new_sensors) {
         SDL_UnlockSensors();
         SDL_free(name);
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     ISensor_AddRef(sensor);

@@ -399,7 +399,6 @@ static ID3D11BlendState *D3D11_CreateBlendState(SDL_Renderer *renderer, SDL_Blen
     blendModes = (D3D11_BlendMode *)SDL_realloc(data->blendModes, (data->blendModesCount + 1) * sizeof(*blendModes));
     if (!blendModes) {
         SAFE_RELEASE(blendState);
-        SDL_OutOfMemory();
         return NULL;
     }
     blendModes[data->blendModesCount].blendMode = blendMode;
@@ -1095,7 +1094,6 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 
     textureData = (D3D11_TextureData *)SDL_calloc(1, sizeof(*textureData));
     if (!textureData) {
-        SDL_OutOfMemory();
         return -1;
     }
     textureData->scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? D3D11_FILTER_MIN_MAG_MIP_POINT : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -1554,7 +1552,7 @@ static int D3D11_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
             textureData->pitch = texture->w;
             textureData->pixels = (Uint8 *)SDL_malloc((texture->h * textureData->pitch * 3) / 2);
             if (!textureData->pixels) {
-                return SDL_OutOfMemory();
+                return -1;
             }
         }
         textureData->locked_rect = *rect;
@@ -2436,7 +2434,6 @@ SDL_Renderer *D3D11_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_p
 
     renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
-        SDL_OutOfMemory();
         return NULL;
     }
     renderer->magic = &SDL_renderer_magic;
@@ -2444,7 +2441,6 @@ SDL_Renderer *D3D11_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_p
     data = (D3D11_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
         SDL_free(renderer);
-        SDL_OutOfMemory();
         return NULL;
     }
 

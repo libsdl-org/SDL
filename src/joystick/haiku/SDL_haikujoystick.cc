@@ -129,12 +129,10 @@ extern "C"
 
         /* Create the joystick data structure */
         joystick->instance_id = device_index;
-        joystick->hwdata = (struct joystick_hwdata *)
-            SDL_malloc(sizeof(*joystick->hwdata));
+        joystick->hwdata = (struct joystick_hwdata *) SDL_calloc(1, sizeof(*joystick->hwdata));
         if (joystick->hwdata == NULL) {
-            return SDL_OutOfMemory();
+            return -1;
         }
-        SDL_memset(joystick->hwdata, 0, sizeof(*joystick->hwdata));
         stick = new BJoystick;
         joystick->hwdata->stick = stick;
 
@@ -152,13 +150,11 @@ extern "C"
         joystick->naxes = stick->CountAxes();
         joystick->nhats = stick->CountHats();
 
-        joystick->hwdata->new_axes = (int16 *)
-            SDL_malloc(joystick->naxes * sizeof(int16));
-        joystick->hwdata->new_hats = (uint8 *)
-            SDL_malloc(joystick->nhats * sizeof(uint8));
+        joystick->hwdata->new_axes = (int16 *) SDL_calloc(joystick->naxes, sizeof(int16));
+        joystick->hwdata->new_hats = (uint8 *) SDL_calloc(joystick->nhats, sizeof(uint8));
         if (!joystick->hwdata->new_hats || !joystick->hwdata->new_axes) {
             HAIKU_JoystickClose(joystick);
-            return SDL_OutOfMemory();
+            return -1;
         }
 
         /* We're done! */

@@ -149,7 +149,6 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     if (!data) {
         WAYLAND_wl_display_disconnect(display);
         SDL_WAYLAND_UnloadSymbols();
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -163,7 +162,6 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
         SDL_free(data);
         WAYLAND_wl_display_disconnect(display);
         SDL_WAYLAND_UnloadSymbols();
-        SDL_OutOfMemory();
         return NULL;
     }
 

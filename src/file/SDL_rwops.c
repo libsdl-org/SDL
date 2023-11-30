@@ -92,7 +92,7 @@ static int SDLCALL windows_file_open(SDL_RWops *context, const char *filename, c
     context->hidden.windowsio.buffer.data =
         (char *)SDL_malloc(READAHEAD_BUFFER_SIZE);
     if (!context->hidden.windowsio.buffer.data) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__) && !defined(__WINRT__)
     /* Do not open a dialog box if failure */
@@ -609,9 +609,7 @@ SDL_RWops *SDL_CreateRW(void)
     SDL_RWops *context;
 
     context = (SDL_RWops *)SDL_calloc(1, sizeof(*context));
-    if (!context) {
-        SDL_OutOfMemory();
-    } else {
+    if (context) {
         context->type = SDL_RWOPS_UNKNOWN;
     }
     return context;
@@ -643,12 +641,10 @@ void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, SDL_bool freesrc)
         loading_chunks = SDL_TRUE;
     }
     if (size >= SDL_SIZE_MAX) {
-        SDL_OutOfMemory();
         goto done;
     }
     data = (char *)SDL_malloc((size_t)(size + 1));
     if (!data) {
-        SDL_OutOfMemory();
         goto done;
     }
 
@@ -665,7 +661,6 @@ void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, SDL_bool freesrc)
                 if (!newdata) {
                     SDL_free(data);
                     data = NULL;
-                    SDL_OutOfMemory();
                     goto done;
                 }
                 data = newdata;

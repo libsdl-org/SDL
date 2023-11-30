@@ -111,7 +111,7 @@ static int PS2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
     GSTEXTURE *ps2_tex = (GSTEXTURE *)SDL_calloc(1, sizeof(GSTEXTURE));
 
     if (!ps2_tex) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     ps2_tex->Width = texture->w;
@@ -121,7 +121,7 @@ static int PS2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
 
     if (!ps2_tex->Mem) {
         SDL_free(ps2_tex);
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     texture->driverdata = ps2_tex;
@@ -595,14 +595,12 @@ static SDL_Renderer *PS2_CreateRenderer(SDL_Window *window, SDL_PropertiesID cre
 
     renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
     data = (PS2_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
         PS2_DestroyRenderer(renderer);
-        SDL_OutOfMemory();
         return NULL;
     }
 

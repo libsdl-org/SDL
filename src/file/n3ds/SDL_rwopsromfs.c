@@ -78,7 +78,6 @@ FILE *TryOpenInRomfs(const char *file, const char *mode)
     char *prefixed_filepath = NULL;
 
     if (SDL_asprintf(&prefixed_filepath, "romfs:/%s", file) < 0) {
-        SDL_OutOfMemory();
         return NULL;
     }
 

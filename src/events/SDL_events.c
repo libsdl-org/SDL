@@ -105,7 +105,6 @@ void *SDL_AllocateEventMemory(size_t size)
 {
     void *memory = SDL_malloc(size);
     if (!memory) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -126,7 +125,6 @@ void *SDL_AllocateEventMemory(size_t size)
         } else {
             SDL_free(memory);
             memory = NULL;
-            SDL_OutOfMemory();
         }
     }
     SDL_UnlockMutex(SDL_event_memory_lock);
@@ -1295,7 +1293,6 @@ int SDL_AddEventWatch(SDL_EventFilter filter, void *userdata)
             watcher->removed = SDL_FALSE;
             ++SDL_event_watchers_count;
         } else {
-            SDL_OutOfMemory();
             result = -1;
         }
     }

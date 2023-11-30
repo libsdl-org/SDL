@@ -1988,7 +1988,7 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
 
     data = SDL_calloc(1, sizeof(*data));
     if (!data) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     c = _this->driverdata;

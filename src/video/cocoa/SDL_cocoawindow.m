@@ -2458,7 +2458,6 @@ void *Cocoa_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size
 
         retIccProfileData = SDL_malloc([iccProfileData length]);
         if (!retIccProfileData) {
-            SDL_OutOfMemory();
             return NULL;
         }
 

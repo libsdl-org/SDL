@@ -125,7 +125,7 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
     hwdata = SDL_calloc(1, sizeof(joystick_hwdata));
     if (!hwdata) {
         VIRTUAL_FreeHWData(hwdata);
-        return SDL_OutOfMemory();
+        return -1;
     }
     SDL_memcpy(&hwdata->desc, desc, sizeof(*desc));
 
@@ -210,7 +210,7 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
         hwdata->axes = SDL_calloc(hwdata->desc.naxes, sizeof(Sint16));
         if (!hwdata->axes) {
             VIRTUAL_FreeHWData(hwdata);
-            return SDL_OutOfMemory();
+            return -1;
         }
 
         /* Trigger axes are at minimum value at rest */
@@ -225,14 +225,14 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
         hwdata->buttons = SDL_calloc(hwdata->desc.nbuttons, sizeof(Uint8));
         if (!hwdata->buttons) {
             VIRTUAL_FreeHWData(hwdata);
-            return SDL_OutOfMemory();
+            return -1;
         }
     }
     if (hwdata->desc.nhats > 0) {
         hwdata->hats = SDL_calloc(hwdata->desc.nhats, sizeof(Uint8));
         if (!hwdata->hats) {
             VIRTUAL_FreeHWData(hwdata);
-            return SDL_OutOfMemory();
+            return -1;
         }
     }
 

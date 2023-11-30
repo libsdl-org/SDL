@@ -618,12 +618,12 @@ static int RAWINPUT_UpdateWindowsGamingInput()
                             WindowsGamingInputGamepadState **new_per_gamepad;
                             gamepad_state = SDL_calloc(1, sizeof(*gamepad_state));
                             if (!gamepad_state) {
-                                return SDL_OutOfMemory();
+                                return -1;
                             }
                             new_per_gamepad = SDL_realloc(wgi_state.per_gamepad, sizeof(wgi_state.per_gamepad[0]) * (wgi_state.per_gamepad_count + 1));
                             if (!new_per_gamepad) {
                                 SDL_free(gamepad_state);
-                                return SDL_OutOfMemory();
+                                return -1;
                             }
                             wgi_state.per_gamepad = new_per_gamepad;
                             wgi_state.per_gamepad_count++;
@@ -1227,7 +1227,7 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     ctx = (RAWINPUT_DeviceContext *)SDL_calloc(1, sizeof(RAWINPUT_DeviceContext));
     if (!ctx) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     joystick->hwdata = ctx;
 
@@ -1259,7 +1259,7 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
     ctx->data = (HIDP_DATA *)SDL_malloc(ctx->max_data_length * sizeof(*ctx->data));
     if (!ctx->data) {
         RAWINPUT_JoystickClose(joystick);
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     if (SDL_HidP_GetCaps(ctx->preparsed_data, &caps) != HIDP_STATUS_SUCCESS) {
@@ -1304,7 +1304,7 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         ctx->button_indices = (USHORT *)SDL_malloc(joystick->nbuttons * sizeof(*ctx->button_indices));
         if (!ctx->button_indices) {
             RAWINPUT_JoystickClose(joystick);
-            return SDL_OutOfMemory();
+            return -1;
         }
 
         for (i = 0; i < caps.NumberInputButtonCaps; ++i) {
@@ -1357,7 +1357,7 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         ctx->axis_indices = (USHORT *)SDL_malloc(joystick->naxes * sizeof(*ctx->axis_indices));
         if (!ctx->axis_indices) {
             RAWINPUT_JoystickClose(joystick);
-            return SDL_OutOfMemory();
+            return -1;
         }
 
         for (i = 0; i < caps.NumberInputValueCaps; ++i) {
@@ -1390,7 +1390,7 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         ctx->hat_indices = (USHORT *)SDL_malloc(joystick->nhats * sizeof(*ctx->hat_indices));
         if (!ctx->hat_indices) {
             RAWINPUT_JoystickClose(joystick);
-            return SDL_OutOfMemory();
+            return -1;
         }
 
         for (i = 0; i < caps.NumberInputValueCaps; ++i) {

@@ -492,7 +492,7 @@ static int DSOUND_OpenDevice(SDL_AudioDevice *device)
     // Initialize all variables that we clean on shutdown
     device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     // Open the audio device

@@ -53,7 +53,6 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     len = SDL_strlen(append) + SDL_strlen(org) + SDL_strlen(app) + 3;
     retval = (char *)SDL_malloc(len);
     if (!retval) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -86,7 +85,6 @@ char *SDL_GetPrefPath(const char *org, const char *app)
 char *SDL_GetUserFolder(SDL_Folder folder)
 {
     const char *home = NULL;
-    char *retval;
 
     if (folder != SDL_FOLDER_HOME) {
         SDL_SetError("Emscripten only supports the home folder");
@@ -99,13 +97,7 @@ char *SDL_GetUserFolder(SDL_Folder folder)
         return NULL;
     }
 
-    retval = SDL_strdup(home);
-
-    if (!retval) {
-        SDL_OutOfMemory();
-    }
-
-    return retval;
+    return SDL_strdup(home);
 }
 
 #endif /* SDL_FILESYSTEM_EMSCRIPTEN */

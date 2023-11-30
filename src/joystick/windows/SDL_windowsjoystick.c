@@ -670,12 +670,10 @@ static int WINDOWS_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     /* allocate memory for system specific hardware data */
     joystick->instance_id = device->nInstanceID;
-    joystick->hwdata =
-        (struct joystick_hwdata *)SDL_malloc(sizeof(struct joystick_hwdata));
+    joystick->hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof(struct joystick_hwdata));
     if (!joystick->hwdata) {
-        return SDL_OutOfMemory();
+        return -1;
     }
-    SDL_zerop(joystick->hwdata);
     joystick->hwdata->guid = device->guid;
 
     if (device->bXInputDevice) {

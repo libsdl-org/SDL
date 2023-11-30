@@ -345,7 +345,6 @@ static SDL_bool ExpandDialogSpace(WIN_DialogData *dialog, size_t space)
     if (size > dialog->size) {
         void *data = SDL_realloc(dialog->data, size);
         if (!data) {
-            SDL_OutOfMemory();
             return SDL_FALSE;
         }
         dialog->data = data;

@@ -48,8 +48,6 @@ SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
             SDL_free(sem);
             sem = NULL;
         }
-    } else {
-        SDL_OutOfMemory();
     }
     return sem;
 }

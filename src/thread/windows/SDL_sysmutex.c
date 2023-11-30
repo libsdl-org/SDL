@@ -58,15 +58,10 @@ static pfnTryAcquireSRWLockExclusive pTryAcquireSRWLockExclusive = NULL;
 
 static SDL_Mutex *SDL_CreateMutex_srw(void)
 {
-    SDL_mutex_srw *mutex;
-
-    mutex = (SDL_mutex_srw *)SDL_calloc(1, sizeof(*mutex));
-    if (!mutex) {
-        SDL_OutOfMemory();
+    SDL_mutex_srw *mutex = (SDL_mutex_srw *)SDL_calloc(1, sizeof(*mutex));
+    if (mutex) {
+        pInitializeSRWLock(&mutex->srw);
     }
-
-    pInitializeSRWLock(&mutex->srw);
-
     return (SDL_Mutex *)mutex;
 }
 
@@ -153,8 +148,6 @@ static SDL_Mutex *SDL_CreateMutex_cs(void)
 #else
         InitializeCriticalSectionAndSpinCount(&mutex->cs, 2000);
 #endif
-    } else {
-        SDL_OutOfMemory();
     }
     return (SDL_Mutex *)mutex;
 }

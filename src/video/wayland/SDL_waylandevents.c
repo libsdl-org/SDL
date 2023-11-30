@@ -1765,7 +1765,6 @@ SDL_WaylandDataSource *Wayland_data_source_create(SDL_VideoDevice *_this)
         } else {
             data_source = SDL_calloc(1, sizeof(*data_source));
             if (!data_source) {
-                SDL_OutOfMemory();
                 wl_data_source_destroy(id);
             } else {
                 data_source->source = id;
@@ -1799,7 +1798,6 @@ SDL_WaylandPrimarySelectionSource *Wayland_primary_selection_source_create(SDL_V
         } else {
             primary_selection_source = SDL_calloc(1, sizeof(*primary_selection_source));
             if (!primary_selection_source) {
-                SDL_OutOfMemory();
                 zwp_primary_selection_source_v1_destroy(id);
             } else {
                 primary_selection_source->source = id;
@@ -1848,12 +1846,8 @@ static const struct zwp_primary_selection_offer_v1_listener primary_selection_of
 static void data_device_handle_data_offer(void *data, struct wl_data_device *wl_data_device,
                                           struct wl_data_offer *id)
 {
-    SDL_WaylandDataOffer *data_offer = NULL;
-
-    data_offer = SDL_calloc(1, sizeof(*data_offer));
-    if (!data_offer) {
-        SDL_OutOfMemory();
-    } else {
+    SDL_WaylandDataOffer *data_offer = SDL_calloc(1, sizeof(*data_offer));
+    if (data_offer) {
         data_offer->offer = id;
         data_offer->data_device = data;
         WAYLAND_wl_list_init(&(data_offer->mimes));
@@ -2158,12 +2152,8 @@ static const struct wl_data_device_listener data_device_listener = {
 static void primary_selection_device_handle_offer(void *data, struct zwp_primary_selection_device_v1 *zwp_primary_selection_device_v1,
                                                   struct zwp_primary_selection_offer_v1 *id)
 {
-    SDL_WaylandPrimarySelectionOffer *primary_selection_offer = NULL;
-
-    primary_selection_offer = SDL_calloc(1, sizeof(*primary_selection_offer));
-    if (!primary_selection_offer) {
-        SDL_OutOfMemory();
-    } else {
+    SDL_WaylandPrimarySelectionOffer *primary_selection_offer = SDL_calloc(1, sizeof(*primary_selection_offer));
+    if (primary_selection_offer) {
         primary_selection_offer->offer = id;
         primary_selection_offer->primary_selection_device = data;
         WAYLAND_wl_list_init(&(primary_selection_offer->mimes));

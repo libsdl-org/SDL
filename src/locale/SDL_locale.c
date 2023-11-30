@@ -48,7 +48,6 @@ static SDL_Locale *build_locales_from_csv_string(char *csv)
 
     loc = retval = (SDL_Locale *)SDL_calloc(1, alloclen);
     if (!retval) {
-        SDL_OutOfMemory();
         return NULL; /* oh well */
     }
     ptr = (char *)(retval + num_locales);

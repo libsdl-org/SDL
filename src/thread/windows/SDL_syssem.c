@@ -85,17 +85,13 @@ static SDL_Semaphore *SDL_CreateSemaphore_atom(Uint32 initial_value)
     sem = (SDL_sem_atom *)SDL_malloc(sizeof(*sem));
     if (sem) {
         sem->count = initial_value;
-    } else {
-        SDL_OutOfMemory();
     }
     return (SDL_Semaphore *)sem;
 }
 
 static void SDL_DestroySemaphore_atom(SDL_Semaphore *sem)
 {
-    if (sem) {
-        SDL_free(sem);
-    }
+    SDL_free(sem);
 }
 
 static int SDL_WaitSemaphoreTimeoutNS_atom(SDL_Semaphore *_sem, Sint64 timeoutNS)
@@ -226,6 +222,7 @@ static SDL_Semaphore *SDL_CreateSemaphore_kern(Uint32 initial_value)
     sem = (SDL_sem_kern *)SDL_malloc(sizeof(*sem));
     if (sem) {
         /* Create the semaphore, with max value 32K */
+// !!! FIXME: CreateSemaphoreEx is available in Vista and later, so if XP support is dropped, we can lose this #ifdef.
 #ifdef __WINRT__
         sem->id = CreateSemaphoreEx(NULL, initial_value, 32 * 1024, NULL, 0, SEMAPHORE_ALL_ACCESS);
 #else
@@ -237,8 +234,6 @@ static SDL_Semaphore *SDL_CreateSemaphore_kern(Uint32 initial_value)
             SDL_free(sem);
             sem = NULL;
         }
-    } else {
-        SDL_OutOfMemory();
     }
     return (SDL_Semaphore *)sem;
 }

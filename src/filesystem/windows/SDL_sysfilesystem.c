@@ -53,7 +53,6 @@ char *SDL_GetBasePath(void)
         void *ptr = SDL_realloc(path, buflen * sizeof(WCHAR));
         if (!ptr) {
             SDL_free(path);
-            SDL_OutOfMemory();
             return NULL;
         }
 
@@ -123,14 +122,12 @@ char *SDL_GetPrefPath(const char *org, const char *app)
 
     worg = WIN_UTF8ToStringW(org);
     if (!worg) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
     wapp = WIN_UTF8ToStringW(app);
     if (!wapp) {
         SDL_free(worg);
-        SDL_OutOfMemory();
         return NULL;
     }
 

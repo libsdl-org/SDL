@@ -48,7 +48,6 @@ static char *readSymLink(const char *path)
     while (1) {
         char *ptr = (char *)SDL_realloc(retval, (size_t)len);
         if (!ptr) {
-            SDL_OutOfMemory();
             break;
         }
 
@@ -85,7 +84,6 @@ static char *search_path_for_binary(const char *bin)
 
     envr = SDL_strdup(envr);
     if (!envr) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -131,7 +129,6 @@ char *SDL_GetBasePath(void)
     if (sysctl(mib, SDL_arraysize(mib), fullpath, &buflen, NULL, 0) != -1) {
         retval = SDL_strdup(fullpath);
         if (!retval) {
-            SDL_OutOfMemory();
             return NULL;
         }
     }
@@ -145,14 +142,12 @@ char *SDL_GetBasePath(void)
         char *exe, *pwddst;
         char *realpathbuf = (char *)SDL_malloc(PATH_MAX + 1);
         if (!realpathbuf) {
-            SDL_OutOfMemory();
             return NULL;
         }
 
         cmdline = SDL_malloc(len);
         if (!cmdline) {
             SDL_free(realpathbuf);
-            SDL_OutOfMemory();
             return NULL;
         }
 
@@ -228,7 +223,6 @@ char *SDL_GetBasePath(void)
         if ((path) && (path[0] == '/')) { /* must be absolute path... */
             retval = SDL_strdup(path);
             if (!retval) {
-                SDL_OutOfMemory();
                 return NULL;
             }
         }
@@ -302,7 +296,6 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     len += SDL_strlen(append) + SDL_strlen(org) + SDL_strlen(app) + 3;
     retval = (char *)SDL_malloc(len);
     if (!retval) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -541,13 +534,7 @@ char *SDL_GetUserFolder(SDL_Folder folder)
             return NULL;
         }
 
-        retval = SDL_strdup(param);
-
-        if (!retval) {
-            SDL_OutOfMemory();
-        }
-
-        return retval;
+        return SDL_strdup(param);
 
     case SDL_FOLDER_DESKTOP:
         param = "DESKTOP";

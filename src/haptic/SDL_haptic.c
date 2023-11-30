@@ -125,7 +125,6 @@ SDL_Haptic *SDL_HapticOpen(int device_index)
     /* Create the haptic device */
     haptic = (SDL_Haptic *)SDL_malloc(sizeof(*haptic));
     if (!haptic) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -297,7 +296,6 @@ SDL_Haptic *SDL_HapticOpenFromJoystick(SDL_Joystick *joystick)
         /* Create the haptic device */
         haptic = (SDL_Haptic *)SDL_malloc(sizeof(*haptic));
         if (!haptic) {
-            SDL_OutOfMemory();
             SDL_UnlockJoysticks();
             return NULL;
         }

@@ -63,7 +63,7 @@ int RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, U
     size = sizeof(sprite_area) + sizeof(sprite_header) + ((*pitch) * h);
     driverdata->fb_area = SDL_malloc(size);
     if (!driverdata->fb_area) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     driverdata->fb_area->size = size;

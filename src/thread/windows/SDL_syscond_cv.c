@@ -80,23 +80,14 @@ typedef struct SDL_cond_cv
 
 static SDL_Condition *SDL_CreateCondition_cv(void)
 {
-    SDL_cond_cv *cond;
-
     /* Relies on CONDITION_VARIABLE_INIT == 0. */
-    cond = (SDL_cond_cv *)SDL_calloc(1, sizeof(*cond));
-    if (!cond) {
-        SDL_OutOfMemory();
-    }
-
-    return (SDL_Condition *)cond;
+    return (SDL_Condition *)SDL_calloc(1, sizeof(SDL_cond_cv));
 }
 
 static void SDL_DestroyCondition_cv(SDL_Condition *cond)
 {
-    if (cond) {
-        /* There are no kernel allocated resources */
-        SDL_free(cond);
-    }
+    /* There are no kernel allocated resources */
+    SDL_free(cond);
 }
 
 static int SDL_SignalCondition_cv(SDL_Condition *_cond)

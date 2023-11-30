@@ -271,7 +271,7 @@ int SDL_SetPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *v
 
     property = (SDL_Property *)SDL_calloc(1, sizeof(*property));
     if (!property) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     property->type = SDL_PROPERTY_TYPE_POINTER;
     property->value.pointer_value = value;
@@ -290,7 +290,7 @@ int SDL_SetProperty(SDL_PropertiesID props, const char *name, void *value)
 
     property = (SDL_Property *)SDL_calloc(1, sizeof(*property));
     if (!property) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     property->type = SDL_PROPERTY_TYPE_POINTER;
     property->value.pointer_value = value;
@@ -308,13 +308,13 @@ int SDL_SetStringProperty(SDL_PropertiesID props, const char *name, const char *
 
     property = (SDL_Property *)SDL_calloc(1, sizeof(*property));
     if (!property) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     property->type = SDL_PROPERTY_TYPE_STRING;
     property->value.string_value = SDL_strdup(value);
     if (!property->value.string_value) {
         SDL_free(property);
-        return SDL_OutOfMemory();
+        return -1;
     }
     return SDL_PrivateSetProperty(props, name, property);
 }
@@ -323,7 +323,7 @@ int SDL_SetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 value
 {
     SDL_Property *property = (SDL_Property *)SDL_calloc(1, sizeof(*property));
     if (!property) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     property->type = SDL_PROPERTY_TYPE_NUMBER;
     property->value.number_value = value;
@@ -334,7 +334,7 @@ int SDL_SetFloatProperty(SDL_PropertiesID props, const char *name, float value)
 {
     SDL_Property *property = (SDL_Property *)SDL_calloc(1, sizeof(*property));
     if (!property) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     property->type = SDL_PROPERTY_TYPE_FLOAT;
     property->value.float_value = value;
@@ -345,7 +345,7 @@ int SDL_SetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bool va
 {
     SDL_Property *property = (SDL_Property *)SDL_calloc(1, sizeof(*property));
     if (!property) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     property->type = SDL_PROPERTY_TYPE_BOOLEAN;
     property->value.boolean_value = value ? SDL_TRUE : SDL_FALSE;
@@ -478,8 +478,6 @@ const char *SDL_GetStringProperty(SDL_PropertiesID props, const char *name, cons
                     SDL_asprintf(&property->string_storage, "%" SDL_PRIs64 "", property->value.number_value);
                     if (property->string_storage) {
                         value = property->string_storage;
-                    } else {
-                        SDL_OutOfMemory();
                     }
                 }
                 break;
@@ -490,8 +488,6 @@ const char *SDL_GetStringProperty(SDL_PropertiesID props, const char *name, cons
                     SDL_asprintf(&property->string_storage, "%f", property->value.float_value);
                     if (property->string_storage) {
                         value = property->string_storage;
-                    } else {
-                        SDL_OutOfMemory();
                     }
                 }
                 break;

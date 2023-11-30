@@ -62,11 +62,10 @@ static int VITAAUD_OpenDevice(SDL_AudioDevice *device)
     const SDL_AudioFormat *closefmts;
 
     device->hidden = (struct SDL_PrivateAudioData *)
-        SDL_malloc(sizeof(*device->hidden));
+        SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
-        return SDL_OutOfMemory();
+        return -1;
     }
-    SDL_memset(device->hidden, 0, sizeof(*device->hidden));
 
     closefmts = SDL_ClosestAudioFormats(device->spec.format);
     while ((test_format = *(closefmts++)) != 0) {

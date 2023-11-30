@@ -112,7 +112,7 @@ int SDL_UDEV_Init(void)
     if (!_this) {
         _this = (SDL_UDEV_PrivateData *)SDL_calloc(1, sizeof(*_this));
         if (!_this) {
-            return SDL_OutOfMemory();
+            return -1;
         }
 
         retval = SDL_UDEV_LoadLibrary();
@@ -518,7 +518,7 @@ int SDL_UDEV_AddCallback(SDL_UDEV_Callback cb)
     SDL_UDEV_CallbackList *item;
     item = (SDL_UDEV_CallbackList *)SDL_calloc(1, sizeof(SDL_UDEV_CallbackList));
     if (!item) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     item->callback = cb;

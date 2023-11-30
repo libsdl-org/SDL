@@ -389,7 +389,7 @@ static int UpdateAudioStreamInputSpec(SDL_AudioStream *stream, const SDL_AudioSp
     if (stream->history_buffer_allocation < history_buffer_allocation) {
         history_buffer = (Uint8 *) SDL_aligned_alloc(SDL_SIMDGetAlignment(), history_buffer_allocation);
         if (!history_buffer) {
-            return SDL_OutOfMemory();
+            return -1;
         }
         SDL_aligned_free(stream->history_buffer);
         stream->history_buffer = history_buffer;
@@ -409,7 +409,6 @@ SDL_AudioStream *SDL_CreateAudioStream(const SDL_AudioSpec *src_spec, const SDL_
 
     SDL_AudioStream *retval = (SDL_AudioStream *)SDL_calloc(1, sizeof(SDL_AudioStream));
     if (!retval) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -722,7 +721,6 @@ static Uint8 *EnsureAudioStreamWorkBufferSize(SDL_AudioStream *stream, size_t ne
 
     Uint8 *ptr = (Uint8 *) SDL_aligned_alloc(SDL_SIMDGetAlignment(), newlen);
     if (!ptr) {
-        SDL_OutOfMemory();
         return NULL;  // previous work buffer is still valid!
     }
 
@@ -1234,9 +1232,7 @@ int SDL_ConvertAudioSamples(const SDL_AudioSpec *src_spec, const Uint8 *src_data
             dstlen = SDL_GetAudioStreamAvailable(stream);
             if (dstlen >= 0) {
                 dst = (Uint8 *)SDL_malloc(dstlen);
-                if (!dst) {
-                    SDL_OutOfMemory();
-                } else {
+                if (dst) {
                     retval = (SDL_GetAudioStreamData(stream, dst, dstlen) >= 0) ? 0 : -1;
                 }
             }

@@ -42,14 +42,11 @@
 
 static SDL_Cursor *Emscripten_CreateCursorFromString(const char *cursor_str, SDL_bool is_custom)
 {
-    SDL_Cursor *cursor;
     Emscripten_CursorData *curdata;
-
-    cursor = SDL_calloc(1, sizeof(SDL_Cursor));
+    SDL_Cursor *cursor = SDL_calloc(1, sizeof(SDL_Cursor));
     if (cursor) {
         curdata = (Emscripten_CursorData *)SDL_calloc(1, sizeof(*curdata));
         if (!curdata) {
-            SDL_OutOfMemory();
             SDL_free(cursor);
             return NULL;
         }
@@ -57,8 +54,6 @@ static SDL_Cursor *Emscripten_CreateCursorFromString(const char *cursor_str, SDL
         curdata->system_cursor = cursor_str;
         curdata->is_custom = is_custom;
         cursor->driverdata = curdata;
-    } else {
-        SDL_OutOfMemory();
     }
 
     return cursor;

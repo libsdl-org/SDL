@@ -66,12 +66,10 @@ static SDL_Cursor *RPI_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 
     cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
     if (!cursor) {
-        SDL_OutOfMemory();
         return NULL;
     }
     curdata = (RPI_CursorData *)SDL_calloc(1, sizeof(*curdata));
     if (!curdata) {
-        SDL_OutOfMemory();
         SDL_free(cursor);
         return NULL;
     }

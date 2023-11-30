@@ -132,7 +132,6 @@ static SDL_bool HIDAPI_DriverXbox360W_InitDevice(SDL_HIDAPI_Device *device)
 
     ctx = (SDL_DriverXbox360W_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
-        SDL_OutOfMemory();
         return SDL_FALSE;
     }
     ctx->device = device;

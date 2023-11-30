@@ -286,7 +286,7 @@ static int TextureSwizzle(PSP_TextureData *psp_texture, void *dst)
     }
 
     if (!data) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     for (j = 0; j < height; j++, blockaddress += 16) {
@@ -348,7 +348,7 @@ static int TextureUnswizzle(PSP_TextureData *psp_texture, void *dst)
     }
 
     if (!data) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     ydst = (unsigned char *)data;
@@ -392,7 +392,7 @@ static int TextureSpillToSram(PSP_RenderData *data, PSP_TextureData *psp_texture
         // Texture was swizzled in vram, just copy to system memory
         void *sdata = SDL_malloc(psp_texture->size);
         if (!sdata) {
-            return SDL_OutOfMemory();
+            return -1;
         }
 
         SDL_memcpy(sdata, psp_texture->data, psp_texture->size);
@@ -484,7 +484,7 @@ static int PSP_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
     PSP_TextureData *psp_texture = (PSP_TextureData *)SDL_calloc(1, sizeof(*psp_texture));
 
     if (!psp_texture) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     psp_texture->swizzled = SDL_FALSE;
@@ -527,7 +527,7 @@ static int PSP_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
 
     if (!psp_texture->data) {
         SDL_free(psp_texture);
-        return SDL_OutOfMemory();
+        return -1;
     }
     texture->driverdata = psp_texture;
 
@@ -1304,14 +1304,12 @@ SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
 
     renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
     data = (PSP_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
         PSP_DestroyRenderer(renderer);
-        SDL_OutOfMemory();
         return NULL;
     }
 

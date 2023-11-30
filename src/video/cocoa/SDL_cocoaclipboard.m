@@ -148,8 +148,6 @@ void *Cocoa_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size
                 if (data) {
                     [itemData getBytes: data length: length];
                     SDL_memset((Uint8 *)data + length, 0, sizeof(Uint32));
-                } else {
-                    SDL_OutOfMemory();
                 }
                 break;
             }

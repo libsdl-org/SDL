@@ -67,7 +67,6 @@ SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 
     sem = (SDL_Semaphore *)SDL_malloc(sizeof(*sem));
     if (!sem) {
-        SDL_OutOfMemory();
         return NULL;
     }
     sem->count = initial_value;

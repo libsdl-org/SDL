@@ -149,7 +149,6 @@ VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
     }
 
     if (!retval) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -229,7 +228,6 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
 
     physicalDevices = SDL_malloc(sizeof(VkPhysicalDevice) * physicalDeviceCount);
     if (!physicalDevices) {
-        SDL_OutOfMemory();
         goto error;
     }
 
@@ -272,7 +270,6 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
 
         displayProperties = SDL_malloc(sizeof(VkDisplayPropertiesKHR) * displayPropertiesCount);
         if (!displayProperties) {
-            SDL_OutOfMemory();
             goto error;
         }
 
@@ -301,7 +298,6 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
 
         displayModeProperties = SDL_malloc(sizeof(VkDisplayModePropertiesKHR) * displayModePropertiesCount);
         if (!displayModeProperties) {
-            SDL_OutOfMemory();
             goto error;
         }
 
@@ -348,7 +344,6 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
 
         displayPlaneProperties = SDL_malloc(sizeof(VkDisplayPlanePropertiesKHR) * displayPlanePropertiesCount);
         if (!displayPlaneProperties) {
-            SDL_OutOfMemory();
             goto error;
         }
 
@@ -380,7 +375,6 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
             planeSupportedDisplays = SDL_malloc(sizeof(VkDisplayKHR) * planeSupportedDisplaysCount);
             if (!planeSupportedDisplays) {
                 SDL_free(displayPlaneProperties);
-                SDL_OutOfMemory();
                 goto error;
             }
 

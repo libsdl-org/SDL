@@ -68,10 +68,7 @@ static SDL_Cursor *Android_WrapCursor(int custom_cursor, int system_cursor)
         } else {
             SDL_free(cursor);
             cursor = NULL;
-            SDL_OutOfMemory();
         }
-    } else {
-        SDL_OutOfMemory();
     }
 
     return cursor;

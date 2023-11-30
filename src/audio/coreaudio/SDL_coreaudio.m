@@ -769,7 +769,7 @@ static int PrepareAudioQueue(SDL_AudioDevice *device)
     device->hidden->numAudioBuffers = numAudioBuffers;
     device->hidden->audioBuffer = SDL_calloc(numAudioBuffers, sizeof(AudioQueueBufferRef));
     if (device->hidden->audioBuffer == NULL) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     #if DEBUG_COREAUDIO
@@ -833,7 +833,7 @@ static int COREAUDIO_OpenDevice(SDL_AudioDevice *device)
     // Initialize all variables that we clean on shutdown
     device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (device->hidden == NULL) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     #ifndef MACOSX_COREAUDIO

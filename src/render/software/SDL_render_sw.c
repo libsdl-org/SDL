@@ -1111,14 +1111,12 @@ SDL_Renderer *SW_CreateRendererForSurface(SDL_Surface *surface)
 
     renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
     data = (SW_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
         SW_DestroyRenderer(renderer);
-        SDL_OutOfMemory();
         return NULL;
     }
     data->surface = surface;

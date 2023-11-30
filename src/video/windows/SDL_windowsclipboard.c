@@ -125,8 +125,6 @@ static void *WIN_ConvertDIBtoBMP(HANDLE hMem, size_t *size)
                     pbfh->bfOffBits = (DWORD)(sizeof(BITMAPFILEHEADER) + bih_size);
                     SDL_memcpy((Uint8 *)bmp + sizeof(BITMAPFILEHEADER), dib, dib_size);
                     *size = bmp_size;
-                } else {
-                    SDL_OutOfMemory();
                 }
             } else {
                 SDL_SetError("Invalid BMP data");

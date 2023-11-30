@@ -878,7 +878,7 @@ static int SDL_DINPUT_JoystickInitRumble(SDL_Joystick *joystick, Sint16 magnitud
     /* Create the effect */
     joystick->hwdata->ffeffect = CreateRumbleEffectData(magnitude);
     if (!joystick->hwdata->ffeffect) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     result = IDirectInputDevice8_CreateEffect(joystick->hwdata->InputDevice, &GUID_Sine,

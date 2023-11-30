@@ -228,7 +228,7 @@ static int SNDIO_OpenDevice(SDL_AudioDevice *device)
 {
     device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     // !!! FIXME: we really should standardize this on a specific SDL hint.
@@ -243,7 +243,7 @@ static int SNDIO_OpenDevice(SDL_AudioDevice *device)
 
     device->hidden->pfd = SDL_malloc(sizeof(struct pollfd) * SNDIO_sio_nfds(device->hidden->dev));
     if (!device->hidden->pfd) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     struct sio_par par;
@@ -308,7 +308,7 @@ static int SNDIO_OpenDevice(SDL_AudioDevice *device)
     // Allocate mixing buffer
     device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
     if (!device->hidden->mixbuf) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     SDL_memset(device->hidden->mixbuf, device->silence_value, device->buffer_size);
 

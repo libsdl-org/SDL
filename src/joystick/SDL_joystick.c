@@ -270,7 +270,6 @@ static SDL_bool SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID
     if (player_index >= SDL_joystick_player_count) {
         SDL_JoystickID *new_players = (SDL_JoystickID *)SDL_realloc(SDL_joystick_players, (player_index + 1) * sizeof(*SDL_joystick_players));
         if (!new_players) {
-            SDL_OutOfMemory();
             return SDL_FALSE;
         }
 
@@ -403,8 +402,6 @@ SDL_JoystickID *SDL_GetJoysticks(int *count)
             if (count) {
                 *count = 0;
             }
-
-            SDL_OutOfMemory();
         }
     }
     SDL_UnlockJoysticks();
@@ -755,7 +752,6 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     /* Create and initialize the joystick */
     joystick = (SDL_Joystick *)SDL_calloc(sizeof(*joystick), 1);
     if (!joystick) {
-        SDL_OutOfMemory();
         SDL_UnlockJoysticks();
         return NULL;
     }
@@ -798,7 +794,6 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
         joystick->buttons = (Uint8 *)SDL_calloc(joystick->nbuttons, sizeof(Uint8));
     }
     if (((joystick->naxes > 0) && !joystick->axes) || ((joystick->nhats > 0) && !joystick->hats) || ((joystick->nbuttons > 0) && !joystick->buttons)) {
-        SDL_OutOfMemory();
         SDL_CloseJoystick(joystick);
         SDL_UnlockJoysticks();
         return NULL;

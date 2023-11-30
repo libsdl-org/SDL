@@ -468,7 +468,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
 
     data = (GL_TextureData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
@@ -488,7 +488,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
         data->pixels = SDL_calloc(1, size);
         if (!data->pixels) {
             SDL_free(data);
-            return SDL_OutOfMemory();
+            return -1;
         }
     }
 
@@ -1483,7 +1483,7 @@ static int GL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
     temp_pitch = rect->w * SDL_BYTESPERPIXEL(temp_format);
     temp_pixels = SDL_malloc((size_t)rect->h * temp_pitch);
     if (!temp_pixels) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     SDL_GetCurrentRenderOutputSize(renderer, &w, &h);
@@ -1794,14 +1794,12 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
 
     renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
-        SDL_OutOfMemory();
         goto error;
     }
 
     data = (GL_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
         SDL_free(renderer);
-        SDL_OutOfMemory();
         goto error;
     }
 

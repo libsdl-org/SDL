@@ -37,8 +37,6 @@ SDL_Condition *SDL_CreateCondition(void)
     SDL_Condition *cond = (SDL_Condition *)SDL_malloc(sizeof(SDL_Condition));
     if (cond) {
         CondVar_Init(&cond->cond_variable);
-    } else {
-        SDL_OutOfMemory();
     }
     return cond;
 }

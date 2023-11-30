@@ -27,7 +27,7 @@ int SDL_SYS_OpenURL(const char *url)
 {
     WCHAR *wurl = WIN_UTF8ToStringW(url);
     if (!wurl) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     auto strurl = ref new Platform::String(wurl);
     SDL_free(wurl);

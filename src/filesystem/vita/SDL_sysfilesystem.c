@@ -61,7 +61,6 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     len += SDL_strlen(org) + SDL_strlen(app) + 3;
     retval = (char *)SDL_malloc(len);
     if (!retval) {
-        SDL_OutOfMemory();
         return NULL;
     }
 

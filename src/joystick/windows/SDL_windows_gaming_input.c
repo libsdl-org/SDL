@@ -128,7 +128,6 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
 
     raw_devices = (PRAWINPUTDEVICELIST)SDL_malloc(sizeof(RAWINPUTDEVICELIST) * raw_device_count);
     if (!raw_devices) {
-        SDL_OutOfMemory();
         return SDL_FALSE;
     }
 
@@ -720,7 +719,7 @@ static int WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof(*hwdata));
     if (!hwdata) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     joystick->hwdata = hwdata;
 

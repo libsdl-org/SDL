@@ -101,9 +101,7 @@ static void *CloneDataBuffer(const void *buffer, size_t *len)
     void *clone = NULL;
     if (*len > 0 && buffer) {
         clone = SDL_malloc((*len)+sizeof(Uint32));
-        if (!clone) {
-            SDL_OutOfMemory();
-        } else {
+        if (clone) {
             SDL_memcpy(clone, buffer, *len);
             SDL_memset((Uint8 *)clone + *len, 0, sizeof(Uint32));
         }

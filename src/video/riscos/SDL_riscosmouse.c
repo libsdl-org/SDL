@@ -30,14 +30,10 @@
 
 static SDL_Cursor *RISCOS_CreateDefaultCursor()
 {
-    SDL_Cursor *cursor;
-
-    cursor = SDL_calloc(1, sizeof(*cursor));
+    SDL_Cursor *cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
         /* NULL is used to indicate the default cursor */
         cursor->driverdata = NULL;
-    } else {
-        SDL_OutOfMemory();
     }
 
     return cursor;

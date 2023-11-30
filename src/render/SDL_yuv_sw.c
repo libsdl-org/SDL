@@ -47,7 +47,6 @@ SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(Uint32 format, int w, int h)
 
     swdata = (SDL_SW_YUVTexture *)SDL_calloc(1, sizeof(*swdata));
     if (!swdata) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -59,13 +58,11 @@ SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(Uint32 format, int w, int h)
         size_t dst_size;
         if (SDL_CalculateYUVSize(format, w, h, &dst_size, NULL) < 0) {
             SDL_SW_DestroyYUVTexture(swdata);
-            SDL_OutOfMemory();
             return NULL;
         }
         swdata->pixels = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), dst_size);
         if (!swdata->pixels) {
             SDL_SW_DestroyYUVTexture(swdata);
-            SDL_OutOfMemory();
             return NULL;
         }
     }

@@ -529,7 +529,6 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
 
     device = (recDevice *)SDL_calloc(1, sizeof(recDevice));
     if (!device) {
-        SDL_OutOfMemory();
         return;
     }
 
@@ -834,7 +833,7 @@ static int DARWIN_JoystickInitRumble(recDevice *device, Sint16 magnitude)
     /* Create the effect */
     device->ffeffect = CreateRumbleEffectData(magnitude);
     if (!device->ffeffect) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     result = FFDeviceCreateEffect(device->ffdevice, kFFEffectType_Sine_ID,

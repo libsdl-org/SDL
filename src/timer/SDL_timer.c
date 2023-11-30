@@ -297,7 +297,6 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
     } else {
         timer = (SDL_Timer *)SDL_malloc(sizeof(*timer));
         if (!timer) {
-            SDL_OutOfMemory();
             return 0;
         }
     }
@@ -311,7 +310,6 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
     entry = (SDL_TimerMap *)SDL_malloc(sizeof(*entry));
     if (!entry) {
         SDL_free(timer);
-        SDL_OutOfMemory();
         return 0;
     }
     entry->timer = timer;
@@ -423,7 +421,6 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
 
     entry = (SDL_TimerMap *)SDL_malloc(sizeof(*entry));
     if (!entry) {
-        SDL_OutOfMemory();
         return 0;
     }
     entry->timerID = ++data->nextID;

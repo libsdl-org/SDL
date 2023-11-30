@@ -220,7 +220,7 @@ int RISCOS_InitModes(SDL_VideoDevice *_this)
     size = measure_mode_block(current_mode);
     mode.driverdata = copy_memory(current_mode, size, size);
     if (!mode.driverdata) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     if (SDL_AddBasicVideoDisplay(&mode) == 0) {
@@ -247,7 +247,7 @@ int RISCOS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 
     block = SDL_malloc(-regs.r[7]);
     if (!block) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     regs.r[6] = (int)block;
@@ -270,7 +270,7 @@ int RISCOS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
         mode.driverdata = convert_mode_block(pos + 4);
         if (!mode.driverdata) {
             SDL_free(block);
-            return SDL_OutOfMemory();
+            return -1;
         }
 
         if (!SDL_AddFullscreenDisplayMode(display, &mode)) {

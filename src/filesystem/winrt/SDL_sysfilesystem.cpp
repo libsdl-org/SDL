@@ -131,7 +131,6 @@ SDL_GetBasePath(void)
     destPathLen = SDL_strlen(srcPath) + 2;
     destPath = (char *)SDL_malloc(destPathLen);
     if (!destPath) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -178,14 +177,12 @@ SDL_GetPrefPath(const char *org, const char *app)
 
     worg = WIN_UTF8ToString(org);
     if (!worg) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
     wapp = WIN_UTF8ToString(app);
     if (!wapp) {
         SDL_free(worg);
-        SDL_OutOfMemory();
         return NULL;
     }
 

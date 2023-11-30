@@ -136,14 +136,12 @@ SDL_Surface *SDL_CreateSurface(int width, int height, Uint32 format)
 
     if (SDL_CalculateSize(format, width, height, &size, &pitch, SDL_FALSE /* not minimal pitch */) < 0) {
         /* Overflow... */
-        SDL_OutOfMemory();
         return NULL;
     }
 
     /* Allocate the surface */
     surface = (SDL_Surface *)SDL_calloc(1, sizeof(*surface));
     if (!surface) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -182,7 +180,6 @@ SDL_Surface *SDL_CreateSurface(int width, int height, Uint32 format)
         surface->pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), size);
         if (!surface->pixels) {
             SDL_DestroySurface(surface);
-            SDL_OutOfMemory();
             return NULL;
         }
         surface->flags |= SDL_SIMD_ALIGNED;
@@ -232,7 +229,6 @@ SDL_Surface *SDL_CreateSurfaceFrom(void *pixels, int width, int height, int pitc
 
         if (SDL_CalculateSize(format, width, height, NULL, &minimalPitch, SDL_TRUE /* minimal pitch */) < 0) {
             /* Overflow... */
-            SDL_OutOfMemory();
             return NULL;
         }
 

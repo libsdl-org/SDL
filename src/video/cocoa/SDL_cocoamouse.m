@@ -393,7 +393,7 @@ int Cocoa_InitMouse(SDL_VideoDevice *_this)
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_MouseData *driverdata = (SDL_MouseData *)SDL_calloc(1, sizeof(SDL_MouseData));
     if (driverdata == NULL) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     mouse->driverdata = driverdata;

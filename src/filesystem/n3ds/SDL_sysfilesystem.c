@@ -70,7 +70,6 @@ static char *MakePrefPath(const char *app)
 {
     char *pref_path;
     if (SDL_asprintf(&pref_path, "sdmc:/3ds/%s/", app) < 0) {
-        SDL_OutOfMemory();
         return NULL;
     }
     return pref_path;

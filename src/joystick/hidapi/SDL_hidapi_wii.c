@@ -719,7 +719,6 @@ static SDL_bool HIDAPI_DriverWii_InitDevice(SDL_HIDAPI_Device *device)
 
     ctx = (SDL_DriverWii_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
-        SDL_OutOfMemory();
         return SDL_FALSE;
     }
     ctx->device = device;

@@ -226,7 +226,7 @@ int SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userd
 
     entry = (SDL_HintWatch *)SDL_malloc(sizeof(*entry));
     if (!entry) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     entry->callback = callback;
     entry->userdata = userdata;
@@ -241,13 +241,13 @@ int SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userd
         hint = (SDL_Hint *)SDL_malloc(sizeof(*hint));
         if (!hint) {
             SDL_free(entry);
-            return SDL_OutOfMemory();
+            return -1;
         }
         hint->name = SDL_strdup(name);
         if (!hint->name) {
             SDL_free(entry);
             SDL_free(hint);
-            return SDL_OutOfMemory();
+            return -1;
         }
         hint->value = NULL;
         hint->priority = SDL_HINT_DEFAULT;

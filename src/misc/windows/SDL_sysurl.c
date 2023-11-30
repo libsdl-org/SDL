@@ -47,7 +47,7 @@ int SDL_SYS_OpenURL(const char *url)
     wurl = WIN_UTF8ToStringW(url);
     if (!wurl) {
         WIN_CoUninitialize();
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     /* Success returns value greater than 32. Less is an error. */

@@ -302,7 +302,6 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
         SDL_WaylandCursorTheme *new_cursor_themes = SDL_realloc(vdata->cursor_themes,
                                                                 sizeof(SDL_WaylandCursorTheme) * (vdata->num_cursor_themes + 1));
         if (!new_cursor_themes) {
-            SDL_OutOfMemory();
             return SDL_FALSE;
         }
         vdata->cursor_themes = new_cursor_themes;
@@ -504,15 +503,12 @@ static int create_buffer_from_shm(Wayland_CursorData *d,
 
 static SDL_Cursor *Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
-    SDL_Cursor *cursor;
-
-    cursor = SDL_calloc(1, sizeof(*cursor));
+    SDL_Cursor *cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
         SDL_VideoDevice *vd = SDL_GetVideoDevice();
         SDL_VideoData *wd = vd->driverdata;
         Wayland_CursorData *data = SDL_calloc(1, sizeof(Wayland_CursorData));
         if (!data) {
-            SDL_OutOfMemory();
             SDL_free(cursor);
             return NULL;
         }
@@ -540,8 +536,6 @@ static SDL_Cursor *Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot
         data->hot_y = hot_y;
         data->w = surface->w;
         data->h = surface->h;
-    } else {
-        SDL_OutOfMemory();
     }
 
     return cursor;
@@ -550,13 +544,10 @@ static SDL_Cursor *Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot
 static SDL_Cursor *Wayland_CreateSystemCursor(SDL_SystemCursor id)
 {
     SDL_VideoData *data = SDL_GetVideoDevice()->driverdata;
-    SDL_Cursor *cursor;
-
-    cursor = SDL_calloc(1, sizeof(*cursor));
+    SDL_Cursor *cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
         Wayland_CursorData *cdata = SDL_calloc(1, sizeof(Wayland_CursorData));
         if (!cdata) {
-            SDL_OutOfMemory();
             SDL_free(cursor);
             return NULL;
         }
@@ -569,8 +560,6 @@ static SDL_Cursor *Wayland_CreateSystemCursor(SDL_SystemCursor id)
          * is output-specific. See wayland_get_system_cursor for the rest!
          */
         cdata->system_cursor = id;
-    } else {
-        SDL_OutOfMemory();
     }
 
     return cursor;

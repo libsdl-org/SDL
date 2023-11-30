@@ -270,7 +270,6 @@ CreateHwData(const char *path)
         SDL_calloc(1, sizeof(struct joystick_hwdata));
     if (!hw) {
         close(fd);
-        SDL_OutOfMemory();
         return NULL;
     }
     hw->fd = fd;
@@ -794,7 +793,7 @@ static int report_alloc(struct report *r, struct report_desc *rd, int repind)
                             r->size);
 #endif
         if (!r->buf) {
-            return SDL_OutOfMemory();
+            return -1;
         }
     } else {
         r->buf = NULL;

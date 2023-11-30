@@ -565,13 +565,13 @@ static int X11_AddXRandRDisplay(SDL_VideoDevice *_this, Display *dpy, int screen
 
     displaydata = (SDL_DisplayData *)SDL_calloc(1, sizeof(*displaydata));
     if (!displaydata) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     modedata = (SDL_DisplayModeData *)SDL_calloc(1, sizeof(SDL_DisplayModeData));
     if (!modedata) {
         SDL_free(displaydata);
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     modedata->xrandr_mode = modeID;
@@ -768,13 +768,13 @@ static int X11_InitModes_StdXlib(SDL_VideoDevice *_this)
 
     displaydata = (SDL_DisplayData *)SDL_calloc(1, sizeof(*displaydata));
     if (!displaydata) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     modedata = (SDL_DisplayModeData *)SDL_calloc(1, sizeof(SDL_DisplayModeData));
     if (!modedata) {
         SDL_free(displaydata);
-        return SDL_OutOfMemory();
+        return -1;
     }
     mode.driverdata = modedata;
 

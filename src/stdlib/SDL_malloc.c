@@ -5287,7 +5287,10 @@ void *SDL_malloc(size_t size)
     mem = s_mem.malloc_func(size);
     if (mem) {
         SDL_AtomicIncRef(&s_mem.num_allocations);
+    } else {
+        SDL_OutOfMemory();
     }
+
     return mem;
 }
 
@@ -5303,7 +5306,10 @@ void *SDL_calloc(size_t nmemb, size_t size)
     mem = s_mem.calloc_func(nmemb, size);
     if (mem) {
         SDL_AtomicIncRef(&s_mem.num_allocations);
+    } else {
+        SDL_OutOfMemory();
     }
+
     return mem;
 }
 
@@ -5318,7 +5324,10 @@ void *SDL_realloc(void *ptr, size_t size)
     mem = s_mem.realloc_func(ptr, size);
     if (mem && !ptr) {
         SDL_AtomicIncRef(&s_mem.num_allocations);
+    } else if (!mem) {
+        SDL_OutOfMemory();
     }
+
     return mem;
 }
 

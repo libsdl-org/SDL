@@ -150,7 +150,7 @@ static int WriteToChunkedAudioTrack(void *ctx, const Uint8 *data, size_t len)
         chunk = CreateAudioTrackChunk(track);
 
         if (!chunk) {
-            return SDL_OutOfMemory();
+            return -1;
         }
 
         SDL_assert((track->head == NULL) && (track->tail == NULL) && (track->queued_bytes == 0));
@@ -189,7 +189,7 @@ static int WriteToChunkedAudioTrack(void *ctx, const Uint8 *data, size_t len)
 
         DestroyAudioChunks(next);
 
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     track->tail = chunk;
@@ -256,7 +256,6 @@ static SDL_AudioTrack *CreateChunkedAudioTrack(const SDL_AudioSpec *spec, size_t
     SDL_ChunkedAudioTrack *track = (SDL_ChunkedAudioTrack *)SDL_calloc(1, sizeof(*track));
 
     if (!track) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -276,7 +275,6 @@ SDL_AudioQueue *SDL_CreateAudioQueue(size_t chunk_size)
     SDL_AudioQueue *queue = (SDL_AudioQueue *)SDL_calloc(1, sizeof(*queue));
 
     if (!queue) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -398,7 +396,7 @@ int SDL_WriteToAudioQueue(SDL_AudioQueue *queue, const SDL_AudioSpec *spec, cons
         SDL_AudioTrack *new_track = CreateChunkedAudioTrack(spec, queue->chunk_size);
 
         if (!new_track) {
-            return SDL_OutOfMemory();
+            return -1;
         }
 
         if (track) {

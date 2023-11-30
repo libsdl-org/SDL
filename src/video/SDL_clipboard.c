@@ -97,7 +97,7 @@ int SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanu
         }
         if (num_allocated < num_mime_types) {
             SDL_ClearClipboardData();
-            return SDL_OutOfMemory();
+            return -1;
         }
         _this->num_clipboard_mime_types = num_mime_types;
     }
@@ -156,8 +156,6 @@ void *SDL_GetInternalClipboardData(SDL_VideoDevice *_this, const char *mime_type
             if (data) {
                 SDL_memcpy(data, provided_data, *size);
                 SDL_memset((Uint8 *)data + *size, 0, sizeof(Uint32));
-            } else {
-                SDL_OutOfMemory();
             }
         }
     }

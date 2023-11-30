@@ -52,8 +52,6 @@ SDL_Condition *SDL_CreateCondition(void)
             SDL_DestroyCondition(cond);
             cond = NULL;
         }
-    } else {
-        SDL_OutOfMemory();
     }
     return cond;
 }

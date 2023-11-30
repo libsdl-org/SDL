@@ -47,7 +47,7 @@ int WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint
     size = sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD);
     info = (LPBITMAPINFO)SDL_small_alloc(Uint8, size, &isstack);
     if (!info) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     SDL_memset(info, 0, size);

@@ -208,8 +208,6 @@ SDL_SensorID *SDL_GetSensors(int *count)
             if (count) {
                 *count = 0;
             }
-
-            SDL_OutOfMemory();
         }
     }
     SDL_UnlockSensors();
@@ -330,7 +328,6 @@ SDL_Sensor *SDL_OpenSensor(SDL_SensorID instance_id)
     /* Create and initialize the sensor */
     sensor = (SDL_Sensor *)SDL_calloc(sizeof(*sensor), 1);
     if (!sensor) {
-        SDL_OutOfMemory();
         SDL_UnlockSensors();
         return NULL;
     }

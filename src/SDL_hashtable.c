@@ -54,14 +54,12 @@ SDL_HashTable *SDL_CreateHashTable(void *data, const Uint32 num_buckets, const S
 
     table = (SDL_HashTable *) SDL_calloc(1, sizeof (SDL_HashTable));
     if (!table) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
     table->table = (SDL_HashItem **) SDL_calloc(num_buckets, sizeof (SDL_HashItem *));
     if (!table->table) {
         SDL_free(table);
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -92,7 +90,6 @@ SDL_bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const vo
     // !!! FIXME: grow and rehash table if it gets too saturated.
     item = (SDL_HashItem *) SDL_malloc(sizeof (SDL_HashItem));
     if (!item) {
-        SDL_OutOfMemory();
         return SDL_FALSE;
     }
 

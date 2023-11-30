@@ -55,14 +55,12 @@ static SDL_VideoDevice *RISCOS_CreateDevice(void)
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
-        SDL_OutOfMemory();
         return 0;
     }
 
     /* Initialize internal data */
     phdata = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
     if (!phdata) {
-        SDL_OutOfMemory();
         SDL_free(device);
         return NULL;
     }

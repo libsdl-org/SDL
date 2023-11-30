@@ -128,7 +128,7 @@ int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint
 
     *pixels = SDL_malloc((size_t)h * (*pitch));
     if (!*pixels) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     data->ximage = X11_XCreateImage(display, data->visual,

@@ -144,7 +144,7 @@ static int SDL3_SetWindowShape(SDL_Window *window, SDL_Surface *shape, SDL_Windo
     g_bitmap_h = shape->h;
     g_bitmap = (Uint8*) SDL_malloc(shape->w * shape->h);
     if (!g_bitmap) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     SDL_CalculateShapeBitmap(*shape_mode, shape, g_bitmap, 1);

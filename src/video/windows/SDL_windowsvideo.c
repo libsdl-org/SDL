@@ -117,7 +117,6 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     }
     if (!data) {
         SDL_free(device);
-        SDL_OutOfMemory();
         return NULL;
     }
     device->driverdata = data;

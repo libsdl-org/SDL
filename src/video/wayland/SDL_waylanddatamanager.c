@@ -119,7 +119,7 @@ static ssize_t read_pipe(int fd, void **buffer, size_t *total_length)
         }
 
         if (!output_buffer) {
-            bytes_read = SDL_OutOfMemory();
+            bytes_read = -1;
         } else {
             SDL_memcpy((Uint8 *)output_buffer + pos, temp, bytes_read);
             SDL_memset((Uint8 *)output_buffer + (new_buffer_length - sizeof(Uint32)), 0, sizeof(Uint32));
@@ -158,7 +158,7 @@ static int mime_data_list_add(struct wl_list *list,
     if (buffer) {
         internal_buffer = SDL_malloc(length);
         if (!internal_buffer) {
-            return SDL_OutOfMemory();
+            return -1;
         }
         SDL_memcpy(internal_buffer, buffer, length);
     }
@@ -168,14 +168,14 @@ static int mime_data_list_add(struct wl_list *list,
     if (!mime_data) {
         mime_data = SDL_calloc(1, sizeof(*mime_data));
         if (!mime_data) {
-            status = SDL_OutOfMemory();
+            status = -1;
         } else {
             WAYLAND_wl_list_insert(list, &(mime_data->link));
 
             mime_type_length = SDL_strlen(mime_type) + 1;
             mime_data->mime_type = SDL_malloc(mime_type_length);
             if (!mime_data->mime_type) {
-                status = SDL_OutOfMemory();
+                status = -1;
             } else {
                 SDL_memcpy(mime_data->mime_type, mime_type, mime_type_length);
             }
@@ -278,9 +278,7 @@ static void *Wayland_clone_data_buffer(const void *buffer, size_t *len)
     void *clone = NULL;
     if (*len > 0 && buffer) {
         clone = SDL_malloc((*len)+sizeof(Uint32));
-        if (!clone) {
-            SDL_OutOfMemory();
-        } else {
+        if (clone) {
             SDL_memcpy(clone, buffer, *len);
             SDL_memset((Uint8 *)clone + *len, 0, sizeof(Uint32));
         }

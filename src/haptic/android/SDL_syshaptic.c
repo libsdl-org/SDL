@@ -107,7 +107,6 @@ static SDL_hapticlist_item *OpenHaptic(SDL_Haptic *haptic, SDL_hapticlist_item *
     haptic->nplaying = haptic->neffects;
     haptic->effects = (struct haptic_effect *)SDL_malloc(sizeof(struct haptic_effect) * haptic->neffects);
     if (!haptic->effects) {
-        SDL_OutOfMemory();
         return NULL;
     }
     SDL_memset(haptic->effects, 0, sizeof(struct haptic_effect) * haptic->neffects);

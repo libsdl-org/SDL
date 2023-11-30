@@ -277,7 +277,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
         data = (SDL_WindowTextureData *)SDL_calloc(1, sizeof(*data));
         if (!data) {
             SDL_DestroyRenderer(renderer);
-            return SDL_OutOfMemory();
+            return -1;
         }
         SDL_SetPropertyWithCleanup(props, SDL_WINDOWTEXTUREDATA, data, SDL_CleanupWindowTextureData, NULL);
 
@@ -324,7 +324,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
         const size_t allocsize = (size_t)h * data->pitch;
         data->pixels = SDL_malloc((allocsize > 0) ? allocsize : 1);
         if (!data->pixels) {
-            return SDL_OutOfMemory();
+            return -1;
         }
     }
 
@@ -657,13 +657,11 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send
 
     new_display = (SDL_VideoDisplay *)SDL_malloc(sizeof(*new_display));
     if (!new_display) {
-        SDL_OutOfMemory();
         return 0;
     }
 
     displays = (SDL_VideoDisplay **)SDL_realloc(_this->displays, (_this->num_displays + 1) * sizeof(*displays));
     if (!displays) {
-        SDL_OutOfMemory();
         SDL_free(new_display);
         return 0;
     }
@@ -767,8 +765,6 @@ SDL_DisplayID *SDL_GetDisplays(int *count)
         if (count) {
             *count = 0;
         }
-
-        SDL_OutOfMemory();
     }
     return displays;
 }
@@ -1105,8 +1101,6 @@ const SDL_DisplayMode **SDL_GetFullscreenDisplayModes(SDL_DisplayID displayID, i
         if (count) {
             *count = 0;
         }
-
-        SDL_OutOfMemory();
     }
     return modes;
 }
@@ -2020,7 +2014,6 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
 
     window = (SDL_Window *)SDL_calloc(1, sizeof(*window));
     if (!window) {
-        SDL_OutOfMemory();
         return NULL;
     }
     window->magic = &_this->window_magic;

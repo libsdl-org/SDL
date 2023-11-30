@@ -126,8 +126,6 @@ static SDL_Cursor *WINRT_CreateSystemCursor(SDL_SystemCursor id)
         CoreCursor ^ *theCursor = new CoreCursor ^ (nullptr);
         *theCursor = ref new CoreCursor(cursorType, 0);
         cursor->driverdata = (void *)theCursor;
-    } else {
-        SDL_OutOfMemory();
     }
 
     return cursor;

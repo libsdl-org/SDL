@@ -42,7 +42,6 @@ static char *SDL_unixify_std(const char *ro_path, char *buffer, size_t buf_len, 
         buffer = SDL_malloc(buf_len);
 
         if (!buffer) {
-            SDL_OutOfMemory();
             return NULL;
         }
     }
@@ -89,7 +88,6 @@ static char *canonicalisePath(const char *path, const char *pathVar)
     regs.r[5] = 1 - regs.r[5];
     buf = SDL_malloc(regs.r[5]);
     if (!buf) {
-        SDL_OutOfMemory();
         return NULL;
     }
     regs.r[2] = (int)buf;
@@ -174,7 +172,6 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     len = SDL_strlen(canon) + SDL_strlen(org) + SDL_strlen(app) + 4;
     dir = (char *)SDL_malloc(len);
     if (!dir) {
-        SDL_OutOfMemory();
         SDL_free(canon);
         return NULL;
     }

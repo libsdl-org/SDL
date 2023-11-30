@@ -473,13 +473,10 @@ static int SDL_SYS_HapticOpenFromService(SDL_Haptic *haptic, io_service_t servic
     int ret2;
 
     /* Allocate the hwdata */
-    haptic->hwdata = (struct haptic_hwdata *)
-        SDL_malloc(sizeof(*haptic->hwdata));
+    haptic->hwdata = (struct haptic_hwdata *) SDL_calloc(1, sizeof(*haptic->hwdata));
     if (!haptic->hwdata) {
-        SDL_OutOfMemory();
         goto creat_err;
     }
-    SDL_memset(haptic->hwdata, 0, sizeof(*haptic->hwdata));
 
     /* Open the device */
     ret = FFCreateDevice(service, &haptic->hwdata->device);
@@ -513,7 +510,6 @@ static int SDL_SYS_HapticOpenFromService(SDL_Haptic *haptic, io_service_t servic
     haptic->effects = (struct haptic_effect *)
         SDL_malloc(sizeof(struct haptic_effect) * haptic->neffects);
     if (!haptic->effects) {
-        SDL_OutOfMemory();
         goto open_err;
     }
     /* Clear the memory */
@@ -700,7 +696,7 @@ static int SDL_SYS_SetDirection(FFEFFECT *effect, SDL_HapticDirection *dir, int 
     /* Has axes. */
     rglDir = SDL_malloc(sizeof(LONG) * naxes);
     if (!rglDir) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     SDL_memset(rglDir, 0, sizeof(LONG) * naxes);
     effect->rglDirection = rglDir;
@@ -771,11 +767,10 @@ static int SDL_SYS_ToFFEFFECT(SDL_Haptic *haptic, FFEFFECT *dest, SDL_HapticEffe
     dest->dwFlags = FFEFF_OBJECTOFFSETS; /* Seems obligatory. */
 
     /* Envelope. */
-    envelope = SDL_malloc(sizeof(FFENVELOPE));
+    envelope = SDL_calloc(1, sizeof(FFENVELOPE));
     if (!envelope) {
-        return SDL_OutOfMemory();
+        return -1;
     }
-    SDL_memset(envelope, 0, sizeof(FFENVELOPE));
     dest->lpEnvelope = envelope;
     envelope->dwSize = sizeof(FFENVELOPE); /* Always should be this. */
 
@@ -788,7 +783,7 @@ static int SDL_SYS_ToFFEFFECT(SDL_Haptic *haptic, FFEFFECT *dest, SDL_HapticEffe
     if (dest->cAxes > 0) {
         axes = SDL_malloc(sizeof(DWORD) * dest->cAxes);
         if (!axes) {
-            return SDL_OutOfMemory();
+            return -1;
         }
         axes[0] = haptic->hwdata->axes[0]; /* Always at least one axis. */
         if (dest->cAxes > 1) {
@@ -804,11 +799,10 @@ static int SDL_SYS_ToFFEFFECT(SDL_Haptic *haptic, FFEFFECT *dest, SDL_HapticEffe
     switch (src->type) {
     case SDL_HAPTIC_CONSTANT:
         hap_constant = &src->constant;
-        constant = SDL_malloc(sizeof(FFCONSTANTFORCE));
+        constant = SDL_calloc(1, sizeof(FFCONSTANTFORCE));
         if (!constant) {
-            return SDL_OutOfMemory();
+            return -1;
         }
-        SDL_memset(constant, 0, sizeof(FFCONSTANTFORCE));
 
         /* Specifics */
         constant->lMagnitude = CONVERT(hap_constant->level);
@@ -846,11 +840,10 @@ static int SDL_SYS_ToFFEFFECT(SDL_Haptic *haptic, FFEFFECT *dest, SDL_HapticEffe
     case SDL_HAPTIC_SAWTOOTHUP:
     case SDL_HAPTIC_SAWTOOTHDOWN:
         hap_periodic = &src->periodic;
-        periodic = SDL_malloc(sizeof(FFPERIODIC));
+        periodic = SDL_calloc(1, sizeof(FFPERIODIC));
         if (!periodic) {
-            return SDL_OutOfMemory();
+            return -1;
         }
-        SDL_memset(periodic, 0, sizeof(FFPERIODIC));
 
         /* Specifics */
         periodic->dwMagnitude = CONVERT(SDL_abs(hap_periodic->magnitude));
@@ -891,11 +884,10 @@ static int SDL_SYS_ToFFEFFECT(SDL_Haptic *haptic, FFEFFECT *dest, SDL_HapticEffe
     case SDL_HAPTIC_FRICTION:
         hap_condition = &src->condition;
         if (dest->cAxes > 0) {
-            condition = SDL_malloc(sizeof(FFCONDITION) * dest->cAxes);
+            condition = SDL_calloc(dest->cAxes, sizeof(FFCONDITION));
             if (!condition) {
-                return SDL_OutOfMemory();
+                return -1;
             }
-            SDL_memset(condition, 0, sizeof(FFCONDITION));
 
             /* Specifics */
             for (i = 0; i < dest->cAxes; i++) {
@@ -934,11 +926,10 @@ static int SDL_SYS_ToFFEFFECT(SDL_Haptic *haptic, FFEFFECT *dest, SDL_HapticEffe
 
     case SDL_HAPTIC_RAMP:
         hap_ramp = &src->ramp;
-        ramp = SDL_malloc(sizeof(FFRAMPFORCE));
+        ramp = SDL_calloc(1, sizeof(FFRAMPFORCE));
         if (!ramp) {
-            return SDL_OutOfMemory();
+            return -1;
         }
-        SDL_memset(ramp, 0, sizeof(FFRAMPFORCE));
 
         /* Specifics */
         ramp->lStart = CONVERT(hap_ramp->start);
@@ -972,11 +963,10 @@ static int SDL_SYS_ToFFEFFECT(SDL_Haptic *haptic, FFEFFECT *dest, SDL_HapticEffe
 
     case SDL_HAPTIC_CUSTOM:
         hap_custom = &src->custom;
-        custom = SDL_malloc(sizeof(FFCUSTOMFORCE));
+        custom = SDL_calloc(1, sizeof(FFCUSTOMFORCE));
         if (!custom) {
-            return SDL_OutOfMemory();
+            return -1;
         }
-        SDL_memset(custom, 0, sizeof(FFCUSTOMFORCE));
 
         /* Specifics */
         custom->cChannels = hap_custom->channels;
@@ -1107,9 +1097,8 @@ int SDL_SYS_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
 
     /* Alloc the effect. */
     effect->hweffect = (struct haptic_hweffect *)
-        SDL_malloc(sizeof(struct haptic_hweffect));
+        SDL_calloc(1, sizeof(struct haptic_hweffect));
     if (!effect->hweffect) {
-        SDL_OutOfMemory();
         goto err_hweffect;
     }
 

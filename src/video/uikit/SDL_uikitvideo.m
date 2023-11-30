@@ -67,13 +67,11 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
 
         /* Initialize all variables that we clean on shutdown */
         device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
-        if (device) {
-            data = [SDL_UIKitVideoData new];
-        } else {
-            SDL_free(device);
-            SDL_OutOfMemory();
-            return (0);
-        }
+        if (!device) {
+            return NULL;
+        ]
+
+        data = [SDL_UIKitVideoData new];
 
         device->driverdata = (SDL_VideoData *)CFBridgingRetain(data);
         device->system_theme = UIKit_GetSystemTheme();

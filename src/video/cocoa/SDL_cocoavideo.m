@@ -68,7 +68,6 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
             data = nil;
         }
         if (!data) {
-            SDL_OutOfMemory();
             SDL_free(device);
             return NULL;
         }

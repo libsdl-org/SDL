@@ -261,13 +261,11 @@ static SDL_VideoDevice *KMSDRM_CreateDevice(void)
 
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
     viddata = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
     if (!viddata) {
-        SDL_OutOfMemory();
         goto cleanup;
     }
     viddata->devindex = devindex;
@@ -364,7 +362,6 @@ KMSDRM_FBInfo *KMSDRM_FBFromBO(SDL_VideoDevice *_this, struct gbm_bo *bo)
     fb_info = (KMSDRM_FBInfo *)SDL_calloc(1, sizeof(KMSDRM_FBInfo));
 
     if (!fb_info) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -689,7 +686,7 @@ static void KMSDRM_AddDisplay(SDL_VideoDevice *_this, drmModeConnector *connecto
     /* Reserve memory for the new display's driverdata. */
     dispdata = (SDL_DisplayData *)SDL_calloc(1, sizeof(SDL_DisplayData));
     if (!dispdata) {
-        ret = SDL_OutOfMemory();
+        ret = -1;
         goto cleanup;
     }
 
@@ -852,7 +849,7 @@ static void KMSDRM_AddDisplay(SDL_VideoDevice *_this, drmModeConnector *connecto
     modedata = SDL_calloc(1, sizeof(SDL_DisplayModeData));
 
     if (!modedata) {
-        ret = SDL_OutOfMemory();
+        ret = -1;
         goto cleanup;
     }
 
@@ -1460,7 +1457,7 @@ int KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
     /* Allocate window internal data */
     windata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
     if (!windata) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     /* Setup driver data for this window */
@@ -1559,7 +1556,7 @@ int KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
         SDL_Window **new_windows = (SDL_Window **)SDL_realloc(viddata->windows,
                                                               new_max_windows * sizeof(SDL_Window *));
         if (!new_windows) {
-            return SDL_OutOfMemory();
+            return -1;
         }
         viddata->windows = new_windows;
         viddata->max_windows = new_max_windows;

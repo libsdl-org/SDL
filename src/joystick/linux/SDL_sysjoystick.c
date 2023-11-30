@@ -1381,7 +1381,7 @@ static int PrepareJoystickHwdata(SDL_Joystick *joystick, SDL_joylist_item *item,
             if (fd_sensor >= 0) {
                 close(fd_sensor);
             }
-            return SDL_OutOfMemory();
+            return -1;
         }
 
         /* Set the joystick to non-blocking read mode */
@@ -1471,7 +1471,7 @@ static int LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->hwdata = (struct joystick_hwdata *)
         SDL_calloc(1, sizeof(*joystick->hwdata));
     if (!joystick->hwdata) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     item_sensor = GetSensor(item);
@@ -2147,7 +2147,6 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
        a fake SDL_Joystick object to do so. */
     joystick = (SDL_Joystick *)SDL_calloc(sizeof(*joystick), 1);
     if (!joystick) {
-        SDL_OutOfMemory();
         return SDL_FALSE;
     }
     joystick->magic = &SDL_joystick_magic;
@@ -2157,7 +2156,6 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
         SDL_calloc(1, sizeof(*joystick->hwdata));
     if (!joystick->hwdata) {
         SDL_free(joystick);
-        SDL_OutOfMemory();
         return SDL_FALSE;
     }
 

@@ -104,7 +104,7 @@ int WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, in
 
     ManagementThreadPendingTask *pending = SDL_calloc(1, sizeof(ManagementThreadPendingTask));
     if (!pending) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     pending->fn = task;
@@ -700,7 +700,7 @@ static int WASAPI_OpenDevice(SDL_AudioDevice *device)
     // Initialize all variables that we clean on shutdown
     device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
-        return SDL_OutOfMemory();
+        return -1;
     } else if (ActivateWasapiDevice(device) < 0) {
         return -1; // already set error.
     }
