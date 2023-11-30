@@ -701,48 +701,11 @@ static int WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
     }
 
     /* Initialize the joystick capabilities */
+    joystick->epowerlevel = wireless ? SDL_JOYSTICK_POWER_UNKNOWN : SDL_JOYSTICK_POWER_WIRED;
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_ButtonCount(hwdata->controller, &joystick->nbuttons);
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_AxisCount(hwdata->controller, &joystick->naxes);
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_SwitchCount(hwdata->controller, &joystick->nhats);
-    joystick->epowerlevel = wireless ? SDL_JOYSTICK_POWER_UNKNOWN : SDL_JOYSTICK_POWER_WIRED;
 
-    if (wireless && hwdata->battery) {
-        HRESULT hr;
-        __x_ABI_CWindows_CDevices_CPower_CIBatteryReport *report;
-
-        hr = __x_ABI_CWindows_CGaming_CInput_CIGameControllerBatteryInfo_TryGetBatteryReport(hwdata->battery, &report);
-        if (SUCCEEDED(hr) && report) {
-            int full_capacity = 0, curr_capacity = 0;
-            __FIReference_1_int *full_capacityP, *curr_capacityP;
-
-            hr = __x_ABI_CWindows_CDevices_CPower_CIBatteryReport_get_FullChargeCapacityInMilliwattHours(report, &full_capacityP);
-            if (SUCCEEDED(hr)) {
-                __FIReference_1_int_get_Value(full_capacityP, &full_capacity);
-                __FIReference_1_int_Release(full_capacityP);
-            }
-
-            hr = __x_ABI_CWindows_CDevices_CPower_CIBatteryReport_get_RemainingCapacityInMilliwattHours(report, &curr_capacityP);
-            if (SUCCEEDED(hr)) {
-                __FIReference_1_int_get_Value(curr_capacityP, &curr_capacity);
-                __FIReference_1_int_Release(curr_capacityP);
-            }
-
-            if (full_capacity > 0) {
-                float ratio = (float)curr_capacity / full_capacity;
-
-                if (ratio <= 0.05f) {
-                    joystick->epowerlevel = SDL_JOYSTICK_POWER_EMPTY;
-                } else if (ratio <= 0.20f) {
-                    joystick->epowerlevel = SDL_JOYSTICK_POWER_LOW;
-                } else if (ratio <= 0.70f) {
-                    joystick->epowerlevel = SDL_JOYSTICK_POWER_MEDIUM;
-                } else {
-                    joystick->epowerlevel = SDL_JOYSTICK_POWER_FULL;
-                }
-            }
-            __x_ABI_CWindows_CDevices_CPower_CIBatteryReport_Release(report);
-        }
-    }
     return 0;
 }
 
@@ -753,6 +716,7 @@ static int WGI_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
     if (hwdata->gamepad) {
         HRESULT hr;
 
+        /* Note: reusing partially filled vibration data struct */
         hwdata->vibration.LeftMotor = (DOUBLE)low_frequency_rumble / SDL_MAX_UINT16;
         hwdata->vibration.RightMotor = (DOUBLE)high_frequency_rumble / SDL_MAX_UINT16;
         hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(hwdata->gamepad, hwdata->vibration);
@@ -773,6 +737,7 @@ static int WGI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble
     if (hwdata->gamepad) {
         HRESULT hr;
 
+        /* Note: reusing partially filled vibration data struct */
         hwdata->vibration.LeftTrigger = (DOUBLE)left_rumble / SDL_MAX_UINT16;
         hwdata->vibration.RightTrigger = (DOUBLE)right_rumble / SDL_MAX_UINT16;
         hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(hwdata->gamepad, hwdata->vibration);
@@ -896,6 +861,43 @@ static void WGI_JoystickUpdate(SDL_Joystick *joystick)
     SDL_stack_free(buttons);
     SDL_stack_free(hats);
     SDL_stack_free(axes);
+
+    if (joystick->epowerlevel != SDL_JOYSTICK_POWER_WIRED && hwdata->battery) {
+        __x_ABI_CWindows_CDevices_CPower_CIBatteryReport *report = NULL;
+
+        hr = __x_ABI_CWindows_CGaming_CInput_CIGameControllerBatteryInfo_TryGetBatteryReport(hwdata->battery, &report);
+        if (SUCCEEDED(hr) && report) {
+            int full_capacity = 0, curr_capacity = 0;
+            __FIReference_1_int *full_capacityP, *curr_capacityP;
+
+            hr = __x_ABI_CWindows_CDevices_CPower_CIBatteryReport_get_FullChargeCapacityInMilliwattHours(report, &full_capacityP);
+            if (SUCCEEDED(hr)) {
+                __FIReference_1_int_get_Value(full_capacityP, &full_capacity);
+                __FIReference_1_int_Release(full_capacityP);
+            }
+
+            hr = __x_ABI_CWindows_CDevices_CPower_CIBatteryReport_get_RemainingCapacityInMilliwattHours(report, &curr_capacityP);
+            if (SUCCEEDED(hr)) {
+                __FIReference_1_int_get_Value(curr_capacityP, &curr_capacity);
+                __FIReference_1_int_Release(curr_capacityP);
+            }
+
+            if (full_capacity > 0) {
+                float ratio = (float)curr_capacity / full_capacity;
+
+                if (ratio <= 0.05f) {
+                    joystick->epowerlevel = SDL_JOYSTICK_POWER_EMPTY;
+                } else if (ratio <= 0.20f) {
+                    joystick->epowerlevel = SDL_JOYSTICK_POWER_LOW;
+                } else if (ratio <= 0.70f) {
+                    joystick->epowerlevel = SDL_JOYSTICK_POWER_MEDIUM;
+                } else {
+                    joystick->epowerlevel = SDL_JOYSTICK_POWER_FULL;
+                }
+            }
+            __x_ABI_CWindows_CDevices_CPower_CIBatteryReport_Release(report);
+        }
+    }
 }
 
 static void WGI_JoystickClose(SDL_Joystick *joystick)
