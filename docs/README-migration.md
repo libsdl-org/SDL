@@ -489,7 +489,7 @@ The following functions have been removed:
 * SDL_GameControllerPathForIndex() - replaced with SDL_GetGamepadInstancePath()
 * SDL_GameControllerTypeForIndex() - replaced with SDL_GetGamepadInstanceType()
 * SDL_GameControllerNumMappings() - replaced with SDL_GetGamepadMappings()
-* SDL_GameControllerMappingForIndex() replaced with SDL_GetGamepadMappings()
+* SDL_GameControllerMappingForIndex() - replaced with SDL_GetGamepadMappings()
 
 The following symbols have been renamed:
 * SDL_CONTROLLER_AXIS_INVALID => SDL_GAMEPAD_AXIS_INVALID
