@@ -68,16 +68,16 @@ typedef struct SDL_Finger
  * Get a list of registered touch devices.
  *
  * On some platforms SDL first sees the touch device if it was actually used.
- * Therefore the returned list might be empty, although devices are
- * available. After using all devices at least once the number will be
- * correct.
+ * Therefore the returned list might be empty, although devices are available.
+ * After using all devices at least once the number will be correct.
  *
  * This was fixed for Android in SDL 2.0.1.
  *
- * \param count a pointer filled in with the number of devices returned, can be NULL.
- * \returns a 0 terminated array of touch device IDs which should be
- *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
- *          more details.
+ * \param count a pointer filled in with the number of devices returned, can
+ *              be NULL.
+ * \returns a 0 terminated array of touch device IDs which should be freed
+ *          with SDL_free(), or NULL on error; call SDL_GetError() for more
+ *          details.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -89,8 +89,8 @@ extern DECLSPEC SDL_TouchID *SDLCALL SDL_GetTouchDevices(int *count);
  * You do not own the returned string, do not modify or free it.
  *
  * \param touchID the touch device instance ID.
- * \returns touch device name, or NULL on error; call SDL_GetError() for
- *          more details.
+ * \returns touch device name, or NULL on error; call SDL_GetError() for more
+ *          details.
  *
  * \since This function is available since SDL 3.0.0.
  */

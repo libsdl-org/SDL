@@ -317,9 +317,10 @@ extern DECLSPEC int SDLCALL SDL_ReloadGamepadMappings(void);
  * You must free the returned pointer with SDL_free() when you are done with
  * it, but you do _not_ free each string in the array.
  *
- * \param count a pointer filled in with the number of mappings returned, can be NULL.
- * \returns an array of the mapping strings, NULL-terminated. Must be freed with SDL_free().
- *          Returns NULL on error.
+ * \param count a pointer filled in with the number of mappings returned, can
+ *              be NULL.
+ * \returns an array of the mapping strings, NULL-terminated. Must be freed
+ *          with SDL_free(). Returns NULL on error.
  *
  * \since This function is available since SDL 3.0.0.
  */

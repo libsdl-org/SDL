@@ -300,10 +300,11 @@ extern DECLSPEC void SDLCALL SDL_ClearComposition(void);
 extern DECLSPEC SDL_bool SDLCALL SDL_TextInputShown(void);
 
 /**
- * Set the rectangle used to type Unicode text inputs. Native input methods
- * will place a window with word suggestions near it, without covering the
- * text being inputted.
- * 
+ * Set the rectangle used to type Unicode text inputs.
+ *
+ * Native input methods will place a window with word suggestions near it,
+ * without covering the text being inputted.
+ *
  * To start text input in a given location, this function is intended to be
  * called before SDL_StartTextInput, although some platforms support moving
  * the rectangle even while text input (and a composition) is active.
