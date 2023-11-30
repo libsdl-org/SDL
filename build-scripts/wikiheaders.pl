@@ -1090,7 +1090,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 my $dent = $_;
                 if ($dent =~ /\A(.*?)\.md\Z/) {  # we only bridge Markdown files here.
                     next if $1 eq 'FrontPage';
-                    filecopy("$wikireadmepath/$dent", "$readmepath/README-$dent", "\r\n");
+                    filecopy("$wikireadmepath/$dent", "$readmepath/README-$dent", "\n");
                 }
             }
             closedir(DH);
