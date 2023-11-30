@@ -33,6 +33,7 @@
 #include "SDL_x11touch.h"
 #include "SDL_x11xinput2.h"
 #include "SDL_x11xfixes.h"
+#include "SDL_x11settings.h"
 #include "../SDL_clipboard_c.h"
 #include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_events_c.h"
@@ -779,6 +780,16 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
     }
 }
 
+static void X11_HandleSettingsEvent(SDL_VideoDevice *_this, const XEvent *xevent)
+{
+    SDL_VideoData *videodata = _this->driverdata;
+
+    SDL_assert(videodata->xsettings_window != None);
+    SDL_assert(xevent->xany.window == videodata->xsettings_window);
+
+    X11_HandleXsettings(_this, xevent);
+}
+
 static Bool isMapNotify(Display *display, XEvent *ev, XPointer arg)
 {
     XUnmapEvent *unmap;
@@ -1100,6 +1111,12 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     if ((videodata->clipboard_window != None) &&
         (videodata->clipboard_window == xevent->xany.window)) {
         X11_HandleClipboardEvent(_this, xevent);
+        return;
+    }
+
+    if ((videodata->xsettings_window != None) &&
+        (videodata->xsettings_window == xevent->xany.window)) {
+        X11_HandleSettingsEvent(_this, xevent);
         return;
     }
 

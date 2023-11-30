@@ -36,6 +36,7 @@
 #include "SDL_x11modes.h"
 #include "SDL_x11mouse.h"
 #include "SDL_x11opengl.h"
+#include "SDL_x11settings.h"
 #include "SDL_x11window.h"
 #include "SDL_x11vulkan.h"
 
@@ -58,6 +59,8 @@ struct SDL_VideoData
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     SDL_Window *active_cursor_confined_window;
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
+    Window xsettings_window;
+    SDLX11_SettingsData xsettings_data;
 
     /* This is true for ICCCM2.0-compliant window managers */
     SDL_bool net_wm;
