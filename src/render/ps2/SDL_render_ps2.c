@@ -669,6 +669,7 @@ static SDL_Renderer *PS2_CreateRenderer(SDL_Window *window, SDL_PropertiesID cre
     renderer->info = PS2_RenderDriver.info;
     renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
+    PS2_InvalidateCachedState(renderer);
     renderer->window = window;
 
     if (data->vsync) {

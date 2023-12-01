@@ -1832,6 +1832,7 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
     renderer->info = GL_RenderDriver.info;
     renderer->info.flags = 0; /* will set some flags below. */
     renderer->driverdata = data;
+    GL_InvalidateCachedState(renderer);
     renderer->window = window;
 
     data->context = SDL_GL_CreateContext(window);
@@ -2008,8 +2009,6 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
     /* This ended up causing video discrepancies between OpenGL and Direct3D */
     /* data->glEnable(GL_LINE_SMOOTH); */
 
-    data->drawstate.blend = SDL_BLENDMODE_INVALID;
-    data->drawstate.shader = SHADER_INVALID;
     data->drawstate.color = 0xFFFFFFFF;
     data->drawstate.clear_color = 0xFFFFFFFF;
 

@@ -2119,6 +2119,7 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
     renderer->info = GLES2_RenderDriver.info;
     renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
+    GLES2_InvalidateCachedState(renderer);
     renderer->window = window;
 
     /* Create an OpenGL ES 2.0 context */
@@ -2255,7 +2256,6 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
 
     data->glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-    data->drawstate.blend = SDL_BLENDMODE_INVALID;
     data->drawstate.clear_color = 0xFFFFFFFF;
     data->drawstate.projection[3][0] = -1.0f;
     data->drawstate.projection[3][3] = 1.0f;

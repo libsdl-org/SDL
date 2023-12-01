@@ -2472,6 +2472,7 @@ SDL_Renderer *D3D11_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_p
     renderer->info = D3D11_RenderDriver.info;
     renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
+    D3D11_InvalidateCachedState(renderer);
 
 #if SDL_WINAPI_FAMILY_PHONE
     /* VSync is required in Windows Phone, at least for Win Phone 8.0 and 8.1.

@@ -1796,6 +1796,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         }
 
         renderer->driverdata = (void *)CFBridgingRetain(data);
+        METAL_InvalidateCachedState(renderer);
         renderer->window = window;
 
         data.mtlview = view;

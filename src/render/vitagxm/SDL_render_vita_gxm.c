@@ -255,6 +255,7 @@ SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, SDL_PropertiesID creat
     renderer->info = VITA_GXM_RenderDriver.info;
     renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
+    VITA_GXM_InvalidateCachedState(renderer);
     renderer->window = window;
 
     data->initialized = SDL_TRUE;
