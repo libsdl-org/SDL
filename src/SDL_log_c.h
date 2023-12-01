@@ -27,5 +27,6 @@
 
 extern void SDL_InitLog(void);
 extern void SDL_QuitLog(void);
+extern void SDL_LogMessageOutOfMemory(void);
 
 #endif /* SDL_log_c_h_ */

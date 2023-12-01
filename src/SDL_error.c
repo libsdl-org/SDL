@@ -23,6 +23,7 @@
 /* Simple error handling in SDL */
 
 #include "SDL_error_c.h"
+#include "SDL_log_c.h"
 
 int SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
@@ -76,7 +77,8 @@ int SDL_Error(SDL_errorcode code)
 {
     switch (code) {
     case SDL_ENOMEM:
-        return SDL_SetError("Out of memory");
+        SDL_LogMessageOutOfMemory();
+        return -1;
     case SDL_EFREAD:
         return SDL_SetError("Error reading from datastream");
     case SDL_EFWRITE:

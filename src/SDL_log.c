@@ -351,6 +351,39 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va
     }
 }
 
+/* Log "Out of memory" without allocation */
+void SDL_LogMessageOutOfMemory()
+{
+    int category = SDL_LOG_CATEGORY_ERROR;
+    SDL_LogPriority priority = SDL_LOG_PRIORITY_DEBUG;
+
+    /* Nothing to do if we don't have an output function */
+    if (!SDL_log_function) {
+        return;
+    }
+
+    /* Make sure we don't exceed array bounds */
+    if ((int)priority < 0 || priority >= SDL_NUM_LOG_PRIORITIES) {
+        return;
+    }
+
+    /* See if we want to do anything with this message */
+    if (priority < SDL_LogGetPriority(category)) {
+        return;
+    }
+
+    /* Creating a mutex would be an allocation ! */
+    if (log_function_mutex) {
+        SDL_LockMutex(log_function_mutex);
+    }
+
+    SDL_log_function(SDL_log_userdata, category, priority, "Out of memory");
+
+    if (log_function_mutex) {
+        SDL_UnlockMutex(log_function_mutex);
+    }
+}
+
 #if defined(__WIN32__) && !defined(HAVE_STDIO_H) && !defined(__WINRT__) && !defined(__GDK__)
 /* Flag tracking the attachment of the console: 0=unattached, 1=attached to a console, 2=attached to a file, -1=error */
 static int consoleAttached = 0;
