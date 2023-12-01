@@ -32,7 +32,7 @@ int SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
         int result;
         SDL_error *error = SDL_GetErrBuf();
 
-        error->error = 1; /* mark error as valid */
+        error->error = SDL_ErrorCodeGeneric;
 
         va_start(ap, fmt);
         result = SDL_vsnprintf(error->str, error->len, fmt, ap);
@@ -63,12 +63,20 @@ int SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 const char *SDL_GetError(void)
 {
     const SDL_error *error = SDL_GetErrBuf();
-    return error->error ? error->str : "";
+
+    switch (error->error) {
+    case SDL_ErrorCodeGeneric:
+        return error->str;
+    case SDL_ErrorCodeOutOfMemory:
+        return "Out of memory";
+    default:
+        return "";
+    }
 }
 
 void SDL_ClearError(void)
 {
-    SDL_GetErrBuf()->error = 0;
+    SDL_GetErrBuf()->error = SDL_ErrorCodeNone;
 }
 
 /* Very common errors go here */
@@ -76,7 +84,8 @@ int SDL_Error(SDL_errorcode code)
 {
     switch (code) {
     case SDL_ENOMEM:
-        return SDL_SetError("Out of memory");
+        SDL_GetErrBuf()->error = SDL_ErrorCodeOutOfMemory;
+        return -1;
     case SDL_EFREAD:
         return SDL_SetError("Error reading from datastream");
     case SDL_EFWRITE:
@@ -92,13 +101,6 @@ int SDL_Error(SDL_errorcode code)
 
 char *SDL_GetErrorMsg(char *errstr, int maxlen)
 {
-    const SDL_error *error = SDL_GetErrBuf();
-
-    if (error->error) {
-        SDL_strlcpy(errstr, error->str, maxlen);
-    } else {
-        *errstr = '\0';
-    }
-
+    SDL_strlcpy(errstr, SDL_GetError(), maxlen);
     return errstr;
 }

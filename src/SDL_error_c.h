@@ -27,9 +27,16 @@
 #ifndef SDL_error_c_h_
 #define SDL_error_c_h_
 
+typedef enum
+{
+    SDL_ErrorCodeNone,
+    SDL_ErrorCodeGeneric,
+    SDL_ErrorCodeOutOfMemory,
+} SDL_ErrorCode;
+
 typedef struct SDL_error
 {
-    int error; /* This is a numeric value corresponding to the current error */
+    SDL_ErrorCode error;
     char *str;
     size_t len;
     SDL_realloc_func realloc_func;
