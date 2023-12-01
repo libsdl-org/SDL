@@ -98,9 +98,3 @@ int SDL_Error(SDL_errorcode code)
         return SDL_SetError("Unknown SDL error");
     }
 }
-
-char *SDL_GetErrorMsg(char *errstr, int maxlen)
-{
-    SDL_strlcpy(errstr, SDL_GetError(), maxlen);
-    return errstr;
-}

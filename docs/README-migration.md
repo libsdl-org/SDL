@@ -290,6 +290,11 @@ SDL_HasRDTSC() has been removed; there is no replacement. Don't use the RDTSC op
 
 SDL_SIMDAlloc(), SDL_SIMDRealloc(), and SDL_SIMDFree() have been removed. You can use SDL_aligned_alloc() and SDL_aligned_free() with SDL_SIMDGetAlignment() to get the same functionality.
 
+## SDL_error.h
+
+The following functions have been removed:
+* SDL_GetErrorMsg() - Can be implemented as `SDL_strlcpy(errstr, SDL_GetError(), maxlen);`
+
 ## SDL_events.h
 
 The timestamp member of the SDL_Event structure now represents nanoseconds, and is populated with SDL_GetTicksNS()

@@ -188,7 +188,6 @@
 #define SDL_GetDisplayUsableBounds SDL_GetDisplayUsableBounds_REAL
 #define SDL_GetDisplays SDL_GetDisplays_REAL
 #define SDL_GetError SDL_GetError_REAL
-#define SDL_GetErrorMsg SDL_GetErrorMsg_REAL
 #define SDL_GetEventFilter SDL_GetEventFilter_REAL
 #define SDL_GetFullscreenDisplayModes SDL_GetFullscreenDisplayModes_REAL
 #define SDL_GetGamepadAppleSFSymbolsNameForAxis SDL_GetGamepadAppleSFSymbolsNameForAxis_REAL

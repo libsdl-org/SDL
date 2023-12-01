@@ -103,23 +103,6 @@ extern DECLSPEC int SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fm
 extern DECLSPEC const char *SDLCALL SDL_GetError(void);
 
 /**
- * Get the last error message that was set for the current thread.
- *
- * This allows the caller to copy the error string into a provided buffer, but
- * otherwise operates exactly the same as SDL_GetError().
- *
- * \param errstr A buffer to fill with the last error message that was set for
- *               the current thread
- * \param maxlen The size of the buffer pointed to by the errstr parameter
- * \returns the pointer passed in as the `errstr` parameter.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetError
- */
-extern DECLSPEC char * SDLCALL SDL_GetErrorMsg(char *errstr, int maxlen);
-
-/**
  * Clear any previous error message for this thread.
  *
  * \since This function is available since SDL 3.0.0.

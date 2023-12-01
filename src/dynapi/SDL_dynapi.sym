@@ -164,7 +164,6 @@ SDL3_0.0.0 {
     SDL_GetDisplayUsableBounds;
     SDL_GetDisplays;
     SDL_GetError;
-    SDL_GetErrorMsg;
     SDL_GetEventFilter;
     SDL_GetFullscreenDisplayModes;
     SDL_GetGamepadAppleSFSymbolsNameForAxis;
