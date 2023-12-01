@@ -248,7 +248,7 @@
 #define SDL_FILESYSTEM_WINDOWS  1
 
 /* Enable the camera driver (src/camera/dummy/\*.c) */  /* !!! FIXME */
-#define SDL_CAMERA_DUMMY  1
+#define SDL_CAMERA_DRIVER_DUMMY  1
 
 /* Use the (inferior) GDK text input method for GDK platforms */
 /*#define SDL_GDK_TEXTINPUT 1*/

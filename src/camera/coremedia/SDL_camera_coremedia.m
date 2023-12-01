@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#ifdef SDL_CAMERA_APPLE
+#ifdef SDL_CAMERA_DRIVER_COREMEDIA
 
 #include "../SDL_syscamera.h"
 #include "../SDL_camera_c.h"
@@ -35,59 +35,7 @@
 #undef HAVE_COREMEDIA
 #endif
 
-// !!! FIXME: use the dummy driver
-// !!! FIXME: actually, move everything over to backend callbacks instead.
-#ifndef HAVE_COREMEDIA
-int InitDevice(SDL_CameraDevice *_this) {
-    return -1;
-}
-int OpenDevice(SDL_CameraDevice *_this) {
-    return -1;
-}
-int AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame) {
-    return -1;
-}
-void CloseDevice(SDL_CameraDevice *_this) {
-}
-int GetCameraDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size) {
-    return -1;
-}
-int GetDeviceSpec(SDL_CameraDevice *_this, SDL_CameraSpec *spec) {
-    return -1;
-}
-int GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format) {
-    return -1;
-}
-int GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int *height) {
-    return -1;
-}
-SDL_CameraDeviceID *GetCameraDevices(int *count) {
-    return NULL;
-}
-int GetNumFormats(SDL_CameraDevice *_this) {
-    return 0;
-}
-int GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format) {
-    return 0;
-}
-int ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame) {
-    return 0;
-}
-int StartCapture(SDL_CameraDevice *_this) {
-    return 0;
-}
-int StopCapture(SDL_CameraDevice *_this) {
-    return 0;
-}
-int SDL_SYS_CameraInit(void) {
-    return 0;
-}
-int SDL_SYS_CameraQuit(void) {
-    return 0;
-}
-
-
-#else
+#ifdef HAVE_COREMEDIA
 
 #import <AVFoundation/AVFoundation.h>
 #import <CoreMedia/CoreMedia.h>
@@ -234,16 +182,16 @@ static NSString *sdlformat_to_nsfourcc(Uint32 fmt)
         }
 @end
 
-int OpenDevice(SDL_CameraDevice *_this)
+static int COREMEDIA_OpenDevice(SDL_CameraDevice *_this)
 {
     _this->hidden = (struct SDL_PrivateCameraData *) SDL_calloc(1, sizeof (struct SDL_PrivateCameraData));
     if (_this->hidden == NULL) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     return 0;
 }
 
-void CloseDevice(SDL_CameraDevice *_this)
+static void COREMEDIA_CloseDevice(SDL_CameraDevice *_this)
 {
     if (!_this) {
         return;
@@ -271,7 +219,7 @@ void CloseDevice(SDL_CameraDevice *_this)
     }
 }
 
-int InitDevice(SDL_CameraDevice *_this)
+static int COREMEDIA_InitDevice(SDL_CameraDevice *_this)
 {
     // !!! FIXME: autorelease pool?
     NSString *fmt = sdlformat_to_nsfourcc(_this->spec.format);
@@ -381,7 +329,7 @@ int InitDevice(SDL_CameraDevice *_this)
     return 0;
 }
 
-int GetDeviceSpec(SDL_CameraDevice *_this, SDL_CameraSpec *spec)
+static int COREMEDIA_GetDeviceSpec(SDL_CameraDevice *_this, SDL_CameraSpec *spec)
 {
     // !!! FIXME: make sure higher level checks spec != NULL
     if (spec) {
@@ -391,19 +339,19 @@ int GetDeviceSpec(SDL_CameraDevice *_this, SDL_CameraSpec *spec)
     return -1;
 }
 
-int StartCamera(SDL_CameraDevice *_this)
+static int COREMEDIA_StartCamera(SDL_CameraDevice *_this)
 {
     [_this->hidden->session startRunning];
     return 0;
 }
 
-int StopCamera(SDL_CameraDevice *_this)
+static int COREMEDIA_StopCamera(SDL_CameraDevice *_this)
 {
     [_this->hidden->session stopRunning];
     return 0;
 }
 
-int AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
+static int COREMEDIA_AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 {
     if (CMSimpleQueueGetCount(_this->hidden->frame_queue) > 0) {
         CMSampleBufferRef sampleBuffer = (CMSampleBufferRef)CMSimpleQueueDequeue(_this->hidden->frame_queue);
@@ -444,7 +392,7 @@ int AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
     return 0;
 }
 
-int ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
+static int COREMEDIA_ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 {
     if (frame->internal) {
         CMSampleBufferRef sampleBuffer = (CMSampleBufferRef) frame->internal;
@@ -456,7 +404,7 @@ int ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
     return 0;
 }
 
-int GetNumFormats(SDL_CameraDevice *_this)
+static int COREMEDIA_GetNumFormats(SDL_CameraDevice *_this)
 {
     AVCaptureDevice *device = GetCameraDeviceByName(_this->dev_name);
     if (device) {
@@ -476,7 +424,7 @@ int GetNumFormats(SDL_CameraDevice *_this)
     return 0;
 }
 
-int GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format)
+static int COREMEDIA_GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format)
 {
     AVCaptureDevice *device = GetCameraDeviceByName(_this->dev_name);
     if (device) {
@@ -503,7 +451,7 @@ int GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format)
     return -1;
 }
 
-int GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format)
+static int COREMEDIA_GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format)
 {
     AVCaptureDevice *device = GetCameraDeviceByName(_this->dev_name);
     if (device) {
@@ -525,8 +473,7 @@ int GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format)
     return 0;
 }
 
-int
-GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int *height)
+static int COREMEDIA_GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int *height)
 {
     AVCaptureDevice *device = GetCameraDeviceByName(_this->dev_name);
     if (device) {
@@ -553,7 +500,7 @@ GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int 
     return -1;
 }
 
-int GetCameraDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size)
+static int COREMEDIA_GetDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size)
 {
     int index = instance_id - 1;
     NSArray<AVCaptureDevice *> *devices = DiscoverCameraDevices();
@@ -567,20 +514,19 @@ int GetCameraDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size)
     return -1;
 }
 
-static int GetNumDevices(void)
+static int GetNumCameraDevices(void)
 {
     NSArray<AVCaptureDevice *> *devices = DiscoverCameraDevices();
     return [devices count];
 }
 
-SDL_CameraDeviceID *GetCameraDevices(int *count)
+static SDL_CameraDeviceID *COREMEDIA_GetDevices(int *count)
 {
     // hard-coded list of ID
-    const int num = GetNumDevices();
+    const int num = GetNumCameraDevices();
     SDL_CameraDeviceID *retval = (SDL_CameraDeviceID *)SDL_calloc((num + 1), sizeof(*ret));
 
     if (retval == NULL) {
-        SDL_OutOfMemory();
         *count = 0;
         return NULL;
     }
@@ -593,17 +539,45 @@ SDL_CameraDeviceID *GetCameraDevices(int *count)
     return ret;
 }
 
-int SDL_SYS_CameraInit(void)
+static void COREMEDIA_DetectDevices(void)
 {
-    return 0;
 }
 
-int SDL_SYS_CameraQuit(void)
+static void COREMEDIA_Deinitialize(void)
 {
-    return 0;
 }
+
+static SDL_bool COREMEDIA_Init(SDL_CameraDriverImpl *impl)
+{
+#ifndef HAVE_COREMEDIA
+    return SDL_FALSE;
+#else
+    impl->DetectDevices = COREMEDIA_DetectDevices;
+    impl->OpenDevice = COREMEDIA_OpenDevice;
+    impl->CloseDevice = COREMEDIA_CloseDevice;
+    impl->InitDevice = COREMEDIA_InitDevice;
+    impl->GetDeviceSpec = COREMEDIA_GetDeviceSpec;
+    impl->StartCamera = COREMEDIA_StartCamera;
+    impl->StopCamera = COREMEDIA_StopCamera;
+    impl->AcquireFrame = COREMEDIA_AcquireFrame;
+    impl->ReleaseFrame = COREMEDIA_ReleaseFrame;
+    impl->GetNumFormats = COREMEDIA_GetNumFormats;
+    impl->GetFormat = COREMEDIA_GetFormat;
+    impl->GetNumFrameSizes = COREMEDIA_GetNumFrameSizes;
+    impl->GetFrameSize = COREMEDIA_GetFrameSize;
+    impl->GetDeviceName = COREMEDIA_GetDeviceName;
+    impl->GetDevices = COREMEDIA_GetDevices;
+    impl->Deinitialize = COREMEDIA_Deinitialize;
+
+    return SDL_TRUE;
+#endif
+}
+
+CameraBootStrap COREMEDIA_bootstrap = {
+    "coremedia", "SDL Apple CoreMedia camera driver", COREMEDIA_Init, SDL_FALSE
+};
 
 #endif // HAVE_COREMEDIA
 
-#endif // SDL_CAMERA_APPLE
+#endif // SDL_CAMERA_COREMEDIA
 

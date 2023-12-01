@@ -216,6 +216,6 @@
 #define SDL_POWER_WINRT 1
 
 /* Enable the camera driver (src/camera/dummy/\*.c) */  /* !!! FIXME */
-#define SDL_CAMERA_DUMMY  1
+#define SDL_CAMERA_DRIVER_DUMMY  1
 
 #endif /* SDL_build_config_winrt_h_ */

@@ -46,6 +46,7 @@
 #include "joystick/SDL_gamepad_c.h"
 #include "joystick/SDL_joystick_c.h"
 #include "sensor/SDL_sensor_c.h"
+#include "camera/SDL_camera_c.h"
 
 #define SDL_INIT_EVERYTHING ~0U
 
@@ -365,6 +366,30 @@ int SDL_InitSubSystem(Uint32 flags)
 #endif
     }
 
+    /* Initialize the camera subsystem */
+    if (flags & SDL_INIT_CAMERA) {
+#ifndef SDL_CAMERA_DISABLED
+        if (SDL_ShouldInitSubsystem(SDL_INIT_CAMERA)) {
+            /* camera implies events */
+            if (!SDL_InitOrIncrementSubsystem(SDL_INIT_EVENTS)) {
+                goto quit_and_error;
+            }
+
+            SDL_IncrementSubsystemRefCount(SDL_INIT_CAMERA);
+            if (SDL_CameraInit(NULL) < 0) {
+                SDL_DecrementSubsystemRefCount(SDL_INIT_CAMERA);
+                goto quit_and_error;
+            }
+        } else {
+            SDL_IncrementSubsystemRefCount(SDL_INIT_CAMERA);
+        }
+        flags_initialized |= SDL_INIT_CAMERA;
+#else
+        SDL_SetError("SDL not built with camera support");
+        goto quit_and_error;
+#endif
+    }
+
     (void)flags_initialized; /* make static analysis happy, since this only gets used in error cases. */
 
     return 0;
@@ -382,6 +407,18 @@ int SDL_Init(Uint32 flags)
 void SDL_QuitSubSystem(Uint32 flags)
 {
     /* Shut down requested initialized subsystems */
+
+#ifndef SDL_CAMERA_DISABLED
+    if (flags & SDL_INIT_CAMERA) {
+        if (SDL_ShouldQuitSubsystem(SDL_INIT_CAMERA)) {
+            SDL_QuitCamera();
+            /* camera implies events */
+            SDL_QuitSubSystem(SDL_INIT_EVENTS);
+        }
+        SDL_DecrementSubsystemRefCount(SDL_INIT_CAMERA);
+    }
+#endif
+
 #ifndef SDL_SENSOR_DISABLED
     if (flags & SDL_INIT_SENSOR) {
         if (SDL_ShouldQuitSubsystem(SDL_INIT_SENSOR)) {

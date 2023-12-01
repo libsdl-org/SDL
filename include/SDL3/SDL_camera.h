@@ -109,6 +109,71 @@ typedef struct SDL_CameraFrame
 
 
 /**
+ * Use this function to get the number of built-in camera drivers.
+ *
+ * This function returns a hardcoded number. This never returns a negative
+ * value; if there are no drivers compiled into this build of SDL, this
+ * function returns zero. The presence of a driver in this list does not mean
+ * it will function, it just means SDL is capable of interacting with that
+ * interface. For example, a build of SDL might have v4l2 support, but if
+ * there's no kernel support available, SDL's v4l2 driver would fail if used.
+ *
+ * By default, SDL tries all drivers, in its preferred order, until one is
+ * found to be usable.
+ *
+ * \returns the number of built-in camera drivers.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetCameraDriver
+ */
+extern DECLSPEC int SDLCALL SDL_GetNumCameraDrivers(void);
+
+/**
+ * Use this function to get the name of a built in camera driver.
+ *
+ * The list of camera drivers is given in the order that they are normally
+ * initialized by default; the drivers that seem more reasonable to choose
+ * first (as far as the SDL developers believe) are earlier in the list.
+ *
+ * The names of drivers are all simple, low-ASCII identifiers, like "v4l2",
+ * "coremedia" or "android". These never have Unicode characters, and are not
+ * meant to be proper names.
+ *
+ * \param index the index of the camera driver; the value ranges from 0 to
+ *              SDL_GetNumCameraDrivers() - 1
+ * \returns the name of the camera driver at the requested index, or NULL if an
+ *          invalid index was specified.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetNumCameraDrivers
+ */
+extern DECLSPEC const char *SDLCALL SDL_GetCameraDriver(int index);
+
+/**
+ * Get the name of the current camera driver.
+ *
+ * The returned string points to internal static memory and thus never becomes
+ * invalid, even if you quit the camera subsystem and initialize a new driver
+ * (although such a case would return a different static string from another
+ * call to this function, of course). As such, you should not modify or free
+ * the returned string.
+ *
+ * \returns the name of the current camera driver or NULL if no driver has been
+ *          initialized.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC const char *SDLCALL SDL_GetCurrentCameraDriver(void);
+
+/**
  * Get a list of currently connected camera devices.
  *
  * \param count a pointer filled in with the number of camera devices

@@ -356,6 +356,22 @@ extern "C" {
 #define SDL_HINT_BMP_SAVE_LEGACY_FORMAT "SDL_BMP_SAVE_LEGACY_FORMAT"
 
 /**
+ *  A variable that decides what camera backend to use.
+ *
+ *  By default, SDL will try all available camera backends in a reasonable
+ *  order until it finds one that can work, but this hint allows the app
+ *  or user to force a specific target, such as "directshow" if, say, you are
+ *  on Windows Media Foundations but want to try DirectShow instead.
+ *
+ *  The default value is unset, in which case SDL will try to figure out
+ *  the best camera backend on your behalf. This hint needs to be set
+ *  before SDL_Init() is called to be useful.
+ *
+ *  This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_CAMERA_DRIVER "SDL_CAMERA_DRIVER"
+
+/**
  * A variable controlling whether DirectInput should be used for controllers
  *
  * The variable can be set to the following values:
@@ -2477,7 +2493,6 @@ extern "C" {
  * This hint should be set before SDL is initialized.
  */
 #define SDL_HINT_XINPUT_ENABLED "SDL_XINPUT_ENABLED"
-
 
 /**
  *  An enumeration of hint priorities

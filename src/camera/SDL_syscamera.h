@@ -25,6 +25,8 @@
 
 #include "../SDL_list.h"
 
+#define DEBUG_CAMERA 1
+
 // The SDL camera driver
 typedef struct SDL_CameraDevice SDL_CameraDevice;
 
@@ -57,34 +59,45 @@ struct SDL_CameraDevice
     struct SDL_PrivateCameraData *hidden;
 };
 
-extern int SDL_SYS_CameraInit(void);
-extern int SDL_SYS_CameraQuit(void);
+typedef struct SDL_CameraDriverImpl
+{
+    void (*DetectDevices)(void);
+    int (*OpenDevice)(SDL_CameraDevice *_this);
+    void (*CloseDevice)(SDL_CameraDevice *_this);
+    int (*InitDevice)(SDL_CameraDevice *_this);
+    int (*GetDeviceSpec)(SDL_CameraDevice *_this, SDL_CameraSpec *spec);
+    int (*StartCamera)(SDL_CameraDevice *_this);
+    int (*StopCamera)(SDL_CameraDevice *_this);
+    int (*AcquireFrame)(SDL_CameraDevice *_this, SDL_CameraFrame *frame);
+    int (*ReleaseFrame)(SDL_CameraDevice *_this, SDL_CameraFrame *frame);
+    int (*GetNumFormats)(SDL_CameraDevice *_this);
+    int (*GetFormat)(SDL_CameraDevice *_this, int index, Uint32 *format);
+    int (*GetNumFrameSizes)(SDL_CameraDevice *_this, Uint32 format);
+    int (*GetFrameSize)(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int *height);
+    int (*GetDeviceName)(SDL_CameraDeviceID instance_id, char *buf, int size);
+    SDL_CameraDeviceID *(*GetDevices)(int *count);
+    void (*Deinitialize)(void);
+} SDL_CameraDriverImpl;
 
-// !!! FIXME: These names need to be made camera-specific.
+typedef struct SDL_CameraDriver
+{
+    const char *name;  // The name of this camera driver
+    const char *desc;  // The description of this camera driver
+    SDL_CameraDriverImpl impl; // the backend's interface
+} SDL_CameraDriver;
 
-extern int OpenDevice(SDL_CameraDevice *_this);
-extern void CloseDevice(SDL_CameraDevice *_this);
+typedef struct CameraBootStrap
+{
+    const char *name;
+    const char *desc;
+    SDL_bool (*init)(SDL_CameraDriverImpl *impl);
+    SDL_bool demand_only; // if SDL_TRUE: request explicitly, or it won't be available.
+} CameraBootStrap;
 
-extern int InitDevice(SDL_CameraDevice *_this);
-
-extern int GetDeviceSpec(SDL_CameraDevice *_this, SDL_CameraSpec *spec);
-
-extern int StartCamera(SDL_CameraDevice *_this);
-extern int StopCamera(SDL_CameraDevice *_this);
-
-extern int AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame);
-extern int ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame);
-
-extern int GetNumFormats(SDL_CameraDevice *_this);
-extern int GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format);
-
-extern int GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format);
-extern int GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int *height);
-
-extern int GetCameraDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size);
-extern SDL_CameraDeviceID *GetCameraDevices(int *count);
-
-extern SDL_bool CheckAllDeviceClosed(void);
-extern SDL_bool CheckDevicePlaying(void);
+// Not all of these are available in a given build. Use #ifdefs, etc.
+extern CameraBootStrap DUMMYCAMERA_bootstrap;
+extern CameraBootStrap V4L2_bootstrap;
+extern CameraBootStrap COREMEDIA_bootstrap;
+extern CameraBootStrap ANDROIDCAMERA_bootstrap;
 
 #endif // SDL_syscamera_h_
