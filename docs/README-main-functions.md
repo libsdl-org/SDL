@@ -51,7 +51,7 @@ program.
 
 If for some reason you need to include SDL_main.h in a file but also _don't_
 want it to generate this platform-specific code, you should define a special
-macro before includin the header:
+macro before including the header:
 
 
 ```c
