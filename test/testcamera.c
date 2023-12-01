@@ -213,7 +213,7 @@ int main(int argc, char **argv)
     SDL_Log("%s", usage);
 
     /* Load the SDL library */
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) { /* FIXME: SDL_INIT_JOYSTICK needed for add/removing devices at runtime */
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_CAMERA) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }

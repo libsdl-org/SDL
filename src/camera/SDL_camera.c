@@ -25,7 +25,25 @@
 #include "../video/SDL_pixels_c.h"
 #include "../thread/SDL_systhread.h"
 
-#define DEBUG_CAMERA 1
+// Available camera drivers
+static const CameraBootStrap *const bootstrap[] = {
+#ifdef SDL_CAMERA_DRIVER_V4L2
+    &V4L2_bootstrap,
+#endif
+#ifdef SDL_CAMERA_DRIVER_COREMEDIA
+    &COREMEDIA_bootstrap,
+#endif
+#ifdef SDL_CAMERA_DRIVER_ANDROID
+    &ANDROIDCAMERA_bootstrap,
+#endif
+#ifdef SDL_CAMERA_DRIVER_DUMMY
+    &DUMMYCAMERA_bootstrap,
+#endif
+    NULL
+};
+
+static SDL_CameraDriver camera_driver;
+
 
 // list node entries to share frames between SDL and user app
 // !!! FIXME: do we need this struct?
@@ -35,6 +53,25 @@ typedef struct entry_t
 } entry_t;
 
 static SDL_CameraDevice *open_devices[16];  // !!! FIXME: remove limit
+
+int SDL_GetNumCameraDrivers(void)
+{
+    return SDL_arraysize(bootstrap) - 1;
+}
+
+const char *SDL_GetCameraDriver(int index)
+{
+    if (index >= 0 && index < SDL_GetNumCameraDrivers()) {
+        return bootstrap[index]->name;
+    }
+    return NULL;
+}
+
+const char *SDL_GetCurrentCameraDriver(void)
+{
+    return camera_driver.name;
+}
+
 
 static void CloseCameraDevice(SDL_CameraDevice *device)
 {
@@ -69,44 +106,16 @@ static void CloseCameraDevice(SDL_CameraDevice *device)
             SDL_CameraFrame f = entry->frame;
             // Release frames not acquired, if any
             if (f.timestampNS) {
-                ReleaseFrame(device, &f);
+                camera_driver.impl.ReleaseFrame(device, &f);
             }
             SDL_free(entry);
         }
     }
 
-    CloseDevice(device);
+    camera_driver.impl.CloseDevice(device);
 
     SDL_free(device->dev_name);
     SDL_free(device);
-}
-
-// Tell if all devices are closed
-SDL_bool CheckAllDeviceClosed(void)
-{
-    const int n = SDL_arraysize(open_devices);
-    int all_closed = SDL_TRUE;
-    for (int i = 0; i < n; i++) {
-        if (open_devices[i]) {
-            all_closed = SDL_FALSE;
-            break;
-        }
-    }
-    return all_closed;
-}
-
-// Tell if at least one device is in playing state
-SDL_bool CheckDevicePlaying(void)
-{
-    const int n = SDL_arraysize(open_devices);
-    for (int i = 0; i < n; i++) {
-        if (open_devices[i]) {
-            if (SDL_GetCameraStatus(open_devices[i]) == SDL_CAMERA_PLAYING) {
-                return SDL_TRUE;
-            }
-        }
-    }
-    return SDL_FALSE;
 }
 
 void SDL_CloseCamera(SDL_CameraDevice *device)
@@ -128,7 +137,7 @@ int SDL_StartCamera(SDL_CameraDevice *device)
         return SDL_SetError("invalid state");
     }
 
-    const int result = StartCamera(device);
+    const int result = camera_driver.impl.StartCamera(device);
     if (result < 0) {
         return result;
     }
@@ -147,7 +156,7 @@ int SDL_GetCameraSpec(SDL_CameraDevice *device, SDL_CameraSpec *spec)
     }
 
     SDL_zerop(spec);
-    return GetDeviceSpec(device, spec);
+    return camera_driver.impl.GetDeviceSpec(device, spec);
 }
 
 int SDL_StopCamera(SDL_CameraDevice *device)
@@ -162,7 +171,7 @@ int SDL_StopCamera(SDL_CameraDevice *device)
     SDL_AtomicSet(&device->shutdown, 1);
 
     SDL_LockMutex(device->acquiring_lock);
-    const int retval = StopCamera(device);
+    const int retval = camera_driver.impl.StopCamera(device);
     SDL_UnlockMutex(device->acquiring_lock);
 
     return (retval < 0) ? -1 : 0;
@@ -254,13 +263,12 @@ const char *SDL_GetCameraDeviceName(SDL_CameraDeviceID instance_id)
         return NULL;
     }
 
-    if (GetCameraDeviceName(instance_id, buf, sizeof (buf)) < 0) {
+    if (camera_driver.impl.GetDeviceName(instance_id, buf, sizeof (buf)) < 0) {
         buf[0] = 0;
     }
 
     return buf;
 }
-
 
 SDL_CameraDeviceID *SDL_GetCameraDevices(int *count)
 {
@@ -270,7 +278,7 @@ SDL_CameraDeviceID *SDL_GetCameraDevices(int *count)
     }
 
     int num = 0;
-    SDL_CameraDeviceID *retval = GetCameraDevices(&num);
+    SDL_CameraDeviceID *retval = camera_driver.impl.GetDevices(&num);
     if (retval) {
         *count = num;
         return retval;
@@ -279,7 +287,6 @@ SDL_CameraDeviceID *SDL_GetCameraDevices(int *count)
     // return list of 0 ID, null terminated
     retval = (SDL_CameraDeviceID *)SDL_calloc(1, sizeof(*retval));
     if (retval == NULL) {
-        SDL_OutOfMemory();
         *count = 0;
         return NULL;
     }
@@ -331,7 +338,7 @@ static int SDLCALL SDL_CameraThread(void *devicep)
         SDL_zero(f);
 
         SDL_LockMutex(device->acquiring_lock);
-        ret = AcquireFrame(device, &f);
+        ret = camera_driver.impl.AcquireFrame(device, &f);
         SDL_UnlockMutex(device->acquiring_lock);
 
         if (ret == 0) {
@@ -376,7 +383,6 @@ error_mem:
     SDL_Log("dev[%p] End thread 'SDL_CameraThread' with error: %s", (void *)device, SDL_GetError());
 #endif
     SDL_AtomicSet(&device->shutdown, 1);
-    SDL_OutOfMemory();  // !!! FIXME: this error isn't accessible since the thread is about to terminate
     return 0;
 }
 
@@ -436,7 +442,6 @@ SDL_CameraDevice *SDL_OpenCamera(SDL_CameraDeviceID instance_id)
 
     device = (SDL_CameraDevice *) SDL_calloc(1, sizeof (SDL_CameraDevice));
     if (device == NULL) {
-        SDL_OutOfMemory();
         goto error;
     }
     device->dev_name = SDL_strdup(device_name);
@@ -456,7 +461,7 @@ SDL_CameraDevice *SDL_OpenCamera(SDL_CameraDeviceID instance_id)
         goto error;
     }
 
-    if (OpenDevice(device) < 0) {
+    if (camera_driver.impl.OpenDevice(device) < 0) {
         goto error;
     }
 
@@ -515,7 +520,7 @@ int SDL_SetCameraSpec(SDL_CameraDevice *device, const SDL_CameraSpec *desired, S
 
     device->spec = *obtained;
 
-    result = InitDevice(device);
+    result = camera_driver.impl.InitDevice(device);
     if (result < 0) {
         return result;
     }
@@ -541,7 +546,7 @@ int SDL_AcquireCameraFrame(SDL_CameraDevice *device, SDL_CameraFrame *frame)
         int ret;
 
         // Wait for a frame
-        while ((ret = AcquireFrame(device, frame)) == 0) {
+        while ((ret = camera_driver.impl.AcquireFrame(device, frame)) == 0) {
             if (frame->num_planes) {
                 return 0;
             }
@@ -576,7 +581,7 @@ int SDL_ReleaseCameraFrame(SDL_CameraDevice *device, SDL_CameraFrame *frame)
         return SDL_InvalidParamError("device");
     } else if (frame == NULL) {
         return SDL_InvalidParamError("frame");
-    } else if (ReleaseFrame(device, frame) < 0) {
+    } else if (camera_driver.impl.ReleaseFrame(device, frame) < 0) {
         return -1;
     }
 
@@ -589,7 +594,7 @@ int SDL_GetNumCameraFormats(SDL_CameraDevice *device)
     if (!device) {
         return SDL_InvalidParamError("device");
     }
-    return GetNumFormats(device);
+    return camera_driver.impl.GetNumFormats(device);
 }
 
 int SDL_GetCameraFormat(SDL_CameraDevice *device, int index, Uint32 *format)
@@ -600,7 +605,7 @@ int SDL_GetCameraFormat(SDL_CameraDevice *device, int index, Uint32 *format)
         return SDL_InvalidParamError("format");
     }
     *format = 0;
-    return GetFormat(device, index, format);
+    return camera_driver.impl.GetFormat(device, index, format);
 }
 
 int SDL_GetNumCameraFrameSizes(SDL_CameraDevice *device, Uint32 format)
@@ -608,7 +613,7 @@ int SDL_GetNumCameraFrameSizes(SDL_CameraDevice *device, Uint32 format)
     if (!device) {
         return SDL_InvalidParamError("device");
     }
-    return GetNumFrameSizes(device, format);
+    return camera_driver.impl.GetNumFrameSizes(device, format);
 }
 
 int SDL_GetCameraFrameSize(SDL_CameraDevice *device, Uint32 format, int index, int *width, int *height)
@@ -621,7 +626,7 @@ int SDL_GetCameraFrameSize(SDL_CameraDevice *device, Uint32 format, int index, i
         return SDL_InvalidParamError("height");
     }
     *width = *height = 0;
-    return GetFrameSize(device, format, index, width, height);
+    return camera_driver.impl.GetFrameSize(device, format, index, width, height);
 }
 
 SDL_CameraDevice *SDL_OpenCameraWithSpec(SDL_CameraDeviceID instance_id, const SDL_CameraSpec *desired, SDL_CameraSpec *obtained, int allowed_changes)
@@ -653,15 +658,35 @@ SDL_CameraStatus SDL_GetCameraStatus(SDL_CameraDevice *device)
     return SDL_CAMERA_INIT;
 }
 
-int SDL_CameraInit(void)
+static void CompleteCameraEntryPoints(void)
 {
-    SDL_zeroa(open_devices);
-    SDL_SYS_CameraInit();
-    return 0;
+    // this doesn't currently fill in stub implementations, it just asserts the backend filled them all in.
+    #define FILL_STUB(x) SDL_assert(camera_driver.impl.x != NULL)
+    FILL_STUB(DetectDevices);
+    FILL_STUB(OpenDevice);
+    FILL_STUB(CloseDevice);
+    FILL_STUB(InitDevice);
+    FILL_STUB(GetDeviceSpec);
+    FILL_STUB(StartCamera);
+    FILL_STUB(StopCamera);
+    FILL_STUB(AcquireFrame);
+    FILL_STUB(ReleaseFrame);
+    FILL_STUB(GetNumFormats);
+    FILL_STUB(GetFormat);
+    FILL_STUB(GetNumFrameSizes);
+    FILL_STUB(GetFrameSize);
+    FILL_STUB(GetDeviceName);
+    FILL_STUB(GetDevices);
+    FILL_STUB(Deinitialize);
+    #undef FILL_STUB
 }
 
 void SDL_QuitCamera(void)
 {
+    if (!camera_driver.name) {  // not initialized?!
+        return;
+    }
+
     const int n = SDL_arraysize(open_devices);
     for (int i = 0; i < n; i++) {
         CloseCameraDevice(open_devices[i]);
@@ -669,6 +694,112 @@ void SDL_QuitCamera(void)
 
     SDL_zeroa(open_devices);
 
-    SDL_SYS_CameraQuit();
+#if 0 // !!! FIXME
+    SDL_PendingCameraDeviceEvent *pending_events = camera_driver.pending_events.next;
+    camera_driver.pending_events.next = NULL;
+
+    SDL_PendingCameraDeviceEvent *pending_next = NULL;
+    for (SDL_PendingCameraDeviceEvent *i = pending_events; i; i = pending_next) {
+        pending_next = i->next;
+        SDL_free(i);
+    }
+#endif
+
+    // Free the driver data
+    camera_driver.impl.Deinitialize();
+
+    SDL_zero(camera_driver);
+}
+
+// this is 90% the same code as the audio subsystem uses.
+int SDL_CameraInit(const char *driver_name)
+{
+    if (SDL_GetCurrentCameraDriver()) {
+        SDL_QuitCamera(); // shutdown driver if already running.
+    }
+
+    SDL_zeroa(open_devices);
+
+    // Select the proper camera driver
+    if (!driver_name) {
+        driver_name = SDL_GetHint(SDL_HINT_CAMERA_DRIVER);
+    }
+
+    SDL_bool initialized = SDL_FALSE;
+    SDL_bool tried_to_init = SDL_FALSE;
+
+    if (driver_name && (*driver_name != 0)) {
+        char *driver_name_copy = SDL_strdup(driver_name);
+        const char *driver_attempt = driver_name_copy;
+
+        if (!driver_name_copy) {
+            return -1;
+        }
+
+        while (driver_attempt && (*driver_attempt != 0) && !initialized) {
+            char *driver_attempt_end = SDL_strchr(driver_attempt, ',');
+            if (driver_attempt_end) {
+                *driver_attempt_end = '\0';
+            }
+
+            for (int i = 0; bootstrap[i]; i++) {
+                if (SDL_strcasecmp(bootstrap[i]->name, driver_attempt) == 0) {
+                    tried_to_init = SDL_TRUE;
+                    SDL_zero(camera_driver);
+                    #if 0  // !!! FIXME
+                    camera_driver.pending_events_tail = &camera_driver.pending_events;
+                    #endif
+                    if (bootstrap[i]->init(&camera_driver.impl)) {
+                        camera_driver.name = bootstrap[i]->name;
+                        camera_driver.desc = bootstrap[i]->desc;
+                        initialized = SDL_TRUE;
+                    }
+                    break;
+                }
+            }
+
+            driver_attempt = (driver_attempt_end) ? (driver_attempt_end + 1) : NULL;
+        }
+
+        SDL_free(driver_name_copy);
+    } else {
+        for (int i = 0; !initialized && bootstrap[i]; i++) {
+            if (bootstrap[i]->demand_only) {
+                continue;
+            }
+
+            tried_to_init = SDL_TRUE;
+            SDL_zero(camera_driver);
+            #if 0  // !!! FIXME
+            camera_driver.pending_events_tail = &camera_driver.pending_events;
+            #endif
+            if (bootstrap[i]->init(&camera_driver.impl)) {
+                camera_driver.name = bootstrap[i]->name;
+                camera_driver.desc = bootstrap[i]->desc;
+                initialized = SDL_TRUE;
+            }
+        }
+    }
+
+    if (!initialized) {
+        // specific drivers will set the error message if they fail, but otherwise we do it here.
+        if (!tried_to_init) {
+            if (driver_name) {
+                SDL_SetError("Camera driver '%s' not available", driver_name);
+            } else {
+                SDL_SetError("No available camera driver");
+            }
+        }
+
+        SDL_zero(camera_driver);
+        return -1;  // No driver was available, so fail.
+    }
+
+    CompleteCameraEntryPoints();
+
+    // Make sure we have a list of devices available at startup...
+    camera_driver.impl.DetectDevices();
+
+    return 0;
 }
 

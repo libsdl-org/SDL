@@ -24,7 +24,7 @@
 #define SDL_camera_c_h_
 
 // Initialize the camera subsystem
-int SDL_CameraInit(void);
+int SDL_CameraInit(const char *driver_name);
 
 // Shutdown the camera subsystem
 void SDL_QuitCamera(void);

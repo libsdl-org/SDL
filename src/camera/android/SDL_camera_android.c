@@ -25,9 +25,9 @@
 #include "../../video/SDL_pixels_c.h"
 #include "../../thread/SDL_systhread.h"
 
-#define DEBUG_CAMERA 1
+#if defined(SDL_CAMERA_DRIVER_ANDROID)
 
-#if defined(SDL_CAMERA_ANDROID) && __ANDROID_API__ >= 24
+#if __ANDROID_API__ >= 24
 
 /*
  * APP_PLATFORM=android-24
@@ -62,7 +62,7 @@
 static ACameraManager *cameraMgr = NULL;
 static ACameraIdList *cameraIdList = NULL;
 
-static void create_cameraMgr(void)
+static int CreateCameraManager(void)
 {
     if (cameraMgr == NULL) {
         #if 0  // !!! FIXME: this is getting replaced in a different branch.
@@ -78,9 +78,13 @@ static void create_cameraMgr(void)
             SDL_Log("Create ACameraManager");
         }
     }
+
+    cameraMgr = ACameraManager_create();
+
+    return cameraMgr ? 0 : SDL_SetError("Error creating ACameraManager");
 }
 
-static void delete_cameraMgr(void)
+static void DestroyCameraManager(void)
 {
     if (cameraIdList) {
         ACameraManager_deleteCameraIdList(cameraIdList);
@@ -215,7 +219,7 @@ static void onActive(void* context, ACameraCaptureSession *session)
     #endif
 }
 
-int OpenDevice(SDL_CameraDevice *_this)
+static int ANDROIDCAMERA_OpenDevice(SDL_CameraDevice *_this)
 {
     /* Cannot open a second camera, while the first one is opened.
      * If you want to play several camera, they must all be opened first, then played.
@@ -231,10 +235,10 @@ int OpenDevice(SDL_CameraDevice *_this)
 
     _this->hidden = (struct SDL_PrivateCameraData *) SDL_calloc(1, sizeof (struct SDL_PrivateCameraData));
     if (_this->hidden == NULL) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
-    create_cameraMgr();
+    CreateCameraManager();
 
     _this->hidden->dev_callbacks.context = (void *) _this;
     _this->hidden->dev_callbacks.onDisconnected = onDisconnected;
@@ -248,7 +252,7 @@ int OpenDevice(SDL_CameraDevice *_this)
     return 0;
 }
 
-void CloseDevice(SDL_CameraDevice *_this)
+static void ANDROIDCAMERA_CloseDevice(SDL_CameraDevice *_this)
 {
     if (_this && _this->hidden) {
         if (_this->hidden->session) {
@@ -271,14 +275,9 @@ void CloseDevice(SDL_CameraDevice *_this)
 
         _this->hidden = NULL;
     }
-
-    // !!! FIXME: just refcount this?
-    if (CheckAllDeviceClosed()) {
-        delete_cameraMgr();
-    }
 }
 
-int InitDevice(SDL_CameraDevice *_this)
+static int ANDROIDCAMERA_InitDevice(SDL_CameraDevice *_this)
 {
     size_t size, pitch;
     SDL_CalculateSize(_this->spec.format, _this->spec.width, _this->spec.height, &size, &pitch, SDL_FALSE);
@@ -286,7 +285,7 @@ int InitDevice(SDL_CameraDevice *_this)
     return 0;
 }
 
-int GetDeviceSpec(SDL_CameraDevice *_this, SDL_CameraSpec *spec)
+static int ANDROIDCAMERA_GetDeviceSpec(SDL_CameraDevice *_this, SDL_CameraSpec *spec)
 {
     // !!! FIXME: catch NULLs at higher level
     if (spec) {
@@ -296,7 +295,7 @@ int GetDeviceSpec(SDL_CameraDevice *_this, SDL_CameraSpec *spec)
     return -1;
 }
 
-int StartCamera(SDL_CameraDevice *_this)
+static int ANDROIDCAMERA_StartCamera(SDL_CameraDevice *_this)
 {
     // !!! FIXME: maybe log the error code in SDL_SetError
     camera_status_t res;
@@ -377,14 +376,14 @@ error:
     return -1;
 }
 
-int StopCamera(SDL_CameraDevice *_this)
+static int ANDROIDCAMERA_StopCamera(SDL_CameraDevice *_this)
 {
     ACameraCaptureSession_close(_this->hidden->session);
     _this->hidden->session = NULL;
     return 0;
 }
 
-int AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
+static int ANDROIDCAMERA_AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 {
     media_status_t res;
     AImage *image;
@@ -435,7 +434,7 @@ int AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
     return 0;
 }
 
-int ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
+static int ANDROIDCAMERA_ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 {
     if (frame->internal){
         AImage_delete((AImage *)frame->internal);
@@ -443,7 +442,7 @@ int ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
     return 0;
 }
 
-int GetNumFormats(SDL_CameraDevice *_this)
+static int ANDROIDCAMERA_GetNumFormats(SDL_CameraDevice *_this)
 {
     camera_status_t res;
     SDL_bool unknown = SDL_FALSE;
@@ -505,7 +504,7 @@ int GetNumFormats(SDL_CameraDevice *_this)
     return _this->hidden->num_formats;
 }
 
-int GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format)
+static int ANDROIDCAMERA_GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format)
 {
     int i2 = 0;
 
@@ -533,7 +532,7 @@ int GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format)
     return 0;
 }
 
-int GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format)
+static int ANDROIDCAMERA_GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format)
 {
     // !!! FIXME: call SDL_SetError()?
     if (_this->hidden->num_formats == 0) {
@@ -559,7 +558,7 @@ int GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format)
     return -1;
 }
 
-int GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int *height)
+static int ANDROIDCAMERA_GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int *height)
 {
     // !!! FIXME: call SDL_SetError()?
     camera_status_t res;
@@ -608,10 +607,10 @@ int GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, 
     return -1;
 }
 
-static int GetNumDevices(void)
+static int ANDROIDCAMERA_GetNumDevices(void)
 {
     camera_status_t res;
-    create_cameraMgr();
+    CreateCameraManager();
 
     if (cameraIdList) {
         ACameraManager_deleteCameraIdList(cameraIdList);
@@ -628,11 +627,11 @@ static int GetNumDevices(void)
     return -1;
 }
 
-int GetCameraDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size)
+static int ANDROIDCAMERA_GetDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size)
 {
     // !!! FIXME: call SDL_SetError()?
     int index = instance_id - 1;
-    create_cameraMgr();
+    CreateCameraManager();
 
     if (cameraIdList == NULL) {
         GetNumDevices();
@@ -648,14 +647,13 @@ int GetCameraDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size)
     return -1;
 }
 
-SDL_CameraDeviceID *GetCameraDevices(int *count)
+static SDL_CameraDeviceID *ANDROIDCAMERA_GetDevices(int *count)
 {
     // hard-coded list of ID
     const int num = GetNumDevices();
     SDL_CameraDeviceID *retval = (SDL_CameraDeviceID *)SDL_malloc((num + 1) * sizeof(*ret));
 
     if (retval == NULL) {
-        SDL_OutOfMemory();
         *count = 0;
         return NULL;
     }
@@ -668,15 +666,47 @@ SDL_CameraDeviceID *GetCameraDevices(int *count)
     return retval;
 }
 
-int SDL_SYS_CameraInit(void)
+static void ANDROIDCAMERA_Deinitialize(void)
 {
-    return 0;
+    DestroyCameraManager();
 }
 
-int SDL_SYS_CameraQuit(void)
+#endif  // __ANDROID_API__ >= 24
+
+
+static SDL_bool ANDROIDCAMERA_Init(SDL_CameraDriverImpl *impl)
 {
-    return 0;
+#if __ANDROID_API__ < 24
+    return SDL_FALSE;
+#else
+    if (CreateCameraManager() < 0) {
+        return SDL_FALSE;
+    }
+
+    impl->DetectDevices = ANDROIDCAMERA_DetectDevices;
+    impl->OpenDevice = ANDROIDCAMERA_OpenDevice;
+    impl->CloseDevice = ANDROIDCAMERA_CloseDevice;
+    impl->InitDevice = ANDROIDCAMERA_InitDevice;
+    impl->GetDeviceSpec = ANDROIDCAMERA_GetDeviceSpec;
+    impl->StartCamera = ANDROIDCAMERA_StartCamera;
+    impl->StopCamera = ANDROIDCAMERA_StopCamera;
+    impl->AcquireFrame = ANDROIDCAMERA_AcquireFrame;
+    impl->ReleaseFrame = ANDROIDCAMERA_ReleaseFrame;
+    impl->GetNumFormats = ANDROIDCAMERA_GetNumFormats;
+    impl->GetFormat = ANDROIDCAMERA_GetFormat;
+    impl->GetNumFrameSizes = ANDROIDCAMERA_GetNumFrameSizes;
+    impl->GetFrameSize = ANDROIDCAMERA_GetFrameSize;
+    impl->GetDeviceName = ANDROIDCAMERA_GetDeviceName;
+    impl->GetDevices = ANDROIDCAMERA_GetDevices;
+    impl->Deinitialize = ANDROIDCAMERA_Deinitialize;
+
+    return SDL_TRUE;
+#endif
 }
+
+CameraBootStrap ANDROIDCAMERA_bootstrap = {
+    "android", "SDL Android camera driver", ANDROIDCAMERA_Init, SDL_FALSE
+};
 
 #endif
 

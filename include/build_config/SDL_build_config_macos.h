@@ -270,7 +270,8 @@
 #define SDL_FILESYSTEM_COCOA   1
 
 /* enable camera support */
-#define SDL_CAMERA_APPLE 1
+#define SDL_CAMERA_DRIVER_COREMEDIA 1
+#define SDL_CAMERA_DRIVER_DUMMY 1
 
 /* Enable assembly routines */
 #ifdef __ppc__

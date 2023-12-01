@@ -59,7 +59,8 @@ typedef enum
     SDL_INIT_HAPTIC       = 0x00001000,
     SDL_INIT_GAMEPAD      = 0x00002000,  /**< `SDL_INIT_GAMEPAD` implies `SDL_INIT_JOYSTICK` */
     SDL_INIT_EVENTS       = 0x00004000,
-    SDL_INIT_SENSOR       = 0x00008000
+    SDL_INIT_SENSOR       = 0x00008000,
+    SDL_INIT_CAMERA       = 0x00010000   /**< `SDL_INIT_CAMERA` implies `SDL_INIT_EVENTS` */
 } SDL_InitFlags;
 
 /**

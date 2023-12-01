@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#ifdef SDL_CAMERA_V4L2
+#ifdef SDL_CAMERA_DRIVER_V4L2
 
 #include "../SDL_syscamera.h"
 #include "../SDL_camera_c.h"
@@ -29,8 +29,6 @@
 #include "../../core/linux/SDL_evdev_capabilities.h"
 #include "../../core/linux/SDL_udev.h"
 #include <limits.h>      // INT_MAX
-
-#define DEBUG_CAMERA 1
 
 #define MAX_CAMERA_DEVICES 128 // It's doubtful someone has more than that
 
@@ -206,7 +204,7 @@ static int acquire_frame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 }
 
 
-int ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
+static int V4L2_ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 {
     struct v4l2_buffer buf;
     const int fd = _this->hidden->fd;
@@ -259,8 +257,7 @@ int ReleaseFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
     return 0;
 }
 
-
-int AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
+static int V4L2_AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 {
     fd_set fds;
     struct timeval tv;
@@ -310,7 +307,7 @@ int AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *frame)
 }
 
 
-int StopCamera(SDL_CameraDevice *_this)
+static int V4L2_StopCamera(SDL_CameraDevice *_this)
 {
     enum v4l2_buf_type type;
     const int fd = _this->hidden->fd;
@@ -428,7 +425,7 @@ static int PreEnqueueBuffers(SDL_CameraDevice *_this)
     return 0;
 }
 
-int StartCamera(SDL_CameraDevice *_this)
+static int V4L2_StartCamera(SDL_CameraDevice *_this)
 {
     enum v4l2_buf_type type;
 
@@ -476,15 +473,10 @@ static int AllocBufferRead(SDL_CameraDevice *_this, size_t buffer_size)
 {
     _this->hidden->buffers[0].length = buffer_size;
     _this->hidden->buffers[0].start = SDL_calloc(1, buffer_size);
-
-    if (!_this->hidden->buffers[0].start) {
-        return SDL_OutOfMemory();
-    }
-    return 0;
+    return _this->hidden->buffers[0].start ? 0 : -1;
 }
 
-static int
-AllocBufferMmap(SDL_CameraDevice *_this)
+static int AllocBufferMmap(SDL_CameraDevice *_this)
 {
     int fd = _this->hidden->fd;
     int i;
@@ -516,8 +508,7 @@ AllocBufferMmap(SDL_CameraDevice *_this)
     return 0;
 }
 
-static int
-AllocBufferUserPtr(SDL_CameraDevice *_this, size_t buffer_size)
+static int AllocBufferUserPtr(SDL_CameraDevice *_this, size_t buffer_size)
 {
     int i;
     for (i = 0; i < _this->hidden->nb_buffers; ++i) {
@@ -525,41 +516,38 @@ AllocBufferUserPtr(SDL_CameraDevice *_this, size_t buffer_size)
         _this->hidden->buffers[i].start = SDL_calloc(1, buffer_size);
 
         if (!_this->hidden->buffers[i].start) {
-            return SDL_OutOfMemory();
+            return -1;
         }
     }
     return 0;
 }
 
-static Uint32
-format_v4l2_2_sdl(Uint32 fmt)
+static Uint32 format_v4l2_to_sdl(Uint32 fmt)
 {
     switch (fmt) {
-#define CASE(x, y)  case x: return y
+        #define CASE(x, y)  case x: return y
         CASE(V4L2_PIX_FMT_YUYV, SDL_PIXELFORMAT_YUY2);
         CASE(V4L2_PIX_FMT_MJPEG, SDL_PIXELFORMAT_UNKNOWN);
-#undef CASE
+        #undef CASE
         default:
             SDL_Log("Unknown format V4L2_PIX_FORMAT '%d'", fmt);
             return SDL_PIXELFORMAT_UNKNOWN;
     }
 }
 
-static Uint32
-format_sdl_2_v4l2(Uint32 fmt)
+static Uint32 format_sdl_to_v4l2(Uint32 fmt)
 {
     switch (fmt) {
-#define CASE(y, x)  case x: return y
+        #define CASE(y, x)  case x: return y
         CASE(V4L2_PIX_FMT_YUYV, SDL_PIXELFORMAT_YUY2);
         CASE(V4L2_PIX_FMT_MJPEG, SDL_PIXELFORMAT_UNKNOWN);
-#undef CASE
+        #undef CASE
         default:
             return 0;
     }
 }
 
-int
-GetNumFormats(SDL_CameraDevice *_this)
+static int V4L2_GetNumFormats(SDL_CameraDevice *_this)
 {
     int fd = _this->hidden->fd;
     int i = 0;
@@ -574,8 +562,7 @@ GetNumFormats(SDL_CameraDevice *_this)
     return i;
 }
 
-int
-GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format)
+static int V4L2_GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format)
 {
     int fd = _this->hidden->fd;
     struct v4l2_fmtdesc fmtdesc;
@@ -584,7 +571,7 @@ GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format)
     fmtdesc.index = index;
     fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     if (ioctl(fd,VIDIOC_ENUM_FMT,&fmtdesc) == 0) {
-        *format = format_v4l2_2_sdl(fmtdesc.pixelformat);
+        *format = format_v4l2_to_sdl(fmtdesc.pixelformat);
 
 #if DEBUG_CAMERA
         if (fmtdesc.flags & V4L2_FMT_FLAG_EMULATED) {
@@ -600,8 +587,7 @@ GetFormat(SDL_CameraDevice *_this, int index, Uint32 *format)
     return -1;
 }
 
-int
-GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format)
+static int V4L2_GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format)
 {
     int fd = _this->hidden->fd;
     int i = 0;
@@ -609,7 +595,7 @@ GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format)
 
     SDL_zero(frmsizeenum);
     frmsizeenum.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    frmsizeenum.pixel_format = format_sdl_2_v4l2(format);
+    frmsizeenum.pixel_format = format_sdl_to_v4l2(format);
     while (ioctl(fd,VIDIOC_ENUM_FRAMESIZES, &frmsizeenum) == 0) {
         frmsizeenum.index++;
         if (frmsizeenum.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
@@ -624,8 +610,7 @@ GetNumFrameSizes(SDL_CameraDevice *_this, Uint32 format)
     return i;
 }
 
-int
-GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int *height)
+static int V4L2_GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int *height)
 {
     int fd = _this->hidden->fd;
     struct v4l2_frmsizeenum frmsizeenum;
@@ -633,7 +618,7 @@ GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int 
 
     SDL_zero(frmsizeenum);
     frmsizeenum.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    frmsizeenum.pixel_format = format_sdl_2_v4l2(format);
+    frmsizeenum.pixel_format = format_sdl_to_v4l2(format);
     while (ioctl(fd,VIDIOC_ENUM_FRAMESIZES, &frmsizeenum) == 0) {
         frmsizeenum.index++;
 
@@ -663,12 +648,8 @@ GetFrameSize(SDL_CameraDevice *_this, Uint32 format, int index, int *width, int 
 
     return -1;
 }
-
-
-
-#if DEBUG_VIDEO_CAPTURE_CAPTURE
-static void
-dbg_v4l2_pixelformat(const char *str, int f) {
+static void dbg_v4l2_pixelformat(const char *str, int f)
+{
     SDL_Log("%s  V4L2_format=%d  %c%c%c%c", str, f,
                 (f >> 0) & 0xff,
                 (f >> 8) & 0xff,
@@ -677,8 +658,7 @@ dbg_v4l2_pixelformat(const char *str, int f) {
 }
 #endif
 
-int
-GetDeviceSpec(SDL_CameraDevice *_this, SDL_CameraSpec *spec)
+static int V4L2_GetDeviceSpec(SDL_CameraDevice *_this, SDL_CameraSpec *spec)
 {
     struct v4l2_format fmt;
     int fd = _this->hidden->fd;
@@ -705,13 +685,12 @@ GetDeviceSpec(SDL_CameraDevice *_this, SDL_CameraSpec *spec)
     //spec->width = fmt.fmt.pix.width;
     //spec->height = fmt.fmt.pix.height;
     _this->hidden->driver_pitch = fmt.fmt.pix.bytesperline;
-    //spec->format = format_v4l2_2_sdl(fmt.fmt.pix.pixelformat);
+    //spec->format = format_v4l2_to_sdl(fmt.fmt.pix.pixelformat);
 
     return 0;
 }
 
-int
-InitDevice(SDL_CameraDevice *_this)
+static int V4L2_InitDevice(SDL_CameraDevice *_this)
 {
     struct v4l2_cropcap cropcap;
     struct v4l2_crop crop;
@@ -753,7 +732,7 @@ InitDevice(SDL_CameraDevice *_this)
         fmt.fmt.pix.height      = _this->spec.height;
 
 
-        fmt.fmt.pix.pixelformat = format_sdl_2_v4l2(_this->spec.format);
+        fmt.fmt.pix.pixelformat = format_sdl_to_v4l2(_this->spec.format);
         //    fmt.fmt.pix.field       = V4L2_FIELD_INTERLACED;
         fmt.fmt.pix.field       = V4L2_FIELD_ANY;
 
@@ -767,7 +746,7 @@ InitDevice(SDL_CameraDevice *_this)
         }
     }
 
-    GetDeviceSpec(_this, &_this->spec);
+    V4L2_GetDeviceSpec(_this, &_this->spec);
 
     if (PreEnqueueBuffers(_this) < 0) {
         return -1;
@@ -776,7 +755,7 @@ InitDevice(SDL_CameraDevice *_this)
     {
         _this->hidden->buffers = SDL_calloc(_this->hidden->nb_buffers, sizeof(*_this->hidden->buffers));
         if (!_this->hidden->buffers) {
-            return SDL_OutOfMemory();
+            return -1;
         }
     }
 
@@ -802,7 +781,7 @@ InitDevice(SDL_CameraDevice *_this)
     return (retval < 0) ? -1 : 0;
 }
 
-void CloseDevice(SDL_CameraDevice *_this)
+static void V4L2_CloseDevice(SDL_CameraDevice *_this)
 {
     if (!_this) {
         return;
@@ -846,8 +825,7 @@ void CloseDevice(SDL_CameraDevice *_this)
     }
 }
 
-
-int OpenDevice(SDL_CameraDevice *_this)
+static int V4L2_OpenDevice(SDL_CameraDevice *_this)
 {
     struct stat st;
     struct v4l2_capability cap;
@@ -856,7 +834,6 @@ int OpenDevice(SDL_CameraDevice *_this)
 
     _this->hidden = (struct SDL_PrivateCameraData *) SDL_calloc(1, sizeof (struct SDL_PrivateCameraData));
     if (_this->hidden == NULL) {
-        SDL_OutOfMemory();
         return -1;
     }
 
@@ -921,7 +898,7 @@ int OpenDevice(SDL_CameraDevice *_this)
     return 0;
 }
 
-int GetCameraDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size)
+static int V4L2_GetDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size)
 {
     SDL_cameralist_item *item;
     for (item = SDL_cameralist; item; item = item->next) {
@@ -935,15 +912,13 @@ int GetCameraDeviceName(SDL_CameraDeviceID instance_id, char *buf, int size)
     return -1;
 }
 
-
-SDL_CameraDeviceID *GetCameraDevices(int *count)
+static SDL_CameraDeviceID *V4L2_GetDevices(int *count)
 {
     // real list of ID
     const int num = num_cameras;
     SDL_CameraDeviceID *retval = (SDL_CameraDeviceID *)SDL_malloc((num + 1) * sizeof(*retval));
 
     if (retval == NULL) {
-        SDL_OutOfMemory();
         *count = 0;
         return NULL;
     }
@@ -958,55 +933,6 @@ SDL_CameraDeviceID *GetCameraDevices(int *count)
     return retval;
 }
 
-
-// Initializes the subsystem by finding available devices.
-int SDL_SYS_CameraInit(void)
-{
-    const char pattern[] = "/dev/video%d";
-    char path[PATH_MAX];
-
-    /*
-     * Limit amount of checks to MAX_CAMERA_DEVICES since we may or may not have
-     * permission to some or all devices.
-     */
-    for (int i = 0; i < MAX_CAMERA_DEVICES; i++) {
-        (void)SDL_snprintf(path, PATH_MAX, pattern, i);
-        if (MaybeAddDevice(path) == -2) {
-            break;
-        }
-    }
-
-#ifdef SDL_USE_LIBUDEV
-    if (SDL_UDEV_Init() < 0) {
-        return SDL_SetError("Could not initialize UDEV");
-    } else if (SDL_UDEV_AddCallback(CameraUdevCallback) < 0) {
-        SDL_UDEV_Quit();
-        return SDL_SetError("Could not setup Video Capture <-> udev callback");
-    }
-
-    // Force a scan to build the initial device list
-    SDL_UDEV_Scan();
-#endif // SDL_USE_LIBUDEV
-
-    return num_cameras;
-}
-
-int SDL_SYS_CameraQuit(void)
-{
-    for (SDL_cameralist_item *item = SDL_cameralist; item; ) {
-        SDL_cameralist_item *tmp = item->next;
-        SDL_free(item->fname);
-        SDL_free(item->bus_info);
-        SDL_free(item);
-        item = tmp;
-    }
-
-    num_cameras = 0;
-    SDL_cameralist = NULL;
-    SDL_cameralist_tail = NULL;
-
-    return SDL_FALSE;
-}
 
 #ifdef SDL_USE_LIBUDEV
 static void CameraUdevCallback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath)
@@ -1149,6 +1075,79 @@ static int MaybeRemoveDevice(const char *path)
     return 0;
 }
 #endif // SDL_USE_LIBUDEV
+
+
+static void V4L2_Deinitialize(void)
+{
+    for (SDL_cameralist_item *item = SDL_cameralist; item; ) {
+        SDL_cameralist_item *tmp = item->next;
+        SDL_free(item->fname);
+        SDL_free(item->bus_info);
+        SDL_free(item);
+        item = tmp;
+    }
+
+    num_cameras = 0;
+    SDL_cameralist = NULL;
+    SDL_cameralist_tail = NULL;
+}
+
+static void V4L2_DetectDevices(void)
+{
+}
+
+static SDL_bool V4L2_Init(SDL_CameraDriverImpl *impl)
+{
+    // !!! FIXME: move to DetectDevices
+    const char pattern[] = "/dev/video%d";
+    char path[PATH_MAX];
+
+    /*
+     * Limit amount of checks to MAX_CAMERA_DEVICES since we may or may not have
+     * permission to some or all devices.
+     */
+    for (int i = 0; i < MAX_CAMERA_DEVICES; i++) {
+        (void)SDL_snprintf(path, PATH_MAX, pattern, i);
+        if (MaybeAddDevice(path) == -2) {
+            break;
+        }
+    }
+
+#ifdef SDL_USE_LIBUDEV
+    if (SDL_UDEV_Init() < 0) {
+        return SDL_SetError("Could not initialize UDEV");
+    } else if (SDL_UDEV_AddCallback(CameraUdevCallback) < 0) {
+        SDL_UDEV_Quit();
+        return SDL_SetError("Could not setup Video Capture <-> udev callback");
+    }
+
+    // Force a scan to build the initial device list
+    SDL_UDEV_Scan();
+#endif // SDL_USE_LIBUDEV
+
+    impl->DetectDevices = V4L2_DetectDevices;
+    impl->OpenDevice = V4L2_OpenDevice;
+    impl->CloseDevice = V4L2_CloseDevice;
+    impl->InitDevice = V4L2_InitDevice;
+    impl->GetDeviceSpec = V4L2_GetDeviceSpec;
+    impl->StartCamera = V4L2_StartCamera;
+    impl->StopCamera = V4L2_StopCamera;
+    impl->AcquireFrame = V4L2_AcquireFrame;
+    impl->ReleaseFrame = V4L2_ReleaseFrame;
+    impl->GetNumFormats = V4L2_GetNumFormats;
+    impl->GetFormat = V4L2_GetFormat;
+    impl->GetNumFrameSizes = V4L2_GetNumFrameSizes;
+    impl->GetFrameSize = V4L2_GetFrameSize;
+    impl->GetDeviceName = V4L2_GetDeviceName;
+    impl->GetDevices = V4L2_GetDevices;
+    impl->Deinitialize = V4L2_Deinitialize;
+
+    return SDL_TRUE;
+}
+
+CameraBootStrap V4L2_bootstrap = {
+    "v4l2", "SDL Video4Linux2 camera driver", V4L2_Init, SDL_FALSE
+};
 
 #endif // SDL_CAMERA_V4L2
 
