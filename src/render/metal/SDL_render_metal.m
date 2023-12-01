@@ -1525,9 +1525,10 @@ static int METAL_RenderPresent(SDL_Renderer *renderer)
 
         // If we don't have a command buffer, we can't present, so activate to get one.
         if (data.mtlcmdencoder == nil) {
-            // We haven't even gotten a backbuffer yet? Clear it to black. Otherwise, load the existing data.
+            // We haven't even gotten a backbuffer yet? Load and clear it. Otherwise, load the existing data.
             if (data.mtlbackbuffer == nil) {
-                MTLClearColor color = MTLClearColorMake(0.0f, 0.0f, 0.0f, 1.0f);
+                float alpha = (SDL_GetWindowFlags(renderer->window) & SDL_WINDOW_TRANSPARENT) ? 0.0f : 1.0f;
+                MTLClearColor color = MTLClearColorMake(0.0f, 0.0f, 0.0f, alpha);
                 ready = METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionClear, &color, nil);
             } else {
                 ready = METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, nil);
