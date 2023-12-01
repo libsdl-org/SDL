@@ -1338,6 +1338,7 @@ SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
     renderer->info = PSP_RenderDriver.info;
     renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
+    PSP_InvalidateCachedState(renderer);
     renderer->window = window;
 
     data->initialized = SDL_TRUE;

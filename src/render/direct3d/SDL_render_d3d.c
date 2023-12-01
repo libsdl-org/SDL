@@ -1511,12 +1511,9 @@ static int D3D_Reset(SDL_Renderer *renderer)
     IDirect3DDevice9_GetRenderTarget(data->device, 0, &data->defaultRenderTarget);
     D3D_InitRenderState(data);
     D3D_SetRenderTargetInternal(renderer, renderer->target);
-    data->drawstate.viewport_dirty = SDL_TRUE;
-    data->drawstate.cliprect_dirty = SDL_TRUE;
-    data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
-    data->drawstate.texture = NULL;
-    data->drawstate.shader = NULL;
-    data->drawstate.blend = SDL_BLENDMODE_INVALID;
+
+    D3D_InvalidateCachedState(renderer);
+
     IDirect3DDevice9_SetTransform(data->device, D3DTS_VIEW, (D3DMATRIX *)&d3dmatrix);
 
     /* Let the application know that render targets were reset */
@@ -1605,6 +1602,7 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
     renderer->info = D3D_RenderDriver.info;
     renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
+    D3D_InvalidateCachedState(renderer);
 
     SDL_GetWindowSizeInPixels(window, &w, &h);
     if (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) {
@@ -1710,10 +1708,6 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
         }
     }
 #endif
-    data->drawstate.viewport_dirty = SDL_TRUE;
-    data->drawstate.cliprect_dirty = SDL_TRUE;
-    data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
-    data->drawstate.blend = SDL_BLENDMODE_INVALID;
 
     SDL_SetProperty(SDL_GetRendererProperties(renderer), "SDL.renderer.d3d9.device", data->device);
 
