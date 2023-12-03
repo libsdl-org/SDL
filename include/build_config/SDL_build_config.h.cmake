@@ -116,6 +116,7 @@
 #cmakedefine HAVE_STRCHR 1
 #cmakedefine HAVE_STRRCHR 1
 #cmakedefine HAVE_STRSTR 1
+#cmakedefine HAVE_STRNSTR 1
 #cmakedefine HAVE_STRTOK_R 1
 #cmakedefine HAVE_ITOA 1
 #cmakedefine HAVE__LTOA 1
