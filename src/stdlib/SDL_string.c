@@ -468,19 +468,28 @@ wchar_t *SDL_wcsdup(const wchar_t *string)
     return newstr;
 }
 
+wchar_t *SDL_wcsnstr(const wchar_t *haystack, const wchar_t *needle, size_t maxlen)
+{
+    size_t length = SDL_wcslen(needle);
+    if (length == 0) {
+        return (wchar_t *)haystack;
+    }
+    while (maxlen >= length && *haystack) {
+        if (maxlen >= length && SDL_wcsncmp(haystack, needle, length) == 0) {
+            return (wchar_t *)haystack;
+        }
+        ++haystack;
+        --maxlen;
+    }
+    return NULL;
+}
+
 wchar_t *SDL_wcsstr(const wchar_t *haystack, const wchar_t *needle)
 {
 #ifdef HAVE_WCSSTR
     return SDL_const_cast(wchar_t *, wcsstr(haystack, needle));
 #else
-    size_t length = SDL_wcslen(needle);
-    while (*haystack) {
-        if (SDL_wcsncmp(haystack, needle, length) == 0) {
-            return (wchar_t *)haystack;
-        }
-        ++haystack;
-    }
-    return NULL;
+    return SDL_wcsnstr(haystack, needle, SDL_wcslen(haystack));
 #endif /* HAVE_WCSSTR */
 }
 
@@ -821,19 +830,32 @@ char *SDL_strrchr(const char *string, int c)
 #endif /* HAVE_STRRCHR */
 }
 
+char *SDL_strnstr(const char *haystack, const char *needle, size_t maxlen)
+{
+#ifdef HAVE_STRNSTR
+    return SDL_const_cast(char *, strnstr(haystack, needle, maxlen));
+#else
+    size_t length = SDL_strlen(needle);
+    if (length == 0) {
+        return (char *)haystack;
+    }
+    while (maxlen >= length && *haystack) {
+        if (SDL_strncmp(haystack, needle, length) == 0) {
+            return (char *)haystack;
+        }
+        ++haystack;
+        --maxlen;
+    }
+    return NULL;
+#endif /* HAVE_STRSTR */
+}
+
 char *SDL_strstr(const char *haystack, const char *needle)
 {
 #ifdef HAVE_STRSTR
     return SDL_const_cast(char *, strstr(haystack, needle));
 #else
-    size_t length = SDL_strlen(needle);
-    while (*haystack) {
-        if (SDL_strncmp(haystack, needle, length) == 0) {
-            return (char *)haystack;
-        }
-        ++haystack;
-    }
-    return NULL;
+    return SDL_strnstr(haystack, needle, SDL_strlen(haystack));
 #endif /* HAVE_STRSTR */
 }
 

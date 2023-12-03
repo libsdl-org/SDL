@@ -1065,7 +1065,7 @@ if(SDL_LIBC)
     realloc rindex round roundf
     scalbn scalbnf setenv sin sinf sqr sqrt sqrtf sscanf strchr
     strcmp strlcat strlcpy strlen strncmp strnlen
-    strrchr strstr strtod strtok_r strtol strtoll strtoul strtoull
+    strrchr strstr strnstr strtod strtok_r strtol strtoll strtoul strtoull
     tan tanf trunc truncf
     unsetenv
     vsnprintf vsscanf
