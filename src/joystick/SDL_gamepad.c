@@ -2079,7 +2079,7 @@ char **SDL_GetGamepadMappings(int *count)
     if (!mappings) {
         failed = SDL_TRUE;
     } else {
-        size_t i = 0;
+        int i = 0;
         for (GamepadMapping_t *mapping = s_pSupportedGamepads; mapping; mapping = mapping->next) {
             if (SDL_memcmp(&mapping->guid, &s_zeroGUID, sizeof(mapping->guid)) == 0) {
                 continue;
