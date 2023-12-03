@@ -1010,3 +1010,4 @@ SDL_DYNAPI_PROC(SDL_Renderer*,SDL_CreateRendererWithProperties,(SDL_PropertiesID
 SDL_DYNAPI_PROC(char**,SDL_GetGamepadMappings,(int *a),(a),return)
 SDL_DYNAPI_PROC(SDL_TouchID*,SDL_GetTouchDevices,(int *a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetTouchDeviceName,(SDL_TouchID a),(a),return)
+SDL_DYNAPI_PROC(char*,SDL_strnstr,(const char *a, const char *b, size_t c),(a,b,c),return)

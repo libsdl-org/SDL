@@ -837,6 +837,46 @@ char *SDL_strstr(const char *haystack, const char *needle)
 #endif /* HAVE_STRSTR */
 }
 
+char *SDL_strnstr(const char *haystack, const char *needle, size_t size)
+{
+#ifdef HAVE_STRNSTR
+    return SDL_const_cast(char *, strnstr(haystack, needle, size));
+#else
+    size_t needlesize;
+    const char *end, *giveup;
+
+    needlesize = SDL_strlen(needle);
+    /* We can give up if needle is empty, or haystack can never contain it */
+    if ((needlesize == 0) || (needlesize > size)) {
+        return NULL;
+    }
+    /* The pointer value that marks the end of haystack */
+    end = haystack + size;
+    /* The maximum value of i, because beyond this haystack cannot contain needle */
+    giveup = end - needlesize + 1;
+
+    /* i is used to iterate over haystack */
+    for (const char *i = haystack; i != giveup; i++) {
+        const char *j, *k;
+        /* j is used to iterate over part of haystack during comparison */
+        /* k is used to iterate over needle during comparison */
+        for (j = i, k = needle; j != end && *k != '\0'; j++, k++) {
+            /* Bail on the first character that doesn't match */
+            if (*j != *k) {
+                break;
+            }
+        }
+        /* If we've reached the end of needle, we've found a match */
+        /* i contains the start of our match */
+        if (*k == '\0') {
+            return (char*) i;
+        }
+    }
+    /* Fell through the loops, nothing found */
+    return NULL;
+#endif /* HAVE_STRNSTR */
+}
+
 char *SDL_strcasestr(const char *haystack, const char *needle)
 {
 #ifdef HAVE_STRCASESTR

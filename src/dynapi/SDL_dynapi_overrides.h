@@ -985,3 +985,4 @@
 #define SDL_GetGamepadMappings SDL_GetGamepadMappings_REAL
 #define SDL_GetTouchDevices SDL_GetTouchDevices_REAL
 #define SDL_GetTouchDeviceName SDL_GetTouchDeviceName_REAL
+#define SDL_strnstr SDL_strnstr_REAL
