@@ -54,13 +54,13 @@ static SDL_PropertiesID SDL_last_properties_id;
 static SDL_PropertiesID SDL_global_properties;
 
 
-static void SDL_FreeProperty(const void *key, const void *value, void *data)
+static void SDL_FreePropertyWithCleanup(const void *key, const void *value, void *data, SDL_bool cleanup)
 {
     SDL_Property *property = (SDL_Property *)value;
     if (property) {
         switch (property->type) {
         case SDL_PROPERTY_TYPE_POINTER:
-            if (property->cleanup) {
+            if (property->cleanup && cleanup) {
                 property->cleanup(property->userdata, property->value.pointer_value);
             }
             break;
@@ -76,6 +76,11 @@ static void SDL_FreeProperty(const void *key, const void *value, void *data)
     }
     SDL_free((void *)key);
     SDL_free((void *)value);
+}
+
+static void SDL_FreeProperty(const void *key, const void *value, void *data)
+{
+    SDL_FreePropertyWithCleanup(key, value, data, SDL_TRUE);
 }
 
 static void SDL_FreeProperties(const void *key, const void *value, void *data)
@@ -228,11 +233,11 @@ static int SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL_
     int result = 0;
 
     if (!props) {
-        SDL_FreeProperty(NULL, property, NULL);
+        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_FALSE);
         return SDL_InvalidParamError("props");
     }
     if (!name || !*name) {
-        SDL_FreeProperty(NULL, property, NULL);
+        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_FALSE);
         return SDL_InvalidParamError("name");
     }
 
@@ -241,7 +246,7 @@ static int SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL_
     SDL_UnlockMutex(SDL_properties_lock);
 
     if (!properties) {
-        SDL_FreeProperty(NULL, property, NULL);
+        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_FALSE);
         return SDL_InvalidParamError("props");
     }
 
@@ -251,7 +256,7 @@ static int SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL_
         if (property) {
             char *key = SDL_strdup(name);
             if (!SDL_InsertIntoHashTable(properties->props, key, property)) {
-                SDL_FreeProperty(key, property, NULL);
+                SDL_FreePropertyWithCleanup(key, property, NULL, SDL_FALSE);
                 result = -1;
             }
         }
