@@ -852,7 +852,7 @@ static void RAWINPUT_AddDevice(HANDLE hDevice)
     SDL_RAWINPUT_Device *curr, *last;
     RID_DEVICE_INFO rdi;
     UINT size;
-    char dev_name[MAX_PATH];
+    char dev_name[MAX_PATH] = { 0 };
     HANDLE hFile = INVALID_HANDLE_VALUE;
 
     /* Make sure we're not trying to add the same device twice */
@@ -862,6 +862,7 @@ static void RAWINPUT_AddDevice(HANDLE hDevice)
 
     /* Figure out what kind of device it is */
     size = sizeof(rdi);
+    SDL_zero(rdi);
     CHECK(GetRawInputDeviceInfoA(hDevice, RIDI_DEVICEINFO, &rdi, &size) != (UINT)-1);
     CHECK(rdi.dwType == RIM_TYPEHID);
 
