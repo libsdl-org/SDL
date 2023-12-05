@@ -282,7 +282,7 @@ static const char *GetCategoryPrefix(int category)
 }
 #endif /* __ANDROID__ */
 
-void SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va_list ap)
+void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
 {
     char *message = NULL;
     char stack_buf[SDL_MAX_LOG_MESSAGE_STACK];
