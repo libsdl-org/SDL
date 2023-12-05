@@ -1695,10 +1695,10 @@ static void SDL_PrivateAppendToMappingString(char *mapping_string,
     SDL_strlcat(mapping_string, ":", mapping_string_len);
     switch (mapping->kind) {
     case EMappingKind_Button:
-        (void)SDL_snprintf(buffer, sizeof(buffer), "b%i", mapping->target);
+        (void)SDL_snprintf(buffer, sizeof(buffer), "b%u", mapping->target);
         break;
     case EMappingKind_Axis:
-        (void)SDL_snprintf(buffer, sizeof(buffer), "%sa%i%s",
+        (void)SDL_snprintf(buffer, sizeof(buffer), "%sa%u%s",
             mapping->half_axis_positive ? "+" :
             mapping->half_axis_negative ? "-" : "",
             mapping->target,
