@@ -296,8 +296,8 @@ static void transformSurfaceRGBA(SDL_Surface *src, SDL_Surface *dst, int isin, i
         int y;
         for (y = 0; y < dst->h; y++) {
             int x;
-            double src_x = (rect_dest->x + 0 + 0.5 - center->x);
-            double src_y = (rect_dest->y + y + 0.5 - center->y);
+            double src_x = ((double)rect_dest->x + 0 + 0.5 - center->x);
+            double src_y = ((double)rect_dest->y + y + 0.5 - center->y);
             int sdx = (int)((icos * src_x - isin * src_y) + cx - fp_half);
             int sdy = (int)((isin * src_x + icos * src_y) + cy - fp_half);
             for (x = 0; x < dst->w; x++) {
@@ -364,8 +364,8 @@ static void transformSurfaceRGBA(SDL_Surface *src, SDL_Surface *dst, int isin, i
         int y;
         for (y = 0; y < dst->h; y++) {
             int x;
-            double src_x = (rect_dest->x + 0 + 0.5 - center->x);
-            double src_y = (rect_dest->y + y + 0.5 - center->y);
+            double src_x = ((double)rect_dest->x + 0 + 0.5 - center->x);
+            double src_y = ((double)rect_dest->y + y + 0.5 - center->y);
             int sdx = (int)((icos * src_x - isin * src_y) + cx - fp_half);
             int sdy = (int)((isin * src_x + icos * src_y) + cy - fp_half);
             for (x = 0; x < dst->w; x++) {
@@ -437,8 +437,8 @@ static void transformSurfaceY(SDL_Surface *src, SDL_Surface *dst, int isin, int 
      */
     for (y = 0; y < dst->h; y++) {
         int x;
-        double src_x = (rect_dest->x + 0 + 0.5 - center->x);
-        double src_y = (rect_dest->y + y + 0.5 - center->y);
+        double src_x = ((double)rect_dest->x + 0 + 0.5 - center->x);
+        double src_y = ((double)rect_dest->y + y + 0.5 - center->y);
         int sdx = (int)((icos * src_x - isin * src_y) + cx - fp_half);
         int sdy = (int)((isin * src_x + icos * src_y) + cy - fp_half);
         for (x = 0; x < dst->w; x++) {
