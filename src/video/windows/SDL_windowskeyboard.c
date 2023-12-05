@@ -1484,7 +1484,7 @@ static void StopDrawToBitmap(HDC hdc, HBITMAP *hhbm)
 static void DrawRect(HDC hdc, int left, int top, int right, int bottom, int pensize)
 {
     /* The case of no pen (PenSize = 0) is automatically taken care of. */
-    const int penadjust = (int)SDL_floor(pensize / 2.0f - 0.5f);
+    const int penadjust = (int)SDL_floorf(pensize / 2.0f - 0.5f);
     left += pensize / 2;
     top += pensize / 2;
     right -= penadjust;
