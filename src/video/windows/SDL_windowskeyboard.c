@@ -198,7 +198,9 @@ void WIN_ResetDeadKeys()
     WCHAR buffer[16];
     int keycode, scancode, result, i;
 
-    GetKeyboardState(keyboardState);
+    if (!GetKeyboardState(keyboardState)) {
+        return;
+    }
 
     keycode = VK_SPACE;
     scancode = MapVirtualKey(keycode, MAPVK_VK_TO_VSC);
