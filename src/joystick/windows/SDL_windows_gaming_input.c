@@ -143,7 +143,7 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
 
     for (i = 0; i < raw_device_count; i++) {
         RID_DEVICE_INFO rdi;
-        char devName[MAX_PATH];
+        char devName[MAX_PATH] = { 0 };
         UINT rdiSize = sizeof(rdi);
         UINT nameSize = SDL_arraysize(devName);
         DEVINST devNode;
