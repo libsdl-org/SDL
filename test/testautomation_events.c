@@ -7,6 +7,25 @@
 
 /* ================= Test Case Implementation ================== */
 
+/* Fixture */
+
+static void eventsSetUp(void *arg)
+{
+    /* Start SDL events subsystem */
+    int ret = SDL_InitSubSystem(SDL_INIT_EVENTS);
+    SDLTest_AssertPass("Call to SDL_InitSubSystem(SDL_INIT_EVENTS)");
+    SDLTest_AssertCheck(ret == 0, "Check result from SDL_InitSubSystem(SDL_INIT_EVENTS)");
+    if (ret != 0) {
+        SDLTest_LogError("%s", SDL_GetError());
+    }
+}
+
+static void eventsTearDown(void *arg)
+{
+    SDL_QuitSubSystem(SDL_INIT_EVENTS);
+    SDLTest_AssertPass("Call to SDL_QuitSubSystem(SDL_INIT_EVENTS)");
+}
+
 /* Test case functions */
 
 /* Flag indicating if the userdata should be checked */
@@ -198,7 +217,7 @@ static const SDLTest_TestCaseReference *eventsTests[] = {
 /* Events test suite (global) */
 SDLTest_TestSuiteReference eventsTestSuite = {
     "Events",
-    NULL,
+    eventsSetUp,
     eventsTests,
-    NULL
+    eventsTearDown
 };

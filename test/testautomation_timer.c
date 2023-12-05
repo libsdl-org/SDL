@@ -27,6 +27,13 @@ static void timerSetUp(void *arg)
     }
 }
 
+static void timerTearDown(void *arg)
+{
+    /* Stop SDL timer subsystem */
+    SDL_QuitSubSystem(SDL_INIT_TIMER);
+    SDLTest_AssertPass("Call to SDL_QuitSubSystem(SDL_INIT_TIMER)");
+}
+
 /* Test case functions */
 
 /**
@@ -197,5 +204,5 @@ SDLTest_TestSuiteReference timerTestSuite = {
     "Timer",
     timerSetUp,
     timerTests,
-    NULL
+    timerTearDown
 };
