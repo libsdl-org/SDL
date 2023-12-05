@@ -95,6 +95,14 @@
 #define TOUCHEVENTF_PEN 0x0040
 #endif
 
+#ifndef MAPVK_VK_TO_VSC_EX
+#define MAPVK_VK_TO_VSC_EX 4
+#endif
+
+#ifndef WC_ERR_INVALID_CHARS
+#define WC_ERR_INVALID_CHARS 0x00000080
+#endif
+
 #ifndef IS_HIGH_SURROGATE
 #define IS_HIGH_SURROGATE(x) (((x) >= 0xd800) && ((x) <= 0xdbff))
 #endif
