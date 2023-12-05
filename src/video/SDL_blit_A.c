@@ -345,7 +345,7 @@ static void SDL_TARGETING("mmx") BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo *info)
     }
 
     multmask = 0x00FF;
-    multmask <<= (ashift * 2);
+    multmask <<= ((Uint64)ashift * 2);
     multmask2 = 0x00FF00FF00FF00FFULL;
 
     while (height--) {
