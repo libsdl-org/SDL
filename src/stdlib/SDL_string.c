@@ -1255,7 +1255,7 @@ static SDL_bool CharacterMatchesSet(char c, const char *set, size_t set_len)
 }
 
 /* NOLINTNEXTLINE(readability-non-const-parameter) */
-int SDL_vsscanf(const char *text, const char *fmt, va_list ap)
+int SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_list ap) SDL_SCANF_VARARG_FUNCV(2)
 {
     int retval = 0;
 
@@ -1922,7 +1922,7 @@ static size_t SDL_PrintPointer(char *text, size_t maxlen, SDL_FormatInfo *info, 
 }
 
 /* NOLINTNEXTLINE(readability-non-const-parameter) */
-int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap)
+int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
 {
     size_t length = 0;
 
@@ -2146,7 +2146,7 @@ int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *f
 #undef TEXT_AND_LEN_ARGS
 #endif /* HAVE_VSNPRINTF */
 
-int SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const wchar_t *fmt, va_list ap)
+int SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, const wchar_t *fmt, va_list ap)
 {
     char *text_utf8 = NULL, *fmt_utf8 = NULL;
     int retval;
@@ -2201,7 +2201,7 @@ int SDL_asprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
     return retval;
 }
 
-int SDL_vasprintf(char **strp, const char *fmt, va_list ap)
+int SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
 {
     int retval;
     int size = 100; /* Guess we need no more than 100 bytes */
