@@ -754,7 +754,7 @@ void SDL_SetKeymap(int start, const SDL_Keycode *keys, int length, SDL_bool send
 
 void SDL_SetScancodeName(SDL_Scancode scancode, const char *name)
 {
-    if (scancode >= SDL_NUM_SCANCODES) {
+    if (scancode < 0 || scancode >= SDL_NUM_SCANCODES) {
         return;
     }
     SDL_scancode_names[scancode] = name;
@@ -831,7 +831,7 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, SDL_KeyboardFlags flags
     Uint8 repeat = SDL_FALSE;
     const Uint8 source = flags & KEYBOARD_SOURCE_MASK;
 
-    if (scancode == SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
+    if (scancode < 0 || scancode == SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
         return 0;
     }
 
