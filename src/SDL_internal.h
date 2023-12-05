@@ -44,6 +44,9 @@
 #define HAVE_GCC_DIAGNOSTIC_PRAGMA 1
 #endif
 
+#ifdef _MSC_VER // SDL_MAX_SMALL_ALLOC_STACKSIZE is smaller than _ALLOCA_S_THRESHOLD and should be generally safe
+#pragma warning(disable : 6255)
+#endif
 #define SDL_MAX_SMALL_ALLOC_STACKSIZE          128
 #define SDL_small_alloc(type, count, pisstack) ((*(pisstack) = ((sizeof(type) * (count)) < SDL_MAX_SMALL_ALLOC_STACKSIZE)), (*(pisstack) ? SDL_stack_alloc(type, count) : (type *)SDL_malloc(sizeof(type) * (count))))
 #define SDL_small_free(ptr, isstack) \
