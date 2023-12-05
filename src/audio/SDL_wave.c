@@ -985,7 +985,7 @@ static int IMA_ADPCM_DecodeBlockData(ADPCM_DecoderState *state)
         const size_t remainingbytes = blockleft % subblockframesize;
         blockframesleft = guaranteedframes;
         if (remainingbytes > subblockframesize - 4) {
-            blockframesleft += (remainingbytes % 4) * 2;
+            blockframesleft += (Sint64)(remainingbytes % 4) * 2;
         }
         /* Signal the truncation. */
         retval = -1;
