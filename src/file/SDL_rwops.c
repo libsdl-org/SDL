@@ -822,7 +822,7 @@ size_t SDL_RWprintf(SDL_RWops *context, SDL_PRINTF_FORMAT_STRING const char *fmt
     return bytes;
 }
 
-size_t SDL_RWvprintf(SDL_RWops *context, const char *fmt, va_list ap)
+size_t SDL_RWvprintf(SDL_RWops *context, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
 {
     int size;
     char *string;
