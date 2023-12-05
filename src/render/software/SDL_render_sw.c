@@ -643,7 +643,7 @@ static void SetDrawState(SDL_Surface *surface, SW_DrawStateCache *drawstate)
         const SDL_Rect *cliprect = drawstate->cliprect;
         SDL_assert_release(viewport != NULL); /* the higher level should have forced a SDL_RENDERCMD_SETVIEWPORT */
 
-        if (cliprect) {
+        if (cliprect && viewport) {
             SDL_Rect clip_rect;
             clip_rect.x = cliprect->x + viewport->x;
             clip_rect.y = cliprect->y + viewport->y;
