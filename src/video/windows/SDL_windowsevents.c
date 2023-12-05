@@ -1288,16 +1288,15 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         HDROP drop = (HDROP)wParam;
         UINT count = DragQueryFile(drop, 0xFFFFFFFF, NULL, 0);
         for (i = 0; i < count; ++i) {
-            SDL_bool isstack;
             UINT size = DragQueryFile(drop, i, NULL, 0) + 1;
-            LPTSTR buffer = SDL_small_alloc(TCHAR, size, &isstack);
+            LPTSTR buffer = (LPTSTR)SDL_malloc(sizeof(TCHAR) * size);
             if (buffer) {
                 if (DragQueryFile(drop, i, buffer, size)) {
                     char *file = WIN_StringToUTF8(buffer);
                     SDL_SendDropFile(data->window, NULL, file);
                     SDL_free(file);
                 }
-                SDL_small_free(buffer, isstack);
+                SDL_free(buffer);
             }
         }
         SDL_SendDropComplete(data->window);
