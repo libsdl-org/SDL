@@ -316,10 +316,17 @@ void WIN_SetCursorPos(int x, int y)
     SetCursorPos(x, y);
 
     /* Flush any mouse motion prior to or associated with this warp */
+#ifdef _MSC_VER /* We explicitly want to use GetTickCount(), not GetTickCount64() */
+#pragma warning(push)
+#pragma warning(disable : 28159)
+#endif
     SDL_last_warp_time = GetTickCount();
     if (!SDL_last_warp_time) {
         SDL_last_warp_time = 1;
     }
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 }
 
 static int WIN_WarpMouse(SDL_Window *window, float x, float y)

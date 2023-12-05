@@ -1643,7 +1643,14 @@ void WIN_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window)
 void WIN_PumpEvents(SDL_VideoDevice *_this)
 {
     MSG msg;
+#ifdef _MSC_VER /* We explicitly want to use GetTickCount(), not GetTickCount64() */
+#pragma warning(push)
+#pragma warning(disable : 28159)
+#endif
     DWORD end_ticks = GetTickCount() + 1;
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
     int new_messages = 0;
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     const Uint8 *keystate;
