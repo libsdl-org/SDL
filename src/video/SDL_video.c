@@ -1508,7 +1508,7 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
                 break;
             }
         }
-        if (i == _this->num_displays) {
+        if (!display || i == _this->num_displays) {
             /* Already not fullscreen on any display */
             goto done;
         }
