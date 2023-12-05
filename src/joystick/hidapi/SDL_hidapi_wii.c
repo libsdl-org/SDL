@@ -272,7 +272,7 @@ static SDL_bool WriteRegister(SDL_DriverWii_Context *ctx, Uint32 address, const 
             return SDL_FALSE;
         }
         if (ctx->m_rgucReadBuffer[4]) {
-            SDL_SetError("Write memory failed: %d", ctx->m_rgucReadBuffer[4]);
+            SDL_SetError("Write memory failed: %u", ctx->m_rgucReadBuffer[4]);
             return SDL_FALSE;
         }
     }
@@ -335,7 +335,7 @@ static SDL_bool ParseExtensionIdentifyResponse(SDL_DriverWii_Context *ctx, Uint1
         }
 
         if (error) {
-            SDL_SetError("Failed to read extension type: %d", error);
+            SDL_SetError("Failed to read extension type: %u", error);
         } else {
             SDL_SetError("Unexpected read length when reading extension type: %d", (ctx->m_rgucReadBuffer[3] >> 4) + 1);
         }
