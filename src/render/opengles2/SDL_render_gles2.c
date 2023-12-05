@@ -543,20 +543,19 @@ static GLuint GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, G
     }
 
     if (!compileSuccessful) {
-        SDL_bool isstack = SDL_FALSE;
         char *info = NULL;
         int length = 0;
 
         data->glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
         if (length > 0) {
-            info = SDL_small_alloc(char, length, &isstack);
+            info = (char *)SDL_malloc(length);
             if (info) {
                 data->glGetShaderInfoLog(id, length, &length, info);
             }
         }
         if (info) {
             SDL_SetError("Failed to load the shader %d: %s", type, info);
-            SDL_small_free(info, isstack);
+            SDL_free(info);
         } else {
             SDL_SetError("Failed to load the shader %d", type);
         }
