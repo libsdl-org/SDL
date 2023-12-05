@@ -103,7 +103,7 @@ static void GetMMDeviceInfo(IMMDevice *device, char **utf8dev, WAVEFORMATEXTENSI
         }
         PropVariantClear(&var);
         if (SUCCEEDED(IPropertyStore_GetValue(props, &SDL_PKEY_AudioEndpoint_GUID, &var))) {
-            CLSIDFromString(var.pwszVal, guid);
+            (void)CLSIDFromString(var.pwszVal, guid);
         }
         PropVariantClear(&var);
         IPropertyStore_Release(props);
