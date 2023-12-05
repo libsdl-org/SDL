@@ -1355,7 +1355,14 @@ void SDL_SetEventEnabled(Uint32 type, SDL_bool enabled)
 
     if (enabled != current_state) {
         if (enabled) {
+#ifdef _MSC_VER /* Visual Studio analyzer can't tell that SDL_disabled_events[hi] isn't NULL if enabled is true */
+#pragma warning(push)
+#pragma warning(disable : 6011)
+#endif
             SDL_disabled_events[hi]->bits[lo / 32] &= ~(1 << (lo & 31));
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
             /* Gamepad events depend on joystick events */
             switch (type) {
