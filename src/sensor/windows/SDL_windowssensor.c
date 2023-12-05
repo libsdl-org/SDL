@@ -150,7 +150,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *
         if (pSensor == SDL_sensors[i].sensor) {
             if (SDL_sensors[i].sensor_opened) {
                 HRESULT hrX, hrY, hrZ;
-                PROPVARIANT valueX, valueY, valueZ;
+                PROPVARIANT valueX = { 0 }, valueY = { 0 }, valueZ = { 0 };
                 SYSTEMTIME sensor_systemtime;
                 FILETIME sensor_filetime;
                 Uint64 sensor_timestamp;
