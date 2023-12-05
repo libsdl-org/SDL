@@ -86,7 +86,7 @@ int SDL_XINPUT_HapticMaybeAddDevice(const DWORD dwUserid)
     /* !!! FIXME: I'm not bothering to query for a real name right now (can we even?) */
     {
         char buf[64];
-        (void)SDL_snprintf(buf, sizeof(buf), "XInput Controller #%u", userid + 1);
+        (void)SDL_snprintf(buf, sizeof(buf), "XInput Controller #%d", 1 + userid);
         item->name = SDL_strdup(buf);
     }
 
@@ -196,7 +196,7 @@ static int SDL_XINPUT_HapticOpenFromUserIndex(SDL_Haptic *haptic, const Uint8 us
         return SDL_SetError("Couldn't create XInput haptic mutex");
     }
 
-    (void)SDL_snprintf(threadName, sizeof(threadName), "SDLXInputDev%d", userid);
+    (void)SDL_snprintf(threadName, sizeof(threadName), "SDLXInputDev%u", userid);
     haptic->hwdata->thread = SDL_CreateThreadInternal(SDL_RunXInputHaptic, threadName, 64 * 1024, haptic->hwdata);
 
     if (!haptic->hwdata->thread) {
@@ -283,7 +283,7 @@ int SDL_XINPUT_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
     } else if ((!effect->effect.leftright.length) || (!iterations)) {
         /* do nothing. Effect runs for zero milliseconds. */
     } else {
-        haptic->hwdata->stopTicks = SDL_GetTicks() + (effect->effect.leftright.length * iterations);
+        haptic->hwdata->stopTicks = SDL_GetTicks() + ((Uint64)effect->effect.leftright.length * iterations);
     }
     SDL_UnlockMutex(haptic->hwdata->mutex);
     return (XINPUTSETSTATE(haptic->hwdata->userid, vib) == ERROR_SUCCESS) ? 0 : -1;
