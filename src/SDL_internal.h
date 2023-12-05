@@ -44,7 +44,11 @@
 #define HAVE_GCC_DIAGNOSTIC_PRAGMA 1
 #endif
 
-#ifdef _MSC_VER // SDL_MAX_SMALL_ALLOC_STACKSIZE is smaller than _ALLOCA_S_THRESHOLD and should be generally safe
+#ifdef _MSC_VER /* We use constant comparison for generated code */
+#pragma warning(disable : 6326)
+#endif
+
+#ifdef _MSC_VER /* SDL_MAX_SMALL_ALLOC_STACKSIZE is smaller than _ALLOCA_S_THRESHOLD and should be generally safe */
 #pragma warning(disable : 6255)
 #endif
 #define SDL_MAX_SMALL_ALLOC_STACKSIZE          128
