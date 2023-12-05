@@ -589,7 +589,7 @@ static SDL_bool HIDAPI_DriverPS4_LoadOfficialCalibrationData(SDL_HIDAPI_Device *
             SDL_Log("calibration[%d] bias = %d, sensitivity = %f\n", i, ctx->calibration[i].bias, ctx->calibration[i].scale);
 #endif
             /* Some controllers have a bad calibration */
-            if (SDL_abs(ctx->calibration[i].bias) > 1024 || SDL_fabs(1.0f - ctx->calibration[i].scale) > 0.5f) {
+            if (SDL_abs(ctx->calibration[i].bias) > 1024 || SDL_fabsf(1.0f - ctx->calibration[i].scale) > 0.5f) {
 #ifdef DEBUG_PS4_CALIBRATION
                 SDL_Log("invalid calibration, ignoring\n");
 #endif
