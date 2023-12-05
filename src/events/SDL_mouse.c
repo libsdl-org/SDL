@@ -799,8 +799,8 @@ static int SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_
                 Uint64 now = SDL_GetTicks();
 
                 if (now >= (clickstate->last_timestamp + mouse->double_click_time) ||
-                    SDL_fabs(mouse->x - clickstate->last_x) > mouse->double_click_radius ||
-                    SDL_fabs(mouse->y - clickstate->last_y) > mouse->double_click_radius) {
+                    SDL_fabs((double)mouse->x - clickstate->last_x) > mouse->double_click_radius ||
+                    SDL_fabs((double)mouse->y - clickstate->last_y) > mouse->double_click_radius) {
                     clickstate->click_count = 0;
                 }
                 clickstate->last_timestamp = now;
