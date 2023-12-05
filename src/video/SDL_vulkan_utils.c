@@ -408,7 +408,7 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
             if (extent.width >= planeCaps.minDstExtent.width && extent.height >= planeCaps.minDstExtent.height &&
                 extent.width <= planeCaps.maxDstExtent.width && extent.height <= planeCaps.maxDstExtent.height) {
                 /* If it does, choose this plane. */
-                SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "vulkandisplay: Choosing plane %d, minimum extent %dx%d maximum extent %dx%d", i,
+                SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "vulkandisplay: Choosing plane %u, minimum extent %ux%u maximum extent %ux%u", i,
                              planeCaps.minDstExtent.width, planeCaps.minDstExtent.height,
                              planeCaps.maxDstExtent.width, planeCaps.maxDstExtent.height);
                 planeIndex = i;
