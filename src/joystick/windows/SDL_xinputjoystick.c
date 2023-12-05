@@ -77,37 +77,37 @@ static const char *GetXInputName(const Uint8 userid, BYTE SubType)
     static char name[32];
 
     if (SDL_XInputUseOldJoystickMapping()) {
-        (void)SDL_snprintf(name, sizeof(name), "X360 Controller #%u", 1 + userid);
+        (void)SDL_snprintf(name, sizeof(name), "X360 Controller #%d", 1 + userid);
     } else {
         switch (SubType) {
         case XINPUT_DEVSUBTYPE_GAMEPAD:
-            (void)SDL_snprintf(name, sizeof(name), "XInput Controller #%u", 1 + userid);
+            (void)SDL_snprintf(name, sizeof(name), "XInput Controller #%d", 1 + userid);
             break;
         case XINPUT_DEVSUBTYPE_WHEEL:
-            (void)SDL_snprintf(name, sizeof(name), "XInput Wheel #%u", 1 + userid);
+            (void)SDL_snprintf(name, sizeof(name), "XInput Wheel #%d", 1 + userid);
             break;
         case XINPUT_DEVSUBTYPE_ARCADE_STICK:
-            (void)SDL_snprintf(name, sizeof(name), "XInput ArcadeStick #%u", 1 + userid);
+            (void)SDL_snprintf(name, sizeof(name), "XInput ArcadeStick #%d", 1 + userid);
             break;
         case XINPUT_DEVSUBTYPE_FLIGHT_STICK:
-            (void)SDL_snprintf(name, sizeof(name), "XInput FlightStick #%u", 1 + userid);
+            (void)SDL_snprintf(name, sizeof(name), "XInput FlightStick #%d", 1 + userid);
             break;
         case XINPUT_DEVSUBTYPE_DANCE_PAD:
-            (void)SDL_snprintf(name, sizeof(name), "XInput DancePad #%u", 1 + userid);
+            (void)SDL_snprintf(name, sizeof(name), "XInput DancePad #%d", 1 + userid);
             break;
         case XINPUT_DEVSUBTYPE_GUITAR:
         case XINPUT_DEVSUBTYPE_GUITAR_ALTERNATE:
         case XINPUT_DEVSUBTYPE_GUITAR_BASS:
-            (void)SDL_snprintf(name, sizeof(name), "XInput Guitar #%u", 1 + userid);
+            (void)SDL_snprintf(name, sizeof(name), "XInput Guitar #%d", 1 + userid);
             break;
         case XINPUT_DEVSUBTYPE_DRUM_KIT:
-            (void)SDL_snprintf(name, sizeof(name), "XInput DrumKit #%u", 1 + userid);
+            (void)SDL_snprintf(name, sizeof(name), "XInput DrumKit #%d", 1 + userid);
             break;
         case XINPUT_DEVSUBTYPE_ARCADE_PAD:
-            (void)SDL_snprintf(name, sizeof(name), "XInput ArcadePad #%u", 1 + userid);
+            (void)SDL_snprintf(name, sizeof(name), "XInput ArcadePad #%d", 1 + userid);
             break;
         default:
-            (void)SDL_snprintf(name, sizeof(name), "XInput Device #%u", 1 + userid);
+            (void)SDL_snprintf(name, sizeof(name), "XInput Device #%d", 1 + userid);
             break;
         }
     }
@@ -142,7 +142,7 @@ static void GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *
     if (s_arrXInputDevicePath[userid]) {
         for (i = 0; i < device_count; i++) {
             RID_DEVICE_INFO rdi;
-            char devName[128];
+            char devName[128] = { 0 };
             UINT rdiSize = sizeof(rdi);
             UINT nameSize = SDL_arraysize(devName);
 
@@ -163,7 +163,7 @@ static void GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *
 
     for (i = 0; i < device_count; i++) {
         RID_DEVICE_INFO rdi;
-        char devName[MAX_PATH];
+        char devName[MAX_PATH] = { 0 };
         UINT rdiSize = sizeof(rdi);
         UINT nameSize = SDL_arraysize(devName);
 
@@ -285,7 +285,7 @@ static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pC
         SDL_free(pNewJoystick);
         return; /* better luck next time? */
     }
-    (void)SDL_snprintf(pNewJoystick->path, sizeof(pNewJoystick->path), "XInput#%d", userid);
+    (void)SDL_snprintf(pNewJoystick->path, sizeof(pNewJoystick->path), "XInput#%u", userid);
     if (!SDL_XInputUseOldJoystickMapping()) {
         GuessXInputDevice(userid, &vendor, &product, &version);
 
@@ -512,7 +512,7 @@ Uint32 SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
 
 void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick)
 {
-    HRESULT result;
+    DWORD result;
     XINPUT_STATE XInputState;
     XINPUT_BATTERY_INFORMATION_EX XBatteryInformation;
 
