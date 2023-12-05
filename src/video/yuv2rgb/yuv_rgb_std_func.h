@@ -69,6 +69,12 @@
 #endif
 
 
+#ifdef _MSC_VER /* Visual Studio analyzer can't tell that we're building this with different constants */
+#pragma warning(push)
+#pragma warning(disable : 6239)
+#pragma warning(disable : 6326)
+#endif
+
 void STD_FUNCTION_NAME(
 	uint32_t width, uint32_t height, 
 	const uint8_t *Y, const uint8_t *U, const uint8_t *V, uint32_t Y_stride, uint32_t UV_stride, 
@@ -226,6 +232,10 @@ void STD_FUNCTION_NAME(
 	#undef uv_x_sample_interval
 	#undef uv_y_sample_interval
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #undef STD_FUNCTION_NAME
 #undef YUV_FORMAT
