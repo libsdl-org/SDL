@@ -795,8 +795,9 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
             result = E_FAIL;
             goto done;
         }
-        D3D12GetDebugInterfaceFunc(D3D_GUID(SDL_IID_ID3D12Debug), (void **)&data->debugInterface);
-        D3D_CALL(data->debugInterface, EnableDebugLayer);
+        if (SUCCEEDED(D3D12GetDebugInterfaceFunc(D3D_GUID(SDL_IID_ID3D12Debug), (void **)&data->debugInterface))) {
+            D3D_CALL(data->debugInterface, EnableDebugLayer);
+        }
     }
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
@@ -1302,7 +1303,7 @@ static HRESULT D3D12_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
         }
     } else {
         result = D3D12_CreateSwapChain(renderer, w, h);
-        if (FAILED(result)) {
+        if (FAILED(result) || !data->swapChain) {
             goto done;
         }
     }
