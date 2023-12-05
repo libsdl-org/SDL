@@ -31,6 +31,11 @@ typedef struct
 // |G| = 1/PRECISION_FACTOR * |y_factor  u_g_factor  v_g_factor| * |  U-128  |
 // |B|                        |y_factor  u_b_factor      0     |   |  V-128  |
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 26451)
+#endif
+
 #define V(value) (int16_t)((value*PRECISION_FACTOR)+0.5)
 
 // for ITU-T T.871, values can be found in section 7
@@ -55,6 +60,10 @@ static const RGB2YUVParam RGB2YUV[3] = {
 	// ITU-R BT.709-6
 	{/*.y_shift=*/ 16, /*.matrix=*/ {{V(0.1826), V(0.6142), V(0.062)}, {-V(0.1006), -V(0.3386), V(0.4392)}, {V(0.4392), -V(0.3989), -V(0.0403)}}}
 };
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 /* The various layouts of YUV data we support */
 #define YUV_FORMAT_420	1
