@@ -236,7 +236,7 @@ static SDL_bool SDL_GetDriverAndSensorIndex(SDL_SensorID instance_id, SDL_Sensor
             }
         }
     }
-    SDL_SetError("Sensor %" SDL_PRIs32 " not found", instance_id);
+    SDL_SetError("Sensor %" SDL_PRIu32 " not found", instance_id);
     return SDL_FALSE;
 }
 
