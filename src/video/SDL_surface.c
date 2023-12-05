@@ -1210,10 +1210,12 @@ SDL_Surface *SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *for
         if (set_opaque) {
             int i;
             palette_saved_alpha_ncolors = surface->format->palette->ncolors;
-            palette_saved_alpha = SDL_stack_alloc(Uint8, palette_saved_alpha_ncolors);
-            for (i = 0; i < palette_saved_alpha_ncolors; i++) {
-                palette_saved_alpha[i] = surface->format->palette->colors[i].a;
-                surface->format->palette->colors[i].a = SDL_ALPHA_OPAQUE;
+            if (palette_saved_alpha_ncolors > 0) {
+                palette_saved_alpha = SDL_stack_alloc(Uint8, palette_saved_alpha_ncolors);
+                for (i = 0; i < palette_saved_alpha_ncolors; i++) {
+                    palette_saved_alpha[i] = surface->format->palette->colors[i].a;
+                    surface->format->palette->colors[i].a = SDL_ALPHA_OPAQUE;
+                }
             }
         }
     }
