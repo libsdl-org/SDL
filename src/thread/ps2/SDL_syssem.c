@@ -38,9 +38,14 @@ struct SDL_semaphore
     s32 semid;
 };
 
-static void usercb(struct timer_alarm_t *alarm, void *arg)
+static u64 usercb(s32 id, u64 scheduled_time, u64 actual_time, void *arg, void *pc_value)
 {
+    (void)id;
+    (void)scheduled_time;
+    (void)actual_time;
+    (void)pc_value;
     iReleaseWaitThread((int)arg);
+    return 0;
 }
 
 /* Create a semaphore */
@@ -85,8 +90,6 @@ void SDL_DestroySemaphore(SDL_sem *sem)
 int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
 {
     int ret;
-    struct timer_alarm_t alarm;
-    InitializeTimerAlarm(&alarm);
 
     if (!sem) {
         return SDL_InvalidParamError("sem");
@@ -100,11 +103,10 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
     }
 
     if (timeout != SDL_MUTEX_MAXWAIT) {
-        SetTimerAlarm(&alarm, MSec2TimerBusClock(timeout), &usercb, (void *)GetThreadId());
+        SetTimerAlarm(MSec2TimerBusClock(timeout), &usercb, (void *)GetThreadId());
     }
 
     ret = WaitSema(sem->semid);
-    StopTimerAlarm(&alarm);
 
     if (ret < 0) {
         return SDL_MUTEX_TIMEDOUT;
