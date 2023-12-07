@@ -1172,6 +1172,10 @@ The following functions have been renamed:
 * SDL_UpperBlit() => SDL_BlitSurface()
 * SDL_UpperBlitScaled() => SDL_BlitSurfaceScaled()
 
+The following functions have been removed:
+* SDL_SoftStretch() - please use SDL_BlitSurfaceScaled() without blend mode
+* SDL_SoftStretchLinear() - please use SDL_BlitSurfaceScaledLinear() without blend mode
+
 ## SDL_system.h
 
 SDL_WindowsMessageHook has changed signatures so the message may be modified and it can block further message processing.

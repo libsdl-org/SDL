@@ -30,3 +30,4 @@ General:
 * Added SDL_PlayAudioDevice() to start audio playback
 * Added SDL_ConvertAudioSamples() to convert audio samples from one format to another
 * Added the hint SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY to control re-creation of Android SDL activity.
+* Added SDL_BlitSurfaceScaledLinear() and SDL_BlitSurfaceUncheckedScaledLinear() to perform bilinear scaling between surfaces.

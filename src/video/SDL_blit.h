@@ -593,4 +593,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
 #pragma warning(disable : 4244) /* '=': conversion from 'X' to 'Y', possible loss of data */
 #endif
 
+
+int SDL_UpperSoftStretch(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
+
 #endif /* SDL_blit_h_ */

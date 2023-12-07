@@ -24,21 +24,8 @@
 
 static int SDL_LowerSoftStretchNearest(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
 static int SDL_LowerSoftStretchLinear(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
-static int SDL_UpperSoftStretch(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
 
-int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
-                    SDL_Surface *dst, const SDL_Rect *dstrect)
-{
-    return SDL_UpperSoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
-}
-
-int SDL_SoftStretchLinear(SDL_Surface *src, const SDL_Rect *srcrect,
-                          SDL_Surface *dst, const SDL_Rect *dstrect)
-{
-    return SDL_UpperSoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_LINEAR);
-}
-
-static int SDL_UpperSoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
+int SDL_UpperSoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
                                 SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
 {
     int ret;

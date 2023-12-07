@@ -635,8 +635,6 @@
 #define SDL_ShowSimpleMessageBox SDL_ShowSimpleMessageBox_REAL
 #define SDL_ShowWindow SDL_ShowWindow_REAL
 #define SDL_SignalCondition SDL_SignalCondition_REAL
-#define SDL_SoftStretch SDL_SoftStretch_REAL
-#define SDL_SoftStretchLinear SDL_SoftStretchLinear_REAL
 #define SDL_StartTextInput SDL_StartTextInput_REAL
 #define SDL_StopTextInput SDL_StopTextInput_REAL
 #define SDL_SurfaceHasColorKey SDL_SurfaceHasColorKey_REAL
@@ -987,3 +985,5 @@
 #define SDL_GetTouchDeviceName SDL_GetTouchDeviceName_REAL
 #define SDL_strnstr SDL_strnstr_REAL
 #define SDL_wcsnstr SDL_wcsnstr_REAL
+#define SDL_BlitSurfaceScaledLinear SDL_BlitSurfaceScaledLinear_REAL
+#define SDL_BlitSurfaceUncheckedScaledLinear SDL_BlitSurfaceUncheckedScaledLinear_REAL
