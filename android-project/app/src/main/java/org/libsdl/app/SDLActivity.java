@@ -683,11 +683,11 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
             // Wait for "SDLThread" thread to end
             try {
-                // 500ms timeout, because:
+                // Use a timeout because:
                 // C SDLmain() thread might have started (mSDLThread.start() called)
                 // while the SDL_Init() might not have been called yet,
                 // and so the previous QUIT event will be discarded by SDL_Init() and app is running, not exiting.
-                SDLActivity.mSDLThread.join(500);
+                SDLActivity.mSDLThread.join(1000);
             } catch(Exception e) {
                 Log.v(TAG, "Problem stopping SDLThread: " + e);
             }
