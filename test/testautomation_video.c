@@ -1134,10 +1134,9 @@ static int video_getSetWindowSize(void *arg)
             SDL_SetWindowSize(window, desiredW, desiredH);
             SDLTest_AssertPass("Call to SDL_SetWindowSize(...,%d,%d)", desiredW, desiredH);
 
-            /* The sync may time out if changing the size changes the window position. */
             result = SDL_SyncWindow(window);
             SDLTest_AssertPass("SDL_SyncWindow()");
-            SDLTest_AssertCheck(result >= 0, "Verify return value; expected: >=0, got: %d", result);
+            SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
 
             /* Get size */
             currentW = desiredW + 1;

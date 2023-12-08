@@ -614,12 +614,12 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
                                   window->floating.x, window->floating.y,
                                   &win_x, &win_y);
 
-    /* Always create this with the window->windowed.* fields; if we're
-       creating a windowed mode window, that's fine. If we're creating a
-       fullscreen window, the window manager will want to know these values
-       so it can use them if we go _back_ to windowed mode. SDL manages
-       migration to fullscreen after CreateSDLWindow returns, which will
-       put all the SDL_Window fields and system state as expected. */
+    /* Always create this with the window->floating.* fields; if we're creating a windowed mode window,
+     * that's fine. If we're creating a maximized or fullscreen window, the window manager will want to
+     * know these values so it can use them if we go _back_ to the base floating windowed mode. SDL manages
+     * migration to fullscreen after CreateSDLWindow returns, which will put all the SDL_Window fields and
+     * system state as expected.
+     */
     w = X11_XCreateWindow(display, RootWindow(display, screen),
                           win_x, win_y, window->floating.w, window->floating.h,
                           0, depth, InputOutput, visual,
@@ -868,9 +868,9 @@ static int X11_SyncWindowTimeout(SDL_VideoDevice *_this, SDL_Window *window, int
         X11_XSync(display, False);
         X11_PumpEvents(_this);
 
-        if (window->x == data->expected.x && window->y == data->expected.y &&
-            window->w == data->expected.w && window->h == data->expected.h &&
-            data->pending_operation == X11_PENDING_OP_NONE) {
+        if ((!(data->pending_operation & X11_PENDING_OP_MOVE) || (window->x == data->expected.x && window->y == data->expected.y)) &&
+            (!(data->pending_operation & X11_PENDING_OP_RESIZE) || (window->w == data->expected.w && window->h == data->expected.h)) &&
+            (data->pending_operation & ~(X11_PENDING_OP_MOVE | X11_PENDING_OP_RESIZE)) == X11_PENDING_OP_NONE) {
             /* The window is where it is wanted and nothing is pending. Done. */
             break;
         }
@@ -882,14 +882,14 @@ static int X11_SyncWindowTimeout(SDL_VideoDevice *_this, SDL_Window *window, int
             data->expected.w = window->w;
             data->expected.h = window->h;
 
-            data->pending_operation = X11_PENDING_OP_NONE;
-
             ret = 1;
             break;
         }
 
         SDL_Delay(10);
     }
+
+    data->pending_operation = X11_PENDING_OP_NONE;
 
     if (!caught_x11_error) {
         X11_PumpEvents(_this);
@@ -973,6 +973,7 @@ void X11_UpdateWindowPosition(SDL_Window *window, SDL_bool use_current_position)
                                   &data->expected.x, &data->expected.y);
 
     /* Attempt to move the window */
+    data->pending_operation |= X11_PENDING_OP_MOVE;
     X11_XMoveWindow(display, data->xwindow, data->expected.x, data->expected.y);
 }
 
@@ -1116,6 +1117,7 @@ void X11_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
     } else {
         data->expected.w = window->floating.w;
         data->expected.h = window->floating.h;
+        data->pending_operation |= X11_PENDING_OP_RESIZE;
         X11_XResizeWindow(display, data->xwindow, data->expected.w, data->expected.h);
     }
 }
@@ -1598,10 +1600,12 @@ static int X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this, SDL_Window *wind
 
                 data->expected.w = window->floating.w;
                 data->expected.h = window->floating.h;
+                data->pending_operation |= X11_PENDING_OP_MOVE;
                 X11_XMoveWindow(display, data->xwindow, data->expected.x, data->expected.y);
 
                 /* If the window is bordered, the size will be set when the borders turn themselves back on. */
                 if (window->flags & SDL_WINDOW_BORDERLESS) {
+                    data->pending_operation |= X11_PENDING_OP_RESIZE;
                     X11_XResizeWindow(display, data->xwindow, data->expected.w, data->expected.h);
                 }
             }

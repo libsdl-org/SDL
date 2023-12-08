@@ -88,7 +88,9 @@ struct SDL_WindowData
         X11_PENDING_OP_RESTORE = 0x01,
         X11_PENDING_OP_MINIMIZE = 0x02,
         X11_PENDING_OP_MAXIMIZE = 0x04,
-        X11_PENDING_OP_FULLSCREEN = 0x08
+        X11_PENDING_OP_FULLSCREEN = 0x08,
+        X11_PENDING_OP_MOVE = 0x10,
+        X11_PENDING_OP_RESIZE = 0x20
     } pending_operation;
 
     SDL_bool initial_border_adjustment;
