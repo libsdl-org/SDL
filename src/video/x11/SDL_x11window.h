@@ -78,7 +78,7 @@ struct SDL_WindowData
     SDL_bool pointer_barrier_active;
     PointerBarrier barrier[4];
     SDL_Rect barrier_rect;
-
+#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
     SDL_Rect expected;
     SDL_DisplayMode requested_fullscreen_mode;
 
@@ -94,7 +94,6 @@ struct SDL_WindowData
     SDL_bool initial_border_adjustment;
     SDL_bool window_was_maximized;
     int skip_size_count;
-#endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
     SDL_HitTestResult hit_test_result;
 };
 
