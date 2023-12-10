@@ -995,6 +995,10 @@ static void HandleGamepadAdded(SDL_JoystickID id, SDL_bool verbose)
             if (SDL_GamepadHasRumbleTriggers(gamepad)) {
                 SDL_Log("Trigger rumble supported");
             }
+
+            if (SDL_GetGamepadPlayerIndex(gamepad) >= 0) {
+                SDL_Log("Player index: %d\n", SDL_GetGamepadPlayerIndex(gamepad));
+            }
         }
 
         for (i = 0; i < SDL_arraysize(sensors); ++i) {
