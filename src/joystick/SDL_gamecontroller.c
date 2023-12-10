@@ -27,6 +27,7 @@
 #include "SDL_timer.h"
 #include "SDL_sysjoystick.h"
 #include "SDL_joystick_c.h"
+#include "SDL_steam_virtual_gamepad.h"
 #include "SDL_gamecontrollerdb.h"
 #include "controller_type.h"
 #include "usb_ids.h"
@@ -822,7 +823,7 @@ SDL_COMPILE_TIME_ASSERT(map_StringForGameControllerType, SDL_arraysize(map_Strin
 /*
  * convert a string to its enum equivalent
  */
-static SDL_GameControllerType SDL_GetGameControllerTypeFromString(const char *str)
+SDL_GameControllerType SDL_GetGameControllerTypeFromString(const char *str)
 {
     int i;
 
@@ -2675,7 +2676,8 @@ const char *SDL_GameControllerName(SDL_GameController *gamecontroller)
     {
         CHECK_GAMECONTROLLER_MAGIC(gamecontroller, NULL);
 
-        if (SDL_strcmp(gamecontroller->name, "*") == 0) {
+        if (SDL_strcmp(gamecontroller->name, "*") == 0 ||
+            gamecontroller->joystick->steam_handle != 0) {
             retval = SDL_JoystickName(gamecontroller->joystick);
         } else {
             retval = gamecontroller->name;
@@ -2698,15 +2700,27 @@ const char *SDL_GameControllerPath(SDL_GameController *gamecontroller)
 
 SDL_GameControllerType SDL_GameControllerGetType(SDL_GameController *gamecontroller)
 {
-    SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
+    SDL_GameControllerType type = SDL_CONTROLLER_TYPE_UNKNOWN;
+    SDL_Joystick *joystick;
+    const SDL_SteamVirtualGamepadInfo *info;
 
-    if (!joystick) {
-        return SDL_CONTROLLER_TYPE_UNKNOWN;
+    SDL_LockJoysticks();
+    {
+        CHECK_GAMECONTROLLER_MAGIC(gamecontroller, SDL_CONTROLLER_TYPE_UNKNOWN);
+
+        joystick = gamecontroller->joystick;
+        info = SDL_GetJoystickInstanceVirtualGamepadInfo(joystick->instance_id);
+        if (info) {
+            type = info->type;
+        } else if (gamecontroller->type != SDL_CONTROLLER_TYPE_UNKNOWN) {
+            type = gamecontroller->type;
+        } else {
+            type = SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGetGUID(joystick), SDL_JoystickName(joystick));
+        }
     }
-    if (gamecontroller->type != SDL_CONTROLLER_TYPE_UNKNOWN) {
-        return gamecontroller->type;
-    }
-    return SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGetGUID(joystick), SDL_JoystickName(joystick));
+    SDL_UnlockJoysticks();
+
+    return type;
 }
 
 int SDL_GameControllerGetPlayerIndex(SDL_GameController *gamecontroller)
@@ -2780,6 +2794,21 @@ const char * SDL_GameControllerGetSerial(SDL_GameController *gamecontroller)
         return NULL;
     }
     return SDL_JoystickGetSerial(joystick);
+}
+
+Uint64 SDL_GameControllerGetSteamHandle(SDL_GameController *gamecontroller)
+{
+    Uint64 handle = 0;
+
+    SDL_LockJoysticks();
+    {
+        CHECK_GAMECONTROLLER_MAGIC(gamecontroller, 0);
+
+        handle = gamecontroller->joystick->steam_handle;
+    }
+    SDL_UnlockJoysticks();
+
+    return handle;
 }
 
 /*

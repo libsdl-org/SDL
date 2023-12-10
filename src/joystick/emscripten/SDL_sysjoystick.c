@@ -274,6 +274,11 @@ static const char *EMSCRIPTEN_JoystickGetDevicePath(int device_index)
     return NULL;
 }
 
+static int EMSCRIPTEN_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return -1;
+}
+
 static int EMSCRIPTEN_JoystickGetDevicePlayerIndex(int device_index)
 {
     return -1;
@@ -421,6 +426,7 @@ SDL_JoystickDriver SDL_EMSCRIPTEN_JoystickDriver = {
     EMSCRIPTEN_JoystickDetect,
     EMSCRIPTEN_JoystickGetDeviceName,
     EMSCRIPTEN_JoystickGetDevicePath,
+    EMSCRIPTEN_JoystickGetDeviceSteamVirtualGamepadSlot,
     EMSCRIPTEN_JoystickGetDevicePlayerIndex,
     EMSCRIPTEN_JoystickSetDevicePlayerIndex,
     EMSCRIPTEN_JoystickGetDeviceGUID,

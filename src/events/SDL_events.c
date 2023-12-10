@@ -425,6 +425,9 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_EVENT_CASE(SDL_CONTROLLERDEVICEREMAPPED)
         PRINT_CONTROLLERDEV_EVENT(event);
         break;
+        SDL_EVENT_CASE(SDL_CONTROLLERSTEAMHANDLEUPDATED)
+        PRINT_CONTROLLERDEV_EVENT(event);
+        break;
 #undef PRINT_CONTROLLERDEV_EVENT
 
 #define PRINT_CTOUCHPAD_EVENT(event)                                                                                     \

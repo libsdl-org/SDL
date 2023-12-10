@@ -124,6 +124,11 @@ static const char *PSP_JoystickGetDevicePath(int index)
     return NULL;
 }
 
+static int PSP_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return -1;
+}
+
 static int PSP_JoystickGetDevicePlayerIndex(int device_index)
 {
     return -1;
@@ -255,6 +260,7 @@ SDL_JoystickDriver SDL_PSP_JoystickDriver = {
     PSP_JoystickDetect,
     PSP_JoystickGetDeviceName,
     PSP_JoystickGetDevicePath,
+    PSP_JoystickGetDeviceSteamVirtualGamepadSlot,
     PSP_JoystickGetDevicePlayerIndex,
     PSP_JoystickSetDevicePlayerIndex,
     PSP_JoystickGetDeviceGUID,

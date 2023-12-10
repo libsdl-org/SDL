@@ -28,6 +28,7 @@
 #include "SDL_sysjoystick.h"
 #include "SDL_hints.h"
 #include "../SDL_hints_c.h"
+#include "SDL_steam_virtual_gamepad.h"
 
 #ifndef SDL_EVENTS_DISABLED
 #include "../events/SDL_events_c.h"
@@ -622,6 +623,8 @@ int SDL_JoystickInit(void)
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
                         SDL_JoystickAllowBackgroundEventsChanged, NULL);
 
+    SDL_InitSteamVirtualGamepadInfo();
+
     status = -1;
     for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
         if (SDL_joystick_drivers[i]->Init() >= 0) {
@@ -660,6 +663,19 @@ SDL_JoystickID SDL_GetNextJoystickInstanceID()
     return SDL_AtomicIncRef(&SDL_next_joystick_instance_id);
 }
 
+const SDL_SteamVirtualGamepadInfo *SDL_GetJoystickInstanceVirtualGamepadInfo(SDL_JoystickID instance_id)
+{
+    SDL_JoystickDriver *driver;
+    int device_index;
+    const SDL_SteamVirtualGamepadInfo *info = NULL;
+
+    if (SDL_SteamVirtualGamepadEnabled() &&
+        SDL_GetDriverAndJoystickIndex(SDL_JoystickGetDeviceIndexFromInstanceID(instance_id), &driver, &device_index)) {
+        info = SDL_GetSteamVirtualGamepadInfo(driver->GetDeviceSteamVirtualGamepadSlot(device_index));
+    }
+    return info;
+}
+
 /*
  * Get the implementation dependent name of a joystick
  */
@@ -667,9 +683,13 @@ const char *SDL_JoystickNameForIndex(int device_index)
 {
     SDL_JoystickDriver *driver;
     const char *name = NULL;
+    const SDL_SteamVirtualGamepadInfo *info;
 
     SDL_LockJoysticks();
-    if (SDL_GetDriverAndJoystickIndex(device_index, &driver, &device_index)) {
+    info = SDL_GetJoystickInstanceVirtualGamepadInfo(SDL_JoystickGetDeviceInstanceID(device_index));
+    if (info) {
+        name = info->name;
+    } else if (SDL_GetDriverAndJoystickIndex(device_index, &driver, &device_index)) {
         name = driver->GetDeviceName(device_index);
     }
     SDL_UnlockJoysticks();
@@ -750,6 +770,7 @@ SDL_Joystick *SDL_JoystickOpen(int device_index)
     const char *joystickname = NULL;
     const char *joystickpath = NULL;
     SDL_JoystickPowerLevel initial_power_level;
+    const SDL_SteamVirtualGamepadInfo *info;
 
     SDL_LockJoysticks();
 
@@ -838,6 +859,12 @@ SDL_Joystick *SDL_JoystickOpen(int device_index)
     }
 
     joystick->is_game_controller = SDL_IsGameController(device_index);
+
+    /* Get the Steam Input API handle */
+    info = SDL_GetJoystickInstanceVirtualGamepadInfo(instance_id);
+    if (info) {
+        joystick->steam_handle = info->handle;
+    }
 
     /* Add joystick to list */
     ++joystick->ref_count;
@@ -1282,15 +1309,20 @@ SDL_Joystick *SDL_JoystickFromPlayerIndex(int player_index)
 const char *SDL_JoystickName(SDL_Joystick *joystick)
 {
     const char *retval;
+    const SDL_SteamVirtualGamepadInfo *info;
 
     SDL_LockJoysticks();
-    {
+    info = SDL_GetJoystickInstanceVirtualGamepadInfo(joystick->instance_id);
+    if (info) {
+        retval = info->name;
+    } else {
         CHECK_JOYSTICK_MAGIC(joystick, NULL);
 
         retval = joystick->name;
     }
     SDL_UnlockJoysticks();
 
+    /* FIXME: Really we should reference count this name so it doesn't go away after unlock */
     return retval;
 }
 
@@ -1609,6 +1641,8 @@ void SDL_JoystickQuit(void)
     SDL_QuitSubSystem(SDL_INIT_EVENTS);
 #endif
 
+    SDL_QuitSteamVirtualGamepadInfo();
+
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
                         SDL_JoystickAllowBackgroundEventsChanged, NULL);
 
@@ -1709,7 +1743,10 @@ void SDL_PrivateJoystickAdded(SDL_JoystickID device_instance)
     }
 
     if (SDL_GetDriverAndJoystickIndex(device_index, &driver, &driver_device_index)) {
-        player_index = driver->GetDevicePlayerIndex(driver_device_index);
+        player_index = driver->GetDeviceSteamVirtualGamepadSlot(driver_device_index);
+        if (player_index < 0) {
+            player_index = driver->GetDevicePlayerIndex(driver_device_index);
+        }
     }
     if (player_index < 0 && SDL_IsGameController(device_index)) {
         player_index = SDL_FindFreePlayerIndex();
@@ -2064,6 +2101,43 @@ int SDL_PrivateJoystickButton(SDL_Joystick *joystick, Uint8 button, Uint8 state)
     return posted;
 }
 
+static void SendSteamHandleUpdateEvents(void)
+{
+    SDL_Joystick *joystick;
+    const SDL_SteamVirtualGamepadInfo *info;
+
+    /* Check to see if any Steam handles changed */
+    for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
+        SDL_bool changed = SDL_FALSE;
+
+        if (!joystick->is_game_controller) {
+            continue;
+        }
+
+        info = SDL_GetJoystickInstanceVirtualGamepadInfo(joystick->instance_id);
+        if (info) {
+            if (joystick->steam_handle != info->handle) {
+                joystick->steam_handle = info->handle;
+                changed = SDL_TRUE;
+            }
+        } else {
+            if (joystick->steam_handle != 0) {
+                joystick->steam_handle = 0;
+                changed = SDL_TRUE;
+            }
+        }
+        if (changed) {
+            SDL_Event event;
+
+            SDL_zero(event);
+            event.type = SDL_CONTROLLERSTEAMHANDLEUPDATED;
+            event.common.timestamp = 0;
+            event.cdevice.which = joystick->instance_id;
+            SDL_PushEvent(&event);
+        }
+    }
+}
+
 void SDL_JoystickUpdate(void)
 {
     int i;
@@ -2075,6 +2149,10 @@ void SDL_JoystickUpdate(void)
     }
 
     SDL_LockJoysticks();
+
+    if (SDL_UpdateSteamVirtualGamepadInfo()) {
+        SendSteamHandleUpdateEvents();
+    }
 
 #ifdef SDL_JOYSTICK_HIDAPI
     /* Special function for HIDAPI devices, as a single device can provide multiple SDL_Joysticks */
@@ -2906,18 +2984,38 @@ SDL_JoystickGUID SDL_JoystickGetDeviceGUID(int device_index)
 Uint16 SDL_JoystickGetDeviceVendor(int device_index)
 {
     Uint16 vendor;
-    SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(device_index);
+    const SDL_SteamVirtualGamepadInfo *info;
 
-    SDL_GetJoystickGUIDInfo(guid, &vendor, NULL, NULL, NULL);
+    SDL_LockJoysticks();
+    info = SDL_GetJoystickInstanceVirtualGamepadInfo(SDL_JoystickGetDeviceInstanceID(device_index));
+    if (info) {
+        vendor = info->vendor_id;
+    } else {
+        SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(device_index);
+
+        SDL_GetJoystickGUIDInfo(guid, &vendor, NULL, NULL, NULL);
+    }
+    SDL_UnlockJoysticks();
+
     return vendor;
 }
 
 Uint16 SDL_JoystickGetDeviceProduct(int device_index)
 {
     Uint16 product;
-    SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(device_index);
+    const SDL_SteamVirtualGamepadInfo *info;
 
-    SDL_GetJoystickGUIDInfo(guid, NULL, &product, NULL, NULL);
+    SDL_LockJoysticks();
+    info = SDL_GetJoystickInstanceVirtualGamepadInfo(SDL_JoystickGetDeviceInstanceID(device_index));
+    if (info) {
+        product = info->product_id;
+    } else {
+        SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(device_index);
+
+        SDL_GetJoystickGUIDInfo(guid, NULL, &product, NULL, NULL);
+    }
+    SDL_UnlockJoysticks();
+
     return product;
 }
 
@@ -2995,18 +3093,38 @@ SDL_JoystickGUID SDL_JoystickGetGUID(SDL_Joystick *joystick)
 Uint16 SDL_JoystickGetVendor(SDL_Joystick *joystick)
 {
     Uint16 vendor;
-    SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
+    const SDL_SteamVirtualGamepadInfo *info;
 
-    SDL_GetJoystickGUIDInfo(guid, &vendor, NULL, NULL, NULL);
+    SDL_LockJoysticks();
+    info = SDL_GetJoystickInstanceVirtualGamepadInfo(joystick->instance_id);
+    if (info) {
+        vendor = info->vendor_id;
+    } else {
+        SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
+
+        SDL_GetJoystickGUIDInfo(guid, &vendor, NULL, NULL, NULL);
+    }
+    SDL_UnlockJoysticks();
+
     return vendor;
 }
 
 Uint16 SDL_JoystickGetProduct(SDL_Joystick *joystick)
 {
     Uint16 product;
-    SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
+    const SDL_SteamVirtualGamepadInfo *info;
 
-    SDL_GetJoystickGUIDInfo(guid, NULL, &product, NULL, NULL);
+    SDL_LockJoysticks();
+    info = SDL_GetJoystickInstanceVirtualGamepadInfo(joystick->instance_id);
+    if (info) {
+        product = info->product_id;
+    } else {
+        SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
+
+        SDL_GetJoystickGUIDInfo(guid, NULL, &product, NULL, NULL);
+    }
+    SDL_UnlockJoysticks();
+
     return product;
 }
 

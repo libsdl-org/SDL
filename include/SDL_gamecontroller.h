@@ -525,6 +525,20 @@ extern DECLSPEC Uint16 SDLCALL SDL_GameControllerGetFirmwareVersion(SDL_GameCont
 extern DECLSPEC const char * SDLCALL SDL_GameControllerGetSerial(SDL_GameController *gamecontroller);
 
 /**
+ * Get the Steam Input handle of an opened controller, if available.
+ *
+ * Returns an InputHandle_t for the controller that can be used with Steam Input API:
+ * https://partner.steamgames.com/doc/api/ISteamInput
+ *
+ * \param gamecontroller the game controller object to query.
+ * \returns the gamepad handle, or 0 if unavailable.
+ *
+ * \since This function is available since SDL 2.30.0.
+ */
+extern DECLSPEC Uint64 SDLCALL SDL_GameControllerGetSteamHandle(SDL_GameController *gamecontroller);
+
+
+/**
  * Check if a controller has been opened and is currently connected.
  *
  * \param gamecontroller a game controller identifier previously returned by

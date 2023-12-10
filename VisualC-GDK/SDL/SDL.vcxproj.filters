@@ -501,6 +501,9 @@
     <ClInclude Include="..\..\src\joystick\SDL_joystick_c.h">
       <Filter>joystick</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\joystick\SDL_steam_virtual_gamepad.h">
+      <Filter>joystick</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\joystick\SDL_sysjoystick.h">
       <Filter>joystick</Filter>
     </ClInclude>
@@ -941,6 +944,9 @@
       <Filter>joystick</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\SDL_joystick.c">
+      <Filter>joystick</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\joystick\SDL_steam_virtual_gamepad.c">
       <Filter>joystick</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libm\e_atan2.c">

@@ -125,6 +125,7 @@
     <ClInclude Include="..\src\joystick\controller_type.h" />
     <ClInclude Include="..\src\joystick\SDL_gamecontrollerdb.h" />
     <ClInclude Include="..\src\joystick\SDL_joystick_c.h" />
+    <ClInclude Include="..\src\joystick\SDL_steam_virtual_gamepad.h" />
     <ClInclude Include="..\src\joystick\SDL_sysjoystick.h" />
     <ClInclude Include="..\src\joystick\virtual\SDL_virtualjoystick_c.h" />
     <ClInclude Include="..\src\joystick\windows\SDL_dinputjoystick_c.h" />
@@ -237,6 +238,7 @@
     <ClCompile Include="..\src\joystick\controller_type.c" />
     <ClCompile Include="..\src\joystick\SDL_gamecontroller.c" />
     <ClCompile Include="..\src\joystick\SDL_joystick.c" />
+    <ClCompile Include="..\src\joystick\SDL_steam_virtual_gamepad.c" />
     <ClCompile Include="..\src\joystick\virtual\SDL_virtualjoystick.c" />
     <ClCompile Include="..\src\joystick\windows\SDL_dinputjoystick.c" />
     <ClCompile Include="..\src\joystick\windows\SDL_windowsjoystick.c" />

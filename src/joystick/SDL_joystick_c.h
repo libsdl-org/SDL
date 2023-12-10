@@ -34,6 +34,7 @@ extern "C" {
 #endif
 
 struct _SDL_JoystickDriver;
+struct SDL_SteamVirtualGamepadInfo;
 extern char SDL_joystick_magic;
 
 /* Initialization and shutdown functions */
@@ -178,6 +179,9 @@ extern int SDL_PrivateJoystickSensor(SDL_Joystick *joystick,
                                      SDL_SensorType type, Uint64 timestamp_us, const float *data, int num_values);
 extern void SDL_PrivateJoystickBatteryLevel(SDL_Joystick *joystick,
                                             SDL_JoystickPowerLevel ePowerLevel);
+
+/* Function to get the Steam virtual gamepad info for a joystick */
+extern const struct SDL_SteamVirtualGamepadInfo *SDL_GetJoystickInstanceVirtualGamepadInfo(SDL_JoystickID instance_id);
 
 /* Internal sanity checking functions */
 extern SDL_bool SDL_PrivateJoystickValid(SDL_Joystick *joystick);

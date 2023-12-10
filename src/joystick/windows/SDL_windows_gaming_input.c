@@ -64,6 +64,7 @@ typedef struct WindowsGamingInputControllerState
     int naxes;
     int nhats;
     int nbuttons;
+    int steam_virtual_gamepad_slot;
 } WindowsGamingInputControllerState;
 
 static struct
@@ -385,6 +386,50 @@ static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_Release(__FI
     return rc;
 }
 
+static int GetSteamVirtualGamepadSlot(__x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller, Uint16 vendor_id, Uint16 product_id)
+{
+    int slot = -1;
+
+    if (vendor_id == USB_VENDOR_VALVE &&
+        product_id == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD) {
+        __x_ABI_CWindows_CGaming_CInput_CIRawGameController2 *controller2 = NULL;
+        HRESULT hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(controller, &IID_IRawGameController2, (void **)&controller2);
+        if (SUCCEEDED(hr)) {
+            HSTRING hString;
+            hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController2_get_NonRoamableId(controller2, &hString);
+            if (SUCCEEDED(hr)) {
+                typedef PCWSTR(WINAPI * WindowsGetStringRawBuffer_t)(HSTRING string, UINT32 * length);
+                typedef HRESULT(WINAPI * WindowsDeleteString_t)(HSTRING string);
+
+                WindowsGetStringRawBuffer_t WindowsGetStringRawBufferFunc = NULL;
+                WindowsDeleteString_t WindowsDeleteStringFunc = NULL;
+#ifdef __WINRT__
+                WindowsGetStringRawBufferFunc = WindowsGetStringRawBuffer;
+                WindowsDeleteStringFunc = WindowsDeleteString;
+#else
+                {
+                    WindowsGetStringRawBufferFunc = (WindowsGetStringRawBuffer_t)WIN_LoadComBaseFunction("WindowsGetStringRawBuffer");
+                    WindowsDeleteStringFunc = (WindowsDeleteString_t)WIN_LoadComBaseFunction("WindowsDeleteString");
+                }
+#endif /* __WINRT__ */
+                if (WindowsGetStringRawBufferFunc && WindowsDeleteStringFunc) {
+                    PCWSTR string = WindowsGetStringRawBufferFunc(hString, NULL);
+                    if (string) {
+                        char *id = WIN_StringToUTF8W(string);
+                        if (id) {
+                            (void)SDL_sscanf(id, "{wgi/nrid/:steam-%*X&%*X&%*X#%d#%*u}", &slot);
+                            SDL_free(id);
+                        }
+                    }
+                    WindowsDeleteStringFunc(hString);
+                }
+            }
+            __x_ABI_CWindows_CGaming_CInput_CIRawGameController2_Release(controller2);
+        }
+    }
+    return slot;
+}
+
 static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdded(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e)
 {
     HRESULT hr;
@@ -502,6 +547,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
                 state->name = name;
                 state->guid = guid;
                 state->type = type;
+                state->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot(controller, vendor, product);
 
                 __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_ButtonCount(controller, &state->nbuttons);
                 __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_AxisCount(controller, &state->naxes);
@@ -686,6 +732,11 @@ static const char *WGI_JoystickGetDeviceName(int device_index)
 static const char *WGI_JoystickGetDevicePath(int device_index)
 {
     return NULL;
+}
+
+static int WGI_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return wgi.controllers[device_index].steam_virtual_gamepad_slot;
 }
 
 static int WGI_JoystickGetDevicePlayerIndex(int device_index)
@@ -1004,6 +1055,7 @@ SDL_JoystickDriver SDL_WGI_JoystickDriver = {
     WGI_JoystickDetect,
     WGI_JoystickGetDeviceName,
     WGI_JoystickGetDevicePath,
+    WGI_JoystickGetDeviceSteamVirtualGamepadSlot,
     WGI_JoystickGetDevicePlayerIndex,
     WGI_JoystickSetDevicePlayerIndex,
     WGI_JoystickGetDeviceGUID,

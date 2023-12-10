@@ -871,3 +871,4 @@
 ++'_SDL_HasWindowSurface'.'SDL2.dll'.'SDL_HasWindowSurface'
 ++'_SDL_DestroyWindowSurface'.'SDL2.dll'.'SDL_DestroyWindowSurface'
 # ++'_SDL_GDKGetDefaultUser'.'SDL2.dll'.'SDL_GDKGetDefaultUser'
+++'_SDL_GameControllerGetSteamHandle'.'SDL2.dll'.'SDL_GameControllerGetSteamHandle'

@@ -542,6 +542,11 @@ static const char *ANDROID_JoystickGetDevicePath(int device_index)
     return NULL;
 }
 
+static int ANDROID_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return -1;
+}
+
 static int ANDROID_JoystickGetDevicePlayerIndex(int device_index)
 {
     return -1;
@@ -682,6 +687,7 @@ SDL_JoystickDriver SDL_ANDROID_JoystickDriver = {
     ANDROID_JoystickDetect,
     ANDROID_JoystickGetDeviceName,
     ANDROID_JoystickGetDevicePath,
+    ANDROID_JoystickGetDeviceSteamVirtualGamepadSlot,
     ANDROID_JoystickGetDevicePlayerIndex,
     ANDROID_JoystickSetDevicePlayerIndex,
     ANDROID_JoystickGetDeviceGUID,

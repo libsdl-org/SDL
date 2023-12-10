@@ -574,6 +574,11 @@ static const char *BSD_JoystickGetDevicePath(int device_index)
     return JoystickByDevIndex(device_index)->path;
 }
 
+static int BSD_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return -1;
+}
+
 static int BSD_JoystickGetDevicePlayerIndex(int device_index)
 {
     return -1;
@@ -870,6 +875,7 @@ SDL_JoystickDriver SDL_BSD_JoystickDriver = {
     BSD_JoystickDetect,
     BSD_JoystickGetDeviceName,
     BSD_JoystickGetDevicePath,
+    BSD_JoystickGetDeviceSteamVirtualGamepadSlot,
     BSD_JoystickGetDevicePlayerIndex,
     BSD_JoystickSetDevicePlayerIndex,
     BSD_JoystickGetDeviceGUID,

@@ -71,6 +71,7 @@ struct joystick_hwdata
 
     int instance_id;
     SDL_JoystickGUID guid;
+    int steam_virtual_gamepad_slot;
 
     struct joystick_hwdata *pNext; /* next device */
 };
