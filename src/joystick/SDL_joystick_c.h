@@ -225,12 +225,24 @@ extern SDL_bool SDL_PrivateJoystickGetAutoGamepadMapping(SDL_JoystickID instance
 
 typedef struct
 {
-    int num_entries;
-    int max_entries;
-    Uint32 *entries;
+    const char *included_hint_name;
+    int num_included_entries;
+    int max_included_entries;
+    Uint32 *included_entries;
+
+    const char *excluded_hint_name;
+    int num_excluded_entries;
+    int max_excluded_entries;
+    Uint32 *excluded_entries;
+
+    int num_initial_entries;
+    Uint32 *initial_entries;
+
+    SDL_bool initialized;
 } SDL_vidpid_list;
 
-extern void SDL_LoadVIDPIDListFromHint(const char *hint, SDL_vidpid_list *list);
+extern void SDL_LoadVIDPIDList(SDL_vidpid_list *list);
+extern void SDL_LoadVIDPIDListFromHints(SDL_vidpid_list *list, const char *included_list, const char *excluded_list);
 extern SDL_bool SDL_VIDPIDInList(Uint16 vendor_id, Uint16 product_id, const SDL_vidpid_list *list);
 extern void SDL_FreeVIDPIDList(SDL_vidpid_list *list);
 
