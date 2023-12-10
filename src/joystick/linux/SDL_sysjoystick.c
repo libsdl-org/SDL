@@ -1114,7 +1114,7 @@ static const char *LINUX_JoystickGetDevicePath(int device_index)
 
 static int LINUX_JoystickGetDevicePlayerIndex(int device_index)
 {
-    return GetJoystickByDevIndex(device_index)->steam_virtual_gamepad_slot;
+    return JoystickByDevIndex(device_index)->steam_virtual_gamepad_slot;
 }
 
 static void LINUX_JoystickSetDevicePlayerIndex(int device_index, int player_index)
