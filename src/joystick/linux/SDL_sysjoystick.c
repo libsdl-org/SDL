@@ -828,6 +828,104 @@ static int sort_entries(const void *_a, const void *_b)
     return numA - numB;
 }
 
+typedef struct
+{
+    char *path;
+    int slot;
+} VirtualGamepadEntry;
+
+static int SDLCALL sort_virtual_gamepads(const void *_a, const void *_b)
+{
+    const VirtualGamepadEntry *a = (const VirtualGamepadEntry *)_a;
+    const VirtualGamepadEntry *b = (const VirtualGamepadEntry *)_b;
+    return a->slot - b->slot;
+}
+
+static SDL_bool get_virtual_gamepad_slot(const char *name, int *slot)
+{
+    const char *digits = SDL_strstr(name, "pad ");
+    if (digits) {
+        digits += 4;
+        if (SDL_isdigit(*digits)) {
+            *slot = SDL_atoi(digits);
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+static void LINUX_ScanSteamVirtualGamepads(void)
+{
+    int i, count;
+    int fd;
+    struct dirent **entries = NULL;
+    char path[PATH_MAX];
+    char name[128];
+    struct input_id inpid;
+    int num_virtual_gamepads = 0;
+    int virtual_gamepad_slot;
+    VirtualGamepadEntry *virtual_gamepads = NULL;
+
+    count = scandir("/dev/input", &entries, filter_entries, NULL);
+    for (i = 0; i < count; ++i) {
+        (void)SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", entries[i]->d_name);
+
+        fd = open(path, O_RDONLY | O_CLOEXEC, 0);
+        if (fd >= 0) {
+            if (ioctl(fd, EVIOCGID, &inpid) == 0 &&
+                inpid.vendor == USB_VENDOR_VALVE &&
+                inpid.product == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD &&
+                ioctl(fd, EVIOCGNAME(sizeof(name)), name) > 0 &&
+                get_virtual_gamepad_slot(name, &virtual_gamepad_slot)) {
+                VirtualGamepadEntry *new_virtual_gamepads = (VirtualGamepadEntry *)SDL_realloc(virtual_gamepads, (num_virtual_gamepads + 1) * sizeof(*virtual_gamepads));
+                if (new_virtual_gamepads) {
+                    VirtualGamepadEntry *entry = &new_virtual_gamepads[num_virtual_gamepads];
+                    entry->path = SDL_strdup(path);
+                    entry->slot = virtual_gamepad_slot;
+                    if (entry->path) {
+                        virtual_gamepads = new_virtual_gamepads;
+                        ++num_virtual_gamepads;
+                    } else {
+                        SDL_free(entry->path);
+                        SDL_free(new_virtual_gamepads);
+                    }
+                }
+            }
+            close(fd);
+        }
+        free(entries[i]); /* This should NOT be SDL_free() */
+    }
+    free(entries); /* This should NOT be SDL_free() */
+
+    if (num_virtual_gamepads > 1) {
+        SDL_qsort(virtual_gamepads, num_virtual_gamepads, sizeof(*virtual_gamepads), sort_virtual_gamepads);
+    }
+    for (i = 0; i < num_virtual_gamepads; ++i) {
+        MaybeAddDevice(virtual_gamepads[i].path);
+        SDL_free(virtual_gamepads[i].path);
+    }
+    SDL_free(virtual_gamepads);
+}
+
+static void LINUX_ScanInputDevices(void)
+{
+    int i, count;
+    struct dirent **entries = NULL;
+    char path[PATH_MAX];
+
+    count = scandir("/dev/input", &entries, filter_entries, NULL);
+    if (count > 1) {
+        SDL_qsort(entries, count, sizeof(*entries), sort_entries);
+    }
+    for (i = 0; i < count; ++i) {
+        (void)SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", entries[i]->d_name);
+        MaybeAddDevice(path);
+
+        free(entries[i]); /* This should NOT be SDL_free() */
+    }
+    free(entries); /* This should NOT be SDL_free() */
+}
+
 static void LINUX_FallbackJoystickDetect(void)
 {
     const Uint32 SDL_JOY_DETECT_INTERVAL_MS = 3000; /* Update every 3 seconds */
@@ -838,21 +936,10 @@ static void LINUX_FallbackJoystickDetect(void)
 
         /* Opening input devices can generate synchronous device I/O, so avoid it if we can */
         if (stat("/dev/input", &sb) == 0 && sb.st_mtime != last_input_dir_mtime) {
-            int i, count;
-            struct dirent **entries = NULL;
-            char path[PATH_MAX];
+            /* Look for Steam virtual gamepads first, and sort by Steam controller slot */
+            LINUX_ScanSteamVirtualGamepads();
 
-            count = scandir("/dev/input", &entries, filter_entries, NULL);
-            if (count > 1) {
-                qsort(entries, count, sizeof(*entries), sort_entries);
-            }
-            for (i = 0; i < count; ++i) {
-                (void)SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", entries[i]->d_name);
-                MaybeAddDevice(path);
-
-                free(entries[i]); /* This should NOT be SDL_free() */
-            }
-            free(entries); /* This should NOT be SDL_free() */
+            LINUX_ScanInputDevices();
 
             last_input_dir_mtime = sb.st_mtime;
         }
