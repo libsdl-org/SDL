@@ -156,18 +156,18 @@ struct _SDL_GameController
         return retval;                                                       \
     }
 
-static SDL_vidpid_list SDL_allowed_controllers;
-static SDL_vidpid_list SDL_ignored_controllers;
-
-static void SDLCALL SDL_GameControllerIgnoreDevicesChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    SDL_LoadVIDPIDListFromHint(hint, &SDL_ignored_controllers);
-}
-
-static void SDLCALL SDL_GameControllerIgnoreDevicesExceptChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    SDL_LoadVIDPIDListFromHint(hint, &SDL_allowed_controllers);
-}
+static SDL_vidpid_list SDL_allowed_controllers = {
+    SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT, 0, 0, NULL,
+    NULL, 0, 0, NULL,
+    0, NULL,
+    SDL_FALSE
+};
+static SDL_vidpid_list SDL_ignored_controllers = {
+    SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES, 0, 0, NULL,
+    NULL, 0, 0, NULL,
+    0, NULL,
+    SDL_FALSE
+};
 
 static ControllerMapping_t *SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, SDL_bool *existing, SDL_ControllerMappingPriority priority);
 static int SDL_PrivateGameControllerAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis, Sint16 value);
@@ -1920,10 +1920,8 @@ int SDL_GameControllerInitMappings(void)
     /* load in any user supplied config */
     SDL_GameControllerLoadHints();
 
-    SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES,
-                        SDL_GameControllerIgnoreDevicesChanged, NULL);
-    SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT,
-                        SDL_GameControllerIgnoreDevicesExceptChanged, NULL);
+    SDL_LoadVIDPIDList(&SDL_allowed_controllers);
+    SDL_LoadVIDPIDList(&SDL_ignored_controllers);
 
     return 0;
 }
@@ -2136,8 +2134,8 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
         return SDL_TRUE;
     }
 
-    if (SDL_allowed_controllers.num_entries == 0 &&
-        SDL_ignored_controllers.num_entries == 0) {
+    if (SDL_allowed_controllers.num_included_entries == 0 &&
+        SDL_ignored_controllers.num_included_entries == 0) {
         return SDL_FALSE;
     }
 
@@ -2160,7 +2158,7 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
         }
     }
 
-    if (SDL_allowed_controllers.num_entries > 0) {
+    if (SDL_allowed_controllers.num_included_entries > 0) {
         if (SDL_VIDPIDInList(vendor, product, &SDL_allowed_controllers)) {
             return SDL_FALSE;
         }
@@ -3072,11 +3070,6 @@ void SDL_GameControllerQuitMappings(void)
     }
 
     SDL_DelEventWatch(SDL_GameControllerEventWatcher, NULL);
-
-    SDL_DelHintCallback(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES,
-                        SDL_GameControllerIgnoreDevicesChanged, NULL);
-    SDL_DelHintCallback(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT,
-                        SDL_GameControllerIgnoreDevicesExceptChanged, NULL);
 
     SDL_FreeVIDPIDList(&SDL_allowed_controllers);
     SDL_FreeVIDPIDList(&SDL_ignored_controllers);

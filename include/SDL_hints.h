@@ -632,6 +632,110 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS "SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"
 
 /**
+ *  A variable containing a list of arcade stick style controllers.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES "SDL_JOYSTICK_ARCADESTICK_DEVICES"
+
+/**
+ *  A variable containing a list of devices that are not arcade stick style controllers. This will override SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES and the built in device list.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED "SDL_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED"
+
+/**
+ *  A variable containing a list of devices that should not be considerd joysticks.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_BLACKLIST_DEVICES "SDL_JOYSTICK_BLACKLIST_DEVICES"
+
+/**
+ *  A variable containing a list of devices that should be considered joysticks. This will override SDL_HINT_JOYSTICK_BLACKLIST_DEVICES and the built in device list.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_BLACKLIST_DEVICES_EXCLUDED "SDL_JOYSTICK_BLACKLIST_DEVICES_EXCLUDED"
+
+/**
+ *  A variable containing a list of flightstick style controllers.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES "SDL_JOYSTICK_FLIGHTSTICK_DEVICES"
+
+/**
+ *  A variable containing a list of devices that are not flightstick style controllers. This will override SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES and the built in device list.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED "SDL_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED"
+
+/**
+ *  A variable containing a list of devices known to have a GameCube form factor.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_GAMECUBE_DEVICES "SDL_JOYSTICK_GAMECUBE_DEVICES"
+
+/**
+ *  A variable containing a list of devices known not to have a GameCube form factor. This will override SDL_HINT_JOYSTICK_GAMECUBE_DEVICES and the built in device list.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_GAMECUBE_DEVICES_EXCLUDED "SDL_JOYSTICK_GAMECUBE_DEVICES_EXCLUDED"
+
+/**
  *  \brief  A variable controlling whether the HIDAPI joystick drivers should be used.
  *
  *  This variable can be set to the following values:
@@ -1026,6 +1130,32 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_THREAD "SDL_JOYSTICK_THREAD"
 
 /**
+ *  A variable containing a list of throttle style controllers.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_THROTTLE_DEVICES "SDL_JOYSTICK_THROTTLE_DEVICES"
+
+/**
+ *  A variable containing a list of devices that are not throttle style controllers. This will override SDL_HINT_JOYSTICK_THROTTLE_DEVICES and the built in device list.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_THROTTLE_DEVICES_EXCLUDED "SDL_JOYSTICK_THROTTLE_DEVICES_EXCLUDED"
+
+/**
   *  \brief  A variable controlling whether Windows.Gaming.Input should be used for controller handling.
   *
   *  This variable can be set to the following values:
@@ -1033,6 +1163,45 @@ extern "C" {
   *    "1"       - WGI is used (the default)
   */
 #define SDL_HINT_JOYSTICK_WGI "SDL_JOYSTICK_WGI"
+
+/**
+ *  A variable containing a list of wheel style controllers.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_WHEEL_DEVICES "SDL_JOYSTICK_WHEEL_DEVICES"
+
+/**
+ *  A variable containing a list of devices that are not wheel style controllers. This will override SDL_HINT_JOYSTICK_WHEEL_DEVICES and the built in device list.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_WHEEL_DEVICES_EXCLUDED "SDL_JOYSTICK_WHEEL_DEVICES_EXCLUDED"
+
+/**
+ *  A variable containing a list of devices known to have all axes centered at zero.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_ZERO_CENTERED_DEVICES "SDL_JOYSTICK_ZERO_CENTERED_DEVICES"
 
 /**
  * \brief Determines whether SDL enforces that DRM master is required in order
@@ -1502,6 +1671,32 @@ extern "C" {
  *  By default the prefered OS device is used.
  */
 #define SDL_HINT_RENDER_METAL_PREFER_LOW_POWER_DEVICE "SDL_RENDER_METAL_PREFER_LOW_POWER_DEVICE"
+
+/**
+ *  A variable containing a list of ROG gamepad capable mice.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_ROG_GAMEPAD_MICE "SDL_ROG_GAMEPAD_MICE"
+
+/**
+ *  A variable containing a list of devices that are not ROG gamepad capable mice. This will override SDL_HINT_ROG_GAMEPAD_MICE and the built in device list.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_ROG_GAMEPAD_MICE_EXCLUDED "SDL_ROG_GAMEPAD_MICE_EXCLUDED"
 
 /**
  *  \brief  A variable controlling if VSYNC is automatically disable if doesn't reach the enough FPS
