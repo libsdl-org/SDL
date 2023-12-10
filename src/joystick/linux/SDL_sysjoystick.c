@@ -156,6 +156,7 @@ typedef struct SDL_joylist_item
     char *name; /* "SideWinder 3D Pro" or whatever */
     SDL_JoystickGUID guid;
     dev_t devnum;
+    int steam_virtual_gamepad_slot;
     struct joystick_hwdata *hwdata;
     struct SDL_joylist_item *next;
 
@@ -219,6 +220,19 @@ static SDL_bool IsVirtualJoystick(Uint16 vendor, Uint16 product, Uint16 version,
 }
 #endif /* SDL_JOYSTICK_HIDAPI */
 
+static SDL_bool GetVirtualGamepadSlot(const char *name, int *slot)
+{
+    const char *digits = SDL_strstr(name, "pad ");
+    if (digits) {
+        digits += 4;
+        if (SDL_isdigit(*digits)) {
+            *slot = SDL_atoi(digits);
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
 static int GuessDeviceClass(int fd)
 {
     unsigned long propbit[NBITS(INPUT_PROP_MAX)] = { 0 };
@@ -259,7 +273,7 @@ static int GuessIsSensor(int fd)
     return 0;
 }
 
-static int IsJoystick(const char *path, int fd, char **name_return, SDL_JoystickGUID *guid)
+static int IsJoystick(const char *path, int fd, char **name_return, Uint16 *vendor_return, Uint16 *product_return, SDL_JoystickGUID *guid)
 {
     struct input_id inpid;
     char *name;
@@ -312,6 +326,8 @@ static int IsJoystick(const char *path, int fd, char **name_return, SDL_Joystick
         return 0;
     }
     *name_return = name;
+    *vendor_return = inpid.vendor;
+    *product_return = inpid.product;
     return 1;
 }
 
@@ -389,6 +405,7 @@ static void MaybeAddDevice(const char *path)
     struct stat sb;
     int fd = -1;
     char *name = NULL;
+    Uint16 vendor, product;
     SDL_JoystickGUID guid;
     SDL_joylist_item *item;
     SDL_sensorlist_item *item_sensor;
@@ -424,7 +441,7 @@ static void MaybeAddDevice(const char *path)
     SDL_Log("Checking %s\n", path);
 #endif
 
-    if (IsJoystick(path, fd, &name, &guid)) {
+    if (IsJoystick(path, fd, &name, &vendor, &product, &guid)) {
 #ifdef DEBUG_INPUT_EVENTS
         SDL_Log("found joystick: %s\n", path);
 #endif
@@ -436,9 +453,15 @@ static void MaybeAddDevice(const char *path)
         }
 
         item->devnum = sb.st_rdev;
+        item->steam_virtual_gamepad_slot = -1;
         item->path = SDL_strdup(path);
         item->name = name;
         item->guid = guid;
+
+        if (vendor == USB_VENDOR_VALVE &&
+            product == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD) {
+            GetVirtualGamepadSlot(item->name, &item->steam_virtual_gamepad_slot);
+        }
 
         if ((!item->path) || (!item->name)) {
             FreeJoylistItem(item);
@@ -845,19 +868,6 @@ static int SDLCALL sort_virtual_gamepads(const void *_a, const void *_b)
     return a->slot - b->slot;
 }
 
-static SDL_bool get_virtual_gamepad_slot(const char *name, int *slot)
-{
-    const char *digits = SDL_strstr(name, "pad ");
-    if (digits) {
-        digits += 4;
-        if (SDL_isdigit(*digits)) {
-            *slot = SDL_atoi(digits);
-            return SDL_TRUE;
-        }
-    }
-    return SDL_FALSE;
-}
-
 static void LINUX_ScanSteamVirtualGamepads(void)
 {
     int i, count;
@@ -880,7 +890,7 @@ static void LINUX_ScanSteamVirtualGamepads(void)
                 inpid.vendor == USB_VENDOR_VALVE &&
                 inpid.product == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD &&
                 ioctl(fd, EVIOCGNAME(sizeof(name)), name) > 0 &&
-                get_virtual_gamepad_slot(name, &virtual_gamepad_slot)) {
+                GetVirtualGamepadSlot(name, &virtual_gamepad_slot)) {
                 VirtualGamepadEntry *new_virtual_gamepads = (VirtualGamepadEntry *)SDL_realloc(virtual_gamepads, (num_virtual_gamepads + 1) * sizeof(*virtual_gamepads));
                 if (new_virtual_gamepads) {
                     VirtualGamepadEntry *entry = &new_virtual_gamepads[num_virtual_gamepads];
@@ -1108,7 +1118,7 @@ static const char *LINUX_JoystickGetDevicePath(int device_index)
 
 static int LINUX_JoystickGetDevicePlayerIndex(int device_index)
 {
-    return -1;
+    return GetJoystickByDevIndex(device_index)->steam_virtual_gamepad_slot;
 }
 
 static void LINUX_JoystickSetDevicePlayerIndex(int device_index, int player_index)
