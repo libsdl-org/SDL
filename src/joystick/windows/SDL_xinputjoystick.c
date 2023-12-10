@@ -127,11 +127,29 @@ static SDL_bool GetXInputDeviceInfo(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Ui
         capabilities.ProductId = USB_PRODUCT_XBOX360_XUSB_CONTROLLER;
     }
 
-    *pVID = capabilities.VendorId;
-    *pPID = capabilities.ProductId;
-    *pVersion = capabilities.ProductVersion;
-
+    if (pVID) {
+        *pVID = capabilities.VendorId;
+    }
+    if (pPID) {
+        *pPID = capabilities.ProductId;
+    }
+    if (pVersion) {
+        *pVersion = capabilities.ProductVersion;
+    }
     return SDL_TRUE;
+}
+
+int SDL_XINPUT_GetSteamVirtualGamepadSlot(Uint8 userid)
+{
+    XINPUT_CAPABILITIES_EX capabilities;
+
+    if (XINPUTGETCAPABILITIESEX &&
+        XINPUTGETCAPABILITIESEX(1, userid, 0, &capabilities) == ERROR_SUCCESS &&
+        capabilities.VendorId == USB_VENDOR_VALVE &&
+        capabilities.ProductId == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD) {
+        return (int)capabilities.unk2;
+    }
+    return -1;
 }
 
 static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)

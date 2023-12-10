@@ -42,6 +42,7 @@ typedef struct JoyStick_DeviceData
     Uint8 XInputUserId;
     DIDEVICEINSTANCE dxdevice;
     char path[MAX_PATH];
+    int steam_virtual_gamepad_slot;
     struct JoyStick_DeviceData *pNext;
 } JoyStick_DeviceData;
 

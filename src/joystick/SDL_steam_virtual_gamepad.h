@@ -20,25 +20,17 @@
 */
 #include "SDL_internal.h"
 
-#include "../../core/windows/SDL_xinput.h"
+typedef struct SDL_SteamVirtualGamepadInfo
+{
+    Uint64 handle;
+    char *name;
+    Uint16 vendor_id;
+    Uint16 product_id;
+    SDL_GamepadType type;
+} SDL_SteamVirtualGamepadInfo;
 
-/* Set up for C function definitions, even when using C++ */
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern SDL_bool SDL_XINPUT_Enabled(void);
-extern int SDL_XINPUT_JoystickInit(void);
-extern void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext);
-extern int SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystickdevice);
-extern int SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
-extern Uint32 SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick *joystick);
-extern void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick);
-extern void SDL_XINPUT_JoystickClose(SDL_Joystick *joystick);
-extern void SDL_XINPUT_JoystickQuit(void);
-extern int SDL_XINPUT_GetSteamVirtualGamepadSlot(Uint8 userid);
-
-/* Ends C function definitions when using C++ */
-#ifdef __cplusplus
-}
-#endif
+void SDL_InitSteamVirtualGamepadInfo(void);
+SDL_bool SDL_SteamVirtualGamepadEnabled(void);
+SDL_bool SDL_UpdateSteamVirtualGamepadInfo(void);
+const SDL_SteamVirtualGamepadInfo *SDL_GetSteamVirtualGamepadInfo(int slot);
+void SDL_QuitSteamVirtualGamepadInfo(void);

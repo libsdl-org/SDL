@@ -612,6 +612,23 @@ static const char *WINDOWS_JoystickGetDevicePath(int device_index)
     return device->path;
 }
 
+static int WINDOWS_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    JoyStick_DeviceData *device = SYS_Joystick;
+    int index;
+
+    for (index = device_index; index > 0; index--) {
+        device = device->pNext;
+    }
+
+    if (device->bXInputDevice) {
+        /* The slot for XInput devices can change as controllers are seated */
+        return SDL_XINPUT_GetSteamVirtualGamepadSlot(device->XInputUserId);
+    } else {
+        return device->steam_virtual_gamepad_slot;
+    }
+}
+
 static int WINDOWS_JoystickGetDevicePlayerIndex(int device_index)
 {
     JoyStick_DeviceData *device = SYS_Joystick;
@@ -669,7 +686,6 @@ static int WINDOWS_JoystickOpen(SDL_Joystick *joystick, int device_index)
     }
 
     /* allocate memory for system specific hardware data */
-    joystick->instance_id = device->nInstanceID;
     joystick->hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof(struct joystick_hwdata));
     if (!joystick->hwdata) {
         return -1;
@@ -792,6 +808,7 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver = {
     WINDOWS_JoystickDetect,
     WINDOWS_JoystickGetDeviceName,
     WINDOWS_JoystickGetDevicePath,
+    WINDOWS_JoystickGetDeviceSteamVirtualGamepadSlot,
     WINDOWS_JoystickGetDevicePlayerIndex,
     WINDOWS_JoystickSetDevicePlayerIndex,
     WINDOWS_JoystickGetDeviceGUID,

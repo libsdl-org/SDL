@@ -51,6 +51,11 @@ static const char *DUMMY_JoystickGetDevicePath(int device_index)
     return NULL;
 }
 
+static int DUMMY_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return -1;
+}
+
 static int DUMMY_JoystickGetDevicePlayerIndex(int device_index)
 {
     return -1;
@@ -130,6 +135,7 @@ SDL_JoystickDriver SDL_DUMMY_JoystickDriver = {
     DUMMY_JoystickDetect,
     DUMMY_JoystickGetDeviceName,
     DUMMY_JoystickGetDevicePath,
+    DUMMY_JoystickGetDeviceSteamVirtualGamepadSlot,
     DUMMY_JoystickGetDevicePlayerIndex,
     DUMMY_JoystickSetDevicePlayerIndex,
     DUMMY_JoystickGetDeviceGUID,
