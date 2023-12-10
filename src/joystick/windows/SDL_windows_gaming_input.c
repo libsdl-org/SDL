@@ -58,6 +58,7 @@ typedef struct WindowsGamingInputControllerState
     char *name;
     SDL_JoystickGUID guid;
     SDL_JoystickType type;
+    int steam_virtual_gamepad_slot;
 } WindowsGamingInputControllerState;
 
 typedef HRESULT(WINAPI *CoIncrementMTAUsage_t)(PVOID *pCookie);
@@ -356,6 +357,34 @@ static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_Release(__FI
     return rc;
 }
 
+static int GetSteamVirtualGamepadSlot(__x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller, Uint16 vendor_id, Uint16 product_id)
+{
+    int slot = -1;
+
+    if (vendor_id == USB_VENDOR_VALVE &&
+        product_id == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD) {
+        __x_ABI_CWindows_CGaming_CInput_CIRawGameController2 *controller2 = NULL;
+        HRESULT hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(controller, &IID___x_ABI_CWindows_CGaming_CInput_CIRawGameController2, (void **)&controller2);
+        if (SUCCEEDED(hr)) {
+            HSTRING hString;
+            hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController2_get_NonRoamableId(controller2, &hString);
+            if (SUCCEEDED(hr)) {
+                PCWSTR string = wgi.WindowsGetStringRawBuffer(hString, NULL);
+                if (string) {
+                    char *id = WIN_StringToUTF8W(string);
+                    if (id) {
+                        (void)SDL_sscanf(id, "{wgi/nrid/:steam-%*X&%*X&%*X#%d#%*u}", &slot);
+                        SDL_free(id);
+                    }
+                }
+                wgi.WindowsDeleteString(hString);
+            }
+            __x_ABI_CWindows_CGaming_CInput_CIRawGameController2_Release(controller2);
+        }
+    }
+    return slot;
+}
+
 static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdded(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e)
 {
     HRESULT hr;
@@ -464,6 +493,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
                 state->name = name;
                 state->guid = guid;
                 state->type = type;
+                state->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot(controller, vendor, product);
 
                 __x_ABI_CWindows_CGaming_CInput_CIRawGameController_AddRef(controller);
 
@@ -662,6 +692,11 @@ static const char *WGI_JoystickGetDeviceName(int device_index)
 static const char *WGI_JoystickGetDevicePath(int device_index)
 {
     return NULL;
+}
+
+static int WGI_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return wgi.controllers[device_index].steam_virtual_gamepad_slot;
 }
 
 static int WGI_JoystickGetDevicePlayerIndex(int device_index)
@@ -983,6 +1018,7 @@ SDL_JoystickDriver SDL_WGI_JoystickDriver = {
     WGI_JoystickDetect,
     WGI_JoystickGetDeviceName,
     WGI_JoystickGetDevicePath,
+    WGI_JoystickGetDeviceSteamVirtualGamepadSlot,
     WGI_JoystickGetDevicePlayerIndex,
     WGI_JoystickSetDevicePlayerIndex,
     WGI_JoystickGetDeviceGUID,

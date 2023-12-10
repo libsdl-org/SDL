@@ -25,6 +25,7 @@
 #include "../SDL_utils_c.h"
 #include "SDL_sysjoystick.h"
 #include "SDL_joystick_c.h"
+#include "SDL_steam_virtual_gamepad.h"
 #include "SDL_gamepad_c.h"
 #include "SDL_gamepad_db.h"
 #include "controller_type.h"
@@ -2411,7 +2412,21 @@ SDL_GamepadType SDL_GetGamepadInstanceType(SDL_JoystickID instance_id)
 
 SDL_GamepadType SDL_GetRealGamepadInstanceType(SDL_JoystickID instance_id)
 {
-    return SDL_GetGamepadTypeFromGUID(SDL_GetJoystickInstanceGUID(instance_id), SDL_GetJoystickInstanceName(instance_id));
+    SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN;
+    const SDL_SteamVirtualGamepadInfo *info;
+
+    SDL_LockJoysticks();
+    {
+        info = SDL_GetJoystickInstanceVirtualGamepadInfo(instance_id);
+        if (info) {
+            type = info->type;
+        } else {
+            type = SDL_GetGamepadTypeFromGUID(SDL_GetJoystickInstanceGUID(instance_id), SDL_GetJoystickInstanceName(instance_id));
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    return type;
 }
 
 char *SDL_GetGamepadInstanceMapping(SDL_JoystickID instance_id)
@@ -2518,7 +2533,7 @@ SDL_bool SDL_ShouldIgnoreGamepad(const char *name, SDL_JoystickGUID guid)
 #ifdef __LINUX__
         bSteamVirtualGamepad = (vendor == USB_VENDOR_VALVE && product == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD);
 #elif defined(__MACOS__)
-        bSteamVirtualGamepad = (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX360_WIRED_CONTROLLER && version == 1);
+        bSteamVirtualGamepad = (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX360_WIRED_CONTROLLER && version == 0);
 #elif defined(__WIN32__)
         /* We can't tell on Windows, but Steam will block others in input hooks */
         bSteamVirtualGamepad = SDL_TRUE;
@@ -3190,7 +3205,8 @@ const char *SDL_GetGamepadName(SDL_Gamepad *gamepad)
     {
         CHECK_GAMEPAD_MAGIC(gamepad, NULL);
 
-        if (SDL_strcmp(gamepad->name, "*") == 0) {
+        if (SDL_strcmp(gamepad->name, "*") == 0 ||
+            gamepad->joystick->steam_handle != 0) {
             retval = SDL_GetJoystickName(gamepad->joystick);
         } else {
             retval = gamepad->name;
@@ -3214,12 +3230,18 @@ const char *SDL_GetGamepadPath(SDL_Gamepad *gamepad)
 SDL_GamepadType SDL_GetGamepadType(SDL_Gamepad *gamepad)
 {
     SDL_GamepadType type;
+    const SDL_SteamVirtualGamepadInfo *info;
 
     SDL_LockJoysticks();
     {
         CHECK_GAMEPAD_MAGIC(gamepad, SDL_GAMEPAD_TYPE_UNKNOWN);
 
-        type = gamepad->type;
+        info = SDL_GetJoystickInstanceVirtualGamepadInfo(gamepad->joystick->instance_id);
+        if (info) {
+            type = info->type;
+        } else {
+            type = gamepad->type;
+        }
     }
     SDL_UnlockJoysticks();
 
@@ -3308,6 +3330,21 @@ const char * SDL_GetGamepadSerial(SDL_Gamepad *gamepad)
         return NULL;
     }
     return SDL_GetJoystickSerial(joystick);
+}
+
+Uint64 SDL_GetGamepadSteamHandle(SDL_Gamepad *gamepad)
+{
+    Uint64 handle = 0;
+
+    SDL_LockJoysticks();
+    {
+        CHECK_GAMEPAD_MAGIC(gamepad, 0);
+
+        handle = gamepad->joystick->steam_handle;
+    }
+    SDL_UnlockJoysticks();
+
+    return handle;
 }
 
 SDL_JoystickPowerLevel SDL_GetGamepadPowerLevel(SDL_Gamepad *gamepad)

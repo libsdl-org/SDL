@@ -433,6 +433,9 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_REMAPPED)
         PRINT_GAMEPADDEV_EVENT(event);
         break;
+        SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED)
+        PRINT_GAMEPADDEV_EVENT(event);
+        break;
 #undef PRINT_GAMEPADDEV_EVENT
 
 #define PRINT_CTOUCHPAD_EVENT(event)                                                                                     \

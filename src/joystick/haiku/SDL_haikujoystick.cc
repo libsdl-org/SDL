@@ -101,6 +101,11 @@ extern "C"
         return SDL_joyport[device_index];
     }
 
+    static int HAIKU_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+    {
+        return -1;
+    }
+
     static int HAIKU_JoystickGetDevicePlayerIndex(int device_index)
     {
         return -1;
@@ -295,6 +300,7 @@ extern "C"
         HAIKU_JoystickDetect,
         HAIKU_JoystickGetDeviceName,
         HAIKU_JoystickGetDevicePath,
+        HAIKU_JoystickGetDeviceSteamVirtualGamepadSlot,
         HAIKU_JoystickGetDevicePlayerIndex,
         HAIKU_JoystickSetDevicePlayerIndex,
         HAIKU_JoystickGetDeviceGUID,

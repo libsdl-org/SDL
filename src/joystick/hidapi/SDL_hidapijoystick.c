@@ -1376,6 +1376,11 @@ static const char *HIDAPI_JoystickGetDevicePath(int device_index)
     return path;
 }
 
+static int HIDAPI_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return -1;
+}
+
 static int HIDAPI_JoystickGetDevicePlayerIndex(int device_index)
 {
     SDL_HIDAPI_Device *device;
@@ -1654,6 +1659,7 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver = {
     HIDAPI_JoystickDetect,
     HIDAPI_JoystickGetDeviceName,
     HIDAPI_JoystickGetDevicePath,
+    HIDAPI_JoystickGetDeviceSteamVirtualGamepadSlot,
     HIDAPI_JoystickGetDevicePlayerIndex,
     HIDAPI_JoystickSetDevicePlayerIndex,
     HIDAPI_JoystickGetDeviceGUID,

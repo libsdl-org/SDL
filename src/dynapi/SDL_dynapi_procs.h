@@ -1015,3 +1015,4 @@ SDL_DYNAPI_PROC(wchar_t*,SDL_wcsnstr,(const wchar_t *a, const wchar_t *b, size_t
 SDL_DYNAPI_PROC(int,SDL_SyncWindow,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_SetSurfaceScaleMode,(SDL_Surface *a, SDL_ScaleMode b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_GetSurfaceScaleMode,(SDL_Surface *a, SDL_ScaleMode *b),(a,b),return)
+SDL_DYNAPI_PROC(Uint64,SDL_GetGamepadSteamHandle,(SDL_Gamepad *a),(a),return)

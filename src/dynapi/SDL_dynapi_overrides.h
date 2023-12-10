@@ -990,3 +990,4 @@
 #define SDL_SyncWindow SDL_SyncWindow_REAL
 #define SDL_SetSurfaceScaleMode SDL_SetSurfaceScaleMode_REAL
 #define SDL_GetSurfaceScaleMode SDL_GetSurfaceScaleMode_REAL
+#define SDL_GetGamepadSteamHandle SDL_GetGamepadSteamHandle_REAL

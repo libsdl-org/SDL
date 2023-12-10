@@ -1292,6 +1292,13 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
         SDL_SetRenderDrawColor(renderer, r, g, b, a);
     }
 
+    if (controller->joystick) {
+        SDL_snprintf(text, sizeof(text), "(%" SDL_PRIu32 ")", SDL_GetJoystickInstanceID(controller->joystick));
+        x = (float)SCREEN_WIDTH - (FONT_CHARACTER_SIZE * SDL_strlen(text)) - 8.0f;
+        y = 8.0f;
+        SDLTest_DrawString(renderer, x, y, text);
+    }
+
     if (controller_name && *controller_name) {
         x = title_area.x + title_area.w / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(controller_name)) / 2;
         y = title_area.y + title_area.h / 2 - FONT_CHARACTER_SIZE / 2;
@@ -1311,6 +1318,14 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
     SDLTest_DrawString(renderer, x, y, type);
 
     if (display_mode == CONTROLLER_MODE_TESTING) {
+        Uint64 steam_handle = SDL_GetGamepadSteamHandle(controller->gamepad);
+        if (steam_handle) {
+            SDL_snprintf(text, SDL_arraysize(text), "Steam: 0x%.16llx", (unsigned long long)steam_handle);
+            y = (float)SCREEN_HEIGHT - 2 * (8.0f + FONT_LINE_HEIGHT);
+            x = (float)SCREEN_WIDTH - 8.0f - (FONT_CHARACTER_SIZE * SDL_strlen(text));
+            SDLTest_DrawString(renderer, x, y, text);
+        }
+
         SDL_snprintf(text, SDL_arraysize(text), "VID: 0x%.4x PID: 0x%.4x",
                      SDL_GetJoystickVendor(controller->joystick),
                      SDL_GetJoystickProduct(controller->joystick));
@@ -1593,6 +1608,10 @@ static void loop(void *arg)
 
         case SDL_EVENT_GAMEPAD_REMAPPED:
             HandleGamepadRemapped(event.gdevice.which);
+            break;
+
+        case SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED:
+            RefreshControllerName();
             break;
 
 #ifdef VERBOSE_TOUCHPAD
