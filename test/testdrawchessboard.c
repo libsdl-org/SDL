@@ -50,6 +50,7 @@ void DrawChessBoard()
             SDL_RenderFillRect(renderer, &rect);
         }
     }
+    SDL_RenderPresent(renderer);
 }
 
 void loop()
