@@ -2615,9 +2615,6 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
     } else if (vendor == 0x0001 && product == 0x0001) {
         type = SDL_GAMEPAD_TYPE_STANDARD;
 
-    } else if (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX_ONE_XINPUT_CONTROLLER) {
-        type = SDL_GAMEPAD_TYPE_XBOXONE;
-
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT) {
         type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT;
 
