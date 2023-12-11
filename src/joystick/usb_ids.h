@@ -136,7 +136,6 @@
 #define USB_PRODUCT_XBOX_SERIES_X_POWERA_FUSION_PRO2      0x4001
 #define USB_PRODUCT_XBOX_SERIES_X_POWERA_SPECTRA          0x4002
 #define USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER           0x02ff /* XBOXGIP driver software PID */
-#define USB_PRODUCT_XBOX_ONE_XINPUT_CONTROLLER            0x02fe /* Made up product ID for XInput */
 #define USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD                 0x11ff
 
 /* USB usage pages */

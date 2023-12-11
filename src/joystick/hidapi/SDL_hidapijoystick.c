@@ -1171,7 +1171,7 @@ static SDL_bool HIDAPI_IsEquivalentToDevice(Uint16 vendor_id, Uint16 product_id,
         }
 
         /* If we're looking for an XInput controller, match it against any other Xbox controller */
-        if (product_id == USB_PRODUCT_XBOX_ONE_XINPUT_CONTROLLER) {
+        if (product_id == USB_PRODUCT_XBOX360_XUSB_CONTROLLER) {
             if (device->type == SDL_CONTROLLER_TYPE_XBOX360 || device->type == SDL_CONTROLLER_TYPE_XBOXONE) {
                 return SDL_TRUE;
             }
