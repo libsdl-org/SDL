@@ -57,6 +57,7 @@ static void DrawChessBoard(void)
             }
         }
     }
+    SDL_RenderPresent(renderer);
 }
 
 static void loop(void)
