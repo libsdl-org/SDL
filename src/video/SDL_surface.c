@@ -702,7 +702,8 @@ int SDL_UpperBlit(SDL_Surface *src, const SDL_Rect *srcrect,
                   SDL_Surface *dst, SDL_Rect *dstrect)
 {
     SDL_Rect fulldst;
-    int srcx, srcy, w, h;
+    int srcx, srcy;
+    Sint64 w, h;
 
     /* Make sure the surfaces aren't locked */
     if (!src || !dst) {
