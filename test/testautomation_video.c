@@ -1145,8 +1145,8 @@ int video_getSetWindowPosition(void *arg)
     SDL_Rect display_bounds;
 
     if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
-      SDLTest_Log("Skipping test: wayland does not support window positioning");
-      return TEST_SKIPPED;
+        SDLTest_Log("Skipping test: wayland does not support window positioning");
+        return TEST_SKIPPED;
     }
 
     /* Call against new test window */
@@ -1156,26 +1156,26 @@ int video_getSetWindowPosition(void *arg)
     }
 
     if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
-      /* The X11 server allows arbitrary window placement, but compositing
+        /* The X11 server allows arbitrary window placement, but compositing
          * window managers such as GNOME and KDE force windows to be within
          * desktop bounds.
-       */
-      maxxVariation = 2;
-      maxyVariation = 2;
+         */
+        maxxVariation = 2;
+        maxyVariation = 2;
 
-      SDL_GetDisplayUsableBounds(SDL_GetWindowDisplayIndex(window), &display_bounds);
+        SDL_GetDisplayUsableBounds(SDL_GetWindowDisplayIndex(window), &display_bounds);
     } else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "cocoa") == 0) {
-      /* Platform doesn't allow windows with negative Y desktop bounds */
-      maxxVariation = 4;
-      maxyVariation = 3;
+        /* Platform doesn't allow windows with negative Y desktop bounds */
+        maxxVariation = 4;
+        maxyVariation = 3;
 
-      SDL_GetDisplayUsableBounds(SDL_GetWindowDisplayIndex(window), &display_bounds);
+        SDL_GetDisplayUsableBounds(SDL_GetWindowDisplayIndex(window), &display_bounds);
     } else {
-      /* Platform allows windows to be placed out of bounds */
-      maxxVariation = 4;
-      maxyVariation = 4;
+        /* Platform allows windows to be placed out of bounds */
+        maxxVariation = 4;
+        maxyVariation = 4;
 
-      SDL_GetDisplayBounds(SDL_GetWindowDisplayIndex(window), &display_bounds);
+        SDL_GetDisplayBounds(SDL_GetWindowDisplayIndex(window), &display_bounds);
     }
 
     for (xVariation = 0; xVariation < maxxVariation; xVariation++) {
@@ -1183,41 +1183,41 @@ int video_getSetWindowPosition(void *arg)
             switch (xVariation) {
             default:
             case 0:
-              /* Zero X Position */
-              desiredX = display_bounds.x > 0 ? display_bounds.x : 0;
-              break;
+                /* Zero X Position */
+                desiredX = display_bounds.x > 0 ? display_bounds.x : 0;
+                break;
             case 1:
-              /* Random X position inside screen */
-              desiredX = SDLTest_RandomIntegerInRange(display_bounds.x + 1, display_bounds.x + 100);
-              break;
+                /* Random X position inside screen */
+                desiredX = SDLTest_RandomIntegerInRange(display_bounds.x + 1, display_bounds.x + 100);
+                break;
             case 2:
-              /* Random X position outside screen (positive) */
-              desiredX = SDLTest_RandomIntegerInRange(10000, 11000);
-              break;
+                /* Random X position outside screen (positive) */
+                desiredX = SDLTest_RandomIntegerInRange(10000, 11000);
+                break;
             case 3:
-              /* Random X position outside screen (negative) */
-              desiredX = SDLTest_RandomIntegerInRange(-1000, -100);
-              break;
+                /* Random X position outside screen (negative) */
+                desiredX = SDLTest_RandomIntegerInRange(-1000, -100);
+                break;
             }
 
             switch (yVariation) {
             default:
             case 0:
-              /* Zero Y Position */
-              desiredY = display_bounds.y > 0 ? display_bounds.y : 0;
-              break;
+                /* Zero Y Position */
+                desiredY = display_bounds.y > 0 ? display_bounds.y : 0;
+                break;
             case 1:
-              /* Random Y position inside screen */
-              desiredY = SDLTest_RandomIntegerInRange(display_bounds.y + 1, display_bounds.y + 100);
-              break;
+                /* Random Y position inside screen */
+                desiredY = SDLTest_RandomIntegerInRange(display_bounds.y + 1, display_bounds.y + 100);
+                break;
             case 2:
-              /* Random Y position outside screen (positive) */
-              desiredY = SDLTest_RandomIntegerInRange(10000, 11000);
-              break;
+                /* Random Y position outside screen (positive) */
+                desiredY = SDLTest_RandomIntegerInRange(10000, 11000);
+                break;
             case 3:
-              /* Random Y position outside screen (negative) */
-              desiredY = SDLTest_RandomIntegerInRange(-1000, -100);
-              break;
+                /* Random Y position outside screen (negative) */
+                desiredY = SDLTest_RandomIntegerInRange(-1000, -100);
+                break;
             }
 
             /* Set position */
@@ -1352,13 +1352,13 @@ int video_getSetWindowSize(void *arg)
 
     if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "windows") == 0 ||
         SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
-      /* Platform clips window size to screen size */
-      maxwVariation = 4;
-      maxhVariation = 4;
+        /* Platform clips window size to screen size */
+        maxwVariation = 4;
+        maxhVariation = 4;
     } else {
-      /* Platform allows window size >= screen size */
-      maxwVariation = 5;
-      maxhVariation = 5;
+        /* Platform allows window size >= screen size */
+        maxwVariation = 5;
+        maxhVariation = 5;
     }
 
     for (wVariation = 0; wVariation < maxwVariation; wVariation++) {
@@ -1437,7 +1437,6 @@ int video_getSetWindowSize(void *arg)
                     SDLTest_AssertCheck(desiredH == currentH, "Verify returned height is the one from SDL event; expected: %d, got: %d", desiredH, currentH);
                 }
             }
-
 
             /* Get just width */
             currentW = desiredW + 1;
