@@ -2209,7 +2209,8 @@ void Cocoa_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
             Cocoa_SyncWindow(_this, window);
         }
 
-        if (!Cocoa_IsZoomed(window)) {
+        /* isZoomed always returns true if the window is not resizable */
+        if (!Cocoa_IsZoomed(window) || !(window->flags & SDL_WINDOW_RESIZABLE)) {
             if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
                 [nswindow setFrame:[nswindow frameRectForContentRect:rect] display:YES];
                 ScheduleContextUpdates(windata);
