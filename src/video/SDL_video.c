@@ -1754,7 +1754,6 @@ int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen, SDL_bool c
 
 done:
     window->last_fullscreen_exclusive_display = display && (window->flags & SDL_WINDOW_FULLSCREEN) && window->fullscreen_exclusive ? display->id : 0;
-    SDL_SyncIfRequired(window);
     return 0;
 
 error:
@@ -2972,6 +2971,10 @@ int SDL_SetWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
     if (!fullscreen || ret != 0) {
         /* Clear the current fullscreen mode. */
         SDL_zero(window->current_fullscreen_mode);
+    }
+
+    if (ret == 0) {
+        SDL_SyncIfRequired(window);
     }
 
     return ret;
