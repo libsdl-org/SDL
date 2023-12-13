@@ -3621,21 +3621,23 @@ void SDL_DestroyWindow(SDL_Window *window)
         }
     }
 
-    /* make no context current if this is the current context window. */
+    /* Make no context current if this is the current context window */
     if (window->flags & SDL_WINDOW_OPENGL) {
         if (_this->current_glwin == window) {
             SDL_GL_MakeCurrent(window, NULL);
         }
     }
+
+    if (_this->DestroyWindow) {
+        _this->DestroyWindow(_this, window);
+    }
+
+    /* Unload the graphics libraries after the window is destroyed, which may clean up EGL surfaces */
     if (window->flags & SDL_WINDOW_OPENGL) {
         SDL_GL_UnloadLibrary();
     }
     if (window->flags & SDL_WINDOW_VULKAN) {
         SDL_Vulkan_UnloadLibrary();
-    }
-
-    if (_this->DestroyWindow) {
-        _this->DestroyWindow(_this, window);
     }
 
     if (_this->grabbed_window == window) {
