@@ -810,11 +810,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     }
 
     // Messages from the SDLMain thread
-    static final int COMMAND_CHANGE_TITLE = 1;
-    static final int COMMAND_CHANGE_WINDOW_STYLE = 2;
-    static final int COMMAND_TEXTEDIT_HIDE = 3;
-    static final int COMMAND_SET_KEEP_SCREEN_ON = 5;
-
+    protected static final int COMMAND_CHANGE_TITLE = 1;
+    protected static final int COMMAND_CHANGE_WINDOW_STYLE = 2;
+    protected static final int COMMAND_TEXTEDIT_HIDE = 3;
+    protected static final int COMMAND_SET_KEEP_SCREEN_ON = 5;
     protected static final int COMMAND_USER = 0x8000;
 
     protected static boolean mFullscreenModeActive;
@@ -922,7 +921,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     Handler commandHandler = new SDLCommandHandler();
 
     // Send a message from the SDLMain thread
-    boolean sendCommand(int command, Object data) {
+    protected boolean sendCommand(int command, Object data) {
         Message msg = commandHandler.obtainMessage();
         msg.arg1 = command;
         msg.obj = data;
