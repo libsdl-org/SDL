@@ -25,6 +25,7 @@
 #include "SDL_windowsvideo.h"
 
 #include "../../events/SDL_mouse_c.h"
+#include "../SDL_video_c.h"
 
 DWORD SDL_last_warp_time = 0;
 HCURSOR SDL_cursor = NULL;
@@ -80,6 +81,32 @@ static SDL_Cursor *WIN_CreateDefaultCursor()
     return cursor;
 }
 
+static SDL_bool IsMonochromeSurface(SDL_Surface *surface)
+{
+    int x, y;
+    Uint8 r, g, b, a;
+
+    SDL_assert(surface->format->format == SDL_PIXELFORMAT_ARGB8888);
+
+    for (y = 0; y < surface->h; y++) {
+        for (x = 0; x < surface->w; x++) {
+            SDL_ReadSurfacePixel(surface, x, y, &r, &g, &b, &a);
+
+            /* Black or white pixel. */
+            if (!((r == 0x00 && g == 0x00 && b == 0x00) || (r == 0xff && g == 0xff && b == 0xff))) {
+                return SDL_FALSE;
+            }
+
+            /* Transparent or opaque pixel. */
+            if (!(a == 0x00 || a == 0xff)) {
+                return SDL_FALSE;
+            }
+        }
+    }
+
+    return SDL_TRUE;
+}
+
 static HBITMAP CreateColorBitmap(SDL_Surface *surface)
 {
     HBITMAP bitmap;
@@ -107,43 +134,55 @@ static HBITMAP CreateColorBitmap(SDL_Surface *surface)
     return bitmap;
 }
 
-static HBITMAP CreateMaskBitmap(SDL_Surface *surface)
+/* Generate bitmap with a mask and optional monochrome image data.
+ *
+ * For info on the expected mask format see:
+ * https://devblogs.microsoft.com/oldnewthing/20101018-00/?p=12513
+ */
+static HBITMAP CreateMaskBitmap(SDL_Surface *surface, SDL_bool is_monochrome)
 {
     HBITMAP bitmap;
     SDL_bool isstack;
     void *pixels;
     int x, y;
-    Uint8 *src, *dst;
+    Uint8 r, g, b, a;
+    Uint8 *dst;
     const int pitch = ((surface->w + 15) & ~15) / 8;
+    const int size = pitch * surface->h;
     static const unsigned char masks[] = { 0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1 };
 
     SDL_assert(surface->format->format == SDL_PIXELFORMAT_ARGB8888);
 
-    pixels = SDL_small_alloc(Uint8, pitch * surface->h, &isstack);
+    pixels = SDL_small_alloc(Uint8, size * (is_monochrome ? 2 : 1), &isstack);
     if (!pixels) {
         return NULL;
     }
 
-    /* Make the entire mask completely transparent. */
-    SDL_memset(pixels, 0xff, pitch * surface->h);
-
-    SDL_LockSurface(surface);
-
-    src = surface->pixels;
     dst = pixels;
-    for (y = 0; y < surface->h; y++, src += surface->pitch, dst += pitch) {
+
+    /* Make the mask completely transparent. */
+    SDL_memset(dst, 0xff, size);
+    if (is_monochrome) {
+        SDL_memset(dst + size, 0x00, size);
+    }
+
+    for (y = 0; y < surface->h; y++, dst += pitch) {
         for (x = 0; x < surface->w; x++) {
-            Uint8 alpha = src[x * 4 + 3];
-            if (alpha != 0) {
+            SDL_ReadSurfacePixel(surface, x, y, &r, &g, &b, &a);
+
+            if (a != 0) {
                 /* Reset bit of an opaque pixel. */
                 dst[x >> 3] &= ~masks[x & 7];
+            }
+
+            if (is_monochrome && !(r == 0x00 && g == 0x00 && b == 0x00)) {
+                /* Set bit of white or inverted pixel. */
+                dst[size + (x >> 3)] |= masks[x & 7];
             }
         }
     }
 
-    SDL_UnlockSurface(surface);
-
-    bitmap = CreateBitmap(surface->w, surface->h, 1, 1, pixels);
+    bitmap = CreateBitmap(surface->w, surface->h * (is_monochrome ? 2 : 1), 1, 1, pixels);
     SDL_small_free(pixels, isstack);
     if (!bitmap) {
         WIN_SetError("CreateBitmap()");
@@ -158,22 +197,25 @@ static SDL_Cursor *WIN_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
     HCURSOR hcursor;
     SDL_Cursor *cursor;
     ICONINFO ii;
+    SDL_bool is_monochrome = IsMonochromeSurface(surface);
 
     SDL_zero(ii);
     ii.fIcon = FALSE;
     ii.xHotspot = (DWORD)hot_x;
     ii.yHotspot = (DWORD)hot_y;
-    ii.hbmColor = CreateColorBitmap(surface);
-    ii.hbmMask = CreateMaskBitmap(surface);
+    ii.hbmMask = CreateMaskBitmap(surface, is_monochrome);
+    ii.hbmColor = is_monochrome ? NULL : CreateColorBitmap(surface);
 
-    if (!ii.hbmColor || !ii.hbmMask) {
+    if (!ii.hbmMask || (!is_monochrome && !ii.hbmColor)) {
         return NULL;
     }
 
     hcursor = CreateIconIndirect(&ii);
 
-    DeleteObject(ii.hbmColor);
     DeleteObject(ii.hbmMask);
+    if (ii.hbmColor) {
+        DeleteObject(ii.hbmColor);
+    }
 
     if (!hcursor) {
         WIN_SetError("CreateIconIndirect()");
