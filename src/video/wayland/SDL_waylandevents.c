@@ -163,6 +163,21 @@ static void touch_del(SDL_TouchID id, wl_fixed_t *x, wl_fixed_t *y, struct wl_su
     }
 }
 
+static SDL_bool Wayland_SurfaceHasActiveTouches(struct wl_surface *surface)
+{
+    struct SDL_WaylandTouchPoint *tp = touch_points.head;
+
+    while (tp) {
+        if (tp->surface == surface) {
+            return SDL_TRUE;
+        }
+
+        tp = tp->next;
+    }
+
+    return SDL_FALSE;
+}
+
 /* Returns SDL_TRUE if a key repeat event was due */
 static SDL_bool keyboard_repeat_handle(SDL_WaylandKeyboardRepeat *repeat_info, uint32_t elapsed)
 {
@@ -453,7 +468,12 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
     }
 
     if (input->pointer_focus) {
-        SDL_SetMouseFocus(NULL);
+        /* A pointer leave event may be emitted if the compositor hides the pointer in response to receiving a touch event.
+         * Don't relinquish focus if the surface has active touches, as the compositor is just transitioning from mouse to touch mode.
+         */
+        if (!Wayland_SurfaceHasActiveTouches(surface)) {
+            SDL_SetMouseFocus(NULL);
+        }
         input->pointer_focus = NULL;
     }
 }
@@ -820,6 +840,8 @@ static void touch_handler_down(void *data, struct wl_touch *touch, uint32_t seri
         const float x = dblx / window_data->sdlwindow->w;
         const float y = dbly / window_data->sdlwindow->h;
 
+        SDL_SetMouseFocus(window_data->sdlwindow);
+
         SDL_SendTouch((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id,
                       window_data->sdlwindow, SDL_TRUE, x, y, 1.0f);
     }
@@ -829,6 +851,7 @@ static void touch_handler_up(void *data, struct wl_touch *touch, uint32_t serial
                              uint32_t timestamp, int id)
 {
     wl_fixed_t fx = 0, fy = 0;
+    struct SDL_WaylandInput *input = (struct SDL_WaylandInput *)data;
     struct wl_surface *surface = NULL;
 
     touch_del(id, &fx, &fy, &surface);
@@ -844,6 +867,14 @@ static void touch_handler_up(void *data, struct wl_touch *touch, uint32_t serial
 
             SDL_SendTouch((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id,
                           window_data->sdlwindow, SDL_FALSE, x, y, 1.0f);
+
+            /* If the seat lacks pointer focus, the seat's keyboard focus is another window or NULL, this window curently
+             * has mouse focus, and the surface has no active touch events, consider mouse focus to be lost.
+             */
+            if (!input->pointer_focus && input->keyboard_focus != window_data &&
+                SDL_GetMouseFocus() == window_data->sdlwindow && !Wayland_SurfaceHasActiveTouches(surface)) {
+                SDL_SetMouseFocus(NULL);
+            }
         }
     }
 }
@@ -1127,15 +1158,18 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
                                   uint32_t serial, struct wl_surface *surface)
 {
     struct SDL_WaylandInput *input = data;
-    SDL_WindowData *window;
+    SDL_WindowData *wind;
+    SDL_Window *window = NULL;
 
     if (!surface || !SDL_WAYLAND_own_surface(surface)) {
         return;
     }
 
-    window = wl_surface_get_user_data(surface);
-    if (window) {
-        window->sdlwindow->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
+    wind = wl_surface_get_user_data(surface);
+    if (wind) {
+        wind->keyboard_device = NULL;
+        window = wind->sdlwindow;
+        window->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
     }
 
     /* Stop key repeat before clearing keyboard focus */
@@ -1143,12 +1177,20 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
 
     /* This will release any keys still pressed */
     SDL_SetKeyboardFocus(NULL);
+    input->keyboard_focus = NULL;
 
 #ifdef SDL_USE_IME
     if (!input->text_input) {
         SDL_IME_SetFocus(SDL_FALSE);
     }
 #endif
+
+    /* If the surface had a pointer leave event while still having active touch events, it retained mouse focus.
+     * Clear it now if all touch events are raised.
+     */
+    if (!input->pointer_focus && SDL_GetMouseFocus() == window && !Wayland_SurfaceHasActiveTouches(surface)) {
+        SDL_SetMouseFocus(NULL);
+    }
 }
 
 static SDL_bool keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint32_t key, Uint8 state, SDL_bool *handled_by_ime)
