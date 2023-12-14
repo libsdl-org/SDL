@@ -776,7 +776,7 @@ int SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect,
 int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
                         SDL_Surface *dst, SDL_Rect *dstrect)
 {
-    return SDL_PrivateBlitSurfaceScaled(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
+    return SDL_PrivateBlitSurfaceScaled(src, srcrect, dst, dstrect, src->scaleMode);
 }
 
 int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
@@ -944,7 +944,7 @@ int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
 int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
                                    SDL_Surface *dst, const SDL_Rect *dstrect)
 {
-    return SDL_PrivateBlitSurfaceUncheckedScaled(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
+    return SDL_PrivateBlitSurfaceUncheckedScaled(src, srcrect, dst, dstrect, src->scaleMode);
 }
 
 int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
@@ -1049,6 +1049,38 @@ int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcr
             return ret;
         }
     }
+}
+
+int SDL_SetSurfaceScaleMode(SDL_Surface *surface, SDL_ScaleMode scaleMode)
+{
+    if (!surface) {
+        return SDL_InvalidParamError("surface");
+    }
+
+    if (scaleMode != SDL_SCALEMODE_NEAREST && scaleMode != SDL_SCALEMODE_LINEAR && scaleMode != SDL_SCALEMODE_BEST) {
+        return SDL_InvalidParamError("scaleMode");
+    }
+
+    if (scaleMode == SDL_SCALEMODE_NEAREST) {
+        surface->scaleMode = SDL_SCALEMODE_NEAREST;
+    } else {
+        surface->scaleMode = SDL_SCALEMODE_LINEAR;
+    }
+
+    return 0;
+}
+
+int SDL_GetSurfaceScaleMode(SDL_Surface *surface, SDL_ScaleMode *scaleMode)
+{
+    if (!surface) {
+        return SDL_InvalidParamError("surface");
+    }
+
+    if (scaleMode) {
+        *scaleMode = surface->scaleMode;
+    }
+
+    return 0;
 }
 
 /*

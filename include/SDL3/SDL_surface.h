@@ -65,6 +65,17 @@ extern "C" {
 typedef struct SDL_BlitMap SDL_BlitMap;  /* this is an opaque type. */
 
 /**
+ * The scaling mode
+ */
+typedef enum
+{
+    SDL_SCALEMODE_NEAREST, /**< nearest pixel sampling */
+    SDL_SCALEMODE_LINEAR,  /**< linear filtering */
+    SDL_SCALEMODE_BEST     /**< anisotropic filtering */
+} SDL_ScaleMode;
+
+
+/**
  * A collection of pixels used in software blitting.
  *
  * Pixels are arranged in memory in rows, with the top row first.
@@ -103,6 +114,8 @@ typedef struct SDL_Surface
 
     /** clipping information */
     SDL_Rect clip_rect;         /**< Read-only */
+
+    SDL_ScaleMode scaleMode;    /**< The scale mode */
 
     /** info for fast blit mapping to other surfaces */
     SDL_BlitMap *map;           /**< Private */
@@ -903,6 +916,7 @@ extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface *src,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurface
+ * \sa SDL_SetSurfaceScaleMode
  */
 extern DECLSPEC int SDLCALL SDL_BlitSurfaceScaled
     (SDL_Surface *src, const SDL_Rect *srcrect,
@@ -926,10 +940,41 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceScaled
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurfaceScaled
+ * \sa SDL_SetSurfaceScaleMode
  */
 extern DECLSPEC int SDLCALL SDL_BlitSurfaceUncheckedScaled
     (SDL_Surface *src, const SDL_Rect *srcrect,
      SDL_Surface *dst, const SDL_Rect *dstrect);
+
+/**
+ * Set the scale mode used for surface scale operations.
+ *
+ * \param surface the surface to update.
+ * \param scaleMode the SDL_ScaleMode to use for scaling.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetSurfaceScaleMode
+ * \sa SDL_BlitSurfaceScaled
+ */
+extern DECLSPEC int SDLCALL SDL_SetSurfaceScaleMode(SDL_Surface *surface, SDL_ScaleMode scaleMode);
+
+/**
+ * Get the scale mode used for surface scale operations.
+ *
+ * \param surface the surface to query.
+ * \param scaleMode a pointer filled in with the current scale mode.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetSurfaceScaleMode
+ * \sa SDL_BlitSurfaceScaled
+ */
+extern DECLSPEC int SDLCALL SDL_GetSurfaceScaleMode(SDL_Surface *surface, SDL_ScaleMode *scaleMode);
 
 /**
  * Set the YUV conversion mode

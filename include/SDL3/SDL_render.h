@@ -96,16 +96,6 @@ typedef struct SDL_Vertex
 } SDL_Vertex;
 
 /**
- * The scaling mode for a texture.
- */
-typedef enum
-{
-    SDL_SCALEMODE_NEAREST, /**< nearest pixel sampling */
-    SDL_SCALEMODE_LINEAR,  /**< linear filtering */
-    SDL_SCALEMODE_BEST     /**< anisotropic filtering */
-} SDL_ScaleMode;
-
-/**
  * The access pattern allowed for a texture.
  */
 typedef enum
