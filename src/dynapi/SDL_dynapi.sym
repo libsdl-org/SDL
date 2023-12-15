@@ -957,21 +957,18 @@ SDL3_0.0.0 {
     SDL_SetWindowShape;
     SDL_RenderViewportSet;
     SDL_HasProperty;
+    SDL_GetNumCameraDrivers;
+    SDL_GetCameraDriver;
+    SDL_GetCurrentCameraDriver;
     SDL_GetCameraDevices;
-    SDL_OpenCamera;
-    SDL_SetCameraSpec;
-    SDL_OpenCameraWithSpec;
+    SDL_GetCameraDeviceSupportedSpecs;
     SDL_GetCameraDeviceName;
+    SDL_OpenCameraDevice;
+    SDL_GetCameraInstanceID;
+    SDL_GetCameraProperties;
     SDL_GetCameraSpec;
-    SDL_GetCameraFormat;
-    SDL_GetNumCameraFormats;
-    SDL_GetCameraFrameSize;
-    SDL_GetNumCameraFrameSizes;
-    SDL_GetCameraStatus;
-    SDL_StartCamera;
     SDL_AcquireCameraFrame;
     SDL_ReleaseCameraFrame;
-    SDL_StopCamera;
     SDL_CloseCamera;
     # extra symbols go here (don't modify this line)
   local: *;

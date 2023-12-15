@@ -205,6 +205,10 @@ typedef enum
     SDL_EVENT_PEN_BUTTON_DOWN,            /**< Pressure-sensitive pen button pressed */
     SDL_EVENT_PEN_BUTTON_UP,              /**< Pressure-sensitive pen button released */
 
+    /* Camera hotplug events */
+    SDL_EVENT_CAMERA_DEVICE_ADDED = 0x1400,  /**< A new camera device is available */
+    SDL_EVENT_CAMERA_DEVICE_REMOVED,         /**< A camera device has been removed. */
+
     /* Render events */
     SDL_EVENT_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset and their contents need to be updated */
     SDL_EVENT_RENDER_DEVICE_RESET, /**< The device has been reset and all textures need to be recreated */
@@ -526,6 +530,18 @@ typedef struct SDL_AudioDeviceEvent
     Uint8 padding3;
 } SDL_AudioDeviceEvent;
 
+/**
+ *  Camera device event structure (event.cdevice.*)
+ */
+typedef struct SDL_CameraDeviceEvent
+{
+    Uint32 type;        /**< ::SDL_EVENT_CAMERA_DEVICE_ADDED, or ::SDL_EVENT_CAMERA_DEVICE_REMOVED */
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_CameraDeviceID which;       /**< SDL_CameraDeviceID for the device being added or removed or changing */
+    Uint8 padding1;
+    Uint8 padding2;
+    Uint8 padding3;
+} SDL_CameraDeviceEvent;
 
 /**
  *  Touch finger event structure (event.tfinger.*)
@@ -699,6 +715,7 @@ typedef union SDL_Event
     SDL_GamepadTouchpadEvent gtouchpad;     /**< Gamepad touchpad event data */
     SDL_GamepadSensorEvent gsensor;         /**< Gamepad sensor event data */
     SDL_AudioDeviceEvent adevice;           /**< Audio device event data */
+    SDL_CameraDeviceEvent cdevice;          /**< Camera device event data */
     SDL_SensorEvent sensor;                 /**< Sensor event data */
     SDL_QuitEvent quit;                     /**< Quit request event data */
     SDL_UserEvent user;                     /**< Custom event data */

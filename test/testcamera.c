@@ -18,8 +18,13 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include <stdio.h>
-
+#if 1
+int main(int argc, char **argv)
+{
+    SDL_Log("FIXME: update me");
+    return 0;
+}
+#else
 static const char *usage = "\
  \n\
  =========================================================================\n\
@@ -769,3 +774,4 @@ int main(int argc, char **argv)
 
     return 0;
 }
+#endif
