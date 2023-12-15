@@ -385,6 +385,23 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_HardwareVendorId(controller, &vendor);
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_HardwareProductId(controller, &product);
 
+        hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(controller, &IID___x_ABI_CWindows_CGaming_CInput_CIGameController, (void **)&game_controller);
+        if (SUCCEEDED(hr)) {
+            boolean wireless = 0;
+            hr = __x_ABI_CWindows_CGaming_CInput_CIGameController_get_IsWireless(game_controller, &wireless);
+            if (SUCCEEDED(hr) && wireless) {
+                bus = SDL_HARDWARE_BUS_BLUETOOTH;
+
+                /* Fixup for Wireless Xbox 360 Controller */
+                if (product == 0) {
+                    vendor = USB_VENDOR_MICROSOFT;
+                    product = USB_PRODUCT_XBOX360_XUSB_CONTROLLER;
+                }
+            }
+
+            __x_ABI_CWindows_CGaming_CInput_CIGameController_Release(game_controller);
+        }
+
         hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(controller, &IID___x_ABI_CWindows_CGaming_CInput_CIRawGameController2, (void **)&controller2);
         if (SUCCEEDED(hr)) {
             HSTRING hString;
@@ -423,18 +440,8 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
         }
 
         if (!ignore_joystick) {
-            hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(controller, &IID___x_ABI_CWindows_CGaming_CInput_CIGameController, (void **)&game_controller);
-            if (SUCCEEDED(hr)) {
-                boolean wireless;
-
+            if (game_controller) {
                 type = GetGameControllerType(game_controller);
-
-                hr = __x_ABI_CWindows_CGaming_CInput_CIGameController_get_IsWireless(game_controller, &wireless);
-                if (SUCCEEDED(hr) && wireless) {
-                    bus = SDL_HARDWARE_BUS_BLUETOOTH;
-                }
-
-                __x_ABI_CWindows_CGaming_CInput_CIGameController_Release(game_controller);
             }
 
             guid = SDL_CreateJoystickGUID(bus, vendor, product, version, name, 'w', (Uint8)type);
