@@ -395,7 +395,7 @@ int main(int argc, char *argv[])
     }
 
     for (i = 0; i < SDL_NUM_SYSTEM_CURSORS; ++i) {
-        SDL_Cursor *cursor = SDL_CreateSystemCursor((SDL_SystemCursor)i);
+        cursor = SDL_CreateSystemCursor((SDL_SystemCursor)i);
         if (cursor) {
             cursors[num_cursors] = cursor;
             cursor_types[num_cursors] = i;
