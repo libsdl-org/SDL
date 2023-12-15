@@ -65,7 +65,7 @@ static SDL_bool HIDAPI_DriverXbox360W_IsSupportedDevice(SDL_HIDAPI_Device *devic
 {
     const int XB360W_IFACE_PROTOCOL = 129; /* Wireless */
 
-    if ((vendor_id == USB_VENDOR_MICROSOFT && (product_id == 0x0291 || product_id == 0x02a9 || product_id == 0x0719) && interface_protocol == 0) ||
+    if ((vendor_id == USB_VENDOR_MICROSOFT && (product_id == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER_THIRDPARTY2 || product_id == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER_THIRDPARTY1 || product_id == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER) && interface_protocol == 0) ||
         (type == SDL_GAMEPAD_TYPE_XBOX360 && interface_protocol == XB360W_IFACE_PROTOCOL)) {
         return SDL_TRUE;
     }

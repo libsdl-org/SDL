@@ -71,7 +71,7 @@ static SDL_bool HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device
         /* This is the NVIDIA Shield controller which doesn't talk Xbox controller protocol */
         return SDL_FALSE;
     }
-    if ((vendor_id == USB_VENDOR_MICROSOFT && (product_id == 0x0291 || product_id == 0x0719)) ||
+    if ((vendor_id == USB_VENDOR_MICROSOFT && (product_id == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER_THIRDPARTY2 || product_id == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER)) ||
         (type == SDL_GAMEPAD_TYPE_XBOX360 && interface_protocol == XB360W_IFACE_PROTOCOL)) {
         /* This is the wireless dongle, which talks a different protocol */
         return SDL_FALSE;
