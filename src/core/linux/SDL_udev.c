@@ -530,7 +530,7 @@ int SDL_UDEV_AddCallback(SDL_UDEV_Callback cb)
         _this->last = item;
     }
 
-    return 1;
+    return 0;
 }
 
 void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb)
