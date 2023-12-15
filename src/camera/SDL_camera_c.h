@@ -29,4 +29,7 @@ int SDL_CameraInit(const char *driver_name);
 // Shutdown the camera subsystem
 void SDL_QuitCamera(void);
 
+// "Pump" the event queue.
+extern void SDL_UpdateCamera(void);
+
 #endif // SDL_camera_c_h_

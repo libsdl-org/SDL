@@ -49,23 +49,16 @@ typedef Uint32 SDL_CameraDeviceID;
 
 
 /**
- * The structure used to identify an SDL camera device
+ * The structure used to identify an opened SDL camera
  */
-struct SDL_CameraDevice;
-typedef struct SDL_CameraDevice SDL_CameraDevice;
-
-#define SDL_CAMERA_ALLOW_ANY_CHANGE          1
+struct SDL_Camera;
+typedef struct SDL_Camera SDL_Camera;
 
 /**
  *  SDL_CameraSpec structure
  *
- *  Only those field can be 'desired' when configuring the device:
- *  - format
- *  - width
- *  - height
- *
- *  \sa SDL_GetCameraFormat
- *  \sa SDL_GetCameraFrameSize
+ * \sa SDL_GetCameraDeviceSupportedSpecs
+ * \sa SDL_GetCameraSpec
  *
  */
 typedef struct SDL_CameraSpec
@@ -74,39 +67,6 @@ typedef struct SDL_CameraSpec
     int width;              /**< Frame width */
     int height;             /**< Frame height */
 } SDL_CameraSpec;
-
-/**
- *  SDL Camera Status
- *
- *  Change states but calling the function in this order:
- *
- *  SDL_OpenCamera()
- *  SDL_SetCameraSpec()  -> Init
- *  SDL_StartCamera()    -> Playing
- *  SDL_StopCamera()     -> Stopped
- *  SDL_CloseCamera()
- *
- */
-typedef enum
-{
-    SDL_CAMERA_FAIL = -1,    /**< Failed */
-    SDL_CAMERA_INIT = 0,     /**< Init, spec hasn't been set */
-    SDL_CAMERA_STOPPED,      /**< Stopped */
-    SDL_CAMERA_PLAYING       /**< Playing */
-} SDL_CameraStatus;
-
-/**
- *  SDL Video Capture Status
- */
-typedef struct SDL_CameraFrame
-{
-    Uint64 timestampNS;         /**< Frame timestamp in nanoseconds when read from the driver */
-    int num_planes;             /**< Number of planes */
-    Uint8 *data[3];             /**< Pointer to data of i-th plane */
-    int pitch[3];               /**< Pitch of i-th plane */
-    void *internal;             /**< Private field */
-} SDL_CameraFrame;
-
 
 /**
  * Use this function to get the number of built-in camera drivers.
@@ -176,10 +136,12 @@ extern DECLSPEC const char *SDLCALL SDL_GetCurrentCameraDriver(void);
 /**
  * Get a list of currently connected camera devices.
  *
- * \param count a pointer filled in with the number of camera devices
+ * \param count a pointer filled in with the number of camera devices. Can be NULL.
  * \returns a 0 terminated array of camera instance IDs which should be
  *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
  *          more details.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -188,11 +150,78 @@ extern DECLSPEC const char *SDLCALL SDL_GetCurrentCameraDriver(void);
 extern DECLSPEC SDL_CameraDeviceID *SDLCALL SDL_GetCameraDevices(int *count);
 
 /**
- * Open a Video Capture device
+ * Get the list of native formats/sizes a camera supports.
+ *
+ * This returns a list of all formats and frame sizes that a specific
+ * camera can offer. This is useful if your app can accept a variety
+ * of image formats and sizes and so want to find the optimal spec
+ * that doesn't require conversion.
+ *
+ * This function isn't strictly required; if you call SDL_OpenCameraDevice
+ * with a NULL spec, SDL will choose a native format for you, and if you
+ * instead specify a desired format, it will transparently convert to the
+ * requested format on your behalf.
+ *
+ * If `count` is not NULL, it will be filled with the number of elements
+ * in the returned array. Additionally, the last element of the array
+ * has all fields set to zero (this element is not included in `count`).
+ *
+ * The returned list is owned by the caller, and should be released with
+ * SDL_free() when no longer needed.
+ *
+ * \param devid the camera device instance ID to query.
+ * \param count a pointer filled in with the number of elements in the list. Can be NULL.
+ * \returns a 0 terminated array of SDL_CameraSpecs, which should be
+ *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
+ *          more details.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetCameraDevices
+ * \sa SDL_OpenCameraDevice
+ */
+extern DECLSPEC SDL_CameraSpec *SDLCALL SDL_GetCameraDeviceSupportedSpecs(SDL_CameraDeviceID devid, int *count);
+
+/**
+ * Get human-readable device name for a camera.
+ *
+ * The returned string is owned by the caller; please release it with
+ * SDL_free() when done with it.
  *
  * \param instance_id the camera device instance ID
+ * \returns Human-readable device name, or NULL on error; call SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetCameraDevices
+ */
+extern DECLSPEC char * SDLCALL SDL_GetCameraDeviceName(SDL_CameraDeviceID instance_id);
+
+/**
+ * Open a video capture device (a "camera").
+ *
+ * You can open the device with any reasonable spec, and if the hardware can't
+ * directly support it, it will convert data seamlessly to the requested
+ * format. This might incur overhead, including scaling of image data.
+ *
+ * If you would rather accept whatever format the device offers, you can
+ * pass a NULL spec here and it will choose one for you (and you can use
+ * SDL_Surface's conversion/scaling functions directly if necessary).
+ *
+ * You can call SDL_GetCameraSpec() to get the actual data format if
+ * passing a NULL spec here. You can see the exact specs a device can
+ * support without conversion with SDL_GetCameraSupportedSpecs().
+ *
+ * \param instance_id the camera device instance ID
+ * \param spec The desired format for data the device will provide. Can be NULL.
  * \returns device, or NULL on failure; call SDL_GetError() for more
  *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -200,225 +229,123 @@ extern DECLSPEC SDL_CameraDeviceID *SDLCALL SDL_GetCameraDevices(int *count);
  * \sa SDL_GetCameraDevices
  * \sa SDL_OpenCameraWithSpec
  */
-extern DECLSPEC SDL_CameraDevice *SDLCALL SDL_OpenCamera(SDL_CameraDeviceID instance_id);
+extern DECLSPEC SDL_Camera *SDLCALL SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_CameraSpec *spec);
 
 /**
- * Set specification
+ * Get the instance ID of an opened camera.
  *
- * \param device opened camera device
- * \param desired desired camera spec
- * \param obtained obtained camera spec
- * \param allowed_changes allow changes or not
- * \returns 0 on success or a negative error code on failure; call
+ * \param device an SDL_Camera to query
+ * \returns the instance ID of the specified camera on success or 0 on
+ *          failure; call SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_OpenCameraDevice
+ */
+extern DECLSPEC SDL_CameraDeviceID SDLCALL SDL_GetCameraInstanceID(SDL_Camera *camera);
+
+/**
+ * Get the properties associated with an opened camera.
+ *
+ * \param device the SDL_Camera obtained from SDL_OpenCameraDevice()
+ * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_OpenCamera
- * \sa SDL_OpenCameraWithSpec
- * \sa SDL_GetCameraSpec
- */
-extern DECLSPEC int SDLCALL SDL_SetCameraSpec(SDL_CameraDevice *device,
-                                                    const SDL_CameraSpec *desired,
-                                                    SDL_CameraSpec *obtained,
-                                                    int allowed_changes);
-
-/**
- * Open a Video Capture device and set specification
- *
- * \param instance_id the camera device instance ID
- * \param desired desired camera spec
- * \param obtained obtained camera spec
- * \param allowed_changes allow changes or not
- * \returns device, or NULL on failure; call SDL_GetError() for more
- *          information.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_OpenCamera
- * \sa SDL_SetCameraSpec
- * \sa SDL_GetCameraSpec
+ * \sa SDL_GetProperty
+ * \sa SDL_SetProperty
  */
-extern DECLSPEC SDL_CameraDevice *SDLCALL SDL_OpenCameraWithSpec(SDL_CameraDeviceID instance_id,
-                                                                              const SDL_CameraSpec *desired,
-                                                                              SDL_CameraSpec *obtained,
-                                                                              int allowed_changes);
+extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetCameraProperties(SDL_Camera *camera);
 
 /**
- * Get device name
+ * Get the spec that a camera is using when generating images.
  *
- * \param instance_id the camera device instance ID
- * \returns device name, shouldn't be freed
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetCameraDevices
- */
-extern DECLSPEC const char * SDLCALL SDL_GetCameraDeviceName(SDL_CameraDeviceID instance_id);
-
-/**
- * Get the obtained camera spec
+ * Note that this might not be the native format of the hardware, as SDL
+ * might be converting to this format behind the scenes.
  *
  * \param device opened camera device
  * \param spec The SDL_CameraSpec to be initialized by this function.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_SetCameraSpec
- * \sa SDL_OpenCameraWithSpec
- */
-extern DECLSPEC int SDLCALL SDL_GetCameraSpec(SDL_CameraDevice *device, SDL_CameraSpec *spec);
-
-
-/**
- * Get frame format of camera device.
- *
- * The value can be used to fill SDL_CameraSpec structure.
- *
- * \param device opened camera device
- * \param index format between 0 and num -1
- * \param format pointer output format (SDL_PixelFormatEnum)
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetNumCameraFormats
+ * \sa SDL_OpenCameraDevice
  */
-extern DECLSPEC int SDLCALL SDL_GetCameraFormat(SDL_CameraDevice *device,
-                                                      int index,
-                                                      Uint32 *format);
-
-/**
- * Number of available formats for the device
- *
- * \param device opened camera device
- * \returns number of formats or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetCameraFormat
- * \sa SDL_SetCameraSpec
- */
-extern DECLSPEC int SDLCALL SDL_GetNumCameraFormats(SDL_CameraDevice *device);
-
-/**
- * Get frame sizes of the device and the specified input format.
- *
- * The value can be used to fill SDL_CameraSpec structure.
- *
- * \param device opened camera device
- * \param format a format that can be used by the device (SDL_PixelFormatEnum)
- * \param index framesize between 0 and num -1
- * \param width output width
- * \param height output height
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetNumCameraFrameSizes
- */
-extern DECLSPEC int SDLCALL SDL_GetCameraFrameSize(SDL_CameraDevice *device, Uint32 format, int index, int *width, int *height);
-
-/**
- * Number of different framesizes available for the device and pixel format.
- *
- * \param device opened camera device
- * \param format frame pixel format (SDL_PixelFormatEnum)
- * \returns number of framesizes or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetCameraFrameSize
- * \sa SDL_SetCameraSpec
- */
-extern DECLSPEC int SDLCALL SDL_GetNumCameraFrameSizes(SDL_CameraDevice *device, Uint32 format);
-
-
-/**
- * Get camera status
- *
- * \param device opened camera device
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_CameraStatus
- */
-extern DECLSPEC SDL_CameraStatus SDLCALL SDL_GetCameraStatus(SDL_CameraDevice *device);
-
-/**
- * Start camera
- *
- * \param device opened camera device
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_StopCamera
- */
-extern DECLSPEC int SDLCALL SDL_StartCamera(SDL_CameraDevice *device);
+extern DECLSPEC int SDLCALL SDL_GetCameraSpec(SDL_Camera *camera, SDL_CameraSpec *spec);
 
 /**
  * Acquire a frame.
  *
  * The frame is a memory pointer to the image data, whose size and format are
- * given by the the obtained spec.
+ * given by the spec requested when opening the device.
  *
- * Non blocking API. If there is a frame available, frame->num_planes is non
- * 0. If frame->num_planes is 0 and returned code is 0, there is no frame at
- * that time.
+ * This is a non blocking API. If there is a frame available, a non-NULL surface is
+ * returned, and timestampNS will be filled with a non-zero value.
  *
- * After used, the frame should be released with SDL_ReleaseCameraFrame
+ * Note that an error case can also return NULL, but a NULL by itself is normal
+ * and just signifies that a new frame is not yet available. Note that even if a
+ * camera device fails outright (a USB camera is unplugged while in use, etc), SDL
+ * will send an event separately to notify the app, but continue to provide blank
+ * frames at ongoing intervals until SDL_CloseCamera() is called, so real
+ * failure here is almost always an out of memory condition.
+ *
+ * After use, the frame should be released with SDL_ReleaseCameraFrame(). If you
+ * don't do this, the system may stop providing more video! If the hardware is
+ * using DMA to write directly into memory, frames held too long may be overwritten
+ * with new data.
+ *
+ * Do not call SDL_FreeSurface() on the returned surface! It must be given back
+ * to the camera subsystem with SDL_ReleaseCameraFrame!
  *
  * \param device opened camera device
- * \param frame pointer to get the frame
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \param timestampNS a pointer filled in with the frame's timestamp, or 0 on error. Can be NULL.
+ * \returns A new frame of video on success, NULL if none is currently available.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ReleaseCameraFrame
  */
-extern DECLSPEC int SDLCALL SDL_AcquireCameraFrame(SDL_CameraDevice *device, SDL_CameraFrame *frame);
+extern DECLSPEC SDL_Surface * SDLCALL SDL_AcquireCameraFrame(SDL_Camera *camera, Uint64 *timestampNS);
 
 /**
- * Release a frame.
+ * Release a frame of video acquired from a camera.
  *
  * Let the back-end re-use the internal buffer for camera.
  *
- * All acquired frames should be released before closing the device.
+ * This function _must_ be called only on surface objects returned by
+ * SDL_AcquireCameraFrame(). This function should be called as quickly as
+ * possible after acquisition, as SDL keeps a small FIFO queue of surfaces
+ * for video frames; if surfaces aren't released in a timely manner, SDL
+ * may drop upcoming video frames from the camera.
+ *
+ * If the app needs to keep the surface for a significant time, they should
+ * make a copy of it and release the original.
+ *
+ * The app should not use the surface again after calling this function;
+ * assume the surface is freed and the pointer is invalid.
  *
  * \param device opened camera device
- * \param frame frame pointer.
+ * \param frame The video frame surface to release.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AcquireCameraFrame
  */
-extern DECLSPEC int SDLCALL SDL_ReleaseCameraFrame(SDL_CameraDevice *device, SDL_CameraFrame *frame);
-
-/**
- * Stop Video Capture
- *
- * \param device opened camera device
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_StartCamera
- */
-extern DECLSPEC int SDLCALL SDL_StopCamera(SDL_CameraDevice *device);
+extern DECLSPEC int SDLCALL SDL_ReleaseCameraFrame(SDL_Camera *camera, SDL_Surface *frame);
 
 /**
  * Use this function to shut down camera processing and close the
@@ -426,12 +353,16 @@ extern DECLSPEC int SDLCALL SDL_StopCamera(SDL_CameraDevice *device);
  *
  * \param device opened camera device
  *
+ * \threadsafety It is safe to call this function from any thread, but
+ *               no thread may reference `device` once this function
+ *               is called.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_OpenCameraWithSpec
  * \sa SDL_OpenCamera
  */
-extern DECLSPEC void SDLCALL SDL_CloseCamera(SDL_CameraDevice *device);
+extern DECLSPEC void SDLCALL SDL_CloseCamera(SDL_Camera *camera);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

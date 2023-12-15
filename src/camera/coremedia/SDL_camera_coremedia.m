@@ -135,7 +135,9 @@ static Uint32 nsfourcc_to_sdlformat(NSString *nsfourcc)
     if (SDL_strcmp("yuvs", str) == 0)  return SDL_PIXELFORMAT_UYVY;
     if (SDL_strcmp("420f", str) == 0)  return SDL_PIXELFORMAT_UNKNOWN;
 
-    SDL_Log("Unknown format '%s'", str);
+    #if DEBUG_CAMERA
+    SDL_Log("CAMERA: Unknown format '%s'", str);
+    #endif
 
     return SDL_PIXELFORMAT_UNKNOWN;
 }
@@ -177,8 +179,9 @@ static NSString *sdlformat_to_nsfourcc(Uint32 fmt)
     - (void)captureOutput:(AVCaptureOutput *)output
         didDropSampleBuffer:(CMSampleBufferRef)sampleBuffer
         fromConnection:(AVCaptureConnection *)connection {
-            // !!! FIXME #if DEBUG_CAMERA
-            SDL_Log("Drop frame..");
+            #if DEBUG_CAMERA
+            SDL_Log("CAMERA: Drop frame..");
+            #endif
         }
 @end
 
@@ -362,13 +365,13 @@ static int COREMEDIA_AcquireFrame(SDL_CameraDevice *_this, SDL_CameraFrame *fram
         const int numPlanes = CVPixelBufferGetPlaneCount(image);
         const int planar = CVPixelBufferIsPlanar(image);
 
-#if 0
+        #if DEBUG_CAMERA
         const int w = CVPixelBufferGetWidth(image);
         const int h = CVPixelBufferGetHeight(image);
         const int sz = CVPixelBufferGetDataSize(image);
         const int pitch = CVPixelBufferGetBytesPerRow(image);
-        SDL_Log("buffer planar=%d count:%d %d x %d sz=%d pitch=%d", planar, numPlanes, w, h, sz, pitch);
-#endif
+        SDL_Log("CAMERA: buffer planar=%d count:%d %d x %d sz=%d pitch=%d", planar, numPlanes, w, h, sz, pitch);
+        #endif
 
         CVPixelBufferLockBaseAddress(image, 0);
 

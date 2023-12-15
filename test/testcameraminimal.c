@@ -28,21 +28,14 @@ int main(int argc, char **argv)
     int quit = 0;
     SDLTest_CommonState  *state = NULL;
 
-    SDL_CameraDevice *device = NULL;
-    SDL_CameraSpec obtained;
-
-    SDL_CameraFrame frame_current;
+    SDL_Camera *camera = NULL;
+    SDL_CameraSpec spec;
     SDL_Texture *texture = NULL;
     int texture_updated = 0;
+    SDL_Surface *frame_current = NULL;
 
     SDL_zero(evt);
-    SDL_zero(obtained);
-    SDL_zero(frame_current);
-
-    /* Set 0 to disable TouchEvent to be duplicated as MouseEvent with SDL_TOUCH_MOUSEID */
-    SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
-    /* Set 0 to disable MouseEvent to be duplicated as TouchEvent with SDL_MOUSE_TOUCHID */
-    SDL_SetHint(SDL_HINT_MOUSE_TOUCH_EVENTS, "0");
+    SDL_zero(spec);
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -73,20 +66,42 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    device = SDL_OpenCameraWithSpec(0, NULL, &obtained, SDL_CAMERA_ALLOW_ANY_CHANGE);
-    if (!device) {
-        SDL_Log("No camera? %s", SDL_GetError());
+    SDL_CameraDeviceID *devices = SDL_GetCameraDevices(NULL);
+    if (!devices) {
+        SDL_Log("SDL_GetCameraDevices failed: %s", SDL_GetError());
         return 1;
     }
 
-    if (SDL_StartCamera(device) < 0) {
-        SDL_Log("error SDL_StartCamera(): %s", SDL_GetError());
+    const SDL_CameraDeviceID devid = devices[0];  /* just take the first one. */
+    SDL_free(devices);
+
+    if (!devid) {
+        SDL_Log("No cameras available? %s", SDL_GetError());
+        return 1;
+    }
+    
+    SDL_CameraSpec *pspec = NULL;
+    #if 0  /* just for edge-case testing purposes, ignore. */
+    pspec = &spec;
+    spec.width = 100 /*1280 * 2*/;
+    spec.height = 100 /*720 * 2*/;
+    spec.format = SDL_PIXELFORMAT_YUY2 /*SDL_PIXELFORMAT_RGBA8888*/;
+    #endif
+
+    camera = SDL_OpenCameraDevice(devid, pspec);
+    if (!camera) {
+        SDL_Log("Failed to open camera device: %s", SDL_GetError());
+        return 1;
+    }
+
+   if (SDL_GetCameraSpec(camera, &spec) < 0) {
+        SDL_Log("Couldn't get camera spec: %s", SDL_GetError());
         return 1;
     }
 
     /* Create texture with appropriate format */
     if (texture == NULL) {
-        texture = SDL_CreateTexture(renderer, obtained.format, SDL_TEXTUREACCESS_STATIC, obtained.width, obtained.height);
+        texture = SDL_CreateTexture(renderer, spec.format, SDL_TEXTUREACCESS_STATIC, spec.width, spec.height);
         if (texture == NULL) {
             SDL_Log("Couldn't create texture: %s", SDL_GetError());
             return 1;
@@ -118,21 +133,18 @@ int main(int argc, char **argv)
         }
 
         {
-            SDL_CameraFrame frame_next;
-            SDL_zero(frame_next);
+            Uint64 timestampNS = 0;
+            SDL_Surface *frame_next = SDL_AcquireCameraFrame(camera, &timestampNS);
 
-            if (SDL_AcquireCameraFrame(device, &frame_next) < 0) {
-                SDL_Log("err SDL_AcquireCameraFrame: %s", SDL_GetError());
-            }
 #if 0
-            if (frame_next.num_planes) {
-                SDL_Log("frame: %p  at %" SDL_PRIu64, (void*)frame_next.data[0], frame_next.timestampNS);
+            if (frame_next) {
+                SDL_Log("frame: %p  at %" SDL_PRIu64, (void*)frame_next->pixels, timestampNS);
             }
 #endif
 
-            if (frame_next.num_planes) {
-                if (frame_current.num_planes) {
-                    if (SDL_ReleaseCameraFrame(device, &frame_current) < 0) {
+            if (frame_next) {
+                if (frame_current) {
+                    if (SDL_ReleaseCameraFrame(camera, frame_current) < 0) {
                         SDL_Log("err SDL_ReleaseCameraFrame: %s", SDL_GetError());
                     }
                 }
@@ -146,20 +158,8 @@ int main(int argc, char **argv)
         }
 
         /* Update SDL_Texture with last video frame (only once per new frame) */
-        if (frame_current.num_planes && texture_updated == 0) {
-            /* Use software data */
-            if (frame_current.num_planes == 1) {
-                SDL_UpdateTexture(texture, NULL,
-                        frame_current.data[0], frame_current.pitch[0]);
-            } else if (frame_current.num_planes == 2) {
-                SDL_UpdateNVTexture(texture, NULL,
-                        frame_current.data[0], frame_current.pitch[0],
-                        frame_current.data[1], frame_current.pitch[1]);
-            } else if (frame_current.num_planes == 3) {
-                SDL_UpdateYUVTexture(texture, NULL, frame_current.data[0], frame_current.pitch[0],
-                        frame_current.data[1], frame_current.pitch[1],
-                        frame_current.data[2], frame_current.pitch[2]);
-            }
+        if (frame_current && texture_updated == 0) {
+            SDL_UpdateTexture(texture, NULL, frame_current->pixels, frame_current->pitch);
             texture_updated = 1;
         }
 
@@ -177,7 +177,7 @@ int main(int argc, char **argv)
                 th = (int)((float) th * scale);
             }
             d.x = (float)(10 );
-            d.y = (float)(win_h - th);
+            d.y = ((float)(win_h - th)) / 2.0f;
             d.w = (float)tw;
             d.h = (float)(th - 10);
             SDL_RenderTexture(renderer, texture, NULL, &d);
@@ -186,13 +186,10 @@ int main(int argc, char **argv)
         SDL_RenderPresent(renderer);
     }
 
-    if (SDL_StopCamera(device) < 0) {
-        SDL_Log("error SDL_StopCamera(): %s", SDL_GetError());
+    if (frame_current) {
+        SDL_ReleaseCameraFrame(camera, frame_current);
     }
-    if (frame_current.num_planes) {
-        SDL_ReleaseCameraFrame(device, &frame_current);
-    }
-    SDL_CloseCamera(device);
+    SDL_CloseCamera(camera);
 
     if (texture) {
         SDL_DestroyTexture(texture);
@@ -205,3 +202,4 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
