@@ -38,7 +38,6 @@ extern "C" {
  * Internal stuff.
  */
 static SDL_bool s_bXInputEnabled = SDL_TRUE;
-static char *s_arrXInputDevicePath[XUSER_MAX_COUNT];
 
 static SDL_bool SDL_XInputUseOldJoystickMapping()
 {
@@ -114,116 +113,25 @@ static const char *GetXInputName(const Uint8 userid, BYTE SubType)
     return name;
 }
 
-/* We can't really tell what device is being used for XInput, but we can guess
-   and we'll be correct for the case where only one device is connected.
- */
-static void GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
+static SDL_bool GetXInputDeviceInfo(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
 {
-#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__) /* TODO: remove this ifndef __WINRT__ block, but only after integrating with UWP/WinRT's HID API */
-    PRAWINPUTDEVICELIST devices = NULL;
-    UINT i, j, device_count = 0;
+    XINPUT_CAPABILITIES_EX capabilities;
 
-    if ((GetRawInputDeviceList(NULL, &device_count, sizeof(RAWINPUTDEVICELIST)) == -1) || (!device_count)) {
-        return; /* oh well. */
+    if (!XINPUTGETCAPABILITIESEX || XINPUTGETCAPABILITIESEX(1, userid, 0, &capabilities) != ERROR_SUCCESS) {
+        return SDL_FALSE;
     }
 
-    devices = (PRAWINPUTDEVICELIST)SDL_malloc(sizeof(RAWINPUTDEVICELIST) * device_count);
-    if (!devices) {
-        return;
+    /* Fixup for Wireless Xbox 360 Controller */
+    if (capabilities.ProductId == 0 && capabilities.Capabilities.Flags & XINPUT_CAPS_WIRELESS) {
+        capabilities.VendorId = USB_VENDOR_MICROSOFT;
+        capabilities.ProductId = USB_PRODUCT_XBOX360_XUSB_CONTROLLER;
     }
 
-    device_count = GetRawInputDeviceList(devices, &device_count, sizeof(RAWINPUTDEVICELIST));
-    if (device_count == (UINT)-1) {
-        SDL_free(devices);
-        return; /* oh well. */
-    }
+    *pVID = capabilities.VendorId;
+    *pPID = capabilities.ProductId;
+    *pVersion = capabilities.ProductVersion;
 
-    /* First see if we have a cached entry for this index */
-    if (s_arrXInputDevicePath[userid]) {
-        for (i = 0; i < device_count; i++) {
-            RID_DEVICE_INFO rdi;
-            char devName[128] = { 0 };
-            UINT rdiSize = sizeof(rdi);
-            UINT nameSize = SDL_arraysize(devName);
-
-            rdi.cbSize = sizeof(rdi);
-            if (devices[i].dwType == RIM_TYPEHID &&
-                GetRawInputDeviceInfoA(devices[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize) != (UINT)-1 &&
-                GetRawInputDeviceInfoA(devices[i].hDevice, RIDI_DEVICENAME, devName, &nameSize) != (UINT)-1) {
-                if (SDL_strcmp(devName, s_arrXInputDevicePath[userid]) == 0) {
-                    *pVID = (Uint16)rdi.hid.dwVendorId;
-                    *pPID = (Uint16)rdi.hid.dwProductId;
-                    *pVersion = (Uint16)rdi.hid.dwVersionNumber;
-                    SDL_free(devices);
-                    return;
-                }
-            }
-        }
-    }
-
-    for (i = 0; i < device_count; i++) {
-        RID_DEVICE_INFO rdi;
-        char devName[MAX_PATH] = { 0 };
-        UINT rdiSize = sizeof(rdi);
-        UINT nameSize = SDL_arraysize(devName);
-
-        rdi.cbSize = sizeof(rdi);
-        if (devices[i].dwType == RIM_TYPEHID &&
-            GetRawInputDeviceInfoA(devices[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize) != (UINT)-1 &&
-            GetRawInputDeviceInfoA(devices[i].hDevice, RIDI_DEVICENAME, devName, &nameSize) != (UINT)-1) {
-#ifdef DEBUG_JOYSTICK
-            SDL_Log("Raw input device: VID = 0x%x, PID = 0x%x, %s\n", rdi.hid.dwVendorId, rdi.hid.dwProductId, devName);
-#endif
-            if (SDL_strstr(devName, "IG_") != NULL) {
-                SDL_bool found = SDL_FALSE;
-                for (j = 0; j < SDL_arraysize(s_arrXInputDevicePath); ++j) {
-                    if (!s_arrXInputDevicePath[j]) {
-                        continue;
-                    }
-                    if (SDL_strcmp(devName, s_arrXInputDevicePath[j]) == 0) {
-                        found = SDL_TRUE;
-                        break;
-                    }
-                }
-                if (found) {
-                    /* We already have this device in our XInput device list */
-                    continue;
-                }
-
-                /* We don't actually know if this is the right device for this
-                 * userid, but we'll record it so we'll at least be consistent
-                 * when the raw device list changes.
-                 */
-                if (rdi.hid.dwVendorId == USB_VENDOR_VALVE &&
-                    rdi.hid.dwProductId == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD) {
-                    /* Steam encodes the real device in the path */
-                    int realVID = rdi.hid.dwVendorId;
-                    int realPID = rdi.hid.dwProductId;
-                    (void)SDL_sscanf(devName, "\\\\.\\pipe\\HID#VID_045E&PID_028E&IG_00#%x&%x&", &realVID, &realPID);
-                    *pVID = (Uint16)realVID;
-                    *pPID = (Uint16)realPID;
-                    *pVersion = 0;
-                } else {
-                    *pVID = (Uint16)rdi.hid.dwVendorId;
-                    *pPID = (Uint16)rdi.hid.dwProductId;
-                    *pVersion = (Uint16)rdi.hid.dwVersionNumber;
-                }
-                if (s_arrXInputDevicePath[userid]) {
-                    SDL_free(s_arrXInputDevicePath[userid]);
-                }
-                s_arrXInputDevicePath[userid] = SDL_strdup(devName);
-                SDL_free(devices);
-                return;
-            }
-        }
-    }
-    SDL_free(devices);
-#endif /* !__WINRT__ */
-
-    /* The device wasn't in the raw HID device list, it's probably Bluetooth */
-    *pVID = 0x045e; /* Microsoft */
-    *pPID = 0x02fd; /* XBox One S Bluetooth */
-    *pVersion = 0;
+    return SDL_TRUE;
 }
 
 static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
@@ -279,6 +187,7 @@ static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pC
         return; /* better luck next time? */
     }
 
+    GetXInputDeviceInfo(userid, &vendor, &product, &version);
     pNewJoystick->bXInputDevice = SDL_TRUE;
     pNewJoystick->joystickname = SDL_CreateJoystickName(vendor, product, NULL, GetXInputName(userid, SubType));
     if (!pNewJoystick->joystickname) {
@@ -287,8 +196,6 @@ static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pC
     }
     (void)SDL_snprintf(pNewJoystick->path, sizeof(pNewJoystick->path), "XInput#%u", userid);
     if (!SDL_XInputUseOldJoystickMapping()) {
-        GuessXInputDevice(userid, &vendor, &product, &version);
-
         pNewJoystick->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, vendor, product, version, pNewJoystick->joystickname, 'x', SubType);
     }
     pNewJoystick->SubType = SubType;
@@ -319,14 +226,6 @@ static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pC
     WINDOWS_AddJoystickDevice(pNewJoystick);
 }
 
-static void DelXInputDevice(Uint8 userid)
-{
-    if (s_arrXInputDevicePath[userid]) {
-        SDL_free(s_arrXInputDevicePath[userid]);
-        s_arrXInputDevicePath[userid] = NULL;
-    }
-}
-
 void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
 {
     int iuserid;
@@ -340,21 +239,7 @@ void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
         const Uint8 userid = (Uint8)iuserid;
         XINPUT_CAPABILITIES capabilities;
         if (XINPUTGETCAPABILITIES(userid, XINPUT_FLAG_GAMEPAD, &capabilities) == ERROR_SUCCESS) {
-            /* Adding a new device, must handle all removes first, or GuessXInputDevice goes terribly wrong (returns
-              a product/vendor ID that is not even attached to the system) when we get a remove and add on the same tick
-              (e.g. when disconnecting a device and the OS reassigns which userid an already-attached controller is)
-            */
-            int iuserid2;
-            for (iuserid2 = iuserid - 1; iuserid2 >= 0; iuserid2--) {
-                const Uint8 userid2 = (Uint8)iuserid2;
-                XINPUT_CAPABILITIES capabilities2;
-                if (XINPUTGETCAPABILITIES(userid2, XINPUT_FLAG_GAMEPAD, &capabilities2) != ERROR_SUCCESS) {
-                    DelXInputDevice(userid2);
-                }
-            }
             AddXInputDevice(userid, capabilities.SubType, pContext);
-        } else {
-            DelXInputDevice(userid);
         }
     }
 }
@@ -552,12 +437,6 @@ void SDL_XINPUT_JoystickClose(SDL_Joystick *joystick)
 
 void SDL_XINPUT_JoystickQuit(void)
 {
-    int iuserid;
-
-    for (iuserid = 0; iuserid < XUSER_MAX_COUNT; ++iuserid) {
-        DelXInputDevice(iuserid);
-    }
-
     if (s_bXInputEnabled) {
         WIN_UnloadXInputDLL();
     }
