@@ -361,8 +361,8 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
             int h = rect.bottom;
 
             if (window->flags & SDL_WINDOW_EXTERNAL) {
-                window->windowed.w = window->w = w;
-                window->windowed.h = window->h = h;
+                window->floating.w = window->windowed.w = window->w = w;
+                window->floating.h = window->windowed.h = window->h = h;
             } else if ((window->windowed.w && window->windowed.w != w) || (window->windowed.h && window->windowed.h != h)) {
                 /* We tried to create a window larger than the desktop and Windows didn't allow it.  Override! */
                 int x, y;
@@ -384,8 +384,8 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
         point.y = 0;
         if (ClientToScreen(hwnd, &point)) {
             if (window->flags & SDL_WINDOW_EXTERNAL) {
-                window->windowed.x = point.x;
-                window->windowed.y = point.y;
+                window->floating.x = window->windowed.x = point.x;
+                window->floating.y = window->windowed.y = point.y;
             }
             window->x = point.x;
             window->y = point.y;
