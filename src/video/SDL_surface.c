@@ -199,7 +199,7 @@ SDL_Surface *SDL_CreateSurface(int width, int height, Uint32 format)
 }
 
 /*
- * Create an RGB surface from an existing memory buffer using the given given
+ * Create an RGB surface from an existing memory buffer using the given
  * enum SDL_PIXELFORMAT_* format
  */
 SDL_Surface *SDL_CreateSurfaceFrom(void *pixels, int width, int height, int pitch, Uint32 format)
