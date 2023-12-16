@@ -611,14 +611,14 @@ static SDL_bool FindV4L2CameraDeviceByBusInfoCallback(SDL_CameraDevice *device, 
     return (SDL_strcmp(handle->bus_info, (const char *) userdata) == 0);
 }
 
-typedef struct SpecAddData
+typedef struct FormatAddData
 {
     SDL_CameraSpec *specs;
     int num_specs;
     int allocated_specs;
-} SpecAddData;
+} FormatAddData;
 
-static int AddCameraSpec(SpecAddData *data, Uint32 fmt, int w, int h)
+static int AddCameraFormat(FormatAddData *data, Uint32 fmt, int w, int h)
 {
     SDL_assert(data != NULL);
     if (data->allocated_specs <= data->num_specs) {
@@ -676,7 +676,7 @@ static void MaybeAddDevice(const char *path)
     SDL_Log("CAMERA: V4L2 camera path='%s' bus_info='%s' name='%s'", path, (const char *) vcap.bus_info, vcap.card);
     #endif
 
-    SpecAddData add_data;
+    FormatAddData add_data;
     SDL_zero(add_data);
 
     struct v4l2_fmtdesc fmtdesc;
@@ -709,7 +709,7 @@ static void MaybeAddDevice(const char *path)
                 #if DEBUG_CAMERA
                 SDL_Log("CAMERA:     * Has discrete size %dx%d", w, h);
                 #endif
-                if (AddCameraSpec(&add_data, sdlfmt, w, h) == -1) {
+                if (AddCameraFormat(&add_data, sdlfmt, w, h) == -1) {
                     break;  // Probably out of memory; we'll go with what we have, if anything.
                 }
                 frmsizeenum.index++;  // set up for the next one.
@@ -725,7 +725,7 @@ static void MaybeAddDevice(const char *path)
                         #if DEBUG_CAMERA
                         SDL_Log("CAMERA:     * Has %s size %dx%d", (frmsizeenum.type == V4L2_FRMSIZE_TYPE_STEPWISE) ? "stepwise" : "continuous", w, h);
                         #endif
-                        if (AddCameraSpec(&add_data, sdlfmt, w, h) == -1) {
+                        if (AddCameraFormat(&add_data, sdlfmt, w, h) == -1) {
                             break;  // Probably out of memory; we'll go with what we have, if anything.
                         }
 
