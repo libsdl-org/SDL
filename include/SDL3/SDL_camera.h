@@ -57,8 +57,8 @@ typedef struct SDL_Camera SDL_Camera;
 /**
  *  SDL_CameraSpec structure
  *
- * \sa SDL_GetCameraDeviceSupportedSpecs
- * \sa SDL_GetCameraSpec
+ * \sa SDL_GetCameraDeviceSupportedFormats
+ * \sa SDL_GetCameraFormat
  *
  */
 typedef struct SDL_CameraSpec
@@ -182,7 +182,7 @@ extern DECLSPEC SDL_CameraDeviceID *SDLCALL SDL_GetCameraDevices(int *count);
  * \sa SDL_GetCameraDevices
  * \sa SDL_OpenCameraDevice
  */
-extern DECLSPEC SDL_CameraSpec *SDLCALL SDL_GetCameraDeviceSupportedSpecs(SDL_CameraDeviceID devid, int *count);
+extern DECLSPEC SDL_CameraSpec *SDLCALL SDL_GetCameraDeviceSupportedFormats(SDL_CameraDeviceID devid, int *count);
 
 /**
  * Get human-readable device name for a camera.
@@ -212,7 +212,7 @@ extern DECLSPEC char * SDLCALL SDL_GetCameraDeviceName(SDL_CameraDeviceID instan
  * pass a NULL spec here and it will choose one for you (and you can use
  * SDL_Surface's conversion/scaling functions directly if necessary).
  *
- * You can call SDL_GetCameraSpec() to get the actual data format if
+ * You can call SDL_GetCameraFormat() to get the actual data format if
  * passing a NULL spec here. You can see the exact specs a device can
  * support without conversion with SDL_GetCameraSupportedSpecs().
  *
@@ -279,7 +279,7 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetCameraProperties(SDL_Camera *cam
  *
  * \sa SDL_OpenCameraDevice
  */
-extern DECLSPEC int SDLCALL SDL_GetCameraSpec(SDL_Camera *camera, SDL_CameraSpec *spec);
+extern DECLSPEC int SDLCALL SDL_GetCameraFormat(SDL_Camera *camera, SDL_CameraSpec *spec);
 
 /**
  * Acquire a frame.

@@ -407,7 +407,7 @@ void SDL_CloseCamera(SDL_Camera *camera)
     ClosePhysicalCameraDevice(device);
 }
 
-int SDL_GetCameraSpec(SDL_Camera *camera, SDL_CameraSpec *spec)
+int SDL_GetCameraFormat(SDL_Camera *camera, SDL_CameraSpec *spec)
 {
     if (!camera) {
         return SDL_InvalidParamError("camera");
@@ -469,7 +469,7 @@ SDL_CameraDeviceID *SDL_GetCameraDevices(int *count)
 
 }
 
-SDL_CameraSpec *SDL_GetCameraDeviceSupportedSpecs(SDL_CameraDeviceID instance_id, int *count)
+SDL_CameraSpec *SDL_GetCameraDeviceSupportedFormats(SDL_CameraDeviceID instance_id, int *count)
 {
     if (count) {
         *count = 0;

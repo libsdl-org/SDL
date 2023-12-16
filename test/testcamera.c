@@ -284,7 +284,7 @@ int main(int argc, char **argv)
 
     {
         SDL_CameraSpec spec;
-        if (SDL_GetCameraSpec(device, &spec) == 0) {
+        if (SDL_GetCameraFormat(device, &spec) == 0) {
             SDL_Log("Read spec: size=%d x %d format=%s",
                     spec.width, spec.height, SDL_GetPixelFormatName(spec.format));
         } else {

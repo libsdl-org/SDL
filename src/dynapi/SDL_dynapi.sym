@@ -961,12 +961,12 @@ SDL3_0.0.0 {
     SDL_GetCameraDriver;
     SDL_GetCurrentCameraDriver;
     SDL_GetCameraDevices;
-    SDL_GetCameraDeviceSupportedSpecs;
+    SDL_GetCameraDeviceSupportedFormats;
     SDL_GetCameraDeviceName;
     SDL_OpenCameraDevice;
     SDL_GetCameraInstanceID;
     SDL_GetCameraProperties;
-    SDL_GetCameraSpec;
+    SDL_GetCameraFormat;
     SDL_AcquireCameraFrame;
     SDL_ReleaseCameraFrame;
     SDL_CloseCamera;

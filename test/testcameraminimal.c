@@ -94,7 +94,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-   if (SDL_GetCameraSpec(camera, &spec) < 0) {
+   if (SDL_GetCameraFormat(camera, &spec) < 0) {
         SDL_Log("Couldn't get camera spec: %s", SDL_GetError());
         return 1;
     }
