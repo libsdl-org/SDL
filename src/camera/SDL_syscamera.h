@@ -25,7 +25,7 @@
 
 #include "../SDL_hashtable.h"
 
-#define DEBUG_CAMERA 1
+#define DEBUG_CAMERA 0
 
 
 // !!! FIXME: update these drivers!
@@ -91,6 +91,15 @@ struct SDL_CameraDevice
 
     // Driver-specific hardware data on how to open device (`hidden` is driver-specific data _when opened_).
     void *handle;
+
+    // Dropping the first frame(s) after open seems to help timing on some platforms.
+    int drop_frames;
+
+    // Backend timestamp of first acquired frame, so we can keep these meaningful regardless of epoch.
+    Uint64 base_timestamp;
+
+    // SDL timestamp of first acquired frame, so we can roughly convert to SDL ticks.
+    Uint64 adjust_timestamp;
 
     // Pixel data flows from the driver into these, then gets converted for the app if necessary.
     SDL_Surface *acquire_surface;

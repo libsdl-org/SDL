@@ -109,6 +109,9 @@ static void ClosePhysicalCameraDevice(SDL_CameraDevice *device)
     device->filled_output_surfaces.next = NULL;
     device->empty_output_surfaces.next = NULL;
     device->app_held_output_surfaces.next = NULL;
+
+    device->base_timestamp = 0;
+    device->adjust_timestamp = 0;
 }
 
 // this must not be called while `device` is still in a device list, or while a device's camera thread is still running.
@@ -535,7 +538,12 @@ SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device)
         SDL_Log("CAMERA: New frame available!");
         #endif
 
-        if (device->empty_output_surfaces.next == NULL) {
+        if (device->drop_frames > 0) {
+            device->drop_frames--;
+            camera_driver.impl.ReleaseFrame(device, device->acquire_surface);
+            device->acquire_surface->pixels = NULL;
+            device->acquire_surface->pitch = 0;
+        } else if (device->empty_output_surfaces.next == NULL) {
             // uhoh, no output frames available! Either the app is slow, or it forgot to release frames when done with them. Drop this new frame.
             #if DEBUG_CAMERA
             SDL_Log("CAMERA: No empty output surfaces! Dropping frame!");
@@ -544,6 +552,12 @@ SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device)
             device->acquire_surface->pixels = NULL;
             device->acquire_surface->pitch = 0;
         } else {
+            if (!device->adjust_timestamp) {
+                device->adjust_timestamp = SDL_GetTicksNS();
+                device->base_timestamp = timestampNS;
+            }
+            timestampNS = (timestampNS - device->base_timestamp) + device->adjust_timestamp;
+
             slist = device->empty_output_surfaces.next;
             output_surface = slist->surface;
             device->empty_output_surfaces.next = slist->next;
@@ -827,6 +841,8 @@ SDL_Camera *SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_Camer
 
         device->output_surfaces[i].surface = surf;
     }
+
+    device->drop_frames = 1;
 
     // Start the camera thread if necessary
     if (!camera_driver.impl.ProvidesOwnCallbackThread) {
