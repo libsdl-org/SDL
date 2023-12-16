@@ -67,7 +67,6 @@ struct SDL_PrivateCameraData
     io_method io;
     int nb_buffers;
     struct buffer *buffers;
-    int first_start;
     int driver_pitch;
 };
 
@@ -129,6 +128,7 @@ static int V4L2_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, Uint6
                 }
             }
 
+            *timestampNS = SDL_GetTicksNS();  // oh well, close enough.
             frame->pixels = device->hidden->buffers[0].start;
             frame->pitch = device->hidden->driver_pitch;
             break;
@@ -160,6 +160,8 @@ static int V4L2_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, Uint6
             frame->pixels = device->hidden->buffers[buf.index].start;
             frame->pitch = device->hidden->driver_pitch;
             device->hidden->buffers[buf.index].available = 1;
+
+            *timestampNS = (((Uint64) buf.timestamp.tv_sec) * SDL_NS_PER_SECOND) + SDL_US_TO_NS(buf.timestamp.tv_usec);
 
             #if DEBUG_CAMERA
             SDL_Log("CAMERA: debug mmap: image %d/%d  data[0]=%p", buf.index, device->hidden->nb_buffers, (void*)frame->pixels);
@@ -202,6 +204,8 @@ static int V4L2_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, Uint6
             frame->pitch = device->hidden->driver_pitch;
             device->hidden->buffers[i].available = 1;
 
+            *timestampNS = (((Uint64) buf.timestamp.tv_sec) * SDL_NS_PER_SECOND) + SDL_US_TO_NS(buf.timestamp.tv_usec);
+
             #if DEBUG_CAMERA
             SDL_Log("CAMERA: debug userptr: image %d/%d  data[0]=%p", buf.index, device->hidden->nb_buffers, (void*)frame->pixels);
             #endif
@@ -212,7 +216,6 @@ static int V4L2_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, Uint6
             break;
     }
 
-    *timestampNS = SDL_GetTicksNS();  // !!! FIXME: can we get this info more accurately from v4l2?
     return 1;
 }
 
