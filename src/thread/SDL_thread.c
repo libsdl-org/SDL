@@ -212,7 +212,7 @@ static void SDLCALL SDL_FreeErrBuf(void *data)
 #endif
 
 /* Routine to get the thread-specific error variable */
-SDL_error *SDL_GetErrBuf(void)
+SDL_error *SDL_GetErrBuf(SDL_bool create)
 {
 #ifdef SDL_THREADS_DISABLED
     return SDL_GetStaticErrBuf();
@@ -222,6 +222,10 @@ SDL_error *SDL_GetErrBuf(void)
     static SDL_TLSID tls_errbuf;
     const SDL_error *ALLOCATION_IN_PROGRESS = (SDL_error *)-1;
     SDL_error *errbuf;
+
+    if (!tls_errbuf && !create) {
+        return NULL;
+    }
 
     /* tls_being_created is there simply to prevent recursion if SDL_CreateTLS() fails.
        It also means it's possible for another thread to also use SDL_global_errbuf,
