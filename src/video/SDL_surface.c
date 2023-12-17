@@ -1100,6 +1100,155 @@ SDL_Surface *SDL_DuplicateSurface(SDL_Surface *surface)
     return SDL_ConvertSurface(surface, surface->format);
 }
 
+/* Tell if a YUV surface should be rejected */
+static SDL_bool SDL_YUVSurfaceInvalid(SDL_Surface *surf) {
+    if (!SDL_ISPIXELFORMAT_FOURCC(surf->format->format)) {
+        /* Not even yuv, not invalid */
+        return SDL_FALSE;
+    }
+
+    if (!surf->pixels2 && !surf->pixels3) {
+        /* Assume contiguous, not invalid */
+        return SDL_FALSE;
+    }
+
+    /* now, we expect multiplanes */
+    switch (surf->format->format) {
+    case SDL_PIXELFORMAT_YV12: /**< Planar mode: Y + V + U  (3 planes) */
+    case SDL_PIXELFORMAT_IYUV: /**< Planar mode: Y + U + V  (3 planes) */
+        if (!surf->pixels || !surf->pixels2 || !surf->pixels3) {
+            /* expect 3 planes, so invalid */
+            return SDL_TRUE;
+        }
+        break;
+
+    case SDL_PIXELFORMAT_YUY2: /**< Packed mode: Y0+U0+Y1+V0 (1 plane) */
+    case SDL_PIXELFORMAT_UYVY: /**< Packed mode: U0+Y0+V0+Y1 (1 plane) */
+    case SDL_PIXELFORMAT_YVYU: /**< Packed mode: Y0+V0+Y1+U0 (1 plane) */
+        if (!surf->pixels || surf->pixels2 || surf->pixels3) {
+            /* expect 1 plane, so invalid */
+            /* anyway, this would hit the first 'contiguous' case */
+            return SDL_TRUE;
+        }
+
+        break;
+
+    case SDL_PIXELFORMAT_NV12: /**< Planar mode: Y + U/V interleaved  (2 planes) */
+    case SDL_PIXELFORMAT_NV21: /**< Planar mode: Y + V/U interleaved  (2 planes) */
+
+        if (!surf->pixels || !surf->pixels2 || surf->pixels3) {
+            /* expect 2 planes, so invalid */
+            return SDL_TRUE;
+        }
+        break;
+
+    }
+
+    /* multiplanes ok */
+    return SDL_FALSE;
+
+}
+
+/* Tell if a YUV surface is non contiguous */
+static SDL_bool SDL_YUVSurfaceNonContiguous(SDL_Surface *surf) {
+    if (!SDL_ISPIXELFORMAT_FOURCC(surf->format->format)) {
+        /* Not yuv */
+        return SDL_FALSE;
+    }
+
+    if (surf->pixels2 == NULL && surf->pixels3 == NULL) {
+        /* Contiguous */
+        return SDL_FALSE;
+    }
+
+    /* Non contiguous */
+    return SDL_TRUE;
+}
+
+/* transform a yuv non contiguous surface to yuv contiguous surface */
+static SDL_Surface *SDL_PackYUVSurface(SDL_Surface *surf) {
+    SDL_Surface *tmp;
+    Uint8 *src, *dst;
+    int w, h;
+
+    if (!surf) {
+        return NULL;
+    }
+
+    w = surf->w;
+    h = surf->h;
+
+    /* Create a new surface with the same format */
+    tmp = SDL_CreateSurface(surf->w, surf->h, surf->format->format);
+    if (!tmp) {
+        return NULL;
+    }
+
+    /* pack the memory */
+    switch (surf->format->format) {
+    case SDL_PIXELFORMAT_YV12: /**< Planar mode: Y + V + U  (3 planes) */
+    case SDL_PIXELFORMAT_IYUV: /**< Planar mode: Y + U + V  (3 planes) */
+        /* dst_size == sz_plane + sz_plane_chroma + sz_plane_chroma; */
+        src = surf->pixels;
+        dst = tmp->pixels;
+
+        for (int x = 0; x < h; x++) {
+            SDL_memcpy(dst, src, w);
+            src += surf->pitch;
+            dst += w;
+        }
+
+        src = surf->pixels2;
+        for (int x = 0; x < h / 2; x++) {
+            SDL_memcpy(dst, src, (w + 1) / 2);
+            src += surf->pitch2;
+            dst += (w + 1) / 2;
+        }
+
+        src = surf->pixels3;
+        for (int x = 0; x < h / 2; x++) {
+            SDL_memcpy(dst, src, (w + 1) /2);
+            src += surf->pitch3;
+            dst += (w + 1)/2;
+        }
+
+        break;
+
+    case SDL_PIXELFORMAT_YUY2: /**< Packed mode: Y0+U0+Y1+V0 (1 plane) */
+    case SDL_PIXELFORMAT_UYVY: /**< Packed mode: U0+Y0+V0+Y1 (1 plane) */
+    case SDL_PIXELFORMAT_YVYU: /**< Packed mode: Y0+V0+Y1+U0 (1 plane) */
+        /* Can't happen because of prior SDL_YUVSurfaceNonContiguous() check */
+
+        break;
+
+    case SDL_PIXELFORMAT_NV12: /**< Planar mode: Y + U/V interleaved  (2 planes) */
+    case SDL_PIXELFORMAT_NV21: /**< Planar mode: Y + V/U interleaved  (2 planes) */
+            /* dst_size == sz_plane + sz_plane_chroma + sz_plane_chroma; */
+        src = surf->pixels;
+        dst = tmp->pixels;
+
+        for (int x = 0; x < h; x++) {
+            SDL_memcpy(dst, src, w);
+            src += surf->pitch;
+            dst += w;
+        }
+
+        src = surf->pixels2;
+        for (int x = 0; x < h/2; x++) {
+            SDL_memcpy(dst, src, w);
+            src += surf->pitch2;
+            dst += w;
+        }
+        break;
+
+    }
+
+
+    return tmp;
+
+}
+
+
 /*
  * Convert a surface into the specified pixel format.
  */
@@ -1125,6 +1274,11 @@ SDL_Surface *SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *for
         return NULL;
     }
 
+    if (SDL_YUVSurfaceInvalid(surface)) {
+        SDL_SetError("invalid YUV surface");
+        return NULL;
+    }
+
     /* Check for empty destination palette! (results in empty image) */
     if (format->palette) {
         int i;
@@ -1146,10 +1300,25 @@ SDL_Surface *SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *for
     }
 
     if (SDL_ISPIXELFORMAT_FOURCC(format->format) || SDL_ISPIXELFORMAT_FOURCC(surface->format->format)) {
+        SDL_Surface *tmp = surface;
+        SDL_Surface *packed_yuv = NULL;
 
-        ret = SDL_ConvertPixels(surface->w, surface->h,
-                                surface->format->format, surface->pixels, surface->pitch,
+
+        /* Make the YUV surface contiguous */
+        if (SDL_YUVSurfaceNonContiguous(surface)) {
+            packed_yuv = SDL_PackYUVSurface(surface);
+            tmp = surface;
+            if (!tmp) {
+                SDL_DestroySurface(convert);
+                return NULL;
+            }
+        }
+
+        ret = SDL_ConvertPixels(tmp->w, tmp->h,
+                                tmp->format->format, tmp->pixels, tmp->pitch,
                                 convert->format->format, convert->pixels, convert->pitch);
+
+        SDL_DestroySurface(packed_yuv);
 
         if (ret < 0) {
             SDL_DestroySurface(convert);
@@ -1585,9 +1754,15 @@ void SDL_DestroySurface(SDL_Surface *surface)
     } else if (surface->flags & SDL_SIMD_ALIGNED) {
         /* Free aligned */
         SDL_aligned_free(surface->pixels);
+        /* Non-contiguous YUV */
+        SDL_aligned_free(surface->pixels2);
+        SDL_aligned_free(surface->pixels3);
     } else {
         /* Normal */
         SDL_free(surface->pixels);
+        /* Non-contiguous YUV */
+        SDL_free(surface->pixels2);
+        SDL_free(surface->pixels3);
     }
     if (surface->map) {
         SDL_FreeBlitMap(surface->map);

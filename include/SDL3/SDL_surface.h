@@ -91,6 +91,10 @@ typedef struct SDL_Surface
     int w, h;                   /**< Read-only */
     int pitch;                  /**< Read-only */
     void *pixels;               /**< Read-write */
+    void *pixels2;               /**< Read-write. 2nd plane, if any, for FOURCC format */
+    void *pixels3;               /**< Read-write. 3rd plane, if any, for FOURCC format */
+    int pitch2;                  /**< Read-only. 2nd plane */
+    int pitch3;                  /**< Read-only. 3rd plane */
 
     /** Application data associated with the surface */
     SDL_PropertiesID props;     /**< Read-write */
