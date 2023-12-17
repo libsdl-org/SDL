@@ -856,6 +856,7 @@ static int X11_SyncWindowTimeout(SDL_VideoDevice *_this, SDL_Window *window, int
     int (*prev_handler)(Display *, XErrorEvent *);
     Uint64 timeout = 0;
     int ret = 0;
+    SDL_bool force_exit = SDL_FALSE;
 
     X11_XSync(display, False);
     prev_handler = X11_XSetErrorHandler(X11_CatchAnyError);
@@ -868,11 +869,25 @@ static int X11_SyncWindowTimeout(SDL_VideoDevice *_this, SDL_Window *window, int
         X11_XSync(display, False);
         X11_PumpEvents(_this);
 
-        if ((!(data->pending_operation & X11_PENDING_OP_MOVE) || (window->x == data->expected.x && window->y == data->expected.y)) &&
-            (!(data->pending_operation & X11_PENDING_OP_RESIZE) || (window->w == data->expected.w && window->h == data->expected.h)) &&
-            (data->pending_operation & ~(X11_PENDING_OP_MOVE | X11_PENDING_OP_RESIZE)) == X11_PENDING_OP_NONE) {
-            /* The window is where it is wanted and nothing is pending. Done. */
-            break;
+        if ((data->pending_operation & X11_PENDING_OP_MOVE) && (window->x == data->expected.x && window->y == data->expected.y)) {
+            data->pending_operation &= ~X11_PENDING_OP_MOVE;
+        }
+        if ((data->pending_operation & X11_PENDING_OP_RESIZE) && (window->w == data->expected.w && window->h == data->expected.h)) {
+            data->pending_operation &= ~X11_PENDING_OP_RESIZE;
+        }
+
+        if (data->pending_operation == X11_PENDING_OP_NONE) {
+            if (force_exit ||
+                (window->x == data->expected.x && window->y == data->expected.y &&
+                 window->w == data->expected.w && window->h == data->expected.h)) {
+                /* The window is in the expected state and nothing is pending. Done. */
+                break;
+            }
+
+            /* No operations are pending, but the window still isn't in the expected state.
+             * Try one more time before exiting.
+             */
+            force_exit = SDL_TRUE;
         }
 
         if (SDL_GetTicks() >= timeout) {
@@ -1310,15 +1325,9 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         }
     }
 
-    /* Get some valid border values, if we haven't them yet */
+    /* Get some valid border values, if we haven't received them yet */
     if (data->border_left == 0 && data->border_right == 0 && data->border_top == 0 && data->border_bottom == 0) {
         X11_GetBorderValues(data);
-
-        if (!data->initial_border_adjustment) {
-            data->expected.x += data->border_left;
-            data->expected.y += data->border_top;
-            data->initial_border_adjustment = SDL_TRUE;
-        }
     }
 }
 
@@ -1591,24 +1600,6 @@ static int X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this, SDL_Window *wind
             e.xclient.data.l[3] = 0l;
             X11_XSendEvent(display, RootWindow(display, displaydata->screen), 0,
                            SubstructureNotifyMask | SubstructureRedirectMask, &e);
-
-            if (!data->window_was_maximized) {
-                /* Attempt to move the window back to where it was. */
-                SDL_RelativeToGlobalForWindow(window,
-                                              window->floating.x - data->border_left, window->floating.y - data->border_top,
-                                              &data->expected.x, &data->expected.y);
-
-                data->expected.w = window->floating.w;
-                data->expected.h = window->floating.h;
-                data->pending_operation |= X11_PENDING_OP_MOVE;
-                X11_XMoveWindow(display, data->xwindow, data->expected.x, data->expected.y);
-
-                /* If the window is bordered, the size will be set when the borders turn themselves back on. */
-                if (window->flags & SDL_WINDOW_BORDERLESS) {
-                    data->pending_operation |= X11_PENDING_OP_RESIZE;
-                    X11_XResizeWindow(display, data->xwindow, data->expected.w, data->expected.h);
-                }
-            }
         }
     } else {
         Uint32 flags;

@@ -93,9 +93,9 @@ struct SDL_WindowData
         X11_PENDING_OP_RESIZE = 0x20
     } pending_operation;
 
-    SDL_bool initial_border_adjustment;
     SDL_bool window_was_maximized;
-    int skip_size_count;
+    SDL_bool disable_size_position_events;
+    SDL_bool previous_borders_nonzero;
     SDL_HitTestResult hit_test_result;
 };
 
