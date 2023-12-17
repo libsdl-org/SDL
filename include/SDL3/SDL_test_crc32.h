@@ -63,7 +63,7 @@ extern "C" {
 /**
  * Data structure for CRC32 (checksum) computation
  */
-  typedef struct {
+  typedef struct SDLTest_Crc32Context {
     CrcUint32    crc32_table[256]; /* CRC table */
   } SDLTest_Crc32Context;
 

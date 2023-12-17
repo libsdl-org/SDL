@@ -52,7 +52,7 @@ extern "C" {
  * GUIDs may be platform-dependent (i.e., the same device may report
  *   different GUIDs on different operating systems).
  */
-typedef struct {
+typedef struct SDL_GUID {
     Uint8 data[16];
 } SDL_GUID;
 
