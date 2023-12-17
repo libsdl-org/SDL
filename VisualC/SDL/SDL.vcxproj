@@ -236,6 +236,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_camera.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_close_code.h" />
     <ClInclude Include="..\..\include\SDL3\SDL.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_assert.h" />
@@ -320,6 +321,8 @@
     <ClInclude Include="..\..\src\audio\SDL_audioresample.h" />
     <ClInclude Include="..\..\src\audio\SDL_wave.h" />
     <ClInclude Include="..\..\src\audio\wasapi\SDL_wasapi.h" />
+    <ClInclude Include="..\..\src\camera\SDL_camera_c.h" />
+    <ClInclude Include="..\..\src\camera\SDL_syscamera.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_directx.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_hid.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_immdevice.h" />
@@ -393,6 +396,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\src\camera\dummy\SDL_camera_dummy.c" />
+    <ClCompile Include="..\..\src\camera\SDL_camera.c" />
     <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c" />
     <ClCompile Include="..\..\src\main\SDL_main_callbacks.c" />
     <ClCompile Include="..\..\src\SDL_guid.c" />
@@ -658,7 +663,6 @@
     <ClCompile Include="..\..\src\video\SDL_surface.c" />
     <ClCompile Include="..\..\src\video\SDL_video.c" />
     <ClCompile Include="..\..\src\video\SDL_video_unsupported.c" />
-    <ClCompile Include="..\..\src\video\SDL_video_capture.c" />
     <ClCompile Include="..\..\src\video\SDL_vulkan_utils.c" />
     <ClCompile Include="..\..\src\video\SDL_yuv.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsclipboard.c" />

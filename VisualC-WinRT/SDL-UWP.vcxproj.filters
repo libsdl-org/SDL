@@ -13,10 +13,19 @@
     <Filter Include="main\generic">
       <UniqueIdentifier>{0000318d975e0a2867ab1d5727bf0000}</UniqueIdentifier>
     </Filter>
+    <Filter Include="camera">
+      <UniqueIdentifier>{00009e5236c2ac679fe0bc30beb90000}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="camera\dummy">
+      <UniqueIdentifier>{000031d805439b865ff4550d2f620000}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\SDL3\SDL_begin_code.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SDL3\SDL_camera.h">
+      <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\include\SDL3\SDL_close_code.h">
       <Filter>Header Files</Filter>
@@ -165,8 +174,11 @@
     <ClInclude Include="..\include\SDL3\SDL_video.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\SDL3\SDL_video_capture.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\src\camera\SDL_camera_c.h">
+      <Filter>camera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\camera\SDL_syscamera.h">
+      <Filter>camera</Filter>
     </ClInclude>
     <ClInclude Include="..\src\joystick\SDL_gamepad_c.h">
       <Filter>Header Files</Filter>
@@ -507,6 +519,12 @@
     <ClCompile Include="..\src\audio\wasapi\SDL_wasapi_winrt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\camera\dummy\SDL_camera_dummy.c">
+      <Filter>camera\dummy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\camera\SDL_camera.c">
+      <Filter>camera</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\core\SDL_core_unsupported.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -820,9 +838,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\video\SDL_video.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\video\SDL_video_capture.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\video\SDL_video_unsupported.c">
