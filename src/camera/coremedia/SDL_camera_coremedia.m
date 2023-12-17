@@ -24,7 +24,7 @@
 
 #include "../SDL_syscamera.h"
 #include "../SDL_camera_c.h"
-#include "../thread/SDL_systhread.h"
+#include "../../thread/SDL_systhread.h"
 
 #if defined(HAVE_COREMEDIA) && defined(SDL_PLATFORM_MACOS) && (__MAC_OS_X_VERSION_MAX_ALLOWED < 101500)
 // AVCaptureDeviceTypeBuiltInWideAngleCamera requires macOS SDK 10.15

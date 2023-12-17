@@ -36,6 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\SDL3\SDL_begin_code.h" />
+    <ClInclude Include="..\include\SDL3\SDL_camera.h" />
     <ClInclude Include="..\include\SDL3\SDL_close_code.h" />
     <ClInclude Include="..\include\SDL3\SDL.h" />
     <ClInclude Include="..\include\SDL3\SDL_assert.h" />
@@ -89,7 +90,6 @@
     <ClInclude Include="..\include\SDL3\SDL_types.h" />
     <ClInclude Include="..\include\SDL3\SDL_version.h" />
     <ClInclude Include="..\include\SDL3\SDL_video.h" />
-    <ClInclude Include="..\include\SDL3\SDL_video_capture.h" />
     <ClInclude Include="..\src\audio\disk\SDL_diskaudio.h" />
     <ClInclude Include="..\src\audio\dummy\SDL_dummyaudio.h" />
     <ClInclude Include="..\src\audio\SDL_audiodev_c.h" />
@@ -99,6 +99,8 @@
     <ClInclude Include="..\src\audio\SDL_audioresample.h" />
     <ClInclude Include="..\src\audio\SDL_wave.h" />
     <ClInclude Include="..\src\audio\wasapi\SDL_wasapi.h" />
+    <ClInclude Include="..\src\camera\SDL_camera_c.h" />
+    <ClInclude Include="..\src\camera\SDL_syscamera.h" />
     <ClInclude Include="..\src\core\windows\SDL_directx.h" />
     <ClInclude Include="..\src\core\windows\SDL_windows.h" />
     <ClInclude Include="..\src\core\windows\SDL_xinput.h" />
@@ -259,6 +261,8 @@
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
     </ClCompile>
+    <ClCompile Include="..\src\camera\dummy\SDL_camera_dummy.c" />
+    <ClCompile Include="..\src\camera\SDL_camera.c" />
     <ClCompile Include="..\src\core\SDL_core_unsupported.c" />
     <ClCompile Include="..\src\core\SDL_runapp.c" />
     <ClCompile Include="..\src\core\windows\SDL_windows.c" />
@@ -532,7 +536,6 @@
     <ClCompile Include="..\src\video\SDL_stretch.c" />
     <ClCompile Include="..\src\video\SDL_surface.c" />
     <ClCompile Include="..\src\video\SDL_video.c" />
-    <ClCompile Include="..\src\video\SDL_video_capture.c" />
     <ClCompile Include="..\src\video\SDL_video_unsupported.c" />
     <ClCompile Include="..\src\video\SDL_yuv.c" />
     <ClCompile Include="..\src\video\winrt\SDL_winrtevents.cpp">
