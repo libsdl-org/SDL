@@ -509,6 +509,13 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         x += x >> 8;                                     \
         dC = x >> 8;                                     \
     } while (0)
+/* Perform a division by 255 after a multiplication of two 8-bit color channels */
+#define MULT_DIV_255(sC, dC, out) \
+    do {                          \
+        Uint16 x = sC * dC;       \
+        x += x >> 8;              \
+        out = x >> 8;             \
+    } while (0)
 /* Blend the RGB values of two pixels with an alpha value */
 #define ALPHA_BLEND_RGB(sR, sG, sB, A, dR, dG, dB)            \
     do {                                                      \
