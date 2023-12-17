@@ -869,7 +869,7 @@ static void V4L2_DetectDevices(void)
 {
 #ifdef SDL_USE_LIBUDEV
     if (SDL_UDEV_Init() == 0) {
-        if (SDL_UDEV_AddCallback(CameraUdevCallback) >= 0) {  // !!! FIXME: this should return 0 on success, it currently returns 1.
+        if (SDL_UDEV_AddCallback(CameraUdevCallback) == 0) {
             SDL_UDEV_Scan();  // Force a scan to build the initial device list
         }
     }
