@@ -69,8 +69,6 @@ TNOBJS = $(TNSRCS:.c=.obj)
 
 all: testutils.lib $(TARGETS)
 
-.c: ../src/test
-
 .obj.exe:
   wlink SYS $(SYSTEM) libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
 
