@@ -20,6 +20,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+#include "SDL_blit.h"
 
 #if SDL_HAVE_BLIT_AUTO
 
@@ -86,14 +87,14 @@ static void SDL_Blit_XRGB8888_XRGB8888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -147,14 +148,14 @@ static void SDL_Blit_XRGB8888_XRGB8888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -184,9 +185,9 @@ static void SDL_Blit_XRGB8888_XRGB8888_Modulate(SDL_BlitInfo *info)
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -227,9 +228,9 @@ static void SDL_Blit_XRGB8888_XRGB8888_Modulate_Scale(SDL_BlitInfo *info)
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -264,23 +265,26 @@ static void SDL_Blit_XRGB8888_XRGB8888_Modulate_Blend(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -288,14 +292,20 @@ static void SDL_Blit_XRGB8888_XRGB8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -343,23 +353,26 @@ static void SDL_Blit_XRGB8888_XRGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -367,14 +380,20 @@ static void SDL_Blit_XRGB8888_XRGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -450,14 +469,14 @@ static void SDL_Blit_XRGB8888_XBGR8888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -511,14 +530,14 @@ static void SDL_Blit_XRGB8888_XBGR8888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -548,9 +567,9 @@ static void SDL_Blit_XRGB8888_XBGR8888_Modulate(SDL_BlitInfo *info)
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (B << 16) | (G << 8) | R;
             *dst = pixel;
@@ -591,9 +610,9 @@ static void SDL_Blit_XRGB8888_XBGR8888_Modulate_Scale(SDL_BlitInfo *info)
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (B << 16) | (G << 8) | R;
             *dst = pixel;
@@ -628,23 +647,26 @@ static void SDL_Blit_XRGB8888_XBGR8888_Modulate_Blend(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -652,14 +674,20 @@ static void SDL_Blit_XRGB8888_XBGR8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -707,23 +735,26 @@ static void SDL_Blit_XRGB8888_XBGR8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -731,14 +762,20 @@ static void SDL_Blit_XRGB8888_XBGR8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -814,14 +851,14 @@ static void SDL_Blit_XRGB8888_ARGB8888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -876,14 +913,14 @@ static void SDL_Blit_XRGB8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -915,9 +952,9 @@ static void SDL_Blit_XRGB8888_ARGB8888_Modulate(SDL_BlitInfo *info)
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (A << 24) | (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -960,9 +997,9 @@ static void SDL_Blit_XRGB8888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (A << 24) | (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -997,24 +1034,28 @@ static void SDL_Blit_XRGB8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = (Uint8)(dstpixel >> 24);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -1022,14 +1063,20 @@ static void SDL_Blit_XRGB8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -1077,24 +1124,28 @@ static void SDL_Blit_XRGB8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = (Uint8)(dstpixel >> 24);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -1102,14 +1153,20 @@ static void SDL_Blit_XRGB8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -1185,14 +1242,14 @@ static void SDL_Blit_XBGR8888_XRGB8888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -1246,14 +1303,14 @@ static void SDL_Blit_XBGR8888_XRGB8888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -1283,9 +1340,9 @@ static void SDL_Blit_XBGR8888_XRGB8888_Modulate(SDL_BlitInfo *info)
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -1326,9 +1383,9 @@ static void SDL_Blit_XBGR8888_XRGB8888_Modulate_Scale(SDL_BlitInfo *info)
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -1363,23 +1420,26 @@ static void SDL_Blit_XBGR8888_XRGB8888_Modulate_Blend(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -1387,14 +1447,20 @@ static void SDL_Blit_XBGR8888_XRGB8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -1442,23 +1508,26 @@ static void SDL_Blit_XBGR8888_XRGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -1466,14 +1535,20 @@ static void SDL_Blit_XBGR8888_XRGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -1544,14 +1619,14 @@ static void SDL_Blit_XBGR8888_XBGR8888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -1605,14 +1680,14 @@ static void SDL_Blit_XBGR8888_XBGR8888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -1642,9 +1717,9 @@ static void SDL_Blit_XBGR8888_XBGR8888_Modulate(SDL_BlitInfo *info)
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (B << 16) | (G << 8) | R;
             *dst = pixel;
@@ -1685,9 +1760,9 @@ static void SDL_Blit_XBGR8888_XBGR8888_Modulate_Scale(SDL_BlitInfo *info)
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (B << 16) | (G << 8) | R;
             *dst = pixel;
@@ -1722,23 +1797,26 @@ static void SDL_Blit_XBGR8888_XBGR8888_Modulate_Blend(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -1746,14 +1824,20 @@ static void SDL_Blit_XBGR8888_XBGR8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -1801,23 +1885,26 @@ static void SDL_Blit_XBGR8888_XBGR8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -1825,14 +1912,20 @@ static void SDL_Blit_XBGR8888_XBGR8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -1910,14 +2003,14 @@ static void SDL_Blit_XBGR8888_ARGB8888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -1972,14 +2065,14 @@ static void SDL_Blit_XBGR8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -2011,9 +2104,9 @@ static void SDL_Blit_XBGR8888_ARGB8888_Modulate(SDL_BlitInfo *info)
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (A << 24) | (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -2056,9 +2149,9 @@ static void SDL_Blit_XBGR8888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (A << 24) | (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -2093,24 +2186,28 @@ static void SDL_Blit_XBGR8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = (Uint8)(dstpixel >> 24);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -2118,14 +2215,20 @@ static void SDL_Blit_XBGR8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -2173,24 +2276,28 @@ static void SDL_Blit_XBGR8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = (Uint8)(dstpixel >> 24);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -2198,14 +2305,20 @@ static void SDL_Blit_XBGR8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -2270,16 +2383,19 @@ static void SDL_Blit_ARGB8888_XRGB8888_Blend(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -2287,14 +2403,20 @@ static void SDL_Blit_ARGB8888_XRGB8888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -2339,16 +2461,19 @@ static void SDL_Blit_ARGB8888_XRGB8888_Blend_Scale(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -2356,14 +2481,20 @@ static void SDL_Blit_ARGB8888_XRGB8888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -2393,9 +2524,9 @@ static void SDL_Blit_ARGB8888_XRGB8888_Modulate(SDL_BlitInfo *info)
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -2436,9 +2567,9 @@ static void SDL_Blit_ARGB8888_XRGB8888_Modulate_Scale(SDL_BlitInfo *info)
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -2472,26 +2603,29 @@ static void SDL_Blit_ARGB8888_XRGB8888_Modulate_Blend(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -2499,14 +2633,20 @@ static void SDL_Blit_ARGB8888_XRGB8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -2553,26 +2693,29 @@ static void SDL_Blit_ARGB8888_XRGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -2580,14 +2723,20 @@ static void SDL_Blit_ARGB8888_XRGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -2654,16 +2803,19 @@ static void SDL_Blit_ARGB8888_XBGR8888_Blend(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -2671,14 +2823,20 @@ static void SDL_Blit_ARGB8888_XBGR8888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -2723,16 +2881,19 @@ static void SDL_Blit_ARGB8888_XBGR8888_Blend_Scale(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -2740,14 +2901,20 @@ static void SDL_Blit_ARGB8888_XBGR8888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -2777,9 +2944,9 @@ static void SDL_Blit_ARGB8888_XBGR8888_Modulate(SDL_BlitInfo *info)
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (B << 16) | (G << 8) | R;
             *dst = pixel;
@@ -2820,9 +2987,9 @@ static void SDL_Blit_ARGB8888_XBGR8888_Modulate_Scale(SDL_BlitInfo *info)
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (B << 16) | (G << 8) | R;
             *dst = pixel;
@@ -2856,26 +3023,29 @@ static void SDL_Blit_ARGB8888_XBGR8888_Modulate_Blend(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -2883,14 +3053,20 @@ static void SDL_Blit_ARGB8888_XBGR8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -2937,26 +3113,29 @@ static void SDL_Blit_ARGB8888_XBGR8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -2964,14 +3143,20 @@ static void SDL_Blit_ARGB8888_XBGR8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -3033,17 +3218,21 @@ static void SDL_Blit_ARGB8888_ARGB8888_Blend(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -3051,14 +3240,20 @@ static void SDL_Blit_ARGB8888_ARGB8888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -3103,17 +3298,21 @@ static void SDL_Blit_ARGB8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -3121,14 +3320,20 @@ static void SDL_Blit_ARGB8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -3159,12 +3364,12 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate(SDL_BlitInfo *info)
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel; A = (Uint8)(pixel >> 24);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                A = (A * modulateA) / 255;
+                MULT_DIV_255(A, modulateA, A);
             }
             pixel = (A << 24) | (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -3206,12 +3411,12 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
             pixel = *src;
             R = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); B = (Uint8)pixel; A = (Uint8)(pixel >> 24);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                A = (A * modulateA) / 255;
+                MULT_DIV_255(A, modulateA, A);
             }
             pixel = (A << 24) | (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -3245,27 +3450,31 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = (Uint8)(dstpixel >> 24);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -3273,14 +3482,20 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -3327,27 +3542,31 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = (Uint8)(dstpixel >> 24);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -3355,14 +3574,20 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -3427,16 +3652,19 @@ static void SDL_Blit_RGBA8888_XRGB8888_Blend(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -3444,14 +3672,20 @@ static void SDL_Blit_RGBA8888_XRGB8888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -3496,16 +3730,19 @@ static void SDL_Blit_RGBA8888_XRGB8888_Blend_Scale(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -3513,14 +3750,20 @@ static void SDL_Blit_RGBA8888_XRGB8888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -3550,9 +3793,9 @@ static void SDL_Blit_RGBA8888_XRGB8888_Modulate(SDL_BlitInfo *info)
             pixel = *src;
             R = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); B = (Uint8)(pixel >> 8);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -3593,9 +3836,9 @@ static void SDL_Blit_RGBA8888_XRGB8888_Modulate_Scale(SDL_BlitInfo *info)
             pixel = *src;
             R = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); B = (Uint8)(pixel >> 8);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -3629,26 +3872,29 @@ static void SDL_Blit_RGBA8888_XRGB8888_Modulate_Blend(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -3656,14 +3902,20 @@ static void SDL_Blit_RGBA8888_XRGB8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -3710,26 +3962,29 @@ static void SDL_Blit_RGBA8888_XRGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -3737,14 +3992,20 @@ static void SDL_Blit_RGBA8888_XRGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -3811,16 +4072,19 @@ static void SDL_Blit_RGBA8888_XBGR8888_Blend(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -3828,14 +4092,20 @@ static void SDL_Blit_RGBA8888_XBGR8888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -3880,16 +4150,19 @@ static void SDL_Blit_RGBA8888_XBGR8888_Blend_Scale(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -3897,14 +4170,20 @@ static void SDL_Blit_RGBA8888_XBGR8888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -3934,9 +4213,9 @@ static void SDL_Blit_RGBA8888_XBGR8888_Modulate(SDL_BlitInfo *info)
             pixel = *src;
             R = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); B = (Uint8)(pixel >> 8);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (B << 16) | (G << 8) | R;
             *dst = pixel;
@@ -3977,9 +4256,9 @@ static void SDL_Blit_RGBA8888_XBGR8888_Modulate_Scale(SDL_BlitInfo *info)
             pixel = *src;
             R = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); B = (Uint8)(pixel >> 8);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (B << 16) | (G << 8) | R;
             *dst = pixel;
@@ -4013,26 +4292,29 @@ static void SDL_Blit_RGBA8888_XBGR8888_Modulate_Blend(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -4040,14 +4322,20 @@ static void SDL_Blit_RGBA8888_XBGR8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -4094,26 +4382,29 @@ static void SDL_Blit_RGBA8888_XBGR8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -4121,14 +4412,20 @@ static void SDL_Blit_RGBA8888_XBGR8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -4193,17 +4490,21 @@ static void SDL_Blit_RGBA8888_ARGB8888_Blend(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -4211,14 +4512,20 @@ static void SDL_Blit_RGBA8888_ARGB8888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -4263,17 +4570,21 @@ static void SDL_Blit_RGBA8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -4281,14 +4592,20 @@ static void SDL_Blit_RGBA8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -4319,12 +4636,12 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate(SDL_BlitInfo *info)
             pixel = *src;
             R = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); B = (Uint8)(pixel >> 8); A = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                A = (A * modulateA) / 255;
+                MULT_DIV_255(A, modulateA, A);
             }
             pixel = (A << 24) | (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -4366,12 +4683,12 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
             pixel = *src;
             R = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); B = (Uint8)(pixel >> 8); A = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                A = (A * modulateA) / 255;
+                MULT_DIV_255(A, modulateA, A);
             }
             pixel = (A << 24) | (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -4405,27 +4722,31 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = (Uint8)(dstpixel >> 24);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -4433,14 +4754,20 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -4487,27 +4814,31 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = (Uint8)(dstpixel >> 24);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -4515,14 +4846,20 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -4589,16 +4926,19 @@ static void SDL_Blit_ABGR8888_XRGB8888_Blend(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -4606,14 +4946,20 @@ static void SDL_Blit_ABGR8888_XRGB8888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -4658,16 +5004,19 @@ static void SDL_Blit_ABGR8888_XRGB8888_Blend_Scale(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -4675,14 +5024,20 @@ static void SDL_Blit_ABGR8888_XRGB8888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -4712,9 +5067,9 @@ static void SDL_Blit_ABGR8888_XRGB8888_Modulate(SDL_BlitInfo *info)
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -4755,9 +5110,9 @@ static void SDL_Blit_ABGR8888_XRGB8888_Modulate_Scale(SDL_BlitInfo *info)
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -4791,26 +5146,29 @@ static void SDL_Blit_ABGR8888_XRGB8888_Modulate_Blend(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -4818,14 +5176,20 @@ static void SDL_Blit_ABGR8888_XRGB8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -4872,26 +5236,29 @@ static void SDL_Blit_ABGR8888_XRGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -4899,14 +5266,20 @@ static void SDL_Blit_ABGR8888_XRGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -4971,16 +5344,19 @@ static void SDL_Blit_ABGR8888_XBGR8888_Blend(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -4988,14 +5364,20 @@ static void SDL_Blit_ABGR8888_XBGR8888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -5040,16 +5422,19 @@ static void SDL_Blit_ABGR8888_XBGR8888_Blend_Scale(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -5057,14 +5442,20 @@ static void SDL_Blit_ABGR8888_XBGR8888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -5094,9 +5485,9 @@ static void SDL_Blit_ABGR8888_XBGR8888_Modulate(SDL_BlitInfo *info)
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (B << 16) | (G << 8) | R;
             *dst = pixel;
@@ -5137,9 +5528,9 @@ static void SDL_Blit_ABGR8888_XBGR8888_Modulate_Scale(SDL_BlitInfo *info)
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (B << 16) | (G << 8) | R;
             *dst = pixel;
@@ -5173,26 +5564,29 @@ static void SDL_Blit_ABGR8888_XBGR8888_Modulate_Blend(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -5200,14 +5594,20 @@ static void SDL_Blit_ABGR8888_XBGR8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -5254,26 +5654,29 @@ static void SDL_Blit_ABGR8888_XBGR8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -5281,14 +5684,20 @@ static void SDL_Blit_ABGR8888_XBGR8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -5355,17 +5764,21 @@ static void SDL_Blit_ABGR8888_ARGB8888_Blend(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -5373,14 +5786,20 @@ static void SDL_Blit_ABGR8888_ARGB8888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -5425,17 +5844,21 @@ static void SDL_Blit_ABGR8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -5443,14 +5866,20 @@ static void SDL_Blit_ABGR8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -5481,12 +5910,12 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate(SDL_BlitInfo *info)
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel; A = (Uint8)(pixel >> 24);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                A = (A * modulateA) / 255;
+                MULT_DIV_255(A, modulateA, A);
             }
             pixel = (A << 24) | (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -5528,12 +5957,12 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
             pixel = *src;
             B = (Uint8)(pixel >> 16); G = (Uint8)(pixel >> 8); R = (Uint8)pixel; A = (Uint8)(pixel >> 24);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                A = (A * modulateA) / 255;
+                MULT_DIV_255(A, modulateA, A);
             }
             pixel = (A << 24) | (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -5567,27 +5996,31 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = (Uint8)(dstpixel >> 24);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -5595,14 +6028,20 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -5649,27 +6088,31 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = (Uint8)(dstpixel >> 24);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -5677,14 +6120,20 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -5751,16 +6200,19 @@ static void SDL_Blit_BGRA8888_XRGB8888_Blend(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -5768,14 +6220,20 @@ static void SDL_Blit_BGRA8888_XRGB8888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -5820,16 +6278,19 @@ static void SDL_Blit_BGRA8888_XRGB8888_Blend_Scale(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -5837,14 +6298,20 @@ static void SDL_Blit_BGRA8888_XRGB8888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -5874,9 +6341,9 @@ static void SDL_Blit_BGRA8888_XRGB8888_Modulate(SDL_BlitInfo *info)
             pixel = *src;
             B = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); R = (Uint8)(pixel >> 8);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -5917,9 +6384,9 @@ static void SDL_Blit_BGRA8888_XRGB8888_Modulate_Scale(SDL_BlitInfo *info)
             pixel = *src;
             B = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); R = (Uint8)(pixel >> 8);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -5953,26 +6420,29 @@ static void SDL_Blit_BGRA8888_XRGB8888_Modulate_Blend(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -5980,14 +6450,20 @@ static void SDL_Blit_BGRA8888_XRGB8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -6034,26 +6510,29 @@ static void SDL_Blit_BGRA8888_XRGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -6061,14 +6540,20 @@ static void SDL_Blit_BGRA8888_XRGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstR << 16) | (dstG << 8) | dstB;
@@ -6133,16 +6618,19 @@ static void SDL_Blit_BGRA8888_XBGR8888_Blend(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -6150,14 +6638,20 @@ static void SDL_Blit_BGRA8888_XBGR8888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -6202,16 +6696,19 @@ static void SDL_Blit_BGRA8888_XBGR8888_Blend_Scale(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -6219,14 +6716,20 @@ static void SDL_Blit_BGRA8888_XBGR8888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -6256,9 +6759,9 @@ static void SDL_Blit_BGRA8888_XBGR8888_Modulate(SDL_BlitInfo *info)
             pixel = *src;
             B = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); R = (Uint8)(pixel >> 8);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (B << 16) | (G << 8) | R;
             *dst = pixel;
@@ -6299,9 +6802,9 @@ static void SDL_Blit_BGRA8888_XBGR8888_Modulate_Scale(SDL_BlitInfo *info)
             pixel = *src;
             B = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); R = (Uint8)(pixel >> 8);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             pixel = (B << 16) | (G << 8) | R;
             *dst = pixel;
@@ -6335,26 +6838,29 @@ static void SDL_Blit_BGRA8888_XBGR8888_Modulate_Blend(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -6362,14 +6868,20 @@ static void SDL_Blit_BGRA8888_XBGR8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -6416,26 +6928,29 @@ static void SDL_Blit_BGRA8888_XBGR8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -6443,14 +6958,20 @@ static void SDL_Blit_BGRA8888_XBGR8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstB << 16) | (dstG << 8) | dstR;
@@ -6517,17 +7038,21 @@ static void SDL_Blit_BGRA8888_ARGB8888_Blend(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -6535,14 +7060,20 @@ static void SDL_Blit_BGRA8888_ARGB8888_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -6587,17 +7118,21 @@ static void SDL_Blit_BGRA8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -6605,14 +7140,20 @@ static void SDL_Blit_BGRA8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -6643,12 +7184,12 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate(SDL_BlitInfo *info)
             pixel = *src;
             B = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); R = (Uint8)(pixel >> 8); A = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                A = (A * modulateA) / 255;
+                MULT_DIV_255(A, modulateA, A);
             }
             pixel = (A << 24) | (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -6690,12 +7231,12 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
             pixel = *src;
             B = (Uint8)(pixel >> 24); G = (Uint8)(pixel >> 16); R = (Uint8)(pixel >> 8); A = (Uint8)pixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                R = (R * modulateR) / 255;
-                G = (G * modulateG) / 255;
-                B = (B * modulateB) / 255;
+                MULT_DIV_255(R, modulateR, R);
+                MULT_DIV_255(G, modulateG, G);
+                MULT_DIV_255(B, modulateB, B);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                A = (A * modulateA) / 255;
+                MULT_DIV_255(A, modulateA, A);
             }
             pixel = (A << 24) | (R << 16) | (G << 8) | B;
             *dst = pixel;
@@ -6729,27 +7270,31 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = (Uint8)(dstpixel >> 24);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -6757,14 +7302,20 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
@@ -6811,27 +7362,31 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             dstpixel = *dst;
             dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = (Uint8)(dstpixel >> 24);
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                srcR = (srcR * modulateR) / 255;
-                srcG = (srcG * modulateG) / 255;
-                srcB = (srcB * modulateB) / 255;
+                MULT_DIV_255(srcR, modulateR, srcR);
+                MULT_DIV_255(srcG, modulateG, srcG);
+                MULT_DIV_255(srcB, modulateB, srcB);
             }
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                srcA = (srcA * modulateA) / 255;
+                MULT_DIV_255(srcA, modulateA, srcA);
             }
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
-                    srcR = (srcR * srcA) / 255;
-                    srcG = (srcG * srcA) / 255;
-                    srcB = (srcB * srcA) / 255;
+                    MULT_DIV_255(srcR, srcA, srcR);
+                    MULT_DIV_255(srcG, srcA, srcG);
+                    MULT_DIV_255(srcB, srcA, srcB);
                 }
             }
             switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
-                dstR = srcR + ((255 - srcA) * dstR) / 255;
-                dstG = srcG + ((255 - srcA) * dstG) / 255;
-                dstB = srcB + ((255 - srcA) * dstB) / 255;
-                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                MULT_DIV_255((255 - srcA), dstR, dstR);
+                dstR += srcR;
+                MULT_DIV_255((255 - srcA), dstG, dstG);
+                dstG += srcG;
+                MULT_DIV_255((255 - srcA), dstB, dstB);
+                dstB += srcB;
+                MULT_DIV_255((255 - srcA), dstA, dstA);
+                dstA += srcA;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR; if (dstR > 255) dstR = 255;
@@ -6839,14 +7394,20 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
                 dstB = srcB + dstB; if (dstB > 255) dstB = 255;
                 break;
             case SDL_COPY_MOD:
-                dstR = (srcR * dstR) / 255;
-                dstG = (srcG * dstG) / 255;
-                dstB = (srcB * dstB) / 255;
+                MULT_DIV_255(srcR, dstR, dstR);
+                MULT_DIV_255(srcG, dstG, dstG);
+                MULT_DIV_255(srcB, dstB, dstB);
                 break;
             case SDL_COPY_MUL:
-                dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255; if (dstR > 255) dstR = 255;
-                dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255; if (dstG > 255) dstG = 255;
-                dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255; if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstR, (255 - srcA), dstR);
+                dstR += (srcR * dstR);
+                if (dstR > 255) dstR = 255;
+                MULT_DIV_255(dstB, (255 - srcA), dstB);
+                dstB += (srcB * dstB);
+                if (dstB > 255) dstB = 255;
+                MULT_DIV_255(dstG, (255 - srcA), dstG);
+                dstG += (srcG * dstG);
+                if (dstG > 255) dstG = 255;
                 break;
             }
             dstpixel = (dstA << 24) | (dstR << 16) | (dstG << 8) | dstB;
