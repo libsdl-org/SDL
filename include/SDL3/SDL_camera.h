@@ -66,6 +66,8 @@ typedef struct SDL_CameraSpec
     Uint32 format;          /**< Frame SDL_PixelFormatEnum format */
     int width;              /**< Frame width */
     int height;             /**< Frame height */
+    int interval_numerator;  /**< Frame rate numerator ((dom / num) == fps) */
+    int interval_denominator;  /**< Frame rate demoninator ((dom / num) == fps)*/
 } SDL_CameraSpec;
 
 /**
@@ -216,6 +218,12 @@ extern DECLSPEC char * SDLCALL SDL_GetCameraDeviceName(SDL_CameraDeviceID instan
  * passing a NULL spec here. You can see the exact specs a device can
  * support without conversion with SDL_GetCameraSupportedSpecs().
  *
+ * SDL will not attempt to emulate framerate; it will try to set the
+ * hardware to the rate closest to the requested speed, but it won't
+ * attempt to limit or duplicate frames artificially; call
+ * SDL_GetCameraFormat() to see the actual framerate of the opened the device,
+ * and check your timestamps if this is crucial to your app!
+ *
  * \param instance_id the camera device instance ID
  * \param spec The desired format for data the device will provide. Can be NULL.
  * \returns device, or NULL on failure; call SDL_GetError() for more
@@ -225,9 +233,8 @@ extern DECLSPEC char * SDLCALL SDL_GetCameraDeviceName(SDL_CameraDeviceID instan
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetCameraDeviceName
  * \sa SDL_GetCameraDevices
- * \sa SDL_OpenCameraWithSpec
+ * \sa SDL_GetCameraFormat
  */
 extern DECLSPEC SDL_Camera *SDLCALL SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_CameraSpec *spec);
 

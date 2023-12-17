@@ -524,6 +524,23 @@ static int V4L2_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *spec)
         return SDL_SetError("Error VIDIOC_S_FMT");
     }
 
+    if (spec->interval_numerator && spec->interval_denominator) {
+        struct v4l2_streamparm setfps;
+        SDL_zero(setfps);
+        setfps.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        if (xioctl(fd, VIDIOC_G_PARM, &setfps) == 0) {
+            if ( (setfps.parm.capture.timeperframe.numerator != spec->interval_numerator) ||
+                 (setfps.parm.capture.timeperframe.denominator = spec->interval_denominator) ) {
+                setfps.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+                setfps.parm.capture.timeperframe.numerator = spec->interval_numerator;
+                setfps.parm.capture.timeperframe.denominator = spec->interval_denominator;
+                if (xioctl(fd, VIDIOC_S_PARM, &setfps) == -1) {
+                    return SDL_SetError("Error VIDIOC_S_PARM");
+                }
+            }
+        }
+    }
+
     SDL_zero(fmt);
     fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     if (xioctl(fd, VIDIOC_G_FMT, &fmt) == -1) {
@@ -618,7 +635,7 @@ typedef struct FormatAddData
     int allocated_specs;
 } FormatAddData;
 
-static int AddCameraFormat(FormatAddData *data, Uint32 fmt, int w, int h)
+static int AddCameraCompleteFormat(FormatAddData *data, Uint32 fmt, int w, int h, int interval_numerator, int interval_denominator)
 {
     SDL_assert(data != NULL);
     if (data->allocated_specs <= data->num_specs) {
@@ -635,11 +652,54 @@ static int AddCameraFormat(FormatAddData *data, Uint32 fmt, int w, int h)
     spec->format = fmt;
     spec->width = w;
     spec->height = h;
+    spec->interval_numerator = interval_numerator;
+    spec->interval_denominator = interval_denominator;
 
     data->num_specs++;
 
     return 0;
 }
+
+static int AddCameraFormat(const int fd, FormatAddData *data, Uint32 sdlfmt, Uint32 v4l2fmt, int w, int h)
+{
+    struct v4l2_frmivalenum frmivalenum;
+    SDL_zero(frmivalenum);
+    frmivalenum.pixel_format = v4l2fmt;
+    frmivalenum.width = (Uint32) w;
+    frmivalenum.height = (Uint32) h;
+
+    while (ioctl(fd, VIDIOC_ENUM_FRAMEINTERVALS, &frmivalenum) == 0) {
+        if (frmivalenum.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
+            const int numerator = (int) frmivalenum.discrete.numerator;
+            const int denominator = (int) frmivalenum.discrete.denominator;
+            #if DEBUG_CAMERA
+            const float fps = (float) denominator / (float) numerator;
+            SDL_Log("CAMERA:       * Has discrete frame interval (%d / %d), fps=%f", numerator, denominator, fps);
+            #endif
+            if (AddCameraCompleteFormat(data, sdlfmt, w, h, numerator, denominator) == -1) {
+                return -1;  // Probably out of memory; we'll go with what we have, if anything.
+            }
+            frmivalenum.index++;  // set up for the next one.
+        } else if ((frmivalenum.type == V4L2_FRMIVAL_TYPE_STEPWISE) || (frmivalenum.type == V4L2_FRMIVAL_TYPE_CONTINUOUS)) {
+            int d = frmivalenum.stepwise.min.denominator;
+            // !!! FIXME: should we step by the numerator...?
+            for (int n = (int) frmivalenum.stepwise.min.numerator; n <= (int) frmivalenum.stepwise.max.numerator; n += (int) frmivalenum.stepwise.step.numerator) {
+                #if DEBUG_CAMERA
+                const float fps = (float) d / (float) n;
+                SDL_Log("CAMERA:       * Has %s frame interval (%d / %d), fps=%f", (frmivalenum.type == V4L2_FRMIVAL_TYPE_STEPWISE) ? "stepwise" : "continuous", n, d, fps);
+                #endif
+                if (AddCameraCompleteFormat(data, sdlfmt, w, h, n, d) == -1) {
+                    return -1;  // Probably out of memory; we'll go with what we have, if anything.
+                }
+                d += (int) frmivalenum.stepwise.step.denominator;
+            }
+            break;
+        }
+    }
+
+    return 0;
+}
+
 
 static void MaybeAddDevice(const char *path)
 {
@@ -699,17 +759,16 @@ static void MaybeAddDevice(const char *path)
 
         struct v4l2_frmsizeenum frmsizeenum;
         SDL_zero(frmsizeenum);
-        frmsizeenum.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         frmsizeenum.pixel_format = fmtdesc.pixelformat;
 
-        while (ioctl(fd,VIDIOC_ENUM_FRAMESIZES, &frmsizeenum) == 0) {
+        while (ioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frmsizeenum) == 0) {
             if (frmsizeenum.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
                 const int w = (int) frmsizeenum.discrete.width;
                 const int h = (int) frmsizeenum.discrete.height;
                 #if DEBUG_CAMERA
                 SDL_Log("CAMERA:     * Has discrete size %dx%d", w, h);
                 #endif
-                if (AddCameraFormat(&add_data, sdlfmt, w, h) == -1) {
+                if (AddCameraFormat(fd, &add_data, sdlfmt, fmtdesc.pixelformat, w, h) == -1) {
                     break;  // Probably out of memory; we'll go with what we have, if anything.
                 }
                 frmsizeenum.index++;  // set up for the next one.
@@ -725,10 +784,9 @@ static void MaybeAddDevice(const char *path)
                         #if DEBUG_CAMERA
                         SDL_Log("CAMERA:     * Has %s size %dx%d", (frmsizeenum.type == V4L2_FRMSIZE_TYPE_STEPWISE) ? "stepwise" : "continuous", w, h);
                         #endif
-                        if (AddCameraFormat(&add_data, sdlfmt, w, h) == -1) {
+                        if (AddCameraFormat(fd, &add_data, sdlfmt, fmtdesc.pixelformat, w, h) == -1) {
                             break;  // Probably out of memory; we'll go with what we have, if anything.
                         }
-
                     }
                 }
                 break;
