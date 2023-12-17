@@ -36,7 +36,7 @@ Use keyboards:\n\
  \n\
 ";
 
-typedef struct {
+typedef struct measure_fps_t {
     Uint64 next_check;
     int frame_counter;
     int check_delay;

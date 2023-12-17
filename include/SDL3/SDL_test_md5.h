@@ -68,7 +68,7 @@ extern "C" {
   typedef Uint32 MD5UINT4;
 
 /* Data structure for MD5 (Message-Digest) computation */
-  typedef struct {
+  typedef struct SDLTest_Md5Context {
     MD5UINT4  i[2];     /* number of _bits_ handled mod 2^64 */
     MD5UINT4  buf[4];       /* scratch buffer */
     unsigned char in[64];   /* input buffer */

@@ -99,7 +99,7 @@ typedef struct
 	};
 } bluetoothSegment;
 
-typedef struct {
+typedef struct hidFeatureReport {
 	uint8_t		id;
 	union {
 		bluetoothSegment segment;
@@ -128,7 +128,7 @@ size_t GetBluetoothSegmentSize(bluetoothSegment *segment)
 #define RingBuffer_cbElem   19
 #define RingBuffer_nElem    4096
 
-typedef struct {
+typedef struct RingBuffer {
 	int _first, _last;
 	uint8_t _data[ ( RingBuffer_nElem * RingBuffer_cbElem ) ];
 	pthread_mutex_t accessLock;

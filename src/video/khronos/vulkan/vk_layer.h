@@ -118,7 +118,7 @@ typedef enum VkLoaderFeastureFlagBits {
 } VkLoaderFlagBits;
 typedef VkFlags VkLoaderFeatureFlags;
 
-typedef struct {
+typedef struct VkLayerInstanceCreateInfo {
     VkStructureType sType; // VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO
     const void *pNext;
     VkLayerFunction function;
@@ -139,7 +139,7 @@ typedef struct VkLayerDeviceLink_ {
     PFN_vkGetDeviceProcAddr pfnNextGetDeviceProcAddr;
 } VkLayerDeviceLink;
 
-typedef struct {
+typedef struct VkLayerDeviceCreateInfo {
     VkStructureType sType; // VK_STRUCTURE_TYPE_LOADER_DEVICE_CREATE_INFO
     const void *pNext;
     VkLayerFunction function;

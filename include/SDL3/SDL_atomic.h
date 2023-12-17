@@ -267,7 +267,7 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
  *
  * It is a struct so people don't accidentally use numeric operations on it.
  */
-typedef struct { int value; } SDL_AtomicInt;
+typedef struct SDL_AtomicInt { int value; } SDL_AtomicInt;
 
 /**
  * Set an atomic variable to a new value if it is currently an old value.

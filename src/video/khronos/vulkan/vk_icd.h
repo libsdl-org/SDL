@@ -88,7 +88,7 @@ extern "C" {
 
 #define ICD_LOADER_MAGIC 0x01CDC0DE
 
-typedef union {
+typedef union VK_LOADER_DATA {
     uintptr_t loaderMagic;
     void *loaderData;
 } VK_LOADER_DATA;
@@ -125,12 +125,12 @@ typedef enum {
     VK_ICD_WSI_PLATFORM_SCREEN,
 } VkIcdWsiPlatform;
 
-typedef struct {
+typedef struct VkIcdSurfaceBase {
     VkIcdWsiPlatform platform;
 } VkIcdSurfaceBase;
 
 #ifdef VK_USE_PLATFORM_MIR_KHR
-typedef struct {
+typedef struct VkIcdSurfaceMir {
     VkIcdSurfaceBase base;
     MirConnection *connection;
     MirSurface *mirSurface;
@@ -138,7 +138,7 @@ typedef struct {
 #endif  // VK_USE_PLATFORM_MIR_KHR
 
 #ifdef VK_USE_PLATFORM_WAYLAND_KHR
-typedef struct {
+typedef struct VkIcdSurfaceWayland {
     VkIcdSurfaceBase base;
     struct wl_display *display;
     struct wl_surface *surface;
@@ -146,7 +146,7 @@ typedef struct {
 #endif  // VK_USE_PLATFORM_WAYLAND_KHR
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
-typedef struct {
+typedef struct VkIcdSurfaceWin32 {
     VkIcdSurfaceBase base;
     HINSTANCE hinstance;
     HWND hwnd;
@@ -154,7 +154,7 @@ typedef struct {
 #endif  // VK_USE_PLATFORM_WIN32_KHR
 
 #ifdef VK_USE_PLATFORM_XCB_KHR
-typedef struct {
+typedef struct VkIcdSurfaceXcb {
     VkIcdSurfaceBase base;
     xcb_connection_t *connection;
     xcb_window_t window;
@@ -162,7 +162,7 @@ typedef struct {
 #endif  // VK_USE_PLATFORM_XCB_KHR
 
 #ifdef VK_USE_PLATFORM_XLIB_KHR
-typedef struct {
+typedef struct VkIcdSurfaceXlib {
     VkIcdSurfaceBase base;
     Display *dpy;
     Window window;
@@ -170,7 +170,7 @@ typedef struct {
 #endif  // VK_USE_PLATFORM_XLIB_KHR
 
 #ifdef VK_USE_PLATFORM_DIRECTFB_EXT
-typedef struct {
+typedef struct VkIcdSurfaceDirectFB {
     VkIcdSurfaceBase base;
     IDirectFB *dfb;
     IDirectFBSurface *surface;
@@ -178,34 +178,34 @@ typedef struct {
 #endif  // VK_USE_PLATFORM_DIRECTFB_EXT
 
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
-typedef struct {
+typedef struct VkIcdSurfaceAndroid {
     VkIcdSurfaceBase base;
     struct ANativeWindow *window;
 } VkIcdSurfaceAndroid;
 #endif  // VK_USE_PLATFORM_ANDROID_KHR
 
 #ifdef VK_USE_PLATFORM_MACOS_MVK
-typedef struct {
+typedef struct VkIcdSurfaceMacOS {
     VkIcdSurfaceBase base;
     const void *pView;
 } VkIcdSurfaceMacOS;
 #endif  // VK_USE_PLATFORM_MACOS_MVK
 
 #ifdef VK_USE_PLATFORM_IOS_MVK
-typedef struct {
+typedef struct VkIcdSurfaceIOS {
     VkIcdSurfaceBase base;
     const void *pView;
 } VkIcdSurfaceIOS;
 #endif  // VK_USE_PLATFORM_IOS_MVK
 
 #ifdef VK_USE_PLATFORM_GGP
-typedef struct {
+typedef struct VkIcdSurfaceGgp {
     VkIcdSurfaceBase base;
     GgpStreamDescriptor streamDescriptor;
 } VkIcdSurfaceGgp;
 #endif  // VK_USE_PLATFORM_GGP
 
-typedef struct {
+typedef struct VkIcdSurfaceDisplay {
     VkIcdSurfaceBase base;
     VkDisplayModeKHR displayMode;
     uint32_t planeIndex;
@@ -216,26 +216,26 @@ typedef struct {
     VkExtent2D imageExtent;
 } VkIcdSurfaceDisplay;
 
-typedef struct {
+typedef struct VkIcdSurfaceHeadless {
     VkIcdSurfaceBase base;
 } VkIcdSurfaceHeadless;
 
 #ifdef VK_USE_PLATFORM_METAL_EXT
-typedef struct {
+typedef struct VkIcdSurfaceMetal {
     VkIcdSurfaceBase base;
     const CAMetalLayer *pLayer;
 } VkIcdSurfaceMetal;
 #endif // VK_USE_PLATFORM_METAL_EXT
 
 #ifdef VK_USE_PLATFORM_VI_NN
-typedef struct {
+typedef struct VkIcdSurfaceVi {
     VkIcdSurfaceBase base;
     void *window;
 } VkIcdSurfaceVi;
 #endif // VK_USE_PLATFORM_VI_NN
 
 #ifdef VK_USE_PLATFORM_SCREEN_QNX
-typedef struct {
+typedef struct VkIcdSurfaceScreen {
     VkIcdSurfaceBase base;
     struct _screen_context *context;
     struct _screen_window *window;

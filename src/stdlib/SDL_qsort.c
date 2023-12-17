@@ -180,7 +180,7 @@ static char _ID[]="<qsort.c gjm 1.15 2016-03-10>";
  */
 #define PIVOT_THRESHOLD 40
 
-typedef struct { char * first; char * last; } stack_entry;
+typedef struct stack_entry { char * first; char * last; } stack_entry;
 #define pushLeft {stack[stacktop].first=ffirst;stack[stacktop++].last=last;}
 #define pushRight {stack[stacktop].first=first;stack[stacktop++].last=llast;}
 #define doLeft {first=ffirst;llast=last;continue;}
