@@ -111,6 +111,7 @@ sub open_file {
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+#include "SDL_blit.h"
 
 #if SDL_HAVE_BLIT_AUTO
 
@@ -309,15 +310,15 @@ __EOF__
     if ( $modulate ) {
         print FILE <<__EOF__;
             if (flags & SDL_COPY_MODULATE_COLOR) {
-                ${s}R = (${s}R * modulateR) / 255;
-                ${s}G = (${s}G * modulateG) / 255;
-                ${s}B = (${s}B * modulateB) / 255;
+                MULT_DIV_255(${s}R, modulateR, ${s}R);
+                MULT_DIV_255(${s}G, modulateG, ${s}G);
+                MULT_DIV_255(${s}B, modulateB, ${s}B);
             }
 __EOF__
         if (!$ignore_dst_alpha && !$is_modulateA_done) {
             print FILE <<__EOF__;
             if (flags & SDL_COPY_MODULATE_ALPHA) {
-                ${s}A = (${s}A * modulateA) / 255;
+                MULT_DIV_255(${s}A, modulateA, ${s}A);
             }
 __EOF__
         }
@@ -328,9 +329,9 @@ __EOF__
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (${s}A < 255) {
-                    ${s}R = (${s}R * ${s}A) / 255;
-                    ${s}G = (${s}G * ${s}A) / 255;
-                    ${s}B = (${s}B * ${s}A) / 255;
+                    MULT_DIV_255(${s}R, ${s}A, ${s}R);
+                    MULT_DIV_255(${s}G, ${s}A, ${s}G);
+                    MULT_DIV_255(${s}B, ${s}A, ${s}B);
                 }
             }
 __EOF__
@@ -347,9 +348,12 @@ __EOF__
 __EOF__
         } else {
             print FILE <<__EOF__;
-                ${d}R = ${s}R + ((255 - ${s}A) * ${d}R) / 255;
-                ${d}G = ${s}G + ((255 - ${s}A) * ${d}G) / 255;
-                ${d}B = ${s}B + ((255 - ${s}A) * ${d}B) / 255;
+                MULT_DIV_255((255 - ${s}A), ${d}R, ${d}R);
+                ${d}R += ${s}R;
+                MULT_DIV_255((255 - ${s}A), ${d}G, ${d}G);
+                ${d}G += ${s}G;
+                MULT_DIV_255((255 - ${s}A), ${d}B, ${d}B);
+                ${d}B += ${s}B;
 __EOF__
         }
         if ( $dst_has_alpha ) {
@@ -359,7 +363,8 @@ __EOF__
 __EOF__
             } else {
                 print FILE <<__EOF__;
-                ${d}A = ${s}A + ((255 - ${s}A) * ${d}A) / 255;
+                MULT_DIV_255((255 - ${s}A), ${d}A, ${d}A);
+                ${d}A += ${s}A;
 __EOF__
             }
         }
@@ -372,23 +377,29 @@ __EOF__
                 ${d}B = ${s}B + ${d}B; if (${d}B > 255) ${d}B = 255;
                 break;
             case SDL_COPY_MOD:
-                ${d}R = (${s}R * ${d}R) / 255;
-                ${d}G = (${s}G * ${d}G) / 255;
-                ${d}B = (${s}B * ${d}B) / 255;
+                MULT_DIV_255(${s}R, ${d}R, ${d}R);
+                MULT_DIV_255(${s}G, ${d}G, ${d}G);
+                MULT_DIV_255(${s}B, ${d}B, ${d}B);
                 break;
             case SDL_COPY_MUL:
 __EOF__
         if ($A_is_const_FF) {
             print FILE <<__EOF__;
-                ${d}R = (${s}R * ${d}R) / 255;
-                ${d}G = (${s}G * ${d}G) / 255;
-                ${d}B = (${s}B * ${d}B) / 255;
+                MULT_DIV_255(${s}R, ${d}R, ${d}R);
+                MULT_DIV_255(${s}G, ${d}G, ${d}G);
+                MULT_DIV_255(${s}B, ${d}B, ${d}B);
 __EOF__
         } else {
             print FILE <<__EOF__;
-                ${d}R = ((${s}R * ${d}R) + (${d}R * (255 - ${s}A))) / 255; if (${d}R > 255) ${d}R = 255;
-                ${d}G = ((${s}G * ${d}G) + (${d}G * (255 - ${s}A))) / 255; if (${d}G > 255) ${d}G = 255;
-                ${d}B = ((${s}B * ${d}B) + (${d}B * (255 - ${s}A))) / 255; if (${d}B > 255) ${d}B = 255;
+                MULT_DIV_255(${d}R, (255 - ${s}A), ${d}R);
+                ${d}R += (${s}R * ${d}R);
+                if (${d}R > 255) ${d}R = 255;
+                MULT_DIV_255(${d}B, (255 - ${s}A), ${d}B);
+                ${d}B += (${s}B * ${d}B);
+                if (${d}B > 255) ${d}B = 255;
+                MULT_DIV_255(${d}G, (255 - ${s}A), ${d}G);
+                ${d}G += (${s}G * ${d}G);
+                if (${d}G > 255) ${d}G = 255;
 __EOF__
         }
 
