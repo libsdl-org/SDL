@@ -1164,7 +1164,7 @@ static void BlitNtoNPixelAlpha(SDL_BlitInfo *info)
     }
 
     while (height--) {
-        if (srcbpp == 4 && dstbpp == 4 && dstfmt->Ashift == 24 && dstfmt->Rshift == 16 && dstfmt->Gshift == 8 &&
+        /* if (srcbpp == 4 && dstbpp == 4 && dstfmt->Ashift == 24 && dstfmt->Rshift == 16 && dstfmt->Gshift == 8 &&
             dstfmt->Bshift == 0) {
             DUFFS_LOOP4(
             {
@@ -1176,7 +1176,7 @@ static void BlitNtoNPixelAlpha(SDL_BlitInfo *info)
             dst += dstbpp;
             },
             width);
-        } else {
+        } else { */
             /* *INDENT-OFF* */ /* clang-format off */
             DUFFS_LOOP4(
             {
@@ -1193,7 +1193,7 @@ static void BlitNtoNPixelAlpha(SDL_BlitInfo *info)
             /* *INDENT-ON* */ /* clang-format on */
             src += srcskip;
             dst += dstskip;
-        }
+        // }
     }
     if (freeFormat) {
         SDL_DestroyPixelFormat(dstfmt);
