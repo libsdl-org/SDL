@@ -29,6 +29,7 @@
 #include "SDL_yuv_c.h"
 #include "../render/SDL_sysrender.h"
 #include "../video/SDL_yuv_c.h"
+#include "../video/SDL_blit.h"
 
 /* Check to make sure we can safely check multiplication of surface w and pitch and it won't overflow size_t */
 SDL_COMPILE_TIME_ASSERT(surface_size_assumptions,
@@ -968,7 +969,7 @@ int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcr
         if (!(src->map->info.flags & complex_copy_flags) &&
             src->format->format == dst->format->format &&
             !SDL_ISPIXELFORMAT_INDEXED(src->format->format)) {
-            return SDL_SoftStretch(src, srcrect, dst, dstrect);
+            return SDL_UpperSoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
         } else {
             return SDL_BlitSurfaceUnchecked(src, srcrect, dst, dstrect);
         }
@@ -979,7 +980,7 @@ int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcr
             src->format->BytesPerPixel == 4 &&
             src->format->format != SDL_PIXELFORMAT_ARGB2101010) {
             /* fast path */
-            return SDL_SoftStretchLinear(src, srcrect, dst, dstrect);
+            return SDL_UpperSoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_LINEAR);
         } else {
             /* Use intermediate surface(s) */
             SDL_Surface *tmp1 = NULL;
@@ -1029,7 +1030,7 @@ int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcr
             if (is_complex_copy_flags || src->format->format != dst->format->format) {
                 SDL_Rect tmprect;
                 SDL_Surface *tmp2 = SDL_CreateSurface(dstrect->w, dstrect->h, src->format->format);
-                SDL_SoftStretchLinear(src, &srcrect2, tmp2, NULL);
+                SDL_UpperSoftStretch(src, &srcrect2, tmp2, NULL, SDL_SCALEMODE_NEAREST);
 
                 SDL_SetSurfaceColorMod(tmp2, r, g, b);
                 SDL_SetSurfaceAlphaMod(tmp2, alpha);
@@ -1042,7 +1043,7 @@ int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcr
                 ret = SDL_BlitSurfaceUnchecked(tmp2, &tmprect, dst, dstrect);
                 SDL_DestroySurface(tmp2);
             } else {
-                ret = SDL_SoftStretchLinear(src, &srcrect2, dst, dstrect);
+                ret = SDL_UpperSoftStretch(src, &srcrect2, dst, dstrect, SDL_SCALEMODE_LINEAR);
             }
 
             SDL_DestroySurface(tmp1);

@@ -677,8 +677,6 @@ SDL_DYNAPI_PROC(int,SDL_ShowMessageBox,(const SDL_MessageBoxData *a, int *b),(a,
 SDL_DYNAPI_PROC(int,SDL_ShowSimpleMessageBox,(Uint32 a, const char *b, const char *c, SDL_Window *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_ShowWindow,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_SignalCondition,(SDL_Condition *a),(a),return)
-SDL_DYNAPI_PROC(int,SDL_SoftStretch,(SDL_Surface *a, const SDL_Rect *b, SDL_Surface *c, const SDL_Rect *d),(a,b,c,d),return)
-SDL_DYNAPI_PROC(int,SDL_SoftStretchLinear,(SDL_Surface *a, const SDL_Rect *b, SDL_Surface *c, const SDL_Rect *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(void,SDL_StartTextInput,(void),(),)
 SDL_DYNAPI_PROC(void,SDL_StopTextInput,(void),(),)
 SDL_DYNAPI_PROC(SDL_bool,SDL_SurfaceHasColorKey,(SDL_Surface *a),(a),return)

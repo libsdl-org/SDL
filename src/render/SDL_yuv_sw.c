@@ -26,6 +26,7 @@
 
 #include "SDL_yuv_sw_c.h"
 #include "../video/SDL_yuv_c.h"
+#include "../video/SDL_blit.h"
 
 SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(Uint32 format, int w, int h)
 {
@@ -382,7 +383,7 @@ int SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect,
     }
     if (stretch) {
         SDL_Rect rect = *srcrect;
-        SDL_SoftStretch(swdata->stretch, &rect, swdata->display, NULL);
+        SDL_UpperSoftStretch(swdata->stretch, &rect, swdata->display, NULL, SDL_SCALEMODE_NEAREST);
     }
     return 0;
 }

@@ -859,48 +859,6 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceUnchecked
      SDL_Surface *dst, const SDL_Rect *dstrect);
 
 /**
- * Perform a fast, low quality, stretch blit between two surfaces of the same
- * format.
- *
- * **WARNING**: Please use SDL_BlitSurfaceScaled() instead.
- *
- * \param src the SDL_Surface structure to be copied from
- * \param srcrect the SDL_Rect structure representing the rectangle to be
- *                copied
- * \param dst the SDL_Surface structure that is the blit target
- * \param dstrect the SDL_Rect structure representing the target rectangle in
- *                the destination surface
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface *src,
-                                            const SDL_Rect *srcrect,
-                                            SDL_Surface *dst,
-                                            const SDL_Rect *dstrect);
-
-/**
- * Perform bilinear scaling between two surfaces of the same format, 32BPP.
- *
- * \param src the SDL_Surface structure to be copied from
- * \param srcrect the SDL_Rect structure representing the rectangle to be
- *                copied
- * \param dst the SDL_Surface structure that is the blit target
- * \param dstrect the SDL_Rect structure representing the target rectangle in
- *                the destination surface
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface *src,
-                                            const SDL_Rect *srcrect,
-                                            SDL_Surface *dst,
-                                            const SDL_Rect *dstrect);
-
-
-/**
  * Perform a scaled surface copy to a destination surface.
  *
  * \param src the SDL_Surface structure to be copied from
