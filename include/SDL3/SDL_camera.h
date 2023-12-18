@@ -241,7 +241,7 @@ extern DECLSPEC SDL_Camera *SDLCALL SDL_OpenCameraDevice(SDL_CameraDeviceID inst
 /**
  * Get the instance ID of an opened camera.
  *
- * \param device an SDL_Camera to query
+ * \param camera an SDL_Camera to query
  * \returns the instance ID of the specified camera on success or 0 on
  *          failure; call SDL_GetError() for more information.
  *
@@ -256,7 +256,7 @@ extern DECLSPEC SDL_CameraDeviceID SDLCALL SDL_GetCameraInstanceID(SDL_Camera *c
 /**
  * Get the properties associated with an opened camera.
  *
- * \param device the SDL_Camera obtained from SDL_OpenCameraDevice()
+ * \param camera the SDL_Camera obtained from SDL_OpenCameraDevice()
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
  *
@@ -275,7 +275,7 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetCameraProperties(SDL_Camera *cam
  * Note that this might not be the native format of the hardware, as SDL
  * might be converting to this format behind the scenes.
  *
- * \param device opened camera device
+ * \param camera opened camera device
  * \param spec The SDL_CameraSpec to be initialized by this function.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -312,7 +312,7 @@ extern DECLSPEC int SDLCALL SDL_GetCameraFormat(SDL_Camera *camera, SDL_CameraSp
  * Do not call SDL_FreeSurface() on the returned surface! It must be given back
  * to the camera subsystem with SDL_ReleaseCameraFrame!
  *
- * \param device opened camera device
+ * \param camera opened camera device
  * \param timestampNS a pointer filled in with the frame's timestamp, or 0 on error. Can be NULL.
  * \returns A new frame of video on success, NULL if none is currently available.
  *
@@ -341,7 +341,7 @@ extern DECLSPEC SDL_Surface * SDLCALL SDL_AcquireCameraFrame(SDL_Camera *camera,
  * The app should not use the surface again after calling this function;
  * assume the surface is freed and the pointer is invalid.
  *
- * \param device opened camera device
+ * \param camera opened camera device
  * \param frame The video frame surface to release.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -358,7 +358,7 @@ extern DECLSPEC int SDLCALL SDL_ReleaseCameraFrame(SDL_Camera *camera, SDL_Surfa
  * Use this function to shut down camera processing and close the
  * camera device.
  *
- * \param device opened camera device
+ * \param camera opened camera device
  *
  * \threadsafety It is safe to call this function from any thread, but
  *               no thread may reference `device` once this function
