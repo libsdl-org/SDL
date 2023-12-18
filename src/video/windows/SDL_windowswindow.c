@@ -1083,6 +1083,13 @@ int WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_Vide
     SDL_Log("WIN_SetWindowFullscreen: %d", (int)fullscreen);
 #endif
 
+    /* Early out if already not in fullscreen, or the styling on
+     * external windows may end up being overridden.
+     */
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN) && !fullscreen) {
+        return 0;
+    }
+
     if (SDL_ShouldAllowTopmost() && (window->flags & SDL_WINDOW_ALWAYS_ON_TOP)) {
         top = HWND_TOPMOST;
     } else {
