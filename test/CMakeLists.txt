@@ -387,6 +387,7 @@ add_sdl_test_executable(testvideocaptureminimal SOURCES testvideocaptureminimal.
 add_sdl_test_executable(testviewport NEEDS_RESOURCES TESTUTILS SOURCES testviewport.c)
 add_sdl_test_executable(testwm SOURCES testwm.c)
 add_sdl_test_executable(testyuv NONINTERACTIVE NONINTERACTIVE_ARGS "--automated" NEEDS_RESOURCES TESTUTILS SOURCES testyuv.c testyuv_cvt.c)
+add_sdl_test_executable(testyuvconversion NEEDS_RESOURCES TESTUTILS SOURCES testyuvconversion.c)
 add_sdl_test_executable(torturethread NONINTERACTIVE NONINTERACTIVE_TIMEOUT 30 SOURCES torturethread.c)
 add_sdl_test_executable(testrendercopyex NEEDS_RESOURCES TESTUTILS SOURCES testrendercopyex.c)
 add_sdl_test_executable(testmessage SOURCES testmessage.c)
