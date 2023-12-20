@@ -741,8 +741,13 @@ static void handle_configure_xdg_toplevel(void *data,
             /* If we're a fixed-size window, we know our size for sure.
              * Always assume the configure is wrong.
              */
-            width = window->windowed.w;
-            height = window->windowed.h;
+            if (floating) {
+                width = window->floating.w;
+                height = window->floating.h;
+            } else {
+                width = window->windowed.w;
+                height = window->windowed.h;
+            }
         }
 
         /* The content limits are only a hint, which the compositor is free to ignore,
@@ -1007,8 +1012,13 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
         }
     } else {
         if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
-            width = window->windowed.w;
-            height = window->windowed.h;
+            if (floating) {
+                width = window->floating.w;
+                height = window->floating.h;
+            } else {
+                width = window->windowed.w;
+                height = window->windowed.h;
+            }
 
             OverrideLibdecorLimits(window);
         } else {

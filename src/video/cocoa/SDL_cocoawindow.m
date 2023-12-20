@@ -2440,9 +2440,14 @@ void Cocoa_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 void Cocoa_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool bordered)
 {
     @autoreleasepool {
-        if (SetWindowStyle(window, GetWindowStyle(window))) {
-            if (bordered) {
-                Cocoa_SetWindowTitle(_this, window); /* this got blanked out. */
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;
+
+        /* If the window is in or transitioning to/from fullscreen, this will be set on leave. */
+        if (!(window->flags & SDL_WINDOW_FULLSCREEN) && ![data.listener isInFullscreenSpaceTransition]) {
+            if (SetWindowStyle(window, GetWindowStyle(window))) {
+                if (bordered) {
+                    Cocoa_SetWindowTitle(_this, window); /* this got blanked out. */
+                }
             }
         }
     }
@@ -2476,11 +2481,16 @@ void Cocoa_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bo
 void Cocoa_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool on_top)
 {
     @autoreleasepool {
-        NSWindow *nswindow = ((__bridge SDL_CocoaWindowData *)window->driverdata).nswindow;
-        if (on_top) {
-            [nswindow setLevel:NSFloatingWindowLevel];
-        } else {
-            [nswindow setLevel:kCGNormalWindowLevel];
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;
+        NSWindow *nswindow = data.nswindow;
+
+        /* If the window is in or transitioning to/from fullscreen, this will be set on leave. */
+        if (!(window->flags & SDL_WINDOW_FULLSCREEN) && ![data.listener isInFullscreenSpaceTransition]) {
+            if (on_top) {
+                [nswindow setLevel:NSFloatingWindowLevel];
+            } else {
+                [nswindow setLevel:kCGNormalWindowLevel];
+            }
         }
     }
 }

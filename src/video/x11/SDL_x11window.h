@@ -96,6 +96,7 @@ struct SDL_WindowData
     SDL_bool window_was_maximized;
     SDL_bool disable_size_position_events;
     SDL_bool previous_borders_nonzero;
+    SDL_bool toggle_borders;
     SDL_HitTestResult hit_test_result;
 };
 
@@ -137,5 +138,6 @@ extern int X11_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, SD
 
 int SDL_X11_SetWindowTitle(Display *display, Window xwindow, char *title);
 void X11_UpdateWindowPosition(SDL_Window *window, SDL_bool use_current_position);
+void X11_SetWindowMinMax(SDL_Window *window, SDL_bool use_current);
 
 #endif /* SDL_x11window_h_ */

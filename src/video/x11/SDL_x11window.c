@@ -1048,50 +1048,58 @@ static void X11_SetWMNormalHints(SDL_VideoDevice *_this, SDL_Window *window, XSi
     X11_XRaiseWindow(display, data->xwindow);
 }
 
-void X11_SetWindowMinimumSize(SDL_VideoDevice *_this, SDL_Window *window)
+void X11_SetWindowMinMax(SDL_Window *window, SDL_bool use_current)
 {
     SDL_WindowData *data = window->driverdata;
     Display *display = data->videodata->display;
+    XSizeHints *sizehints = X11_XAllocSizeHints();
+    long hint_flags = 0;
 
-    if (window->flags & SDL_WINDOW_RESIZABLE) {
-        XSizeHints *sizehints = X11_XAllocSizeHints();
-        long userhints;
+    X11_XGetWMNormalHints(display, data->xwindow, sizehints, &hint_flags);
+    sizehints->flags &= ~(PMinSize | PMaxSize);
 
-        X11_XGetWMNormalHints(display, data->xwindow, sizehints, &userhints);
-
-        sizehints->min_width = window->min_w;
-        sizehints->min_height = window->min_h;
-        sizehints->flags |= PMinSize;
-
-        X11_SetWMNormalHints(_this, window, sizehints);
-
-        X11_XFree(sizehints);
+    if (data->window->flags & SDL_WINDOW_RESIZABLE) {
+        if (data->window->min_w || data->window->min_h) {
+            sizehints->flags |= PMinSize;
+            sizehints->min_width = data->window->min_w;
+            sizehints->min_height = data->window->min_h;
+        }
+        if (data->window->max_w || data->window->max_h) {
+            sizehints->flags |= PMaxSize;
+            sizehints->max_width = data->window->max_w;
+            sizehints->max_height = data->window->max_h;
+        }
+    } else {
+        /* Set the min/max to the same values to make the window non-resizable */
+        sizehints->flags |= PMinSize | PMaxSize;
+        sizehints->min_width = sizehints->max_width = use_current ? data->window->floating.w : window->windowed.w;
+        sizehints->min_height = sizehints->max_height = use_current ? data->window->floating.h : window->windowed.h;
     }
 
-    X11_XFlush(display);
+    X11_XSetWMNormalHints(display, data->xwindow, sizehints);
+    X11_XFree(sizehints);
+}
+
+void X11_SetWindowMinimumSize(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    if (window->driverdata->pending_operation & X11_PENDING_OP_FULLSCREEN) {
+        X11_SyncWindow(_this, window);
+    }
+
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        X11_SetWindowMinMax(window, SDL_TRUE);
+    }
 }
 
 void X11_SetWindowMaximumSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *data = window->driverdata;
-    Display *display = data->videodata->display;
-
-    if (window->flags & SDL_WINDOW_RESIZABLE) {
-        XSizeHints *sizehints = X11_XAllocSizeHints();
-        long userhints;
-
-        X11_XGetWMNormalHints(display, data->xwindow, sizehints, &userhints);
-
-        sizehints->max_width = window->max_w;
-        sizehints->max_height = window->max_h;
-        sizehints->flags |= PMaxSize;
-
-        X11_SetWMNormalHints(_this, window, sizehints);
-
-        X11_XFree(sizehints);
+    if (window->driverdata->pending_operation & X11_PENDING_OP_FULLSCREEN) {
+        X11_SyncWindow(_this, window);
     }
 
-    X11_XFlush(display);
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        X11_SetWindowMinMax(window, SDL_TRUE);
+    }
 }
 
 void X11_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
@@ -1198,61 +1206,60 @@ void X11_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool 
     Display *display = data->videodata->display;
     XEvent event;
 
-    SetWindowBordered(display, displaydata->screen, data->xwindow, bordered);
-    X11_XFlush(display);
-
-    if (visible) {
-        XWindowAttributes attr;
-        do {
-            X11_XSync(display, False);
-            X11_XGetWindowAttributes(display, data->xwindow, &attr);
-        } while (attr.map_state != IsViewable);
-
-        if (focused) {
-            X11_XSetInputFocus(display, data->xwindow, RevertToParent, CurrentTime);
-        }
+    if (data->pending_operation & X11_PENDING_OP_FULLSCREEN) {
+        X11_SyncWindow(_this, window);
     }
 
-    /* make sure these don't make it to the real event queue if they fired here. */
-    X11_XSync(display, False);
-    X11_XCheckIfEvent(display, &event, &isUnmapNotify, (XPointer)&data->xwindow);
-    X11_XCheckIfEvent(display, &event, &isMapNotify, (XPointer)&data->xwindow);
+    /* If the window is fullscreen, the resize capability will be set/cleared when it is returned to windowed mode. */
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        SetWindowBordered(display, displaydata->screen, data->xwindow, bordered);
+        X11_XFlush(display);
 
-    /* Make sure the window manager didn't resize our window for the difference. */
-    X11_XResizeWindow(display, data->xwindow, window->floating.w, window->floating.h);
-    X11_XSync(display, False);
+        if (visible) {
+            XWindowAttributes attr;
+            do {
+                X11_XSync(display, False);
+                X11_XGetWindowAttributes(display, data->xwindow, &attr);
+            } while (attr.map_state != IsViewable);
+
+            if (focused) {
+                X11_XSetInputFocus(display, data->xwindow, RevertToParent, CurrentTime);
+            }
+        }
+
+        /* make sure these don't make it to the real event queue if they fired here. */
+        X11_XSync(display, False);
+        X11_XCheckIfEvent(display, &event, &isUnmapNotify, (XPointer)&data->xwindow);
+        X11_XCheckIfEvent(display, &event, &isMapNotify, (XPointer)&data->xwindow);
+
+        /* Turning the borders off doesn't send an extent event, so they must be cleared here. */
+        if (bordered) {
+            X11_GetBorderValues(data);
+        } else {
+            data->border_top = data->border_left = data->border_bottom = data->border_right = 0;
+        }
+
+        /* Make sure the window manager didn't resize our window for the difference. */
+        X11_XResizeWindow(display, data->xwindow, window->floating.w, window->floating.h);
+        X11_XSync(display, False);
+    } else {
+        /* If fullscreen, set a flag to toggle the borders when returning to windowed mode. */
+        data->toggle_borders = SDL_TRUE;
+    }
 }
 
 void X11_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable)
 {
     SDL_WindowData *data = window->driverdata;
-    Display *display = data->videodata->display;
 
-    XSizeHints *sizehints = X11_XAllocSizeHints();
-    long userhints;
-
-    X11_XGetWMNormalHints(display, data->xwindow, sizehints, &userhints);
-
-    if (resizable) {
-        /* FIXME: Is there a better way to get max window size from X? -flibit */
-        const int maxsize = 0x7FFFFFFF;
-        sizehints->min_width = window->min_w;
-        sizehints->min_height = window->min_h;
-        sizehints->max_width = (window->max_w == 0) ? maxsize : window->max_w;
-        sizehints->max_height = (window->max_h == 0) ? maxsize : window->max_h;
-    } else {
-        sizehints->min_width = window->w;
-        sizehints->min_height = window->h;
-        sizehints->max_width = window->w;
-        sizehints->max_height = window->h;
+    if (data->pending_operation & X11_PENDING_OP_FULLSCREEN) {
+        X11_SyncWindow(_this, window);
     }
-    sizehints->flags |= PMinSize | PMaxSize;
 
-    X11_SetWMNormalHints(_this, window, sizehints);
-
-    X11_XFree(sizehints);
-
-    X11_XFlush(display);
+    /* If the window is fullscreen, the resize capability will be set/cleared when it is returned to windowed mode. */
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        X11_SetWindowMinMax(window, SDL_TRUE);
+    }
 }
 
 void X11_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool on_top)
@@ -1528,22 +1535,14 @@ static int X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this, SDL_Window *wind
             return 0;
         }
 
-        if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
+        if (fullscreen && !(window->flags & SDL_WINDOW_RESIZABLE)) {
             /* Compiz refuses fullscreen toggle if we're not resizable, so update the hints so we
                can be resized to the fullscreen resolution (or reset so we're not resizable again) */
             XSizeHints *sizehints = X11_XAllocSizeHints();
             long flags = 0;
             X11_XGetWMNormalHints(display, data->xwindow, sizehints, &flags);
-            /* set the resize flags on */
-            if (fullscreen) {
-                /* we are going fullscreen so turn the flags off */
-                sizehints->flags &= ~(PMinSize | PMaxSize);
-            } else {
-                /* Reset the min/max width height to make the window non-resizable again */
-                sizehints->flags |= PMinSize | PMaxSize;
-                sizehints->min_width = sizehints->max_width = window->windowed.w;
-                sizehints->min_height = sizehints->max_height = window->windowed.h;
-            }
+            /* we are going fullscreen so turn the flags off */
+            sizehints->flags &= ~(PMinSize | PMaxSize);
             X11_XSetWMNormalHints(display, data->xwindow, sizehints);
             X11_XFree(sizehints);
         }
