@@ -1064,9 +1064,9 @@ static int HIDAPI_DriverSteam_SetSensorsEnabled(SDL_HIDAPI_Device *device, SDL_J
     SDL_memset(buf, 0, 65);
     buf[1] = ID_SET_SETTINGS_VALUES;
     if (enabled) {
-        ADD_SETTING(SETTING_GYRO_MODE, 0x18 /* SETTING_GYRO_SEND_RAW_ACCEL | SETTING_GYRO_MODE_SEND_RAW_GYRO */);
+        ADD_SETTING(SETTING_IMU_MODE, SETTING_GYRO_MODE_SEND_RAW_ACCEL | SETTING_GYRO_MODE_SEND_RAW_GYRO);
     } else {
-        ADD_SETTING(SETTING_GYRO_MODE, 0x00 /* SETTING_GYRO_MODE_OFF */);
+        ADD_SETTING(SETTING_IMU_MODE, SETTING_GYRO_MODE_OFF);
     }
     buf[2] = (unsigned char)(nSettings * 3);
     if (SetFeatureReport(device->dev, buf, 3 + nSettings * 3) < 0) {
