@@ -1,4 +1,4 @@
-# Open Watcom makefile to build SDL2.dll for Win32
+# Open Watcom makefile to build SDL2.dll for Win32:
 # wmake -f Makefile.w32
 #
 # To error out upon warnings: wmake -f Makefile.w32 ENABLE_WERROR=1
@@ -93,7 +93,7 @@ SRCS+= SDL_render_gl.c SDL_shaders_gl.c
 SRCS+= SDL_render_gles2.c SDL_shaders_gles2.c
 SRCS+= SDL_windowssensor.c
 SRCS+= SDL_syscond_cv.c
-SRCS+= SDL_windowsclipboard.c SDL_windowsevents.c SDL_windowsframebuffer.c SDL_windowskeyboard.c SDL_windowsmessagebox.c SDL_windowsmodes.c SDL_windowsmouse.c SDL_windowsopengl.c SDL_windowsopengles.c SDL_windowsshape.c SDL_windowsvideo.c SDL_windowsvulkan.c SDL_windowswindow.c
+SRCS+= SDL_windowsclipboard.c SDL_windowsevents.c SDL_windowsframebuffer.c SDL_windowskeyboard.c SDL_windowsmessagebox.c SDL_windowsmodes.c SDL_windowsmouse.c SDL_windowsopengl.c SDL_windowsopengles.c SDL_windowsshape.c SDL_windowsvideo.c SDL_windowsvulkan.c SDL_windowswindow.c SDL_steam_virtual_gamepad.c
 
 SRCS+= SDL_dynapi.c
 

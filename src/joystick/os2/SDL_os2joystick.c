@@ -408,6 +408,11 @@ static const char *OS2_JoystickGetDevicePath(int device_index)
     return NULL;
 }
 
+static int OS2_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return -1;
+}
+
 static int OS2_JoystickGetDevicePlayerIndex(int device_index)
 {
     return -1;
@@ -817,6 +822,7 @@ SDL_JoystickDriver SDL_OS2_JoystickDriver = {
     OS2_JoystickDetect,
     OS2_JoystickGetDeviceName,
     OS2_JoystickGetDevicePath,
+    OS2_JoystickGetDeviceSteamVirtualGamepadSlot,
     OS2_JoystickGetDevicePlayerIndex,
     OS2_JoystickSetDevicePlayerIndex,
     OS2_JoystickGetDeviceGUID,
