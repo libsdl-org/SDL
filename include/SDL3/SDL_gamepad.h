@@ -761,8 +761,8 @@ extern DECLSPEC const char * SDLCALL SDL_GetGamepadSerial(SDL_Gamepad *gamepad);
 /**
  * Get the Steam Input handle of an opened gamepad, if available.
  *
- * Returns an InputHandle_t for the gamepad that can be used with Steam Input API:
- * https://partner.steamgames.com/doc/api/ISteamInput
+ * Returns an InputHandle_t for the gamepad that can be used with Steam Input
+ * API: https://partner.steamgames.com/doc/api/ISteamInput
  *
  * \param gamepad the gamepad object to query.
  * \returns the gamepad handle, or 0 if unavailable.
