@@ -2548,18 +2548,18 @@ int SDL_SetWindowBordered(SDL_Window *window, SDL_bool bordered)
 {
     CHECK_WINDOW_MAGIC(window, -1);
     CHECK_WINDOW_NOT_POPUP(window, -1);
-    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-        const SDL_bool want = (bordered != SDL_FALSE); /* normalize the flag. */
-        const SDL_bool have = !(window->flags & SDL_WINDOW_BORDERLESS);
-        if ((want != have) && (_this->SetWindowBordered)) {
-            if (want) {
-                window->flags &= ~SDL_WINDOW_BORDERLESS;
-            } else {
-                window->flags |= SDL_WINDOW_BORDERLESS;
-            }
-            _this->SetWindowBordered(_this, window, want);
+
+    const SDL_bool want = (bordered != SDL_FALSE); /* normalize the flag. */
+    const SDL_bool have = !(window->flags & SDL_WINDOW_BORDERLESS);
+    if ((want != have) && (_this->SetWindowBordered)) {
+        if (want) {
+            window->flags &= ~SDL_WINDOW_BORDERLESS;
+        } else {
+            window->flags |= SDL_WINDOW_BORDERLESS;
         }
+        _this->SetWindowBordered(_this, window, want);
     }
+
     return 0;
 }
 
@@ -2567,19 +2567,19 @@ int SDL_SetWindowResizable(SDL_Window *window, SDL_bool resizable)
 {
     CHECK_WINDOW_MAGIC(window, -1);
     CHECK_WINDOW_NOT_POPUP(window, -1);
-    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-        const SDL_bool want = (resizable != SDL_FALSE); /* normalize the flag. */
-        const SDL_bool have = ((window->flags & SDL_WINDOW_RESIZABLE) != 0);
-        if ((want != have) && (_this->SetWindowResizable)) {
-            if (want) {
-                window->flags |= SDL_WINDOW_RESIZABLE;
-            } else {
-                window->flags &= ~SDL_WINDOW_RESIZABLE;
-                SDL_copyp(&window->windowed, &window->floating);
-            }
-            _this->SetWindowResizable(_this, window, want);
+
+    const SDL_bool want = (resizable != SDL_FALSE); /* normalize the flag. */
+    const SDL_bool have = ((window->flags & SDL_WINDOW_RESIZABLE) != 0);
+    if ((want != have) && (_this->SetWindowResizable)) {
+        if (want) {
+            window->flags |= SDL_WINDOW_RESIZABLE;
+        } else {
+            window->flags &= ~SDL_WINDOW_RESIZABLE;
+            SDL_copyp(&window->windowed, &window->floating);
         }
+        _this->SetWindowResizable(_this, window, want);
     }
+
     return 0;
 }
 
@@ -2587,18 +2587,18 @@ int SDL_SetWindowAlwaysOnTop(SDL_Window *window, SDL_bool on_top)
 {
     CHECK_WINDOW_MAGIC(window, -1);
     CHECK_WINDOW_NOT_POPUP(window, -1);
-    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-        const SDL_bool want = (on_top != SDL_FALSE); /* normalize the flag. */
-        const SDL_bool have = ((window->flags & SDL_WINDOW_ALWAYS_ON_TOP) != 0);
-        if ((want != have) && (_this->SetWindowAlwaysOnTop)) {
-            if (want) {
-                window->flags |= SDL_WINDOW_ALWAYS_ON_TOP;
-            } else {
-                window->flags &= ~SDL_WINDOW_ALWAYS_ON_TOP;
-            }
-            _this->SetWindowAlwaysOnTop(_this, window, want);
+
+    const SDL_bool want = (on_top != SDL_FALSE); /* normalize the flag. */
+    const SDL_bool have = ((window->flags & SDL_WINDOW_ALWAYS_ON_TOP) != 0);
+    if ((want != have) && (_this->SetWindowAlwaysOnTop)) {
+        if (want) {
+            window->flags |= SDL_WINDOW_ALWAYS_ON_TOP;
+        } else {
+            window->flags &= ~SDL_WINDOW_ALWAYS_ON_TOP;
         }
+        _this->SetWindowAlwaysOnTop(_this, window, want);
     }
+
     return 0;
 }
 
@@ -2716,6 +2716,8 @@ int SDL_GetWindowSizeInPixels(SDL_Window *window, int *w, int *h)
 
 int SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
 {
+    int w, h;
+
     CHECK_WINDOW_MAGIC(window, -1);
     if (min_w < 0) {
         return SDL_InvalidParamError("min_w");
@@ -2732,19 +2734,14 @@ int SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
     window->min_w = min_w;
     window->min_h = min_h;
 
-    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-        int w, h;
-
-        if (_this->SetWindowMinimumSize) {
-            _this->SetWindowMinimumSize(_this, window);
-        }
-
-        /* Ensure that window is not smaller than minimal size */
-        w = window->min_w ? SDL_max(window->floating.w, window->min_w) : window->floating.w;
-        h = window->min_h ? SDL_max(window->floating.h, window->min_h) : window->floating.h;
-        return SDL_SetWindowSize(window, w, h);
+    if (_this->SetWindowMinimumSize) {
+        _this->SetWindowMinimumSize(_this, window);
     }
-    return 0;
+
+    /* Ensure that window is not smaller than minimal size */
+    w = window->min_w ? SDL_max(window->floating.w, window->min_w) : window->floating.w;
+    h = window->min_h ? SDL_max(window->floating.h, window->min_h) : window->floating.h;
+    return SDL_SetWindowSize(window, w, h);
 }
 
 int SDL_GetWindowMinimumSize(SDL_Window *window, int *min_w, int *min_h)
@@ -2761,6 +2758,8 @@ int SDL_GetWindowMinimumSize(SDL_Window *window, int *min_w, int *min_h)
 
 int SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
 {
+    int w, h;
+
     CHECK_WINDOW_MAGIC(window, -1);
     if (max_w < 0) {
         return SDL_InvalidParamError("max_w");
@@ -2776,19 +2775,14 @@ int SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
     window->max_w = max_w;
     window->max_h = max_h;
 
-    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-        int w, h;
-
-        if (_this->SetWindowMaximumSize) {
-            _this->SetWindowMaximumSize(_this, window);
-        }
-
-        /* Ensure that window is not larger than maximal size */
-        w = window->max_w ? SDL_min(window->floating.w, window->max_w) : window->floating.w;
-        h = window->max_h ? SDL_min(window->floating.h, window->max_h) : window->floating.h;
-        return SDL_SetWindowSize(window, w, h);
+    if (_this->SetWindowMaximumSize) {
+        _this->SetWindowMaximumSize(_this, window);
     }
-    return 0;
+
+    /* Ensure that window is not larger than maximal size */
+    w = window->max_w ? SDL_min(window->floating.w, window->max_w) : window->floating.w;
+    h = window->max_h ? SDL_min(window->floating.h, window->max_h) : window->floating.h;
+    return SDL_SetWindowSize(window, w, h);
 }
 
 int SDL_GetWindowMaximumSize(SDL_Window *window, int *max_w, int *max_h)

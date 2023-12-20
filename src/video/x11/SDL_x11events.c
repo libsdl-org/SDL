@@ -1640,7 +1640,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_ENTER_FULLSCREEN, 0, 0);
                             if (commit) {
                                 /* This was initiated by the compositor, or the mode was changed between the request and the window
-                             * becoming fullscreen. Switch to the application requested mode if necessary.
+                                 * becoming fullscreen. Switch to the application requested mode if necessary.
                                  */
                                 SDL_copyp(&data->window->current_fullscreen_mode, &data->window->requested_fullscreen_mode);
                                 SDL_UpdateFullscreenMode(data->window, SDL_TRUE, SDL_TRUE);
@@ -1650,7 +1650,10 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                         }
                     } else {
                         SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_LEAVE_FULLSCREEN, 0, 0);
-                        SDL_UpdateFullscreenMode(data->window, SDL_FALSE, SDL_TRUE);
+                        SDL_UpdateFullscreenMode(data->window, SDL_FALSE, SDL_FALSE);
+
+                        /* Need to restore or update any limits changed while the window was fullscreen. */
+                        X11_SetWindowMinMax(data->window, !!(flags & SDL_WINDOW_MAXIMIZED));
                     }
 
                     if ((flags & SDL_WINDOW_FULLSCREEN) &&
@@ -1675,6 +1678,11 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                     } else {
                         data->disable_size_position_events = SDL_FALSE;
                         data->previous_borders_nonzero = SDL_FALSE;
+
+                        if (!(data->window->flags & SDL_WINDOW_FULLSCREEN) && data->toggle_borders) {
+                            data->toggle_borders = SDL_FALSE;
+                            X11_SetWindowBordered(_this, data->window, !(data->window->flags & SDL_WINDOW_BORDERLESS));
+                        }
                     }
                 }
                 if ((changed & SDL_WINDOW_MAXIMIZED) && ((flags & SDL_WINDOW_MAXIMIZED) && !(flags & SDL_WINDOW_MINIMIZED))) {
@@ -1736,6 +1744,11 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                     data->expected.h = data->window->floating.h;
                     X11_XMoveWindow(display, data->xwindow, data->window->floating.x - data->border_left, data->window->floating.y - data->border_top);
                     X11_XResizeWindow(display, data->xwindow, data->window->floating.w, data->window->floating.h);
+                }
+
+                if (!(data->window->flags & SDL_WINDOW_FULLSCREEN) && data->toggle_borders) {
+                    data->toggle_borders = SDL_FALSE;
+                    X11_SetWindowBordered(_this, data->window, !(data->window->flags & SDL_WINDOW_BORDERLESS));
                 }
             }
         }
