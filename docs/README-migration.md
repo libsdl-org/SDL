@@ -338,6 +338,7 @@ The following symbols have been renamed:
 * SDL_CONTROLLERDEVICEREMAPPED => SDL_EVENT_GAMEPAD_REMAPPED
 * SDL_CONTROLLERDEVICEREMOVED => SDL_EVENT_GAMEPAD_REMOVED
 * SDL_CONTROLLERSENSORUPDATE => SDL_EVENT_GAMEPAD_SENSOR_UPDATE
+* SDL_CONTROLLERSTEAMHANDLEUPDATED => SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED
 * SDL_CONTROLLERTOUCHPADDOWN => SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN
 * SDL_CONTROLLERTOUCHPADMOTION => SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION
 * SDL_CONTROLLERTOUCHPADUP => SDL_EVENT_GAMEPAD_TOUCHPAD_UP
@@ -459,6 +460,7 @@ The following functions have been renamed:
 * SDL_GameControllerGetSensorData() => SDL_GetGamepadSensorData()
 * SDL_GameControllerGetSensorDataRate() => SDL_GetGamepadSensorDataRate()
 * SDL_GameControllerGetSerial() => SDL_GetGamepadSerial()
+* SDL_GameControllerGetSteamHandle() => SDL_GetGamepadSteamHandle()
 * SDL_GameControllerGetStringForAxis() => SDL_GetGamepadStringForAxis()
 * SDL_GameControllerGetStringForButton() => SDL_GetGamepadStringForButton()
 * SDL_GameControllerGetTouchpadFinger() => SDL_GetGamepadTouchpadFinger()

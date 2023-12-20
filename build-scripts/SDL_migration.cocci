@@ -2745,3 +2745,12 @@ expression w, i, s;
 - SDL_RenderFlush
 + SDL_FlushRenderer
   (...)
+@@
+@@
+- SDL_CONTROLLERSTEAMHANDLEUPDATED
++ SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED
+@@
+@@
+- SDL_GameControllerGetSteamHandle
++ SDL_GetGamepadSteamHandle
+  (...)
