@@ -386,7 +386,7 @@ int platform_testSetErrorEmptyInput(void *arg)
 int platform_testSetErrorInvalidInput(void *arg)
 {
     int result;
-    const char *invalidError = NULL;
+    const char *invalidError = "";
     const char *probeError = "Testing";
     char *lastError;
     size_t len;
