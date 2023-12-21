@@ -257,8 +257,16 @@ SDL_PropertiesID SDL_GetSurfaceProperties(SDL_Surface *surface)
         return 0;
     }
 
-    if (surface->props == 0) {
+    if (!(surface->flags & SDL_SURFACE_USES_PROPERTIES)) {
+        if (surface->reserved != NULL) {
+            SDL_SetError("Surface has userdata, incompatible with properties");
+            return 0;
+        }
+
         surface->props = SDL_CreateProperties();
+        if (surface->props) {
+            surface->flags |= SDL_SURFACE_USES_PROPERTIES;
+        }
     }
     return surface->props;
 }
@@ -776,7 +784,12 @@ int SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect,
 int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
                         SDL_Surface *dst, SDL_Rect *dstrect)
 {
-    return SDL_PrivateBlitSurfaceScaled(src, srcrect, dst, dstrect, src->scaleMode);
+    SDL_ScaleMode scale_mode = SDL_SCALEMODE_NEAREST;
+
+    if (SDL_GetSurfaceScaleMode(src, &scale_mode) < 0) {
+        return -1;
+    }
+    return SDL_PrivateBlitSurfaceScaled(src, srcrect, dst, dstrect, scale_mode);
 }
 
 int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
@@ -944,7 +957,12 @@ int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
 int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
                                    SDL_Surface *dst, const SDL_Rect *dstrect)
 {
-    return SDL_PrivateBlitSurfaceUncheckedScaled(src, srcrect, dst, dstrect, src->scaleMode);
+    SDL_ScaleMode scale_mode = SDL_SCALEMODE_NEAREST;
+
+    if (SDL_GetSurfaceScaleMode(src, &scale_mode) < 0) {
+        return -1;
+    }
+    return SDL_PrivateBlitSurfaceUncheckedScaled(src, srcrect, dst, dstrect, scale_mode);
 }
 
 int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
@@ -1051,8 +1069,12 @@ int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcr
     }
 }
 
+#define SDL_PROPERTY_SURFACE_SCALEMODE  "SDL.internal.surface.scale_mode"
+
 int SDL_SetSurfaceScaleMode(SDL_Surface *surface, SDL_ScaleMode scaleMode)
 {
+    SDL_PropertiesID props;
+
     if (!surface) {
         return SDL_InvalidParamError("surface");
     }
@@ -1061,13 +1083,15 @@ int SDL_SetSurfaceScaleMode(SDL_Surface *surface, SDL_ScaleMode scaleMode)
         return SDL_InvalidParamError("scaleMode");
     }
 
-    if (scaleMode == SDL_SCALEMODE_NEAREST) {
-        surface->scaleMode = SDL_SCALEMODE_NEAREST;
-    } else {
-        surface->scaleMode = SDL_SCALEMODE_LINEAR;
+    props = SDL_GetSurfaceProperties(surface);
+    if (!props) {
+        return -1;
     }
 
-    return 0;
+    if (scaleMode != SDL_SCALEMODE_NEAREST) {
+        scaleMode = SDL_SCALEMODE_LINEAR;
+    }
+    return SDL_SetNumberProperty(props, SDL_PROPERTY_SURFACE_SCALEMODE, scaleMode);
 }
 
 int SDL_GetSurfaceScaleMode(SDL_Surface *surface, SDL_ScaleMode *scaleMode)
@@ -1077,9 +1101,12 @@ int SDL_GetSurfaceScaleMode(SDL_Surface *surface, SDL_ScaleMode *scaleMode)
     }
 
     if (scaleMode) {
-        *scaleMode = surface->scaleMode;
+        if (surface->flags & SDL_SURFACE_USES_PROPERTIES) {
+            *scaleMode = (SDL_ScaleMode)SDL_GetNumberProperty(SDL_GetSurfaceProperties(surface), SDL_PROPERTY_SURFACE_SCALEMODE, SDL_SCALEMODE_NEAREST);
+        } else {
+            *scaleMode = SDL_SCALEMODE_NEAREST;
+        }
     }
-
     return 0;
 }
 
@@ -1595,7 +1622,10 @@ void SDL_DestroySurface(SDL_Surface *surface)
         return;
     }
 
-    SDL_DestroyProperties(surface->props);
+    if (surface->flags & SDL_SURFACE_USES_PROPERTIES) {
+        SDL_DestroyProperties(surface->props);
+    }
+
     SDL_InvalidateMap(surface->map);
     SDL_InvalidateAllBlitMap(surface);
 

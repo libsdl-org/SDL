@@ -50,11 +50,12 @@ extern "C" {
  *  Used internally (read-only).
  */
 /* @{ */
-#define SDL_SWSURFACE       0           /**< Just here for compatibility */
-#define SDL_PREALLOC        0x00000001  /**< Surface uses preallocated memory */
-#define SDL_RLEACCEL        0x00000002  /**< Surface is RLE encoded */
-#define SDL_DONTFREE        0x00000004  /**< Surface is referenced internally */
-#define SDL_SIMD_ALIGNED    0x00000008  /**< Surface uses aligned memory */
+#define SDL_SWSURFACE               0           /**< Just here for compatibility */
+#define SDL_PREALLOC                0x00000001  /**< Surface uses preallocated memory */
+#define SDL_RLEACCEL                0x00000002  /**< Surface is RLE encoded */
+#define SDL_DONTFREE                0x00000004  /**< Surface is referenced internally */
+#define SDL_SIMD_ALIGNED            0x00000008  /**< Surface uses aligned memory */
+#define SDL_SURFACE_USES_PROPERTIES 0x00000010  /**< Surface uses properties */
 /* @} *//* Surface flags */
 
 /**
@@ -104,7 +105,10 @@ typedef struct SDL_Surface
     void *pixels;               /**< Read-write */
 
     /** Application data associated with the surface */
-    SDL_PropertiesID props;     /**< Read-write */
+    union {
+        void *reserved;         /**< For ABI compatibility only, do not use */
+        SDL_PropertiesID props; /**< Read-only */
+    };
 
     /** information needed for surfaces requiring locks */
     int locked;                 /**< Read-only */
@@ -114,8 +118,6 @@ typedef struct SDL_Surface
 
     /** clipping information */
     SDL_Rect clip_rect;         /**< Read-only */
-
-    SDL_ScaleMode scaleMode;    /**< The scale mode */
 
     /** info for fast blit mapping to other surfaces */
     SDL_BlitMap *map;           /**< Private */
