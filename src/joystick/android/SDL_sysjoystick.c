@@ -344,7 +344,7 @@ int Android_AddJoystick(int device_id, const char *name, const char *desc, int v
         nhats = 0;
     }
 
-    guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor_id, product_id, 0, desc, 0, 0);
+    guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor_id, product_id, 0, NULL, desc, 0, 0);
 
     /* Update the GUID with capability bits */
     {

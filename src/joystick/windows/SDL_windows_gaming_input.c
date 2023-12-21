@@ -527,7 +527,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
                 __x_ABI_CWindows_CGaming_CInput_CIGameController_Release(gamecontroller);
             }
 
-            guid = SDL_CreateJoystickGUID(bus, vendor, product, version, name, 'w', (Uint8)type);
+            guid = SDL_CreateJoystickGUID(bus, vendor, product, version, NULL, name, 'w', (Uint8)type);
 
             if (SDL_ShouldIgnoreJoystick(name, guid)) {
                 ignore_joystick = SDL_TRUE;

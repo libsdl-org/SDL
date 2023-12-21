@@ -59,6 +59,8 @@ typedef struct _SDL_HIDAPI_Device
 {
     const void *magic;
     char *name;
+    char *manufacturer_string;
+    char *product_string;
     char *path;
     Uint16 vendor_id;
     Uint16 product_id;

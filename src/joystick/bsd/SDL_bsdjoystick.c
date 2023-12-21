@@ -456,7 +456,7 @@ static int MaybeAddDevice(const char *path)
         struct usb_device_info di;
         if (ioctl(hw->fd, USB_GET_DEVICEINFO, &di) != -1) {
             name = SDL_CreateJoystickName(di.udi_vendorNo, di.udi_productNo, di.udi_vendor, di.udi_product);
-            guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, name, 0, 0);
+            guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, di.udi_vendor, di.udi_product, 0, 0);
 
 #ifdef SDL_JOYSTICK_HIDAPI
             if (HIDAPI_IsDevicePresent(di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, name)) {
