@@ -60,7 +60,7 @@ extern SDL_bool SDL_JoysticksOpened(void);
 extern char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, const char *product_name);
 
 /* Function to create a GUID for a joystick based on the VID/PID and name */
-extern SDL_JoystickGUID SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 product, Uint16 version, const char *name, Uint8 driver_signature, Uint8 driver_data);
+extern SDL_JoystickGUID SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 product, Uint16 version, const char *vendor_name, const char *product_name, Uint8 driver_signature, Uint8 driver_data);
 
 /* Function to create a GUID for a joystick based on the name, with no VID/PID information */
 extern SDL_JoystickGUID SDL_CreateJoystickGUIDForName(const char *name);

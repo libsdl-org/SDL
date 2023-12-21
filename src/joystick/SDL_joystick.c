@@ -2606,21 +2606,26 @@ char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_n
     return name;
 }
 
-SDL_JoystickGUID SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 product, Uint16 version, const char *name, Uint8 driver_signature, Uint8 driver_data)
+SDL_JoystickGUID SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 product, Uint16 version, const char *vendor_name, const char *product_name, Uint8 driver_signature, Uint8 driver_data)
 {
     SDL_JoystickGUID guid;
     Uint16 *guid16 = (Uint16 *)guid.data;
+    Uint16 crc = 0;
 
     SDL_zero(guid);
 
-    if (!name) {
-        name = "";
+    if (vendor_name && *vendor_name && product_name && *product_name) {
+        SDL_crc16(crc, vendor_name, SDL_strlen(vendor_name));
+        SDL_crc16(crc, " ", 1);
+        SDL_crc16(crc, product_name, SDL_strlen(product_name));
+    } else if (product_name) {
+        SDL_crc16(crc, product_name, SDL_strlen(product_name));
     }
 
     /* We only need 16 bits for each of these; space them out to fill 128. */
     /* Byteswap so devices get same GUID on little/big endian platforms. */
     *guid16++ = SDL_SwapLE16(bus);
-    *guid16++ = SDL_SwapLE16(SDL_crc16(0, name, SDL_strlen(name)));
+    *guid16++ = SDL_SwapLE16(crc);
 
     if (vendor && product) {
         *guid16++ = SDL_SwapLE16(vendor);
@@ -2638,14 +2643,14 @@ SDL_JoystickGUID SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 produc
             guid.data[14] = driver_signature;
             guid.data[15] = driver_data;
         }
-        SDL_strlcpy((char *)guid16, name, available_space);
+        SDL_strlcpy((char *)guid16, product_name, available_space);
     }
     return guid;
 }
 
 SDL_JoystickGUID SDL_CreateJoystickGUIDForName(const char *name)
 {
-    return SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_UNKNOWN, 0, 0, 0, name, 0, 0);
+    return SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_UNKNOWN, 0, 0, 0, NULL, name, 0, 0);
 }
 
 void SDL_SetJoystickGUIDVendor(SDL_JoystickGUID *guid, Uint16 vendor)
