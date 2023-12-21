@@ -203,7 +203,7 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
         }
     }
 
-    hwdata->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_VIRTUAL, hwdata->desc.vendor_id, hwdata->desc.product_id, 0, name, 'v', (Uint8)hwdata->desc.type);
+    hwdata->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_VIRTUAL, hwdata->desc.vendor_id, hwdata->desc.product_id, 0, NULL, name, 'v', (Uint8)hwdata->desc.type);
 
     /* Allocate fields for different control-types */
     if (hwdata->desc.naxes > 0) {
