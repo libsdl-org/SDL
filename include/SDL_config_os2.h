@@ -47,7 +47,7 @@
 /* dynamically loaded libusb-1.0 dll: */
 #define SDL_LIBUSB_DYNAMIC "usb100.dll"
 #endif
-/*#undef SDL_JOYSTICK_VIRTUAL */
+#define SDL_JOYSTICK_VIRTUAL 1
 
 /* Enable OpenGL support */
 /* #undef SDL_VIDEO_OPENGL */
