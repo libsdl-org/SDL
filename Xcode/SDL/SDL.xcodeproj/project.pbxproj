@@ -3396,24 +3396,6 @@
 		F34B9895291DEFF500AAC96E /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAAC23E2795C00529352 /* SDL_hidapi_steam.c */; };
 		F34B9896291DEFF700AAC96E /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAAC23E2795C00529352 /* SDL_hidapi_steam.c */; };
 		F34B9897291DEFFA00AAC96E /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAAC23E2795C00529352 /* SDL_hidapi_steam.c */; };
-		F362B9202B33916600D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B91D2B33916600D30B94 /* SDL_steam_virtual_gamepad.c */; };
-		F362B9212B33916600D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B91D2B33916600D30B94 /* SDL_steam_virtual_gamepad.c */; };
-		F362B9222B33916600D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B91D2B33916600D30B94 /* SDL_steam_virtual_gamepad.c */; };
-		F362B9232B33916600D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B91D2B33916600D30B94 /* SDL_steam_virtual_gamepad.c */; };
-		F362B9242B33916600D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B91D2B33916600D30B94 /* SDL_steam_virtual_gamepad.c */; };
-		F362B9252B33916600D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B91D2B33916600D30B94 /* SDL_steam_virtual_gamepad.c */; };
-		F362B9262B33916600D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B91D2B33916600D30B94 /* SDL_steam_virtual_gamepad.c */; };
-		F362B9272B33916600D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B91D2B33916600D30B94 /* SDL_steam_virtual_gamepad.c */; };
-		F362B9282B33916600D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B91D2B33916600D30B94 /* SDL_steam_virtual_gamepad.c */; };
-		F362B9292B33916600D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B91E2B33916600D30B94 /* SDL_steam_virtual_gamepad.h */; };
-		F362B92A2B33916600D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B91E2B33916600D30B94 /* SDL_steam_virtual_gamepad.h */; };
-		F362B92B2B33916600D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B91E2B33916600D30B94 /* SDL_steam_virtual_gamepad.h */; };
-		F362B92C2B33916600D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B91E2B33916600D30B94 /* SDL_steam_virtual_gamepad.h */; };
-		F362B92D2B33916600D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B91E2B33916600D30B94 /* SDL_steam_virtual_gamepad.h */; };
-		F362B92E2B33916600D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B91E2B33916600D30B94 /* SDL_steam_virtual_gamepad.h */; };
-		F362B92F2B33916600D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B91E2B33916600D30B94 /* SDL_steam_virtual_gamepad.h */; };
-		F362B9302B33916600D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B91E2B33916600D30B94 /* SDL_steam_virtual_gamepad.h */; };
-		F362B9312B33916600D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B91E2B33916600D30B94 /* SDL_steam_virtual_gamepad.h */; };
 		F362B9322B33916600D30B94 /* controller_list.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B91F2B33916600D30B94 /* controller_list.h */; };
 		F362B9332B33916600D30B94 /* controller_list.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B91F2B33916600D30B94 /* controller_list.h */; };
 		F362B9342B33916600D30B94 /* controller_list.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B91F2B33916600D30B94 /* controller_list.h */; };
@@ -3441,6 +3423,24 @@
 		F362B94C2B33920500D30B94 /* SDL_hidapi_nintendo.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B93C2B33920400D30B94 /* SDL_hidapi_nintendo.h */; };
 		F362B94D2B33920500D30B94 /* SDL_hidapi_nintendo.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B93C2B33920400D30B94 /* SDL_hidapi_nintendo.h */; };
 		F362B94E2B33920500D30B94 /* SDL_hidapi_nintendo.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B93C2B33920400D30B94 /* SDL_hidapi_nintendo.h */; };
+		F362B9522B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9502B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h */; };
+		F362B9532B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9502B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h */; };
+		F362B9542B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9502B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h */; };
+		F362B9552B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9502B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h */; };
+		F362B9562B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9502B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h */; };
+		F362B9572B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9502B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h */; };
+		F362B9582B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9502B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h */; };
+		F362B9592B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9502B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h */; };
+		F362B95A2B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9502B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h */; };
+		F362B95B2B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B9512B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c */; };
+		F362B95C2B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B9512B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c */; };
+		F362B95D2B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B9512B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c */; };
+		F362B95E2B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B9512B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c */; };
+		F362B95F2B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B9512B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c */; };
+		F362B9602B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B9512B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c */; };
+		F362B9612B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B9512B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c */; };
+		F362B9622B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B9512B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c */; };
+		F362B9632B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B9512B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c */; };
 		F3631C6424884ACF004F28EA /* SDL_locale.h in Headers */ = {isa = PBXBuildFile; fileRef = 566E26792462701100718109 /* SDL_locale.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3631C652488534E004F28EA /* SDL_locale.h in Headers */ = {isa = PBXBuildFile; fileRef = 566E26792462701100718109 /* SDL_locale.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F376F6192559B29300CFC0BC /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F376F6182559B29300CFC0BC /* OpenGLES.framework */; platformFilter = ios; };
@@ -4152,11 +4152,11 @@
 		F31A92C628D4CB39003BFD6A /* SDL_offscreenopengles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_offscreenopengles.h; sourceTree = "<group>"; };
 		F31A92C728D4CB39003BFD6A /* SDL_offscreenopengles.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_offscreenopengles.c; sourceTree = "<group>"; };
 		F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_combined.c; sourceTree = "<group>"; };
-		F362B91D2B33916600D30B94 /* SDL_steam_virtual_gamepad.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_steam_virtual_gamepad.c; sourceTree = "<group>"; };
-		F362B91E2B33916600D30B94 /* SDL_steam_virtual_gamepad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_steam_virtual_gamepad.h; sourceTree = "<group>"; };
 		F362B91F2B33916600D30B94 /* controller_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = controller_list.h; sourceTree = "<group>"; };
 		F362B93B2B33920400D30B94 /* SDL_hidapi_steamdeck.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_steamdeck.c; sourceTree = "<group>"; };
 		F362B93C2B33920400D30B94 /* SDL_hidapi_nintendo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_hidapi_nintendo.h; sourceTree = "<group>"; };
+		F362B9502B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_steam_virtual_gamepad.h; sourceTree = "<group>"; };
+		F362B9512B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_steam_virtual_gamepad.c; sourceTree = "<group>"; };
 		F376F6182559B29300CFC0BC /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.1.sdk/System/Library/Frameworks/OpenGLES.framework; sourceTree = DEVELOPER_DIR; };
 		F376F61A2559B2AF00CFC0BC /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/iOSSupport/System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		F376F6312559B31D00CFC0BC /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/iOSSupport/System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
@@ -5007,8 +5007,8 @@
 				A7D8A79E23E2513E00DCD162 /* SDL_gamecontrollerdb.h */,
 				A7D8A7D023E2513E00DCD162 /* SDL_joystick_c.h */,
 				A7D8A7A923E2513E00DCD162 /* SDL_joystick.c */,
-				F362B9182B3349E200D30B94 /* SDL_steam_virtual_gamepad.c */,
-				F362B9172B3349E200D30B94 /* SDL_steam_virtual_gamepad.h */,
+				F362B9512B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c */,
+				F362B9502B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h */,
 				A7D8A7CF23E2513E00DCD162 /* SDL_sysjoystick.h */,
 				A7D8A7CB23E2513E00DCD162 /* usb_ids.h */,
 			);
@@ -5448,6 +5448,7 @@
 				A75FCD0223E25AB700529352 /* close_code.h in Headers */,
 				A75FCD0323E25AB700529352 /* SDL.h in Headers */,
 				A75FCD0423E25AB700529352 /* SDL_uikitmetalview.h in Headers */,
+				F362B9592B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A75FCD0523E25AB700529352 /* SDL_assert.h in Headers */,
 				A75FCD0623E25AB700529352 /* SDL_shape_internals.h in Headers */,
 				A75FCD0723E25AB700529352 /* SDL_glfuncs.h in Headers */,
@@ -5596,7 +5597,6 @@
 				A75FCD9E23E25AB700529352 /* controller_type.h in Headers */,
 				A75FCDA023E25AB700529352 /* SDL_uikitclipboard.h in Headers */,
 				A75FCDA123E25AB700529352 /* vulkan_xlib.h in Headers */,
-				F362B9302B33916600D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A75FCDA223E25AB700529352 /* SDL_uikitwindow.h in Headers */,
 				A75FCDA323E25AB700529352 /* vulkan_vi.h in Headers */,
 				A75FCDA423E25AB700529352 /* vulkan_mir.h in Headers */,
@@ -5680,6 +5680,7 @@
 				A75FCEBB23E25AC700529352 /* close_code.h in Headers */,
 				A75FCEBC23E25AC700529352 /* SDL.h in Headers */,
 				A75FCEBD23E25AC700529352 /* SDL_uikitmetalview.h in Headers */,
+				F362B95A2B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A75FCEBE23E25AC700529352 /* SDL_assert.h in Headers */,
 				A75FCEBF23E25AC700529352 /* SDL_shape_internals.h in Headers */,
 				A75FCEC023E25AC700529352 /* SDL_glfuncs.h in Headers */,
@@ -5828,7 +5829,6 @@
 				A75FCF5723E25AC700529352 /* controller_type.h in Headers */,
 				A75FCF5923E25AC700529352 /* SDL_uikitclipboard.h in Headers */,
 				A75FCF5A23E25AC700529352 /* vulkan_xlib.h in Headers */,
-				F362B9312B33916600D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A75FCF5B23E25AC700529352 /* SDL_uikitwindow.h in Headers */,
 				A75FCF5C23E25AC700529352 /* vulkan_vi.h in Headers */,
 				A75FCF5D23E25AC700529352 /* vulkan_mir.h in Headers */,
@@ -5972,6 +5972,7 @@
 				A769B0E523E259AE00872273 /* vulkan_android.h in Headers */,
 				A769B0E623E259AE00872273 /* yuv_rgb_std_func.h in Headers */,
 				A769B0E723E259AE00872273 /* vulkan_core.h in Headers */,
+				F362B9572B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A769B0E823E259AE00872273 /* SDL_syssensor.h in Headers */,
 				A769B0E923E259AE00872273 /* SDL_dynapi.h in Headers */,
 				A769B0EA23E259AE00872273 /* SDL_assert_c.h in Headers */,
@@ -5994,7 +5995,6 @@
 				A769B10223E259AE00872273 /* math_private.h in Headers */,
 				A769B10323E259AE00872273 /* vulkan_wayland.h in Headers */,
 				A769B10523E259AE00872273 /* SDL_cocoashape.h in Headers */,
-				F362B92E2B33916600D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A769B10723E259AE00872273 /* SDL_shaders_gles2.h in Headers */,
 				A769B10923E259AE00872273 /* SDL_glesfuncs.h in Headers */,
 				A769B10A23E259AE00872273 /* SDL_blendpoint.h in Headers */,
@@ -6264,6 +6264,7 @@
 				A7D8B9CC23E2514400DCD162 /* SDL_yuv_sw_c.h in Headers */,
 				A7D88A1623E2437C00DCD162 /* begin_code.h in Headers */,
 				A7D8BB4623E2514500DCD162 /* blank_cursor.h in Headers */,
+				F362B9532B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A7D88A1823E2437C00DCD162 /* close_code.h in Headers */,
 				A7D8B5B823E2514300DCD162 /* controller_type.h in Headers */,
 				A7D8BB4C23E2514500DCD162 /* default_cursor.h in Headers */,
@@ -6283,7 +6284,6 @@
 				A7D8BB2223E2514500DCD162 /* scancodes_windows.h in Headers */,
 				A7D8BBA023E2514500DCD162 /* scancodes_xfree86.h in Headers */,
 				A7D8B57023E2514300DCD162 /* usb_ids.h in Headers */,
-				F362B92A2B33916600D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A1626A532617008D003F1973 /* SDL_triangle.h in Headers */,
 				A7D8B25523E2514200DCD162 /* vk_icd.h in Headers */,
 				A7D8B24F23E2514200DCD162 /* vk_layer.h in Headers */,
@@ -6501,6 +6501,7 @@
 				A7D8B9CD23E2514400DCD162 /* SDL_yuv_sw_c.h in Headers */,
 				A7D88BCC23E24BED00DCD162 /* begin_code.h in Headers */,
 				A7D8BB4723E2514500DCD162 /* blank_cursor.h in Headers */,
+				F362B9542B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A7D88BCE23E24BED00DCD162 /* close_code.h in Headers */,
 				A7D8B5B923E2514300DCD162 /* controller_type.h in Headers */,
 				A7D8BB4D23E2514500DCD162 /* default_cursor.h in Headers */,
@@ -6520,7 +6521,6 @@
 				A7D8BB2323E2514500DCD162 /* scancodes_windows.h in Headers */,
 				A7D8BBA123E2514500DCD162 /* scancodes_xfree86.h in Headers */,
 				A7D8B57123E2514300DCD162 /* usb_ids.h in Headers */,
-				F362B92B2B33916600D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A1626A542617008D003F1973 /* SDL_triangle.h in Headers */,
 				A7D8B25623E2514200DCD162 /* vk_icd.h in Headers */,
 				A7D8B25023E2514200DCD162 /* vk_layer.h in Headers */,
@@ -6618,6 +6618,7 @@
 				A7D8B2B823E2514200DCD162 /* vulkan_android.h in Headers */,
 				A7D8B3D223E2514300DCD162 /* yuv_rgb_std_func.h in Headers */,
 				A7D8B2AC23E2514200DCD162 /* vulkan_core.h in Headers */,
+				F362B9562B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A7D8A97F23E2514000DCD162 /* SDL_syssensor.h in Headers */,
 				A7D8AB0E23E2514100DCD162 /* SDL_dynapi.h in Headers */,
 				A7D8B61B23E2514300DCD162 /* SDL_assert_c.h in Headers */,
@@ -6640,7 +6641,6 @@
 				A7D8BAC523E2514500DCD162 /* math_private.h in Headers */,
 				A7D8B27C23E2514200DCD162 /* vulkan_wayland.h in Headers */,
 				A7D8AE8623E2514100DCD162 /* SDL_cocoashape.h in Headers */,
-				F362B92D2B33916600D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A7D8BA5323E2514400DCD162 /* SDL_shaders_gles2.h in Headers */,
 				A7D8BA4723E2514400DCD162 /* SDL_glesfuncs.h in Headers */,
 				A7D8BA1123E2514400DCD162 /* SDL_blendpoint.h in Headers */,
@@ -6910,6 +6910,7 @@
 				A7D8B9CB23E2514400DCD162 /* SDL_yuv_sw_c.h in Headers */,
 				AA7557FA1595D4D800BBD41B /* begin_code.h in Headers */,
 				A7D8BB4523E2514500DCD162 /* blank_cursor.h in Headers */,
+				F362B9522B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				AA7557FC1595D4D800BBD41B /* close_code.h in Headers */,
 				A7D8B5B723E2514300DCD162 /* controller_type.h in Headers */,
 				A7D8BB4B23E2514500DCD162 /* default_cursor.h in Headers */,
@@ -6929,7 +6930,6 @@
 				A7D8BB2123E2514500DCD162 /* scancodes_windows.h in Headers */,
 				A7D8BB9F23E2514500DCD162 /* scancodes_xfree86.h in Headers */,
 				A7D8B56F23E2514300DCD162 /* usb_ids.h in Headers */,
-				F362B9292B33916600D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A1626A522617008D003F1973 /* SDL_triangle.h in Headers */,
 				A7D8B25423E2514200DCD162 /* vk_icd.h in Headers */,
 				A7D8B24E23E2514200DCD162 /* vk_layer.h in Headers */,
@@ -6981,6 +6981,7 @@
 				A7D8B3EF23E2514300DCD162 /* SDL_thread_c.h in Headers */,
 				A7D8AF0923E2514100DCD162 /* SDL_cocoamessagebox.h in Headers */,
 				A7D8BA0423E2514400DCD162 /* SDL_blendfillrect.h in Headers */,
+				F362B9552B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A7D8B55A23E2514300DCD162 /* SDL_hidapijoystick_c.h in Headers */,
 				A7D8B2C323E2514200DCD162 /* SDL_pixels_c.h in Headers */,
 				A7D8B58A23E2514300DCD162 /* SDL_joystick_c.h in Headers */,
@@ -7040,7 +7041,6 @@
 				A7D8BBFF23E2574800DCD162 /* SDL_uikitview.h in Headers */,
 				A7D8BBA823E2514500DCD162 /* SDL_events_c.h in Headers */,
 				A7D8BAC423E2514500DCD162 /* math_private.h in Headers */,
-				F362B92C2B33916600D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A7D8B27B23E2514200DCD162 /* vulkan_wayland.h in Headers */,
 				A7D8BBF523E2574800DCD162 /* SDL_uikitmetalview.h in Headers */,
 				A7D8AE8523E2514100DCD162 /* SDL_cocoashape.h in Headers */,
@@ -7138,6 +7138,7 @@
 				DB313FC917554B71006C0E22 /* close_code.h in Headers */,
 				DB313FF917554B71006C0E22 /* SDL.h in Headers */,
 				A7D8AC6223E2514100DCD162 /* SDL_uikitmetalview.h in Headers */,
+				F362B9582B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				DB313FCA17554B71006C0E22 /* SDL_assert.h in Headers */,
 				A7D8AC0E23E2514100DCD162 /* SDL_shape_internals.h in Headers */,
 				A7D8BA7E23E2514400DCD162 /* SDL_glfuncs.h in Headers */,
@@ -7286,7 +7287,6 @@
 				A7D8AC7A23E2514100DCD162 /* SDL_uikitclipboard.h in Headers */,
 				A7D8B2A123E2514200DCD162 /* vulkan_xlib.h in Headers */,
 				A7D8AC9E23E2514100DCD162 /* SDL_uikitwindow.h in Headers */,
-				F362B92F2B33916600D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A7D8B25F23E2514200DCD162 /* vulkan_vi.h in Headers */,
 				A7D8B29B23E2514200DCD162 /* vulkan_mir.h in Headers */,
 				DB313FE817554B71006C0E22 /* SDL_quit.h in Headers */,
@@ -7880,7 +7880,6 @@
 				A75FCE2823E25AB700529352 /* SDL_dropevents.c in Sources */,
 				A75FCE2923E25AB700529352 /* e_atan2.c in Sources */,
 				A75FCE2A23E25AB700529352 /* s_sin.c in Sources */,
-				F362B9272B33916600D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A75FCE2B23E25AB700529352 /* SDL_power.c in Sources */,
 				A75FCE2C23E25AB700529352 /* SDL_cocoakeyboard.m in Sources */,
 				A75FCE2D23E25AB700529352 /* SDL_dynapi.c in Sources */,
@@ -7994,6 +7993,7 @@
 				A75FCE9B23E25AB700529352 /* SDL_drawpoint.c in Sources */,
 				A75FCE9C23E25AB700529352 /* e_sqrt.c in Sources */,
 				A75FCE9D23E25AB700529352 /* SDL_cocoavideo.m in Sources */,
+				F362B9622B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A75FCE9F23E25AB700529352 /* SDL.c in Sources */,
 				A75FCEA123E25AB700529352 /* SDL_cocoavulkan.m in Sources */,
 				A75FCEA223E25AB700529352 /* SDL_uikitappdelegate.m in Sources */,
@@ -8078,7 +8078,6 @@
 				A75FCFE123E25AC700529352 /* SDL_dropevents.c in Sources */,
 				A75FCFE223E25AC700529352 /* e_atan2.c in Sources */,
 				A75FCFE323E25AC700529352 /* s_sin.c in Sources */,
-				F362B9282B33916600D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A75FCFE423E25AC700529352 /* SDL_power.c in Sources */,
 				A75FCFE523E25AC700529352 /* SDL_cocoakeyboard.m in Sources */,
 				A75FCFE623E25AC700529352 /* SDL_dynapi.c in Sources */,
@@ -8192,6 +8191,7 @@
 				A75FD05423E25AC700529352 /* SDL_drawpoint.c in Sources */,
 				A75FD05523E25AC700529352 /* e_sqrt.c in Sources */,
 				A75FD05623E25AC700529352 /* SDL_cocoavideo.m in Sources */,
+				F362B9632B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A75FD05823E25AC700529352 /* SDL.c in Sources */,
 				A75FD05A23E25AC700529352 /* SDL_cocoavulkan.m in Sources */,
 				A75FD05B23E25AC700529352 /* SDL_uikitappdelegate.m in Sources */,
@@ -8231,6 +8231,7 @@
 				A769B18D23E259AE00872273 /* SDL_offscreenframebuffer.c in Sources */,
 				A769B18E23E259AE00872273 /* yuv_rgb.c in Sources */,
 				A769B18F23E259AE00872273 /* SDL_render_gles.c in Sources */,
+				F362B9602B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A769B19023E259AE00872273 /* SDL_systhread.c in Sources */,
 				A769B19123E259AE00872273 /* SDL_windowevents.c in Sources */,
 				A769B19223E259AE00872273 /* s_scalbn.c in Sources */,
@@ -8390,7 +8391,6 @@
 				A769B22723E259AE00872273 /* e_sqrt.c in Sources */,
 				A769B22823E259AE00872273 /* SDL_cocoavideo.m in Sources */,
 				A769B22923E259AE00872273 /* SDL.c in Sources */,
-				F362B9252B33916600D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A769B22B23E259AE00872273 /* SDL_cocoavulkan.m in Sources */,
 				A769B22C23E259AE00872273 /* SDL_uikitappdelegate.m in Sources */,
 				A1626A432617006A003F1973 /* SDL_triangle.c in Sources */,
@@ -8475,7 +8475,6 @@
 				A7D8B5E823E2514300DCD162 /* SDL_power.c in Sources */,
 				A7D8AED723E2514100DCD162 /* SDL_cocoakeyboard.m in Sources */,
 				A7D8AB1723E2514100DCD162 /* SDL_dynapi.c in Sources */,
-				F362B9212B33916600D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A7D8BA8623E2514400DCD162 /* SDL_shaders_gl.c in Sources */,
 				A7D8BAF223E2514500DCD162 /* e_log.c in Sources */,
 				A7D8AED123E2514100DCD162 /* SDL_cocoamessagebox.m in Sources */,
@@ -8589,6 +8588,7 @@
 				A7D8BA2623E2514400DCD162 /* SDL_drawpoint.c in Sources */,
 				A7D8BAF823E2514500DCD162 /* e_sqrt.c in Sources */,
 				A7D8AEAD23E2514100DCD162 /* SDL_cocoavideo.m in Sources */,
+				F362B95C2B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A7D8A94C23E2514000DCD162 /* SDL.c in Sources */,
 				A7D8AEA123E2514100DCD162 /* SDL_cocoavulkan.m in Sources */,
 				A7D8AC6423E2514100DCD162 /* SDL_uikitappdelegate.m in Sources */,
@@ -8673,7 +8673,6 @@
 				A7D8B5E923E2514300DCD162 /* SDL_power.c in Sources */,
 				A7D8AED823E2514100DCD162 /* SDL_cocoakeyboard.m in Sources */,
 				A7D8AB1823E2514100DCD162 /* SDL_dynapi.c in Sources */,
-				F362B9222B33916600D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A7D8BA8723E2514400DCD162 /* SDL_shaders_gl.c in Sources */,
 				A7D8BAF323E2514500DCD162 /* e_log.c in Sources */,
 				A7D8AED223E2514100DCD162 /* SDL_cocoamessagebox.m in Sources */,
@@ -8787,6 +8786,7 @@
 				A7D8BA2723E2514400DCD162 /* SDL_drawpoint.c in Sources */,
 				A7D8BAF923E2514500DCD162 /* e_sqrt.c in Sources */,
 				A7D8AEAE23E2514100DCD162 /* SDL_cocoavideo.m in Sources */,
+				F362B95D2B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A7D8A94D23E2514000DCD162 /* SDL.c in Sources */,
 				A7D8AEA223E2514100DCD162 /* SDL_cocoavulkan.m in Sources */,
 				A7D8AC6523E2514100DCD162 /* SDL_uikitappdelegate.m in Sources */,
@@ -8826,6 +8826,7 @@
 				A7D8AB7723E2514100DCD162 /* SDL_offscreenframebuffer.c in Sources */,
 				A7D8B3C323E2514200DCD162 /* yuv_rgb.c in Sources */,
 				A7D8BA4123E2514400DCD162 /* SDL_render_gles.c in Sources */,
+				F362B95F2B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A7D8B43823E2514300DCD162 /* SDL_systhread.c in Sources */,
 				A7D8BB3723E2514500DCD162 /* SDL_windowevents.c in Sources */,
 				A7D8BABF23E2514400DCD162 /* s_scalbn.c in Sources */,
@@ -8985,7 +8986,6 @@
 				A7D8BAFB23E2514500DCD162 /* e_sqrt.c in Sources */,
 				A7D8AEB023E2514100DCD162 /* SDL_cocoavideo.m in Sources */,
 				A7D8A94F23E2514000DCD162 /* SDL.c in Sources */,
-				F362B9242B33916600D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A7D8AEA423E2514100DCD162 /* SDL_cocoavulkan.m in Sources */,
 				A7D8AC6723E2514100DCD162 /* SDL_uikitappdelegate.m in Sources */,
 				A1626A422617006A003F1973 /* SDL_triangle.c in Sources */,
@@ -9049,7 +9049,6 @@
 				A7D8BA1F23E2514400DCD162 /* SDL_blendline.c in Sources */,
 				A7D8BBE723E2574800DCD162 /* SDL_uikitviewcontroller.m in Sources */,
 				A7D8ADF223E2514100DCD162 /* SDL_blit_A.c in Sources */,
-				F362B9202B33916600D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A7D8BBDD23E2574800DCD162 /* SDL_uikitmodes.m in Sources */,
 				A7D8BA3723E2514400DCD162 /* SDL_d3dmath.c in Sources */,
 				75E0915A241EA924004729E1 /* SDL_virtualjoystick.c in Sources */,
@@ -9070,6 +9069,7 @@
 				A7D8BBC523E2561500DCD162 /* SDL_steamcontroller.c in Sources */,
 				A7D8AD3223E2514100DCD162 /* SDL_blit_N.c in Sources */,
 				A7D8BB7B23E2514500DCD162 /* SDL_dropevents.c in Sources */,
+				F362B95B2B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A7D8BACD23E2514500DCD162 /* e_atan2.c in Sources */,
 				A7D8BA8B23E2514400DCD162 /* s_sin.c in Sources */,
 				A7D8BBEB23E2574800DCD162 /* SDL_uikitwindow.m in Sources */,
@@ -9095,7 +9095,6 @@
 				A7D8BAD323E2514500DCD162 /* s_tan.c in Sources */,
 				A7D8AA6523E2514000DCD162 /* SDL_hints.c in Sources */,
 				A7D8B53F23E2514300DCD162 /* SDL_hidapi_ps4.c in Sources */,
-				F362B91C2B3349E200D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A7D8AD6E23E2514100DCD162 /* SDL_pixels.c in Sources */,
 				A7D8B75E23E2514300DCD162 /* SDL_sysloadso.c in Sources */,
 				A7D8BBD723E2574800DCD162 /* SDL_uikitevents.m in Sources */,
@@ -9247,7 +9246,6 @@
 				A7D8B53C23E2514300DCD162 /* SDL_hidapi_xbox360.c in Sources */,
 				A7D8B8D523E2514400DCD162 /* SDL_coreaudio.m in Sources */,
 				A7D8BA2223E2514400DCD162 /* SDL_blendline.c in Sources */,
-				F362B9232B33916600D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A7D8BC0623E2574800DCD162 /* SDL_uikitwindow.m in Sources */,
 				A7D8ADF523E2514100DCD162 /* SDL_blit_A.c in Sources */,
 				A7D8BA3A23E2514400DCD162 /* SDL_d3dmath.c in Sources */,
@@ -9268,6 +9266,7 @@
 				A7D8BBFA23E2574800DCD162 /* SDL_uikitopengles.m in Sources */,
 				A7D8BAD023E2514500DCD162 /* e_atan2.c in Sources */,
 				A7D8BA8E23E2514400DCD162 /* s_sin.c in Sources */,
+				F362B95E2B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A7D8B5EA23E2514300DCD162 /* SDL_power.c in Sources */,
 				A7D8AED923E2514100DCD162 /* SDL_cocoakeyboard.m in Sources */,
 				A7D8AB1923E2514100DCD162 /* SDL_dynapi.c in Sources */,
@@ -9444,7 +9443,6 @@
 				A7D8B8D723E2514400DCD162 /* SDL_coreaudio.m in Sources */,
 				A7D8BA2423E2514400DCD162 /* SDL_blendline.c in Sources */,
 				A7D8ADF723E2514100DCD162 /* SDL_blit_A.c in Sources */,
-				F362B9262B33916600D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A7D8BA3C23E2514400DCD162 /* SDL_d3dmath.c in Sources */,
 				A7D8ABF023E2514100DCD162 /* SDL_nullvideo.c in Sources */,
 				A7D8AB6C23E2514100DCD162 /* SDL_offscreenevents.c in Sources */,
@@ -9465,6 +9463,7 @@
 				A7D8AD3723E2514100DCD162 /* SDL_blit_N.c in Sources */,
 				A7D8BB8023E2514500DCD162 /* SDL_dropevents.c in Sources */,
 				A7D8BAD223E2514500DCD162 /* e_atan2.c in Sources */,
+				F362B9612B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A7D8BA9023E2514400DCD162 /* s_sin.c in Sources */,
 				A7D8B5EC23E2514300DCD162 /* SDL_power.c in Sources */,
 				A7D8AEDB23E2514100DCD162 /* SDL_cocoakeyboard.m in Sources */,
