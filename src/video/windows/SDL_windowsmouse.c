@@ -508,7 +508,7 @@ static void WIN_SetEnhancedMouseScale(int mouse_speed)
     float xpoints[5];
     float ypoints[5];
     float scale_points[10];
-    const int dpi = 96; // FIXME, how do we handle different monitors with different DPI?
+    const int dpi = USER_DEFAULT_SCREEN_DPI; // FIXME, how do we handle different monitors with different DPI?
     const float display_factor = 3.5f * (150.0f / dpi);
 
     if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Control Panel\\Mouse", 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
