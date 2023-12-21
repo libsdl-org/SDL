@@ -2615,11 +2615,11 @@ SDL_JoystickGUID SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 produc
     SDL_zero(guid);
 
     if (vendor_name && *vendor_name && product_name && *product_name) {
-        SDL_crc16(crc, vendor_name, SDL_strlen(vendor_name));
-        SDL_crc16(crc, " ", 1);
-        SDL_crc16(crc, product_name, SDL_strlen(product_name));
+        crc = SDL_crc16(crc, vendor_name, SDL_strlen(vendor_name));
+        crc = SDL_crc16(crc, " ", 1);
+        crc = SDL_crc16(crc, product_name, SDL_strlen(product_name));
     } else if (product_name) {
-        SDL_crc16(crc, product_name, SDL_strlen(product_name));
+        crc = SDL_crc16(crc, product_name, SDL_strlen(product_name));
     }
 
     /* We only need 16 bits for each of these; space them out to fill 128. */
