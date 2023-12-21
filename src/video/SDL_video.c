@@ -195,7 +195,7 @@ static void SDL_SyncIfRequired(SDL_Window *window)
 
 /* Support for framebuffer emulation using an accelerated renderer */
 
-#define SDL_WINDOWTEXTUREDATA "SDL.internal.window.texturedata"
+#define SDL_PROPERTY_WINDOW_TEXTUREDATA "SDL.internal.window.texturedata"
 
 typedef struct
 {
@@ -239,7 +239,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
 {
     SDL_RendererInfo info;
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
-    SDL_WindowTextureData *data = (SDL_WindowTextureData *)SDL_GetProperty(props, SDL_WINDOWTEXTUREDATA, NULL);
+    SDL_WindowTextureData *data = (SDL_WindowTextureData *)SDL_GetProperty(props, SDL_PROPERTY_WINDOW_TEXTUREDATA, NULL);
     const SDL_bool transparent = (window->flags & SDL_WINDOW_TRANSPARENT) ? SDL_TRUE : SDL_FALSE;
     int i;
     int w, h;
@@ -292,7 +292,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
             SDL_DestroyRenderer(renderer);
             return -1;
         }
-        SDL_SetPropertyWithCleanup(props, SDL_WINDOWTEXTUREDATA, data, SDL_CleanupWindowTextureData, NULL);
+        SDL_SetPropertyWithCleanup(props, SDL_PROPERTY_WINDOW_TEXTUREDATA, data, SDL_CleanupWindowTextureData, NULL);
 
         data->renderer = renderer;
     } else {
@@ -324,7 +324,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
                                       SDL_TEXTUREACCESS_STREAMING,
                                       w, h);
     if (!data->texture) {
-        /* codechecker_false_positive [Malloc] Static analyzer doesn't realize allocated `data` is saved to SDL_WINDOWTEXTUREDATA and not leaked here. */
+        /* codechecker_false_positive [Malloc] Static analyzer doesn't realize allocated `data` is saved to SDL_PROPERTY_WINDOW_TEXTUREDATA and not leaked here. */
         return -1; /* NOLINT(clang-analyzer-unix.Malloc) */
     }
 
@@ -362,7 +362,7 @@ static int SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window *window, 
 
     SDL_GetWindowSizeInPixels(window, &w, &h);
 
-    data = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_WINDOWTEXTUREDATA, NULL);
+    data = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_TEXTUREDATA, NULL);
     if (!data || !data->texture) {
         return SDL_SetError("No window texture data");
     }
@@ -387,14 +387,14 @@ static int SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window *window, 
 
 static void SDL_DestroyWindowTexture(SDL_VideoDevice *unused, SDL_Window *window)
 {
-    SDL_ClearProperty(SDL_GetWindowProperties(window), SDL_WINDOWTEXTUREDATA);
+    SDL_ClearProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_TEXTUREDATA);
 }
 
 int SDL_SetWindowTextureVSync(SDL_Window *window, int vsync)
 {
     SDL_WindowTextureData *data;
 
-    data = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_WINDOWTEXTUREDATA, NULL);
+    data = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_TEXTUREDATA, NULL);
     if (!data) {
         return -1;
     }
