@@ -948,7 +948,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             BOOL menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
             UINT dpi;
 
-            dpi = 96;
+            dpi = USER_DEFAULT_SCREEN_DPI;
             size.top = 0;
             size.left = 0;
             size.bottom = h;

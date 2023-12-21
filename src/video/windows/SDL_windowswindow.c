@@ -158,9 +158,6 @@ static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL m
 {
     SDL_VideoData *videodata = SDL_GetVideoDevice() ? SDL_GetVideoDevice()->driverdata : NULL;
     RECT rect;
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-    UINT frame_dpi;
-#endif
 
     /* Client rect, in points */
     switch (rect_type) {
@@ -202,8 +199,9 @@ static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL m
             /* With per-monitor v2, the window border/titlebar size depend on the DPI, so we need to call AdjustWindowRectExForDpi instead of
                AdjustWindowRectEx. */
             if (videodata) {
+                UINT frame_dpi;
                 SDL_WindowData *data = window->driverdata;
-                frame_dpi = (data && videodata->GetDpiForWindow) ? videodata->GetDpiForWindow(data->hwnd) : 96;
+                frame_dpi = (data && videodata->GetDpiForWindow) ? videodata->GetDpiForWindow(data->hwnd) : USER_DEFAULT_SCREEN_DPI;
                 if (videodata->AdjustWindowRectExForDpi(&rect, style, menu, 0, frame_dpi) == 0) {
                     return WIN_SetError("AdjustWindowRectExForDpi()");
                 }
