@@ -782,18 +782,8 @@ int SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect,
 }
 
 int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
-                        SDL_Surface *dst, SDL_Rect *dstrect)
-{
-    SDL_ScaleMode scale_mode = SDL_SCALEMODE_NEAREST;
-
-    if (SDL_GetSurfaceScaleMode(src, &scale_mode) < 0) {
-        return -1;
-    }
-    return SDL_PrivateBlitSurfaceScaled(src, srcrect, dst, dstrect, scale_mode);
-}
-
-int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
-                               SDL_Surface *dst, SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
+                          SDL_Surface *dst, SDL_Rect *dstrect,
+                          SDL_ScaleMode scaleMode)
 {
     double src_x0, src_y0, src_x1, src_y1;
     double dst_x0, dst_y0, dst_x1, dst_y1;
@@ -947,7 +937,7 @@ int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
         return 0;
     }
 
-    return SDL_PrivateBlitSurfaceUncheckedScaled(src, &final_src, dst, &final_dst, scaleMode);
+    return SDL_BlitSurfaceUncheckedScaled(src, &final_src, dst, &final_dst, scaleMode);
 }
 
 /**
@@ -955,22 +945,20 @@ int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
  *  scaled blitting only.
  */
 int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
-                                   SDL_Surface *dst, const SDL_Rect *dstrect)
-{
-    SDL_ScaleMode scale_mode = SDL_SCALEMODE_NEAREST;
-
-    if (SDL_GetSurfaceScaleMode(src, &scale_mode) < 0) {
-        return -1;
-    }
-    return SDL_PrivateBlitSurfaceUncheckedScaled(src, srcrect, dst, dstrect, scale_mode);
-}
-
-int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
-                                          SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
+                                   SDL_Surface *dst, const SDL_Rect *dstrect,
+                                   SDL_ScaleMode scaleMode)
 {
     static const Uint32 complex_copy_flags = (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA |
                                               SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL |
                                               SDL_COPY_COLORKEY);
+
+    if (scaleMode != SDL_SCALEMODE_NEAREST && scaleMode != SDL_SCALEMODE_LINEAR && scaleMode != SDL_SCALEMODE_BEST) {
+        return SDL_InvalidParamError("scaleMode");
+    }
+
+    if (scaleMode != SDL_SCALEMODE_NEAREST) {
+        scaleMode = SDL_SCALEMODE_LINEAR;
+    }
 
     if (srcrect->w > SDL_MAX_UINT16 || srcrect->h > SDL_MAX_UINT16 ||
         dstrect->w > SDL_MAX_UINT16 || dstrect->h > SDL_MAX_UINT16) {
@@ -1067,47 +1055,6 @@ int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcr
             return ret;
         }
     }
-}
-
-#define SDL_PROPERTY_SURFACE_SCALEMODE  "SDL.internal.surface.scale_mode"
-
-int SDL_SetSurfaceScaleMode(SDL_Surface *surface, SDL_ScaleMode scaleMode)
-{
-    SDL_PropertiesID props;
-
-    if (!surface) {
-        return SDL_InvalidParamError("surface");
-    }
-
-    if (scaleMode != SDL_SCALEMODE_NEAREST && scaleMode != SDL_SCALEMODE_LINEAR && scaleMode != SDL_SCALEMODE_BEST) {
-        return SDL_InvalidParamError("scaleMode");
-    }
-
-    props = SDL_GetSurfaceProperties(surface);
-    if (!props) {
-        return -1;
-    }
-
-    if (scaleMode != SDL_SCALEMODE_NEAREST) {
-        scaleMode = SDL_SCALEMODE_LINEAR;
-    }
-    return SDL_SetNumberProperty(props, SDL_PROPERTY_SURFACE_SCALEMODE, scaleMode);
-}
-
-int SDL_GetSurfaceScaleMode(SDL_Surface *surface, SDL_ScaleMode *scaleMode)
-{
-    if (!surface) {
-        return SDL_InvalidParamError("surface");
-    }
-
-    if (scaleMode) {
-        if (surface->flags & SDL_SURFACE_USES_PROPERTIES) {
-            *scaleMode = (SDL_ScaleMode)SDL_GetNumberProperty(SDL_GetSurfaceProperties(surface), SDL_PROPERTY_SURFACE_SCALEMODE, SDL_SCALEMODE_NEAREST);
-        } else {
-            *scaleMode = SDL_SCALEMODE_NEAREST;
-        }
-    }
-    return 0;
 }
 
 /*

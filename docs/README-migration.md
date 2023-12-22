@@ -1158,6 +1158,7 @@ But if you're migrating your code which uses masks, you probably have a format i
 0x0000F800 0x000007E0 0x0000001F 0x00000000 => SDL_PIXELFORMAT_RGB565
 ```
 
+SDL_BlitSurfaceScaled() and SDL_BlitSurfaceUncheckedScaled() now take a scale paramater.
 
 The following functions have been renamed:
 * SDL_FillRect() => SDL_FillSurfaceRect()
