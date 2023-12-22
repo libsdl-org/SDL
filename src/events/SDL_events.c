@@ -562,6 +562,12 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_EVENT_CASE(SDL_EVENT_CAMERA_DEVICE_REMOVED)
         PRINT_CAMERADEV_EVENT(event);
         break;
+        SDL_EVENT_CASE(SDL_EVENT_CAMERA_DEVICE_APPROVED)
+        PRINT_CAMERADEV_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_CAMERA_DEVICE_DENIED)
+        PRINT_CAMERADEV_EVENT(event);
+        break;
 #undef PRINT_CAMERADEV_EVENT
 
         SDL_EVENT_CASE(SDL_EVENT_SENSOR_UPDATE)

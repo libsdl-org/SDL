@@ -171,6 +171,13 @@ extern DECLSPEC SDL_CameraDeviceID *SDLCALL SDL_GetCameraDevices(int *count);
  * The returned list is owned by the caller, and should be released with
  * SDL_free() when no longer needed.
  *
+ * Note that it's legal for a camera to supply a list with only the zeroed
+ * final element and `*count` set to zero; this is what will happen on
+ * Emscripten builds, since that platform won't tell _anything_ about
+ * available cameras until you've opened one, and won't even tell if there
+ * _is_ a camera until the user has given you permission to check through
+ * a scary warning popup.
+ *
  * \param devid the camera device instance ID to query.
  * \param count a pointer filled in with the number of elements in the list. Can be NULL.
  * \returns a 0 terminated array of SDL_CameraSpecs, which should be
@@ -224,6 +231,16 @@ extern DECLSPEC char * SDLCALL SDL_GetCameraDeviceName(SDL_CameraDeviceID instan
  * SDL_GetCameraFormat() to see the actual framerate of the opened the device,
  * and check your timestamps if this is crucial to your app!
  *
+ * Note that the camera is not usable until the user approves its use! On
+ * some platforms, the operating system will prompt the user to permit access
+ * to the camera, and they can choose Yes or No at that point. Until they do,
+ * the camera will not be usable. The app should either wait for an
+ * SDL_EVENT_CAMERA_DEVICE_APPROVED (or SDL_EVENT_CAMERA_DEVICE_DENIED) event,
+ * or poll SDL_IsCameraApproved() occasionally until it returns non-zero. On
+ * platforms that don't require explicit user approval (and perhaps in places
+ * where the user previously permitted access), the approval event might come
+ * immediately, but it might come seconds, minutes, or hours later!
+ *
  * \param instance_id the camera device instance ID
  * \param spec The desired format for data the device will provide. Can be NULL.
  * \returns device, or NULL on failure; call SDL_GetError() for more
@@ -237,6 +254,38 @@ extern DECLSPEC char * SDLCALL SDL_GetCameraDeviceName(SDL_CameraDeviceID instan
  * \sa SDL_GetCameraFormat
  */
 extern DECLSPEC SDL_Camera *SDLCALL SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_CameraSpec *spec);
+
+/**
+ * Query if camera access has been approved by the user.
+ *
+ * Cameras will not function between when the device is opened by the app
+ * and when the user permits access to the hardware. On some platforms, this
+ * presents as a popup dialog where the user has to explicitly approve access;
+ * on others the approval might be implicit and not alert the user at all.
+ *
+ * This function can be used to check the status of that approval. It will
+ * return 0 if still waiting for user response, 1 if the camera is approved
+ * for use, and -1 if the user denied access.
+ *
+ * Instead of polling with this function, you can wait for a
+ * SDL_EVENT_CAMERA_DEVICE_APPROVED (or SDL_EVENT_CAMERA_DEVICE_DENIED) event
+ * in the standard SDL event loop, which is guaranteed to be sent once when
+ * permission to use the camera is decided.
+ *
+ * If a camera is declined, there's nothing to be done but call
+ * SDL_CloseCamera() to dispose of it.
+ *
+ * \param camera the opened camera device to query
+ * \returns -1 if user denied access to the camera, 1 if user approved access, 0 if no decision has been made yet.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_OpenCameraDevice
+ * \sa SDL_CloseCamera
+ */
+extern DECLSPEC int SDLCALL SDL_GetCameraPermissionState(SDL_Camera *camera);
 
 /**
  * Get the instance ID of an opened camera.
@@ -275,6 +324,12 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetCameraProperties(SDL_Camera *cam
  * Note that this might not be the native format of the hardware, as SDL
  * might be converting to this format behind the scenes.
  *
+ * If the system is waiting for the user to approve access to the camera, as
+ * some platforms require, this will return -1, but this isn't necessarily a
+ * fatal error; you should either wait for an SDL_EVENT_CAMERA_DEVICE_APPROVED
+ * (or SDL_EVENT_CAMERA_DEVICE_DENIED) event, or poll SDL_IsCameraApproved()
+ * occasionally until it returns non-zero.
+ *
  * \param camera opened camera device
  * \param spec The SDL_CameraSpec to be initialized by this function.
  * \returns 0 on success or a negative error code on failure; call
@@ -305,12 +360,16 @@ extern DECLSPEC int SDLCALL SDL_GetCameraFormat(SDL_Camera *camera, SDL_CameraSp
  * failure here is almost always an out of memory condition.
  *
  * After use, the frame should be released with SDL_ReleaseCameraFrame(). If you
- * don't do this, the system may stop providing more video! If the hardware is
- * using DMA to write directly into memory, frames held too long may be overwritten
- * with new data.
+ * don't do this, the system may stop providing more video!
  *
  * Do not call SDL_FreeSurface() on the returned surface! It must be given back
  * to the camera subsystem with SDL_ReleaseCameraFrame!
+ *
+ * If the system is waiting for the user to approve access to the camera, as
+ * some platforms require, this will return NULL (no frames available); you should
+ * either wait for an SDL_EVENT_CAMERA_DEVICE_APPROVED (or
+ * SDL_EVENT_CAMERA_DEVICE_DENIED) event, or poll SDL_IsCameraApproved()
+ * occasionally until it returns non-zero.
  *
  * \param camera opened camera device
  * \param timestampNS a pointer filled in with the frame's timestamp, or 0 on error. Can be NULL.

@@ -619,6 +619,9 @@ static int V4L2_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *spec)
         }
     }
 
+    // Currently there is no user permission prompt for camera access, but maybe there will be a D-Bus portal interface at some point.
+    SDL_CameraDevicePermissionOutcome(device, SDL_TRUE);
+
     return 0;
 }
 

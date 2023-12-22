@@ -208,6 +208,8 @@ typedef enum
     /* Camera hotplug events */
     SDL_EVENT_CAMERA_DEVICE_ADDED = 0x1400,  /**< A new camera device is available */
     SDL_EVENT_CAMERA_DEVICE_REMOVED,         /**< A camera device has been removed. */
+    SDL_EVENT_CAMERA_DEVICE_APPROVED,        /**< A camera device has been approved for use by the user. */
+    SDL_EVENT_CAMERA_DEVICE_DENIED,          /**< A camera device has been denied for use by the user. */
 
     /* Render events */
     SDL_EVENT_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset and their contents need to be updated */
@@ -535,7 +537,7 @@ typedef struct SDL_AudioDeviceEvent
  */
 typedef struct SDL_CameraDeviceEvent
 {
-    Uint32 type;        /**< ::SDL_EVENT_CAMERA_DEVICE_ADDED, or ::SDL_EVENT_CAMERA_DEVICE_REMOVED */
+    Uint32 type;        /**< ::SDL_EVENT_CAMERA_DEVICE_ADDED, ::SDL_EVENT_CAMERA_DEVICE_REMOVED, ::SDL_EVENT_CAMERA_DEVICE_APPROVED, ::SDL_EVENT_CAMERA_DEVICE_DENIED */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_CameraDeviceID which;       /**< SDL_CameraDeviceID for the device being added or removed or changing */
     Uint8 padding1;
