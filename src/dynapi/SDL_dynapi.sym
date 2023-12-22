@@ -613,7 +613,6 @@ SDL3_0.0.0 {
     SDL_ShowWindow;
     SDL_SignalCondition;
     SDL_SoftStretch;
-    SDL_SoftStretchLinear;
     SDL_StartTextInput;
     SDL_StopTextInput;
     SDL_SurfaceHasColorKey;

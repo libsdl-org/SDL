@@ -2754,3 +2754,13 @@ expression w, i, s;
 - SDL_GameControllerGetSteamHandle
 + SDL_GetGamepadSteamHandle
   (...)
+@@
+expression e1, e2, e3, e4;
+@@
+- SDL_SoftStretch(e1, e2, e3, e4)
++ SDL_SoftStretch(e1, e2, e3, e4, SDL_SCALEMODE_NEAREST)
+@@
+expression e1, e2, e3, e4;
+@@
+- SDL_SoftStretchLinear(e1, e2, e3, e4)
++ SDL_SoftStretch(e1, e2, e3, e4, SDL_SCALEMODE_LINEAR)
