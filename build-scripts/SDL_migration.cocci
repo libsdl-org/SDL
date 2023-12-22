@@ -1924,10 +1924,10 @@ expression e2;
 + SDL_BlitSurfaceUnchecked
   (...)
 @@
+expression e1, e2, e3, e4;
 @@
-- SDL_LowerBlitScaled
-+ SDL_BlitSurfaceUncheckedScaled
-  (...)
+- SDL_LowerBlitScaled(e1, e2, e3, e4)
++ SDL_BlitSurfaceUncheckedScaled(e1, e2, e3, e4, SDL_SCALEMODE_NEAREST)
 @@
 @@
 - SDL_SetClipRect
@@ -1944,10 +1944,10 @@ expression e2;
 + SDL_BlitSurface
   (...)
 @@
+expression e1, e2, e3, e4;
 @@
-- SDL_UpperBlitScaled
-+ SDL_BlitSurfaceScaled
-  (...)
+- SDL_UpperBlitScaled(e1, e2, e3, e4)
++ SDL_BlitSurfaceScaled(e1, e2, e3, e4, SDL_SCALEMODE_NEAREST)
 @@
 @@
 - SDL_RenderGetD3D11Device

@@ -963,8 +963,6 @@ SDL3_0.0.0 {
     SDL_strnstr;
     SDL_wcsnstr;
     SDL_SyncWindow;
-    SDL_SetSurfaceScaleMode;
-    SDL_GetSurfaceScaleMode;
     SDL_GetGamepadSteamHandle;
     # extra symbols go here (don't modify this line)
   local: *;

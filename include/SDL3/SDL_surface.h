@@ -876,7 +876,6 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceUnchecked
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurfaceScaled
- * \sa SDL_SetSurfaceScaleMode
  */
 extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface *src,
                                             const SDL_Rect *srcrect,
@@ -898,7 +897,6 @@ extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface *src,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurfaceScaled
- * \sa SDL_SetSurfaceScaleMode
  */
 extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface *src,
                                             const SDL_Rect *srcrect,
@@ -916,17 +914,19 @@ extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface *src,
  * \param dstrect the SDL_Rect structure representing the target rectangle in
  *                the destination surface, filled with the actual rectangle
  *                used after clipping
+ * \param scaleMode scale algorithm to be used
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurface
- * \sa SDL_SetSurfaceScaleMode
  */
-extern DECLSPEC int SDLCALL SDL_BlitSurfaceScaled
-    (SDL_Surface *src, const SDL_Rect *srcrect,
-     SDL_Surface *dst, SDL_Rect *dstrect);
+extern DECLSPEC int SDLCALL SDL_BlitSurfaceScaled(SDL_Surface *src,
+                                                  const SDL_Rect *srcrect,
+                                                  SDL_Surface *dst,
+                                                  SDL_Rect *dstrect,
+                                                  SDL_ScaleMode scaleMode);
 
 /**
  * Perform low-level surface scaled blitting only.
@@ -940,47 +940,19 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceScaled
  * \param dst the SDL_Surface structure that is the blit target
  * \param dstrect the SDL_Rect structure representing the target rectangle in
  *                the destination surface
+ * \param scaleMode scale algorithm to be used
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurfaceScaled
- * \sa SDL_SetSurfaceScaleMode
  */
-extern DECLSPEC int SDLCALL SDL_BlitSurfaceUncheckedScaled
-    (SDL_Surface *src, const SDL_Rect *srcrect,
-     SDL_Surface *dst, const SDL_Rect *dstrect);
-
-/**
- * Set the scale mode used for surface scale operations.
- *
- * \param surface the surface to update.
- * \param scaleMode the SDL_ScaleMode to use for scaling.
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetSurfaceScaleMode
- * \sa SDL_BlitSurfaceScaled
- */
-extern DECLSPEC int SDLCALL SDL_SetSurfaceScaleMode(SDL_Surface *surface, SDL_ScaleMode scaleMode);
-
-/**
- * Get the scale mode used for surface scale operations.
- *
- * \param surface the surface to query.
- * \param scaleMode a pointer filled in with the current scale mode.
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_SetSurfaceScaleMode
- * \sa SDL_BlitSurfaceScaled
- */
-extern DECLSPEC int SDLCALL SDL_GetSurfaceScaleMode(SDL_Surface *surface, SDL_ScaleMode *scaleMode);
+extern DECLSPEC int SDLCALL SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src,
+                                                           const SDL_Rect *srcrect,
+                                                           SDL_Surface *dst,
+                                                           const SDL_Rect *dstrect,
+                                                           SDL_ScaleMode scaleMode);
 
 /**
  * Set the YUV conversion mode

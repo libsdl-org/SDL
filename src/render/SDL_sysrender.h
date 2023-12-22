@@ -310,9 +310,6 @@ extern SDL_BlendOperation SDL_GetBlendModeAlphaOperation(SDL_BlendMode blendMode
    the next call, because it might be in an array that gets realloc()'d. */
 extern void *SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, const size_t alignment, size_t *offset);
 
-extern int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
-extern int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
-
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
