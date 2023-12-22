@@ -209,7 +209,7 @@
 /* Enable system filesystem support */
 #define SDL_FILESYSTEM_EMSCRIPTEN 1
 
-/* Enable the camera driver (src/camera/dummy/\*.c) */  /* !!! FIXME */
-#define SDL_CAMERA_DRIVER_DUMMY  1
+/* Enable the camera driver */
+#define SDL_CAMERA_DRIVER_EMSCRIPTEN  1
 
 #endif /* SDL_build_config_emscripten_h */

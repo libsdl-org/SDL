@@ -995,3 +995,4 @@
 #define SDL_AcquireCameraFrame SDL_AcquireCameraFrame_REAL
 #define SDL_ReleaseCameraFrame SDL_ReleaseCameraFrame_REAL
 #define SDL_CloseCamera SDL_CloseCamera_REAL
+#define SDL_GetCameraPermissionState SDL_GetCameraPermissionState_REAL

@@ -50,6 +50,9 @@ extern void SDL_CameraDeviceDisconnected(SDL_CameraDevice *device);
 // Find an SDL_CameraDevice, selected by a callback. NULL if not found. DOES NOT LOCK THE DEVICE.
 extern SDL_CameraDevice *SDL_FindPhysicalCameraDeviceByCallback(SDL_bool (*callback)(SDL_CameraDevice *device, void *userdata), void *userdata);
 
+// Backends should call this when the user has approved/denied access to a camera.
+extern void SDL_CameraDevicePermissionOutcome(SDL_CameraDevice *device, SDL_bool approved);
+
 // These functions are the heart of the camera threads. Backends can call them directly if they aren't using the SDL-provided thread.
 extern void SDL_CameraThreadSetup(SDL_CameraDevice *device);
 extern SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device);
@@ -129,6 +132,9 @@ struct SDL_CameraDevice
     // Optional properties.
     SDL_PropertiesID props;
 
+    // -1: user denied permission, 0: waiting for user response, 1: user approved permission.
+    int permission;
+
     // Data private to this driver, used when device is opened and running.
     struct SDL_PrivateCameraData *hidden;
 };
@@ -182,5 +188,6 @@ extern CameraBootStrap DUMMYCAMERA_bootstrap;
 extern CameraBootStrap V4L2_bootstrap;
 extern CameraBootStrap COREMEDIA_bootstrap;
 extern CameraBootStrap ANDROIDCAMERA_bootstrap;
+extern CameraBootStrap EMSCRIPTENCAMERA_bootstrap;
 
 #endif // SDL_syscamera_h_
