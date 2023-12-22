@@ -884,18 +884,24 @@ void X11_GetBorderValues(SDL_WindowData *data)
     int format;
     unsigned long nitems, bytes_after;
     unsigned char *property;
-    if (X11_XGetWindowProperty(display, data->xwindow, videodata->_NET_FRAME_EXTENTS, 0, 16, 0, XA_CARDINAL, &type, &format, &nitems, &bytes_after, &property) == Success) {
-        if (type != None && nitems == 4) {
-            data->border_left = (int)((long *)property)[0];
-            data->border_right = (int)((long *)property)[1];
-            data->border_top = (int)((long *)property)[2];
-            data->border_bottom = (int)((long *)property)[3];
-        }
-        X11_XFree(property);
+
+    /* Some compositors will send extents even when the border hint is turned off. Ignore them in this case. */
+    if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
+        if (X11_XGetWindowProperty(display, data->xwindow, videodata->_NET_FRAME_EXTENTS, 0, 16, 0, XA_CARDINAL, &type, &format, &nitems, &bytes_after, &property) == Success) {
+            if (type != None && nitems == 4) {
+                data->border_left = (int)((long *)property)[0];
+                data->border_right = (int)((long *)property)[1];
+                data->border_top = (int)((long *)property)[2];
+                data->border_bottom = (int)((long *)property)[3];
+            }
+            X11_XFree(property);
 
 #ifdef DEBUG_XEVENTS
-        printf("New _NET_FRAME_EXTENTS: left=%d right=%d, top=%d, bottom=%d\n", data->border_left, data->border_right, data->border_top, data->border_bottom);
+            printf("New _NET_FRAME_EXTENTS: left=%d right=%d, top=%d, bottom=%d\n", data->border_left, data->border_right, data->border_top, data->border_bottom);
 #endif
+        }
+    } else {
+        data->border_left = data->border_top = data->border_right = data->border_bottom = 0;
     }
 }
 
@@ -1745,11 +1751,10 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                     X11_XMoveWindow(display, data->xwindow, data->window->floating.x - data->border_left, data->window->floating.y - data->border_top);
                     X11_XResizeWindow(display, data->xwindow, data->window->floating.w, data->window->floating.h);
                 }
-
-                if (!(data->window->flags & SDL_WINDOW_FULLSCREEN) && data->toggle_borders) {
-                    data->toggle_borders = SDL_FALSE;
-                    X11_SetWindowBordered(_this, data->window, !(data->window->flags & SDL_WINDOW_BORDERLESS));
-                }
+            }
+            if (!(data->window->flags & SDL_WINDOW_FULLSCREEN) && data->toggle_borders) {
+                data->toggle_borders = SDL_FALSE;
+                X11_SetWindowBordered(_this, data->window, !(data->window->flags & SDL_WINDOW_BORDERLESS));
             }
         }
     } break;

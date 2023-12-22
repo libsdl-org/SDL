@@ -1233,11 +1233,7 @@ void X11_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool 
         X11_XCheckIfEvent(display, &event, &isMapNotify, (XPointer)&data->xwindow);
 
         /* Turning the borders off doesn't send an extent event, so they must be cleared here. */
-        if (bordered) {
-            X11_GetBorderValues(data);
-        } else {
-            data->border_top = data->border_left = data->border_bottom = data->border_right = 0;
-        }
+        X11_GetBorderValues(data);
 
         /* Make sure the window manager didn't resize our window for the difference. */
         X11_XResizeWindow(display, data->xwindow, window->floating.w, window->floating.h);
