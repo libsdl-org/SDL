@@ -1160,6 +1160,8 @@ But if you're migrating your code which uses masks, you probably have a format i
 
 SDL_BlitSurfaceScaled() and SDL_BlitSurfaceUncheckedScaled() now take a scale paramater.
 
+SDL_SoftStretch() now takes a scale paramater.
+
 The following functions have been renamed:
 * SDL_FillRect() => SDL_FillSurfaceRect()
 * SDL_FillRects() => SDL_FillSurfaceRects()
@@ -1174,6 +1176,9 @@ The following functions have been renamed:
 * SDL_SetColorKey() => SDL_SetSurfaceColorKey()
 * SDL_UpperBlit() => SDL_BlitSurface()
 * SDL_UpperBlitScaled() => SDL_BlitSurfaceScaled()
+
+The following functions have been removed:
+* SDL_SoftStretchLinear() - use SDL_SoftStretch() with SDL_SCALEMODE_LINEAR
 
 ## SDL_system.h
 
