@@ -236,7 +236,6 @@ static void EMSCRIPTENCAMERA_DetectDevices(void)
 
 static SDL_bool EMSCRIPTENCAMERA_Init(SDL_CameraDriverImpl *impl)
 {
-SDL_Log("EMSCRIPTENCAMERA_Init, %s:%d", __FILE__, __LINE__);
     MAIN_THREAD_EM_ASM({
         if (typeof(Module['SDL3']) === 'undefined') {
             Module['SDL3'] = {};
@@ -244,7 +243,6 @@ SDL_Log("EMSCRIPTENCAMERA_Init, %s:%d", __FILE__, __LINE__);
         Module['SDL3'].camera = {};
     });
 
-SDL_Log("EMSCRIPTENCAMERA_Init, %s:%d", __FILE__, __LINE__);
     impl->DetectDevices = EMSCRIPTENCAMERA_DetectDevices;
     impl->OpenDevice = EMSCRIPTENCAMERA_OpenDevice;
     impl->CloseDevice = EMSCRIPTENCAMERA_CloseDevice;
