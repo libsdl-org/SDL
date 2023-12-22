@@ -863,8 +863,8 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceUnchecked
 /**
  * Perform stretch blit between two surfaces of the same format.
  *
- * Using SDL_SCALEMODE_NEAREST: fast, low quality.
- * Using SDL_SCALEMODE_LINEAR: bilinear scaling, slower, better quality, only 32BPP.
+ * Using SDL_SCALEMODE_NEAREST: fast, low quality. Using SDL_SCALEMODE_LINEAR:
+ * bilinear scaling, slower, better quality, only 32BPP.
  *
  * \param src the SDL_Surface structure to be copied from
  * \param srcrect the SDL_Rect structure representing the rectangle to be
