@@ -345,8 +345,22 @@ static SDL_bool HIDAPI_DriverSteamDeck_OpenJoystick(SDL_HIDAPI_Device *device, S
 
 static int HIDAPI_DriverSteamDeck_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    /* You should use the full Steam Input API for rumble support */
-    return SDL_Unsupported();
+    int rc;
+    Uint8 buffer[HID_FEATURE_REPORT_BYTES + 1] = { 0 };
+    FeatureReportMsg *msg = (FeatureReportMsg *)(buffer + 1);
+
+    msg->header.type = ID_TRIGGER_RUMBLE_CMD;
+    msg->payload.simpleRumble.unRumbleType = 0;
+    msg->payload.simpleRumble.unIntensity = HAPTIC_INTENSITY_SYSTEM;
+    msg->payload.simpleRumble.unLeftMotorSpeed = low_frequency_rumble;
+    msg->payload.simpleRumble.unRightMotorSpeed = high_frequency_rumble;
+    msg->payload.simpleRumble.nLeftGain = 2;
+    msg->payload.simpleRumble.nRightGain = 0;
+
+    rc = SDL_hid_send_feature_report(device->dev, buffer, sizeof(buffer));
+    if (rc != sizeof(buffer))
+        return -1;
+    return 0;
 }
 
 static int HIDAPI_DriverSteamDeck_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
@@ -356,7 +370,7 @@ static int HIDAPI_DriverSteamDeck_RumbleJoystickTriggers(SDL_HIDAPI_Device *devi
 
 static Uint32 HIDAPI_DriverSteamDeck_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return 0;
+    return SDL_JOYCAP_RUMBLE;
 }
 
 static int HIDAPI_DriverSteamDeck_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
