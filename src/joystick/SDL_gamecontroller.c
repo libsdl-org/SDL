@@ -1066,6 +1066,7 @@ static void SDL_PrivateGameControllerParseControllerConfigString(SDL_GameControl
 
         } else if (bGameButton) {
             if (i >= sizeof(szGameButton)) {
+                szGameButton[sizeof(szGameButton) - 1] = '\0';
                 SDL_SetError("Button name too large: %s", szGameButton);
                 return;
             }
@@ -1073,6 +1074,7 @@ static void SDL_PrivateGameControllerParseControllerConfigString(SDL_GameControl
             i++;
         } else {
             if (i >= sizeof(szJoystickButton)) {
+                szJoystickButton[sizeof(szJoystickButton) - 1] = '\0';
                 SDL_SetError("Joystick button name too large: %s", szJoystickButton);
                 return;
             }
