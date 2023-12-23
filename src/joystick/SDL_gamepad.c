@@ -1282,12 +1282,14 @@ static int SDL_PrivateParseGamepadConfigString(SDL_Gamepad *gamepad, const char 
 
         } else if (bGameButton) {
             if (i >= sizeof(szGameButton)) {
+                szGameButton[sizeof(szGameButton) - 1] = '\0';
                 return SDL_SetError("Button name too large: %s", szGameButton);
             }
             szGameButton[i] = *pchPos;
             i++;
         } else {
             if (i >= sizeof(szJoystickButton)) {
+                szJoystickButton[sizeof(szJoystickButton) - 1] = '\0';
                 return SDL_SetError("Joystick button name too large: %s", szJoystickButton);
             }
             szJoystickButton[i] = *pchPos;
