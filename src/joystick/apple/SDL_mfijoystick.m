@@ -1826,6 +1826,9 @@ static SDL_bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
     if (device == NULL) {
         return SDL_FALSE;
     }
+    if (device->accelerometer) {
+        return SDL_FALSE;
+    }
 
     if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
         int axis = 0;
