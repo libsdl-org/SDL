@@ -26,7 +26,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <timer_alarm.h>
+#include <kernel_util.h>
 
 #include "SDL_error.h"
 #include "SDL_thread.h"
@@ -37,11 +37,6 @@ struct SDL_semaphore
 {
     s32 semid;
 };
-
-static void usercb(struct timer_alarm_t *alarm, void *arg)
-{
-    iReleaseWaitThread((int)arg);
-}
 
 /* Create a semaphore */
 SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
@@ -85,8 +80,8 @@ void SDL_DestroySemaphore(SDL_sem *sem)
 int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
 {
     int ret;
-    struct timer_alarm_t alarm;
-    InitializeTimerAlarm(&alarm);
+    u64 timeout_usec;
+    u64 *timeout_ptr;
 
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");
@@ -99,12 +94,14 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
         return 0;
     }
 
+    timeout_ptr = NULL;
+
     if (timeout != SDL_MUTEX_MAXWAIT) {
-        SetTimerAlarm(&alarm, MSec2TimerBusClock(timeout), &usercb, (void *)GetThreadId());
+        timeout_usec = timeout * 1000;
+        timeout_ptr = &timeout_usec;
     }
 
-    ret = WaitSema(sem->semid);
-    StopTimerAlarm(&alarm);
+    ret = WaitSemaEx(sem->semid, 1, timeout_ptr);
 
     if (ret < 0) {
         return SDL_MUTEX_TIMEDOUT;
