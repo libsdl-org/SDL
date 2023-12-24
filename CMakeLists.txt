@@ -2530,7 +2530,7 @@ elseif(VITA)
       ${SDL2_SOURCE_DIR}/src/thread/vita/SDL_sysmutex.c
       ${SDL2_SOURCE_DIR}/src/thread/vita/SDL_syssem.c
       ${SDL2_SOURCE_DIR}/src/thread/vita/SDL_systhread.c
-      ${SDL2_SOURCE_DIR}/src/thread/vita/SDL_syscond.c
+      ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_syscond.c
       ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_systls.c)
     set(HAVE_SDL_THREADS TRUE)
   endif()
@@ -2682,7 +2682,10 @@ elseif(PSP)
   endif()
   if(SDL_THREADS)
     set(SDL_THREAD_PSP 1)
-    file(GLOB PSP_THREAD_SOURCES ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_systls.c ${SDL2_SOURCE_DIR}/src/thread/psp/*.c)
+    file(GLOB PSP_THREAD_SOURCES
+      ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_systls.c
+      ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_syscond.c
+      ${SDL2_SOURCE_DIR}/src/thread/psp/*.c)
     list(APPEND SOURCE_FILES ${PSP_THREAD_SOURCES})
     set(HAVE_SDL_THREADS TRUE)
   endif()
@@ -2743,7 +2746,11 @@ elseif(PS2)
   endif()
   if(SDL_THREADS)
     set(SDL_THREAD_PS2 1)
-    file(GLOB PS2_THREAD_SOURCES ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_systls.c ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_sysmutex.c ${SDL2_SOURCE_DIR}/src/thread/ps2/*.c)
+    file(GLOB PS2_THREAD_SOURCES
+      ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_systls.c
+      ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_sysmutex.c
+      ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_syscond.c
+      ${SDL2_SOURCE_DIR}/src/thread/ps2/*.c)
     list(APPEND SOURCE_FILES ${PS2_THREAD_SOURCES})
     set(HAVE_SDL_THREADS TRUE)
   endif()
@@ -2874,7 +2881,9 @@ elseif(N3DS)
   if(SDL_THREADS)
     set(SDL_THREAD_N3DS 1)
     file(GLOB N3DS_THREAD_SOURCES ${SDL2_SOURCE_DIR}/src/thread/n3ds/*.c)
-    list(APPEND SOURCE_FILES ${N3DS_THREAD_SOURCES} ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_systls.c)
+    list(APPEND SOURCE_FILES ${N3DS_THREAD_SOURCES}
+      ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_systls.c
+      ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_syscond.c)
     set(HAVE_SDL_THREADS TRUE)
   endif()
 
