@@ -2470,7 +2470,7 @@ elseif(VITA)
       "${SDL3_SOURCE_DIR}/src/thread/vita/SDL_sysmutex.c"
       "${SDL3_SOURCE_DIR}/src/thread/vita/SDL_syssem.c"
       "${SDL3_SOURCE_DIR}/src/thread/vita/SDL_systhread.c"
-      "${SDL3_SOURCE_DIR}/src/thread/vita/SDL_syscond.c"
+      "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
       "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
       "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
     )
@@ -2601,6 +2601,7 @@ elseif(PSP)
   if(SDL_THREADS)
     set(SDL_THREAD_PSP 1)
     sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
       "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
       "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
       "${SDL3_SOURCE_DIR}/src/thread/psp/*.c"
