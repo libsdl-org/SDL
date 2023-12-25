@@ -305,6 +305,11 @@ static void UIKit_UpdateWindowBorder(SDL_VideoDevice *_this, SDL_Window *window)
 void UIKit_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool bordered)
 {
     @autoreleasepool {
+        if (bordered) {
+            window->flags &= ~SDL_WINDOW_BORDERLESS;
+        } else {
+            window->flags |= SDL_WINDOW_BORDERLESS;
+        }
         UIKit_UpdateWindowBorder(_this, window);
     }
 }
@@ -312,6 +317,11 @@ void UIKit_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_boo
 int UIKit_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
     @autoreleasepool {
+        if (fullscreen) {
+            window->flags &= ~SDL_WINDOW_FULLSCREEN;
+        } else {
+            window->flags |= SDL_WINDOW_FULLSCREEN;
+        }
         UIKit_UpdateWindowBorder(_this, window);
     }
     return 0;
