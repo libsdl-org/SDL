@@ -34,6 +34,14 @@ static const char *cursorNames[] = {
     "sizeALL",
     "NO",
     "hand",
+    "window top left",
+    "window top",
+    "window top right",
+    "window right",
+    "window bottom right",
+    "window bottom",
+    "window bottom left",
+    "window left"
 };
 static int system_cursor = -1;
 static SDL_Cursor *cursor = NULL;
