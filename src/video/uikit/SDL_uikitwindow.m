@@ -318,9 +318,9 @@ int UIKit_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_Vi
 {
     @autoreleasepool {
         if (fullscreen) {
-            window->flags &= ~SDL_WINDOW_FULLSCREEN;
-        } else {
             window->flags |= SDL_WINDOW_FULLSCREEN;
+        } else {
+            window->flags &= ~SDL_WINDOW_FULLSCREEN;
         }
         UIKit_UpdateWindowBorder(_this, window);
     }
