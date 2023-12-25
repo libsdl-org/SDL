@@ -131,6 +131,8 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->Metal_GetLayer = UIKit_Metal_GetLayer;
 #endif
 
+        device->device_caps = VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS;
+
         device->gl_config.accelerated = 1;
 
         return device;
