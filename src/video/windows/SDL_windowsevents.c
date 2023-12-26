@@ -406,9 +406,8 @@ typedef enum
     SDL_MOUSE_EVENT_SOURCE_PEN,
 } SDL_MOUSE_EVENT_SOURCE;
 
-static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource(void)
+static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource(ULONG extrainfo)
 {
-    LPARAM extrainfo = GetMessageExtraInfo();
     /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
     /* Versions below Vista will set the low 7 bits to the Mouse ID and don't use bit 7:
        Check bits 8-31 for the signature (which will indicate a Tablet PC Pen or Touch Device).
@@ -620,7 +619,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         if (!mouse->relative_mode || mouse->relative_mode_warp) {
             /* Only generate mouse events for real mouse */
-            if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
+            if (GetMouseMessageSource((ULONG)GetMessageExtraInfo()) != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
                 lParam != data->last_pointer_update) {
                 SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, 0, 0, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
             }
@@ -642,7 +641,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         SDL_Mouse *mouse = SDL_GetMouse();
         if (!mouse->relative_mode || mouse->relative_mode_warp) {
-            if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
+            if (GetMouseMessageSource((ULONG)GetMessageExtraInfo()) != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
                 lParam != data->last_pointer_update) {
                 WIN_CheckWParamMouseButtons(wParam, data, 0);
             }
@@ -672,7 +671,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         if (inp.header.dwType == RIM_TYPEMOUSE) {
             SDL_MouseID mouseID;
             RAWMOUSE *rawmouse;
-            if (GetMouseMessageSource() == SDL_MOUSE_EVENT_SOURCE_TOUCH) {
+            if (GetMouseMessageSource(inp.data.mouse.ulExtraInformation) == SDL_MOUSE_EVENT_SOURCE_TOUCH) {
                 break;
             }
             /* We do all of our mouse state checking against mouse ID 0
