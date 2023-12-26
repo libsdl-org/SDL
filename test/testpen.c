@@ -308,6 +308,15 @@ static void update_axes(float *axes)
     last_rotation = axes[SDL_PEN_AXIS_ROTATION];
 }
 
+static void update_axes_from_touch(const float pressure)
+{
+    last_xtilt = 0;
+    last_ytilt = 0;
+    last_pressure = pressure;
+    last_distance = 0;
+    last_rotation = 0;
+}
+
 static void process_event(SDL_Event event)
 {
     SDLTest_CommonEvent(state, &event, &quitting);
@@ -341,7 +350,7 @@ static void process_event(SDL_Event event)
         }
     }
 #endif
-    if (event.motion.which != SDL_PEN_MOUSEID) {
+    if (event.motion.which != SDL_PEN_MOUSEID && event.motion.which != SDL_TOUCH_MOUSEID) {
         SDL_ShowCursor();
     } break;
 
@@ -443,6 +452,31 @@ static void process_event(SDL_Event event)
                 (unsigned long) event.window.windowID);
         break;
 #endif
+
+    case SDL_EVENT_FINGER_DOWN:
+    case SDL_EVENT_FINGER_MOTION:
+    case SDL_EVENT_FINGER_UP:
+    {
+        SDL_TouchFingerEvent *ev = &event.tfinger;
+        int w, h;
+        SDL_HideCursor();
+        SDL_GetWindowSize(SDL_GetWindowFromID(ev->windowID), &w, &h);
+        last_x = ev->x * w;
+        last_y = ev->y * h;
+        update_axes_from_touch(ev->pressure);
+        last_was_eraser = SDL_FALSE;
+        last_button = 0;
+        last_touching = (ev->type != SDL_EVENT_FINGER_UP);
+#if VERBOSE
+        SDL_Log("[%lu] finger %s: %s (touchId: %" SDL_PRIs64 ", fingerId: %" SDL_PRIs64 ") at (%.4f, %.4f); pressure=%.3f\n",
+                (unsigned long) ev->timestamp,
+                ev->type == SDL_EVENT_FINGER_DOWN ? "down" : (ev->type == SDL_EVENT_FINGER_MOTION ? "motion" : "up"),
+                SDL_GetTouchDeviceName(ev->touchId),
+                ev->touchId,
+                ev->fingerId,
+                last_x, last_y, last_pressure);
+#endif
+    } break;
 
     default:
         break;
