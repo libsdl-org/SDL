@@ -421,6 +421,11 @@ static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource()
             return SDL_MOUSE_EVENT_SOURCE_PEN;
         }
     }
+    /* Sometimes WM_INPUT events won't have the correct touch signature,
+      so we have to rely purely on the touch bit being set. */
+    if (SDL_TouchDevicesAvailable() && extrainfo & 0x80) {
+        return SDL_MOUSE_EVENT_SOURCE_TOUCH;
+    }
     return SDL_MOUSE_EVENT_SOURCE_MOUSE;
 }
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
@@ -667,8 +672,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         if (inp.header.dwType == RIM_TYPEMOUSE) {
             SDL_MouseID mouseID;
             RAWMOUSE *rawmouse;
-            if (SDL_TouchDevicesAvailable() &&
-                (GetMouseMessageSource() == SDL_MOUSE_EVENT_SOURCE_TOUCH || (GetMessageExtraInfo() & 0x80) == 0x80)) {
+            if (GetMouseMessageSource() == SDL_MOUSE_EVENT_SOURCE_TOUCH) {
                 break;
             }
             /* We do all of our mouse state checking against mouse ID 0
