@@ -72,12 +72,6 @@ int SDL_main(int argc, char **argv)
 #define WINAPI __stdcall
 #endif
 
-#include <SDL3/SDL_begin_code.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef struct HINSTANCE__ * HINSTANCE;
 typedef char* LPSTR;
 typedef wchar_t* PWSTR;
@@ -118,12 +112,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
     (void)sw;
     return SDL_RunApp(0, NULL, SDL_main, NULL);
 }
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#include <SDL3/SDL_close_code.h>
 
 /* end of __WIN32__ and __GDK__ impls */
 #elif defined(__WINRT__)
@@ -196,22 +184,10 @@ TInt E32Main()
 
 #else /* platforms that use a standard main() and just call SDL_RunApp(), like iOS and 3DS */
 
-#include <SDL3/SDL_begin_code.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 int main(int argc, char *argv[])
 {
     return SDL_RunApp(argc, argv, SDL_main, NULL);
 }
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#include <SDL3/SDL_close_code.h>
 
 /* end of impls for standard-conforming platforms */
 
