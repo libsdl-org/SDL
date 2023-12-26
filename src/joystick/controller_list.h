@@ -151,6 +151,7 @@ static const ControllerDescription_t arrControllers[] = {
 
 	{ MAKE_CONTROLLER_ID( 0x054c, 0x0ce6 ), k_eControllerType_PS5Controller, NULL },	// Sony DualSense Controller
 	{ MAKE_CONTROLLER_ID( 0x054c, 0x0df2 ), k_eControllerType_PS5Controller, NULL },	// Sony DualSense Edge Controller
+	{ MAKE_CONTROLLER_ID( 0x054c, 0x0e5f ), k_eControllerType_PS5Controller, NULL },	// Access Controller for PS5
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0209 ), k_eControllerType_PS5Controller, NULL },	// Victrix Pro FS PS4/PS5 (PS5 mode)
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0163 ), k_eControllerType_PS5Controller, NULL },	// HORI Fighting Commander OCTA
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0184 ), k_eControllerType_PS5Controller, NULL },	// Hori Fighting Stick α
