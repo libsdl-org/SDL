@@ -668,7 +668,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             SDL_MouseID mouseID;
             RAWMOUSE *rawmouse;
             if (SDL_TouchDevicesAvailable() &&
-                (GetMouseMessageSource() == SDL_MOUSE_EVENT_SOURCE_TOUCH || (GetMessageExtraInfo() & 0x82) == 0x82)) {
+                (GetMouseMessageSource() == SDL_MOUSE_EVENT_SOURCE_TOUCH || (GetMessageExtraInfo() & 0x80) == 0x80)) {
                 break;
             }
             /* We do all of our mouse state checking against mouse ID 0
