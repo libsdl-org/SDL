@@ -579,7 +579,7 @@ typedef enum
     SDL_MOUSE_EVENT_SOURCE_PEN,
 } SDL_MOUSE_EVENT_SOURCE;
 
-static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource()
+static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource(void)
 {
     LPARAM extrainfo = GetMessageExtraInfo();
     /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
