@@ -1230,7 +1230,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 for (i = 0; i < num_inputs; ++i) {
                     PTOUCHINPUT input = &inputs[i];
                     const int w = (rect.right - rect.left);
-                    const int h = (rect.right - rect.left);
+                    const int h = (rect.bottom - rect.top);
 
                     const SDL_TouchID touchId = (SDL_TouchID)((size_t)input->hSource);
 
