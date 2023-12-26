@@ -411,7 +411,7 @@ static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource(void)
     LPARAM extrainfo = GetMessageExtraInfo();
     /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
     /* Versions below Vista will set the low 7 bits to the Mouse ID and don't use bit 7:
-       Check bits 8-32 for the signature (which will indicate a Tablet PC Pen or Touch Device).
+       Check bits 8-31 for the signature (which will indicate a Tablet PC Pen or Touch Device).
        Only check bit 7 when Vista and up(Cleared=Pen, Set=Touch(which we need to filter out)),
        when the signature is set. The Mouse ID will be zero for an actual mouse. */
     if (IsTouchEvent(extrainfo)) {
