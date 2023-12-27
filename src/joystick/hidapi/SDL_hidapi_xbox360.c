@@ -187,8 +187,9 @@ static SDL_bool HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL
                         SDL_PlayerLEDHintChanged, ctx);
 
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = 15;
+    joystick->nbuttons = 11;
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
+    joystick->nhats = 1;
     joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
 
     return SDL_TRUE;
@@ -269,10 +270,22 @@ static void HIDAPI_DriverXbox360_HandleStatePacket(SDL_Joystick *joystick, SDL_D
     Uint64 timestamp = SDL_GetTicksNS();
 
     if (ctx->last_state[2] != data[2]) {
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, (data[2] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, (data[2] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, (data[2] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, (data[2] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+        Uint8 hat = 0;
+
+        if (data[2] & 0x01) {
+            hat |= SDL_HAT_UP;
+        }
+        if (data[2] & 0x02) {
+            hat |= SDL_HAT_DOWN;
+        }
+        if (data[2] & 0x04) {
+            hat |= SDL_HAT_LEFT;
+        }
+        if (data[2] & 0x08) {
+            hat |= SDL_HAT_RIGHT;
+        }
+        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
+
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, (data[2] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, (data[2] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, (data[2] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
