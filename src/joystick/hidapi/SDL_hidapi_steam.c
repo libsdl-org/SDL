@@ -36,6 +36,13 @@
 #include "steam/controller_constants.h"
 #include "steam/controller_structs.h"
 
+enum
+{
+    SDL_GAMEPAD_BUTTON_STEAM_RIGHT_PADDLE = 11,
+    SDL_GAMEPAD_BUTTON_STEAM_LEFT_PADDLE,
+    SDL_GAMEPAD_NUM_STEAM_BUTTONS,
+};
+
 typedef struct SteamControllerStateInternal_t
 {
     // Controller Type for this Controller State
@@ -1018,8 +1025,9 @@ static SDL_bool HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_J
     InitializeSteamControllerPacketAssembler(&ctx->m_assembler);
 
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = 17;
+    joystick->nbuttons = SDL_GAMEPAD_NUM_STEAM_BUTTONS;
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
+    joystick->nhats = 1;
 
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, update_rate_in_hz);
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, update_rate_in_hz);
@@ -1114,6 +1122,8 @@ static SDL_bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
             Uint64 timestamp = SDL_GetTicksNS();
 
             if (ctx->m_state.ulButtons != ctx->m_last_state.ulButtons) {
+                Uint8 hat = 0;
+
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH,
                                           (ctx->m_state.ulButtons & STEAM_BUTTON_3_MASK) ? SDL_PRESSED : SDL_RELEASED);
 
@@ -1143,19 +1153,24 @@ static SDL_bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
 
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK,
                                           (ctx->m_state.ulButtons & STEAM_JOYSTICK_BUTTON_MASK) ? SDL_PRESSED : SDL_RELEASED);
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC1 + 0,
+                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STEAM_LEFT_PADDLE,
                                           (ctx->m_state.ulButtons & STEAM_BUTTON_BACK_LEFT_MASK) ? SDL_PRESSED : SDL_RELEASED);
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC1 + 1,
+                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STEAM_RIGHT_PADDLE,
                                           (ctx->m_state.ulButtons & STEAM_BUTTON_BACK_RIGHT_MASK) ? SDL_PRESSED : SDL_RELEASED);
 
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_UP,
-                                          (ctx->m_state.ulButtons & STEAM_TOUCH_0_MASK) ? SDL_PRESSED : SDL_RELEASED);
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN,
-                                          (ctx->m_state.ulButtons & STEAM_TOUCH_3_MASK) ? SDL_PRESSED : SDL_RELEASED);
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT,
-                                          (ctx->m_state.ulButtons & STEAM_TOUCH_2_MASK) ? SDL_PRESSED : SDL_RELEASED);
-                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT,
-                                          (ctx->m_state.ulButtons & STEAM_TOUCH_1_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                if (ctx->m_state.ulButtons & STEAM_TOUCH_0_MASK) {
+                    hat |= SDL_HAT_UP;
+                }
+                if (ctx->m_state.ulButtons & STEAM_TOUCH_3_MASK) {
+                    hat |= SDL_HAT_DOWN;
+                }
+                if (ctx->m_state.ulButtons & STEAM_TOUCH_2_MASK) {
+                    hat |= SDL_HAT_LEFT;
+                }
+                if (ctx->m_state.ulButtons & STEAM_TOUCH_1_MASK) {
+                    hat |= SDL_HAT_RIGHT;
+                }
+                SDL_SendJoystickHat(timestamp, joystick, 0, hat);
             }
 
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, (int)ctx->m_state.sTriggerL * 2 - 32768);
