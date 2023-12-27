@@ -309,11 +309,7 @@ void UIKit_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_boo
 int UIKit_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
     @autoreleasepool {
-        if (fullscreen) {
-            window->flags |= SDL_WINDOW_FULLSCREEN;
-        } else {
-            window->flags &= ~SDL_WINDOW_FULLSCREEN;
-        }
+        SDL_SendWindowEvent(window, fullscreen ? SDL_EVENT_WINDOW_ENTER_FULLSCREEN : SDL_EVENT_WINDOW_LEAVE_FULLSCREEN, 0, 0);
         UIKit_UpdateWindowBorder(_this, window);
     }
     return 0;
