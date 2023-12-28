@@ -1199,22 +1199,40 @@ The Windows and X11 events are now available via callbacks which you can set wit
 
 The information previously available in SDL_GetWindowWMInfo() is now available as window properties, e.g.
 ```c
-    HWND hwnd = NULL;
     SDL_SysWMinfo info;
     SDL_VERSION(&info.version);
+
+#if defined(__WIN32__)
+    HWND hwnd = NULL;
     if (SDL_GetWindowWMInfo(window, &info) && info.subsystem == SDL_SYSWM_WINDOWS) {
         hwnd = info.info.win.window;
     }
     if (hwnd) {
         ...
     }
+#elif defined(__LINUX__)
+    Window xwin = 0;
+    if (SDL_GetWindowWMInfo(window, &info) && info.subsystem == SDL_SYSWM_X11) {
+        xwin = info.info.x11.window;
+    }
+    if (xwin) {
+        ...
+    }
+#endif
 ```
 becomes:
 ```c
-    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.win32.hwnd");
+#if defined(__WIN32__)
+    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.win32.hwnd", NULL);
     if (hwnd) {
         ...
     }
+#elif defined(__LINUX__)
+    Window xwin = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(window), "SDL.window.x11.window", 0);
+    if (xwin) {
+        ...
+    }
+#endif
 ```
 
 ## SDL_thread.h
