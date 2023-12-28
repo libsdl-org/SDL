@@ -557,9 +557,20 @@ macro(CheckWayland)
         set(LibDecor_PKG_CONFIG_SPEC libdecor-0)
         pkg_check_modules(PC_LIBDECOR IMPORTED_TARGET ${LibDecor_PKG_CONFIG_SPEC})
         if(PC_LIBDECOR_FOUND)
-          # Version 0.2.0 or higher is needed for suspended window state and statically linked min/max getters.
+
+          # Libdecor doesn't provide internal version defines, so generate them here.
+          if (PC_LIBDECOR_VERSION MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)")
+            set(SDL_LIBDECOR_VERSION_MAJOR ${CMAKE_MATCH_1})
+            set(SDL_LIBDECOR_VERSION_MINOR ${CMAKE_MATCH_2})
+            set(SDL_LIBDECOR_VERSION_PATCH ${CMAKE_MATCH_3})
+          else()
+            message(WARNING "Failed to parse libdecor version; defaulting to lowest supported (0.1.0)")
+            set(SDL_LIBDECOR_VERSION_MAJOR 0)
+            set(SDL_LIBDECOR_VERSION_MINOR 1)
+            set(SDL_LIBDECOR_VERSION_PATCH 0)
+          endif()
+
           if(PC_LIBDECOR_VERSION VERSION_GREATER_EQUAL "0.2.0")
-            set(SDL_HAVE_LIBDECOR_VER_0_2_0 1)
             set(LibDecor_PKG_CONFIG_SPEC "libdecor-0>=0.2.0")
           endif()
           set(HAVE_WAYLAND_LIBDECOR TRUE)
