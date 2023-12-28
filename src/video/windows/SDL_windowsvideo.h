@@ -52,6 +52,10 @@
 
 #include "SDL_windowswindow.h"
 
+#ifndef USER_DEFAULT_SCREEN_DPI
+#define USER_DEFAULT_SCREEN_DPI 96
+#endif
+
 #if WINVER < 0x0601
 /* Touch input definitions */
 #define TWF_FINETOUCH 1
