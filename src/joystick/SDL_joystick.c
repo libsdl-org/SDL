@@ -3002,7 +3002,7 @@ SDL_bool SDL_IsJoystickSteamController(Uint16 vendor_id, Uint16 product_id)
 SDL_bool SDL_IsJoystickSteamDeck(Uint16 vendor_id, Uint16 product_id)
 {
     EControllerType eType = GuessControllerType(vendor_id, product_id);
-    return eType == k_eControllerType_SteamDeck;
+    return eType == k_eControllerType_SteamControllerNeptune;
 }
 
 SDL_bool SDL_IsJoystickXInput(SDL_JoystickGUID guid)
