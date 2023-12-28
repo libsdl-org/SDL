@@ -967,8 +967,6 @@ static void HandleGamepadAdded(SDL_JoystickID id, SDL_bool verbose)
     int i;
 
     i = FindController(id);
-
-    SDL_assert(i >= 0);
     if (i < 0) {
         return;
     }
