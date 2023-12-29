@@ -1219,11 +1219,13 @@ The information previously available in SDL_GetWindowWMInfo() is now available a
         ...
     }
 #elif defined(__LINUX__)
+    Display *xdisplay = NULL;
     Window xwindow = 0;
     if (SDL_GetWindowWMInfo(window, &info) && info.subsystem == SDL_SYSWM_X11) {
+        xdisplay = info.info.x11.display;
         xwindow = info.info.x11.window;
     }
-    if (xwindow) {
+    if (xdisplay && xwindow) {
         ...
     }
 #endif
@@ -1241,8 +1243,9 @@ becomes:
         ...
     }
 #elif defined(__LINUX__)
+    Display *xdisplay = (Display *)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.x11.display", NULL);
     Window xwindow = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(window), "SDL.window.x11.window", 0);
-    if (xwindow) {
+    if (xdisplay && xwindow) {
         ...
     }
 #endif
