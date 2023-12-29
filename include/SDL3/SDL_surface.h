@@ -104,11 +104,7 @@ typedef struct SDL_Surface
     int pitch;                  /**< Read-only */
     void *pixels;               /**< Read-write */
 
-    /** Application data associated with the surface */
-    union {
-        void *reserved;         /**< For ABI compatibility only, do not use */
-        SDL_PropertiesID props; /**< Read-only */
-    };
+    void *reserved;             /**< Private */
 
     /** information needed for surfaces requiring locks */
     int locked;                 /**< Read-only */

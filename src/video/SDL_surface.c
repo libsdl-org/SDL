@@ -252,23 +252,28 @@ SDL_Surface *SDL_CreateSurfaceFrom(void *pixels, int width, int height, int pitc
 
 SDL_PropertiesID SDL_GetSurfaceProperties(SDL_Surface *surface)
 {
+    SDL_PropertiesID props;
+
     if (!surface) {
         SDL_InvalidParamError("surface");
         return 0;
     }
 
-    if (!(surface->flags & SDL_SURFACE_USES_PROPERTIES)) {
+    if (surface->flags & SDL_SURFACE_USES_PROPERTIES) {
+        props = (SDL_PropertiesID)(uintptr_t)surface->reserved;
+    } else {
         if (surface->reserved != NULL) {
             SDL_SetError("Surface has userdata, incompatible with properties");
             return 0;
         }
 
-        surface->props = SDL_CreateProperties();
-        if (surface->props) {
+        props = SDL_CreateProperties();
+        if (props) {
+            surface->reserved = (void *)(uintptr_t)props;
             surface->flags |= SDL_SURFACE_USES_PROPERTIES;
         }
     }
-    return surface->props;
+    return props;
 }
 
 int SDL_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette)
@@ -1570,7 +1575,8 @@ void SDL_DestroySurface(SDL_Surface *surface)
     }
 
     if (surface->flags & SDL_SURFACE_USES_PROPERTIES) {
-        SDL_DestroyProperties(surface->props);
+        SDL_PropertiesID props = (SDL_PropertiesID)(uintptr_t)surface->reserved;
+        SDL_DestroyProperties(props);
     }
 
     SDL_InvalidateMap(surface->map);
