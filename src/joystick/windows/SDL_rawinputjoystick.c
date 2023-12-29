@@ -1802,7 +1802,7 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
         }
     }
     if (!ctx->wgi_correlated) {
-        SDL_bool new_correlation_count = 0;
+        Uint8 new_correlation_count = 0;
         if (RAWINPUT_MissingWindowsGamingInputSlot()) {
             Uint8 correlation_id = 0;
             WindowsGamingInputGamepadState *slot_idx = NULL;
