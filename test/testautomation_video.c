@@ -15,7 +15,7 @@ static SDL_Window *createVideoSuiteTestWindow(const char *title)
     SDL_Window *window;
     SDL_Event event;
     int w, h;
-    SDL_WindowFlags flags;
+    Uint32 flags;
     SDL_bool needs_renderer = SDL_FALSE;
     SDL_bool needs_events_pumped = SDL_FALSE;
 
@@ -197,7 +197,7 @@ static int video_createWindowVariousFlags(void *arg)
     const char *title = "video_createWindowVariousFlags Test Window";
     int w, h;
     int fVariation;
-    SDL_WindowFlags flags;
+    Uint32 flags;
 
     /* Standard window */
     w = SDLTest_RandomIntegerInRange(320, 1024);
@@ -269,7 +269,7 @@ static int video_getWindowFlags(void *arg)
 {
     SDL_Window *window;
     const char *title = "video_getWindowFlags Test Window";
-    SDL_WindowFlags flags;
+    Uint32 flags;
     Uint32 actualFlags;
 
     /* Reliable flag set always set in test window */
