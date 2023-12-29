@@ -1087,8 +1087,6 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
     window->state_not_floating = tiled;
 
     /* Calculate the new window geometry */
-    wind->requested_window_width = width;
-    wind->requested_window_height = height;
     ConfigureWindowGeometry(window);
 
     /* ... then commit the changes on the libdecor side. */
