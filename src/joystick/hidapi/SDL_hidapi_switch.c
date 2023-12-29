@@ -1075,7 +1075,7 @@ static SDL_bool HasHomeLED(SDL_DriverSwitch_Context *ctx)
     return SDL_TRUE;
 }
 
-static SDL_bool AlwaysUsesLabels(int vendor_id, int product_id, ESwitchDeviceInfoControllerType eControllerType)
+static SDL_bool AlwaysUsesLabels(Uint16 vendor_id, Uint16 product_id, ESwitchDeviceInfoControllerType eControllerType)
 {
     /* Some controllers don't have a diamond button configuration, so should always use labels */
     if (SDL_IsJoystickGameCube(vendor_id, product_id)) {
