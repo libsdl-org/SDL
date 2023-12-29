@@ -1210,12 +1210,20 @@ The information previously available in SDL_GetWindowWMInfo() is now available a
     if (hwnd) {
         ...
     }
-#elif defined(__LINUX__)
-    Window xwin = 0;
-    if (SDL_GetWindowWMInfo(window, &info) && info.subsystem == SDL_SYSWM_X11) {
-        xwin = info.info.x11.window;
+#elif defined(__MACOSX__)
+    NSWindow *nswindow = NULL;
+    if (SDL_GetWindowWMInfo(window, &info) && info.subsystem == SDL_SYSWM_COCOA) {
+        nswindow = (__bridge NSWindow *)info.info.cocoa.window;
     }
-    if (xwin) {
+    if (nswindow) {
+        ...
+    }
+#elif defined(__LINUX__)
+    Window xwindow = 0;
+    if (SDL_GetWindowWMInfo(window, &info) && info.subsystem == SDL_SYSWM_X11) {
+        xwindow = info.info.x11.window;
+    }
+    if (xwindow) {
         ...
     }
 #endif
@@ -1227,9 +1235,14 @@ becomes:
     if (hwnd) {
         ...
     }
+#elif defined(__MACOS__)
+    NSWindow *nswindow = (__bridge NSWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.cocoa.window", NULL);
+    if (nswindow) {
+        ...
+    }
 #elif defined(__LINUX__)
-    Window xwin = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(window), "SDL.window.x11.window", 0);
-    if (xwin) {
+    Window xwindow = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(window), "SDL.window.x11.window", 0);
+    if (xwindow) {
         ...
     }
 #endif
