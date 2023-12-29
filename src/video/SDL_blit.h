@@ -79,7 +79,7 @@ typedef struct
     Uint32 src_format;
     Uint32 dst_format;
     int flags;
-    int cpu;
+    unsigned int cpu;
     SDL_BlitFunc func;
 } SDL_BlitFuncEntry;
 
