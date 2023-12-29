@@ -53,7 +53,7 @@ typedef struct SDL_PenStatusInfo
 {
     float x, y;
     float axes[SDL_PEN_NUM_AXES];
-    Uint32 buttons; /* SDL_BUTTON(1) | SDL_BUTTON(2) | ... | SDL_PEN_DOWN_MASK */
+    Uint16 buttons; /* SDL_BUTTON(1) | SDL_BUTTON(2) | ... | SDL_PEN_DOWN_MASK */
 } SDL_PenStatusInfo;
 
 /**

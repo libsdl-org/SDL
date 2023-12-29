@@ -318,9 +318,9 @@ SDL_Pen *SDL_PenModifyBegin(Uint32 instance_id)
 void SDL_PenModifyAddCapabilities(SDL_Pen *pen, Uint32 capabilities)
 {
     if (capabilities & SDL_PEN_ERASER_MASK) {
-	pen->header.flags &= ~SDL_PEN_INK_MASK;
+        pen->header.flags &= ~SDL_PEN_INK_MASK;
     } else if (capabilities & SDL_PEN_INK_MASK) {
-	pen->header.flags &= ~SDL_PEN_ERASER_MASK;
+        pen->header.flags &= ~SDL_PEN_ERASER_MASK;
     }
     pen->header.flags |= (capabilities & PEN_FLAGS_CAPABILITIES);
 }
@@ -485,7 +485,7 @@ static void event_setup(const SDL_Pen *pen, const SDL_Window *window, Uint64 tim
     event->pmotion.timestamp = timestamp;
     event->pmotion.windowID = window ? window->id : 0;
     event->pmotion.which = pen->header.id;
-    event->pmotion.pen_state = (Uint16)last_buttons | PEN_GET_PUBLIC_STATUS_MASK(pen);
+    event->pmotion.pen_state = last_buttons | PEN_GET_PUBLIC_STATUS_MASK(pen);
     event->pmotion.x = status->x;
     event->pmotion.y = status->y;
     SDL_memcpy(event->pmotion.axes, status->axes, SDL_PEN_NUM_AXES * sizeof(float));
@@ -545,7 +545,7 @@ int SDL_SendPenMotion(Uint64 timestamp,
     }
 
     if (SDL_EventEnabled(SDL_EVENT_PEN_MOTION)) {
-	event_setup(pen, window, timestamp, status, &event);
+        event_setup(pen, window, timestamp, status, &event);
         event.pmotion.type = SDL_EVENT_PEN_MOTION;
 
         posted = SDL_PushEvent(&event) > 0;
@@ -563,7 +563,7 @@ int SDL_SendPenMotion(Uint64 timestamp,
         case PEN_MOUSE_STATELESS:
             /* Report mouse event but don't update mouse state */
             if (SDL_EventEnabled(SDL_EVENT_MOUSE_MOTION)) {
-                event.motion.windowID = event.pmotion.windowID;
+                event.motion.windowID = window->id;
                 event.motion.timestamp = timestamp;
                 event.motion.which = SDL_PEN_MOUSEID;
                 event.motion.type = SDL_EVENT_MOUSE_MOTION;
@@ -589,7 +589,7 @@ int SDL_SendPenTipEvent(Uint64 timestamp, SDL_PenID instance_id, Uint8 state)
     SDL_Event event;
     SDL_bool posted = SDL_FALSE;
     SDL_PenStatusInfo *last = &pen->last;
-    int mouse_button = SDL_BUTTON_LEFT;
+    Uint8 mouse_button = SDL_BUTTON_LEFT;
     SDL_Window *window;
 
     if (!pen) {
@@ -602,17 +602,17 @@ int SDL_SendPenTipEvent(Uint64 timestamp, SDL_PenID instance_id, Uint8 state)
     }
 
     if (state == SDL_PRESSED) {
-	event.pbutton.type = SDL_EVENT_PEN_DOWN;
-	pen->header.flags |= SDL_PEN_DOWN_MASK;
+        event.pbutton.type = SDL_EVENT_PEN_DOWN;
+        pen->header.flags |= SDL_PEN_DOWN_MASK;
     } else {
-	event.pbutton.type = SDL_EVENT_PEN_UP;
-	pen->header.flags &= ~SDL_PEN_DOWN_MASK;
+        event.pbutton.type = SDL_EVENT_PEN_UP;
+        pen->header.flags &= ~SDL_PEN_DOWN_MASK;
     }
 
     if (SDL_EventEnabled(event.ptip.type)) {
-	event_setup(pen, window, timestamp, &pen->last, &event);
+        event_setup(pen, window, timestamp, &pen->last, &event);
 
-	/* Used as eraser?  Report eraser event, otherwise ink event */
+        /* Used as eraser?  Report eraser event, otherwise ink event */
         event.ptip.tip = (pen->header.flags & SDL_PEN_ERASER_MASK) ? SDL_PEN_TIP_ERASER : SDL_PEN_TIP_INK;
         event.ptip.state = state == SDL_PRESSED ? SDL_PRESSED : SDL_RELEASED;
 
@@ -626,10 +626,10 @@ int SDL_SendPenTipEvent(Uint64 timestamp, SDL_PenID instance_id, Uint8 state)
     /* Mouse emulation */
     if (pen_delay_mouse_button_mode) {
         /* Send button events when pen touches / leaves surface */
-	mouse_button = pen->last_mouse_button;
-	if (0 == mouse_button) {
-	    mouse_button = SDL_BUTTON_LEFT; /* No current button? Instead report left mouse button */
-	}
+        mouse_button = pen->last_mouse_button;
+        if (mouse_button == 0) {
+            mouse_button = SDL_BUTTON_LEFT; /* No current button? Instead report left mouse button */
+        }
     }
 
     switch (pen_mouse_emulation_mode) {
@@ -668,7 +668,7 @@ int SDL_SendPenButton(Uint64 timestamp,
     SDL_Event event;
     SDL_bool posted = SDL_FALSE;
     SDL_PenStatusInfo *last = &pen->last;
-    int mouse_button = button + 1; /* For mouse emulation, PEN_DOWN counts as button 1, so the first actual button is mouse button 2 */
+    Uint8 mouse_button = button + 1; /* For mouse emulation, PEN_DOWN counts as button 1, so the first actual button is mouse button 2 */
     SDL_Window *window;
 
     if (!pen) {
@@ -681,15 +681,15 @@ int SDL_SendPenButton(Uint64 timestamp,
     }
 
     if (state == SDL_PRESSED) {
-	event.pbutton.type = SDL_EVENT_PEN_BUTTON_DOWN;
-	pen->last.buttons |= (1 << (button - 1));
+        event.pbutton.type = SDL_EVENT_PEN_BUTTON_DOWN;
+        pen->last.buttons |= (1 << (button - 1));
     } else {
-	event.pbutton.type = SDL_EVENT_PEN_BUTTON_UP;
-	pen->last.buttons &= ~(1 << (button - 1));
+        event.pbutton.type = SDL_EVENT_PEN_BUTTON_UP;
+        pen->last.buttons &= ~(1 << (button - 1));
     }
 
     if (SDL_EventEnabled(event.pbutton.type)) {
-	event_setup(pen, window, timestamp, &pen->last, &event);
+        event_setup(pen, window, timestamp, &pen->last, &event);
 
         event.pbutton.button = button;
         event.pbutton.state = state == SDL_PRESSED ? SDL_PRESSED : SDL_RELEASED;
@@ -705,14 +705,14 @@ int SDL_SendPenButton(Uint64 timestamp,
     if (pen_delay_mouse_button_mode) {
         /* Can only change active mouse button while not touching the surface */
         if (!(pen->header.flags & SDL_PEN_DOWN_MASK)) {
-	    if (state == SDL_RELEASED) {
-		pen->last_mouse_button = 0;
-	    } else {
-		pen->last_mouse_button = mouse_button;
-	    }
-	}
-	/* Defer emulation event */
-	return SDL_TRUE;
+            if (state == SDL_RELEASED) {
+                pen->last_mouse_button = 0;
+            } else {
+                pen->last_mouse_button = mouse_button;
+            }
+        }
+        /* Defer emulation event */
+        return SDL_TRUE;
     }
 
     switch (pen_mouse_emulation_mode) {
@@ -1043,9 +1043,9 @@ void SDL_PenUpdateGUIDForWacom(SDL_GUID *guid, Uint32 wacom_devicetype_id, Uint3
 int SDL_PenModifyForWacomID(SDL_Pen *pen, Uint32 wacom_devicetype_id, Uint32 *axis_flags)
 {
     const char *name = NULL;
-    int num_buttons;
-    int tool_type;
-    int axes;
+    int num_buttons = 0;
+    int tool_type = 0;
+    int axes = 0;
 
 #if SDL_PEN_DEBUG_UNKNOWN_WACOM
     wacom_devicetype_id = PEN_WACOM_ID_INVALID; /* force detection to fail */
@@ -1079,14 +1079,14 @@ int SDL_PenModifyForWacomID(SDL_Pen *pen, Uint32 wacom_devicetype_id, Uint32 *ax
 
     /* Override defaults */
     if (pen->info.num_buttons == SDL_PEN_INFO_UNKNOWN) {
-        pen->info.num_buttons = num_buttons;
+        pen->info.num_buttons = (Sint8)SDL_min(num_buttons, SDL_MAX_SINT8);
     }
     if (pen->type == SDL_PEN_TYPE_PEN) {
         pen->type = (SDL_PenSubtype)tool_type;
     }
     if (pen->info.max_tilt == SDL_PEN_INFO_UNKNOWN) {
         /* supposedly: 64 degrees left, 63 right, as reported by the Wacom X11 driver */
-	pen->info.max_tilt = 64.0f;
+        pen->info.max_tilt = 64.0f;
     }
     pen->info.wacom_id = wacom_devicetype_id;
     if (0 == pen->name[0]) {
