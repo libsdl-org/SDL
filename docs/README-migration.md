@@ -1323,7 +1323,21 @@ Rather than iterating over displays using display index, there is a new function
 }
 ```
 
-SDL_CreateWindow() has been simplified and no longer takes a window position. You can use SDL_CreateWindowWithProperties() if you need to set the window position when creating it.
+SDL_CreateWindow() has been simplified and no longer takes a window position. You can use SDL_CreateWindowWithProperties() if you need to set the window position when creating it, e.g.
+```c
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetStringProperty(props, title);
+    SDL_SetNumberProperty(props, "x", x);
+    SDL_SetNumberProperty(props, "y", y);
+    SDL_SetNumberProperty(props, "width", width);
+    SDL_SetNumberProperty(props, "height", height);
+    SDL_SetNumberProperty(props, "flags", flags);
+    pWindow = SDL_CreateWindowWithProperties(props);
+    SDL_DestroyProperties(props);
+    if (window) {
+        ...
+    }
+```
 
 The SDL_WINDOWPOS_UNDEFINED_DISPLAY() and SDL_WINDOWPOS_CENTERED_DISPLAY() macros take a display ID instead of display index. The display ID 0 has a special meaning in this case, and is used to indicate the primary display.
 
