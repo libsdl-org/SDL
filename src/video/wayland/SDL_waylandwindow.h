@@ -120,13 +120,13 @@ struct SDL_WindowData
     int system_min_required_height;
     SDL_DisplayID last_displayID;
     int fullscreen_deadline_count;
-    SDL_bool floating : 1;
-    SDL_bool suspended : 1;
-    SDL_bool active : 1;
-    SDL_bool is_fullscreen : 1;
-    SDL_bool drop_fullscreen_requests : 1;
-    SDL_bool fullscreen_was_positioned : 1;
-    SDL_bool show_hide_sync_required : 1;
+    SDL_bool floating;
+    SDL_bool suspended;
+    SDL_bool active;
+    SDL_bool is_fullscreen;
+    SDL_bool drop_fullscreen_requests;
+    SDL_bool fullscreen_was_positioned;
+    SDL_bool show_hide_sync_required;
 
     SDL_HitTestResult hit_test_result;
 };
