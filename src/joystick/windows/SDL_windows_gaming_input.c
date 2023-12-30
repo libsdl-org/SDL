@@ -662,7 +662,7 @@ static int WGI_JoystickInit(void)
 
                     hr = __FIVectorView_1_Windows__CGaming__CInput__CRawGameController_GetAt(controllers, i, &controller);
                     if (SUCCEEDED(hr) && controller) {
-                        __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController_Invoke(&controller_added.iface, NULL, controller);
+                        IEventHandler_CRawGameControllerVtbl_InvokeAdded(&controller_added.iface, NULL, controller);
                         __x_ABI_CWindows_CGaming_CInput_CIRawGameController_Release(controller);
                     }
                 }
@@ -969,7 +969,7 @@ static void WGI_JoystickQuit(void)
 {
     if (wgi.controller_statics) {
         while (wgi.controller_count > 0) {
-            __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController_Invoke(&controller_removed.iface, NULL, wgi.controllers[wgi.controller_count - 1].controller);
+            IEventHandler_CRawGameControllerVtbl_InvokeRemoved(&controller_removed.iface, NULL, wgi.controllers[wgi.controller_count - 1].controller);
         }
         if (wgi.controllers) {
             SDL_free(wgi.controllers);
