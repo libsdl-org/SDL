@@ -133,7 +133,7 @@ char *alloca();
  */
 #define SDL_FALSE 0
 #define SDL_TRUE 1
-typedef int SDL_bool;
+typedef unsigned int SDL_bool;
 
 /**
  * A signed 8-bit integer type.
