@@ -866,7 +866,7 @@ SDL_bool SDL_PenPerformHitTest(void)
 #define PEN_NAME_LAST PEN_NAME_STROKE
 #define PEN_NUM_NAMES (PEN_NAME_LAST + 1)
 
-const static char *default_pen_names[PEN_NUM_NAMES] = {
+static const char *default_pen_names[] = {
     /* PEN_NAME_AES */
     "AES Pen",
     /* PEN_NAME_ART */
@@ -892,6 +892,7 @@ const static char *default_pen_names[PEN_NUM_NAMES] = {
     /* PEN_NAME_STROKE */
     "Stroke Pen"
 };
+SDL_COMPILE_TIME_ASSERT(default_pen_names, SDL_arraysize(default_pen_names) == PEN_NUM_NAMES);
 
 #define PEN_SPEC_TYPE_SHIFT    0
 #define PEN_SPEC_TYPE_MASK     0x0000000fu
