@@ -24,7 +24,6 @@
 
 #include "../../events/SDL_pen_c.h"
 #include "../SDL_sysvideo.h"
-#include "SDL_pen.h"
 #include "SDL_x11pen.h"
 #include "SDL_x11video.h"
 #include "SDL_x11xinput2.h"
