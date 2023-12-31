@@ -1915,11 +1915,11 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         try
         {
             class OneShotTask implements Runnable {
-                String mMessage;
-                int mDuration;
-                int mGravity;
-                int mXOffset;
-                int mYOffset;
+                private final String mMessage;
+                private final int mDuration;
+                private final int mGravity;
+                private final int mXOffset;
+                private final int mYOffset;
 
                 OneShotTask(String message, int duration, int gravity, int xOffset, int yOffset) {
                     mMessage  = message;
