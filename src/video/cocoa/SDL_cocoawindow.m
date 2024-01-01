@@ -1212,8 +1212,6 @@ static SDL_bool Cocoa_IsZoomed(SDL_Window *window)
 
 - (void)windowWillExitFullScreen:(NSNotification *)aNotification
 {
-    SDL_Window *window = _data.window;
-
     isFullscreenSpace = NO;
     inFullscreenTransition = YES;
 }
