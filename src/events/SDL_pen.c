@@ -121,9 +121,10 @@ SDL_Pen *SDL_GetPenPtr(Uint32 instance_id)
     }
 
     if (pen_handler.sorted) {
-        struct SDL_Pen_header key = { 0, 0 };
+        struct SDL_Pen_header key;
         SDL_Pen *pen;
 
+        SDL_zero(key);
         key.id = instance_id;
 
         pen = SDL_bsearch(&key, pen_handler.pens,
