@@ -1094,7 +1094,7 @@ SDL_COMPILE_TIME_ASSERT(map_StringForGamepadButton, SDL_arraysize(map_StringForG
 /*
  * convert a string to its enum equivalent
  */
-SDL_GamepadButton SDL_PrivateGetGamepadButtonFromString(const char *str, SDL_bool baxy)
+static SDL_GamepadButton SDL_PrivateGetGamepadButtonFromString(const char *str, SDL_bool baxy)
 {
     int i;
 
@@ -2818,7 +2818,7 @@ Uint8 SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 /**
  * Get the label of a button on a gamepad.
  */
-SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForFaceStyle(SDL_GamepadFaceStyle face_style, SDL_GamepadButton button)
+static SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForFaceStyle(SDL_GamepadFaceStyle face_style, SDL_GamepadButton button)
 {
     SDL_GamepadButtonLabel label = SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN;
 
