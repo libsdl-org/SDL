@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -113,7 +113,7 @@ int main(void)
     printf(
         "/*\n"
         "  Simple DirectMedia Layer\n"
-        "  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>\n"
+        "  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>\n"
         "\n"
         "  This software is provided 'as-is', without any express or implied\n"
         "  warranty.  In no event will the authors be held liable for any damages\n"
