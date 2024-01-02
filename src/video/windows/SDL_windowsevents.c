@@ -607,6 +607,26 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, RAWM
     WIN_CheckRawMouseButtons(timestamp, rawmouse->usButtonFlags, data, mouseID);
 }
 
+/* The layout of memory for data returned from GetRawInputBuffer(), documented here:
+ * https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getrawinputbuffer
+ */
+typedef struct
+{
+    union
+    {
+        RAWINPUTHEADER header;
+        BYTE padding[24];
+    } hdr;
+
+    union
+    {
+        RAWMOUSE mouse;
+        RAWKEYBOARD keyboard;
+        RAWHID hid;
+    } data;
+
+} ALIGNED_RAWINPUT;
+
 static void WIN_PollRawMouseInput()
 {
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -641,7 +661,7 @@ static void WIN_PollRawMouseInput()
     for (;;) {
         if (total == data->rawinput_count) {
             count = total + 8;
-            input = (RAWINPUT *)SDL_malloc(count * data->rawinput_size);
+            input = (RAWINPUT *)SDL_realloc(data->rawinput, count * data->rawinput_size);
             if (!input) {
                 return;
             }
@@ -650,7 +670,7 @@ static void WIN_PollRawMouseInput()
         }
 
         size = (data->rawinput_count - total) * data->rawinput_size;
-        count = GetRawInputBuffer(&data->rawinput[total], &size, sizeof(RAWINPUTHEADER));
+        count = GetRawInputBuffer((RAWINPUT *)((BYTE *)data->rawinput + (total * data->rawinput_size)), &size, sizeof(RAWINPUTHEADER));
         if (count == (UINT)-1 || count == 0) {
             break;
         }
@@ -665,7 +685,7 @@ static void WIN_PollRawMouseInput()
         for (i = 0, input = data->rawinput; i < total; ++i, input = NEXTRAWINPUTBLOCK(input)) {
             timestamp += increment;
             if (input->header.dwType == RIM_TYPEMOUSE) {
-                RAWMOUSE *rawmouse = (RAWMOUSE *)((BYTE *)input + 24);
+                RAWMOUSE *rawmouse = &(((ALIGNED_RAWINPUT *)input)->data.mouse);
                 WIN_HandleRawMouseInput(timestamp, window->driverdata, rawmouse);
             }
         }
