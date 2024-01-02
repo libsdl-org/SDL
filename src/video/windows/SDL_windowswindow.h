@@ -66,6 +66,10 @@ struct SDL_WindowData
     SDL_bool windowed_mode_was_maximized;
     SDL_bool in_window_deactivation;
     RECT cursor_clipped_rect;
+    RAWINPUT *rawinput;
+    UINT rawinput_size;
+    UINT rawinput_count;
+    Uint64 last_rawinput_poll;
     SDL_Point last_raw_mouse_position;
     SDL_bool mouse_tracked;
     SDL_bool destroy_parent_with_window;

@@ -518,6 +518,7 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
             }
         }
+        SDL_free(data->rawinput);
         SDL_free(data);
     }
     window->driverdata = NULL;
