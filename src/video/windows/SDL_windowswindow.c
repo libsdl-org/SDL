@@ -81,17 +81,18 @@ static const TCHAR *SDL_HelperWindowName = TEXT("SDLHelperWindowInputMsgWindow")
 static ATOM SDL_HelperWindowClass = 0;
 
 /* For borderless Windows, still want the following flag:
+   - WS_THICKFRAME: without this the window cannot be resized and so aero snap, de-maximizing and minimizing won't work
    - WS_MINIMIZEBOX: window will respond to Windows minimize commands sent to all windows, such as windows key + m, shaking title bar, etc.
    Additionally, non-fullscreen windows can add:
-   - WS_CAPTION: this seems to enable the Windows minimize animation
-   - WS_SYSMENU: enables system context menu on task bar
+   - WS_CAPTION: enables aero minimize animation/transition
+   - WS_SYSMENU: enables the context menu with the move, close, maximize, minize... commands (shift + right-click on the task bar item)
    This will also cause the task bar to overlap the window and other windowed behaviors, so only use this for windows that shouldn't appear to be fullscreen
  */
 
 #define STYLE_BASIC               (WS_CLIPSIBLINGS | WS_CLIPCHILDREN)
 #define STYLE_FULLSCREEN          (WS_POPUP | WS_MINIMIZEBOX)
 #define STYLE_BORDERLESS          (WS_POPUP | WS_MINIMIZEBOX)
-#define STYLE_BORDERLESS_WINDOWED (WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX)
+#define STYLE_BORDERLESS_WINDOWED (WS_POPUP | WS_THICKFRAME | WS_CAPTION | WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX)
 #define STYLE_NORMAL              (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX)
 #define STYLE_RESIZABLE           (WS_THICKFRAME | WS_MAXIMIZEBOX)
 #define STYLE_MASK                (STYLE_FULLSCREEN | STYLE_BORDERLESS | STYLE_NORMAL | STYLE_RESIZABLE)
