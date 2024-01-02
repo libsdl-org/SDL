@@ -508,12 +508,12 @@ void SDL_Quit(void)
     SDL_TicksQuit();
 #endif
 
-    SDL_ClearHints();
-    SDL_AssertionsQuit();
-
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Quit();
 #endif
+
+    SDL_ClearHints();
+    SDL_AssertionsQuit();
 
     SDL_LogQuit();
 
