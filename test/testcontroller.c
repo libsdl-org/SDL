@@ -460,8 +460,8 @@ static void CommitBindingElement(const char *binding, SDL_bool force)
             }
         }
         if (native_axis) {
-            AxisInfo current_axis_info;
-            AxisInfo proposed_axis_info;
+            AxisInfo current_axis_info  = { 0, 0 };
+            AxisInfo proposed_axis_info = { 0, 0 };
             SDL_bool current_axis = ParseAxisInfo(current, &current_axis_info);
             SDL_bool proposed_axis = ParseAxisInfo(binding, &proposed_axis_info);
 
@@ -1318,7 +1318,7 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
     if (display_mode == CONTROLLER_MODE_TESTING) {
         Uint64 steam_handle = SDL_GetGamepadSteamHandle(controller->gamepad);
         if (steam_handle) {
-            SDL_snprintf(text, SDL_arraysize(text), "Steam: 0x%.16llx", (unsigned long long)steam_handle);
+            SDL_snprintf(text, SDL_arraysize(text), "Steam: 0x%.16" SDL_PRIx64 "", steam_handle);
             y = (float)SCREEN_HEIGHT - 2 * (8.0f + FONT_LINE_HEIGHT);
             x = (float)SCREEN_WIDTH - 8.0f - (FONT_CHARACTER_SIZE * SDL_strlen(text));
             SDLTest_DrawString(renderer, x, y, text);
