@@ -52,7 +52,7 @@
 { \
 	__m128i red_mask, tmp1, tmp2, tmp3, tmp4; \
 \
-	red_mask = _mm_set1_epi16((short)0xF800); \
+	red_mask = _mm_set1_epi16((unsigned short)0xF800); \
 	RGB1 = _mm_and_si128(_mm_unpacklo_epi8(_mm_setzero_si128(), R1), red_mask); \
 	RGB2 = _mm_and_si128(_mm_unpackhi_epi8(_mm_setzero_si128(), R1), red_mask); \
 	RGB3 = _mm_and_si128(_mm_unpacklo_epi8(_mm_setzero_si128(), R2), red_mask); \
@@ -145,7 +145,7 @@ PACK_RGB24_32_STEP1(R1, R2, G1, G2, B1, B2, RGB1, RGB2, RGB3, RGB4, RGB5, RGB6) 
 #define PACK_PIXEL \
 	__m128i rgb_1, rgb_2, rgb_3, rgb_4, rgb_5, rgb_6, rgb_7, rgb_8; \
 	__m128i rgb_9, rgb_10, rgb_11, rgb_12, rgb_13, rgb_14, rgb_15, rgb_16; \
-	__m128i a = _mm_set1_epi8((char)0xFF); \
+	__m128i a = _mm_set1_epi8((unsigned char)0xFF); \
 	\
 	PACK_RGBA_32(r_8_11, r_8_12, g_8_11, g_8_12, b_8_11, b_8_12, a, a, rgb_1, rgb_2, rgb_3, rgb_4, rgb_5, rgb_6, rgb_7, rgb_8) \
 	\
@@ -156,7 +156,7 @@ PACK_RGB24_32_STEP1(R1, R2, G1, G2, B1, B2, RGB1, RGB2, RGB3, RGB4, RGB5, RGB6) 
 #define PACK_PIXEL \
 	__m128i rgb_1, rgb_2, rgb_3, rgb_4, rgb_5, rgb_6, rgb_7, rgb_8; \
 	__m128i rgb_9, rgb_10, rgb_11, rgb_12, rgb_13, rgb_14, rgb_15, rgb_16; \
-	__m128i a = _mm_set1_epi8((char)0xFF); \
+	__m128i a = _mm_set1_epi8((unsigned char)0xFF); \
 	\
 	PACK_RGBA_32(b_8_11, b_8_12, g_8_11, g_8_12, r_8_11, r_8_12, a, a, rgb_1, rgb_2, rgb_3, rgb_4, rgb_5, rgb_6, rgb_7, rgb_8) \
 	\
@@ -167,7 +167,7 @@ PACK_RGB24_32_STEP1(R1, R2, G1, G2, B1, B2, RGB1, RGB2, RGB3, RGB4, RGB5, RGB6) 
 #define PACK_PIXEL \
 	__m128i rgb_1, rgb_2, rgb_3, rgb_4, rgb_5, rgb_6, rgb_7, rgb_8; \
 	__m128i rgb_9, rgb_10, rgb_11, rgb_12, rgb_13, rgb_14, rgb_15, rgb_16; \
-	__m128i a = _mm_set1_epi8((char)0xFF); \
+	__m128i a = _mm_set1_epi8((unsigned char)0xFF); \
 	\
 	PACK_RGBA_32(a, a, r_8_11, r_8_12, g_8_11, g_8_12, b_8_11, b_8_12, rgb_1, rgb_2, rgb_3, rgb_4, rgb_5, rgb_6, rgb_7, rgb_8) \
 	\
@@ -178,7 +178,7 @@ PACK_RGB24_32_STEP1(R1, R2, G1, G2, B1, B2, RGB1, RGB2, RGB3, RGB4, RGB5, RGB6) 
 #define PACK_PIXEL \
 	__m128i rgb_1, rgb_2, rgb_3, rgb_4, rgb_5, rgb_6, rgb_7, rgb_8; \
 	__m128i rgb_9, rgb_10, rgb_11, rgb_12, rgb_13, rgb_14, rgb_15, rgb_16; \
-	__m128i a = _mm_set1_epi8((char)0xFF); \
+	__m128i a = _mm_set1_epi8((unsigned char)0xFF); \
 	\
 	PACK_RGBA_32(a, a, b_8_11, b_8_12, g_8_11, g_8_12, r_8_11, r_8_12, rgb_1, rgb_2, rgb_3, rgb_4, rgb_5, rgb_6, rgb_7, rgb_8) \
 	\
@@ -491,7 +491,7 @@ void SSE_FUNCTION_NAME(uint32_t width, uint32_t height,
 
 	/* Catch the right column, if needed */
 	{
-		int converted = (width & ~31);
+		uint32_t converted = (width & ~31);
 		if (fix_read_nv12) {
 			converted -= 32;
 		}
