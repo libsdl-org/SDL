@@ -607,34 +607,14 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, RAWM
     WIN_CheckRawMouseButtons(timestamp, rawmouse->usButtonFlags, data, mouseID);
 }
 
-/* The layout of memory for data returned from GetRawInputBuffer(), documented here:
- * https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getrawinputbuffer
- */
-typedef struct
-{
-    union
-    {
-        RAWINPUTHEADER header;
-        BYTE padding[24];
-    } hdr;
-
-    union
-    {
-        RAWMOUSE mouse;
-        RAWKEYBOARD keyboard;
-        RAWHID hid;
-    } data;
-
-} ALIGNED_RAWINPUT;
-
-static void WIN_PollRawMouseInput()
+void WIN_PollRawMouseInput(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_Window *window;
     SDL_WindowData *data;
     UINT size, count, i, total = 0;
     RAWINPUT *input;
-    Uint64 now, timestamp, increment;
+    Uint64 now;
 
     /* We only use raw mouse input in relative mode */
     if (!mouse->relative_mode || mouse->relative_mode_warp) {
@@ -649,6 +629,14 @@ static void WIN_PollRawMouseInput()
     data = window->driverdata;
 
     if (data->rawinput_size == 0) {
+        BOOL isWow64;
+
+        data->rawinput_offset = sizeof(RAWINPUTHEADER);
+        if (IsWow64Process(GetCurrentProcess(), &isWow64) && isWow64) {
+            /* We're going to get 64-bit data, so use the 64-bit RAWINPUTHEADER size */
+            data->rawinput_offset += 8;
+        }
+
         if (GetRawInputBuffer(NULL, &data->rawinput_size, sizeof(RAWINPUTHEADER)) == (UINT)-1) {
             return;
         }
@@ -679,13 +667,21 @@ static void WIN_PollRawMouseInput()
 
     now = SDL_GetTicksNS();
     if (total > 0) {
-        /* We'll spread these events over the time since the last poll */
-        timestamp = data->last_rawinput_poll;
-        increment = (now - timestamp) / total;
+        Uint64 timestamp, increment;
+        Uint64 delta = (now - data->last_rawinput_poll);
+        if (total > 1 && delta <= SDL_MS_TO_NS(100)) {
+            /* We'll spread these events over the time since the last poll */
+            timestamp = data->last_rawinput_poll;
+            increment = delta / total;
+        } else {
+            /* Do we want to track the update rate per device? */
+            timestamp = now;
+            increment = 0;
+        }
         for (i = 0, input = data->rawinput; i < total; ++i, input = NEXTRAWINPUTBLOCK(input)) {
             timestamp += increment;
             if (input->header.dwType == RIM_TYPEMOUSE) {
-                RAWMOUSE *rawmouse = &(((ALIGNED_RAWINPUT *)input)->data.mouse);
+                RAWMOUSE *rawmouse = (RAWMOUSE *)((BYTE *)input + data->rawinput_offset);
                 WIN_HandleRawMouseInput(timestamp, window->driverdata, rawmouse);
             }
         }
@@ -1762,8 +1758,6 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
     const Uint8 *keystate;
     SDL_Window *focusWindow;
 #endif
-
-    WIN_PollRawMouseInput();
 
     if (g_WindowsEnableMessageLoop) {
         SDL_processing_messages = SDL_TRUE;

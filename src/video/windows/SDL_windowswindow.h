@@ -67,6 +67,7 @@ struct SDL_WindowData
     SDL_bool in_window_deactivation;
     RECT cursor_clipped_rect;
     RAWINPUT *rawinput;
+    UINT rawinput_offset;
     UINT rawinput_size;
     UINT rawinput_count;
     Uint64 last_rawinput_poll;
