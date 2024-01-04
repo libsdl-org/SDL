@@ -1140,18 +1140,12 @@ static SDL_bool Cocoa_IsZoomed(SDL_Window *window)
 - (void)windowWillEnterFullScreen:(NSNotification *)aNotification
 {
     SDL_Window *window = _data.window;
-    NSUInteger flags = NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
+    const NSUInteger flags = NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable | NSWindowStyleMaskTitled;
 
-    /* Don't set the titled flag on a fullscreen window if the windowed-mode window
-     * is borderless, or the window can wind up in a weird, pseudo-decorated state
-     * when leaving fullscreen if the border flag was toggled on.
+    /* For some reason, the fullscreen window won't get any mouse button events
+     * without the NSWindowStyleMaskTitled flag being set when entering fullscreen,
+     * so it's needed even if the window is borderless.
      */
-    if (!(window->flags & SDL_WINDOW_BORDERLESS)) {
-        flags |= NSWindowStyleMaskTitled;
-    } else {
-        flags |= NSWindowStyleMaskBorderless;
-    }
-
     SetWindowStyle(window, flags);
 
     _data.was_zoomed = !!(window->flags & SDL_WINDOW_MAXIMIZED);
@@ -1212,6 +1206,19 @@ static SDL_bool Cocoa_IsZoomed(SDL_Window *window)
 
 - (void)windowWillExitFullScreen:(NSNotification *)aNotification
 {
+    SDL_Window *window = _data.window;
+
+    /* If the windowed mode borders were toggled on while in a fullscreen space,
+     * NSWindowStyleMaskTitled has to be cleared here, or the window can end up
+     * in a weird, semi-decorated state upon returning to windowed mode.
+     */
+    if (_data.border_toggled && !(window->flags & SDL_WINDOW_BORDERLESS)) {
+        const NSUInteger flags = NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
+
+        SetWindowStyle(window, flags);
+        _data.border_toggled = SDL_FALSE;
+    }
+
     isFullscreenSpace = NO;
     inFullscreenTransition = YES;
 }
@@ -1219,16 +1226,10 @@ static SDL_bool Cocoa_IsZoomed(SDL_Window *window)
 - (void)windowDidFailToExitFullScreen:(NSNotification *)aNotification
 {
     SDL_Window *window = _data.window;
-    NSUInteger flags = NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
+    const NSUInteger flags = NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 
     if (window->is_destroying) {
         return;
-    }
-
-    if (!(window->flags & SDL_WINDOW_BORDERLESS)) {
-        flags |= NSWindowStyleMaskTitled;
-    } else {
-        flags |= NSWindowStyleMaskBorderless;
     }
     
     SetWindowStyle(window, flags);
@@ -2455,6 +2456,8 @@ void Cocoa_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_boo
                     Cocoa_SetWindowTitle(_this, window); /* this got blanked out. */
                 }
             }
+        } else {
+            data.border_toggled = SDL_TRUE;
         }
     }
 }

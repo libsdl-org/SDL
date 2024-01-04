@@ -140,6 +140,7 @@ typedef enum
 @property(nonatomic) SDL_CocoaVideoData *videodata;
 @property(nonatomic) SDL_bool send_floating_size;
 @property(nonatomic) SDL_bool send_floating_position;
+@property(nonatomic) SDL_bool border_toggled;
 @property(nonatomic) BOOL checking_zoom;
 #ifdef SDL_VIDEO_OPENGL_EGL
 @property(nonatomic) EGLSurface egl_surface;
