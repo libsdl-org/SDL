@@ -497,7 +497,7 @@ sdl_glob_sources(
 if(MSVC AND TARGET SDL3-shared)
   if(SDL_CPU_X64)
     enable_language(ASM_MASM)
-    set(asm_src "${SDL3_SOURCE_DIR}/src/stdlib/SDL_mslibc_x64.asm")
+    set(asm_src "${SDL3_SOURCE_DIR}/src/stdlib/SDL_mslibc_x64.masm")
     target_compile_options(SDL3-shared PRIVATE "$<$<COMPILE_LANGUAGE:ASM_MASM>:/nologo>")
     set_property(SOURCE "${asm_src}" PROPERTY LANGUAGE "ASM_MASM")
     target_sources(SDL3-shared PRIVATE "${asm_src}")

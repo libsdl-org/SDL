@@ -613,7 +613,7 @@
     <ClCompile Include="..\..\src\stdlib\SDL_iconv.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_malloc.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_mslibc.c" />
-    <MASM Condition="'$(Platform)'=='x64'" Include="..\..\src\stdlib\SDL_mslibc_x64.asm" >
+    <MASM Condition="'$(Platform)'=='x64'" Include="..\..\src\stdlib\SDL_mslibc_x64.masm" >
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </MASM>
     <ClCompile Include="..\..\src\stdlib\SDL_qsort.c" />
