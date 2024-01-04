@@ -1219,14 +1219,20 @@ The information previously available in SDL_GetWindowWMInfo() is now available a
         ...
     }
 #elif defined(__LINUX__)
-    Display *xdisplay = NULL;
-    Window xwindow = 0;
-    if (SDL_GetWindowWMInfo(window, &info) && info.subsystem == SDL_SYSWM_X11) {
-        xdisplay = info.info.x11.display;
-        xwindow = info.info.x11.window;
-    }
-    if (xdisplay && xwindow) {
-        ...
+    if (SDL_GetWindowWMInfo(window, &info)) {
+        if (info.subsystem == SDL_SYSWM_X11) {
+            Display *xdisplay = info.info.x11.display;
+            Window xwindow = info.info.x11.window;
+            if (xdisplay && xwindow) {
+                ...
+            }
+        } else if (info.subsystem == SDL_SYSWM_WAYLAND) {
+            struct wl_display *display = info.info.wl.display;
+            struct wl_surface *surface = info.info.wl.surface;
+            if (display && surface) {
+                ...
+            }
+        }
     }
 #endif
 ```
@@ -1243,10 +1249,18 @@ becomes:
         ...
     }
 #elif defined(__LINUX__)
-    Display *xdisplay = (Display *)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.x11.display", NULL);
-    Window xwindow = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(window), "SDL.window.x11.window", 0);
-    if (xdisplay && xwindow) {
-        ...
+    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
+        Display *xdisplay = (Display *)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.x11.display", NULL);
+        Window xwindow = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(window), "SDL.window.x11.window", 0);
+        if (xdisplay && xwindow) {
+            ...
+        }
+    } else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
+        struct wl_display *display = (struct wl_display *)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.wayland.display", NULL);
+        struct wl_surface *surface = (struct wl_surface *)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.wayland.surface", NULL);
+        if (display && surface) {
+            ...
+        }
     }
 #endif
 ```
