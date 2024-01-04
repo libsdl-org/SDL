@@ -68,6 +68,9 @@ static DWORD WINAPI WIN_RawMouseThread(LPVOID param)
         return 0;
     }
 
+    /* Make sure we get mouse events as soon as possible */
+    SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+
     /* Tell the parent we're ready to go! */
     SetEvent(thread_data.ready_event);
 
