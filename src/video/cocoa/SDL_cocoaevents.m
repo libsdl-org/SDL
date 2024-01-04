@@ -142,18 +142,21 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     self = [super init];
     if (self) {
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+        SDL_bool registerActivationHandlers = SDL_GetHintBoolean("SDL_MAC_REGISTER_ACTIVATION_HANDLERS", SDL_TRUE);
 
         seenFirstActivate = NO;
 
-        [center addObserver:self
-                   selector:@selector(windowWillClose:)
-                       name:NSWindowWillCloseNotification
-                     object:nil];
+        if (registerActivationHandlers) {
+            [center addObserver:self
+                       selector:@selector(windowWillClose:)
+                           name:NSWindowWillCloseNotification
+                         object:nil];
 
-        [center addObserver:self
-                   selector:@selector(focusSomeWindow:)
-                       name:NSApplicationDidBecomeActiveNotification
-                     object:nil];
+            [center addObserver:self
+                       selector:@selector(focusSomeWindow:)
+                           name:NSApplicationDidBecomeActiveNotification
+                         object:nil];
+        }
 
         [center addObserver:self
                    selector:@selector(localeDidChange:)
@@ -293,6 +296,9 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
+    if (!SDL_GetHintBoolean("SDL_MAC_REGISTER_ACTIVATION_HANDLERS", SDL_TRUE))
+        return;
+
     /* The menu bar of SDL apps which don't have the typical .app bundle
      * structure fails to work the first time a window is created (until it's
      * de-focused and re-focused), if this call is in Cocoa_RegisterApp instead
