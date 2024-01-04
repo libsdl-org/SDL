@@ -1926,6 +1926,16 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow 
                     Cocoa_SetKeyboardFocus(window);
                 }
             }
+
+            /* FIXME: Should not need to call addChildWindow then orderOut.
+               Attaching a hidden child window to a hidden parent window will cause the child window
+               to show when the parent does. We therefore shouldn't attach the child window here as we're
+               going to do so when the child window is explicitly shown later but skipping the addChildWindow
+               entirely causes the child window to not get key focus correctly the first time it's shown. Adding
+               then immediately ordering out (removing) the window does work. */
+            if (window->flags & SDL_WINDOW_HIDDEN) {
+                [nswindow orderOut:nil];
+            }
         }
 
         if (nswindow.isOpaque) {
