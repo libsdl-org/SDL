@@ -396,7 +396,71 @@ The SDL_EVENT_GAMEPAD_ADDED event now provides the joystick instance ID in the w
 
 The functions SDL_GetGamepads(), SDL_GetGamepadInstanceName(), SDL_GetGamepadInstancePath(), SDL_GetGamepadInstancePlayerIndex(), SDL_GetGamepadInstanceGUID(), SDL_GetGamepadInstanceVendor(), SDL_GetGamepadInstanceProduct(), SDL_GetGamepadInstanceProductVersion(), and SDL_GetGamepadInstanceType() have been added to directly query the list of available gamepads.
 
-The gamepad face buttons have been renamed from A/B/X/Y to North/South/East/West to indicate that they are positional rather than hardware-specific. You can use SDL_GetGamepadButtonLabel() to get the labels for the face buttons, e.g. A/B/X/Y or Cross/Circle/Square/Triangle. The hint SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS is ignored, and mappings that use this hint are translated correctly into positional buttons. Applications will now need to provide a way for users to swap between South/East as their accept/cancel buttons, as this varies based on region and muscle memory. Using South as the accept button and East as the cancel button is a good default.
+The gamepad face buttons have been renamed from A/B/X/Y to North/South/East/West to indicate that they are positional rather than hardware-specific. You can use SDL_GetGamepadButtonLabel() to get the labels for the face buttons, e.g. A/B/X/Y or Cross/Circle/Square/Triangle. The hint SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS is ignored, and mappings that use this hint are translated correctly into positional buttons. Applications should provide a way for users to swap between South/East as their accept/cancel buttons, as this varies based on region and muscle memory. You can use an approach similar to the following to handle this:
+
+```c
+#define CONFIRM_BUTTON SDL_GAMEPAD_BUTTON_SOUTH
+#define CANCEL_BUTTON SDL_GAMEPAD_BUTTON_EAST
+
+SDL_bool flipped_buttons;
+
+void InitMappedButtons(SDL_Gamepad *gamepad)
+{
+    if (!GetFlippedButtonSetting(&flipped_buttons)) {
+        if (SDL_GetGamepadButtonLabel(gamepad, SDL_GAMEPAD_BUTTON_SOUTH) == SDL_GAMEPAD_BUTTON_LABEL_B) {
+            flipped_buttons = SDL_TRUE;
+        } else {
+            flipped_buttons = SDL_FALSE;
+        }
+    }
+}
+
+SDL_GamepadButton GetMappedButton(SDL_GamepadButton button)
+{
+    if (flipped_buttons) {
+        switch (button) {
+        case SDL_GAMEPAD_BUTTON_SOUTH:
+            return SDL_GAMEPAD_BUTTON_EAST;
+        case SDL_GAMEPAD_BUTTON_EAST:
+            return SDL_GAMEPAD_BUTTON_SOUTH;
+        case SDL_GAMEPAD_BUTTON_WEST:
+            return SDL_GAMEPAD_BUTTON_NORTH;
+        case SDL_GAMEPAD_BUTTON_NORTH:
+            return SDL_GAMEPAD_BUTTON_WEST;
+        default:
+            break;
+        }
+    }
+    return button;
+}
+
+SDL_GamepadButtonLabel GetConfirmActionLabel(SDL_Gamepad *gamepad)
+{
+    return SDL_GetGamepadButtonLabel(gamepad, GetMappedButton(CONFIRM_BUTTON));
+}
+
+SDL_GamepadButtonLabel GetCancelActionLabel(SDL_Gamepad *gamepad)
+{
+    return SDL_GetGamepadButtonLabel(gamepad, GetMappedButton(CANCEL_BUTTON));
+}
+
+void HandleGamepadEvent(SDL_Event *event)
+{
+    if (event->type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
+        switch (GetMappedButton(event->gbutton.button)) {
+        case CONFIRM_BUTTON:
+            /* Handle confirm action */
+            break;
+        case CANCEL_BUTTON:
+            /* Handle cancel action */
+            break;
+        default:
+            /* ... */
+            break;
+        }
+    }
+}
+```
 
 SDL_GameControllerGetSensorDataWithTimestamp() has been removed. If you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_EVENT_GAMEPAD_SENSOR_UPDATE events.
 
