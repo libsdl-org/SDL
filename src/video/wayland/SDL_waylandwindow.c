@@ -2154,7 +2154,6 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     } /* All other cases will be WAYLAND_SURFACE_UNKNOWN */
 
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
-    SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_REGISTRY_POINTER, c->registry);
     SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_DISPLAY_POINTER, data->waylandData->display);
     SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_SURFACE_POINTER, data->surface);
     SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_EGL_WINDOW_POINTER, data->egl_window);

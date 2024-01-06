@@ -1033,8 +1033,6 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_GetWindowParent(SDL_Window *window);
  * show/hide calls. They will be null if the window is hidden and must be
  * queried each time it is shown.
  *
- * - `SDL_PROPERTY_WINDOW_WAYLAND_REGISTRY_POINTER`: the wl_registry
- *   associated with the window
  * - `SDL_PROPERTY_WINDOW_WAYLAND_DISPLAY_POINTER`: the wl_display associated
  *   with the window
  * - `SDL_PROPERTY_WINDOW_WAYLAND_SURFACE_POINTER`: the wl_surface associated
@@ -1086,7 +1084,6 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window *win
 #define SDL_PROPERTY_WINDOW_WIN32_HWND_POINTER              "SDL.window.win32.hwnd"
 #define SDL_PROPERTY_WINDOW_WIN32_HDC_POINTER               "SDL.window.win32.hdc"
 #define SDL_PROPERTY_WINDOW_WIN32_INSTANCE_POINTER          "SDL.window.win32.instance"
-#define SDL_PROPERTY_WINDOW_WAYLAND_REGISTRY_POINTER        "SDL.window.wayland.registry"
 #define SDL_PROPERTY_WINDOW_WAYLAND_DISPLAY_POINTER         "SDL.window.wayland.display"
 #define SDL_PROPERTY_WINDOW_WAYLAND_SURFACE_POINTER         "SDL.window.wayland.surface"
 #define SDL_PROPERTY_WINDOW_WAYLAND_EGL_WINDOW_POINTER      "SDL.window.wayland.egl_window"
