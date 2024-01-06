@@ -157,8 +157,13 @@ SDL_bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product)
     case USB_VENDOR_HORI:
         return SDL_TRUE;
     case USB_VENDOR_LOGITECH:
-        /* Most Logitech devices are fine with this, but the F310 will lock up */
+        /* Most Logitech devices are fine with this, but there are a few exceptions */
         if (product == USB_PRODUCT_LOGITECH_F310) {
+            /* The Logitech F310 gamepad will lock up */
+            return SDL_FALSE;
+        }
+        if (product == 0xc33f) {
+            /* The Logitech G815 keyboard will reset the LEDs */
             return SDL_FALSE;
         }
         return SDL_TRUE;
