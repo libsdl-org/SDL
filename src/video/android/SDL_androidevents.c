@@ -132,8 +132,9 @@ void Android_PumpEvents_Blocking(SDL_VideoDevice *_this)
 #endif
 
             /* Make sure SW Keyboard is restored when an app becomes foreground */
-            if (SDL_TextInputActive()) {
-                Android_StartTextInput(_this); /* Only showTextInput */
+            if (SDL_TextInputActive() &&
+                SDL_GetHintBoolean(SDL_HINT_ENABLE_SCREEN_KEYBOARD, SDL_TRUE)) {
+                Android_ShowScreenKeyboard(_this, Android_Window); /* Only showTextInput */
             }
 
             SDL_SendAppEvent(SDL_EVENT_DID_ENTER_FOREGROUND);
@@ -212,8 +213,9 @@ void Android_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
 #endif
 
             /* Make sure SW Keyboard is restored when an app becomes foreground */
-            if (SDL_TextInputActive()) {
-                Android_StartTextInput(_this); /* Only showTextInput */
+            if (SDL_TextInputActive() &&
+                SDL_GetHintBoolean(SDL_HINT_ENABLE_SCREEN_KEYBOARD, SDL_TRUE)) {
+                Android_ShowScreenKeyboard(_this, Android_Window); /* Only showTextInput */
             }
 
             SDL_SendAppEvent(SDL_EVENT_DID_ENTER_FOREGROUND);
