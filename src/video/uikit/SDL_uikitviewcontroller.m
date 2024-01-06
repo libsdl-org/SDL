@@ -511,12 +511,14 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 - (void)updateKeyboard
 {
+    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *) window->driverdata;
+
     CGAffineTransform t = self.view.transform;
     CGPoint offset = CGPointMake(0.0, 0.0);
 #if TARGET_OS_XR
     CGRect frame = UIKit_ComputeViewFrame(window);
 #else
-    CGRect frame = UIKit_ComputeViewFrame(window, self.view.window.screen);
+    CGRect frame = UIKit_ComputeViewFrame(window, data.uiwindow.screen);
 #endif
 
     if (self.keyboardHeight) {
