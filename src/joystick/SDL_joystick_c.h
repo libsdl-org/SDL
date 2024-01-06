@@ -262,6 +262,9 @@ extern void SDL_LoadVIDPIDListFromHints(SDL_vidpid_list *list, const char *inclu
 extern SDL_bool SDL_VIDPIDInList(Uint16 vendor_id, Uint16 product_id, const SDL_vidpid_list *list);
 extern void SDL_FreeVIDPIDList(SDL_vidpid_list *list);
 
+/* This is in SDL_gamecontroller.c */
+extern SDL_GameControllerType SDL_GetGameControllerTypeFromString(const char *str);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
