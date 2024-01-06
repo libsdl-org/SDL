@@ -395,8 +395,10 @@ static void ConfigureWindowGeometry(SDL_Window *window)
                 wl_surface_set_buffer_scale(data->surface, 1);
                 SetDrawSurfaceViewport(window, data->drawable_width, data->drawable_height,
                                        window_width, window_height);
-            } else {
+            } else if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
                 UnsetDrawSurfaceViewport(window);
+
+                /* Don't change this if DPI awareness flag is unset, as an application may have set this manually. */
                 wl_surface_set_buffer_scale(data->surface, (int32_t)data->windowed_scale_factor);
             }
 
@@ -1415,6 +1417,11 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData *data = window->driverdata;
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
 
+    /* Custom surfaces don't get toplevels and are always considered 'shown'; nothing to do here. */
+    if (data->shell_surface_type == WAYLAND_SURFACE_CUSTOM) {
+        return;
+    }
+
     /* If this is a child window, the parent *must* be in the final shown state,
      * meaning that it has received a configure event, followed by a frame callback.
      * If not, a race condition can result, with effects ranging from the child
@@ -1436,8 +1443,6 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     if (data->show_hide_sync_required) {
         WAYLAND_wl_display_roundtrip(c->display);
     }
-
-    data->surface_status = WAYLAND_SURFACE_STATUS_WAITING_FOR_CONFIGURE;
 
     /* Detach any previous buffers before resetting everything, otherwise when
      * calling this a second time you'll get an annoying protocol error!
@@ -1683,6 +1688,11 @@ void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData *wind = window->driverdata;
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
 
+    /* Custom surfaces have nothing to destroy and are always considered to be 'shown'; nothing to do here. */
+    if (wind->shell_surface_type == WAYLAND_SURFACE_CUSTOM) {
+        return;
+    }
+
     /* The window was shown, but the sync point hasn't yet been reached.
      * Pump events to avoid a possible protocol violation.
      */
@@ -1715,17 +1725,16 @@ void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
     } else
 #endif
         if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
-            Wayland_ReleasePopup(_this, window);
-        } else if (wind->shell_surface.xdg.roleobj.toplevel) {
-            xdg_toplevel_destroy(wind->shell_surface.xdg.roleobj.toplevel);
-            wind->shell_surface.xdg.roleobj.toplevel = NULL;
-            SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, NULL);
-        }
-        if (wind->shell_surface.xdg.surface) {
-            xdg_surface_destroy(wind->shell_surface.xdg.surface);
-            wind->shell_surface.xdg.surface = NULL;
-            SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_XDG_SURFACE_POINTER, NULL);
-        }
+        Wayland_ReleasePopup(_this, window);
+    } else if (wind->shell_surface.xdg.roleobj.toplevel) {
+        xdg_toplevel_destroy(wind->shell_surface.xdg.roleobj.toplevel);
+        wind->shell_surface.xdg.roleobj.toplevel = NULL;
+        SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, NULL);
+    }
+    if (wind->shell_surface.xdg.surface) {
+        xdg_surface_destroy(wind->shell_surface.xdg.surface);
+        wind->shell_surface.xdg.surface = NULL;
+        SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_XDG_SURFACE_POINTER, NULL);
     }
 
     wind->show_hide_sync_required = SDL_TRUE;
@@ -1843,6 +1852,11 @@ int Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window,
 {
     SDL_WindowData *wind = window->driverdata;
     struct wl_output *output = display->driverdata->output;
+
+    /* Custom surfaces have no toplevel to make fullscreen. */
+    if (wind->shell_surface_type == WAYLAND_SURFACE_CUSTOM) {
+        return -1;
+    }
 
     if (wind->show_hide_sync_required) {
         WAYLAND_wl_display_roundtrip(_this->driverdata->display);
@@ -2041,6 +2055,7 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
 {
     SDL_WindowData *data;
     SDL_VideoData *c;
+    const SDL_bool custom_surface_role = SDL_GetBooleanProperty(create_props, SDL_PROPERTY_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN, SDL_FALSE);
 
     data = SDL_calloc(1, sizeof(*data));
     if (!data) {
@@ -2140,18 +2155,24 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     /* We may need to create an idle inhibitor for this new window */
     Wayland_SuspendScreenSaver(_this);
 
+    if (!custom_surface_role) {
 #ifdef HAVE_LIBDECOR_H
-    if (c->shell.libdecor && !SDL_WINDOW_IS_POPUP(window)) {
-        data->shell_surface_type = WAYLAND_SURFACE_LIBDECOR;
-    } else
+        if (c->shell.libdecor && !SDL_WINDOW_IS_POPUP(window)) {
+            data->shell_surface_type = WAYLAND_SURFACE_LIBDECOR;
+        } else
 #endif
-        if (c->shell.xdg) {
-        if (SDL_WINDOW_IS_POPUP(window)) {
-            data->shell_surface_type = WAYLAND_SURFACE_XDG_POPUP;
-        } else {
-            data->shell_surface_type = WAYLAND_SURFACE_XDG_TOPLEVEL;
-        }
-    } /* All other cases will be WAYLAND_SURFACE_UNKNOWN */
+            if (c->shell.xdg) {
+            if (SDL_WINDOW_IS_POPUP(window)) {
+                data->shell_surface_type = WAYLAND_SURFACE_XDG_POPUP;
+            } else {
+                data->shell_surface_type = WAYLAND_SURFACE_XDG_TOPLEVEL;
+            }
+        } /* All other cases will be WAYLAND_SURFACE_UNKNOWN */
+    } else {
+        /* Roleless surfaces are always considered to be in the shown state by the backend. */
+        data->shell_surface_type = WAYLAND_SURFACE_CUSTOM;
+        data->surface_status = WAYLAND_SURFACE_STATUS_SHOWN;
+    }
 
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
     SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_DISPLAY_POINTER, data->waylandData->display);
@@ -2259,12 +2280,20 @@ void Wayland_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *wind = window->driverdata;
 
-    /* Queue an event to send the window size. */
-    struct wl_callback *cb = wl_display_sync(_this->driverdata->display);
+    if (wind->shell_surface_type != WAYLAND_SURFACE_CUSTOM) {
+        /* Queue an event to send the window size. */
+        struct wl_callback *cb = wl_display_sync(_this->driverdata->display);
 
-    wind->pending_size_event.width = window->floating.w;
-    wind->pending_size_event.height = window->floating.h;
-    wl_callback_add_listener(cb, &size_event_listener, (void*)((uintptr_t)window->id));
+        wind->pending_size_event.width = window->floating.w;
+        wind->pending_size_event.height = window->floating.h;
+        wl_callback_add_listener(cb, &size_event_listener, (void *)((uintptr_t)window->id));
+    } else {
+        /* We are being informed of a size change on a custom surface, just configure. */
+        wind->requested_window_width = window->floating.w;
+        wind->requested_window_height = window->floating.h;
+
+        ConfigureWindowGeometry(window);
+    }
 }
 
 void Wayland_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h)

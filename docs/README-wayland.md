@@ -43,3 +43,31 @@ encounter limitations or behavior that is different from other windowing systems
   on the format of this file. Note that if your application manually sets the application ID via the `SDL_APP_ID` hint
   string, the desktop entry file name should match the application ID. For example, if your application ID is set
   to `org.my_org.sdl_app`, the desktop entry file should be named `org.my_org.sdl_app.desktop`.
+
+## Using custom Wayland windowing protocols with SDL windows
+
+Under normal operation, an `SDL_Window` corresponds to an XDG toplevel window, which provides a standard desktop window.
+If an application wishes to use a different windowing protocol with an SDL window (e.g. wlr_layer_shell) while still
+having SDL handle input and rendering, it needs to create a custom, roleless surface and attach that surface to its own
+toplevel window.
+
+This is done by using `SDL_CreateWindowWithProperties()` and setting the
+`SDL_PROPERTY_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN` property to `SDL_TRUE`. Once the window has been
+successfully created, the `wl_display` and `wl_surface` objects can then be retrieved from the
+`SDL_PROPERTY_WINDOW_WAYLAND_DISPLAY_POINTER` and `SDL_PROPERTY_WINDOW_WAYLAND_SURFACE_POINTER` properties respectively.
+
+Surfaces don't receive any size change notifications, so if an application changes the window size, it must inform SDL
+that the surface size has changed by calling SDL_SetWindowSize() with the new dimensions.
+
+Custom surfaces will automatically handle scaling internally if the window was created with the `high-pixel-density`
+property set to `SDL_TRUE`. In this case, applications should not manually attach viewports or change the surface scale
+value, as SDL will handle this internally. Calls to `SDL_SetWindowSize()` should use the logical size of the window, and
+`SDL_GetWindowSizeInPixels()` should be used to query the size of the backbuffer surface in pixels. If this property is
+not set or is `SDL_FALSE`, applications can attach their own viewports or change the surface scale manually, and the SDL
+backend will not interfere or change any values internally. In this case, calls to `SDL_SetWindowSize()` should pass the
+requested surface size in pixels, not the logical window size, as no scaling calculations will be done internally.
+
+All window functions that control window state aside from `SDL_SetWindowSize()` are no-ops with custom surfaces.  
+
+Please see the minimal example in tests/testwaylandcustom.c for an example of how to use a custom, roleless surface and
+attach it to an application-managed toplevel window.
