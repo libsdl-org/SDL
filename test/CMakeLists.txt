@@ -398,6 +398,15 @@ add_sdl_test_executable(testvulkan NO_C90 SOURCES testvulkan.c)
 add_sdl_test_executable(testoffscreen SOURCES testoffscreen.c)
 add_sdl_test_executable(testpopup SOURCES testpopup.c)
 
+if (HAVE_WAYLAND)
+    # Set the GENERATED property on the protocol file, since it is first created at build time
+    set_property(SOURCE ${SDL3_BINARY_DIR}/wayland-generated-protocols/xdg-shell-protocol.c PROPERTY GENERATED 1)
+    add_sdl_test_executable(testwaylandcustom NO_C90 NEEDS_RESOURCES SOURCES testwaylandcustom.c ${SDL3_BINARY_DIR}/wayland-generated-protocols/xdg-shell-protocol.c)
+    # Needed to silence the documentation warning in the generated header file
+    target_compile_options(testwaylandcustom PRIVATE -Wno-documentation-unknown-command)
+    target_link_libraries(testwaylandcustom PRIVATE wayland-client)
+endif()
+
 check_c_compiler_flag(-Wformat-overflow HAVE_WFORMAT_OVERFLOW)
 if(HAVE_WFORMAT_OVERFLOW)
     target_compile_definitions(testautomation PRIVATE HAVE_WFORMAT_OVERFLOW)

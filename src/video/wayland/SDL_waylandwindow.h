@@ -70,7 +70,8 @@ struct SDL_WindowData
         WAYLAND_SURFACE_UNKNOWN = 0,
         WAYLAND_SURFACE_XDG_TOPLEVEL,
         WAYLAND_SURFACE_XDG_POPUP,
-        WAYLAND_SURFACE_LIBDECOR
+        WAYLAND_SURFACE_LIBDECOR,
+        WAYLAND_SURFACE_CUSTOM
     } shell_surface_type;
     enum
     {

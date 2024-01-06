@@ -866,6 +866,13 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, in
  *   `(__unsafe_unretained)` NSView associated with the window, defaults to
  *   `[window contentView]`
  *
+ * These are additional supported properties on Wayland:
+ *
+ * - `SDL_PROPERTY_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN` - true
+ *   if the application wants to use the Wayland surface for a custom role and
+ *   does not want it attached to an XDG toplevel window. See
+ *   docs/README-wayland.md for more information on using custom surfaces.
+ *
  * These are additional supported properties on Windows:
  *
  * - `SDL_PROPERTY_WINDOW_CREATE_WIN32_HWND_POINTER`: the HWND associated with
@@ -894,35 +901,35 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, in
  */
 extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowWithProperties(SDL_PropertiesID props);
 
-#define SDL_PROPERTY_WINDOW_CREATE_ALWAYS_ON_TOP_BOOLEAN            "always-on-top"
-#define SDL_PROPERTY_WINDOW_CREATE_BORDERLESS_BOOLEAN               "borderless"
-#define SDL_PROPERTY_WINDOW_CREATE_FOCUSABLE_BOOLEAN                "focusable"
-#define SDL_PROPERTY_WINDOW_CREATE_FULLSCREEN_BOOLEAN               "fullscreen"
-#define SDL_PROPERTY_WINDOW_CREATE_HEIGHT_NUMBER                    "height"
-#define SDL_PROPERTY_WINDOW_CREATE_HIDDEN_BOOLEAN                   "hidden"
-#define SDL_PROPERTY_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN       "high-pixel-density"
-#define SDL_PROPERTY_WINDOW_CREATE_MAXIMIZED_BOOLEAN                "maximized"
-#define SDL_PROPERTY_WINDOW_CREATE_MENU_BOOLEAN                     "menu"
-#define SDL_PROPERTY_WINDOW_CREATE_METAL_BOOLEAN                    "metal"
-#define SDL_PROPERTY_WINDOW_CREATE_MINIMIZED_BOOLEAN                "minimized"
-#define SDL_PROPERTY_WINDOW_CREATE_MOUSE_GRABBED_BOOLEAN            "mouse-grabbed"
-#define SDL_PROPERTY_WINDOW_CREATE_OPENGL_BOOLEAN                   "opengl"
-#define SDL_PROPERTY_WINDOW_CREATE_PARENT_POINTER                   "parent"
-#define SDL_PROPERTY_WINDOW_CREATE_RESIZABLE_BOOLEAN                "resizable"
-#define SDL_PROPERTY_WINDOW_CREATE_TITLE_STRING                     "title"
-#define SDL_PROPERTY_WINDOW_CREATE_TRANSPARENT_BOOLEAN              "transparent"
-#define SDL_PROPERTY_WINDOW_CREATE_TOOLTIP_BOOLEAN                  "tooltip"
-#define SDL_PROPERTY_WINDOW_CREATE_UTILITY_BOOLEAN                  "utility"
-#define SDL_PROPERTY_WINDOW_CREATE_VULKAN_BOOLEAN                   "vulkan"
-#define SDL_PROPERTY_WINDOW_CREATE_WIDTH_NUMBER                     "width"
-#define SDL_PROPERTY_WINDOW_CREATE_X_NUMBER                         "x"
-#define SDL_PROPERTY_WINDOW_CREATE_Y_NUMBER                         "y"
-#define SDL_PROPERTY_WINDOW_CREATE_COCOA_WINDOW_POINTER             "cocoa.window"
-#define SDL_PROPERTY_WINDOW_CREATE_COCOA_VIEW_POINTER               "cocoa.view"
-#define SDL_PROPERTY_WINDOW_CREATE_WIN32_HWND_POINTER               "win32.hwnd"
-#define SDL_PROPERTY_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER  "win32.pixel_format_hwnd"
-#define SDL_PROPERTY_WINDOW_CREATE_X11_WINDOW_NUMBER                "x11.window"
-
+#define SDL_PROPERTY_WINDOW_CREATE_ALWAYS_ON_TOP_BOOLEAN               "always-on-top"
+#define SDL_PROPERTY_WINDOW_CREATE_BORDERLESS_BOOLEAN                  "borderless"
+#define SDL_PROPERTY_WINDOW_CREATE_FOCUSABLE_BOOLEAN                   "focusable"
+#define SDL_PROPERTY_WINDOW_CREATE_FULLSCREEN_BOOLEAN                  "fullscreen"
+#define SDL_PROPERTY_WINDOW_CREATE_HEIGHT_NUMBER                       "height"
+#define SDL_PROPERTY_WINDOW_CREATE_HIDDEN_BOOLEAN                      "hidden"
+#define SDL_PROPERTY_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN          "high-pixel-density"
+#define SDL_PROPERTY_WINDOW_CREATE_MAXIMIZED_BOOLEAN                   "maximized"
+#define SDL_PROPERTY_WINDOW_CREATE_MENU_BOOLEAN                        "menu"
+#define SDL_PROPERTY_WINDOW_CREATE_METAL_BOOLEAN                       "metal"
+#define SDL_PROPERTY_WINDOW_CREATE_MINIMIZED_BOOLEAN                   "minimized"
+#define SDL_PROPERTY_WINDOW_CREATE_MOUSE_GRABBED_BOOLEAN               "mouse-grabbed"
+#define SDL_PROPERTY_WINDOW_CREATE_OPENGL_BOOLEAN                      "opengl"
+#define SDL_PROPERTY_WINDOW_CREATE_PARENT_POINTER                      "parent"
+#define SDL_PROPERTY_WINDOW_CREATE_RESIZABLE_BOOLEAN                   "resizable"
+#define SDL_PROPERTY_WINDOW_CREATE_TITLE_STRING                        "title"
+#define SDL_PROPERTY_WINDOW_CREATE_TRANSPARENT_BOOLEAN                 "transparent"
+#define SDL_PROPERTY_WINDOW_CREATE_TOOLTIP_BOOLEAN                     "tooltip"
+#define SDL_PROPERTY_WINDOW_CREATE_UTILITY_BOOLEAN                     "utility"
+#define SDL_PROPERTY_WINDOW_CREATE_VULKAN_BOOLEAN                      "vulkan"
+#define SDL_PROPERTY_WINDOW_CREATE_WIDTH_NUMBER                        "width"
+#define SDL_PROPERTY_WINDOW_CREATE_X_NUMBER                            "x"
+#define SDL_PROPERTY_WINDOW_CREATE_Y_NUMBER                            "y"
+#define SDL_PROPERTY_WINDOW_CREATE_COCOA_WINDOW_POINTER                "cocoa.window"
+#define SDL_PROPERTY_WINDOW_CREATE_COCOA_VIEW_POINTER                  "cocoa.view"
+#define SDL_PROPERTY_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN "wayland.surface_role_custom"
+#define SDL_PROPERTY_WINDOW_CREATE_WIN32_HWND_POINTER                  "win32.hwnd"
+#define SDL_PROPERTY_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER     "win32.pixel_format_hwnd"
+#define SDL_PROPERTY_WINDOW_CREATE_X11_WINDOW_NUMBER                   "x11.window"
 
 /**
  * Get the numeric ID of a window.
