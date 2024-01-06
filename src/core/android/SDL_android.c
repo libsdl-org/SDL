@@ -2208,7 +2208,7 @@ void Android_JNI_SuspendScreenSaver(SDL_bool suspend)
     Android_JNI_SendMessage(COMMAND_SET_KEEP_SCREEN_ON, (suspend == SDL_FALSE) ? 0 : 1);
 }
 
-void Android_JNI_ShowTextInput(SDL_Rect *inputRect)
+void Android_JNI_ShowScreenKeyboard(SDL_Rect *inputRect)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     (*env)->CallStaticBooleanMethod(env, mActivityClass, midShowTextInput,
@@ -2218,7 +2218,7 @@ void Android_JNI_ShowTextInput(SDL_Rect *inputRect)
                                     inputRect->h);
 }
 
-void Android_JNI_HideTextInput(void)
+void Android_JNI_HideScreenKeyboard(void)
 {
     /* has to match Activity constant */
     const int COMMAND_TEXTEDIT_HIDE = 3;

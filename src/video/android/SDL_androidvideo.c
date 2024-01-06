@@ -148,12 +148,12 @@ static SDL_VideoDevice *Android_CreateDevice(void)
     device->SuspendScreenSaver = Android_SuspendScreenSaver;
 
     /* Text input */
-    device->StartTextInput = Android_StartTextInput;
-    device->StopTextInput = Android_StopTextInput;
     device->SetTextInputRect = Android_SetTextInputRect;
 
     /* Screen keyboard */
     device->HasScreenKeyboardSupport = Android_HasScreenKeyboardSupport;
+    device->ShowScreenKeyboard = Android_ShowScreenKeyboard;
+    device->HideScreenKeyboard = Android_HideScreenKeyboard;
     device->IsScreenKeyboardShown = Android_IsScreenKeyboardShown;
 
     /* Clipboard */

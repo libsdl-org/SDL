@@ -24,6 +24,7 @@
 
 #include "SDL_androidevents.h"
 #include "SDL_events.h"
+#include "SDL_hints.h"
 #include "SDL_androidkeyboard.h"
 #include "SDL_androidwindow.h"
 #include "../SDL_sysvideo.h"
@@ -149,8 +150,9 @@ void Android_PumpEvents_Blocking(_THIS)
 #endif
 
             /* Make sure SW Keyboard is restored when an app becomes foreground */
-            if (SDL_IsTextInputActive()) {
-                Android_StartTextInput(_this); /* Only showTextInput */
+            if (SDL_IsTextInputActive() &&
+                SDL_GetHintBoolean(SDL_HINT_ENABLE_SCREEN_KEYBOARD, SDL_TRUE)) {
+                Android_ShowScreenKeyboard(_this, Android_Window); /* Only showTextInput */
             }
         }
     } else {
@@ -233,8 +235,9 @@ void Android_PumpEvents_NonBlocking(_THIS)
 #endif
 
             /* Make sure SW Keyboard is restored when an app becomes foreground */
-            if (SDL_IsTextInputActive()) {
-                Android_StartTextInput(_this); /* Only showTextInput */
+            if (SDL_IsTextInputActive() &&
+                SDL_GetHintBoolean(SDL_HINT_ENABLE_SCREEN_KEYBOARD, SDL_TRUE)) {
+                Android_ShowScreenKeyboard(_this, Android_Window); /* Only showTextInput */
             }
         }
     } else {

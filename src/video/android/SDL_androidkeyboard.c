@@ -341,20 +341,20 @@ SDL_bool Android_HasScreenKeyboardSupport(_THIS)
     return SDL_TRUE;
 }
 
+void Android_ShowScreenKeyboard(_THIS, SDL_Window *window)
+{
+    SDL_VideoData *videodata = _this->driverdata;
+    Android_JNI_ShowScreenKeyboard(&videodata->textRect);
+}
+
+void Android_HideScreenKeyboard(_THIS, SDL_Window *window)
+{
+    Android_JNI_HideScreenKeyboard();
+}
+
 SDL_bool Android_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
     return Android_JNI_IsScreenKeyboardShown();
-}
-
-void Android_StartTextInput(_THIS)
-{
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
-    Android_JNI_ShowTextInput(&videodata->textRect);
-}
-
-void Android_StopTextInput(_THIS)
-{
-    Android_JNI_HideTextInput();
 }
 
 void Android_SetTextInputRect(_THIS, const SDL_Rect *rect)
