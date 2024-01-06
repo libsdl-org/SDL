@@ -823,7 +823,7 @@ SDL_COMPILE_TIME_ASSERT(map_StringForGameControllerType, SDL_arraysize(map_Strin
 /*
  * convert a string to its enum equivalent
  */
-SDL_GameControllerType SDL_GetGameControllerTypeFromString(const char *str)
+static SDL_GameControllerType SDL_GetGameControllerTypeFromString(const char *str)
 {
     int i;
 
