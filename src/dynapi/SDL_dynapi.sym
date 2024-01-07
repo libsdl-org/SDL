@@ -910,6 +910,7 @@ SDL3_0.0.0 {
     SDL_hid_send_feature_report;
     SDL_hid_set_nonblocking;
     SDL_hid_write;
+    SDL_macOSSetAnimationCallback;
     SDL_iOSSetAnimationCallback;
     SDL_iOSSetEventPump;
     SDL_iconv;
