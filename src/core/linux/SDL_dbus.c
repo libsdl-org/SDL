@@ -184,9 +184,10 @@ void SDL_DBus_Quit(void)
         dbus.connection_unref(dbus.session_conn);
     }
 
-    SDL_bool q = SDL_GetHintBoolean(SDL_HINT_SHUTDOWN_DBUS_ON_QUIT, SDL_FALSE);
-    if (q == SDL_TRUE && dbus.shutdown) {
-        dbus.shutdown();
+    if (SDL_GetHintBoolean(SDL_HINT_SHUTDOWN_DBUS_ON_QUIT, SDL_FALSE)) {
+        if (dbus.shutdown) {
+            dbus.shutdown();
+        }
     }
 
     SDL_zero(dbus);
