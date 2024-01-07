@@ -2667,18 +2667,18 @@ extern "C" {
 #define SDL_HINT_TRACKPAD_IS_TOUCH_ONLY "SDL_TRACKPAD_IS_TOUCH_ONLY"
 
 /**
- * Let SDL handle dbus_shutdown().
+ * Cause SDL to call dbus_shutdown() on quit.
  *
- * Only enable this option if no other dependency uses D-Bus.
+ * This is useful as a debug tool to validate memory leaks, but shouldn't ever
+ * be set in production applications, as other libraries used by the application
+ * might use dbus under the hood and this cause cause crashes if they continue
+ * after SDL_Quit().
  *
- * This option tells SDL that it can safely call dbus_shutdown() when
- * SDL_Quit() is called. You must ensure that no other library still uses
- * D-Bus when SDL_Quit() is called, otherwise resources will be freed while
- * they are still in use, which results in undefined behavior and likely a
- * crash.
+ * This variable can be set to the following values:
+ *   "0"       - SDL will not call dbus_shutdown() on quit (default)
+ *   "1"       - SDL will call dbus_shutdown() on quit
  *
- * Use this option to prevent memory leaks if your application doesn't use
- * D-Bus other than through SDL.
+ * This hint is available since SDL 2.30.0.
  */
 #define SDL_HINT_SHUTDOWN_DBUS_ON_QUIT "SDL_SHUTDOWN_DBUS_ON_QUIT"
 
