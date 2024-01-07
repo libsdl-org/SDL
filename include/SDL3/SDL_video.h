@@ -872,6 +872,9 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, in
  *   if the application wants to use the Wayland surface for a custom role and
  *   does not want it attached to an XDG toplevel window. See
  *   docs/README-wayland.md for more information on using custom surfaces.
+ * - `SDL_PROPERTY_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN - true if
+ *   the application wants an associated `wl_egl_window` object to be created,
+ *   even if the window does not have the OpenGL property or flag set.
  *
  * These are additional supported properties on Windows:
  *
@@ -927,6 +930,7 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowWithProperties(SDL_Propertie
 #define SDL_PROPERTY_WINDOW_CREATE_COCOA_WINDOW_POINTER                "cocoa.window"
 #define SDL_PROPERTY_WINDOW_CREATE_COCOA_VIEW_POINTER                  "cocoa.view"
 #define SDL_PROPERTY_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN "wayland.surface_role_custom"
+#define SDL_PROPERTY_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN   "wayland.create_egl_window"
 #define SDL_PROPERTY_WINDOW_CREATE_WIN32_HWND_POINTER                  "win32.hwnd"
 #define SDL_PROPERTY_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER     "win32.pixel_format_hwnd"
 #define SDL_PROPERTY_WINDOW_CREATE_X11_WINDOW_NUMBER                   "x11.window"

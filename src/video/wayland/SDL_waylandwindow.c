@@ -2056,6 +2056,8 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     SDL_WindowData *data;
     SDL_VideoData *c;
     const SDL_bool custom_surface_role = SDL_GetBooleanProperty(create_props, SDL_PROPERTY_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN, SDL_FALSE);
+    const SDL_bool create_egl_window = !!(window->flags & SDL_WINDOW_OPENGL) ||
+                                       SDL_GetBooleanProperty(create_props, SDL_PROPERTY_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN, SDL_FALSE);
 
     data = SDL_calloc(1, sizeof(*data));
     if (!data) {
@@ -2129,18 +2131,20 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
         }
     }
 
-    if (window->flags & SDL_WINDOW_OPENGL) {
+    if (create_egl_window) {
         data->egl_window = WAYLAND_wl_egl_window_create(data->surface, data->drawable_width, data->drawable_height);
+    }
 
 #ifdef SDL_VIDEO_OPENGL_EGL
+    if (window->flags & SDL_WINDOW_OPENGL) {
         /* Create the GLES window surface */
         data->egl_surface = SDL_EGL_CreateSurface(_this, window, (NativeWindowType)data->egl_window);
 
         if (data->egl_surface == EGL_NO_SURFACE) {
             return -1; /* SDL_EGL_CreateSurface should have set error */
         }
-#endif
     }
+#endif
 
     if (c->relative_mouse_mode) {
         Wayland_input_lock_pointer(c->input);
