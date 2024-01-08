@@ -2131,15 +2131,9 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
         parent->first_child = window;
     }
 
-    if (_this->CreateSDLWindow) {
-        if (_this->CreateSDLWindow(_this, window, props) < 0) {
-            SDL_DestroyWindow(window);
-            return NULL;
-        }
-    } else {
-        /* No windowing system, make sure the new window has focus */
-        SDL_SetMouseFocus(window);
-        SDL_SetKeyboardFocus(window);
+    if (_this->CreateSDLWindow && _this->CreateSDLWindow(_this, window, props) < 0) {
+        SDL_DestroyWindow(window);
+        return NULL;
     }
 
     /* Clear minimized if not on windows, only windows handles it at create rather than FinishWindowCreation,
