@@ -963,13 +963,12 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GamepadHasAxis(SDL_Gamepad *gamepad, SDL_Ga
  *
  * The axis indices start at index 0.
  *
- * For thumbsticks, the state is a value ranging from -32768 (up/left)
- * to 32767 (down/right).
+ * For thumbsticks, the state is a value ranging from -32768 (up/left) to
+ * 32767 (down/right).
  *
- * Triggers range from 0 when released to 32767 when fully pressed, and
- * never return a negative value. Note that this differs from the value
- * reported by the lower-level SDL_GetJoystickAxis(), which normally uses
- * the full range.
+ * Triggers range from 0 when released to 32767 when fully pressed, and never
+ * return a negative value. Note that this differs from the value reported by
+ * the lower-level SDL_GetJoystickAxis(), which normally uses the full range.
  *
  * \param gamepad a gamepad
  * \param axis an axis index (one of the SDL_GamepadAxis values)
