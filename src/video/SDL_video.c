@@ -1916,23 +1916,23 @@ static struct {
     Uint32 flag;
     SDL_bool invert_value;
 } SDL_WindowFlagProperties[] = {
-    { "always-on-top",      SDL_WINDOW_ALWAYS_ON_TOP,       SDL_FALSE },
-    { "borderless",         SDL_WINDOW_BORDERLESS,          SDL_FALSE },
-    { "focusable",          SDL_WINDOW_NOT_FOCUSABLE,       SDL_TRUE },
-    { "fullscreen",         SDL_WINDOW_FULLSCREEN,          SDL_FALSE },
-    { "hidden",             SDL_WINDOW_HIDDEN,              SDL_FALSE },
-    { "high-pixel-density", SDL_WINDOW_HIGH_PIXEL_DENSITY,  SDL_FALSE },
-    { "maximized",          SDL_WINDOW_MAXIMIZED,           SDL_FALSE },
-    { "menu",               SDL_WINDOW_POPUP_MENU,          SDL_FALSE },
-    { "metal",              SDL_WINDOW_METAL,               SDL_FALSE },
-    { "minimized",          SDL_WINDOW_MINIMIZED,           SDL_FALSE },
-    { "mouse-grabbed",      SDL_WINDOW_MOUSE_GRABBED,       SDL_FALSE },
-    { "opengl",             SDL_WINDOW_OPENGL,              SDL_FALSE },
-    { "resizable",          SDL_WINDOW_RESIZABLE,           SDL_FALSE },
-    { "transparent",        SDL_WINDOW_TRANSPARENT,         SDL_FALSE },
-    { "tooltip",            SDL_WINDOW_TOOLTIP,             SDL_FALSE },
-    { "utility",            SDL_WINDOW_UTILITY,             SDL_FALSE },
-    { "vulkan",             SDL_WINDOW_VULKAN,              SDL_FALSE }
+    { SDL_PROPERTY_WINDOW_CREATE_ALWAYS_ON_TOP_BOOLEAN,      SDL_WINDOW_ALWAYS_ON_TOP,       SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_BORDERLESS_BOOLEAN,         SDL_WINDOW_BORDERLESS,          SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_FOCUSABLE_BOOLEAN,          SDL_WINDOW_NOT_FOCUSABLE,       SDL_TRUE },
+    { SDL_PROPERTY_WINDOW_CREATE_FULLSCREEN_BOOLEAN,         SDL_WINDOW_FULLSCREEN,          SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_HIDDEN_BOOLEAN,             SDL_WINDOW_HIDDEN,              SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, SDL_WINDOW_HIGH_PIXEL_DENSITY,  SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_MAXIMIZED_BOOLEAN,          SDL_WINDOW_MAXIMIZED,           SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_MENU_BOOLEAN,               SDL_WINDOW_POPUP_MENU,          SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_METAL_BOOLEAN,              SDL_WINDOW_METAL,               SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_MINIMIZED_BOOLEAN,          SDL_WINDOW_MINIMIZED,           SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_MOUSE_GRABBED_BOOLEAN,      SDL_WINDOW_MOUSE_GRABBED,       SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_OPENGL_BOOLEAN,             SDL_WINDOW_OPENGL,              SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_RESIZABLE_BOOLEAN,          SDL_WINDOW_RESIZABLE,           SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_TRANSPARENT_BOOLEAN,        SDL_WINDOW_TRANSPARENT,         SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_TOOLTIP_BOOLEAN,            SDL_WINDOW_TOOLTIP,             SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_UTILITY_BOOLEAN,            SDL_WINDOW_UTILITY,             SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_VULKAN_BOOLEAN,             SDL_WINDOW_VULKAN,              SDL_FALSE }
 };
 
 static Uint32 SDL_GetWindowFlagProperties(SDL_PropertiesID props)
@@ -1957,12 +1957,12 @@ static Uint32 SDL_GetWindowFlagProperties(SDL_PropertiesID props)
 SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
 {
     SDL_Window *window;
-    const char *title = SDL_GetStringProperty(props, "title", NULL);
-    int x = (int)SDL_GetNumberProperty(props, "x", SDL_WINDOWPOS_UNDEFINED);
-    int y = (int)SDL_GetNumberProperty(props, "y", SDL_WINDOWPOS_UNDEFINED);
-    int w = (int)SDL_GetNumberProperty(props, "width", 0);
-    int h = (int)SDL_GetNumberProperty(props, "height", 0);
-    SDL_Window *parent = SDL_GetProperty(props, "parent", NULL);
+    const char *title = SDL_GetStringProperty(props, SDL_PROPERTY_WINDOW_CREATE_TITLE_STRING, NULL);
+    int x = (int)SDL_GetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_X_NUMBER, SDL_WINDOWPOS_UNDEFINED);
+    int y = (int)SDL_GetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_Y_NUMBER, SDL_WINDOWPOS_UNDEFINED);
+    int w = (int)SDL_GetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_WIDTH_NUMBER, 0);
+    int h = (int)SDL_GetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_HEIGHT_NUMBER, 0);
+    SDL_Window *parent = SDL_GetProperty(props, SDL_PROPERTY_WINDOW_CREATE_PARENT_POINTER, NULL);
     Uint32 flags = SDL_GetWindowFlagProperties(props);
     Uint32 type_flags, graphics_flags;
     SDL_bool undefined_x = SDL_FALSE;
@@ -2173,10 +2173,10 @@ SDL_Window *SDL_CreateWindow(const char *title, int w, int h, Uint32 flags)
     SDL_Window *window;
     SDL_PropertiesID props = SDL_CreateProperties();
     if (title && *title) {
-        SDL_SetStringProperty(props, "title", title);
+        SDL_SetStringProperty(props, SDL_PROPERTY_WINDOW_CREATE_TITLE_STRING, title);
     }
-    SDL_SetNumberProperty(props, "width", w);
-    SDL_SetNumberProperty(props, "height", h);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_WIDTH_NUMBER, w);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_HEIGHT_NUMBER, h);
     SDL_SetNumberProperty(props, "flags", flags);
     window = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);
@@ -2194,11 +2194,11 @@ SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y
         return NULL;
     }
 
-    SDL_SetProperty(props, "parent", parent);
-    SDL_SetNumberProperty(props, "x", offset_x);
-    SDL_SetNumberProperty(props, "y", offset_y);
-    SDL_SetNumberProperty(props, "width", w);
-    SDL_SetNumberProperty(props, "height", h);
+    SDL_SetProperty(props, SDL_PROPERTY_WINDOW_CREATE_PARENT_POINTER, parent);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_X_NUMBER, offset_x);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_Y_NUMBER, offset_y);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_WIDTH_NUMBER, w);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_HEIGHT_NUMBER, h);
     SDL_SetNumberProperty(props, "flags", flags);
     window = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);

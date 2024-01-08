@@ -643,7 +643,7 @@ static SDL_Renderer *PS2_CreateRenderer(SDL_Window *window, SDL_PropertiesID cre
 
     data->gsGlobal = gsGlobal;
     dynamicVsync = SDL_GetHintBoolean(SDL_HINT_PS2_DYNAMIC_VSYNC, SDL_FALSE);
-    if (SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE)) {
+    if (SDL_GetBooleanProperty(create_props, SDL_PROPERTY_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
         data->vsync = (dynamicVsync ? 2 : 1);
     }
 

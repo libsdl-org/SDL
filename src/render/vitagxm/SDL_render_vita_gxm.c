@@ -260,7 +260,7 @@ SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, SDL_PropertiesID creat
 
     data->initialized = SDL_TRUE;
 
-    if (SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE)) {
+    if (SDL_GetBooleanProperty(create_props, SDL_PROPERTY_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
         data->displayData.wait_vblank = SDL_TRUE;
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     } else {

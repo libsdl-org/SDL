@@ -145,7 +145,7 @@ static SDL_bool CreateWindowAndRenderer(Uint32 window_flags, const char *driver)
 #endif
 
 #ifdef __WIN32__
-    d3d11_device = (ID3D11Device *)SDL_GetProperty(SDL_GetRendererProperties(renderer), "SDL.renderer.d3d11.device", NULL);
+    d3d11_device = (ID3D11Device *)SDL_GetProperty(SDL_GetRendererProperties(renderer), SDL_PROPERTY_RENDERER_D3D11_DEVICE_POINTER, NULL);
     if (d3d11_device) {
         ID3D11Device_AddRef(d3d11_device);
         ID3D11Device_GetImmediateContext(d3d11_device, &d3d11_context);
@@ -622,7 +622,7 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
         }
     }
 
-    ID3D11Resource *dx11_resource = SDL_GetProperty(SDL_GetTextureProperties(*texture), "SDL.texture.d3d11.texture", NULL);
+    ID3D11Resource *dx11_resource = SDL_GetProperty(SDL_GetTextureProperties(*texture), SDL_PROPERTY_TEXTURE_D3D11_TEXTURE_POINTER, NULL);
     if (!dx11_resource) {
         SDL_SetError("Couldn't get texture ID3D11Resource interface");
         return SDL_FALSE;

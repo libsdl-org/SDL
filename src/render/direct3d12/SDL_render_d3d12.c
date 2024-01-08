@@ -324,8 +324,8 @@ static void D3D12_ReleaseAll(SDL_Renderer *renderer)
     SDL_Texture *texture = NULL;
 
     SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
-    SDL_SetProperty(props, "SDL.renderer.d3d12.device", NULL);
-    SDL_SetProperty(props, "SDL.renderer.d3d12.command_queue", NULL);
+    SDL_SetProperty(props, SDL_PROPERTY_RENDERER_D3D12_DEVICE_POINTER, NULL);
+    SDL_SetProperty(props, SDL_PROPERTY_RENDERER_D3D12_COMMAND_QUEUE_POINTER, NULL);
 
     /* Release all textures */
     for (texture = renderer->textures; texture; texture = texture->next) {
@@ -1074,8 +1074,8 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
     data->srvPoolHead = &data->srvPoolNodes[0];
 
     SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
-    SDL_SetProperty(props, "SDL.renderer.d3d12.device", data->d3dDevice);
-    SDL_SetProperty(props, "SDL.renderer.d3d12.command_queue", data->commandQueue);
+    SDL_SetProperty(props, SDL_PROPERTY_RENDERER_D3D12_DEVICE_POINTER, data->d3dDevice);
+    SDL_SetProperty(props, SDL_PROPERTY_RENDERER_D3D12_COMMAND_QUEUE_POINTER, data->commandQueue);
 
 done:
     SAFE_RELEASE(d3dDevice);
@@ -1179,7 +1179,7 @@ static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT | /* To support SetMaximumFrameLatency */
                           DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;                  /* To support presenting with allow tearing on */
 
-    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(renderer->window), "SDL.window.win32.hwnd", NULL);
+    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(renderer->window), SDL_PROPERTY_WINDOW_WIN32_HWND_POINTER, NULL);
 
     result = D3D_CALL(data->dxgiFactory, CreateSwapChainForHwnd,
                       (IUnknown *)data->commandQueue,
@@ -1506,7 +1506,7 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         }
     }
     textureData->mainResourceState = D3D12_RESOURCE_STATE_COPY_DEST;
-    SDL_SetProperty(SDL_GetTextureProperties(texture), "SDL.texture.d3d12.texture", textureData->mainTexture);
+    SDL_SetProperty(SDL_GetTextureProperties(texture), SDL_PROPERTY_TEXTURE_D3D12_TEXTURE_POINTER, textureData->mainTexture);
 #if SDL_HAVE_YUV
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
         texture->format == SDL_PIXELFORMAT_IYUV) {
@@ -1533,7 +1533,7 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
             }
         }
         textureData->mainResourceStateU = D3D12_RESOURCE_STATE_COPY_DEST;
-        SDL_SetProperty(SDL_GetTextureProperties(texture), "SDL.texture.d3d12.texture_u", textureData->mainTextureU);
+        SDL_SetProperty(SDL_GetTextureProperties(texture), SDL_PROPERTY_TEXTURE_D3D12_TEXTURE_U_POINTER, textureData->mainTextureU);
 
         if (GetTextureProperty(create_props, "d3d12.texture_v", &textureData->mainTextureV) < 0) {
             return -1;
@@ -1553,7 +1553,7 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
             }
         }
         textureData->mainResourceStateV = D3D12_RESOURCE_STATE_COPY_DEST;
-        SDL_SetProperty(SDL_GetTextureProperties(texture), "SDL.texture.d3d12.texture_v", textureData->mainTextureV);
+        SDL_SetProperty(SDL_GetTextureProperties(texture), SDL_PROPERTY_TEXTURE_D3D12_TEXTURE_V_POINTER, textureData->mainTextureV);
     }
 
     if (texture->format == SDL_PIXELFORMAT_NV12 ||
@@ -3027,7 +3027,7 @@ SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_p
     renderer->driverdata = data;
     D3D12_InvalidateCachedState(renderer);
 
-    if (SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE)) {
+    if (SDL_GetBooleanProperty(create_props, SDL_PROPERTY_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     }
     renderer->SetVSync = D3D12_SetVSync;

@@ -1630,8 +1630,8 @@ static int METAL_SetVSync(SDL_Renderer *renderer, const int vsync)
 static SDL_MetalView GetWindowView(SDL_Window *window)
 {
 #ifdef SDL_VIDEO_DRIVER_COCOA
-    NSWindow *nswindow = (__bridge NSWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.cocoa.window", NULL);
-    NSInteger tag = (NSInteger)SDL_GetNumberProperty(SDL_GetWindowProperties(window), "SDL.window.cocoa.metal_view_tag", 0);
+    NSWindow *nswindow = (__bridge NSWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_COCOA_WINDOW_POINTER, NULL);
+    NSInteger tag = (NSInteger)SDL_GetNumberProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_COCOA_METAL_VIEW_TAG_NUMBER, 0);
     if (nswindow && tag) {
         NSView *view = nswindow.contentView;
         if (view.subviews.count > 0) {
@@ -1644,8 +1644,8 @@ static SDL_MetalView GetWindowView(SDL_Window *window)
 #endif
 
 #ifdef SDL_VIDEO_DRIVER_UIKIT
-    UIWindow *uiwindow = (__bridge UIWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.uikit.window", NULL);
-    NSInteger tag = (NSInteger)SDL_GetNumberProperty(SDL_GetWindowProperties(window), "SDL.window.uikit.metal_view_tag", 0);
+    UIWindow *uiwindow = (__bridge UIWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_UIKIT_WINDOW_POINTER, NULL);
+    NSInteger tag = (NSInteger)SDL_GetNumberProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER, 0);
     if (uiwindow && tag) {
         UIView *view = uiwindow.rootViewController.view;
         if (view.tag == tag) {
@@ -1924,7 +1924,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
 
 #if (defined(__MACOS__) && defined(MAC_OS_X_VERSION_10_13)) || TARGET_OS_MACCATALYST
         if (@available(macOS 10.13, *)) {
-            data.mtllayer.displaySyncEnabled = SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE);
+            data.mtllayer.displaySyncEnabled = SDL_GetBooleanProperty(create_props, SDL_PROPERTY_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE);
             if (data.mtllayer.displaySyncEnabled) {
                 renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
             }

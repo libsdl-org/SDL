@@ -498,7 +498,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
         data->fbo = NULL;
     }
 
-    data->texture = (GLuint)SDL_GetNumberProperty(create_props, "opengl.texture", 0);
+    data->texture = (GLuint)SDL_GetNumberProperty(create_props, SDL_PROPERTY_TEXTURE_CREATE_OPENGL_TEXTURE_NUMBER, 0);
     if (data->texture) {
         data->texture_external = SDL_TRUE;
     } else {
@@ -531,9 +531,9 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
         data->texh = (GLfloat)texture->h / texture_h;
     }
     SDL_PropertiesID props = SDL_GetTextureProperties(texture);
-    SDL_SetNumberProperty(props, "SDL.texture.opengl.texture", data->texture);
-    SDL_SetFloatProperty(props, "SDL.texture.opengl.tex_w", data->texw);
-    SDL_SetFloatProperty(props, "SDL.texture.opengl.tex_h", data->texh);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_TEXTURE_OPENGL_TEXTURE_NUMBER, data->texture);
+    SDL_SetFloatProperty(props, SDL_PROPERTY_TEXTURE_OPENGL_TEX_W_FLOAT, data->texw);
+    SDL_SetFloatProperty(props, SDL_PROPERTY_TEXTURE_OPENGL_TEX_H_FLOAT, data->texh);
 
     data->format = format;
     data->formattype = type;
@@ -592,13 +592,13 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
         texture->format == SDL_PIXELFORMAT_IYUV) {
         data->yuv = SDL_TRUE;
 
-        data->utexture = (GLuint)SDL_GetNumberProperty(create_props, "opengl.texture_u", 0);
+        data->utexture = (GLuint)SDL_GetNumberProperty(create_props, SDL_PROPERTY_TEXTURE_CREATE_OPENGL_TEXTURE_U_NUMBER, 0);
         if (data->utexture) {
             data->utexture_external = SDL_TRUE;
         } else {
             renderdata->glGenTextures(1, &data->utexture);
         }
-        data->vtexture = (GLuint)SDL_GetNumberProperty(create_props, "opengl.texture_v", 0);
+        data->vtexture = (GLuint)SDL_GetNumberProperty(create_props, SDL_PROPERTY_TEXTURE_CREATE_OPENGL_TEXTURE_V_NUMBER, 0);
         if (data->vtexture) {
             data->vtexture_external = SDL_TRUE;
         } else {
@@ -616,7 +616,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
                                     GL_CLAMP_TO_EDGE);
         renderdata->glTexImage2D(textype, 0, internalFormat, (texture_w + 1) / 2,
                                  (texture_h + 1) / 2, 0, format, type, NULL);
-        SDL_SetNumberProperty(props, "SDL.texture.opengl.texture_u", data->utexture);
+        SDL_SetNumberProperty(props, SDL_PROPERTY_TEXTURE_OPENGL_TEXTURE_U_NUMBER, data->utexture);
 
         renderdata->glBindTexture(textype, data->vtexture);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER,
@@ -629,14 +629,14 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
                                     GL_CLAMP_TO_EDGE);
         renderdata->glTexImage2D(textype, 0, internalFormat, (texture_w + 1) / 2,
                                  (texture_h + 1) / 2, 0, format, type, NULL);
-        SDL_SetNumberProperty(props, "SDL.texture.opengl.texture_v", data->vtexture);
+        SDL_SetNumberProperty(props, SDL_PROPERTY_TEXTURE_OPENGL_TEXTURE_V_NUMBER, data->vtexture);
     }
 
     if (texture->format == SDL_PIXELFORMAT_NV12 ||
         texture->format == SDL_PIXELFORMAT_NV21) {
         data->nv12 = SDL_TRUE;
 
-        data->utexture = (GLuint)SDL_GetNumberProperty(create_props, "opengl.texture_uv", 0);
+        data->utexture = (GLuint)SDL_GetNumberProperty(create_props, SDL_PROPERTY_TEXTURE_CREATE_OPENGL_TEXTURE_UV_NUMBER, 0);
         if (data->utexture) {
             data->utexture_external = SDL_TRUE;
         } else {
@@ -653,7 +653,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
                                     GL_CLAMP_TO_EDGE);
         renderdata->glTexImage2D(textype, 0, GL_LUMINANCE_ALPHA, (texture_w + 1) / 2,
                                  (texture_h + 1) / 2, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, NULL);
-        SDL_SetNumberProperty(props, "SDL.texture.opengl.texture_uv", data->utexture);
+        SDL_SetNumberProperty(props, SDL_PROPERTY_TEXTURE_OPENGL_TEXTURE_UV_NUMBER, data->utexture);
     }
 #endif
 
@@ -1867,7 +1867,7 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
      */
 #endif
 
-    if (SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE)) {
+    if (SDL_GetBooleanProperty(create_props, SDL_PROPERTY_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
         SDL_GL_SetSwapInterval(1);
     } else {
         SDL_GL_SetSwapInterval(0);

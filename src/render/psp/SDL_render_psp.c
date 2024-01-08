@@ -1345,7 +1345,7 @@ SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
     data->most_recent_target = NULL;
     data->least_recent_target = NULL;
 
-    if (SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE)) {
+    if (SDL_GetBooleanProperty(create_props, SDL_PROPERTY_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
         data->vsync = SDL_TRUE;
     } else {
         data->vsync = SDL_FALSE;

@@ -1508,7 +1508,7 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 
 #if SDL_HAVE_YUV
     if (data->yuv) {
-        data->texture_v = (GLuint)SDL_GetNumberProperty(create_props, "opengles2.texture_v", 0);
+        data->texture_v = (GLuint)SDL_GetNumberProperty(create_props, SDL_PROPERTY_TEXTURE_CREATE_OPENGLES2_TEXTURE_V_NUMBER, 0);
         if (data->texture_v) {
             data->texture_v_external = SDL_TRUE;
         } else {
@@ -1524,9 +1524,9 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         renderdata->glTexImage2D(data->texture_type, 0, format, (texture->w + 1) / 2, (texture->h + 1) / 2, 0, format, type, NULL);
-        SDL_SetNumberProperty(SDL_GetTextureProperties(texture), "SDL.texture.opengles2.texture_v", data->texture_v);
+        SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROPERTY_TEXTURE_OPENGLES2_TEXTURE_V_NUMBER, data->texture_v);
 
-        data->texture_u = (GLuint)SDL_GetNumberProperty(create_props, "opengles2.texture_u", 0);
+        data->texture_u = (GLuint)SDL_GetNumberProperty(create_props, SDL_PROPERTY_TEXTURE_CREATE_OPENGLES2_TEXTURE_U_NUMBER, 0);
         if (data->texture_u) {
             data->texture_u_external = SDL_TRUE;
         } else {
@@ -1545,10 +1545,10 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         if (GL_CheckError("glTexImage2D()", renderer) < 0) {
             return -1;
         }
-        SDL_SetNumberProperty(SDL_GetTextureProperties(texture), "SDL.texture.opengles2.texture_u", data->texture_u);
+        SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROPERTY_TEXTURE_OPENGLES2_TEXTURE_U_NUMBER, data->texture_u);
 
     } else if (data->nv12) {
-        data->texture_u = (GLuint)SDL_GetNumberProperty(create_props, "opengles2.texture_uv", 0);
+        data->texture_u = (GLuint)SDL_GetNumberProperty(create_props, SDL_PROPERTY_TEXTURE_CREATE_OPENGLES2_TEXTURE_UV_NUMBER, 0);
         if (data->texture_u) {
             data->texture_u_external = SDL_TRUE;
         } else {
@@ -1567,11 +1567,11 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         if (GL_CheckError("glTexImage2D()", renderer) < 0) {
             return -1;
         }
-        SDL_SetNumberProperty(SDL_GetTextureProperties(texture), "SDL.texture.opengles2.texture_uv", data->texture_u);
+        SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROPERTY_TEXTURE_OPENGLES2_TEXTURE_UV_NUMBER, data->texture_u);
     }
 #endif
 
-    data->texture = (GLuint)SDL_GetNumberProperty(create_props, "opengles2.texture", 0);
+    data->texture = (GLuint)SDL_GetNumberProperty(create_props, SDL_PROPERTY_TEXTURE_CREATE_OPENGLES2_TEXTURE_NUMBER, 0);
     if (data->texture) {
         data->texture_external = SDL_TRUE;
     } else {
@@ -1593,7 +1593,7 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
             return -1;
         }
     }
-    SDL_SetNumberProperty(SDL_GetTextureProperties(texture), "SDL.texture.opengles2.texture", data->texture);
+    SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROPERTY_TEXTURE_OPENGLES2_TEXTURE_NUMBER, data->texture);
 
     if (texture->access == SDL_TEXTUREACCESS_TARGET) {
         data->fbo = GLES2_GetFBO(renderer->driverdata, texture->w, texture->h);
@@ -2155,10 +2155,10 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
      * is turned on.  Not doing so will freeze the screen's contents to that
      * of the first drawn frame.
      */
-    SDL_SetBooleanProperty(create_props, "present_vsync", SDL_TRUE);
+    SDL_SetBooleanProperty(create_props, SDL_PROPERTY_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_TRUE);
 #endif
 
-    if (SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE)) {
+    if (SDL_GetBooleanProperty(create_props, SDL_PROPERTY_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
         SDL_GL_SetSwapInterval(1);
     } else {
         SDL_GL_SetSwapInterval(0);

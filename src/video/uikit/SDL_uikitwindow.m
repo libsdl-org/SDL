@@ -146,8 +146,8 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow 
     [view setSDLWindow:window];
 
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
-    SDL_SetProperty(props, "SDL.window.uikit.window", (__bridge void *)data.uiwindow);
-    SDL_SetNumberProperty(props, "SDL.window.uikit.metal_view_tag", SDL_METALVIEW_TAG);
+    SDL_SetProperty(props, SDL_PROPERTY_WINDOW_UIKIT_WINDOW_POINTER, (__bridge void *)data.uiwindow);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER, SDL_METALVIEW_TAG);
 
     return 0;
 }

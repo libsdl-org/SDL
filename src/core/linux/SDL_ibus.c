@@ -705,9 +705,9 @@ void SDL_IBus_UpdateTextRect(const SDL_Rect *rect)
 #ifdef SDL_VIDEO_DRIVER_X11
     {
         SDL_PropertiesID props = SDL_GetWindowProperties(focused_win);
-        Display *x_disp = (Display *)SDL_GetProperty(props, "SDL.window.x11.display", NULL);
-        int x_screen = SDL_GetNumberProperty(props, "SDL.window.x11.screen", 0);
-        Window x_win = SDL_GetNumberProperty(props, "SDL.window.x11.window", 0);
+        Display *x_disp = (Display *)SDL_GetProperty(props, SDL_PROPERTY_WINDOW_X11_DISPLAY_POINTER, NULL);
+        int x_screen = SDL_GetNumberProperty(props, SDL_PROPERTY_WINDOW_X11_SCREEN_NUMBER, 0);
+        Window x_win = SDL_GetNumberProperty(props, SDL_PROPERTY_WINDOW_X11_WINDOW_NUMBER, 0);
         Window unused;
 
         if (x_disp && x_win) {

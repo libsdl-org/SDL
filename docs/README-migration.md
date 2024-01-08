@@ -1303,25 +1303,25 @@ The information previously available in SDL_GetWindowWMInfo() is now available a
 becomes:
 ```c
 #if defined(__WIN32__)
-    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.win32.hwnd", NULL);
+    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_WIN32_HWND_POINTER, NULL);
     if (hwnd) {
         ...
     }
 #elif defined(__MACOS__)
-    NSWindow *nswindow = (__bridge NSWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.cocoa.window", NULL);
+    NSWindow *nswindow = (__bridge NSWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_COCOA_WINDOW_POINTER, NULL);
     if (nswindow) {
         ...
     }
 #elif defined(__LINUX__)
     if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
-        Display *xdisplay = (Display *)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.x11.display", NULL);
-        Window xwindow = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(window), "SDL.window.x11.window", 0);
+        Display *xdisplay = (Display *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_X11_DISPLAY_POINTER, NULL);
+        Window xwindow = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_X11_WINDOW_NUMBER, 0);
         if (xdisplay && xwindow) {
             ...
         }
     } else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
-        struct wl_display *display = (struct wl_display *)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.wayland.display", NULL);
-        struct wl_surface *surface = (struct wl_surface *)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.wayland.surface", NULL);
+        struct wl_display *display = (struct wl_display *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
+        struct wl_surface *surface = (struct wl_surface *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
         if (display && surface) {
             ...
         }
@@ -1404,11 +1404,11 @@ Rather than iterating over displays using display index, there is a new function
 SDL_CreateWindow() has been simplified and no longer takes a window position. You can use SDL_CreateWindowWithProperties() if you need to set the window position when creating it, e.g.
 ```c
     SDL_PropertiesID props = SDL_CreateProperties();
-    SDL_SetStringProperty(props, "title", title);
-    SDL_SetNumberProperty(props, "x", x);
-    SDL_SetNumberProperty(props, "y", y);
-    SDL_SetNumberProperty(props, "width", width);
-    SDL_SetNumberProperty(props, "height", height);
+    SDL_SetStringProperty(props, SDL_PROPERTY_WINDOW_CREATE_TITLE_STRING, title);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_X_NUMBER, x);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_Y_NUMBER, y);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_WIDTH_NUMBER, width);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_HEIGHT_NUMBER, height);
     SDL_SetNumberProperty(props, "flags", flags);
     pWindow = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);

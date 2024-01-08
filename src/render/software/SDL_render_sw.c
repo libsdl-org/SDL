@@ -1168,7 +1168,7 @@ static SDL_Renderer *SW_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
     }
 
     if (no_hint_set) {
-        if (SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE)) {
+        if (SDL_GetBooleanProperty(create_props, SDL_PROPERTY_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
             SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
         } else {
             SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");

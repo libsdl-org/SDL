@@ -1764,12 +1764,12 @@ static int video_setWindowCenteredOnDisplay(void *arg)
                 expectedY = (expectedDisplayRect.y + ((expectedDisplayRect.h - h) / 2));
 
                 props = SDL_CreateProperties();
-                SDL_SetStringProperty(props, "title", title);
-                SDL_SetNumberProperty(props, "x", x);
-                SDL_SetNumberProperty(props, "w", y);
-                SDL_SetNumberProperty(props, "width", w);
-                SDL_SetNumberProperty(props, "height", h);
-                SDL_SetBooleanProperty(props, "borderless", SDL_TRUE);
+                SDL_SetStringProperty(props, SDL_PROPERTY_WINDOW_CREATE_TITLE_STRING, title);
+                SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_X_NUMBER, x);
+                SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_Y_NUMBER, y);
+                SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_WIDTH_NUMBER, w);
+                SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_HEIGHT_NUMBER, h);
+                SDL_SetBooleanProperty(props, SDL_PROPERTY_WINDOW_CREATE_BORDERLESS_BOOLEAN, SDL_TRUE);
                 window = SDL_CreateWindowWithProperties(props);
                 SDL_DestroyProperties(props);
                 SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d,%d,SHOWN)", x, y, w, h);
@@ -1961,7 +1961,7 @@ static int video_getSetWindowState(void *arg)
 
     SDL_GetWindowSize(window, &windowedW, &windowedH);
     SDLTest_AssertPass("SDL_GetWindowSize()");
-    
+
     SDL_GetWindowPosition(window, &windowedX, &windowedY);
     SDLTest_AssertPass("SDL_GetWindowPosition()");
 
