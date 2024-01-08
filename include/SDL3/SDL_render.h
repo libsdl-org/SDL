@@ -703,6 +703,23 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Rendere
 extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTextureProperties(SDL_Texture *texture);
 
 /**
+ * Get the renderer that created an SDL_Texture.
+ *
+ * \param texture the texture to query
+ * \returns a pointer to the SDL_Renderer that created the texture, or NULL
+ *          on failure; call SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateTexture
+ * \sa SDL_CreateTextureFromSurface
+ * \sa SDL_CreateTextureWithProperties
+ */
+extern DECLSPEC SDL_Renderer *SDLCALL SDL_GetTextureRenderer(SDL_Texture *texture);
+
+/**
  * Query the attributes of a texture.
  *
  * \param texture the texture to query

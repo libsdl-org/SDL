@@ -1011,3 +1011,4 @@ SDL_DYNAPI_PROC(char*,SDL_strnstr,(const char *a, const char *b, size_t c),(a,b,
 SDL_DYNAPI_PROC(wchar_t*,SDL_wcsnstr,(const wchar_t *a, const wchar_t *b, size_t c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_SyncWindow,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(Uint64,SDL_GetGamepadSteamHandle,(SDL_Gamepad *a),(a),return)
+SDL_DYNAPI_PROC(SDL_Renderer*,SDL_GetTextureRenderer,(SDL_Texture *a),(a),return)
