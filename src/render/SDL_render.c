@@ -1396,7 +1396,7 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     return texture;
 }
 
-SDL_Renderer *SDL_GetTextureRenderer(SDL_Texture *texture)
+SDL_Renderer *SDL_GetRendererFromTexture(SDL_Texture *texture)
 {
     CHECK_TEXTURE_MAGIC(texture, NULL);
     return texture->renderer;

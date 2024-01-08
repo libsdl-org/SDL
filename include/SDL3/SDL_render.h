@@ -651,7 +651,7 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTextureProperties(SDL_Texture *t
  * \sa SDL_CreateTextureFromSurface
  * \sa SDL_CreateTextureWithProperties
  */
-extern DECLSPEC SDL_Renderer *SDLCALL SDL_GetTextureRenderer(SDL_Texture *texture);
+extern DECLSPEC SDL_Renderer *SDLCALL SDL_GetRendererFromTexture(SDL_Texture *texture);
 
 /**
  * Query the attributes of a texture.
