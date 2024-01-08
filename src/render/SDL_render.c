@@ -4153,38 +4153,6 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
     renderer->DestroyRenderer(renderer);
 }
 
-int SDL_GL_BindTexture(SDL_Texture *texture, float *texw, float *texh)
-{
-    SDL_Renderer *renderer;
-
-    CHECK_TEXTURE_MAGIC(texture, -1);
-    renderer = texture->renderer;
-    if (texture->native) {
-        return SDL_GL_BindTexture(texture->native, texw, texh);
-    } else if (renderer && renderer->GL_BindTexture) {
-        FlushRenderCommandsIfTextureNeeded(texture); /* in case the app is going to mess with it. */
-        return renderer->GL_BindTexture(renderer, texture, texw, texh);
-    } else {
-        return SDL_Unsupported();
-    }
-}
-
-int SDL_GL_UnbindTexture(SDL_Texture *texture)
-{
-    SDL_Renderer *renderer;
-
-    CHECK_TEXTURE_MAGIC(texture, -1);
-    renderer = texture->renderer;
-    if (texture->native) {
-        return SDL_GL_UnbindTexture(texture->native);
-    } else if (renderer && renderer->GL_UnbindTexture) {
-        FlushRenderCommandsIfTextureNeeded(texture); /* in case the app messed with it. */
-        return renderer->GL_UnbindTexture(renderer, texture);
-    }
-
-    return SDL_Unsupported();
-}
-
 void *SDL_GetRenderMetalLayer(SDL_Renderer *renderer)
 {
     CHECK_RENDERER_MAGIC(renderer, NULL);

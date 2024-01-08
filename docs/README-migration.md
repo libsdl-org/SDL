@@ -959,6 +959,8 @@ The following functions have been renamed:
 * SDL_RenderWindowToLogical() => SDL_RenderCoordinatesFromWindow()
 
 The following functions have been removed:
+* SDL_GL_BindTexture() - use SDL_GetTextureProperties() to get the OpenGL texture ID and bind the texture directly
+* SDL_GL_UnbindTexture() - use SDL_GetTextureProperties() to get the OpenGL texture ID and unbind the texture directly
 * SDL_GetTextureUserData() - use SDL_GetTextureProperties() instead
 * SDL_RenderGetIntegerScale()
 * SDL_RenderSetIntegerScale() - this is now explicit with SDL_LOGICAL_PRESENTATION_INTEGER_SCALE

@@ -1746,60 +1746,6 @@ extern DECLSPEC void SDLCALL SDL_DestroyRenderer(SDL_Renderer *renderer);
  */
 extern DECLSPEC int SDLCALL SDL_FlushRenderer(SDL_Renderer *renderer);
 
-
-/**
- * Bind an OpenGL/ES/ES2 texture to the current context.
- *
- * This is for use with OpenGL instructions when rendering OpenGL primitives
- * directly.
- *
- * If not NULL, `texw` and `texh` will be filled with the width and height
- * values suitable for the provided texture. In most cases, both will be 1.0,
- * however, on systems that support the GL_ARB_texture_rectangle extension,
- * these values will actually be the pixel width and height used to create the
- * texture, so this factor needs to be taken into account when providing
- * texture coordinates to OpenGL.
- *
- * You need a renderer to create an SDL_Texture, therefore you can only use
- * this function with an implicit OpenGL context from SDL_CreateRenderer(),
- * not with your own OpenGL context. If you need control over your OpenGL
- * context, you need to write your own texture-loading methods.
- *
- * Also note that SDL may upload RGB textures as BGR (or vice-versa), and
- * re-order the color channels in the shaders phase, so the uploaded texture
- * may have swapped color channels.
- *
- * \param texture the texture to bind to the current OpenGL/ES/ES2 context
- * \param texw a pointer to a float value which will be filled with the
- *             texture width or NULL if you don't need that value
- * \param texh a pointer to a float value which will be filled with the
- *             texture height or NULL if you don't need that value
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GL_MakeCurrent
- * \sa SDL_GL_UnbindTexture
- */
-extern DECLSPEC int SDLCALL SDL_GL_BindTexture(SDL_Texture *texture, float *texw, float *texh);
-
-/**
- * Unbind an OpenGL/ES/ES2 texture from the current context.
- *
- * See SDL_GL_BindTexture() for examples on how to use these functions
- *
- * \param texture the texture to unbind from the current OpenGL/ES/ES2 context
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GL_BindTexture
- * \sa SDL_GL_MakeCurrent
- */
-extern DECLSPEC int SDLCALL SDL_GL_UnbindTexture(SDL_Texture *texture);
-
 /**
  * Get the CAMetalLayer associated with the given Metal renderer.
  *

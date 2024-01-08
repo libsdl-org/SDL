@@ -2014,57 +2014,6 @@ static int GLES2_SetVSync(SDL_Renderer *renderer, const int vsync)
 }
 
 /*************************************************************************************************
- * Bind/unbinding of textures
- *************************************************************************************************/
-static int GLES2_BindTexture(SDL_Renderer *renderer, SDL_Texture *texture, float *texw, float *texh)
-{
-    GLES2_RenderData *data = (GLES2_RenderData *)renderer->driverdata;
-    GLES2_TextureData *texturedata = (GLES2_TextureData *)texture->driverdata;
-    GLES2_ActivateRenderer(renderer);
-
-#if SDL_HAVE_YUV
-    if (texturedata->yuv) {
-        data->glActiveTexture(GL_TEXTURE2);
-        data->glBindTexture(texturedata->texture_type, texturedata->texture_v);
-
-        data->glActiveTexture(GL_TEXTURE1);
-        data->glBindTexture(texturedata->texture_type, texturedata->texture_u);
-
-        data->glActiveTexture(GL_TEXTURE0);
-    } else if (texturedata->nv12) {
-        data->glActiveTexture(GL_TEXTURE1);
-        data->glBindTexture(texturedata->texture_type, texturedata->texture_u);
-
-        data->glActiveTexture(GL_TEXTURE0);
-    }
-#endif
-
-    data->glBindTexture(texturedata->texture_type, texturedata->texture);
-    data->drawstate.texture = texture;
-
-    if (texw) {
-        *texw = 1.0;
-    }
-    if (texh) {
-        *texh = 1.0;
-    }
-
-    return 0;
-}
-
-static int GLES2_UnbindTexture(SDL_Renderer *renderer, SDL_Texture *texture)
-{
-    GLES2_RenderData *data = (GLES2_RenderData *)renderer->driverdata;
-    GLES2_TextureData *texturedata = (GLES2_TextureData *)texture->driverdata;
-    GLES2_ActivateRenderer(renderer);
-
-    data->glBindTexture(texturedata->texture_type, 0);
-    data->drawstate.texture = NULL;
-
-    return 0;
-}
-
-/*************************************************************************************************
  * Renderer instantiation                                                                        *
  *************************************************************************************************/
 
@@ -2220,8 +2169,6 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
     renderer->DestroyTexture = GLES2_DestroyTexture;
     renderer->DestroyRenderer = GLES2_DestroyRenderer;
     renderer->SetVSync = GLES2_SetVSync;
-    renderer->GL_BindTexture = GLES2_BindTexture;
-    renderer->GL_UnbindTexture = GLES2_UnbindTexture;
 #if SDL_HAVE_YUV
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;

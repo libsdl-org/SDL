@@ -134,7 +134,6 @@
 #define SDL_FlushRenderer SDL_FlushRenderer_REAL
 #define SDL_GDKGetTaskQueue SDL_GDKGetTaskQueue_REAL
 #define SDL_GDKSuspendComplete  SDL_GDKSuspendComplete_REAL
-#define SDL_GL_BindTexture SDL_GL_BindTexture_REAL
 #define SDL_GL_CreateContext SDL_GL_CreateContext_REAL
 #define SDL_GL_DeleteContext SDL_GL_DeleteContext_REAL
 #define SDL_GL_ExtensionSupported SDL_GL_ExtensionSupported_REAL
@@ -149,7 +148,6 @@
 #define SDL_GL_SetAttribute SDL_GL_SetAttribute_REAL
 #define SDL_GL_SetSwapInterval SDL_GL_SetSwapInterval_REAL
 #define SDL_GL_SwapWindow SDL_GL_SwapWindow_REAL
-#define SDL_GL_UnbindTexture SDL_GL_UnbindTexture_REAL
 #define SDL_GL_UnloadLibrary SDL_GL_UnloadLibrary_REAL
 #define SDL_GUIDFromString SDL_GUIDFromString_REAL
 #define SDL_GUIDToString SDL_GUIDToString_REAL
