@@ -613,7 +613,9 @@ extern DECLSPEC void SDLCALL SDL_GameControllerUpdate(void);
  *  and are centered within ~8000 of zero, though advanced UI will allow users to set
  *  or autodetect the dead zone, which varies between controllers.
  *
- *  Trigger axis values range from 0 to SDL_JOYSTICK_AXIS_MAX.
+ *  Trigger axis values range from 0 (released) to SDL_JOYSTICK_AXIS_MAX
+ *  (fully pressed) when reported by SDL_GetGamepadAxis(). Note that this is not the
+ *  same range that will be reported by the lower-level SDL_GetJoystickAxis().
  */
 typedef enum
 {
@@ -702,8 +704,13 @@ SDL_GameControllerHasAxis(SDL_GameController *gamecontroller, SDL_GameController
  *
  * The axis indices start at index 0.
  *
- * The state is a value ranging from -32768 to 32767. Triggers, however, range
- * from 0 to 32767 (they never return a negative value).
+ * For thumbsticks, the state is a value ranging from -32768 (up/left)
+ * to 32767 (down/right).
+ *
+ * Triggers range from 0 when released to 32767 when fully pressed, and
+ * never return a negative value. Note that this differs from the value
+ * reported by the lower-level SDL_GetJoystickAxis(), which normally uses
+ * the full range.
  *
  * \param gamecontroller a game controller
  * \param axis an axis index (one of the SDL_GameControllerAxis values)
