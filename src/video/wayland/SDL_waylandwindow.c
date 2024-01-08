@@ -1444,6 +1444,8 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         WAYLAND_wl_display_roundtrip(c->display);
     }
 
+    data->surface_status = WAYLAND_SURFACE_STATUS_WAITING_FOR_CONFIGURE;
+
     /* Detach any previous buffers before resetting everything, otherwise when
      * calling this a second time you'll get an annoying protocol error!
      *
