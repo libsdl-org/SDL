@@ -614,7 +614,7 @@ extern DECLSPEC void SDLCALL SDL_GameControllerUpdate(void);
  *  or autodetect the dead zone, which varies between controllers.
  *
  *  Trigger axis values range from 0 (released) to SDL_JOYSTICK_AXIS_MAX
- *  (fully pressed) when reported by SDL_GetGamepadAxis(). Note that this is not the
+ *  (fully pressed) when reported by SDL_GameControllerGetAxis(). Note that this is not the
  *  same range that will be reported by the lower-level SDL_GetJoystickAxis().
  */
 typedef enum
