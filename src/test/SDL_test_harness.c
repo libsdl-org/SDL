@@ -494,7 +494,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                 /* Within each suite, loop over all test cases to check if we have a filter match */
                 for (testCounter = 0; testSuite->testCases[testCounter]; ++testCounter) {
                     testCase = testSuite->testCases[testCounter];
-                    SDLTest_Log("      test: %s", testCase->name);
+                    SDLTest_Log("      test: %s%s", testCase->name, testCase->enabled ? "" : " (disabled)");
                 }
             }
             SDLTest_Log("Exit code: 2");
