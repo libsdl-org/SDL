@@ -21,6 +21,7 @@ static int main_testInitQuitJoystickHaptic(void *arg)
     return TEST_SKIPPED;
 #else
     int enabled_subsystems;
+    int previous_subsystems = SDL_WasInit(SDL_INIT_EVERYTHING);
     int initialized_subsystems = SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC;
 
     SDLTest_AssertCheck(SDL_Init(initialized_subsystems) == 0, "SDL_Init multiple systems.");
@@ -32,6 +33,8 @@ static int main_testInitQuitJoystickHaptic(void *arg)
 
     enabled_subsystems = SDL_WasInit(initialized_subsystems);
     SDLTest_AssertCheck(enabled_subsystems == 0, "SDL_Quit should shut down everything (%i)", enabled_subsystems);
+
+    SDL_Init(previous_subsystems);
 
     return TEST_COMPLETED;
 #endif
