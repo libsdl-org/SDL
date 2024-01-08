@@ -1145,7 +1145,7 @@ static int SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const
     }
 
     /* This is a little awkward but should avoid texcoord arrays getting into
-       a bad state if SDL_GL_BindTexture/UnbindTexture are called. */
+       a bad state if the application is manually binding textures */
     if (texture_array != data->drawstate.texture_array) {
         if (texture_array) {
             data->glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -1610,105 +1610,6 @@ static void GL_DestroyRenderer(SDL_Renderer *renderer)
     SDL_free(renderer);
 }
 
-static int GL_BindTexture(SDL_Renderer *renderer, SDL_Texture *texture, float *texw, float *texh)
-{
-    GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
-    GL_TextureData *texturedata = (GL_TextureData *)texture->driverdata;
-    const GLenum textype = data->textype;
-
-    GL_ActivateRenderer(renderer);
-
-    data->glEnable(textype);
-#if SDL_HAVE_YUV
-    if (texturedata->yuv) {
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE2_ARB);
-        }
-        data->glBindTexture(textype, texturedata->vtexture);
-
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE1_ARB);
-        }
-        data->glBindTexture(textype, texturedata->utexture);
-
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE0_ARB);
-        }
-    }
-    if (texturedata->nv12) {
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE1_ARB);
-        }
-        data->glBindTexture(textype, texturedata->utexture);
-
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE0_ARB);
-        }
-    }
-#endif
-    data->glBindTexture(textype, texturedata->texture);
-
-    data->drawstate.texturing = SDL_TRUE;
-    data->drawstate.texture = texture;
-
-    if (texw) {
-        *texw = (float)texturedata->texw;
-    }
-    if (texh) {
-        *texh = (float)texturedata->texh;
-    }
-    return 0;
-}
-
-static int GL_UnbindTexture(SDL_Renderer *renderer, SDL_Texture *texture)
-{
-    GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
-    const GLenum textype = data->textype;
-#if SDL_HAVE_YUV
-    GL_TextureData *texturedata = (GL_TextureData *)texture->driverdata;
-#endif
-
-    GL_ActivateRenderer(renderer);
-
-#if SDL_HAVE_YUV
-    if (texturedata->yuv) {
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE2_ARB);
-        }
-        data->glBindTexture(textype, 0);
-        data->glDisable(textype);
-
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE1_ARB);
-        }
-        data->glBindTexture(textype, 0);
-        data->glDisable(textype);
-
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE0_ARB);
-        }
-    }
-    if (texturedata->nv12) {
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE1_ARB);
-        }
-        data->glBindTexture(textype, 0);
-        data->glDisable(textype);
-
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE0_ARB);
-        }
-    }
-#endif
-    data->glBindTexture(textype, 0);
-    data->glDisable(textype);
-
-    data->drawstate.texturing = SDL_FALSE;
-    data->drawstate.texture = NULL;
-
-    return 0;
-}
-
 static int GL_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
     int retval;
@@ -1828,8 +1729,6 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
     renderer->DestroyTexture = GL_DestroyTexture;
     renderer->DestroyRenderer = GL_DestroyRenderer;
     renderer->SetVSync = GL_SetVSync;
-    renderer->GL_BindTexture = GL_BindTexture;
-    renderer->GL_UnbindTexture = GL_UnbindTexture;
     renderer->info = GL_RenderDriver.info;
     renderer->info.flags = 0; /* will set some flags below. */
     renderer->driverdata = data;

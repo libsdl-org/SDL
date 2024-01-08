@@ -508,6 +508,8 @@ static SDL_bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
     const AVDRMFrameDescriptor *desc = (const AVDRMFrameDescriptor *)frame->data[0];
     int i, j, image_index, num_planes;
     EGLDisplay display = eglGetCurrentDisplay();
+    SDL_PropertiesID props;
+    GLuint textures[2];
 
     /* FIXME: Assuming NV12 data format */
     num_planes = 0;
@@ -536,8 +538,13 @@ static SDL_bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
     SDL_SetTextureBlendMode(*texture, SDL_BLENDMODE_NONE);
     SDL_SetTextureScaleMode(*texture, SDL_SCALEMODE_LINEAR);
 
-    /* Bind the texture for importing */
-    SDL_GL_BindTexture(*texture, NULL, NULL);
+    props = SDL_GetTextureProperties(*texture);
+    textures[0] = (GLuint)SDL_GetNumberProperty(props, SDL_PROPERTY_TEXTURE_OPENGLES2_TEXTURE_NUMBER, 0);
+    textures[1] = (GLuint)SDL_GetNumberProperty(props, SDL_PROPERTY_TEXTURE_OPENGLES2_TEXTURE_UV_NUMBER, 0);
+    if (!textures[0] || !textures[1]) {
+        SDL_SetError("Couldn't get NV12 OpenGL textures");
+        return SDL_FALSE;
+    }
 
     /* import the frame into OpenGL */
     image_index = 0;
@@ -559,12 +566,11 @@ static SDL_bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
             EGLImage pImage = eglCreateImage(display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, img_attr);
 
             glActiveTextureARBFunc(GL_TEXTURE0_ARB + image_index);
+            glBindTexture(GL_TEXTURE_2D, textures[image_index]);
             glEGLImageTargetTexture2DOESFunc(GL_TEXTURE_2D, pImage);
             ++image_index;
         }
     }
-
-    SDL_GL_UnbindTexture(*texture);
 
     return SDL_TRUE;
 #else
