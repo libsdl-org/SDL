@@ -532,6 +532,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
     }
     SDL_PropertiesID props = SDL_GetTextureProperties(texture);
     SDL_SetNumberProperty(props, SDL_PROPERTY_TEXTURE_OPENGL_TEXTURE_NUMBER, data->texture);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_TEXTURE_OPENGL_TEXTURE_TARGET, (Sint64) textype);
     SDL_SetFloatProperty(props, SDL_PROPERTY_TEXTURE_OPENGL_TEX_W_FLOAT, data->texw);
     SDL_SetFloatProperty(props, SDL_PROPERTY_TEXTURE_OPENGL_TEX_H_FLOAT, data->texh);
 

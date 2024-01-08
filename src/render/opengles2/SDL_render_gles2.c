@@ -1594,6 +1594,7 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         }
     }
     SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROPERTY_TEXTURE_OPENGLES2_TEXTURE_NUMBER, data->texture);
+    SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROPERTY_TEXTURE_OPENGLES2_TEXTURE_TARGET, data->texture_type);
 
     if (texture->access == SDL_TEXTUREACCESS_TARGET) {
         data->fbo = GLES2_GetFBO(renderer->driverdata, texture->w, texture->h);
