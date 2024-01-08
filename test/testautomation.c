@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
             SDL_Log("Test suite: %s", testSuite->name);
             for (testCounter = 0; testSuite->testCases[testCounter]; ++testCounter) {
                 const SDLTest_TestCaseReference *testCase = testSuite->testCases[testCounter];
-                SDL_Log("      test: %s", testCase->name);
+                SDL_Log("      test: %s%s", testCase->name, testCase->enabled ? "" : " (disabled)");
             }
         }
         return 0;
