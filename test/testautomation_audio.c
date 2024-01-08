@@ -87,6 +87,7 @@ static int audio_initQuitAudio(void *arg)
     int result;
     int i, iMax;
     const char *audioDriver;
+    const char *hint = SDL_GetHint(SDL_HINT_AUDIO_DRIVER);
 
     /* Stop SDL audio subsystem */
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
@@ -101,6 +102,10 @@ static int audio_initQuitAudio(void *arg)
         SDLTest_AssertPass("Call to SDL_GetAudioDriver(%d)", i);
         SDLTest_Assert(audioDriver != NULL, "Audio driver name is not NULL");
         SDLTest_AssertCheck(audioDriver[0] != '\0', "Audio driver name is not empty; got: %s", audioDriver); /* NOLINT(clang-analyzer-core.NullDereference): Checked for NULL above */
+
+        if (hint && SDL_strcmp(audioDriver, hint) != 0) {
+            continue;
+        }
 
         /* Call Init */
         SDL_SetHint("SDL_AUDIO_DRIVER", audioDriver);
@@ -146,6 +151,7 @@ static int audio_initOpenCloseQuitAudio(void *arg)
     int i, iMax, j, k;
     const char *audioDriver;
     SDL_AudioSpec desired;
+    const char *hint = SDL_GetHint(SDL_HINT_AUDIO_DRIVER);
 
     /* Stop SDL audio subsystem */
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
@@ -160,6 +166,10 @@ static int audio_initOpenCloseQuitAudio(void *arg)
         SDLTest_AssertPass("Call to SDL_GetAudioDriver(%d)", i);
         SDLTest_Assert(audioDriver != NULL, "Audio driver name is not NULL");
         SDLTest_AssertCheck(audioDriver[0] != '\0', "Audio driver name is not empty; got: %s", audioDriver); /* NOLINT(clang-analyzer-core.NullDereference): Checked for NULL above */
+
+        if (hint && SDL_strcmp(audioDriver, hint) != 0) {
+            continue;
+        }
 
         /* Change specs */
         for (j = 0; j < 2; j++) {
@@ -231,6 +241,7 @@ static int audio_pauseUnpauseAudio(void *arg)
     int result;
     const char *audioDriver;
     SDL_AudioSpec desired;
+    const char *hint = SDL_GetHint(SDL_HINT_AUDIO_DRIVER);
 
     /* Stop SDL audio subsystem */
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
@@ -245,6 +256,10 @@ static int audio_pauseUnpauseAudio(void *arg)
         SDLTest_AssertPass("Call to SDL_GetAudioDriver(%d)", i);
         SDLTest_Assert(audioDriver != NULL, "Audio driver name is not NULL");
         SDLTest_AssertCheck(audioDriver[0] != '\0', "Audio driver name is not empty; got: %s", audioDriver); /* NOLINT(clang-analyzer-core.NullDereference): Checked for NULL above */
+
+        if (hint && SDL_strcmp(audioDriver, hint) != 0) {
+            continue;
+        }
 
         /* Change specs */
         for (j = 0; j < 2; j++) {
