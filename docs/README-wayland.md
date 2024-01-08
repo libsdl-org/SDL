@@ -67,7 +67,7 @@ not set or is `SDL_FALSE`, applications can attach their own viewports or change
 backend will not interfere or change any values internally. In this case, calls to `SDL_SetWindowSize()` should pass the
 requested surface size in pixels, not the logical window size, as no scaling calculations will be done internally.
 
-All window functions that control window state aside from `SDL_SetWindowSize()` are no-ops with custom surfaces.  
+All window functions that control window state aside from `SDL_SetWindowSize()` are no-ops with custom surfaces.
 
 Please see the minimal example in tests/testwaylandcustom.c for an example of how to use a custom, roleless surface and
 attach it to an application-managed toplevel window.
