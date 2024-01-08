@@ -706,8 +706,8 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTextureProperties(SDL_Texture *t
  * Get the renderer that created an SDL_Texture.
  *
  * \param texture the texture to query
- * \returns a pointer to the SDL_Renderer that created the texture, or NULL
- *          on failure; call SDL_GetError() for more information.
+ * \returns a pointer to the SDL_Renderer that created the texture, or NULL on
+ *          failure; call SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
