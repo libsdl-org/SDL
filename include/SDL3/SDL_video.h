@@ -45,6 +45,22 @@ typedef Uint32 SDL_DisplayID;
 typedef Uint32 SDL_WindowID;
 
 /**
+ *  Global video properties
+ *
+ *  - `SDL_PROPERTY_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER`: the pointer to
+ *    the global `wl_display` object used by the Wayland video backend. Can be
+ *    set before the video subsystem is initialized to import an external
+ *    `wl_display` object from an application or toolkit for use in SDL, or
+ *    read after initialization to export the `wl_display` used by the
+ *    Wayland video backend. Setting this property after the video subsystem
+ *    has been initialized has no effect, and reading it when the video
+ *    subsystem is uninitialized will either return the user provided value,
+ *    if one was set prior to initialization, or NULL. See
+ *    docs/README-wayland.md for more information.
+ */
+#define SDL_PROPERTY_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER "video.wayland.wl_display"
+
+/**
  *  System theme
  */
 typedef enum
@@ -875,6 +891,9 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, in
  * - `SDL_PROPERTY_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN - true if
  *   the application wants an associated `wl_egl_window` object to be created,
  *   even if the window does not have the OpenGL property or flag set.
+ * - `SDL_PROPERTY_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER` - the wl_surface
+ *   associated with the window, if you want to wrap an existing window. See
+*    docs/README-wayland.md for more information.
  *
  * These are additional supported properties on Windows:
  *
@@ -931,6 +950,7 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowWithProperties(SDL_Propertie
 #define SDL_PROPERTY_WINDOW_CREATE_COCOA_VIEW_POINTER                  "cocoa.view"
 #define SDL_PROPERTY_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN "wayland.surface_role_custom"
 #define SDL_PROPERTY_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN   "wayland.create_egl_window"
+#define SDL_PROPERTY_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER          "wayland.wl_surface"
 #define SDL_PROPERTY_WINDOW_CREATE_WIN32_HWND_POINTER                  "win32.hwnd"
 #define SDL_PROPERTY_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER     "win32.pixel_format_hwnd"
 #define SDL_PROPERTY_WINDOW_CREATE_X11_WINDOW_NUMBER                   "x11.window"

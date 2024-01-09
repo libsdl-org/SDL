@@ -36,6 +36,11 @@ typedef struct
 extern NativeWindowFactory WindowsWindowFactory;
 #endif
 
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
+#define TEST_NATIVE_WAYLAND
+extern NativeWindowFactory WaylandWindowFactory;
+#endif
+
 #ifdef SDL_VIDEO_DRIVER_X11
 #define TEST_NATIVE_X11
 extern NativeWindowFactory X11WindowFactory;
