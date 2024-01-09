@@ -287,6 +287,7 @@ static void SDL_LogEvent(const SDL_Event *event)
                 SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_HIT_TEST);
                 SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_ICCPROF_CHANGED);
                 SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_DISPLAY_CHANGED);
+                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_OCCLUDED);
 #undef SDL_WINDOWEVENT_CASE
             default:
                 SDL_strlcpy(name2, "UNKNOWN (bug? fixme?)", sizeof(name2));

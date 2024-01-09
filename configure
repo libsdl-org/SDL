@@ -23617,7 +23617,7 @@ fi
 
                     if test x$libdecor_get_min_max = xyes; then
 
-printf "%s\n" "#define SDL_HAVE_LIBDECOR_GET_MIN_MAX 1" >>confdefs.h
+printf "%s\n" "#define SDL_HAVE_LIBDECOR_VER_0_2_0 1" >>confdefs.h
 
                     fi
                     CFLAGS="$saved_cflags"

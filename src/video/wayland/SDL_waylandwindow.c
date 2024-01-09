@@ -569,6 +569,7 @@ static void handle_configure_xdg_toplevel(void *data,
     SDL_bool fullscreen = SDL_FALSE;
     SDL_bool maximized = SDL_FALSE;
     SDL_bool floating = SDL_TRUE;
+    SDL_bool suspended = SDL_FALSE;
     wl_array_for_each (state, states) {
         switch (*state) {
         case XDG_TOPLEVEL_STATE_FULLSCREEN:
@@ -584,6 +585,9 @@ static void handle_configure_xdg_toplevel(void *data,
         case XDG_TOPLEVEL_STATE_TILED_TOP:
         case XDG_TOPLEVEL_STATE_TILED_BOTTOM:
             floating = SDL_FALSE;
+            break;
+        case XDG_TOPLEVEL_STATE_SUSPENDED:
+            suspended = SDL_TRUE;
             break;
         default:
             break;
@@ -667,6 +671,11 @@ static void handle_configure_xdg_toplevel(void *data,
             wind->needs_resize_event = SDL_TRUE;
         }
     }
+
+    if (wind->suspended != suspended) {
+        SDL_SendWindowEvent(window, suspended ? SDL_WINDOWEVENT_OCCLUDED : SDL_WINDOWEVENT_EXPOSED, 0, 0);
+    }
+    wind->suspended = suspended;
 }
 
 static void handle_close_xdg_toplevel(void *data, struct xdg_toplevel *xdg_toplevel)
@@ -675,9 +684,21 @@ static void handle_close_xdg_toplevel(void *data, struct xdg_toplevel *xdg_tople
     SDL_SendWindowEvent(window->sdlwindow, SDL_WINDOWEVENT_CLOSE, 0, 0);
 }
 
+static void handle_configure_bounds_xdg_toplevel(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height)
+{
+    /* NOP */
+}
+
+static void handle_wm_capabilities_xdg_toplevel(void *data, struct xdg_toplevel *xdg_toplevel, struct wl_array *capabilities)
+{
+    /* NOP */
+}
+
 static const struct xdg_toplevel_listener toplevel_listener_xdg = {
     handle_configure_xdg_toplevel,
-    handle_close_xdg_toplevel
+    handle_close_xdg_toplevel,
+    handle_configure_bounds_xdg_toplevel,
+    handle_wm_capabilities_xdg_toplevel
 };
 
 static void handle_configure_xdg_popup(void *data,
@@ -784,7 +805,7 @@ static void OverrideLibdecorLimits(SDL_Window *window)
     if (!libdecor_frame_get_min_content_size) {
         SetMinMaxDimensions(window, SDL_FALSE);
     }
-#elif !defined(SDL_HAVE_LIBDECOR_GET_MIN_MAX)
+#elif !defined(SDL_HAVE_LIBDECOR_VER_0_2_0)
     SetMinMaxDimensions(window, SDL_FALSE);
 #endif
 }
@@ -803,7 +824,7 @@ static void LibdecorGetMinContentSize(struct libdecor_frame *frame, int *min_w, 
     if (libdecor_frame_get_min_content_size != NULL) {
         libdecor_frame_get_min_content_size(frame, min_w, min_h);
     }
-#elif defined(SDL_HAVE_LIBDECOR_GET_MIN_MAX)
+#elif defined(SDL_HAVE_LIBDECOR_VER_0_2_0)
     libdecor_frame_get_min_content_size(frame, min_w, min_h);
 #endif
 }
@@ -820,6 +841,7 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
     int width, height;
 
     SDL_bool focused = SDL_FALSE;
+    SDL_bool suspended = SDL_FALSE;
     SDL_bool fullscreen = SDL_FALSE;
     SDL_bool maximized = SDL_FALSE;
     SDL_bool tiled = SDL_FALSE;
@@ -833,6 +855,9 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
         fullscreen = (window_state & LIBDECOR_WINDOW_STATE_FULLSCREEN) != 0;
         maximized = (window_state & LIBDECOR_WINDOW_STATE_MAXIMIZED) != 0;
         focused = (window_state & LIBDECOR_WINDOW_STATE_ACTIVE) != 0;
+#ifdef SDL_HAVE_LIBDECOR_VER_0_2_0
+        suspended = (window_state & LIBDECOR_WINDOW_STATE_SUSPENDED) != 0;
+#endif
         tiled = (window_state & tiled_states) != 0;
     }
     floating = !(fullscreen || maximized || tiled);
@@ -934,6 +959,11 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
         wind->shell_surface.libdecor.initial_configure_seen = SDL_TRUE;
     }
 
+    if (wind->suspended != suspended) {
+        SDL_SendWindowEvent(window, suspended ? SDL_WINDOWEVENT_OCCLUDED : SDL_WINDOWEVENT_EXPOSED, 0, 0);
+    }
+    wind->suspended = suspended;
+
     /* Update the resize capability. Since this will change the capabilities and
      * commit a new frame state with the last known content dimension, this has
      * to be called after the new state has been committed and the new content
@@ -952,7 +982,9 @@ static void decoration_frame_commit(struct libdecor_frame *frame, void *user_dat
 {
     SDL_WindowData *wind = user_data;
 
-    SDL_SendWindowEvent(wind->sdlwindow, SDL_WINDOWEVENT_EXPOSED, 0, 0);
+    if (!wind->suspended) {
+        SDL_SendWindowEvent(wind->sdlwindow, SDL_WINDOWEVENT_EXPOSED, 0, 0);
+    }
 }
 
 static struct libdecor_frame_interface libdecor_frame_interface = {
@@ -1479,6 +1511,12 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
      * HideWindow was called immediately before ShowWindow.
      */
     WAYLAND_wl_display_roundtrip(c->display);
+
+    /* Signal that the client should draw, then set the occluded flag immediately after if necessary. */
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_EXPOSED, 0, 0);
+    if (data->suspended) {
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_OCCLUDED, 0, 0);
+    }
 }
 
 static void Wayland_ReleasePopup(_THIS, SDL_Window *popup)

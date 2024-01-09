@@ -110,6 +110,7 @@ typedef struct
     int window_width, window_height;
     int system_min_required_width;
     int system_min_required_height;
+    SDL_bool suspended;
     SDL_bool needs_resize_event;
     SDL_bool floating_resize_pending;
     SDL_bool was_floating;

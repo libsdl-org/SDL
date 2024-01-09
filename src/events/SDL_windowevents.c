@@ -182,6 +182,15 @@ int SDL_SendWindowEvent(SDL_Window *window, Uint8 windowevent, int data1,
         window->flags &= ~SDL_WINDOW_INPUT_FOCUS;
         SDL_OnWindowFocusLost(window);
         break;
+    case SDL_WINDOWEVENT_EXPOSED:
+        window->flags &= ~SDL_WINDOW_OCCLUDED;
+        break;
+    case SDL_WINDOWEVENT_OCCLUDED:
+        if (window->flags & SDL_WINDOW_OCCLUDED) {
+            return 0;
+        }
+        window->flags |= SDL_WINDOW_OCCLUDED;
+        break;
     }
 
     /* Post the event, if desired */
