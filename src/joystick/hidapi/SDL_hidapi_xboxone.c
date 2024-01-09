@@ -1154,6 +1154,10 @@ static SDL_bool HIDAPI_DriverXboxOne_UpdateInitState(SDL_DriverXboxOne_Context *
     return SDL_TRUE;
 }
 
+/* GIP protocol handling adapted under the Zlib license with permission from @medusalix:
+ * https://github.com/medusalix/xone/blob/master/bus/protocol.h
+ * https://github.com/medusalix/xone/blob/master/bus/protocol.c
+ */
 #define GIP_HEADER_MIN_LENGTH 3
 
 /* Internal commands */
