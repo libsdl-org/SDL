@@ -469,7 +469,7 @@ int SDL_VideoInit(const char *driver_name)
     if (!driver_name) {
         driver_name = SDL_GetHint(SDL_HINT_VIDEODRIVER);
     }
-#ifdef __LINUX__
+#if defined(__LINUX__) && defined(SDL_VIDEO_DRIVER_X11)
     if (!driver_name) {
         /* See if it looks like we need X11 */
         SDL_bool force_x11 = SDL_FALSE;
