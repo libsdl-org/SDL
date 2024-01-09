@@ -5,8 +5,6 @@
 # stolen from Manish Singh
 # Shamelessly stolen from Owen Taylor
 
-# serial 2
-
 dnl AM_PATH_SDL2([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
 dnl Test for SDL, and define SDL_CFLAGS and SDL_LIBS
 dnl
@@ -45,7 +43,7 @@ AC_ARG_ENABLE(sdltest, [  --disable-sdltest       Do not try to compile and run 
 
   if test "x$sdl_pc" = xyes ; then
     no_sdl=""
-    SDL2_CONFIG="pkg-config sdl2"
+    SDL2_CONFIG="$PKG_CONFIG sdl2"
   else
     as_save_PATH="$PATH"
     if test "x$prefix" != xNONE && test "$cross_compiling" != yes; then
