@@ -106,12 +106,45 @@ SDL_bool SDL_WAYLAND_own_output(struct wl_output *output)
     return wl_proxy_get_tag((struct wl_proxy *)output) == &SDL_WAYLAND_output_tag;
 }
 
+/* External surfaces may have their own user data attached, the modification of which
+ * can cause problems with external toolkits. Instead, external windows are kept in
+ * their own list, and a search is conducted to find a matching surface.
+ */
+static struct wl_list external_window_list;
+
+void Wayland_AddWindowDataToExternalList(SDL_WindowData *data)
+{
+    WAYLAND_wl_list_insert(&external_window_list, &data->external_window_list_link);
+}
+
+void Wayland_RemoveWindowDataFromExternalList(SDL_WindowData *data)
+{
+    WAYLAND_wl_list_remove(&data->external_window_list_link);
+}
+
+SDL_WindowData *Wayland_GetWindowDataForOwnedSurface(struct wl_surface *surface)
+{
+    if (SDL_WAYLAND_own_surface(surface)) {
+        return (SDL_WindowData *)wl_surface_get_user_data(surface);
+    } else if (!WAYLAND_wl_list_empty(&external_window_list)) {
+        SDL_WindowData *p;
+        wl_list_for_each (p, &external_window_list, external_window_list_link) {
+            if (p->surface == surface) {
+                return p;
+            }
+        }
+    }
+
+    return NULL;
+}
+
 static void Wayland_DeleteDevice(SDL_VideoDevice *device)
 {
     SDL_VideoData *data = device->driverdata;
-    if (data->display) {
+    if (data->display && !data->display_externally_owned) {
         WAYLAND_wl_display_flush(data->display);
         WAYLAND_wl_display_disconnect(data->display);
+        SDL_ClearProperty(SDL_GetGlobalProperties(), SDL_PROPERTY_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER);
     }
     if (device->wakeup_lock) {
         SDL_DestroyMutex(device->wakeup_lock);
@@ -125,7 +158,9 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
-    struct wl_display *display;
+    struct wl_display *display = SDL_GetProperty(SDL_GetGlobalProperties(),
+                                                 SDL_PROPERTY_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, NULL);
+    SDL_bool display_is_external = !!display;
 
     /* Are we trying to connect to or are currently in a Wayland session? */
     if (!SDL_getenv("WAYLAND_DISPLAY")) {
@@ -139,10 +174,12 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
         return NULL;
     }
 
-    display = WAYLAND_wl_display_connect(NULL);
     if (!display) {
-        SDL_WAYLAND_UnloadSymbols();
-        return NULL;
+        display = WAYLAND_wl_display_connect(NULL);
+        if (!display) {
+            SDL_WAYLAND_UnloadSymbols();
+            return NULL;
+        }
     }
 
     data = SDL_calloc(1, sizeof(*data));
@@ -154,7 +191,9 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
 
     data->initializing = SDL_TRUE;
     data->display = display;
+    data->display_externally_owned = display_is_external;
     WAYLAND_wl_list_init(&data->output_list);
+    WAYLAND_wl_list_init(&external_window_list);
 
     /* Initialize all variables that we clean on shutdown */
     device = SDL_calloc(1, sizeof(SDL_VideoDevice));
@@ -163,6 +202,11 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
         WAYLAND_wl_display_disconnect(display);
         SDL_WAYLAND_UnloadSymbols();
         return NULL;
+    }
+
+    if (!display_is_external) {
+        SDL_SetProperty(SDL_GetGlobalProperties(),
+                        SDL_PROPERTY_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, display);
     }
 
     device->driverdata = data;

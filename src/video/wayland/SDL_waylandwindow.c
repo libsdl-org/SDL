@@ -2057,9 +2057,12 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
 {
     SDL_WindowData *data;
     SDL_VideoData *c;
-    const SDL_bool custom_surface_role = SDL_GetBooleanProperty(create_props, SDL_PROPERTY_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN, SDL_FALSE);
+    struct wl_surface *external_surface = (struct wl_surface *)SDL_GetProperty(create_props, SDL_PROPERTY_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER,
+                                                                               (struct wl_surface *)SDL_GetProperty(create_props, "sdl2-compat.external_window", NULL));
+    const SDL_bool custom_surface_role = (external_surface != NULL) || SDL_GetBooleanProperty(create_props, SDL_PROPERTY_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN, SDL_FALSE);
     const SDL_bool create_egl_window = !!(window->flags & SDL_WINDOW_OPENGL) ||
                                        SDL_GetBooleanProperty(create_props, SDL_PROPERTY_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN, SDL_FALSE);
+
 
     data = SDL_calloc(1, sizeof(*data));
     if (!data) {
@@ -2102,10 +2105,20 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     data->requested_window_width = window->w;
     data->requested_window_height = window->h;
 
-    data->surface = wl_compositor_create_surface(c->compositor);
-    wl_surface_add_listener(data->surface, &surface_listener, data);
+    if (!external_surface) {
+        data->surface = wl_compositor_create_surface(c->compositor);
+        wl_surface_add_listener(data->surface, &surface_listener, data);
+        wl_surface_set_user_data(data->surface, data);
+        SDL_WAYLAND_register_surface(data->surface);
+    } else {
+        window->flags |= SDL_WINDOW_EXTERNAL;
+        data->surface = external_surface;
 
-    SDL_WAYLAND_register_surface(data->surface);
+        /* External surfaces are registered by being put in a list, as changing tags or userdata
+         * can cause problems with external toolkits.
+         */
+        Wayland_AddWindowDataToExternalList(data);
+    }
 
     /* Must be called before EGL configuration to set the drawable backbuffer size. */
     ConfigureWindowGeometry(window);
@@ -2123,9 +2136,12 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
         wl_callback_add_listener(data->gles_swap_frame_callback, &gles_swap_frame_listener, data);
     }
 
-    /* Fire a callback when the compositor wants a new frame to set the surface damage region. */
-    data->surface_frame_callback = wl_surface_frame(data->surface);
-    wl_callback_add_listener(data->surface_frame_callback, &surface_frame_listener, data);
+    /* No frame callback on external surfaces as it may already have one attached. */
+    if (!external_surface) {
+        /* Fire a callback when the compositor wants a new frame to set the surface damage region. */
+        data->surface_frame_callback = wl_surface_frame(data->surface);
+        wl_callback_add_listener(data->surface_frame_callback, &surface_frame_listener, data);
+    }
 
     if (window->flags & SDL_WINDOW_TRANSPARENT) {
         if (_this->gl_config.alpha_size == 0) {
@@ -2152,7 +2168,13 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
         Wayland_input_lock_pointer(c->input);
     }
 
-    if (c->fractional_scale_manager) {
+    /* Don't attach a fractional scale manager to surfaces unless they are
+     * flagged as DPI-aware. Under non-scaled operation, the scale will
+     * always be 1.0, and external/custom surfaces may already have, or
+     * will try to attach, their own fractional scale manager, which will
+     * result in a protocol violation.
+     */
+    if (c->fractional_scale_manager && (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY)) {
         data->fractional_scale = wp_fractional_scale_manager_v1_get_fractional_scale(c->fractional_scale_manager, data->surface);
         wp_fractional_scale_v1_add_listener(data->fractional_scale,
                                             &fractional_scale_listener, data);
@@ -2175,7 +2197,7 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
             }
         } /* All other cases will be WAYLAND_SURFACE_UNKNOWN */
     } else {
-        /* Roleless surfaces are always considered to be in the shown state by the backend. */
+        /* Roleless and external surfaces are always considered to be in the shown state by the backend. */
         data->shell_surface_type = WAYLAND_SURFACE_CUSTOM;
         data->surface_status = WAYLAND_SURFACE_STATUS_SHOWN;
     }
@@ -2433,7 +2455,11 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
             wl_callback_destroy(wind->surface_frame_callback);
         }
 
-        wl_surface_destroy(wind->surface);
+        if (!(window->flags & SDL_WINDOW_EXTERNAL)) {
+            wl_surface_destroy(wind->surface);
+        } else {
+            Wayland_RemoveWindowDataFromExternalList(wind);
+        }
 
         SDL_free(wind);
         WAYLAND_wl_display_flush(data->display);
