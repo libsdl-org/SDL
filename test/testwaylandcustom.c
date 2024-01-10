@@ -217,6 +217,7 @@ int main(int argc, char **argv)
     SDL_SetStringProperty(props, SDL_PROPERTY_WINDOW_CREATE_TITLE_STRING, "Wayland custom surface role test"); /* Default title */
 
     window = SDL_CreateWindowWithProperties(props);
+    SDL_DestroyProperties(props);
     if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Window creation failed");
         goto exit;
