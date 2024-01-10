@@ -162,6 +162,9 @@ static SDL_Scancode WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
     if (scanCode != 0) {
         if ((keyFlags & KF_EXTENDED) == KF_EXTENDED) {
             scanCode = MAKEWORD(scanCode, 0xe0);
+        } else if (scanCode == 0x45) {
+            /* Pause */
+            scanCode = 0xe046;
         }
     } else {
         Uint16 vkCode = LOWORD(wParam);
