@@ -1040,8 +1040,8 @@ int audio_resampleLoss()
     SDLTest_AssertPass("Test resampling of %i s %i Hz %f phase sine wave from sampling rate of %i Hz to %i Hz",
                        spec->time, spec->freq, spec->phase, spec->rate_in, spec->rate_out);
 
-    ret = SDL_BuildAudioCVT(&cvt, AUDIO_F32, 1, spec->rate_in, AUDIO_F32, 1, spec->rate_out);
-    SDLTest_AssertPass("Call to SDL_BuildAudioCVT(&cvt, AUDIO_F32, 1, %i, AUDIO_F32, 1, %i)", spec->rate_in, spec->rate_out);
+    ret = SDL_BuildAudioCVT(&cvt, AUDIO_F32SYS, 1, spec->rate_in, AUDIO_F32SYS, 1, spec->rate_out);
+    SDLTest_AssertPass("Call to SDL_BuildAudioCVT(&cvt, AUDIO_F32SYS, 1, %i, AUDIO_F32SYS, 1, %i)", spec->rate_in, spec->rate_out);
     SDLTest_AssertCheck(ret == 1, "Expected SDL_BuildAudioCVT to succeed and conversion to be needed.");
     if (ret != 1) {
       return TEST_ABORTED;
