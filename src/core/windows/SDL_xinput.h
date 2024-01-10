@@ -28,6 +28,7 @@
 #ifdef HAVE_XINPUT_H
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
 /* Xbox supports an XInput wrapper which is a C++-only header... */
+#include <math.h> /* Required to compile with recent MSVC... */
 #include <XInputOnGameInput.h>
 using namespace XInputOnGameInput;
 #else
