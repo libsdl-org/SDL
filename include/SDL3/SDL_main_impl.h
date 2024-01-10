@@ -100,6 +100,10 @@ int main(int argc, char *argv[])
 #endif /* _MSC_VER && ! __GDK__ */
 
 /* This is where execution begins [windowed apps and GDK] */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 #if defined( UNICODE ) && UNICODE
 int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrev, PWSTR szCmdLine, int sw)
 #else /* ANSI */
@@ -112,6 +116,9 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
     (void)sw;
     return SDL_RunApp(0, NULL, SDL_main, NULL);
 }
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 /* end of __WIN32__ and __GDK__ impls */
 #elif defined(__WINRT__)
@@ -163,10 +170,16 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
 #pragma comment(lib, "runtimeobject.lib")
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
     return SDL_RunApp(0, NULL, SDL_main, NULL);
 }
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 /* end of WinRT impl */
 #elif defined(__NGAGE__)
