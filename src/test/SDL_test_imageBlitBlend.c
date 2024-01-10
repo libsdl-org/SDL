@@ -582,24 +582,13 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendAdd = {
  */
 SDL_Surface *SDLTest_ImageBlitBlendAdd()
 {
-    SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(
+    SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
         (void *)SDLTest_imageBlitBlendAdd.pixel_data,
         SDLTest_imageBlitBlendAdd.width,
         SDLTest_imageBlitBlendAdd.height,
         SDLTest_imageBlitBlendAdd.bytes_per_pixel * 8,
         SDLTest_imageBlitBlendAdd.width * SDLTest_imageBlitBlendAdd.bytes_per_pixel,
-#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-        0xff000000, /* Red bit mask. */
-        0x00ff0000, /* Green bit mask. */
-        0x0000ff00, /* Blue bit mask. */
-        0x000000ff  /* Alpha bit mask. */
-#else
-        0x000000ff, /* Red bit mask. */
-        0x0000ff00, /* Green bit mask. */
-        0x00ff0000, /* Blue bit mask. */
-        0xff000000  /* Alpha bit mask. */
-#endif
-    );
+        SDL_PIXELFORMAT_RGB24);
     return surface;
 }
 
@@ -1184,24 +1173,13 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlend = {
  */
 SDL_Surface *SDLTest_ImageBlitBlend()
 {
-    SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(
+    SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
         (void *)SDLTest_imageBlitBlend.pixel_data,
         SDLTest_imageBlitBlend.width,
         SDLTest_imageBlitBlend.height,
         SDLTest_imageBlitBlend.bytes_per_pixel * 8,
         SDLTest_imageBlitBlend.width * SDLTest_imageBlitBlend.bytes_per_pixel,
-#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-        0xff000000, /* Red bit mask. */
-        0x00ff0000, /* Green bit mask. */
-        0x0000ff00, /* Blue bit mask. */
-        0x000000ff  /* Alpha bit mask. */
-#else
-        0x000000ff, /* Red bit mask. */
-        0x0000ff00, /* Green bit mask. */
-        0x00ff0000, /* Blue bit mask. */
-        0xff000000  /* Alpha bit mask. */
-#endif
-    );
+        SDL_PIXELFORMAT_RGB24);
     return surface;
 }
 
@@ -1616,24 +1594,13 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendMod = {
  */
 SDL_Surface *SDLTest_ImageBlitBlendMod()
 {
-    SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(
+    SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
         (void *)SDLTest_imageBlitBlendMod.pixel_data,
         SDLTest_imageBlitBlendMod.width,
         SDLTest_imageBlitBlendMod.height,
         SDLTest_imageBlitBlendMod.bytes_per_pixel * 8,
         SDLTest_imageBlitBlendMod.width * SDLTest_imageBlitBlendMod.bytes_per_pixel,
-#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-        0xff000000, /* Red bit mask. */
-        0x00ff0000, /* Green bit mask. */
-        0x0000ff00, /* Blue bit mask. */
-        0x000000ff  /* Alpha bit mask. */
-#else
-        0x000000ff, /* Red bit mask. */
-        0x0000ff00, /* Green bit mask. */
-        0x00ff0000, /* Blue bit mask. */
-        0xff000000  /* Alpha bit mask. */
-#endif
-    );
+        SDL_PIXELFORMAT_RGB24);
     return surface;
 }
 
@@ -2431,24 +2398,13 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendNone = {
  */
 SDL_Surface *SDLTest_ImageBlitBlendNone()
 {
-    SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(
+    SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
         (void *)SDLTest_imageBlitBlendNone.pixel_data,
         SDLTest_imageBlitBlendNone.width,
         SDLTest_imageBlitBlendNone.height,
         SDLTest_imageBlitBlendNone.bytes_per_pixel * 8,
         SDLTest_imageBlitBlendNone.width * SDLTest_imageBlitBlendNone.bytes_per_pixel,
-#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-        0xff000000, /* Red bit mask. */
-        0x00ff0000, /* Green bit mask. */
-        0x0000ff00, /* Blue bit mask. */
-        0x000000ff  /* Alpha bit mask. */
-#else
-        0x000000ff, /* Red bit mask. */
-        0x0000ff00, /* Green bit mask. */
-        0x00ff0000, /* Blue bit mask. */
-        0xff000000  /* Alpha bit mask. */
-#endif
-    );
+        SDL_PIXELFORMAT_RGB24);
     return surface;
 }
 
@@ -2978,24 +2934,13 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendAll = {
  */
 SDL_Surface *SDLTest_ImageBlitBlendAll()
 {
-    SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(
+    SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
         (void *)SDLTest_imageBlitBlendAll.pixel_data,
         SDLTest_imageBlitBlendAll.width,
         SDLTest_imageBlitBlendAll.height,
         SDLTest_imageBlitBlendAll.bytes_per_pixel * 8,
         SDLTest_imageBlitBlendAll.width * SDLTest_imageBlitBlendAll.bytes_per_pixel,
-#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-        0xff000000, /* Red bit mask. */
-        0x00ff0000, /* Green bit mask. */
-        0x0000ff00, /* Blue bit mask. */
-        0x000000ff  /* Alpha bit mask. */
-#else
-        0x000000ff, /* Red bit mask. */
-        0x0000ff00, /* Green bit mask. */
-        0x00ff0000, /* Blue bit mask. */
-        0xff000000  /* Alpha bit mask. */
-#endif
-    );
+        SDL_PIXELFORMAT_RGB24);
     return surface;
 }
 
