@@ -110,9 +110,9 @@ int main(int argc, char **argv)
 
     SDL_Log("\nUploading effects\n");
     /* First we'll try a SINE effect. */
-    if (supported & SDL_HAPTIC_SINE) {
+    if (supported & SDL_HAPTIC_FEATURE_SINE) {
         SDL_Log("   effect %d: Sine Wave\n", nefx);
-        efx[nefx].type = SDL_HAPTIC_SINE;
+        efx[nefx].type = SDL_HAPTIC_EFFECT_SINE;
         efx[nefx].periodic.period = 1000;
         efx[nefx].periodic.magnitude = -0x2000; /* Negative magnitude and ...                      */
         efx[nefx].periodic.phase = 18000;       /* ... 180 degrees phase shift => cancel eachother */
@@ -127,9 +127,9 @@ int main(int argc, char **argv)
         nefx++;
     }
     /* Now we'll try a SAWTOOTHUP */
-    if (supported & SDL_HAPTIC_SAWTOOTHUP) {
+    if (supported & SDL_HAPTIC_FEATURE_SAWTOOTHUP) {
         SDL_Log("   effect %d: Sawtooth Up\n", nefx);
-        efx[nefx].type = SDL_HAPTIC_SAWTOOTHUP;
+        efx[nefx].type = SDL_HAPTIC_EFFECT_SAWTOOTHUP;
         efx[nefx].periodic.period = 500;
         efx[nefx].periodic.magnitude = 0x5000;
         efx[nefx].periodic.length = 5000;
@@ -144,9 +144,9 @@ int main(int argc, char **argv)
     }
 
     /* Now the classical constant effect. */
-    if (supported & SDL_HAPTIC_CONSTANT) {
+    if (supported & SDL_HAPTIC_FEATURE_CONSTANT) {
         SDL_Log("   effect %d: Constant Force\n", nefx);
-        efx[nefx].type = SDL_HAPTIC_CONSTANT;
+        efx[nefx].type = SDL_HAPTIC_EFFECT_CONSTANT;
         efx[nefx].constant.direction.type = SDL_HAPTIC_POLAR;
         efx[nefx].constant.direction.dir[0] = 20000; /* Force comes from the south-west. */
         efx[nefx].constant.length = 5000;
@@ -162,9 +162,9 @@ int main(int argc, char **argv)
     }
 
     /* The cute spring effect. */
-    if (supported & SDL_HAPTIC_SPRING) {
+    if (supported & SDL_HAPTIC_FEATURE_SPRING) {
         SDL_Log("   effect %d: Condition Spring\n", nefx);
-        efx[nefx].type = SDL_HAPTIC_SPRING;
+        efx[nefx].type = SDL_HAPTIC_EFFECT_SPRING;
         efx[nefx].condition.length = 5000;
         for (i = 0; i < SDL_HapticNumAxes(haptic); i++) {
             efx[nefx].condition.right_sat[i] = 0xFFFF;
@@ -181,9 +181,9 @@ int main(int argc, char **argv)
         nefx++;
     }
     /* The interesting damper effect. */
-    if (supported & SDL_HAPTIC_DAMPER) {
+    if (supported & SDL_HAPTIC_FEATURE_DAMPER) {
         SDL_Log("   effect %d: Condition Damper\n", nefx);
-        efx[nefx].type = SDL_HAPTIC_DAMPER;
+        efx[nefx].type = SDL_HAPTIC_EFFECT_DAMPER;
         efx[nefx].condition.length = 5000;
         for (i = 0; i < SDL_HapticNumAxes(haptic); i++) {
             efx[nefx].condition.right_sat[i] = 0xFFFF;
@@ -199,9 +199,9 @@ int main(int argc, char **argv)
         nefx++;
     }
     /* The pretty awesome inertia effect. */
-    if (supported & SDL_HAPTIC_INERTIA) {
+    if (supported & SDL_HAPTIC_FEATURE_INERTIA) {
         SDL_Log("   effect %d: Condition Inertia\n", nefx);
-        efx[nefx].type = SDL_HAPTIC_INERTIA;
+        efx[nefx].type = SDL_HAPTIC_EFFECT_INERTIA;
         efx[nefx].condition.length = 5000;
         for (i = 0; i < SDL_HapticNumAxes(haptic); i++) {
             efx[nefx].condition.right_sat[i] = 0xFFFF;
@@ -218,9 +218,9 @@ int main(int argc, char **argv)
         nefx++;
     }
     /* The hot friction effect. */
-    if (supported & SDL_HAPTIC_FRICTION) {
+    if (supported & SDL_HAPTIC_FEATURE_FRICTION) {
         SDL_Log("   effect %d: Condition Friction\n", nefx);
-        efx[nefx].type = SDL_HAPTIC_FRICTION;
+        efx[nefx].type = SDL_HAPTIC_EFFECT_FRICTION;
         efx[nefx].condition.length = 5000;
         for (i = 0; i < SDL_HapticNumAxes(haptic); i++) {
             efx[nefx].condition.right_sat[i] = 0xFFFF;
@@ -237,9 +237,9 @@ int main(int argc, char **argv)
     }
 
     /* Now we'll try a ramp effect */
-    if (supported & SDL_HAPTIC_RAMP) {
+    if (supported & SDL_HAPTIC_FEATURE_RAMP) {
         SDL_Log("   effect %d: Ramp\n", nefx);
-        efx[nefx].type = SDL_HAPTIC_RAMP;
+        efx[nefx].type = SDL_HAPTIC_EFFECT_RAMP;
         efx[nefx].ramp.direction.type = SDL_HAPTIC_CARTESIAN;
         efx[nefx].ramp.direction.dir[0] = 1;  /* Force comes from                 */
         efx[nefx].ramp.direction.dir[1] = -1; /*                  the north-east. */
@@ -257,9 +257,9 @@ int main(int argc, char **argv)
     }
 
     /* Finally we'll try a left/right effect. */
-    if (supported & SDL_HAPTIC_LEFTRIGHT) {
+    if (supported & SDL_HAPTIC_FEATURE_LEFTRIGHT) {
         SDL_Log("   effect %d: Left/Right\n", nefx);
-        efx[nefx].type = SDL_HAPTIC_LEFTRIGHT;
+        efx[nefx].type = SDL_HAPTIC_EFFECT_LEFTRIGHT;
         efx[nefx].leftright.length = 5000;
         efx[nefx].leftright.large_magnitude = 0x3000;
         efx[nefx].leftright.small_magnitude = 0xFFFF;
@@ -312,53 +312,56 @@ HapticPrintSupported(SDL_Haptic *ptr)
     supported = SDL_HapticQuery(ptr);
     SDL_Log("   Supported effects [%d effects, %d playing]:\n",
             SDL_HapticNumEffects(ptr), SDL_HapticNumEffectsPlaying(ptr));
-    if (supported & SDL_HAPTIC_CONSTANT) {
+    if (supported & SDL_HAPTIC_FEATURE_CONSTANT) {
         SDL_Log("      constant\n");
     }
-    if (supported & SDL_HAPTIC_SINE) {
+    if (supported & SDL_HAPTIC_FEATURE_SINE) {
         SDL_Log("      sine\n");
     }
-    /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /* if (supported & SDL_HAPTIC_SQUARE)
-        SDL_Log("      square\n"); */
-    if (supported & SDL_HAPTIC_TRIANGLE) {
+    if (supported & SDL_HAPTIC_FEATURE_SQUARE) {
+        SDL_Log("      square\n");
+    }
+    if (supported & SDL_HAPTIC_FEATURE_TRIANGLE) {
         SDL_Log("      triangle\n");
     }
-    if (supported & SDL_HAPTIC_SAWTOOTHUP) {
+    if (supported & SDL_HAPTIC_FEATURE_SAWTOOTHUP) {
         SDL_Log("      sawtoothup\n");
     }
-    if (supported & SDL_HAPTIC_SAWTOOTHDOWN) {
+    if (supported & SDL_HAPTIC_FEATURE_SAWTOOTHDOWN) {
         SDL_Log("      sawtoothdown\n");
     }
-    if (supported & SDL_HAPTIC_RAMP) {
+    if (supported & SDL_HAPTIC_FEATURE_SQUARE) {
+        SDL_Log("      square\n");
+    }
+    if (supported & SDL_HAPTIC_FEATURE_RAMP) {
         SDL_Log("      ramp\n");
     }
-    if (supported & SDL_HAPTIC_FRICTION) {
+    if (supported & SDL_HAPTIC_FEATURE_FRICTION) {
         SDL_Log("      friction\n");
     }
-    if (supported & SDL_HAPTIC_SPRING) {
+    if (supported & SDL_HAPTIC_FEATURE_SPRING) {
         SDL_Log("      spring\n");
     }
-    if (supported & SDL_HAPTIC_DAMPER) {
+    if (supported & SDL_HAPTIC_FEATURE_DAMPER) {
         SDL_Log("      damper\n");
     }
-    if (supported & SDL_HAPTIC_INERTIA) {
+    if (supported & SDL_HAPTIC_FEATURE_INERTIA) {
         SDL_Log("      inertia\n");
     }
-    if (supported & SDL_HAPTIC_CUSTOM) {
+    if (supported & SDL_HAPTIC_FEATURE_CUSTOM) {
         SDL_Log("      custom\n");
     }
-    if (supported & SDL_HAPTIC_LEFTRIGHT) {
+    if (supported & SDL_HAPTIC_FEATURE_LEFTRIGHT) {
         SDL_Log("      left/right\n");
     }
     SDL_Log("   Supported capabilities:\n");
-    if (supported & SDL_HAPTIC_GAIN) {
+    if (supported & SDL_HAPTIC_FEATURE_GAIN) {
         SDL_Log("      gain\n");
     }
-    if (supported & SDL_HAPTIC_AUTOCENTER) {
+    if (supported & SDL_HAPTIC_FEATURE_AUTOCENTER) {
         SDL_Log("      autocenter\n");
     }
-    if (supported & SDL_HAPTIC_STATUS) {
+    if (supported & SDL_HAPTIC_FEATURE_STATUS) {
         SDL_Log("      status\n");
     }
 }

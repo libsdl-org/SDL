@@ -145,10 +145,10 @@ SDL_Haptic *SDL_HapticOpen(int device_index)
     SDL_haptics = haptic;
 
     /* Disable autocenter and set gain to max. */
-    if (haptic->supported & SDL_HAPTIC_GAIN) {
+    if (haptic->supported & SDL_HAPTIC_FEATURE_GAIN) {
         SDL_HapticSetGain(haptic, 100);
     }
-    if (haptic->supported & SDL_HAPTIC_AUTOCENTER) {
+    if (haptic->supported & SDL_HAPTIC_FEATURE_AUTOCENTER) {
         SDL_HapticSetAutocenter(haptic, 0);
     }
 
@@ -580,7 +580,7 @@ int SDL_HapticGetEffectStatus(SDL_Haptic *haptic, int effect)
         return -1;
     }
 
-    if (!(haptic->supported & SDL_HAPTIC_STATUS)) {
+    if (!(haptic->supported & SDL_HAPTIC_FEATURE_STATUS)) {
         return SDL_SetError("Haptic: Device does not support status queries.");
     }
 
@@ -599,7 +599,7 @@ int SDL_HapticSetGain(SDL_Haptic *haptic, int gain)
         return -1;
     }
 
-    if (!(haptic->supported & SDL_HAPTIC_GAIN)) {
+    if (!(haptic->supported & SDL_HAPTIC_FEATURE_GAIN)) {
         return SDL_SetError("Haptic: Device does not support setting gain.");
     }
 
@@ -641,7 +641,7 @@ int SDL_HapticSetAutocenter(SDL_Haptic *haptic, int autocenter)
         return -1;
     }
 
-    if (!(haptic->supported & SDL_HAPTIC_AUTOCENTER)) {
+    if (!(haptic->supported & SDL_HAPTIC_FEATURE_AUTOCENTER)) {
         return SDL_SetError("Haptic: Device does not support setting autocenter.");
     }
 
@@ -665,7 +665,7 @@ int SDL_HapticPause(SDL_Haptic *haptic)
         return -1;
     }
 
-    if (!(haptic->supported & SDL_HAPTIC_PAUSE)) {
+    if (!(haptic->supported & SDL_HAPTIC_FEATURE_PAUSE)) {
         return SDL_SetError("Haptic: Device does not support setting pausing.");
     }
 
@@ -681,7 +681,7 @@ int SDL_HapticUnpause(SDL_Haptic *haptic)
         return -1;
     }
 
-    if (!(haptic->supported & SDL_HAPTIC_PAUSE)) {
+    if (!(haptic->supported & SDL_HAPTIC_FEATURE_PAUSE)) {
         return 0; /* Not going to be paused, so we pretend it's unpaused. */
     }
 
@@ -710,7 +710,7 @@ int SDL_HapticRumbleSupported(SDL_Haptic *haptic)
     }
 
     /* Most things can use SINE, but XInput only has LEFTRIGHT. */
-    return (haptic->supported & (SDL_HAPTIC_SINE | SDL_HAPTIC_LEFTRIGHT)) != 0;
+    return (haptic->supported & (SDL_HAPTIC_FEATURE_SINE | SDL_HAPTIC_FEATURE_LEFTRIGHT)) != 0;
 }
 
 /*
@@ -730,16 +730,16 @@ int SDL_HapticRumbleInit(SDL_Haptic *haptic)
     }
 
     SDL_zerop(efx);
-    if (haptic->supported & SDL_HAPTIC_SINE) {
-        efx->type = SDL_HAPTIC_SINE;
+    if (haptic->supported & SDL_HAPTIC_FEATURE_SINE) {
+        efx->type = SDL_HAPTIC_EFFECT_SINE;
         efx->periodic.direction.type = SDL_HAPTIC_CARTESIAN;
         efx->periodic.period = 1000;
         efx->periodic.magnitude = 0x4000;
         efx->periodic.length = 5000;
         efx->periodic.attack_length = 0;
         efx->periodic.fade_length = 0;
-    } else if (haptic->supported & SDL_HAPTIC_LEFTRIGHT) { /* XInput? */
-        efx->type = SDL_HAPTIC_LEFTRIGHT;
+    } else if (haptic->supported & SDL_HAPTIC_FEATURE_LEFTRIGHT) { /* XInput? */
+        efx->type = SDL_HAPTIC_EFFECT_LEFTRIGHT;
         efx->leftright.length = 5000;
         efx->leftright.large_magnitude = 0x4000;
         efx->leftright.small_magnitude = 0x4000;
@@ -779,10 +779,10 @@ int SDL_HapticRumblePlay(SDL_Haptic *haptic, float strength, Uint32 length)
     magnitude = (Sint16)(32767.0f * strength);
 
     efx = &haptic->rumble_effect;
-    if (efx->type == SDL_HAPTIC_SINE) {
+    if (efx->type == SDL_HAPTIC_EFFECT_SINE) {
         efx->periodic.magnitude = magnitude;
         efx->periodic.length = length;
-    } else if (efx->type == SDL_HAPTIC_LEFTRIGHT) {
+    } else if (efx->type == SDL_HAPTIC_EFFECT_LEFTRIGHT) {
         efx->leftright.small_magnitude = efx->leftright.large_magnitude = magnitude;
         efx->leftright.length = length;
     } else {

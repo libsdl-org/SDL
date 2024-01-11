@@ -104,22 +104,21 @@ static int EV_IsHaptic(int fd)
     }
 
     /* Convert supported features to SDL_HAPTIC platform-neutral features. */
-    EV_TEST(FF_CONSTANT, SDL_HAPTIC_CONSTANT);
-    EV_TEST(FF_SINE, SDL_HAPTIC_SINE);
-    /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /* EV_TEST(FF_SQUARE, SDL_HAPTIC_SQUARE); */
-    EV_TEST(FF_TRIANGLE, SDL_HAPTIC_TRIANGLE);
-    EV_TEST(FF_SAW_UP, SDL_HAPTIC_SAWTOOTHUP);
-    EV_TEST(FF_SAW_DOWN, SDL_HAPTIC_SAWTOOTHDOWN);
-    EV_TEST(FF_RAMP, SDL_HAPTIC_RAMP);
-    EV_TEST(FF_SPRING, SDL_HAPTIC_SPRING);
-    EV_TEST(FF_FRICTION, SDL_HAPTIC_FRICTION);
-    EV_TEST(FF_DAMPER, SDL_HAPTIC_DAMPER);
-    EV_TEST(FF_INERTIA, SDL_HAPTIC_INERTIA);
-    EV_TEST(FF_CUSTOM, SDL_HAPTIC_CUSTOM);
-    EV_TEST(FF_GAIN, SDL_HAPTIC_GAIN);
-    EV_TEST(FF_AUTOCENTER, SDL_HAPTIC_AUTOCENTER);
-    EV_TEST(FF_RUMBLE, SDL_HAPTIC_LEFTRIGHT);
+    EV_TEST(FF_CONSTANT, SDL_HAPTIC_FEATURE_CONSTANT);
+    EV_TEST(FF_SINE, SDL_HAPTIC_FEATURE_SINE);
+    EV_TEST(FF_SQUARE, SDL_HAPTIC_FEATURE_SQUARE);
+    EV_TEST(FF_TRIANGLE, SDL_HAPTIC_FEATURE_TRIANGLE);
+    EV_TEST(FF_SAW_UP, SDL_HAPTIC_FEATURE_SAWTOOTHUP);
+    EV_TEST(FF_SAW_DOWN, SDL_HAPTIC_FEATURE_SAWTOOTHDOWN);
+    EV_TEST(FF_RAMP, SDL_HAPTIC_FEATURE_RAMP);
+    EV_TEST(FF_SPRING, SDL_HAPTIC_FEATURE_SPRING);
+    EV_TEST(FF_FRICTION, SDL_HAPTIC_FEATURE_FRICTION);
+    EV_TEST(FF_DAMPER, SDL_HAPTIC_FEATURE_DAMPER);
+    EV_TEST(FF_INERTIA, SDL_HAPTIC_FEATURE_INERTIA);
+    EV_TEST(FF_CUSTOM, SDL_HAPTIC_FEATURE_CUSTOM);
+    EV_TEST(FF_GAIN, SDL_HAPTIC_FEATURE_GAIN);
+    EV_TEST(FF_AUTOCENTER, SDL_HAPTIC_FEATURE_AUTOCENTER);
+    EV_TEST(FF_RUMBLE, SDL_HAPTIC_FEATURE_LEFTRIGHT);
 
     /* Return what it supports. */
     return ret;
@@ -714,7 +713,7 @@ static int SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect *src)
     SDL_memset(dest, 0, sizeof(struct ff_effect));
 
     switch (src->type) {
-    case SDL_HAPTIC_CONSTANT:
+    case SDL_HAPTIC_EFFECT_CONSTANT:
         constant = &src->constant;
 
         /* Header */
@@ -744,12 +743,11 @@ static int SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect *src)
 
         break;
 
-    case SDL_HAPTIC_SINE:
-    /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /* case SDL_HAPTIC_SQUARE: */
-    case SDL_HAPTIC_TRIANGLE:
-    case SDL_HAPTIC_SAWTOOTHUP:
-    case SDL_HAPTIC_SAWTOOTHDOWN:
+    case SDL_HAPTIC_EFFECT_SINE:
+    case SDL_HAPTIC_EFFECT_SQUARE:
+    case SDL_HAPTIC_EFFECT_TRIANGLE:
+    case SDL_HAPTIC_EFFECT_SAWTOOTHUP:
+    case SDL_HAPTIC_EFFECT_SAWTOOTHDOWN:
         periodic = &src->periodic;
 
         /* Header */
@@ -767,16 +765,15 @@ static int SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect *src)
         dest->trigger.interval = CLAMP(periodic->interval);
 
         /* Periodic */
-        if (periodic->type == SDL_HAPTIC_SINE) {
+        if (periodic->type == SDL_HAPTIC_EFFECT_SINE) {
             dest->u.periodic.waveform = FF_SINE;
-            /* !!! FIXME: put this back when we have more bits in 2.1 */
-            /* else if (periodic->type == SDL_HAPTIC_SQUARE)
-                dest->u.periodic.waveform = FF_SQUARE; */
-        } else if (periodic->type == SDL_HAPTIC_TRIANGLE) {
+        } else if (periodic->type == SDL_HAPTIC_EFFECT_SQUARE) {
+            dest->u.periodic.waveform = FF_SQUARE;
+        } else if (periodic->type == SDL_HAPTIC_EFFECT_TRIANGLE) {
             dest->u.periodic.waveform = FF_TRIANGLE;
-        } else if (periodic->type == SDL_HAPTIC_SAWTOOTHUP) {
+        } else if (periodic->type == SDL_HAPTIC_EFFECT_SAWTOOTHUP) {
             dest->u.periodic.waveform = FF_SAW_UP;
-        } else if (periodic->type == SDL_HAPTIC_SAWTOOTHDOWN) {
+        } else if (periodic->type == SDL_HAPTIC_EFFECT_SAWTOOTHDOWN) {
             dest->u.periodic.waveform = FF_SAW_DOWN;
         }
         dest->u.periodic.period = CLAMP(periodic->period);
@@ -795,20 +792,20 @@ static int SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect *src)
 
         break;
 
-    case SDL_HAPTIC_SPRING:
-    case SDL_HAPTIC_DAMPER:
-    case SDL_HAPTIC_INERTIA:
-    case SDL_HAPTIC_FRICTION:
+    case SDL_HAPTIC_EFFECT_SPRING:
+    case SDL_HAPTIC_EFFECT_DAMPER:
+    case SDL_HAPTIC_EFFECT_INERTIA:
+    case SDL_HAPTIC_EFFECT_FRICTION:
         condition = &src->condition;
 
         /* Header */
-        if (condition->type == SDL_HAPTIC_SPRING) {
+        if (condition->type == SDL_HAPTIC_EFFECT_SPRING) {
             dest->type = FF_SPRING;
-        } else if (condition->type == SDL_HAPTIC_DAMPER) {
+        } else if (condition->type == SDL_HAPTIC_EFFECT_DAMPER) {
             dest->type = FF_DAMPER;
-        } else if (condition->type == SDL_HAPTIC_INERTIA) {
+        } else if (condition->type == SDL_HAPTIC_EFFECT_INERTIA) {
             dest->type = FF_INERTIA;
-        } else if (condition->type == SDL_HAPTIC_FRICTION) {
+        } else if (condition->type == SDL_HAPTIC_EFFECT_FRICTION) {
             dest->type = FF_FRICTION;
         }
 
@@ -844,7 +841,7 @@ static int SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect *src)
 
         break;
 
-    case SDL_HAPTIC_RAMP:
+    case SDL_HAPTIC_EFFECT_RAMP:
         ramp = &src->ramp;
 
         /* Header */
@@ -873,7 +870,7 @@ static int SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect *src)
 
         break;
 
-    case SDL_HAPTIC_LEFTRIGHT:
+    case SDL_HAPTIC_EFFECT_LEFTRIGHT:
         leftright = &src->leftright;
 
         /* Header */

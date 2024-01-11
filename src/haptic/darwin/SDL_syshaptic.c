@@ -420,25 +420,24 @@ static unsigned int GetSupportedFeatures(SDL_Haptic *haptic)
     haptic->nplaying = features.playbackCapacity;
 
     /* Test for effects. */
-    FF_TEST(FFCAP_ET_CONSTANTFORCE, SDL_HAPTIC_CONSTANT);
-    FF_TEST(FFCAP_ET_RAMPFORCE, SDL_HAPTIC_RAMP);
-    /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /* FF_TEST(FFCAP_ET_SQUARE, SDL_HAPTIC_SQUARE); */
-    FF_TEST(FFCAP_ET_SINE, SDL_HAPTIC_SINE);
-    FF_TEST(FFCAP_ET_TRIANGLE, SDL_HAPTIC_TRIANGLE);
-    FF_TEST(FFCAP_ET_SAWTOOTHUP, SDL_HAPTIC_SAWTOOTHUP);
-    FF_TEST(FFCAP_ET_SAWTOOTHDOWN, SDL_HAPTIC_SAWTOOTHDOWN);
-    FF_TEST(FFCAP_ET_SPRING, SDL_HAPTIC_SPRING);
-    FF_TEST(FFCAP_ET_DAMPER, SDL_HAPTIC_DAMPER);
-    FF_TEST(FFCAP_ET_INERTIA, SDL_HAPTIC_INERTIA);
-    FF_TEST(FFCAP_ET_FRICTION, SDL_HAPTIC_FRICTION);
-    FF_TEST(FFCAP_ET_CUSTOMFORCE, SDL_HAPTIC_CUSTOM);
+    FF_TEST(FFCAP_ET_CONSTANTFORCE, SDL_HAPTIC_FEATURE_CONSTANT);
+    FF_TEST(FFCAP_ET_RAMPFORCE, SDL_HAPTIC_FEATURE_RAMP);
+    FF_TEST(FFCAP_ET_SQUARE, SDL_HAPTIC_FEATURE_SQUARE);
+    FF_TEST(FFCAP_ET_SINE, SDL_HAPTIC_FEATURE_SINE);
+    FF_TEST(FFCAP_ET_TRIANGLE, SDL_HAPTIC_FEATURE_TRIANGLE);
+    FF_TEST(FFCAP_ET_SAWTOOTHUP, SDL_HAPTIC_FEATURE_SAWTOOTHUP);
+    FF_TEST(FFCAP_ET_SAWTOOTHDOWN, SDL_HAPTIC_FEATURE_SAWTOOTHDOWN);
+    FF_TEST(FFCAP_ET_SPRING, SDL_HAPTIC_FEATURE_SPRING);
+    FF_TEST(FFCAP_ET_DAMPER, SDL_HAPTIC_FEATURE_DAMPER);
+    FF_TEST(FFCAP_ET_INERTIA, SDL_HAPTIC_FEATURE_INERTIA);
+    FF_TEST(FFCAP_ET_FRICTION, SDL_HAPTIC_FEATURE_FRICTION);
+    FF_TEST(FFCAP_ET_CUSTOMFORCE, SDL_HAPTIC_FEATURE_CUSTOM);
 
     /* Check if supports gain. */
     ret = FFDeviceGetForceFeedbackProperty(device, FFPROP_FFGAIN,
                                            &val, sizeof(val));
     if (ret == FF_OK) {
-        supported |= SDL_HAPTIC_GAIN;
+        supported |= SDL_HAPTIC_FEATURE_GAIN;
     } else if (ret != FFERR_UNSUPPORTED) {
         return SDL_SetError("Haptic: Unable to get if device supports gain: %s.",
                             FFStrError(ret));
@@ -448,7 +447,7 @@ static unsigned int GetSupportedFeatures(SDL_Haptic *haptic)
     ret = FFDeviceGetForceFeedbackProperty(device, FFPROP_AUTOCENTER,
                                            &val, sizeof(val));
     if (ret == FF_OK) {
-        supported |= SDL_HAPTIC_AUTOCENTER;
+        supported |= SDL_HAPTIC_FEATURE_AUTOCENTER;
     } else if (ret != FFERR_UNSUPPORTED) {
         return SDL_SetError("Haptic: Unable to get if device supports autocenter: %s.",
                             FFStrError(ret));
@@ -461,7 +460,7 @@ static unsigned int GetSupportedFeatures(SDL_Haptic *haptic)
                haptic->naxes * sizeof(Uint8));
 
     /* Always supported features. */
-    supported |= SDL_HAPTIC_STATUS | SDL_HAPTIC_PAUSE;
+    supported |= SDL_HAPTIC_FEATURE_STATUS | SDL_HAPTIC_FEATURE_PAUSE;
 
     haptic->supported = supported;
     return 0;
@@ -806,7 +805,7 @@ static int SDL_SYS_ToFFEFFECT(SDL_Haptic *haptic, FFEFFECT *dest, SDL_HapticEffe
 
     /* The big type handling switch, even bigger then Linux's version. */
     switch (src->type) {
-    case SDL_HAPTIC_CONSTANT:
+    case SDL_HAPTIC_EFFECT_CONSTANT:
         hap_constant = &src->constant;
         constant = SDL_malloc(sizeof(FFCONSTANTFORCE));
         if (!constant) {
@@ -843,12 +842,11 @@ static int SDL_SYS_ToFFEFFECT(SDL_Haptic *haptic, FFEFFECT *dest, SDL_HapticEffe
 
         break;
 
-    case SDL_HAPTIC_SINE:
-    /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /* case SDL_HAPTIC_SQUARE: */
-    case SDL_HAPTIC_TRIANGLE:
-    case SDL_HAPTIC_SAWTOOTHUP:
-    case SDL_HAPTIC_SAWTOOTHDOWN:
+    case SDL_HAPTIC_EFFECT_SINE:
+    case SDL_HAPTIC_EFFECT_SQUARE:
+    case SDL_HAPTIC_EFFECT_TRIANGLE:
+    case SDL_HAPTIC_EFFECT_SAWTOOTHUP:
+    case SDL_HAPTIC_EFFECT_SAWTOOTHDOWN:
         hap_periodic = &src->periodic;
         periodic = SDL_malloc(sizeof(FFPERIODIC));
         if (!periodic) {
@@ -889,10 +887,10 @@ static int SDL_SYS_ToFFEFFECT(SDL_Haptic *haptic, FFEFFECT *dest, SDL_HapticEffe
 
         break;
 
-    case SDL_HAPTIC_SPRING:
-    case SDL_HAPTIC_DAMPER:
-    case SDL_HAPTIC_INERTIA:
-    case SDL_HAPTIC_FRICTION:
+    case SDL_HAPTIC_EFFECT_SPRING:
+    case SDL_HAPTIC_EFFECT_DAMPER:
+    case SDL_HAPTIC_EFFECT_INERTIA:
+    case SDL_HAPTIC_EFFECT_FRICTION:
         hap_condition = &src->condition;
         if (dest->cAxes > 0) {
             condition = SDL_malloc(sizeof(FFCONDITION) * dest->cAxes);
@@ -936,7 +934,7 @@ static int SDL_SYS_ToFFEFFECT(SDL_Haptic *haptic, FFEFFECT *dest, SDL_HapticEffe
 
         break;
 
-    case SDL_HAPTIC_RAMP:
+    case SDL_HAPTIC_EFFECT_RAMP:
         hap_ramp = &src->ramp;
         ramp = SDL_malloc(sizeof(FFRAMPFORCE));
         if (!ramp) {
@@ -974,7 +972,7 @@ static int SDL_SYS_ToFFEFFECT(SDL_Haptic *haptic, FFEFFECT *dest, SDL_HapticEffe
 
         break;
 
-    case SDL_HAPTIC_CUSTOM:
+    case SDL_HAPTIC_EFFECT_CUSTOM:
         hap_custom = &src->custom;
         custom = SDL_malloc(sizeof(FFCUSTOMFORCE));
         if (!custom) {
@@ -1038,7 +1036,7 @@ static void SDL_SYS_HapticFreeFFEFFECT(FFEFFECT *effect, int type)
     SDL_free(effect->rgdwAxes);
     effect->rgdwAxes = NULL;
     if (effect->lpvTypeSpecificParams) {
-        if (type == SDL_HAPTIC_CUSTOM) { /* Must free the custom data. */
+        if (type == SDL_HAPTIC_EFFECT_CUSTOM) { /* Must free the custom data. */
             custom = (FFCUSTOMFORCE *)effect->lpvTypeSpecificParams;
             SDL_free(custom->rglForceData);
             custom->rglForceData = NULL;
@@ -1057,41 +1055,40 @@ CFUUIDRef
 SDL_SYS_HapticEffectType(Uint16 type)
 {
     switch (type) {
-    case SDL_HAPTIC_CONSTANT:
+    case SDL_HAPTIC_EFFECT_CONSTANT:
         return kFFEffectType_ConstantForce_ID;
 
-    case SDL_HAPTIC_RAMP:
+    case SDL_HAPTIC_EFFECT_RAMP:
         return kFFEffectType_RampForce_ID;
 
-        /* !!! FIXME: put this back when we have more bits in 2.1 */
-        /* case SDL_HAPTIC_SQUARE:
-            return kFFEffectType_Square_ID; */
+    case SDL_HAPTIC_EFFECT_SQUARE:
+        return kFFEffectType_Square_ID;
 
-    case SDL_HAPTIC_SINE:
+    case SDL_HAPTIC_EFFECT_SINE:
         return kFFEffectType_Sine_ID;
 
-    case SDL_HAPTIC_TRIANGLE:
+    case SDL_HAPTIC_EFFECT_TRIANGLE:
         return kFFEffectType_Triangle_ID;
 
-    case SDL_HAPTIC_SAWTOOTHUP:
+    case SDL_HAPTIC_EFFECT_SAWTOOTHUP:
         return kFFEffectType_SawtoothUp_ID;
 
-    case SDL_HAPTIC_SAWTOOTHDOWN:
+    case SDL_HAPTIC_EFFECT_SAWTOOTHDOWN:
         return kFFEffectType_SawtoothDown_ID;
 
-    case SDL_HAPTIC_SPRING:
+    case SDL_HAPTIC_EFFECT_SPRING:
         return kFFEffectType_Spring_ID;
 
-    case SDL_HAPTIC_DAMPER:
+    case SDL_HAPTIC_EFFECT_DAMPER:
         return kFFEffectType_Damper_ID;
 
-    case SDL_HAPTIC_INERTIA:
+    case SDL_HAPTIC_EFFECT_INERTIA:
         return kFFEffectType_Inertia_ID;
 
-    case SDL_HAPTIC_FRICTION:
+    case SDL_HAPTIC_EFFECT_FRICTION:
         return kFFEffectType_Friction_ID;
 
-    case SDL_HAPTIC_CUSTOM:
+    case SDL_HAPTIC_EFFECT_CUSTOM:
         return kFFEffectType_CustomForce_ID;
 
     default:

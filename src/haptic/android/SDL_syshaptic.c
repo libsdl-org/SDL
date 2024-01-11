@@ -113,7 +113,7 @@ static SDL_hapticlist_item *OpenHaptic(SDL_Haptic *haptic, SDL_hapticlist_item *
     haptic->hwdata = (struct haptic_hwdata *)item;
     item->haptic = haptic;
 
-    haptic->supported = SDL_HAPTIC_LEFTRIGHT;
+    haptic->supported = SDL_HAPTIC_FEATURE_LEFTRIGHT;
     haptic->neffects = 1;
     haptic->nplaying = haptic->neffects;
     haptic->effects = (struct haptic_effect *)SDL_malloc(sizeof(struct haptic_effect) * haptic->neffects);

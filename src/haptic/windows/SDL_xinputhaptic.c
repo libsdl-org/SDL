@@ -170,7 +170,7 @@ static int SDL_XINPUT_HapticOpenFromUserIndex(SDL_Haptic *haptic, const Uint8 us
     XINPUT_VIBRATION vibration = { 0, 0 }; /* stop any current vibration */
     XINPUTSETSTATE(userid, &vibration);
 
-    haptic->supported = SDL_HAPTIC_LEFTRIGHT;
+    haptic->supported = SDL_HAPTIC_FEATURE_LEFTRIGHT;
 
     haptic->neffects = 1;
     haptic->nplaying = 1;
@@ -262,14 +262,14 @@ void SDL_XINPUT_HapticQuit(void)
 
 int SDL_XINPUT_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect, SDL_HapticEffect *base)
 {
-    SDL_assert(base->type == SDL_HAPTIC_LEFTRIGHT); /* should catch this at higher level */
+    SDL_assert(base->type == SDL_HAPTIC_EFFECT_LEFTRIGHT); /* should catch this at higher level */
     return SDL_XINPUT_HapticUpdateEffect(haptic, effect, base);
 }
 
 int SDL_XINPUT_HapticUpdateEffect(SDL_Haptic *haptic, struct haptic_effect *effect, SDL_HapticEffect *data)
 {
     XINPUT_VIBRATION *vib = &effect->hweffect->vibration;
-    SDL_assert(data->type == SDL_HAPTIC_LEFTRIGHT);
+    SDL_assert(data->type == SDL_HAPTIC_EFFECT_LEFTRIGHT);
     /* SDL_HapticEffect has max magnitude of 32767, XInput expects 65535 max, so multiply */
     vib->wLeftMotorSpeed = data->leftright.large_magnitude * 2;
     vib->wRightMotorSpeed = data->leftright.small_magnitude * 2;
@@ -284,7 +284,7 @@ int SDL_XINPUT_HapticUpdateEffect(SDL_Haptic *haptic, struct haptic_effect *effe
 int SDL_XINPUT_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect, Uint32 iterations)
 {
     XINPUT_VIBRATION *vib = &effect->hweffect->vibration;
-    SDL_assert(effect->effect.type == SDL_HAPTIC_LEFTRIGHT); /* should catch this at higher level */
+    SDL_assert(effect->effect.type == SDL_HAPTIC_EFFECT_LEFTRIGHT); /* should catch this at higher level */
     SDL_LockMutex(haptic->hwdata->mutex);
     if (effect->effect.leftright.length == SDL_HAPTIC_INFINITY || iterations == SDL_HAPTIC_INFINITY) {
         haptic->hwdata->stopTicks = SDL_HAPTIC_INFINITY;
