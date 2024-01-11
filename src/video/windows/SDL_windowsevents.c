@@ -1424,8 +1424,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             if (!(window_flags & SDL_WINDOW_RESIZABLE)) {
                 int w, h;
                 NCCALCSIZE_PARAMS *params = (NCCALCSIZE_PARAMS *)lParam;
-                w = data->window->windowed.w;
-                h = data->window->windowed.h;
+                w = data->window->floating.w;
+                h = data->window->floating.h;
                 params->rgrc[0].right = params->rgrc[0].left + w;
                 params->rgrc[0].bottom = params->rgrc[0].top + h;
             }
