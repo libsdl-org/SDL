@@ -125,7 +125,7 @@ TestGuidToString(void *arg)
             SDL_GUIDToString(guid, guid_str, size);
 
             /* Check bytes before guid_str_buf */
-            expected_prefix = fill_char | (fill_char << 8) | (fill_char << 16) | (fill_char << 24);
+            expected_prefix = fill_char | (fill_char << 8) | (fill_char << 16) | (((Uint32)fill_char) << 24);
             SDL_memcpy(&actual_prefix, guid_str_buf, 4);
             SDLTest_AssertCheck(expected_prefix == actual_prefix, "String buffer memory before output untouched, expected: %" SDL_PRIu32 ", got: %" SDL_PRIu32 ", at size=%d", expected_prefix, actual_prefix, size);
 
