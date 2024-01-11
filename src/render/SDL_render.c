@@ -2815,8 +2815,8 @@ static int RenderDrawLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x
     /* the backend might clip this further to the clipping rect, but we
        just want a basic safety against generating millions of points for
        massive lines. */
-    clip_rect.x = (int) renderer->viewport.x;
-    clip_rect.y = (int) renderer->viewport.y;
+    clip_rect.x = 0;
+    clip_rect.y = 0;
     clip_rect.w = (int) renderer->viewport.w;
     clip_rect.h = (int) renderer->viewport.h;
     if (!SDL_IntersectRectAndLine(&clip_rect, &x1, &y1, &x2, &y2)) {
