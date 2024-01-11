@@ -27,7 +27,7 @@
 #include "../SDL_pixels_c.h"
 #include "../../thread/SDL_systhread.h"
 
-#define DEBUG_VIDEO_CAPTURE_CAPTURE 1
+#define DEBUG_VIDEO_CAPTURE_CAPTURE 0
 
 #if defined(__ANDROID__) && __ANDROID_API__ >= 24
 
