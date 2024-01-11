@@ -41,7 +41,7 @@ int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
 
 #endif
 
-#ifndef SDL_GDK_TEXTINPUT
+#ifndef __GDK__
 
 DECLSPEC int SDLCALL SDL_GDKGetTaskQueue(void *outTaskQueue);
 int SDL_GDKGetTaskQueue(void *outTaskQueue)
