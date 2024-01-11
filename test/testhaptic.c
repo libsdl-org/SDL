@@ -36,8 +36,8 @@ int main(int argc, char **argv)
     int i;
     char *name;
     int index;
-    SDL_HapticEffect efx[9];
-    int id[9];
+    SDL_HapticEffect efx[12];
+    int id[12];
     int nefx;
     unsigned int supported;
 
@@ -126,12 +126,62 @@ int main(int argc, char **argv)
         }
         nefx++;
     }
+    /* First we'll try a TRIANGLE effect. */
+    if (supported & SDL_HAPTIC_FEATURE_TRIANGLE) {
+        SDL_Log("   effect %d: Triangle\n", nefx);
+        efx[nefx].type = SDL_HAPTIC_EFFECT_TRIANGLE;
+        efx[nefx].periodic.period = 1000;
+        efx[nefx].periodic.magnitude = -0x5000; /* Negative magnitude and ...                      */
+        efx[nefx].periodic.phase = 18000;       /* ... 180 degrees phase shift => cancel eachother */
+        efx[nefx].periodic.length = 5000;
+        efx[nefx].periodic.attack_length = 1000;
+        efx[nefx].periodic.fade_length = 1000;
+        id[nefx] = SDL_HapticNewEffect(haptic, &efx[nefx]);
+        if (id[nefx] < 0) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "UPLOADING EFFECT ERROR: %s\n", SDL_GetError());
+            abort_execution();
+        }
+        nefx++;
+    }
     /* Now we'll try a SAWTOOTHUP */
     if (supported & SDL_HAPTIC_FEATURE_SAWTOOTHUP) {
         SDL_Log("   effect %d: Sawtooth Up\n", nefx);
         efx[nefx].type = SDL_HAPTIC_EFFECT_SAWTOOTHUP;
         efx[nefx].periodic.period = 500;
         efx[nefx].periodic.magnitude = 0x5000;
+        efx[nefx].periodic.length = 5000;
+        efx[nefx].periodic.attack_length = 1000;
+        efx[nefx].periodic.fade_length = 1000;
+        id[nefx] = SDL_HapticNewEffect(haptic, &efx[nefx]);
+        if (id[nefx] < 0) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "UPLOADING EFFECT ERROR: %s\n", SDL_GetError());
+            abort_execution();
+        }
+        nefx++;
+    }
+    /* Now we'll try a SAWTOOTHDOWN */
+    if (supported & SDL_HAPTIC_FEATURE_SAWTOOTHDOWN) {
+        SDL_Log("   effect %d: Sawtooth Down\n", nefx);
+        efx[nefx].type = SDL_HAPTIC_EFFECT_SAWTOOTHDOWN;
+        efx[nefx].periodic.period = 500;
+        efx[nefx].periodic.magnitude = 0x5000;
+        efx[nefx].periodic.length = 5000;
+        efx[nefx].periodic.attack_length = 1000;
+        efx[nefx].periodic.fade_length = 1000;
+        id[nefx] = SDL_HapticNewEffect(haptic, &efx[nefx]);
+        if (id[nefx] < 0) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "UPLOADING EFFECT ERROR: %s\n", SDL_GetError());
+            abort_execution();
+        }
+        nefx++;
+    }
+    /* Now we'll try a SQUARE effect. */
+    if (supported & SDL_HAPTIC_FEATURE_SQUARE) {
+        SDL_Log("   effect %d: Square\n", nefx);
+        efx[nefx].type = SDL_HAPTIC_EFFECT_SQUARE;
+        efx[nefx].periodic.period = 1000;
+        efx[nefx].periodic.magnitude = -0x5000; /* Negative magnitude and ...                      */
+        efx[nefx].periodic.phase = 18000;       /* ... 180 degrees phase shift => cancel eachother */
         efx[nefx].periodic.length = 5000;
         efx[nefx].periodic.attack_length = 1000;
         efx[nefx].periodic.fade_length = 1000;
