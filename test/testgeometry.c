@@ -29,6 +29,8 @@ static SDL_Texture **sprites;
 static SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
 static float angle = 0.0f;
 static int sprite_w, sprite_h;
+static int translate_cx = 0;
+static int translate_cy = 0;
 
 static int done;
 
@@ -92,6 +94,18 @@ static void loop(void)
                     angle += yrel;
                 }
             }
+        } else if (event.type == SDL_EVENT_KEY_DOWN) {
+            if (event.key.keysym.sym == SDLK_LEFT) {
+                translate_cx -= 1;
+            } else if (event.key.keysym.sym == SDLK_RIGHT) {
+                translate_cx += 1;
+            } else if (event.key.keysym.sym == SDLK_UP) {
+                translate_cy -= 1;
+            } else if (event.key.keysym.sym == SDLK_DOWN) {
+                translate_cy += 1;
+            } else {
+                SDLTest_CommonEvent(state, &event, &done);
+            }
         } else {
             SDLTest_CommonEvent(state, &event, &done);
         }
@@ -118,6 +132,9 @@ static void loop(void)
             cx = viewport.x + viewport.w / 2;
             cy = viewport.y + viewport.h / 2;
             d = (viewport.w + viewport.h) / 5.f;
+
+            cx += translate_cx;
+            cy += translate_cy;
 
             a = (angle * 3.1415f) / 180.0f;
             verts[0].position.x = cx + d * SDL_cosf(a);
