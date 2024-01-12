@@ -113,10 +113,23 @@ static int is_top_left(const SDL_Point *a, const SDL_Point *b, int is_clockwise)
     return 0;
 }
 
+/* x = (y << FP_BITS) */
+/* prevent runtime error: left shift of negative value */
+#define PRECOMP(x, y)               \
+        val = y;                    \
+        if (val >= 0) {             \
+            x = val << FP_BITS;     \
+        } else {                    \
+            val *= -1;              \
+            x = val << FP_BITS;     \
+            x *= -1;                \
+        }
+
 void trianglepoint_2_fixedpoint(SDL_Point *a)
 {
-    a->x <<= FP_BITS;
-    a->y <<= FP_BITS;
+    int val;
+    PRECOMP(a->x, a->x);
+    PRECOMP(a->y, a->y);
 }
 
 /* bounding rect of three points (in fixed point) */
@@ -298,12 +311,15 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
     is_clockwise = area > 0;
     area = SDL_abs(area);
 
-    d2d1_y = (d1->y - d2->y) << FP_BITS;
-    d0d2_y = (d2->y - d0->y) << FP_BITS;
-    d1d0_y = (d0->y - d1->y) << FP_BITS;
-    d1d2_x = (d2->x - d1->x) << FP_BITS;
-    d2d0_x = (d0->x - d2->x) << FP_BITS;
-    d0d1_x = (d1->x - d0->x) << FP_BITS;
+    {
+        int val;
+        PRECOMP(d2d1_y, d1->y - d2->y)
+        PRECOMP(d0d2_y, d2->y - d0->y)
+        PRECOMP(d1d0_y, d0->y - d1->y)
+        PRECOMP(d1d2_x, d2->x - d1->x)
+        PRECOMP(d2d0_x, d0->x - d2->x)
+        PRECOMP(d0d1_x, d1->x - d0->x)
+    }
 
     /* Starting point for rendering, at the middle of a pixel */
     {
@@ -565,13 +581,15 @@ int SDL_SW_BlitTriangle(
     is_clockwise = area > 0;
     area = SDL_abs(area);
 
-    d2d1_y = (d1->y - d2->y) << FP_BITS;
-    d0d2_y = (d2->y - d0->y) << FP_BITS;
-    d1d0_y = (d0->y - d1->y) << FP_BITS;
-
-    d1d2_x = (d2->x - d1->x) << FP_BITS;
-    d2d0_x = (d0->x - d2->x) << FP_BITS;
-    d0d1_x = (d1->x - d0->x) << FP_BITS;
+    {
+        int val;
+        PRECOMP(d2d1_y, d1->y - d2->y)
+        PRECOMP(d0d2_y, d2->y - d0->y)
+        PRECOMP(d1d0_y, d0->y - d1->y)
+        PRECOMP(d1d2_x, d2->x - d1->x)
+        PRECOMP(d2d0_x, d0->x - d2->x)
+        PRECOMP(d0d1_x, d1->x - d0->x)
+    }
 
     s2s0_x = s0->x - s2->x;
     s2s1_x = s1->x - s2->x;
