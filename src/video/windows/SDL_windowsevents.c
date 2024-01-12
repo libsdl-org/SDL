@@ -1088,91 +1088,96 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_WINDOWPOSCHANGING:
     {
         WINDOWPOS *windowpos = (WINDOWPOS*)lParam;
+        if (!IsIconic(hwnd) &&
+            !IsZoomed(hwnd) &&
+            (data->window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED)) &&
+            !(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
+            /* Use the stored floating size if moving from a fixed-size to floating state. */
+            int fx, fy, fw, fh;
 
-        if (data->expected_resize) {
-            returnCode = 0;
-        }
-
-        if (IsIconic(hwnd)) {
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
-        } else if (IsZoomed(hwnd)) {
-            if (data->window->flags & SDL_WINDOW_MINIMIZED) {
-                /* If going from minimized to maximized, send the restored event first. */
-                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
-            }
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
-        } else {
-            SDL_bool was_fixed_size = !!(data->window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED));
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
-
-            /* Send the stored floating size if moving from a fixed-size to floating state. */
-            if (was_fixed_size && !(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
-                int fx, fy, fw, fh;
-
-                WIN_AdjustWindowRect(data->window, &fx, &fy, &fw, &fh, SDL_WINDOWRECT_FLOATING);
-                windowpos->x = fx;
-                windowpos->y = fy;
-                windowpos->cx = fw;
-                windowpos->cy = fh;
-                windowpos->flags &= ~(SWP_NOSIZE | SWP_NOMOVE);
-            }
+            WIN_AdjustWindowRect(data->window, &fx, &fy, &fw, &fh, SDL_WINDOWRECT_FLOATING);
+            windowpos->x = fx;
+            windowpos->y = fy;
+            windowpos->cx = fw;
+            windowpos->cy = fh;
+            windowpos->flags &= ~(SWP_NOSIZE | SWP_NOMOVE);
         }
     } break;
 
     case WM_WINDOWPOSCHANGED:
     {
         SDL_Window *win;
-        RECT rect;
-        int x, y;
-        int w, h;
         const SDL_DisplayID original_displayID = data->last_displayID;
+        const WINDOWPOS *windowpos = (WINDOWPOS *)lParam;
+        const SDL_bool moved = !(windowpos->flags & SWP_NOMOVE);
+        const SDL_bool resized = !(windowpos->flags & SWP_NOSIZE);
+        const SDL_bool iconic = IsIconic(hwnd);
+        const SDL_bool zoomed = IsZoomed(hwnd);
 
-        if (data->initializing || data->in_border_change) {
+        if (windowpos->flags & SWP_SHOWWINDOW) {
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
+        }
+
+        if (iconic) {
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
+        } else if (zoomed) {
+            if (data->window->flags & SDL_WINDOW_MINIMIZED) {
+                /* If going from minimized to maximized, send the restored event first. */
+                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+            }
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
+        } else if (data->window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED)) {
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+        }
+
+        if (windowpos->flags & SWP_HIDEWINDOW) {
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
+        }
+
+        if (!moved && !resized) {
+            /* Nothing left to handle */
             break;
         }
 
         /* When the window is minimized it's resized to the dock icon size, ignore this */
-        if (IsIconic(hwnd)) {
+        if (iconic) {
             break;
         }
 
-        if (!GetClientRect(hwnd, &rect) || WIN_IsRectEmpty(&rect)) {
+        if (data->initializing) {
             break;
         }
-        ClientToScreen(hwnd, (LPPOINT)&rect);
-        ClientToScreen(hwnd, (LPPOINT)&rect + 1);
+
+        if (moved) {
+            RECT rect;
+            int x, y;
+
+            if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
+                ClientToScreen(hwnd, (LPPOINT)&rect);
+                ClientToScreen(hwnd, (LPPOINT)&rect + 1);
+
+                x = rect.left;
+                y = rect.top;
+
+                SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
+                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
+            }
+        }
+
+        if (resized) {
+            RECT rect;
+            int w, h;
+
+            /* Moving the window from one display to another can change the size of the window (in the handling of SDL_EVENT_WINDOW_MOVED), so we need to re-query the bounds */
+            if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
+                w = rect.right;
+                h = rect.bottom;
+
+                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED, w, h);
+            }
+        }
 
         WIN_UpdateClipCursor(data->window);
-
-        x = rect.left;
-        y = rect.top;
-
-        SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
-        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
-
-        // Moving the window from one display to another can change the size of the window (in the handling of SDL_EVENT_WINDOW_MOVED), so we need to re-query the bounds
-        if (GetClientRect(hwnd, &rect)) {
-            ClientToScreen(hwnd, (LPPOINT)&rect);
-            ClientToScreen(hwnd, (LPPOINT)&rect + 1);
-
-            WIN_UpdateClipCursor(data->window);
-
-            x = rect.left;
-            y = rect.top;
-        }
-
-        w = rect.right - rect.left;
-        h = rect.bottom - rect.top;
-        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED, w, h);
-
-#ifdef HIGHDPI_DEBUG
-        SDL_Log("WM_WINDOWPOSCHANGED: Windows client rect (pixels): (%d, %d) (%d x %d)\tSDL client rect (points): (%d, %d) (%d x %d) windows reported dpi %d",
-                rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top,
-                x, y, w, h, data->videodata->GetDpiForWindow ? data->videodata->GetDpiForWindow(data->hwnd) : 0);
-#endif
-
-        /* Forces a WM_PAINT event */
-        InvalidateRect(hwnd, NULL, FALSE);
 
         /* Update the window display position */
         data->last_displayID = SDL_GetDisplayForWindow(data->window);
@@ -1189,6 +1194,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 WIN_SetWindowPositionInternal(win, SWP_NOCOPYBITS | SWP_NOACTIVATE, SDL_WINDOWRECT_CURRENT);
             }
         }
+
+        /* Forces a WM_PAINT event */
+        InvalidateRect(hwnd, NULL, FALSE);
+
     } break;
 
     case WM_ENTERSIZEMOVE:
