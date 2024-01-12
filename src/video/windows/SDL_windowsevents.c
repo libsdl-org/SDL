@@ -1542,11 +1542,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_DPICHANGED:
         /* Windows 8.1+ */
         {
+            const int newDPI = HIWORD(wParam);
             RECT *const suggestedRect = (RECT *)lParam;
             int w, h;
 
 #ifdef HIGHDPI_DEBUG
-            const int newDPI = HIWORD(wParam);
             SDL_Log("WM_DPICHANGED: to %d\tsuggested rect: (%d, %d), (%dx%d)\n", newDPI,
                     suggestedRect->left, suggestedRect->top, suggestedRect->right - suggestedRect->left, suggestedRect->bottom - suggestedRect->top);
 #endif
