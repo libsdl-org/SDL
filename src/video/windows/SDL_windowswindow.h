@@ -120,7 +120,7 @@ extern int WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags, SDL_Win
 extern void WIN_ShowWindowSystemMenu(SDL_Window *window, int x, int y);
 extern int WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool focusable);
 extern int WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *height, SDL_WindowRect rect_type);
-extern int WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect);
+extern int WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

@@ -248,7 +248,7 @@ int WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *he
     return WIN_AdjustWindowRectWithStyle(window, style, styleEx, menu, x, y, width, height, rect_type);
 }
 
-int WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect)
+int WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi)
 {
     SDL_VideoDevice *videodevice = SDL_GetVideoDevice();
     SDL_VideoData *videodata = videodevice ? videodevice->driverdata : NULL;
@@ -268,7 +268,9 @@ int WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect)
 #else
     if (WIN_IsPerMonitorV2DPIAware(videodevice)) {
         /* With per-monitor v2, the window border/titlebar size depend on the DPI, so we need to call AdjustWindowRectExForDpi instead of AdjustWindowRectEx. */
-        UINT frame_dpi = videodata->GetDpiForWindow ? videodata->GetDpiForWindow(hwnd) : USER_DEFAULT_SCREEN_DPI;
+        if (!frame_dpi) {
+            frame_dpi = videodata->GetDpiForWindow ? videodata->GetDpiForWindow(hwnd) : USER_DEFAULT_SCREEN_DPI;
+        }
         if (!videodata->AdjustWindowRectExForDpi(lpRect, style, menu, styleEx, frame_dpi)) {
             return WIN_SetError("AdjustWindowRectExForDpi()");
         }

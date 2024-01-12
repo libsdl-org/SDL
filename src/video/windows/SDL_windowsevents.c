@@ -1045,7 +1045,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             size.left = 0;
             size.bottom = h;
             size.right = w;
-            WIN_AdjustWindowRectForHWND(hwnd, &size);
+            WIN_AdjustWindowRectForHWND(hwnd, &size, 0);
             w = size.right - size.left;
             h = size.bottom - size.top;
 #ifdef HIGHDPI_DEBUG
@@ -1493,10 +1493,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int frame_w, frame_h;
             int query_client_w_win, query_client_h_win;
 
-            const DWORD style = GetWindowLong(hwnd, GWL_STYLE);
-            const DWORD styleEx = GetWindowLong(hwnd, GWL_EXSTYLE);
-            const BOOL menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
-
 #ifdef HIGHDPI_DEBUG
             SDL_Log("WM_GETDPISCALEDSIZE: current DPI: %d potential DPI: %d input size: (%dx%d)",
                     prevDPI, nextDPI, sizeInOut->cx, sizeInOut->cy);
@@ -1507,7 +1503,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 RECT rect = { 0 };
 
                 if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
-                    data->videodata->AdjustWindowRectExForDpi(&rect, style, menu, styleEx, prevDPI);
+                    WIN_AdjustWindowRectForHWND(hwnd, &rect, prevDPI);
                 }
 
                 frame_w = -rect.left + rect.right;
@@ -1524,7 +1520,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 rect.bottom = query_client_h_win;
 
                 if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
-                    data->videodata->AdjustWindowRectExForDpi(&rect, style, menu, styleEx, nextDPI);
+                    WIN_AdjustWindowRectForHWND(hwnd, &rect, nextDPI);
                 }
 
                 /* This is supposed to control the suggested rect param of WM_DPICHANGED */
@@ -1570,7 +1566,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 rect.bottom = data->window->h;
 
                 if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
-                    WIN_AdjustWindowRectForHWND(hwnd, &rect);
+                    WIN_AdjustWindowRectForHWND(hwnd, &rect, newDPI);
                 }
 
                 w = rect.right - rect.left;
