@@ -1041,27 +1041,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
 
         if (!(SDL_GetWindowFlags(data->window) & SDL_WINDOW_BORDERLESS)) {
-            LONG style = GetWindowLong(hwnd, GWL_STYLE);
-            /* DJM - according to the docs for GetMenu(), the
-               return value is undefined if hwnd is a child window.
-               Apparently it's too difficult for MS to check
-               inside their function, so I have to do it here.
-             */
-            BOOL menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
-            UINT dpi;
-
-            dpi = USER_DEFAULT_SCREEN_DPI;
             size.top = 0;
             size.left = 0;
             size.bottom = h;
             size.right = w;
-
-            if (WIN_IsPerMonitorV2DPIAware(SDL_GetVideoDevice())) {
-                dpi = data->videodata->GetDpiForWindow(hwnd);
-                data->videodata->AdjustWindowRectExForDpi(&size, style, menu, 0, dpi);
-            } else {
-                AdjustWindowRectEx(&size, style, menu, 0);
-            }
+            WIN_AdjustWindowRectForHWND(hwnd, &size);
             w = size.right - size.left;
             h = size.bottom - size.top;
 #ifdef HIGHDPI_DEBUG
@@ -1510,6 +1494,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int query_client_w_win, query_client_h_win;
 
             const DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+            const DWORD styleEx = GetWindowLong(hwnd, GWL_EXSTYLE);
             const BOOL menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
 
 #ifdef HIGHDPI_DEBUG
@@ -1522,7 +1507,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 RECT rect = { 0 };
 
                 if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
-                    data->videodata->AdjustWindowRectExForDpi(&rect, style, menu, 0, prevDPI);
+                    data->videodata->AdjustWindowRectExForDpi(&rect, style, menu, styleEx, prevDPI);
                 }
 
                 frame_w = -rect.left + rect.right;
@@ -1539,7 +1524,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 rect.bottom = query_client_h_win;
 
                 if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
-                    data->videodata->AdjustWindowRectExForDpi(&rect, style, menu, 0, nextDPI);
+                    data->videodata->AdjustWindowRectExForDpi(&rect, style, menu, styleEx, nextDPI);
                 }
 
                 /* This is supposed to control the suggested rect param of WM_DPICHANGED */
@@ -1580,19 +1565,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             {
                 /* Calculate the new frame w/h such that
                    the client area size is maintained. */
-                const DWORD style = GetWindowLong(hwnd, GWL_STYLE);
-                const BOOL menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
-
                 RECT rect = { 0 };
                 rect.right = data->window->w;
                 rect.bottom = data->window->h;
 
                 if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
-                    if (data->videodata->GetDpiForWindow && data->videodata->AdjustWindowRectExForDpi) {
-                        data->videodata->AdjustWindowRectExForDpi(&rect, style, menu, 0, newDPI);
-                    } else {
-                        AdjustWindowRectEx(&rect, style, menu, 0);
-                    }
+                    WIN_AdjustWindowRectForHWND(hwnd, &rect);
                 }
 
                 w = rect.right - rect.left;
