@@ -1087,21 +1087,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_WINDOWPOSCHANGING:
     {
-        WINDOWPOS *windowpos = (WINDOWPOS*)lParam;
-        if (!IsIconic(hwnd) &&
-            !IsZoomed(hwnd) &&
-            (data->window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED)) &&
-            !(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
-            /* Use the stored floating size if moving from a fixed-size to floating state. */
-            int fx, fy, fw, fh;
-
-            WIN_AdjustWindowRect(data->window, &fx, &fy, &fw, &fh, SDL_WINDOWRECT_FLOATING);
-            windowpos->x = fx;
-            windowpos->y = fy;
-            windowpos->cx = fw;
-            windowpos->cy = fh;
-            windowpos->flags &= ~(SWP_NOSIZE | SWP_NOMOVE);
-        }
     } break;
 
     case WM_WINDOWPOSCHANGED:
