@@ -517,7 +517,7 @@ void UIKit_QuitModes(_THIS)
 }
 
 #if !TARGET_OS_TV
-void SDL_OnApplicationDidChangeStatusBarOrientation()
+void SDL_OnApplicationDidChangeStatusBarOrientation(void)
 {
     BOOL isLandscape = UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation);
     SDL_VideoDisplay *display = SDL_GetDisplay(0);

@@ -532,7 +532,7 @@ static int scale_mat_SSE(const Uint32 *src, int src_w, int src_h, int src_pitch,
 
 #if defined(HAVE_NEON_INTRINSICS)
 
-static SDL_INLINE int hasNEON()
+static SDL_INLINE int hasNEON(void)
 {
     static int val = -1;
     if (val != -1) {

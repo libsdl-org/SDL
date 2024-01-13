@@ -380,7 +380,7 @@ const char *GLES2_GetShaderInclude(GLES2_ShaderIncludeType type)
     }
 }
 
-GLES2_ShaderIncludeType GLES2_GetTexCoordPrecisionEnumFromHint()
+GLES2_ShaderIncludeType GLES2_GetTexCoordPrecisionEnumFromHint(void)
 {
     const char *texcoord_hint = SDL_GetHint("SDL_RENDER_OPENGLES2_TEXCOORD_PRECISION");
     GLES2_ShaderIncludeType value = GLES2_SHADER_FRAGMENT_INCLUDE_BEST_TEXCOORD_PRECISION;

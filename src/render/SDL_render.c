@@ -892,7 +892,7 @@ static SDL_INLINE void VerifyDrawQueueFunctions(const SDL_Renderer *renderer)
     SDL_assert(renderer->RunCommandQueue != NULL);
 }
 
-static SDL_RenderLineMethod SDL_GetRenderLineMethod()
+static SDL_RenderLineMethod SDL_GetRenderLineMethod(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_RENDER_LINE_METHOD);
 

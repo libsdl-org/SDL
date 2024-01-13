@@ -740,7 +740,7 @@ static void SDL_CutEvent(SDL_EventEntry *entry)
     SDL_AtomicAdd(&SDL_EventQ.count, -1);
 }
 
-static int SDL_SendWakeupEvent()
+static int SDL_SendWakeupEvent(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     if (_this == NULL || !_this->SendWakeupEvent) {
@@ -955,7 +955,7 @@ static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
     }
 }
 
-void SDL_PumpEvents()
+void SDL_PumpEvents(void)
 {
     SDL_PumpEventsInternal(SDL_FALSE);
 }
@@ -967,7 +967,7 @@ int SDL_PollEvent(SDL_Event *event)
     return SDL_WaitEventTimeout(event, 0);
 }
 
-static SDL_bool SDL_events_need_periodic_poll()
+static SDL_bool SDL_events_need_periodic_poll(void)
 {
     SDL_bool need_periodic_poll = SDL_FALSE;
 
@@ -1052,7 +1052,7 @@ static int SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Eve
     return 0;
 }
 
-static SDL_bool SDL_events_need_polling()
+static SDL_bool SDL_events_need_polling(void)
 {
     SDL_bool need_polling = SDL_FALSE;
 

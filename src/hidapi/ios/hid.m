@@ -475,7 +475,7 @@ typedef enum
 
 
 // Core Bluetooth devices calling back on event boundaries of their run-loops. so annoying.
-static void process_pending_events()
+static void process_pending_events(void)
 {
 	CFRunLoopRunResult res;
 	do

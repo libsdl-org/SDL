@@ -110,7 +110,7 @@ int SDL_RecordGesture(SDL_TouchID touchId)
     return touchId < 0;
 }
 
-void SDL_GestureQuit()
+void SDL_GestureQuit(void)
 {
     SDL_free(SDL_gestureTouch);
     SDL_gestureTouch = NULL;

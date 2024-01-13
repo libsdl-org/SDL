@@ -293,7 +293,7 @@ static SDL_AudioDevice **open_devices;
 
 static BOOL session_active = NO;
 
-static void pause_audio_devices()
+static void pause_audio_devices(void)
 {
     int i;
 
@@ -309,7 +309,7 @@ static void pause_audio_devices()
     }
 }
 
-static void resume_audio_devices()
+static void resume_audio_devices(void)
 {
     int i;
 

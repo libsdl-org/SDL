@@ -40,7 +40,7 @@ void SDL_SetYUVConversionMode(SDL_YUV_CONVERSION_MODE mode)
     SDL_YUV_ConversionMode = mode;
 }
 
-SDL_YUV_CONVERSION_MODE SDL_GetYUVConversionMode()
+SDL_YUV_CONVERSION_MODE SDL_GetYUVConversionMode(void)
 {
     return SDL_YUV_ConversionMode;
 }

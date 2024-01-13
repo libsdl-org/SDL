@@ -230,7 +230,7 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
     return frame;
 }
 
-void UIKit_ForceUpdateHomeIndicator()
+void UIKit_ForceUpdateHomeIndicator(void)
 {
 #if !TARGET_OS_TV
     /* Force the main SDL window to re-evaluate home indicator state */

@@ -108,7 +108,7 @@ int SDL_NumSensors(void)
  * Return the next available sensor instance ID
  * This may be called by drivers from multiple threads, unprotected by any locks
  */
-SDL_SensorID SDL_GetNextSensorInstanceID()
+SDL_SensorID SDL_GetNextSensorInstanceID(void)
 {
     return SDL_AtomicIncRef(&SDL_next_sensor_instance_id);
 }

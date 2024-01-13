@@ -116,7 +116,7 @@ static SDL_bool SDL_UseAltivecPrefetch()
     }
 }
 #else
-static SDL_bool SDL_UseAltivecPrefetch()
+static SDL_bool SDL_UseAltivecPrefetch(void)
 {
     /* Just guess G4 */
     return SDL_TRUE;

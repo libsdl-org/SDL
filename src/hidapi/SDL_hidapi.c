@@ -220,7 +220,7 @@ static int StrIsInteger(const char *string)
 }
 #endif /* HAVE_INOTIFY */
 
-static void HIDAPI_InitializeDiscovery()
+static void HIDAPI_InitializeDiscovery(void)
 {
     SDL_HIDAPI_discovery.m_bInitialized = SDL_TRUE;
     SDL_HIDAPI_discovery.m_unDeviceChangeCounter = 1;
@@ -359,7 +359,7 @@ static void HIDAPI_InitializeDiscovery()
     }
 }
 
-static void HIDAPI_UpdateDiscovery()
+static void HIDAPI_UpdateDiscovery(void)
 {
     if (!SDL_HIDAPI_discovery.m_bInitialized) {
         HIDAPI_InitializeDiscovery();
@@ -476,7 +476,7 @@ static void HIDAPI_UpdateDiscovery()
     }
 }
 
-static void HIDAPI_ShutdownDiscovery()
+static void HIDAPI_ShutdownDiscovery(void)
 {
     if (!SDL_HIDAPI_discovery.m_bInitialized) {
         return;

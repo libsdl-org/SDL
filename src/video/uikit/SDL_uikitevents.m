@@ -283,7 +283,7 @@ static void UpdateScrollDirection(void)
 #endif
 }
 
-static void UpdatePointerLock()
+static void UpdatePointerLock(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *window;

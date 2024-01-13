@@ -1849,7 +1849,7 @@ char *SDL_GameControllerMapping(SDL_GameController *gamecontroller)
     return retval;
 }
 
-static void SDL_GameControllerLoadHints()
+static void SDL_GameControllerLoadHints(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_GAMECONTROLLERCONFIG);
     if (hint && hint[0]) {

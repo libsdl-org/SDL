@@ -28,7 +28,7 @@
 #include "SDL_hints.h"
 #include "../SDL_error_c.h"
 
-SDL_TLSID SDL_TLSCreate()
+SDL_TLSID SDL_TLSCreate(void)
 {
     static SDL_atomic_t SDL_tls_id;
     return SDL_AtomicIncRef(&SDL_tls_id) + 1;
@@ -78,7 +78,7 @@ int SDL_TLSSet(SDL_TLSID id, const void *value, void(SDLCALL *destructor)(void *
     return 0;
 }
 
-void SDL_TLSCleanup()
+void SDL_TLSCleanup(void)
 {
     SDL_TLSData *storage;
 
@@ -193,7 +193,7 @@ int SDL_Generic_SetTLSData(SDL_TLSData *data)
 }
 
 /* Non-thread-safe global error variable */
-static SDL_error *SDL_GetStaticErrBuf()
+static SDL_error *SDL_GetStaticErrBuf(void)
 {
     static SDL_error SDL_global_error;
     static char SDL_global_error_str[128];
