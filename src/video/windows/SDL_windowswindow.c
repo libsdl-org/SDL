@@ -829,6 +829,8 @@ int WIN_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
             return WIN_SetWindowPositionInternal(window,
                                                  window->driverdata->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER |
                                                  SWP_NOACTIVATE, SDL_WINDOWRECT_FLOATING);
+        } else {
+            window->driverdata->floating_rect_pending = SDL_TRUE;
         }
     } else {
         return SDL_UpdateFullscreenMode(window, SDL_TRUE, SDL_TRUE);
@@ -841,6 +843,8 @@ void WIN_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
     if (!(window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED))) {
         WIN_SetWindowPositionInternal(window, window->driverdata->copybits_flag | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE, SDL_WINDOWRECT_FLOATING);
+    } else {
+        window->driverdata->floating_rect_pending = SDL_TRUE;
     }
 }
 
