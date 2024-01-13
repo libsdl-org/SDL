@@ -160,7 +160,6 @@
 		A75FCD1023E25AB700529352 /* SDL_uikitview.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A61923E2513D00DCD162 /* SDL_uikitview.h */; };
 		A75FCD1123E25AB700529352 /* SDL_bits.h in Headers */ = {isa = PBXBuildFile; fileRef = AADA5B8616CCAB3000107CF7 /* SDL_bits.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A75FCD1223E25AB700529352 /* SDL_uikitappdelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62F23E2513D00DCD162 /* SDL_uikitappdelegate.h */; };
-		A75FCD1323E25AB700529352 /* keyinfotable.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62823E2513D00DCD162 /* keyinfotable.h */; };
 		A75FCD1423E25AB700529352 /* SDL_blendmode.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557CC1595D4D800BBD41B /* SDL_blendmode.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A75FCD1523E25AB700529352 /* SDL_dropevents_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A92E23E2514000DCD162 /* SDL_dropevents_c.h */; };
 		A75FCD1623E25AB700529352 /* SDL_haptic_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A5C623E2513D00DCD162 /* SDL_haptic_c.h */; };
@@ -536,7 +535,6 @@
 		A75FCEC923E25AC700529352 /* SDL_uikitview.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A61923E2513D00DCD162 /* SDL_uikitview.h */; };
 		A75FCECA23E25AC700529352 /* SDL_bits.h in Headers */ = {isa = PBXBuildFile; fileRef = AADA5B8616CCAB3000107CF7 /* SDL_bits.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A75FCECB23E25AC700529352 /* SDL_uikitappdelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62F23E2513D00DCD162 /* SDL_uikitappdelegate.h */; };
-		A75FCECC23E25AC700529352 /* keyinfotable.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62823E2513D00DCD162 /* keyinfotable.h */; };
 		A75FCECD23E25AC700529352 /* SDL_blendmode.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557CC1595D4D800BBD41B /* SDL_blendmode.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A75FCECE23E25AC700529352 /* SDL_dropevents_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A92E23E2514000DCD162 /* SDL_dropevents_c.h */; };
 		A75FCECF23E25AC700529352 /* SDL_haptic_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A5C623E2513D00DCD162 /* SDL_haptic_c.h */; };
@@ -947,7 +945,6 @@
 		A769B09623E259AE00872273 /* SDL_coremotionsensor.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A57B23E2513D00DCD162 /* SDL_coremotionsensor.h */; };
 		A769B09723E259AE00872273 /* SDL_uikitview.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A61923E2513D00DCD162 /* SDL_uikitview.h */; };
 		A769B09923E259AE00872273 /* SDL_uikitappdelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62F23E2513D00DCD162 /* SDL_uikitappdelegate.h */; };
-		A769B09A23E259AE00872273 /* keyinfotable.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62823E2513D00DCD162 /* keyinfotable.h */; };
 		A769B09C23E259AE00872273 /* SDL_dropevents_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A92E23E2514000DCD162 /* SDL_dropevents_c.h */; };
 		A769B09D23E259AE00872273 /* SDL_haptic_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A5C623E2513D00DCD162 /* SDL_haptic_c.h */; };
 		A769B09F23E259AE00872273 /* SDL_dataqueue.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A57023E2513D00DCD162 /* SDL_dataqueue.h */; };
@@ -1760,10 +1757,6 @@
 		A7D8AC9B23E2514100DCD162 /* SDL_uikitwindow.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62723E2513D00DCD162 /* SDL_uikitwindow.h */; };
 		A7D8AC9D23E2514100DCD162 /* SDL_uikitwindow.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62723E2513D00DCD162 /* SDL_uikitwindow.h */; };
 		A7D8AC9E23E2514100DCD162 /* SDL_uikitwindow.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62723E2513D00DCD162 /* SDL_uikitwindow.h */; };
-		A7D8ACA023E2514100DCD162 /* keyinfotable.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62823E2513D00DCD162 /* keyinfotable.h */; };
-		A7D8ACA123E2514100DCD162 /* keyinfotable.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62823E2513D00DCD162 /* keyinfotable.h */; };
-		A7D8ACA323E2514100DCD162 /* keyinfotable.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62823E2513D00DCD162 /* keyinfotable.h */; };
-		A7D8ACA423E2514100DCD162 /* keyinfotable.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62823E2513D00DCD162 /* keyinfotable.h */; };
 		A7D8ACA623E2514100DCD162 /* SDL_uikitview.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A62923E2513D00DCD162 /* SDL_uikitview.m */; };
 		A7D8ACA723E2514100DCD162 /* SDL_uikitview.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A62923E2513D00DCD162 /* SDL_uikitview.m */; };
 		A7D8ACA923E2514100DCD162 /* SDL_uikitview.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A62923E2513D00DCD162 /* SDL_uikitview.m */; };
@@ -3188,7 +3181,6 @@
 		A7D8BBC723E2561500DCD162 /* SDL_steamcontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A7A523E2513E00DCD162 /* SDL_steamcontroller.h */; };
 		A7D8BBCB23E2561600DCD162 /* SDL_steamcontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A7A523E2513E00DCD162 /* SDL_steamcontroller.h */; };
 		A7D8BBCF23E2561600DCD162 /* SDL_steamcontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A7A523E2513E00DCD162 /* SDL_steamcontroller.h */; };
-		A7D8BBD123E2574800DCD162 /* keyinfotable.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62823E2513D00DCD162 /* keyinfotable.h */; };
 		A7D8BBD223E2574800DCD162 /* SDL_uikitappdelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62F23E2513D00DCD162 /* SDL_uikitappdelegate.h */; };
 		A7D8BBD323E2574800DCD162 /* SDL_uikitappdelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A61E23E2513D00DCD162 /* SDL_uikitappdelegate.m */; };
 		A7D8BBD423E2574800DCD162 /* SDL_uikitclipboard.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62123E2513D00DCD162 /* SDL_uikitclipboard.h */; };
@@ -3215,7 +3207,6 @@
 		A7D8BBE923E2574800DCD162 /* SDL_uikitvulkan.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A62523E2513D00DCD162 /* SDL_uikitvulkan.m */; };
 		A7D8BBEA23E2574800DCD162 /* SDL_uikitwindow.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62723E2513D00DCD162 /* SDL_uikitwindow.h */; };
 		A7D8BBEB23E2574800DCD162 /* SDL_uikitwindow.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A61A23E2513D00DCD162 /* SDL_uikitwindow.m */; };
-		A7D8BBEC23E2574800DCD162 /* keyinfotable.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62823E2513D00DCD162 /* keyinfotable.h */; };
 		A7D8BBED23E2574800DCD162 /* SDL_uikitappdelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62F23E2513D00DCD162 /* SDL_uikitappdelegate.h */; };
 		A7D8BBEE23E2574800DCD162 /* SDL_uikitappdelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A61E23E2513D00DCD162 /* SDL_uikitappdelegate.m */; };
 		A7D8BBEF23E2574800DCD162 /* SDL_uikitclipboard.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62123E2513D00DCD162 /* SDL_uikitclipboard.h */; };
@@ -3842,7 +3833,6 @@
 		A7D8A62523E2513D00DCD162 /* SDL_uikitvulkan.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitvulkan.m; sourceTree = "<group>"; };
 		A7D8A62623E2513D00DCD162 /* SDL_uikitmessagebox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitmessagebox.h; sourceTree = "<group>"; };
 		A7D8A62723E2513D00DCD162 /* SDL_uikitwindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitwindow.h; sourceTree = "<group>"; };
-		A7D8A62823E2513D00DCD162 /* keyinfotable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = keyinfotable.h; sourceTree = "<group>"; };
 		A7D8A62923E2513D00DCD162 /* SDL_uikitview.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitview.m; sourceTree = "<group>"; };
 		A7D8A62A23E2513D00DCD162 /* SDL_uikitclipboard.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitclipboard.m; sourceTree = "<group>"; };
 		A7D8A62B23E2513D00DCD162 /* SDL_uikitopenglview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitopenglview.h; sourceTree = "<group>"; };
@@ -4819,7 +4809,6 @@
 		A7D8A61823E2513D00DCD162 /* uikit */ = {
 			isa = PBXGroup;
 			children = (
-				A7D8A62823E2513D00DCD162 /* keyinfotable.h */,
 				A7D8A62F23E2513D00DCD162 /* SDL_uikitappdelegate.h */,
 				A7D8A61E23E2513D00DCD162 /* SDL_uikitappdelegate.m */,
 				A7D8A62123E2513D00DCD162 /* SDL_uikitclipboard.h */,
@@ -5464,7 +5453,6 @@
 				A75FCD1023E25AB700529352 /* SDL_uikitview.h in Headers */,
 				A75FCD1123E25AB700529352 /* SDL_bits.h in Headers */,
 				A75FCD1223E25AB700529352 /* SDL_uikitappdelegate.h in Headers */,
-				A75FCD1323E25AB700529352 /* keyinfotable.h in Headers */,
 				A75FCD1423E25AB700529352 /* SDL_blendmode.h in Headers */,
 				A75FCD1523E25AB700529352 /* SDL_dropevents_c.h in Headers */,
 				A75FCD1623E25AB700529352 /* SDL_haptic_c.h in Headers */,
@@ -5696,7 +5684,6 @@
 				A75FCEC923E25AC700529352 /* SDL_uikitview.h in Headers */,
 				A75FCECA23E25AC700529352 /* SDL_bits.h in Headers */,
 				A75FCECB23E25AC700529352 /* SDL_uikitappdelegate.h in Headers */,
-				A75FCECC23E25AC700529352 /* keyinfotable.h in Headers */,
 				A75FCECD23E25AC700529352 /* SDL_blendmode.h in Headers */,
 				A75FCECE23E25AC700529352 /* SDL_dropevents_c.h in Headers */,
 				A75FCECF23E25AC700529352 /* SDL_haptic_c.h in Headers */,
@@ -5917,7 +5904,6 @@
 				A769B09623E259AE00872273 /* SDL_coremotionsensor.h in Headers */,
 				A769B09723E259AE00872273 /* SDL_uikitview.h in Headers */,
 				A769B09923E259AE00872273 /* SDL_uikitappdelegate.h in Headers */,
-				A769B09A23E259AE00872273 /* keyinfotable.h in Headers */,
 				A769B09C23E259AE00872273 /* SDL_dropevents_c.h in Headers */,
 				A769B09D23E259AE00872273 /* SDL_haptic_c.h in Headers */,
 				A769B09F23E259AE00872273 /* SDL_dataqueue.h in Headers */,
@@ -6275,7 +6261,6 @@
 				A7D8B22523E2514200DCD162 /* gl2ext.h in Headers */,
 				A7D8B23123E2514200DCD162 /* gl2platform.h in Headers */,
 				A75FDB5923E39E6100529352 /* hidapi.h in Headers */,
-				A7D8ACA023E2514100DCD162 /* keyinfotable.h in Headers */,
 				A7D8B23723E2514200DCD162 /* khrplatform.h in Headers */,
 				A7D8BB0423E2514500DCD162 /* math_libm.h in Headers */,
 				A7D8BAC223E2514500DCD162 /* math_private.h in Headers */,
@@ -6512,7 +6497,6 @@
 				A7D8B22623E2514200DCD162 /* gl2ext.h in Headers */,
 				A7D8B23223E2514200DCD162 /* gl2platform.h in Headers */,
 				A75FDB5A23E39E6100529352 /* hidapi.h in Headers */,
-				A7D8ACA123E2514100DCD162 /* keyinfotable.h in Headers */,
 				A7D8B23823E2514200DCD162 /* khrplatform.h in Headers */,
 				A7D8BB0523E2514500DCD162 /* math_libm.h in Headers */,
 				A7D8BAC323E2514500DCD162 /* math_private.h in Headers */,
@@ -6563,7 +6547,6 @@
 				A7D8A97323E2514000DCD162 /* SDL_coremotionsensor.h in Headers */,
 				A7D8AC4923E2514100DCD162 /* SDL_uikitview.h in Headers */,
 				A7D8ACCD23E2514100DCD162 /* SDL_uikitappdelegate.h in Headers */,
-				A7D8ACA323E2514100DCD162 /* keyinfotable.h in Headers */,
 				A7D8BB3123E2514500DCD162 /* SDL_dropevents_c.h in Headers */,
 				A7D8AAC023E2514100DCD162 /* SDL_haptic_c.h in Headers */,
 				A7D8A94923E2514000DCD162 /* SDL_dataqueue.h in Headers */,
@@ -6921,7 +6904,6 @@
 				A7D8B22423E2514200DCD162 /* gl2ext.h in Headers */,
 				A7D8B23023E2514200DCD162 /* gl2platform.h in Headers */,
 				A75FDB5823E39E6100529352 /* hidapi.h in Headers */,
-				A7D8BBD123E2574800DCD162 /* keyinfotable.h in Headers */,
 				A7D8B23623E2514200DCD162 /* khrplatform.h in Headers */,
 				A7D8BB0323E2514500DCD162 /* math_libm.h in Headers */,
 				A7D8BAC123E2514500DCD162 /* math_private.h in Headers */,
@@ -7047,7 +7029,6 @@
 				A7D8BA5223E2514400DCD162 /* SDL_shaders_gles2.h in Headers */,
 				A7D8BA4623E2514400DCD162 /* SDL_glesfuncs.h in Headers */,
 				A7D8BA1023E2514400DCD162 /* SDL_blendpoint.h in Headers */,
-				A7D8BBEC23E2574800DCD162 /* keyinfotable.h in Headers */,
 				A7D8AB7023E2514100DCD162 /* SDL_offscreenvideo.h in Headers */,
 				A7D8AC0023E2514100DCD162 /* SDL_nullevents_c.h in Headers */,
 				A7D8B58423E2514300DCD162 /* SDL_sysjoystick.h in Headers */,
@@ -7155,7 +7136,6 @@
 				A7D8AC4A23E2514100DCD162 /* SDL_uikitview.h in Headers */,
 				DB313FFC17554B71006C0E22 /* SDL_bits.h in Headers */,
 				A7D8ACCE23E2514100DCD162 /* SDL_uikitappdelegate.h in Headers */,
-				A7D8ACA423E2514100DCD162 /* keyinfotable.h in Headers */,
 				DB313FCD17554B71006C0E22 /* SDL_blendmode.h in Headers */,
 				A7D8BB3223E2514500DCD162 /* SDL_dropevents_c.h in Headers */,
 				A7D8AAC123E2514100DCD162 /* SDL_haptic_c.h in Headers */,
