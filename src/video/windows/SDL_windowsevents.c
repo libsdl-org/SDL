@@ -1090,6 +1090,25 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         if (data->expected_resize) {
             returnCode = 0;
         }
+
+        if (data->floating_rect_pending &&
+            !IsIconic(hwnd) &&
+            !IsZoomed(hwnd) &&
+            (data->window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED)) &&
+            !(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
+            /* If a new floating size is pending, apply it if moving from a fixed-size to floating state. */
+            WINDOWPOS *windowpos = (WINDOWPOS*)lParam;
+            int fx, fy, fw, fh;
+
+            WIN_AdjustWindowRect(data->window, &fx, &fy, &fw, &fh, SDL_WINDOWRECT_FLOATING);
+            windowpos->x = fx;
+            windowpos->y = fy;
+            windowpos->cx = fw;
+            windowpos->cy = fh;
+            windowpos->flags &= ~(SWP_NOSIZE | SWP_NOMOVE);
+
+            data->floating_rect_pending = SDL_FALSE;
+        }
     } break;
 
     case WM_WINDOWPOSCHANGED:

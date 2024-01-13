@@ -59,6 +59,7 @@ struct SDL_WindowData
     SDL_bool expected_resize;
     SDL_bool in_border_change;
     SDL_bool in_title_click;
+    SDL_bool floating_rect_pending;
     Uint8 focus_click_pending;
     SDL_bool skip_update_clipcursor;
     Uint64 last_updated_clipcursor;
