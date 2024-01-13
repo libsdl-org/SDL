@@ -170,6 +170,12 @@
       <SubSystem>Windows</SubSystem>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)\shaders\buildshaders.bat $(SolutionDir)</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Building shader blobs (Xbox Scarlett)</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.XboxOne.x64'">
     <Midl>
@@ -198,6 +204,12 @@
       <SubSystem>Windows</SubSystem>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)\shaders\buildshaders.bat $(SolutionDir)</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Building shader blobs (Xbox One)</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">
     <Midl>
@@ -258,6 +270,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)\shaders\buildshaders.bat $(SolutionDir)</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Building shader blobs (Xbox Scarlett)</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'">
     <Midl>
@@ -287,6 +305,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)\shaders\buildshaders.bat $(SolutionDir)</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Building shader blobs (Xbox One)</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h" />
