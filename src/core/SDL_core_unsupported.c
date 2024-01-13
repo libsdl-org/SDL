@@ -224,3 +224,12 @@ Sint32 JNI_OnLoad(void *vm, void *reserved)
     return -1; /* JNI_ERR */
 }
 #endif
+
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+char *SDL_GetUserFolder(SDL_Folder folder)
+{
+    (void)folder;
+    SDL_Unsupported();
+    return NULL;
+}
+#endif

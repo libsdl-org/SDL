@@ -81,3 +81,11 @@ void SDL_iPhoneSetEventPump(SDL_bool enabled)
     SDL_Unsupported();
 }
 #endif
+
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
+{
+    (void)displayID;
+    return SDL_Unsupported();
+}
+#endif
