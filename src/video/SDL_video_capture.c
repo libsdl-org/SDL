@@ -27,7 +27,7 @@
 #include "SDL_pixels_c.h"
 #include "../thread/SDL_systhread.h"
 
-#define DEBUG_VIDEO_CAPTURE_CAPTURE 1
+#define DEBUG_VIDEO_CAPTURE_CAPTURE 0
 
 
 #ifdef SDL_VIDEO_CAPTURE
@@ -861,7 +861,7 @@ SDL_QuitVideoCapture(void)
 
 /* See SDL_android_video_capture.c */
 
-#elif defined(__IPHONEOS__) || defined(__MACOS__)
+#elif defined(__IOS__) || defined(__MACOS__)
 
 /* See SDL_video_capture_apple.m */
 #else
