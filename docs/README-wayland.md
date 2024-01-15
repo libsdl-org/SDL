@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
         }
 
         qtApp.processEvents();
-        
+
         /* Update the backbuffer size if the window scale changed. */
         qreal scale = qtWindow.devicePixelRatio();
         SDL_SetWindowSize(sdlWindow, SDL_lround(640. * scale), SDL_lround(480. * scale));

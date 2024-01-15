@@ -893,7 +893,7 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, in
  *   even if the window does not have the OpenGL property or flag set.
  * - `SDL_PROPERTY_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER` - the wl_surface
  *   associated with the window, if you want to wrap an existing window. See
-*    docs/README-wayland.md for more information.
+ *   docs/README-wayland.md for more information.
  *
  * These are additional supported properties on Windows:
  *
