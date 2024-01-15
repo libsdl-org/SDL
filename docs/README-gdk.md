@@ -33,7 +33,7 @@ The Windows GDK port supports the full set of Win32 APIs, renderers, controllers
 * Single-player games have some additional features available:
   * Call `SDL_GDKGetDefaultUser` to get the default XUserHandle pointer.
   * `SDL_GetPrefPath` still works, but only for single-player titles.
-  
+
   These functions mostly wrap around async APIs, and thus should be treated as synchronous alternatives. Also note that the single-player functions return on any OS errors, so be sure to validate the return values!
 
 * What doesn't work:
