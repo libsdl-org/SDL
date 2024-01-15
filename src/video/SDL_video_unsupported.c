@@ -41,7 +41,7 @@ int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
 
 #endif
 
-#ifndef SDL_GDK_TEXTINPUT
+#ifndef __GDK__
 
 DECLSPEC int SDLCALL SDL_GDKGetTaskQueue(void *outTaskQueue);
 int SDL_GDKGetTaskQueue(void *outTaskQueue)
@@ -79,5 +79,13 @@ void SDL_iPhoneSetEventPump(SDL_bool enabled)
 {
     (void)enabled;
     SDL_Unsupported();
+}
+#endif
+
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
+{
+    (void)displayID;
+    return SDL_Unsupported();
 }
 #endif

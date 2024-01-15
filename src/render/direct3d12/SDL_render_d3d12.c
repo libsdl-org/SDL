@@ -1435,7 +1435,7 @@ static void D3D12_FreeSRVIndex(SDL_Renderer *renderer, SIZE_T index)
 
 static int GetTextureProperty(SDL_PropertiesID props, const char *name, ID3D12Resource **texture)
 {
-    IUnknown *unknown = SDL_GetProperty(props, name, NULL);
+    IUnknown *unknown = (IUnknown*)SDL_GetProperty(props, name, NULL);
     if (unknown) {
         HRESULT result = D3D_CALL(unknown, QueryInterface, D3D_GUID(SDL_IID_ID3D12Resource), (void **)texture);
         if (FAILED(result)) {

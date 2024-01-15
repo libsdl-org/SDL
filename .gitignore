@@ -79,6 +79,7 @@ VisualC/tests/testscale/sample.bmp
 VisualC/tests/testsprite/icon.bmp
 VisualC/tests/testyuv/testyuv.bmp
 VisualC-GDK/**/Layout
+VisualC-GDK/shaders/*.h
 
 # for Android
 android-project/local.properties

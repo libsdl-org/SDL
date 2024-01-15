@@ -264,7 +264,7 @@ int WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi)
 #endif
 
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
-    AdjustWindowRectEx(&rect, style, menu, styleEx);
+    AdjustWindowRectEx(lpRect, style, menu, styleEx);
 #else
     if (WIN_IsPerMonitorV2DPIAware(videodevice)) {
         /* With per-monitor v2, the window border/titlebar size depend on the DPI, so we need to call AdjustWindowRectExForDpi instead of AdjustWindowRectEx. */
@@ -490,6 +490,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
 
     data->initializing = SDL_FALSE;
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     if (window->flags & SDL_WINDOW_EXTERNAL) {
         /* Query the title from the existing window */
         LPTSTR title;
@@ -510,6 +511,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
             SDL_small_free(title, isstack);
         }
     }
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
     SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WIN32_HWND_POINTER, data->hwnd);
@@ -554,7 +556,9 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
             }
         }
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
         SDL_free(data->rawinput);
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
         SDL_free(data);
     }
     window->driverdata = NULL;
@@ -672,6 +676,7 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
         }
     }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     /* FIXME: does not work on all hardware configurations with different renders (i.e. hybrid GPUs) */
     if (window->flags & SDL_WINDOW_TRANSPARENT) {
         void *handle = SDL_LoadObject("dwmapi.dll");
@@ -739,6 +744,7 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
         return SDL_SetError("Could not create GL window (WGL support not configured)");
 #endif
     }
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
     return 0;
 }
