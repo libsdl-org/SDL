@@ -2490,6 +2490,14 @@ int SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *event
             }
             SDL_RenderCoordinatesFromWindow(renderer, event->tfinger.x * w, event->tfinger.y * h, &event->tfinger.x, &event->tfinger.y);
         }
+    } else if (event->type == SDL_EVENT_DROP_POSITION ||
+               event->type == SDL_EVENT_DROP_FILE ||
+               event->type == SDL_EVENT_DROP_TEXT ||
+               event->type == SDL_EVENT_DROP_COMPLETE) {
+        SDL_Window *window = SDL_GetWindowFromID(event->drop.windowID);
+        if (window == renderer->window) {
+            SDL_RenderCoordinatesFromWindow(renderer, event->drop.x, event->drop.y, &event->wheel.x, &event->wheel.y);
+        }
     }
     return 0;
 }
