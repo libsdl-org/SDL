@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: Windows GDK, target: SDL3, sdk: iphoneos }
+        - { name: Windows GDK }
 
     steps:
       - uses: actions/checkout@v3
