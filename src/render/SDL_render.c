@@ -2496,7 +2496,7 @@ int SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *event
                event->type == SDL_EVENT_DROP_COMPLETE) {
         SDL_Window *window = SDL_GetWindowFromID(event->drop.windowID);
         if (window == renderer->window) {
-            SDL_RenderCoordinatesFromWindow(renderer, event->drop.x, event->drop.y, &event->wheel.x, &event->wheel.y);
+            SDL_RenderCoordinatesFromWindow(renderer, event->drop.x, event->drop.y, &event->drop.x, &event->drop.y);
         }
     }
     return 0;
