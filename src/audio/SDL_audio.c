@@ -1257,48 +1257,51 @@ static int SDLCALL CaptureAudioThread(void *devicep)  // thread entry point
 }
 
 
-static SDL_AudioDeviceID *GetAudioDevices(int *reqcount, SDL_bool iscapture)
+static SDL_AudioDeviceID *GetAudioDevices(int *count, SDL_bool iscapture)
 {
-    if (!SDL_GetCurrentAudioDriver()) {
+    SDL_AudioDeviceID *retval = NULL;
+    int num_devices = 0;
+
+    if (SDL_GetCurrentAudioDriver()) {
+        SDL_LockRWLockForReading(current_audio.device_hash_lock);
+        {
+            num_devices = SDL_AtomicGet(iscapture ? &current_audio.capture_device_count : &current_audio.output_device_count);
+            retval = (SDL_AudioDeviceID *) SDL_malloc((num_devices + 1) * sizeof (SDL_AudioDeviceID));
+            if (retval) {
+                int devs_seen = 0;
+                const void *key;
+                const void *value;
+                void *iter = NULL;
+                while (SDL_IterateHashTable(current_audio.device_hash, &key, &value, &iter)) {
+                    const SDL_AudioDeviceID devid = (SDL_AudioDeviceID) (uintptr_t) key;
+                    // bit #0 of devid is set for output devices and unset for capture.
+                    // bit #1 of devid is set for physical devices and unset for logical.
+                    const SDL_bool devid_iscapture = !(devid & (1<<0));
+                    const SDL_bool isphysical = (devid & (1<<1));
+                    if (isphysical && (devid_iscapture == iscapture)) {
+                        SDL_assert(devs_seen < num_devices);
+                        retval[devs_seen++] = devid;
+                    }
+                }
+
+                SDL_assert(devs_seen == num_devices);
+                retval[devs_seen] = 0;  // null-terminated.
+            } else {
+                SDL_OutOfMemory();
+            }
+        }
+        SDL_UnlockRWLock(current_audio.device_hash_lock);
+    } else {
         SDL_SetError("Audio subsystem is not initialized");
-        return NULL;
     }
 
-    SDL_AudioDeviceID *retval = NULL;
-
-    SDL_LockRWLockForReading(current_audio.device_hash_lock);
-    int num_devices = SDL_AtomicGet(iscapture ? &current_audio.capture_device_count : &current_audio.output_device_count);
-    if (num_devices > 0) {
-        retval = (SDL_AudioDeviceID *) SDL_malloc((num_devices + 1) * sizeof (SDL_AudioDeviceID));
-        if (!retval) {
-            num_devices = 0;
+    if (count) {
+        if (retval) {
+            *count = num_devices;
         } else {
-            int devs_seen = 0;
-            const void *key;
-            const void *value;
-            void *iter = NULL;
-            while (SDL_IterateHashTable(current_audio.device_hash, &key, &value, &iter)) {
-                const SDL_AudioDeviceID devid = (SDL_AudioDeviceID) (uintptr_t) key;
-                // bit #0 of devid is set for output devices and unset for capture.
-                // bit #1 of devid is set for physical devices and unset for logical.
-                const SDL_bool devid_iscapture = !(devid & (1<<0));
-                const SDL_bool isphysical = (devid & (1<<1));
-                if (isphysical && (devid_iscapture == iscapture)) {
-                    SDL_assert(devs_seen < num_devices);
-                    retval[devs_seen++] = devid;
-                }
-            }
-
-            SDL_assert(devs_seen == num_devices);
-            retval[devs_seen] = 0;  // null-terminated.
+            *count = 0;
         }
     }
-    SDL_UnlockRWLock(current_audio.device_hash_lock);
-
-    if (reqcount) {
-        *reqcount = num_devices;
-    }
-
     return retval;
 }
 
