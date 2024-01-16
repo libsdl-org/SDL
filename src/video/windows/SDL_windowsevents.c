@@ -858,7 +858,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
         if (inp.header.dwType == RIM_TYPEMOUSE) {
-            WIN_HandleRawMouseInput(WIN_GetEventTimestamp(), data, &inp.data.mouse);
+            WIN_HandleRawMouseInput(WIN_GetEventTimestamp(), data, inp.header.hDevice, &inp.data.mouse);
         }
     } break;
 #endif
