@@ -2019,6 +2019,14 @@ int SDL_RecreateWindow(SDL_Window *window, Uint32 flags)
         _this->SetWindowIcon(_this, window, window->icon);
     }
 
+    if (_this->SetWindowMinimumSize && (window->min_w || window->min_h)) {
+        _this->SetWindowMinimumSize(_this, window);
+    }
+
+    if (_this->SetWindowMaximumSize && (window->max_w || window->max_h)) {
+        _this->SetWindowMaximumSize(_this, window);
+    }
+
     if (window->hit_test) {
         _this->SetWindowHitTest(window, SDL_TRUE);
     }
