@@ -244,7 +244,7 @@ static void WIN_CheckWParamMouseButtons(Uint64 timestamp, WPARAM wParam, SDL_Win
     }
 }
 
-static void WIN_CheckRawMouseButtons(Uint64 timestamp, ULONG rawButtons, SDL_WindowData *data, SDL_MouseID mouseID)
+static void WIN_CheckRawMouseButtons(Uint64 timestamp, HANDLE hDevice, ULONG rawButtons, SDL_WindowData *data, SDL_MouseID mouseID)
 {
     // Add a flag to distinguish raw mouse buttons from wParam above
     rawButtons |= 0x8000000;
@@ -252,6 +252,10 @@ static void WIN_CheckRawMouseButtons(Uint64 timestamp, ULONG rawButtons, SDL_Win
     if (rawButtons != data->mouse_button_flags) {
         Uint32 mouseFlags = SDL_GetMouseState(NULL, NULL);
         SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
+        if (swapButtons && hDevice == NULL) {
+            /* Touchpad, already has buttons swapped */
+            swapButtons = SDL_FALSE;
+        }
         if (rawButtons & RI_MOUSE_BUTTON_1_DOWN) {
             WIN_CheckWParamMouseButton(timestamp, (rawButtons & RI_MOUSE_BUTTON_1_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, mouseID);
         }
@@ -517,7 +521,7 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     return 1;
 }
 
-static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, RAWMOUSE *rawmouse)
+static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, HANDLE hDevice, RAWMOUSE *rawmouse)
 {
     SDL_MouseID mouseID;
 
@@ -607,7 +611,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, RAWM
         data->last_raw_mouse_position.x = x;
         data->last_raw_mouse_position.y = y;
     }
-    WIN_CheckRawMouseButtons(timestamp, rawmouse->usButtonFlags, data, mouseID);
+    WIN_CheckRawMouseButtons(timestamp, hDevice, rawmouse->usButtonFlags, data, mouseID);
 }
 
 void WIN_PollRawMouseInput(void)
@@ -685,7 +689,7 @@ void WIN_PollRawMouseInput(void)
             timestamp += increment;
             if (input->header.dwType == RIM_TYPEMOUSE) {
                 RAWMOUSE *rawmouse = (RAWMOUSE *)((BYTE *)input + data->rawinput_offset);
-                WIN_HandleRawMouseInput(timestamp, window->driverdata, rawmouse);
+                WIN_HandleRawMouseInput(timestamp, window->driverdata, input->header.hDevice, rawmouse);
             }
         }
     }
