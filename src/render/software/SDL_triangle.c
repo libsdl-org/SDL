@@ -87,9 +87,9 @@ int SDL_FillTriangle(SDL_Surface *dst, const SDL_Point points[3], Uint32 color)
 #endif
 
 /* cross product AB x AC */
-static int cross_product(const SDL_Point *a, const SDL_Point *b, int c_x, int c_y)
+static Sint64 cross_product(const SDL_Point *a, const SDL_Point *b, int c_x, int c_y)
 {
-    return (b->x - a->x) * (c_y - a->y) - (b->y - a->y) * (c_x - a->x);
+    return ((Sint64)(b->x - a->x)) * ((Sint64)(c_y - a->y)) - ((Sint64)(b->y - a->y)) * ((Sint64)(c_x - a->x));
 }
 
 /* check for top left rules */
@@ -171,9 +171,9 @@ static void bounding_rect(const SDL_Point *a, const SDL_Point *b, const SDL_Poin
         int x, y;                                                                  \
         for (y = 0; y < dstrect.h; y++) {                                          \
             /* y start */                                                          \
-            int w0 = w0_row;                                                       \
-            int w1 = w1_row;                                                       \
-            int w2 = w2_row;                                                       \
+            Sint64 w0 = w0_row;                                                    \
+            Sint64 w1 = w1_row;                                                    \
+            Sint64 w2 = w2_row;                                                    \
             for (x = 0; x < dstrect.w; x++) {                                      \
                 /* In triangle */                                                  \
                 if (w0 + bias_w0 >= 0 && w1 + bias_w1 >= 0 && w2 + bias_w2 >= 0) { \
@@ -226,7 +226,7 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
     int area, is_clockwise;
 
     int d2d1_y, d1d2_x, d0d2_y, d2d0_x, d1d0_y, d0d1_x;
-    int w0_row, w1_row, w2_row;
+    Sint64 w0_row, w1_row, w2_row;
     int bias_w0, bias_w1, bias_w2;
 
     int is_uniform;
@@ -469,7 +469,7 @@ int SDL_SW_BlitTriangle(
     int d2d1_y, d1d2_x, d0d2_y, d2d0_x, d1d0_y, d0d1_x;
     int s2s0_x, s2s1_x, s2s0_y, s2s1_y;
 
-    int w0_row, w1_row, w2_row;
+    Sint64 w0_row, w1_row, w2_row;
     int bias_w0, bias_w1, bias_w2;
 
     int is_uniform;
