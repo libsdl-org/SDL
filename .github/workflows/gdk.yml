@@ -1,0 +1,34 @@
+name: Build (GDK)
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  Build:
+    name: ${{ matrix.platform.name }}
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+        - { name: Windows GDK, target: SDL3, sdk: iphoneos }
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download GDK
+        shell: pwsh
+        run: |
+          $ProgressPreference = 'SilentlyContinue'
+          Invoke-WebRequest https://github.com/microsoft/GDK/archive/refs/tags/October_2023_Update_1.zip -OutFile October_2023_Update_1.zip
+      - name: Install GDK
+        run: |
+          7z x October_2023_Update_1.zip
+          GDK-October_2023_Update_1\SetupScripts\InstallXboxOneDKs.cmd /pgdk:GDK-October_2023_Update_1\PGDK.exe
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1.3
+      - name: Build
+        run: msbuild VisualC-GDK/SDL.sln /m /p:BuildInParallel=true /p:Configuration=Release /p:Platform=Gaming.Desktop.x64
