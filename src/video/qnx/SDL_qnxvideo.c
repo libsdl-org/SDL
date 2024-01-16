@@ -236,16 +236,23 @@ static void pumpEvents(SDL_VideoDevice *_this)
  * @param   SDL_VideoDevice *_this
  * @param   window  SDL window to update
  */
-static void setWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
+static int setWindowRect(SDL_VideoDevice *_this, SDL_Window *window, Uint32 flags)
 {
-    window_impl_t   *impl = (window_impl_t *)window->driverdata;
-    int             size[2];
+    if (flags & SDL_WINDOW_RECT_UPDATE_SIZE) {
+        window_impl_t *impl = (window_impl_t *) window->driverdata;
+        int size[2];
 
-    size[0] = window->floating.w;
-    size[1] = window->floating.h;
+        size[0] = window->floating.w;
+        size[1] = window->floating.h;
 
-    screen_set_window_property_iv(impl->window, SCREEN_PROPERTY_SIZE, size);
-    screen_set_window_property_iv(impl->window, SCREEN_PROPERTY_SOURCE_SIZE, size);
+        screen_set_window_property_iv(impl->window, SCREEN_PROPERTY_SIZE, size);
+        screen_set_window_property_iv(impl->window, SCREEN_PROPERTY_SOURCE_SIZE, size);
+
+        return 0;
+    }
+
+    /* Setting position only unsupported. */
+    return SDL_Unsupported();
 }
 
 /**
@@ -319,7 +326,7 @@ static SDL_VideoDevice *createDevice()
     device->CreateSDLWindow = createWindow;
     device->CreateWindowFramebuffer = createWindowFramebuffer;
     device->UpdateWindowFramebuffer = updateWindowFramebuffer;
-    device->SetWindowSize = setWindowSize;
+    device->SetWindowRect = setWindowRect;
     device->ShowWindow = showWindow;
     device->HideWindow = hideWindow;
     device->PumpEvents = pumpEvents;

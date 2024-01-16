@@ -134,6 +134,8 @@ static VideoBootStrap *bootstrap[] = {
     NULL
 };
 
+#define SDL_SIZEPOS_IGNORE INT32_MIN
+
 #define CHECK_WINDOW_MAGIC(window, retval)                              \
     if (!_this) {                                                       \
         SDL_UninitializedVideo();                                       \
@@ -2447,52 +2449,81 @@ int SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon)
     return _this->SetWindowIcon(_this, window, window->icon);
 }
 
-int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
+static int SDL_SetWindowRectInternal(SDL_Window *window, const SDL_Rect *rect, Uint32 flags)
 {
-    SDL_DisplayID original_displayID;
+    if (flags & SDL_WINDOW_RECT_UPDATE_SIZE) {
+        int w = rect->w;
+        int h = rect->h;
 
-    CHECK_WINDOW_MAGIC(window, -1);
+        if (w <= 0) {
+            return SDL_InvalidParamError("w");
+        }
+        if (h <= 0) {
+            return SDL_InvalidParamError("h");
+        }
+        
+        /* Make sure we don't exceed any window size limits */
+        if (window->min_w && w < window->min_w) {
+            w = window->min_w;
+        }
+        if (window->max_w && w > window->max_w) {
+            w = window->max_w;
+        }
+        if (window->min_h && h < window->min_h) {
+            h = window->min_h;
+        }
+        if (window->max_h && h > window->max_h) {
+            h = window->max_h;
+        }
 
-    original_displayID = SDL_GetDisplayForWindow(window);
-
-    if (SDL_WINDOWPOS_ISUNDEFINED(x)) {
-        x = window->windowed.x;
+        window->floating.w = w;
+        window->floating.h = h;
     }
-    if (SDL_WINDOWPOS_ISUNDEFINED(y)) {
-        y = window->windowed.y;
+    
+    if (flags & SDL_WINDOW_RECT_UPDATE_POS) {
+        int x = rect->x;
+        int y = rect->y;
+        SDL_DisplayID original_displayID = SDL_GetDisplayForWindow(window);
+
+        if (SDL_WINDOWPOS_ISUNDEFINED(x)) {
+            x = window->windowed.x;
+        }
+        if (SDL_WINDOWPOS_ISUNDEFINED(y)) {
+            y = window->windowed.y;
+        }
+        if (SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISCENTERED(y)) {
+            SDL_DisplayID displayID = original_displayID;
+            SDL_Rect bounds;
+
+            if (SDL_WINDOWPOS_ISCENTERED(x) && (x & 0xFFFF)) {
+                displayID = (x & 0xFFFF);
+            } else if (SDL_WINDOWPOS_ISCENTERED(y) && (y & 0xFFFF)) {
+                displayID = (y & 0xFFFF);
+            }
+            if (displayID == 0 || SDL_GetDisplayIndex(displayID) < 0) {
+                displayID = SDL_GetPrimaryDisplay();
+            }
+
+            SDL_zero(bounds);
+            if (SDL_GetDisplayBounds(displayID, &bounds) < 0) {
+                return -1;
+            }
+            if (SDL_WINDOWPOS_ISCENTERED(x)) {
+                x = bounds.x + (bounds.w - window->windowed.w) / 2;
+            }
+            if (SDL_WINDOWPOS_ISCENTERED(y)) {
+                y = bounds.y + (bounds.h - window->windowed.h) / 2;
+            }
+        }
+
+        window->floating.x = x;
+        window->floating.y = y;
+        window->undefined_x = SDL_FALSE;
+        window->undefined_y = SDL_FALSE;
     }
-    if (SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISCENTERED(y)) {
-        SDL_DisplayID displayID = original_displayID;
-        SDL_Rect bounds;
 
-        if (SDL_WINDOWPOS_ISCENTERED(x) && (x & 0xFFFF)) {
-            displayID = (x & 0xFFFF);
-        } else if (SDL_WINDOWPOS_ISCENTERED(y) && (y & 0xFFFF)) {
-            displayID = (y & 0xFFFF);
-        }
-        if (displayID == 0 || SDL_GetDisplayIndex(displayID) < 0) {
-            displayID = SDL_GetPrimaryDisplay();
-        }
-
-        SDL_zero(bounds);
-        if (SDL_GetDisplayBounds(displayID, &bounds) < 0) {
-            return -1;
-        }
-        if (SDL_WINDOWPOS_ISCENTERED(x)) {
-            x = bounds.x + (bounds.w - window->windowed.w) / 2;
-        }
-        if (SDL_WINDOWPOS_ISCENTERED(y)) {
-            y = bounds.y + (bounds.h - window->windowed.h) / 2;
-        }
-    }
-
-    window->floating.x = x;
-    window->floating.y = y;
-    window->undefined_x = SDL_FALSE;
-    window->undefined_y = SDL_FALSE;
-
-    if (_this->SetWindowPosition) {
-        const int ret = _this->SetWindowPosition(_this, window);
+    if (_this->SetWindowRect) {
+        const int ret = _this->SetWindowRect(_this, window, flags);
         if (!ret) {
             SDL_SyncIfRequired(window);
         }
@@ -2502,20 +2533,29 @@ int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
     return SDL_Unsupported();
 }
 
-int SDL_GetWindowPosition(SDL_Window *window, int *x, int *y)
+int SDL_SetWindowRect(SDL_Window *window, const SDL_Rect *rect)
 {
     CHECK_WINDOW_MAGIC(window, -1);
+    if (!rect) {
+        return SDL_InvalidParamError("rect");
+    }
+    return SDL_SetWindowRectInternal(window, rect, SDL_WINDOW_RECT_UPDATE_POS | SDL_WINDOW_RECT_UPDATE_SIZE);
+}
 
-    /* Fullscreen windows are always at their display's origin */
+int SDL_GetWindowRect(SDL_Window *window, SDL_Rect *dst)
+{
+    CHECK_WINDOW_MAGIC(window, -1)
+    if (!dst) {
+        return SDL_InvalidParamError("dst");
+    }
+
+    SDL_zerop(dst);
+
+    /* Get the position.
+     * Fullscreen windows are always at their display's origin.
+     */
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
         SDL_DisplayID displayID;
-
-        if (x) {
-            *x = 0;
-        }
-        if (y) {
-            *y = 0;
-        }
 
         /* Find the window's monitor and update to the
            monitor offset. */
@@ -2524,24 +2564,44 @@ int SDL_GetWindowPosition(SDL_Window *window, int *x, int *y)
             SDL_Rect bounds;
 
             SDL_zero(bounds);
-
             SDL_GetDisplayBounds(displayID, &bounds);
-            if (x) {
-                *x = bounds.x;
-            }
-            if (y) {
-                *y = bounds.y;
-            }
+            dst->x = bounds.x;
+            dst->y = bounds.y;
         }
     } else {
+        dst->x = window->x;
+        dst->y = window->y;
+    }
+
+    /* Set the size. */
+    dst->w = window->w;
+    dst->h = window->h;
+
+    return 0;
+}
+
+int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
+{
+    CHECK_WINDOW_MAGIC(window, -1);
+    const SDL_Rect rect = { x, y, 0, 0 };
+    return SDL_SetWindowRectInternal(window, &rect, SDL_WINDOW_RECT_UPDATE_POS);
+}
+
+int SDL_GetWindowPosition(SDL_Window *window, int *x, int *y)
+{
+    SDL_Rect rect;
+
+    const int ret = SDL_GetWindowRect(window, &rect);
+    if (ret == 0) {
         if (x) {
-            *x = window->x;
+            *x = rect.x;
         }
         if (y) {
-            *y = window->y;
+            *y = rect.y;
         }
     }
-    return 0;
+
+    return ret;
 }
 
 int SDL_SetWindowBordered(SDL_Window *window, SDL_bool bordered)
@@ -2605,49 +2665,25 @@ int SDL_SetWindowAlwaysOnTop(SDL_Window *window, SDL_bool on_top)
 int SDL_SetWindowSize(SDL_Window *window, int w, int h)
 {
     CHECK_WINDOW_MAGIC(window, -1);
-    if (w <= 0) {
-        return SDL_InvalidParamError("w");
-    }
-    if (h <= 0) {
-        return SDL_InvalidParamError("h");
-    }
-
-    /* Make sure we don't exceed any window size limits */
-    if (window->min_w && w < window->min_w) {
-        w = window->min_w;
-    }
-    if (window->max_w && w > window->max_w) {
-        w = window->max_w;
-    }
-    if (window->min_h && h < window->min_h) {
-        h = window->min_h;
-    }
-    if (window->max_h && h > window->max_h) {
-        h = window->max_h;
-    }
-
-    window->floating.w = w;
-    window->floating.h = h;
-
-    if (_this->SetWindowSize) {
-        _this->SetWindowSize(_this, window);
-        SDL_SyncIfRequired(window);
-    } else {
-        return SDL_Unsupported();
-    }
-    return 0;
+    const SDL_Rect rect = { 0, 0, w, h };
+    return SDL_SetWindowRectInternal(window, &rect, SDL_WINDOW_RECT_UPDATE_SIZE);
 }
 
 int SDL_GetWindowSize(SDL_Window *window, int *w, int *h)
 {
-    CHECK_WINDOW_MAGIC(window, -1);
-    if (w) {
-        *w = window->w;
+    SDL_Rect rect;
+
+    const int ret = SDL_GetWindowRect(window, &rect);
+    if (ret == 0) {
+        if (w) {
+            *w = rect.w;
+        }
+        if (h) {
+            *h = rect.h;
+        }
     }
-    if (h) {
-        *h = window->h;
-    }
-    return 0;
+
+    return ret;
 }
 
 int SDL_GetWindowBordersSize(SDL_Window *window, int *top, int *left, int *bottom, int *right)

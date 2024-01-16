@@ -83,8 +83,14 @@ void OFFSCREEN_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     window->driverdata = NULL;
 }
 
-void OFFSCREEN_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
+int OFFSCREEN_SetWindowRect(SDL_VideoDevice *_this, SDL_Window *window, Uint32 flags)
 {
-    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window->floating.w, window->floating.h);
+    if (flags & SDL_WINDOW_RECT_UPDATE_SIZE) {
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window->floating.w, window->floating.h);
+        return 0;
+    }
+    
+    /* Setting position only not supported. */
+    return SDL_Unsupported();
 }
 #endif /* SDL_VIDEO_DRIVER_OFFSCREEN */

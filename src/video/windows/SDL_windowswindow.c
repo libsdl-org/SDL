@@ -818,34 +818,38 @@ int WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *i
 #endif
 }
 
-int WIN_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
+int WIN_SetWindowRect(SDL_VideoDevice *_this, SDL_Window *window, Uint32 flags)
 {
-    /* HighDPI support: removed SWP_NOSIZE. If the move results in a DPI change, we need to allow
-     * the window to resize (e.g. AdjustWindowRectExForDpi frame sizes are different).
-     */
+    SDL_WindowData *data = window->driverdata;
+    UINT setPosFlags = data->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE;
+
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-        if (!(window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED))) {
-            WIN_ConstrainPopup(window);
-            return WIN_SetWindowPositionInternal(window,
-                                                 window->driverdata->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER |
-                                                 SWP_NOACTIVATE, SDL_WINDOWRECT_FLOATING);
-        } else {
-            window->driverdata->floating_rect_pending = SDL_TRUE;
+        if (window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED)) {
+            /* Non-fullscreen fixed-size; defer moves and resizes. */
+            data->floating_rect_pending = SDL_TRUE;
+            return 0;
         }
     } else {
+        if (flags & SDL_WINDOW_RECT_UPDATE_SIZE) {
+            data->floating_rect_pending = SDL_TRUE;
+        }
         return SDL_UpdateFullscreenMode(window, SDL_TRUE, SDL_TRUE);
     }
 
-    return 0;
-}
+    if (flags) {
+        /* HighDPI support: Removed SWP_NOSIZE when repositioning. If the move results in a DPI change,
+         *                  we need to allow the window to resize (e.g. AdjustWindowRectExForDpi frame
+         *                  sizes are different).
+         */
+        if (!(flags & SDL_WINDOW_RECT_UPDATE_POS)) {
+            setPosFlags |= SWP_NOMOVE;
+        }
 
-void WIN_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
-{
-    if (!(window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED))) {
-        WIN_SetWindowPositionInternal(window, window->driverdata->copybits_flag | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE, SDL_WINDOWRECT_FLOATING);
-    } else {
-        window->driverdata->floating_rect_pending = SDL_TRUE;
+        WIN_ConstrainPopup(window);
+        return WIN_SetWindowPositionInternal(window, setPosFlags, SDL_WINDOWRECT_FLOATING);
     }
+
+    return 0;
 }
 
 int WIN_GetWindowBordersSize(SDL_VideoDevice *_this, SDL_Window *window, int *top, int *left, int *bottom, int *right)
@@ -939,7 +943,7 @@ void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     if (window->parent) {
         /* Update our position in case our parent moved while we were hidden */
-        WIN_SetWindowPosition(_this, window);
+        WIN_SetWindowRect(_this, window, SDL_WINDOW_RECT_UPDATE_POS);
     }
 
     hwnd = window->driverdata->hwnd;

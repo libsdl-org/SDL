@@ -987,3 +987,5 @@
 #define SDL_SyncWindow SDL_SyncWindow_REAL
 #define SDL_GetGamepadSteamHandle SDL_GetGamepadSteamHandle_REAL
 #define SDL_GetRendererFromTexture SDL_GetRendererFromTexture_REAL
+#define SDL_SetWindowRect SDL_SetWindowRect_REAL
+#define SDL_GetWindowRect SDL_GetWindowRect_REAL

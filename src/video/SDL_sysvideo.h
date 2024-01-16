@@ -150,6 +150,13 @@ typedef enum
     VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS = 0x04
 } DeviceCaps;
 
+/* Window rect update flags */
+typedef enum
+{
+    SDL_WINDOW_RECT_UPDATE_SIZE = 0x01,
+    SDL_WINDOW_RECT_UPDATE_POS = 0x02
+} WindowRectUpdateFlags;
+
 struct SDL_VideoDevice
 {
     /* * * */
@@ -216,8 +223,7 @@ struct SDL_VideoDevice
     int (*CreateSDLWindow)(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
     void (*SetWindowTitle)(SDL_VideoDevice *_this, SDL_Window *window);
     int (*SetWindowIcon)(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon);
-    int (*SetWindowPosition)(SDL_VideoDevice *_this, SDL_Window *window);
-    void (*SetWindowSize)(SDL_VideoDevice *_this, SDL_Window *window);
+    int (*SetWindowRect)(SDL_VideoDevice *_this, SDL_Window *window, Uint32 flags);
     void (*SetWindowMinimumSize)(SDL_VideoDevice *_this, SDL_Window *window);
     void (*SetWindowMaximumSize)(SDL_VideoDevice *_this, SDL_Window *window);
     int (*GetWindowBordersSize)(SDL_VideoDevice *_this, SDL_Window *window, int *top, int *left, int *bottom, int *right);

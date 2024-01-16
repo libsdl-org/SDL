@@ -55,15 +55,16 @@
 static int DUMMY_VideoInit(SDL_VideoDevice *_this);
 static void DUMMY_VideoQuit(SDL_VideoDevice *_this);
 
-static int DUMMY_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
+static int DUMMY_SetWindowRect(SDL_VideoDevice *_this, SDL_Window *window, Uint32 flags)
 {
-    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, window->floating.x, window->floating.y);
+    if (flags & SDL_WINDOW_RECT_UPDATE_POS) {
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, window->floating.x, window->floating.y);
+    }
+    if (flags & SDL_WINDOW_RECT_UPDATE_SIZE) {
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window->floating.w, window->floating.h);
+    }
+    
     return 0;
-}
-
-static void DUMMY_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
-{
-    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window->floating.w, window->floating.h);
 }
 
 /* DUMMY driver bootstrap functions */
@@ -103,8 +104,7 @@ static SDL_VideoDevice *DUMMY_InternalCreateDevice(const char *enable_hint)
     device->VideoInit = DUMMY_VideoInit;
     device->VideoQuit = DUMMY_VideoQuit;
     device->PumpEvents = DUMMY_PumpEvents;
-    device->SetWindowSize = DUMMY_SetWindowSize;
-    device->SetWindowPosition = DUMMY_SetWindowPosition;
+    device->SetWindowRect = DUMMY_SetWindowRect;
     device->CreateWindowFramebuffer = SDL_DUMMY_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = SDL_DUMMY_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = SDL_DUMMY_DestroyWindowFramebuffer;

@@ -2192,64 +2192,14 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
 
 void Wayland_SetWindowMinimumSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    /* Will be committed when Wayland_SetWindowSize() is called by the video core. */
+    /* Will be committed when Wayland_SetWindowRect() is called by the video core. */
     SetMinMaxDimensions(window);
 }
 
 void Wayland_SetWindowMaximumSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    /* Will be committed when Wayland_SetWindowSize() is called by the video core. */
+    /* Will be committed when Wayland_SetWindowRect() is called by the video core. */
     SetMinMaxDimensions(window);
-}
-
-int Wayland_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
-{
-    SDL_WindowData *wind = window->driverdata;
-
-    /* Only popup windows can be positioned relative to the parent. */
-    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
-        if (wind->shell_surface.xdg.roleobj.popup.popup &&
-            xdg_popup_get_version(wind->shell_surface.xdg.roleobj.popup.popup) < XDG_POPUP_REPOSITION_SINCE_VERSION) {
-            return SDL_Unsupported();
-        }
-
-        RepositionPopup(window, SDL_FALSE);
-        return 0;
-    } else if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR || wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
-        const int x = window->floating.x;
-        const int y = window->floating.y;
-
-        /* Catch up on any pending state before attempting to change the fullscreen window
-         * display via a set fullscreen call to make sure the window doesn't have a pending
-         * leave fullscreen event that it might override.
-         */
-        FlushFullscreenEvents(window);
-
-        /* XXX: Need to restore this after the roundtrip, as the requested coordinates might
-         *      have been overwritten by the 'real' coordinates if a display enter/leave event
-         *      occurred.
-         *
-         * The common pattern:
-         *
-         * SDL_SetWindowPosition();
-         * SDL_SetWindowFullscreen();
-         *
-         * for positioning a desktop fullscreen window won't work without this.
-         */
-        window->floating.x = x;
-        window->floating.y = y;
-
-        if (wind->is_fullscreen) {
-            SDL_VideoDisplay *display = SDL_GetVideoDisplayForFullscreenWindow(window);
-            if (display && wind->last_displayID != display->id) {
-                struct wl_output *output = display->driverdata->output;
-                SetFullscreen(window, output);
-
-                return 0;
-            }
-        }
-    }
-    return SDL_SetError("wayland cannot position non-popup windows");
 }
 
 static void size_event_handler(void *data, struct wl_callback *callback, uint32_t callback_data)
@@ -2282,24 +2232,74 @@ static struct wl_callback_listener size_event_listener = {
     size_event_handler
 };
 
-void Wayland_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
+int Wayland_SetWindowRect(SDL_VideoDevice *_this, SDL_Window *window, Uint32 flags)
 {
     SDL_WindowData *wind = window->driverdata;
+    int ret = 0;
 
-    if (wind->shell_surface_type != WAYLAND_SURFACE_CUSTOM) {
-        /* Queue an event to send the window size. */
-        struct wl_callback *cb = wl_display_sync(_this->driverdata->display);
+    if (flags & SDL_WINDOW_RECT_UPDATE_POS) {
+        /* Only popup windows can be positioned relative to the parent. */
+        if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
+            if (wind->shell_surface.xdg.roleobj.popup.popup &&
+                xdg_popup_get_version(wind->shell_surface.xdg.roleobj.popup.popup) < XDG_POPUP_REPOSITION_SINCE_VERSION) {
+                ret = SDL_Unsupported();
+            }
 
-        wind->pending_size_event.width = window->floating.w;
-        wind->pending_size_event.height = window->floating.h;
-        wl_callback_add_listener(cb, &size_event_listener, (void *)((uintptr_t)window->id));
-    } else {
-        /* We are being informed of a size change on a custom surface, just configure. */
-        wind->requested_window_width = window->floating.w;
-        wind->requested_window_height = window->floating.h;
+            RepositionPopup(window, SDL_FALSE);
+        } else if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR || wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
+            const int x = window->floating.x;
+            const int y = window->floating.y;
 
-        ConfigureWindowGeometry(window);
+            /* Catch up on any pending state before attempting to change the fullscreen window
+             * display via a set fullscreen call to make sure the window doesn't have a pending
+             * leave fullscreen event that it might override.
+             */
+            FlushFullscreenEvents(window);
+
+            /* XXX: Need to restore this after the roundtrip, as the requested coordinates might
+             *      have been overwritten by the 'real' coordinates if a display enter/leave event
+             *      occurred.
+             *
+             * The common pattern:
+             *
+             * SDL_SetWindowPosition();
+             * SDL_SetWindowFullscreen();
+             *
+             * for positioning a desktop fullscreen window won't work without this.
+             */
+            window->floating.x = x;
+            window->floating.y = y;
+
+            if (wind->is_fullscreen) {
+                SDL_VideoDisplay *display = SDL_GetVideoDisplayForFullscreenWindow(window);
+                if (display && wind->last_displayID != display->id) {
+                    struct wl_output *output = display->driverdata->output;
+                    SetFullscreen(window, output);
+                }
+            } else if (!(flags & SDL_WINDOW_RECT_UPDATE_SIZE)) {
+                ret = SDL_SetError("Positioning non-popup windows is unsupported on Wayland");
+            }
+        }
     }
+
+    if (flags & SDL_WINDOW_RECT_UPDATE_SIZE) {
+        if (wind->shell_surface_type != WAYLAND_SURFACE_CUSTOM) {
+            /* Queue an event to send the window size. */
+            struct wl_callback *cb = wl_display_sync(_this->driverdata->display);
+
+            wind->pending_size_event.width = window->floating.w;
+            wind->pending_size_event.height = window->floating.h;
+            wl_callback_add_listener(cb, &size_event_listener, (void *)((uintptr_t)window->id));
+        } else {
+            /* We are being informed of a size change on a custom surface, just configure. */
+            wind->requested_window_width = window->floating.w;
+            wind->requested_window_height = window->floating.h;
+
+            ConfigureWindowGeometry(window);
+        }
+    }
+
+    return ret;
 }
 
 void Wayland_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h)

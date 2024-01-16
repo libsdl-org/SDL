@@ -204,8 +204,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     device->RestoreWindow = Wayland_RestoreWindow;
     device->SetWindowBordered = Wayland_SetWindowBordered;
     device->SetWindowResizable = Wayland_SetWindowResizable;
-    device->SetWindowPosition = Wayland_SetWindowPosition;
-    device->SetWindowSize = Wayland_SetWindowSize;
+    device->SetWindowRect = Wayland_SetWindowRect;
     device->SetWindowMinimumSize = Wayland_SetWindowMinimumSize;
     device->SetWindowMaximumSize = Wayland_SetWindowMaximumSize;
     device->SetWindowModalFor = Wayland_SetWindowModalFor;

@@ -90,8 +90,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->CreateSDLWindow = Cocoa_CreateWindow;
         device->SetWindowTitle = Cocoa_SetWindowTitle;
         device->SetWindowIcon = Cocoa_SetWindowIcon;
-        device->SetWindowPosition = Cocoa_SetWindowPosition;
-        device->SetWindowSize = Cocoa_SetWindowSize;
+        device->SetWindowRect = Cocoa_SetWindowRect;
         device->SetWindowMinimumSize = Cocoa_SetWindowMinimumSize;
         device->SetWindowMaximumSize = Cocoa_SetWindowMaximumSize;
         device->SetWindowOpacity = Cocoa_SetWindowOpacity;

@@ -92,19 +92,20 @@ void HAIKU_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window * window) {
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-int HAIKU_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window * window) {
-    BMessage msg(BWIN_MOVE_WINDOW);
-    msg.AddInt32("window-x", window->floating.x);
-    msg.AddInt32("window-y", window->floating.y);
-    _ToBeWin(window)->PostMessage(&msg);
+int HAIKU_SetWindowRect(SDL_VideoDevice *_this, SDL_Window * window, Uint32 flags) {
+    if (flags & SDL_WINDOW_RECT_UPDATE_POS) {
+        BMessage msg(BWIN_MOVE_WINDOW);
+        msg.AddInt32("window-x", window->floating.x);
+        msg.AddInt32("window-y", window->floating.y);
+        _ToBeWin(window)->PostMessage(&msg);
+    }
+    if (flags & SDL_WINDOW_RECT_UPDATE_SIZE) {
+        BMessage msg(BWIN_RESIZE_WINDOW);
+        msg.AddInt32("window-w", window->floating.w - 1);
+        msg.AddInt32("window-h", window->floating.h - 1);
+        _ToBeWin(window)->PostMessage(&msg);
+    }
     return 0;
-}
-
-void HAIKU_SetWindowSize(SDL_VideoDevice *_this, SDL_Window * window) {
-    BMessage msg(BWIN_RESIZE_WINDOW);
-    msg.AddInt32("window-w", window->floating.w - 1);
-    msg.AddInt32("window-h", window->floating.h - 1);
-    _ToBeWin(window)->PostMessage(&msg);
 }
 
 void HAIKU_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window * window, SDL_bool bordered) {

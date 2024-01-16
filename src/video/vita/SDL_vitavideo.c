@@ -103,8 +103,7 @@ static SDL_VideoDevice *VITA_Create()
     device->VideoQuit = VITA_VideoQuit;
     device->CreateSDLWindow = VITA_CreateWindow;
     device->SetWindowTitle = VITA_SetWindowTitle;
-    device->SetWindowPosition = VITA_SetWindowPosition;
-    device->SetWindowSize = VITA_SetWindowSize;
+    device->SetWindowRect = VITA_SetWindowRect;
     device->ShowWindow = VITA_ShowWindow;
     device->HideWindow = VITA_HideWindow;
     device->RaiseWindow = VITA_RaiseWindow;
@@ -292,12 +291,9 @@ int VITA_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
 void VITA_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
-int VITA_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
+int VITA_SetWindowRect(SDL_VideoDevice *_this, SDL_Window *window, Uint32 flags)
 {
     return SDL_Unsupported();
-}
-void VITA_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
-{
 }
 void VITA_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {

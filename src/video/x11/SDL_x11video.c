@@ -180,8 +180,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->CreateSDLWindow = X11_CreateWindow;
     device->SetWindowTitle = X11_SetWindowTitle;
     device->SetWindowIcon = X11_SetWindowIcon;
-    device->SetWindowPosition = X11_SetWindowPosition;
-    device->SetWindowSize = X11_SetWindowSize;
+    device->SetWindowRect = X11_SetWindowRect;
     device->SetWindowMinimumSize = X11_SetWindowMinimumSize;
     device->SetWindowMaximumSize = X11_SetWindowMaximumSize;
     device->GetWindowBordersSize = X11_GetWindowBordersSize;

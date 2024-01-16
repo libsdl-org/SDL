@@ -280,8 +280,7 @@ static SDL_VideoDevice *KMSDRM_CreateDevice(void)
     device->SetDisplayMode = KMSDRM_SetDisplayMode;
     device->CreateSDLWindow = KMSDRM_CreateWindow;
     device->SetWindowTitle = KMSDRM_SetWindowTitle;
-    device->SetWindowPosition = KMSDRM_SetWindowPosition;
-    device->SetWindowSize = KMSDRM_SetWindowSize;
+    device->SetWindowRect = KMSDRM_SetWindowRect;
     device->SetWindowFullscreen = KMSDRM_SetWindowFullscreen;
     device->ShowWindow = KMSDRM_ShowWindow;
     device->HideWindow = KMSDRM_HideWindow;
@@ -1126,7 +1125,7 @@ static void KMSDRM_DirtySurfaces(SDL_Window *window)
        so the correct thread-local surface and context state are available */
     windata->egl_surface_dirty = SDL_TRUE;
 
-    /* The app may be waiting for the resize event after calling SetWindowSize
+    /* The app may be waiting for the resize event after calling SetWindowRect
        or SetWindowFullscreen, send a fake event for now since the actual
        recreation is deferred */
     KMSDRM_GetModeToSet(window, &mode);
@@ -1585,16 +1584,19 @@ int KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
 void KMSDRM_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
-int KMSDRM_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
+int KMSDRM_SetWindowRect(SDL_VideoDevice *_this, SDL_Window *window, Uint32 flags)
 {
-    return SDL_Unsupported();
-}
-void KMSDRM_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
-{
-    SDL_VideoData *viddata = _this->driverdata;
-    if (!viddata->vulkan_mode) {
-        KMSDRM_DirtySurfaces(window);
+    if (flags & SDL_WINDOW_RECT_UPDATE_SIZE) {
+        SDL_VideoData *viddata = _this->driverdata;
+        if (!viddata->vulkan_mode) {
+            KMSDRM_DirtySurfaces(window);
+        }
+
+        return 0;
     }
+
+    /* Setting position only not supported. */
+    return SDL_Unsupported();
 }
 int KMSDRM_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {

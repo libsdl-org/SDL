@@ -2158,86 +2158,77 @@ int Cocoa_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface 
     }
 }
 
-int Cocoa_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
+int Cocoa_SetWindowRect(SDL_VideoDevice *_this, SDL_Window *window, Uint32 flags)
 {
     @autoreleasepool {
         SDL_CocoaWindowData *windata = (__bridge SDL_CocoaWindowData *)window->driverdata;
         NSWindow *nswindow = windata.nswindow;
         NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
         BOOL fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
-        int x, y;
 
         if ([windata.listener windowOperationIsPending:(PENDING_OPERATION_ENTER_FULLSCREEN | PENDING_OPERATION_LEAVE_FULLSCREEN)] ||
             [windata.listener isInFullscreenSpaceTransition]) {
             Cocoa_SyncWindow(_this, window);
         }
 
-        if (!(window->flags & SDL_WINDOW_MAXIMIZED)) {
-            if (fullscreen) {
-                SDL_VideoDisplay *display = SDL_GetVideoDisplayForFullscreenWindow(window);
-                SDL_Rect r;
-                SDL_GetDisplayBounds(display->id, &r);
-
-                rect.origin.x = r.x;
-                rect.origin.y = r.y;
+        if (flags & SDL_WINDOW_RECT_UPDATE_SIZE) {
+            /* isZoomed always returns true if the window is not resizable */
+            if (!(window->flags & SDL_WINDOW_RESIZABLE) || !Cocoa_IsZoomed(window)) {
+                if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+                    rect.size.width = window->floating.w;
+                    rect.size.height = window->floating.h;
+                } else if (windata.was_zoomed) {
+                    flags &= ~SDL_WINDOW_RECT_UPDATE_SIZE;
+                    windata.send_floating_size = SDL_TRUE;
+                }
             } else {
-                SDL_RelativeToGlobalForWindow(window, window->floating.x, window->floating.y, &x, &y);
-                rect.origin.x = x;
-                rect.origin.y = y;
+                flags &= ~SDL_WINDOW_RECT_UPDATE_SIZE;
+                windata.send_floating_size = SDL_TRUE;
             }
-            ConvertNSRect(fullscreen, &rect);
-
-            /* Position and constrain the popup */
-            if (SDL_WINDOW_IS_POPUP(window)) {
-                NSRect screenRect = [ScreenForRect(&rect) frame];
-
-                if (rect.origin.x + rect.size.width > screenRect.origin.x + screenRect.size.width) {
-                    rect.origin.x -= (rect.origin.x + rect.size.width) - (screenRect.origin.x + screenRect.size.width);
+        }
+        
+        if (flags & SDL_WINDOW_RECT_UPDATE_POS) {
+            if (!(window->flags & SDL_WINDOW_MAXIMIZED)) {
+                if (fullscreen) {
+                    SDL_VideoDisplay *display = SDL_GetVideoDisplayForFullscreenWindow(window);
+                    SDL_Rect r;
+                    SDL_GetDisplayBounds(display->id, &r);
+                    
+                    rect.origin.x = r.x;
+                    rect.origin.y = r.y;
+                } else {
+                    int x, y;
+                    SDL_RelativeToGlobalForWindow(window, window->floating.x, window->floating.y, &x, &y);
+                    rect.origin.x = x;
+                    rect.origin.y = y;
                 }
-                if (rect.origin.y + rect.size.height > screenRect.origin.y + screenRect.size.height) {
-                    rect.origin.y -= (rect.origin.y + rect.size.height) - (screenRect.origin.y + screenRect.size.height);
+                ConvertNSRect(fullscreen, &rect);
+                
+                /* Position and constrain the popup */
+                if (SDL_WINDOW_IS_POPUP(window)) {
+                    NSRect screenRect = [ScreenForRect(&rect) frame];
+                    
+                    if (rect.origin.x + rect.size.width > screenRect.origin.x + screenRect.size.width) {
+                        rect.origin.x -= (rect.origin.x + rect.size.width) - (screenRect.origin.x + screenRect.size.width);
+                    }
+                    if (rect.origin.y + rect.size.height > screenRect.origin.y + screenRect.size.height) {
+                        rect.origin.y -= (rect.origin.y + rect.size.height) - (screenRect.origin.y + screenRect.size.height);
+                    }
+                    rect.origin.x = SDL_max(rect.origin.x, screenRect.origin.x);
+                    rect.origin.y = SDL_max(rect.origin.y, screenRect.origin.y);
                 }
-                rect.origin.x = SDL_max(rect.origin.x, screenRect.origin.x);
-                rect.origin.y = SDL_max(rect.origin.y, screenRect.origin.y);
+            } else {
+                flags &= ~SDL_WINDOW_RECT_UPDATE_POS;
+                windata.send_floating_position = SDL_TRUE;
             }
-
-            [nswindow setFrameOrigin:rect.origin];
-
+        }
+        
+        if (flags) {
+            [nswindow setFrame:[nswindow frameRectForContentRect:rect] display:YES];
             ScheduleContextUpdates(windata);
-        } else {
-            windata.send_floating_position = SDL_TRUE;
         }
     }
     return 0;
-}
-
-void Cocoa_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
-{
-    @autoreleasepool {
-        SDL_CocoaWindowData *windata = (__bridge SDL_CocoaWindowData *)window->driverdata;
-        NSWindow *nswindow = windata.nswindow;
-        NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
-
-        rect.size.width = window->floating.w;
-        rect.size.height = window->floating.h;
-
-        if ([windata.listener windowOperationIsPending:(PENDING_OPERATION_ENTER_FULLSCREEN | PENDING_OPERATION_LEAVE_FULLSCREEN)] ||
-            [windata.listener isInFullscreenSpaceTransition]) {
-            Cocoa_SyncWindow(_this, window);
-        }
-
-        /* isZoomed always returns true if the window is not resizable */
-        if (!(window->flags & SDL_WINDOW_RESIZABLE) || !Cocoa_IsZoomed(window)) {
-            if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-                [nswindow setFrame:[nswindow frameRectForContentRect:rect] display:YES];
-                ScheduleContextUpdates(windata);
-            } else if (windata.was_zoomed) {
-                windata.send_floating_size = SDL_TRUE;
-            }
-        } else {
-            windata.send_floating_size = SDL_TRUE;
-        }
-    }
 }
 
 void Cocoa_SetWindowMinimumSize(SDL_VideoDevice *_this, SDL_Window *window)

@@ -75,7 +75,7 @@ static void WINRT_VideoQuit(SDL_VideoDevice *_this);
 
 /* Window functions */
 static int WINRT_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
-static void WINRT_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
+static int WINRT_SetWindowRect(SDL_VideoDevice *_this, SDL_Window *window, Uint32 flags);
 static int WINRT_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
 static void WINRT_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
@@ -123,7 +123,7 @@ static SDL_VideoDevice *WINRT_CreateDevice(void)
     device->VideoInit = WINRT_VideoInit;
     device->VideoQuit = WINRT_VideoQuit;
     device->CreateSDLWindow = WINRT_CreateWindow;
-    device->SetWindowSize = WINRT_SetWindowSize;
+    device->SetWindowRect = WINRT_SetWindowRect;
     device->SetWindowFullscreen = WINRT_SetWindowFullscreen;
     device->DestroyWindow = WINRT_DestroyWindow;
     device->SetDisplayMode = WINRT_SetDisplayMode;
@@ -730,15 +730,22 @@ int WINRT_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
     return 0;
 }
 
-void WINRT_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
+int WINRT_SetWindowRect(SDL_VideoDevice *_this, SDL_Window *window, Uint32 flags)
 {
 #if NTDDI_VERSION >= NTDDI_WIN10
-    SDL_WindowData *data = window->driverdata;
-    const Windows::Foundation::Size size((float)window->floating.w, (float)window->floating.h);
-    if (data->appView->TryResizeView(size)) {
-        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window->floating.w, window->floating.h);
+    if (flags & SDL_WINDOW_RECT_UPDATE_SIZE) {
+        SDL_WindowData *data = window->driverdata;
+        const Windows::Foundation::Size size((float)window->floating.w, (float)window->floating.h);
+        if (data->appView->TryResizeView(size)) {
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window->floating.w, window->floating.h);
+            return 0;
+        }
+        return SDL_SetError("TryResizeView() failed");
     }
 #endif
+
+    /* Setting position only unsupported. */
+    return SDL_Unsupported();
 }
 
 int WINRT_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)

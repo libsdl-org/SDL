@@ -1166,6 +1166,67 @@ extern DECLSPEC const char *SDLCALL SDL_GetWindowTitle(SDL_Window *window);
 extern DECLSPEC int SDLCALL SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon);
 
 /**
+ * Request that the window's client rect size and position be set.
+ *
+ * The x and y members of the struct may be the coordinates of the window, or
+ * `SDL_WINDOWPOS_CENTERED` or `SDL_WINDOWPOS_UNDEFINED`.
+ *
+ * The w and h members of the struct must be non-zero, positive integer values,
+ * or the call will fail with an invalid parameter error.
+ *
+ * If, at the time of this request, the window is in a fixed size/position
+ * state such as maximized or fullscreen, a portion of the request may be
+ * deferred until the window returns to a resizable state.
+ *
+ * This can be used to reposition fullscreen-desktop windows onto a different
+ * display, however, exclusive fullscreen windows are locked to a specific
+ * display and can only be repositioned programmatically via
+ * SDL_SetWindowFullscreenMode().
+ *
+ * On some windowing systems this request is asynchronous and the new
+ * size/coordinates may not have have been applied immediately upon the return
+ * of this function. If an immediate change is required, call SDL_SyncWindow()
+ * to block until the changes have taken effect.
+ *
+ * \param window the window to reposition
+ * \param rect the new client rect of the window
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetWindowRect
+ * \sa SDL_SetWindowPosition
+ * \sa SDL_SetWindowSize
+ * \sa SDL_SyncWindow
+ */
+extern DECLSPEC int SDLCALL SDL_SetWindowRect(SDL_Window *window, const SDL_Rect *rect);
+
+/**
+ * Get the client rect of a window.
+ *
+ * The destination rect contains the current size and position of the window as
+ * last reported by the windowing system.
+ *
+ * The window pixel size may differ from its window coordinate size if the
+ * window is on a high pixel density display. Use SDL_GetWindowSizeInPixels()
+ * or SDL_GetRenderOutputSize() to get the real client area size in pixels.
+ *
+ * \param window the window to query
+ * \param dst a pointer to a rect that will be filled in with the size and
+ *        position of the window
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetWindowRect
+ * \sa SDL_GetWindowSizeInPixels()
+ * \sa SDL_GetRenderOutputSize()
+ */
+extern DECLSPEC int SDLCALL SDL_GetWindowRect(SDL_Window *window, SDL_Rect *dst);
+
+/**
  * Request that the window's position be set.
  *
  * If, at the time of this request, the window is in a fixed-size state such
@@ -1200,6 +1261,7 @@ extern DECLSPEC int SDLCALL SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *i
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_SetWindowRect
  * \sa SDL_GetWindowPosition
  * \sa SDL_SyncWindow
  */
@@ -1222,6 +1284,7 @@ extern DECLSPEC int SDLCALL SDL_SetWindowPosition(SDL_Window *window, int x, int
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_GetWindowRect
  * \sa SDL_SetWindowPosition
  */
 extern DECLSPEC int SDLCALL SDL_GetWindowPosition(SDL_Window *window, int *x, int *y);
@@ -1259,6 +1322,7 @@ extern DECLSPEC int SDLCALL SDL_GetWindowPosition(SDL_Window *window, int *x, in
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_SetWindowRect
  * \sa SDL_GetWindowSize
  * \sa SDL_SetWindowFullscreenMode
  * \sa SDL_SyncWindow
@@ -1285,6 +1349,7 @@ extern DECLSPEC int SDLCALL SDL_SetWindowSize(SDL_Window *window, int w, int h);
  *
  * \sa SDL_GetRenderOutputSize
  * \sa SDL_GetWindowSizeInPixels
+ * \sa SDL_GetWindowRect
  * \sa SDL_SetWindowSize
  */
 extern DECLSPEC int SDLCALL SDL_GetWindowSize(SDL_Window *window, int *w, int *h);

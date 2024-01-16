@@ -1715,8 +1715,9 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                         data->expected.y = data->window->floating.y - data->border_top;
                         data->expected.w = data->window->floating.w;
                         data->expected.h = data->window->floating.h;
-                        X11_XMoveWindow(display, data->xwindow, data->window->floating.x - data->border_left, data->window->floating.y - data->border_top);
-                        X11_XResizeWindow(display, data->xwindow, data->window->floating.w, data->window->floating.h);
+                        X11_XMoveResizeWindow(display, data->xwindow,
+                                              data->window->floating.x - data->border_left, data->window->floating.y - data->border_top,
+                                              data->window->floating.w, data->window->floating.h);
                     }
                 }
             }
@@ -1748,8 +1749,9 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                     data->pending_operation |= X11_PENDING_OP_RESIZE | X11_PENDING_OP_MOVE;
                     data->expected.w = data->window->floating.w;
                     data->expected.h = data->window->floating.h;
-                    X11_XMoveWindow(display, data->xwindow, data->window->floating.x - data->border_left, data->window->floating.y - data->border_top);
-                    X11_XResizeWindow(display, data->xwindow, data->window->floating.w, data->window->floating.h);
+                    X11_XMoveResizeWindow(display, data->xwindow,
+                                          data->window->floating.x - data->border_left, data->window->floating.y - data->border_top,
+                                          data->window->floating.w, data->window->floating.h);
                 }
             }
             if (!(data->window->flags & SDL_WINDOW_FULLSCREEN) && data->toggle_borders) {

@@ -90,8 +90,7 @@ struct SDL_WindowData
 extern int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void WIN_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 extern int WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon);
-extern int WIN_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
-extern void WIN_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
+extern int WIN_SetWindowRect(SDL_VideoDevice *_this, SDL_Window *window, Uint32 flags);
 extern int WIN_GetWindowBordersSize(SDL_VideoDevice *_this, SDL_Window *window, int *top, int *left, int *bottom, int *right);
 extern void WIN_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *width, int *height);
 extern int WIN_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity);

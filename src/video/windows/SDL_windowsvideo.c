@@ -176,8 +176,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->CreateSDLWindow = WIN_CreateWindow;
     device->SetWindowTitle = WIN_SetWindowTitle;
     device->SetWindowIcon = WIN_SetWindowIcon;
-    device->SetWindowPosition = WIN_SetWindowPosition;
-    device->SetWindowSize = WIN_SetWindowSize;
+    device->SetWindowRect = WIN_SetWindowRect;
     device->GetWindowBordersSize = WIN_GetWindowBordersSize;
     device->GetWindowSizeInPixels = WIN_GetWindowSizeInPixels;
     device->SetWindowOpacity = WIN_SetWindowOpacity;

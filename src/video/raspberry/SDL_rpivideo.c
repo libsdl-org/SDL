@@ -100,8 +100,7 @@ static SDL_VideoDevice *RPI_Create()
     device->VideoQuit = RPI_VideoQuit;
     device->CreateSDLWindow = RPI_CreateWindow;
     device->SetWindowTitle = RPI_SetWindowTitle;
-    device->SetWindowPosition = RPI_SetWindowPosition;
-    device->SetWindowSize = RPI_SetWindowSize;
+    device->SetWindowRect = RPI_SetWindowRect;
     device->ShowWindow = RPI_ShowWindow;
     device->HideWindow = RPI_HideWindow;
     device->RaiseWindow = RPI_RaiseWindow;
@@ -339,12 +338,9 @@ void RPI_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 void RPI_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
-int RPI_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
+int RPI_SetWindowRect(SDL_VideoDevice *_this, SDL_Window *window, Uint32 flags)
 {
     return SDL_Unsupported();
-}
-void RPI_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
-{
 }
 void RPI_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {

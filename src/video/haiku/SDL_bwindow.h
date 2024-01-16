@@ -26,8 +26,7 @@
 
 extern int HAIKU_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void HAIKU_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
-extern int HAIKU_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
-extern void HAIKU_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
+extern int HAIKU_SetWindowRect(SDL_VideoDevice *_this, SDL_Window *window, Uint32 flags);
 extern void HAIKU_SetWindowMinimumSize(SDL_VideoDevice *_this, SDL_Window *window);
 extern void HAIKU_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void HAIKU_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);

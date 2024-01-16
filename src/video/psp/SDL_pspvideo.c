@@ -87,8 +87,7 @@ static SDL_VideoDevice *PSP_Create()
     device->SetDisplayMode = PSP_SetDisplayMode;
     device->CreateSDLWindow = PSP_CreateWindow;
     device->SetWindowTitle = PSP_SetWindowTitle;
-    device->SetWindowPosition = PSP_SetWindowPosition;
-    device->SetWindowSize = PSP_SetWindowSize;
+    device->SetWindowRect = PSP_SetWindowRect;
     device->ShowWindow = PSP_ShowWindow;
     device->HideWindow = PSP_HideWindow;
     device->RaiseWindow = PSP_RaiseWindow;
@@ -209,12 +208,9 @@ int PSP_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
 void PSP_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
-int PSP_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
+int PSP_SetWindowRect(SDL_VideoDevice *_this, SDL_Window *window, Uint32 flags)
 {
     return SDL_Unsupported();
-}
-void PSP_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
-{
 }
 void PSP_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
