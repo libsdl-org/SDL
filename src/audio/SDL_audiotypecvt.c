@@ -256,10 +256,11 @@ static void SDLCALL SDL_Convert_F32_to_S16_Scalar(SDL_AudioCVT *cvt, SDL_AudioFo
          * 2) Shift the integer range from [0x43BF8000, 0x43C08000] to [-32768, 32768]
          * 3) Clamp values outside the [-32768, 32767] range */
         union float_bits x;
+        Uint32 y, z;
         x.f32 = src[i] + 384.0f;
 
-        Uint32 y = x.u32 - 0x43C00000u;
-        Uint32 z = 0x7FFFu - (y ^ SIGNMASK(y));
+        y = x.u32 - 0x43C00000u;
+        z = 0x7FFFu - (y ^ SIGNMASK(y));
         y = y ^ (z & SIGNMASK(z));
 
         dst[i] = (Sint16)(y & 0xFFFF);
@@ -310,10 +311,11 @@ static void SDLCALL SDL_Convert_F32_to_S32_Scalar(SDL_AudioCVT *cvt, SDL_AudioFo
          * 2) Set values outside the [-2147483648.0, 2147483647.0] range to -2147483648.0
          * 3) Convert the float to an integer, and fixup values outside the valid range */
         union float_bits x;
+        Uint32 y, z;
         x.f32 = src[i];
 
-        Uint32 y = x.u32 + 0x0F800000u;
-        Uint32 z = y - 0xCF000000u;
+        y = x.u32 + 0x0F800000u;
+        z = y - 0xCF000000u;
         z &= SIGNMASK(y ^ z);
         x.u32 = y - z;
 
