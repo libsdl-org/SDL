@@ -25,12 +25,10 @@
 #include "../SDL_joystick_c.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 #include "../usb_ids.h"
+#include "../../events/SDL_events_c.h"
 
 #include "SDL_mfijoystick_c.h"
 
-#ifndef SDL_EVENTS_DISABLED
-#include "../../events/SDL_events_c.h"
-#endif
 
 #if TARGET_OS_IOS
 #define SDL_JOYSTICK_iOS_ACCELEROMETER
