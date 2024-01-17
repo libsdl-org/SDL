@@ -255,7 +255,7 @@
 
 #cmakedefine SDL_VIDEO_CAPTURE
 
-/* Allow disabling of core subsystems */
+/* Allow disabling of major subsystems */
 #cmakedefine SDL_AUDIO_DISABLED @SDL_AUDIO_DISABLED@
 #cmakedefine SDL_JOYSTICK_DISABLED @SDL_JOYSTICK_DISABLED@
 #cmakedefine SDL_HAPTIC_DISABLED @SDL_HAPTIC_DISABLED@
