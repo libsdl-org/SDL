@@ -1054,15 +1054,11 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     joystickname = driver->GetDeviceName(device_index);
     if (joystickname) {
         joystick->name = SDL_strdup(joystickname);
-    } else {
-        joystick->name = NULL;
     }
 
     joystickpath = driver->GetDevicePath(device_index);
     if (joystickpath) {
         joystick->path = SDL_strdup(joystickpath);
-    } else {
-        joystick->path = NULL;
     }
 
     joystick->guid = driver->GetDeviceGUID(device_index);
