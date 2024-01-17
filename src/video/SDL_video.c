@@ -465,9 +465,7 @@ int SDL_VideoInit(const char *driver_name)
         SDL_VideoQuit();
     }
 
-#ifndef SDL_TIMERS_DISABLED
     SDL_InitTicks();
-#endif
 
     /* Start the event loop */
     if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0) {
