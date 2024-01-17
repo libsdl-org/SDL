@@ -1,0 +1,152 @@
+/*
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely.
+*/
+
+/* This is the equivalent of testvulkan.c (just clears the screen, fading colors). */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "SDL_test_common.h"
+#include "SDL_gpu.h"
+
+static SDLTest_CommonState *state;
+SDL_GpuDevice *gpuDevice = NULL;
+
+static void shutdownGpu(void)
+{
+    SDL_DestroyGpuDevice(gpuDevice);
+    gpuDevice = NULL;
+}
+
+/* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
+static void quit(int rc)
+{
+    shutdownGpu();
+    SDLTest_CommonQuit(state);
+    exit(rc);
+}
+
+static void initGpu(void)
+{
+    gpuDevice = SDL_CreateGpuDevice("The GPU device", NULL);
+    if (!gpuDevice) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to create GPU device: %s", SDL_GetError());
+        quit(2);
+    }
+}
+
+static void render(SDL_Window *window)
+{
+    double currentTime;
+    SDL_GpuColorAttachmentDescription color_desc;
+    SDL_GpuCommandBuffer *cmd;
+    SDL_GpuRenderPass *pass;
+
+    if (!window) {
+        return;
+    }
+
+    cmd = SDL_CreateGpuCommandBuffer("empty command buffer", gpuDevice);
+    if (!cmd) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateGpuCommandBuffer(): %s\n", SDL_GetError());
+        quit(2);
+    }
+
+    currentTime = (double)SDL_GetPerformanceCounter() / SDL_GetPerformanceFrequency();
+
+    SDL_zero(color_desc);
+    color_desc.texture = SDL_GetGpuBackbuffer(gpuDevice, window);
+    color_desc.color_init = SDL_GPUPASSINIT_CLEAR;
+    color_desc.clear_red = (float)(0.5 + 0.5 * SDL_sin(currentTime));
+    color_desc.clear_green = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 2 / 3));
+    color_desc.clear_blue = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 4 / 3));
+    color_desc.clear_alpha = 1.0f;
+
+    pass = SDL_StartGpuRenderPass("just-clear-the-screen render pass", cmd, 1, &color_desc, NULL, NULL);
+    if (!pass) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_StartGpuRenderPass(): %s\n", SDL_GetError());
+        quit(2);
+    }
+
+    SDL_EndGpuRenderPass(pass);
+
+    /* literally nothing to do, we just start a pass to say "clear the framebuffer to this color," present, and we're done. */
+    SDL_SubmitGpuCommandBuffer(cmd, NULL);
+    SDL_GpuPresent(gpuDevice, window, 1);
+}
+
+
+int main(int argc, char **argv)
+{
+    int done;
+    SDL_DisplayMode mode;
+    SDL_Event event;
+    Uint64 then, now, frames;
+    SDL_GpuTextureDescription texdesc;
+    int dw, dh;
+
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
+    if(!state) {
+        return 1;
+    }
+
+    state->skip_renderer = 1;
+
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv) || !SDLTest_CommonInit(state)) {
+        SDLTest_CommonQuit(state);
+        return 1;
+    }
+
+    initGpu();
+
+    SDL_GetCurrentDisplayMode(0, &mode);
+    SDL_Log("Screen BPP    : %d\n", SDL_BITSPERPIXEL(mode.format));
+    SDL_GetWindowSize(state->windows[0], &dw, &dh);
+    SDL_Log("Window Size   : %d,%d\n", dw, dh);
+    SDL_GetGpuTextureDescription(SDL_GetGpuBackbuffer(gpuDevice, state->windows[0]), &texdesc);  /* !!! FIXME: probably shouldn't do this. */
+    SDL_Log("Draw Size     : %d,%d\n", (int) texdesc.width, (int) texdesc.height);
+
+    /* Main render loop */
+    frames = 0;
+    then = SDL_GetTicks();
+    done = 0;
+    while (!done) {
+        /* Check for events */
+        frames++;
+        while(SDL_PollEvent(&event)) {
+            SDLTest_CommonEvent(state, &event, &done);
+        }
+
+        if (!done) {
+            int i;
+            for (i = 0; i < state->num_windows; ++i) {
+                render(state->windows[i]);
+            }
+        }
+    }
+
+    /* Print out some timing information */
+    now = SDL_GetTicks();
+    if (now > then) {
+        SDL_Log("%2.2f frames per second\n", ((double)frames * 1000) / (now - then));
+    }
+
+    quit(0);
+    return 0;
+}
+
+/* vi: set ts=4 sw=4 expandtab: */

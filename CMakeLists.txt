@@ -478,6 +478,8 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/events/*.c"
   "${SDL3_SOURCE_DIR}/src/file/*.c"
   "${SDL3_SOURCE_DIR}/src/joystick/*.c"
+  "${SDL3_SOURCE_DIR}/src/gpu/*.c"
+  "${SDL3_SOURCE_DIR}/src/gpu/dummy/*.c"
   "${SDL3_SOURCE_DIR}/src/haptic/*.c"
   "${SDL3_SOURCE_DIR}/src/hidapi/*.c"
   "${SDL3_SOURCE_DIR}/src/libm/*.c"
@@ -2251,7 +2253,9 @@ elseif(APPLE)
         endif()
         if(SDL_RENDER_METAL)
           sdl_glob_sources("${SDL3_SOURCE_DIR}/src/render/metal/*.m")
+          sdl_glob_sources("${SDL3_SOURCE_DIR}/src/gpu/metal/*.m")
           set(SDL_VIDEO_RENDER_METAL 1)
+          set(SDL_GPU_METAL 1)
           set(HAVE_RENDER_METAL TRUE)
         endif()
       endif()

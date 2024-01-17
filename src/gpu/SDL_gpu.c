@@ -1,0 +1,1361 @@
+/*
+  Simple DirectMedia Layer
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
+*/
+#include "../SDL_internal.h"
+
+/* The high-level gpu subsystem */
+
+#include "SDL.h"
+#include "SDL_sysgpu.h"
+#include "../video/SDL_sysvideo.h"
+
+
+extern const SDL_GpuDriver DUMMY_GpuDriver;
+extern const SDL_GpuDriver METAL_GpuDriver;
+
+static const SDL_GpuDriver *gpu_drivers[] = {
+#ifdef SDL_GPU_METAL
+    &METAL_GpuDriver,
+#endif
+    &DUMMY_GpuDriver
+};
+
+int
+SDL_GetNumGpuDrivers(void)
+{
+    return (int) SDL_arraysize(gpu_drivers);
+}
+
+const char *
+SDL_GetGpuDriver(int index)
+{
+    const int numdrivers = (int) SDL_arraysize(gpu_drivers);
+    if ((index < 0) || (index >= numdrivers)) {
+        SDL_SetError("index must be in the range of 0 - %u", (unsigned int) (numdrivers ? (numdrivers - 1) : 0));
+        return NULL;
+    }
+    return gpu_drivers[index]->name;
+}
+
+/* helper function since lots of things need an object and a label allocated. */
+static void *AllocObjAndString(const size_t objlen, const char *str, char **allocatedstr)
+{
+    void *retval;
+
+    SDL_assert(str != NULL);
+    SDL_assert(allocatedstr != NULL);
+    SDL_assert(objlen > 0);
+
+    *allocatedstr = NULL;
+    retval = SDL_calloc(1, objlen);
+    if (!retval) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
+    if (str) {
+        *allocatedstr = SDL_strdup(str);
+        if (!*allocatedstr) {
+            SDL_free(retval);
+            SDL_OutOfMemory();
+            return NULL;
+        }
+    }
+
+    return retval;
+}
+
+#define ALLOC_OBJ_WITH_LABEL(typ, var, str) { \
+    char *cpystr; \
+    var = (typ *) AllocObjAndString(sizeof (typ), str, &cpystr); \
+    if (var != NULL) { \
+        var->label = cpystr; \
+    } \
+}
+
+#define FREE_AND_NULL_OBJ_WITH_LABEL(obj) { \
+    SDL_free((void *) obj->label); \
+    SDL_free(obj); \
+    obj = NULL; \
+}
+
+#define ALLOC_OBJ_WITH_DESC(typ, var, dsc) { \
+    char *cpystr; \
+    var = (typ *) AllocObjAndString(sizeof (typ), (dsc)->label, &cpystr); \
+    if (var != NULL) { \
+        SDL_memcpy(&var->desc, dsc, sizeof (*(dsc)));\
+        var->desc.label = cpystr; \
+    } \
+}
+
+#define FREE_AND_NULL_OBJ_WITH_DESC(obj) { \
+    SDL_free((void *) ((obj)->desc.label)); \
+    SDL_free(obj); \
+    obj = NULL; \
+}
+
+
+/* !!! FIXME: change this API to allow selection of a specific GPU? */
+static int
+CreateGpuDeviceInternal(SDL_GpuDevice *device, const char *driver)
+{
+    size_t i;
+
+    if (driver) {  /* if a specific driver requested, succeed or fail without trying others. */
+        for (i = 0; i < SDL_arraysize(gpu_drivers); i++) {
+            const SDL_GpuDriver *thisdriver = gpu_drivers[i];
+            if (SDL_strcasecmp(driver, thisdriver->name) == 0) {
+                return thisdriver->CreateDevice(device);
+            }
+        }
+        return SDL_SetError("GPU driver '%s' not found", driver);  /* possibly misnamed, possibly not built in */
+    }
+
+
+    /* !!! FIXME: add a hint to SDL_hints.h later, but that will make merging later harder if done now. */
+    driver = SDL_GetHint(/*SDL_HINT_GPU_DRIVER*/ "SDL_GPU_DRIVER");
+    if (driver) {
+        for (i = 0; i < SDL_arraysize(gpu_drivers); i++) {
+            const SDL_GpuDriver *thisdriver = gpu_drivers[i];
+            if (SDL_strcasecmp(driver, thisdriver->name) == 0) {
+                if (thisdriver->CreateDevice(device) == 0) {
+                    return 0;
+                }
+            }
+        }
+    }
+
+    /* Still here? Take the first one that works. */
+    for (i = 0; i < SDL_arraysize(gpu_drivers); i++) {
+        const SDL_GpuDriver *thisdriver = gpu_drivers[i];
+        if (!driver || (SDL_strcasecmp(driver, thisdriver->name) != 0)) {
+            if (thisdriver->CreateDevice(device) == 0) {
+                return 0;
+            }
+        }
+    }
+
+    return SDL_SetError("Couldn't find an available GPU driver");
+}
+
+SDL_GpuDevice *
+SDL_CreateGpuDevice(const char *label, const char *driver)
+{
+    SDL_GpuDevice *device;
+    ALLOC_OBJ_WITH_LABEL(SDL_GpuDevice, device, label);
+
+    if (device != NULL) {
+        if (CreateGpuDeviceInternal(device, driver) == -1) {
+            FREE_AND_NULL_OBJ_WITH_LABEL(device);
+        }
+    }
+    return device;
+}
+
+void
+SDL_DestroyGpuDevice(SDL_GpuDevice *device)
+{
+    if (device) {
+        device->DestroyDevice(device);
+        FREE_AND_NULL_OBJ_WITH_LABEL(device);
+    }
+}
+
+SDL_CpuBuffer *
+SDL_CreateCpuBuffer(const char *label, SDL_GpuDevice *device, const Uint32 buflen, const void *data)
+{
+    SDL_CpuBuffer *buffer = NULL;
+    if (!device) {
+        SDL_InvalidParamError("device");
+    } else if (buflen == 0) {
+        SDL_InvalidParamError("buflen");
+    } else {
+        ALLOC_OBJ_WITH_LABEL(SDL_CpuBuffer, buffer, label);
+        if (buffer != NULL) {
+            buffer->device = device;
+            buffer->buflen = buflen;
+            if (device->CreateCpuBuffer(buffer, data) == -1) {
+                FREE_AND_NULL_OBJ_WITH_LABEL(buffer);
+            }
+        }
+    }
+    return buffer;
+}
+
+void
+SDL_DestroyCpuBuffer(SDL_CpuBuffer *buffer)
+{
+    if (buffer) {
+        buffer->device->DestroyCpuBuffer(buffer);
+        FREE_AND_NULL_OBJ_WITH_LABEL(buffer);
+    }
+}
+
+void *
+SDL_LockCpuBuffer(SDL_CpuBuffer *buffer, Uint32 *_buflen)
+{
+    void *retval = NULL;
+    if (!buffer) {
+        SDL_InvalidParamError("buffer");
+    } else {
+        retval = buffer->device->LockCpuBuffer(buffer);
+    }
+
+    if (_buflen) {
+        *_buflen = retval ? buffer->buflen : 0;
+    }
+    return retval;
+}
+
+int
+SDL_UnlockCpuBuffer(SDL_CpuBuffer *buffer)
+{
+    if (!buffer) {
+        return SDL_InvalidParamError("buffer");
+    }
+    return buffer->device->UnlockCpuBuffer(buffer);
+}
+
+SDL_GpuBuffer *
+SDL_CreateGpuBuffer(const char *label, SDL_GpuDevice *device, const Uint32 buflen)
+{
+    SDL_GpuBuffer *buffer = NULL;
+
+    if (!device) {
+        SDL_InvalidParamError("device");
+    } else if (buflen == 0) {
+        SDL_InvalidParamError("buflen");
+    } else {
+        ALLOC_OBJ_WITH_LABEL(SDL_GpuBuffer, buffer, label);
+        if (buffer != NULL) {
+            buffer->device = device;
+            buffer->buflen = buflen;
+            if (device->CreateBuffer(buffer) == -1) {
+                FREE_AND_NULL_OBJ_WITH_LABEL(buffer);
+            }
+        }
+    }
+    return buffer;
+}
+
+void
+SDL_DestroyGpuBuffer(SDL_GpuBuffer *buffer)
+{
+    if (buffer) {
+        buffer->device->DestroyBuffer(buffer);
+        FREE_AND_NULL_OBJ_WITH_LABEL(buffer);
+    }
+}
+
+SDL_GpuTexture *
+SDL_CreateGpuTexture(SDL_GpuDevice *device, const SDL_GpuTextureDescription *desc)
+{
+    SDL_GpuTexture *texture = NULL;
+
+    if (!device) {
+        SDL_InvalidParamError("device");
+    } else if (!desc) {
+        SDL_InvalidParamError("desc");
+    } else if (desc->depth_or_slices == 0) {
+        SDL_SetError("depth_or_slices must be > 0");
+    } else if ((desc->texture_type == SDL_GPUTEXTYPE_CUBE) && (desc->depth_or_slices != 6)) {
+        SDL_SetError("depth_or_slices for a cubemap must be 6");
+    } else if ((desc->texture_type == SDL_GPUTEXTYPE_CUBE_ARRAY) && ((desc->depth_or_slices % 6) != 0)) {
+        SDL_SetError("depth_or_slices for a cubemap array must be a multiple of 6");
+    } else if ((desc->texture_type == SDL_GPUTEXTYPE_CUBE_ARRAY) && ((desc->depth_or_slices % 6) != 0)) {
+        SDL_SetError("depth_or_slices for a cubemap array must be a multiple of 6");
+    } else if (((desc->texture_type == SDL_GPUTEXTYPE_1D) || (desc->texture_type == SDL_GPUTEXTYPE_2D)) && (desc->depth_or_slices != 1)) {
+        SDL_SetError("depth_or_slices for 1D and 2D textures must be 1");
+    } else if (((desc->texture_type == SDL_GPUTEXTYPE_CUBE) || (desc->texture_type == SDL_GPUTEXTYPE_CUBE_ARRAY)) && ((desc->width != desc->height))) {
+        SDL_SetError("cubemaps must have the same width and height");
+    } else {
+        ALLOC_OBJ_WITH_DESC(SDL_GpuTexture, texture, desc);
+        if (texture != NULL) {
+            texture->device = device;
+            if (device->CreateTexture(texture) == -1) {
+                FREE_AND_NULL_OBJ_WITH_DESC(texture);
+            }
+        }
+    }
+    return texture;
+}
+
+int
+SDL_GetGpuTextureDescription(SDL_GpuTexture *texture, SDL_GpuTextureDescription *desc)
+{
+    if (!texture) {
+        return SDL_InvalidParamError("pipeline");
+    } else if (!desc) {
+        return SDL_InvalidParamError("desc");
+    }
+    SDL_memcpy(desc, &texture->desc, sizeof (*desc));
+    return 0;
+}
+
+void
+SDL_DestroyGpuTexture(SDL_GpuTexture *texture)
+{
+    if (texture) {
+        texture->device->DestroyTexture(texture);
+        FREE_AND_NULL_OBJ_WITH_DESC(texture);
+    }
+}
+
+SDL_GpuShader *
+SDL_CreateGpuShader(const char *label, SDL_GpuDevice *device, const Uint8 *bytecode, const Uint32 bytecodelen)
+{
+    SDL_GpuShader *shader = NULL;
+
+    if (!device) {
+        SDL_InvalidParamError("device");
+    } else if (!bytecode) {
+        SDL_InvalidParamError("bytecode");
+    } else if (bytecodelen == 0) {
+        SDL_InvalidParamError("bytecodelen");
+    } else {
+        ALLOC_OBJ_WITH_LABEL(SDL_GpuShader, shader, label);
+        if (shader != NULL) {
+            shader->device = device;
+            SDL_AtomicSet(&shader->refcount, 1);
+            if (device->CreateShader(shader, bytecode, bytecodelen) == -1) {
+                FREE_AND_NULL_OBJ_WITH_LABEL(shader);
+            }
+        }
+    }
+    return shader;
+}
+
+void
+SDL_DestroyGpuShader(SDL_GpuShader *shader)
+{
+    if (shader) {
+        if (SDL_AtomicDecRef(&shader->refcount)) {
+            shader->device->DestroyShader(shader);
+            FREE_AND_NULL_OBJ_WITH_LABEL(shader);
+        }
+    }
+}
+
+SDL_GpuPipeline *
+SDL_CreateGpuPipeline(SDL_GpuDevice *device, const SDL_GpuPipelineDescription *desc)
+{
+    SDL_GpuPipeline *pipeline = NULL;
+    if (!device) {
+        SDL_InvalidParamError("device");
+    } else if (!desc) {
+        SDL_InvalidParamError("desc");
+    } else if (!desc->vertex_shader) {
+        SDL_SetError("vertex shader is NULL");
+    } else if (!desc->fragment_shader) {
+        SDL_SetError("fragment shader is NULL");
+    } else if (desc->vertex_shader->device != device) {
+        SDL_SetError("vertex shader is not from this device");
+    } else if (desc->fragment_shader->device != device) {
+        SDL_SetError("fragment shader is not from this device");
+    } else {
+        ALLOC_OBJ_WITH_DESC(SDL_GpuPipeline, pipeline, desc);
+        if (pipeline != NULL) {
+            pipeline->device = device;
+            if (device->CreatePipeline(pipeline) == -1) {
+                FREE_AND_NULL_OBJ_WITH_DESC(pipeline);
+            } else {
+                SDL_AtomicIncRef(&desc->vertex_shader->refcount);
+                SDL_AtomicIncRef(&desc->fragment_shader->refcount);
+            }
+        }
+    }
+    return pipeline;
+}
+
+void
+SDL_DestroyGpuPipeline(SDL_GpuPipeline *pipeline)
+{
+    if (pipeline) {
+        SDL_GpuShader *vshader = pipeline->desc.vertex_shader;
+        SDL_GpuShader *fshader = pipeline->desc.fragment_shader;
+
+        pipeline->device->DestroyPipeline(pipeline);
+        FREE_AND_NULL_OBJ_WITH_DESC(pipeline);
+
+        /* decrement reference counts (and possibly destroy) the shaders. */
+        SDL_DestroyGpuShader(vshader);
+        SDL_DestroyGpuShader(fshader);
+    }
+}
+
+void
+SDL_GetDefaultGpuPipelineDescription(SDL_GpuPipelineDescription *desc)
+{
+    /* !!! FIXME: decide if these are reasonable defaults. */
+    SDL_zerop(desc);
+    desc->primitive = SDL_GPUPRIM_TRIANGLESTRIP;
+    desc->num_vertex_attributes = 1;
+    desc->vertices[0].format = SDL_GPUVERTFMT_FLOAT4;
+    desc->num_color_attachments = 1;
+    desc->color_attachments[0].pixel_format = SDL_GPUPIXELFMT_RGBA8;
+    desc->color_attachments[0].writemask_enabled_red = SDL_TRUE;
+    desc->color_attachments[0].writemask_enabled_blue = SDL_TRUE;
+    desc->color_attachments[0].writemask_enabled_green = SDL_TRUE;
+    desc->color_attachments[0].writemask_enabled_alpha = SDL_TRUE;
+    desc->depth_format = SDL_GPUPIXELFMT_Depth24_Stencil8;
+    desc->stencil_format = SDL_GPUPIXELFMT_Depth24_Stencil8;
+    desc->depth_write_enabled = SDL_TRUE;
+    desc->depth_function = SDL_GPUCMPFUNC_LESS;
+    desc->depth_stencil_front.stencil_read_mask = 0xFFFFFFFF;
+    desc->depth_stencil_front.stencil_write_mask = 0xFFFFFFFF;
+    desc->depth_stencil_front.stencil_function = SDL_GPUCMPFUNC_ALWAYS;
+    desc->depth_stencil_front.stencil_fail = SDL_GPUSTENCILOP_KEEP;
+    desc->depth_stencil_front.depth_fail = SDL_GPUSTENCILOP_KEEP;
+    desc->depth_stencil_front.depth_and_stencil_pass = SDL_GPUSTENCILOP_KEEP;
+    desc->depth_stencil_back.stencil_read_mask = 0xFFFFFFFF;
+    desc->depth_stencil_back.stencil_write_mask = 0xFFFFFFFF;
+    desc->depth_stencil_back.stencil_function = SDL_GPUCMPFUNC_ALWAYS;
+    desc->depth_stencil_back.stencil_fail = SDL_GPUSTENCILOP_KEEP;
+    desc->depth_stencil_back.depth_fail = SDL_GPUSTENCILOP_KEEP;
+    desc->depth_stencil_back.depth_and_stencil_pass = SDL_GPUSTENCILOP_KEEP;
+    desc->fill_mode = SDL_GPUFILL_FILL;
+    desc->front_face = SDL_GPUFRONTFACE_COUNTER_CLOCKWISE;
+    desc->cull_face = SDL_GPUCULLFACE_BACK;
+}
+
+int
+SDL_GetGpuPipelineDescription(SDL_GpuPipeline *pipeline, SDL_GpuPipelineDescription *desc)
+{
+    if (!pipeline) {
+        return SDL_InvalidParamError("pipeline");
+    } else if (!desc) {
+        return SDL_InvalidParamError("desc");
+    }
+    SDL_memcpy(desc, &pipeline->desc, sizeof (*desc));
+    return 0;
+}
+
+SDL_GpuSampler *
+SDL_CreateGpuSampler(SDL_GpuDevice *device, const SDL_GpuSamplerDescription *desc)
+{
+    SDL_GpuSampler *sampler = NULL;
+    if (!device) {
+        SDL_InvalidParamError("device");
+    } else if (!desc) {
+        SDL_InvalidParamError("desc");
+    } else {
+        ALLOC_OBJ_WITH_DESC(SDL_GpuSampler, sampler, desc);
+        if (sampler != NULL) {
+            sampler->device = device;
+            if (device->CreateSampler(sampler) == -1) {
+                FREE_AND_NULL_OBJ_WITH_DESC(sampler);
+            }
+        }
+    }
+    return sampler;
+}
+
+void
+SDL_DestroyGpuSampler(SDL_GpuSampler *sampler)
+{
+    if (sampler) {
+        sampler->device->DestroySampler(sampler);
+        FREE_AND_NULL_OBJ_WITH_DESC(sampler);
+    }
+}
+
+
+/* GpuStateCache hashtable implementations... */
+
+/* !!! FIXME: crc32 algorithm is probably overkill here. */
+#define CRC32_INIT_VALUE 0xFFFFFFFF
+#define CRC32_APPEND_VAR(crc, var) crc = crc32_append(crc, &var, sizeof (var))
+#define CRC32_FINISH(crc) crc ^= 0xFFFFFFFF
+
+static Uint32
+crc32_append(Uint32 crc, const void *_buf, const size_t buflen)
+{
+    const Uint8 *buf = (const Uint8 *) _buf;
+    size_t i;
+    for (i = 0; i < buflen; i++) {
+        Uint32 xorval = (Uint32) ((crc ^ *(buf++)) & 0xFF);
+        xorval = ((xorval & 1) ? (0xEDB88320 ^ (xorval >> 1)) : (xorval >> 1));
+        xorval = ((xorval & 1) ? (0xEDB88320 ^ (xorval >> 1)) : (xorval >> 1));
+        xorval = ((xorval & 1) ? (0xEDB88320 ^ (xorval >> 1)) : (xorval >> 1));
+        xorval = ((xorval & 1) ? (0xEDB88320 ^ (xorval >> 1)) : (xorval >> 1));
+        xorval = ((xorval & 1) ? (0xEDB88320 ^ (xorval >> 1)) : (xorval >> 1));
+        xorval = ((xorval & 1) ? (0xEDB88320 ^ (xorval >> 1)) : (xorval >> 1));
+        xorval = ((xorval & 1) ? (0xEDB88320 ^ (xorval >> 1)) : (xorval >> 1));
+        xorval = ((xorval & 1) ? (0xEDB88320 ^ (xorval >> 1)) : (xorval >> 1));
+        crc = xorval ^ (crc >> 8);
+    } // for
+
+    return crc;
+}
+
+static Uint32 hash_pipeline(const void *key, void *data)
+{
+    /* this hashes the shader pointers; this hash is meant to be unique and contained in this process. As such, it also doesn't care about enum size or byte order. */
+    /* However, it _does_ care about uninitialized packing bytes, so it doesn't just hash the sizeof (object). */
+    const SDL_GpuPipelineDescription *desc = (const SDL_GpuPipelineDescription *) key;
+    Uint32 crc = CRC32_INIT_VALUE;
+    Uint32 i;
+
+    if (desc->label) { crc = crc32_append(crc, desc->label, SDL_strlen(desc->label)); }  /* NULL means less bytes hashed to keep it unique vs "". */
+
+    CRC32_APPEND_VAR(crc, desc->primitive);
+    CRC32_APPEND_VAR(crc, desc->vertex_shader);
+    CRC32_APPEND_VAR(crc, desc->fragment_shader);
+
+    CRC32_APPEND_VAR(crc, desc->num_vertex_attributes);
+    for (i = 0; i < desc->num_vertex_attributes; i++) {
+        CRC32_APPEND_VAR(crc, desc->vertices[i].format);
+        CRC32_APPEND_VAR(crc, desc->vertices[i].offset);
+        CRC32_APPEND_VAR(crc, desc->vertices[i].stride);
+        CRC32_APPEND_VAR(crc, desc->vertices[i].index);
+    }
+
+    CRC32_APPEND_VAR(crc, desc->num_color_attachments);
+    for (i = 0; i < desc->num_color_attachments; i++) {
+        CRC32_APPEND_VAR(crc, desc->color_attachments[i].pixel_format);
+        CRC32_APPEND_VAR(crc, desc->color_attachments[i].writemask_enabled_red);
+        CRC32_APPEND_VAR(crc, desc->color_attachments[i].writemask_enabled_blue);
+        CRC32_APPEND_VAR(crc, desc->color_attachments[i].writemask_enabled_green);
+        CRC32_APPEND_VAR(crc, desc->color_attachments[i].writemask_enabled_alpha);
+        CRC32_APPEND_VAR(crc, desc->color_attachments[i].blending_enabled);
+        CRC32_APPEND_VAR(crc, desc->color_attachments[i].alpha_blend_op);
+        CRC32_APPEND_VAR(crc, desc->color_attachments[i].alpha_src_blend_factor);
+        CRC32_APPEND_VAR(crc, desc->color_attachments[i].alpha_dst_blend_factor);
+        CRC32_APPEND_VAR(crc, desc->color_attachments[i].rgb_blend_op);
+        CRC32_APPEND_VAR(crc, desc->color_attachments[i].rgb_src_blend_factor);
+        CRC32_APPEND_VAR(crc, desc->color_attachments[i].rgb_dst_blend_factor);
+    }
+
+    CRC32_APPEND_VAR(crc, desc->depth_format);
+    CRC32_APPEND_VAR(crc, desc->stencil_format);
+    CRC32_APPEND_VAR(crc, desc->depth_write_enabled);
+    CRC32_APPEND_VAR(crc, desc->depth_function);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_front.stencil_read_mask);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_front.stencil_write_mask);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_front.stencil_reference);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_front.stencil_function);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_front.stencil_fail);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_front.depth_fail);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_front.depth_and_stencil_pass);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_back.stencil_read_mask);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_back.stencil_write_mask);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_back.stencil_reference);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_back.stencil_function);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_back.stencil_fail);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_back.depth_fail);
+    CRC32_APPEND_VAR(crc, desc->depth_stencil_back.depth_and_stencil_pass);
+    CRC32_APPEND_VAR(crc, desc->fill_mode);
+    CRC32_APPEND_VAR(crc, desc->front_face);
+    CRC32_APPEND_VAR(crc, desc->cull_face);
+    CRC32_APPEND_VAR(crc, desc->depth_bias);
+    CRC32_APPEND_VAR(crc, desc->depth_bias_scale);
+    CRC32_APPEND_VAR(crc, desc->depth_bias_clamp);
+
+    return CRC32_FINISH(crc);
+}
+
+static SDL_bool keymatch_pipeline(const void *_a, const void *_b, void *data)
+{
+    const SDL_GpuPipelineDescription *a = (const SDL_GpuPipelineDescription *) _a;
+    const SDL_GpuPipelineDescription *b = (const SDL_GpuPipelineDescription *) _b;
+    Uint32 i;
+
+    if ( (!SDL_KeyMatchString(a->label, b->label, NULL)) ||
+         (a->primitive != b->primitive) ||
+         (a->vertex_shader != b->vertex_shader) ||
+         (a->fragment_shader != b->fragment_shader) ||
+         (a->num_vertex_attributes != b->num_vertex_attributes) ||
+         (a->num_color_attachments != b->num_color_attachments) ||
+         (a->depth_format != b->depth_format) ||
+         (a->stencil_format != b->stencil_format) ||
+         (a->depth_write_enabled != b->depth_write_enabled) ||
+         (a->depth_function != b->depth_function) ||
+         (a->depth_stencil_front.stencil_read_mask != b->depth_stencil_front.stencil_read_mask) ||
+         (a->depth_stencil_front.stencil_write_mask != b->depth_stencil_front.stencil_write_mask) ||
+         (a->depth_stencil_front.stencil_reference != b->depth_stencil_front.stencil_reference) ||
+         (a->depth_stencil_front.stencil_function != b->depth_stencil_front.stencil_function) ||
+         (a->depth_stencil_front.stencil_fail != b->depth_stencil_front.stencil_fail) ||
+         (a->depth_stencil_front.depth_fail != b->depth_stencil_front.depth_fail) ||
+         (a->depth_stencil_front.depth_and_stencil_pass != b->depth_stencil_front.depth_and_stencil_pass) ||
+         (a->depth_stencil_back.stencil_read_mask != b->depth_stencil_back.stencil_read_mask) ||
+         (a->depth_stencil_back.stencil_write_mask != b->depth_stencil_back.stencil_write_mask) ||
+         (a->depth_stencil_back.stencil_reference != b->depth_stencil_back.stencil_reference) ||
+         (a->depth_stencil_back.stencil_function != b->depth_stencil_back.stencil_function) ||
+         (a->depth_stencil_back.stencil_fail != b->depth_stencil_back.stencil_fail) ||
+         (a->depth_stencil_back.depth_fail != b->depth_stencil_back.depth_fail) ||
+         (a->depth_stencil_back.depth_and_stencil_pass != b->depth_stencil_back.depth_and_stencil_pass) ||
+         (a->fill_mode != b->fill_mode) ||
+         (a->front_face != b->front_face) ||
+         (a->cull_face != b->cull_face) ||
+         (a->depth_bias != b->depth_bias) ||
+         (a->depth_bias_scale != b->depth_bias_scale) ||
+         (a->depth_bias_clamp != b->depth_bias_clamp) ) {
+        return SDL_FALSE;
+    }
+
+    /* still here? Compare the arrays */
+    for (i = 0; i < a->num_vertex_attributes; i++) {
+        const SDL_GpuVertexAttributeDescription *av = &a->vertices[i];
+        const SDL_GpuVertexAttributeDescription *bv = &b->vertices[i];
+        if ( (av->format != bv->format) ||
+             (av->offset != bv->offset) ||
+             (av->stride != bv->stride) ||
+             (av->index != bv->index) ) {
+            return SDL_FALSE;
+        }
+    }
+
+    for (i = 0; i < a->num_color_attachments; i++) {
+        const SDL_GpuPipelineColorAttachmentDescription *ac = &a->color_attachments[i];
+        const SDL_GpuPipelineColorAttachmentDescription *bc = &b->color_attachments[i];
+        if ( (ac->pixel_format != bc->pixel_format) ||
+             (ac->writemask_enabled_red != bc->writemask_enabled_red) ||
+             (ac->writemask_enabled_blue != bc->writemask_enabled_blue) ||
+             (ac->writemask_enabled_green != bc->writemask_enabled_green) ||
+             (ac->writemask_enabled_alpha != bc->writemask_enabled_alpha) ||
+             (ac->blending_enabled != bc->blending_enabled) ||
+             (ac->alpha_blend_op != bc->alpha_blend_op) ||
+             (ac->alpha_src_blend_factor != bc->alpha_src_blend_factor) ||
+             (ac->alpha_dst_blend_factor != bc->alpha_dst_blend_factor) ||
+             (ac->rgb_blend_op != bc->rgb_blend_op) ||
+             (ac->rgb_src_blend_factor != bc->rgb_src_blend_factor) ||
+             (ac->rgb_dst_blend_factor != bc->rgb_dst_blend_factor) ) {
+            return SDL_FALSE;
+        }
+    }
+
+    return SDL_TRUE;
+}
+
+void nuke_pipeline(const void *key, const void *value, void *data)
+{
+    SDL_GpuPipeline *pipeline = (SDL_GpuPipeline *) value;
+    SDL_assert(key == &pipeline->desc);
+    SDL_DestroyGpuPipeline(pipeline);
+}
+
+
+static Uint32 hash_sampler(const void *key, void *data)
+{
+    /* this hashes most pointers; this hash is meant to be unique and contained in this process. As such, it also doesn't care about enum size or byte order. */
+    /* However, it _does_ care about uninitialized packing bytes, so it doesn't just hash the sizeof (object). */
+    const SDL_GpuSamplerDescription *desc = (const SDL_GpuSamplerDescription *) key;
+    Uint32 crc = CRC32_INIT_VALUE;
+
+    if (desc->label) { crc = crc32_append(crc, desc->label, SDL_strlen(desc->label)); }  /* NULL means less bytes hashed to keep it unique vs "". */
+    CRC32_APPEND_VAR(crc, desc->addrmode_u);
+    CRC32_APPEND_VAR(crc, desc->addrmode_v);
+    CRC32_APPEND_VAR(crc, desc->addrmode_r);
+    CRC32_APPEND_VAR(crc, desc->border_color);
+    CRC32_APPEND_VAR(crc, desc->min_filter);
+    CRC32_APPEND_VAR(crc, desc->mag_filter);
+    CRC32_APPEND_VAR(crc, desc->mip_filter);
+    return CRC32_FINISH(crc);
+}
+
+static SDL_bool keymatch_sampler(const void *_a, const void *_b, void *data)
+{
+    const SDL_GpuSamplerDescription *a = (const SDL_GpuSamplerDescription *) _a;
+    const SDL_GpuSamplerDescription *b = (const SDL_GpuSamplerDescription *) _b;
+    return ( (SDL_KeyMatchString(a->label, b->label, NULL)) &&
+             (a->addrmode_u == b->addrmode_u) &&
+             (a->addrmode_v == b->addrmode_v) &&
+             (a->addrmode_r == b->addrmode_r) &&
+             (a->min_filter == b->min_filter) &&
+             (a->mag_filter == b->mag_filter) &&
+             (a->mip_filter == b->mip_filter) ) ? SDL_TRUE : SDL_FALSE;
+}
+
+void nuke_sampler(const void *key, const void *value, void *data)
+{
+    SDL_GpuSampler *sampler = (SDL_GpuSampler *) value;
+    SDL_assert(key == &sampler->desc);
+    SDL_DestroyGpuSampler(sampler);
+}
+
+SDL_GpuStateCache *
+SDL_CreateGpuStateCache(const char *label, SDL_GpuDevice *device)
+{
+    SDL_GpuStateCache *cache = NULL;
+    if (!device) {
+        SDL_InvalidParamError("device");
+    } else {
+        ALLOC_OBJ_WITH_LABEL(SDL_GpuStateCache, cache, label);
+        if (cache != NULL) {
+            /* !!! FIXME: adjust hash table bucket counts? */
+            cache->device = device;
+            cache->pipeline_mutex = SDL_CreateMutex();
+            cache->sampler_mutex = SDL_CreateMutex();
+            cache->pipeline_cache = SDL_CreateHashTable(NULL, 128, hash_pipeline, keymatch_pipeline, nuke_pipeline, SDL_FALSE);
+            cache->sampler_cache = SDL_CreateHashTable(NULL, 16, hash_sampler, keymatch_sampler, nuke_sampler, SDL_FALSE);
+            if (!cache->pipeline_mutex || !cache->sampler_mutex || !cache->pipeline_cache || !cache->sampler_cache) {
+                SDL_DestroyGpuStateCache(cache);  /* can clean up half-created objects. */
+                cache = NULL;
+            }
+        }
+    }
+
+    return cache;
+}
+
+#define GETCACHEDOBJIMPL(ctyp, typ) \
+    SDL_Gpu##ctyp *retval; \
+    const void *val; \
+    \
+    if (!cache) { \
+        SDL_InvalidParamError("cache"); \
+        return NULL; \
+    } \
+    \
+    SDL_LockMutex(cache->typ##_mutex); \
+    if (SDL_FindInHashTable(cache->typ##_cache, desc, &val)) { \
+        retval = (SDL_Gpu##ctyp *) val; \
+    } else {  /* not cached yet, make a new one and cache it. */ \
+        retval = SDL_CreateGpu##ctyp(cache->device, desc); \
+        if (retval) { \
+            if (!SDL_InsertIntoHashTable(cache->typ##_cache, &retval->desc, retval)) { \
+                SDL_DestroyGpu##ctyp(retval); \
+                retval = NULL; \
+            } \
+        } \
+    } \
+    SDL_UnlockMutex(cache->typ##_mutex); \
+    return retval
+
+SDL_GpuPipeline *
+SDL_GetCachedGpuPipeline(SDL_GpuStateCache *cache, const SDL_GpuPipelineDescription *desc)
+{
+    GETCACHEDOBJIMPL(Pipeline, pipeline);
+}
+
+SDL_GpuSampler *
+SDL_GetCachedGpuSampler(SDL_GpuStateCache *cache, const SDL_GpuSamplerDescription *desc)
+{
+    GETCACHEDOBJIMPL(Sampler, sampler);
+}
+
+void
+SDL_DestroyGpuStateCache(SDL_GpuStateCache *cache)
+{
+    if (cache) {
+        SDL_DestroyMutex(cache->pipeline_mutex);
+        SDL_DestroyHashTable(cache->pipeline_cache);
+        SDL_DestroyMutex(cache->sampler_mutex);
+        SDL_DestroyHashTable(cache->sampler_cache);
+        FREE_AND_NULL_OBJ_WITH_LABEL(cache);
+    }
+}
+
+SDL_GpuCommandBuffer *
+SDL_CreateGpuCommandBuffer(const char *label, SDL_GpuDevice *device)
+{
+    SDL_GpuCommandBuffer *cmdbuf = NULL;
+    if (!device) {
+        SDL_InvalidParamError("device");
+    } else {
+        ALLOC_OBJ_WITH_LABEL(SDL_GpuCommandBuffer, cmdbuf, label);
+        if (cmdbuf != NULL) {
+            cmdbuf->device = device;
+            if (device->CreateCommandBuffer(cmdbuf) == -1) {
+                FREE_AND_NULL_OBJ_WITH_LABEL(cmdbuf);
+            }
+        }
+    }
+    return cmdbuf;
+}
+
+SDL_GpuRenderPass *
+SDL_StartGpuRenderPass(const char *label, SDL_GpuCommandBuffer *cmdbuf,
+                       Uint32 num_color_attachments,
+                       const SDL_GpuColorAttachmentDescription *color_attachments,
+                       const SDL_GpuDepthAttachmentDescription *depth_attachment,
+                       const SDL_GpuStencilAttachmentDescription *stencil_attachment)
+{
+    SDL_GpuRenderPass *pass = NULL;
+    if (!cmdbuf) {
+        SDL_InvalidParamError("cmdbuf");
+    } else if (cmdbuf->currently_encoding) {
+        SDL_SetError("There is already a pass encoding to this command buffer");
+    } else if (depth_attachment && !depth_attachment->texture) {
+        SDL_SetError("Depth attachment without a texture");
+    } else if (depth_attachment && ((depth_attachment->texture->desc.usage & SDL_GPUTEXUSAGE_RENDER_TARGET) == 0)) {
+        SDL_SetError("Depth attachment texture isn't a render target");
+    } else if (stencil_attachment && !stencil_attachment->texture) {
+        SDL_SetError("Stencil attachment without a texture");
+    } else if (stencil_attachment && ((stencil_attachment->texture->desc.usage & SDL_GPUTEXUSAGE_RENDER_TARGET) == 0)) {
+        SDL_SetError("Stencil attachment texture isn't a render target");
+    } else {
+        Uint32 i;
+        for (i = 0; i < num_color_attachments; i++) {
+            if (color_attachments[i].texture && ((color_attachments[i].texture->desc.usage & SDL_GPUTEXUSAGE_RENDER_TARGET) == 0)) {
+                SDL_SetError("Color attachment #%u texture isn't a render target", (unsigned int) i);
+                return NULL;
+            }
+        }
+        ALLOC_OBJ_WITH_LABEL(SDL_GpuRenderPass, pass, label);
+        if (pass != NULL) {
+            pass->device = cmdbuf->device;
+            pass->cmdbuf = cmdbuf;
+            if (pass->device->StartRenderPass(pass, num_color_attachments, color_attachments, depth_attachment, stencil_attachment) == -1) {
+                FREE_AND_NULL_OBJ_WITH_LABEL(pass);
+            } else {
+                cmdbuf->currently_encoding = SDL_TRUE;
+            }
+        }
+    }
+    return pass;
+}
+
+int
+SDL_SetGpuRenderPassPipeline(SDL_GpuRenderPass *pass, SDL_GpuPipeline *pipeline)
+{
+    if (!pass) {
+        return SDL_InvalidParamError("pass");
+    }
+    /* !!! FIXME: can we set a NULL pipeline? */
+    return pass->device->SetRenderPassPipeline(pass, pipeline);
+}
+
+int
+SDL_SetGpuRenderPassViewport(SDL_GpuRenderPass *pass, const double x, const double y, const double width, const double height, const double znear, const double zfar)
+{
+    return pass ? pass->device->SetRenderPassViewport(pass, x, y, width, height, znear, zfar) : SDL_InvalidParamError("pass");
+}
+
+int
+SDL_SetGpuRenderPassScissor(SDL_GpuRenderPass *pass, const Uint32 x, const Uint32 y, const Uint32 width, const Uint32 height)
+{
+    return pass ? pass->device->SetRenderPassScissor(pass, x, y, width, height) : SDL_InvalidParamError("pass");
+}
+
+int
+SDL_SetGpuRenderPassBlendConstant(SDL_GpuRenderPass *pass, const double red, const double green, const double blue, const double alpha)
+{
+    return pass ? pass->device->SetRenderPassBlendConstant(pass, red, green, blue, alpha) : SDL_InvalidParamError("pass");
+}
+
+int
+SDL_SetGpuRenderPassVertexBuffer(SDL_GpuRenderPass *pass, SDL_GpuBuffer *buffer, const Uint32 offset, const Uint32 index)
+{
+    return pass ? pass->device->SetRenderPassVertexBuffer(pass, buffer, offset, index) : SDL_InvalidParamError("pass");
+}
+
+int
+SDL_SetGpuRenderPassVertexSampler(SDL_GpuRenderPass *pass, SDL_GpuSampler *sampler, const Uint32 index)
+{
+    return pass ? pass->device->SetRenderPassVertexSampler(pass, sampler, index) : SDL_InvalidParamError("pass");
+}
+
+int
+SDL_SetGpuRenderPassVertexTexture(SDL_GpuRenderPass *pass, SDL_GpuTexture *texture, const Uint32 index)
+{
+    return pass ? pass->device->SetRenderPassVertexTexture(pass, texture, index) : SDL_InvalidParamError("pass");
+}
+
+int
+SDL_SetGpuRenderPassFragmentBuffer(SDL_GpuRenderPass *pass, SDL_GpuBuffer *buffer, const Uint32 offset, const Uint32 index)
+{
+    return pass ? pass->device->SetRenderPassFragmentBuffer(pass, buffer, offset, index) : SDL_InvalidParamError("pass");
+}
+
+int
+SDL_SetGpuRenderPassFragmentSampler(SDL_GpuRenderPass *pass, SDL_GpuSampler *sampler, const Uint32 index)
+{
+    return pass ? pass->device->SetRenderPassFragmentSampler(pass, sampler, index) : SDL_InvalidParamError("pass");
+}
+
+int
+SDL_SetGpuRenderPassFragmentTexture(SDL_GpuRenderPass *pass, SDL_GpuTexture *texture, const Uint32 index)
+{
+    return pass ? pass->device->SetRenderPassFragmentTexture(pass, texture, index) : SDL_InvalidParamError("pass");
+}
+
+int
+SDL_GpuDraw(SDL_GpuRenderPass *pass, Uint32 vertex_start, Uint32 vertex_count)
+{
+    return pass ? pass->device->Draw(pass, vertex_start, vertex_count) : SDL_InvalidParamError("pass");
+}
+
+int
+SDL_GpuDrawIndexed(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset)
+{
+    return pass ? pass->device->DrawIndexed(pass, index_count, index_type, index_buffer, index_offset) : SDL_InvalidParamError("pass");
+}
+
+int
+SDL_GpuDrawInstanced(SDL_GpuRenderPass *pass, Uint32 vertex_start, Uint32 vertex_count, Uint32 instance_count, Uint32 base_instance)
+{
+    return pass ? pass->device->DrawInstanced(pass, vertex_start, vertex_count, instance_count, base_instance) : SDL_InvalidParamError("pass");
+}
+
+int
+SDL_GpuDrawInstancedIndexed(SDL_GpuRenderPass *pass, Uint32 index_count, SDL_GpuIndexType index_type, SDL_GpuBuffer *index_buffer, Uint32 index_offset, Uint32 instance_count, Uint32 base_vertex, Uint32 base_instance)
+{
+    return pass ? pass->device->DrawInstancedIndexed(pass, index_count, index_type, index_buffer, index_offset, instance_count, base_vertex, base_instance) : SDL_InvalidParamError("pass");
+}
+
+int
+SDL_EndGpuRenderPass(SDL_GpuRenderPass *pass)
+{
+    int retval;
+    if (!pass) {
+        return SDL_InvalidParamError("pass");
+    }
+
+    retval = pass->device->EndRenderPass(pass);
+    if (retval == 0) {
+        pass->cmdbuf->currently_encoding = SDL_FALSE;
+        FREE_AND_NULL_OBJ_WITH_LABEL(pass);
+    }
+    return retval;
+}
+
+
+SDL_GpuBlitPass *
+SDL_StartGpuBlitPass(const char *label, SDL_GpuCommandBuffer *cmdbuf)
+{
+    SDL_GpuBlitPass *pass = NULL;
+    if (!cmdbuf) {
+        SDL_InvalidParamError("cmdbuf");
+    } else if (cmdbuf->currently_encoding) {
+        SDL_SetError("There is already a pass encoding to this command buffer");
+    } else {
+        ALLOC_OBJ_WITH_LABEL(SDL_GpuBlitPass, pass, label);
+        if (pass != NULL) {
+            pass->device = cmdbuf->device;
+            pass->cmdbuf = cmdbuf;
+            if (pass->device->StartBlitPass(pass) == -1) {
+                FREE_AND_NULL_OBJ_WITH_LABEL(pass);
+            } else {
+                cmdbuf->currently_encoding = SDL_TRUE;
+            }
+        }
+    }
+    return pass;
+}
+
+int
+SDL_CopyBetweenGpuTextures(SDL_GpuBlitPass *pass, SDL_GpuTexture *srctex, Uint32 srcslice, Uint32 srclevel,
+                           Uint32 srcx, Uint32 srcy, Uint32 srcz,
+                           Uint32 srcw, Uint32 srch, Uint32 srcdepth,
+                           SDL_GpuTexture *dsttex, Uint32 dstslice, Uint32 dstlevel,
+                           Uint32 dstx, Uint32 dsty, Uint32 dstz)
+{
+    if (!pass) {
+        return SDL_InvalidParamError("pass");
+    } else if (!srctex) {
+        return SDL_InvalidParamError("srctex");
+    } else if (!dsttex) {
+        return SDL_InvalidParamError("dsttex");
+    }
+    /* !!! FIXME: check levels, slices, etc. */
+    return pass->device->CopyBetweenTextures(pass, srctex, srcslice, srclevel, srcx, srcy, srcz, srcw, srch, srcdepth, dsttex, dstslice, dstlevel, dstx, dsty, dstz);
+}
+
+int
+SDL_FillGpuBuffer(SDL_GpuBlitPass *pass, SDL_GpuBuffer *buffer, Uint32 offset, Uint32 length, Uint8 value)
+{
+    if (!pass) {
+        return SDL_InvalidParamError("pass");
+    } else if (!buffer) {
+        return SDL_InvalidParamError("buffer");
+    } else if ((offset+length) > buffer->buflen) {
+        return SDL_SetError("offset+length overflows the buffer");  /* !!! FIXME: should we clamp instead so you can fully initialize without knowing the size? */
+    }
+    return pass ? pass->device->FillBuffer(pass, buffer, offset, length, value) : SDL_InvalidParamError("pass");
+}
+
+int
+SDL_GenerateGpuMipmaps(SDL_GpuBlitPass *pass, SDL_GpuTexture *texture)
+{
+    if (!pass) {
+        return SDL_InvalidParamError("pass");
+    } else if (!texture) {
+        return SDL_InvalidParamError("texture");
+    }
+    return pass->device->GenerateMipmaps(pass, texture);
+}
+
+int
+SDL_CopyCpuBufferToGpu(SDL_GpuBlitPass *pass, SDL_CpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length)
+{
+    if (!pass) {
+        return SDL_InvalidParamError("pass");
+    } else if (!srcbuf) {
+        return SDL_InvalidParamError("srcbuf");
+    } else if (!dstbuf) {
+        return SDL_InvalidParamError("dstbuf");
+    } else if ((srcoffset+length) > srcbuf->buflen) {
+        return SDL_SetError("srcoffset+length overflows the source buffer");
+    } else if ((dstoffset+length) > dstbuf->buflen) {
+        return SDL_SetError("dstoffset+length overflows the destination buffer");
+    }
+    return pass->device->CopyBufferCpuToGpu(pass, srcbuf, srcoffset, dstbuf, dstoffset, length);
+}
+
+int
+SDL_CopyGpuBufferToCpu(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, SDL_CpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length)
+{
+    if (!pass) {
+        return SDL_InvalidParamError("pass");
+    } else if (!srcbuf) {
+        return SDL_InvalidParamError("srcbuf");
+    } else if (!dstbuf) {
+        return SDL_InvalidParamError("dstbuf");
+    } else if ((srcoffset+length) > srcbuf->buflen) {
+        return SDL_SetError("srcoffset+length overflows the source buffer");
+    } else if ((dstoffset+length) > dstbuf->buflen) {
+        return SDL_SetError("dstoffset+length overflows the destination buffer");
+    }
+    return pass->device->CopyBufferGpuToCpu(pass, srcbuf, srcoffset, dstbuf, dstoffset, length);
+}
+
+int
+SDL_CopyBetweenGpuBuffers(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset, SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 length)
+{
+    if (!pass) {
+        return SDL_InvalidParamError("pass");
+    } else if (!srcbuf) {
+        return SDL_InvalidParamError("srcbuf");
+    } else if (!dstbuf) {
+        return SDL_InvalidParamError("dstbuf");
+    } else if ((srcoffset+length) > srcbuf->buflen) {
+        return SDL_SetError("srcoffset+length overflows the source buffer");
+    } else if ((dstoffset+length) > dstbuf->buflen) {
+        return SDL_SetError("dstoffset+length overflows the destination buffer");
+    }
+    return pass->device->CopyBufferGpuToGpu(pass, srcbuf, srcoffset, dstbuf, dstoffset, length);
+}
+
+int
+SDL_CopyGpuBufferToGpuTexture(SDL_GpuBlitPass *pass, SDL_GpuBuffer *srcbuf, Uint32 srcoffset,
+                               Uint32 srcpitch, Uint32 srcimgpitch,
+                               Uint32 srcw, Uint32 srch, Uint32 srcdepth,
+                               SDL_GpuTexture *dsttex, Uint32 dstslice, Uint32 dstlevel,
+                               Uint32 dstx, Uint32 dsty, Uint32 dstz)
+{
+    if (!pass) {
+        return SDL_InvalidParamError("pass");
+    } else if (!srcbuf) {
+        return SDL_InvalidParamError("srcbuf");
+    } else if (!dsttex) {
+        return SDL_InvalidParamError("dsttex");
+    }
+    /* !!! FIXME: check other param ranges */
+    return pass->device->CopyFromBufferToTexture(pass, srcbuf, srcoffset, srcpitch, srcimgpitch, srcw, srch, srcdepth, dsttex, dstslice, dstlevel, dstx, dsty, dstz);
+}
+
+int
+SDL_GpuCopyGpuTextureToGpuBuffer(SDL_GpuBlitPass *pass, SDL_GpuTexture *srctex, Uint32 srcslice, Uint32 srclevel,
+                               Uint32 srcx, Uint32 srcy, Uint32 srcz,
+                               Uint32 srcw, Uint32 srch, Uint32 srcdepth,
+                               SDL_GpuBuffer *dstbuf, Uint32 dstoffset, Uint32 dstpitch, Uint32 dstimgpitch)
+{
+    if (!pass) {
+        return SDL_InvalidParamError("pass");
+    } else if (!srctex) {
+        return SDL_InvalidParamError("srctex");
+    } else if (!dstbuf) {
+        return SDL_InvalidParamError("dstbuf");
+    }
+    /* !!! FIXME: check other param ranges */
+    return pass->device->CopyFromTextureToBuffer(pass, srctex, srcslice, srclevel, srcx, srcy, srcz, srcw, srch, srcdepth, dstbuf, dstoffset, dstpitch, dstimgpitch);
+}
+
+int
+SDL_EndGpuBlitPass(SDL_GpuBlitPass *pass)
+{
+    int retval;
+    if (!pass) {
+        return SDL_InvalidParamError("pass");
+    }
+
+    retval = pass->device->EndBlitPass(pass);
+    if (retval == 0) {
+        pass->cmdbuf->currently_encoding = SDL_FALSE;
+        FREE_AND_NULL_OBJ_WITH_LABEL(pass);
+    }
+    return retval;
+}
+
+SDL_GpuFence *
+SDL_CreateGpuFence(const char *label, SDL_GpuDevice *device)
+{
+    SDL_GpuFence *fence = NULL;
+    if (!device) {
+        SDL_InvalidParamError("device");
+    } else {
+        ALLOC_OBJ_WITH_LABEL(SDL_GpuFence, fence, label);
+        if (fence != NULL) {
+            fence->device = device;
+            if (device->CreateFence(fence) == -1) {
+                FREE_AND_NULL_OBJ_WITH_LABEL(fence);
+            }
+        }
+    }
+    return fence;
+}
+
+void
+SDL_DestroyGpuFence(SDL_GpuFence *fence)
+{
+    if (fence) {
+        fence->device->DestroyFence(fence);
+        FREE_AND_NULL_OBJ_WITH_LABEL(fence);
+    }
+}
+
+int
+SDL_QueryGpuFence(SDL_GpuFence *fence)
+{
+    return fence ? fence->device->QueryFence(fence) : SDL_InvalidParamError("fence");
+}
+
+int
+SDL_ResetGpuFence(SDL_GpuFence *fence)
+{
+    return fence ? fence->device->ResetFence(fence) : SDL_InvalidParamError("fence");
+}
+
+int
+SDL_WaitGpuFence(SDL_GpuFence *fence)
+{
+    return fence ? fence->device->WaitFence(fence) : SDL_InvalidParamError("fence");
+}
+
+int
+SDL_SubmitGpuCommandBuffer(SDL_GpuCommandBuffer *cmdbuf, SDL_GpuFence *fence)
+{
+    int retval;
+
+    if (!cmdbuf) {
+        return SDL_InvalidParamError("cmdbuf");
+    } else if (cmdbuf->currently_encoding) {
+        return SDL_SetError("There is a pass still encoding to command buffer");
+    } else if (fence && (fence->device != cmdbuf->device)) {
+        return SDL_SetError("Fence is not from command buffer's device");
+    }
+
+    retval = cmdbuf->device->SubmitCommandBuffer(cmdbuf, fence);
+    FREE_AND_NULL_OBJ_WITH_LABEL(cmdbuf);
+
+    return retval;
+}
+
+void
+SDL_AbandonGpuCommandBuffer(SDL_GpuCommandBuffer *buffer)
+{
+    if (buffer) {
+        /* !!! FIXME: deal with buffer->currently_encoding */
+        buffer->device->AbandonCommandBuffer(buffer);
+        FREE_AND_NULL_OBJ_WITH_LABEL(buffer);
+    }
+}
+
+SDL_GpuTexture *
+SDL_GetGpuBackbuffer(SDL_GpuDevice *device, SDL_Window *window)
+{
+    SDL_GpuTexture *retval = NULL;
+    if (!device) {
+        SDL_InvalidParamError("device");
+    } else if (!window) {
+        SDL_InvalidParamError("window");
+    } else if (window->gpu_device && (window->gpu_device != device)) {
+        SDL_SetError("Window is being used by another GPU device");
+    } else {
+        if (window->gpu_device == NULL) {
+            if (device->ClaimWindow(device, window) == -1) {
+                return NULL;
+            }
+            window->gpu_device = device;
+        }
+
+        if (!window->gpu_backbuffer) {   /* if !NULL, already requested one that isn't yet in-flight for presentation. */
+            SDL_GpuTextureDescription desc;
+            char label[128];
+            SDL_snprintf(label, sizeof (label), "Window backbuffer frame #%llu ('%s')", (unsigned long long) window->gpu_framenum, window->title);
+            SDL_zero(desc);
+            desc.label = label;
+            desc.texture_type = SDL_GPUTEXTYPE_2D;
+            desc.usage = SDL_GPUTEXUSAGE_RENDER_TARGET;
+            desc.depth_or_slices = 1;
+            desc.mipmap_levels = 1;
+            ALLOC_OBJ_WITH_DESC(SDL_GpuTexture, retval, &desc);
+            if (retval != NULL) {
+                retval->device = device;
+                if (device->GetBackbuffer(device, window, retval) == -1) {   /* backend is expected to fill in width, height, and pixel_format of retval->desc! */
+                    FREE_AND_NULL_OBJ_WITH_DESC(retval);
+                } else {
+                    window->gpu_framenum++;
+                    window->gpu_backbuffer = retval;
+                }
+            }
+        }
+
+        retval = (SDL_GpuTexture *) window->gpu_backbuffer;
+    }
+    return retval;
+}
+
+int
+SDL_GpuPresent(SDL_GpuDevice *device, SDL_Window *window, int swapinterval)
+{
+    if (!device) {
+        return SDL_InvalidParamError("device");
+    } else if (!window) {
+        return SDL_InvalidParamError("window");
+    } else if (window->gpu_device != device) {
+        return SDL_SetError("Window is not claimed by this GPU device (call SDL_GetGpuBackbuffer first!)");
+    } else if (!window->gpu_backbuffer) {
+        return SDL_SetError("Window does not have a prepared backbuffer (call SDL_GetGpuBackbuffer first!)");
+    } else if (device->Present(device, window, (SDL_GpuTexture *) window->gpu_backbuffer, swapinterval) == -1) {
+        return -1;
+    } else {
+        /* Note that we free the memory from our abstract object but we do not destroy the texture.
+           That clean up should have been done by device->Present, since they usually don't work the same way as normal textures! */
+        SDL_GpuTexture *backbuffer = (SDL_GpuTexture *) window->gpu_backbuffer;
+        FREE_AND_NULL_OBJ_WITH_DESC(backbuffer);  /* it's in-flight, mark the window as having no current backbuffer. */
+        window->gpu_backbuffer = NULL;
+    }
+
+    return 0;
+}
+
+SDL_GpuBuffer *SDL_CreateAndInitGpuBuffer(const char *label, SDL_GpuDevice *device, const Uint32 buflen, const void *data)
+{
+    SDL_GpuFence *fence = NULL;
+    SDL_CpuBuffer *staging = NULL;
+    SDL_GpuBuffer *gpubuf = NULL;
+    SDL_GpuBuffer *retval = NULL;
+    SDL_GpuCommandBuffer *cmd = NULL;
+    SDL_GpuBlitPass *blit = NULL;
+
+    if (device == NULL) {
+        SDL_InvalidParamError("device");
+        return NULL;
+    } else if (data == NULL) {
+        SDL_InvalidParamError("data");
+        return NULL;
+    }
+
+    if ( ((fence = SDL_CreateGpuFence("Temporary fence for SDL_GpuCreateAndInitBuffer", device)) != NULL) &&
+         ((staging = SDL_CreateCpuBuffer("Staging buffer for SDL_GpuCreateAndInitBuffer", device, buflen, data)) != NULL) &&
+         ((gpubuf = SDL_CreateGpuBuffer(label, device, buflen)) != NULL) &&
+         ((cmd = SDL_CreateGpuCommandBuffer("Command buffer for SDL_GpuCreateAndInitBuffer", device)) != NULL) &&
+         ((blit = SDL_StartGpuBlitPass("Blit pass for SDL_GpuCreateAndInitBuffer", cmd)) != NULL) ) {
+        SDL_CopyCpuBufferToGpu(blit, staging, 0, gpubuf, 0, buflen);
+        SDL_EndGpuBlitPass(blit);
+        SDL_SubmitGpuCommandBuffer(cmd, fence);
+        SDL_WaitGpuFence(fence);  /* so we know it's definitely uploaded */
+        retval = gpubuf;
+    }
+
+    if (!retval) {
+        SDL_EndGpuBlitPass(blit);   /* assume this might be un-ended. */
+        SDL_AbandonGpuCommandBuffer(cmd);
+        SDL_DestroyGpuBuffer(gpubuf);
+    }
+    SDL_DestroyCpuBuffer(staging);
+    SDL_DestroyGpuFence(fence);
+    return retval;
+}
+
+/* !!! FIXME: SDL_GpuCreateAndInitTexture */
+
+SDL_GpuTexture *
+SDL_MatchingGpuDepthTexture(const char *label, SDL_GpuDevice *device, SDL_GpuTexture *backbuffer, SDL_GpuTexture **depthtex)
+{
+    SDL_GpuTextureDescription bbtexdesc, depthtexdesc;
+
+    if (!device) {
+        SDL_InvalidParamError("device");
+        return NULL;
+    } else if (!backbuffer) {
+        SDL_InvalidParamError("backbuffer");
+        return NULL;
+    } else if (!depthtex) {
+        SDL_InvalidParamError("depthtex");
+        return NULL;
+    }
+
+    SDL_GetGpuTextureDescription(backbuffer, &bbtexdesc);
+
+    if (*depthtex) {
+        SDL_GetGpuTextureDescription(*depthtex, &depthtexdesc);
+    }
+
+    /* !!! FIXME: check texture_type, pixel_format, etc? */
+    if (!*depthtex || (depthtexdesc.width != bbtexdesc.width) || (depthtexdesc.height != bbtexdesc.height)) {
+        SDL_zero(depthtexdesc);
+        depthtexdesc.label = label;
+        depthtexdesc.texture_type = SDL_GPUTEXTYPE_2D;
+        depthtexdesc.pixel_format = SDL_GPUPIXELFMT_Depth24_Stencil8;
+        depthtexdesc.usage = SDL_GPUTEXUSAGE_RENDER_TARGET;  /* !!! FIXME: does this need shader read or write to be the depth buffer? */
+        depthtexdesc.width = bbtexdesc.width;
+        depthtexdesc.height = bbtexdesc.width;
+        SDL_DestroyGpuTexture(*depthtex);
+        *depthtex = SDL_CreateGpuTexture(device, &depthtexdesc);
+    }
+
+    return *depthtex;
+}
+
+/* various object cycle APIs ... */
+#define SDL_GPUCYCLETYPE SDL_CpuBufferCycle
+#define SDL_GPUCYCLEITEMTYPE SDL_CpuBuffer
+#define SDL_GPUCYCLECREATEFNSIG SDL_CreateCpuBufferCycle(const char *label, SDL_GpuDevice *device, const Uint32 bufsize, const void *data, const Uint32 numitems)
+#define SDL_GPUCYCLENEXTFNNAME SDL_GetNextCpuBufferInCycle
+#define SDL_GPUCYCLENEXTPTRFNNAME SDL_NextCpuBufferPtrInCycle
+#define SDL_GPUCYCLEDESTROYFNNAME SDL_DestroyCpuBufferCycle
+#define SDL_GPUCYCLECREATE(lbl, failvar, itemvar) { itemvar = SDL_CreateCpuBuffer(lbl, device, bufsize, data); failvar = (itemvar == NULL); }
+#define SDL_GPUCYCLEDESTROY SDL_DestroyCpuBuffer
+#include "SDL_gpu_cycle_impl.h"
+
+#define SDL_GPUCYCLETYPE SDL_GpuBufferCycle
+#define SDL_GPUCYCLEITEMTYPE SDL_GpuBuffer
+#define SDL_GPUCYCLECREATEFNSIG SDL_CreateGpuBufferCycle(const char *label, SDL_GpuDevice *device, const Uint32 bufsize, const Uint32 numitems)
+#define SDL_GPUCYCLENEXTFNNAME SDL_GetNextGpuBufferCycle
+#define SDL_GPUCYCLENEXTPTRFNNAME SDL_GetNextGpuBufferPtrInCycle
+#define SDL_GPUCYCLEDESTROYFNNAME SDL_DestroyGpuBufferCycle
+#define SDL_GPUCYCLECREATE(lbl, failvar, itemvar) { itemvar = SDL_CreateGpuBuffer(lbl, device, bufsize); failvar = (itemvar == NULL); }
+#define SDL_GPUCYCLEDESTROY SDL_DestroyGpuBuffer
+#include "SDL_gpu_cycle_impl.h"
+
+#define SDL_GPUCYCLETYPE SDL_GpuTextureCycle
+#define SDL_GPUCYCLEITEMTYPE SDL_GpuTexture
+#define SDL_GPUCYCLECREATEFNSIG SDL_CreateGpuTextureCycle(const char *label, SDL_GpuDevice *device, const SDL_GpuTextureDescription *texdesc, const Uint32 numitems)
+#define SDL_GPUCYCLENEXTFNNAME SDL_GpuNextTextureCycle
+#define SDL_GPUCYCLENEXTPTRFNNAME SDL_GpuNextTexturePtrCycle
+#define SDL_GPUCYCLEDESTROYFNNAME SDL_DestroyGpuTextureCycle
+#define SDL_GPUCYCLECREATE(lbl, failvar, itemvar) { if (texdesc) { SDL_GpuTextureDescription td; SDL_memcpy(&td, texdesc, sizeof (td)); td.label = lbl; itemvar = SDL_CreateGpuTexture(device, &td); failvar = (itemvar == NULL); } else { itemvar = NULL; failvar = SDL_FALSE; } }
+#define SDL_GPUCYCLEDESTROY SDL_DestroyGpuTexture
+#include "SDL_gpu_cycle_impl.h"
+
+#define SDL_GPUCYCLETYPE SDL_GpuFenceCycle
+#define SDL_GPUCYCLEITEMTYPE SDL_GpuFence
+#define SDL_GPUCYCLECREATEFNSIG SDL_CreateGpuFenceCycle(const char *label, SDL_GpuDevice *device, const Uint32 numitems)
+#define SDL_GPUCYCLENEXTFNNAME SDL_GetNextGpuFenceInCycle
+#define SDL_GPUCYCLENEXTPTRFNNAME SDL_GetNextGpuFencePtrInCycle
+#define SDL_GPUCYCLEDESTROYFNNAME SDL_DestroyGpuFenceCycle
+#define SDL_GPUCYCLECREATE(lbl, failvar, itemvar) { itemvar = SDL_CreateGpuFence(lbl, device); failvar = (itemvar == NULL); }
+#define SDL_GPUCYCLEDESTROY SDL_DestroyGpuFence
+#include "SDL_gpu_cycle_impl.h"
+
+/* vi: set ts=4 sw=4 expandtab: */
