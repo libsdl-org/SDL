@@ -31,10 +31,8 @@
 #include "controller_type.h"
 #include "usb_ids.h"
 #include "hidapi/SDL_hidapi_nintendo.h"
-
-#ifndef SDL_EVENTS_DISABLED
 #include "../events/SDL_events_c.h"
-#endif
+
 
 #ifdef __ANDROID__
 #endif
@@ -3635,7 +3633,6 @@ static int SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gamep
 
     /* translate the event, if desired */
     posted = 0;
-#ifndef SDL_EVENTS_DISABLED
     if (SDL_EventEnabled(SDL_EVENT_GAMEPAD_AXIS_MOTION)) {
         SDL_Event event;
         event.type = SDL_EVENT_GAMEPAD_AXIS_MOTION;
@@ -3645,7 +3642,6 @@ static int SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gamep
         event.gaxis.value = value;
         posted = SDL_PushEvent(&event) == 1;
     }
-#endif /* !SDL_EVENTS_DISABLED */
     return posted;
 }
 
@@ -3655,7 +3651,6 @@ static int SDL_SendGamepadAxis(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gamep
 static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadButton button, Uint8 state)
 {
     int posted;
-#ifndef SDL_EVENTS_DISABLED
     SDL_Event event;
 
     SDL_AssertJoysticksLocked();
@@ -3675,7 +3670,6 @@ static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gam
         /* Invalid state -- bail */
         return 0;
     }
-#endif /* !SDL_EVENTS_DISABLED */
 
     if (button == SDL_GAMEPAD_BUTTON_GUIDE) {
         Uint64 now = SDL_GetTicks();
@@ -3697,7 +3691,6 @@ static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gam
 
     /* translate the event, if desired */
     posted = 0;
-#ifndef SDL_EVENTS_DISABLED
     if (SDL_EventEnabled(event.type)) {
         event.common.timestamp = timestamp;
         event.gbutton.which = gamepad->joystick->instance_id;
@@ -3705,11 +3698,9 @@ static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gam
         event.gbutton.state = state;
         posted = SDL_PushEvent(&event) == 1;
     }
-#endif /* !SDL_EVENTS_DISABLED */
     return posted;
 }
 
-#ifndef SDL_EVENTS_DISABLED
 static const Uint32 SDL_gamepad_event_list[] = {
     SDL_EVENT_GAMEPAD_AXIS_MOTION,
     SDL_EVENT_GAMEPAD_BUTTON_DOWN,
@@ -3722,24 +3713,19 @@ static const Uint32 SDL_gamepad_event_list[] = {
     SDL_EVENT_GAMEPAD_TOUCHPAD_UP,
     SDL_EVENT_GAMEPAD_SENSOR_UPDATE,
 };
-#endif
 
 void SDL_SetGamepadEventsEnabled(SDL_bool enabled)
 {
-#ifndef SDL_EVENTS_DISABLED
     unsigned int i;
 
     for (i = 0; i < SDL_arraysize(SDL_gamepad_event_list); ++i) {
         SDL_SetEventEnabled(SDL_gamepad_event_list[i], enabled);
     }
-#endif /* !SDL_EVENTS_DISABLED */
 }
 
 SDL_bool SDL_GamepadEventsEnabled(void)
 {
     SDL_bool enabled = SDL_FALSE;
-
-#ifndef SDL_EVENTS_DISABLED
     unsigned int i;
 
     for (i = 0; i < SDL_arraysize(SDL_gamepad_event_list); ++i) {
@@ -3748,8 +3734,6 @@ SDL_bool SDL_GamepadEventsEnabled(void)
             break;
         }
     }
-#endif /* SDL_EVENTS_DISABLED */
-
     return enabled;
 }
 
