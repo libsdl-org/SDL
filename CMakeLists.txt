@@ -211,7 +211,6 @@ if(EMSCRIPTEN)
   set(SDL_ASSEMBLY_DEFAULT OFF)
   set(SDL_SHARED_AVAILABLE OFF)
   set(SDL_ATOMIC_DEFAULT OFF)
-  set(SDL_CPUINFO_DEFAULT OFF)
 endif()
 
 if(VITA OR PSP OR PS2 OR N3DS OR RISCOS)
@@ -250,7 +249,6 @@ set(SDL_SUBSYSTEMS
   Threads
   Timers
   File
-  CPUinfo
   Filesystem
   Sensor
   Locale
