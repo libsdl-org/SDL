@@ -46,7 +46,6 @@
 #include "SDL_rawinputjoystick_c.h"
 
 #include "../../haptic/windows/SDL_dinputhaptic_c.h" /* For haptic hot plugging */
-#include "../../haptic/windows/SDL_xinputhaptic_c.h" /* For haptic hot plugging */
 
 #ifndef DEVICE_NOTIFY_WINDOW_HANDLE
 #define DEVICE_NOTIFY_WINDOW_HANDLE 0x00000000
@@ -551,11 +550,7 @@ void WINDOWS_JoystickDetect(void)
     while (pCurList) {
         JoyStick_DeviceData *pListNext = NULL;
 
-        if (pCurList->bXInputDevice) {
-#ifdef SDL_HAPTIC_XINPUT
-            SDL_XINPUT_HapticMaybeRemoveDevice(pCurList->XInputUserId);
-#endif
-        } else {
+        if (!pCurList->bXInputDevice) {
 #ifdef SDL_HAPTIC_DINPUT
             SDL_DINPUT_HapticMaybeRemoveDevice(&pCurList->dxdevice);
 #endif
@@ -571,11 +566,7 @@ void WINDOWS_JoystickDetect(void)
 
     for (pCurList = SYS_Joystick; pCurList; pCurList = pCurList->pNext) {
         if (pCurList->send_add_event) {
-            if (pCurList->bXInputDevice) {
-#ifdef SDL_HAPTIC_XINPUT
-                SDL_XINPUT_HapticMaybeAddDevice(pCurList->XInputUserId);
-#endif
-            } else {
+            if (!pCurList->bXInputDevice) {
 #ifdef SDL_HAPTIC_DINPUT
                 SDL_DINPUT_HapticMaybeAddDevice(&pCurList->dxdevice);
 #endif

@@ -42,6 +42,7 @@
  */
 typedef struct SDL_hapticlist_item
 {
+    SDL_HapticID instance_id;
     char name[256]; /* Name of the device. */
 
     io_service_t dev;   /* Node we use to create the device. */
@@ -201,6 +202,17 @@ static SDL_hapticlist_item *HapticByDevIndex(int device_index)
     return item;
 }
 
+static SDL_hapticlist_item *HapticByInstanceID(SDL_HapticID instance_id)
+{
+    SDL_hapticlist_item *item;
+    for (item = SDL_hapticlist; item; item = item->next) {
+        if (instance_id == item->instance_id) {
+            return item;
+        }
+    }
+    return NULL;
+}
+
 int MacHaptic_MaybeAddDevice(io_object_t device)
 {
     IOReturn result;
@@ -229,6 +241,7 @@ int MacHaptic_MaybeAddDevice(io_object_t device)
     if (!item) {
         return SDL_SetError("Could not allocate haptic storage");
     }
+    item->instance_id = SDL_GetNextObjectID();
 
     /* retain it as we are going to keep it around a while */
     IOObjectRetain(device);
@@ -287,7 +300,7 @@ int MacHaptic_MaybeRemoveDevice(io_object_t device)
     for (item = SDL_hapticlist; item; item = item->next) {
         /* found it, remove it. */
         if (IOObjectIsEqualTo((io_object_t)item->dev, device)) {
-            const int retval = item->haptic ? item->haptic->index : -1;
+            const int retval = item->haptic ? 0 : -1;
 
             if (prev) {
                 prev->next = item->next;
@@ -313,6 +326,16 @@ int MacHaptic_MaybeRemoveDevice(io_object_t device)
     return -1;
 }
 
+SDL_HapticID SDL_SYS_HapticInstanceID(int index)
+{
+    SDL_hapticlist_item *item;
+    item = HapticByDevIndex(index);
+    if (item) {
+        return item->instance_id;
+    }
+    return 0;
+}
+
 /*
  * Return the name of a haptic device, does not need to be opened.
  */
@@ -320,7 +343,10 @@ const char *SDL_SYS_HapticName(int index)
 {
     SDL_hapticlist_item *item;
     item = HapticByDevIndex(index);
-    return item->name;
+    if (item) {
+        return item->name;
+    }
+    return NULL;
 }
 
 /*
@@ -535,7 +561,7 @@ creat_err:
 int SDL_SYS_HapticOpen(SDL_Haptic *haptic)
 {
     SDL_hapticlist_item *item;
-    item = HapticByDevIndex(haptic->index);
+    item = HapticByInstanceID(haptic->instance_id);
 
     return SDL_SYS_HapticOpenFromService(haptic, item->dev);
 }
@@ -598,7 +624,6 @@ int SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
 int SDL_SYS_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
 #ifdef SDL_JOYSTICK_IOKIT
-    int device_index = 0;
     SDL_hapticlist_item *item;
 
     if (joystick->driver != &SDL_DARWIN_JoystickDriver) {
@@ -607,10 +632,13 @@ int SDL_SYS_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick)
     for (item = SDL_hapticlist; item; item = item->next) {
         if (IOObjectIsEqualTo((io_object_t)item->dev,
                               joystick->hwdata->ffservice)) {
-            haptic->index = device_index;
+            haptic->instance_id = item->instance_id;
             break;
         }
-        ++device_index;
+    }
+
+    if (joystick->name) {
+        haptic->name = SDL_strdup(joystick->name);
     }
 
     return SDL_SYS_HapticOpenFromService(haptic, joystick->hwdata->ffservice);

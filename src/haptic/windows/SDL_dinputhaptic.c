@@ -139,7 +139,7 @@ int SDL_DINPUT_HapticMaybeAddDevice(const DIDEVICEINSTANCE *pdidInstance)
 
     /* Make sure we don't already have it */
     for (item = SDL_hapticlist; item; item = item->next) {
-        if ((!item->bXInputHaptic) && (SDL_memcmp(&item->instance, pdidInstance, sizeof(*pdidInstance)) == 0)) {
+        if (SDL_memcmp(&item->instance, pdidInstance, sizeof(*pdidInstance)) == 0) {
             return -1; /* Already added */
         }
     }
@@ -170,6 +170,7 @@ int SDL_DINPUT_HapticMaybeAddDevice(const DIDEVICEINSTANCE *pdidInstance)
         return -1;
     }
 
+    item->instance_id = SDL_GetNextObjectID();
     item->name = WIN_StringToUTF8(pdidInstance->tszProductName);
     if (!item->name) {
         SDL_free(item);
@@ -193,7 +194,7 @@ int SDL_DINPUT_HapticMaybeRemoveDevice(const DIDEVICEINSTANCE *pdidInstance)
     }
 
     for (item = SDL_hapticlist; item; item = item->next) {
-        if (!item->bXInputHaptic && SDL_memcmp(&item->instance, pdidInstance, sizeof(*pdidInstance)) == 0) {
+        if (SDL_memcmp(&item->instance, pdidInstance, sizeof(*pdidInstance)) == 0) {
             /* found it, remove it. */
             return SDL_SYS_RemoveHapticDevice(prev, item);
         }
@@ -298,7 +299,7 @@ static int SDL_DINPUT_HapticOpenFromDevice(SDL_Haptic *haptic, LPDIRECTINPUTDEVI
     /* !!! FIXME: opening a haptic device here first will make an attempt to
        !!! FIXME:  SDL_OpenJoystick() that same device fail later, since we
        !!! FIXME:  have it open in exclusive mode. But this will allow
-       !!! FIXME:  SDL_OpenJoystick() followed by SDL_HapticOpenFromJoystick()
+       !!! FIXME:  SDL_OpenJoystick() followed by SDL_OpenHapticFromJoystick()
        !!! FIXME:  to work, and that's probably the common case. Still,
        !!! FIXME:  ideally, We need to unify the opening code. */
 
@@ -461,7 +462,6 @@ int SDL_DINPUT_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
 int SDL_DINPUT_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
     SDL_hapticlist_item *item;
-    Uint8 index = 0;
     HRESULT ret;
     DIDEVICEINSTANCE joy_instance;
 
@@ -473,11 +473,11 @@ int SDL_DINPUT_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick
 
     /* Since it comes from a joystick we have to try to match it with a haptic device on our haptic list. */
     for (item = SDL_hapticlist; item; item = item->next) {
-        if (!item->bXInputHaptic && WIN_IsEqualGUID(&item->instance.guidInstance, &joy_instance.guidInstance)) {
-            haptic->index = index;
+        if (WIN_IsEqualGUID(&item->instance.guidInstance, &joy_instance.guidInstance)) {
+            haptic->instance_id = item->instance_id;
+            haptic->name = SDL_strdup(item->name);
             return SDL_DINPUT_HapticOpenFromDevice(haptic, joystick->hwdata->InputDevice, SDL_TRUE);
         }
-        ++index;
     }
 
     return SDL_SetError("Couldn't find joystick in haptic device list");
