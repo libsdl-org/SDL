@@ -241,7 +241,6 @@ set(SDL_SUBSYSTEMS
   Hidapi
   Power
   Sensor
-  Locale
   Misc
 )
 foreach(_SUB IN LISTS SDL_SUBSYSTEMS)
@@ -1279,10 +1278,8 @@ if(ANDROID)
     set(HAVE_SDL_POWER TRUE)
   endif()
 
-  if(SDL_LOCALE)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/android/*.c")
-    set(HAVE_SDL_LOCALE TRUE)
-  endif()
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/android/*.c")
+  set(HAVE_SDL_LOCALE TRUE)
 
   set(SDL_TIMER_UNIX 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
@@ -1418,10 +1415,8 @@ elseif(EMSCRIPTEN)
     set(HAVE_SDL_POWER TRUE)
   endif()
 
-  if(SDL_LOCALE)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/emscripten/*.c")
-    set(HAVE_SDL_LOCALE TRUE)
-  endif()
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/emscripten/*.c")
+  set(HAVE_SDL_LOCALE TRUE)
 
   set(SDL_TIMER_UNIX 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
@@ -1696,10 +1691,8 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     endif()
   endif()
 
-  if(SDL_LOCALE)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/unix/*.c")
-    set(HAVE_SDL_LOCALE TRUE)
-  endif()
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/unix/*.c")
+  set(HAVE_SDL_LOCALE TRUE)
 
   set(SDL_FILESYSTEM_UNIX 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/unix/*.c")
@@ -1909,14 +1902,12 @@ elseif(WINDOWS)
     endif()
   endif()
 
-  if(SDL_LOCALE)
-    if(WINDOWS_STORE)
-      sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/winrt/*.c")
-    else()
-      sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/windows/*.c")
-    endif()
-    set(HAVE_SDL_LOCALE TRUE)
+  if(WINDOWS_STORE)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/winrt/*.c")
+  else()
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/windows/*.c")
   endif()
+  set(HAVE_SDL_LOCALE TRUE)
 
   set(SDL_FILESYSTEM_WINDOWS 1)
   if(WINDOWS_STORE)
@@ -2141,10 +2132,8 @@ elseif(APPLE)
     set(HAVE_SDL_POWER TRUE)
   endif()
 
-  if(SDL_LOCALE)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/macos/*.m")
-    set(HAVE_SDL_LOCALE TRUE)
-  endif()
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/macos/*.m")
+  set(HAVE_SDL_LOCALE TRUE)
 
   set(SDL_TIMER_UNIX 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
@@ -2348,10 +2337,8 @@ elseif(HAIKU)
     set(HAVE_SDL_POWER TRUE)
   endif()
 
-  if(SDL_LOCALE)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/haiku/*.cc")
-    set(HAVE_SDL_LOCALE TRUE)
-  endif()
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/haiku/*.cc")
+  set(HAVE_SDL_LOCALE TRUE)
 
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/haiku/*.cc")
 
@@ -2436,10 +2423,8 @@ elseif(VITA)
   )
   set(HAVE_SDL_THREADS TRUE)
 
-  if(SDL_LOCALE)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/vita/*.c")
-    set(HAVE_SDL_LOCALE TRUE)
-  endif()
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/vita/*.c")
+  set(HAVE_SDL_LOCALE TRUE)
 
   set(SDL_TIMER_VITA 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/vita/*.c")
@@ -2699,10 +2684,8 @@ elseif(N3DS)
     set(HAVE_SDL_VIDEO TRUE)
   endif()
 
-  if(SDL_LOCALE)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/n3ds/*.c")
-    set(HAVE_SDL_LOCALE TRUE)
-  endif()
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/n3ds/*.c")
+  set(HAVE_SDL_LOCALE TRUE)
 
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/file/n3ds/*.c")
 endif()
