@@ -77,8 +77,8 @@ typedef unsigned int uintptr_t;
 /* Enable the stub sensor driver (src/sensor/dummy/\*.c) */
 #define SDL_SENSOR_DISABLED 1
 
-/* Enable the stub shared object loader (src/loadso/dummy/\*.c) */
-#define SDL_LOADSO_DISABLED 1
+/* Enable the dummy shared object loader (src/loadso/dummy/\*.c) */
+#define SDL_LOADSO_DUMMY 1
 
 /* Enable the stub thread support (src/thread/generic/\*.c) */
 #define SDL_THREADS_DISABLED    1
