@@ -243,7 +243,6 @@ set(SDL_SUBSYSTEMS
   Audio
   Video
   Render
-  Events
   Joystick
   Haptic
   Hidapi

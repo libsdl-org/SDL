@@ -204,7 +204,6 @@ int SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the event subsystem */
     if (flags & SDL_INIT_EVENTS) {
-#ifndef SDL_EVENTS_DISABLED
         if (SDL_ShouldInitSubsystem(SDL_INIT_EVENTS)) {
             SDL_IncrementSubsystemRefCount(SDL_INIT_EVENTS);
             if (SDL_InitEvents() < 0) {
@@ -215,10 +214,6 @@ int SDL_InitSubSystem(Uint32 flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_EVENTS);
         }
         flags_initialized |= SDL_INIT_EVENTS;
-#else
-        SDL_SetError("SDL not built with events support");
-        goto quit_and_error;
-#endif
     }
 
     /* Initialize the timer subsystem */
@@ -452,14 +447,12 @@ void SDL_QuitSubSystem(Uint32 flags)
         SDL_DecrementSubsystemRefCount(SDL_INIT_TIMER);
     }
 
-#ifndef SDL_EVENTS_DISABLED
     if (flags & SDL_INIT_EVENTS) {
         if (SDL_ShouldQuitSubsystem(SDL_INIT_EVENTS)) {
             SDL_QuitEvents();
         }
         SDL_DecrementSubsystemRefCount(SDL_INIT_EVENTS);
     }
-#endif
 }
 
 Uint32 SDL_WasInit(Uint32 flags)
