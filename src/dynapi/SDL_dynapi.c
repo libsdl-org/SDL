@@ -535,22 +535,15 @@ static void SDL_InitDynamicAPI(void)
      */
     static SDL_bool already_initialized = SDL_FALSE;
 
-    /* SDL_AtomicLock calls SDL mutex functions to emulate if
-       SDL_ATOMIC_DISABLED, which we can't do here, so in such a
-       configuration, you're on your own. */
-    #ifndef SDL_ATOMIC_DISABLED
     static SDL_SpinLock lock = 0;
     SDL_AtomicLock_REAL(&lock);
-    #endif
 
     if (!already_initialized) {
         SDL_InitDynamicAPILocked();
         already_initialized = SDL_TRUE;
     }
 
-    #ifndef SDL_ATOMIC_DISABLED
     SDL_AtomicUnlock_REAL(&lock);
-    #endif
 }
 
 #else /* SDL_DYNAMIC_API */
