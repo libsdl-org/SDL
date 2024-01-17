@@ -256,7 +256,6 @@
 #cmakedefine SDL_VIDEO_CAPTURE
 
 /* Allow disabling of core subsystems */
-#cmakedefine SDL_ATOMIC_DISABLED @SDL_ATOMIC_DISABLED@
 #cmakedefine SDL_AUDIO_DISABLED @SDL_AUDIO_DISABLED@
 #cmakedefine SDL_FILE_DISABLED @SDL_FILE_DISABLED@
 #cmakedefine SDL_JOYSTICK_DISABLED @SDL_JOYSTICK_DISABLED@
