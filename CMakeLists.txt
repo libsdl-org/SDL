@@ -204,10 +204,6 @@ if(EMSCRIPTEN)
   # Set up default values for the currently supported set of subsystems:
   # Emscripten/Javascript does not have assembly support, a dynamic library
   # loading architecture, or low-level CPU inspection.
-
-  # SDL_THREADS_DEFAULT now defaults to ON, but pthread support might be disabled by default.
-  # !!! FIXME: most of these subsystems should default to ON if there are dummy implementations to be used.
-
   set(SDL_ASSEMBLY_DEFAULT OFF)
   set(SDL_SHARED_AVAILABLE OFF)
 endif()
@@ -244,8 +240,6 @@ set(SDL_SUBSYSTEMS
   Haptic
   Hidapi
   Power
-  Threads
-  Timers
   File
   Filesystem
   Sensor
@@ -1253,19 +1247,23 @@ if(ANDROID)
 
     set(HAVE_SDL_AUDIO TRUE)
   endif()
+
   if(SDL_FILESYSTEM)
     set(SDL_FILESYSTEM_ANDROID 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/android/*.c")
     set(HAVE_SDL_FILESYSTEM TRUE)
   endif()
+
   if(SDL_HAPTIC)
     set(SDL_HAPTIC_ANDROID 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/haptic/android/*.c")
     set(HAVE_SDL_HAPTIC TRUE)
   endif()
+
   if(SDL_HIDAPI)
     CheckHIDAPI()
   endif()
+
   if(SDL_JOYSTICK)
     set(SDL_JOYSTICK_ANDROID 1)
     sdl_glob_sources(
@@ -1274,28 +1272,32 @@ if(ANDROID)
     )
     set(HAVE_SDL_JOYSTICK TRUE)
   endif()
+
   set(SDL_LOADSO_DLOPEN 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/loadso/dlopen/*.c")
   set(HAVE_SDL_LOADSO TRUE)
+
   if(SDL_POWER)
     set(SDL_POWER_ANDROID 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/power/android/*.c")
     set(HAVE_SDL_POWER TRUE)
   endif()
+
   if(SDL_LOCALE)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/android/*.c")
     set(HAVE_SDL_LOCALE TRUE)
   endif()
-  if(SDL_TIMERS)
-    set(SDL_TIMER_UNIX 1)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
-    set(HAVE_SDL_TIMERS TRUE)
-  endif()
+
+  set(SDL_TIMER_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
+  set(HAVE_SDL_TIMERS TRUE)
+
   if(SDL_SENSOR)
     set(SDL_SENSOR_ANDROID 1)
     set(HAVE_SDL_SENSORS TRUE)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/sensor/android/*.c")
   endif()
+
   if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_ANDROID 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/android/*.c")
@@ -1397,39 +1399,44 @@ elseif(EMSCRIPTEN)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/misc/emscripten/*.c")
     set(HAVE_SDL_MISC TRUE)
   endif()
+
   if(SDL_AUDIO)
     set(SDL_AUDIO_DRIVER_EMSCRIPTEN 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/audio/emscripten/*.c")
     set(HAVE_SDL_AUDIO TRUE)
   endif()
+
   if(SDL_FILESYSTEM)
     set(SDL_FILESYSTEM_EMSCRIPTEN 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/emscripten/*.c")
     set(HAVE_SDL_FILESYSTEM TRUE)
   endif()
+
   if(SDL_JOYSTICK)
     set(SDL_JOYSTICK_EMSCRIPTEN 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/joystick/emscripten/*.c")
     set(HAVE_SDL_JOYSTICK TRUE)
   endif()
+
   if(SDL_POWER)
     set(SDL_POWER_EMSCRIPTEN 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/power/emscripten/*.c")
     set(HAVE_SDL_POWER TRUE)
   endif()
+
   if(SDL_LOCALE)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/emscripten/*.c")
     set(HAVE_SDL_LOCALE TRUE)
   endif()
-  if(SDL_TIMERS)
-    set(SDL_TIMER_UNIX 1)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
-    set(HAVE_SDL_TIMERS TRUE)
 
-    if(SDL_CLOCK_GETTIME)
-      set(HAVE_CLOCK_GETTIME 1)
-    endif()
+  set(SDL_TIMER_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
+  set(HAVE_SDL_TIMERS TRUE)
+
+  if(SDL_CLOCK_GETTIME)
+    set(HAVE_CLOCK_GETTIME 1)
   endif()
+
   if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_EMSCRIPTEN 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/emscripten/*.c")
@@ -1706,11 +1713,9 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     set(HAVE_SDL_FILESYSTEM TRUE)
   endif()
 
-  if(SDL_TIMERS)
-    set(SDL_TIMER_UNIX 1)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
-    set(HAVE_SDL_TIMERS TRUE)
-  endif()
+  set(SDL_TIMER_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
+  set(HAVE_SDL_TIMERS TRUE)
 
   set(SDL_RLD_FLAGS "")
   if(SDL_RPATH AND SDL_SHARED)
@@ -1880,22 +1885,20 @@ elseif(WINDOWS)
     set(HAVE_SDL_VIDEO TRUE)
   endif()
 
-  if(SDL_THREADS)
-    set(SDL_THREAD_GENERIC_COND_SUFFIX 1)
-    set(SDL_THREAD_GENERIC_RWLOCK_SUFFIX 1)
-    set(SDL_THREAD_WINDOWS 1)
-    sdl_sources(
-      "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
-      "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
-      "${SDL3_SOURCE_DIR}/src/thread/windows/SDL_syscond_cv.c"
-      "${SDL3_SOURCE_DIR}/src/thread/windows/SDL_sysmutex.c"
-      "${SDL3_SOURCE_DIR}/src/thread/windows/SDL_sysrwlock_srw.c"
-      "${SDL3_SOURCE_DIR}/src/thread/windows/SDL_syssem.c"
-      "${SDL3_SOURCE_DIR}/src/thread/windows/SDL_systhread.c"
-      "${SDL3_SOURCE_DIR}/src/thread/windows/SDL_systls.c"
-    )
-    set(HAVE_SDL_THREADS TRUE)
-  endif()
+  set(SDL_THREAD_GENERIC_COND_SUFFIX 1)
+  set(SDL_THREAD_GENERIC_RWLOCK_SUFFIX 1)
+  set(SDL_THREAD_WINDOWS 1)
+  sdl_sources(
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
+    "${SDL3_SOURCE_DIR}/src/thread/windows/SDL_syscond_cv.c"
+    "${SDL3_SOURCE_DIR}/src/thread/windows/SDL_sysmutex.c"
+    "${SDL3_SOURCE_DIR}/src/thread/windows/SDL_sysrwlock_srw.c"
+    "${SDL3_SOURCE_DIR}/src/thread/windows/SDL_syssem.c"
+    "${SDL3_SOURCE_DIR}/src/thread/windows/SDL_systhread.c"
+    "${SDL3_SOURCE_DIR}/src/thread/windows/SDL_systls.c"
+  )
+  set(HAVE_SDL_THREADS TRUE)
 
   if(SDL_SENSOR AND HAVE_SENSORSAPI_H AND NOT WINDOWS_STORE)
     set(SDL_SENSOR_WINDOWS 1)
@@ -1949,11 +1952,9 @@ elseif(WINDOWS)
     )
   endif()
 
-  if(SDL_TIMERS)
-    set(SDL_TIMER_WINDOWS 1)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/windows/*.c")
-    set(HAVE_SDL_TIMERS TRUE)
-  endif()
+  set(SDL_TIMER_WINDOWS 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/windows/*.c")
+  set(HAVE_SDL_TIMERS TRUE)
 
   set(SDL_LOADSO_WINDOWS 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/loadso/windows/*.c")
@@ -2159,11 +2160,9 @@ elseif(APPLE)
     set(HAVE_SDL_LOCALE TRUE)
   endif()
 
-  if(SDL_TIMERS)
-    set(SDL_TIMER_UNIX 1)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
-    set(HAVE_SDL_TIMERS TRUE)
-  endif()
+  set(SDL_TIMER_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
+  set(HAVE_SDL_TIMERS TRUE)
 
   if(SDL_FILESYSTEM)
     set(SDL_FILESYSTEM_COCOA 1)
@@ -2357,11 +2356,9 @@ elseif(HAIKU)
     set(HAVE_SDL_FILESYSTEM TRUE)
   endif()
 
-  if(SDL_TIMERS)
-    set(SDL_TIMER_HAIKU 1)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/haiku/*.c")
-    set(HAVE_SDL_TIMERS TRUE)
-  endif()
+  set(SDL_TIMER_HAIKU 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/haiku/*.c")
+  set(HAVE_SDL_TIMERS TRUE)
 
   if(SDL_POWER)
     set(SDL_POWER_HAIKU 1)
@@ -2397,14 +2394,12 @@ elseif(RISCOS)
     set(HAVE_SDL_FILESYSTEM TRUE)
   endif()
 
-  if(SDL_TIMERS)
-    set(SDL_TIMER_UNIX 1)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
-    set(HAVE_SDL_TIMERS TRUE)
+  set(SDL_TIMER_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
+  set(HAVE_SDL_TIMERS TRUE)
 
-    if(SDL_CLOCK_GETTIME)
-      set(HAVE_CLOCK_GETTIME 1)
-    endif()
+  if(SDL_CLOCK_GETTIME)
+    set(HAVE_CLOCK_GETTIME 1)
   endif()
 
   CheckPTHREAD()
@@ -2433,47 +2428,51 @@ elseif(VITA)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/audio/vita/*.c")
     set(HAVE_SDL_AUDIO TRUE)
   endif()
+
   if(SDL_FILESYSTEM)
     set(SDL_FILESYSTEM_VITA 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/vita/*.c")
     set(HAVE_SDL_FILESYSTEM TRUE)
   endif()
+
   if(SDL_JOYSTICK)
     set(SDL_JOYSTICK_VITA 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/joystick/vita/*.c")
     set(HAVE_SDL_JOYSTICK TRUE)
   endif()
+
   if(SDL_POWER)
     set(SDL_POWER_VITA 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/power/vita/*.c")
     set(HAVE_SDL_POWER TRUE)
   endif()
-  if(SDL_THREADS)
-    set(SDL_THREAD_VITA 1)
-    sdl_sources(
-      "${SDL3_SOURCE_DIR}/src/thread/vita/SDL_sysmutex.c"
-      "${SDL3_SOURCE_DIR}/src/thread/vita/SDL_syssem.c"
-      "${SDL3_SOURCE_DIR}/src/thread/vita/SDL_systhread.c"
-      "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
-      "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
-      "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
-    )
-    set(HAVE_SDL_THREADS TRUE)
-  endif()
+
+  set(SDL_THREAD_VITA 1)
+  sdl_sources(
+    "${SDL3_SOURCE_DIR}/src/thread/vita/SDL_sysmutex.c"
+    "${SDL3_SOURCE_DIR}/src/thread/vita/SDL_syssem.c"
+    "${SDL3_SOURCE_DIR}/src/thread/vita/SDL_systhread.c"
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
+  )
+  set(HAVE_SDL_THREADS TRUE)
+
   if(SDL_LOCALE)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/vita/*.c")
     set(HAVE_SDL_LOCALE TRUE)
   endif()
-  if(SDL_TIMERS)
-    set(SDL_TIMER_VITA 1)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/vita/*.c")
-    set(HAVE_SDL_TIMERS TRUE)
-  endif()
+
+  set(SDL_TIMER_VITA 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/vita/*.c")
+  set(HAVE_SDL_TIMERS TRUE)
+
   if(SDL_SENSOR)
     set(SDL_SENSOR_VITA 1)
     set(HAVE_SDL_SENSORS TRUE)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/sensor/vita/*.c")
   endif()
+
   if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_VITA 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/vita/*.c")
@@ -2567,36 +2566,38 @@ elseif(PSP)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/audio/psp/*.c")
     set(HAVE_SDL_AUDIO TRUE)
   endif()
+
   if(SDL_FILESYSTEM)
     set(SDL_FILESYSTEM_PSP 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/psp/*.c")
     set(HAVE_SDL_FILESYSTEM TRUE)
   endif()
+
   if(SDL_JOYSTICK)
     set(SDL_JOYSTICK_PSP 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/joystick/psp/*.c")
     set(HAVE_SDL_JOYSTICK TRUE)
   endif()
+
   if(SDL_POWER)
     set(SDL_POWER_PSP 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/power/psp/*.c")
     set(HAVE_SDL_POWER TRUE)
   endif()
-  if(SDL_THREADS)
-    set(SDL_THREAD_PSP 1)
-    sdl_glob_sources(
-      "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
-      "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
-      "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
-      "${SDL3_SOURCE_DIR}/src/thread/psp/*.c"
-    )
-    set(HAVE_SDL_THREADS TRUE)
-  endif()
-  if(SDL_TIMERS)
-    set(SDL_TIMER_PSP 1)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/psp/*.c")
-    set(HAVE_SDL_TIMERS TRUE)
-  endif()
+
+  set(SDL_THREAD_PSP 1)
+  sdl_glob_sources(
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
+    "${SDL3_SOURCE_DIR}/src/thread/psp/*.c"
+  )
+  set(HAVE_SDL_THREADS TRUE)
+
+  set(SDL_TIMER_PSP 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/psp/*.c")
+  set(HAVE_SDL_TIMERS TRUE)
+
   if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_PSP 1)
     set(SDL_VIDEO_RENDER_PSP 1)
@@ -2604,6 +2605,7 @@ elseif(PSP)
     set(SDL_VIDEO_OPENGL 1)
     set(HAVE_SDL_VIDEO TRUE)
   endif()
+
   sdl_link_dependency(base
     LIBS
       GL
@@ -2629,32 +2631,33 @@ elseif(PS2)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/audio/ps2/*.c")
     set(HAVE_SDL_AUDIO TRUE)
   endif()
+
   if(SDL_FILESYSTEM)
     set(SDL_FILESYSTEM_PS2 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/ps2/*.c")
     set(HAVE_SDL_FILESYSTEM TRUE)
   endif()
+
   if(SDL_JOYSTICK)
     set(SDL_JOYSTICK_PS2 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/joystick/ps2/*.c")
     set(HAVE_SDL_JOYSTICK TRUE)
   endif()
-  if(SDL_THREADS)
-    set(SDL_THREAD_PS2 1)
-    sdl_glob_sources(
-      "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
-      "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysmutex.c"
-      "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
-      "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
-      "${SDL3_SOURCE_DIR}/src/thread/ps2/*.c"
-    )
-    set(HAVE_SDL_THREADS TRUE)
-  endif()
-  if(SDL_TIMERS)
-    set(SDL_TIMER_PS2 1)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/ps2/*.c")
-    set(HAVE_SDL_TIMERS TRUE)
-  endif()
+
+  set(SDL_THREAD_PS2 1)
+  sdl_glob_sources(
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysmutex.c"
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
+    "${SDL3_SOURCE_DIR}/src/thread/ps2/*.c"
+  )
+  set(HAVE_SDL_THREADS TRUE)
+
+  set(SDL_TIMER_PS2 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/ps2/*.c")
+  set(HAVE_SDL_TIMERS TRUE)
+
   if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_PS2 1)
     set(SDL_VIDEO_RENDER_PS2 1)
@@ -2700,21 +2703,17 @@ elseif(N3DS)
     set(HAVE_SDL_POWER TRUE)
   endif()
 
-  if(SDL_THREADS)
-    set(SDL_THREAD_N3DS 1)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/thread/n3ds/*.c")
-    sdl_sources(
-      "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
-      "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
-    )
-    set(HAVE_SDL_THREADS TRUE)
-  endif()
+  set(SDL_THREAD_N3DS 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/thread/n3ds/*.c")
+  sdl_sources(
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
+  )
+  set(HAVE_SDL_THREADS TRUE)
 
-  if(SDL_TIMERS)
-    set(SDL_TIMER_N3DS 1)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/n3ds/*.c")
-    set(HAVE_SDL_TIMERS TRUE)
-  endif()
+  set(SDL_TIMER_N3DS 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/n3ds/*.c")
+  set(HAVE_SDL_TIMERS TRUE)
 
   if(SDL_SENSOR)
     set(SDL_SENSOR_N3DS 1)
