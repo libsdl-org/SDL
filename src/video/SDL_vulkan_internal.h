@@ -24,10 +24,6 @@
 #include "SDL_internal.h"
 
 #ifdef SDL_VIDEO_VULKAN
-#if defined(SDL_LOADSO_DISABLED) || defined(SDL_LOADSO_DUMMY)
-#error You should not be here.
-#endif
-
 #ifdef SDL_VIDEO_DRIVER_ANDROID
 #define VK_USE_PLATFORM_ANDROID_KHR
 #endif

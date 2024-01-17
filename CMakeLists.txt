@@ -211,13 +211,11 @@ if(EMSCRIPTEN)
   set(SDL_ASSEMBLY_DEFAULT OFF)
   set(SDL_SHARED_AVAILABLE OFF)
   set(SDL_ATOMIC_DEFAULT OFF)
-  set(SDL_LOADSO_DEFAULT OFF)
   set(SDL_CPUINFO_DEFAULT OFF)
 endif()
 
 if(VITA OR PSP OR PS2 OR N3DS OR RISCOS)
   set(SDL_SHARED_AVAILABLE OFF)
-  set(SDL_LOADSO_DEFAULT OFF)
 endif()
 
 if((RISCOS OR UNIX_SYS) AND NOT (LINUX OR NETBSD OR OPENBSD))
@@ -253,7 +251,6 @@ set(SDL_SUBSYSTEMS
   Threads
   Timers
   File
-  Loadso
   CPUinfo
   Filesystem
   Sensor
@@ -1193,7 +1190,7 @@ if(UNIX OR APPLE)
   # Relevant for Unix/Darwin only
   set(DYNAPI_NEEDS_DLOPEN 1)
   CheckDLOPEN()
-  if(SDL_LOADSO AND HAVE_DLOPEN)
+  if(HAVE_DLOPEN)
     set(SDL_LOADSO_DLOPEN 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/loadso/dlopen/*.c")
     set(HAVE_SDL_LOADSO TRUE)
@@ -1282,11 +1279,9 @@ if(ANDROID)
     )
     set(HAVE_SDL_JOYSTICK TRUE)
   endif()
-  if(SDL_LOADSO)
-    set(SDL_LOADSO_DLOPEN 1)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/loadso/dlopen/*.c")
-    set(HAVE_SDL_LOADSO TRUE)
-  endif()
+  set(SDL_LOADSO_DLOPEN 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/loadso/dlopen/*.c")
+  set(HAVE_SDL_LOADSO TRUE)
   if(SDL_POWER)
     set(SDL_POWER_ANDROID 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/power/android/*.c")
@@ -1863,10 +1858,6 @@ elseif(WINDOWS)
   endif()
 
   if(SDL_VIDEO)
-    # requires SDL_LOADSO on Windows (IME, DX, etc.)
-    if(NOT SDL_LOADSO)
-      message(FATAL_ERROR "SDL_VIDEO requires SDL_LOADSO, which is not enabled")
-    endif()
     if(WINDOWS_STORE)
       set(SDL_VIDEO_DRIVER_WINRT 1)
       sdl_glob_sources(
@@ -1969,11 +1960,9 @@ elseif(WINDOWS)
     set(HAVE_SDL_TIMERS TRUE)
   endif()
 
-  if(SDL_LOADSO)
-    set(SDL_LOADSO_WINDOWS 1)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/loadso/windows/*.c")
-    set(HAVE_SDL_LOADSO TRUE)
-  endif()
+  set(SDL_LOADSO_WINDOWS 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/loadso/windows/*.c")
+  set(HAVE_SDL_LOADSO TRUE)
 
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/windows/*.c")
 
@@ -2756,12 +2745,6 @@ elseif(N3DS)
   else()
     message(FATAL_ERROR "SDL_FILE must be enabled to build on N3DS")
   endif()
-endif()
-
-if(HAVE_VULKAN AND NOT SDL_LOADSO)
-  message(STATUS "Vulkan support is available, but disabled because there's no loadso.")
-  set(HAVE_VULKAN FALSE)
-  set(SDL_VIDEO_VULKAN 0)
 endif()
 
 # Platform-independent options
