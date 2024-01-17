@@ -156,7 +156,6 @@
 /* SDL internal assertion support */
 /* #undef SDL_DEFAULT_ASSERT_LEVEL */
 
-#define SDL_CPUINFO_DISABLED 1
 #define SDL_HAPTIC_DISABLED 1
 #define SDL_HIDAPI_DISABLED 1
 #ifndef __EMSCRIPTEN_PTHREADS__
