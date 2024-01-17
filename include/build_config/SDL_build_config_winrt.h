@@ -168,7 +168,6 @@
 #define SDL_HAPTIC_DISABLED 1
 #else
 #define SDL_JOYSTICK_XINPUT 1
-#define SDL_HAPTIC_XINPUT   1
 #endif /* WIN10 */
 #endif
 

@@ -546,9 +546,6 @@
     <ClInclude Include="..\..\src\haptic\windows\SDL_windowshaptic_c.h">
       <Filter>haptic\windows</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\haptic\windows\SDL_xinputhaptic_c.h">
-      <Filter>haptic\windows</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\joystick\hidapi\SDL_hidapijoystick_c.h">
       <Filter>joystick\hidapi</Filter>
     </ClInclude>
@@ -1048,9 +1045,6 @@
       <Filter>haptic\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\haptic\windows\SDL_windowshaptic.c">
-      <Filter>haptic\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\haptic\windows\SDL_xinputhaptic.c">
       <Filter>haptic\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\haptic\dummy\SDL_syshaptic.c">

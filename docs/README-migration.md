@@ -618,6 +618,65 @@ be dropped into an SDL3 or SDL2 program, to continue to provide this
 functionality to your app and aid migration. That is located in the
 [SDL_gesture GitHub repository](https://github.com/libsdl-org/SDL_gesture).
 
+## SDL_haptic.h
+
+Gamepads with simple rumble capability no longer show up in the SDL haptics interface, instead you should use SDL_RumbleGamepad().
+
+Rather than iterating over haptic devices using device index, there is a new function SDL_GetHaptics() to get the current list of haptic devices, and new functions to get information about haptic devices from their instance ID:
+```c
+{
+    if (SDL_InitSubSystem(SDL_INIT_HAPTIC) == 0) {
+        int i, num_haptics;
+        SDL_HapticID *haptics = SDL_GetHaptics(&num_haptics);
+        if (haptics) {
+            for (i = 0; i < num_haptics; ++i) {
+                SDL_HapticID instance_id = haptics[i];
+                const char *name = SDL_GetHapticInstanceName(instance_id);
+
+                SDL_Log("Haptic %" SDL_PRIu32 ": %s\n",
+                        instance_id, name ? name : "Unknown");
+            }
+            SDL_free(haptics);
+        }
+        SDL_QuitSubSystem(SDL_INIT_HAPTIC);
+    }
+}
+```
+
+SDL_HapticEffectSupported(), SDL_HapticRumbleSupported(), and SDL_IsJoystickHaptic() now return SDL_bool instead of an optional negative error code.
+
+The following functions have been renamed:
+* SDL_HapticClose() => SDL_CloseHaptic()
+* SDL_HapticDestroyEffect() => SDL_DestroyHapticEffect()
+* SDL_HapticGetEffectStatus() => SDL_GetHapticEffectStatus()
+* SDL_HapticNewEffect() => SDL_CreateHapticEffect()
+* SDL_HapticNumAxes() => SDL_GetNumHapticAxes()
+* SDL_HapticNumEffects() => SDL_GetMaxHapticEffects()
+* SDL_HapticNumEffectsPlaying() => SDL_GetMaxHapticEffectsPlaying()
+* SDL_HapticOpen() => SDL_OpenHaptic()
+* SDL_HapticOpenFromJoystick() => SDL_OpenHapticFromJoystick()
+* SDL_HapticOpenFromMouse() => SDL_OpenHapticFromMouse()
+* SDL_HapticPause() => SDL_PauseHaptic()
+* SDL_HapticQuery() => SDL_GetHapticFeatures()
+* SDL_HapticRumbleInit() => SDL_InitHapticRumble()
+* SDL_HapticRumblePlay() => SDL_PlayHapticRumble()
+* SDL_HapticRumbleStop() => SDL_StopHapticRumble()
+* SDL_HapticRunEffect() => SDL_RunHapticEffect()
+* SDL_HapticSetAutocenter() => SDL_SetHapticAutocenter()
+* SDL_HapticSetGain() => SDL_SetHapticGain()
+* SDL_HapticStopAll() => SDL_StopHapticEffects()
+* SDL_HapticStopEffect() => SDL_StopHapticEffect()
+* SDL_HapticUnpause() => SDL_ResumeHaptic()
+* SDL_HapticUpdateEffect() => SDL_UpdateHapticEffect()
+* SDL_JoystickIsHaptic() => SDL_IsJoystickHaptic()
+* SDL_MouseIsHaptic() => SDL_IsMouseHaptic()
+
+The following functions have been removed:
+* SDL_HapticIndex() - replaced with SDL_GetHapticInstanceID()
+* SDL_HapticName() - replaced with SDL_GetHapticInstanceName()
+* SDL_HapticOpened() - replaced with SDL_GetHapticFromInstanceID()
+* SDL_NumHaptics() - replaced with SDL_GetHaptics()
+
 ## SDL_hints.h
 
 SDL_AddHintCallback() now returns a standard int result instead of void, returning 0 if the function succeeds or a negative error code if there was an error.

@@ -564,7 +564,7 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
     /* Allocate an instance ID for this device */
     device->instance_id = SDL_GetNextObjectID();
 
-    /* We have to do some storage of the io_service_t for SDL_HapticOpenFromJoystick */
+    /* We have to do some storage of the io_service_t for SDL_OpenHapticFromJoystick */
     ioservice = IOHIDDeviceGetService(ioHIDDeviceObject);
     if ((ioservice) && (FFIsForceFeedback(ioservice) == FF_OK)) {
         device->ffservice = ioservice;
