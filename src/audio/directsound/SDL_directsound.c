@@ -51,6 +51,10 @@ static fnDirectSoundCaptureCreate8 pDirectSoundCaptureCreate8 = NULL;
 static fnDirectSoundCaptureEnumerateW pDirectSoundCaptureEnumerateW = NULL;
 static fnGetDeviceID pGetDeviceID = NULL;
 
+#include <initguid.h>
+DEFINE_GUID(SDL_DSDEVID_DefaultPlayback, 0xdef00000, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
+DEFINE_GUID(SDL_DSDEVID_DefaultCapture, 0xdef00001, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
+
 static const GUID SDL_KSDATAFORMAT_SUBTYPE_PCM = { 0x00000001, 0x0000, 0x0010, { 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
 static const GUID SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = { 0x00000003, 0x0000, 0x0010, { 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
 
@@ -214,12 +218,12 @@ static void DSOUND_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevi
 
         data.iscapture = SDL_TRUE;
         data.default_device = default_capture;
-        data.default_device_guid = (pGetDeviceID(&DSDEVID_DefaultCapture, &guid) == DS_OK) ? &guid : NULL;
+        data.default_device_guid = (pGetDeviceID(&SDL_DSDEVID_DefaultCapture, &guid) == DS_OK) ? &guid : NULL;
         pDirectSoundCaptureEnumerateW(FindAllDevs, &data);
 
         data.iscapture = SDL_FALSE;
         data.default_device = default_output;
-        data.default_device_guid = (pGetDeviceID(&DSDEVID_DefaultPlayback, &guid) == DS_OK) ? &guid : NULL;
+        data.default_device_guid = (pGetDeviceID(&SDL_DSDEVID_DefaultPlayback, &guid) == DS_OK) ? &guid : NULL;
         pDirectSoundEnumerateW(FindAllDevs, &data);
     }
 
