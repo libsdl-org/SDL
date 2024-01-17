@@ -240,7 +240,6 @@ set(SDL_SUBSYSTEMS
   Haptic
   Hidapi
   Power
-  File
   Filesystem
   Sensor
   Locale
@@ -2052,11 +2051,7 @@ elseif(APPLE)
     set(HAVE_SDL_MAIN_CALLBACKS TRUE)
   endif()
 
-  # Requires the darwin file implementation
-  if(SDL_FILE)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/file/cocoa/*.m")
-    set(HAVE_SDL_FILE TRUE)
-  endif()
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/file/cocoa/*.m")
 
   if(IOS OR TVOS OR MACOSX OR DARWIN)
     sdl_sources("${SDL3_SOURCE_DIR}/src/video/SDL_video_capture_apple.m")
@@ -2732,13 +2727,7 @@ elseif(N3DS)
     set(HAVE_SDL_LOCALE TRUE)
   endif()
 
-  # Requires the n3ds file implementation
-  if(SDL_FILE)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/file/n3ds/*.c")
-    set(HAVE_SDL_FILE TRUE)
-  else()
-    message(FATAL_ERROR "SDL_FILE must be enabled to build on N3DS")
-  endif()
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/file/n3ds/*.c")
 endif()
 
 # Platform-independent options
