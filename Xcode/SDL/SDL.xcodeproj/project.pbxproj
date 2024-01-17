@@ -96,7 +96,6 @@
 		A7D8AB2523E2514100DCD162 /* SDL_log.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5DD23E2513D00DCD162 /* SDL_log.c */; };
 		A7D8AB2B23E2514100DCD162 /* SDL_timer.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5DF23E2513D00DCD162 /* SDL_timer.c */; };
 		A7D8AB3123E2514100DCD162 /* SDL_timer_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A5E023E2513D00DCD162 /* SDL_timer_c.h */; };
-		A7D8AB3723E2514100DCD162 /* SDL_systimer.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5E223E2513D00DCD162 /* SDL_systimer.c */; };
 		A7D8AB4923E2514100DCD162 /* SDL_systimer.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5E823E2513D00DCD162 /* SDL_systimer.c */; };
 		A7D8AB5B23E2514100DCD162 /* SDL_offscreenevents_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A5EE23E2513D00DCD162 /* SDL_offscreenevents_c.h */; };
 		A7D8AB6123E2514100DCD162 /* SDL_offscreenwindow.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5EF23E2513D00DCD162 /* SDL_offscreenwindow.c */; };
@@ -592,7 +591,6 @@
 		A7D8A5DD23E2513D00DCD162 /* SDL_log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_log.c; sourceTree = "<group>"; };
 		A7D8A5DF23E2513D00DCD162 /* SDL_timer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_timer.c; sourceTree = "<group>"; };
 		A7D8A5E023E2513D00DCD162 /* SDL_timer_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_timer_c.h; sourceTree = "<group>"; };
-		A7D8A5E223E2513D00DCD162 /* SDL_systimer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_systimer.c; sourceTree = "<group>"; };
 		A7D8A5E823E2513D00DCD162 /* SDL_systimer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_systimer.c; sourceTree = "<group>"; };
 		A7D8A5EE23E2513D00DCD162 /* SDL_offscreenevents_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_offscreenevents_c.h; sourceTree = "<group>"; };
 		A7D8A5EF23E2513D00DCD162 /* SDL_offscreenwindow.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_offscreenwindow.c; sourceTree = "<group>"; };
@@ -1388,20 +1386,11 @@
 		A7D8A5DE23E2513D00DCD162 /* timer */ = {
 			isa = PBXGroup;
 			children = (
-				A7D8A5E123E2513D00DCD162 /* dummy */,
 				A7D8A5E723E2513D00DCD162 /* unix */,
 				A7D8A5E023E2513D00DCD162 /* SDL_timer_c.h */,
 				A7D8A5DF23E2513D00DCD162 /* SDL_timer.c */,
 			);
 			path = timer;
-			sourceTree = "<group>";
-		};
-		A7D8A5E123E2513D00DCD162 /* dummy */ = {
-			isa = PBXGroup;
-			children = (
-				A7D8A5E223E2513D00DCD162 /* SDL_systimer.c */,
-			);
-			path = dummy;
 			sourceTree = "<group>";
 		};
 		A7D8A5E723E2513D00DCD162 /* unix */ = {
@@ -2544,7 +2533,6 @@
 				A7D8B9DD23E2514400DCD162 /* SDL_blendpoint.c in Sources */,
 				A7D8B4EE23E2514300DCD162 /* SDL_gamepad.c in Sources */,
 				E4A568B62AF763940062EEC4 /* SDL_sysmain_callbacks.c in Sources */,
-				A7D8AB3723E2514100DCD162 /* SDL_systimer.c in Sources */,
 				A7D8BA1323E2514400DCD162 /* SDL_render_sw.c in Sources */,
 				A7D8B42223E2514300DCD162 /* SDL_syssem.c in Sources */,
 				A7D8B53923E2514300DCD162 /* SDL_hidapi_xbox360.c in Sources */,

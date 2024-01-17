@@ -2179,7 +2179,7 @@ elseif(APPLE)
     set(SDL_TIMER_UNIX 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
     set(HAVE_SDL_TIMERS TRUE)
-  endif(SDL_TIMERS)
+  endif()
 
   if(SDL_FILESYSTEM)
     set(SDL_FILESYSTEM_COCOA 1)
@@ -2831,8 +2831,7 @@ if(NOT HAVE_SDL_THREADS)
   endif()
 endif()
 if(NOT HAVE_SDL_TIMERS)
-  set(SDL_TIMER_DUMMY 1)
-  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/dummy/*.c")
+  message(FATAL_ERROR "Timers are needed by many SDL subsystems and may not be disabled")
 endif()
 
 # Most platforms use this.
