@@ -59,25 +59,7 @@ extern __inline int _SDL_xchg_watcom(volatile int *a, int v);
 /* This function is where all the magic happens... */
 SDL_bool SDL_AtomicTryLock(SDL_SpinLock *lock)
 {
-#ifdef SDL_ATOMIC_DISABLED
-    /* Terrible terrible damage */
-    static SDL_Mutex *_spinlock_mutex;
-
-    if (!_spinlock_mutex) {
-        /* Race condition on first lock... */
-        _spinlock_mutex = SDL_CreateMutex();
-    }
-    SDL_LockMutex(_spinlock_mutex);
-    if (*lock == 0) {
-        *lock = 1;
-        SDL_UnlockMutex(_spinlock_mutex);
-        return SDL_TRUE;
-    } else {
-        SDL_UnlockMutex(_spinlock_mutex);
-        return SDL_FALSE;
-    }
-
-#elif defined(HAVE_GCC_ATOMICS) || defined(HAVE_GCC_SYNC_LOCK_TEST_AND_SET)
+#if defined(HAVE_GCC_ATOMICS) || defined(HAVE_GCC_SYNC_LOCK_TEST_AND_SET)
     return __sync_lock_test_and_set(lock, 1) == 0;
 
 #elif defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64))
@@ -160,8 +142,22 @@ SDL_bool SDL_AtomicTryLock(SDL_SpinLock *lock)
     }
     return res;
 #else
-#error Please implement for your platform.
-    return SDL_FALSE;
+    /* Terrible terrible damage */
+    static SDL_Mutex *_spinlock_mutex;
+
+    if (!_spinlock_mutex) {
+        /* Race condition on first lock... */
+        _spinlock_mutex = SDL_CreateMutex();
+    }
+    SDL_LockMutex(_spinlock_mutex);
+    if (*lock == 0) {
+        *lock = 1;
+        SDL_UnlockMutex(_spinlock_mutex);
+        return SDL_TRUE;
+    } else {
+        SDL_UnlockMutex(_spinlock_mutex);
+        return SDL_FALSE;
+    }
 #endif
 }
 
