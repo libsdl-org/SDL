@@ -42,6 +42,7 @@ void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
 
 #endif /* __WIN32__ || __GDK__ */
 
+DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);
 SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
 {
     (void)displayID;
@@ -51,6 +52,7 @@ SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *
     return SDL_FALSE;
 }
 
+DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID);
 int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
 {
     (void)displayID;
@@ -59,6 +61,7 @@ int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
 
 #elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
 
+DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID);
 int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
 {
     (void)displayID;
@@ -69,6 +72,7 @@ int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
 
 #ifndef __GDK__
 
+DECLSPEC int SDLCALL SDL_GDKGetTaskQueue(void *outTaskQueue);
 int SDL_GDKGetTaskQueue(void *outTaskQueue)
 {
     (void)outTaskQueue;
@@ -79,6 +83,7 @@ int SDL_GDKGetTaskQueue(void *outTaskQueue)
 
 #ifndef SDL_VIDEO_DRIVER_UIKIT
 
+DECLSPEC void SDLCALL SDL_OnApplicationDidChangeStatusBarOrientation(void);
 void SDL_OnApplicationDidChangeStatusBarOrientation(void)
 {
     SDL_Unsupported();
@@ -88,6 +93,7 @@ void SDL_OnApplicationDidChangeStatusBarOrientation(void)
 
 #ifndef SDL_VIDEO_DRIVER_UIKIT
 
+DECLSPEC int SDLCALL SDL_iPhoneSetAnimationCallback(SDL_Window *window, int interval, void (*callback)(void *), void *callbackParam);
 int SDL_iPhoneSetAnimationCallback(SDL_Window *window, int interval, void (*callback)(void *), void *callbackParam)
 {
     (void)window;
@@ -97,6 +103,7 @@ int SDL_iPhoneSetAnimationCallback(SDL_Window *window, int interval, void (*call
     return SDL_Unsupported();
 }
 
+DECLSPEC void SDLCALL SDL_iPhoneSetEventPump(SDL_bool enabled);
 void SDL_iPhoneSetEventPump(SDL_bool enabled)
 {
     (void)enabled;
