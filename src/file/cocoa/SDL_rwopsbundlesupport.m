@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
 #import <Foundation/Foundation.h>
 
 #include "SDL_rwopsbundlesupport.h"
@@ -62,4 +62,4 @@ FILE *SDL_OpenFPFromBundleOrFallback(const char *file, const char *mode)
     }
 }
 
-#endif /* __APPLE__ */
+#endif /* SDL_PLATFORM_APPLE */

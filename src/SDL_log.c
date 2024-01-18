@@ -447,7 +447,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         SDL_snprintf(tag, SDL_arraysize(tag), "SDL/%s", GetCategoryPrefix(category));
         __android_log_write(SDL_android_priority[priority], tag, message);
     }
-#elif defined(__APPLE__) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT))
+#elif defined(SDL_PLATFORM_APPLE) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT))
     /* Technically we don't need Cocoa/UIKit, but that's where this function is defined for now.
      */
     extern void SDL_NSLog(const char *prefix, const char *text);
@@ -484,7 +484,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
     }
 #endif
 #if defined(HAVE_STDIO_H) && \
-    !(defined(__APPLE__) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT)))
+    !(defined(SDL_PLATFORM_APPLE) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT)))
     (void)fprintf(stderr, "%s: %s\n", SDL_priority_prefixes[priority], message);
 #endif
 }

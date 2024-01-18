@@ -45,7 +45,7 @@
 #endif
 #endif
 
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
 #include "testffmpeg_videotoolbox.h"
 #endif
 
@@ -74,7 +74,7 @@ static SDL_bool has_EGL_EXT_image_dma_buf_import;
 static PFNGLACTIVETEXTUREARBPROC glActiveTextureARBFunc;
 static PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOESFunc;
 #endif
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
 static SDL_bool has_videotoolbox_output;
 #endif
 #ifdef __WIN32__
@@ -140,7 +140,7 @@ static SDL_bool CreateWindowAndRenderer(Uint32 window_flags, const char *driver)
     }
 #endif /* HAVE_EGL */
 
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
     has_videotoolbox_output = SetupVideoToolboxOutput(renderer);
 #endif
 
@@ -259,7 +259,7 @@ static SDL_bool SupportedPixelFormat(enum AVPixelFormat format)
             (format == AV_PIX_FMT_VAAPI || format == AV_PIX_FMT_DRM_PRIME)) {
             return SDL_TRUE;
         }
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
         if (has_videotoolbox_output && format == AV_PIX_FMT_VIDEOTOOLBOX) {
             return SDL_TRUE;
         }
@@ -672,7 +672,7 @@ static void DisplayVideoTexture(AVFrame *frame)
 
 static void DisplayVideoToolbox(AVFrame *frame)
 {
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
     SDL_Rect viewport;
     SDL_GetRenderViewport(renderer, &viewport);
     DisplayVideoToolboxFrame(renderer, frame->data[3], 0, 0, frame->width, frame->height, viewport.x, viewport.y, viewport.w, viewport.h);
@@ -908,7 +908,7 @@ int main(int argc, char *argv[])
     }
 
     window_flags = SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
     window_flags |= SDL_WINDOW_METAL;
 #elif !defined(__WIN32__)
     window_flags |= SDL_WINDOW_OPENGL;
@@ -919,7 +919,7 @@ int main(int argc, char *argv[])
         CreateWindowAndRenderer(window_flags, "opengles2");
     }
 #endif
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
     if (!window) {
         CreateWindowAndRenderer(window_flags, "metal");
     }
@@ -1111,7 +1111,7 @@ int main(int argc, char *argv[])
     }
     return_code = 0;
 quit:
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
     CleanupVideoToolboxOutput();
 #endif
 #ifdef __WIN32__

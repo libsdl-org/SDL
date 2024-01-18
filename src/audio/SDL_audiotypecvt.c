@@ -32,7 +32,7 @@
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0 // macOS/Intel guarantees SSE2.
 #elif defined(__ARM_ARCH) && (__ARM_ARCH >= 8) && defined(SDL_NEON_INTRINSICS)
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0 // ARMv8+ promise NEON.
-#elif defined(__APPLE__) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7) && defined(SDL_NEON_INTRINSICS)
+#elif defined(SDL_PLATFORM_APPLE) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7) && defined(SDL_NEON_INTRINSICS)
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0 // All Apple ARMv7 chips promise NEON support.
 #endif
 #endif /* __EMSCRIPTEN__ */

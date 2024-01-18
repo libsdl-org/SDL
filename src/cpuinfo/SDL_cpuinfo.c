@@ -453,10 +453,10 @@ static int CPU_haveNEON(void)
     return 1;
 #elif defined(__3DS__)
     return 0;
-#elif defined(__APPLE__) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7)
+#elif defined(SDL_PLATFORM_APPLE) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7)
     /* (note that sysctlbyname("hw.optional.neon") doesn't work!) */
     return 1; /* all Apple ARMv7 chips and later have NEON. */
-#elif defined(__APPLE__)
+#elif defined(SDL_PLATFORM_APPLE)
     return 0; /* assume anything else from Apple doesn't have NEON. */
 #elif !defined(__arm__)
     return 0; /* not an ARM CPU at all. */

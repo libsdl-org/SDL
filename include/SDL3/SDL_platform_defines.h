@@ -58,6 +58,7 @@
 #endif
 
 #ifdef __APPLE__
+#define SDL_PLATFORM_APPLE  1
 /* lets us know what version of macOS we're compiling on */
 #include <AvailabilityMacros.h>
 #include <TargetConditionals.h>
@@ -99,7 +100,7 @@
 # error SDL for macOS only supports deploying on 10.7 and above.
 #endif /* MAC_OS_X_VERSION_MIN_REQUIRED < 1070 */
 #endif /* TARGET_OS_IPHONE */
-#endif /* defined(__APPLE__) */
+#endif /* defined(SDL_PLATFORM_APPLE) */
 
 #ifdef __NetBSD__
 #undef __NETBSD__

@@ -4367,7 +4367,7 @@ GLAPI void APIENTRY glMinSampleShadingARB (GLfloat value);
 
 #ifndef GL_ARB_shader_objects
 #define GL_ARB_shader_objects 1
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
 typedef void *GLhandleARB;
 #else
 typedef unsigned int GLhandleARB;

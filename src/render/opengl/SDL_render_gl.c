@@ -1648,7 +1648,7 @@ static SDL_bool GL_IsProbablyAccelerated(const GL_RenderData *data)
     }
 #endif
 
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
     if (SDL_strcmp(renderer, "Apple Software Renderer") == 0) {
         return SDL_FALSE; /* (a probably very old) Apple software-based OpenGL. */
     }

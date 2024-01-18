@@ -39,7 +39,7 @@
 #error Nope, you have to edit this file to force this off.
 #endif
 
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
 #include "TargetConditionals.h"
 #endif
 
