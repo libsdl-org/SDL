@@ -28,7 +28,7 @@
 
 /* Wrapper around POSIX 1003.1b semaphores */
 
-#if defined(__MACOS__) || defined(__IOS__)
+#if defined(__MACOS__) || defined(SDL_PLATFORM_IOS)
 /* macOS doesn't support sem_getvalue() as of version 10.4 */
 #include "../generic/SDL_syssem.c"
 #else

@@ -41,7 +41,7 @@
 #include "SDL_build_config_xbox.h"
 #elif defined(__MACOS__)
 #include "SDL_build_config_macos.h"
-#elif defined(__IOS__)
+#elif defined(SDL_PLATFORM_IOS)
 #include "SDL_build_config_ios.h"
 #elif defined(SDL_PLATFORM_ANDROID)
 #include "SDL_build_config_android.h"

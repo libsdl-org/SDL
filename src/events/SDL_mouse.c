@@ -133,7 +133,7 @@ static void SDLCALL SDL_MouseTouchEventsChanged(void *userdata, const char *name
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
     SDL_bool default_value;
 
-#if defined(SDL_PLATFORM_ANDROID) || (defined(__IOS__) && !defined(SDL_PLATFORM_TVOS))
+#if defined(SDL_PLATFORM_ANDROID) || (defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_TVOS))
     default_value = SDL_TRUE;
 #else
     default_value = SDL_FALSE;

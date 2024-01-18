@@ -861,7 +861,7 @@ SDL_QuitVideoCapture(void)
 
 /* See SDL_android_video_capture.c */
 
-#elif defined(__IOS__) || defined(__MACOS__)
+#elif defined(SDL_PLATFORM_IOS) || defined(__MACOS__)
 
 /* See SDL_video_capture_apple.m */
 #else

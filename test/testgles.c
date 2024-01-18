@@ -14,7 +14,7 @@
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
 
-#if defined(__IOS__) || defined(SDL_PLATFORM_ANDROID)
+#if defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_ANDROID)
 #define HAVE_OPENGLES
 #endif
 

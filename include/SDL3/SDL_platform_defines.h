@@ -90,8 +90,7 @@
 #define SDL_PLATFORM_TVOS   1
 #endif
 #if TARGET_OS_IPHONE
-#undef __IOS__
-#define __IOS__ 1
+#define SDL_PLATFORM_IOS    1
 #else
 #undef __MACOS__
 #define __MACOS__  1

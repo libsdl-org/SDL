@@ -115,7 +115,7 @@ SDL_bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
         : "cc", "memory");
     return result == 0;
 
-#elif defined(__MACOS__) || defined(__IOS__) || defined(SDL_PLATFORM_TVOS)
+#elif defined(__MACOS__) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
     /* Maybe used for PowerPC, but the Intel asm or gcc atomics are favored. */
     return OSAtomicCompareAndSwap32Barrier(0, 1, lock);
 

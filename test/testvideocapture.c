@@ -663,7 +663,7 @@ int main(int argc, char **argv)
 
         /* display status and FPS */
         if (!device) {
-#ifdef __IOS__
+#ifdef SDL_PLATFORM_IOS
             const float x_offset = 500;
 #else
             const float x_offset = 0;
@@ -672,7 +672,7 @@ int main(int argc, char **argv)
             SDL_snprintf(buf, 256, "Device %d (%s) is not opened", current_dev, SDL_GetVideoCaptureDeviceName(get_instance_id(current_dev)));
             SDLTest_DrawString(renderer, x_offset + 10, 10, buf);
         } else {
-#ifdef __IOS__
+#ifdef SDL_PLATFORM_IOS
             const float x_offset = 500;
 #else
             const float x_offset = 0;

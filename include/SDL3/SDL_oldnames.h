@@ -378,8 +378,8 @@
 #define SDL_PixelFormatEnumToMasks SDL_GetMasksForPixelFormatEnum
 
 /* ##SDL_platform.h */
-#ifdef __IOS__
-#define __IPHONEOS__ __IOS__
+#ifdef SDL_PLATFORM_IOS
+#define __IPHONEOS__ SDL_PLATFORM_IOS
 #endif
 #ifdef __MACOS__
 #define __MACOSX__ __MACOS__
@@ -854,8 +854,8 @@
 #define SDL_PixelFormatEnumToMasks SDL_PixelFormatEnumToMasks_renamed_SDL_GetMasksForPixelFormatEnum
 
 /* ##SDL_platform.h */
-#ifdef __IOS__
-#define __IPHONEOS__ __IPHONEOS___renamed___IOS__
+#ifdef SDL_PLATFORM_IOS
+#define __IPHONEOS__ __IPHONEOS___renamed_SDL_PLATFORM_IOS
 #endif
 #ifdef __MACOS__
 #define __MACOSX__ __MACOSX___renamed___MACOS__

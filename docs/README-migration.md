@@ -932,7 +932,7 @@ The following symbols have been renamed:
 
 ## SDL_platform.h
 
-The preprocessor symbol `__MACOSX__` has been renamed `__MACOS__`, and `__IPHONEOS__` has been renamed `__IOS__`
+The preprocessor symbol `__MACOSX__` has been renamed `__MACOS__`, and `__IPHONEOS__` has been renamed `SDL_PLATFORM_IOS`
 
 ## SDL_rect.h
 
