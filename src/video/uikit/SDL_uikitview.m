@@ -271,7 +271,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
             SDL_SendTouch(UIKit_GetEventTimestamp([event timestamp]),
-                          touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
+                          touchId, (SDL_FingerID)(uintptr_t)touch, sdlwindow,
                           SDL_TRUE, locationInView.x, locationInView.y, pressure);
         }
     }
@@ -327,7 +327,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
             SDL_SendTouch(UIKit_GetEventTimestamp([event timestamp]),
-                          touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
+                          touchId, (SDL_FingerID)(uintptr_t)touch, sdlwindow,
                           SDL_FALSE, locationInView.x, locationInView.y, pressure);
         }
     }
@@ -362,7 +362,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
             SDL_SendTouchMotion(UIKit_GetEventTimestamp([event timestamp]),
-                                touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
+                                touchId, (SDL_FingerID)(uintptr_t)touch, sdlwindow,
                                 locationInView.x, locationInView.y, pressure);
         }
     }

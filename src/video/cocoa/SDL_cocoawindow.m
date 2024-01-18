@@ -1238,7 +1238,7 @@ static SDL_bool Cocoa_IsZoomed(SDL_Window *window)
     if (window->is_destroying) {
         return;
     }
-    
+
     SetWindowStyle(window, flags);
 
     isFullscreenSpace = YES;
@@ -1687,7 +1687,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
     float x, y;
 
     for (NSTouch *touch in touches) {
-        const SDL_TouchID touchId = istrackpad ? SDL_MOUSE_TOUCHID : (SDL_TouchID)(intptr_t)[touch device];
+        const SDL_TouchID touchId = istrackpad ? SDL_MOUSE_TOUCHID : (SDL_TouchID)(uintptr_t)[touch device];
         SDL_TouchDeviceType devtype = SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE;
 
         /* trackpad touches have no window. If we really wanted one we could
@@ -1716,7 +1716,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
             return;
         }
 
-        fingerId = (SDL_FingerID)(intptr_t)[touch identity];
+        fingerId = (SDL_FingerID)(uintptr_t)[touch identity];
         x = [touch normalizedPosition].x;
         y = [touch normalizedPosition].y;
         /* Make the origin the upper left instead of the lower left */
