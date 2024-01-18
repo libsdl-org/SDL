@@ -178,8 +178,7 @@
 #define __GDK__ 1
 #endif
 #ifdef __PSP__
-#undef __PSP__
-#define __PSP__ 1
+#define SDL_PLATFORM_PSP    1
 #endif
 #ifdef PS2
 #define __PS2__ 1

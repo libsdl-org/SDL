@@ -94,7 +94,7 @@
 /* We need to export SDL_main so it can be launched from Java */
 #define SDLMAIN_DECLSPEC    DECLSPEC
 
-#elif defined(__PSP__)
+#elif defined(SDL_PLATFORM_PSP)
 /* On PSP SDL provides a main function that sets the module info,
    activates the GPU and starts the thread required to be able to exit
    the software.
@@ -508,7 +508,7 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 /* include header-only SDL_main implementations */
 #if defined(SDL_MAIN_USE_CALLBACKS) \
     || defined(__WIN32__) || defined(__GDK__) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS) \
-    || defined(__3DS__) || defined(SDL_PLATFORM_NGAGE) || defined(__PS2__) || defined(__PSP__)
+    || defined(__3DS__) || defined(SDL_PLATFORM_NGAGE) || defined(__PS2__) || defined(SDL_PLATFORM_PSP)
 
 /* platforms which main (-equivalent) can be implemented in plain C */
 #include <SDL3/SDL_main_impl.h>
