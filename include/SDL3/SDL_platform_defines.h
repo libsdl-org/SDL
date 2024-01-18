@@ -54,8 +54,7 @@
 #define SDL_PLATFORM_ANDROID    1
 #endif
 #ifdef __NGAGE__
-#undef __NGAGE__
-#define __NGAGE__ 1
+#define SDL_PLATFORM_NGAGE 1
 #endif
 
 #ifdef __APPLE__

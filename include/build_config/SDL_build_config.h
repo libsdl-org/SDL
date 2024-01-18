@@ -47,7 +47,7 @@
 #include "SDL_build_config_android.h"
 #elif defined(__EMSCRIPTEN__)
 #include "SDL_build_config_emscripten.h"
-#elif defined(__NGAGE__)
+#elif defined(SDL_PLATFORM_NGAGE)
 #include "SDL_build_config_ngage.h"
 #else
 /* This is a minimal configuration just to get SDL running on new platforms. */

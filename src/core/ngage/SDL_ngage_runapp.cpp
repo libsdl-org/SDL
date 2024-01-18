@@ -4,7 +4,7 @@
 
 #include "SDL_internal.h"
 
-#ifdef __NGAGE__
+#ifdef SDL_PLATFORM_NGAGE
 
 #include <e32std.h>
 #include <e32def.h>
@@ -75,4 +75,4 @@ cleanup:
     return ret;
 }
 
-#endif // __NGAGE__
+#endif // SDL_PLATFORM_NGAGE

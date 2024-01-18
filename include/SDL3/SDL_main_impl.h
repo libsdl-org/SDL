@@ -182,18 +182,18 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #endif
 
 /* end of WinRT impl */
-#elif defined(__NGAGE__)
+#elif defined(SDL_PLATFORM_NGAGE)
 
 /* same typedef as in ngage SDKs e32def.h */
 typedef signed int TInt;
 /* TODO: if it turns out that this only works when built as C++,
-         move __NGAGE__ into the C++ section in SDL_main.h */
+         move SDL_PLATFORM_NGAGE into the C++ section in SDL_main.h */
 TInt E32Main()
 {
     return SDL_RunApp(0, NULL, SDL_main, NULL);
 }
 
-/* end of __NGAGE__ impl */
+/* end of SDL_PLATFORM_NGAGE impl */
 
 #else /* platforms that use a standard main() and just call SDL_RunApp(), like iOS and 3DS */
 
