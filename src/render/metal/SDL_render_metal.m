@@ -39,7 +39,7 @@
 /* Regenerate these with build-metal-shaders.sh */
 #ifdef __MACOS__
 #include "SDL_shaders_metal_macos.h"
-#elif defined(__TVOS__)
+#elif defined(SDL_PLATFORM_TVOS)
 #if TARGET_OS_SIMULATOR
 #include "SDL_shaders_metal_tvsimulator.h"
 #else
@@ -1938,7 +1938,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         maxtexsize = 4096;
 #if defined(__MACOS__) || TARGET_OS_MACCATALYST
         maxtexsize = 16384;
-#elif defined(__TVOS__)
+#elif defined(SDL_PLATFORM_TVOS)
         maxtexsize = 8192;
 #ifdef __TVOS_11_0
         if (@available(tvOS 11.0, *)) {
