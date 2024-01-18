@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
 
 #include "SDL_android.h"
 
@@ -2741,4 +2741,4 @@ int Android_JNI_OpenURL(const char *url)
     return ret;
 }
 
-#endif /* __ANDROID__ */
+#endif /* SDL_PLATFORM_ANDROID */

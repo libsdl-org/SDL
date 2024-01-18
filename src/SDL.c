@@ -569,7 +569,7 @@ const char *SDL_GetPlatform(void)
 {
 #if defined(SDL_PLATFORM_AIX)
     return "AIX";
-#elif defined(__ANDROID__)
+#elif defined(SDL_PLATFORM_ANDROID)
     return "Android";
 #elif defined(SDL_PLATFORM_BSDI)
     return "BSDI";
@@ -638,7 +638,7 @@ const char *SDL_GetPlatform(void)
 
 SDL_bool SDL_IsTablet(void)
 {
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
     extern SDL_bool SDL_IsAndroidTablet(void);
     return SDL_IsAndroidTablet();
 #elif defined(__IOS__)

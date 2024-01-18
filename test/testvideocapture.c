@@ -62,7 +62,7 @@ update_fps(measure_fps_t *m)
     }
 }
 
-#if defined(SDL_PLATFORM_LINUX) && !defined(__ANDROID__)
+#if defined(SDL_PLATFORM_LINUX) && !defined(SDL_PLATFORM_ANDROID)
 static void load_average(float *val)
 {
     FILE *fp = 0;
@@ -714,7 +714,7 @@ int main(int argc, char **argv)
         }
 
         /* display load average */
-#if defined(SDL_PLATFORM_LINUX) && !defined(__ANDROID__)
+#if defined(SDL_PLATFORM_LINUX) && !defined(SDL_PLATFORM_ANDROID)
         {
             float val = 0.0f;
             char buf[128];

@@ -47,7 +47,7 @@
 #include <setjmp.h>
 #endif
 
-#if (defined(SDL_PLATFORM_LINUX) || defined(__ANDROID__)) && defined(__arm__)
+#if (defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID)) && defined(__arm__)
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -66,7 +66,7 @@
 #endif
 #endif
 
-#if defined(__ANDROID__) && defined(__arm__) && !defined(HAVE_GETAUXVAL)
+#if defined(SDL_PLATFORM_ANDROID) && defined(__arm__) && !defined(HAVE_GETAUXVAL)
 #include <cpu-features.h>
 #endif
 
@@ -468,11 +468,11 @@ static int CPU_haveNEON(void)
         return 0;
     }
     return (hasneon & HWCAP_NEON) == HWCAP_NEON;
-#elif (defined(SDL_PLATFORM_LINUX) || defined(__ANDROID__)) && defined(HAVE_GETAUXVAL)
+#elif (defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID)) && defined(HAVE_GETAUXVAL)
     return (getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON;
 #elif defined(SDL_PLATFORM_LINUX)
     return readProcAuxvForNeon();
-#elif defined(__ANDROID__)
+#elif defined(SDL_PLATFORM_ANDROID)
     /* Use NDK cpufeatures to read either /proc/self/auxv or /proc/cpuinfo */
     {
         AndroidCpuFamily cpu_family = android_getCpuFamily();

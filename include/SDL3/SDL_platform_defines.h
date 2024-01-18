@@ -50,9 +50,8 @@
 #define SDL_PLATFORM_LINUX   1
 #endif
 #if defined(ANDROID) || defined(__ANDROID__)
-#undef __ANDROID__
 #undef SDL_PLATFORM_LINUX /* do we need to do this? */
-#define __ANDROID__ 1
+#define SDL_PLATFORM_ANDROID    1
 #endif
 #ifdef __NGAGE__
 #undef __NGAGE__

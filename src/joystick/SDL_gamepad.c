@@ -34,7 +34,7 @@
 #include "../events/SDL_events_c.h"
 
 
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
 #endif
 
 /* Many gamepads turn the center button into an instantaneous button press */
@@ -582,7 +582,7 @@ static void PopMappingChangeTracking(void)
     SDL_free(tracker);
 }
 
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
 /*
  * Helper function to guess at a mapping based on the elements reported for this gamepad
  */
@@ -683,7 +683,7 @@ static GamepadMapping_t *SDL_CreateMappingForAndroidGamepad(SDL_JoystickGUID gui
 
     return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
 }
-#endif /* __ANDROID__ */
+#endif /* SDL_PLATFORM_ANDROID */
 
 /*
  * Helper function to guess at a mapping for HIDAPI gamepads
@@ -963,7 +963,7 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMappingForGUID(SDL_JoystickGUID gu
         mapping = SDL_CreateMappingForWGIGamepad(guid);
     } else if (SDL_IsJoystickVIRTUAL(guid)) {
         /* We'll pick up a robust mapping in VIRTUAL_JoystickGetGamepadMapping */
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
     } else {
         mapping = SDL_CreateMappingForAndroidGamepad(guid);
 #endif
@@ -2242,7 +2242,7 @@ static SDL_bool SDL_GetGamepadMappingFilePath(char *path, size_t size)
         return SDL_strlcpy(path, hint, size) < size;
     }
 
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
     return SDL_snprintf(path, size, "%s/gamepad_map.txt", SDL_AndroidGetInternalStoragePath()) < size;
 #else
     return SDL_FALSE;

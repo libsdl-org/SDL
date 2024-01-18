@@ -22,7 +22,7 @@
 
 /* Most platforms that use/need SDL_main have their own SDL_RunApp() implementation.
  * If not, you can special case it here by appending || defined(__YOUR_PLATFORM__) */
-#if ( !defined(SDL_MAIN_NEEDED) && !defined(SDL_MAIN_AVAILABLE) ) || defined(__ANDROID__)
+#if ( !defined(SDL_MAIN_NEEDED) && !defined(SDL_MAIN_AVAILABLE) ) || defined(SDL_PLATFORM_ANDROID)
 
 DECLSPEC int
 SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)

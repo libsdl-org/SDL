@@ -119,7 +119,7 @@ const char *SDL_WinRTGetFSPathUTF8(int pathType)
 }
 #endif
 
-#ifndef __ANDROID__
+#ifndef SDL_PLATFORM_ANDROID
 
 DECLSPEC void SDLCALL SDL_AndroidBackButton(void);
 void SDL_AndroidBackButton()

@@ -43,7 +43,7 @@
 #include "SDL_build_config_macos.h"
 #elif defined(__IOS__)
 #include "SDL_build_config_ios.h"
-#elif defined(__ANDROID__)
+#elif defined(SDL_PLATFORM_ANDROID)
 #include "SDL_build_config_android.h"
 #elif defined(__EMSCRIPTEN__)
 #include "SDL_build_config_emscripten.h"

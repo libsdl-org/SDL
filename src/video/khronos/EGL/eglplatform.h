@@ -88,7 +88,7 @@ typedef struct gbm_device  *EGLNativeDisplayType;
 typedef struct gbm_bo      *EGLNativePixmapType;
 typedef void               *EGLNativeWindowType;
 
-#elif defined(__ANDROID__) || defined(ANDROID)
+#elif defined(SDL_PLATFORM_ANDROID) || defined(ANDROID)
 
 struct ANativeWindow;
 struct egl_native_pixmap_t;

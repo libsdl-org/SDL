@@ -225,7 +225,7 @@ extern DECLSPEC void SDLCALL SDL_iPhoneSetEventPump(SDL_bool enabled);
 /*
  * Platform specific functions for Android
  */
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
 
 /**
  * Get the Android Java Native Interface Environment of the current thread.
@@ -451,7 +451,7 @@ extern DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int durati
  */
 extern DECLSPEC int SDLCALL SDL_AndroidSendMessage(Uint32 command, int param);
 
-#endif /* __ANDROID__ */
+#endif /* SDL_PLATFORM_ANDROID */
 
 /*
  * Platform specific functions for WinRT

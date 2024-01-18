@@ -103,7 +103,7 @@ typedef struct SDL_RWops
     SDL_PropertiesID props;
     union
     {
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
         struct
         {
             void *asset;

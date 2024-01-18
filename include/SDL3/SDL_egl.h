@@ -25,7 +25,7 @@
  *  This is a simple file to encapsulate the EGL API headers.
  */
 
-#if !defined(_MSC_VER) && !defined(__ANDROID__) && !defined(SDL_USE_BUILTIN_OPENGL_DEFINITIONS)
+#if !defined(_MSC_VER) && !defined(SDL_PLATFORM_ANDROID) && !defined(SDL_USE_BUILTIN_OPENGL_DEFINITIONS)
 
 #if defined(__vita__) || defined(__psp2__)
 #include <psp2/display.h>
@@ -149,7 +149,7 @@
 #   define KHRONOS_APICALL __declspec(dllimport)
 #elif defined (__SYMBIAN32__)
 #   define KHRONOS_APICALL IMPORT_C
-#elif defined(__ANDROID__)
+#elif defined(SDL_PLATFORM_ANDROID)
 #   define KHRONOS_APICALL __attribute__((visibility("default")))
 #else
 #   define KHRONOS_APICALL
@@ -443,7 +443,7 @@ typedef struct gbm_device  *EGLNativeDisplayType;
 typedef struct gbm_bo      *EGLNativePixmapType;
 typedef void               *EGLNativeWindowType;
 
-#elif defined(__ANDROID__) || defined(ANDROID)
+#elif defined(SDL_PLATFORM_ANDROID) || defined(ANDROID)
 
 struct ANativeWindow;
 struct egl_native_pixmap_t;

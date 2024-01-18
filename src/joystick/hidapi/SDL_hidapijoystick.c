@@ -451,7 +451,7 @@ static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, SDL_bool *remove
             /* Wait a little bit for the device to initialize */
             SDL_Delay(10);
 
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
             /* On Android we need to leave joysticks unlocked because it calls
              * out to the main thread for permissions and the main thread can
              * be in the process of handling controller input.

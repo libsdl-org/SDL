@@ -853,11 +853,11 @@ SDL_QuitVideoCapture(void)
 
 #ifdef SDL_VIDEO_CAPTURE
 
-#if defined(SDL_PLATFORM_LINUX) && !defined(__ANDROID__)
+#if defined(SDL_PLATFORM_LINUX) && !defined(SDL_PLATFORM_ANDROID)
 
 /* See SDL_video_capture_v4l2.c */
 
-#elif defined(__ANDROID__) && __ANDROID_API__ >= 24
+#elif defined(SDL_PLATFORM_ANDROID) && __ANDROID_API__ >= 24
 
 /* See SDL_android_video_capture.c */
 

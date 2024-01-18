@@ -32,7 +32,7 @@
 #include <stdio.h>
 #endif
 
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
 #include <android/log.h>
 #endif
 
@@ -84,7 +84,7 @@ static const char *SDL_priority_prefixes[SDL_NUM_LOG_PRIORITIES] = {
 #pragma GCC diagnostic pop
 #endif
 
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
 static const char *SDL_category_prefixes[] = {
     "APP",
     "ERROR",
@@ -108,7 +108,7 @@ static int SDL_android_priority[SDL_NUM_LOG_PRIORITIES] = {
     ANDROID_LOG_ERROR,
     ANDROID_LOG_FATAL
 };
-#endif /* __ANDROID__ */
+#endif /* SDL_PLATFORM_ANDROID */
 
 void SDL_InitLog(void)
 {
@@ -269,7 +269,7 @@ void SDL_LogMessage(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_ST
     va_end(ap);
 }
 
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
 static const char *GetCategoryPrefix(int category)
 {
     if (category < SDL_LOG_CATEGORY_RESERVED1) {
@@ -280,7 +280,7 @@ static const char *GetCategoryPrefix(int category)
     }
     return "CUSTOM";
 }
-#endif /* __ANDROID__ */
+#endif /* SDL_PLATFORM_ANDROID */
 
 void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
 {
@@ -440,7 +440,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         SDL_free(tstr);
         SDL_small_free(output, isstack);
     }
-#elif defined(__ANDROID__)
+#elif defined(SDL_PLATFORM_ANDROID)
     {
         char tag[32];
 
