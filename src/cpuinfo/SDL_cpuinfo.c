@@ -39,7 +39,7 @@
 #include <sys/types.h>
 #include <sys/sysctl.h> /* For AltiVec check */
 #include <machine/cpu.h>
-#elif defined(__FreeBSD__) && defined(__powerpc__)
+#elif defined(SDL_PLATFORM_FREEBSD) && defined(__powerpc__)
 #include <machine/cpu.h>
 #include <sys/auxv.h>
 #elif defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP)
@@ -106,7 +106,7 @@
 #define CPU_CFG2_LSX  (1 << 6)
 #define CPU_CFG2_LASX (1 << 7)
 
-#if defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP) && !defined(__MACOS__) && !defined(__OpenBSD__) && !defined(__FreeBSD__)
+#if defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP) && !defined(__MACOS__) && !defined(__OpenBSD__) && !defined(SDL_PLATFORM_FREEBSD)
 /* This is the brute force way of detecting instruction sets...
    the idea is borrowed from the libmpeg2 library - thanks!
  */
@@ -330,7 +330,7 @@ static int CPU_haveAltiVec(void)
     if (0 == error) {
         altivec = (hasVectorUnit != 0);
     }
-#elif defined(__FreeBSD__) && defined(__powerpc__)
+#elif defined(SDL_PLATFORM_FREEBSD) && defined(__powerpc__)
     unsigned long cpufeatures = 0;
     elf_aux_info(AT_HWCAP, &cpufeatures, sizeof(cpufeatures));
     altivec = cpufeatures & PPC_FEATURE_HAS_ALTIVEC;

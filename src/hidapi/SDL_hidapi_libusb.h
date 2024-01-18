@@ -76,7 +76,7 @@
 #define wcsdup          SDL_wcsdup
 
 
-#ifndef __FreeBSD__
+#ifndef SDL_PLATFORM_FREEBSD
 /* this is awkwardly inlined, so we need to re-implement it here
  * so we can override the libusb_control_transfer call */
 static int SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
@@ -87,7 +87,7 @@ static int SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
                                    data, (uint16_t)length, 1000); /* Endpoint 0 IN */
 }
 #define libusb_get_string_descriptor SDL_libusb_get_string_descriptor
-#endif /* __FreeBSD__ */
+#endif /* SDL_PLATFORM_FREEBSD */
 
 #define HIDAPI_THREAD_MODEL_INCLUDE "hidapi_thread_sdl.h"
 #ifndef LIBUSB_API_VERSION

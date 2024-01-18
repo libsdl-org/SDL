@@ -575,7 +575,7 @@ const char *SDL_GetPlatform(void)
     return "BSDI";
 #elif defined(__EMSCRIPTEN__)
     return "Emscripten";
-#elif defined(__FREEBSD__)
+#elif defined(SDL_PLATFORM_FREEBSD)
     return "FreeBSD";
 #elif defined(SDL_PLATFORM_HAIKU)
     return "Haiku";

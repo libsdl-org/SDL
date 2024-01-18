@@ -38,8 +38,7 @@
 #define SDL_PLATFORM_BSDI    1
 #endif
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
-#undef __FREEBSD__
-#define __FREEBSD__ 1
+#define SDL_PLATFORM_FREEBSD 1
 #endif
 #if defined(hpux) || defined(__hpux) || defined(__hpux__)
 #undef __HPUX__

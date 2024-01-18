@@ -35,7 +35,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#if defined(__FREEBSD__) || defined(__OPENBSD__)
+#if defined(SDL_PLATFORM_FREEBSD) || defined(__OPENBSD__)
 #include <sys/sysctl.h>
 #endif
 
@@ -122,7 +122,7 @@ char *SDL_GetBasePath(void)
 {
     char *retval = NULL;
 
-#ifdef __FREEBSD__
+#ifdef SDL_PLATFORM_FREEBSD
     char fullpath[PATH_MAX];
     size_t buflen = sizeof(fullpath);
     const int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1 };
@@ -196,7 +196,7 @@ char *SDL_GetBasePath(void)
         /* !!! FIXME: after 2.0.6 ships, let's delete this code and just
                       use the /proc/%llu version. There's no reason to have
                       two copies of this plus all the #ifdefs. --ryan. */
-#ifdef __FREEBSD__
+#ifdef SDL_PLATFORM_FREEBSD
         retval = readSymLink("/proc/curproc/file");
 #elif defined(__NETBSD__)
         retval = readSymLink("/proc/curproc/exe");
