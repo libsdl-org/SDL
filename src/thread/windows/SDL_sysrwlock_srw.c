@@ -82,7 +82,7 @@ static SDL_rwlock_impl_t SDL_rwlock_impl_active = { 0 };
 typedef struct SDL_rwlock_srw
 {
     SRWLOCK srw;
-    SDL_threadID write_owner;
+    SDL_ThreadID write_owner;
 } SDL_rwlock_srw;
 
 static SDL_RWLock *SDL_CreateRWLock_srw(void)
@@ -116,7 +116,7 @@ static void SDL_LockRWLockForWriting_srw(SDL_RWLock *_rwlock) SDL_NO_THREAD_SAFE
     SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *) _rwlock;
     if (rwlock != NULL) {
         pAcquireSRWLockExclusive(&rwlock->srw);
-        rwlock->write_owner = SDL_ThreadID();
+        rwlock->write_owner = SDL_GetCurrentThreadID();
     }
 }
 
@@ -144,7 +144,7 @@ static void SDL_UnlockRWLock_srw(SDL_RWLock *_rwlock) SDL_NO_THREAD_SAFETY_ANALY
 {
     SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *) _rwlock;
     if (rwlock != NULL) {
-        if (rwlock->write_owner == SDL_ThreadID()) {
+        if (rwlock->write_owner == SDL_GetCurrentThreadID()) {
             rwlock->write_owner = 0;
             pReleaseSRWLockExclusive(&rwlock->srw);
         } else {

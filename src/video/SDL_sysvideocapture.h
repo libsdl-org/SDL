@@ -51,7 +51,7 @@ struct SDL_VideoCaptureDevice
 
     /* A thread to feed the video_capture device */
     SDL_Thread *thread;
-    SDL_threadID threadid;
+    SDL_ThreadID threadid;
 
     /* Queued buffers (if app not using callback). */
     SDL_ListNode *buffer_queue;

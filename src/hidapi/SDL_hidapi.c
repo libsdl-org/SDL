@@ -101,7 +101,7 @@ static struct
     Uint64 m_unLastDetect;
 
 #if defined(__WIN32__) || defined(__WINGDK__)
-    SDL_threadID m_nThreadID;
+    SDL_ThreadID m_nThreadID;
     WNDCLASSEXA m_wndClass;
     HWND m_hwndMsg;
     HDEVNOTIFY m_hNotify;
@@ -230,7 +230,7 @@ static void HIDAPI_InitializeDiscovery(void)
     SDL_HIDAPI_discovery.m_unLastDetect = 0;
 
 #if defined(__WIN32__) || defined(__WINGDK__)
-    SDL_HIDAPI_discovery.m_nThreadID = SDL_ThreadID();
+    SDL_HIDAPI_discovery.m_nThreadID = SDL_GetCurrentThreadID();
 
     SDL_zero(SDL_HIDAPI_discovery.m_wndClass);
     SDL_HIDAPI_discovery.m_wndClass.hInstance = GetModuleHandle(NULL);
@@ -380,7 +380,7 @@ static void HIDAPI_UpdateDiscovery(void)
 #if defined(__WIN32__) || defined(__WINGDK__)
 #if 0 /* just let the usual SDL_PumpEvents loop dispatch these, fixing bug 4286. --ryan. */
     /* We'll only get messages on the same thread that created the window */
-    if (SDL_ThreadID() == SDL_HIDAPI_discovery.m_nThreadID) {
+    if (SDL_GetCurrentThreadID() == SDL_HIDAPI_discovery.m_nThreadID) {
         MSG msg;
         while (PeekMessage(&msg, SDL_HIDAPI_discovery.m_hwndMsg, 0, 0, PM_NOREMOVE)) {
             if (GetMessageA(&msg, SDL_HIDAPI_discovery.m_hwndMsg, 0, 0) != 0) {

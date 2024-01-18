@@ -87,11 +87,11 @@ void SDL_SYS_SetupThread(const char *name)
     return;
 }
 
-SDL_threadID SDL_ThreadID(void)
+SDL_ThreadID SDL_GetCurrentThreadID(void)
 {
     u32 thread_ID = 0;
     svcGetThreadId(&thread_ID, CUR_THREAD_HANDLE);
-    return (SDL_threadID)thread_ID;
+    return (SDL_ThreadID)thread_ID;
 }
 
 int SDL_SYS_SetThreadPriority(SDL_ThreadPriority sdl_priority)

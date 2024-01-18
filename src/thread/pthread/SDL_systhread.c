@@ -168,9 +168,9 @@ void SDL_SYS_SetupThread(const char *name)
 #endif
 }
 
-SDL_threadID SDL_ThreadID(void)
+SDL_ThreadID SDL_GetCurrentThreadID(void)
 {
-    return (SDL_threadID)pthread_self();
+    return (SDL_ThreadID)pthread_self();
 }
 
 int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)

@@ -105,7 +105,7 @@ void SDL_CleanupTLS(void)
 
 typedef struct SDL_TLSEntry
 {
-    SDL_threadID thread;
+    SDL_ThreadID thread;
     SDL_TLSData *storage;
     struct SDL_TLSEntry *next;
 } SDL_TLSEntry;
@@ -115,7 +115,7 @@ static SDL_TLSEntry *SDL_generic_TLS;
 
 SDL_TLSData *SDL_Generic_GetTLSData(void)
 {
-    SDL_threadID thread = SDL_ThreadID();
+    SDL_ThreadID thread = SDL_GetCurrentThreadID();
     SDL_TLSEntry *entry;
     SDL_TLSData *storage = NULL;
 
@@ -153,7 +153,7 @@ SDL_TLSData *SDL_Generic_GetTLSData(void)
 
 int SDL_Generic_SetTLSData(SDL_TLSData *data)
 {
-    SDL_threadID thread = SDL_ThreadID();
+    SDL_ThreadID thread = SDL_GetCurrentThreadID();
     SDL_TLSEntry *prev, *entry;
 
     /* SDL_Generic_GetTLSData() is always called first, so we can assume SDL_generic_TLS_mutex */
@@ -287,7 +287,7 @@ void SDL_RunThread(SDL_Thread *thread)
     SDL_SYS_SetupThread(thread->name);
 
     /* Get the thread id */
-    thread->threadid = SDL_ThreadID();
+    thread->threadid = SDL_GetCurrentThreadID();
 
     /* Run the function */
     *statusloc = userfunc(userdata);
@@ -409,14 +409,14 @@ SDL_Thread *SDL_CreateThreadInternal(int(SDLCALL *fn)(void *), const char *name,
 #endif
 }
 
-SDL_threadID SDL_GetThreadID(SDL_Thread *thread)
+SDL_ThreadID SDL_GetThreadID(SDL_Thread *thread)
 {
-    SDL_threadID id;
+    SDL_ThreadID id;
 
     if (thread) {
         id = thread->threadid;
     } else {
-        id = SDL_ThreadID();
+        id = SDL_GetCurrentThreadID();
     }
     return id;
 }

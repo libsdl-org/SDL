@@ -48,7 +48,7 @@ struct SDL_RWLock
 #else
     SDL_Mutex *lock;
     SDL_Condition *condition;
-    SDL_threadID writer_thread;
+    SDL_ThreadID writer_thread;
     SDL_AtomicInt reader_count;
     SDL_AtomicInt writer_count;
 #endif
