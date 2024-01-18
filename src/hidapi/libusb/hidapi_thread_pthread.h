@@ -24,7 +24,7 @@
 
 #include <pthread.h>
 
-#if defined(SDL_PLATFORM_ANDROID) && __ANDROID_API__ < __ANDROID_API_N__
+#if defined(__ANDROID__) && __ANDROID_API__ < __ANDROID_API_N__
 
 /* Barrier implementation because Android/Bionic don't have pthread_barrier.
    This implementation came from Brent Priddy and was posted on

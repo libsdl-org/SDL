@@ -39,7 +39,7 @@
 
 //
 // Sample using platform-specific headers
-#if defined(SDL_PLATFORM_APPLE) && HID_API_VERSION >= HID_API_MAKE_VERSION(0, 12, 0)
+#if defined(__APPLE__) && HID_API_VERSION >= HID_API_MAKE_VERSION(0, 12, 0)
 #include <hidapi_darwin.h>
 #endif
 
@@ -151,7 +151,7 @@ int main(int argc, char* argv[])
 	if (hid_init())
 		return -1;
 
-#if defined(SDL_PLATFORM_APPLE) && HID_API_VERSION >= HID_API_MAKE_VERSION(0, 12, 0)
+#if defined(__APPLE__) && HID_API_VERSION >= HID_API_MAKE_VERSION(0, 12, 0)
 	// To work properly needs to be called before hid_open/hid_open_path after hid_init.
 	// Best/recommended option - call it right after hid_init.
 	hid_darwin_set_open_exclusive(0);

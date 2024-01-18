@@ -42,7 +42,7 @@
 
 /* GNU / LibUSB */
 #include <libusb.h>
-#if !defined(SDL_PLATFORM_ANDROID) && !defined(NO_ICONV)
+#if !defined(__ANDROID__) && !defined(NO_ICONV)
 #include <iconv.h>
 #ifndef ICONV_CONST
 #define ICONV_CONST
@@ -360,7 +360,7 @@ static wchar_t *get_usb_string(libusb_device_handle *dev, uint8_t idx)
 	int len;
 	wchar_t *str = NULL;
 
-#if !defined(SDL_PLATFORM_ANDROID) && !defined(NO_ICONV) /* we don't use iconv on Android, or when it is explicitly disabled */
+#if !defined(__ANDROID__) && !defined(NO_ICONV) /* we don't use iconv on Android, or when it is explicitly disabled */
 	wchar_t wbuf[256];
 	/* iconv variables */
 	iconv_t ic;
@@ -386,7 +386,7 @@ static wchar_t *get_usb_string(libusb_device_handle *dev, uint8_t idx)
 	if (len < 2) /* we always skip first 2 bytes */
 		return NULL;
 
-#if defined(SDL_PLATFORM_ANDROID) || defined(NO_ICONV)
+#if defined(__ANDROID__) || defined(NO_ICONV)
 
 	/* Bionic does not have iconv support nor wcsdup() function, so it
 	   has to be done manually.  The following code will only work for
@@ -972,7 +972,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 
 						res = libusb_open(dev, &handle);
 
-#ifdef SDL_PLATFORM_ANDROID
+#ifdef __ANDROID__
 						if (handle) {
 							/* There is (a potential) libusb Android backend, in which
 							   device descriptor is not accurate up until the device is opened.
