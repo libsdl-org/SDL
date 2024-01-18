@@ -25,9 +25,9 @@
  *  This is a simple file to encapsulate the EGL API headers.
  */
 
-#if !defined(_MSC_VER) && !defined(SDL_PLATFORM_ANDROID) && !defined(SDL_USE_BUILTIN_OPENGL_DEFINITIONS)
+#if !defined(_MSC_VER) && !defined(__ANDROID__) && !defined(SDL_USE_BUILTIN_OPENGL_DEFINITIONS)
 
-#if defined(SDL_PLATFORM_VITA)
+#if defined(__vita__) || defined(__psp2__)
 #include <psp2/display.h>
 #include <psp2/gxm.h>
 #include <psp2/types.h>
@@ -149,7 +149,7 @@
 #   define KHRONOS_APICALL __declspec(dllimport)
 #elif defined (__SYMBIAN32__)
 #   define KHRONOS_APICALL IMPORT_C
-#elif defined(SDL_PLATFORM_ANDROID)
+#elif defined(__ANDROID__)
 #   define KHRONOS_APICALL __attribute__((visibility("default")))
 #else
 #   define KHRONOS_APICALL
@@ -409,7 +409,7 @@ typedef void *EGLNativeDisplayType;
 typedef void *EGLNativePixmapType;
 typedef void *EGLNativeWindowType;
 
-#elif defined(_WIN32) || defined(__VC32__) && !defined(SDL_PLATFORM_CYGWIN) && !defined(__SCITECH_SNAP__) /* Win32 and WinCE */
+#elif defined(_WIN32) || defined(__VC32__) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__) /* Win32 and WinCE */
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -443,7 +443,7 @@ typedef struct gbm_device  *EGLNativeDisplayType;
 typedef struct gbm_bo      *EGLNativePixmapType;
 typedef void               *EGLNativeWindowType;
 
-#elif defined(SDL_PLATFORM_ANDROID) || defined(ANDROID)
+#elif defined(__ANDROID__) || defined(ANDROID)
 
 struct ANativeWindow;
 struct egl_native_pixmap_t;
@@ -474,13 +474,13 @@ typedef void             *EGLNativeDisplayType;
 typedef khronos_uintptr_t EGLNativePixmapType;
 typedef khronos_uintptr_t EGLNativeWindowType;
 
-#elif defined(SDL_PLATFORM_APPLE)
+#elif defined(__APPLE__)
 
 typedef int   EGLNativeDisplayType;
 typedef void *EGLNativePixmapType;
 typedef void *EGLNativeWindowType;
 
-#elif defined(SDL_PLATFORM_HAIKU)
+#elif defined(__HAIKU__)
 
 #include <kernel/image.h>
 
