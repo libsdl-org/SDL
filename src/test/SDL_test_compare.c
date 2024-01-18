@@ -28,18 +28,10 @@
 */
 #include <SDL3/SDL_test.h>
 
-#include "../video/SDL_surface_pixel_impl.h"
-
 #define FILENAME_SIZE 128
 
 /* Counter for _CompareSurface calls; used for filename creation when comparisons fail */
 static int _CompareSurfaceCount = 0;
-
-int
-SDLTest_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a)
-{
-    return SDL_ReadSurfacePixel_impl(surface, x, y, r, g, b, a);
-}
 
 static void
 LogErrorFormat(const char *name, const SDL_PixelFormat *format)
@@ -96,14 +88,14 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
         for (i = 0; i < surface->w; i++) {
             int temp;
 
-            temp = SDLTest_ReadSurfacePixel(surface, i, j, &R, &G, &B, &A);
+            temp = SDL_ReadSurfacePixel(surface, i, j, &R, &G, &B, &A);
             if (temp != 0) {
                 SDLTest_LogError("Failed to retrieve pixel (%d,%d): %s", i, j, SDL_GetError());
                 ret++;
                 continue;
             }
 
-            temp = SDLTest_ReadSurfacePixel(referenceSurface, i, j, &Rd, &Gd, &Bd, &Ad);
+            temp = SDL_ReadSurfacePixel(referenceSurface, i, j, &Rd, &Gd, &Bd, &Ad);
             if (temp != 0) {
                 SDLTest_LogError("Failed to retrieve reference pixel (%d,%d): %s", i, j, SDL_GetError());
                 ret++;

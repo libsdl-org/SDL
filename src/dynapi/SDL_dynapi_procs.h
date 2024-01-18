@@ -1013,3 +1013,4 @@ SDL_DYNAPI_PROC(const char*,SDL_GetHapticInstanceName,(SDL_HapticID a),(a),retur
 SDL_DYNAPI_PROC(SDL_Haptic*,SDL_GetHapticFromInstanceID,(SDL_HapticID a),(a),return)
 SDL_DYNAPI_PROC(SDL_HapticID,SDL_GetHapticInstanceID,(SDL_Haptic *a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetHapticName,(SDL_Haptic *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_ReadSurfacePixel,(SDL_Surface *a, int b, int c, Uint8 *d, Uint8 *e, Uint8 *f, Uint8 *g),(a,b,c,d,e,f,g),return)

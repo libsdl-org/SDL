@@ -988,3 +988,4 @@
 #define SDL_GetHapticFromInstanceID SDL_GetHapticFromInstanceID_REAL
 #define SDL_GetHapticInstanceID SDL_GetHapticInstanceID_REAL
 #define SDL_GetHapticName SDL_GetHapticName_REAL
+#define SDL_ReadSurfacePixel SDL_ReadSurfacePixel_REAL

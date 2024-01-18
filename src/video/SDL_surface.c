@@ -24,7 +24,6 @@
 #include "SDL_video_c.h"
 #include "SDL_blit.h"
 #include "SDL_RLEaccel_c.h"
-#include "SDL_surface_pixel_impl.h"
 #include "SDL_pixels_c.h"
 #include "SDL_yuv_c.h"
 #include "../render/SDL_sysrender.h"
@@ -35,11 +34,6 @@ SDL_COMPILE_TIME_ASSERT(surface_size_assumptions,
                         sizeof(int) == sizeof(Sint32) && sizeof(size_t) >= sizeof(Sint32));
 
 SDL_COMPILE_TIME_ASSERT(can_indicate_overflow, SDL_SIZE_MAX > SDL_MAX_SINT32);
-
-int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a)
-{
-    return SDL_ReadSurfacePixel_impl(surface, x, y, r, g, b, a);
-}
 
 /* Public routines */
 
@@ -1556,6 +1550,68 @@ int SDL_PremultiplyAlpha(int width, int height,
         }
         src = (const Uint8 *)src + src_pitch;
         dst = (Uint8 *)dst + dst_pitch;
+    }
+    return 0;
+}
+
+/* This function Copyright 2023 Collabora Ltd., contributed to SDL under the ZLib license */
+int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a)
+{
+    Uint32 pixel = 0;
+    size_t bytes_per_pixel;
+    Uint8 unused;
+    Uint8 *p;
+
+    if (!surface || !surface->format || !surface->pixels) {
+        return SDL_InvalidParamError("surface");
+    }
+
+    if (x < 0 || x >= surface->w) {
+        return SDL_InvalidParamError("x");
+    }
+
+    if (y < 0 || y >= surface->h) {
+        return SDL_InvalidParamError("y");
+    }
+
+    if (!r) {
+        r = &unused;
+    }
+
+    if (!g) {
+        g = &unused;
+    }
+
+    if (!b) {
+        b = &unused;
+    }
+
+    if (!a) {
+        a = &unused;
+    }
+
+    bytes_per_pixel = surface->format->BytesPerPixel;
+
+    if (bytes_per_pixel > sizeof(pixel)) {
+        return SDL_InvalidParamError("surface->format->BytesPerPixel");
+    }
+
+    if (SDL_MUSTLOCK(surface)) {
+        SDL_LockSurface(surface);
+    }
+
+    p = (Uint8 *)surface->pixels + y * surface->pitch + x * bytes_per_pixel;
+    /* Fill the appropriate number of least-significant bytes of pixel,
+     * leaving the most-significant bytes set to zero */
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    SDL_memcpy(((Uint8 *) &pixel) + (sizeof(pixel) - bytes_per_pixel), p, bytes_per_pixel);
+#else
+    SDL_memcpy(&pixel, p, bytes_per_pixel);
+#endif
+    SDL_GetRGBA(pixel, surface->format, r, g, b, a);
+
+    if (SDL_MUSTLOCK(surface)) {
+        SDL_UnlockSurface(surface);
     }
     return 0;
 }
