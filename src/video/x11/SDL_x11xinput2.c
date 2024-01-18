@@ -436,6 +436,8 @@ int X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         int pointer_emulated = (xev->flags & XIPointerEmulated);
 #endif /* SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH */
 
+        videodata->global_mouse_changed = SDL_TRUE;
+
         if (xev->deviceid != xev->sourceid) {
             /* Discard events from "Master" devices to avoid duplicates. */
             return 1;
