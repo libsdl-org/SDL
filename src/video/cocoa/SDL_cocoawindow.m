@@ -546,15 +546,22 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
     }
 }
 
-static void Cocoa_SetKeyboardFocus(SDL_Window *window)
+static SDL_Window *GetTopmostWindow(SDL_Window *window)
 {
     SDL_Window *topmost = window;
-    SDL_CocoaWindowData *topmost_data;
 
     /* Find the topmost parent */
     while (topmost->parent != NULL) {
         topmost = topmost->parent;
     }
+
+    return topmost;
+}
+
+static void Cocoa_SetKeyboardFocus(SDL_Window *window)
+{
+    SDL_Window *topmost = GetTopmostWindow(window);
+    SDL_CocoaWindowData *topmost_data;
 
     topmost_data = (__bridge SDL_CocoaWindowData *)topmost->driverdata;
     topmost_data.keyboard_focus = window;
@@ -2732,6 +2739,22 @@ void Cocoa_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
             NSArray *contexts;
 
 #endif /* SDL_VIDEO_OPENGL */
+            SDL_Window *topmost = GetTopmostWindow(window);
+            SDL_CocoaWindowData *topmost_data = (__bridge SDL_CocoaWindowData *)topmost->driverdata;
+
+            /* Reset the input focus of the root window if this window is still set as keyboard focus.
+             * SDL_DestroyWindow will have already taken care of reassigning focus if this is the SDL
+             * keyboard focus, this ensures that an inactive window with this window set as input focus
+             * does not try to reference it the next time it gains focus.
+             */
+            if (topmost_data.keyboard_focus == window) {
+                SDL_Window *new_focus = window;
+                while(new_focus->parent && (new_focus->is_hiding || new_focus->is_destroying)) {
+                    new_focus = new_focus->parent;
+                }
+
+                topmost_data.keyboard_focus = new_focus;
+            }
 
             if ([data.listener isInFullscreenSpace]) {
                 [NSMenu setMenuBarVisible:YES];
