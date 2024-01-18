@@ -77,7 +77,7 @@ static SDL_bool HIDAPI_DriverPS3_IsEnabled(void)
      * See https://github.com/ViGEm/DsHidMini as an alternative driver
      */
     default_value = SDL_FALSE;
-#elif defined(__LINUX__)
+#elif defined(SDL_PLATFORM_LINUX)
     /* Linux drivers do a better job of managing the transition between
      * USB and Bluetooth. There are also some quirks in communicating
      * with PS3 controllers that have been implemented in SDL's hidapi

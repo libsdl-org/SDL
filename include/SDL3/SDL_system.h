@@ -127,7 +127,7 @@ extern DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, void
 /*
  * Platform specific functions for Linux
  */
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
 
 /**
  * Sets the UNIX nice value for a thread.
@@ -158,7 +158,7 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int prio
  */
 extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
 
-#endif /* __LINUX__ */
+#endif /* SDL_PLATFORM_LINUX */
 
 /*
  * Platform specific functions for iOS

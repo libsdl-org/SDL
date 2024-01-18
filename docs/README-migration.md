@@ -1360,7 +1360,7 @@ The information previously available in SDL_GetWindowWMInfo() is now available a
     if (nswindow) {
         ...
     }
-#elif defined(__LINUX__)
+#elif defined(SDL_PLATFORM_LINUX)
     if (SDL_GetWindowWMInfo(window, &info)) {
         if (info.subsystem == SDL_SYSWM_X11) {
             Display *xdisplay = info.info.x11.display;
@@ -1390,7 +1390,7 @@ becomes:
     if (nswindow) {
         ...
     }
-#elif defined(__LINUX__)
+#elif defined(SDL_PLATFORM_LINUX)
     if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
         Display *xdisplay = (Display *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_X11_DISPLAY_POINTER, NULL);
         Window xwindow = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_X11_WINDOW_NUMBER, 0);

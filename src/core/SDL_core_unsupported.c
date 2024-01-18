@@ -28,7 +28,7 @@ DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, void *userd
 
 #endif
 
-#ifndef __LINUX__
+#ifndef SDL_PLATFORM_LINUX
 
 DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int priority);
 int SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)

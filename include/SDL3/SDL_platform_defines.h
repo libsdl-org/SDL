@@ -47,12 +47,11 @@
 #define SDL_PLATFORM_IRIX    1
 #endif
 #if (defined(linux) || defined(__linux) || defined(__linux__))
-#undef __LINUX__
-#define __LINUX__   1
+#define SDL_PLATFORM_LINUX   1
 #endif
 #if defined(ANDROID) || defined(__ANDROID__)
 #undef __ANDROID__
-#undef __LINUX__ /* do we need to do this? */
+#undef SDL_PLATFORM_LINUX /* do we need to do this? */
 #define __ANDROID__ 1
 #endif
 #ifdef __NGAGE__

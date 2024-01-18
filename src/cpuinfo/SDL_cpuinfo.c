@@ -47,7 +47,7 @@
 #include <setjmp.h>
 #endif
 
-#if (defined(__LINUX__) || defined(__ANDROID__)) && defined(__arm__)
+#if (defined(SDL_PLATFORM_LINUX) || defined(__ANDROID__)) && defined(__arm__)
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -361,7 +361,7 @@ static int CPU_haveARMSIMD(void)
     return 0;
 }
 
-#elif defined(__LINUX__)
+#elif defined(SDL_PLATFORM_LINUX)
 static int CPU_haveARMSIMD(void)
 {
     int arm_simd = 0;
@@ -414,7 +414,7 @@ static int CPU_haveARMSIMD(void)
 }
 #endif
 
-#if defined(__LINUX__) && defined(__arm__) && !defined(HAVE_GETAUXVAL)
+#if defined(SDL_PLATFORM_LINUX) && defined(__arm__) && !defined(HAVE_GETAUXVAL)
 static int readProcAuxvForNeon(void)
 {
     int neon = 0;
@@ -468,9 +468,9 @@ static int CPU_haveNEON(void)
         return 0;
     }
     return (hasneon & HWCAP_NEON) == HWCAP_NEON;
-#elif (defined(__LINUX__) || defined(__ANDROID__)) && defined(HAVE_GETAUXVAL)
+#elif (defined(SDL_PLATFORM_LINUX) || defined(__ANDROID__)) && defined(HAVE_GETAUXVAL)
     return (getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON;
-#elif defined(__LINUX__)
+#elif defined(SDL_PLATFORM_LINUX)
     return readProcAuxvForNeon();
 #elif defined(__ANDROID__)
     /* Use NDK cpufeatures to read either /proc/self/auxv or /proc/cpuinfo */

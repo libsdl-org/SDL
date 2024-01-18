@@ -57,7 +57,7 @@
 #include <emscripten.h>
 #endif
 
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -3028,7 +3028,7 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
             attempt_texture_framebuffer = SDL_FALSE;
         }
 
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
         /* On WSL, direct X11 is faster than using OpenGL for window framebuffers, so try to detect WSL and avoid texture framebuffer. */
         else if ((_this->CreateWindowFramebuffer) && (SDL_strcmp(_this->name, "x11") == 0)) {
             struct stat sb;

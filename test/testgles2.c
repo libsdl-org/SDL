@@ -18,7 +18,7 @@
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
 
-#if defined(__IOS__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__) || defined(__WINDOWS__) || defined(__LINUX__)
+#if defined(__IOS__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__) || defined(__WINDOWS__) || defined(SDL_PLATFORM_LINUX)
 #define HAVE_OPENGLES2
 #endif
 

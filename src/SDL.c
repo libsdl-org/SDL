@@ -583,7 +583,7 @@ const char *SDL_GetPlatform(void)
     return "HP-UX";
 #elif defined(SDL_PLATFORM_IRIX)
     return "Irix";
-#elif defined(__LINUX__)
+#elif defined(SDL_PLATFORM_LINUX)
     return "Linux";
 #elif defined(__MINT__)
     return "Atari MiNT";

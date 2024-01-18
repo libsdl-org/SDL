@@ -571,7 +571,7 @@ typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
 #define read_thread                  PLATFORM_read_thread
 #define return_data                  PLATFORM_return_data
 
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
 #include "SDL_hidapi_linux.h"
 #elif defined(__NETBSD__)
 #include "SDL_hidapi_netbsd.h"
@@ -1232,7 +1232,7 @@ int SDL_hid_init(void)
 
 #ifdef HAVE_PLATFORM_BACKEND
     ++attempts;
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
     udev_ctx = SDL_UDEV_GetUdevSyms();
 #endif /* __LINUX __ */
     if (udev_ctx && PLATFORM_hid_init() == 0) {
@@ -1273,7 +1273,7 @@ int SDL_hid_exit(void)
     if (udev_ctx) {
         result |= PLATFORM_hid_exit();
     }
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
     SDL_UDEV_ReleaseUdevSyms();
 #endif /* __LINUX __ */
 #endif /* HAVE_PLATFORM_BACKEND */

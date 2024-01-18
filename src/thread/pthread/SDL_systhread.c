@@ -29,16 +29,16 @@
 #include <signal.h>
 #include <errno.h>
 
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 
 #include "../../core/linux/SDL_dbus.h"
-#endif /* __LINUX__ */
+#endif /* SDL_PLATFORM_LINUX */
 
-#if (defined(__LINUX__) || defined(__MACOS__) || defined(__IOS__)) && defined(HAVE_DLOPEN)
+#if (defined(SDL_PLATFORM_LINUX) || defined(__MACOS__) || defined(__IOS__)) && defined(HAVE_DLOPEN)
 #include <dlfcn.h>
 #ifndef RTLD_DEFAULT
 #define RTLD_DEFAULT NULL
@@ -73,7 +73,7 @@ static void *RunThread(void *data)
 #if (defined(__MACOS__) || defined(__IOS__)) && defined(HAVE_DLOPEN)
 static SDL_bool checked_setname = SDL_FALSE;
 static int (*ppthread_setname_np)(const char *) = NULL;
-#elif defined(__LINUX__) && defined(HAVE_DLOPEN)
+#elif defined(SDL_PLATFORM_LINUX) && defined(HAVE_DLOPEN)
 static SDL_bool checked_setname = SDL_FALSE;
 static int (*ppthread_setname_np)(pthread_t, const char *) = NULL;
 #endif
@@ -82,12 +82,12 @@ int SDL_SYS_CreateThread(SDL_Thread *thread)
     pthread_attr_t type;
 
 /* do this here before any threads exist, so there's no race condition. */
-#if (defined(__MACOS__) || defined(__IOS__) || defined(__LINUX__)) && defined(HAVE_DLOPEN)
+#if (defined(__MACOS__) || defined(__IOS__) || defined(SDL_PLATFORM_LINUX)) && defined(HAVE_DLOPEN)
     if (!checked_setname) {
         void *fn = dlsym(RTLD_DEFAULT, "pthread_setname_np");
 #if defined(__MACOS__) || defined(__IOS__)
         ppthread_setname_np = (int (*)(const char *))fn;
-#elif defined(__LINUX__)
+#elif defined(SDL_PLATFORM_LINUX)
         ppthread_setname_np = (int (*)(pthread_t, const char *))fn;
 #endif
         checked_setname = SDL_TRUE;
@@ -119,12 +119,12 @@ void SDL_SYS_SetupThread(const char *name)
     sigset_t mask;
 
     if (name) {
-#if (defined(__MACOS__) || defined(__IOS__) || defined(__LINUX__)) && defined(HAVE_DLOPEN)
+#if (defined(__MACOS__) || defined(__IOS__) || defined(SDL_PLATFORM_LINUX)) && defined(HAVE_DLOPEN)
         SDL_assert(checked_setname);
         if (ppthread_setname_np) {
 #if defined(__MACOS__) || defined(__IOS__)
             ppthread_setname_np(name);
-#elif defined(__LINUX__)
+#elif defined(SDL_PLATFORM_LINUX)
             if (ppthread_setname_np(pthread_self(), name) == ERANGE) {
                 char namebuf[16]; /* Limited to 16 char */
                 SDL_strlcpy(namebuf, name, sizeof(namebuf));
@@ -233,7 +233,7 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         policy = pri_policy;
     }
 
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
     {
         pid_t linuxTid = syscall(SYS_gettid);
         return SDL_LinuxSetThreadPriorityAndPolicy(linuxTid, priority, policy);
