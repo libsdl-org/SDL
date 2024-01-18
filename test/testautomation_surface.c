@@ -765,6 +765,7 @@ int surface_testOverflow(void *arg)
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
 
     if (sizeof(size_t) == 4 && sizeof(int) >= 4) {
+        SDL_ClearError();
         expectedError = "Out of memory";
         /* 0x5555'5555 * 3bpp = 0xffff'ffff which fits in size_t, but adding
          * alignment padding makes it overflow */
@@ -772,15 +773,18 @@ int surface_testOverflow(void *arg)
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width + alignment");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+        SDL_ClearError();
         /* 0x4000'0000 * 4bpp = 0x1'0000'0000 which (just) overflows */
         surface = SDL_CreateRGBSurfaceWithFormat(0, 0x40000000, 1, 32, SDL_PIXELFORMAT_ARGB8888);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * bytes per pixel");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+        SDL_ClearError();
         surface = SDL_CreateRGBSurfaceWithFormat(0, (1 << 29) - 1, (1 << 29) - 1, 8, SDL_PIXELFORMAT_INDEX8);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * height");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+        SDL_ClearError();
         surface = SDL_CreateRGBSurfaceWithFormat(0, (1 << 15) + 1, (1 << 15) + 1, 32, SDL_PIXELFORMAT_ARGB8888);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * height * bytes per pixel");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
