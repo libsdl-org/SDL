@@ -112,8 +112,7 @@
 #define SDL_PLATFORM_OSF    1
 #endif
 #ifdef __QNXNTO__
-#undef __QNXNTO__
-#define __QNXNTO__  1
+#define SDL_PLATFORM_QNXNTO 1
 #endif
 #if defined(riscos) || defined(__riscos) || defined(__riscos__)
 #undef __RISCOS__
