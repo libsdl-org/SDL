@@ -933,6 +933,31 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src,
                                                            SDL_ScaleMode scaleMode);
 
 /**
+ * Retrieves a single pixel from a surface.
+ *
+ * This function prioritizes correctness over speed: it is suitable for
+ * unit tests, but is not intended for use in a game engine.
+ *
+ * Like SDL_GetRGBA, this uses the entire 0..255 range when converting
+ * color components from pixel formats with less than 8 bits per RGB
+ * component.
+ *
+ * \param surface the surface to read
+ * \param x the horizontal coordinate, 0 <= x < width
+ * \param y the vertical coordinate, 0 <= y < height
+ * \param r a pointer filled in with the red channel, 0-255, or NULL to ignore this channel
+ * \param g a pointer filled in with the green channel, 0-255, or NULL to ignore this channel
+ * \param b a pointer filled in with the blue channel, 0-255, or NULL to ignore this channel
+ * \param a a pointer filled in with the alpha channel, 0-255, or NULL to ignore this channel
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
+
+
+/**
  * Set the YUV conversion mode
  *
  * \param mode YUV conversion mode

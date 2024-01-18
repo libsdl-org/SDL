@@ -963,6 +963,7 @@ SDL3_0.0.0 {
     SDL_GetHapticFromInstanceID;
     SDL_GetHapticInstanceID;
     SDL_GetHapticName;
+    SDL_ReadSurfacePixel;
     # extra symbols go here (don't modify this line)
   local: *;
 };

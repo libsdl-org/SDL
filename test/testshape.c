@@ -88,7 +88,7 @@ static void SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode, SDL_Surface *shap
         bitmap_scanline = bitmap + y * bytes_per_scanline;
         for (x = 0; x < shape->w; x++) {
             alpha = 0;
-            if (SDLTest_ReadSurfacePixel(shape, x, y, &r, &g, &b, &alpha) != 0) {
+            if (SDL_ReadSurfacePixel(shape, x, y, &r, &g, &b, &alpha) != 0) {
                 continue;
             }
 
