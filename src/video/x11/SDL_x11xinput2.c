@@ -337,6 +337,8 @@ int X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie
         const XIDeviceEvent *xev = (const XIDeviceEvent *)cookie->data;
         int pointer_emulated = (xev->flags & XIPointerEmulated);
 
+        videodata->global_mouse_changed = SDL_TRUE;
+
         if (!pointer_emulated) {
             SDL_Mouse *mouse = SDL_GetMouse();
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
