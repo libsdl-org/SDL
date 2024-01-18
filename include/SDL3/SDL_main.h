@@ -22,6 +22,7 @@
 #ifndef SDL_main_h_
 #define SDL_main_h_
 
+#include <SDL3/SDL_platform_defines.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_events.h>
 
