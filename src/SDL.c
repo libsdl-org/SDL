@@ -623,7 +623,7 @@ const char *SDL_GetPlatform(void)
     return "PlayStation 2";
 #elif defined(SDL_PLATFORM_PSP)
     return "PlayStation Portable";
-#elif defined(__VITA__)
+#elif defined(SDL_PLATFORM_VITA)
     return "PlayStation Vita";
 #elif defined(SDL_PLATFORM_NGAGE)
     return "Nokia N-Gage";

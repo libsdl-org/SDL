@@ -184,8 +184,8 @@
 #define SDL_PLATFORM_PS2    1
 #endif
 
-#ifdef __vita__
-#define __VITA__ 1
+#if defined(__vita__) || defined(__psp2__)
+#define SDL_PLATFORM_VITA   1
 #endif
 
 #ifdef __3DS__

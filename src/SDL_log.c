@@ -464,7 +464,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
             (void)fclose(pFile);
         }
     }
-#elif defined(__VITA__)
+#elif defined(SDL_PLATFORM_VITA)
     {
         FILE *pFile;
         pFile = fopen("ux0:/data/SDL_Log.txt", "a");

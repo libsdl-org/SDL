@@ -59,7 +59,7 @@
 #define SDL_DYNAMIC_API 0
 #elif defined(__clang_analyzer__) || defined(SDL_THREAD_SAFETY_ANALYSIS)
 #define SDL_DYNAMIC_API 0 /* Turn off for static analysis, so reports are more clear. */
-#elif defined(__VITA__)
+#elif defined(SDL_PLATFORM_VITA)
 #define SDL_DYNAMIC_API 0 /* vitasdk doesn't support dynamic linking */
 #elif defined(SDL_PLATFORM_NGAGE)
 #define SDL_DYNAMIC_API 0 /* The N-Gage doesn't support dynamic linking either */

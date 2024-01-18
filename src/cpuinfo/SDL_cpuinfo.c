@@ -449,7 +449,7 @@ static int CPU_haveNEON(void)
     return IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE) != 0;
 #elif (defined(__ARM_ARCH) && (__ARM_ARCH >= 8)) || defined(__aarch64__)
     return 1; /* ARMv8 always has non-optional NEON support. */
-#elif defined(__VITA__)
+#elif defined(SDL_PLATFORM_VITA)
     return 1;
 #elif defined(__3DS__)
     return 0;
@@ -1047,7 +1047,7 @@ int SDL_GetSystemRAM(void)
             }
         }
 #endif
-#ifdef __VITA__
+#ifdef SDL_PLATFORM_VITA
         if (SDL_SystemRAM <= 0) {
             /* Vita has 512MiB on SoC, that's split into 256MiB(+109MiB in extended memory mode) for app
                +26MiB of physically continuous memory, +112MiB of CDRAM(VRAM) + system reserved memory. */
