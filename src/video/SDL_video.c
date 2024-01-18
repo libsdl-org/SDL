@@ -3037,7 +3037,7 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
             }
         }
 #endif
-#if defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__) /* GDI BitBlt() is way faster than Direct3D dynamic textures right now. (!!! FIXME: is this still true?) */
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) /* GDI BitBlt() is way faster than Direct3D dynamic textures right now. (!!! FIXME: is this still true?) */
         else if ((_this->CreateWindowFramebuffer) && (SDL_strcmp(_this->name, "windows") == 0)) {
             attempt_texture_framebuffer = SDL_FALSE;
         }

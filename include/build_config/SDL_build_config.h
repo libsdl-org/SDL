@@ -35,7 +35,7 @@
 #include "SDL_build_config_windows.h"
 #elif defined(SDL_PLATFORM_WINRT)
 #include "SDL_build_config_winrt.h"
-#elif defined(__WINGDK__)
+#elif defined(SDL_PLATFORM_WINGDK)
 #include "SDL_build_config_wingdk.h"
 #elif defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 #include "SDL_build_config_xbox.h"

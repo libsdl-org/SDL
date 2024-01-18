@@ -28,7 +28,7 @@ typedef struct ID3D12Device ID3D12Device;
 typedef void *SDL_WindowsMessageHook;
 #endif
 
-#if !(defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__))
+#if !(defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK))
 typedef struct ID3D11Device ID3D11Device;
 typedef struct IDirect3DDevice9 IDirect3DDevice9;
 #endif

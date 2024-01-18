@@ -674,7 +674,7 @@ done:
     return result;
 }
 
-#if defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 
 static DXGI_MODE_ROTATION D3D11_GetCurrentRotation()
 {
@@ -682,7 +682,7 @@ static DXGI_MODE_ROTATION D3D11_GetCurrentRotation()
     return DXGI_MODE_ROTATION_IDENTITY;
 }
 
-#endif /* defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) */
 
 static BOOL D3D11_IsDisplayRotated90Degrees(DXGI_MODE_ROTATION rotation)
 {
@@ -828,7 +828,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         goto done;
 #endif
     } else {
-#if defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
         HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(renderer->window), SDL_PROPERTY_WINDOW_WIN32_HWND_POINTER, NULL);
 
         result = IDXGIFactory2_CreateSwapChainForHwnd(data->dxgiFactory,
@@ -847,7 +847,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 #else
         SDL_SetError(__FUNCTION__ ", Unable to find something to attach a swap chain to");
         goto done;
-#endif /* defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__) / else */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) / else */
     }
     data->swapEffect = swapChainDesc.SwapEffect;
 

@@ -48,7 +48,7 @@ static void SDLCALL SDL_MouseDoubleClickTimeChanged(void *userdata, const char *
     if (hint && *hint) {
         mouse->double_click_time = SDL_atoi(hint);
     } else {
-#if defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
         mouse->double_click_time = GetDoubleClickTime();
 #else
         mouse->double_click_time = 500;
@@ -1209,7 +1209,7 @@ int SDL_CaptureMouse(SDL_bool enabled)
         return SDL_Unsupported();
     }
 
-#if defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
     /* Windows mouse capture is tied to the current thread, and must be called
      * from the thread that created the window being captured. Since we update
      * the mouse capture state from the event processing, any application state
@@ -1218,7 +1218,7 @@ int SDL_CaptureMouse(SDL_bool enabled)
     if (!SDL_OnVideoThread()) {
         return SDL_SetError("SDL_CaptureMouse() must be called on the main thread");
     }
-#endif /* defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) */
 
     if (enabled && SDL_GetKeyboardFocus() == NULL) {
         return SDL_SetError("No window has focus");

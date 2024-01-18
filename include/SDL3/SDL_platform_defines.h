@@ -161,8 +161,7 @@
 #if WINAPI_FAMILY_WINRT
 #define SDL_PLATFORM_WINRT   1
 #elif defined(_GAMING_DESKTOP) /* GDK project configuration always defines _GAMING_XXX */
-#undef __WINGDK__
-#define __WINGDK__ 1
+#define SDL_PLATFORM_WINGDK 1
 #elif defined(_GAMING_XBOX_XBOXONE)
 #define SDL_PLATFORM_XBOXONE    1
 #elif defined(_GAMING_XBOX_SCARLETT)
@@ -176,7 +175,7 @@
 #define SDL_PLATFORM_WIN32  1
 #endif
 /* This is to support generic "any GDK" separate from a platform-specific GDK */
-#if defined(__WINGDK__) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
+#if defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 #undef __GDK__
 #define __GDK__ 1
 #endif

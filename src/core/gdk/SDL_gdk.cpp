@@ -190,7 +190,7 @@ SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
 
         XGameRuntimeUninitialize();
     } else {
-#ifdef __WINGDK__
+#ifdef SDL_PLATFORM_WINGDK
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Could not initialize - aborting", NULL);
 #else
         SDL_assert_always(0 && "[GDK] Could not initialize - aborting");

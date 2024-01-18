@@ -45,7 +45,7 @@
 #endif
 #define WINVER _WIN32_WINNT
 
-#elif defined(__WINGDK__)
+#elif defined(SDL_PLATFORM_WINGDK)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif

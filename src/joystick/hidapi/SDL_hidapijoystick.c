@@ -27,7 +27,7 @@
 #include "SDL_hidapi_rumble.h"
 #include "../../SDL_hints_c.h"
 
-#if defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 #include "../windows/SDL_rawinputjoystick_c.h"
 #endif
 

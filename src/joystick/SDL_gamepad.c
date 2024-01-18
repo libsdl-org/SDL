@@ -1441,7 +1441,7 @@ static char *SDL_PrivateGetGamepadGUIDFromMappingString(const char *pMapping)
         pchGUID[pFirstComma - pMapping] = '\0';
 
         /* Convert old style GUIDs to the new style in 2.0.5 */
-#if defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
         if (SDL_strlen(pchGUID) == 32 &&
             SDL_memcmp(&pchGUID[20], "504944564944", 12) == 0) {
             SDL_memcpy(&pchGUID[20], "000000000000", 12);

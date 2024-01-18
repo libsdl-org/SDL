@@ -609,7 +609,7 @@ const char *SDL_GetPlatform(void)
     return "Windows";
 #elif defined(SDL_PLATFORM_WINRT)
     return "WinRT";
-#elif defined(__WINGDK__)
+#elif defined(SDL_PLATFORM_WINGDK)
     return "WinGDK";
 #elif defined(SDL_PLATFORM_XBOXONE)
     return "Xbox One";
