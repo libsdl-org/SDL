@@ -41,8 +41,7 @@
 #define SDL_PLATFORM_FREEBSD 1
 #endif
 #if defined(hpux) || defined(__hpux) || defined(__hpux__)
-#undef __HPUX__
-#define __HPUX__    1
+#define SDL_PLATFORM_HPUX    1
 #endif
 #if defined(sgi) || defined(__sgi) || defined(__sgi__) || defined(_SGI_SOURCE)
 #undef __IRIX__

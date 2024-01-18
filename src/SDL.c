@@ -579,7 +579,7 @@ const char *SDL_GetPlatform(void)
     return "FreeBSD";
 #elif defined(SDL_PLATFORM_HAIKU)
     return "Haiku";
-#elif defined(__HPUX__)
+#elif defined(SDL_PLATFORM_HPUX)
     return "HP-UX";
 #elif defined(__IRIX__)
     return "Irix";
