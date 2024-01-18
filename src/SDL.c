@@ -593,7 +593,7 @@ const char *SDL_GetPlatform(void)
     return "NaCl";
 #elif defined(SDL_PLATFORM_NETBSD)
     return "NetBSD";
-#elif defined(__OPENBSD__)
+#elif defined(SDL_PLATFORM_OPENBSD)
     return "OpenBSD";
 #elif defined(__OS2__)
     return "OS/2";

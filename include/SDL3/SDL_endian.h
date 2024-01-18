@@ -59,7 +59,7 @@ _m_prefetch(void *__P)
 #ifdef SDL_PLATFORM_LINUX
 #include <endian.h>
 #define SDL_BYTEORDER  __BYTE_ORDER
-#elif defined(__OpenBSD__) || defined(__DragonFly__)
+#elif defined(SDL_PLATFORM_OPENBSD) || defined(__DragonFly__)
 #include <endian.h>
 #define SDL_BYTEORDER  BYTE_ORDER
 #elif defined(SDL_PLATFORM_FREEBSD) || defined(SDL_PLATFORM_NETBSD)

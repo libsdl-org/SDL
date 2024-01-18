@@ -85,7 +85,7 @@
 #define MAX_JOY_JOYS  2
 #define MAX_JOYS      (MAX_UHID_JOYS + MAX_JOY_JOYS)
 
-#ifdef __OpenBSD__
+#ifdef SDL_PLATFORM_OPENBSD
 
 #define HUG_DPAD_UP    0x90
 #define HUG_DPAD_DOWN  0x91
@@ -336,7 +336,7 @@ CreateHwData(const char *path)
                     if (joyaxe >= 0) {
                         hw->axis_map[joyaxe] = 1;
                     } else if (usage == HUG_HAT_SWITCH
-#ifdef __OpenBSD__
+#ifdef SDL_PLATFORM_OPENBSD
                                || usage == HUG_DPAD_UP
 #endif
                     ) {
@@ -487,7 +487,7 @@ static int BSD_JoystickInit(void)
     int i;
 
     for (i = 0; i < MAX_UHID_JOYS; i++) {
-#if defined(__OpenBSD__) && (OpenBSD >= 202105)
+#if defined(SDL_PLATFORM_OPENBSD) && (OpenBSD >= 202105)
         SDL_snprintf(s, SDL_arraysize(s), "/dev/ujoy/%d", i);
 #else
         SDL_snprintf(s, SDL_arraysize(s), "/dev/uhid%d", i);
@@ -612,7 +612,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
     struct report *rep;
     int nbutton, naxe = -1;
     Sint32 v;
-#ifdef __OpenBSD__
+#ifdef SDL_PLATFORM_OPENBSD
     Sint32 dpad[4] = { 0, 0, 0, 0 };
 #endif
     Uint64 timestamp = SDL_GetTicksNS();
@@ -693,7 +693,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                                                hatval_to_sdl(v) -
                                                    hitem.logical_minimum);
                     }
-#ifdef __OpenBSD__
+#ifdef SDL_PLATFORM_OPENBSD
                     /* here D-pad directions are reported like separate buttons.
                      * calculate the SDL hat value from the 4 separate values.
                      */

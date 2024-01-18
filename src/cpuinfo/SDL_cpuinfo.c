@@ -35,7 +35,7 @@
 #endif
 #if defined(SDL_PLATFORM_MACOS) && (defined(__ppc__) || defined(__ppc64__))
 #include <sys/sysctl.h> /* For AltiVec check */
-#elif defined(__OpenBSD__) && defined(__powerpc__)
+#elif defined(SDL_PLATFORM_OPENBSD) && defined(__powerpc__)
 #include <sys/types.h>
 #include <sys/sysctl.h> /* For AltiVec check */
 #include <machine/cpu.h>
@@ -106,7 +106,7 @@
 #define CPU_CFG2_LSX  (1 << 6)
 #define CPU_CFG2_LASX (1 << 7)
 
-#if defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP) && !defined(SDL_PLATFORM_MACOS) && !defined(__OpenBSD__) && !defined(SDL_PLATFORM_FREEBSD)
+#if defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP) && !defined(SDL_PLATFORM_MACOS) && !defined(SDL_PLATFORM_OPENBSD) && !defined(SDL_PLATFORM_FREEBSD)
 /* This is the brute force way of detecting instruction sets...
    the idea is borrowed from the libmpeg2 library - thanks!
  */
@@ -318,8 +318,8 @@ static int CPU_haveAltiVec(void)
 {
     volatile int altivec = 0;
 #ifndef SDL_CPUINFO_DISABLED
-#if (defined(SDL_PLATFORM_MACOS) && (defined(__ppc__) || defined(__ppc64__))) || (defined(__OpenBSD__) && defined(__powerpc__))
-#ifdef __OpenBSD__
+#if (defined(SDL_PLATFORM_MACOS) && (defined(__ppc__) || defined(__ppc64__))) || (defined(SDL_PLATFORM_OPENBSD) && defined(__powerpc__))
+#ifdef SDL_PLATFORM_OPENBSD
     int selectors[2] = { CTL_MACHDEP, CPU_ALTIVEC };
 #else
     int selectors[2] = { CTL_HW, HW_VECTORUNIT };
@@ -460,7 +460,7 @@ static int CPU_haveNEON(void)
     return 0; /* assume anything else from Apple doesn't have NEON. */
 #elif !defined(__arm__)
     return 0; /* not an ARM CPU at all. */
-#elif defined(__OpenBSD__)
+#elif defined(SDL_PLATFORM_OPENBSD)
     return 1; /* OpenBSD only supports ARMv7 CPUs that have NEON. */
 #elif defined(HAVE_ELF_AUX_INFO)
     unsigned long hasneon = 0;
