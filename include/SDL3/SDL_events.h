@@ -823,6 +823,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasEvents(Uint32 minType, Uint32 maxType);
  * sure that all pending OS events are flushed, you can call SDL_PumpEvents()
  * on the main thread immediately before the flush call.
  *
+ * If you have user events with custom data that needs to be freed, you should use SDL_PeepEvents() to remove and clean up those events before calling this function.
+ *
  * \param type the type of event to be cleared; see SDL_EventType for details
  *
  * \since This function is available since SDL 3.0.0.
