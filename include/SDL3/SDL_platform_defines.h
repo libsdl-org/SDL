@@ -32,8 +32,7 @@
 #define SDL_PLATFORM_AIX    1
 #endif
 #ifdef __HAIKU__
-#undef __HAIKU__
-#define __HAIKU__   1
+#define SDL_PLATFORM_HAIKU   1
 #endif
 #if defined(bsdi) || defined(__bsdi) || defined(__bsdi__)
 #undef __BSDI__

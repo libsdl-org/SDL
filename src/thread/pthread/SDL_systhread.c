@@ -51,7 +51,7 @@
 #include "../../core/android/SDL_android.h"
 #endif
 
-#ifdef __HAIKU__
+#ifdef SDL_PLATFORM_HAIKU
 #include <kernel/OS.h>
 #endif
 
@@ -144,7 +144,7 @@ void SDL_SYS_SetupThread(const char *name)
 #endif
 #elif defined(HAVE_PTHREAD_SET_NAME_NP)
         pthread_set_name_np(pthread_self(), name);
-#elif defined(__HAIKU__)
+#elif defined(SDL_PLATFORM_HAIKU)
         /* The docs say the thread name can't be longer than B_OS_NAME_LENGTH. */
         char namebuf[B_OS_NAME_LENGTH];
         SDL_strlcpy(namebuf, name, sizeof(namebuf));

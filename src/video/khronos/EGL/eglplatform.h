@@ -125,7 +125,7 @@ typedef int   EGLNativeDisplayType;
 typedef void *EGLNativePixmapType;
 typedef void *EGLNativeWindowType;
 
-#elif defined(__HAIKU__)
+#elif defined(SDL_PLATFORM_HAIKU)
 
 #include <kernel/image.h>
 

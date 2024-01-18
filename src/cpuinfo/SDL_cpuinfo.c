@@ -83,7 +83,7 @@
 #include <kernel.h>
 #endif
 
-#ifdef __HAIKU__
+#ifdef SDL_PLATFORM_HAIKU
 #include <kernel/OS.h>
 #endif
 
@@ -1060,7 +1060,7 @@ int SDL_GetSystemRAM(void)
             SDL_SystemRAM = GetMemorySize();
         }
 #endif
-#ifdef __HAIKU__
+#ifdef SDL_PLATFORM_HAIKU
         if (SDL_SystemRAM <= 0) {
             system_info info;
             if (get_system_info(&info) == B_OK) {
