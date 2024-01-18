@@ -378,11 +378,95 @@
 #define SDL_PixelFormatEnumToMasks SDL_GetMasksForPixelFormatEnum
 
 /* ##SDL_platform.h */
+#ifdef SDL_PLATFORM_3DS
+#define __3DS__ SDL_PLATFORM_3DS
+#endif
+#ifdef SDL_PLATFORM_AIX
+#define __AIX__ SDL_PLATFORM_AIX
+#endif
+#ifdef SDL_PLATFORM_ANDROID
+#define __ANDROID__ SDL_PLATFORM_ANDOID
+#endif
+#ifdef SDL_PLATFORM_APPLE
+#define __APPLE__ SDL_PLATFORM_APPLE
+#endif
+#ifdef SDL_PLATFORM_BSDI
+#define __BSDI__ SDL_PLATFORM_BSDI
+#endif
+#ifdef SDL_PLATFORM_CYGWIN
+#define __CYGWIN__ SDL_PLATFORM_CYGWIN
+#endif
+#ifdef SDL_PLATFORM_FREEBSD
+#define __FREEBSD__ SDL_PLATFORM_FREEBSD
+#endif
+#ifdef SDL_PLATFORM_HAIKU
+#define __HAIKU__ SDL_PLATFORM_HAIKU
+#endif
+#ifdef SDL_PLATFORM_HPUX
+#define __HPUX__ SDL_PLATFORM_HPUX
+#endif
 #ifdef SDL_PLATFORM_IOS
 #define __IPHONEOS__ SDL_PLATFORM_IOS
 #endif
+#ifdef SDL_PLATFORM_IRIX
+#define __IRIX__ SDL_PLATFORM_IRIX
+#endif
+#ifdef SDL_PLATFORM_LINUX
+#define __LINUX__ SDL_PLATFORM_LINUX
+#endif
 #ifdef SDL_PLATFORM_MACOS
 #define __MACOSX__ SDL_PLATFORM_MACOS
+#endif
+#ifdef SDL_PLATFORM_NETBSD
+#define __NETBSD__ SDL_PLATFORM_NETBSD
+#endif
+#ifdef SDL_PLATFORM_NGAGE
+#define __NGAGE__ SDL_PLATFORM_NGAGE
+#endif
+#ifdef SDL_PLATFORM_OPENBSD
+#define __OPENBSD__ SDL_PLATFORM_OPENBSD
+#endif
+#ifdef SDL_PLATFORM_OS2
+#define __OS2__ SDL_PLATFORM_OS2
+#endif
+#ifdef SDL_PLATFORM_OSF
+#define __OSF__ SDL_PLATFORM_OSF
+#endif
+#ifdef SDL_PLATFORM_PS2
+#define __PSP2__ SDL_PLATFORM_PS2
+#endif
+#ifdef SDL_PLATFORM_PSP
+#define __PSP__ SDL_PLATFORM_PSP
+#endif
+#ifdef SDL_PLATFORM_QNXNTO
+#define __QNXNTO__ SDL_PLATFORM_QNXNTO
+#endif
+#ifdef SDL_PLATFORM_RISCOS
+#define __RISCOS__ SDL_PLATFORM_RISCOS
+#endif
+#ifdef SDL_PLATFORM_SOLARIS
+#define __SOLARIS__ SDL_PLATFORM_SOLARIS
+#endif
+#ifdef SDL_PLATFORM_TVOS
+#define __TVOS__ SDL_PLATFORM_TVOS
+#endif
+#ifdef SDL_PLATFORM_VITA
+#define __VITA__ SDL_PLATFORM_VITA
+#endif
+#ifdef SDL_PLATFORM_WINGDK
+#define __WINGDK__ SDL_PLATFORM_WINGDK
+#endif
+#ifdef SDL_PLATFORM_WINDOWS
+#define __WINDOWS__ SDL_PLATFORM_WINDOWS
+#endif
+#ifdef SDL_PLATFORM_WINRT
+#define __WINRT__ SDL_PLATFORM_WINRT
+#endif
+#ifdef SDL_PLATFORM_XBOXONE
+#define __XBOXONE__ SDL_PLATFORM_XBOXONE
+#endif
+#ifdef SDL_PLATFORM_XBOXSERIES
+#define __XBOXSERIES__ SDL_PLATFORM_XBOXSERIES
 #endif
 
 /* ##SDL_rect.h */
@@ -854,11 +938,92 @@
 #define SDL_PixelFormatEnumToMasks SDL_PixelFormatEnumToMasks_renamed_SDL_GetMasksForPixelFormatEnum
 
 /* ##SDL_platform.h */
+#ifdef SDL_PLATFORM_3DS
+#define __3DS__ __3DS___renamed_SDL_PLATFORM_3DS
+#endif
+#ifdef SDL_PLATFORM_AIX
+#define __AIX__ __AIX___renamed_SDL_PLATFORM_AIX
+#endif
+#ifdef SDL_PLATFORM_ANDROID
+#define __ANDROID__ __ANDROID___renamed_SDL_PLATFORM_ANDROID
+#endif
+#ifdef SDL_PLATFORM_APPLE
+#define __APPLE__ __ANDROID___renamed_SDL_PLATFORM_APPLE
+#endif
+#ifdef SDL_PLATFORM_BSDI
+#define __BSDI__ __BSDI___renamed_SDL_PLATFORM_BSDI
+#endif
+#ifdef SDL_PLATFORM_CYGWIN
+#define __CYGWIN__ __CYGWIN___renamed_SDL_PLATFORM_CYGWIN
+#endif
+#ifdef SDL_PLATFORM_FREEBSD
+#define __FREEBSD__ __FREEBSD___renamed_SDL_PLATFORM_FREEBSD
+#endif
+#ifdef SDL_PLATFORM_HAIKU
+#define __HAIKU__ __HAIKU___renamed_SDL_PLATFORM_HAIKU
+#endif
+#ifdef SDL_PLATFORM_HPUX
+#define __HPUX__ __HPUX___renamed_SDL_PLATFORM_HPUX
+#endif
 #ifdef SDL_PLATFORM_IOS
 #define __IPHONEOS__ __IPHONEOS___renamed_SDL_PLATFORM_IOS
 #endif
+#ifdef SDL_PLATFORM_IRIX
+#define __IRIX__ __IRIX___renamed_SDL_PLATFORM_IRIX
+#endif
+#ifdef SDL_PLATFORM_LINUX
+#define __LINUX__ __LINUX___renamed_SDL_PLATFORM_LINUX
+#endif
 #ifdef SDL_PLATFORM_MACOS
 #define __MACOSX__ __MACOSX___renamed_SDL_PLATFORM_MACOS
+#endif
+#ifdef SDL_PLATFORM_NETBSD
+#define __NETBSD__ __NETBSD___renamed_SDL_PLATFORM_NETBSD
+#endif
+#ifdef SDL_PLATFORM_NGAGE
+#define __NGAGE__ __MACOSX___renamed_SDL_PLATFORM_NGAGE
+#endif
+#ifdef SDL_PLATFORM_OPENBSD
+#define __OPENBSD__ __MACOSX___renamed_SDL_PLATFORM_OPENBSD
+#endif
+#ifdef SDL_PLATFORM_OS2
+#define __OS2__ __OS2___renamed_SDL_PLATFORM_OS2
+#endif
+#ifdef SDL_PLATFORM_OSF
+#define __OSF__ __OSF___renamed_SDL_PLATFORM_OSF
+#endif
+#ifdef SDL_PLATFORM_PS2
+#define __PS2__ __PS2___renamed_SDL_PLATFORM_PS2
+#endif
+#ifdef SDL_PLATFORM_PSP
+#define __PSP__ __PSP___renamed_SDL_PLATFORM_PSP
+#endif
+#ifdef SDL_PLATFORM_QNXNTO
+#define __QNXNTO__ __QNXNTO___renamed_SDL_PLATFORM_QNXNTO
+#endif
+#ifdef SDL_PLATFORM_RISCOS
+#define __RISCOS__ __RISCOS___renamed_SDL_PLATFORM_RISCOS
+#endif
+#ifdef SDL_PLATFORM_TVOS
+#define __TVOS__ __TVOS___renamed_SDL_PLATFORM_TVOS
+#endif
+#ifdef SDL_PLATFORM_VITA
+#define __VITA__ __VITA___renamed_SDL_PLATFORM_VITA
+#endif
+#ifdef SDL_PLATFORM_WINGDK
+#define __WINGDK__ __WINGDK___renamed_SDL_PLATFORM_WINGDK
+#endif
+#ifdef SDL_PLATFORM_WINDOWS
+#define __WINDOWS__ __WINDOWS___renamed_SDL_PLATFORM_WINDOWS
+#endif
+#ifdef SDL_PLATFORM_WINRT
+#define __WINRT__ __WINRT___renamed_SDL_PLATFORM_WINRT
+#endif
+#ifdef SDL_PLATFORM_XBOXONE
+#define __XBOXONE __XBOXONE___renamed_SDL_PLATFORM_XBOXONE
+#endif
+#ifdef SDL_PLATFORM_XBOXSERIES
+#define __XBOXSERIES__ __XBOXERIES___renamed_SDL_PLATFORM_XBOXSERIES
 #endif
 
 /* ##SDL_rect.h */
