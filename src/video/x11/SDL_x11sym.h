@@ -247,7 +247,7 @@ SDL_X11_SYM(void,_XRead32,(Display *dpy,register long *data,long len),(dpy,data,
 /*
  * These only show up on some variants of Unix.
  */
-#ifdef __osf__
+#ifdef SDL_PLATFORM_OSF
 SDL_X11_MODULE(OSF_ENTRY_POINTS)
 SDL_X11_SYM(void,_SmtBufferOverflow,(Display *dpy,register smtDisplayPtr p),(dpy,p),)
 SDL_X11_SYM(void,_SmtIpError,(Display *dpy,register smtDisplayPtr p,int i),(dpy,p,i),)

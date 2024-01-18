@@ -109,8 +109,7 @@
 #define SDL_PLATFORM_OS2    1
 #endif
 #if defined(osf) || defined(__osf) || defined(__osf__) || defined(_OSF_SOURCE)
-#undef __OSF__
-#define __OSF__     1
+#define SDL_PLATFORM_OSF    1
 #endif
 #ifdef __QNXNTO__
 #undef __QNXNTO__
