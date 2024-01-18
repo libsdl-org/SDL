@@ -772,7 +772,8 @@ int surface_testOverflow(void *arg)
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width + alignment");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
-        surface = SDL_CreateRGBSurfaceWithFormat(0, SDL_MAX_SINT32 / 2, 1, 32, SDL_PIXELFORMAT_ARGB8888);
+        /* 0x4000'0000 * 4bpp = 0x1'0000'0000 which (just) overflows */
+        surface = SDL_CreateRGBSurfaceWithFormat(0, 0x40000000, 1, 32, SDL_PIXELFORMAT_ARGB8888);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * bytes per pixel");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
