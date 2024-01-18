@@ -468,7 +468,7 @@ static void process_event(SDL_Event event)
         last_button = 0;
         last_touching = (ev->type != SDL_EVENT_FINGER_UP);
 #if VERBOSE
-        SDL_Log("[%lu] finger %s: %s (touchId: %" SDL_PRIs64 ", fingerId: %" SDL_PRIs64 ") at (%.4f, %.4f); pressure=%.3f\n",
+        SDL_Log("[%lu] finger %s: %s (touchId: %" SDL_PRIu64 ", fingerId: %" SDL_PRIu64 ") at (%.4f, %.4f); pressure=%.3f\n",
                 (unsigned long) ev->timestamp,
                 ev->type == SDL_EVENT_FINGER_DOWN ? "down" : (ev->type == SDL_EVENT_FINGER_MOTION ? "motion" : "up"),
                 SDL_GetTouchDeviceName(ev->touchId),

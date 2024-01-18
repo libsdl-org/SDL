@@ -999,8 +999,8 @@ static void touch_handler_down(void *data, struct wl_touch *touch, uint32_t seri
 
         SDL_SetMouseFocus(window_data->sdlwindow);
 
-        SDL_SendTouch(Wayland_GetTouchTimestamp(input, timestamp), (SDL_TouchID)(intptr_t)touch,
-                      (SDL_FingerID)id, window_data->sdlwindow, SDL_TRUE, x, y, 1.0f);
+        SDL_SendTouch(Wayland_GetTouchTimestamp(input, timestamp), (SDL_TouchID)(uintptr_t)touch,
+                      (SDL_FingerID)(id + 1), window_data->sdlwindow, SDL_TRUE, x, y, 1.0f);
     }
 }
 
@@ -1020,8 +1020,8 @@ static void touch_handler_up(void *data, struct wl_touch *touch, uint32_t serial
             const float x = wl_fixed_to_double(fx) / window_data->wl_window_width;
             const float y = wl_fixed_to_double(fy) / window_data->wl_window_height;
 
-            SDL_SendTouch(Wayland_GetTouchTimestamp(input, timestamp), (SDL_TouchID)(intptr_t)touch,
-                          (SDL_FingerID)id, window_data->sdlwindow, SDL_FALSE, x, y, 0.0f);
+            SDL_SendTouch(Wayland_GetTouchTimestamp(input, timestamp), (SDL_TouchID)(uintptr_t)touch,
+                          (SDL_FingerID)(id + 1), window_data->sdlwindow, SDL_FALSE, x, y, 0.0f);
 
             /* If the seat lacks pointer focus, the seat's keyboard focus is another window or NULL, this window curently
              * has mouse focus, and the surface has no active touch events, consider mouse focus to be lost.
@@ -1049,8 +1049,8 @@ static void touch_handler_motion(void *data, struct wl_touch *touch, uint32_t ti
             const float x = wl_fixed_to_double(fx) / window_data->wl_window_width;
             const float y = wl_fixed_to_double(fy) / window_data->wl_window_height;
 
-            SDL_SendTouchMotion(Wayland_GetPointerTimestamp(input, timestamp), (SDL_TouchID)(intptr_t)touch,
-                                (SDL_FingerID)id, window_data->sdlwindow, x, y, 1.0f);
+            SDL_SendTouchMotion(Wayland_GetPointerTimestamp(input, timestamp), (SDL_TouchID)(uintptr_t)touch,
+                                (SDL_FingerID)(id + 1), window_data->sdlwindow, x, y, 1.0f);
         }
     }
 }
@@ -1687,7 +1687,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
 
     if ((caps & WL_SEAT_CAPABILITY_TOUCH) && !input->touch) {
         input->touch = wl_seat_get_touch(seat);
-        SDL_AddTouch((SDL_TouchID)(intptr_t)input->touch, SDL_TOUCH_DEVICE_DIRECT, "wayland_touch");
+        SDL_AddTouch((SDL_TouchID)(uintptr_t)input->touch, SDL_TOUCH_DEVICE_DIRECT, "wayland_touch");
         wl_touch_set_user_data(input->touch, input);
         wl_touch_add_listener(input->touch, &touch_listener,
                               input);

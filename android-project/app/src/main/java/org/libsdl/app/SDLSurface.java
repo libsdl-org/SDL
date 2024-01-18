@@ -222,16 +222,6 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         int i = -1;
         float x,y,p;
 
-        /*
-         * Prevent id to be -1, since it's used in SDL internal for synthetic events
-         * Appears when using Android emulator, eg:
-         *  adb shell input mouse tap 100 100
-         *  adb shell input touchscreen tap 100 100
-         */
-        if (touchDevId < 0) {
-            touchDevId -= 1;
-        }
-
         // 12290 = Samsung DeX mode desktop mouse
         // 12290 = 0x3002 = 0x2002 | 0x1002 = SOURCE_MOUSE | SOURCE_TOUCHSCREEN
         // 0x2   = SOURCE_CLASS_POINTER

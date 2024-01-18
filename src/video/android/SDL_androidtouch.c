@@ -56,12 +56,19 @@ void Android_OnTouch(SDL_Window *window, int touch_device_id_in, int pointer_fin
         return;
     }
 
-    touchDeviceId = (SDL_TouchID)touch_device_id_in;
+    /* Touch device -1 appears when using Android emulator, eg:
+     *  adb shell input mouse tap 100 100
+     *  adb shell input touchscreen tap 100 100
+     */
+    touchDeviceId = (SDL_TouchID)(touch_device_id_in + 2);
+
+    /* Finger ID should be greater than 0 */
+    fingerId = (SDL_FingerID)(pointer_finger_id_in + 1);
+
     if (SDL_AddTouch(touchDeviceId, SDL_TOUCH_DEVICE_DIRECT, "") < 0) {
         SDL_Log("error: can't add touch %s, %d", __FILE__, __LINE__);
     }
 
-    fingerId = (SDL_FingerID)pointer_finger_id_in;
     switch (action) {
     case ACTION_DOWN:
     case ACTION_POINTER_DOWN:

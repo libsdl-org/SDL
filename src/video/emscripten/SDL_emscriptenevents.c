@@ -743,7 +743,7 @@ static EM_BOOL Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent 
     double client_w, client_h;
     int preventDefault = 0;
 
-    SDL_TouchID deviceId = 1;
+    const SDL_TouchID deviceId = 1;
     if (SDL_AddTouch(deviceId, SDL_TOUCH_DEVICE_DIRECT, "") < 0) {
         return 0;
     }
