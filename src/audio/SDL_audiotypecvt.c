@@ -28,7 +28,7 @@
 #ifndef __EMSCRIPTEN__
 #if defined(__x86_64__) && defined(SDL_SSE2_INTRINSICS)
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0 // x86_64 guarantees SSE2.
-#elif defined(__MACOS__) && defined(SDL_SSE2_INTRINSICS)
+#elif defined(SDL_PLATFORM_MACOS) && defined(SDL_SSE2_INTRINSICS)
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0 // macOS/Intel guarantees SSE2.
 #elif defined(__ARM_ARCH) && (__ARM_ARCH >= 8) && defined(SDL_NEON_INTRINSICS)
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0 // ARMv8+ promise NEON.

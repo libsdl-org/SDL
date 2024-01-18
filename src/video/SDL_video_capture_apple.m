@@ -28,7 +28,7 @@
 #include "SDL_video_capture_c.h"
 #include "../thread/SDL_systhread.h"
 
-#if defined(HAVE_COREMEDIA) && defined(__MACOS__) && (__MAC_OS_X_VERSION_MAX_ALLOWED < 101500)
+#if defined(HAVE_COREMEDIA) && defined(SDL_PLATFORM_MACOS) && (__MAC_OS_X_VERSION_MAX_ALLOWED < 101500)
 /* AVCaptureDeviceTypeBuiltInWideAngleCamera requires macOS SDK 10.15 */
 #undef HAVE_COREMEDIA
 #endif
@@ -183,7 +183,7 @@ nsfourcc_to_sdlformat(NSString *nsfourcc)
    * on macos, 1 plane/ YVYU
    *
    */
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
   if (SDL_strcmp("420v", str) == 0)  return SDL_PIXELFORMAT_YVYU;
 #else
   if (SDL_strcmp("420v", str) == 0)  return SDL_PIXELFORMAT_NV12;
@@ -202,7 +202,7 @@ sdlformat_to_nsfourcc(Uint32 fmt)
   const char *str = "";
   NSString *result;
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
   if (fmt == SDL_PIXELFORMAT_YVYU)  str = "420v";
 #else
   if (fmt == SDL_PIXELFORMAT_NV12)  str = "420v";
@@ -298,7 +298,7 @@ InitDevice(SDL_VideoCaptureDevice *_this)
 
     AVCaptureDeviceFormat *spec_format = nil;
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
     if (@available(macOS 10.15, *)) {
         /* good. */
     } else {
@@ -359,7 +359,7 @@ InitDevice(SDL_VideoCaptureDevice *_this)
     // Output
     output = [[AVCaptureVideoDataOutput alloc] init];
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
     // FIXME this now fail on ios ... but not using anything works...
 
     // Specify the pixel format

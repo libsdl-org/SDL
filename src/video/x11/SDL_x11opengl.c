@@ -37,7 +37,7 @@
  * the library was installed.
  */
 #define DEFAULT_OPENGL "libGL.so"
-#elif defined(__MACOS__)
+#elif defined(SDL_PLATFORM_MACOS)
 #define DEFAULT_OPENGL "/opt/X11/lib/libGL.1.dylib"
 #else
 #define DEFAULT_OPENGL "libGL.so.1"

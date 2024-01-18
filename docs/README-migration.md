@@ -932,7 +932,7 @@ The following symbols have been renamed:
 
 ## SDL_platform.h
 
-The preprocessor symbol `__MACOSX__` has been renamed `__MACOS__`, and `__IPHONEOS__` has been renamed `SDL_PLATFORM_IOS`
+The preprocessor symbol `__MACOSX__` has been renamed `SDL_PLATFORM_MACOS`, and `__IPHONEOS__` has been renamed `SDL_PLATFORM_IOS`
 
 ## SDL_rect.h
 
@@ -1385,7 +1385,7 @@ becomes:
     if (hwnd) {
         ...
     }
-#elif defined(__MACOS__)
+#elif defined(SDL_PLATFORM_MACOS)
     NSWindow *nswindow = (__bridge NSWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_COCOA_WINDOW_POINTER, NULL);
     if (nswindow) {
         ...

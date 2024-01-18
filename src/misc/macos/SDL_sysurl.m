@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(__MACOS__)
+#if defined(SDL_PLATFORM_MACOS)
 
 #include "../SDL_sysurl.h"
 
@@ -36,4 +36,4 @@ int SDL_SYS_OpenURL(const char *url)
     }
 }
 
-#endif /* __MACOS__ */
+#endif /* SDL_PLATFORM_MACOS */

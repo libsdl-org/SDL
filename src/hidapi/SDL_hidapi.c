@@ -43,7 +43,7 @@
 #include "../core/windows/SDL_windows.h"
 #endif
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
 #include <CoreFoundation/CoreFoundation.h>
 #include <mach/mach.h>
 #include <IOKit/IOKitLib.h>
@@ -108,7 +108,7 @@ static struct
     double m_flLastWin32MessageCheck;
 #endif
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
     IONotificationPortRef m_notificationPort;
     mach_port_t m_notificationMach;
 #endif
@@ -168,7 +168,7 @@ static LRESULT CALLBACK ControllerWndProc(HWND hwnd, UINT message, WPARAM wParam
 }
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
 static void CallbackIOServiceFunc(void *context, io_iterator_t portIterator)
 {
     /* Must drain the iterator, or we won't receive new notifications */
@@ -178,7 +178,7 @@ static void CallbackIOServiceFunc(void *context, io_iterator_t portIterator)
         ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
     }
 }
-#endif /* __MACOS__ */
+#endif /* SDL_PLATFORM_MACOS */
 
 #ifdef HAVE_INOTIFY
 #ifdef HAVE_INOTIFY_INIT1
@@ -258,7 +258,7 @@ static void HIDAPI_InitializeDiscovery(void)
     }
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
     SDL_HIDAPI_discovery.m_notificationPort = IONotificationPortCreate(kIOMainPortDefault);
     if (SDL_HIDAPI_discovery.m_notificationPort) {
         {
@@ -308,7 +308,7 @@ static void HIDAPI_InitializeDiscovery(void)
 
     SDL_HIDAPI_discovery.m_bCanGetNotifications = (SDL_HIDAPI_discovery.m_notificationMach != MACH_PORT_NULL);
 
-#endif /* __MACOS__ */
+#endif /* SDL_PLATFORM_MACOS */
 
 #ifdef SDL_USE_LIBUDEV
     if (linux_enumeration_method == ENUMERATION_LIBUDEV) {
@@ -392,7 +392,7 @@ static void HIDAPI_UpdateDiscovery(void)
 #endif
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
     if (SDL_HIDAPI_discovery.m_notificationPort) {
         struct
         {
@@ -496,7 +496,7 @@ static void HIDAPI_ShutdownDiscovery(void)
     UnregisterClassA(SDL_HIDAPI_discovery.m_wndClass.lpszClassName, SDL_HIDAPI_discovery.m_wndClass.hInstance);
 #endif
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
     if (SDL_HIDAPI_discovery.m_notificationPort) {
         IONotificationPortDestroy(SDL_HIDAPI_discovery.m_notificationPort);
     }
@@ -575,7 +575,7 @@ typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
 #include "SDL_hidapi_linux.h"
 #elif defined(__NETBSD__)
 #include "SDL_hidapi_netbsd.h"
-#elif defined(__MACOS__)
+#elif defined(SDL_PLATFORM_MACOS)
 #include "SDL_hidapi_mac.h"
 #elif defined(__WINDOWS__) || defined(__WINGDK__)
 #include "SDL_hidapi_windows.h"
@@ -1244,7 +1244,7 @@ int SDL_hid_init(void)
         return -1;
     }
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
     hid_darwin_set_open_exclusive(0);
 #endif
 

@@ -347,7 +347,7 @@ static int GetFeatureReport(SDL_hid_device *dev, unsigned char uBuffer[65])
         // On Windows and macOS, BLE devices get 2 copies of the feature report ID, one that is removed by ReadFeatureReport,
         // and one that's included in the buffer we receive. We pad the bytes to read and skip over the report ID
         // if necessary.
-#if defined(__WIN32__) || defined(__MACOS__)
+#if defined(__WIN32__) || defined(SDL_PLATFORM_MACOS)
         ++ucBytesToRead;
         ++ucDataStartOffset;
 #endif

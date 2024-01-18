@@ -40,7 +40,7 @@
 #include <kernel.h>
 #endif
 
-#if !defined(HAVE_GCC_ATOMICS) && defined(__MACOS__)
+#if !defined(HAVE_GCC_ATOMICS) && defined(SDL_PLATFORM_MACOS)
 #include <libkern/OSAtomic.h>
 #endif
 
@@ -115,7 +115,7 @@ SDL_bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
         : "cc", "memory");
     return result == 0;
 
-#elif defined(__MACOS__) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
+#elif defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
     /* Maybe used for PowerPC, but the Intel asm or gcc atomics are favored. */
     return OSAtomicCompareAndSwap32Barrier(0, 1, lock);
 

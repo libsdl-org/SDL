@@ -33,7 +33,7 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #endif
-#if defined(__MACOS__) && (defined(__ppc__) || defined(__ppc64__))
+#if defined(SDL_PLATFORM_MACOS) && (defined(__ppc__) || defined(__ppc64__))
 #include <sys/sysctl.h> /* For AltiVec check */
 #elif defined(__OpenBSD__) && defined(__powerpc__)
 #include <sys/types.h>
@@ -106,7 +106,7 @@
 #define CPU_CFG2_LSX  (1 << 6)
 #define CPU_CFG2_LASX (1 << 7)
 
-#if defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP) && !defined(__MACOS__) && !defined(__OpenBSD__) && !defined(SDL_PLATFORM_FREEBSD)
+#if defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP) && !defined(SDL_PLATFORM_MACOS) && !defined(__OpenBSD__) && !defined(SDL_PLATFORM_FREEBSD)
 /* This is the brute force way of detecting instruction sets...
    the idea is borrowed from the libmpeg2 library - thanks!
  */
@@ -318,7 +318,7 @@ static int CPU_haveAltiVec(void)
 {
     volatile int altivec = 0;
 #ifndef SDL_CPUINFO_DISABLED
-#if (defined(__MACOS__) && (defined(__ppc__) || defined(__ppc64__))) || (defined(__OpenBSD__) && defined(__powerpc__))
+#if (defined(SDL_PLATFORM_MACOS) && (defined(__ppc__) || defined(__ppc64__))) || (defined(__OpenBSD__) && defined(__powerpc__))
 #ifdef __OpenBSD__
     int selectors[2] = { CTL_MACHDEP, CPU_ALTIVEC };
 #else

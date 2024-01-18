@@ -27,7 +27,7 @@
 #endif
 
 #ifdef HAVE_SDL_TTF
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
 #define DEFAULT_FONT "/System/Library/Fonts/华文细黑.ttf"
 #elif defined(__WIN32__)
 /* Some japanese font present on at least Windows 8.1. */

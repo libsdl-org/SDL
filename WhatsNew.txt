@@ -8,7 +8,7 @@ This is a list of major changes in SDL's version history.
 General:
 * SDL headers should now be included as `#include <SDL3/SDL.h>`
 * Many functions and symbols have changed since SDL 2.0, see the [migration guide](docs/README-migration.md) for details
-* The preprocessor symbol __MACOSX__ has been renamed __MACOS__
+* The preprocessor symbol __MACOSX__ has been renamed SDL_PLATFORM_MACOS
 * The preprocessor symbol __IPHONEOS__ has been renamed SDL_PLATFORM_IOS
 * SDL_stdinc.h no longer includes stdio.h, stdlib.h, etc., it only provides the SDL C runtime functionality
 * SDL_intrin.h now includes the intrinsics headers that were in SDL_cpuinfo.h

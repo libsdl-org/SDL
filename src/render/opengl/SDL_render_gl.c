@@ -27,7 +27,7 @@
 #include "SDL_shaders_gl.h"
 #include "../../SDL_utils_c.h"
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
 #include <OpenGL/OpenGL.h>
 #endif
 
@@ -427,7 +427,7 @@ static SDL_bool convert_format(GL_RenderData *renderdata, Uint32 pixel_format,
         *format = GL_LUMINANCE;
         *type = GL_UNSIGNED_BYTE;
         break;
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
     case SDL_PIXELFORMAT_UYVY:
         *internalFormat = GL_RGB8;
         *format = GL_YCBCR_422_APPLE;
@@ -552,7 +552,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
         renderdata->glTexParameteri(textype, GL_TEXTURE_WRAP_T,
                                     GL_CLAMP_TO_EDGE);
     }
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
 #ifndef GL_TEXTURE_STORAGE_HINT_APPLE
 #define GL_TEXTURE_STORAGE_HINT_APPLE 0x85BC
 #endif
@@ -1238,7 +1238,7 @@ static int GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
         }
     }
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
     // On macOS on older systems, the OpenGL view change and resize events aren't
     // necessarily synchronized, so just always reset it.
     // Workaround for: https://discourse.libsdl.org/t/sdl-2-0-22-prerelease/35306/6
@@ -1760,7 +1760,7 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
         renderer->info.flags |= SDL_RENDERER_ACCELERATED;
     }
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
     /* Enable multi-threaded rendering */
     /* Disabled until Ryan finishes his VBO/PBO code...
        CGLEnable(CGLGetCurrentContext(), kCGLCEMPEngine);
@@ -1867,7 +1867,7 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
         renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
     }
 #endif
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_UYVY;
 #endif
 
