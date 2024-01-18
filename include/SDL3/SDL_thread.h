@@ -220,10 +220,6 @@ SDL_CreateThread(SDL_ThreadFunction fn, const char *name, void *data);
  * multiple of the system's page size (in many cases, this is 4 kilobytes, but
  * check your system documentation).
  *
- * In SDL 2.1, stack size will be folded into the original SDL_CreateThread
- * function, but for backwards compatibility, this is currently a separate
- * function.
- *
  * \param fn the SDL_ThreadFunction function to call in the new thread
  * \param name the name of the thread
  * \param stacksize the size, in bytes, to allocate for the new thread stack.
