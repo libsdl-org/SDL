@@ -567,7 +567,7 @@ render_thread_fn(void *render_ctx)
     thread_data *thread = render_ctx;
 
     while (!done && !thread->done && state->windows[thread->index]) {
-        if (SDL_AtomicCAS(&thread->suspended, WAIT_STATE_ENTER_SEM, WAIT_STATE_WAITING_ON_SEM)) {
+        if (SDL_AtomicCompareAndSwap(&thread->suspended, WAIT_STATE_ENTER_SEM, WAIT_STATE_WAITING_ON_SEM)) {
             SDL_WaitSemaphore(thread->suspend_sem);
         }
         render_window(thread->index);
@@ -602,7 +602,7 @@ loop_threaded(void)
         if (suspend_when_occluded && event.type == SDL_EVENT_WINDOW_OCCLUDED) {
             tdata = GetThreadDataForWindow(event.window.windowID);
             if (tdata) {
-                SDL_AtomicCAS(&tdata->suspended, WAIT_STATE_GO, WAIT_STATE_ENTER_SEM);
+                SDL_AtomicCompareAndSwap(&tdata->suspended, WAIT_STATE_GO, WAIT_STATE_ENTER_SEM);
             }
         } else if (suspend_when_occluded && event.type == SDL_EVENT_WINDOW_EXPOSED) {
             tdata = GetThreadDataForWindow(event.window.windowID);

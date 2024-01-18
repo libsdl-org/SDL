@@ -536,14 +536,14 @@ static void SDL_InitDynamicAPI(void)
     static SDL_bool already_initialized = SDL_FALSE;
 
     static SDL_SpinLock lock = 0;
-    SDL_AtomicLock_REAL(&lock);
+    SDL_LockSpinlock_REAL(&lock);
 
     if (!already_initialized) {
         SDL_InitDynamicAPILocked();
         already_initialized = SDL_TRUE;
     }
 
-    SDL_AtomicUnlock_REAL(&lock);
+    SDL_UnlockSpinlock_REAL(&lock);
 }
 
 #else /* SDL_DYNAMIC_API */

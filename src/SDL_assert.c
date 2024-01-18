@@ -333,15 +333,15 @@ SDL_AssertState SDL_ReportAssertion(SDL_AssertData *data, const char *func, cons
 
 #ifndef SDL_THREADS_DISABLED
     static SDL_SpinLock spinlock = 0;
-    SDL_AtomicLock(&spinlock);
+    SDL_LockSpinlock(&spinlock);
     if (!assertion_mutex) { /* never called SDL_Init()? */
         assertion_mutex = SDL_CreateMutex();
         if (!assertion_mutex) {
-            SDL_AtomicUnlock(&spinlock);
+            SDL_UnlockSpinlock(&spinlock);
             return SDL_ASSERTION_IGNORE; /* oh well, I guess. */
         }
     }
-    SDL_AtomicUnlock(&spinlock);
+    SDL_UnlockSpinlock(&spinlock);
 
     SDL_LockMutex(assertion_mutex);
 #endif /* !SDL_THREADS_DISABLED */

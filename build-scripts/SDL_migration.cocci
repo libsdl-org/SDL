@@ -2884,3 +2884,28 @@ expression e1, e2, e3, e4;
 - SDL_HapticRumbleStop
 + SDL_StopHapticRumble
   (...)
+@@
+@@
+- SDL_AtomicTryLock
++ SDL_TryLockSpinlock
+  (...)
+@@
+@@
+- SDL_AtomicLock
++ SDL_LockSpinlock
+  (...)
+@@
+@@
+- SDL_AtomicUnlock
++ SDL_UnlockSpinlock
+  (...)
+@@
+@@
+- SDL_AtomicCAS
++ SDL_AtomicCompareAndSwap
+  (...)
+@@
+@@
+- SDL_AtomicCASPtr
++ SDL_AtomicCompareAndSwapPointer
+  (...)
