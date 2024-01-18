@@ -35,8 +35,7 @@
 #define SDL_PLATFORM_HAIKU   1
 #endif
 #if defined(bsdi) || defined(__bsdi) || defined(__bsdi__)
-#undef __BSDI__
-#define __BSDI__    1
+#define SDL_PLATFORM_BSDI    1
 #endif
 #ifdef _arch_dreamcast
 #undef __DREAMCAST__
