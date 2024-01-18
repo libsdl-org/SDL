@@ -30,7 +30,7 @@
 #ifdef SDL_VIDEO_OPENGL_GLX
 #include "SDL_x11opengles.h"
 
-#if defined(__IRIX__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(SDL_PLATFORM_IRIX) || defined(__NetBSD__) || defined(__OpenBSD__)
 /*
  * IRIX doesn't have a GL library versioning system.
  * NetBSD and OpenBSD have different GL library versions depending on how

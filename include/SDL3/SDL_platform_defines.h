@@ -44,8 +44,7 @@
 #define SDL_PLATFORM_HPUX    1
 #endif
 #if defined(sgi) || defined(__sgi) || defined(__sgi__) || defined(_SGI_SOURCE)
-#undef __IRIX__
-#define __IRIX__    1
+#define SDL_PLATFORM_IRIX    1
 #endif
 #if (defined(linux) || defined(__linux) || defined(__linux__))
 #undef __LINUX__

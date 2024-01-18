@@ -581,7 +581,7 @@ const char *SDL_GetPlatform(void)
     return "Haiku";
 #elif defined(SDL_PLATFORM_HPUX)
     return "HP-UX";
-#elif defined(__IRIX__)
+#elif defined(SDL_PLATFORM_IRIX)
     return "Irix";
 #elif defined(__LINUX__)
     return "Linux";
