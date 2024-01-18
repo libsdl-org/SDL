@@ -1318,7 +1318,7 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
     if (display_mode == CONTROLLER_MODE_TESTING) {
         Uint64 steam_handle = SDL_GetGamepadSteamHandle(controller->gamepad);
         if (steam_handle) {
-            SDL_snprintf(text, SDL_arraysize(text), "Steam: 0x%.16" SDL_PRIx64 "", steam_handle);
+            SDL_snprintf(text, SDL_arraysize(text), "Steam: 0x%.16" SDL_PRIx64, steam_handle);
             y = (float)SCREEN_HEIGHT - 2 * (8.0f + FONT_LINE_HEIGHT);
             x = (float)SCREEN_WIDTH - 8.0f - (FONT_CHARACTER_SIZE * SDL_strlen(text));
             SDLTest_DrawString(renderer, x, y, text);

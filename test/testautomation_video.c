@@ -336,7 +336,7 @@ static int video_getClosestDisplayModeCurrentResolution(void *arg)
 
         /* Make calls for each display */
         for (i = 0; displays[i]; ++i) {
-            SDLTest_Log("Testing against display: %" SDL_PRIu32 "", displays[i]);
+            SDLTest_Log("Testing against display: %" SDL_PRIu32, displays[i]);
 
             /* Get first display mode to get a sane resolution; this should always work */
             modes = SDL_GetFullscreenDisplayModes(displays[i], &num_modes);
@@ -385,7 +385,7 @@ static int video_getClosestDisplayModeRandomResolution(void *arg)
 
         /* Make calls for each display */
         for (i = 0; displays[i]; ++i) {
-            SDLTest_Log("Testing against display: %" SDL_PRIu32 "", displays[i]);
+            SDLTest_Log("Testing against display: %" SDL_PRIu32, displays[i]);
 
             for (variation = 0; variation < 16; variation++) {
 

@@ -480,7 +480,7 @@ const char *SDL_GetStringProperty(SDL_PropertiesID props, const char *name, cons
                 if (property->string_storage) {
                     value = property->string_storage;
                 } else {
-                    SDL_asprintf(&property->string_storage, "%" SDL_PRIs64 "", property->value.number_value);
+                    SDL_asprintf(&property->string_storage, "%" SDL_PRIs64, property->value.number_value);
                     if (property->string_storage) {
                         value = property->string_storage;
                     }

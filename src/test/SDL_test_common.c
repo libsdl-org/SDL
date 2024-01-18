@@ -1709,11 +1709,10 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " restored", event->window.windowID);
         break;
     case SDL_EVENT_WINDOW_MOUSE_ENTER:
-        SDL_Log("SDL EVENT: Mouse entered window %" SDL_PRIu32 "",
-                event->window.windowID);
+        SDL_Log("SDL EVENT: Mouse entered window %" SDL_PRIu32, event->window.windowID);
         break;
     case SDL_EVENT_WINDOW_MOUSE_LEAVE:
-        SDL_Log("SDL EVENT: Mouse left window %" SDL_PRIu32 "", event->window.windowID);
+        SDL_Log("SDL EVENT: Mouse left window %" SDL_PRIu32, event->window.windowID);
         break;
     case SDL_EVENT_WINDOW_FOCUS_GAINED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " gained keyboard focus",
@@ -1736,7 +1735,7 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " ICC profile changed", event->window.windowID);
         break;
     case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
-        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " display changed to %" SDL_PRIs32 "", event->window.windowID, event->window.data1);
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " display changed to %" SDL_PRIs32, event->window.windowID, event->window.data1);
         break;
     case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " display scale changed to %d%%", event->window.windowID, (int)(SDL_GetWindowDisplayScale(SDL_GetWindowFromID(event->window.windowID)) * 100.0f));
@@ -1926,7 +1925,7 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
         SDL_Log("SDL EVENT: App entered the foreground");
         break;
     case SDL_EVENT_DROP_BEGIN:
-        SDL_Log("SDL EVENT: Drag and drop beginning in window %" SDL_PRIu32 "", event->drop.windowID);
+        SDL_Log("SDL EVENT: Drag and drop beginning in window %" SDL_PRIu32, event->drop.windowID);
         break;
     case SDL_EVENT_DROP_POSITION:
         SDL_Log("SDL EVENT: Drag and drop moving in window %" SDL_PRIu32 ": %g,%g", event->drop.windowID, event->drop.x, event->drop.y);
@@ -2691,7 +2690,7 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
 
     SDL_SetRenderDrawColor(renderer, 170, 170, 170, 255);
 
-    (void)SDL_snprintf(text, sizeof(text), "SDL_GetDisplayForWindow: %" SDL_PRIu32 "", windowDisplayID);
+    (void)SDL_snprintf(text, sizeof(text), "SDL_GetDisplayForWindow: %" SDL_PRIu32, windowDisplayID);
     SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
