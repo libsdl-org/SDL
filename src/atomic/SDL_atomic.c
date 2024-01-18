@@ -29,7 +29,7 @@
 #include <libkern/OSAtomic.h>
 #endif
 
-#if !defined(HAVE_GCC_ATOMICS) && defined(__SOLARIS__)
+#if !defined(HAVE_GCC_ATOMICS) && defined(SDL_PLATFORM_SOLARIS)
 #include <atomic.h>
 #endif
 
@@ -100,7 +100,7 @@ extern __inline int _SDL_xadd_watcom(volatile int *a, int v);
   Contributed by Bob Pendleton, bob@pendleton.com
 */
 
-#if !defined(HAVE_MSC_ATOMICS) && !defined(HAVE_GCC_ATOMICS) && !defined(SDL_PLATFORM_MACOS) && !defined(__SOLARIS__) && !defined(HAVE_WATCOM_ATOMICS)
+#if !defined(HAVE_MSC_ATOMICS) && !defined(HAVE_GCC_ATOMICS) && !defined(SDL_PLATFORM_MACOS) && !defined(SDL_PLATFORM_SOLARIS) && !defined(HAVE_WATCOM_ATOMICS)
 #define EMULATE_CAS 1
 #endif
 
@@ -133,7 +133,7 @@ SDL_bool SDL_AtomicCompareAndSwap(SDL_AtomicInt *a, int oldval, int newval)
     return __sync_bool_compare_and_swap(&a->value, oldval, newval);
 #elif defined(SDL_PLATFORM_MACOS) /* this is deprecated in 10.12 sdk; favor gcc atomics. */
     return OSAtomicCompareAndSwap32Barrier(oldval, newval, &a->value);
-#elif defined(__SOLARIS__)
+#elif defined(SDL_PLATFORM_SOLARIS)
     return ((int)atomic_cas_uint((volatile uint_t *)&a->value, (uint_t)oldval, (uint_t)newval) == oldval);
 #elif defined(EMULATE_CAS)
     SDL_bool retval = SDL_FALSE;
@@ -163,7 +163,7 @@ SDL_bool SDL_AtomicCompareAndSwapPointer(void **a, void *oldval, void *newval)
     return OSAtomicCompareAndSwap64Barrier((int64_t)oldval, (int64_t)newval, (int64_t *)a);
 #elif defined(SDL_PLATFORM_MACOS) && !defined(__LP64__) /* this is deprecated in 10.12 sdk; favor gcc atomics. */
     return OSAtomicCompareAndSwap32Barrier((int32_t)oldval, (int32_t)newval, (int32_t *)a);
-#elif defined(__SOLARIS__)
+#elif defined(SDL_PLATFORM_SOLARIS)
     return (atomic_cas_ptr(a, oldval, newval) == oldval);
 #elif defined(EMULATE_CAS)
     SDL_bool retval = SDL_FALSE;
@@ -190,7 +190,7 @@ int SDL_AtomicSet(SDL_AtomicInt *a, int v)
     return _SDL_xchg_watcom(&a->value, v);
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_lock_test_and_set(&a->value, v);
-#elif defined(__SOLARIS__)
+#elif defined(SDL_PLATFORM_SOLARIS)
     return (int)atomic_swap_uint((volatile uint_t *)&a->value, v);
 #else
     int value;
@@ -209,7 +209,7 @@ void *SDL_AtomicSetPtr(void **a, void *v)
     return (void *)_SDL_xchg_watcom((int *)a, (long)v);
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_lock_test_and_set(a, v);
-#elif defined(__SOLARIS__)
+#elif defined(SDL_PLATFORM_SOLARIS)
     return atomic_swap_ptr(a, v);
 #else
     void *value;
@@ -229,7 +229,7 @@ int SDL_AtomicAdd(SDL_AtomicInt *a, int v)
     return _SDL_xadd_watcom(&a->value, v);
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_fetch_and_add(&a->value, v);
-#elif defined(__SOLARIS__)
+#elif defined(SDL_PLATFORM_SOLARIS)
     int pv = a->value;
     membar_consumer();
     atomic_add_int((volatile uint_t *)&a->value, v);
@@ -256,7 +256,7 @@ int SDL_AtomicGet(SDL_AtomicInt *a)
     return __sync_or_and_fetch(&a->value, 0);
 #elif defined(SDL_PLATFORM_MACOS) /* this is deprecated in 10.12 sdk; favor gcc atomics. */
     return sizeof(a->value) == sizeof(uint32_t) ? OSAtomicOr32Barrier(0, (volatile uint32_t *)&a->value) : OSAtomicAdd64Barrier(0, (volatile int64_t *)&a->value);
-#elif defined(__SOLARIS__)
+#elif defined(SDL_PLATFORM_SOLARIS)
     return atomic_or_uint((volatile uint_t *)&a->value, 0);
 #else
     int value;
@@ -275,7 +275,7 @@ void *SDL_AtomicGetPtr(void **a)
     return _InterlockedCompareExchangePointer(a, NULL, NULL);
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_val_compare_and_swap(a, (void *)0, (void *)0);
-#elif defined(__SOLARIS__)
+#elif defined(SDL_PLATFORM_SOLARIS)
     return atomic_cas_ptr(a, (void *)0, (void *)0);
 #else
     void *value;

@@ -118,8 +118,7 @@
 #define SDL_PLATFORM_RISCOS 1
 #endif
 #if defined(__sun) && defined(__SVR4)
-#undef __SOLARIS__
-#define __SOLARIS__ 1
+#define SDL_PLATFORM_SOLARIS    1
 #endif
 
 #if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)

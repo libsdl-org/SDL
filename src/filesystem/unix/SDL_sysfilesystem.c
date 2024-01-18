@@ -200,7 +200,7 @@ char *SDL_GetBasePath(void)
         retval = readSymLink("/proc/curproc/file");
 #elif defined(SDL_PLATFORM_NETBSD)
         retval = readSymLink("/proc/curproc/exe");
-#elif defined(__SOLARIS__)
+#elif defined(SDL_PLATFORM_SOLARIS)
         retval = readSymLink("/proc/self/path/a.out");
 #else
         retval = readSymLink("/proc/self/exe"); /* linux. */
@@ -217,7 +217,7 @@ char *SDL_GetBasePath(void)
 #endif
     }
 
-#ifdef __SOLARIS__  /* try this as a fallback if /proc didn't pan out */
+#ifdef SDL_PLATFORM_SOLARIS  /* try this as a fallback if /proc didn't pan out */
     if (!retval) {
         const char *path = getexecname();
         if ((path) && (path[0] == '/')) { /* must be absolute path... */

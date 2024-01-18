@@ -24,7 +24,7 @@
 #include "../core/windows/SDL_windows.h"
 #endif
 
-#if !defined(HAVE_GCC_ATOMICS) && defined(__SOLARIS__)
+#if !defined(HAVE_GCC_ATOMICS) && defined(SDL_PLATFORM_SOLARIS)
 #include <atomic.h>
 #endif
 
@@ -119,11 +119,11 @@ SDL_bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
     /* Maybe used for PowerPC, but the Intel asm or gcc atomics are favored. */
     return OSAtomicCompareAndSwap32Barrier(0, 1, lock);
 
-#elif defined(__SOLARIS__) && defined(_LP64)
+#elif defined(SDL_PLATFORM_SOLARIS) && defined(_LP64)
     /* Used for Solaris with non-gcc compilers. */
     return ((int)atomic_cas_64((volatile uint64_t *)lock, 0, 1) == 0);
 
-#elif defined(__SOLARIS__) && !defined(_LP64)
+#elif defined(SDL_PLATFORM_SOLARIS) && !defined(_LP64)
     /* Used for Solaris with non-gcc compilers. */
     return ((int)atomic_cas_32((volatile uint32_t *)lock, 0, 1) == 0);
 #elif defined(PS2)
@@ -192,7 +192,7 @@ void SDL_UnlockSpinlock(SDL_SpinLock *lock)
     SDL_CompilerBarrier();
     *lock = 0;
 
-#elif defined(__SOLARIS__)
+#elif defined(SDL_PLATFORM_SOLARIS)
     /* Used for Solaris when not using gcc. */
     *lock = 0;
     membar_producer();
