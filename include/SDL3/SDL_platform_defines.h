@@ -37,10 +37,6 @@
 #if defined(bsdi) || defined(__bsdi) || defined(__bsdi__)
 #define SDL_PLATFORM_BSDI    1
 #endif
-#ifdef _arch_dreamcast
-#undef __DREAMCAST__
-#define __DREAMCAST__   1
-#endif
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
 #undef __FREEBSD__
 #define __FREEBSD__ 1
