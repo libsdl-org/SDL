@@ -251,7 +251,7 @@ loop(void)
             break;
 
         case SDL_DOLLARRECORD:
-            SDL_Log("Recorded gesture: %" SDL_PRIs64 "", event.dgesture.gestureId);
+            SDL_Log("Recorded gesture: %" SDL_PRIs64, event.dgesture.gestureId);
             break;
         }
     }

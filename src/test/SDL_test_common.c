@@ -1594,11 +1594,10 @@ static void SDLTest_PrintEvent(SDL_Event *event)
             SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " restored", event->window.windowID);
             break;
         case SDL_WINDOWEVENT_ENTER:
-            SDL_Log("SDL EVENT: Mouse entered window %" SDL_PRIu32 "",
-                    event->window.windowID);
+            SDL_Log("SDL EVENT: Mouse entered window %" SDL_PRIu32, event->window.windowID);
             break;
         case SDL_WINDOWEVENT_LEAVE:
-            SDL_Log("SDL EVENT: Mouse left window %" SDL_PRIu32 "", event->window.windowID);
+            SDL_Log("SDL EVENT: Mouse left window %" SDL_PRIu32, event->window.windowID);
             break;
         case SDL_WINDOWEVENT_FOCUS_GAINED:
             SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " gained keyboard focus",
@@ -1621,7 +1620,7 @@ static void SDLTest_PrintEvent(SDL_Event *event)
             SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " ICC profile changed", event->window.windowID);
             break;
         case SDL_WINDOWEVENT_DISPLAY_CHANGED:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " display changed to %" SDL_PRIs32 "", event->window.windowID, event->window.data1);
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " display changed to %" SDL_PRIs32, event->window.windowID, event->window.data1);
             break;
         default:
             SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " got unknown event 0x%4.4x",
