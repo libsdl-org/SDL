@@ -512,7 +512,7 @@ int SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *egl_path, NativeDisp
 
     _this->egl_data->egl_display = EGL_NO_DISPLAY;
 
-#ifndef __WINRT__
+#ifndef SDL_PLATFORM_WINRT
 #ifndef SDL_VIDEO_DRIVER_VITA
     if (platform) {
         /* EGL 1.5 allows querying for client version with EGL_NO_DISPLAY

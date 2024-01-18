@@ -236,7 +236,7 @@ typedef unsigned int uintptr_t;
 /* Enable various input drivers */
 #define SDL_JOYSTICK_DINPUT 1
 #define SDL_JOYSTICK_HIDAPI 1
-#ifndef __WINRT__
+#ifndef SDL_PLATFORM_WINRT
 #define SDL_JOYSTICK_RAWINPUT   1
 #endif
 #define SDL_JOYSTICK_VIRTUAL    1

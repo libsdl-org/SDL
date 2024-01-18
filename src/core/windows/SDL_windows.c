@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__)
+#if defined(__WIN32__) || defined(SDL_PLATFORM_WINRT) || defined(__GDK__)
 
 #include "SDL_windows.h"
 
@@ -86,7 +86,7 @@ WIN_CoInitialize(void)
 
        If you need multi-threaded mode, call CoInitializeEx() before SDL_Init()
     */
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
     /* DLudwig: On WinRT, it is assumed that COM was initialized in main().
        CoInitializeEx is available (not CoInitialize though), however
        on WinRT, main() is typically declared with the [MTAThread]
@@ -114,12 +114,12 @@ WIN_CoInitialize(void)
 
 void WIN_CoUninitialize(void)
 {
-#ifndef __WINRT__
+#ifndef SDL_PLATFORM_WINRT
     CoUninitialize();
 #endif
 }
 
-#ifndef __WINRT__
+#ifndef SDL_PLATFORM_WINRT
 FARPROC WIN_LoadComBaseFunction(const char *name)
 {
     static SDL_bool s_bLoaded;
@@ -140,7 +140,7 @@ FARPROC WIN_LoadComBaseFunction(const char *name)
 HRESULT
 WIN_RoInitialize(void)
 {
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
     return S_OK;
 #else
     typedef HRESULT(WINAPI * RoInitialize_t)(RO_INIT_TYPE initType);
@@ -167,7 +167,7 @@ WIN_RoInitialize(void)
 
 void WIN_RoUninitialize(void)
 {
-#ifndef __WINRT__
+#ifndef SDL_PLATFORM_WINRT
     typedef void(WINAPI * RoUninitialize_t)(void);
     RoUninitialize_t RoUninitializeFunc = (RoUninitialize_t)WIN_LoadComBaseFunction("RoUninitialize");
     if (RoUninitializeFunc) {
@@ -176,7 +176,7 @@ void WIN_RoUninitialize(void)
 #endif
 }
 
-#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(SDL_PLATFORM_WINRT) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor)
 {
     OSVERSIONINFOEXW osvi;
@@ -199,7 +199,7 @@ static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WO
 
 BOOL WIN_IsWindowsVistaOrGreater(void)
 {
-#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(SDL_PLATFORM_WINRT) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return TRUE;
 #else
     return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_VISTA), LOBYTE(_WIN32_WINNT_VISTA), 0);
@@ -208,7 +208,7 @@ BOOL WIN_IsWindowsVistaOrGreater(void)
 
 BOOL WIN_IsWindows7OrGreater(void)
 {
-#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(SDL_PLATFORM_WINRT) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return TRUE;
 #else
     return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN7), LOBYTE(_WIN32_WINNT_WIN7), 0);
@@ -217,7 +217,7 @@ BOOL WIN_IsWindows7OrGreater(void)
 
 BOOL WIN_IsWindows8OrGreater(void)
 {
-#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(SDL_PLATFORM_WINRT) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return TRUE;
 #else
     return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN8), LOBYTE(_WIN32_WINNT_WIN8), 0);
@@ -247,7 +247,7 @@ WASAPI doesn't need this. This is just for DirectSound/WinMM.
 */
 char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
 {
-#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(SDL_PLATFORM_WINRT) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return WIN_StringToUTF8(name); /* No registry access on WinRT/UWP and Xbox, go with what we've got. */
 #else
     static const GUID nullguid = { 0 };
@@ -300,7 +300,7 @@ char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
     retval = WIN_StringToUTF8(strw);
     SDL_free(strw);
     return retval ? retval : WIN_StringToUTF8(name);
-#endif /* if __WINRT__ / else */
+#endif /* if SDL_PLATFORM_WINRT / else */
 }
 
 BOOL WIN_IsEqualGUID(const GUID *a, const GUID *b)
@@ -435,4 +435,4 @@ DECLSPEC int MINGW32_FORCEALIGN SDL_RunApp(int _argc, char* _argv[], SDL_main_fu
 
 #endif /* __WIN32__ */
 
-#endif /* defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__) */
+#endif /* defined(__WIN32__) || defined(SDL_PLATFORM_WINRT) || defined(__GDK__) */

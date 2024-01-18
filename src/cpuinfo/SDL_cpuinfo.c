@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__)
+#if defined(__WIN32__) || defined(SDL_PLATFORM_WINRT) || defined(__GDK__)
 #include "../core/windows/SDL_windows.h"
 #endif
 
@@ -439,7 +439,7 @@ static int CPU_haveNEON(void)
 {
 /* The way you detect NEON is a privileged instruction on ARM, so you have
    query the OS kernel in a platform-specific way. :/ */
-#if (defined(__WINDOWS__) || defined(__WINRT__) || defined(__GDK__)) && (defined(_M_ARM) || defined(_M_ARM64))
+#if (defined(__WINDOWS__) || defined(SDL_PLATFORM_WINRT) || defined(__GDK__)) && (defined(_M_ARM) || defined(_M_ARM64))
 /* Visual Studio, for ARM, doesn't define __ARM_ARCH. Handle this first. */
 /* Seems to have been removed */
 #ifndef PF_ARM_NEON_INSTRUCTIONS_AVAILABLE

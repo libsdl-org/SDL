@@ -155,8 +155,7 @@
 #endif
 
 #if WINAPI_FAMILY_WINRT
-#undef __WINRT__
-#define __WINRT__ 1
+#define SDL_PLATFORM_WINRT   1
 #elif defined(_GAMING_DESKTOP) /* GDK project configuration always defines _GAMING_XXX */
 #undef __WINGDK__
 #define __WINGDK__ 1

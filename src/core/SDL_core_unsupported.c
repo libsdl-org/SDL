@@ -65,7 +65,7 @@ int SDL_GDKGetDefaultUser(void *outUserHandle)
 
 #endif
 
-#if !(defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__))
+#if !(defined(__WIN32__) || defined(SDL_PLATFORM_WINRT) || defined(__GDK__))
 
 DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
 int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
@@ -92,7 +92,7 @@ void SDL_UnregisterApp(void)
 
 #endif
 
-#ifndef __WINRT__
+#ifndef SDL_PLATFORM_WINRT
 
 /* Returns SDL_WinRT_DeviceFamily enum */
 DECLSPEC int SDLCALL SDL_WinRTGetDeviceFamily(void);

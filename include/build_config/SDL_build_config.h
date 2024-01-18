@@ -33,7 +33,7 @@
 /* Add any platform that doesn't build using the configure system. */
 #if defined(__WIN32__)
 #include "SDL_build_config_windows.h"
-#elif defined(__WINRT__)
+#elif defined(SDL_PLATFORM_WINRT)
 #include "SDL_build_config_winrt.h"
 #elif defined(__WINGDK__)
 #include "SDL_build_config_wingdk.h"

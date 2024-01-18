@@ -35,7 +35,7 @@
 #include <SDL3/SDL_atomic.h>
 #include <SDL3/SDL_mutex.h>
 
-#if (defined(__WIN32__) || defined(__GDK__)) && !defined(__WINRT__)
+#if (defined(__WIN32__) || defined(__GDK__)) && !defined(SDL_PLATFORM_WINRT)
 #include <process.h> /* _beginthreadex() and _endthreadex() */
 #endif
 
@@ -81,7 +81,7 @@ typedef enum {
 typedef int (SDLCALL * SDL_ThreadFunction) (void *data);
 
 
-#if (defined(__WIN32__) || defined(__GDK__)) && !defined(__WINRT__)
+#if (defined(__WIN32__) || defined(__GDK__)) && !defined(SDL_PLATFORM_WINRT)
 /**
  *  \file SDL_thread.h
  *

@@ -1511,7 +1511,7 @@ static void SDL_CheckWindowDisplayScaleChanged(SDL_Window *window)
     }
 }
 
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
 extern Uint32 WINRT_DetectWindowFlags(SDL_Window *window);
 #endif
 
@@ -1606,7 +1606,7 @@ int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen, SDL_bool c
             }
         }
     }
-#elif defined(__WINRT__) && (NTDDI_VERSION < NTDDI_WIN10)
+#elif defined(SDL_PLATFORM_WINRT) && (NTDDI_VERSION < NTDDI_WIN10)
     /* HACK: WinRT 8.x apps can't choose whether or not they are fullscreen
        or not.  The user can choose this, via OS-provided UI, but this can't
        be set programmatically.
@@ -2150,7 +2150,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     }
 #endif
 
-#if defined(__WINRT__) && (NTDDI_VERSION < NTDDI_WIN10)
+#if defined(SDL_PLATFORM_WINRT) && (NTDDI_VERSION < NTDDI_WIN10)
     /* HACK: WinRT 8.x apps can't choose whether or not they are fullscreen
        or not.  The user can choose this, via OS-provided UI, but this can't
        be set programmatically.

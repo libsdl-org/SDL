@@ -132,7 +132,7 @@ extern int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr);
 /* Sets an error message based on GetLastError(). Always return -1. */
 extern int WIN_SetError(const char *prefix);
 
-#ifndef __WINRT__
+#ifndef SDL_PLATFORM_WINRT
 /* Load a function from combase.dll */
 FARPROC WIN_LoadComBaseFunction(const char *name);
 #endif

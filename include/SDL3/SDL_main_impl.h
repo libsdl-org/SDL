@@ -121,7 +121,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
 #endif
 
 /* end of __WIN32__ and __GDK__ impls */
-#elif defined(__WINRT__)
+#elif defined(SDL_PLATFORM_WINRT)
 
 /* WinRT main based on SDL_winrt_main_NonXAML.cpp, placed in the public domain by David Ludwig  3/13/14 */
 

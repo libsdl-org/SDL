@@ -49,7 +49,7 @@
  */
 #define SDL_MAIN_AVAILABLE
 
-#elif defined(__WINRT__)
+#elif defined(SDL_PLATFORM_WINRT)
 /* On WinRT, SDL provides a main function that initializes CoreApplication,
    creating an instance of IFrameworkView in the process.
 
@@ -471,12 +471,12 @@ extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 #endif /* defined(__WIN32__) || defined(__GDK__) */
 
 
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
 
 /* for compatibility with SDL2's function of this name */
 #define SDL_WinRTRunApp(MAIN_FUNC, RESERVED)  SDL_RunApp(0, NULL, MAIN_FUNC, RESERVED)
 
-#endif /* __WINRT__ */
+#endif /* SDL_PLATFORM_WINRT */
 
 #ifdef SDL_PLATFORM_IOS
 
@@ -514,7 +514,7 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 /* platforms which main (-equivalent) can be implemented in plain C */
 #include <SDL3/SDL_main_impl.h>
 
-#elif defined(__WINRT__) /* C++ platforms */
+#elif defined(SDL_PLATFORM_WINRT) /* C++ platforms */
 
 #ifdef __cplusplus
 #include <SDL3/SDL_main_impl.h>
@@ -529,7 +529,7 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 #endif /* __GNUC__ */
 #endif /* __cplusplus */
 
-#endif /* C++ platforms like __WINRT__ etc */
+#endif /* C++ platforms like SDL_PLATFORM_WINRT etc */
 
 #endif /* SDL_MAIN_HANDLED */
 

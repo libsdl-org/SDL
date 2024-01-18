@@ -470,7 +470,7 @@ static Uint32 tick_numerator_ms;
 static Uint32 tick_denominator_ms;
 
 #if defined(SDL_TIMER_WINDOWS) && \
-    !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+    !defined(SDL_PLATFORM_WINRT) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 #include <mmsystem.h>
 #define HAVE_TIME_BEGIN_PERIOD
 #endif

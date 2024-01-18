@@ -25,7 +25,7 @@
 
 #include "SDL_windows.h"
 
-#ifndef __WINRT__
+#ifndef SDL_PLATFORM_WINRT
 
 typedef LONG NTSTATUS;
 typedef USHORT USAGE;
@@ -208,6 +208,6 @@ extern HidP_GetValueCaps_t SDL_HidP_GetValueCaps;
 extern HidP_MaxDataListLength_t SDL_HidP_MaxDataListLength;
 extern HidP_GetData_t SDL_HidP_GetData;
 
-#endif /* !__WINRT__ */
+#endif /* !SDL_PLATFORM_WINRT */
 
 #endif /* SDL_hid_h_ */

@@ -774,7 +774,7 @@ int SDL_GetJoystickInstancePlayerIndex(SDL_JoystickID instance_id)
  */
 static SDL_bool SDL_JoystickAxesCenteredAtZero(SDL_Joystick *joystick)
 {
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
     return SDL_TRUE;
 #else
     /*printf("JOYSTICK '%s' VID/PID 0x%.4x/0x%.4x AXES: %d\n", joystick->name, vendor, product, joystick->naxes);*/
@@ -785,7 +785,7 @@ static SDL_bool SDL_JoystickAxesCenteredAtZero(SDL_Joystick *joystick)
     }
 
     return SDL_VIDPIDInList(SDL_GetJoystickVendor(joystick), SDL_GetJoystickProduct(joystick), &zero_centered_devices);
-#endif /* __WINRT__ */
+#endif /* SDL_PLATFORM_WINRT */
 }
 
 static SDL_bool IsROGAlly(SDL_Joystick *joystick)

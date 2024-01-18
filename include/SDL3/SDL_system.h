@@ -456,7 +456,7 @@ extern DECLSPEC int SDLCALL SDL_AndroidSendMessage(Uint32 command, int param);
 /*
  * Platform specific functions for WinRT
  */
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
 
 /**
  *  WinRT / Windows Phone path types
@@ -556,7 +556,7 @@ extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathT
  */
 extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
 
-#endif /* __WINRT__ */
+#endif /* SDL_PLATFORM_WINRT */
 
 /**
  * Query if the current device is a tablet.

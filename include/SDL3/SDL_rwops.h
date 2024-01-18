@@ -109,7 +109,7 @@ typedef struct SDL_RWops
             void *asset;
         } androidio;
 
-#elif defined(__WIN32__) || defined(__GDK__) || defined(__WINRT__)
+#elif defined(__WIN32__) || defined(__GDK__) || defined(SDL_PLATFORM_WINRT)
         struct
         {
             SDL_bool append;

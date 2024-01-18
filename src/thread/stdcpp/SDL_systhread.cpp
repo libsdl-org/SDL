@@ -31,7 +31,7 @@ extern "C" {
 #include <thread>
 #include <system_error>
 
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
 #include <Windows.h>
 #endif
 
@@ -66,7 +66,7 @@ SDL_SYS_SetupThread(const char *name)
 extern "C" SDL_ThreadID
 SDL_GetCurrentThreadID(void)
 {
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
     return GetCurrentThreadId();
 #else
     // HACK: Mimic a thread ID, if one isn't otherwise available.
@@ -87,7 +87,7 @@ SDL_GetCurrentThreadID(void)
 extern "C" int
 SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
     int value;
 
     if (priority == SDL_THREAD_PRIORITY_LOW) {
