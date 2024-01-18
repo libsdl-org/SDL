@@ -589,8 +589,6 @@ const char *SDL_GetPlatform(void)
     return "Atari MiNT";
 #elif defined(SDL_PLATFORM_MACOS)
     return "macOS";
-#elif defined(__NACL__)
-    return "NaCl";
 #elif defined(SDL_PLATFORM_NETBSD)
     return "NetBSD";
 #elif defined(SDL_PLATFORM_OPENBSD)
