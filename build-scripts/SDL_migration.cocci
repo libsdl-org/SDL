@@ -2909,3 +2909,12 @@ expression e1, e2, e3, e4;
 - SDL_AtomicCASPtr
 + SDL_AtomicCompareAndSwapPointer
   (...)
+@@
+@@
+- SDL_ThreadID
++ SDL_GetCurrentThreadID
+  (...)
+@@
+@@
+- SDL_threadID
++ SDL_ThreadID

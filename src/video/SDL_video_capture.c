@@ -396,7 +396,7 @@ SDL_CaptureVideoThread(void *devicep)
 #endif
 
     /* Perform any thread setup */
-    device->threadid = SDL_ThreadID();
+    device->threadid = SDL_GetCurrentThreadID();
 
     /* Init state */
     while (!SDL_AtomicGet(&device->enabled)) {

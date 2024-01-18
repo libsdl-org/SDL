@@ -40,7 +40,7 @@ void SDL_SYS_SetupThread(const char *name)
     return;
 }
 
-SDL_threadID SDL_ThreadID(void)
+SDL_ThreadID SDL_GetCurrentThreadID(void)
 {
     return 0;
 }
