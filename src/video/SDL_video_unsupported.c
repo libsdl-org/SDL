@@ -59,7 +59,7 @@ int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
     return SDL_Unsupported();
 }
 
-#elif defined(__XBOXONE__) || defined(SDL_PLATFORM_XBOXSERIES)
+#elif defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 
 DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID);
 int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)

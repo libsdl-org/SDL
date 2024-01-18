@@ -60,7 +60,7 @@
 #define _WIN32_WINNT 0xA00
 #define WINVER       _WIN32_WINNT
 
-#elif defined(__XBOXONE__) || defined(SDL_PLATFORM_XBOXSERIES)
+#elif defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif

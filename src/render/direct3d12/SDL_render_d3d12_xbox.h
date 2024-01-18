@@ -24,7 +24,7 @@
 
 #include "../../SDL_internal.h"
 
-#if defined(__XBOXONE__)
+#if defined(SDL_PLATFORM_XBOXONE)
 #include <d3d12_x.h>
 #else /* SDL_PLATFORM_XBOXSERIES */
 #include <d3d12_xs.h>
