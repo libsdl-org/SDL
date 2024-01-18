@@ -455,7 +455,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         SDL_NSLog(SDL_priority_prefixes[priority], message);
         return;
     }
-#elif defined(SDL_PLATFORM_PSP) || defined(__PS2__)
+#elif defined(SDL_PLATFORM_PSP) || defined(SDL_PLATFORM_PS2)
     {
         FILE *pFile;
         pFile = fopen("SDL_Log.txt", "a");

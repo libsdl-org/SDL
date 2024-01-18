@@ -79,7 +79,7 @@
 #include <swis.h>
 #endif
 
-#ifdef __PS2__
+#ifdef SDL_PLATFORM_PS2
 #include <kernel.h>
 #endif
 
@@ -1054,7 +1054,7 @@ int SDL_GetSystemRAM(void)
             SDL_SystemRAM = 536870912;
         }
 #endif
-#ifdef __PS2__
+#ifdef SDL_PLATFORM_PS2
         if (SDL_SystemRAM <= 0) {
             /* PlayStation 2 has 32MiB however there are some special models with 64 and 128 */
             SDL_SystemRAM = GetMemorySize();

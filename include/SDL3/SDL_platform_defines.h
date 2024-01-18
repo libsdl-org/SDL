@@ -180,8 +180,8 @@
 #ifdef __PSP__
 #define SDL_PLATFORM_PSP    1
 #endif
-#ifdef PS2
-#define __PS2__ 1
+#if defined(__PS2__) || defined(PS2)
+#define SDL_PLATFORM_PS2    1
 #endif
 
 #ifdef __vita__

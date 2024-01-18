@@ -103,7 +103,7 @@
  */
 #define SDL_MAIN_AVAILABLE
 
-#elif defined(__PS2__)
+#elif defined(SDL_PLATFORM_PS2)
 #define SDL_MAIN_AVAILABLE
 
 #define SDL_PS2_SKIP_IOP_RESET() \
@@ -508,7 +508,7 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 /* include header-only SDL_main implementations */
 #if defined(SDL_MAIN_USE_CALLBACKS) \
     || defined(__WIN32__) || defined(__GDK__) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS) \
-    || defined(__3DS__) || defined(SDL_PLATFORM_NGAGE) || defined(__PS2__) || defined(SDL_PLATFORM_PSP)
+    || defined(__3DS__) || defined(SDL_PLATFORM_NGAGE) || defined(SDL_PLATFORM_PS2) || defined(SDL_PLATFORM_PSP)
 
 /* platforms which main (-equivalent) can be implemented in plain C */
 #include <SDL3/SDL_main_impl.h>
