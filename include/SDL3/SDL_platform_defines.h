@@ -29,8 +29,7 @@
 #define SDL_platform_defines_h_
 
 #ifdef _AIX
-#undef __AIX__
-#define __AIX__     1
+#define SDL_PLATFORM_AIX    1
 #endif
 #ifdef __HAIKU__
 #undef __HAIKU__

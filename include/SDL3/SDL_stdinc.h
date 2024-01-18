@@ -59,7 +59,7 @@
 #   include <malloc.h>
 #  elif defined(__DMC__)
 #   include <stdlib.h>
-#  elif defined(__AIX__)
+#  elif defined(SDL_PLATFORM_AIX)
 # pragma alloca
 #  elif defined(__MRC__)
 void *alloca(unsigned);
