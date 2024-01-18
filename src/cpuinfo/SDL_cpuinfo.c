@@ -74,7 +74,7 @@
 #include <sys/auxv.h>
 #endif
 
-#ifdef __RISCOS__
+#ifdef SDL_PLATFORM_RISCOS
 #include <kernel.h>
 #include <swis.h>
 #endif
@@ -384,7 +384,7 @@ static int CPU_haveARMSIMD(void)
     return arm_simd;
 }
 
-#elif defined(__RISCOS__)
+#elif defined(SDL_PLATFORM_RISCOS)
 static int CPU_haveARMSIMD(void)
 {
     _kernel_swi_regs regs;
@@ -484,7 +484,7 @@ static int CPU_haveNEON(void)
         }
         return 0;
     }
-#elif defined(__RISCOS__)
+#elif defined(SDL_PLATFORM_RISCOS)
     /* Use the VFPSupport_Features SWI to access the MVFR registers */
     {
         _kernel_swi_regs regs;
@@ -1038,7 +1038,7 @@ int SDL_GetSystemRAM(void)
             }
         }
 #endif
-#ifdef __RISCOS__
+#ifdef SDL_PLATFORM_RISCOS
         if (SDL_SystemRAM <= 0) {
             _kernel_swi_regs regs;
             regs.r[0] = 0x108;

@@ -175,7 +175,7 @@ SDL_ThreadID SDL_GetCurrentThreadID(void)
 
 int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
-#ifdef __RISCOS__
+#ifdef SDL_PLATFORM_RISCOS
     /* FIXME: Setting thread priority does not seem to be supported */
     return 0;
 #else
@@ -269,7 +269,7 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     }
     return 0;
 #endif /* linux */
-#endif /* #if __RISCOS__ */
+#endif /* #if SDL_PLATFORM_RISCOS */
 }
 
 void SDL_SYS_WaitThread(SDL_Thread *thread)

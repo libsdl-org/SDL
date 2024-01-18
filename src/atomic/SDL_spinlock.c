@@ -28,7 +28,7 @@
 #include <atomic.h>
 #endif
 
-#if !defined(HAVE_GCC_ATOMICS) && defined(__RISCOS__)
+#if !defined(HAVE_GCC_ATOMICS) && defined(SDL_PLATFORM_RISCOS)
 #include <unixlib/local.h>
 #endif
 
@@ -79,7 +79,7 @@ SDL_bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
      defined(__ARM_ARCH_5TEJ__))
     int result;
 
-#ifdef __RISCOS__
+#ifdef SDL_PLATFORM_RISCOS
     if (__cpucap_have_rex()) {
         __asm__ __volatile__(
             "ldrex %0, [%2]\nteq   %0, #0\nstrexeq %0, %1, [%2]"

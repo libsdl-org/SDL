@@ -115,8 +115,7 @@
 #define SDL_PLATFORM_QNXNTO 1
 #endif
 #if defined(riscos) || defined(__riscos) || defined(__riscos__)
-#undef __RISCOS__
-#define __RISCOS__  1
+#define SDL_PLATFORM_RISCOS 1
 #endif
 #if defined(__sun) && defined(__SVR4)
 #undef __SOLARIS__
