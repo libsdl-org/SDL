@@ -591,7 +591,7 @@ const char *SDL_GetPlatform(void)
     return "macOS";
 #elif defined(__NACL__)
     return "NaCl";
-#elif defined(__NETBSD__)
+#elif defined(SDL_PLATFORM_NETBSD)
     return "NetBSD";
 #elif defined(__OPENBSD__)
     return "OpenBSD";

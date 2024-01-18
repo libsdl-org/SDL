@@ -42,7 +42,7 @@
 # ifndef alloca
 #  ifdef HAVE_ALLOCA_H
 #   include <alloca.h>
-#  elif defined(__NETBSD__)
+#  elif defined(SDL_PLATFORM_NETBSD)
 #   if defined(__STRICT_ANSI__)
 #    define SDL_DISABLE_ALLOCA
 #   else

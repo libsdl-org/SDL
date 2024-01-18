@@ -100,8 +100,7 @@
 #endif /* defined(SDL_PLATFORM_APPLE) */
 
 #ifdef __NetBSD__
-#undef __NETBSD__
-#define __NETBSD__  1
+#define SDL_PLATFORM_NETBSD 1
 #endif
 #ifdef __OpenBSD__
 #undef __OPENBSD__

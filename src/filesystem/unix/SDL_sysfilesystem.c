@@ -198,7 +198,7 @@ char *SDL_GetBasePath(void)
                       two copies of this plus all the #ifdefs. --ryan. */
 #ifdef SDL_PLATFORM_FREEBSD
         retval = readSymLink("/proc/curproc/file");
-#elif defined(__NETBSD__)
+#elif defined(SDL_PLATFORM_NETBSD)
         retval = readSymLink("/proc/curproc/exe");
 #elif defined(__SOLARIS__)
         retval = readSymLink("/proc/self/path/a.out");

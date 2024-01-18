@@ -1238,7 +1238,7 @@ int mspace_mallopt(int, int);
 #ifndef LACKS_UNISTD_H
 #include <unistd.h>     /* for sbrk */
 #else /* LACKS_UNISTD_H */
-#if !defined(SDL_PLATFORM_FREEBSD) && !defined(__OpenBSD__) && !defined(__NetBSD__) && !defined(__DragonFly__)
+#if !defined(SDL_PLATFORM_FREEBSD) && !defined(__OpenBSD__) && !defined(SDL_PLATFORM_NETBSD) && !defined(__DragonFly__)
 extern void*     sbrk(ptrdiff_t);
 #endif /* FreeBSD etc */
 #endif /* LACKS_UNISTD_H */

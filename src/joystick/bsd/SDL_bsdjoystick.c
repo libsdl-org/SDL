@@ -374,7 +374,7 @@ CreateHwData(const char *path)
 
     /* The poll blocks the event thread. */
     fcntl(fd, F_SETFL, O_NONBLOCK);
-#ifdef __NetBSD__
+#ifdef SDL_PLATFORM_NETBSD
     /* Flush pending events */
     if (rep) {
         while (read(fd, REP_BUF_DATA(rep), rep->size) == rep->size)
