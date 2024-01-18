@@ -164,12 +164,11 @@
 #elif defined(_GAMING_XBOX_SCARLETT)
 #define SDL_PLATFORM_XBOXSERIES 1
 #else
-#undef __WINDOWS__
-#define __WINDOWS__ 1
+#define SDL_PLATFORM_WINDOWS    1
 #endif
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__) */
 
-#ifdef __WINDOWS__
+#ifdef SDL_PLATFORM_WINDOWS
 #undef __WIN32__
 #define __WIN32__ 1
 #endif

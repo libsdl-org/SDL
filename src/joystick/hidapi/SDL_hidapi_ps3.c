@@ -72,7 +72,7 @@ static SDL_bool HIDAPI_DriverPS3_IsEnabled(void)
 #ifdef SDL_PLATFORM_MACOS
     /* This works well on macOS */
     default_value = SDL_TRUE;
-#elif defined(__WINDOWS__)
+#elif defined(SDL_PLATFORM_WINDOWS)
     /* You can't initialize the controller with the stock Windows drivers
      * See https://github.com/ViGEm/DsHidMini as an alternative driver
      */

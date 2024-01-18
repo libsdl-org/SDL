@@ -644,7 +644,7 @@ static Thing *LoadWavThing(const char *fname, float x, float y)
         static const ThingType can_be_dropped_onto[] = { THING_TRASHCAN, THING_NULL };
         char *titlebar = NULL;
         const char *nodirs = SDL_strrchr(fname, '/');
-        #ifdef __WINDOWS__
+        #ifdef SDL_PLATFORM_WINDOWS
         const char *nodirs2 = SDL_strrchr(nodirs ? nodirs : fname, '\\');
         if (nodirs2) {
             nodirs = nodirs2;
