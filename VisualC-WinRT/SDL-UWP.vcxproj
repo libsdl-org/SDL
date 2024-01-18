@@ -185,6 +185,14 @@
     <ClInclude Include="..\src\video\winrt\SDL_winrtopengles.h" />
     <ClInclude Include="..\src\video\winrt\SDL_winrtvideo_cpp.h" />
     <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb.h" />
+    <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb_common.h" />
+    <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb_internal.h" />
+    <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb_lsx.h" />
+    <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb_lsx_func.h" />
+    <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb_sse.h" />
+    <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb_sse_func.h" />
+    <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb_std.h" />
+    <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb_std_func.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\atomic\SDL_atomic.c" />
@@ -346,7 +354,9 @@
     <ClCompile Include="..\src\video\winrt\SDL_winrtvideo.cpp">
       <CompileAsWinRT>true</CompileAsWinRT>
     </ClCompile>
-    <ClCompile Include="..\src\video\yuv2rgb\yuv_rgb.c" />
+    <ClCompile Include="..\src\video\yuv2rgb\yuv_rgb_lsx.c" />
+    <ClCompile Include="..\src\video\yuv2rgb\yuv_rgb_sse.c" />
+    <ClCompile Include="..\src\video\yuv2rgb\yuv_rgb_std.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{89e9b32e-a86a-47c3-a948-d2b1622925ce}</ProjectGuid>

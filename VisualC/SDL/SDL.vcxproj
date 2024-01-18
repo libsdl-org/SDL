@@ -439,7 +439,13 @@
     <ClInclude Include="..\..\src\video\windows\SDL_windowswindow.h" />
     <ClInclude Include="..\..\src\video\windows\wmmsg.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_common.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_internal.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx_func.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_sse.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_sse_func.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_std.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_std_func.h" />
   </ItemGroup>
   <ItemGroup>
@@ -624,7 +630,9 @@
     <ClCompile Include="..\..\src\video\windows\SDL_windowsvideo.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsvulkan.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowswindow.c" />
-    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb.c" />
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx.c" />
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_sse.c" />
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_std.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\main\windows\version.rc" />
