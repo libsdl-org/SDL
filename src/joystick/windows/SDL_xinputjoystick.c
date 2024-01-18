@@ -39,23 +39,6 @@ extern "C" {
  */
 static SDL_bool s_bXInputEnabled = SDL_TRUE;
 
-static SDL_bool SDL_XInputUseOldJoystickMapping()
-{
-#ifdef __WINRT__
-    /* TODO: remove this __WINRT__ block, but only after integrating with UWP/WinRT's HID API */
-    /* FIXME: Why are Win8/10 different here? -flibit */
-    return NTDDI_VERSION < NTDDI_WIN10;
-#elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
-    return SDL_FALSE;
-#else
-    static int s_XInputUseOldJoystickMapping = -1;
-    if (s_XInputUseOldJoystickMapping < 0) {
-        s_XInputUseOldJoystickMapping = SDL_GetHintBoolean(SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING, SDL_FALSE);
-    }
-    return s_XInputUseOldJoystickMapping > 0;
-#endif
-}
-
 SDL_bool SDL_XINPUT_Enabled(void)
 {
     return s_bXInputEnabled;
@@ -75,40 +58,36 @@ static const char *GetXInputName(const Uint8 userid, BYTE SubType)
 {
     static char name[32];
 
-    if (SDL_XInputUseOldJoystickMapping()) {
-        (void)SDL_snprintf(name, sizeof(name), "X360 Controller #%d", 1 + userid);
-    } else {
-        switch (SubType) {
-        case XINPUT_DEVSUBTYPE_GAMEPAD:
-            (void)SDL_snprintf(name, sizeof(name), "XInput Controller #%d", 1 + userid);
-            break;
-        case XINPUT_DEVSUBTYPE_WHEEL:
-            (void)SDL_snprintf(name, sizeof(name), "XInput Wheel #%d", 1 + userid);
-            break;
-        case XINPUT_DEVSUBTYPE_ARCADE_STICK:
-            (void)SDL_snprintf(name, sizeof(name), "XInput ArcadeStick #%d", 1 + userid);
-            break;
-        case XINPUT_DEVSUBTYPE_FLIGHT_STICK:
-            (void)SDL_snprintf(name, sizeof(name), "XInput FlightStick #%d", 1 + userid);
-            break;
-        case XINPUT_DEVSUBTYPE_DANCE_PAD:
-            (void)SDL_snprintf(name, sizeof(name), "XInput DancePad #%d", 1 + userid);
-            break;
-        case XINPUT_DEVSUBTYPE_GUITAR:
-        case XINPUT_DEVSUBTYPE_GUITAR_ALTERNATE:
-        case XINPUT_DEVSUBTYPE_GUITAR_BASS:
-            (void)SDL_snprintf(name, sizeof(name), "XInput Guitar #%d", 1 + userid);
-            break;
-        case XINPUT_DEVSUBTYPE_DRUM_KIT:
-            (void)SDL_snprintf(name, sizeof(name), "XInput DrumKit #%d", 1 + userid);
-            break;
-        case XINPUT_DEVSUBTYPE_ARCADE_PAD:
-            (void)SDL_snprintf(name, sizeof(name), "XInput ArcadePad #%d", 1 + userid);
-            break;
-        default:
-            (void)SDL_snprintf(name, sizeof(name), "XInput Device #%d", 1 + userid);
-            break;
-        }
+    switch (SubType) {
+    case XINPUT_DEVSUBTYPE_GAMEPAD:
+        (void)SDL_snprintf(name, sizeof(name), "XInput Controller #%d", 1 + userid);
+        break;
+    case XINPUT_DEVSUBTYPE_WHEEL:
+        (void)SDL_snprintf(name, sizeof(name), "XInput Wheel #%d", 1 + userid);
+        break;
+    case XINPUT_DEVSUBTYPE_ARCADE_STICK:
+        (void)SDL_snprintf(name, sizeof(name), "XInput ArcadeStick #%d", 1 + userid);
+        break;
+    case XINPUT_DEVSUBTYPE_FLIGHT_STICK:
+        (void)SDL_snprintf(name, sizeof(name), "XInput FlightStick #%d", 1 + userid);
+        break;
+    case XINPUT_DEVSUBTYPE_DANCE_PAD:
+        (void)SDL_snprintf(name, sizeof(name), "XInput DancePad #%d", 1 + userid);
+        break;
+    case XINPUT_DEVSUBTYPE_GUITAR:
+    case XINPUT_DEVSUBTYPE_GUITAR_ALTERNATE:
+    case XINPUT_DEVSUBTYPE_GUITAR_BASS:
+        (void)SDL_snprintf(name, sizeof(name), "XInput Guitar #%d", 1 + userid);
+        break;
+    case XINPUT_DEVSUBTYPE_DRUM_KIT:
+        (void)SDL_snprintf(name, sizeof(name), "XInput DrumKit #%d", 1 + userid);
+        break;
+    case XINPUT_DEVSUBTYPE_ARCADE_PAD:
+        (void)SDL_snprintf(name, sizeof(name), "XInput ArcadePad #%d", 1 + userid);
+        break;
+    default:
+        (void)SDL_snprintf(name, sizeof(name), "XInput Device #%d", 1 + userid);
+        break;
     }
     return name;
 }
@@ -175,10 +154,6 @@ static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pC
     }
 #endif
 
-    if (SDL_XInputUseOldJoystickMapping() && SubType != XINPUT_DEVSUBTYPE_GAMEPAD) {
-        return;
-    }
-
     if (SubType == XINPUT_DEVSUBTYPE_UNKNOWN) {
         return;
     }
@@ -215,9 +190,7 @@ static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pC
         return; /* better luck next time? */
     }
     (void)SDL_snprintf(pNewJoystick->path, sizeof(pNewJoystick->path), "XInput#%u", userid);
-    if (!SDL_XInputUseOldJoystickMapping()) {
-        pNewJoystick->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, vendor, product, version, NULL, name, 'x', SubType);
-    }
+    pNewJoystick->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, vendor, product, version, NULL, name, 'x', SubType);
     pNewJoystick->SubType = SubType;
     pNewJoystick->XInputUserId = userid;
 
@@ -287,14 +260,9 @@ int SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystic
     joystick->hwdata->userid = userId;
 
     /* The XInput API has a hard coded button/axis mapping, so we just match it */
-    if (SDL_XInputUseOldJoystickMapping()) {
-        joystick->naxes = 6;
-        joystick->nbuttons = 15;
-    } else {
-        joystick->naxes = 6;
-        joystick->nbuttons = 11;
-        joystick->nhats = 1;
-    }
+    joystick->naxes = 6;
+    joystick->nbuttons = 11;
+    joystick->nhats = 1;
     return 0;
 }
 
@@ -324,33 +292,6 @@ static void UpdateXInputJoystickBatteryInformation(SDL_Joystick *joystick, XINPU
 
         SDL_SendJoystickBatteryLevel(joystick, ePowerLevel);
     }
-}
-
-static void UpdateXInputJoystickState_OLD(SDL_Joystick *joystick, XINPUT_STATE *pXInputState, XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation)
-{
-    static WORD s_XInputButtons[] = {
-        XINPUT_GAMEPAD_DPAD_UP, XINPUT_GAMEPAD_DPAD_DOWN, XINPUT_GAMEPAD_DPAD_LEFT, XINPUT_GAMEPAD_DPAD_RIGHT,
-        XINPUT_GAMEPAD_START, XINPUT_GAMEPAD_BACK, XINPUT_GAMEPAD_LEFT_THUMB, XINPUT_GAMEPAD_RIGHT_THUMB,
-        XINPUT_GAMEPAD_LEFT_SHOULDER, XINPUT_GAMEPAD_RIGHT_SHOULDER,
-        XINPUT_GAMEPAD_A, XINPUT_GAMEPAD_B, XINPUT_GAMEPAD_X, XINPUT_GAMEPAD_Y,
-        XINPUT_GAMEPAD_GUIDE
-    };
-    WORD wButtons = pXInputState->Gamepad.wButtons;
-    Uint8 button;
-    Uint64 timestamp = SDL_GetTicksNS();
-
-    SDL_SendJoystickAxis(timestamp, joystick, 0, (Sint16)pXInputState->Gamepad.sThumbLX);
-    SDL_SendJoystickAxis(timestamp, joystick, 1, (Sint16)(-SDL_max(-32767, pXInputState->Gamepad.sThumbLY)));
-    SDL_SendJoystickAxis(timestamp, joystick, 2, (Sint16)pXInputState->Gamepad.sThumbRX);
-    SDL_SendJoystickAxis(timestamp, joystick, 3, (Sint16)(-SDL_max(-32767, pXInputState->Gamepad.sThumbRY)));
-    SDL_SendJoystickAxis(timestamp, joystick, 4, (Sint16)(((int)pXInputState->Gamepad.bLeftTrigger * 65535 / 255) - 32768));
-    SDL_SendJoystickAxis(timestamp, joystick, 5, (Sint16)(((int)pXInputState->Gamepad.bRightTrigger * 65535 / 255) - 32768));
-
-    for (button = 0; button < (Uint8)SDL_arraysize(s_XInputButtons); ++button) {
-        SDL_SendJoystickButton(timestamp, joystick, button, (wButtons & s_XInputButtons[button]) ? SDL_PRESSED : SDL_RELEASED);
-    }
-
-    UpdateXInputJoystickBatteryInformation(joystick, pBatteryInformation);
 }
 
 static void UpdateXInputJoystickState(SDL_Joystick *joystick, XINPUT_STATE *pXInputState, XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation)
@@ -441,11 +382,7 @@ void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick)
 #else
     /* only fire events if the data changed from last time */
     if (XInputState.dwPacketNumber && XInputState.dwPacketNumber != joystick->hwdata->dwPacketNumber) {
-        if (SDL_XInputUseOldJoystickMapping()) {
-            UpdateXInputJoystickState_OLD(joystick, &XInputState, &XBatteryInformation);
-        } else {
-            UpdateXInputJoystickState(joystick, &XInputState, &XBatteryInformation);
-        }
+        UpdateXInputJoystickState(joystick, &XInputState, &XBatteryInformation);
         joystick->hwdata->dwPacketNumber = XInputState.dwPacketNumber;
     }
 #endif
