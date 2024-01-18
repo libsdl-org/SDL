@@ -30,7 +30,7 @@
 /* this checks for HAVE_DBUS_DBUS_H internally. */
 #include "core/linux/SDL_dbus.h"
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten.h>
 #endif
 
@@ -91,7 +91,7 @@ SDL_NORETURN void SDL_ExitProcess(int exitcode)
     /* MingW doesn't have TerminateProcess marked as noreturn, so add an
        ExitProcess here that will never be reached but make MingW happy. */
     ExitProcess(exitcode);
-#elif defined(__EMSCRIPTEN__)
+#elif defined(SDL_PLATFORM_EMSCRIPTEN)
     emscripten_cancel_main_loop();   /* this should "kill" the app. */
     emscripten_force_exit(exitcode); /* this should "kill" the app. */
     exit(exitcode);
@@ -573,7 +573,7 @@ const char *SDL_GetPlatform(void)
     return "Android";
 #elif defined(SDL_PLATFORM_BSDI)
     return "BSDI";
-#elif defined(__EMSCRIPTEN__)
+#elif defined(SDL_PLATFORM_EMSCRIPTEN)
     return "Emscripten";
 #elif defined(SDL_PLATFORM_FREEBSD)
     return "FreeBSD";

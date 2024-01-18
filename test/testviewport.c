@@ -11,23 +11,23 @@
 */
 /* Simple program:  Check viewports */
 
-#include <stdlib.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
 #include "testutils.h"
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
+#include <stdlib.h>
 
 static SDLTest_CommonState *state;
 
 static SDL_Rect viewport;
 static int done, j;
 static SDL_bool use_target = SDL_FALSE;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 static Uint32 wait_start;
 #endif
 static SDL_Texture *sprite;
@@ -109,7 +109,7 @@ static void loop(void)
 {
     SDL_Event event;
     int i;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     /* Avoid using delays */
     if (SDL_GetTicks() - wait_start < 1000) {
         return;
@@ -148,7 +148,7 @@ static void loop(void)
         }
     }
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {
         emscripten_cancel_main_loop();
     }
@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
     done = 0;
     j = 0;
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     wait_start = SDL_GetTicks();
     emscripten_set_main_loop(loop, 0, 1);
 #else

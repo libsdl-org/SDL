@@ -29,7 +29,7 @@
 
 #include "../SDL_timer_c.h"
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten.h>
 #endif
 
@@ -146,7 +146,7 @@ void SDL_DelayNS(Uint64 ns)
     Uint64 then, now, elapsed;
 #endif
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
         /* pseudo-synchronous pause, used directly or through e.g. SDL_WaitEvent */
         emscripten_sleep(ns / SDL_NS_PER_MS);

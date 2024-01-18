@@ -17,7 +17,7 @@
 #include <SDL3/SDL_test.h>
 #include "testutils.h"
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #endif
 
@@ -219,7 +219,7 @@ static void loop(void)
 
     while (SDL_PollEvent(&e)) {
         SDLTest_CommonEvent(state, &e, &done);
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
         if (done) {
             emscripten_cancel_main_loop();
         }
@@ -432,7 +432,7 @@ int main(int argc, char *argv[])
 
     SDL_BindAudioStream(state->audio_id, stream);
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {

@@ -16,16 +16,16 @@
  *                                                                              *
  ********************************************************************************/
 
-#include <stdlib.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
 #include "testutils.h"
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
+#include <stdlib.h>
 
 #define MOOSEPIC_W 64
 #define MOOSEPIC_H 88
@@ -285,7 +285,7 @@ static void loop(void)
         }
     }
 
-#ifndef __EMSCRIPTEN__
+#ifndef SDL_PLATFORM_EMSCRIPTEN
     SDL_Delay(fpsdelay);
 #endif
 
@@ -295,7 +295,7 @@ static void loop(void)
         }
         MoveSprites(state->renderers[i]);
     }
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {
         emscripten_cancel_main_loop();
     }
@@ -529,7 +529,7 @@ int main(int argc, char **argv)
     done = 0;
 
     /* Loop, waiting for QUIT or RESIZE */
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, nodelay ? 0 : fps, 1);
 #else
     while (!done) {

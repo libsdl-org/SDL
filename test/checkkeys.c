@@ -15,13 +15,13 @@
    pump the event loop and catch keystrokes.
 */
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
 
 static SDLTest_CommonState *state;
 static SDLTest_TextWindow *textwin;
@@ -228,7 +228,7 @@ static void loop(void)
     /* Slow down framerate */
     SDL_Delay(100);
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {
         emscripten_cancel_main_loop();
     }
@@ -285,7 +285,7 @@ int main(int argc, char *argv[])
     /* Watch keystrokes */
     done = 0;
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {

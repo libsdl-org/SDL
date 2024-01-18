@@ -25,7 +25,7 @@
 // TODO: NEON is disabled until https://github.com/libsdl-org/SDL/issues/8352 can be fixed
 #undef SDL_NEON_INTRINSICS
 
-#ifndef __EMSCRIPTEN__
+#ifndef SDL_PLATFORM_EMSCRIPTEN
 #if defined(__x86_64__) && defined(SDL_SSE2_INTRINSICS)
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0 // x86_64 guarantees SSE2.
 #elif defined(SDL_PLATFORM_MACOS) && defined(SDL_SSE2_INTRINSICS)
@@ -35,7 +35,7 @@
 #elif defined(SDL_PLATFORM_APPLE) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7) && defined(SDL_NEON_INTRINSICS)
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0 // All Apple ARMv7 chips promise NEON support.
 #endif
-#endif /* __EMSCRIPTEN__ */
+#endif /* SDL_PLATFORM_EMSCRIPTEN */
 
 // Set to zero if platform is guaranteed to use a SIMD codepath here.
 #if !defined(NEED_SCALAR_CONVERTER_FALLBACKS)

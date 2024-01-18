@@ -13,11 +13,12 @@
 #include "SDL3/SDL.h"
 #include "SDL3/SDL_test.h"
 #include "SDL3/SDL_video_capture.h"
-#include <stdio.h>
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #endif
+
+#include <stdio.h>
 
 static const char *usage = "\
  \n\

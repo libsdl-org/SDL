@@ -53,7 +53,7 @@
 #endif
 #endif
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten.h>
 #endif
 
@@ -3042,7 +3042,7 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
             attempt_texture_framebuffer = SDL_FALSE;
         }
 #endif
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
         else {
             attempt_texture_framebuffer = SDL_FALSE;
         }
@@ -4951,7 +4951,7 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
 int SDL_ShowSimpleMessageBox(Uint32 flags, const char *title, const char *message, SDL_Window *window)
 {
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     /* !!! FIXME: propose a browser API for this, get this #ifdef out of here? */
     /* Web browsers don't (currently) have an API for a custom message box
        that can block, but for the most common case (SDL_ShowSimpleMessageBox),

@@ -45,7 +45,7 @@
 #include "SDL_build_config_ios.h"
 #elif defined(SDL_PLATFORM_ANDROID)
 #include "SDL_build_config_android.h"
-#elif defined(__EMSCRIPTEN__)
+#elif defined(SDL_PLATFORM_EMSCRIPTEN)
 #include "SDL_build_config_emscripten.h"
 #elif defined(SDL_PLATFORM_NGAGE)
 #include "SDL_build_config_ngage.h"

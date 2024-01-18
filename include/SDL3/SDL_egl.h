@@ -419,7 +419,7 @@ typedef HDC     EGLNativeDisplayType;
 typedef HBITMAP EGLNativePixmapType;
 typedef HWND    EGLNativeWindowType;
 
-#elif defined(__EMSCRIPTEN__)
+#elif defined(SDL_PLATFORM_EMSCRIPTEN)
 
 typedef int EGLNativeDisplayType;
 typedef int EGLNativePixmapType;

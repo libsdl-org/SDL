@@ -33,7 +33,7 @@
 #endif
 #endif
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     #include <emscripten.h>
     /* older Emscriptens don't have this, but we need to for wasm64 compatibility. */
     #ifndef MAIN_THREAD_EM_ASM_PTR
@@ -246,7 +246,7 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
             state = (SDL_AssertState)selected;
         }
     } else {
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
         /* This is nasty, but we can't block on a custom UI. */
         for (;;) {
             SDL_bool okay = SDL_TRUE;

@@ -14,13 +14,13 @@
 
 /* Sample program:  Draw a Chess Board  by using SDL_CreateSoftwareRenderer API */
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
 
 static SDL_Window *window;
 static SDL_Renderer *renderer;
@@ -79,7 +79,7 @@ static void loop(void)
 
         if (e.type == SDL_EVENT_QUIT) {
             done = 1;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
             emscripten_cancel_main_loop();
 #endif
             return;
@@ -87,7 +87,7 @@ static void loop(void)
 
         if ((e.type == SDL_EVENT_KEY_DOWN) && (e.key.keysym.sym == SDLK_ESCAPE)) {
             done = 1;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
             emscripten_cancel_main_loop();
 #endif
             return;
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
 
     /* Draw the Image on rendering surface */
     done = 0;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {

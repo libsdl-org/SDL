@@ -33,7 +33,7 @@
    In all other cases, attempt to use client-side arrays, as they tend to
    be dramatically faster when not batching, and about the same when
    we are. */
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 #define USE_VERTEX_BUFFER_OBJECTS 1
 #else
 #define USE_VERTEX_BUFFER_OBJECTS 0

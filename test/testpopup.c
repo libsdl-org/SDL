@@ -11,16 +11,16 @@ freely.
 */
 /* Simple program:  Move N sprites around on the screen as fast as possible */
 
-#include <stdlib.h>
-#include <time.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_test_font.h>
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
+#include <stdlib.h>
+#include <time.h>
 
 #define MENU_WIDTH  120
 #define MENU_HEIGHT 300
@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
 
     /* Main render loop */
     done = 0;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {

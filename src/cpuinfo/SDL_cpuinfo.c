@@ -122,7 +122,7 @@ static int CPU_haveCPUID(void)
     int has_CPUID = 0;
 
 /* *INDENT-OFF* */ /* clang-format off */
-#ifndef __EMSCRIPTEN__
+#ifndef SDL_PLATFORM_EMSCRIPTEN
 #if (defined(__GNUC__) || defined(__llvm__)) && defined(__i386__)
     __asm__ (
 "        pushfl                      # Get original EFLAGS             \n"
@@ -209,7 +209,7 @@ done:
 "1:                            \n"
     );
 #endif
-#endif /* !__EMSCRIPTEN__ */
+#endif /* !SDL_PLATFORM_EMSCRIPTEN */
 /* *INDENT-ON* */ /* clang-format on */
     return has_CPUID;
 }
@@ -496,7 +496,7 @@ static int CPU_haveNEON(void)
         }
         return 0;
     }
-#elif defined(__EMSCRIPTEN__)
+#elif defined(SDL_PLATFORM_EMSCRIPTEN)
     return 0;
 #else
 #warning SDL_HasNEON is not implemented for this ARM platform. Write me.

@@ -103,6 +103,9 @@
 #endif /* TARGET_OS_IPHONE */
 #endif /* defined(SDL_PLATFORM_APPLE) */
 
+#ifdef __EMSCRIPTEN__
+#define SDL_PLATFORM_EMSCRIPTEN 1
+#endif
 #ifdef __NetBSD__
 #define SDL_PLATFORM_NETBSD 1
 #endif

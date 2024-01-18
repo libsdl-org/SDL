@@ -9,17 +9,18 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include <stdlib.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
 
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
 #include "testutils.h"
 
-#if defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_ANDROID) || defined(__EMSCRIPTEN__) || defined(SDL_PLATFORM_WINDOWS) || defined(SDL_PLATFORM_LINUX)
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
+#include <stdlib.h>
+
+#if defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_EMSCRIPTEN) || defined(SDL_PLATFORM_WINDOWS) || defined(SDL_PLATFORM_LINUX)
 #define HAVE_OPENGLES2
 #endif
 
@@ -425,7 +426,7 @@ static void loop(void)
             SDL_GL_SwapWindow(state->windows[i]);
         }
     }
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     else {
         emscripten_cancel_main_loop();
     }
@@ -769,7 +770,7 @@ int main(int argc, char *argv[])
     then = SDL_GetTicks();
     done = 0;
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {

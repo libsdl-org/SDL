@@ -12,20 +12,20 @@
 
 /* Program to test hotplugging of audio devices */
 
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
+#include "testutils.h"
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
 #include <stdlib.h>
 
 #ifdef HAVE_SIGNAL_H
 #include <signal.h>
 #endif
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test.h>
-#include "testutils.h"
 
 static SDL_AudioSpec spec;
 static Uint8 *sound = NULL; /* Pointer to wave data */
@@ -101,7 +101,7 @@ static void iteration(void)
     }
 }
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 static void loop(void)
 {
     if (done)
@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
     SDL_Log("Select a driver with the SDL_AUDIO_DRIVER environment variable.\n");
     SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {
