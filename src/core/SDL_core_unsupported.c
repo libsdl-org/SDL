@@ -225,7 +225,7 @@ Sint32 JNI_OnLoad(void *vm, void *reserved)
 }
 #endif
 
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(__XBOXONE__) || defined(SDL_PLATFORM_XBOXSERIES)
 char *SDL_GetUserFolder(SDL_Folder folder)
 {
     (void)folder;

@@ -376,7 +376,7 @@ void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick)
         result = XINPUTGETBATTERYINFORMATION(joystick->hwdata->userid, BATTERY_DEVTYPE_GAMEPAD, &XBatteryInformation);
     }
 
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(__XBOXONE__) || defined(SDL_PLATFORM_XBOXSERIES)
     /* XInputOnGameInput doesn't ever change dwPacketNumber, so have to just update every frame */
     UpdateXInputJoystickState(joystick, &XInputState, &XBatteryInformation);
 #else

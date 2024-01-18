@@ -58,7 +58,7 @@
 
 static int SDLCALL windows_file_open(SDL_RWops *context, const char *filename, const char *mode)
 {
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__) && !defined(SDL_PLATFORM_WINRT)
+#if !defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES) && !defined(SDL_PLATFORM_WINRT)
     UINT old_error_mode;
 #endif
     HANDLE h;
@@ -94,7 +94,7 @@ static int SDLCALL windows_file_open(SDL_RWops *context, const char *filename, c
     if (!context->hidden.windowsio.buffer.data) {
         return -1;
     }
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__) && !defined(SDL_PLATFORM_WINRT)
+#if !defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES) && !defined(SDL_PLATFORM_WINRT)
     /* Do not open a dialog box if failure */
     old_error_mode =
         SetErrorMode(SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
@@ -124,7 +124,7 @@ static int SDLCALL windows_file_open(SDL_RWops *context, const char *filename, c
         SDL_free(tstr);
     }
 
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__) && !defined(SDL_PLATFORM_WINRT)
+#if !defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES) && !defined(SDL_PLATFORM_WINRT)
     /* restore old behavior */
     SetErrorMode(old_error_mode);
 #endif

@@ -163,8 +163,7 @@
 #undef __XBOXONE__
 #define __XBOXONE__ 1
 #elif defined(_GAMING_XBOX_SCARLETT)
-#undef __XBOXSERIES__
-#define __XBOXSERIES__ 1
+#define SDL_PLATFORM_XBOXSERIES 1
 #else
 #undef __WINDOWS__
 #define __WINDOWS__ 1
@@ -176,7 +175,7 @@
 #define __WIN32__ 1
 #endif
 /* This is to support generic "any GDK" separate from a platform-specific GDK */
-#if defined(__WINGDK__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(__WINGDK__) || defined(__XBOXONE__) || defined(SDL_PLATFORM_XBOXSERIES)
 #undef __GDK__
 #define __GDK__ 1
 #endif

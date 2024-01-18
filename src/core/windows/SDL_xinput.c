@@ -37,7 +37,7 @@ DWORD SDL_XInputVersion = 0;
 static HMODULE s_pXInputDLL = NULL;
 static int s_XInputDLLRefCount = 0;
 
-#if defined(SDL_PLATFORM_WINRT) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(SDL_PLATFORM_WINRT) || defined(__XBOXONE__) || defined(SDL_PLATFORM_XBOXSERIES)
 
 int WIN_LoadXInputDLL(void)
 {
@@ -68,7 +68,7 @@ void WIN_UnloadXInputDLL(void)
 {
 }
 
-#else /* !(defined(SDL_PLATFORM_WINRT) || defined(__XBOXONE__) || defined(__XBOXSERIES__)) */
+#else /* !(defined(SDL_PLATFORM_WINRT) || defined(__XBOXONE__) || defined(SDL_PLATFORM_XBOXSERIES)) */
 
 int WIN_LoadXInputDLL(void)
 {

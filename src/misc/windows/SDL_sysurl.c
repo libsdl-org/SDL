@@ -25,7 +25,7 @@
 
 #include <shellapi.h>
 
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(__XBOXONE__) || defined(SDL_PLATFORM_XBOXSERIES)
 int SDL_SYS_OpenURL(const char *url)
 {
     /* Not supported */

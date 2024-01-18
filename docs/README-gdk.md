@@ -149,7 +149,7 @@ Xbox GDKX Setup
 In general, the same process in the Windows GDK instructions work. There are just a few additional notes:
 * For Xbox One consoles, use the Gaming.Xbox.XboxOne.x64 target
 * For Xbox Series consoles, use the Gaming.Xbox.Scarlett.x64 target
-* The Xbox One target sets the `__XBOXONE__` define and the Xbox Series target sets the `__XBOXSERIES__` define
+* The Xbox One target sets the `__XBOXONE__` define and the Xbox Series target sets the `SDL_PLATFORM_XBOXSERIES` define
 * You don't need to link against the Xbox.Services Thunks lib nor include that dll in your package (it doesn't exist for Xbox)
 * The shader blobs for Xbox are created in a pre-build step for the Xbox targets, rather than included in the source (due to NDA and version compatability reasons)
 * To create a package, use:

@@ -613,7 +613,7 @@ const char *SDL_GetPlatform(void)
     return "WinGDK";
 #elif defined(__XBOXONE__)
     return "Xbox One";
-#elif defined(__XBOXSERIES__)
+#elif defined(SDL_PLATFORM_XBOXSERIES)
     return "Xbox Series X|S";
 #elif defined(SDL_PLATFORM_IOS)
     return "iOS";

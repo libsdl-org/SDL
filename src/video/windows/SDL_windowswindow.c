@@ -192,7 +192,7 @@ static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, DWORD 
        expanding the window client area to the previous window + chrome size, so shouldn't need to adjust the window size for the set styles.
      */
     if (!(window->flags & SDL_WINDOW_BORDERLESS)) {
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(__XBOXONE__) || defined(SDL_PLATFORM_XBOXSERIES)
         AdjustWindowRectEx(&rect, style, menu, 0);
 #else
         if (WIN_IsPerMonitorV2DPIAware(SDL_GetVideoDevice())) {
@@ -240,7 +240,7 @@ int WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *he
 
     style = GetWindowLong(hwnd, GWL_STYLE);
     styleEx = GetWindowLong(hwnd, GWL_EXSTYLE);
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(__XBOXONE__) || defined(SDL_PLATFORM_XBOXSERIES)
     menu = FALSE;
 #else
     menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
@@ -257,13 +257,13 @@ int WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi)
 
     style = GetWindowLong(hwnd, GWL_STYLE);
     styleEx = GetWindowLong(hwnd, GWL_EXSTYLE);
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(__XBOXONE__) || defined(SDL_PLATFORM_XBOXSERIES)
     menu = FALSE;
 #else
     menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
 #endif
 
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(__XBOXONE__) || defined(SDL_PLATFORM_XBOXSERIES)
     AdjustWindowRectEx(lpRect, style, menu, styleEx);
 #else
     if (WIN_IsPerMonitorV2DPIAware(videodevice)) {
@@ -336,7 +336,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
     data->window = window;
     data->hwnd = hwnd;
     data->parent = parent;
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(__XBOXONE__) || defined(SDL_PLATFORM_XBOXSERIES)
     data->hdc = (HDC)data->hwnd;
 #else
     data->hdc = GetDC(hwnd);
@@ -361,7 +361,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
 
     window->driverdata = data;
 
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)
     /* Associate the data with the window */
     if (!SetProp(hwnd, TEXT("SDL_WindowData"), data)) {
         ReleaseDC(hwnd, data->hdc);
@@ -411,7 +411,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
             }
         }
     }
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)
     {
         POINT point;
         point.x = 0;
@@ -461,7 +461,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
             window->flags &= ~SDL_WINDOW_MINIMIZED;
         }
     }
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(__XBOXONE__) || defined(SDL_PLATFORM_XBOXSERIES)
     window->flags |= SDL_WINDOW_INPUT_FOCUS;
 #else
     if (GetFocus() == hwnd) {
@@ -477,7 +477,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
         WIN_SetWindowAlwaysOnTop(_this, window, SDL_FALSE);
     }
 
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)
     /* Enable multi-touch */
     if (videodata->RegisterTouchWindow) {
         videodata->RegisterTouchWindow(hwnd, (TWF_FINETOUCH | TWF_WANTPALM));
@@ -490,7 +490,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
 
     data->initializing = SDL_FALSE;
 
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)
     if (window->flags & SDL_WINDOW_EXTERNAL) {
         /* Query the title from the existing window */
         LPTSTR title;
@@ -511,7 +511,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
             SDL_small_free(title, isstack);
         }
     }
-#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+#endif /*!defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
     SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WIN32_HWND_POINTER, data->hwnd);
@@ -529,7 +529,7 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
     if (data) {
         SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, WIN_MouseRelativeModeCenterChanged, data);
 
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)
         if (data->ICMFileName) {
             SDL_free(data->ICMFileName);
         }
@@ -556,9 +556,9 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
             }
         }
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)
         SDL_free(data->rawinput);
-#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+#endif /*!defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)*/
         SDL_free(data);
     }
     window->driverdata = NULL;
@@ -676,7 +676,7 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
         }
     }
 
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)
     /* FIXME: does not work on all hardware configurations with different renders (i.e. hybrid GPUs) */
     if (window->flags & SDL_WINDOW_TRANSPARENT) {
         void *handle = SDL_LoadObject("dwmapi.dll");
@@ -744,14 +744,14 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
         return SDL_SetError("Could not create GL window (WGL support not configured)");
 #endif
     }
-#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+#endif /*!defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
     return 0;
 }
 
 void WIN_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)
     HWND hwnd = window->driverdata->hwnd;
     LPTSTR title = WIN_UTF8ToString(window->title);
     SetWindowText(hwnd, title);
@@ -761,7 +761,7 @@ void WIN_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 
 int WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon)
 {
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)
     HWND hwnd = window->driverdata->hwnd;
     HICON hicon = NULL;
     BYTE *icon_bmp;
@@ -856,7 +856,7 @@ void WIN_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 
 int WIN_GetWindowBordersSize(SDL_VideoDevice *_this, SDL_Window *window, int *top, int *left, int *bottom, int *right)
 {
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(__XBOXONE__) || defined(SDL_PLATFORM_XBOXSERIES)
     HWND hwnd = window->driverdata->hwnd;
     RECT rcClient;
 
@@ -870,7 +870,7 @@ int WIN_GetWindowBordersSize(SDL_VideoDevice *_this, SDL_Window *window, int *to
     *right = rcClient.right;
 
     return 0;
-#else  /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+#else  /*!defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)*/
     HWND hwnd = window->driverdata->hwnd;
     RECT rcClient, rcWindow;
     POINT ptDiff;
@@ -918,7 +918,7 @@ int WIN_GetWindowBordersSize(SDL_VideoDevice *_this, SDL_Window *window, int *to
     *right = rcWindow.right - rcClient.right;
 
     return 0;
-#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+#endif /*!defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 }
 
 void WIN_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h)
@@ -989,7 +989,7 @@ void WIN_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 void WIN_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)
     /* If desired, raise the window more forcefully.
      * Technique taken from http://stackoverflow.com/questions/916259/ .
      * Specifically, http://stackoverflow.com/a/34414846 .
@@ -1033,7 +1033,7 @@ void WIN_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
         SetFocus(hwnd);
         SetActiveWindow(hwnd);
     }
-#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+#endif /*!defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 }
 
 void WIN_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
@@ -1114,7 +1114,7 @@ void WIN_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
  */
 int WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)
     SDL_DisplayData *displaydata = display->driverdata;
     SDL_WindowData *data = window->driverdata;
     HWND hwnd = data->hwnd;
@@ -1198,11 +1198,11 @@ int WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_Vide
     SDL_Log("WIN_SetWindowFullscreen: %d finished. Set window to %d,%d, %dx%d", (int)fullscreen, x, y, w, h);
 #endif
 
-#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+#endif /*!defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)*/
     return 0;
 }
 
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)
 void WIN_UpdateWindowICCProfile(SDL_Window *window, SDL_bool send_event)
 {
     SDL_WindowData *data = window->driverdata;
@@ -1310,7 +1310,7 @@ void WIN_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_b
         WIN_UngrabKeyboard(window);
     }
 }
-#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+#endif /*!defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
 void WIN_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
@@ -1383,7 +1383,7 @@ void SDL_HelperWindowDestroy(void)
     }
 }
 
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)
 void WIN_OnWindowEnter(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
@@ -1499,11 +1499,11 @@ int WIN_SetWindowHitTest(SDL_Window *window, SDL_bool enabled)
 {
     return 0; /* just succeed, the real work is done elsewhere. */
 }
-#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+#endif /*!defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
 int WIN_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity)
 {
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(__XBOXONE__) || defined(SDL_PLATFORM_XBOXSERIES)
     return -1;
 #else
     const SDL_WindowData *data = window->driverdata;
@@ -1534,10 +1534,10 @@ int WIN_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opaci
     }
 
     return 0;
-#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+#endif /*!defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 }
 
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)
 void WIN_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept)
 {
     const SDL_WindowData *data = window->driverdata;
@@ -1606,7 +1606,7 @@ int WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool 
 
     return 0;
 }
-#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+#endif /*!defined(__XBOXONE__) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
 void WIN_UpdateDarkModeForHWND(HWND hwnd)
 {

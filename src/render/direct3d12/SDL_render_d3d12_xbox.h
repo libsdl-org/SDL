@@ -26,7 +26,7 @@
 
 #if defined(__XBOXONE__)
 #include <d3d12_x.h>
-#else /* __XBOXSERIES__ */
+#else /* SDL_PLATFORM_XBOXSERIES */
 #include <d3d12_xs.h>
 #endif
 
