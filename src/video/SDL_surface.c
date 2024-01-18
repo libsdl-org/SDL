@@ -47,28 +47,27 @@ static int SDL_CalculateRGBSize(Uint32 format, size_t width, size_t height, size
 {
     if (SDL_BITSPERPIXEL(format) >= 8) {
         if (SDL_size_mul_overflow(width, SDL_BYTESPERPIXEL(format), pitch)) {
-            return -1;
+            return SDL_SetError("width * bpp would overflow");
         }
     } else {
         if (SDL_size_mul_overflow(width, SDL_BITSPERPIXEL(format), pitch)) {
-            return -1;
+            return SDL_SetError("width * bpp would overflow");
         }
         if (SDL_size_add_overflow(*pitch, 7, pitch)) {
-            return -1;
+            return SDL_SetError("aligning pitch would overflow");
         }
         *pitch /= 8;
     }
     if (!minimal) {
         /* 4-byte aligning for speed */
         if (SDL_size_add_overflow(*pitch, 3, pitch)) {
-            return -1;
+            return SDL_SetError("aligning pitch would overflow");
         }
         *pitch &= ~3;
     }
 
     if (SDL_size_mul_overflow(height, *pitch, size)) {
-        /* Overflow... */
-        return -1;
+        return SDL_SetError("height * pitch would overflow");
     }
 
     return 0;

@@ -72,7 +72,7 @@ int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, size_t *pitc
             /* sz_plane == w * h; */
             size_t s1;
             if (SDL_size_mul_overflow(w, h, &s1) < 0) {
-                return -1;
+                return SDL_SetError("width * height would overflow");
             }
             sz_plane = (int) s1;
         }
@@ -81,15 +81,15 @@ int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, size_t *pitc
             /* sz_plane_chroma == ((w + 1) / 2) * ((h + 1) / 2); */
             size_t s1, s2, s3;
             if (SDL_size_add_overflow(w, 1, &s1) < 0) {
-                return -1;
+                return SDL_SetError("width + 1 would overflow");
             }
             s1 = s1 / 2;
             if (SDL_size_add_overflow(h, 1, &s2) < 0) {
-                return -1;
+                return SDL_SetError("height + 1 would overflow");
             }
             s2 = s2 / 2;
             if (SDL_size_mul_overflow(s1, s2, &s3) < 0) {
-                return -1;
+                return SDL_SetError("width * height would overflow");
             }
             sz_plane_chroma = (int) s3;
         }
@@ -97,11 +97,11 @@ int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, size_t *pitc
         /* sz_plane_packed == ((w + 1) / 2) * h; */
         size_t s1, s2;
         if (SDL_size_add_overflow(w, 1, &s1) < 0) {
-            return -1;
+            return SDL_SetError("width + 1 would overflow");
         }
         s1 = s1 / 2;
         if (SDL_size_mul_overflow(s1, h, &s2) < 0) {
-            return -1;
+            return SDL_SetError("width * height would overflow");
         }
         sz_plane_packed = (int) s2;
     }
@@ -118,10 +118,10 @@ int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, size_t *pitc
             /* dst_size == sz_plane + sz_plane_chroma + sz_plane_chroma; */
             size_t s1, s2;
             if (SDL_size_add_overflow(sz_plane, sz_plane_chroma, &s1) < 0) {
-                return -1;
+                return SDL_SetError("Y + U would overflow");
             }
             if (SDL_size_add_overflow(s1, sz_plane_chroma, &s2) < 0) {
-                return -1;
+                return SDL_SetError("Y + U + V would overflow");
             }
             *size = (int)s2;
         }
@@ -135,11 +135,11 @@ int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, size_t *pitc
             /* pitch == ((w + 1) / 2) * 4; */
            size_t p1, p2;
            if (SDL_size_add_overflow(w, 1, &p1) < 0) {
-               return -1;
+               return SDL_SetError("width + 1 would overflow");
            }
            p1 = p1 / 2;
            if (SDL_size_mul_overflow(p1, 4, &p2) < 0) {
-               return -1;
+               return SDL_SetError("width * 4 would overflow");
            }
            *pitch = p2;
         }
@@ -148,7 +148,7 @@ int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, size_t *pitc
             /* dst_size == 4 * sz_plane_packed; */
             size_t s1;
             if (SDL_size_mul_overflow(sz_plane_packed, 4, &s1) < 0) {
-                return -1;
+                return SDL_SetError("plane * 4 would overflow");
             }
             *size = (int) s1;
         }
@@ -164,22 +164,22 @@ int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, size_t *pitc
             /* dst_size == sz_plane + sz_plane_chroma + sz_plane_chroma; */
             size_t s1, s2;
             if (SDL_size_add_overflow(sz_plane, sz_plane_chroma, &s1) < 0) {
-                return -1;
+                return SDL_SetError("Y + U would overflow");
             }
             if (SDL_size_add_overflow(s1, sz_plane_chroma, &s2) < 0) {
-                return -1;
+                return SDL_SetError("Y + U + V would overflow");
             }
             *size = (int) s2;
         }
         break;
 
     default:
-        return -1;
+        return SDL_Unsupported();
     }
 
     return 0;
 #else
-    return -1;
+    return SDL_Unsupported();
 #endif
 }
 
