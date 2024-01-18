@@ -550,13 +550,13 @@ SDL_PixelFormat *SDL_CreatePixelFormat(Uint32 pixel_format)
 {
     SDL_PixelFormat *format;
 
-    SDL_AtomicLock(&formats_lock);
+    SDL_LockSpinlock(&formats_lock);
 
     /* Look it up in our list of previously allocated formats */
     for (format = formats; format; format = format->next) {
         if (pixel_format == format->format) {
             ++format->refcount;
-            SDL_AtomicUnlock(&formats_lock);
+            SDL_UnlockSpinlock(&formats_lock);
             return format;
         }
     }
@@ -564,11 +564,11 @@ SDL_PixelFormat *SDL_CreatePixelFormat(Uint32 pixel_format)
     /* Allocate an empty pixel format structure, and initialize it */
     format = SDL_malloc(sizeof(*format));
     if (!format) {
-        SDL_AtomicUnlock(&formats_lock);
+        SDL_UnlockSpinlock(&formats_lock);
         return NULL;
     }
     if (SDL_InitFormat(format, pixel_format) < 0) {
-        SDL_AtomicUnlock(&formats_lock);
+        SDL_UnlockSpinlock(&formats_lock);
         SDL_free(format);
         return NULL;
     }
@@ -579,7 +579,7 @@ SDL_PixelFormat *SDL_CreatePixelFormat(Uint32 pixel_format)
         formats = format;
     }
 
-    SDL_AtomicUnlock(&formats_lock);
+    SDL_UnlockSpinlock(&formats_lock);
 
     return format;
 }
@@ -664,10 +664,10 @@ void SDL_DestroyPixelFormat(SDL_PixelFormat *format)
         return;
     }
 
-    SDL_AtomicLock(&formats_lock);
+    SDL_LockSpinlock(&formats_lock);
 
     if (--format->refcount > 0) {
-        SDL_AtomicUnlock(&formats_lock);
+        SDL_UnlockSpinlock(&formats_lock);
         return;
     }
 
@@ -683,7 +683,7 @@ void SDL_DestroyPixelFormat(SDL_PixelFormat *format)
         }
     }
 
-    SDL_AtomicUnlock(&formats_lock);
+    SDL_UnlockSpinlock(&formats_lock);
 
     if (format->palette) {
         SDL_DestroyPalette(format->palette);

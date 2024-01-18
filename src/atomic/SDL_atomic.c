@@ -111,18 +111,18 @@ static SDL_INLINE void enterLock(void *a)
 {
     uintptr_t index = ((((uintptr_t)a) >> 3) & 0x1f);
 
-    SDL_AtomicLock(&locks[index]);
+    SDL_LockSpinlock(&locks[index]);
 }
 
 static SDL_INLINE void leaveLock(void *a)
 {
     uintptr_t index = ((((uintptr_t)a) >> 3) & 0x1f);
 
-    SDL_AtomicUnlock(&locks[index]);
+    SDL_UnlockSpinlock(&locks[index]);
 }
 #endif
 
-SDL_bool SDL_AtomicCAS(SDL_AtomicInt *a, int oldval, int newval)
+SDL_bool SDL_AtomicCompareAndSwap(SDL_AtomicInt *a, int oldval, int newval)
 {
 #ifdef HAVE_MSC_ATOMICS
     SDL_COMPILE_TIME_ASSERT(atomic_cas, sizeof(long) == sizeof(a->value));
@@ -151,7 +151,7 @@ SDL_bool SDL_AtomicCAS(SDL_AtomicInt *a, int oldval, int newval)
 #endif
 }
 
-SDL_bool SDL_AtomicCASPtr(void **a, void *oldval, void *newval)
+SDL_bool SDL_AtomicCompareAndSwapPointer(void **a, void *oldval, void *newval)
 {
 #ifdef HAVE_MSC_ATOMICS
     return _InterlockedCompareExchangePointer(a, newval, oldval) == oldval;
@@ -196,7 +196,7 @@ int SDL_AtomicSet(SDL_AtomicInt *a, int v)
     int value;
     do {
         value = a->value;
-    } while (!SDL_AtomicCAS(a, value, v));
+    } while (!SDL_AtomicCompareAndSwap(a, value, v));
     return value;
 #endif
 }
@@ -215,7 +215,7 @@ void *SDL_AtomicSetPtr(void **a, void *v)
     void *value;
     do {
         value = *a;
-    } while (!SDL_AtomicCASPtr(a, value, v));
+    } while (!SDL_AtomicCompareAndSwapPointer(a, value, v));
     return value;
 #endif
 }
@@ -238,7 +238,7 @@ int SDL_AtomicAdd(SDL_AtomicInt *a, int v)
     int value;
     do {
         value = a->value;
-    } while (!SDL_AtomicCAS(a, value, (value + v)));
+    } while (!SDL_AtomicCompareAndSwap(a, value, (value + v)));
     return value;
 #endif
 }
@@ -262,7 +262,7 @@ int SDL_AtomicGet(SDL_AtomicInt *a)
     int value;
     do {
         value = a->value;
-    } while (!SDL_AtomicCAS(a, value, value));
+    } while (!SDL_AtomicCompareAndSwap(a, value, value));
     return value;
 #endif
 }
@@ -281,7 +281,7 @@ void *SDL_AtomicGetPtr(void **a)
     void *value;
     do {
         value = *a;
-    } while (!SDL_AtomicCASPtr(a, value, value));
+    } while (!SDL_AtomicCompareAndSwapPointer(a, value, value));
     return value;
 #endif
 }

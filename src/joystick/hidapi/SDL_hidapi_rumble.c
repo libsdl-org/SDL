@@ -168,7 +168,7 @@ int SDL_HIDAPI_LockRumble(void)
 {
     SDL_HIDAPI_RumbleContext *ctx = &rumble_context;
 
-    if (SDL_AtomicCAS(&ctx->initialized, SDL_FALSE, SDL_TRUE)) {
+    if (SDL_AtomicCompareAndSwap(&ctx->initialized, SDL_FALSE, SDL_TRUE)) {
         if (SDL_HIDAPI_StartRumbleThread(ctx) < 0) {
             return -1;
         }

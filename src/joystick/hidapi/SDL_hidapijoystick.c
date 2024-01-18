@@ -1206,9 +1206,9 @@ SDL_bool HIDAPI_IsDeviceTypePresent(SDL_GamepadType type)
         return SDL_FALSE;
     }
 
-    if (SDL_AtomicTryLock(&SDL_HIDAPI_spinlock)) {
+    if (SDL_TryLockSpinlock(&SDL_HIDAPI_spinlock)) {
         HIDAPI_UpdateDeviceList();
-        SDL_AtomicUnlock(&SDL_HIDAPI_spinlock);
+        SDL_UnlockSpinlock(&SDL_HIDAPI_spinlock);
     }
 
     SDL_LockJoysticks();
@@ -1251,9 +1251,9 @@ SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 vers
     }
 #endif /* SDL_JOYSTICK_HIDAPI_XBOX360 || SDL_JOYSTICK_HIDAPI_XBOXONE */
     if (supported) {
-        if (SDL_AtomicTryLock(&SDL_HIDAPI_spinlock)) {
+        if (SDL_TryLockSpinlock(&SDL_HIDAPI_spinlock)) {
             HIDAPI_UpdateDeviceList();
-            SDL_AtomicUnlock(&SDL_HIDAPI_spinlock);
+            SDL_UnlockSpinlock(&SDL_HIDAPI_spinlock);
         }
     }
 
@@ -1313,13 +1313,13 @@ SDL_GamepadType HIDAPI_GetGamepadTypeFromGUID(SDL_JoystickGUID guid)
 
 static void HIDAPI_JoystickDetect(void)
 {
-    if (SDL_AtomicTryLock(&SDL_HIDAPI_spinlock)) {
+    if (SDL_TryLockSpinlock(&SDL_HIDAPI_spinlock)) {
         Uint32 count = SDL_hid_device_change_count();
         if (SDL_HIDAPI_change_count != count) {
             SDL_HIDAPI_change_count = count;
             HIDAPI_UpdateDeviceList();
         }
-        SDL_AtomicUnlock(&SDL_HIDAPI_spinlock);
+        SDL_UnlockSpinlock(&SDL_HIDAPI_spinlock);
     }
 }
 
@@ -1332,7 +1332,7 @@ void HIDAPI_UpdateDevices(void)
     /* Update the devices, which may change connected joysticks and send events */
 
     /* Prepare the existing device list */
-    if (SDL_AtomicTryLock(&SDL_HIDAPI_spinlock)) {
+    if (SDL_TryLockSpinlock(&SDL_HIDAPI_spinlock)) {
         for (device = SDL_HIDAPI_devices; device; device = device->next) {
             if (device->parent) {
                 continue;
@@ -1346,7 +1346,7 @@ void HIDAPI_UpdateDevices(void)
                 }
             }
         }
-        SDL_AtomicUnlock(&SDL_HIDAPI_spinlock);
+        SDL_UnlockSpinlock(&SDL_HIDAPI_spinlock);
     }
 }
 

@@ -112,7 +112,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
      */
     for (;;) {
         /* Pending and freelist maintenance */
-        SDL_AtomicLock(&data->lock);
+        SDL_LockSpinlock(&data->lock);
         {
             /* Get any timers ready to be queued */
             pending = data->pending;
@@ -124,7 +124,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
                 data->freelist = freelist_head;
             }
         }
-        SDL_AtomicUnlock(&data->lock);
+        SDL_UnlockSpinlock(&data->lock);
 
         /* Sort the pending timers into our list */
         while (pending) {
@@ -239,7 +239,7 @@ void SDL_QuitTimers(void)
     SDL_Timer *timer;
     SDL_TimerMap *entry;
 
-    if (SDL_AtomicCAS(&data->active, 1, 0)) { /* active? Move to inactive. */
+    if (SDL_AtomicCompareAndSwap(&data->active, 1, 0)) { /* active? Move to inactive. */
         /* Shutdown the timer thread */
         if (data->thread) {
             SDL_PostSemaphore(data->sem);
@@ -278,10 +278,10 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
     SDL_Timer *timer;
     SDL_TimerMap *entry;
 
-    SDL_AtomicLock(&data->lock);
+    SDL_LockSpinlock(&data->lock);
     if (!SDL_AtomicGet(&data->active)) {
         if (SDL_InitTimers() < 0) {
-            SDL_AtomicUnlock(&data->lock);
+            SDL_UnlockSpinlock(&data->lock);
             return 0;
         }
     }
@@ -290,7 +290,7 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
     if (timer) {
         data->freelist = timer->next;
     }
-    SDL_AtomicUnlock(&data->lock);
+    SDL_UnlockSpinlock(&data->lock);
 
     if (timer) {
         SDL_RemoveTimer(timer->timerID);
@@ -321,10 +321,10 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
     SDL_UnlockMutex(data->timermap_lock);
 
     /* Add the timer to the pending list for the timer thread */
-    SDL_AtomicLock(&data->lock);
+    SDL_LockSpinlock(&data->lock);
     timer->next = data->pending;
     data->pending = timer;
-    SDL_AtomicUnlock(&data->lock);
+    SDL_UnlockSpinlock(&data->lock);
 
     /* Wake up the timer thread if necessary */
     SDL_PostSemaphore(data->sem);

@@ -47,6 +47,13 @@ The vi format comments have been removed from source code. Vim users can use the
 The following structures have been renamed:
 - SDL_atomic_t => SDL_AtomicInt
 
+The following functions have been renamed:
+* SDL_AtomicCAS() => SDL_AtomicCompareAndSwap()
+* SDL_AtomicCASPtr() => SDL_AtomicCompareAndSwapPointer()
+* SDL_AtomicLock() => SDL_LockSpinlock()
+* SDL_AtomicTryLock() => SDL_TryLockSpinlock()
+* SDL_AtomicUnlock() => SDL_UnlockSpinlock()
+
 ## SDL_audio.h
 
 The audio subsystem in SDL3 is dramatically different than SDL2. The primary way to play audio is no longer an audio callback; instead you bind SDL_AudioStreams to devices; however, there is still a callback method available if needed.

@@ -416,7 +416,7 @@ static void kbd_vt_update(SDL_EVDEV_keyboard_state *state)
             }
             ioctl(state->console_fd, VT_RELDISP, VT_ACKACQ);
         }
-        SDL_AtomicCAS(&vt_signal_pending, signal_pending, VT_SIGNAL_NONE);
+        SDL_AtomicCompareAndSwap(&vt_signal_pending, signal_pending, VT_SIGNAL_NONE);
     }
 }
 

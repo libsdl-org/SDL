@@ -168,9 +168,9 @@ static void SDL_DBus_Init_Spinlocked(void)
 
 void SDL_DBus_Init(void)
 {
-    SDL_AtomicLock(&spinlock_dbus_init); /* make sure two threads can't init at same time, since this can happen before SDL_Init. */
+    SDL_LockSpinlock(&spinlock_dbus_init); /* make sure two threads can't init at same time, since this can happen before SDL_Init. */
     SDL_DBus_Init_Spinlocked();
-    SDL_AtomicUnlock(&spinlock_dbus_init);
+    SDL_UnlockSpinlock(&spinlock_dbus_init);
 }
 
 void SDL_DBus_Quit(void)

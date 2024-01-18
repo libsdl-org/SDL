@@ -57,7 +57,7 @@ extern __inline int _SDL_xchg_watcom(volatile int *a, int v);
 /* *INDENT-ON* */ /* clang-format on */
 
 /* This function is where all the magic happens... */
-SDL_bool SDL_AtomicTryLock(SDL_SpinLock *lock)
+SDL_bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
 {
 #if defined(HAVE_GCC_ATOMICS) || defined(HAVE_GCC_SYNC_LOCK_TEST_AND_SET)
     return __sync_lock_test_and_set(lock, 1) == 0;
@@ -161,11 +161,11 @@ SDL_bool SDL_AtomicTryLock(SDL_SpinLock *lock)
 #endif
 }
 
-void SDL_AtomicLock(SDL_SpinLock *lock)
+void SDL_LockSpinlock(SDL_SpinLock *lock)
 {
     int iterations = 0;
     /* FIXME: Should we have an eventual timeout? */
-    while (!SDL_AtomicTryLock(lock)) {
+    while (!SDL_TryLockSpinlock(lock)) {
         if (iterations < 32) {
             iterations++;
             SDL_CPUPauseInstruction();
@@ -176,7 +176,7 @@ void SDL_AtomicLock(SDL_SpinLock *lock)
     }
 }
 
-void SDL_AtomicUnlock(SDL_SpinLock *lock)
+void SDL_UnlockSpinlock(SDL_SpinLock *lock)
 {
 #if defined(HAVE_GCC_ATOMICS) || defined(HAVE_GCC_SYNC_LOCK_TEST_AND_SET)
     __sync_lock_release(lock);
