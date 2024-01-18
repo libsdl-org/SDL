@@ -764,7 +764,8 @@ static int surface_testOverflow(void *arg)
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in pitch + alignment");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
-        surface = SDL_CreateSurface(SDL_MAX_SINT32 / 2, 1, SDL_PIXELFORMAT_ARGB8888);
+        /* 0x4000'0000 * 4bpp = 0x1'0000'0000 which (just) overflows */
+        surface = SDL_CreateSurface(0x40000000, 1, SDL_PIXELFORMAT_ARGB8888);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * bytes per pixel");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
