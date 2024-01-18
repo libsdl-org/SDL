@@ -29,7 +29,7 @@
 
 typedef struct SDL_Timer
 {
-    int timerID;
+    SDL_TimerID timerID;
     SDL_TimerCallback callback;
     void *param;
     Uint64 interval;
@@ -40,7 +40,7 @@ typedef struct SDL_Timer
 
 typedef struct SDL_TimerMap
 {
-    int timerID;
+    SDL_TimerID timerID;
     SDL_Timer *timer;
     struct SDL_TimerMap *next;
 } SDL_TimerMap;
@@ -50,7 +50,6 @@ typedef struct
 {
     /* Data used by the main thread */
     SDL_Thread *thread;
-    SDL_AtomicInt nextID;
     SDL_TimerMap *timermap;
     SDL_Mutex *timermap_lock;
 
@@ -227,8 +226,6 @@ int SDL_InitTimers(void)
             SDL_QuitTimers();
             return -1;
         }
-
-        SDL_AtomicSet(&data->nextID, 1);
     }
     return 0;
 }
@@ -300,7 +297,7 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
             return 0;
         }
     }
-    timer->timerID = SDL_AtomicIncRef(&data->nextID);
+    timer->timerID = SDL_GetNextObjectID();
     timer->callback = callback;
     timer->param = param;
     timer->interval = SDL_MS_TO_NS(interval);
@@ -370,7 +367,7 @@ SDL_bool SDL_RemoveTimer(SDL_TimerID id)
 
 typedef struct SDL_TimerMap
 {
-    int timerID;
+    SDL_TimerID timerID;
     int timeoutID;
     Uint32 interval;
     SDL_TimerCallback callback;
@@ -380,7 +377,6 @@ typedef struct SDL_TimerMap
 
 typedef struct
 {
-    int nextID;
     SDL_TimerMap *timermap;
 } SDL_TimerData;
 
@@ -423,7 +419,7 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
     if (!entry) {
         return 0;
     }
-    entry->timerID = ++data->nextID;
+    entry->timerID = SDL_GetNextObjectID();
     entry->callback = callback;
     entry->param = param;
     entry->interval = interval;
