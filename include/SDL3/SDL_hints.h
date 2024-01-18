@@ -2427,15 +2427,6 @@ extern "C" {
 #define SDL_HINT_DIRECTINPUT_ENABLED "SDL_DIRECTINPUT_ENABLED"
 
 /**
- *  A variable that causes SDL to use the old axis and button mapping for XInput devices.
- *
- *  This hint is for backwards compatibility only and will be removed in SDL 2.1
- *
- *  The default value is "0".  This hint must be set before SDL_Init()
- */
-#define SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING "SDL_XINPUT_USE_OLD_JOYSTICK_MAPPING"
-
-/**
  *  A variable that causes SDL to not ignore audio "monitors"
  *
  *  This is currently only used for PulseAudio and ignored elsewhere.
