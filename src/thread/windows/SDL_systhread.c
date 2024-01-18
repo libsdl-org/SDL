@@ -68,7 +68,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
                          pfnSDL_CurrentBeginThread pfnBeginThread,
                          pfnSDL_CurrentEndThread pfnEndThread)
 {
-#elif defined(__CYGWIN__) || defined(SDL_PLATFORM_WINRT)
+#elif defined(SDL_PLATFORM_CYGWIN) || defined(SDL_PLATFORM_WINRT)
 int SDL_SYS_CreateThread(SDL_Thread *thread)
 {
     pfnSDL_CurrentBeginThread pfnBeginThread = NULL;

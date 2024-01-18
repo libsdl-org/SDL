@@ -125,7 +125,11 @@
 #define SDL_PLATFORM_SOLARIS    1
 #endif
 
-#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
+#if defined(__CYGWIN__)
+#define SDL_PLATFORM_CYGWIN 1
+#endif
+
+#if defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN) || defined(__MINGW32__)
 /* Try to find out if we're compiling for WinRT, GDK or non-WinRT/GDK */
 #if defined(_MSC_VER) && defined(__has_include)
 #if __has_include(<winapifamily.h>)
@@ -166,7 +170,7 @@
 #else
 #define SDL_PLATFORM_WINDOWS    1
 #endif
-#endif /* defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__) */
+#endif /* defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN) */
 
 #ifdef SDL_PLATFORM_WINDOWS
 #define SDL_PLATFORM_WIN32  1
