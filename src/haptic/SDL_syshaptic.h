@@ -48,7 +48,7 @@ struct SDL_Haptic
     struct haptic_effect *effects;  /* Allocated effects */
     int neffects;                   /* Maximum amount of effects */
     int nplaying;                   /* Maximum amount of effects to play at the same time */
-    unsigned int supported;         /* Supported effects */
+    Uint32 supported;               /* Supported effects and features */
     int naxes;                      /* Number of axes on the device. */
 
     struct haptic_hwdata *hwdata;   /* Driver dependent */

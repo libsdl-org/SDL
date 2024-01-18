@@ -351,9 +351,8 @@ HapticPrintSupported(SDL_Haptic *ptr)
     if (supported & SDL_HAPTIC_SINE) {
         SDL_Log("      sine\n");
     }
-    /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /* if (supported & SDL_HAPTIC_SQUARE)
-        SDL_Log("      square\n"); */
+    if (supported & SDL_HAPTIC_SQUARE)
+        SDL_Log("      square\n");
     if (supported & SDL_HAPTIC_TRIANGLE) {
         SDL_Log("      triangle\n");
     }
