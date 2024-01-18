@@ -473,7 +473,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
             (void)fclose(pFile);
         }
     }
-#elif defined(__3DS__)
+#elif defined(SDL_PLATFORM_3DS)
     {
         FILE *pFile;
         pFile = fopen("sdmc:/3ds/SDL_Log.txt", "a");

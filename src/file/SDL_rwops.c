@@ -39,9 +39,9 @@
 #include "cocoa/SDL_rwopsbundlesupport.h"
 #endif /* SDL_PLATFORM_APPLE */
 
-#ifdef __3DS__
+#ifdef SDL_PLATFORM_3DS
 #include "n3ds/SDL_rwopsromfs.h"
-#endif /* __3DS__ */
+#endif /* SDL_PLATFORM_3DS */
 
 #ifdef SDL_PLATFORM_ANDROID
 #include "../core/android/SDL_android.h"
@@ -533,7 +533,7 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
 #elif defined(__WINRT__)
         FILE *fp = NULL;
         fopen_s(&fp, file, mode);
-#elif defined(__3DS__)
+#elif defined(SDL_PLATFORM_3DS)
         FILE *fp = N3DS_FileOpen(file, mode);
 #else
         FILE *fp = fopen(file, mode);
