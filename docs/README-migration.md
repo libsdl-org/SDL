@@ -716,6 +716,7 @@ The following symbols have been renamed:
 
 The following symbols have been removed:
 * SDL_INIT_NOPARACHUTE
+* SDL_INIT_EVERYTHING - you should only initialize the subsystems you are using
 
 ## SDL_joystick.h
 
