@@ -654,8 +654,9 @@ extern DECLSPEC float SDLCALL SDL_GetWindowDisplayScale(SDL_Window *window);
  *
  * \param window the window to affect
  * \param mode a pointer to the display mode to use, which can be NULL for
- *             borderless fullscreen desktop mode, or one of the fullscreen modes returned by
- *             SDL_GetFullscreenDisplayModes() to set an exclusive fullscreen mode.
+ *             borderless fullscreen desktop mode, or one of the fullscreen
+ *             modes returned by SDL_GetFullscreenDisplayModes() to set an
+ *             exclusive fullscreen mode.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -671,7 +672,8 @@ extern DECLSPEC int SDLCALL SDL_SetWindowFullscreenMode(SDL_Window *window, cons
  * Query the display mode to use when a window is visible at fullscreen.
  *
  * \param window the window to query
- * \returns a pointer to the exclusive fullscreen mode to use or NULL for borderless fullscreen desktop mode
+ * \returns a pointer to the exclusive fullscreen mode to use or NULL for
+ *          borderless fullscreen desktop mode
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1608,8 +1610,9 @@ extern DECLSPEC int SDLCALL SDL_RestoreWindow(SDL_Window *window);
 /**
  * Request that the window's fullscreen state be changed.
  *
- * By default a window in fullscreen state uses borderless fullscreen desktop mode, but a
- * specific exclusive display mode can be set using SDL_SetWindowFullscreenMode().
+ * By default a window in fullscreen state uses borderless fullscreen desktop
+ * mode, but a specific exclusive display mode can be set using
+ * SDL_SetWindowFullscreenMode().
  *
  * On some windowing systems this request is asynchronous and the new
  * fullscreen state may not have have been applied immediately upon the return
