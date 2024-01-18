@@ -15,12 +15,12 @@ static void subsystemsSetUp(void *arg)
     /* CHECKME: can we use SDL_Quit here, or this will break the flow of tests? */
     SDL_Quit();
     /* Alternate variant without SDL_Quit:
-        while (SDL_WasInit(SDL_INIT_EVERYTHING) != 0) {
-            SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
+        while (SDL_WasInit(0) != 0) {
+            SDL_QuitSubSystem(~0U);
         }
     */
     SDLTest_AssertPass("Reset all subsystems before subsystems test");
-    SDLTest_AssertCheck(SDL_WasInit(SDL_INIT_EVERYTHING) == 0, "Check result from SDL_WasInit(SDL_INIT_EVERYTHING)");
+    SDLTest_AssertCheck(SDL_WasInit(0) == 0, "Check result from SDL_WasInit(0)");
 }
 
 static void subsystemsTearDown(void *arg)

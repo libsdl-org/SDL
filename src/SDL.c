@@ -47,6 +47,8 @@
 #include "joystick/SDL_joystick_c.h"
 #include "sensor/SDL_sensor_c.h"
 
+#define SDL_INIT_EVERYTHING ~0U
+
 /* Initialization/Cleanup routines */
 #include "timer/SDL_timer_c.h"
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
