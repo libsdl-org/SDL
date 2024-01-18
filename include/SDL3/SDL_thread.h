@@ -81,7 +81,7 @@ typedef enum {
 typedef int (SDLCALL * SDL_ThreadFunction) (void *data);
 
 
-#if (defined(SDL_PLATFORM_WIN32) || defined(__GDK__)) && !defined(SDL_PLATFORM_WINRT)
+#if (defined(SDL_PLATFORM_WIN32) || defined(__GDK__)) && !defined(__WINRT__)
 /**
  *  \file SDL_thread.h
  *

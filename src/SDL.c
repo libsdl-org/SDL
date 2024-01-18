@@ -21,7 +21,7 @@
 #include "SDL_internal.h"
 #include "SDL3/SDL_revision.h"
 
-#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 #include "core/windows/SDL_windows.h"
 #elif !defined(SDL_PLATFORM_WINRT)
 #include <unistd.h> /* _exit(), etc. */
@@ -83,7 +83,7 @@ SDL_COMPILE_TIME_ASSERT(SDL_PATCHLEVEL_max, SDL_PATCHLEVEL <= 99);
 extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 SDL_NORETURN void SDL_ExitProcess(int exitcode)
 {
-#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
     /* "if you do not know the state of all threads in your process, it is
        better to call TerminateProcess than ExitProcess"
        https://msdn.microsoft.com/en-us/library/windows/desktop/ms682658(v=vs.85).aspx */
@@ -667,4 +667,4 @@ BOOL APIENTRY MINGW32_FORCEALIGN _DllMainCRTStartup(HANDLE hModule, DWORD ul_rea
 }
 #endif /* Building DLL */
 
-#endif /* defined(SDL_PLATFORM_WIN32) || defined(__GDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) */

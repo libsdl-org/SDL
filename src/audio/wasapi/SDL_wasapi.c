@@ -564,7 +564,7 @@ static int mgmtthrtask_PrepDevice(void *userdata)
     IAudioClient *client = device->hidden->client;
     SDL_assert(client != NULL);
 
-#if defined(SDL_PLATFORM_WINRT) || defined(__GDK__) // CreateEventEx() arrived in Vista, so we need an #ifdef for XP.
+#if defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK) // CreateEventEx() arrived in Vista, so we need an #ifdef for XP.
     device->hidden->event = CreateEventEx(NULL, NULL, 0, EVENT_ALL_ACCESS);
 #else
     device->hidden->event = CreateEventW(NULL, 0, 0, NULL);

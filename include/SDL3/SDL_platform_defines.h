@@ -176,8 +176,7 @@
 #endif
 /* This is to support generic "any GDK" separate from a platform-specific GDK */
 #if defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-#undef __GDK__
-#define __GDK__ 1
+#define SDL_PLATFORM_GDK    1
 #endif
 #ifdef __PSP__
 #define SDL_PLATFORM_PSP    1

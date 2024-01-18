@@ -22,7 +22,7 @@
 
 #ifndef SDL_VIDEO_DRIVER_WINDOWS
 
-#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 
 int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
 {
@@ -40,7 +40,7 @@ void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
 {
 }
 
-#endif /* SDL_PLATFORM_WIN32 || __GDK__ */
+#endif /* SDL_PLATFORM_WIN32 || SDL_PLATFORM_GDK */
 
 DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);
 SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
@@ -70,7 +70,7 @@ int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
 
 #endif /* !SDL_VIDEO_DRIVER_WINDOWS */
 
-#ifndef __GDK__
+#ifndef SDL_PLATFORM_GDK
 
 DECLSPEC int SDLCALL SDL_GDKGetTaskQueue(void *outTaskQueue);
 int SDL_GDKGetTaskQueue(void *outTaskQueue)

@@ -65,7 +65,7 @@ int SDL_main(int argc, char **argv)
 /* set up the usual SDL_main stuff if we're not using callbacks or if we are but need the normal entry point. */
 #if !defined(SDL_MAIN_USE_CALLBACKS) || defined(SDL_MAIN_CALLBACK_STANDARD)
 
-#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 
 /* these defines/typedefs are needed for the WinMain() definition */
 #ifndef WINAPI
@@ -77,7 +77,7 @@ typedef char* LPSTR;
 typedef wchar_t* PWSTR;
 
 /* The VC++ compiler needs main/wmain defined, but not for GDK */
-#if defined(_MSC_VER) && !defined(__GDK__)
+#if defined(_MSC_VER) && !defined(SDL_PLATFORM_GDK)
 
 /* This is where execution begins [console apps] */
 #if defined( UNICODE ) && UNICODE
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 }
 #endif /* UNICODE */
 
-#endif /* _MSC_VER && ! __GDK__ */
+#endif /* _MSC_VER && ! SDL_PLATFORM_GDK */
 
 /* This is where execution begins [windowed apps and GDK] */
 
@@ -120,7 +120,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
 } /* extern "C" */
 #endif
 
-/* end of SDL_PLATFORM_WIN32 and __GDK__ impls */
+/* end of SDL_PLATFORM_WIN32 and SDL_PLATFORM_GDK impls */
 #elif defined(SDL_PLATFORM_WINRT)
 
 /* WinRT main based on SDL_winrt_main_NonXAML.cpp, placed in the public domain by David Ludwig  3/13/14 */

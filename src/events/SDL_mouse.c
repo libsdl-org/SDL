@@ -27,7 +27,7 @@
 #include "SDL_events_c.h"
 #include "SDL_mouse_c.h"
 #include "SDL_pen_c.h"
-#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 #include "../core/windows/SDL_windows.h" // For GetDoubleClickTime()
 #endif
 

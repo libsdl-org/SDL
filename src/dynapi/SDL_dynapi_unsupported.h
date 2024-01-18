@@ -23,7 +23,7 @@
 #define SDL_dynapi_unsupported_h_
 
 
-#if !(defined(SDL_PLATFORM_WIN32) || defined(__GDK__))
+#if !(defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK))
 typedef struct ID3D12Device ID3D12Device;
 typedef void *SDL_WindowsMessageHook;
 #endif
@@ -33,7 +33,7 @@ typedef struct ID3D11Device ID3D11Device;
 typedef struct IDirect3DDevice9 IDirect3DDevice9;
 #endif
 
-#ifndef __GDK__
+#ifndef SDL_PLATFORM_GDK
 typedef struct XTaskQueueHandle XTaskQueueHandle;
 #endif
 
@@ -41,7 +41,7 @@ typedef struct XTaskQueueHandle XTaskQueueHandle;
 typedef int SDL_WinRT_DeviceFamily;
 typedef int SDL_WinRT_Path;
 #endif
-#ifndef __GDK__
+#ifndef SDL_PLATFORM_GDK
 typedef struct XUserHandle XUserHandle;
 #endif
 

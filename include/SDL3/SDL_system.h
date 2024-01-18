@@ -43,7 +43,7 @@ extern "C" {
 /*
  * Platform specific functions for Windows
  */
-#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 
 typedef struct tagMSG MSG;
 typedef SDL_bool (SDLCALL *SDL_WindowsMessageHook)(void *userdata, MSG *msg);
@@ -62,7 +62,7 @@ typedef SDL_bool (SDLCALL *SDL_WindowsMessageHook)(void *userdata, MSG *msg);
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata);
 
-#endif /* defined(SDL_PLATFORM_WIN32) || defined(__GDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) */
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 
@@ -620,7 +620,7 @@ extern DECLSPEC void SDLCALL SDL_OnApplicationDidChangeStatusBarOrientation(void
 /*
  * Functions used only by GDK
  */
-#ifdef __GDK__
+#ifdef SDL_PLATFORM_GDK
 typedef struct XTaskQueueObject *XTaskQueueHandle;
 typedef struct XUser *XUserHandle;
 

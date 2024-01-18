@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK)
 #include "../core/windows/SDL_windows.h"
 #endif
 
@@ -439,7 +439,7 @@ static int CPU_haveNEON(void)
 {
 /* The way you detect NEON is a privileged instruction on ARM, so you have
    query the OS kernel in a platform-specific way. :/ */
-#if (defined(SDL_PLATFORM_WINDOWS) || defined(SDL_PLATFORM_WINRT) || defined(__GDK__)) && (defined(_M_ARM) || defined(_M_ARM64))
+#if (defined(SDL_PLATFORM_WINDOWS) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK)) && (defined(_M_ARM) || defined(_M_ARM64))
 /* Visual Studio, for ARM, doesn't define __ARM_ARCH. Handle this first. */
 /* Seems to have been removed */
 #ifndef PF_ARM_NEON_INSTRUCTIONS_AVAILABLE
@@ -629,7 +629,7 @@ int SDL_GetCPUCount(void)
             sysctlbyname("hw.ncpu", &SDL_CPUCount, &size, NULL, 0);
         }
 #endif
-#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
         if (SDL_CPUCount <= 0) {
             SYSTEM_INFO info;
             GetSystemInfo(&info);
@@ -1029,7 +1029,7 @@ int SDL_GetSystemRAM(void)
             }
         }
 #endif
-#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
         if (SDL_SystemRAM <= 0) {
             MEMORYSTATUSEX stat;
             stat.dwLength = sizeof(stat);

@@ -63,7 +63,7 @@
 */
 #define SDL_MAIN_NEEDED
 
-#elif defined(__GDK__)
+#elif defined(SDL_PLATFORM_GDK)
 /* On GDK, SDL provides a main function that initializes the game runtime.
 
    If you prefer to write your own WinMain-function instead of having SDL
@@ -423,7 +423,7 @@ extern DECLSPEC int SDLCALL SDL_RunApp(int argc, char* argv[], SDL_main_func mai
 extern DECLSPEC int SDLCALL SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit);
 
 
-#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 
 /**
  * Register a win32 window class for SDL's use.
@@ -468,7 +468,7 @@ extern DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void
  */
 extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
-#endif /* defined(SDL_PLATFORM_WIN32) || defined(__GDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) */
 
 
 #ifdef SDL_PLATFORM_WINRT
@@ -485,7 +485,7 @@ extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
 #endif /* SDL_PLATFORM_IOS */
 
-#ifdef __GDK__
+#ifdef SDL_PLATFORM_GDK
 
 /* for compatibility with SDL2's function of this name */
 #define SDL_GDKRunApp(MAIN_FUNC, RESERVED)  SDL_RunApp(0, NULL, MAIN_FUNC, RESERVED)
@@ -497,7 +497,7 @@ extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
  */
 extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 
-#endif /* __GDK__ */
+#endif /* SDL_PLATFORM_GDK */
 
 #ifdef __cplusplus
 }
@@ -508,7 +508,7 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 #if !defined(SDL_MAIN_HANDLED) && !defined(SDL_MAIN_NOIMPL)
 /* include header-only SDL_main implementations */
 #if defined(SDL_MAIN_USE_CALLBACKS) \
-    || defined(SDL_PLATFORM_WIN32) || defined(__GDK__) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS) \
+    || defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS) \
     || defined(SDL_PLATFORM_3DS) || defined(SDL_PLATFORM_NGAGE) || defined(SDL_PLATFORM_PS2) || defined(SDL_PLATFORM_PSP)
 
 /* platforms which main (-equivalent) can be implemented in plain C */

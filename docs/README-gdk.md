@@ -21,7 +21,7 @@ Windows GDK Status
 The Windows GDK port supports the full set of Win32 APIs, renderers, controllers, input devices, etc., as the normal Windows x64 build of SDL.
 
 * Additionally, the GDK port adds the following:
-  * Compile-time platform detection for SDL programs. The `__GDK__` is `#define`d on every GDK platform, and the  `SDL_PLATFORM_WINGDK` is `#define`d on Windows GDK, specifically. (This distinction exists because other GDK platforms support a smaller subset of functionality. This allows you to mark code for "any" GDK separate from Windows GDK.)
+  * Compile-time platform detection for SDL programs. The `SDL_PLATFORM_GDK` is `#define`d on every GDK platform, and the  `SDL_PLATFORM_WINGDK` is `#define`d on Windows GDK, specifically. (This distinction exists because other GDK platforms support a smaller subset of functionality. This allows you to mark code for "any" GDK separate from Windows GDK.)
   * GDK-specific setup:
     * Initializing/uninitializing the game runtime, and initializing Xbox Live services
     * Creating a global task queue and setting it as the default for the process. When running any async operations, passing in `NULL` as the task queue will make the task get added to the global task queue.

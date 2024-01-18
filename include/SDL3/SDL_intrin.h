@@ -64,7 +64,7 @@ _m_prefetch(void *__P)
 #  ifdef __ARM_NEON
 #    define SDL_NEON_INTRINSICS 1
 #    include <arm_neon.h>
-#  elif defined(SDL_PLATFORM_WINDOWS) || defined(SDL_PLATFORM_WINRT) || defined(__GDK__)
+#  elif defined(SDL_PLATFORM_WINDOWS) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK)
 /* Visual Studio doesn't define __ARM_ARCH, but _M_ARM (if set, always 7), and _M_ARM64 (if set, always 1). */
 #    ifdef _M_ARM
 #      define SDL_NEON_INTRINSICS 1

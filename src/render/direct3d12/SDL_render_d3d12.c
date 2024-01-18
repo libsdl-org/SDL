@@ -745,7 +745,7 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
     /* See if we need debug interfaces */
     createDebug = SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, SDL_FALSE);
 
-#ifdef __GDK__
+#ifdef SDL_PLATFORM_GDK
     CreateEventExFunc = CreateEventExW;
 #else
     /* CreateEventEx() arrived in Vista, so we need to load it with GetProcAddress for XP. */

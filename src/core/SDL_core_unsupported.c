@@ -49,7 +49,7 @@ int SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int sc
 
 #endif
 
-#ifndef __GDK__
+#ifndef SDL_PLATFORM_GDK
 
 DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 void SDL_GDKSuspendComplete(void)
@@ -65,7 +65,7 @@ int SDL_GDKGetDefaultUser(void *outUserHandle)
 
 #endif
 
-#if !(defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(__GDK__))
+#if !(defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK))
 
 DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
 int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)

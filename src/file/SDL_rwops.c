@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__) || defined(SDL_PLATFORM_WINRT)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) || defined(SDL_PLATFORM_WINRT)
 #include "../core/windows/SDL_windows.h"
 #endif
 
@@ -47,7 +47,7 @@
 #include "../core/android/SDL_android.h"
 #endif
 
-#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__) || defined(SDL_PLATFORM_WINRT)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) || defined(SDL_PLATFORM_WINRT)
 
 /* Functions to read/write Win32 API file pointers */
 #ifndef INVALID_SET_FILE_POINTER
@@ -274,9 +274,9 @@ static int SDLCALL windows_file_close(SDL_RWops *context)
     SDL_DestroyRW(context);
     return 0;
 }
-#endif /* defined(SDL_PLATFORM_WIN32) || defined(__GDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) */
 
-#if defined(HAVE_STDIO_H) && !(defined(SDL_PLATFORM_WIN32) || defined(__GDK__))
+#if defined(HAVE_STDIO_H) && !(defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK))
 
 /* Functions to read/write stdio file pointers. Not used for windows. */
 
@@ -400,7 +400,7 @@ static SDL_RWops *SDL_RWFromFP(void *fp, SDL_bool autoclose)
     }
     return rwops;
 }
-#endif /* !HAVE_STDIO_H && !(SDL_PLATFORM_WIN32 || __GDK__) */
+#endif /* !HAVE_STDIO_H && !(SDL_PLATFORM_WIN32 || SDL_PLATFORM_GDK) */
 
 /* Functions to read/write memory pointers */
 
@@ -510,7 +510,7 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
     rwops->close = Android_JNI_FileClose;
     rwops->type = SDL_RWOPS_JNIFILE;
 
-#elif defined(SDL_PLATFORM_WIN32) || defined(__GDK__) || defined(SDL_PLATFORM_WINRT)
+#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) || defined(SDL_PLATFORM_WINRT)
     rwops = SDL_CreateRW();
     if (!rwops) {
         return NULL; /* SDL_SetError already setup by SDL_CreateRW() */

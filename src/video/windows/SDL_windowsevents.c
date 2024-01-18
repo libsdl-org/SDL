@@ -45,7 +45,7 @@
 #include "wmmsg.h"
 #endif
 
-#ifdef __GDK__
+#ifdef SDL_PLATFORM_GDK
 #include "../../core/gdk/SDL_gdk.h"
 #endif
 
@@ -1822,7 +1822,7 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
     WIN_UpdateMouseCapture();
 #endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
-#ifdef __GDK__
+#ifdef SDL_PLATFORM_GDK
     GDK_DispatchTaskQueue();
 #endif
 }
