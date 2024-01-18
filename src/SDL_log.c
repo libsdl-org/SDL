@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(__WIN32__) || defined(SDL_PLATFORM_WINRT) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(__GDK__)
 #include "core/windows/SDL_windows.h"
 #endif
 
@@ -351,7 +351,7 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
     }
 }
 
-#if defined(__WIN32__) && !defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINRT) && !defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) && !defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINRT) && !defined(__GDK__)
 /* Flag tracking the attachment of the console: 0=unattached, 1=attached to a console, 2=attached to a file, -1=error */
 static int consoleAttached = 0;
 
@@ -362,7 +362,7 @@ static HANDLE stderrHandle = NULL;
 static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
                                   const char *message)
 {
-#if defined(__WIN32__) || defined(SDL_PLATFORM_WINRT) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(__GDK__)
     /* Way too many allocations here, urgh */
     /* Note: One can't call SDL_SetError here, since that function itself logs. */
     {

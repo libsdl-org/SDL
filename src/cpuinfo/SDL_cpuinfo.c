@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(__WIN32__) || defined(SDL_PLATFORM_WINRT) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(__GDK__)
 #include "../core/windows/SDL_windows.h"
 #endif
 
@@ -629,7 +629,7 @@ int SDL_GetCPUCount(void)
             sysctlbyname("hw.ncpu", &SDL_CPUCount, &size, NULL, 0);
         }
 #endif
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
         if (SDL_CPUCount <= 0) {
             SYSTEM_INFO info;
             GetSystemInfo(&info);
@@ -1029,7 +1029,7 @@ int SDL_GetSystemRAM(void)
             }
         }
 #endif
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
         if (SDL_SystemRAM <= 0) {
             MEMORYSTATUSEX stat;
             stat.dwLength = sizeof(stat);

@@ -50,7 +50,7 @@ SDL_DYNAPI_PROC(size_t,SDL_RWprintf,(SDL_RWops *a, SDL_PRINTF_FORMAT_STRING cons
 #undef SDL_CreateThread
 #endif
 
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *b, void *c, pfnSDL_CurrentBeginThread d, pfnSDL_CurrentEndThread e),(a,b,c,d,e),return)
 #else
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *b, void *c),(a,b,c),return)
@@ -60,7 +60,7 @@ SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *
 #undef SDL_CreateThreadWithStackSize
 #endif
 
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a, const char *b, const size_t c, void *d, pfnSDL_CurrentBeginThread e, pfnSDL_CurrentEndThread f),(a,b,c,d,e,f),return)
 #else
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a, const char *b, const size_t c, void *d),(a,b,c,d),return)

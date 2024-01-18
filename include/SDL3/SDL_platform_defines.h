@@ -169,8 +169,7 @@
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__) */
 
 #ifdef SDL_PLATFORM_WINDOWS
-#undef __WIN32__
-#define __WIN32__ 1
+#define SDL_PLATFORM_WIN32  1
 #endif
 /* This is to support generic "any GDK" separate from a platform-specific GDK */
 #if defined(__WINGDK__) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)

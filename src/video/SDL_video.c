@@ -2144,7 +2144,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     /* Clear minimized if not on windows, only windows handles it at create rather than FinishWindowCreation,
      * but it's important or window focus will get broken on windows!
      */
-#if !defined(__WIN32__) && !defined(__GDK__)
+#if !defined(SDL_PLATFORM_WIN32) && !defined(__GDK__)
     if (window->flags & SDL_WINDOW_MINIMIZED) {
         window->flags &= ~SDL_WINDOW_MINIMIZED;
     }
@@ -3037,7 +3037,7 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
             }
         }
 #endif
-#if defined(__WIN32__) || defined(__WINGDK__) /* GDI BitBlt() is way faster than Direct3D dynamic textures right now. (!!! FIXME: is this still true?) */
+#if defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__) /* GDI BitBlt() is way faster than Direct3D dynamic textures right now. (!!! FIXME: is this still true?) */
         else if ((_this->CreateWindowFramebuffer) && (SDL_strcmp(_this->name, "windows") == 0)) {
             attempt_texture_framebuffer = SDL_FALSE;
         }

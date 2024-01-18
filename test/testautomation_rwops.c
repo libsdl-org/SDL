@@ -344,7 +344,7 @@ static int rwops_testFileRead(void *arg)
     SDLTest_AssertCheck(
         rw->type == SDL_RWOPS_STDFILE || rw->type == SDL_RWOPS_JNIFILE,
         "Verify RWops type is SDL_RWOPS_STDFILE or SDL_RWOPS_JNIFILE; expected: %d|%d, got: %d", SDL_RWOPS_STDFILE, SDL_RWOPS_JNIFILE, rw->type);
-#elif defined(__WIN32__)
+#elif defined(SDL_PLATFORM_WIN32)
     SDLTest_AssertCheck(
         rw->type == SDL_RWOPS_WINFILE,
         "Verify RWops type is SDL_RWOPS_WINFILE; expected: %d, got: %d", SDL_RWOPS_WINFILE, rw->type);
@@ -391,7 +391,7 @@ static int rwops_testFileWrite(void *arg)
     SDLTest_AssertCheck(
         rw->type == SDL_RWOPS_STDFILE || rw->type == SDL_RWOPS_JNIFILE,
         "Verify RWops type is SDL_RWOPS_STDFILE or SDL_RWOPS_JNIFILE; expected: %d|%d, got: %d", SDL_RWOPS_STDFILE, SDL_RWOPS_JNIFILE, rw->type);
-#elif defined(__WIN32__)
+#elif defined(SDL_PLATFORM_WIN32)
     SDLTest_AssertCheck(
         rw->type == SDL_RWOPS_WINFILE,
         "Verify RWops type is SDL_RWOPS_WINFILE; expected: %d, got: %d", SDL_RWOPS_WINFILE, rw->type);

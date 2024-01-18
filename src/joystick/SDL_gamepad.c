@@ -1441,7 +1441,7 @@ static char *SDL_PrivateGetGamepadGUIDFromMappingString(const char *pMapping)
         pchGUID[pFirstComma - pMapping] = '\0';
 
         /* Convert old style GUIDs to the new style in 2.0.5 */
-#if defined(__WIN32__) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__)
         if (SDL_strlen(pchGUID) == 32 &&
             SDL_memcmp(&pchGUID[20], "504944564944", 12) == 0) {
             SDL_memcpy(&pchGUID[20], "000000000000", 12);
@@ -2534,7 +2534,7 @@ SDL_bool SDL_ShouldIgnoreGamepad(const char *name, SDL_JoystickGUID guid)
         bSteamVirtualGamepad = (vendor == USB_VENDOR_VALVE && product == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD);
 #elif defined(SDL_PLATFORM_MACOS)
         bSteamVirtualGamepad = (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX360_WIRED_CONTROLLER && version == 0);
-#elif defined(__WIN32__)
+#elif defined(SDL_PLATFORM_WIN32)
         /* We can't tell on Windows, but Steam will block others in input hooks */
         bSteamVirtualGamepad = SDL_TRUE;
 #endif

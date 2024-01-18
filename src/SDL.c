@@ -21,7 +21,7 @@
 #include "SDL_internal.h"
 #include "SDL3/SDL_revision.h"
 
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
 #include "core/windows/SDL_windows.h"
 #elif !defined(SDL_PLATFORM_WINRT)
 #include <unistd.h> /* _exit(), etc. */
@@ -83,7 +83,7 @@ SDL_COMPILE_TIME_ASSERT(SDL_PATCHLEVEL_max, SDL_PATCHLEVEL <= 99);
 extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 SDL_NORETURN void SDL_ExitProcess(int exitcode)
 {
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
     /* "if you do not know the state of all threads in your process, it is
        better to call TerminateProcess than ExitProcess"
        https://msdn.microsoft.com/en-us/library/windows/desktop/ms682658(v=vs.85).aspx */
@@ -605,7 +605,7 @@ const char *SDL_GetPlatform(void)
     return "RISC OS";
 #elif defined(SDL_PLATFORM_SOLARIS)
     return "Solaris";
-#elif defined(__WIN32__)
+#elif defined(SDL_PLATFORM_WIN32)
     return "Windows";
 #elif defined(SDL_PLATFORM_WINRT)
     return "WinRT";
@@ -649,7 +649,7 @@ SDL_bool SDL_IsTablet(void)
 #endif
 }
 
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
 
 #if (!defined(HAVE_LIBC) || defined(__WATCOMC__)) && !defined(SDL_STATIC_LIB)
 /* FIXME: Still need to include DllMain() on Watcom C ? */
@@ -667,4 +667,4 @@ BOOL APIENTRY MINGW32_FORCEALIGN _DllMainCRTStartup(HANDLE hModule, DWORD ul_rea
 }
 #endif /* Building DLL */
 
-#endif /* defined(__WIN32__) || defined(__GDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(__GDK__) */

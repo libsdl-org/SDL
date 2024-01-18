@@ -65,7 +65,7 @@ int SDL_main(int argc, char **argv)
 /* set up the usual SDL_main stuff if we're not using callbacks or if we are but need the normal entry point. */
 #if !defined(SDL_MAIN_USE_CALLBACKS) || defined(SDL_MAIN_CALLBACK_STANDARD)
 
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
 
 /* these defines/typedefs are needed for the WinMain() definition */
 #ifndef WINAPI
@@ -120,7 +120,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
 } /* extern "C" */
 #endif
 
-/* end of __WIN32__ and __GDK__ impls */
+/* end of SDL_PLATFORM_WIN32 and __GDK__ impls */
 #elif defined(SDL_PLATFORM_WINRT)
 
 /* WinRT main based on SDL_winrt_main_NonXAML.cpp, placed in the public domain by David Ludwig  3/13/14 */
@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
 
 /* end of impls for standard-conforming platforms */
 
-#endif /* __WIN32__ etc */
+#endif /* SDL_PLATFORM_WIN32 etc */
 
 #endif /* !defined(SDL_MAIN_USE_CALLBACKS) || defined(SDL_MAIN_CALLBACK_STANDARD) */
 

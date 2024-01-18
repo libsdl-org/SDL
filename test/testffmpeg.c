@@ -49,10 +49,10 @@
 #include "testffmpeg_videotoolbox.h"
 #endif
 
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
 #define COBJMACROS
 #include <libavutil/hwcontext_d3d11va.h>
-#endif /* __WIN32__ */
+#endif /* SDL_PLATFORM_WIN32 */
 
 #include "icon.h"
 
@@ -77,7 +77,7 @@ static PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOESFunc;
 #ifdef SDL_PLATFORM_APPLE
 static SDL_bool has_videotoolbox_output;
 #endif
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
 static ID3D11Device *d3d11_device;
 static ID3D11DeviceContext *d3d11_context;
 static const GUID SDL_IID_ID3D11Resource = { 0xdc8e63f3, 0xd12b, 0x4952, { 0xb4, 0x7b, 0x5e, 0x45, 0x02, 0x6a, 0x86, 0x2d } };
@@ -144,7 +144,7 @@ static SDL_bool CreateWindowAndRenderer(Uint32 window_flags, const char *driver)
     has_videotoolbox_output = SetupVideoToolboxOutput(renderer);
 #endif
 
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
     d3d11_device = (ID3D11Device *)SDL_GetProperty(SDL_GetRendererProperties(renderer), SDL_PROPERTY_RENDERER_D3D11_DEVICE_POINTER, NULL);
     if (d3d11_device) {
         ID3D11Device_AddRef(d3d11_device);
@@ -264,7 +264,7 @@ static SDL_bool SupportedPixelFormat(enum AVPixelFormat format)
             return SDL_TRUE;
         }
 #endif
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
         if (d3d11_device && format == AV_PIX_FMT_D3D11) {
             return SDL_TRUE;
         }
@@ -351,7 +351,7 @@ static AVCodecContext *OpenVideoStream(AVFormatContext *ic, int stream, const AV
                 continue;
             }
 
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
             if (d3d11_device && type == AV_HWDEVICE_TYPE_D3D11VA) {
                 AVD3D11VADeviceContext *device_context;
 
@@ -598,7 +598,7 @@ static SDL_bool GetTextureForVAAPIFrame(AVFrame *frame, SDL_Texture **texture)
 
 static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
 {
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
     int texture_width = 0, texture_height = 0;
     ID3D11Texture2D *pTexture = (ID3D11Texture2D *)frame->data[0];
     UINT iSliceIndex = (UINT)(uintptr_t)frame->data[1];
@@ -910,7 +910,7 @@ int main(int argc, char *argv[])
     window_flags = SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 #ifdef SDL_PLATFORM_APPLE
     window_flags |= SDL_WINDOW_METAL;
-#elif !defined(__WIN32__)
+#elif !defined(SDL_PLATFORM_WIN32)
     window_flags |= SDL_WINDOW_OPENGL;
 #endif
 #ifdef HAVE_EGL
@@ -924,7 +924,7 @@ int main(int argc, char *argv[])
         CreateWindowAndRenderer(window_flags, "metal");
     }
 #endif
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
     if (!window) {
         CreateWindowAndRenderer(window_flags, "direct3d11");
     }
@@ -1114,7 +1114,7 @@ quit:
 #ifdef SDL_PLATFORM_APPLE
     CleanupVideoToolboxOutput();
 #endif
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
     if (d3d11_context) {
         ID3D11DeviceContext_Release(d3d11_device);
         d3d11_context = NULL;

@@ -65,7 +65,7 @@ int SDL_GDKGetDefaultUser(void *outUserHandle)
 
 #endif
 
-#if !(defined(__WIN32__) || defined(SDL_PLATFORM_WINRT) || defined(__GDK__))
+#if !(defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(__GDK__))
 
 DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
 int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)

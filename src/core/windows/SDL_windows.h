@@ -24,7 +24,7 @@
 #ifndef _INCLUDED_WINDOWS_H
 #define _INCLUDED_WINDOWS_H
 
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif

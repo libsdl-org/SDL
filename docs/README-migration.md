@@ -1380,7 +1380,7 @@ The information previously available in SDL_GetWindowWMInfo() is now available a
 ```
 becomes:
 ```c
-#if defined(__WIN32__)
+#if defined(SDL_PLATFORM_WIN32)
     HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_WIN32_HWND_POINTER, NULL);
     if (hwnd) {
         ...

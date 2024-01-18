@@ -25,7 +25,7 @@
 #  It keeps the dynamic API jump table operating correctly.
 #
 #  OS-specific API:
-#   After running the script, you have to manually add #ifdef __WIN32__
+#   After running the script, you have to manually add #ifdef SDL_PLATFORM_WIN32
 #   or similar around the function in 'SDL_dynapi_procs.h'
 #
 

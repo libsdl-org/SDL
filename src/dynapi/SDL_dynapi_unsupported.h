@@ -23,12 +23,12 @@
 #define SDL_dynapi_unsupported_h_
 
 
-#if !(defined(__WIN32__) || defined(__GDK__))
+#if !(defined(SDL_PLATFORM_WIN32) || defined(__GDK__))
 typedef struct ID3D12Device ID3D12Device;
 typedef void *SDL_WindowsMessageHook;
 #endif
 
-#if !(defined(__WIN32__) || defined(__WINGDK__))
+#if !(defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__))
 typedef struct ID3D11Device ID3D11Device;
 typedef struct IDirect3DDevice9 IDirect3DDevice9;
 #endif

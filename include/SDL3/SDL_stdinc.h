@@ -207,7 +207,7 @@ typedef uint64_t Uint64;
 #ifndef SDL_PRIs64
 #ifdef PRIs64
 #define SDL_PRIs64 PRIs64
-#elif defined(__WIN32__) || defined(__GDK__)
+#elif defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
 #define SDL_PRIs64 "I64d"
 #elif defined(__LP64__) && !defined(SDL_PLATFORM_APPLE)
 #define SDL_PRIs64 "ld"
@@ -218,7 +218,7 @@ typedef uint64_t Uint64;
 #ifndef SDL_PRIu64
 #ifdef PRIu64
 #define SDL_PRIu64 PRIu64
-#elif defined(__WIN32__) || defined(__GDK__)
+#elif defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
 #define SDL_PRIu64 "I64u"
 #elif defined(__LP64__) && !defined(SDL_PLATFORM_APPLE)
 #define SDL_PRIu64 "lu"
@@ -229,7 +229,7 @@ typedef uint64_t Uint64;
 #ifndef SDL_PRIx64
 #ifdef PRIx64
 #define SDL_PRIx64 PRIx64
-#elif defined(__WIN32__) || defined(__GDK__)
+#elif defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
 #define SDL_PRIx64 "I64x"
 #elif defined(__LP64__) && !defined(SDL_PLATFORM_APPLE)
 #define SDL_PRIx64 "lx"
@@ -240,7 +240,7 @@ typedef uint64_t Uint64;
 #ifndef SDL_PRIX64
 #ifdef PRIX64
 #define SDL_PRIX64 PRIX64
-#elif defined(__WIN32__) || defined(__GDK__)
+#elif defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
 #define SDL_PRIX64 "I64X"
 #elif defined(__LP64__) && !defined(SDL_PLATFORM_APPLE)
 #define SDL_PRIX64 "lX"

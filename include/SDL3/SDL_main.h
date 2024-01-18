@@ -41,7 +41,7 @@
  */
 
 #ifndef SDL_MAIN_HANDLED
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
 /* On Windows SDL provides WinMain(), which parses the command line and passes
    the arguments to your main function.
 
@@ -423,7 +423,7 @@ extern DECLSPEC int SDLCALL SDL_RunApp(int argc, char* argv[], SDL_main_func mai
 extern DECLSPEC int SDLCALL SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit);
 
 
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
 
 /**
  * Register a win32 window class for SDL's use.
@@ -468,7 +468,7 @@ extern DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void
  */
 extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
-#endif /* defined(__WIN32__) || defined(__GDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(__GDK__) */
 
 
 #ifdef SDL_PLATFORM_WINRT
@@ -508,7 +508,7 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 #if !defined(SDL_MAIN_HANDLED) && !defined(SDL_MAIN_NOIMPL)
 /* include header-only SDL_main implementations */
 #if defined(SDL_MAIN_USE_CALLBACKS) \
-    || defined(__WIN32__) || defined(__GDK__) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS) \
+    || defined(SDL_PLATFORM_WIN32) || defined(__GDK__) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS) \
     || defined(SDL_PLATFORM_3DS) || defined(SDL_PLATFORM_NGAGE) || defined(SDL_PLATFORM_PS2) || defined(SDL_PLATFORM_PSP)
 
 /* platforms which main (-equivalent) can be implemented in plain C */

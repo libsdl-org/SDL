@@ -35,7 +35,7 @@
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_XBOX_PROTOCOL*/
 
-#if defined(__WIN32__) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__)
 #define XBOX_ONE_DRIVER_ACTIVE  1
 #else
 #define XBOX_ONE_DRIVER_ACTIVE  0

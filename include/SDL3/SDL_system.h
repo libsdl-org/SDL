@@ -43,7 +43,7 @@ extern "C" {
 /*
  * Platform specific functions for Windows
  */
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(__GDK__)
 
 typedef struct tagMSG MSG;
 typedef SDL_bool (SDLCALL *SDL_WindowsMessageHook)(void *userdata, MSG *msg);
@@ -62,9 +62,9 @@ typedef SDL_bool (SDLCALL *SDL_WindowsMessageHook)(void *userdata, MSG *msg);
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata);
 
-#endif /* defined(__WIN32__) || defined(__GDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(__GDK__) */
 
-#if defined(__WIN32__) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__)
 
 /**
  * Get the D3D9 adapter index that matches the specified display.
@@ -80,9 +80,9 @@ extern DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook ca
  */
 extern DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID);
 
-#endif /* defined(__WIN32__) || defined(__WINGDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__) */
 
-#if defined(__WIN32__) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__)
 
 /**
  * Get the DXGI Adapter and Output indices for the specified display.
@@ -101,7 +101,7 @@ extern DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);
 
-#endif /* defined(__WIN32__) || defined(__WINGDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(__WINGDK__) */
 
 /*
  * Platform specific functions for UNIX
