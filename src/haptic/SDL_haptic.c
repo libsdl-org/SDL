@@ -366,7 +366,7 @@ int SDL_GetMaxHapticEffectsPlaying(SDL_Haptic *haptic)
     return haptic->nplaying;
 }
 
-unsigned int SDL_GetHapticFeatures(SDL_Haptic *haptic)
+Uint32 SDL_GetHapticFeatures(SDL_Haptic *haptic)
 {
     CHECK_HAPTIC_MAGIC(haptic, 0);
 

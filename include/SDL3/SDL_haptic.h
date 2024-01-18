@@ -166,7 +166,7 @@ typedef struct SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticCondition
  */
-#define SDL_HAPTIC_CONSTANT   (1u<<0)
+#define SDL_HAPTIC_CONSTANT     (1u<<0)
 
 /**
  *  Sine wave effect supported.
@@ -175,21 +175,16 @@ typedef struct SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticPeriodic
  */
-#define SDL_HAPTIC_SINE       (1u<<1)
+#define SDL_HAPTIC_SINE         (1u<<1)
 
 /**
- *  Left/Right effect supported.
+ *  Square wave effect supported.
  *
- *  Haptic effect for direct control over high/low frequency motors.
+ *  Periodic haptic effect that simulates square waves.
  *
- *  \sa SDL_HapticLeftRight
- * \warning this value was SDL_HAPTIC_SQUARE right before 2.0.0 shipped. Sorry,
- *          we ran out of bits, and this is important for XInput devices.
+ *  \sa SDL_HapticPeriodic
  */
-#define SDL_HAPTIC_LEFTRIGHT     (1u<<2)
-
-/* !!! FIXME: put this back when we have more bits in 2.1 */
-/* #define SDL_HAPTIC_SQUARE     (1<<2) */
+#define SDL_HAPTIC_SQUARE       (1<<2)
 
 /**
  *  Triangle wave effect supported.
@@ -198,7 +193,7 @@ typedef struct SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticPeriodic
  */
-#define SDL_HAPTIC_TRIANGLE   (1u<<3)
+#define SDL_HAPTIC_TRIANGLE     (1u<<3)
 
 /**
  *  Sawtoothup wave effect supported.
@@ -207,7 +202,7 @@ typedef struct SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticPeriodic
  */
-#define SDL_HAPTIC_SAWTOOTHUP (1u<<4)
+#define SDL_HAPTIC_SAWTOOTHUP   (1u<<4)
 
 /**
  *  Sawtoothdown wave effect supported.
@@ -225,7 +220,7 @@ typedef struct SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticRamp
  */
-#define SDL_HAPTIC_RAMP       (1u<<6)
+#define SDL_HAPTIC_RAMP         (1u<<6)
 
 /**
  *  Spring effect supported - uses axes position.
@@ -235,7 +230,7 @@ typedef struct SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticCondition
  */
-#define SDL_HAPTIC_SPRING     (1u<<7)
+#define SDL_HAPTIC_SPRING       (1u<<7)
 
 /**
  *  Damper effect supported - uses axes velocity.
@@ -245,7 +240,7 @@ typedef struct SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticCondition
  */
-#define SDL_HAPTIC_DAMPER     (1u<<8)
+#define SDL_HAPTIC_DAMPER       (1u<<8)
 
 /**
  *  Inertia effect supported - uses axes acceleration.
@@ -255,7 +250,7 @@ typedef struct SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticCondition
  */
-#define SDL_HAPTIC_INERTIA    (1u<<9)
+#define SDL_HAPTIC_INERTIA      (1u<<9)
 
 /**
  *  Friction effect supported - uses axes movement.
@@ -265,14 +260,30 @@ typedef struct SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticCondition
  */
-#define SDL_HAPTIC_FRICTION   (1u<<10)
+#define SDL_HAPTIC_FRICTION     (1u<<10)
+
+/**
+ *  Left/Right effect supported.
+ *
+ *  Haptic effect for direct control over high/low frequency motors.
+ *
+ *  \sa SDL_HapticLeftRight
+ */
+#define SDL_HAPTIC_LEFTRIGHT    (1u<<11)
+
+/**
+ *  Reserved for future use
+ */
+#define SDL_HAPTIC_RESERVED1    (1u<<12)
+#define SDL_HAPTIC_RESERVED2    (1u<<13)
+#define SDL_HAPTIC_RESERVED3    (1u<<14)
 
 /**
  *  Custom effect is supported.
  *
  *  User defined custom haptic effect.
  */
-#define SDL_HAPTIC_CUSTOM     (1u<<11)
+#define SDL_HAPTIC_CUSTOM       (1u<<15)
 
 /* @} *//* Haptic effects */
 
@@ -285,7 +296,7 @@ typedef struct SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_SetHapticGain
  */
-#define SDL_HAPTIC_GAIN       (1u<<12)
+#define SDL_HAPTIC_GAIN       (1u<<16)
 
 /**
  *  Device can set autocenter.
@@ -294,7 +305,7 @@ typedef struct SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_SetHapticAutocenter
  */
-#define SDL_HAPTIC_AUTOCENTER (1u<<13)
+#define SDL_HAPTIC_AUTOCENTER (1u<<17)
 
 /**
  *  Device can be queried for effect status.
@@ -303,7 +314,7 @@ typedef struct SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_GetHapticEffectStatus
  */
-#define SDL_HAPTIC_STATUS     (1u<<14)
+#define SDL_HAPTIC_STATUS     (1u<<18)
 
 /**
  *  Device can be paused.
@@ -313,7 +324,7 @@ typedef struct SDL_Haptic SDL_Haptic;
  *  \sa SDL_PauseHaptic
  *  \sa SDL_ResumeHaptic
  */
-#define SDL_HAPTIC_PAUSE      (1u<<15)
+#define SDL_HAPTIC_PAUSE      (1u<<19)
 
 
 /**
@@ -511,7 +522,7 @@ typedef struct SDL_HapticConstant
  *
  *  The struct handles the following effects:
  *   - ::SDL_HAPTIC_SINE
- *   - ::SDL_HAPTIC_LEFTRIGHT
+ *   - ::SDL_HAPTIC_SQUARE
  *   - ::SDL_HAPTIC_TRIANGLE
  *   - ::SDL_HAPTIC_SAWTOOTHUP
  *   - ::SDL_HAPTIC_SAWTOOTHDOWN
@@ -557,7 +568,7 @@ typedef struct SDL_HapticConstant
     \endverbatim
  *
  *  \sa SDL_HAPTIC_SINE
- *  \sa SDL_HAPTIC_LEFTRIGHT
+ *  \sa SDL_HAPTIC_SQUARE
  *  \sa SDL_HAPTIC_TRIANGLE
  *  \sa SDL_HAPTIC_SAWTOOTHUP
  *  \sa SDL_HAPTIC_SAWTOOTHDOWN
@@ -566,7 +577,7 @@ typedef struct SDL_HapticConstant
 typedef struct SDL_HapticPeriodic
 {
     /* Header */
-    Uint16 type;        /**< ::SDL_HAPTIC_SINE, ::SDL_HAPTIC_LEFTRIGHT,
+    Uint16 type;        /**< ::SDL_HAPTIC_SINE, ::SDL_HAPTIC_SQUARE
                              ::SDL_HAPTIC_TRIANGLE, ::SDL_HAPTIC_SAWTOOTHUP or
                              ::SDL_HAPTIC_SAWTOOTHDOWN */
     SDL_HapticDirection direction;  /**< Direction of the effect. */
@@ -1050,7 +1061,7 @@ extern DECLSPEC int SDLCALL SDL_GetMaxHapticEffectsPlaying(SDL_Haptic *haptic);
  * \sa SDL_HapticEffectSupported
  * \sa SDL_GetMaxHapticEffects
  */
-extern DECLSPEC unsigned int SDLCALL SDL_GetHapticFeatures(SDL_Haptic *haptic);
+extern DECLSPEC Uint32 SDLCALL SDL_GetHapticFeatures(SDL_Haptic *haptic);
 
 
 /**
