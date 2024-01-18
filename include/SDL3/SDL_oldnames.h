@@ -384,12 +384,6 @@
 #ifdef SDL_PLATFORM_AIX
 #define __AIX__ SDL_PLATFORM_AIX
 #endif
-#ifdef SDL_PLATFORM_ANDROID
-#define __ANDROID__ SDL_PLATFORM_ANDOID
-#endif
-#ifdef SDL_PLATFORM_APPLE
-#define __APPLE__ SDL_PLATFORM_APPLE
-#endif
 #ifdef SDL_PLATFORM_BSDI
 #define __BSDI__ SDL_PLATFORM_BSDI
 #endif
@@ -398,9 +392,6 @@
 #endif
 #ifdef SDL_PLATFORM_FREEBSD
 #define __FREEBSD__ SDL_PLATFORM_FREEBSD
-#endif
-#ifdef SDL_PLATFORM_HAIKU
-#define __HAIKU__ SDL_PLATFORM_HAIKU
 #endif
 #ifdef SDL_PLATFORM_HPUX
 #define __HPUX__ SDL_PLATFORM_HPUX
@@ -432,12 +423,6 @@
 #ifdef SDL_PLATFORM_OSF
 #define __OSF__ SDL_PLATFORM_OSF
 #endif
-#ifdef SDL_PLATFORM_PS2
-#define __PSP2__ SDL_PLATFORM_PS2
-#endif
-#ifdef SDL_PLATFORM_PSP
-#define __PSP__ SDL_PLATFORM_PSP
-#endif
 #ifdef SDL_PLATFORM_QNXNTO
 #define __QNXNTO__ SDL_PLATFORM_QNXNTO
 #endif
@@ -449,9 +434,6 @@
 #endif
 #ifdef SDL_PLATFORM_TVOS
 #define __TVOS__ SDL_PLATFORM_TVOS
-#endif
-#ifdef SDL_PLATFORM_VITA
-#define __VITA__ SDL_PLATFORM_VITA
 #endif
 #ifdef SDL_PLATFORM_WINGDK
 #define __WINGDK__ SDL_PLATFORM_WINGDK
@@ -944,12 +926,6 @@
 #ifdef SDL_PLATFORM_AIX
 #define __AIX__ __AIX___renamed_SDL_PLATFORM_AIX
 #endif
-#ifdef SDL_PLATFORM_ANDROID
-#define __ANDROID__ __ANDROID___renamed_SDL_PLATFORM_ANDROID
-#endif
-#ifdef SDL_PLATFORM_APPLE
-#define __APPLE__ __ANDROID___renamed_SDL_PLATFORM_APPLE
-#endif
 #ifdef SDL_PLATFORM_BSDI
 #define __BSDI__ __BSDI___renamed_SDL_PLATFORM_BSDI
 #endif
@@ -958,9 +934,6 @@
 #endif
 #ifdef SDL_PLATFORM_FREEBSD
 #define __FREEBSD__ __FREEBSD___renamed_SDL_PLATFORM_FREEBSD
-#endif
-#ifdef SDL_PLATFORM_HAIKU
-#define __HAIKU__ __HAIKU___renamed_SDL_PLATFORM_HAIKU
 #endif
 #ifdef SDL_PLATFORM_HPUX
 #define __HPUX__ __HPUX___renamed_SDL_PLATFORM_HPUX
@@ -992,12 +965,6 @@
 #ifdef SDL_PLATFORM_OSF
 #define __OSF__ __OSF___renamed_SDL_PLATFORM_OSF
 #endif
-#ifdef SDL_PLATFORM_PS2
-#define __PS2__ __PS2___renamed_SDL_PLATFORM_PS2
-#endif
-#ifdef SDL_PLATFORM_PSP
-#define __PSP__ __PSP___renamed_SDL_PLATFORM_PSP
-#endif
 #ifdef SDL_PLATFORM_QNXNTO
 #define __QNXNTO__ __QNXNTO___renamed_SDL_PLATFORM_QNXNTO
 #endif
@@ -1006,9 +973,6 @@
 #endif
 #ifdef SDL_PLATFORM_TVOS
 #define __TVOS__ __TVOS___renamed_SDL_PLATFORM_TVOS
-#endif
-#ifdef SDL_PLATFORM_VITA
-#define __VITA__ __VITA___renamed_SDL_PLATFORM_VITA
 #endif
 #ifdef SDL_PLATFORM_WINGDK
 #define __WINGDK__ __WINGDK___renamed_SDL_PLATFORM_WINGDK
