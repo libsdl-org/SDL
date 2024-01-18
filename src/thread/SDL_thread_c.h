@@ -78,7 +78,7 @@ extern void SDL_RunThread(SDL_Thread *thread);
 /* This is the system-independent thread local storage structure */
 typedef struct
 {
-    unsigned int limit;
+    SDL_TLSID limit;
     struct
     {
         void *data;

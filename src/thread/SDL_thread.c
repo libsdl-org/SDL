@@ -29,7 +29,7 @@
 SDL_TLSID SDL_CreateTLS(void)
 {
     static SDL_AtomicInt SDL_tls_id;
-    return SDL_AtomicIncRef(&SDL_tls_id) + 1;
+    return (SDL_TLSID)(SDL_AtomicIncRef(&SDL_tls_id) + 1);
 }
 
 void *SDL_GetTLS(SDL_TLSID id)
@@ -60,6 +60,7 @@ int SDL_SetTLS(SDL_TLSID id, const void *value, void(SDLCALL *destructor)(void *
         newlimit = (id + TLS_ALLOC_CHUNKSIZE);
         new_storage = (SDL_TLSData *)SDL_realloc(storage, sizeof(*storage) + (newlimit - 1) * sizeof(storage->array[0]));
         if (!new_storage) {
+            SDL_OutOfMemory();
             return -1;
         }
         storage = new_storage;

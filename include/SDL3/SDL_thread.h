@@ -53,7 +53,7 @@ typedef struct SDL_Thread SDL_Thread;
 typedef Uint64 SDL_ThreadID;
 
 /* Thread local storage ID, 0 is the invalid ID */
-typedef unsigned int SDL_TLSID;
+typedef Uint32 SDL_TLSID;
 
 /**
  *  The SDL thread priority.
