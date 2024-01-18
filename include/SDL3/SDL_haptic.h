@@ -856,8 +856,9 @@ extern DECLSPEC SDL_HapticID *SDLCALL SDL_GetHaptics(int *count);
  * This can be called before any haptic devices are opened.
  *
  * \param instance_id the haptic device instance ID
- * \returns the name of the selected haptic device. If no name can be found, this
- *          function returns NULL; call SDL_GetError() for more information.
+ * \returns the name of the selected haptic device. If no name can be found,
+ *          this function returns NULL; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -921,8 +922,9 @@ extern DECLSPEC SDL_HapticID SDLCALL SDL_GetHapticInstanceID(SDL_Haptic *haptic)
  * Get the implementation dependent name of a haptic device.
  *
  * \param haptic the SDL_Haptic obtained from SDL_OpenJoystick()
- * \returns the name of the selected haptic device. If no name can be found, this
- *          function returns NULL; call SDL_GetError() for more information.
+ * \returns the name of the selected haptic device. If no name can be found,
+ *          this function returns NULL; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1235,8 +1237,8 @@ extern DECLSPEC int SDLCALL SDL_SetHapticAutocenter(SDL_Haptic *haptic, int auto
 /**
  * Pause a haptic device.
  *
- * Device must support the `SDL_HAPTIC_PAUSE` feature. Call
- * SDL_ResumeHaptic() to resume playback.
+ * Device must support the `SDL_HAPTIC_PAUSE` feature. Call SDL_ResumeHaptic()
+ * to resume playback.
  *
  * Do not modify the effects nor add new ones while the device is paused. That
  * can cause all sorts of weird errors.
