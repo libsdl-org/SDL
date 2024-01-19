@@ -370,7 +370,6 @@
 		A75FCE0223E25AB700529352 /* SDL_log.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5DD23E2513D00DCD162 /* SDL_log.c */; };
 		A75FCE0323E25AB700529352 /* SDL_cocoaopengl.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A67F23E2513E00DCD162 /* SDL_cocoaopengl.m */; };
 		A75FCE0423E25AB700529352 /* SDL_offscreenframebuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5F223E2513D00DCD162 /* SDL_offscreenframebuffer.c */; };
-		A75FCE0523E25AB700529352 /* yuv_rgb.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A76E23E2513E00DCD162 /* yuv_rgb.c */; };
 		A75FCE0623E25AB700529352 /* SDL_render_gles.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A90123E2514000DCD162 /* SDL_render_gles.c */; };
 		A75FCE0723E25AB700529352 /* SDL_systhread.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A78623E2513E00DCD162 /* SDL_systhread.c */; };
 		A75FCE0823E25AB700529352 /* SDL_windowevents.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A92F23E2514000DCD162 /* SDL_windowevents.c */; };
@@ -745,7 +744,6 @@
 		A75FCFBB23E25AC700529352 /* SDL_log.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5DD23E2513D00DCD162 /* SDL_log.c */; };
 		A75FCFBC23E25AC700529352 /* SDL_cocoaopengl.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A67F23E2513E00DCD162 /* SDL_cocoaopengl.m */; };
 		A75FCFBD23E25AC700529352 /* SDL_offscreenframebuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5F223E2513D00DCD162 /* SDL_offscreenframebuffer.c */; };
-		A75FCFBE23E25AC700529352 /* yuv_rgb.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A76E23E2513E00DCD162 /* yuv_rgb.c */; };
 		A75FCFBF23E25AC700529352 /* SDL_render_gles.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A90123E2514000DCD162 /* SDL_render_gles.c */; };
 		A75FCFC023E25AC700529352 /* SDL_systhread.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A78623E2513E00DCD162 /* SDL_systhread.c */; };
 		A75FCFC123E25AC700529352 /* SDL_windowevents.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A92F23E2514000DCD162 /* SDL_windowevents.c */; };
@@ -1104,7 +1102,6 @@
 		A769B18B23E259AE00872273 /* SDL_log.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5DD23E2513D00DCD162 /* SDL_log.c */; };
 		A769B18C23E259AE00872273 /* SDL_cocoaopengl.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A67F23E2513E00DCD162 /* SDL_cocoaopengl.m */; };
 		A769B18D23E259AE00872273 /* SDL_offscreenframebuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5F223E2513D00DCD162 /* SDL_offscreenframebuffer.c */; };
-		A769B18E23E259AE00872273 /* yuv_rgb.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A76E23E2513E00DCD162 /* yuv_rgb.c */; };
 		A769B18F23E259AE00872273 /* SDL_render_gles.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A90123E2514000DCD162 /* SDL_render_gles.c */; };
 		A769B19023E259AE00872273 /* SDL_systhread.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A78623E2513E00DCD162 /* SDL_systhread.c */; };
 		A769B19123E259AE00872273 /* SDL_windowevents.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A92F23E2514000DCD162 /* SDL_windowevents.c */; };
@@ -2239,12 +2236,6 @@
 		A7D8B3B923E2514200DCD162 /* SDL_blit.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A76B23E2513E00DCD162 /* SDL_blit.h */; };
 		A7D8B3BA23E2514200DCD162 /* SDL_blit.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A76B23E2513E00DCD162 /* SDL_blit.h */; };
 		A7D8B3BB23E2514200DCD162 /* SDL_blit.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A76B23E2513E00DCD162 /* SDL_blit.h */; };
-		A7D8B3BF23E2514200DCD162 /* yuv_rgb.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A76E23E2513E00DCD162 /* yuv_rgb.c */; };
-		A7D8B3C023E2514200DCD162 /* yuv_rgb.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A76E23E2513E00DCD162 /* yuv_rgb.c */; };
-		A7D8B3C123E2514200DCD162 /* yuv_rgb.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A76E23E2513E00DCD162 /* yuv_rgb.c */; };
-		A7D8B3C223E2514200DCD162 /* yuv_rgb.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A76E23E2513E00DCD162 /* yuv_rgb.c */; };
-		A7D8B3C323E2514200DCD162 /* yuv_rgb.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A76E23E2513E00DCD162 /* yuv_rgb.c */; };
-		A7D8B3C423E2514200DCD162 /* yuv_rgb.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A76E23E2513E00DCD162 /* yuv_rgb.c */; };
 		A7D8B3C823E2514200DCD162 /* yuv_rgb_sse_func.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A77023E2513E00DCD162 /* yuv_rgb_sse_func.h */; };
 		A7D8B3C923E2514300DCD162 /* yuv_rgb_sse_func.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A77023E2513E00DCD162 /* yuv_rgb_sse_func.h */; };
 		A7D8B3CA23E2514300DCD162 /* yuv_rgb_sse_func.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A77023E2513E00DCD162 /* yuv_rgb_sse_func.h */; };
@@ -3355,6 +3346,87 @@
 		DB31407017554B71006C0E22 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0073179F0858DECD00B2BC32 /* IOKit.framework */; };
 		DB31407217554B71006C0E22 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 007317C10858E15000B2BC32 /* Carbon.framework */; };
 		DB31408D17554D3C006C0E22 /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00CFA89C106B4BA100758660 /* ForceFeedback.framework */; };
+		F316AB852B5A02C3002EF551 /* yuv_rgb_common.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB7C2B5A02C2002EF551 /* yuv_rgb_common.h */; };
+		F316AB862B5A02C3002EF551 /* yuv_rgb_common.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB7C2B5A02C2002EF551 /* yuv_rgb_common.h */; };
+		F316AB872B5A02C3002EF551 /* yuv_rgb_common.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB7C2B5A02C2002EF551 /* yuv_rgb_common.h */; };
+		F316AB882B5A02C3002EF551 /* yuv_rgb_common.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB7C2B5A02C2002EF551 /* yuv_rgb_common.h */; };
+		F316AB892B5A02C3002EF551 /* yuv_rgb_common.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB7C2B5A02C2002EF551 /* yuv_rgb_common.h */; };
+		F316AB8A2B5A02C3002EF551 /* yuv_rgb_common.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB7C2B5A02C2002EF551 /* yuv_rgb_common.h */; };
+		F316AB8B2B5A02C3002EF551 /* yuv_rgb_common.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB7C2B5A02C2002EF551 /* yuv_rgb_common.h */; };
+		F316AB8C2B5A02C3002EF551 /* yuv_rgb_common.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB7C2B5A02C2002EF551 /* yuv_rgb_common.h */; };
+		F316AB8D2B5A02C3002EF551 /* yuv_rgb_common.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB7C2B5A02C2002EF551 /* yuv_rgb_common.h */; };
+		F316AB8E2B5A02C3002EF551 /* yuv_rgb_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB7D2B5A02C2002EF551 /* yuv_rgb_internal.h */; };
+		F316AB8F2B5A02C3002EF551 /* yuv_rgb_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB7D2B5A02C2002EF551 /* yuv_rgb_internal.h */; };
+		F316AB902B5A02C3002EF551 /* yuv_rgb_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB7D2B5A02C2002EF551 /* yuv_rgb_internal.h */; };
+		F316AB912B5A02C3002EF551 /* yuv_rgb_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB7D2B5A02C2002EF551 /* yuv_rgb_internal.h */; };
+		F316AB922B5A02C3002EF551 /* yuv_rgb_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB7D2B5A02C2002EF551 /* yuv_rgb_internal.h */; };
+		F316AB932B5A02C3002EF551 /* yuv_rgb_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB7D2B5A02C2002EF551 /* yuv_rgb_internal.h */; };
+		F316AB942B5A02C3002EF551 /* yuv_rgb_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB7D2B5A02C2002EF551 /* yuv_rgb_internal.h */; };
+		F316AB952B5A02C3002EF551 /* yuv_rgb_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB7D2B5A02C2002EF551 /* yuv_rgb_internal.h */; };
+		F316AB962B5A02C3002EF551 /* yuv_rgb_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB7D2B5A02C2002EF551 /* yuv_rgb_internal.h */; };
+		F316AB972B5A02C3002EF551 /* yuv_rgb_std.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB7E2B5A02C3002EF551 /* yuv_rgb_std.c */; };
+		F316AB982B5A02C3002EF551 /* yuv_rgb_std.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB7E2B5A02C3002EF551 /* yuv_rgb_std.c */; };
+		F316AB992B5A02C3002EF551 /* yuv_rgb_std.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB7E2B5A02C3002EF551 /* yuv_rgb_std.c */; };
+		F316AB9A2B5A02C3002EF551 /* yuv_rgb_std.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB7E2B5A02C3002EF551 /* yuv_rgb_std.c */; };
+		F316AB9B2B5A02C3002EF551 /* yuv_rgb_std.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB7E2B5A02C3002EF551 /* yuv_rgb_std.c */; };
+		F316AB9C2B5A02C3002EF551 /* yuv_rgb_std.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB7E2B5A02C3002EF551 /* yuv_rgb_std.c */; };
+		F316AB9D2B5A02C3002EF551 /* yuv_rgb_std.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB7E2B5A02C3002EF551 /* yuv_rgb_std.c */; };
+		F316AB9E2B5A02C3002EF551 /* yuv_rgb_std.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB7E2B5A02C3002EF551 /* yuv_rgb_std.c */; };
+		F316AB9F2B5A02C3002EF551 /* yuv_rgb_std.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB7E2B5A02C3002EF551 /* yuv_rgb_std.c */; };
+		F316ABA02B5A02C3002EF551 /* yuv_rgb_sse.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB7F2B5A02C3002EF551 /* yuv_rgb_sse.c */; };
+		F316ABA12B5A02C3002EF551 /* yuv_rgb_sse.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB7F2B5A02C3002EF551 /* yuv_rgb_sse.c */; };
+		F316ABA22B5A02C3002EF551 /* yuv_rgb_sse.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB7F2B5A02C3002EF551 /* yuv_rgb_sse.c */; };
+		F316ABA32B5A02C3002EF551 /* yuv_rgb_sse.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB7F2B5A02C3002EF551 /* yuv_rgb_sse.c */; };
+		F316ABA42B5A02C3002EF551 /* yuv_rgb_sse.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB7F2B5A02C3002EF551 /* yuv_rgb_sse.c */; };
+		F316ABA52B5A02C3002EF551 /* yuv_rgb_sse.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB7F2B5A02C3002EF551 /* yuv_rgb_sse.c */; };
+		F316ABA62B5A02C3002EF551 /* yuv_rgb_sse.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB7F2B5A02C3002EF551 /* yuv_rgb_sse.c */; };
+		F316ABA72B5A02C3002EF551 /* yuv_rgb_sse.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB7F2B5A02C3002EF551 /* yuv_rgb_sse.c */; };
+		F316ABA82B5A02C3002EF551 /* yuv_rgb_sse.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB7F2B5A02C3002EF551 /* yuv_rgb_sse.c */; };
+		F316ABA92B5A02C3002EF551 /* yuv_rgb_lsx.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB802B5A02C3002EF551 /* yuv_rgb_lsx.h */; };
+		F316ABAA2B5A02C3002EF551 /* yuv_rgb_lsx.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB802B5A02C3002EF551 /* yuv_rgb_lsx.h */; };
+		F316ABAB2B5A02C3002EF551 /* yuv_rgb_lsx.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB802B5A02C3002EF551 /* yuv_rgb_lsx.h */; };
+		F316ABAC2B5A02C3002EF551 /* yuv_rgb_lsx.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB802B5A02C3002EF551 /* yuv_rgb_lsx.h */; };
+		F316ABAD2B5A02C3002EF551 /* yuv_rgb_lsx.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB802B5A02C3002EF551 /* yuv_rgb_lsx.h */; };
+		F316ABAE2B5A02C3002EF551 /* yuv_rgb_lsx.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB802B5A02C3002EF551 /* yuv_rgb_lsx.h */; };
+		F316ABAF2B5A02C3002EF551 /* yuv_rgb_lsx.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB802B5A02C3002EF551 /* yuv_rgb_lsx.h */; };
+		F316ABB02B5A02C3002EF551 /* yuv_rgb_lsx.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB802B5A02C3002EF551 /* yuv_rgb_lsx.h */; };
+		F316ABB12B5A02C3002EF551 /* yuv_rgb_lsx.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB802B5A02C3002EF551 /* yuv_rgb_lsx.h */; };
+		F316ABB22B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB812B5A02C3002EF551 /* yuv_rgb_lsx.c */; };
+		F316ABB32B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB812B5A02C3002EF551 /* yuv_rgb_lsx.c */; };
+		F316ABB42B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB812B5A02C3002EF551 /* yuv_rgb_lsx.c */; };
+		F316ABB52B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB812B5A02C3002EF551 /* yuv_rgb_lsx.c */; };
+		F316ABB62B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB812B5A02C3002EF551 /* yuv_rgb_lsx.c */; };
+		F316ABB72B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB812B5A02C3002EF551 /* yuv_rgb_lsx.c */; };
+		F316ABB82B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB812B5A02C3002EF551 /* yuv_rgb_lsx.c */; };
+		F316ABB92B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB812B5A02C3002EF551 /* yuv_rgb_lsx.c */; };
+		F316ABBA2B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */ = {isa = PBXBuildFile; fileRef = F316AB812B5A02C3002EF551 /* yuv_rgb_lsx.c */; };
+		F316ABBB2B5A02C3002EF551 /* yuv_rgb_sse.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB822B5A02C3002EF551 /* yuv_rgb_sse.h */; };
+		F316ABBC2B5A02C3002EF551 /* yuv_rgb_sse.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB822B5A02C3002EF551 /* yuv_rgb_sse.h */; };
+		F316ABBD2B5A02C3002EF551 /* yuv_rgb_sse.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB822B5A02C3002EF551 /* yuv_rgb_sse.h */; };
+		F316ABBE2B5A02C3002EF551 /* yuv_rgb_sse.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB822B5A02C3002EF551 /* yuv_rgb_sse.h */; };
+		F316ABBF2B5A02C3002EF551 /* yuv_rgb_sse.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB822B5A02C3002EF551 /* yuv_rgb_sse.h */; };
+		F316ABC02B5A02C3002EF551 /* yuv_rgb_sse.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB822B5A02C3002EF551 /* yuv_rgb_sse.h */; };
+		F316ABC12B5A02C3002EF551 /* yuv_rgb_sse.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB822B5A02C3002EF551 /* yuv_rgb_sse.h */; };
+		F316ABC22B5A02C3002EF551 /* yuv_rgb_sse.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB822B5A02C3002EF551 /* yuv_rgb_sse.h */; };
+		F316ABC32B5A02C3002EF551 /* yuv_rgb_sse.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB822B5A02C3002EF551 /* yuv_rgb_sse.h */; };
+		F316ABC42B5A02C3002EF551 /* yuv_rgb_std.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB832B5A02C3002EF551 /* yuv_rgb_std.h */; };
+		F316ABC52B5A02C3002EF551 /* yuv_rgb_std.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB832B5A02C3002EF551 /* yuv_rgb_std.h */; };
+		F316ABC62B5A02C3002EF551 /* yuv_rgb_std.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB832B5A02C3002EF551 /* yuv_rgb_std.h */; };
+		F316ABC72B5A02C3002EF551 /* yuv_rgb_std.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB832B5A02C3002EF551 /* yuv_rgb_std.h */; };
+		F316ABC82B5A02C3002EF551 /* yuv_rgb_std.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB832B5A02C3002EF551 /* yuv_rgb_std.h */; };
+		F316ABC92B5A02C3002EF551 /* yuv_rgb_std.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB832B5A02C3002EF551 /* yuv_rgb_std.h */; };
+		F316ABCA2B5A02C3002EF551 /* yuv_rgb_std.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB832B5A02C3002EF551 /* yuv_rgb_std.h */; };
+		F316ABCB2B5A02C3002EF551 /* yuv_rgb_std.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB832B5A02C3002EF551 /* yuv_rgb_std.h */; };
+		F316ABCC2B5A02C3002EF551 /* yuv_rgb_std.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB832B5A02C3002EF551 /* yuv_rgb_std.h */; };
+		F316ABCD2B5A02C3002EF551 /* yuv_rgb_lsx_func.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB842B5A02C3002EF551 /* yuv_rgb_lsx_func.h */; };
+		F316ABCE2B5A02C3002EF551 /* yuv_rgb_lsx_func.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB842B5A02C3002EF551 /* yuv_rgb_lsx_func.h */; };
+		F316ABCF2B5A02C3002EF551 /* yuv_rgb_lsx_func.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB842B5A02C3002EF551 /* yuv_rgb_lsx_func.h */; };
+		F316ABD02B5A02C3002EF551 /* yuv_rgb_lsx_func.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB842B5A02C3002EF551 /* yuv_rgb_lsx_func.h */; };
+		F316ABD12B5A02C3002EF551 /* yuv_rgb_lsx_func.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB842B5A02C3002EF551 /* yuv_rgb_lsx_func.h */; };
+		F316ABD22B5A02C3002EF551 /* yuv_rgb_lsx_func.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB842B5A02C3002EF551 /* yuv_rgb_lsx_func.h */; };
+		F316ABD32B5A02C3002EF551 /* yuv_rgb_lsx_func.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB842B5A02C3002EF551 /* yuv_rgb_lsx_func.h */; };
+		F316ABD42B5A02C3002EF551 /* yuv_rgb_lsx_func.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB842B5A02C3002EF551 /* yuv_rgb_lsx_func.h */; };
+		F316ABD52B5A02C3002EF551 /* yuv_rgb_lsx_func.h in Headers */ = {isa = PBXBuildFile; fileRef = F316AB842B5A02C3002EF551 /* yuv_rgb_lsx_func.h */; };
 		F31A92C828D4CB39003BFD6A /* SDL_offscreenopengles.h in Headers */ = {isa = PBXBuildFile; fileRef = F31A92C628D4CB39003BFD6A /* SDL_offscreenopengles.h */; };
 		F31A92C928D4CB39003BFD6A /* SDL_offscreenopengles.h in Headers */ = {isa = PBXBuildFile; fileRef = F31A92C628D4CB39003BFD6A /* SDL_offscreenopengles.h */; };
 		F31A92CA28D4CB39003BFD6A /* SDL_offscreenopengles.h in Headers */ = {isa = PBXBuildFile; fileRef = F31A92C628D4CB39003BFD6A /* SDL_offscreenopengles.h */; };
@@ -3917,7 +3989,6 @@
 		A7D8A76923E2513E00DCD162 /* SDL_shape.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_shape.c; sourceTree = "<group>"; };
 		A7D8A76A23E2513E00DCD162 /* SDL_yuv_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_yuv_c.h; sourceTree = "<group>"; };
 		A7D8A76B23E2513E00DCD162 /* SDL_blit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_blit.h; sourceTree = "<group>"; };
-		A7D8A76E23E2513E00DCD162 /* yuv_rgb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = yuv_rgb.c; sourceTree = "<group>"; };
 		A7D8A77023E2513E00DCD162 /* yuv_rgb_sse_func.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = yuv_rgb_sse_func.h; sourceTree = "<group>"; };
 		A7D8A77123E2513E00DCD162 /* yuv_rgb_std_func.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = yuv_rgb_std_func.h; sourceTree = "<group>"; };
 		A7D8A77223E2513E00DCD162 /* yuv_rgb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = yuv_rgb.h; sourceTree = "<group>"; };
@@ -4139,6 +4210,15 @@
 		DB31407717554B71006C0E22 /* libSDL2.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSDL2.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2D187CF28A5673500D2B4F1 /* SDL2.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SDL2.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2D187D228A5673500D2B4F1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F316AB7C2B5A02C2002EF551 /* yuv_rgb_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = yuv_rgb_common.h; sourceTree = "<group>"; };
+		F316AB7D2B5A02C2002EF551 /* yuv_rgb_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = yuv_rgb_internal.h; sourceTree = "<group>"; };
+		F316AB7E2B5A02C3002EF551 /* yuv_rgb_std.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = yuv_rgb_std.c; sourceTree = "<group>"; };
+		F316AB7F2B5A02C3002EF551 /* yuv_rgb_sse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = yuv_rgb_sse.c; sourceTree = "<group>"; };
+		F316AB802B5A02C3002EF551 /* yuv_rgb_lsx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = yuv_rgb_lsx.h; sourceTree = "<group>"; };
+		F316AB812B5A02C3002EF551 /* yuv_rgb_lsx.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = yuv_rgb_lsx.c; sourceTree = "<group>"; };
+		F316AB822B5A02C3002EF551 /* yuv_rgb_sse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = yuv_rgb_sse.h; sourceTree = "<group>"; };
+		F316AB832B5A02C3002EF551 /* yuv_rgb_std.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = yuv_rgb_std.h; sourceTree = "<group>"; };
+		F316AB842B5A02C3002EF551 /* yuv_rgb_lsx_func.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = yuv_rgb_lsx_func.h; sourceTree = "<group>"; };
 		F31A92C628D4CB39003BFD6A /* SDL_offscreenopengles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_offscreenopengles.h; sourceTree = "<group>"; };
 		F31A92C728D4CB39003BFD6A /* SDL_offscreenopengles.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_offscreenopengles.c; sourceTree = "<group>"; };
 		F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_combined.c; sourceTree = "<group>"; };
@@ -4939,9 +5019,17 @@
 		A7D8A76C23E2513E00DCD162 /* yuv2rgb */ = {
 			isa = PBXGroup;
 			children = (
+				F316AB7C2B5A02C2002EF551 /* yuv_rgb_common.h */,
+				F316AB7D2B5A02C2002EF551 /* yuv_rgb_internal.h */,
+				F316AB842B5A02C3002EF551 /* yuv_rgb_lsx_func.h */,
+				F316AB812B5A02C3002EF551 /* yuv_rgb_lsx.c */,
+				F316AB802B5A02C3002EF551 /* yuv_rgb_lsx.h */,
 				A7D8A77023E2513E00DCD162 /* yuv_rgb_sse_func.h */,
+				F316AB7F2B5A02C3002EF551 /* yuv_rgb_sse.c */,
+				F316AB822B5A02C3002EF551 /* yuv_rgb_sse.h */,
 				A7D8A77123E2513E00DCD162 /* yuv_rgb_std_func.h */,
-				A7D8A76E23E2513E00DCD162 /* yuv_rgb.c */,
+				F316AB7E2B5A02C3002EF551 /* yuv_rgb_std.c */,
+				F316AB832B5A02C3002EF551 /* yuv_rgb_std.h */,
 				A7D8A77223E2513E00DCD162 /* yuv_rgb.h */,
 			);
 			path = yuv2rgb;
@@ -5513,6 +5601,7 @@
 				A75FCD5023E25AB700529352 /* gl2ext.h in Headers */,
 				A75FCD5123E25AB700529352 /* SDL_clipboardevents_c.h in Headers */,
 				A75FCD5323E25AB700529352 /* SDL_syshaptic_c.h in Headers */,
+				F316ABC22B5A02C3002EF551 /* yuv_rgb_sse.h in Headers */,
 				A75FCD5423E25AB700529352 /* SDL_hints_c.h in Headers */,
 				A75FCD5523E25AB700529352 /* SDL_audiodev_c.h in Headers */,
 				A75FCD5623E25AB700529352 /* SDL_audio_c.h in Headers */,
@@ -5526,6 +5615,7 @@
 				A75FCD5E23E25AB700529352 /* yuv_rgb_std_func.h in Headers */,
 				A75FCD5F23E25AB700529352 /* vulkan_core.h in Headers */,
 				A75FCD6023E25AB700529352 /* SDL_syssensor.h in Headers */,
+				F316ABD42B5A02C3002EF551 /* yuv_rgb_lsx_func.h in Headers */,
 				A75FCD6123E25AB700529352 /* SDL_dynapi.h in Headers */,
 				A75FCD6223E25AB700529352 /* SDL_assert_c.h in Headers */,
 				A75FCD6323E25AB700529352 /* SDL_diskaudio.h in Headers */,
@@ -5535,6 +5625,7 @@
 				A75FCD6723E25AB700529352 /* SDL_wave.h in Headers */,
 				A75FCD6823E25AB700529352 /* SDL_cocoaopengl.h in Headers */,
 				A75FCD6923E25AB700529352 /* yuv_rgb_sse_func.h in Headers */,
+				F316ABCB2B5A02C3002EF551 /* yuv_rgb_std.h in Headers */,
 				A75FCD6B23E25AB700529352 /* SDL_offscreenevents_c.h in Headers */,
 				F3973FA928A59BDD00B84553 /* SDL_vacopy.h in Headers */,
 				A1626A592617008D003F1973 /* SDL_triangle.h in Headers */,
@@ -5558,6 +5649,8 @@
 				A75FCD7F23E25AB700529352 /* SDL_opengles.h in Headers */,
 				A75FCD8023E25AB700529352 /* SDL_shaders_gles2.h in Headers */,
 				A75FCD8123E25AB700529352 /* SDL_opengles2.h in Headers */,
+				F316AB8C2B5A02C3002EF551 /* yuv_rgb_common.h in Headers */,
+				F316ABB02B5A02C3002EF551 /* yuv_rgb_lsx.h in Headers */,
 				A75FCD8223E25AB700529352 /* SDL_glesfuncs.h in Headers */,
 				A75FCD8323E25AB700529352 /* SDL_blendpoint.h in Headers */,
 				A75FCD8423E25AB700529352 /* SDL_offscreenvideo.h in Headers */,
@@ -5653,6 +5746,7 @@
 				A75FCDE223E25AB700529352 /* SDL_opengles2_gl2platform.h in Headers */,
 				A75FCDE323E25AB700529352 /* SDL_opengles2_gl2ext.h in Headers */,
 				A75FCDE523E25AB700529352 /* SDL_dynapi_overrides.h in Headers */,
+				F316AB952B5A02C3002EF551 /* yuv_rgb_internal.h in Headers */,
 				A75FCDE623E25AB700529352 /* SDL_cocoawindow.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -5744,6 +5838,7 @@
 				A75FCF0923E25AC700529352 /* gl2ext.h in Headers */,
 				A75FCF0A23E25AC700529352 /* SDL_clipboardevents_c.h in Headers */,
 				A75FCF0C23E25AC700529352 /* SDL_syshaptic_c.h in Headers */,
+				F316ABC32B5A02C3002EF551 /* yuv_rgb_sse.h in Headers */,
 				A75FCF0D23E25AC700529352 /* SDL_hints_c.h in Headers */,
 				A75FCF0E23E25AC700529352 /* SDL_audiodev_c.h in Headers */,
 				A75FCF0F23E25AC700529352 /* SDL_audio_c.h in Headers */,
@@ -5757,6 +5852,7 @@
 				A75FCF1723E25AC700529352 /* yuv_rgb_std_func.h in Headers */,
 				A75FCF1823E25AC700529352 /* vulkan_core.h in Headers */,
 				A75FCF1923E25AC700529352 /* SDL_syssensor.h in Headers */,
+				F316ABD52B5A02C3002EF551 /* yuv_rgb_lsx_func.h in Headers */,
 				A75FCF1A23E25AC700529352 /* SDL_dynapi.h in Headers */,
 				A75FCF1B23E25AC700529352 /* SDL_assert_c.h in Headers */,
 				A75FCF1C23E25AC700529352 /* SDL_diskaudio.h in Headers */,
@@ -5766,6 +5862,7 @@
 				A75FCF2023E25AC700529352 /* SDL_wave.h in Headers */,
 				A75FCF2123E25AC700529352 /* SDL_cocoaopengl.h in Headers */,
 				A75FCF2223E25AC700529352 /* yuv_rgb_sse_func.h in Headers */,
+				F316ABCC2B5A02C3002EF551 /* yuv_rgb_std.h in Headers */,
 				A75FCF2423E25AC700529352 /* SDL_offscreenevents_c.h in Headers */,
 				F3973FAA28A59BDD00B84553 /* SDL_vacopy.h in Headers */,
 				A1626A5A2617008D003F1973 /* SDL_triangle.h in Headers */,
@@ -5789,6 +5886,8 @@
 				A75FCF3823E25AC700529352 /* SDL_opengles.h in Headers */,
 				A75FCF3923E25AC700529352 /* SDL_shaders_gles2.h in Headers */,
 				A75FCF3A23E25AC700529352 /* SDL_opengles2.h in Headers */,
+				F316AB8D2B5A02C3002EF551 /* yuv_rgb_common.h in Headers */,
+				F316ABB12B5A02C3002EF551 /* yuv_rgb_lsx.h in Headers */,
 				A75FCF3B23E25AC700529352 /* SDL_glesfuncs.h in Headers */,
 				A75FCF3C23E25AC700529352 /* SDL_blendpoint.h in Headers */,
 				A75FCF3D23E25AC700529352 /* SDL_offscreenvideo.h in Headers */,
@@ -5884,6 +5983,7 @@
 				A75FCF9B23E25AC700529352 /* SDL_opengles2_gl2platform.h in Headers */,
 				A75FCF9C23E25AC700529352 /* SDL_opengles2_gl2ext.h in Headers */,
 				A75FCF9E23E25AC700529352 /* SDL_dynapi_overrides.h in Headers */,
+				F316AB962B5A02C3002EF551 /* yuv_rgb_internal.h in Headers */,
 				A75FCF9F23E25AC700529352 /* SDL_cocoawindow.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -5927,6 +6027,7 @@
 				A769B0BC23E259AE00872273 /* SDL_sysaudio.h in Headers */,
 				A769B0BF23E259AE00872273 /* math_libm.h in Headers */,
 				A769B0C023E259AE00872273 /* SDL_uikitvideo.h in Headers */,
+				F316ABC02B5A02C3002EF551 /* yuv_rgb_sse.h in Headers */,
 				A769B0C123E259AE00872273 /* SDL_cocoamouse.h in Headers */,
 				A769B0C323E259AE00872273 /* SDL_blit_slow.h in Headers */,
 				F3973FA728A59BDD00B84553 /* SDL_vacopy.h in Headers */,
@@ -5960,12 +6061,14 @@
 				A769B0E723E259AE00872273 /* vulkan_core.h in Headers */,
 				F362B9572B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A769B0E823E259AE00872273 /* SDL_syssensor.h in Headers */,
+				F316AB8A2B5A02C3002EF551 /* yuv_rgb_common.h in Headers */,
 				A769B0E923E259AE00872273 /* SDL_dynapi.h in Headers */,
 				A769B0EA23E259AE00872273 /* SDL_assert_c.h in Headers */,
 				A769B0EB23E259AE00872273 /* SDL_diskaudio.h in Headers */,
 				A769B0ED23E259AE00872273 /* SDL_drawpoint.h in Headers */,
 				A769B0EF23E259AE00872273 /* SDL_wave.h in Headers */,
 				A769B0F023E259AE00872273 /* SDL_cocoaopengl.h in Headers */,
+				F316ABC92B5A02C3002EF551 /* yuv_rgb_std.h in Headers */,
 				A1626A572617008D003F1973 /* SDL_triangle.h in Headers */,
 				A769B0F123E259AE00872273 /* yuv_rgb_sse_func.h in Headers */,
 				A769B0F323E259AE00872273 /* SDL_offscreenevents_c.h in Headers */,
@@ -5986,6 +6089,7 @@
 				A769B10A23E259AE00872273 /* SDL_blendpoint.h in Headers */,
 				A769B10B23E259AE00872273 /* SDL_offscreenvideo.h in Headers */,
 				A769B10C23E259AE00872273 /* SDL_nullevents_c.h in Headers */,
+				F316ABD22B5A02C3002EF551 /* yuv_rgb_lsx_func.h in Headers */,
 				A769B10D23E259AE00872273 /* SDL_sysjoystick.h in Headers */,
 				A769B10E23E259AE00872273 /* scancodes_linux.h in Headers */,
 				A769B11023E259AE00872273 /* SDL_touch_c.h in Headers */,
@@ -6001,6 +6105,7 @@
 				A769B11D23E259AE00872273 /* vulkan_xlib_xrandr.h in Headers */,
 				A769B11E23E259AE00872273 /* SDL_sensor_c.h in Headers */,
 				A769B11F23E259AE00872273 /* SDL_sysrender.h in Headers */,
+				F316AB932B5A02C3002EF551 /* yuv_rgb_internal.h in Headers */,
 				A769B12023E259AE00872273 /* SDL_rotate.h in Headers */,
 				A769B12523E259AE00872273 /* scancodes_darwin.h in Headers */,
 				A769B12623E259AE00872273 /* controller_type.h in Headers */,
@@ -6052,6 +6157,7 @@
 				A769B15D23E259AE00872273 /* SDL_dynapi_procs.h in Headers */,
 				A769B15E23E259AE00872273 /* vulkan_fuchsia.h in Headers */,
 				A769B16123E259AE00872273 /* usb_ids.h in Headers */,
+				F316ABAE2B5A02C3002EF551 /* yuv_rgb_lsx.h in Headers */,
 				A769B16323E259AE00872273 /* SDL_gles2funcs.h in Headers */,
 				A769B16923E259AE00872273 /* SDL_sysvideo.h in Headers */,
 				A769B16D23E259AE00872273 /* SDL_dynapi_overrides.h in Headers */,
@@ -6074,6 +6180,7 @@
 				A7D88A1E23E2437C00DCD162 /* SDL_bits.h in Headers */,
 				A7D8BA0223E2514400DCD162 /* SDL_blendfillrect.h in Headers */,
 				A7D8B9EA23E2514400DCD162 /* SDL_blendline.h in Headers */,
+				F316ABC52B5A02C3002EF551 /* yuv_rgb_std.h in Headers */,
 				A7D88A1F23E2437C00DCD162 /* SDL_blendmode.h in Headers */,
 				A7D8BA0E23E2514400DCD162 /* SDL_blendpoint.h in Headers */,
 				A7D8B3B723E2514200DCD162 /* SDL_blit.h in Headers */,
@@ -6109,6 +6216,7 @@
 				A7D8BB4023E2514500DCD162 /* SDL_displayevents_c.h in Headers */,
 				A7D8BA1A23E2514400DCD162 /* SDL_draw.h in Headers */,
 				A7D8BA0823E2514400DCD162 /* SDL_drawline.h in Headers */,
+				F316ABBC2B5A02C3002EF551 /* yuv_rgb_sse.h in Headers */,
 				A7D8B9F023E2514400DCD162 /* SDL_drawpoint.h in Headers */,
 				A7D8BB2E23E2514500DCD162 /* SDL_dropevents_c.h in Headers */,
 				A7D8B79523E2514400DCD162 /* SDL_dummyaudio.h in Headers */,
@@ -6133,14 +6241,17 @@
 				A7D8BA7A23E2514400DCD162 /* SDL_glfuncs.h in Headers */,
 				A7D88A2D23E2437C00DCD162 /* SDL_haptic.h in Headers */,
 				A7D8AABD23E2514100DCD162 /* SDL_haptic_c.h in Headers */,
+				F316AB8F2B5A02C3002EF551 /* yuv_rgb_internal.h in Headers */,
 				A75FDBC623EA380300529352 /* SDL_hidapi_rumble.h in Headers */,
 				A7D8B55823E2514300DCD162 /* SDL_hidapijoystick_c.h in Headers */,
 				A7D88A2E23E2437C00DCD162 /* SDL_hints.h in Headers */,
 				A7D8B94B23E2514400DCD162 /* SDL_hints_c.h in Headers */,
+				F316ABCE2B5A02C3002EF551 /* yuv_rgb_lsx_func.h in Headers */,
 				A7D8A99A23E2514000DCD162 /* SDL_internal.h in Headers */,
 				F395C1942569C68F00942BFF /* SDL_iokitjoystick_c.h in Headers */,
 				A7D88A2F23E2437C00DCD162 /* SDL_joystick.h in Headers */,
 				A7D8B58823E2514300DCD162 /* SDL_joystick_c.h in Headers */,
+				F316AB862B5A02C3002EF551 /* yuv_rgb_common.h in Headers */,
 				A7D88A3023E2437C00DCD162 /* SDL_keyboard.h in Headers */,
 				A7D8BB8823E2514500DCD162 /* SDL_keyboard_c.h in Headers */,
 				A7D88A3323E2437C00DCD162 /* SDL_keycode.h in Headers */,
@@ -6212,6 +6323,7 @@
 				A7D8B61223E2514300DCD162 /* SDL_syspower.h in Headers */,
 				A7D8B9D823E2514400DCD162 /* SDL_sysrender.h in Headers */,
 				F362B9472B33920500D30B94 /* SDL_hidapi_nintendo.h in Headers */,
+				F316ABAA2B5A02C3002EF551 /* yuv_rgb_lsx.h in Headers */,
 				A7D8A97C23E2514000DCD162 /* SDL_syssensor.h in Headers */,
 				A7D88A5323E2437C00DCD162 /* SDL_system.h in Headers */,
 				A7D8B3E723E2514300DCD162 /* SDL_systhread.h in Headers */,
@@ -6310,6 +6422,7 @@
 				A7D88BD523E24BED00DCD162 /* SDL_bits.h in Headers */,
 				A7D8BA0323E2514400DCD162 /* SDL_blendfillrect.h in Headers */,
 				A7D8B9EB23E2514400DCD162 /* SDL_blendline.h in Headers */,
+				F316ABC62B5A02C3002EF551 /* yuv_rgb_std.h in Headers */,
 				A7D88BD623E24BED00DCD162 /* SDL_blendmode.h in Headers */,
 				A7D8BA0F23E2514400DCD162 /* SDL_blendpoint.h in Headers */,
 				A7D8B3B823E2514200DCD162 /* SDL_blit.h in Headers */,
@@ -6345,6 +6458,7 @@
 				A7D8BB4123E2514500DCD162 /* SDL_displayevents_c.h in Headers */,
 				A7D8BA1B23E2514400DCD162 /* SDL_draw.h in Headers */,
 				A7D8BA0923E2514400DCD162 /* SDL_drawline.h in Headers */,
+				F316ABBD2B5A02C3002EF551 /* yuv_rgb_sse.h in Headers */,
 				A7D8B9F123E2514400DCD162 /* SDL_drawpoint.h in Headers */,
 				A7D8BB2F23E2514500DCD162 /* SDL_dropevents_c.h in Headers */,
 				A7D8B79623E2514400DCD162 /* SDL_dummyaudio.h in Headers */,
@@ -6369,14 +6483,17 @@
 				A7D8BA7B23E2514400DCD162 /* SDL_glfuncs.h in Headers */,
 				A7D88BE423E24BED00DCD162 /* SDL_haptic.h in Headers */,
 				A7D8AABE23E2514100DCD162 /* SDL_haptic_c.h in Headers */,
+				F316AB902B5A02C3002EF551 /* yuv_rgb_internal.h in Headers */,
 				A75FDBC723EA380300529352 /* SDL_hidapi_rumble.h in Headers */,
 				A7D8B55923E2514300DCD162 /* SDL_hidapijoystick_c.h in Headers */,
 				A7D88BE523E24BED00DCD162 /* SDL_hints.h in Headers */,
 				A7D8B94C23E2514400DCD162 /* SDL_hints_c.h in Headers */,
+				F316ABCF2B5A02C3002EF551 /* yuv_rgb_lsx_func.h in Headers */,
 				A7D8A99B23E2514000DCD162 /* SDL_internal.h in Headers */,
 				F395C1952569C68F00942BFF /* SDL_iokitjoystick_c.h in Headers */,
 				A7D88BE623E24BED00DCD162 /* SDL_joystick.h in Headers */,
 				A7D8B58923E2514300DCD162 /* SDL_joystick_c.h in Headers */,
+				F316AB872B5A02C3002EF551 /* yuv_rgb_common.h in Headers */,
 				A7D88BE723E24BED00DCD162 /* SDL_keyboard.h in Headers */,
 				A7D8BB8923E2514500DCD162 /* SDL_keyboard_c.h in Headers */,
 				A7D88BEB23E24BED00DCD162 /* SDL_keycode.h in Headers */,
@@ -6448,6 +6565,7 @@
 				A7D8B61323E2514300DCD162 /* SDL_syspower.h in Headers */,
 				A7D8B9D923E2514400DCD162 /* SDL_sysrender.h in Headers */,
 				F362B9482B33920500D30B94 /* SDL_hidapi_nintendo.h in Headers */,
+				F316ABAB2B5A02C3002EF551 /* yuv_rgb_lsx.h in Headers */,
 				A7D8A97D23E2514000DCD162 /* SDL_syssensor.h in Headers */,
 				A7D88C0E23E24BED00DCD162 /* SDL_system.h in Headers */,
 				A7D8B3E823E2514300DCD162 /* SDL_systhread.h in Headers */,
@@ -6570,6 +6688,7 @@
 				A7D8B85E23E2514400DCD162 /* SDL_sysaudio.h in Headers */,
 				A7D8BB0723E2514500DCD162 /* math_libm.h in Headers */,
 				A7D8AC7F23E2514100DCD162 /* SDL_uikitvideo.h in Headers */,
+				F316ABBF2B5A02C3002EF551 /* yuv_rgb_sse.h in Headers */,
 				A7D8AF2223E2514100DCD162 /* SDL_cocoamouse.h in Headers */,
 				A7D8ADF023E2514100DCD162 /* SDL_blit_slow.h in Headers */,
 				F3973FA628A59BDD00B84553 /* SDL_vacopy.h in Headers */,
@@ -6603,12 +6722,14 @@
 				A7D8B2AC23E2514200DCD162 /* vulkan_core.h in Headers */,
 				F362B9562B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A7D8A97F23E2514000DCD162 /* SDL_syssensor.h in Headers */,
+				F316AB892B5A02C3002EF551 /* yuv_rgb_common.h in Headers */,
 				A7D8AB0E23E2514100DCD162 /* SDL_dynapi.h in Headers */,
 				A7D8B61B23E2514300DCD162 /* SDL_assert_c.h in Headers */,
 				A7D8B8A623E2514400DCD162 /* SDL_diskaudio.h in Headers */,
 				A7D8B9F323E2514400DCD162 /* SDL_drawpoint.h in Headers */,
 				A7D8B87023E2514400DCD162 /* SDL_wave.h in Headers */,
 				A7D8AEE023E2514100DCD162 /* SDL_cocoaopengl.h in Headers */,
+				F316ABC82B5A02C3002EF551 /* yuv_rgb_std.h in Headers */,
 				A1626A562617008D003F1973 /* SDL_triangle.h in Headers */,
 				A7D8B3CC23E2514300DCD162 /* yuv_rgb_sse_func.h in Headers */,
 				A7D8AB5F23E2514100DCD162 /* SDL_offscreenevents_c.h in Headers */,
@@ -6629,6 +6750,7 @@
 				A7D8BA1123E2514400DCD162 /* SDL_blendpoint.h in Headers */,
 				A7D8AB7123E2514100DCD162 /* SDL_offscreenvideo.h in Headers */,
 				A7D8AC0123E2514100DCD162 /* SDL_nullevents_c.h in Headers */,
+				F316ABD12B5A02C3002EF551 /* yuv_rgb_lsx_func.h in Headers */,
 				A7D8B58523E2514300DCD162 /* SDL_sysjoystick.h in Headers */,
 				A7D8BB6123E2514500DCD162 /* scancodes_linux.h in Headers */,
 				A7D8BB6723E2514500DCD162 /* SDL_touch_c.h in Headers */,
@@ -6644,6 +6766,7 @@
 				A7D8B28E23E2514200DCD162 /* vulkan_xlib_xrandr.h in Headers */,
 				A7D8A99123E2514000DCD162 /* SDL_sensor_c.h in Headers */,
 				A7D8B9DB23E2514400DCD162 /* SDL_sysrender.h in Headers */,
+				F316AB922B5A02C3002EF551 /* yuv_rgb_internal.h in Headers */,
 				A7D8BA3523E2514400DCD162 /* SDL_rotate.h in Headers */,
 				A7D8BB5523E2514500DCD162 /* scancodes_darwin.h in Headers */,
 				A7D8B5BB23E2514300DCD162 /* controller_type.h in Headers */,
@@ -6695,6 +6818,7 @@
 				A7D8AB2023E2514100DCD162 /* SDL_dynapi_procs.h in Headers */,
 				A7D8B27623E2514200DCD162 /* vulkan_fuchsia.h in Headers */,
 				A7D8B57323E2514300DCD162 /* usb_ids.h in Headers */,
+				F316ABAD2B5A02C3002EF551 /* yuv_rgb_lsx.h in Headers */,
 				A7D8BA5923E2514400DCD162 /* SDL_gles2funcs.h in Headers */,
 				A7D8AC4323E2514100DCD162 /* SDL_sysvideo.h in Headers */,
 				A7D8AB1423E2514100DCD162 /* SDL_dynapi_overrides.h in Headers */,
@@ -6717,6 +6841,7 @@
 				AADA5B8716CCAB3000107CF7 /* SDL_bits.h in Headers */,
 				A7D8BA0123E2514400DCD162 /* SDL_blendfillrect.h in Headers */,
 				A7D8B9E923E2514400DCD162 /* SDL_blendline.h in Headers */,
+				F316ABC42B5A02C3002EF551 /* yuv_rgb_std.h in Headers */,
 				AA7558041595D4D800BBD41B /* SDL_blendmode.h in Headers */,
 				A7D8BA0D23E2514400DCD162 /* SDL_blendpoint.h in Headers */,
 				A7D8B3B623E2514200DCD162 /* SDL_blit.h in Headers */,
@@ -6752,6 +6877,7 @@
 				A7D8BB3F23E2514500DCD162 /* SDL_displayevents_c.h in Headers */,
 				A7D8BA1923E2514400DCD162 /* SDL_draw.h in Headers */,
 				A7D8BA0723E2514400DCD162 /* SDL_drawline.h in Headers */,
+				F316ABBB2B5A02C3002EF551 /* yuv_rgb_sse.h in Headers */,
 				A7D8B9EF23E2514400DCD162 /* SDL_drawpoint.h in Headers */,
 				A7D8BB2D23E2514500DCD162 /* SDL_dropevents_c.h in Headers */,
 				A7D8B79423E2514400DCD162 /* SDL_dummyaudio.h in Headers */,
@@ -6776,14 +6902,17 @@
 				A7D8BA7923E2514400DCD162 /* SDL_glfuncs.h in Headers */,
 				AA7558181595D4D800BBD41B /* SDL_haptic.h in Headers */,
 				A7D8AABC23E2514100DCD162 /* SDL_haptic_c.h in Headers */,
+				F316AB8E2B5A02C3002EF551 /* yuv_rgb_internal.h in Headers */,
 				A75FDBC523EA380300529352 /* SDL_hidapi_rumble.h in Headers */,
 				A7D8B55723E2514300DCD162 /* SDL_hidapijoystick_c.h in Headers */,
 				AA75581A1595D4D800BBD41B /* SDL_hints.h in Headers */,
 				A7D8B94A23E2514400DCD162 /* SDL_hints_c.h in Headers */,
+				F316ABCD2B5A02C3002EF551 /* yuv_rgb_lsx_func.h in Headers */,
 				A7D8A99923E2514000DCD162 /* SDL_internal.h in Headers */,
 				F395C1932569C68F00942BFF /* SDL_iokitjoystick_c.h in Headers */,
 				AA75581E1595D4D800BBD41B /* SDL_joystick.h in Headers */,
 				A7D8B58723E2514300DCD162 /* SDL_joystick_c.h in Headers */,
+				F316AB852B5A02C3002EF551 /* yuv_rgb_common.h in Headers */,
 				AA7558201595D4D800BBD41B /* SDL_keyboard.h in Headers */,
 				A7D8BB8723E2514500DCD162 /* SDL_keyboard_c.h in Headers */,
 				AA7558221595D4D800BBD41B /* SDL_keycode.h in Headers */,
@@ -6855,6 +6984,7 @@
 				A7D8B61123E2514300DCD162 /* SDL_syspower.h in Headers */,
 				A7D8B9D723E2514400DCD162 /* SDL_sysrender.h in Headers */,
 				F362B9462B33920500D30B94 /* SDL_hidapi_nintendo.h in Headers */,
+				F316ABA92B5A02C3002EF551 /* yuv_rgb_lsx.h in Headers */,
 				A7D8A97B23E2514000DCD162 /* SDL_syssensor.h in Headers */,
 				AA75584E1595D4D800BBD41B /* SDL_system.h in Headers */,
 				A7D8B3E623E2514300DCD162 /* SDL_systhread.h in Headers */,
@@ -6943,6 +7073,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A7D8B9A423E2514400DCD162 /* SDL_shaders_metal_tvos.h in Headers */,
+				F316ABBE2B5A02C3002EF551 /* yuv_rgb_sse.h in Headers */,
 				A7D8AC0C23E2514100DCD162 /* SDL_shape_internals.h in Headers */,
 				A7D8BA7C23E2514400DCD162 /* SDL_glfuncs.h in Headers */,
 				A7D8AC0623E2514100DCD162 /* SDL_rect_c.h in Headers */,
@@ -6965,6 +7096,7 @@
 				A7D8BA0423E2514400DCD162 /* SDL_blendfillrect.h in Headers */,
 				F362B9552B33EB7300D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A7D8B55A23E2514300DCD162 /* SDL_hidapijoystick_c.h in Headers */,
+				F316ABAC2B5A02C3002EF551 /* yuv_rgb_lsx.h in Headers */,
 				A7D8B2C323E2514200DCD162 /* SDL_pixels_c.h in Headers */,
 				A7D8B58A23E2514300DCD162 /* SDL_joystick_c.h in Headers */,
 				A75FDB5B23E39E6100529352 /* hidapi.h in Headers */,
@@ -6979,6 +7111,7 @@
 				A7D8B9CE23E2514400DCD162 /* SDL_yuv_sw_c.h in Headers */,
 				A7D8BBFD23E2574800DCD162 /* SDL_uikitvideo.h in Headers */,
 				A7D8BBAE23E2514500DCD162 /* SDL_windowevents_c.h in Headers */,
+				F316AB912B5A02C3002EF551 /* yuv_rgb_internal.h in Headers */,
 				A7D8AF0323E2514100DCD162 /* SDL_cocoavideo.h in Headers */,
 				A7D8BB3C23E2514500DCD162 /* SDL_gesture_c.h in Headers */,
 				A7D8BBEF23E2574800DCD162 /* SDL_uikitclipboard.h in Headers */,
@@ -7022,6 +7155,7 @@
 				A7D8BBF123E2574800DCD162 /* SDL_uikitevents.h in Headers */,
 				A7D8BBFF23E2574800DCD162 /* SDL_uikitview.h in Headers */,
 				A7D8BBA823E2514500DCD162 /* SDL_events_c.h in Headers */,
+				F316ABC72B5A02C3002EF551 /* yuv_rgb_std.h in Headers */,
 				A7D8BAC423E2514500DCD162 /* math_private.h in Headers */,
 				A7D8B27B23E2514200DCD162 /* vulkan_wayland.h in Headers */,
 				A7D8BBF523E2574800DCD162 /* SDL_uikitmetalview.h in Headers */,
@@ -7054,6 +7188,7 @@
 				A7D8B5BA23E2514300DCD162 /* controller_type.h in Headers */,
 				A7D8B29F23E2514200DCD162 /* vulkan_xlib.h in Headers */,
 				A7D8B25D23E2514200DCD162 /* vulkan_vi.h in Headers */,
+				F316AB882B5A02C3002EF551 /* yuv_rgb_common.h in Headers */,
 				A7D8B29923E2514200DCD162 /* vulkan_mir.h in Headers */,
 				A1BB8B6F27F6CF330057CFA8 /* SDL_list.h in Headers */,
 				A7D8BB4E23E2514500DCD162 /* default_cursor.h in Headers */,
@@ -7080,6 +7215,7 @@
 				A7D8BB2423E2514500DCD162 /* scancodes_windows.h in Headers */,
 				A7D8B5C623E2514300DCD162 /* SDL_rwopsbundlesupport.h in Headers */,
 				A7D8B61423E2514300DCD162 /* SDL_syspower.h in Headers */,
+				F316ABD02B5A02C3002EF551 /* yuv_rgb_lsx_func.h in Headers */,
 				A7D8B28723E2514200DCD162 /* vulkan_macos.h in Headers */,
 				A7D8B29323E2514200DCD162 /* vulkan_xcb.h in Headers */,
 				A7D8B2A523E2514200DCD162 /* vulkan_ios.h in Headers */,
@@ -7195,6 +7331,7 @@
 				A7D8BB7423E2514500DCD162 /* SDL_clipboardevents_c.h in Headers */,
 				A7D8AAE523E2514100DCD162 /* SDL_syshaptic_c.h in Headers */,
 				A7D8B94F23E2514400DCD162 /* SDL_hints_c.h in Headers */,
+				F316ABC12B5A02C3002EF551 /* yuv_rgb_sse.h in Headers */,
 				A7D8B7B723E2514400DCD162 /* SDL_audiodev_c.h in Headers */,
 				A7D8B7A523E2514400DCD162 /* SDL_audio_c.h in Headers */,
 				A7D8AC6E23E2514100DCD162 /* SDL_uikitmodes.h in Headers */,
@@ -7208,6 +7345,7 @@
 				A7D8B2AD23E2514200DCD162 /* vulkan_core.h in Headers */,
 				A7D8A98023E2514000DCD162 /* SDL_syssensor.h in Headers */,
 				A7D8AB0F23E2514100DCD162 /* SDL_dynapi.h in Headers */,
+				F316ABD32B5A02C3002EF551 /* yuv_rgb_lsx_func.h in Headers */,
 				A7D8B61C23E2514300DCD162 /* SDL_assert_c.h in Headers */,
 				A7D8B8A723E2514400DCD162 /* SDL_diskaudio.h in Headers */,
 				DB313FDE17554B71006C0E22 /* SDL_main.h in Headers */,
@@ -7217,6 +7355,7 @@
 				A7D8AEE123E2514100DCD162 /* SDL_cocoaopengl.h in Headers */,
 				A7D8B3CD23E2514300DCD162 /* yuv_rgb_sse_func.h in Headers */,
 				5605721B2473688D00B46B66 /* SDL_syslocale.h in Headers */,
+				F316ABCA2B5A02C3002EF551 /* yuv_rgb_std.h in Headers */,
 				A7D8AB6023E2514100DCD162 /* SDL_offscreenevents_c.h in Headers */,
 				F3973FA828A59BDD00B84553 /* SDL_vacopy.h in Headers */,
 				A1626A582617008D003F1973 /* SDL_triangle.h in Headers */,
@@ -7240,6 +7379,8 @@
 				A7D8BA5423E2514400DCD162 /* SDL_shaders_gles2.h in Headers */,
 				DB313FE417554B71006C0E22 /* SDL_opengles2.h in Headers */,
 				A7D8BA4823E2514400DCD162 /* SDL_glesfuncs.h in Headers */,
+				F316AB8B2B5A02C3002EF551 /* yuv_rgb_common.h in Headers */,
+				F316ABAF2B5A02C3002EF551 /* yuv_rgb_lsx.h in Headers */,
 				A7D8BA1223E2514400DCD162 /* SDL_blendpoint.h in Headers */,
 				A7D8AB7223E2514100DCD162 /* SDL_offscreenvideo.h in Headers */,
 				A7D8AC0223E2514100DCD162 /* SDL_nullevents_c.h in Headers */,
@@ -7335,6 +7476,7 @@
 				AAC07104195606770073DCDF /* SDL_opengles2_gl2platform.h in Headers */,
 				AAC07101195606770073DCDF /* SDL_opengles2_gl2ext.h in Headers */,
 				A7D8AB1523E2514100DCD162 /* SDL_dynapi_overrides.h in Headers */,
+				F316AB942B5A02C3002EF551 /* yuv_rgb_internal.h in Headers */,
 				A7D8AEFF23E2514100DCD162 /* SDL_cocoawindow.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -7818,7 +7960,6 @@
 				A75FCE0223E25AB700529352 /* SDL_log.c in Sources */,
 				A75FCE0323E25AB700529352 /* SDL_cocoaopengl.m in Sources */,
 				A75FCE0423E25AB700529352 /* SDL_offscreenframebuffer.c in Sources */,
-				A75FCE0523E25AB700529352 /* yuv_rgb.c in Sources */,
 				F323060628939F6400E66D30 /* SDL_hidapi_combined.c in Sources */,
 				A75FCE0623E25AB700529352 /* SDL_render_gles.c in Sources */,
 				A75FCE0723E25AB700529352 /* SDL_systhread.c in Sources */,
@@ -7905,6 +8046,7 @@
 				A75FCE5323E25AB700529352 /* SDL_mixer.c in Sources */,
 				5616CA64252BB35F005D5928 /* SDL_url.c in Sources */,
 				A75FCE5423E25AB700529352 /* SDL_events.c in Sources */,
+				F316AB9E2B5A02C3002EF551 /* yuv_rgb_std.c in Sources */,
 				F386F7002884663E001840AA /* SDL_utils.c in Sources */,
 				A75FCE5523E25AB700529352 /* SDL_blit_0.c in Sources */,
 				A75FCE5623E25AB700529352 /* k_tan.c in Sources */,
@@ -7921,6 +8063,7 @@
 				F3ADAB922576F0B400A6B1D9 /* SDL_sysurl.m in Sources */,
 				A75FCE6323E25AB700529352 /* SDL_string.c in Sources */,
 				A75FCE6423E25AB700529352 /* SDL_render_gl.c in Sources */,
+				F316ABA72B5A02C3002EF551 /* yuv_rgb_sse.c in Sources */,
 				A75FCE6523E25AB700529352 /* SDL_uikitopengles.m in Sources */,
 				A75FCE6723E25AB700529352 /* SDL_cocoamodes.m in Sources */,
 				A75FCE6823E25AB700529352 /* k_rem_pio2.c in Sources */,
@@ -7978,6 +8121,7 @@
 				A75FCEA123E25AB700529352 /* SDL_cocoavulkan.m in Sources */,
 				A75FCEA223E25AB700529352 /* SDL_uikitappdelegate.m in Sources */,
 				A75FCEA323E25AB700529352 /* SDL_offscreenwindow.c in Sources */,
+				F316ABB92B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8016,7 +8160,6 @@
 				A75FCFBB23E25AC700529352 /* SDL_log.c in Sources */,
 				A75FCFBC23E25AC700529352 /* SDL_cocoaopengl.m in Sources */,
 				A75FCFBD23E25AC700529352 /* SDL_offscreenframebuffer.c in Sources */,
-				A75FCFBE23E25AC700529352 /* yuv_rgb.c in Sources */,
 				F323060728939F6400E66D30 /* SDL_hidapi_combined.c in Sources */,
 				A75FCFBF23E25AC700529352 /* SDL_render_gles.c in Sources */,
 				A75FCFC023E25AC700529352 /* SDL_systhread.c in Sources */,
@@ -8103,6 +8246,7 @@
 				A75FD00C23E25AC700529352 /* SDL_mixer.c in Sources */,
 				5616CA67252BB361005D5928 /* SDL_url.c in Sources */,
 				A75FD00D23E25AC700529352 /* SDL_events.c in Sources */,
+				F316AB9F2B5A02C3002EF551 /* yuv_rgb_std.c in Sources */,
 				F386F7012884663E001840AA /* SDL_utils.c in Sources */,
 				A75FD00E23E25AC700529352 /* SDL_blit_0.c in Sources */,
 				A75FD00F23E25AC700529352 /* k_tan.c in Sources */,
@@ -8119,6 +8263,7 @@
 				F3ADAB932576F0B400A6B1D9 /* SDL_sysurl.m in Sources */,
 				A75FD01C23E25AC700529352 /* SDL_string.c in Sources */,
 				A75FD01D23E25AC700529352 /* SDL_render_gl.c in Sources */,
+				F316ABA82B5A02C3002EF551 /* yuv_rgb_sse.c in Sources */,
 				A75FD01E23E25AC700529352 /* SDL_uikitopengles.m in Sources */,
 				A75FD02023E25AC700529352 /* SDL_cocoamodes.m in Sources */,
 				A75FD02123E25AC700529352 /* k_rem_pio2.c in Sources */,
@@ -8176,6 +8321,7 @@
 				A75FD05A23E25AC700529352 /* SDL_cocoavulkan.m in Sources */,
 				A75FD05B23E25AC700529352 /* SDL_uikitappdelegate.m in Sources */,
 				A75FD05C23E25AC700529352 /* SDL_offscreenwindow.c in Sources */,
+				F316ABBA2B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8206,10 +8352,10 @@
 				A769B18723E259AE00872273 /* SDL_hidapi_xbox360w.c in Sources */,
 				A769B18823E259AE00872273 /* SDL_atomic.c in Sources */,
 				A769B18923E259AE00872273 /* SDL_displayevents.c in Sources */,
+				F316ABA52B5A02C3002EF551 /* yuv_rgb_sse.c in Sources */,
 				A769B18B23E259AE00872273 /* SDL_log.c in Sources */,
 				A769B18C23E259AE00872273 /* SDL_cocoaopengl.m in Sources */,
 				A769B18D23E259AE00872273 /* SDL_offscreenframebuffer.c in Sources */,
-				A769B18E23E259AE00872273 /* yuv_rgb.c in Sources */,
 				A769B18F23E259AE00872273 /* SDL_render_gles.c in Sources */,
 				F362B9602B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A769B19023E259AE00872273 /* SDL_systhread.c in Sources */,
@@ -8303,6 +8449,7 @@
 				A769B1E923E259AE00872273 /* SDL_uikit_main.c in Sources */,
 				F3F07D5F269640160074468B /* SDL_hidapi_luna.c in Sources */,
 				A769B1EA23E259AE00872273 /* SDL_stdlib.c in Sources */,
+				F316ABB72B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */,
 				A769B1EB23E259AE00872273 /* SDL_dummyaudio.c in Sources */,
 				A769B1EC23E259AE00872273 /* SDL_fillrect.c in Sources */,
 				A769B1ED23E259AE00872273 /* SDL_nullframebuffer.c in Sources */,
@@ -8318,6 +8465,7 @@
 				A769B1F923E259AE00872273 /* SDL_joystick.c in Sources */,
 				A769B1FA23E259AE00872273 /* SDL_render_gles2.c in Sources */,
 				A769B1FB23E259AE00872273 /* SDL_surface.c in Sources */,
+				F316AB9C2B5A02C3002EF551 /* yuv_rgb_std.c in Sources */,
 				F395BF6A25633B2400942BFF /* SDL_crc32.c in Sources */,
 				A769B1FC23E259AE00872273 /* SDL_hidapi_xboxone.c in Sources */,
 				A769B1FD23E259AE00872273 /* SDL_blit_auto.c in Sources */,
@@ -8411,7 +8559,6 @@
 				A7D8AB2623E2514100DCD162 /* SDL_log.c in Sources */,
 				A7D8AE8923E2514100DCD162 /* SDL_cocoaopengl.m in Sources */,
 				A7D8AB7423E2514100DCD162 /* SDL_offscreenframebuffer.c in Sources */,
-				A7D8B3C023E2514200DCD162 /* yuv_rgb.c in Sources */,
 				A7D8BA3E23E2514400DCD162 /* SDL_render_gles.c in Sources */,
 				A7D8B43523E2514300DCD162 /* SDL_systhread.c in Sources */,
 				F323060028939F6400E66D30 /* SDL_hidapi_combined.c in Sources */,
@@ -8500,6 +8647,7 @@
 				A7D8ADE723E2514100DCD162 /* SDL_blit_0.c in Sources */,
 				A7D8BB0A23E2514500DCD162 /* k_tan.c in Sources */,
 				A75FDBCF23EA380300529352 /* SDL_hidapi_rumble.c in Sources */,
+				F316AB982B5A02C3002EF551 /* yuv_rgb_std.c in Sources */,
 				F386F6FA2884663E001840AA /* SDL_utils.c in Sources */,
 				A7D8B8A923E2514400DCD162 /* SDL_diskaudio.c in Sources */,
 				A7D8AFC123E2514200DCD162 /* SDL_egl.c in Sources */,
@@ -8516,6 +8664,7 @@
 				F3ADAB8E2576F0B400A6B1D9 /* SDL_sysurl.m in Sources */,
 				A7D8AC8223E2514100DCD162 /* SDL_uikitopengles.m in Sources */,
 				A7D8AE9523E2514100DCD162 /* SDL_cocoamodes.m in Sources */,
+				F316ABA12B5A02C3002EF551 /* yuv_rgb_sse.c in Sources */,
 				A7D8BAA423E2514400DCD162 /* k_rem_pio2.c in Sources */,
 				A7D8BB9A23E2514500DCD162 /* SDL_gesture.c in Sources */,
 				A7D8B95723E2514400DCD162 /* SDL_getenv.c in Sources */,
@@ -8573,6 +8722,7 @@
 				A7D8AEA123E2514100DCD162 /* SDL_cocoavulkan.m in Sources */,
 				A7D8AC6423E2514100DCD162 /* SDL_uikitappdelegate.m in Sources */,
 				A7D8AB6223E2514100DCD162 /* SDL_offscreenwindow.c in Sources */,
+				F316ABB32B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8609,7 +8759,6 @@
 				A7D8AB2723E2514100DCD162 /* SDL_log.c in Sources */,
 				A7D8AE8A23E2514100DCD162 /* SDL_cocoaopengl.m in Sources */,
 				A7D8AB7523E2514100DCD162 /* SDL_offscreenframebuffer.c in Sources */,
-				A7D8B3C123E2514200DCD162 /* yuv_rgb.c in Sources */,
 				A7D8BA3F23E2514400DCD162 /* SDL_render_gles.c in Sources */,
 				A7D8B43623E2514300DCD162 /* SDL_systhread.c in Sources */,
 				F323060128939F6400E66D30 /* SDL_hidapi_combined.c in Sources */,
@@ -8698,6 +8847,7 @@
 				A7D8ADE823E2514100DCD162 /* SDL_blit_0.c in Sources */,
 				A7D8BB0B23E2514500DCD162 /* k_tan.c in Sources */,
 				A75FDBD023EA380300529352 /* SDL_hidapi_rumble.c in Sources */,
+				F316AB992B5A02C3002EF551 /* yuv_rgb_std.c in Sources */,
 				F386F6FB2884663E001840AA /* SDL_utils.c in Sources */,
 				A7D8B8AA23E2514400DCD162 /* SDL_diskaudio.c in Sources */,
 				A7D8AFC223E2514200DCD162 /* SDL_egl.c in Sources */,
@@ -8714,6 +8864,7 @@
 				F3ADAB8F2576F0B400A6B1D9 /* SDL_sysurl.m in Sources */,
 				A7D8AC8323E2514100DCD162 /* SDL_uikitopengles.m in Sources */,
 				A7D8AE9623E2514100DCD162 /* SDL_cocoamodes.m in Sources */,
+				F316ABA22B5A02C3002EF551 /* yuv_rgb_sse.c in Sources */,
 				A7D8BAA523E2514400DCD162 /* k_rem_pio2.c in Sources */,
 				A7D8BB9B23E2514500DCD162 /* SDL_gesture.c in Sources */,
 				A7D8B95823E2514400DCD162 /* SDL_getenv.c in Sources */,
@@ -8771,6 +8922,7 @@
 				A7D8AEA223E2514100DCD162 /* SDL_cocoavulkan.m in Sources */,
 				A7D8AC6523E2514100DCD162 /* SDL_uikitappdelegate.m in Sources */,
 				A7D8AB6323E2514100DCD162 /* SDL_offscreenwindow.c in Sources */,
+				F316ABB42B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8801,10 +8953,10 @@
 				A7D8B56123E2514300DCD162 /* SDL_hidapi_xbox360w.c in Sources */,
 				A7D8A95B23E2514000DCD162 /* SDL_atomic.c in Sources */,
 				A7D8BB2B23E2514500DCD162 /* SDL_displayevents.c in Sources */,
+				F316ABA42B5A02C3002EF551 /* yuv_rgb_sse.c in Sources */,
 				A7D8AB2923E2514100DCD162 /* SDL_log.c in Sources */,
 				A7D8AE8C23E2514100DCD162 /* SDL_cocoaopengl.m in Sources */,
 				A7D8AB7723E2514100DCD162 /* SDL_offscreenframebuffer.c in Sources */,
-				A7D8B3C323E2514200DCD162 /* yuv_rgb.c in Sources */,
 				A7D8BA4123E2514400DCD162 /* SDL_render_gles.c in Sources */,
 				F362B95F2B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
 				A7D8B43823E2514300DCD162 /* SDL_systhread.c in Sources */,
@@ -8898,6 +9050,7 @@
 				A7D8BC0723E2590800DCD162 /* SDL_uikit_main.c in Sources */,
 				F3F07D5E269640160074468B /* SDL_hidapi_luna.c in Sources */,
 				A7D8B97223E2514400DCD162 /* SDL_stdlib.c in Sources */,
+				F316ABB62B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */,
 				A7D8B79E23E2514400DCD162 /* SDL_dummyaudio.c in Sources */,
 				A7D8B3A823E2514200DCD162 /* SDL_fillrect.c in Sources */,
 				A7D8ABE323E2514100DCD162 /* SDL_nullframebuffer.c in Sources */,
@@ -8913,6 +9066,7 @@
 				A7D8B4E023E2514300DCD162 /* SDL_joystick.c in Sources */,
 				A7D8BA4D23E2514400DCD162 /* SDL_render_gles2.c in Sources */,
 				A7D8AC3123E2514100DCD162 /* SDL_surface.c in Sources */,
+				F316AB9B2B5A02C3002EF551 /* yuv_rgb_std.c in Sources */,
 				F395BF6925633B2400942BFF /* SDL_crc32.c in Sources */,
 				A7D8B54F23E2514300DCD162 /* SDL_hidapi_xboxone.c in Sources */,
 				A7D8AD2723E2514100DCD162 /* SDL_blit_auto.c in Sources */,
@@ -9011,7 +9165,6 @@
 				A7D8AB2523E2514100DCD162 /* SDL_log.c in Sources */,
 				A7D8AE8823E2514100DCD162 /* SDL_cocoaopengl.m in Sources */,
 				A7D8AB7323E2514100DCD162 /* SDL_offscreenframebuffer.c in Sources */,
-				A7D8B3BF23E2514200DCD162 /* yuv_rgb.c in Sources */,
 				A7D8BA3D23E2514400DCD162 /* SDL_render_gles.c in Sources */,
 				A7D8B43423E2514300DCD162 /* SDL_systhread.c in Sources */,
 				A7D8BB3323E2514500DCD162 /* SDL_windowevents.c in Sources */,
@@ -9050,6 +9203,7 @@
 				A7D8AD3223E2514100DCD162 /* SDL_blit_N.c in Sources */,
 				A7D8BB7B23E2514500DCD162 /* SDL_dropevents.c in Sources */,
 				F362B95B2B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
+				F316AB972B5A02C3002EF551 /* yuv_rgb_std.c in Sources */,
 				A7D8BACD23E2514500DCD162 /* e_atan2.c in Sources */,
 				A7D8BA8B23E2514400DCD162 /* s_sin.c in Sources */,
 				A7D8BBEB23E2574800DCD162 /* SDL_uikitwindow.m in Sources */,
@@ -9123,9 +9277,11 @@
 				A7D8BB6923E2514500DCD162 /* SDL_keyboard.c in Sources */,
 				A7D8ACE723E2514100DCD162 /* SDL_rect.c in Sources */,
 				A7D8AE9A23E2514100DCD162 /* SDL_cocoaopengles.m in Sources */,
+				F316ABB22B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */,
 				A7D8B96823E2514400DCD162 /* SDL_qsort.c in Sources */,
 				A7D8B55123E2514300DCD162 /* SDL_hidapi_switch.c in Sources */,
 				A7D8B96223E2514400DCD162 /* SDL_strtokr.c in Sources */,
+				F316ABA02B5A02C3002EF551 /* yuv_rgb_sse.c in Sources */,
 				A7D8BB7523E2514500DCD162 /* SDL_clipboardevents.c in Sources */,
 				A1BB8B6327F6CF330057CFA8 /* SDL_list.c in Sources */,
 				A7D8BAB523E2514400DCD162 /* k_cos.c in Sources */,
@@ -9210,7 +9366,6 @@
 				A7D8AE8B23E2514100DCD162 /* SDL_cocoaopengl.m in Sources */,
 				A7D8AB7623E2514100DCD162 /* SDL_offscreenframebuffer.c in Sources */,
 				5616CA58252BB35C005D5928 /* SDL_url.c in Sources */,
-				A7D8B3C223E2514200DCD162 /* yuv_rgb.c in Sources */,
 				A7D8BA4023E2514400DCD162 /* SDL_render_gles.c in Sources */,
 				A7D8B43723E2514300DCD162 /* SDL_systhread.c in Sources */,
 				F3973FAE28A59BDD00B84553 /* SDL_crc16.c in Sources */,
@@ -9247,6 +9402,7 @@
 				A7D8BAD023E2514500DCD162 /* e_atan2.c in Sources */,
 				A7D8BA8E23E2514400DCD162 /* s_sin.c in Sources */,
 				F362B95E2B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
+				F316AB9A2B5A02C3002EF551 /* yuv_rgb_std.c in Sources */,
 				A7D8B5EA23E2514300DCD162 /* SDL_power.c in Sources */,
 				A7D8AED923E2514100DCD162 /* SDL_cocoakeyboard.m in Sources */,
 				A7D8AB1923E2514100DCD162 /* SDL_dynapi.c in Sources */,
@@ -9320,9 +9476,11 @@
 				A7D8BC0023E2574800DCD162 /* SDL_uikitview.m in Sources */,
 				A7D8AE9D23E2514100DCD162 /* SDL_cocoaopengles.m in Sources */,
 				A7D8B96B23E2514400DCD162 /* SDL_qsort.c in Sources */,
+				F316ABB52B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */,
 				A7D8B55423E2514300DCD162 /* SDL_hidapi_switch.c in Sources */,
 				A7D8B96523E2514400DCD162 /* SDL_strtokr.c in Sources */,
 				A7D8BB7823E2514500DCD162 /* SDL_clipboardevents.c in Sources */,
+				F316ABA32B5A02C3002EF551 /* yuv_rgb_sse.c in Sources */,
 				A7D8BAB823E2514400DCD162 /* k_cos.c in Sources */,
 				A1BB8B6627F6CF330057CFA8 /* SDL_list.c in Sources */,
 				A7D8B54823E2514300DCD162 /* SDL_hidapijoystick.c in Sources */,
@@ -9404,7 +9562,6 @@
 				A7D8AB2A23E2514100DCD162 /* SDL_log.c in Sources */,
 				A7D8AE8D23E2514100DCD162 /* SDL_cocoaopengl.m in Sources */,
 				A7D8AB7823E2514100DCD162 /* SDL_offscreenframebuffer.c in Sources */,
-				A7D8B3C423E2514200DCD162 /* yuv_rgb.c in Sources */,
 				A7D8BA4223E2514400DCD162 /* SDL_render_gles.c in Sources */,
 				5616CA61252BB35E005D5928 /* SDL_url.c in Sources */,
 				A7D8B43923E2514300DCD162 /* SDL_systhread.c in Sources */,
@@ -9444,6 +9601,7 @@
 				A7D8BB8023E2514500DCD162 /* SDL_dropevents.c in Sources */,
 				A7D8BAD223E2514500DCD162 /* e_atan2.c in Sources */,
 				F362B9612B33EB7300D30B94 /* SDL_steam_virtual_gamepad.c in Sources */,
+				F316AB9D2B5A02C3002EF551 /* yuv_rgb_std.c in Sources */,
 				A7D8BA9023E2514400DCD162 /* s_sin.c in Sources */,
 				A7D8B5EC23E2514300DCD162 /* SDL_power.c in Sources */,
 				A7D8AEDB23E2514100DCD162 /* SDL_cocoakeyboard.m in Sources */,
@@ -9517,9 +9675,11 @@
 				A7D8ACEC23E2514100DCD162 /* SDL_rect.c in Sources */,
 				A7D8AE9F23E2514100DCD162 /* SDL_cocoaopengles.m in Sources */,
 				A7D8B96D23E2514400DCD162 /* SDL_qsort.c in Sources */,
+				F316ABB82B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */,
 				A7D8B55623E2514300DCD162 /* SDL_hidapi_switch.c in Sources */,
 				A7D8B96723E2514400DCD162 /* SDL_strtokr.c in Sources */,
 				A7D8BB7A23E2514500DCD162 /* SDL_clipboardevents.c in Sources */,
+				F316ABA62B5A02C3002EF551 /* yuv_rgb_sse.c in Sources */,
 				A7D8BABA23E2514400DCD162 /* k_cos.c in Sources */,
 				A1BB8B6927F6CF330057CFA8 /* SDL_list.c in Sources */,
 				A7D8B54A23E2514300DCD162 /* SDL_hidapijoystick.c in Sources */,
