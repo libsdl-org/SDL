@@ -701,86 +701,65 @@ int SDL_LowerBlit(SDL_Surface *src, SDL_Rect *srcrect,
 int SDL_UpperBlit(SDL_Surface *src, const SDL_Rect *srcrect,
                   SDL_Surface *dst, SDL_Rect *dstrect)
 {
-    SDL_Rect fulldst;
-    int srcx, srcy;
-    Sint64 w, h;
+    SDL_Rect r_src, r_dst;
 
     /* Make sure the surfaces aren't locked */
-    if (!src || !dst) {
-        return SDL_InvalidParamError("SDL_UpperBlit(): src/dst");
-    }
-    if (src->locked || dst->locked) {
+    if (!src) {
+        return SDL_InvalidParamError("src");
+    } else if (!dst) {
+        return SDL_InvalidParamError("dst");
+    } else if (src->locked || dst->locked) {
         return SDL_SetError("Surfaces must not be locked during blit");
     }
 
-    /* If the destination rectangle is NULL, use the entire dest surface */
-    if (!dstrect) {
-        fulldst.x = fulldst.y = 0;
-        fulldst.w = dst->w;
-        fulldst.h = dst->h;
-        dstrect = &fulldst;
+    /* Full src surface */
+    r_src.x = 0;
+    r_src.y = 0;
+    r_src.w = src->w;
+    r_src.h = src->h;
+
+    if (dstrect) {
+        r_dst.x = dstrect->x;
+        r_dst.y = dstrect->y;
+    } else {
+        r_dst.x = 0;
+        r_dst.y = 0;
     }
 
     /* clip the source rectangle to the source surface */
     if (srcrect) {
-        int maxw, maxh;
-
-        srcx = srcrect->x;
-        w = srcrect->w;
-        if (srcx < 0) {
-            w += srcx;
-            dstrect->x -= srcx;
-            srcx = 0;
-        }
-        maxw = src->w - srcx;
-        if (maxw < w) {
-            w = maxw;
+        SDL_Rect tmp;
+        if (SDL_IntersectRect(srcrect, &r_src, &tmp) == SDL_FALSE) {
+            goto end;
         }
 
-        srcy = srcrect->y;
-        h = srcrect->h;
-        if (srcy < 0) {
-            h += srcy;
-            dstrect->y -= srcy;
-            srcy = 0;
-        }
-        maxh = src->h - srcy;
-        if (maxh < h) {
-            h = maxh;
-        }
+        /* Shift dstrect, if srcrect origin has changed */
+        r_dst.x += tmp.x - srcrect->x;
+        r_dst.y += tmp.y - srcrect->y;
 
-    } else {
-        srcx = srcy = 0;
-        w = src->w;
-        h = src->h;
+        /* Update srcrect */
+        r_src = tmp;
     }
+
+    /* There're no dstrect.w/h parameters. It's the same as srcrect */
+    r_dst.w = r_src.w;
+    r_dst.h = r_src.h;
 
     /* clip the destination rectangle against the clip rectangle */
     {
-        SDL_Rect *clip = &dst->clip_rect;
-        int dx, dy;
-
-        dx = clip->x - dstrect->x;
-        if (dx > 0) {
-            w -= dx;
-            dstrect->x += dx;
-            srcx += dx;
-        }
-        dx = dstrect->x + w - clip->x - clip->w;
-        if (dx > 0) {
-            w -= dx;
+        SDL_Rect tmp;
+        if (SDL_IntersectRect(&r_dst, &dst->clip_rect, &tmp) == SDL_FALSE) {
+            goto end;
         }
 
-        dy = clip->y - dstrect->y;
-        if (dy > 0) {
-            h -= dy;
-            dstrect->y += dy;
-            srcy += dy;
-        }
-        dy = dstrect->y + h - clip->y - clip->h;
-        if (dy > 0) {
-            h -= dy;
-        }
+        /* Shift srcrect, if dstrect has changed */
+        r_src.x += tmp.x - r_dst.x;
+        r_src.y += tmp.y - r_dst.y;
+        r_src.w = tmp.w;
+        r_src.h = tmp.h;
+
+        /* Update dstrect */
+        r_dst = tmp;
     }
 
     /* Switch back to a fast blit if we were previously stretching */
@@ -789,15 +768,17 @@ int SDL_UpperBlit(SDL_Surface *src, const SDL_Rect *srcrect,
         SDL_InvalidateMap(src->map);
     }
 
-    if (w > 0 && h > 0) {
-        SDL_Rect sr;
-        sr.x = srcx;
-        sr.y = srcy;
-        sr.w = dstrect->w = w;
-        sr.h = dstrect->h = h;
-        return SDL_LowerBlit(src, &sr, dst, dstrect);
+    if (r_dst.w > 0 && r_dst.h > 0) {
+        if (dstrect) { /* update output parameter */
+            *dstrect = r_dst;
+        }
+        return SDL_LowerBlit(src, &r_src, dst, dstrect);
     }
-    dstrect->w = dstrect->h = 0;
+
+end:
+    if (dstrect) { /* update output parameter */
+        dstrect->w = dstrect->h = 0;
+    }
     return 0;
 }
 
