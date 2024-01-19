@@ -1745,8 +1745,10 @@ int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen, SDL_bool c
                 }
             }
 
-            /* Restore the cursor position */
-            SDL_RestoreMousePosition(window);
+            /* Restore the cursor position if we've exited fullscreen on a display */
+            if (display) {
+                SDL_RestoreMousePosition(window);
+            }
         }
     }
 
