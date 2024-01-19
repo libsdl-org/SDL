@@ -1842,6 +1842,19 @@ static int D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
     ID3D11BlendState *blendState = NULL;
     SDL_bool updateSubresource = SDL_FALSE;
 
+    if (numShaderResources > 0) {
+        shaderResource = shaderResources[0];
+    } else {
+        shaderResource = NULL;
+    }
+
+    /* Make sure the render target isn't bound to a shader */
+    if (shaderResource != rendererData->currentShaderResource) {
+        ID3D11ShaderResourceView *pNullResource = NULL;
+        ID3D11DeviceContext_PSSetShaderResources(rendererData->d3dContext, 0, 1, &pNullResource);
+        rendererData->currentShaderResource = NULL;
+    }
+
     if (renderTargetView != rendererData->currentRenderTargetView) {
         ID3D11DeviceContext_OMSetRenderTargets(rendererData->d3dContext,
                                                1,
@@ -1904,11 +1917,6 @@ static int D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
     if (shader != rendererData->currentShader) {
         ID3D11DeviceContext_PSSetShader(rendererData->d3dContext, shader, NULL, 0);
         rendererData->currentShader = shader;
-    }
-    if (numShaderResources > 0) {
-        shaderResource = shaderResources[0];
-    } else {
-        shaderResource = NULL;
     }
     if (shaderResource != rendererData->currentShaderResource) {
         ID3D11DeviceContext_PSSetShaderResources(rendererData->d3dContext, 0, numShaderResources, shaderResources);
