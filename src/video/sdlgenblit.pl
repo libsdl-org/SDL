@@ -518,15 +518,15 @@ __EOF__
     }
     if ( $scale ) {
         print FILE <<__EOF__;
-    int srcy, srcx;
-    Uint32 posy, posx;
-    int incy, incx;
+    Uint64 srcy, srcx;
+    Uint64 posy, posx;
+    Uint64 incy, incx;
 __EOF__
 
     print FILE <<__EOF__;
 
-    incy = (info->src_h << 16) / info->dst_h;
-    incx = (info->src_w << 16) / info->dst_w;
+    incy = ((Uint64)info->src_h << 16) / info->dst_h;
+    incx = ((Uint64)info->src_w << 16) / info->dst_w;
     posy = incy / 2;
 
     while (info->dst_h--) {
