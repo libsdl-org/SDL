@@ -169,6 +169,8 @@ SDL_bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product)
         return SDL_TRUE;
     case USB_VENDOR_MADCATZ:
         return SDL_TRUE;
+    case USB_VENDOR_MAYFLASH:
+        return SDL_TRUE;
     case USB_VENDOR_NACON:
     case USB_VENDOR_NACON_ALT:
         return SDL_TRUE;
