@@ -4,6 +4,7 @@
 
 #if SDL_HAVE_YUV
 #include "yuv_rgb_lsx.h"
+#include "yuv_rgb_internal.h"
 
 #ifdef SDL_LSX_INTRINSICS
 
