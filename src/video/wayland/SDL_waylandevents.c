@@ -507,7 +507,8 @@ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
     }
 
     if (window && window->hit_test) {
-        const SDL_Point point = { wl_fixed_to_int(sx_w), wl_fixed_to_int(sy_w) };
+        const SDL_Point point = { (int)SDL_floor(wl_fixed_to_double(sx_w) * window_data->pointer_scale_x),
+                                  (int)SDL_floor(wl_fixed_to_double(sy_w) * window_data->pointer_scale_y) };
         SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
         if (rc == window_data->hit_test_result) {
             return;

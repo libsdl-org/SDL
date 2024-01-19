@@ -6,6 +6,14 @@ encounter limitations or behavior that is different from other windowing systems
 
 ## Common issues:
 
+### Legacy, DPI-unaware applications are blurry
+
+- Wayland handles high-DPI displays by scaling the desktop, which causes applications that are not designed to be 
+  DPI-aware to be automatically scaled by the window manager, which results in them being blurry. SDL can _attempt_ to
+  scale these applications such that they will be output with a 1:1 pixel aspect, however this may be buggy, especially
+  with odd-sized windows and/or scale factors that aren't quarter-increments (125%, 150%, etc...). To enable this, set
+  the environment variable `SDL_HINT_VIDEO_WAYLAND_SCALE_TO_DISPLAY=1`
+
 ### Window decorations are missing, or the decorations look strange
 
 - On some desktops (i.e. GNOME), Wayland applications use a library

@@ -1204,8 +1204,24 @@ static int Wayland_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *di
         rect->w = display->fullscreen_window->current_fullscreen_mode.w;
         rect->h = display->fullscreen_window->current_fullscreen_mode.h;
     } else {
-        rect->w = display->current_mode->w;
-        rect->h = display->current_mode->h;
+        /* If the focused window is on the requested display and requires display scaling,
+         * return the physical dimensions in pixels.
+         */
+        SDL_Window *kb = SDL_GetKeyboardFocus();
+        SDL_Window *m = SDL_GetMouseFocus();
+        SDL_bool scale_output = (kb && kb->driverdata->scale_to_display && (kb->last_displayID == display->id)) ||
+                                (m && m->driverdata->scale_to_display && (m->last_displayID == display->id));
+
+        if (!scale_output) {
+            rect->w = display->current_mode->w;
+            rect->h = display->current_mode->h;
+        } else if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
+            rect->w = driverdata->pixel_height;
+            rect->h = driverdata->pixel_width;
+        } else {
+            rect->w = driverdata->pixel_width;
+            rect->h = driverdata->pixel_height;
+        }
     }
     return 0;
 }
