@@ -158,7 +158,8 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
 #define BILINEAR___HEIGHT                                              \
     int index_h, frac_h0, frac_h1, middle;                             \
     const Uint32 *src_h0, *src_h1;                                     \
-    int no_padding, incr_h0, incr_h1;                                  \
+    int no_padding;                                                    \
+    Uint64 incr_h0, incr_h1;                                           \
                                                                        \
     no_padding = !(i < left_pad_h || i > dst_h - 1 - right_pad_h);     \
     index_h = SRC_INDEX(fp_sum_h);                                     \
@@ -167,7 +168,7 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
     index_h = no_padding ? index_h : (i < left_pad_h ? 0 : src_h - 1); \
     frac_h0 = no_padding ? frac_h0 : 0;                                \
     incr_h1 = no_padding ? src_pitch : 0;                              \
-    incr_h0 = index_h * src_pitch;                                     \
+    incr_h0 = (Uint64)index_h * src_pitch;                             \
                                                                        \
     src_h0 = (const Uint32 *)((const Uint8 *)src + incr_h0);           \
     src_h1 = (const Uint32 *)((const Uint8 *)src_h0 + incr_h1);        \
@@ -814,16 +815,16 @@ int SDL_LowerSoftStretchLinear(SDL_Surface *s, const SDL_Rect *srcrect,
     return ret;
 }
 
-#define SDL_SCALE_NEAREST__START       \
-    int i;                             \
-    Uint32 posy, incy;                 \
-    Uint32 posx, incx;                 \
-    int dst_gap;                       \
-    int srcy, n;                       \
-    const Uint32 *src_h0;              \
-    incy = (src_h << 16) / dst_h;      \
-    incx = (src_w << 16) / dst_w;      \
-    dst_gap = dst_pitch - bpp * dst_w; \
+#define SDL_SCALE_NEAREST__START          \
+    int i;                                \
+    Uint64 posy, incy;                    \
+    Uint64 posx, incx;                    \
+    Uint64 srcy, srcx;                    \
+    int dst_gap, n;                       \
+    const Uint32 *src_h0;                 \
+    incy = ((Uint64)src_h << 16) / dst_h; \
+    incx = ((Uint64)src_w << 16) / dst_w; \
+    dst_gap = dst_pitch - bpp * dst_w;    \
     posy = incy / 2;
 
 #define SDL_SCALE_NEAREST__HEIGHT                                         \
@@ -842,7 +843,7 @@ static int scale_mat_nearest_1(const Uint32 *src_ptr, int src_w, int src_h, int 
         SDL_SCALE_NEAREST__HEIGHT
         while (n--) {
             const Uint8 *src;
-            int srcx = bpp * (posx >> 16);
+            srcx = bpp * (posx >> 16);
             posx += incx;
             src = (const Uint8 *)src_h0 + srcx;
             *(Uint8 *)dst = *src;
@@ -862,7 +863,7 @@ static int scale_mat_nearest_2(const Uint32 *src_ptr, int src_w, int src_h, int 
         SDL_SCALE_NEAREST__HEIGHT
         while (n--) {
             const Uint16 *src;
-            int srcx = bpp * (posx >> 16);
+            srcx = bpp * (posx >> 16);
             posx += incx;
             src = (const Uint16 *)((const Uint8 *)src_h0 + srcx);
             *(Uint16 *)dst = *src;
@@ -882,7 +883,7 @@ static int scale_mat_nearest_3(const Uint32 *src_ptr, int src_w, int src_h, int 
         SDL_SCALE_NEAREST__HEIGHT
         while (n--) {
             const Uint8 *src;
-            int srcx = bpp * (posx >> 16);
+            srcx = bpp * (posx >> 16);
             posx += incx;
             src = (const Uint8 *)src_h0 + srcx;
             ((Uint8 *)dst)[0] = src[0];
@@ -904,7 +905,7 @@ static int scale_mat_nearest_4(const Uint32 *src_ptr, int src_w, int src_h, int 
         SDL_SCALE_NEAREST__HEIGHT
         while (n--) {
             const Uint32 *src;
-            int srcx = bpp * (posx >> 16);
+            srcx = bpp * (posx >> 16);
             posx += incx;
             src = (const Uint32 *)((const Uint8 *)src_h0 + srcx);
             *dst = *src;
