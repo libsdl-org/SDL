@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -528,7 +528,7 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
     rwops->type = SDL_RWOPS_WINFILE;
 #elif defined(HAVE_STDIO_H)
     {
-#if defined(__APPLE__) && !defined(SDL_FILE_DISABLED) // TODO: add dummy?
+#if defined(__APPLE__)
         FILE *fp = SDL_OpenFPFromBundleOrFallback(file, mode);
 #elif defined(__WINRT__)
         FILE *fp = NULL;

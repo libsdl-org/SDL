@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,7 +29,7 @@
 SDL_TLSID SDL_CreateTLS(void)
 {
     static SDL_AtomicInt SDL_tls_id;
-    return SDL_AtomicIncRef(&SDL_tls_id) + 1;
+    return (SDL_TLSID)(SDL_AtomicIncRef(&SDL_tls_id) + 1);
 }
 
 void *SDL_GetTLS(SDL_TLSID id)
@@ -60,6 +60,7 @@ int SDL_SetTLS(SDL_TLSID id, const void *value, void(SDLCALL *destructor)(void *
         newlimit = (id + TLS_ALLOC_CHUNKSIZE);
         new_storage = (SDL_TLSData *)SDL_realloc(storage, sizeof(*storage) + (newlimit - 1) * sizeof(storage->array[0]));
         if (!new_storage) {
+            SDL_OutOfMemory();
             return -1;
         }
         storage = new_storage;
@@ -105,7 +106,7 @@ void SDL_CleanupTLS(void)
 
 typedef struct SDL_TLSEntry
 {
-    SDL_threadID thread;
+    SDL_ThreadID thread;
     SDL_TLSData *storage;
     struct SDL_TLSEntry *next;
 } SDL_TLSEntry;
@@ -115,24 +116,24 @@ static SDL_TLSEntry *SDL_generic_TLS;
 
 SDL_TLSData *SDL_Generic_GetTLSData(void)
 {
-    SDL_threadID thread = SDL_ThreadID();
+    SDL_ThreadID thread = SDL_GetCurrentThreadID();
     SDL_TLSEntry *entry;
     SDL_TLSData *storage = NULL;
 
 #ifndef SDL_THREADS_DISABLED
     if (!SDL_generic_TLS_mutex) {
         static SDL_SpinLock tls_lock;
-        SDL_AtomicLock(&tls_lock);
+        SDL_LockSpinlock(&tls_lock);
         if (!SDL_generic_TLS_mutex) {
             SDL_Mutex *mutex = SDL_CreateMutex();
             SDL_MemoryBarrierRelease();
             SDL_generic_TLS_mutex = mutex;
             if (!SDL_generic_TLS_mutex) {
-                SDL_AtomicUnlock(&tls_lock);
+                SDL_UnlockSpinlock(&tls_lock);
                 return NULL;
             }
         }
-        SDL_AtomicUnlock(&tls_lock);
+        SDL_UnlockSpinlock(&tls_lock);
     }
     SDL_MemoryBarrierAcquire();
     SDL_LockMutex(SDL_generic_TLS_mutex);
@@ -153,7 +154,7 @@ SDL_TLSData *SDL_Generic_GetTLSData(void)
 
 int SDL_Generic_SetTLSData(SDL_TLSData *data)
 {
-    SDL_threadID thread = SDL_ThreadID();
+    SDL_ThreadID thread = SDL_GetCurrentThreadID();
     SDL_TLSEntry *prev, *entry;
 
     /* SDL_Generic_GetTLSData() is always called first, so we can assume SDL_generic_TLS_mutex */
@@ -212,7 +213,7 @@ static void SDLCALL SDL_FreeErrBuf(void *data)
 #endif
 
 /* Routine to get the thread-specific error variable */
-SDL_error *SDL_GetErrBuf(void)
+SDL_error *SDL_GetErrBuf(SDL_bool create)
 {
 #ifdef SDL_THREADS_DISABLED
     return SDL_GetStaticErrBuf();
@@ -223,12 +224,16 @@ SDL_error *SDL_GetErrBuf(void)
     const SDL_error *ALLOCATION_IN_PROGRESS = (SDL_error *)-1;
     SDL_error *errbuf;
 
+    if (!tls_errbuf && !create) {
+        return NULL;
+    }
+
     /* tls_being_created is there simply to prevent recursion if SDL_CreateTLS() fails.
        It also means it's possible for another thread to also use SDL_global_errbuf,
        but that's very unlikely and hopefully won't cause issues.
      */
     if (!tls_errbuf && !tls_being_created) {
-        SDL_AtomicLock(&tls_lock);
+        SDL_LockSpinlock(&tls_lock);
         if (!tls_errbuf) {
             SDL_TLSID slot;
             tls_being_created = SDL_TRUE;
@@ -237,7 +242,7 @@ SDL_error *SDL_GetErrBuf(void)
             SDL_MemoryBarrierRelease();
             tls_errbuf = slot;
         }
-        SDL_AtomicUnlock(&tls_lock);
+        SDL_UnlockSpinlock(&tls_lock);
     }
     if (!tls_errbuf) {
         return SDL_GetStaticErrBuf();
@@ -283,7 +288,7 @@ void SDL_RunThread(SDL_Thread *thread)
     SDL_SYS_SetupThread(thread->name);
 
     /* Get the thread id */
-    thread->threadid = SDL_ThreadID();
+    thread->threadid = SDL_GetCurrentThreadID();
 
     /* Run the function */
     *statusloc = userfunc(userdata);
@@ -292,9 +297,9 @@ void SDL_RunThread(SDL_Thread *thread)
     SDL_CleanupTLS();
 
     /* Mark us as ready to be joined (or detached) */
-    if (!SDL_AtomicCAS(&thread->state, SDL_THREAD_STATE_ALIVE, SDL_THREAD_STATE_ZOMBIE)) {
+    if (!SDL_AtomicCompareAndSwap(&thread->state, SDL_THREAD_STATE_ALIVE, SDL_THREAD_STATE_ZOMBIE)) {
         /* Clean up if something already detached us. */
-        if (SDL_AtomicCAS(&thread->state, SDL_THREAD_STATE_DETACHED, SDL_THREAD_STATE_CLEANED)) {
+        if (SDL_AtomicCompareAndSwap(&thread->state, SDL_THREAD_STATE_DETACHED, SDL_THREAD_STATE_CLEANED)) {
             if (thread->name) {
                 SDL_free(thread->name);
             }
@@ -405,14 +410,14 @@ SDL_Thread *SDL_CreateThreadInternal(int(SDLCALL *fn)(void *), const char *name,
 #endif
 }
 
-SDL_threadID SDL_GetThreadID(SDL_Thread *thread)
+SDL_ThreadID SDL_GetThreadID(SDL_Thread *thread)
 {
-    SDL_threadID id;
+    SDL_ThreadID id;
 
     if (thread) {
         id = thread->threadid;
     } else {
-        id = SDL_ThreadID();
+        id = SDL_GetCurrentThreadID();
     }
     return id;
 }
@@ -452,7 +457,7 @@ void SDL_DetachThread(SDL_Thread *thread)
     }
 
     /* Grab dibs if the state is alive+joinable. */
-    if (SDL_AtomicCAS(&thread->state, SDL_THREAD_STATE_ALIVE, SDL_THREAD_STATE_DETACHED)) {
+    if (SDL_AtomicCompareAndSwap(&thread->state, SDL_THREAD_STATE_ALIVE, SDL_THREAD_STATE_DETACHED)) {
         SDL_SYS_DetachThread(thread);
     } else {
         /* all other states are pretty final, see where we landed. */

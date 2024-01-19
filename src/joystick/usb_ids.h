@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -121,6 +121,8 @@
 #define USB_PRODUCT_XBOX360_XUSB_CONTROLLER               0x02a1 /* XUSB driver software PID */
 #define USB_PRODUCT_XBOX360_WIRED_CONTROLLER              0x028e
 #define USB_PRODUCT_XBOX360_WIRELESS_RECEIVER             0x0719
+#define USB_PRODUCT_XBOX360_WIRELESS_RECEIVER_THIRDPARTY1 0x02a9
+#define USB_PRODUCT_XBOX360_WIRELESS_RECEIVER_THIRDPARTY2 0x0291
 #define USB_PRODUCT_XBOX_ONE_ADAPTIVE                     0x0b0a
 #define USB_PRODUCT_XBOX_ONE_ADAPTIVE_BLUETOOTH           0x0b0c
 #define USB_PRODUCT_XBOX_ONE_ADAPTIVE_BLE                 0x0b21
@@ -143,7 +145,6 @@
 #define USB_PRODUCT_XBOX_SERIES_X_POWERA_SPECTRA          0x4002
 #define USB_PRODUCT_XBOX_SERIES_X_VICTRIX_GAMBIT          0x02d6
 #define USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER           0x02ff /* XBOXGIP driver software PID */
-#define USB_PRODUCT_XBOX_ONE_XINPUT_CONTROLLER            0x02fe /* Made up product ID for XInput */
 #define USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD                 0x11ff
 
 /* USB usage pages */

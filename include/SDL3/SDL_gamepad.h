@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -149,7 +149,9 @@ typedef enum
  *  and are centered within ~8000 of zero, though advanced UI will allow users to set
  *  or autodetect the dead zone, which varies between gamepads.
  *
- *  Trigger axis values range from 0 to SDL_JOYSTICK_AXIS_MAX.
+ *  Trigger axis values range from 0 (released) to SDL_JOYSTICK_AXIS_MAX
+ *  (fully pressed) when reported by SDL_GetGamepadAxis(). Note that this is not the
+ *  same range that will be reported by the lower-level SDL_GetJoystickAxis().
  */
 typedef enum
 {
@@ -759,6 +761,19 @@ extern DECLSPEC Uint16 SDLCALL SDL_GetGamepadFirmwareVersion(SDL_Gamepad *gamepa
 extern DECLSPEC const char * SDLCALL SDL_GetGamepadSerial(SDL_Gamepad *gamepad);
 
 /**
+ * Get the Steam Input handle of an opened gamepad, if available.
+ *
+ * Returns an InputHandle_t for the gamepad that can be used with Steam Input
+ * API: https://partner.steamgames.com/doc/api/ISteamInput
+ *
+ * \param gamepad the gamepad object to query.
+ * \returns the gamepad handle, or 0 if unavailable.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC Uint64 SDLCALL SDL_GetGamepadSteamHandle(SDL_Gamepad *gamepad);
+
+/**
  * Get the battery level of a gamepad, if available.
  *
  * \param gamepad a gamepad identifier previously returned by
@@ -948,8 +963,12 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GamepadHasAxis(SDL_Gamepad *gamepad, SDL_Ga
  *
  * The axis indices start at index 0.
  *
- * The state is a value ranging from -32768 to 32767. Triggers, however, range
- * from 0 to 32767 (they never return a negative value).
+ * For thumbsticks, the state is a value ranging from -32768 (up/left) to
+ * 32767 (down/right).
+ *
+ * Triggers range from 0 when released to 32767 when fully pressed, and never
+ * return a negative value. Note that this differs from the value reported by
+ * the lower-level SDL_GetJoystickAxis(), which normally uses the full range.
  *
  * \param gamepad a gamepad
  * \param axis an axis index (one of the SDL_GamepadAxis values)

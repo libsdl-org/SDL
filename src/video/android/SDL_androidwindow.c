@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -72,7 +72,7 @@ int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
         retval = SDL_SetError("Could not fetch native window");
         goto endfunction;
     }
-    SDL_SetProperty(SDL_GetWindowProperties(window), "SDL.window.android.window", data->native_window);
+    SDL_SetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_ANDROID_WINDOW_POINTER, data->native_window);
 
     /* Do not create EGLSurface for Vulkan window since it will then make the window
        incompatible with vkCreateAndroidSurfaceKHR */
@@ -87,7 +87,7 @@ int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
             goto endfunction;
         }
     }
-    SDL_SetProperty(SDL_GetWindowProperties(window), "SDL.window.android.surface", data->egl_surface);
+    SDL_SetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_ANDROID_SURFACE_POINTER, data->egl_surface);
 #endif
 
     window->driverdata = data;

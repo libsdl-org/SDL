@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,7 @@
 #include "../SDL_pixels_c.h"
 #include "../../thread/SDL_systhread.h"
 
-#define DEBUG_VIDEO_CAPTURE_CAPTURE 1
+#define DEBUG_VIDEO_CAPTURE_CAPTURE 0
 
 #if defined(__ANDROID__) && __ANDROID_API__ >= 24
 
@@ -119,7 +119,7 @@ format_2_id(int fmt) {
 #define CASE(x, y)  case x: return y
         CASE(FORMAT_SDL, 0);
         CASE(SDL_PIXELFORMAT_RGB565, 1);
-        CASE(SDL_PIXELFORMAT_RGB888, 2);
+        CASE(SDL_PIXELFORMAT_XRGB8888, 2);
         CASE(SDL_PIXELFORMAT_RGBA8888, 3);
         CASE(SDL_PIXELFORMAT_RGBX8888, 4);
         CASE(SDL_PIXELFORMAT_UNKNOWN, 5);
@@ -135,7 +135,7 @@ id_2_format(int fmt) {
 #define CASE(x, y)  case y: return x
         CASE(FORMAT_SDL, 0);
         CASE(SDL_PIXELFORMAT_RGB565, 1);
-        CASE(SDL_PIXELFORMAT_RGB888, 2);
+        CASE(SDL_PIXELFORMAT_XRGB8888, 2);
         CASE(SDL_PIXELFORMAT_RGBA8888, 3);
         CASE(SDL_PIXELFORMAT_RGBX8888, 4);
         CASE(SDL_PIXELFORMAT_UNKNOWN, 5);
@@ -152,7 +152,7 @@ format_android_2_sdl(Uint32 fmt)
 #define CASE(x, y)  case x: return y
         CASE(AIMAGE_FORMAT_YUV_420_888, FORMAT_SDL);
         CASE(AIMAGE_FORMAT_RGB_565,     SDL_PIXELFORMAT_RGB565);
-        CASE(AIMAGE_FORMAT_RGB_888,     SDL_PIXELFORMAT_RGB888);
+        CASE(AIMAGE_FORMAT_RGB_888,     SDL_PIXELFORMAT_XRGB8888);
         CASE(AIMAGE_FORMAT_RGBA_8888,   SDL_PIXELFORMAT_RGBA8888);
         CASE(AIMAGE_FORMAT_RGBX_8888,   SDL_PIXELFORMAT_RGBX8888);
 
@@ -173,7 +173,7 @@ format_sdl_2_android(Uint32 fmt)
 #define CASE(x, y)  case y: return x
         CASE(AIMAGE_FORMAT_YUV_420_888, FORMAT_SDL);
         CASE(AIMAGE_FORMAT_RGB_565,     SDL_PIXELFORMAT_RGB565);
-        CASE(AIMAGE_FORMAT_RGB_888,     SDL_PIXELFORMAT_RGB888);
+        CASE(AIMAGE_FORMAT_RGB_888,     SDL_PIXELFORMAT_XRGB8888);
         CASE(AIMAGE_FORMAT_RGBA_8888,   SDL_PIXELFORMAT_RGBA8888);
         CASE(AIMAGE_FORMAT_RGBX_8888,   SDL_PIXELFORMAT_RGBX8888);
 #undef CASE

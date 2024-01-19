@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -498,7 +498,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
         data->fbo = NULL;
     }
 
-    data->texture = (GLuint)SDL_GetNumberProperty(create_props, "opengl.texture", 0);
+    data->texture = (GLuint)SDL_GetNumberProperty(create_props, SDL_PROPERTY_TEXTURE_CREATE_OPENGL_TEXTURE_NUMBER, 0);
     if (data->texture) {
         data->texture_external = SDL_TRUE;
     } else {
@@ -531,9 +531,10 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
         data->texh = (GLfloat)texture->h / texture_h;
     }
     SDL_PropertiesID props = SDL_GetTextureProperties(texture);
-    SDL_SetNumberProperty(props, "SDL.texture.opengl.texture", data->texture);
-    SDL_SetFloatProperty(props, "SDL.texture.opengl.tex_w", data->texw);
-    SDL_SetFloatProperty(props, "SDL.texture.opengl.tex_h", data->texh);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_TEXTURE_OPENGL_TEXTURE_NUMBER, data->texture);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_TEXTURE_OPENGL_TEXTURE_TARGET, (Sint64) textype);
+    SDL_SetFloatProperty(props, SDL_PROPERTY_TEXTURE_OPENGL_TEX_W_FLOAT, data->texw);
+    SDL_SetFloatProperty(props, SDL_PROPERTY_TEXTURE_OPENGL_TEX_H_FLOAT, data->texh);
 
     data->format = format;
     data->formattype = type;
@@ -592,13 +593,13 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
         texture->format == SDL_PIXELFORMAT_IYUV) {
         data->yuv = SDL_TRUE;
 
-        data->utexture = (GLuint)SDL_GetNumberProperty(create_props, "opengl.texture_u", 0);
+        data->utexture = (GLuint)SDL_GetNumberProperty(create_props, SDL_PROPERTY_TEXTURE_CREATE_OPENGL_TEXTURE_U_NUMBER, 0);
         if (data->utexture) {
             data->utexture_external = SDL_TRUE;
         } else {
             renderdata->glGenTextures(1, &data->utexture);
         }
-        data->vtexture = (GLuint)SDL_GetNumberProperty(create_props, "opengl.texture_v", 0);
+        data->vtexture = (GLuint)SDL_GetNumberProperty(create_props, SDL_PROPERTY_TEXTURE_CREATE_OPENGL_TEXTURE_V_NUMBER, 0);
         if (data->vtexture) {
             data->vtexture_external = SDL_TRUE;
         } else {
@@ -616,7 +617,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
                                     GL_CLAMP_TO_EDGE);
         renderdata->glTexImage2D(textype, 0, internalFormat, (texture_w + 1) / 2,
                                  (texture_h + 1) / 2, 0, format, type, NULL);
-        SDL_SetNumberProperty(props, "SDL.texture.opengl.texture_u", data->utexture);
+        SDL_SetNumberProperty(props, SDL_PROPERTY_TEXTURE_OPENGL_TEXTURE_U_NUMBER, data->utexture);
 
         renderdata->glBindTexture(textype, data->vtexture);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER,
@@ -629,14 +630,14 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
                                     GL_CLAMP_TO_EDGE);
         renderdata->glTexImage2D(textype, 0, internalFormat, (texture_w + 1) / 2,
                                  (texture_h + 1) / 2, 0, format, type, NULL);
-        SDL_SetNumberProperty(props, "SDL.texture.opengl.texture_v", data->vtexture);
+        SDL_SetNumberProperty(props, SDL_PROPERTY_TEXTURE_OPENGL_TEXTURE_V_NUMBER, data->vtexture);
     }
 
     if (texture->format == SDL_PIXELFORMAT_NV12 ||
         texture->format == SDL_PIXELFORMAT_NV21) {
         data->nv12 = SDL_TRUE;
 
-        data->utexture = (GLuint)SDL_GetNumberProperty(create_props, "opengl.texture_uv", 0);
+        data->utexture = (GLuint)SDL_GetNumberProperty(create_props, SDL_PROPERTY_TEXTURE_CREATE_OPENGL_TEXTURE_UV_NUMBER, 0);
         if (data->utexture) {
             data->utexture_external = SDL_TRUE;
         } else {
@@ -653,7 +654,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
                                     GL_CLAMP_TO_EDGE);
         renderdata->glTexImage2D(textype, 0, GL_LUMINANCE_ALPHA, (texture_w + 1) / 2,
                                  (texture_h + 1) / 2, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, NULL);
-        SDL_SetNumberProperty(props, "SDL.texture.opengl.texture_uv", data->utexture);
+        SDL_SetNumberProperty(props, SDL_PROPERTY_TEXTURE_OPENGL_TEXTURE_UV_NUMBER, data->utexture);
     }
 #endif
 
@@ -1145,7 +1146,7 @@ static int SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const
     }
 
     /* This is a little awkward but should avoid texcoord arrays getting into
-       a bad state if SDL_GL_BindTexture/UnbindTexture are called. */
+       a bad state if the application is manually binding textures */
     if (texture_array != data->drawstate.texture_array) {
         if (texture_array) {
             data->glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -1610,105 +1611,6 @@ static void GL_DestroyRenderer(SDL_Renderer *renderer)
     SDL_free(renderer);
 }
 
-static int GL_BindTexture(SDL_Renderer *renderer, SDL_Texture *texture, float *texw, float *texh)
-{
-    GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
-    GL_TextureData *texturedata = (GL_TextureData *)texture->driverdata;
-    const GLenum textype = data->textype;
-
-    GL_ActivateRenderer(renderer);
-
-    data->glEnable(textype);
-#if SDL_HAVE_YUV
-    if (texturedata->yuv) {
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE2_ARB);
-        }
-        data->glBindTexture(textype, texturedata->vtexture);
-
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE1_ARB);
-        }
-        data->glBindTexture(textype, texturedata->utexture);
-
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE0_ARB);
-        }
-    }
-    if (texturedata->nv12) {
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE1_ARB);
-        }
-        data->glBindTexture(textype, texturedata->utexture);
-
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE0_ARB);
-        }
-    }
-#endif
-    data->glBindTexture(textype, texturedata->texture);
-
-    data->drawstate.texturing = SDL_TRUE;
-    data->drawstate.texture = texture;
-
-    if (texw) {
-        *texw = (float)texturedata->texw;
-    }
-    if (texh) {
-        *texh = (float)texturedata->texh;
-    }
-    return 0;
-}
-
-static int GL_UnbindTexture(SDL_Renderer *renderer, SDL_Texture *texture)
-{
-    GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
-    const GLenum textype = data->textype;
-#if SDL_HAVE_YUV
-    GL_TextureData *texturedata = (GL_TextureData *)texture->driverdata;
-#endif
-
-    GL_ActivateRenderer(renderer);
-
-#if SDL_HAVE_YUV
-    if (texturedata->yuv) {
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE2_ARB);
-        }
-        data->glBindTexture(textype, 0);
-        data->glDisable(textype);
-
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE1_ARB);
-        }
-        data->glBindTexture(textype, 0);
-        data->glDisable(textype);
-
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE0_ARB);
-        }
-    }
-    if (texturedata->nv12) {
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE1_ARB);
-        }
-        data->glBindTexture(textype, 0);
-        data->glDisable(textype);
-
-        if (data->GL_ARB_multitexture_supported) {
-            data->glActiveTextureARB(GL_TEXTURE0_ARB);
-        }
-    }
-#endif
-    data->glBindTexture(textype, 0);
-    data->glDisable(textype);
-
-    data->drawstate.texturing = SDL_FALSE;
-    data->drawstate.texture = NULL;
-
-    return 0;
-}
-
 static int GL_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
     int retval;
@@ -1828,8 +1730,6 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
     renderer->DestroyTexture = GL_DestroyTexture;
     renderer->DestroyRenderer = GL_DestroyRenderer;
     renderer->SetVSync = GL_SetVSync;
-    renderer->GL_BindTexture = GL_BindTexture;
-    renderer->GL_UnbindTexture = GL_UnbindTexture;
     renderer->info = GL_RenderDriver.info;
     renderer->info.flags = 0; /* will set some flags below. */
     renderer->driverdata = data;
@@ -1867,7 +1767,7 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
      */
 #endif
 
-    if (SDL_GetBooleanProperty(create_props, "present_vsync", SDL_FALSE)) {
+    if (SDL_GetBooleanProperty(create_props, SDL_PROPERTY_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
         SDL_GL_SetSwapInterval(1);
     } else {
         SDL_GL_SetSwapInterval(0);

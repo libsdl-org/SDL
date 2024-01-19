@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -395,7 +395,7 @@ void SDL_EVDEV_Poll(void)
                             break;
                         }
                         if (event->value >= 0) {
-                            item->touchscreen_data->slots[item->touchscreen_data->current_slot].tracking_id = event->value;
+                            item->touchscreen_data->slots[item->touchscreen_data->current_slot].tracking_id = event->value + 1;
                             item->touchscreen_data->slots[item->touchscreen_data->current_slot].delta = EVDEV_TOUCH_SLOTDELTA_DOWN;
                         } else {
                             item->touchscreen_data->slots[item->touchscreen_data->current_slot].delta = EVDEV_TOUCH_SLOTDELTA_UP;
@@ -551,7 +551,7 @@ void SDL_EVDEV_Poll(void)
                                 break;
                             case EVDEV_TOUCH_SLOTDELTA_UP:
                                 SDL_SendTouch(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, SDL_FALSE, norm_x, norm_y, norm_pressure);
-                                item->touchscreen_data->slots[j].tracking_id = -1;
+                                item->touchscreen_data->slots[j].tracking_id = 0;
                                 item->touchscreen_data->slots[j].delta = EVDEV_TOUCH_SLOTDELTA_NONE;
                                 break;
                             case EVDEV_TOUCH_SLOTDELTA_MOVE:
@@ -633,7 +633,7 @@ static int SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
 
 static int SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
 {
-    int ret, i;
+    int ret;
     unsigned long xreq, yreq;
     char name[64];
     struct input_absinfo abs_info;
@@ -715,10 +715,6 @@ static int SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
         return -1;
     }
 
-    for (i = 0; i < item->touchscreen_data->max_slots; i++) {
-        item->touchscreen_data->slots[i].tracking_id = -1;
-    }
-
     ret = SDL_AddTouch(item->fd, /* I guess our fd is unique enough */
                        (udev_class & SDL_UDEV_DEVICE_TOUCHPAD) ? SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE : SDL_TOUCH_DEVICE_DIRECT,
                        item->touchscreen_data->name);
@@ -792,13 +788,13 @@ static void SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
          * SDL_EVDEV_Poll to tell SDL, the current structure of this code doesn't
          * allow it. Lets just pray to God it doesn't happen.
          */
-        if (item->touchscreen_data->slots[i].tracking_id < 0 &&
+        if (item->touchscreen_data->slots[i].tracking_id == 0 &&
             mt_req_values[i] >= 0) {
-            item->touchscreen_data->slots[i].tracking_id = mt_req_values[i];
+            item->touchscreen_data->slots[i].tracking_id = mt_req_values[i] + 1;
             item->touchscreen_data->slots[i].delta = EVDEV_TOUCH_SLOTDELTA_DOWN;
-        } else if (item->touchscreen_data->slots[i].tracking_id >= 0 &&
+        } else if (item->touchscreen_data->slots[i].tracking_id != 0 &&
                    mt_req_values[i] < 0) {
-            item->touchscreen_data->slots[i].tracking_id = -1;
+            item->touchscreen_data->slots[i].tracking_id = 0;
             item->touchscreen_data->slots[i].delta = EVDEV_TOUCH_SLOTDELTA_UP;
         }
     }
@@ -810,7 +806,7 @@ static void SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
         return;
     }
     for (i = 0; i < item->touchscreen_data->max_slots; i++) {
-        if (item->touchscreen_data->slots[i].tracking_id >= 0 &&
+        if (item->touchscreen_data->slots[i].tracking_id != 0 &&
             item->touchscreen_data->slots[i].x != mt_req_values[i]) {
             item->touchscreen_data->slots[i].x = mt_req_values[i];
             if (item->touchscreen_data->slots[i].delta ==
@@ -828,7 +824,7 @@ static void SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
         return;
     }
     for (i = 0; i < item->touchscreen_data->max_slots; i++) {
-        if (item->touchscreen_data->slots[i].tracking_id >= 0 &&
+        if (item->touchscreen_data->slots[i].tracking_id != 0 &&
             item->touchscreen_data->slots[i].y != mt_req_values[i]) {
             item->touchscreen_data->slots[i].y = mt_req_values[i];
             if (item->touchscreen_data->slots[i].delta ==
@@ -846,7 +842,7 @@ static void SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
         return;
     }
     for (i = 0; i < item->touchscreen_data->max_slots; i++) {
-        if (item->touchscreen_data->slots[i].tracking_id >= 0 &&
+        if (item->touchscreen_data->slots[i].tracking_id != 0 &&
             item->touchscreen_data->slots[i].pressure != mt_req_values[i]) {
             item->touchscreen_data->slots[i].pressure = mt_req_values[i];
             if (item->touchscreen_data->slots[i].delta ==

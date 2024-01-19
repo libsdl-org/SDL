@@ -47,6 +47,13 @@ The vi format comments have been removed from source code. Vim users can use the
 The following structures have been renamed:
 - SDL_atomic_t => SDL_AtomicInt
 
+The following functions have been renamed:
+* SDL_AtomicCAS() => SDL_AtomicCompareAndSwap()
+* SDL_AtomicCASPtr() => SDL_AtomicCompareAndSwapPointer()
+* SDL_AtomicLock() => SDL_LockSpinlock()
+* SDL_AtomicTryLock() => SDL_TryLockSpinlock()
+* SDL_AtomicUnlock() => SDL_UnlockSpinlock()
+
 ## SDL_audio.h
 
 The audio subsystem in SDL3 is dramatically different than SDL2. The primary way to play audio is no longer an audio callback; instead you bind SDL_AudioStreams to devices; however, there is still a callback method available if needed.
@@ -338,6 +345,7 @@ The following symbols have been renamed:
 * SDL_CONTROLLERDEVICEREMAPPED => SDL_EVENT_GAMEPAD_REMAPPED
 * SDL_CONTROLLERDEVICEREMOVED => SDL_EVENT_GAMEPAD_REMOVED
 * SDL_CONTROLLERSENSORUPDATE => SDL_EVENT_GAMEPAD_SENSOR_UPDATE
+* SDL_CONTROLLERSTEAMHANDLEUPDATED => SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED
 * SDL_CONTROLLERTOUCHPADDOWN => SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN
 * SDL_CONTROLLERTOUCHPADMOTION => SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION
 * SDL_CONTROLLERTOUCHPADUP => SDL_EVENT_GAMEPAD_TOUCHPAD_UP
@@ -395,7 +403,71 @@ The SDL_EVENT_GAMEPAD_ADDED event now provides the joystick instance ID in the w
 
 The functions SDL_GetGamepads(), SDL_GetGamepadInstanceName(), SDL_GetGamepadInstancePath(), SDL_GetGamepadInstancePlayerIndex(), SDL_GetGamepadInstanceGUID(), SDL_GetGamepadInstanceVendor(), SDL_GetGamepadInstanceProduct(), SDL_GetGamepadInstanceProductVersion(), and SDL_GetGamepadInstanceType() have been added to directly query the list of available gamepads.
 
-The gamepad face buttons have been renamed from A/B/X/Y to North/South/East/West to indicate that they are positional rather than hardware-specific. You can use SDL_GetGamepadButtonLabel() to get the labels for the face buttons, e.g. A/B/X/Y or Cross/Circle/Square/Triangle. The hint SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS is ignored, and mappings that use this hint are translated correctly into positional buttons. Applications will now need to provide a way for users to swap between South/East as their accept/cancel buttons, as this varies based on region and muscle memory. Using South as the accept button and East as the cancel button is a good default.
+The gamepad face buttons have been renamed from A/B/X/Y to North/South/East/West to indicate that they are positional rather than hardware-specific. You can use SDL_GetGamepadButtonLabel() to get the labels for the face buttons, e.g. A/B/X/Y or Cross/Circle/Square/Triangle. The hint SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS is ignored, and mappings that use this hint are translated correctly into positional buttons. Applications should provide a way for users to swap between South/East as their accept/cancel buttons, as this varies based on region and muscle memory. You can use an approach similar to the following to handle this:
+
+```c
+#define CONFIRM_BUTTON SDL_GAMEPAD_BUTTON_SOUTH
+#define CANCEL_BUTTON SDL_GAMEPAD_BUTTON_EAST
+
+SDL_bool flipped_buttons;
+
+void InitMappedButtons(SDL_Gamepad *gamepad)
+{
+    if (!GetFlippedButtonSetting(&flipped_buttons)) {
+        if (SDL_GetGamepadButtonLabel(gamepad, SDL_GAMEPAD_BUTTON_SOUTH) == SDL_GAMEPAD_BUTTON_LABEL_B) {
+            flipped_buttons = SDL_TRUE;
+        } else {
+            flipped_buttons = SDL_FALSE;
+        }
+    }
+}
+
+SDL_GamepadButton GetMappedButton(SDL_GamepadButton button)
+{
+    if (flipped_buttons) {
+        switch (button) {
+        case SDL_GAMEPAD_BUTTON_SOUTH:
+            return SDL_GAMEPAD_BUTTON_EAST;
+        case SDL_GAMEPAD_BUTTON_EAST:
+            return SDL_GAMEPAD_BUTTON_SOUTH;
+        case SDL_GAMEPAD_BUTTON_WEST:
+            return SDL_GAMEPAD_BUTTON_NORTH;
+        case SDL_GAMEPAD_BUTTON_NORTH:
+            return SDL_GAMEPAD_BUTTON_WEST;
+        default:
+            break;
+        }
+    }
+    return button;
+}
+
+SDL_GamepadButtonLabel GetConfirmActionLabel(SDL_Gamepad *gamepad)
+{
+    return SDL_GetGamepadButtonLabel(gamepad, GetMappedButton(CONFIRM_BUTTON));
+}
+
+SDL_GamepadButtonLabel GetCancelActionLabel(SDL_Gamepad *gamepad)
+{
+    return SDL_GetGamepadButtonLabel(gamepad, GetMappedButton(CANCEL_BUTTON));
+}
+
+void HandleGamepadEvent(SDL_Event *event)
+{
+    if (event->type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
+        switch (GetMappedButton(event->gbutton.button)) {
+        case CONFIRM_BUTTON:
+            /* Handle confirm action */
+            break;
+        case CANCEL_BUTTON:
+            /* Handle cancel action */
+            break;
+        default:
+            /* ... */
+            break;
+        }
+    }
+}
+```
 
 SDL_GameControllerGetSensorDataWithTimestamp() has been removed. If you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_EVENT_GAMEPAD_SENSOR_UPDATE events.
 
@@ -459,6 +531,7 @@ The following functions have been renamed:
 * SDL_GameControllerGetSensorData() => SDL_GetGamepadSensorData()
 * SDL_GameControllerGetSensorDataRate() => SDL_GetGamepadSensorDataRate()
 * SDL_GameControllerGetSerial() => SDL_GetGamepadSerial()
+* SDL_GameControllerGetSteamHandle() => SDL_GetGamepadSteamHandle()
 * SDL_GameControllerGetStringForAxis() => SDL_GetGamepadStringForAxis()
 * SDL_GameControllerGetStringForButton() => SDL_GetGamepadStringForButton()
 * SDL_GameControllerGetTouchpadFinger() => SDL_GetGamepadTouchpadFinger()
@@ -552,6 +625,65 @@ be dropped into an SDL3 or SDL2 program, to continue to provide this
 functionality to your app and aid migration. That is located in the
 [SDL_gesture GitHub repository](https://github.com/libsdl-org/SDL_gesture).
 
+## SDL_haptic.h
+
+Gamepads with simple rumble capability no longer show up in the SDL haptics interface, instead you should use SDL_RumbleGamepad().
+
+Rather than iterating over haptic devices using device index, there is a new function SDL_GetHaptics() to get the current list of haptic devices, and new functions to get information about haptic devices from their instance ID:
+```c
+{
+    if (SDL_InitSubSystem(SDL_INIT_HAPTIC) == 0) {
+        int i, num_haptics;
+        SDL_HapticID *haptics = SDL_GetHaptics(&num_haptics);
+        if (haptics) {
+            for (i = 0; i < num_haptics; ++i) {
+                SDL_HapticID instance_id = haptics[i];
+                const char *name = SDL_GetHapticInstanceName(instance_id);
+
+                SDL_Log("Haptic %" SDL_PRIu32 ": %s\n",
+                        instance_id, name ? name : "Unknown");
+            }
+            SDL_free(haptics);
+        }
+        SDL_QuitSubSystem(SDL_INIT_HAPTIC);
+    }
+}
+```
+
+SDL_HapticEffectSupported(), SDL_HapticRumbleSupported(), and SDL_IsJoystickHaptic() now return SDL_bool instead of an optional negative error code.
+
+The following functions have been renamed:
+* SDL_HapticClose() => SDL_CloseHaptic()
+* SDL_HapticDestroyEffect() => SDL_DestroyHapticEffect()
+* SDL_HapticGetEffectStatus() => SDL_GetHapticEffectStatus()
+* SDL_HapticNewEffect() => SDL_CreateHapticEffect()
+* SDL_HapticNumAxes() => SDL_GetNumHapticAxes()
+* SDL_HapticNumEffects() => SDL_GetMaxHapticEffects()
+* SDL_HapticNumEffectsPlaying() => SDL_GetMaxHapticEffectsPlaying()
+* SDL_HapticOpen() => SDL_OpenHaptic()
+* SDL_HapticOpenFromJoystick() => SDL_OpenHapticFromJoystick()
+* SDL_HapticOpenFromMouse() => SDL_OpenHapticFromMouse()
+* SDL_HapticPause() => SDL_PauseHaptic()
+* SDL_HapticQuery() => SDL_GetHapticFeatures()
+* SDL_HapticRumbleInit() => SDL_InitHapticRumble()
+* SDL_HapticRumblePlay() => SDL_PlayHapticRumble()
+* SDL_HapticRumbleStop() => SDL_StopHapticRumble()
+* SDL_HapticRunEffect() => SDL_RunHapticEffect()
+* SDL_HapticSetAutocenter() => SDL_SetHapticAutocenter()
+* SDL_HapticSetGain() => SDL_SetHapticGain()
+* SDL_HapticStopAll() => SDL_StopHapticEffects()
+* SDL_HapticStopEffect() => SDL_StopHapticEffect()
+* SDL_HapticUnpause() => SDL_ResumeHaptic()
+* SDL_HapticUpdateEffect() => SDL_UpdateHapticEffect()
+* SDL_JoystickIsHaptic() => SDL_IsJoystickHaptic()
+* SDL_MouseIsHaptic() => SDL_IsMouseHaptic()
+
+The following functions have been removed:
+* SDL_HapticIndex() - replaced with SDL_GetHapticInstanceID()
+* SDL_HapticName() - replaced with SDL_GetHapticInstanceName()
+* SDL_HapticOpened() - replaced with SDL_GetHapticFromInstanceID()
+* SDL_NumHaptics() - replaced with SDL_GetHaptics()
+
 ## SDL_hints.h
 
 SDL_AddHintCallback() now returns a standard int result instead of void, returning 0 if the function succeeds or a negative error code if there was an error.
@@ -563,15 +695,17 @@ The following hints have been removed:
 * SDL_HINT_IDLE_TIMER_DISABLED - use SDL_DisableScreenSaver instead
 * SDL_HINT_IME_SUPPORT_EXTENDED_TEXT - the normal text editing event has extended text
 * SDL_HINT_MOUSE_RELATIVE_SCALING - mouse coordinates are no longer automatically scaled by the SDL renderer
-* SDL_HINT_RENDER_LOGICAL_SIZE_MODE - the logical size mode is explicitly set with SDL_SetRenderLogicalPresentation()
 * SDL_HINT_RENDER_BATCHING - Render batching is always enabled, apps should call SDL_FlushRenderer() before calling into a lower-level graphics API.
+* SDL_HINT_RENDER_LOGICAL_SIZE_MODE - the logical size mode is explicitly set with SDL_SetRenderLogicalPresentation()
 * SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL - replaced with the "opengl" property in SDL_CreateWindowWithProperties()
 * SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN - replaced with the "vulkan" property in SDL_CreateWindowWithProperties()
 * SDL_HINT_VIDEO_HIGHDPI_DISABLED - high DPI support is always enabled
 * SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT - replaced with the "win32.pixel_format_hwnd" in SDL_CreateWindowWithProperties()
+* SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING - SDL now properly handles the 0x406D1388 Exception if no debugger intercepts it, preventing its propagation.
 * SDL_HINT_VIDEO_X11_FORCE_EGL - use SDL_HINT_VIDEO_FORCE_EGL instead
 * SDL_HINT_VIDEO_X11_XINERAMA - Xinerama no longer supported by the X11 backend
 * SDL_HINT_VIDEO_X11_XVIDMODE - Xvidmode no longer supported by the X11 backend
+* SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING
 
 * Renamed hints SDL_HINT_VIDEODRIVER and SDL_HINT_AUDIODRIVER to SDL_HINT_VIDEO_DRIVER and SDL_HINT_AUDIO_DRIVER
 * Renamed environment variables SDL_VIDEODRIVER and SDL_AUDIODRIVER to SDL_VIDEO_DRIVER and SDL_AUDIO_DRIVER
@@ -584,6 +718,7 @@ The following symbols have been renamed:
 
 The following symbols have been removed:
 * SDL_INIT_NOPARACHUTE
+* SDL_INIT_EVERYTHING - you should only initialize the subsystems you are using
 
 ## SDL_joystick.h
 
@@ -893,6 +1028,8 @@ The following functions have been renamed:
 * SDL_RenderWindowToLogical() => SDL_RenderCoordinatesFromWindow()
 
 The following functions have been removed:
+* SDL_GL_BindTexture() - use SDL_GetTextureProperties() to get the OpenGL texture ID and bind the texture directly
+* SDL_GL_UnbindTexture() - use SDL_GetTextureProperties() to get the OpenGL texture ID and unbind the texture directly
 * SDL_GetTextureUserData() - use SDL_GetTextureProperties() instead
 * SDL_RenderGetIntegerScale()
 * SDL_RenderSetIntegerScale() - this is now explicit with SDL_LOGICAL_PRESENTATION_INTEGER_SCALE
@@ -1156,6 +1293,9 @@ But if you're migrating your code which uses masks, you probably have a format i
 0x0000F800 0x000007E0 0x0000001F 0x00000000 => SDL_PIXELFORMAT_RGB565
 ```
 
+SDL_BlitSurfaceScaled() and SDL_BlitSurfaceUncheckedScaled() now take a scale paramater.
+
+SDL_SoftStretch() now takes a scale paramater.
 
 The following functions have been renamed:
 * SDL_FillRect() => SDL_FillSurfaceRect()
@@ -1171,6 +1311,9 @@ The following functions have been renamed:
 * SDL_SetColorKey() => SDL_SetSurfaceColorKey()
 * SDL_UpperBlit() => SDL_BlitSurface()
 * SDL_UpperBlitScaled() => SDL_BlitSurfaceScaled()
+
+The following functions have been removed:
+* SDL_SoftStretchLinear() - use SDL_SoftStretch() with SDL_SCALEMODE_LINEAR
 
 ## SDL_system.h
 
@@ -1191,22 +1334,70 @@ The Windows and X11 events are now available via callbacks which you can set wit
 
 The information previously available in SDL_GetWindowWMInfo() is now available as window properties, e.g.
 ```c
-    HWND hwnd = NULL;
     SDL_SysWMinfo info;
     SDL_VERSION(&info.version);
+
+#if defined(__WIN32__)
+    HWND hwnd = NULL;
     if (SDL_GetWindowWMInfo(window, &info) && info.subsystem == SDL_SYSWM_WINDOWS) {
         hwnd = info.info.win.window;
     }
     if (hwnd) {
         ...
     }
+#elif defined(__MACOSX__)
+    NSWindow *nswindow = NULL;
+    if (SDL_GetWindowWMInfo(window, &info) && info.subsystem == SDL_SYSWM_COCOA) {
+        nswindow = (__bridge NSWindow *)info.info.cocoa.window;
+    }
+    if (nswindow) {
+        ...
+    }
+#elif defined(__LINUX__)
+    if (SDL_GetWindowWMInfo(window, &info)) {
+        if (info.subsystem == SDL_SYSWM_X11) {
+            Display *xdisplay = info.info.x11.display;
+            Window xwindow = info.info.x11.window;
+            if (xdisplay && xwindow) {
+                ...
+            }
+        } else if (info.subsystem == SDL_SYSWM_WAYLAND) {
+            struct wl_display *display = info.info.wl.display;
+            struct wl_surface *surface = info.info.wl.surface;
+            if (display && surface) {
+                ...
+            }
+        }
+    }
+#endif
 ```
 becomes:
 ```c
-    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.win32.hwnd");
+#if defined(__WIN32__)
+    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_WIN32_HWND_POINTER, NULL);
     if (hwnd) {
         ...
     }
+#elif defined(__MACOS__)
+    NSWindow *nswindow = (__bridge NSWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_COCOA_WINDOW_POINTER, NULL);
+    if (nswindow) {
+        ...
+    }
+#elif defined(__LINUX__)
+    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
+        Display *xdisplay = (Display *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_X11_DISPLAY_POINTER, NULL);
+        Window xwindow = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_X11_WINDOW_NUMBER, 0);
+        if (xdisplay && xwindow) {
+            ...
+        }
+    } else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
+        struct wl_display *display = (struct wl_display *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
+        struct wl_surface *surface = (struct wl_surface *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
+        if (display && surface) {
+            ...
+        }
+    }
+#endif
 ```
 
 ## SDL_thread.h
@@ -1216,6 +1407,10 @@ The following functions have been renamed:
 * SDL_TLSCreate() => SDL_CreateTLS()
 * SDL_TLSGet() => SDL_GetTLS()
 * SDL_TLSSet() => SDL_SetTLS()
+* SDL_ThreadID() => SDL_GetCurrentThreadID()
+
+The following symbols have been renamed:
+* SDL_threadID => SDL_ThreadID
 
 ## SDL_timer.h
 
@@ -1281,7 +1476,21 @@ Rather than iterating over displays using display index, there is a new function
 }
 ```
 
-SDL_CreateWindow() has been simplified and no longer takes a window position. You can use SDL_CreateWindowWithProperties() if you need to set the window position when creating it.
+SDL_CreateWindow() has been simplified and no longer takes a window position. You can use SDL_CreateWindowWithProperties() if you need to set the window position when creating it, e.g.
+```c
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetStringProperty(props, SDL_PROPERTY_WINDOW_CREATE_TITLE_STRING, title);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_X_NUMBER, x);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_Y_NUMBER, y);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_WIDTH_NUMBER, width);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_HEIGHT_NUMBER, height);
+    SDL_SetNumberProperty(props, "flags", flags);
+    pWindow = SDL_CreateWindowWithProperties(props);
+    SDL_DestroyProperties(props);
+    if (window) {
+        ...
+    }
+```
 
 The SDL_WINDOWPOS_UNDEFINED_DISPLAY() and SDL_WINDOWPOS_CENTERED_DISPLAY() macros take a display ID instead of display index. The display ID 0 has a special meaning in this case, and is used to indicate the primary display.
 
@@ -1314,7 +1523,7 @@ SDL_GetDesktopDisplayMode() and SDL_GetCurrentDisplayMode() return pointers to d
 
 Windows now have an explicit fullscreen mode that is set, using SDL_SetWindowFullscreenMode(). The fullscreen mode for a window can be queried with SDL_GetWindowFullscreenMode(), which returns a pointer to the mode, or NULL if the window will be fullscreen desktop. SDL_SetWindowFullscreen() just takes a boolean value, setting the correct fullscreen state based on the selected mode.
 
-SDL_WINDOW_FULLSCREEN_DESKTOP has been removed, and you can call SDL_GetWindowFullscreenMode() to see whether an exclusive fullscreen mode will be used or the fullscreen desktop mode will be used when the window is fullscreen.
+SDL_WINDOW_FULLSCREEN_DESKTOP has been removed, and you can call SDL_GetWindowFullscreenMode() to see whether an exclusive fullscreen mode will be used or the borderless fullscreen desktop mode will be used when the window is fullscreen.
 
 SDL_SetWindowBrightness and SDL_SetWindowGammaRamp have been removed from the API, because they interact poorly with modern operating systems and aren't able to limit their effects to the SDL window.
 
@@ -1352,7 +1561,8 @@ The following functions have been removed:
 * SDL_SetWindowData() - use SDL_GetWindowProperties() instead
 * SDL_CreateWindowFrom() - use SDL_CreateWindowWithProperties() with the properties that allow you to wrap an existing window
 
-SDL_Window id type is named SDL_WindowID
+The SDL_Window id type is named SDL_WindowID
+The SDL_WindowFlags enum should be replaced with Uint32
 
 The following symbols have been renamed:
 * SDL_WINDOW_ALLOW_HIGHDPI => SDL_WINDOW_HIGH_PIXEL_DENSITY

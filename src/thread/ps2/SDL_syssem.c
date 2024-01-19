@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,7 +26,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <timer_alarm.h>
+#include <kernel_util.h>
 
 #include <kernel.h>
 
@@ -34,11 +34,6 @@ struct SDL_Semaphore
 {
     s32 semid;
 };
-
-static void usercb(struct timer_alarm_t *alarm, void *arg)
-{
-    iReleaseWaitThread((int)arg);
-}
 
 /* Create a semaphore */
 SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
@@ -80,8 +75,8 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
 int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
     int ret;
-    struct timer_alarm_t alarm;
-    InitializeTimerAlarm(&alarm);
+    u64 timeout_usec;
+    u64 *timeout_ptr;
 
     if (!sem) {
         return SDL_InvalidParamError("sem");
@@ -94,12 +89,14 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
         return 0;
     }
 
+    timeout_ptr = NULL;
+
     if (timeoutNS != -1) {  // -1 == wait indefinitely.
-        SetTimerAlarm(&alarm, MSec2TimerBusClock(SDL_NS_TO_MS(timeoutNS)), &usercb, (void *)GetThreadId());
+        timeout_usec = SDL_NS_TO_US(timeoutNS);
+        timeout_ptr = &timeout_usec;
     }
 
-    ret = WaitSema(sem->semid);
-    StopTimerAlarm(&alarm);
+    ret = WaitSemaEx(sem->semid, 1, timeout_ptr);
 
     if (ret < 0) {
         return SDL_MUTEX_TIMEDOUT;

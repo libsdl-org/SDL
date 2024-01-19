@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -551,6 +551,8 @@ static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, SDL_bool isc
     if (SDL_InsertIntoHashTable(current_audio.device_hash, (const void *) (uintptr_t) device->instance_id, device)) {
         SDL_AtomicAdd(device_count, 1);
     } else {
+        SDL_DestroyCondition(device->close_cond);
+        SDL_DestroyMutex(device->lock);
         SDL_free(device->name);
         SDL_free(device);
         device = NULL;
@@ -633,7 +635,7 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
     const SDL_bool is_default_device = ((devid == current_audio.default_output_device_id) || (devid == current_audio.default_capture_device_id));
     SDL_UnlockRWLock(current_audio.device_hash_lock);
 
-    const SDL_bool first_disconnect = SDL_AtomicCAS(&device->zombie, 0, 1);
+    const SDL_bool first_disconnect = SDL_AtomicCompareAndSwap(&device->zombie, 0, 1);
     if (first_disconnect) {   // if already disconnected this device, don't do it twice.
         // Swap in "Zombie" versions of the usual platform interfaces, so the device will keep
         // making progress until the app closes it. Otherwise, streams might continue to
@@ -807,7 +809,7 @@ int SDL_InitAudio(const char *driver_name)
     }
 
     // make sure device IDs start at 2 (because of SDL2 legacy interface), but don't reset the counter on each init, in case the app is holding an old device ID somewhere.
-    SDL_AtomicCAS(&last_device_instance_id, 0, 2);
+    SDL_AtomicCompareAndSwap(&last_device_instance_id, 0, 2);
 
     SDL_ChooseAudioConverters();
     SDL_SetupAudioResampler();
@@ -1255,48 +1257,51 @@ static int SDLCALL CaptureAudioThread(void *devicep)  // thread entry point
 }
 
 
-static SDL_AudioDeviceID *GetAudioDevices(int *reqcount, SDL_bool iscapture)
+static SDL_AudioDeviceID *GetAudioDevices(int *count, SDL_bool iscapture)
 {
-    if (!SDL_GetCurrentAudioDriver()) {
+    SDL_AudioDeviceID *retval = NULL;
+    int num_devices = 0;
+
+    if (SDL_GetCurrentAudioDriver()) {
+        SDL_LockRWLockForReading(current_audio.device_hash_lock);
+        {
+            num_devices = SDL_AtomicGet(iscapture ? &current_audio.capture_device_count : &current_audio.output_device_count);
+            retval = (SDL_AudioDeviceID *) SDL_malloc((num_devices + 1) * sizeof (SDL_AudioDeviceID));
+            if (retval) {
+                int devs_seen = 0;
+                const void *key;
+                const void *value;
+                void *iter = NULL;
+                while (SDL_IterateHashTable(current_audio.device_hash, &key, &value, &iter)) {
+                    const SDL_AudioDeviceID devid = (SDL_AudioDeviceID) (uintptr_t) key;
+                    // bit #0 of devid is set for output devices and unset for capture.
+                    // bit #1 of devid is set for physical devices and unset for logical.
+                    const SDL_bool devid_iscapture = !(devid & (1<<0));
+                    const SDL_bool isphysical = (devid & (1<<1));
+                    if (isphysical && (devid_iscapture == iscapture)) {
+                        SDL_assert(devs_seen < num_devices);
+                        retval[devs_seen++] = devid;
+                    }
+                }
+
+                SDL_assert(devs_seen == num_devices);
+                retval[devs_seen] = 0;  // null-terminated.
+            } else {
+                SDL_OutOfMemory();
+            }
+        }
+        SDL_UnlockRWLock(current_audio.device_hash_lock);
+    } else {
         SDL_SetError("Audio subsystem is not initialized");
-        return NULL;
     }
 
-    SDL_AudioDeviceID *retval = NULL;
-
-    SDL_LockRWLockForReading(current_audio.device_hash_lock);
-    int num_devices = SDL_AtomicGet(iscapture ? &current_audio.capture_device_count : &current_audio.output_device_count);
-    if (num_devices > 0) {
-        retval = (SDL_AudioDeviceID *) SDL_malloc((num_devices + 1) * sizeof (SDL_AudioDeviceID));
-        if (!retval) {
-            num_devices = 0;
+    if (count) {
+        if (retval) {
+            *count = num_devices;
         } else {
-            int devs_seen = 0;
-            const void *key;
-            const void *value;
-            void *iter = NULL;
-            while (SDL_IterateHashTable(current_audio.device_hash, &key, &value, &iter)) {
-                const SDL_AudioDeviceID devid = (SDL_AudioDeviceID) (uintptr_t) key;
-                // bit #0 of devid is set for output devices and unset for capture.
-                // bit #1 of devid is set for physical devices and unset for logical.
-                const SDL_bool devid_iscapture = !(devid & (1<<0));
-                const SDL_bool isphysical = (devid & (1<<1));
-                if (isphysical && (devid_iscapture == iscapture)) {
-                    SDL_assert(devs_seen < num_devices);
-                    retval[devs_seen++] = devid;
-                }
-            }
-
-            SDL_assert(devs_seen == num_devices);
-            retval[devs_seen] = 0;  // null-terminated.
+            *count = 0;
         }
     }
-    SDL_UnlockRWLock(current_audio.device_hash_lock);
-
-    if (reqcount) {
-        *reqcount = num_devices;
-    }
-
     return retval;
 }
 

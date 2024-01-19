@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -47,10 +47,10 @@
 #include "joystick/SDL_joystick_c.h"
 #include "sensor/SDL_sensor_c.h"
 
+#define SDL_INIT_EVERYTHING ~0U
+
 /* Initialization/Cleanup routines */
-#ifndef SDL_TIMERS_DISABLED
 #include "timer/SDL_timer_c.h"
-#endif
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
 extern int SDL_HelperWindowCreate(void);
 extern int SDL_HelperWindowDestroy(void);
@@ -202,13 +202,10 @@ int SDL_InitSubSystem(Uint32 flags)
     }
 #endif
 
-#ifndef SDL_TIMERS_DISABLED
     SDL_InitTicks();
-#endif
 
     /* Initialize the event subsystem */
     if (flags & SDL_INIT_EVENTS) {
-#ifndef SDL_EVENTS_DISABLED
         if (SDL_ShouldInitSubsystem(SDL_INIT_EVENTS)) {
             SDL_IncrementSubsystemRefCount(SDL_INIT_EVENTS);
             if (SDL_InitEvents() < 0) {
@@ -219,15 +216,10 @@ int SDL_InitSubSystem(Uint32 flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_EVENTS);
         }
         flags_initialized |= SDL_INIT_EVENTS;
-#else
-        SDL_SetError("SDL not built with events support");
-        goto quit_and_error;
-#endif
     }
 
     /* Initialize the timer subsystem */
     if (flags & SDL_INIT_TIMER) {
-#if !defined(SDL_TIMERS_DISABLED) && !defined(SDL_TIMER_DUMMY)
         if (SDL_ShouldInitSubsystem(SDL_INIT_TIMER)) {
             SDL_IncrementSubsystemRefCount(SDL_INIT_TIMER);
             if (SDL_InitTimers() < 0) {
@@ -238,10 +230,6 @@ int SDL_InitSubSystem(Uint32 flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_TIMER);
         }
         flags_initialized |= SDL_INIT_TIMER;
-#else
-        SDL_SetError("SDL not built with timer support");
-        goto quit_and_error;
-#endif
     }
 
     /* Initialize the video subsystem */
@@ -454,23 +442,19 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !defined(SDL_TIMERS_DISABLED) && !defined(SDL_TIMER_DUMMY)
     if (flags & SDL_INIT_TIMER) {
         if (SDL_ShouldQuitSubsystem(SDL_INIT_TIMER)) {
             SDL_QuitTimers();
         }
         SDL_DecrementSubsystemRefCount(SDL_INIT_TIMER);
     }
-#endif
 
-#ifndef SDL_EVENTS_DISABLED
     if (flags & SDL_INIT_EVENTS) {
         if (SDL_ShouldQuitSubsystem(SDL_INIT_EVENTS)) {
             SDL_QuitEvents();
         }
         SDL_DecrementSubsystemRefCount(SDL_INIT_EVENTS);
     }
-#endif
 }
 
 Uint32 SDL_WasInit(Uint32 flags)
@@ -513,16 +497,14 @@ void SDL_Quit(void)
 #endif
     SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
 
-#ifndef SDL_TIMERS_DISABLED
     SDL_QuitTicks();
-#endif
-
-    SDL_ClearHints();
-    SDL_AssertionsQuit();
 
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Quit();
 #endif
+
+    SDL_ClearHints();
+    SDL_AssertionsQuit();
 
     SDL_QuitProperties();
     SDL_QuitLog();

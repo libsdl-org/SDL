@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,7 @@
 #include "SDL_pixels_c.h"
 #include "../thread/SDL_systhread.h"
 
-#define DEBUG_VIDEO_CAPTURE_CAPTURE 1
+#define DEBUG_VIDEO_CAPTURE_CAPTURE 0
 
 
 #ifdef SDL_VIDEO_CAPTURE
@@ -396,7 +396,7 @@ SDL_CaptureVideoThread(void *devicep)
 #endif
 
     /* Perform any thread setup */
-    device->threadid = SDL_ThreadID();
+    device->threadid = SDL_GetCurrentThreadID();
 
     /* Init state */
     while (!SDL_AtomicGet(&device->enabled)) {
@@ -861,7 +861,7 @@ SDL_QuitVideoCapture(void)
 
 /* See SDL_android_video_capture.c */
 
-#elif defined(__IPHONEOS__) || defined(__MACOS__)
+#elif defined(__IOS__) || defined(__MACOS__)
 
 /* See SDL_video_capture_apple.m */
 #else

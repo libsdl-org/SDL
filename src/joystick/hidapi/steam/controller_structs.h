@@ -32,6 +32,13 @@ typedef struct
 	unsigned char length;
 } FeatureReportHeader;
 
+// Generic controller settings structure
+typedef struct
+{
+	unsigned char settingNum;
+	unsigned short settingValue;
+} ControllerSetting;
+
 // Generic controller attribute structure
 typedef struct
 {
@@ -42,9 +49,86 @@ typedef struct
 // Generic controller settings structure
 typedef struct
 {
+	ControllerSetting settings[ ( HID_FEATURE_REPORT_BYTES - sizeof( FeatureReportHeader ) ) / sizeof( ControllerSetting ) ];
+} MsgSetSettingsValues, MsgGetSettingsValues, MsgGetSettingsDefaults, MsgGetSettingsMaxs;
+
+// Generic controller settings structure
+typedef struct
+{
 	ControllerAttribute attributes[ ( HID_FEATURE_REPORT_BYTES - sizeof( FeatureReportHeader ) ) / sizeof( ControllerAttribute ) ];
 } MsgGetAttributes;
 
+typedef struct
+{
+	unsigned char attributeTag;
+	char attributeValue[20];
+} MsgGetStringAttribute;
+
+typedef struct
+{
+	unsigned char mode;
+} MsgSetControllerMode;
+
+// Trigger a haptic pulse
+typedef struct {
+	unsigned char which_pad;
+	unsigned short pulse_duration;
+	unsigned short pulse_interval;
+	unsigned short pulse_count;
+	short dBgain;
+	unsigned char priority;
+} MsgFireHapticPulse;
+
+typedef struct {
+	uint8_t mode;
+} MsgHapticSetMode;
+
+typedef enum {
+	HAPTIC_TYPE_OFF,
+	HAPTIC_TYPE_TICK,
+	HAPTIC_TYPE_CLICK,
+	HAPTIC_TYPE_TONE,
+	HAPTIC_TYPE_RUMBLE,
+	HAPTIC_TYPE_NOISE,
+	HAPTIC_TYPE_SCRIPT,
+	HAPTIC_TYPE_LOG_SWEEP,
+} haptic_type_t;
+
+typedef enum {
+	HAPTIC_INTENSITY_SYSTEM,
+	HAPTIC_INTENSITY_SHORT,
+	HAPTIC_INTENSITY_MEDIUM,
+	HAPTIC_INTENSITY_LONG,
+	HAPTIC_INTENSITY_INSANE,
+} haptic_intensity_t;
+
+typedef struct {
+	uint8_t side; 				// 0x01 = L, 0x02 = R, 0x03 = Both
+	uint8_t cmd; 				// 0 = Off, 1 = tick, 2 = click, 3 = tone, 4 = rumble, 5 =
+								// rumble_noise, 6 = script, 7 = sweep,
+	uint8_t ui_intensity; 		// 0-4 (0 = default)
+	int8_t dBgain; 				// dB Can be positive (reasonable clipping / limiting will apply)
+	uint16_t freq; 				// Frequency of tone (if applicable)
+	int16_t dur_ms; 			// Duration of tone / rumble (if applicable) (neg = infinite)
+
+	uint16_t noise_intensity;
+	uint16_t lfo_freq; 			// Drives both tone and rumble geneators
+	uint8_t lfo_depth; 			// percentage, typically 100
+	uint8_t rand_tone_gain; 	// Randomize each LFO cycle's gain
+	uint8_t script_id; 			// Used w/ dBgain for scripted haptics
+
+	uint16_t lss_start_freq;	// Used w/ Log Sine Sweep
+	uint16_t lss_end_freq;		// Ditto
+} MsgTriggerHaptic;
+
+typedef struct {
+	uint8_t unRumbleType;
+	uint16_t unIntensity;
+	uint16_t unLeftMotorSpeed;
+	uint16_t unRightMotorSpeed;
+	int8_t nLeftGain;
+	int8_t nRightGain;
+} MsgSimpleRumbleCmd;
 
 // This is the only message struct that application code should use to interact with feature request messages. Any new
 // messages should be added to the union. The structures defined here should correspond to the ones defined in
@@ -55,7 +139,17 @@ typedef struct
 	FeatureReportHeader header;
 	union
 	{
-		MsgGetAttributes				getAttributes;
+		MsgSetSettingsValues setSettingsValues;
+		MsgGetSettingsValues getSettingsValues;
+		MsgGetSettingsMaxs getSettingsMaxs;
+		MsgGetSettingsDefaults getSettingsDefaults;
+		MsgGetAttributes getAttributes;
+		MsgSetControllerMode controllerMode;
+		MsgFireHapticPulse fireHapticPulse;
+		MsgGetStringAttribute getStringAttribute;
+		MsgHapticSetMode hapticMode;
+		MsgTriggerHaptic triggerHaptic;
+		MsgSimpleRumbleCmd simpleRumble;
 	} payload;
 
 } FeatureReportMsg;
@@ -77,6 +171,7 @@ typedef enum
 	ID_CONTROLLER_DEBUG2 = 5,
 	ID_CONTROLLER_SECONDARY_STATE = 6,
 	ID_CONTROLLER_BLE_STATE = 7,
+	ID_CONTROLLER_DECK_STATE = 9,
 	ID_CONTROLLER_MSG_COUNT
 } ValveInReportMessageIDs; 
 
@@ -94,12 +189,12 @@ typedef struct
 {
 	// If packet num matches that on your prior call, then the controller state hasn't been changed since 
 	// your last call and there is no need to process it
-	uint32 unPacketNum;
+	Uint32 unPacketNum;
 	
 	// Button bitmask and trigger data.
 	union
 	{
-		uint64 ulButtons;
+		Uint64 ulButtons;
 		struct
 		{
 			unsigned char _pad0[3];
@@ -143,12 +238,12 @@ typedef struct
 {
 	// If packet num matches that on your prior call, then the controller state hasn't been changed since 
 	// your last call and there is no need to process it
-	uint32 unPacketNum;
+	Uint32 unPacketNum;
 
 	// Button bitmask and trigger data.
 	union
 	{
-		uint64 ulButtons;
+		Uint64 ulButtons;
 		struct
 		{
 			unsigned char _pad0[3];
@@ -258,6 +353,66 @@ typedef struct
 	unsigned char ucBatteryLevel;
 } SteamControllerStatusEvent_t;
 
+// Deck State payload
+typedef struct
+{
+	// If packet num matches that on your prior call, then the controller
+	// state hasn't been changed since your last call and there is no need to
+	// process it
+	Uint32 unPacketNum;
+
+	// Button bitmask and trigger data.
+	union
+	{
+		Uint64 ulButtons;
+		struct
+		{
+			Uint32 ulButtonsL;
+			Uint32 ulButtonsH;
+		};
+	};
+
+	// Left pad coordinates
+	short sLeftPadX;
+	short sLeftPadY;
+
+	// Right pad coordinates
+	short sRightPadX;
+	short sRightPadY;
+
+	// Accelerometer values
+	short sAccelX;
+	short sAccelY;
+	short sAccelZ;
+
+	// Gyroscope values
+	short sGyroX;
+	short sGyroY;
+	short sGyroZ;
+
+	// Gyro quaternions
+	short sGyroQuatW;
+	short sGyroQuatX;
+	short sGyroQuatY;
+	short sGyroQuatZ;
+
+	// Uncalibrated trigger values
+	unsigned short sTriggerRawL;
+	unsigned short sTriggerRawR;
+
+	// Left stick values
+	short sLeftStickX;
+	short sLeftStickY;
+
+	// Right stick values
+	short sRightStickX;
+	short sRightStickY;
+
+	// Touchpad pressures
+	unsigned short sPressurePadLeft;
+	unsigned short sPressurePadRight;
+} SteamDeckStatePacket_t;
+
 typedef struct
 {
 	ValveInReportHeader_t header;
@@ -271,6 +426,7 @@ typedef struct
 		ValveControllerRawTrackpadImage_t rawPadImage;
 		SteamControllerWirelessEvent_t wirelessEvent;
 		SteamControllerStatusEvent_t statusEvent;
+		SteamDeckStatePacket_t deckState;
 	} payload;
 	
 } ValveInReport_t;

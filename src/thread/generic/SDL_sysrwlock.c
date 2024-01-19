@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -48,7 +48,7 @@ struct SDL_RWLock
 #else
     SDL_Mutex *lock;
     SDL_Condition *condition;
-    SDL_threadID writer_thread;
+    SDL_ThreadID writer_thread;
     SDL_AtomicInt reader_count;
     SDL_AtomicInt writer_count;
 #endif

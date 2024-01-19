@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -341,20 +341,20 @@ SDL_bool Android_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
     return SDL_TRUE;
 }
 
+void Android_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    SDL_VideoData *videodata = _this->driverdata;
+    Android_JNI_ShowScreenKeyboard(&videodata->textRect);
+}
+
+void Android_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    Android_JNI_HideScreenKeyboard();
+}
+
 SDL_bool Android_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
 {
     return Android_JNI_IsScreenKeyboardShown();
-}
-
-void Android_StartTextInput(SDL_VideoDevice *_this)
-{
-    SDL_VideoData *videodata = _this->driverdata;
-    Android_JNI_ShowTextInput(&videodata->textRect);
-}
-
-void Android_StopTextInput(SDL_VideoDevice *_this)
-{
-    Android_JNI_HideTextInput();
 }
 
 int Android_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)

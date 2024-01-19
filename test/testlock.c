@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 #include <SDL3/SDL_test.h>
 
 static SDL_Mutex *mutex = NULL;
-static SDL_threadID mainthread;
+static SDL_ThreadID mainthread;
 static SDL_AtomicInt doterminate;
 static int nb_threads = 6;
 static SDL_Thread **threads;
@@ -42,7 +42,7 @@ SDL_Quit_Wrapper(void)
 
 static void printid(void)
 {
-    SDL_Log("Thread %lu:  exiting\n", SDL_ThreadID());
+    SDL_Log("Thread %" SDL_PRIu64 ":  exiting\n", SDL_GetCurrentThreadID());
 }
 
 static void terminate(int sig)
@@ -53,9 +53,9 @@ static void terminate(int sig)
 
 static void closemutex(int sig)
 {
-    SDL_threadID id = SDL_ThreadID();
+    SDL_ThreadID id = SDL_GetCurrentThreadID();
     int i;
-    SDL_Log("Thread %lu:  Cleaning up...\n", id == mainthread ? 0 : id);
+    SDL_Log("Thread %" SDL_PRIu64 ":  Cleaning up...\n", id == mainthread ? 0 : id);
     SDL_AtomicSet(&doterminate, 1);
     if (threads) {
         for (i = 0; i < nb_threads; ++i) {
@@ -74,26 +74,28 @@ static void closemutex(int sig)
 static int SDLCALL
 Run(void *data)
 {
-    if (SDL_ThreadID() == mainthread) {
+    SDL_ThreadID current_thread = SDL_GetCurrentThreadID();
+
+    if (current_thread == mainthread) {
         (void)signal(SIGTERM, closemutex);
     }
-    SDL_Log("Thread %lu: starting up", SDL_ThreadID());
+    SDL_Log("Thread %" SDL_PRIu64 ": starting up", current_thread);
     while (!SDL_AtomicGet(&doterminate)) {
-        SDL_Log("Thread %lu: ready to work\n", SDL_ThreadID());
+        SDL_Log("Thread %" SDL_PRIu64 ": ready to work\n", current_thread);
         SDL_LockMutex(mutex);
-        SDL_Log("Thread %lu: start work!\n", SDL_ThreadID());
+        SDL_Log("Thread %" SDL_PRIu64 ": start work!\n", current_thread);
         SDL_Delay(1 * worktime);
-        SDL_Log("Thread %lu: work done!\n", SDL_ThreadID());
+        SDL_Log("Thread %" SDL_PRIu64 ": work done!\n", current_thread);
         SDL_UnlockMutex(mutex);
 
         /* If this sleep isn't done, then threads may starve */
         SDL_Delay(10);
     }
-    if (SDL_ThreadID() == mainthread && SDL_AtomicGet(&doterminate)) {
-        SDL_Log("Thread %lu: raising SIGTERM\n", SDL_ThreadID());
+    if (current_thread == mainthread && SDL_AtomicGet(&doterminate)) {
+        SDL_Log("Thread %" SDL_PRIu64 ": raising SIGTERM\n", current_thread);
         (void)raise(SIGTERM);
     }
-    SDL_Log("Thread %lu: exiting!\n", SDL_ThreadID());
+    SDL_Log("Thread %" SDL_PRIu64 ": exiting!\n", current_thread);
     return 0;
 }
 
@@ -187,8 +189,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    mainthread = SDL_ThreadID();
-    SDL_Log("Main thread: %lu\n", mainthread);
+    mainthread = SDL_GetCurrentThreadID();
+    SDL_Log("Main thread: %" SDL_PRIu64 "\n", mainthread);
     (void)atexit(printid);
     for (i = 0; i < nb_threads; ++i) {
         char name[64];

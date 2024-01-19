@@ -122,11 +122,11 @@
     <ClInclude Include="..\src\haptic\SDL_syshaptic.h" />
     <ClInclude Include="..\src\haptic\windows\SDL_dinputhaptic_c.h" />
     <ClInclude Include="..\src\haptic\windows\SDL_windowshaptic_c.h" />
-    <ClInclude Include="..\src\haptic\windows\SDL_xinputhaptic_c.h" />
     <ClInclude Include="..\src\joystick\controller_type.h" />
     <ClInclude Include="..\src\joystick\SDL_gamepad_c.h" />
     <ClInclude Include="..\src\joystick\SDL_gamepad_db.h" />
     <ClInclude Include="..\src\joystick\SDL_joystick_c.h" />
+    <ClInclude Include="..\src\joystick\SDL_steam_virtual_gamepad.h" />
     <ClInclude Include="..\src\joystick\SDL_sysjoystick.h" />
     <ClInclude Include="..\src\joystick\virtual\SDL_virtualjoystick_c.h" />
     <ClInclude Include="..\src\joystick\windows\SDL_dinputjoystick_c.h" />
@@ -189,6 +189,14 @@
     <ClInclude Include="..\src\video\winrt\SDL_winrtopengles.h" />
     <ClInclude Include="..\src\video\winrt\SDL_winrtvideo_cpp.h" />
     <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb.h" />
+    <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb_common.h" />
+    <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb_internal.h" />
+    <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb_lsx.h" />
+    <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb_lsx_func.h" />
+    <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb_sse.h" />
+    <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb_sse_func.h" />
+    <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb_std.h" />
+    <ClInclude Include="..\src\video\yuv2rgb\yuv_rgb_std_func.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\atomic\SDL_atomic.c" />
@@ -325,12 +333,12 @@
     <ClCompile Include="..\src\haptic\SDL_haptic.c" />
     <ClCompile Include="..\src\haptic\windows\SDL_dinputhaptic.c" />
     <ClCompile Include="..\src\haptic\windows\SDL_windowshaptic.c" />
-    <ClCompile Include="..\src\haptic\windows\SDL_xinputhaptic.c" />
     <ClCompile Include="..\src\hidapi\SDL_hidapi.c" />
     <ClCompile Include="..\src\joystick\dummy\SDL_sysjoystick.c" />
     <ClCompile Include="..\src\joystick\controller_type.c" />
     <ClCompile Include="..\src\joystick\SDL_gamepad.c" />
     <ClCompile Include="..\src\joystick\SDL_joystick.c" />
+    <ClCompile Include="..\src\joystick\SDL_steam_virtual_gamepad.c" />
     <ClCompile Include="..\src\joystick\virtual\SDL_virtualjoystick.c" />
     <ClCompile Include="..\src\joystick\windows\SDL_dinputjoystick.c" />
     <ClCompile Include="..\src\joystick\windows\SDL_windowsjoystick.c" />
@@ -417,7 +425,7 @@
     <ClCompile Include="..\src\stdlib\SDL_iconv.c" />
     <ClCompile Include="..\src\stdlib\SDL_malloc.c" />
     <ClCompile Include="..\src\stdlib\SDL_mslibc.c" />
-    <MASM Condition="'$(Platform)'=='x64'" Include="..\src\stdlib\SDL_mslibc_x64.asm" >
+    <MASM Condition="'$(Platform)'=='x64'" Include="..\src\stdlib\SDL_mslibc_x64.masm" >
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </MASM>
     <ClCompile Include="..\src\stdlib\SDL_qsort.c" />
@@ -612,7 +620,9 @@
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
-    <ClCompile Include="..\src\video\yuv2rgb\yuv_rgb.c" />
+    <ClCompile Include="..\src\video\yuv2rgb\yuv_rgb_lsx.c" />
+    <ClCompile Include="..\src\video\yuv2rgb\yuv_rgb_sse.c" />
+    <ClCompile Include="..\src\video\yuv2rgb\yuv_rgb_std.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{89e9b32e-a86a-47c3-a948-d2b1622925ce}</ProjectGuid>

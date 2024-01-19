@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,7 +32,7 @@
 #include "../../core/linux/SDL_udev.h"
 #include <limits.h>      /* INT_MAX */
 
-#define DEBUG_VIDEO_CAPTURE_CAPTURE 1
+#define DEBUG_VIDEO_CAPTURE_CAPTURE 0
 
 #if defined(__linux__) && !defined(__ANDROID__)
 
@@ -692,6 +692,7 @@ GetFrameSize(SDL_VideoCaptureDevice *_this, Uint32 format, int index, int *width
 
 
 
+#if DEBUG_VIDEO_CAPTURE_CAPTURE
 static void
 dbg_v4l2_pixelformat(const char *str, int f) {
     SDL_Log("%s  V4L2_format=%d  %c%c%c%c", str, f,
@@ -700,6 +701,7 @@ dbg_v4l2_pixelformat(const char *str, int f) {
                 (f >> 16) & 0xff,
                 (f >> 24) & 0xff);
 }
+#endif
 
 int
 GetDeviceSpec(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureSpec *spec)

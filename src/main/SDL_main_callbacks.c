@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -46,7 +46,7 @@ static SDL_bool ShouldDispatchImmediately(SDL_Event *event)
 static void SDL_DispatchMainCallbackEvent(SDL_Event *event)
 {
     if (SDL_AtomicGet(&apprc) == 0) { // if already quitting, don't send the event to the app.
-        SDL_AtomicCAS(&apprc, 0, SDL_main_event_callback(event));
+        SDL_AtomicCompareAndSwap(&apprc, 0, SDL_main_event_callback(event));
     }
 }
 
@@ -96,7 +96,7 @@ int SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_
     SDL_AtomicSet(&apprc, 0);
 
     const int rc = appinit(argc, argv);
-    if (SDL_AtomicCAS(&apprc, 0, rc) && (rc == 0)) {  // bounce if SDL_AppInit already said abort, otherwise...
+    if (SDL_AtomicCompareAndSwap(&apprc, 0, rc) && (rc == 0)) {  // bounce if SDL_AppInit already said abort, otherwise...
         // make sure we definitely have events initialized, even if the app didn't do it.
         if (SDL_InitSubSystem(SDL_INIT_EVENTS) == -1) {
             SDL_AtomicSet(&apprc, -1);
@@ -122,7 +122,7 @@ int SDL_IterateMainCallbacks(SDL_bool pump_events)
     int rc = SDL_AtomicGet(&apprc);
     if (rc == 0) {
         rc = SDL_main_iteration_callback();
-        if (!SDL_AtomicCAS(&apprc, 0, rc)) {
+        if (!SDL_AtomicCompareAndSwap(&apprc, 0, rc)) {
             rc = SDL_AtomicGet(&apprc); // something else already set a quit result, keep that.
         }
     }

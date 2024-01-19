@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -42,9 +42,9 @@ static void RunBasicTest(void)
 
     SDL_Log("\nspin lock---------------------------------------\n\n");
 
-    SDL_AtomicLock(&lock);
+    SDL_LockSpinlock(&lock);
     SDL_Log("AtomicLock                   lock=%d\n", lock);
-    SDL_AtomicUnlock(&lock);
+    SDL_UnlockSpinlock(&lock);
     SDL_Log("AtomicUnlock                 lock=%d\n", lock);
 
     SDL_Log("\natomic -----------------------------------------\n\n");
@@ -68,10 +68,10 @@ static void RunBasicTest(void)
     SDL_Log("AtomicDecRef()       tfret=%s val=%d\n", tf(tfret), SDL_AtomicGet(&v));
 
     SDL_AtomicSet(&v, 10);
-    tfret = (SDL_AtomicCAS(&v, 0, 20) == SDL_FALSE);
+    tfret = (SDL_AtomicCompareAndSwap(&v, 0, 20) == SDL_FALSE);
     SDL_Log("AtomicCAS()          tfret=%s val=%d\n", tf(tfret), SDL_AtomicGet(&v));
     value = SDL_AtomicGet(&v);
-    tfret = (SDL_AtomicCAS(&v, value, 20) == SDL_TRUE);
+    tfret = (SDL_AtomicCompareAndSwap(&v, value, 20) == SDL_TRUE);
     SDL_Log("AtomicCAS()          tfret=%s val=%d\n", tf(tfret), SDL_AtomicGet(&v));
 }
 
@@ -179,12 +179,12 @@ static void RunEpicTest(void)
 
     SDL_Log("Test compare and exchange\n");
 
-    b = SDL_AtomicCAS(&good, 500, 43);
+    b = SDL_AtomicCompareAndSwap(&good, 500, 43);
     SDL_assert(!b); /* no swap since CountTo!=500 */
     v = SDL_AtomicGet(&good);
     SDL_assert(v == CountTo); /* ensure no swap */
 
-    b = SDL_AtomicCAS(&good, CountTo, 44);
+    b = SDL_AtomicCompareAndSwap(&good, CountTo, 44);
     SDL_assert(!!b); /* will swap */
     v = SDL_AtomicGet(&good);
     SDL_assert(v == 44);
@@ -317,10 +317,10 @@ static SDL_bool EnqueueEvent_LockFree(SDL_EventQueue *queue, const SDL_Event *ev
 
 #ifdef TEST_SPINLOCK_FIFO
     /* This is a gate so an external thread can lock the queue */
-    SDL_AtomicLock(&queue->lock);
+    SDL_LockSpinlock(&queue->lock);
     SDL_assert(SDL_AtomicGet(&queue->watcher) == 0);
     SDL_AtomicIncRef(&queue->rwcount);
-    SDL_AtomicUnlock(&queue->lock);
+    SDL_UnlockSpinlock(&queue->lock);
 #endif
 
     queue_pos = (unsigned)SDL_AtomicGet(&queue->enqueue_pos);
@@ -331,7 +331,7 @@ static SDL_bool EnqueueEvent_LockFree(SDL_EventQueue *queue, const SDL_Event *ev
         delta = (int)(entry_seq - queue_pos);
         if (delta == 0) {
             /* The entry and the queue position match, try to increment the queue position */
-            if (SDL_AtomicCAS(&queue->enqueue_pos, (int)queue_pos, (int)(queue_pos + 1))) {
+            if (SDL_AtomicCompareAndSwap(&queue->enqueue_pos, (int)queue_pos, (int)(queue_pos + 1))) {
                 /* We own the object, fill it! */
                 entry->event = *event;
                 SDL_AtomicSet(&entry->sequence, (int)(queue_pos + 1));
@@ -364,10 +364,10 @@ static SDL_bool DequeueEvent_LockFree(SDL_EventQueue *queue, SDL_Event *event)
 
 #ifdef TEST_SPINLOCK_FIFO
     /* This is a gate so an external thread can lock the queue */
-    SDL_AtomicLock(&queue->lock);
+    SDL_LockSpinlock(&queue->lock);
     SDL_assert(SDL_AtomicGet(&queue->watcher) == 0);
     SDL_AtomicIncRef(&queue->rwcount);
-    SDL_AtomicUnlock(&queue->lock);
+    SDL_UnlockSpinlock(&queue->lock);
 #endif
 
     queue_pos = (unsigned)SDL_AtomicGet(&queue->dequeue_pos);
@@ -378,7 +378,7 @@ static SDL_bool DequeueEvent_LockFree(SDL_EventQueue *queue, SDL_Event *event)
         delta = (int)(entry_seq - (queue_pos + 1));
         if (delta == 0) {
             /* The entry and the queue position match, try to increment the queue position */
-            if (SDL_AtomicCAS(&queue->dequeue_pos, (int)queue_pos, (int)(queue_pos + 1))) {
+            if (SDL_AtomicCompareAndSwap(&queue->dequeue_pos, (int)queue_pos, (int)(queue_pos + 1))) {
                 /* We own the object, fill it! */
                 *event = entry->event;
                 SDL_AtomicSet(&entry->sequence, (int)(queue_pos + MAX_ENTRIES));
@@ -564,14 +564,14 @@ static int SDLCALL FIFO_Watcher(void *_data)
     SDL_EventQueue *queue = (SDL_EventQueue *)_data;
 
     while (SDL_AtomicGet(&queue->active)) {
-        SDL_AtomicLock(&queue->lock);
+        SDL_LockSpinlock(&queue->lock);
         SDL_AtomicIncRef(&queue->watcher);
         while (SDL_AtomicGet(&queue->rwcount) > 0) {
             SDL_Delay(0);
         }
         /* Do queue manipulation here... */
         (void)SDL_AtomicDecRef(&queue->watcher);
-        SDL_AtomicUnlock(&queue->lock);
+        SDL_UnlockSpinlock(&queue->lock);
 
         /* Wait a bit... */
         SDL_Delay(1);

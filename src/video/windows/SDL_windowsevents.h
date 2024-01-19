@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,6 +30,7 @@ extern HINSTANCE SDL_Instance;
 extern LRESULT CALLBACK WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam);
 extern LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam,
                                        LPARAM lParam);
+extern void WIN_PollRawMouseInput(void);
 extern void WIN_PumpEvents(SDL_VideoDevice *_this);
 extern void WIN_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window);
 extern int WIN_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS);

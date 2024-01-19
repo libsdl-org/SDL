@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -40,6 +40,11 @@
 #ifdef SDL_ENABLE_OLD_NAMES
 
 /* ##SDL_atomic.h */
+#define SDL_AtomicCAS SDL_AtomicCompareAndSwap
+#define SDL_AtomicCASPtr SDL_AtomicCompareAndSwapPointer
+#define SDL_AtomicLock SDL_LockSpinlock
+#define SDL_AtomicTryLock SDL_TryLockSpinlock
+#define SDL_AtomicUnlock SDL_UnlockSpinlock
 #define SDL_atomic_t SDL_AtomicInt
 
 /* ##SDL_audio.h */
@@ -83,6 +88,7 @@
 #define SDL_CONTROLLERDEVICEREMAPPED SDL_EVENT_GAMEPAD_REMAPPED
 #define SDL_CONTROLLERDEVICEREMOVED SDL_EVENT_GAMEPAD_REMOVED
 #define SDL_CONTROLLERSENSORUPDATE SDL_EVENT_GAMEPAD_SENSOR_UPDATE
+#define SDL_CONTROLLERSTEAMHANDLEUPDATED SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED
 #define SDL_CONTROLLERTOUCHPADDOWN SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN
 #define SDL_CONTROLLERTOUCHPADMOTION SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION
 #define SDL_CONTROLLERTOUCHPADUP SDL_EVENT_GAMEPAD_TOUCHPAD_UP
@@ -147,7 +153,7 @@
 #define SDL_WINDOWEVENT_SIZE_CHANGED SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
 #define SDL_WINDOWEVENT_TAKE_FOCUS SDL_EVENT_WINDOW_TAKE_FOCUS
 
-/* ##SDL_gamepad.h */
+/* ##SDL_gamecontroller.h */
 #define SDL_CONTROLLER_AXIS_INVALID SDL_GAMEPAD_AXIS_INVALID
 #define SDL_CONTROLLER_AXIS_LEFTX SDL_GAMEPAD_AXIS_LEFTX
 #define SDL_CONTROLLER_AXIS_LEFTY SDL_GAMEPAD_AXIS_LEFTY
@@ -221,6 +227,7 @@
 #define SDL_GameControllerGetSensorData SDL_GetGamepadSensorData
 #define SDL_GameControllerGetSensorDataRate SDL_GetGamepadSensorDataRate
 #define SDL_GameControllerGetSerial SDL_GetGamepadSerial
+#define SDL_GameControllerGetSteamHandle SDL_GetGamepadSteamHandle
 #define SDL_GameControllerGetStringForAxis SDL_GetGamepadStringForAxis
 #define SDL_GameControllerGetStringForButton SDL_GetGamepadStringForButton
 #define SDL_GameControllerGetTouchpadFinger SDL_GetGamepadTouchpadFinger
@@ -248,6 +255,32 @@
 #define SDL_GameControllerUpdate SDL_UpdateGamepads
 #define SDL_INIT_GAMECONTROLLER SDL_INIT_GAMEPAD
 #define SDL_IsGameController SDL_IsGamepad
+
+/* ##SDL_haptic.h */
+#define SDL_HapticClose SDL_CloseHaptic
+#define SDL_HapticDestroyEffect SDL_DestroyHapticEffect
+#define SDL_HapticGetEffectStatus SDL_GetHapticEffectStatus
+#define SDL_HapticNewEffect SDL_CreateHapticEffect
+#define SDL_HapticNumAxes SDL_GetNumHapticAxes
+#define SDL_HapticNumEffects SDL_GetMaxHapticEffects
+#define SDL_HapticNumEffectsPlaying SDL_GetMaxHapticEffectsPlaying
+#define SDL_HapticOpen SDL_OpenHaptic
+#define SDL_HapticOpenFromJoystick SDL_OpenHapticFromJoystick
+#define SDL_HapticOpenFromMouse SDL_OpenHapticFromMouse
+#define SDL_HapticPause SDL_PauseHaptic
+#define SDL_HapticQuery SDL_GetHapticFeatures
+#define SDL_HapticRumbleInit SDL_InitHapticRumble
+#define SDL_HapticRumblePlay SDL_PlayHapticRumble
+#define SDL_HapticRumbleStop SDL_StopHapticRumble
+#define SDL_HapticRunEffect SDL_RunHapticEffect
+#define SDL_HapticSetAutocenter SDL_SetHapticAutocenter
+#define SDL_HapticSetGain SDL_SetHapticGain
+#define SDL_HapticStopAll SDL_StopHapticEffects
+#define SDL_HapticStopEffect SDL_StopHapticEffect
+#define SDL_HapticUnpause SDL_ResumeHaptic
+#define SDL_HapticUpdateEffect SDL_UpdateHapticEffect
+#define SDL_JoystickIsHaptic SDL_IsJoystickHaptic
+#define SDL_MouseIsHaptic SDL_IsMouseHaptic
 
 /* ##SDL_joystick.h */
 #define SDL_JOYSTICK_TYPE_GAMECONTROLLER SDL_JOYSTICK_TYPE_GAMEPAD
@@ -465,6 +498,7 @@
 #define SDL_TLSCreate SDL_CreateTLS
 #define SDL_TLSGet SDL_GetTLS
 #define SDL_TLSSet SDL_SetTLS
+#define SDL_threadID SDL_ThreadID
 
 /* ##SDL_timer.h */
 #define SDL_GetTicks64 SDL_GetTicks
@@ -483,6 +517,13 @@
 #define SDL_WINDOW_SKIP_TASKBAR SDL_WINDOW_UTILITY
 
 #elif !defined(SDL_DISABLE_OLD_NAMES)
+
+/* ##SDL_atomic.h */
+#define SDL_AtomicCAS SDL_AtomicCAS_renamed_SDL_AtomicCompareAndSwap
+#define SDL_AtomicCASPtr SDL_AtomicCASPtr_renamed_SDL_AtomicCompareAndSwapPointer
+#define SDL_AtomicLock SDL_AtomicLock_renamed_SDL_LockSpinlock
+#define SDL_AtomicTryLock SDL_AtomicTryLock_renamed_SDL_TryLockSpinlock
+#define SDL_AtomicUnlock SDL_AtomicUnlock_renamed_SDL_UnlockSpinlock
 
 /* ##SDL_audio.h */
 #define AUDIO_F32 AUDIO_F32_renamed_SDL_AUDIO_F32LE
@@ -525,6 +566,7 @@
 #define SDL_CONTROLLERDEVICEREMAPPED SDL_CONTROLLERDEVICEREMAPPED_renamed_SDL_EVENT_GAMEPAD_REMAPPED
 #define SDL_CONTROLLERDEVICEREMOVED SDL_CONTROLLERDEVICEREMOVED_renamed_SDL_EVENT_GAMEPAD_REMOVED
 #define SDL_CONTROLLERSENSORUPDATE SDL_CONTROLLERSENSORUPDATE_renamed_SDL_EVENT_GAMEPAD_SENSOR_UPDATE
+#define SDL_CONTROLLERSTEAMHANDLEUPDATED SDL_CONTROLLERSTEAMHANDLEUPDATED_renamed_SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED
 #define SDL_CONTROLLERTOUCHPADDOWN SDL_CONTROLLERTOUCHPADDOWN_renamed_SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN
 #define SDL_CONTROLLERTOUCHPADMOTION SDL_CONTROLLERTOUCHPADMOTION_renamed_SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION
 #define SDL_CONTROLLERTOUCHPADUP SDL_CONTROLLERTOUCHPADUP_renamed_SDL_EVENT_GAMEPAD_TOUCHPAD_UP
@@ -589,7 +631,7 @@
 #define SDL_WINDOWEVENT_SIZE_CHANGED SDL_WINDOWEVENT_SIZE_CHANGED_renamed_SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
 #define SDL_WINDOWEVENT_TAKE_FOCUS SDL_WINDOWEVENT_TAKE_FOCUS_renamed_SDL_EVENT_WINDOW_TAKE_FOCUS
 
-/* ##SDL_gamepad.h */
+/* ##SDL_gamecontroller.h */
 #define SDL_CONTROLLER_AXIS_INVALID SDL_CONTROLLER_AXIS_INVALID_renamed_SDL_GAMEPAD_AXIS_INVALID
 #define SDL_CONTROLLER_AXIS_LEFTX SDL_CONTROLLER_AXIS_LEFTX_renamed_SDL_GAMEPAD_AXIS_LEFTX
 #define SDL_CONTROLLER_AXIS_LEFTY SDL_CONTROLLER_AXIS_LEFTY_renamed_SDL_GAMEPAD_AXIS_LEFTY
@@ -663,6 +705,7 @@
 #define SDL_GameControllerGetSensorData SDL_GameControllerGetSensorData_renamed_SDL_GetGamepadSensorData
 #define SDL_GameControllerGetSensorDataRate SDL_GameControllerGetSensorDataRate_renamed_SDL_GetGamepadSensorDataRate
 #define SDL_GameControllerGetSerial SDL_GameControllerGetSerial_renamed_SDL_GetGamepadSerial
+#define SDL_GameControllerGetSteamHandle SDL_GameControllerGetSteamHandle_renamed_SDL_GetGamepadSteamHandle
 #define SDL_GameControllerGetStringForAxis SDL_GameControllerGetStringForAxis_renamed_SDL_GetGamepadStringForAxis
 #define SDL_GameControllerGetStringForButton SDL_GameControllerGetStringForButton_renamed_SDL_GetGamepadStringForButton
 #define SDL_GameControllerGetTouchpadFinger SDL_GameControllerGetTouchpadFinger_renamed_SDL_GetGamepadTouchpadFinger
@@ -691,6 +734,32 @@
 #define SDL_GameControllerUpdate SDL_GameControllerUpdate_renamed_SDL_UpdateGamepads
 #define SDL_INIT_GAMECONTROLLER SDL_INIT_GAMECONTROLLER_renamed_SDL_INIT_GAMEPAD
 #define SDL_IsGameController SDL_IsGameController_renamed_SDL_IsGamepad
+
+/* ##SDL_haptic.h */
+#define SDL_HapticClose SDL_HapticClose_renamed_SDL_CloseHaptic
+#define SDL_HapticDestroyEffect SDL_HapticDestroyEffect_renamed_SDL_DestroyHapticEffect
+#define SDL_HapticGetEffectStatus SDL_HapticGetEffectStatus_renamed_SDL_GetHapticEffectStatus
+#define SDL_HapticNewEffect SDL_HapticNewEffect_renamed_SDL_CreateHapticEffect
+#define SDL_HapticNumAxes SDL_HapticNumAxes_renamed_SDL_GetNumHapticAxes
+#define SDL_HapticNumEffects SDL_HapticNumEffects_renamed_SDL_GetMaxHapticEffects
+#define SDL_HapticNumEffectsPlaying SDL_HapticNumEffectsPlaying_renamed_SDL_GetMaxHapticEffectsPlaying
+#define SDL_HapticOpen SDL_HapticOpen_renamed_SDL_OpenHaptic
+#define SDL_HapticOpenFromJoystick SDL_HapticOpenFromJoystick_renamed_SDL_OpenHapticFromJoystick
+#define SDL_HapticOpenFromMouse SDL_HapticOpenFromMouse_renamed_SDL_OpenHapticFromMouse
+#define SDL_HapticPause SDL_HapticPause_renamed_SDL_PauseHaptic
+#define SDL_HapticQuery SDL_HapticQuery_renamed_SDL_GetHapticFeatures
+#define SDL_HapticRumbleInit SDL_HapticRumbleInit_renamed_SDL_InitHapticRumble
+#define SDL_HapticRumblePlay SDL_HapticRumblePlay_renamed_SDL_PlayHapticRumble
+#define SDL_HapticRumbleStop SDL_HapticRumbleStop_renamed_SDL_StopHapticRumble
+#define SDL_HapticRunEffect SDL_HapticRunEffect_renamed_SDL_RunHapticEffect
+#define SDL_HapticSetAutocenter SDL_HapticSetAutocenter_renamed_SDL_SetHapticAutocenter
+#define SDL_HapticSetGain SDL_HapticSetGain_renamed_SDL_SetHapticGain
+#define SDL_HapticStopAll SDL_HapticStopAll_renamed_SDL_StopHapticEffects
+#define SDL_HapticStopEffect SDL_HapticStopEffect_renamed_SDL_StopHapticEffect
+#define SDL_HapticUnpause SDL_HapticUnpause_renamed_SDL_ResumeHaptic
+#define SDL_HapticUpdateEffect SDL_HapticUpdateEffect_renamed_SDL_UpdateHapticEffect
+#define SDL_JoystickIsHaptic SDL_JoystickIsHaptic_renamed_SDL_IsJoystickHaptic
+#define SDL_MouseIsHaptic SDL_MouseIsHaptic_renamed_SDL_IsMouseHaptic
 
 /* ##SDL_joystick.h */
 #define SDL_JOYSTICK_TYPE_GAMECONTROLLER SDL_JOYSTICK_TYPE_GAMECONTROLLER_renamed_SDL_JOYSTICK_TYPE_GAMEPAD
@@ -908,6 +977,7 @@
 #define SDL_TLSCreate SDL_TLSCreate_renamed_SDL_CreateTLS
 #define SDL_TLSGet SDL_TLSGet_renamed_SDL_GetTLS
 #define SDL_TLSSet SDL_TLSSet_renamed_SDL_SetTLS
+#define SDL_threadID SDL_threadID_renamed_SDL_ThreadID
 
 /* ##SDL_timer.h */
 #define SDL_GetTicks64 SDL_GetTicks64_renamed_SDL_GetTicks

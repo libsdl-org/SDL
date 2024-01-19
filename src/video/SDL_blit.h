@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -79,7 +79,7 @@ typedef struct
     Uint32 src_format;
     Uint32 dst_format;
     int flags;
-    int cpu;
+    unsigned int cpu;
     SDL_BlitFunc func;
 } SDL_BlitFuncEntry;
 

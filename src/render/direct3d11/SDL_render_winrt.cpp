@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -44,7 +44,7 @@ using namespace Windows::Graphics::Display;
 extern "C" void *
 D3D11_GetCoreWindowFromSDLRenderer(SDL_Renderer *renderer)
 {
-    IInspectable *window = (IInspectable *)SDL_GetProperty(SDL_GetWindowProperties(renderer->window), "SDL.window.winrt.window", NULL);
+    IInspectable *window = (IInspectable *)SDL_GetProperty(SDL_GetWindowProperties(renderer->window), SDL_PROPERTY_WINDOW_WINRT_WINDOW_POINTER, NULL);
     ABI::Windows::UI::Core::ICoreWindow *coreWindow = NULL;
     if (!window || FAILED(window->QueryInterface(&coreWindow))) {
         return NULL;

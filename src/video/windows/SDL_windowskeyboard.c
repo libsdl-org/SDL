@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -120,7 +120,9 @@ void WIN_UpdateKeymap(SDL_bool send_event)
     WIN_ResetDeadKeys();
 
     for (i = 0; i < SDL_arraysize(windows_scancode_table); i++) {
-        int vk;
+        Uint8 vk;
+        Uint16 sc;
+
         /* Make sure this scancode is a valid character scancode */
         scancode = windows_scancode_table[i];
         if (scancode == SDL_SCANCODE_UNKNOWN) {
@@ -133,7 +135,9 @@ void WIN_UpdateKeymap(SDL_bool send_event)
             continue;
         }
 
-        vk = MapVirtualKey(i, MAPVK_VSC_TO_VK);
+        /* Unpack the single byte index to make the scan code. */
+        sc = MAKEWORD(i & 0x7f, (i & 0x80) ? 0xe0 : 0x00);
+        vk = LOBYTE(MapVirtualKey(sc, MAPVK_VSC_TO_VK));
         if (!vk) {
             continue;
         }
@@ -147,8 +151,8 @@ void WIN_UpdateKeymap(SDL_bool send_event)
             BYTE keyboardState[256] = { 0 };
             WCHAR buffer[16] = { 0 };
             Uint32 *ch = 0;
-            int result = ToUnicode(vk, i, keyboardState, buffer, 16, 0);
-            buffer[SDL_abs(result) + 1] = 0;
+            int result = ToUnicode(vk, sc, keyboardState, buffer, 16, 0);
+            buffer[SDL_abs(result)] = 0;
 
             /* Convert UTF-16 to UTF-32 code points */
             ch = (Uint32 *)SDL_iconv_string("UTF-32LE", "UTF-16LE", (const char *)buffer, (SDL_abs(result) + 1) * sizeof(WCHAR));
@@ -196,21 +200,21 @@ void WIN_ResetDeadKeys()
     */
     BYTE keyboardState[256];
     WCHAR buffer[16];
-    int keycode, scancode, result, i;
+    int vk, sc, result, i;
 
     if (!GetKeyboardState(keyboardState)) {
         return;
     }
 
-    keycode = VK_SPACE;
-    scancode = MapVirtualKey(keycode, MAPVK_VK_TO_VSC);
-    if (scancode == 0) {
+    vk = VK_SPACE;
+    sc = MapVirtualKey(vk, MAPVK_VK_TO_VSC);
+    if (sc == 0) {
         /* the keyboard doesn't have this key */
         return;
     }
 
     for (i = 0; i < 5; i++) {
-        result = ToUnicode(keycode, scancode, keyboardState, buffer, 16, 0);
+        result = ToUnicode(vk, sc, keyboardState, buffer, 16, 0);
         if (result > 0) {
             /* success */
             return;

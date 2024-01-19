@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -227,7 +227,7 @@ void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::Po
 
         SDL_SendTouch(0,
             WINRT_TouchID,
-            (SDL_FingerID)pointerPoint->PointerId,
+            (SDL_FingerID)(pointerPoint->PointerId + 1),
             window,
             SDL_TRUE,
             normalizedPoint.X,
@@ -256,7 +256,7 @@ void WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::Poin
     } else {
         SDL_SendTouchMotion(0,
             WINRT_TouchID,
-            (SDL_FingerID)pointerPoint->PointerId,
+            (SDL_FingerID)(pointerPoint->PointerId + 1),
             window,
             normalizedPoint.X,
             normalizedPoint.Y,
@@ -280,7 +280,7 @@ void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::P
 
         SDL_SendTouch(0,
             WINRT_TouchID,
-            (SDL_FingerID)pointerPoint->PointerId,
+            (SDL_FingerID)(pointerPoint->PointerId + 1),
             window,
             SDL_FALSE,
             normalizedPoint.X,

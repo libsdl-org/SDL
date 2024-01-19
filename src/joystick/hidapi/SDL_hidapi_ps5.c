@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -51,11 +51,12 @@
 
 enum
 {
-    SDL_CONTROLLER_BUTTON_PS5_TOUCHPAD = SDL_GAMEPAD_BUTTON_MISC1 + 1,
-    SDL_CONTROLLER_BUTTON_PS5_LEFT_FUNCTION,
-    SDL_CONTROLLER_BUTTON_PS5_RIGHT_FUNCTION,
-    SDL_CONTROLLER_BUTTON_PS5_LEFT_PADDLE,
-    SDL_CONTROLLER_BUTTON_PS5_RIGHT_PADDLE
+    SDL_GAMEPAD_BUTTON_PS5_TOUCHPAD = 11,
+    SDL_GAMEPAD_BUTTON_PS5_MICROPHONE,
+    SDL_GAMEPAD_BUTTON_PS5_LEFT_FUNCTION,
+    SDL_GAMEPAD_BUTTON_PS5_RIGHT_FUNCTION,
+    SDL_GAMEPAD_BUTTON_PS5_LEFT_PADDLE,
+    SDL_GAMEPAD_BUTTON_PS5_RIGHT_PADDLE
 };
 
 typedef enum
@@ -945,13 +946,14 @@ static SDL_bool HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
 
     /* Initialize the joystick capabilities */
     if (SDL_IsJoystickDualSenseEdge(device->vendor_id, device->product_id)) {
-        joystick->nbuttons = 21;
+        joystick->nbuttons = 17; /* paddles and touchpad and microphone */
     } else if (ctx->touchpad_supported) {
-        joystick->nbuttons = 17;
+        joystick->nbuttons = 13; /* touchpad and microphone */
     } else {
-        joystick->nbuttons = 15;
+        joystick->nbuttons = 11;
     }
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
+    joystick->nhats = 1;
     if (device->is_bluetooth) {
         /* We'll update this once we're in enhanced mode */
         joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
@@ -1139,47 +1141,38 @@ static void HIDAPI_DriverPS5_HandleSimpleStatePacket(SDL_Joystick *joystick, SDL
         }
         {
             Uint8 data = (packet->rgucButtonsHatAndCounter[0] & 0x0F);
-            SDL_bool dpad_up = SDL_FALSE;
-            SDL_bool dpad_down = SDL_FALSE;
-            SDL_bool dpad_left = SDL_FALSE;
-            SDL_bool dpad_right = SDL_FALSE;
+            Uint8 hat;
 
             switch (data) {
             case 0:
-                dpad_up = SDL_TRUE;
+                hat = SDL_HAT_UP;
                 break;
             case 1:
-                dpad_up = SDL_TRUE;
-                dpad_right = SDL_TRUE;
+                hat = SDL_HAT_RIGHTUP;
                 break;
             case 2:
-                dpad_right = SDL_TRUE;
+                hat = SDL_HAT_RIGHT;
                 break;
             case 3:
-                dpad_right = SDL_TRUE;
-                dpad_down = SDL_TRUE;
+                hat = SDL_HAT_RIGHTDOWN;
                 break;
             case 4:
-                dpad_down = SDL_TRUE;
+                hat = SDL_HAT_DOWN;
                 break;
             case 5:
-                dpad_left = SDL_TRUE;
-                dpad_down = SDL_TRUE;
+                hat = SDL_HAT_LEFTDOWN;
                 break;
             case 6:
-                dpad_left = SDL_TRUE;
+                hat = SDL_HAT_LEFT;
                 break;
             case 7:
-                dpad_up = SDL_TRUE;
-                dpad_left = SDL_TRUE;
+                hat = SDL_HAT_LEFTUP;
                 break;
             default:
+                hat = SDL_HAT_CENTERED;
                 break;
             }
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, dpad_down);
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, dpad_up);
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, dpad_right);
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, dpad_left);
+            SDL_SendJoystickHat(timestamp, joystick, 0, hat);
         }
     }
 
@@ -1198,7 +1191,7 @@ static void HIDAPI_DriverPS5_HandleSimpleStatePacket(SDL_Joystick *joystick, SDL
         Uint8 data = (packet->rgucButtonsHatAndCounter[2] & 0x03);
 
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC1, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_PS5_TOUCHPAD, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     if (packet->ucTriggerLeft == 0 && (packet->rgucButtonsHatAndCounter[1] & 0x04)) {
@@ -1240,47 +1233,38 @@ static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL
         }
         {
             Uint8 data = (packet->rgucButtonsAndHat[0] & 0x0F);
-            SDL_bool dpad_up = SDL_FALSE;
-            SDL_bool dpad_down = SDL_FALSE;
-            SDL_bool dpad_left = SDL_FALSE;
-            SDL_bool dpad_right = SDL_FALSE;
+            Uint8 hat;
 
             switch (data) {
             case 0:
-                dpad_up = SDL_TRUE;
+                hat = SDL_HAT_UP;
                 break;
             case 1:
-                dpad_up = SDL_TRUE;
-                dpad_right = SDL_TRUE;
+                hat = SDL_HAT_RIGHTUP;
                 break;
             case 2:
-                dpad_right = SDL_TRUE;
+                hat = SDL_HAT_RIGHT;
                 break;
             case 3:
-                dpad_right = SDL_TRUE;
-                dpad_down = SDL_TRUE;
+                hat = SDL_HAT_RIGHTDOWN;
                 break;
             case 4:
-                dpad_down = SDL_TRUE;
+                hat = SDL_HAT_DOWN;
                 break;
             case 5:
-                dpad_left = SDL_TRUE;
-                dpad_down = SDL_TRUE;
+                hat = SDL_HAT_LEFTDOWN;
                 break;
             case 6:
-                dpad_left = SDL_TRUE;
+                hat = SDL_HAT_LEFT;
                 break;
             case 7:
-                dpad_up = SDL_TRUE;
-                dpad_left = SDL_TRUE;
+                hat = SDL_HAT_LEFTUP;
                 break;
             default:
+                hat = SDL_HAT_CENTERED;
                 break;
             }
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, dpad_down);
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, dpad_up);
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, dpad_right);
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, dpad_left);
+            SDL_SendJoystickHat(timestamp, joystick, 0, hat);
         }
     }
 
@@ -1299,12 +1283,12 @@ static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL
         Uint8 data = packet->rgucButtonsAndHat[2];
 
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC1, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_PS5_TOUCHPAD, (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_PS5_LEFT_FUNCTION, (data & 0x10) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_PS5_RIGHT_FUNCTION, (data & 0x20) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_PS5_LEFT_PADDLE, (data & 0x40) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_PS5_RIGHT_PADDLE, (data & 0x80) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_PS5_TOUCHPAD, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_PS5_MICROPHONE, (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_PS5_LEFT_FUNCTION, (data & 0x10) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_PS5_RIGHT_FUNCTION, (data & 0x20) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_PS5_LEFT_PADDLE, (data & 0x40) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_PS5_RIGHT_PADDLE, (data & 0x80) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     if (packet->ucTriggerLeft == 0 && (packet->rgucButtonsAndHat[1] & 0x04)) {

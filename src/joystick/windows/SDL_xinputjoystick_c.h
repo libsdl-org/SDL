@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -36,6 +36,7 @@ extern Uint32 SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick *joystick);
 extern void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick);
 extern void SDL_XINPUT_JoystickClose(SDL_Joystick *joystick);
 extern void SDL_XINPUT_JoystickQuit(void);
+extern int SDL_XINPUT_GetSteamVirtualGamepadSlot(Uint8 userid);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

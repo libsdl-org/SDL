@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -343,7 +343,7 @@ int Android_AddJoystick(int device_id, const char *name, const char *desc, int v
         nhats = 0;
     }
 
-    guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor_id, product_id, 0, desc, 0, 0);
+    guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor_id, product_id, 0, NULL, desc, 0, 0);
 
     /* Update the GUID with capability bits */
     {
@@ -541,6 +541,11 @@ static const char *ANDROID_JoystickGetDevicePath(int device_index)
     return NULL;
 }
 
+static int ANDROID_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return -1;
+}
+
 static int ANDROID_JoystickGetDevicePlayerIndex(int device_index)
 {
     return -1;
@@ -681,6 +686,7 @@ SDL_JoystickDriver SDL_ANDROID_JoystickDriver = {
     ANDROID_JoystickDetect,
     ANDROID_JoystickGetDeviceName,
     ANDROID_JoystickGetDevicePath,
+    ANDROID_JoystickGetDeviceSteamVirtualGamepadSlot,
     ANDROID_JoystickGetDevicePlayerIndex,
     ANDROID_JoystickSetDevicePlayerIndex,
     ANDROID_JoystickGetDeviceGUID,

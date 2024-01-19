@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -49,6 +49,11 @@
                             (((Uint32)(B)) << 8) |  \
                             (((Uint32)(C)) << 16) | \
                             (((Uint32)(D)) << 24))
+
+enum
+{
+    SDL_GAMEPAD_BUTTON_PS4_TOUCHPAD = 11
+};
 
 typedef enum
 {
@@ -820,8 +825,12 @@ static SDL_bool HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     ctx->player_index = SDL_GetJoystickPlayerIndex(joystick);
 
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = ctx->touchpad_supported ? 16 : 15;
+    joystick->nbuttons = 11;
+    if (ctx->touchpad_supported) {
+        joystick->nbuttons += 1;
+    }
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
+    joystick->nhats = 1;
     if (device->is_bluetooth) {
         /* We'll update this once we're in enhanced mode */
         joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
@@ -985,48 +994,39 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
             SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
         }
         {
+            Uint8 hat;
             Uint8 data = (packet->rgucButtonsHatAndCounter[0] & 0x0F);
-            SDL_bool dpad_up = SDL_FALSE;
-            SDL_bool dpad_down = SDL_FALSE;
-            SDL_bool dpad_left = SDL_FALSE;
-            SDL_bool dpad_right = SDL_FALSE;
 
             switch (data) {
             case 0:
-                dpad_up = SDL_TRUE;
+                hat = SDL_HAT_UP;
                 break;
             case 1:
-                dpad_up = SDL_TRUE;
-                dpad_right = SDL_TRUE;
+                hat = SDL_HAT_RIGHTUP;
                 break;
             case 2:
-                dpad_right = SDL_TRUE;
+                hat = SDL_HAT_RIGHT;
                 break;
             case 3:
-                dpad_right = SDL_TRUE;
-                dpad_down = SDL_TRUE;
+                hat = SDL_HAT_RIGHTDOWN;
                 break;
             case 4:
-                dpad_down = SDL_TRUE;
+                hat = SDL_HAT_DOWN;
                 break;
             case 5:
-                dpad_left = SDL_TRUE;
-                dpad_down = SDL_TRUE;
+                hat = SDL_HAT_LEFTDOWN;
                 break;
             case 6:
-                dpad_left = SDL_TRUE;
+                hat = SDL_HAT_LEFT;
                 break;
             case 7:
-                dpad_up = SDL_TRUE;
-                dpad_left = SDL_TRUE;
+                hat = SDL_HAT_LEFTUP;
                 break;
             default:
+                hat = SDL_HAT_CENTERED;
                 break;
             }
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, dpad_down);
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, dpad_up);
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, dpad_right);
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, dpad_left);
+            SDL_SendJoystickHat(timestamp, joystick, 0, hat);
         }
     }
 
@@ -1054,7 +1054,7 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
         Uint8 data = (packet->rgucButtonsHatAndCounter[2] & 0x03);
 
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, 15, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_PS4_TOUCHPAD, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     axis = ((int)packet->ucTriggerLeft * 257) - 32768;

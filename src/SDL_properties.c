@@ -1,6 +1,6 @@
 /*
   Simple DiretMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -480,7 +480,7 @@ const char *SDL_GetStringProperty(SDL_PropertiesID props, const char *name, cons
                 if (property->string_storage) {
                     value = property->string_storage;
                 } else {
-                    SDL_asprintf(&property->string_storage, "%" SDL_PRIs64 "", property->value.number_value);
+                    SDL_asprintf(&property->string_storage, "%" SDL_PRIs64, property->value.number_value);
                     if (property->string_storage) {
                         value = property->string_storage;
                     }

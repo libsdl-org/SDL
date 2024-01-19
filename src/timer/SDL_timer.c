@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,7 +29,7 @@
 
 typedef struct SDL_Timer
 {
-    int timerID;
+    SDL_TimerID timerID;
     SDL_TimerCallback callback;
     void *param;
     Uint64 interval;
@@ -40,7 +40,7 @@ typedef struct SDL_Timer
 
 typedef struct SDL_TimerMap
 {
-    int timerID;
+    SDL_TimerID timerID;
     SDL_Timer *timer;
     struct SDL_TimerMap *next;
 } SDL_TimerMap;
@@ -50,7 +50,6 @@ typedef struct
 {
     /* Data used by the main thread */
     SDL_Thread *thread;
-    SDL_AtomicInt nextID;
     SDL_TimerMap *timermap;
     SDL_Mutex *timermap_lock;
 
@@ -112,7 +111,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
      */
     for (;;) {
         /* Pending and freelist maintenance */
-        SDL_AtomicLock(&data->lock);
+        SDL_LockSpinlock(&data->lock);
         {
             /* Get any timers ready to be queued */
             pending = data->pending;
@@ -124,7 +123,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
                 data->freelist = freelist_head;
             }
         }
-        SDL_AtomicUnlock(&data->lock);
+        SDL_UnlockSpinlock(&data->lock);
 
         /* Sort the pending timers into our list */
         while (pending) {
@@ -227,8 +226,6 @@ int SDL_InitTimers(void)
             SDL_QuitTimers();
             return -1;
         }
-
-        SDL_AtomicSet(&data->nextID, 1);
     }
     return 0;
 }
@@ -239,7 +236,7 @@ void SDL_QuitTimers(void)
     SDL_Timer *timer;
     SDL_TimerMap *entry;
 
-    if (SDL_AtomicCAS(&data->active, 1, 0)) { /* active? Move to inactive. */
+    if (SDL_AtomicCompareAndSwap(&data->active, 1, 0)) { /* active? Move to inactive. */
         /* Shutdown the timer thread */
         if (data->thread) {
             SDL_PostSemaphore(data->sem);
@@ -278,10 +275,10 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
     SDL_Timer *timer;
     SDL_TimerMap *entry;
 
-    SDL_AtomicLock(&data->lock);
+    SDL_LockSpinlock(&data->lock);
     if (!SDL_AtomicGet(&data->active)) {
         if (SDL_InitTimers() < 0) {
-            SDL_AtomicUnlock(&data->lock);
+            SDL_UnlockSpinlock(&data->lock);
             return 0;
         }
     }
@@ -290,7 +287,7 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
     if (timer) {
         data->freelist = timer->next;
     }
-    SDL_AtomicUnlock(&data->lock);
+    SDL_UnlockSpinlock(&data->lock);
 
     if (timer) {
         SDL_RemoveTimer(timer->timerID);
@@ -300,7 +297,7 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
             return 0;
         }
     }
-    timer->timerID = SDL_AtomicIncRef(&data->nextID);
+    timer->timerID = SDL_GetNextObjectID();
     timer->callback = callback;
     timer->param = param;
     timer->interval = SDL_MS_TO_NS(interval);
@@ -321,10 +318,10 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
     SDL_UnlockMutex(data->timermap_lock);
 
     /* Add the timer to the pending list for the timer thread */
-    SDL_AtomicLock(&data->lock);
+    SDL_LockSpinlock(&data->lock);
     timer->next = data->pending;
     data->pending = timer;
-    SDL_AtomicUnlock(&data->lock);
+    SDL_UnlockSpinlock(&data->lock);
 
     /* Wake up the timer thread if necessary */
     SDL_PostSemaphore(data->sem);
@@ -370,7 +367,7 @@ SDL_bool SDL_RemoveTimer(SDL_TimerID id)
 
 typedef struct SDL_TimerMap
 {
-    int timerID;
+    SDL_TimerID timerID;
     int timeoutID;
     Uint32 interval;
     SDL_TimerCallback callback;
@@ -380,7 +377,6 @@ typedef struct SDL_TimerMap
 
 typedef struct
 {
-    int nextID;
     SDL_TimerMap *timermap;
 } SDL_TimerData;
 
@@ -423,7 +419,7 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
     if (!entry) {
         return 0;
     }
-    entry->timerID = ++data->nextID;
+    entry->timerID = SDL_GetNextObjectID();
     entry->callback = callback;
     entry->param = param;
     entry->interval = interval;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,4 +19,31 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#error "This is a placeholder Xbox file, as the real one is under NDA. See README-gdk.md for more info."
+#ifndef SDL_render_d3d12_xbox_h_
+#define SDL_render_d3d12_xbox_h_
+
+#include "../../SDL_internal.h"
+
+#if defined(__XBOXONE__)
+#include <d3d12_x.h>
+#else /* __XBOXSERIES__ */
+#include <d3d12_xs.h>
+#endif
+
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern HRESULT D3D12_XBOX_CreateDevice(ID3D12Device **device, SDL_bool createDebug);
+extern HRESULT D3D12_XBOX_CreateBackBufferTarget(ID3D12Device1 *device, int width, int height, void **resource);
+extern HRESULT D3D12_XBOX_StartFrame(ID3D12Device1 *device, UINT64 *outToken);
+extern HRESULT D3D12_XBOX_PresentFrame(ID3D12CommandQueue *commandQueue, UINT64 token, ID3D12Resource *renderTarget);
+extern void D3D12_XBOX_GetResolution(Uint32 *width, Uint32 *height);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
+
+#endif

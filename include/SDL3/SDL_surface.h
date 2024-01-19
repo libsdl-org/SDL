@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -50,11 +50,12 @@ extern "C" {
  *  Used internally (read-only).
  */
 /* @{ */
-#define SDL_SWSURFACE       0           /**< Just here for compatibility */
-#define SDL_PREALLOC        0x00000001  /**< Surface uses preallocated memory */
-#define SDL_RLEACCEL        0x00000002  /**< Surface is RLE encoded */
-#define SDL_DONTFREE        0x00000004  /**< Surface is referenced internally */
-#define SDL_SIMD_ALIGNED    0x00000008  /**< Surface uses aligned memory */
+#define SDL_SWSURFACE               0           /**< Just here for compatibility */
+#define SDL_PREALLOC                0x00000001  /**< Surface uses preallocated memory */
+#define SDL_RLEACCEL                0x00000002  /**< Surface is RLE encoded */
+#define SDL_DONTFREE                0x00000004  /**< Surface is referenced internally */
+#define SDL_SIMD_ALIGNED            0x00000008  /**< Surface uses aligned memory */
+#define SDL_SURFACE_USES_PROPERTIES 0x00000010  /**< Surface uses properties */
 /* @} *//* Surface flags */
 
 /**
@@ -63,6 +64,17 @@ extern "C" {
 #define SDL_MUSTLOCK(S) (((S)->flags & SDL_RLEACCEL) != 0)
 
 typedef struct SDL_BlitMap SDL_BlitMap;  /* this is an opaque type. */
+
+/**
+ * The scaling mode
+ */
+typedef enum
+{
+    SDL_SCALEMODE_NEAREST, /**< nearest pixel sampling */
+    SDL_SCALEMODE_LINEAR,  /**< linear filtering */
+    SDL_SCALEMODE_BEST     /**< anisotropic filtering */
+} SDL_ScaleMode;
+
 
 /**
  * A collection of pixels used in software blitting.
@@ -92,8 +104,7 @@ typedef struct SDL_Surface
     int pitch;                  /**< Read-only */
     void *pixels;               /**< Read-write */
 
-    /** Application data associated with the surface */
-    SDL_PropertiesID props;     /**< Read-write */
+    void *reserved;             /**< Private */
 
     /** information needed for surfaces requiring locks */
     int locked;                 /**< Read-only */
@@ -846,10 +857,10 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceUnchecked
      SDL_Surface *dst, const SDL_Rect *dstrect);
 
 /**
- * Perform a fast, low quality, stretch blit between two surfaces of the same
- * format.
+ * Perform stretch blit between two surfaces of the same format.
  *
- * **WARNING**: Please use SDL_BlitSurfaceScaled() instead.
+ * Using SDL_SCALEMODE_NEAREST: fast, low quality. Using SDL_SCALEMODE_LINEAR:
+ * bilinear scaling, slower, better quality, only 32BPP.
  *
  * \param src the SDL_Surface structure to be copied from
  * \param srcrect the SDL_Rect structure representing the rectangle to be
@@ -857,35 +868,19 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceUnchecked
  * \param dst the SDL_Surface structure that is the blit target
  * \param dstrect the SDL_Rect structure representing the target rectangle in
  *                the destination surface
+ * \param scaleMode scale algorithm to be used
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_BlitSurfaceScaled
  */
 extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface *src,
                                             const SDL_Rect *srcrect,
                                             SDL_Surface *dst,
-                                            const SDL_Rect *dstrect);
-
-/**
- * Perform bilinear scaling between two surfaces of the same format, 32BPP.
- *
- * \param src the SDL_Surface structure to be copied from
- * \param srcrect the SDL_Rect structure representing the rectangle to be
- *                copied
- * \param dst the SDL_Surface structure that is the blit target
- * \param dstrect the SDL_Rect structure representing the target rectangle in
- *                the destination surface
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface *src,
-                                            const SDL_Rect *srcrect,
-                                            SDL_Surface *dst,
-                                            const SDL_Rect *dstrect);
-
+                                            const SDL_Rect *dstrect,
+                                            SDL_ScaleMode scaleMode);
 
 /**
  * Perform a scaled surface copy to a destination surface.
@@ -897,6 +892,7 @@ extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface *src,
  * \param dstrect the SDL_Rect structure representing the target rectangle in
  *                the destination surface, filled with the actual rectangle
  *                used after clipping
+ * \param scaleMode scale algorithm to be used
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -904,9 +900,11 @@ extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface *src,
  *
  * \sa SDL_BlitSurface
  */
-extern DECLSPEC int SDLCALL SDL_BlitSurfaceScaled
-    (SDL_Surface *src, const SDL_Rect *srcrect,
-     SDL_Surface *dst, SDL_Rect *dstrect);
+extern DECLSPEC int SDLCALL SDL_BlitSurfaceScaled(SDL_Surface *src,
+                                                  const SDL_Rect *srcrect,
+                                                  SDL_Surface *dst,
+                                                  SDL_Rect *dstrect,
+                                                  SDL_ScaleMode scaleMode);
 
 /**
  * Perform low-level surface scaled blitting only.
@@ -920,6 +918,7 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceScaled
  * \param dst the SDL_Surface structure that is the blit target
  * \param dstrect the SDL_Rect structure representing the target rectangle in
  *                the destination surface
+ * \param scaleMode scale algorithm to be used
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -927,9 +926,39 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceScaled
  *
  * \sa SDL_BlitSurfaceScaled
  */
-extern DECLSPEC int SDLCALL SDL_BlitSurfaceUncheckedScaled
-    (SDL_Surface *src, const SDL_Rect *srcrect,
-     SDL_Surface *dst, const SDL_Rect *dstrect);
+extern DECLSPEC int SDLCALL SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src,
+                                                           const SDL_Rect *srcrect,
+                                                           SDL_Surface *dst,
+                                                           const SDL_Rect *dstrect,
+                                                           SDL_ScaleMode scaleMode);
+
+/**
+ * Retrieves a single pixel from a surface.
+ *
+ * This function prioritizes correctness over speed: it is suitable for unit
+ * tests, but is not intended for use in a game engine.
+ *
+ * Like SDL_GetRGBA, this uses the entire 0..255 range when converting color
+ * components from pixel formats with less than 8 bits per RGB component.
+ *
+ * \param surface the surface to read
+ * \param x the horizontal coordinate, 0 <= x < width
+ * \param y the vertical coordinate, 0 <= y < height
+ * \param r a pointer filled in with the red channel, 0-255, or NULL to ignore
+ *          this channel
+ * \param g a pointer filled in with the green channel, 0-255, or NULL to
+ *          ignore this channel
+ * \param b a pointer filled in with the blue channel, 0-255, or NULL to
+ *          ignore this channel
+ * \param a a pointer filled in with the alpha channel, 0-255, or NULL to
+ *          ignore this channel
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
+
 
 /**
  * Set the YUV conversion mode

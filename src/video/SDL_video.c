@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -195,7 +195,7 @@ static void SDL_SyncIfRequired(SDL_Window *window)
 
 /* Support for framebuffer emulation using an accelerated renderer */
 
-#define SDL_WINDOWTEXTUREDATA "SDL.internal.window.texturedata"
+#define SDL_PROPERTY_WINDOW_TEXTUREDATA "SDL.internal.window.texturedata"
 
 typedef struct
 {
@@ -239,7 +239,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
 {
     SDL_RendererInfo info;
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
-    SDL_WindowTextureData *data = (SDL_WindowTextureData *)SDL_GetProperty(props, SDL_WINDOWTEXTUREDATA, NULL);
+    SDL_WindowTextureData *data = (SDL_WindowTextureData *)SDL_GetProperty(props, SDL_PROPERTY_WINDOW_TEXTUREDATA, NULL);
     const SDL_bool transparent = (window->flags & SDL_WINDOW_TRANSPARENT) ? SDL_TRUE : SDL_FALSE;
     int i;
     int w, h;
@@ -292,7 +292,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
             SDL_DestroyRenderer(renderer);
             return -1;
         }
-        SDL_SetPropertyWithCleanup(props, SDL_WINDOWTEXTUREDATA, data, SDL_CleanupWindowTextureData, NULL);
+        SDL_SetPropertyWithCleanup(props, SDL_PROPERTY_WINDOW_TEXTUREDATA, data, SDL_CleanupWindowTextureData, NULL);
 
         data->renderer = renderer;
     } else {
@@ -324,7 +324,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
                                       SDL_TEXTUREACCESS_STREAMING,
                                       w, h);
     if (!data->texture) {
-        /* codechecker_false_positive [Malloc] Static analyzer doesn't realize allocated `data` is saved to SDL_WINDOWTEXTUREDATA and not leaked here. */
+        /* codechecker_false_positive [Malloc] Static analyzer doesn't realize allocated `data` is saved to SDL_PROPERTY_WINDOW_TEXTUREDATA and not leaked here. */
         return -1; /* NOLINT(clang-analyzer-unix.Malloc) */
     }
 
@@ -362,7 +362,7 @@ static int SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window *window, 
 
     SDL_GetWindowSizeInPixels(window, &w, &h);
 
-    data = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_WINDOWTEXTUREDATA, NULL);
+    data = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_TEXTUREDATA, NULL);
     if (!data || !data->texture) {
         return SDL_SetError("No window texture data");
     }
@@ -387,14 +387,14 @@ static int SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window *window, 
 
 static void SDL_DestroyWindowTexture(SDL_VideoDevice *unused, SDL_Window *window)
 {
-    SDL_ClearProperty(SDL_GetWindowProperties(window), SDL_WINDOWTEXTUREDATA);
+    SDL_ClearProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_TEXTUREDATA);
 }
 
 int SDL_SetWindowTextureVSync(SDL_Window *window, int vsync)
 {
     SDL_WindowTextureData *data;
 
-    data = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_WINDOWTEXTUREDATA, NULL);
+    data = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_TEXTUREDATA, NULL);
     if (!data) {
         return -1;
     }
@@ -465,9 +465,7 @@ int SDL_VideoInit(const char *driver_name)
         SDL_VideoQuit();
     }
 
-#ifndef SDL_TIMERS_DISABLED
     SDL_InitTicks();
-#endif
 
     /* Start the event loop */
     if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0) {
@@ -534,7 +532,7 @@ int SDL_VideoInit(const char *driver_name)
     pre_driver_error. */
     _this = video;
     _this->name = bootstrap[i]->name;
-    _this->thread = SDL_ThreadID();
+    _this->thread = SDL_GetCurrentThreadID();
 
     /* Set some very sane GL defaults */
     _this->gl_config.driver_loaded = 0;
@@ -620,7 +618,7 @@ SDL_VideoDevice *SDL_GetVideoDevice(void)
 
 SDL_bool SDL_OnVideoThread(void)
 {
-    return (_this && SDL_ThreadID() == _this->thread);
+    return (_this && SDL_GetCurrentThreadID() == _this->thread);
 }
 
 SDL_bool SDL_IsVideoContextExternal(void)
@@ -1754,7 +1752,6 @@ int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen, SDL_bool c
 
 done:
     window->last_fullscreen_exclusive_display = display && (window->flags & SDL_WINDOW_FULLSCREEN) && window->fullscreen_exclusive ? display->id : 0;
-    SDL_SyncIfRequired(window);
     return 0;
 
 error:
@@ -1917,23 +1914,23 @@ static struct {
     Uint32 flag;
     SDL_bool invert_value;
 } SDL_WindowFlagProperties[] = {
-    { "always-on-top",      SDL_WINDOW_ALWAYS_ON_TOP,       SDL_FALSE },
-    { "borderless",         SDL_WINDOW_BORDERLESS,          SDL_FALSE },
-    { "focusable",          SDL_WINDOW_NOT_FOCUSABLE,       SDL_TRUE },
-    { "fullscreen",         SDL_WINDOW_FULLSCREEN,          SDL_FALSE },
-    { "hidden",             SDL_WINDOW_HIDDEN,              SDL_FALSE },
-    { "high-pixel-density", SDL_WINDOW_HIGH_PIXEL_DENSITY,  SDL_FALSE },
-    { "maximized",          SDL_WINDOW_MAXIMIZED,           SDL_FALSE },
-    { "menu",               SDL_WINDOW_POPUP_MENU,          SDL_FALSE },
-    { "metal",              SDL_WINDOW_METAL,               SDL_FALSE },
-    { "minimized",          SDL_WINDOW_MINIMIZED,           SDL_FALSE },
-    { "mouse-grabbed",      SDL_WINDOW_MOUSE_GRABBED,       SDL_FALSE },
-    { "opengl",             SDL_WINDOW_OPENGL,              SDL_FALSE },
-    { "resizable",          SDL_WINDOW_RESIZABLE,           SDL_FALSE },
-    { "transparent",        SDL_WINDOW_TRANSPARENT,         SDL_FALSE },
-    { "tooltip",            SDL_WINDOW_TOOLTIP,             SDL_FALSE },
-    { "utility",            SDL_WINDOW_UTILITY,             SDL_FALSE },
-    { "vulkan",             SDL_WINDOW_VULKAN,              SDL_FALSE }
+    { SDL_PROPERTY_WINDOW_CREATE_ALWAYS_ON_TOP_BOOLEAN,      SDL_WINDOW_ALWAYS_ON_TOP,       SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_BORDERLESS_BOOLEAN,         SDL_WINDOW_BORDERLESS,          SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_FOCUSABLE_BOOLEAN,          SDL_WINDOW_NOT_FOCUSABLE,       SDL_TRUE },
+    { SDL_PROPERTY_WINDOW_CREATE_FULLSCREEN_BOOLEAN,         SDL_WINDOW_FULLSCREEN,          SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_HIDDEN_BOOLEAN,             SDL_WINDOW_HIDDEN,              SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, SDL_WINDOW_HIGH_PIXEL_DENSITY,  SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_MAXIMIZED_BOOLEAN,          SDL_WINDOW_MAXIMIZED,           SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_MENU_BOOLEAN,               SDL_WINDOW_POPUP_MENU,          SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_METAL_BOOLEAN,              SDL_WINDOW_METAL,               SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_MINIMIZED_BOOLEAN,          SDL_WINDOW_MINIMIZED,           SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_MOUSE_GRABBED_BOOLEAN,      SDL_WINDOW_MOUSE_GRABBED,       SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_OPENGL_BOOLEAN,             SDL_WINDOW_OPENGL,              SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_RESIZABLE_BOOLEAN,          SDL_WINDOW_RESIZABLE,           SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_TRANSPARENT_BOOLEAN,        SDL_WINDOW_TRANSPARENT,         SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_TOOLTIP_BOOLEAN,            SDL_WINDOW_TOOLTIP,             SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_UTILITY_BOOLEAN,            SDL_WINDOW_UTILITY,             SDL_FALSE },
+    { SDL_PROPERTY_WINDOW_CREATE_VULKAN_BOOLEAN,             SDL_WINDOW_VULKAN,              SDL_FALSE }
 };
 
 static Uint32 SDL_GetWindowFlagProperties(SDL_PropertiesID props)
@@ -1958,12 +1955,12 @@ static Uint32 SDL_GetWindowFlagProperties(SDL_PropertiesID props)
 SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
 {
     SDL_Window *window;
-    const char *title = SDL_GetStringProperty(props, "title", NULL);
-    int x = (int)SDL_GetNumberProperty(props, "x", SDL_WINDOWPOS_UNDEFINED);
-    int y = (int)SDL_GetNumberProperty(props, "y", SDL_WINDOWPOS_UNDEFINED);
-    int w = (int)SDL_GetNumberProperty(props, "width", 0);
-    int h = (int)SDL_GetNumberProperty(props, "height", 0);
-    SDL_Window *parent = SDL_GetProperty(props, "parent", NULL);
+    const char *title = SDL_GetStringProperty(props, SDL_PROPERTY_WINDOW_CREATE_TITLE_STRING, NULL);
+    int x = (int)SDL_GetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_X_NUMBER, SDL_WINDOWPOS_UNDEFINED);
+    int y = (int)SDL_GetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_Y_NUMBER, SDL_WINDOWPOS_UNDEFINED);
+    int w = (int)SDL_GetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_WIDTH_NUMBER, 0);
+    int h = (int)SDL_GetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_HEIGHT_NUMBER, 0);
+    SDL_Window *parent = SDL_GetProperty(props, SDL_PROPERTY_WINDOW_CREATE_PARENT_POINTER, NULL);
     Uint32 flags = SDL_GetWindowFlagProperties(props);
     Uint32 type_flags, graphics_flags;
     SDL_bool undefined_x = SDL_FALSE;
@@ -2174,10 +2171,10 @@ SDL_Window *SDL_CreateWindow(const char *title, int w, int h, Uint32 flags)
     SDL_Window *window;
     SDL_PropertiesID props = SDL_CreateProperties();
     if (title && *title) {
-        SDL_SetStringProperty(props, "title", title);
+        SDL_SetStringProperty(props, SDL_PROPERTY_WINDOW_CREATE_TITLE_STRING, title);
     }
-    SDL_SetNumberProperty(props, "width", w);
-    SDL_SetNumberProperty(props, "height", h);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_WIDTH_NUMBER, w);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_HEIGHT_NUMBER, h);
     SDL_SetNumberProperty(props, "flags", flags);
     window = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);
@@ -2195,11 +2192,11 @@ SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y
         return NULL;
     }
 
-    SDL_SetProperty(props, "parent", parent);
-    SDL_SetNumberProperty(props, "x", offset_x);
-    SDL_SetNumberProperty(props, "y", offset_y);
-    SDL_SetNumberProperty(props, "width", w);
-    SDL_SetNumberProperty(props, "height", h);
+    SDL_SetProperty(props, SDL_PROPERTY_WINDOW_CREATE_PARENT_POINTER, parent);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_X_NUMBER, offset_x);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_Y_NUMBER, offset_y);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_WIDTH_NUMBER, w);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_HEIGHT_NUMBER, h);
     SDL_SetNumberProperty(props, "flags", flags);
     window = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);
@@ -2338,6 +2335,14 @@ int SDL_RecreateWindow(SDL_Window *window, Uint32 flags)
 
     if (_this->SetWindowIcon && window->icon) {
         _this->SetWindowIcon(_this, window, window->icon);
+    }
+
+    if (_this->SetWindowMinimumSize && (window->min_w || window->min_h)) {
+        _this->SetWindowMinimumSize(_this, window);
+    }
+
+    if (_this->SetWindowMaximumSize && (window->max_w || window->max_h)) {
+        _this->SetWindowMaximumSize(_this, window);
     }
 
     if (window->hit_test) {
@@ -2549,18 +2554,18 @@ int SDL_SetWindowBordered(SDL_Window *window, SDL_bool bordered)
 {
     CHECK_WINDOW_MAGIC(window, -1);
     CHECK_WINDOW_NOT_POPUP(window, -1);
-    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-        const SDL_bool want = (bordered != SDL_FALSE); /* normalize the flag. */
-        const SDL_bool have = !(window->flags & SDL_WINDOW_BORDERLESS);
-        if ((want != have) && (_this->SetWindowBordered)) {
-            if (want) {
-                window->flags &= ~SDL_WINDOW_BORDERLESS;
-            } else {
-                window->flags |= SDL_WINDOW_BORDERLESS;
-            }
-            _this->SetWindowBordered(_this, window, want);
+
+    const SDL_bool want = (bordered != SDL_FALSE); /* normalize the flag. */
+    const SDL_bool have = !(window->flags & SDL_WINDOW_BORDERLESS);
+    if ((want != have) && (_this->SetWindowBordered)) {
+        if (want) {
+            window->flags &= ~SDL_WINDOW_BORDERLESS;
+        } else {
+            window->flags |= SDL_WINDOW_BORDERLESS;
         }
+        _this->SetWindowBordered(_this, window, want);
     }
+
     return 0;
 }
 
@@ -2568,19 +2573,19 @@ int SDL_SetWindowResizable(SDL_Window *window, SDL_bool resizable)
 {
     CHECK_WINDOW_MAGIC(window, -1);
     CHECK_WINDOW_NOT_POPUP(window, -1);
-    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-        const SDL_bool want = (resizable != SDL_FALSE); /* normalize the flag. */
-        const SDL_bool have = ((window->flags & SDL_WINDOW_RESIZABLE) != 0);
-        if ((want != have) && (_this->SetWindowResizable)) {
-            if (want) {
-                window->flags |= SDL_WINDOW_RESIZABLE;
-            } else {
-                window->flags &= ~SDL_WINDOW_RESIZABLE;
-                SDL_copyp(&window->windowed, &window->floating);
-            }
-            _this->SetWindowResizable(_this, window, want);
+
+    const SDL_bool want = (resizable != SDL_FALSE); /* normalize the flag. */
+    const SDL_bool have = ((window->flags & SDL_WINDOW_RESIZABLE) != 0);
+    if ((want != have) && (_this->SetWindowResizable)) {
+        if (want) {
+            window->flags |= SDL_WINDOW_RESIZABLE;
+        } else {
+            window->flags &= ~SDL_WINDOW_RESIZABLE;
+            SDL_copyp(&window->windowed, &window->floating);
         }
+        _this->SetWindowResizable(_this, window, want);
     }
+
     return 0;
 }
 
@@ -2588,18 +2593,18 @@ int SDL_SetWindowAlwaysOnTop(SDL_Window *window, SDL_bool on_top)
 {
     CHECK_WINDOW_MAGIC(window, -1);
     CHECK_WINDOW_NOT_POPUP(window, -1);
-    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-        const SDL_bool want = (on_top != SDL_FALSE); /* normalize the flag. */
-        const SDL_bool have = ((window->flags & SDL_WINDOW_ALWAYS_ON_TOP) != 0);
-        if ((want != have) && (_this->SetWindowAlwaysOnTop)) {
-            if (want) {
-                window->flags |= SDL_WINDOW_ALWAYS_ON_TOP;
-            } else {
-                window->flags &= ~SDL_WINDOW_ALWAYS_ON_TOP;
-            }
-            _this->SetWindowAlwaysOnTop(_this, window, want);
+
+    const SDL_bool want = (on_top != SDL_FALSE); /* normalize the flag. */
+    const SDL_bool have = ((window->flags & SDL_WINDOW_ALWAYS_ON_TOP) != 0);
+    if ((want != have) && (_this->SetWindowAlwaysOnTop)) {
+        if (want) {
+            window->flags |= SDL_WINDOW_ALWAYS_ON_TOP;
+        } else {
+            window->flags &= ~SDL_WINDOW_ALWAYS_ON_TOP;
         }
+        _this->SetWindowAlwaysOnTop(_this, window, want);
     }
+
     return 0;
 }
 
@@ -2717,6 +2722,8 @@ int SDL_GetWindowSizeInPixels(SDL_Window *window, int *w, int *h)
 
 int SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
 {
+    int w, h;
+
     CHECK_WINDOW_MAGIC(window, -1);
     if (min_w < 0) {
         return SDL_InvalidParamError("min_w");
@@ -2733,19 +2740,14 @@ int SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
     window->min_w = min_w;
     window->min_h = min_h;
 
-    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-        int w, h;
-
-        if (_this->SetWindowMinimumSize) {
-            _this->SetWindowMinimumSize(_this, window);
-        }
-
-        /* Ensure that window is not smaller than minimal size */
-        w = window->min_w ? SDL_max(window->floating.w, window->min_w) : window->floating.w;
-        h = window->min_h ? SDL_max(window->floating.h, window->min_h) : window->floating.h;
-        return SDL_SetWindowSize(window, w, h);
+    if (_this->SetWindowMinimumSize) {
+        _this->SetWindowMinimumSize(_this, window);
     }
-    return 0;
+
+    /* Ensure that window is not smaller than minimal size */
+    w = window->min_w ? SDL_max(window->floating.w, window->min_w) : window->floating.w;
+    h = window->min_h ? SDL_max(window->floating.h, window->min_h) : window->floating.h;
+    return SDL_SetWindowSize(window, w, h);
 }
 
 int SDL_GetWindowMinimumSize(SDL_Window *window, int *min_w, int *min_h)
@@ -2762,6 +2764,8 @@ int SDL_GetWindowMinimumSize(SDL_Window *window, int *min_w, int *min_h)
 
 int SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
 {
+    int w, h;
+
     CHECK_WINDOW_MAGIC(window, -1);
     if (max_w < 0) {
         return SDL_InvalidParamError("max_w");
@@ -2777,19 +2781,14 @@ int SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
     window->max_w = max_w;
     window->max_h = max_h;
 
-    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-        int w, h;
-
-        if (_this->SetWindowMaximumSize) {
-            _this->SetWindowMaximumSize(_this, window);
-        }
-
-        /* Ensure that window is not larger than maximal size */
-        w = window->max_w ? SDL_min(window->floating.w, window->max_w) : window->floating.w;
-        h = window->max_h ? SDL_min(window->floating.h, window->max_h) : window->floating.h;
-        return SDL_SetWindowSize(window, w, h);
+    if (_this->SetWindowMaximumSize) {
+        _this->SetWindowMaximumSize(_this, window);
     }
-    return 0;
+
+    /* Ensure that window is not larger than maximal size */
+    w = window->max_w ? SDL_min(window->floating.w, window->max_w) : window->floating.w;
+    h = window->max_h ? SDL_min(window->floating.h, window->max_h) : window->floating.h;
+    return SDL_SetWindowSize(window, w, h);
 }
 
 int SDL_GetWindowMaximumSize(SDL_Window *window, int *max_w, int *max_h)
@@ -2972,6 +2971,10 @@ int SDL_SetWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
     if (!fullscreen || ret != 0) {
         /* Clear the current fullscreen mode. */
         SDL_zero(window->current_fullscreen_mode);
+    }
+
+    if (ret == 0) {
+        SDL_SyncIfRequired(window);
     }
 
     return ret;
@@ -3618,21 +3621,23 @@ void SDL_DestroyWindow(SDL_Window *window)
         }
     }
 
-    /* make no context current if this is the current context window. */
+    /* Make no context current if this is the current context window */
     if (window->flags & SDL_WINDOW_OPENGL) {
         if (_this->current_glwin == window) {
             SDL_GL_MakeCurrent(window, NULL);
         }
     }
+
+    if (_this->DestroyWindow) {
+        _this->DestroyWindow(_this, window);
+    }
+
+    /* Unload the graphics libraries after the window is destroyed, which may clean up EGL surfaces */
     if (window->flags & SDL_WINDOW_OPENGL) {
         SDL_GL_UnloadLibrary();
     }
     if (window->flags & SDL_WINDOW_VULKAN) {
         SDL_Vulkan_UnloadLibrary();
-    }
-
-    if (_this->DestroyWindow) {
-        _this->DestroyWindow(_this, window);
     }
 
     if (_this->grabbed_window == window) {

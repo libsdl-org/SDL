@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -58,6 +58,50 @@ static const char *arrow[] = {
     "                                ",
     "                                ",
     "                                ",
+    "                                ",
+    "                                ",
+    "                                ",
+    "                                ",
+    "0,0"
+};
+
+static const char *cross[] = {
+    /* width height num_colors chars_per_pixel */
+    "    32    32        3            1",
+    /* colors */
+    "o c #000000",
+    ". c #ffffff",
+    "  c None",
+    /* pixels */
+    /* pixels */
+    "                                ",
+    "                                ",
+    "                                ",
+    "                                ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "    oooooooooooooooooooooooo    ",
+    "    oooooooooooooooooooooooo    ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
     "                                ",
     "                                ",
     "                                ",
@@ -127,6 +171,9 @@ init_system_cursor(const char *image[])
             case '.':
                 mask[i] |= 0x01;
                 break;
+            case 'o':
+                data[i] |= 0x01;
+                break;
             case ' ':
                 break;
             }
@@ -138,8 +185,8 @@ init_system_cursor(const char *image[])
 
 static SDLTest_CommonState *state;
 static int done;
-static SDL_Cursor *cursors[1 + SDL_NUM_SYSTEM_CURSORS];
-static SDL_SystemCursor cursor_types[1 + SDL_NUM_SYSTEM_CURSORS];
+static SDL_Cursor *cursors[3 + SDL_NUM_SYSTEM_CURSORS];
+static SDL_SystemCursor cursor_types[3 + SDL_NUM_SYSTEM_CURSORS];
 static int num_cursors;
 static int current_cursor;
 static SDL_bool show_cursor;
@@ -257,7 +304,29 @@ static void loop(void)
 
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Renderer *renderer = state->renderers[i];
-        SDL_RenderClear(renderer);
+        SDL_FRect rect;
+        int x, y, row;
+        int window_w = 0, window_h = 0;
+
+        SDL_GetWindowSize(state->windows[i], &window_w, &window_h);
+        rect.w = 128.0f;
+        rect.h = 128.0f;
+        for (y = 0, row = 0; y < window_h; y += (int)rect.h, ++row) {
+            SDL_bool black = ((row % 2) == 0) ? SDL_TRUE : SDL_FALSE;
+            for (x = 0; x < window_w; x += (int)rect.w) {
+                rect.x = (float)x;
+                rect.y = (float)y;
+
+                if (black) {
+                    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+                } else {
+                    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+                }
+                SDL_RenderFillRect(renderer, &rect);
+
+                black = !black;
+            }
+        }
         SDL_RenderPresent(renderer);
     }
 #ifdef __EMSCRIPTEN__
@@ -271,6 +340,7 @@ int main(int argc, char *argv[])
 {
     int i;
     const char *color_cursor = NULL;
+    SDL_Cursor *cursor;
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -299,23 +369,10 @@ int main(int argc, char *argv[])
         quit(2);
     }
 
-    for (i = 0; i < state->num_windows; ++i) {
-        SDL_Renderer *renderer = state->renderers[i];
-        SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
-        SDL_RenderClear(renderer);
-    }
-
     num_cursors = 0;
 
     if (color_cursor) {
-        SDL_Cursor *cursor = init_color_cursor(color_cursor);
-        if (cursor) {
-            cursors[num_cursors] = cursor;
-            cursor_types[num_cursors] = (SDL_SystemCursor)-1;
-            num_cursors++;
-        }
-    } else {
-        SDL_Cursor *cursor = init_system_cursor(arrow);
+        cursor = init_color_cursor(color_cursor);
         if (cursor) {
             cursors[num_cursors] = cursor;
             cursor_types[num_cursors] = (SDL_SystemCursor)-1;
@@ -323,8 +380,22 @@ int main(int argc, char *argv[])
         }
     }
 
+    cursor = init_system_cursor(arrow);
+    if (cursor) {
+        cursors[num_cursors] = cursor;
+        cursor_types[num_cursors] = (SDL_SystemCursor)-1;
+        num_cursors++;
+    }
+
+    cursor = init_system_cursor(cross);
+    if (cursor) {
+        cursors[num_cursors] = cursor;
+        cursor_types[num_cursors] = (SDL_SystemCursor)-1;
+        num_cursors++;
+    }
+
     for (i = 0; i < SDL_NUM_SYSTEM_CURSORS; ++i) {
-        SDL_Cursor *cursor = SDL_CreateSystemCursor((SDL_SystemCursor)i);
+        cursor = SDL_CreateSystemCursor((SDL_SystemCursor)i);
         if (cursor) {
             cursors[num_cursors] = cursor;
             cursor_types[num_cursors] = i;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -168,7 +168,7 @@ int SDL_HIDAPI_LockRumble(void)
 {
     SDL_HIDAPI_RumbleContext *ctx = &rumble_context;
 
-    if (SDL_AtomicCAS(&ctx->initialized, SDL_FALSE, SDL_TRUE)) {
+    if (SDL_AtomicCompareAndSwap(&ctx->initialized, SDL_FALSE, SDL_TRUE)) {
         if (SDL_HIDAPI_StartRumbleThread(ctx) < 0) {
             return -1;
         }

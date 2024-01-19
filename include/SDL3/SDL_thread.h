@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -50,10 +50,10 @@ struct SDL_Thread;
 typedef struct SDL_Thread SDL_Thread;
 
 /* The SDL thread ID */
-typedef unsigned long SDL_threadID;
+typedef Uint64 SDL_ThreadID;
 
 /* Thread local storage ID, 0 is the invalid ID */
-typedef unsigned int SDL_TLSID;
+typedef Uint32 SDL_TLSID;
 
 /**
  *  The SDL thread priority.
@@ -220,10 +220,6 @@ SDL_CreateThread(SDL_ThreadFunction fn, const char *name, void *data);
  * multiple of the system's page size (in many cases, this is 4 kilobytes, but
  * check your system documentation).
  *
- * In SDL 2.1, stack size will be folded into the original SDL_CreateThread
- * function, but for backwards compatibility, this is currently a separate
- * function.
- *
  * \param fn the SDL_ThreadFunction function to call in the new thread
  * \param name the name of the thread
  * \param stacksize the size, in bytes, to allocate for the new thread stack.
@@ -273,7 +269,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetThreadName(SDL_Thread *thread);
  *
  * \sa SDL_GetThreadID
  */
-extern DECLSPEC SDL_threadID SDLCALL SDL_ThreadID(void);
+extern DECLSPEC SDL_ThreadID SDLCALL SDL_GetCurrentThreadID(void);
 
 /**
  * Get the thread identifier for the specified thread.
@@ -288,9 +284,9 @@ extern DECLSPEC SDL_threadID SDLCALL SDL_ThreadID(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_ThreadID
+ * \sa SDL_GetCurrentThreadID
  */
-extern DECLSPEC SDL_threadID SDLCALL SDL_GetThreadID(SDL_Thread * thread);
+extern DECLSPEC SDL_ThreadID SDLCALL SDL_GetThreadID(SDL_Thread * thread);
 
 /**
  * Set the priority for the current thread.

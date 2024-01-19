@@ -1,6 +1,6 @@
 /*
  Simple DirectMedia Layer
- Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+ Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
  This software is provided 'as-is', without any express or implied
  warranty.  In no event will the authors be held liable for any damages
@@ -271,7 +271,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
             SDL_SendTouch(UIKit_GetEventTimestamp([event timestamp]),
-                          touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
+                          touchId, (SDL_FingerID)(uintptr_t)touch, sdlwindow,
                           SDL_TRUE, locationInView.x, locationInView.y, pressure);
         }
     }
@@ -327,7 +327,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
             SDL_SendTouch(UIKit_GetEventTimestamp([event timestamp]),
-                          touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
+                          touchId, (SDL_FingerID)(uintptr_t)touch, sdlwindow,
                           SDL_FALSE, locationInView.x, locationInView.y, pressure);
         }
     }
@@ -362,7 +362,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
             SDL_SendTouchMotion(UIKit_GetEventTimestamp([event timestamp]),
-                                touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
+                                touchId, (SDL_FingerID)(uintptr_t)touch, sdlwindow,
                                 locationInView.x, locationInView.y, pressure);
         }
     }

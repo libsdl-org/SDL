@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -82,7 +82,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread)
     const DWORD flags = thread->stacksize ? STACK_SIZE_PARAM_IS_A_RESERVATION : 0;
 
     /* Save the function which we will have to call to clear the RTL of calling app! */
-    thread->endfunc = pfnEndThread;
+    thread->endfunc = (SDL_FunctionPointer)pfnEndThread;
 
     /* thread->stacksize == 0 means "system default", same as win32 expects */
     if (pfnBeginThread) {
@@ -112,11 +112,18 @@ typedef struct tagTHREADNAME_INFO
 } THREADNAME_INFO;
 #pragma pack(pop)
 
+static LONG NTAPI EmptyVectoredExceptionHandler(EXCEPTION_POINTERS *ExceptionInfo)
+{
+    (void)ExceptionInfo;
+    return EXCEPTION_CONTINUE_EXECUTION;
+}
+
 typedef HRESULT(WINAPI *pfnSetThreadDescription)(HANDLE, PCWSTR);
 
 void SDL_SYS_SetupThread(const char *name)
 {
     if (name) {
+        PVOID exceptionHandlerHandle;
 #ifndef __WINRT__ /* !!! FIXME: There's no LoadLibrary() in WinRT; don't know if SetThreadDescription is available there at all at the moment. */
         static pfnSetThreadDescription pSetThreadDescription = NULL;
         static HMODULE kernel32 = NULL;
@@ -125,6 +132,12 @@ void SDL_SYS_SetupThread(const char *name)
             kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
             if (kernel32) {
                 pSetThreadDescription = (pfnSetThreadDescription)GetProcAddress(kernel32, "SetThreadDescription");
+            }
+            if (!kernel32 || !pSetThreadDescription) {
+                HMODULE kernelBase = GetModuleHandle(TEXT("KernelBase.dll"));
+                if (kernelBase) {
+                    pSetThreadDescription = (pfnSetThreadDescription)GetProcAddress(kernelBase, "SetThreadDescription");
+                }
             }
         }
 
@@ -141,14 +154,9 @@ void SDL_SYS_SetupThread(const char *name)
            but we still need to deal with older OSes and debuggers. Set it with the arcane
            exception magic, too. */
 
-        if (IsDebuggerPresent()) {
+        exceptionHandlerHandle = AddVectoredExceptionHandler(1, EmptyVectoredExceptionHandler);
+        if (exceptionHandlerHandle) {
             THREADNAME_INFO inf;
-
-            /* C# and friends will try to catch this Exception, let's avoid it. */
-            if (SDL_GetHintBoolean(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, SDL_TRUE)) {
-                return;
-            }
-
             /* This magic tells the debugger to name a thread if it's listening. */
             SDL_zero(inf);
             inf.dwType = 0x1000;
@@ -158,13 +166,14 @@ void SDL_SYS_SetupThread(const char *name)
 
             /* The debugger catches this, renames the thread, continues on. */
             RaiseException(0x406D1388, 0, sizeof(inf) / sizeof(ULONG), (const ULONG_PTR *)&inf);
+            RemoveVectoredExceptionHandler(exceptionHandlerHandle);
         }
     }
 }
 
-SDL_threadID SDL_ThreadID(void)
+SDL_ThreadID SDL_GetCurrentThreadID(void)
 {
-    return (SDL_threadID)GetCurrentThreadId();
+    return (SDL_ThreadID)GetCurrentThreadId();
 }
 
 int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)

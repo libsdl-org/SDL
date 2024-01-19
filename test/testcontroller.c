@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -460,8 +460,8 @@ static void CommitBindingElement(const char *binding, SDL_bool force)
             }
         }
         if (native_axis) {
-            AxisInfo current_axis_info;
-            AxisInfo proposed_axis_info;
+            AxisInfo current_axis_info  = { 0, 0 };
+            AxisInfo proposed_axis_info = { 0, 0 };
             SDL_bool current_axis = ParseAxisInfo(current, &current_axis_info);
             SDL_bool proposed_axis = ParseAxisInfo(binding, &proposed_axis_info);
 
@@ -967,8 +967,6 @@ static void HandleGamepadAdded(SDL_JoystickID id, SDL_bool verbose)
     int i;
 
     i = FindController(id);
-
-    SDL_assert(i >= 0);
     if (i < 0) {
         return;
     }
@@ -994,6 +992,10 @@ static void HandleGamepadAdded(SDL_JoystickID id, SDL_bool verbose)
 
             if (SDL_GamepadHasRumbleTriggers(gamepad)) {
                 SDL_Log("Trigger rumble supported");
+            }
+
+            if (SDL_GetGamepadPlayerIndex(gamepad) >= 0) {
+                SDL_Log("Player index: %d\n", SDL_GetGamepadPlayerIndex(gamepad));
             }
         }
 
@@ -1288,6 +1290,13 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
         SDL_SetRenderDrawColor(renderer, r, g, b, a);
     }
 
+    if (controller->joystick) {
+        SDL_snprintf(text, sizeof(text), "(%" SDL_PRIu32 ")", SDL_GetJoystickInstanceID(controller->joystick));
+        x = (float)SCREEN_WIDTH - (FONT_CHARACTER_SIZE * SDL_strlen(text)) - 8.0f;
+        y = 8.0f;
+        SDLTest_DrawString(renderer, x, y, text);
+    }
+
     if (controller_name && *controller_name) {
         x = title_area.x + title_area.w / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(controller_name)) / 2;
         y = title_area.y + title_area.h / 2 - FONT_CHARACTER_SIZE / 2;
@@ -1307,6 +1316,14 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
     SDLTest_DrawString(renderer, x, y, type);
 
     if (display_mode == CONTROLLER_MODE_TESTING) {
+        Uint64 steam_handle = SDL_GetGamepadSteamHandle(controller->gamepad);
+        if (steam_handle) {
+            SDL_snprintf(text, SDL_arraysize(text), "Steam: 0x%.16" SDL_PRIx64, steam_handle);
+            y = (float)SCREEN_HEIGHT - 2 * (8.0f + FONT_LINE_HEIGHT);
+            x = (float)SCREEN_WIDTH - 8.0f - (FONT_CHARACTER_SIZE * SDL_strlen(text));
+            SDLTest_DrawString(renderer, x, y, text);
+        }
+
         SDL_snprintf(text, SDL_arraysize(text), "VID: 0x%.4x PID: 0x%.4x",
                      SDL_GetJoystickVendor(controller->joystick),
                      SDL_GetJoystickProduct(controller->joystick));
@@ -1589,6 +1606,10 @@ static void loop(void *arg)
 
         case SDL_EVENT_GAMEPAD_REMAPPED:
             HandleGamepadRemapped(event.gdevice.which);
+            break;
+
+        case SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED:
+            RefreshControllerName();
             break;
 
 #ifdef VERBOSE_TOUCHPAD

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -113,14 +113,6 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow 
 
 #if !TARGET_OS_TV && !TARGET_OS_XR
     if (displaydata.uiscreen == [UIScreen mainScreen]) {
-        /* SDL_CreateWindow sets the window w&h to the display's bounds if the
-         * fullscreen flag is set. But the display bounds orientation might not
-         * match what we want, and GetSupportedOrientations call below uses the
-         * window w&h. They're overridden below anyway, so we'll just set them
-         * to the requested size for the purposes of determining orientation. */
-        window->w = window->windowed.w;
-        window->h = window->windowed.h;
-
         NSUInteger orients = UIKit_GetSupportedOrientations(window);
         BOOL supportsLandscape = (orients & UIInterfaceOrientationMaskLandscape) != 0;
         BOOL supportsPortrait = (orients & (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown)) != 0;
@@ -154,8 +146,8 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow 
     [view setSDLWindow:window];
 
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
-    SDL_SetProperty(props, "SDL.window.uikit.window", (__bridge void *)data.uiwindow);
-    SDL_SetNumberProperty(props, "SDL.window.uikit.metal_view_tag", SDL_METALVIEW_TAG);
+    SDL_SetProperty(props, SDL_PROPERTY_WINDOW_UIKIT_WINDOW_POINTER, (__bridge void *)data.uiwindow);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER, SDL_METALVIEW_TAG);
 
     return 0;
 }
@@ -305,6 +297,11 @@ static void UIKit_UpdateWindowBorder(SDL_VideoDevice *_this, SDL_Window *window)
 void UIKit_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool bordered)
 {
     @autoreleasepool {
+        if (bordered) {
+            window->flags &= ~SDL_WINDOW_BORDERLESS;
+        } else {
+            window->flags |= SDL_WINDOW_BORDERLESS;
+        }
         UIKit_UpdateWindowBorder(_this, window);
     }
 }
@@ -312,6 +309,7 @@ void UIKit_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_boo
 int UIKit_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
     @autoreleasepool {
+        SDL_SendWindowEvent(window, fullscreen ? SDL_EVENT_WINDOW_ENTER_FULLSCREEN : SDL_EVENT_WINDOW_LEAVE_FULLSCREEN, 0, 0);
         UIKit_UpdateWindowBorder(_this, window);
     }
     return 0;
@@ -431,10 +429,10 @@ UIKit_GetSupportedOrientations(SDL_Window *window)
         }
 
         if (orientationMask == 0) {
-            if (window->w >= window->h) {
+            if (window->floating.w >= window->floating.h) {
                 orientationMask |= UIInterfaceOrientationMaskLandscape;
             }
-            if (window->h >= window->w) {
+            if (window->floating.h >= window->floating.w) {
                 orientationMask |= (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown);
             }
         }

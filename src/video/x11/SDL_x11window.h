@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -88,12 +88,15 @@ struct SDL_WindowData
         X11_PENDING_OP_RESTORE = 0x01,
         X11_PENDING_OP_MINIMIZE = 0x02,
         X11_PENDING_OP_MAXIMIZE = 0x04,
-        X11_PENDING_OP_FULLSCREEN = 0x08
+        X11_PENDING_OP_FULLSCREEN = 0x08,
+        X11_PENDING_OP_MOVE = 0x10,
+        X11_PENDING_OP_RESIZE = 0x20
     } pending_operation;
 
-    SDL_bool initial_border_adjustment;
     SDL_bool window_was_maximized;
-    int skip_size_count;
+    SDL_bool disable_size_position_events;
+    SDL_bool previous_borders_nonzero;
+    SDL_bool toggle_borders;
     SDL_HitTestResult hit_test_result;
 };
 
@@ -135,5 +138,6 @@ extern int X11_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, SD
 
 int SDL_X11_SetWindowTitle(Display *display, Window xwindow, char *title);
 void X11_UpdateWindowPosition(SDL_Window *window, SDL_bool use_current_position);
+void X11_SetWindowMinMax(SDL_Window *window, SDL_bool use_current);
 
 #endif /* SDL_x11window_h_ */

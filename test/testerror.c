@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -35,8 +35,8 @@ static int SDLCALL
 ThreadFunc(void *data)
 {
     /* Set the child thread error string */
-    SDL_SetError("Thread %s (%lu) had a problem: %s",
-                 (char *)data, SDL_ThreadID(), "nevermind");
+    SDL_SetError("Thread %s (%" SDL_PRIu64 ") had a problem: %s",
+                 (char *)data, SDL_GetCurrentThreadID(), "nevermind");
     while (alive) {
         SDL_Log("Thread '%s' is alive!\n", (char *)data);
         SDL_Delay(1 * 1000);

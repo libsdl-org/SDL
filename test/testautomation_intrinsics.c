@@ -95,7 +95,7 @@ static void verify_ints_addition(const Sint32 *dest, const Sint32 *a, const Sint
     for (i = 0; i < size; ++i) {
         Sint32 expected = a[i] + b[i];
         if (dest[i] != expected) {
-            SDLTest_AssertCheck(SDL_FALSE, "%"SDL_PRIs32" + %"SDL_PRIs32" = %"SDL_PRIs32", expected %"SDL_PRIs32" ([%"SDL_PRIu32"/%"SDL_PRIu32"] %s)",
+            SDLTest_AssertCheck(SDL_FALSE, "%" SDL_PRIs32 " + %" SDL_PRIs32 " = %" SDL_PRIs32 ", expected %" SDL_PRIs32 " ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
                                 a[i], b[i], dest[i], expected, (Uint32)i, (Uint32)size, desc);
             all_good = 0;
         }
@@ -115,7 +115,7 @@ static void verify_ints_multiplication(const Sint32 *dest, const Sint32 *a, cons
     for (i = 0; i < size; ++i) {
         Sint32 expected = a[i] * b[i];
         if (dest[i] != expected) {
-            SDLTest_AssertCheck(SDL_FALSE, "%"SDL_PRIs32" * %"SDL_PRIs32" = %"SDL_PRIs32", expected %"SDL_PRIs32" ([%"SDL_PRIu32"/%"SDL_PRIu32"] %s)",
+            SDLTest_AssertCheck(SDL_FALSE, "%" SDL_PRIs32 " * %" SDL_PRIs32 " = %" SDL_PRIs32 ", expected %" SDL_PRIs32 " ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
                                 a[i], b[i], dest[i], expected, (Uint32)i, (Uint32)size, desc);
             all_good = 0;
         }
@@ -136,7 +136,7 @@ static void verify_floats_addition(const float *dest, const float *a, const floa
         float expected = a[i] + b[i];
         float abs_error = SDL_fabsf(dest[i] - expected);
         if (abs_error > 1.0e-5f) {
-            SDLTest_AssertCheck(SDL_FALSE, "%g + %g = %g, expected %g (error = %g) ([%"SDL_PRIu32"/%"SDL_PRIu32"] %s)",
+            SDLTest_AssertCheck(SDL_FALSE, "%g + %g = %g, expected %g (error = %g) ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
                                 a[i], b[i], dest[i], expected, abs_error, (Uint32) i, (Uint32) size, desc);
             all_good = 0;
         }
@@ -157,7 +157,7 @@ static void verify_doubles_addition(const double *dest, const double *a, const d
         double expected = a[i] + b[i];
         double abs_error = SDL_fabs(dest[i] - expected);
         if (abs_error > 1.0e-5) {
-            SDLTest_AssertCheck(abs_error < 1.0e-5f, "%g + %g = %g, expected %g (error = %g) ([%"SDL_PRIu32"/%"SDL_PRIu32"] %s)",
+            SDLTest_AssertCheck(abs_error < 1.0e-5f, "%g + %g = %g, expected %g (error = %g) ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
                                 a[i], b[i], dest[i], expected, abs_error, (Uint32) i, (Uint32) size, desc);
             all_good = SDL_FALSE;
         }

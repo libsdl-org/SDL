@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,7 +30,7 @@ int SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
     if (fmt) {
         va_list ap;
         int result;
-        SDL_error *error = SDL_GetErrBuf();
+        SDL_error *error = SDL_GetErrBuf(SDL_TRUE);
 
         error->error = SDL_ErrorCodeGeneric;
 
@@ -62,7 +62,11 @@ int SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 /* Available for backwards compatibility */
 const char *SDL_GetError(void)
 {
-    const SDL_error *error = SDL_GetErrBuf();
+    const SDL_error *error = SDL_GetErrBuf(SDL_FALSE);
+
+    if (!error) {
+        return "";
+    }
 
     switch (error->error) {
     case SDL_ErrorCodeGeneric:
@@ -76,7 +80,11 @@ const char *SDL_GetError(void)
 
 void SDL_ClearError(void)
 {
-    SDL_GetErrBuf()->error = SDL_ErrorCodeNone;
+    SDL_error *error = SDL_GetErrBuf(SDL_FALSE);
+
+    if (error) {
+        error->error = SDL_ErrorCodeNone;
+    }
 }
 
 /* Very common errors go here */
@@ -84,7 +92,7 @@ int SDL_Error(SDL_errorcode code)
 {
     switch (code) {
     case SDL_ENOMEM:
-        SDL_GetErrBuf()->error = SDL_ErrorCodeOutOfMemory;
+        SDL_GetErrBuf(SDL_TRUE)->error = SDL_ErrorCodeOutOfMemory;
         return -1;
     case SDL_EFREAD:
         return SDL_SetError("Error reading from datastream");

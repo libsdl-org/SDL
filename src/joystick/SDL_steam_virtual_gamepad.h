@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,22 +20,17 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_TIMER_DUMMY) || defined(SDL_TIMERS_DISABLED)
-
-Uint64 SDL_GetPerformanceCounter(void)
+typedef struct SDL_SteamVirtualGamepadInfo
 {
-    SDL_Unsupported();
-    return 0;
-}
+    Uint64 handle;
+    char *name;
+    Uint16 vendor_id;
+    Uint16 product_id;
+    SDL_GamepadType type;
+} SDL_SteamVirtualGamepadInfo;
 
-Uint64 SDL_GetPerformanceFrequency(void)
-{
-    return 1;
-}
-
-void SDL_DelayNS(Uint64 ns)
-{
-    SDL_Unsupported();
-}
-
-#endif /* SDL_TIMER_DUMMY || SDL_TIMERS_DISABLED */
+void SDL_InitSteamVirtualGamepadInfo(void);
+SDL_bool SDL_SteamVirtualGamepadEnabled(void);
+SDL_bool SDL_UpdateSteamVirtualGamepadInfo(void);
+const SDL_SteamVirtualGamepadInfo *SDL_GetSteamVirtualGamepadInfo(int slot);
+void SDL_QuitSteamVirtualGamepadInfo(void);

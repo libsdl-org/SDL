@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -70,7 +70,8 @@ struct SDL_WindowData
         WAYLAND_SURFACE_UNKNOWN = 0,
         WAYLAND_SURFACE_XDG_TOPLEVEL,
         WAYLAND_SURFACE_XDG_POPUP,
-        WAYLAND_SURFACE_LIBDECOR
+        WAYLAND_SURFACE_LIBDECOR,
+        WAYLAND_SURFACE_CUSTOM
     } shell_surface_type;
     enum
     {
@@ -120,15 +121,17 @@ struct SDL_WindowData
     int system_min_required_height;
     SDL_DisplayID last_displayID;
     int fullscreen_deadline_count;
-    SDL_bool floating : 1;
-    SDL_bool suspended : 1;
-    SDL_bool active : 1;
-    SDL_bool is_fullscreen : 1;
-    SDL_bool drop_fullscreen_requests : 1;
-    SDL_bool fullscreen_was_positioned : 1;
-    SDL_bool show_hide_sync_required : 1;
+    SDL_bool floating;
+    SDL_bool suspended;
+    SDL_bool active;
+    SDL_bool is_fullscreen;
+    SDL_bool drop_fullscreen_requests;
+    SDL_bool fullscreen_was_positioned;
+    SDL_bool show_hide_sync_required;
 
     SDL_HitTestResult hit_test_result;
+
+    struct wl_list external_window_list_link;
 };
 
 extern void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -168,9 +168,9 @@ static void SDL_DBus_Init_Spinlocked(void)
 
 void SDL_DBus_Init(void)
 {
-    SDL_AtomicLock(&spinlock_dbus_init); /* make sure two threads can't init at same time, since this can happen before SDL_Init. */
+    SDL_LockSpinlock(&spinlock_dbus_init); /* make sure two threads can't init at same time, since this can happen before SDL_Init. */
     SDL_DBus_Init_Spinlocked();
-    SDL_AtomicUnlock(&spinlock_dbus_init);
+    SDL_UnlockSpinlock(&spinlock_dbus_init);
 }
 
 void SDL_DBus_Quit(void)
@@ -183,14 +183,13 @@ void SDL_DBus_Quit(void)
         dbus.connection_close(dbus.session_conn);
         dbus.connection_unref(dbus.session_conn);
     }
-/* Don't do this - bug 3950
-   dbus_shutdown() is a debug feature which closes all global resources in the dbus library. Calling this should be done by the app, not a library, because if there are multiple users of dbus in the process then SDL could shut it down even though another part is using it.
-*/
-#if 0
-    if (dbus.shutdown) {
-        dbus.shutdown();
+
+    if (SDL_GetHintBoolean(SDL_HINT_SHUTDOWN_DBUS_ON_QUIT, SDL_FALSE)) {
+        if (dbus.shutdown) {
+            dbus.shutdown();
+        }
     }
-#endif
+
     SDL_zero(dbus);
     UnloadDBUSLibrary();
     SDL_free(inhibit_handle);

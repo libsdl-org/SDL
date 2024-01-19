@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -50,15 +50,6 @@
 #endif
 
 /* #define HIGHDPI_DEBUG */
-
-/* Masks for processing the windows KEYDOWN and KEYUP messages */
-#define REPEATED_KEYMASK (1 << 30)
-#define EXTENDED_KEYMASK (1 << 24)
-
-#define VK_ENTER 10 /* Keypad Enter ... no VKEY defined? */
-#ifndef VK_OEM_NEC_EQUAL
-#define VK_OEM_NEC_EQUAL 0x92
-#endif
 
 /* Make sure XBUTTON stuff is defined that isn't in older Platform SDKs... */
 #ifndef WM_XBUTTONDOWN
@@ -114,6 +105,10 @@
 /* Used to compare Windows message timestamps */
 #define SDL_TICKS_PASSED(A, B) ((Sint32)((B) - (A)) <= 0)
 
+#ifdef _WIN64
+typedef Uint64 QWORD; // Needed for NEXTRAWINPUTBLOCK()
+#endif
+
 static SDL_bool SDL_processing_messages;
 static DWORD message_tick;
 static Uint64 timestamp_offset;
@@ -167,13 +162,18 @@ static SDL_Scancode WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
     if (scanCode != 0) {
         if ((keyFlags & KF_EXTENDED) == KF_EXTENDED) {
             scanCode = MAKEWORD(scanCode, 0xe0);
+        } else if (scanCode == 0x45) {
+            /* Pause */
+            scanCode = 0xe046;
         }
     } else {
         Uint16 vkCode = LOWORD(wParam);
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
         /* Windows may not report scan codes for some buttons (multimedia buttons etc).
          * Get scan code from the VK code.*/
         scanCode = LOWORD(MapVirtualKey(vkCode, MAPVK_VK_TO_VSC_EX));
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
         /* Pause/Break key have a special scan code with 0xe1 prefix.
          * Use Pause scan code that is used in Win32. */
@@ -196,7 +196,7 @@ static SDL_bool WIN_ShouldIgnoreFocusClick(SDL_WindowData *data)
            !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
 }
 
-static void WIN_CheckWParamMouseButton(SDL_bool bwParamMousePressed, Uint32 mouseFlags, SDL_bool bSwapButtons, SDL_WindowData *data, Uint8 button, SDL_MouseID mouseID)
+static void WIN_CheckWParamMouseButton(Uint64 timestamp, SDL_bool bwParamMousePressed, Uint32 mouseFlags, SDL_bool bSwapButtons, SDL_WindowData *data, Uint8 button, SDL_MouseID mouseID)
 {
     if (bSwapButtons) {
         if (button == SDL_BUTTON_LEFT) {
@@ -218,9 +218,9 @@ static void WIN_CheckWParamMouseButton(SDL_bool bwParamMousePressed, Uint32 mous
     }
 
     if (bwParamMousePressed && !(mouseFlags & SDL_BUTTON(button))) {
-        SDL_SendMouseButton(WIN_GetEventTimestamp(), data->window, mouseID, SDL_PRESSED, button);
+        SDL_SendMouseButton(timestamp, data->window, mouseID, SDL_PRESSED, button);
     } else if (!bwParamMousePressed && (mouseFlags & SDL_BUTTON(button))) {
-        SDL_SendMouseButton(WIN_GetEventTimestamp(), data->window, mouseID, SDL_RELEASED, button);
+        SDL_SendMouseButton(timestamp, data->window, mouseID, SDL_RELEASED, button);
     }
 }
 
@@ -228,23 +228,23 @@ static void WIN_CheckWParamMouseButton(SDL_bool bwParamMousePressed, Uint32 mous
  * Some windows systems fail to send a WM_LBUTTONDOWN sometimes, but each mouse move contains the current button state also
  *  so this function reconciles our view of the world with the current buttons reported by windows
  */
-static void WIN_CheckWParamMouseButtons(WPARAM wParam, SDL_WindowData *data, SDL_MouseID mouseID)
+static void WIN_CheckWParamMouseButtons(Uint64 timestamp, WPARAM wParam, SDL_WindowData *data, SDL_MouseID mouseID)
 {
     if (wParam != data->mouse_button_flags) {
         Uint32 mouseFlags = SDL_GetMouseState(NULL, NULL);
 
         /* WM_LBUTTONDOWN and friends handle button swapping for us. No need to check SM_SWAPBUTTON here.  */
-        WIN_CheckWParamMouseButton((wParam & MK_LBUTTON), mouseFlags, SDL_FALSE, data, SDL_BUTTON_LEFT, mouseID);
-        WIN_CheckWParamMouseButton((wParam & MK_MBUTTON), mouseFlags, SDL_FALSE, data, SDL_BUTTON_MIDDLE, mouseID);
-        WIN_CheckWParamMouseButton((wParam & MK_RBUTTON), mouseFlags, SDL_FALSE, data, SDL_BUTTON_RIGHT, mouseID);
-        WIN_CheckWParamMouseButton((wParam & MK_XBUTTON1), mouseFlags, SDL_FALSE, data, SDL_BUTTON_X1, mouseID);
-        WIN_CheckWParamMouseButton((wParam & MK_XBUTTON2), mouseFlags, SDL_FALSE, data, SDL_BUTTON_X2, mouseID);
+        WIN_CheckWParamMouseButton(timestamp, (wParam & MK_LBUTTON), mouseFlags, SDL_FALSE, data, SDL_BUTTON_LEFT, mouseID);
+        WIN_CheckWParamMouseButton(timestamp, (wParam & MK_MBUTTON), mouseFlags, SDL_FALSE, data, SDL_BUTTON_MIDDLE, mouseID);
+        WIN_CheckWParamMouseButton(timestamp, (wParam & MK_RBUTTON), mouseFlags, SDL_FALSE, data, SDL_BUTTON_RIGHT, mouseID);
+        WIN_CheckWParamMouseButton(timestamp, (wParam & MK_XBUTTON1), mouseFlags, SDL_FALSE, data, SDL_BUTTON_X1, mouseID);
+        WIN_CheckWParamMouseButton(timestamp, (wParam & MK_XBUTTON2), mouseFlags, SDL_FALSE, data, SDL_BUTTON_X2, mouseID);
 
         data->mouse_button_flags = wParam;
     }
 }
 
-static void WIN_CheckRawMouseButtons(ULONG rawButtons, SDL_WindowData *data, SDL_MouseID mouseID)
+static void WIN_CheckRawMouseButtons(Uint64 timestamp, HANDLE hDevice, ULONG rawButtons, SDL_WindowData *data, SDL_MouseID mouseID)
 {
     // Add a flag to distinguish raw mouse buttons from wParam above
     rawButtons |= 0x8000000;
@@ -252,41 +252,45 @@ static void WIN_CheckRawMouseButtons(ULONG rawButtons, SDL_WindowData *data, SDL
     if (rawButtons != data->mouse_button_flags) {
         Uint32 mouseFlags = SDL_GetMouseState(NULL, NULL);
         SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
+        if (swapButtons && hDevice == NULL) {
+            /* Touchpad, already has buttons swapped */
+            swapButtons = SDL_FALSE;
+        }
         if (rawButtons & RI_MOUSE_BUTTON_1_DOWN) {
-            WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_1_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, mouseID);
+            WIN_CheckWParamMouseButton(timestamp, (rawButtons & RI_MOUSE_BUTTON_1_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, mouseID);
         }
         if (rawButtons & RI_MOUSE_BUTTON_1_UP) {
-            WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_1_UP), mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, mouseID);
+            WIN_CheckWParamMouseButton(timestamp, !(rawButtons & RI_MOUSE_BUTTON_1_UP), mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, mouseID);
         }
         if (rawButtons & RI_MOUSE_BUTTON_2_DOWN) {
-            WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_2_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_RIGHT, mouseID);
+            WIN_CheckWParamMouseButton(timestamp, (rawButtons & RI_MOUSE_BUTTON_2_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_RIGHT, mouseID);
         }
         if (rawButtons & RI_MOUSE_BUTTON_2_UP) {
-            WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_2_UP), mouseFlags, swapButtons, data, SDL_BUTTON_RIGHT, mouseID);
+            WIN_CheckWParamMouseButton(timestamp, !(rawButtons & RI_MOUSE_BUTTON_2_UP), mouseFlags, swapButtons, data, SDL_BUTTON_RIGHT, mouseID);
         }
         if (rawButtons & RI_MOUSE_BUTTON_3_DOWN) {
-            WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_3_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_MIDDLE, mouseID);
+            WIN_CheckWParamMouseButton(timestamp, (rawButtons & RI_MOUSE_BUTTON_3_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_MIDDLE, mouseID);
         }
         if (rawButtons & RI_MOUSE_BUTTON_3_UP) {
-            WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_3_UP), mouseFlags, swapButtons, data, SDL_BUTTON_MIDDLE, mouseID);
+            WIN_CheckWParamMouseButton(timestamp, !(rawButtons & RI_MOUSE_BUTTON_3_UP), mouseFlags, swapButtons, data, SDL_BUTTON_MIDDLE, mouseID);
         }
         if (rawButtons & RI_MOUSE_BUTTON_4_DOWN) {
-            WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_4_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_X1, mouseID);
+            WIN_CheckWParamMouseButton(timestamp, (rawButtons & RI_MOUSE_BUTTON_4_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_X1, mouseID);
         }
         if (rawButtons & RI_MOUSE_BUTTON_4_UP) {
-            WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_4_UP), mouseFlags, swapButtons, data, SDL_BUTTON_X1, mouseID);
+            WIN_CheckWParamMouseButton(timestamp, !(rawButtons & RI_MOUSE_BUTTON_4_UP), mouseFlags, swapButtons, data, SDL_BUTTON_X1, mouseID);
         }
         if (rawButtons & RI_MOUSE_BUTTON_5_DOWN) {
-            WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_5_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_X2, mouseID);
+            WIN_CheckWParamMouseButton(timestamp, (rawButtons & RI_MOUSE_BUTTON_5_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_X2, mouseID);
         }
         if (rawButtons & RI_MOUSE_BUTTON_5_UP) {
-            WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_5_UP), mouseFlags, swapButtons, data, SDL_BUTTON_X2, mouseID);
+            WIN_CheckWParamMouseButton(timestamp, !(rawButtons & RI_MOUSE_BUTTON_5_UP), mouseFlags, swapButtons, data, SDL_BUTTON_X2, mouseID);
         }
         data->mouse_button_flags = rawButtons;
     }
 }
 
-static void WIN_CheckAsyncMouseRelease(SDL_WindowData *data)
+static void WIN_CheckAsyncMouseRelease(Uint64 timestamp, SDL_WindowData *data)
 {
     Uint32 mouseFlags;
     SHORT keyState;
@@ -300,23 +304,23 @@ static void WIN_CheckAsyncMouseRelease(SDL_WindowData *data)
 
     keyState = GetAsyncKeyState(VK_LBUTTON);
     if (!(keyState & 0x8000)) {
-        WIN_CheckWParamMouseButton(SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, 0);
+        WIN_CheckWParamMouseButton(timestamp, SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, 0);
     }
     keyState = GetAsyncKeyState(VK_RBUTTON);
     if (!(keyState & 0x8000)) {
-        WIN_CheckWParamMouseButton(SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_RIGHT, 0);
+        WIN_CheckWParamMouseButton(timestamp, SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_RIGHT, 0);
     }
     keyState = GetAsyncKeyState(VK_MBUTTON);
     if (!(keyState & 0x8000)) {
-        WIN_CheckWParamMouseButton(SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_MIDDLE, 0);
+        WIN_CheckWParamMouseButton(timestamp, SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_MIDDLE, 0);
     }
     keyState = GetAsyncKeyState(VK_XBUTTON1);
     if (!(keyState & 0x8000)) {
-        WIN_CheckWParamMouseButton(SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_X1, 0);
+        WIN_CheckWParamMouseButton(timestamp, SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_X1, 0);
     }
     keyState = GetAsyncKeyState(VK_XBUTTON2);
     if (!(keyState & 0x8000)) {
-        WIN_CheckWParamMouseButton(SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_X2, 0);
+        WIN_CheckWParamMouseButton(timestamp, SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_X2, 0);
     }
     data->mouse_button_flags = (WPARAM)-1;
 }
@@ -361,7 +365,7 @@ static void WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
             SDL_SendMouseMotion(WIN_GetEventTimestamp(), window, 0, 0, (float)cursorPos.x, (float)cursorPos.y);
         }
 
-        WIN_CheckAsyncMouseRelease(data);
+        WIN_CheckAsyncMouseRelease(WIN_GetEventTimestamp(), data);
         WIN_UpdateClipCursor(window);
 
         /*
@@ -415,12 +419,11 @@ typedef enum
     SDL_MOUSE_EVENT_SOURCE_PEN,
 } SDL_MOUSE_EVENT_SOURCE;
 
-static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource()
+static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource(ULONG extrainfo)
 {
-    LPARAM extrainfo = GetMessageExtraInfo();
     /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
     /* Versions below Vista will set the low 7 bits to the Mouse ID and don't use bit 7:
-       Check bits 8-32 for the signature (which will indicate a Tablet PC Pen or Touch Device).
+       Check bits 8-31 for the signature (which will indicate a Tablet PC Pen or Touch Device).
        Only check bit 7 when Vista and up(Cleared=Pen, Set=Touch(which we need to filter out)),
        when the signature is set. The Mouse ID will be zero for an actual mouse. */
     if (IsTouchEvent(extrainfo)) {
@@ -429,6 +432,11 @@ static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource()
         } else {
             return SDL_MOUSE_EVENT_SOURCE_PEN;
         }
+    }
+    /* Sometimes WM_INPUT events won't have the correct touch signature,
+      so we have to rely purely on the touch bit being set. */
+    if (SDL_TouchDevicesAvailable() && extrainfo & 0x80) {
+        return SDL_MOUSE_EVENT_SOURCE_TOUCH;
     }
     return SDL_MOUSE_EVENT_SOURCE_MOUSE;
 }
@@ -511,6 +519,181 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     }
 
     return 1;
+}
+
+static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, HANDLE hDevice, RAWMOUSE *rawmouse)
+{
+    SDL_MouseID mouseID;
+
+    if (GetMouseMessageSource(rawmouse->ulExtraInformation) == SDL_MOUSE_EVENT_SOURCE_TOUCH) {
+        return;
+    }
+
+    /* We do all of our mouse state checking against mouse ID 0
+     * We would only use the actual hDevice if we were tracking
+     * all mouse motion independently, and never using mouse ID 0.
+     */
+    mouseID = 0; /* (SDL_MouseID)(uintptr_t)inp.header.hDevice; */
+
+    if ((rawmouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
+        if (rawmouse->lLastX || rawmouse->lLastY) {
+            SDL_SendMouseMotion(timestamp, data->window, mouseID, 1, (float)rawmouse->lLastX, (float)rawmouse->lLastY);
+        }
+    } else if (rawmouse->lLastX || rawmouse->lLastY) {
+        /* This is absolute motion, either using a tablet or mouse over RDP
+
+            Notes on how RDP appears to work, as of Windows 10 2004:
+            - SetCursorPos() calls are cached, with multiple calls coalesced into a single call that's sent to the RDP client. If the last call to SetCursorPos() has the same value as the last one that was sent to the client, it appears to be ignored and not sent. This means that we need to jitter the SetCursorPos() position slightly in order for the recentering to work correctly.
+            - User mouse motion is coalesced with SetCursorPos(), so the WM_INPUT positions we see will not necessarily match the position we requested with SetCursorPos().
+            - SetCursorPos() outside of the bounds of the focus window appears not to do anything.
+            - SetCursorPos() while the cursor is NULL doesn't do anything
+
+            We handle this by creating a safe area within the application window, and when the mouse leaves that safe area, we warp back to the opposite side. Any single motion > 50% of the safe area is assumed to be a warp and ignored.
+        */
+        SDL_bool remote_desktop = GetSystemMetrics(SM_REMOTESESSION) ? SDL_TRUE : SDL_FALSE;
+        SDL_bool virtual_desktop = (rawmouse->usFlags & MOUSE_VIRTUAL_DESKTOP) ? SDL_TRUE : SDL_FALSE;
+        SDL_bool normalized_coordinates = !(rawmouse->usFlags & 0x40) ? SDL_TRUE : SDL_FALSE;
+        int w = GetSystemMetrics(virtual_desktop ? SM_CXVIRTUALSCREEN : SM_CXSCREEN);
+        int h = GetSystemMetrics(virtual_desktop ? SM_CYVIRTUALSCREEN : SM_CYSCREEN);
+        int x = normalized_coordinates ? (int)(((float)rawmouse->lLastX / 65535.0f) * w) : (int)rawmouse->lLastX;
+        int y = normalized_coordinates ? (int)(((float)rawmouse->lLastY / 65535.0f) * h) : (int)rawmouse->lLastY;
+        int relX, relY;
+
+        /* Calculate relative motion */
+        if (data->last_raw_mouse_position.x == 0 && data->last_raw_mouse_position.y == 0) {
+            data->last_raw_mouse_position.x = x;
+            data->last_raw_mouse_position.y = y;
+        }
+        relX = x - data->last_raw_mouse_position.x;
+        relY = y - data->last_raw_mouse_position.y;
+
+        if (remote_desktop) {
+            if (!data->in_title_click && !data->focus_click_pending) {
+                static int wobble;
+                float floatX = (float)x / w;
+                float floatY = (float)y / h;
+
+                /* See if the mouse is at the edge of the screen, or in the RDP title bar area */
+                if (floatX <= 0.01f || floatX >= 0.99f || floatY <= 0.01f || floatY >= 0.99f || y < 32) {
+                    /* Wobble the cursor position so it's not ignored if the last warp didn't have any effect */
+                    RECT rect = data->cursor_clipped_rect;
+                    int warpX = rect.left + ((rect.right - rect.left) / 2) + wobble;
+                    int warpY = rect.top + ((rect.bottom - rect.top) / 2);
+
+                    WIN_SetCursorPos(warpX, warpY);
+
+                    ++wobble;
+                    if (wobble > 1) {
+                        wobble = -1;
+                    }
+                } else {
+                    /* Send relative motion if we didn't warp last frame (had good position data)
+                               We also sometimes get large deltas due to coalesced mouse motion and warping,
+                               so ignore those.
+                             */
+                    const int MAX_RELATIVE_MOTION = (h / 6);
+                    if (SDL_abs(relX) < MAX_RELATIVE_MOTION &&
+                        SDL_abs(relY) < MAX_RELATIVE_MOTION) {
+                        SDL_SendMouseMotion(timestamp, data->window, mouseID, 1, (float)relX, (float)relY);
+                    }
+                }
+            }
+        } else {
+            const int MAXIMUM_TABLET_RELATIVE_MOTION = 32;
+            if (SDL_abs(relX) > MAXIMUM_TABLET_RELATIVE_MOTION ||
+                SDL_abs(relY) > MAXIMUM_TABLET_RELATIVE_MOTION) {
+                /* Ignore this motion, probably a pen lift and drop */
+            } else {
+                SDL_SendMouseMotion(timestamp, data->window, mouseID, 1, (float)relX, (float)relY);
+            }
+        }
+
+        data->last_raw_mouse_position.x = x;
+        data->last_raw_mouse_position.y = y;
+    }
+    WIN_CheckRawMouseButtons(timestamp, hDevice, rawmouse->usButtonFlags, data, mouseID);
+}
+
+void WIN_PollRawMouseInput(void)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_Window *window;
+    SDL_WindowData *data;
+    UINT size, count, i, total = 0;
+    RAWINPUT *input;
+    Uint64 now;
+
+    /* We only use raw mouse input in relative mode */
+    if (!mouse->relative_mode || mouse->relative_mode_warp) {
+        return;
+    }
+
+    /* Relative mouse motion is delivered to the window with keyboard focus */
+    window = SDL_GetKeyboardFocus();
+    if (!window) {
+        return;
+    }
+    data = window->driverdata;
+
+    if (data->rawinput_size == 0) {
+        BOOL isWow64;
+
+        data->rawinput_offset = sizeof(RAWINPUTHEADER);
+        if (IsWow64Process(GetCurrentProcess(), &isWow64) && isWow64) {
+            /* We're going to get 64-bit data, so use the 64-bit RAWINPUTHEADER size */
+            data->rawinput_offset += 8;
+        }
+
+        if (GetRawInputBuffer(NULL, &data->rawinput_size, sizeof(RAWINPUTHEADER)) == (UINT)-1) {
+            return;
+        }
+        if (data->rawinput_size == 0) {
+            return;
+        }
+    }
+
+    /* Get all available events */
+    for (;;) {
+        if (total == data->rawinput_count) {
+            count = total + 8;
+            input = (RAWINPUT *)SDL_realloc(data->rawinput, count * data->rawinput_size);
+            if (!input) {
+                return;
+            }
+            data->rawinput = input;
+            data->rawinput_count = count;
+        }
+
+        size = (data->rawinput_count - total) * data->rawinput_size;
+        count = GetRawInputBuffer((RAWINPUT *)((BYTE *)data->rawinput + (total * data->rawinput_size)), &size, sizeof(RAWINPUTHEADER));
+        if (count == (UINT)-1 || count == 0) {
+            break;
+        }
+        total += count;
+    }
+
+    now = SDL_GetTicksNS();
+    if (total > 0) {
+        Uint64 timestamp, increment;
+        Uint64 delta = (now - data->last_rawinput_poll);
+        if (total > 1 && delta <= SDL_MS_TO_NS(100)) {
+            /* We'll spread these events over the time since the last poll */
+            timestamp = data->last_rawinput_poll;
+            increment = delta / total;
+        } else {
+            /* Do we want to track the update rate per device? */
+            timestamp = now;
+            increment = 0;
+        }
+        for (i = 0, input = data->rawinput; i < total; ++i, input = NEXTRAWINPUTBLOCK(input)) {
+            timestamp += increment;
+            if (input->header.dwType == RIM_TYPEMOUSE) {
+                RAWMOUSE *rawmouse = (RAWMOUSE *)((BYTE *)input + data->rawinput_offset);
+                WIN_HandleRawMouseInput(timestamp, window->driverdata, input->header.hDevice, rawmouse);
+            }
+        }
+    }
+    data->last_rawinput_poll = now;
 }
 
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
@@ -624,7 +807,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         if (!mouse->relative_mode || mouse->relative_mode_warp) {
             /* Only generate mouse events for real mouse */
-            if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
+            if (GetMouseMessageSource((ULONG)GetMessageExtraInfo()) != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
                 lParam != data->last_pointer_update) {
                 SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, 0, 0, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
             }
@@ -646,13 +829,14 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         SDL_Mouse *mouse = SDL_GetMouse();
         if (!mouse->relative_mode || mouse->relative_mode_warp) {
-            if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
+            if (GetMouseMessageSource((ULONG)GetMessageExtraInfo()) != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
                 lParam != data->last_pointer_update) {
-                WIN_CheckWParamMouseButtons(wParam, data, 0);
+                WIN_CheckWParamMouseButtons(WIN_GetEventTimestamp(), wParam, data, 0);
             }
         }
     } break;
 
+#if 0   /* We handle raw input all at once instead of using a syscall for each mouse event */
     case WM_INPUT:
     {
         SDL_Mouse *mouse = SDL_GetMouse();
@@ -674,96 +858,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
         if (inp.header.dwType == RIM_TYPEMOUSE) {
-            SDL_MouseID mouseID;
-            RAWMOUSE *rawmouse;
-            if (SDL_TouchDevicesAvailable() &&
-                (GetMouseMessageSource() == SDL_MOUSE_EVENT_SOURCE_TOUCH || (GetMessageExtraInfo() & 0x82) == 0x82)) {
-                break;
-            }
-            /* We do all of our mouse state checking against mouse ID 0
-             * We would only use the actual hDevice if we were tracking
-             * all mouse motion independently, and never using mouse ID 0.
-             */
-            mouseID = 0; /* (SDL_MouseID)(uintptr_t)inp.header.hDevice; */
-            rawmouse = &inp.data.mouse;
-
-            if ((rawmouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
-                SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, mouseID, 1, (float)rawmouse->lLastX, (float)rawmouse->lLastY);
-            } else if (rawmouse->lLastX || rawmouse->lLastY) {
-                /* This is absolute motion, either using a tablet or mouse over RDP
-
-                   Notes on how RDP appears to work, as of Windows 10 2004:
-                    - SetCursorPos() calls are cached, with multiple calls coalesced into a single call that's sent to the RDP client. If the last call to SetCursorPos() has the same value as the last one that was sent to the client, it appears to be ignored and not sent. This means that we need to jitter the SetCursorPos() position slightly in order for the recentering to work correctly.
-                    - User mouse motion is coalesced with SetCursorPos(), so the WM_INPUT positions we see will not necessarily match the position we requested with SetCursorPos().
-                    - SetCursorPos() outside of the bounds of the focus window appears not to do anything.
-                    - SetCursorPos() while the cursor is NULL doesn't do anything
-
-                   We handle this by creating a safe area within the application window, and when the mouse leaves that safe area, we warp back to the opposite side. Any single motion > 50% of the safe area is assumed to be a warp and ignored.
-                */
-                SDL_bool remote_desktop = GetSystemMetrics(SM_REMOTESESSION) ? SDL_TRUE : SDL_FALSE;
-                SDL_bool virtual_desktop = (rawmouse->usFlags & MOUSE_VIRTUAL_DESKTOP) ? SDL_TRUE : SDL_FALSE;
-                SDL_bool normalized_coordinates = !(rawmouse->usFlags & 0x40) ? SDL_TRUE : SDL_FALSE;
-                int w = GetSystemMetrics(virtual_desktop ? SM_CXVIRTUALSCREEN : SM_CXSCREEN);
-                int h = GetSystemMetrics(virtual_desktop ? SM_CYVIRTUALSCREEN : SM_CYSCREEN);
-                int x = normalized_coordinates ? (int)(((float)rawmouse->lLastX / 65535.0f) * w) : (int)rawmouse->lLastX;
-                int y = normalized_coordinates ? (int)(((float)rawmouse->lLastY / 65535.0f) * h) : (int)rawmouse->lLastY;
-                int relX, relY;
-
-                /* Calculate relative motion */
-                if (data->last_raw_mouse_position.x == 0 && data->last_raw_mouse_position.y == 0) {
-                    data->last_raw_mouse_position.x = x;
-                    data->last_raw_mouse_position.y = y;
-                }
-                relX = x - data->last_raw_mouse_position.x;
-                relY = y - data->last_raw_mouse_position.y;
-
-                if (remote_desktop) {
-                    if (!data->in_title_click && !data->focus_click_pending) {
-                        static int wobble;
-                        float floatX = (float)x / w;
-                        float floatY = (float)y / h;
-
-                        /* See if the mouse is at the edge of the screen, or in the RDP title bar area */
-                        if (floatX <= 0.01f || floatX >= 0.99f || floatY <= 0.01f || floatY >= 0.99f || y < 32) {
-                            /* Wobble the cursor position so it's not ignored if the last warp didn't have any effect */
-                            RECT rect = data->cursor_clipped_rect;
-                            int warpX = rect.left + ((rect.right - rect.left) / 2) + wobble;
-                            int warpY = rect.top + ((rect.bottom - rect.top) / 2);
-
-                            WIN_SetCursorPos(warpX, warpY);
-
-                            ++wobble;
-                            if (wobble > 1) {
-                                wobble = -1;
-                            }
-                        } else {
-                            /* Send relative motion if we didn't warp last frame (had good position data)
-                               We also sometimes get large deltas due to coalesced mouse motion and warping,
-                               so ignore those.
-                             */
-                            const int MAX_RELATIVE_MOTION = (h / 6);
-                            if (SDL_abs(relX) < MAX_RELATIVE_MOTION &&
-                                SDL_abs(relY) < MAX_RELATIVE_MOTION) {
-                                SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, mouseID, 1, (float)relX, (float)relY);
-                            }
-                        }
-                    }
-                } else {
-                    const int MAXIMUM_TABLET_RELATIVE_MOTION = 32;
-                    if (SDL_abs(relX) > MAXIMUM_TABLET_RELATIVE_MOTION ||
-                        SDL_abs(relY) > MAXIMUM_TABLET_RELATIVE_MOTION) {
-                        /* Ignore this motion, probably a pen lift and drop */
-                    } else {
-                        SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, mouseID, 1, (float)relX, (float)relY);
-                    }
-                }
-
-                data->last_raw_mouse_position.x = x;
-                data->last_raw_mouse_position.y = y;
-            }
-            WIN_CheckRawMouseButtons(rawmouse->usButtonFlags, data, mouseID);
+            WIN_HandleRawMouseInput(WIN_GetEventTimestamp(), data, inp.header.hDevice, &inp.data.mouse);
         }
     } break;
+#endif
 
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL:
@@ -906,7 +1004,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         data->in_title_click = SDL_FALSE;
 
         /* The mouse may have been released during a modal loop */
-        WIN_CheckAsyncMouseRelease(data);
+        WIN_CheckAsyncMouseRelease(WIN_GetEventTimestamp(), data);
     } break;
 
 #ifdef WM_GETMINMAXINFO
@@ -948,27 +1046,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
 
         if (!(SDL_GetWindowFlags(data->window) & SDL_WINDOW_BORDERLESS)) {
-            LONG style = GetWindowLong(hwnd, GWL_STYLE);
-            /* DJM - according to the docs for GetMenu(), the
-               return value is undefined if hwnd is a child window.
-               Apparently it's too difficult for MS to check
-               inside their function, so I have to do it here.
-             */
-            BOOL menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
-            UINT dpi;
-
-            dpi = 96;
             size.top = 0;
             size.left = 0;
             size.bottom = h;
             size.right = w;
-
-            if (WIN_IsPerMonitorV2DPIAware(SDL_GetVideoDevice())) {
-                dpi = data->videodata->GetDpiForWindow(hwnd);
-                data->videodata->AdjustWindowRectExForDpi(&size, style, menu, 0, dpi);
-            } else {
-                AdjustWindowRectEx(&size, style, menu, 0);
-            }
+            WIN_AdjustWindowRectForHWND(hwnd, &size, 0);
             w = size.right - size.left;
             h = size.bottom - size.top;
 #ifdef HIGHDPI_DEBUG
@@ -1010,92 +1092,90 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_WINDOWPOSCHANGING:
     {
-        WINDOWPOS *windowpos = (WINDOWPOS*)lParam;
-
         if (data->expected_resize) {
             returnCode = 0;
         }
 
-        if (IsIconic(hwnd)) {
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
-        } else if (IsZoomed(hwnd)) {
-            if (data->window->flags & SDL_WINDOW_MINIMIZED) {
-                /* If going from minimized to maximized, send the restored event first. */
-                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
-            }
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
-        } else {
-            SDL_bool was_fixed_size = !!(data->window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED));
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+        if (data->floating_rect_pending &&
+            !IsIconic(hwnd) &&
+            !IsZoomed(hwnd) &&
+            (data->window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED)) &&
+            !(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
+            /* If a new floating size is pending, apply it if moving from a fixed-size to floating state. */
+            WINDOWPOS *windowpos = (WINDOWPOS*)lParam;
+            int fx, fy, fw, fh;
 
-            /* Send the stored floating size if moving from a fixed-size to floating state. */
-            if (was_fixed_size && !(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
-                int fx, fy, fw, fh;
+            WIN_AdjustWindowRect(data->window, &fx, &fy, &fw, &fh, SDL_WINDOWRECT_FLOATING);
+            windowpos->x = fx;
+            windowpos->y = fy;
+            windowpos->cx = fw;
+            windowpos->cy = fh;
+            windowpos->flags &= ~(SWP_NOSIZE | SWP_NOMOVE);
 
-                WIN_AdjustWindowRect(data->window, &fx, &fy, &fw, &fh, SDL_WINDOWRECT_FLOATING);
-                windowpos->x = fx;
-                windowpos->y = fy;
-                windowpos->cx = fw;
-                windowpos->cy = fh;
-                windowpos->flags &= ~(SWP_NOSIZE | SWP_NOMOVE);
-            }
+            data->floating_rect_pending = SDL_FALSE;
         }
     } break;
 
     case WM_WINDOWPOSCHANGED:
     {
         SDL_Window *win;
+        const SDL_DisplayID original_displayID = data->last_displayID;
+        const WINDOWPOS *windowpos = (WINDOWPOS *)lParam;
+        const SDL_bool iconic = IsIconic(hwnd);
+        const SDL_bool zoomed = IsZoomed(hwnd);
         RECT rect;
         int x, y;
         int w, h;
-        const SDL_DisplayID original_displayID = data->last_displayID;
 
-        if (data->initializing || data->in_border_change) {
-            break;
+        if (windowpos->flags & SWP_SHOWWINDOW) {
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
+        }
+
+        if (iconic) {
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
+        } else if (zoomed) {
+            if (data->window->flags & SDL_WINDOW_MINIMIZED) {
+                /* If going from minimized to maximized, send the restored event first. */
+                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+            }
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
+        } else if (data->window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED)) {
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+        }
+
+        if (windowpos->flags & SWP_HIDEWINDOW) {
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
         }
 
         /* When the window is minimized it's resized to the dock icon size, ignore this */
-        if (IsIconic(hwnd)) {
+        if (iconic) {
             break;
         }
 
-        if (!GetClientRect(hwnd, &rect) || WIN_IsRectEmpty(&rect)) {
+        if (data->initializing) {
             break;
         }
-        ClientToScreen(hwnd, (LPPOINT)&rect);
-        ClientToScreen(hwnd, (LPPOINT)&rect + 1);
 
-        WIN_UpdateClipCursor(data->window);
-
-        x = rect.left;
-        y = rect.top;
-
-        SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
-        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
-
-        // Moving the window from one display to another can change the size of the window (in the handling of SDL_EVENT_WINDOW_MOVED), so we need to re-query the bounds
-        if (GetClientRect(hwnd, &rect)) {
-            ClientToScreen(hwnd, (LPPOINT)&rect);
-            ClientToScreen(hwnd, (LPPOINT)&rect + 1);
-
-            WIN_UpdateClipCursor(data->window);
+        if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
+            ClientToScreen(hwnd, (LPPOINT) &rect);
+            ClientToScreen(hwnd, (LPPOINT) &rect + 1);
 
             x = rect.left;
             y = rect.top;
+
+            SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
         }
 
-        w = rect.right - rect.left;
-        h = rect.bottom - rect.top;
-        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED, w, h);
+        /* Moving the window from one display to another can change the size of the window (in the handling of SDL_EVENT_WINDOW_MOVED), so we need to re-query the bounds */
+        if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
+            w = rect.right;
+            h = rect.bottom;
 
-#ifdef HIGHDPI_DEBUG
-        SDL_Log("WM_WINDOWPOSCHANGED: Windows client rect (pixels): (%d, %d) (%d x %d)\tSDL client rect (points): (%d, %d) (%d x %d) windows reported dpi %d",
-                rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top,
-                x, y, w, h, data->videodata->GetDpiForWindow ? data->videodata->GetDpiForWindow(data->hwnd) : 0);
-#endif
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED, w, h);
+        }
 
-        /* Forces a WM_PAINT event */
-        InvalidateRect(hwnd, NULL, FALSE);
+        WIN_UpdateClipCursor(data->window);
 
         /* Update the window display position */
         data->last_displayID = SDL_GetDisplayForWindow(data->window);
@@ -1112,6 +1192,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 WIN_SetWindowPositionInternal(win, SWP_NOCOPYBITS | SWP_NOACTIVATE, SDL_WINDOWRECT_CURRENT);
             }
         }
+
+        /* Forces a WM_PAINT event */
+        InvalidateRect(hwnd, NULL, FALSE);
+
     } break;
 
     case WM_ENTERSIZEMOVE:
@@ -1239,9 +1323,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 for (i = 0; i < num_inputs; ++i) {
                     PTOUCHINPUT input = &inputs[i];
                     const int w = (rect.right - rect.left);
-                    const int h = (rect.right - rect.left);
+                    const int h = (rect.bottom - rect.top);
 
-                    const SDL_TouchID touchId = (SDL_TouchID)((size_t)input->hSource);
+                    const SDL_TouchID touchId = (SDL_TouchID)((uintptr_t)input->hSource);
+                    const SDL_FingerID fingerId = (input->dwID + 1);
 
                     /* TODO: Can we use GetRawInputDeviceInfo and HID info to
                        determine if this is a direct or indirect touch device?
@@ -1264,13 +1349,13 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                     /* FIXME: Should we use the input->dwTime field for the tick source of the timestamp? */
                     if (input->dwFlags & TOUCHEVENTF_DOWN) {
-                        SDL_SendTouch(WIN_GetEventTimestamp(), touchId, input->dwID, data->window, SDL_TRUE, x, y, 1.0f);
+                        SDL_SendTouch(WIN_GetEventTimestamp(), touchId, fingerId, data->window, SDL_TRUE, x, y, 1.0f);
                     }
                     if (input->dwFlags & TOUCHEVENTF_MOVE) {
-                        SDL_SendTouchMotion(WIN_GetEventTimestamp(), touchId, input->dwID, data->window, x, y, 1.0f);
+                        SDL_SendTouchMotion(WIN_GetEventTimestamp(), touchId, fingerId, data->window, x, y, 1.0f);
                     }
                     if (input->dwFlags & TOUCHEVENTF_UP) {
-                        SDL_SendTouch(WIN_GetEventTimestamp(), touchId, input->dwID, data->window, SDL_FALSE, x, y, 1.0f);
+                        SDL_SendTouch(WIN_GetEventTimestamp(), touchId, fingerId, data->window, SDL_FALSE, x, y, 1.0f);
                     }
                 }
             }
@@ -1331,8 +1416,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             if (!(window_flags & SDL_WINDOW_RESIZABLE)) {
                 int w, h;
                 NCCALCSIZE_PARAMS *params = (NCCALCSIZE_PARAMS *)lParam;
-                w = data->window->windowed.w;
-                h = data->window->windowed.h;
+                w = data->window->floating.w;
+                h = data->window->floating.h;
                 params->rgrc[0].right = params->rgrc[0].left + w;
                 params->rgrc[0].bottom = params->rgrc[0].top + h;
             }
@@ -1416,9 +1501,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int frame_w, frame_h;
             int query_client_w_win, query_client_h_win;
 
-            const DWORD style = GetWindowLong(hwnd, GWL_STYLE);
-            const BOOL menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
-
 #ifdef HIGHDPI_DEBUG
             SDL_Log("WM_GETDPISCALEDSIZE: current DPI: %d potential DPI: %d input size: (%dx%d)",
                     prevDPI, nextDPI, sizeInOut->cx, sizeInOut->cy);
@@ -1429,7 +1511,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 RECT rect = { 0 };
 
                 if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
-                    data->videodata->AdjustWindowRectExForDpi(&rect, style, menu, 0, prevDPI);
+                    WIN_AdjustWindowRectForHWND(hwnd, &rect, prevDPI);
                 }
 
                 frame_w = -rect.left + rect.right;
@@ -1446,7 +1528,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 rect.bottom = query_client_h_win;
 
                 if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
-                    data->videodata->AdjustWindowRectExForDpi(&rect, style, menu, 0, nextDPI);
+                    WIN_AdjustWindowRectForHWND(hwnd, &rect, nextDPI);
                 }
 
                 /* This is supposed to control the suggested rect param of WM_DPICHANGED */
@@ -1487,19 +1569,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             {
                 /* Calculate the new frame w/h such that
                    the client area size is maintained. */
-                const DWORD style = GetWindowLong(hwnd, GWL_STYLE);
-                const BOOL menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
-
                 RECT rect = { 0 };
                 rect.right = data->window->w;
                 rect.bottom = data->window->h;
 
                 if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
-                    if (data->videodata->GetDpiForWindow && data->videodata->AdjustWindowRectExForDpi) {
-                        data->videodata->AdjustWindowRectExForDpi(&rect, style, menu, 0, newDPI);
-                    } else {
-                        AdjustWindowRectEx(&rect, style, menu, 0);
-                    }
+                    WIN_AdjustWindowRectForHWND(hwnd, &rect, newDPI);
                 }
 
                 w = rect.right - rect.left;

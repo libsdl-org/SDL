@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -179,6 +179,11 @@ const char *VITA_JoystickGetDeviceName(int index)
 const char *VITA_JoystickGetDevicePath(int index)
 {
     return NULL;
+}
+
+static int VITA_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return -1;
 }
 
 static int VITA_JoystickGetDevicePlayerIndex(int device_index)
@@ -378,6 +383,7 @@ SDL_JoystickDriver SDL_VITA_JoystickDriver = {
     VITA_JoystickDetect,
     VITA_JoystickGetDeviceName,
     VITA_JoystickGetDevicePath,
+    VITA_JoystickGetDeviceSteamVirtualGamepadSlot,
     VITA_JoystickGetDevicePlayerIndex,
     VITA_JoystickSetDevicePlayerIndex,
     VITA_JoystickGetDeviceGUID,

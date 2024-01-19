@@ -501,6 +501,9 @@
     <ClInclude Include="..\..\src\joystick\SDL_joystick_c.h">
       <Filter>joystick</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\joystick\SDL_steam_virtual_gamepad.h">
+      <Filter>joystick</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\joystick\SDL_sysjoystick.h">
       <Filter>joystick</Filter>
     </ClInclude>
@@ -541,9 +544,6 @@
       <Filter>haptic\windows</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\haptic\windows\SDL_windowshaptic_c.h">
-      <Filter>haptic\windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\haptic\windows\SDL_xinputhaptic_c.h">
       <Filter>haptic\windows</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\joystick\hidapi\SDL_hidapijoystick_c.h">
@@ -945,6 +945,9 @@
     <ClCompile Include="..\..\src\joystick\SDL_joystick.c">
       <Filter>joystick</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\joystick\SDL_steam_virtual_gamepad.c">
+      <Filter>joystick</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libm\e_atan2.c">
       <Filter>libm</Filter>
     </ClCompile>
@@ -1044,9 +1047,6 @@
     <ClCompile Include="..\..\src\haptic\windows\SDL_windowshaptic.c">
       <Filter>haptic\windows</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\haptic\windows\SDL_xinputhaptic.c">
-      <Filter>haptic\windows</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\haptic\dummy\SDL_syshaptic.c">
       <Filter>haptic\dummy</Filter>
     </ClCompile>
@@ -1081,6 +1081,9 @@
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_steam.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_steamdeck.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_switch.c">
@@ -1378,7 +1381,7 @@
     <ClCompile Include="..\..\src\stdlib\SDL_mslibc.c">
       <Filter>stdlib</Filter>
     </ClCompile>
-    <MASM Include="..\..\src\stdlib\SDL_mslibc_x64.asm">
+    <MASM Include="..\..\src\stdlib\SDL_mslibc_x64.masm">
       <Filter>stdlib</Filter>
     </MASM>
   </ItemGroup>

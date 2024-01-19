@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,7 @@
 struct SDL_Mutex
 {
     int recursive;
-    SDL_threadID owner;
+    SDL_ThreadID owner;
     SDL_Semaphore *sem;
 };
 
@@ -65,7 +65,7 @@ void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doe
 {
 #ifndef SDL_THREADS_DISABLED
     if (mutex != NULL) {
-        SDL_threadID this_thread = SDL_ThreadID();
+        SDL_ThreadID this_thread = SDL_GetCurrentThreadID();
         if (mutex->owner == this_thread) {
             ++mutex->recursive;
         } else {
@@ -86,7 +86,7 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
     int retval = 0;
 #ifndef SDL_THREADS_DISABLED
     if (mutex) {
-        SDL_threadID this_thread = SDL_ThreadID();
+        SDL_ThreadID this_thread = SDL_GetCurrentThreadID();
         if (mutex->owner == this_thread) {
             ++mutex->recursive;
         } else {
@@ -110,7 +110,7 @@ void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang d
 #ifndef SDL_THREADS_DISABLED
     if (mutex != NULL) {
         // If we don't own the mutex, we can't unlock it
-        if (SDL_ThreadID() != mutex->owner) {
+        if (SDL_GetCurrentThreadID() != mutex->owner) {
             SDL_assert(!"Tried to unlock a mutex we don't own!");
             return; // (undefined behavior!) SDL_SetError("mutex not owned by this thread");
         }

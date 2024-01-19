@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,7 +34,17 @@ static const char *cursorNames[] = {
     "sizeALL",
     "NO",
     "hand",
+    "window top left",
+    "window top",
+    "window top right",
+    "window right",
+    "window bottom right",
+    "window bottom",
+    "window bottom left",
+    "window left"
 };
+SDL_COMPILE_TIME_ASSERT(cursorNames, SDL_arraysize(cursorNames) == SDL_NUM_SYSTEM_CURSORS);
+
 static int system_cursor = -1;
 static SDL_Cursor *cursor = NULL;
 static SDL_bool relative_mode = SDL_FALSE;
@@ -257,8 +267,6 @@ int main(int argc, char *argv[])
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
-    SDL_assert(SDL_arraysize(cursorNames) == SDL_NUM_SYSTEM_CURSORS);
 
     if (!SDLTest_CommonDefaultArgs(state, argc, argv) || !SDLTest_CommonInit(state)) {
         SDLTest_CommonQuit(state);

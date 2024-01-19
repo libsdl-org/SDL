@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,6 @@
 #include "SDL_video_c.h"
 #include "SDL_blit.h"
 #include "SDL_RLEaccel_c.h"
-#include "SDL_surface_pixel_impl.h"
 #include "SDL_pixels_c.h"
 #include "SDL_yuv_c.h"
 #include "../render/SDL_sysrender.h"
@@ -35,11 +34,6 @@ SDL_COMPILE_TIME_ASSERT(surface_size_assumptions,
                         sizeof(int) == sizeof(Sint32) && sizeof(size_t) >= sizeof(Sint32));
 
 SDL_COMPILE_TIME_ASSERT(can_indicate_overflow, SDL_SIZE_MAX > SDL_MAX_SINT32);
-
-int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a)
-{
-    return SDL_ReadSurfacePixel_impl(surface, x, y, r, g, b, a);
-}
 
 /* Public routines */
 
@@ -53,28 +47,27 @@ static int SDL_CalculateRGBSize(Uint32 format, size_t width, size_t height, size
 {
     if (SDL_BITSPERPIXEL(format) >= 8) {
         if (SDL_size_mul_overflow(width, SDL_BYTESPERPIXEL(format), pitch)) {
-            return -1;
+            return SDL_SetError("width * bpp would overflow");
         }
     } else {
         if (SDL_size_mul_overflow(width, SDL_BITSPERPIXEL(format), pitch)) {
-            return -1;
+            return SDL_SetError("width * bpp would overflow");
         }
         if (SDL_size_add_overflow(*pitch, 7, pitch)) {
-            return -1;
+            return SDL_SetError("aligning pitch would overflow");
         }
         *pitch /= 8;
     }
     if (!minimal) {
         /* 4-byte aligning for speed */
         if (SDL_size_add_overflow(*pitch, 3, pitch)) {
-            return -1;
+            return SDL_SetError("aligning pitch would overflow");
         }
         *pitch &= ~3;
     }
 
     if (SDL_size_mul_overflow(height, *pitch, size)) {
-        /* Overflow... */
-        return -1;
+        return SDL_SetError("height * pitch would overflow");
     }
 
     return 0;
@@ -252,15 +245,28 @@ SDL_Surface *SDL_CreateSurfaceFrom(void *pixels, int width, int height, int pitc
 
 SDL_PropertiesID SDL_GetSurfaceProperties(SDL_Surface *surface)
 {
+    SDL_PropertiesID props;
+
     if (!surface) {
         SDL_InvalidParamError("surface");
         return 0;
     }
 
-    if (surface->props == 0) {
-        surface->props = SDL_CreateProperties();
+    if (surface->flags & SDL_SURFACE_USES_PROPERTIES) {
+        props = (SDL_PropertiesID)(uintptr_t)surface->reserved;
+    } else {
+        if (surface->reserved != NULL) {
+            SDL_SetError("Surface has userdata, incompatible with properties");
+            return 0;
+        }
+
+        props = SDL_CreateProperties();
+        if (props) {
+            surface->reserved = (void *)(uintptr_t)props;
+            surface->flags |= SDL_SURFACE_USES_PROPERTIES;
+        }
     }
-    return surface->props;
+    return props;
 }
 
 int SDL_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette)
@@ -756,13 +762,8 @@ end:
 }
 
 int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
-                        SDL_Surface *dst, SDL_Rect *dstrect)
-{
-    return SDL_PrivateBlitSurfaceScaled(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
-}
-
-int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
-                               SDL_Surface *dst, SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
+                          SDL_Surface *dst, SDL_Rect *dstrect,
+                          SDL_ScaleMode scaleMode)
 {
     double src_x0, src_y0, src_x1, src_y1;
     double dst_x0, dst_y0, dst_x1, dst_y1;
@@ -916,7 +917,7 @@ int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
         return 0;
     }
 
-    return SDL_PrivateBlitSurfaceUncheckedScaled(src, &final_src, dst, &final_dst, scaleMode);
+    return SDL_BlitSurfaceUncheckedScaled(src, &final_src, dst, &final_dst, scaleMode);
 }
 
 /**
@@ -924,17 +925,20 @@ int SDL_PrivateBlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
  *  scaled blitting only.
  */
 int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
-                                   SDL_Surface *dst, const SDL_Rect *dstrect)
-{
-    return SDL_PrivateBlitSurfaceUncheckedScaled(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
-}
-
-int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
-                                          SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
+                                   SDL_Surface *dst, const SDL_Rect *dstrect,
+                                   SDL_ScaleMode scaleMode)
 {
     static const Uint32 complex_copy_flags = (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA |
                                               SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL |
                                               SDL_COPY_COLORKEY);
+
+    if (scaleMode != SDL_SCALEMODE_NEAREST && scaleMode != SDL_SCALEMODE_LINEAR && scaleMode != SDL_SCALEMODE_BEST) {
+        return SDL_InvalidParamError("scaleMode");
+    }
+
+    if (scaleMode != SDL_SCALEMODE_NEAREST) {
+        scaleMode = SDL_SCALEMODE_LINEAR;
+    }
 
     if (srcrect->w > SDL_MAX_UINT16 || srcrect->h > SDL_MAX_UINT16 ||
         dstrect->w > SDL_MAX_UINT16 || dstrect->h > SDL_MAX_UINT16) {
@@ -950,7 +954,7 @@ int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcr
         if (!(src->map->info.flags & complex_copy_flags) &&
             src->format->format == dst->format->format &&
             !SDL_ISPIXELFORMAT_INDEXED(src->format->format)) {
-            return SDL_SoftStretch(src, srcrect, dst, dstrect);
+            return SDL_SoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
         } else {
             return SDL_BlitSurfaceUnchecked(src, srcrect, dst, dstrect);
         }
@@ -961,7 +965,7 @@ int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcr
             src->format->BytesPerPixel == 4 &&
             src->format->format != SDL_PIXELFORMAT_ARGB2101010) {
             /* fast path */
-            return SDL_SoftStretchLinear(src, srcrect, dst, dstrect);
+            return SDL_SoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_LINEAR);
         } else {
             /* Use intermediate surface(s) */
             SDL_Surface *tmp1 = NULL;
@@ -1011,7 +1015,7 @@ int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcr
             if (is_complex_copy_flags || src->format->format != dst->format->format) {
                 SDL_Rect tmprect;
                 SDL_Surface *tmp2 = SDL_CreateSurface(dstrect->w, dstrect->h, src->format->format);
-                SDL_SoftStretchLinear(src, &srcrect2, tmp2, NULL);
+                SDL_SoftStretch(src, &srcrect2, tmp2, NULL, SDL_SCALEMODE_LINEAR);
 
                 SDL_SetSurfaceColorMod(tmp2, r, g, b);
                 SDL_SetSurfaceAlphaMod(tmp2, alpha);
@@ -1024,7 +1028,7 @@ int SDL_PrivateBlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcr
                 ret = SDL_BlitSurfaceUnchecked(tmp2, &tmprect, dst, dstrect);
                 SDL_DestroySurface(tmp2);
             } else {
-                ret = SDL_SoftStretchLinear(src, &srcrect2, dst, dstrect);
+                ret = SDL_SoftStretch(src, &srcrect2, dst, dstrect, SDL_SCALEMODE_LINEAR);
             }
 
             SDL_DestroySurface(tmp1);
@@ -1530,6 +1534,68 @@ int SDL_PremultiplyAlpha(int width, int height,
     return 0;
 }
 
+/* This function Copyright 2023 Collabora Ltd., contributed to SDL under the ZLib license */
+int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a)
+{
+    Uint32 pixel = 0;
+    size_t bytes_per_pixel;
+    Uint8 unused;
+    Uint8 *p;
+
+    if (!surface || !surface->format || !surface->pixels) {
+        return SDL_InvalidParamError("surface");
+    }
+
+    if (x < 0 || x >= surface->w) {
+        return SDL_InvalidParamError("x");
+    }
+
+    if (y < 0 || y >= surface->h) {
+        return SDL_InvalidParamError("y");
+    }
+
+    if (!r) {
+        r = &unused;
+    }
+
+    if (!g) {
+        g = &unused;
+    }
+
+    if (!b) {
+        b = &unused;
+    }
+
+    if (!a) {
+        a = &unused;
+    }
+
+    bytes_per_pixel = surface->format->BytesPerPixel;
+
+    if (bytes_per_pixel > sizeof(pixel)) {
+        return SDL_InvalidParamError("surface->format->BytesPerPixel");
+    }
+
+    if (SDL_MUSTLOCK(surface)) {
+        SDL_LockSurface(surface);
+    }
+
+    p = (Uint8 *)surface->pixels + y * surface->pitch + x * bytes_per_pixel;
+    /* Fill the appropriate number of least-significant bytes of pixel,
+     * leaving the most-significant bytes set to zero */
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    SDL_memcpy(((Uint8 *) &pixel) + (sizeof(pixel) - bytes_per_pixel), p, bytes_per_pixel);
+#else
+    SDL_memcpy(&pixel, p, bytes_per_pixel);
+#endif
+    SDL_GetRGBA(pixel, surface->format, r, g, b, a);
+
+    if (SDL_MUSTLOCK(surface)) {
+        SDL_UnlockSurface(surface);
+    }
+    return 0;
+}
+
 /*
  * Free a surface created by the above function.
  */
@@ -1545,7 +1611,11 @@ void SDL_DestroySurface(SDL_Surface *surface)
         return;
     }
 
-    SDL_DestroyProperties(surface->props);
+    if (surface->flags & SDL_SURFACE_USES_PROPERTIES) {
+        SDL_PropertiesID props = (SDL_PropertiesID)(uintptr_t)surface->reserved;
+        SDL_DestroyProperties(props);
+    }
+
     SDL_InvalidateMap(surface->map);
     SDL_InvalidateAllBlitMap(surface);
 

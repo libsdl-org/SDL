@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -168,9 +168,9 @@ void SDL_SYS_SetupThread(const char *name)
 #endif
 }
 
-SDL_threadID SDL_ThreadID(void)
+SDL_ThreadID SDL_GetCurrentThreadID(void)
 {
-    return (SDL_threadID)pthread_self();
+    return (SDL_ThreadID)pthread_self();
 }
 
 int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)

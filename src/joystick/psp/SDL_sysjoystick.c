@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -119,6 +119,11 @@ static const char *PSP_JoystickGetDeviceName(int device_index)
 static const char *PSP_JoystickGetDevicePath(int index)
 {
     return NULL;
+}
+
+static int PSP_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return -1;
 }
 
 static int PSP_JoystickGetDevicePlayerIndex(int device_index)
@@ -253,6 +258,7 @@ SDL_JoystickDriver SDL_PSP_JoystickDriver = {
     PSP_JoystickDetect,
     PSP_JoystickGetDeviceName,
     PSP_JoystickGetDevicePath,
+    PSP_JoystickGetDeviceSteamVirtualGamepadSlot,
     PSP_JoystickGetDevicePlayerIndex,
     PSP_JoystickSetDevicePlayerIndex,
     PSP_JoystickGetDeviceGUID,

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -41,15 +41,15 @@
 #define SDL_AndroidSendMessage  SDL_AndroidSendMessage_REAL
 #define SDL_AndroidShowToast    SDL_AndroidShowToast_REAL
 #define SDL_AtomicAdd SDL_AtomicAdd_REAL
-#define SDL_AtomicCAS SDL_AtomicCAS_REAL
-#define SDL_AtomicCASPtr SDL_AtomicCASPtr_REAL
+#define SDL_AtomicCompareAndSwap SDL_AtomicCompareAndSwap_REAL
+#define SDL_AtomicCompareAndSwapPointer SDL_AtomicCompareAndSwapPointer_REAL
 #define SDL_AtomicGet SDL_AtomicGet_REAL
 #define SDL_AtomicGetPtr SDL_AtomicGetPtr_REAL
-#define SDL_AtomicLock SDL_AtomicLock_REAL
+#define SDL_LockSpinlock SDL_LockSpinlock_REAL
 #define SDL_AtomicSet SDL_AtomicSet_REAL
 #define SDL_AtomicSetPtr SDL_AtomicSetPtr_REAL
-#define SDL_AtomicTryLock SDL_AtomicTryLock_REAL
-#define SDL_AtomicUnlock SDL_AtomicUnlock_REAL
+#define SDL_TryLockSpinlock SDL_TryLockSpinlock_REAL
+#define SDL_UnlockSpinlock SDL_UnlockSpinlock_REAL
 #define SDL_AttachVirtualJoystick SDL_AttachVirtualJoystick_REAL
 #define SDL_AttachVirtualJoystickEx SDL_AttachVirtualJoystickEx_REAL
 #define SDL_BlitSurface SDL_BlitSurface_REAL
@@ -134,7 +134,6 @@
 #define SDL_FlushRenderer SDL_FlushRenderer_REAL
 #define SDL_GDKGetTaskQueue SDL_GDKGetTaskQueue_REAL
 #define SDL_GDKSuspendComplete  SDL_GDKSuspendComplete_REAL
-#define SDL_GL_BindTexture SDL_GL_BindTexture_REAL
 #define SDL_GL_CreateContext SDL_GL_CreateContext_REAL
 #define SDL_GL_DeleteContext SDL_GL_DeleteContext_REAL
 #define SDL_GL_ExtensionSupported SDL_GL_ExtensionSupported_REAL
@@ -149,7 +148,6 @@
 #define SDL_GL_SetAttribute SDL_GL_SetAttribute_REAL
 #define SDL_GL_SetSwapInterval SDL_GL_SetSwapInterval_REAL
 #define SDL_GL_SwapWindow SDL_GL_SwapWindow_REAL
-#define SDL_GL_UnbindTexture SDL_GL_UnbindTexture_REAL
 #define SDL_GL_UnloadLibrary SDL_GL_UnloadLibrary_REAL
 #define SDL_GUIDFromString SDL_GUIDFromString_REAL
 #define SDL_GUIDToString SDL_GUIDToString_REAL
@@ -378,33 +376,30 @@
 #define SDL_GetWindowTitle SDL_GetWindowTitle_REAL
 #define SDL_GetYUVConversionMode SDL_GetYUVConversionMode_REAL
 #define SDL_GetYUVConversionModeForResolution SDL_GetYUVConversionModeForResolution_REAL
-#define SDL_HapticClose SDL_HapticClose_REAL
-#define SDL_HapticDestroyEffect SDL_HapticDestroyEffect_REAL
+#define SDL_CloseHaptic SDL_CloseHaptic_REAL
+#define SDL_DestroyHapticEffect SDL_DestroyHapticEffect_REAL
 #define SDL_HapticEffectSupported SDL_HapticEffectSupported_REAL
-#define SDL_HapticGetEffectStatus SDL_HapticGetEffectStatus_REAL
-#define SDL_HapticIndex SDL_HapticIndex_REAL
-#define SDL_HapticName SDL_HapticName_REAL
-#define SDL_HapticNewEffect SDL_HapticNewEffect_REAL
-#define SDL_HapticNumAxes SDL_HapticNumAxes_REAL
-#define SDL_HapticNumEffects SDL_HapticNumEffects_REAL
-#define SDL_HapticNumEffectsPlaying SDL_HapticNumEffectsPlaying_REAL
-#define SDL_HapticOpen SDL_HapticOpen_REAL
-#define SDL_HapticOpenFromJoystick SDL_HapticOpenFromJoystick_REAL
-#define SDL_HapticOpenFromMouse SDL_HapticOpenFromMouse_REAL
-#define SDL_HapticOpened SDL_HapticOpened_REAL
-#define SDL_HapticPause SDL_HapticPause_REAL
-#define SDL_HapticQuery SDL_HapticQuery_REAL
-#define SDL_HapticRumbleInit SDL_HapticRumbleInit_REAL
-#define SDL_HapticRumblePlay SDL_HapticRumblePlay_REAL
-#define SDL_HapticRumbleStop SDL_HapticRumbleStop_REAL
+#define SDL_GetHapticEffectStatus SDL_GetHapticEffectStatus_REAL
+#define SDL_CreateHapticEffect SDL_CreateHapticEffect_REAL
+#define SDL_GetNumHapticAxes SDL_GetNumHapticAxes_REAL
+#define SDL_GetMaxHapticEffects SDL_GetMaxHapticEffects_REAL
+#define SDL_GetMaxHapticEffectsPlaying SDL_GetMaxHapticEffectsPlaying_REAL
+#define SDL_OpenHaptic SDL_OpenHaptic_REAL
+#define SDL_OpenHapticFromJoystick SDL_OpenHapticFromJoystick_REAL
+#define SDL_OpenHapticFromMouse SDL_OpenHapticFromMouse_REAL
+#define SDL_PauseHaptic SDL_PauseHaptic_REAL
+#define SDL_GetHapticFeatures SDL_GetHapticFeatures_REAL
+#define SDL_InitHapticRumble SDL_InitHapticRumble_REAL
+#define SDL_PlayHapticRumble SDL_PlayHapticRumble_REAL
+#define SDL_StopHapticRumble SDL_StopHapticRumble_REAL
 #define SDL_HapticRumbleSupported SDL_HapticRumbleSupported_REAL
-#define SDL_HapticRunEffect SDL_HapticRunEffect_REAL
-#define SDL_HapticSetAutocenter SDL_HapticSetAutocenter_REAL
-#define SDL_HapticSetGain SDL_HapticSetGain_REAL
-#define SDL_HapticStopAll SDL_HapticStopAll_REAL
-#define SDL_HapticStopEffect SDL_HapticStopEffect_REAL
-#define SDL_HapticUnpause SDL_HapticUnpause_REAL
-#define SDL_HapticUpdateEffect SDL_HapticUpdateEffect_REAL
+#define SDL_RunHapticEffect SDL_RunHapticEffect_REAL
+#define SDL_SetHapticAutocenter SDL_SetHapticAutocenter_REAL
+#define SDL_SetHapticGain SDL_SetHapticGain_REAL
+#define SDL_StopHapticEffects SDL_StopHapticEffects_REAL
+#define SDL_StopHapticEffect SDL_StopHapticEffect_REAL
+#define SDL_ResumeHaptic SDL_ResumeHaptic_REAL
+#define SDL_UpdateHapticEffect SDL_UpdateHapticEffect_REAL
 #define SDL_HasARMSIMD SDL_HasARMSIMD_REAL
 #define SDL_HasAVX SDL_HasAVX_REAL
 #define SDL_HasAVX2 SDL_HasAVX2_REAL
@@ -443,7 +438,7 @@
 #define SDL_JoystickHasLED SDL_JoystickHasLED_REAL
 #define SDL_JoystickHasRumble SDL_JoystickHasRumble_REAL
 #define SDL_JoystickHasRumbleTriggers SDL_JoystickHasRumbleTriggers_REAL
-#define SDL_JoystickIsHaptic SDL_JoystickIsHaptic_REAL
+#define SDL_IsJoystickHaptic SDL_IsJoystickHaptic_REAL
 #define SDL_LinuxSetThreadPriority  SDL_LinuxSetThreadPriority_REAL
 #define SDL_LinuxSetThreadPriorityAndPolicy SDL_LinuxSetThreadPriorityAndPolicy_REAL
 #define SDL_LoadBMP SDL_LoadBMP_REAL
@@ -483,8 +478,7 @@
 #define SDL_Metal_DestroyView SDL_Metal_DestroyView_REAL
 #define SDL_Metal_GetLayer SDL_Metal_GetLayer_REAL
 #define SDL_MinimizeWindow SDL_MinimizeWindow_REAL
-#define SDL_MouseIsHaptic SDL_MouseIsHaptic_REAL
-#define SDL_NumHaptics SDL_NumHaptics_REAL
+#define SDL_IsMouseHaptic SDL_IsMouseHaptic_REAL
 #define SDL_OnApplicationDidBecomeActive SDL_OnApplicationDidBecomeActive_REAL
 #define SDL_OnApplicationDidChangeStatusBarOrientation  SDL_OnApplicationDidChangeStatusBarOrientation_REAL
 #define SDL_OnApplicationDidEnterBackground SDL_OnApplicationDidEnterBackground_REAL
@@ -636,14 +630,13 @@
 #define SDL_ShowWindow SDL_ShowWindow_REAL
 #define SDL_SignalCondition SDL_SignalCondition_REAL
 #define SDL_SoftStretch SDL_SoftStretch_REAL
-#define SDL_SoftStretchLinear SDL_SoftStretchLinear_REAL
 #define SDL_StartTextInput SDL_StartTextInput_REAL
 #define SDL_StopTextInput SDL_StopTextInput_REAL
 #define SDL_SurfaceHasColorKey SDL_SurfaceHasColorKey_REAL
 #define SDL_SurfaceHasRLE SDL_SurfaceHasRLE_REAL
 #define SDL_TextInputActive SDL_TextInputActive_REAL
 #define SDL_TextInputShown SDL_TextInputShown_REAL
-#define SDL_ThreadID SDL_ThreadID_REAL
+#define SDL_GetCurrentThreadID SDL_GetCurrentThreadID_REAL
 #define SDL_TryLockMutex SDL_TryLockMutex_REAL
 #define SDL_TryLockRWLockForReading SDL_TryLockRWLockForReading_REAL
 #define SDL_TryLockRWLockForWriting SDL_TryLockRWLockForWriting_REAL
@@ -988,3 +981,11 @@
 #define SDL_strnstr SDL_strnstr_REAL
 #define SDL_wcsnstr SDL_wcsnstr_REAL
 #define SDL_SyncWindow SDL_SyncWindow_REAL
+#define SDL_GetGamepadSteamHandle SDL_GetGamepadSteamHandle_REAL
+#define SDL_GetRendererFromTexture SDL_GetRendererFromTexture_REAL
+#define SDL_GetHaptics SDL_GetHaptics_REAL
+#define SDL_GetHapticInstanceName SDL_GetHapticInstanceName_REAL
+#define SDL_GetHapticFromInstanceID SDL_GetHapticFromInstanceID_REAL
+#define SDL_GetHapticInstanceID SDL_GetHapticInstanceID_REAL
+#define SDL_GetHapticName SDL_GetHapticName_REAL
+#define SDL_ReadSurfacePixel SDL_ReadSurfacePixel_REAL

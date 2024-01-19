@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -77,6 +77,7 @@ struct SDL_Joystick
     char *serial _guarded;               /* Joystick serial */
     SDL_JoystickGUID guid _guarded;      /* Joystick guid */
     Uint16 firmware_version _guarded;    /* Firmware version, if available */
+    Uint64 steam_handle _guarded;        /* Steam controller API handle */
 
     int naxes _guarded; /* Number of axis controls on the joystick */
     SDL_JoystickAxisInfo *axes _guarded;
@@ -167,6 +168,9 @@ typedef struct SDL_JoystickDriver
 
     /* Function to get the device-dependent path of a joystick */
     const char *(*GetDevicePath)(int device_index);
+
+    /* Function to get the Steam virtual gamepad slot of a joystick */
+    int (*GetDeviceSteamVirtualGamepadSlot)(int device_index);
 
     /* Function to get the player index of a joystick */
     int (*GetDevicePlayerIndex)(int device_index);

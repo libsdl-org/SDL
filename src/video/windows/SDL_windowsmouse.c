@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,8 +23,11 @@
 #if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 
 #include "SDL_windowsvideo.h"
+#include "SDL_windowsevents.h"
 
+#include "../SDL_video_c.h"
 #include "../../events/SDL_mouse_c.h"
+#include "../../joystick/usb_ids.h"
 
 DWORD SDL_last_warp_time = 0;
 HCURSOR SDL_cursor = NULL;
@@ -32,9 +35,87 @@ static SDL_Cursor *SDL_blank_cursor = NULL;
 
 static int rawInputEnableCount = 0;
 
+typedef struct
+{
+    HANDLE ready_event;
+    HANDLE done_event;
+    HANDLE thread;
+} RawMouseThreadData;
+
+static RawMouseThreadData thread_data = {
+    INVALID_HANDLE_VALUE,
+    INVALID_HANDLE_VALUE,
+    INVALID_HANDLE_VALUE
+};
+
+static DWORD WINAPI WIN_RawMouseThread(LPVOID param)
+{
+    RAWINPUTDEVICE rawMouse;
+    HWND window;
+
+    window = CreateWindowEx(0, TEXT("Message"), NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
+    if (!window) {
+        return 0;
+    }
+
+    rawMouse.usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
+    rawMouse.usUsage = USB_USAGE_GENERIC_MOUSE;
+    rawMouse.dwFlags = 0;
+    rawMouse.hwndTarget = window;
+
+    if (!RegisterRawInputDevices(&rawMouse, 1, sizeof(rawMouse))) {
+        DestroyWindow(window);
+        return 0;
+    }
+
+    /* Make sure we get mouse events as soon as possible */
+    SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+
+    /* Tell the parent we're ready to go! */
+    SetEvent(thread_data.ready_event);
+
+    for ( ; ; ) {
+        if (MsgWaitForMultipleObjects(1, &thread_data.done_event, 0, INFINITE, QS_RAWINPUT) != WAIT_OBJECT_0 + 1) {
+            break;
+        }
+
+        /* Clear the queue status so MsgWaitForMultipleObjects() will wait again */
+        (void)GetQueueStatus(QS_RAWINPUT);
+
+        WIN_PollRawMouseInput();
+    }
+
+    rawMouse.dwFlags |= RIDEV_REMOVE;
+    RegisterRawInputDevices(&rawMouse, 1, sizeof(rawMouse));
+
+    DestroyWindow(window);
+
+    return 0;
+}
+
+static void CleanupRawMouseThreadData(void)
+{
+    if (thread_data.thread != INVALID_HANDLE_VALUE) {
+        SetEvent(thread_data.done_event);
+        WaitForSingleObject(thread_data.thread, 500);
+        CloseHandle(thread_data.thread);
+        thread_data.thread = INVALID_HANDLE_VALUE;
+    }
+
+    if (thread_data.ready_event != INVALID_HANDLE_VALUE) {
+        CloseHandle(thread_data.ready_event);
+        thread_data.ready_event = INVALID_HANDLE_VALUE;
+    }
+
+    if (thread_data.done_event != INVALID_HANDLE_VALUE) {
+        CloseHandle(thread_data.done_event);
+        thread_data.done_event = INVALID_HANDLE_VALUE;
+    }
+}
+
 static int ToggleRawInput(SDL_bool enabled)
 {
-    RAWINPUTDEVICE rawMouse = { 0x01, 0x02, 0, NULL }; /* Mouse: UsagePage = 1, Usage = 2 */
+    int result = -1;
 
     if (enabled) {
         rawInputEnableCount++;
@@ -51,23 +132,48 @@ static int ToggleRawInput(SDL_bool enabled)
         }
     }
 
-    if (!enabled) {
-        rawMouse.dwFlags |= RIDEV_REMOVE;
-    }
+    if (enabled) {
+        HANDLE handles[2];
 
-    /* (Un)register raw input for mice */
-    if (RegisterRawInputDevices(&rawMouse, 1, sizeof(RAWINPUTDEVICE)) == FALSE) {
-        /* Reset the enable count, otherwise subsequent enable calls will
-           believe raw input is enabled */
-        rawInputEnableCount = 0;
-
-        /* Only return an error when registering. If we unregister and fail,
-           then it's probably that we unregistered twice. That's OK. */
-        if (enabled) {
-            return SDL_Unsupported();
+        thread_data.ready_event = CreateEvent(NULL, FALSE, FALSE, NULL);
+        if (thread_data.ready_event == INVALID_HANDLE_VALUE) {
+            WIN_SetError("CreateEvent");
+            goto done;
         }
+
+        thread_data.done_event = CreateEvent(NULL, FALSE, FALSE, NULL);
+        if (thread_data.done_event == INVALID_HANDLE_VALUE) {
+            WIN_SetError("CreateEvent");
+            goto done;
+        }
+
+        thread_data.thread = CreateThread(NULL, 0, WIN_RawMouseThread, &thread_data, 0, NULL);
+        if (thread_data.thread == INVALID_HANDLE_VALUE) {
+            WIN_SetError("CreateThread");
+            goto done;
+        }
+
+        /* Wait for the thread to signal ready or exit */
+        handles[0] = thread_data.ready_event;
+        handles[1] = thread_data.thread;
+        if (WaitForMultipleObjects(2, handles, FALSE, INFINITE) != WAIT_OBJECT_0) {
+            SDL_SetError("Couldn't set up raw input handling");
+            goto done;
+        }
+        result = 0;
+    } else {
+        CleanupRawMouseThreadData();
+        result = 0;
     }
-    return 0;
+
+done:
+    if (enabled && result < 0) {
+        CleanupRawMouseThreadData();
+
+        /* Reset rawInputEnableCount so we can try again */
+        rawInputEnableCount = 0;
+    }
+    return result;
 }
 
 static SDL_Cursor *WIN_CreateDefaultCursor()
@@ -78,6 +184,32 @@ static SDL_Cursor *WIN_CreateDefaultCursor()
     }
 
     return cursor;
+}
+
+static SDL_bool IsMonochromeSurface(SDL_Surface *surface)
+{
+    int x, y;
+    Uint8 r, g, b, a;
+
+    SDL_assert(surface->format->format == SDL_PIXELFORMAT_ARGB8888);
+
+    for (y = 0; y < surface->h; y++) {
+        for (x = 0; x < surface->w; x++) {
+            SDL_ReadSurfacePixel(surface, x, y, &r, &g, &b, &a);
+
+            /* Black or white pixel. */
+            if (!((r == 0x00 && g == 0x00 && b == 0x00) || (r == 0xff && g == 0xff && b == 0xff))) {
+                return SDL_FALSE;
+            }
+
+            /* Transparent or opaque pixel. */
+            if (!(a == 0x00 || a == 0xff)) {
+                return SDL_FALSE;
+            }
+        }
+    }
+
+    return SDL_TRUE;
 }
 
 static HBITMAP CreateColorBitmap(SDL_Surface *surface)
@@ -107,43 +239,55 @@ static HBITMAP CreateColorBitmap(SDL_Surface *surface)
     return bitmap;
 }
 
-static HBITMAP CreateMaskBitmap(SDL_Surface *surface)
+/* Generate bitmap with a mask and optional monochrome image data.
+ *
+ * For info on the expected mask format see:
+ * https://devblogs.microsoft.com/oldnewthing/20101018-00/?p=12513
+ */
+static HBITMAP CreateMaskBitmap(SDL_Surface *surface, SDL_bool is_monochrome)
 {
     HBITMAP bitmap;
     SDL_bool isstack;
     void *pixels;
     int x, y;
-    Uint8 *src, *dst;
+    Uint8 r, g, b, a;
+    Uint8 *dst;
     const int pitch = ((surface->w + 15) & ~15) / 8;
+    const int size = pitch * surface->h;
     static const unsigned char masks[] = { 0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1 };
 
     SDL_assert(surface->format->format == SDL_PIXELFORMAT_ARGB8888);
 
-    pixels = SDL_small_alloc(Uint8, pitch * surface->h, &isstack);
+    pixels = SDL_small_alloc(Uint8, size * (is_monochrome ? 2 : 1), &isstack);
     if (!pixels) {
         return NULL;
     }
 
-    /* Make the entire mask completely transparent. */
-    SDL_memset(pixels, 0xff, pitch * surface->h);
-
-    SDL_LockSurface(surface);
-
-    src = surface->pixels;
     dst = pixels;
-    for (y = 0; y < surface->h; y++, src += surface->pitch, dst += pitch) {
+
+    /* Make the mask completely transparent. */
+    SDL_memset(dst, 0xff, size);
+    if (is_monochrome) {
+        SDL_memset(dst + size, 0x00, size);
+    }
+
+    for (y = 0; y < surface->h; y++, dst += pitch) {
         for (x = 0; x < surface->w; x++) {
-            Uint8 alpha = src[x * 4 + 3];
-            if (alpha != 0) {
+            SDL_ReadSurfacePixel(surface, x, y, &r, &g, &b, &a);
+
+            if (a != 0) {
                 /* Reset bit of an opaque pixel. */
                 dst[x >> 3] &= ~masks[x & 7];
+            }
+
+            if (is_monochrome && !(r == 0x00 && g == 0x00 && b == 0x00)) {
+                /* Set bit of white or inverted pixel. */
+                dst[size + (x >> 3)] |= masks[x & 7];
             }
         }
     }
 
-    SDL_UnlockSurface(surface);
-
-    bitmap = CreateBitmap(surface->w, surface->h, 1, 1, pixels);
+    bitmap = CreateBitmap(surface->w, surface->h * (is_monochrome ? 2 : 1), 1, 1, pixels);
     SDL_small_free(pixels, isstack);
     if (!bitmap) {
         WIN_SetError("CreateBitmap()");
@@ -158,22 +302,25 @@ static SDL_Cursor *WIN_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
     HCURSOR hcursor;
     SDL_Cursor *cursor;
     ICONINFO ii;
+    SDL_bool is_monochrome = IsMonochromeSurface(surface);
 
     SDL_zero(ii);
     ii.fIcon = FALSE;
     ii.xHotspot = (DWORD)hot_x;
     ii.yHotspot = (DWORD)hot_y;
-    ii.hbmColor = CreateColorBitmap(surface);
-    ii.hbmMask = CreateMaskBitmap(surface);
+    ii.hbmMask = CreateMaskBitmap(surface, is_monochrome);
+    ii.hbmColor = is_monochrome ? NULL : CreateColorBitmap(surface);
 
-    if (!ii.hbmColor || !ii.hbmMask) {
+    if (!ii.hbmMask || (!is_monochrome && !ii.hbmColor)) {
         return NULL;
     }
 
     hcursor = CreateIconIndirect(&ii);
 
-    DeleteObject(ii.hbmColor);
     DeleteObject(ii.hbmMask);
+    if (ii.hbmColor) {
+        DeleteObject(ii.hbmColor);
+    }
 
     if (!hcursor) {
         WIN_SetError("CreateIconIndirect()");
@@ -466,7 +613,7 @@ static void WIN_SetEnhancedMouseScale(int mouse_speed)
     float xpoints[5];
     float ypoints[5];
     float scale_points[10];
-    const int dpi = 96; // FIXME, how do we handle different monitors with different DPI?
+    const int dpi = USER_DEFAULT_SCREEN_DPI; // FIXME, how do we handle different monitors with different DPI?
     const float display_factor = 3.5f * (150.0f / dpi);
 
     if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Control Panel\\Mouse", 0, KEY_READ, &hKey) == ERROR_SUCCESS) {

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,22 +24,10 @@
 
 static int SDL_LowerSoftStretchNearest(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
 static int SDL_LowerSoftStretchLinear(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
-static int SDL_UpperSoftStretch(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
 
 int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
-                    SDL_Surface *dst, const SDL_Rect *dstrect)
-{
-    return SDL_UpperSoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
-}
-
-int SDL_SoftStretchLinear(SDL_Surface *src, const SDL_Rect *srcrect,
-                          SDL_Surface *dst, const SDL_Rect *dstrect)
-{
-    return SDL_UpperSoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_LINEAR);
-}
-
-static int SDL_UpperSoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
-                                SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
+                    SDL_Surface *dst, const SDL_Rect *dstrect,
+                    SDL_ScaleMode scaleMode)
 {
     int ret;
     int src_locked;
@@ -47,11 +35,20 @@ static int SDL_UpperSoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
     SDL_Rect full_src;
     SDL_Rect full_dst;
 
+
     if (src->format->format != dst->format->format) {
         return SDL_SetError("Only works with same format surfaces");
     }
 
+    if (scaleMode != SDL_SCALEMODE_NEAREST && scaleMode != SDL_SCALEMODE_LINEAR && scaleMode != SDL_SCALEMODE_BEST) {
+        return SDL_InvalidParamError("scaleMode");
+    }
+
     if (scaleMode != SDL_SCALEMODE_NEAREST) {
+        scaleMode = SDL_SCALEMODE_LINEAR;
+    }
+
+    if (scaleMode == SDL_SCALEMODE_LINEAR) {
         if (src->format->BytesPerPixel != 4 || src->format->format == SDL_PIXELFORMAT_ARGB2101010) {
             return SDL_SetError("Wrong format");
         }

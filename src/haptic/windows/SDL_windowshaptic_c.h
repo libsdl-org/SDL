@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -42,8 +42,6 @@ struct haptic_hwdata
 #endif
     DWORD axes[3];        /* Axes to use. */
     SDL_bool is_joystick; /* Device is loaded as joystick. */
-    Uint8 bXInputHaptic;  /* Supports force feedback via XInput. */
-    Uint8 userid;         /* XInput userid index for this joystick */
     SDL_Thread *thread;
     SDL_Mutex *mutex;
     Uint64 stopTicks;
@@ -53,16 +51,11 @@ struct haptic_hwdata
 /*
  * Haptic system effect data.
  */
-#if defined(SDL_HAPTIC_DINPUT) || defined(SDL_HAPTIC_XINPUT)
+#ifdef SDL_HAPTIC_DINPUT
 struct haptic_hweffect
 {
-#ifdef SDL_HAPTIC_DINPUT
     DIEFFECT effect;
     LPDIRECTINPUTEFFECT ref;
-#endif
-#ifdef SDL_HAPTIC_XINPUT
-    XINPUT_VIBRATION vibration;
-#endif
 };
 #endif
 
@@ -71,14 +64,13 @@ struct haptic_hweffect
  */
 typedef struct SDL_hapticlist_item
 {
+    SDL_HapticID instance_id;
     char *name;
     SDL_Haptic *haptic;
 #ifdef SDL_HAPTIC_DINPUT
     DIDEVICEINSTANCE instance;
     DIDEVCAPS capabilities;
 #endif
-    SDL_bool bXInputHaptic; /* Supports force feedback via XInput. */
-    Uint8 userid;           /* XInput userid index for this joystick */
     struct SDL_hapticlist_item *next;
 } SDL_hapticlist_item;
 

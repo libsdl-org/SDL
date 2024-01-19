@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,6 +30,9 @@ static NativeWindowFactory *factories[] = {
 #ifdef TEST_NATIVE_WINDOWS
     &WindowsWindowFactory,
 #endif
+#ifdef TEST_NATIVE_WAYLAND
+    &WaylandWindowFactory,
+#endif
 #ifdef TEST_NATIVE_X11
     &X11WindowFactory,
 #endif
@@ -47,10 +50,10 @@ static SDLTest_CommonState *state;
 static void
 quit(int rc)
 {
-    SDL_Quit();
     if (native_window && factory) {
         factory->DestroyNativeWindow(native_window);
     }
+    SDL_Quit();
     SDLTest_CommonDestroyState(state);
     /* Let 'main()' return normally */
     if (rc != 0) {
@@ -149,6 +152,9 @@ int main(int argc, char *argv[])
     }
     props = SDL_CreateProperties();
     SDL_SetProperty(props, "sdl2-compat.external_window", native_window);
+    SDL_SetBooleanProperty(props, SDL_PROPERTY_WINDOW_CREATE_OPENGL_BOOLEAN, SDL_TRUE);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_WIDTH_NUMBER, WINDOW_W);
+    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_HEIGHT_NUMBER, WINDOW_H);
     window = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);
     if (!window) {

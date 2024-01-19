@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -231,6 +231,11 @@ static const char *N3DS_JoystickGetDevicePath(int device_index)
     return NULL;
 }
 
+static int N3DS_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return -1;
+}
+
 static int N3DS_JoystickGetDevicePlayerIndex(int device_index)
 {
     return -1;
@@ -271,6 +276,7 @@ SDL_JoystickDriver SDL_N3DS_JoystickDriver = {
     .Detect = N3DS_JoystickDetect,
     .GetDeviceName = N3DS_JoystickGetDeviceName,
     .GetDevicePath = N3DS_JoystickGetDevicePath,
+    .GetDeviceSteamVirtualGamepadSlot = N3DS_JoystickGetDeviceSteamVirtualGamepadSlot,
     .GetDevicePlayerIndex = N3DS_JoystickGetDevicePlayerIndex,
     .SetDevicePlayerIndex = N3DS_JoystickSetDevicePlayerIndex,
     .GetDeviceGUID = N3DS_JoystickGetDeviceGUID,

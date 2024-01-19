@@ -757,19 +757,29 @@ static int surface_testOverflow(void *arg)
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
 
     if (sizeof(size_t) == 4 && sizeof(int) >= 4) {
-        expectedError = "Out of memory";
-        surface = SDL_CreateSurface(SDL_MAX_SINT32, 1, SDL_PIXELFORMAT_INDEX8);
-        SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width + alignment");
+        SDL_ClearError();
+        expectedError = "aligning pitch would overflow";
+        /* 0x5555'5555 * 3bpp = 0xffff'ffff which fits in size_t, but adding
+         * alignment padding makes it overflow */
+        surface = SDL_CreateSurface(0x55555555, 1, SDL_PIXELFORMAT_RGB24);
+        SDLTest_AssertCheck(surface == NULL, "Should detect overflow in pitch + alignment");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
-        surface = SDL_CreateSurface(SDL_MAX_SINT32 / 2, 1, SDL_PIXELFORMAT_ARGB8888);
+        SDL_ClearError();
+        expectedError = "width * bpp would overflow";
+        /* 0x4000'0000 * 4bpp = 0x1'0000'0000 which (just) overflows */
+        surface = SDL_CreateSurface(0x40000000, 1, SDL_PIXELFORMAT_ARGB8888);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * bytes per pixel");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+        SDL_ClearError();
+        expectedError = "height * pitch would overflow";
         surface = SDL_CreateSurface((1 << 29) - 1, (1 << 29) - 1, SDL_PIXELFORMAT_INDEX8);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * height");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+        SDL_ClearError();
+        expectedError = "height * pitch would overflow";
         surface = SDL_CreateSurface((1 << 15) + 1, (1 << 15) + 1, SDL_PIXELFORMAT_ARGB8888);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * height * bytes per pixel");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,

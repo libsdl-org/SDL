@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -139,7 +139,7 @@ int SDL_DINPUT_HapticMaybeAddDevice(const DIDEVICEINSTANCE *pdidInstance)
 
     /* Make sure we don't already have it */
     for (item = SDL_hapticlist; item; item = item->next) {
-        if ((!item->bXInputHaptic) && (SDL_memcmp(&item->instance, pdidInstance, sizeof(*pdidInstance)) == 0)) {
+        if (SDL_memcmp(&item->instance, pdidInstance, sizeof(*pdidInstance)) == 0) {
             return -1; /* Already added */
         }
     }
@@ -170,6 +170,7 @@ int SDL_DINPUT_HapticMaybeAddDevice(const DIDEVICEINSTANCE *pdidInstance)
         return -1;
     }
 
+    item->instance_id = SDL_GetNextObjectID();
     item->name = WIN_StringToUTF8(pdidInstance->tszProductName);
     if (!item->name) {
         SDL_free(item);
@@ -193,7 +194,7 @@ int SDL_DINPUT_HapticMaybeRemoveDevice(const DIDEVICEINSTANCE *pdidInstance)
     }
 
     for (item = SDL_hapticlist; item; item = item->next) {
-        if (!item->bXInputHaptic && SDL_memcmp(&item->instance, pdidInstance, sizeof(*pdidInstance)) == 0) {
+        if (SDL_memcmp(&item->instance, pdidInstance, sizeof(*pdidInstance)) == 0) {
             /* found it, remove it. */
             return SDL_SYS_RemoveHapticDevice(prev, item);
         }
@@ -259,8 +260,7 @@ static BOOL CALLBACK DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
     EFFECT_TEST(GUID_ConstantForce, SDL_HAPTIC_CONSTANT);
     EFFECT_TEST(GUID_CustomForce, SDL_HAPTIC_CUSTOM);
     EFFECT_TEST(GUID_Sine, SDL_HAPTIC_SINE);
-    /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /* EFFECT_TEST(GUID_Square, SDL_HAPTIC_SQUARE); */
+    EFFECT_TEST(GUID_Square, SDL_HAPTIC_SQUARE);
     EFFECT_TEST(GUID_Triangle, SDL_HAPTIC_TRIANGLE);
     EFFECT_TEST(GUID_SawtoothUp, SDL_HAPTIC_SAWTOOTHUP);
     EFFECT_TEST(GUID_SawtoothDown, SDL_HAPTIC_SAWTOOTHDOWN);
@@ -298,7 +298,7 @@ static int SDL_DINPUT_HapticOpenFromDevice(SDL_Haptic *haptic, LPDIRECTINPUTDEVI
     /* !!! FIXME: opening a haptic device here first will make an attempt to
        !!! FIXME:  SDL_OpenJoystick() that same device fail later, since we
        !!! FIXME:  have it open in exclusive mode. But this will allow
-       !!! FIXME:  SDL_OpenJoystick() followed by SDL_HapticOpenFromJoystick()
+       !!! FIXME:  SDL_OpenJoystick() followed by SDL_OpenHapticFromJoystick()
        !!! FIXME:  to work, and that's probably the common case. Still,
        !!! FIXME:  ideally, We need to unify the opening code. */
 
@@ -461,7 +461,6 @@ int SDL_DINPUT_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
 int SDL_DINPUT_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
     SDL_hapticlist_item *item;
-    Uint8 index = 0;
     HRESULT ret;
     DIDEVICEINSTANCE joy_instance;
 
@@ -473,11 +472,11 @@ int SDL_DINPUT_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick
 
     /* Since it comes from a joystick we have to try to match it with a haptic device on our haptic list. */
     for (item = SDL_hapticlist; item; item = item->next) {
-        if (!item->bXInputHaptic && WIN_IsEqualGUID(&item->instance.guidInstance, &joy_instance.guidInstance)) {
-            haptic->index = index;
+        if (WIN_IsEqualGUID(&item->instance.guidInstance, &joy_instance.guidInstance)) {
+            haptic->instance_id = item->instance_id;
+            haptic->name = SDL_strdup(item->name);
             return SDL_DINPUT_HapticOpenFromDevice(haptic, joystick->hwdata->InputDevice, SDL_TRUE);
         }
-        ++index;
     }
 
     return SDL_SetError("Couldn't find joystick in haptic device list");
@@ -678,8 +677,7 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
         break;
 
     case SDL_HAPTIC_SINE:
-    /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /* case SDL_HAPTIC_SQUARE: */
+    case SDL_HAPTIC_SQUARE:
     case SDL_HAPTIC_TRIANGLE:
     case SDL_HAPTIC_SAWTOOTHUP:
     case SDL_HAPTIC_SAWTOOTHDOWN:
@@ -889,9 +887,8 @@ static REFGUID SDL_SYS_HapticEffectType(SDL_HapticEffect *effect)
     case SDL_HAPTIC_RAMP:
         return &GUID_RampForce;
 
-        /* !!! FIXME: put this back when we have more bits in 2.1 */
-        /* case SDL_HAPTIC_SQUARE:
-            return &GUID_Square; */
+    case SDL_HAPTIC_SQUARE:
+        return &GUID_Square;
 
     case SDL_HAPTIC_SINE:
         return &GUID_Sine;

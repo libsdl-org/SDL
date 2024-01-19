@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -137,7 +137,7 @@ typedef Uint32 (SDLCALL *SDL_TimerCallback)(Uint32 interval, void *param);
 /**
  * Definition of the timer ID type.
  */
-typedef int SDL_TimerID;
+typedef Uint32 SDL_TimerID;
 
 /**
  * Call a callback function at a future time.

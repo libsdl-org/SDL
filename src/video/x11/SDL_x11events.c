@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -884,18 +884,24 @@ void X11_GetBorderValues(SDL_WindowData *data)
     int format;
     unsigned long nitems, bytes_after;
     unsigned char *property;
-    if (X11_XGetWindowProperty(display, data->xwindow, videodata->_NET_FRAME_EXTENTS, 0, 16, 0, XA_CARDINAL, &type, &format, &nitems, &bytes_after, &property) == Success) {
-        if (type != None && nitems == 4) {
-            data->border_left = (int)((long *)property)[0];
-            data->border_right = (int)((long *)property)[1];
-            data->border_top = (int)((long *)property)[2];
-            data->border_bottom = (int)((long *)property)[3];
-        }
-        X11_XFree(property);
+
+    /* Some compositors will send extents even when the border hint is turned off. Ignore them in this case. */
+    if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
+        if (X11_XGetWindowProperty(display, data->xwindow, videodata->_NET_FRAME_EXTENTS, 0, 16, 0, XA_CARDINAL, &type, &format, &nitems, &bytes_after, &property) == Success) {
+            if (type != None && nitems == 4) {
+                data->border_left = (int)((long *)property)[0];
+                data->border_right = (int)((long *)property)[1];
+                data->border_top = (int)((long *)property)[2];
+                data->border_bottom = (int)((long *)property)[3];
+            }
+            X11_XFree(property);
 
 #ifdef DEBUG_XEVENTS
-        printf("New _NET_FRAME_EXTENTS: left=%d right=%d, top=%d, bottom=%d\n", data->border_left, data->border_right, data->border_top, data->border_bottom);
+            printf("New _NET_FRAME_EXTENTS: left=%d right=%d, top=%d, bottom=%d\n", data->border_left, data->border_right, data->border_top, data->border_bottom);
 #endif
+        }
+    } else {
+        data->border_left = data->border_top = data->border_right = data->border_bottom = 0;
     }
 }
 
@@ -1326,34 +1332,36 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
         if (xevent->xconfigure.x != data->last_xconfigure.x ||
             xevent->xconfigure.y != data->last_xconfigure.y) {
-            SDL_Window *w;
-            int x = xevent->xconfigure.x;
-            int y = xevent->xconfigure.y;
+            if (!data->disable_size_position_events) {
+                SDL_Window *w;
+                int x = xevent->xconfigure.x;
+                int y = xevent->xconfigure.y;
 
-            SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
+                data->pending_operation &= ~X11_PENDING_OP_MOVE;
+                SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
+                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
 
 #ifdef SDL_USE_IME
-            if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
-                /* Update IME candidate list position */
-                SDL_IME_UpdateTextRect(NULL);
-            }
+                if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
+                    /* Update IME candidate list position */
+                    SDL_IME_UpdateTextRect(NULL);
+                }
 #endif
-            for (w = data->window->first_child; w; w = w->next_sibling) {
-                /* Don't update hidden child windows, their relative position doesn't change */
-                if (!(w->flags & SDL_WINDOW_HIDDEN)) {
-                    X11_UpdateWindowPosition(w, SDL_TRUE);
+                for (w = data->window->first_child; w; w = w->next_sibling) {
+                    /* Don't update hidden child windows, their relative position doesn't change */
+                    if (!(w->flags & SDL_WINDOW_HIDDEN)) {
+                        X11_UpdateWindowPosition(w, SDL_TRUE);
+                    }
                 }
             }
         }
         if (xevent->xconfigure.width != data->last_xconfigure.width ||
             xevent->xconfigure.height != data->last_xconfigure.height) {
-            if (!data->skip_size_count) {
+            if (!data->disable_size_position_events) {
+                data->pending_operation &= ~X11_PENDING_OP_RESIZE;
                 SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED,
                                     xevent->xconfigure.width,
                                     xevent->xconfigure.height);
-            } else {
-                data->skip_size_count--;
             }
         }
 
@@ -1638,7 +1646,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_ENTER_FULLSCREEN, 0, 0);
                             if (commit) {
                                 /* This was initiated by the compositor, or the mode was changed between the request and the window
-                             * becoming fullscreen. Switch to the application requested mode if necessary.
+                                 * becoming fullscreen. Switch to the application requested mode if necessary.
                                  */
                                 SDL_copyp(&data->window->current_fullscreen_mode, &data->window->requested_fullscreen_mode);
                                 SDL_UpdateFullscreenMode(data->window, SDL_TRUE, SDL_TRUE);
@@ -1648,12 +1656,39 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                         }
                     } else {
                         SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_LEAVE_FULLSCREEN, 0, 0);
-                        SDL_UpdateFullscreenMode(data->window, SDL_FALSE, SDL_TRUE);
+                        SDL_UpdateFullscreenMode(data->window, SDL_FALSE, SDL_FALSE);
+
+                        /* Need to restore or update any limits changed while the window was fullscreen. */
+                        X11_SetWindowMinMax(data->window, !!(flags & SDL_WINDOW_MAXIMIZED));
                     }
 
-                    if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
-                        /* Skip the first resize event if the borders are being turned on/off. */
-                        data->skip_size_count = 1;
+                    if ((flags & SDL_WINDOW_FULLSCREEN) &&
+                        (data->border_top || data->border_left || data->border_bottom || data->border_right)) {
+                        /* If the window is entering fullscreen and the borders are
+                         * non-zero sized, turn off size events until the borders are
+                         * shut off to avoid bogus window sizes and positions, and
+                         * note that the old borders were non-zero for restoration.
+                         */
+                        data->disable_size_position_events = SDL_TRUE;
+                        data->previous_borders_nonzero = SDL_TRUE;
+                    } else if (!(flags & SDL_WINDOW_FULLSCREEN) &&
+                               data->previous_borders_nonzero &&
+                               (!data->border_top && !data->border_left && !data->border_bottom && !data->border_right)) {
+                        /* If the window is leaving fullscreen and the current borders
+                         * are zero sized, but weren't when entering fullscreen, turn
+                         * off size events until the borders come back to avoid bogus
+                         * window sizes and positions.
+                         */
+                        data->disable_size_position_events = SDL_TRUE;
+                        data->previous_borders_nonzero = SDL_FALSE;
+                    } else {
+                        data->disable_size_position_events = SDL_FALSE;
+                        data->previous_borders_nonzero = SDL_FALSE;
+
+                        if (!(data->window->flags & SDL_WINDOW_FULLSCREEN) && data->toggle_borders) {
+                            data->toggle_borders = SDL_FALSE;
+                            X11_SetWindowBordered(_this, data->window, !(data->window->flags & SDL_WINDOW_BORDERLESS));
+                        }
                     }
                 }
                 if ((changed & SDL_WINDOW_MAXIMIZED) && ((flags & SDL_WINDOW_MAXIMIZED) && !(flags & SDL_WINDOW_MINIMIZED))) {
@@ -1675,7 +1710,12 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
                     /* Restore the last known floating state if leaving maximized mode */
                     if (!(flags & SDL_WINDOW_FULLSCREEN)) {
-                        X11_XMoveWindow(display, data->xwindow, data->window->floating.x, data->window->floating.y);
+                        data->pending_operation |= X11_PENDING_OP_MOVE | X11_PENDING_OP_RESIZE;
+                        data->expected.x = data->window->floating.x - data->border_left;
+                        data->expected.y = data->window->floating.y - data->border_top;
+                        data->expected.w = data->window->floating.w;
+                        data->expected.h = data->window->floating.h;
+                        X11_XMoveWindow(display, data->xwindow, data->window->floating.x - data->border_left, data->window->floating.y - data->border_top);
                         X11_XResizeWindow(display, data->xwindow, data->window->floating.w, data->window->floating.h);
                     }
                 }
@@ -1692,14 +1732,29 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                right approach, but it seems to work. */
             X11_UpdateKeymap(_this, SDL_TRUE);
         } else if (xevent->xproperty.atom == videodata->_NET_FRAME_EXTENTS) {
+            /* Re-enable size events if they were turned off waiting for the borders to come back
+             * when leaving fullscreen.
+             */
+            data->disable_size_position_events = SDL_FALSE;
             X11_GetBorderValues(data);
             if (data->border_top != 0 || data->border_left != 0 || data->border_right != 0 || data->border_bottom != 0) {
-                /* Adjust if the window size changed to accommodate the borders. */
+                /* Adjust if the window size/position changed to accommodate the borders. */
                 if (data->window->flags & SDL_WINDOW_MAXIMIZED) {
+                    data->pending_operation |= X11_PENDING_OP_RESIZE;
+                    data->expected.w = data->window->windowed.w;
+                    data->expected.h = data->window->windowed.h;
                     X11_XResizeWindow(display, data->xwindow, data->window->windowed.w, data->window->windowed.h);
                 } else {
+                    data->pending_operation |= X11_PENDING_OP_RESIZE | X11_PENDING_OP_MOVE;
+                    data->expected.w = data->window->floating.w;
+                    data->expected.h = data->window->floating.h;
+                    X11_XMoveWindow(display, data->xwindow, data->window->floating.x - data->border_left, data->window->floating.y - data->border_top);
                     X11_XResizeWindow(display, data->xwindow, data->window->floating.w, data->window->floating.h);
                 }
+            }
+            if (!(data->window->flags & SDL_WINDOW_FULLSCREEN) && data->toggle_borders) {
+                data->toggle_borders = SDL_FALSE;
+                X11_SetWindowBordered(_this, data->window, !(data->window->flags & SDL_WINDOW_BORDERLESS));
             }
         }
     } break;

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -88,7 +88,7 @@ static void SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode, SDL_Surface *shap
         bitmap_scanline = bitmap + y * bytes_per_scanline;
         for (x = 0; x < shape->w; x++) {
             alpha = 0;
-            if (SDLTest_ReadSurfacePixel(shape, x, y, &r, &g, &b, &alpha) != 0) {
+            if (SDL_ReadSurfacePixel(shape, x, y, &r, &g, &b, &alpha) != 0) {
                 continue;
             }
 

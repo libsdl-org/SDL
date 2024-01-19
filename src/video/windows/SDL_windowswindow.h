@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -59,6 +59,7 @@ struct SDL_WindowData
     SDL_bool expected_resize;
     SDL_bool in_border_change;
     SDL_bool in_title_click;
+    SDL_bool floating_rect_pending;
     Uint8 focus_click_pending;
     SDL_bool skip_update_clipcursor;
     Uint64 last_updated_clipcursor;
@@ -66,6 +67,13 @@ struct SDL_WindowData
     SDL_bool windowed_mode_was_maximized;
     SDL_bool in_window_deactivation;
     RECT cursor_clipped_rect;
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+    RAWINPUT *rawinput;
+    UINT rawinput_offset;
+    UINT rawinput_size;
+    UINT rawinput_count;
+    Uint64 last_rawinput_poll;
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
     SDL_Point last_raw_mouse_position;
     SDL_bool mouse_tracked;
     SDL_bool destroy_parent_with_window;
@@ -114,7 +122,8 @@ extern void WIN_UpdateDarkModeForHWND(HWND hwnd);
 extern int WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags, SDL_WindowRect rect_type);
 extern void WIN_ShowWindowSystemMenu(SDL_Window *window, int x, int y);
 extern int WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool focusable);
-extern void WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *height, SDL_WindowRect rect_type);
+extern int WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *height, SDL_WindowRect rect_type);
+extern int WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

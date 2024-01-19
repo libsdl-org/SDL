@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -535,22 +535,15 @@ static void SDL_InitDynamicAPI(void)
      */
     static SDL_bool already_initialized = SDL_FALSE;
 
-    /* SDL_AtomicLock calls SDL mutex functions to emulate if
-       SDL_ATOMIC_DISABLED, which we can't do here, so in such a
-       configuration, you're on your own. */
-    #ifndef SDL_ATOMIC_DISABLED
     static SDL_SpinLock lock = 0;
-    SDL_AtomicLock_REAL(&lock);
-    #endif
+    SDL_LockSpinlock_REAL(&lock);
 
     if (!already_initialized) {
         SDL_InitDynamicAPILocked();
         already_initialized = SDL_TRUE;
     }
 
-    #ifndef SDL_ATOMIC_DISABLED
-    SDL_AtomicUnlock_REAL(&lock);
-    #endif
+    SDL_UnlockSpinlock_REAL(&lock);
 }
 
 #else /* SDL_DYNAMIC_API */

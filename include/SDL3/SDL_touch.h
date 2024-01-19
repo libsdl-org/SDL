@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -38,8 +38,8 @@
 extern "C" {
 #endif
 
-typedef Sint64 SDL_TouchID;
-typedef Sint64 SDL_FingerID;
+typedef Uint64 SDL_TouchID;
+typedef Uint64 SDL_FingerID;
 
 typedef enum
 {
@@ -61,7 +61,7 @@ typedef struct SDL_Finger
 #define SDL_TOUCH_MOUSEID ((Uint32)-1)
 
 /* Used as the SDL_TouchID for touch events simulated with mouse input */
-#define SDL_MOUSE_TOUCHID ((Sint64)-1)
+#define SDL_MOUSE_TOUCHID ((Uint64)-1)
 
 
 /**

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -134,7 +134,7 @@ extern int WIN_SetError(const char *prefix);
 
 #ifndef __WINRT__
 /* Load a function from combase.dll */
-void *WIN_LoadComBaseFunction(const char *name);
+FARPROC WIN_LoadComBaseFunction(const char *name);
 #endif
 
 /* Wrap up the oddities of CoInitialize() into a common function. */

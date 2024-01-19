@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -61,10 +61,6 @@ typedef enum
     SDL_INIT_EVENTS       = 0x00004000,
     SDL_INIT_SENSOR       = 0x00008000
 } SDL_InitFlags;
-#define SDL_INIT_EVERYTHING ( \
-                SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS | \
-                SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_SENSOR \
-            )
 
 /**
  * Initialize the SDL library.
@@ -94,7 +90,7 @@ typedef enum
  * - `SDL_INIT_GAMEPAD`: gamepad subsystem; automatically initializes the
  *   joystick subsystem
  * - `SDL_INIT_EVENTS`: events subsystem
- * - `SDL_INIT_EVERYTHING`: all of the above subsystems
+ * - `SDL_INIT_SENSOR`: sensor subsystem
  *
  * Subsystem initialization is ref-counted, you must call SDL_QuitSubSystem()
  * for each SDL_InitSubSystem() to correctly shutdown a subsystem manually (or
