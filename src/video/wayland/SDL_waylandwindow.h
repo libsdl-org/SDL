@@ -115,6 +115,7 @@ struct SDL_WindowData
 
     int last_configure_width, last_configure_height;
     int requested_window_width, requested_window_height;
+    int requested_logical_width, requested_logical_height; /* Only used for screen space scaling. */
     int drawable_width, drawable_height;
     int wl_window_width, wl_window_height;
     int system_min_required_width;
@@ -128,6 +129,7 @@ struct SDL_WindowData
     SDL_bool drop_fullscreen_requests;
     SDL_bool fullscreen_was_positioned;
     SDL_bool show_hide_sync_required;
+    SDL_bool scale_to_display;
 
     SDL_HitTestResult hit_test_result;
 
