@@ -120,7 +120,7 @@ void WIN_CoUninitialize(void)
 }
 
 #ifndef __WINRT__
-void *WIN_LoadComBaseFunction(const char *name)
+FARPROC WIN_LoadComBaseFunction(const char *name)
 {
     static SDL_bool s_bLoaded;
     static HMODULE s_hComBase;

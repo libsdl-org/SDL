@@ -69,7 +69,7 @@ struct SDL_Thread
     int(SDLCALL *userfunc)(void *);
     void *userdata;
     void *data;
-    void *endfunc; /* only used on some platforms. */
+    SDL_FunctionPointer endfunc; /* only used on some platforms. */
 };
 
 /* This is the function called to run a thread */

@@ -60,7 +60,7 @@ void *SDL_LoadObject(const char *sofile)
 
 SDL_FunctionPointer SDL_LoadFunction(void *handle, const char *name)
 {
-    void *symbol = (void *)GetProcAddress((HMODULE)handle, name);
+    SDL_FunctionPointer symbol = (SDL_FunctionPointer)GetProcAddress((HMODULE)handle, name);
     if (!symbol) {
         char errbuf[512];
         SDL_strlcpy(errbuf, "Failed loading ", SDL_arraysize(errbuf));

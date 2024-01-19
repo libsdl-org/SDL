@@ -214,13 +214,13 @@ int WIN_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 
 SDL_FunctionPointer WIN_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc)
 {
-    void *func;
+    SDL_FunctionPointer func;
 
     /* This is to pick up extensions */
-    func = _this->gl_data->wglGetProcAddress(proc);
+    func = (SDL_FunctionPointer)_this->gl_data->wglGetProcAddress(proc);
     if (!func) {
         /* This is probably a normal GL function */
-        func = GetProcAddress(_this->gl_config.dll_handle, proc);
+        func = (SDL_FunctionPointer)GetProcAddress(_this->gl_config.dll_handle, proc);
     }
     return func;
 }

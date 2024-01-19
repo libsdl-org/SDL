@@ -134,7 +134,7 @@ extern int WIN_SetError(const char *prefix);
 
 #ifndef __WINRT__
 /* Load a function from combase.dll */
-void *WIN_LoadComBaseFunction(const char *name);
+FARPROC WIN_LoadComBaseFunction(const char *name);
 #endif
 
 /* Wrap up the oddities of CoInitialize() into a common function. */

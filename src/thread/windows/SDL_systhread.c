@@ -82,7 +82,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread)
     const DWORD flags = thread->stacksize ? STACK_SIZE_PARAM_IS_A_RESERVATION : 0;
 
     /* Save the function which we will have to call to clear the RTL of calling app! */
-    thread->endfunc = pfnEndThread;
+    thread->endfunc = (SDL_FunctionPointer)pfnEndThread;
 
     /* thread->stacksize == 0 means "system default", same as win32 expects */
     if (pfnBeginThread) {
