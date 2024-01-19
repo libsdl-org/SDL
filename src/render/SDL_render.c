@@ -1035,7 +1035,7 @@ int SDL_GetRenderOutputSize(SDL_Renderer *renderer, int *w, int *h)
     } else if (renderer->window) {
         return SDL_GetWindowSizeInPixels(renderer->window, w, h);
     } else {
-        SDL_assert(0 && "This should never happen");
+        SDL_assert(!"This should never happen");
         return SDL_SetError("Renderer doesn't support querying output size");
     }
 }

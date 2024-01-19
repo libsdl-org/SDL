@@ -674,7 +674,7 @@ int SDL_PlayHapticRumble(SDL_Haptic *haptic, float strength, Uint32 length)
         efx->leftright.small_magnitude = efx->leftright.large_magnitude = magnitude;
         efx->leftright.length = length;
     } else {
-        SDL_assert(0 && "This should have been caught elsewhere");
+        SDL_assert(!"This should have been caught elsewhere");
     }
 
     if (SDL_UpdateHapticEffect(haptic, haptic->rumble_id, &haptic->rumble_effect) < 0) {

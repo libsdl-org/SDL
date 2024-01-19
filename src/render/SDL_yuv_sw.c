@@ -94,7 +94,7 @@ SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(Uint32 format, int w, int h)
         break;
 
     default:
-        SDL_assert(0 && "We should never get here (caught above)");
+        SDL_assert(!"We should never get here (caught above)");
         break;
     }
 
