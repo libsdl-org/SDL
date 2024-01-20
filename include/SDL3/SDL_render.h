@@ -1484,8 +1484,8 @@ extern DECLSPEC int SDLCALL SDL_RenderTexture(SDL_Renderer *renderer, SDL_Textur
  * \param center A pointer to a point indicating the point around which
  *               dstrect will be rotated (if NULL, rotation will be done
  *               around dstrect.w/2, dstrect.h/2).
- * \param flip An SDL_FlipMode value stating which flipping actions should
- *             be performed on the texture
+ * \param flip An SDL_FlipMode value stating which flipping actions should be
+ *             performed on the texture
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
