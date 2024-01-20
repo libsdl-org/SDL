@@ -30,8 +30,7 @@
 
 struct SDL_PrivateAudioData
 {
-    /* Resume device if it was paused automatically */
-    int resume;
+    int unused;
 };
 
 void ANDROIDAUDIO_ResumeDevices(void);
