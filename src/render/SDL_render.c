@@ -2776,6 +2776,8 @@ static int RenderLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x2, i
        just want a basic safety against generating millions of points for
        massive lines. */
     GetRenderViewportInPixels(renderer, &viewport);
+    viewport.x = 0;
+    viewport.y = 0;
     if (!SDL_GetRectAndLineIntersection(&viewport, &x1, &y1, &x2, &y2)) {
         return 0;
     }

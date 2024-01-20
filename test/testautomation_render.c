@@ -333,6 +333,44 @@ static int render_testPrimitivesBlend(void *arg)
 }
 
 /**
+ * Tests the SDL primitives for rendering within a viewport.
+ *
+ * \sa SDL_SetRenderDrawColor
+ * \sa SDL_RenderFillRect
+ * \sa SDL_RenderLine
+ *
+ */
+static int render_testPrimitivesWithViewport(void *arg)
+{
+    SDL_Rect viewport;
+    Uint32 pixel;
+
+    /* Clear surface. */
+    clearScreen();
+
+    viewport.x = 2;
+    viewport.y = 2;
+    viewport.w = 2;
+    viewport.h = 2;
+    CHECK_FUNC(SDL_SetRenderViewport, (renderer, &viewport));
+
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 255, 255, 255, SDL_ALPHA_OPAQUE))
+    CHECK_FUNC(SDL_RenderLine, (renderer, 0.0f, 0.0f, 1.0f, 1.0f));
+
+    viewport.x = 3;
+    viewport.y = 3;
+    viewport.w = 1;
+    viewport.h = 1;
+    CHECK_FUNC(SDL_SetRenderViewport, (renderer, &viewport));
+
+    pixel = 0;
+    CHECK_FUNC(SDL_RenderReadPixels, (renderer, NULL, SDL_PIXELFORMAT_RGBA8888, &pixel, sizeof(pixel)));
+    SDLTest_AssertCheck(pixel == 0xFFFFFFFF, "Validate diagonal line drawing with viewport, expected 0xFFFFFFFF, got 0x%.8x", pixel);
+
+    return TEST_COMPLETED;
+}
+
+/**
  * Tests some blitting routines.
  *
  * \sa SDL_RenderTexture
@@ -1250,28 +1288,32 @@ static const SDLTest_TestCaseReference renderTest3 = {
 };
 
 static const SDLTest_TestCaseReference renderTest4 = {
-    (SDLTest_TestCaseFp)render_testBlit, "render_testBlit", "Tests blitting", TEST_ENABLED
+    (SDLTest_TestCaseFp)render_testPrimitivesWithViewport, "render_testPrimitivesWithViewport", "Tests rendering primitives within a viewport", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference renderTest5 = {
+    (SDLTest_TestCaseFp)render_testBlit, "render_testBlit", "Tests blitting", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference renderTest6 = {
     (SDLTest_TestCaseFp)render_testBlitColor, "render_testBlitColor", "Tests blitting with color", TEST_ENABLED
 };
 
 /* TODO: rewrite test case, define new test data and re-enable; current implementation fails */
-static const SDLTest_TestCaseReference renderTest6 = {
+static const SDLTest_TestCaseReference renderTest7 = {
     (SDLTest_TestCaseFp)render_testBlitAlpha, "render_testBlitAlpha", "Tests blitting with alpha", TEST_DISABLED
 };
 
 /* TODO: rewrite test case, define new test data and re-enable; current implementation fails */
-static const SDLTest_TestCaseReference renderTest7 = {
+static const SDLTest_TestCaseReference renderTest8 = {
     (SDLTest_TestCaseFp)render_testBlitBlend, "render_testBlitBlend", "Tests blitting with blending", TEST_DISABLED
 };
 
-static const SDLTest_TestCaseReference renderTest8 = {
+static const SDLTest_TestCaseReference renderTest9 = {
     (SDLTest_TestCaseFp)render_testViewport, "render_testViewport", "Tests viewport", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference renderTest9 = {
+static const SDLTest_TestCaseReference renderTest10 = {
     (SDLTest_TestCaseFp)render_testLogicalSize, "render_testLogicalSize", "Tests logical size", TEST_ENABLED
 };
 
@@ -1279,7 +1321,7 @@ static const SDLTest_TestCaseReference renderTest9 = {
 static const SDLTest_TestCaseReference *renderTests[] = {
     &renderTest1, &renderTest2, &renderTest3, &renderTest4,
     &renderTest5, &renderTest6, &renderTest7, &renderTest8,
-    &renderTest9, NULL
+    &renderTest9, &renderTest10, NULL
 };
 
 /* Render test suite (global) */
