@@ -16,7 +16,7 @@ macOS:
 * Added the hint SDL_HINT_RENDER_METAL_PREFER_LOW_POWER_DEVICE to choose whether high or low power GPU should be used for rendering, in the case where there are multiple GPUs available
 
 Xbox:
-* Added the function SDL_GDKGetDefaultUser() and SDL_GameControllerGetSteamHandle()
+* Added the function SDL_GDKGetDefaultUser()
 
 ---------------------------------------------------------------------------
 2.28.2:
