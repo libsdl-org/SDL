@@ -5,9 +5,18 @@ This is a list of major changes in SDL's version history.
 2.30.0:
 ---------------------------------------------------------------------------
 
+General:
+* Added support for 2 bits-per-pixel indexed surface formats
+* Added the function SDL_GameControllerGetSteamHandle() to get the Steam API handle for a controller, if available
+* Added the event SDL_CONTROLLERSTEAMHANDLEUPDATED which is sent when the Steam API handle for a controller changes. This could also change the name, VID, and PID of the controller.
+
+macOS:
+* Added the hint SDL_HINT_JOYSTICK_IOKIT to control whether the IOKit controller driver should be used
+* Added the hint SDL_HINT_JOYSTICK_MFI to control whether the GCController controller driver should be used
+* Added the hint SDL_HINT_RENDER_METAL_PREFER_LOW_POWER_DEVICE to choose whether high or low power GPU should be used for rendering, in the case where there are multiple GPUs available
+
 Xbox:
 * Added the function SDL_GDKGetDefaultUser()
-
 
 ---------------------------------------------------------------------------
 2.28.2:
