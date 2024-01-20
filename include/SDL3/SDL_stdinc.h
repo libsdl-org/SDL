@@ -35,6 +35,7 @@
 #endif
 #include <stdarg.h>
 #include <stdint.h>
+#include <string.h>
 #include <wchar.h>
 
 #ifndef SDL_DISABLE_ALLOCA
@@ -726,27 +727,26 @@ extern DECLSPEC char *SDLCALL SDL_iconv_string(const char *tocode,
 #if defined(__clang_analyzer__) && !defined(SDL_DISABLE_ANALYZE_MACROS)
 
 /* The analyzer knows about strlcpy even when the system doesn't provide it */
-#ifndef HAVE_STRLCPY
+#if !defined(HAVE_STRLCPY) && !defined(strlcpy)
 size_t strlcpy(char* dst, const char* src, size_t size);
 #endif
 
 /* The analyzer knows about strlcat even when the system doesn't provide it */
-#ifndef HAVE_STRLCAT
+#if !defined(HAVE_STRLCAT) && !defined(strlcat)
 size_t strlcat(char* dst, const char* src, size_t size);
 #endif
 
-#ifndef HAVE_WCSLCPY
+#if !defined(HAVE_WCSLCPY) && !defined(wcslcpy)
 size_t wcslcpy(wchar_t *dst, const wchar_t *src, size_t size);
 #endif
 
-#ifndef HAVE_WCSLCAT
+#if !defined(HAVE_WCSLCAT) && !defined(wcslcat)
 size_t wcslcat(wchar_t *dst, const wchar_t *src, size_t size);
 #endif
 
 /* Starting LLVM 16, the analyser errors out if these functions do not have
    their prototype defined (clang-diagnostic-implicit-function-declaration) */
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 
 #define SDL_malloc malloc
