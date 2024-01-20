@@ -3510,7 +3510,7 @@ orig_CFLAGS="$CFLAGS"
 # See docs/release_checklist.md
 SDL_MAJOR_VERSION=2
 SDL_MINOR_VERSION=29
-SDL_MICRO_VERSION=0
+SDL_MICRO_VERSION=1
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
 
 SDL_BINARY_AGE=`expr $SDL_MINOR_VERSION \* 100 + $SDL_MICRO_VERSION`
@@ -19219,15 +19219,13 @@ then :
   ac_cv_func_alloca_works=yes
 else $as_nop
   ac_cv_func_alloca_works=no
-
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
 fi
-
-fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_alloca_works" >&5
 printf "%s\n" "$ac_cv_func_alloca_works" >&6; }
+fi
 
 if test $ac_cv_func_alloca_works = yes; then
 
