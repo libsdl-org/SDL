@@ -144,8 +144,10 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
 
 #define BILINEAR___START                                                              \
     int i;                                                                            \
-    int fp_sum_h, fp_step_h, left_pad_h, right_pad_h;                                 \
-    int fp_sum_w, fp_step_w, left_pad_w, right_pad_w;                                 \
+    Sint64 fp_sum_h;                                                                  \
+    int fp_step_h, left_pad_h, right_pad_h;                                           \
+    Sint64  fp_sum_w;                                                                 \
+    int fp_step_w, left_pad_w, right_pad_w;                                           \
     int fp_sum_w_init, left_pad_w_init, right_pad_w_init, dst_gap, middle_init;       \
     get_scaler_datas(src_h, dst_h, &fp_sum_h, &fp_step_h, &left_pad_h, &right_pad_h); \
     get_scaler_datas(src_w, dst_w, &fp_sum_w, &fp_step_w, &left_pad_w, &right_pad_w); \
@@ -189,12 +191,12 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
 // OK with clang 12.0.0 / Xcode
 __attribute__((noinline))
 #endif
-static void get_scaler_datas(int src_nb, int dst_nb, int *fp_start, int *fp_step, int *left_pad, int *right_pad)
+static void get_scaler_datas(int src_nb, int dst_nb, Sint64 *fp_start, int *fp_step, int *left_pad, int *right_pad)
 {
 
     int step = FIXED_POINT(src_nb) / (dst_nb); /* source step in fixed point */
     int x0 = FP_ONE / 2;                       /* dst first pixel center at 0.5 in fixed point */
-    int fp_sum;
+    Sint64 fp_sum;
     int i;
 #if 0
     /* scale to source coordinates */
