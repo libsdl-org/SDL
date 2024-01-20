@@ -714,6 +714,15 @@
     <ClCompile Include="..\src\stdlib\SDL_malloc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\stdlib\SDL_memcpy.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\stdlib\SDL_memmove.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\stdlib\SDL_memset.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\stdlib\SDL_qsort.c">
       <Filter>Source Files</Filter>
     </ClCompile>

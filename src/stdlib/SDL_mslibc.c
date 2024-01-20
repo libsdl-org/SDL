@@ -33,40 +33,6 @@
 __declspec(selectany) int _fltused = 1;
 #endif
 
-/* The optimizer on Visual Studio 2005 and later generates memcpy() and memset() calls.
-   Always provide it for the SDL3 DLL, but skip it when building static lib w/ static runtime. */
-#if (_MSC_VER >= 1400) && (!defined(_MT) || defined(DLL_EXPORT))
-/* NOLINTNEXTLINE(readability-redundant-declaration) */
-extern void *memcpy(void *dst, const void *src, size_t len);
-#ifndef __INTEL_LLVM_COMPILER
-#pragma intrinsic(memcpy)
-#endif
-
-#ifndef __clang__
-#pragma function(memcpy)
-#endif
-/* NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) */
-void *memcpy(void *dst, const void *src, size_t len)
-{
-    return SDL_memcpy(dst, src, len);
-}
-
-/* NOLINTNEXTLINE(readability-redundant-declaration) */
-extern void *memset(void *dst, int c, size_t len);
-#ifndef __INTEL_LLVM_COMPILER
-#pragma intrinsic(memset)
-#endif
-
-#ifndef __clang__
-#pragma function(memset)
-#endif
-/* NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) */
-void *memset(void *dst, int c, size_t len)
-{
-    return SDL_memset(dst, c, len);
-}
-#endif /* (_MSC_VER >= 1400) && (!defined(_MT) || defined(DLL_EXPORT)) */
-
 #ifdef _M_IX86
 
 /* Float to long */

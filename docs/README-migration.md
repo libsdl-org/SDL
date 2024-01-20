@@ -1249,6 +1249,9 @@ M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_PI_D 
 The following functions have been renamed:
 * SDL_strtokr() => SDL_strtok_r()
 
+The following functions have been removed:
+* SDL_memcpy4()
+
 ## SDL_surface.h
 
 The userdata member of SDL_Surface has been replaced with a more general properties interface, which can be queried with SDL_GetSurfaceProperties()

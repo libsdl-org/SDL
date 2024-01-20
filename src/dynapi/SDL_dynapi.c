@@ -26,6 +26,9 @@
 #if SDL_DYNAMIC_API
 
 #define SDL_DYNAMIC_API_ENVVAR "SDL3_DYNAMIC_API"
+#define SDL_SLOW_MEMCPY
+#define SDL_SLOW_MEMMOVE
+#define SDL_SLOW_MEMSET
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
