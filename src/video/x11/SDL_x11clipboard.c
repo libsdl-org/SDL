@@ -30,10 +30,10 @@
 #include "../../events/SDL_events_c.h"
 
 static const char *text_mime_types[] = {
+    "UTF8_STRING",
     "text/plain;charset=utf-8",
     "text/plain",
     "TEXT",
-    "UTF8_STRING",
     "STRING"
 };
 
