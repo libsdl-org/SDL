@@ -86,6 +86,7 @@ struct SDL_Window
     SDL_Surface *surface;
     SDL_bool surface_valid;
 
+    SDL_bool is_repositioning; /* Set during an SDL_SetWindowPosition() call. */
     SDL_bool is_hiding;
     SDL_bool restore_on_show; /* Child was hidden recursively by the parent, restore when shown. */
     SDL_bool is_destroying;
