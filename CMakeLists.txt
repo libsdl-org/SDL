@@ -448,6 +448,7 @@ if(USE_GCC OR USE_INTELCC OR (USE_CLANG AND NOT MSVC_CLANG))
 else()
   sdl_include_directories(NO_EXPORT SYSTEM PUBLIC "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/src/video/khronos>")
 endif()
+list(APPEND CMAKE_REQUIRED_INCLUDES "${SDL3_SOURCE_DIR}/src/video/khronos")
 
 # General source files
 sdl_glob_sources(
