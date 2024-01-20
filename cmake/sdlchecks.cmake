@@ -652,6 +652,7 @@ macro(CheckEGL)
     cmake_push_check_state()
     find_package(OpenGL MODULE)
     list(APPEND CMAKE_REQUIRED_INCLUDES ${OPENGL_EGL_INCLUDE_DIRS})
+    list(APPEND CMAKE_REQUIRED_INCLUDES "${SDL3_SOURCE_DIR}/src/video/khronos")
     check_c_source_compiles("
         #define EGL_API_FB
         #define MESA_EGL_NO_X11_HEADERS
@@ -686,18 +687,21 @@ endmacro()
 # - nada
 macro(CheckOpenGLES)
   if(SDL_OPENGLES)
+    cmake_push_check_state()
+    list(APPEND CMAKE_REQUIRED_INCLUDES "${SDL3_SOURCE_DIR}/src/video/khronos")
     check_c_source_compiles("
         #include <GLES/gl.h>
         #include <GLES/glext.h>
         int main (int argc, char** argv) { return 0; }" HAVE_OPENGLES_V1)
-    if(HAVE_OPENGLES_V1)
-      set(HAVE_OPENGLES TRUE)
-      set(SDL_VIDEO_OPENGL_ES 1)
-    endif()
     check_c_source_compiles("
       #include <GLES2/gl2.h>
       #include <GLES2/gl2ext.h>
       int main (int argc, char** argv) { return 0; }" HAVE_OPENGLES_V2)
+    cmake_pop_check_state()
+    if(HAVE_OPENGLES_V1)
+      set(HAVE_OPENGLES TRUE)
+      set(SDL_VIDEO_OPENGL_ES 1)
+    endif()
     if(HAVE_OPENGLES_V2)
       set(HAVE_OPENGLES TRUE)
       set(SDL_VIDEO_OPENGL_ES2 1)
