@@ -33,9 +33,26 @@
 #include <gbm.h>
 #include <EGL/egl.h>
 
+#ifndef DRM_MODE_PAGE_FLIP_ASYNC
+#define DRM_MODE_PAGE_FLIP_ASYNC    2
+#endif
+
+#ifndef DRM_MODE_OBJECT_CONNECTOR
+#define DRM_MODE_OBJECT_CONNECTOR   0xc0c0c0c0
+#endif
+
+#ifndef DRM_MODE_OBJECT_CRTC
+#define DRM_MODE_OBJECT_CRTC        0xcccccccc
+#endif
+
+#ifndef DRM_CAP_ASYNC_PAGE_FLIP
+#define DRM_CAP_ASYNC_PAGE_FLIP 7
+#endif
+
 #ifndef DRM_CAP_CURSOR_WIDTH
 #define DRM_CAP_CURSOR_WIDTH    8
 #endif
+
 #ifndef DRM_CAP_CURSOR_HEIGHT
 #define DRM_CAP_CURSOR_HEIGHT   9
 #endif
