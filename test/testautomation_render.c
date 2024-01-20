@@ -365,7 +365,7 @@ static int render_testPrimitivesWithViewport(void *arg)
 
     pixel = 0;
     CHECK_FUNC(SDL_RenderReadPixels, (renderer, NULL, SDL_PIXELFORMAT_RGBA8888, &pixel, sizeof(pixel)));
-    SDLTest_AssertCheck(pixel == 0xFFFFFFFF, "Validate diagonal line drawing with viewport, expected 0xFFFFFFFF, got 0x%.8x", pixel);
+    SDLTest_AssertCheck(pixel == 0xFFFFFFFF, "Validate diagonal line drawing with viewport, expected 0xFFFFFFFF, got 0x%.8x", (unsigned int)pixel);
 
     return TEST_COMPLETED;
 }
