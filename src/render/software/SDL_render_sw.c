@@ -257,14 +257,14 @@ typedef struct CopyExData
     SDL_Rect dstrect;
     double angle;
     SDL_FPoint center;
-    SDL_RendererFlip flip;
+    SDL_FlipMode flip;
     float scale_x;
     float scale_y;
 } CopyExData;
 
 static int SW_QueueCopyEx(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
                           const SDL_FRect *srcrect, const SDL_FRect *dstrect,
-                          const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y)
+                          const double angle, const SDL_FPoint *center, const SDL_FlipMode flip, float scale_x, float scale_y)
 {
     CopyExData *verts = (CopyExData *)SDL_AllocateRenderVertices(renderer, sizeof(CopyExData), 0, &cmd->data.draw.first);
 
@@ -311,7 +311,7 @@ static int Blit_to_Screen(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *surf
 
 static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Texture *texture,
                            const SDL_Rect *srcrect, const SDL_Rect *final_rect,
-                           const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y)
+                           const double angle, const SDL_FPoint *center, const SDL_FlipMode flip, float scale_x, float scale_y)
 {
     SDL_Surface *src = (SDL_Surface *)texture->driverdata;
     SDL_Rect tmp_rect;

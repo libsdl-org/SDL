@@ -1078,11 +1078,97 @@ void SDL_UnlockSurface(SDL_Surface *surface)
 #endif
 }
 
+static int SDL_FlipSurfaceHorizontal(SDL_Surface *surface)
+{
+    SDL_bool isstack;
+    Uint8 *row, *a, *b, *tmp;
+    int i, j, bpp;
+
+    if (surface->format->BitsPerPixel < 8) {
+        /* We could implement this if needed, but we'd have to flip sets of bits within a byte */
+        return SDL_Unsupported();
+    }
+
+    if (surface->h <= 0) {
+        return 0;
+    }
+
+    if (surface->w <= 1) {
+        return 0;
+    }
+
+    bpp = surface->format->BytesPerPixel;
+    row = (Uint8 *)surface->pixels;
+    tmp = SDL_small_alloc(Uint8, surface->pitch, &isstack);
+    for (i = surface->h; i--; ) {
+        a = row;
+        b = a + (surface->w - 1) * bpp;
+        for (j = surface->w / 2; j--; ) {
+            SDL_memcpy(tmp, a, bpp);
+            SDL_memcpy(a, b, bpp);
+            SDL_memcpy(b, tmp, bpp);
+            a += bpp;
+            b -= bpp;
+        }
+        row += surface->pitch;
+    }
+    SDL_small_free(tmp, isstack);
+    return 0;
+}
+
+static int SDL_FlipSurfaceVertical(SDL_Surface *surface)
+{
+    SDL_bool isstack;
+    Uint8 *a, *b, *tmp;
+    int i;
+
+    if (surface->h <= 1) {
+        return 0;
+    }
+
+    a = (Uint8 *)surface->pixels;
+    b = a + (surface->h - 1) * surface->pitch;
+    tmp = SDL_small_alloc(Uint8, surface->pitch, &isstack);
+    for (i = surface->h / 2; i--; ) {
+        SDL_memcpy(tmp, a, surface->pitch);
+        SDL_memcpy(a, b, surface->pitch);
+        SDL_memcpy(b, tmp, surface->pitch);
+        a += surface->pitch;
+        b -= surface->pitch;
+    }
+    SDL_small_free(tmp, isstack);
+    return 0;
+}
+
+int SDL_FlipSurface(SDL_Surface *surface, SDL_FlipMode flip)
+{
+    if (!surface || !surface->format) {
+        return SDL_InvalidParamError("surface");
+    }
+    if (!surface->pixels) {
+        return 0;
+    }
+
+    switch (flip) {
+    case SDL_FLIP_HORIZONTAL:
+        return SDL_FlipSurfaceHorizontal(surface);
+    case SDL_FLIP_VERTICAL:
+        return SDL_FlipSurfaceVertical(surface);
+    default:
+        return SDL_InvalidParamError("flip");
+    }
+}
+
 /*
  * Creates a new surface identical to the existing surface
  */
 SDL_Surface *SDL_DuplicateSurface(SDL_Surface *surface)
 {
+    if (!surface) {
+        SDL_InvalidParamError("surface");
+        return NULL;
+    }
+
     return SDL_ConvertSurface(surface, surface->format);
 }
 

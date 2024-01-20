@@ -75,6 +75,15 @@ typedef enum
     SDL_SCALEMODE_BEST     /**< anisotropic filtering */
 } SDL_ScaleMode;
 
+/**
+ * The flip mode
+ */
+typedef enum
+{
+    SDL_FLIP_NONE,          /**< Do not flip */
+    SDL_FLIP_HORIZONTAL,    /**< flip horizontally */
+    SDL_FLIP_VERTICAL       /**< flip vertically */
+} SDL_FlipMode;
 
 /**
  * A collection of pixels used in software blitting.
@@ -601,6 +610,18 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetSurfaceClipRect(SDL_Surface *surface,
  */
 extern DECLSPEC int SDLCALL SDL_GetSurfaceClipRect(SDL_Surface *surface,
                                              SDL_Rect *rect);
+
+/*
+ * Flip a surface vertically or horizontally.
+ *
+ * \param surface the surface to flip
+ * \param flip the direction to flip
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_FlipSurface(SDL_Surface *surface, SDL_FlipMode flip);
 
 /*
  * Creates a new surface identical to the existing surface.

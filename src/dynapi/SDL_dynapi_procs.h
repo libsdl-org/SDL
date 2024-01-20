@@ -580,7 +580,7 @@ SDL_DYNAPI_PROC(int,SDL_RenderReadPixels,(SDL_Renderer *a, const SDL_Rect *b, Ui
 SDL_DYNAPI_PROC(int,SDL_RenderRect,(SDL_Renderer *a, const SDL_FRect *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_RenderRects,(SDL_Renderer *a, const SDL_FRect *b, int c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_RenderTexture,(SDL_Renderer *a, SDL_Texture *b, const SDL_FRect *c, const SDL_FRect *d),(a,b,c,d),return)
-SDL_DYNAPI_PROC(int,SDL_RenderTextureRotated,(SDL_Renderer *a, SDL_Texture *b, const SDL_FRect *c, const SDL_FRect *d, const double e, const SDL_FPoint *f, const SDL_RendererFlip g),(a,b,c,d,e,f,g),return)
+SDL_DYNAPI_PROC(int,SDL_RenderTextureRotated,(SDL_Renderer *a, SDL_Texture *b, const SDL_FRect *c, const SDL_FRect *d, const double e, const SDL_FPoint *f, const SDL_FlipMode g),(a,b,c,d,e,f,g),return)
 SDL_DYNAPI_PROC(SDL_AssertState,SDL_ReportAssertion,(SDL_AssertData *a, const char *b, const char *c, int d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(void,SDL_ResetAssertionReport,(void),(),)
 SDL_DYNAPI_PROC(SDL_bool,SDL_ResetHint,(const char *a),(a),return)
@@ -1014,3 +1014,4 @@ SDL_DYNAPI_PROC(SDL_Haptic*,SDL_GetHapticFromInstanceID,(SDL_HapticID a),(a),ret
 SDL_DYNAPI_PROC(SDL_HapticID,SDL_GetHapticInstanceID,(SDL_Haptic *a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetHapticName,(SDL_Haptic *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_ReadSurfacePixel,(SDL_Surface *a, int b, int c, Uint8 *d, Uint8 *e, Uint8 *f, Uint8 *g),(a,b,c,d,e,f,g),return)
+SDL_DYNAPI_PROC(int,SDL_FlipSurface,(SDL_Surface *a, SDL_FlipMode b),(a,b),return)

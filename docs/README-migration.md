@@ -1037,6 +1037,7 @@ The following functions have been removed:
 * SDL_SetTextureUserData() - use SDL_GetTextureProperties() instead
 
 The following symbols have been renamed:
+* SDL_RendererFlip => SDL_FlipMode
 * SDL_ScaleModeBest => SDL_SCALEMODE_BEST
 * SDL_ScaleModeLinear => SDL_SCALEMODE_LINEAR
 * SDL_ScaleModeNearest => SDL_SCALEMODE_NEAREST

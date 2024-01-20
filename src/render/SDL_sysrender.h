@@ -173,7 +173,7 @@ struct SDL_Renderer
                      const SDL_FRect *srcrect, const SDL_FRect *dstrect);
     int (*QueueCopyEx)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
                        const SDL_FRect *srcquad, const SDL_FRect *dstrect,
-                       const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y);
+                       const double angle, const SDL_FPoint *center, const SDL_FlipMode flip, float scale_x, float scale_y);
     int (*QueueGeometry)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
                          const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
                          int num_vertices, const void *indices, int num_indices, int size_indices,

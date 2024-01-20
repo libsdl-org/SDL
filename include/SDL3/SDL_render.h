@@ -106,16 +106,6 @@ typedef enum
 } SDL_TextureAccess;
 
 /**
- * Flip constants for SDL_RenderTextureRotated
- */
-typedef enum
-{
-    SDL_FLIP_NONE = 0x00000000,     /**< Do not flip */
-    SDL_FLIP_HORIZONTAL = 0x00000001,    /**< flip horizontally */
-    SDL_FLIP_VERTICAL = 0x00000002     /**< flip vertically */
-} SDL_RendererFlip;
-
-/**
  * How the logical size is mapped to the output
  */
 typedef enum
@@ -1494,7 +1484,7 @@ extern DECLSPEC int SDLCALL SDL_RenderTexture(SDL_Renderer *renderer, SDL_Textur
  * \param center A pointer to a point indicating the point around which
  *               dstrect will be rotated (if NULL, rotation will be done
  *               around dstrect.w/2, dstrect.h/2).
- * \param flip An SDL_RendererFlip value stating which flipping actions should
+ * \param flip An SDL_FlipMode value stating which flipping actions should
  *             be performed on the texture
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1504,7 +1494,7 @@ extern DECLSPEC int SDLCALL SDL_RenderTexture(SDL_Renderer *renderer, SDL_Textur
 extern DECLSPEC int SDLCALL SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
                                                      const SDL_FRect *srcrect, const SDL_FRect *dstrect,
                                                      const double angle, const SDL_FPoint *center,
-                                                     const SDL_RendererFlip flip);
+                                                     const SDL_FlipMode flip);
 
 /**
  * Render a list of triangles, optionally using a texture and indices into the
