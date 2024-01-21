@@ -201,14 +201,14 @@ void SDL_SYS_HapticQuit(void)
 }
 
 int SDL_SYS_HapticNewEffect(SDL_Haptic *haptic,
-                            struct haptic_effect *effect, SDL_HapticEffect *base)
+                            struct haptic_effect *effect, const SDL_HapticEffect *base)
 {
     return 0;
 }
 
 int SDL_SYS_HapticUpdateEffect(SDL_Haptic *haptic,
                                struct haptic_effect *effect,
-                               SDL_HapticEffect *data)
+                               const SDL_HapticEffect *data)
 {
     return 0;
 }

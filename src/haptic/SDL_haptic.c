@@ -380,9 +380,13 @@ int SDL_GetNumHapticAxes(SDL_Haptic *haptic)
     return haptic->naxes;
 }
 
-SDL_bool SDL_HapticEffectSupported(SDL_Haptic *haptic, SDL_HapticEffect *effect)
+SDL_bool SDL_HapticEffectSupported(SDL_Haptic *haptic, const SDL_HapticEffect *effect)
 {
     CHECK_HAPTIC_MAGIC(haptic, SDL_FALSE);
+
+    if (!effect) {
+        return SDL_FALSE;
+    }
 
     if ((haptic->supported & effect->type) != 0) {
         return SDL_TRUE;
@@ -390,11 +394,15 @@ SDL_bool SDL_HapticEffectSupported(SDL_Haptic *haptic, SDL_HapticEffect *effect)
     return SDL_FALSE;
 }
 
-int SDL_CreateHapticEffect(SDL_Haptic *haptic, SDL_HapticEffect *effect)
+int SDL_CreateHapticEffect(SDL_Haptic *haptic, const SDL_HapticEffect *effect)
 {
     int i;
 
     CHECK_HAPTIC_MAGIC(haptic, -1);
+
+    if (!effect) {
+        return SDL_InvalidParamError("effect");
+    }
 
     /* Check to see if effect is supported */
     if (SDL_HapticEffectSupported(haptic, effect) == SDL_FALSE) {
@@ -428,12 +436,16 @@ static int ValidEffect(SDL_Haptic *haptic, int effect)
     return 1;
 }
 
-int SDL_UpdateHapticEffect(SDL_Haptic *haptic, int effect, SDL_HapticEffect *data)
+int SDL_UpdateHapticEffect(SDL_Haptic *haptic, int effect, const SDL_HapticEffect *data)
 {
     CHECK_HAPTIC_MAGIC(haptic, -1);
 
     if (!ValidEffect(haptic, effect)) {
         return -1;
+    }
+
+    if (!data) {
+        return SDL_InvalidParamError("data");
     }
 
     /* Can't change type dynamically. */

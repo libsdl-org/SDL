@@ -656,7 +656,7 @@ static Uint16 SDL_SYS_ToButton(Uint16 button)
 /*
  * Initializes the ff_effect usable direction from a SDL_HapticDirection.
  */
-static int SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection *src)
+static int SDL_SYS_ToDirection(Uint16 *dest, const SDL_HapticDirection *src)
 {
     Uint32 tmp;
 
@@ -717,13 +717,13 @@ static int SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection *src)
  * Initializes the Linux effect struct from a haptic_effect.
  * Values above 32767 (for unsigned) are unspecified so we must clamp.
  */
-static int SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect *src)
+static int SDL_SYS_ToFFEffect(struct ff_effect *dest, const SDL_HapticEffect *src)
 {
-    SDL_HapticConstant *constant;
-    SDL_HapticPeriodic *periodic;
-    SDL_HapticCondition *condition;
-    SDL_HapticRamp *ramp;
-    SDL_HapticLeftRight *leftright;
+    const SDL_HapticConstant *constant;
+    const SDL_HapticPeriodic *periodic;
+    const SDL_HapticCondition *condition;
+    const SDL_HapticRamp *ramp;
+    const SDL_HapticLeftRight *leftright;
 
     /* Clear up */
     SDL_memset(dest, 0, sizeof(struct ff_effect));
@@ -917,7 +917,7 @@ static int SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect *src)
  * Creates a new haptic effect.
  */
 int SDL_SYS_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
-                            SDL_HapticEffect *base)
+                            const SDL_HapticEffect *base)
 {
     struct ff_effect *linux_effect;
 
@@ -958,7 +958,7 @@ new_effect_err:
  */
 int SDL_SYS_HapticUpdateEffect(SDL_Haptic *haptic,
                                struct haptic_effect *effect,
-                               SDL_HapticEffect *data)
+                               const SDL_HapticEffect *data)
 {
     struct ff_effect linux_effect;
 

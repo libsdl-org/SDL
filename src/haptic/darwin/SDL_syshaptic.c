@@ -709,7 +709,7 @@ static DWORD FFGetTriggerButton(Uint16 button)
 /*
  * Sets the direction.
  */
-static int SDL_SYS_SetDirection(FFEFFECT *effect, SDL_HapticDirection *dir, int naxes)
+static int SDL_SYS_SetDirection(FFEFFECT *effect, const SDL_HapticDirection *dir, int naxes)
 {
     LONG *rglDir;
 
@@ -770,7 +770,7 @@ static int SDL_SYS_SetDirection(FFEFFECT *effect, SDL_HapticDirection *dir, int 
 /*
  * Creates the FFEFFECT from a SDL_HapticEffect.
  */
-static int SDL_SYS_ToFFEFFECT(SDL_Haptic *haptic, FFEFFECT *dest, SDL_HapticEffect *src)
+static int SDL_SYS_ToFFEFFECT(SDL_Haptic *haptic, FFEFFECT *dest, const SDL_HapticEffect *src)
 {
     int i;
     FFCONSTANTFORCE *constant = NULL;
@@ -779,11 +779,11 @@ static int SDL_SYS_ToFFEFFECT(SDL_Haptic *haptic, FFEFFECT *dest, SDL_HapticEffe
     FFRAMPFORCE *ramp = NULL;
     FFCUSTOMFORCE *custom = NULL;
     FFENVELOPE *envelope = NULL;
-    SDL_HapticConstant *hap_constant = NULL;
-    SDL_HapticPeriodic *hap_periodic = NULL;
-    SDL_HapticCondition *hap_condition = NULL;
-    SDL_HapticRamp *hap_ramp = NULL;
-    SDL_HapticCustom *hap_custom = NULL;
+    const SDL_HapticConstant *hap_constant = NULL;
+    const SDL_HapticPeriodic *hap_periodic = NULL;
+    const SDL_HapticCondition *hap_condition = NULL;
+    const SDL_HapticRamp *hap_ramp = NULL;
+    const SDL_HapticCustom *hap_custom = NULL;
     DWORD *axes = NULL;
 
     /* Set global stuff. */
@@ -1115,7 +1115,7 @@ SDL_SYS_HapticEffectType(Uint16 type)
  * Creates a new haptic effect.
  */
 int SDL_SYS_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
-                            SDL_HapticEffect *base)
+                            const SDL_HapticEffect *base)
 {
     HRESULT ret;
     CFUUIDRef type;
@@ -1162,7 +1162,7 @@ err_hweffect:
  */
 int SDL_SYS_HapticUpdateEffect(SDL_Haptic *haptic,
                                struct haptic_effect *effect,
-                               SDL_HapticEffect *data)
+                               const SDL_HapticEffect *data)
 {
     HRESULT ret;
     FFEffectParameterFlag flags;
