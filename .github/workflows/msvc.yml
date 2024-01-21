@@ -17,8 +17,6 @@ jobs:
         platform:
         - { name: Windows (x64),          flags: -A x64,   project: VisualC/SDL.sln, projectflags: '/p:Platform=x64', artifact: 'SDL-VC-x64' }
         - { name: Windows (x86),          flags: -A Win32, project: VisualC/SDL.sln, projectflags: '/p:Platform=Win32', artifact: 'SDL-VC-x86' }
-        - { name: Windows static VCRT (x64), flags: -A x64 -DSDL_FORCE_STATIC_VCRT=ON, artifact: 'SDL-VC-static-VCRT-x64' }
-        - { name: Windows static VCRT (x86), flags: -A Win32 -DSDL_FORCE_STATIC_VCRT=ON, artifact: 'SDL-VC-static-VCRT-x86' }
         - { name: Windows (clang-cl x64), flags: -T ClangCL -A x64, artifact: 'SDL-clang-cl-x64' }
         - { name: Windows (clang-cl x86), flags: -T ClangCL -A Win32, artifact: 'SDL-clang-cl-x86' }
         - { name: Windows (ARM),          flags: -A ARM, artifact: 'SDL-VC-arm32', notests: true }

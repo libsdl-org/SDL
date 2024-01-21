@@ -80,8 +80,8 @@ void *SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void 
 }
 
 /* The optimizer on Visual Studio 2005 and later generates memcpy() and memset() calls.
-   Always provide it for the SDL3 DLL, but skip it when building static lib w/ static runtime. */
-#if defined(_MSC_VER) && (_MSC_VER >= 1400) && (!defined(_MT) || defined(DLL_EXPORT))
+   We will provide our own implementation if we're not building with a C runtime. */
+#if defined(_MSC_VER) && (_MSC_VER >= 1400) && !defined(_MT)
 /* NOLINTNEXTLINE(readability-redundant-declaration) */
 extern void *memcpy(void *dst, const void *src, size_t len);
 #ifndef __INTEL_LLVM_COMPILER
@@ -96,4 +96,4 @@ void *memcpy(void *dst, const void *src, size_t len)
 {
     return SDL_memcpy(dst, src, len);
 }
-#endif /* (_MSC_VER >= 1400) && (!defined(_MT) || defined(DLL_EXPORT)) */
+#endif /* (_MSC_VER >= 1400) && !defined(_MT) */
