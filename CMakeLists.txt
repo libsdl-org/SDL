@@ -911,7 +911,7 @@ if(SDL_ASSEMBLY)
 
     if(SDL_LSX)
       cmake_push_check_state()
-      list(APPEND CMAKE_REQUIRED_FLAGS "-mlsx")
+      set(CMAKE_REQUIRED_FLAGS "-mlsx")
       check_c_source_compiles("
           #ifndef __loongarch_sx
           #error Assembler CPP flag not enabled
@@ -928,7 +928,7 @@ if(SDL_ASSEMBLY)
 
     if(SDL_LASX)
       cmake_push_check_state()
-      list(APPEND CMAKE_REQUIRED_FLAGS "-mlasx")
+      set(CMAKE_REQUIRED_FLAGS "-mlasx")
       check_c_source_compiles("
           #ifndef __loongarch_asx
           #error Assembler CPP flag not enabled
