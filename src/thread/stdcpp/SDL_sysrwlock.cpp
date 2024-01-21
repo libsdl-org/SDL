@@ -56,7 +56,7 @@ extern "C" void SDL_LockRWLockForReading(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFET
     if (rwlock) {
         try {
             rwlock->cpp_mutex.lock_shared();
-        } catch (std::system_error &ex) {
+        } catch (std::system_error &/*ex*/) {
             SDL_assert(!"Error trying to lock rwlock for reading");  // assume we're in a lot of trouble if this assert fails.
             //return SDL_SetError("unable to lock a C++ rwlock: code=%d; %s", ex.code(), ex.what());
         }
@@ -69,7 +69,7 @@ extern "C" void SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFET
         try {
             rwlock->cpp_mutex.lock();
             rwlock->write_owner = SDL_GetCurrentThreadID();
-        } catch (std::system_error &ex) {
+        } catch (std::system_error &/*ex*/) {
             SDL_assert(!"Error trying to lock rwlock for writing");  // assume we're in a lot of trouble if this assert fails.
             //return SDL_SetError("unable to lock a C++ rwlock: code=%d; %s", ex.code(), ex.what());
         }

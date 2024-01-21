@@ -55,7 +55,7 @@ extern "C" void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  /
     if (mutex != NULL) {
         try {
             mutex->cpp_mutex.lock();
-        } catch (std::system_error &ex) {
+        } catch (std::system_error &/*ex*/) {
             SDL_assert(!"Error trying to lock mutex");  // assume we're in a lot of trouble if this assert fails.
             //return SDL_SetError("unable to lock a C++ mutex: code=%d; %s", ex.code(), ex.what());
         }
