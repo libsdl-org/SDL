@@ -134,7 +134,7 @@ extern void SDL_SYS_HapticQuit(void);
  */
 extern int SDL_SYS_HapticNewEffect(SDL_Haptic *haptic,
                                    struct haptic_effect *effect,
-                                   SDL_HapticEffect *base);
+                                   const SDL_HapticEffect *base);
 
 /*
  * Updates the haptic effect on the haptic device using data
@@ -144,7 +144,7 @@ extern int SDL_SYS_HapticNewEffect(SDL_Haptic *haptic,
  */
 extern int SDL_SYS_HapticUpdateEffect(SDL_Haptic *haptic,
                                       struct haptic_effect *effect,
-                                      SDL_HapticEffect *data);
+                                      const SDL_HapticEffect *data);
 
 /*
  * Runs the effect on the haptic device.

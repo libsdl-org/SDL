@@ -524,7 +524,7 @@ static DWORD DIGetTriggerButton(Uint16 button)
 /*
  * Sets the direction.
  */
-static int SDL_SYS_SetDirection(DIEFFECT *effect, SDL_HapticDirection *dir, int naxes)
+static int SDL_SYS_SetDirection(DIEFFECT *effect, const SDL_HapticDirection *dir, int naxes)
 {
     LONG *rglDir;
 
@@ -586,7 +586,7 @@ static int SDL_SYS_SetDirection(DIEFFECT *effect, SDL_HapticDirection *dir, int 
  * Creates the DIEFFECT from a SDL_HapticEffect.
  */
 static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
-                              SDL_HapticEffect *src)
+                              const SDL_HapticEffect *src)
 {
     int i;
     DICONSTANTFORCE *constant;
@@ -595,11 +595,11 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
     DIRAMPFORCE *ramp;
     DICUSTOMFORCE *custom;
     DIENVELOPE *envelope;
-    SDL_HapticConstant *hap_constant;
-    SDL_HapticPeriodic *hap_periodic;
-    SDL_HapticCondition *hap_condition;
-    SDL_HapticRamp *hap_ramp;
-    SDL_HapticCustom *hap_custom;
+    const SDL_HapticConstant *hap_constant;
+    const SDL_HapticPeriodic *hap_periodic;
+    const SDL_HapticCondition *hap_condition;
+    const SDL_HapticRamp *hap_ramp;
+    const SDL_HapticCustom *hap_custom;
     DWORD *axes;
 
     /* Set global stuff. */
@@ -878,7 +878,7 @@ static void SDL_SYS_HapticFreeDIEFFECT(DIEFFECT *effect, int type)
  * Gets the effect type from the generic SDL haptic effect wrapper.
  */
 /* NOLINTNEXTLINE(readability-const-return-type): Can't fix Windows' headers */
-static REFGUID SDL_SYS_HapticEffectType(SDL_HapticEffect *effect)
+static REFGUID SDL_SYS_HapticEffectType(const SDL_HapticEffect *effect)
 {
     switch (effect->type) {
     case SDL_HAPTIC_CONSTANT:
@@ -921,7 +921,7 @@ static REFGUID SDL_SYS_HapticEffectType(SDL_HapticEffect *effect)
         return NULL;
     }
 }
-int SDL_DINPUT_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect, SDL_HapticEffect *base)
+int SDL_DINPUT_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect, const SDL_HapticEffect *base)
 {
     HRESULT ret;
     REFGUID type = SDL_SYS_HapticEffectType(base);
@@ -951,7 +951,7 @@ err_effectdone:
     return -1;
 }
 
-int SDL_DINPUT_HapticUpdateEffect(SDL_Haptic *haptic, struct haptic_effect *effect, SDL_HapticEffect *data)
+int SDL_DINPUT_HapticUpdateEffect(SDL_Haptic *haptic, struct haptic_effect *effect, const SDL_HapticEffect *data)
 {
     HRESULT ret;
     DWORD flags;
@@ -1186,12 +1186,12 @@ void SDL_DINPUT_HapticQuit(void)
 {
 }
 
-int SDL_DINPUT_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect, SDL_HapticEffect *base)
+int SDL_DINPUT_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect, const SDL_HapticEffect *base)
 {
     return SDL_Unsupported();
 }
 
-int SDL_DINPUT_HapticUpdateEffect(SDL_Haptic *haptic, struct haptic_effect *effect, SDL_HapticEffect *data)
+int SDL_DINPUT_HapticUpdateEffect(SDL_Haptic *haptic, struct haptic_effect *effect, const SDL_HapticEffect *data)
 {
     return SDL_Unsupported();
 }
