@@ -1294,9 +1294,7 @@ extern DECLSPEC int SDLCALL SDL_StopHapticEffects(SDL_Haptic *haptic);
  * Check whether rumble is supported on a haptic device.
  *
  * \param haptic haptic device to check for rumble support
- * \returns SDL_TRUE if effect is supported, SDL_FALSE if it isn't, or a
- *          negative error code on failure; call SDL_GetError() for more
- *          information.
+ * \returns SDL_TRUE if the effect is supported or SDL_FALSE if it isn't.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1304,7 +1302,7 @@ extern DECLSPEC int SDLCALL SDL_StopHapticEffects(SDL_Haptic *haptic);
  * \sa SDL_PlayHapticRumble
  * \sa SDL_StopHapticRumble
  */
-extern DECLSPEC int SDLCALL SDL_HapticRumbleSupported(SDL_Haptic *haptic);
+extern DECLSPEC SDL_bool SDLCALL SDL_HapticRumbleSupported(SDL_Haptic *haptic);
 
 /**
  * Initialize a haptic device for simple rumble playback.
