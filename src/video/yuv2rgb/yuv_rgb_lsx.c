@@ -4,7 +4,7 @@
 
 #if SDL_HAVE_YUV
 #include "yuv_rgb.h"
-
+#include "yuv_rgb_internal.h"
 #include "SDL_cpuinfo.h"
 
 #ifdef __loongarch_sx
