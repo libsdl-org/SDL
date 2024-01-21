@@ -3,7 +3,7 @@ GDK
 
 This port allows SDL applications to run via Microsoft's Game Development Kit (GDK).
 
-Windows (GDK) and  Xbox One/Xbox Series (GDKX) are supported. Although most of the Xbox code is included in the public SDL source code, NDA access is required for a small number of source files. If you have access to GDKX, these required Xbox files are posted on the GDK forums [here](https://forums.xboxlive.com/questions/130003/).
+Windows (GDK) and  Xbox One/Xbox Series (GDKX) are both supported and all the required code is included in this public SDL release. However, only licensed Xbox developers have access to the GDKX libraries which will allow you to build the Xbox targets.
 
 
 Requirements
@@ -11,6 +11,7 @@ Requirements
 
 * Microsoft Visual Studio 2022 (in theory, it should also work in 2017 or 2019, but this has not been tested)
 * Microsoft GDK June 2022 or newer (public release [here](https://github.com/microsoft/GDK/releases/tag/June_2022))
+* For Xbox, you will need the corresponding GDKX version (licensed developers only)
 * To publish a package or successfully authenticate a user, you will need to create an app id/configure services in Partner Center. However, for local testing purposes (without authenticating on Xbox Live), the identifiers used by the GDK test programs in the included solution will work.
 
 
@@ -33,7 +34,7 @@ The Windows GDK port supports the full set of Win32 APIs, renderers, controllers
   * Call `SDL_GDKGetDefaultUser` to get the default XUserHandle pointer.
   * `SDL_GetPrefPath` still works, but only for single-player titles.
 
-These functions mostly wrap around async APIs, and thus should be treated as synchronous alternatives. Also note that the single-player functions return on any OS errors, so be sure to validate the return values!
+  These functions mostly wrap around async APIs, and thus should be treated as synchronous alternatives. Also note that the single-player functions return on any OS errors, so be sure to validate the return values!
 
 * What doesn't work:
   * Compilation with anything other than through the included Visual C++ solution file
@@ -145,6 +146,20 @@ To create the package:
 6. Once the package is installed, you can run it from the start menu.
 7. As with when running from Visual Studio, if you need to test any Xbox Live functionality you must switch to the correct sandbox.
 
+Xbox GDKX Setup
+---------------------
+In general, the same process in the Windows GDK instructions work. There are just a few additional notes:
+* For Xbox One consoles, use the Gaming.Xbox.XboxOne.x64 target
+* For Xbox Series consoles, use the Gaming.Xbox.Scarlett.x64 target
+* The Xbox One target sets the `__XBOXONE__` define and the Xbox Series target sets the `__XBOXSERIES__` define
+* You don't need to link against the Xbox.Services Thunks lib nor include that dll in your package (it doesn't exist for Xbox)
+* The shader blobs for Xbox are created in a pre-build step for the Xbox targets, rather than included in the source (due to NDA and version compatability reasons)
+* To create a package, use:
+  `makepkg pack /f PackageLayout.xml /lt /d . /pd Package`
+* To install the package, use:
+  `xbapp install [PACKAGE].xvc`
+* For some reason, if you make changes that require SDL2.dll to build, and you are running through the debugger (instead of a package), you have to rebuild your .exe target for the debugger to recognize the dll has changed and needs to be transferred to the console again
+* While there are successful releases of Xbox titles using this port, it is not as extensively tested as other targets
 
 Troubleshooting
 ---------------
