@@ -111,7 +111,8 @@ typedef unsigned int uintptr_t;
 # define SDL_DISABLE_AVX 1
 #endif
 
-/* This is disabled by default to avoid C runtime dependencies and manifest requirements */
+/* This can be disabled to avoid C runtime dependencies and manifest requirements */
+#define HAVE_LIBC
 #ifdef HAVE_LIBC
 /* Useful headers */
 #define HAVE_CTYPE_H 1
@@ -162,6 +163,9 @@ typedef unsigned int uintptr_t;
 #define HAVE__WCSICMP 1
 #define HAVE__WCSNICMP 1
 #define HAVE__WCSDUP 1
+#define HAVE_SSCANF 1
+#define HAVE_VSSCANF 1
+#define HAVE_VSNPRINTF 1
 #define HAVE_ACOS   1
 #define HAVE_ASIN   1
 #define HAVE_ATAN   1

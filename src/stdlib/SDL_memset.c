@@ -117,8 +117,8 @@ void *SDL_memset4(void *dst, Uint32 val, size_t dwords)
 }
 
 /* The optimizer on Visual Studio 2005 and later generates memcpy() and memset() calls.
-   Always provide it for the SDL3 DLL, but skip it when building static lib w/ static runtime. */
-#if defined(_MSC_VER) && (_MSC_VER >= 1400) && (!defined(_MT) || defined(DLL_EXPORT))
+   We will provide our own implementation if we're not building with a C runtime. */
+#if defined(_MSC_VER) && (_MSC_VER >= 1400) && !defined(_MT)
 /* NOLINTNEXTLINE(readability-redundant-declaration) */
 extern void *memset(void *dst, int c, size_t len);
 #ifndef __INTEL_LLVM_COMPILER
@@ -133,5 +133,5 @@ void *memset(void *dst, int c, size_t len)
 {
     return SDL_memset(dst, c, len);
 }
-#endif /* (_MSC_VER >= 1400) && (!defined(_MT) || defined(DLL_EXPORT)) */
+#endif /* (_MSC_VER >= 1400) && !defined(_MT) */
 
