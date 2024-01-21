@@ -1750,7 +1750,7 @@ static int video_setWindowCenteredOnDisplay(void *arg)
                 int expectedX = 0, expectedY = 0;
                 int currentDisplay;
                 int expectedDisplay;
-                SDL_Rect expectedDisplayRect;
+                SDL_Rect expectedDisplayRect, expectedFullscreenRect;
                 SDL_PropertiesID props;
 
                 /* xVariation is the display we start on */
@@ -1826,16 +1826,24 @@ static int video_setWindowCenteredOnDisplay(void *arg)
                 SDL_GetWindowSize(window, &currentW, &currentH);
                 SDL_GetWindowPosition(window, &currentX, &currentY);
 
+                /* Get the expected fullscreen rect.
+                 * This needs to be queried after window creation and positioning as some drivers can alter the
+                 * usable bounds based on the window scaling mode.
+                 */
+                result = SDL_GetDisplayBounds(expectedDisplay, &expectedFullscreenRect);
+                SDLTest_AssertPass("SDL_GetDisplayBounds()");
+                SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+
                 if (!video_driver_is_wayland) {
                     SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display ID (current: %d, expected: %d)", currentDisplay, expectedDisplay);
                 } else {
                     SDLTest_Log("Skipping display ID validation: Wayland driver does not support window positioning");
                 }
-                SDLTest_AssertCheck(currentW == expectedDisplayRect.w, "Validate width (current: %d, expected: %d)", currentW, expectedDisplayRect.w);
-                SDLTest_AssertCheck(currentH == expectedDisplayRect.h, "Validate height (current: %d, expected: %d)", currentH, expectedDisplayRect.h);
+                SDLTest_AssertCheck(currentW == expectedFullscreenRect.w, "Validate width (current: %d, expected: %d)", currentW, expectedFullscreenRect.w);
+                SDLTest_AssertCheck(currentH == expectedFullscreenRect.h, "Validate height (current: %d, expected: %d)", currentH, expectedFullscreenRect.h);
                 if (!video_driver_is_wayland) {
-                    SDLTest_AssertCheck(currentX == expectedDisplayRect.x, "Validate x (current: %d, expected: %d)", currentX, expectedDisplayRect.x);
-                    SDLTest_AssertCheck(currentY == expectedDisplayRect.y, "Validate y (current: %d, expected: %d)", currentY, expectedDisplayRect.y);
+                    SDLTest_AssertCheck(currentX == expectedFullscreenRect.x, "Validate x (current: %d, expected: %d)", currentX, expectedFullscreenRect.x);
+                    SDLTest_AssertCheck(currentY == expectedFullscreenRect.y, "Validate y (current: %d, expected: %d)", currentY, expectedFullscreenRect.y);
                 } else {
                     SDLTest_Log("Skipping window position validation: Wayland driver does not support window positioning");
                 }
