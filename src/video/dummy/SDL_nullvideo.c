@@ -120,13 +120,15 @@ static SDL_VideoDevice *DUMMY_CreateDevice(void)
 
 VideoBootStrap DUMMY_bootstrap = {
     DUMMYVID_DRIVER_NAME, "SDL dummy video driver",
-    DUMMY_CreateDevice
+    DUMMY_CreateDevice,
+    NULL /* no ShowMessageBox implementation */
 };
 
 #ifdef SDL_INPUT_LINUXEV
 VideoBootStrap DUMMY_evdev_bootstrap = {
     DUMMYVID_DRIVER_EVDEV_NAME, "SDL dummy video driver with evdev",
-    DUMMY_CreateDevice
+    DUMMY_CreateDevice,
+    NULL /* no ShowMessageBox implementation */
 };
 void SDL_EVDEV_Init(void);
 void SDL_EVDEV_Poll();

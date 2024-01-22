@@ -125,7 +125,8 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
 
 VideoBootStrap Emscripten_bootstrap = {
     EMSCRIPTENVID_DRIVER_NAME, "SDL emscripten video driver",
-    Emscripten_CreateDevice
+    Emscripten_CreateDevice,
+    NULL /* no ShowMessageBox implementation */
 };
 
 int Emscripten_VideoInit(_THIS)

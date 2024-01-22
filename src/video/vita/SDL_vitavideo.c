@@ -39,6 +39,7 @@
 #include "SDL_vitakeyboard.h"
 #include "SDL_vitamouse_c.h"
 #include "SDL_vitaframebuffer.h"
+#include "SDL_vitamessagebox.h"
 
 #if defined(SDL_VIDEO_VITA_PIB)
 #include "SDL_vitagles_c.h"
@@ -175,7 +176,8 @@ static SDL_VideoDevice *VITA_Create()
 VideoBootStrap VITA_bootstrap = {
     "VITA",
     "VITA Video Driver",
-    VITA_Create
+    VITA_Create,
+    VITA_ShowMessageBox
 };
 
 /*****************************************************************************/
