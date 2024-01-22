@@ -772,7 +772,7 @@ int SDL_UpperBlit(SDL_Surface *src, const SDL_Rect *srcrect,
         if (dstrect) { /* update output parameter */
             *dstrect = r_dst;
         }
-        return SDL_LowerBlit(src, &r_src, dst, dstrect);
+        return SDL_LowerBlit(src, &r_src, dst, &r_dst);
     }
 
 end:
