@@ -171,6 +171,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
+    struct SDL_WaylandInput *input;
     struct wl_display *display;
 
     /* Are we trying to connect to or are currently in a Wayland session? */
@@ -199,13 +200,29 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
         return NULL;
     }
 
+    input = SDL_calloc(1, sizeof(*input));
+    if (!input) {
+        SDL_free(data);
+        WAYLAND_wl_display_disconnect(display);
+        SDL_WAYLAND_UnloadSymbols();
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
+    input->display = data;
+    input->sx_w = wl_fixed_from_int(0);
+    input->sy_w = wl_fixed_from_int(0);
+    input->xkb.current_group = XKB_GROUP_INVALID;
+
     data->initializing = SDL_TRUE;
     data->display = display;
+    data->input = input;
 
     /* Initialize all variables that we clean on shutdown */
     device = SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
         SDL_free(data);
+        SDL_free(input);
         WAYLAND_wl_display_disconnect(display);
         SDL_WAYLAND_UnloadSymbols();
         SDL_OutOfMemory();
@@ -849,9 +866,7 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         d->decoration_manager = wl_registry_bind(d->registry, id, &zxdg_decoration_manager_v1_interface, 1);
     } else if (SDL_strcmp(interface, "zwp_tablet_manager_v2") == 0) {
         d->tablet_manager = wl_registry_bind(d->registry, id, &zwp_tablet_manager_v2_interface, 1);
-        if (d->input) {
-            Wayland_input_add_tablet(d->input, d->tablet_manager);
-        }
+        Wayland_input_add_tablet(d->input, d->tablet_manager);
     } else if (SDL_strcmp(interface, "zxdg_output_manager_v1") == 0) {
         version = SDL_min(version, 3); /* Versions 1 through 3 are supported. */
         d->xdg_output_manager = wl_registry_bind(d->registry, id, &zxdg_output_manager_v1_interface, version);
