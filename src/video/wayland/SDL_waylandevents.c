@@ -2004,6 +2004,11 @@ static void Wayland_create_data_device(SDL_VideoData *d)
 {
     SDL_WaylandDataDevice *data_device = NULL;
 
+    if (!d->input->seat) {
+        /* No seat yet, will be initialized later. */
+        return;
+    }
+
     data_device = SDL_calloc(1, sizeof(*data_device));
     if (!data_device) {
         return;
@@ -2026,6 +2031,11 @@ static void Wayland_create_data_device(SDL_VideoData *d)
 static void Wayland_create_primary_selection_device(SDL_VideoData *d)
 {
     SDL_WaylandPrimarySelectionDevice *primary_selection_device = NULL;
+
+    if (!d->input->seat) {
+        /* No seat yet, will be initialized later. */
+        return;
+    }
 
     primary_selection_device = SDL_calloc(1, sizeof(*primary_selection_device));
     if (!primary_selection_device) {
@@ -2050,6 +2060,11 @@ static void Wayland_create_primary_selection_device(SDL_VideoData *d)
 static void Wayland_create_text_input(SDL_VideoData *d)
 {
     SDL_WaylandTextInput *text_input = NULL;
+
+    if (!d->input->seat) {
+        /* No seat yet, will be initialized later. */
+        return;
+    }
 
     text_input = SDL_calloc(1, sizeof(*text_input));
     if (!text_input) {
@@ -2392,7 +2407,7 @@ void Wayland_input_add_tablet(struct SDL_WaylandInput *input, struct SDL_Wayland
 {
     struct SDL_WaylandTabletInput *tablet_input;
 
-    if (!tablet_manager || !input || !input->seat) {
+    if (!tablet_manager || !input->seat) {
         return;
     }
 
@@ -2427,19 +2442,9 @@ void Wayland_input_destroy_tablet(struct SDL_WaylandInput *input)
 
 void Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version)
 {
-    struct SDL_WaylandInput *input;
+    struct SDL_WaylandInput *input = d->input;
 
-    input = SDL_calloc(1, sizeof(*input));
-    if (!input) {
-        return;
-    }
-
-    input->display = d;
     input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, SDL_min(SDL_WL_SEAT_VERSION, version));
-    input->sx_w = wl_fixed_from_int(0);
-    input->sy_w = wl_fixed_from_int(0);
-    input->xkb.current_group = XKB_GROUP_INVALID;
-    d->input = input;
 
     if (d->data_device_manager) {
         Wayland_create_data_device(d);
