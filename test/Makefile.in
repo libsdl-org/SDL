@@ -95,7 +95,7 @@ installedtestsmetadir = $(datadir)/installed-tests/SDL2
 
 generatetestmeta:
 	rm -f *.test
-	set -e; for exe in $(noninteractive) $(needs_audio) $(needs_display); do \
+	set -e; for exe in $(TESTS); do \
 		sed \
 			-e 's#@installedtestsdir@#$(installedtestsdir)#g' \
 			-e "s#@exe@#$$exe#g" \
@@ -386,8 +386,11 @@ distclean: clean
 	rm -f config.status config.cache config.log
 	rm -rf $(srcdir)/autom4te*
 
-noninteractive = \
+TESTS = \
 	testatomic$(EXE) \
+	testaudioinfo$(EXE) \
+	testbounds$(EXE) \
+	testdisplayinfo$(EXE) \
 	testerror$(EXE) \
 	testevdev$(EXE) \
 	testfilesystem$(EXE) \
@@ -396,22 +399,11 @@ noninteractive = \
 	testplatform$(EXE) \
 	testpower$(EXE) \
 	testqsort$(EXE) \
+	testsurround$(EXE) \
 	testthread$(EXE) \
 	testtimer$(EXE) \
 	testver$(EXE) \
 	$(NULL)
-
-needs_audio = \
-	testaudioinfo$(EXE) \
-	testsurround$(EXE) \
-	$(NULL)
-
-needs_display = \
-	testbounds$(EXE) \
-	testdisplayinfo$(EXE) \
-	$(NULL)
-
-TESTS = $(noninteractive) $(needs_audio) $(needs_display)
 
 check:
 	@set -e; \
