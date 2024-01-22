@@ -63,10 +63,19 @@
 
 #define WAYLANDVID_DRIVER_NAME "wayland"
 
+/* Clamp certain core protocol versions on older versions of libwayland. */
 #if SDL_WAYLAND_CHECK_VERSION(1, 22, 0)
 #define SDL_WL_COMPOSITOR_VERSION 6
 #else
 #define SDL_WL_COMPOSITOR_VERSION 4
+#endif
+
+#if SDL_WAYLAND_CHECK_VERSION(1, 22, 0)
+#define SDL_WL_SEAT_VERSION 9
+#elif SDL_WAYLAND_CHECK_VERSION(1, 21, 0)
+#define SDL_WL_SEAT_VERSION 8
+#else
+#define SDL_WL_SEAT_VERSION 5
 #endif
 
 #if SDL_WAYLAND_CHECK_VERSION(1, 20, 0)
@@ -158,6 +167,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
+    struct SDL_WaylandInput *input;
     struct wl_display *display = SDL_GetProperty(SDL_GetGlobalProperties(),
                                                  SDL_PROPERTY_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, NULL);
     SDL_bool display_is_external = !!display;
@@ -189,8 +199,22 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
         return NULL;
     }
 
+    input = SDL_calloc(1, sizeof(*input));
+    if (!input) {
+        SDL_free(data);
+        WAYLAND_wl_display_disconnect(display);
+        SDL_WAYLAND_UnloadSymbols();
+        return NULL;
+    }
+
+    input->display = data;
+    input->sx_w = wl_fixed_from_int(0);
+    input->sy_w = wl_fixed_from_int(0);
+    input->xkb.current_group = XKB_GROUP_INVALID;
+
     data->initializing = SDL_TRUE;
     data->display = display;
+    data->input = input;
     data->display_externally_owned = display_is_external;
     WAYLAND_wl_list_init(&data->output_list);
     WAYLAND_wl_list_init(&external_window_list);
@@ -786,7 +810,8 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
     } else if (SDL_strcmp(interface, "wl_output") == 0) {
         Wayland_add_display(d, id, SDL_min(version, SDL_WL_OUTPUT_VERSION));
     } else if (SDL_strcmp(interface, "wl_seat") == 0) {
-        Wayland_display_add_input(d, id, version);
+        d->input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, SDL_min(SDL_WL_SEAT_VERSION, version));
+        Wayland_input_initialize_seat(d);
     } else if (SDL_strcmp(interface, "xdg_wm_base") == 0) {
         d->shell.xdg = wl_registry_bind(d->registry, id, &xdg_wm_base_interface, SDL_min(version, 6));
         xdg_wm_base_add_listener(d->shell.xdg, &shell_listener_xdg, NULL);
@@ -803,18 +828,19 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
     } else if (SDL_strcmp(interface, "xdg_activation_v1") == 0) {
         d->activation_manager = wl_registry_bind(d->registry, id, &xdg_activation_v1_interface, 1);
     } else if (SDL_strcmp(interface, "zwp_text_input_manager_v3") == 0) {
-        Wayland_add_text_input_manager(d, id, version);
+        d->text_input_manager = wl_registry_bind(d->registry, id, &zwp_text_input_manager_v3_interface, 1);
+        Wayland_create_text_input(d);
     } else if (SDL_strcmp(interface, "wl_data_device_manager") == 0) {
-        Wayland_add_data_device_manager(d, id, version);
+        d->data_device_manager = wl_registry_bind(d->registry, id, &wl_data_device_manager_interface, SDL_min(3, version));
+        Wayland_create_data_device(d);
     } else if (SDL_strcmp(interface, "zwp_primary_selection_device_manager_v1") == 0) {
-        Wayland_add_primary_selection_device_manager(d, id, version);
+        d->primary_selection_device_manager = wl_registry_bind(d->registry, id, &zwp_primary_selection_device_manager_v1_interface, 1);
+        Wayland_create_primary_selection_device(d);
     } else if (SDL_strcmp(interface, "zxdg_decoration_manager_v1") == 0) {
         d->decoration_manager = wl_registry_bind(d->registry, id, &zxdg_decoration_manager_v1_interface, 1);
     } else if (SDL_strcmp(interface, "zwp_tablet_manager_v2") == 0) {
         d->tablet_manager = wl_registry_bind(d->registry, id, &zwp_tablet_manager_v2_interface, 1);
-        if (d->input) {
-            Wayland_input_add_tablet(d->input, d->tablet_manager);
-        }
+        Wayland_input_add_tablet(d->input, d->tablet_manager);
     } else if (SDL_strcmp(interface, "zxdg_output_manager_v1") == 0) {
         version = SDL_min(version, 3); /* Versions 1 through 3 are supported. */
         d->xdg_output_manager = wl_registry_bind(d->registry, id, &zxdg_output_manager_v1_interface, version);

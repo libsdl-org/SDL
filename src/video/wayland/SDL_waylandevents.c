@@ -64,15 +64,6 @@
 #include "../../events/imKStoUCS.h"
 #include "../../events/SDL_keysym_to_scancode_c.h"
 
-/* Clamp the wl_seat version on older versions of libwayland. */
-#if SDL_WAYLAND_CHECK_VERSION(1, 22, 0)
-#define SDL_WL_SEAT_VERSION 9
-#elif SDL_WAYLAND_CHECK_VERSION(1, 21, 0)
-#define SDL_WL_SEAT_VERSION 8
-#else
-#define SDL_WL_SEAT_VERSION 5
-#endif
-
 /* Weston uses a ratio of 10 units per scroll tick */
 #define WAYLAND_WHEEL_AXIS_UNIT 10
 
@@ -2305,9 +2296,14 @@ static const struct zwp_text_input_v3_listener text_input_listener = {
     text_input_done
 };
 
-static void Wayland_create_data_device(SDL_VideoData *d)
+void Wayland_create_data_device(SDL_VideoData *d)
 {
     SDL_WaylandDataDevice *data_device = NULL;
+
+    if (!d->input->seat) {
+        /* No seat yet, will be initialized later. */
+        return;
+    }
 
     data_device = SDL_calloc(1, sizeof(*data_device));
     if (!data_device) {
@@ -2328,9 +2324,14 @@ static void Wayland_create_data_device(SDL_VideoData *d)
     }
 }
 
-static void Wayland_create_primary_selection_device(SDL_VideoData *d)
+void Wayland_create_primary_selection_device(SDL_VideoData *d)
 {
     SDL_WaylandPrimarySelectionDevice *primary_selection_device = NULL;
+
+    if (!d->input->seat) {
+        /* No seat yet, will be initialized later. */
+        return;
+    }
 
     primary_selection_device = SDL_calloc(1, sizeof(*primary_selection_device));
     if (!primary_selection_device) {
@@ -2352,9 +2353,14 @@ static void Wayland_create_primary_selection_device(SDL_VideoData *d)
     }
 }
 
-static void Wayland_create_text_input(SDL_VideoData *d)
+void Wayland_create_text_input(SDL_VideoData *d)
 {
     SDL_WaylandTextInput *text_input = NULL;
+
+    if (!d->input->seat) {
+        /* No seat yet, will be initialized later. */
+        return;
+    }
 
     text_input = SDL_calloc(1, sizeof(*text_input));
     if (!text_input) {
@@ -2371,33 +2377,6 @@ static void Wayland_create_text_input(SDL_VideoData *d)
         zwp_text_input_v3_add_listener(text_input->text_input,
                                        &text_input_listener, text_input);
         d->input->text_input = text_input;
-    }
-}
-
-void Wayland_add_data_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version)
-{
-    d->data_device_manager = wl_registry_bind(d->registry, id, &wl_data_device_manager_interface, SDL_min(3, version));
-
-    if (d->input) {
-        Wayland_create_data_device(d);
-    }
-}
-
-void Wayland_add_primary_selection_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version)
-{
-    d->primary_selection_device_manager = wl_registry_bind(d->registry, id, &zwp_primary_selection_device_manager_v1_interface, 1);
-
-    if (d->input) {
-        Wayland_create_primary_selection_device(d);
-    }
-}
-
-void Wayland_add_text_input_manager(SDL_VideoData *d, uint32_t id, uint32_t version)
-{
-    d->text_input_manager = wl_registry_bind(d->registry, id, &zwp_text_input_manager_v3_interface, 1);
-
-    if (d->input) {
-        Wayland_create_text_input(d);
     }
 }
 
@@ -2939,7 +2918,7 @@ void Wayland_input_add_tablet(struct SDL_WaylandInput *input, struct SDL_Wayland
     struct SDL_WaylandTabletInput *tablet_input;
     static Uint32 num_tablets = 0;
 
-    if (!tablet_manager || !input || !input->seat) {
+    if (!tablet_manager || !input->seat) {
         return;
     }
 
@@ -2974,23 +2953,11 @@ void Wayland_input_destroy_tablet(struct SDL_WaylandInput *input)
     input->tablet = NULL;
 }
 
-void Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version)
+void Wayland_input_initialize_seat(SDL_VideoData *d)
 {
-    struct SDL_WaylandInput *input;
-
-    input = SDL_calloc(1, sizeof(*input));
-    if (!input) {
-        return;
-    }
+    struct SDL_WaylandInput *input = d->input;
 
     WAYLAND_wl_list_init(&touch_points);
-
-    input->display = d;
-    input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, SDL_min(SDL_WL_SEAT_VERSION, version));
-    input->sx_w = wl_fixed_from_int(0);
-    input->sy_w = wl_fixed_from_int(0);
-    input->xkb.current_group = XKB_GROUP_INVALID;
-    d->input = input;
 
     if (d->data_device_manager) {
         Wayland_create_data_device(d);
@@ -3015,10 +2982,6 @@ void Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version)
 void Wayland_display_destroy_input(SDL_VideoData *d)
 {
     struct SDL_WaylandInput *input = d->input;
-
-    if (!input) {
-        return;
-    }
 
     if (input->keyboard_timestamps) {
         zwp_input_timestamps_v1_destroy(input->keyboard_timestamps);
