@@ -30,6 +30,7 @@
 #include "SDL_cocoavulkan.h"
 #include "SDL_cocoametalview.h"
 #include "SDL_cocoaopengles.h"
+#include "SDL_cocoamessagebox.h"
 
 @implementation SDL_CocoaVideoData
 
@@ -180,7 +181,8 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
 
 VideoBootStrap COCOA_bootstrap = {
     "cocoa", "SDL Cocoa video driver",
-    Cocoa_CreateDevice
+    Cocoa_CreateDevice,
+    Cocoa_ShowMessageBox
 };
 
 int Cocoa_VideoInit(SDL_VideoDevice *_this)

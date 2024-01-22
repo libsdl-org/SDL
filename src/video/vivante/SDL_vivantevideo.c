@@ -105,7 +105,8 @@ static SDL_VideoDevice *VIVANTE_Create()
 VideoBootStrap VIVANTE_bootstrap = {
     "vivante",
     "Vivante EGL Video Driver",
-    VIVANTE_Create
+    VIVANTE_Create,
+    NULL /* no ShowMessageBox implementation */
 };
 
 /*****************************************************************************/

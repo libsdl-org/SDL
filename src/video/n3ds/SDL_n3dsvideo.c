@@ -82,7 +82,7 @@ static SDL_VideoDevice *N3DS_CreateDevice(void)
     return device;
 }
 
-VideoBootStrap N3DS_bootstrap = { N3DSVID_DRIVER_NAME, "N3DS Video Driver", N3DS_CreateDevice };
+VideoBootStrap N3DS_bootstrap = { N3DSVID_DRIVER_NAME, "N3DS Video Driver", N3DS_CreateDevice, NULL /* no ShowMessageBox implementation */ };
 
 static int N3DS_VideoInit(SDL_VideoDevice *_this)
 {
