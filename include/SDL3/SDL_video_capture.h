@@ -104,6 +104,8 @@ typedef struct SDL_VideoCaptureFrame
     int num_planes;             /**< Number of planes */
     Uint8 *data[3];             /**< Pointer to data of i-th plane */
     int pitch[3];               /**< Pitch of i-th plane */
+    int fd;                     /**< DMABUF file descriptor if available (-1 if not) */
+    void *clientbuffer;         /**< Android clientbuffer if available (NULL if not) */
     void *internal;             /**< Private field */
 } SDL_VideoCaptureFrame;
 

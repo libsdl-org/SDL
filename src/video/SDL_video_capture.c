@@ -410,6 +410,8 @@ SDL_CaptureVideoThread(void *devicep)
         entry_t *entry;
 
         SDL_zero(f);
+        f.fd = -1;
+        f.clientbuffer = NULL;
 
         SDL_LockMutex(device->acquiring_lock);
         ret = AcquireFrame(device, &f);
@@ -645,6 +647,8 @@ SDL_AcquireVideoCaptureFrame(SDL_VideoCaptureDevice *device, SDL_VideoCaptureFra
     }
 
     SDL_zerop(frame);
+    frame->fd = -1;
+    frame->clientbuffer = NULL;
 
     if (device->thread == NULL) {
         int ret;

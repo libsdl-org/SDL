@@ -72,6 +72,7 @@ enum io_method {
 struct buffer {
     void   *start;
     size_t  length;
+    int dmabuf_fd;
     int available; /* Is available in userspace */
 };
 
@@ -166,6 +167,7 @@ acquire_frame(SDL_VideoCaptureDevice *_this, SDL_VideoCaptureFrame *frame)
             frame->num_planes = 1;
             frame->data[0] = _this->hidden->buffers[buf.index].start;
             frame->pitch[0] = _this->hidden->driver_pitch;
+            frame->fd = _this->hidden->buffers[buf.index].dmabuf_fd;
             _this->hidden->buffers[buf.index].available = 1;
 
 #if DEBUG_VIDEO_CAPTURE_CAPTURE
@@ -557,6 +559,26 @@ alloc_buffer_userp(SDL_VideoCaptureDevice *_this, size_t buffer_size)
     return 0;
 }
 
+static int
+export_dmabuf(SDL_VideoCaptureDevice *_this)
+{
+    int fd = _this->hidden->fd;
+    Uint32 i;
+    for (i = 0; i < _this->hidden->nb_buffers; ++i) {
+        struct v4l2_exportbuffer expbuf;
+        SDL_zero(expbuf);
+        expbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        expbuf.index = i;
+        expbuf.flags = O_RDWR;
+        if (ioctl(fd, VIDIOC_EXPBUF, &expbuf) == -1) {
+            SDL_SetError("VIDIOC_EXPBUF");
+            return -1;
+        }
+        _this->hidden->buffers[i].dmabuf_fd = expbuf.fd;
+    }
+    return 0;
+}
+
 static Uint32
 format_v4l2_2_sdl(Uint32 fmt)
 {
@@ -800,9 +822,14 @@ InitDevice(SDL_VideoCaptureDevice *_this)
     }
 
     {
+        Uint32 i;
         _this->hidden->buffers = SDL_calloc(_this->hidden->nb_buffers, sizeof(*_this->hidden->buffers));
         if (!_this->hidden->buffers) {
             return SDL_OutOfMemory();
+        }
+
+        for (i = 0; i < _this->hidden->nb_buffers; ++i) {
+            _this->hidden->buffers[i].dmabuf_fd = -1;
         }
     }
 
@@ -817,6 +844,8 @@ InitDevice(SDL_VideoCaptureDevice *_this)
 
             case IO_METHOD_MMAP:
                 ret = alloc_buffer_mmap(_this);
+
+                export_dmabuf(_this);
                 break;
 
             case IO_METHOD_USERPTR:
@@ -851,6 +880,9 @@ CloseDevice(SDL_VideoCaptureDevice *_this)
 
                 case IO_METHOD_MMAP:
                     for (i = 0; i < _this->hidden->nb_buffers; ++i) {
+                        if (_this->hidden->buffers[i].dmabuf_fd != -1) {
+                            close(_this->hidden->buffers[i].dmabuf_fd);
+                        }
                         if (munmap(_this->hidden->buffers[i].start, _this->hidden->buffers[i].length) == -1) {
                             SDL_SetError("munmap");
                         }
