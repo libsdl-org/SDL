@@ -427,7 +427,7 @@ static void SDLCALL SDL_Convert_U8_to_F32_SSE2(SDL_AudioCVT *cvt, SDL_AudioForma
 
 static void SDLCALL SDL_Convert_S16_to_F32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    const Sint8 *src = (const Sint8 *)cvt->buf;
+    const Sint16 *src = (const Sint16 *)cvt->buf;
     float *dst = (float *)cvt->buf;
     int i = cvt->len_cvt / 2;
 
