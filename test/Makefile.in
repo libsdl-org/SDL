@@ -389,6 +389,7 @@ distclean: clean
 TESTS = \
 	testatomic$(EXE) \
 	testaudioinfo$(EXE) \
+	testautomation$(EXE) \
 	testbounds$(EXE) \
 	testdisplayinfo$(EXE) \
 	testerror$(EXE) \
