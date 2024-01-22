@@ -39,6 +39,7 @@ extern "C" {
 #include "SDL_bmodes.h"
 #include "SDL_bframebuffer.h"
 #include "SDL_bevents.h"
+#include "SDL_bmessagebox.h"
 
 static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
     return (SDL_BWin *)(window->driverdata);
@@ -131,7 +132,8 @@ static SDL_VideoDevice * HAIKU_CreateDevice(void)
 
 VideoBootStrap HAIKU_bootstrap = {
     "haiku", "Haiku graphics",
-    HAIKU_CreateDevice
+    HAIKU_CreateDevice,
+    HAIKU_ShowMessageBox
 };
 
 void HAIKU_DeleteDevice(SDL_VideoDevice * device)

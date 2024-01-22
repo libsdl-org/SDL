@@ -95,7 +95,8 @@ static SDL_VideoDevice *OFFSCREEN_CreateDevice(void)
 
 VideoBootStrap OFFSCREEN_bootstrap = {
     OFFSCREENVID_DRIVER_NAME, "SDL offscreen video driver",
-    OFFSCREEN_CreateDevice
+    OFFSCREEN_CreateDevice,
+    NULL /* no ShowMessageBox implementation */
 };
 
 int OFFSCREEN_VideoInit(_THIS)

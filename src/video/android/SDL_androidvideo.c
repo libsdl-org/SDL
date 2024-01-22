@@ -41,6 +41,7 @@
 #include "SDL_androidtouch.h"
 #include "SDL_androidwindow.h"
 #include "SDL_androidvulkan.h"
+#include "SDL_androidmessagebox.h"
 
 #define ANDROID_VID_DRIVER_NAME "Android"
 
@@ -166,7 +167,8 @@ static SDL_VideoDevice *Android_CreateDevice(void)
 
 VideoBootStrap Android_bootstrap = {
     ANDROID_VID_DRIVER_NAME, "SDL Android video driver",
-    Android_CreateDevice
+    Android_CreateDevice,
+    Android_ShowMessageBox
 };
 
 int Android_VideoInit(_THIS)
