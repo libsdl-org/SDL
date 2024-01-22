@@ -222,6 +222,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     /* Initialize all variables that we clean on shutdown */
     device = SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
+        SDL_free(input);
         SDL_free(data);
         WAYLAND_wl_display_disconnect(display);
         SDL_WAYLAND_UnloadSymbols();
