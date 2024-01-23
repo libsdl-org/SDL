@@ -918,7 +918,7 @@ static Uint32 DARWIN_JoystickGetCapabilities(SDL_Joystick *joystick)
     }
 
     if (device->ffservice) {
-        result |= SDL_JOYCAP_RUMBLE;
+        result |= SDL_JOYSTICK_CAP_RUMBLE;
     }
 
     return result;

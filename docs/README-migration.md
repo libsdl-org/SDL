@@ -539,9 +539,6 @@ The following functions have been renamed:
 * SDL_GameControllerGetVendor() => SDL_GetGamepadVendor()
 * SDL_GameControllerHasAxis() => SDL_GamepadHasAxis()
 * SDL_GameControllerHasButton() => SDL_GamepadHasButton()
-* SDL_GameControllerHasLED() => SDL_GamepadHasLED()
-* SDL_GameControllerHasRumble() => SDL_GamepadHasRumble()
-* SDL_GameControllerHasRumbleTriggers() => SDL_GamepadHasRumbleTriggers()
 * SDL_GameControllerHasSensor() => SDL_GamepadHasSensor()
 * SDL_GameControllerIsSensorEnabled() => SDL_GamepadSensorEnabled()
 * SDL_GameControllerMapping() => SDL_GetGamepadMapping()
@@ -562,12 +559,15 @@ The following functions have been removed:
 * SDL_GameControllerEventState() - replaced with SDL_SetGamepadEventsEnabled() and SDL_GamepadEventsEnabled()
 * SDL_GameControllerGetBindForAxis() - replaced with SDL_GetGamepadBindings()
 * SDL_GameControllerGetBindForButton() - replaced with SDL_GetGamepadBindings()
+* SDL_GameControllerHasLED() - replaced with SDL_GetGamepadCaps()
+* SDL_GameControllerHasRumble() - replaced with SDL_GetGamepadCaps()
+* SDL_GameControllerHasRumbleTriggers() - replaced with SDL_GetGamepadCaps()
 * SDL_GameControllerMappingForDeviceIndex() - replaced with SDL_GetGamepadInstanceMapping()
+* SDL_GameControllerMappingForIndex() - replaced with SDL_GetGamepadMappings()
 * SDL_GameControllerNameForIndex() - replaced with SDL_GetGamepadInstanceName()
+* SDL_GameControllerNumMappings() - replaced with SDL_GetGamepadMappings()
 * SDL_GameControllerPathForIndex() - replaced with SDL_GetGamepadInstancePath()
 * SDL_GameControllerTypeForIndex() - replaced with SDL_GetGamepadInstanceType()
-* SDL_GameControllerNumMappings() - replaced with SDL_GetGamepadMappings()
-* SDL_GameControllerMappingForIndex() - replaced with SDL_GetGamepadMappings()
 
 The following symbols have been renamed:
 * SDL_CONTROLLER_AXIS_INVALID => SDL_GAMEPAD_AXIS_INVALID
@@ -805,6 +805,9 @@ The following functions have been removed:
 * SDL_JoystickGetDeviceProductVersion() - replaced with SDL_GetJoystickInstanceProductVersion()
 * SDL_JoystickGetDeviceType() - replaced with SDL_GetJoystickInstanceType()
 * SDL_JoystickGetDeviceVendor() - replaced with SDL_GetJoystickInstanceVendor()
+* SDL_JoystickHasLED() - replaced with SDL_GetJoystickCaps()
+* SDL_JoystickHasRumble() - replaced with SDL_GetJoystickCaps()
+* SDL_JoystickHasRumbleTriggers() - replaced with SDL_GetJoystickCaps()
 * SDL_JoystickNameForIndex() - replaced with SDL_GetJoystickInstanceName()
 * SDL_JoystickNumBalls() - API has been removed, see https://github.com/libsdl-org/SDL/issues/6766
 * SDL_JoystickPathForIndex() - replaced with SDL_GetJoystickInstancePath()

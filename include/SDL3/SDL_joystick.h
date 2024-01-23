@@ -99,6 +99,15 @@ typedef enum
 
 typedef enum
 {
+    SDL_JOYSTICK_CAP_MONO_LED       = 0x00000001,   /**< This joystick has an LED that has adjustable brightness */
+    SDL_JOYSTICK_CAP_RGB_LED        = 0x00000002,   /**< This joystick has an LED that has adjustable color */
+    SDL_JOYSTICK_CAP_PLAYER_LED     = 0x00000004,   /**< This joystick has a player LED */
+    SDL_JOYSTICK_CAP_RUMBLE         = 0x00000010,   /**< This joystick has left/right rumble */
+    SDL_JOYSTICK_CAP_TRIGGER_RUMBLE = 0x00000020,   /**< This joystick has simple trigger rumble */
+} SDL_JoystickCaps;
+
+typedef enum
+{
     SDL_JOYSTICK_POWER_UNKNOWN = -1,
     SDL_JOYSTICK_POWER_EMPTY,   /* <= 5% */
     SDL_JOYSTICK_POWER_LOW,     /* <= 20% */
@@ -881,6 +890,16 @@ extern DECLSPEC Uint8 SDLCALL SDL_GetJoystickButton(SDL_Joystick *joystick,
                                                     int button);
 
 /**
+ * Query joystick capabilities
+ *
+ * \param joystick The joystick to query
+ * \returns a mask of SDL_JoystickCaps values indicating the joystick capabilities.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC Uint32 SDLCALL SDL_GetJoystickCaps(SDL_Joystick *joystick);
+
+/**
  * Start a rumble effect.
  *
  * Each call to this function cancels any previous rumble effect, and calling
@@ -896,7 +915,7 @@ extern DECLSPEC Uint8 SDLCALL SDL_GetJoystickButton(SDL_Joystick *joystick,
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_JoystickHasRumble
+ * \sa SDL_GetJoystickCaps
  */
 extern DECLSPEC int SDLCALL SDL_RumbleJoystick(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 
@@ -922,53 +941,17 @@ extern DECLSPEC int SDLCALL SDL_RumbleJoystick(SDL_Joystick *joystick, Uint16 lo
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_JoystickHasRumbleTriggers
+ * \sa SDL_GetJoystickCaps
  */
 extern DECLSPEC int SDLCALL SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms);
-
-/**
- * Query whether a joystick has an LED.
- *
- * An example of a joystick LED is the light on the back of a PlayStation 4's
- * DualShock 4 controller.
- *
- * \param joystick The joystick to query
- * \returns SDL_TRUE if the joystick has a modifiable LED, SDL_FALSE
- *          otherwise.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasLED(SDL_Joystick *joystick);
-
-/**
- * Query whether a joystick has rumble support.
- *
- * \param joystick The joystick to query
- * \returns SDL_TRUE if the joystick has rumble, SDL_FALSE otherwise.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_RumbleJoystick
- */
-extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasRumble(SDL_Joystick *joystick);
-
-/**
- * Query whether a joystick has rumble support on triggers.
- *
- * \param joystick The joystick to query
- * \returns SDL_TRUE if the joystick has trigger rumble, SDL_FALSE otherwise.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_RumbleJoystickTriggers
- */
-extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasRumbleTriggers(SDL_Joystick *joystick);
 
 /**
  * Update a joystick's LED color.
  *
  * An example of a joystick LED is the light on the back of a PlayStation 4's
  * DualShock 4 controller.
+ *
+ * For joysticks with a single color LED, the maximum of the RGB values will be used as the LED brightness.
  *
  * \param joystick The joystick to update
  * \param red The intensity of the red LED
@@ -978,6 +961,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasRumbleTriggers(SDL_Joystick *joy
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetJoystickCaps
  */
 extern DECLSPEC int SDLCALL SDL_SetJoystickLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
 

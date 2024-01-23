@@ -155,9 +155,6 @@
 #define SDL_GamepadEventsEnabled SDL_GamepadEventsEnabled_REAL
 #define SDL_GamepadHasAxis SDL_GamepadHasAxis_REAL
 #define SDL_GamepadHasButton SDL_GamepadHasButton_REAL
-#define SDL_GamepadHasLED SDL_GamepadHasLED_REAL
-#define SDL_GamepadHasRumble SDL_GamepadHasRumble_REAL
-#define SDL_GamepadHasRumbleTriggers SDL_GamepadHasRumbleTriggers_REAL
 #define SDL_GamepadHasSensor SDL_GamepadHasSensor_REAL
 #define SDL_GamepadSensorEnabled SDL_GamepadSensorEnabled_REAL
 #define SDL_GetAndroidSDKVersion    SDL_GetAndroidSDKVersion_REAL
@@ -435,9 +432,6 @@
 #define SDL_IsTablet SDL_IsTablet_REAL
 #define SDL_JoystickConnected SDL_JoystickConnected_REAL
 #define SDL_JoystickEventsEnabled SDL_JoystickEventsEnabled_REAL
-#define SDL_JoystickHasLED SDL_JoystickHasLED_REAL
-#define SDL_JoystickHasRumble SDL_JoystickHasRumble_REAL
-#define SDL_JoystickHasRumbleTriggers SDL_JoystickHasRumbleTriggers_REAL
 #define SDL_IsJoystickHaptic SDL_IsJoystickHaptic_REAL
 #define SDL_LinuxSetThreadPriority  SDL_LinuxSetThreadPriority_REAL
 #define SDL_LinuxSetThreadPriorityAndPolicy SDL_LinuxSetThreadPriorityAndPolicy_REAL
@@ -990,3 +984,5 @@
 #define SDL_GetHapticName SDL_GetHapticName_REAL
 #define SDL_ReadSurfacePixel SDL_ReadSurfacePixel_REAL
 #define SDL_FlipSurface SDL_FlipSurface_REAL
+#define SDL_GetGamepadCaps SDL_GetGamepadCaps_REAL
+#define SDL_GetJoystickCaps SDL_GetJoystickCaps_REAL

@@ -131,9 +131,6 @@ SDL3_0.0.0 {
     SDL_GamepadEventsEnabled;
     SDL_GamepadHasAxis;
     SDL_GamepadHasButton;
-    SDL_GamepadHasLED;
-    SDL_GamepadHasRumble;
-    SDL_GamepadHasRumbleTriggers;
     SDL_GamepadHasSensor;
     SDL_GamepadSensorEnabled;
     SDL_GetAndroidSDKVersion;
@@ -411,9 +408,6 @@ SDL3_0.0.0 {
     SDL_IsTablet;
     SDL_JoystickConnected;
     SDL_JoystickEventsEnabled;
-    SDL_JoystickHasLED;
-    SDL_JoystickHasRumble;
-    SDL_JoystickHasRumbleTriggers;
     SDL_IsJoystickHaptic;
     SDL_LinuxSetThreadPriority;
     SDL_LinuxSetThreadPriorityAndPolicy;
@@ -965,6 +959,8 @@ SDL3_0.0.0 {
     SDL_GetHapticName;
     SDL_ReadSurfacePixel;
     SDL_FlipSurface;
+    SDL_GetGamepadCaps;
+    SDL_GetJoystickCaps;
     # extra symbols go here (don't modify this line)
   local: *;
 };

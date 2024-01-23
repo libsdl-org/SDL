@@ -1667,7 +1667,7 @@ static Uint32 LINUX_JoystickGetCapabilities(SDL_Joystick *joystick)
     SDL_AssertJoysticksLocked();
 
     if (joystick->hwdata->ff_rumble || joystick->hwdata->ff_sine) {
-        result |= SDL_JOYCAP_RUMBLE;
+        result |= SDL_JOYSTICK_CAP_RUMBLE;
     }
 
     return result;

@@ -1641,7 +1641,7 @@ static Uint32 IOS_JoystickGetCapabilities(SDL_Joystick *joystick)
             GCController *controller = device->controller;
 #ifdef ENABLE_MFI_LIGHT
             if (controller.light) {
-                result |= SDL_JOYCAP_LED;
+                result |= SDL_JOYSTICK_CAP_RGB_LED;
             }
 #endif
 
@@ -1649,9 +1649,9 @@ static Uint32 IOS_JoystickGetCapabilities(SDL_Joystick *joystick)
             if (controller.haptics) {
                 for (GCHapticsLocality locality in controller.haptics.supportedLocalities) {
                     if ([locality isEqualToString:GCHapticsLocalityHandles]) {
-                        result |= SDL_JOYCAP_RUMBLE;
+                        result |= SDL_JOYSTICK_CAP_RUMBLE;
                     } else if ([locality isEqualToString:GCHapticsLocalityTriggers]) {
-                        result |= SDL_JOYCAP_RUMBLE_TRIGGERS;
+                        result |= SDL_JOYSTICK_CAP_TRIGGER_RUMBLE;
                     }
                 }
             }

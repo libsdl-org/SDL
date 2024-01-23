@@ -459,7 +459,7 @@ static Uint32 HIDAPI_DriverGameCube_GetJoystickCapabilities(SDL_HIDAPI_Device *d
         for (i = 0; i < MAX_CONTROLLERS; i += 1) {
             if (joystick->instance_id == ctx->joysticks[i]) {
                 if (!ctx->wireless[i] && ctx->rumbleAllowed[i]) {
-                    result |= SDL_JOYCAP_RUMBLE;
+                    result |= SDL_JOYSTICK_CAP_RUMBLE;
                     break;
                 }
             }

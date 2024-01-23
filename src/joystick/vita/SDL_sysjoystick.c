@@ -347,7 +347,7 @@ static int VITA_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint
 static Uint32 VITA_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
     // always return LED and rumble supported for now
-    return SDL_JOYCAP_LED | SDL_JOYCAP_RUMBLE;
+    return SDL_JOYSTICK_CAP_RGB_LED | SDL_JOYSTICK_CAP_RUMBLE;
 }
 
 static int VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)

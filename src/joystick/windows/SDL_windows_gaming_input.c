@@ -800,7 +800,7 @@ static Uint32 WGI_JoystickGetCapabilities(SDL_Joystick *joystick)
 
     if (hwdata->gamepad) {
         /* FIXME: Can WGI even tell us if trigger rumble is supported? */
-        return SDL_JOYCAP_RUMBLE | SDL_JOYCAP_RUMBLE_TRIGGERS;
+        return (SDL_JOYSTICK_CAP_RUMBLE | SDL_JOYSTICK_CAP_TRIGGER_RUMBLE);
     } else {
         return 0;
     }

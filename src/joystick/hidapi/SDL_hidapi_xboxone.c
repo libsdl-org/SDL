@@ -540,13 +540,13 @@ static Uint32 HIDAPI_DriverXboxOne_GetJoystickCapabilities(SDL_HIDAPI_Device *de
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
     Uint32 result = 0;
 
-    result |= SDL_JOYCAP_RUMBLE;
+    result |= SDL_JOYSTICK_CAP_RUMBLE;
     if (ctx->has_trigger_rumble) {
-        result |= SDL_JOYCAP_RUMBLE_TRIGGERS;
+        result |= SDL_JOYSTICK_CAP_TRIGGER_RUMBLE;
     }
 
     if (ctx->has_color_led) {
-        result |= SDL_JOYCAP_LED;
+        result |= SDL_JOYSTICK_CAP_RGB_LED;
     }
 
     return result;

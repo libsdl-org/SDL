@@ -869,10 +869,10 @@ static Uint32 HIDAPI_DriverPS4_GetJoystickCapabilities(SDL_HIDAPI_Device *device
 
     if (ctx->enhanced_mode_available) {
         if (ctx->lightbar_supported) {
-            result |= SDL_JOYCAP_LED;
+            result |= SDL_JOYSTICK_CAP_RGB_LED;
         }
         if (ctx->vibration_supported) {
-            result |= SDL_JOYCAP_RUMBLE;
+            result |= SDL_JOYSTICK_CAP_RUMBLE;
         }
     }
 

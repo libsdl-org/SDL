@@ -87,7 +87,7 @@ static SDL_bool SetSlotLED(SDL_hid_device *dev, Uint8 slot, SDL_bool on)
 
 static void UpdateSlotLED(SDL_DriverXbox360W_Context *ctx)
 {
-    if (ctx->player_lights) {
+    if (ctx->player_lights && ctx->player_index >= 0) {
         SetSlotLED(ctx->device->dev, (ctx->player_index % 4), SDL_TRUE);
     } else {
         SetSlotLED(ctx->device->dev, 0, SDL_FALSE);
@@ -210,8 +210,13 @@ static int HIDAPI_DriverXbox360W_RumbleJoystickTriggers(SDL_HIDAPI_Device *devic
 
 static Uint32 HIDAPI_DriverXbox360W_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    /* Doesn't have an RGB LED, so don't return SDL_JOYCAP_LED here */
-    return SDL_JOYCAP_RUMBLE;
+    SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)device->context;
+    Uint32 result = SDL_JOYSTICK_CAP_RUMBLE;
+
+    if (ctx->player_lights) {
+        result |= SDL_JOYSTICK_CAP_PLAYER_LED;
+    }
+    return result;
 }
 
 static int HIDAPI_DriverXbox360W_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)

@@ -475,13 +475,13 @@ static Uint32 VIRTUAL_JoystickGetCapabilities(SDL_Joystick *joystick)
     hwdata = joystick->hwdata;
     if (hwdata) {
         if (hwdata->desc.Rumble) {
-            caps |= SDL_JOYCAP_RUMBLE;
+            caps |= SDL_JOYSTICK_CAP_RUMBLE;
         }
         if (hwdata->desc.RumbleTriggers) {
-            caps |= SDL_JOYCAP_RUMBLE_TRIGGERS;
+            caps |= SDL_JOYSTICK_CAP_TRIGGER_RUMBLE;
         }
         if (hwdata->desc.SetLED) {
-            caps |= SDL_JOYCAP_LED;
+            caps |= SDL_JOYSTICK_CAP_RGB_LED;
         }
     }
     return caps;

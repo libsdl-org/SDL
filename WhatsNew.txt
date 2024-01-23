@@ -21,6 +21,7 @@ General:
 * Added SDL_GetJoysticks(), SDL_GetJoystickInstanceName(), SDL_GetJoystickInstancePath(), SDL_GetJoystickInstancePlayerIndex(), SDL_GetJoystickInstanceGUID(), SDL_GetJoystickInstanceVendor(), SDL_GetJoystickInstanceProduct(), SDL_GetJoystickInstanceProductVersion(), and SDL_GetJoystickInstanceType() to directly query the list of available joysticks
 * Added SDL_GetGamepads(), SDL_GetGamepadInstanceName(), SDL_GetGamepadInstancePath(), SDL_GetGamepadInstancePlayerIndex(), SDL_GetGamepadInstanceGUID(), SDL_GetGamepadInstanceVendor(), SDL_GetGamepadInstanceProduct(), SDL_GetGamepadInstanceProductVersion(), and SDL_GetGamepadInstanceType() to directly query the list of available gamepads
 * Added SDL_GetSensors(), SDL_GetSensorInstanceName(), SDL_GetSensorInstanceType(), and SDL_GetSensorInstanceNonPortableType() to directly query the list of available sensors
+* Added SDL_GetJoystickCaps() and SDL_GetGamepadCaps() to get the capabilities of controllers
 * SDL_GetTicks() now returns a 64-bit value and the tick values should be directly compared instead of using the SDL_TICKS_PASSED macro
 * Added SDL_GetTicksNS() to return the number of nanoseconds since the SDL library initialized
 * Added SDL_DelayNS() to specify a delay in nanoseconds, to the highest precision the system will support

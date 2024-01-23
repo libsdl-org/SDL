@@ -75,6 +75,15 @@ typedef enum
     SDL_GAMEPAD_TYPE_MAX
 } SDL_GamepadType;
 
+typedef enum
+{
+    SDL_GAMEPAD_CAP_MONO_LED       = 0x00000001,   /**< This gamepad has an LED that has adjustable brightness */
+    SDL_GAMEPAD_CAP_RGB_LED        = 0x00000002,   /**< This gamepad has an LED that has adjustable color */
+    SDL_GAMEPAD_CAP_PLAYER_LED     = 0x00000004,   /**< This gamepad has a player LED */
+    SDL_GAMEPAD_CAP_RUMBLE         = 0x00000010,   /**< This gamepad has left/right rumble */
+    SDL_GAMEPAD_CAP_TRIGGER_RUMBLE = 0x00000020,   /**< This gamepad has simple trigger rumble */
+} SDL_GamepadCaps;
+
 /**
  *  The list of buttons available on a gamepad
  *
@@ -1170,6 +1179,16 @@ extern DECLSPEC float SDLCALL SDL_GetGamepadSensorDataRate(SDL_Gamepad *gamepad,
 extern DECLSPEC int SDLCALL SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, SDL_SensorType type, float *data, int num_values);
 
 /**
+ * Query gamepad capabilities
+ *
+ * \param gamepad The gamepad to query
+ * \returns a mask of SDL_GamepadCaps values indicating the gamepad capabilities.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC Uint32 SDLCALL SDL_GetGamepadCaps(SDL_Gamepad *gamepad);
+
+/**
  * Start a rumble effect on a gamepad.
  *
  * Each call to this function cancels any previous rumble effect, and calling
@@ -1185,7 +1204,7 @@ extern DECLSPEC int SDLCALL SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, SDL_S
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GamepadHasRumble
+ * \sa SDL_GetGamepadCaps
  */
 extern DECLSPEC int SDLCALL SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 
@@ -1210,49 +1229,17 @@ extern DECLSPEC int SDLCALL SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uint16 low_f
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GamepadHasRumbleTriggers
+ * \sa SDL_GetGamepadCaps
  */
 extern DECLSPEC int SDLCALL SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms);
 
 /**
- * Query whether a gamepad has an LED.
- *
- * \param gamepad The gamepad to query
- * \returns SDL_TRUE, or SDL_FALSE if this gamepad does not have a modifiable
- *          LED
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC SDL_bool SDLCALL SDL_GamepadHasLED(SDL_Gamepad *gamepad);
-
-/**
- * Query whether a gamepad has rumble support.
- *
- * \param gamepad The gamepad to query
- * \returns SDL_TRUE, or SDL_FALSE if this gamepad does not have rumble
- *          support
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_RumbleGamepad
- */
-extern DECLSPEC SDL_bool SDLCALL SDL_GamepadHasRumble(SDL_Gamepad *gamepad);
-
-/**
- * Query whether a gamepad has rumble support on triggers.
- *
- * \param gamepad The gamepad to query
- * \returns SDL_TRUE, or SDL_FALSE if this gamepad does not have trigger
- *          rumble support
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_RumbleGamepadTriggers
- */
-extern DECLSPEC SDL_bool SDLCALL SDL_GamepadHasRumbleTriggers(SDL_Gamepad *gamepad);
-
-/**
  * Update a gamepad's LED color.
+ *
+ * An example of a joystick LED is the light on the back of a PlayStation 4's
+ * DualShock 4 controller.
+ *
+ * For gamepads with a single color LED, the maximum of the RGB values will be used as the LED brightness.
  *
  * \param gamepad The gamepad to update
  * \param red The intensity of the red LED
@@ -1262,6 +1249,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GamepadHasRumbleTriggers(SDL_Gamepad *gamep
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetGamepadCaps
  */
 extern DECLSPEC int SDLCALL SDL_SetGamepadLED(SDL_Gamepad *gamepad, Uint8 red, Uint8 green, Uint8 blue);
 

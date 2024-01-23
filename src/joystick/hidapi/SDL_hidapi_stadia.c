@@ -147,7 +147,7 @@ static Uint32 HIDAPI_DriverStadia_GetJoystickCapabilities(SDL_HIDAPI_Device *dev
     Uint32 caps = 0;
 
     if (ctx->rumble_supported) {
-        caps |= SDL_JOYCAP_RUMBLE;
+        caps |= SDL_JOYSTICK_CAP_RUMBLE;
     }
     return caps;
 }
