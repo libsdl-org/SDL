@@ -1182,7 +1182,8 @@ extern DECLSPEC int SDLCALL SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, SDL_S
  * Query gamepad capabilities
  *
  * \param gamepad The gamepad to query
- * \returns a mask of SDL_GamepadCaps values indicating the gamepad capabilities.
+ * \returns a mask of SDL_GamepadCaps values indicating the gamepad
+ *          capabilities.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1239,7 +1240,8 @@ extern DECLSPEC int SDLCALL SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad, Uint
  * An example of a joystick LED is the light on the back of a PlayStation 4's
  * DualShock 4 controller.
  *
- * For gamepads with a single color LED, the maximum of the RGB values will be used as the LED brightness.
+ * For gamepads with a single color LED, the maximum of the RGB values will be
+ * used as the LED brightness.
  *
  * \param gamepad The gamepad to update
  * \param red The intensity of the red LED

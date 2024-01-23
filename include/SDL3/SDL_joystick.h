@@ -893,7 +893,8 @@ extern DECLSPEC Uint8 SDLCALL SDL_GetJoystickButton(SDL_Joystick *joystick,
  * Query joystick capabilities
  *
  * \param joystick The joystick to query
- * \returns a mask of SDL_JoystickCaps values indicating the joystick capabilities.
+ * \returns a mask of SDL_JoystickCaps values indicating the joystick
+ *          capabilities.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -951,7 +952,8 @@ extern DECLSPEC int SDLCALL SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, U
  * An example of a joystick LED is the light on the back of a PlayStation 4's
  * DualShock 4 controller.
  *
- * For joysticks with a single color LED, the maximum of the RGB values will be used as the LED brightness.
+ * For joysticks with a single color LED, the maximum of the RGB values will
+ * be used as the LED brightness.
  *
  * \param joystick The joystick to update
  * \param red The intensity of the red LED
