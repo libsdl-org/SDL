@@ -20,12 +20,6 @@
 */
 #include "../../SDL_internal.h"
 
-/* Standard C++11 includes */
-#include <functional>
-#include <string>
-#include <sstream>
-using namespace std;
-
 /* Windows includes */
 #include "ppltasks.h"
 using namespace concurrency;
