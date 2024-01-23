@@ -18,6 +18,12 @@ SDL headers should now be included as `#include <SDL3/SDL.h>`. Typically that's 
 rename_headers.py source_code_path
 ```
 
+Some macros are renamed and/or removed in SDL3. We have provided a handy Python script [rename_macros.py](https://github.com/libsdl-org/SDL/blob/main/build-scripts/rename_macros.py) to replace these, and also add fixme comments on how to further improve the code:
+```sh
+rename_macros.py source_code_path
+```
+
+
 CMake users should use this snippet to include SDL support in their project:
 ```
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
@@ -932,7 +938,49 @@ The following symbols have been renamed:
 
 ## SDL_platform.h
 
-The preprocessor symbol `__MACOSX__` has been renamed `SDL_PLATFORM_MACOS`, and `__IPHONEOS__` has been renamed `SDL_PLATFORM_IOS`
+The following platform preprocessor macros have been removed:
+* __DREAMCAST__
+* __NACL__
+* __PNACL__
+
+The following platform preprocessor macros have been renamed:
+
+| SDL2              | SDL3                      |
+|-------------------|---------------------------|
+| `__3DS__`         | `SDL_PLATFORM_3DS`        |
+| `__AIX__`         | `SDL_PLATFORM_AIX`        |
+| `__ANDROID__`     | `SDL_PLATFORM_ANDROID`    |
+| `__APPLE__`       | `SDL_PLATFORM_APPLE`      |
+| `__BSDI__`        | `SDL_PLATFORM_BSDI`       |
+| `__CYGWIN_`       | `SDL_PLATFORM_CYGWIN`     |
+| `__EMSCRIPTEN__`  | `SDL_PLATFORM_EMSCRIPTEN` |
+| `__FREEBSD__`     | `SDL_PLATFORM_FREEBSD`    |
+| `__GDK__`         | `SDL_PLATFORM_GDK`        |
+| `__HAIKU__`       | `SDL_PLATFORM_HAIKU`      |
+| `__HPUX__`        | `SDL_PLATFORM_HPUX`       |
+| `__IPHONEOS__`    | `SDL_PLATFORM_IOS`        |
+| `__IRIX__`        | `SDL_PLATFORM_IRIX`       |
+| `__LINUX__`       | `SDL_PLATFORM_LINUX`      |
+| `__MACOSX__`      | `SDL_PLATFORM_MACOS`      |
+| `__NETBSD__`      | `SDL_PLATFORM_NETBSD`     |
+| `__NGAGE__`       | `SDL_PLATFORM_NGAGE`      |
+| `__OPENBSD__`     | `SDL_PLATFORM_OPENBSD`    |
+| `__OS2__`         | `SDL_PLATFORM_OS2`        |
+| `__OSF__`         | `SDL_PLATFORM_OSF`        |
+| `__PS2__`         | `SDL_PLATFORM_PS2`        |
+| `__PSP__`         | `SDL_PLATFORM_PSP`        |
+| `__QNXNTO__`      | `SDL_PLATFORM_QNXNTO`     |
+| `__RISCOS__`      | `SDL_PLATFORM_RISCOS`     |
+| `__SOLARIS__`     | `SDL_PLATFORM_SOLARIS`    |
+| `__TVOS__`        | `SDL_PLATFORM_TVOS`       |
+| `__unix__`        | `SDL_PLATFORM_UNI`        |
+| `__VITA__`        | `SDL_PLATFORM_VITA`       |
+| `__WIN32__`       | `SDL_PLATFORM_WINRT`      |
+| `__WINDOWS__`     | `SDL_PLATFORM_WINDOWS`    |
+| `__WINGDK__`      | `SDL_PLATFORM_WINGDK`     |
+| `__WINRT__`       | `SDL_PLATFORM_WINRT`      |
+| `__XBOXONE__`     | `SDL_PLATFORM_XBOXONE`    |
+| `__XBOXSERIES__`  | `SDL_PLATFORM_XBOXSERIES` |
 
 ## SDL_rect.h
 
