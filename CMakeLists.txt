@@ -407,7 +407,7 @@ if (LIBC_IS_GLIBC AND CMAKE_SIZEOF_VOID_P EQUAL 4)
 endif()
 
 if(WINDOWS_STORE)
-  sdl_compile_definitions(PRIVATE "SDL_BUILDING_WINRT=1")
+  sdl_compile_definitions(PRIVATE "_HAS_STD_BYTE=0" "SDL_BUILDING_WINRT=1")
   sdl_compile_options(PRIVATE "-ZW")
 endif()
 
