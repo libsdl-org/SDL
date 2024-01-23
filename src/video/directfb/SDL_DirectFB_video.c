@@ -65,7 +65,8 @@ static SDL_VideoDevice *DirectFB_CreateDevice(void);
 
 VideoBootStrap DirectFB_bootstrap = {
     "directfb", "DirectFB",
-    DirectFB_CreateDevice
+    DirectFB_CreateDevice,
+    NULL /* no ShowMessageBox implementation */
 };
 
 static const DirectFBSurfaceDrawingFlagsNames(drawing_flags);

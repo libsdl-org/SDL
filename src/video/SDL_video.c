@@ -4445,13 +4445,14 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     } else {
         /* It's completely fine to call this function before video is initialized */
         const char *driver_name = SDL_GetHint(SDL_HINT_VIDEODRIVER);
+        int i;
         if (driver_name && *driver_name != 0) {
             const char *driver_attempt = driver_name;
             while (driver_attempt && (*driver_attempt != 0) && (retval == -1)) {
                 const char *driver_attempt_end = SDL_strchr(driver_attempt, ',');
                 size_t driver_attempt_len = (driver_attempt_end) ? (driver_attempt_end - driver_attempt)
                                                                      : SDL_strlen(driver_attempt);
-                for (int i = 0; bootstrap[i]; ++i) {
+                for (i = 0; bootstrap[i]; ++i) {
                     if (bootstrap[i]->ShowMessageBox && (driver_attempt_len == SDL_strlen(bootstrap[i]->name)) &&
                         (SDL_strncasecmp(bootstrap[i]->name, driver_attempt, driver_attempt_len) == 0)) {
                         if (bootstrap[i]->ShowMessageBox(messageboxdata, buttonid) == 0) {
@@ -4464,7 +4465,7 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
                 driver_attempt = (driver_attempt_end) ? (driver_attempt_end + 1) : NULL;
             }
         } else {
-            for (int i = 0; bootstrap[i]; ++i) {
+            for (i = 0; bootstrap[i]; ++i) {
                 if (bootstrap[i]->ShowMessageBox && bootstrap[i]->ShowMessageBox(messageboxdata, buttonid) == 0) {
                     retval = 0;
                     break;
