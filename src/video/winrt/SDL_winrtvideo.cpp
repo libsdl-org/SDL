@@ -29,10 +29,8 @@
  */
 
 /* Standard C++11 includes */
-#include <functional>
-#include <string>
 #include <sstream>
-using namespace std;
+#include <string>
 
 /* Windows includes */
 #include <agile.h>
