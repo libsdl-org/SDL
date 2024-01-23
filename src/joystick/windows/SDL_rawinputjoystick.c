@@ -1514,15 +1514,15 @@ static Uint32 RAWINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
 
 #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
     if (ctx->is_xinput) {
-        result |= SDL_JOYCAP_RUMBLE;
+        result |= SDL_JOYSTICK_CAP_RUMBLE;
     }
 #endif
 #ifdef SDL_JOYSTICK_RAWINPUT_WGI
     if (ctx->is_xinput) {
-        result |= SDL_JOYCAP_RUMBLE;
+        result |= SDL_JOYSTICK_CAP_RUMBLE;
 
         if (ctx->is_xboxone) {
-            result |= SDL_JOYCAP_RUMBLE_TRIGGERS;
+            result |= SDL_JOYSTICK_CAP_TRIGGER_RUMBLE;
         }
     }
 #endif

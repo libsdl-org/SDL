@@ -950,7 +950,7 @@ Uint32 SDL_DINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
     Uint32 result = 0;
 
     if (joystick->hwdata->Capabilities.dwFlags & DIDC_FORCEFEEDBACK) {
-        result |= SDL_JOYCAP_RUMBLE;
+        result |= SDL_JOYSTICK_CAP_RUMBLE;
     }
 
     return result;

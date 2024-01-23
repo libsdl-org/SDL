@@ -1655,45 +1655,15 @@ int SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint1
     return retval;
 }
 
-SDL_bool SDL_JoystickHasLED(SDL_Joystick *joystick)
+Uint32 SDL_GetJoystickCaps(SDL_Joystick *joystick)
 {
-    SDL_bool retval;
+    Uint32 retval;
 
     SDL_LockJoysticks();
     {
-        CHECK_JOYSTICK_MAGIC(joystick, SDL_FALSE);
+        CHECK_JOYSTICK_MAGIC(joystick, 0);
 
-        retval = (joystick->driver->GetCapabilities(joystick) & SDL_JOYCAP_LED) != 0;
-    }
-    SDL_UnlockJoysticks();
-
-    return retval;
-}
-
-SDL_bool SDL_JoystickHasRumble(SDL_Joystick *joystick)
-{
-    SDL_bool retval;
-
-    SDL_LockJoysticks();
-    {
-        CHECK_JOYSTICK_MAGIC(joystick, SDL_FALSE);
-
-        retval = (joystick->driver->GetCapabilities(joystick) & SDL_JOYCAP_RUMBLE) != 0;
-    }
-    SDL_UnlockJoysticks();
-
-    return retval;
-}
-
-SDL_bool SDL_JoystickHasRumbleTriggers(SDL_Joystick *joystick)
-{
-    SDL_bool retval;
-
-    SDL_LockJoysticks();
-    {
-        CHECK_JOYSTICK_MAGIC(joystick, SDL_FALSE);
-
-        retval = (joystick->driver->GetCapabilities(joystick) & SDL_JOYCAP_RUMBLE_TRIGGERS) != 0;
+        retval = joystick->driver->GetCapabilities(joystick);
     }
     SDL_UnlockJoysticks();
 

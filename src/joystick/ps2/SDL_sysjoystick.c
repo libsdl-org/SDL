@@ -246,7 +246,7 @@ static int PS2_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint1
 /* Capability detection */
 static Uint32 PS2_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
-    return SDL_JOYCAP_RUMBLE;
+    return SDL_JOYSTICK_CAP_RUMBLE;
 }
 
 /* LED functionality */

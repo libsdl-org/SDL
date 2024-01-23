@@ -986,11 +986,11 @@ static void HandleGamepadAdded(SDL_JoystickID id, SDL_bool verbose)
                 SDL_Log("Firmware version: 0x%x (%d)\n", firmware_version, firmware_version);
             }
 
-            if (SDL_GamepadHasRumble(gamepad)) {
+            if (SDL_GetGamepadCaps(gamepad) & SDL_GAMEPAD_CAP_RUMBLE) {
                 SDL_Log("Rumble supported");
             }
 
-            if (SDL_GamepadHasRumbleTriggers(gamepad)) {
+            if (SDL_GetGamepadCaps(gamepad) & SDL_GAMEPAD_CAP_TRIGGER_RUMBLE) {
                 SDL_Log("Trigger rumble supported");
             }
 
