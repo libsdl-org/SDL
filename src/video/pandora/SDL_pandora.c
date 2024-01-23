@@ -41,11 +41,6 @@
 static NativeWindowType hNativeWnd = 0; /* A handle to the window we will create. */
 #endif
 
-static int PND_available(void)
-{
-    return 1;
-}
-
 static void PND_destroy(SDL_VideoDevice * device)
 {
     if (device->driverdata) {
@@ -55,18 +50,10 @@ static void PND_destroy(SDL_VideoDevice * device)
     SDL_free(device);
 }
 
-static SDL_VideoDevice *PND_create()
+static SDL_VideoDevice *PND_create(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;
-    int status;
-
-    /* Check if pandora could be initialized */
-    status = PND_available();
-    if (status == 0) {
-        /* PND could not be used */
-        return NULL;
-    }
 
     /* Initialize SDL_VideoDevice structure */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
@@ -139,8 +126,8 @@ VideoBootStrap PND_bootstrap = {
     "pandora",
     "SDL Pandora Video Driver",
 #endif
-    PND_available,
-    PND_create
+    PND_create,
+    NULL /* no ShowMessageBox implementation */
 };
 
 /*****************************************************************************/
@@ -586,16 +573,16 @@ SDL_GLContext PND_gl_createcontext(_THIS, SDL_Window * window)
     }
 
 #ifdef WIZ_GLES_LITE
-    if(!hNativeWnd) {
-    hNativeWnd = (NativeWindowType)SDL_malloc(16*1024);
-
-    if(!hNativeWnd)
-        printf( "Error: Wiz framebuffer allocatation failed\n" );
-    else
-        printf( "SDL: Wiz framebuffer allocated: %X\n", hNativeWnd );
+    if (!hNativeWnd) {
+        hNativeWnd = (NativeWindowType)SDL_malloc(16*1024);
+        if (!hNativeWnd) {
+            printf("Error: Wiz framebuffer allocatation failed\n");
+        } else {
+            printf("SDL: Wiz framebuffer allocated: %X\n", hNativeWnd);
+        }
     }
     else {
-        printf( "SDL: Wiz framebuffer already allocated: %X\n", hNativeWnd );
+        printf("SDL: Wiz framebuffer already allocated: %X\n", hNativeWnd);
     }
 
     wdata->gles_surface =
@@ -787,11 +774,10 @@ void PND_gl_deletecontext(_THIS, SDL_GLContext context)
     }
 
 #ifdef WIZ_GLES_LITE
-    if( hNativeWnd != 0 )
-    {
+    if (hNativeWnd != 0) {
       SDL_free(hNativeWnd);
       hNativeWnd = 0;
-      printf( "SDL: Wiz framebuffer released\n" );
+      printf("SDL: Wiz framebuffer released\n");
     }
 #endif
 
