@@ -22,6 +22,7 @@
 
 #include "SDL_blit.h"
 #include "SDL_blit_slow.h"
+#include "SDL_pixels_c.h"
 
 #define FORMAT_ALPHA                0
 #define FORMAT_NO_ALPHA             (-1)
@@ -236,6 +237,18 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
     }
 }
 
+static void MatrixMultiply(float v[3], const float *matrix)
+{
+    float out[3];
+
+    out[0] = matrix[0 * 3 + 0] * v[0] + matrix[0 * 3 + 1] * v[1] + matrix[0 * 3 + 2] * v[2];
+    out[1] = matrix[1 * 3 + 0] * v[0] + matrix[1 * 3 + 1] * v[1] + matrix[1 * 3 + 2] * v[2];
+    out[2] = matrix[2 * 3 + 0] * v[0] + matrix[2 * 3 + 1] * v[1] + matrix[2 * 3 + 2] * v[2];
+    v[0] = out[0];
+    v[1] = out[1];
+    v[2] = out[2];
+}
+
 static float PQtoNits(float pq)
 {
     const float c1 = 0.8359375f;
@@ -251,25 +264,9 @@ static float PQtoNits(float pq)
     return 10000.0f * SDL_powf(num / den, oo_m1);
 }
 
-static void Convert2020to709(float v[3])
-{
-    static const float matrix[3][3] = {
-        { 1.660496f, -0.587656f, -0.072840f },
-        { -0.124547f, 1.132895f, -0.008348f },
-        { -0.018154f, -0.100597f, 1.118751f }
-    };
-
-    float out[3];
-    out[0] = matrix[0][0] * v[0] + matrix[0][1] * v[1] + matrix[0][2] * v[2];
-    out[1] = matrix[1][0] * v[0] + matrix[1][1] * v[1] + matrix[1][2] * v[2];
-    out[2] = matrix[2][0] * v[0] + matrix[2][1] * v[1] + matrix[2][2] * v[2];
-    v[0] = out[0];
-    v[1] = out[1];
-    v[2] = out[2];
-}
 
 /* This isn't really a tone mapping algorithm but it generally works well for HDR -> SDR display */
-static void PQtoSDR(float floatR, float floatG, float floatB, Uint32 *outR, Uint32 *outG, Uint32 *outB)
+static void PQtoSDR(const float *color_primaries_matrix, float floatR, float floatG, float floatB, Uint32 *outR, Uint32 *outG, Uint32 *outB)
 {
     float v[3];
     int i;
@@ -278,7 +275,7 @@ static void PQtoSDR(float floatR, float floatG, float floatB, Uint32 *outR, Uint
     v[1] = PQtoNits(floatG);
     v[2] = PQtoNits(floatB);
 
-    Convert2020to709(v);
+    MatrixMultiply(v, color_primaries_matrix);
 
     for (i = 0; i < SDL_arraysize(v); ++i) {
         v[i] /= 400.0f;
@@ -313,6 +310,9 @@ void SDL_Blit_Slow_PQtoSDR(SDL_BlitInfo *info)
     int dstfmt_val;
     Uint32 rgbmask = ~src_fmt->Amask;
     Uint32 ckey = info->colorkey & rgbmask;
+    SDL_PropertiesID props = SDL_GetSurfaceProperties(info->src_surface);
+    SDL_ColorPrimaries src_primaries = (SDL_ColorPrimaries)SDL_GetNumberProperty(props, SDL_PROPERTY_SURFACE_COLOR_PRIMARIES_NUMBER, SDL_COLOR_PRIMARIES_BT2020);
+    const float *color_primaries_matrix = SDL_GetColorPrimariesConversionMatrix(src_primaries, SDL_COLOR_PRIMARIES_BT709);
 
     dstfmt_val = detect_format(dst_fmt);
 
@@ -353,7 +353,7 @@ void SDL_Blit_Slow_PQtoSDR(SDL_BlitInfo *info)
                 break;
             }
 
-            PQtoSDR(srcFloatR, srcFloatG, srcFloatB, &srcR, &srcG, &srcB);
+            PQtoSDR(color_primaries_matrix, srcFloatR, srcFloatG, srcFloatB, &srcR, &srcG, &srcB);
             srcA = (Uint32)(srcFloatA * 255);
 
             if (flags & SDL_COPY_COLORKEY) {

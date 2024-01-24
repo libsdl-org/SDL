@@ -187,7 +187,9 @@ static SDL_bool IsSurfaceHDR(SDL_Surface *surface)
 {
     if (surface->flags & SDL_SURFACE_USES_PROPERTIES) {
         SDL_PropertiesID props = SDL_GetSurfaceProperties(surface);
-        return SDL_GetBooleanProperty(props, SDL_PROPERTY_SURFACE_HDR_BOOLEAN, SDL_FALSE);
+        if (SDL_GetNumberProperty(props, SDL_PROPERTY_SURFACE_TRANSFER_CHARACTERISTICS_NUMBER, SDL_TRANSFER_CHARACTERISTICS_UNKNOWN) == SDL_TRANSFER_CHARACTERISTICS_SMPTE2084) {
+            return SDL_TRUE;
+        }
     }
     return SDL_FALSE;
 }
@@ -215,8 +217,10 @@ int SDL_CalculateBlit(SDL_Surface *surface)
 #endif
 
     map->blit = SDL_SoftBlit;
+    map->info.src_surface = surface;
     map->info.src_fmt = surface->format;
     map->info.src_pitch = surface->pitch;
+    map->info.dst_surface = dst;
     map->info.dst_fmt = dst->format;
     map->info.dst_pitch = dst->pitch;
 
@@ -255,8 +259,8 @@ int SDL_CalculateBlit(SDL_Surface *surface)
         } else {
             /* Tone mapping from an HDR surface to SDR surface */
             SDL_PropertiesID props = SDL_GetSurfaceProperties(surface);
-            if (SDL_GetNumberProperty(props, SDL_PROPERTY_SURFACE_COLOR_PRIMARIES_NUMBER, SDL_COLOR_PRIMARIES_BT2020) == SDL_COLOR_PRIMARIES_BT2020 &&
-                SDL_GetNumberProperty(props, SDL_PROPERTY_SURFACE_TRANSFER_CHARACTERISTICS_NUMBER, SDL_TRANSFER_CHARACTERISTICS_SMPTE2084) == SDL_TRANSFER_CHARACTERISTICS_SMPTE2084) {
+            SDL_ColorPrimaries primaries = (SDL_ColorPrimaries)SDL_GetNumberProperty(props, SDL_PROPERTY_SURFACE_COLOR_PRIMARIES_NUMBER, SDL_COLOR_PRIMARIES_BT2020);
+            if (SDL_GetColorPrimariesConversionMatrix(primaries, SDL_COLOR_PRIMARIES_BT709) != NULL) {
                 if (SDL_ISPIXELFORMAT_10BIT(surface->format->format)) {
                     blit = SDL_Blit_Slow_PQtoSDR;
                 } else {
