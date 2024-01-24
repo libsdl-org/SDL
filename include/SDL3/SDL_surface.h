@@ -262,8 +262,6 @@ extern DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
  *
  * The following properties are understood by SDL:
  *
- * - `SDL_PROPERTY_SURFACE_HDR_BOOLEAN`: true if this surface has HDR
- *   properties
  * - `SDL_PROPERTY_SURFACE_COLOR_PRIMARIES_NUMBER`: an SDL_ColorPrimaries
  *   value describing the surface colorspace
  * - `SDL_PROPERTY_SURFACE_TRANSFER_CHARACTERISTICS_NUMBER`: an
@@ -291,7 +289,6 @@ extern DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
  */
 extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSurfaceProperties(SDL_Surface *surface);
 
-#define SDL_PROPERTY_SURFACE_HDR_BOOLEAN                        "SDL.surface.HDR"
 #define SDL_PROPERTY_SURFACE_COLOR_PRIMARIES_NUMBER             "SDL.surface.color_primaries"
 #define SDL_PROPERTY_SURFACE_TRANSFER_CHARACTERISTICS_NUMBER    "SDL.surface.transfer_characteristics"
 #define SDL_PROPERTY_SURFACE_MAXCLL_NUMBER                      "SDL.surface.maxCLL"

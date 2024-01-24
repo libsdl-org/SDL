@@ -1173,3 +1173,51 @@ void SDL_FreeBlitMap(SDL_BlitMap *map)
         SDL_free(map);
     }
 }
+
+const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src, SDL_ColorPrimaries dst)
+{
+    /* Conversion matrices generated using gamescope color helpers and the primaries definitions at:
+     * https://www.itu.int/rec/T-REC-H.273-201612-S/en
+     */
+    static const float mat2020to709[] = {
+        1.660496f, -0.587656f, -0.072840f,
+        -0.124547f, 1.132895f, -0.008348f,
+        -0.018154f, -0.100597f, 1.118751f
+    };
+    static const float matXYZto709[] = {
+        3.240969f, -1.537383f, -0.498611f,
+        -0.969243f, 1.875967f, 0.041555f,
+        0.055630f, -0.203977f, 1.056971f,
+    };
+    static const float matSMPTE431to709[] = {
+        1.120713f, -0.234649f, 0.000000f,
+        -0.038478f, 1.087034f, 0.000000f,
+        -0.017967f, -0.082030f, 0.954576f,
+    };
+    static const float matSMPTE432to709[] = {
+        1.224940f, -0.224940f, -0.000000f,
+        -0.042057f, 1.042057f, 0.000000f,
+        -0.019638f, -0.078636f, 1.098273f,
+    };
+
+    switch (dst) {
+    case SDL_COLOR_PRIMARIES_BT709:
+        switch (src) {
+        case SDL_COLOR_PRIMARIES_BT2020:
+            return mat2020to709;
+        case SDL_COLOR_PRIMARIES_XYZ:
+            return matXYZto709;
+        case SDL_COLOR_PRIMARIES_SMPTE431:
+            return matSMPTE431to709;
+        case SDL_COLOR_PRIMARIES_SMPTE432:
+            return matSMPTE432to709;
+        default:
+            break;
+        }
+        break;
+    default:
+        break;
+    }
+    return NULL;
+}
+

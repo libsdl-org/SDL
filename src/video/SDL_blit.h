@@ -56,10 +56,12 @@ extern Uint8 *SDL_expand_byte[9];
 
 typedef struct
 {
+    SDL_Surface *src_surface;
     Uint8 *src;
     int src_w, src_h;
     int src_pitch;
     int src_skip;
+    SDL_Surface *dst_surface;
     Uint8 *dst;
     int dst_w, dst_h;
     int dst_pitch;
