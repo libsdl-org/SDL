@@ -63,7 +63,7 @@ class PlatformMacrosCheck:
             original = m.group(0)
             match_start, _ = m.span(0)
             platform_start, platform_end = m.span(1)
-            new_text = "{0} /* FIXME: use '#ifdef {0}' or 'defined({0})' */".format(self.RENAMED_MACROS[macro])
+            new_text = self.RENAMED_MACROS[macro]
             r = original[:(platform_start-match_start)] + new_text + original[platform_end-match_start:]
             return r
         contents, _ = self.re_platform_macros.subn(cb, contents)
