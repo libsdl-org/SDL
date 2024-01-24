@@ -25,7 +25,7 @@
 #include <libunwind.h>
 #endif
 
-#ifdef SDL_PLATFORM_WINDOWS
+#ifdef SDL_PLATFORM_WIN32
 #include <windows.h>
 #include <dbghelp.h>
 
@@ -153,7 +153,7 @@ static void SDL_TrackAllocation(void *mem, size_t size)
             }
         }
     }
-#elif defined(SDL_PLATFORM_WINDOWS)
+#elif defined(SDL_PLATFORM_WIN32)
     {
         Uint32 count;
         PVOID frames[63];
@@ -295,7 +295,7 @@ void SDLTest_TrackAllocations(void)
     if (s_previous_allocations != 0) {
         SDL_Log("SDLTest_TrackAllocations(): There are %d previous allocations, disabling free() validation", s_previous_allocations);
     }
-#ifdef SDL_PLATFORM_WINDOWS
+#ifdef SDL_PLATFORM_WIN32
     {
         s_dbghelp = SDL_LoadObject("dbghelp.dll");
         if (s_dbghelp) {
