@@ -173,7 +173,17 @@
 #ifdef HAVE_WINDOWS_GAMING_INPUT_H
 #define SDL_JOYSTICK_WGI    1
 #endif
-#define SDL_JOYSTICK_XINPUT 1
+/* This is XInputOnGameInput for GDK platforms: */
+/*#define SDL_JOYSTICK_XINPUT 1*/
+/* Native GameInput: */
+#define SDL_JOYSTICK_GAMEINPUT 1
+#if defined(SDL_JOYSTICK_GAMEINPUT) && (defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_DINPUT))
+#error "GameInput cannot co-exist, choose one."
+#endif /* defined(SDL_JOYSTICK_GAMEINPUT) && (defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_DINPUT)) */
+#if defined(SDL_JOYSTICK_GAMEINPUT) && SDL_JOYSTICK_GAMEINPUT
+/* TODO: Implement proper haptics for GameInput! */
+#define SDL_HAPTIC_DUMMY 1
+#endif /* defined(SDL_JOYSTICK_GAMEINPUT) && SDL_JOYSTICK_GAMEINPUT */
 /*#define SDL_HAPTIC_DINPUT   1*/
 
 /* Enable the sensor driver */
