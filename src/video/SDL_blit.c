@@ -183,12 +183,23 @@ static SDL_BlitFunc SDL_ChooseBlitFunc(Uint32 src_format, Uint32 dst_format, int
 }
 #endif /* SDL_HAVE_BLIT_AUTO */
 
+static SDL_bool IsSurfaceHDR(SDL_Surface *surface)
+{
+    if (surface->flags & SDL_SURFACE_USES_PROPERTIES) {
+        SDL_PropertiesID props = SDL_GetSurfaceProperties(surface);
+        return SDL_GetBooleanProperty(props, SDL_PROPERTY_SURFACE_HDR_BOOLEAN, SDL_FALSE);
+    }
+    return SDL_FALSE;
+}
+
 /* Figure out which of many blit routines to set up on a surface */
 int SDL_CalculateBlit(SDL_Surface *surface)
 {
     SDL_BlitFunc blit = NULL;
     SDL_BlitMap *map = surface->map;
     SDL_Surface *dst = map->dst;
+    SDL_bool src_HDR = IsSurfaceHDR(surface);
+    SDL_bool dst_HDR = IsSurfaceHDR(dst);
 
     /* We don't currently support blitting to < 8 bpp surfaces */
     if (dst->format->BitsPerPixel < 8) {
@@ -219,33 +230,74 @@ int SDL_CalculateBlit(SDL_Surface *surface)
 #endif
 
     /* Choose a standard blit function */
-    if (map->identity && !(map->info.flags & ~SDL_COPY_RLE_DESIRED)) {
-        blit = SDL_BlitCopy;
-    } else if (surface->format->Rloss > 8 || dst->format->Rloss > 8) {
-        blit = SDL_Blit_Slow;
+    if (src_HDR || dst_HDR) {
+        if (src_HDR && dst_HDR) {
+            /* See if they're in the same colorspace and light level */
+            SDL_PropertiesID src_props = SDL_GetSurfaceProperties(surface);
+            SDL_PropertiesID dst_props = SDL_GetSurfaceProperties(dst);
+            if ((SDL_GetNumberProperty(src_props, SDL_PROPERTY_SURFACE_COLOR_PRIMARIES_NUMBER, SDL_COLOR_PRIMARIES_UNKNOWN) !=
+                 SDL_GetNumberProperty(dst_props, SDL_PROPERTY_SURFACE_COLOR_PRIMARIES_NUMBER, SDL_COLOR_PRIMARIES_UNKNOWN)) ||
+                (SDL_GetNumberProperty(src_props, SDL_PROPERTY_SURFACE_TRANSFER_CHARACTERISTICS_NUMBER, SDL_TRANSFER_CHARACTERISTICS_UNKNOWN) !=
+                 SDL_GetNumberProperty(dst_props, SDL_PROPERTY_SURFACE_TRANSFER_CHARACTERISTICS_NUMBER, SDL_TRANSFER_CHARACTERISTICS_UNKNOWN)) ||
+                (SDL_GetNumberProperty(src_props, SDL_PROPERTY_SURFACE_MAXCLL_NUMBER, 0) !=
+                 SDL_GetNumberProperty(dst_props, SDL_PROPERTY_SURFACE_MAXCLL_NUMBER, 0)) ||
+                (SDL_GetNumberProperty(src_props, SDL_PROPERTY_SURFACE_MAXFALL_NUMBER, 0) !=
+                 SDL_GetNumberProperty(dst_props, SDL_PROPERTY_SURFACE_MAXFALL_NUMBER, 0))) {
+                SDL_InvalidateMap(map);
+                return SDL_SetError("Tone mapping between HDR surfaces not supported");
+            }
+
+            /* Fall through to the normal blit calculation (is this correct?) */
+
+        } else if (dst_HDR) {
+            SDL_InvalidateMap(map);
+            return SDL_SetError("Tone mapping from an SDR to an HDR surface not supported");
+        } else {
+            /* Tone mapping from an HDR surface to SDR surface */
+            SDL_PropertiesID props = SDL_GetSurfaceProperties(surface);
+            if (SDL_GetNumberProperty(props, SDL_PROPERTY_SURFACE_COLOR_PRIMARIES_NUMBER, SDL_COLOR_PRIMARIES_BT2020) == SDL_COLOR_PRIMARIES_BT2020 &&
+                SDL_GetNumberProperty(props, SDL_PROPERTY_SURFACE_TRANSFER_CHARACTERISTICS_NUMBER, SDL_TRANSFER_CHARACTERISTICS_SMPTE2084) == SDL_TRANSFER_CHARACTERISTICS_SMPTE2084) {
+                if (SDL_ISPIXELFORMAT_10BIT(surface->format->format)) {
+                    blit = SDL_Blit_Slow_PQtoSDR;
+                } else {
+                    SDL_InvalidateMap(map);
+                    return SDL_SetError("Surface has unknown HDR pixel format");
+                }
+            } else {
+                SDL_InvalidateMap(map);
+                return SDL_SetError("Surface has unknown HDR colorspace");
+            }
+        }
     }
+    if (!blit) {
+        if (map->identity && !(map->info.flags & ~SDL_COPY_RLE_DESIRED)) {
+            blit = SDL_BlitCopy;
+        } else if (surface->format->Rloss > 8 || dst->format->Rloss > 8) {
+            blit = SDL_Blit_Slow;
+        }
 #if SDL_HAVE_BLIT_0
-    else if (surface->format->BitsPerPixel < 8 &&
-             SDL_ISPIXELFORMAT_INDEXED(surface->format->format)) {
-        blit = SDL_CalculateBlit0(surface);
-    }
+        else if (surface->format->BitsPerPixel < 8 &&
+                 SDL_ISPIXELFORMAT_INDEXED(surface->format->format)) {
+            blit = SDL_CalculateBlit0(surface);
+        }
 #endif
 #if SDL_HAVE_BLIT_1
-    else if (surface->format->BytesPerPixel == 1 &&
-             SDL_ISPIXELFORMAT_INDEXED(surface->format->format)) {
-        blit = SDL_CalculateBlit1(surface);
-    }
+        else if (surface->format->BytesPerPixel == 1 &&
+                 SDL_ISPIXELFORMAT_INDEXED(surface->format->format)) {
+            blit = SDL_CalculateBlit1(surface);
+        }
 #endif
 #if SDL_HAVE_BLIT_A
-    else if (map->info.flags & SDL_COPY_BLEND) {
-        blit = SDL_CalculateBlitA(surface);
-    }
+        else if (map->info.flags & SDL_COPY_BLEND) {
+            blit = SDL_CalculateBlitA(surface);
+        }
 #endif
 #if SDL_HAVE_BLIT_N
-    else {
-        blit = SDL_CalculateBlitN(surface);
-    }
+        else {
+            blit = SDL_CalculateBlitN(surface);
+        }
 #endif
+    }
 #if SDL_HAVE_BLIT_AUTO
     if (!blit) {
         Uint32 src_format = surface->format->format;
