@@ -1714,6 +1714,10 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         wl_surface_commit(data->surface);
     }
 
+    /* Make sure the window can't be resized to 0 or it can be spuriously closed by the window manager. */
+    data->system_limits.min_width = SDL_max(data->system_limits.min_width, 1);
+    data->system_limits.min_height = SDL_max(data->system_limits.min_height, 1);
+
     /* Unlike the rest of window state we have to set this _after_ flushing the
      * display, because we need to create the decorations before possibly hiding
      * them immediately afterward.
