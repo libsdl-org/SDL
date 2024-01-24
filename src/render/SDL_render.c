@@ -2285,6 +2285,11 @@ int SDL_GetRenderLogicalPresentation(SDL_Renderer *renderer, int *w, int *h, SDL
     return 0;
 }
 
+int SDL_GetLogicalRect(SDL_Renderer *renderer, SDL_Rect* rect) {
+    *rect = renderer->logical_dst_rect;
+    return 0;
+}
+
 static void SDL_RenderLogicalBorders(SDL_Renderer *renderer)
 {
     const SDL_FRect *dst = &renderer->logical_dst_rect;

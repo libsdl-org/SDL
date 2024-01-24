@@ -1072,6 +1072,11 @@ extern DECLSPEC int SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *rende
 extern DECLSPEC int SDLCALL SDL_GetRenderLogicalPresentation(SDL_Renderer *renderer, int *w, int *h, SDL_RendererLogicalPresentation *mode, SDL_ScaleMode *scale_mode);
 
 /**
+ * Get the logical destination rect
+ */
+extern DECLSPEC int SDL_GetLogicalRect(SDL_Renderer *renderer, SDL_Rect* rect);
+
+/**
  * Get a point in render coordinates when given a point in window coordinates.
  *
  * \param renderer the rendering context
