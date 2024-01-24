@@ -38,7 +38,7 @@ class PlatformMacrosCheck:
         "__XBOXSERIES__": "SDL_PLATFORM_XBOXSERIES",
         "__XBOXONE__": "SDL_PLATFORM_XBOXONE",
         "__WINDOWS__": "SDL_PLATFORM_WINDOWS",
-        "__WIN32__": "SDL_PLATFORM_WINRT",
+        "__WIN32__": "SDL_PLATFORM_WIN32",
         # "__CYGWIN_": "SDL_PLATFORM_CYGWIN",
         "__WINGDK__": "SDL_PLATFORM_WINGDK",
         "__GDK__": "SDL_PLATFORM_GDK",
