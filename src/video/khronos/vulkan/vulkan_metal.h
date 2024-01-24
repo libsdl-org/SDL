@@ -2,7 +2,7 @@
 #define VULKAN_METAL_H_ 1
 
 /*
-** Copyright 2015-2022 The Khronos Group Inc.
+** Copyright 2015-2024 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0
 */
@@ -19,19 +19,12 @@ extern "C" {
 
 
 
+// VK_EXT_metal_surface is a preprocessor guard. Do not pass it to API calls.
 #define VK_EXT_metal_surface 1
 #ifdef __OBJC__
 @class CAMetalLayer;
 #else
 typedef void CAMetalLayer;
-#endif
-
-#define SDL_UNSAFE_UNRETAINED
-#if defined(__OBJC__) && defined(__has_feature)
-#if __has_feature(objc_arc)
-#undef SDL_UNSAFE_UNRETAINED
-#define SDL_UNSAFE_UNRETAINED __unsafe_unretained
-#endif
 #endif
 
 #define VK_EXT_METAL_SURFACE_SPEC_VERSION 1
@@ -41,7 +34,7 @@ typedef struct VkMetalSurfaceCreateInfoEXT {
     VkStructureType                 sType;
     const void*                     pNext;
     VkMetalSurfaceCreateFlagsEXT    flags;
-    const CAMetalLayer SDL_UNSAFE_UNRETAINED *pLayer;
+    const CAMetalLayer*             pLayer;
 } VkMetalSurfaceCreateInfoEXT;
 
 typedef VkResult (VKAPI_PTR *PFN_vkCreateMetalSurfaceEXT)(VkInstance instance, const VkMetalSurfaceCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface);
@@ -55,6 +48,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateMetalSurfaceEXT(
 #endif
 
 
+// VK_EXT_metal_objects is a preprocessor guard. Do not pass it to API calls.
 #define VK_EXT_metal_objects 1
 #ifdef __OBJC__
 @protocol MTLDevice;
@@ -119,27 +113,27 @@ typedef struct VkExportMetalObjectsInfoEXT {
 typedef struct VkExportMetalDeviceInfoEXT {
     VkStructureType    sType;
     const void*        pNext;
-    MTLDevice_id SDL_UNSAFE_UNRETAINED mtlDevice;
+    MTLDevice_id       mtlDevice;
 } VkExportMetalDeviceInfoEXT;
 
 typedef struct VkExportMetalCommandQueueInfoEXT {
     VkStructureType       sType;
     const void*           pNext;
     VkQueue               queue;
-    MTLCommandQueue_id SDL_UNSAFE_UNRETAINED mtlCommandQueue;
+    MTLCommandQueue_id    mtlCommandQueue;
 } VkExportMetalCommandQueueInfoEXT;
 
 typedef struct VkExportMetalBufferInfoEXT {
     VkStructureType    sType;
     const void*        pNext;
     VkDeviceMemory     memory;
-    MTLBuffer_id SDL_UNSAFE_UNRETAINED mtlBuffer;
+    MTLBuffer_id       mtlBuffer;
 } VkExportMetalBufferInfoEXT;
 
 typedef struct VkImportMetalBufferInfoEXT {
     VkStructureType    sType;
     const void*        pNext;
-    MTLBuffer_id SDL_UNSAFE_UNRETAINED mtlBuffer;
+    MTLBuffer_id       mtlBuffer;
 } VkImportMetalBufferInfoEXT;
 
 typedef struct VkExportMetalTextureInfoEXT {
@@ -149,14 +143,14 @@ typedef struct VkExportMetalTextureInfoEXT {
     VkImageView              imageView;
     VkBufferView             bufferView;
     VkImageAspectFlagBits    plane;
-    MTLTexture_id SDL_UNSAFE_UNRETAINED mtlTexture;
+    MTLTexture_id            mtlTexture;
 } VkExportMetalTextureInfoEXT;
 
 typedef struct VkImportMetalTextureInfoEXT {
     VkStructureType          sType;
     const void*              pNext;
     VkImageAspectFlagBits    plane;
-    MTLTexture_id SDL_UNSAFE_UNRETAINED mtlTexture;
+    MTLTexture_id            mtlTexture;
 } VkImportMetalTextureInfoEXT;
 
 typedef struct VkExportMetalIOSurfaceInfoEXT {
@@ -177,13 +171,13 @@ typedef struct VkExportMetalSharedEventInfoEXT {
     const void*          pNext;
     VkSemaphore          semaphore;
     VkEvent              event;
-    MTLSharedEvent_id SDL_UNSAFE_UNRETAINED mtlSharedEvent;
+    MTLSharedEvent_id    mtlSharedEvent;
 } VkExportMetalSharedEventInfoEXT;
 
 typedef struct VkImportMetalSharedEventInfoEXT {
     VkStructureType      sType;
     const void*          pNext;
-    MTLSharedEvent_id SDL_UNSAFE_UNRETAINED mtlSharedEvent;
+    MTLSharedEvent_id    mtlSharedEvent;
 } VkImportMetalSharedEventInfoEXT;
 
 typedef void (VKAPI_PTR *PFN_vkExportMetalObjectsEXT)(VkDevice device, VkExportMetalObjectsInfoEXT* pMetalObjectsInfo);
