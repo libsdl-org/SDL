@@ -1642,7 +1642,7 @@ static SDL_bool GL_IsProbablyAccelerated(const GL_RenderData *data)
     /*const char *vendor = (const char *) data->glGetString(GL_VENDOR);*/
     const char *renderer = (const char *)data->glGetString(GL_RENDERER);
 
-#if defined(SDL_PLATFORM_WINDOWS) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
     if (SDL_strcmp(renderer, "GDI Generic") == 0) {
         return SDL_FALSE; /* Microsoft's fallback software renderer. Fix your system! */
     }
