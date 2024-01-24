@@ -849,7 +849,7 @@ macro(CheckPTHREAD)
         check_c_source_compiles("
             #include <pthread.h>
             int main(int argc, char **argv) {
-              #ifdef SDL_PLATFORM_APPLE
+              #ifdef __APPLE__
               pthread_setname_np(\"\");
               #else
               pthread_setname_np(pthread_self(),\"\");
