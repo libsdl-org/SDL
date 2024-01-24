@@ -262,11 +262,23 @@ extern DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
  *
  * The following properties are understood by SDL:
  *
- * - `SDL_PROPERTY_SURFACE_HDR_BOOLEAN`: true if this surface has HDR properties
- * - `SDL_PROPERTY_SURFACE_COLOR_PRIMARIES_NUMBER`: an SDL_ColorPrimaries value describing the surface colorspace
- * - `SDL_PROPERTY_SURFACE_TRANSFER_CHARACTERISTICS_NUMBER`: an SDL_TransferCharacteristics value describing the surface colorspace
- * - `SDL_PROPERTY_SURFACE_MAXCLL_NUMBER`: MaxCLL (Maximum Content Light Level) indicates the maximum light level of any single pixel (in cd/m2 or nits) of the entire playback sequence. MaxCLL is usually measured off the final delivered content after mastering. If one uses the full light level of the HDR mastering display and adds a hard clip at its maximum value, MaxCLL would be equal to the peak luminance of the mastering monitor.
- * - `SDL_PROPERTY_SURFACE_MAXFALL_NUMBER`: MaxFALL (Maximum Frame Average Light Level) indicates the maximum value of the frame average light level (in cd/m2 or nits) of the entire playback sequence. MaxFALL is calculated by averaging the decoded luminance values of all the pixels within a frame. MaxFALL is usually much lower than MaxCLL.
+ * - `SDL_PROPERTY_SURFACE_HDR_BOOLEAN`: true if this surface has HDR
+ *   properties
+ * - `SDL_PROPERTY_SURFACE_COLOR_PRIMARIES_NUMBER`: an SDL_ColorPrimaries
+ *   value describing the surface colorspace
+ * - `SDL_PROPERTY_SURFACE_TRANSFER_CHARACTERISTICS_NUMBER`: an
+ *   SDL_TransferCharacteristics value describing the surface colorspace
+ * - `SDL_PROPERTY_SURFACE_MAXCLL_NUMBER`: MaxCLL (Maximum Content Light
+ *   Level) indicates the maximum light level of any single pixel (in cd/m2 or
+ *   nits) of the entire playback sequence. MaxCLL is usually measured off the
+ *   final delivered content after mastering. If one uses the full light level
+ *   of the HDR mastering display and adds a hard clip at its maximum value,
+ *   MaxCLL would be equal to the peak luminance of the mastering monitor.
+ * - `SDL_PROPERTY_SURFACE_MAXFALL_NUMBER`: MaxFALL (Maximum Frame Average
+ *   Light Level) indicates the maximum value of the frame average light level
+ *   (in cd/m2 or nits) of the entire playback sequence. MaxFALL is calculated
+ *   by averaging the decoded luminance values of all the pixels within a
+ *   frame. MaxFALL is usually much lower than MaxCLL.
  *
  * \param surface the SDL_Surface structure to query
  * \returns a valid property ID on success or 0 on failure; call
