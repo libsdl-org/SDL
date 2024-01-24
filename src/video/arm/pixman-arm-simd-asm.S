@@ -19,7 +19,7 @@
  */
 
 /* Prevent the stack from becoming executable */
-#if defined(SDL_PLATFORM_LINUX) && defined(__ELF__)
+#if defined(__linux__) && defined(__ELF__)
 .section .note.GNU-stack,"",%progbits
 #endif
 
