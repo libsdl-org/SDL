@@ -19,7 +19,7 @@ extern "C" {
 #define GL_APIENTRYP GL_APIENTRY*
 #endif
 
-/* Generated on date 20220530 */
+/* Generated on date 20231129 */
 
 /* Generated C header for:
  * API: gles2
@@ -1052,6 +1052,21 @@ GL_APICALL void GL_APIENTRY glGetSyncivAPPLE (GLsync sync, GLenum pname, GLsizei
 #define GL_ARM_rgba8 1
 #endif /* GL_ARM_rgba8 */
 
+#ifndef GL_ARM_shader_core_properties
+#define GL_ARM_shader_core_properties 1
+#define GL_SHADER_CORE_COUNT_ARM          0x96F0
+#define GL_SHADER_CORE_ACTIVE_COUNT_ARM   0x96F1
+#define GL_SHADER_CORE_PRESENT_MASK_ARM   0x96F2
+#define GL_SHADER_CORE_MAX_WARP_COUNT_ARM 0x96F3
+#define GL_SHADER_CORE_PIXEL_RATE_ARM     0x96F4
+#define GL_SHADER_CORE_TEXEL_RATE_ARM     0x96F5
+#define GL_SHADER_CORE_FMA_RATE_ARM       0x96F6
+typedef void (GL_APIENTRYP PFNGLMAXACTIVESHADERCORESARMPROC) (GLuint count);
+#ifdef GL_GLEXT_PROTOTYPES
+GL_APICALL void GL_APIENTRY glMaxActiveShaderCoresARM (GLuint count);
+#endif
+#endif /* GL_ARM_shader_core_properties */
+
 #ifndef GL_ARM_shader_framebuffer_fetch
 #define GL_ARM_shader_framebuffer_fetch 1
 #define GL_FETCH_PER_SAMPLE_ARM           0x8F65
@@ -1459,6 +1474,16 @@ GL_APICALL void GL_APIENTRY glFramebufferShadingRateEXT (GLenum target, GLenum a
 #endif
 #endif /* GL_EXT_fragment_shading_rate */
 
+#ifndef GL_EXT_framebuffer_blit_layers
+#define GL_EXT_framebuffer_blit_layers 1
+typedef void (GL_APIENTRYP PFNGLBLITFRAMEBUFFERLAYERSEXTPROC) (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
+typedef void (GL_APIENTRYP PFNGLBLITFRAMEBUFFERLAYEREXTPROC) (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint srcLayer, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLint dstLayer, GLbitfield mask, GLenum filter);
+#ifdef GL_GLEXT_PROTOTYPES
+GL_APICALL void GL_APIENTRY glBlitFramebufferLayersEXT (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
+GL_APICALL void GL_APIENTRY glBlitFramebufferLayerEXT (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint srcLayer, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLint dstLayer, GLbitfield mask, GLenum filter);
+#endif
+#endif /* GL_EXT_framebuffer_blit_layers */
+
 #ifndef GL_EXT_geometry_point_size
 #define GL_EXT_geometry_point_size 1
 #endif /* GL_EXT_geometry_point_size */
@@ -1856,7 +1881,7 @@ GL_APICALL void GL_APIENTRY glImportSemaphoreWin32NameEXT (GLuint semaphore, GLe
 #define GL_PROGRAM_PIPELINE_BINDING_EXT   0x825A
 typedef void (GL_APIENTRYP PFNGLACTIVESHADERPROGRAMEXTPROC) (GLuint pipeline, GLuint program);
 typedef void (GL_APIENTRYP PFNGLBINDPROGRAMPIPELINEEXTPROC) (GLuint pipeline);
-typedef GLuint (GL_APIENTRYP PFNGLCREATESHADERPROGRAMVEXTPROC) (GLenum type, GLsizei count, const GLchar **strings);
+typedef GLuint (GL_APIENTRYP PFNGLCREATESHADERPROGRAMVEXTPROC) (GLenum type, GLsizei count, const GLchar *const*strings);
 typedef void (GL_APIENTRYP PFNGLDELETEPROGRAMPIPELINESEXTPROC) (GLsizei n, const GLuint *pipelines);
 typedef void (GL_APIENTRYP PFNGLGENPROGRAMPIPELINESEXTPROC) (GLsizei n, GLuint *pipelines);
 typedef void (GL_APIENTRYP PFNGLGETPROGRAMPIPELINEINFOLOGEXTPROC) (GLuint pipeline, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
@@ -1901,7 +1926,7 @@ typedef void (GL_APIENTRYP PFNGLPROGRAMUNIFORMMATRIX4X3FVEXTPROC) (GLuint progra
 #ifdef GL_GLEXT_PROTOTYPES
 GL_APICALL void GL_APIENTRY glActiveShaderProgramEXT (GLuint pipeline, GLuint program);
 GL_APICALL void GL_APIENTRY glBindProgramPipelineEXT (GLuint pipeline);
-GL_APICALL GLuint GL_APIENTRY glCreateShaderProgramvEXT (GLenum type, GLsizei count, const GLchar **strings);
+GL_APICALL GLuint GL_APIENTRY glCreateShaderProgramvEXT (GLenum type, GLsizei count, const GLchar *const*strings);
 GL_APICALL void GL_APIENTRY glDeleteProgramPipelinesEXT (GLsizei n, const GLuint *pipelines);
 GL_APICALL void GL_APIENTRY glGenProgramPipelinesEXT (GLsizei n, GLuint *pipelines);
 GL_APICALL void GL_APIENTRY glGetProgramPipelineInfoLogEXT (GLuint pipeline, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
@@ -2553,6 +2578,33 @@ GL_APICALL void GL_APIENTRY glGetFramebufferParameterivMESA (GLenum target, GLen
 #define GL_PROGRAM_BINARY_FORMAT_MESA     0x875F
 #endif /* GL_MESA_program_binary_formats */
 
+#ifndef GL_MESA_sampler_objects
+#define GL_MESA_sampler_objects 1
+#define GL_SAMPLER_BINDING                0x8919
+typedef void (GL_APIENTRYP PFNGLGENSAMPLERSPROC) (GLsizei count, GLuint *samplers);
+typedef void (GL_APIENTRYP PFNGLDELETESAMPLERSPROC) (GLsizei count, const GLuint *samplers);
+typedef GLboolean (GL_APIENTRYP PFNGLISSAMPLERPROC) (GLuint sampler);
+typedef void (GL_APIENTRYP PFNGLBINDSAMPLERPROC) (GLuint unit, GLuint sampler);
+typedef void (GL_APIENTRYP PFNGLSAMPLERPARAMETERIPROC) (GLuint sampler, GLenum pname, GLint param);
+typedef void (GL_APIENTRYP PFNGLSAMPLERPARAMETERIVPROC) (GLuint sampler, GLenum pname, const GLint *param);
+typedef void (GL_APIENTRYP PFNGLSAMPLERPARAMETERFPROC) (GLuint sampler, GLenum pname, GLfloat param);
+typedef void (GL_APIENTRYP PFNGLSAMPLERPARAMETERFVPROC) (GLuint sampler, GLenum pname, const GLfloat *param);
+typedef void (GL_APIENTRYP PFNGLGETSAMPLERPARAMETERIVPROC) (GLuint sampler, GLenum pname, GLint *params);
+typedef void (GL_APIENTRYP PFNGLGETSAMPLERPARAMETERFVPROC) (GLuint sampler, GLenum pname, GLfloat *params);
+#ifdef GL_GLEXT_PROTOTYPES
+GL_APICALL void GL_APIENTRY glGenSamplers (GLsizei count, GLuint *samplers);
+GL_APICALL void GL_APIENTRY glDeleteSamplers (GLsizei count, const GLuint *samplers);
+GL_APICALL GLboolean GL_APIENTRY glIsSampler (GLuint sampler);
+GL_APICALL void GL_APIENTRY glBindSampler (GLuint unit, GLuint sampler);
+GL_APICALL void GL_APIENTRY glSamplerParameteri (GLuint sampler, GLenum pname, GLint param);
+GL_APICALL void GL_APIENTRY glSamplerParameteriv (GLuint sampler, GLenum pname, const GLint *param);
+GL_APICALL void GL_APIENTRY glSamplerParameterf (GLuint sampler, GLenum pname, GLfloat param);
+GL_APICALL void GL_APIENTRY glSamplerParameterfv (GLuint sampler, GLenum pname, const GLfloat *param);
+GL_APICALL void GL_APIENTRY glGetSamplerParameteriv (GLuint sampler, GLenum pname, GLint *params);
+GL_APICALL void GL_APIENTRY glGetSamplerParameterfv (GLuint sampler, GLenum pname, GLfloat *params);
+#endif
+#endif /* GL_MESA_sampler_objects */
+
 #ifndef GL_MESA_shader_integer_functions
 #define GL_MESA_shader_integer_functions 1
 #endif /* GL_MESA_shader_integer_functions */
@@ -3185,6 +3237,13 @@ GL_APICALL void GL_APIENTRY glUniformMatrix3x4fvNV (GLint location, GLsizei coun
 GL_APICALL void GL_APIENTRY glUniformMatrix4x3fvNV (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 #endif
 #endif /* GL_NV_non_square_matrices */
+
+#ifndef GL_NV_pack_subimage
+#define GL_NV_pack_subimage 1
+#define GL_PACK_ROW_LENGTH_NV             0x0D02
+#define GL_PACK_SKIP_ROWS_NV              0x0D03
+#define GL_PACK_SKIP_PIXELS_NV            0x0D04
+#endif /* GL_NV_pack_subimage */
 
 #ifndef GL_NV_path_rendering
 #define GL_NV_path_rendering 1
@@ -3917,6 +3976,10 @@ GL_APICALL void GL_APIENTRY glTexEstimateMotionRegionsQCOM (GLuint ref, GLuint t
 #define GL_PERFMON_GLOBAL_MODE_QCOM       0x8FA0
 #endif /* GL_QCOM_perfmon_global_mode */
 
+#ifndef GL_QCOM_render_sRGB_R8_RG8
+#define GL_QCOM_render_sRGB_R8_RG8 1
+#endif /* GL_QCOM_render_sRGB_R8_RG8 */
+
 #ifndef GL_QCOM_render_shared_exponent
 #define GL_QCOM_render_shared_exponent 1
 #endif /* GL_QCOM_render_shared_exponent */
@@ -3973,6 +4036,11 @@ GL_APICALL void GL_APIENTRY glTextureFoveationParametersQCOM (GLuint texture, GL
 #define GL_FOVEATION_SUBSAMPLED_LAYOUT_METHOD_BIT_QCOM 0x00000004
 #define GL_MAX_SHADER_SUBSAMPLED_IMAGE_UNITS_QCOM 0x8FA1
 #endif /* GL_QCOM_texture_foveated_subsampled_layout */
+
+#ifndef GL_QCOM_texture_lod_bias
+#define GL_QCOM_texture_lod_bias 1
+#define GL_TEXTURE_LOD_BIAS_QCOM          0x8C96
+#endif /* GL_QCOM_texture_lod_bias */
 
 #ifndef GL_QCOM_tiled_rendering
 #define GL_QCOM_tiled_rendering 1
