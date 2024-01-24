@@ -49,6 +49,7 @@ class PlatformMacrosCheck:
         "__DREAMCAST__",
         "__NACL__",
         "__PNACL__",
+        "__WINDOWS__",
     }
 
     def __init__(self):

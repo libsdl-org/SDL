@@ -938,11 +938,6 @@ The following symbols have been renamed:
 
 ## SDL_platform.h
 
-The following platform preprocessor macros have been removed:
-* __DREAMCAST__
-* __NACL__
-* __PNACL__
-
 The following platform preprocessor macros have been renamed:
 
 | SDL2              | SDL3                      |
@@ -975,12 +970,21 @@ The following platform preprocessor macros have been renamed:
 | `__TVOS__`        | `SDL_PLATFORM_TVOS`       |
 | `__unix__`        | `SDL_PLATFORM_UNI`        |
 | `__VITA__`        | `SDL_PLATFORM_VITA`       |
-| `__WIN32__`       | `SDL_PLATFORM_WINRT`      |
-| `__WINDOWS__`     | `SDL_PLATFORM_WINDOWS`    |
+| `__WIN32__`       | `SDL_PLATFORM_WIN32`      |
 | `__WINGDK__`      | `SDL_PLATFORM_WINGDK`     |
 | `__WINRT__`       | `SDL_PLATFORM_WINRT`      |
 | `__XBOXONE__`     | `SDL_PLATFORM_XBOXONE`    |
 | `__XBOXSERIES__`  | `SDL_PLATFORM_XBOXSERIES` |
+
+You can use the Python script [rename_macros.py](https://github.com/libsdl-org/SDL/blob/main/build-scripts/rename_macros.py) to automatically rename these in your source code.
+
+A new macro `SDL_PLATFORM_WINDOWS` has been added that is true for all Windows platforms, including Xbox, GDK, etc.
+
+The following platform preprocessor macros have been removed:
+* `__DREAMCAST__`
+* `__NACL__`
+* `__PNACL__`
+* `__WINDOWS__`
 
 ## SDL_rect.h
 
