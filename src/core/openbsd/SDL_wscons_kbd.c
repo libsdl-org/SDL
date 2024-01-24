@@ -34,7 +34,7 @@
 
 #include "../../events/SDL_events_c.h"
 
-#ifdef __NetBSD__
+#ifdef SDL_PLATFORM_NETBSD
 #define KS_GROUP_Ascii    KS_GROUP_Plain
 #define KS_Cmd_ScrollBack KS_Cmd_ScrollFastUp
 #define KS_Cmd_ScrollFwd  KS_Cmd_ScrollFastDown
@@ -224,7 +224,7 @@ static struct SDL_wscons_compose_tab_s
     { { KS_asciicircum, KS_u }, KS_ucircumflex },
     { { KS_grave, KS_u }, KS_ugrave },
     { { KS_acute, KS_y }, KS_yacute },
-#ifndef __NetBSD__
+#ifndef SDL_PLATFORM_NETBSD
     { { KS_dead_caron, KS_space }, KS_L2_caron },
     { { KS_dead_caron, KS_S }, KS_L2_Scaron },
     { { KS_dead_caron, KS_Z }, KS_L2_Zcaron },
@@ -319,7 +319,7 @@ static struct wscons_keycode_to_SDL
     { KS_f18, SDL_SCANCODE_F18 },
     { KS_f19, SDL_SCANCODE_F19 },
     { KS_f20, SDL_SCANCODE_F20 },
-#ifndef __NetBSD__
+#ifndef SDL_PLATFORM_NETBSD
     { KS_f21, SDL_SCANCODE_F21 },
     { KS_f22, SDL_SCANCODE_F22 },
     { KS_f23, SDL_SCANCODE_F23 },
@@ -620,7 +620,7 @@ static void updateKeyboard(SDL_WSCONS_input_data *input)
                     input->lockheldstate[2] = 1;
                     break;
                 }
-#ifndef __NetBSD__
+#ifndef SDL_PLATFORM_NETBSD
                 case KS_Mode_Lock:
                 {
                     if (input->lockheldstate[3] >= 1) {
@@ -728,7 +728,7 @@ static void updateKeyboard(SDL_WSCONS_input_data *input)
                         input->lockheldstate[2] = 0;
                     }
                 } break;
-#ifndef __NetBSD__
+#ifndef SDL_PLATFORM_NETBSD
                 case KS_Mode_Lock:
                 {
                     if (input->lockheldstate[3]) {

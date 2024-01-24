@@ -34,7 +34,7 @@
 #include "../events/SDL_events_c.h"
 
 
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
 #endif
 
 /* Many gamepads turn the center button into an instantaneous button press */
@@ -582,7 +582,7 @@ static void PopMappingChangeTracking(void)
     SDL_free(tracker);
 }
 
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
 /*
  * Helper function to guess at a mapping based on the elements reported for this gamepad
  */
@@ -683,7 +683,7 @@ static GamepadMapping_t *SDL_CreateMappingForAndroidGamepad(SDL_JoystickGUID gui
 
     return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
 }
-#endif /* __ANDROID__ */
+#endif /* SDL_PLATFORM_ANDROID */
 
 /*
  * Helper function to guess at a mapping for HIDAPI gamepads
@@ -963,7 +963,7 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMappingForGUID(SDL_JoystickGUID gu
         mapping = SDL_CreateMappingForWGIGamepad(guid);
     } else if (SDL_IsJoystickVIRTUAL(guid)) {
         /* We'll pick up a robust mapping in VIRTUAL_JoystickGetGamepadMapping */
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
     } else {
         mapping = SDL_CreateMappingForAndroidGamepad(guid);
 #endif
@@ -1441,7 +1441,7 @@ static char *SDL_PrivateGetGamepadGUIDFromMappingString(const char *pMapping)
         pchGUID[pFirstComma - pMapping] = '\0';
 
         /* Convert old style GUIDs to the new style in 2.0.5 */
-#if defined(__WIN32__) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
         if (SDL_strlen(pchGUID) == 32 &&
             SDL_memcmp(&pchGUID[20], "504944564944", 12) == 0) {
             SDL_memcpy(&pchGUID[20], "000000000000", 12);
@@ -1449,7 +1449,7 @@ static char *SDL_PrivateGetGamepadGUIDFromMappingString(const char *pMapping)
             SDL_memcpy(&pchGUID[8], &pchGUID[0], 4);
             SDL_memcpy(&pchGUID[0], "03000000", 8);
         }
-#elif defined(__MACOS__)
+#elif defined(SDL_PLATFORM_MACOS)
         if (SDL_strlen(pchGUID) == 32 &&
             SDL_memcmp(&pchGUID[4], "000000000000", 12) == 0 &&
             SDL_memcmp(&pchGUID[20], "000000000000", 12) == 0) {
@@ -1664,7 +1664,7 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMappingForNameAndGUID(const char *
     SDL_AssertJoysticksLocked();
 
     mapping = SDL_PrivateGetGamepadMappingForGUID(guid, SDL_FALSE);
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
     if (!mapping && name) {
         if (SDL_strstr(name, "Xbox 360 Wireless Receiver")) {
             /* The Linux driver xpad.c maps the wireless dpad to buttons */
@@ -1674,7 +1674,7 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMappingForNameAndGUID(const char *
                                                    &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
         }
     }
-#endif /* __LINUX__ */
+#endif /* SDL_PLATFORM_LINUX */
 
     if (!mapping) {
         mapping = s_pDefaultMapping;
@@ -2242,7 +2242,7 @@ static SDL_bool SDL_GetGamepadMappingFilePath(char *path, size_t size)
         return SDL_strlcpy(path, hint, size) < size;
     }
 
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
     return SDL_snprintf(path, size, "%s/gamepad_map.txt", SDL_AndroidGetInternalStoragePath()) < size;
 #else
     return SDL_FALSE;
@@ -2496,7 +2496,7 @@ SDL_bool SDL_ShouldIgnoreGamepad(const char *name, SDL_JoystickGUID guid)
     Uint16 product;
     Uint16 version;
 
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
     if (SDL_endswith(name, " Motion Sensors")) {
         /* Don't treat the PS3 and PS4 motion controls as a separate gamepad */
         return SDL_TRUE;
@@ -2530,11 +2530,11 @@ SDL_bool SDL_ShouldIgnoreGamepad(const char *name, SDL_JoystickGUID guid)
         /* We shouldn't ignore Steam's virtual gamepad since it's using the hints to filter out the real gamepads so it can remap input for the virtual gamepad */
         /* https://partner.steamgames.com/doc/features/steam_gamepad/steam_input_gamepad_emulation_bestpractices */
         SDL_bool bSteamVirtualGamepad = SDL_FALSE;
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
         bSteamVirtualGamepad = (vendor == USB_VENDOR_VALVE && product == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD);
-#elif defined(__MACOS__)
+#elif defined(SDL_PLATFORM_MACOS)
         bSteamVirtualGamepad = (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX360_WIRED_CONTROLLER && version == 0);
-#elif defined(__WIN32__)
+#elif defined(SDL_PLATFORM_WIN32)
         /* We can't tell on Windows, but Steam will block others in input hooks */
         bSteamVirtualGamepad = SDL_TRUE;
 #endif

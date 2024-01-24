@@ -65,7 +65,7 @@ int SDL_main(int argc, char **argv)
 /* set up the usual SDL_main stuff if we're not using callbacks or if we are but need the normal entry point. */
 #if !defined(SDL_MAIN_USE_CALLBACKS) || defined(SDL_MAIN_CALLBACK_STANDARD)
 
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 
 /* these defines/typedefs are needed for the WinMain() definition */
 #ifndef WINAPI
@@ -77,7 +77,7 @@ typedef char* LPSTR;
 typedef wchar_t* PWSTR;
 
 /* The VC++ compiler needs main/wmain defined, but not for GDK */
-#if defined(_MSC_VER) && !defined(__GDK__)
+#if defined(_MSC_VER) && !defined(SDL_PLATFORM_GDK)
 
 /* This is where execution begins [console apps] */
 #if defined( UNICODE ) && UNICODE
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 }
 #endif /* UNICODE */
 
-#endif /* _MSC_VER && ! __GDK__ */
+#endif /* _MSC_VER && ! SDL_PLATFORM_GDK */
 
 /* This is where execution begins [windowed apps and GDK] */
 
@@ -120,8 +120,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
 } /* extern "C" */
 #endif
 
-/* end of __WIN32__ and __GDK__ impls */
-#elif defined(__WINRT__)
+/* end of SDL_PLATFORM_WIN32 and SDL_PLATFORM_GDK impls */
+#elif defined(SDL_PLATFORM_WINRT)
 
 /* WinRT main based on SDL_winrt_main_NonXAML.cpp, placed in the public domain by David Ludwig  3/13/14 */
 
@@ -182,18 +182,18 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #endif
 
 /* end of WinRT impl */
-#elif defined(__NGAGE__)
+#elif defined(SDL_PLATFORM_NGAGE)
 
 /* same typedef as in ngage SDKs e32def.h */
 typedef signed int TInt;
 /* TODO: if it turns out that this only works when built as C++,
-         move __NGAGE__ into the C++ section in SDL_main.h */
+         move SDL_PLATFORM_NGAGE into the C++ section in SDL_main.h */
 TInt E32Main()
 {
     return SDL_RunApp(0, NULL, SDL_main, NULL);
 }
 
-/* end of __NGAGE__ impl */
+/* end of SDL_PLATFORM_NGAGE impl */
 
 #else /* platforms that use a standard main() and just call SDL_RunApp(), like iOS and 3DS */
 
@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
 
 /* end of impls for standard-conforming platforms */
 
-#endif /* __WIN32__ etc */
+#endif /* SDL_PLATFORM_WIN32 etc */
 
 #endif /* !defined(SDL_MAIN_USE_CALLBACKS) || defined(SDL_MAIN_CALLBACK_STANDARD) */
 

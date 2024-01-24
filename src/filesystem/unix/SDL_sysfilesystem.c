@@ -35,7 +35,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#if defined(__FREEBSD__) || defined(__OPENBSD__)
+#if defined(SDL_PLATFORM_FREEBSD) || defined(SDL_PLATFORM_OPENBSD)
 #include <sys/sysctl.h>
 #endif
 
@@ -68,7 +68,7 @@ static char *readSymLink(const char *path)
     return NULL;
 }
 
-#ifdef __OPENBSD__
+#ifdef SDL_PLATFORM_OPENBSD
 static char *search_path_for_binary(const char *bin)
 {
     char *envr = SDL_getenv("PATH");
@@ -122,7 +122,7 @@ char *SDL_GetBasePath(void)
 {
     char *retval = NULL;
 
-#ifdef __FREEBSD__
+#ifdef SDL_PLATFORM_FREEBSD
     char fullpath[PATH_MAX];
     size_t buflen = sizeof(fullpath);
     const int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1 };
@@ -133,7 +133,7 @@ char *SDL_GetBasePath(void)
         }
     }
 #endif
-#ifdef __OPENBSD__
+#ifdef SDL_PLATFORM_OPENBSD
     /* Please note that this will fail if the process was launched with a relative path and $PWD + the cwd have changed, or argv is altered. So don't do that. Or add a new sysctl to OpenBSD. */
     char **cmdline;
     size_t len;
@@ -196,11 +196,11 @@ char *SDL_GetBasePath(void)
         /* !!! FIXME: after 2.0.6 ships, let's delete this code and just
                       use the /proc/%llu version. There's no reason to have
                       two copies of this plus all the #ifdefs. --ryan. */
-#ifdef __FREEBSD__
+#ifdef SDL_PLATFORM_FREEBSD
         retval = readSymLink("/proc/curproc/file");
-#elif defined(__NETBSD__)
+#elif defined(SDL_PLATFORM_NETBSD)
         retval = readSymLink("/proc/curproc/exe");
-#elif defined(__SOLARIS__)
+#elif defined(SDL_PLATFORM_SOLARIS)
         retval = readSymLink("/proc/self/path/a.out");
 #else
         retval = readSymLink("/proc/self/exe"); /* linux. */
@@ -217,7 +217,7 @@ char *SDL_GetBasePath(void)
 #endif
     }
 
-#ifdef __SOLARIS__  /* try this as a fallback if /proc didn't pan out */
+#ifdef SDL_PLATFORM_SOLARIS  /* try this as a fallback if /proc didn't pan out */
     if (!retval) {
         const char *path = getexecname();
         if ((path) && (path[0] == '/')) { /* must be absolute path... */

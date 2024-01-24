@@ -32,7 +32,7 @@ Andreas Schiffler -- aschiffler at ferzkopp dot net
 
 #if SDL_VIDEO_RENDER_SW && !defined(SDL_RENDER_DISABLED)
 
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 #include "../../core/windows/SDL_windows.h"
 #endif
 

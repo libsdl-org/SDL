@@ -29,16 +29,16 @@
 #include <signal.h>
 #include <errno.h>
 
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 
 #include "../../core/linux/SDL_dbus.h"
-#endif /* __LINUX__ */
+#endif /* SDL_PLATFORM_LINUX */
 
-#if (defined(__LINUX__) || defined(__MACOS__) || defined(__IOS__)) && defined(HAVE_DLOPEN)
+#if (defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS)) && defined(HAVE_DLOPEN)
 #include <dlfcn.h>
 #ifndef RTLD_DEFAULT
 #define RTLD_DEFAULT NULL
@@ -47,11 +47,11 @@
 
 #include "../SDL_thread_c.h"
 #include "../SDL_systhread.h"
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
 #include "../../core/android/SDL_android.h"
 #endif
 
-#ifdef __HAIKU__
+#ifdef SDL_PLATFORM_HAIKU
 #include <kernel/OS.h>
 #endif
 
@@ -63,17 +63,17 @@ static const int sig_list[] = {
 
 static void *RunThread(void *data)
 {
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
     Android_JNI_SetupThread();
 #endif
     SDL_RunThread((SDL_Thread *)data);
     return NULL;
 }
 
-#if (defined(__MACOS__) || defined(__IOS__)) && defined(HAVE_DLOPEN)
+#if (defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS)) && defined(HAVE_DLOPEN)
 static SDL_bool checked_setname = SDL_FALSE;
 static int (*ppthread_setname_np)(const char *) = NULL;
-#elif defined(__LINUX__) && defined(HAVE_DLOPEN)
+#elif defined(SDL_PLATFORM_LINUX) && defined(HAVE_DLOPEN)
 static SDL_bool checked_setname = SDL_FALSE;
 static int (*ppthread_setname_np)(pthread_t, const char *) = NULL;
 #endif
@@ -82,12 +82,12 @@ int SDL_SYS_CreateThread(SDL_Thread *thread)
     pthread_attr_t type;
 
 /* do this here before any threads exist, so there's no race condition. */
-#if (defined(__MACOS__) || defined(__IOS__) || defined(__LINUX__)) && defined(HAVE_DLOPEN)
+#if (defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_LINUX)) && defined(HAVE_DLOPEN)
     if (!checked_setname) {
         void *fn = dlsym(RTLD_DEFAULT, "pthread_setname_np");
-#if defined(__MACOS__) || defined(__IOS__)
+#if defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS)
         ppthread_setname_np = (int (*)(const char *))fn;
-#elif defined(__LINUX__)
+#elif defined(SDL_PLATFORM_LINUX)
         ppthread_setname_np = (int (*)(pthread_t, const char *))fn;
 #endif
         checked_setname = SDL_TRUE;
@@ -119,12 +119,12 @@ void SDL_SYS_SetupThread(const char *name)
     sigset_t mask;
 
     if (name) {
-#if (defined(__MACOS__) || defined(__IOS__) || defined(__LINUX__)) && defined(HAVE_DLOPEN)
+#if (defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_LINUX)) && defined(HAVE_DLOPEN)
         SDL_assert(checked_setname);
         if (ppthread_setname_np) {
-#if defined(__MACOS__) || defined(__IOS__)
+#if defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS)
             ppthread_setname_np(name);
-#elif defined(__LINUX__)
+#elif defined(SDL_PLATFORM_LINUX)
             if (ppthread_setname_np(pthread_self(), name) == ERANGE) {
                 char namebuf[16]; /* Limited to 16 char */
                 SDL_strlcpy(namebuf, name, sizeof(namebuf));
@@ -133,7 +133,7 @@ void SDL_SYS_SetupThread(const char *name)
 #endif
         }
 #elif defined(HAVE_PTHREAD_SETNAME_NP)
-#ifdef __NETBSD__
+#ifdef SDL_PLATFORM_NETBSD
         pthread_setname_np(pthread_self(), "%s", name);
 #else
         if (pthread_setname_np(pthread_self(), name) == ERANGE) {
@@ -144,7 +144,7 @@ void SDL_SYS_SetupThread(const char *name)
 #endif
 #elif defined(HAVE_PTHREAD_SET_NAME_NP)
         pthread_set_name_np(pthread_self(), name);
-#elif defined(__HAIKU__)
+#elif defined(SDL_PLATFORM_HAIKU)
         /* The docs say the thread name can't be longer than B_OS_NAME_LENGTH. */
         char namebuf[B_OS_NAME_LENGTH];
         SDL_strlcpy(namebuf, name, sizeof(namebuf));
@@ -175,7 +175,7 @@ SDL_ThreadID SDL_GetCurrentThreadID(void)
 
 int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
-#ifdef __RISCOS__
+#ifdef SDL_PLATFORM_RISCOS
     /* FIXME: Setting thread priority does not seem to be supported */
     return 0;
 #else
@@ -200,7 +200,7 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         break;
     case SDL_THREAD_PRIORITY_HIGH:
     case SDL_THREAD_PRIORITY_TIME_CRITICAL:
-#if defined(__MACOS__) || defined(__IOS__) || defined(__TVOS__)
+#if defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
         /* Apple requires SCHED_RR for high priority threads */
         pri_policy = SCHED_RR;
         break;
@@ -233,7 +233,7 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         policy = pri_policy;
     }
 
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
     {
         pid_t linuxTid = syscall(SYS_gettid);
         return SDL_LinuxSetThreadPriorityAndPolicy(linuxTid, priority, policy);
@@ -247,7 +247,7 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         int min_priority = sched_get_priority_min(policy);
         int max_priority = sched_get_priority_max(policy);
 
-#if defined(__MACOS__) || defined(__IOS__) || defined(__TVOS__)
+#if defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
         if (min_priority == 15 && max_priority == 47) {
             /* Apple has a specific set of thread priorities */
             if (priority == SDL_THREAD_PRIORITY_HIGH) {
@@ -256,7 +256,7 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
                 sched.sched_priority = 37;
             }
         } else
-#endif /* __MACOS__ || __IOS__ || __TVOS__ */
+#endif /* SDL_PLATFORM_MACOS || SDL_PLATFORM_IOS || SDL_PLATFORM_TVOS */
         {
             sched.sched_priority = (min_priority + (max_priority - min_priority) / 2);
             if (priority == SDL_THREAD_PRIORITY_HIGH) {
@@ -269,7 +269,7 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     }
     return 0;
 #endif /* linux */
-#endif /* #if __RISCOS__ */
+#endif /* #if SDL_PLATFORM_RISCOS */
 }
 
 void SDL_SYS_WaitThread(SDL_Thread *thread)

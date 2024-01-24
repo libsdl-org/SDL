@@ -35,7 +35,7 @@
 #include "../video/SDL_sysvideo.h"
 
 #undef SDL_PRIs64
-#if (defined(__WIN32__) || defined(__GDK__)) && !defined(__CYGWIN__)
+#if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)) && !defined(SDL_PLATFORM_CYGWIN)
 #define SDL_PRIs64 "I64d"
 #else
 #define SDL_PRIs64 "lld"

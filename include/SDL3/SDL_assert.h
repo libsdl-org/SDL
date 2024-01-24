@@ -66,9 +66,9 @@ assert can have unique static variables associated with it.
     #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "int $3\n\t" )
 #elif (defined(__GNUC__) || defined(__clang__)) && defined(__riscv)
     #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "ebreak\n\t" )
-#elif ( defined(__APPLE__) && (defined(__arm64__) || defined(__aarch64__)) )  /* this might work on other ARM targets, but this is a known quantity... */
+#elif ( defined(SDL_PLATFORM_APPLE) && (defined(__arm64__) || defined(__aarch64__)) )  /* this might work on other ARM targets, but this is a known quantity... */
     #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "brk #22\n\t" )
-#elif defined(__APPLE__) && defined(__arm__)
+#elif defined(SDL_PLATFORM_APPLE) && defined(__arm__)
     #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "bkpt #22\n\t" )
 #elif defined(__386__) && defined(__WATCOMC__)
     #define SDL_TriggerBreakpoint() { _asm { int 0x03 } }
@@ -167,7 +167,7 @@ extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data
 #ifndef SDL_AssertBreakpoint
 #if defined(ANDROID) && defined(assert)
 /* Define this as empty in case assert() is defined as SDL_assert */
-#define SDL_AssertBreakpoint() 
+#define SDL_AssertBreakpoint()
 #else
 #define SDL_AssertBreakpoint() SDL_TriggerBreakpoint()
 #endif

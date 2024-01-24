@@ -22,6 +22,7 @@
 #ifndef SDL_main_h_
 #define SDL_main_h_
 
+#include <SDL3/SDL_platform_defines.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_events.h>
 
@@ -40,7 +41,7 @@
  */
 
 #ifndef SDL_MAIN_HANDLED
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
 /* On Windows SDL provides WinMain(), which parses the command line and passes
    the arguments to your main function.
 
@@ -48,7 +49,7 @@
  */
 #define SDL_MAIN_AVAILABLE
 
-#elif defined(__WINRT__)
+#elif defined(SDL_PLATFORM_WINRT)
 /* On WinRT, SDL provides a main function that initializes CoreApplication,
    creating an instance of IFrameworkView in the process.
 
@@ -62,7 +63,7 @@
 */
 #define SDL_MAIN_NEEDED
 
-#elif defined(__GDK__)
+#elif defined(SDL_PLATFORM_GDK)
 /* On GDK, SDL provides a main function that initializes the game runtime.
 
    If you prefer to write your own WinMain-function instead of having SDL
@@ -72,7 +73,7 @@
 */
 #define SDL_MAIN_NEEDED
 
-#elif defined(__IOS__)
+#elif defined(SDL_PLATFORM_IOS)
 /* On iOS SDL provides a main function that creates an application delegate
    and starts the iOS application run loop.
 
@@ -83,7 +84,7 @@
  */
 #define SDL_MAIN_NEEDED
 
-#elif defined(__ANDROID__)
+#elif defined(SDL_PLATFORM_ANDROID)
 /* On Android SDL provides a Java class in SDLActivity.java that is the
    main activity entry point.
 
@@ -94,7 +95,7 @@
 /* We need to export SDL_main so it can be launched from Java */
 #define SDLMAIN_DECLSPEC    DECLSPEC
 
-#elif defined(__PSP__)
+#elif defined(SDL_PLATFORM_PSP)
 /* On PSP SDL provides a main function that sets the module info,
    activates the GPU and starts the thread required to be able to exit
    the software.
@@ -103,14 +104,14 @@
  */
 #define SDL_MAIN_AVAILABLE
 
-#elif defined(__PS2__)
+#elif defined(SDL_PLATFORM_PS2)
 #define SDL_MAIN_AVAILABLE
 
 #define SDL_PS2_SKIP_IOP_RESET() \
    void reset_IOP(); \
    void reset_IOP() {}
 
-#elif defined(__3DS__)
+#elif defined(SDL_PLATFORM_3DS)
 /*
   On N3DS, SDL provides a main function that sets up the screens
   and storage.
@@ -119,7 +120,7 @@
 */
 #define SDL_MAIN_AVAILABLE
 
-#elif defined(__NGAGE__)
+#elif defined(SDL_PLATFORM_NGAGE)
 
 /*
    TODO: not sure if it should be SDL_MAIN_NEEDED, in SDL2 ngage had a
@@ -422,7 +423,7 @@ extern DECLSPEC int SDLCALL SDL_RunApp(int argc, char* argv[], SDL_main_func mai
 extern DECLSPEC int SDLCALL SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit);
 
 
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 
 /**
  * Register a win32 window class for SDL's use.
@@ -467,24 +468,24 @@ extern DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void
  */
 extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
-#endif /* defined(__WIN32__) || defined(__GDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) */
 
 
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
 
 /* for compatibility with SDL2's function of this name */
 #define SDL_WinRTRunApp(MAIN_FUNC, RESERVED)  SDL_RunApp(0, NULL, MAIN_FUNC, RESERVED)
 
-#endif /* __WINRT__ */
+#endif /* SDL_PLATFORM_WINRT */
 
-#ifdef __IOS__
+#ifdef SDL_PLATFORM_IOS
 
 /* for compatibility with SDL2's function of this name */
 #define SDL_UIKitRunApp(ARGC, ARGV, MAIN_FUNC)  SDL_RunApp(ARGC, ARGV, MAIN_FUNC, NULL)
 
-#endif /* __IOS__ */
+#endif /* SDL_PLATFORM_IOS */
 
-#ifdef __GDK__
+#ifdef SDL_PLATFORM_GDK
 
 /* for compatibility with SDL2's function of this name */
 #define SDL_GDKRunApp(MAIN_FUNC, RESERVED)  SDL_RunApp(0, NULL, MAIN_FUNC, RESERVED)
@@ -496,7 +497,7 @@ extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
  */
 extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 
-#endif /* __GDK__ */
+#endif /* SDL_PLATFORM_GDK */
 
 #ifdef __cplusplus
 }
@@ -507,13 +508,13 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 #if !defined(SDL_MAIN_HANDLED) && !defined(SDL_MAIN_NOIMPL)
 /* include header-only SDL_main implementations */
 #if defined(SDL_MAIN_USE_CALLBACKS) \
-    || defined(__WIN32__) || defined(__GDK__) || defined(__IOS__) || defined(__TVOS__) \
-    || defined(__3DS__) || defined(__NGAGE__) || defined(__PS2__) || defined(__PSP__)
+    || defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS) \
+    || defined(SDL_PLATFORM_3DS) || defined(SDL_PLATFORM_NGAGE) || defined(SDL_PLATFORM_PS2) || defined(SDL_PLATFORM_PSP)
 
 /* platforms which main (-equivalent) can be implemented in plain C */
 #include <SDL3/SDL_main_impl.h>
 
-#elif defined(__WINRT__) /* C++ platforms */
+#elif defined(SDL_PLATFORM_WINRT) /* C++ platforms */
 
 #ifdef __cplusplus
 #include <SDL3/SDL_main_impl.h>
@@ -528,7 +529,7 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 #endif /* __GNUC__ */
 #endif /* __cplusplus */
 
-#endif /* C++ platforms like __WINRT__ etc */
+#endif /* C++ platforms like SDL_PLATFORM_WINRT etc */
 
 #endif /* SDL_MAIN_HANDLED */
 

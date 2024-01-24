@@ -54,7 +54,7 @@ typedef void *EGLNativeDisplayType;
 typedef void *EGLNativePixmapType;
 typedef void *EGLNativeWindowType;
 
-#elif defined(_WIN32) || defined(__VC32__) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__) /* Win32 and WinCE */
+#elif defined(_WIN32) || defined(__VC32__) && !defined(SDL_PLATFORM_CYGWIN) && !defined(__SCITECH_SNAP__) /* Win32 and WinCE */
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -88,7 +88,7 @@ typedef struct gbm_device  *EGLNativeDisplayType;
 typedef struct gbm_bo      *EGLNativePixmapType;
 typedef void               *EGLNativeWindowType;
 
-#elif defined(__ANDROID__) || defined(ANDROID)
+#elif defined(SDL_PLATFORM_ANDROID) || defined(ANDROID)
 
 struct ANativeWindow;
 struct egl_native_pixmap_t;
@@ -125,7 +125,7 @@ typedef int   EGLNativeDisplayType;
 typedef void *EGLNativePixmapType;
 typedef void *EGLNativeWindowType;
 
-#elif defined(__HAIKU__)
+#elif defined(SDL_PLATFORM_HAIKU)
 
 #include <kernel/image.h>
 

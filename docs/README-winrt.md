@@ -33,7 +33,7 @@ Here is a rough list of what works, and what doesn't:
 * What works:
   * compilation via Visual C++ 2019.
   * compile-time platform detection for SDL programs.  The C/C++ #define,
-    `__WINRT__`, will be set to 1 (by SDL) when compiling for WinRT.
+    `SDL_PLATFORM_WINRT`, will be set to 1 (by SDL) when compiling for WinRT.
   * GPU-accelerated 2D rendering, via SDL_Renderer.
   * OpenGL ES 2, via the ANGLE library (included separately from SDL)
   * software rendering, via either SDL_Surface (optionally in conjunction with

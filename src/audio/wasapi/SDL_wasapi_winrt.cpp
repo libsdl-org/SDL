@@ -25,7 +25,7 @@
 //  is in SDL_wasapi_win32.c. The code in SDL_wasapi.c is used by both standard
 //  Windows and WinRT builds to deal with audio and calls into these functions.
 
-#if defined(SDL_AUDIO_DRIVER_WASAPI) && defined(__WINRT__)
+#if defined(SDL_AUDIO_DRIVER_WASAPI) && defined(SDL_PLATFORM_WINRT)
 
 #include <Windows.h>
 #include <windows.ui.core.h>
@@ -357,4 +357,4 @@ void WASAPI_PlatformFreeDeviceHandle(SDL_AudioDevice *device)
     SDL_free(device->handle);
 }
 
-#endif // SDL_AUDIO_DRIVER_WASAPI && defined(__WINRT__)
+#endif // SDL_AUDIO_DRIVER_WASAPI && defined(SDL_PLATFORM_WINRT)

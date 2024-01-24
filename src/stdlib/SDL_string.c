@@ -24,7 +24,7 @@
 
 #include "SDL_vacopy.h"
 
-#ifdef __vita__
+#ifdef SDL_PLATFORM_VITA
 #include <psp2/kernel/clib.h>
 #endif
 
@@ -327,7 +327,7 @@ static size_t SDL_ScanFloat(const char *text, double *valuep)
 
 int SDL_memcmp(const void *s1, const void *s2, size_t len)
 {
-#ifdef __vita__
+#ifdef SDL_PLATFORM_VITA
     /*
       Using memcmp on NULL is UB per POSIX / C99 7.21.1/2.
       But, both linux and bsd allow that, with an exception:

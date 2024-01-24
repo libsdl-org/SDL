@@ -347,7 +347,7 @@ static int GetFeatureReport(SDL_hid_device *dev, unsigned char uBuffer[65])
         // On Windows and macOS, BLE devices get 2 copies of the feature report ID, one that is removed by ReadFeatureReport,
         // and one that's included in the buffer we receive. We pad the bytes to read and skip over the report ID
         // if necessary.
-#if defined(__WIN32__) || defined(__MACOS__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_MACOS)
         ++ucBytesToRead;
         ++ucDataStartOffset;
 #endif
@@ -980,13 +980,13 @@ static SDL_bool HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
     }
     device->context = ctx;
 
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
     if (device->serial) {
         /* We get a garbage serial number on Windows */
         SDL_free(device->serial);
         device->serial = NULL;
     }
-#endif /* __WIN32__ */
+#endif /* SDL_PLATFORM_WIN32 */
 
     HIDAPI_SetDeviceName(device, "Steam Controller");
 

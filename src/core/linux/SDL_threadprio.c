@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
 
 #ifndef SDL_THREADS_DISABLED
 #include <sys/time.h>
@@ -342,4 +342,4 @@ int SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int sc
 #endif
 }
 
-#endif /* __LINUX__ */
+#endif /* SDL_PLATFORM_LINUX */

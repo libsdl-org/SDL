@@ -35,7 +35,7 @@ typedef VOID(WINAPI *pfnReleaseSRWLockExclusive)(PSRWLOCK);
 typedef VOID(WINAPI *pfnAcquireSRWLockExclusive)(PSRWLOCK);
 typedef BOOLEAN(WINAPI *pfnTryAcquireSRWLockExclusive)(PSRWLOCK);
 
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
 /* Functions are guaranteed to be available */
 #define pTryAcquireSRWLockExclusive TryAcquireSRWLockExclusive
 #define pInitializeSRWLock InitializeSRWLock
@@ -163,7 +163,7 @@ static const SDL_rwlock_impl_t SDL_rwlock_impl_srw = {
     &SDL_UnlockRWLock_srw
 };
 
-#ifndef __WINRT__
+#ifndef SDL_PLATFORM_WINRT
 
 #include "../generic/SDL_sysrwlock_c.h"
 
@@ -184,7 +184,7 @@ SDL_RWLock *SDL_CreateRWLock(void)
     if (!SDL_rwlock_impl_active.Create) {
         const SDL_rwlock_impl_t *impl;
 
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
         /* Link statically on this platform */
         impl = &SDL_rwlock_impl_srw;
 #else

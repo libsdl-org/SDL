@@ -42,7 +42,7 @@
 # ifndef alloca
 #  ifdef HAVE_ALLOCA_H
 #   include <alloca.h>
-#  elif defined(__NETBSD__)
+#  elif defined(SDL_PLATFORM_NETBSD)
 #   if defined(__STRICT_ANSI__)
 #    define SDL_DISABLE_ALLOCA
 #   else
@@ -59,7 +59,7 @@
 #   include <malloc.h>
 #  elif defined(__DMC__)
 #   include <stdlib.h>
-#  elif defined(__AIX__)
+#  elif defined(SDL_PLATFORM_AIX)
 # pragma alloca
 #  elif defined(__MRC__)
 void *alloca(unsigned);
@@ -207,9 +207,9 @@ typedef uint64_t Uint64;
 #ifndef SDL_PRIs64
 #ifdef PRIs64
 #define SDL_PRIs64 PRIs64
-#elif defined(__WIN32__) || defined(__GDK__)
+#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 #define SDL_PRIs64 "I64d"
-#elif defined(__LP64__) && !defined(__APPLE__)
+#elif defined(__LP64__) && !defined(SDL_PLATFORM_APPLE)
 #define SDL_PRIs64 "ld"
 #else
 #define SDL_PRIs64 "lld"
@@ -218,9 +218,9 @@ typedef uint64_t Uint64;
 #ifndef SDL_PRIu64
 #ifdef PRIu64
 #define SDL_PRIu64 PRIu64
-#elif defined(__WIN32__) || defined(__GDK__)
+#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 #define SDL_PRIu64 "I64u"
-#elif defined(__LP64__) && !defined(__APPLE__)
+#elif defined(__LP64__) && !defined(SDL_PLATFORM_APPLE)
 #define SDL_PRIu64 "lu"
 #else
 #define SDL_PRIu64 "llu"
@@ -229,9 +229,9 @@ typedef uint64_t Uint64;
 #ifndef SDL_PRIx64
 #ifdef PRIx64
 #define SDL_PRIx64 PRIx64
-#elif defined(__WIN32__) || defined(__GDK__)
+#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 #define SDL_PRIx64 "I64x"
-#elif defined(__LP64__) && !defined(__APPLE__)
+#elif defined(__LP64__) && !defined(SDL_PLATFORM_APPLE)
 #define SDL_PRIx64 "lx"
 #else
 #define SDL_PRIx64 "llx"
@@ -240,9 +240,9 @@ typedef uint64_t Uint64;
 #ifndef SDL_PRIX64
 #ifdef PRIX64
 #define SDL_PRIX64 PRIX64
-#elif defined(__WIN32__) || defined(__GDK__)
+#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 #define SDL_PRIX64 "I64X"
-#elif defined(__LP64__) && !defined(__APPLE__)
+#elif defined(__LP64__) && !defined(SDL_PLATFORM_APPLE)
 #define SDL_PRIX64 "lX"
 #else
 #define SDL_PRIX64 "llX"
@@ -370,7 +370,7 @@ SDL_COMPILE_TIME_ASSERT(sint64, sizeof(Sint64) == 8);
 
 /** \cond */
 #ifndef DOXYGEN_SHOULD_IGNORE_THIS
-#if !defined(__ANDROID__) && !defined(__VITA__) && !defined(__3DS__)
+#if !defined(SDL_PLATFORM_ANDROID) && !defined(SDL_PLATFORM_VITA) && !defined(SDL_PLATFORM_3DS)
    /* TODO: include/SDL_stdinc.h:174: error: size of array 'SDL_dummy_enum' is negative */
 typedef enum
 {

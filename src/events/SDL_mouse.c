@@ -27,7 +27,7 @@
 #include "SDL_events_c.h"
 #include "SDL_mouse_c.h"
 #include "SDL_pen_c.h"
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 #include "../core/windows/SDL_windows.h" // For GetDoubleClickTime()
 #endif
 
@@ -48,7 +48,7 @@ static void SDLCALL SDL_MouseDoubleClickTimeChanged(void *userdata, const char *
     if (hint && *hint) {
         mouse->double_click_time = SDL_atoi(hint);
     } else {
-#if defined(__WIN32__) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
         mouse->double_click_time = GetDoubleClickTime();
 #else
         mouse->double_click_time = 500;
@@ -107,7 +107,7 @@ static void SDLCALL SDL_TouchMouseEventsChanged(void *userdata, const char *name
     mouse->touch_mouse_events = SDL_GetStringBoolean(hint, SDL_TRUE);
 }
 
-#ifdef __vita__
+#ifdef SDL_PLATFORM_VITA
 static void SDLCALL SDL_VitaTouchMouseDeviceChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
@@ -133,7 +133,7 @@ static void SDLCALL SDL_MouseTouchEventsChanged(void *userdata, const char *name
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
     SDL_bool default_value;
 
-#if defined(__ANDROID__) || (defined(__IOS__) && !defined(__TVOS__))
+#if defined(SDL_PLATFORM_ANDROID) || (defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_TVOS))
     default_value = SDL_TRUE;
 #else
     default_value = SDL_FALSE;
@@ -188,7 +188,7 @@ int SDL_PreInitMouse(void)
     SDL_AddHintCallback(SDL_HINT_TOUCH_MOUSE_EVENTS,
                         SDL_TouchMouseEventsChanged, mouse);
 
-#ifdef __vita__
+#ifdef SDL_PLATFORM_VITA
     SDL_AddHintCallback(SDL_HINT_VITA_TOUCH_MOUSE_DEVICE,
                         SDL_VitaTouchMouseDeviceChanged, mouse);
 #endif
@@ -438,7 +438,7 @@ static float CalculateSystemScale(SDL_Mouse *mouse, SDL_Window *window, const fl
             scale = v[i + 1] + (coef * (v[i + 3] - v[i + 1]));
         }
     }
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
     {
         /* On Windows the mouse speed is affected by the content scale */
         SDL_VideoDisplay *display;
@@ -1209,7 +1209,7 @@ int SDL_CaptureMouse(SDL_bool enabled)
         return SDL_Unsupported();
     }
 
-#if defined(__WIN32__) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
     /* Windows mouse capture is tied to the current thread, and must be called
      * from the thread that created the window being captured. Since we update
      * the mouse capture state from the event processing, any application state
@@ -1218,7 +1218,7 @@ int SDL_CaptureMouse(SDL_bool enabled)
     if (!SDL_OnVideoThread()) {
         return SDL_SetError("SDL_CaptureMouse() must be called on the main thread");
     }
-#endif /* defined(__WIN32__) || defined(__WINGDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) */
 
     if (enabled && SDL_GetKeyboardFocus() == NULL) {
         return SDL_SetError("No window has focus");
@@ -1238,12 +1238,12 @@ SDL_Cursor *SDL_CreateCursor(const Uint8 *data, const Uint8 *mask, int w, int h,
     const Uint32 black = 0xFF000000;
     const Uint32 white = 0xFFFFFFFF;
     const Uint32 transparent = 0x00000000;
-#if defined(__WIN32__)
+#if defined(SDL_PLATFORM_WIN32)
     /* Only Windows backend supports inverted pixels in mono cursors. */
     const Uint32 inverted = 0x00FFFFFF;
 #else
     const Uint32 inverted = 0xFF000000;
-#endif /* defined(__WIN32__) */
+#endif /* defined(SDL_PLATFORM_WIN32) */
 
     /* Make sure the width is a multiple of 8 */
     w = ((w + 7) & ~7);

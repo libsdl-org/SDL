@@ -23,7 +23,7 @@
 #include "SDL_joystick_c.h"
 #include "SDL_steam_virtual_gamepad.h"
 
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
 #include "../core/windows/SDL_windows.h"
 #else
 #include <sys/types.h>
@@ -43,7 +43,7 @@ static Uint64 GetFileModificationTime(const char *file)
 {
     Uint64 modification_time = 0;
 
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
     WCHAR *wFile = WIN_UTF8ToStringW(file);
     if (wFile) {
         HANDLE hFile = CreateFileW(wFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);

@@ -29,7 +29,7 @@
 
 #define DEBUG_VIDEO_CAPTURE_CAPTURE 0
 
-#if defined(__ANDROID__) && __ANDROID_API__ >= 24
+#if defined(SDL_PLATFORM_ANDROID) && __ANDROID_API__ >= 24
 
 /*
  * APP_PLATFORM=android-24

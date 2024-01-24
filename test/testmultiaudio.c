@@ -15,13 +15,11 @@
 
 #include "testutils.h"
 
-#include <stdio.h> /* for fflush() and stdout */
-
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #endif
 
-#include "testutils.h"
+#include <stdio.h> /* for fflush() and stdout */
 
 static SDL_AudioSpec spec;
 static Uint8 *sound = NULL; /* Pointer to wave data */
@@ -31,7 +29,7 @@ static Uint32 soundlen = 0; /* Length of wave data */
 static SDL_AudioStream *stream = NULL;
 
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 static void loop(void)
 {
     if (SDL_GetAudioStreamAvailable(stream) == 0) {
@@ -51,7 +49,7 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
     SDL_AudioStream **streams = NULL;
     int i;
 
-#ifdef __ANDROID__  /* !!! FIXME: maybe always create a window, in the SDLTest layer, so these #ifdefs don't have to be here? */
+#ifdef SDL_PLATFORM_ANDROID  /* !!! FIXME: maybe always create a window, in the SDLTest layer, so these #ifdefs don't have to be here? */
     SDL_Event event;
 
     /* Create a Window to get fully initialized event processing for testing pause on Android. */
@@ -69,11 +67,11 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
             SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
             SDL_PutAudioStreamData(stream, sound, soundlen);
             SDL_FlushAudioStream(stream);
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
             emscripten_set_main_loop(loop, 0, 1);
 #else
             while (SDL_GetAudioStreamAvailable(stream) > 0) {
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
                 /* Empty queue, some application events would prevent pause. */
                 while (SDL_PollEvent(&event)) {
                 }
@@ -118,7 +116,7 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
                     keep_going = 1;
                 }
             }
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
             /* Empty queue, some application events would prevent pause. */
             while (SDL_PollEvent(&event)) {}
 #endif

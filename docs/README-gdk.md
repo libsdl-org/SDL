@@ -21,7 +21,7 @@ Windows GDK Status
 The Windows GDK port supports the full set of Win32 APIs, renderers, controllers, input devices, etc., as the normal Windows x64 build of SDL.
 
 * Additionally, the GDK port adds the following:
-  * Compile-time platform detection for SDL programs. The `__GDK__` is `#define`d on every GDK platform, and the  `__WINGDK__` is `#define`d on Windows GDK, specifically. (This distinction exists because other GDK platforms support a smaller subset of functionality. This allows you to mark code for "any" GDK separate from Windows GDK.)
+  * Compile-time platform detection for SDL programs. The `SDL_PLATFORM_GDK` is `#define`d on every GDK platform, and the  `SDL_PLATFORM_WINGDK` is `#define`d on Windows GDK, specifically. (This distinction exists because other GDK platforms support a smaller subset of functionality. This allows you to mark code for "any" GDK separate from Windows GDK.)
   * GDK-specific setup:
     * Initializing/uninitializing the game runtime, and initializing Xbox Live services
     * Creating a global task queue and setting it as the default for the process. When running any async operations, passing in `NULL` as the task queue will make the task get added to the global task queue.
@@ -149,7 +149,7 @@ Xbox GDKX Setup
 In general, the same process in the Windows GDK instructions work. There are just a few additional notes:
 * For Xbox One consoles, use the Gaming.Xbox.XboxOne.x64 target
 * For Xbox Series consoles, use the Gaming.Xbox.Scarlett.x64 target
-* The Xbox One target sets the `__XBOXONE__` define and the Xbox Series target sets the `__XBOXSERIES__` define
+* The Xbox One target sets the `SDL_PLATFORM_XBOXONE` define and the Xbox Series target sets the `SDL_PLATFORM_XBOXSERIES` define
 * You don't need to link against the Xbox.Services Thunks lib nor include that dll in your package (it doesn't exist for Xbox)
 * The shader blobs for Xbox are created in a pre-build step for the Xbox targets, rather than included in the source (due to NDA and version compatability reasons)
 * To create a package, use:

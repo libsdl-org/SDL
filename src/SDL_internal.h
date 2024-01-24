@@ -74,7 +74,7 @@
 #define DECLSPEC
 #endif
 
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
 #ifndef _DARWIN_C_SOURCE
 #define _DARWIN_C_SOURCE 1 /* for memset_pattern4() */
 #endif

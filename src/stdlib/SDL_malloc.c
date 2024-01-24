@@ -496,13 +496,13 @@ DEFAULT_MMAP_THRESHOLD       default: 256K
 #define MMAP_CLEARS 0 /* WINCE and some others apparently don't clear */
 #endif  /* WIN32 */
 
-#ifdef __OS2__
+#ifdef SDL_PLATFORM_OS2
 #define INCL_DOS
 #include <os2.h>
 #define HAVE_MMAP 1
 #define HAVE_MORECORE 0
 #define LACKS_SYS_MMAN_H
-#endif  /* __OS2__ */
+#endif  /* SDL_PLATFORM_OS2 */
 
 #if defined(DARWIN) || defined(_DARWIN)
 /* Mac OSX docs advise not to use sbrk; it seems better to use mmap */
@@ -1238,7 +1238,7 @@ int mspace_mallopt(int, int);
 #ifndef LACKS_UNISTD_H
 #include <unistd.h>     /* for sbrk */
 #else /* LACKS_UNISTD_H */
-#if !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__NetBSD__) && !defined(__DragonFly__)
+#if !defined(SDL_PLATFORM_FREEBSD) && !defined(SDL_PLATFORM_OPENBSD) && !defined(SDL_PLATFORM_NETBSD) && !defined(__DragonFly__)
 extern void*     sbrk(ptrdiff_t);
 #endif /* FreeBSD etc */
 #endif /* LACKS_UNISTD_H */
@@ -1342,7 +1342,7 @@ extern void*     sbrk(ptrdiff_t);
 #define IS_MMAPPED_BIT       (SIZE_T_ONE)
 #define USE_MMAP_BIT         (SIZE_T_ONE)
 
-#if !defined(WIN32) && !defined(__OS2__)
+#if !defined(WIN32) && !defined(SDL_PLATFORM_OS2)
 #define CALL_MUNMAP(a, s)    munmap((a), (s))
 #define MMAP_PROT            (PROT_READ|PROT_WRITE)
 #if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
@@ -1366,7 +1366,7 @@ static int dev_zero_fd = -1; /* Cached file descriptor for /dev/zero. */
 
 #define DIRECT_MMAP(s)       CALL_MMAP(s)
 
-#elif defined(__OS2__)
+#elif defined(SDL_PLATFORM_OS2)
 
 /* OS/2 MMAP via DosAllocMem */
 static void* os2mmap(size_t size) {
@@ -1477,7 +1477,7 @@ static int win32munmap(void* ptr, size_t size) {
     unique mparams values are initialized only once.
 */
 
-#if !defined(WIN32) && !defined(__OS2__)
+#if !defined(WIN32) && !defined(SDL_PLATFORM_OS2)
 /* By default use posix locks */
 #include <pthread.h>
 #define MLOCK_T pthread_mutex_t
@@ -1491,7 +1491,7 @@ static MLOCK_T morecore_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static MLOCK_T magic_init_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-#elif defined(__OS2__)
+#elif defined(SDL_PLATFORM_OS2)
 #define MLOCK_T HMTX
 #define INITIAL_LOCK(l)      DosCreateMutexSem(0, l, 0, FALSE)
 #define ACQUIRE_LOCK(l)      DosRequestMutexSem(*l, SEM_INDEFINITE_WAIT)
@@ -2559,11 +2559,11 @@ static int init_mparams(void) {
     }
     RELEASE_MAGIC_INIT_LOCK();
 
-#if !defined(WIN32) && !defined(__OS2__)
+#if !defined(WIN32) && !defined(SDL_PLATFORM_OS2)
     mparams.page_size = malloc_getpagesize;
     mparams.granularity = ((DEFAULT_GRANULARITY != 0)?
                            DEFAULT_GRANULARITY : mparams.page_size);
-#elif defined (__OS2__)
+#elif defined (SDL_PLATFORM_OS2)
     /* if low-memory is used, os2munmap() would break
        if it were anything other than 64k */
     mparams.page_size = 4096u;

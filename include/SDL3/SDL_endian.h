@@ -56,13 +56,13 @@ _m_prefetch(void *__P)
 /* @} */
 
 #ifndef SDL_BYTEORDER
-#ifdef __linux__
+#ifdef SDL_PLATFORM_LINUX
 #include <endian.h>
 #define SDL_BYTEORDER  __BYTE_ORDER
-#elif defined(__OpenBSD__) || defined(__DragonFly__)
+#elif defined(SDL_PLATFORM_OPENBSD) || defined(__DragonFly__)
 #include <endian.h>
 #define SDL_BYTEORDER  BYTE_ORDER
-#elif defined(__FreeBSD__) || defined(__NetBSD__)
+#elif defined(SDL_PLATFORM_FREEBSD) || defined(SDL_PLATFORM_NETBSD)
 #include <sys/endian.h>
 #define SDL_BYTEORDER  BYTE_ORDER
 /* predefs from newer gcc and clang versions: */
@@ -84,7 +84,7 @@ _m_prefetch(void *__P)
 #else
 #define SDL_BYTEORDER   SDL_LIL_ENDIAN
 #endif
-#endif /* __linux__ */
+#endif /* SDL_PLATFORM_LINUX */
 #endif /* !SDL_BYTEORDER */
 
 #ifndef SDL_FLOATWORDORDER

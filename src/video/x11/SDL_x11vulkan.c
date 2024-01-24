@@ -31,7 +31,7 @@
 #include <X11/Xlib.h>
 /*#include <xcb/xcb.h>*/
 
-#ifdef __OpenBSD__
+#ifdef SDL_PLATFORM_OPENBSD
 #define DEFAULT_VULKAN "libvulkan.so"
 #else
 #define DEFAULT_VULKAN "libvulkan.so.1"

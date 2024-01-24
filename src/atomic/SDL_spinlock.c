@@ -20,15 +20,15 @@
 */
 #include "SDL_internal.h"
 
-#if defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK)
 #include "../core/windows/SDL_windows.h"
 #endif
 
-#if !defined(HAVE_GCC_ATOMICS) && defined(__SOLARIS__)
+#if !defined(HAVE_GCC_ATOMICS) && defined(SDL_PLATFORM_SOLARIS)
 #include <atomic.h>
 #endif
 
-#if !defined(HAVE_GCC_ATOMICS) && defined(__RISCOS__)
+#if !defined(HAVE_GCC_ATOMICS) && defined(SDL_PLATFORM_RISCOS)
 #include <unixlib/local.h>
 #endif
 
@@ -40,7 +40,7 @@
 #include <kernel.h>
 #endif
 
-#if !defined(HAVE_GCC_ATOMICS) && defined(__MACOS__)
+#if !defined(HAVE_GCC_ATOMICS) && defined(SDL_PLATFORM_MACOS)
 #include <libkern/OSAtomic.h>
 #endif
 
@@ -79,7 +79,7 @@ SDL_bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
      defined(__ARM_ARCH_5TEJ__))
     int result;
 
-#ifdef __RISCOS__
+#ifdef SDL_PLATFORM_RISCOS
     if (__cpucap_have_rex()) {
         __asm__ __volatile__(
             "ldrex %0, [%2]\nteq   %0, #0\nstrexeq %0, %1, [%2]"
@@ -115,15 +115,15 @@ SDL_bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
         : "cc", "memory");
     return result == 0;
 
-#elif defined(__MACOS__) || defined(__IOS__) || defined(__TVOS__)
+#elif defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
     /* Maybe used for PowerPC, but the Intel asm or gcc atomics are favored. */
     return OSAtomicCompareAndSwap32Barrier(0, 1, lock);
 
-#elif defined(__SOLARIS__) && defined(_LP64)
+#elif defined(SDL_PLATFORM_SOLARIS) && defined(_LP64)
     /* Used for Solaris with non-gcc compilers. */
     return ((int)atomic_cas_64((volatile uint64_t *)lock, 0, 1) == 0);
 
-#elif defined(__SOLARIS__) && !defined(_LP64)
+#elif defined(SDL_PLATFORM_SOLARIS) && !defined(_LP64)
     /* Used for Solaris with non-gcc compilers. */
     return ((int)atomic_cas_32((volatile uint32_t *)lock, 0, 1) == 0);
 #elif defined(PS2)
@@ -192,7 +192,7 @@ void SDL_UnlockSpinlock(SDL_SpinLock *lock)
     SDL_CompilerBarrier();
     *lock = 0;
 
-#elif defined(__SOLARIS__)
+#elif defined(SDL_PLATFORM_SOLARIS)
     /* Used for Solaris when not using gcc. */
     *lock = 0;
     membar_producer();

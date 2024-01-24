@@ -59,7 +59,7 @@
 #include <libusbhid.h>
 #endif
 
-#if defined(__FREEBSD__) || defined(__FreeBSD_kernel__)
+#if defined(SDL_PLATFORM_FREEBSD)
 #include <osreldate.h>
 #if __FreeBSD_kernel_version > 800063
 #include <dev/usb/usb_ioctl.h>
@@ -77,7 +77,7 @@
 #include "../SDL_joystick_c.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
-#if defined(__FREEBSD__) || SDL_HAVE_MACHINE_JOYSTICK_H || defined(__FreeBSD_kernel__) || defined(__DragonFly_)
+#if defined(SDL_PLATFORM_FREEBSD) || SDL_HAVE_MACHINE_JOYSTICK_H || defined(__FreeBSD_kernel__) || defined(__DragonFly_)
 #define SUPPORT_JOY_GAMEPORT
 #endif
 
@@ -85,7 +85,7 @@
 #define MAX_JOY_JOYS  2
 #define MAX_JOYS      (MAX_UHID_JOYS + MAX_JOY_JOYS)
 
-#ifdef __OpenBSD__
+#ifdef SDL_PLATFORM_OPENBSD
 
 #define HUG_DPAD_UP    0x90
 #define HUG_DPAD_DOWN  0x91
@@ -101,10 +101,10 @@
 
 struct report
 {
-#if defined(__FREEBSD__) && (__FreeBSD_kernel_version > 900000) || \
+#if defined(SDL_PLATFORM_FREEBSD) && (__FreeBSD_kernel_version > 900000) || \
     defined(__DragonFly__)
     void *buf; /* Buffer */
-#elif defined(__FREEBSD__) && (__FreeBSD_kernel_version > 800063)
+#elif defined(SDL_PLATFORM_FREEBSD) && (__FreeBSD_kernel_version > 800063)
     struct usb_gen_descriptor *buf; /* Buffer */
 #else
     struct usb_ctl_report *buf; /* Buffer */
@@ -187,10 +187,10 @@ static void report_free(struct report *);
 
 #if defined(USBHID_UCR_DATA) || (defined(__FreeBSD_kernel__) && __FreeBSD_kernel_version <= 800063)
 #define REP_BUF_DATA(rep) ((rep)->buf->ucr_data)
-#elif (defined(__FREEBSD__) && (__FreeBSD_kernel_version > 900000)) || \
+#elif (defined(SDL_PLATFORM_FREEBSD) && (__FreeBSD_kernel_version > 900000)) || \
     defined(__DragonFly__)
 #define REP_BUF_DATA(rep) ((rep)->buf)
-#elif (defined(__FREEBSD__) && (__FreeBSD_kernel_version > 800063))
+#elif (defined(SDL_PLATFORM_FREEBSD) && (__FreeBSD_kernel_version > 800063))
 #define REP_BUF_DATA(rep) ((rep)->buf->ugd_data)
 #else
 #define REP_BUF_DATA(rep) ((rep)->buf->data)
@@ -296,7 +296,7 @@ CreateHwData(const char *path)
             goto usberr;
         }
         rep = &hw->inreport;
-#if defined(__FREEBSD__) && (__FreeBSD_kernel_version > 800063) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
+#if defined(SDL_PLATFORM_FREEBSD) && (__FreeBSD_kernel_version > 800063) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
         rep->rid = hid_get_report_id(fd);
         if (rep->rid < 0) {
 #else
@@ -312,7 +312,7 @@ CreateHwData(const char *path)
                          path);
             goto usberr;
         }
-#if defined(USBHID_NEW) || (defined(__FREEBSD__) && __FreeBSD_kernel_version >= 500111) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
+#if defined(USBHID_NEW) || (defined(SDL_PLATFORM_FREEBSD) && __FreeBSD_kernel_version >= 500111) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
         hdata = hid_start_parse(hw->repdesc, 1 << hid_input, rep->rid);
 #else
         hdata = hid_start_parse(hw->repdesc, 1 << hid_input);
@@ -336,7 +336,7 @@ CreateHwData(const char *path)
                     if (joyaxe >= 0) {
                         hw->axis_map[joyaxe] = 1;
                     } else if (usage == HUG_HAT_SWITCH
-#ifdef __OpenBSD__
+#ifdef SDL_PLATFORM_OPENBSD
                                || usage == HUG_DPAD_UP
 #endif
                     ) {
@@ -374,7 +374,7 @@ CreateHwData(const char *path)
 
     /* The poll blocks the event thread. */
     fcntl(fd, F_SETFL, O_NONBLOCK);
-#ifdef __NetBSD__
+#ifdef SDL_PLATFORM_NETBSD
     /* Flush pending events */
     if (rep) {
         while (read(fd, REP_BUF_DATA(rep), rep->size) == rep->size)
@@ -487,7 +487,7 @@ static int BSD_JoystickInit(void)
     int i;
 
     for (i = 0; i < MAX_UHID_JOYS; i++) {
-#if defined(__OpenBSD__) && (OpenBSD >= 202105)
+#if defined(SDL_PLATFORM_OPENBSD) && (OpenBSD >= 202105)
         SDL_snprintf(s, SDL_arraysize(s), "/dev/ujoy/%d", i);
 #else
         SDL_snprintf(s, SDL_arraysize(s), "/dev/uhid%d", i);
@@ -612,7 +612,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
     struct report *rep;
     int nbutton, naxe = -1;
     Sint32 v;
-#ifdef __OpenBSD__
+#ifdef SDL_PLATFORM_OPENBSD
     Sint32 dpad[4] = { 0, 0, 0, 0 };
 #endif
     Uint64 timestamp = SDL_GetTicksNS();
@@ -663,7 +663,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
     rep = &joy->hwdata->inreport;
 
     while (read(joy->hwdata->fd, REP_BUF_DATA(rep), rep->size) == rep->size) {
-#if defined(USBHID_NEW) || (defined(__FREEBSD__) && __FreeBSD_kernel_version >= 500111) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
+#if defined(USBHID_NEW) || (defined(SDL_PLATFORM_FREEBSD) && __FreeBSD_kernel_version >= 500111) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
         hdata = hid_start_parse(joy->hwdata->repdesc, 1 << hid_input, rep->rid);
 #else
         hdata = hid_start_parse(joy->hwdata->repdesc, 1 << hid_input);
@@ -693,7 +693,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                                                hatval_to_sdl(v) -
                                                    hitem.logical_minimum);
                     }
-#ifdef __OpenBSD__
+#ifdef SDL_PLATFORM_OPENBSD
                     /* here D-pad directions are reported like separate buttons.
                      * calculate the SDL hat value from the 4 separate values.
                      */
@@ -767,7 +767,7 @@ static int report_alloc(struct report *r, struct report_desc *rd, int repind)
 
 #ifdef __DragonFly__
     len = hid_report_size(rd, repinfo[repind].kind, r->rid);
-#elif defined __FREEBSD__
+#elif defined(SDL_PLATFORM_FREEBSD)
 #if (__FreeBSD_kernel_version >= 460000) || defined(__FreeBSD_kernel__)
 #if (__FreeBSD_kernel_version <= 500111)
     len = hid_report_size(rd, r->rid, repinfo[repind].kind);
@@ -791,7 +791,7 @@ static int report_alloc(struct report *r, struct report_desc *rd, int repind)
     r->size = len;
 
     if (r->size > 0) {
-#if defined(__FREEBSD__) && (__FreeBSD_kernel_version > 900000) || defined(__DragonFly__)
+#if defined(SDL_PLATFORM_FREEBSD) && (__FreeBSD_kernel_version > 900000) || defined(__DragonFly__)
         r->buf = SDL_malloc(r->size);
 #else
         r->buf = SDL_malloc(sizeof(*r->buf) - sizeof(REP_BUF_DATA(r)) +

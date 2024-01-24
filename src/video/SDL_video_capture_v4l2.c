@@ -34,7 +34,7 @@
 
 #define DEBUG_VIDEO_CAPTURE_CAPTURE 0
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#if defined(SDL_PLATFORM_LINUX) && !defined(SDL_PLATFORM_ANDROID)
 
 
 #define MAX_CAPTURE_DEVICES 128 /* It's doubtful someone has more than that */

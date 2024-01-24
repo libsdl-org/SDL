@@ -25,7 +25,7 @@
 
 /* #define DEBUG_TIMERS */
 
-#if !defined(__EMSCRIPTEN__) || !defined(SDL_THREADS_DISABLED)
+#if !defined(SDL_PLATFORM_EMSCRIPTEN) || !defined(SDL_THREADS_DISABLED)
 
 typedef struct SDL_Timer
 {
@@ -461,7 +461,7 @@ SDL_bool SDL_RemoveTimer(SDL_TimerID id)
     return SDL_FALSE;
 }
 
-#endif /* !defined(__EMSCRIPTEN__) || !SDL_THREADS_DISABLED */
+#endif /* !defined(SDL_PLATFORM_EMSCRIPTEN) || !SDL_THREADS_DISABLED */
 
 static Uint64 tick_start;
 static Uint32 tick_numerator_ns;
@@ -470,7 +470,7 @@ static Uint32 tick_numerator_ms;
 static Uint32 tick_denominator_ms;
 
 #if defined(SDL_TIMER_WINDOWS) && \
-    !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+    !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 #include <mmsystem.h>
 #define HAVE_TIME_BEGIN_PERIOD
 #endif

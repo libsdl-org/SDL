@@ -21,7 +21,7 @@
 
 #include "SDL_internal.h"
 
-#ifdef __3DS__
+#ifdef SDL_PLATFORM_3DS
 
 #include <3ds.h>
 

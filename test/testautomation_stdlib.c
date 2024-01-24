@@ -839,7 +839,7 @@ static int stdlib_sscanf(void *arg)
 
 #ifdef _WIN64
 #define SIZE_FORMAT "I64u"
-#elif defined(__WIN32__)
+#elif defined(SDL_PLATFORM_WIN32)
 #define SIZE_FORMAT "I32u"
 #else
 #define SIZE_FORMAT "zu"

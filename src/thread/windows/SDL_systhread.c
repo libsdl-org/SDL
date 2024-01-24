@@ -68,7 +68,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
                          pfnSDL_CurrentBeginThread pfnBeginThread,
                          pfnSDL_CurrentEndThread pfnEndThread)
 {
-#elif defined(__CYGWIN__) || defined(__WINRT__)
+#elif defined(SDL_PLATFORM_CYGWIN) || defined(SDL_PLATFORM_WINRT)
 int SDL_SYS_CreateThread(SDL_Thread *thread)
 {
     pfnSDL_CurrentBeginThread pfnBeginThread = NULL;
@@ -124,7 +124,7 @@ void SDL_SYS_SetupThread(const char *name)
 {
     if (name) {
         PVOID exceptionHandlerHandle;
-#ifndef __WINRT__ /* !!! FIXME: There's no LoadLibrary() in WinRT; don't know if SetThreadDescription is available there at all at the moment. */
+#ifndef SDL_PLATFORM_WINRT /* !!! FIXME: There's no LoadLibrary() in WinRT; don't know if SetThreadDescription is available there at all at the moment. */
         static pfnSetThreadDescription pSetThreadDescription = NULL;
         static HMODULE kernel32 = NULL;
 

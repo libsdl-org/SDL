@@ -14,13 +14,13 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #endif
 
 #include <stdlib.h> /* exit() */
 
-#ifdef __IOS__
+#ifdef SDL_PLATFORM_IOS
 #define SCREEN_WIDTH  320
 #define SCREEN_HEIGHT 480
 #else
@@ -245,7 +245,7 @@ static void loop(void *arg)
 
     SDL_RenderPresent(renderer);
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (loop_data->done) {
         emscripten_cancel_main_loop();
     }
@@ -294,7 +294,7 @@ int main(int argc, char *argv[])
     }
 
     /* Main render loop */
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop_arg(loop, &loop_data, 0, 1);
 #else
     while (loop_data.done == SDL_FALSE) {

@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(__IOS__) || defined(__TVOS__)
+#if defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
 
 #include "../SDL_sysurl.h"
 
@@ -40,4 +40,4 @@ int SDL_SYS_OpenURL(const char *url)
     }
 }
 
-#endif /* __IOS__ || __TVOS__ */
+#endif /* SDL_PLATFORM_IOS || SDL_PLATFORM_TVOS */

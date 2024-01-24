@@ -30,14 +30,14 @@
 #ifdef SDL_VIDEO_OPENGL_GLX
 #include "SDL_x11opengles.h"
 
-#if defined(__IRIX__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(SDL_PLATFORM_IRIX) || defined(SDL_PLATFORM_NETBSD) || defined(SDL_PLATFORM_OPENBSD)
 /*
  * IRIX doesn't have a GL library versioning system.
  * NetBSD and OpenBSD have different GL library versions depending on how
  * the library was installed.
  */
 #define DEFAULT_OPENGL "libGL.so"
-#elif defined(__MACOS__)
+#elif defined(SDL_PLATFORM_MACOS)
 #define DEFAULT_OPENGL "/opt/X11/lib/libGL.1.dylib"
 #else
 #define DEFAULT_OPENGL "libGL.so.1"

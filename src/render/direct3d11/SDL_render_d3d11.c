@@ -24,7 +24,7 @@
 
 #define COBJMACROS
 #include "../../core/windows/SDL_windows.h"
-#ifndef __WINRT__
+#ifndef SDL_PLATFORM_WINRT
 #include "../../video/windows/SDL_windowswindow.h"
 #endif
 #include "../SDL_sysrender.h"
@@ -34,7 +34,7 @@
 
 #include "SDL_shaders_d3d11.h"
 
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
 
 #if NTDDI_VERSION > NTDDI_WIN8
 #include <DXGI1_3.h>
@@ -48,7 +48,7 @@
 extern ISwapChainBackgroundPanelNative *WINRT_GlobalSwapChainBackgroundPanelNative;
 #endif /* WINAPI_FAMILY == WINAPI_FAMILY_APP */
 
-#endif /* __WINRT__ */
+#endif /* SDL_PLATFORM_WINRT */
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #define SDL_COMPOSE_ERROR(str) __FUNCTION__ ", " str
@@ -182,7 +182,7 @@ typedef struct
 
 static const GUID SDL_IID_IDXGIFactory2 = { 0x50c83a1c, 0xe072, 0x4c48, { 0x87, 0xb0, 0x36, 0x30, 0xfa, 0x36, 0xa6, 0xd0 } };
 static const GUID SDL_IID_IDXGIDevice1 = { 0x77db970f, 0x6276, 0x48ba, { 0xba, 0x28, 0x07, 0x01, 0x43, 0xb4, 0x39, 0x2c } };
-#if defined(__WINRT__) && NTDDI_VERSION > NTDDI_WIN8
+#if defined(SDL_PLATFORM_WINRT) && NTDDI_VERSION > NTDDI_WIN8
 static const GUID SDL_IID_IDXGIDevice3 = { 0x6007896c, 0x3244, 0x4afd, { 0xbf, 0x18, 0xa6, 0xd3, 0xbe, 0xda, 0x50, 0x23 } };
 #endif
 static const GUID SDL_IID_ID3D11Texture2D = { 0x6f15aaf2, 0xd208, 0x4e89, { 0x9a, 0xb4, 0x48, 0x95, 0x35, 0xd3, 0x4f, 0x9c } };
@@ -442,7 +442,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     D3D11_SAMPLER_DESC samplerDesc;
     D3D11_RASTERIZER_DESC rasterDesc;
 
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
     CreateDXGIFactoryFunc = CreateDXGIFactory1;
     D3D11CreateDeviceFunc = D3D11CreateDevice;
 #else
@@ -469,7 +469,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         result = E_FAIL;
         goto done;
     }
-#endif /* __WINRT__ */
+#endif /* SDL_PLATFORM_WINRT */
 
     result = CreateDXGIFactoryFunc(&SDL_IID_IDXGIFactory2, (void **)&data->dxgiFactory);
     if (FAILED(result)) {
@@ -674,7 +674,7 @@ done:
     return result;
 }
 
-#if defined(__WIN32__) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 
 static DXGI_MODE_ROTATION D3D11_GetCurrentRotation()
 {
@@ -682,7 +682,7 @@ static DXGI_MODE_ROTATION D3D11_GetCurrentRotation()
     return DXGI_MODE_ROTATION_IDENTITY;
 }
 
-#endif /* defined(__WIN32__) || defined(__WINGDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) */
 
 static BOOL D3D11_IsDisplayRotated90Degrees(DXGI_MODE_ROTATION rotation)
 {
@@ -751,7 +751,7 @@ static int D3D11_GetViewportAlignedD3DRect(SDL_Renderer *renderer, const SDL_Rec
 static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 {
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
     IUnknown *coreWindow = D3D11_GetCoreWindowFromSDLRenderer(renderer);
     const BOOL usingXAML = (!coreWindow);
 #else
@@ -828,7 +828,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         goto done;
 #endif
     } else {
-#if defined(__WIN32__) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
         HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(renderer->window), SDL_PROPERTY_WINDOW_WIN32_HWND_POINTER, NULL);
 
         result = IDXGIFactory2_CreateSwapChainForHwnd(data->dxgiFactory,
@@ -847,7 +847,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 #else
         SDL_SetError(__FUNCTION__ ", Unable to find something to attach a swap chain to");
         goto done;
-#endif /* defined(__WIN32__) || defined(__WINGDK__) / else */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) / else */
     }
     data->swapEffect = swapChainDesc.SwapEffect;
 
@@ -908,7 +908,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
     /* The width and height of the swap chain must be based on the display's
      * non-rotated size.
      */
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
     SDL_GetWindowSize(renderer->window, &w, &h);
 #else
     SDL_GetWindowSizeInPixels(renderer->window, &w, &h);
@@ -923,7 +923,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
 
     if (data->swapChain) {
         /* IDXGISwapChain::ResizeBuffers is not available on Windows Phone 8. */
-#if !defined(__WINRT__) || !SDL_WINAPI_FAMILY_PHONE
+#if !defined(SDL_PLATFORM_WINRT) || !SDL_WINAPI_FAMILY_PHONE
         /* If the swap chain already exists, resize it. */
         result = IDXGISwapChain_ResizeBuffers(data->swapChain,
                                               0,
@@ -1021,7 +1021,7 @@ static HRESULT D3D11_UpdateForWindowSizeChange(SDL_Renderer *renderer)
 
 void D3D11_Trim(SDL_Renderer *renderer)
 {
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
 #if NTDDI_VERSION > NTDDI_WIN8
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
     HRESULT result = S_OK;

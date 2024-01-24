@@ -20,15 +20,15 @@
 */
 #include "SDL_internal.h"
 
-#if defined(__WIN32__) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 #include "../core/windows/SDL_windows.h"
 #endif
 
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
 #include "../core/android/SDL_android.h"
 #endif
 
-#if (defined(__WIN32__) || defined(__WINGDK__)) && (!defined(HAVE_SETENV) || !defined(HAVE_GETENV))
+#if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)) && (!defined(HAVE_SETENV) || !defined(HAVE_GETENV))
 /* Note this isn't thread-safe! */
 static char *SDL_envmem = NULL; /* Ugh, memory leak */
 static size_t SDL_envmemlen = 0;
@@ -46,7 +46,7 @@ int SDL_setenv(const char *name, const char *value, int overwrite)
 
     return setenv(name, value, overwrite);
 }
-#elif defined(__WIN32__) || defined(__WINGDK__)
+#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 int SDL_setenv(const char *name, const char *value, int overwrite)
 {
     /* Input validation */
@@ -163,7 +163,7 @@ int SDL_setenv(const char *name, const char *value, int overwrite)
 #ifdef HAVE_GETENV
 char *SDL_getenv(const char *name)
 {
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
     /* Make sure variables from the application manifest are available */
     Android_JNI_GetManifestEnvironmentVariables();
 #endif
@@ -175,7 +175,7 @@ char *SDL_getenv(const char *name)
 
     return getenv(name);
 }
-#elif defined(__WIN32__) || defined(__WINGDK__)
+#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 char *SDL_getenv(const char *name)
 {
     size_t bufferlen;

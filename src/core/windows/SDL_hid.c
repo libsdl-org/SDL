@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#ifndef __WINRT__
+#ifndef SDL_PLATFORM_WINRT
 
 #include "SDL_hid.h"
 
@@ -81,4 +81,4 @@ void WIN_UnloadHIDDLL(void)
     }
 }
 
-#endif /* !__WINRT__ */
+#endif /* !SDL_PLATFORM_WINRT */

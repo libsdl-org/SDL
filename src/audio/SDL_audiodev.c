@@ -32,7 +32,7 @@
 #include "SDL_audiodev_c.h"
 
 #ifndef SDL_PATH_DEV_DSP
-#if defined(__NETBSD__) || defined(__OPENBSD__)
+#if defined(SDL_PLATFORM_NETBSD) || defined(SDL_PLATFORM_OPENBSD)
 #define SDL_PATH_DEV_DSP "/dev/audio"
 #else
 #define SDL_PATH_DEV_DSP "/dev/dsp"

@@ -1053,7 +1053,7 @@ int SDL_PenModifyForWacomID(SDL_Pen *pen, Uint32 wacom_devicetype_id, Uint32 *ax
     wacom_devicetype_id = PEN_WACOM_ID_INVALID; /* force detection to fail */
 #endif
 
-#if defined(__LINUX__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_FREEBSD) || defined(SDL_PLATFORM_NETBSD) || defined(SDL_PLATFORM_OPENBSD)
     /* According to Ping Cheng, the curent Wacom for Linux maintainer, device IDs on Linux
        squeeze a "0" nibble after the 3rd (least significant) nibble.
        This may also affect the *BSDs, so they are heuristically included here.

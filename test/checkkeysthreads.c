@@ -15,16 +15,16 @@
    pump the event loop and catch keystrokes.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
+#include <stdio.h>
+#include <stdlib.h>
 
 static int done;
 
@@ -214,7 +214,7 @@ static void loop(void)
     }
     (void)fprintf(stderr, "exiting event loop\n");
     (void)fflush(stderr);
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {
         emscripten_cancel_main_loop();
     }
@@ -279,7 +279,7 @@ int main(int argc, char *argv[])
     renderer = SDL_CreateRenderer(window, NULL, 0);
     SDL_RenderPresent(renderer);
 
-#ifdef __IOS__
+#ifdef SDL_PLATFORM_IOS
     /* Creating the context creates the view, which we need to show keyboard */
     SDL_GL_CreateContext(window);
 #endif
@@ -295,7 +295,7 @@ int main(int argc, char *argv[])
 
     thread = SDL_CreateThread(ping_thread, "PingThread", NULL);
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {

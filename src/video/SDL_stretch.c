@@ -337,7 +337,7 @@ static int scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch,
 #define CAST_uint32x2_t      (uint32x2_t)
 #endif
 
-#if defined(__WINRT__) || defined(_MSC_VER)
+#if defined(SDL_PLATFORM_WINRT) || defined(_MSC_VER)
 #ifdef SDL_NEON_INTRINSICS
 #undef CAST_uint8x8_t
 #undef CAST_uint32x2_t

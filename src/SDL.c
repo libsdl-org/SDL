@@ -21,16 +21,16 @@
 #include "SDL_internal.h"
 #include "SDL3/SDL_revision.h"
 
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 #include "core/windows/SDL_windows.h"
-#elif !defined(__WINRT__)
+#elif !defined(SDL_PLATFORM_WINRT)
 #include <unistd.h> /* _exit(), etc. */
 #endif
 
 /* this checks for HAVE_DBUS_DBUS_H internally. */
 #include "core/linux/SDL_dbus.h"
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten.h>
 #endif
 
@@ -83,7 +83,7 @@ SDL_COMPILE_TIME_ASSERT(SDL_PATCHLEVEL_max, SDL_PATCHLEVEL <= 99);
 extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 SDL_NORETURN void SDL_ExitProcess(int exitcode)
 {
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
     /* "if you do not know the state of all threads in your process, it is
        better to call TerminateProcess than ExitProcess"
        https://msdn.microsoft.com/en-us/library/windows/desktop/ms682658(v=vs.85).aspx */
@@ -91,11 +91,11 @@ SDL_NORETURN void SDL_ExitProcess(int exitcode)
     /* MingW doesn't have TerminateProcess marked as noreturn, so add an
        ExitProcess here that will never be reached but make MingW happy. */
     ExitProcess(exitcode);
-#elif defined(__EMSCRIPTEN__)
+#elif defined(SDL_PLATFORM_EMSCRIPTEN)
     emscripten_cancel_main_loop();   /* this should "kill" the app. */
     emscripten_force_exit(exitcode); /* this should "kill" the app. */
     exit(exitcode);
-#elif defined(__HAIKU__)  /* Haiku has _Exit, but it's not marked noreturn. */
+#elif defined(SDL_PLATFORM_HAIKU)  /* Haiku has _Exit, but it's not marked noreturn. */
     _exit(exitcode);
 #elif defined(HAVE__EXIT) /* Upper case _Exit() */
     _Exit(exitcode);
@@ -567,69 +567,65 @@ const char *SDL_GetRevision(void)
 /* Get the name of the platform */
 const char *SDL_GetPlatform(void)
 {
-#ifdef __AIX__
+#if defined(SDL_PLATFORM_AIX)
     return "AIX";
-#elif defined(__ANDROID__)
+#elif defined(SDL_PLATFORM_ANDROID)
     return "Android";
-#elif defined(__BSDI__)
+#elif defined(SDL_PLATFORM_BSDI)
     return "BSDI";
-#elif defined(__DREAMCAST__)
-    return "Dreamcast";
-#elif defined(__EMSCRIPTEN__)
+#elif defined(SDL_PLATFORM_EMSCRIPTEN)
     return "Emscripten";
-#elif defined(__FREEBSD__)
+#elif defined(SDL_PLATFORM_FREEBSD)
     return "FreeBSD";
-#elif defined(__HAIKU__)
+#elif defined(SDL_PLATFORM_HAIKU)
     return "Haiku";
-#elif defined(__HPUX__)
+#elif defined(SDL_PLATFORM_HPUX)
     return "HP-UX";
-#elif defined(__IRIX__)
+#elif defined(SDL_PLATFORM_IRIX)
     return "Irix";
-#elif defined(__LINUX__)
+#elif defined(SDL_PLATFORM_LINUX)
     return "Linux";
 #elif defined(__MINT__)
     return "Atari MiNT";
-#elif defined(__MACOS__)
+#elif defined(SDL_PLATFORM_MACOS)
     return "macOS";
-#elif defined(__NACL__)
-    return "NaCl";
-#elif defined(__NETBSD__)
+#elif defined(SDL_PLATFORM_NETBSD)
     return "NetBSD";
-#elif defined(__OPENBSD__)
+#elif defined(SDL_PLATFORM_OPENBSD)
     return "OpenBSD";
-#elif defined(__OS2__)
+#elif defined(SDL_PLATFORM_OS2)
     return "OS/2";
-#elif defined(__OSF__)
+#elif defined(SDL_PLATFORM_OSF)
     return "OSF/1";
-#elif defined(__QNXNTO__)
+#elif defined(SDL_PLATFORM_QNXNTO)
     return "QNX Neutrino";
-#elif defined(__RISCOS__)
+#elif defined(SDL_PLATFORM_RISCOS)
     return "RISC OS";
-#elif defined(__SOLARIS__)
+#elif defined(SDL_PLATFORM_SOLARIS)
     return "Solaris";
-#elif defined(__WIN32__)
+#elif defined(SDL_PLATFORM_WIN32)
     return "Windows";
-#elif defined(__WINRT__)
+#elif defined(SDL_PLATFORM_WINRT)
     return "WinRT";
-#elif defined(__WINGDK__)
+#elif defined(SDL_PLATFORM_WINGDK)
     return "WinGDK";
-#elif defined(__XBOXONE__)
+#elif defined(SDL_PLATFORM_XBOXONE)
     return "Xbox One";
-#elif defined(__XBOXSERIES__)
+#elif defined(SDL_PLATFORM_XBOXSERIES)
     return "Xbox Series X|S";
-#elif defined(__IOS__)
+#elif defined(SDL_PLATFORM_IOS)
     return "iOS";
-#elif defined(__TVOS__)
+#elif defined(SDL_PLATFORM_TVOS)
     return "tvOS";
-#elif defined(__PS2__)
+#elif defined(SDL_PLATFORM_PS2)
     return "PlayStation 2";
-#elif defined(__PSP__)
+#elif defined(SDL_PLATFORM_PSP)
     return "PlayStation Portable";
-#elif defined(__VITA__)
+#elif defined(SDL_PLATFORM_VITA)
     return "PlayStation Vita";
-#elif defined(__NGAGE__)
+#elif defined(SDL_PLATFORM_NGAGE)
     return "Nokia N-Gage";
-#elif defined(__3DS__)
+#elif defined(SDL_PLATFORM_3DS)
     return "Nintendo 3DS";
 #elif defined(__managarm__)
     return "Managarm";
@@ -640,10 +636,10 @@ const char *SDL_GetPlatform(void)
 
 SDL_bool SDL_IsTablet(void)
 {
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
     extern SDL_bool SDL_IsAndroidTablet(void);
     return SDL_IsAndroidTablet();
-#elif defined(__IOS__)
+#elif defined(SDL_PLATFORM_IOS)
     extern SDL_bool SDL_IsIPad(void);
     return SDL_IsIPad();
 #else
@@ -651,7 +647,7 @@ SDL_bool SDL_IsTablet(void)
 #endif
 }
 
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
 
 #if (!defined(HAVE_LIBC) || defined(__WATCOMC__)) && !defined(SDL_STATIC_LIB)
 /* FIXME: Still need to include DllMain() on Watcom C ? */
@@ -669,4 +665,4 @@ BOOL APIENTRY MINGW32_FORCEALIGN _DllMainCRTStartup(HANDLE hModule, DWORD ul_rea
 }
 #endif /* Building DLL */
 
-#endif /* defined(__WIN32__) || defined(__GDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) */

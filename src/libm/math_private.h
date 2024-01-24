@@ -26,7 +26,7 @@
 #define libm_hidden_def(x)
 #define strong_alias(x, y)
 
-#if !defined(__HAIKU__) && !defined(__PSP__) && !defined(__3DS__) && !defined(__PS2__) /* already defined in a system header. */
+#if !defined(SDL_PLATFORM_HAIKU) && !defined(SDL_PLATFORM_PSP) && !defined(SDL_PLATFORM_3DS) && !defined(SDL_PLATFORM_PS2) /* already defined in a system header. */
 typedef unsigned int u_int32_t;
 #endif
 

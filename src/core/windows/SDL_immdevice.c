@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if (defined(__WIN32__) || defined(__GDK__)) && defined(HAVE_MMDEVICEAPI_H)
+#if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)) && defined(HAVE_MMDEVICEAPI_H)
 
 #include "SDL_windows.h"
 #include "SDL_immdevice.h"
@@ -429,4 +429,4 @@ void SDL_IMMDevice_EnumerateEndpoints(SDL_AudioDevice **default_output, SDL_Audi
     IMMDeviceEnumerator_RegisterEndpointNotificationCallback(enumerator, (IMMNotificationClient *)&notification_client);
 }
 
-#endif /* (defined(__WIN32__) || defined(__GDK__)) && defined(HAVE_MMDEVICEAPI_H) */
+#endif /* (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)) && defined(HAVE_MMDEVICEAPI_H) */

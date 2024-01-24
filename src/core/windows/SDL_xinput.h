@@ -26,7 +26,7 @@
 #include "SDL_windows.h"
 
 #ifdef HAVE_XINPUT_H
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 /* Xbox supports an XInput wrapper which is a C++-only header... */
 #include <math.h> /* Required to compile with recent MSVC... */
 #include <XInputOnGameInput.h>

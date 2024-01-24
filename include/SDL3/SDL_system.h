@@ -43,7 +43,7 @@ extern "C" {
 /*
  * Platform specific functions for Windows
  */
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 
 typedef struct tagMSG MSG;
 typedef SDL_bool (SDLCALL *SDL_WindowsMessageHook)(void *userdata, MSG *msg);
@@ -62,9 +62,9 @@ typedef SDL_bool (SDLCALL *SDL_WindowsMessageHook)(void *userdata, MSG *msg);
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata);
 
-#endif /* defined(__WIN32__) || defined(__GDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) */
 
-#if defined(__WIN32__) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 
 /**
  * Get the D3D9 adapter index that matches the specified display.
@@ -80,9 +80,9 @@ extern DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook ca
  */
 extern DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID);
 
-#endif /* defined(__WIN32__) || defined(__WINGDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) */
 
-#if defined(__WIN32__) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 
 /**
  * Get the DXGI Adapter and Output indices for the specified display.
@@ -101,7 +101,7 @@ extern DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);
 
-#endif /* defined(__WIN32__) || defined(__WINGDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) */
 
 /*
  * Platform specific functions for UNIX
@@ -127,7 +127,7 @@ extern DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, void
 /*
  * Platform specific functions for Linux
  */
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
 
 /**
  * Sets the UNIX nice value for a thread.
@@ -158,12 +158,12 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int prio
  */
 extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
 
-#endif /* __LINUX__ */
+#endif /* SDL_PLATFORM_LINUX */
 
 /*
  * Platform specific functions for iOS
  */
-#ifdef __IOS__
+#ifdef SDL_PLATFORM_IOS
 
 #define SDL_iOSSetAnimationCallback(window, interval, callback, callbackParam) SDL_iPhoneSetAnimationCallback(window, interval, callback, callbackParam)
 
@@ -219,13 +219,13 @@ extern DECLSPEC int SDLCALL SDL_iPhoneSetAnimationCallback(SDL_Window * window, 
  */
 extern DECLSPEC void SDLCALL SDL_iPhoneSetEventPump(SDL_bool enabled);
 
-#endif /* __IOS__ */
+#endif /* SDL_PLATFORM_IOS */
 
 
 /*
  * Platform specific functions for Android
  */
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
 
 /**
  * Get the Android Java Native Interface Environment of the current thread.
@@ -451,12 +451,12 @@ extern DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int durati
  */
 extern DECLSPEC int SDLCALL SDL_AndroidSendMessage(Uint32 command, int param);
 
-#endif /* __ANDROID__ */
+#endif /* SDL_PLATFORM_ANDROID */
 
 /*
  * Platform specific functions for WinRT
  */
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
 
 /**
  *  WinRT / Windows Phone path types
@@ -556,7 +556,7 @@ extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathT
  */
 extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
 
-#endif /* __WINRT__ */
+#endif /* SDL_PLATFORM_WINRT */
 
 /**
  * Query if the current device is a tablet.
@@ -610,7 +610,7 @@ extern DECLSPEC void SDLCALL SDL_OnApplicationWillEnterForeground(void);
  */
 extern DECLSPEC void SDLCALL SDL_OnApplicationDidBecomeActive(void);
 
-#ifdef __IOS__
+#ifdef SDL_PLATFORM_IOS
 /*
  * \since This function is available since SDL 3.0.0.
  */
@@ -620,7 +620,7 @@ extern DECLSPEC void SDLCALL SDL_OnApplicationDidChangeStatusBarOrientation(void
 /*
  * Functions used only by GDK
  */
-#ifdef __GDK__
+#ifdef SDL_PLATFORM_GDK
 typedef struct XTaskQueueObject *XTaskQueueHandle;
 typedef struct XUser *XUserHandle;
 

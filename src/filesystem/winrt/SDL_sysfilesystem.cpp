@@ -23,7 +23,7 @@
 /* TODO, WinRT: remove the need to compile this with C++/CX (/ZW) extensions, and if possible, without C++ at all
  */
 
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
 
 extern "C" {
 #include "../../core/windows/SDL_windows.h"
@@ -236,4 +236,4 @@ char *SDL_GetUserFolder(SDL_Folder folder)
     return NULL;
 }
 
-#endif /* __WINRT__ */
+#endif /* SDL_PLATFORM_WINRT */

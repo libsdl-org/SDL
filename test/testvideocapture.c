@@ -13,11 +13,12 @@
 #include "SDL3/SDL.h"
 #include "SDL3/SDL_test.h"
 #include "SDL3/SDL_video_capture.h"
-#include <stdio.h>
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #endif
+
+#include <stdio.h>
 
 static const char *usage = "\
  \n\
@@ -62,7 +63,7 @@ update_fps(measure_fps_t *m)
     }
 }
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#if defined(SDL_PLATFORM_LINUX) && !defined(SDL_PLATFORM_ANDROID)
 static void load_average(float *val)
 {
     FILE *fp = 0;
@@ -663,7 +664,7 @@ int main(int argc, char **argv)
 
         /* display status and FPS */
         if (!device) {
-#ifdef __IOS__
+#ifdef SDL_PLATFORM_IOS
             const float x_offset = 500;
 #else
             const float x_offset = 0;
@@ -672,7 +673,7 @@ int main(int argc, char **argv)
             SDL_snprintf(buf, 256, "Device %d (%s) is not opened", current_dev, SDL_GetVideoCaptureDeviceName(get_instance_id(current_dev)));
             SDLTest_DrawString(renderer, x_offset + 10, 10, buf);
         } else {
-#ifdef __IOS__
+#ifdef SDL_PLATFORM_IOS
             const float x_offset = 500;
 #else
             const float x_offset = 0;
@@ -714,7 +715,7 @@ int main(int argc, char **argv)
         }
 
         /* display load average */
-#if defined(__linux__) && !defined(__ANDROID__)
+#if defined(SDL_PLATFORM_LINUX) && !defined(SDL_PLATFORM_ANDROID)
         {
             float val = 0.0f;
             char buf[128];

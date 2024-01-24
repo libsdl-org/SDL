@@ -12,17 +12,17 @@
 
 /* Simple program: picks the offscreen backend and renders each frame to a bmp */
 
-#include <stdlib.h>
-#include <time.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_opengl.h>
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
+#include <stdlib.h>
+#include <time.h>
 
 static SDL_Renderer *renderer = NULL;
 static SDL_Window *window = NULL;
@@ -85,7 +85,7 @@ static void loop(void)
     draw();
     save_surface_to_bmp();
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {
         emscripten_cancel_main_loop();
     }
@@ -94,7 +94,7 @@ static void loop(void)
 
 int main(int argc, char *argv[])
 {
-#ifndef __EMSCRIPTEN__
+#ifndef SDL_PLATFORM_EMSCRIPTEN
     Uint64 then, now;
     Uint32 frames;
 #endif
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
 
     srand((unsigned int)time(NULL));
 
-#ifndef __EMSCRIPTEN__
+#ifndef SDL_PLATFORM_EMSCRIPTEN
     /* Main render loop */
     frames = 0;
     then = SDL_GetTicks();
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
 
     SDL_Log("Rendering %u frames offscreen\n", max_frames);
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done && frames < max_frames) {

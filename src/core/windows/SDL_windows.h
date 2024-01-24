@@ -24,7 +24,7 @@
 #ifndef _INCLUDED_WINDOWS_H
 #define _INCLUDED_WINDOWS_H
 
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -45,7 +45,7 @@
 #endif
 #define WINVER _WIN32_WINNT
 
-#elif defined(__WINGDK__)
+#elif defined(SDL_PLATFORM_WINGDK)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -60,7 +60,7 @@
 #define _WIN32_WINNT 0xA00
 #define WINVER       _WIN32_WINNT
 
-#elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#elif defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -132,7 +132,7 @@ extern int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr);
 /* Sets an error message based on GetLastError(). Always return -1. */
 extern int WIN_SetError(const char *prefix);
 
-#ifndef __WINRT__
+#ifndef SDL_PLATFORM_WINRT
 /* Load a function from combase.dll */
 FARPROC WIN_LoadComBaseFunction(const char *name);
 #endif

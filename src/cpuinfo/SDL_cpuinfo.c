@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK)
 #include "../core/windows/SDL_windows.h"
 #endif
 
@@ -33,13 +33,13 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #endif
-#if defined(__MACOS__) && (defined(__ppc__) || defined(__ppc64__))
+#if defined(SDL_PLATFORM_MACOS) && (defined(__ppc__) || defined(__ppc64__))
 #include <sys/sysctl.h> /* For AltiVec check */
-#elif defined(__OpenBSD__) && defined(__powerpc__)
+#elif defined(SDL_PLATFORM_OPENBSD) && defined(__powerpc__)
 #include <sys/types.h>
 #include <sys/sysctl.h> /* For AltiVec check */
 #include <machine/cpu.h>
-#elif defined(__FreeBSD__) && defined(__powerpc__)
+#elif defined(SDL_PLATFORM_FREEBSD) && defined(__powerpc__)
 #include <machine/cpu.h>
 #include <sys/auxv.h>
 #elif defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP)
@@ -47,7 +47,7 @@
 #include <setjmp.h>
 #endif
 
-#if (defined(__LINUX__) || defined(__ANDROID__)) && defined(__arm__)
+#if (defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID)) && defined(__arm__)
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -66,7 +66,7 @@
 #endif
 #endif
 
-#if defined(__ANDROID__) && defined(__arm__) && !defined(HAVE_GETAUXVAL)
+#if defined(SDL_PLATFORM_ANDROID) && defined(__arm__) && !defined(HAVE_GETAUXVAL)
 #include <cpu-features.h>
 #endif
 
@@ -74,16 +74,16 @@
 #include <sys/auxv.h>
 #endif
 
-#ifdef __RISCOS__
+#ifdef SDL_PLATFORM_RISCOS
 #include <kernel.h>
 #include <swis.h>
 #endif
 
-#ifdef __PS2__
+#ifdef SDL_PLATFORM_PS2
 #include <kernel.h>
 #endif
 
-#ifdef __HAIKU__
+#ifdef SDL_PLATFORM_HAIKU
 #include <kernel/OS.h>
 #endif
 
@@ -106,7 +106,7 @@
 #define CPU_CFG2_LSX  (1 << 6)
 #define CPU_CFG2_LASX (1 << 7)
 
-#if defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP) && !defined(__MACOS__) && !defined(__OpenBSD__) && !defined(__FreeBSD__)
+#if defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP) && !defined(SDL_PLATFORM_MACOS) && !defined(SDL_PLATFORM_OPENBSD) && !defined(SDL_PLATFORM_FREEBSD)
 /* This is the brute force way of detecting instruction sets...
    the idea is borrowed from the libmpeg2 library - thanks!
  */
@@ -122,7 +122,7 @@ static int CPU_haveCPUID(void)
     int has_CPUID = 0;
 
 /* *INDENT-OFF* */ /* clang-format off */
-#ifndef __EMSCRIPTEN__
+#ifndef SDL_PLATFORM_EMSCRIPTEN
 #if (defined(__GNUC__) || defined(__llvm__)) && defined(__i386__)
     __asm__ (
 "        pushfl                      # Get original EFLAGS             \n"
@@ -209,7 +209,7 @@ done:
 "1:                            \n"
     );
 #endif
-#endif /* !__EMSCRIPTEN__ */
+#endif /* !SDL_PLATFORM_EMSCRIPTEN */
 /* *INDENT-ON* */ /* clang-format on */
     return has_CPUID;
 }
@@ -318,8 +318,8 @@ static int CPU_haveAltiVec(void)
 {
     volatile int altivec = 0;
 #ifndef SDL_CPUINFO_DISABLED
-#if (defined(__MACOS__) && (defined(__ppc__) || defined(__ppc64__))) || (defined(__OpenBSD__) && defined(__powerpc__))
-#ifdef __OpenBSD__
+#if (defined(SDL_PLATFORM_MACOS) && (defined(__ppc__) || defined(__ppc64__))) || (defined(SDL_PLATFORM_OPENBSD) && defined(__powerpc__))
+#ifdef SDL_PLATFORM_OPENBSD
     int selectors[2] = { CTL_MACHDEP, CPU_ALTIVEC };
 #else
     int selectors[2] = { CTL_HW, HW_VECTORUNIT };
@@ -330,7 +330,7 @@ static int CPU_haveAltiVec(void)
     if (0 == error) {
         altivec = (hasVectorUnit != 0);
     }
-#elif defined(__FreeBSD__) && defined(__powerpc__)
+#elif defined(SDL_PLATFORM_FREEBSD) && defined(__powerpc__)
     unsigned long cpufeatures = 0;
     elf_aux_info(AT_HWCAP, &cpufeatures, sizeof(cpufeatures));
     altivec = cpufeatures & PPC_FEATURE_HAS_ALTIVEC;
@@ -361,7 +361,7 @@ static int CPU_haveARMSIMD(void)
     return 0;
 }
 
-#elif defined(__LINUX__)
+#elif defined(SDL_PLATFORM_LINUX)
 static int CPU_haveARMSIMD(void)
 {
     int arm_simd = 0;
@@ -384,7 +384,7 @@ static int CPU_haveARMSIMD(void)
     return arm_simd;
 }
 
-#elif defined(__RISCOS__)
+#elif defined(SDL_PLATFORM_RISCOS)
 static int CPU_haveARMSIMD(void)
 {
     _kernel_swi_regs regs;
@@ -414,7 +414,7 @@ static int CPU_haveARMSIMD(void)
 }
 #endif
 
-#if defined(__LINUX__) && defined(__arm__) && !defined(HAVE_GETAUXVAL)
+#if defined(SDL_PLATFORM_LINUX) && defined(__arm__) && !defined(HAVE_GETAUXVAL)
 static int readProcAuxvForNeon(void)
 {
     int neon = 0;
@@ -439,7 +439,7 @@ static int CPU_haveNEON(void)
 {
 /* The way you detect NEON is a privileged instruction on ARM, so you have
    query the OS kernel in a platform-specific way. :/ */
-#if (defined(__WINDOWS__) || defined(__WINRT__) || defined(__GDK__)) && (defined(_M_ARM) || defined(_M_ARM64))
+#if (defined(SDL_PLATFORM_WINDOWS) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK)) && (defined(_M_ARM) || defined(_M_ARM64))
 /* Visual Studio, for ARM, doesn't define __ARM_ARCH. Handle this first. */
 /* Seems to have been removed */
 #ifndef PF_ARM_NEON_INSTRUCTIONS_AVAILABLE
@@ -449,18 +449,18 @@ static int CPU_haveNEON(void)
     return IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE) != 0;
 #elif (defined(__ARM_ARCH) && (__ARM_ARCH >= 8)) || defined(__aarch64__)
     return 1; /* ARMv8 always has non-optional NEON support. */
-#elif defined(__VITA__)
+#elif defined(SDL_PLATFORM_VITA)
     return 1;
-#elif defined(__3DS__)
+#elif defined(SDL_PLATFORM_3DS)
     return 0;
-#elif defined(__APPLE__) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7)
+#elif defined(SDL_PLATFORM_APPLE) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7)
     /* (note that sysctlbyname("hw.optional.neon") doesn't work!) */
     return 1; /* all Apple ARMv7 chips and later have NEON. */
-#elif defined(__APPLE__)
+#elif defined(SDL_PLATFORM_APPLE)
     return 0; /* assume anything else from Apple doesn't have NEON. */
 #elif !defined(__arm__)
     return 0; /* not an ARM CPU at all. */
-#elif defined(__OpenBSD__)
+#elif defined(SDL_PLATFORM_OPENBSD)
     return 1; /* OpenBSD only supports ARMv7 CPUs that have NEON. */
 #elif defined(HAVE_ELF_AUX_INFO)
     unsigned long hasneon = 0;
@@ -468,11 +468,11 @@ static int CPU_haveNEON(void)
         return 0;
     }
     return (hasneon & HWCAP_NEON) == HWCAP_NEON;
-#elif (defined(__LINUX__) || defined(__ANDROID__)) && defined(HAVE_GETAUXVAL)
+#elif (defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID)) && defined(HAVE_GETAUXVAL)
     return (getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON;
-#elif defined(__LINUX__)
+#elif defined(SDL_PLATFORM_LINUX)
     return readProcAuxvForNeon();
-#elif defined(__ANDROID__)
+#elif defined(SDL_PLATFORM_ANDROID)
     /* Use NDK cpufeatures to read either /proc/self/auxv or /proc/cpuinfo */
     {
         AndroidCpuFamily cpu_family = android_getCpuFamily();
@@ -484,7 +484,7 @@ static int CPU_haveNEON(void)
         }
         return 0;
     }
-#elif defined(__RISCOS__)
+#elif defined(SDL_PLATFORM_RISCOS)
     /* Use the VFPSupport_Features SWI to access the MVFR registers */
     {
         _kernel_swi_regs regs;
@@ -496,7 +496,7 @@ static int CPU_haveNEON(void)
         }
         return 0;
     }
-#elif defined(__EMSCRIPTEN__)
+#elif defined(SDL_PLATFORM_EMSCRIPTEN)
     return 0;
 #else
 #warning SDL_HasNEON is not implemented for this ARM platform. Write me.
@@ -629,7 +629,7 @@ int SDL_GetCPUCount(void)
             sysctlbyname("hw.ncpu", &SDL_CPUCount, &size, NULL, 0);
         }
 #endif
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
         if (SDL_CPUCount <= 0) {
             SYSTEM_INFO info;
             GetSystemInfo(&info);
@@ -1029,7 +1029,7 @@ int SDL_GetSystemRAM(void)
             }
         }
 #endif
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
         if (SDL_SystemRAM <= 0) {
             MEMORYSTATUSEX stat;
             stat.dwLength = sizeof(stat);
@@ -1038,7 +1038,7 @@ int SDL_GetSystemRAM(void)
             }
         }
 #endif
-#ifdef __RISCOS__
+#ifdef SDL_PLATFORM_RISCOS
         if (SDL_SystemRAM <= 0) {
             _kernel_swi_regs regs;
             regs.r[0] = 0x108;
@@ -1047,20 +1047,20 @@ int SDL_GetSystemRAM(void)
             }
         }
 #endif
-#ifdef __VITA__
+#ifdef SDL_PLATFORM_VITA
         if (SDL_SystemRAM <= 0) {
             /* Vita has 512MiB on SoC, that's split into 256MiB(+109MiB in extended memory mode) for app
                +26MiB of physically continuous memory, +112MiB of CDRAM(VRAM) + system reserved memory. */
             SDL_SystemRAM = 536870912;
         }
 #endif
-#ifdef __PS2__
+#ifdef SDL_PLATFORM_PS2
         if (SDL_SystemRAM <= 0) {
             /* PlayStation 2 has 32MiB however there are some special models with 64 and 128 */
             SDL_SystemRAM = GetMemorySize();
         }
 #endif
-#ifdef __HAIKU__
+#ifdef SDL_PLATFORM_HAIKU
         if (SDL_SystemRAM <= 0) {
             system_info info;
             if (get_system_info(&info) == B_OK) {

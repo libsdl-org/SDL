@@ -22,7 +22,7 @@
 #include "SDL_internal.h"
 #include "../SDL_main_callbacks.h"
 
-#ifdef __IOS__
+#ifdef SDL_PLATFORM_IOS
 
 #import <UIKit/UIKit.h>
 

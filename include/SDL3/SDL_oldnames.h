@@ -377,14 +377,6 @@
 #define SDL_PIXELFORMAT_RGB888 SDL_PIXELFORMAT_XRGB8888
 #define SDL_PixelFormatEnumToMasks SDL_GetMasksForPixelFormatEnum
 
-/* ##SDL_platform.h */
-#ifdef __IOS__
-#define __IPHONEOS__ __IOS__
-#endif
-#ifdef __MACOS__
-#define __MACOSX__ __MACOS__
-#endif
-
 /* ##SDL_rect.h */
 #define SDL_EncloseFPoints SDL_GetRectEnclosingPointsFloat
 #define SDL_EnclosePoints SDL_GetRectEnclosingPoints
@@ -852,14 +844,6 @@
 #define SDL_PIXELFORMAT_BGR888 SDL_PIXELFORMAT_BGR888_renamed_SDL_PIXELFORMAT_XBGR8888
 #define SDL_PIXELFORMAT_RGB888 SDL_PIXELFORMAT_RGB888_renamed_SDL_PIXELFORMAT_XRGB8888
 #define SDL_PixelFormatEnumToMasks SDL_PixelFormatEnumToMasks_renamed_SDL_GetMasksForPixelFormatEnum
-
-/* ##SDL_platform.h */
-#ifdef __IOS__
-#define __IPHONEOS__ __IPHONEOS___renamed___IOS__
-#endif
-#ifdef __MACOS__
-#define __MACOSX__ __MACOSX___renamed___MACOS__
-#endif
 
 /* ##SDL_rect.h */
 #define SDL_EncloseFPoints SDL_EncloseFPoints_renamed_SDL_GetRectEnclosingPointsFloat

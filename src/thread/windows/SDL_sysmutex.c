@@ -39,7 +39,7 @@ SDL_mutex_impl_t SDL_mutex_impl_active = { 0 };
  * Implementation based on Slim Reader/Writer (SRW) Locks for Win 7 and newer.
  */
 
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
 /* Functions are guaranteed to be available */
 #define pInitializeSRWLock InitializeSRWLock
 #define pReleaseSRWLockExclusive    ReleaseSRWLockExclusive
@@ -143,7 +143,7 @@ static SDL_Mutex *SDL_CreateMutex_cs(void)
     if (mutex) {
         // Initialize
         // On SMP systems, a non-zero spin count generally helps performance
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
         InitializeCriticalSectionEx(&mutex->cs, 2000, 0);
 #else
         InitializeCriticalSectionAndSpinCount(&mutex->cs, 2000);
@@ -197,7 +197,7 @@ SDL_Mutex *SDL_CreateMutex(void)
         const SDL_mutex_impl_t *impl = &SDL_mutex_impl_cs;
 
         if (!SDL_GetHintBoolean(SDL_HINT_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS, SDL_FALSE)) {
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
             // Link statically on this platform
             impl = &SDL_mutex_impl_srw;
 #else
