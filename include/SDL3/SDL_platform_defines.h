@@ -132,7 +132,9 @@
 #define SDL_PLATFORM_CYGWIN 1
 #endif
 
-#if defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN) || defined(__MINGW32__)
+#if defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)
+#define SDL_PLATFORM_WINDOWS  1    /* Win32 api and Windows-based OSs */
+
 /* Try to find out if we're compiling for WinRT, GDK or non-WinRT/GDK */
 #if defined(_MSC_VER) && defined(__has_include)
 #if __has_include(<winapifamily.h>)
@@ -170,13 +172,10 @@
 #elif defined(_GAMING_XBOX_SCARLETT)
 #define SDL_PLATFORM_XBOXSERIES 1
 #else
-#define SDL_PLATFORM_WINDOWS    1
+#define SDL_PLATFORM_WIN32      1
 #endif
 #endif /* defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN) */
 
-#ifdef SDL_PLATFORM_WINDOWS
-#define SDL_PLATFORM_WIN32  1
-#endif
 /* This is to support generic "any GDK" separate from a platform-specific GDK */
 #if defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 #define SDL_PLATFORM_GDK    1
