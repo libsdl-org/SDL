@@ -27,6 +27,7 @@
  * This merges the two, at a small performance cost, until distributions
  * have granted access to /dev/hidraw*
  */
+
 #include "SDL_internal.h"
 
 #include "SDL_hidapi_c.h"
@@ -577,7 +578,7 @@ typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
 #include "SDL_hidapi_netbsd.h"
 #elif defined(SDL_PLATFORM_MACOS)
 #include "SDL_hidapi_mac.h"
-#elif defined(SDL_PLATFORM_WINDOWS) || defined(SDL_PLATFORM_WINGDK)
+#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 #include "SDL_hidapi_windows.h"
 #elif defined(SDL_PLATFORM_ANDROID)
 #include "SDL_hidapi_android.h"
