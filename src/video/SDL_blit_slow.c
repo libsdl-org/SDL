@@ -259,7 +259,7 @@ static float PQtoNits(float pq)
     const float oo_m2 = 1.0f / 78.84375f;
 
     float num = SDL_max(SDL_powf(pq, oo_m2) - c1, 0.0f);
-    float den = c2 - c3 * pow(pq, oo_m2);
+    float den = c2 - c3 * SDL_powf(pq, oo_m2);
 
     return 10000.0f * SDL_powf(num / den, oo_m1);
 }
