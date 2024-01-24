@@ -501,14 +501,14 @@ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
     input->sx_w = sx_w;
     input->sy_w = sy_w;
     if (input->pointer_focus) {
-        float sx = (float)(wl_fixed_to_double(sx_w) * window_data->pointer_scale_x);
-        float sy = (float)(wl_fixed_to_double(sy_w) * window_data->pointer_scale_y);
+        float sx = (float)(wl_fixed_to_double(sx_w) * window_data->pointer_scale.x);
+        float sy = (float)(wl_fixed_to_double(sy_w) * window_data->pointer_scale.y);
         SDL_SendMouseMotion(Wayland_GetPointerTimestamp(input, time), window_data->sdlwindow, 0, 0, sx, sy);
     }
 
     if (window && window->hit_test) {
-        const SDL_Point point = { (int)SDL_floor(wl_fixed_to_double(sx_w) * window_data->pointer_scale_x),
-                                  (int)SDL_floor(wl_fixed_to_double(sy_w) * window_data->pointer_scale_y) };
+        const SDL_Point point = { (int)SDL_floor(wl_fixed_to_double(sx_w) * window_data->pointer_scale.x),
+                                  (int)SDL_floor(wl_fixed_to_double(sy_w) * window_data->pointer_scale.y) };
         SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
         if (rc == window_data->hit_test_result) {
             return;
@@ -978,15 +978,15 @@ static void touch_handler_down(void *data, struct wl_touch *touch, uint32_t seri
     if (window_data) {
         float x, y;
 
-        if (window_data->wl_window_width <= 1) {
+        if (window_data->current.logical_width <= 1) {
             x = 0.5f;
         } else {
-            x = wl_fixed_to_double(fx) / (window_data->wl_window_width - 1);
+            x = wl_fixed_to_double(fx) / (window_data->current.logical_width - 1);
         }
-        if (window_data->wl_window_height <= 1) {
+        if (window_data->current.logical_height <= 1) {
             y = 0.5f;
         } else {
-            y = wl_fixed_to_double(fy) / (window_data->wl_window_height - 1);
+            y = wl_fixed_to_double(fy) / (window_data->current.logical_height - 1);
         }
 
         SDL_SetMouseFocus(window_data->sdlwindow);
@@ -1009,8 +1009,8 @@ static void touch_handler_up(void *data, struct wl_touch *touch, uint32_t serial
         SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(surface);
 
         if (window_data) {
-            const float x = wl_fixed_to_double(fx) / window_data->wl_window_width;
-            const float y = wl_fixed_to_double(fy) / window_data->wl_window_height;
+            const float x = wl_fixed_to_double(fx) / window_data->current.logical_width;
+            const float y = wl_fixed_to_double(fy) / window_data->current.logical_height;
 
             SDL_SendTouch(Wayland_GetTouchTimestamp(input, timestamp), (SDL_TouchID)(uintptr_t)touch,
                           (SDL_FingerID)(id + 1), window_data->sdlwindow, SDL_FALSE, x, y, 0.0f);
@@ -1038,8 +1038,8 @@ static void touch_handler_motion(void *data, struct wl_touch *touch, uint32_t ti
         SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(surface);
 
         if (window_data) {
-            const float x = wl_fixed_to_double(fx) / window_data->wl_window_width;
-            const float y = wl_fixed_to_double(fy) / window_data->wl_window_height;
+            const float x = wl_fixed_to_double(fx) / window_data->current.logical_width;
+            const float y = wl_fixed_to_double(fy) / window_data->current.logical_height;
 
             SDL_SendTouchMotion(Wayland_GetPointerTimestamp(input, timestamp), (SDL_TouchID)(uintptr_t)touch,
                                 (SDL_FingerID)(id + 1), window_data->sdlwindow, x, y, 1.0f);
@@ -2642,8 +2642,8 @@ static void tablet_tool_handle_motion(void *data, struct zwp_tablet_tool_v2 *too
     if (input->tool_focus) {
         const float sx_f = (float)wl_fixed_to_double(sx_w);
         const float sy_f = (float)wl_fixed_to_double(sy_w);
-        const float sx = sx_f * window->pointer_scale_x;
-        const float sy = sy_f * window->pointer_scale_y;
+        const float sx = sx_f * window->pointer_scale.x;
+        const float sy = sy_f * window->pointer_scale.y;
 
         if (penid != SDL_PEN_INVALID) {
             input->current_pen.update_status.x = sx;
@@ -3304,10 +3304,10 @@ int Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *wi
     } else {
         SDL_Rect scaled_mouse_rect;
 
-        scaled_mouse_rect.x = (int)SDL_floorf((float)window->mouse_rect.x / w->pointer_scale_x);
-        scaled_mouse_rect.y = (int)SDL_floorf((float)window->mouse_rect.y / w->pointer_scale_y);
-        scaled_mouse_rect.w = (int)SDL_ceilf((float)window->mouse_rect.w / w->pointer_scale_x);
-        scaled_mouse_rect.h = (int)SDL_ceilf((float)window->mouse_rect.h / w->pointer_scale_y);
+        scaled_mouse_rect.x = (int)SDL_floorf((float)window->mouse_rect.x / w->pointer_scale.x);
+        scaled_mouse_rect.y = (int)SDL_floorf((float)window->mouse_rect.y / w->pointer_scale.y);
+        scaled_mouse_rect.w = (int)SDL_ceilf((float)window->mouse_rect.w / w->pointer_scale.x);
+        scaled_mouse_rect.h = (int)SDL_ceilf((float)window->mouse_rect.h / w->pointer_scale.y);
 
         confine_rect = wl_compositor_create_region(d->compositor);
         wl_region_add(confine_rect,
