@@ -891,7 +891,7 @@ static void Wayland_FinalizeDisplays(SDL_VideoData *vid)
      * Otherwise, assume that the displays were already exposed in preferential order.
      * */
     if (Wayland_GetPrimaryDisplayCoordinates(&p_x, &p_y)) {
-        wl_list_for_each(d, &vid->output_list, link) {
+        wl_list_for_each (d, &vid->output_list, link) {
             if (d->x == p_x && d->y == p_y) {
                 WAYLAND_wl_list_remove(&d->link);
                 WAYLAND_wl_list_insert(&vid->output_list, &d->link);
@@ -900,7 +900,7 @@ static void Wayland_FinalizeDisplays(SDL_VideoData *vid)
         }
     }
 
-    wl_list_for_each(d, &vid->output_list, link) {
+    wl_list_for_each (d, &vid->output_list, link) {
         d->display = SDL_AddVideoDisplay(&d->placeholder, SDL_FALSE);
         SDL_free(d->placeholder.name);
         SDL_zero(d->placeholder);
@@ -910,7 +910,7 @@ static void Wayland_FinalizeDisplays(SDL_VideoData *vid)
 static void Wayland_init_xdg_output(SDL_VideoData *d)
 {
     SDL_DisplayData *node;
-    wl_list_for_each(node, &d->output_list, link) {
+    wl_list_for_each (node, &d->output_list, link) {
         node->xdg_output = zxdg_output_manager_v1_get_xdg_output(node->videodata->xdg_output_manager, node->output);
         zxdg_output_v1_add_listener(node->xdg_output, &xdg_output_listener, node);
     }
