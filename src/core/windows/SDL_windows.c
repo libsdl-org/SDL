@@ -211,6 +211,15 @@ static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WO
         return retval;
 #endif
 
+// this is the oldest thing we run on (and we may lose support for this in SDL3 at any time!),
+//  so there's no "OrGreater" as that would always be TRUE. The other functions are here to
+//  ask "can we support a specific feature?" but this function is here to ask "do we need to do
+//  something different for an OS version we probably should abandon?"  :)
+BOOL WIN_IsWindowsXP(void)
+{
+    CHECKWINVER(FALSE, !WIN_IsWindowsVistaOrGreater() && IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WINXP), LOBYTE(_WIN32_WINNT_WINXP), 0));
+}
+
 BOOL WIN_IsWindowsVistaOrGreater(void)
 {
     CHECKWINVER(TRUE, IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_VISTA), LOBYTE(_WIN32_WINNT_VISTA), 0));
