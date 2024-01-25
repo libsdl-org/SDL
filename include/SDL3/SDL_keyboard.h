@@ -251,6 +251,8 @@ extern DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromName(const char *name);
  * and SDL_TextEditingEvent (SDL_EVENT_TEXT_EDITING) events. Please use this
  * function in pair with SDL_StopTextInput().
  *
+ * Text input events are received by default.
+ *
  * On some platforms using this function activates the screen keyboard.
  *
  * \since This function is available since SDL 3.0.0.
@@ -273,6 +275,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_TextInputActive(void);
 
 /**
  * Stop receiving any text input events.
+ *
+ * Text input events are received by default.
  *
  * \since This function is available since SDL 3.0.0.
  *
