@@ -41,94 +41,93 @@
  */
 
 #ifndef SDL_MAIN_HANDLED
-#ifdef SDL_PLATFORM_WIN32
-/* On Windows SDL provides WinMain(), which parses the command line and passes
-   the arguments to your main function.
+    #ifdef SDL_PLATFORM_WIN32
+        /* On Windows SDL provides WinMain(), which parses the command line and passes
+           the arguments to your main function.
 
-   If you provide your own WinMain(), you may define SDL_MAIN_HANDLED
- */
-#define SDL_MAIN_AVAILABLE
+           If you provide your own WinMain(), you may define SDL_MAIN_HANDLED
+         */
+        #define SDL_MAIN_AVAILABLE
 
-#elif defined(SDL_PLATFORM_WINRT)
-/* On WinRT, SDL provides a main function that initializes CoreApplication,
-   creating an instance of IFrameworkView in the process.
+    #elif defined(SDL_PLATFORM_WINRT)
+        /* On WinRT, SDL provides a main function that initializes CoreApplication,
+           creating an instance of IFrameworkView in the process.
 
-   Ideally, #include'ing SDL_main.h is enough to get a main() function working.
-   However, that requires the source file your main() is in to be compiled
-   as C++ *and* with the /ZW compiler flag. If that's not feasible, add an
-   otherwise empty .cpp file that only contains `#include <SDL3/SDL_main.h>`
-   and build that with /ZW (still include SDL_main.h in your other file with main()!).
-   In XAML apps, instead the function SDL_RunApp() must be called with a pointer
-   to the Direct3D-hosted XAML control passed in as the "reserved" argument.
-*/
-#define SDL_MAIN_NEEDED
+           Ideally, #include'ing SDL_main.h is enough to get a main() function working.
+           However, that requires the source file your main() is in to be compiled
+           as C++ *and* with the /ZW compiler flag. If that's not feasible, add an
+           otherwise empty .cpp file that only contains `#include <SDL3/SDL_main.h>`
+           and build that with /ZW (still include SDL_main.h in your other file with main()!).
+           In XAML apps, instead the function SDL_RunApp() must be called with a pointer
+           to the Direct3D-hosted XAML control passed in as the "reserved" argument.
+        */
+        #define SDL_MAIN_NEEDED
 
-#elif defined(SDL_PLATFORM_GDK)
-/* On GDK, SDL provides a main function that initializes the game runtime.
+    #elif defined(SDL_PLATFORM_GDK)
+        /* On GDK, SDL provides a main function that initializes the game runtime.
 
-   If you prefer to write your own WinMain-function instead of having SDL
-   provide one that calls your main() function,
-   #define SDL_MAIN_HANDLED before #include'ing SDL_main.h
-   and call the SDL_RunApp function from your entry point.
-*/
-#define SDL_MAIN_NEEDED
+           If you prefer to write your own WinMain-function instead of having SDL
+           provide one that calls your main() function,
+           #define SDL_MAIN_HANDLED before #include'ing SDL_main.h
+           and call the SDL_RunApp function from your entry point.
+        */
+        #define SDL_MAIN_NEEDED
 
-#elif defined(SDL_PLATFORM_IOS)
-/* On iOS SDL provides a main function that creates an application delegate
-   and starts the iOS application run loop.
+    #elif defined(SDL_PLATFORM_IOS)
+        /* On iOS SDL provides a main function that creates an application delegate
+           and starts the iOS application run loop.
 
-   To use it, just #include SDL_main.h in the source file that contains your
-   main() function.
+           To use it, just #include SDL_main.h in the source file that contains your
+           main() function.
 
-   See src/video/uikit/SDL_uikitappdelegate.m for more details.
- */
-#define SDL_MAIN_NEEDED
+           See src/video/uikit/SDL_uikitappdelegate.m for more details.
+         */
+        #define SDL_MAIN_NEEDED
 
-#elif defined(SDL_PLATFORM_ANDROID)
-/* On Android SDL provides a Java class in SDLActivity.java that is the
-   main activity entry point.
+    #elif defined(SDL_PLATFORM_ANDROID)
+        /* On Android SDL provides a Java class in SDLActivity.java that is the
+           main activity entry point.
 
-   See docs/README-android.md for more details on extending that class.
- */
-#define SDL_MAIN_NEEDED
+           See docs/README-android.md for more details on extending that class.
+         */
+        #define SDL_MAIN_NEEDED
 
-/* We need to export SDL_main so it can be launched from Java */
-#define SDLMAIN_DECLSPEC    DECLSPEC
+        /* We need to export SDL_main so it can be launched from Java */
+        #define SDLMAIN_DECLSPEC    DECLSPEC
 
-#elif defined(SDL_PLATFORM_PSP)
-/* On PSP SDL provides a main function that sets the module info,
-   activates the GPU and starts the thread required to be able to exit
-   the software.
+    #elif defined(SDL_PLATFORM_PSP)
+        /* On PSP SDL provides a main function that sets the module info,
+           activates the GPU and starts the thread required to be able to exit
+           the software.
 
-   If you provide this yourself, you may define SDL_MAIN_HANDLED
- */
-#define SDL_MAIN_AVAILABLE
+           If you provide this yourself, you may define SDL_MAIN_HANDLED
+         */
+        #define SDL_MAIN_AVAILABLE
 
-#elif defined(SDL_PLATFORM_PS2)
-#define SDL_MAIN_AVAILABLE
+    #elif defined(SDL_PLATFORM_PS2)
+        #define SDL_MAIN_AVAILABLE
 
-#define SDL_PS2_SKIP_IOP_RESET() \
-   void reset_IOP(); \
-   void reset_IOP() {}
+        #define SDL_PS2_SKIP_IOP_RESET() \
+           void reset_IOP(); \
+           void reset_IOP() {}
 
-#elif defined(SDL_PLATFORM_3DS)
-/*
-  On N3DS, SDL provides a main function that sets up the screens
-  and storage.
+    #elif defined(SDL_PLATFORM_3DS)
+        /*
+          On N3DS, SDL provides a main function that sets up the screens
+          and storage.
 
-  If you provide this yourself, you may define SDL_MAIN_HANDLED
-*/
-#define SDL_MAIN_AVAILABLE
+          If you provide this yourself, you may define SDL_MAIN_HANDLED
+        */
+        #define SDL_MAIN_AVAILABLE
 
-#elif defined(SDL_PLATFORM_NGAGE)
+    #elif defined(SDL_PLATFORM_NGAGE)
+        /*
+        TODO: not sure if it should be SDL_MAIN_NEEDED, in SDL2 ngage had a
+                main implementation, but wasn't mentioned in SDL_main.h
+         */
+        #define SDL_MAIN_AVAILABLE
 
-/*
-   TODO: not sure if it should be SDL_MAIN_NEEDED, in SDL2 ngage had a
-        main implementation, but wasn't mentioned in SDL_main.h
- */
-#define SDL_MAIN_AVAILABLE
-
-#endif
+    #endif
 #endif /* SDL_MAIN_HANDLED */
 
 #ifndef SDLMAIN_DECLSPEC
@@ -151,7 +150,7 @@
  */
 
 #if defined(SDL_MAIN_NEEDED) || defined(SDL_MAIN_AVAILABLE) || defined(SDL_MAIN_USE_CALLBACKS)
-#define main    SDL_main
+#define main SDL_main
 #endif
 
 #include <SDL3/SDL_begin_code.h>
@@ -470,25 +469,7 @@ extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
 #endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) */
 
-
-#ifdef SDL_PLATFORM_WINRT
-
-/* for compatibility with SDL2's function of this name */
-#define SDL_WinRTRunApp(MAIN_FUNC, RESERVED)  SDL_RunApp(0, NULL, MAIN_FUNC, RESERVED)
-
-#endif /* SDL_PLATFORM_WINRT */
-
-#ifdef SDL_PLATFORM_IOS
-
-/* for compatibility with SDL2's function of this name */
-#define SDL_UIKitRunApp(ARGC, ARGV, MAIN_FUNC)  SDL_RunApp(ARGC, ARGV, MAIN_FUNC, NULL)
-
-#endif /* SDL_PLATFORM_IOS */
-
 #ifdef SDL_PLATFORM_GDK
-
-/* for compatibility with SDL2's function of this name */
-#define SDL_GDKRunApp(MAIN_FUNC, RESERVED)  SDL_RunApp(0, NULL, MAIN_FUNC, RESERVED)
 
 /**
  * Callback from the application to let the suspend continue.
@@ -506,31 +487,29 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 #include <SDL3/SDL_close_code.h>
 
 #if !defined(SDL_MAIN_HANDLED) && !defined(SDL_MAIN_NOIMPL)
-/* include header-only SDL_main implementations */
-#if defined(SDL_MAIN_USE_CALLBACKS) \
-    || defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS) \
-    || defined(SDL_PLATFORM_3DS) || defined(SDL_PLATFORM_NGAGE) || defined(SDL_PLATFORM_PS2) || defined(SDL_PLATFORM_PSP)
+    /* include header-only SDL_main implementations */
+    #if defined(SDL_MAIN_USE_CALLBACKS) \
+        || defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS) \
+        || defined(SDL_PLATFORM_3DS) || defined(SDL_PLATFORM_NGAGE) || defined(SDL_PLATFORM_PS2) || defined(SDL_PLATFORM_PSP)
 
-/* platforms which main (-equivalent) can be implemented in plain C */
-#include <SDL3/SDL_main_impl.h>
+        /* platforms which main (-equivalent) can be implemented in plain C */
+        #include <SDL3/SDL_main_impl.h>
 
-#elif defined(SDL_PLATFORM_WINRT) /* C++ platforms */
+    #elif defined(SDL_PLATFORM_WINRT) /* C++ platforms */
+        #ifdef __cplusplus
+        #include <SDL3/SDL_main_impl.h>
+        #else
+            /* Note: to get rid of the following warning, you can #define SDL_MAIN_NOIMPL before including SDL_main.h
+             *  in your C sourcefile that contains the standard main. Do *not* use SDL_MAIN_HANDLED for that, then SDL_main won't find your main()!
+             */
+            #ifdef _MSC_VER
+                #pragma message("Note: Your platform needs the SDL_main implementation in a C++ source file. You can keep your main() in plain C (then continue including SDL_main.h there!) and create a fresh .cpp file that only contains #include <SDL3/SDL_main.h>")
+            #elif defined(__GNUC__) /* gcc, clang, mingw and compatible are matched by this and have #warning */
+                #warning "Note: Your platform needs the SDL_main implementation in a C++ source file. You can keep your main() in plain C and create a fresh .cpp file that only contains #include <SDL3/SDL_main.h>"
+            #endif /* __GNUC__ */
+        #endif /* __cplusplus */
 
-#ifdef __cplusplus
-#include <SDL3/SDL_main_impl.h>
-#else
-/* Note: to get rid of the following warning, you can #define SDL_MAIN_NOIMPL before including SDL_main.h
- *  in your C sourcefile that contains the standard main. Do *not* use SDL_MAIN_HANDLED for that, then SDL_main won't find your main()!
- */
-#ifdef _MSC_VER
-#pragma message("Note: Your platform needs the SDL_main implementation in a C++ source file. You can keep your main() in plain C (then continue including SDL_main.h there!) and create a fresh .cpp file that only contains #include <SDL3/SDL_main.h>")
-#elif defined(__GNUC__) /* gcc, clang, mingw and compatible are matched by this and have #warning */
-#warning "Note: Your platform needs the SDL_main implementation in a C++ source file. You can keep your main() in plain C and create a fresh .cpp file that only contains #include <SDL3/SDL_main.h>"
-#endif /* __GNUC__ */
-#endif /* __cplusplus */
-
-#endif /* C++ platforms like SDL_PLATFORM_WINRT etc */
-
-#endif /* SDL_MAIN_HANDLED */
+    #endif /* C++ platforms like SDL_PLATFORM_WINRT etc */
+#endif
 
 #endif /* SDL_main_h_ */
