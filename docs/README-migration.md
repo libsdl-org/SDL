@@ -1501,6 +1501,8 @@ SDL_GetNumTouchFingers() returns a negative error code if there was an error.
 
 SDL_GetTouchName is replaced with SDL_GetTouchDeviceName(), which takes an SDL_TouchID instead of an index.
 
+SDL_TouchID and SDL_FingerID are now Uint64 with 0 being an invalid value.
+
 The following functions have been removed:
 * SDL_GetNumTouchDevices() - replaced with SDL_GetTouchDevices()
 * SDL_GetTouchDevice() - replaced with SDL_GetTouchDevices()
