@@ -197,32 +197,37 @@ static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WO
 }
 #endif
 
+// apply some static variables so we only call into the Win32 API once per process for each check.
+#if defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
+    #define CHECKWINVER(notdesktop_platform_result, test) return (notdesktop_platform_result);
+#else
+    #define CHECKWINVER(notdesktop_platform_result, test) \
+        static SDL_bool checked = SDL_FALSE; \
+        static BOOL retval = FALSE; \
+        if (!checked) { \
+            retval = (test); \
+            checked = SDL_TRUE; \
+        } \
+        return retval;
+#endif
+
 BOOL WIN_IsWindowsVistaOrGreater(void)
 {
-#if defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-    return TRUE;
-#else
-    return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_VISTA), LOBYTE(_WIN32_WINNT_VISTA), 0);
-#endif
+    CHECKWINVER(TRUE, IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_VISTA), LOBYTE(_WIN32_WINNT_VISTA), 0));
 }
 
 BOOL WIN_IsWindows7OrGreater(void)
 {
-#if defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-    return TRUE;
-#else
-    return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN7), LOBYTE(_WIN32_WINNT_WIN7), 0);
-#endif
+    CHECKWINVER(TRUE, IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN7), LOBYTE(_WIN32_WINNT_WIN7), 0));
 }
 
 BOOL WIN_IsWindows8OrGreater(void)
 {
-#if defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-    return TRUE;
-#else
-    return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN8), LOBYTE(_WIN32_WINNT_WIN8), 0);
-#endif
+    CHECKWINVER(TRUE, IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN8), LOBYTE(_WIN32_WINNT_WIN8), 0));
 }
+
+#undef CHECKWINVER
+
 
 /*
 WAVExxxCAPS gives you 31 bytes for the device name, and just truncates if it's
