@@ -173,6 +173,9 @@ extern BOOL WIN_IsRectEmpty(const RECT *rect);
 
 extern SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat);
 
+/* WideCharToMultiByte, but with some WinXP manangement. */
+extern int WIN_WideCharToMultiByte(UINT CodePage, DWORD dwFlags, LPCWCH lpWideCharStr, int cchWideChar, LPSTR lpMultiByteStr, int cbMultiByte, LPCCH lpDefaultChar, LPBOOL lpUsedDefaultChar);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
