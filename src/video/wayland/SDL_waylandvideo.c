@@ -85,6 +85,114 @@
 #define SDL_WL_OUTPUT_VERSION 3
 #endif
 
+#ifdef SDL_USE_LIBDBUS
+#include "../../core/linux/SDL_dbus.h"
+
+#define DISPLAY_INFO_NODE   "org.gnome.Mutter.DisplayConfig"
+#define DISPLAY_INFO_PATH   "/org/gnome/Mutter/DisplayConfig"
+#define DISPLAY_INFO_METHOD "GetCurrentState"
+#endif
+
+/* GNOME doesn't expose displays in any particular order, but we can find the
+ * primary display and its logical coordinates via a DBus method.
+ */
+static SDL_bool Wayland_GetPrimaryDisplayCoordinates(int *x, int *y)
+{
+#ifdef SDL_USE_LIBDBUS
+    SDL_DBusContext *dbus = SDL_DBus_GetContext();
+    DBusMessage *reply = NULL;
+    DBusMessageIter iter[3];
+    DBusMessage *msg = dbus->message_new_method_call(DISPLAY_INFO_NODE,
+                                                     DISPLAY_INFO_PATH,
+                                                     DISPLAY_INFO_NODE,
+                                                     DISPLAY_INFO_METHOD);
+
+    if (msg) {
+        reply = dbus->connection_send_with_reply_and_block(dbus->session_conn, msg, DBUS_TIMEOUT_USE_DEFAULT, NULL);
+        dbus->message_unref(msg);
+    }
+
+    if (reply) {
+        /* Serial (don't care) */
+        dbus->message_iter_init(reply, &iter[0]);
+        if (dbus->message_iter_get_arg_type(&iter[0]) != DBUS_TYPE_UINT32) {
+            goto error;
+        }
+
+        /* Physical monitor array (don't care) */
+        dbus->message_iter_next(&iter[0]);
+        if (dbus->message_iter_get_arg_type(&iter[0]) != DBUS_TYPE_ARRAY) {
+            goto error;
+        }
+
+        /* Logical monitor array of structs */
+        dbus->message_iter_next(&iter[0]);
+        if (dbus->message_iter_get_arg_type(&iter[0]) != DBUS_TYPE_ARRAY) {
+            goto error;
+        }
+
+        /* First logical monitor struct */
+        dbus->message_iter_recurse(&iter[0], &iter[1]);
+        if (dbus->message_iter_get_arg_type(&iter[1]) != DBUS_TYPE_STRUCT) {
+            goto error;
+        }
+
+        do {
+            int logical_x, logical_y;
+            dbus_bool_t primary;
+
+            /* Logical X */
+            dbus->message_iter_recurse(&iter[1], &iter[2]);
+            if (dbus->message_iter_get_arg_type(&iter[2]) != DBUS_TYPE_INT32) {
+                goto error;
+            }
+            dbus->message_iter_get_basic(&iter[2], &logical_x);
+
+            /* Logical Y */
+            dbus->message_iter_next(&iter[2]);
+            if (dbus->message_iter_get_arg_type(&iter[2]) != DBUS_TYPE_INT32) {
+                goto error;
+            }
+            dbus->message_iter_get_basic(&iter[2], &logical_y);
+
+            /* Scale (don't care) */
+            dbus->message_iter_next(&iter[2]);
+            if (dbus->message_iter_get_arg_type(&iter[2]) != DBUS_TYPE_DOUBLE) {
+                goto error;
+            }
+
+            /* Transform (don't care) */
+            dbus->message_iter_next(&iter[2]);
+            if (dbus->message_iter_get_arg_type(&iter[2]) != DBUS_TYPE_UINT32) {
+                goto error;
+            }
+
+            /* Primary display boolean */
+            dbus->message_iter_next(&iter[2]);
+            if (dbus->message_iter_get_arg_type(&iter[2]) != DBUS_TYPE_BOOLEAN) {
+                goto error;
+            }
+            dbus->message_iter_get_basic(&iter[2], &primary);
+
+            if (primary) {
+                *x = logical_x;
+                *y = logical_y;
+
+                /* We found the primary display: success. */
+                dbus->message_unref(reply);
+                return SDL_TRUE;
+            }
+        } while (dbus->message_iter_next(&iter[1]));
+    }
+
+error:
+    if (reply) {
+        dbus->message_unref(reply);
+    }
+#endif
+    return SDL_FALSE;
+}
+
 static void display_handle_done(void *data, struct wl_output *output);
 
 /* Initialization/Query functions */
@@ -665,8 +773,7 @@ static void display_handle_done(void *data,
     }
 
     if (driverdata->display == 0) {
-        /* First time getting display info, create the VideoDisplay */
-        SDL_bool send_event = !driverdata->videodata->initializing;
+        /* First time getting display info, initialize the VideoDisplay */
         if (driverdata->physical_width >= driverdata->physical_height) {
             driverdata->placeholder.natural_orientation = SDL_ORIENTATION_LANDSCAPE;
         } else {
@@ -674,9 +781,13 @@ static void display_handle_done(void *data,
         }
         driverdata->placeholder.current_orientation = driverdata->orientation;
         driverdata->placeholder.driverdata = driverdata;
-        driverdata->display = SDL_AddVideoDisplay(&driverdata->placeholder, send_event);
-        SDL_free(driverdata->placeholder.name);
-        SDL_zero(driverdata->placeholder);
+
+        /* During initialization, the displays will be added after enumeration is complete. */
+        if (!video->initializing) {
+            driverdata->display = SDL_AddVideoDisplay(&driverdata->placeholder, SDL_TRUE);
+            SDL_free(driverdata->placeholder.name);
+            SDL_zero(driverdata->placeholder);
+        }
     } else {
         SDL_SendDisplayEvent(dpy, SDL_EVENT_DISPLAY_ORIENTATION, driverdata->orientation);
     }
@@ -767,6 +878,32 @@ static void Wayland_free_display(SDL_VideoDisplay *display)
         }
         display->desktop_mode.driverdata = NULL;
         SDL_DelVideoDisplay(display->id, SDL_FALSE);
+    }
+}
+
+static void Wayland_FinalizeDisplays(SDL_VideoData *vid)
+{
+    SDL_DisplayData *d;
+    int p_x, p_y;
+
+    /* GNOME doesn't expose the displays in any preferential order, so find the primary display coordinates and use them
+     * to manually sort the primary display to the front of the list so that it is always the first exposed by SDL.
+     * Otherwise, assume that the displays were already exposed in preferential order.
+     * */
+    if (Wayland_GetPrimaryDisplayCoordinates(&p_x, &p_y)) {
+        wl_list_for_each(d, &vid->output_list, link) {
+            if (d->x == p_x && d->y == p_y) {
+                WAYLAND_wl_list_remove(&d->link);
+                WAYLAND_wl_list_insert(&vid->output_list, &d->link);
+                break;
+            }
+        }
+    }
+
+    wl_list_for_each(d, &vid->output_list, link) {
+        d->display = SDL_AddVideoDisplay(&d->placeholder, SDL_FALSE);
+        SDL_free(d->placeholder.name);
+        SDL_zero(d->placeholder);
     }
 }
 
@@ -944,6 +1081,8 @@ int Wayland_VideoInit(SDL_VideoDevice *_this)
 
     // Second roundtrip to receive all output events.
     WAYLAND_wl_display_roundtrip(data->display);
+
+    Wayland_FinalizeDisplays(data);
 
     Wayland_InitMouse();
 
