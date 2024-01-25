@@ -895,6 +895,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetHapticInstanceName(SDL_HapticID insta
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CloseHaptic
+ * \sa SDL_GetHaptics
  * \sa SDL_OpenHapticFromJoystick
  * \sa SDL_OpenHapticFromMouse
  * \sa SDL_PauseHaptic
