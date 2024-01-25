@@ -795,13 +795,21 @@ end:
 static char *hid_internal_UTF16toUTF8(const wchar_t *src)
 {
 	char *dst = NULL;
+#ifdef HIDAPI_USING_SDL_RUNTIME
+	int len = WIN_WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, src, -1, NULL, 0, NULL, NULL);
+#else
 	int len = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, src, -1, NULL, 0, NULL, NULL);
+#endif
 	if (len) {
 		dst = (char*)calloc(len, sizeof(char));
 		if (dst == NULL) {
 			return NULL;
 		}
+#ifdef HIDAPI_USING_SDL_RUNTIME
+		WIN_WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, src, -1, dst, len, NULL, NULL);
+#else
 		WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, src, -1, dst, len, NULL, NULL);
+#endif
 	}
 
 	return dst;

@@ -376,6 +376,16 @@ SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat)
     return 0;
 }
 
+
+int WIN_WideCharToMultiByte(UINT CodePage, DWORD dwFlags, LPCWCH lpWideCharStr, int cchWideChar, LPSTR lpMultiByteStr, int cbMultiByte, LPCCH lpDefaultChar, LPBOOL lpUsedDefaultChar)
+{
+    if (WIN_IsWindowsXP()) {
+        dwFlags &= ~WC_ERR_INVALID_CHARS;  // not supported before Vista. Without this flag, it will just replace bogus chars with U+FFFD. You're on your own, WinXP.
+    }
+    return WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr, cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
+}
+
+
 /* Win32-specific SDL_RunApp(), which does most of the SDL_main work,
   based on SDL_windows_main.c, placed in the public domain by Sam Lantinga  4/13/98 */
 #ifdef SDL_PLATFORM_WIN32

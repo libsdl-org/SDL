@@ -101,6 +101,7 @@ void WINRT_ProcessCharacterReceivedEvent(SDL_Window *window, Windows::UI::Core::
         };
 
         char utf8[5];
+        // doesn't need to be WIN_WideCharToMultiByte, since we don't care about WinXP support in WinRT.
         int result = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, utf16, -1, utf8, sizeof(utf8), NULL, NULL);
         if (result > 0) {
             SDL_SendKeyboardText(utf8);
