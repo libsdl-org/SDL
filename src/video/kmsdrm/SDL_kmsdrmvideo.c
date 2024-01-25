@@ -326,7 +326,7 @@ cleanup:
 }
 
 VideoBootStrap KMSDRM_bootstrap = {
-    "KMSDRM",
+    "kmsdrm",
     "KMS/DRM Video Driver",
     KMSDRM_CreateDevice,
     NULL /* no ShowMessageBox implementation */

@@ -157,7 +157,7 @@ static SDL_VideoDevice *VITA_Create()
 }
 
 VideoBootStrap VITA_bootstrap = {
-    "VITA",
+    "vita",
     "VITA Video Driver",
     VITA_Create,
     VITA_ShowMessageBox

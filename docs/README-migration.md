@@ -1515,6 +1515,8 @@ SDL_GetRevisionNumber() has been removed from the API, it always returned 0 in S
 
 ## SDL_video.h
 
+Several video backends have had their names lower-cased ("kmsdrm", "rpi", "android", "psp", "ps2", "vita"). SDL already does a case-insensitive compare for SDL_HINT_VIDEO_DRIVER tests, but if your app is calling SDL_GetVideoDriver() or SDL_GetCurrentVideoDriver() and doing case-sensitive compares on those strings, please update your code.
+
 SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_InitSubSystem() and SDL_QuitSubSystem() with SDL_INIT_VIDEO, which will properly refcount the subsystems. You can choose a specific video driver using SDL_VIDEO_DRIVER hint.
 
 Rather than iterating over displays using display index, there is a new function SDL_GetDisplays() to get the current list of displays, and functions which used to take a display index now take SDL_DisplayID, with an invalid ID being 0.

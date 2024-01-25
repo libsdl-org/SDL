@@ -40,7 +40,7 @@
 #include "SDL_androidvulkan.h"
 #include "SDL_androidmessagebox.h"
 
-#define ANDROID_VID_DRIVER_NAME "Android"
+#define ANDROID_VID_DRIVER_NAME "android"
 
 /* Initialization/Query functions */
 static int Android_VideoInit(SDL_VideoDevice *_this);
