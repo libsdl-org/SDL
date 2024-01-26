@@ -486,6 +486,11 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
         this->spec.samples = (Uint16)SDL_ceilf(period_frames);
     }
 
+    /* regardless of what we calculated for the period size, clamp it to the expected hardware buffer size. */
+    if (this->spec.samples > bufsize) {
+        this->spec.samples = bufsize;
+    }
+
     /* Update the fragment size as size in bytes */
     SDL_CalculateAudioSpec(&this->spec);
 
