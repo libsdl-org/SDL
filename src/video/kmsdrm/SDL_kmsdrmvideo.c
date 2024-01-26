@@ -23,6 +23,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_KMSDRM
 
+#include "SDL_kmsdrmvulkan.h"
+
 /* SDL internals */
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_keyboard_c.h"
@@ -41,7 +43,7 @@
 #include "SDL_kmsdrmmouse.h"
 #include "SDL_kmsdrmvideo.h"
 #include "SDL_kmsdrmopengles.h"
-#include "SDL_kmsdrmvulkan.h"
+/*#include "SDL_kmsdrmvulkan.h"*/
 #include <dirent.h>
 #include <errno.h>
 #include <poll.h>
