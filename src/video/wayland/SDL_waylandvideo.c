@@ -57,6 +57,7 @@
 #include "input-timestamps-unstable-v1-client-protocol.h"
 #include "relative-pointer-unstable-v1-client-protocol.h"
 #include "pointer-constraints-unstable-v1-client-protocol.h"
+#include "kde-output-order-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -96,7 +97,7 @@
 /* GNOME doesn't expose displays in any particular order, but we can find the
  * primary display and its logical coordinates via a DBus method.
  */
-static SDL_bool Wayland_GetPrimaryDisplayCoordinates(int *x, int *y)
+static SDL_bool Wayland_GetGNOMEPrimaryDisplayCoordinates(int *x, int *y)
 {
 #ifdef SDL_USE_LIBDBUS
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
@@ -191,6 +192,97 @@ error:
     }
 #endif
     return SDL_FALSE;
+}
+
+static void Wayland_FlushOutputOrder(SDL_VideoData *vid)
+{
+    SDL_WaylandConnectorName *c, *tmp;
+    wl_list_for_each_safe (c, tmp, &vid->output_order, link) {
+        WAYLAND_wl_list_remove(&c->link);
+        SDL_free(c);
+    }
+
+    vid->output_order_finalized = SDL_FALSE;
+}
+
+/* The order of wl_output displays exposed by KDE doesn't correspond to any priority, but KDE does provide a protocol
+ * that tells clients the preferred order or all connected displays via an ordered list of connector name strings.
+ */
+static void handle_kde_output_order_output(void *data, struct kde_output_order_v1 *kde_output_order_v1, const char *output_name)
+{
+    SDL_VideoData *vid = (SDL_VideoData *)data;
+
+    /* Starting a new list, flush the old. */
+    if (vid->output_order_finalized) {
+        Wayland_FlushOutputOrder(vid);
+    }
+
+    const int len = SDL_strlen(output_name) + 1;
+    SDL_WaylandConnectorName *node = SDL_malloc(sizeof(SDL_WaylandConnectorName) + len);
+    SDL_strlcpy(node->wl_output_name, output_name, len);
+
+    WAYLAND_wl_list_insert(vid->output_order.prev, &node->link);
+}
+
+static void handle_kde_output_order_done(void *data, struct kde_output_order_v1 *kde_output_order_v1)
+{
+    SDL_VideoData *vid = (SDL_VideoData *)data;
+    vid->output_order_finalized = SDL_TRUE;
+}
+
+static const struct kde_output_order_v1_listener kde_output_order_listener = {
+    handle_kde_output_order_output,
+    handle_kde_output_order_done
+};
+
+static void Wayland_SortOutputs(SDL_VideoData *vid)
+{
+    SDL_DisplayData *d;
+    int p_x, p_y;
+
+    /* KDE provides the kde-output-order-v1 protocol, which gives us the full preferred display
+     * ordering in the form of a list of wl_output.name strings (connector names).
+     */
+    if (!WAYLAND_wl_list_empty(&vid->output_order)) {
+        struct wl_list sorted_list;
+        SDL_WaylandConnectorName *c;
+
+        /* Sort the outputs by connector name. */
+        WAYLAND_wl_list_init(&sorted_list);
+        wl_list_for_each (c, &vid->output_order, link) {
+            wl_list_for_each (d, &vid->output_list, link) {
+                if (SDL_strcmp(c->wl_output_name, d->wl_output_name) == 0) {
+                    /* Remove from the current list and Append the next node to the end of the new list. */
+                    WAYLAND_wl_list_remove(&d->link);
+                    WAYLAND_wl_list_insert(sorted_list.prev, &d->link);
+                    break;
+                }
+            }
+        }
+
+        if (!WAYLAND_wl_list_empty(&vid->output_list)) {
+            /* If any displays were omitted during the sort, append them to the new list.
+             * This shouldn't happen, but better safe than sorry.
+             */
+            WAYLAND_wl_list_insert_list(sorted_list.prev, &vid->output_list);
+        }
+
+        /* Set the output list to the sorted list. */
+        WAYLAND_wl_list_init(&vid->output_list);
+        WAYLAND_wl_list_insert_list(&vid->output_list, &sorted_list);
+    } else if (Wayland_GetGNOMEPrimaryDisplayCoordinates(&p_x, &p_y)) {
+        /* GNOME doesn't expose the displays in any preferential order, so find the primary display coordinates and use them
+         * to manually sort the primary display to the front of the list so that it is always the first exposed by SDL.
+         * Otherwise, assume that the displays were already exposed in preferential order.
+         */
+        wl_list_for_each (d, &vid->output_list, link) {
+            if (d->x == p_x && d->y == p_y) {
+                WAYLAND_wl_list_remove(&d->link);
+                WAYLAND_wl_list_insert(&vid->output_list, &d->link);
+                break;
+            }
+        }
+    }
 }
 
 static void display_handle_done(void *data, struct wl_output *output);
@@ -326,6 +418,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     data->input = input;
     data->display_externally_owned = display_is_external;
     WAYLAND_wl_list_init(&data->output_list);
+    WAYLAND_wl_list_init(&data->output_order);
     WAYLAND_wl_list_init(&external_window_list);
 
     /* Initialize all variables that we clean on shutdown */
@@ -803,6 +896,10 @@ static void display_handle_scale(void *data,
 
 static void display_handle_name(void *data, struct wl_output *wl_output, const char *name)
 {
+    SDL_DisplayData *driverdata = (SDL_DisplayData *)data;
+
+    SDL_free(driverdata->wl_output_name);
+    driverdata->wl_output_name = SDL_strdup(name);
 }
 
 static void display_handle_description(void *data, struct wl_output *wl_output, const char *description)
@@ -859,6 +956,8 @@ static void Wayland_free_display(SDL_VideoDisplay *display)
         SDL_DisplayData *display_data = display->driverdata;
         int i;
 
+        SDL_free(display_data->wl_output_name);
+
         if (display_data->xdg_output) {
             zxdg_output_v1_destroy(display_data->xdg_output);
         }
@@ -884,23 +983,9 @@ static void Wayland_free_display(SDL_VideoDisplay *display)
 static void Wayland_FinalizeDisplays(SDL_VideoData *vid)
 {
     SDL_DisplayData *d;
-    int p_x, p_y;
 
-    /* GNOME doesn't expose the displays in any preferential order, so find the primary display coordinates and use them
-     * to manually sort the primary display to the front of the list so that it is always the first exposed by SDL.
-     * Otherwise, assume that the displays were already exposed in preferential order.
-     * */
-    if (Wayland_GetPrimaryDisplayCoordinates(&p_x, &p_y)) {
-        wl_list_for_each (d, &vid->output_list, link) {
-            if (d->x == p_x && d->y == p_y) {
-                WAYLAND_wl_list_remove(&d->link);
-                WAYLAND_wl_list_insert(&vid->output_list, &d->link);
-                break;
-            }
-        }
-    }
-
-    wl_list_for_each (d, &vid->output_list, link) {
+    Wayland_SortOutputs(vid);
+    wl_list_for_each(d, &vid->output_list, link) {
         d->display = SDL_AddVideoDisplay(&d->placeholder, SDL_FALSE);
         SDL_free(d->placeholder.name);
         SDL_zero(d->placeholder);
@@ -994,6 +1079,9 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         if (d->input) {
             Wayland_RegisterTimestampListeners(d->input);
         }
+    } else if (SDL_strcmp(interface, "kde_output_order_v1") == 0) {
+        d->kde_output_order = wl_registry_bind(d->registry, id, &kde_output_order_v1_interface, 1);
+        kde_output_order_v1_add_listener(d->kde_output_order, &kde_output_order_listener, d);
     }
 }
 
@@ -1221,6 +1309,12 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     if (data->input_timestamps_manager) {
         zwp_input_timestamps_manager_v1_destroy(data->input_timestamps_manager);
         data->input_timestamps_manager = NULL;
+    }
+
+    if (data->kde_output_order) {
+        Wayland_FlushOutputOrder(data);
+        kde_output_order_v1_destroy(data->kde_output_order);
+        data->kde_output_order = NULL;
     }
 
     if (data->compositor) {
