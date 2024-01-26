@@ -787,8 +787,10 @@ static void handle_configure_xdg_toplevel(void *data,
                  */
                 width = window->floating.w;
                 height = window->floating.h;
-                wind->requested.logical_width = PixelToPoint(window, width);
-                wind->requested.logical_height = PixelToPoint(window, height);
+                if (wind->scale_to_display) {
+                    wind->requested.logical_width = PixelToPoint(window, width);
+                    wind->requested.logical_height = PixelToPoint(window, height);
+                }
             } else if (wind->scale_to_display) {
                 /* Don't convert if the size hasn't changed to avoid rounding errors. */
                 if (width != wind->current.logical_width || height != wind->current.logical_height) {
@@ -808,8 +810,10 @@ static void handle_configure_xdg_toplevel(void *data,
              */
             width = window->floating.w;
             height = window->floating.h;
-            wind->requested.logical_width = PixelToPoint(window, width);
-            wind->requested.logical_height = PixelToPoint(window, height);
+            if (wind->scale_to_display) {
+                wind->requested.logical_width = PixelToPoint(window, width);
+                wind->requested.logical_height = PixelToPoint(window, height);
+            }
         }
 
         /* The content limits are only a hint, which the compositor is free to ignore,
@@ -829,8 +833,10 @@ static void handle_configure_xdg_toplevel(void *data,
             }
             height = SDL_max(height, window->min_h);
 
-            wind->requested.logical_width = PixelToPoint(window, width);
-            wind->requested.logical_height = PixelToPoint(window, height);
+            if (wind->scale_to_display) {
+                wind->requested.logical_width = PixelToPoint(window, width);
+                wind->requested.logical_height = PixelToPoint(window, height);
+            }
         }
     } else {
         /* Fullscreen windows know their exact size. */
@@ -1100,8 +1106,10 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
             width = window->floating.w;
             height = window->floating.h;
 
-            wind->requested.logical_width = PixelToPoint(window, width);
-            wind->requested.logical_height = PixelToPoint(window, height);
+            if (wind->scale_to_display) {
+                wind->requested.logical_width = PixelToPoint(window, width);
+                wind->requested.logical_height = PixelToPoint(window, height);
+            }
 
             OverrideLibdecorLimits(window);
         } else {
@@ -1132,8 +1140,10 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
                     height = window->windowed.h;
                 }
 
-                wind->requested.logical_width = PixelToPoint(window, width);
-                wind->requested.logical_height = PixelToPoint(window, height);
+                if (wind->scale_to_display) {
+                    wind->requested.logical_width = PixelToPoint(window, width);
+                    wind->requested.logical_height = PixelToPoint(window, height);
+                }
             } else if (wind->scale_to_display) {
                 /* Don't convert if the size hasn't changed to avoid rounding errors. */
                 if (width != wind->current.logical_width || height != wind->current.logical_height) {
@@ -1165,8 +1175,10 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
             }
             height = SDL_max(height, window->min_h);
 
-            wind->requested.logical_width = PixelToPoint(window, width);
-            wind->requested.logical_height = PixelToPoint(window, height);
+            if (wind->scale_to_display) {
+                wind->requested.logical_width = PixelToPoint(window, width);
+                wind->requested.logical_height = PixelToPoint(window, height);
+            }
         }
     }
 
@@ -2242,8 +2254,10 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
 
     data->requested.width = window->w;
     data->requested.height = window->h;
-    data->requested.logical_width = PixelToPoint(window, window->w);
-    data->requested.logical_height = PixelToPoint(window, window->h);
+    if (data->scale_to_display) {
+        data->requested.logical_width = PixelToPoint(window, window->w);
+        data->requested.logical_height = PixelToPoint(window, window->h);
+    }
 
     if (!external_surface) {
         data->surface = wl_compositor_create_surface(c->compositor);
