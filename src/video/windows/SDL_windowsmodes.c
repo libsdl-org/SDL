@@ -70,10 +70,14 @@ static void WIN_UpdateDisplayMode(SDL_VideoDevice *_this, LPCWSTR deviceName, DW
                 mode->format = SDL_PIXELFORMAT_RGB555;
                 break;
             }
-        } else if (bmi->bmiHeader.biBitCount == 8) {
-            mode->format = SDL_PIXELFORMAT_INDEX8;
-        } else if (bmi->bmiHeader.biBitCount == 4) {
-            mode->format = SDL_PIXELFORMAT_INDEX4LSB;
+        } else if (bmi->bmiHeader.biCompression == BI_RGB) {
+            if (bmi->bmiHeader.biBitCount == 24) {
+                mode->format = SDL_PIXELFORMAT_RGB24;
+            } else if (bmi->bmiHeader.biBitCount == 8) {
+                mode->format = SDL_PIXELFORMAT_INDEX8;
+            } else if (bmi->bmiHeader.biBitCount == 4) {
+                mode->format = SDL_PIXELFORMAT_INDEX4LSB;
+            }
         }
     } else if (mode->format == SDL_PIXELFORMAT_UNKNOWN) {
         /* FIXME: Can we tell what this will be? */
