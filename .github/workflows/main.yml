@@ -89,7 +89,7 @@ jobs:
         # Install oneAPI
         sudo apt-get install -y intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Check that versioning is consistent
       # We only need to run this once: arbitrarily use the Linux/CMake build
       if: "runner.os == 'Linux'"
@@ -149,7 +149,7 @@ jobs:
         ${{ matrix.platform.source_cmd }}
         export PKG_CONFIG_PATH=$(echo "${{ github.workspace }}/cmake_prefix/lib/pkgconfig" | sed  -e 's#\\#/#g')
         cmake/test/test_pkgconfig.sh
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       if: ${{ always() && steps.build.outcome == 'success' }}
       with:
         if-no-files-found: error

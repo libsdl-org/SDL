@@ -25,7 +25,7 @@ jobs:
             project: VisualC-WinRT/SDL-UWP.sln, projectflags: '/p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0.17763.0', artifact: 'SDL-VC-UWP' }
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Create CMake project using SDL as a subproject
       shell: python
       run: |
@@ -92,7 +92,7 @@ jobs:
     - name: Build msbuild
       if: ${{ matrix.platform.project != '' }}
       run: msbuild ${{ matrix.platform.project }} /m /p:BuildInParallel=true /p:Configuration=Release ${{ matrix.platform.projectflags }}
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       if: ${{ always() && steps.build.outcome == 'success' }}
       with:
         if-no-files-found: error

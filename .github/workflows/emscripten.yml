@@ -10,7 +10,7 @@ jobs:
   emscripten:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: mymindstorm/setup-emsdk@v12
         with:
           version: 3.1.35
@@ -51,7 +51,7 @@ jobs:
             -DTEST_SHARED=FALSE \
             -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }}
           cmake --build cmake_config_build --verbose
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           if-no-files-found: error
           name: SDL-emscripten

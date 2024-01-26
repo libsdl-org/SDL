@@ -12,7 +12,7 @@ jobs:
     container:
       image: devkitpro/devkitarm:latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install build requirements
         run: |
           apt update
@@ -58,7 +58,7 @@ jobs:
         run: |
           export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
           cmake/test/test_pkgconfig.sh
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           if-no-files-found: error
           name: SDL-n3ds

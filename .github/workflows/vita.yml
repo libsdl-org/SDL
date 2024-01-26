@@ -24,13 +24,13 @@ jobs:
         - { name: Vita (GLES w/ PVR_PSP2 + gles4vita), pvr: true, version: 3.9,   artifact: SDL-vita-pvr }
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install build requirements
       run: |
         apk update
         apk add cmake ninja pkgconf bash tar
 
-    - uses: actions/cache/restore@v3
+    - uses: actions/cache/restore@v4
       id: restore-cache
       with:
         path: /vita/dependencies
@@ -77,7 +77,7 @@ jobs:
         wget https://github.com/SonicMastr/gl4es4vita/releases/download/v$gl4es4vita_version-vita/vitasdk_stubs.zip -P/tmp
         unzip /tmp/vitasdk_stubs.zip -d/vita/dependencies/lib
 
-    - uses: actions/cache/save@v3
+    - uses: actions/cache/save@v4
       if: ${{ !steps.restore-cache.outputs.cache-hit }}
       with:
         path: /vita/dependencies
@@ -129,7 +129,7 @@ jobs:
         export CC=arm-vita-eabi-gcc
         export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
         cmake/test/test_pkgconfig.sh
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         if-no-files-found: error
         name: ${{ matrix.platform.artifact }}

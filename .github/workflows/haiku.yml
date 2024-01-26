@@ -8,7 +8,7 @@ jobs:
     name: Haiku
     container: haiku/cross-compiler:x86_64-r1beta4
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup dependencies
       run: |
         apt-get install pkg-config -y
@@ -50,7 +50,7 @@ jobs:
       run: |
         export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
         cmake/test/test_pkgconfig.sh
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         if-no-files-found: error
         name: SDL-haiku
