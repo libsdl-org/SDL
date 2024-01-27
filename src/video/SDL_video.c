@@ -435,6 +435,7 @@ int SDL_VideoInit(const char *driver_name)
     SDL_bool init_keyboard = SDL_FALSE;
     SDL_bool init_mouse = SDL_FALSE;
     SDL_bool init_touch = SDL_FALSE;
+    const char *hint;
     int i = 0;
 
     /* Check to make sure we don't overwrite '_this' */
@@ -562,16 +563,19 @@ int SDL_VideoInit(const char *driver_name)
         SDL_DisableScreenSaver();
     }
 
-    /* If we don't use a screen keyboard, turn on text input by default,
-       otherwise programs that expect to get text events without enabling
-       UNICODE input won't get any events.
-
-       Actually, come to think of it, you needed to call SDL_EnableUNICODE(1)
-       in SDL 1.2 before you got text input events.  Hmm...
+#if !defined(SDL_VIDEO_DRIVER_N3DS)
+    /* In the initial state we don't want to pop up an on-screen keyboard,
+     * but we do want to allow text input from other mechanisms.
      */
-    if (!SDL_HasScreenKeyboardSupport()) {
-        SDL_StartTextInput();
+    hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
+    if (!hint) {
+        SDL_SetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD, "0");
     }
+    SDL_StartTextInput();
+    if (!hint) {
+        SDL_SetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD, NULL);
+    }
+#endif /* !SDL_VIDEO_DRIVER_N3DS */
 
     SDL_MousePostInit();
 
