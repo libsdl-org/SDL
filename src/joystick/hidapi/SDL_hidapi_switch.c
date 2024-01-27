@@ -727,6 +727,7 @@ static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, c
         ctx->m_bPlayerLights = bPlayerLights;
 
         UpdateSlotLED(ctx);
+        HIDAPI_UpdateDeviceProperties(ctx->device);
     }
 }
 

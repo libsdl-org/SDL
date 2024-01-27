@@ -770,6 +770,11 @@ static int DARWIN_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->naxes = device->axes;
     joystick->nhats = device->hats;
     joystick->nbuttons = device->buttons;
+
+    if (device->ffservice) {
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
+    }
+
     return 0;
 }
 
@@ -906,22 +911,6 @@ static int DARWIN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_ru
 static int DARWIN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
-}
-
-static Uint32 DARWIN_JoystickGetCapabilities(SDL_Joystick *joystick)
-{
-    recDevice *device = joystick->hwdata;
-    Uint32 result = 0;
-
-    if (!device) {
-        return 0;
-    }
-
-    if (device->ffservice) {
-        result |= SDL_JOYSTICK_CAP_RUMBLE;
-    }
-
-    return result;
 }
 
 static int DARWIN_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
@@ -1084,7 +1073,6 @@ SDL_JoystickDriver SDL_DARWIN_JoystickDriver = {
     DARWIN_JoystickOpen,
     DARWIN_JoystickRumble,
     DARWIN_JoystickRumbleTriggers,
-    DARWIN_JoystickGetCapabilities,
     DARWIN_JoystickSetLED,
     DARWIN_JoystickSendEffect,
     DARWIN_JoystickSetSensorsEnabled,

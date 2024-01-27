@@ -1609,6 +1609,9 @@ static int LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
         joystick->hwdata->fd_sensor = -1;
     }
 
+    if (joystick->hwdata->ff_rumble || joystick->hwdata->ff_sine) {
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
+    }
     return 0;
 }
 
@@ -1658,19 +1661,6 @@ static int LINUX_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rum
 static int LINUX_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
-}
-
-static Uint32 LINUX_JoystickGetCapabilities(SDL_Joystick *joystick)
-{
-    Uint32 result = 0;
-
-    SDL_AssertJoysticksLocked();
-
-    if (joystick->hwdata->ff_rumble || joystick->hwdata->ff_sine) {
-        result |= SDL_JOYSTICK_CAP_RUMBLE;
-    }
-
-    return result;
 }
 
 static int LINUX_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
@@ -2706,7 +2696,6 @@ SDL_JoystickDriver SDL_LINUX_JoystickDriver = {
     LINUX_JoystickOpen,
     LINUX_JoystickRumble,
     LINUX_JoystickRumbleTriggers,
-    LINUX_JoystickGetCapabilities,
     LINUX_JoystickSetLED,
     LINUX_JoystickSendEffect,
     LINUX_JoystickSetSensorsEnabled,

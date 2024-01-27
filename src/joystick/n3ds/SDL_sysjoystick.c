@@ -245,11 +245,6 @@ static void N3DS_JoystickSetDevicePlayerIndex(int device_index, int player_index
 {
 }
 
-static Uint32 N3DS_JoystickGetCapabilities(SDL_Joystick *joystick)
-{
-    return 0;
-}
-
 static int N3DS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
@@ -284,7 +279,6 @@ SDL_JoystickDriver SDL_N3DS_JoystickDriver = {
     .Open = N3DS_JoystickOpen,
     .Rumble = N3DS_JoystickRumble,
     .RumbleTriggers = N3DS_JoystickRumbleTriggers,
-    .GetCapabilities = N3DS_JoystickGetCapabilities,
     .SetLED = N3DS_JoystickSetLED,
     .SendEffect = N3DS_JoystickSendEffect,
     .SetSensorsEnabled = N3DS_JoystickSetSensorsEnabled,

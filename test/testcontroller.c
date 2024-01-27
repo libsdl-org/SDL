@@ -977,6 +977,7 @@ static void HandleGamepadAdded(SDL_JoystickID id, SDL_bool verbose)
     gamepad = controllers[i].gamepad;
     if (gamepad) {
         if (verbose) {
+            SDL_PropertiesID props = SDL_GetGamepadProperties(gamepad);
             const char *name = SDL_GetGamepadName(gamepad);
             const char *path = SDL_GetGamepadPath(gamepad);
             SDL_Log("Opened gamepad %s%s%s\n", name, path ? ", " : "", path ? path : "");
@@ -986,11 +987,15 @@ static void HandleGamepadAdded(SDL_JoystickID id, SDL_bool verbose)
                 SDL_Log("Firmware version: 0x%x (%d)\n", firmware_version, firmware_version);
             }
 
-            if (SDL_GetGamepadCaps(gamepad) & SDL_GAMEPAD_CAP_RUMBLE) {
+            if (SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_PLAYER_LED_BOOLEAN, SDL_FALSE)) {
+                SDL_Log("Has player LED");
+            }
+
+            if (SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN, SDL_FALSE)) {
                 SDL_Log("Rumble supported");
             }
 
-            if (SDL_GetGamepadCaps(gamepad) & SDL_GAMEPAD_CAP_TRIGGER_RUMBLE) {
+            if (SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_TRIGGER_RUMBLE_BOOLEAN, SDL_FALSE)) {
                 SDL_Log("Trigger rumble supported");
             }
 

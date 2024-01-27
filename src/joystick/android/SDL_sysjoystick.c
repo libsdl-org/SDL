@@ -597,11 +597,6 @@ static int ANDROID_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_ru
     return SDL_Unsupported();
 }
 
-static Uint32 ANDROID_JoystickGetCapabilities(SDL_Joystick *joystick)
-{
-    return 0;
-}
-
 static int ANDROID_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
@@ -694,7 +689,6 @@ SDL_JoystickDriver SDL_ANDROID_JoystickDriver = {
     ANDROID_JoystickOpen,
     ANDROID_JoystickRumble,
     ANDROID_JoystickRumbleTriggers,
-    ANDROID_JoystickGetCapabilities,
     ANDROID_JoystickSetLED,
     ANDROID_JoystickSendEffect,
     ANDROID_JoystickSetSensorsEnabled,

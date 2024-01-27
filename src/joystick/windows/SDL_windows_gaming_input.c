@@ -749,6 +749,11 @@ static int WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_AxisCount(hwdata->controller, &joystick->naxes);
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_SwitchCount(hwdata->controller, &joystick->nhats);
 
+    if (hwdata->gamepad) {
+        /* FIXME: Can WGI even tell us if trigger rumble is supported? */
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, SDL_TRUE);
+    }
     return 0;
 }
 
@@ -791,18 +796,6 @@ static int WGI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble
         }
     } else {
         return SDL_Unsupported();
-    }
-}
-
-static Uint32 WGI_JoystickGetCapabilities(SDL_Joystick *joystick)
-{
-    struct joystick_hwdata *hwdata = joystick->hwdata;
-
-    if (hwdata->gamepad) {
-        /* FIXME: Can WGI even tell us if trigger rumble is supported? */
-        return (SDL_JOYSTICK_CAP_RUMBLE | SDL_JOYSTICK_CAP_TRIGGER_RUMBLE);
-    } else {
-        return 0;
     }
 }
 
@@ -1026,7 +1019,6 @@ SDL_JoystickDriver SDL_WGI_JoystickDriver = {
     WGI_JoystickOpen,
     WGI_JoystickRumble,
     WGI_JoystickRumbleTriggers,
-    WGI_JoystickGetCapabilities,
     WGI_JoystickSetLED,
     WGI_JoystickSendEffect,
     WGI_JoystickSetSensorsEnabled,

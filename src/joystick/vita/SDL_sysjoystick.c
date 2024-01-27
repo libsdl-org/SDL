@@ -207,6 +207,9 @@ int VITA_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->nhats = 0;
     joystick->instance_id = device_index;
 
+    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, SDL_TRUE);
+    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
+
     return 0;
 }
 
@@ -344,12 +347,6 @@ static int VITA_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint
     return SDL_Unsupported();
 }
 
-static Uint32 VITA_JoystickGetCapabilities(SDL_Joystick *joystick)
-{
-    // always return LED and rumble supported for now
-    return SDL_JOYSTICK_CAP_RGB_LED | SDL_JOYSTICK_CAP_RUMBLE;
-}
-
 static int VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     int index = (int)SDL_GetJoystickInstanceID(joystick) - 1;
@@ -388,17 +385,12 @@ SDL_JoystickDriver SDL_VITA_JoystickDriver = {
     VITA_JoystickSetDevicePlayerIndex,
     VITA_JoystickGetDeviceGUID,
     VITA_JoystickGetDeviceInstanceID,
-
     VITA_JoystickOpen,
-
     VITA_JoystickRumble,
     VITA_JoystickRumbleTriggers,
-
-    VITA_JoystickGetCapabilities,
     VITA_JoystickSetLED,
     VITA_JoystickSendEffect,
     VITA_JoystickSetSensorsEnabled,
-
     VITA_JoystickUpdate,
     VITA_JoystickClose,
     VITA_JoystickQuit,

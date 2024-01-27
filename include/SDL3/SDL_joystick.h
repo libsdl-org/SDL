@@ -99,15 +99,6 @@ typedef enum
 
 typedef enum
 {
-    SDL_JOYSTICK_CAP_MONO_LED       = 0x00000001,   /**< This joystick has an LED that has adjustable brightness */
-    SDL_JOYSTICK_CAP_RGB_LED        = 0x00000002,   /**< This joystick has an LED that has adjustable color */
-    SDL_JOYSTICK_CAP_PLAYER_LED     = 0x00000004,   /**< This joystick has a player LED */
-    SDL_JOYSTICK_CAP_RUMBLE         = 0x00000010,   /**< This joystick has left/right rumble */
-    SDL_JOYSTICK_CAP_TRIGGER_RUMBLE = 0x00000020,   /**< This joystick has simple trigger rumble */
-} SDL_JoystickCaps;
-
-typedef enum
-{
     SDL_JOYSTICK_POWER_UNKNOWN = -1,
     SDL_JOYSTICK_POWER_EMPTY,   /* <= 5% */
     SDL_JOYSTICK_POWER_LOW,     /* <= 20% */
@@ -469,6 +460,13 @@ extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualHat(SDL_Joystick *joystick, in
 /**
  * Get the properties associated with a joystick.
  *
+ * The following read-only properties are provided by SDL:
+ * - `SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN`: true if this joystick has an LED that has adjustable brightness
+ * - `SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN`: true if this joystick has an LED that has adjustable color
+ * - `SDL_PROP_JOYSTICK_CAP_PLAYER_LED_BOOLEAN`: true if this joystick has a player LED
+ * - `SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN`: true if this joystick has left/right rumble
+ * - `SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN`: true if this joystick has simple trigger rumble
+ *
  * \param joystick the SDL_Joystick obtained from SDL_OpenJoystick()
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -479,6 +477,12 @@ extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualHat(SDL_Joystick *joystick, in
  * \sa SDL_SetProperty
  */
 extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetJoystickProperties(SDL_Joystick *joystick);
+
+#define SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN          "SDL.joystick.cap.mono_led"
+#define SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN           "SDL.joystick.cap.rgb_led"
+#define SDL_PROP_JOYSTICK_CAP_PLAYER_LED_BOOLEAN        "SDL.joystick.cap.player_led"
+#define SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN            "SDL.joystick.cap.rumble"
+#define SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN    "SDL.joystick.cap.trigger_rumble"
 
 /**
  * Get the implementation dependent name of a joystick.
@@ -890,17 +894,6 @@ extern DECLSPEC Uint8 SDLCALL SDL_GetJoystickButton(SDL_Joystick *joystick,
                                                     int button);
 
 /**
- * Query joystick capabilities
- *
- * \param joystick The joystick to query
- * \returns a mask of SDL_JoystickCaps values indicating the joystick
- *          capabilities.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC Uint32 SDLCALL SDL_GetJoystickCaps(SDL_Joystick *joystick);
-
-/**
  * Start a rumble effect.
  *
  * Each call to this function cancels any previous rumble effect, and calling
@@ -915,8 +908,6 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetJoystickCaps(SDL_Joystick *joystick);
  * \returns 0, or -1 if rumble isn't supported on this joystick
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetJoystickCaps
  */
 extern DECLSPEC int SDLCALL SDL_RumbleJoystick(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 
@@ -941,8 +932,6 @@ extern DECLSPEC int SDLCALL SDL_RumbleJoystick(SDL_Joystick *joystick, Uint16 lo
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetJoystickCaps
  */
 extern DECLSPEC int SDLCALL SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms);
 
@@ -963,8 +952,6 @@ extern DECLSPEC int SDLCALL SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, U
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetJoystickCaps
  */
 extern DECLSPEC int SDLCALL SDL_SetJoystickLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
 

@@ -422,6 +422,16 @@ static int VIRTUAL_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->nbuttons = hwdata->desc.nbuttons;
     joystick->nhats = hwdata->desc.nhats;
     hwdata->joystick = joystick;
+
+    if (hwdata->desc.SetLED) {
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, SDL_TRUE);
+    }
+    if (hwdata->desc.Rumble) {
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
+    }
+    if (hwdata->desc.RumbleTriggers) {
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, SDL_TRUE);
+    }
     return 0;
 }
 
@@ -463,28 +473,6 @@ static int VIRTUAL_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_ru
     }
 
     return result;
-}
-
-static Uint32 VIRTUAL_JoystickGetCapabilities(SDL_Joystick *joystick)
-{
-    joystick_hwdata *hwdata;
-    Uint32 caps = 0;
-
-    SDL_AssertJoysticksLocked();
-
-    hwdata = joystick->hwdata;
-    if (hwdata) {
-        if (hwdata->desc.Rumble) {
-            caps |= SDL_JOYSTICK_CAP_RUMBLE;
-        }
-        if (hwdata->desc.RumbleTriggers) {
-            caps |= SDL_JOYSTICK_CAP_TRIGGER_RUMBLE;
-        }
-        if (hwdata->desc.SetLED) {
-            caps |= SDL_JOYSTICK_CAP_RGB_LED;
-        }
-    }
-    return caps;
 }
 
 static int VIRTUAL_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
@@ -741,7 +729,6 @@ SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver = {
     VIRTUAL_JoystickOpen,
     VIRTUAL_JoystickRumble,
     VIRTUAL_JoystickRumbleTriggers,
-    VIRTUAL_JoystickGetCapabilities,
     VIRTUAL_JoystickSetLED,
     VIRTUAL_JoystickSendEffect,
     VIRTUAL_JoystickSetSensorsEnabled,

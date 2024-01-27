@@ -1655,21 +1655,6 @@ int SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint1
     return retval;
 }
 
-Uint32 SDL_GetJoystickCaps(SDL_Joystick *joystick)
-{
-    Uint32 retval;
-
-    SDL_LockJoysticks();
-    {
-        CHECK_JOYSTICK_MAGIC(joystick, 0);
-
-        retval = joystick->driver->GetCapabilities(joystick);
-    }
-    SDL_UnlockJoysticks();
-
-    return retval;
-}
-
 int SDL_SetJoystickLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     int retval;

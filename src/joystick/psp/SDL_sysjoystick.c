@@ -173,11 +173,6 @@ static int PSP_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble
     return SDL_Unsupported();
 }
 
-static Uint32 PSP_JoystickGetCapabilities(SDL_Joystick *joystick)
-{
-    return 0;
-}
-
 static int PSP_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
@@ -266,7 +261,6 @@ SDL_JoystickDriver SDL_PSP_JoystickDriver = {
     PSP_JoystickOpen,
     PSP_JoystickRumble,
     PSP_JoystickRumbleTriggers,
-    PSP_JoystickGetCapabilities,
     PSP_JoystickSetLED,
     PSP_JoystickSendEffect,
     PSP_JoystickSetSensorsEnabled,

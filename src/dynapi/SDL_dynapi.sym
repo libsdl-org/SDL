@@ -959,8 +959,6 @@ SDL3_0.0.0 {
     SDL_GetHapticName;
     SDL_ReadSurfacePixel;
     SDL_FlipSurface;
-    SDL_GetGamepadCaps;
-    SDL_GetJoystickCaps;
     # extra symbols go here (don't modify this line)
   local: *;
 };

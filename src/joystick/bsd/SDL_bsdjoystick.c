@@ -829,11 +829,6 @@ static SDL_bool BSD_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
     return SDL_FALSE;
 }
 
-static Uint32 BSD_JoystickGetCapabilities(SDL_Joystick *joystick)
-{
-    return 0;
-}
-
 static int BSD_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
@@ -863,7 +858,6 @@ SDL_JoystickDriver SDL_BSD_JoystickDriver = {
     BSD_JoystickOpen,
     BSD_JoystickRumble,
     BSD_JoystickRumbleTriggers,
-    BSD_JoystickGetCapabilities,
     BSD_JoystickSetLED,
     BSD_JoystickSendEffect,
     BSD_JoystickSetSensorsEnabled,

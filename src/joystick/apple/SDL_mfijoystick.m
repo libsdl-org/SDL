@@ -1012,6 +1012,26 @@ static int IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
             }
 #endif /* ENABLE_MFI_SYSTEM_GESTURE_STATE */
 
+            if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
+                GCController *controller = device->controller;
+#ifdef ENABLE_MFI_LIGHT
+                if (controller.light) {
+                    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, SDL_TRUE);
+                }
+#endif
+
+#ifdef ENABLE_MFI_RUMBLE
+                if (controller.haptics) {
+                    for (GCHapticsLocality locality in controller.haptics.supportedLocalities) {
+                        if ([locality isEqualToString:GCHapticsLocalityHandles]) {
+                            SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
+                        } else if ([locality isEqualToString:GCHapticsLocalityTriggers]) {
+                            SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, SDL_TRUE);
+                        }
+                    }
+                }
+#endif
+            }
 #endif /* SDL_JOYSTICK_MFI */
         }
     }
@@ -1625,44 +1645,6 @@ static int IOS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble
 #endif
 }
 
-static Uint32 IOS_JoystickGetCapabilities(SDL_Joystick *joystick)
-{
-    Uint32 result = 0;
-
-#if defined(ENABLE_MFI_LIGHT) || defined(ENABLE_MFI_RUMBLE)
-    @autoreleasepool {
-        SDL_JoystickDeviceItem *device = joystick->hwdata;
-
-        if (device == NULL) {
-            return 0;
-        }
-
-        if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
-            GCController *controller = device->controller;
-#ifdef ENABLE_MFI_LIGHT
-            if (controller.light) {
-                result |= SDL_JOYSTICK_CAP_RGB_LED;
-            }
-#endif
-
-#ifdef ENABLE_MFI_RUMBLE
-            if (controller.haptics) {
-                for (GCHapticsLocality locality in controller.haptics.supportedLocalities) {
-                    if ([locality isEqualToString:GCHapticsLocalityHandles]) {
-                        result |= SDL_JOYSTICK_CAP_RUMBLE;
-                    } else if ([locality isEqualToString:GCHapticsLocalityTriggers]) {
-                        result |= SDL_JOYSTICK_CAP_TRIGGER_RUMBLE;
-                    }
-                }
-            }
-#endif
-        }
-    }
-#endif /* ENABLE_MFI_LIGHT || ENABLE_MFI_RUMBLE */
-
-    return result;
-}
-
 static int IOS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
 #ifdef ENABLE_MFI_LIGHT
@@ -2184,7 +2166,6 @@ SDL_JoystickDriver SDL_IOS_JoystickDriver = {
     IOS_JoystickOpen,
     IOS_JoystickRumble,
     IOS_JoystickRumbleTriggers,
-    IOS_JoystickGetCapabilities,
     IOS_JoystickSetLED,
     IOS_JoystickSendEffect,
     IOS_JoystickSetSensorsEnabled,

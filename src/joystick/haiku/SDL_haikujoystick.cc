@@ -272,11 +272,6 @@ extern "C"
         return SDL_FALSE;
     }
 
-    static Uint32 HAIKU_JoystickGetCapabilities(SDL_Joystick *joystick)
-    {
-        return 0;
-    }
-
     static int HAIKU_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
     {
         return SDL_Unsupported();
@@ -308,7 +303,6 @@ extern "C"
         HAIKU_JoystickOpen,
         HAIKU_JoystickRumble,
         HAIKU_JoystickRumbleTriggers,
-        HAIKU_JoystickGetCapabilities,
         HAIKU_JoystickSetLED,
         HAIKU_JoystickSendEffect,
         HAIKU_JoystickSetSensorsEnabled,
