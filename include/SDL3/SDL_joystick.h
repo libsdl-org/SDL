@@ -460,14 +460,13 @@ extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualHat(SDL_Joystick *joystick, in
 /**
  * Get the properties associated with a joystick.
  *
- * The following read-only properties are provided by SDL: -
- * `SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN`: true if this joystick has an LED
- * that has adjustable brightness - `SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN`:
- * true if this joystick has an LED that has adjustable color -
- * `SDL_PROP_JOYSTICK_CAP_PLAYER_LED_BOOLEAN`: true if this joystick has a
- * player LED - `SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN`: true if this joystick
- * has left/right rumble - `SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN`:
- * true if this joystick has simple trigger rumble
+ * The following read-only properties are provided by SDL:
+ *
+ * - `SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN`: true if this joystick has an LED that has adjustable brightness
+ * - `SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN`: true if this joystick has an LED that has adjustable color
+ * - `SDL_PROP_JOYSTICK_CAP_PLAYER_LED_BOOLEAN`: true if this joystick has a player LED
+ * - `SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN`: true if this joystick has left/right rumble
+ * - `SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN`: true if this joystick has simple trigger rumble
  *
  * \param joystick the SDL_Joystick obtained from SDL_OpenJoystick()
  * \returns a valid property ID on success or 0 on failure; call
