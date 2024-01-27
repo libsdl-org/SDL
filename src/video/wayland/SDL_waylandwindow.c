@@ -1476,8 +1476,8 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, data->app_id);
             libdecor_frame_map(data->shell_surface.libdecor.frame);
 
-            SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_XDG_SURFACE_POINTER, libdecor_frame_get_xdg_surface(data->shell_surface.libdecor.frame));
-            SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, libdecor_frame_get_xdg_toplevel(data->shell_surface.libdecor.frame));
+            SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_SURFACE_POINTER, libdecor_frame_get_xdg_surface(data->shell_surface.libdecor.frame));
+            SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, libdecor_frame_get_xdg_toplevel(data->shell_surface.libdecor.frame));
         }
     } else
 #endif
@@ -1485,7 +1485,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         data->shell_surface.xdg.surface = xdg_wm_base_get_xdg_surface(c->shell.xdg, data->surface);
         xdg_surface_set_user_data(data->shell_surface.xdg.surface, data);
         xdg_surface_add_listener(data->shell_surface.xdg.surface, &shell_surface_listener_xdg, data);
-        SDL_SetProperty(SDL_GetWindowProperties(window), SDL_PROPERTY_WINDOW_WAYLAND_XDG_SURFACE_POINTER, data->shell_surface.xdg.surface);
+        SDL_SetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_XDG_SURFACE_POINTER, data->shell_surface.xdg.surface);
 
         if (data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
             SDL_Window *parent = window->parent;
@@ -1538,13 +1538,13 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 }
             }
 
-            SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_XDG_POPUP_POINTER, data->shell_surface.xdg.roleobj.popup.popup);
-            SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_XDG_POSITIONER_POINTER, data->shell_surface.xdg.roleobj.popup.positioner);
+            SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_POPUP_POINTER, data->shell_surface.xdg.roleobj.popup.popup);
+            SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_POSITIONER_POINTER, data->shell_surface.xdg.roleobj.popup.positioner);
         } else {
             data->shell_surface.xdg.roleobj.toplevel = xdg_surface_get_toplevel(data->shell_surface.xdg.surface);
             xdg_toplevel_set_app_id(data->shell_surface.xdg.roleobj.toplevel, data->app_id);
             xdg_toplevel_add_listener(data->shell_surface.xdg.roleobj.toplevel, &toplevel_listener_xdg, data);
-            SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, data->shell_surface.xdg.roleobj.toplevel);
+            SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, data->shell_surface.xdg.roleobj.toplevel);
         }
     }
 
@@ -1680,8 +1680,8 @@ static void Wayland_ReleasePopup(SDL_VideoDevice *_this, SDL_Window *popup)
     popupdata->shell_surface.xdg.roleobj.popup.positioner = NULL;
 
     SDL_PropertiesID props = SDL_GetWindowProperties(popup);
-    SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_XDG_POPUP_POINTER, NULL);
-    SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_XDG_POSITIONER_POINTER, NULL);
+    SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_POPUP_POINTER, NULL);
+    SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_POSITIONER_POINTER, NULL);
 }
 
 void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
@@ -1721,8 +1721,8 @@ void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
             libdecor_frame_unref(wind->shell_surface.libdecor.frame);
             wind->shell_surface.libdecor.frame = NULL;
 
-            SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_XDG_SURFACE_POINTER, NULL);
-            SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, NULL);
+            SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_SURFACE_POINTER, NULL);
+            SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, NULL);
         }
     } else
 #endif
@@ -1731,12 +1731,12 @@ void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
     } else if (wind->shell_surface.xdg.roleobj.toplevel) {
         xdg_toplevel_destroy(wind->shell_surface.xdg.roleobj.toplevel);
         wind->shell_surface.xdg.roleobj.toplevel = NULL;
-        SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, NULL);
+        SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, NULL);
     }
     if (wind->shell_surface.xdg.surface) {
         xdg_surface_destroy(wind->shell_surface.xdg.surface);
         wind->shell_surface.xdg.surface = NULL;
-        SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_XDG_SURFACE_POINTER, NULL);
+        SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_SURFACE_POINTER, NULL);
     }
 
     wind->show_hide_sync_required = SDL_TRUE;
@@ -2057,11 +2057,11 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
 {
     SDL_WindowData *data;
     SDL_VideoData *c;
-    struct wl_surface *external_surface = (struct wl_surface *)SDL_GetProperty(create_props, SDL_PROPERTY_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER,
+    struct wl_surface *external_surface = (struct wl_surface *)SDL_GetProperty(create_props, SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER,
                                                                                (struct wl_surface *)SDL_GetProperty(create_props, "sdl2-compat.external_window", NULL));
-    const SDL_bool custom_surface_role = (external_surface != NULL) || SDL_GetBooleanProperty(create_props, SDL_PROPERTY_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN, SDL_FALSE);
+    const SDL_bool custom_surface_role = (external_surface != NULL) || SDL_GetBooleanProperty(create_props, SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN, SDL_FALSE);
     const SDL_bool create_egl_window = !!(window->flags & SDL_WINDOW_OPENGL) ||
-                                       SDL_GetBooleanProperty(create_props, SDL_PROPERTY_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN, SDL_FALSE);
+                                       SDL_GetBooleanProperty(create_props, SDL_PROP_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN, SDL_FALSE);
 
 
     data = SDL_calloc(1, sizeof(*data));
@@ -2203,9 +2203,9 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     }
 
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
-    SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_DISPLAY_POINTER, data->waylandData->display);
-    SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_SURFACE_POINTER, data->surface);
-    SDL_SetProperty(props, SDL_PROPERTY_WINDOW_WAYLAND_EGL_WINDOW_POINTER, data->egl_window);
+    SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, data->waylandData->display);
+    SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, data->surface);
+    SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_EGL_WINDOW_POINTER, data->egl_window);
 
     data->hit_test_result = SDL_HITTEST_NORMAL;
 

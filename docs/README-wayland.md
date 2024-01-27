@@ -52,15 +52,15 @@ having SDL handle input and rendering, it needs to create a custom, roleless sur
 toplevel window.
 
 This is done by using `SDL_CreateWindowWithProperties()` and setting the
-`SDL_PROPERTY_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN` property to `SDL_TRUE`. Once the window has been
+`SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN` property to `SDL_TRUE`. Once the window has been
 successfully created, the `wl_display` and `wl_surface` objects can then be retrieved from the
-`SDL_PROPERTY_WINDOW_WAYLAND_DISPLAY_POINTER` and `SDL_PROPERTY_WINDOW_WAYLAND_SURFACE_POINTER` properties respectively.
+`SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER` and `SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER` properties respectively.
 
 Surfaces don't receive any size change notifications, so if an application changes the window size, it must inform SDL
 that the surface size has changed by calling SDL_SetWindowSize() with the new dimensions.
 
 Custom surfaces will automatically handle scaling internally if the window was created with the
-`SDL_PROPERTY_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN` property set to `SDL_TRUE`. In this case, applications should
+`SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN` property set to `SDL_TRUE`. In this case, applications should
 not manually attach viewports or change the surface scale value, as SDL will handle this internally. Calls
 to `SDL_SetWindowSize()` should use the logical size of the window, and `SDL_GetWindowSizeInPixels()` should be used to
 query the size of the backbuffer surface in pixels. If this property is not set or is `SDL_FALSE`, applications can
@@ -77,7 +77,7 @@ and attach it to an application-managed toplevel window.
 
 Wayland windows and surfaces are more intrinsically tied to the client library than other windowing systems, therefore,
 when importing surfaces, it is necessary for both SDL and the application or toolkit to use the same `wl_display`
-object. This can be set/queried via the global `SDL_PROPERTY_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER` property. To
+object. This can be set/queried via the global `SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER` property. To
 import an external `wl_display`, set this property before initializing the SDL video subsystem, and read the value to
 export the internal `wl_display` after the video subsystem has been initialized. Setting this property after the video
 subsystem has been initialized has no effect, and reading it when the video subsystem is uninitialized will either
@@ -85,14 +85,14 @@ return the user provided value, if one was set while in the uninitialized state,
 
 Once this is done, and the application has created or obtained the `wl_surface` to be wrapped in an `SDL_Window`, the
 window is created with `SDL_CreateWindowWithProperties()` with the
-`SDL_PROPERTY_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER` property to set to the `wl_surface` object that is to be
+`SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER` property to set to the `wl_surface` object that is to be
 imported by SDL.
 
 SDL receives no notification regarding size changes on external surfaces or toplevel windows, so if the external surface
 needs to be resized, SDL must be informed by calling SDL_SetWindowSize() with the new dimensions.
 
 If desired, SDL can automatically handle the scaling for the surface by setting the
-`SDL_PROPERTY_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN` property to `SDL_TRUE`, however, if the surface being imported
+`SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN` property to `SDL_TRUE`, however, if the surface being imported
 already has, or will have, a viewport/fractional scale manager attached to it by the application or an external toolkit,
 a protocol violation will result. Avoid setting this property if importing surfaces from toolkits such as Qt or GTK.
 
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
     }
 
     /* Set SDL to use the existing wl_display object from Qt and initialize. */
-    SDL_SetProperty(SDL_GetGlobalProperties(), SDL_PROPERTY_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, display);
+    SDL_SetProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, display);
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
     /* Create a basic, frameless QWindow */
@@ -166,10 +166,10 @@ int main(int argc, char *argv[])
      * Qt objects should not be flagged as DPI-aware or protocol violations will result.
      */
     props = SDL_CreateProperties();
-    SDL_SetProperty(props, SDL_PROPERTY_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER, surface);
-    SDL_SetBooleanProperty(props, SDL_PROPERTY_WINDOW_CREATE_OPENGL_BOOLEAN, SDL_TRUE);
-    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_WIDTH_NUMBER, 640);
-    SDL_SetNumberProperty(props, SDL_PROPERTY_WINDOW_CREATE_HEIGHT_NUMBER, 480);
+    SDL_SetProperty(props, SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER, surface);
+    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, SDL_TRUE);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 640);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 480);
     sdlWindow = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);
     if (!sdlWindow) {

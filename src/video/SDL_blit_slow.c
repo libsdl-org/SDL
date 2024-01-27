@@ -311,7 +311,7 @@ void SDL_Blit_Slow_PQtoSDR(SDL_BlitInfo *info)
     Uint32 rgbmask = ~src_fmt->Amask;
     Uint32 ckey = info->colorkey & rgbmask;
     SDL_PropertiesID props = SDL_GetSurfaceProperties(info->src_surface);
-    SDL_ColorPrimaries src_primaries = (SDL_ColorPrimaries)SDL_GetNumberProperty(props, SDL_PROPERTY_SURFACE_COLOR_PRIMARIES_NUMBER, SDL_COLOR_PRIMARIES_BT2020);
+    SDL_ColorPrimaries src_primaries = (SDL_ColorPrimaries)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_COLOR_PRIMARIES_NUMBER, SDL_COLOR_PRIMARIES_BT2020);
     const float *color_primaries_matrix = SDL_GetColorPrimariesConversionMatrix(src_primaries, SDL_COLOR_PRIMARIES_BT709);
 
     dstfmt_val = detect_format(dst_fmt);
