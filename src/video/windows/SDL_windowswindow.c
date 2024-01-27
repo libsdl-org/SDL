@@ -387,46 +387,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
     }
 #endif
 
-    /* Fill in the SDL window with the window data */
-    {
-        RECT rect;
-        if (GetClientRect(hwnd, &rect)) {
-            int w = rect.right;
-            int h = rect.bottom;
-
-            if (window->flags & SDL_WINDOW_EXTERNAL) {
-                window->floating.w = window->windowed.w = window->w = w;
-                window->floating.h = window->windowed.h = window->h = h;
-            } else if ((window->windowed.w && window->windowed.w != w) || (window->windowed.h && window->windowed.h != h)) {
-                /* We tried to create a window larger than the desktop and Windows didn't allow it.  Override! */
-                int x, y;
-                /* Figure out what the window area will be */
-                WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_WINDOWRECT_FLOATING);
-                data->expected_resize = SDL_TRUE;
-                SetWindowPos(hwnd, NULL, x, y, w, h, data->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
-                data->expected_resize = SDL_FALSE;
-            } else {
-                window->w = w;
-                window->h = h;
-            }
-        }
-    }
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    {
-        POINT point;
-        point.x = 0;
-        point.y = 0;
-        if (ClientToScreen(hwnd, &point)) {
-            if (window->flags & SDL_WINDOW_EXTERNAL) {
-                window->floating.x = window->windowed.x = point.x;
-                window->floating.y = window->windowed.y = point.y;
-            }
-            window->x = point.x;
-            window->y = point.y;
-        }
-    }
-    WIN_UpdateWindowICCProfile(window, SDL_FALSE);
-#endif
+    /* Fill in the SDL window with the window state */
     {
         DWORD style = GetWindowLong(hwnd, GWL_STYLE);
         if (style & WS_VISIBLE) {
@@ -461,6 +422,47 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
             window->flags &= ~SDL_WINDOW_MINIMIZED;
         }
     }
+    if (!(window->flags & SDL_WINDOW_MINIMIZED)) {
+        RECT rect;
+        if (GetClientRect(hwnd, &rect) && !IsRectEmpty(&rect)) {
+            int w = rect.right;
+            int h = rect.bottom;
+
+            if (window->flags & SDL_WINDOW_EXTERNAL) {
+                window->floating.w = window->windowed.w = window->w = w;
+                window->floating.h = window->windowed.h = window->h = h;
+            } else if ((window->windowed.w && window->windowed.w != w) || (window->windowed.h && window->windowed.h != h)) {
+                /* We tried to create a window larger than the desktop and Windows didn't allow it.  Override! */
+                int x, y;
+                /* Figure out what the window area will be */
+                WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_WINDOWRECT_FLOATING);
+                data->expected_resize = SDL_TRUE;
+                SetWindowPos(hwnd, NULL, x, y, w, h, data->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
+                data->expected_resize = SDL_FALSE;
+            } else {
+                window->w = w;
+                window->h = h;
+            }
+        }
+    }
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+    if (!(window->flags & SDL_WINDOW_MINIMIZED)) {
+        POINT point;
+        point.x = 0;
+        point.y = 0;
+        if (ClientToScreen(hwnd, &point)) {
+            if (window->flags & SDL_WINDOW_EXTERNAL) {
+                window->floating.x = window->windowed.x = point.x;
+                window->floating.y = window->windowed.y = point.y;
+            }
+            window->x = point.x;
+            window->y = point.y;
+        }
+    }
+
+    WIN_UpdateWindowICCProfile(window, SDL_FALSE);
+#endif
+
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     window->flags |= SDL_WINDOW_INPUT_FOCUS;
 #else
@@ -930,9 +932,13 @@ void WIN_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *
     if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
         *w = rect.right;
         *h = rect.bottom;
-    } else {
+    } else if (window->last_pixel_w && window->last_pixel_h) {
         *w = window->last_pixel_w;
         *h = window->last_pixel_h;
+    } else {
+        /* Probably created minimized, use the restored size */
+        *w = window->floating.w;
+        *h = window->floating.h;
     }
 }
 
