@@ -435,7 +435,6 @@ int SDL_VideoInit(const char *driver_name)
     SDL_bool init_keyboard = SDL_FALSE;
     SDL_bool init_mouse = SDL_FALSE;
     SDL_bool init_touch = SDL_FALSE;
-    const char *hint;
     int i = 0;
 
     /* Check to make sure we don't overwrite '_this' */
@@ -567,13 +566,15 @@ int SDL_VideoInit(const char *driver_name)
     /* In the initial state we don't want to pop up an on-screen keyboard,
      * but we do want to allow text input from other mechanisms.
      */
-    hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
-    if (!hint) {
-        SDL_SetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD, "0");
-    }
-    SDL_StartTextInput();
-    if (!hint) {
-        SDL_SetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD, NULL);
+    {
+        const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
+        if (!hint) {
+            SDL_SetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD, "0");
+        }
+        SDL_StartTextInput();
+        if (!hint) {
+            SDL_SetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD, NULL);
+        }
     }
 #endif /* !SDL_VIDEO_DRIVER_N3DS */
 
