@@ -44,11 +44,6 @@
 /* The size of the stack buffer to use for rendering log messages. */
 #define SDL_MAX_LOG_MESSAGE_STACK 256
 
-#define DEFAULT_PRIORITY             SDL_LOG_PRIORITY_CRITICAL
-#define DEFAULT_ASSERT_PRIORITY      SDL_LOG_PRIORITY_WARN
-#define DEFAULT_APPLICATION_PRIORITY SDL_LOG_PRIORITY_INFO
-#define DEFAULT_TEST_PRIORITY        SDL_LOG_PRIORITY_VERBOSE
-
 typedef struct SDL_LogLevel
 {
     int category;
@@ -60,10 +55,8 @@ typedef struct SDL_LogLevel
 static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority, const char *message);
 
 static SDL_LogLevel *SDL_loglevels;
-static SDL_LogPriority SDL_default_priority = DEFAULT_PRIORITY;
-static SDL_LogPriority SDL_assert_priority = DEFAULT_ASSERT_PRIORITY;
-static SDL_LogPriority SDL_application_priority = DEFAULT_APPLICATION_PRIORITY;
-static SDL_LogPriority SDL_test_priority = DEFAULT_TEST_PRIORITY;
+static SDL_bool SDL_forced_priority = SDL_FALSE;
+static SDL_LogPriority SDL_forced_priority_level;
 static SDL_LogOutputFunction SDL_log_function = SDL_LogOutput;
 static void *SDL_log_userdata = NULL;
 static SDL_mutex *log_function_mutex = NULL;
@@ -128,9 +121,9 @@ void SDL_LogSetAllPriority(SDL_LogPriority priority)
     for (entry = SDL_loglevels; entry; entry = entry->next) {
         entry->priority = priority;
     }
-    SDL_default_priority = priority;
-    SDL_assert_priority = priority;
-    SDL_application_priority = priority;
+
+    SDL_forced_priority = SDL_TRUE;
+    SDL_forced_priority_level = priority;
 }
 
 void SDL_LogSetPriority(int category, SDL_LogPriority priority)
@@ -164,14 +157,19 @@ SDL_LogPriority SDL_LogGetPriority(int category)
         }
     }
 
-    if (category == SDL_LOG_CATEGORY_TEST) {
-        return SDL_test_priority;
-    } else if (category == SDL_LOG_CATEGORY_APPLICATION) {
-        return SDL_application_priority;
-    } else if (category == SDL_LOG_CATEGORY_ASSERT) {
-        return SDL_assert_priority;
-    } else {
-        return SDL_default_priority;
+    if (SDL_forced_priority) {
+        return SDL_forced_priority_level;
+    }
+
+    switch (category) {
+    case SDL_LOG_CATEGORY_APPLICATION:
+        return SDL_LOG_PRIORITY_INFO;
+    case SDL_LOG_CATEGORY_ASSERT:
+        return SDL_LOG_PRIORITY_WARN;
+    case SDL_LOG_CATEGORY_TEST:
+        return SDL_LOG_PRIORITY_VERBOSE;
+    default:
+        return SDL_LOG_PRIORITY_ERROR;
     }
 }
 
@@ -184,11 +182,7 @@ void SDL_LogResetPriorities(void)
         SDL_loglevels = entry->next;
         SDL_free(entry);
     }
-
-    SDL_default_priority = DEFAULT_PRIORITY;
-    SDL_assert_priority = DEFAULT_ASSERT_PRIORITY;
-    SDL_application_priority = DEFAULT_APPLICATION_PRIORITY;
-    SDL_test_priority = DEFAULT_TEST_PRIORITY;
+    SDL_forced_priority = SDL_FALSE;
 }
 
 void SDL_Log(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
