@@ -26,6 +26,7 @@
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
+#include <sys/stat.h>
 #endif
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
@@ -459,6 +460,24 @@ static size_t SDLCALL mem_write(SDL_RWops *context, const void *ptr, size_t size
 
 /* Functions to create SDL_RWops structures from various data sources */
 
+#if defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINDOWS)
+static SDL_bool SDL_IsRegularFile(FILE *f)
+{
+    #ifdef SDL_PLATFORM_WINRT
+    struct __stat64 st;
+    if (_fstat64(_fileno(f), &st) < 0 || !S_ISREG(st.st_mode)) {
+        return SDL_FALSE;
+    }
+    #else
+    struct stat st;
+    if (fstat(fileno(f), &st) < 0 || !S_ISREG(st.st_mode)) {
+        return SDL_FALSE;
+    }
+    #endif
+    return SDL_TRUE;
+}
+#endif
+
 SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
 {
     SDL_RWops *rwops = NULL;
@@ -472,6 +491,11 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
     if (*file == '/') {
         FILE *fp = fopen(file, mode);
         if (fp) {
+            if (!SDL_IsRegularFile(fp)) {
+                fclose(fp);
+                SDL_SetError("%s is not a regular file", file);
+                return NULL;
+            }
             return SDL_RWFromFP(fp, 1);
         }
     } else {
@@ -487,6 +511,11 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
             fp = fopen(path, mode);
             SDL_stack_free(path);
             if (fp) {
+                if (!SDL_IsRegularFile(fp)) {
+                    fclose(fp);
+                    SDL_SetError("%s is not a regular file", path);
+                    return NULL;
+                }
                 return SDL_RWFromFP(fp, 1);
             }
         }
@@ -540,6 +569,10 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
 #endif
         if (!fp) {
             SDL_SetError("Couldn't open %s", file);
+        } else if (!SDL_IsRegularFile(fp)) {
+            fclose(fp);
+            fp = NULL;
+            SDL_SetError("%s is not a regular file", file);
         } else {
             rwops = SDL_RWFromFP(fp, SDL_TRUE);
         }
