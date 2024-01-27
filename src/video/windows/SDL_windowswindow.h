@@ -67,6 +67,8 @@ struct SDL_WindowData
     SDL_bool windowed_mode_was_maximized;
     SDL_bool in_window_deactivation;
     RECT cursor_clipped_rect;
+    UINT windowed_mode_corner_rounding;
+    COLORREF dwma_border_color;
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     RAWINPUT *rawinput;
     UINT rawinput_offset;

@@ -37,11 +37,38 @@
 /* Dropfile support */
 #include <shellapi.h>
 
-/* Dark mode support */
+/* DWM setting support */
+typedef HRESULT (WINAPI *DwmSetWindowAttribute_t)(HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
+typedef HRESULT (WINAPI *DwmGetWindowAttribute_t)(HWND hwnd, DWORD dwAttribute, PVOID pvAttribute, DWORD cbAttribute);
+
+/* Dark mode support*/
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 #endif
-typedef HRESULT (WINAPI *DwmSetWindowAttribute_t)(HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
+
+/* Corner rounding support  (Win 11+) */
+#ifndef DWMWA_WINDOW_CORNER_PREFERENCE 
+#define DWMWA_WINDOW_CORNER_PREFERENCE 33
+#endif
+typedef enum {
+    DWMWCP_DEFAULT = 0,
+    DWMWCP_DONOTROUND = 1,
+    DWMWCP_ROUND = 2,
+    DWMWCP_ROUNDSMALL = 3
+} DWM_WINDOW_CORNER_PREFERENCE;
+
+/* Border Color support (Win 11+) */
+#ifndef DWMWA_BORDER_COLOR
+#define DWMWA_BORDER_COLOR 34
+#endif
+
+#ifndef DWMWA_COLOR_DEFAULT
+#define DWMWA_COLOR_DEFAULT 0xFFFFFFFF
+#endif
+
+#ifndef DWMWA_COLOR_NONE
+#define DWMWA_COLOR_NONE 0xFFFFFFFE
+#endif
 
 /* Transparent window support */
 #ifndef DWM_BB_ENABLE
@@ -347,6 +374,8 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
     data->videodata = videodata;
     data->initializing = SDL_TRUE;
     data->last_displayID = window->last_displayID;
+    data->dwma_border_color = DWMWA_COLOR_DEFAULT;
+
     if (SDL_GetHintBoolean("SDL_WINDOW_RETAIN_CONTENT", SDL_FALSE)) {
         data->copybits_flag = 0;
     } else {
@@ -1115,6 +1144,44 @@ void WIN_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
     data->expected_resize = SDL_FALSE;
 }
 
+static DWM_WINDOW_CORNER_PREFERENCE WIN_UpdateCornerRoundingForHWND(HWND hwnd, DWM_WINDOW_CORNER_PREFERENCE cornerPref)
+{
+    DWM_WINDOW_CORNER_PREFERENCE oldPref = DWMWCP_DEFAULT;
+
+    void *handle = SDL_LoadObject("dwmapi.dll");
+    if (handle) {
+        DwmGetWindowAttribute_t DwmGetWindowAttributeFunc = (DwmGetWindowAttribute_t)SDL_LoadFunction(handle, "DwmGetWindowAttribute");
+        DwmSetWindowAttribute_t DwmSetWindowAttributeFunc = (DwmSetWindowAttribute_t)SDL_LoadFunction(handle, "DwmSetWindowAttribute");
+        if (DwmGetWindowAttributeFunc && DwmSetWindowAttributeFunc) {
+            DwmGetWindowAttributeFunc(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &oldPref, sizeof(oldPref));
+            DwmSetWindowAttributeFunc(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPref, sizeof(cornerPref));            
+        }
+		
+        SDL_UnloadObject(handle);
+    }
+
+    return oldPref;
+}
+
+static COLORREF WIN_UpdateBorderColorForHWND(HWND hwnd, COLORREF colorRef)
+{
+    COLORREF oldPref = DWMWA_COLOR_DEFAULT;
+
+    void *handle = SDL_LoadObject("dwmapi.dll");
+    if (handle) {
+        DwmGetWindowAttribute_t DwmGetWindowAttributeFunc = (DwmGetWindowAttribute_t)SDL_LoadFunction(handle, "DwmGetWindowAttribute");
+        DwmSetWindowAttribute_t DwmSetWindowAttributeFunc = (DwmSetWindowAttribute_t)SDL_LoadFunction(handle, "DwmSetWindowAttribute");
+        if (DwmGetWindowAttributeFunc && DwmSetWindowAttributeFunc) {
+            DwmGetWindowAttributeFunc(hwnd, DWMWA_BORDER_COLOR, &oldPref, sizeof(oldPref));
+            DwmSetWindowAttributeFunc(hwnd, DWMWA_BORDER_COLOR, &colorRef, sizeof(colorRef));
+        }
+		
+        SDL_UnloadObject(handle);
+    }
+
+    return oldPref;
+}
+
 /**
  * Reconfigures the window to fill the given display, if fullscreen is true, otherwise restores the window.
  */
@@ -1175,8 +1242,15 @@ int WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_Vide
             data->windowed_mode_was_maximized = SDL_TRUE;
             style &= ~WS_MAXIMIZE;
         }
+
+        /* Disable corner rounding & border color (Windows 11+) so the window fills the full screen */
+        data->windowed_mode_corner_rounding = WIN_UpdateCornerRoundingForHWND(hwnd, DWMWCP_DONOTROUND);
+        data->dwma_border_color = WIN_UpdateBorderColorForHWND(hwnd, DWMWA_COLOR_NONE);
     } else {
         BOOL menu;
+
+        WIN_UpdateCornerRoundingForHWND(hwnd, data->windowed_mode_corner_rounding);
+        WIN_UpdateBorderColorForHWND(hwnd, data->dwma_border_color);
 
         /* Restore window-maximization state, as applicable.
            Special care is taken to *not* do this if and when we're
