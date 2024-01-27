@@ -529,7 +529,7 @@ static SDL_bool SDL_IsRegularFile(FILE *f)
 {
     #ifdef __WINRT__
     struct __stat64 st;
-    if (_fstat64(_fileno(f), &st) < 0 || !S_ISREG(st.st_mode)) {
+    if (_fstat64(_fileno(f), &st) < 0 || (st.st_mode & _S_IFMT) != _S_IFREG) {
         return SDL_FALSE;
     }
     #else
