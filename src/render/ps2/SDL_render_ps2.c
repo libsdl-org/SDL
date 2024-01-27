@@ -213,10 +213,10 @@ static int PS2_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, c
 
     cmd->data.draw.count = count;
 
-    colorR = cmd->data.draw.r >> 1;
-    colorG = cmd->data.draw.g >> 1;
-    colorB = cmd->data.draw.b >> 1;
-    colorA = cmd->data.draw.a >> 1;
+    colorR = cmd->data.draw.r;
+    colorG = cmd->data.draw.g;
+    colorB = cmd->data.draw.b;
+    colorA = cmd->data.draw.a;
     rgbaq = color_to_RGBAQ(colorR, colorG, colorB, colorA, 0.0f);
 
     for (i = 0; i < count; i++, vertices++, points++) {
@@ -266,7 +266,7 @@ static int PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
             uv_ = (float *)((char *)uv + j * uv_stride);
 
             vertices->xyz2 = vertex_to_XYZ2(data->gsGlobal, xy_[0] * scale_x, xy_[1] * scale_y, 0);
-            vertices->rgbaq = color_to_RGBAQ(col_.r >> 1, col_.g >> 1, col_.b >> 1, col_.a >> 1, 0);
+            vertices->rgbaq = color_to_RGBAQ(col_.r, col_.g, col_.b, col_.a, 0);
             vertices->uv = vertex_to_UV(ps2_tex, uv_[0] * ps2_tex->Width, uv_[1] * ps2_tex->Height);
 
             vertices++;
@@ -297,7 +297,7 @@ static int PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
             col_ = *(SDL_Color *)((char *)color + j * color_stride);
 
             vertices->xyz2 = vertex_to_XYZ2(data->gsGlobal, xy_[0] * scale_x, xy_[1] * scale_y, 0);
-            vertices->rgbaq = color_to_RGBAQ(col_.r >> 1, col_.g >> 1, col_.b >> 1, col_.a >> 1, 0.0f);
+            vertices->rgbaq = color_to_RGBAQ(col_.r, col_.g, col_.b, col_.a, 0.0f);
 
             vertices++;
         }
@@ -338,10 +338,10 @@ static int PS2_RenderSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd
 
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
 
-    colorR = (cmd->data.color.r) >> 1;
-    colorG = (cmd->data.color.g) >> 1;
-    colorB = (cmd->data.color.b) >> 1;
-    colorA = (cmd->data.color.a) >> 1;
+    colorR = (cmd->data.color.r);
+    colorG = (cmd->data.color.g);
+    colorB = (cmd->data.color.b);
+    colorA = (cmd->data.color.a);
     data->drawColor = GS_SETREG_RGBAQ(colorR, colorG, colorB, colorA, 0x00);
     return 0;
 }
@@ -352,10 +352,10 @@ static int PS2_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
 
-    colorR = (cmd->data.color.r) >> 1;
-    colorG = (cmd->data.color.g) >> 1;
-    colorB = (cmd->data.color.b) >> 1;
-    colorA = (cmd->data.color.a) >> 1;
+    colorR = (cmd->data.color.r);
+    colorG = (cmd->data.color.g);
+    colorB = (cmd->data.color.b);
+    colorA = (cmd->data.color.a);
     gsKit_clear(data->gsGlobal, GS_SETREG_RGBAQ(colorR, colorG, colorB, colorA, 0x00));
 
     return 0;
