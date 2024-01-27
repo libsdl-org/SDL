@@ -984,5 +984,3 @@
 #define SDL_GetHapticName SDL_GetHapticName_REAL
 #define SDL_ReadSurfacePixel SDL_ReadSurfacePixel_REAL
 #define SDL_FlipSurface SDL_FlipSurface_REAL
-#define SDL_GetGamepadCaps SDL_GetGamepadCaps_REAL
-#define SDL_GetJoystickCaps SDL_GetJoystickCaps_REAL

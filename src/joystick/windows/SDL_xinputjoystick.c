@@ -263,6 +263,9 @@ int SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystic
     joystick->naxes = 6;
     joystick->nbuttons = 11;
     joystick->nhats = 1;
+
+    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
+
     return 0;
 }
 
@@ -351,11 +354,6 @@ int SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
     return 0;
 }
 
-Uint32 SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
-{
-    return SDL_JOYSTICK_CAP_RUMBLE;
-}
-
 void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick)
 {
     DWORD result;
@@ -430,11 +428,6 @@ int SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystic
 int SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
-}
-
-Uint32 SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
-{
-    return 0;
 }
 
 void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick)

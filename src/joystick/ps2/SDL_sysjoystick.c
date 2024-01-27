@@ -210,6 +210,8 @@ static int PS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->nhats = 0;
     joystick->instance_id = device_index;
 
+    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
+
     return 0;
 }
 
@@ -240,31 +242,25 @@ static int PS2_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
 /* Rumble functionality */
 static int PS2_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint16 right)
 {
-    return -1;
-}
-
-/* Capability detection */
-static Uint32 PS2_JoystickGetCapabilities(SDL_Joystick *joystick)
-{
-    return SDL_JOYSTICK_CAP_RUMBLE;
+    return SDL_Unsupported();
 }
 
 /* LED functionality */
 static int PS2_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
-    return -1;
+    return SDL_Unsupported();
 }
 
 /* General effects */
 static int PS2_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
-    return -1;
+    return SDL_Unsupported();
 }
 
 /* Sensor functionality */
 static int PS2_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
-    return -1;
+    return SDL_Unsupported();
 }
 
 /*  Function to update the state of a joystick - called as a device poll.
@@ -355,7 +351,6 @@ SDL_JoystickDriver SDL_PS2_JoystickDriver = {
     PS2_JoystickOpen,
     PS2_JoystickRumble,
     PS2_JoystickRumbleTriggers,
-    PS2_JoystickGetCapabilities,
     PS2_JoystickSetLED,
     PS2_JoystickSendEffect,
     PS2_JoystickSetSensorsEnabled,

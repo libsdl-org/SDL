@@ -723,6 +723,8 @@ static void HIDAPI_DriverPS4_SetEnhancedModeAvailable(SDL_DriverPS4_Context *ctx
     if (ctx->device->is_bluetooth && ctx->official_controller) {
         ctx->report_battery = SDL_TRUE;
     }
+
+    HIDAPI_UpdateDeviceProperties(ctx->device);
 }
 
 static void HIDAPI_DriverPS4_SetEnhancedMode(SDL_DriverPS4_Context *ctx)

@@ -3485,16 +3485,6 @@ int SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad, Uint16 left_rumble, Uint16 r
     return SDL_RumbleJoystickTriggers(joystick, left_rumble, right_rumble, duration_ms);
 }
 
-Uint32 SDL_GetGamepadCaps(SDL_Gamepad *gamepad)
-{
-    SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
-
-    if (!joystick) {
-        return 0;
-    }
-    return SDL_GetJoystickCaps(joystick);
-}
-
 int SDL_SetGamepadLED(SDL_Gamepad *gamepad, Uint8 red, Uint8 green, Uint8 blue)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);

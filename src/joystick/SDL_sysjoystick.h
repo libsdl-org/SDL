@@ -190,9 +190,6 @@ typedef struct SDL_JoystickDriver
     int (*Rumble)(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
     int (*RumbleTriggers)(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble);
 
-    /* Capability detection */
-    Uint32 (*GetCapabilities)(SDL_Joystick *joystick);
-
     /* LED functionality */
     int (*SetLED)(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
 

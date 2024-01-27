@@ -75,15 +75,6 @@ typedef enum
     SDL_GAMEPAD_TYPE_MAX
 } SDL_GamepadType;
 
-typedef enum
-{
-    SDL_GAMEPAD_CAP_MONO_LED       = 0x00000001,   /**< This gamepad has an LED that has adjustable brightness */
-    SDL_GAMEPAD_CAP_RGB_LED        = 0x00000002,   /**< This gamepad has an LED that has adjustable color */
-    SDL_GAMEPAD_CAP_PLAYER_LED     = 0x00000004,   /**< This gamepad has a player LED */
-    SDL_GAMEPAD_CAP_RUMBLE         = 0x00000010,   /**< This gamepad has left/right rumble */
-    SDL_GAMEPAD_CAP_TRIGGER_RUMBLE = 0x00000020,   /**< This gamepad has simple trigger rumble */
-} SDL_GamepadCaps;
-
 /**
  *  The list of buttons available on a gamepad
  *
@@ -603,6 +594,13 @@ extern DECLSPEC SDL_Gamepad *SDLCALL SDL_GetGamepadFromPlayerIndex(int player_in
  *
  * These properties are shared with the underlying joystick object.
  *
+ * The following read-only properties are provided by SDL:
+ * - `SDL_PROP_GAMEPAD_CAP_MONO_LED_BOOLEAN`: true if this gamepad has an LED that has adjustable brightness
+ * - `SDL_PROP_GAMEPAD_CAP_RGB_LED_BOOLEAN`: true if this gamepad has an LED that has adjustable color
+ * - `SDL_PROP_GAMEPAD_CAP_PLAYER_LED_BOOLEAN`: true if this gamepad has a player LED
+ * - `SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN`: true if this gamepad has left/right rumble
+ * - `SDL_PROP_GAMEPAD_CAP_TRIGGER_RUMBLE_BOOLEAN`: true if this gamepad has simple trigger rumble
+ *
  * \param gamepad a gamepad identifier previously returned by
  *                SDL_OpenGamepad()
  * \returns a valid property ID on success or 0 on failure; call
@@ -614,6 +612,12 @@ extern DECLSPEC SDL_Gamepad *SDLCALL SDL_GetGamepadFromPlayerIndex(int player_in
  * \sa SDL_SetProperty
  */
 extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGamepadProperties(SDL_Gamepad *gamepad);
+
+#define SDL_PROP_GAMEPAD_CAP_MONO_LED_BOOLEAN       SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN
+#define SDL_PROP_GAMEPAD_CAP_RGB_LED_BOOLEAN        SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN
+#define SDL_PROP_GAMEPAD_CAP_PLAYER_LED_BOOLEAN     SDL_PROP_JOYSTICK_CAP_PLAYER_LED_BOOLEAN
+#define SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN         SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN
+#define SDL_PROP_GAMEPAD_CAP_TRIGGER_RUMBLE_BOOLEAN SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN
 
 /**
  * Get the instance ID of an opened gamepad.
@@ -1179,17 +1183,6 @@ extern DECLSPEC float SDLCALL SDL_GetGamepadSensorDataRate(SDL_Gamepad *gamepad,
 extern DECLSPEC int SDLCALL SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, SDL_SensorType type, float *data, int num_values);
 
 /**
- * Query gamepad capabilities
- *
- * \param gamepad The gamepad to query
- * \returns a mask of SDL_GamepadCaps values indicating the gamepad
- *          capabilities.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC Uint32 SDLCALL SDL_GetGamepadCaps(SDL_Gamepad *gamepad);
-
-/**
  * Start a rumble effect on a gamepad.
  *
  * Each call to this function cancels any previous rumble effect, and calling
@@ -1204,8 +1197,6 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetGamepadCaps(SDL_Gamepad *gamepad);
  * \returns 0, or -1 if rumble isn't supported on this gamepad
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetGamepadCaps
  */
 extern DECLSPEC int SDLCALL SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 
@@ -1229,8 +1220,6 @@ extern DECLSPEC int SDLCALL SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uint16 low_f
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetGamepadCaps
  */
 extern DECLSPEC int SDLCALL SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms);
 
@@ -1251,8 +1240,6 @@ extern DECLSPEC int SDLCALL SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad, Uint
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetGamepadCaps
  */
 extern DECLSPEC int SDLCALL SDL_SetGamepadLED(SDL_Gamepad *gamepad, Uint8 red, Uint8 green, Uint8 blue);
 

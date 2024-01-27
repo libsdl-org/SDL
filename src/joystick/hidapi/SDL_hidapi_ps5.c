@@ -818,6 +818,8 @@ static void HIDAPI_DriverPS5_SetEnhancedModeAvailable(SDL_DriverPS5_Context *ctx
     if (ctx->device->is_bluetooth) {
         ctx->report_battery = SDL_TRUE;
     }
+
+    HIDAPI_UpdateDeviceProperties(ctx->device);
 }
 
 static void HIDAPI_DriverPS5_SetEnhancedMode(SDL_DriverPS5_Context *ctx)

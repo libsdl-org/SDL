@@ -565,9 +565,9 @@ The following functions have been removed:
 * SDL_GameControllerEventState() - replaced with SDL_SetGamepadEventsEnabled() and SDL_GamepadEventsEnabled()
 * SDL_GameControllerGetBindForAxis() - replaced with SDL_GetGamepadBindings()
 * SDL_GameControllerGetBindForButton() - replaced with SDL_GetGamepadBindings()
-* SDL_GameControllerHasLED() - replaced with SDL_GetGamepadCaps()
-* SDL_GameControllerHasRumble() - replaced with SDL_GetGamepadCaps()
-* SDL_GameControllerHasRumbleTriggers() - replaced with SDL_GetGamepadCaps()
+* SDL_GameControllerHasLED() - replaced with SDL_PROP_GAMEPAD_CAP_RGB_LED_BOOLEAN
+* SDL_GameControllerHasRumble() - replaced with SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN
+* SDL_GameControllerHasRumbleTriggers() - replaced with SDL_PROP_GAMEPAD_CAP_TRIGGER_RUMBLE_BOOLEAN
 * SDL_GameControllerMappingForDeviceIndex() - replaced with SDL_GetGamepadInstanceMapping()
 * SDL_GameControllerMappingForIndex() - replaced with SDL_GetGamepadMappings()
 * SDL_GameControllerNameForIndex() - replaced with SDL_GetGamepadInstanceName()
@@ -811,9 +811,9 @@ The following functions have been removed:
 * SDL_JoystickGetDeviceProductVersion() - replaced with SDL_GetJoystickInstanceProductVersion()
 * SDL_JoystickGetDeviceType() - replaced with SDL_GetJoystickInstanceType()
 * SDL_JoystickGetDeviceVendor() - replaced with SDL_GetJoystickInstanceVendor()
-* SDL_JoystickHasLED() - replaced with SDL_GetJoystickCaps()
-* SDL_JoystickHasRumble() - replaced with SDL_GetJoystickCaps()
-* SDL_JoystickHasRumbleTriggers() - replaced with SDL_GetJoystickCaps()
+* SDL_JoystickHasLED() - replaced with SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN
+* SDL_JoystickHasRumble() - replaced with SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN
+* SDL_JoystickHasRumbleTriggers() - replaced with SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN
 * SDL_JoystickNameForIndex() - replaced with SDL_GetJoystickInstanceName()
 * SDL_JoystickNumBalls() - API has been removed, see https://github.com/libsdl-org/SDL/issues/6766
 * SDL_JoystickPathForIndex() - replaced with SDL_GetJoystickInstancePath()
