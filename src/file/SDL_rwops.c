@@ -625,14 +625,14 @@ void SDL_DestroyRW(SDL_RWops *context)
 void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, SDL_bool freesrc)
 {
     const int FILE_CHUNK_SIZE = 1024;
-    Sint64 size, size_total;
+    Sint64 size, size_total = 0;
     size_t size_read;
     char *data = NULL, *newdata;
     SDL_bool loading_chunks = SDL_FALSE;
 
     if (!src) {
         SDL_InvalidParamError("src");
-        return NULL;
+        goto done;
     }
 
     size = SDL_RWsize(src);
@@ -677,12 +677,12 @@ void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, SDL_bool freesrc)
         break;
     }
 
-    if (datasize) {
-        *datasize = (size_t)size_total;
-    }
     data[size_total] = '\0';
 
 done:
+    if (datasize) {
+        *datasize = (size_t)size_total;
+    }
     if (freesrc && src) {
         SDL_RWclose(src);
     }
