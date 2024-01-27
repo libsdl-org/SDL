@@ -432,7 +432,11 @@ static Uint8 *WASAPI_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
     BYTE *buffer = NULL;
 
     if (device->hidden->render) {
-        if (WasapiFailed(device, IAudioRenderClient_GetBuffer(device->hidden->render, device->sample_frames, &buffer))) {
+        const HRESULT ret = IAudioRenderClient_GetBuffer(device->hidden->render, device->sample_frames, &buffer);
+        if (ret == AUDCLNT_E_BUFFER_TOO_LARGE) {
+            SDL_assert(buffer == NULL);
+            *buffer_size = 0;  // just go back to WaitDevice and try again after the hardware has consumed some more data.
+        } else if (WasapiFailed(device, ret)) {
             SDL_assert(buffer == NULL);
             if (device->hidden->device_lost) {  // just use an available buffer, we won't be playing it anyhow.
                 *buffer_size = 0;  // we'll recover during WaitDevice and try again.
@@ -642,11 +646,16 @@ static int mgmtthrtask_PrepDevice(void *userdata)
         return WIN_SetErrorFromHRESULT("WASAPI can't determine buffer size", ret);
     }
 
-    /* Match the callback size to the period size to cut down on the number of
-       interrupts waited for in each call to WaitDevice */
+    // Match the callback size to the period size to cut down on the number of
+    // interrupts waited for in each call to WaitDevice
     const float period_millis = default_period / 10000.0f;
     const float period_frames = period_millis * newspec.freq / 1000.0f;
-    const int new_sample_frames = (int) SDL_ceilf(period_frames);
+    int new_sample_frames = (int) SDL_ceilf(period_frames);
+
+    // regardless of what we calculated for the period size, clamp it to the expected hardware buffer size.
+    if (new_sample_frames > (int) bufsize) {
+        new_sample_frames = (int) bufsize;
+    }
 
     // Update the fragment size as size in bytes
     if (SDL_AudioDeviceFormatChangedAlreadyLocked(device, &newspec, new_sample_frames) < 0) {
