@@ -102,21 +102,16 @@ static int aaudio_OpenDevice(_THIS, const char *devname)
     ctx.AAudioStreamBuilder_setSampleRate(ctx.builder, this->spec.freq);
     ctx.AAudioStreamBuilder_setChannelCount(ctx.builder, this->spec.channels);
     if(devname) {
-        int aaudio_device_id = SDL_atoi(devname);
-        LOGI("Opening device id %d", aaudio_device_id);
-        ctx.AAudioStreamBuilder_setDeviceId(ctx.builder, aaudio_device_id);
+        private->devid = SDL_atoi(devname);
+        LOGI("Opening device id %d", private->devid);
+        ctx.AAudioStreamBuilder_setDeviceId(ctx.builder, private->devid);
     }
     {
-        aaudio_direction_t direction = (iscapture ? AAUDIO_DIRECTION_INPUT : AAUDIO_DIRECTION_OUTPUT);
+        const aaudio_direction_t direction = (iscapture ? AAUDIO_DIRECTION_INPUT : AAUDIO_DIRECTION_OUTPUT);
         ctx.AAudioStreamBuilder_setDirection(ctx.builder, direction);
     }
     {
-        aaudio_format_t format = AAUDIO_FORMAT_PCM_FLOAT;
-        if (this->spec.format == AUDIO_S16SYS) {
-            format = AAUDIO_FORMAT_PCM_I16;
-        } else if (this->spec.format == AUDIO_S16SYS) {
-            format = AAUDIO_FORMAT_PCM_FLOAT;
-        }
+        const aaudio_format_t format = (this->spec.format == AUDIO_S16SYS) ? AAUDIO_FORMAT_PCM_I16 : AAUDIO_FORMAT_PCM_FLOAT;
         ctx.AAudioStreamBuilder_setFormat(ctx.builder, format);
     }
 
@@ -212,6 +207,97 @@ static Uint8 *aaudio_GetDeviceBuf(_THIS)
     return private->mixbuf;
 }
 
+/* Try to reestablish an AAudioStream.
+
+   This needs to get a stream with the same format as the previous one,
+   even if this means AAudio needs to handle a conversion it didn't when
+   we initially opened the device. If we can't get that, we are forced
+   to give up here.
+
+   (This is more robust in SDL3, which is designed to handle
+   abrupt format changes.)
+*/
+static int RebuildAAudioStream(SDL_AudioDevice *device)
+{
+    struct SDL_PrivateAudioData *hidden = device->hidden;
+    const SDL_bool iscapture = device->iscapture;
+    aaudio_result_t res;
+
+    ctx.AAudioStreamBuilder_setSampleRate(ctx.builder, device->spec.freq);
+    ctx.AAudioStreamBuilder_setChannelCount(ctx.builder, device->spec.channels);
+    if(hidden->devid) {
+        LOGI("Reopening device id %d", hidden->devid);
+        ctx.AAudioStreamBuilder_setDeviceId(ctx.builder, hidden->devid);
+    }
+    {
+        const aaudio_direction_t direction = (iscapture ? AAUDIO_DIRECTION_INPUT : AAUDIO_DIRECTION_OUTPUT);
+        ctx.AAudioStreamBuilder_setDirection(ctx.builder, direction);
+    }
+    {
+        const aaudio_format_t format = (device->spec.format == AUDIO_S16SYS) ? AAUDIO_FORMAT_PCM_I16 : AAUDIO_FORMAT_PCM_FLOAT;
+        ctx.AAudioStreamBuilder_setFormat(ctx.builder, format);
+    }
+
+    ctx.AAudioStreamBuilder_setErrorCallback(ctx.builder, aaudio_errorCallback, hidden);
+    ctx.AAudioStreamBuilder_setPerformanceMode(ctx.builder, AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
+
+    LOGI("AAudio Try to reopen %u hz %u bit chan %u %s samples %u",
+         device->spec.freq, SDL_AUDIO_BITSIZE(device->spec.format),
+         device->spec.channels, (device->spec.format & 0x1000) ? "BE" : "LE", device->spec.samples);
+
+    res = ctx.AAudioStreamBuilder_openStream(ctx.builder, &hidden->stream);
+    if (res != AAUDIO_OK) {
+        LOGI("SDL Failed AAudioStreamBuilder_openStream %d", res);
+        return SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
+    }
+
+    {
+        const aaudio_format_t fmt = ctx.AAudioStream_getFormat(hidden->stream);
+        SDL_AudioFormat sdlfmt = (SDL_AudioFormat) 0;
+        if (fmt == AAUDIO_FORMAT_PCM_I16) {
+            sdlfmt = AUDIO_S16SYS;
+        } else if (fmt == AAUDIO_FORMAT_PCM_FLOAT) {
+            sdlfmt = AUDIO_F32SYS;
+        }
+
+        /* We handle this better in SDL3, but this _needs_ to match the previous stream for SDL2. */
+        if ( (device->spec.freq != ctx.AAudioStream_getSampleRate(hidden->stream)) ||
+             (device->spec.channels != ctx.AAudioStream_getChannelCount(hidden->stream)) ||
+             (device->spec.format != sdlfmt) ) {
+            LOGI("Didn't get an identical spec from AAudioStream during reopen!");
+            ctx.AAudioStream_close(hidden->stream);
+            hidden->stream = NULL;
+            return SDL_SetError("Didn't get an identical spec from AAudioStream during reopen!");
+        }
+    }
+
+    res = ctx.AAudioStream_requestStart(hidden->stream);
+    if (res != AAUDIO_OK) {
+        LOGI("SDL Failed AAudioStream_requestStart %d iscapture:%d", res, iscapture);
+        return SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
+    }
+
+    return 0;
+}
+
+static int RecoverAAudioDevice(SDL_AudioDevice *device)
+{
+    struct SDL_PrivateAudioData *hidden = device->hidden;
+    AAudioStream *stream = hidden->stream;
+
+    /* attempt to build a new stream, in case there's a new default device. */
+    hidden->stream = NULL;
+    ctx.AAudioStream_requestStop(stream);
+    ctx.AAudioStream_close(stream);
+
+    if (RebuildAAudioStream(device) < 0) {
+        return -1;  // oh well, we tried.
+    }
+
+    return 0;
+}
+
+
 static void aaudio_PlayDevice(_THIS)
 {
     struct SDL_PrivateAudioData *private = this->hidden;
@@ -220,6 +306,9 @@ static void aaudio_PlayDevice(_THIS)
     res = ctx.AAudioStream_write(private->stream, private->mixbuf, private->mixlen / private->frame_size, timeoutNanoseconds);
     if (res < 0) {
         LOGI("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
+        if (RecoverAAudioDevice(this) < 0) {
+            return;  /* oh well, we went down hard. */
+        }
     } else {
         LOGI("SDL AAudio play: %d frames, wanted:%d frames", (int)res, private->mixlen / private->frame_size);
     }
@@ -408,6 +497,7 @@ void aaudio_ResumeDevices(void)
 */
 SDL_bool aaudio_DetectBrokenPlayState(void)
 {
+    AAudioStream *stream;
     struct SDL_PrivateAudioData *private;
     int64_t framePosition, timeNanoseconds;
     aaudio_result_t res;
@@ -417,10 +507,14 @@ SDL_bool aaudio_DetectBrokenPlayState(void)
     }
 
     private = audioDevice->hidden;
+    stream = private->stream;
+    if (!stream) {
+        return SDL_FALSE;
+    }
 
-    res = ctx.AAudioStream_getTimestamp(private->stream, CLOCK_MONOTONIC, &framePosition, &timeNanoseconds);
+    res = ctx.AAudioStream_getTimestamp(stream, CLOCK_MONOTONIC, &framePosition, &timeNanoseconds);
     if (res == AAUDIO_ERROR_INVALID_STATE) {
-        aaudio_stream_state_t currentState = ctx.AAudioStream_getState(private->stream);
+        aaudio_stream_state_t currentState = ctx.AAudioStream_getState(stream);
         /* AAudioStream_getTimestamp() will also return AAUDIO_ERROR_INVALID_STATE while the stream is still initially starting. But we only care if it silently went invalid while playing. */
         if (currentState == AAUDIO_STREAM_STATE_STARTED) {
             LOGI("SDL aaudio_DetectBrokenPlayState: detected invalid audio device state: AAudioStream_getTimestamp result=%d, framePosition=%lld, timeNanoseconds=%lld, getState=%d", (int)res, (long long)framePosition, (long long)timeNanoseconds, (int)currentState);
