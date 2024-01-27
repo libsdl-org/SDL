@@ -402,8 +402,21 @@ static SDL_bool CheckXRandR(Display *display, int *major, int *minor)
 
 static float CalculateXRandRRefreshRate(const XRRModeInfo *info)
 {
-    if (info->hTotal && info->vTotal) {
-        return ((100 * (Sint64)info->dotClock) / (info->hTotal * info->vTotal)) / 100.0f;
+    double vTotal = info->vTotal;
+
+    if (info->modeFlags & RR_DoubleScan) {
+        /* doublescan doubles the number of lines */
+        vTotal *= 2;
+    }
+
+    if (info->modeFlags & RR_Interlace) {
+        /* interlace splits the frame into two fields */
+        /* the field rate is what is typically reported by monitors */
+        vTotal /= 2;
+    }
+
+    if (info->hTotal && vTotal) {
+        return ((100 * (Sint64)info->dotClock) / (info->hTotal * vTotal)) / 100.0f;
     }
     return 0.0f;
 }
