@@ -98,7 +98,7 @@ static BOOL UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messag
     }
 
     if (window == nil || window.rootViewController == nil) {
-#if TARGET_OS_XR
+#ifdef SDL_PLATFORM_VISIONOS
         alertwindow = [[UIWindow alloc] init];
 #else
         alertwindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];

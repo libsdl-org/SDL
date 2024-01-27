@@ -33,7 +33,7 @@
 #include "SDL_uikitwindow.h"
 #include "SDL_uikitopengles.h"
 
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
 static void SDLCALL SDL_AppleTVControllerUIHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     @autoreleasepool {
@@ -43,7 +43,7 @@ static void SDLCALL SDL_AppleTVControllerUIHintChanged(void *userdata, const cha
 }
 #endif
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
 static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     @autoreleasepool {
@@ -104,13 +104,13 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         rotatingOrientation = NO;
 #endif
 
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
         SDL_AddHintCallback(SDL_HINT_APPLE_TV_CONTROLLER_UI_EVENTS,
                             SDL_AppleTVControllerUIHintChanged,
                             (__bridge void *)self);
 #endif
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
         SDL_AddHintCallback(SDL_HINT_IOS_HIDE_HOME_INDICATOR,
                             SDL_HideHomeIndicatorHintChanged,
                             (__bridge void *)self);
@@ -125,13 +125,13 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     [self deinitKeyboard];
 #endif
 
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
     SDL_DelHintCallback(SDL_HINT_APPLE_TV_CONTROLLER_UI_EVENTS,
                         SDL_AppleTVControllerUIHintChanged,
                         (__bridge void *)self);
 #endif
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
     SDL_DelHintCallback(SDL_HINT_IOS_HIDE_HOME_INDICATOR,
                         SDL_HideHomeIndicatorHintChanged,
                         (__bridge void *)self);
@@ -162,7 +162,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 {
     displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(doLoop:)];
 
-#if TARGET_OS_XR
+#ifdef SDL_PLATFORM_VISIONOS
     displayLink.preferredFramesPerSecond = 90 / animationInterval;      //TODO: Get frame max frame rate on visionOS
 #elif defined(__IPHONE_10_3)
     SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
@@ -213,7 +213,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, w, h);
 }
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
 - (NSUInteger)supportedInterfaceOrientations
 {
     return UIKit_GetSupportedOrientations(window);
@@ -257,7 +257,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     return SDL_GCMouseRelativeMode() ? YES : NO;
 }
 
-#endif /* !TARGET_OS_TV */
+#endif /* !SDL_PLATFORM_TVOS */
 
 /*
  ---- Keyboard related functionality below this line ----
@@ -291,7 +291,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     keyboardVisible = NO;
 
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
     [center addObserver:self
                selector:@selector(keyboardWillShow:)
                    name:UIKeyboardWillShowNotification
@@ -374,7 +374,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 - (void)deinitKeyboard
 {
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
     [center removeObserver:self
                       name:UIKeyboardWillShowNotification
                     object:nil];
@@ -430,7 +430,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     }
 
     showingKeyboard = YES;
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
     CGRect kbrect = [[notification userInfo][UIKeyboardFrameEndUserInfoKey] CGRectValue];
 
     /* The keyboard rect is in the coordinate space of the screen/window, but we
@@ -515,7 +515,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
     CGAffineTransform t = self.view.transform;
     CGPoint offset = CGPointMake(0.0, 0.0);
-#if TARGET_OS_XR
+#ifdef SDL_PLATFORM_VISIONOS
     CGRect frame = UIKit_ComputeViewFrame(window);
 #else
     CGRect frame = UIKit_ComputeViewFrame(window, data.uiwindow.screen);

@@ -30,7 +30,7 @@ int SDL_SYS_OpenURL(const char *url)
 {
     @autoreleasepool {
 
-#if TARGET_OS_XR
+#ifdef SDL_PLATFORM_VISIONOS
         return SDL_Unsupported();  // openURL is not suported on visionOS
 #else
         NSString *nsstr = [NSString stringWithUTF8String:url];

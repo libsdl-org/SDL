@@ -27,7 +27,7 @@
 
 @interface SDL_UIKitDisplayData : NSObject
 
-#if !TARGET_OS_XR
+#ifndef SDL_PLATFORM_VISIONOS
 - (instancetype)initWithScreen:(UIScreen *)screen;
 @property(nonatomic, strong) UIScreen *uiscreen;
 #endif
@@ -35,18 +35,18 @@
 @end
 
 @interface SDL_UIKitDisplayModeData : NSObject
-#if !TARGET_OS_XR
+#ifndef SDL_PLATFORM_VISIONOS
 @property(nonatomic, strong) UIScreenMode *uiscreenmode;
 #endif
 
 @end
 
-#if !TARGET_OS_XR
+#ifndef SDL_PLATFORM_VISIONOS
 extern SDL_bool UIKit_IsDisplayLandscape(UIScreen *uiscreen);
 #endif
 
 extern int UIKit_InitModes(SDL_VideoDevice *_this);
-#if !TARGET_OS_XR
+#ifndef SDL_PLATFORM_VISIONOS
 extern int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event);
 extern void UIKit_DelDisplay(UIScreen *uiscreen);
 #endif
@@ -57,7 +57,7 @@ extern int UIKit_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay
 
 // because visionOS does not have a screen
 // we create a fake 1080p display to maintain compatibility.
-#if TARGET_OS_XR
+#ifdef SDL_PLATFORM_VISIONOS
 #define SDL_XR_SCREENWIDTH 1920
 #define SDL_XR_SCREENHEIGHT 1080
 #endif

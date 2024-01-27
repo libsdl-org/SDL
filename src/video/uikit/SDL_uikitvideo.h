@@ -33,7 +33,7 @@
 
 @end
 
-#if TARGET_OS_XR
+#ifdef SDL_PLATFORM_VISIONOS
 CGRect UIKit_ComputeViewFrame(SDL_Window *window);
 #else
 CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen);

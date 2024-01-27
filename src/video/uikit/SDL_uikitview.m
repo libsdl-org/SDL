@@ -52,7 +52,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 - (instancetype)initWithFrame:(CGRect)frame
 {
     if ((self = [super initWithFrame:frame])) {
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
         /* Apple TV Remote touchpad swipe gestures. */
         UISwipeGestureRecognizer *swipeUp = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
         swipeUp.direction = UISwipeGestureRecognizerDirectionUp;
@@ -77,12 +77,12 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         directTouchId = 1;
         indirectTouchId = 2;
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
         self.multipleTouchEnabled = YES;
         SDL_AddTouch(directTouchId, SDL_TOUCH_DEVICE_DIRECT, "");
 #endif
 
-#if !TARGET_OS_TV && defined(__IPHONE_13_4)
+#if !defined(SDL_PLATFORM_TVOS) && defined(__IPHONE_13_4)
         if (@available(iOS 13.4, *)) {
             [self addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
         }
@@ -148,7 +148,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     sdlwindow = window;
 }
 
-#if !TARGET_OS_TV && defined(__IPHONE_13_4)
+#if !defined(SDL_PLATFORM_TVOS) && defined(__IPHONE_13_4)
 - (UIPointerRegion *)pointerInteraction:(UIPointerInteraction *)interaction regionForRequest:(UIPointerRegionRequest *)request defaultRegion:(UIPointerRegion *)defaultRegion API_AVAILABLE(ios(13.4))
 {
     if (request != nil && !SDL_GCMouseRelativeMode()) {
@@ -171,7 +171,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         return [UIPointerStyle hiddenPointerStyle];
     }
 }
-#endif /* !TARGET_OS_TV && __IPHONE_13_4 */
+#endif /* !defined(SDL_PLATFORM_TVOS) && __IPHONE_13_4 */
 
 - (SDL_TouchDeviceType)touchTypeForTouch:(UITouch *)touch
 {
@@ -226,7 +226,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     for (UITouch *touch in touches) {
         BOOL handled = NO;
 
-#if !TARGET_OS_TV && defined(__IPHONE_13_4)
+#if !defined(SDL_PLATFORM_TVOS) && defined(__IPHONE_13_4)
         if (@available(iOS 13.4, *)) {
             if (touch.type == UITouchTypeIndirectPointer) {
                 if (!SDL_HasGCMouse()) {
@@ -282,7 +282,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     for (UITouch *touch in touches) {
         BOOL handled = NO;
 
-#if !TARGET_OS_TV && defined(__IPHONE_13_4)
+#if !defined(SDL_PLATFORM_TVOS) && defined(__IPHONE_13_4)
         if (@available(iOS 13.4, *)) {
             if (touch.type == UITouchTypeIndirectPointer) {
                 if (!SDL_HasGCMouse()) {
@@ -343,7 +343,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     for (UITouch *touch in touches) {
         BOOL handled = NO;
 
-#if !TARGET_OS_TV && defined(__IPHONE_13_4)
+#if !defined(SDL_PLATFORM_TVOS) && defined(__IPHONE_13_4)
         if (@available(iOS 13.4, *)) {
             if (touch.type == UITouchTypeIndirectPointer) {
                 /* Already handled in pointerInteraction callback */
@@ -368,7 +368,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     }
 }
 
-#if TARGET_OS_TV || defined(__IPHONE_9_1)
+#if defined(SDL_PLATFORM_TVOS) || defined(__IPHONE_9_1)
 - (SDL_Scancode)scancodeFromPress:(UIPress *)press
 {
 #ifdef __IPHONE_13_4
@@ -456,9 +456,9 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     }
 }
 
-#endif /* TARGET_OS_TV || defined(__IPHONE_9_1) */
+#endif /* defined(SDL_PLATFORM_TVOS) || defined(__IPHONE_9_1) */
 
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
 - (void)swipeGesture:(UISwipeGestureRecognizer *)gesture
 {
     /* Swipe gestures don't trigger begin states. */
@@ -485,7 +485,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 #endif /* !SDL_JOYSTICK_DISABLED */
     }
 }
-#endif /* TARGET_OS_TV */
+#endif /* SDL_PLATFORM_TVOS */
 
 @end
 

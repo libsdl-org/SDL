@@ -86,12 +86,15 @@
 #ifndef TARGET_OS_SIMULATOR
 #define TARGET_OS_SIMULATOR 0
 #endif
-#ifndef TARGET_OS_XR
-#define TARGET_OS_XR 0
+#ifndef TARGET_OS_VISION
+#define TARGET_OS_VISION 0
 #endif
 
 #if TARGET_OS_TV
 #define SDL_PLATFORM_TVOS   1
+#endif
+#if TARGET_OS_VISION
+#define SDL_PLATFORM_VISIONOS 1
 #endif
 #if TARGET_OS_IPHONE
 #define SDL_PLATFORM_IOS    1

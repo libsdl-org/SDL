@@ -30,7 +30,7 @@
 #include "SDL_mfijoystick_c.h"
 
 
-#if TARGET_OS_IOS
+#if defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_TVOS)
 #define SDL_JOYSTICK_iOS_ACCELEROMETER
 #import <CoreMotion/CoreMotion.h>
 #endif
@@ -325,7 +325,7 @@ static BOOL ElementAlreadyHandled(SDL_JoystickDeviceItem *device, NSString *elem
             /* The Nintendo Switch JoyCon home button doesn't ever show as being held down */
             return TRUE;
         }
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
         /* The OS uses the home button, it's not available to apps */
         return TRUE;
 #endif
@@ -484,7 +484,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         vendor = USB_VENDOR_APPLE;
         product = 2;
         subtype = 2;
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
     } else if (controller.microGamepad) {
         vendor = USB_VENDOR_APPLE;
         product = 3;
@@ -541,7 +541,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         }
 #endif /* DEBUG_CONTROLLER_PROFILE */
 
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
         /* tvOS turns the menu button into a system gesture, so we grab it here instead */
         if (elements[GCInputButtonMenu] && !elements[@"Button Home"]) {
             device->pause_button_index = [device->buttons indexOfObject:GCInputButtonMenu];
@@ -588,7 +588,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
                 has_direct_menu = TRUE;
             }
         }
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
         /* The single menu button isn't very reliable, at least as of tvOS 16.1 */
         if ((device->button_mask & (1 << SDL_GAMEPAD_BUTTON_BACK)) == 0) {
             has_direct_menu = FALSE;
@@ -620,7 +620,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         device->nhats = 1; /* d-pad */
         device->nbuttons = nbuttons;
     }
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
     else if (controller.microGamepad) {
         int nbuttons = 0;
 
@@ -786,7 +786,7 @@ static SDL_JoystickDeviceItem *IOS_RemoveJoystickDevice(SDL_JoystickDeviceItem *
     return next;
 }
 
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
 static void SDLCALL SDL_AppleTVRemoteRotationHintChanged(void *udata, const char *name, const char *oldValue, const char *newValue)
 {
     BOOL allowRotation = newValue != NULL && *newValue != '0';
@@ -799,7 +799,7 @@ static void SDLCALL SDL_AppleTVRemoteRotationHintChanged(void *udata, const char
         }
     }
 }
-#endif /* TARGET_OS_TV */
+#endif /* SDL_PLATFORM_TVOS */
 
 static int IOS_JoystickInit(void)
 {
@@ -843,10 +843,10 @@ static int IOS_JoystickInit(void)
             IOS_AddJoystickDevice(controller, SDL_FALSE);
         }
 
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
         SDL_AddHintCallback(SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION,
                             SDL_AppleTVRemoteRotationHintChanged, NULL);
-#endif /* TARGET_OS_TV */
+#endif /* SDL_PLATFORM_TVOS */
 
         center = [NSNotificationCenter defaultCenter];
 
@@ -1248,7 +1248,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 
             SDL_small_free(buttons, isstack);
         }
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
         else if (controller.microGamepad) {
             GCMicroGamepad *gamepad = controller.microGamepad;
 
@@ -1271,7 +1271,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
                 SDL_SendJoystickButton(timestamp, joystick, i, buttons[i]);
             }
         }
-#endif /* TARGET_OS_TV */
+#endif /* SDL_PLATFORM_TVOS */
 
         if (joystick->nhats > 0) {
             SDL_SendJoystickHat(timestamp, joystick, 0, hatstate);
@@ -1799,10 +1799,10 @@ static void IOS_JoystickQuit(void)
             disconnectObserver = nil;
         }
 
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
         SDL_DelHintCallback(SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION,
                             SDL_AppleTVRemoteRotationHintChanged, NULL);
-#endif /* TARGET_OS_TV */
+#endif /* SDL_PLATFORM_TVOS */
 #endif /* SDL_JOYSTICK_MFI */
 
         while (deviceList != NULL) {

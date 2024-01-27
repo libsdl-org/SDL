@@ -33,7 +33,7 @@
 #undef HAVE_COREMEDIA
 #endif
 
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
 #undef HAVE_COREMEDIA
 #endif
 

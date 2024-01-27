@@ -417,7 +417,7 @@ static SDL_bool UpdateAudioSession(SDL_AudioDevice *device, SDL_bool open, SDL_b
             category = AVAudioSessionCategoryRecord;
         }
 
-        #if !TARGET_OS_TV
+        #ifndef SDL_PLATFORM_TVOS
         if (category == AVAudioSessionCategoryPlayAndRecord) {
             options |= AVAudioSessionCategoryOptionDefaultToSpeaker;
         }
@@ -846,7 +846,7 @@ static int COREAUDIO_OpenDevice(SDL_AudioDevice *device)
         AVAudioSession *session = [AVAudioSession sharedInstance];
         [session setPreferredSampleRate:device->spec.freq error:nil];
         device->spec.freq = (int)session.sampleRate;
-        #if TARGET_OS_TV
+        #ifdef SDL_PLATFORM_TVOS
         if (device->iscapture) {
             [session setPreferredInputNumberOfChannels:device->spec.channels error:nil];
             device->spec.channels = session.preferredInputNumberOfChannels;
@@ -856,7 +856,7 @@ static int COREAUDIO_OpenDevice(SDL_AudioDevice *device)
         }
         #else
         // Calling setPreferredOutputNumberOfChannels seems to break audio output on iOS
-        #endif // TARGET_OS_TV
+        #endif /* SDL_PLATFORM_TVOS */
     }
     #endif
 

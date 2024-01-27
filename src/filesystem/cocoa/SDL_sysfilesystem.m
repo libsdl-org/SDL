@@ -75,7 +75,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
             org = "";
         }
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
         array = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
 #else
         /* tvOS does not have persistent local storage!
@@ -95,7 +95,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
         }
 
         array = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-#endif /* !TARGET_OS_TV */
+#endif /* !SDL_PLATFORM_TVOS */
 
         if ([array count] > 0) { /* we only want the first item in the list. */
             NSString *str = [array objectAtIndex:0];
@@ -129,7 +129,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
 char *SDL_GetUserFolder(SDL_Folder folder)
 {
     @autoreleasepool {
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
         SDL_SetError("tvOS does not have persistent storage");
         return NULL;
 #else
@@ -224,7 +224,7 @@ char *SDL_GetUserFolder(SDL_Folder folder)
         mkdir(retval, 0700);
 
         return retval;
-#endif /* TARGET_OS_TV */
+#endif /* SDL_PLATFORM_TVOS */
     }
 }
 

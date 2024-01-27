@@ -24,7 +24,7 @@
 
 #include "../SDL_sysvideo.h"
 
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
 #import <GameController/GameController.h>
 #define SDLRootViewController GCEventViewController
 #else
@@ -59,7 +59,7 @@
 - (void)loadView;
 - (void)viewDidLayoutSubviews;
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
 - (NSUInteger)supportedInterfaceOrientations;
 - (BOOL)prefersStatusBarHidden;
 - (BOOL)prefersHomeIndicatorAutoHidden;

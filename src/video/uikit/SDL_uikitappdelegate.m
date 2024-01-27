@@ -30,7 +30,7 @@
 
 #include "../../events/SDL_events_c.h"
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
 #include <AvailabilityVersions.h>
 
 #ifndef __IPHONE_13_0
@@ -79,7 +79,7 @@ int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserv
     return exit_status;
 }
 
-#if !TARGET_OS_TV && !TARGET_OS_XR
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
 /* Load a launch image using the old UILaunchImageFile-era naming rules. */
 static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 {
@@ -142,7 +142,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     self.storyboardViewController.view.frame = self.view.bounds;
     [self.storyboardViewController didMoveToParentViewController:self];
 
-#if !TARGET_OS_XR
+#ifndef SDL_PLATFORM_VISIONOS
     UIApplication.sharedApplication.statusBarHidden = self.prefersStatusBarHidden;
     UIApplication.sharedApplication.statusBarStyle = self.preferredStatusBarStyle;
 #endif
@@ -170,11 +170,11 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 }
 
 @end
-#endif /* !TARGET_OS_TV */
+#endif /* !SDL_PLATFORM_TVOS */
 
 @interface SDLLaunchScreenController ()
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
 - (NSUInteger)supportedInterfaceOrientations;
 #endif
 
@@ -213,7 +213,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
         NSString *imagename = nil;
         UIImage *image = nil;
 
-#if TARGET_OS_XR
+#ifdef SDL_PLATFORM_VISIONOS
         int screenw = SDL_XR_SCREENWIDTH;
         int screenh = SDL_XR_SCREENHEIGHT;
 #else
@@ -223,7 +223,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
 
 
-#if !TARGET_OS_TV && !TARGET_OS_XR
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
         UIInterfaceOrientation curorient = [UIApplication sharedApplication].statusBarOrientation;
 
         /* We always want portrait-oriented size, to match UILaunchImageSize. */
@@ -253,7 +253,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
                     }
                 }
 
-#if !TARGET_OS_TV && !TARGET_OS_XR
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
                 UIInterfaceOrientationMask orientmask = UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown;
                 NSString *orientstring = dict[@"UILaunchImageOrientation"];
 
@@ -282,7 +282,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
                 image = [UIImage imageNamed:imagename];
             }
         }
-#if !TARGET_OS_TV && !TARGET_OS_XR
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
         else {
             imagename = [bundle objectForInfoDictionaryKey:@"UILaunchImageFile"];
 
@@ -297,7 +297,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 #endif
 
         if (image) {
-#if TARGET_OS_XR
+#ifdef SDL_PLATFORM_VISIONOS
             CGRect viewFrame = CGRectMake(0, 0, screenw, screenh);
 #else
             CGRect viewFrame = [UIScreen mainScreen].bounds;
@@ -305,7 +305,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
             UIImageView *view = [[UIImageView alloc] initWithFrame:viewFrame];
             UIImageOrientation imageorient = UIImageOrientationUp;
 
-#if !TARGET_OS_TV && !TARGET_OS_XR
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
             /* Bugs observed / workaround tested in iOS 8.3. */
             if (UIInterfaceOrientationIsLandscape(curorient)) {
                 if (image.size.width < image.size.height) {
@@ -337,7 +337,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     /* Do nothing. */
 }
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
 - (BOOL)shouldAutorotate
 {
     /* If YES, the launch image will be incorrectly rotated in some cases. */
@@ -351,7 +351,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
      * the ones set here (it will cause an exception in that case.) */
     return UIInterfaceOrientationMaskAll;
 }
-#endif /* !TARGET_OS_TV */
+#endif /* !SDL_PLATFORM_TVOS */
 
 @end
 
@@ -434,7 +434,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     NSString *screenname = nil;
 
     /* tvOS only uses a plain launch image. */
-#if !TARGET_OS_TV && !TARGET_OS_XR
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
     screenname = [bundle objectForInfoDictionaryKey:@"UILaunchStoryboardName"];
 
     if (screenname) {
@@ -457,7 +457,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     }
 
     if (vc.view) {
-#if TARGET_OS_XR
+#ifdef SDL_PLATFORM_VISIONOS
         CGRect viewFrame = CGRectMake(0, 0, SDL_XR_SCREENWIDTH, SDL_XR_SCREENHEIGHT);
 #else
         CGRect viewFrame = [UIScreen mainScreen].bounds;
@@ -517,7 +517,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     SDL_SendDropComplete(NULL);
 }
 
-#if TARGET_OS_TV || (defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_9_0)
+#if defined(SDL_PLATFORM_TVOS) || (defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_9_0)
 
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options
 {
