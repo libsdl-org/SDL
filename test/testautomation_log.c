@@ -8,7 +8,7 @@
 static SDL_LogOutputFunction original_function;
 static void *original_userdata;
 
-static void TestLogOutput(void *userdata, int category, SDL_LogPriority priority, const char *message)
+static void SDLCALL TestLogOutput(void *userdata, int category, SDL_LogPriority priority, const char *message)
 {
     int *message_count = (int *)userdata;
     ++(*message_count);
