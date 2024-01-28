@@ -93,7 +93,7 @@ struct SDL_WindowData
     struct zwp_keyboard_shortcuts_inhibitor_v1 *key_inhibitor;
     struct zwp_idle_inhibitor_v1 *idle_inhibitor;
     struct xdg_activation_token_v1 *activation_token;
-    struct wp_viewport *draw_viewport;
+    struct wp_viewport *viewport;
     struct wp_fractional_scale_v1 *fractional_scale;
 
     SDL_AtomicInt swap_interval_ready;
