@@ -4,6 +4,7 @@ build-*/
 buildbot/
 /VERSION.txt
 __pycache__
+*.cache/
 
 *.so
 *.so.*
