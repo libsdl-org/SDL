@@ -9,6 +9,7 @@ General:
 * Added support for 2 bits-per-pixel indexed surface formats
 * Added the function SDL_GameControllerGetSteamHandle() to get the Steam API handle for a controller, if available
 * Added the event SDL_CONTROLLERSTEAMHANDLEUPDATED which is sent when the Steam API handle for a controller changes. This could also change the name, VID, and PID of the controller.
+* Added the environment variable SDL_LOGGING to control default log output
 
 macOS:
 * Added the hint SDL_HINT_JOYSTICK_IOKIT to control whether the IOKit controller driver should be used
