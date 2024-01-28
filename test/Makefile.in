@@ -141,6 +141,7 @@ testautomation$(EXE): $(srcdir)/testautomation.c \
 		      $(srcdir)/testautomation_hints.c \
 		      $(srcdir)/testautomation_joystick.c \
 		      $(srcdir)/testautomation_keyboard.c \
+		      $(srcdir)/testautomation_log.c \
 		      $(srcdir)/testautomation_main.c \
 		      $(srcdir)/testautomation_math.c \
 		      $(srcdir)/testautomation_mouse.c \
