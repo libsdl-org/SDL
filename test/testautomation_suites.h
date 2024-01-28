@@ -16,6 +16,7 @@ extern SDLTest_TestSuiteReference guidTestSuite;
 extern SDLTest_TestSuiteReference hintsTestSuite;
 extern SDLTest_TestSuiteReference joystickTestSuite;
 extern SDLTest_TestSuiteReference keyboardTestSuite;
+extern SDLTest_TestSuiteReference logTestSuite;
 extern SDLTest_TestSuiteReference mainTestSuite;
 extern SDLTest_TestSuiteReference mathTestSuite;
 extern SDLTest_TestSuiteReference mouseTestSuite;
@@ -41,6 +42,7 @@ SDLTest_TestSuiteReference *testSuites[] = {
     &hintsTestSuite,
     &joystickTestSuite,
     &keyboardTestSuite,
+    &logTestSuite,
     &mainTestSuite,
     &mathTestSuite,
     &mouseTestSuite,
