@@ -1228,7 +1228,7 @@ static void Wayland_MaybeUpdateScaleFactor(SDL_WindowData *window)
     int i;
 
     /* If the fractional scale protocol is present or the core protocol supports the
-     * preferred buffer scale event, the compositor will tell explicitly the application
+     * preferred buffer scale event, the compositor will explicitly tell the application
      * what scale it wants via these events, so don't try to determine the scale factor
      * from which displays the surface has entered.
      */
@@ -2216,12 +2216,18 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
         Wayland_AddWindowDataToExternalList(data);
     }
 
-    /* Always attach a viewport if available and the surface is not custom/external,
-     * or the custom/extern surface was explicitly flagged as high pixel density aware,
-     * which signals that the application wants SDL to handle DPI scaling.
+    /* Always attach a viewport and fractional scale manager if available and the surface is not custom/external,
+     * or the custom/external surface was explicitly flagged as high pixel density aware, which signals that the
+     * application wants SDL to handle scaling.
      */
-    if (c->viewporter && (!custom_surface_role || (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY))) {
-        data->viewport = wp_viewporter_get_viewport(c->viewporter, data->surface);
+    if (!custom_surface_role || (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY)) {
+        if (c->viewporter) {
+            data->viewport = wp_viewporter_get_viewport(c->viewporter, data->surface);
+        }
+        if (c->fractional_scale_manager) {
+            data->fractional_scale = wp_fractional_scale_manager_v1_get_fractional_scale(c->fractional_scale_manager, data->surface);
+            wp_fractional_scale_v1_add_listener(data->fractional_scale, &fractional_scale_listener, data);
+        }
     }
 
     /* Must be called before EGL configuration to set the drawable backbuffer size. */
@@ -2270,18 +2276,6 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
 
     if (c->relative_mouse_mode) {
         Wayland_input_lock_pointer(c->input);
-    }
-
-    /* Don't attach a fractional scale manager to custom or external surfaces unless
-     * they are flagged as DPI-aware. Under non-scaled operation, the scale will always
-     * be 1.0, and external/custom surfaces may already have, or will try to attach,
-     * their own fractional scale manager, which will result in a protocol violation.
-     */
-    if (c->fractional_scale_manager &&
-        ((!custom_surface_role && !external_surface) || (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY))) {
-        data->fractional_scale = wp_fractional_scale_manager_v1_get_fractional_scale(c->fractional_scale_manager, data->surface);
-        wp_fractional_scale_v1_add_listener(data->fractional_scale,
-                                            &fractional_scale_listener, data);
     }
 
     /* We may need to create an idle inhibitor for this new window */
