@@ -312,7 +312,7 @@ static int PS2_RenderSetViewPort(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     const SDL_Rect *viewport = &cmd->data.viewport.rect;
 
     gsKit_set_display_offset(data->gsGlobal, viewport->x, viewport->y);
-    gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(viewport->x, viewport->y, viewport->w, viewport->h));
+    gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(viewport->x, viewport->x + viewport->w, viewport->y, viewport->y + viewport->h));
 
     return 0;
 }
@@ -324,7 +324,7 @@ static int PS2_RenderSetClipRect(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     const SDL_Rect *rect = &cmd->data.cliprect.rect;
 
     if (cmd->data.cliprect.enabled) {
-        gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(rect->x, rect->y, rect->w, rect->h));
+        gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(rect->x, rect->x + rect->w, rect->y, rect->y + rect->h));
     } else {
         gsKit_set_scissor(data->gsGlobal, GS_SCISSOR_RESET);
     }
