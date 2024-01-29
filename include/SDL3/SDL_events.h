@@ -872,6 +872,8 @@ typedef union SDL_Event
 /* Make sure we haven't broken binary compatibility */
 SDL_COMPILE_TIME_ASSERT(SDL_Event, sizeof(SDL_Event) == sizeof(((SDL_Event *)NULL)->padding));
 
+/* イベントキュー内の要素を指すポインター */
+typedef struct SDL_EventEntry *SDL_EventQueueElement;
 
 /* Function prototypes */
 
