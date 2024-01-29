@@ -1185,10 +1185,30 @@ extern DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
  */
 extern DECLSPEC void * SDLCALL SDL_AllocateEventMemory(size_t size);
 
+/**
+ * Lock SDL event queue
+ *
+ * この関数はイベントキューのmutexをロックするまで処理をブロックする．
+ * \note この関数と対になるようにSDL_UnlockEventQueueを呼ぶようにする．
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC void SDLCALL SDL_LockEventQueue();
+
+/**
+ * Unlock SDL event queue
+ *
+ * この関数はイベントキューのmutexをロックするまで処理をブロックする．
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC void SDLCALL SDL_UnlockEventQueue();
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
 #endif
+
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_events_h_ */
