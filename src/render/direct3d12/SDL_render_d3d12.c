@@ -92,7 +92,7 @@ typedef struct
 {
     Float2 pos;
     Float2 tex;
-    SDL_Color color;
+    SDL_FColor color;
 } VertexPositionColor;
 
 /* Per-texture data */
@@ -598,7 +598,7 @@ static D3D12_PipelineState *D3D12_CreatePipelineState(SDL_Renderer *renderer,
     const D3D12_INPUT_ELEMENT_DESC vertexDesc[] = {
         { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 8, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-        { "COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->driverdata;
     D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineDesc;
@@ -2139,11 +2139,6 @@ static int D3D12_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
 {
     VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
     int i;
-    SDL_Color color;
-    color.r = cmd->data.draw.r;
-    color.g = cmd->data.draw.g;
-    color.b = cmd->data.draw.b;
-    color.a = cmd->data.draw.a;
 
     if (!verts) {
         return -1;
@@ -2156,7 +2151,7 @@ static int D3D12_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
         verts->pos.y = points[i].y + 0.5f;
         verts->tex.x = 0.0f;
         verts->tex.y = 0.0f;
-        verts->color = color;
+        verts->color = cmd->data.draw.color;
         verts++;
     }
 
@@ -2164,7 +2159,7 @@ static int D3D12_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
 }
 
 static int D3D12_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                               const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
+                               const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
                                int num_vertices, const void *indices, int num_indices, int size_indices,
                                float scale_x, float scale_y)
 {
@@ -2196,7 +2191,7 @@ static int D3D12_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
 
         verts->pos.x = xy_[0] * scale_x;
         verts->pos.y = xy_[1] * scale_y;
-        verts->color = *(SDL_Color *)((char *)color + j * color_stride);
+        verts->color = *(SDL_FColor *)((char *)color + j * color_stride);
 
         if (texture) {
             float *uv_ = (float *)((char *)uv + j * uv_stride);
@@ -2659,15 +2654,8 @@ static int D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
 
         case SDL_RENDERCMD_CLEAR:
         {
-            const float colorRGBA[] = {
-                (cmd->data.color.r / 255.0f),
-                (cmd->data.color.g / 255.0f),
-                (cmd->data.color.b / 255.0f),
-                (cmd->data.color.a / 255.0f)
-            };
-
             D3D12_CPU_DESCRIPTOR_HANDLE rtvDescriptor = D3D12_GetCurrentRenderTargetView(renderer);
-            D3D_CALL(rendererData->commandList, ClearRenderTargetView, rtvDescriptor, colorRGBA, 0, NULL);
+            D3D_CALL(rendererData->commandList, ClearRenderTargetView, rtvDescriptor, &cmd->data.color.color.r, 0, NULL);
             break;
         }
 

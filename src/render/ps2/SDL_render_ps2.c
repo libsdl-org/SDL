@@ -103,6 +103,26 @@ static int PixelFormatToPS2PSM(Uint32 format)
     }
 }
 
+static gs_rgbaq float_color_to_RGBAQ(const SDL_FColor *color)
+{
+    uint8_t colorR = (uint8_t)(color->r * 255.0f);
+    uint8_t colorG = (uint8_t)(color->g * 255.0f);
+    uint8_t colorB = (uint8_t)(color->b * 255.0f);
+    uint8_t colorA = (uint8_t)(color->a * 255.0f);
+
+    return color_to_RGBAQ(colorR, colorG, colorB, colorA, 0x00);
+}
+
+static uint64_t float_GS_SETREG_RGBAQ(const SDL_FColor *color)
+{
+    uint8_t colorR = (uint8_t)(color->r * 255.0f);
+    uint8_t colorG = (uint8_t)(color->g * 255.0f);
+    uint8_t colorB = (uint8_t)(color->b * 255.0f);
+    uint8_t colorA = (uint8_t)(color->a * 255.0f);
+
+    return GS_SETREG_RGBAQ(colorR, colorG, colorB, colorA, 0x00);
+}
+
 static void PS2_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 {
 }
@@ -217,7 +237,6 @@ static int PS2_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, c
 {
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
     GSPRIMPOINT *vertices = (GSPRIMPOINT *)SDL_AllocateRenderVertices(renderer, count * sizeof(GSPRIMPOINT), 4, &cmd->data.draw.first);
-    uint8_t colorR, colorG, colorB, colorA;
     gs_rgbaq rgbaq;
     int i;
 
@@ -227,11 +246,7 @@ static int PS2_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, c
 
     cmd->data.draw.count = count;
 
-    colorR = cmd->data.draw.r;
-    colorG = cmd->data.draw.g;
-    colorB = cmd->data.draw.b;
-    colorA = cmd->data.draw.a;
-    rgbaq = color_to_RGBAQ(colorR, colorG, colorB, colorA, 0.0f);
+    rgbaq = float_color_to_RGBAQ(&cmd->data.draw.color);
 
     for (i = 0; i < count; i++, vertices++, points++) {
         vertices->xyz2 = vertex_to_XYZ2(data->gsGlobal, points->x, points->y, 0);
@@ -241,7 +256,7 @@ static int PS2_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, c
 }
 
 static int PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                             const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
+                             const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
                              int num_vertices, const void *indices, int num_indices, int size_indices,
                              float scale_x, float scale_y)
 {
@@ -264,7 +279,7 @@ static int PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
             int j;
             float *xy_;
             float *uv_;
-            SDL_Color col_;
+            SDL_FColor *col_;
             if (size_indices == 4) {
                 j = ((const Uint32 *)indices)[i];
             } else if (size_indices == 2) {
@@ -276,11 +291,11 @@ static int PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
             }
 
             xy_ = (float *)((char *)xy + j * xy_stride);
-            col_ = *(SDL_Color *)((char *)color + j * color_stride);
+            col_ = (SDL_FColor *)((char *)color + j * color_stride);
             uv_ = (float *)((char *)uv + j * uv_stride);
 
             vertices->xyz2 = vertex_to_XYZ2(data->gsGlobal, xy_[0] * scale_x, xy_[1] * scale_y, 0);
-            vertices->rgbaq = color_to_RGBAQ(col_.r, col_.g, col_.b, col_.a, 0);
+            vertices->rgbaq = float_color_to_RGBAQ(col_);
             vertices->uv = vertex_to_UV(ps2_tex, uv_[0] * ps2_tex->Width, uv_[1] * ps2_tex->Height);
 
             vertices++;
@@ -296,7 +311,7 @@ static int PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
         for (i = 0; i < count; i++) {
             int j;
             float *xy_;
-            SDL_Color col_;
+            SDL_FColor *col_;
             if (size_indices == 4) {
                 j = ((const Uint32 *)indices)[i];
             } else if (size_indices == 2) {
@@ -308,10 +323,10 @@ static int PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
             }
 
             xy_ = (float *)((char *)xy + j * xy_stride);
-            col_ = *(SDL_Color *)((char *)color + j * color_stride);
+            col_ = (SDL_FColor *)((char *)color + j * color_stride);
 
             vertices->xyz2 = vertex_to_XYZ2(data->gsGlobal, xy_[0] * scale_x, xy_[1] * scale_y, 0);
-            vertices->rgbaq = color_to_RGBAQ(col_.r, col_.g, col_.b, col_.a, 0.0f);
+            vertices->rgbaq = float_color_to_RGBAQ(col_);
 
             vertices++;
         }
@@ -346,29 +361,18 @@ static int PS2_RenderSetClipRect(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 
 static int PS2_RenderSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
-    int colorR, colorG, colorB, colorA;
-
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
 
-    colorR = (cmd->data.color.r);
-    colorG = (cmd->data.color.g);
-    colorB = (cmd->data.color.b);
-    colorA = (cmd->data.color.a);
-    data->drawColor = GS_SETREG_RGBAQ(colorR, colorG, colorB, colorA, 0x00);
+    data->drawColor = float_GS_SETREG_RGBAQ(&cmd->data.color.color);
     return 0;
 }
 
 static int PS2_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
-    int colorR, colorG, colorB, colorA, offsetX, offsetY;
+    int offsetX, offsetY;
     SDL_Rect *viewport;
 
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
-
-    colorR = (cmd->data.color.r);
-    colorG = (cmd->data.color.g);
-    colorB = (cmd->data.color.b);
-    colorA = (cmd->data.color.a);
 
     /* Clear the screen, so let's put default viewport */
     gsKit_set_scissor(data->gsGlobal, GS_SCISSOR_RESET);
@@ -377,7 +381,7 @@ static int PS2_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     offsetY = data->gsGlobal->OffsetY;
     data->gsGlobal->OffsetX = (int)(2048.0f * 16.0f);
     data->gsGlobal->OffsetY = (int)(2048.0f * 16.0f);
-    gsKit_clear(data->gsGlobal, GS_SETREG_RGBAQ(colorR, colorG, colorB, colorA, 0x00));
+    gsKit_clear(data->gsGlobal, float_GS_SETREG_RGBAQ(&cmd->data.color.color));
 
     /* Put back original offset */
     data->gsGlobal->OffsetX = offsetX;
@@ -386,7 +390,7 @@ static int PS2_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     // /* Put back view port */
     viewport = data->viewport;
     gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(viewport->x, viewport->x + viewport->w, viewport->y, viewport->y + viewport->h));
-    
+
     return 0;
 }
 

@@ -354,6 +354,24 @@ typedef enum
     SDL_PIXELFORMAT_ABGR64_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_ABGR, 0,
                                64, 4),
+    SDL_PIXELFORMAT_RGB96_FLOAT =
+        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_RGB, 0,
+                               96, 3),
+    SDL_PIXELFORMAT_BGR96_FLOAT =
+        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_BGR, 0,
+                               96, 3),
+    SDL_PIXELFORMAT_RGBA128_FLOAT =
+        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_RGBA, 0,
+                               128, 4),
+    SDL_PIXELFORMAT_ARGB128_FLOAT =
+        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_ARGB, 0,
+                               128, 4),
+    SDL_PIXELFORMAT_BGRA128_FLOAT =
+        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_BGRA, 0,
+                               128, 4),
+    SDL_PIXELFORMAT_ABGR128_FLOAT =
+        SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_ABGR, 0,
+                               128, 4),
 
     /* Aliases for RGBA byte arrays of color data, for the current platform */
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -601,6 +619,19 @@ typedef struct SDL_Color
     Uint8 a;
 } SDL_Color;
 #define SDL_Colour SDL_Color
+
+/**
+ * The bits of this structure can be directly reinterpreted as a float-packed
+ * color which uses the SDL_PIXELFORMAT_RGBA128_FLOAT format
+ */
+typedef struct SDL_FColor
+{
+    float r;
+    float g;
+    float b;
+    float a;
+} SDL_FColor;
+#define SDL_FColour SDL_FColor
 
 typedef struct SDL_Palette
 {
