@@ -1552,6 +1552,19 @@ SDL_bool SDL_IsEventQueueActive()
     return SDL_EventQ.active;
 }
 
+SDL_EventQueueElement SDL_EventQueueBegin() {
+    return SDL_EventQ.head;
+}
+
+SDL_EventQueueElement SDL_EventQueueEnd() {
+    SDL_assert(SDL_EventQ.tail->next == NULL);
+    return NULL;
+}
+
+int SDL_NumOfEvent() {
+    return SDL_AtomicGet(&SDL_EventQ.count);
+}
+
 ///* Lock the event queue, take a peep at it, and unlock it */
 // event = vector.get, numevents = vector.max, action = SDL_GETEVENT, [min, max]=all range, include_sentinel = SDL_FALSE
 //static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_eventaction action,

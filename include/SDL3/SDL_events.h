@@ -1392,6 +1392,30 @@ extern DECLSPEC void SDLCALL SDL_UnlockEventQueue();
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IsEventQueueActive();
 
+/**
+ * イベントキューの先頭
+ * 
+ * \since This function is available since SDL 3.0.0.
+ * \returns イベントキューの先頭を指すポインタ．
+ */
+extern DECLSPEC SDL_EventQueueElement SDLCALL SDL_EventQueueBegin();
+
+/**
+ * イベントキューの末端
+ * 
+ * \since This function is available since SDL 3.0.0.
+ * \returns イベントキューの末端の次を指すポインタ．
+ */
+extern DECLSPEC SDL_EventQueueElement SDLCALL SDL_EventQueueEnd();
+
+/**
+ * イベントキュー内のイベント数を返す
+ * 
+ * \since This function is available since SDL 3.0.0.
+ * \returns イベントキューのイベント数．
+ */
+extern DECLSPEC int SDLCALL SDL_NumOfEvent();
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
