@@ -216,7 +216,8 @@ extern DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
  *
  * The following properties are understood by SDL:
  *
- * - `SDL_PROP_SURFACE_COLORSPACE_NUMBER`: an SDL_ColorSpace value describing the surface colorspace
+ * - `SDL_PROP_SURFACE_COLORSPACE_NUMBER`: an SDL_ColorSpace value describing
+ *   the surface colorspace
  * - `SDL_PROP_SURFACE_MAXCLL_NUMBER`: MaxCLL (Maximum Content Light Level)
  *   indicates the maximum light level of any single pixel (in cd/m2 or nits)
  *   of the entire playback sequence. MaxCLL is usually measured off the final
