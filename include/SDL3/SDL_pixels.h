@@ -395,6 +395,200 @@ typedef enum
 } SDL_PixelFormatEnum;
 
 /**
+ * Pixels are a representation of a color in a particular color space.
+ *
+ * The first characteristic of a color space is the color type. SDL understands two different color types, RGB and YCbCr, or in SDL also referred to as YUV.
+ *
+ * RGB colors consist of red, green, and blue channels of color that are added together to represent the colors we see on the screen.
+ * https://en.wikipedia.org/wiki/RGB_color_model
+ *
+ * YCbCr colors represent colors as a Y luma brightness component and red and blue chroma color offsets. This color representation takes advantage of the fact that the human eye is more sensitive to brightness than the color in an image. The Cb and Cr components are often compressed and have lower resolution than the luma component.
+ * https://en.wikipedia.org/wiki/YCbCr
+ *
+ * When the color information in YCbCr is compressed, the Y pixels are left at full resolution and each Cr and Cb pixel represents an average of the color information in a block of Y pixels. The chroma location determines where in that block of pixels the color information is coming from.
+ *
+ * The color range defines how much of the pixel to use when converting a pixel into a color on the display. When the full color range is used, the entire numeric range of the pixel bits is significant. When narrow color range is used, for historical reasons, the pixel uses only a portion of the numeric range to represent colors.
+ *
+ * The color primaries and white point are a definition of the colors in the color space relative to the standard XYZ color space.
+ * https://en.wikipedia.org/wiki/CIE_1931_color_space
+ *
+ * The transfer characteristic, or opto-electrical transfer function (OETF), is the way a color is converted from mathematically linear space into a non-linear output signals.
+ * https://en.wikipedia.org/wiki/Rec._709#Transfer_characteristics
+ *
+ * The matrix coefficients are used to convert between YCbCr and RGB colors.
+ */
+
+/**
+ * The color type
+ */
+typedef enum
+{
+    SDL_COLOR_TYPE_UNKNOWN = 0,
+    SDL_COLOR_TYPE_RGB = 1,
+    SDL_COLOR_TYPE_YCBCR = 2
+} SDL_ColorType;
+
+/**
+ * The color range, as described by https://www.itu.int/rec/R-REC-BT.2100-2-201807-I/en
+ */
+typedef enum
+{
+    SDL_COLOR_RANGE_UNKNOWN = 0,
+    SDL_COLOR_RANGE_LIMITED = 1, /**< Narrow range, e.g. 16-235 for 8-bit RGB and luma, and 16-240 for 8-bit chroma */
+    SDL_COLOR_RANGE_FULL = 2    /**< Full range, e.g. 0-255 for 8-bit RGB and luma, and 1-255 for 8-bit chroma */
+} SDL_ColorRange;
+
+/**
+ * The color primaries, as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
+ */
+typedef enum
+{
+    SDL_COLOR_PRIMARIES_UNKNOWN = 0,
+    SDL_COLOR_PRIMARIES_BT709 = 1,
+    SDL_COLOR_PRIMARIES_UNSPECIFIED = 2,
+    SDL_COLOR_PRIMARIES_BT470M = 4,
+    SDL_COLOR_PRIMARIES_BT470BG = 5,
+    SDL_COLOR_PRIMARIES_BT601 = 6,
+    SDL_COLOR_PRIMARIES_SMPTE240 = 7,
+    SDL_COLOR_PRIMARIES_GENERIC_FILM = 8,
+    SDL_COLOR_PRIMARIES_BT2020 = 9,
+    SDL_COLOR_PRIMARIES_XYZ = 10,
+    SDL_COLOR_PRIMARIES_SMPTE431 = 11,
+    SDL_COLOR_PRIMARIES_SMPTE432 = 12, /* DCI P3 */
+    SDL_COLOR_PRIMARIES_EBU3213 = 22,
+    SDL_COLOR_PRIMARIES_CUSTOM = 31
+} SDL_ColorPrimaries;
+
+/**
+ * The transfer characteristics, as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
+ */
+typedef enum
+{
+    SDL_TRANSFER_CHARACTERISTICS_UNKNOWN = 0,
+    SDL_TRANSFER_CHARACTERISTICS_BT709 = 1,         /**< ITU-R BT1361 */
+    SDL_TRANSFER_CHARACTERISTICS_UNSPECIFIED = 2,
+    SDL_TRANSFER_CHARACTERISTICS_GAMMA22 = 4,       /**< ITU-R BT470M / ITU-R BT1700 625 PAL & SECAM */
+    SDL_TRANSFER_CHARACTERISTICS_GAMMA28 = 5,       /**< ITU-R BT470BG */
+    SDL_TRANSFER_CHARACTERISTICS_BT601 = 6,         /**< SMPTE ST 170M */
+    SDL_TRANSFER_CHARACTERISTICS_SMPTE240 = 7,      /**< SMPTE ST 240M */
+    SDL_TRANSFER_CHARACTERISTICS_LINEAR = 8,
+    SDL_TRANSFER_CHARACTERISTICS_LOG100 = 9,
+    SDL_TRANSFER_CHARACTERISTICS_LOG100_SQRT10 = 10,
+    SDL_TRANSFER_CHARACTERISTICS_IEC61966 = 11,     /**< IEC 61966-2-4 */
+    SDL_TRANSFER_CHARACTERISTICS_BT1361 = 12,       /**< ITU-R BT1361 Extended Colour Gamut */
+    SDL_TRANSFER_CHARACTERISTICS_SRGB = 13,         /**< IEC 61966-2-1 (sRGB or sYCC) */
+    SDL_TRANSFER_CHARACTERISTICS_BT2020_10BIT = 14, /**< ITU-R BT2020 for 10-bit system */
+    SDL_TRANSFER_CHARACTERISTICS_BT2020_12BIT = 15, /**< ITU-R BT2020 for 12-bit system */
+    SDL_TRANSFER_CHARACTERISTICS_PQ = 16,           /**< SMPTE ST 2084 for 10-, 12-, 14- and 16-bit systems */
+    SDL_TRANSFER_CHARACTERISTICS_SMPTE428 = 17,     /**< SMPTE ST 428-1 */
+    SDL_TRANSFER_CHARACTERISTICS_HLG = 18,          /**< ARIB STD-B67, known as "Hybrid log-gamma" */
+    SDL_TRANSFER_COEFFICIENTS_CUSTOM = 31
+} SDL_TransferCharacteristics;
+
+/**
+ * The matrix coefficients, as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
+ */
+typedef enum
+{
+    SDL_MATRIX_COEFFICIENTS_IDENTITY = 0,
+    SDL_MATRIX_COEFFICIENTS_BT709 = 1,
+    SDL_MATRIX_COEFFICIENTS_UNSPECIFIED = 2,
+    SDL_MATRIX_COEFFICIENTS_FCC = 4,
+    SDL_MATRIX_COEFFICIENTS_BT470BG = 5,
+    SDL_MATRIX_COEFFICIENTS_BT601 = 6,
+    SDL_MATRIX_COEFFICIENTS_SMPTE240 = 7,
+    SDL_MATRIX_COEFFICIENTS_YCGCO = 8,
+    SDL_MATRIX_COEFFICIENTS_BT2020_NCL = 9,
+    SDL_MATRIX_COEFFICIENTS_BT2020_CL = 10,
+    SDL_MATRIX_COEFFICIENTS_SMPTE2085 = 11,
+    SDL_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL = 12,
+    SDL_MATRIX_COEFFICIENTS_CHROMA_DERIVED_CL = 13,
+    SDL_MATRIX_COEFFICIENTS_ICTCP = 14,
+    SDL_MATRIX_COEFFICIENTS_CUSTOM = 31
+} SDL_MatrixCoefficients;
+
+/**
+ * The chroma sample location
+ */
+typedef enum
+{
+    SDL_CHROMA_LOCATION_NONE = 0,   /**< RGB, no chroma sampling */
+    SDL_CHROMA_LOCATION_LEFT = 1,   /**< In MPEG-2, MPEG-4, and AVC, Cb and Cr are taken on midpoint of the left-edge of the 2×2 square. In other words, they have the same horizontal location as the top-left pixel, but is shifted one-half pixel down vertically. */
+    SDL_CHROMA_LOCATION_CENTER = 2, /**< In JPEG/JFIF, H.261, and MPEG-1, Cb and Cr are taken at the center of 2×2 the square. In other words, they are offset one-half pixel to the right and one-half pixel down compared to the top-left pixel. */
+    SDL_CHROMA_LOCATION_TOPLEFT = 3 /**< In HEVC for BT.2020 and BT.2100 content (in particular on Blu-rays), Cb and Cr are sampled at the same location as the group's top-left Y pixel ("co-sited", "co-located"). */
+} SDL_ChromaLocation;
+
+
+/* Colorspace definition */
+#define SDL_DEFINE_COLORSPACE(type, range, primaries, transfer, matrix, chroma) \
+    (((Uint32)(type) << 28) | ((Uint32)(range) << 24) | ((Uint32)(chroma) << 20) | \
+    ((Uint32)(primaries) << 10) | ((Uint32)(transfer) << 5) | ((Uint32)(matrix) << 0))
+
+#define SDL_COLORSPACETYPE(X)       (SDL_ColorType)(((X) >> 28) & 0x0F)
+#define SDL_COLORSPACERANGE(X)      (SDL_ColorRange)(((X) >> 24) & 0x0F)
+#define SDL_COLORSPACECHROMA(X)     (SDL_ChromaLocation)(((X) >> 20) & 0x0F)
+#define SDL_COLORSPACEPRIMARIES(X)  (SDL_ColorPrimaries)(((X) >> 10) & 0x1F)
+#define SDL_COLORSPACETRANSFER(X)   (SDL_TransferCharacteristics)(((X) >> 5) & 0x1F)
+#define SDL_COLORSPACEMATRIX(X)     (SDL_MatrixCoefficients)((X) & 0x1F)
+
+typedef enum
+{
+    SDL_COLORSPACE_UNKNOWN,
+    SDL_COLORSPACE_SRGB =   /**< Equivalent to DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709 */
+        SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_RGB,
+                              SDL_COLOR_RANGE_FULL,
+                              SDL_COLOR_PRIMARIES_BT709,
+                              SDL_TRANSFER_CHARACTERISTICS_SRGB,
+                              SDL_MATRIX_COEFFICIENTS_UNSPECIFIED,
+                              SDL_CHROMA_LOCATION_NONE),
+    SDL_COLORSPACE_SCRGB =   /**< Equivalent to DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709  */
+        SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_RGB,
+                              SDL_COLOR_RANGE_FULL,
+                              SDL_COLOR_PRIMARIES_BT709,
+                              SDL_TRANSFER_CHARACTERISTICS_LINEAR,
+                              SDL_MATRIX_COEFFICIENTS_UNSPECIFIED,
+                              SDL_CHROMA_LOCATION_NONE),
+    SDL_COLORSPACE_HDR10 =   /**< Equivalent to DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020  */
+        SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_RGB,
+                              SDL_COLOR_RANGE_FULL,
+                              SDL_COLOR_PRIMARIES_BT2020,
+                              SDL_TRANSFER_CHARACTERISTICS_PQ,
+                              SDL_MATRIX_COEFFICIENTS_UNSPECIFIED,
+                              SDL_CHROMA_LOCATION_NONE),
+    SDL_COLORSPACE_BT601_LIMITED =  /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601 */
+        SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                              SDL_COLOR_RANGE_LIMITED,
+                              SDL_COLOR_PRIMARIES_BT601,
+                              SDL_TRANSFER_CHARACTERISTICS_BT601,
+                              SDL_MATRIX_COEFFICIENTS_BT601,
+                              SDL_CHROMA_LOCATION_LEFT),
+    SDL_COLORSPACE_BT601_FULL =     /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601 */
+        SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                              SDL_COLOR_RANGE_LIMITED,
+                              SDL_COLOR_PRIMARIES_BT601,
+                              SDL_TRANSFER_CHARACTERISTICS_BT601,
+                              SDL_MATRIX_COEFFICIENTS_BT601,
+                              SDL_CHROMA_LOCATION_LEFT),
+    SDL_COLORSPACE_BT709_LIMITED =  /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709 */
+        SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                              SDL_COLOR_RANGE_LIMITED,
+                              SDL_COLOR_PRIMARIES_BT709,
+                              SDL_TRANSFER_CHARACTERISTICS_BT709,
+                              SDL_MATRIX_COEFFICIENTS_BT709,
+                              SDL_CHROMA_LOCATION_LEFT),
+    SDL_COLORSPACE_BT709_FULL =     /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709 */
+        SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                              SDL_COLOR_RANGE_LIMITED,
+                              SDL_COLOR_PRIMARIES_BT709,
+                              SDL_TRANSFER_CHARACTERISTICS_BT709,
+                              SDL_MATRIX_COEFFICIENTS_BT709,
+                              SDL_CHROMA_LOCATION_LEFT),
+
+    /* The default colorspace for RGB surfaces if no colorspace is specified */
+    SDL_COLORSPACE_RGB_DEFAULT = SDL_COLORSPACE_SRGB,
+} SDL_Colorspace;
+
+/**
  * The bits of this structure can be directly reinterpreted as an integer-packed
  * color which uses the SDL_PIXELFORMAT_RGBA32 format (SDL_PIXELFORMAT_ABGR8888
  * on little-endian systems and SDL_PIXELFORMAT_RGBA8888 on big-endian systems).
