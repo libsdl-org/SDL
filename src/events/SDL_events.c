@@ -1536,3 +1536,53 @@ void SDL_QuitEvents(void)
     SDL_DelHintCallback(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_AutoUpdateSensorsChanged, NULL);
 #endif
 }
+
+void SDL_LockEventQueue()
+{
+    SDL_LockMutex(SDL_EventQ.lock);
+}
+
+void SDL_UnlockEventQueue()
+{
+    SDL_UnlockMutex(SDL_EventQ.lock);
+}
+
+///* Lock the event queue, take a peep at it, and unlock it */
+// event = vector.get, numevents = vector.max, action = SDL_GETEVENT, [min, max]=all range, include_sentinel = SDL_FALSE
+//static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_eventaction action,
+//                                  Uint32 minType, Uint32 maxType, SDL_bool include_sentinel = SDL_FALSE)
+//{
+//    int used = 0;
+//
+//    /* Lock the event queue */
+//    SDL_LockMutex(SDL_EventQ.lock);
+//    {
+//        /* Don't look after we've quit */
+//        if (!SDL_EventQ.active) {
+//            /* We get a few spurious events at shutdown, so don't warn then */
+//            SDL_SetError("The event system has been shut down");
+//            SDL_UnlockMutex(SDL_EventQ.lock);
+//            return -1;
+//        }
+//        SDL_EventEntry *entry, *next;
+//        Uint32 type;
+//
+//        for (entry = SDL_EventQ.head; entry && (events == NULL || used < numevents); entry = next) {
+//            next = entry->next;
+//            type = entry->event.type;
+//            if (events) {
+//                SDL_copyp(&events[used], &entry->event);
+//                if (action == SDL_GETEVENT) {
+//                    SDL_CutEvent(entry);
+//                }
+//            }
+//            if (type == SDL_EVENT_POLL_SENTINEL) {
+//                continue;
+//            }
+//            ++used;
+//        }
+//    }
+//    SDL_UnlockMutex(SDL_EventQ.lock);
+//
+//    return used;
+//}
