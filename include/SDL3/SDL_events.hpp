@@ -10,6 +10,11 @@
 #include <vector>
 
 namespace SDLcpp {
+    /**
+     * @brief SDLのイベントキューを扱うイテレータ
+     * @tparam does_remove インクリメント時に現在の要素を破棄するか
+     */
+    template <bool does_remove>
     struct event_queue_iterator {
         using value_type = SDL_Event;
         using pointer = SDL_EventQueueElement;
@@ -27,7 +32,7 @@ namespace SDLcpp {
         }
 
         event_queue_iterator& operator++() noexcept {
-            iter = SDL_ForwardElement(iter);
+            iter = SDL_ForwardElement(iter, does_remove);
             return *this;
         }
 
