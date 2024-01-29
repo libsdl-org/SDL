@@ -52,6 +52,7 @@ typedef struct
 {
     GSGLOBAL *gsGlobal;
     uint64_t drawColor;
+    SDL_Rect *viewport;
     int32_t vsync_callback_id;
     uint8_t vsync; /* 0 (Disabled), 1 (Enabled), 2 (Dynamic) */
 } PS2_RenderData;
@@ -196,6 +197,19 @@ static int PS2_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 
 static int PS2_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
+    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    const SDL_Rect *viewport = &cmd->data.viewport.rect;
+    data->viewport = (SDL_Rect *)viewport;
+
+    data->gsGlobal->OffsetX = (int)((2048.0f + (float)viewport->x) * 16.0f);
+    data->gsGlobal->OffsetY = (int)((2048.0f + (float)viewport->y) * 16.0f);
+    gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(viewport->x, viewport->x + viewport->w, viewport->y, viewport->y + viewport->h));
+
+    return 0;
+}
+
+static int PS2_QueueSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+{
     return 0; /* nothing to do in this backend. */
 }
 
@@ -308,26 +322,24 @@ static int PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
 
 static int PS2_RenderSetViewPort(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
-    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
-    const SDL_Rect *viewport = &cmd->data.viewport.rect;
-
-    gsKit_set_display_offset(data->gsGlobal, viewport->x, viewport->y);
-    gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(viewport->x, viewport->x + viewport->w, viewport->y, viewport->y + viewport->h));
-
-    return 0;
+    return 0; /* nothing to do in this backend. */
 }
 
 static int PS2_RenderSetClipRect(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    SDL_Rect *viewport = data->viewport;
 
     const SDL_Rect *rect = &cmd->data.cliprect.rect;
 
     if (cmd->data.cliprect.enabled) {
-        gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(rect->x, rect->x + rect->w, rect->y, rect->y + rect->h));
-    } else {
-        gsKit_set_scissor(data->gsGlobal, GS_SCISSOR_RESET);
+        /* We need to do it relative to saved viewport */
+        viewport->x += rect->x;
+        viewport->y += rect->y;
+        viewport->w = SDL_min(viewport->w, rect->w);
+        viewport->h = SDL_min(viewport->h, rect->h);
     }
+    gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(viewport->x, viewport->x + viewport->w, viewport->y, viewport->y + viewport->h));
 
     return 0;
 }
@@ -348,7 +360,8 @@ static int PS2_RenderSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd
 
 static int PS2_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
-    int colorR, colorG, colorB, colorA;
+    int colorR, colorG, colorB, colorA, offsetX, offsetY;
+    SDL_Rect *viewport;
 
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
 
@@ -356,8 +369,24 @@ static int PS2_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     colorG = (cmd->data.color.g);
     colorB = (cmd->data.color.b);
     colorA = (cmd->data.color.a);
+
+    /* Clear the screen, so let's put default viewport */
+    gsKit_set_scissor(data->gsGlobal, GS_SCISSOR_RESET);
+    /* Put back original offset */
+    offsetX = data->gsGlobal->OffsetX;
+    offsetY = data->gsGlobal->OffsetY;
+    data->gsGlobal->OffsetX = (int)(2048.0f * 16.0f);
+    data->gsGlobal->OffsetY = (int)(2048.0f * 16.0f);
     gsKit_clear(data->gsGlobal, GS_SETREG_RGBAQ(colorR, colorG, colorB, colorA, 0x00));
 
+    /* Put back original offset */
+    data->gsGlobal->OffsetX = offsetX;
+    data->gsGlobal->OffsetY = offsetY;
+
+    // /* Put back view port */
+    viewport = data->viewport;
+    gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(viewport->x, viewport->x + viewport->w, viewport->y, viewport->y + viewport->h));
+    
     return 0;
 }
 
@@ -655,7 +684,7 @@ static SDL_Renderer *PS2_CreateRenderer(SDL_Window *window, SDL_PropertiesID cre
     renderer->SetTextureScaleMode = PS2_SetTextureScaleMode;
     renderer->SetRenderTarget = PS2_SetRenderTarget;
     renderer->QueueSetViewport = PS2_QueueSetViewport;
-    renderer->QueueSetDrawColor = PS2_QueueSetViewport;
+    renderer->QueueSetDrawColor = PS2_QueueSetDrawColor;
     renderer->QueueDrawPoints = PS2_QueueDrawPoints;
     renderer->QueueDrawLines = PS2_QueueDrawPoints;
     renderer->QueueGeometry = PS2_QueueGeometry;
