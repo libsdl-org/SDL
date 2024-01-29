@@ -959,6 +959,12 @@ SDL3_0.0.0 {
     SDL_GetHapticName;
     SDL_ReadSurfacePixel;
     SDL_FlipSurface;
+    SDL_SetTextureColorModFloat;
+    SDL_GetTextureColorModFloat;
+    SDL_SetTextureAlphaModFloat;
+    SDL_GetTextureAlphaModFloat;
+    SDL_SetRenderDrawColorFloat;
+    SDL_GetRenderDrawColorFloat;
     # extra symbols go here (don't modify this line)
   local: *;
 };

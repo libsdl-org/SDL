@@ -100,13 +100,18 @@ static int SW_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
 static int SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     SDL_Surface *surface = SDL_CreateSurface(texture->w, texture->h, texture->format);
+    Uint8 r, g, b, a;
 
     if (!surface) {
         return SDL_SetError("Cannot create surface");
     }
     texture->driverdata = surface;
-    SDL_SetSurfaceColorMod(texture->driverdata, texture->color.r, texture->color.g, texture->color.b);
-    SDL_SetSurfaceAlphaMod(texture->driverdata, texture->color.a);
+    r = (Uint8)((float)texture->color.r * 255.0f);
+    g = (Uint8)((float)texture->color.g * 255.0f);
+    b = (Uint8)((float)texture->color.b * 255.0f);
+    a = (Uint8)((float)texture->color.a * 255.0f);
+    SDL_SetSurfaceColorMod(texture->driverdata, r, g, b);
+    SDL_SetSurfaceAlphaMod(texture->driverdata, a);
     SDL_SetSurfaceBlendMode(texture->driverdata, texture->blendMode);
 
     /* Only RLE encode textures without an alpha channel since the RLE coder
@@ -531,7 +536,7 @@ typedef struct GeometryCopyData
 } GeometryCopyData;
 
 static int SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                            const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
+                            const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
                             int num_vertices, const void *indices, int num_indices, int size_indices,
                             float scale_x, float scale_y)
 {
@@ -553,7 +558,7 @@ static int SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
         for (i = 0; i < count; i++) {
             int j;
             float *xy_;
-            SDL_Color col_;
+            SDL_FColor col_;
             float *uv_;
             if (size_indices == 4) {
                 j = ((const Uint32 *)indices)[i];
@@ -566,7 +571,7 @@ static int SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
             }
 
             xy_ = (float *)((char *)xy + j * xy_stride);
-            col_ = *(SDL_Color *)((char *)color + j * color_stride);
+            col_ = *(SDL_FColor *)((char *)color + j * color_stride);
 
             uv_ = (float *)((char *)uv + j * uv_stride);
 
@@ -577,7 +582,10 @@ static int SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
             ptr->dst.y = (int)(xy_[1] * scale_y);
             trianglepoint_2_fixedpoint(&ptr->dst);
 
-            ptr->color = col_;
+            ptr->color.r = (Uint8)((float)col_.r * 255.0f);
+            ptr->color.g = (Uint8)((float)col_.g * 255.0f);
+            ptr->color.b = (Uint8)((float)col_.b * 255.0f);
+            ptr->color.a = (Uint8)((float)col_.a * 255.0f);
 
             ptr++;
         }
@@ -587,7 +595,7 @@ static int SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
         for (i = 0; i < count; i++) {
             int j;
             float *xy_;
-            SDL_Color col_;
+            SDL_FColor col_;
             if (size_indices == 4) {
                 j = ((const Uint32 *)indices)[i];
             } else if (size_indices == 2) {
@@ -599,13 +607,16 @@ static int SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
             }
 
             xy_ = (float *)((char *)xy + j * xy_stride);
-            col_ = *(SDL_Color *)((char *)color + j * color_stride);
+            col_ = *(SDL_FColor *)((char *)color + j * color_stride);
 
             ptr->dst.x = (int)(xy_[0] * scale_x);
             ptr->dst.y = (int)(xy_[1] * scale_y);
             trianglepoint_2_fixedpoint(&ptr->dst);
 
-            ptr->color = col_;
+            ptr->color.r = (Uint8)((float)col_.r * 255.0f);
+            ptr->color.g = (Uint8)((float)col_.g * 255.0f);
+            ptr->color.b = (Uint8)((float)col_.b * 255.0f);
+            ptr->color.a = (Uint8)((float)col_.a * 255.0f);
 
             ptr++;
         }
@@ -615,10 +626,10 @@ static int SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
 
 static void PrepTextureForCopy(const SDL_RenderCommand *cmd)
 {
-    const Uint8 r = cmd->data.draw.r;
-    const Uint8 g = cmd->data.draw.g;
-    const Uint8 b = cmd->data.draw.b;
-    const Uint8 a = cmd->data.draw.a;
+    const Uint8 r = (Uint8)((float)cmd->data.draw.color.r * 255.0f);
+    const Uint8 g = (Uint8)((float)cmd->data.draw.color.g * 255.0f);
+    const Uint8 b = (Uint8)((float)cmd->data.draw.color.b * 255.0f);
+    const Uint8 a = (Uint8)((float)cmd->data.draw.color.a * 255.0f);
     const SDL_BlendMode blend = cmd->data.draw.blend;
     SDL_Texture *texture = cmd->data.draw.texture;
     SDL_Surface *surface = (SDL_Surface *)texture->driverdata;
@@ -700,10 +711,10 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
 
         case SDL_RENDERCMD_CLEAR:
         {
-            const Uint8 r = cmd->data.color.r;
-            const Uint8 g = cmd->data.color.g;
-            const Uint8 b = cmd->data.color.b;
-            const Uint8 a = cmd->data.color.a;
+            const Uint8 r = (Uint8)((float)cmd->data.color.color.r * 255.0f);
+            const Uint8 g = (Uint8)((float)cmd->data.color.color.g * 255.0f);
+            const Uint8 b = (Uint8)((float)cmd->data.color.color.b * 255.0f);
+            const Uint8 a = (Uint8)((float)cmd->data.color.color.a * 255.0f);
             /* By definition the clear ignores the clip rect */
             SDL_SetSurfaceClipRect(surface, NULL);
             SDL_FillSurfaceRect(surface, NULL, SDL_MapRGBA(surface->format, r, g, b, a));
@@ -713,10 +724,10 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
 
         case SDL_RENDERCMD_DRAW_POINTS:
         {
-            const Uint8 r = cmd->data.draw.r;
-            const Uint8 g = cmd->data.draw.g;
-            const Uint8 b = cmd->data.draw.b;
-            const Uint8 a = cmd->data.draw.a;
+            const Uint8 r = (Uint8)((float)cmd->data.draw.color.r * 255.0f);
+            const Uint8 g = (Uint8)((float)cmd->data.draw.color.g * 255.0f);
+            const Uint8 b = (Uint8)((float)cmd->data.draw.color.b * 255.0f);
+            const Uint8 a = (Uint8)((float)cmd->data.draw.color.a * 255.0f);
             const int count = (int)cmd->data.draw.count;
             SDL_Point *verts = (SDL_Point *)(((Uint8 *)vertices) + cmd->data.draw.first);
             const SDL_BlendMode blend = cmd->data.draw.blend;
@@ -741,10 +752,10 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
 
         case SDL_RENDERCMD_DRAW_LINES:
         {
-            const Uint8 r = cmd->data.draw.r;
-            const Uint8 g = cmd->data.draw.g;
-            const Uint8 b = cmd->data.draw.b;
-            const Uint8 a = cmd->data.draw.a;
+            const Uint8 r = (Uint8)((float)cmd->data.draw.color.r * 255.0f);
+            const Uint8 g = (Uint8)((float)cmd->data.draw.color.g * 255.0f);
+            const Uint8 b = (Uint8)((float)cmd->data.draw.color.b * 255.0f);
+            const Uint8 a = (Uint8)((float)cmd->data.draw.color.a * 255.0f);
             const int count = (int)cmd->data.draw.count;
             SDL_Point *verts = (SDL_Point *)(((Uint8 *)vertices) + cmd->data.draw.first);
             const SDL_BlendMode blend = cmd->data.draw.blend;
@@ -769,10 +780,10 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
 
         case SDL_RENDERCMD_FILL_RECTS:
         {
-            const Uint8 r = cmd->data.draw.r;
-            const Uint8 g = cmd->data.draw.g;
-            const Uint8 b = cmd->data.draw.b;
-            const Uint8 a = cmd->data.draw.a;
+            const Uint8 r = (Uint8)((float)cmd->data.draw.color.r * 255.0f);
+            const Uint8 g = (Uint8)((float)cmd->data.draw.color.g * 255.0f);
+            const Uint8 b = (Uint8)((float)cmd->data.draw.color.b * 255.0f);
+            const Uint8 a = (Uint8)((float)cmd->data.draw.color.a * 255.0f);
             const int count = (int)cmd->data.draw.count;
             SDL_Rect *verts = (SDL_Rect *)(((Uint8 *)vertices) + cmd->data.draw.first);
             const SDL_BlendMode blend = cmd->data.draw.blend;

@@ -80,9 +80,9 @@ typedef struct
     SDL_bool color_array;
     SDL_bool texture_array;
     SDL_bool color_dirty;
-    Uint32 color;
+    SDL_FColor color;
     SDL_bool clear_color_dirty;
-    Uint32 clear_color;
+    SDL_FColor clear_color;
 } GL_DrawStateCache;
 
 typedef struct
@@ -996,7 +996,7 @@ static int GL_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, con
 }
 
 static int GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                            const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
+                            const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
                             int num_vertices, const void *indices, int num_indices, int size_indices,
                             float scale_x, float scale_y)
 {
@@ -1004,7 +1004,7 @@ static int GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
     int i;
     int count = indices ? num_indices : num_vertices;
     GLfloat *verts;
-    size_t sz = 2 * sizeof(GLfloat) + 4 * sizeof(Uint8) + (texture ? 2 : 0) * sizeof(GLfloat);
+    size_t sz = 2 * sizeof(GLfloat) + 4 * sizeof(GLfloat) + (texture ? 2 : 0) * sizeof(GLfloat);
 
     verts = (GLfloat *)SDL_AllocateRenderVertices(renderer, count * sz, 0, &cmd->data.draw.first);
     if (!verts) {
@@ -1021,6 +1021,7 @@ static int GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
     for (i = 0; i < count; i++) {
         int j;
         float *xy_;
+        SDL_FColor *col_;
         if (size_indices == 4) {
             j = ((const Uint32 *)indices)[i];
         } else if (size_indices == 2) {
@@ -1036,10 +1037,11 @@ static int GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
         *(verts++) = xy_[0] * scale_x;
         *(verts++) = xy_[1] * scale_y;
 
-        /* Not really a float, but it is still 4 bytes and will be cast to the
-           right type in the graphics driver. */
-        SDL_memcpy(verts, ((char *)color + j * color_stride), sizeof(*color));
-        ++verts;
+        col_ = (SDL_FColor *)((char *)color + j * color_stride);
+        *(verts++) = col_->r;
+        *(verts++) = col_->g;
+        *(verts++) = col_->b;
+        *(verts++) = col_->a;
 
         if (texture) {
             float *uv_ = (float *)((char *)uv + j * uv_stride);
@@ -1249,14 +1251,17 @@ static int GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
         switch (cmd->command) {
         case SDL_RENDERCMD_SETDRAWCOLOR:
         {
-            const Uint8 r = cmd->data.color.r;
-            const Uint8 g = cmd->data.color.g;
-            const Uint8 b = cmd->data.color.b;
-            const Uint8 a = cmd->data.color.a;
-            const Uint32 color = (((Uint32)a << 24) | (r << 16) | (g << 8) | b);
-            if ((data->drawstate.color_dirty) || (color != data->drawstate.color)) {
-                data->glColor4ub((GLubyte)r, (GLubyte)g, (GLubyte)b, (GLubyte)a);
-                data->drawstate.color = color;
+            const float r = cmd->data.color.color.r;
+            const float g = cmd->data.color.color.g;
+            const float b = cmd->data.color.color.b;
+            const float a = cmd->data.color.color.a;
+            if (data->drawstate.clear_color_dirty ||
+                (r != data->drawstate.color.r) ||
+                (g != data->drawstate.color.g) ||
+                (b != data->drawstate.color.b) ||
+                (a != data->drawstate.color.a)) {
+                data->glColor4f(r, g, b, a);
+                data->drawstate.color = cmd->data.color.color;
                 data->drawstate.color_dirty = SDL_FALSE;
             }
             break;
@@ -1289,18 +1294,17 @@ static int GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
 
         case SDL_RENDERCMD_CLEAR:
         {
-            const Uint8 r = cmd->data.color.r;
-            const Uint8 g = cmd->data.color.g;
-            const Uint8 b = cmd->data.color.b;
-            const Uint8 a = cmd->data.color.a;
-            const Uint32 color = (((Uint32)a << 24) | (r << 16) | (g << 8) | b);
-            if ((data->drawstate.clear_color_dirty) || (color != data->drawstate.clear_color)) {
-                const GLfloat fr = ((GLfloat)r) * inv255f;
-                const GLfloat fg = ((GLfloat)g) * inv255f;
-                const GLfloat fb = ((GLfloat)b) * inv255f;
-                const GLfloat fa = ((GLfloat)a) * inv255f;
-                data->glClearColor(fr, fg, fb, fa);
-                data->drawstate.clear_color = color;
+            const float r = cmd->data.color.color.r;
+            const float g = cmd->data.color.color.g;
+            const float b = cmd->data.color.color.b;
+            const float a = cmd->data.color.color.a;
+            if (data->drawstate.clear_color_dirty ||
+                (r != data->drawstate.clear_color.r) ||
+                (g != data->drawstate.clear_color.g) ||
+                (b != data->drawstate.clear_color.b) ||
+                (a != data->drawstate.clear_color.a)) {
+                data->glClearColor(r, g, b, a);
+                data->drawstate.clear_color = cmd->data.color.color;
                 data->drawstate.clear_color_dirty = SDL_FALSE;
             }
 
@@ -1406,12 +1410,12 @@ static int GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
                 } else {
                     /* SetDrawState handles glEnableClientState. */
                     if (thistexture) {
-                        data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 5, verts + 0);
-                        data->glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(float) * 5, verts + 2);
-                        data->glTexCoordPointer(2, GL_FLOAT, sizeof(float) * 5, verts + 3);
+                        data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 8, verts + 0);
+                        data->glColorPointer(4, GL_FLOAT, sizeof(float) * 8, verts + 2);
+                        data->glTexCoordPointer(2, GL_FLOAT, sizeof(float) * 8, verts + 6);
                     } else {
-                        data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 3, verts + 0);
-                        data->glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(float) * 3, verts + 2);
+                        data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 6, verts + 0);
+                        data->glColorPointer(4, GL_FLOAT, sizeof(float) * 6, verts + 2);
                     }
                 }
 
@@ -1419,12 +1423,11 @@ static int GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
 
                 /* Restore previously set color when we're done. */
                 if (thiscmdtype != SDL_RENDERCMD_DRAW_POINTS) {
-                    Uint32 color = data->drawstate.color;
-                    GLubyte a = (GLubyte)((color >> 24) & 0xFF);
-                    GLubyte r = (GLubyte)((color >> 16) & 0xFF);
-                    GLubyte g = (GLubyte)((color >> 8) & 0xFF);
-                    GLubyte b = (GLubyte)((color >> 0) & 0xFF);
-                    data->glColor4ub(r, g, b, a);
+                    const float r = data->drawstate.color.r;
+                    const float g = data->drawstate.color.g;
+                    const float b = data->drawstate.color.b;
+                    const float a = data->drawstate.color.a;
+                    data->glColor4f(r, g, b, a);
                 }
             }
 
@@ -1906,12 +1909,18 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
     data->glDisable(GL_SCISSOR_TEST);
     data->glDisable(data->textype);
     data->glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    data->glColor4ub(255, 255, 255, 255);
+    data->glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
     /* This ended up causing video discrepancies between OpenGL and Direct3D */
     /* data->glEnable(GL_LINE_SMOOTH); */
 
-    data->drawstate.color = 0xFFFFFFFF;
-    data->drawstate.clear_color = 0xFFFFFFFF;
+    data->drawstate.color.r = 1.0f;
+    data->drawstate.color.g = 1.0f;
+    data->drawstate.color.b = 1.0f;
+    data->drawstate.color.a = 1.0f;
+    data->drawstate.clear_color.r = 1.0f;
+    data->drawstate.clear_color.g = 1.0f;
+    data->drawstate.clear_color.b = 1.0f;
+    data->drawstate.clear_color.a = 1.0f;
 
     return renderer;
 

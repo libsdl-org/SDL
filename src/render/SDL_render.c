@@ -407,27 +407,27 @@ static int QueueCmdSetClipRect(SDL_Renderer *renderer)
     return retval;
 }
 
-static int QueueCmdSetDrawColor(SDL_Renderer *renderer, SDL_Color *col)
+static int QueueCmdSetDrawColor(SDL_Renderer *renderer, SDL_FColor *color)
 {
-    const Uint32 color = (((Uint32)col->a << 24) | (col->r << 16) | (col->g << 8) | col->b);
     int retval = 0;
 
-    if (!renderer->color_queued || (color != renderer->last_queued_color)) {
+    if (!renderer->color_queued ||
+        color->r != renderer->last_queued_color.r ||
+        color->g != renderer->last_queued_color.g ||
+        color->b != renderer->last_queued_color.b ||
+        color->a != renderer->last_queued_color.a) {
         SDL_RenderCommand *cmd = AllocateRenderCommand(renderer);
         retval = -1;
 
         if (cmd) {
             cmd->command = SDL_RENDERCMD_SETDRAWCOLOR;
             cmd->data.color.first = 0; /* render backend will fill this in. */
-            cmd->data.color.r = col->r;
-            cmd->data.color.g = col->g;
-            cmd->data.color.b = col->b;
-            cmd->data.color.a = col->a;
+            cmd->data.color.color = *color;
             retval = renderer->QueueSetDrawColor(renderer, cmd);
             if (retval < 0) {
                 cmd->command = SDL_RENDERCMD_NO_OP;
             } else {
-                renderer->last_queued_color = color;
+                renderer->last_queued_color = *color;
                 renderer->color_queued = SDL_TRUE;
             }
         }
@@ -444,10 +444,7 @@ static int QueueCmdClear(SDL_Renderer *renderer)
 
     cmd->command = SDL_RENDERCMD_CLEAR;
     cmd->data.color.first = 0;
-    cmd->data.color.r = renderer->color.r;
-    cmd->data.color.g = renderer->color.g;
-    cmd->data.color.b = renderer->color.b;
-    cmd->data.color.a = renderer->color.a;
+    cmd->data.color.color = renderer->color;
     return 0;
 }
 
@@ -455,7 +452,7 @@ static SDL_RenderCommand *PrepQueueCmdDraw(SDL_Renderer *renderer, const SDL_Ren
 {
     SDL_RenderCommand *cmd = NULL;
     int retval = 0;
-    SDL_Color *color;
+    SDL_FColor *color;
     SDL_BlendMode blendMode;
 
     if (texture) {
@@ -485,10 +482,7 @@ static SDL_RenderCommand *PrepQueueCmdDraw(SDL_Renderer *renderer, const SDL_Ren
             cmd->command = cmdtype;
             cmd->data.draw.first = 0; /* render backend will fill this in. */
             cmd->data.draw.count = 0; /* render backend will fill this in. */
-            cmd->data.draw.r = color->r;
-            cmd->data.draw.g = color->g;
-            cmd->data.draw.b = color->b;
-            cmd->data.draw.a = color->a;
+            cmd->data.draw.color = *color;
             cmd->data.draw.blend = blendMode;
             cmd->data.draw.texture = texture;
         }
@@ -626,7 +620,7 @@ static int QueueCmdCopyEx(SDL_Renderer *renderer, SDL_Texture *texture,
 
 static int QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
                             const float *xy, int xy_stride,
-                            const SDL_Color *color, int color_stride,
+                            const SDL_FColor *color, int color_stride,
                             const float *uv, int uv_stride,
                             int num_vertices,
                             const void *indices, int num_indices, int size_indices,
@@ -1163,10 +1157,10 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     texture->access = access;
     texture->w = w;
     texture->h = h;
-    texture->color.r = 255;
-    texture->color.g = 255;
-    texture->color.b = 255;
-    texture->color.a = 255;
+    texture->color.r = 1.0f;
+    texture->color.g = 1.0f;
+    texture->color.b = 1.0f;
+    texture->color.a = 1.0f;
     texture->scaleMode = SDL_GetScaleMode();
     texture->view.pixel_w = w;
     texture->view.pixel_h = h;
@@ -1433,18 +1427,47 @@ int SDL_QueryTexture(SDL_Texture *texture, Uint32 *format, int *access, int *w, 
 
 int SDL_SetTextureColorMod(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b)
 {
+    const float fR = (float)r / 255.0f;
+    const float fG = (float)g / 255.0f;
+    const float fB = (float)b / 255.0f;
+
+    return SDL_SetTextureColorModFloat(texture, fR, fG, fB);
+}
+
+int SDL_SetTextureColorModFloat(SDL_Texture *texture, float r, float g, float b)
+{
     CHECK_TEXTURE_MAGIC(texture, -1);
 
     texture->color.r = r;
     texture->color.g = g;
     texture->color.b = b;
     if (texture->native) {
-        return SDL_SetTextureColorMod(texture->native, r, g, b);
+        return SDL_SetTextureColorModFloat(texture->native, r, g, b);
     }
     return 0;
 }
 
 int SDL_GetTextureColorMod(SDL_Texture *texture, Uint8 *r, Uint8 *g, Uint8 *b)
+{
+    float fR, fG, fB;
+
+    if (SDL_GetTextureColorModFloat(texture, &fR, &fG, &fB) < 0) {
+        return -1;
+    }
+
+    if (r) {
+        *r = (Uint8)(fR * 255.0f);
+    }
+    if (g) {
+        *g = (Uint8)(fG * 255.0f);
+    }
+    if (b) {
+        *b = (Uint8)(fB * 255.0f);
+    }
+    return 0;
+}
+
+int SDL_GetTextureColorModFloat(SDL_Texture *texture, float *r, float *g, float *b)
 {
     CHECK_TEXTURE_MAGIC(texture, -1);
 
@@ -1462,16 +1485,37 @@ int SDL_GetTextureColorMod(SDL_Texture *texture, Uint8 *r, Uint8 *g, Uint8 *b)
 
 int SDL_SetTextureAlphaMod(SDL_Texture *texture, Uint8 alpha)
 {
+    const float fA = (float)alpha / 255.0f;
+
+    return SDL_SetTextureAlphaModFloat(texture, fA);
+}
+
+int SDL_SetTextureAlphaModFloat(SDL_Texture *texture, float alpha)
+{
     CHECK_TEXTURE_MAGIC(texture, -1);
 
     texture->color.a = alpha;
     if (texture->native) {
-        return SDL_SetTextureAlphaMod(texture->native, alpha);
+        return SDL_SetTextureAlphaModFloat(texture->native, alpha);
     }
     return 0;
 }
 
 int SDL_GetTextureAlphaMod(SDL_Texture *texture, Uint8 *alpha)
+{
+    float fA;
+
+    if (SDL_GetTextureAlphaModFloat(texture, &fA) < 0) {
+        return -1;
+    }
+
+    if (alpha) {
+        *alpha = (Uint8)(fA * 255.0f);
+    }
+    return 0;
+}
+
+int SDL_GetTextureAlphaModFloat(SDL_Texture *texture, float *alpha)
 {
     CHECK_TEXTURE_MAGIC(texture, -1);
 
@@ -2291,7 +2335,7 @@ static void SDL_RenderLogicalBorders(SDL_Renderer *renderer)
 
     if (dst->x > 0.0f || dst->y > 0.0f) {
         SDL_BlendMode saved_blend_mode = renderer->blendMode;
-        SDL_Color saved_color = renderer->color;
+        SDL_FColor saved_color = renderer->color;
 
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -2629,6 +2673,16 @@ int SDL_GetRenderScale(SDL_Renderer *renderer, float *scaleX, float *scaleY)
 
 int SDL_SetRenderDrawColor(SDL_Renderer *renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
+    const float fR = (float)r / 255.0f;
+    const float fG = (float)g / 255.0f;
+    const float fB = (float)b / 255.0f;
+    const float fA = (float)a / 255.0f;
+
+    return SDL_SetRenderDrawColorFloat(renderer, fR, fG, fB, fA);
+}
+
+int SDL_SetRenderDrawColorFloat(SDL_Renderer *renderer, float r, float g, float b, float a)
+{
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     renderer->color.r = r;
@@ -2639,6 +2693,29 @@ int SDL_SetRenderDrawColor(SDL_Renderer *renderer, Uint8 r, Uint8 g, Uint8 b, Ui
 }
 
 int SDL_GetRenderDrawColor(SDL_Renderer *renderer, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a)
+{
+    float fR, fG, fB, fA;
+
+    if (SDL_GetRenderDrawColorFloat(renderer, &fR, &fG, &fB, &fA) < 0) {
+        return -1;
+    }
+
+    if (r) {
+        *r = (Uint8)(fR * 255.0f);
+    }
+    if (g) {
+        *g = (Uint8)(fG * 255.0f);
+    }
+    if (b) {
+        *b = (Uint8)(fB * 255.0f);
+    }
+    if (a) {
+        *a = (Uint8)(fA * 255.0f);
+    }
+    return 0;
+}
+
+int SDL_GetRenderDrawColorFloat(SDL_Renderer *renderer, float *r, float *g, float *b, float *a)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -3457,7 +3534,7 @@ int SDL_RenderGeometry(SDL_Renderer *renderer,
     if (vertices) {
         const float *xy = &vertices->position.x;
         int xy_stride = sizeof(SDL_Vertex);
-        const SDL_Color *color = &vertices->color;
+        const SDL_FColor *color = &vertices->color;
         int color_stride = sizeof(SDL_Vertex);
         const float *uv = &vertices->tex_coord.x;
         int uv_stride = sizeof(SDL_Vertex);
@@ -3473,11 +3550,11 @@ static int remap_one_indice(
     int k,
     SDL_Texture *texture,
     const float *xy, int xy_stride,
-    const SDL_Color *color, int color_stride,
+    const SDL_FColor *color, int color_stride,
     const float *uv, int uv_stride)
 {
     const float *xy0_, *xy1_, *uv0_, *uv1_;
-    int col0_, col1_;
+    const SDL_FColor *col0_, *col1_;
     xy0_ = (const float *)((const char *)xy + prev * xy_stride);
     xy1_ = (const float *)((const char *)xy + k * xy_stride);
     if (xy0_[0] != xy1_[0]) {
@@ -3496,10 +3573,10 @@ static int remap_one_indice(
             return k;
         }
     }
-    col0_ = *(const int *)((const char *)color + prev * color_stride);
-    col1_ = *(const int *)((const char *)color + k * color_stride);
+    col0_ = (const SDL_FColor *)((const char *)color + prev * color_stride);
+    col1_ = (const SDL_FColor *)((const char *)color + k * color_stride);
 
-    if (col0_ != col1_) {
+    if (SDL_memcmp(col0_, col1_, sizeof(*col0_)) != 0) {
         return k;
     }
 
@@ -3511,7 +3588,7 @@ static int remap_indices(
     int k,
     SDL_Texture *texture,
     const float *xy, int xy_stride,
-    const SDL_Color *color, int color_stride,
+    const SDL_FColor *color, int color_stride,
     const float *uv, int uv_stride)
 {
     int i;
@@ -3533,7 +3610,7 @@ static int remap_indices(
 static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                                             SDL_Texture *texture,
                                             const float *xy, int xy_stride,
-                                            const SDL_Color *color, int color_stride,
+                                            const SDL_FColor *color, int color_stride,
                                             const float *uv, int uv_stride,
                                             int num_vertices,
                                             const void *indices, int num_indices, int size_indices)
@@ -3711,11 +3788,13 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
 
         /* Check if uniformly colored */
         if (is_quad) {
-            const int col0_ = *(const int *)((const char *)color + A * color_stride);
-            const int col1_ = *(const int *)((const char *)color + B * color_stride);
-            const int col2_ = *(const int *)((const char *)color + C * color_stride);
-            const int col3_ = *(const int *)((const char *)color + C2 * color_stride);
-            if (col0_ == col1_ && col0_ == col2_ && col0_ == col3_) {
+            const SDL_FColor *col0_ = (const SDL_FColor *)((const char *)color + A * color_stride);
+            const SDL_FColor *col1_ = (const SDL_FColor *)((const char *)color + B * color_stride);
+            const SDL_FColor *col2_ = (const SDL_FColor *)((const char *)color + C * color_stride);
+            const SDL_FColor *col3_ = (const SDL_FColor *)((const char *)color + C2 * color_stride);
+            if (SDL_memcmp(col0_, col1_, sizeof(*col0_)) == 0 &&
+                SDL_memcmp(col0_, col2_, sizeof(*col0_)) == 0 &&
+                SDL_memcmp(col0_, col3_, sizeof(*col0_)) == 0) {
                 /* ok */
             } else {
                 is_quad = 0;
@@ -3730,7 +3809,7 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
             SDL_FRect s;
             SDL_FRect d;
             const float *xy0_, *xy1_, *uv0_, *uv1_;
-            SDL_Color col0_ = *(const SDL_Color *)((const char *)color + k0 * color_stride);
+            const SDL_FColor *col0_ = (const SDL_FColor *)((const char *)color + k0 * color_stride);
 
             xy0_ = (const float *)((const char *)xy + A * xy_stride);
             xy1_ = (const float *)((const char *)xy + B * xy_stride);
@@ -3753,8 +3832,8 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
 
             /* Rect + texture */
             if (texture && s.w != 0 && s.h != 0) {
-                SDL_SetTextureAlphaMod(texture, col0_.a);
-                SDL_SetTextureColorMod(texture, col0_.r, col0_.g, col0_.b);
+                SDL_SetTextureAlphaModFloat(texture, col0_->a);
+                SDL_SetTextureColorModFloat(texture, col0_->r, col0_->g, col0_->b);
                 if (s.w > 0 && s.h > 0) {
                     SDL_RenderTexture(renderer, texture, &s, &d);
                 } else {
@@ -3773,18 +3852,18 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                 }
 
 #if DEBUG_SW_RENDER_GEOMETRY
-                SDL_Log("Rect-COPY: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
+                SDL_Log("Rect-COPY: RGB %f %f %f - Alpha:%f - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_->r, col0_->g, col0_->b, col0_->a,
                         (void *)texture, s.x, s.y, s.w, s.h, d.x, d.y, d.w, d.h);
 #endif
             } else if (d.w != 0.0f && d.h != 0.0f) { /* Rect, no texture */
                 SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-                SDL_SetRenderDrawColor(renderer, col0_.r, col0_.g, col0_.b, col0_.a);
+                SDL_SetRenderDrawColorFloat(renderer, col0_->r, col0_->g, col0_->b, col0_->a);
                 SDL_RenderFillRect(renderer, &d);
 #if DEBUG_SW_RENDER_GEOMETRY
-                SDL_Log("Rect-FILL: RGB %d %d %d - Alpha:%d - texture=%p: dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
+                SDL_Log("Rect-FILL: RGB %f %f %f - Alpha:%f - texture=%p: dst (%f, %f, %f x %f)", col0_->r, col0_->g, col0_->b, col0_->a,
                         (void *)texture, d.x, d.y, d.w, d.h);
             } else {
-                SDL_Log("Rect-DISMISS: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
+                SDL_Log("Rect-DISMISS: RGB %f %f %f - Alpha:%f - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_->r, col0_->g, col0_->b, col0_->a,
                         (void *)texture, s.x, s.y, s.w, s.h, d.x, d.y, d.w, d.h);
 #endif
             }
@@ -3838,7 +3917,7 @@ end:
 int SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                           SDL_Texture *texture,
                           const float *xy, int xy_stride,
-                          const SDL_Color *color, int color_stride,
+                          const SDL_FColor *color, int color_stride,
                           const float *uv, int uv_stride,
                           int num_vertices,
                           const void *indices, int num_indices, int size_indices)
