@@ -1547,6 +1547,11 @@ void SDL_UnlockEventQueue()
     SDL_UnlockMutex(SDL_EventQ.lock);
 }
 
+SDL_bool SDL_IsEventQueueActive()
+{
+    return SDL_EventQ.active;
+}
+
 ///* Lock the event queue, take a peep at it, and unlock it */
 // event = vector.get, numevents = vector.max, action = SDL_GETEVENT, [min, max]=all range, include_sentinel = SDL_FALSE
 //static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_eventaction action,

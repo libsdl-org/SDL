@@ -1382,6 +1382,14 @@ extern DECLSPEC void SDLCALL SDL_LockEventQueue();
  */
 extern DECLSPEC void SDLCALL SDL_UnlockEventQueue();
 
+/**
+ * イベントキューがアクティブかを調べる
+ * 
+ * \returns アクティブならtrue, そうでなければfalse．
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_IsEventQueueActive();
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
