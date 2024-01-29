@@ -1238,6 +1238,24 @@ extern DECLSPEC SDL_EventQueueElement SDLCALL SDL_EventQueueEnd();
  */
 extern DECLSPEC int SDLCALL SDL_NumOfEvent();
 
+/**
+ * イベントキューの要素を一つ進める
+ * 
+ * \since This function is available since SDL 3.0.0.
+ * \param element イベントキューの要素を指すアドレス．
+ * \returns 次をイベントを指す指すポインタ．
+ */
+extern DECLSPEC SDL_EventQueueElement SDLCALL SDL_ForwardElement(SDL_EventQueueElement element);
+
+/**
+ * イベントキューの要素からSDL_Eventを取り出す
+ * 
+ * \since This function is available since SDL 3.0.0.
+ * \param element イベントキューの要素を指すアドレス．
+ * \returns イベントオブジェクト．
+ */
+extern DECLSPEC SDL_Event * SDLCALL SDL_GetEvent(SDL_EventQueueElement element);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

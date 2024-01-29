@@ -1528,6 +1528,14 @@ int SDL_NumOfEvent() {
     return SDL_AtomicGet(&SDL_EventQ.count);
 }
 
+SDL_EventQueueElement SDL_ForwardElement(SDL_EventQueueElement element) {
+    return element->next;
+}
+
+SDL_Event * SDL_GetEvent(SDL_EventQueueElement element) {
+    return &(element->event);
+}
+
 ///* Lock the event queue, take a peep at it, and unlock it */
 // event = vector.get, numevents = vector.max, action = SDL_GETEVENT, [min, max]=all range, include_sentinel = SDL_FALSE
 //static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_eventaction action,
@@ -1548,14 +1556,12 @@ int SDL_NumOfEvent() {
 //        SDL_EventEntry *entry, *next;
 //        Uint32 type;
 //
-//        for (entry = SDL_EventQ.head; entry && (events == NULL || used < numevents); entry = next) {
+//        for (entry = SDL_EventQ.head; entry; entry = next) {
 //            next = entry->next;
 //            type = entry->event.type;
-//            if (events) {
-//                SDL_copyp(&events[used], &entry->event);
-//                if (action == SDL_GETEVENT) {
-//                    SDL_CutEvent(entry);
-//                }
+//            SDL_copyp(&events[used], &entry->event);
+//            if (action == SDL_GETEVENT) {
+//                SDL_CutEvent(entry);
 //            }
 //            if (type == SDL_EVENT_POLL_SENTINEL) {
 //                continue;
@@ -1567,3 +1573,7 @@ int SDL_NumOfEvent() {
 //
 //    return used;
 //}
+/*
+
+
+*/
