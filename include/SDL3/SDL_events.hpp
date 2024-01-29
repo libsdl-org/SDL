@@ -13,8 +13,8 @@ namespace SDLcpp {
     struct event_queue_iterator {
         using value_type = SDL_Event;
         using pointer = SDL_EventQueueElement;
-        using reference = value_type&;
-        using iterator_category = std::forward_iterator_tag;
+        using reference = std::add_lvalue_reference_t<value_type>;
+        using iterator_category = std::input_iterator_tag;
         using difference_type = std::ptrdiff_t;
 
         SDL_EventQueueElement iter;
@@ -22,7 +22,7 @@ namespace SDLcpp {
         event_queue_iterator(pointer p):
         iter(p){}
 
-        reference operator*() noexcept {
+        reference operator*() const noexcept {
             return *(SDL_GetEvent(iter));
         }
 
@@ -41,4 +41,6 @@ namespace SDLcpp {
             return iter == rval.iter;
         }
     };
+
+    static_assert(std::input_iterator<event_queue_iterator>);
 }
