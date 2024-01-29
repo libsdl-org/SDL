@@ -529,6 +529,7 @@ SDL3_0.0.0 {
     SDL_IsJoystickVirtual;
     SDL_IsMouseHaptic;
     SDL_IsTablet;
+    SDL_IterateMainCallbacks;
     SDL_JoystickConnected;
     SDL_JoystickEventsEnabled;
     SDL_LinuxSetThreadPriority;
