@@ -1421,9 +1421,10 @@ extern DECLSPEC int SDLCALL SDL_NumOfEvent();
  * 
  * \since This function is available since SDL 3.0.0.
  * \param element イベントキューの要素を指すアドレス．
+ * \param remove elementを削除するか．
  * \returns 次をイベントを指す指すポインタ．
  */
-extern DECLSPEC SDL_EventQueueElement SDLCALL SDL_ForwardElement(SDL_EventQueueElement element);
+extern DECLSPEC SDL_EventQueueElement SDLCALL SDL_ForwardElement(SDL_EventQueueElement element, SDL_bool remove);
 
 /**
  * イベントキューの要素からSDL_Eventを取り出す
