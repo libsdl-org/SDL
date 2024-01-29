@@ -47,5 +47,7 @@ namespace SDLcpp {
         }
     };
 
-    static_assert(std::input_iterator<event_queue_iterator>);
+    static_assert(std::input_iterator<event_queue_iterator<true>>);
+    static_assert(std::input_iterator<event_queue_iterator<false>>);
+
 }
