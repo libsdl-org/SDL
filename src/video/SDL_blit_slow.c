@@ -310,9 +310,13 @@ void SDL_Blit_Slow_PQtoSDR(SDL_BlitInfo *info)
     int dstfmt_val;
     Uint32 rgbmask = ~src_fmt->Amask;
     Uint32 ckey = info->colorkey & rgbmask;
-    SDL_PropertiesID props = SDL_GetSurfaceProperties(info->src_surface);
-    SDL_ColorPrimaries src_primaries = (SDL_ColorPrimaries)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_COLOR_PRIMARIES_NUMBER, SDL_COLOR_PRIMARIES_BT2020);
-    const float *color_primaries_matrix = SDL_GetColorPrimariesConversionMatrix(src_primaries, SDL_COLOR_PRIMARIES_BT709);
+    SDL_PropertiesID src_props = SDL_GetSurfaceProperties(info->src_surface);
+    SDL_Colorspace src_colorspace = (SDL_Colorspace)SDL_GetNumberProperty(src_props, SDL_PROP_SURFACE_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
+    SDL_ColorPrimaries src_primaries = SDL_COLORSPACEPRIMARIES(src_colorspace);
+    SDL_PropertiesID dst_props = SDL_GetSurfaceProperties(info->dst_surface);
+    SDL_Colorspace dst_colorspace = (SDL_Colorspace)SDL_GetNumberProperty(dst_props, SDL_PROP_SURFACE_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
+    SDL_ColorPrimaries dst_primaries = SDL_COLORSPACEPRIMARIES(dst_colorspace);
+    const float *color_primaries_matrix = SDL_GetColorPrimariesConversionMatrix(src_primaries, dst_primaries);
 
     dstfmt_val = detect_format(dst_fmt);
 

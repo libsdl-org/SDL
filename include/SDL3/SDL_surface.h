@@ -139,52 +139,6 @@ typedef int (SDLCALL *SDL_blit) (struct SDL_Surface *src, const SDL_Rect *srcrec
 
 
 /**
- * The color primaries, as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
- */
-typedef enum
-{
-    SDL_COLOR_PRIMARIES_UNKNOWN = 0,
-    SDL_COLOR_PRIMARIES_BT709 = 1,
-    SDL_COLOR_PRIMARIES_IEC61966_2_4 = 1,
-    SDL_COLOR_PRIMARIES_UNSPECIFIED = 2,
-    SDL_COLOR_PRIMARIES_BT470M = 4,
-    SDL_COLOR_PRIMARIES_BT470BG = 5,
-    SDL_COLOR_PRIMARIES_BT601 = 6,
-    SDL_COLOR_PRIMARIES_SMPTE240 = 7,
-    SDL_COLOR_PRIMARIES_GENERIC_FILM = 8,
-    SDL_COLOR_PRIMARIES_BT2020 = 9,
-    SDL_COLOR_PRIMARIES_XYZ = 10,
-    SDL_COLOR_PRIMARIES_SMPTE431 = 11,
-    SDL_COLOR_PRIMARIES_SMPTE432 = 12, /* DCI P3 */
-    SDL_COLOR_PRIMARIES_EBU3213 = 22
-} SDL_ColorPrimaries;
-
-/**
- * The transfer characteristics, as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
- */
-typedef enum
-{
-    SDL_TRANSFER_CHARACTERISTICS_UNKNOWN = 0,
-    SDL_TRANSFER_CHARACTERISTICS_BT709 = 1,
-    SDL_TRANSFER_CHARACTERISTICS_UNSPECIFIED = 2,
-    SDL_TRANSFER_CHARACTERISTICS_BT470M = 4,  /* 2.2 gamma */
-    SDL_TRANSFER_CHARACTERISTICS_BT470BG = 5, /* 2.8 gamma */
-    SDL_TRANSFER_CHARACTERISTICS_BT601 = 6,
-    SDL_TRANSFER_CHARACTERISTICS_SMPTE240 = 7,
-    SDL_TRANSFER_CHARACTERISTICS_LINEAR = 8,
-    SDL_TRANSFER_CHARACTERISTICS_LOG100 = 9,
-    SDL_TRANSFER_CHARACTERISTICS_LOG100_SQRT10 = 10,
-    SDL_TRANSFER_CHARACTERISTICS_IEC61966 = 11,
-    SDL_TRANSFER_CHARACTERISTICS_BT1361 = 12,
-    SDL_TRANSFER_CHARACTERISTICS_SRGB = 13,
-    SDL_TRANSFER_CHARACTERISTICS_BT2020_10BIT = 14,
-    SDL_TRANSFER_CHARACTERISTICS_BT2020_12BIT = 15,
-    SDL_TRANSFER_CHARACTERISTICS_SMPTE2084 = 16, /* PQ */
-    SDL_TRANSFER_CHARACTERISTICS_SMPTE428 = 17,
-    SDL_TRANSFER_CHARACTERISTICS_HLG = 18
-} SDL_TransferCharacteristics;
-
-/**
  * The formula used for converting between YUV and RGB
  */
 typedef enum
@@ -262,10 +216,7 @@ extern DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
  *
  * The following properties are understood by SDL:
  *
- * - `SDL_PROP_SURFACE_COLOR_PRIMARIES_NUMBER`: an SDL_ColorPrimaries value
- *   describing the surface colorspace
- * - `SDL_PROP_SURFACE_TRANSFER_CHARACTERISTICS_NUMBER`: an
- *   SDL_TransferCharacteristics value describing the surface colorspace
+ * - `SDL_PROP_SURFACE_COLORSPACE_NUMBER`: an SDL_ColorSpace value describing the surface colorspace
  * - `SDL_PROP_SURFACE_MAXCLL_NUMBER`: MaxCLL (Maximum Content Light Level)
  *   indicates the maximum light level of any single pixel (in cd/m2 or nits)
  *   of the entire playback sequence. MaxCLL is usually measured off the final
@@ -289,8 +240,7 @@ extern DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
  */
 extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSurfaceProperties(SDL_Surface *surface);
 
-#define SDL_PROP_SURFACE_COLOR_PRIMARIES_NUMBER             "SDL.surface.color_primaries"
-#define SDL_PROP_SURFACE_TRANSFER_CHARACTERISTICS_NUMBER    "SDL.surface.transfer_characteristics"
+#define SDL_PROP_SURFACE_COLORSPACE_NUMBER                  "SDL.surface.colorspace"
 #define SDL_PROP_SURFACE_MAXCLL_NUMBER                      "SDL.surface.maxCLL"
 #define SDL_PROP_SURFACE_MAXFALL_NUMBER                     "SDL.surface.maxFALL"
 
