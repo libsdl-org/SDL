@@ -826,11 +826,13 @@ static void PIPEWIRE_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDe
     spa_list_for_each (io, &hotplug_io_list, link) {
         SDL_AudioDevice *device = SDL_AddAudioDevice(io->is_capture, io->name, &io->spec, PW_ID_TO_HANDLE(io->id));
         if (pipewire_default_sink_id && SDL_strcmp(io->path, pipewire_default_sink_id) == 0) {
-            SDL_assert(!io->is_capture);
-            *default_output = device;
+            if (!io->is_capture) {
+                *default_output = device;
+            }
         } else if (pipewire_default_source_id && SDL_strcmp(io->path, pipewire_default_source_id) == 0) {
-            SDL_assert(io->is_capture);
-            *default_capture = device;
+            if (io->is_capture) {
+                *default_capture = device;
+            }
         }
     }
 
