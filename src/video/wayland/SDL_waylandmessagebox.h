@@ -19,10 +19,67 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#include "../SDL_genericmessagebox.h"
+
 #ifndef SDL_waylandmessagebox_h_
 #define SDL_waylandmessagebox_h_
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
+
+#include "../SDL_sysvideo.h"
+
+#include "SDL_waylandvideo.h"
+#include "wayland-cursor.h"
+#include "xdg-shell-client-protocol.h"
+#include "xdg-decoration-unstable-v1-client-protocol.h"
+
+#ifdef HAVE_LIBDONNELL_H
+typedef struct SDL_MessageBoxDataWayland
+{
+	int last_x;
+	int last_y;
+	int button;
+	
+	SDL_bool has_decoration_manager;
+	SDL_bool running;
+	SDL_bool should_close;
+	
+	struct wl_surface *cursor_surface;
+	struct wl_cursor_image *cursor_image;
+	struct wl_cursor_theme *cursor_theme;
+	struct wl_cursor *cursor;
+	struct wl_buffer *cursor_buffer;
+	struct wl_pointer *pointer;
+
+    struct wl_display *display;
+	struct wl_registry *registry;
+	struct wl_shm *shm;
+	struct wl_seat *seat;
+	struct wl_compositor *compositor;
+	struct wl_surface *surface;
+	struct xdg_surface *surface_xdg;
+	struct xdg_wm_base *wm_base;
+	struct xdg_toplevel *toplevel;
+    struct zxdg_decoration_manager_v1 *decoration_manager;	
+	struct zxdg_toplevel_decoration_v1 *server_decoration;
+
+	struct xdg_wm_base_listener wm_base_listener;
+	struct xdg_surface_listener surface_listener;
+	struct wl_registry_listener registry_listener;
+	struct wl_buffer_listener buffer_listener;
+	struct wl_pointer_listener pointer_listener;
+	
+#ifdef HAVE_LIBDECOR_H
+	struct libdecor *libdecor;
+	struct libdecor_interface libdecor_iface;
+	struct libdecor_frame* frame;
+	struct libdecor_frame_interface frame_iface;
+	enum libdecor_window_state state;
+#endif
+
+    SDL_MessageBoxDataGeneric *generic;
+} SDL_MessageBoxDataWayland;
+#endif
 
 extern int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 

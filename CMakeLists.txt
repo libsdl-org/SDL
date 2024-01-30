@@ -343,6 +343,7 @@ set_option(SDL_LIBUDEV             "Enable libudev support" ON)
 set_option(SDL_ASAN                "Use AddressSanitizer to detect memory errors" OFF)
 set_option(SDL_CCACHE              "Use Ccache to speed up build" OFF)
 set_option(SDL_CLANG_TIDY          "Run clang-tidy static analysis" OFF)
+set_option(SDL_LIBDONNELL          "Use libdonnell for rendering messageboxes on platforms that do not support them natively" ON)
 
 set(SDL_VENDOR_INFO "" CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
 
@@ -1470,6 +1471,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     CheckGLX()
     CheckOpenGL()
     CheckOpenGLES()
+    CheckLibDonnell()
     CheckWayland()
     CheckVivante()
     CheckVulkan()
@@ -2674,6 +2676,7 @@ if(SDL_VIDEO)
     set(HAVE_OFFSCREEN TRUE)
     set(HAVE_SDL_VIDEO TRUE)
   endif()
+  CheckNativeMsgBox()
 endif()
 
 # Dummies

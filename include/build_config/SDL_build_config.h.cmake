@@ -226,6 +226,8 @@
 #cmakedefine HAVE_LINUX_INPUT_H 1
 #cmakedefine HAVE_LIBUDEV_H 1
 #cmakedefine HAVE_LIBDECOR_H 1
+#cmakedefine HAVE_LIBDONNELL_H 1
+#cmakedefine HAVE_NATIVE_MESSAGEBOXES_H 1
 
 #cmakedefine HAVE_D3D_H @HAVE_D3D_H@
 #cmakedefine HAVE_D3D11_H @HAVE_D3D11_H@

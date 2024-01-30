@@ -583,6 +583,26 @@ macro(CheckWayland)
   endif()
 endmacro()
 
+macro(CheckLibDonnell)
+  if(SDL_LIBDONNELL)
+    set(HAVE_LIBDONNELL FALSE)
+	set(LibDonnell_PKG_CONFIG_SPEC donnell)
+	pkg_check_modules(PC_LIBDONNELL IMPORTED_TARGET ${LibDonnell_PKG_CONFIG_SPEC})
+
+    if(PC_LIBDONNELL_FOUND)
+        set(HAVE_LIBDONNELL TRUE)
+		set(HAVE_LIBDONNELL_H TRUE)
+        cmake_push_check_state()
+        list(APPEND CMAKE_REQUIRED_INCLUDES ${PC_LIBDONNELL_INCLUDE_DIRS})
+        list(APPEND CMAKE_REQUIRED_LIBRARIES PkgConfig::PC_LIBDONNELL)
+        cmake_pop_check_state()
+        FindLibraryAndSONAME("donnell" LIBDIRS ${PC_LIBDONNELL_LIBRARY_DIRS})
+        sdl_link_dependency(donnell LIBS PkgConfig::PC_LIBDONNELL PKG_CONFIG_PREFIX PC_LIBDONNELL PKG_CONFIG_SPECS ${LibDonnell_PKG_CONFIG_SPEC})
+    endif()
+  endif()
+endmacro()
+
+
 # Requires:
 # - n/a
 #
@@ -1221,5 +1241,12 @@ macro(CheckLibUnwind)
     if(found_libunwind)
       target_compile_definitions(SDL3_test PRIVATE HAVE_LIBUNWIND_H)
     endif()
+  endif()
+endmacro()
+
+macro(CheckNativeMsgBox)
+  set(HAVE_NATIVE_MESSAGEBOXES_H TRUE)
+  if(SDL_WAYLAND)
+    set(HAVE_NATIVE_MESSAGEBOXES_H FALSE)
   endif()
 endmacro()

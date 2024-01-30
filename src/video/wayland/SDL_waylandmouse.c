@@ -38,6 +38,7 @@
 
 #include "wayland-cursor.h"
 #include "SDL_waylandmouse.h"
+#include "SDL_waylandutil.h"
 
 #include "../../SDL_hints_c.h"
 
@@ -413,34 +414,6 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
     cdata->w = cursor->images[0]->width;
     cdata->h = cursor->images[0]->height;
     return SDL_TRUE;
-}
-
-static int wayland_create_tmp_file(off_t size)
-{
-    static const char template[] = "/sdl-shared-XXXXXX";
-    char *xdg_path;
-    char tmp_path[PATH_MAX];
-    int fd;
-
-    xdg_path = SDL_getenv("XDG_RUNTIME_DIR");
-    if (!xdg_path) {
-        return -1;
-    }
-
-    SDL_strlcpy(tmp_path, xdg_path, PATH_MAX);
-    SDL_strlcat(tmp_path, template, PATH_MAX);
-
-    fd = mkostemp(tmp_path, O_CLOEXEC);
-    if (fd < 0) {
-        return -1;
-    }
-
-    if (ftruncate(fd, size) < 0) {
-        close(fd);
-        return -1;
-    }
-
-    return fd;
 }
 
 static void mouse_buffer_release(void *data, struct wl_buffer *buffer)
