@@ -240,13 +240,22 @@ extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, co
  *   is displayed, if you want a software renderer without a window
  * - `SDL_PROP_RENDERER_CREATE_NAME_STRING`: the name of the rendering driver
  *   to use, if a specific one is desired
- * - `SDL_PROP_RENDERER_CREATE_INPUT_COLORSPACE_NUMBER`: an SDL_ColorSpace value describing the colorspace for input colors, defaults to SDL_COLORSPACE_SRGB
- * - `SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER`: an SDL_ColorSpace value describing the colorspace for output to the display, defaults to SDL_COLORSPACE_SRGB
- * - `SDL_PROP_RENDERER_CREATE_COLORSPACE_CONVERSION_BOOLEAN`: true if you want conversion between the input colorspace and the output colorspace, defaults to SDL_TRUE
+ * - `SDL_PROP_RENDERER_CREATE_INPUT_COLORSPACE_NUMBER`: an SDL_ColorSpace
+ *   value describing the colorspace for input colors, defaults to
+ *   SDL_COLORSPACE_SRGB
+ * - `SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER`: an SDL_ColorSpace
+ *   value describing the colorspace for output to the display, defaults to
+ *   SDL_COLORSPACE_SRGB
+ * - `SDL_PROP_RENDERER_CREATE_COLORSPACE_CONVERSION_BOOLEAN`: true if you
+ *   want conversion between the input colorspace and the output colorspace,
+ *   defaults to SDL_TRUE
  * - `SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN`: true if you want
  *   present synchronized with the refresh rate
  *
- * Note that enabling colorspace conversion between sRGB input and sRGB output implies that the rendering is done in a linear colorspace for more correct blending results. If colorspace conversion is disabled, then input colors are passed directly through to the output.
+ * Note that enabling colorspace conversion between sRGB input and sRGB output
+ * implies that the rendering is done in a linear colorspace for more correct
+ * blending results. If colorspace conversion is disabled, then input colors
+ * are passed directly through to the output.
  *
  * \param props the properties to use
  * \returns a valid rendering context or NULL if there was an error; call
@@ -455,7 +464,11 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *
  *
  * These are the supported properties:
  *
- * - `SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER`: an SDL_ColorSpace value describing the texture colorspace, defaults to SDL_COLORSPACE_SCRGB for floating point textures, SDL_COLORSPACE_HDR10 for 10-bit textures, SDL_COLORSPACE_SRGB for other RGB textures and SDL_COLORSPACE_BT709_FULL for YUV textures.
+ * - `SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER`: an SDL_ColorSpace value
+ *   describing the texture colorspace, defaults to SDL_COLORSPACE_SCRGB for
+ *   floating point textures, SDL_COLORSPACE_HDR10 for 10-bit textures,
+ *   SDL_COLORSPACE_SRGB for other RGB textures and SDL_COLORSPACE_BT709_FULL
+ *   for YUV textures.
  * - `SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER`: one of the enumerated values in
  *   SDL_PixelFormatEnum, defaults to the best RGBA format for the renderer
  * - `SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER`: one of the enumerated values in
@@ -560,7 +573,8 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Rendere
  *
  * The following read-only properties are provided by SDL:
  *
- * - `SDL_PROP_TEXTURE_COLORSPACE_NUMBER`: an SDL_ColorSpace value describing the colorspace used by the texture
+ * - `SDL_PROP_TEXTURE_COLORSPACE_NUMBER`: an SDL_ColorSpace value describing
+ *   the colorspace used by the texture
  *
  * With the direct3d11 renderer:
  *
@@ -1388,8 +1402,9 @@ extern DECLSPEC int SDLCALL SDL_SetRenderDrawColor(SDL_Renderer *renderer, Uint8
  * \param r the red value used to draw on the rendering target
  * \param g the green value used to draw on the rendering target
  * \param b the blue value used to draw on the rendering target
- * \param a the alpha value used to draw on the rendering target. Use SDL_SetRenderDrawBlendMode to
- *          specify how the alpha channel is used
+ * \param a the alpha value used to draw on the rendering target. Use
+ *          SDL_SetRenderDrawBlendMode to specify how the alpha channel is
+ *          used
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
