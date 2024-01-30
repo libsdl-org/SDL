@@ -63,6 +63,7 @@ typedef struct SDL_RenderViewState
 struct SDL_Texture
 {
     const void *magic;
+    SDL_Colorspace colorspace;  /**< The colorspace of the texture */
     Uint32 format;              /**< The pixel format of the texture */
     int access;                 /**< SDL_TextureAccess */
     int w;                      /**< The width of the texture */
@@ -249,6 +250,10 @@ struct SDL_Renderer
     SDL_Texture *target;
     SDL_Mutex *target_mutex;
 
+    SDL_Colorspace input_colorspace;
+    SDL_Colorspace output_colorspace;
+    SDL_bool colorspace_conversion;
+
     SDL_FColor color;        /**< Color for drawing operations values */
     SDL_BlendMode blendMode; /**< The drawing blend mode */
 
@@ -293,6 +298,13 @@ extern SDL_RenderDriver PS2_RenderDriver;
 extern SDL_RenderDriver PSP_RenderDriver;
 extern SDL_RenderDriver SW_RenderDriver;
 extern SDL_RenderDriver VITA_GXM_RenderDriver;
+
+/* Setup colorspace conversion */
+extern void SDL_SetupRendererColorspace(SDL_Renderer *renderer, SDL_PropertiesID props);
+
+/* Colorspace conversion functions */
+extern void SDL_ConvertToLinear(SDL_Renderer *renderer, SDL_FColor *color);
+extern void SDL_ConvertFromLinear(SDL_Renderer *renderer, SDL_FColor *color);
 
 /* Blend mode functions */
 extern SDL_BlendFactor SDL_GetBlendModeSrcColorFactor(SDL_BlendMode blendMode);

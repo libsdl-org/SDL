@@ -198,20 +198,28 @@ Uint32 D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
 {
     switch (dxgiFormat) {
     case DXGI_FORMAT_B8G8R8A8_UNORM:
+    case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
         return SDL_PIXELFORMAT_ARGB8888;
     case DXGI_FORMAT_B8G8R8X8_UNORM:
+    case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
         return SDL_PIXELFORMAT_XRGB8888;
     default:
         return SDL_PIXELFORMAT_UNKNOWN;
     }
 }
 
-static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 sdlFormat)
+static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 colorspace, SDL_bool colorspace_conversion)
 {
-    switch (sdlFormat) {
+    switch (format) {
     case SDL_PIXELFORMAT_ARGB8888:
+        if (colorspace_conversion && colorspace == SDL_COLORSPACE_SRGB) {
+            return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+        }
         return DXGI_FORMAT_B8G8R8A8_UNORM;
     case SDL_PIXELFORMAT_XRGB8888:
+        if (colorspace_conversion && colorspace == SDL_COLORSPACE_SRGB) {
+            return DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
+        }
         return DXGI_FORMAT_B8G8R8X8_UNORM;
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
@@ -224,12 +232,18 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 sdlFormat)
     }
 }
 
-static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(Uint32 sdlFormat)
+static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(Uint32 format, Uint32 colorspace, SDL_bool colorspace_conversion)
 {
-    switch (sdlFormat) {
+    switch (format) {
     case SDL_PIXELFORMAT_ARGB8888:
+        if (colorspace_conversion && colorspace == SDL_COLORSPACE_SRGB) {
+            return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+        }
         return DXGI_FORMAT_B8G8R8A8_UNORM;
     case SDL_PIXELFORMAT_XRGB8888:
+        if (colorspace_conversion && colorspace == SDL_COLORSPACE_SRGB) {
+            return DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
+        }
         return DXGI_FORMAT_B8G8R8X8_UNORM;
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
@@ -988,9 +1002,17 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
     }
 
     /* Create a render target view of the swap chain back buffer. */
+    D3D11_RENDER_TARGET_VIEW_DESC desc;
+    SDL_zero(desc);
+    if (renderer->colorspace_conversion && renderer->output_colorspace == SDL_COLORSPACE_SRGB) {
+        desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+    } else {
+        desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    }
+    desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
     result = ID3D11Device_CreateRenderTargetView(data->d3dDevice,
                                                  (ID3D11Resource *)backBuffer,
-                                                 NULL,
+                                                 &desc,
                                                  &data->mainRenderTargetView);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device::CreateRenderTargetView"), result);
@@ -1083,7 +1105,7 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->driverdata;
     D3D11_TextureData *textureData;
     HRESULT result;
-    DXGI_FORMAT textureFormat = SDLPixelFormatToDXGITextureFormat(texture->format);
+    DXGI_FORMAT textureFormat = SDLPixelFormatToDXGITextureFormat(texture->format, texture->colorspace, renderer->colorspace_conversion);
     D3D11_TEXTURE2D_DESC textureDesc;
     D3D11_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
 
@@ -1182,7 +1204,7 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
     }
 #endif /* SDL_HAVE_YUV */
     SDL_zero(resourceViewDesc);
-    resourceViewDesc.Format = SDLPixelFormatToDXGIMainResourceViewFormat(texture->format);
+    resourceViewDesc.Format = SDLPixelFormatToDXGIMainResourceViewFormat(texture->format, texture->colorspace, renderer->colorspace_conversion);
     resourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
     resourceViewDesc.Texture2D.MostDetailedMip = 0;
     resourceViewDesc.Texture2D.MipLevels = textureDesc.MipLevels;
@@ -2440,6 +2462,8 @@ SDL_Renderer *D3D11_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_p
         SDL_free(renderer);
         return NULL;
     }
+
+    SDL_SetupRendererColorspace(renderer, create_props);
 
     data->identity = MatrixIdentity();
 

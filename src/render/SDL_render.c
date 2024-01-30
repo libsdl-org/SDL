@@ -125,6 +125,66 @@ static const SDL_RenderDriver *render_drivers[] = {
 char SDL_renderer_magic;
 char SDL_texture_magic;
 
+
+void SDL_SetupRendererColorspace(SDL_Renderer *renderer, SDL_PropertiesID props)
+{
+    renderer->input_colorspace = (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_INPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
+    renderer->output_colorspace = (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
+    renderer->colorspace_conversion = SDL_GetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_COLORSPACE_CONVERSION_BOOLEAN, SDL_TRUE);
+}
+
+static float sRGBtoLinear(float v)
+{
+    return v <= 0.04045f ? (v / 12.92f) : SDL_powf(((v + 0.055f) / 1.055f), 2.4f);
+}
+
+static float sRGBfromLinear(float v)
+{
+    return v <= 0.0031308f ? (v * 12.92f) : (SDL_powf(v, 1.0f / 2.4f) * 1.055f - 0.055f);
+}
+
+void SDL_ConvertToLinear(SDL_Renderer *renderer, SDL_FColor *color)
+{
+    if (!renderer->colorspace_conversion) {
+        return;
+    }
+
+    switch (SDL_COLORSPACETRANSFER(renderer->input_colorspace)) {
+    case SDL_TRANSFER_CHARACTERISTICS_SRGB:
+        color->r = sRGBtoLinear(color->r);
+        color->g = sRGBtoLinear(color->g);
+        color->b = sRGBtoLinear(color->b);
+        break;
+    case SDL_TRANSFER_CHARACTERISTICS_LINEAR:
+        /* No conversion needed */
+        break;
+    default:
+        /* Unsupported */
+        break;
+    }
+}
+
+void SDL_ConvertFromLinear(SDL_Renderer *renderer, SDL_FColor *color)
+{
+    if (!renderer->colorspace_conversion) {
+        return;
+    }
+
+    switch (SDL_COLORSPACETRANSFER(renderer->input_colorspace)) {
+    case SDL_TRANSFER_CHARACTERISTICS_SRGB:
+        color->r = sRGBfromLinear(color->r);
+        color->g = sRGBfromLinear(color->g);
+        color->b = sRGBfromLinear(color->b);
+        break;
+    case SDL_TRANSFER_CHARACTERISTICS_LINEAR:
+        /* No conversion needed */
+        break;
+    default:
+        /* Unsupported */
+        break;
+    }
+}
+
 static SDL_INLINE void DebugLogRenderCommands(const SDL_RenderCommand *cmd)
 {
 #if 0
@@ -1115,6 +1175,19 @@ static SDL_ScaleMode SDL_GetScaleMode(void)
     }
 }
 
+static SDL_Colorspace SDL_GetDefaultTextureColorspace(Uint32 format)
+{
+    if (SDL_ISPIXELFORMAT_FOURCC(format)) {
+        return SDL_COLORSPACE_BT709_FULL;
+    } else if (SDL_ISPIXELFORMAT_FLOAT(format)) {
+        return SDL_COLORSPACE_SCRGB;
+    } else if (SDL_ISPIXELFORMAT_10BIT(format)) {
+        return SDL_COLORSPACE_HDR10;
+    } else {
+        return SDL_COLORSPACE_SRGB;
+    }
+}
+
 SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_PropertiesID props)
 {
     SDL_Texture *texture;
@@ -1122,6 +1195,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     int access = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STATIC);
     int w = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, 0);
     int h = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, 0);
+    Uint32 default_colorspace;
     SDL_bool texture_is_fourcc_and_target;
 
     CHECK_RENDERER_MAGIC(renderer, NULL);
@@ -1148,11 +1222,15 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
         SDL_SetError("Texture dimensions are limited to %dx%d", renderer->info.max_texture_width, renderer->info.max_texture_height);
         return NULL;
     }
+
+    default_colorspace = SDL_GetDefaultTextureColorspace(format);
+
     texture = (SDL_Texture *)SDL_calloc(1, sizeof(*texture));
     if (!texture) {
         return NULL;
     }
     texture->magic = &SDL_texture_magic;
+    texture->colorspace = (Uint32)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, default_colorspace);
     texture->format = format;
     texture->access = access;
     texture->w = w;
@@ -1176,9 +1254,9 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     renderer->textures = texture;
 
     /* FOURCC format cannot be used directly by renderer back-ends for target texture */
-    texture_is_fourcc_and_target = (access == SDL_TEXTUREACCESS_TARGET && SDL_ISPIXELFORMAT_FOURCC(texture->format));
+    texture_is_fourcc_and_target = (access == SDL_TEXTUREACCESS_TARGET && SDL_ISPIXELFORMAT_FOURCC(format));
 
-    if (texture_is_fourcc_and_target == SDL_FALSE && IsSupportedFormat(renderer, format)) {
+    if (!texture_is_fourcc_and_target && IsSupportedFormat(renderer, format)) {
         if (renderer->CreateTexture(renderer, texture, props) < 0) {
             SDL_DestroyTexture(texture);
             return NULL;
@@ -1186,7 +1264,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     } else {
         int closest_format;
 
-        if (texture_is_fourcc_and_target == SDL_FALSE) {
+        if (!texture_is_fourcc_and_target) {
             closest_format = GetClosestSupportedFormat(renderer, format);
         } else {
             closest_format = renderer->info.texture_formats[0];
@@ -1255,6 +1333,8 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     int i;
     Uint32 format = SDL_PIXELFORMAT_UNKNOWN;
     SDL_Texture *texture;
+    SDL_PropertiesID props;
+    Uint32 default_colorspace, colorspace;
 
     CHECK_RENDERER_MAGIC(renderer, NULL);
 
@@ -1320,8 +1400,16 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
         }
     }
 
-    texture = SDL_CreateTexture(renderer, format, SDL_TEXTUREACCESS_STATIC,
-                                surface->w, surface->h);
+    default_colorspace = SDL_GetDefaultTextureColorspace(format);
+    colorspace = (Uint32)SDL_GetNumberProperty(SDL_GetSurfaceProperties(surface), SDL_PROP_SURFACE_COLORSPACE_NUMBER, default_colorspace);
+
+    props = SDL_CreateProperties();
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, colorspace);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, format);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STATIC);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, surface->w);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, surface->h);
+    texture = SDL_CreateTextureWithProperties(renderer, props);
     if (!texture) {
         return NULL;
     }
@@ -1441,6 +1529,7 @@ int SDL_SetTextureColorModFloat(SDL_Texture *texture, float r, float g, float b)
     texture->color.r = r;
     texture->color.g = g;
     texture->color.b = b;
+    SDL_ConvertToLinear(texture->renderer, &texture->color);
     if (texture->native) {
         return SDL_SetTextureColorModFloat(texture->native, r, g, b);
     }
@@ -1469,16 +1558,21 @@ int SDL_GetTextureColorMod(SDL_Texture *texture, Uint8 *r, Uint8 *g, Uint8 *b)
 
 int SDL_GetTextureColorModFloat(SDL_Texture *texture, float *r, float *g, float *b)
 {
+    SDL_FColor color;
+
     CHECK_TEXTURE_MAGIC(texture, -1);
 
+    color = texture->color;
+    SDL_ConvertFromLinear(texture->renderer, &color);
+
     if (r) {
-        *r = texture->color.r;
+        *r = color.r;
     }
     if (g) {
-        *g = texture->color.g;
+        *g = color.g;
     }
     if (b) {
-        *b = texture->color.b;
+        *b = color.b;
     }
     return 0;
 }
@@ -2689,6 +2783,7 @@ int SDL_SetRenderDrawColorFloat(SDL_Renderer *renderer, float r, float g, float 
     renderer->color.g = g;
     renderer->color.b = b;
     renderer->color.a = a;
+    SDL_ConvertToLinear(renderer, &renderer->color);
     return 0;
 }
 
@@ -2717,19 +2812,24 @@ int SDL_GetRenderDrawColor(SDL_Renderer *renderer, Uint8 *r, Uint8 *g, Uint8 *b,
 
 int SDL_GetRenderDrawColorFloat(SDL_Renderer *renderer, float *r, float *g, float *b, float *a)
 {
+    SDL_FColor color;
+
     CHECK_RENDERER_MAGIC(renderer, -1);
 
+    color = renderer->color;
+    SDL_ConvertFromLinear(renderer, &color);
+
     if (r) {
-        *r = renderer->color.r;
+        *r = color.r;
     }
     if (g) {
-        *g = renderer->color.g;
+        *g = color.g;
     }
     if (b) {
-        *b = renderer->color.b;
+        *b = color.b;
     }
     if (a) {
-        *a = renderer->color.a;
+        *a = color.a;
     }
     return 0;
 }

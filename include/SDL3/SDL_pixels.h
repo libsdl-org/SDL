@@ -196,8 +196,14 @@ typedef enum
       (SDL_PIXELORDER(format) == SDL_PACKEDORDER_BGRA))))
 
 #define SDL_ISPIXELFORMAT_10BIT(format)    \
-      ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_PACKED32) && \
-       (SDL_PIXELLAYOUT(format) == SDL_PACKEDLAYOUT_2101010))
+      (!SDL_ISPIXELFORMAT_FOURCC(format) && \
+       ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_PACKED32) && \
+        (SDL_PIXELLAYOUT(format) == SDL_PACKEDLAYOUT_2101010)))
+
+#define SDL_ISPIXELFORMAT_FLOAT(format)    \
+      (!SDL_ISPIXELFORMAT_FOURCC(format) && \
+       ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYF16) || \
+        (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYF32)))
 
 /* The flag is set to 1 because 0x1? is not in the printable ASCII range */
 #define SDL_ISPIXELFORMAT_FOURCC(format)    \
