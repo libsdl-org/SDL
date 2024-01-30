@@ -588,7 +588,7 @@ typedef enum
                               SDL_CHROMA_LOCATION_LEFT),
     SDL_COLORSPACE_BT601_FULL =     /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601 */
         SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
-                              SDL_COLOR_RANGE_LIMITED,
+                              SDL_COLOR_RANGE_FULL,
                               SDL_COLOR_PRIMARIES_BT601,
                               SDL_TRANSFER_CHARACTERISTICS_BT601,
                               SDL_MATRIX_COEFFICIENTS_BT601,
@@ -602,7 +602,7 @@ typedef enum
                               SDL_CHROMA_LOCATION_LEFT),
     SDL_COLORSPACE_BT709_FULL =     /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709 */
         SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
-                              SDL_COLOR_RANGE_LIMITED,
+                              SDL_COLOR_RANGE_FULL,
                               SDL_COLOR_PRIMARIES_BT709,
                               SDL_TRANSFER_CHARACTERISTICS_BT709,
                               SDL_MATRIX_COEFFICIENTS_BT709,
