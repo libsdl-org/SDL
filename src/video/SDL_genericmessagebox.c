@@ -22,7 +22,7 @@
 #include "SDL_internal.h"
 #include "SDL_genericmessagebox.h"
 
-#ifndef HAVE_NATIVE_MESSAGEBOXES_H
+#ifndef HAVE_NATIVE_MESSAGEBOXES
 #ifdef HAVE_LIBDONNELL_H
 
 #include <donnell.h>
