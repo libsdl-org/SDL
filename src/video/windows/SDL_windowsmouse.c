@@ -282,6 +282,8 @@ static void WIN_WarpMouse(SDL_Window *window, int x, int y)
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     HWND hwnd = data->hwnd;
     POINT pt;
+    int warp_x = x;
+    int warp_y = y;
 
     /* Don't warp the mouse while we're doing a modal interaction */
     if (data->in_title_click || data->focus_click_pending) {
@@ -295,7 +297,7 @@ static void WIN_WarpMouse(SDL_Window *window, int x, int y)
     WIN_SetCursorPos(pt.x, pt.y);
 
     /* Send the exact mouse motion associated with this warp */
-    SDL_SendMouseMotion(window, SDL_GetMouse()->mouseID, 0, x, y);
+    SDL_SendMouseMotion(window, SDL_GetMouse()->mouseID, 0, warp_x, warp_y);
 }
 
 static int WIN_WarpMouseGlobal(int x, int y)
