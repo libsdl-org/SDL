@@ -499,6 +499,7 @@
 		F3FA5A242B59ACE000FEAD97 /* yuv_rgb_lsx.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FA5A1B2B59ACE000FEAD97 /* yuv_rgb_lsx.h */; };
 		F3FA5A252B59ACE000FEAD97 /* yuv_rgb_common.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FA5A1C2B59ACE000FEAD97 /* yuv_rgb_common.h */; };
 		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; platformFilters = (ios, maccatalyst, macos, tvos, watchos, ); };
+		00009F560664255CCB6C0000 /* SDL_camera_mediafoundation.c in Sources */ = {isa = PBXBuildFile; fileRef = 0000C61C247BAAAF757D0000 /* SDL_camera_mediafoundation.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1027,6 +1028,7 @@
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
 		F5A2EF3900C6A39A01000001 /* BUGS.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = BUGS.txt; path = ../../BUGS.txt; sourceTree = SOURCE_ROOT; };
 		FA73671C19A540EF004122E4 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		0000C61C247BAAAF757D0000 /* SDL_camera_mediafoundation.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_camera_mediafoundation.c; path = SDL_camera_mediafoundation.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1068,6 +1070,7 @@
 				0000035D38C3899C7EFD0000 /* SDL_camera.c */,
 				00009003C7148E1126CA0000 /* SDL_camera_c.h */,
 				00005D3EB902478835E20000 /* SDL_syscamera.h */,
+				0000926F2501CA0BDD650000 /* mediafoundation */,
 			);
 			path = camera;
 			sourceTree = "<group>";
@@ -2175,6 +2178,14 @@
 			path = resources;
 			sourceTree = "<group>";
 		};
+		0000926F2501CA0BDD650000 /* mediafoundation */ = {
+			isa = PBXGroup;
+			children = (
+				0000C61C247BAAAF757D0000 /* SDL_camera_mediafoundation.c */,
+			);
+			path = mediafoundation;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -2754,6 +2765,7 @@
 				000098E9DAA43EF6FF7F0000 /* SDL_camera.c in Sources */,
 				00001B2471F503DD3C1B0000 /* SDL_camera_dummy.c in Sources */,
 				00002B20A48E055EB0350000 /* SDL_camera_coremedia.m in Sources */,
+				00009F560664255CCB6C0000 /* SDL_camera_mediafoundation.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

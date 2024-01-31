@@ -79,8 +79,6 @@ static int EMSCRIPTENCAMERA_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *
 static void EMSCRIPTENCAMERA_ReleaseFrame(SDL_CameraDevice *device, SDL_Surface *frame)
 {
     SDL_free(frame->pixels);
-    frame->pixels = NULL;
-    frame->pitch = 0;
 }
 
 static void EMSCRIPTENCAMERA_CloseDevice(SDL_CameraDevice *device)

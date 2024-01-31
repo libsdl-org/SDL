@@ -631,39 +631,7 @@ static SDL_bool FindV4L2CameraDeviceByBusInfoCallback(SDL_CameraDevice *device, 
     return (SDL_strcmp(handle->bus_info, (const char *) userdata) == 0);
 }
 
-typedef struct FormatAddData
-{
-    SDL_CameraSpec *specs;
-    int num_specs;
-    int allocated_specs;
-} FormatAddData;
-
-static int AddCameraCompleteFormat(FormatAddData *data, Uint32 fmt, int w, int h, int interval_numerator, int interval_denominator)
-{
-    SDL_assert(data != NULL);
-    if (data->allocated_specs <= data->num_specs) {
-        const int newalloc = data->allocated_specs ? (data->allocated_specs * 2) : 16;
-        void *ptr = SDL_realloc(data->specs, sizeof (SDL_CameraSpec) * newalloc);
-        if (!ptr) {
-            return -1;
-        }
-        data->specs = (SDL_CameraSpec *) ptr;
-        data->allocated_specs = newalloc;
-    }
-
-    SDL_CameraSpec *spec = &data->specs[data->num_specs];
-    spec->format = fmt;
-    spec->width = w;
-    spec->height = h;
-    spec->interval_numerator = interval_numerator;
-    spec->interval_denominator = interval_denominator;
-
-    data->num_specs++;
-
-    return 0;
-}
-
-static int AddCameraFormat(const int fd, FormatAddData *data, Uint32 sdlfmt, Uint32 v4l2fmt, int w, int h)
+static int AddCameraFormat(const int fd, CameraFormatAddData *data, Uint32 sdlfmt, Uint32 v4l2fmt, int w, int h)
 {
     struct v4l2_frmivalenum frmivalenum;
     SDL_zero(frmivalenum);
@@ -679,7 +647,7 @@ static int AddCameraFormat(const int fd, FormatAddData *data, Uint32 sdlfmt, Uin
             const float fps = (float) denominator / (float) numerator;
             SDL_Log("CAMERA:       * Has discrete frame interval (%d / %d), fps=%f", numerator, denominator, fps);
             #endif
-            if (AddCameraCompleteFormat(data, sdlfmt, w, h, numerator, denominator) == -1) {
+            if (SDL_AddCameraFormat(data, sdlfmt, w, h, numerator, denominator) == -1) {
                 return -1;  // Probably out of memory; we'll go with what we have, if anything.
             }
             frmivalenum.index++;  // set up for the next one.
@@ -691,7 +659,7 @@ static int AddCameraFormat(const int fd, FormatAddData *data, Uint32 sdlfmt, Uin
                 const float fps = (float) d / (float) n;
                 SDL_Log("CAMERA:       * Has %s frame interval (%d / %d), fps=%f", (frmivalenum.type == V4L2_FRMIVAL_TYPE_STEPWISE) ? "stepwise" : "continuous", n, d, fps);
                 #endif
-                if (AddCameraCompleteFormat(data, sdlfmt, w, h, n, d) == -1) {
+                if (SDL_AddCameraFormat(data, sdlfmt, w, h, n, d) == -1) {
                     return -1;  // Probably out of memory; we'll go with what we have, if anything.
                 }
                 d += (int) frmivalenum.stepwise.step.denominator;
@@ -739,7 +707,7 @@ static void MaybeAddDevice(const char *path)
     SDL_Log("CAMERA: V4L2 camera path='%s' bus_info='%s' name='%s'", path, (const char *) vcap.bus_info, vcap.card);
     #endif
 
-    FormatAddData add_data;
+    CameraFormatAddData add_data;
     SDL_zero(add_data);
 
     struct v4l2_fmtdesc fmtdesc;
@@ -911,5 +879,5 @@ CameraBootStrap V4L2_bootstrap = {
     "v4l2", "SDL Video4Linux2 camera driver", V4L2_Init, SDL_FALSE
 };
 
-#endif // SDL_CAMERA_V4L2
+#endif // SDL_CAMERA_DRIVER_V4L2
 

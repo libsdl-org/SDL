@@ -184,6 +184,9 @@
     <Filter Include="camera\dummy">
       <UniqueIdentifier>{0000fc2700d453b3c8d79fe81e1c0000}</UniqueIdentifier>
     </Filter>
+    <Filter Include="camera\mediafoundation">
+      <UniqueIdentifier>{0000fbfe2d21e4f451142e7d0e870000}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h">
@@ -855,6 +858,9 @@
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
     <ClCompile Include="..\..\src\camera\dummy\SDL_camera_dummy.c">
       <Filter>camera\dummy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\camera\mediafoundation\SDL_camera_mediafoundation.c">
+      <Filter>camera\mediafoundation</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\camera\SDL_camera.c">
       <Filter>camera</Filter>

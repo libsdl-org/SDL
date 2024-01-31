@@ -58,6 +58,16 @@ extern void SDL_CameraThreadSetup(SDL_CameraDevice *device);
 extern SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device);
 extern void SDL_CameraThreadShutdown(SDL_CameraDevice *device);
 
+// common utility functionality to gather up camera specs. Not required!
+typedef struct CameraFormatAddData
+{
+    SDL_CameraSpec *specs;
+    int num_specs;
+    int allocated_specs;
+} CameraFormatAddData;
+
+int SDL_AddCameraFormat(CameraFormatAddData *data, Uint32 fmt, int w, int h, int interval_numerator, int interval_denominator);
+
 typedef struct SurfaceList
 {
     SDL_Surface *surface;
@@ -189,5 +199,6 @@ extern CameraBootStrap V4L2_bootstrap;
 extern CameraBootStrap COREMEDIA_bootstrap;
 extern CameraBootStrap ANDROIDCAMERA_bootstrap;
 extern CameraBootStrap EMSCRIPTENCAMERA_bootstrap;
+extern CameraBootStrap MEDIAFOUNDATION_bootstrap;
 
 #endif // SDL_syscamera_h_
