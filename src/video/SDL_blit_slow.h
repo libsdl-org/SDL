@@ -25,6 +25,6 @@
 #include "SDL_internal.h"
 
 extern void SDL_Blit_Slow(SDL_BlitInfo *info);
-extern void SDL_Blit_Slow_PQtoSDR(SDL_BlitInfo *info);
+extern void SDL_Blit_Slow_Float(SDL_BlitInfo *info);
 
 #endif /* SDL_blit_slow_h_ */
