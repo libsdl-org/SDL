@@ -393,7 +393,7 @@ void SDL_CameraDeviceDisconnected(SDL_CameraDevice *device)
 
     ObtainPhysicalCameraDeviceObj(device);
 
-    const SDL_bool first_disconnect = SDL_AtomicCAS(&device->zombie, 0, 1);
+    const SDL_bool first_disconnect = SDL_AtomicCompareAndSwap(&device->zombie, 0, 1);
     if (first_disconnect) {   // if already disconnected this device, don't do it twice.
         // Swap in "Zombie" versions of the usual platform interfaces, so the device will keep
         // making progress until the app closes it.
@@ -706,7 +706,7 @@ SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device)
             SDL_Surface *srcsurf = acquired;
             if (device->needs_scaling == -1) {  // downscaling? Do it first.  -1: downscale, 0: no scaling, 1: upscale
                 SDL_Surface *dstsurf = device->needs_conversion ? device->conversion_surface : output_surface;
-                SDL_SoftStretch(srcsurf, NULL, dstsurf, NULL);  // !!! FIXME: linear scale? letterboxing?
+                SDL_SoftStretch(srcsurf, NULL, dstsurf, NULL, SDL_SCALEMODE_NEAREST);  // !!! FIXME: linear scale? letterboxing?
                 srcsurf = dstsurf;
             }
             if (device->needs_conversion) {
@@ -717,7 +717,7 @@ SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device)
                 srcsurf = dstsurf;
             }
             if (device->needs_scaling == 1) {  // upscaling? Do it last.  -1: downscale, 0: no scaling, 1: upscale
-                SDL_SoftStretch(srcsurf, NULL, output_surface, NULL);  // !!! FIXME: linear scale? letterboxing?
+                SDL_SoftStretch(srcsurf, NULL, output_surface, NULL, SDL_SCALEMODE_NEAREST);  // !!! FIXME: linear scale? letterboxing?
             }
 
             // we made a copy, so we can give the driver back its resources.
