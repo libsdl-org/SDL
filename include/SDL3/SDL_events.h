@@ -39,6 +39,7 @@
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_video.h>
+#include <SDL3/SDL_camera.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
