@@ -3374,7 +3374,8 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
             if (dstfmt->Amask) {
                 a_need = srcfmt->Amask ? COPY_ALPHA : SET_ALPHA;
             }
-            if (srcfmt->BytesPerPixel <= SDL_arraysize(normal_blit)) {
+            if (srcfmt->BytesPerPixel > 0 &&
+                srcfmt->BytesPerPixel <= SDL_arraysize(normal_blit)) {
                 table = normal_blit[srcfmt->BytesPerPixel - 1];
                 for (which = 0; table[which].dstbpp; ++which) {
                     if (MASKOK(srcfmt->Rmask, table[which].srcR) &&
