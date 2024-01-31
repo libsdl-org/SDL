@@ -4030,6 +4030,8 @@ int SDL_RenderGeometryRaw(SDL_Renderer *renderer,
     int i;
     int retval = 0;
     int count = indices ? num_indices : num_vertices;
+    SDL_bool isstack = SDL_FALSE;
+    SDL_FColor *updated_colors = NULL;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -4122,12 +4124,34 @@ int SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                         indices, num_indices, size_indices);
     }
 
+    /* Transform the colors if necessary */
+    if (renderer->colorspace_conversion &&
+        SDL_COLORSPACETRANSFER(renderer->input_colorspace) == SDL_TRANSFER_CHARACTERISTICS_SRGB) {
+        int num_colors = (color_stride > 0) ? num_vertices : 1;
+        updated_colors = SDL_small_alloc(SDL_FColor, num_colors, &isstack);
+        if (!updated_colors) {
+            return -1;
+        }
+        for (i = 0; i < num_colors; ++i) {
+            updated_colors[i] = *(const SDL_FColor *)(((const Uint8 *)color) + i * color_stride);
+            SDL_ConvertToLinear(renderer, &updated_colors[i]);
+        }
+        color = updated_colors;
+        if (color_stride > 0) {
+            color_stride = sizeof(SDL_FColor);
+        }
+    }
+
     retval = QueueCmdGeometry(renderer, texture,
                               xy, xy_stride, color, color_stride, uv, uv_stride,
                               num_vertices,
                               indices, num_indices, size_indices,
                               renderer->view->scale.x,
                               renderer->view->scale.y);
+
+    if (updated_colors) {
+        SDL_small_free(updated_colors, isstack);
+    }
 
     return retval;
 }
