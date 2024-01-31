@@ -3374,22 +3374,24 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
             if (dstfmt->Amask) {
                 a_need = srcfmt->Amask ? COPY_ALPHA : SET_ALPHA;
             }
-            table = normal_blit[srcfmt->BytesPerPixel - 1];
-            for (which = 0; table[which].dstbpp; ++which) {
-                if (MASKOK(srcfmt->Rmask, table[which].srcR) &&
-                    MASKOK(srcfmt->Gmask, table[which].srcG) &&
-                    MASKOK(srcfmt->Bmask, table[which].srcB) &&
-                    MASKOK(dstfmt->Rmask, table[which].dstR) &&
-                    MASKOK(dstfmt->Gmask, table[which].dstG) &&
-                    MASKOK(dstfmt->Bmask, table[which].dstB) &&
-                    dstfmt->BytesPerPixel == table[which].dstbpp &&
-                    (a_need & table[which].alpha) == a_need &&
-                    ((table[which].blit_features & GetBlitFeatures()) ==
-                     table[which].blit_features)) {
-                    break;
+            if (srcfmt->BytesPerPixel <= SDL_arraysize(normal_blit)) {
+                table = normal_blit[srcfmt->BytesPerPixel - 1];
+                for (which = 0; table[which].dstbpp; ++which) {
+                    if (MASKOK(srcfmt->Rmask, table[which].srcR) &&
+                        MASKOK(srcfmt->Gmask, table[which].srcG) &&
+                        MASKOK(srcfmt->Bmask, table[which].srcB) &&
+                        MASKOK(dstfmt->Rmask, table[which].dstR) &&
+                        MASKOK(dstfmt->Gmask, table[which].dstG) &&
+                        MASKOK(dstfmt->Bmask, table[which].dstB) &&
+                        dstfmt->BytesPerPixel == table[which].dstbpp &&
+                        (a_need & table[which].alpha) == a_need &&
+                        ((table[which].blit_features & GetBlitFeatures()) ==
+                         table[which].blit_features)) {
+                        break;
+                    }
                 }
+                blitfun = table[which].blitfunc;
             }
-            blitfun = table[which].blitfunc;
 
             if (blitfun == BlitNtoN) { /* default C fallback catch-all. Slow! */
                 if (srcfmt->format == SDL_PIXELFORMAT_ARGB2101010) {

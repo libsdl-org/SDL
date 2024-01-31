@@ -326,58 +326,58 @@ typedef enum
                                SDL_PACKEDLAYOUT_2101010, 32, 4),
     SDL_PIXELFORMAT_RGB48 =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_RGB, 0,
-                               48, 3),
+                               48, 6),
     SDL_PIXELFORMAT_BGR48 =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_BGR, 0,
-                               48, 3),
+                               48, 6),
     SDL_PIXELFORMAT_RGBA64 =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_RGBA, 0,
-                               64, 4),
+                               64, 8),
     SDL_PIXELFORMAT_ARGB64 =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_ARGB, 0,
-                               64, 4),
+                               64, 8),
     SDL_PIXELFORMAT_BGRA64 =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_BGRA, 0,
-                               64, 4),
+                               64, 8),
     SDL_PIXELFORMAT_ABGR64 =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_ABGR, 0,
-                               64, 4),
+                               64, 8),
     SDL_PIXELFORMAT_RGB48_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_RGB, 0,
-                               48, 3),
+                               48, 6),
     SDL_PIXELFORMAT_BGR48_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_BGR, 0,
-                               48, 3),
+                               48, 6),
     SDL_PIXELFORMAT_RGBA64_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_RGBA, 0,
-                               64, 4),
+                               64, 8),
     SDL_PIXELFORMAT_ARGB64_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_ARGB, 0,
-                               64, 4),
+                               64, 8),
     SDL_PIXELFORMAT_BGRA64_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_BGRA, 0,
-                               64, 4),
+                               64, 8),
     SDL_PIXELFORMAT_ABGR64_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_ABGR, 0,
-                               64, 4),
+                               64, 8),
     SDL_PIXELFORMAT_RGB96_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_RGB, 0,
-                               96, 3),
+                               96, 12),
     SDL_PIXELFORMAT_BGR96_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_BGR, 0,
-                               96, 3),
+                               96, 12),
     SDL_PIXELFORMAT_RGBA128_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_RGBA, 0,
-                               128, 4),
+                               128, 16),
     SDL_PIXELFORMAT_ARGB128_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_ARGB, 0,
-                               128, 4),
+                               128, 16),
     SDL_PIXELFORMAT_BGRA128_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_BGRA, 0,
-                               128, 4),
+                               128, 16),
     SDL_PIXELFORMAT_ABGR128_FLOAT =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_ABGR, 0,
-                               128, 4),
+                               128, 16),
 
     /* Aliases for RGBA byte arrays of color data, for the current platform */
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN

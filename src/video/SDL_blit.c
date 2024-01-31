@@ -183,18 +183,13 @@ static SDL_BlitFunc SDL_ChooseBlitFunc(Uint32 src_format, Uint32 dst_format, int
 }
 #endif /* SDL_HAVE_BLIT_AUTO */
 
-static SDL_bool IsSurfaceHDR(SDL_Surface *surface)
+static SDL_Colorspace GetSurfaceColorspace(SDL_Surface *surface)
 {
     if (surface->flags & SDL_SURFACE_USES_PROPERTIES) {
         SDL_PropertiesID props = SDL_GetSurfaceProperties(surface);
-        SDL_Colorspace colorspace = SDL_GetNumberProperty(props, SDL_PROP_SURFACE_COLORSPACE_NUMBER, SDL_COLORSPACE_RGB_DEFAULT);
-        SDL_TransferCharacteristics transfer = SDL_COLORSPACETRANSFER(colorspace);
-        if (transfer == SDL_TRANSFER_CHARACTERISTICS_PQ
-            /*|| (colorspace == SDL_COLORSPACE_SCRGB && SDL_BITSPERPIXEL(surface->format->format) > 32*/) {
-            return SDL_TRUE;
-        }
+        return (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_COLORSPACE_NUMBER, SDL_COLORSPACE_RGB_DEFAULT);
     }
-    return SDL_FALSE;
+    return SDL_COLORSPACE_RGB_DEFAULT;
 }
 
 /* Figure out which of many blit routines to set up on a surface */
@@ -203,8 +198,8 @@ int SDL_CalculateBlit(SDL_Surface *surface)
     SDL_BlitFunc blit = NULL;
     SDL_BlitMap *map = surface->map;
     SDL_Surface *dst = map->dst;
-    SDL_bool src_HDR = IsSurfaceHDR(surface);
-    SDL_bool dst_HDR = IsSurfaceHDR(dst);
+    SDL_Colorspace src_colorspace = GetSurfaceColorspace(surface);
+    SDL_Colorspace dst_colorspace = GetSurfaceColorspace(dst);
 
     /* We don't currently support blitting to < 8 bpp surfaces */
     if (dst->format->BitsPerPixel < 8) {
@@ -237,45 +232,11 @@ int SDL_CalculateBlit(SDL_Surface *surface)
 #endif
 
     /* Choose a standard blit function */
-    if (src_HDR || dst_HDR) {
-        if (src_HDR && dst_HDR) {
-            /* See if they're in the same colorspace and light level */
-            SDL_PropertiesID src_props = SDL_GetSurfaceProperties(surface);
-            SDL_PropertiesID dst_props = SDL_GetSurfaceProperties(dst);
-            if ((SDL_GetNumberProperty(src_props, SDL_PROP_SURFACE_COLORSPACE_NUMBER, SDL_COLORSPACE_RGB_DEFAULT) !=
-                 SDL_GetNumberProperty(dst_props, SDL_PROP_SURFACE_COLORSPACE_NUMBER, SDL_COLORSPACE_RGB_DEFAULT)) ||
-                (SDL_GetNumberProperty(src_props, SDL_PROP_SURFACE_MAXCLL_NUMBER, 0) !=
-                 SDL_GetNumberProperty(dst_props, SDL_PROP_SURFACE_MAXCLL_NUMBER, 0)) ||
-                (SDL_GetNumberProperty(src_props, SDL_PROP_SURFACE_MAXFALL_NUMBER, 0) !=
-                 SDL_GetNumberProperty(dst_props, SDL_PROP_SURFACE_MAXFALL_NUMBER, 0))) {
-                SDL_InvalidateMap(map);
-                return SDL_SetError("Tone mapping between HDR surfaces not supported");
-            }
-
-            /* Fall through to the normal blit calculation (is this correct?) */
-
-        } else if (dst_HDR) {
-            SDL_InvalidateMap(map);
-            return SDL_SetError("Tone mapping from an SDR to an HDR surface not supported");
-        } else {
-            /* Tone mapping from an HDR surface to SDR surface */
-            SDL_PropertiesID src_props = SDL_GetSurfaceProperties(surface);
-            SDL_Colorspace src_colorspace = (SDL_Colorspace)SDL_GetNumberProperty(src_props, SDL_PROP_SURFACE_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
-            SDL_ColorPrimaries src_primaries = SDL_COLORSPACEPRIMARIES(src_colorspace);
-            SDL_PropertiesID dst_props = SDL_GetSurfaceProperties(dst);
-            SDL_Colorspace dst_colorspace = (SDL_Colorspace)SDL_GetNumberProperty(dst_props, SDL_PROP_SURFACE_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
-            SDL_ColorPrimaries dst_primaries = SDL_COLORSPACEPRIMARIES(dst_colorspace);
-            if (SDL_GetColorPrimariesConversionMatrix(src_primaries, dst_primaries) != NULL) {
-                if (SDL_ISPIXELFORMAT_10BIT(surface->format->format)) {
-                    blit = SDL_Blit_Slow_PQtoSDR;
-                } else {
-                    SDL_InvalidateMap(map);
-                    return SDL_SetError("Surface has unknown HDR pixel format");
-                }
-            } else {
-                SDL_InvalidateMap(map);
-                return SDL_SetError("Surface has unknown HDR colorspace");
-            }
+    if (!blit) {
+        if (src_colorspace != dst_colorspace ||
+            surface->format->BytesPerPixel > 4 ||
+            dst->format->BytesPerPixel > 4) {
+            blit = SDL_Blit_Slow_Float;
         }
     }
     if (!blit) {
