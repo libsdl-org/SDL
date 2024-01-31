@@ -1334,7 +1334,7 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     Uint32 format = SDL_PIXELFORMAT_UNKNOWN;
     SDL_Texture *texture;
     SDL_PropertiesID props;
-    Uint32 default_colorspace, colorspace;
+    SDL_Colorspace default_colorspace, colorspace;
 
     CHECK_RENDERER_MAGIC(renderer, NULL);
 
@@ -1400,8 +1400,27 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
         }
     }
 
-    default_colorspace = SDL_GetDefaultTextureColorspace(format);
-    colorspace = (Uint32)SDL_GetNumberProperty(SDL_GetSurfaceProperties(surface), SDL_PROP_SURFACE_COLORSPACE_NUMBER, default_colorspace);
+    if (format == surface->format->format) {
+        if (surface->format->Amask && SDL_SurfaceHasColorKey(surface)) {
+            /* Surface and Renderer formats are identical.
+             * Intermediate conversion is needed to convert color key to alpha (SDL_ConvertColorkeyToAlpha()). */
+            direct_update = SDL_FALSE;
+        } else {
+            /* Update Texture directly */
+            direct_update = SDL_TRUE;
+        }
+    } else {
+        /* Surface and Renderer formats are different, it needs an intermediate conversion. */
+        direct_update = SDL_FALSE;
+    }
+
+    if (direct_update) {
+        default_colorspace = SDL_GetDefaultTextureColorspace(format);
+        colorspace = (SDL_Colorspace)SDL_GetNumberProperty(SDL_GetSurfaceProperties(surface), SDL_PROP_SURFACE_COLORSPACE_NUMBER, default_colorspace);
+    } else {
+        /* We're updating through an intermediate surface, so we lose colorspace information */
+        colorspace = SDL_COLORSPACE_RGB_DEFAULT;
+    }
 
     props = SDL_CreateProperties();
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, colorspace);
@@ -1412,20 +1431,6 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     texture = SDL_CreateTextureWithProperties(renderer, props);
     if (!texture) {
         return NULL;
-    }
-
-    if (format == surface->format->format) {
-        if (surface->format->Amask && SDL_SurfaceHasColorKey(surface)) {
-            /* Surface and Renderer formats are identicals.
-             * Intermediate conversion is needed to convert color key to alpha (SDL_ConvertColorkeyToAlpha()). */
-            direct_update = SDL_FALSE;
-        } else {
-            /* Update Texture directly */
-            direct_update = SDL_TRUE;
-        }
-    } else {
-        /* Surface and Renderer formats are different, it needs an intermediate conversion. */
-        direct_update = SDL_FALSE;
     }
 
     if (direct_update) {
