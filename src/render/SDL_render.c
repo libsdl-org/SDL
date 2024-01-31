@@ -2437,7 +2437,7 @@ static void SDL_RenderLogicalBorders(SDL_Renderer *renderer)
         SDL_FColor saved_color = renderer->color;
 
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_SetRenderDrawColorFloat(renderer, 0.0f, 0.0f, 0.0f, 1.0f);
 
         if (dst->x > 0.0f) {
             SDL_FRect rect;
@@ -2468,7 +2468,7 @@ static void SDL_RenderLogicalBorders(SDL_Renderer *renderer)
         }
 
         SDL_SetRenderDrawBlendMode(renderer, saved_blend_mode);
-        SDL_SetRenderDrawColor(renderer, saved_color.r, saved_color.g, saved_color.b, saved_color.a);
+        SDL_SetRenderDrawColorFloat(renderer, saved_color.r, saved_color.g, saved_color.b, saved_color.a);
     }
 }
 
@@ -3726,11 +3726,11 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
     int prev[3]; /* Previous triangle vertex indices */
     int texw = 0, texh = 0;
     SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
-    Uint8 r = 0, g = 0, b = 0, a = 0;
+    float r = 0, g = 0, b = 0, a = 0;
 
     /* Save */
     SDL_GetRenderDrawBlendMode(renderer, &blendMode);
-    SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
+    SDL_GetRenderDrawColorFloat(renderer, &r, &g, &b, &a);
 
     if (texture) {
         SDL_QueryTexture(texture, NULL, NULL, &texw, &texh);
@@ -4014,7 +4014,7 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
 end:
     /* Restore */
     SDL_SetRenderDrawBlendMode(renderer, blendMode);
-    SDL_SetRenderDrawColor(renderer, r, g, b, a);
+    SDL_SetRenderDrawColorFloat(renderer, r, g, b, a);
 
     return retval;
 }
