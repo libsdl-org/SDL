@@ -139,26 +139,26 @@ static void loop(void)
             a = (angle * 3.1415f) / 180.0f;
             verts[0].position.x = cx + d * SDL_cosf(a);
             verts[0].position.y = cy + d * SDL_sinf(a);
-            verts[0].color.r = 0xFF;
+            verts[0].color.r = 1.0f;
             verts[0].color.g = 0;
             verts[0].color.b = 0;
-            verts[0].color.a = 0xFF;
+            verts[0].color.a = 1.0f;
 
             a = ((angle + 120) * 3.1415f) / 180.0f;
             verts[1].position.x = cx + d * SDL_cosf(a);
             verts[1].position.y = cy + d * SDL_sinf(a);
             verts[1].color.r = 0;
-            verts[1].color.g = 0xFF;
+            verts[1].color.g = 1.0f;
             verts[1].color.b = 0;
-            verts[1].color.a = 0xFF;
+            verts[1].color.a = 1.0f;
 
             a = ((angle + 240) * 3.1415f) / 180.0f;
             verts[2].position.x = cx + d * SDL_cosf(a);
             verts[2].position.y = cy + d * SDL_sinf(a);
             verts[2].color.r = 0;
             verts[2].color.g = 0;
-            verts[2].color.b = 0xFF;
-            verts[2].color.a = 0xFF;
+            verts[2].color.b = 1.0f;
+            verts[2].color.a = 1.0f;
 
             if (use_texture) {
                 verts[0].tex_coord.x = 0.5f;
