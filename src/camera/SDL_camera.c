@@ -43,6 +43,9 @@ static const CameraBootStrap *const bootstrap[] = {
 #ifdef SDL_CAMERA_DRIVER_EMSCRIPTEN
     &EMSCRIPTENCAMERA_bootstrap,
 #endif
+#ifdef SDL_CAMERA_DRIVER_MEDIAFOUNDATION
+    &MEDIAFOUNDATION_bootstrap,
+#endif
 #ifdef SDL_CAMERA_DRIVER_DUMMY
     &DUMMYCAMERA_bootstrap,
 #endif
@@ -69,6 +72,32 @@ const char *SDL_GetCurrentCameraDriver(void)
 {
     return camera_driver.name;
 }
+
+int SDL_AddCameraFormat(CameraFormatAddData *data, Uint32 fmt, int w, int h, int interval_numerator, int interval_denominator)
+{
+    SDL_assert(data != NULL);
+    if (data->allocated_specs <= data->num_specs) {
+        const int newalloc = data->allocated_specs ? (data->allocated_specs * 2) : 16;
+        void *ptr = SDL_realloc(data->specs, sizeof (SDL_CameraSpec) * newalloc);
+        if (!ptr) {
+            return -1;
+        }
+        data->specs = (SDL_CameraSpec *) ptr;
+        data->allocated_specs = newalloc;
+    }
+
+    SDL_CameraSpec *spec = &data->specs[data->num_specs];
+    spec->format = fmt;
+    spec->width = w;
+    spec->height = h;
+    spec->interval_numerator = interval_numerator;
+    spec->interval_denominator = interval_denominator;
+
+    data->num_specs++;
+
+    return 0;
+}
+
 
 static void ClosePhysicalCameraDevice(SDL_CameraDevice *device)
 {
@@ -610,10 +639,13 @@ SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device)
 
     if (rc == 1) {  // new frame acquired!
         #if DEBUG_CAMERA
-        SDL_Log("CAMERA: New frame available!");
+        SDL_Log("CAMERA: New frame available! pixels=%p pitch=%d", device->acquire_surface->pixels, device->acquire_surface->pitch);
         #endif
 
         if (device->drop_frames > 0) {
+            #if DEBUG_CAMERA
+            SDL_Log("CAMERA: Dropping an initial frame");
+            #endif
             device->drop_frames--;
             camera_driver.impl.ReleaseFrame(device, device->acquire_surface);
             device->acquire_surface->pixels = NULL;
@@ -662,9 +694,15 @@ SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device)
     } else if (acquired) {  // we have a new frame, scale/convert if necessary and queue it for the app!
         SDL_assert(slist != NULL);
         if (!device->needs_scaling && !device->needs_conversion) {  // no conversion needed? Just move the pointer/pitch into the output surface.
+            #if DEBUG_CAMERA
+            SDL_Log("CAMERA: Frame is going through without conversion!");
+            #endif
             output_surface->pixels = acquired->pixels;
             output_surface->pitch = acquired->pitch;
         } else {  // convert/scale into a different surface.
+            #if DEBUG_CAMERA
+            SDL_Log("CAMERA: Frame is getting converted!");
+            #endif
             SDL_Surface *srcsurf = acquired;
             if (device->needs_scaling == -1) {  // downscaling? Do it first.  -1: downscale, 0: no scaling, 1: upscale
                 SDL_Surface *dstsurf = device->needs_conversion ? device->conversion_surface : output_surface;
