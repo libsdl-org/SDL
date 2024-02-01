@@ -865,7 +865,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     SDL_Renderer *renderer = NULL;
     const int n = SDL_GetNumRenderDrivers();
     const char *hint;
-    int i;
+    int i, attempted = 0;
 
     if (!window && surface) {
         return SDL_CreateSoftwareRenderer(surface);
@@ -904,6 +904,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
             const SDL_RenderDriver *driver = render_drivers[i];
             if (SDL_strcasecmp(name, driver->info.name) == 0) {
                 /* Create a new renderer instance */
+                ++attempted;
                 renderer = driver->CreateRenderer(window, props);
                 break;
             }
@@ -912,6 +913,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
         for (i = 0; i < n; i++) {
             const SDL_RenderDriver *driver = render_drivers[i];
             /* Create a new renderer instance */
+            ++attempted;
             renderer = driver->CreateRenderer(window, props);
             if (renderer) {
                 /* Yay, we got one! */
@@ -921,7 +923,9 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     }
 
     if (!renderer) {
-        SDL_SetError("Couldn't find matching render driver");
+        if (!name || !attempted) {
+            SDL_SetError("Couldn't find matching render driver");
+        }
         goto error;
     }
 
@@ -1175,19 +1179,6 @@ static SDL_ScaleMode SDL_GetScaleMode(void)
     }
 }
 
-static SDL_Colorspace SDL_GetDefaultTextureColorspace(Uint32 format)
-{
-    if (SDL_ISPIXELFORMAT_FOURCC(format)) {
-        return SDL_COLORSPACE_BT709_FULL;
-    } else if (SDL_ISPIXELFORMAT_FLOAT(format)) {
-        return SDL_COLORSPACE_SCRGB;
-    } else if (SDL_ISPIXELFORMAT_10BIT(format)) {
-        return SDL_COLORSPACE_HDR10;
-    } else {
-        return SDL_COLORSPACE_SRGB;
-    }
-}
-
 SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_PropertiesID props)
 {
     SDL_Texture *texture;
@@ -1195,7 +1186,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     int access = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STATIC);
     int w = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, 0);
     int h = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, 0);
-    Uint32 default_colorspace;
+    SDL_Colorspace default_colorspace;
     SDL_bool texture_is_fourcc_and_target;
 
     CHECK_RENDERER_MAGIC(renderer, NULL);
@@ -1223,14 +1214,14 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
         return NULL;
     }
 
-    default_colorspace = SDL_GetDefaultTextureColorspace(format);
+    default_colorspace = SDL_GetDefaultColorspaceForFormat(format);
 
     texture = (SDL_Texture *)SDL_calloc(1, sizeof(*texture));
     if (!texture) {
         return NULL;
     }
     texture->magic = &SDL_texture_magic;
-    texture->colorspace = (Uint32)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, default_colorspace);
+    texture->colorspace = (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, default_colorspace);
     texture->format = format;
     texture->access = access;
     texture->w = w;
@@ -1334,7 +1325,7 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     Uint32 format = SDL_PIXELFORMAT_UNKNOWN;
     SDL_Texture *texture;
     SDL_PropertiesID props;
-    SDL_Colorspace default_colorspace, colorspace;
+    SDL_Colorspace colorspace = SDL_COLORSPACE_UNKNOWN;
 
     CHECK_RENDERER_MAGIC(renderer, NULL);
 
@@ -1414,12 +1405,8 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
         direct_update = SDL_FALSE;
     }
 
-    if (direct_update) {
-        default_colorspace = SDL_GetDefaultTextureColorspace(format);
-        colorspace = (SDL_Colorspace)SDL_GetNumberProperty(SDL_GetSurfaceProperties(surface), SDL_PROP_SURFACE_COLORSPACE_NUMBER, default_colorspace);
-    } else {
-        /* We're updating through an intermediate surface, so we lose colorspace information */
-        colorspace = SDL_COLORSPACE_RGB_DEFAULT;
+    if (SDL_GetSurfaceColorspace(surface, &colorspace) < 0) {
+        return NULL;
     }
 
     props = SDL_CreateProperties();

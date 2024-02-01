@@ -1737,6 +1737,15 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         if (!renderer) {
             return NULL;
         }
+        renderer->magic = &SDL_renderer_magic;
+
+        SDL_SetupRendererColorspace(renderer, create_props);
+
+        if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
+            SDL_SetError("Unsupported output colorspace");
+            SDL_free(renderer);
+            return NULL;
+        }
 
 #ifdef SDL_PLATFORM_MACOS
         if (SDL_GetHintBoolean(SDL_HINT_RENDER_METAL_PREFER_LOW_POWER_DEVICE, SDL_TRUE)) {

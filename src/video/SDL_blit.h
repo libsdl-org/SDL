@@ -262,13 +262,16 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         a = (a * 3) / 255;                             \
         Pixel = (a << 30) | (r << 20) | (g << 10) | b; \
     }
-#define ARGB2101010_FROM_RGBAFLOAT(Pixel, r, g, b, a)  \
-    {                                                  \
-        r = SDL_clamp(r, 0.0f, 1.0f) * 1023.0f;        \
-        g = SDL_clamp(g, 0.0f, 1.0f) * 1023.0f;        \
-        b = SDL_clamp(b, 0.0f, 1.0f) * 1023.0f;        \
-        a = SDL_clamp(a, 0.0f, 1.0f) * 3.0f;           \
-        Pixel = (((Uint32)a) << 30) | (((Uint32)r) << 20) | (((Uint32)g) << 10) | (Uint32)b; \
+#define ARGB2101010_FROM_RGBAFLOAT(Pixel, r, g, b, a) \
+    {                                                 \
+        r = SDL_clamp(r, 0.0f, 1.0f) * 1023.0f;       \
+        g = SDL_clamp(g, 0.0f, 1.0f) * 1023.0f;       \
+        b = SDL_clamp(b, 0.0f, 1.0f) * 1023.0f;       \
+        a = SDL_clamp(a, 0.0f, 1.0f) * 3.0f;          \
+        Pixel = (((Uint32)SDL_roundf(a)) << 30) |     \
+                (((Uint32)SDL_roundf(r)) << 20) |     \
+                (((Uint32)SDL_roundf(g)) << 10) |     \
+                (Uint32)SDL_roundf(b);                \
     }
 #define ABGR2101010_FROM_RGBA(Pixel, r, g, b, a)       \
     {                                                  \
@@ -278,13 +281,16 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         a = (a * 3) / 255;                             \
         Pixel = (a << 30) | (b << 20) | (g << 10) | r; \
     }
-#define ABGR2101010_FROM_RGBAFLOAT(Pixel, r, g, b, a)  \
-    {                                                  \
-        r = SDL_clamp(r, 0.0f, 1.0f) * 1023.0f;        \
-        g = SDL_clamp(g, 0.0f, 1.0f) * 1023.0f;        \
-        b = SDL_clamp(b, 0.0f, 1.0f) * 1023.0f;        \
-        a = SDL_clamp(a, 0.0f, 1.0f) * 3.0f;           \
-        Pixel = (((Uint32)a) << 30) | (((Uint32)b) << 20) | (((Uint32)g) << 10) | (Uint32)r; \
+#define ABGR2101010_FROM_RGBAFLOAT(Pixel, r, g, b, a) \
+    {                                                 \
+        r = SDL_clamp(r, 0.0f, 1.0f) * 1023.0f;       \
+        g = SDL_clamp(g, 0.0f, 1.0f) * 1023.0f;       \
+        b = SDL_clamp(b, 0.0f, 1.0f) * 1023.0f;       \
+        a = SDL_clamp(a, 0.0f, 1.0f) * 3.0f;          \
+        Pixel = (((Uint32)SDL_roundf(a)) << 30) |     \
+                (((Uint32)SDL_roundf(b)) << 20) |     \
+                (((Uint32)SDL_roundf(g)) << 10) |     \
+                (Uint32)SDL_roundf(r);                \
     }
 #define ASSEMBLE_RGB(buf, bpp, fmt, r, g, b)        \
     {                                               \

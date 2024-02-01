@@ -630,6 +630,15 @@ static SDL_Renderer *PS2_CreateRenderer(SDL_Window *window, SDL_PropertiesID cre
     if (!renderer) {
         return NULL;
     }
+    renderer->magic = &SDL_renderer_magic;
+
+    SDL_SetupRendererColorspace(renderer, create_props);
+
+    if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
+        SDL_SetError("Unsupported output colorspace");
+        SDL_free(renderer);
+        return NULL;
+    }
 
     data = (PS2_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {

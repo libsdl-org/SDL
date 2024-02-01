@@ -31,13 +31,14 @@
 #include "../SDL_d3dmath.h"
 
 #include <d3d11_1.h>
+#include <dxgi1_4.h>
 
 #include "SDL_shaders_d3d11.h"
 
 #ifdef SDL_PLATFORM_WINRT
 
 #if NTDDI_VERSION > NTDDI_WIN8
-#include <DXGI1_3.h>
+#include <dxgi1_3.h>
 #endif
 
 #include "SDL_render_winrt.h"
@@ -189,6 +190,7 @@ static const GUID SDL_IID_ID3D11Texture2D = { 0x6f15aaf2, 0xd208, 0x4e89, { 0x9a
 static const GUID SDL_IID_ID3D11Device1 = { 0xa04bfb29, 0x08ef, 0x43d6, { 0xa4, 0x9c, 0xa9, 0xbd, 0xbd, 0xcb, 0xe6, 0x86 } };
 static const GUID SDL_IID_ID3D11DeviceContext1 = { 0xbb2c6faa, 0xb5fb, 0x4082, { 0x8e, 0x6b, 0x38, 0x8b, 0x8c, 0xfa, 0x90, 0xe1 } };
 /*static const GUID SDL_IID_ID3D11Debug = { 0x79cf2233, 0x7536, 0x4948, { 0x9d, 0x36, 0x1e, 0x46, 0x92, 0xdc, 0x57, 0x60 } };*/
+static const GUID SDL_IID_IDXGISwapChain2 = { 0x94d99bdb, 0xf1f8, 0x4ab0, { 0xb2, 0x36, 0x7d, 0xa0, 0x17, 0x0e, 0xda, 0xb1 } };
 
 #ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 #pragma GCC diagnostic pop
@@ -203,6 +205,10 @@ Uint32 D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
     case DXGI_FORMAT_B8G8R8X8_UNORM:
     case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
         return SDL_PIXELFORMAT_XRGB8888;
+    case DXGI_FORMAT_R10G10B10A2_UNORM:
+        return SDL_PIXELFORMAT_XBGR2101010;
+    case DXGI_FORMAT_R16G16B16A16_FLOAT:
+        return SDL_PIXELFORMAT_RGBA64_FLOAT;
     default:
         return SDL_PIXELFORMAT_UNKNOWN;
     }
@@ -271,21 +277,12 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
     if (data) {
         int i;
 
-        SAFE_RELEASE(data->dxgiFactory);
-        SAFE_RELEASE(data->dxgiAdapter);
-        SAFE_RELEASE(data->d3dDevice);
-        SAFE_RELEASE(data->d3dContext);
-        SAFE_RELEASE(data->swapChain);
-        SAFE_RELEASE(data->mainRenderTargetView);
-        SAFE_RELEASE(data->currentOffscreenRenderTargetView);
-        SAFE_RELEASE(data->inputLayout);
-        for (i = 0; i < SDL_arraysize(data->vertexBuffers); ++i) {
-            SAFE_RELEASE(data->vertexBuffers[i]);
-        }
-        SAFE_RELEASE(data->vertexShader);
-        for (i = 0; i < SDL_arraysize(data->pixelShaders); ++i) {
-            SAFE_RELEASE(data->pixelShaders[i]);
-        }
+        SAFE_RELEASE(data->vertexShaderConstants);
+        SAFE_RELEASE(data->clippedRasterizer);
+        SAFE_RELEASE(data->mainRasterizer);
+        SAFE_RELEASE(data->linearSampler);
+        SAFE_RELEASE(data->nearestPixelSampler);
+
         if (data->blendModesCount > 0) {
             for (i = 0; i < data->blendModesCount; ++i) {
                 SAFE_RELEASE(data->blendModes[i].blendState);
@@ -294,11 +291,26 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
 
             data->blendModesCount = 0;
         }
-        SAFE_RELEASE(data->nearestPixelSampler);
-        SAFE_RELEASE(data->linearSampler);
-        SAFE_RELEASE(data->mainRasterizer);
-        SAFE_RELEASE(data->clippedRasterizer);
-        SAFE_RELEASE(data->vertexShaderConstants);
+        for (i = 0; i < SDL_arraysize(data->pixelShaders); ++i) {
+            SAFE_RELEASE(data->pixelShaders[i]);
+        }
+        SAFE_RELEASE(data->vertexShader);
+        for (i = 0; i < SDL_arraysize(data->vertexBuffers); ++i) {
+            SAFE_RELEASE(data->vertexBuffers[i]);
+        }
+        SAFE_RELEASE(data->inputLayout);
+        SAFE_RELEASE(data->currentOffscreenRenderTargetView);
+        SAFE_RELEASE(data->mainRenderTargetView);
+        SAFE_RELEASE(data->swapChain);
+
+        /* Make sure the swap chain is fully released */
+        ID3D11DeviceContext_ClearState(data->d3dContext);
+        ID3D11DeviceContext_Flush(data->d3dContext);
+
+        SAFE_RELEASE(data->d3dContext);
+        SAFE_RELEASE(data->d3dDevice);
+        SAFE_RELEASE(data->dxgiAdapter);
+        SAFE_RELEASE(data->dxgiFactory);
 
         data->swapEffect = (DXGI_SWAP_EFFECT)0;
         data->rotation = DXGI_MODE_ROTATION_UNSPECIFIED;
@@ -779,7 +791,17 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     SDL_zero(swapChainDesc);
     swapChainDesc.Width = w;
     swapChainDesc.Height = h;
-    swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM; /* This is the most common swap chain format. */
+    switch (renderer->output_colorspace) {
+    case SDL_COLORSPACE_SCRGB:
+        swapChainDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+        break;
+    case SDL_COLORSPACE_HDR10:
+        swapChainDesc.Format = DXGI_FORMAT_R10G10B10A2_UNORM;
+        break;
+    default:
+        swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM; /* This is the most common swap chain format. */
+        break;
+    }
     swapChainDesc.Stereo = FALSE;
     swapChainDesc.SampleDesc.Count = 1; /* Don't use multi-sampling. */
     swapChainDesc.SampleDesc.Quality = 0;
@@ -864,6 +886,28 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 #endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) / else */
     }
     data->swapEffect = swapChainDesc.SwapEffect;
+
+    IDXGISwapChain3 *swapChain3 = NULL;
+    if (SUCCEEDED(IDXGISwapChain1_QueryInterface(data->swapChain, &SDL_IID_IDXGISwapChain2, (void **)&swapChain3))) {
+        DXGI_COLOR_SPACE_TYPE ColorSpace;
+        switch (renderer->output_colorspace) {
+        case SDL_COLORSPACE_SCRGB:
+            ColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709;
+            break;
+        case SDL_COLORSPACE_HDR10:
+            ColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
+            break;
+        default:
+            /* sRGB */
+            ColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
+            break;
+        }
+        result = IDXGISwapChain3_SetColorSpace1(swapChain3, ColorSpace);
+        if (FAILED(result)) {
+            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain3::SetColorSpace1"), result);
+            goto done;
+        }
+    }
 
 done:
     SAFE_RELEASE(coreWindow);
@@ -1004,10 +1048,20 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
     /* Create a render target view of the swap chain back buffer. */
     D3D11_RENDER_TARGET_VIEW_DESC desc;
     SDL_zero(desc);
-    if (renderer->colorspace_conversion && renderer->output_colorspace == SDL_COLORSPACE_SRGB) {
-        desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
-    } else {
-        desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    switch (renderer->output_colorspace) {
+    case SDL_COLORSPACE_SCRGB:
+        desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+        break;
+    case SDL_COLORSPACE_HDR10:
+        desc.Format = DXGI_FORMAT_R10G10B10A2_UNORM;
+        break;
+    default:
+        if (renderer->colorspace_conversion && renderer->output_colorspace == SDL_COLORSPACE_SRGB) {
+            desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+        } else {
+            desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+        }
+        break;
     }
     desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
     result = ID3D11Device_CreateRenderTargetView(data->d3dDevice,
@@ -2354,12 +2408,14 @@ static int D3D11_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
     /* Copy the data into the desired buffer, converting pixels to the
      * desired format at the same time:
      */
-    status = SDL_ConvertPixels(
+    status = SDL_ConvertPixelsAndColorspace(
         rect->w, rect->h,
         D3D11_DXGIFormatToSDLPixelFormat(stagingTextureDesc.Format),
+        renderer->target ? renderer->target->colorspace : renderer->output_colorspace,
         textureMemory.pData,
         textureMemory.RowPitch,
         format,
+        renderer->input_colorspace,
         pixels,
         pitch);
 
@@ -2457,13 +2513,21 @@ SDL_Renderer *D3D11_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_p
     }
     renderer->magic = &SDL_renderer_magic;
 
+    SDL_SetupRendererColorspace(renderer, create_props);
+
+    if (renderer->output_colorspace != SDL_COLORSPACE_SRGB &&
+        renderer->output_colorspace != SDL_COLORSPACE_SCRGB &&
+        renderer->output_colorspace != SDL_COLORSPACE_HDR10) {
+        SDL_SetError("Unsupported output colorspace");
+        SDL_free(renderer);
+        return NULL;
+    }
+
     data = (D3D11_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
         SDL_free(renderer);
         return NULL;
     }
-
-    SDL_SetupRendererColorspace(renderer, create_props);
 
     data->identity = MatrixIdentity();
 

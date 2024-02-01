@@ -366,65 +366,6 @@ static Uint16 float_to_half(float a)
     return ir;
 }
 
-static float scRGBtoNits(float v)
-{
-    return v * 80.0f;
-}
-
-static float scRGBfromNits(float v)
-{
-    return v / 80.0f;
-}
-
-static float sRGBtoNits(float v)
-{
-    if (v <= 0.04045f) {
-        v = (v / 12.92f);
-    } else {
-        v = SDL_powf((v + 0.055f) / 1.055f, 2.4f);
-    }
-    return scRGBtoNits(v);
-}
-
-static float sRGBfromNits(float v)
-{
-    v = scRGBfromNits(v);
-
-    if (v <= 0.0031308f) {
-        v = (v * 12.92f);
-    } else {
-        v = (SDL_powf(v, 1.0f / 2.4f) * 1.055f - 0.055f);
-    }
-    return v;
-}
-
-static float PQtoNits(float v)
-{
-    const float c1 = 0.8359375f;
-    const float c2 = 18.8515625f;
-    const float c3 = 18.6875f;
-    const float oo_m1 = 1.0f / 0.1593017578125f;
-    const float oo_m2 = 1.0f / 78.84375f;
-
-    float num = SDL_max(SDL_powf(v, oo_m2) - c1, 0.0f);
-    float den = c2 - c3 * SDL_powf(v, oo_m2);
-    return 10000.0f * SDL_powf(num / den, oo_m1);
-}
-
-static float PQfromNits(float v)
-{
-    const float c1 = 0.8359375f;
-    const float c2 = 18.8515625f;
-    const float c3 = 18.6875f;
-    const float m1 = 0.1593017578125f;
-    const float m2 = 78.84375f;
-
-    float y = SDL_clamp(v / 10000.0f, 0.0f, 1.0f);
-    float num = c1 + c2 * pow(y, m1);
-    float den = 1.0f + c3 * pow(y, m1);
-    return pow(num / den, m2);
-}
-
 static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_PixelFormat *fmt, SDL_Colorspace colorspace,
                            float *outR, float *outG, float *outB, float *outA)
 {
@@ -555,20 +496,20 @@ static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_PixelF
     /* Convert to nits so src and dst are guaranteed to be linear and in the same units */
     switch (SDL_COLORSPACETRANSFER(colorspace)) {
     case SDL_TRANSFER_CHARACTERISTICS_SRGB:
-        fR = sRGBtoNits(fR);
-        fG = sRGBtoNits(fG);
-        fB = sRGBtoNits(fB);
+        fR = SDL_sRGBtoNits(fR);
+        fG = SDL_sRGBtoNits(fG);
+        fB = SDL_sRGBtoNits(fB);
         break;
     case SDL_TRANSFER_CHARACTERISTICS_PQ:
-        fR = PQtoNits(fR);
-        fG = PQtoNits(fG);
-        fB = PQtoNits(fB);
+        fR = SDL_PQtoNits(fR);
+        fG = SDL_PQtoNits(fG);
+        fB = SDL_PQtoNits(fB);
         break;
     case SDL_TRANSFER_CHARACTERISTICS_LINEAR:
         /* Assuming scRGB for now */
-        fR = scRGBtoNits(fR);
-        fG = scRGBtoNits(fG);
-        fB = scRGBtoNits(fB);
+        fR = SDL_scRGBtoNits(fR);
+        fG = SDL_scRGBtoNits(fG);
+        fB = SDL_scRGBtoNits(fB);
         break;
     default:
         /* Unknown, leave it alone */
@@ -590,20 +531,20 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_Pixel
     /* We converted to nits so src and dst are guaranteed to be linear and in the same units */
     switch (SDL_COLORSPACETRANSFER(colorspace)) {
     case SDL_TRANSFER_CHARACTERISTICS_SRGB:
-        fR = sRGBfromNits(fR);
-        fG = sRGBfromNits(fG);
-        fB = sRGBfromNits(fB);
+        fR = SDL_sRGBfromNits(fR);
+        fG = SDL_sRGBfromNits(fG);
+        fB = SDL_sRGBfromNits(fB);
         break;
     case SDL_TRANSFER_CHARACTERISTICS_PQ:
-        fR = PQfromNits(fR);
-        fG = PQfromNits(fG);
-        fB = PQfromNits(fB);
+        fR = SDL_PQfromNits(fR);
+        fG = SDL_PQfromNits(fG);
+        fB = SDL_PQfromNits(fB);
         break;
     case SDL_TRANSFER_CHARACTERISTICS_LINEAR:
         /* Assuming scRGB for now */
-        fR = scRGBfromNits(fR);
-        fG = scRGBfromNits(fG);
-        fB = scRGBfromNits(fB);
+        fR = SDL_scRGBfromNits(fR);
+        fG = SDL_scRGBfromNits(fG);
+        fB = SDL_scRGBfromNits(fB);
         break;
     default:
         /* Unknown, leave it alone */
@@ -612,16 +553,16 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_Pixel
 
     switch (access) {
     case SlowBlitPixelAccess_RGB:
-        R = (Uint8)(SDL_clamp(fR, 0.0f, 1.0f) * 255.0f);
-        G = (Uint8)(SDL_clamp(fG, 0.0f, 1.0f) * 255.0f);
-        B = (Uint8)(SDL_clamp(fB, 0.0f, 1.0f) * 255.0f);
+        R = (Uint8)SDL_roundf(SDL_clamp(fR, 0.0f, 1.0f) * 255.0f);
+        G = (Uint8)SDL_roundf(SDL_clamp(fG, 0.0f, 1.0f) * 255.0f);
+        B = (Uint8)SDL_roundf(SDL_clamp(fB, 0.0f, 1.0f) * 255.0f);
         ASSEMBLE_RGB(pixels, fmt->BytesPerPixel, fmt, R, G, B);
         break;
     case SlowBlitPixelAccess_RGBA:
-        R = (Uint8)(SDL_clamp(fR, 0.0f, 1.0f) * 255.0f);
-        G = (Uint8)(SDL_clamp(fG, 0.0f, 1.0f) * 255.0f);
-        B = (Uint8)(SDL_clamp(fB, 0.0f, 1.0f) * 255.0f);
-        A = (Uint8)(SDL_clamp(fA, 0.0f, 1.0f) * 255.0f);
+        R = (Uint8)SDL_roundf(SDL_clamp(fR, 0.0f, 1.0f) * 255.0f);
+        G = (Uint8)SDL_roundf(SDL_clamp(fG, 0.0f, 1.0f) * 255.0f);
+        B = (Uint8)SDL_roundf(SDL_clamp(fB, 0.0f, 1.0f) * 255.0f);
+        A = (Uint8)SDL_roundf(SDL_clamp(fA, 0.0f, 1.0f) * 255.0f);
         ASSEMBLE_RGBA(pixels, fmt->BytesPerPixel, fmt, R, G, B, A);
         break;
     case SlowBlitPixelAccess_10Bit:
@@ -692,11 +633,11 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_Pixel
         }
         switch (SDL_PIXELTYPE(fmt->format)) {
         case SDL_PIXELTYPE_ARRAYU16:
-            ((Uint16 *)pixels)[0] = (Uint16)(SDL_clamp(v[0], 0.0f, 1.0f) * SDL_MAX_UINT16);
-            ((Uint16 *)pixels)[1] = (Uint16)(SDL_clamp(v[1], 0.0f, 1.0f) * SDL_MAX_UINT16);
-            ((Uint16 *)pixels)[2] = (Uint16)(SDL_clamp(v[2], 0.0f, 1.0f) * SDL_MAX_UINT16);
+            ((Uint16 *)pixels)[0] = (Uint16)SDL_roundf(SDL_clamp(v[0], 0.0f, 1.0f) * SDL_MAX_UINT16);
+            ((Uint16 *)pixels)[1] = (Uint16)SDL_roundf(SDL_clamp(v[1], 0.0f, 1.0f) * SDL_MAX_UINT16);
+            ((Uint16 *)pixels)[2] = (Uint16)SDL_roundf(SDL_clamp(v[2], 0.0f, 1.0f) * SDL_MAX_UINT16);
             if (fmt->BytesPerPixel == 8) {
-                ((Uint16 *)pixels)[3] = (Uint16)(SDL_clamp(v[3], 0.0f, 1.0f) * SDL_MAX_UINT16);
+                ((Uint16 *)pixels)[3] = (Uint16)SDL_roundf(SDL_clamp(v[3], 0.0f, 1.0f) * SDL_MAX_UINT16);
             }
             break;
         case SDL_PIXELTYPE_ARRAYF16:
@@ -765,16 +706,25 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
     int dstbpp = dst_fmt->BytesPerPixel;
     SlowBlitPixelAccess src_access;
     SlowBlitPixelAccess dst_access;
-    SDL_PropertiesID src_props = SDL_GetSurfaceProperties(info->src_surface);
-    SDL_Colorspace src_colorspace = (SDL_Colorspace)SDL_GetNumberProperty(src_props, SDL_PROP_SURFACE_COLORSPACE_NUMBER, SDL_COLORSPACE_RGB_DEFAULT);
-    SDL_ColorPrimaries src_primaries = SDL_COLORSPACEPRIMARIES(src_colorspace);
-    SDL_TransferCharacteristics src_transfer = SDL_COLORSPACETRANSFER(src_colorspace);
-    SDL_PropertiesID dst_props = SDL_GetSurfaceProperties(info->dst_surface);
-    SDL_Colorspace dst_colorspace = (SDL_Colorspace)SDL_GetNumberProperty(dst_props, SDL_PROP_SURFACE_COLORSPACE_NUMBER, SDL_COLORSPACE_RGB_DEFAULT);
-    SDL_ColorPrimaries dst_primaries = SDL_COLORSPACEPRIMARIES(dst_colorspace);
-    SDL_TransferCharacteristics dst_transfer = SDL_COLORSPACETRANSFER(dst_colorspace);
-    const float *color_primaries_matrix = SDL_GetColorPrimariesConversionMatrix(src_primaries, dst_primaries);
+    SDL_Colorspace src_colorspace;
+    SDL_ColorPrimaries src_primaries;
+    SDL_TransferCharacteristics src_transfer;
+    SDL_Colorspace dst_colorspace;
+    SDL_ColorPrimaries dst_primaries;
+    SDL_TransferCharacteristics dst_transfer;
+    const float *color_primaries_matrix;
     SDL_bool compress_PQ = SDL_FALSE;
+
+    if (SDL_GetSurfaceColorspace(info->src_surface, &src_colorspace) < 0 ||
+        SDL_GetSurfaceColorspace(info->dst_surface, &dst_colorspace) < 0) {
+        return;
+    }
+
+    src_primaries = SDL_COLORSPACEPRIMARIES(src_colorspace);
+    src_transfer = SDL_COLORSPACETRANSFER(src_colorspace);
+    dst_primaries = SDL_COLORSPACEPRIMARIES(dst_colorspace);
+    dst_transfer = SDL_COLORSPACETRANSFER(dst_colorspace);
+    color_primaries_matrix = SDL_GetColorPrimariesConversionMatrix(src_primaries, dst_primaries);
 
     if (src_transfer == SDL_TRANSFER_CHARACTERISTICS_PQ &&
         dst_transfer != SDL_TRANSFER_CHARACTERISTICS_PQ &&

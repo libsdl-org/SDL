@@ -220,6 +220,15 @@ SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, SDL_PropertiesID creat
     if (!renderer) {
         return NULL;
     }
+    renderer->magic = &SDL_renderer_magic;
+
+    SDL_SetupRendererColorspace(renderer, create_props);
+
+    if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
+        SDL_SetError("Unsupported output colorspace");
+        SDL_free(renderer);
+        return NULL;
+    }
 
     data = (VITA_GXM_RenderData *)SDL_calloc(1, sizeof(VITA_GXM_RenderData));
     if (!data) {

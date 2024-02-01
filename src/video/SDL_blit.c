@@ -183,23 +183,21 @@ static SDL_BlitFunc SDL_ChooseBlitFunc(Uint32 src_format, Uint32 dst_format, int
 }
 #endif /* SDL_HAVE_BLIT_AUTO */
 
-static SDL_Colorspace GetSurfaceColorspace(SDL_Surface *surface)
-{
-    if (surface->flags & SDL_SURFACE_USES_PROPERTIES) {
-        SDL_PropertiesID props = SDL_GetSurfaceProperties(surface);
-        return (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_COLORSPACE_NUMBER, SDL_COLORSPACE_RGB_DEFAULT);
-    }
-    return SDL_COLORSPACE_RGB_DEFAULT;
-}
-
 /* Figure out which of many blit routines to set up on a surface */
 int SDL_CalculateBlit(SDL_Surface *surface)
 {
     SDL_BlitFunc blit = NULL;
     SDL_BlitMap *map = surface->map;
     SDL_Surface *dst = map->dst;
-    SDL_Colorspace src_colorspace = GetSurfaceColorspace(surface);
-    SDL_Colorspace dst_colorspace = GetSurfaceColorspace(dst);
+    SDL_Colorspace src_colorspace = SDL_COLORSPACE_UNKNOWN;
+    SDL_Colorspace dst_colorspace = SDL_COLORSPACE_UNKNOWN;
+
+    if (SDL_GetSurfaceColorspace(surface, &src_colorspace) < 0) {
+        return -1;
+    }
+    if (SDL_GetSurfaceColorspace(dst, &dst_colorspace) < 0) {
+        return -1;
+    }
 
     /* We don't currently support blitting to < 8 bpp surfaces */
     if (dst->format->BitsPerPixel < 8) {

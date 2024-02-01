@@ -28,6 +28,8 @@
 static SDL_Window *window;
 static SDL_Renderer *renderer;
 static const char *renderer_name;
+static SDL_Colorspace colorspace = SDL_COLORSPACE_SRGB;
+static const char *colorspace_name = "sRGB";
 static int renderer_count = 0;
 static int renderer_index = 0;
 static int stage_count = 4;
@@ -50,7 +52,7 @@ static void CreateRenderer(void)
     SDL_SetProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
     SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, SDL_GetRenderDriver(renderer_index));
     SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_INPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
-    SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
+    SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, colorspace);
     SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_COLORSPACE_CONVERSION_BOOLEAN, SDL_TRUE);
     renderer = SDL_CreateRendererWithProperties(props);
     SDL_DestroyProperties(props);
@@ -158,7 +160,7 @@ static void RenderClearBackground(void)
 
     float x = TEXT_START_X;
     float y = TEXT_START_Y;
-    DrawText(x, y, renderer_name);
+    DrawText(x, y, "%s %s", renderer_name, colorspace_name);
     y += TEXT_LINE_ADVANCE;
     DrawText(x, y, "Test: Clear 50%% Gray Background");
     y += TEXT_LINE_ADVANCE;
@@ -186,7 +188,7 @@ static void RenderDrawBackground(void)
 
     float x = TEXT_START_X;
     float y = TEXT_START_Y;
-    DrawText(x, y, renderer_name);
+    DrawText(x, y, "%s %s", renderer_name, colorspace_name);
     y += TEXT_LINE_ADVANCE;
     DrawText(x, y, "Test: Draw 50%% Gray Background");
     y += TEXT_LINE_ADVANCE;
@@ -236,7 +238,7 @@ static void RenderBlendDrawing(void)
 
     float x = TEXT_START_X;
     float y = TEXT_START_Y;
-    DrawText(x, y, renderer_name);
+    DrawText(x, y, "%s %s", renderer_name, colorspace_name);
     y += TEXT_LINE_ADVANCE;
     DrawText(x, y, "Test: Draw Linear Blending");
     y += TEXT_LINE_ADVANCE;
@@ -294,7 +296,7 @@ static void RenderBlendTexture(void)
 
     float x = TEXT_START_X;
     float y = TEXT_START_Y;
-    DrawText(x, y, renderer_name);
+    DrawText(x, y, "%s %s", renderer_name, colorspace_name);
     y += TEXT_LINE_ADVANCE;
     DrawText(x, y, "Test: Texture Linear Blending");
     y += TEXT_LINE_ADVANCE;
@@ -343,25 +345,27 @@ static void loop(void)
         }
     }
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
+    if (renderer) {
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
 
-    switch (stage_index) {
-    case 0:
-        RenderClearBackground();
-        break;
-    case 1:
-        RenderDrawBackground();
-        break;
-    case 2:
-        RenderBlendDrawing();
-        break;
-    case 3:
-        RenderBlendTexture();
-        break;
+        switch (stage_index) {
+        case 0:
+            RenderClearBackground();
+            break;
+        case 1:
+            RenderDrawBackground();
+            break;
+        case 2:
+            RenderBlendDrawing();
+            break;
+        case 3:
+            RenderBlendTexture();
+            break;
+        }
+
+        SDL_RenderPresent(renderer);
     }
-
-    SDL_RenderPresent(renderer);
     SDL_Delay(100);
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
@@ -371,15 +375,47 @@ static void loop(void)
 #endif
 }
 
+static void LogUsage(const char *argv0)
+{
+    SDL_Log("Usage: %s [--renderer renderer] [--colorspace colorspace]\n", argv0);
+}
+
 int main(int argc, char *argv[])
 {
-    int return_code = -1;
+    int return_code = 1;
     int i;
 
-    if (argc > 2) {
-        SDL_Log("Usage: %s [renderer]\n", argv[0]);
-        return_code = 1;
-        goto quit;
+    for (i = 1; i < argc; ++i) {
+        if (SDL_strcmp(argv[i], "--renderer") == 0) {
+            if (argv[i + 1]) {
+                renderer_name = argv[i + 1];
+                ++i;
+            } else {
+                LogUsage(argv[0]);
+                goto quit;
+            }
+        } else if (SDL_strcmp(argv[i], "--colorspace") == 0) {
+            if (argv[i + 1]) {
+                colorspace_name = argv[i + 1];
+                if (SDL_strcasecmp(colorspace_name, "srgb") == 0) {
+                    colorspace = SDL_COLORSPACE_SRGB;
+                } else if (SDL_strcasecmp(colorspace_name, "scrgb") == 0) {
+                    colorspace = SDL_COLORSPACE_SCRGB;
+                } else if (SDL_strcasecmp(colorspace_name, "hdr10") == 0) {
+                    colorspace = SDL_COLORSPACE_HDR10;
+                } else {
+                    SDL_Log("Unknown colorspace %s\n", argv[i + 1]);
+                    goto quit;
+                }
+                ++i;
+            } else {
+                LogUsage(argv[0]);
+                goto quit;
+            }
+        } else {
+            LogUsage(argv[0]);
+            goto quit;
+        }
     }
 
     window = SDL_CreateWindow("SDL colorspace test", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
@@ -394,7 +430,7 @@ int main(int argc, char *argv[])
     for (i = 0; i < renderer_count; ++i) {
         const char *name = SDL_GetRenderDriver(i);
 
-        if (argv[1] && SDL_strcasecmp(argv[1], name) == 0) {
+        if (renderer_name && SDL_strcasecmp(renderer_name, name) == 0) {
             renderer_index = i;
         }
         SDL_Log("    %s\n", name);
