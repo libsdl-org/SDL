@@ -3041,8 +3041,8 @@ SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_p
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB &&
-        renderer->output_colorspace != SDL_COLORSPACE_SCRGB &&
-        renderer->output_colorspace != SDL_COLORSPACE_HDR10) {
+        renderer->output_colorspace != SDL_COLORSPACE_SCRGB
+        /*&& renderer->output_colorspace != SDL_COLORSPACE_HDR10*/) {
         SDL_SetError("Unsupported output colorspace");
         SDL_free(renderer);
         return NULL;

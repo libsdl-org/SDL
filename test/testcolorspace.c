@@ -403,8 +403,10 @@ int main(int argc, char *argv[])
                     colorspace = SDL_COLORSPACE_SRGB;
                 } else if (SDL_strcasecmp(colorspace_name, "scRGB") == 0) {
                     colorspace = SDL_COLORSPACE_SCRGB;
+/* Not currently supported
                 } else if (SDL_strcasecmp(colorspace_name, "HDR10") == 0) {
                     colorspace = SDL_COLORSPACE_HDR10;
+*/
                 } else {
                     SDL_Log("Unknown colorspace %s\n", argv[i + 1]);
                     goto quit;
