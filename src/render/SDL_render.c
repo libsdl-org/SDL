@@ -1383,6 +1383,17 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
         }
     }
 
+    /* Look for floating point pixel formats if needed */
+    if (format == SDL_PIXELFORMAT_UNKNOWN &&
+        (SDL_ISPIXELFORMAT_10BIT(fmt->format) || SDL_ISPIXELFORMAT_FLOAT(fmt->format))) {
+        for (i = 0; i < (int)renderer->info.num_texture_formats; ++i) {
+            if (SDL_ISPIXELFORMAT_FLOAT(renderer->info.texture_formats[i])) {
+                format = renderer->info.texture_formats[i];
+                break;
+            }
+        }
+    }
+
     /* Fallback, choose a valid pixel format */
     if (format == SDL_PIXELFORMAT_UNKNOWN) {
         format = renderer->info.texture_formats[0];
@@ -1410,9 +1421,12 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     }
 
     if ((SDL_COLORSPACETRANSFER(colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ && !SDL_ISPIXELFORMAT_10BIT(format)) ||
-        (colorspace == SDL_COLORSPACE_SCRGB && !SDL_ISPIXELFORMAT_FLOAT(format))) {
-        /* Need to do SDR conversion */
-        colorspace = SDL_COLORSPACE_SRGB;
+        colorspace == SDL_COLORSPACE_SCRGB) {
+        if (SDL_ISPIXELFORMAT_FLOAT(format)) {
+            colorspace = SDL_COLORSPACE_SCRGB;
+        } else {
+            colorspace = SDL_COLORSPACE_SRGB;
+        }
     }
 
     props = SDL_CreateProperties();

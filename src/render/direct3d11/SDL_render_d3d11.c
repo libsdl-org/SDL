@@ -217,6 +217,8 @@ Uint32 D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
 static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 colorspace, SDL_bool colorspace_conversion)
 {
     switch (format) {
+    case SDL_PIXELFORMAT_RGBA64_FLOAT:
+        return DXGI_FORMAT_R16G16B16A16_FLOAT;
     case SDL_PIXELFORMAT_ARGB8888:
         if (colorspace_conversion && colorspace == SDL_COLORSPACE_SRGB) {
             return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
@@ -241,6 +243,8 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 color
 static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(Uint32 format, Uint32 colorspace, SDL_bool colorspace_conversion)
 {
     switch (format) {
+    case SDL_PIXELFORMAT_RGBA64_FLOAT:
+        return DXGI_FORMAT_R16G16B16A16_FLOAT;
     case SDL_PIXELFORMAT_ARGB8888:
         if (colorspace_conversion && colorspace == SDL_COLORSPACE_SRGB) {
             return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
@@ -2603,10 +2607,11 @@ SDL_RenderDriver D3D11_RenderDriver = {
         "direct3d11",
         (SDL_RENDERER_ACCELERATED |
          SDL_RENDERER_PRESENTVSYNC), /* flags.  see SDL_RendererFlags */
-        6,                           /* num_texture_formats */
+        7,                           /* num_texture_formats */
         {                            /* texture_formats */
           SDL_PIXELFORMAT_ARGB8888,
           SDL_PIXELFORMAT_XRGB8888,
+          SDL_PIXELFORMAT_RGBA64_FLOAT,
           SDL_PIXELFORMAT_YV12,
           SDL_PIXELFORMAT_IYUV,
           SDL_PIXELFORMAT_NV12,
