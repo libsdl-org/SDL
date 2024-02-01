@@ -216,7 +216,11 @@ extern DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
  *
  * The following properties are understood by SDL:
  *
- * - `SDL_PROP_SURFACE_COLORSPACE_NUMBER`: an SDL_ColorSpace value describing the surface colorspace, defaults to SDL_COLORSPACE_SCRGB for floating point formats, SDL_COLORSPACE_HDR10 for 10-bit formats, SDL_COLORSPACE_SRGB for other RGB surfaces and SDL_COLORSPACE_BT709_FULL for YUV textures.
+ * - `SDL_PROP_SURFACE_COLORSPACE_NUMBER`: an SDL_ColorSpace value describing
+ *   the surface colorspace, defaults to SDL_COLORSPACE_SCRGB for floating
+ *   point formats, SDL_COLORSPACE_HDR10 for 10-bit formats,
+ *   SDL_COLORSPACE_SRGB for other RGB surfaces and SDL_COLORSPACE_BT709_FULL
+ *   for YUV textures.
  * - `SDL_PROP_SURFACE_MAXCLL_NUMBER`: MaxCLL (Maximum Content Light Level)
  *   indicates the maximum light level of any single pixel (in cd/m2 or nits)
  *   of the entire playback sequence. MaxCLL is usually measured off the final
@@ -247,7 +251,8 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSurfaceProperties(SDL_Surface *s
 /**
  * Set the colorspace used by a surface.
  *
- * Setting the colorspace doesn't change the pixels, only how they are interpreted in color operations.
+ * Setting the colorspace doesn't change the pixels, only how they are
+ * interpreted in color operations.
  *
  * \param surface the SDL_Surface structure to update
  * \param colorspace an SDL_ColorSpace value describing the surface colorspace
@@ -261,10 +266,13 @@ extern DECLSPEC int SDLCALL SDL_SetSurfaceColorspace(SDL_Surface *surface, SDL_C
 /**
  * Get the colorspace used by a surface.
  *
- * The colorspace defaults to SDL_COLORSPACE_SCRGB for floating point formats, SDL_COLORSPACE_HDR10 for 10-bit formats, SDL_COLORSPACE_SRGB for other RGB surfaces and SDL_COLORSPACE_BT709_FULL for YUV textures.
+ * The colorspace defaults to SDL_COLORSPACE_SCRGB for floating point formats,
+ * SDL_COLORSPACE_HDR10 for 10-bit formats, SDL_COLORSPACE_SRGB for other RGB
+ * surfaces and SDL_COLORSPACE_BT709_FULL for YUV textures.
  *
  * \param surface the SDL_Surface structure to query
- * \param colorspace a pointer filled in with an SDL_ColorSpace value describing the surface colorspace
+ * \param colorspace a pointer filled in with an SDL_ColorSpace value
+ *                   describing the surface colorspace
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -715,9 +723,12 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface(SDL_Surface *surface, co
 extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormat(SDL_Surface *surface, Uint32 pixel_format);
 
 /**
- * Copy an existing surface to a new surface of the specified format and colorspace.
+ * Copy an existing surface to a new surface of the specified format and
+ * colorspace.
  *
- * This function converts an existing surface to a new format and colorspace and returns the new surface. This will perform any pixel format and colorspace conversion needed.
+ * This function converts an existing surface to a new format and colorspace
+ * and returns the new surface. This will perform any pixel format and
+ * colorspace conversion needed.
  *
  * \param surface the existing SDL_Surface structure to convert
  * \param pixel_format the new pixel format
@@ -752,16 +763,19 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormatAndColorspace(SDL_S
 extern DECLSPEC int SDLCALL SDL_ConvertPixels(int width, int height, Uint32 src_format, const void *src, int src_pitch, Uint32 dst_format, void *dst, int dst_pitch);
 
 /**
- * Copy a block of pixels of one format and colorspace to another format and colorspace.
+ * Copy a block of pixels of one format and colorspace to another format and
+ * colorspace.
  *
  * \param width the width of the block to copy, in pixels
  * \param height the height of the block to copy, in pixels
  * \param src_format an SDL_PixelFormatEnum value of the `src` pixels format
- * \param src_colorspace an SDL_ColorSpace value describing the colorspace of the `src` pixels
+ * \param src_colorspace an SDL_ColorSpace value describing the colorspace of
+ *                       the `src` pixels
  * \param src a pointer to the source pixels
  * \param src_pitch the pitch of the source pixels, in bytes
  * \param dst_format an SDL_PixelFormatEnum value of the `dst` pixels format
- * \param dst_colorspace an SDL_ColorSpace value describing the colorspace of the `dst` pixels
+ * \param dst_colorspace an SDL_ColorSpace value describing the colorspace of
+ *                       the `dst` pixels
  * \param dst a pointer to be filled in with new pixel data
  * \param dst_pitch the pitch of the destination pixels, in bytes
  * \returns 0 on success or a negative error code on failure; call
