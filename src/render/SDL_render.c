@@ -1150,6 +1150,13 @@ static Uint32 GetClosestSupportedFormat(SDL_Renderer *renderer, Uint32 format)
                 return renderer->info.texture_formats[i];
             }
         }
+    } else if (SDL_ISPIXELFORMAT_10BIT(format) || SDL_ISPIXELFORMAT_FLOAT(format)) {
+        for (i = 0; i < renderer->info.num_texture_formats; ++i) {
+            if (!SDL_ISPIXELFORMAT_FOURCC(renderer->info.texture_formats[i]) &&
+                SDL_ISPIXELFORMAT_FLOAT(renderer->info.texture_formats[i])) {
+                return renderer->info.texture_formats[i];
+            }
+        }
     } else {
         SDL_bool hasAlpha = SDL_ISPIXELFORMAT_ALPHA(format);
 
@@ -1254,6 +1261,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
         }
     } else {
         int closest_format;
+        SDL_PropertiesID native_props = SDL_CreateProperties();
 
         if (!texture_is_fourcc_and_target) {
             closest_format = GetClosestSupportedFormat(renderer, format);
@@ -1261,7 +1269,14 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
             closest_format = renderer->info.texture_formats[0];
         }
 
-        texture->native = SDL_CreateTexture(renderer, closest_format, access, w, h);
+        SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, texture->colorspace);
+        SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, closest_format);
+        SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, texture->access);
+        SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, texture->w);
+        SDL_SetNumberProperty(native_props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, texture->h);
+
+        texture->native = SDL_CreateTextureWithProperties(renderer, native_props);
+        SDL_DestroyProperties(native_props);
         if (!texture->native) {
             SDL_DestroyTexture(texture);
             return NULL;
