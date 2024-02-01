@@ -105,20 +105,20 @@ static int PixelFormatToPS2PSM(Uint32 format)
 
 static gs_rgbaq float_color_to_RGBAQ(const SDL_FColor *color)
 {
-    uint8_t colorR = (uint8_t)(color->r * 255.0f);
-    uint8_t colorG = (uint8_t)(color->g * 255.0f);
-    uint8_t colorB = (uint8_t)(color->b * 255.0f);
-    uint8_t colorA = (uint8_t)(color->a * 255.0f);
+    uint8_t colorR = (uint8_t)SDL_roundf(color->r * 255.0f);
+    uint8_t colorG = (uint8_t)SDL_roundf(color->g * 255.0f);
+    uint8_t colorB = (uint8_t)SDL_roundf(color->b * 255.0f);
+    uint8_t colorA = (uint8_t)SDL_roundf(color->a * 255.0f);
 
     return color_to_RGBAQ(colorR, colorG, colorB, colorA, 0x00);
 }
 
 static uint64_t float_GS_SETREG_RGBAQ(const SDL_FColor *color)
 {
-    uint8_t colorR = (uint8_t)(color->r * 255.0f);
-    uint8_t colorG = (uint8_t)(color->g * 255.0f);
-    uint8_t colorB = (uint8_t)(color->b * 255.0f);
-    uint8_t colorA = (uint8_t)(color->a * 255.0f);
+    uint8_t colorR = (uint8_t)SDL_roundf(color->r * 255.0f);
+    uint8_t colorG = (uint8_t)SDL_roundf(color->g * 255.0f);
+    uint8_t colorB = (uint8_t)SDL_roundf(color->b * 255.0f);
+    uint8_t colorA = (uint8_t)SDL_roundf(color->a * 255.0f);
 
     return GS_SETREG_RGBAQ(colorR, colorG, colorB, colorA, 0x00);
 }
