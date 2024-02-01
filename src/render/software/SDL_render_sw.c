@@ -1124,6 +1124,7 @@ SDL_Renderer *SW_CreateRendererForSurface(SDL_Surface *surface)
     if (!renderer) {
         return NULL;
     }
+    renderer->magic = &SDL_renderer_magic;
 
     data = (SW_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {

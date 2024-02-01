@@ -31,6 +31,16 @@
 /* Pixel format functions */
 extern int SDL_InitFormat(SDL_PixelFormat *format, Uint32 pixel_format);
 extern int SDL_CalculateSize(Uint32 format, int width, int height, size_t *size, size_t *pitch, SDL_bool minimalPitch);
+extern SDL_Colorspace SDL_GetDefaultColorspaceForFormat(Uint32 pixel_format);
+
+/* Colorspace conversion functions */
+extern float SDL_scRGBtoNits(float v);
+extern float SDL_scRGBfromNits(float v);
+extern float SDL_sRGBtoNits(float v);
+extern float SDL_sRGBfromNits(float v);
+extern float SDL_PQtoNits(float v);
+extern float SDL_PQfromNits(float v);
+
 
 /* Blit mapping functions */
 extern SDL_BlitMap *SDL_AllocBlitMap(void);

@@ -174,6 +174,7 @@ typedef struct
     ID3D12GraphicsCommandList2 *commandList;
     DXGI_SWAP_EFFECT swapEffect;
     UINT swapFlags;
+    DXGI_FORMAT renderTargetFormat;
     SDL_bool pixelSizeChanged;
 
     /* Descriptor heaps */
@@ -278,6 +279,10 @@ Uint32 D3D12_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
     case DXGI_FORMAT_B8G8R8X8_UNORM:
     case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
         return SDL_PIXELFORMAT_XRGB8888;
+    case DXGI_FORMAT_R10G10B10A2_UNORM:
+        return SDL_PIXELFORMAT_XBGR2101010;
+    case DXGI_FORMAT_R16G16B16A16_FLOAT:
+        return SDL_PIXELFORMAT_RGBA64_FLOAT;
     default:
         return SDL_PIXELFORMAT_UNKNOWN;
     }
@@ -751,6 +756,8 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
         SDL_BLENDMODE_MUL
     };
     const DXGI_FORMAT defaultRTVFormats[] = {
+        DXGI_FORMAT_R16G16B16A16_FLOAT,
+        DXGI_FORMAT_R10G10B10A2_UNORM,
         DXGI_FORMAT_B8G8R8A8_UNORM,
         DXGI_FORMAT_B8G8R8X8_UNORM,
         DXGI_FORMAT_R8_UNORM
@@ -1178,7 +1185,24 @@ static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     SDL_zero(swapChainDesc);
     swapChainDesc.Width = w;
     swapChainDesc.Height = h;
-    swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM; /* This is the most common swap chain format. */
+    switch (renderer->output_colorspace) {
+    case SDL_COLORSPACE_SCRGB:
+        swapChainDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+        data->renderTargetFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+        break;
+    case SDL_COLORSPACE_HDR10:
+        swapChainDesc.Format = DXGI_FORMAT_R10G10B10A2_UNORM;
+        data->renderTargetFormat = DXGI_FORMAT_R10G10B10A2_UNORM;
+        break;
+    default:
+        swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM; /* This is the most common swap chain format. */
+        if (renderer->colorspace_conversion && renderer->output_colorspace == SDL_COLORSPACE_SRGB) {
+            data->renderTargetFormat = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+        } else {
+            data->renderTargetFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
+        }
+        break;
+    }
     swapChainDesc.Stereo = FALSE;
     swapChainDesc.SampleDesc.Count = 1; /* Don't use multi-sampling. */
     swapChainDesc.SampleDesc.Quality = 0;
@@ -1226,6 +1250,25 @@ static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 
     data->swapEffect = swapChainDesc.SwapEffect;
     data->swapFlags = swapChainDesc.Flags;
+
+    DXGI_COLOR_SPACE_TYPE ColorSpace;
+    switch (renderer->output_colorspace) {
+    case SDL_COLORSPACE_SCRGB:
+        ColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709;
+        break;
+    case SDL_COLORSPACE_HDR10:
+        ColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
+        break;
+    default:
+        /* sRGB */
+        ColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
+        break;
+    }
+    result = D3D_CALL(data->swapChain, SetColorSpace1, ColorSpace);
+    if (FAILED(result)) {
+        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain3::SetColorSpace1"), result);
+        goto done;
+    }
 
 done:
     SAFE_RELEASE(swapChain);
@@ -1354,11 +1397,7 @@ static HRESULT D3D12_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
 #endif
 
         SDL_zero(rtvDesc);
-        if (renderer->colorspace_conversion && renderer->output_colorspace == SDL_COLORSPACE_SRGB) {
-            rtvDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
-        } else {
-            rtvDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-        }
+        rtvDesc.Format = data->renderTargetFormat;
         rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
         SDL_zero(rtvDescriptor);
@@ -2379,7 +2418,7 @@ static int D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
     SDL_bool updateSubresource = SDL_FALSE;
     int i;
     D3D12_CPU_DESCRIPTOR_HANDLE firstShaderResource;
-    DXGI_FORMAT rtvFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
+    DXGI_FORMAT rtvFormat = rendererData->renderTargetFormat;
 
     if (rendererData->textureRenderTarget) {
         rtvFormat = rendererData->textureRenderTarget->mainTextureFormat;
@@ -2877,12 +2916,14 @@ static int D3D12_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
     /* Copy the data into the desired buffer, converting pixels to the
      * desired format at the same time:
      */
-    status = SDL_ConvertPixels(
+    status = SDL_ConvertPixelsAndColorspace(
         rect->w, rect->h,
         D3D12_DXGIFormatToSDLPixelFormat(textureDesc.Format),
+        renderer->target ? renderer->target->colorspace : renderer->output_colorspace,
         textureMemory,
         pitchedDesc.RowPitch,
         format,
+        renderer->input_colorspace,
         pixels,
         pitch);
 
@@ -2997,13 +3038,21 @@ SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_p
     }
     renderer->magic = &SDL_renderer_magic;
 
+    SDL_SetupRendererColorspace(renderer, create_props);
+
+    if (renderer->output_colorspace != SDL_COLORSPACE_SRGB &&
+        renderer->output_colorspace != SDL_COLORSPACE_SCRGB &&
+        renderer->output_colorspace != SDL_COLORSPACE_HDR10) {
+        SDL_SetError("Unsupported output colorspace");
+        SDL_free(renderer);
+        return NULL;
+    }
+
     data = (D3D12_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
         SDL_free(renderer);
         return NULL;
     }
-
-    SDL_SetupRendererColorspace(renderer, create_props);
 
     data->identity = MatrixIdentity();
 

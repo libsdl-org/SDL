@@ -1566,6 +1566,14 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
     }
     renderer->magic = &SDL_renderer_magic;
 
+    SDL_SetupRendererColorspace(renderer, create_props);
+
+    if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
+        SDL_SetError("Unsupported output colorspace");
+        SDL_free(renderer);
+        return NULL;
+    }
+
     data = (D3D_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
         SDL_free(renderer);
@@ -1573,9 +1581,9 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
     }
 
     if (!D3D_LoadDLL(&data->d3dDLL, &data->d3d)) {
+        SDL_SetError("Unable to create Direct3D interface");
         SDL_free(renderer);
         SDL_free(data);
-        SDL_SetError("Unable to create Direct3D interface");
         return NULL;
     }
 

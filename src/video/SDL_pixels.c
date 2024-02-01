@@ -692,6 +692,78 @@ void SDL_DestroyPixelFormat(SDL_PixelFormat *format)
     return;
 }
 
+SDL_Colorspace SDL_GetDefaultColorspaceForFormat(Uint32 format)
+{
+    if (SDL_ISPIXELFORMAT_FOURCC(format)) {
+        return SDL_COLORSPACE_BT709_FULL;
+    } else if (SDL_ISPIXELFORMAT_FLOAT(format)) {
+        return SDL_COLORSPACE_SCRGB;
+    } else if (SDL_ISPIXELFORMAT_10BIT(format)) {
+        return SDL_COLORSPACE_HDR10;
+    } else {
+        return SDL_COLORSPACE_RGB_DEFAULT;
+    }
+}
+
+float SDL_scRGBtoNits(float v)
+{
+    return v * 80.0f;
+}
+
+float SDL_scRGBfromNits(float v)
+{
+    return v / 80.0f;
+}
+
+float SDL_sRGBtoNits(float v)
+{
+    if (v <= 0.04045f) {
+        v = (v / 12.92f);
+    } else {
+        v = SDL_powf((v + 0.055f) / 1.055f, 2.4f);
+    }
+    return SDL_scRGBtoNits(v);
+}
+
+float SDL_sRGBfromNits(float v)
+{
+    v = SDL_scRGBfromNits(v);
+
+    if (v <= 0.0031308f) {
+        v = (v * 12.92f);
+    } else {
+        v = (SDL_powf(v, 1.0f / 2.4f) * 1.055f - 0.055f);
+    }
+    return v;
+}
+
+float SDL_PQtoNits(float v)
+{
+    const float c1 = 0.8359375f;
+    const float c2 = 18.8515625f;
+    const float c3 = 18.6875f;
+    const float oo_m1 = 1.0f / 0.1593017578125f;
+    const float oo_m2 = 1.0f / 78.84375f;
+
+    float num = SDL_max(SDL_powf(v, oo_m2) - c1, 0.0f);
+    float den = c2 - c3 * SDL_powf(v, oo_m2);
+    return 10000.0f * SDL_powf(num / den, oo_m1);
+}
+
+float SDL_PQfromNits(float v)
+{
+    const float c1 = 0.8359375f;
+    const float c2 = 18.8515625f;
+    const float c3 = 18.6875f;
+    const float m1 = 0.1593017578125f;
+    const float m2 = 78.84375f;
+
+    float y = SDL_clamp(v / 10000.0f, 0.0f, 1.0f);
+    float num = c1 + c2 * pow(y, m1);
+    float den = 1.0f + c3 * pow(y, m1);
+    return pow(num / den, m2);
+}
+
 SDL_Palette *SDL_CreatePalette(int ncolors)
 {
     SDL_Palette *palette;

@@ -1710,13 +1710,19 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
         goto error;
     }
 
+    SDL_SetupRendererColorspace(renderer, create_props);
+
+    if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
+        SDL_SetError("Unsupported output colorspace");
+        SDL_free(renderer);
+        goto error;
+    }
+
     data = (GL_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
         SDL_free(renderer);
         goto error;
     }
-
-    SDL_SetupRendererColorspace(renderer, create_props);
 
     renderer->WindowEvent = GL_WindowEvent;
     renderer->SupportsBlendMode = GL_SupportsBlendMode;
@@ -1939,10 +1945,13 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
 error:
     if (changed_window) {
         /* Uh oh, better try to put it back... */
+        char *error = SDL_strdup(SDL_GetError());
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, profile_mask);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor);
         SDL_RecreateWindow(window, window_flags);
+        SDL_SetError("%s", error);
+        SDL_free(error);
     }
     return NULL;
 }

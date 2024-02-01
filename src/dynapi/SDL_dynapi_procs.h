@@ -1015,3 +1015,7 @@ SDL_DYNAPI_PROC(int,SDL_SetTextureAlphaModFloat,(SDL_Texture *a, float b),(a,b),
 SDL_DYNAPI_PROC(int,SDL_GetTextureAlphaModFloat,(SDL_Texture *a, float *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_SetRenderDrawColorFloat,(SDL_Renderer *a, float b, float c, float d, float e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(int,SDL_GetRenderDrawColorFloat,(SDL_Renderer *a, float *b, float *c, float *d, float *e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(int,SDL_ConvertPixelsAndColorspace,(int a, int b, Uint32 c, SDL_Colorspace d, const void *e, int f, Uint32 g, SDL_Colorspace h, void *i, int j),(a,b,c,d,e,f,g,h,i,j),return)
+SDL_DYNAPI_PROC(int,SDL_SetSurfaceColorspace,(SDL_Surface *a, SDL_Colorspace b),(a,b),return)
+SDL_DYNAPI_PROC(int,SDL_GetSurfaceColorspace,(SDL_Surface *a, SDL_Colorspace *b),(a,b),return)
+SDL_DYNAPI_PROC(SDL_Surface*,SDL_ConvertSurfaceFormatAndColorspace,(SDL_Surface *a, Uint32 b, SDL_Colorspace c),(a,b,c),return)

@@ -886,7 +886,7 @@ static int GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
             verts->position.y = xy_[1] * scale_y;
 
             if (colorswap) {
-                Uint8 r = col_.r;
+                float r = col_.r;
                 col_.r = col_.b;
                 col_.b = r;
             }
@@ -2049,6 +2049,15 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
     if (!renderer) {
         goto error;
     }
+    renderer->magic = &SDL_renderer_magic;
+
+    SDL_SetupRendererColorspace(renderer, create_props);
+
+    if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
+        SDL_SetError("Unsupported output colorspace");
+        SDL_free(renderer);
+        goto error;
+    }
 
     data = (GLES2_RenderData *)SDL_calloc(1, sizeof(GLES2_RenderData));
     if (!data) {
@@ -2207,10 +2216,13 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
 error:
     if (changed_window) {
         /* Uh oh, better try to put it back... */
+        char *error = SDL_strdup(SDL_GetError());
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, profile_mask);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor);
         SDL_RecreateWindow(window, window_flags);
+        SDL_SetError("%s", error);
+        SDL_free(error);
     }
     return NULL;
 }
