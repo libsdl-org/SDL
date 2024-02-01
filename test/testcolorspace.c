@@ -32,7 +32,7 @@ static SDL_Colorspace colorspace = SDL_COLORSPACE_SRGB;
 static const char *colorspace_name = "sRGB";
 static int renderer_count = 0;
 static int renderer_index = 0;
-static int stage_count = 4;
+static int stage_count = 6;
 static int stage_index = 0;
 static int done;
 
@@ -140,6 +140,20 @@ static void DrawText(float x, float y, const char *fmt, ...)
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDLTest_DrawString(renderer, x + 1.0f, y + 1.0f, text);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDLTest_DrawString(renderer, x, y, text);
+    SDL_free(text);
+}
+
+static void DrawTextWhite(float x, float y, const char *fmt, ...)
+{
+    char *text;
+
+    va_list ap;
+    va_start(ap, fmt);
+    SDL_vasprintf(&text, fmt, ap);
+    va_end(ap);
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDLTest_DrawString(renderer, x, y, text);
     SDL_free(text);
 }
@@ -316,6 +330,158 @@ static void RenderBlendTexture(void)
     SDL_DestroyTexture(b);
 }
 
+static void DrawGradient(float x, float y, float width, float height, float start, float end)
+{
+    float xy[8];
+    const int xy_stride = 2 * sizeof(float);
+    SDL_FColor color[4];
+    const int color_stride = sizeof(SDL_FColor);
+    const int num_vertices = 4;
+    const int indices[6] = { 0, 1, 2, 0, 2, 3 };
+    const int num_indices = 6;
+    const int size_indices = 4;
+    float minx, miny, maxx, maxy;
+    SDL_FColor min_color = { start, start, start, 1.0f };
+    SDL_FColor max_color = { end, end, end, 1.0f };
+
+    minx = x;
+    miny = y;
+    maxx = minx + width;
+    maxy = miny + height;
+
+    xy[0] = minx;
+    xy[1] = miny;
+
+    xy[2] = maxx;
+    xy[3] = miny;
+
+    xy[4] = maxx;
+    xy[5] = maxy;
+
+    xy[6] = minx;
+    xy[7] = maxy;
+
+    color[0] = min_color;
+    color[1] = max_color;
+    color[2] = max_color;
+    color[3] = min_color;
+
+    SDL_RenderGeometryRaw(renderer, NULL, xy, xy_stride, color, color_stride, NULL, 0, num_vertices, indices, num_indices, size_indices);
+}
+
+static void RenderGradientDrawing(void)
+{
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    float x = TEXT_START_X;
+    float y = TEXT_START_Y;
+    DrawTextWhite(x, y, "%s %s", renderer_name, colorspace_name);
+    y += TEXT_LINE_ADVANCE;
+    DrawTextWhite(x, y, "Test: Draw SDR and HDR gradients");
+    y += TEXT_LINE_ADVANCE;
+
+    y += TEXT_LINE_ADVANCE;
+
+    DrawTextWhite(x, y, "SDR mathematically linear gradient (%d nits)", 80);
+    y += TEXT_LINE_ADVANCE;
+    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, 1.0f);
+    y += 64.0f;
+
+    y += TEXT_LINE_ADVANCE;
+    y += TEXT_LINE_ADVANCE;
+
+    DrawTextWhite(x, y, "HDR mathematically linear gradient (%d nits)", 400);
+    y += TEXT_LINE_ADVANCE;
+    SDL_SetRenderDrawColorspace(renderer, SDL_COLORSPACE_SCRGB);
+    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, 5.0f);
+    SDL_SetRenderDrawColorspace(renderer, SDL_COLORSPACE_SRGB);
+    y += 64.0f;
+
+    y += TEXT_LINE_ADVANCE;
+    y += TEXT_LINE_ADVANCE;
+
+    DrawTextWhite(x, y, "HDR mathematically linear gradient (%d nits)", 1000);
+    y += TEXT_LINE_ADVANCE;
+    SDL_SetRenderDrawColorspace(renderer, SDL_COLORSPACE_SCRGB);
+    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, 12.5f);
+    SDL_SetRenderDrawColorspace(renderer, SDL_COLORSPACE_SRGB);
+    y += 64.0f;
+}
+
+static SDL_Texture *CreateGradientTexture(int width, float start, float end)
+{
+    SDL_Texture *texture;
+    float *pixels;
+
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA128_FLOAT, SDL_TEXTUREACCESS_STATIC, width, 1);
+    if (!texture) {
+        return NULL;
+    }
+
+    pixels = (float *)SDL_malloc(width * sizeof(float) * 4);
+    if (pixels) {
+        int i;
+        float length = (end - start);
+
+        for (i = 0; i < width; ++i) {
+            /* Use a 2.4 gamma function to create a perceptually linear gradient */
+            float v = SDL_powf(start + (length * i) / width, 2.4f);
+            pixels[i * 4 + 0] = v;
+            pixels[i * 4 + 1] = v;
+            pixels[i * 4 + 2] = v;
+            pixels[i * 4 + 3] = 1.0f;
+        }
+        SDL_UpdateTexture(texture, NULL, pixels, width * sizeof(float) * 4);
+        SDL_free(pixels);
+    }
+    return texture;
+}
+
+static void DrawGradientTexture(float x, float y, float width, float height, float start, float end)
+{
+    SDL_FRect rect = { x, y, width, height };
+    SDL_Texture *texture = CreateGradientTexture((int)width, start, end);
+    SDL_RenderTexture(renderer, texture, NULL, &rect);
+    SDL_DestroyTexture(texture);
+}
+
+static void RenderGradientTexture(void)
+{
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    float x = TEXT_START_X;
+    float y = TEXT_START_Y;
+    DrawTextWhite(x, y, "%s %s", renderer_name, colorspace_name);
+    y += TEXT_LINE_ADVANCE;
+    DrawTextWhite(x, y, "Test: Draw SDR and HDR gradients");
+    y += TEXT_LINE_ADVANCE;
+
+    y += TEXT_LINE_ADVANCE;
+
+    DrawTextWhite(x, y, "SDR perceptually linear gradient (%d nits)", 80);
+    y += TEXT_LINE_ADVANCE;
+    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, 1.0f);
+    y += 64.0f;
+
+    y += TEXT_LINE_ADVANCE;
+    y += TEXT_LINE_ADVANCE;
+
+    DrawTextWhite(x, y, "HDR perceptually linear gradient (%d nits)", 400);
+    y += TEXT_LINE_ADVANCE;
+    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, 5.0f);
+    y += 64.0f;
+
+    y += TEXT_LINE_ADVANCE;
+    y += TEXT_LINE_ADVANCE;
+
+    DrawTextWhite(x, y, "HDR perceptually linear gradient (%d nits)", 1000);
+    y += TEXT_LINE_ADVANCE;
+    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, 12.5f);
+    y += 64.0f;
+}
+
 static void loop(void)
 {
     SDL_Event event;
@@ -363,6 +529,12 @@ static void loop(void)
             break;
         case 3:
             RenderBlendTexture();
+            break;
+        case 4:
+            RenderGradientDrawing();
+            break;
+        case 5:
+            RenderGradientTexture();
             break;
         }
 
