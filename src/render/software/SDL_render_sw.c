@@ -41,6 +41,7 @@ typedef struct
     const SDL_Rect *viewport;
     const SDL_Rect *cliprect;
     SDL_bool surface_cliprect_dirty;
+    SDL_Color color;
 } SW_DrawStateCache;
 
 typedef struct
@@ -624,12 +625,12 @@ static int SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
     return 0;
 }
 
-static void PrepTextureForCopy(const SDL_RenderCommand *cmd)
+static void PrepTextureForCopy(const SDL_RenderCommand *cmd, SW_DrawStateCache *drawstate)
 {
-    const Uint8 r = (Uint8)SDL_roundf(cmd->data.draw.color.r * 255.0f);
-    const Uint8 g = (Uint8)SDL_roundf(cmd->data.draw.color.g * 255.0f);
-    const Uint8 b = (Uint8)SDL_roundf(cmd->data.draw.color.b * 255.0f);
-    const Uint8 a = (Uint8)SDL_roundf(cmd->data.draw.color.a * 255.0f);
+    const Uint8 r = drawstate->color.r;
+    const Uint8 g = drawstate->color.g;
+    const Uint8 b = drawstate->color.b;
+    const Uint8 a = drawstate->color.a;
     const SDL_BlendMode blend = cmd->data.draw.blend;
     SDL_Texture *texture = cmd->data.draw.texture;
     SDL_Surface *surface = (SDL_Surface *)texture->driverdata;
@@ -687,12 +688,20 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
     drawstate.viewport = NULL;
     drawstate.cliprect = NULL;
     drawstate.surface_cliprect_dirty = SDL_TRUE;
+    drawstate.color.r = 0;
+    drawstate.color.g = 0;
+    drawstate.color.b = 0;
+    drawstate.color.a = 0;
 
     while (cmd) {
         switch (cmd->command) {
         case SDL_RENDERCMD_SETDRAWCOLOR:
         {
-            break; /* Not used in this backend. */
+            drawstate.color.r = (Uint8)SDL_roundf(cmd->data.color.color.r * 255.0f);
+            drawstate.color.g = (Uint8)SDL_roundf(cmd->data.color.color.g * 255.0f);
+            drawstate.color.b = (Uint8)SDL_roundf(cmd->data.color.color.b * 255.0f);
+            drawstate.color.a = (Uint8)SDL_roundf(cmd->data.color.color.a * 255.0f);
+            break;
         }
 
         case SDL_RENDERCMD_SETVIEWPORT:
@@ -724,10 +733,10 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
 
         case SDL_RENDERCMD_DRAW_POINTS:
         {
-            const Uint8 r = (Uint8)SDL_roundf(cmd->data.draw.color.r * 255.0f);
-            const Uint8 g = (Uint8)SDL_roundf(cmd->data.draw.color.g * 255.0f);
-            const Uint8 b = (Uint8)SDL_roundf(cmd->data.draw.color.b * 255.0f);
-            const Uint8 a = (Uint8)SDL_roundf(cmd->data.draw.color.a * 255.0f);
+            const Uint8 r = drawstate.color.r;
+            const Uint8 g = drawstate.color.g;
+            const Uint8 b = drawstate.color.b;
+            const Uint8 a = drawstate.color.a;
             const int count = (int)cmd->data.draw.count;
             SDL_Point *verts = (SDL_Point *)(((Uint8 *)vertices) + cmd->data.draw.first);
             const SDL_BlendMode blend = cmd->data.draw.blend;
@@ -752,10 +761,10 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
 
         case SDL_RENDERCMD_DRAW_LINES:
         {
-            const Uint8 r = (Uint8)SDL_roundf(cmd->data.draw.color.r * 255.0f);
-            const Uint8 g = (Uint8)SDL_roundf(cmd->data.draw.color.g * 255.0f);
-            const Uint8 b = (Uint8)SDL_roundf(cmd->data.draw.color.b * 255.0f);
-            const Uint8 a = (Uint8)SDL_roundf(cmd->data.draw.color.a * 255.0f);
+            const Uint8 r = drawstate.color.r;
+            const Uint8 g = drawstate.color.g;
+            const Uint8 b = drawstate.color.b;
+            const Uint8 a = drawstate.color.a;
             const int count = (int)cmd->data.draw.count;
             SDL_Point *verts = (SDL_Point *)(((Uint8 *)vertices) + cmd->data.draw.first);
             const SDL_BlendMode blend = cmd->data.draw.blend;
@@ -780,10 +789,10 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
 
         case SDL_RENDERCMD_FILL_RECTS:
         {
-            const Uint8 r = (Uint8)SDL_roundf(cmd->data.draw.color.r * 255.0f);
-            const Uint8 g = (Uint8)SDL_roundf(cmd->data.draw.color.g * 255.0f);
-            const Uint8 b = (Uint8)SDL_roundf(cmd->data.draw.color.b * 255.0f);
-            const Uint8 a = (Uint8)SDL_roundf(cmd->data.draw.color.a * 255.0f);
+            const Uint8 r = drawstate.color.r;
+            const Uint8 g = drawstate.color.g;
+            const Uint8 b = drawstate.color.b;
+            const Uint8 a = drawstate.color.a;
             const int count = (int)cmd->data.draw.count;
             SDL_Rect *verts = (SDL_Rect *)(((Uint8 *)vertices) + cmd->data.draw.first);
             const SDL_BlendMode blend = cmd->data.draw.blend;
@@ -816,7 +825,7 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
 
             SetDrawState(surface, &drawstate);
 
-            PrepTextureForCopy(cmd);
+            PrepTextureForCopy(cmd, &drawstate);
 
             /* Apply viewport */
             if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
@@ -875,7 +884,7 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
         {
             CopyExData *copydata = (CopyExData *)(((Uint8 *)vertices) + cmd->data.draw.first);
             SetDrawState(surface, &drawstate);
-            PrepTextureForCopy(cmd);
+            PrepTextureForCopy(cmd, &drawstate);
 
             /* Apply viewport */
             if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
@@ -904,7 +913,7 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
 
                 GeometryCopyData *ptr = (GeometryCopyData *)verts;
 
-                PrepTextureForCopy(cmd);
+                PrepTextureForCopy(cmd, &drawstate);
 
                 /* Apply viewport */
                 if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
