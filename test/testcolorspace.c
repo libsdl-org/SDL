@@ -247,6 +247,8 @@ static void RenderBlendDrawing(void)
     } else if ((cr.r == 192 && cr.g == 163 && cr.b == 83) ||
                (cr.r == 191 && cr.g == 162 && cr.b == 82)) {
         DrawText(x, y, "Incorrect blend color, blending in sRGB space");
+    } else if (cr.r == 214 && cr.g == 156 && cr.b == 113) {
+        DrawText(x, y, "Incorrect blend color, blending in PQ space");
     } else {
         DrawText(x, y, "Incorrect blend color, unknown reason");
     }
@@ -397,11 +399,11 @@ int main(int argc, char *argv[])
         } else if (SDL_strcmp(argv[i], "--colorspace") == 0) {
             if (argv[i + 1]) {
                 colorspace_name = argv[i + 1];
-                if (SDL_strcasecmp(colorspace_name, "srgb") == 0) {
+                if (SDL_strcasecmp(colorspace_name, "sRGB") == 0) {
                     colorspace = SDL_COLORSPACE_SRGB;
-                } else if (SDL_strcasecmp(colorspace_name, "scrgb") == 0) {
+                } else if (SDL_strcasecmp(colorspace_name, "scRGB") == 0) {
                     colorspace = SDL_COLORSPACE_SCRGB;
-                } else if (SDL_strcasecmp(colorspace_name, "hdr10") == 0) {
+                } else if (SDL_strcasecmp(colorspace_name, "HDR10") == 0) {
                     colorspace = SDL_COLORSPACE_HDR10;
                 } else {
                     SDL_Log("Unknown colorspace %s\n", argv[i + 1]);
