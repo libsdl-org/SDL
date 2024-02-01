@@ -82,7 +82,7 @@ helper_dtod(const char *func_name, d_to_d_func func,
     Uint32 i;
     for (i = 0; i < cases_size; i++) {
         const double result = func(cases[i].input);
-        SDLTest_AssertCheck((result - cases[i].expected) < FLT_EPSILON,
+        SDLTest_AssertCheck(SDL_fabs(result - cases[i].expected) < FLT_EPSILON,
                             "%s(%f), expected %f, got %f",
                             func_name,
                             cases[i].input,
@@ -1161,7 +1161,7 @@ log_baseCases(void *args)
                         1.0, 0.0, result);
 
     result = SDL_log(EULER);
-    SDLTest_AssertCheck((result - 1.) < FLT_EPSILON,
+    SDLTest_AssertCheck(SDL_fabs(result - 1.) < FLT_EPSILON,
                         "Log(%f), expected %f, got %f",
                         EULER, 1.0, result);
 
