@@ -1363,12 +1363,16 @@ extern DECLSPEC int SDLCALL SDL_GetRenderScale(SDL_Renderer *renderer, float *sc
 /**
  * Set the colorspace used for drawing operations
  *
- * The default colorspace for drawing operations is SDL_COLORSPACE_SRGB, but you can change it to other colorspaces such as SDL_COLORSPACE_SCRGB for HDR rendering.
+ * The default colorspace for drawing operations is SDL_COLORSPACE_SRGB, but
+ * you can change it to other colorspaces such as SDL_COLORSPACE_SCRGB for HDR
+ * rendering.
  *
- * This does not affect the colorspace of textures, which is specified via properties when the texture is created and does not change.
+ * This does not affect the colorspace of textures, which is specified via
+ * properties when the texture is created and does not change.
  *
  * \param renderer the rendering context
- * \param colorspace an SDL_ColorSpace value describing the colorspace for drawing operations
+ * \param colorspace an SDL_ColorSpace value describing the colorspace for
+ *                   drawing operations
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1382,7 +1386,8 @@ extern DECLSPEC int SDLCALL SDL_SetRenderDrawColorspace(SDL_Renderer *renderer, 
  * Get the colorspace used for drawing operations
  *
  * \param renderer the rendering context
- * \param colorspace a pointer filled in with an SDL_ColorSpace value describing the colorspace for drawing operations
+ * \param colorspace a pointer filled in with an SDL_ColorSpace value
+ *                   describing the colorspace for drawing operations
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
