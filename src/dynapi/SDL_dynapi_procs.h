@@ -1019,3 +1019,5 @@ SDL_DYNAPI_PROC(int,SDL_ConvertPixelsAndColorspace,(int a, int b, Uint32 c, SDL_
 SDL_DYNAPI_PROC(int,SDL_SetSurfaceColorspace,(SDL_Surface *a, SDL_Colorspace b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_GetSurfaceColorspace,(SDL_Surface *a, SDL_Colorspace *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_ConvertSurfaceFormatAndColorspace,(SDL_Surface *a, Uint32 b, SDL_Colorspace c),(a,b,c),return)
+SDL_DYNAPI_PROC(int,SDL_SetRenderDrawColorspace,(SDL_Renderer *a, SDL_Colorspace b),(a,b),return)
+SDL_DYNAPI_PROC(int,SDL_GetRenderDrawColorspace,(SDL_Renderer *a, SDL_Colorspace *b),(a,b),return)
