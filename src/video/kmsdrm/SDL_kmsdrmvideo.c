@@ -23,13 +23,14 @@
 
 #ifdef SDL_VIDEO_DRIVER_KMSDRM
 
+/* include this here before SDL_sysvideo.h to avoid vulkan type
+ * redefinition errors.  it already includes SDL_sysvideo.h.  */
 #include "SDL_kmsdrmvulkan.h"
 
 /* SDL internals */
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
-#include "../SDL_sysvideo.h"
 
 #ifdef SDL_INPUT_LINUXEV
 #include "../../core/linux/SDL_evdev.h"
@@ -43,7 +44,6 @@
 #include "SDL_kmsdrmmouse.h"
 #include "SDL_kmsdrmvideo.h"
 #include "SDL_kmsdrmopengles.h"
-/*#include "SDL_kmsdrmvulkan.h"*/
 #include <dirent.h>
 #include <errno.h>
 #include <poll.h>
