@@ -2757,6 +2757,30 @@ int SDL_GetRenderScale(SDL_Renderer *renderer, float *scaleX, float *scaleY)
     return 0;
 }
 
+int SDL_SetRenderDrawColorspace(SDL_Renderer *renderer, SDL_Colorspace colorspace)
+{
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    if (colorspace != SDL_COLORSPACE_SRGB &&
+        colorspace != SDL_COLORSPACE_SCRGB) {
+        return SDL_SetError("Unsupported colorspace");
+    }
+
+    renderer->input_colorspace = colorspace;
+    return 0;
+}
+
+int SDL_GetRenderDrawColorspace(SDL_Renderer *renderer, SDL_Colorspace *colorspace)
+{
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    if (colorspace) {
+        *colorspace = renderer->input_colorspace;
+    }
+    return 0;
+}
+
+
 int SDL_SetRenderDrawColor(SDL_Renderer *renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     const float fR = (float)r / 255.0f;
