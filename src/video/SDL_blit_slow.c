@@ -664,19 +664,6 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_Pixel
     }
 }
 
-static void ConvertColorPrimaries(float *fR, float *fG, float *fB, const float *matrix)
-{
-    float v[3];
-
-    v[0] = *fR;
-    v[1] = *fG;
-    v[2] = *fB;
-
-    *fR = matrix[0 * 3 + 0] * v[0] + matrix[0 * 3 + 1] * v[1] + matrix[0 * 3 + 2] * v[2];
-    *fG = matrix[1 * 3 + 0] * v[0] + matrix[1 * 3 + 1] * v[1] + matrix[1 * 3 + 2] * v[2];
-    *fB = matrix[2 * 3 + 0] * v[0] + matrix[2 * 3 + 1] * v[1] + matrix[2 * 3 + 2] * v[2];
-}
-
 static float CompressPQtoSDR(float v)
 {
     /* This gives generally good results for PQ HDR -> SDR conversion, scaling from 400 nits to 80 nits,
@@ -729,7 +716,7 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
     if (src_transfer == SDL_TRANSFER_CHARACTERISTICS_PQ &&
         dst_transfer != SDL_TRANSFER_CHARACTERISTICS_PQ &&
         dst_colorspace != SDL_COLORSPACE_SCRGB) {
-        compress_PQ = SDL_TRUE;
+        //compress_PQ = SDL_TRUE;
     }
 
     src_access = GetPixelAccessMethod(src_fmt);
@@ -752,7 +739,7 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
             ReadFloatPixel(src, src_access, src_fmt, src_colorspace, &srcR, &srcG, &srcB, &srcA);
 
             if (color_primaries_matrix) {
-                ConvertColorPrimaries(&srcR, &srcG, &srcB, color_primaries_matrix);
+                SDL_ConvertColorPrimaries(&srcR, &srcG, &srcB, color_primaries_matrix);
             }
 
             if (compress_PQ) {
