@@ -664,12 +664,44 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_Pixel
     }
 }
 
-static float CompressPQtoSDR(float v)
+typedef enum
 {
-    /* This gives generally good results for PQ HDR -> SDR conversion, scaling from 400 nits to 80 nits,
-     * which is scRGB 1.0
-     */
-    return (v / 5.0f);
+    SDL_TONEMAP_NONE,
+    SDL_TONEMAP_LINEAR,
+} SDL_TonemapOperator;
+
+typedef struct
+{
+    SDL_TonemapOperator op;
+
+    union {
+        struct {
+            float scale;
+        } linear;
+    } data;
+
+} SDL_TonemapContext;
+
+static void ApplyTonemap(SDL_TonemapContext *ctx, float *r, float *g, float *b)
+{
+    switch (ctx->op) {
+    case SDL_TONEMAP_LINEAR:
+        *r *= ctx->data.linear.scale;
+        *g *= ctx->data.linear.scale;
+        *b *= ctx->data.linear.scale;
+        break;
+    default:
+        break;
+    }
+}
+
+static SDL_bool IsHDRColorspace(SDL_Colorspace colorspace)
+{
+    if (colorspace == SDL_COLORSPACE_SCRGB ||
+        SDL_COLORSPACETRANSFER(colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
 }
 
 /* The SECOND TRUE BLITTER
@@ -694,29 +726,30 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
     SlowBlitPixelAccess src_access;
     SlowBlitPixelAccess dst_access;
     SDL_Colorspace src_colorspace;
-    SDL_ColorPrimaries src_primaries;
-    SDL_TransferCharacteristics src_transfer;
     SDL_Colorspace dst_colorspace;
-    SDL_ColorPrimaries dst_primaries;
-    SDL_TransferCharacteristics dst_transfer;
-    const float *color_primaries_matrix;
-    SDL_bool compress_PQ = SDL_FALSE;
+    const float *color_primaries_matrix = NULL;
+    SDL_TonemapContext tonemap;
 
     if (SDL_GetSurfaceColorspace(info->src_surface, &src_colorspace) < 0 ||
         SDL_GetSurfaceColorspace(info->dst_surface, &dst_colorspace) < 0) {
         return;
     }
 
-    src_primaries = SDL_COLORSPACEPRIMARIES(src_colorspace);
-    src_transfer = SDL_COLORSPACETRANSFER(src_colorspace);
-    dst_primaries = SDL_COLORSPACEPRIMARIES(dst_colorspace);
-    dst_transfer = SDL_COLORSPACETRANSFER(dst_colorspace);
-    color_primaries_matrix = SDL_GetColorPrimariesConversionMatrix(src_primaries, dst_primaries);
+    tonemap.op = SDL_TONEMAP_NONE;
+    if (src_colorspace != dst_colorspace) {
+        SDL_ColorPrimaries src_primaries = SDL_COLORSPACEPRIMARIES(src_colorspace);
+        SDL_ColorPrimaries dst_primaries = SDL_COLORSPACEPRIMARIES(dst_colorspace);
+        color_primaries_matrix = SDL_GetColorPrimariesConversionMatrix(src_primaries, dst_primaries);
 
-    if (src_transfer == SDL_TRANSFER_CHARACTERISTICS_PQ &&
-        dst_transfer != SDL_TRANSFER_CHARACTERISTICS_PQ &&
-        dst_colorspace != SDL_COLORSPACE_SCRGB) {
-        //compress_PQ = SDL_TRUE;
+        if (IsHDRColorspace(src_colorspace) != IsHDRColorspace(dst_colorspace)) {
+            const char *tonemap_operator = SDL_GetStringProperty(SDL_GetSurfaceProperties(info->src_surface), SDL_PROP_SURFACE_TONEMAP_OPERATOR_STRING, NULL);
+            if (tonemap_operator) {
+                if (SDL_strncmp(tonemap_operator, "*=", 2) == 0) {
+                    tonemap.op = SDL_TONEMAP_LINEAR;
+                    tonemap.data.linear.scale = SDL_atof(tonemap_operator + 2);
+                }
+            }
+        }
     }
 
     src_access = GetPixelAccessMethod(src_fmt);
@@ -742,10 +775,8 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
                 SDL_ConvertColorPrimaries(&srcR, &srcG, &srcB, color_primaries_matrix);
             }
 
-            if (compress_PQ) {
-                srcR = CompressPQtoSDR(srcR);
-                srcG = CompressPQtoSDR(srcG);
-                srcB = CompressPQtoSDR(srcB);
+            if (tonemap.op) {
+                ApplyTonemap(&tonemap, &srcR, &srcG, &srcB);
             }
 
             if (flags & SDL_COPY_COLORKEY) {
