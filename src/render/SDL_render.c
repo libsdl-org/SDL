@@ -1351,6 +1351,10 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
         }
     }
 
+    if (SDL_GetSurfaceColorspace(surface, &colorspace) < 0) {
+        return NULL;
+    }
+
     /* Try to have the best pixel format for the texture */
     /* No alpha, but a colorkey => promote to alpha */
     if (!fmt->Amask && SDL_SurfaceHasColorKey(surface)) {
@@ -1405,8 +1409,10 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
         direct_update = SDL_FALSE;
     }
 
-    if (SDL_GetSurfaceColorspace(surface, &colorspace) < 0) {
-        return NULL;
+    if ((SDL_COLORSPACETRANSFER(colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ && !SDL_ISPIXELFORMAT_10BIT(format)) ||
+        (colorspace == SDL_COLORSPACE_SCRGB && !SDL_ISPIXELFORMAT_FLOAT(format))) {
+        /* Need to do SDR conversion */
+        colorspace = SDL_COLORSPACE_SRGB;
     }
 
     props = SDL_CreateProperties();
@@ -1429,17 +1435,10 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
             SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
         }
     } else {
-        SDL_PixelFormat *dst_fmt;
         SDL_Surface *temp = NULL;
 
         /* Set up a destination surface for the texture update */
-        dst_fmt = SDL_CreatePixelFormat(format);
-        if (!dst_fmt) {
-            SDL_DestroyTexture(texture);
-            return NULL;
-        }
-        temp = SDL_ConvertSurface(surface, dst_fmt);
-        SDL_DestroyPixelFormat(dst_fmt);
+        temp = SDL_ConvertSurfaceFormatAndColorspace(surface, format, colorspace);
         if (temp) {
             SDL_UpdateTexture(texture, NULL, temp->pixels, temp->pitch);
             SDL_DestroySurface(temp);
