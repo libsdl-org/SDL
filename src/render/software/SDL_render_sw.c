@@ -107,10 +107,10 @@ static int SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
         return SDL_SetError("Cannot create surface");
     }
     texture->driverdata = surface;
-    r = (Uint8)SDL_roundf(texture->color.r * 255.0f);
-    g = (Uint8)SDL_roundf(texture->color.g * 255.0f);
-    b = (Uint8)SDL_roundf(texture->color.b * 255.0f);
-    a = (Uint8)SDL_roundf(texture->color.a * 255.0f);
+    r = (Uint8)SDL_roundf(SDL_clamp(texture->color.r, 0.0f, 1.0f) * 255.0f);
+    g = (Uint8)SDL_roundf(SDL_clamp(texture->color.g, 0.0f, 1.0f) * 255.0f);
+    b = (Uint8)SDL_roundf(SDL_clamp(texture->color.b, 0.0f, 1.0f) * 255.0f);
+    a = (Uint8)SDL_roundf(SDL_clamp(texture->color.a, 0.0f, 1.0f) * 255.0f);
     SDL_SetSurfaceColorMod(texture->driverdata, r, g, b);
     SDL_SetSurfaceAlphaMod(texture->driverdata, a);
     SDL_SetSurfaceBlendMode(texture->driverdata, texture->blendMode);
@@ -583,10 +583,10 @@ static int SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
             ptr->dst.y = (int)(xy_[1] * scale_y);
             trianglepoint_2_fixedpoint(&ptr->dst);
 
-            ptr->color.r = (Uint8)SDL_roundf(col_.r * 255.0f);
-            ptr->color.g = (Uint8)SDL_roundf(col_.g * 255.0f);
-            ptr->color.b = (Uint8)SDL_roundf(col_.b * 255.0f);
-            ptr->color.a = (Uint8)SDL_roundf(col_.a * 255.0f);
+            ptr->color.r = (Uint8)SDL_roundf(SDL_clamp(col_.r, 0.0f, 1.0f) * 255.0f);
+            ptr->color.g = (Uint8)SDL_roundf(SDL_clamp(col_.g, 0.0f, 1.0f) * 255.0f);
+            ptr->color.b = (Uint8)SDL_roundf(SDL_clamp(col_.b, 0.0f, 1.0f) * 255.0f);
+            ptr->color.a = (Uint8)SDL_roundf(SDL_clamp(col_.a, 0.0f, 1.0f) * 255.0f);
 
             ptr++;
         }
@@ -614,10 +614,10 @@ static int SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
             ptr->dst.y = (int)(xy_[1] * scale_y);
             trianglepoint_2_fixedpoint(&ptr->dst);
 
-            ptr->color.r = (Uint8)SDL_roundf(col_.r * 255.0f);
-            ptr->color.g = (Uint8)SDL_roundf(col_.g * 255.0f);
-            ptr->color.b = (Uint8)SDL_roundf(col_.b * 255.0f);
-            ptr->color.a = (Uint8)SDL_roundf(col_.a * 255.0f);
+            ptr->color.r = (Uint8)SDL_roundf(SDL_clamp(col_.r, 0.0f, 1.0f) * 255.0f);
+            ptr->color.g = (Uint8)SDL_roundf(SDL_clamp(col_.g, 0.0f, 1.0f) * 255.0f);
+            ptr->color.b = (Uint8)SDL_roundf(SDL_clamp(col_.b, 0.0f, 1.0f) * 255.0f);
+            ptr->color.a = (Uint8)SDL_roundf(SDL_clamp(col_.a, 0.0f, 1.0f) * 255.0f);
 
             ptr++;
         }
@@ -697,10 +697,10 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
         switch (cmd->command) {
         case SDL_RENDERCMD_SETDRAWCOLOR:
         {
-            drawstate.color.r = (Uint8)SDL_roundf(cmd->data.color.color.r * 255.0f);
-            drawstate.color.g = (Uint8)SDL_roundf(cmd->data.color.color.g * 255.0f);
-            drawstate.color.b = (Uint8)SDL_roundf(cmd->data.color.color.b * 255.0f);
-            drawstate.color.a = (Uint8)SDL_roundf(cmd->data.color.color.a * 255.0f);
+            drawstate.color.r = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.r, 0.0f, 1.0f) * 255.0f);
+            drawstate.color.g = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.g, 0.0f, 1.0f) * 255.0f);
+            drawstate.color.b = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.b, 0.0f, 1.0f) * 255.0f);
+            drawstate.color.a = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.a, 0.0f, 1.0f) * 255.0f);
             break;
         }
 
@@ -720,10 +720,10 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
 
         case SDL_RENDERCMD_CLEAR:
         {
-            const Uint8 r = (Uint8)SDL_roundf(cmd->data.color.color.r * 255.0f);
-            const Uint8 g = (Uint8)SDL_roundf(cmd->data.color.color.g * 255.0f);
-            const Uint8 b = (Uint8)SDL_roundf(cmd->data.color.color.b * 255.0f);
-            const Uint8 a = (Uint8)SDL_roundf(cmd->data.color.color.a * 255.0f);
+            const Uint8 r = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.r, 0.0f, 1.0f) * 255.0f);
+            const Uint8 g = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.g, 0.0f, 1.0f) * 255.0f);
+            const Uint8 b = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.b, 0.0f, 1.0f) * 255.0f);
+            const Uint8 a = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.a, 0.0f, 1.0f) * 255.0f);
             /* By definition the clear ignores the clip rect */
             SDL_SetSurfaceClipRect(surface, NULL);
             SDL_FillSurfaceRect(surface, NULL, SDL_MapRGBA(surface->format, r, g, b, a));
