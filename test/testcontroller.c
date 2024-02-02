@@ -785,6 +785,8 @@ static const char *GetBindingInstruction(void)
     case SDL_GAMEPAD_BUTTON_MISC2:
     case SDL_GAMEPAD_BUTTON_MISC3:
     case SDL_GAMEPAD_BUTTON_MISC4:
+    case SDL_GAMEPAD_BUTTON_MISC5:
+    case SDL_GAMEPAD_BUTTON_MISC6:
         return "Press any additional button not already bound";
     case SDL_GAMEPAD_ELEMENT_AXIS_LEFTX_NEGATIVE:
         return "Move the left thumbstick to the left";

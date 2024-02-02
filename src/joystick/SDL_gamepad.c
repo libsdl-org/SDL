@@ -1088,7 +1088,9 @@ static const char *map_StringForGamepadButton[] = {
     "touchpad",
     "misc2",
     "misc3",
-    "misc4"
+    "misc4",
+    "misc5",
+    "misc6"
 };
 SDL_COMPILE_TIME_ASSERT(map_StringForGamepadButton, SDL_arraysize(map_StringForGamepadButton) == SDL_GAMEPAD_BUTTON_MAX);
 
@@ -1757,6 +1759,8 @@ static GamepadMapping_t *SDL_PrivateGenerateAutomaticGamepadMapping(const char *
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "misc2", &raw_map->misc2);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "misc3", &raw_map->misc3);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "misc4", &raw_map->misc4);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "misc5", &raw_map->misc5);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "misc6", &raw_map->misc6);
     /* Keep using paddle1-4 in the generated mapping so that it can be
      * reused with SDL2 */
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle1", &raw_map->right_paddle1);

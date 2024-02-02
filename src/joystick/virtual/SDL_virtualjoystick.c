@@ -702,6 +702,16 @@ static SDL_bool VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadM
         out->misc4.target = current_button++;
     }
 
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_MISC5))) {
+        out->misc5.kind = EMappingKind_Button;
+        out->misc5.target = current_button++;
+    }
+
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_GAMEPAD_BUTTON_MISC6))) {
+        out->misc6.kind = EMappingKind_Button;
+        out->misc6.target = current_button++;
+    }
+
     if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_GAMEPAD_AXIS_LEFTX))) {
         out->leftx.kind = EMappingKind_Axis;
         out->leftx.target = current_axis++;

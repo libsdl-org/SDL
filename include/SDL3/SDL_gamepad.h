@@ -122,6 +122,8 @@ typedef enum
     SDL_GAMEPAD_BUTTON_MISC2,           /* Additional button */
     SDL_GAMEPAD_BUTTON_MISC3,           /* Additional button */
     SDL_GAMEPAD_BUTTON_MISC4,           /* Additional button */
+    SDL_GAMEPAD_BUTTON_MISC5,           /* Additional button */
+    SDL_GAMEPAD_BUTTON_MISC6,           /* Additional button */
     SDL_GAMEPAD_BUTTON_MAX
 } SDL_GamepadButton;
 

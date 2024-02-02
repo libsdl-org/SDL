@@ -215,6 +215,8 @@ typedef struct SDL_GamepadMapping
     SDL_InputMapping misc2;
     SDL_InputMapping misc3;
     SDL_InputMapping misc4;
+    SDL_InputMapping misc5;
+    SDL_InputMapping misc6;
     SDL_InputMapping right_paddle1;
     SDL_InputMapping left_paddle1;
     SDL_InputMapping right_paddle2;
