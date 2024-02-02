@@ -117,11 +117,10 @@ helper_dtod_inexact(const char *func_name, d_to_d_func func,
             max_err = -max_err;
         }
         SDLTest_AssertCheck(diff <= max_err,
-                            "%s(%f), expected [%f,%f], got %f",
+                            "%s(%f), expected %f +/- %g, got %f",
                             func_name,
                             cases[i].input,
-                            cases[i].expected - EPSILON,
-                            cases[i].expected + EPSILON,
+                            cases[i].expected, max_err,
                             result);
     }
 
@@ -182,11 +181,10 @@ helper_ddtod_inexact(const char *func_name, dd_to_d_func func,
         }
 
         SDLTest_AssertCheck(diff <= max_err,
-                            "%s(%f,%f), expected [%f,%f], got %f",
+                            "%s(%f,%f), expected %f +/- %g, got %f",
                             func_name,
                             cases[i].x_input, cases[i].y_input,
-                            cases[i].expected - EPSILON,
-                            cases[i].expected + EPSILON,
+                            cases[i].expected, max_err,
                             result);
     }
 
