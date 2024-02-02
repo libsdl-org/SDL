@@ -242,7 +242,9 @@ extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, co
  *   to use, if a specific one is desired
  * - `SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER`: an SDL_ColorSpace
  *   value describing the colorspace for output to the display, defaults to
- *   SDL_COLORSPACE_SRGB. The direct3d11 and direct3d12 renderers support SDL_COLORSPACE_SCRGB, which is a linear color space and supports HDR output.
+ *   SDL_COLORSPACE_SRGB. The direct3d11 and direct3d12 renderers support
+ *   SDL_COLORSPACE_SCRGB, which is a linear color space and supports HDR
+ *   output.
  * - `SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN`: true if you want
  *   present synchronized with the refresh rate
  *
