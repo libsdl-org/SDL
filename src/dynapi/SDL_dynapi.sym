@@ -969,8 +969,6 @@ SDL3_0.0.0 {
     SDL_SetSurfaceColorspace;
     SDL_GetSurfaceColorspace;
     SDL_ConvertSurfaceFormatAndColorspace;
-    SDL_SetRenderDrawColorspace;
-    SDL_GetRenderDrawColorspace;
     # extra symbols go here (don't modify this line)
   local: *;
 };

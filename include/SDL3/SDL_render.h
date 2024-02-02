@@ -240,15 +240,9 @@ extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, co
  *   is displayed, if you want a software renderer without a window
  * - `SDL_PROP_RENDERER_CREATE_NAME_STRING`: the name of the rendering driver
  *   to use, if a specific one is desired
- * - `SDL_PROP_RENDERER_CREATE_INPUT_COLORSPACE_NUMBER`: an SDL_ColorSpace
- *   value describing the colorspace for input colors, defaults to
- *   SDL_COLORSPACE_SRGB
  * - `SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER`: an SDL_ColorSpace
  *   value describing the colorspace for output to the display, defaults to
- *   SDL_COLORSPACE_SRGB
- * - `SDL_PROP_RENDERER_CREATE_COLORSPACE_CONVERSION_BOOLEAN`: true if you
- *   want conversion between the input colorspace and the output colorspace,
- *   defaults to SDL_TRUE
+ *   SDL_COLORSPACE_SRGB. The direct3d11 and direct3d12 renderers support SDL_COLORSPACE_SCRGB, which is a linear color space and supports HDR output.
  * - `SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN`: true if you want
  *   present synchronized with the refresh rate
  *
@@ -273,9 +267,7 @@ extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_Prop
 #define SDL_PROP_RENDERER_CREATE_WINDOW_POINTER                 "window"
 #define SDL_PROP_RENDERER_CREATE_SURFACE_POINTER                "surface"
 #define SDL_PROP_RENDERER_CREATE_NAME_STRING                    "name"
-#define SDL_PROP_RENDERER_CREATE_INPUT_COLORSPACE_NUMBER        "input_colorspace"
 #define SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER       "output_colorspace"
-#define SDL_PROP_RENDERER_CREATE_COLORSPACE_CONVERSION_BOOLEAN  "colorspace_conversion"
 #define SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN          "present_vsync"
 
 /**
@@ -1359,44 +1351,6 @@ extern DECLSPEC int SDLCALL SDL_SetRenderScale(SDL_Renderer *renderer, float sca
  * \sa SDL_SetRenderScale
  */
 extern DECLSPEC int SDLCALL SDL_GetRenderScale(SDL_Renderer *renderer, float *scaleX, float *scaleY);
-
-/**
- * Set the colorspace used for drawing operations
- *
- * The default colorspace for drawing operations is SDL_COLORSPACE_SRGB, but
- * you can change it to other colorspaces such as SDL_COLORSPACE_SCRGB for HDR
- * rendering.
- *
- * This does not affect the colorspace of textures, which is specified via
- * properties when the texture is created and does not change.
- *
- * \param renderer the rendering context
- * \param colorspace an SDL_ColorSpace value describing the colorspace for
- *                   drawing operations
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetRenderDrawColorspace
- */
-extern DECLSPEC int SDLCALL SDL_SetRenderDrawColorspace(SDL_Renderer *renderer, SDL_Colorspace colorspace);
-
-/**
- * Get the colorspace used for drawing operations
- *
- * \param renderer the rendering context
- * \param colorspace a pointer filled in with an SDL_ColorSpace value
- *                   describing the colorspace for drawing operations
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_SetRenderDrawColorspace
- */
-extern DECLSPEC int SDLCALL SDL_GetRenderDrawColorspace(SDL_Renderer *renderer, SDL_Colorspace *colorspace);
-
 
 /**
  * Set the color used for drawing operations.

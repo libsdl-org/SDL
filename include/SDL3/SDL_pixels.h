@@ -558,6 +558,8 @@ typedef enum
 typedef enum
 {
     SDL_COLORSPACE_UNKNOWN,
+
+    /* sRGB is a gamma corrected colorspace, and the default colorspace for SDL rendering and 8-bit RGB surfaces */
     SDL_COLORSPACE_SRGB =   /**< Equivalent to DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709 */
         SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_RGB,
                               SDL_COLOR_RANGE_FULL,
@@ -565,6 +567,8 @@ typedef enum
                               SDL_TRANSFER_CHARACTERISTICS_SRGB,
                               SDL_MATRIX_COEFFICIENTS_UNSPECIFIED,
                               SDL_CHROMA_LOCATION_NONE),
+
+    /* scRGB is a linear colorspace and the default colorspace for floating point surfaces */
     SDL_COLORSPACE_SCRGB =   /**< Equivalent to DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709  */
         SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_RGB,
                               SDL_COLOR_RANGE_FULL,
@@ -572,6 +576,8 @@ typedef enum
                               SDL_TRANSFER_CHARACTERISTICS_LINEAR,
                               SDL_MATRIX_COEFFICIENTS_UNSPECIFIED,
                               SDL_CHROMA_LOCATION_NONE),
+
+    /* HDR10 is a non-linear HDR colorspace and the default colorspace for 10-bit surfaces */
     SDL_COLORSPACE_HDR10 =   /**< Equivalent to DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020  */
         SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_RGB,
                               SDL_COLOR_RANGE_FULL,
@@ -579,6 +585,7 @@ typedef enum
                               SDL_TRANSFER_CHARACTERISTICS_PQ,
                               SDL_MATRIX_COEFFICIENTS_UNSPECIFIED,
                               SDL_CHROMA_LOCATION_NONE),
+
     SDL_COLORSPACE_BT601_LIMITED =  /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601 */
         SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
                               SDL_COLOR_RANGE_LIMITED,
@@ -586,6 +593,7 @@ typedef enum
                               SDL_TRANSFER_CHARACTERISTICS_BT601,
                               SDL_MATRIX_COEFFICIENTS_BT601,
                               SDL_CHROMA_LOCATION_LEFT),
+
     SDL_COLORSPACE_BT601_FULL =     /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601 */
         SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
                               SDL_COLOR_RANGE_FULL,
@@ -593,6 +601,7 @@ typedef enum
                               SDL_TRANSFER_CHARACTERISTICS_BT601,
                               SDL_MATRIX_COEFFICIENTS_BT601,
                               SDL_CHROMA_LOCATION_LEFT),
+
     SDL_COLORSPACE_BT709_LIMITED =  /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709 */
         SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
                               SDL_COLOR_RANGE_LIMITED,
@@ -600,6 +609,7 @@ typedef enum
                               SDL_TRANSFER_CHARACTERISTICS_BT709,
                               SDL_MATRIX_COEFFICIENTS_BT709,
                               SDL_CHROMA_LOCATION_LEFT),
+
     SDL_COLORSPACE_BT709_FULL =     /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709 */
         SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
                               SDL_COLOR_RANGE_FULL,

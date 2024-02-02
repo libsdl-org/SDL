@@ -51,9 +51,7 @@ static void CreateRenderer(void)
     props = SDL_CreateProperties();
     SDL_SetProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
     SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, SDL_GetRenderDriver(renderer_index));
-    SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_INPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
     SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, colorspace);
-    SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_COLORSPACE_CONVERSION_BOOLEAN, SDL_TRUE);
     renderer = SDL_CreateRendererWithProperties(props);
     SDL_DestroyProperties(props);
     if (!renderer) {
@@ -254,13 +252,13 @@ static void RenderBlendDrawing(void)
     float y = TEXT_START_Y;
     DrawText(x, y, "%s %s", renderer_name, colorspace_name);
     y += TEXT_LINE_ADVANCE;
-    DrawText(x, y, "Test: Draw Linear Blending");
+    DrawText(x, y, "Test: Draw Blending");
     y += TEXT_LINE_ADVANCE;
     if (cr.r == 199 && cr.g == 193 && cr.b == 121) {
-        DrawText(x, y, "Correct blend color in linear space");
+        DrawText(x, y, "Correct blend color, blending in linear space");
     } else if ((cr.r == 192 && cr.g == 163 && cr.b == 83) ||
                (cr.r == 191 && cr.g == 162 && cr.b == 82)) {
-        DrawText(x, y, "Incorrect blend color, blending in sRGB space");
+        DrawText(x, y, "Correct blend color, blending in sRGB space");
     } else if (cr.r == 214 && cr.g == 156 && cr.b == 113) {
         DrawText(x, y, "Incorrect blend color, blending in PQ space");
     } else {
@@ -314,13 +312,13 @@ static void RenderBlendTexture(void)
     float y = TEXT_START_Y;
     DrawText(x, y, "%s %s", renderer_name, colorspace_name);
     y += TEXT_LINE_ADVANCE;
-    DrawText(x, y, "Test: Texture Linear Blending");
+    DrawText(x, y, "Test: Texture Blending");
     y += TEXT_LINE_ADVANCE;
     if (cr.r == 199 && cr.g == 193 && cr.b == 121) {
-        DrawText(x, y, "Correct blend color in linear space");
+        DrawText(x, y, "Correct blend color, blending in linear space");
     } else if ((cr.r == 192 && cr.g == 163 && cr.b == 83) ||
                (cr.r == 191 && cr.g == 162 && cr.b == 82)) {
-        DrawText(x, y, "Incorrect blend color, blending in sRGB space");
+        DrawText(x, y, "Correct blend color, blending in sRGB space");
     } else {
         DrawText(x, y, "Incorrect blend color, unknown reason");
     }
@@ -351,13 +349,10 @@ static void DrawGradient(float x, float y, float width, float height, float star
 
     xy[0] = minx;
     xy[1] = miny;
-
     xy[2] = maxx;
     xy[3] = miny;
-
     xy[4] = maxx;
     xy[5] = maxy;
-
     xy[6] = minx;
     xy[7] = maxy;
 
@@ -367,6 +362,36 @@ static void DrawGradient(float x, float y, float width, float height, float star
     color[3] = min_color;
 
     SDL_RenderGeometryRaw(renderer, NULL, xy, xy_stride, color, color_stride, NULL, 0, num_vertices, indices, num_indices, size_indices);
+}
+
+static float scRGBfromNits(float v)
+{
+    return v / 80.0f;
+}
+
+static float sRGBtoLinear(float v)
+{
+    if (v <= 0.04045f) {
+        v = (v / 12.92f);
+    } else {
+        v = SDL_powf(((v + 0.055f) / 1.055f), 2.4f);
+    }
+    return v;
+}
+
+static float sRGBFromLinear(float v)
+{
+    if (v <= 0.0031308f) {
+        v = (v * 12.92f);
+    } else {
+        v = (SDL_powf(v, 1.0f / 2.4f) * 1.055f - 0.055f);
+    }
+    return v;
+}
+
+static float sRGBfromNits(float v)
+{
+    return sRGBFromLinear(scRGBfromNits(v));
 }
 
 static void RenderGradientDrawing(void)
@@ -383,29 +408,25 @@ static void RenderGradientDrawing(void)
 
     y += TEXT_LINE_ADVANCE;
 
-    DrawTextWhite(x, y, "SDR mathematically linear gradient (%d nits)", 80);
+    DrawTextWhite(x, y, "SDR gradient (%d nits)", 80);
     y += TEXT_LINE_ADVANCE;
-    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, 1.0f);
+    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(80.0f));
     y += 64.0f;
 
     y += TEXT_LINE_ADVANCE;
     y += TEXT_LINE_ADVANCE;
 
-    DrawTextWhite(x, y, "HDR mathematically linear gradient (%d nits)", 400);
+    DrawTextWhite(x, y, "HDR gradient (%d nits)", 400);
     y += TEXT_LINE_ADVANCE;
-    SDL_SetRenderDrawColorspace(renderer, SDL_COLORSPACE_SCRGB);
-    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, 5.0f);
-    SDL_SetRenderDrawColorspace(renderer, SDL_COLORSPACE_SRGB);
+    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(400.0f));
     y += 64.0f;
 
     y += TEXT_LINE_ADVANCE;
     y += TEXT_LINE_ADVANCE;
 
-    DrawTextWhite(x, y, "HDR mathematically linear gradient (%d nits)", 1000);
+    DrawTextWhite(x, y, "HDR gradient (%d nits)", 1000);
     y += TEXT_LINE_ADVANCE;
-    SDL_SetRenderDrawColorspace(renderer, SDL_COLORSPACE_SCRGB);
-    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, 12.5f);
-    SDL_SetRenderDrawColorspace(renderer, SDL_COLORSPACE_SRGB);
+    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(1000));
     y += 64.0f;
 }
 
@@ -414,9 +435,18 @@ static SDL_Texture *CreateGradientTexture(int width, float start, float end)
     SDL_Texture *texture;
     float *pixels;
 
+    /* Floating point textures are in the scRGB colorspace by default */
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA128_FLOAT, SDL_TEXTUREACCESS_STATIC, width, 1);
     if (!texture) {
         return NULL;
+    }
+
+    if (colorspace == SDL_COLORSPACE_SCRGB) {
+        /* The input values are in the sRGB colorspace, but we're blending in linear space */
+        start = sRGBtoLinear(start);
+        end = sRGBtoLinear(end);
+    } else if (colorspace == SDL_COLORSPACE_SRGB) {
+        /* The input values are in the sRGB colorspace, and we're blending in sRGB space */
     }
 
     pixels = (float *)SDL_malloc(width * sizeof(float) * 4);
@@ -425,8 +455,7 @@ static SDL_Texture *CreateGradientTexture(int width, float start, float end)
         float length = (end - start);
 
         for (i = 0; i < width; ++i) {
-            /* Use a 2.4 gamma function to create a perceptually linear gradient */
-            float v = SDL_powf(start + (length * i) / width, 2.4f);
+            float v = (start + (length * i) / width);
             pixels[i * 4 + 0] = v;
             pixels[i * 4 + 1] = v;
             pixels[i * 4 + 2] = v;
@@ -455,30 +484,30 @@ static void RenderGradientTexture(void)
     float y = TEXT_START_Y;
     DrawTextWhite(x, y, "%s %s", renderer_name, colorspace_name);
     y += TEXT_LINE_ADVANCE;
-    DrawTextWhite(x, y, "Test: Draw SDR and HDR gradients");
+    DrawTextWhite(x, y, "Test: Texture SDR and HDR gradients");
     y += TEXT_LINE_ADVANCE;
 
     y += TEXT_LINE_ADVANCE;
 
-    DrawTextWhite(x, y, "SDR perceptually linear gradient (%d nits)", 80);
+    DrawTextWhite(x, y, "SDR gradient (%d nits)", 80);
     y += TEXT_LINE_ADVANCE;
-    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, 1.0f);
+    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(80));
     y += 64.0f;
 
     y += TEXT_LINE_ADVANCE;
     y += TEXT_LINE_ADVANCE;
 
-    DrawTextWhite(x, y, "HDR perceptually linear gradient (%d nits)", 400);
+    DrawTextWhite(x, y, "HDR gradient (%d nits)", 400);
     y += TEXT_LINE_ADVANCE;
-    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, 5.0f);
+    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(400));
     y += 64.0f;
 
     y += TEXT_LINE_ADVANCE;
     y += TEXT_LINE_ADVANCE;
 
-    DrawTextWhite(x, y, "HDR perceptually linear gradient (%d nits)", 1000);
+    DrawTextWhite(x, y, "HDR gradient (%d nits)", 1000);
     y += TEXT_LINE_ADVANCE;
-    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, 12.5f);
+    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(1000));
     y += 64.0f;
 }
 
