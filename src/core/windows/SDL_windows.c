@@ -49,6 +49,10 @@ typedef enum RO_INIT_TYPE
 #define LOAD_LIBRARY_SEARCH_SYSTEM32 0x00000800
 #endif
 
+#ifndef WC_ERR_INVALID_CHARS
+#define WC_ERR_INVALID_CHARS 0x00000080
+#endif
+
 /* Sets an error message based on an HRESULT */
 int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr)
 {
