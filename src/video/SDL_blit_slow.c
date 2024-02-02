@@ -55,10 +55,10 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
     const Uint32 modulateA = info->a;
-    Uint32 srcpixel;
-    Uint32 srcR, srcG, srcB, srcA;
-    Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 srcpixel = 0;
+    Uint32 srcR = 0, srcG = 0, srcB = 0, srcA = 0;
+    Uint32 dstpixel = 0;
+    Uint32 dstR = 0, dstG = 0, dstB = 0, dstA = 0;
     Uint64 srcy, srcx;
     Uint64 posy, posx;
     Uint64 incy, incx;
@@ -114,13 +114,11 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
                     RGBA_FROM_ABGR2101010(srcpixel, srcR, srcG, srcB, srcA);
                     break;
                 default:
-                    srcR = srcG = srcB = srcA = 0;
                     break;
                 }
                 break;
             case SlowBlitPixelAccess_Large:
                 /* Handled in SDL_Blit_Slow_Float() */
-                srcpixel = srcR = srcG = srcB = srcA = 0;
                 break;
             }
 
@@ -163,18 +161,15 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
                         RGBA_FROM_ABGR2101010(dstpixel, dstR, dstG, dstB, dstA);
                         break;
                     default:
-                        dstR = dstG = dstB = dstA = 0;
                         break;
                     }
                     break;
                 case SlowBlitPixelAccess_Large:
                     /* Handled in SDL_Blit_Slow_Float() */
-                    dstR = dstG = dstB = dstA = 0;
                     break;
                 }
             } else {
                 /* don't care */
-                dstR = dstG = dstB = dstA = 0;
             }
 
             if (flags & SDL_COPY_MODULATE_COLOR) {
