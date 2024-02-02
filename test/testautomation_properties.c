@@ -214,6 +214,67 @@ static int properties_testBasic(void *arg)
 }
 
 /**
+ * Test copy functionality
+ */
+static void SDLCALL copy_cleanup(void *userdata, void *value)
+{
+}
+static int properties_testCopy(void *arg)
+{
+    SDL_PropertiesID a, b;
+    int num;
+    const char *string;
+    void *data;
+    int result;
+
+    a = SDL_CreateProperties();
+    SDL_SetNumberProperty(a, "num", 1);
+    SDL_SetStringProperty(a, "string", "foo");
+    SDL_SetProperty(a, "data", &a);
+    SDL_SetPropertyWithCleanup(a, "cleanup", &a, copy_cleanup, &a);
+
+    b = SDL_CreateProperties();
+    SDL_SetNumberProperty(b, "num", 2);
+
+    SDLTest_AssertPass("Call to SDL_CopyProperties(a, 0)");
+    result = SDL_CopyProperties(a, 0);
+    SDLTest_AssertCheck(result == -1,
+                        "SDL_CopyProperties() result, got %d, expected -1", result);
+
+    SDLTest_AssertPass("Call to SDL_CopyProperties(0, b)");
+    result = SDL_CopyProperties(0, b);
+    SDLTest_AssertCheck(result == -1,
+                        "SDL_CopyProperties() result, got %d, expected -1", result);
+
+    SDLTest_AssertPass("Call to SDL_CopyProperties(a, b)");
+    result = SDL_CopyProperties(a, b);
+    SDLTest_AssertCheck(result == 0,
+        "SDL_CopyProperties() result, got %d, expected 0", result);
+
+    SDL_DestroyProperties(a);
+
+    num = SDL_GetNumberProperty(b, "num", 0);
+    SDLTest_AssertCheck(num == 1,
+        "Checking number property, got %d, expected 1", num);
+
+    string = SDL_GetStringProperty(b, "string", NULL);
+    SDLTest_AssertCheck(string && SDL_strcmp(string, "foo") == 0,
+        "Checking string property, got \"%s\", expected \"foo\"", string);
+
+    data = SDL_GetProperty(b, "data", NULL);
+    SDLTest_AssertCheck(data == &a,
+        "Checking data property, got %p, expected %p", data, &a);
+
+    data = SDL_GetProperty(b, "cleanup", NULL);
+    SDLTest_AssertCheck(data == NULL,
+        "Checking cleanup property, got %p, expected NULL", data);
+
+    SDL_DestroyProperties(b);
+
+    return TEST_COMPLETED;
+}
+
+/**
  * Test cleanup functionality
  */
 static void SDLCALL cleanup(void *userdata, void *value)
@@ -324,21 +385,29 @@ static int properties_testLocking(void *arg)
 /* ================= Test References ================== */
 
 /* Properties test cases */
-static const SDLTest_TestCaseReference propertiesTest1 = {
+static const SDLTest_TestCaseReference propertiesTestBasic = {
     (SDLTest_TestCaseFp)properties_testBasic, "properties_testBasic", "Test basic property functionality", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference propertiesTest2 = {
+static const SDLTest_TestCaseReference propertiesTestCopy = {
+    (SDLTest_TestCaseFp)properties_testCopy, "properties_testCopy", "Test property copy functionality", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference propertiesTestCleanup = {
     (SDLTest_TestCaseFp)properties_testCleanup, "properties_testCleanup", "Test property cleanup functionality", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference propertiesTest3 = {
+static const SDLTest_TestCaseReference propertiesTestLocking = {
     (SDLTest_TestCaseFp)properties_testLocking, "properties_testLocking", "Test property locking functionality", TEST_ENABLED
 };
 
 /* Sequence of Properties test cases */
 static const SDLTest_TestCaseReference *propertiesTests[] = {
-    &propertiesTest1, &propertiesTest2, &propertiesTest3, NULL
+    &propertiesTestBasic,
+    &propertiesTestCopy,
+    &propertiesTestCleanup,
+    &propertiesTestLocking,
+    NULL
 };
 
 /* Properties test suite (global) */
