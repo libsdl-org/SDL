@@ -84,7 +84,10 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_CreateProperties(void);
 /**
  * Copy a set of properties
  *
- * Copy all the properties from one set of properties to another, with the exception of properties requiring cleanup (set using SDL_SetPropertyWithCleanup()), which will not be copied. Any property that already exists on `dst` will be overwritten.
+ * Copy all the properties from one set of properties to another, with the
+ * exception of properties requiring cleanup (set using
+ * SDL_SetPropertyWithCleanup()), which will not be copied. Any property that
+ * already exists on `dst` will be overwritten.
  *
  * \param src the properties to copy
  * \param dst the destination properties
