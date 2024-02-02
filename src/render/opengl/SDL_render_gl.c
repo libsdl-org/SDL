@@ -401,27 +401,18 @@ static SDL_bool GL_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blend
     return SDL_TRUE;
 }
 
-static SDL_bool convert_format(Uint32 pixel_format, Uint32 colorspace, SDL_bool colorspace_conversion,
-               GLint *internalFormat, GLenum *format, GLenum *type)
+static SDL_bool convert_format(Uint32 pixel_format, GLint *internalFormat, GLenum *format, GLenum *type)
 {
     switch (pixel_format) {
     case SDL_PIXELFORMAT_ARGB8888:
     case SDL_PIXELFORMAT_XRGB8888:
-        if (colorspace_conversion && colorspace == SDL_COLORSPACE_SRGB) {
-            *internalFormat = GL_SRGB8_ALPHA8;
-        } else {
-            *internalFormat = GL_RGBA8;
-        }
+        *internalFormat = GL_RGBA8;
         *format = GL_BGRA;
         *type = GL_UNSIGNED_INT_8_8_8_8_REV;
         break;
     case SDL_PIXELFORMAT_ABGR8888:
     case SDL_PIXELFORMAT_XBGR8888:
-        if (colorspace_conversion && colorspace == SDL_COLORSPACE_SRGB) {
-            *internalFormat = GL_SRGB8_ALPHA8;
-        } else {
-            *internalFormat = GL_RGBA8;
-        }
+        *internalFormat = GL_RGBA8;
         *format = GL_RGBA;
         *type = GL_UNSIGNED_INT_8_8_8_8_REV;
         break;
@@ -466,8 +457,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
         return SDL_SetError("Render targets not supported by OpenGL");
     }
 
-    if (!convert_format(texture->format, texture->colorspace, renderer->colorspace_conversion,
-                        &internalFormat, &format, &type)) {
+    if (!convert_format(texture->format, &internalFormat, &format, &type)) {
         return SDL_SetError("Texture format %s not supported by OpenGL",
                             SDL_GetPixelFormatName(texture->format));
     }
@@ -1481,8 +1471,7 @@ static int GL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
 
     GL_ActivateRenderer(renderer);
 
-    if (!convert_format(temp_format, renderer->input_colorspace, renderer->colorspace_conversion,
-                        &internalFormat, &format, &type)) {
+    if (!convert_format(temp_format, &internalFormat, &format, &type)) {
         return SDL_SetError("Texture format %s not supported by OpenGL",
                             SDL_GetPixelFormatName(temp_format));
     }
@@ -1925,9 +1914,6 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
     data->glDisable(data->textype);
     data->glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     data->glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    if (renderer->colorspace_conversion && renderer->output_colorspace == SDL_COLORSPACE_SRGB) {
-        data->glEnable(GL_FRAMEBUFFER_SRGB);
-    }
     /* This ended up causing video discrepancies between OpenGL and Direct3D */
     /* data->glEnable(GL_LINE_SMOOTH); */
 

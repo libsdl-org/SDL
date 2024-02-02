@@ -214,18 +214,18 @@ Uint32 D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
     }
 }
 
-static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 colorspace, SDL_bool colorspace_conversion)
+static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 colorspace)
 {
     switch (format) {
     case SDL_PIXELFORMAT_RGBA64_FLOAT:
         return DXGI_FORMAT_R16G16B16A16_FLOAT;
     case SDL_PIXELFORMAT_ARGB8888:
-        if (colorspace_conversion && colorspace == SDL_COLORSPACE_SRGB) {
+        if (colorspace == SDL_COLORSPACE_SCRGB) {
             return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
         }
         return DXGI_FORMAT_B8G8R8A8_UNORM;
     case SDL_PIXELFORMAT_XRGB8888:
-        if (colorspace_conversion && colorspace == SDL_COLORSPACE_SRGB) {
+        if (colorspace == SDL_COLORSPACE_SCRGB) {
             return DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
         }
         return DXGI_FORMAT_B8G8R8X8_UNORM;
@@ -240,18 +240,18 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 color
     }
 }
 
-static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(Uint32 format, Uint32 colorspace, SDL_bool colorspace_conversion)
+static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(Uint32 format, Uint32 colorspace)
 {
     switch (format) {
     case SDL_PIXELFORMAT_RGBA64_FLOAT:
         return DXGI_FORMAT_R16G16B16A16_FLOAT;
     case SDL_PIXELFORMAT_ARGB8888:
-        if (colorspace_conversion && colorspace == SDL_COLORSPACE_SRGB) {
+        if (colorspace == SDL_COLORSPACE_SCRGB) {
             return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
         }
         return DXGI_FORMAT_B8G8R8A8_UNORM;
     case SDL_PIXELFORMAT_XRGB8888:
-        if (colorspace_conversion && colorspace == SDL_COLORSPACE_SRGB) {
+        if (colorspace == SDL_COLORSPACE_SCRGB) {
             return DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
         }
         return DXGI_FORMAT_B8G8R8X8_UNORM;
@@ -523,6 +523,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     if (SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, SDL_FALSE)) {
         creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
     }
+        creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
 
     /* Create a single-threaded device unless the app requests otherwise. */
     if (!SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D_THREADSAFE, SDL_FALSE)) {
@@ -893,23 +894,31 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 
     IDXGISwapChain3 *swapChain3 = NULL;
     if (SUCCEEDED(IDXGISwapChain1_QueryInterface(data->swapChain, &SDL_IID_IDXGISwapChain2, (void **)&swapChain3))) {
-        DXGI_COLOR_SPACE_TYPE ColorSpace;
+        UINT colorspace_support = 0;
+        DXGI_COLOR_SPACE_TYPE colorspace;
         switch (renderer->output_colorspace) {
         case SDL_COLORSPACE_SCRGB:
-            ColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709;
+            colorspace = DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709;
             break;
         case SDL_COLORSPACE_HDR10:
-            ColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
+            colorspace = DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
             break;
         default:
             /* sRGB */
-            ColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
+            colorspace = DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
             break;
         }
-        result = IDXGISwapChain3_SetColorSpace1(swapChain3, ColorSpace);
-        if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain3::SetColorSpace1"), result);
-            goto done;
+        if (SUCCEEDED(IDXGISwapChain3_CheckColorSpaceSupport(swapChain3, colorspace, &colorspace_support)) &&
+            (colorspace_support & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT)) {
+            result = IDXGISwapChain3_SetColorSpace1(swapChain3, colorspace);
+            if (FAILED(result)) {
+                WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain3::SetColorSpace1"), result);
+                goto done;
+            }
+        } else if (colorspace != DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709) {
+            /* Not the default, we're not going to be able to present in this colorspace */
+            SDL_SetError("Unsupported output colorspace");
+            result = DXGI_ERROR_UNSUPPORTED;
         }
     }
 
@@ -1050,27 +1059,9 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
     }
 
     /* Create a render target view of the swap chain back buffer. */
-    D3D11_RENDER_TARGET_VIEW_DESC desc;
-    SDL_zero(desc);
-    switch (renderer->output_colorspace) {
-    case SDL_COLORSPACE_SCRGB:
-        desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-        break;
-    case SDL_COLORSPACE_HDR10:
-        desc.Format = DXGI_FORMAT_R10G10B10A2_UNORM;
-        break;
-    default:
-        if (renderer->colorspace_conversion && renderer->output_colorspace == SDL_COLORSPACE_SRGB) {
-            desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
-        } else {
-            desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-        }
-        break;
-    }
-    desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
     result = ID3D11Device_CreateRenderTargetView(data->d3dDevice,
                                                  (ID3D11Resource *)backBuffer,
-                                                 &desc,
+                                                 NULL,
                                                  &data->mainRenderTargetView);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device::CreateRenderTargetView"), result);
@@ -1163,7 +1154,7 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->driverdata;
     D3D11_TextureData *textureData;
     HRESULT result;
-    DXGI_FORMAT textureFormat = SDLPixelFormatToDXGITextureFormat(texture->format, texture->colorspace, renderer->colorspace_conversion);
+    DXGI_FORMAT textureFormat = SDLPixelFormatToDXGITextureFormat(texture->format, renderer->output_colorspace);
     D3D11_TEXTURE2D_DESC textureDesc;
     D3D11_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
 
@@ -1262,7 +1253,7 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
     }
 #endif /* SDL_HAVE_YUV */
     SDL_zero(resourceViewDesc);
-    resourceViewDesc.Format = SDLPixelFormatToDXGIMainResourceViewFormat(texture->format, texture->colorspace, renderer->colorspace_conversion);
+    resourceViewDesc.Format = SDLPixelFormatToDXGIMainResourceViewFormat(texture->format, renderer->output_colorspace);
     resourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
     resourceViewDesc.Texture2D.MostDetailedMip = 0;
     resourceViewDesc.Texture2D.MipLevels = textureDesc.MipLevels;
@@ -1774,6 +1765,7 @@ static int D3D11_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
 {
     VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
     int i;
+    SDL_bool convert_color = SDL_RenderingLinearSpace(renderer);
 
     if (!verts) {
         return -1;
@@ -1787,6 +1779,9 @@ static int D3D11_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
         verts->tex.x = 0.0f;
         verts->tex.y = 0.0f;
         verts->color = cmd->data.draw.color;
+        if (convert_color) {
+            SDL_ConvertToLinear(&verts->color);
+        }
         verts++;
     }
 
@@ -1801,6 +1796,7 @@ static int D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
     int i;
     int count = indices ? num_indices : num_vertices;
     VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
+    SDL_bool convert_color = SDL_RenderingLinearSpace(renderer);
 
     if (!verts) {
         return -1;
@@ -1827,6 +1823,9 @@ static int D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
         verts->pos.x = xy_[0] * scale_x;
         verts->pos.y = xy_[1] * scale_y;
         verts->color = *(SDL_FColor *)((char *)color + j * color_stride);
+        if (convert_color) {
+            SDL_ConvertToLinear(&verts->color);
+        }
 
         if (texture) {
             float *uv_ = (float *)((char *)uv + j * uv_stride);
@@ -2270,7 +2269,12 @@ static int D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
 
         case SDL_RENDERCMD_CLEAR:
         {
-            ID3D11DeviceContext_ClearRenderTargetView(rendererData->d3dContext, D3D11_GetCurrentRenderTargetView(renderer), &cmd->data.color.color.r);
+            SDL_bool convert_color = SDL_RenderingLinearSpace(renderer);
+            SDL_FColor color = cmd->data.color.color;
+            if (convert_color) {
+                SDL_ConvertToLinear(&color);
+            }
+            ID3D11DeviceContext_ClearRenderTargetView(rendererData->d3dContext, D3D11_GetCurrentRenderTargetView(renderer), &color.r);
             break;
         }
 
@@ -2419,7 +2423,7 @@ static int D3D11_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
         textureMemory.pData,
         textureMemory.RowPitch,
         format,
-        renderer->input_colorspace,
+        SDL_COLORSPACE_SRGB,
         pixels,
         pitch);
 

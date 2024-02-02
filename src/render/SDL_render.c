@@ -128,9 +128,7 @@ char SDL_texture_magic;
 
 void SDL_SetupRendererColorspace(SDL_Renderer *renderer, SDL_PropertiesID props)
 {
-    renderer->input_colorspace = (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_INPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
     renderer->output_colorspace = (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
-    renderer->colorspace_conversion = SDL_GetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_COLORSPACE_CONVERSION_BOOLEAN, SDL_TRUE);
 }
 
 static float sRGBtoLinear(float v)
@@ -143,46 +141,33 @@ static float sRGBfromLinear(float v)
     return v <= 0.0031308f ? (v * 12.92f) : (SDL_powf(v, 1.0f / 2.4f) * 1.055f - 0.055f);
 }
 
-void SDL_ConvertToLinear(SDL_Renderer *renderer, SDL_FColor *color)
+SDL_bool SDL_RenderingLinearSpace(SDL_Renderer *renderer)
 {
-    if (!renderer->colorspace_conversion) {
-        return;
-    }
+    SDL_Colorspace colorspace;
 
-    switch (SDL_COLORSPACETRANSFER(renderer->input_colorspace)) {
-    case SDL_TRANSFER_CHARACTERISTICS_SRGB:
-        color->r = sRGBtoLinear(color->r);
-        color->g = sRGBtoLinear(color->g);
-        color->b = sRGBtoLinear(color->b);
-        break;
-    case SDL_TRANSFER_CHARACTERISTICS_LINEAR:
-        /* No conversion needed */
-        break;
-    default:
-        /* Unsupported */
-        break;
+    if (renderer->target) {
+        colorspace = renderer->target->colorspace;
+    } else {
+        colorspace = renderer->output_colorspace;
     }
+    if (colorspace == SDL_COLORSPACE_SCRGB) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
 }
 
-void SDL_ConvertFromLinear(SDL_Renderer *renderer, SDL_FColor *color)
+void SDL_ConvertToLinear(SDL_FColor *color)
 {
-    if (!renderer->colorspace_conversion) {
-        return;
-    }
+    color->r = sRGBtoLinear(color->r);
+    color->g = sRGBtoLinear(color->g);
+    color->b = sRGBtoLinear(color->b);
+}
 
-    switch (SDL_COLORSPACETRANSFER(renderer->input_colorspace)) {
-    case SDL_TRANSFER_CHARACTERISTICS_SRGB:
-        color->r = sRGBfromLinear(color->r);
-        color->g = sRGBfromLinear(color->g);
-        color->b = sRGBfromLinear(color->b);
-        break;
-    case SDL_TRANSFER_CHARACTERISTICS_LINEAR:
-        /* No conversion needed */
-        break;
-    default:
-        /* Unsupported */
-        break;
-    }
+void SDL_ConvertFromLinear(SDL_FColor *color)
+{
+    color->r = sRGBfromLinear(color->r);
+    color->g = sRGBfromLinear(color->g);
+    color->b = sRGBfromLinear(color->b);
 }
 
 static SDL_INLINE void DebugLogRenderCommands(const SDL_RenderCommand *cmd)
@@ -1549,7 +1534,6 @@ int SDL_SetTextureColorModFloat(SDL_Texture *texture, float r, float g, float b)
     texture->color.r = r;
     texture->color.g = g;
     texture->color.b = b;
-    SDL_ConvertToLinear(texture->renderer, &texture->color);
     if (texture->native) {
         return SDL_SetTextureColorModFloat(texture->native, r, g, b);
     }
@@ -1583,7 +1567,6 @@ int SDL_GetTextureColorModFloat(SDL_Texture *texture, float *r, float *g, float 
     CHECK_TEXTURE_MAGIC(texture, -1);
 
     color = texture->color;
-    SDL_ConvertFromLinear(texture->renderer, &color);
 
     if (r) {
         *r = color.r;
@@ -2785,30 +2768,6 @@ int SDL_GetRenderScale(SDL_Renderer *renderer, float *scaleX, float *scaleY)
     return 0;
 }
 
-int SDL_SetRenderDrawColorspace(SDL_Renderer *renderer, SDL_Colorspace colorspace)
-{
-    CHECK_RENDERER_MAGIC(renderer, -1);
-
-    if (colorspace != SDL_COLORSPACE_SRGB &&
-        colorspace != SDL_COLORSPACE_SCRGB) {
-        return SDL_SetError("Unsupported colorspace");
-    }
-
-    renderer->input_colorspace = colorspace;
-    return 0;
-}
-
-int SDL_GetRenderDrawColorspace(SDL_Renderer *renderer, SDL_Colorspace *colorspace)
-{
-    CHECK_RENDERER_MAGIC(renderer, -1);
-
-    if (colorspace) {
-        *colorspace = renderer->input_colorspace;
-    }
-    return 0;
-}
-
-
 int SDL_SetRenderDrawColor(SDL_Renderer *renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     const float fR = (float)r / 255.0f;
@@ -2827,7 +2786,6 @@ int SDL_SetRenderDrawColorFloat(SDL_Renderer *renderer, float r, float g, float 
     renderer->color.g = g;
     renderer->color.b = b;
     renderer->color.a = a;
-    SDL_ConvertToLinear(renderer, &renderer->color);
     return 0;
 }
 
@@ -2861,7 +2819,6 @@ int SDL_GetRenderDrawColorFloat(SDL_Renderer *renderer, float *r, float *g, floa
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     color = renderer->color;
-    SDL_ConvertFromLinear(renderer, &color);
 
     if (r) {
         *r = color.r;
@@ -4161,24 +4118,6 @@ int SDL_RenderGeometryRaw(SDL_Renderer *renderer,
         return SDL_SW_RenderGeometryRaw(renderer, texture,
                                         xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices,
                                         indices, num_indices, size_indices);
-    }
-
-    /* Transform the colors if necessary */
-    if (renderer->colorspace_conversion &&
-        SDL_COLORSPACETRANSFER(renderer->input_colorspace) == SDL_TRANSFER_CHARACTERISTICS_SRGB) {
-        int num_colors = (color_stride > 0) ? num_vertices : 1;
-        updated_colors = SDL_small_alloc(SDL_FColor, num_colors, &isstack);
-        if (!updated_colors) {
-            return -1;
-        }
-        for (i = 0; i < num_colors; ++i) {
-            updated_colors[i] = *(const SDL_FColor *)(((const Uint8 *)color) + i * color_stride);
-            SDL_ConvertToLinear(renderer, &updated_colors[i]);
-        }
-        color = updated_colors;
-        if (color_stride > 0) {
-            color_stride = sizeof(SDL_FColor);
-        }
     }
 
     retval = QueueCmdGeometry(renderer, texture,

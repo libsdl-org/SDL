@@ -1176,6 +1176,7 @@ SDL_Renderer *SW_CreateRendererForSurface(SDL_Surface *surface)
 
 static SDL_Renderer *SW_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
 {
+    SDL_Renderer *renderer;
     const char *hint;
     SDL_Surface *surface;
     SDL_bool no_hint_set;
@@ -1206,7 +1207,21 @@ static SDL_Renderer *SW_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
     if (!surface) {
         return NULL;
     }
-    return SW_CreateRendererForSurface(surface);
+
+    renderer = SW_CreateRendererForSurface(surface);
+    if (!renderer) {
+        return NULL;
+    }
+
+    SDL_SetupRendererColorspace(renderer, create_props);
+
+    if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
+        SDL_SetError("Unsupported output colorspace");
+        SW_DestroyRenderer(renderer);
+        return NULL;
+    }
+
+    return renderer;
 }
 
 SDL_RenderDriver SW_RenderDriver = {
