@@ -35,7 +35,7 @@
 #define BUTTON_MARGIN 16
 #define BUTTON_PADDING 12
 #define GAMEPAD_WIDTH 512
-#define GAMEPAD_HEIGHT 480
+#define GAMEPAD_HEIGHT 560
 
 #define SCREEN_WIDTH  (PANEL_WIDTH + PANEL_SPACING + GAMEPAD_WIDTH + PANEL_SPACING + PANEL_WIDTH)
 #define SCREEN_HEIGHT (TITLE_HEIGHT + GAMEPAD_HEIGHT)
@@ -782,6 +782,10 @@ static const char *GetBindingInstruction(void)
         return "Press the lower paddle under your left hand";
     case SDL_GAMEPAD_BUTTON_TOUCHPAD:
         return "Press down on the touchpad";
+    case SDL_GAMEPAD_BUTTON_MISC2:
+    case SDL_GAMEPAD_BUTTON_MISC3:
+    case SDL_GAMEPAD_BUTTON_MISC4:
+        return "Press any additional button not already bound";
     case SDL_GAMEPAD_ELEMENT_AXIS_LEFTX_NEGATIVE:
         return "Move the left thumbstick to the left";
     case SDL_GAMEPAD_ELEMENT_AXIS_LEFTX_POSITIVE:

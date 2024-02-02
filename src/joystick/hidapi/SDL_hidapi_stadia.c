@@ -33,7 +33,7 @@
 
 enum
 {
-    SDL_GAMEPAD_BUTTON_STADIA_SHARE = 11,
+    SDL_GAMEPAD_BUTTON_STADIA_CAPTURE = 11,
     SDL_GAMEPAD_BUTTON_STADIA_GOOGLE_ASSISTANT,
     SDL_GAMEPAD_NUM_STADIA_BUTTONS,
 };
@@ -218,7 +218,7 @@ static void HIDAPI_DriverStadia_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (data[2] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, (data[2] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, (data[2] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STADIA_SHARE, (data[2] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STADIA_CAPTURE, (data[2] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STADIA_GOOGLE_ASSISTANT, (data[2] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
     }
 

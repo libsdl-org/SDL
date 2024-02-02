@@ -790,14 +790,14 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_JoystickGUID guid
             SDL_strlcat(mapping_string, "misc1:b11,", sizeof(mapping_string));
         } else if (SDL_IsJoystickGoogleStadiaController(vendor, product)) {
             /* The Google Stadia controller has a share button and a Google Assistant button */
-            SDL_strlcat(mapping_string, "misc1:b11,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "misc1:b11,misc2:b12", sizeof(mapping_string));
         } else if (SDL_IsJoystickNVIDIASHIELDController(vendor, product)) {
             /* The NVIDIA SHIELD controller has a share button between back and start buttons */
             SDL_strlcat(mapping_string, "misc1:b11,", sizeof(mapping_string));
 
             if (product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103) {
-                /* The original SHIELD controller has a touchpad as well */
-                SDL_strlcat(mapping_string, "touchpad:b12,", sizeof(mapping_string));
+                /* The original SHIELD controller has a touchpad and plus/minus buttons as well */
+                SDL_strlcat(mapping_string, "touchpad:b12,misc2:b13,misc3:b14", sizeof(mapping_string));
             }
         } else if (SDL_IsJoystickPS4(vendor, product)) {
             /* PS4 controllers have an additional touchpad button */
@@ -805,7 +805,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_JoystickGUID guid
         } else if (SDL_IsJoystickPS5(vendor, product)) {
             /* PS5 controllers have a microphone button and an additional touchpad button */
             SDL_strlcat(mapping_string, "touchpad:b11,misc1:b12,", sizeof(mapping_string));
-            /* DualSense Edge controllers have paddles */
+            /* DualSense Edge controllers have paddles and a microphone button */
             if (SDL_IsJoystickDualSenseEdge(vendor, product)) {
                 SDL_strlcat(mapping_string, "paddle1:b16,paddle2:b15,paddle3:b14,paddle4:b13,", sizeof(mapping_string));
             }
@@ -1085,7 +1085,10 @@ static const char *map_StringForGamepadButton[] = {
     "paddle2",
     "paddle3",
     "paddle4",
-    "touchpad"
+    "touchpad",
+    "misc2",
+    "misc3",
+    "misc4"
 };
 SDL_COMPILE_TIME_ASSERT(map_StringForGamepadButton, SDL_arraysize(map_StringForGamepadButton) == SDL_GAMEPAD_BUTTON_MAX);
 
@@ -1518,7 +1521,7 @@ static char *SDL_PrivateGetGamepadMappingFromMappingString(const char *pMapping)
 
     /* Trim whitespace */
     length = SDL_strlen(result);
-    while (SDL_isspace(result[length - 1])) {
+    while (length > 0 && SDL_isspace(result[length - 1])) {
         --length;
     }
     result[length] = '\0';
@@ -1751,6 +1754,9 @@ static GamepadMapping_t *SDL_PrivateGenerateAutomaticGamepadMapping(const char *
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpleft", &raw_map->dpleft);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpright", &raw_map->dpright);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "misc1", &raw_map->misc1);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "misc2", &raw_map->misc2);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "misc3", &raw_map->misc3);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "misc4", &raw_map->misc4);
     /* Keep using paddle1-4 in the generated mapping so that it can be
      * reused with SDL2 */
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle1", &raw_map->right_paddle1);

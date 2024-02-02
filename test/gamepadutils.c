@@ -649,6 +649,9 @@ static const char *gamepad_button_names[] = {
     "Right Paddle 2",
     "Left Paddle 2",
     "Touchpad",
+    "Misc2",
+    "Misc3",
+    "Misc4",
 };
 SDL_COMPILE_TIME_ASSERT(gamepad_button_names, SDL_arraysize(gamepad_button_names) == SDL_GAMEPAD_BUTTON_MAX);
 
