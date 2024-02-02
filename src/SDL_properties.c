@@ -188,6 +188,78 @@ error:
     return 0;
 }
 
+int SDL_CopyProperties(SDL_PropertiesID src, SDL_PropertiesID dst)
+{
+    SDL_Properties *src_properties = NULL;
+    SDL_Properties *dst_properties = NULL;
+    int result = 0;
+
+    if (!src) {
+        return SDL_InvalidParamError("src");
+    }
+    if (!dst) {
+        return SDL_InvalidParamError("dst");
+    }
+
+    SDL_LockMutex(SDL_properties_lock);
+    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)src, (const void **)&src_properties);
+    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)dst, (const void **)&dst_properties);
+    SDL_UnlockMutex(SDL_properties_lock);
+
+    if (!src_properties) {
+        return SDL_InvalidParamError("src");
+    }
+    if (!dst_properties) {
+        return SDL_InvalidParamError("dst");
+    }
+
+    SDL_LockMutex(src_properties->lock);
+    SDL_LockMutex(dst_properties->lock);
+    {
+        void *iter;
+        const void *key, *value;
+
+        iter = NULL;
+        while (SDL_IterateHashTable(src_properties->props, &key, &value, &iter)) {
+            const char *src_name = (const char *)key;
+            const SDL_Property *src_property = (const SDL_Property *)value;
+            char *dst_name;
+            SDL_Property *dst_property;
+
+            if (src_property->cleanup) {
+                /* Can't copy properties with cleanup functions, we don't know how to duplicate the data */
+                continue;
+            }
+
+            SDL_RemoveFromHashTable(dst_properties->props, src_name);
+
+            dst_name = SDL_strdup(src_name);
+            if (!dst_name) {
+                result = -1;
+                continue;
+            }
+            dst_property = (SDL_Property *)SDL_malloc(sizeof(*dst_property));
+            if (!dst_property) {
+                SDL_free(dst_name);
+                result = -1;
+                continue;
+            }
+            SDL_copyp(dst_property, src_property);
+            if (src_property->type == SDL_PROPERTY_TYPE_STRING) {
+                dst_property->value.string_value = SDL_strdup(src_property->value.string_value);
+            }
+            if (!SDL_InsertIntoHashTable(dst_properties->props, dst_name, dst_property)) {
+                SDL_FreePropertyWithCleanup(dst_name, dst_property, NULL, SDL_FALSE);
+                result = -1;
+            }
+        }
+    }
+    SDL_UnlockMutex(dst_properties->lock);
+    SDL_UnlockMutex(src_properties->lock);
+
+    return result;
+}
+
 int SDL_LockProperties(SDL_PropertiesID props)
 {
     SDL_Properties *properties = NULL;

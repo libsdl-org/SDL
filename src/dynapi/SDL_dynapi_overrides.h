@@ -994,3 +994,4 @@
 #define SDL_SetSurfaceColorspace SDL_SetSurfaceColorspace_REAL
 #define SDL_GetSurfaceColorspace SDL_GetSurfaceColorspace_REAL
 #define SDL_ConvertSurfaceFormatAndColorspace SDL_ConvertSurfaceFormatAndColorspace_REAL
+#define SDL_CopyProperties SDL_CopyProperties_REAL
