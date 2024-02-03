@@ -1407,7 +1407,7 @@ static SDL_Surface *SDL_ConvertSurfaceWithPixelFormatAndColorspace(SDL_Surface *
             tmp->map->info.flags &= ~SDL_COPY_COLORKEY;
 
             /* Conversion of the colorkey */
-            tmp2 = SDL_ConvertSurface(tmp, format);
+            tmp2 = SDL_ConvertSurfaceWithPixelFormatAndColorspace(tmp, format, colorspace);
             if (!tmp2) {
                 SDL_DestroySurface(tmp);
                 SDL_DestroySurface(convert);
@@ -1461,12 +1461,35 @@ SDL_Surface *SDL_DuplicateSurface(SDL_Surface *surface)
 
 SDL_Surface *SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *format)
 {
-    return SDL_ConvertSurfaceWithPixelFormatAndColorspace(surface, format, SDL_COLORSPACE_UNKNOWN);
+    SDL_Colorspace colorspace;
+
+    if (!surface) {
+        SDL_InvalidParamError("surface");
+        return NULL;
+    }
+
+    if (!format) {
+        SDL_InvalidParamError("format");
+        return NULL;
+    }
+
+    colorspace = SDL_GetDefaultColorspaceForFormat(format->format);
+
+    return SDL_ConvertSurfaceWithPixelFormatAndColorspace(surface, format, colorspace);
 }
 
 SDL_Surface *SDL_ConvertSurfaceFormat(SDL_Surface *surface, Uint32 pixel_format)
 {
-    return SDL_ConvertSurfaceFormatAndColorspace(surface, pixel_format, SDL_COLORSPACE_UNKNOWN);
+    SDL_Colorspace colorspace;
+
+    if (!surface) {
+        SDL_InvalidParamError("surface");
+        return NULL;
+    }
+
+    colorspace = SDL_GetDefaultColorspaceForFormat(pixel_format);
+
+    return SDL_ConvertSurfaceFormatAndColorspace(surface, pixel_format, colorspace);
 }
 
 SDL_Surface *SDL_ConvertSurfaceFormatAndColorspace(SDL_Surface *surface, Uint32 pixel_format, SDL_Colorspace colorspace)
