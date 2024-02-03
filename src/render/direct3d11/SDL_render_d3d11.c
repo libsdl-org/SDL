@@ -304,7 +304,6 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
             SAFE_RELEASE(data->vertexBuffers[i]);
         }
         SAFE_RELEASE(data->inputLayout);
-        SAFE_RELEASE(data->currentOffscreenRenderTargetView);
         SAFE_RELEASE(data->mainRenderTargetView);
         SAFE_RELEASE(data->swapChain);
 
@@ -319,6 +318,7 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
 
         data->swapEffect = (DXGI_SWAP_EFFECT)0;
         data->rotation = DXGI_MODE_ROTATION_UNSPECIFIED;
+        data->currentOffscreenRenderTargetView = NULL;
         data->currentRenderTargetView = NULL;
         data->currentRasterizerState = NULL;
         data->currentBlendState = NULL;
