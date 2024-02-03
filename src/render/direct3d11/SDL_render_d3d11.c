@@ -524,7 +524,6 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     if (SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, SDL_FALSE)) {
         creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
     }
-        creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
 
     /* Create a single-threaded device unless the app requests otherwise. */
     if (!SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D_THREADSAFE, SDL_FALSE)) {
