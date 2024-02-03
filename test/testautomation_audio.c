@@ -54,7 +54,7 @@ static void SDLCALL audio_testCallback(void *userdata, Uint8 *stream, int len)
 }
 #endif
 
-static SDL_AudioDeviceID g_audio_id = -1;
+static SDL_AudioDeviceID g_audio_id = 0;
 
 /* Test case functions */
 
