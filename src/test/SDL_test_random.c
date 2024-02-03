@@ -82,7 +82,7 @@ unsigned int SDLTest_Random(SDLTest_RandomContext *rndContext)
     unsigned int xh, xl;
 
     if (!rndContext) {
-        return -1;
+        return 0;
     }
 
     xh = rndContext->x >> 16;
