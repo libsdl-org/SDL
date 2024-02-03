@@ -101,6 +101,9 @@ static SDL_bool Wayland_GetGNOMEPrimaryDisplayCoordinates(int *x, int *y)
 {
 #ifdef SDL_USE_LIBDBUS
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
+    if (dbus == NULL) {
+        return SDL_FALSE;
+    }
     DBusMessage *reply = NULL;
     DBusMessageIter iter[3];
     DBusMessage *msg = dbus->message_new_method_call(DISPLAY_INFO_NODE,
