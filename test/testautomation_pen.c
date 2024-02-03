@@ -1342,7 +1342,7 @@ pen_movementAndAxes(void *arg)
 
     _pen_simulate_init(&ptest, simulated_pens, 2);
     /* Simulate pen movements */
-    while ((last_action = _pen_simulate(steps, &sim_pc, &simulated_pens[0], 2))) {
+    while ((last_action = _pen_simulate(steps, &sim_pc, &simulated_pens[0], 2)) != 0) {
         int attempts = 0;
         SDL_Pen *simpen = &simulated_pens[last_action->pen_index];
         SDL_PenID reported_which = 0;
