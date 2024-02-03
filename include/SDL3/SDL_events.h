@@ -698,6 +698,8 @@ typedef union SDL_Event
 /* Make sure we haven't broken binary compatibility */
 SDL_COMPILE_TIME_ASSERT(SDL_Event, sizeof(SDL_Event) == sizeof(((SDL_Event *)NULL)->padding));
 
+/* イベントキュー内の要素を指すポインター */
+typedef struct SDL_EventEntry *SDL_EventQueueElement;
 
 /* Function prototypes */
 
@@ -1185,10 +1187,81 @@ extern DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
  */
 extern DECLSPEC void * SDLCALL SDL_AllocateEventMemory(size_t size);
 
+/**
+ * Lock SDL event queue
+ *
+ * この関数はイベントキューのmutexをロックするまで処理をブロックする．
+ * \note この関数と対になるようにSDL_UnlockEventQueueを呼ぶようにする．
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC void SDLCALL SDL_LockEventQueue();
+
+/**
+ * Unlock SDL event queue
+ *
+ * この関数はイベントキューのmutexをロックするまで処理をブロックする．
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC void SDLCALL SDL_UnlockEventQueue();
+
+/**
+ * イベントキューがアクティブかを調べる
+ * 
+ * \returns アクティブならtrue, そうでなければfalse．
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_IsEventQueueActive();
+
+/**
+ * イベントキューの先頭
+ * 
+ * \since This function is available since SDL 3.0.0.
+ * \returns イベントキューの先頭を指すポインタ．
+ */
+extern DECLSPEC SDL_EventQueueElement SDLCALL SDL_EventQueueBegin();
+
+/**
+ * イベントキューの末端
+ * 
+ * \since This function is available since SDL 3.0.0.
+ * \returns イベントキューの末端の次を指すポインタ．
+ */
+extern DECLSPEC SDL_EventQueueElement SDLCALL SDL_EventQueueEnd();
+
+/**
+ * イベントキュー内のイベント数を返す
+ * 
+ * \since This function is available since SDL 3.0.0.
+ * \returns イベントキューのイベント数．
+ */
+extern DECLSPEC int SDLCALL SDL_NumOfEvent();
+
+/**
+ * イベントキューの要素を一つ進める
+ * 
+ * \since This function is available since SDL 3.0.0.
+ * \param element イベントキューの要素を指すアドレス．
+ * \param remove elementを削除するか．
+ * \returns 次をイベントを指す指すポインタ．
+ */
+extern DECLSPEC SDL_EventQueueElement SDLCALL SDL_ForwardElement(SDL_EventQueueElement element, SDL_bool remove);
+
+/**
+ * イベントキューの要素からSDL_Eventを取り出す
+ * 
+ * \since This function is available since SDL 3.0.0.
+ * \param element イベントキューの要素を指すアドレス．
+ * \returns イベントオブジェクト．
+ */
+extern DECLSPEC SDL_Event * SDLCALL SDL_GetEvent(SDL_EventQueueElement element);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
 #endif
+
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_events_h_ */

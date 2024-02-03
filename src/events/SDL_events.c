@@ -1499,3 +1499,44 @@ void SDL_QuitEvents(void)
     SDL_DelHintCallback(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_AutoUpdateSensorsChanged, NULL);
 #endif
 }
+
+void SDL_LockEventQueue()
+{
+    SDL_LockMutex(SDL_EventQ.lock);
+}
+
+void SDL_UnlockEventQueue()
+{
+    SDL_UnlockMutex(SDL_EventQ.lock);
+}
+
+SDL_bool SDL_IsEventQueueActive()
+{
+    return SDL_EventQ.active;
+}
+
+SDL_EventQueueElement SDL_EventQueueBegin() {
+    return SDL_EventQ.head;
+}
+
+SDL_EventQueueElement SDL_EventQueueEnd() {
+    SDL_assert(SDL_EventQ.tail->next == NULL);
+    return NULL;
+}
+
+int SDL_NumOfEvent() {
+    return SDL_AtomicGet(&SDL_EventQ.count);
+}
+
+SDL_EventQueueElement SDL_ForwardElement(SDL_EventQueueElement element, SDL_bool remove) {
+    if(!remove) {
+        return element->next;
+    }
+    struct SDL_EventEntry *next = element->next;
+    SDL_CutEvent(element);
+    return next;
+}
+
+SDL_Event * SDL_GetEvent(SDL_EventQueueElement element) {
+    return &(element->event);
+}
