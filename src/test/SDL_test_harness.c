@@ -183,19 +183,19 @@ static SDL_TimerID SDLTest_SetTestTimeout(int timeout, void(SDLCALL *callback)(v
 
     if (!callback) {
         SDLTest_LogError("Timeout callback can't be NULL");
-        return -1;
+        return 0;
     }
 
     if (timeout < 0) {
         SDLTest_LogError("Timeout value must be bigger than zero.");
-        return -1;
+        return 0;
     }
 
     /* Init SDL timer if not initialized before */
     if (SDL_WasInit(SDL_INIT_TIMER) == 0) {
         if (SDL_InitSubSystem(SDL_INIT_TIMER)) {
             SDLTest_LogError("Failed to init timer subsystem: %s", SDL_GetError());
-            return -1;
+            return 0;
         }
     }
 
@@ -204,7 +204,7 @@ static SDL_TimerID SDLTest_SetTestTimeout(int timeout, void(SDLCALL *callback)(v
     timerID = SDL_AddTimer(timeoutInMilliseconds, (SDL_TimerCallback)callback, 0x0);
     if (timerID == 0) {
         SDLTest_LogError("Creation of SDL timer failed: %s", SDL_GetError());
-        return -1;
+        return 0;
     }
 
     return timerID;
