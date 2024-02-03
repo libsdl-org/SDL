@@ -4024,7 +4024,6 @@ int SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                           const void *indices, int num_indices, int size_indices)
 {
     int i;
-    int retval = 0;
     int count = indices ? num_indices : num_vertices;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
