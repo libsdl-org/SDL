@@ -50,7 +50,11 @@ namespace SDLcpp {
 
     static_assert(std::input_iterator<event_queue_iterator<true>>);
     static_assert(std::input_iterator<event_queue_iterator<false>>);
-
+    
+    /**
+     * @brief イベントをすべて取り出す
+     * @return std::vector<SDL_Event> 取り出したイベントの配列
+     */
     inline std::vector<SDL_Event> FetchAllEvents() noexcept {
         SDL_LockEventQueue();
         assert(SDL_IsEventQueueActive());
