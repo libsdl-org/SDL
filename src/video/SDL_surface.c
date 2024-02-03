@@ -276,6 +276,9 @@ int SDL_SetSurfaceColorspace(SDL_Surface *surface, SDL_Colorspace colorspace)
         return SDL_InvalidParamError("surface");
     }
 
+    if (colorspace == SDL_GetDefaultColorspaceForFormat(surface->format->format)) {
+        return 0;
+    }
     return SDL_SetNumberProperty(SDL_GetSurfaceProperties(surface), SDL_PROP_SURFACE_COLORSPACE_NUMBER, colorspace);
 }
 
@@ -1537,7 +1540,7 @@ static SDL_bool SDL_CreateSurfaceOnStack(int width, int height, Uint32 pixel_for
     blitmap->info.a = 0xFF;
     surface->map = blitmap;
 
-    SDL_SetNumberProperty(SDL_GetSurfaceProperties(surface), SDL_PROP_SURFACE_COLORSPACE_NUMBER, colorspace);
+    SDL_SetSurfaceColorspace(surface, colorspace);
 
     /* The surface is ready to go */
     surface->refcount = 1;
@@ -1549,7 +1552,9 @@ static void SDL_DestroySurfaceOnStack(SDL_Surface *surface)
     /* Free blitmap reference, after blitting between stack'ed surfaces */
     SDL_InvalidateMap(surface->map);
 
-    SDL_DestroyProperties(SDL_GetSurfaceProperties(surface));
+    if (surface->flags & SDL_SURFACE_USES_PROPERTIES) {
+        SDL_DestroyProperties(SDL_GetSurfaceProperties(surface));
+    }
 }
 
 SDL_Surface *SDL_DuplicatePixels(int width, int height, Uint32 format, SDL_Colorspace colorspace, void *pixels, int pitch)
@@ -1566,9 +1571,7 @@ SDL_Surface *SDL_DuplicatePixels(int width, int height, Uint32 format, SDL_Color
             src += pitch;
         }
 
-        if (colorspace != SDL_GetDefaultColorspaceForFormat(format)) {
-            SDL_SetNumberProperty(SDL_GetSurfaceProperties(surface), SDL_PROP_SURFACE_COLORSPACE_NUMBER, colorspace);
-        }
+        SDL_SetSurfaceColorspace(surface, colorspace);
     }
     return surface;
 }
