@@ -132,11 +132,11 @@ int main(int argc, char **argv)
     SDL_WriteU32LE(io, 0x20746D66);                             /* fmt */
     SDL_WriteU32LE(io, 16);                                     /* chunk size */
     SDL_WriteU16LE(io, SDL_AUDIO_ISFLOAT(spec.format) ? 3 : 1); /* uncompressed */
-    SDL_WriteU16LE(io, cvtspec.channels);                       /* channels */
+    SDL_WriteU16LE(io, (Uint16)cvtspec.channels);               /* channels */
     SDL_WriteU32LE(io, cvtspec.freq);                           /* sample rate */
     SDL_WriteU32LE(io, avgbytes);                               /* average bytes per second */
-    SDL_WriteU16LE(io, blockalign);                             /* block align */
-    SDL_WriteU16LE(io, bitsize);                                /* significant bits per sample */
+    SDL_WriteU16LE(io, (Uint16)blockalign);                     /* block align */
+    SDL_WriteU16LE(io, (Uint16)bitsize);                        /* significant bits per sample */
     SDL_WriteU32LE(io, 0x61746164);                             /* data */
     SDL_WriteU32LE(io, dst_len);                                /* size */
     SDL_RWwrite(io, dst_buf, dst_len);
