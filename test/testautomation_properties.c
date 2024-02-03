@@ -253,7 +253,7 @@ static int properties_testCopy(void *arg)
 
     SDL_DestroyProperties(a);
 
-    num = SDL_GetNumberProperty(b, "num", 0);
+    num = (int)SDL_GetNumberProperty(b, "num", 0);
     SDLTest_AssertCheck(num == 1,
         "Checking number property, got %d, expected 1", num);
 
