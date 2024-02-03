@@ -155,13 +155,13 @@ static void testBlitBlendMode(int mode)
         for (i = 0; i <= ni; i += 4) {
             if (mode == -2) {
                 /* Set color mod. */
-                ret = SDL_SetSurfaceColorMod(face, (255 / nj) * j, (255 / ni) * i, (255 / nj) * j);
+                ret = SDL_SetSurfaceColorMod(face, (Uint8)((255 / nj) * j), (Uint8)((255 / ni) * i), (Uint8)((255 / nj) * j));
                 if (ret != 0) {
                     checkFailCount2++;
                 }
             } else if (mode == -3) {
                 /* Set alpha mod. */
-                ret = SDL_SetSurfaceAlphaMod(face, (255 / ni) * i);
+                ret = SDL_SetSurfaceAlphaMod(face, (Uint8)((255 / ni) * i));
                 if (ret != 0) {
                     checkFailCount3++;
                 }

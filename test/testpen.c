@@ -152,7 +152,7 @@ static void DrawScreen(SDL_Renderer *renderer)
                            (color & 0x01) ? 0xff : 0,
                            (color & 0x02) ? 0xff : 0,
                            (color & 0x04) ? 0xff : 0,
-                           (int)(0xff * last_pressure));
+                           (Uint8)(0xff * last_pressure));
     /* Cone base width based on pressure: */
     SDL_RenderLine(renderer, X, Y, endx + (ydelta * last_pressure / 3.0f), endy - (xdelta * last_pressure / 3.0f));
     SDL_RenderLine(renderer, X, Y, endx - (ydelta * last_pressure / 3.0f), endy + (xdelta * last_pressure / 3.0f));
