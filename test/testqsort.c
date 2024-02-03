@@ -53,6 +53,8 @@ int main(int argc, char *argv[])
     SDLTest_CommonState *state;
     int seed_seen = 0;
 
+    SDL_zero(rndctx);
+
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
     if (!state) {
