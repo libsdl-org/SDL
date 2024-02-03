@@ -120,22 +120,22 @@ static Uint64 SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName
 
     if (!runSeed || runSeed[0] == '\0') {
         SDLTest_LogError("Invalid runSeed string.");
-        return -1;
+        return 0;
     }
 
     if (!suiteName || suiteName[0] == '\0') {
         SDLTest_LogError("Invalid suiteName string.");
-        return -1;
+        return 0;
     }
 
     if (!testName || testName[0] == '\0') {
         SDLTest_LogError("Invalid testName string.");
-        return -1;
+        return 0;
     }
 
     if (iteration <= 0) {
         SDLTest_LogError("Invalid iteration count.");
-        return -1;
+        return 0;
     }
 
     /* Convert iteration number into a string */
