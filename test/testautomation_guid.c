@@ -117,7 +117,7 @@ TestGuidToString(void *arg)
 
         /* Serialise to limited-length buffers */
         for (size = 0; size <= 36; ++size) {
-            const Uint8 fill_char = size + 0xa0;
+            const Uint8 fill_char = (Uint8)(size + 0xa0);
             Uint32 expected_prefix;
             Uint32 actual_prefix;
             int written_size;
