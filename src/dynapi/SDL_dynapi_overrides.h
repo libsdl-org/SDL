@@ -371,8 +371,6 @@
 #define SDL_GetWindowSizeInPixels SDL_GetWindowSizeInPixels_REAL
 #define SDL_GetWindowSurface SDL_GetWindowSurface_REAL
 #define SDL_GetWindowTitle SDL_GetWindowTitle_REAL
-#define SDL_GetYUVConversionMode SDL_GetYUVConversionMode_REAL
-#define SDL_GetYUVConversionModeForResolution SDL_GetYUVConversionModeForResolution_REAL
 #define SDL_CloseHaptic SDL_CloseHaptic_REAL
 #define SDL_DestroyHapticEffect SDL_DestroyHapticEffect_REAL
 #define SDL_HapticEffectSupported SDL_HapticEffectSupported_REAL
@@ -617,7 +615,6 @@
 #define SDL_SetWindowSize SDL_SetWindowSize_REAL
 #define SDL_SetWindowTitle SDL_SetWindowTitle_REAL
 #define SDL_SetWindowsMessageHook   SDL_SetWindowsMessageHook_REAL
-#define SDL_SetYUVConversionMode SDL_SetYUVConversionMode_REAL
 #define SDL_ShowCursor SDL_ShowCursor_REAL
 #define SDL_ShowMessageBox SDL_ShowMessageBox_REAL
 #define SDL_ShowSimpleMessageBox SDL_ShowSimpleMessageBox_REAL

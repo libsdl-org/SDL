@@ -1567,13 +1567,20 @@ int SDL_ConvertPixelsAndColorspace(int width, int height,
         return SDL_InvalidParamError("dst_pitch");
     }
 
+    if (src_colorspace == SDL_COLORSPACE_UNKNOWN) {
+        src_colorspace = SDL_GetDefaultColorspaceForFormat(src_format);
+    }
+    if (dst_colorspace == SDL_COLORSPACE_UNKNOWN) {
+        dst_colorspace = SDL_GetDefaultColorspaceForFormat(dst_format);
+    }
+
 #if SDL_HAVE_YUV
     if (SDL_ISPIXELFORMAT_FOURCC(src_format) && SDL_ISPIXELFORMAT_FOURCC(dst_format)) {
-        return SDL_ConvertPixels_YUV_to_YUV(width, height, src_format, src, src_pitch, dst_format, dst, dst_pitch);
+        return SDL_ConvertPixels_YUV_to_YUV(width, height, src_format, src_colorspace, src, src_pitch, dst_format, dst_colorspace, dst, dst_pitch);
     } else if (SDL_ISPIXELFORMAT_FOURCC(src_format)) {
-        return SDL_ConvertPixels_YUV_to_RGB(width, height, src_format, src, src_pitch, dst_format, dst, dst_pitch);
+        return SDL_ConvertPixels_YUV_to_RGB(width, height, src_format, src_colorspace, src, src_pitch, dst_format, dst_colorspace, dst, dst_pitch);
     } else if (SDL_ISPIXELFORMAT_FOURCC(dst_format)) {
-        return SDL_ConvertPixels_RGB_to_YUV(width, height, src_format, src, src_pitch, dst_format, dst, dst_pitch);
+        return SDL_ConvertPixels_RGB_to_YUV(width, height, src_format, src_colorspace, src, src_pitch, dst_format, dst_colorspace, dst, dst_pitch);
     }
 #else
     if (SDL_ISPIXELFORMAT_FOURCC(src_format) || SDL_ISPIXELFORMAT_FOURCC(dst_format)) {
@@ -1599,17 +1606,13 @@ int SDL_ConvertPixelsAndColorspace(int width, int height,
                                   &src_surface, &src_fmt, &src_blitmap)) {
         return -1;
     }
-    if (src_colorspace != SDL_COLORSPACE_UNKNOWN) {
-        SDL_SetNumberProperty(SDL_GetSurfaceProperties(&src_surface), SDL_PROP_SURFACE_COLORSPACE_NUMBER, src_colorspace);
-    }
+    SDL_SetNumberProperty(SDL_GetSurfaceProperties(&src_surface), SDL_PROP_SURFACE_COLORSPACE_NUMBER, src_colorspace);
 
     if (!SDL_CreateSurfaceOnStack(width, height, dst_format, dst, dst_pitch,
                                   &dst_surface, &dst_fmt, &dst_blitmap)) {
         return -1;
     }
-    if (dst_colorspace != SDL_COLORSPACE_UNKNOWN) {
-        SDL_SetNumberProperty(SDL_GetSurfaceProperties(&dst_surface), SDL_PROP_SURFACE_COLORSPACE_NUMBER, dst_colorspace);
-    }
+    SDL_SetNumberProperty(SDL_GetSurfaceProperties(&dst_surface), SDL_PROP_SURFACE_COLORSPACE_NUMBER, dst_colorspace);
 
     /* Set up the rect and go! */
     rect.x = 0;

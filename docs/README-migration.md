@@ -1382,6 +1382,9 @@ The following functions have been renamed:
 * SDL_UpperBlitScaled() => SDL_BlitSurfaceScaled()
 
 The following functions have been removed:
+* SDL_GetYUVConversionMode()
+* SDL_GetYUVConversionModeForResolution()
+* SDL_SetYUVConversionMode() - use SDL_SetSurfaceColorspace() to set the surface colorspace and SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER with SDL_CreateTextureWithProperties() to set the texture colorspace. The default colorspace for YUV pixel formats is SDL_COLORSPACE_BT601_LIMITED.
 * SDL_SoftStretchLinear() - use SDL_SoftStretch() with SDL_SCALEMODE_LINEAR
 
 ## SDL_system.h

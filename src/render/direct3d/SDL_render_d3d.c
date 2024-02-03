@@ -944,17 +944,19 @@ static int SetupTextureState(D3D_RenderData *data, SDL_Texture *texture, LPDIREC
     }
 #if SDL_HAVE_YUV
     if (texturedata->yuv) {
-        switch (SDL_GetYUVConversionModeForResolution(texture->w, texture->h)) {
-        case SDL_YUV_CONVERSION_JPEG:
-            *shader = data->shaders[SHADER_YUV_JPEG];
-            break;
-        case SDL_YUV_CONVERSION_BT601:
-            *shader = data->shaders[SHADER_YUV_BT601];
-            break;
-        case SDL_YUV_CONVERSION_BT709:
-            *shader = data->shaders[SHADER_YUV_BT709];
-            break;
-        default:
+        if (SDL_ISCOLORSPACE_YUV_BT601(texture->colorspace)) {
+            if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
+                *shader = data->shaders[SHADER_YUV_BT601];
+            } else {
+                *shader = data->shaders[SHADER_YUV_JPEG];
+            }
+        } else if (SDL_ISCOLORSPACE_YUV_BT709(texture->colorspace)) {
+            if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
+                *shader = data->shaders[SHADER_YUV_BT709];
+            } else {
+                return SDL_SetError("Unsupported YUV conversion mode");
+            }
+        } else {
             return SDL_SetError("Unsupported YUV conversion mode");
         }
 

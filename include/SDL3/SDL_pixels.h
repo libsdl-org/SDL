@@ -555,6 +555,11 @@ typedef enum
 #define SDL_COLORSPACETRANSFER(X)   (SDL_TransferCharacteristics)(((X) >> 5) & 0x1F)
 #define SDL_COLORSPACEMATRIX(X)     (SDL_MatrixCoefficients)((X) & 0x1F)
 
+#define SDL_ISCOLORSPACE_YUV_BT601(X)       (SDL_COLORSPACEMATRIX(X) == SDL_MATRIX_COEFFICIENTS_BT601 || SDL_COLORSPACEMATRIX(X) == SDL_MATRIX_COEFFICIENTS_BT470BG)
+#define SDL_ISCOLORSPACE_YUV_BT709(X)       (SDL_COLORSPACEMATRIX(X) == SDL_MATRIX_COEFFICIENTS_BT709)
+#define SDL_ISCOLORSPACE_LIMITED_RANGE(X)   (SDL_COLORSPACERANGE(X) == SDL_COLOR_RANGE_LIMITED)
+#define SDL_ISCOLORSPACE_FULL_RANGE(X)      (SDL_COLORSPACERANGE(X) == SDL_COLOR_RANGE_LIMITED)
+
 typedef enum
 {
     SDL_COLORSPACE_UNKNOWN,
@@ -620,6 +625,10 @@ typedef enum
 
     /* The default colorspace for RGB surfaces if no colorspace is specified */
     SDL_COLORSPACE_RGB_DEFAULT = SDL_COLORSPACE_SRGB,
+
+    /* The default colorspace for YUV surfaces if no colorspace is specified */
+    SDL_COLORSPACE_YUV_DEFAULT = SDL_COLORSPACE_BT601_LIMITED,
+
 } SDL_Colorspace;
 
 /**

@@ -588,7 +588,7 @@ static int GLES2_CacheShaders(GLES2_RenderData *data)
     return 0;
 }
 
-static int GLES2_SelectProgram(GLES2_RenderData *data, GLES2_ImageSource source, int w, int h)
+static int GLES2_SelectProgram(GLES2_RenderData *data, GLES2_ImageSource source, SDL_Colorspace colorspace)
 {
     GLuint vertex;
     GLuint fragment;
@@ -615,58 +615,67 @@ static int GLES2_SelectProgram(GLES2_RenderData *data, GLES2_ImageSource source,
         break;
 #if SDL_HAVE_YUV
     case GLES2_IMAGESOURCE_TEXTURE_YUV:
-        switch (SDL_GetYUVConversionModeForResolution(w, h)) {
-        case SDL_YUV_CONVERSION_JPEG:
-            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_YUV_JPEG;
-            break;
-        case SDL_YUV_CONVERSION_BT601:
-            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_YUV_BT601;
-            break;
-        case SDL_YUV_CONVERSION_BT709:
-            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_YUV_BT709;
-            break;
-        default:
-            SDL_SetError("Unsupported YUV conversion mode: %d\n", SDL_GetYUVConversionModeForResolution(w, h));
+        if (SDL_ISCOLORSPACE_YUV_BT601(colorspace)) {
+            if (SDL_ISCOLORSPACE_LIMITED_RANGE(colorspace)) {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_YUV_BT601;
+            } else {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_YUV_JPEG;
+            }
+        } else if (SDL_ISCOLORSPACE_YUV_BT709(colorspace)) {
+            if (SDL_ISCOLORSPACE_LIMITED_RANGE(colorspace)) {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_YUV_BT709;
+            } else {
+                SDL_SetError("Unsupported YUV conversion mode");
+                goto fault;
+            }
+        } else {
+            SDL_SetError("Unsupported YUV conversion mode");
             goto fault;
         }
         break;
     case GLES2_IMAGESOURCE_TEXTURE_NV12:
-        switch (SDL_GetYUVConversionModeForResolution(w, h)) {
-        case SDL_YUV_CONVERSION_JPEG:
-            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_JPEG;
-            break;
-        case SDL_YUV_CONVERSION_BT601:
-            if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
-                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RG_BT601;
+        if (SDL_ISCOLORSPACE_YUV_BT601(colorspace)) {
+            if (SDL_ISCOLORSPACE_LIMITED_RANGE(colorspace)) {
+                if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
+                    ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RG_BT601;
+                } else {
+                    ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RA_BT601;
+                }
             } else {
-                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RA_BT601;
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_JPEG;
             }
-            break;
-        case SDL_YUV_CONVERSION_BT709:
-            if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
-                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RG_BT709;
+        } else if (SDL_ISCOLORSPACE_YUV_BT709(colorspace)) {
+            if (SDL_ISCOLORSPACE_LIMITED_RANGE(colorspace)) {
+                if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
+                    ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RG_BT709;
+                } else {
+                    ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RA_BT709;
+                }
             } else {
-                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RA_BT709;
+                SDL_SetError("Unsupported YUV conversion mode");
+                goto fault;
             }
-            break;
-        default:
-            SDL_SetError("Unsupported YUV conversion mode: %d\n", SDL_GetYUVConversionModeForResolution(w, h));
+        } else {
+            SDL_SetError("Unsupported YUV conversion mode");
             goto fault;
         }
         break;
     case GLES2_IMAGESOURCE_TEXTURE_NV21:
-        switch (SDL_GetYUVConversionModeForResolution(w, h)) {
-        case SDL_YUV_CONVERSION_JPEG:
-            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV21_JPEG;
-            break;
-        case SDL_YUV_CONVERSION_BT601:
-            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT601;
-            break;
-        case SDL_YUV_CONVERSION_BT709:
-            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT709;
-            break;
-        default:
-            SDL_SetError("Unsupported YUV conversion mode: %d\n", SDL_GetYUVConversionModeForResolution(w, h));
+        if (SDL_ISCOLORSPACE_YUV_BT601(colorspace)) {
+            if (SDL_ISCOLORSPACE_LIMITED_RANGE(colorspace)) {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT601;
+            } else {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV21_JPEG;
+            }
+        } else if (SDL_ISCOLORSPACE_YUV_BT709(colorspace)) {
+            if (SDL_ISCOLORSPACE_LIMITED_RANGE(colorspace)) {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT709;
+            } else {
+                SDL_SetError("Unsupported YUV conversion mode");
+                goto fault;
+            }
+        } else {
+            SDL_SetError("Unsupported YUV conversion mode");
             goto fault;
         }
         break;
@@ -961,7 +970,7 @@ static int SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, co
         data->glVertexAttribPointer(GLES2_ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, stride, (const GLvoid *)&verts->tex_coord);
     }
 
-    if (GLES2_SelectProgram(data, imgsrc, texture ? texture->w : 0, texture ? texture->h : 0) < 0) {
+    if (GLES2_SelectProgram(data, imgsrc, texture ? texture->colorspace : SDL_COLORSPACE_SRGB) < 0) {
         return -1;
     }
 
