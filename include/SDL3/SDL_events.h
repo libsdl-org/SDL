@@ -699,6 +699,7 @@ typedef union SDL_Event
 SDL_COMPILE_TIME_ASSERT(SDL_Event, sizeof(SDL_Event) == sizeof(((SDL_Event *)NULL)->padding));
 
 /* イベントキュー内の要素を指すポインター */
+// 独自追加の型
 typedef struct SDL_EventEntry *SDL_EventQueueElement;
 
 /* Function prototypes */
@@ -1187,6 +1188,8 @@ extern DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
  */
 extern DECLSPEC void * SDLCALL SDL_AllocateEventMemory(size_t size);
 
+// ここから独自に追加した関数の宣言
+
 /**
  * Lock SDL event queue
  *
@@ -1256,6 +1259,8 @@ extern DECLSPEC SDL_EventQueueElement SDLCALL SDL_ForwardElement(SDL_EventQueueE
  * \returns イベントオブジェクト．
  */
 extern DECLSPEC SDL_Event * SDLCALL SDL_GetEvent(SDL_EventQueueElement element);
+
+// 独自に追加した関数の宣言はここまで
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
