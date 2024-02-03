@@ -125,7 +125,7 @@ static void SDLCALL SDL_Convert_U8_to_F32_Scalar(SDL_AudioCVT *cvt, SDL_AudioFor
 
 static void SDLCALL SDL_Convert_S16_to_F32_Scalar(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    const int num_samples = cvt->len_cvt;
+    const int num_samples = cvt->len_cvt / sizeof(Sint16);
     const Sint16 *src = (const Sint16 *)cvt->buf;
     float *dst = (float *)cvt->buf;
     int i;
