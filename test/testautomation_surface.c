@@ -336,10 +336,12 @@ static int surface_testCompleteSurfaceConversion(void *arg)
         SDL_PIXELFORMAT_RGBA8888,
         SDL_PIXELFORMAT_ABGR8888,
         SDL_PIXELFORMAT_BGRA8888,
+#if 0 /* We aren't testing HDR10 colorspace conversion */
         SDL_PIXELFORMAT_XRGB2101010,
         SDL_PIXELFORMAT_XBGR2101010,
         SDL_PIXELFORMAT_ARGB2101010,
         SDL_PIXELFORMAT_ABGR2101010,
+#endif
     };
     SDL_Surface *face = NULL, *cvt1, *cvt2, *final;
     SDL_PixelFormat *fmt1, *fmt2;
