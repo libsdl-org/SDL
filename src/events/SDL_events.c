@@ -1500,6 +1500,8 @@ void SDL_QuitEvents(void)
 #endif
 }
 
+// ここから独自に追加した関数の定義
+
 void SDL_LockEventQueue()
 {
     SDL_LockMutex(SDL_EventQ.lock);
@@ -1540,3 +1542,5 @@ SDL_EventQueueElement SDL_ForwardElement(SDL_EventQueueElement element, SDL_bool
 SDL_Event * SDL_GetEvent(SDL_EventQueueElement element) {
     return &(element->event);
 }
+
+// 独自に追加した関数の定義はここまで
