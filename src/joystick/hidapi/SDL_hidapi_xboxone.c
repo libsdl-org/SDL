@@ -1225,17 +1225,19 @@ static int EncodeVariableInt(Uint8 *buf, Uint32 val)
     return i + 1;
 }
 
-static int DecodeVariableInt(const Uint8 *data, int len, Uint32 *val)
+static int DecodeVariableInt(const Uint8 *data, int len, void *out)
 {
     int i;
+    Uint32 val = 0;
 
-    for (i = 0; i < sizeof(*val) && i < len; i++) {
-        *val |= (data[i] & 0x7F) << (i * 7);
+    for (i = 0; i < sizeof(val) && i < len; i++) {
+        val |= (data[i] & 0x7F) << (i * 7);
 
         if (!(data[i] & 0x80)) {
             break;
         }
     }
+    SDL_memcpy(out, &val, sizeof(val));
     return i + 1;
 }
 
