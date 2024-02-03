@@ -15,3 +15,16 @@ the changes are extensively documented in [README-migration.md](docs/README-migr
 Enjoy!
 
 Sam Lantinga (slouken@libsdl.org)
+
+## 変更点
+- イベントキューオブジェクトのポインタ型を追加
+    * typedef struct SDL_EventEntry *SDL_EventQueueElement;
+- イベントキューを操作する関数を追加
+    * void SDL_LockEventQueue();
+    * void SDL_UnlockEventQueue();
+    * SDL_bool SDL_IsEventQueueActive();
+    * SDL_EventQueueElement SDL_EventQueueBegin();
+    * SDL_EventQueueElement SDL_EventQueueEnd();
+    * int SDL_NumOfEvent();
+    * SDL_EventQueueElement SDL_ForwardElement(SDL_EventQueueElement element, SDL_bool remove);
+    * SDL_Event* SDL_GetEvent(SDL_EventQueueElement element);
