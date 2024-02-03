@@ -17,9 +17,9 @@ Enjoy!
 Sam Lantinga (slouken@libsdl.org)
 
 ## 変更点
-- イベントキューオブジェクトのポインタ型を追加
+- イベントキューオブジェクトのポインタ型を追加 (SDL_events.h)
     * typedef struct SDL_EventEntry *SDL_EventQueueElement;
-- イベントキューを操作する関数を追加
+- イベントキューを操作する関数を追加 (SDL_events.h, SDL_events.c)
     * void SDL_LockEventQueue();
     * void SDL_UnlockEventQueue();
     * SDL_bool SDL_IsEventQueueActive();
