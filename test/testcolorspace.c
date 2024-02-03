@@ -114,16 +114,27 @@ static void PrevStage(void)
 
 static SDL_bool ReadPixel(int x, int y, SDL_Color *c)
 {
+    SDL_Surface *surface;
     SDL_Rect r;
+    SDL_bool result = SDL_FALSE;
+
     r.x = x;
     r.y = y;
     r.w = 1;
     r.h = 1;
-    if (SDL_RenderReadPixels(renderer, &r, SDL_PIXELFORMAT_RGBA32, c, sizeof(*c)) < 0) {
+
+    surface = SDL_RenderReadPixels(renderer, &r);
+    if (surface) {
+        if (SDL_ReadSurfacePixel(surface, 0, 0, &c->r, &c->g, &c->b, &c->a) == 0) {
+            result = SDL_TRUE;
+        } else {
+            SDL_Log("Couldn't read pixel: %s\n", SDL_GetError());
+        }
+        SDL_DestroySurface(surface);
+    } else {
         SDL_Log("Couldn't read back pixels: %s\n", SDL_GetError());
-        return SDL_FALSE;
     }
-    return SDL_TRUE;
+    return result;
 }
 
 static void DrawText(float x, float y, const char *fmt, ...)

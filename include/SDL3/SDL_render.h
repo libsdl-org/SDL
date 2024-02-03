@@ -1722,35 +1722,23 @@ extern DECLSPEC int SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                                const void *indices, int num_indices, int size_indices);
 
 /**
- * Read pixels from the current rendering target to an array of pixels.
+ * Read pixels from the current rendering target.
+ *
+ * The returned surface should be freed with SDL_DestroySurface()
  *
  * **WARNING**: This is a very slow operation, and should not be used
  * frequently. If you're using this on the main rendering target, it should be
  * called after rendering and before SDL_RenderPresent().
  *
- * `pitch` specifies the number of bytes between rows in the destination
- * `pixels` data. This allows you to write to a subrectangle or have padded
- * rows in the destination. Generally, `pitch` should equal the number of
- * pixels per row in the `pixels` data times the number of bytes per pixel,
- * but it might contain additional padding (for example, 24bit RGB Windows
- * Bitmap data pads all rows to multiples of 4 bytes).
- *
  * \param renderer the rendering context
  * \param rect an SDL_Rect structure representing the area in pixels relative
  *             to the to current viewport, or NULL for the entire viewport
- * \param format an SDL_PixelFormatEnum value of the desired format of the
- *               pixel data, or 0 to use the format of the rendering target
- * \param pixels a pointer to the pixel data to copy into
- * \param pitch the pitch of the `pixels` parameter
- * \returns 0 on success or a negative error code on failure; call
+ * \returns a new SDL_Surface on success or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderReadPixels(SDL_Renderer *renderer,
-                                                 const SDL_Rect *rect,
-                                                 Uint32 format,
-                                                 void *pixels, int pitch);
+extern DECLSPEC SDL_Surface * SDLCALL SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect);
 
 /**
  * Update the screen with any rendering performed since the previous call.

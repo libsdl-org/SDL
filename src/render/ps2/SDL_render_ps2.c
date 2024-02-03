@@ -537,12 +537,6 @@ static int PS2_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
     return 0;
 }
 
-static int PS2_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
-                                Uint32 format, void *pixels, int pitch)
-{
-    return SDL_Unsupported();
-}
-
 static int PS2_RenderPresent(SDL_Renderer *renderer)
 {
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
@@ -703,7 +697,6 @@ static SDL_Renderer *PS2_CreateRenderer(SDL_Window *window, SDL_PropertiesID cre
     renderer->QueueGeometry = PS2_QueueGeometry;
     renderer->InvalidateCachedState = PS2_InvalidateCachedState;
     renderer->RunCommandQueue = PS2_RunCommandQueue;
-    renderer->RenderReadPixels = PS2_RenderReadPixels;
     renderer->RenderPresent = PS2_RenderPresent;
     renderer->DestroyTexture = PS2_DestroyTexture;
     renderer->DestroyRenderer = PS2_DestroyRenderer;

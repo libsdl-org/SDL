@@ -43,8 +43,6 @@ extern float SDL_PQfromNits(float v);
 extern const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src, SDL_ColorPrimaries dst);
 extern void SDL_ConvertColorPrimaries(float *fR, float *fG, float *fB, const float *matrix);
 
-
-
 /* Blit mapping functions */
 extern SDL_BlitMap *SDL_AllocBlitMap(void);
 extern void SDL_InvalidateMap(SDL_BlitMap *map);
@@ -57,5 +55,6 @@ extern void SDL_InvalidateAllBlitMap(SDL_Surface *surface);
 extern void SDL_DitherColors(SDL_Color *colors, int bpp);
 extern Uint8 SDL_FindColor(SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 extern void SDL_DetectPalette(SDL_Palette *pal, SDL_bool *is_opaque, SDL_bool *has_alpha_channel);
+extern SDL_Surface *SDL_DuplicatePixels(int width, int height, Uint32 format, SDL_Colorspace colorspace, void *pixels, int pitch);
 
 #endif /* SDL_pixels_c_h_ */

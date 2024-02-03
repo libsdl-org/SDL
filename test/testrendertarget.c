@@ -54,11 +54,11 @@ DrawComposite(DrawState *s)
     SDL_Rect viewport;
     SDL_FRect R;
     SDL_Texture *target;
+    SDL_Surface *surface;
 
     static SDL_bool blend_tested = SDL_FALSE;
     if (!blend_tested) {
         SDL_Texture *A, *B;
-        Uint32 P;
 
         A = SDL_CreateTexture(s->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
         SDL_SetTextureBlendMode(A, SDL_BLENDMODE_BLEND);
@@ -74,9 +74,15 @@ DrawComposite(DrawState *s)
         SDL_SetRenderDrawColor(s->renderer, 0x00, 0x00, 0x00, 0x00);
         SDL_RenderFillRect(s->renderer, NULL);
         SDL_RenderTexture(s->renderer, A, NULL, NULL);
-        SDL_RenderReadPixels(s->renderer, NULL, SDL_PIXELFORMAT_ARGB8888, &P, sizeof(P));
 
-        SDL_Log("Blended pixel: 0x%8.8" SDL_PRIX32 "\n", P);
+        surface = SDL_RenderReadPixels(s->renderer, NULL);
+        if (surface) {
+            Uint8 r, g, b, a;
+            if (SDL_ReadSurfacePixel(surface, 0, 0, &r, &g, &b, &a) == 0) {
+                SDL_Log("Blended pixel: 0x%.2x%.2x%.2x%.2x\n", r, g, b, a);
+            }
+            SDL_DestroySurface(surface);
+        }
 
         SDL_DestroyTexture(A);
         SDL_DestroyTexture(B);

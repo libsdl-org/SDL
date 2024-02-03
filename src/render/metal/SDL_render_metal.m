@@ -1451,19 +1451,18 @@ static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
     }
 }
 
-static int METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
-                       Uint32 pixel_format, void *pixels, int pitch)
+static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     @autoreleasepool {
         METAL_RenderData *data = (__bridge METAL_RenderData *)renderer->driverdata;
         id<MTLTexture> mtltexture;
         MTLRegion mtlregion;
-        size_t temp_pitch;
-        int status;
-        Uint32 temp_format;
-        void *temp_pixels;
+        Uint32 format;
+        SDL_Surface *surface;
+
         if (!METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, nil)) {
-            return SDL_SetError("Failed to activate render command encoder (is your window in the background?");
+            SDL_SetError("Failed to activate render command encoder (is your window in the background?");
+            return NULL;
         }
 
         [data.mtlcmdencoder endEncoding];
@@ -1490,19 +1489,12 @@ static int METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
 
         mtlregion = MTLRegionMake2D(rect->x, rect->y, rect->w, rect->h);
 
-        // we only do BGRA8 or RGBA8 at the moment, so 4 will do.
-        temp_pitch = rect->w * 4UL;
-        temp_pixels = SDL_malloc(temp_pitch * rect->h);
-        if (!temp_pixels) {
-            return -1;
+        format = (mtltexture.pixelFormat == MTLPixelFormatBGRA8Unorm) ? SDL_PIXELFORMAT_ARGB8888 : SDL_PIXELFORMAT_ABGR8888;
+        surface = SDL_CreateSurface(rect->w, rect->h, format);
+        if (surface) {
+            [mtltexture getBytes:surface->pixels bytesPerRow:surface->pitch fromRegion:mtlregion mipmapLevel:0];
         }
-
-        [mtltexture getBytes:temp_pixels bytesPerRow:temp_pitch fromRegion:mtlregion mipmapLevel:0];
-
-        temp_format = (mtltexture.pixelFormat == MTLPixelFormatBGRA8Unorm) ? SDL_PIXELFORMAT_ARGB8888 : SDL_PIXELFORMAT_ABGR8888;
-        status = SDL_ConvertPixels(rect->w, rect->h, temp_format, temp_pixels, (int)temp_pitch, pixel_format, pixels, pitch);
-        SDL_free(temp_pixels);
-        return status;
+        return surface;
     }
 }
 

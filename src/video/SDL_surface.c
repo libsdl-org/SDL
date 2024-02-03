@@ -27,6 +27,7 @@
 #include "SDL_pixels_c.h"
 #include "SDL_yuv_c.h"
 #include "../render/SDL_sysrender.h"
+#include "../video/SDL_pixels_c.h"
 #include "../video/SDL_yuv_c.h"
 
 /* Check to make sure we can safely check multiplication of surface w and pitch and it won't overflow size_t */
@@ -1508,9 +1509,7 @@ SDL_Surface *SDL_ConvertSurfaceFormatAndColorspace(SDL_Surface *surface, Uint32 
 /*
  * Create a surface on the stack for quick blit operations
  */
-static SDL_INLINE SDL_bool SDL_CreateSurfaceOnStack(int width, int height, Uint32 pixel_format,
-                                                    void *pixels, int pitch, SDL_Surface *surface,
-                                                    SDL_PixelFormat *format, SDL_BlitMap *blitmap)
+static SDL_bool SDL_CreateSurfaceOnStack(int width, int height, Uint32 pixel_format, SDL_Colorspace colorspace, void *pixels, int pitch, SDL_Surface *surface, SDL_PixelFormat *format, SDL_BlitMap *blitmap)
 {
     if (SDL_ISPIXELFORMAT_INDEXED(pixel_format)) {
         SDL_SetError("Indexed pixel formats not supported");
@@ -1538,9 +1537,34 @@ static SDL_INLINE SDL_bool SDL_CreateSurfaceOnStack(int width, int height, Uint3
     blitmap->info.a = 0xFF;
     surface->map = blitmap;
 
+    SDL_SetNumberProperty(SDL_GetSurfaceProperties(surface), SDL_PROP_SURFACE_COLORSPACE_NUMBER, colorspace);
+
     /* The surface is ready to go */
     surface->refcount = 1;
     return SDL_TRUE;
+}
+
+static void SDL_DestroySurfaceOnStack(SDL_Surface *surface)
+{
+    /* Free blitmap reference, after blitting between stack'ed surfaces */
+    SDL_InvalidateMap(surface->map);
+
+    SDL_DestroyProperties(SDL_GetSurfaceProperties(surface));
+}
+
+SDL_Surface *SDL_DuplicatePixels(int width, int height, Uint32 format, SDL_Colorspace colorspace, void *pixels, int pitch)
+{
+    SDL_Surface surface;
+    SDL_PixelFormat fmt;
+    SDL_BlitMap blitmap;
+    SDL_Surface *result = NULL;
+
+    if (SDL_CreateSurfaceOnStack(width, height, format, colorspace, pixels, pitch, &surface, &fmt, &blitmap)) {
+        result = SDL_DuplicateSurface(&surface);
+
+        SDL_DestroySurfaceOnStack(&surface);
+    }
+    return result;
 }
 
 int SDL_ConvertPixelsAndColorspace(int width, int height,
@@ -1601,18 +1625,13 @@ int SDL_ConvertPixelsAndColorspace(int width, int height,
         return 0;
     }
 
-    if (!SDL_CreateSurfaceOnStack(width, height, src_format, nonconst_src,
-                                  src_pitch,
-                                  &src_surface, &src_fmt, &src_blitmap)) {
+    if (!SDL_CreateSurfaceOnStack(width, height, src_format, src_colorspace, nonconst_src, src_pitch, &src_surface, &src_fmt, &src_blitmap)) {
         return -1;
     }
-    SDL_SetNumberProperty(SDL_GetSurfaceProperties(&src_surface), SDL_PROP_SURFACE_COLORSPACE_NUMBER, src_colorspace);
 
-    if (!SDL_CreateSurfaceOnStack(width, height, dst_format, dst, dst_pitch,
-                                  &dst_surface, &dst_fmt, &dst_blitmap)) {
+    if (!SDL_CreateSurfaceOnStack(width, height, dst_format, dst_colorspace, dst, dst_pitch, &dst_surface, &dst_fmt, &dst_blitmap)) {
         return -1;
     }
-    SDL_SetNumberProperty(SDL_GetSurfaceProperties(&dst_surface), SDL_PROP_SURFACE_COLORSPACE_NUMBER, dst_colorspace);
 
     /* Set up the rect and go! */
     rect.x = 0;
@@ -1621,15 +1640,9 @@ int SDL_ConvertPixelsAndColorspace(int width, int height,
     rect.h = height;
     ret = SDL_BlitSurfaceUnchecked(&src_surface, &rect, &dst_surface, &rect);
 
-    /* Free blitmap reference, after blitting between stack'ed surfaces */
-    SDL_InvalidateMap(src_surface.map);
+    SDL_DestroySurfaceOnStack(&src_surface);
+    SDL_DestroySurfaceOnStack(&dst_surface);
 
-    if (src_colorspace != SDL_COLORSPACE_UNKNOWN) {
-        SDL_DestroyProperties(SDL_GetSurfaceProperties(&src_surface));
-    }
-    if (dst_colorspace != SDL_COLORSPACE_UNKNOWN) {
-        SDL_DestroyProperties(SDL_GetSurfaceProperties(&dst_surface));
-    }
     return ret;
 }
 

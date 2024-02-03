@@ -201,8 +201,7 @@ struct SDL_Renderer
     void (*UnlockTexture)(SDL_Renderer *renderer, SDL_Texture *texture);
     void (*SetTextureScaleMode)(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode);
     int (*SetRenderTarget)(SDL_Renderer *renderer, SDL_Texture *texture);
-    int (*RenderReadPixels)(SDL_Renderer *renderer, const SDL_Rect *rect,
-                            Uint32 format, void *pixels, int pitch);
+    SDL_Surface *(*RenderReadPixels)(SDL_Renderer *renderer, const SDL_Rect *rect);
     int (*RenderPresent)(SDL_Renderer *renderer);
     void (*DestroyTexture)(SDL_Renderer *renderer, SDL_Texture *texture);
 

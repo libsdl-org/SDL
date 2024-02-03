@@ -52,15 +52,10 @@ static void draw(void)
 
 static void save_surface_to_bmp(void)
 {
-    SDL_Surface* surface;
-    Uint32 pixel_format;
+    SDL_Surface *surface;
     char file[128];
 
-    pixel_format = SDL_GetWindowPixelFormat(window);
-
-    surface = SDL_CreateSurface(width, height, pixel_format);
-
-    SDL_RenderReadPixels(renderer, NULL, pixel_format, surface->pixels, surface->pitch);
+    surface = SDL_RenderReadPixels(renderer, NULL);
 
     (void)SDL_snprintf(file, sizeof(file), "SDL_window%" SDL_PRIs32 "-%8.8d.bmp",
                        SDL_GetWindowID(window), ++frame_number);
