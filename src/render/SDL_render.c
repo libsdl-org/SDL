@@ -4026,8 +4026,6 @@ int SDL_RenderGeometryRaw(SDL_Renderer *renderer,
     int i;
     int retval = 0;
     int count = indices ? num_indices : num_vertices;
-    SDL_bool isstack = SDL_FALSE;
-    SDL_FColor *updated_colors = NULL;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -4120,18 +4118,12 @@ int SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                         indices, num_indices, size_indices);
     }
 
-    retval = QueueCmdGeometry(renderer, texture,
+    return QueueCmdGeometry(renderer, texture,
                               xy, xy_stride, color, color_stride, uv, uv_stride,
                               num_vertices,
                               indices, num_indices, size_indices,
                               renderer->view->scale.x,
                               renderer->view->scale.y);
-
-    if (updated_colors) {
-        SDL_small_free(updated_colors, isstack);
-    }
-
-    return retval;
 }
 
 SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
