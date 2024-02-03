@@ -638,20 +638,20 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 #if SDL_HAVE_YUV
         if (yuv || nv12) {
             size_t offset = 0;
-            SDL_YUV_CONVERSION_MODE mode = SDL_GetYUVConversionModeForResolution(texture->w, texture->h);
-            switch (mode) {
-            case SDL_YUV_CONVERSION_JPEG:
-                offset = CONSTANTS_OFFSET_DECODE_JPEG;
-                break;
-            case SDL_YUV_CONVERSION_BT601:
-                offset = CONSTANTS_OFFSET_DECODE_BT601;
-                break;
-            case SDL_YUV_CONVERSION_BT709:
-                offset = CONSTANTS_OFFSET_DECODE_BT709;
-                break;
-            default:
-                offset = 0;
-                break;
+            if (SDL_ISCOLORSPACE_YUV_BT601(texture->colorspace)) {
+                if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
+                    offset = CONSTANTS_OFFSET_DECODE_BT601;
+                } else {
+                    offset = CONSTANTS_OFFSET_DECODE_JPEG;
+                }
+            } else if (SDL_ISCOLORSPACE_YUV_BT709(texture->colorspace)) {
+                if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
+                    offset = CONSTANTS_OFFSET_DECODE_BT709;
+                } else {
+                    return SDL_SetError("Unsupported YUV conversion mode");
+                }
+            } else {
+                return SDL_SetError("Unsupported YUV conversion mode");
             }
             texturedata.conversionBufferOffset = offset;
         }
@@ -1723,10 +1723,10 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         };
 
         float decodetransformBT709[4 * 4] = {
-            0.0, -0.501960814, -0.501960814, 0.0, /* offset */
-            1.0000, 0.0000, 1.4020, 0.0,          /* Rcoeff */
-            1.0000, -0.3441, -0.7141, 0.0,        /* Gcoeff */
-            1.0000, 1.7720, 0.0000, 0.0,          /* Bcoeff */
+            -0.0627451017, -0.501960814, -0.501960814, 0.0, /* offset */
+            1.1644,  0.0000,  1.7927, 0.0,                  /* Rcoeff */
+            1.1644, -0.2132, -0.5329, 0.0,                  /* Gcoeff */
+            1.1644,  2.1124,  0.0000, 0.0,                  /* Bcoeff */
         };
 
         if (!IsMetalAvailable()) {

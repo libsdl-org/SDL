@@ -695,7 +695,7 @@ void SDL_DestroyPixelFormat(SDL_PixelFormat *format)
 SDL_Colorspace SDL_GetDefaultColorspaceForFormat(Uint32 format)
 {
     if (SDL_ISPIXELFORMAT_FOURCC(format)) {
-        return SDL_COLORSPACE_BT709_FULL;
+        return SDL_COLORSPACE_YUV_DEFAULT;
     } else if (SDL_ISPIXELFORMAT_FLOAT(format)) {
         return SDL_COLORSPACE_SCRGB;
     } else if (SDL_ISPIXELFORMAT_10BIT(format)) {

@@ -2151,17 +2151,19 @@ static int D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *c
         };
         D3D11_Shader shader;
 
-        switch (SDL_GetYUVConversionModeForResolution(texture->w, texture->h)) {
-        case SDL_YUV_CONVERSION_JPEG:
-            shader = SHADER_YUV_JPEG;
-            break;
-        case SDL_YUV_CONVERSION_BT601:
-            shader = SHADER_YUV_BT601;
-            break;
-        case SDL_YUV_CONVERSION_BT709:
-            shader = SHADER_YUV_BT709;
-            break;
-        default:
+        if (SDL_ISCOLORSPACE_YUV_BT601(texture->colorspace)) {
+            if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
+                shader = SHADER_YUV_BT601;
+            } else {
+                shader = SHADER_YUV_JPEG;
+            }
+        } else if (SDL_ISCOLORSPACE_YUV_BT709(texture->colorspace)) {
+            if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
+                shader = SHADER_YUV_BT709;
+            } else {
+                return SDL_SetError("Unsupported YUV conversion mode");
+            }
+        } else {
             return SDL_SetError("Unsupported YUV conversion mode");
         }
 
@@ -2175,17 +2177,19 @@ static int D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *c
         };
         D3D11_Shader shader;
 
-        switch (SDL_GetYUVConversionModeForResolution(texture->w, texture->h)) {
-        case SDL_YUV_CONVERSION_JPEG:
-            shader = texture->format == SDL_PIXELFORMAT_NV12 ? SHADER_NV12_JPEG : SHADER_NV21_JPEG;
-            break;
-        case SDL_YUV_CONVERSION_BT601:
-            shader = texture->format == SDL_PIXELFORMAT_NV12 ? SHADER_NV12_BT601 : SHADER_NV21_BT601;
-            break;
-        case SDL_YUV_CONVERSION_BT709:
-            shader = texture->format == SDL_PIXELFORMAT_NV12 ? SHADER_NV12_BT709 : SHADER_NV21_BT709;
-            break;
-        default:
+        if (SDL_ISCOLORSPACE_YUV_BT601(texture->colorspace)) {
+            if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
+                shader = texture->format == SDL_PIXELFORMAT_NV12 ? SHADER_NV12_BT601 : SHADER_NV21_BT601;
+            } else {
+                shader = texture->format == SDL_PIXELFORMAT_NV12 ? SHADER_NV12_JPEG : SHADER_NV21_JPEG;
+            }
+        } else if (SDL_ISCOLORSPACE_YUV_BT709(texture->colorspace)) {
+            if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
+                shader = texture->format == SDL_PIXELFORMAT_NV12 ? SHADER_NV12_BT709 : SHADER_NV21_BT709;
+            } else {
+                return SDL_SetError("Unsupported YUV conversion mode");
+            }
+        } else {
             return SDL_SetError("Unsupported YUV conversion mode");
         }
 

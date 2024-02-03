@@ -341,17 +341,20 @@ static void VITA_GXM_SetYUVProfile(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
     int ret = 0;
-    switch (SDL_GetYUVConversionModeForResolution(texture->w, texture->h)) {
-    case SDL_YUV_CONVERSION_BT601:
-        ret = sceGxmSetYuvProfile(data->gxm_context, 0, SCE_GXM_YUV_PROFILE_BT601_STANDARD);
-        break;
-    case SDL_YUV_CONVERSION_BT709:
-        ret = sceGxmSetYuvProfile(data->gxm_context, 0, SCE_GXM_YUV_PROFILE_BT709_STANDARD);
-        break;
-    case SDL_YUV_CONVERSION_JPEG:
-    default:
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Unsupported YUV profile: %d\n", SDL_GetYUVConversionModeForResolution(texture->w, texture->h));
-        break;
+    if (SDL_ISCOLORSPACE_YUV_BT601(texture->colorspace)) {
+        if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
+            ret = sceGxmSetYuvProfile(data->gxm_context, 0, SCE_GXM_YUV_PROFILE_BT601_STANDARD);
+        } else {
+            ret = sceGxmSetYuvProfile(data->gxm_context, 0, SCE_GXM_YUV_PROFILE_BT601_FULL_RANGE);
+        }
+    } else if (SDL_ISCOLORSPACE_YUV_BT709(texture->colorspace)) {
+        if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
+            ret = sceGxmSetYuvProfile(data->gxm_context, 0, SCE_GXM_YUV_PROFILE_BT709_STANDARD);
+        } else {
+            ret = sceGxmSetYuvProfile(data->gxm_context, 0, SCE_GXM_YUV_PROFILE_BT709_FULL_RANGE);
+        }
+    } else {
+        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Unsupported YUV conversion mode\n");
     }
 
     if (ret < 0) {

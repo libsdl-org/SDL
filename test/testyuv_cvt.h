@@ -12,5 +12,15 @@
 
 /* These functions are designed for testing correctness, not for speed */
 
-extern SDL_bool ConvertRGBtoYUV(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, SDL_YUV_CONVERSION_MODE mode, int monochrome, int luminance);
+typedef enum
+{
+    YUV_CONVERSION_JPEG,        /**< Full range JPEG */
+    YUV_CONVERSION_BT601,       /**< BT.601 (the default) */
+    YUV_CONVERSION_BT709,       /**< BT.709 */
+    YUV_CONVERSION_AUTOMATIC    /**< BT.601 for SD content, BT.709 for HD content */
+} YUV_CONVERSION_MODE;
+
+extern void SetYUVConversionMode(YUV_CONVERSION_MODE mode);
+extern YUV_CONVERSION_MODE GetYUVConversionModeForResolution(int width, int height);
+extern SDL_bool ConvertRGBtoYUV(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance);
 extern int CalculateYUVPitch(Uint32 format, int width);

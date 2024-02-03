@@ -14,14 +14,41 @@
 
 #include "testyuv_cvt.h"
 
+#define YUV_SD_THRESHOLD 576
+
+static YUV_CONVERSION_MODE YUV_ConversionMode = YUV_CONVERSION_BT601;
+
+void SetYUVConversionMode(YUV_CONVERSION_MODE mode)
+{
+    YUV_ConversionMode = mode;
+}
+
+YUV_CONVERSION_MODE GetYUVConversionMode(void)
+{
+    return YUV_ConversionMode;
+}
+
+YUV_CONVERSION_MODE GetYUVConversionModeForResolution(int width, int height)
+{
+    YUV_CONVERSION_MODE mode = GetYUVConversionMode();
+    if (mode == YUV_CONVERSION_AUTOMATIC) {
+        if (height <= YUV_SD_THRESHOLD) {
+            mode = YUV_CONVERSION_BT601;
+        } else {
+            mode = YUV_CONVERSION_BT709;
+        }
+    }
+    return mode;
+}
+
 static float clip3(float x, float y, float z)
 {
     return (z < x) ? x : ((z > y) ? y : z);
 }
 
-static void RGBtoYUV(const Uint8 *rgb, int *yuv, SDL_YUV_CONVERSION_MODE mode, int monochrome, int luminance)
+static void RGBtoYUV(const Uint8 *rgb, int *yuv, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
 {
-    if (mode == SDL_YUV_CONVERSION_JPEG) {
+    if (mode == YUV_CONVERSION_JPEG) {
         /* Full range YUV */
         yuv[0] = (int)(0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]);
         yuv[1] = (int)((rgb[2] - yuv[0]) * 0.565 + 128);
@@ -37,7 +64,7 @@ static void RGBtoYUV(const Uint8 *rgb, int *yuv, SDL_YUV_CONVERSION_MODE mode, i
          */
         float S, Z, R, G, B, L, Kr, Kb, Y, U, V;
 
-        if (mode == SDL_YUV_CONVERSION_BT709) {
+        if (mode == YUV_CONVERSION_BT709) {
             /* BT.709 */
             Kr = 0.2126f;
             Kb = 0.0722f;
@@ -75,7 +102,7 @@ static void RGBtoYUV(const Uint8 *rgb, int *yuv, SDL_YUV_CONVERSION_MODE mode, i
     }
 }
 
-static void ConvertRGBtoPlanar2x2(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, SDL_YUV_CONVERSION_MODE mode, int monochrome, int luminance)
+static void ConvertRGBtoPlanar2x2(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
 {
     int x, y;
     int yuv[4][3];
@@ -191,7 +218,7 @@ static void ConvertRGBtoPlanar2x2(Uint32 format, Uint8 *src, int pitch, Uint8 *o
     }
 }
 
-static void ConvertRGBtoPacked4(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, SDL_YUV_CONVERSION_MODE mode, int monochrome, int luminance)
+static void ConvertRGBtoPacked4(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
 {
     int x, y;
     int yuv[2][3];
@@ -261,7 +288,7 @@ static void ConvertRGBtoPacked4(Uint32 format, Uint8 *src, int pitch, Uint8 *out
     }
 }
 
-SDL_bool ConvertRGBtoYUV(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, SDL_YUV_CONVERSION_MODE mode, int monochrome, int luminance)
+SDL_bool ConvertRGBtoYUV(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
 {
     switch (format) {
     case SDL_PIXELFORMAT_YV12:

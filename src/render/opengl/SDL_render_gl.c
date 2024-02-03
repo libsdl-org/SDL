@@ -662,45 +662,46 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
 
 #if SDL_HAVE_YUV
     if (data->yuv || data->nv12) {
-        switch (SDL_GetYUVConversionModeForResolution(texture->w, texture->h)) {
-        case SDL_YUV_CONVERSION_JPEG:
-            if (data->yuv) {
-                data->shader = SHADER_YUV_JPEG;
-            } else if (texture->format == SDL_PIXELFORMAT_NV12) {
-                data->shader = SHADER_NV12_JPEG;
-            } else {
-                data->shader = SHADER_NV21_JPEG;
-            }
-            break;
-        case SDL_YUV_CONVERSION_BT601:
-            if (data->yuv) {
-                data->shader = SHADER_YUV_BT601;
-            } else if (texture->format == SDL_PIXELFORMAT_NV12) {
-                if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
-                    data->shader = SHADER_NV12_RG_BT601;
+        if (SDL_ISCOLORSPACE_YUV_BT601(texture->colorspace)) {
+            if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
+                if (data->yuv) {
+                    data->shader = SHADER_YUV_BT601;
+                } else if (texture->format == SDL_PIXELFORMAT_NV12) {
+                    if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
+                        data->shader = SHADER_NV12_RG_BT601;
+                    } else {
+                        data->shader = SHADER_NV12_RA_BT601;
+                    }
                 } else {
-                    data->shader = SHADER_NV12_RA_BT601;
+                    data->shader = SHADER_NV21_BT601;
                 }
             } else {
-                data->shader = SHADER_NV21_BT601;
-            }
-            break;
-        case SDL_YUV_CONVERSION_BT709:
-            if (data->yuv) {
-                data->shader = SHADER_YUV_BT709;
-            } else if (texture->format == SDL_PIXELFORMAT_NV12) {
-                if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
-                    data->shader = SHADER_NV12_RG_BT709;
+                if (data->yuv) {
+                    data->shader = SHADER_YUV_JPEG;
+                } else if (texture->format == SDL_PIXELFORMAT_NV12) {
+                    data->shader = SHADER_NV12_JPEG;
                 } else {
-                    data->shader = SHADER_NV12_RA_BT709;
+                    data->shader = SHADER_NV21_JPEG;
+                }
+            }
+        } else if (SDL_ISCOLORSPACE_YUV_BT709(texture->colorspace)) {
+            if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
+                if (data->yuv) {
+                    data->shader = SHADER_YUV_BT709;
+                } else if (texture->format == SDL_PIXELFORMAT_NV12) {
+                    if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
+                        data->shader = SHADER_NV12_RG_BT709;
+                    } else {
+                        data->shader = SHADER_NV12_RA_BT709;
+                    }
+                } else {
+                    data->shader = SHADER_NV21_BT709;
                 }
             } else {
-                data->shader = SHADER_NV21_BT709;
+                return SDL_SetError("Unsupported YUV conversion mode");
             }
-            break;
-        default:
-            SDL_assert(!"unsupported YUV conversion mode");
-            break;
+        } else {
+            return SDL_SetError("Unsupported YUV conversion mode");
         }
     }
 #endif /* SDL_HAVE_YUV */
