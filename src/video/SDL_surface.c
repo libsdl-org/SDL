@@ -1554,17 +1554,23 @@ static void SDL_DestroySurfaceOnStack(SDL_Surface *surface)
 
 SDL_Surface *SDL_DuplicatePixels(int width, int height, Uint32 format, SDL_Colorspace colorspace, void *pixels, int pitch)
 {
-    SDL_Surface surface;
-    SDL_PixelFormat fmt;
-    SDL_BlitMap blitmap;
-    SDL_Surface *result = NULL;
+    SDL_Surface *surface = SDL_CreateSurface(width, height, format);
+    if (surface) {
+        int length = width * SDL_BYTESPERPIXEL(format);
+        Uint8 *src = (Uint8 *)pixels;
+        Uint8 *dst = (Uint8 *)surface->pixels;
+        int rows = height;
+        while (rows--) {
+            SDL_memcpy(dst, src, length);
+            dst += surface->pitch;
+            src += pitch;
+        }
 
-    if (SDL_CreateSurfaceOnStack(width, height, format, colorspace, pixels, pitch, &surface, &fmt, &blitmap)) {
-        result = SDL_DuplicateSurface(&surface);
-
-        SDL_DestroySurfaceOnStack(&surface);
+        if (colorspace != SDL_GetDefaultColorspaceForFormat(format)) {
+            SDL_SetNumberProperty(SDL_GetSurfaceProperties(surface), SDL_PROP_SURFACE_COLORSPACE_NUMBER, colorspace);
+        }
     }
-    return result;
+    return surface;
 }
 
 int SDL_ConvertPixelsAndColorspace(int width, int height,
