@@ -2016,7 +2016,6 @@ static const void *SDLTest_ScreenShotClipboardProvider(void *context, const char
 
 static void SDLTest_CopyScreenShot(SDL_Renderer *renderer)
 {
-    SDL_Rect viewport;
     SDL_Surface *surface;
     const char *image_formats[] = {
         "text/plain;charset=utf-8",
@@ -2028,28 +2027,18 @@ static void SDLTest_CopyScreenShot(SDL_Renderer *renderer)
         return;
     }
 
-    SDL_GetRenderViewport(renderer, &viewport);
-
-    surface = SDL_CreateSurface(viewport.w, viewport.h, SDL_PIXELFORMAT_BGR24);
-
+    surface = SDL_RenderReadPixels(renderer, NULL);
     if (!surface) {
-        SDL_Log("Couldn't create surface: %s\n", SDL_GetError());
-        return;
-    }
-
-    if (SDL_RenderReadPixels(renderer, NULL, surface->format->format,
-                             surface->pixels, surface->pitch) < 0) {
         SDL_Log("Couldn't read screen: %s\n", SDL_GetError());
-        SDL_free(surface);
         return;
     }
 
     if (SDL_SaveBMP(surface, SCREENSHOT_FILE) < 0) {
         SDL_Log("Couldn't save %s: %s\n", SCREENSHOT_FILE, SDL_GetError());
-        SDL_free(surface);
+        SDL_DestroySurface(surface);
         return;
     }
-    SDL_free(surface);
+    SDL_DestroySurface(surface);
 
     clipboard_data = (SDLTest_ClipboardData *)SDL_calloc(1, sizeof(*clipboard_data));
     if (!clipboard_data) {

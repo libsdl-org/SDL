@@ -1053,6 +1053,8 @@ The viewport, clipping state, and scale for render targets are now persistent an
 
 SDL_RenderGeometryRaw() and SDL_Vertex have been changed to use floating point colors, in the range of [0..1] for SDR content.
 
+SDL_RenderReadPixels() returns a surface instead of filling in preallocated memory.
+
 The following functions have been renamed:
 * SDL_GetRendererOutputSize() => SDL_GetCurrentRenderOutputSize()
 * SDL_RenderCopy() => SDL_RenderTexture()

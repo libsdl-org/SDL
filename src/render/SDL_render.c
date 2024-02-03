@@ -4134,43 +4134,28 @@ int SDL_RenderGeometryRaw(SDL_Renderer *renderer,
     return retval;
 }
 
-int SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect, Uint32 format, void *pixels, int pitch)
+SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     SDL_Rect real_rect;
 
-    CHECK_RENDERER_MAGIC(renderer, -1);
+    CHECK_RENDERER_MAGIC(renderer, NULL);
 
     if (!renderer->RenderReadPixels) {
-        return SDL_Unsupported();
+        SDL_Unsupported();
+        return NULL;
     }
 
     FlushRenderCommands(renderer); /* we need to render before we read the results. */
-
-    if (!format) {
-        if (!renderer->target) {
-            format = SDL_GetWindowPixelFormat(renderer->window);
-        } else {
-            format = renderer->target->format;
-        }
-    }
 
     GetRenderViewportInPixels(renderer, &real_rect);
 
     if (rect) {
         if (!SDL_GetRectIntersection(rect, &real_rect, &real_rect)) {
-            return 0;
-        }
-        if (real_rect.y > rect->y) {
-            pixels = (Uint8 *)pixels + pitch * (real_rect.y - rect->y);
-        }
-        if (real_rect.x > rect->x) {
-            int bpp = SDL_BYTESPERPIXEL(format);
-            pixels = (Uint8 *)pixels + bpp * (real_rect.x - rect->x);
+            return NULL;
         }
     }
 
-    return renderer->RenderReadPixels(renderer, &real_rect,
-                                      format, pixels, pitch);
+    return renderer->RenderReadPixels(renderer, &real_rect);
 }
 
 static void SDL_SimulateRenderVSync(SDL_Renderer *renderer)

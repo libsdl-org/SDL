@@ -568,7 +568,7 @@ SDL_DYNAPI_PROC(int,SDL_RenderLines,(SDL_Renderer *a, const SDL_FPoint *b, int c
 SDL_DYNAPI_PROC(int,SDL_RenderPoint,(SDL_Renderer *a, float b, float c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_RenderPoints,(SDL_Renderer *a, const SDL_FPoint *b, int c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_RenderPresent,(SDL_Renderer *a),(a),return)
-SDL_DYNAPI_PROC(int,SDL_RenderReadPixels,(SDL_Renderer *a, const SDL_Rect *b, Uint32 c, void *d, int e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(SDL_Surface *,SDL_RenderReadPixels,(SDL_Renderer *a, const SDL_Rect *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_RenderRect,(SDL_Renderer *a, const SDL_FRect *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_RenderRects,(SDL_Renderer *a, const SDL_FRect *b, int c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_RenderTexture,(SDL_Renderer *a, SDL_Texture *b, const SDL_FRect *c, const SDL_FRect *d),(a,b,c,d),return)

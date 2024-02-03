@@ -27,6 +27,7 @@
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
 #include "../../video/windows/SDL_windowsvideo.h"
+#include "../../video/SDL_pixels_c.h"
 
 #ifdef SDL_VIDEO_RENDER_D3D
 #define D3D_DEBUG_INFO
@@ -1297,8 +1298,7 @@ static int D3D_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
     return 0;
 }
 
-static int D3D_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
-                                Uint32 format, void *pixels, int pitch)
+static SDL_Surface *D3D_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;
     D3DSURFACE_DESC desc;
@@ -1307,7 +1307,7 @@ static int D3D_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
     RECT d3drect;
     D3DLOCKED_RECT locked;
     HRESULT result;
-    int status;
+    SDL_Surface *output;
 
     if (data->currentRenderTarget) {
         backBuffer = data->currentRenderTarget;
@@ -1317,18 +1317,21 @@ static int D3D_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
 
     result = IDirect3DSurface9_GetDesc(backBuffer, &desc);
     if (FAILED(result)) {
-        return D3D_SetError("GetDesc()", result);
+        D3D_SetError("GetDesc()", result);
+        return NULL;
     }
 
     result = IDirect3DDevice9_CreateOffscreenPlainSurface(data->device, desc.Width, desc.Height, desc.Format, D3DPOOL_SYSTEMMEM, &surface, NULL);
     if (FAILED(result)) {
-        return D3D_SetError("CreateOffscreenPlainSurface()", result);
+        D3D_SetError("CreateOffscreenPlainSurface()", result);
+        return NULL;
     }
 
     result = IDirect3DDevice9_GetRenderTargetData(data->device, backBuffer, surface);
     if (FAILED(result)) {
         IDirect3DSurface9_Release(surface);
-        return D3D_SetError("GetRenderTargetData()", result);
+        D3D_SetError("GetRenderTargetData()", result);
+        return NULL;
     }
 
     d3drect.left = rect->x;
@@ -1339,18 +1342,17 @@ static int D3D_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
     result = IDirect3DSurface9_LockRect(surface, &locked, &d3drect, D3DLOCK_READONLY);
     if (FAILED(result)) {
         IDirect3DSurface9_Release(surface);
-        return D3D_SetError("LockRect()", result);
+        D3D_SetError("LockRect()", result);
+        return NULL;
     }
 
-    status = SDL_ConvertPixels(rect->w, rect->h,
-                               D3DFMTToPixelFormat(desc.Format), locked.pBits, locked.Pitch,
-                               format, pixels, pitch);
+    output = SDL_DuplicatePixels(rect->w, rect->h, D3DFMTToPixelFormat(desc.Format), SDL_COLORSPACE_SRGB, locked.pBits, locked.Pitch);
 
     IDirect3DSurface9_UnlockRect(surface);
 
     IDirect3DSurface9_Release(surface);
 
-    return status;
+    return output;
 }
 
 static int D3D_RenderPresent(SDL_Renderer *renderer)

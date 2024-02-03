@@ -33,6 +33,7 @@
 #include "SDL_drawpoint.h"
 #include "SDL_rotate.h"
 #include "SDL_triangle.h"
+#include "../../video/SDL_pixels_c.h"
 
 /* SDL surface based renderer implementation */
 
@@ -967,15 +968,13 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
     return 0;
 }
 
-static int SW_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
-                               Uint32 format, void *pixels, int pitch)
+static SDL_Surface *SW_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     SDL_Surface *surface = SW_ActivateRenderer(renderer);
-    Uint32 src_format;
-    void *src_pixels;
+    void *pixels;
 
     if (!surface) {
-        return -1;
+        return NULL;
     }
 
     /* NOTE: The rect is already adjusted according to the viewport by
@@ -984,17 +983,15 @@ static int SW_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
 
     if (rect->x < 0 || rect->x + rect->w > surface->w ||
         rect->y < 0 || rect->y + rect->h > surface->h) {
-        return SDL_SetError("Tried to read outside of surface bounds");
+        SDL_SetError("Tried to read outside of surface bounds");
+        return NULL;
     }
 
-    src_format = surface->format->format;
-    src_pixels = (void *)((Uint8 *)surface->pixels +
-                          rect->y * surface->pitch +
-                          rect->x * surface->format->BytesPerPixel);
+    pixels = (void *)((Uint8 *)surface->pixels +
+                      rect->y * surface->pitch +
+                      rect->x * surface->format->BytesPerPixel);
 
-    return SDL_ConvertPixels(rect->w, rect->h,
-                             src_format, src_pixels, surface->pitch,
-                             format, pixels, pitch);
+    return SDL_DuplicatePixels(rect->w, rect->h, surface->format->format, SDL_COLORSPACE_SRGB, pixels, surface->pitch);
 }
 
 static int SW_RenderPresent(SDL_Renderer *renderer)

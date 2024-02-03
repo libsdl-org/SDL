@@ -29,6 +29,7 @@
 #endif
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
+#include "../../video/SDL_pixels_c.h"
 
 #include <d3d11_1.h>
 #include <dxgi1_4.h>
@@ -2342,19 +2343,18 @@ static int D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
     return 0;
 }
 
-static int D3D11_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
-                                  Uint32 format, void *pixels, int pitch)
+static SDL_Surface *D3D11_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
     ID3D11RenderTargetView *renderTargetView = NULL;
     ID3D11Texture2D *backBuffer = NULL;
     ID3D11Texture2D *stagingTexture = NULL;
     HRESULT result;
-    int status = -1;
     D3D11_TEXTURE2D_DESC stagingTextureDesc;
     D3D11_RECT srcRect = { 0, 0, 0, 0 };
     D3D11_BOX srcBox;
     D3D11_MAPPED_SUBRESOURCE textureMemory;
+    SDL_Surface *output = NULL;
 
     renderTargetView = D3D11_GetCurrentRenderTargetView(renderer);
     if (!renderTargetView) {
@@ -2417,19 +2417,12 @@ static int D3D11_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
         goto done;
     }
 
-    /* Copy the data into the desired buffer, converting pixels to the
-     * desired format at the same time:
-     */
-    status = SDL_ConvertPixelsAndColorspace(
+    output = SDL_DuplicatePixels(
         rect->w, rect->h,
         D3D11_DXGIFormatToSDLPixelFormat(stagingTextureDesc.Format),
         renderer->target ? renderer->target->colorspace : renderer->output_colorspace,
         textureMemory.pData,
-        textureMemory.RowPitch,
-        format,
-        SDL_COLORSPACE_SRGB,
-        pixels,
-        pitch);
+        textureMemory.RowPitch);
 
     /* Unmap the texture: */
     ID3D11DeviceContext_Unmap(data->d3dContext,
@@ -2439,7 +2432,7 @@ static int D3D11_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
 done:
     SAFE_RELEASE(backBuffer);
     SAFE_RELEASE(stagingTexture);
-    return status;
+    return output;
 }
 
 static int D3D11_RenderPresent(SDL_Renderer *renderer)

@@ -1212,12 +1212,6 @@ static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
     return 0;
 }
 
-static int PSP_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
-                                Uint32 pixel_format, void *pixels, int pitch)
-{
-    return SDL_Unsupported();
-}
-
 static int PSP_RenderPresent(SDL_Renderer *renderer)
 {
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
@@ -1335,7 +1329,6 @@ SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
     renderer->QueueCopyEx = PSP_QueueCopyEx;
     renderer->InvalidateCachedState = PSP_InvalidateCachedState;
     renderer->RunCommandQueue = PSP_RunCommandQueue;
-    renderer->RenderReadPixels = PSP_RenderReadPixels;
     renderer->RenderPresent = PSP_RenderPresent;
     renderer->DestroyTexture = PSP_DestroyTexture;
     renderer->DestroyRenderer = PSP_DestroyRenderer;

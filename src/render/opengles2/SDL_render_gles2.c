@@ -1923,61 +1923,45 @@ static void GLES2_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     }
 }
 
-static int GLES2_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
-                                  Uint32 pixel_format, void *pixels, int pitch)
+static SDL_Surface *GLES2_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->driverdata;
-    Uint32 temp_format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_RGBA32;
-    size_t buflen;
-    void *temp_pixels;
-    int temp_pitch;
-    Uint8 *src, *dst, *tmp;
-    int w, h, length, rows;
-    int status;
+    Uint32 format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_RGBA32;
+    int w, h;
+    SDL_Surface *surface;
 
-    temp_pitch = rect->w * SDL_BYTESPERPIXEL(temp_format);
-    buflen = (size_t)rect->h * temp_pitch;
-    if (buflen == 0) {
-        return 0; /* nothing to do. */
-    }
-
-    temp_pixels = SDL_malloc(buflen);
-    if (!temp_pixels) {
-        return -1;
+    surface = SDL_CreateSurface(rect->w, rect->h, format);
+    if (!surface) {
+        return NULL;
     }
 
     SDL_GetCurrentRenderOutputSize(renderer, &w, &h);
 
     data->glReadPixels(rect->x, renderer->target ? rect->y : (h - rect->y) - rect->h,
-                       rect->w, rect->h, GL_RGBA, GL_UNSIGNED_BYTE, temp_pixels);
+                       rect->w, rect->h, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
     if (GL_CheckError("glReadPixels()", renderer) < 0) {
-        return -1;
+        SDL_DestroySurface(surface);
+        return NULL;
     }
 
     /* Flip the rows to be top-down if necessary */
     if (!renderer->target) {
         SDL_bool isstack;
-        length = rect->w * SDL_BYTESPERPIXEL(temp_format);
-        src = (Uint8 *)temp_pixels + (rect->h - 1) * temp_pitch;
-        dst = (Uint8 *)temp_pixels;
-        tmp = SDL_small_alloc(Uint8, length, &isstack);
-        rows = rect->h / 2;
+        int length = rect->w * SDL_BYTESPERPIXEL(format);
+        Uint8 *src = (Uint8 *)surface->pixels + (rect->h - 1) * surface->pitch;
+        Uint8 *dst = (Uint8 *)surface->pixels;
+        Uint8 *tmp = SDL_small_alloc(Uint8, length, &isstack);
+        int rows = rect->h / 2;
         while (rows--) {
             SDL_memcpy(tmp, dst, length);
             SDL_memcpy(dst, src, length);
             SDL_memcpy(src, tmp, length);
-            dst += temp_pitch;
-            src -= temp_pitch;
+            dst += surface->pitch;
+            src -= surface->pitch;
         }
         SDL_small_free(tmp, isstack);
     }
-
-    status = SDL_ConvertPixels(rect->w, rect->h,
-                               temp_format, temp_pixels, temp_pitch,
-                               pixel_format, pixels, pitch);
-    SDL_free(temp_pixels);
-
-    return status;
+    return surface;
 }
 
 static int GLES2_RenderPresent(SDL_Renderer *renderer)

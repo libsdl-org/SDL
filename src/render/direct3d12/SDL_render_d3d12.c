@@ -31,6 +31,7 @@
 #include "../../video/windows/SDL_windowswindow.h"
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
+#include "../../video/SDL_pixels_c.h"
 
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 #include "SDL_render_d3d12_xbox.h"
@@ -2801,14 +2802,12 @@ static int D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
     return 0;
 }
 
-static int D3D12_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
-                                  Uint32 format, void *pixels, int pitch)
+static SDL_Surface *D3D12_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->driverdata;
     ID3D12Resource *backBuffer = NULL;
     ID3D12Resource *readbackBuffer = NULL;
     HRESULT result;
-    int status = -1;
     D3D12_RESOURCE_DESC textureDesc;
     D3D12_RESOURCE_DESC readbackDesc;
     D3D12_HEAP_PROPERTIES heapProps;
@@ -2820,6 +2819,7 @@ static int D3D12_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
     D3D12_SUBRESOURCE_FOOTPRINT pitchedDesc;
     BYTE *textureMemory;
     int bpp;
+    SDL_Surface *output = NULL;
 
     if (data->textureRenderTarget) {
         backBuffer = data->textureRenderTarget->mainTexture;
@@ -2938,26 +2938,19 @@ static int D3D12_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
         goto done;
     }
 
-    /* Copy the data into the desired buffer, converting pixels to the
-     * desired format at the same time:
-     */
-    status = SDL_ConvertPixelsAndColorspace(
+    output = SDL_DuplicatePixels(
         rect->w, rect->h,
         D3D12_DXGIFormatToSDLPixelFormat(textureDesc.Format),
         renderer->target ? renderer->target->colorspace : renderer->output_colorspace,
         textureMemory,
-        pitchedDesc.RowPitch,
-        format,
-        SDL_COLORSPACE_SRGB,
-        pixels,
-        pitch);
+        pitchedDesc.RowPitch);
 
     /* Unmap the texture: */
     D3D_CALL(readbackBuffer, Unmap, 0, NULL);
 
 done:
     SAFE_RELEASE(readbackBuffer);
-    return status;
+    return output;
 }
 
 static int D3D12_RenderPresent(SDL_Renderer *renderer)
