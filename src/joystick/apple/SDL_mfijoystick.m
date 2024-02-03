@@ -370,6 +370,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
     NSLog(@"Product name: %@\n", controller.vendorName);
     NSLog(@"Product category: %@\n", controller.productCategory);
     NSLog(@"Elements available:\n");
+#ifdef ENABLE_PHYSICAL_INPUT_PROFILE
     if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
         NSDictionary<NSString *, GCControllerElement *> *elements = controller.physicalInputProfile.elements;
         for (id key in controller.physicalInputProfile.buttons) {
@@ -382,6 +383,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
             NSLog(@"\tHat: %@\n", key);
         }
     }
+#endif
 #endif
 
     device->is_xbox = IsControllerXbox(controller);
@@ -1121,7 +1123,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
         int i;
         Uint64 timestamp = SDL_GetTicksNS();
 
-#ifdef DEBUG_CONTROLLER_STATE
+#if defined(DEBUG_CONTROLLER_STATE) && defined(ENABLE_PHYSICAL_INPUT_PROFILE)
         if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
             if (controller.physicalInputProfile) {
                 for (id key in controller.physicalInputProfile.buttons) {
@@ -1148,6 +1150,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
         }
 #endif /* DEBUG_CONTROLLER_STATE */
 
+#ifdef ENABLE_PHYSICAL_INPUT_PROFILE
         if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
             NSDictionary<NSString *, GCControllerElement *> *elements = controller.physicalInputProfile.elements;
             NSDictionary<NSString *, GCControllerButtonInput *> *buttons = controller.physicalInputProfile.buttons;
@@ -1174,7 +1177,9 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
                 }
                 SDL_SendJoystickButton(timestamp, joystick, button++, value);
             }
-        } else if (controller.extendedGamepad) {
+        } else
+#endif
+        if (controller.extendedGamepad) {
             SDL_bool isstack;
             GCExtendedGamepad *gamepad = controller.extendedGamepad;
 
