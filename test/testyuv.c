@@ -117,7 +117,7 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
         SDL_PIXELFORMAT_YVYU
     };
     const SDL_Colorspace colorspaces[] = {
-        SDL_COLORSPACE_BT601_FULL,
+        SDL_COLORSPACE_JPEG,
         SDL_COLORSPACE_BT601_LIMITED,
         SDL_COLORSPACE_BT709_LIMITED
     };

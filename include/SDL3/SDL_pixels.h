@@ -591,6 +591,14 @@ typedef enum
                               SDL_MATRIX_COEFFICIENTS_UNSPECIFIED,
                               SDL_CHROMA_LOCATION_NONE),
 
+    SDL_COLORSPACE_JPEG =     /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_FULL_G22_NONE_P709_X601 */
+        SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                              SDL_COLOR_RANGE_FULL,
+                              SDL_COLOR_PRIMARIES_BT709,
+                              SDL_TRANSFER_CHARACTERISTICS_BT601,
+                              SDL_MATRIX_COEFFICIENTS_BT601,
+                              SDL_CHROMA_LOCATION_NONE),
+
     SDL_COLORSPACE_BT601_LIMITED =  /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601 */
         SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
                               SDL_COLOR_RANGE_LIMITED,
@@ -627,7 +635,7 @@ typedef enum
     SDL_COLORSPACE_RGB_DEFAULT = SDL_COLORSPACE_SRGB,
 
     /* The default colorspace for YUV surfaces if no colorspace is specified */
-    SDL_COLORSPACE_YUV_DEFAULT = SDL_COLORSPACE_BT601_LIMITED,
+    SDL_COLORSPACE_YUV_DEFAULT = SDL_COLORSPACE_JPEG,
 
 } SDL_Colorspace;
 
