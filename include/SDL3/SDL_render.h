@@ -458,8 +458,7 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *
  * - `SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER`: an SDL_ColorSpace value
  *   describing the texture colorspace, defaults to SDL_COLORSPACE_SCRGB for
  *   floating point textures, SDL_COLORSPACE_HDR10 for 10-bit textures,
- *   SDL_COLORSPACE_SRGB for other RGB textures and
- *   SDL_COLORSPACE_BT601_LIMITED for YUV textures.
+ *   SDL_COLORSPACE_SRGB for other RGB textures and SDL_COLORSPACE_JPEG for YUV textures.
  * - `SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER`: one of the enumerated values in
  *   SDL_PixelFormatEnum, defaults to the best RGBA format for the renderer
  * - `SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER`: one of the enumerated values in
