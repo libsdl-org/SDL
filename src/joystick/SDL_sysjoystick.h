@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -77,6 +77,7 @@ struct SDL_Joystick
     char *serial _guarded;               /* Joystick serial */
     SDL_JoystickGUID guid _guarded;      /* Joystick guid */
     Uint16 firmware_version _guarded;    /* Firmware version, if available */
+    Uint64 steam_handle _guarded;        /* Steam controller API handle */
 
     int naxes _guarded; /* Number of axis controls on the joystick */
     SDL_JoystickAxisInfo *axes _guarded;
@@ -113,9 +114,19 @@ struct SDL_Joystick
     SDL_bool delayed_guide_button _guarded;      /* SDL_TRUE if this device has the guide button event delayed */
     SDL_JoystickPowerLevel epowerlevel _guarded; /* power level of this joystick, SDL_JOYSTICK_POWER_UNKNOWN if not supported */
 
+    SDL_SensorID accel_sensor _guarded;
+    SDL_Sensor *accel _guarded;
+    SDL_SensorID gyro_sensor _guarded;
+    SDL_Sensor *gyro _guarded;
+    float sensor_transform[3][3] _guarded;
+
+    Uint64 update_complete _guarded;
+
     struct SDL_JoystickDriver *driver _guarded;
 
     struct joystick_hwdata *hwdata _guarded; /* Driver dependent information */
+
+    SDL_PropertiesID props _guarded;
 
     int ref_count _guarded; /* Reference count for multiple opens */
 
@@ -129,11 +140,6 @@ struct SDL_Joystick
 #define SDL_HARDWARE_BUS_USB       0x03
 #define SDL_HARDWARE_BUS_BLUETOOTH 0x05
 #define SDL_HARDWARE_BUS_VIRTUAL   0xFF
-
-/* Joystick capability flags for GetCapabilities() */
-#define SDL_JOYCAP_LED             0x01
-#define SDL_JOYCAP_RUMBLE          0x02
-#define SDL_JOYCAP_RUMBLE_TRIGGERS 0x04
 
 /* Macro to combine a USB vendor ID and product ID into a single Uint32 value */
 #define MAKE_VIDPID(VID, PID) (((Uint32)(VID)) << 16 | (PID))
@@ -158,6 +164,9 @@ typedef struct SDL_JoystickDriver
     /* Function to get the device-dependent path of a joystick */
     const char *(*GetDevicePath)(int device_index);
 
+    /* Function to get the Steam virtual gamepad slot of a joystick */
+    int (*GetDeviceSteamVirtualGamepadSlot)(int device_index);
+
     /* Function to get the player index of a joystick */
     int (*GetDevicePlayerIndex)(int device_index);
 
@@ -180,9 +189,6 @@ typedef struct SDL_JoystickDriver
     /* Rumble functionality */
     int (*Rumble)(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
     int (*RumbleTriggers)(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble);
-
-    /* Capability detection */
-    Uint32 (*GetCapabilities)(SDL_Joystick *joystick);
 
     /* LED functionality */
     int (*SetLED)(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);

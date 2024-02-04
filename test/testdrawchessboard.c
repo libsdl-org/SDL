@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+   Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
    This software is provided 'as-is', without any express or implied
    warranty.  In no event will the authors be held liable for any damages
@@ -14,13 +14,13 @@
 
 /* Sample program:  Draw a Chess Board  by using SDL_CreateSoftwareRenderer API */
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
 
 static SDL_Window *window;
 static SDL_Renderer *renderer;
@@ -57,6 +57,7 @@ static void DrawChessBoard(void)
             }
         }
     }
+    SDL_RenderPresent(renderer);
 }
 
 static void loop(void)
@@ -78,7 +79,7 @@ static void loop(void)
 
         if (e.type == SDL_EVENT_QUIT) {
             done = 1;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
             emscripten_cancel_main_loop();
 #endif
             return;
@@ -86,7 +87,7 @@ static void loop(void)
 
         if ((e.type == SDL_EVENT_KEY_DOWN) && (e.key.keysym.sym == SDLK_ESCAPE)) {
             done = 1;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
             emscripten_cancel_main_loop();
 #endif
             return;
@@ -106,7 +107,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -126,13 +127,13 @@ int main(int argc, char *argv[])
 
     /* Create window and renderer for given surface */
     window = SDL_CreateWindow("Chess Board", 640, 480, SDL_WINDOW_RESIZABLE);
-    if (window == NULL) {
+    if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Window creation fail : %s\n", SDL_GetError());
         return 1;
     }
     surface = SDL_GetWindowSurface(window);
     renderer = SDL_CreateSoftwareRenderer(surface);
-    if (renderer == NULL) {
+    if (!renderer) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Render creation for surface fail : %s\n", SDL_GetError());
         return 1;
     }
@@ -143,13 +144,16 @@ int main(int argc, char *argv[])
 
     /* Draw the Image on rendering surface */
     done = 0;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {
         loop();
     }
 #endif
+
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
 
     SDL_Quit();
     SDLTest_CommonDestroyState(state);

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,9 +24,10 @@
 
 #include <e32std.h>
 
+/* !!! FIXME: Should this be SDL_MUTEX_TIMEDOUT? */
 #define SDL_MUTEX_TIMEOUT -2
 
-struct SDL_semaphore
+struct SDL_Semaphore
 {
     TInt handle;
     TInt count;
@@ -64,7 +65,7 @@ static TInt NewSema(const TDesC &aName, TAny *aPtr1, TAny *aPtr2)
     return ((RSemaphore *)aPtr1)->CreateGlobal(aName, value);
 }
 
-static void WaitAll(SDL_sem *sem)
+static void WaitAll(SDL_Semaphore *sem)
 {
     RSemaphore sema;
     sema.SetHandle(sem->handle);
@@ -74,23 +75,22 @@ static void WaitAll(SDL_sem *sem)
     }
 }
 
-SDL_sem *
-SDL_CreateSemaphore(Uint32 initial_value)
+SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 {
     RSemaphore s;
     TInt status = CreateUnique(NewSema, &s, &initial_value);
     if (status != KErrNone) {
         SDL_SetError("Couldn't create semaphore");
     }
-    SDL_semaphore *sem = new /*(ELeave)*/ SDL_semaphore;
+    SDL_Semaphore *sem = new /*(ELeave)*/ SDL_Semaphore;
     sem->handle = s.Handle();
     sem->count = initial_value;
     return sem;
 }
 
-void SDL_DestroySemaphore(SDL_sem *sem)
+void SDL_DestroySemaphore(SDL_Semaphore *sem)
 {
-    if (sem != NULL) {
+    if (sem) {
         RSemaphore sema;
         sema.SetHandle(sem->handle);
         sema.Signal(sema.Count());
@@ -100,9 +100,9 @@ void SDL_DestroySemaphore(SDL_sem *sem)
     }
 }
 
-int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
+int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -114,7 +114,7 @@ int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
         return SDL_MUTEX_TIMEOUT;
     }
 
-    if (timeoutNS == SDL_MUTEX_MAXWAIT) {
+    if (timeoutNS == -1) {  // -1 == wait indefinitely.
         WaitAll(sem);
         return 0;
     }
@@ -138,19 +138,18 @@ int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
     return info->iVal;
 }
 
-Uint32
-SDL_SemValue(SDL_sem *sem)
+Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
-    if (sem == NULL) {
+    if (!sem) {
         SDL_InvalidParamError("sem");
         return 0;
     }
     return sem->count;
 }
 
-int SDL_SemPost(SDL_sem *sem)
+int SDL_PostSemaphore(SDL_Semaphore *sem)
 {
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
     sem->count++;

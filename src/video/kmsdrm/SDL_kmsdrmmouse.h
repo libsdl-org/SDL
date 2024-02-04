@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -43,11 +43,11 @@ typedef struct KMSDRM_CursorData
 
 } KMSDRM_CursorData;
 
-extern void KMSDRM_InitMouse(_THIS, SDL_VideoDisplay *display);
-extern void KMSDRM_QuitMouse(_THIS);
+extern void KMSDRM_InitMouse(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
+extern void KMSDRM_QuitMouse(SDL_VideoDevice *_this);
 
 extern int KMSDRM_CreateCursorBO(SDL_VideoDisplay *display);
-extern void KMSDRM_DestroyCursorBO(_THIS, SDL_VideoDisplay *display);
+extern void KMSDRM_DestroyCursorBO(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
 extern void KMSDRM_InitCursor(void);
 
 #endif /* SDL_KMSDRM_mouse_h_ */

@@ -61,7 +61,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="setupapi.lib fox-1.6.lib"
+				AdditionalDependencies="fox-1.6.lib"
 				OutputFile="$(ProjectName).exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\hidapi\objfre_wxp_x86\i386;&quot;..\..\hidapi-externals\fox\lib&quot;"
@@ -139,7 +139,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="setupapi.lib fox-1.6.lib"
+				AdditionalDependencies="fox-1.6.lib"
 				OutputFile="$(ProjectName).exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\hidapi\objfre_wxp_x86\i386;&quot;..\..\hidapi-externals\fox\lib&quot;"

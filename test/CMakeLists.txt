@@ -1,86 +1,135 @@
-cmake_minimum_required(VERSION 3.0)
-project(SDL3_test)
+#
+# CMake script for building the SDL tests
+#
 
-enable_testing()
-
-include("${CMAKE_CURRENT_LIST_DIR}/../cmake/sdlplatform.cmake")
-SDL_DetectCMakePlatform()
-
-include(CheckCCompilerFlag)
-include(CheckIncludeFile)
-include(CMakeParseArguments)
-include(CMakePushCheckState)
-include(GNUInstallDirs)
-
-set(SDL_TESTS_LINK_SHARED_DEFAULT ON)
-if(EMSCRIPTEN OR N3DS OR PS2 OR PSP OR RISCOS OR VITA)
-    set(SDL_TESTS_LINK_SHARED_DEFAULT OFF)
-endif()
-
-option(SDL_TESTS_LINK_SHARED "link tests to shared SDL library" ${SDL_TESTS_LINK_SHARED_DEFAULT})
-set(SDL_TESTS_TIMEOUT_MULTIPLIER "1" CACHE STRING "Timeout multiplier to account for really slow machines")
+include(CheckStructHasMember)
 
 if(SDL_TESTS_LINK_SHARED)
     set(sdl_name_component SDL3-shared)
 else()
     set(sdl_name_component SDL3-static)
 endif()
-
-if(NOT TARGET SDL3::${sdl_name_component})
-    find_package(SDL3 3.0.0 REQUIRED CONFIG COMPONENTS ${sdl_name_component} SDL3_test)
-endif()
-
-if(TARGET sdl-build-options)
-    set(SDL3_TESTS_SUBPROJECT ON)
-else()
-    set(SDL3_TESTS_SUBPROJECT OFF)
-endif()
+set(HAVE_TESTS_LINK_SHARED "${SDL_TESTS_LINK_SHARED}" PARENT_SCOPE)
 
 # CMake incorrectly detects opengl32.lib being present on MSVC ARM64
-if(NOT MSVC OR NOT CMAKE_GENERATOR_PLATFORM STREQUAL "ARM64")
+if(NOT (MSVC AND SDL_CPU_ARM64))
     # Prefer GLVND, if present
     set(OpenGL_GL_PREFERENCE GLVND)
     find_package(OpenGL)
 endif()
 
+if(WINDOWS_STORE)
+    cmake_minimum_required(VERSION 3.19)
+    # CMP0112: Target file component generator expressions do not add target dependencies.
+    cmake_policy(SET CMP0112 NEW)
+endif()
+
 set(SDL_TEST_EXECUTABLES)
 
-# FIXME: can be OBJECT library for CMake 3.16
-add_library(sdltests_utils STATIC
+add_library(sdltests_utils OBJECT
     testutils.c
 )
-target_link_libraries(sdltests_utils PRIVATE SDL3::${sdl_name_component})
+target_link_libraries(sdltests_utils PRIVATE SDL3::Headers)
 
 file(GLOB RESOURCE_FILES *.bmp *.wav *.hex moose.dat utf8.txt)
+
+if(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+    set(test_bin_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    if(NOT IS_ABSOLUTE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+        set(test_bin_dir "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    endif()
+else()
+    set(test_bin_dir "${CMAKE_CURRENT_BINARY_DIR}")
+endif()
+if(NOT CMAKE_VERSION VERSION_LESS 3.20)
+    get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+    set(test_bin_dir "${test_bin_dir}$<$<BOOL:${is_multi_config}>:/$<CONFIG>>")
+endif()
+
 set(RESOURCE_FILE_NAMES)
-foreach(RESOURCE_FILE ${RESOURCE_FILES})
-    get_filename_component(res_file_name ${RESOURCE_FILE} NAME)
+set(RESOURCE_FILES_BINDIR)
+foreach(resource_file IN LISTS RESOURCE_FILES)
+    get_filename_component(res_file_name ${resource_file} NAME)
     list(APPEND RESOURCE_FILE_NAMES "${res_file_name}")
+    set(resource_file_bindir "${test_bin_dir}/${res_file_name}")
+    add_custom_command(OUTPUT "${resource_file_bindir}"
+        COMMAND "${CMAKE_COMMAND}" -E copy "${resource_file}" "${resource_file_bindir}"
+        DEPENDS "${resource_file}"
+    )
+    list(APPEND RESOURCE_FILES_BINDIR "${resource_file_bindir}")
 endforeach()
+add_custom_target(copy-sdl-test-resources
+    DEPENDS "${RESOURCE_FILES_BINDIR}"
+)
 
 define_property(TARGET PROPERTY SDL_NONINTERACTIVE BRIEF_DOCS "If true, target is a non-interactive test executable." FULL_DOCS "If true, target is a noninteractive test executable.")
 define_property(TARGET PROPERTY SDL_NONINTERACTIVE_ARGUMENTS BRIEF_DOCS "Argument(s) to run executable in non-interactive mode." FULL_DOCS "Argument(s) to run executable in non-interactive mode.")
 define_property(TARGET PROPERTY SDL_NONINTERACTIVE_TIMEOUT BRIEF_DOCS "Timeout for noninteractive executable." FULL_DOCS "Timeout for noninteractive executable.")
 
+if(WINDOWS_STORE)
+    add_library(sdl_test_main_uwp OBJECT main.cpp)
+    target_link_libraries(sdl_test_main_uwp PRIVATE SDL3::Headers)
+    target_compile_options(sdl_test_main_uwp PRIVATE "/ZW")
+
+    add_library(sdl_test_main_callbacks_uwp OBJECT main.cpp)
+    target_link_libraries(sdl_test_main_callbacks_uwp PRIVATE SDL3::Headers)
+    target_compile_options(sdl_test_main_callbacks_uwp PRIVATE "/ZW")
+    target_compile_definitions(sdl_test_main_callbacks_uwp PRIVATE "SDL_MAIN_USE_CALLBACKS")
+
+    set_source_files_properties(${RESOURCE_FILES} PROPERTIES VS_DEPLOYENT_LOCATION "Assets")
+endif()
+
 macro(add_sdl_test_executable TARGET)
-    cmake_parse_arguments(AST "NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS" "" "NONINTERACTIVE_TIMEOUT;NONINTERACTIVE_ARGS;SOURCES" ${ARGN})
+    cmake_parse_arguments(AST "BUILD_DEPENDENT;NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS;NO_C90;MAIN_CALLBACKS" "" "NONINTERACTIVE_TIMEOUT;NONINTERACTIVE_ARGS;SOURCES" ${ARGN})
     if(AST_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "Unknown argument(s): ${AST_UNPARSED_ARGUMENTS}")
     endif()
     if(NOT AST_SOURCES)
         message(FATAL_ERROR "add_sdl_test_executable needs at least one source")
     endif()
+    if(AST_TESTUTILS)
+        list(APPEND AST_SOURCES $<TARGET_OBJECTS:sdltests_utils>)
+    endif()
+    set(EXTRA_SOURCES "")
+    if(WINDOWS_STORE)
+        set(uwp_bindir "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.dir")
+        if(NOT IS_DIRECTORY "${uwp_bindir}")
+            execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory "${uwp_bindir}")
+        endif()
+        string(REGEX REPLACE "[_]" "" SAFE_TARGET "${TARGET}")
+        file(GENERATE OUTPUT "${uwp_bindir}/${TARGET}.appxmanifest"
+            INPUT "${CMAKE_CURRENT_SOURCE_DIR}/uwp/Package.appxmanifest.in"
+            TARGET "${TARGET}"
+        )
+        set_property(SOURCE "${uwp_bindir}/${TARGET}.appxmanifest" PROPERTY VS_DEPLOYMENT_CONTENT 1)
+
+        if(AST_MAIN_CALLBACKS)
+            list(APPEND EXTRA_SOURCES "$<TARGET_OBJECTS:sdl_test_main_callbacks_uwp>")
+        else()
+            list(APPEND EXTRA_SOURCES "$<TARGET_OBJECTS:sdl_test_main_uwp>")
+        endif()
+
+        list(APPEND EXTRA_SOURCES
+            "${uwp_bindir}/${TARGET}.appxmanifest"
+            "uwp/logo-50x50.png"
+            "uwp/square-44x44.png"
+            "uwp/square-150x150.png"
+            "uwp/splash-620x300.png"
+        )
+    endif()
     if(AST_NEEDS_RESOURCES)
-        list(APPEND AST_SOURCES ${RESOURCE_FILES})
+        list(APPEND EXTRA_SOURCES ${RESOURCE_FILES})
     endif()
     if(ANDROID)
-        add_library(${TARGET} SHARED ${AST_SOURCES})
+        add_library(${TARGET} SHARED ${AST_SOURCES} ${EXTRA_SOURCES})
     else()
-        add_executable(${TARGET} ${AST_SOURCES})
+        add_executable(${TARGET} ${AST_SOURCES} ${EXTRA_SOURCES})
     endif()
+    SDL_AddCommonCompilerFlags(${TARGET})
     target_link_libraries(${TARGET} PRIVATE SDL3::SDL3_test SDL3::${sdl_name_component})
-    if(AST_TESTUTILS)
-        target_link_libraries(${TARGET} PRIVATE sdltests_utils)
+    if(NOT AST_NO_C90 AND NOT SDL_CMAKE_PLATFORM MATCHES "^(n3ds|ps2|psp)$")
+        set_property(TARGET ${TARGET} PROPERTY C_STANDARD 90)
+        set_property(TARGET ${TARGET} PROPERTY C_EXTENSIONS FALSE)
     endif()
 
     list(APPEND SDL_TEST_EXECUTABLES ${TARGET})
@@ -98,15 +147,34 @@ macro(add_sdl_test_executable TARGET)
             add_custom_command(TARGET ${TARGET} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} ARGS -E make_directory $<TARGET_FILE_DIR:${TARGET}>/sdl-${TARGET}
                 COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILES} $<TARGET_FILE_DIR:${TARGET}>/sdl-${TARGET})
+        elseif(WINDOWS_STORE)
+            # MSVC does build the dependent targets (or POST_BUILD commands) when building an application
+            # after starting to debug. By copying the resources in a custom target, the files can be copied afterwards.
+            # FIXME: find out proper way to add assets to UWP package
+            cmake_minimum_required(VERSION 3.19)
+            add_custom_target(zzz-resources-copy-${TARGET}
+                COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${TARGET}>/AppX"
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${RESOURCE_FILES} "$<TARGET_FILE_DIR:${TARGET}>/AppX"
+            )
+            add_dependencies(${TARGET} zzz-resources-copy-${TARGET})
         else()
-            add_custom_command(TARGET ${TARGET} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILES} $<TARGET_FILE_DIR:${TARGET}>)
+            add_dependencies(${TARGET} copy-sdl-test-resources)
         endif()
         if(APPLE)
             # Make sure resource files get installed into macOS/iOS .app bundles.
             set_target_properties(${TARGET} PROPERTIES RESOURCE "${RESOURCE_FILES}")
         endif()
+        if(EMSCRIPTEN)
+            foreach(res IN LISTS RESOURCE_FILES)
+                get_filename_component(res_name "${res}" NAME)
+                target_link_options(${TARGET} PRIVATE "SHELL:--embed-file ${res}@${res_name}")
+            endforeach()
+        endif()
         set_property(TARGET ${TARGET} APPEND PROPERTY ADDITIONAL_CLEAN_FILES "$<TARGET_FILE_DIR:${TARGET}>/$<JOIN:${RESOURCE_FILE_NAMES},$<SEMICOLON>$<TARGET_FILE_DIR:${TARGET}>/>")
+    endif()
+    if(AST_BUILD_DEPENDENT)
+        target_include_directories(${TARGET} BEFORE PRIVATE $<TARGET_PROPERTY:SDL3::${sdl_name_component},INCLUDE_DIRECTORIES>)
+        target_include_directories(${TARGET} BEFORE PRIVATE ${SDL3_SOURCE_DIR}/src)
     endif()
 
     if(WINDOWS)
@@ -117,21 +185,28 @@ macro(add_sdl_test_executable TARGET)
     elseif(PSP)
         target_link_libraries(${TARGET} PRIVATE GL)
     endif()
+    if(WINDOWS_STORE)
+        target_compile_definitions(${TARGET} PRIVATE "SDL_MAIN_NOIMPL")
+        set_property(TARGET ${TARGET} PROPERTY WIN32_EXECUTABLE TRUE)
+        set_property(TARGET ${TARGET} PROPERTY RUNTIME_OUTPUT_DIRECTORY "${uwp_bindir}")
+        target_link_options(${TARGET} PRIVATE
+            -nodefaultlib:vccorlib$<$<CONFIG:Debug>:d>
+            -nodefaultlib:msvcrt$<$<CONFIG:Debug>:d>
+            vccorlib$<$<CONFIG:Debug>:d>.lib
+            msvcrt$<$<CONFIG:Debug>:d>.lib
+        )
+    endif()
+
+    if(EMSCRIPTEN)
+        set_property(TARGET ${TARGET} PROPERTY SUFFIX ".html")
+    endif()
 
     if(OPENGL_FOUND)
         target_compile_definitions(${TARGET} PRIVATE HAVE_OPENGL)
     endif()
 
-    if(TARGET sdl-global-options)
-        target_link_libraries(${TARGET} PRIVATE $<BUILD_INTERFACE:sdl-global-options>)
-    endif()
-
-    if(SDL3_TESTS_SUBPROJECT)
-        # FIXME: only add "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>" + include paths of external dependencies
-        target_include_directories(${TARGET} PRIVATE "$<TARGET_PROPERTY:SDL3::${sdl_name_component},INCLUDE_DIRECTORIES>")
-    else()
-        target_include_directories(${TARGET} PRIVATE "../include")
-    endif()
+    # FIXME: only add "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>" + include paths of external dependencies
+    target_include_directories(${TARGET} PRIVATE "$<TARGET_PROPERTY:SDL3::${sdl_name_component},INCLUDE_DIRECTORIES>")
 endmacro()
 
 check_include_file(signal.h HAVE_SIGNAL_H)
@@ -144,19 +219,45 @@ if(HAVE_LIBUDEV_H)
     add_definitions(-DHAVE_LIBUDEV_H)
 endif()
 
+set(FFmpeg_FIND_COMPONENTS AVCODEC AVFORMAT AVUTIL SWSCALE)
+include("${SDL3_SOURCE_DIR}/cmake/FindFFmpeg.cmake")
+if(FFmpeg_FOUND)
+    cmake_push_check_state()
+    list(APPEND CMAKE_REQUIRED_INCLUDES "${FFmpeg_AVUTIL_INCLUDE_DIRS}")
+    check_struct_has_member("AVFrame" "ch_layout" "libavutil/frame.h" LIBAVUTIL_AVFRAME_HAS_CH_LAYOUT)
+    cmake_pop_check_state()
+endif()
+if(FFmpeg_FOUND AND LIBAVUTIL_AVFRAME_HAS_CH_LAYOUT)
+    add_sdl_test_executable(testffmpeg NO_C90 SOURCES testffmpeg.c ${icon_bmp_header})
+    if(APPLE)
+        target_sources(testffmpeg PRIVATE testffmpeg_videotoolbox.m)
+        target_link_options(testffmpeg PRIVATE "-Wl,-framework,CoreFoundation" "-Wl,-framework,CoreVideo" "-Wl,-framework,Metal")
+    endif()
+    if(HAVE_OPENGLES_V2)
+        message(DEBUG "Enabling EGL support in testffmpeg")
+        target_compile_definitions(testffmpeg PRIVATE HAVE_EGL)
+        if(TARGET OpenGL::EGL)
+            target_link_libraries(testffmpeg PRIVATE OpenGL::EGL)
+        endif()
+    endif()
+    target_link_libraries(testffmpeg PRIVATE ${FFMPEG_LIBRARIES})
+else()
+    message(STATUS "Can't find ffmpeg 5.1.3 or newer, skipping testffmpeg")
+endif()
+
 add_sdl_test_executable(checkkeys SOURCES checkkeys.c)
 add_sdl_test_executable(checkkeysthreads SOURCES checkkeysthreads.c)
-add_sdl_test_executable(loopwave NEEDS_RESOURCES TESTUTILS SOURCES loopwave.c)
-add_sdl_test_executable(loopwavequeue NEEDS_RESOURCES TESTUTILS SOURCES loopwavequeue.c)
+add_sdl_test_executable(loopwave NEEDS_RESOURCES TESTUTILS MAIN_CALLBACKS SOURCES loopwave.c)
 add_sdl_test_executable(testsurround SOURCES testsurround.c)
 add_sdl_test_executable(testresample NEEDS_RESOURCES SOURCES testresample.c)
 add_sdl_test_executable(testaudioinfo SOURCES testaudioinfo.c)
+add_sdl_test_executable(testaudiostreamdynamicresample NEEDS_RESOURCES TESTUTILS SOURCES testaudiostreamdynamicresample.c)
 
 file(GLOB TESTAUTOMATION_SOURCE_FILES testautomation*.c)
-add_sdl_test_executable(testautomation NEEDS_RESOURCES SOURCES ${TESTAUTOMATION_SOURCE_FILES})
+add_sdl_test_executable(testautomation NONINTERACTIVE NONINTERACTIVE_TIMEOUT 120 NEEDS_RESOURCES NO_C90 SOURCES ${TESTAUTOMATION_SOURCE_FILES})
 add_sdl_test_executable(testmultiaudio NEEDS_RESOURCES TESTUTILS SOURCES testmultiaudio.c)
 add_sdl_test_executable(testaudiohotplug NEEDS_RESOURCES TESTUTILS SOURCES testaudiohotplug.c)
-add_sdl_test_executable(testaudiocapture SOURCES testaudiocapture.c)
+add_sdl_test_executable(testaudiocapture MAIN_CALLBACKS SOURCES testaudiocapture.c)
 add_sdl_test_executable(testatomic NONINTERACTIVE SOURCES testatomic.c)
 add_sdl_test_executable(testintersections SOURCES testintersections.c)
 add_sdl_test_executable(testrelative SOURCES testrelative.c)
@@ -166,45 +267,92 @@ add_sdl_test_executable(testdrawchessboard SOURCES testdrawchessboard.c)
 add_sdl_test_executable(testdropfile SOURCES testdropfile.c)
 add_sdl_test_executable(testerror NONINTERACTIVE SOURCES testerror.c)
 
-if(SDL3_TESTS_SUBPROJECT)
-    set(build_options_dependent_tests )
+set(build_options_dependent_tests )
 
-    add_sdl_test_executable(testevdev NONINTERACTIVE SOURCES testevdev.c)
-    list(APPEND build_options_dependent_tests testevdev)
+add_sdl_test_executable(testevdev BUILD_DEPENDENT NONINTERACTIVE SOURCES testevdev.c)
 
-    if(APPLE)
-        add_sdl_test_executable(testnative NEEDS_RESOURCES TESTUTILS
-            SOURCES
-                testnative.c
-                testnativecocoa.m
-                testnativex11.c
-        )
+if(APPLE)
+    add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS
+        SOURCES
+            testnative.c
+            testnativecocoa.m
+            testnativex11.c
+    )
 
-        cmake_push_check_state()
-        check_c_compiler_flag(-Wno-error=deprecated-declarations HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
-        cmake_pop_check_state()
-        target_link_libraries(testnative PRIVATE "-Wl,-framework,Cocoa")
-        if(HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
-            set_property(SOURCE "testnativecocoa.m" APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-error=deprecated-declarations")
-        endif()
-        list(APPEND build_options_dependent_tests testnative)
-    elseif(WINDOWS)
-        add_sdl_test_executable(testnative NEEDS_RESOURCES TESTUTILS SOURCES testnative.c testnativew32.c)
-        list(APPEND build_options_dependent_tests testnative)
-    elseif(HAVE_X11)
-        add_sdl_test_executable(testnative NEEDS_RESOURCES TESTUTILS SOURCES testnative.c testnativex11.c)
-        target_link_libraries(testnative PRIVATE X11)
-        list(APPEND build_options_dependent_tests testnative)
+    cmake_push_check_state()
+    check_c_compiler_flag(-Wno-error=deprecated-declarations HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
+    cmake_pop_check_state()
+    target_link_libraries(testnative PRIVATE "-Wl,-framework,Cocoa")
+    if(HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
+        set_property(SOURCE "testnativecocoa.m" APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-error=deprecated-declarations")
     endif()
+elseif(WINDOWS)
+    add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS SOURCES testnative.c testnativew32.c)
+elseif(HAVE_X11 OR HAVE_WAYLAND)
+    add_sdl_test_executable(testnative BUILD_DEPENDENT NO_C90 NEEDS_RESOURCES TESTUTILS SOURCES testnative.c)
+    if(HAVE_X11)
+        target_sources(testnative PRIVATE testnativex11.c)
+        target_link_libraries(testnative PRIVATE X11)
+    endif()
+    if(HAVE_WAYLAND)
+        set_property(SOURCE ${SDL3_BINARY_DIR}/wayland-generated-protocols/xdg-shell-protocol.c PROPERTY GENERATED 1)
+        target_sources(testnative PRIVATE testnativewayland.c ${SDL3_BINARY_DIR}/wayland-generated-protocols/xdg-shell-protocol.c)
 
-    foreach(t ${build_options_dependent_tests})
-        target_include_directories(${t} BEFORE PRIVATE $<TARGET_PROPERTY:sdl-build-options,INTERFACE_INCLUDE_DIRECTORIES>)
-        target_include_directories(${t} BEFORE PRIVATE ${SDL3_SOURCE_DIR}/src)
-    endforeach()
+        # Needed to silence the documentation warning in the generated header file
+        target_compile_options(testnative PRIVATE -Wno-documentation-unknown-command)
+        target_link_libraries(testnative PRIVATE wayland-client)
+    endif ()
 endif()
 
+find_package(Python3)
+function(files2headers OUTPUT)
+    set(xxd "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/xxd.py")
+    set(inputs ${ARGN})
+    set(outputs )
+    foreach(input IN LISTS inputs)
+        get_filename_component(file_we "${input}" NAME_WE)
+        set(intermediate "${CMAKE_CURRENT_BINARY_DIR}/${file_we}.h")
+        set(output "${CMAKE_CURRENT_SOURCE_DIR}/${file_we}.h")
+        list(APPEND outputs "${output}")
+        if(Python3_FOUND AND Python3_VERSION VERSION_GREATER_EQUAL "3.2")
+            list(APPEND outputs  "${intermediate}")
+            # Don't add the 'output' header to the output, to avoid marking them as GENERATED
+            # (generated files are removed when running the CLEAN target)
+            add_custom_command(OUTPUT "${intermediate}"
+                COMMAND Python3::Interpreter "${xxd}" -i "${CMAKE_CURRENT_SOURCE_DIR}/${input}" "-o" "${intermediate}"
+                COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${intermediate}" "${output}"
+                DEPENDS "${xxd}" "${bmp}"
+            )
+        endif()
+    endforeach()
+    set(${OUTPUT} "${outputs}" PARENT_SCOPE)
+endfunction()
+
+files2headers(gamepad_image_headers
+    gamepad_axis_arrow.bmp
+    gamepad_axis.bmp
+    gamepad_back.bmp
+    gamepad_battery_empty.bmp
+    gamepad_battery_full.bmp
+    gamepad_battery_low.bmp
+    gamepad_battery_medium.bmp
+    gamepad_battery_unknown.bmp
+    gamepad_battery_wired.bmp
+    gamepad_button_background.bmp
+    gamepad_button.bmp
+    gamepad_button_small.bmp
+    gamepad_face_abxy.bmp
+    gamepad_face_bayx.bmp
+    gamepad_face_sony.bmp
+    gamepad_front.bmp
+    gamepad_touchpad.bmp
+)
+files2headers(icon_bmp_header icon.bmp)
+
+add_sdl_test_executable(testaudio MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testaudio.c)
+add_sdl_test_executable(testcolorspace SOURCES testcolorspace.c)
 add_sdl_test_executable(testfile NONINTERACTIVE SOURCES testfile.c)
-add_sdl_test_executable(testgamepad NEEDS_RESOURCES TESTUTILS SOURCES testgamepad.c)
+add_sdl_test_executable(testcontroller TESTUTILS SOURCES testcontroller.c gamepadutils.c ${gamepad_image_headers})
 add_sdl_test_executable(testgeometry TESTUTILS SOURCES testgeometry.c)
 add_sdl_test_executable(testgl SOURCES testgl.c)
 add_sdl_test_executable(testgles SOURCES testgles.c)
@@ -212,36 +360,42 @@ if(ANDROID)
     target_link_libraries(testgles PRIVATE GLESv1_CM)
 endif()
 add_sdl_test_executable(testgles2 SOURCES testgles2.c)
-add_sdl_test_executable(testgles2_sdf TESTUTILS SOURCES testgles2_sdf.c)
+add_sdl_test_executable(testgles2_sdf NEEDS_RESOURCES TESTUTILS SOURCES testgles2_sdf.c)
 add_sdl_test_executable(testhaptic SOURCES testhaptic.c)
 add_sdl_test_executable(testhotplug SOURCES testhotplug.c)
+add_sdl_test_executable(testpen SOURCES testpen.c)
 add_sdl_test_executable(testrumble SOURCES testrumble.c)
 add_sdl_test_executable(testthread NONINTERACTIVE NONINTERACTIVE_TIMEOUT 40 SOURCES testthread.c)
 add_sdl_test_executable(testiconv NEEDS_RESOURCES TESTUTILS SOURCES testiconv.c)
 add_sdl_test_executable(testime NEEDS_RESOURCES TESTUTILS SOURCES testime.c)
-add_sdl_test_executable(testjoystick SOURCES testjoystick.c)
 add_sdl_test_executable(testkeys SOURCES testkeys.c)
 add_sdl_test_executable(testloadso SOURCES testloadso.c)
 add_sdl_test_executable(testlocale NONINTERACTIVE SOURCES testlocale.c)
-add_sdl_test_executable(testlock SOURCES testlock.c)
+add_sdl_test_executable(testlock NO_C90 SOURCES testlock.c)
+add_sdl_test_executable(testrwlock SOURCES testrwlock.c)
 add_sdl_test_executable(testmouse SOURCES testmouse.c)
 
 add_sdl_test_executable(testoverlay NEEDS_RESOURCES TESTUTILS SOURCES testoverlay.c)
 add_sdl_test_executable(testplatform NONINTERACTIVE SOURCES testplatform.c)
 add_sdl_test_executable(testpower NONINTERACTIVE SOURCES testpower.c)
 add_sdl_test_executable(testfilesystem NONINTERACTIVE SOURCES testfilesystem.c)
+if(WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+    add_sdl_test_executable(pretest SOURCES pretest.c NONINTERACTIVE NONINTERACTIVE_TIMEOUT 60)
+endif()
 add_sdl_test_executable(testrendertarget NEEDS_RESOURCES TESTUTILS SOURCES testrendertarget.c)
 add_sdl_test_executable(testscale NEEDS_RESOURCES TESTUTILS SOURCES testscale.c)
 add_sdl_test_executable(testsem NONINTERACTIVE NONINTERACTIVE_ARGS 10 NONINTERACTIVE_TIMEOUT 30 SOURCES testsem.c)
 add_sdl_test_executable(testsensor SOURCES testsensor.c)
 add_sdl_test_executable(testshader NEEDS_RESOURCES TESTUTILS SOURCES testshader.c)
 add_sdl_test_executable(testshape NEEDS_RESOURCES SOURCES testshape.c)
-add_sdl_test_executable(testsprite NEEDS_RESOURCES TESTUTILS SOURCES testsprite.c)
-add_sdl_test_executable(testspriteminimal NEEDS_RESOURCES TESTUTILS SOURCES testspriteminimal.c)
+add_sdl_test_executable(testsprite MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testsprite.c)
+add_sdl_test_executable(testspriteminimal SOURCES testspriteminimal.c ${icon_bmp_header})
 add_sdl_test_executable(teststreaming NEEDS_RESOURCES TESTUTILS SOURCES teststreaming.c)
-add_sdl_test_executable(testtimer NONINTERACTIVE NONINTERACTIVE_TIMEOUT 60 SOURCES testtimer.c)
+add_sdl_test_executable(testtimer NONINTERACTIVE NONINTERACTIVE_ARGS --no-interactive NONINTERACTIVE_TIMEOUT 60 SOURCES testtimer.c)
 add_sdl_test_executable(testurl SOURCES testurl.c)
 add_sdl_test_executable(testver NONINTERACTIVE SOURCES testver.c)
+add_sdl_test_executable(testvideocapture SOURCES testvideocapture.c)
+add_sdl_test_executable(testvideocaptureminimal SOURCES testvideocaptureminimal.c)
 add_sdl_test_executable(testviewport NEEDS_RESOURCES TESTUTILS SOURCES testviewport.c)
 add_sdl_test_executable(testwm SOURCES testwm.c)
 add_sdl_test_executable(testyuv NONINTERACTIVE NONINTERACTIVE_ARGS "--automated" NEEDS_RESOURCES TESTUTILS SOURCES testyuv.c testyuv_cvt.c)
@@ -252,10 +406,18 @@ add_sdl_test_executable(testdisplayinfo SOURCES testdisplayinfo.c)
 add_sdl_test_executable(testqsort NONINTERACTIVE SOURCES testqsort.c)
 add_sdl_test_executable(testbounds NONINTERACTIVE SOURCES testbounds.c)
 add_sdl_test_executable(testcustomcursor SOURCES testcustomcursor.c)
-add_sdl_test_executable(gamepadmap NEEDS_RESOURCES TESTUTILS SOURCES gamepadmap.c)
-add_sdl_test_executable(testvulkan SOURCES testvulkan.c)
+add_sdl_test_executable(testvulkan NO_C90 SOURCES testvulkan.c)
 add_sdl_test_executable(testoffscreen SOURCES testoffscreen.c)
 add_sdl_test_executable(testpopup SOURCES testpopup.c)
+
+if (HAVE_WAYLAND)
+    # Set the GENERATED property on the protocol file, since it is first created at build time
+    set_property(SOURCE ${SDL3_BINARY_DIR}/wayland-generated-protocols/xdg-shell-protocol.c PROPERTY GENERATED 1)
+    add_sdl_test_executable(testwaylandcustom NO_C90 NEEDS_RESOURCES SOURCES testwaylandcustom.c ${SDL3_BINARY_DIR}/wayland-generated-protocols/xdg-shell-protocol.c)
+    # Needed to silence the documentation warning in the generated header file
+    target_compile_options(testwaylandcustom PRIVATE -Wno-documentation-unknown-command)
+    target_link_libraries(testwaylandcustom PRIVATE wayland-client)
+endif()
 
 check_c_compiler_flag(-Wformat-overflow HAVE_WFORMAT_OVERFLOW)
 if(HAVE_WFORMAT_OVERFLOW)
@@ -270,7 +432,7 @@ endif()
 cmake_push_check_state()
 if(HAVE_WFORMAT)
     # Some compilers ignore -Wformat-extra-args without -Wformat
-    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -Wformat")
+    string(APPEND CMAKE_REQUIRED_FLAGS " -Wformat")
 endif()
 check_c_compiler_flag(-Wformat-extra-args HAVE_WFORMAT_EXTRA_ARGS)
 cmake_pop_check_state()
@@ -280,7 +442,6 @@ endif()
 
 if(SDL_DUMMYAUDIO)
     set_property(TARGET testaudioinfo PROPERTY SDL_NONINTERACTIVE 1)
-    set_property(TARGET testsurround PROPERTY SDL_NONINTERACTIVE 1)
 endif()
 
 if(SDL_DUMMYVIDEO)
@@ -304,6 +465,12 @@ if(OPENGL_FOUND)
 endif()
 if(EMSCRIPTEN)
     set_property(TARGET testshader APPEND_STRING PROPERTY LINK_FLAGS " -sLEGACY_GL_EMULATION")
+
+    find_package(Python3 COMPONENTS Interpreter)
+    if(TARGET Python3::Interpreter)
+        add_custom_target(serve-sdl-tests
+            COMMAND Python3::Interpreter "${CMAKE_CURRENT_SOURCE_DIR}/emscripten/server.py" -d "${CMAKE_CURRENT_BINARY_DIR}")
+    endif()
 endif()
 
 if(PSP)
@@ -387,19 +554,13 @@ endif()
 # Set Apple App ID / Bundle ID.  This is needed to launch apps on some Apple
 # platforms (iOS, for example).
 if(APPLE)
-    if(CMAKE_VERSION VERSION_LESS "3.7.0")
-        # CMake's 'BUILDSYSTEM_TARGETS' property is only available in
-        # CMake 3.7 and above.
-        message(WARNING "Unable to set Bundle ID for Apple .app builds due to old CMake (pre 3.7).")
-    else()
-        foreach(CURRENT_TARGET ${SDL_TEST_EXECUTABLES})
-            set_target_properties("${CURRENT_TARGET}" PROPERTIES
-                MACOSX_BUNDLE_GUI_IDENTIFIER "org.libsdl.${CURRENT_TARGET}"
-                MACOSX_BUNDLE_BUNDLE_VERSION "${SDL3_VERSION}"
-                MACOSX_BUNDLE_SHORT_VERSION_STRING "${SDL3_VERSION}"
-            )
-        endforeach()
-    endif()
+  foreach(CURRENT_TARGET ${SDL_TEST_EXECUTABLES})
+    set_target_properties("${CURRENT_TARGET}" PROPERTIES
+      MACOSX_BUNDLE_GUI_IDENTIFIER "org.libsdl.${CURRENT_TARGET}"
+      MACOSX_BUNDLE_BUNDLE_VERSION "${SDL3_VERSION}"
+      MACOSX_BUNDLE_SHORT_VERSION_STRING "${SDL3_VERSION}"
+    )
+  endforeach()
 endif()
 
 set(TESTS_ENVIRONMENT
@@ -437,6 +598,9 @@ foreach(TEST ${SDL_TEST_EXECUTABLES})
                 DESTINATION ${CMAKE_INSTALL_DATADIR}/installed-tests/SDL3
             )
         endif()
+        if(TARGET pretest AND NOT "${TEST}" MATCHES "pretest")
+            set_property(TEST ${TEST} APPEND PROPERTY DEPENDS pretest)
+        endif()
     endif()
 endforeach()
 
@@ -452,8 +616,148 @@ if(SDL_INSTALL_TESTS)
             DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3
         )
     endif()
+    if(MSVC)
+        foreach(test IN LISTS SDL_TEST_EXECUTABLES)
+            SDL_install_pdb(${test} "${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3")
+        endforeach()
+    endif()
     install(
         FILES ${RESOURCE_FILES}
         DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3
     )
+endif()
+
+if(ANDROID AND TARGET SDL3::Jar)
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../cmake/android")
+    find_package(SdlAndroid MODULE)
+    if(SdlAndroid_FOUND)
+        set(apks "")
+        set(packages "")
+
+        include(SdlAndroidFunctions)
+        sdl_create_android_debug_keystore(SDL_test-debug-keystore)
+        sdl_android_compile_resources(SDL_test-resources RESFOLDER android/res)
+        add_custom_target(sdl-test-apks)
+        foreach(TEST ${SDL_TEST_EXECUTABLES})
+            set(ANDROID_MANIFEST_APP_NAME "${TEST}")
+            set(ANDROID_MANIFEST_LABEL "${TEST}")
+            set(ANDROID_MANIFEST_LIB_NAME "$<TARGET_FILE_BASE_NAME:${TEST}>")
+            set(ANDROID_MANIFEST_PACKAGE "org.libsdl.sdl.test.${TEST}")
+            set(generated_manifest_path "${CMAKE_CURRENT_BINARY_DIR}/android/${TEST}-src/AndroidManifest.xml")
+            string(REPLACE "." "/" JAVA_PACKAGE_DIR "${ANDROID_MANIFEST_PACKAGE}")
+            set(GENERATED_SRC_FOLDER "${CMAKE_CURRENT_BINARY_DIR}/android/${TEST}-src")
+            set(GENERATED_RES_FOLDER "${GENERATED_SRC_FOLDER}/res")
+            set(JAVA_PACKAGE_DIR "${GENERATED_SRC_FOLDER}/${JAVA_PACKAGE_DIR}")
+            configure_file(android/cmake/SDLEntryTestActivity.java.cmake "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java" @ONLY)
+            configure_file(android/cmake/SDLTestActivity.java.cmake "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" @ONLY)
+            configure_file(android/cmake/res/values/strings.xml.cmake android/res/values/strings-${TEST}.xml @ONLY)
+            configure_file(android/cmake/res/xml/shortcuts.xml.cmake "${GENERATED_RES_FOLDER}/xml/shortcuts.xml" @ONLY)
+            configure_file(android/cmake/AndroidManifest.xml.cmake "${generated_manifest_path}" @ONLY)
+            file(GENERATE
+                OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/android/${TEST}-$<CONFIG>/res/values/strings.xml"
+                INPUT "${CMAKE_CURRENT_BINARY_DIR}/android/res/values/strings-${TEST}.xml"
+            )
+
+            sdl_android_compile_resources(${TEST}-resources
+                RESOURCES
+                    "${CMAKE_CURRENT_BINARY_DIR}/android/${TEST}-$<CONFIG>/res/values/strings.xml"
+                    "${GENERATED_RES_FOLDER}/xml/shortcuts.xml"
+            )
+
+            sdl_android_link_resources(${TEST}-apk-linked
+                MANIFEST "${generated_manifest_path}"
+                PACKAGE ${ANDROID_MANIFEST_PACKAGE}
+                RES_TARGETS SDL_test-resources ${TEST}-resources
+                TARGET_SDK_VERSION 31
+            )
+
+            set(CMAKE_JAVA_COMPILE_FLAGS "-encoding;utf-8")
+            set(classes_path "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${TEST}-java.dir/classes")
+            # Some CMake versions have a slow `cmake -E make_directory` implementation
+            if(NOT IS_DIRECTORY "${classes_path}")
+                execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${classes_path}")
+            endif()
+            set(OUT_JAR "${CMAKE_CURRENT_BINARY_DIR}/${TEST}.jar")
+            add_custom_command(
+                OUTPUT "${OUT_JAR}"
+                COMMAND ${CMAKE_COMMAND} -E rm -rf "${classes_path}"
+                COMMAND ${CMAKE_COMMAND} -E make_directory "${classes_path}"
+                COMMAND ${Java_JAVAC_EXECUTABLE}
+                    -source 1.8 -target 1.8
+                    -bootclasspath "$<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>"
+                    "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java"
+                    "${JAVA_PACKAGE_DIR}/SDLTestActivity.java"
+                    $<TARGET_PROPERTY:${TEST}-apk-linked,JAVA_R>
+                    -cp "$<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>:${SDL_ANDROID_PLATFORM_ANDROID_JAR}"
+                    -d "${classes_path}"
+                COMMAND ${Java_JAR_EXECUTABLE} cf "${OUT_JAR}" -C "${classes_path}" .
+                DEPENDS $<TARGET_PROPERTY:${TEST}-apk-linked,OUTPUTS> "$<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>" "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java"
+            )
+            add_custom_target(${TEST}-jar DEPENDS "${OUT_JAR}")
+            set_property(TARGET ${TEST}-jar PROPERTY OUTPUT "${OUT_JAR}")
+
+            set(dexworkdir "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${TEST}-dex.dir")
+            # Some CMake versions have a slow `cmake -E make_directory` implementation
+            if(NOT IS_DIRECTORY "${dexworkdir}")
+                execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory "${dexworkdir}")
+            endif()
+            set(classes_dex_base_name "classes.dex")
+            set(classes_dex "${dexworkdir}/${classes_dex_base_name}")
+            add_custom_command(
+                OUTPUT "${classes_dex}"
+                COMMAND SdlAndroid::d8
+                    $<TARGET_PROPERTY:${TEST}-jar,OUTPUT>
+                    $<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>
+                    --lib "${SDL_ANDROID_PLATFORM_ANDROID_JAR}"
+                    --output "${dexworkdir}"
+                DEPENDS $<TARGET_PROPERTY:${TEST}-jar,OUTPUT> $<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>
+            )
+            add_custom_target(${TEST}-dex DEPENDS "${classes_dex}")
+            set_property(TARGET ${TEST}-dex PROPERTY OUTPUT "${classes_dex}")
+            set_property(TARGET ${TEST}-dex PROPERTY OUTPUT_BASE_NAME "${classes_dex_base_name}")
+
+            sdl_add_to_apk_unaligned(${TEST}-unaligned-apk
+                APK_IN ${TEST}-apk-linked
+                OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/intermediates"
+                ASSETS ${RESOURCE_FILES}
+                NATIVE_LIBS SDL3::SDL3-shared ${TEST}
+                DEX ${TEST}-dex
+            )
+
+            sdl_apk_align(${TEST}-aligned-apk ${TEST}-unaligned-apk
+                OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/intermediates"
+            )
+            sdl_apk_sign(${TEST}-apk ${TEST}-aligned-apk
+                KEYSTORE SDL_test-debug-keystore
+            )
+            add_dependencies(sdl-test-apks ${TEST}-apk)
+
+            if(TARGET SdlAndroid::adb)
+                add_custom_target(install-${TEST}
+                    COMMAND "${CMAKE_COMMAND}" -DACTION=install "-DAPKS=$<TARGET_PROPERTY:${TEST}-apk,OUTPUT>" -P "${SDL3_SOURCE_DIR}/cmake/android/SdlAndroidScript.cmake"
+                    DEPENDS "${TEST}-apk"
+                )
+                add_custom_target(start-${TEST}
+                    COMMAND "${ADB_BIN}" shell am start-activity -S "${ANDROID_MANIFEST_PACKAGE}/.SDLTestActivity"
+                )
+                add_custom_target(build-install-start-${TEST}
+                    COMMAND "${CMAKE_COMMAND}" -DACTION=build-install-run "-DEXECUTABLES=${TEST}" "-DBUILD_FOLDER=${CMAKE_BINARY_DIR}" -P "${SDL3_SOURCE_DIR}/cmake/android/SdlAndroidScript.cmake"
+                )
+            endif()
+
+            list(APPEND packages "${ANDROID_MANIFEST_PACKAGE}")
+            list(APPEND install_targets install-${TEST})
+        endforeach()
+
+        if(TARGET SdlAndroid::adb)
+            add_custom_target(install-sdl-test-apks
+                DEPENDS ${install_targets}
+                VERBATIM
+            )
+            add_custom_target(uninstall-sdl-test-apks
+                COMMAND "${CMAKE_COMMAND}" "-DADB=$<TARGET_FILE:SdlAndroid::adb>" -DACTION=uninstall "-DPACKAGES=${packages}" -P "${SDL3_SOURCE_DIR}/cmake/android/SdlAndroidScript.cmake"
+                VERBATIM
+            )
+        endif()
+    endif()
 endif()

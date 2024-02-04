@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,7 @@
 
 /* EGL implementation of SDL OpenGL support */
 
-int VIVANTE_GLES_LoadLibrary(_THIS, const char *path)
+int VIVANTE_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverData(SDL_GetPrimaryDisplay());
 

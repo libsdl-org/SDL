@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -84,8 +84,7 @@ static SDL_GetPowerInfo_Impl implementations[] = {
 };
 #endif
 
-SDL_PowerState
-SDL_GetPowerInfo(int *seconds, int *percent)
+SDL_PowerState SDL_GetPowerInfo(int *seconds, int *percent)
 {
 #ifndef SDL_POWER_DISABLED
     const int total = sizeof(implementations) / sizeof(implementations[0]);
@@ -95,10 +94,10 @@ SDL_GetPowerInfo(int *seconds, int *percent)
 
     int _seconds, _percent;
     /* Make these never NULL for platform-specific implementations. */
-    if (seconds == NULL) {
+    if (!seconds) {
         seconds = &_seconds;
     }
-    if (percent == NULL) {
+    if (!percent) {
         percent = &_percent;
     }
 

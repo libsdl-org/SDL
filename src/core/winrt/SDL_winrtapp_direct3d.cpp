@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,12 +19,6 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
-
-/* Standard C++11 includes */
-#include <functional>
-#include <string>
-#include <sstream>
-using namespace std;
 
 /* Windows includes */
 #include "ppltasks.h"
@@ -296,11 +290,8 @@ void SDL_WinRTApp::SetWindow(CoreWindow ^ window)
         ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &SDL_WinRTApp::OnMouseMoved);
 #endif
 
-    window->KeyDown +=
-        ref new TypedEventHandler<CoreWindow ^, KeyEventArgs ^>(this, &SDL_WinRTApp::OnKeyDown);
-
-    window->KeyUp +=
-        ref new TypedEventHandler<CoreWindow ^, KeyEventArgs ^>(this, &SDL_WinRTApp::OnKeyUp);
+    window->Dispatcher->AcceleratorKeyActivated +=
+        ref new TypedEventHandler<CoreDispatcher ^, AcceleratorKeyEventArgs ^>(this, &SDL_WinRTApp::OnAcceleratorKeyActivated);
 
     window->CharacterReceived +=
         ref new TypedEventHandler<CoreWindow ^, CharacterReceivedEventArgs ^>(this, &SDL_WinRTApp::OnCharacterReceived);
@@ -343,7 +334,7 @@ void SDL_WinRTApp::Run()
         // representation of command line arguments.
         int argc = 1;
         char **argv = (char **)SDL_malloc(2 * sizeof(*argv));
-        if (argv == NULL) {
+        if (!argv) {
             return;
         }
         argv[0] = SDL_strdup("WinRTApp");
@@ -504,7 +495,7 @@ void SDL_WinRTApp::OnVisibilityChanged(CoreWindow ^ sender, VisibilityChangedEve
         }
 
         // HACK: Prevent SDL's window-hide handling code, which currently
-        // triggers a fake window resize (possibly erronously), from
+        // triggers a fake window resize (possibly erroneously), from
         // marking the SDL window's surface as invalid.
         //
         // A better solution to this probably involves figuring out if the
@@ -720,19 +711,14 @@ void SDL_WinRTApp::OnMouseMoved(MouseDevice ^ mouseDevice, MouseEventArgs ^ args
     WINRT_ProcessMouseMovedEvent(WINRT_GlobalSDLWindow, args);
 }
 
-void SDL_WinRTApp::OnKeyDown(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::KeyEventArgs ^ args)
+void SDL_WinRTApp::OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher ^ sender, Windows::UI::Core::AcceleratorKeyEventArgs ^ args)
 {
-    WINRT_ProcessKeyDownEvent(args);
-}
-
-void SDL_WinRTApp::OnKeyUp(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::KeyEventArgs ^ args)
-{
-    WINRT_ProcessKeyUpEvent(args);
+    WINRT_ProcessAcceleratorKeyActivated(args);
 }
 
 void SDL_WinRTApp::OnCharacterReceived(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::CharacterReceivedEventArgs ^ args)
 {
-    WINRT_ProcessCharacterReceivedEvent(args);
+    WINRT_ProcessCharacterReceivedEvent(WINRT_GlobalSDLWindow, args);
 }
 
 template <typename BackButtonEventArgs>

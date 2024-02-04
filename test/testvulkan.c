@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -14,7 +14,7 @@
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
 
-#if defined(__ANDROID__) && defined(__ARM_EABI__) && !defined(__ARM_ARCH_7A__)
+#if defined(SDL_PLATFORM_ANDROID) && defined(__ARM_EABI__) && !defined(__ARM_ARCH_7A__)
 
 int main(int argc, char *argv[])
 {
@@ -177,8 +177,8 @@ typedef struct VulkanContext
 } VulkanContext;
 
 static SDLTest_CommonState *state;
-static VulkanContext *vulkanContexts = NULL; // an array of state->num_windows items
-static VulkanContext *vulkanContext = NULL;  // for the currently-rendering window
+static VulkanContext *vulkanContexts = NULL; /* an array of state->num_windows items */
+static VulkanContext *vulkanContext = NULL;  /* for the currently-rendering window */
 
 static void shutdownVulkan(SDL_bool doDestroySwapchain);
 
@@ -222,36 +222,15 @@ static void createInstance(void)
 {
     VkApplicationInfo appInfo = { 0 };
     VkInstanceCreateInfo instanceCreateInfo = { 0 };
-    const char **extensions = NULL;
-    unsigned extensionCount = 0;
     VkResult result;
 
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.apiVersion = VK_API_VERSION_1_0;
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceCreateInfo.pApplicationInfo = &appInfo;
-    if (!SDL_Vulkan_GetInstanceExtensions(&extensionCount, NULL)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "SDL_Vulkan_GetInstanceExtensions(): %s\n",
-                     SDL_GetError());
-        quit(2);
-    }
-    extensions = (const char **)SDL_malloc(sizeof(const char *) * extensionCount);
-    if (extensions == NULL) {
-        SDL_OutOfMemory();
-        quit(2);
-    }
-    if (!SDL_Vulkan_GetInstanceExtensions(&extensionCount, extensions)) {
-        SDL_free((void *)extensions);
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "SDL_Vulkan_GetInstanceExtensions(): %s\n",
-                     SDL_GetError());
-        quit(2);
-    }
-    instanceCreateInfo.enabledExtensionCount = extensionCount;
-    instanceCreateInfo.ppEnabledExtensionNames = extensions;
+
+    instanceCreateInfo.ppEnabledExtensionNames = SDL_Vulkan_GetInstanceExtensions(&instanceCreateInfo.enabledExtensionCount);
     result = vkCreateInstance(&instanceCreateInfo, NULL, &vulkanContext->instance);
-    SDL_free((void *)extensions);
     if (result != VK_SUCCESS) {
         vulkanContext->instance = VK_NULL_HANDLE;
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -282,6 +261,7 @@ static void createSurface(void)
 {
     if (!SDL_Vulkan_CreateSurface(vulkanContext->window,
                                   vulkanContext->instance,
+                                  NULL,
                                   &vulkanContext->surface)) {
         vulkanContext->surface = VK_NULL_HANDLE;
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Vulkan_CreateSurface(): %s\n", SDL_GetError());
@@ -313,8 +293,7 @@ static void findPhysicalDevice(void)
         quit(2);
     }
     physicalDevices = (VkPhysicalDevice *)SDL_malloc(sizeof(VkPhysicalDevice) * physicalDeviceCount);
-    if (physicalDevices == NULL) {
-        SDL_OutOfMemory();
+    if (!physicalDevices) {
         quit(2);
     }
     result = vkEnumeratePhysicalDevices(vulkanContext->instance, &physicalDeviceCount, physicalDevices);
@@ -347,10 +326,9 @@ static void findPhysicalDevice(void)
             SDL_free(queueFamiliesProperties);
             queueFamiliesPropertiesAllocatedSize = queueFamiliesCount;
             queueFamiliesProperties = (VkQueueFamilyProperties *)SDL_malloc(sizeof(VkQueueFamilyProperties) * queueFamiliesPropertiesAllocatedSize);
-            if (queueFamiliesProperties == NULL) {
+            if (!queueFamiliesProperties) {
                 SDL_free(physicalDevices);
                 SDL_free(deviceExtensions);
-                SDL_OutOfMemory();
                 quit(2);
             }
         }
@@ -409,10 +387,9 @@ static void findPhysicalDevice(void)
             SDL_free(deviceExtensions);
             deviceExtensionsAllocatedSize = deviceExtensionCount;
             deviceExtensions = SDL_malloc(sizeof(VkExtensionProperties) * deviceExtensionsAllocatedSize);
-            if (deviceExtensions == NULL) {
+            if (!deviceExtensions) {
                 SDL_free(physicalDevices);
                 SDL_free(queueFamiliesProperties);
-                SDL_OutOfMemory();
                 quit(2);
             }
         }
@@ -570,7 +547,6 @@ static void getSurfaceFormats(void)
         vulkanContext->surfaceFormats = (VkSurfaceFormatKHR *)SDL_malloc(sizeof(VkSurfaceFormatKHR) * vulkanContext->surfaceFormatsAllocatedCount);
         if (!vulkanContext->surfaceFormats) {
             vulkanContext->surfaceFormatsCount = 0;
-            SDL_OutOfMemory();
             quit(2);
         }
     }
@@ -603,7 +579,6 @@ static void getSwapchainImages(void)
     }
     vulkanContext->swapchainImages = SDL_malloc(sizeof(VkImage) * vulkanContext->swapchainImageCount);
     if (!vulkanContext->swapchainImages) {
-        SDL_OutOfMemory();
         quit(2);
     }
     result = vkGetSwapchainImagesKHR(vulkanContext->device,
@@ -783,7 +758,6 @@ static void createFences(void)
 
     vulkanContext->fences = SDL_malloc(sizeof(VkFence) * vulkanContext->swapchainImageCount);
     if (!vulkanContext->fences) {
-        SDL_OutOfMemory();
         quit(2);
     }
     for (i = 0; i < vulkanContext->swapchainImageCount; i++) {
@@ -938,7 +912,7 @@ static void initVulkan(void)
     SDL_Vulkan_LoadLibrary(NULL);
 
     vulkanContexts = (VulkanContext *)SDL_calloc(state->num_windows, sizeof(VulkanContext));
-    if (vulkanContexts == NULL) {
+    if (!vulkanContexts) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         quit(2);
     }
@@ -1099,7 +1073,7 @@ int main(int argc, char **argv)
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 

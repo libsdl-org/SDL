@@ -117,7 +117,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         float density = 1.0f;
         try
         {
-            if (Build.VERSION.SDK_INT >= 17) {
+            if (Build.VERSION.SDK_INT >= 17 /* Android 4.2 (JELLY_BEAN_MR1) */) {
                 DisplayMetrics realMetrics = new DisplayMetrics();
                 mDisplay.getRealMetrics( realMetrics );
                 nDeviceWidth = realMetrics.widthPixels;
@@ -164,13 +164,10 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
            }
         }
 
-        // Don't skip in MultiWindow.
+        // Don't skip if we might be multi-window or have popup dialogs
         if (skip) {
-            if (Build.VERSION.SDK_INT >= 24) {
-                if (SDLActivity.mSingleton.isInMultiWindowMode()) {
-                    Log.v("SDL", "Don't skip in Multi-Window");
-                    skip = false;
-                }
+            if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */) {
+                skip = false;
             }
         }
 
@@ -196,6 +193,24 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         return SDLActivity.handleKeyEvent(v, keyCode, event, null);
     }
 
+    private float getNormalizedX(float x)
+    {
+        if (mWidth <= 1) {
+            return 0.5f;
+        } else {
+            return (x / (mWidth - 1));
+        }
+    }
+
+    private float getNormalizedY(float y)
+    {
+        if (mHeight <= 1) {
+            return 0.5f;
+        } else {
+            return (y / (mHeight - 1));
+        }
+    }
+
     // Touch events
     @Override
     public boolean onTouch(View v, MotionEvent event) {
@@ -206,16 +221,6 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         int pointerFingerId;
         int i = -1;
         float x,y,p;
-
-        /*
-         * Prevent id to be -1, since it's used in SDL internal for synthetic events
-         * Appears when using Android emulator, eg:
-         *  adb shell input mouse tap 100 100
-         *  adb shell input touchscreen tap 100 100
-         */
-        if (touchDevId < 0) {
-            touchDevId -= 1;
-        }
 
         // 12290 = Samsung DeX mode desktop mouse
         // 12290 = 0x3002 = 0x2002 | 0x1002 = SOURCE_MOUSE | SOURCE_TOUCHSCREEN
@@ -242,8 +247,8 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 case MotionEvent.ACTION_MOVE:
                     for (i = 0; i < pointerCount; i++) {
                         pointerFingerId = event.getPointerId(i);
-                        x = event.getX(i) / mWidth;
-                        y = event.getY(i) / mHeight;
+                        x = getNormalizedX(event.getX(i));
+                        y = getNormalizedY(event.getY(i));
                         p = event.getPressure(i);
                         if (p > 1.0f) {
                             // may be larger than 1.0f on some devices
@@ -267,8 +272,8 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                     }
 
                     pointerFingerId = event.getPointerId(i);
-                    x = event.getX(i) / mWidth;
-                    y = event.getY(i) / mHeight;
+                    x = getNormalizedX(event.getX(i));
+                    y = getNormalizedY(event.getY(i));
                     p = event.getPressure(i);
                     if (p > 1.0f) {
                         // may be larger than 1.0f on some devices
@@ -281,8 +286,8 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 case MotionEvent.ACTION_CANCEL:
                     for (i = 0; i < pointerCount; i++) {
                         pointerFingerId = event.getPointerId(i);
-                        x = event.getX(i) / mWidth;
-                        y = event.getY(i) / mHeight;
+                        x = getNormalizedX(event.getX(i));
+                        y = getNormalizedY(event.getY(i));
                         p = event.getPressure(i);
                         if (p > 1.0f) {
                             // may be larger than 1.0f on some devices
@@ -325,36 +330,36 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
             // Since we may have an orientation set, we won't receive onConfigurationChanged events.
             // We thus should check here.
-            int newOrientation;
+            int newRotation;
 
             float x, y;
             switch (mDisplay.getRotation()) {
-                case Surface.ROTATION_90:
-                    x = -event.values[1];
-                    y = event.values[0];
-                    newOrientation = SDLActivity.SDL_ORIENTATION_LANDSCAPE;
-                    break;
-                case Surface.ROTATION_270:
-                    x = event.values[1];
-                    y = -event.values[0];
-                    newOrientation = SDLActivity.SDL_ORIENTATION_LANDSCAPE_FLIPPED;
-                    break;
-                case Surface.ROTATION_180:
-                    x = -event.values[0];
-                    y = -event.values[1];
-                    newOrientation = SDLActivity.SDL_ORIENTATION_PORTRAIT_FLIPPED;
-                    break;
                 case Surface.ROTATION_0:
                 default:
                     x = event.values[0];
                     y = event.values[1];
-                    newOrientation = SDLActivity.SDL_ORIENTATION_PORTRAIT;
+                    newRotation = 0;
+                    break;
+                case Surface.ROTATION_90:
+                    x = -event.values[1];
+                    y = event.values[0];
+                    newRotation = 90;
+                    break;
+                case Surface.ROTATION_180:
+                    x = -event.values[0];
+                    y = -event.values[1];
+                    newRotation = 180;
+                    break;
+                case Surface.ROTATION_270:
+                    x = event.values[1];
+                    y = -event.values[0];
+                    newRotation = 270;
                     break;
             }
 
-            if (newOrientation != SDLActivity.mCurrentOrientation) {
-                SDLActivity.mCurrentOrientation = newOrientation;
-                SDLActivity.onNativeOrientationChanged(newOrientation);
+            if (newRotation != SDLActivity.mCurrentRotation) {
+                SDLActivity.mCurrentRotation = newRotation;
+                SDLActivity.onNativeRotationChanged(newRotation);
             }
 
             SDLActivity.onNativeAccel(-x / SensorManager.GRAVITY_EARTH,

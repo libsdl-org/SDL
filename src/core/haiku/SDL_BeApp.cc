@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#ifdef __HAIKU__
+#ifdef SDL_PLATFORM_HAIKU
 
 /* Handle the BeApp specific portions of the application */
 
@@ -69,7 +69,7 @@ public:
         entry_ref entryRef;
         for (int32 i = 0; message->FindRef("refs", i, &entryRef) == B_OK; i++) {
             BPath referencePath = BPath(&entryRef);
-            SDL_SendDropFile(NULL, referencePath.Path());
+            SDL_SendDropFile(NULL, NULL, referencePath.Path());
         }
         return;
     }
@@ -104,18 +104,17 @@ static int StartBeApp(void *unused)
 }
 
 
-static int
-StartBeLooper()
+static int StartBeLooper()
 {
     if (!be_app) {
         SDL_AppThread = SDL_CreateThreadInternal(StartBeApp, "SDLApplication", 0, NULL);
-        if (SDL_AppThread == NULL) {
+        if (!SDL_AppThread) {
             return SDL_SetError("Couldn't create BApplication thread");
         }
 
         do {
             SDL_Delay(10);
-        } while ((be_app == NULL) || be_app->IsLaunching());
+        } while ((!be_app) || be_app->IsLaunching());
     }
 
      /* Change working directory to that of executable */
@@ -140,8 +139,7 @@ StartBeLooper()
 
 
 /* Initialize the Be Application, if it's not already started */
-int
-SDL_InitBeApp(void)
+int SDL_InitBeApp(void)
 {
     /* Create the BApplication that handles appserver interaction */
     if (SDL_BeAppActive <= 0) {
@@ -159,8 +157,7 @@ SDL_InitBeApp(void)
 }
 
 /* Quit the Be Application, if there's nothing left to do */
-void
-SDL_QuitBeApp(void)
+void SDL_QuitBeApp(void)
 {
     /* Decrement the application reference count */
     --SDL_BeAppActive;
@@ -170,7 +167,7 @@ SDL_QuitBeApp(void)
         SDL_Looper->Lock();
         SDL_Looper->Quit();
         SDL_Looper = NULL;
-        if (SDL_AppThread != NULL) {
+        if (SDL_AppThread) {
             if (be_app != NULL) {       /* Not tested */
                 be_app->PostMessage(B_QUIT_REQUESTED);
             }
@@ -195,4 +192,4 @@ void SDL_BLooper::ClearID(SDL_BWin *bwin) {
     }
 }
 
-#endif /* __HAIKU__ */
+#endif /* SDL_PLATFORM_HAIKU */

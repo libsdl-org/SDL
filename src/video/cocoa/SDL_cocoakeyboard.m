@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -198,7 +198,7 @@ static bool IsModifierKeyPressed(unsigned int flags,
     return target_pressed;
 }
 
-static void HandleModifiers(_THIS, SDL_Scancode code, unsigned int modifierFlags)
+static void HandleModifiers(SDL_VideoDevice *_this, SDL_Scancode code, unsigned int modifierFlags)
 {
     bool pressed = false;
 
@@ -312,7 +312,7 @@ cleanup:
     CFRelease(key_layout);
 }
 
-void Cocoa_InitKeyboard(_THIS)
+void Cocoa_InitKeyboard(SDL_VideoDevice *_this)
 {
     SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
 
@@ -330,7 +330,7 @@ void Cocoa_InitKeyboard(_THIS)
     SDL_ToggleModState(SDL_KMOD_CAPS, (data.modifierFlags & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE);
 }
 
-void Cocoa_StartTextInput(_THIS)
+void Cocoa_StartTextInput(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
         NSView *parentView;
@@ -362,7 +362,7 @@ void Cocoa_StartTextInput(_THIS)
     }
 }
 
-void Cocoa_StopTextInput(_THIS)
+void Cocoa_StopTextInput(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
         SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
@@ -374,14 +374,14 @@ void Cocoa_StopTextInput(_THIS)
     }
 }
 
-int Cocoa_SetTextInputRect(_THIS, const SDL_Rect *rect)
+int Cocoa_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
 {
     SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
     [data.fieldEdit setInputRect:rect];
     return 0;
 }
 
-void Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
+void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
 {
     unsigned short scancode;
     SDL_Scancode code;
@@ -435,15 +435,25 @@ void Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
     case NSEventTypeKeyUp:
         SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_RELEASED, code);
         break;
-    case NSEventTypeFlagsChanged:
-        HandleModifiers(_this, code, (unsigned int)[event modifierFlags]);
+    case NSEventTypeFlagsChanged: {
+        // see if the new modifierFlags mean any existing keys should be pressed/released...
+        const unsigned int modflags = (unsigned int)[event modifierFlags];
+        HandleModifiers(_this, SDL_SCANCODE_LSHIFT, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_LCTRL, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_LALT, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_LGUI, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_RSHIFT, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_RCTRL, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_RALT, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_RGUI, modflags);
         break;
+    }
     default: /* just to avoid compiler warnings */
         break;
     }
 }
 
-void Cocoa_QuitKeyboard(_THIS)
+void Cocoa_QuitKeyboard(SDL_VideoDevice *_this)
 {
 }
 
@@ -457,7 +467,7 @@ typedef enum
 extern CGSConnection _CGSDefaultConnection(void);
 extern CGError CGSSetGlobalHotKeyOperatingMode(CGSConnection connection, CGSGlobalHotKeyOperatingMode mode);
 
-void Cocoa_SetWindowKeyboardGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
+void Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
 {
 #ifdef SDL_MAC_NO_SANDBOX
     CGSSetGlobalHotKeyOperatingMode(_CGSDefaultConnection(), grabbed ? CGSGlobalHotKeyDisable : CGSGlobalHotKeyEnable);

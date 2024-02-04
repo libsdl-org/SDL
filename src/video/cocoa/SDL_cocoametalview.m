@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,8 +29,6 @@
 #import "SDL_cocoametalview.h"
 
 #if defined(SDL_VIDEO_DRIVER_COCOA) && (defined(SDL_VIDEO_VULKAN) || defined(SDL_VIDEO_METAL))
-
-#include <SDL3/SDL_syswm.h>
 
 static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 {
@@ -132,13 +130,12 @@ static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 
 @end
 
-SDL_MetalView
-Cocoa_Metal_CreateView(_THIS, SDL_Window *window)
+SDL_MetalView Cocoa_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;
         NSView *view = data.nswindow.contentView;
-        BOOL highDPI = (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
+        BOOL highDPI = (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) != 0;
         BOOL opaque = (window->flags & SDL_WINDOW_TRANSPARENT) == 0;
         Uint32 windowID = SDL_GetWindowID(window);
         SDL_cocoametalview *newview;
@@ -164,7 +161,7 @@ Cocoa_Metal_CreateView(_THIS, SDL_Window *window)
     }
 }
 
-void Cocoa_Metal_DestroyView(_THIS, SDL_MetalView view)
+void Cocoa_Metal_DestroyView(SDL_VideoDevice *_this, SDL_MetalView view)
 {
     @autoreleasepool {
         SDL_cocoametalview *metalview = CFBridgingRelease(view);
@@ -172,8 +169,7 @@ void Cocoa_Metal_DestroyView(_THIS, SDL_MetalView view)
     }
 }
 
-void *
-Cocoa_Metal_GetLayer(_THIS, SDL_MetalView view)
+void *Cocoa_Metal_GetLayer(SDL_VideoDevice *_this, SDL_MetalView view)
 {
     @autoreleasepool {
         SDL_cocoametalview *cocoaview = (__bridge SDL_cocoametalview *)view;

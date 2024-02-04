@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -387,8 +387,7 @@ static const struct {
 };
 /* *INDENT-ON* */ /* clang-format on */
 
-SDL_Scancode
-SDL_GetScancodeFromKeySym(Uint32 keysym, Uint32 keycode)
+SDL_Scancode SDL_GetScancodeFromKeySym(Uint32 keysym, Uint32 keycode)
 {
     int i;
     Uint32 linux_keycode = 0;

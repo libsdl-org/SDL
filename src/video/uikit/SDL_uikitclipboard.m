@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,9 +27,9 @@
 
 #import <UIKit/UIPasteboard.h>
 
-int UIKit_SetClipboardText(_THIS, const char *text)
+int UIKit_SetClipboardText(SDL_VideoDevice *_this, const char *text)
 {
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
     return SDL_SetError("The clipboard is not available on tvOS");
 #else
     @autoreleasepool {
@@ -39,10 +39,9 @@ int UIKit_SetClipboardText(_THIS, const char *text)
 #endif
 }
 
-char *
-UIKit_GetClipboardText(_THIS)
+char *UIKit_GetClipboardText(SDL_VideoDevice *_this)
 {
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
     return SDL_strdup(""); // Unsupported.
 #else
     @autoreleasepool {
@@ -58,11 +57,10 @@ UIKit_GetClipboardText(_THIS)
 #endif
 }
 
-SDL_bool
-UIKit_HasClipboardText(_THIS)
+SDL_bool UIKit_HasClipboardText(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
         if ([UIPasteboard generalPasteboard].string != nil) {
             return SDL_TRUE;
         }
@@ -71,9 +69,9 @@ UIKit_HasClipboardText(_THIS)
     }
 }
 
-void UIKit_InitClipboard(_THIS)
+void UIKit_InitClipboard(SDL_VideoDevice *_this)
 {
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
     @autoreleasepool {
         SDL_UIKitVideoData *data = (__bridge SDL_UIKitVideoData *)_this->driverdata;
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
@@ -90,7 +88,7 @@ void UIKit_InitClipboard(_THIS)
 #endif
 }
 
-void UIKit_QuitClipboard(_THIS)
+void UIKit_QuitClipboard(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
         SDL_UIKitVideoData *data = (__bridge SDL_UIKitVideoData *)_this->driverdata;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -69,15 +69,15 @@ static SDL_bool HIDAPI_DriverPS3_IsEnabled(void)
 {
     SDL_bool default_value;
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
     /* This works well on macOS */
     default_value = SDL_TRUE;
-#elif defined(__WINDOWS__)
+#elif defined(SDL_PLATFORM_WIN32)
     /* You can't initialize the controller with the stock Windows drivers
      * See https://github.com/ViGEm/DsHidMini as an alternative driver
      */
     default_value = SDL_FALSE;
-#elif defined(__LINUX__)
+#elif defined(SDL_PLATFORM_LINUX)
     /* Linux drivers do a better job of managing the transition between
      * USB and Bluetooth. There are also some quirks in communicating
      * with PS3 controllers that have been implemented in SDL's hidapi
@@ -134,8 +134,7 @@ static SDL_bool HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
     }
 
     ctx = (SDL_DriverPS3_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (ctx == NULL) {
-        SDL_OutOfMemory();
+    if (!ctx) {
         return SDL_FALSE;
     }
     ctx->device = device;
@@ -144,14 +143,14 @@ static SDL_bool HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
     device->context = ctx;
 
     /* Set the controller into report mode over Bluetooth */
-    {
+    if (device->is_bluetooth) {
         Uint8 data[] = { 0xf4, 0x42, 0x03, 0x00, 0x00 };
 
         SendFeatureReport(device->dev, data, sizeof(data));
     }
 
     /* Set the controller into report mode over USB */
-    {
+    if (!device->is_bluetooth) {
         Uint8 data[USB_PACKET_LENGTH];
 
         int size = ReadFeatureReport(device->dev, 0xf2, data, 17);
@@ -215,7 +214,7 @@ static void HIDAPI_DriverPS3_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
 
-    if (ctx == NULL) {
+    if (!ctx) {
         return;
     }
 
@@ -241,8 +240,9 @@ static SDL_bool HIDAPI_DriverPS3_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     ctx->player_index = SDL_GetJoystickPlayerIndex(joystick);
 
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = 15;
+    joystick->nbuttons = 11;
     joystick->naxes = 16;
+    joystick->nhats = 1;
     joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
 
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 100.0f);
@@ -267,7 +267,7 @@ static int HIDAPI_DriverPS3_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SD
 
 static Uint32 HIDAPI_DriverPS3_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return SDL_JOYCAP_RUMBLE;
+    return SDL_JOYSTICK_CAP_RUMBLE;
 }
 
 static int HIDAPI_DriverPS3_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
@@ -315,52 +315,43 @@ static void HIDAPI_DriverPS3_HandleMiniStatePacket(SDL_Joystick *joystick, SDL_D
     Uint64 timestamp = SDL_GetTicksNS();
 
     if (ctx->last_state[4] != data[4]) {
-        SDL_bool dpad_up = SDL_FALSE;
-        SDL_bool dpad_down = SDL_FALSE;
-        SDL_bool dpad_left = SDL_FALSE;
-        SDL_bool dpad_right = SDL_FALSE;
+        Uint8 hat;
 
         switch (data[4] & 0x0f) {
         case 0:
-            dpad_up = SDL_TRUE;
+            hat = SDL_HAT_UP;
             break;
         case 1:
-            dpad_up = SDL_TRUE;
-            dpad_right = SDL_TRUE;
+            hat = SDL_HAT_RIGHTUP;
             break;
         case 2:
-            dpad_right = SDL_TRUE;
+            hat = SDL_HAT_RIGHT;
             break;
         case 3:
-            dpad_right = SDL_TRUE;
-            dpad_down = SDL_TRUE;
+            hat = SDL_HAT_RIGHTDOWN;
             break;
         case 4:
-            dpad_down = SDL_TRUE;
+            hat = SDL_HAT_DOWN;
             break;
         case 5:
-            dpad_left = SDL_TRUE;
-            dpad_down = SDL_TRUE;
+            hat = SDL_HAT_LEFTDOWN;
             break;
         case 6:
-            dpad_left = SDL_TRUE;
+            hat = SDL_HAT_LEFT;
             break;
         case 7:
-            dpad_up = SDL_TRUE;
-            dpad_left = SDL_TRUE;
+            hat = SDL_HAT_LEFTUP;
             break;
         default:
+            hat = SDL_HAT_CENTERED;
             break;
         }
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, dpad_down);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, dpad_up);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, dpad_right);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, dpad_left);
+        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
 
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_Y, (data[4] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_B, (data[4] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_A, (data[4] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_X, (data[4] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, (data[4] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, (data[4] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, (data[4] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, (data[4] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     if (ctx->last_state[5] != data[5]) {
@@ -392,23 +383,35 @@ static void HIDAPI_DriverPS3_HandleStatePacket(SDL_Joystick *joystick, SDL_Drive
     Uint64 timestamp = SDL_GetTicksNS();
 
     if (ctx->last_state[2] != data[2]) {
+        Uint8 hat = 0;
+
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, (data[2] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, (data[2] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, (data[2] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, (data[2] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, (data[2] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, (data[2] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, (data[2] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, (data[2] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
+
+        if (data[2] & 0x10) {
+            hat |= SDL_HAT_UP;
+        }
+        if (data[2] & 0x20) {
+            hat |= SDL_HAT_RIGHT;
+        }
+        if (data[2] & 0x40) {
+            hat |= SDL_HAT_DOWN;
+        }
+        if (data[2] & 0x80) {
+            hat |= SDL_HAT_LEFT;
+        }
+        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
     }
 
     if (ctx->last_state[3] != data[3]) {
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, (data[3] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, (data[3] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_Y, (data[3] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_B, (data[3] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_A, (data[3] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_X, (data[3] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, (data[3] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, (data[3] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, (data[3] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, (data[3] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     if (ctx->last_state[4] != data[4]) {
@@ -431,10 +434,10 @@ static void HIDAPI_DriverPS3_HandleStatePacket(SDL_Joystick *joystick, SDL_Drive
     /* Buttons are mapped as axes in the order they appear in the button enumeration */
     {
         static int button_axis_offsets[] = {
-            24, /* SDL_GAMEPAD_BUTTON_A */
-            23, /* SDL_GAMEPAD_BUTTON_B */
-            25, /* SDL_GAMEPAD_BUTTON_X */
-            22, /* SDL_GAMEPAD_BUTTON_Y */
+            24, /* SDL_GAMEPAD_BUTTON_SOUTH */
+            23, /* SDL_GAMEPAD_BUTTON_EAST */
+            25, /* SDL_GAMEPAD_BUTTON_WEST */
+            22, /* SDL_GAMEPAD_BUTTON_NORTH */
             0,  /* SDL_GAMEPAD_BUTTON_BACK */
             0,  /* SDL_GAMEPAD_BUTTON_GUIDE */
             0,  /* SDL_GAMEPAD_BUTTON_START */
@@ -491,7 +494,7 @@ static SDL_bool HIDAPI_DriverPS3_UpdateDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_PS3_PROTOCOL
         HIDAPI_DumpPacket("PS3 packet: size = %d", data, size);
 #endif
-        if (joystick == NULL) {
+        if (!joystick) {
             continue;
         }
 
@@ -581,7 +584,8 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *
     Uint8 data[USB_PACKET_LENGTH];
     int size;
 
-    if (HIDAPI_SupportsPlaystationDetection(vendor_id, product_id)) {
+    if ((type == SDL_GAMEPAD_TYPE_PS3 && vendor_id != USB_VENDOR_SONY) ||
+        HIDAPI_SupportsPlaystationDetection(vendor_id, product_id)) {
         if (device && device->dev) {
             size = ReadFeatureReport(device->dev, 0x03, data, sizeof(data));
             if (size == 8 && data[2] == 0x26) {
@@ -603,8 +607,7 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_InitDevice(SDL_HIDAPI_Device *device)
     SDL_DriverPS3_Context *ctx;
 
     ctx = (SDL_DriverPS3_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (ctx == NULL) {
-        SDL_OutOfMemory();
+    if (!ctx) {
         return SDL_FALSE;
     }
     ctx->device = device;
@@ -640,8 +643,9 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_OpenJoystick(SDL_HIDAPI_Device *devic
     SDL_zeroa(ctx->last_state);
 
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = 15;
+    joystick->nbuttons = 11;
     joystick->naxes = 16;
+    joystick->nhats = 1;
     joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
 
     return SDL_TRUE;
@@ -683,19 +687,16 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket18(SDL_Joystick *joystic
     Uint64 timestamp = SDL_GetTicksNS();
 
     if (ctx->last_state[0] != data[0]) {
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_X, (data[0] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_A, (data[0] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_B, (data[0] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_Y, (data[0] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, (data[0] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, (data[0] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, (data[0] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, (data[0] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, (data[0] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, (data[0] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     if (ctx->last_state[1] != data[1]) {
-        SDL_bool dpad_up = SDL_FALSE;
-        SDL_bool dpad_down = SDL_FALSE;
-        SDL_bool dpad_left = SDL_FALSE;
-        SDL_bool dpad_right = SDL_FALSE;
+        Uint8 hat;
 
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, (data[1] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, (data[1] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
@@ -704,40 +705,34 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket18(SDL_Joystick *joystic
 
         switch (data[1] >> 4) {
         case 0:
-            dpad_up = SDL_TRUE;
+            hat = SDL_HAT_UP;
             break;
         case 1:
-            dpad_up = SDL_TRUE;
-            dpad_right = SDL_TRUE;
+            hat = SDL_HAT_RIGHTUP;
             break;
         case 2:
-            dpad_right = SDL_TRUE;
+            hat = SDL_HAT_RIGHT;
             break;
         case 3:
-            dpad_right = SDL_TRUE;
-            dpad_down = SDL_TRUE;
+            hat = SDL_HAT_RIGHTDOWN;
             break;
         case 4:
-            dpad_down = SDL_TRUE;
+            hat = SDL_HAT_DOWN;
             break;
         case 5:
-            dpad_left = SDL_TRUE;
-            dpad_down = SDL_TRUE;
+            hat = SDL_HAT_LEFTDOWN;
             break;
         case 6:
-            dpad_left = SDL_TRUE;
+            hat = SDL_HAT_LEFT;
             break;
         case 7:
-            dpad_up = SDL_TRUE;
-            dpad_left = SDL_TRUE;
+            hat = SDL_HAT_LEFTUP;
             break;
         default:
+            hat = SDL_HAT_CENTERED;
             break;
         }
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, dpad_down);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, dpad_up);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, dpad_right);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, dpad_left);
+        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
     }
 
     axis = ((int)data[16] * 257) - 32768;
@@ -756,10 +751,10 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket18(SDL_Joystick *joystic
     /* Buttons are mapped as axes in the order they appear in the button enumeration */
     {
         static int button_axis_offsets[] = {
-            12, /* SDL_GAMEPAD_BUTTON_A */
-            11, /* SDL_GAMEPAD_BUTTON_B */
-            13, /* SDL_GAMEPAD_BUTTON_X */
-            10, /* SDL_GAMEPAD_BUTTON_Y */
+            12, /* SDL_GAMEPAD_BUTTON_SOUTH */
+            11, /* SDL_GAMEPAD_BUTTON_EAST */
+            13, /* SDL_GAMEPAD_BUTTON_WEST */
+            10, /* SDL_GAMEPAD_BUTTON_NORTH */
             0,  /* SDL_GAMEPAD_BUTTON_BACK */
             0,  /* SDL_GAMEPAD_BUTTON_GUIDE */
             0,  /* SDL_GAMEPAD_BUTTON_START */
@@ -796,10 +791,10 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
     Uint64 timestamp = SDL_GetTicksNS();
 
     if (ctx->last_state[0] != data[0]) {
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_X, (data[0] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_A, (data[0] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_B, (data[0] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_Y, (data[0] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, (data[0] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, (data[0] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, (data[0] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, (data[0] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, (data[0] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, (data[0] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
     }
@@ -812,48 +807,58 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (data[1] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
     }
 
-    if (ctx->last_state[2] != data[2]) {
-        SDL_bool dpad_up = SDL_FALSE;
-        SDL_bool dpad_down = SDL_FALSE;
-        SDL_bool dpad_left = SDL_FALSE;
-        SDL_bool dpad_right = SDL_FALSE;
+    if (ctx->device->vendor_id == USB_VENDOR_SAITEK && ctx->device->product_id == USB_PRODUCT_SAITEK_CYBORG_V3) {
+        /* Cyborg V.3 Rumble Pad doesn't set the dpad bits as expected, so use the axes instead */
+        Uint8 hat = 0;
 
-        switch (data[2] & 0x0f) {
-        case 0:
-            dpad_up = SDL_TRUE;
-            break;
-        case 1:
-            dpad_up = SDL_TRUE;
-            dpad_right = SDL_TRUE;
-            break;
-        case 2:
-            dpad_right = SDL_TRUE;
-            break;
-        case 3:
-            dpad_right = SDL_TRUE;
-            dpad_down = SDL_TRUE;
-            break;
-        case 4:
-            dpad_down = SDL_TRUE;
-            break;
-        case 5:
-            dpad_left = SDL_TRUE;
-            dpad_down = SDL_TRUE;
-            break;
-        case 6:
-            dpad_left = SDL_TRUE;
-            break;
-        case 7:
-            dpad_up = SDL_TRUE;
-            dpad_left = SDL_TRUE;
-            break;
-        default:
-            break;
+        if (data[7]) {
+            hat |= SDL_HAT_RIGHT;
         }
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, dpad_down);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, dpad_up);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, dpad_right);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, dpad_left);
+        if (data[8]) {
+            hat |= SDL_HAT_LEFT;
+        }
+        if (data[9]) {
+            hat |= SDL_HAT_UP;
+        }
+        if (data[10]) {
+            hat |= SDL_HAT_DOWN;
+        }
+        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
+    } else {
+        if (ctx->last_state[2] != data[2]) {
+            Uint8 hat;
+
+            switch (data[2] & 0x0f) {
+            case 0:
+                hat = SDL_HAT_UP;
+                break;
+            case 1:
+                hat = SDL_HAT_RIGHTUP;
+                break;
+            case 2:
+                hat = SDL_HAT_RIGHT;
+                break;
+            case 3:
+                hat = SDL_HAT_RIGHTDOWN;
+                break;
+            case 4:
+                hat = SDL_HAT_DOWN;
+                break;
+            case 5:
+                hat = SDL_HAT_LEFTDOWN;
+                break;
+            case 6:
+                hat = SDL_HAT_LEFT;
+                break;
+            case 7:
+                hat = SDL_HAT_LEFTUP;
+                break;
+            default:
+                hat = SDL_HAT_CENTERED;
+                break;
+            }
+            SDL_SendJoystickHat(timestamp, joystick, 0, hat);
+        }
     }
 
     axis = ((int)data[17] * 257) - 32768;
@@ -872,10 +877,10 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
     /* Buttons are mapped as axes in the order they appear in the button enumeration */
     {
         static int button_axis_offsets[] = {
-            13, /* SDL_GAMEPAD_BUTTON_A */
-            12, /* SDL_GAMEPAD_BUTTON_B */
-            14, /* SDL_GAMEPAD_BUTTON_X */
-            11, /* SDL_GAMEPAD_BUTTON_Y */
+            13, /* SDL_GAMEPAD_BUTTON_SOUTH */
+            12, /* SDL_GAMEPAD_BUTTON_EAST */
+            14, /* SDL_GAMEPAD_BUTTON_WEST */
+            11, /* SDL_GAMEPAD_BUTTON_NORTH */
             0,  /* SDL_GAMEPAD_BUTTON_BACK */
             0,  /* SDL_GAMEPAD_BUTTON_GUIDE */
             0,  /* SDL_GAMEPAD_BUTTON_START */
@@ -923,7 +928,7 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_UpdateDevice(SDL_HIDAPI_Device *devic
 #ifdef DEBUG_PS3_PROTOCOL
         HIDAPI_DumpPacket("PS3 packet: size = %d", data, size);
 #endif
-        if (joystick == NULL) {
+        if (!joystick) {
             continue;
         }
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -432,7 +432,7 @@
     } while (0)
 
 static void RLEClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
-                        Uint8 *dstbuf, SDL_Rect *srcrect, unsigned alpha)
+                        Uint8 *dstbuf, const SDL_Rect *srcrect, unsigned alpha)
 {
     SDL_PixelFormat *fmt = surf_dst->format;
 
@@ -442,8 +442,8 @@ static void RLEClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
 #undef RLECLIPBLIT
 
 /* blit a colorkeyed RLE surface */
-static int SDLCALL SDL_RLEBlit(SDL_Surface *surf_src, SDL_Rect *srcrect,
-                               SDL_Surface *surf_dst, SDL_Rect *dstrect)
+static int SDLCALL SDL_RLEBlit(SDL_Surface *surf_src, const SDL_Rect *srcrect,
+                               SDL_Surface *surf_dst, const SDL_Rect *dstrect)
 {
     Uint8 *dstbuf;
     Uint8 *srcbuf;
@@ -626,7 +626,7 @@ typedef struct
 
 /* blit a pixel-alpha RLE surface clipped at the right and/or left edges */
 static void RLEAlphaClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
-                             Uint8 *dstbuf, SDL_Rect *srcrect)
+                             Uint8 *dstbuf, const SDL_Rect *srcrect)
 {
     SDL_PixelFormat *df = surf_dst->format;
     /*
@@ -717,8 +717,8 @@ static void RLEAlphaClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
 }
 
 /* blit a pixel-alpha RLE surface */
-static int SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, SDL_Rect *srcrect,
-                                    SDL_Surface *surf_dst, SDL_Rect *dstrect)
+static int SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, const SDL_Rect *srcrect,
+                                    SDL_Surface *surf_dst, const SDL_Rect *dstrect)
 {
     int x, y;
     int w = surf_src->w;
@@ -1023,7 +1023,7 @@ static int RLEAlphaSurface(SDL_Surface *surface)
                        SDL_PixelFormat *, SDL_PixelFormat *);
 
     dest = surface->map->dst;
-    if (dest == NULL) {
+    if (!dest) {
         return -1;
     }
     df = dest->format;
@@ -1080,8 +1080,8 @@ static int RLEAlphaSurface(SDL_Surface *surface)
 
     maxsize += sizeof(RLEDestFormat);
     rlebuf = (Uint8 *)SDL_malloc(maxsize);
-    if (rlebuf == NULL) {
-        return SDL_OutOfMemory();
+    if (!rlebuf) {
+        return -1;
     }
     {
         /* save the destination format so we can undo the encoding later */
@@ -1226,7 +1226,7 @@ static int RLEAlphaSurface(SDL_Surface *surface)
     /* reallocate the buffer to release unused memory */
     {
         Uint8 *p = SDL_realloc(rlebuf, dst - rlebuf);
-        if (p == NULL) {
+        if (!p) {
             p = rlebuf;
         }
         surface->map->data = p;
@@ -1299,8 +1299,8 @@ static int RLEColorkeySurface(SDL_Surface *surface)
     }
 
     rlebuf = (Uint8 *)SDL_malloc(maxsize);
-    if (rlebuf == NULL) {
-        return SDL_OutOfMemory();
+    if (!rlebuf) {
+        return -1;
     }
 
     /* Set up the conversion */
@@ -1394,7 +1394,7 @@ static int RLEColorkeySurface(SDL_Surface *surface)
     {
         /* If SDL_realloc returns NULL, the original block is left intact */
         Uint8 *p = SDL_realloc(rlebuf, dst - rlebuf);
-        if (p == NULL) {
+        if (!p) {
             p = rlebuf;
         }
         surface->map->data = p;
@@ -1496,7 +1496,7 @@ static SDL_bool UnRLEAlpha(SDL_Surface *surface)
     }
 
     surface->pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), size);
-    if (surface->pixels == NULL) {
+    if (!surface->pixels) {
         return SDL_FALSE;
     }
     surface->flags |= SDL_SIMD_ALIGNED;
@@ -1568,7 +1568,7 @@ void SDL_UnRLESurface(SDL_Surface *surface, int recode)
                     return;
                 }
                 surface->pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), size);
-                if (surface->pixels == NULL) {
+                if (!surface->pixels) {
                     /* Oh crap... */
                     surface->flags |= SDL_RLEACCEL;
                     return;

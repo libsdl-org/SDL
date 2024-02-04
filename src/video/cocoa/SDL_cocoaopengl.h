@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,9 +45,9 @@ struct SDL_GLDriverData
     SDL_Window *window;
     CVDisplayLinkRef displayLink;
   @public
-    SDL_mutex *swapIntervalMutex;
+    SDL_Mutex *swapIntervalMutex;
   @public
-    SDL_cond *swapIntervalCond;
+    SDL_Condition *swapIntervalCond;
   @public
     SDL_AtomicInt swapIntervalSetting;
   @public
@@ -69,16 +69,16 @@ struct SDL_GLDriverData
 @end
 
 /* OpenGL functions */
-extern int Cocoa_GL_LoadLibrary(_THIS, const char *path);
-extern SDL_FunctionPointer Cocoa_GL_GetProcAddress(_THIS, const char *proc);
-extern void Cocoa_GL_UnloadLibrary(_THIS);
-extern SDL_GLContext Cocoa_GL_CreateContext(_THIS, SDL_Window *window);
-extern int Cocoa_GL_MakeCurrent(_THIS, SDL_Window *window,
+extern int Cocoa_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+extern SDL_FunctionPointer Cocoa_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
+extern void Cocoa_GL_UnloadLibrary(SDL_VideoDevice *_this);
+extern SDL_GLContext Cocoa_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
+extern int Cocoa_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window,
                                 SDL_GLContext context);
-extern int Cocoa_GL_SetSwapInterval(_THIS, int interval);
-extern int Cocoa_GL_GetSwapInterval(_THIS, int *interval);
-extern int Cocoa_GL_SwapWindow(_THIS, SDL_Window *window);
-extern int Cocoa_GL_DeleteContext(_THIS, SDL_GLContext context);
+extern int Cocoa_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval);
+extern int Cocoa_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
+extern int Cocoa_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern int Cocoa_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
 
 #ifdef __clang__
 #pragma clang diagnostic pop

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,116 +27,80 @@
 #include <psp2/kernel/threadmgr.h>
 #include <psp2/kernel/error.h>
 
-struct SDL_mutex
+struct SDL_Mutex
 {
     SceKernelLwMutexWork lock;
 };
 
-/* Create a mutex */
-SDL_mutex *
-SDL_CreateMutex(void)
+SDL_Mutex *SDL_CreateMutex(void)
 {
-    SDL_mutex *mutex = NULL;
-    SceInt32 res = 0;
-
-    /* Allocate mutex memory */
-    mutex = (SDL_mutex *)SDL_malloc(sizeof(*mutex));
-    if (mutex != NULL) {
-
-        res = sceKernelCreateLwMutex(
-            &mutex->lock,
-            "SDL mutex",
-            SCE_KERNEL_MUTEX_ATTR_RECURSIVE,
-            0,
-            NULL);
+    SDL_Mutex *mutex = (SDL_Mutex *)SDL_malloc(sizeof(*mutex));
+    if (mutex) {
+        const SceInt32 res = sceKernelCreateLwMutex(
+                                &mutex->lock,
+                                "SDL mutex",
+                                SCE_KERNEL_MUTEX_ATTR_RECURSIVE,
+                                0,
+                                NULL);
 
         if (res < 0) {
+            SDL_free(mutex);
+            mutex = NULL;
             SDL_SetError("Error trying to create mutex: %x", res);
         }
-    } else {
-        SDL_OutOfMemory();
     }
     return mutex;
 }
 
-/* Free the mutex */
-void SDL_DestroyMutex(SDL_mutex *mutex)
+void SDL_DestroyMutex(SDL_Mutex *mutex)
 {
-    if (mutex != NULL) {
+    if (mutex) {
         sceKernelDeleteLwMutex(&mutex->lock);
         SDL_free(mutex);
     }
 }
 
-/* Lock the mutex */
-int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
-#ifdef SDL_THREADS_DISABLED
-    return 0;
-#else
-    SceInt32 res = 0;
-
-    if (mutex == NULL) {
-        return 0;
+#ifndef SDL_THREADS_DISABLED
+    if (mutex != NULL) {
+        const SceInt32 res = sceKernelLockLwMutex(&mutex->lock, 1, NULL);
+        SDL_assert(res == SCE_KERNEL_OK);  // assume we're in a lot of trouble if this assert fails.
     }
-
-    res = sceKernelLockLwMutex(&mutex->lock, 1, NULL);
-    if (res != SCE_KERNEL_OK) {
-        return SDL_SetError("Error trying to lock mutex: %x", res);
-    }
-
-    return 0;
-#endif /* SDL_THREADS_DISABLED */
+#endif // SDL_THREADS_DISABLED
 }
 
-/* Try to lock the mutex */
-int SDL_TryLockMutex(SDL_mutex *mutex)
+int SDL_TryLockMutex(SDL_Mutex *mutex)
 {
 #ifdef SDL_THREADS_DISABLED
     return 0;
 #else
     SceInt32 res = 0;
 
-    if (mutex == NULL) {
+    if (!mutex) {
         return 0;
     }
 
     res = sceKernelTryLockLwMutex(&mutex->lock, 1);
     switch (res) {
-    case SCE_KERNEL_OK:
-        return 0;
-        break;
-    case SCE_KERNEL_ERROR_MUTEX_FAILED_TO_OWN:
-        return SDL_MUTEX_TIMEDOUT;
-        break;
-    default:
-        return SDL_SetError("Error trying to lock mutex: %x", res);
-        break;
+    case SCE_KERNEL_OK: return 0;
+    case SCE_KERNEL_ERROR_MUTEX_FAILED_TO_OWN: return SDL_MUTEX_TIMEDOUT;
+    default: break;
     }
 
-    return -1;
-#endif /* SDL_THREADS_DISABLED */
+    SDL_assert(!"Error trying to lock mutex");  // assume we're in a lot of trouble if this assert fails.
+    return SDL_MUTEX_TIMEDOUT;
+#endif // SDL_THREADS_DISABLED
 }
 
-/* Unlock the mutex */
-int SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
-#ifdef SDL_THREADS_DISABLED
-    return 0;
-#else
-    SceInt32 res = 0;
-
-    if (mutex == NULL) {
-        return 0;
+#ifndef SDL_THREADS_DISABLED
+    if (mutex != NULL) {
+        const SceInt32 res = sceKernelUnlockLwMutex(&mutex->lock, 1);
+        SDL_assert(res == SCE_KERNEL_OK);  // assume we're in a lot of trouble if this assert fails.
     }
-
-    res = sceKernelUnlockLwMutex(&mutex->lock, 1);
-    if (res != 0) {
-        return SDL_SetError("Error trying to unlock mutex: %x", res);
-    }
-
-    return 0;
-#endif /* SDL_THREADS_DISABLED */
+#endif // SDL_THREADS_DISABLED
 }
 
-#endif /* SDL_THREAD_VITA */
+#endif // SDL_THREAD_VITA

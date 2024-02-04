@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -40,8 +40,7 @@
 #define APM_DEVICE_ALL            1
 #define APM_BIOS_CALL             (B_DEVICE_OP_CODES_END + 3)
 
-SDL_bool
-SDL_GetPowerInfo_Haiku(SDL_PowerState *state, int *seconds, int *percent)
+SDL_bool SDL_GetPowerInfo_Haiku(SDL_PowerState *state, int *seconds, int *percent)
 {
     const int fd = open("/dev/misc/apm", O_RDONLY | O_CLOEXEC);
     SDL_bool need_details = SDL_FALSE;

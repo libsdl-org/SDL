@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -58,50 +58,49 @@ extern SDL_Window *Vita_Window;
 /****************************************************************************/
 
 /* Display and window functions */
-int VITA_VideoInit(_THIS);
-void VITA_VideoQuit(_THIS);
-int VITA_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
-int VITA_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-int VITA_CreateWindow(_THIS, SDL_Window *window);
-int VITA_CreateWindowFrom(_THIS, SDL_Window *window, const void *data);
-void VITA_SetWindowTitle(_THIS, SDL_Window *window);
-void VITA_SetWindowPosition(_THIS, SDL_Window *window);
-void VITA_SetWindowSize(_THIS, SDL_Window *window);
-void VITA_ShowWindow(_THIS, SDL_Window *window);
-void VITA_HideWindow(_THIS, SDL_Window *window);
-void VITA_RaiseWindow(_THIS, SDL_Window *window);
-void VITA_MaximizeWindow(_THIS, SDL_Window *window);
-void VITA_MinimizeWindow(_THIS, SDL_Window *window);
-void VITA_RestoreWindow(_THIS, SDL_Window *window);
-void VITA_SetWindowGrab(_THIS, SDL_Window *window, SDL_bool grabbed);
-void VITA_DestroyWindow(_THIS, SDL_Window *window);
+int VITA_VideoInit(SDL_VideoDevice *_this);
+void VITA_VideoQuit(SDL_VideoDevice *_this);
+int VITA_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
+int VITA_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+int VITA_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
+void VITA_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
+int VITA_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
+void VITA_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
+void VITA_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
+void VITA_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
+void VITA_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window);
+void VITA_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
+void VITA_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
+void VITA_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window);
+void VITA_SetWindowGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
+void VITA_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
 #ifdef SDL_VIDEO_DRIVER_VITA
 #ifdef SDL_VIDEO_VITA_PVR_OGL
 /* OpenGL functions */
-int VITA_GL_LoadLibrary(_THIS, const char *path);
-SDL_GLContext VITA_GL_CreateContext(_THIS, SDL_Window *window);
-SDL_FunctionPointer VITA_GL_GetProcAddress(_THIS, const char *proc);
+int VITA_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+SDL_GLContext VITA_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
+SDL_FunctionPointer VITA_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
 #endif
 
 /* OpenGLES functions */
-int VITA_GLES_LoadLibrary(_THIS, const char *path);
-SDL_FunctionPointer VITA_GLES_GetProcAddress(_THIS, const char *proc);
-void VITA_GLES_UnloadLibrary(_THIS);
-SDL_GLContext VITA_GLES_CreateContext(_THIS, SDL_Window *window);
-int VITA_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
-int VITA_GLES_SetSwapInterval(_THIS, int interval);
-int VITA_GLES_GetSwapInterval(_THIS, int *interval);
-int VITA_GLES_SwapWindow(_THIS, SDL_Window *window);
-int VITA_GLES_DeleteContext(_THIS, SDL_GLContext context);
+int VITA_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+SDL_FunctionPointer VITA_GLES_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
+void VITA_GLES_UnloadLibrary(SDL_VideoDevice *_this);
+SDL_GLContext VITA_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
+int VITA_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
+int VITA_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval);
+int VITA_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
+int VITA_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
+int VITA_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
 #endif
 
 /* VITA on screen keyboard */
-SDL_bool VITA_HasScreenKeyboardSupport(_THIS);
-void VITA_ShowScreenKeyboard(_THIS, SDL_Window *window);
-void VITA_HideScreenKeyboard(_THIS, SDL_Window *window);
-SDL_bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window);
+SDL_bool VITA_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
+void VITA_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
+void VITA_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
+SDL_bool VITA_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
 
-void VITA_PumpEvents(_THIS);
+void VITA_PumpEvents(SDL_VideoDevice *_this);
 
 #endif /* SDL_pspvideo_h */

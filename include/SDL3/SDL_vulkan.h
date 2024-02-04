@@ -22,7 +22,7 @@
 /**
  *  \file SDL_vulkan.h
  *
- *  \brief Header file for functions to creating Vulkan surfaces on SDL windows.
+ *  Header file for functions to creating Vulkan surfaces on SDL windows.
  */
 
 #ifndef SDL_vulkan_h_
@@ -51,6 +51,7 @@ extern "C" {
 
 VK_DEFINE_HANDLE(VkInstance)
 VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkSurfaceKHR)
+struct VkAllocationCallbacks;
 
 #endif /* !NO_SDL_VULKAN_TYPEDEFS */
 
@@ -135,33 +136,28 @@ extern DECLSPEC SDL_FunctionPointer SDLCALL SDL_Vulkan_GetVkGetInstanceProcAddr(
 extern DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
 
 /**
- * Get the names of the Vulkan instance extensions needed to create a surface
- * with SDL_Vulkan_CreateSurface.
+ * Get the Vulkan instance extensions needed for vkCreateInstance.
  *
  * This should be called after either calling SDL_Vulkan_LoadLibrary() or
  * creating an SDL_Window with the `SDL_WINDOW_VULKAN` flag.
  *
- * If `pNames` is NULL, then the number of required Vulkan instance extensions
- * is returned in `pCount`. Otherwise, `pCount` must point to a variable set
- * to the number of elements in the `pNames` array, and on return the variable
- * is overwritten with the number of names actually written to `pNames`. If
- * `pCount` is less than the number of required extensions, at most `pCount`
- * structures will be written. If `pCount` is smaller than the number of
- * required extensions, SDL_FALSE will be returned instead of SDL_TRUE, to
- * indicate that not all the required extensions were returned.
+ * On return, the variable pointed to by `pCount` will be set to the number of
+ * elements returned, suitable for using with
+ * VkInstanceCreateInfo::enabledExtensionCount, and the returned array can be
+ * used with VkInstanceCreateInfo::ppEnabledExtensionNames, for calling
+ * Vulkan's vkCreateInstance API.
  *
- * \param pCount A pointer to an unsigned int corresponding to the number of
- *               extensions to be returned
- * \param pNames NULL or a pointer to an array to be filled with required
- *               Vulkan instance extensions
- * \returns SDL_TRUE on success, SDL_FALSE on error.
+ * You should not free the returned array; it is owned by SDL.
+ *
+ * \param pCount A pointer to Uint32 that will be filled with the number of
+ *               extensions returned.
+ * \returns An array of extension name strings on success, NULL on error.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_Vulkan_CreateSurface
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_GetInstanceExtensions(unsigned int *pCount,
-                                                                  const char **pNames);
+extern DECLSPEC char const* const* SDLCALL SDL_Vulkan_GetInstanceExtensions(Uint32 *pCount);
 
 /**
  * Create a Vulkan rendering surface for a window.
@@ -170,8 +166,13 @@ extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_GetInstanceExtensions(unsigned int *
  * `instance` must have been created with extensions returned by
  * SDL_Vulkan_GetInstanceExtensions() enabled.
  *
+ * If `allocator` is NULL, Vulkan will use the system default allocator. This
+ * argument is passed directly to Vulkan and isn't used by SDL itself.
+ *
  * \param window The window to which to attach the Vulkan surface
  * \param instance The Vulkan instance handle
+ * \param allocator A VkAllocationCallbacks struct, which lets the app set the
+ *                  allocator that creates the surface. Can be NULL.
  * \param surface A pointer to a VkSurfaceKHR handle to output the newly
  *                created surface
  * \returns SDL_TRUE on success, SDL_FALSE on error.
@@ -182,6 +183,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_GetInstanceExtensions(unsigned int *
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
                                                           VkInstance instance,
+                                                          const struct VkAllocationCallbacks *allocator,
                                                           VkSurfaceKHR* surface);
 
 /* @} *//* Vulkan support functions */

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -190,15 +190,15 @@ static int X11_MessageBoxInit(SDL_MessageBoxDataX11 *data, const SDL_MessageBoxD
         int num_missing = 0;
         data->font_set = X11_XCreateFontSet(data->display, g_MessageBoxFont,
                                             &missing, &num_missing, NULL);
-        if (missing != NULL) {
+        if (missing) {
             X11_XFreeStringList(missing);
         }
-        if (data->font_set == NULL) {
+        if (!data->font_set) {
             return SDL_SetError("Couldn't load font %s", g_MessageBoxFont);
         }
     } else {
         data->font_struct = X11_XLoadQueryFont(data->display, g_MessageBoxFontLatin1);
-        if (data->font_struct == NULL) {
+        if (!data->font_struct) {
             return SDL_SetError("Couldn't load font %s", g_MessageBoxFontLatin1);
         }
     }
@@ -239,13 +239,13 @@ static int X11_MessageBoxInitPositions(SDL_MessageBoxDataX11 *data)
     const SDL_MessageBoxData *messageboxdata = data->messageboxdata;
 
     /* Go over text and break linefeeds into separate lines. */
-    if (messageboxdata != NULL && messageboxdata->message[0]) {
+    if (messageboxdata && messageboxdata->message[0]) {
         const char *text = messageboxdata->message;
         const int linecount = CountLinesOfText(text);
         TextLineData *plinedata = (TextLineData *)SDL_malloc(sizeof(TextLineData) * linecount);
 
-        if (plinedata == NULL) {
-            return SDL_OutOfMemory();
+        if (!plinedata) {
+            return -1;
         }
 
         data->linedata = plinedata;
@@ -272,7 +272,7 @@ static int X11_MessageBoxInitPositions(SDL_MessageBoxDataX11 *data)
             text += length + 1;
 
             /* Break if there are no more linefeeds. */
-            if (lf == NULL) {
+            if (!lf) {
                 break;
             }
         }
@@ -361,12 +361,12 @@ static int X11_MessageBoxInitPositions(SDL_MessageBoxDataX11 *data)
 /* Free SDL_MessageBoxData data. */
 static void X11_MessageBoxShutdown(SDL_MessageBoxDataX11 *data)
 {
-    if (data->font_set != NULL) {
+    if (data->font_set) {
         X11_XFreeFontSet(data->display, data->font_set);
         data->font_set = NULL;
     }
 
-    if (data->font_struct != NULL) {
+    if (data->font_struct) {
         X11_XFreeFont(data->display, data->font_struct);
         data->font_struct = NULL;
     }
@@ -467,11 +467,11 @@ static int X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
         X11_XTranslateCoordinates(display, windowdata->xwindow, RootWindow(display, data->screen), x, y, &x, &y, &dummy);
     } else {
         const SDL_VideoDevice *dev = SDL_GetVideoDevice();
-        if ((dev) && (dev->displays) && (dev->num_displays > 0)) {
-            const SDL_VideoDisplay *dpy = &dev->displays[0];
+        if (dev && dev->displays && dev->num_displays > 0) {
+            const SDL_VideoDisplay *dpy = dev->displays[0];
             const SDL_DisplayData *dpydata = dpy->driverdata;
-            x = dpydata->x + ((dpy->current_mode->pixel_w - data->dialog_width) / 2);
-            y = dpydata->y + ((dpy->current_mode->pixel_h - data->dialog_height) / 3);
+            x = dpydata->x + ((dpy->current_mode->w - data->dialog_width) / 2);
+            y = dpydata->y + ((dpy->current_mode->h - data->dialog_height) / 3);
         } else { /* oh well. This will misposition on a multi-head setup. Init first next time. */
             x = (DisplayWidth(display, data->screen) - data->dialog_width) / 2;
             y = (DisplayHeight(display, data->screen) - data->dialog_height) / 3;
@@ -760,10 +760,10 @@ static int X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int 
 
 #if SDL_SET_LOCALE
     origlocale = setlocale(LC_ALL, NULL);
-    if (origlocale != NULL) {
+    if (origlocale) {
         origlocale = SDL_strdup(origlocale);
-        if (origlocale == NULL) {
-            return SDL_OutOfMemory();
+        if (!origlocale) {
+            return -1;
         }
         (void)setlocale(LC_ALL, "");
     }

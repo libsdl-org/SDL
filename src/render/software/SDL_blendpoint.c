@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -75,26 +75,26 @@ static int SDL_BlendPoint_RGB565(SDL_Surface *dst, int x, int y, SDL_BlendMode b
     return 0;
 }
 
-static int SDL_BlendPoint_RGB888(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
+static int SDL_BlendPoint_XRGB8888(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
                                  Uint8 g, Uint8 b, Uint8 a)
 {
     unsigned inva = 0xff - a;
 
     switch (blendMode) {
     case SDL_BLENDMODE_BLEND:
-        DRAW_SETPIXELXY_BLEND_RGB888(x, y);
+        DRAW_SETPIXELXY_BLEND_XRGB8888(x, y);
         break;
     case SDL_BLENDMODE_ADD:
-        DRAW_SETPIXELXY_ADD_RGB888(x, y);
+        DRAW_SETPIXELXY_ADD_XRGB8888(x, y);
         break;
     case SDL_BLENDMODE_MOD:
-        DRAW_SETPIXELXY_MOD_RGB888(x, y);
+        DRAW_SETPIXELXY_MOD_XRGB8888(x, y);
         break;
     case SDL_BLENDMODE_MUL:
-        DRAW_SETPIXELXY_MUL_RGB888(x, y);
+        DRAW_SETPIXELXY_MUL_XRGB8888(x, y);
         break;
     default:
-        DRAW_SETPIXELXY_RGB888(x, y);
+        DRAW_SETPIXELXY_XRGB8888(x, y);
         break;
     }
     return 0;
@@ -209,7 +209,7 @@ static int SDL_BlendPoint_RGBA(SDL_Surface *dst, int x, int y, SDL_BlendMode ble
 int SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
                    Uint8 g, Uint8 b, Uint8 a)
 {
-    if (dst == NULL) {
+    if (!dst) {
         return SDL_InvalidParamError("SDL_BlendPoint(): dst");
     }
 
@@ -248,7 +248,7 @@ int SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint
         switch (dst->format->Rmask) {
         case 0x00FF0000:
             if (!dst->format->Amask) {
-                return SDL_BlendPoint_RGB888(dst, x, y, blendMode, r, g, b, a);
+                return SDL_BlendPoint_XRGB8888(dst, x, y, blendMode, r, g, b, a);
             } else {
                 return SDL_BlendPoint_ARGB8888(dst, x, y, blendMode, r, g, b, a);
             }
@@ -277,7 +277,7 @@ int SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count,
                 SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a) = NULL;
     int status = 0;
 
-    if (dst == NULL) {
+    if (!dst) {
         return SDL_InvalidParamError("SDL_BlendPoints(): dst");
     }
 
@@ -312,7 +312,7 @@ int SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count,
         switch (dst->format->Rmask) {
         case 0x00FF0000:
             if (!dst->format->Amask) {
-                func = SDL_BlendPoint_RGB888;
+                func = SDL_BlendPoint_XRGB8888;
             } else {
                 func = SDL_BlendPoint_ARGB8888;
             }
@@ -323,7 +323,7 @@ int SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count,
         break;
     }
 
-    if (func == NULL) {
+    if (!func) {
         if (!dst->format->Amask) {
             func = SDL_BlendPoint_RGB;
         } else {

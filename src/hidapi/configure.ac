@@ -1,13 +1,9 @@
 AC_PREREQ(2.63)
 
-# Version number. This is currently the only place.
-m4_define([HIDAPI_MAJOR],   0)
-m4_define([HIDAPI_MINOR],   8)
-m4_define([HIDAPI_RELEASE], 0)
-m4_define([HIDAPI_RC],      -rc1)
-m4_define([VERSION_STRING], HIDAPI_MAJOR[.]HIDAPI_MINOR[.]HIDAPI_RELEASE[]HIDAPI_RC)
+AC_INIT([hidapi],[m4_normalize(m4_builtin([include], VERSION))],[https://github.com/libusb/hidapi/issues])
 
-AC_INIT([hidapi],[VERSION_STRING],[alan@signal11.us])
+echo "This build script for HIDAPI is deprecated."
+echo "Consider using CMake instead."
 
 # Library soname version
 # Follow the following rules (particularly the ones in the second link):
@@ -20,7 +16,6 @@ LTLDFLAGS="-version-info ${lt_current}:${lt_revision}:${lt_age}"
 
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
-AC_CONFIG_MACRO_DIR([m4])
 
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 LT_INIT
@@ -63,14 +58,14 @@ case $host in
 
 	# HIDAPI/hidraw libs
 	PKG_CHECK_MODULES([libudev], [libudev], true, [hidapi_lib_error libudev])
-	LIBS_HIDRAW_PR+=" $libudev_LIBS"
-	CFLAGS_HIDRAW+=" $libudev_CFLAGS"
+	LIBS_HIDRAW_PR="${LIBS_HIDRAW_PR} $libudev_LIBS"
+	CFLAGS_HIDRAW="${CFLAGS_HIDRAW} $libudev_CFLAGS"
 
 	# HIDAPI/libusb libs
-	AC_CHECK_LIB([rt], [clock_gettime], [LIBS_LIBUSB_PRIVATE+=" -lrt"], [hidapi_lib_error librt])
+	AC_CHECK_LIB([rt], [clock_gettime], [LIBS_LIBUSB_PRIVATE="${LIBS_LIBUSB_PRIVATE} -lrt"], [hidapi_lib_error librt])
 	PKG_CHECK_MODULES([libusb], [libusb-1.0 >= 1.0.9], true, [hidapi_lib_error libusb-1.0])
-	LIBS_LIBUSB_PRIVATE+=" $libusb_LIBS"
-	CFLAGS_LIBUSB+=" $libusb_CFLAGS"
+	LIBS_LIBUSB_PRIVATE="${LIBS_LIBUSB_PRIVATE} $libusb_LIBS"
+	CFLAGS_LIBUSB="${CFLAGS_LIBUSB} $libusb_CFLAGS"
 	;;
 *-darwin*)
 	AC_MSG_RESULT([ (Mac OS X back-end)])
@@ -92,9 +87,10 @@ case $host in
 	CFLAGS="$CFLAGS -I/usr/local/include"
 	LDFLAGS="$LDFLAGS -L/usr/local/lib"
 	LIBS="${LIBS}"
-	AC_CHECK_LIB([usb], [libusb_init], [LIBS_LIBUSB_PRIVATE="${LIBS_LIBUSB_PRIVATE} -lusb"], [hidapi_lib_error libusb])
+	PKG_CHECK_MODULES([libusb], [libusb-1.0 >= 1.0.9], true, [hidapi_lib_error libusb-1.0])
+	LIBS_LIBUSB_PRIVATE="${LIBS_LIBUSB_PRIVATE} $libusb_LIBS"
+	CFLAGS_LIBUSB="${CFLAGS_LIBUSB} $libusb_CFLAGS"
 	AC_CHECK_LIB([iconv], [iconv_open], [LIBS_LIBUSB_PRIVATE="${LIBS_LIBUSB_PRIVATE} -liconv"], [hidapi_lib_error libiconv])
-	echo libs_priv: $LIBS_LIBUSB_PRIVATE
 	;;
 *-kfreebsd*)
 	AC_MSG_RESULT([ (kFreeBSD back-end)])
@@ -104,8 +100,22 @@ case $host in
 	os="kfreebsd"
 	threads="pthreads"
 
-	AC_CHECK_LIB([usb], [libusb_init], [LIBS_LIBUSB_PRIVATE="${LIBS_LIBUSB_PRIVATE} -lusb"], [hidapi_lib_error libusb])
-	echo libs_priv: $LIBS_LIBUSB_PRIVATE
+	PKG_CHECK_MODULES([libusb], [libusb-1.0 >= 1.0.9], true, [hidapi_lib_error libusb-1.0])
+	LIBS_LIBUSB_PRIVATE="${LIBS_LIBUSB_PRIVATE} $libusb_LIBS"
+	CFLAGS_LIBUSB="${CFLAGS_LIBUSB} $libusb_CFLAGS"
+	;;
+*-*-haiku)
+	AC_MSG_RESULT([ (Haiku back-end)])
+	AC_DEFINE(OS_HAIKU, 1, [Haiku implementation])
+	AC_SUBST(OS_HAIKU)
+	backend="libusb"
+	os="haiku"
+	threads="pthreads"
+
+	PKG_CHECK_MODULES([libusb], [libusb-1.0 >= 1.0.9], true, [hidapi_lib_error libusb-1.0])
+	LIBS_LIBUSB_PRIVATE="${LIBS_LIBUSB_PRIVATE} $libusb_LIBS"
+	CFLAGS_LIBUSB="${CFLAGS_LIBUSB} $libusb_CFLAGS"
+	AC_CHECK_LIB([iconv], [libiconv_open], [LIBS_LIBUSB_PRIVATE="${LIBS_LIBUSB_PRIVATE} -liconv"], [hidapi_lib_error libiconv])
 	;;
 *-mingw*)
 	AC_MSG_RESULT([ (Windows back-end, using MinGW)])
@@ -113,6 +123,15 @@ case $host in
 	os="windows"
 	threads="windows"
 	win_implementation="mingw"
+	LDFLAGS="${LDFLAGS} -static-libgcc"
+	;;
+*-msys*)
+	AC_MSG_RESULT([ (Windows back-end, using MSYS2)])
+	backend="windows"
+	os="windows"
+	threads="windows"
+	win_implementation="mingw"
+	LDFLAGS="${LDFLAGS} -static-libgcc"
 	;;
 *-cygwin*)
 	AC_MSG_RESULT([ (Windows back-end, using Cygwin)])
@@ -136,7 +155,7 @@ if test "x$os" = xwindows; then
 	AC_DEFINE(OS_WINDOWS, 1, [Windows implementations])
 	AC_SUBST(OS_WINDOWS)
 	LDFLAGS="${LDFLAGS} -no-undefined"
-	LIBS="${LIBS} -lsetupapi"
+	LIBS="${LIBS}"
 fi
 
 if test "x$threads" = xpthreads; then
@@ -175,15 +194,15 @@ mkdir testgui/TestGUI.app/Contents/MacOS/
 
 if test "x$testgui_enabled" != "xno"; then
 	if test "x$os" = xdarwin; then
-		# On Mac OS, don't use pkg-config.
+		# On Mac OS, do not use pkg-config.
 		AC_CHECK_PROG([foxconfig], [fox-config], [fox-config], false)
 		if test "x$foxconfig" = "xfalse"; then
 			hidapi_prog_error fox-config "FOX Toolkit"
 		fi
-		LIBS_TESTGUI+=`$foxconfig --libs`
-		LIBS_TESTGUI+=" -framework Cocoa -L/usr/X11R6/lib"
-		CFLAGS_TESTGUI+=`$foxconfig --cflags`
-		OBJCFLAGS+=" -x objective-c++"
+		LIBS_TESTGUI="${LIBS_TESTGUI} `$foxconfig --libs`"
+		LIBS_TESTGUI="${LIBS_TESTGUI} -framework Cocoa -L/usr/X11R6/lib"
+		CFLAGS_TESTGUI="${CFLAGS_TESTGUI} `$foxconfig --cflags`"
+		OBJCFLAGS="${OBJCFLAGS} -x objective-c++"
 	elif test "x$os" = xwindows; then
 		# On Windows, just set the paths for Fox toolkit
 		if test "x$win_implementation" = xmingw; then
@@ -213,6 +232,7 @@ AM_CONDITIONAL(OS_LINUX, test "x$os" = xlinux)
 AM_CONDITIONAL(OS_DARWIN, test "x$os" = xdarwin)
 AM_CONDITIONAL(OS_FREEBSD, test "x$os" = xfreebsd)
 AM_CONDITIONAL(OS_KFREEBSD, test "x$os" = xkfreebsd)
+AM_CONDITIONAL(OS_HAIKU, test "x$os" = xhaiku)
 AM_CONDITIONAL(OS_WINDOWS, test "x$os" = xwindows)
 
 AC_CONFIG_HEADERS([config.h])

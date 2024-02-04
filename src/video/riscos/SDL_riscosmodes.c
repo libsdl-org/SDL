@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -85,8 +85,7 @@ static SDL_PixelFormatEnum RISCOS_ModeToPixelFormat(int ncolour, int modeflags, 
     return SDL_PIXELFORMAT_UNKNOWN;
 }
 
-static size_t
-measure_mode_block(const int *block)
+static size_t measure_mode_block(const int *block)
 {
     size_t blockSize = ((block[0] & 0xFF) == 3) ? 7 : 5;
     while (block[blockSize] != -1) {
@@ -137,8 +136,8 @@ static SDL_bool read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool exte
     }
 
     SDL_zerop(mode);
-    mode->pixel_w = xres;
-    mode->pixel_h = yres;
+    mode->w = xres;
+    mode->h = yres;
     mode->format = RISCOS_ModeToPixelFormat(ncolour, modeflags, log2bpp);
     mode->refresh_rate = (float)rate;
 
@@ -168,7 +167,7 @@ static void *convert_mode_block(const int *block)
     }
 
     dst = SDL_malloc(40);
-    if (dst == NULL) {
+    if (!dst) {
         return NULL;
     }
 
@@ -199,7 +198,7 @@ static void *copy_memory(const void *src, size_t size, size_t alloc)
     return dst;
 }
 
-int RISCOS_InitModes(_THIS)
+int RISCOS_InitModes(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
     int *current_mode;
@@ -209,7 +208,7 @@ int RISCOS_InitModes(_THIS)
 
     regs.r[0] = 1;
     error = _kernel_swi(OS_ScreenMode, &regs, &regs);
-    if (error != NULL) {
+    if (error) {
         return SDL_SetError("Unable to retrieve the current screen mode: %s (%i)", error->errmess, error->errnum);
     }
 
@@ -221,7 +220,7 @@ int RISCOS_InitModes(_THIS)
     size = measure_mode_block(current_mode);
     mode.driverdata = copy_memory(current_mode, size, size);
     if (!mode.driverdata) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     if (SDL_AddBasicVideoDisplay(&mode) == 0) {
@@ -230,7 +229,7 @@ int RISCOS_InitModes(_THIS)
     return 0;
 }
 
-int RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
+int RISCOS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 {
     SDL_DisplayMode mode;
     _kernel_swi_regs regs;
@@ -242,19 +241,19 @@ int RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
     regs.r[6] = 0;
     regs.r[7] = 0;
     error = _kernel_swi(OS_ScreenMode, &regs, &regs);
-    if (error != NULL) {
+    if (error) {
         return SDL_SetError("Unable to enumerate screen modes: %s (%i)", error->errmess, error->errnum);
     }
 
     block = SDL_malloc(-regs.r[7]);
-    if (block == NULL) {
-        return SDL_OutOfMemory();
+    if (!block) {
+        return -1;
     }
 
     regs.r[6] = (int)block;
     regs.r[7] = -regs.r[7];
     error = _kernel_swi(OS_ScreenMode, &regs, &regs);
-    if (error != NULL) {
+    if (error) {
         SDL_free(block);
         return SDL_SetError("Unable to enumerate screen modes: %s (%i)", error->errmess, error->errnum);
     }
@@ -271,7 +270,7 @@ int RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
         mode.driverdata = convert_mode_block(pos + 4);
         if (!mode.driverdata) {
             SDL_free(block);
-            return SDL_OutOfMemory();
+            return -1;
         }
 
         if (!SDL_AddFullscreenDisplayMode(display, &mode)) {
@@ -283,7 +282,7 @@ int RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
     return 0;
 }
 
-int RISCOS_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+int RISCOS_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     const char disable_cursor[] = { 23, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     _kernel_swi_regs regs;
@@ -293,7 +292,7 @@ int RISCOS_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mod
     regs.r[0] = 0;
     regs.r[1] = (int)mode->driverdata;
     error = _kernel_swi(OS_ScreenMode, &regs, &regs);
-    if (error != NULL) {
+    if (error) {
         return SDL_SetError("Unable to set the current screen mode: %s (%i)", error->errmess, error->errnum);
     }
 

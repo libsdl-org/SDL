@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,7 +23,7 @@
 /* This file contains portable iconv functions for SDL */
 
 #if defined(HAVE_ICONV) && defined(HAVE_ICONV_H)
-#ifdef __FreeBSD__
+#ifndef SDL_USE_LIBICONV
 /* Define LIBICONV_PLUG to use iconv from the base instead of ports and avoid linker errors. */
 #define LIBICONV_PLUG 1
 #endif
@@ -32,8 +32,7 @@
 
 SDL_COMPILE_TIME_ASSERT(iconv_t, sizeof(iconv_t) <= sizeof(SDL_iconv_t));
 
-SDL_iconv_t
-SDL_iconv_open(const char *tocode, const char *fromcode)
+SDL_iconv_t SDL_iconv_open(const char *tocode, const char *fromcode)
 {
     return (SDL_iconv_t)((uintptr_t)iconv_open(tocode, fromcode));
 }
@@ -43,8 +42,7 @@ int SDL_iconv_close(SDL_iconv_t cd)
     return iconv_close((iconv_t)((uintptr_t)cd));
 }
 
-size_t
-SDL_iconv(SDL_iconv_t cd,
+size_t SDL_iconv(SDL_iconv_t cd,
           const char **inbuf, size_t *inbytesleft,
           char **outbuf, size_t *outbytesleft)
 {
@@ -122,7 +120,7 @@ static struct
     { "US-ASCII", ENCODING_ASCII },
     { "8859-1", ENCODING_LATIN1 },
     { "ISO-8859-1", ENCODING_LATIN1 },
-#if defined(__WIN32__) || defined(__OS2__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_OS2) || defined(SDL_PLATFORM_GDK)
     { "WCHAR_T", ENCODING_UTF16LE },
 #else
     { "WCHAR_T", ENCODING_UCS4NATIVE },
@@ -160,36 +158,35 @@ static const char *getlocale(char *buffer, size_t bufsize)
     char *ptr;
 
     lang = SDL_getenv("LC_ALL");
-    if (lang == NULL) {
+    if (!lang) {
         lang = SDL_getenv("LC_CTYPE");
     }
-    if (lang == NULL) {
+    if (!lang) {
         lang = SDL_getenv("LC_MESSAGES");
     }
-    if (lang == NULL) {
+    if (!lang) {
         lang = SDL_getenv("LANG");
     }
-    if (lang == NULL || !*lang || SDL_strcmp(lang, "C") == 0) {
+    if (!lang || !*lang || SDL_strcmp(lang, "C") == 0) {
         lang = "ASCII";
     }
 
     /* We need to trim down strings like "en_US.UTF-8@blah" to "UTF-8" */
     ptr = SDL_strchr(lang, '.');
-    if (ptr != NULL) {
+    if (ptr) {
         lang = ptr + 1;
     }
 
     SDL_strlcpy(buffer, lang, bufsize);
     ptr = SDL_strchr(buffer, '@');
-    if (ptr != NULL) {
+    if (ptr) {
         *ptr = '\0'; /* chop end of string. */
     }
 
     return buffer;
 }
 
-SDL_iconv_t
-SDL_iconv_open(const char *tocode, const char *fromcode)
+SDL_iconv_t SDL_iconv_open(const char *tocode, const char *fromcode)
 {
     int src_fmt = ENCODING_UNKNOWN;
     int dst_fmt = ENCODING_UNKNOWN;
@@ -197,10 +194,10 @@ SDL_iconv_open(const char *tocode, const char *fromcode)
     char fromcode_buffer[64];
     char tocode_buffer[64];
 
-    if (fromcode == NULL || !*fromcode) {
+    if (!fromcode || !*fromcode) {
         fromcode = getlocale(fromcode_buffer, sizeof(fromcode_buffer));
     }
-    if (tocode == NULL || !*tocode) {
+    if (!tocode || !*tocode) {
         tocode = getlocale(tocode_buffer, sizeof(tocode_buffer));
     }
     for (i = 0; i < SDL_arraysize(encodings); ++i) {
@@ -228,8 +225,7 @@ SDL_iconv_open(const char *tocode, const char *fromcode)
     return (SDL_iconv_t)-1;
 }
 
-size_t
-SDL_iconv(SDL_iconv_t cd,
+size_t SDL_iconv(SDL_iconv_t cd,
           const char **inbuf, size_t *inbytesleft,
           char **outbuf, size_t *outbytesleft)
 {
@@ -240,11 +236,11 @@ SDL_iconv(SDL_iconv_t cd,
     Uint32 ch = 0;
     size_t total;
 
-    if (inbuf == NULL || !*inbuf) {
+    if (!inbuf || !*inbuf) {
         /* Reset the context */
         return 0;
     }
-    if (outbuf == NULL || !*outbuf || outbytesleft == NULL || !*outbytesleft) {
+    if (!outbuf || !*outbuf || !outbytesleft || !*outbytesleft) {
         return SDL_ICONV_E2BIG;
     }
     src = *inbuf;
@@ -781,9 +777,7 @@ int SDL_iconv_close(SDL_iconv_t cd)
 
 #endif /* !HAVE_ICONV */
 
-char *
-SDL_iconv_string(const char *tocode, const char *fromcode, const char *inbuf,
-                 size_t inbytesleft)
+char *SDL_iconv_string(const char *tocode, const char *fromcode, const char *inbuf, size_t inbytesleft)
 {
     SDL_iconv_t cd;
     char *string;
@@ -792,30 +786,26 @@ SDL_iconv_string(const char *tocode, const char *fromcode, const char *inbuf,
     size_t outbytesleft;
     size_t retCode = 0;
 
-    cd = SDL_iconv_open(tocode, fromcode);
-    if (cd == (SDL_iconv_t)-1) {
-        /* See if we can recover here (fixes iconv on Solaris 11) */
-        if (tocode == NULL || !*tocode) {
-            tocode = "UTF-8";
-        }
-        if (fromcode == NULL || !*fromcode) {
-            fromcode = "UTF-8";
-        }
-        cd = SDL_iconv_open(tocode, fromcode);
+    if (!tocode || !*tocode) {
+        tocode = "UTF-8";
     }
+    if (!fromcode || !*fromcode) {
+        fromcode = "UTF-8";
+    }
+    cd = SDL_iconv_open(tocode, fromcode);
     if (cd == (SDL_iconv_t)-1) {
         return NULL;
     }
 
-    stringsize = inbytesleft > 4 ? inbytesleft : 4;
-    string = (char *)SDL_malloc(stringsize + 1);
-    if (string == NULL) {
+    stringsize = inbytesleft;
+    string = (char *)SDL_malloc(stringsize + sizeof(Uint32));
+    if (!string) {
         SDL_iconv_close(cd);
         return NULL;
     }
     outbuf = string;
     outbytesleft = stringsize;
-    SDL_memset(outbuf, 0, 4);
+    SDL_memset(outbuf, 0, sizeof(Uint32));
 
     while (inbytesleft > 0) {
         const size_t oldinbytesleft = inbytesleft;
@@ -825,16 +815,17 @@ SDL_iconv_string(const char *tocode, const char *fromcode, const char *inbuf,
         {
             char *oldstring = string;
             stringsize *= 2;
-            string = (char *)SDL_realloc(string, stringsize + 1);
-            if (string == NULL) {
+            string = (char *)SDL_realloc(string, stringsize + sizeof(Uint32));
+            if (!string) {
                 SDL_free(oldstring);
                 SDL_iconv_close(cd);
                 return NULL;
             }
             outbuf = string + (outbuf - oldstring);
             outbytesleft = stringsize - (outbuf - string);
-            SDL_memset(outbuf, 0, 4);
-        } break;
+            SDL_memset(outbuf, 0, sizeof(Uint32));
+            continue;
+        }
         case SDL_ICONV_EILSEQ:
             /* Try skipping some input data - not perfect, but... */
             ++inbuf;
@@ -851,7 +842,7 @@ SDL_iconv_string(const char *tocode, const char *fromcode, const char *inbuf,
             break;
         }
     }
-    *outbuf = '\0';
+    SDL_memset(outbuf, 0, sizeof(Uint32));
     SDL_iconv_close(cd);
 
     return string;

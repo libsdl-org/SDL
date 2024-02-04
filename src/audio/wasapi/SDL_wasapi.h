@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,49 +29,45 @@ extern "C" {
 
 #include "../SDL_sysaudio.h"
 
-/* Hidden "this" pointer for the audio functions */
-#ifdef __cplusplus
-#define _THIS SDL_AudioDevice *_this
-#else
-#define _THIS SDL_AudioDevice *this
-#endif
-
 struct SDL_PrivateAudioData
 {
-    SDL_AtomicInt refcount;
     WCHAR *devid;
     WAVEFORMATEX *waveformat;
     IAudioClient *client;
     IAudioRenderClient *render;
     IAudioCaptureClient *capture;
-    SDL_AudioStream *capturestream;
     HANDLE event;
     HANDLE task;
     SDL_bool coinitialized;
     int framesize;
-    int default_device_generation;
     SDL_bool device_lost;
+    SDL_bool device_dead;
     void *activation_handler;
-    SDL_AtomicInt just_activated;
 };
 
-/* win32 and winrt implementations call into these. */
-int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream);
-void WASAPI_RefDevice(_THIS);
-void WASAPI_UnrefDevice(_THIS);
+// win32 and winrt implementations call into these.
+int WASAPI_PrepDevice(SDL_AudioDevice *device);
+void WASAPI_DisconnectDevice(SDL_AudioDevice *device);  // don't hold the device lock when calling this!
 
-/* These are functions that are implemented differently for Windows vs WinRT. */
+
+// BE CAREFUL: if you are holding the device lock and proxy to the management thread with wait_until_complete, and grab the lock again, you will deadlock.
+typedef int (*ManagementThreadTask)(void *userdata);
+int WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, int *wait_until_complete);
+
+// These are functions that are implemented differently for Windows vs WinRT.
+// UNLESS OTHERWISE NOTED THESE ALL HAPPEN ON THE MANAGEMENT THREAD.
 int WASAPI_PlatformInit(void);
 void WASAPI_PlatformDeinit(void);
-void WASAPI_EnumerateEndpoints(void);
-int WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture);
-int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery);
-void WASAPI_PlatformThreadInit(_THIS);
-void WASAPI_PlatformThreadDeinit(_THIS);
+void WASAPI_PlatformDeinitializeStart(void);
+void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture);
+int WASAPI_ActivateDevice(SDL_AudioDevice *device);
+void WASAPI_PlatformThreadInit(SDL_AudioDevice *device);  // this happens on the audio device thread, not the management thread.
+void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *device);  // this happens on the audio device thread, not the management thread.
 void WASAPI_PlatformDeleteActivationHandler(void *handler);
+void WASAPI_PlatformFreeDeviceHandle(SDL_AudioDevice *device);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SDL_wasapi_h_ */
+#endif // SDL_wasapi_h_

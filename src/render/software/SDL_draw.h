@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -191,39 +191,39 @@
  * Define draw operators for RGB888
  */
 
-#define DRAW_SETPIXEL_RGB888 \
-    DRAW_SETPIXEL(RGB888_FROM_RGB(*pixel, sr, sg, sb))
+#define DRAW_SETPIXEL_XRGB8888 \
+    DRAW_SETPIXEL(XRGB8888_FROM_RGB(*pixel, sr, sg, sb))
 
-#define DRAW_SETPIXEL_BLEND_RGB888                           \
-    DRAW_SETPIXEL_BLEND(RGB_FROM_RGB888(*pixel, sr, sg, sb), \
-                        RGB888_FROM_RGB(*pixel, sr, sg, sb))
+#define DRAW_SETPIXEL_BLEND_XRGB8888                           \
+    DRAW_SETPIXEL_BLEND(RGB_FROM_XRGB8888(*pixel, sr, sg, sb), \
+                        XRGB8888_FROM_RGB(*pixel, sr, sg, sb))
 
-#define DRAW_SETPIXEL_ADD_RGB888                           \
-    DRAW_SETPIXEL_ADD(RGB_FROM_RGB888(*pixel, sr, sg, sb), \
-                      RGB888_FROM_RGB(*pixel, sr, sg, sb))
+#define DRAW_SETPIXEL_ADD_XRGB8888                           \
+    DRAW_SETPIXEL_ADD(RGB_FROM_XRGB8888(*pixel, sr, sg, sb), \
+                      XRGB8888_FROM_RGB(*pixel, sr, sg, sb))
 
-#define DRAW_SETPIXEL_MOD_RGB888                           \
-    DRAW_SETPIXEL_MOD(RGB_FROM_RGB888(*pixel, sr, sg, sb), \
-                      RGB888_FROM_RGB(*pixel, sr, sg, sb))
+#define DRAW_SETPIXEL_MOD_XRGB8888                           \
+    DRAW_SETPIXEL_MOD(RGB_FROM_XRGB8888(*pixel, sr, sg, sb), \
+                      XRGB8888_FROM_RGB(*pixel, sr, sg, sb))
 
-#define DRAW_SETPIXEL_MUL_RGB888                           \
-    DRAW_SETPIXEL_MUL(RGB_FROM_RGB888(*pixel, sr, sg, sb), \
-                      RGB888_FROM_RGB(*pixel, sr, sg, sb))
+#define DRAW_SETPIXEL_MUL_XRGB8888                           \
+    DRAW_SETPIXEL_MUL(RGB_FROM_XRGB8888(*pixel, sr, sg, sb), \
+                      XRGB8888_FROM_RGB(*pixel, sr, sg, sb))
 
-#define DRAW_SETPIXELXY_RGB888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_RGB888)
+#define DRAW_SETPIXELXY_XRGB8888(x, y) \
+    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_XRGB8888)
 
-#define DRAW_SETPIXELXY_BLEND_RGB888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_RGB888)
+#define DRAW_SETPIXELXY_BLEND_XRGB8888(x, y) \
+    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_XRGB8888)
 
-#define DRAW_SETPIXELXY_ADD_RGB888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_ADD_RGB888)
+#define DRAW_SETPIXELXY_ADD_XRGB8888(x, y) \
+    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_ADD_XRGB8888)
 
-#define DRAW_SETPIXELXY_MOD_RGB888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_MOD_RGB888)
+#define DRAW_SETPIXELXY_MOD_XRGB8888(x, y) \
+    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_MOD_XRGB8888)
 
-#define DRAW_SETPIXELXY_MUL_RGB888(x, y) \
-    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_MUL_RGB888)
+#define DRAW_SETPIXELXY_MUL_XRGB8888(x, y) \
+    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_MUL_XRGB8888)
 
 /*
  * Define draw operators for ARGB8888
@@ -546,7 +546,7 @@
             ErrorAdj = ((unsigned long)DeltaX << 16) / (unsigned long)DeltaY;       \
             /* Draw all pixels other than the first and last */                     \
             while (--DeltaY) {                                                      \
-                ErrorAccTemp = ErrorAcc; /* remember currrent accumulated error */  \
+                ErrorAccTemp = ErrorAcc; /* remember current accumulated error */   \
                 ErrorAcc += ErrorAdj;    /* calculate error for next pixel */       \
                 if (ErrorAcc <= ErrorAccTemp) {                                     \
                     /* The error accumulator turned over, so advance the X coord */ \
@@ -581,7 +581,7 @@
             ErrorAdj = ((unsigned long)DeltaY << 16) / (unsigned long)DeltaX;       \
             /* Draw all pixels other than the first and last */                     \
             while (--DeltaX) {                                                      \
-                ErrorAccTemp = ErrorAcc; /* remember currrent accumulated error */  \
+                ErrorAccTemp = ErrorAcc; /* remember current accumulated error */   \
                 ErrorAcc += ErrorAdj;    /* calculate error for next pixel */       \
                 if (ErrorAcc <= ErrorAccTemp) {                                     \
                     /* The error accumulator turned over, so advance the Y coord */ \

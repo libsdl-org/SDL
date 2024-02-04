@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,6 +32,8 @@ struct SDL_DisplayData
     int x;
     int y;
 
+    Uint64 mode_switch_deadline_ns;
+
     SDL_bool use_xrandr;
 
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
@@ -48,21 +50,21 @@ struct SDL_DisplayModeData
 #endif
 };
 
-extern int X11_InitModes(_THIS);
-extern int X11_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
-extern int X11_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-extern void X11_QuitModes(_THIS);
+extern int X11_InitModes(SDL_VideoDevice *_this);
+extern int X11_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
+extern int X11_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+extern void X11_QuitModes(SDL_VideoDevice *_this);
 
 /* Some utility functions for working with visuals */
 extern int X11_GetVisualInfoFromVisual(Display *display, Visual *visual,
                                        XVisualInfo *vinfo);
 extern Uint32 X11_GetPixelFormatFromVisualInfo(Display *display,
                                                XVisualInfo *vinfo);
-extern int X11_GetDisplayBounds(_THIS, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
-extern int X11_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
+extern int X11_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
+extern int X11_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
 
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
-extern void X11_HandleXRandREvent(_THIS, const XEvent *xevent);
+extern void X11_HandleXRandREvent(SDL_VideoDevice *_this, const XEvent *xevent);
 #endif
 
 #endif /* SDL_x11modes_h_ */

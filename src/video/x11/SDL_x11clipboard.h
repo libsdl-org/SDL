@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,25 +23,23 @@
 #ifndef SDL_x11clipboard_h_
 #define SDL_x11clipboard_h_
 
-enum ESDLX11ClipboardMimeType
-{
-    SDL_X11_CLIPBOARD_MIME_TYPE_STRING,
-    SDL_X11_CLIPBOARD_MIME_TYPE_TEXT_PLAIN,
-#ifdef X_HAVE_UTF8_STRING
-    SDL_X11_CLIPBOARD_MIME_TYPE_TEXT_PLAIN_UTF8,
-#endif
-    SDL_X11_CLIPBOARD_MIME_TYPE_TEXT,
-    SDL_X11_CLIPBOARD_MIME_TYPE_MAX
-};
+#include <X11/Xlib.h>
 
-extern int X11_SetClipboardText(_THIS, const char *text);
-extern char *X11_GetClipboardText(_THIS);
-extern SDL_bool X11_HasClipboardText(_THIS);
-extern int X11_SetPrimarySelectionText(_THIS, const char *text);
-extern char *X11_GetPrimarySelectionText(_THIS);
-extern SDL_bool X11_HasPrimarySelectionText(_THIS);
-extern Atom X11_GetSDLCutBufferClipboardType(Display *display, enum ESDLX11ClipboardMimeType mime_type, Atom selection_type);
-extern Atom X11_GetSDLCutBufferClipboardExternalFormat(Display *display, enum ESDLX11ClipboardMimeType mime_type);
-extern Atom X11_GetSDLCutBufferClipboardInternalFormat(Display *display, enum ESDLX11ClipboardMimeType mime_type);
+typedef struct X11_ClipboardData {
+    SDL_ClipboardDataCallback callback;
+    void *userdata;
+    const char **mime_types;
+    size_t mime_count;
+    Uint32 sequence;
+} SDLX11_ClipboardData;
+
+extern const char **X11_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types);
+extern int X11_SetClipboardData(SDL_VideoDevice *_this);
+extern void *X11_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *length);
+extern SDL_bool X11_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type);
+extern int X11_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text);
+extern char *X11_GetPrimarySelectionText(SDL_VideoDevice *_this);
+extern SDL_bool X11_HasPrimarySelectionText(SDL_VideoDevice *_this);
+extern void X11_QuitClipboard(SDL_VideoDevice *_this);
 
 #endif /* SDL_x11clipboard_h_ */

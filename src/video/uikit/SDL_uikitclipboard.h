@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,11 +23,11 @@
 
 #include "../SDL_sysvideo.h"
 
-extern int UIKit_SetClipboardText(_THIS, const char *text);
-extern char *UIKit_GetClipboardText(_THIS);
-extern SDL_bool UIKit_HasClipboardText(_THIS);
+extern int UIKit_SetClipboardText(SDL_VideoDevice *_this, const char *text);
+extern char *UIKit_GetClipboardText(SDL_VideoDevice *_this);
+extern SDL_bool UIKit_HasClipboardText(SDL_VideoDevice *_this);
 
-extern void UIKit_InitClipboard(_THIS);
-extern void UIKit_QuitClipboard(_THIS);
+extern void UIKit_InitClipboard(SDL_VideoDevice *_this);
+extern void UIKit_QuitClipboard(SDL_VideoDevice *_this);
 
 #endif /* SDL_uikitclipboard_h_ */

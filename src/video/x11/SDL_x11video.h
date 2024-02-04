@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,29 +25,6 @@
 
 #include "../SDL_sysvideo.h"
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
-
-#ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
-#include <X11/Xcursor/Xcursor.h>
-#endif
-#ifdef SDL_VIDEO_DRIVER_X11_XDBE
-#include <X11/extensions/Xdbe.h>
-#endif
-#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
-#include <X11/extensions/XInput2.h>
-#endif
-#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
-#include <X11/extensions/Xrandr.h>
-#endif
-#ifdef SDL_VIDEO_DRIVER_X11_XSCRNSAVER
-#include <X11/extensions/scrnsaver.h>
-#endif
-#ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
-#include <X11/extensions/shape.h>
-#endif
-
 #include "../../core/linux/SDL_dbus.h"
 #include "../../core/linux/SDL_ime.h"
 
@@ -68,7 +45,6 @@ struct SDL_VideoData
 {
     Display *display;
     Display *request_display;
-    char *classname;
     pid_t pid;
     XIM im;
     Uint64 screensaver_activity;
@@ -77,6 +53,8 @@ struct SDL_VideoData
     int windowlistlength;
     XID window_group;
     Window clipboard_window;
+    SDLX11_ClipboardData clipboard;
+    SDLX11_ClipboardData primary_selection;
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     SDL_Window *active_cursor_confined_window;
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */

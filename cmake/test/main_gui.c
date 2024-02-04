@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     window = SDL_CreateWindow("Hello SDL", 640, 480, 0);
-    if (window == NULL) {
+    if (!window) {
         SDL_Log("could not create window: %s\n", SDL_GetError());
         return 1;
     }

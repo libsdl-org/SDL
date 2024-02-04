@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,8 +24,6 @@
 
 #include "SDL_rpivideo.h"
 
-void RPI_PumpEvents(_THIS);
-void RPI_EventInit(_THIS);
-void RPI_EventQuit(_THIS);
+void RPI_PumpEvents(SDL_VideoDevice *_this);
 
 #endif /* SDL_rpievents_c_h_ */

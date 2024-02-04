@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 /**
  *  \file SDL_sensor.h
  *
- *  \brief Include file for SDL sensor event handling
+ *  Include file for SDL sensor event handling
  */
 
 #ifndef SDL_sensor_h_
@@ -30,6 +30,7 @@
 
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
+#include <SDL3/SDL_properties.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
@@ -40,7 +41,7 @@ extern "C" {
 #endif
 
 /**
- *  \brief SDL_sensor.h
+ *  SDL_sensor.h
  *
  *  In order to use these functions, SDL_Init() must have been called
  *  with the ::SDL_INIT_SENSOR flag.  This causes SDL to scan the system
@@ -89,15 +90,14 @@ typedef enum
  * values[1]: Acceleration on the y axis
  * values[2]: Acceleration on the z axis
  *
- * For phones held in portrait mode and game controllers held in front of you,
- * the axes are defined as follows:
+ * For phones and tablets held in natural orientation and game controllers held in front of you, the axes are defined as follows:
  * -X ... +X : left ... right
  * -Y ... +Y : bottom ... top
  * -Z ... +Z : farther ... closer
  *
- * The axis data is not changed when the phone is rotated.
+ * The axis data is not changed when the device is rotated.
  *
- * \sa SDL_GetDisplayOrientation()
+ * \sa SDL_GetCurrentDisplayOrientation()
  */
 #define SDL_STANDARD_GRAVITY    9.80665f
 
@@ -114,15 +114,14 @@ typedef enum
  * values[1]: Angular speed around the y axis (yaw)
  * values[2]: Angular speed around the z axis (roll)
  *
- * For phones held in portrait mode and game controllers held in front of you,
- * the axes are defined as follows:
+ * For phones and tablets held in natural orientation and game controllers held in front of you, the axes are defined as follows:
  * -X ... +X : left ... right
  * -Y ... +Y : bottom ... top
  * -Z ... +Z : farther ... closer
  *
- * The axis data is not changed when the phone or controller is rotated.
+ * The axis data is not changed when the device is rotated.
  *
- * \sa SDL_GetDisplayOrientation()
+ * \sa SDL_GetCurrentDisplayOrientation()
  */
 
 /* Function prototypes */
@@ -190,6 +189,20 @@ extern DECLSPEC SDL_Sensor *SDLCALL SDL_OpenSensor(SDL_SensorID instance_id);
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_Sensor *SDLCALL SDL_GetSensorFromInstanceID(SDL_SensorID instance_id);
+
+/**
+ * Get the properties associated with a sensor.
+ *
+ * \param sensor The SDL_Sensor object
+ * \returns a valid property ID on success or 0 on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetProperty
+ * \sa SDL_SetProperty
+ */
+extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSensorProperties(SDL_Sensor *sensor);
 
 /**
  * Get the implementation dependent name of a sensor

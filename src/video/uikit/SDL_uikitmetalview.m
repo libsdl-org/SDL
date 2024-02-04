@@ -1,6 +1,6 @@
 /*
  Simple DirectMedia Layer
- Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+ Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
  This software is provided 'as-is', without any express or implied
  warranty.  In no event will the authors be held liable for any damages
@@ -34,8 +34,6 @@
 
 #import "SDL_uikitwindow.h"
 #import "SDL_uikitmetalview.h"
-
-#include <SDL3/SDL_syswm.h>
 
 @implementation SDL_uikitmetalview
 
@@ -74,15 +72,15 @@
 
 @end
 
-SDL_MetalView
-UIKit_Metal_CreateView(_THIS, SDL_Window *window)
+SDL_MetalView UIKit_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
         CGFloat scale = 1.0;
         SDL_uikitmetalview *metalview;
 
-        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+#ifndef SDL_PLATFORM_VISIONOS
+        if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
             /* Set the scale to the natural scale factor of the screen - then
              * the backing dimensions of the Metal view will match the pixel
              * dimensions of the screen rather than the dimensions in points
@@ -90,6 +88,7 @@ UIKit_Metal_CreateView(_THIS, SDL_Window *window)
              */
             scale = data.uiwindow.screen.nativeScale;
         }
+#endif
 
         metalview = [[SDL_uikitmetalview alloc] initWithFrame:data.uiwindow.bounds
                                                         scale:scale];
@@ -104,7 +103,7 @@ UIKit_Metal_CreateView(_THIS, SDL_Window *window)
     }
 }
 
-void UIKit_Metal_DestroyView(_THIS, SDL_MetalView view)
+void UIKit_Metal_DestroyView(SDL_VideoDevice *_this, SDL_MetalView view)
 {
     @autoreleasepool {
         SDL_uikitmetalview *metalview = CFBridgingRelease(view);
@@ -115,8 +114,7 @@ void UIKit_Metal_DestroyView(_THIS, SDL_MetalView view)
     }
 }
 
-void *
-UIKit_Metal_GetLayer(_THIS, SDL_MetalView view)
+void *UIKit_Metal_GetLayer(SDL_VideoDevice *_this, SDL_MetalView view)
 {
     @autoreleasepool {
         SDL_uikitview *uiview = (__bridge SDL_uikitview *)view;

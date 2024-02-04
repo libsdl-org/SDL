@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,19 +27,19 @@
 
 /* EGL implementation of SDL OpenGL support */
 
-void RPI_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
+void RPI_GLES_DefaultProfileConfig(SDL_VideoDevice *_this, int *mask, int *major, int *minor)
 {
     *mask = SDL_GL_CONTEXT_PROFILE_ES;
     *major = 2;
     *minor = 0;
 }
 
-int RPI_GLES_LoadLibrary(_THIS, const char *path)
+int RPI_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     return SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY, 0);
 }
 
-int RPI_GLES_SwapWindow(_THIS, SDL_Window *window)
+int RPI_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *wdata = window->driverdata;
 
@@ -52,7 +52,7 @@ int RPI_GLES_SwapWindow(_THIS, SDL_Window *window)
      * Run your SDL program with "SDL_RPI_DOUBLE_BUFFER=1 <program_name>" to enable this. */
     if (wdata->double_buffer) {
         SDL_LockMutex(wdata->vsync_cond_mutex);
-        SDL_CondWait(wdata->vsync_cond, wdata->vsync_cond_mutex);
+        SDL_WaitCondition(wdata->vsync_cond, wdata->vsync_cond_mutex);
         SDL_UnlockMutex(wdata->vsync_cond_mutex);
     }
 

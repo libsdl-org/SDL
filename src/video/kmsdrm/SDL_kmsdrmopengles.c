@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,7 +34,7 @@
 
 /* EGL implementation of SDL OpenGL support */
 
-void KMSDRM_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
+void KMSDRM_GLES_DefaultProfileConfig(SDL_VideoDevice *_this, int *mask, int *major, int *minor)
 {
     /* if SDL was _also_ built with the Raspberry Pi driver (so we're
        definitely a Pi device) or with the ROCKCHIP video driver
@@ -46,7 +46,7 @@ void KMSDRM_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
 #endif
 }
 
-int KMSDRM_GLES_LoadLibrary(_THIS, const char *path)
+int KMSDRM_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     /* Just pretend you do this here, but don't do it until KMSDRM_CreateWindow(),
        where we do the same library load we would normally do here.
@@ -60,7 +60,7 @@ int KMSDRM_GLES_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-void KMSDRM_GLES_UnloadLibrary(_THIS)
+void KMSDRM_GLES_UnloadLibrary(SDL_VideoDevice *_this)
 {
     /* As with KMSDRM_GLES_LoadLibrary(), we define our own "dummy" unloading function
        so we manually unload the library whenever we want. */
@@ -68,7 +68,7 @@ void KMSDRM_GLES_UnloadLibrary(_THIS)
 
 SDL_EGL_CreateContext_impl(KMSDRM)
 
-    int KMSDRM_GLES_SetSwapInterval(_THIS, int interval)
+    int KMSDRM_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 {
 
     if (!_this->egl_data) {
@@ -84,7 +84,7 @@ SDL_EGL_CreateContext_impl(KMSDRM)
     return 0;
 }
 
-int KMSDRM_GLES_SwapWindow(_THIS, SDL_Window *window)
+int KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *windata = window->driverdata;
     SDL_DisplayData *dispdata = SDL_GetDisplayDriverDataForWindow(window);
@@ -95,6 +95,13 @@ int KMSDRM_GLES_SwapWindow(_THIS, SDL_Window *window)
     /* Always wait for the previous issued flip before issuing a new one,
        even if you do async flips. */
     uint32_t flip_flags = DRM_MODE_PAGE_FLIP_EVENT;
+
+    /* Skip the swap if we've switched away to another VT */
+    if (windata->egl_surface == EGL_NO_SURFACE) {
+        /* Wait a bit, throttling to ~100 FPS */
+        SDL_Delay(10);
+        return 0;
+    }
 
     /* Recreate the GBM / EGL surfaces if the display mode has changed */
     if (windata->egl_surface_dirty) {
@@ -116,7 +123,7 @@ int KMSDRM_GLES_SwapWindow(_THIS, SDL_Window *window)
 
     windata->bo = windata->next_bo;
 
-    /* Mark a buffer to becume the next front buffer.
+    /* Mark a buffer to become the next front buffer.
        This won't happen until pagelip completes. */
     if (!(_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display,
                                           windata->egl_surface))) {
@@ -135,7 +142,7 @@ int KMSDRM_GLES_SwapWindow(_THIS, SDL_Window *window)
 
     /* Get an actual usable fb for the next front buffer. */
     fb_info = KMSDRM_FBFromBO(_this, windata->next_bo);
-    if (fb_info == NULL) {
+    if (!fb_info) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not get a framebuffer");
         return 0;
     }

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -12,27 +12,24 @@
 
 /* Program to test hotplugging of audio devices */
 
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
+#include "testutils.h"
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
 #include <stdlib.h>
 
 #ifdef HAVE_SIGNAL_H
 #include <signal.h>
 #endif
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test.h>
-#include "testutils.h"
-
 static SDL_AudioSpec spec;
 static Uint8 *sound = NULL; /* Pointer to wave data */
 static Uint32 soundlen = 0; /* Length of wave data */
-
-static int posindex = 0;
-static Uint32 positions[64];
 
 static SDLTest_CommonState *state;
 
@@ -46,31 +43,6 @@ quit(int rc)
     if (rc != 0) {
         exit(rc);
     }
-}
-
-static void SDLCALL
-fillerup(void *_pos, Uint8 *stream, int len)
-{
-    Uint32 pos = *((Uint32 *)_pos);
-    Uint8 *waveptr;
-    int waveleft;
-
-    /* Set up the pointers */
-    waveptr = sound + pos;
-    waveleft = soundlen - pos;
-
-    /* Go! */
-    while (waveleft <= len) {
-        SDL_memcpy(stream, waveptr, waveleft);
-        stream += waveleft;
-        len -= waveleft;
-        waveptr = sound;
-        waveleft = soundlen;
-        pos = 0;
-    }
-    SDL_memcpy(stream, waveptr, len);
-    pos += len;
-    *((Uint32 *)_pos) = pos;
 }
 
 static int done = 0;
@@ -97,37 +69,39 @@ static void iteration(void)
                 done = 1;
             }
         } else if (e.type == SDL_EVENT_AUDIO_DEVICE_ADDED) {
-            int index = e.adevice.which;
-            int iscapture = e.adevice.iscapture;
-            const char *name = SDL_GetAudioDeviceName(index, iscapture);
-            if (name != NULL) {
-                SDL_Log("New %s audio device at index %u: %s\n", devtypestr(iscapture), (unsigned int)index, name);
+            const SDL_AudioDeviceID which = (SDL_AudioDeviceID) e.adevice.which;
+            const SDL_bool iscapture = e.adevice.iscapture ? SDL_TRUE : SDL_FALSE;
+            char *name = SDL_GetAudioDeviceName(which);
+            if (name) {
+                SDL_Log("New %s audio device at id %u: %s", devtypestr(iscapture), (unsigned int)which, name);
             } else {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Got new %s device at index %u, but failed to get the name: %s\n",
-                             devtypestr(iscapture), (unsigned int)index, SDL_GetError());
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Got new %s device, id %u, but failed to get the name: %s",
+                             devtypestr(iscapture), (unsigned int)which, SDL_GetError());
                 continue;
             }
             if (!iscapture) {
-                positions[posindex] = 0;
-                spec.userdata = &positions[posindex++];
-                spec.callback = fillerup;
-                dev = SDL_OpenAudioDevice(name, 0, &spec, NULL, 0);
-                if (!dev) {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open '%s': %s\n", name, SDL_GetError());
+                SDL_AudioStream *stream = SDL_OpenAudioDeviceStream(which, &spec, NULL, NULL);
+                if (!stream) {
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to create/bind an audio stream to %u ('%s'): %s", (unsigned int) which, name, SDL_GetError());
                 } else {
-                    SDL_Log("Opened '%s' as %u\n", name, (unsigned int)dev);
-                    SDL_PlayAudioDevice(dev);
+                    SDL_Log("Opened '%s' as %u\n", name, (unsigned int) which);
+                    /* !!! FIXME: laziness, this used to loop the audio, but we'll just play it once for now on each connect. */
+                    SDL_PutAudioStreamData(stream, sound, soundlen);
+                    SDL_FlushAudioStream(stream);
+                    SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
+                    /* !!! FIXME: this is leaking the stream for now. We'll wire it up to a dictionary or whatever later. */
                 }
             }
+            SDL_free(name);
         } else if (e.type == SDL_EVENT_AUDIO_DEVICE_REMOVED) {
             dev = (SDL_AudioDeviceID)e.adevice.which;
             SDL_Log("%s device %u removed.\n", devtypestr(e.adevice.iscapture), (unsigned int)dev);
-            SDL_CloseAudioDevice(dev);
+            /* !!! FIXME: we need to keep track of our streams and destroy them here. */
         }
     }
 }
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 static void loop(void)
 {
     if (done)
@@ -145,7 +119,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -180,7 +154,7 @@ int main(int argc, char *argv[])
 
     /* Some targets (Mac CoreAudio) need an event queue for audio hotplug, so make and immediately hide a window. */
     window = SDL_CreateWindow("testaudiohotplug", 640, 480, 0);
-    if (window == NULL) {
+    if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateWindow failed: %s\n", SDL_GetError());
         quit(1);
     }
@@ -188,13 +162,13 @@ int main(int argc, char *argv[])
 
     filename = GetResourceFilename(filename, "sample.wav");
 
-    if (filename == NULL) {
+    if (!filename) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         quit(1);
     }
 
     /* Load the wave file into memory */
-    if (SDL_LoadWAV(filename, &spec, &sound, &soundlen) == NULL) {
+    if (SDL_LoadWAV(filename, &spec, &sound, &soundlen) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename, SDL_GetError());
         quit(1);
     }
@@ -220,7 +194,7 @@ int main(int argc, char *argv[])
     SDL_Log("Select a driver with the SDL_AUDIO_DRIVER environment variable.\n");
     SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {

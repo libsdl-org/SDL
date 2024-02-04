@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -43,10 +43,10 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
 {
     int posted;
 
-    if (window == NULL) {
+    if (!window) {
         return 0;
     }
-    if (window->is_destroying) {
+    if (window->is_destroying && windowevent != SDL_EVENT_WINDOW_DESTROYED) {
         return 0;
     }
     switch (windowevent) {
@@ -62,12 +62,20 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         }
         window->flags |= SDL_WINDOW_HIDDEN;
         break;
+    case SDL_EVENT_WINDOW_EXPOSED:
+        window->flags &= ~SDL_WINDOW_OCCLUDED;
+        break;
     case SDL_EVENT_WINDOW_MOVED:
         window->undefined_x = SDL_FALSE;
         window->undefined_y = SDL_FALSE;
         if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
             window->windowed.x = data1;
             window->windowed.y = data2;
+
+            if (!(window->flags & SDL_WINDOW_MAXIMIZED) && !window->state_not_floating) {
+                window->floating.x = data1;
+                window->floating.y = data2;
+            }
         }
         if (data1 == window->x && data2 == window->y) {
             return 0;
@@ -79,6 +87,11 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
             window->windowed.w = data1;
             window->windowed.h = data2;
+
+            if (!(window->flags & SDL_WINDOW_MAXIMIZED) && !window->state_not_floating) {
+                window->floating.w = data1;
+                window->floating.h = data2;
+            }
         }
         if (data1 == window->w && data2 == window->h) {
             SDL_CheckWindowPixelSizeChanged(window);
@@ -144,6 +157,24 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         }
         window->last_displayID = (SDL_DisplayID)data1;
         break;
+    case SDL_EVENT_WINDOW_OCCLUDED:
+        if (window->flags & SDL_WINDOW_OCCLUDED) {
+            return 0;
+        }
+        window->flags |= SDL_WINDOW_OCCLUDED;
+        break;
+    case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:
+        if (window->flags & SDL_WINDOW_FULLSCREEN) {
+            return 0;
+        }
+        window->flags |= SDL_WINDOW_FULLSCREEN;
+        break;
+    case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:
+        if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+            return 0;
+        }
+        window->flags &= ~SDL_WINDOW_FULLSCREEN;
+        break;
     default:
         break;
     }
@@ -162,7 +193,8 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         if (windowevent == SDL_EVENT_WINDOW_MOVED ||
             windowevent == SDL_EVENT_WINDOW_RESIZED ||
             windowevent == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED ||
-            windowevent == SDL_EVENT_WINDOW_EXPOSED) {
+            windowevent == SDL_EVENT_WINDOW_EXPOSED ||
+            windowevent == SDL_EVENT_WINDOW_OCCLUDED) {
             SDL_FilterEvents(RemoveSupercededWindowEvents, &event);
         }
         posted = (SDL_PushEvent(&event) > 0);
@@ -212,11 +244,11 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         break;
     }
 
-    if (windowevent == SDL_EVENT_WINDOW_CLOSE_REQUESTED && window->parent == NULL) {
+    if (windowevent == SDL_EVENT_WINDOW_CLOSE_REQUESTED && !window->parent) {
         int toplevel_count = 0;
         SDL_Window *n;
-        for (n = SDL_GetVideoDevice()->windows; n != NULL; n = n->next) {
-            if (n->parent == NULL) {
+        for (n = SDL_GetVideoDevice()->windows; n; n = n->next) {
+            if (!n->parent) {
                 ++toplevel_count;
             }
         }

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,7 +26,7 @@ int SDL_GUIDToString(SDL_GUID guid, char *pszGUID, int cbGUID)
     static const char k_rgchHexToASCII[] = "0123456789abcdef";
     int i;
 
-    if (pszGUID == NULL) {
+    if (!pszGUID) {
         return SDL_InvalidParamError("pszGUID");
     }
     if (cbGUID <= 0) {

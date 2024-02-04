@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,20 +30,23 @@ static SDLTest_TestSuiteReference *testSuites[] = {
     &intrinsicsTestSuite,
     &joystickTestSuite,
     &keyboardTestSuite,
+    &logTestSuite,
     &mainTestSuite,
     &mathTestSuite,
     &mouseTestSuite,
+    &penTestSuite,
     &pixelsTestSuite,
     &platformTestSuite,
+    &propertiesTestSuite,
     &rectTestSuite,
     &renderTestSuite,
     &rwopsTestSuite,
     &sdltestTestSuite,
     &stdlibTestSuite,
     &surfaceTestSuite,
-    &syswmTestSuite,
     &timerTestSuite,
     &videoTestSuite,
+    &subsystemsTestSuite, /* run last, not interfere with other test enviroment */
     NULL
 };
 
@@ -71,7 +74,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -131,7 +134,7 @@ int main(int argc, char *argv[])
             SDL_Log("Test suite: %s", testSuite->name);
             for (testCounter = 0; testSuite->testCases[testCounter]; ++testCounter) {
                 const SDLTest_TestCaseReference *testCase = testSuite->testCases[testCounter];
-                SDL_Log("      test: %s", testCase->name);
+                SDL_Log("      test: %s%s", testCase->name, testCase->enabled ? "" : " (disabled)");
             }
         }
         return 0;

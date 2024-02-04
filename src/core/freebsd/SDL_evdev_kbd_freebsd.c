@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -87,7 +87,7 @@ static void kbd_cleanup(void)
 {
     struct mouse_info mData;
     SDL_EVDEV_keyboard_state *kbd = kbd_cleanup_state;
-    if (kbd == NULL) {
+    if (!kbd) {
         return;
     }
     kbd_cleanup_state = NULL;
@@ -155,7 +155,7 @@ static void kbd_unregister_emerg_cleanup()
             continue;
         }
 
-        /* Check if action installed and not modifed */
+        /* Check if action installed and not modified */
         if (!(cur_action.sa_flags & SA_SIGINFO) || cur_action.sa_sigaction != &kbd_cleanup_signal_action) {
             continue;
         }
@@ -178,7 +178,7 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
 {
     int tabidx;
 
-    if (kbd_cleanup_state != NULL) {
+    if (kbd_cleanup_state) {
         return;
     }
     kbd_cleanup_state = kbd;
@@ -220,8 +220,7 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
     }
 }
 
-SDL_EVDEV_keyboard_state *
-SDL_EVDEV_kbd_init(void)
+SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
 {
     SDL_EVDEV_keyboard_state *kbd;
     struct mouse_info mData;
@@ -231,7 +230,7 @@ SDL_EVDEV_kbd_init(void)
     SDL_zero(mData);
     mData.operation = MOUSE_HIDE;
     kbd = (SDL_EVDEV_keyboard_state *)SDL_calloc(1, sizeof(SDL_EVDEV_keyboard_state));
-    if (kbd == NULL) {
+    if (!kbd) {
         return NULL;
     }
 
@@ -297,7 +296,7 @@ void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *kbd)
 {
     struct mouse_info mData;
 
-    if (kbd == NULL) {
+    if (!kbd) {
         return;
     }
     SDL_zero(mData);
@@ -319,6 +318,18 @@ void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *kbd)
     }
 
     SDL_free(kbd);
+}
+
+void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, SDL_bool muted)
+{
+}
+
+void SDL_EVDEV_kbd_set_vt_switch_callbacks(SDL_EVDEV_keyboard_state *state, void (*release_callback)(void*), void *release_callback_data, void (*acquire_callback)(void*), void *acquire_callback_data)
+{
+}
+
+void SDL_EVDEV_kbd_update(SDL_EVDEV_keyboard_state *state)
+{
 }
 
 /*
@@ -475,7 +486,7 @@ void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, 
     unsigned int final_key_state;
     unsigned int map_from_key_sym;
 
-    if (kbd == NULL) {
+    if (!kbd) {
         return;
     }
 

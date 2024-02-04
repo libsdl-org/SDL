@@ -206,20 +206,28 @@
     <ClCompile Include="..\..\..\test\testautomation_intrinsics.c" />
     <ClCompile Include="..\..\..\test\testautomation_joystick.c" />
     <ClCompile Include="..\..\..\test\testautomation_keyboard.c" />
+    <ClCompile Include="..\..\..\test\testautomation_log.c" />
     <ClCompile Include="..\..\..\test\testautomation_main.c" />
     <ClCompile Include="..\..\..\test\testautomation_math.c" />
     <ClCompile Include="..\..\..\test\testautomation_mouse.c" />
+    <ClCompile Include="..\..\..\test\testautomation_pen.c">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)\..\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)\..\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\..\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\..\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="..\..\..\test\testautomation_pixels.c" />
     <ClCompile Include="..\..\..\test\testautomation_platform.c" />
+    <ClCompile Include="..\..\..\test\testautomation_properties.c" />
     <ClCompile Include="..\..\..\test\testautomation_rect.c" />
     <ClCompile Include="..\..\..\test\testautomation_render.c" />
     <ClCompile Include="..\..\..\test\testautomation_rwops.c" />
     <ClCompile Include="..\..\..\test\testautomation_sdltest.c" />
     <ClCompile Include="..\..\..\test\testautomation_stdlib.c" />
     <ClCompile Include="..\..\..\test\testautomation_surface.c" />
-    <ClCompile Include="..\..\..\test\testautomation_syswm.c" />
     <ClCompile Include="..\..\..\test\testautomation_timer.c" />
     <ClCompile Include="..\..\..\test\testautomation_video.c" />
+    <ClCompile Include="..\..\..\test\testautomation_subsystems.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\test\testautomation_suites.h" />

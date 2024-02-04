@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -46,10 +46,9 @@ enum blit_features
 };
 
 #ifdef SDL_ALTIVEC_BLITTERS
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
 #include <sys/sysctl.h>
-static size_t
-GetL3CacheSize(void)
+static size_t GetL3CacheSize(void)
 {
     const char key[] = "hw.l3cachesize";
     u_int64_t result = 0;
@@ -63,15 +62,14 @@ GetL3CacheSize(void)
     return result;
 }
 #else
-static size_t
-GetL3CacheSize(void)
+static size_t GetL3CacheSize(void)
 {
     /* XXX: Just guess G4 */
     return 2097152;
 }
-#endif /* __MACOS__ */
+#endif /* SDL_PLATFORM_MACOS */
 
-#if (defined(__MACOS__) && (__GNUC__ < 4))
+#if (defined(SDL_PLATFORM_MACOS) && (__GNUC__ < 4))
 #define VECUINT8_LITERAL(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) \
     (vector unsigned char)(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p)
 #define VECUINT16_LITERAL(a, b, c, d, e, f, g, h) \
@@ -167,7 +165,7 @@ static vector unsigned char calc_swizzle32(const SDL_PixelFormat *srcfmt, const 
     return (vswiz);
 }
 
-#if defined(__powerpc__) && (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
 /* reorder bytes for PowerPC little endian */
 static vector unsigned char reorder_ppc64le_vec(vector unsigned char vpermute)
 {
@@ -175,7 +173,7 @@ static vector unsigned char reorder_ppc64le_vec(vector unsigned char vpermute)
        The LE transformation for vec_perm has an implicit assumption
        that the permutation is being used to reorder vector elements,
        not to reorder bytes within those elements.
-       Unfortunatly the result order is not the expected one for powerpc
+       Unfortunately the result order is not the expected one for powerpc
        little endian when the two first vector parameters of vec_perm are
        not of type 'vector char'. This is because the numbering from the
        left for BE, and numbering from the right for LE, produces a
@@ -195,8 +193,8 @@ static vector unsigned char reorder_ppc64le_vec(vector unsigned char vpermute)
 }
 #endif
 
-static void Blit_RGB888_RGB565(SDL_BlitInfo *info);
-static void Blit_RGB888_RGB565Altivec(SDL_BlitInfo *info)
+static void Blit_XRGB8888_RGB565(SDL_BlitInfo *info);
+static void Blit_XRGB8888_RGB565Altivec(SDL_BlitInfo *info)
 {
     int height = info->dst_h;
     Uint8 *src = (Uint8 *)info->src;
@@ -618,6 +616,11 @@ static void Blit32to32KeyAltivec(SDL_BlitInfo *info)
     ((unsigned int *)(char *)&vrgbmask)[0] = rgbmask;
     vrgbmask = vec_splat(vrgbmask, 0);
 
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    /* reorder bytes for PowerPC little endian */
+    vpermute = reorder_ppc64le_vec(vpermute);
+#endif
+
     while (height--) {
 #define ONE_PIXEL_BLEND(condition, widthvar)                    \
     if (copy_alpha) {                                           \
@@ -667,10 +670,6 @@ static void Blit32to32KeyAltivec(SDL_BlitInfo *info)
                 /* vsel is set for items that match the key */
                 vsel = (vector unsigned char)vec_and(vs, vrgbmask);
                 vsel = (vector unsigned char)vec_cmpeq(vs, vckey);
-#if defined(__powerpc__) && (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-                /* reorder bytes for PowerPC little endian */
-                vpermute = reorder_ppc64le_vec(vpermute);
-#endif
                 /* permute the src vec to the dest format */
                 vs = vec_perm(vs, valpha, vpermute);
                 /* load the destination vec */
@@ -718,6 +717,11 @@ static void ConvertAltivec32to32_noprefetch(SDL_BlitInfo *info)
     SDL_assert(srcfmt->BytesPerPixel == 4);
     SDL_assert(dstfmt->BytesPerPixel == 4);
 
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    /* reorder bytes for PowerPC little endian */
+    vpermute = reorder_ppc64le_vec(vpermute);
+#endif
+
     while (height--) {
         vector unsigned char valigner;
         vector unsigned int vbits;
@@ -749,10 +753,6 @@ static void ConvertAltivec32to32_noprefetch(SDL_BlitInfo *info)
             src += 4;
             width -= 4;
             vbits = vec_perm(vbits, voverflow, valigner); /* src is ready. */
-#if defined(__powerpc__) && (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            /* reorder bytes for PowerPC little endian */
-            vpermute = reorder_ppc64le_vec(vpermute);
-#endif
             vbits = vec_perm(vbits, vzero, vpermute); /* swizzle it. */
             vec_st(vbits, 0, dst);                    /* store it back out. */
             dst += 4;
@@ -803,6 +803,11 @@ static void ConvertAltivec32to32_prefetch(SDL_BlitInfo *info)
     SDL_assert(srcfmt->BytesPerPixel == 4);
     SDL_assert(dstfmt->BytesPerPixel == 4);
 
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    /* reorder bytes for PowerPC little endian */
+    vpermute = reorder_ppc64le_vec(vpermute);
+#endif
+
     while (height--) {
         vector unsigned char valigner;
         vector unsigned int vbits;
@@ -842,10 +847,6 @@ static void ConvertAltivec32to32_prefetch(SDL_BlitInfo *info)
             src += 4;
             width -= 4;
             vbits = vec_perm(vbits, voverflow, valigner); /* src is ready. */
-#if defined(__powerpc__) && (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            /* reorder bytes for PowerPC little endian */
-            vpermute = reorder_ppc64le_vec(vpermute);
-#endif
             vbits = vec_perm(vbits, vzero, vpermute); /* swizzle it. */
             vec_st(vbits, 0, dst);                    /* store it back out. */
             dst += 4;
@@ -905,9 +906,9 @@ static enum blit_features GetBlitFeatures(void)
 #endif
 
 #ifdef SDL_ARM_SIMD_BLITTERS
-void Blit_BGR888_RGB888ARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint32_t *src, int32_t src_stride);
+void Blit_XBGR8888_XRGB8888ARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint32_t *src, int32_t src_stride);
 
-static void Blit_BGR888_RGB888ARMSIMD(SDL_BlitInfo *info)
+static void Blit_XBGR8888_XRGB8888ARMSIMD(SDL_BlitInfo *info)
 {
     int32_t width = info->dst_w;
     int32_t height = info->dst_h;
@@ -916,12 +917,12 @@ static void Blit_BGR888_RGB888ARMSIMD(SDL_BlitInfo *info)
     uint32_t *srcp = (uint32_t *)info->src;
     int32_t srcstride = width + (info->src_skip >> 2);
 
-    Blit_BGR888_RGB888ARMSIMDAsm(width, height, dstp, dststride, srcp, srcstride);
+    Blit_XBGR8888_XRGB8888ARMSIMDAsm(width, height, dstp, dststride, srcp, srcstride);
 }
 
-void Blit_RGB444_RGB888ARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint16_t *src, int32_t src_stride);
+void Blit_RGB444_XRGB8888ARMSIMDAsm(int32_t w, int32_t h, uint32_t *dst, int32_t dst_stride, uint16_t *src, int32_t src_stride);
 
-static void Blit_RGB444_RGB888ARMSIMD(SDL_BlitInfo *info)
+static void Blit_RGB444_XRGB8888ARMSIMD(SDL_BlitInfo *info)
 {
     int32_t width = info->dst_w;
     int32_t height = info->dst_h;
@@ -930,7 +931,7 @@ static void Blit_RGB444_RGB888ARMSIMD(SDL_BlitInfo *info)
     uint16_t *srcp = (uint16_t *)info->src;
     int32_t srcstride = width + (info->src_skip >> 1);
 
-    Blit_RGB444_RGB888ARMSIMDAsm(width, height, dstp, dststride, srcp, srcstride);
+    Blit_RGB444_XRGB8888ARMSIMDAsm(width, height, dstp, dststride, srcp, srcstride);
 }
 #endif
 
@@ -950,7 +951,7 @@ static void Blit_RGB444_RGB888ARMSIMD(SDL_BlitInfo *info)
                       (((src)&0x0000E000) >> 11) | \
                       (((src)&0x000000C0) >> 6));  \
     }
-static void Blit_RGB888_index8(SDL_BlitInfo *info)
+static void Blit_XRGB8888_index8(SDL_BlitInfo *info)
 {
 #ifndef USE_DUFFS_LOOP
     int c;
@@ -970,7 +971,7 @@ static void Blit_RGB888_index8(SDL_BlitInfo *info)
     dstskip = info->dst_skip;
     map = info->table;
 
-    if (map == NULL) {
+    if (!map) {
         while (height--) {
 #ifdef USE_DUFFS_LOOP
             /* *INDENT-OFF* */ /* clang-format off */
@@ -1084,7 +1085,7 @@ static void Blit_RGB101010_index8(SDL_BlitInfo *info)
     dstskip = info->dst_skip;
     map = info->table;
 
-    if (map == NULL) {
+    if (!map) {
         while (height--) {
 #ifdef USE_DUFFS_LOOP
             /* *INDENT-OFF* */ /* clang-format off */
@@ -1190,7 +1191,7 @@ static void Blit_RGB101010_index8(SDL_BlitInfo *info)
                            (((src[LO]) & 0x000000F8) >> 3);    \
     }
 #endif
-static void Blit_RGB888_RGB555(SDL_BlitInfo *info)
+static void Blit_XRGB8888_RGB555(SDL_BlitInfo *info)
 {
 #ifndef USE_DUFFS_LOOP
     int c;
@@ -1320,7 +1321,7 @@ static void Blit_RGB888_RGB555(SDL_BlitInfo *info)
                            (((src[LO]) & 0x000000F8) >> 3);    \
     }
 #endif
-static void Blit_RGB888_RGB565(SDL_BlitInfo *info)
+static void Blit_XRGB8888_RGB565(SDL_BlitInfo *info)
 {
 #ifndef USE_DUFFS_LOOP
     int c;
@@ -2108,7 +2109,7 @@ static void BlitNto1(SDL_BlitInfo *info)
     srcfmt = info->src_fmt;
     srcbpp = srcfmt->BytesPerPixel;
 
-    if (map == NULL) {
+    if (!map) {
         while (height--) {
 #ifdef USE_DUFFS_LOOP
             /* *INDENT-OFF* */ /* clang-format off */
@@ -2326,8 +2327,8 @@ static void BlitNtoN(SDL_BlitInfo *info)
 #if HAVE_FAST_WRITE_INT8
     /* Blit with permutation: 4->4 */
     if (srcbpp == 4 && dstbpp == 4 &&
-        srcfmt->format != SDL_PIXELFORMAT_ARGB2101010 &&
-        dstfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
+        !SDL_ISPIXELFORMAT_10BIT(srcfmt->format) &&
+        !SDL_ISPIXELFORMAT_10BIT(dstfmt->format)) {
 
         /* Find the appropriate permutation */
         int alpha_channel, p0, p1, p2, p3;
@@ -2355,7 +2356,7 @@ static void BlitNtoN(SDL_BlitInfo *info)
 
     /* Blit with permutation: 4->3 */
     if (srcbpp == 4 && dstbpp == 3 &&
-        srcfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
+        !SDL_ISPIXELFORMAT_10BIT(srcfmt->format)) {
 
         /* Find the appropriate permutation */
         int p0, p1, p2, p3;
@@ -2381,7 +2382,7 @@ static void BlitNtoN(SDL_BlitInfo *info)
 #if HAVE_FAST_WRITE_INT8
     /* Blit with permutation: 3->4 */
     if (srcbpp == 3 && dstbpp == 4 &&
-        dstfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
+        !SDL_ISPIXELFORMAT_10BIT(dstfmt->format)) {
 
         /* Find the appropriate permutation */
         int alpha_channel, p0, p1, p2, p3;
@@ -2444,8 +2445,8 @@ static void BlitNtoNCopyAlpha(SDL_BlitInfo *info)
 #if HAVE_FAST_WRITE_INT8
     /* Blit with permutation: 4->4 */
     if (srcbpp == 4 && dstbpp == 4 &&
-        srcfmt->format != SDL_PIXELFORMAT_ARGB2101010 &&
-        dstfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
+        !SDL_ISPIXELFORMAT_10BIT(srcfmt->format) &&
+        !SDL_ISPIXELFORMAT_10BIT(dstfmt->format)) {
 
         /* Find the appropriate permutation */
         int p0, p1, p2, p3;
@@ -2504,7 +2505,7 @@ static void BlitNto1Key(SDL_BlitInfo *info)
     srcbpp = srcfmt->BytesPerPixel;
     ckey &= rgbmask;
 
-    if (palmap == NULL) {
+    if (!palmap) {
         while (height--) {
             /* *INDENT-OFF* */ /* clang-format off */
             DUFFS_LOOP(
@@ -2650,8 +2651,8 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
 #if HAVE_FAST_WRITE_INT8
     /* Blit with permutation: 4->4 */
     if (srcbpp == 4 && dstbpp == 4 &&
-        srcfmt->format != SDL_PIXELFORMAT_ARGB2101010 &&
-        dstfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
+        !SDL_ISPIXELFORMAT_10BIT(srcfmt->format) &&
+        !SDL_ISPIXELFORMAT_10BIT(dstfmt->format)) {
 
         /* Find the appropriate permutation */
         int alpha_channel, p0, p1, p2, p3;
@@ -2759,7 +2760,7 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
 
     /* Blit with permutation: 4->3 */
     if (srcbpp == 4 && dstbpp == 3 &&
-        srcfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
+        !SDL_ISPIXELFORMAT_10BIT(srcfmt->format)) {
 
         /* Find the appropriate permutation */
         int p0, p1, p2, p3;
@@ -2788,7 +2789,7 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
 #if HAVE_FAST_WRITE_INT8
     /* Blit with permutation: 3->4 */
     if (srcbpp == 3 && dstbpp == 4 &&
-        dstfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
+        !SDL_ISPIXELFORMAT_10BIT(dstfmt->format)) {
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
         Uint8 k0 = ckey & 0xFF;
@@ -2908,8 +2909,8 @@ static void BlitNtoNKeyCopyAlpha(SDL_BlitInfo *info)
 #if HAVE_FAST_WRITE_INT8
     /* Blit with permutation: 4->4 */
     if (srcbpp == 4 && dstbpp == 4 &&
-        srcfmt->format != SDL_PIXELFORMAT_ARGB2101010 &&
-        dstfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
+        !SDL_ISPIXELFORMAT_10BIT(srcfmt->format) &&
+        !SDL_ISPIXELFORMAT_10BIT(dstfmt->format)) {
 
         /* Find the appropriate permutation */
         int p0, p1, p2, p3;
@@ -3221,7 +3222,7 @@ static const struct blit_table normal_blit_2[] = {
 #endif
 #ifdef SDL_ARM_SIMD_BLITTERS
     { 0x00000F00, 0x000000F0, 0x0000000F, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
-      BLIT_FEATURE_HAS_ARM_SIMD, Blit_RGB444_RGB888ARMSIMD, NO_ALPHA | COPY_ALPHA },
+      BLIT_FEATURE_HAS_ARM_SIMD, Blit_RGB444_XRGB8888ARMSIMD, NO_ALPHA | COPY_ALPHA },
 #endif
 #if SDL_HAVE_BLIT_N_RGB565
     { 0x0000F800, 0x000007E0, 0x0000001F, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
@@ -3288,11 +3289,11 @@ static const struct blit_table normal_blit_4[] = {
       BLIT_FEATURE_HAS_ALTIVEC, ConvertAltivec32to32_prefetch, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
     /* has-altivec */
     { 0x00000000, 0x00000000, 0x00000000, 2, 0x0000F800, 0x000007E0, 0x0000001F,
-      BLIT_FEATURE_HAS_ALTIVEC, Blit_RGB888_RGB565Altivec, NO_ALPHA },
+      BLIT_FEATURE_HAS_ALTIVEC, Blit_XRGB8888_RGB565Altivec, NO_ALPHA },
 #endif
 #ifdef SDL_ARM_SIMD_BLITTERS
     { 0x000000FF, 0x0000FF00, 0x00FF0000, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
-      BLIT_FEATURE_HAS_ARM_SIMD, Blit_BGR888_RGB888ARMSIMD, NO_ALPHA | COPY_ALPHA },
+      BLIT_FEATURE_HAS_ARM_SIMD, Blit_XBGR8888_XRGB8888ARMSIMD, NO_ALPHA | COPY_ALPHA },
 #endif
     /* 4->3 with same rgb triplet */
     { 0x000000FF, 0x0000FF00, 0x00FF0000, 3, 0x000000FF, 0x0000FF00, 0x00FF0000,
@@ -3319,9 +3320,9 @@ static const struct blit_table normal_blit_4[] = {
           SET_ALPHA | COPY_ALPHA },
     /* RGB 888 and RGB 565 */
     { 0x00FF0000, 0x0000FF00, 0x000000FF, 2, 0x0000F800, 0x000007E0, 0x0000001F,
-      0, Blit_RGB888_RGB565, NO_ALPHA },
+      0, Blit_XRGB8888_RGB565, NO_ALPHA },
     { 0x00FF0000, 0x0000FF00, 0x000000FF, 2, 0x00007C00, 0x000003E0, 0x0000001F,
-      0, Blit_RGB888_RGB555, NO_ALPHA },
+      0, Blit_XRGB8888_RGB555, NO_ALPHA },
     /* Default for 32-bit RGB source, used if no other blitter matches */
     { 0, 0, 0, 0, 0, 0, 0, 0, BlitNtoN, 0 }
 };
@@ -3333,8 +3334,7 @@ static const struct blit_table *const normal_blit[] = {
 /* Mask matches table, or table entry is zero */
 #define MASKOK(x, y) (((x) == (y)) || ((y) == 0x00000000))
 
-SDL_BlitFunc
-SDL_CalculateBlitN(SDL_Surface *surface)
+SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
 {
     SDL_PixelFormat *srcfmt;
     SDL_PixelFormat *dstfmt;
@@ -3359,7 +3359,7 @@ SDL_CalculateBlitN(SDL_Surface *surface)
                 (srcfmt->Rmask == 0x00FF0000) &&
                 (srcfmt->Gmask == 0x0000FF00) &&
                 (srcfmt->Bmask == 0x000000FF)) {
-                blitfun = Blit_RGB888_index8;
+                blitfun = Blit_XRGB8888_index8;
             } else if ((srcfmt->BytesPerPixel == 4) &&
                        (srcfmt->Rmask == 0x3FF00000) &&
                        (srcfmt->Gmask == 0x000FFC00) &&
@@ -3374,22 +3374,25 @@ SDL_CalculateBlitN(SDL_Surface *surface)
             if (dstfmt->Amask) {
                 a_need = srcfmt->Amask ? COPY_ALPHA : SET_ALPHA;
             }
-            table = normal_blit[srcfmt->BytesPerPixel - 1];
-            for (which = 0; table[which].dstbpp; ++which) {
-                if (MASKOK(srcfmt->Rmask, table[which].srcR) &&
-                    MASKOK(srcfmt->Gmask, table[which].srcG) &&
-                    MASKOK(srcfmt->Bmask, table[which].srcB) &&
-                    MASKOK(dstfmt->Rmask, table[which].dstR) &&
-                    MASKOK(dstfmt->Gmask, table[which].dstG) &&
-                    MASKOK(dstfmt->Bmask, table[which].dstB) &&
-                    dstfmt->BytesPerPixel == table[which].dstbpp &&
-                    (a_need & table[which].alpha) == a_need &&
-                    ((table[which].blit_features & GetBlitFeatures()) ==
-                     table[which].blit_features)) {
-                    break;
+            if (srcfmt->BytesPerPixel > 0 &&
+                srcfmt->BytesPerPixel <= SDL_arraysize(normal_blit)) {
+                table = normal_blit[srcfmt->BytesPerPixel - 1];
+                for (which = 0; table[which].dstbpp; ++which) {
+                    if (MASKOK(srcfmt->Rmask, table[which].srcR) &&
+                        MASKOK(srcfmt->Gmask, table[which].srcG) &&
+                        MASKOK(srcfmt->Bmask, table[which].srcB) &&
+                        MASKOK(dstfmt->Rmask, table[which].dstR) &&
+                        MASKOK(dstfmt->Gmask, table[which].dstG) &&
+                        MASKOK(dstfmt->Bmask, table[which].dstB) &&
+                        dstfmt->BytesPerPixel == table[which].dstbpp &&
+                        (a_need & table[which].alpha) == a_need &&
+                        ((table[which].blit_features & GetBlitFeatures()) ==
+                         table[which].blit_features)) {
+                        break;
+                    }
                 }
+                blitfun = table[which].blitfunc;
             }
-            blitfun = table[which].blitfunc;
 
             if (blitfun == BlitNtoN) { /* default C fallback catch-all. Slow! */
                 if (srcfmt->format == SDL_PIXELFORMAT_ARGB2101010) {

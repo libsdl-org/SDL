@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 /**
  *  \file SDL_intrin.h
  *
- *  \brief Header file for CPU intrinsics for SDL
+ *  Header file for CPU intrinsics for SDL
  */
 
 #ifndef SDL_intrin_h_
@@ -64,7 +64,7 @@ _m_prefetch(void *__P)
 #  ifdef __ARM_NEON
 #    define SDL_NEON_INTRINSICS 1
 #    include <arm_neon.h>
-#  elif defined(__WINDOWS__) || defined(__WINRT__) || defined(__GDK__)
+#  elif defined(SDL_PLATFORM_WINDOWS)
 /* Visual Studio doesn't define __ARM_ARCH, but _M_ARM (if set, always 7), and _M_ARM64 (if set, always 1). */
 #    ifdef _M_ARM
 #      define SDL_NEON_INTRINSICS 1

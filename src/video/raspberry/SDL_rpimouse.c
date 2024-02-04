@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -65,13 +65,11 @@ static SDL_Cursor *RPI_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
     SDL_assert(surface->pitch == surface->w * 4);
 
     cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
-    if (cursor == NULL) {
-        SDL_OutOfMemory();
+    if (!cursor) {
         return NULL;
     }
     curdata = (RPI_CursorData *)SDL_calloc(1, sizeof(*curdata));
-    if (curdata == NULL) {
-        SDL_OutOfMemory();
+    if (!curdata) {
         SDL_free(cursor);
         return NULL;
     }
@@ -113,12 +111,12 @@ static int RPI_ShowCursor(SDL_Cursor *cursor)
     const char *env;
 
     mouse = SDL_GetMouse();
-    if (mouse == NULL) {
+    if (!mouse) {
         return -1;
     }
 
     if (cursor != global_cursor) {
-        if (global_cursor != NULL) {
+        if (global_cursor) {
             curdata = (RPI_CursorData *)global_cursor->driverdata;
             if (curdata && curdata->element > DISPMANX_NO_HANDLE) {
                 update = vc_dispmanx_update_start(0);
@@ -133,21 +131,21 @@ static int RPI_ShowCursor(SDL_Cursor *cursor)
         global_cursor = cursor;
     }
 
-    if (cursor == NULL) {
+    if (!cursor) {
         return 0;
     }
 
     curdata = (RPI_CursorData *)cursor->driverdata;
-    if (curdata == NULL) {
+    if (!curdata) {
         return -1;
     }
 
-    if (mouse->focus == NULL) {
+    if (!mouse->focus) {
         return -1;
     }
 
     data = SDL_GetDisplayDriverDataForWindow(mouse->focus);
-    if (data == NULL) {
+    if (!data) {
         return -1;
     }
 
@@ -188,10 +186,10 @@ static void RPI_FreeCursor(SDL_Cursor *cursor)
     DISPMANX_UPDATE_HANDLE_T update;
     RPI_CursorData *curdata;
 
-    if (cursor != NULL) {
+    if (cursor) {
         curdata = (RPI_CursorData *)cursor->driverdata;
 
-        if (curdata != NULL) {
+        if (curdata) {
             if (curdata->element != DISPMANX_NO_HANDLE) {
                 update = vc_dispmanx_update_start(0);
                 SDL_assert(update);
@@ -224,7 +222,7 @@ static int RPI_WarpMouseGlobalGraphically(float x, float y)
     VC_RECT_T src_rect;
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    if (mouse == NULL || mouse->cur_cursor == NULL || mouse->cur_cursor->driverdata == NULL) {
+    if (!mouse || !mouse->cur_cursor || !mouse->cur_cursor->driverdata) {
         return 0;
     }
 
@@ -261,7 +259,7 @@ static int RPI_WarpMouseGlobalGraphically(float x, float y)
         return SDL_SetError("vc_dispmanx_element_change_attributes() failed");
     }
 
-    /* Submit asynchronously, otherwise the peformance suffers a lot */
+    /* Submit asynchronously, otherwise the performance suffers a lot */
     ret = vc_dispmanx_update_submit(update, 0, NULL);
     if (ret != DISPMANX_SUCCESS) {
         return SDL_SetError("vc_dispmanx_update_submit() failed");
@@ -273,7 +271,7 @@ static int RPI_WarpMouseGlobal(float x, float y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    if (mouse == NULL || mouse->cur_cursor == NULL || mouse->cur_cursor->driverdata == NULL) {
+    if (!mouse || !mouse->cur_cursor || !mouse->cur_cursor->driverdata) {
         return 0;
     }
 
@@ -288,7 +286,7 @@ static int RPI_WarpMouse(SDL_Window *window, float x, float y)
     return RPI_WarpMouseGlobal(x, y);
 }
 
-void RPI_InitMouse(_THIS)
+void RPI_InitMouse(SDL_VideoDevice *_this)
 {
     /* FIXME: Using UDEV it should be possible to scan all mice
      * but there's no point in doing so as there's no multimice support...yet!
@@ -305,7 +303,7 @@ void RPI_InitMouse(_THIS)
     SDL_SetDefaultCursor(RPI_CreateDefaultCursor());
 }
 
-void RPI_QuitMouse(_THIS)
+void RPI_QuitMouse(SDL_VideoDevice *_this)
 {
 }
 

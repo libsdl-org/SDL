@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -111,7 +111,8 @@ typedef unsigned int uintptr_t;
 # define SDL_DISABLE_AVX 1
 #endif
 
-/* This is disabled by default to avoid C runtime dependencies and manifest requirements */
+/* This can be disabled to avoid C runtime dependencies and manifest requirements */
+#define HAVE_LIBC
 #ifdef HAVE_LIBC
 /* Useful headers */
 #define HAVE_CTYPE_H 1
@@ -131,7 +132,6 @@ typedef unsigned int uintptr_t;
 #define HAVE_CALLOC 1
 #define HAVE_REALLOC 1
 #define HAVE_FREE 1
-#define HAVE_ALLOCA 1
 #define HAVE_QSORT 1
 #define HAVE_BSEARCH 1
 #define HAVE_ABS 1
@@ -163,6 +163,9 @@ typedef unsigned int uintptr_t;
 #define HAVE__WCSICMP 1
 #define HAVE__WCSNICMP 1
 #define HAVE__WCSDUP 1
+#define HAVE_SSCANF 1
+#define HAVE_VSSCANF 1
+#define HAVE_VSNPRINTF 1
 #define HAVE_ACOS   1
 #define HAVE_ASIN   1
 #define HAVE_ATAN   1
@@ -233,7 +236,7 @@ typedef unsigned int uintptr_t;
 /* Enable various input drivers */
 #define SDL_JOYSTICK_DINPUT 1
 #define SDL_JOYSTICK_HIDAPI 1
-#ifndef __WINRT__
+#ifndef SDL_PLATFORM_WINRT
 #define SDL_JOYSTICK_RAWINPUT   1
 #endif
 #define SDL_JOYSTICK_VIRTUAL    1
@@ -242,7 +245,6 @@ typedef unsigned int uintptr_t;
 #endif
 #define SDL_JOYSTICK_XINPUT 1
 #define SDL_HAPTIC_DINPUT   1
-#define SDL_HAPTIC_XINPUT   1
 
 /* Enable the sensor driver */
 #ifdef HAVE_SENSORSAPI_H
@@ -256,6 +258,7 @@ typedef unsigned int uintptr_t;
 
 /* Enable various threading systems */
 #define SDL_THREAD_GENERIC_COND_SUFFIX 1
+#define SDL_THREAD_GENERIC_RWLOCK_SUFFIX 1
 #define SDL_THREAD_WINDOWS  1
 
 /* Enable various timer systems */

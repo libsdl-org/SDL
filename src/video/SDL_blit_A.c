@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -345,7 +345,7 @@ static void SDL_TARGETING("mmx") BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo *info)
     }
 
     multmask = 0x00FF;
-    multmask <<= (ashift * 2);
+    multmask <<= ((Uint64)ashift * 2);
     multmask2 = 0x00FF00FF00FF00FFULL;
 
     while (height--) {
@@ -1316,8 +1316,7 @@ static void BlitNtoNPixelAlpha(SDL_BlitInfo *info)
     }
 }
 
-SDL_BlitFunc
-SDL_CalculateBlitA(SDL_Surface *surface)
+SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
 {
     SDL_PixelFormat *sf = surface->format;
     SDL_PixelFormat *df = surface->map->dst->format;
@@ -1327,7 +1326,7 @@ SDL_CalculateBlitA(SDL_Surface *surface)
         /* Per-pixel alpha blits */
         switch (df->BytesPerPixel) {
         case 1:
-            if (df->palette != NULL) {
+            if (df->palette) {
                 return BlitNto1PixelAlpha;
             } else {
                 /* RGB332 has no palette ! */
@@ -1398,7 +1397,7 @@ SDL_CalculateBlitA(SDL_Surface *surface)
             /* Per-surface alpha blits */
             switch (df->BytesPerPixel) {
             case 1:
-                if (df->palette != NULL) {
+                if (df->palette) {
                     return BlitNto1SurfaceAlpha;
                 } else {
                     /* RGB332 has no palette ! */
@@ -1453,7 +1452,7 @@ SDL_CalculateBlitA(SDL_Surface *surface)
         if (sf->Amask == 0) {
             if (df->BytesPerPixel == 1) {
 
-                if (df->palette != NULL) {
+                if (df->palette) {
                     return BlitNto1SurfaceAlphaKey;
                 } else {
                     /* RGB332 has no palette ! */

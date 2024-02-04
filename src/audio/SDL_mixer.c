@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* This provides the default mixing callback for the SDL audio routines */
+// This provides the default mixing callback for the SDL audio routines
 
 #include "SDL_sysaudio.h"
 
@@ -77,9 +77,12 @@ static const Uint8 mix8[] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
 
-/* The volume ranges from 0 - 128 */
+// The volume ranges from 0 - 128
 #define ADJUST_VOLUME(type, s, v) ((s) = (type)(((s) * (v)) / SDL_MIX_MAXVOLUME))
 #define ADJUST_VOLUME_U8(s, v)    ((s) = (Uint8)(((((s) - 128) * (v)) / SDL_MIX_MAXVOLUME) + 128))
+
+
+// !!! FIXME: this needs some SIMD magic.
 
 int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
                         Uint32 len, int volume)
@@ -90,7 +93,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
 
     switch (format) {
 
-    case AUDIO_U8:
+    case SDL_AUDIO_U8:
     {
         Uint8 src_sample;
 
@@ -103,7 +106,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         }
     } break;
 
-    case AUDIO_S8:
+    case SDL_AUDIO_S8:
     {
         Sint8 *dst8, *src8;
         Sint8 src_sample;
@@ -128,7 +131,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         }
     } break;
 
-    case AUDIO_S16LSB:
+    case SDL_AUDIO_S16LE:
     {
         Sint16 src1, src2;
         int dst_sample;
@@ -152,7 +155,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         }
     } break;
 
-    case AUDIO_S16MSB:
+    case SDL_AUDIO_S16BE:
     {
         Sint16 src1, src2;
         int dst_sample;
@@ -176,7 +179,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         }
     } break;
 
-    case AUDIO_S32LSB:
+    case SDL_AUDIO_S32LE:
     {
         const Uint32 *src32 = (Uint32 *)src;
         Uint32 *dst32 = (Uint32 *)dst;
@@ -201,7 +204,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         }
     } break;
 
-    case AUDIO_S32MSB:
+    case SDL_AUDIO_S32BE:
     {
         const Uint32 *src32 = (Uint32 *)src;
         Uint32 *dst32 = (Uint32 *)dst;
@@ -226,7 +229,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         }
     } break;
 
-    case AUDIO_F32LSB:
+    case SDL_AUDIO_F32LE:
     {
         const float fmaxvolume = 1.0f / ((float)SDL_MIX_MAXVOLUME);
         const float fvolume = (float)volume;
@@ -234,7 +237,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         float *dst32 = (float *)dst;
         float src1, src2;
         double dst_sample;
-        /* !!! FIXME: are these right? */
+        // !!! FIXME: are these right?
         const double max_audioval = 3.402823466e+38F;
         const double min_audioval = -3.402823466e+38F;
 
@@ -254,7 +257,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         }
     } break;
 
-    case AUDIO_F32MSB:
+    case SDL_AUDIO_F32BE:
     {
         const float fmaxvolume = 1.0f / ((float)SDL_MIX_MAXVOLUME);
         const float fvolume = (float)volume;
@@ -262,7 +265,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         float *dst32 = (float *)dst;
         float src1, src2;
         double dst_sample;
-        /* !!! FIXME: are these right? */
+        // !!! FIXME: are these right?
         const double max_audioval = 3.402823466e+38F;
         const double min_audioval = -3.402823466e+38F;
 
@@ -282,7 +285,7 @@ int SDL_MixAudioFormat(Uint8 *dst, const Uint8 *src, SDL_AudioFormat format,
         }
     } break;
 
-    default: /* If this happens... FIXME! */
+    default: // If this happens... FIXME!
         return SDL_SetError("SDL_MixAudioFormat(): unknown audio format");
     }
 

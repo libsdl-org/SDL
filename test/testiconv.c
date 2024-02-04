@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 
     fname = GetResourceFilename(fname, "utf8.txt");
     file = fopen(fname, "rb");
-    if (file == NULL) {
+    if (!file) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to open %s\n", fname);
         return 1;
     }

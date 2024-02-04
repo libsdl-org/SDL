@@ -1,4 +1,6 @@
 build/
+build-*/
+!build-scripts/
 buildbot/
 /VERSION.txt
 __pycache__
@@ -48,6 +50,9 @@ cmake-build-*
 xcuserdata
 *.xcworkspace
 
+# for Visual Studio Code
+.vscode/
+
 # for Visual C++
 .vs
 Debug
@@ -61,8 +66,7 @@ VisualC/tests/gamepadmap/button.bmp
 VisualC/tests/gamepadmap/gamepadmap.bmp
 VisualC/tests/gamepadmap/gamepadmap_back.bmp
 VisualC/tests/loopwave/sample.wav
-VisualC/tests/testautomation/CompareSurfaces0001_Reference.bmp
-VisualC/tests/testautomation/CompareSurfaces0001_TestOutput.bmp
+VisualC/tests/testautomation/*.bmp
 VisualC/tests/testgamepad/axis.bmp
 VisualC/tests/testgamepad/button.bmp
 VisualC/tests/testgamepad/gamepadmap.bmp
@@ -75,6 +79,7 @@ VisualC/tests/testscale/sample.bmp
 VisualC/tests/testsprite/icon.bmp
 VisualC/tests/testyuv/testyuv.bmp
 VisualC-GDK/**/Layout
+VisualC-GDK/shaders/*.h
 
 # for Android
 android-project/local.properties

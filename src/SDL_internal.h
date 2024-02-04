@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -40,6 +40,17 @@
 #define SDL_VARIABLE_LENGTH_ARRAY
 #endif
 
+#if (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))) || defined(__clang__)
+#define HAVE_GCC_DIAGNOSTIC_PRAGMA 1
+#endif
+
+#ifdef _MSC_VER /* We use constant comparison for generated code */
+#pragma warning(disable : 6326)
+#endif
+
+#ifdef _MSC_VER /* SDL_MAX_SMALL_ALLOC_STACKSIZE is smaller than _ALLOCA_S_THRESHOLD and should be generally safe */
+#pragma warning(disable : 6255)
+#endif
 #define SDL_MAX_SMALL_ALLOC_STACKSIZE          128
 #define SDL_small_alloc(type, count, pisstack) ((*(pisstack) = ((sizeof(type) * (count)) < SDL_MAX_SMALL_ALLOC_STACKSIZE)), (*(pisstack) ? SDL_stack_alloc(type, count) : (type *)SDL_malloc(sizeof(type) * (count))))
 #define SDL_small_free(ptr, isstack) \
@@ -63,7 +74,7 @@
 #define DECLSPEC
 #endif
 
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
 #ifndef _DARWIN_C_SOURCE
 #define _DARWIN_C_SOURCE 1 /* for memset_pattern4() */
 #endif
@@ -197,9 +208,10 @@
 extern "C" {
 #endif
 
-extern DECLSPEC int SDLCALL SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS);
-extern DECLSPEC int SDLCALL SDL_CondWaitTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS);
-extern DECLSPEC int SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS);
+extern DECLSPEC Uint32 SDLCALL SDL_GetNextObjectID(void);
+extern DECLSPEC int SDLCALL SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS);
+extern DECLSPEC int SDLCALL SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS);
+extern DECLSPEC SDL_bool SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

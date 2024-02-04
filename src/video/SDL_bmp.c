@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -71,7 +71,7 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_RWops *src, int isRle8)
 
     /* !!! FIXME: for all these reads, handle error vs eof? handle -2 if non-blocking? */
     for (;;) {
-        if (SDL_RWread(src, &ch, 1) <= 0) {
+        if (!SDL_ReadU8(src, &ch)) {
             return SDL_TRUE;
         }
         /*
@@ -80,7 +80,7 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_RWops *src, int isRle8)
         */
         if (ch) {
             Uint8 pixel;
-            if (SDL_RWread(src, &pixel, 1) <= 0) {
+            if (!SDL_ReadU8(src, &pixel)) {
                 return SDL_TRUE;
             }
             if (isRle8) { /* 256-color bitmap, compressed */
@@ -107,7 +107,7 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_RWops *src, int isRle8)
             | a cursor move, or some absolute data.
             | zero tag may be absolute mode or an escape
             */
-            if (SDL_RWread(src, &ch, 1) <= 0) {
+            if (!SDL_ReadU8(src, &ch)) {
                 return SDL_TRUE;
             }
             switch (ch) {
@@ -118,11 +118,11 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_RWops *src, int isRle8)
             case 1:               /* end of bitmap */
                 return SDL_FALSE; /* success! */
             case 2:               /* delta */
-                if (SDL_RWread(src, &ch, 1) <= 0) {
+                if (!SDL_ReadU8(src, &ch)) {
                     return SDL_TRUE;
                 }
                 ofs += ch;
-                if (SDL_RWread(src, &ch, 1) <= 0) {
+                if (!SDL_ReadU8(src, &ch)) {
                     return SDL_TRUE;
                 }
                 bits -= (ch * pitch);
@@ -132,7 +132,7 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_RWops *src, int isRle8)
                     needsPad = (ch & 1);
                     do {
                         Uint8 pixel;
-                        if (SDL_RWread(src, &pixel, 1) <= 0) {
+                        if (!SDL_ReadU8(src, &pixel)) {
                             return SDL_TRUE;
                         }
                         COPY_PIXEL(pixel);
@@ -141,7 +141,7 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_RWops *src, int isRle8)
                     needsPad = (((ch + 1) >> 1) & 1); /* (ch+1)>>1: bytes size */
                     for (;;) {
                         Uint8 pixel;
-                        if (SDL_RWread(src, &pixel, 1) <= 0) {
+                        if (!SDL_ReadU8(src, &pixel)) {
                             return SDL_TRUE;
                         }
                         COPY_PIXEL(pixel >> 4);
@@ -155,7 +155,7 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_RWops *src, int isRle8)
                     }
                 }
                 /* pad at even boundary */
-                if (needsPad && (SDL_RWread(src, &ch, 1) <= 0)) {
+                if (needsPad && !SDL_ReadU8(src, &ch)) {
                     return SDL_TRUE;
                 }
                 break;
@@ -193,12 +193,10 @@ static void CorrectAlphaChannel(SDL_Surface *surface)
     }
 }
 
-SDL_Surface *
-SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
+SDL_Surface *SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc)
 {
-    SDL_bool was_error;
+    SDL_bool was_error = SDL_TRUE;
     Sint64 fp_offset = 0;
-    int bmpPitch;
     int i, pad;
     SDL_Surface *surface;
     Uint32 Rmask = 0;
@@ -209,7 +207,6 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
     Uint8 *bits;
     Uint8 *top, *end;
     SDL_bool topDown;
-    int ExpandBMP;
     SDL_bool haveRGBMasks = SDL_FALSE;
     SDL_bool haveAlphaMask = SDL_FALSE;
     SDL_bool correctAlpha = SDL_FALSE;
@@ -236,42 +233,45 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
 
     /* Make sure we are passed a valid data source */
     surface = NULL;
-    was_error = SDL_FALSE;
-    if (src == NULL) {
+    if (!src) {
         SDL_InvalidParamError("src");
-        was_error = SDL_TRUE;
         goto done;
     }
 
     /* Read in the BMP file header */
     fp_offset = SDL_RWtell(src);
     if (fp_offset < 0) {
-        was_error = SDL_TRUE;
         goto done;
     }
     SDL_ClearError();
     if (SDL_RWread(src, magic, 2) != 2) {
-        SDL_Error(SDL_EFREAD);
-        was_error = SDL_TRUE;
         goto done;
     }
     if (SDL_strncmp(magic, "BM", 2) != 0) {
         SDL_SetError("File is not a Windows BMP file");
-        was_error = SDL_TRUE;
         goto done;
     }
-    /* bfSize      = */ SDL_ReadLE32(src);
-    /* bfReserved1 = */ SDL_ReadLE16(src);
-    /* bfReserved2 = */ SDL_ReadLE16(src);
-    bfOffBits = SDL_ReadLE32(src);
+    if (!SDL_ReadU32LE(src, NULL /* bfSize */) ||
+        !SDL_ReadU16LE(src, NULL /* bfReserved1 */) ||
+        !SDL_ReadU16LE(src, NULL /* bfReserved2 */) ||
+        !SDL_ReadU32LE(src, &bfOffBits)) {
+        goto done;
+    }
 
     /* Read the Win32 BITMAPINFOHEADER */
-    biSize = SDL_ReadLE32(src);
+    if (!SDL_ReadU32LE(src, &biSize)) {
+        goto done;
+    }
     if (biSize == 12) { /* really old BITMAPCOREHEADER */
-        biWidth = (Uint32)SDL_ReadLE16(src);
-        biHeight = (Uint32)SDL_ReadLE16(src);
-        /* biPlanes = */ SDL_ReadLE16(src);
-        biBitCount = SDL_ReadLE16(src);
+        Uint16 biWidth16, biHeight16;
+        if (!SDL_ReadU16LE(src, &biWidth16) ||
+            !SDL_ReadU16LE(src, &biHeight16) ||
+            !SDL_ReadU16LE(src, NULL /* biPlanes */) ||
+            !SDL_ReadU16LE(src, &biBitCount)) {
+            goto done;
+        }
+        biWidth = biWidth16;
+        biHeight = biHeight16;
         biCompression = BI_RGB;
         /* biSizeImage = 0; */
         /* biXPelsPerMeter = 0; */
@@ -280,16 +280,18 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
         /* biClrImportant = 0; */
     } else if (biSize >= 40) { /* some version of BITMAPINFOHEADER */
         Uint32 headerSize;
-        biWidth = SDL_ReadLE32(src);
-        biHeight = SDL_ReadLE32(src);
-        /* biPlanes = */ SDL_ReadLE16(src);
-        biBitCount = SDL_ReadLE16(src);
-        biCompression = SDL_ReadLE32(src);
-        /* biSizeImage = */ SDL_ReadLE32(src);
-        /* biXPelsPerMeter = */ SDL_ReadLE32(src);
-        /* biYPelsPerMeter = */ SDL_ReadLE32(src);
-        biClrUsed = SDL_ReadLE32(src);
-        /* biClrImportant = */ SDL_ReadLE32(src);
+        if (!SDL_ReadS32LE(src, &biWidth) ||
+            !SDL_ReadS32LE(src, &biHeight) ||
+            !SDL_ReadU16LE(src, NULL /* biPlanes */) ||
+            !SDL_ReadU16LE(src, &biBitCount) ||
+            !SDL_ReadU32LE(src, &biCompression) ||
+            !SDL_ReadU32LE(src, NULL /* biSizeImage */) ||
+            !SDL_ReadU32LE(src, NULL /* biXPelsPerMeter */) ||
+            !SDL_ReadU32LE(src, NULL /* biYPelsPerMeter */) ||
+            !SDL_ReadU32LE(src, &biClrUsed) ||
+            !SDL_ReadU32LE(src, NULL /* biClrImportant */)) {
+            goto done;
+        }
 
         /* 64 == BITMAPCOREHEADER2, an incompatible OS/2 2.x extension. Skip this stuff for now. */
         if (biSize != 64) {
@@ -302,24 +304,32 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
                following the legacy v1 info header, just past biSize. */
             if (biCompression == BI_BITFIELDS) {
                 haveRGBMasks = SDL_TRUE;
-                Rmask = SDL_ReadLE32(src);
-                Gmask = SDL_ReadLE32(src);
-                Bmask = SDL_ReadLE32(src);
+                if (!SDL_ReadU32LE(src, &Rmask) ||
+                    !SDL_ReadU32LE(src, &Gmask) ||
+                    !SDL_ReadU32LE(src, &Bmask)) {
+                    goto done;
+                }
 
                 /* ...v3 adds an alpha mask. */
                 if (biSize >= 56) { /* BITMAPV3INFOHEADER; adds alpha mask */
                     haveAlphaMask = SDL_TRUE;
-                    Amask = SDL_ReadLE32(src);
+                    if (!SDL_ReadU32LE(src, &Amask)) {
+                        goto done;
+                    }
                 }
             } else {
                 /* the mask fields are ignored for v2+ headers if not BI_BITFIELD. */
                 if (biSize >= 52) { /* BITMAPV2INFOHEADER; adds RGB masks */
-                    /*Rmask = */ SDL_ReadLE32(src);
-                    /*Gmask = */ SDL_ReadLE32(src);
-                    /*Bmask = */ SDL_ReadLE32(src);
+                    if (!SDL_ReadU32LE(src, NULL /* Rmask */) ||
+                        !SDL_ReadU32LE(src, NULL /* Gmask */) ||
+                        !SDL_ReadU32LE(src, NULL /* Bmask */)) {
+                        goto done;
+                    }
                 }
                 if (biSize >= 56) { /* BITMAPV3INFOHEADER; adds alpha mask */
-                    /*Amask = */ SDL_ReadLE32(src);
+                    if (!SDL_ReadU32LE(src, NULL /* Amask */)) {
+                        goto done;
+                    }
                 }
             }
 
@@ -332,12 +342,13 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
         /* skip any header bytes we didn't handle... */
         headerSize = (Uint32)(SDL_RWtell(src) - (fp_offset + 14));
         if (biSize > headerSize) {
-            SDL_RWseek(src, (biSize - headerSize), SDL_RW_SEEK_CUR);
+            if (SDL_RWseek(src, (biSize - headerSize), SDL_RW_SEEK_CUR) < 0) {
+                goto done;
+            }
         }
     }
     if (biWidth <= 0 || biHeight == 0) {
         SDL_SetError("BMP file with bad dimensions (%" SDL_PRIs32 "x%" SDL_PRIs32 ")", biWidth, biHeight);
-        was_error = SDL_TRUE;
         goto done;
     }
     if (biHeight < 0) {
@@ -349,28 +360,19 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
 
     /* Check for read error */
     if (SDL_strcmp(SDL_GetError(), "") != 0) {
-        was_error = SDL_TRUE;
         goto done;
     }
 
-    /* Expand 1, 2 and 4 bit bitmaps to 8 bits per pixel */
+    /* Reject invalid bit depths */
     switch (biBitCount) {
-    case 1:
-    case 2:
-    case 4:
-        ExpandBMP = biBitCount;
-        biBitCount = 8;
-        break;
     case 0:
     case 3:
     case 5:
     case 6:
     case 7:
-        SDL_SetError("%d-bpp BMP images are not supported", biBitCount);
-        was_error = SDL_TRUE;
+        SDL_SetError("%u bpp BMP images are not supported", biBitCount);
         goto done;
     default:
-        ExpandBMP = 0;
         break;
     }
 
@@ -431,8 +433,7 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
         format = SDL_GetPixelFormatEnumForMasks(biBitCount, Rmask, Gmask, Bmask, Amask);
         surface = SDL_CreateSurface(biWidth, biHeight, format);
 
-        if (surface == NULL) {
-            was_error = SDL_TRUE;
+        if (!surface) {
             goto done;
         }
     }
@@ -442,13 +443,11 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
     if (palette) {
         if (SDL_RWseek(src, fp_offset + 14 + biSize, SDL_RW_SEEK_SET) < 0) {
             SDL_Error(SDL_EFSEEK);
-            was_error = SDL_TRUE;
             goto done;
         }
 
         if (biBitCount >= 32) { /* we shift biClrUsed by this value later. */
             SDL_SetError("Unsupported or incorrect biBitCount field");
-            was_error = SDL_TRUE;
             goto done;
         }
 
@@ -460,26 +459,27 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
             biClrUsed = 1 << biBitCount; /* try forcing it? */
             if (biClrUsed > (Uint32)palette->ncolors) {
                 SDL_SetError("Unsupported or incorrect biClrUsed field");
-                was_error = SDL_TRUE;
                 goto done;
             }
         }
 
         if (biSize == 12) {
             for (i = 0; i < (int)biClrUsed; ++i) {
-                /* !!! FIXME: this should check for i/o errors! */
-                SDL_RWread(src, &palette->colors[i].b, 1);
-                SDL_RWread(src, &palette->colors[i].g, 1);
-                SDL_RWread(src, &palette->colors[i].r, 1);
+                if (!SDL_ReadU8(src, &palette->colors[i].b) ||
+                    !SDL_ReadU8(src, &palette->colors[i].g) ||
+                    !SDL_ReadU8(src, &palette->colors[i].r)) {
+                    goto done;
+                }
                 palette->colors[i].a = SDL_ALPHA_OPAQUE;
             }
         } else {
             for (i = 0; i < (int)biClrUsed; ++i) {
-                /* !!! FIXME: this should check for i/o errors! */
-                SDL_RWread(src, &palette->colors[i].b, 1);
-                SDL_RWread(src, &palette->colors[i].g, 1);
-                SDL_RWread(src, &palette->colors[i].r, 1);
-                SDL_RWread(src, &palette->colors[i].a, 1);
+                if (!SDL_ReadU8(src, &palette->colors[i].b) ||
+                    !SDL_ReadU8(src, &palette->colors[i].g) ||
+                    !SDL_ReadU8(src, &palette->colors[i].r) ||
+                    !SDL_ReadU8(src, &palette->colors[i].a)) {
+                    goto done;
+                }
 
                 /* According to Microsoft documentation, the fourth element
                    is reserved and must be zero, so we shouldn't treat it as
@@ -494,7 +494,6 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
     /* Read the surface pixels.  Note that the bmp image is upside down */
     if (SDL_RWseek(src, fp_offset + bfOffBits, SDL_RW_SEEK_SET) < 0) {
         SDL_Error(SDL_EFSEEK);
-        was_error = SDL_TRUE;
         goto done;
     }
     if ((biCompression == BI_RLE4) || (biCompression == BI_RLE8)) {
@@ -506,100 +505,56 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
     }
     top = (Uint8 *)surface->pixels;
     end = (Uint8 *)surface->pixels + (surface->h * surface->pitch);
-    switch (ExpandBMP) {
-    case 1:
-        bmpPitch = (biWidth + 7) >> 3;
-        pad = (((bmpPitch) % 4) ? (4 - ((bmpPitch) % 4)) : 0);
-        break;
-    case 2:
-        bmpPitch = (biWidth + 3) >> 2;
-        pad = (((bmpPitch) % 4) ? (4 - ((bmpPitch) % 4)) : 0);
-        break;
-    case 4:
-        bmpPitch = (biWidth + 1) >> 1;
-        pad = (((bmpPitch) % 4) ? (4 - ((bmpPitch) % 4)) : 0);
-        break;
-    default:
-        pad = ((surface->pitch % 4) ? (4 - (surface->pitch % 4)) : 0);
-        break;
-    }
+    pad = ((surface->pitch % 4) ? (4 - (surface->pitch % 4)) : 0);
     if (topDown) {
         bits = top;
     } else {
         bits = end - surface->pitch;
     }
     while (bits >= top && bits < end) {
-        switch (ExpandBMP) {
-        case 1:
-        case 2:
-        case 4:
-        {
-            Uint8 pixel = 0;
-            int shift = (8 - ExpandBMP);
+        if (SDL_RWread(src, bits, surface->pitch) != (size_t)surface->pitch) {
+            goto done;
+        }
+        if (biBitCount == 8 && palette && biClrUsed < (1u << biBitCount)) {
             for (i = 0; i < surface->w; ++i) {
-                if (i % (8 / ExpandBMP) == 0) {
-                    if (SDL_RWread(src, &pixel, 1) != 1) {
-                        SDL_Error(SDL_EFREAD);
-                        was_error = SDL_TRUE;
-                        goto done;
-                    }
-                }
-                bits[i] = (pixel >> shift);
                 if (bits[i] >= biClrUsed) {
                     SDL_SetError("A BMP image contains a pixel with a color out of the palette");
-                    was_error = SDL_TRUE;
                     goto done;
                 }
-                pixel <<= ExpandBMP;
             }
-        } break;
-
-        default:
-            if (SDL_RWread(src, bits, surface->pitch) != surface->pitch) {
-                SDL_Error(SDL_EFREAD);
-                was_error = SDL_TRUE;
-                goto done;
-            }
-            if (biBitCount == 8 && palette && biClrUsed < (1u << biBitCount)) {
-                for (i = 0; i < surface->w; ++i) {
-                    if (bits[i] >= biClrUsed) {
-                        SDL_SetError("A BMP image contains a pixel with a color out of the palette");
-                        was_error = SDL_TRUE;
-                        goto done;
-                    }
-                }
-            }
+        }
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-            /* Byte-swap the pixels if needed. Note that the 24bpp
-               case has already been taken care of above. */
-            switch (biBitCount) {
-            case 15:
-            case 16:
-            {
-                Uint16 *pix = (Uint16 *)bits;
-                for (i = 0; i < surface->w; i++) {
-                    pix[i] = SDL_Swap16(pix[i]);
-                }
-                break;
+        /* Byte-swap the pixels if needed. Note that the 24bpp
+           case has already been taken care of above. */
+        switch (biBitCount) {
+        case 15:
+        case 16:
+        {
+            Uint16 *pix = (Uint16 *)bits;
+            for (i = 0; i < surface->w; i++) {
+                pix[i] = SDL_Swap16(pix[i]);
             }
-
-            case 32:
-            {
-                Uint32 *pix = (Uint32 *)bits;
-                for (i = 0; i < surface->w; i++) {
-                    pix[i] = SDL_Swap32(pix[i]);
-                }
-                break;
-            }
-            }
-#endif
             break;
         }
+
+        case 32:
+        {
+            Uint32 *pix = (Uint32 *)bits;
+            for (i = 0; i < surface->w; i++) {
+                pix[i] = SDL_Swap32(pix[i]);
+            }
+            break;
+        }
+        }
+#endif
+
         /* Skip padding bytes, ugh */
         if (pad) {
             Uint8 padbyte;
             for (i = 0; i < pad; ++i) {
-                SDL_RWread(src, &padbyte, 1);
+                if (!SDL_ReadU8(src, &padbyte)) {
+                    goto done;
+                }
             }
         }
         if (topDown) {
@@ -611,6 +566,9 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
     if (correctAlpha) {
         CorrectAlphaChannel(surface);
     }
+
+    was_error = SDL_FALSE;
+
 done:
     if (was_error) {
         if (src) {
@@ -625,15 +583,15 @@ done:
     return surface;
 }
 
-int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
+SDL_Surface *SDL_LoadBMP(const char *file)
 {
-    /* !!! FIXME: this calls SDL_ClearError() and then checks if an error happened during this function to
-       !!! FIXME: decide if there was a problem, but there's risk of innocent things setting an error
-       !!! FIXME: string for innocent unrelated reasons, and also, an app supplying its own RWops
-       !!! FIXME: implementation may not set the error string on failure. We should check for i/o
-       !!! FIXME: failures as we go, and return early if one occurs. */
+    return SDL_LoadBMP_RW(SDL_RWFromFile(file, "rb"), 1);
+}
 
-    Sint64 fp_offset;
+int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, SDL_bool freedst)
+{
+    SDL_bool was_error = SDL_TRUE;
+    Sint64 fp_offset, new_offset;
     int i, pad;
     SDL_Surface *intermediate_surface;
     Uint8 *bits;
@@ -674,6 +632,11 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
     /* Make sure we have somewhere to save */
     intermediate_surface = NULL;
     if (dst) {
+        if (!surface) {
+            SDL_InvalidParamError("surface");
+            goto done;
+        }
+
 #ifdef SAVE_32BIT_BMP
         /* We can save alpha information in a 32-bit BMP */
         if (surface->format->BitsPerPixel >= 8 &&
@@ -683,12 +646,13 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
         }
 #endif /* SAVE_32BIT_BMP */
 
-        if (surface->format->palette != NULL && !save32bit) {
+        if (surface->format->palette && !save32bit) {
             if (surface->format->BitsPerPixel == 8) {
                 intermediate_surface = surface;
             } else {
-                SDL_SetError("%d bpp BMP files not supported",
+                SDL_SetError("%u bpp BMP files not supported",
                              surface->format->BitsPerPixel);
+                goto done;
             }
         } else if ((surface->format->BitsPerPixel == 24) && !save32bit &&
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
@@ -703,33 +667,34 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
         ) {
             intermediate_surface = surface;
         } else {
-            SDL_PixelFormat format;
+            Uint32 pixel_format;
 
             /* If the surface has a colorkey or alpha channel we'll save a
                32-bit BMP with alpha channel, otherwise save a 24-bit BMP. */
             if (save32bit) {
-                SDL_InitFormat(&format, SDL_PIXELFORMAT_BGRA32);
+                pixel_format = SDL_PIXELFORMAT_BGRA32;
             } else {
-                SDL_InitFormat(&format, SDL_PIXELFORMAT_BGR24);
+                pixel_format = SDL_PIXELFORMAT_BGR24;
             }
-            intermediate_surface = SDL_ConvertSurface(surface, &format);
-            if (intermediate_surface == NULL) {
+            intermediate_surface = SDL_ConvertSurfaceFormat(surface, pixel_format);
+            if (!intermediate_surface) {
                 SDL_SetError("Couldn't convert image to %d bpp",
-                             format.BitsPerPixel);
+                             (int)SDL_BITSPERPIXEL(pixel_format));
+                goto done;
             }
         }
     } else {
         /* Set no error here because it may overwrite a more useful message from
            SDL_RWFromFile() if SDL_SaveBMP_RW() is called from SDL_SaveBMP(). */
-        return -1;
+        goto done;
     }
 
     if (save32bit) {
         saveLegacyBMP = SDL_GetHintBoolean(SDL_HINT_BMP_SAVE_LEGACY_FORMAT, SDL_FALSE);
     }
 
-    if (intermediate_surface && (SDL_LockSurface(intermediate_surface) == 0)) {
-        const int bw = intermediate_surface->w * intermediate_surface->format->BytesPerPixel;
+    if (SDL_LockSurface(intermediate_surface) == 0) {
+        const size_t bw = intermediate_surface->w * intermediate_surface->format->BytesPerPixel;
 
         /* Set the BMP file header values */
         bfSize = 0; /* We'll write this when we're done */
@@ -739,12 +704,16 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
 
         /* Write the BMP file header values */
         fp_offset = SDL_RWtell(dst);
-        SDL_ClearError();
-        SDL_RWwrite(dst, magic, 2);
-        SDL_WriteLE32(dst, bfSize);
-        SDL_WriteLE16(dst, bfReserved1);
-        SDL_WriteLE16(dst, bfReserved2);
-        SDL_WriteLE32(dst, bfOffBits);
+        if (fp_offset < 0) {
+            goto done;
+        }
+        if (SDL_RWwrite(dst, magic, 2) != 2 ||
+            !SDL_WriteU32LE(dst, bfSize) ||
+            !SDL_WriteU16LE(dst, bfReserved1) ||
+            !SDL_WriteU16LE(dst, bfReserved2) ||
+            !SDL_WriteU32LE(dst, bfOffBits)) {
+            goto done;
+        }
 
         /* Set the BMP info values */
         biSize = 40;
@@ -779,31 +748,39 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
         }
 
         /* Write the BMP info values */
-        SDL_WriteLE32(dst, biSize);
-        SDL_WriteLE32(dst, biWidth);
-        SDL_WriteLE32(dst, biHeight);
-        SDL_WriteLE16(dst, biPlanes);
-        SDL_WriteLE16(dst, biBitCount);
-        SDL_WriteLE32(dst, biCompression);
-        SDL_WriteLE32(dst, biSizeImage);
-        SDL_WriteLE32(dst, biXPelsPerMeter);
-        SDL_WriteLE32(dst, biYPelsPerMeter);
-        SDL_WriteLE32(dst, biClrUsed);
-        SDL_WriteLE32(dst, biClrImportant);
+        if (!SDL_WriteU32LE(dst, biSize) ||
+            !SDL_WriteS32LE(dst, biWidth) ||
+            !SDL_WriteS32LE(dst, biHeight) ||
+            !SDL_WriteU16LE(dst, biPlanes) ||
+            !SDL_WriteU16LE(dst, biBitCount) ||
+            !SDL_WriteU32LE(dst, biCompression) ||
+            !SDL_WriteU32LE(dst, biSizeImage) ||
+            !SDL_WriteU32LE(dst, biXPelsPerMeter) ||
+            !SDL_WriteU32LE(dst, biYPelsPerMeter) ||
+            !SDL_WriteU32LE(dst, biClrUsed) ||
+            !SDL_WriteU32LE(dst, biClrImportant)) {
+            goto done;
+        }
 
         /* Write the BMP info values for the version 4 header */
         if (save32bit && !saveLegacyBMP) {
-            SDL_WriteLE32(dst, bV4RedMask);
-            SDL_WriteLE32(dst, bV4GreenMask);
-            SDL_WriteLE32(dst, bV4BlueMask);
-            SDL_WriteLE32(dst, bV4AlphaMask);
-            SDL_WriteLE32(dst, bV4CSType);
-            for (i = 0; i < 3 * 3; i++) {
-                SDL_WriteLE32(dst, bV4Endpoints[i]);
+            if (!SDL_WriteU32LE(dst, bV4RedMask) ||
+                !SDL_WriteU32LE(dst, bV4GreenMask) ||
+                !SDL_WriteU32LE(dst, bV4BlueMask) ||
+                !SDL_WriteU32LE(dst, bV4AlphaMask) ||
+                !SDL_WriteU32LE(dst, bV4CSType)) {
+                goto done;
             }
-            SDL_WriteLE32(dst, bV4GammaRed);
-            SDL_WriteLE32(dst, bV4GammaGreen);
-            SDL_WriteLE32(dst, bV4GammaBlue);
+            for (i = 0; i < 3 * 3; i++) {
+                if (!SDL_WriteU32LE(dst, bV4Endpoints[i])) {
+                    goto done;
+                }
+            }
+            if (!SDL_WriteU32LE(dst, bV4GammaRed) ||
+                !SDL_WriteU32LE(dst, bV4GammaGreen) ||
+                !SDL_WriteU32LE(dst, bV4GammaBlue)) {
+                goto done;
+            }
         }
 
         /* Write the palette (in BGR color order) */
@@ -814,21 +791,25 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
             colors = intermediate_surface->format->palette->colors;
             ncolors = intermediate_surface->format->palette->ncolors;
             for (i = 0; i < ncolors; ++i) {
-                SDL_RWwrite(dst, &colors[i].b, 1);
-                SDL_RWwrite(dst, &colors[i].g, 1);
-                SDL_RWwrite(dst, &colors[i].r, 1);
-                SDL_RWwrite(dst, &colors[i].a, 1);
+                if (!SDL_WriteU8(dst, colors[i].b) ||
+                    !SDL_WriteU8(dst, colors[i].g) ||
+                    !SDL_WriteU8(dst, colors[i].r) ||
+                    !SDL_WriteU8(dst, colors[i].a)) {
+                    goto done;
+                }
             }
         }
 
         /* Write the bitmap offset */
         bfOffBits = (Uint32)(SDL_RWtell(dst) - fp_offset);
         if (SDL_RWseek(dst, fp_offset + 10, SDL_RW_SEEK_SET) < 0) {
-            SDL_Error(SDL_EFSEEK);
+            goto done;
         }
-        SDL_WriteLE32(dst, bfOffBits);
+        if (!SDL_WriteU32LE(dst, bfOffBits)) {
+            goto done;
+        }
         if (SDL_RWseek(dst, fp_offset + bfOffBits, SDL_RW_SEEK_SET) < 0) {
-            SDL_Error(SDL_EFSEEK);
+            goto done;
         }
 
         /* Write the bitmap image upside down */
@@ -837,36 +818,56 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
         while (bits > (Uint8 *)intermediate_surface->pixels) {
             bits -= intermediate_surface->pitch;
             if (SDL_RWwrite(dst, bits, bw) != bw) {
-                SDL_Error(SDL_EFWRITE);
-                break;
+                goto done;
             }
             if (pad) {
                 const Uint8 padbyte = 0;
                 for (i = 0; i < pad; ++i) {
-                    SDL_RWwrite(dst, &padbyte, 1);
+                    if (!SDL_WriteU8(dst, padbyte)) {
+                        goto done;
+                    }
                 }
             }
         }
 
         /* Write the BMP file size */
-        bfSize = (Uint32)(SDL_RWtell(dst) - fp_offset);
-        if (SDL_RWseek(dst, fp_offset + 2, SDL_RW_SEEK_SET) < 0) {
-            SDL_Error(SDL_EFSEEK);
+        new_offset = SDL_RWtell(dst);
+        if (new_offset < 0) {
+            goto done;
         }
-        SDL_WriteLE32(dst, bfSize);
+        bfSize = (Uint32)(new_offset - fp_offset);
+        if (SDL_RWseek(dst, fp_offset + 2, SDL_RW_SEEK_SET) < 0) {
+            goto done;
+        }
+        if (!SDL_WriteU32LE(dst, bfSize)) {
+            goto done;
+        }
         if (SDL_RWseek(dst, fp_offset + bfSize, SDL_RW_SEEK_SET) < 0) {
-            SDL_Error(SDL_EFSEEK);
+            goto done;
         }
 
         /* Close it up.. */
         SDL_UnlockSurface(intermediate_surface);
-        if (intermediate_surface != surface) {
-            SDL_DestroySurface(intermediate_surface);
-        }
+
+        was_error = SDL_FALSE;
     }
 
-    if (freedst && dst) {
-        SDL_RWclose(dst);
+done:
+    if (intermediate_surface && intermediate_surface != surface) {
+        SDL_DestroySurface(intermediate_surface);
     }
-    return (SDL_strcmp(SDL_GetError(), "") == 0) ? 0 : -1;
+    if (freedst && dst) {
+        if (SDL_RWclose(dst) < 0) {
+            was_error = SDL_TRUE;
+        }
+    }
+    if (was_error) {
+        return -1;
+    }
+    return 0;
+}
+
+int SDL_SaveBMP(SDL_Surface *surface, const char *file)
+{
+    return SDL_SaveBMP_RW(surface, SDL_RWFromFile(file, "wb"), 1);
 }

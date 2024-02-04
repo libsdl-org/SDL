@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# This script renames symbols in the specfied paths
+# This script renames symbols in the specified paths
 
 import argparse
 import os
@@ -25,7 +25,7 @@ def main():
 
     else:
         if len(args.args) < 3:
-            print("Usage: %s oldname newname files_or_directories ..." % sys.argv[0])
+            print("Usage: %s [--substring] oldname newname files_or_directories ..." % sys.argv[0])
             exit(1)
 
         replacements = { args.args[0]: args.args[1] }

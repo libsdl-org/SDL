@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,11 +20,11 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 #include "SDL_windowsvideo.h"
 
-int WIN_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
     SDL_WindowData *data = window->driverdata;
     SDL_bool isstack;
@@ -47,7 +47,7 @@ int WIN_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void 
     size = sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD);
     info = (LPBITMAPINFO)SDL_small_alloc(Uint8, size, &isstack);
     if (!info) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     SDL_memset(info, 0, size);
@@ -70,7 +70,7 @@ int WIN_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void 
     }
     if (*format == SDL_PIXELFORMAT_UNKNOWN) {
         /* We'll use RGB format for now */
-        *format = SDL_PIXELFORMAT_RGB888;
+        *format = SDL_PIXELFORMAT_XRGB8888;
 
         /* Create a new one */
         SDL_memset(info, 0, size);
@@ -98,7 +98,7 @@ int WIN_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void 
     return 0;
 }
 
-int WIN_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
+int WIN_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     SDL_WindowData *data = window->driverdata;
     int i;
@@ -110,11 +110,11 @@ int WIN_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects
     return 0;
 }
 
-void WIN_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
+void WIN_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
 
-    if (data == NULL) {
+    if (!data) {
         /* The window wasn't fully initialized */
         return;
     }

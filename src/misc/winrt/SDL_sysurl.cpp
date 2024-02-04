@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,7 @@ int SDL_SYS_OpenURL(const char *url)
 {
     WCHAR *wurl = WIN_UTF8ToStringW(url);
     if (!wurl) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     auto strurl = ref new Platform::String(wurl);
     SDL_free(wurl);

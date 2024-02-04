@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,9 +25,9 @@
 
 extern void Cocoa_RegisterApp(void);
 extern Uint64 Cocoa_GetEventTimestamp(NSTimeInterval nsTimestamp);
-extern void Cocoa_PumpEvents(_THIS);
-extern int Cocoa_WaitEventTimeout(_THIS, Sint64 timeoutNS);
-extern void Cocoa_SendWakeupEvent(_THIS, SDL_Window *window);
-extern int Cocoa_SuspendScreenSaver(_THIS);
+extern void Cocoa_PumpEvents(SDL_VideoDevice *_this);
+extern int Cocoa_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS);
+extern void Cocoa_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window);
+extern int Cocoa_SuspendScreenSaver(SDL_VideoDevice *_this);
 
 #endif /* SDL_cocoaevents_h_ */

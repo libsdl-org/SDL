@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,25 +20,19 @@
 */
 #include "SDL_internal.h"
 
-#ifndef SDL_openslesaudio_h
-#define SDL_openslesaudio_h
+#ifndef SDL_openslesaudio_h_
+#define SDL_openslesaudio_h_
 
-#include "../SDL_sysaudio.h"
+#ifdef SDL_AUDIO_DRIVER_OPENSLES
 
-/* Hidden "this" pointer for the audio functions */
-#define _THIS SDL_AudioDevice *this
+void OPENSLES_ResumeDevices(void);
+void OPENSLES_PauseDevices(void);
 
-#define NUM_BUFFERS 2 /* -- Don't lower this! */
+#else
 
-struct SDL_PrivateAudioData
-{
-    Uint8 *mixbuff;
-    int next_buffer;
-    Uint8 *pmixbuff[NUM_BUFFERS];
-    SDL_sem *playsem;
-};
+static void OPENSLES_ResumeDevices(void) {}
+static void OPENSLES_PauseDevices(void) {}
 
-void openslES_ResumeDevices(void);
-void openslES_PauseDevices(void);
+#endif
 
-#endif /* SDL_openslesaudio_h */
+#endif // SDL_openslesaudio_h_

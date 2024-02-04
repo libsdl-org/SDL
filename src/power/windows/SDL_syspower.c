@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,8 +25,7 @@
 
 #include "../../core/windows/SDL_windows.h"
 
-SDL_bool
-SDL_GetPowerInfo_Windows(SDL_PowerState *state, int *seconds, int *percent)
+SDL_bool SDL_GetPowerInfo_Windows(SDL_PowerState *state, int *seconds, int *percent)
 {
     SYSTEM_POWER_STATUS status;
     SDL_bool need_details = SDL_FALSE;

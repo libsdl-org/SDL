@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,8 +25,7 @@
 
 #include "SDL_render_vita_gxm_memory.h"
 
-void *
-vita_mem_alloc(unsigned int type, unsigned int size, unsigned int alignment, unsigned int attribs, SceUID *uid)
+void *vita_mem_alloc(unsigned int type, unsigned int size, unsigned int alignment, unsigned int attribs, SceUID *uid)
 {
     void *mem;
 
@@ -63,12 +62,11 @@ void vita_mem_free(SceUID uid)
     sceKernelFreeMemBlock(uid);
 }
 
-void *
-vita_gpu_mem_alloc(VITA_GXM_RenderData *data, unsigned int size)
+void *vita_gpu_mem_alloc(VITA_GXM_RenderData *data, unsigned int size)
 {
     void *mem;
 
-    if (data->texturePool == NULL) {
+    if (!data->texturePool) {
         int poolsize;
         int ret;
         SceKernelFreeMemorySizeInfo info;
@@ -90,7 +88,7 @@ vita_gpu_mem_alloc(VITA_GXM_RenderData *data, unsigned int size)
         }
         data->texturePool = sceClibMspaceCreate(mem, poolsize);
 
-        if (data->texturePool == NULL) {
+        if (!data->texturePool) {
             return NULL;
         }
         ret = sceGxmMapMemory(mem, poolsize, SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE);
@@ -103,7 +101,7 @@ vita_gpu_mem_alloc(VITA_GXM_RenderData *data, unsigned int size)
 
 void vita_gpu_mem_free(VITA_GXM_RenderData *data, void *ptr)
 {
-    if (data->texturePool != NULL) {
+    if (data->texturePool) {
         sceClibMspaceFree(data->texturePool, ptr);
     }
 }
@@ -111,7 +109,7 @@ void vita_gpu_mem_free(VITA_GXM_RenderData *data, void *ptr)
 void vita_gpu_mem_destroy(VITA_GXM_RenderData *data)
 {
     void *mem = NULL;
-    if (data->texturePool != NULL) {
+    if (data->texturePool) {
         sceClibMspaceDestroy(data->texturePool);
         data->texturePool = NULL;
         if (sceKernelGetMemBlockBase(data->texturePoolUID, &mem) < 0) {
@@ -122,8 +120,7 @@ void vita_gpu_mem_destroy(VITA_GXM_RenderData *data)
     }
 }
 
-void *
-vita_mem_vertex_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
+void *vita_mem_vertex_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
 {
     void *mem = NULL;
 
@@ -150,8 +147,7 @@ void vita_mem_vertex_usse_free(SceUID uid)
     sceKernelFreeMemBlock(uid);
 }
 
-void *
-vita_mem_fragment_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
+void *vita_mem_fragment_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
 {
     void *mem = NULL;
 

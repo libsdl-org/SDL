@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -63,7 +63,7 @@
 }
 @end
 
-static SDL_Cursor *Cocoa_CreateDefaultCursor()
+static SDL_Cursor *Cocoa_CreateDefaultCursor(void)
 {
     @autoreleasepool {
         NSCursor *nscursor;
@@ -188,6 +188,30 @@ static SDL_Cursor *Cocoa_CreateSystemCursor(SDL_SystemCursor id)
         case SDL_SYSTEM_CURSOR_HAND:
             nscursor = [NSCursor pointingHandCursor];
             break;
+        case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT:
+            nscursor = LoadHiddenSystemCursor(@"resizenorthwestsoutheast", @selector(closedHandCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_WINDOW_TOP:
+            nscursor = LoadHiddenSystemCursor(@"resizenorthsouth", @selector(resizeUpDownCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT:
+            nscursor = LoadHiddenSystemCursor(@"resizenortheastsouthwest", @selector(closedHandCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_WINDOW_RIGHT:
+            nscursor = LoadHiddenSystemCursor(@"resizeeastwest", @selector(resizeLeftRightCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT:
+            nscursor = LoadHiddenSystemCursor(@"resizenorthwestsoutheast", @selector(closedHandCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM:
+            nscursor = LoadHiddenSystemCursor(@"resizenorthsouth", @selector(resizeUpDownCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT:
+            nscursor = LoadHiddenSystemCursor(@"resizenortheastsouthwest", @selector(closedHandCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_WINDOW_LEFT:
+            nscursor = LoadHiddenSystemCursor(@"resizeeastwest", @selector(resizeLeftRightCursor));
+            break;
         default:
             SDL_assert(!"Unknown system cursor");
             return NULL;
@@ -219,15 +243,11 @@ static int Cocoa_ShowCursor(SDL_Cursor *cursor)
         SDL_VideoDevice *device = SDL_GetVideoDevice();
         SDL_Window *window = (device ? device->windows : NULL);
         for (; window != NULL; window = window->next) {
-            SDL_Mouse *mouse = SDL_GetMouse();
-            if(mouse->focus) {
-                if (mouse->cursor_shown && mouse->cur_cursor && !mouse->relative_mode) {
-                    [(__bridge NSCursor*)mouse->cur_cursor->driverdata set];
-                } else {
-                    [[NSCursor invisibleCursor] set];
-                }
-            } else {
-                [[NSCursor arrowCursor] set];
+            SDL_CocoaWindowData *driverdata = (__bridge SDL_CocoaWindowData *)window->driverdata;
+            if (driverdata) {
+                [driverdata.nswindow performSelectorOnMainThread:@selector(invalidateCursorRectsForView:)
+                                                      withObject:[driverdata.nswindow contentView]
+                                                   waitUntilDone:NO];
             }
         }
         return 0;
@@ -296,10 +316,16 @@ static int Cocoa_WarpMouse(SDL_Window *window, float x, float y)
 
 static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
 {
+    SDL_Window *window = SDL_GetKeyboardFocus();
     CGError result;
-    SDL_Window *window;
     SDL_CocoaWindowData *data;
     if (enabled) {
+        if (window) {
+            /* make sure the mouse isn't at the corner of the window, as this can confuse things if macOS thinks a window resize is happening on the first click. */
+            const CGPoint point = CGPointMake((float)(window->x + (window->w / 2)), (float)(window->y + (window->h / 2)));
+            Cocoa_HandleMouseWarp(point.x, point.y);
+            CGWarpMouseCursorPosition(point);
+        }
         DLog("Turning on.");
         result = CGAssociateMouseAndMouseCursorPosition(NO);
     } else {
@@ -313,7 +339,6 @@ static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
     /* We will re-apply the non-relative mode when the window gets focus, if it
      * doesn't have focus right now.
      */
-    window = SDL_GetKeyboardFocus();
     if (!window) {
         return 0;
     }
@@ -362,13 +387,13 @@ static Uint32 Cocoa_GetGlobalMouseState(float *x, float *y)
     return retval;
 }
 
-int Cocoa_InitMouse(_THIS)
+int Cocoa_InitMouse(SDL_VideoDevice *_this)
 {
     NSPoint location;
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_MouseData *driverdata = (SDL_MouseData *)SDL_calloc(1, sizeof(SDL_MouseData));
     if (driverdata == NULL) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     mouse->driverdata = driverdata;
@@ -390,13 +415,13 @@ int Cocoa_InitMouse(_THIS)
     return 0;
 }
 
-static void Cocoa_HandleTitleButtonEvent(_THIS, NSEvent *event)
+static void Cocoa_HandleTitleButtonEvent(SDL_VideoDevice *_this, NSEvent *event)
 {
     SDL_Window *window;
     NSWindow *nswindow = [event window];
 
     /* You might land in this function before SDL_Init if showing a message box.
-       Don't derefence a NULL pointer if that happens. */
+       Don't dereference a NULL pointer if that happens. */
     if (_this == NULL) {
         return;
     }
@@ -423,7 +448,7 @@ static void Cocoa_HandleTitleButtonEvent(_THIS, NSEvent *event)
     }
 }
 
-void Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
+void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
 {
     SDL_Mouse *mouse;
     SDL_MouseData *driverdata;
@@ -552,7 +577,7 @@ void Cocoa_HandleMouseWarp(CGFloat x, CGFloat y)
     DLog("(%g, %g)", x, y);
 }
 
-void Cocoa_QuitMouse(_THIS)
+void Cocoa_QuitMouse(SDL_VideoDevice *_this)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     if (mouse) {

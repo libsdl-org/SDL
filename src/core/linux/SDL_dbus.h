@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +27,10 @@
 #ifdef HAVE_DBUS_DBUS_H
 #define SDL_USE_LIBDBUS 1
 #include <dbus/dbus.h>
+
+#ifndef DBUS_TIMEOUT_USE_DEFAULT
+#define DBUS_TIMEOUT_USE_DEFAULT -1
+#endif
 
 typedef struct SDL_DBusContext
 {
@@ -71,6 +75,7 @@ typedef struct SDL_DBusContext
     dbus_bool_t (*error_is_set)(const DBusError *);
     void (*error_free)(DBusError *);
     char *(*get_local_machine_id)(void);
+    char *(*try_get_local_machine_id)(DBusError *);
     void (*free)(void *);
     void (*free_string_array)(char **);
     void (*shutdown)(void);
@@ -93,6 +98,11 @@ extern SDL_bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const c
 
 extern void SDL_DBus_ScreensaverTickle(void);
 extern SDL_bool SDL_DBus_ScreensaverInhibit(SDL_bool inhibit);
+
+extern void SDL_DBus_PumpEvents(void);
+extern char *SDL_DBus_GetLocalMachineId(void);
+
+extern char **SDL_DBus_DocumentsPortalRetrieveFiles(const char *key, int *files_count);
 
 #endif /* HAVE_DBUS_DBUS_H */
 

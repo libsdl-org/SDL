@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -43,7 +43,7 @@ static void getFBSize(int *width, int *height)
     *height = FB_HEIGHT;
 }
 
-int VITA_GL_LoadLibrary(_THIS, const char *path)
+int VITA_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     PVRSRV_PSP2_APPHINT hint;
     char *override = SDL_getenv("VITA_MODULE_PATH");
@@ -51,8 +51,8 @@ int VITA_GL_LoadLibrary(_THIS, const char *path)
     char *default_path = "app0:module";
     char target_path[MAX_PATH];
 
-    if (skip_init == NULL) { // we don't care about actual value
-        if (override != NULL) {
+    if (!skip_init) { // we don't care about actual value
+        if (override) {
             default_path = override;
         }
 
@@ -80,8 +80,7 @@ int VITA_GL_LoadLibrary(_THIS, const char *path)
     return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)0, 0);
 }
 
-SDL_GLContext
-VITA_GL_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext VITA_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
     char gl_version[3];
     SDL_GLContext context = NULL;
@@ -115,8 +114,7 @@ VITA_GL_CreateContext(_THIS, SDL_Window *window)
     return context;
 }
 
-SDL_FunctionPointer
-VITA_GL_GetProcAddress(_THIS, const char *proc)
+SDL_FunctionPointer VITA_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc)
 {
     return gl4es_GetProcAddress(proc);
 }

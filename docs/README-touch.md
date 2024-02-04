@@ -47,11 +47,12 @@ These structures should _never_ be modified.
 
 The following functions are included from SDL_touch.h
 
-To get a SDL_TouchID call SDL_GetTouchDevice(int index).
-This returns a SDL_TouchID.
-IMPORTANT: If the touch has been removed, or there is no touch with the given index, SDL_GetTouchDevice() will return 0. Be sure to check for this!
+Devices are tracked by instance ID, of type SDL_TouchID.
 
-The number of touch devices can be queried with SDL_GetNumTouchDevices().
+To get a list of available device SDL_TouchID values, call SDL_GetTouchDevices().
+This returns an array of device IDs, terminated by a zero ID. Optionally, you can
+get a count of IDs by passing a non-NULL int* to SDL_GetTouchDevices() if you'd
+rather not iterate the whole array to get this number.
 
 A SDL_TouchID may be used to get pointers to SDL_Finger.
 

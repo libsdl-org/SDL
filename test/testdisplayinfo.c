@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -21,13 +21,14 @@
 static void
 print_mode(const char *prefix, const SDL_DisplayMode *mode)
 {
-    if (mode == NULL) {
+    if (!mode) {
         return;
     }
 
-    SDL_Log("%s: fmt=%s w=%d h=%d scale=%d%% refresh=%gHz\n",
-            prefix, SDL_GetPixelFormatName(mode->format),
-            mode->pixel_w, mode->pixel_h, (int)(mode->display_scale * 100.0f), mode->refresh_rate);
+    SDL_Log("%s: %dx%d@%gx, %gHz, fmt=%s\n",
+            prefix,
+            mode->w, mode->h, mode->pixel_density, mode->refresh_rate,
+            SDL_GetPixelFormatName(mode->format));
 }
 
 int main(int argc, char *argv[])
@@ -39,8 +40,8 @@ int main(int argc, char *argv[])
     SDLTest_CommonState *state;
 
     /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
+    if (!state) {
         return 1;
     }
 
@@ -70,7 +71,7 @@ int main(int argc, char *argv[])
 
         SDL_GetDisplayBounds(dpy, &rect);
         modes = SDL_GetFullscreenDisplayModes(dpy, &num_modes);
-        SDL_Log("%" SDL_PRIu32 ": \"%s\" (%dx%d, (%d, %d)), %d fullscreen modes.\n", dpy, SDL_GetDisplayName(dpy), rect.w, rect.h, rect.x, rect.y, num_modes);
+        SDL_Log("%" SDL_PRIu32 ": \"%s\" (%dx%d at %d,%d), content scale %.1f, %d fullscreen modes.\n", dpy, SDL_GetDisplayName(dpy), rect.w, rect.h, rect.x, rect.y, SDL_GetDisplayContentScale(dpy), num_modes);
 
         mode = SDL_GetCurrentDisplayMode(dpy);
         if (mode) {

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,7 @@
 
 #include "../SDL_sysvideo.h"
 
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
 #import <GameController/GameController.h>
 #define SDLRootViewController GCEventViewController
 #else
@@ -59,7 +59,7 @@
 - (void)loadView;
 - (void)viewDidLayoutSubviews;
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
 - (NSUInteger)supportedInterfaceOrientations;
 - (BOOL)prefersStatusBarHidden;
 - (BOOL)prefersHomeIndicatorAutoHidden;
@@ -87,9 +87,9 @@
 @end
 
 #ifdef SDL_IPHONE_KEYBOARD
-SDL_bool UIKit_HasScreenKeyboardSupport(_THIS);
-void UIKit_ShowScreenKeyboard(_THIS, SDL_Window *window);
-void UIKit_HideScreenKeyboard(_THIS, SDL_Window *window);
-SDL_bool UIKit_IsScreenKeyboardShown(_THIS, SDL_Window *window);
-int UIKit_SetTextInputRect(_THIS, const SDL_Rect *rect);
+SDL_bool UIKit_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
+void UIKit_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
+void UIKit_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
+SDL_bool UIKit_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
+int UIKit_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect);
 #endif

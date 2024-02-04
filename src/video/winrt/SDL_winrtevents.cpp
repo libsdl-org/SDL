@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -48,7 +48,7 @@ static void WINRT_YieldXAMLThread();
 
 /* Global event management */
 
-void WINRT_PumpEvents(_THIS)
+void WINRT_PumpEvents(SDL_VideoDevice *_this)
 {
     if (SDL_WinRTGlobalApp) {
         SDL_WinRTGlobalApp->PumpEvents();
@@ -68,8 +68,8 @@ enum SDL_XAMLAppThreadState
 
 static SDL_XAMLAppThreadState _threadState = ThreadState_NotLaunched;
 static SDL_Thread *_XAMLThread = nullptr;
-static SDL_mutex *_mutex = nullptr;
-static SDL_cond *_cond = nullptr;
+static SDL_Mutex *_mutex = nullptr;
+static SDL_Condition *_cond = nullptr;
 
 static void WINRT_YieldXAMLThread()
 {
@@ -78,11 +78,11 @@ static void WINRT_YieldXAMLThread()
     _threadState = ThreadState_Yielding;
     SDL_UnlockMutex(_mutex);
 
-    SDL_CondSignal(_cond);
+    SDL_SignalCondition(_cond);
 
     SDL_LockMutex(_mutex);
     while (_threadState != ThreadState_Running) {
-        SDL_CondWait(_cond, _mutex);
+        SDL_WaitCondition(_cond, _mutex);
     }
     SDL_UnlockMutex(_mutex);
 }
@@ -101,7 +101,7 @@ void WINRT_CycleXAMLThread(void)
     switch (_threadState) {
     case ThreadState_NotLaunched:
     {
-        _cond = SDL_CreateCond();
+        _cond = SDL_CreateCondition();
 
         _mutex = SDL_CreateMutex();
         _threadState = ThreadState_Running;
@@ -109,7 +109,7 @@ void WINRT_CycleXAMLThread(void)
 
         SDL_LockMutex(_mutex);
         while (_threadState != ThreadState_Yielding) {
-            SDL_CondWait(_cond, _mutex);
+            SDL_WaitCondition(_cond, _mutex);
         }
         SDL_UnlockMutex(_mutex);
 
@@ -129,11 +129,11 @@ void WINRT_CycleXAMLThread(void)
         _threadState = ThreadState_Running;
         SDL_UnlockMutex(_mutex);
 
-        SDL_CondSignal(_cond);
+        SDL_SignalCondition(_cond);
 
         SDL_LockMutex(_mutex);
         while (_threadState != ThreadState_Yielding) {
-            SDL_CondWait(_cond, _mutex);
+            SDL_WaitCondition(_cond, _mutex);
         }
         SDL_UnlockMutex(_mutex);
     }

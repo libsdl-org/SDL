@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -79,8 +79,7 @@ static void patcher_host_free(void *user_data, void *mem)
     SDL_free(mem);
 }
 
-void *
-pool_malloc(VITA_GXM_RenderData *data, unsigned int size)
+void *pool_malloc(VITA_GXM_RenderData *data, unsigned int size)
 {
 
     if ((data->pool_index + size) < VITA_GXM_POOL_SIZE) {
@@ -92,8 +91,7 @@ pool_malloc(VITA_GXM_RenderData *data, unsigned int size)
     return NULL;
 }
 
-void *
-pool_memalign(VITA_GXM_RenderData *data, unsigned int size, unsigned int alignment)
+void *pool_memalign(VITA_GXM_RenderData *data, unsigned int size, unsigned int alignment)
 {
     unsigned int new_index = (data->pool_index + alignment - 1) & ~(alignment - 1);
     if ((new_index + size) < VITA_GXM_POOL_SIZE) {
@@ -528,7 +526,7 @@ int gxm_init(SDL_Renderer *renderer)
     // set the stencil test reference (this is currently assumed to always remain 1 after here for region clipping)
     sceGxmSetFrontStencilRef(data->gxm_context, 1);
 
-    // set the stencil function (this wouldn't actually be needed, as the set clip rectangle function has to call this at the begginning of every scene)
+    // set the stencil function (this wouldn't actually be needed, as the set clip rectangle function has to call this at the beginning of every scene)
     sceGxmSetFrontStencilFunc(
         data->gxm_context,
         SCE_GXM_STENCIL_FUNC_ALWAYS,
@@ -957,8 +955,7 @@ gxm_texture_get_format(const gxm_texture *texture)
     return sceGxmTextureGetFormat(&texture->gxm_tex);
 }
 
-void *
-gxm_texture_get_datap(const gxm_texture *texture)
+void *gxm_texture_get_datap(const gxm_texture *texture)
 {
     return sceGxmTextureGetData(&texture->gxm_tex);
 }
@@ -983,8 +980,7 @@ static SceGxmColorFormat tex_format_to_color_format(SceGxmTextureFormat format)
     }
 }
 
-gxm_texture *
-create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, SceGxmTextureFormat format, unsigned int isRenderTarget, unsigned int *return_w, unsigned int *return_h, unsigned int *return_pitch, float *return_wscale)
+gxm_texture *create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, SceGxmTextureFormat format, unsigned int isRenderTarget, unsigned int *return_w, unsigned int *return_h, unsigned int *return_pitch, float *return_wscale)
 {
     gxm_texture *texture = SDL_calloc(1, sizeof(gxm_texture));
     int aligned_w = ALIGN(w, 8);
@@ -1005,7 +1001,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
         tex_size += (((aligned_w + 1) / 2) * ((h + 1) / 2)) * 2;
     }
 
-    if (texture == NULL) {
+    if (!texture) {
         return NULL;
     }
 
@@ -1019,7 +1015,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
         tex_size);
 
     /* Try SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE in case we're out of VRAM */
-    if (texture_data == NULL) {
+    if (!texture_data) {
         SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "CDRAM texture allocation failed\n");
         texture_data = vita_mem_alloc(
             SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
@@ -1032,7 +1028,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
         texture->cdram = 1;
     }
 
-    if (texture_data == NULL) {
+    if (!texture_data) {
         SDL_free(texture);
         return NULL;
     }

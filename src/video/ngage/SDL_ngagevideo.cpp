@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -47,8 +47,8 @@ extern "C" {
 #define NGAGEVID_DRIVER_NAME "ngage"
 
 /* Initialization/Query functions */
-static int NGAGE_VideoInit(_THIS);
-static void NGAGE_VideoQuit(_THIS);
+static int NGAGE_VideoInit(SDL_VideoDevice *_this);
+static void NGAGE_VideoQuit(SDL_VideoDevice *_this);
 
 /* NGAGE driver bootstrap functions */
 
@@ -67,7 +67,7 @@ static void NGAGE_DeleteDevice(SDL_VideoDevice *device)
             phdata->NGAGE_WsSession.RedrawReadyCancel();
         }
 
-        free(phdata->NGAGE_DrawDevice);
+        free(phdata->NGAGE_DrawDevice); /* This should NOT be SDL_free() */
 
         if (phdata->NGAGE_WsWindow.WsHandle()) {
             phdata->NGAGE_WsWindow.Close();
@@ -104,15 +104,13 @@ static SDL_VideoDevice *NGAGE_CreateDevice(void)
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
-        SDL_OutOfMemory();
+    if (!device) {
         return 0;
     }
 
     /* Initialize internal N-Gage specific data */
     phdata = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
-    if (phdata == NULL) {
-        SDL_OutOfMemory();
+    if (!phdata) {
         SDL_free(device);
         return 0;
     }
@@ -138,18 +136,19 @@ static SDL_VideoDevice *NGAGE_CreateDevice(void)
 
 VideoBootStrap NGAGE_bootstrap = {
     NGAGEVID_DRIVER_NAME, "SDL ngage video driver",
-    NGAGE_CreateDevice
+    NGAGE_CreateDevice,
+    NULL /* no ShowMessageBox implementation */
 };
 
-int NGAGE_VideoInit(_THIS)
+int NGAGE_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
 
     /* Use 12-bpp desktop mode */
     SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_RGB444;
-    mode.pixel_w = 176;
-    mode.pixel_h = 208;
+    mode.w = 176;
+    mode.h = 208;
     if (SDL_AddBasicVideoDisplay(&mode) == 0) {
         return -1;
     }
@@ -158,7 +157,7 @@ int NGAGE_VideoInit(_THIS)
     return 0;
 }
 
-void NGAGE_VideoQuit(_THIS)
+void NGAGE_VideoQuit(SDL_VideoDevice *_this)
 {
 }
 

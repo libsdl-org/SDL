@@ -5,12 +5,9 @@
  Alan Ott
  Signal 11 Software
 
- 8/22/2009
- Linux Version - 6/2/2010
- Libusb Version - 8/13/2010
- FreeBSD Version - 11/1/2011
+ libusb/hidapi Team
 
- Copyright 2009, All Rights Reserved.
+ Copyright 2022, All Rights Reserved.
 
  At the discretion of the user of this library,
  this software may be licensed under the terms of the
@@ -23,124 +20,44 @@
         https://github.com/libusb/hidapi .
 ********************************************************/
 
-/* This file is heavily modified from the original libusb.c, for portability.
- * Last upstream update was from July 25, 2019, Git commit 93dca807.
- */
+#ifndef HIDAPI_USING_SDL_RUNTIME
+#define _GNU_SOURCE /* needed for wcsdup() before glibc 2.10 */
 
-#include "SDL_internal.h"
-#include "../../thread/SDL_systhread.h"
+/* C */
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <locale.h>
+#include <errno.h>
 
-#ifdef realloc
-#undef realloc
-#endif
-#define realloc	SDL_realloc
-#ifdef snprintf
-#undef snprintf
-#endif
-#define snprintf SDL_snprintf
-#ifdef strdup
-#undef strdup
-#endif
-#define strdup  SDL_strdup
-#ifdef strncpy
-#undef strncpy
-#endif
-#define strncpy SDL_strlcpy
-#ifdef tolower
-#undef tolower
-#endif
-#define tolower SDL_tolower
-#ifdef wcsncpy
-#undef wcsncpy
-#endif
-#define wcsncpy SDL_wcslcpy
+/* Unix */
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <sys/utsname.h>
+#include <fcntl.h>
+#include <wchar.h>
 
-#ifndef HAVE_WCSDUP
-#ifdef HAVE__WCSDUP
-#define wcsdup _wcsdup
-#else
-#define wcsdup _dupwcs
-static wchar_t *_dupwcs(const wchar_t *src)
-{
-    wchar_t *dst = NULL;
-    if (src) {
-        size_t len = SDL_wcslen(src) + 1;
-        len *= sizeof(wchar_t);
-        dst = (wchar_t *) malloc(len);
-        if (dst) memcpy(dst, src, len);
-    }
-    return dst;
-}
-#endif
-#endif /* HAVE_WCSDUP */
-
+/* GNU / LibUSB */
 #include <libusb.h>
-#ifndef _WIN32
-#define HAVE_SETLOCALE
-#include <locale.h> /* setlocale */
+#if !defined(__ANDROID__) && !defined(NO_ICONV)
+#include <iconv.h>
+#ifndef ICONV_CONST
+#define ICONV_CONST
 #endif
-
-#include "../hidapi/hidapi.h"
-
-#ifdef NAMESPACE
-namespace NAMESPACE
-{
 #endif
+#endif /* HIDAPI_USING_SDL_RUNTIME */
 
-/* Barrier implementation because Android/Bionic don't have pthread_barrier.
-   This implementation came from Brent Priddy and was posted on
-   StackOverflow. It is used with his permission. */
+#include "hidapi_libusb.h"
 
-typedef struct _SDL_ThreadBarrier
-{
-	SDL_mutex *mutex;
-	SDL_cond *cond;
-	Uint32 count;
-	Uint32 trip_count;
-} SDL_ThreadBarrier;
+#ifndef HIDAPI_THREAD_MODEL_INCLUDE
+#define HIDAPI_THREAD_MODEL_INCLUDE "hidapi_thread_pthread.h"
+#endif
+#include HIDAPI_THREAD_MODEL_INCLUDE
 
-static int SDL_CreateThreadBarrier(SDL_ThreadBarrier *barrier, Uint32 count)
-{
-	SDL_assert(barrier != NULL);
-	SDL_assert(count != 0);
-
-	barrier->mutex = SDL_CreateMutex();
-	if (barrier->mutex == NULL) {
-		return -1; /* Error set by CreateMutex */
-	}
-	barrier->cond = SDL_CreateCond();
-	if (barrier->cond == NULL) {
-		return -1; /* Error set by CreateCond */
-	}
-
-	barrier->trip_count = count;
-	barrier->count = 0;
-
-	return 0;
-}
-
-static void SDL_DestroyThreadBarrier(SDL_ThreadBarrier *barrier)
-{
-	SDL_DestroyCond(barrier->cond);
-	SDL_DestroyMutex(barrier->mutex);
-}
-
-static int SDL_WaitThreadBarrier(SDL_ThreadBarrier *barrier)
-{
-	SDL_LockMutex(barrier->mutex);
-	barrier->count += 1;
-	if (barrier->count >= barrier->trip_count) {
-		barrier->count = 0;
-		SDL_CondBroadcast(barrier->cond);
-		SDL_UnlockMutex(barrier->mutex);
-		return 1;
-	}
-	SDL_CondWait(barrier->cond, barrier->mutex);
-	SDL_UnlockMutex(barrier->mutex);
-	return 0;
-}
-
-#if defined(__cplusplus) && !defined(NAMESPACE)
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -174,38 +91,54 @@ struct hid_device_ {
 	/* Handle to the actual device. */
 	libusb_device_handle *device_handle;
 
+	/* USB Configuration Number of the device */
+	int config_number;
+	/* The interface number of the HID */
+	int interface;
+	int interface_class;
+	int interface_subclass;
+	int interface_protocol;
+
+	uint16_t report_descriptor_size;
+
 	/* Endpoint information */
 	int input_endpoint;
 	int output_endpoint;
 	int input_ep_max_packet_size;
 
-	/* The interface number of the HID */
-	int interface;
-	int detached_driver;
-
 	/* Indexes of Strings */
 	int manufacturer_index;
 	int product_index;
 	int serial_index;
+	struct hid_device_info* device_info;
 
 	/* Whether blocking reads are used */
 	int blocking; /* boolean */
 
 	/* Read thread objects */
-	SDL_Thread *thread;
-	SDL_mutex *mutex; /* Protects input_reports */
-	SDL_cond *condition;
-	SDL_ThreadBarrier barrier; /* Ensures correct startup sequence */
+	hidapi_thread_state thread_state;
 	int shutdown_thread;
 	int transfer_loop_finished;
 	struct libusb_transfer *transfer;
 
 	/* Quirks */
 	int skip_output_report_id;
+	int no_skip_output_report_id;
 	int no_output_reports_on_intr_ep;
 
 	/* List of received input reports. */
 	struct input_report *input_reports;
+
+	/* Was kernel driver detached by libusb */
+#ifdef DETACH_KERNEL_DRIVER
+	int is_driver_detached;
+#endif
+};
+
+static struct hid_api_version api_version = {
+	.major = HID_API_VERSION_MAJOR,
+	.minor = HID_API_VERSION_MINOR,
+	.patch = HID_API_VERSION_PATCH
 };
 
 static libusb_context *usb_context = NULL;
@@ -218,9 +151,7 @@ static hid_device *new_hid_device(void)
 	hid_device *dev = (hid_device*) calloc(1, sizeof(hid_device));
 	dev->blocking = 1;
 
-	dev->mutex = SDL_CreateMutex();
-	dev->condition = SDL_CreateCond();
-	SDL_CreateThreadBarrier(&dev->barrier, 2);
+	hidapi_thread_state_init(&dev->thread_state);
 
 	return dev;
 }
@@ -228,9 +159,9 @@ static hid_device *new_hid_device(void)
 static void free_hid_device(hid_device *dev)
 {
 	/* Clean up the thread objects */
-	SDL_DestroyThreadBarrier(&dev->barrier);
-	SDL_DestroyCond(dev->condition);
-	SDL_DestroyMutex(dev->mutex);
+	hidapi_thread_state_destroy(&dev->thread_state);
+
+	hid_free_enumeration(dev->device_info);
 
 	/* Free the device itself */
 	free(dev);
@@ -240,10 +171,10 @@ static void free_hid_device(hid_device *dev)
 /*TODO: Implement this function on hidapi/libusb.. */
 static void register_error(hid_device *dev, const char *op)
 {
+
 }
 #endif
 
-#ifdef INVASIVE_GET_USAGE
 /* Get bytes from a HID Report Descriptor.
    Only call with a num_bytes of 0, 1, 2, or 4. */
 static uint32_t get_bytes(uint8_t *rpt, size_t len, size_t num_bytes, size_t cur)
@@ -319,7 +250,7 @@ static int get_usage(uint8_t *report_descriptor, size_t size,
 				/* Can't ever happen since size_code is & 0x3 */
 				data_len = 0;
 				break;
-			}
+			};
 			key_size = 1;
 		}
 
@@ -329,8 +260,16 @@ static int get_usage(uint8_t *report_descriptor, size_t size,
 			//printf("Usage Page: %x\n", (uint32_t)*usage_page);
 		}
 		if (key_cmd == 0x8) {
-			*usage = get_bytes(report_descriptor, size, data_len, i);
-			usage_found = 1;
+			if (data_len == 4) { /* Usages 5.5 / Usage Page 6.2.2.7 */
+				*usage_page = get_bytes(report_descriptor, size, 2, i + 2);
+				usage_page_found = 1;
+				*usage = get_bytes(report_descriptor, size, 2, i);
+				usage_found = 1;
+			}
+			else {
+				*usage = get_bytes(report_descriptor, size, data_len, i);
+				usage_found = 1;
+			}
 			//printf("Usage: %x\n", (uint32_t)*usage);
 		}
 
@@ -343,7 +282,6 @@ static int get_usage(uint8_t *report_descriptor, size_t size,
 
 	return -1; /* failure */
 }
-#endif /* INVASIVE_GET_USAGE */
 
 #if defined(__FreeBSD__) && __FreeBSD__ < 10
 /* The libusb version included in FreeBSD < 10 doesn't have this function. In
@@ -363,6 +301,7 @@ static inline int libusb_get_string_descriptor(libusb_device_handle *dev,
 		(LIBUSB_DT_STRING << 8) | descriptor_index,
 		lang_id, data, (uint16_t) length, 1000);
 }
+
 #endif
 
 
@@ -421,16 +360,15 @@ static wchar_t *get_usb_string(libusb_device_handle *dev, uint8_t idx)
 	int len;
 	wchar_t *str = NULL;
 
-#ifndef NO_ICONV
+#if !defined(__ANDROID__) && !defined(NO_ICONV) /* we don't use iconv on Android, or when it is explicitly disabled */
 	wchar_t wbuf[256];
-	SDL_iconv_t ic;
+	/* iconv variables */
+	iconv_t ic;
 	size_t inbytes;
 	size_t outbytes;
 	size_t res;
-	const char *inptr;
+	ICONV_CONST char *inptr;
 	char *outptr;
-#else
-	int i;
 #endif
 
 	/* Determine which language to use. */
@@ -445,12 +383,12 @@ static wchar_t *get_usb_string(libusb_device_handle *dev, uint8_t idx)
 			lang,
 			(unsigned char*)buf,
 			sizeof(buf));
-	if (len < 0)
+	if (len < 2) /* we always skip first 2 bytes */
 		return NULL;
 
-#ifdef NO_ICONV /* original hidapi code for NO_ICONV : */
+#if defined(__ANDROID__) || defined(NO_ICONV)
 
-	/* Bionic does not have wchar_t iconv support, so it
+	/* Bionic does not have iconv support nor wcsdup() function, so it
 	   has to be done manually.  The following code will only work for
 	   code points that can be represented as a single UTF-16 character,
 	   and will incorrectly convert any code points which require more
@@ -459,19 +397,21 @@ static wchar_t *get_usb_string(libusb_device_handle *dev, uint8_t idx)
 	   Skip over the first character (2-bytes).  */
 	len -= 2;
 	str = (wchar_t*) malloc((len / 2 + 1) * sizeof(wchar_t));
+	int i;
 	for (i = 0; i < len / 2; i++) {
 		str[i] = buf[i * 2 + 2] | (buf[i * 2 + 3] << 8);
 	}
 	str[len / 2] = 0x00000000;
 
 #else
+
 	/* buf does not need to be explicitly NULL-terminated because
 	   it is only passed into iconv() which does not need it. */
 
 	/* Initialize iconv. */
-	ic = SDL_iconv_open("WCHAR_T", "UTF-16LE");
-	if (ic == (SDL_iconv_t)-1) {
-		LOG("SDL_iconv_open() failed\n");
+	ic = iconv_open("WCHAR_T", "UTF-16LE");
+	if (ic == (iconv_t)-1) {
+		LOG("iconv_open() failed\n");
 		return NULL;
 	}
 
@@ -481,9 +421,9 @@ static wchar_t *get_usb_string(libusb_device_handle *dev, uint8_t idx)
 	inbytes = len-2;
 	outptr = (char*) wbuf;
 	outbytes = sizeof(wbuf);
-	res = SDL_iconv(ic, &inptr, &inbytes, &outptr, &outbytes);
+	res = iconv(ic, &inptr, &inbytes, &outptr, &outbytes);
 	if (res == (size_t)-1) {
-		LOG("SDL_iconv() failed\n");
+		LOG("iconv() failed\n");
 		goto err;
 	}
 
@@ -496,7 +436,8 @@ static wchar_t *get_usb_string(libusb_device_handle *dev, uint8_t idx)
 	str = wcsdup(wbuf);
 
 err:
-	SDL_iconv_close(ic);
+	iconv_close(ic);
+
 #endif
 
 	return str;
@@ -607,34 +548,66 @@ static const struct usb_string_cache_entry *usb_string_cache_find(struct libusb_
 	return entry;
 }
 
-static char *make_path(libusb_device *dev, int interface_number)
+/**
+  Max length of the result: "000-000.000.000.000.000.000.000:000.000" (39 chars).
+  64 is used for simplicity/alignment.
+*/
+static void get_path(char (*result)[64], libusb_device *dev, int config_number, int interface_number)
+{
+	char *str = *result;
+
+	/* Note that USB3 port count limit is 7; use 8 here for alignment */
+	uint8_t port_numbers[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+	int num_ports = libusb_get_port_numbers(dev, port_numbers, 8);
+
+	if (num_ports > 0) {
+		int n = snprintf(str, sizeof("000-000"), "%u-%u", libusb_get_bus_number(dev), port_numbers[0]);
+		for (uint8_t i = 1; i < num_ports; i++) {
+			n += snprintf(&str[n], sizeof(".000"), ".%u", port_numbers[i]);
+		}
+		n += snprintf(&str[n], sizeof(":000.000"), ":%u.%u", (uint8_t)config_number, (uint8_t)interface_number);
+		str[n] = '\0';
+	} else {
+		/* Likely impossible, but check: USB3.0 specs limit number of ports to 7 and buffer size here is 8 */
+		if (num_ports == LIBUSB_ERROR_OVERFLOW) {
+			LOG("make_path() failed. buffer overflow error\n");
+		} else {
+			LOG("make_path() failed. unknown error\n");
+		}
+		str[0] = '\0';
+	}
+}
+
+static char *make_path(libusb_device *dev, int config_number, int interface_number)
 {
 	char str[64];
-	snprintf(str, sizeof(str), "%04x:%04x:%02x",
-		libusb_get_bus_number(dev),
-		libusb_get_device_address(dev),
-		interface_number);
-	str[sizeof(str)-1] = '\0';
-
+	get_path(&str, dev, config_number, interface_number);
 	return strdup(str);
 }
 
+HID_API_EXPORT const struct hid_api_version* HID_API_CALL hid_version(void)
+{
+	return &api_version;
+}
+
+HID_API_EXPORT const char* HID_API_CALL hid_version_str(void)
+{
+	return HID_API_VERSION_STR;
+}
 
 int HID_API_EXPORT hid_init(void)
 {
 	if (!usb_context) {
+		const char *locale;
+
 		/* Init Libusb */
 		if (libusb_init(&usb_context))
 			return -1;
 
-#ifdef HAVE_SETLOCALE
 		/* Set the locale if it's not set. */
-		{
-			const char *locale = setlocale(LC_CTYPE, NULL);
-			if (!locale)
-				setlocale(LC_CTYPE, "");
-		}
-#endif
+		locale = setlocale(LC_CTYPE, NULL);
+		if (!locale)
+			(void) setlocale(LC_CTYPE, "");
 	}
 
 	return 0;
@@ -652,12 +625,202 @@ int HID_API_EXPORT hid_exit(void)
 	return 0;
 }
 
+static int hid_get_report_descriptor_libusb(libusb_device_handle *handle, int interface_num, uint16_t expected_report_descriptor_size, unsigned char *buf, size_t buf_size)
+{
+	unsigned char *tmp = (unsigned char *)malloc(HID_API_MAX_REPORT_DESCRIPTOR_SIZE);
+
+	if (expected_report_descriptor_size > HID_API_MAX_REPORT_DESCRIPTOR_SIZE)
+		expected_report_descriptor_size = HID_API_MAX_REPORT_DESCRIPTOR_SIZE;
+
+	/* Get the HID Report Descriptor.
+	   See USB HID Specification, section 7.1.1
+	*/
+	int res = libusb_control_transfer(handle, LIBUSB_ENDPOINT_IN|LIBUSB_RECIPIENT_INTERFACE, LIBUSB_REQUEST_GET_DESCRIPTOR, (LIBUSB_DT_REPORT << 8), interface_num, tmp, expected_report_descriptor_size, 5000);
+	if (res >= 0) {
+		if (res > (int)buf_size)
+			res = (int)buf_size;
+
+		memcpy(buf, tmp, (size_t)res);
+	} else {
+		LOG("libusb_control_transfer() for getting the HID Report descriptor failed with %d: %s\n", res, libusb_error_name(res));
+	}
+	free(tmp);
+
+	return res;
+}
+
+/**
+ * Requires an opened device with *claimed interface*.
+ */
+static void fill_device_info_usage(struct hid_device_info *cur_dev, libusb_device_handle *handle, int interface_num, uint16_t expected_report_descriptor_size)
+{
+	unsigned char *hid_report_descriptor = malloc(HID_API_MAX_REPORT_DESCRIPTOR_SIZE);
+	unsigned short page = 0, usage = 0;
+
+	int res = hid_get_report_descriptor_libusb(handle, interface_num, expected_report_descriptor_size, hid_report_descriptor, HID_API_MAX_REPORT_DESCRIPTOR_SIZE);
+	if (res >= 0) {
+		/* Parse the usage and usage page
+		   out of the report descriptor. */
+		get_usage(hid_report_descriptor, res,  &page, &usage);
+	}
+
+	cur_dev->usage_page = page;
+	cur_dev->usage = usage;
+}
+
+#ifdef INVASIVE_GET_USAGE
+static void invasive_fill_device_info_usage(struct hid_device_info *cur_dev, libusb_device_handle *handle, int interface_num, uint16_t report_descriptor_size)
+{
+	int res = 0;
+
+#ifdef DETACH_KERNEL_DRIVER
+	int detached = 0;
+	/* Usage Page and Usage */
+	res = libusb_kernel_driver_active(handle, interface_num);
+	if (res == 1) {
+		res = libusb_detach_kernel_driver(handle, interface_num);
+		if (res < 0)
+			LOG("Couldn't detach kernel driver, even though a kernel driver was attached.\n");
+		else
+			detached = 1;
+	}
+#endif
+
+	res = libusb_claim_interface(handle, interface_num);
+	if (res >= 0) {
+		fill_device_info_usage(cur_dev, handle, interface_num, report_descriptor_size);
+
+		/* Release the interface */
+		res = libusb_release_interface(handle, interface_num);
+		if (res < 0)
+			LOG("Can't release the interface.\n");
+	}
+	else
+		LOG("Can't claim interface: (%d) %s\n", res, libusb_error_name(res));
+
+#ifdef DETACH_KERNEL_DRIVER
+	/* Re-attach kernel driver if necessary. */
+	if (detached) {
+		res = libusb_attach_kernel_driver(handle, interface_num);
+		if (res < 0)
+			LOG("Couldn't re-attach kernel driver.\n");
+	}
+#endif
+}
+#endif /* INVASIVE_GET_USAGE */
+
+/**
+ * Create and fill up most of hid_device_info fields.
+ * usage_page/usage is not filled up.
+ */
+static struct hid_device_info * create_device_info_for_device(libusb_device *device, libusb_device_handle *handle, struct libusb_device_descriptor *desc, int config_number, int interface_num, int interface_class, int interface_subclass, int interface_protocol)
+{
+	struct hid_device_info *cur_dev = calloc(1, sizeof(struct hid_device_info));
+	if (cur_dev == NULL) {
+		return NULL;
+	}
+
+	/* VID/PID */
+	cur_dev->vendor_id = desc->idVendor;
+	cur_dev->product_id = desc->idProduct;
+
+	cur_dev->release_number = desc->bcdDevice;
+
+	cur_dev->interface_number = interface_num;
+	cur_dev->interface_class = interface_class;
+	cur_dev->interface_subclass = interface_subclass;
+	cur_dev->interface_protocol = interface_protocol;
+
+	cur_dev->bus_type = HID_API_BUS_USB;
+
+	cur_dev->path = make_path(device, config_number, interface_num);
+
+	if (!handle) {
+		return cur_dev;
+	}
+
+	if (desc->iSerialNumber > 0)
+		cur_dev->serial_number = get_usb_string(handle, desc->iSerialNumber);
+
+	/* Manufacturer and Product strings */
+	const struct usb_string_cache_entry *string_cache;
+	if (usb_string_can_cache(desc->idVendor, desc->idProduct) &&
+	    (string_cache = usb_string_cache_find(desc, handle)) != NULL) {
+		if (string_cache->vendor) {
+			cur_dev->manufacturer_string = wcsdup(string_cache->vendor);
+		}
+		if (string_cache->product) {
+			cur_dev->product_string = wcsdup(string_cache->product);
+		}
+	} else {
+		if (desc->iManufacturer > 0)
+			cur_dev->manufacturer_string = get_usb_string(handle, desc->iManufacturer);
+		if (desc->iProduct > 0)
+			cur_dev->product_string = get_usb_string(handle, desc->iProduct);
+	}
+
+	return cur_dev;
+}
+
+static uint16_t get_report_descriptor_size_from_interface_descriptors(const struct libusb_interface_descriptor *intf_desc)
+{
+	int i = 0;
+	int found_hid_report_descriptor = 0;
+	uint16_t result = HID_API_MAX_REPORT_DESCRIPTOR_SIZE;
+	const unsigned char *extra = intf_desc->extra;
+	int extra_length = intf_desc->extra_length;
+
+	/*
+	 "extra" contains a HID descriptor
+	 See section 6.2.1 of HID 1.1 specification.
+	*/
+
+	while (extra_length >= 2) { /* Descriptor header: bLength/bDescriptorType */
+		if (extra[1] == LIBUSB_DT_HID) { /* bDescriptorType */
+			if (extra_length < 6) {
+				LOG("Broken HID descriptor: not enough data\n");
+				break;
+			}
+			unsigned char bNumDescriptors = extra[5];
+			if (extra_length < (6 + 3 * bNumDescriptors)) {
+				LOG("Broken HID descriptor: not enough data for Report metadata\n");
+				break;
+			}
+			for (i = 0; i < bNumDescriptors; i++) {
+				if (extra[6 + 3 * i] == LIBUSB_DT_REPORT) {
+					result = (uint16_t)extra[6 + 3 * i + 2] << 8 | extra[6 + 3 * i + 1];
+					found_hid_report_descriptor = 1;
+					break;
+				}
+			}
+
+			if (!found_hid_report_descriptor) {
+				/* We expect to find exactly 1 HID descriptor (LIBUSB_DT_HID)
+				   which should contain exactly one HID Report Descriptor metadata (LIBUSB_DT_REPORT). */
+				LOG("Broken HID descriptor: missing Report descriptor\n");
+			}
+			break;
+		}
+
+		if (extra[0] == 0) { /* bLength */
+			LOG("Broken HID Interface descriptors: zero-sized descriptor\n");
+			break;
+		}
+
+		/* Iterate over to the next Descriptor */
+		extra_length -= extra[0];
+		extra += extra[0];
+	}
+
+	return result;
+}
+
 static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_descriptor *intf_desc)
 {
-	static const int XB360_IFACE_SUBCLASS = 93;
-	static const int XB360_IFACE_PROTOCOL = 1; /* Wired */
-	static const int XB360W_IFACE_PROTOCOL = 129; /* Wireless */
-	static const int SUPPORTED_VENDORS[] = {
+	static const int xb360_iface_subclass = 93;
+	static const int xb360_iface_protocol = 1; /* Wired */
+	static const int xb360w_iface_protocol = 129; /* Wireless */
+	static const int supported_vendors[] = {
 		0x0079, /* GPD Win 2 */
 		0x044f, /* Thrustmaster */
 		0x045e, /* Microsoft */
@@ -683,15 +846,16 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x24c6, /* PowerA */
 		0x2c22, /* Qanba */
 		0x2dc8, /* 8BitDo */
+		0x9886, /* ASTRO Gaming */
 	};
 
 	if (intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
-	    intf_desc->bInterfaceSubClass == XB360_IFACE_SUBCLASS &&
-	    (intf_desc->bInterfaceProtocol == XB360_IFACE_PROTOCOL ||
-	     intf_desc->bInterfaceProtocol == XB360W_IFACE_PROTOCOL)) {
-		int i;
-		for (i = 0; i < sizeof(SUPPORTED_VENDORS)/sizeof(SUPPORTED_VENDORS[0]); ++i) {
-			if (vendor_id == SUPPORTED_VENDORS[i]) {
+	    intf_desc->bInterfaceSubClass == xb360_iface_subclass &&
+	    (intf_desc->bInterfaceProtocol == xb360_iface_protocol ||
+	     intf_desc->bInterfaceProtocol == xb360w_iface_protocol)) {
+		size_t i;
+		for (i = 0; i < sizeof(supported_vendors)/sizeof(supported_vendors[0]); ++i) {
+			if (vendor_id == supported_vendors[i]) {
 				return 1;
 			}
 		}
@@ -701,29 +865,31 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 
 static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_descriptor *intf_desc)
 {
-	static const int XB1_IFACE_SUBCLASS = 71;
-	static const int XB1_IFACE_PROTOCOL = 208;
-	static const int SUPPORTED_VENDORS[] = {
+	static const int xb1_iface_subclass = 71;
+	static const int xb1_iface_protocol = 208;
+	static const int supported_vendors[] = {
+		0x03f0, /* HP */
 		0x044f, /* Thrustmaster */
 		0x045e, /* Microsoft */
 		0x0738, /* Mad Catz */
 		0x0e6f, /* PDP */
 		0x0f0d, /* Hori */
-        0x10f5, /* Turtle Beach */
+		0x10f5, /* Turtle Beach */
 		0x1532, /* Razer Wildcat */
 		0x20d6, /* PowerA */
 		0x24c6, /* PowerA */
 		0x2dc8, /* 8BitDo */
 		0x2e24, /* Hyperkin */
+		0x3537, /* GameSir */
 	};
 
 	if (intf_desc->bInterfaceNumber == 0 &&
 	    intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
-	    intf_desc->bInterfaceSubClass == XB1_IFACE_SUBCLASS &&
-	    intf_desc->bInterfaceProtocol == XB1_IFACE_PROTOCOL) {
-		int i;
-		for (i = 0; i < sizeof(SUPPORTED_VENDORS)/sizeof(SUPPORTED_VENDORS[0]); ++i) {
-			if (vendor_id == SUPPORTED_VENDORS[i]) {
+	    intf_desc->bInterfaceSubClass == xb1_iface_subclass &&
+	    intf_desc->bInterfaceProtocol == xb1_iface_protocol) {
+		size_t i;
+		for (i = 0; i < sizeof(supported_vendors)/sizeof(supported_vendors[0]); ++i) {
+			if (vendor_id == supported_vendors[i]) {
 				return 1;
 			}
 		}
@@ -733,7 +899,9 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
 
 static int should_enumerate_interface(unsigned short vendor_id, const struct libusb_interface_descriptor *intf_desc)
 {
-	//printf("Checking interface 0x%x %d/%d/%d/%d\n", vendor_id, intf_desc->bInterfaceNumber, intf_desc->bInterfaceClass, intf_desc->bInterfaceSubClass, intf_desc->bInterfaceProtocol);
+#if 0
+	printf("Checking interface 0x%x %d/%d/%d/%d\n", vendor_id, intf_desc->bInterfaceNumber, intf_desc->bInterfaceClass, intf_desc->bInterfaceSubClass, intf_desc->bInterfaceProtocol);
+#endif
 
 	if (intf_desc->bInterfaceClass == LIBUSB_CLASS_HID)
 		return 1;
@@ -753,13 +921,12 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 {
 	libusb_device **devs;
 	libusb_device *dev;
-	libusb_device_handle *handle;
+	libusb_device_handle *handle = NULL;
 	ssize_t num_devs;
 	int i = 0;
 
 	struct hid_device_info *root = NULL; /* return object */
 	struct hid_device_info *cur_dev = NULL;
-	const char *hint = SDL_GetHint(SDL_HINT_HIDAPI_IGNORE_DEVICES);
 
 	if(hid_init() < 0)
 		return NULL;
@@ -771,85 +938,58 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		struct libusb_device_descriptor desc;
 		struct libusb_config_descriptor *conf_desc = NULL;
 		int j, k;
-		int interface_num = 0;
 
 		int res = libusb_get_device_descriptor(dev, &desc);
+		if (res < 0)
+			continue;
+
 		unsigned short dev_vid = desc.idVendor;
 		unsigned short dev_pid = desc.idProduct;
 
-		/* See if there are any devices we should skip in enumeration */
-		if (hint) {
-			char vendor_match[16], product_match[16];
-			SDL_snprintf(vendor_match, sizeof(vendor_match), "0x%.4x/0x0000", dev_vid);
-			SDL_snprintf(product_match, sizeof(product_match), "0x%.4x/0x%.4x", dev_vid, dev_pid);
-			if (SDL_strcasestr(hint, vendor_match) || SDL_strcasestr(hint, product_match)) {
-				continue;
-			}
+		if ((vendor_id != 0x0 && vendor_id != dev_vid) ||
+		    (product_id != 0x0 && product_id != dev_pid)) {
+			continue;
 		}
+
+#ifdef HIDAPI_IGNORE_DEVICE
+		/* See if there are any devices we should skip in enumeration */
+		if (HIDAPI_IGNORE_DEVICE(HID_API_BUS_USB, dev_vid, dev_pid, 0, 0)) {
+			continue;
+		}
+#endif
 
 		res = libusb_get_active_config_descriptor(dev, &conf_desc);
 		if (res < 0)
 			libusb_get_config_descriptor(dev, 0, &conf_desc);
 		if (conf_desc) {
-
 			for (j = 0; j < conf_desc->bNumInterfaces; j++) {
 				const struct libusb_interface *intf = &conf_desc->interface[j];
 				for (k = 0; k < intf->num_altsetting; k++) {
 					const struct libusb_interface_descriptor *intf_desc;
 					intf_desc = &intf->altsetting[k];
 					if (should_enumerate_interface(dev_vid, intf_desc)) {
-						interface_num = intf_desc->bInterfaceNumber;
+						struct hid_device_info *tmp;
 
-						/* Check the VID/PID against the arguments */
-						if ((vendor_id == 0x0 || vendor_id == dev_vid) &&
-						    (product_id == 0x0 || product_id == dev_pid)) {
-							res = libusb_open(dev, &handle);
+						res = libusb_open(dev, &handle);
 
-							if (res >= 0) {
-								struct hid_device_info *tmp;
-								const struct usb_string_cache_entry *string_cache;
+#ifdef __ANDROID__
+						if (handle) {
+							/* There is (a potential) libusb Android backend, in which
+							   device descriptor is not accurate up until the device is opened.
+							   https://github.com/libusb/libusb/pull/874#discussion_r632801373
+							   A workaround is to re-read the descriptor again.
+							   Even if it is not going to be accepted into libusb master,
+							   having it here won't do any harm, since reading the device descriptor
+							   is as cheap as copy 18 bytes of data. */
+							libusb_get_device_descriptor(dev, &desc);
+						}
+#endif
 
-								/* VID/PID match. Create the record. */
-								tmp = (struct hid_device_info*) calloc(1, sizeof(struct hid_device_info));
-								if (cur_dev) {
-									cur_dev->next = tmp;
-								}
-								else {
-									root = tmp;
-								}
-								cur_dev = tmp;
-
-								/* Fill out the record */
-								cur_dev->next = NULL;
-								cur_dev->path = make_path(dev, interface_num);
-
-								/* Serial Number */
-								if (desc.iSerialNumber > 0)
-									cur_dev->serial_number =
-										get_usb_string(handle, desc.iSerialNumber);
-
-								/* Manufacturer and Product strings */
-								if (usb_string_can_cache(dev_vid, dev_pid)) {
-									string_cache = usb_string_cache_find(&desc, handle);
-									if (string_cache) {
-										if (string_cache->vendor) {
-											cur_dev->manufacturer_string = wcsdup(string_cache->vendor);
-										}
-										if (string_cache->product) {
-											cur_dev->product_string = wcsdup(string_cache->product);
-										}
-									}
-								} else {
-									if (desc.iManufacturer > 0)
-										cur_dev->manufacturer_string =
-											get_usb_string(handle, desc.iManufacturer);
-									if (desc.iProduct > 0)
-										cur_dev->product_string =
-											get_usb_string(handle, desc.iProduct);
-								}
-
+						tmp = create_device_info_for_device(dev, handle, &desc, conf_desc->bConfigurationValue, intf_desc->bInterfaceNumber, intf_desc->bInterfaceClass, intf_desc->bInterfaceSubClass, intf_desc->bInterfaceProtocol);
+						if (tmp) {
 #ifdef INVASIVE_GET_USAGE
-{
+							/* TODO: have a runtime check for this section. */
+
 							/*
 							This section is removed because it is too
 							invasive on the system. Getting a Usage Page
@@ -862,73 +1002,30 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 							app has them claimed) and the re-attachment of
 							the driver will sometimes change /dev entry names.
 							It is for these reasons that this section is
-							#if 0. For composite devices, use the interface
+							optional. For composite devices, use the interface
 							field in the hid_device_info struct to distinguish
 							between interfaces. */
-								unsigned char data[256];
-#ifdef DETACH_KERNEL_DRIVER
-								int detached = 0;
-								/* Usage Page and Usage */
-								res = libusb_kernel_driver_active(handle, interface_num);
-								if (res == 1) {
-									res = libusb_detach_kernel_driver(handle, interface_num);
-									if (res < 0)
-										LOG("Couldn't detach kernel driver, even though a kernel driver was attached.");
-									else
-										detached = 1;
-								}
-#endif
-								res = libusb_claim_interface(handle, interface_num);
-								if (res >= 0) {
-									/* Get the HID Report Descriptor. */
-									res = libusb_control_transfer(handle, LIBUSB_ENDPOINT_IN|LIBUSB_RECIPIENT_INTERFACE, LIBUSB_REQUEST_GET_DESCRIPTOR, (LIBUSB_DT_REPORT << 8)|interface_num, 0, data, sizeof(data), 5000);
-									if (res >= 0) {
-										unsigned short page=0, usage=0;
-										/* Parse the usage and usage page
-										   out of the report descriptor. */
-										get_usage(data, res,  &page, &usage);
-										cur_dev->usage_page = page;
-										cur_dev->usage = usage;
-									}
-									else
-										LOG("libusb_control_transfer() for getting the HID report failed with %d\n", res);
+							if (handle) {
+								uint16_t report_descriptor_size = get_report_descriptor_size_from_interface_descriptors(intf_desc);
 
-									/* Release the interface */
-									res = libusb_release_interface(handle, interface_num);
-									if (res < 0)
-										LOG("Can't release the interface.\n");
-								}
-								else
-									LOG("Can't claim interface %d\n", res);
-#ifdef DETACH_KERNEL_DRIVER
-								/* Re-attach kernel driver if necessary. */
-								if (detached) {
-									res = libusb_attach_kernel_driver(handle, interface_num);
-									if (res < 0)
-										LOG("Couldn't re-attach kernel driver.\n");
-								}
-#endif
-}
+								invasive_fill_device_info_usage(tmp, handle, intf_desc->bInterfaceNumber, report_descriptor_size);
+							}
 #endif /* INVASIVE_GET_USAGE */
 
-								libusb_close(handle);
-
-								/* VID/PID */
-								cur_dev->vendor_id = dev_vid;
-								cur_dev->product_id = dev_pid;
-
-								/* Release Number */
-								cur_dev->release_number = desc.bcdDevice;
-
-								/* Interface Number */
-								cur_dev->interface_number = interface_num;
-								cur_dev->interface_class = intf_desc->bInterfaceClass;
-								cur_dev->interface_subclass = intf_desc->bInterfaceSubClass;
-								cur_dev->interface_protocol = intf_desc->bInterfaceProtocol;
-
-							} else
-								LOG("Can't open device 0x%.4x/0x%.4x during enumeration: %d\n", dev_vid, dev_pid, res);
+							if (cur_dev) {
+								cur_dev->next = tmp;
+							}
+							else {
+								root = tmp;
+							}
+							cur_dev = tmp;
 						}
+
+						if (res >= 0) {
+							libusb_close(handle);
+							handle = NULL;
+						}
+						break;
 					}
 				} /* altsettings */
 			} /* interfaces */
@@ -983,7 +1080,7 @@ hid_device * hid_open(unsigned short vendor_id, unsigned short product_id, const
 
 	if (path_to_open) {
 		/* Open the device */
-		handle = hid_open_path(path_to_open, 0);
+		handle = hid_open_path(path_to_open);
 	}
 
 	hid_free_enumeration(devs);
@@ -993,7 +1090,7 @@ hid_device * hid_open(unsigned short vendor_id, unsigned short product_id, const
 
 static void LIBUSB_CALL read_callback(struct libusb_transfer *transfer)
 {
-	hid_device *dev = (hid_device *)transfer->user_data;
+	hid_device *dev = transfer->user_data;
 	int res;
 
 	if (transfer->status == LIBUSB_TRANSFER_COMPLETED) {
@@ -1004,13 +1101,13 @@ static void LIBUSB_CALL read_callback(struct libusb_transfer *transfer)
 		rpt->len = transfer->actual_length;
 		rpt->next = NULL;
 
-		SDL_LockMutex(dev->mutex);
+		hidapi_thread_mutex_lock(&dev->thread_state);
 
 		/* Attach the new report object to the end of the list. */
 		if (dev->input_reports == NULL) {
 			/* The list is empty. Put it at the root. */
 			dev->input_reports = rpt;
-			SDL_CondSignal(dev->condition);
+			hidapi_thread_cond_signal(&dev->thread_state);
 		}
 		else {
 			/* Find the end of the list and attach. */
@@ -1029,7 +1126,7 @@ static void LIBUSB_CALL read_callback(struct libusb_transfer *transfer)
 				return_data(dev, NULL, 0);
 			}
 		}
-		SDL_UnlockMutex(dev->mutex);
+		hidapi_thread_mutex_unlock(&dev->thread_state);
 	}
 	else if (transfer->status == LIBUSB_TRANSFER_CANCELLED) {
 		dev->shutdown_thread = 1;
@@ -1052,17 +1149,17 @@ static void LIBUSB_CALL read_callback(struct libusb_transfer *transfer)
 	/* Re-submit the transfer object. */
 	res = libusb_submit_transfer(transfer);
 	if (res != 0) {
-		LOG("Unable to submit URB. libusb error code: %d\n", res);
+		LOG("Unable to submit URB: (%d) %s\n", res, libusb_error_name(res));
 		dev->shutdown_thread = 1;
 		dev->transfer_loop_finished = 1;
 	}
 }
 
 
-static int SDLCALL read_thread(void *param)
+static void *read_thread(void *param)
 {
 	int res;
-	hid_device *dev = (hid_device *)param;
+	hid_device *dev = param;
 	uint8_t *buf;
 	const size_t length = dev->input_ep_max_packet_size;
 
@@ -1088,14 +1185,14 @@ static int SDLCALL read_thread(void *param)
 	}
 
 	/* Notify the main thread that the read thread is up and running. */
-	SDL_WaitThreadBarrier(&dev->barrier);
+	hidapi_thread_barrier_wait(&dev->thread_state);
 
 	/* Handle all the events. */
 	while (!dev->shutdown_thread) {
 		res = libusb_handle_events(usb_context);
 		if (res < 0) {
 			/* There was an error. */
-			LOG("read_thread(): libusb reports error # %d\n", res);
+			LOG("read_thread(): (%d) %s\n", res, libusb_error_name(res));
 
 			/* Break out of this loop only on fatal error.*/
 			if (res != LIBUSB_ERROR_BUSY &&
@@ -1120,23 +1217,25 @@ static int SDLCALL read_thread(void *param)
 	   make sure that a thread which is about to go to sleep waiting on
 	   the condition actually will go to sleep before the condition is
 	   signaled. */
-	SDL_LockMutex(dev->mutex);
-	SDL_CondBroadcast(dev->condition);
-	SDL_UnlockMutex(dev->mutex);
+	hidapi_thread_mutex_lock(&dev->thread_state);
+	hidapi_thread_cond_broadcast(&dev->thread_state);
+	hidapi_thread_mutex_unlock(&dev->thread_state);
 
 	/* The dev->transfer->buffer and dev->transfer objects are cleaned up
 	   in hid_close(). They are not cleaned up here because this thread
 	   could end either due to a disconnect or due to a user
 	   call to hid_close(). In both cases the objects can be safely
-	   cleaned up after the call to pthread_join() (in hid_close()), but
+	   cleaned up after the call to hidapi_thread_join() (in hid_close()), but
 	   since hid_close() calls libusb_cancel_transfer(), on these objects,
 	   they can not be cleaned up here. */
 
-	return 0;
+	return NULL;
 }
 
-static void init_xbox360(libusb_device_handle *device_handle, unsigned short idVendor, unsigned short idProduct, struct libusb_config_descriptor *conf_desc)
+static void init_xbox360(libusb_device_handle *device_handle, unsigned short idVendor, unsigned short idProduct, const struct libusb_config_descriptor *conf_desc)
 {
+	(void)conf_desc;
+
 	if ((idVendor == 0x05ac && idProduct == 0x055b) /* Gamesir-G3w */ ||
 	    idVendor == 0x0f0d /* Hori Xbox controllers */) {
 		unsigned char data[20];
@@ -1145,28 +1244,31 @@ static void init_xbox360(libusb_device_handle *device_handle, unsigned short idV
 		   This VID/PID is also shared with other HORI controllers, but they all seem
 		   to be fine with this as well.
 		 */
+		memset(data, 0, sizeof(data));
 		libusb_control_transfer(device_handle, 0xC1, 0x01, 0x100, 0x0, data, sizeof(data), 100);
 	}
 }
 
-static void init_xboxone(libusb_device_handle *device_handle, unsigned short idVendor, unsigned short idProduct, struct libusb_config_descriptor *conf_desc)
+static void init_xboxone(libusb_device_handle *device_handle, unsigned short idVendor, unsigned short idProduct, const struct libusb_config_descriptor *conf_desc)
 {
-	static const int VENDOR_MICROSOFT = 0x045e;
-	static const int XB1_IFACE_SUBCLASS = 71;
-	static const int XB1_IFACE_PROTOCOL = 208;
+	static const int vendor_microsoft = 0x045e;
+	static const int xb1_iface_subclass = 71;
+	static const int xb1_iface_protocol = 208;
 	int j, k, res;
+
+	(void)idProduct;
 
 	for (j = 0; j < conf_desc->bNumInterfaces; j++) {
 		const struct libusb_interface *intf = &conf_desc->interface[j];
 		for (k = 0; k < intf->num_altsetting; k++) {
 			const struct libusb_interface_descriptor *intf_desc = &intf->altsetting[k];
 			if (intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
-			    intf_desc->bInterfaceSubClass == XB1_IFACE_SUBCLASS &&
-			    intf_desc->bInterfaceProtocol == XB1_IFACE_PROTOCOL) {
+			    intf_desc->bInterfaceSubClass == xb1_iface_subclass &&
+			    intf_desc->bInterfaceProtocol == xb1_iface_protocol) {
 				int bSetAlternateSetting = 0;
 
 				/* Newer Microsoft Xbox One controllers have a high speed alternate setting */
-				if (idVendor == VENDOR_MICROSOFT &&
+				if (idVendor == vendor_microsoft &&
 				    intf_desc->bInterfaceNumber == 0 && intf_desc->bAlternateSetting == 1) {
 					bSetAlternateSetting = 1;
 				} else if (intf_desc->bInterfaceNumber != 0 && intf_desc->bAlternateSetting == 0) {
@@ -1207,13 +1309,121 @@ static void calculate_device_quirks(hid_device *dev, unsigned short idVendor, un
 	}
 }
 
-hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
+static int hidapi_initialize_device(hid_device *dev, const struct libusb_interface_descriptor *intf_desc, const struct libusb_config_descriptor *conf_desc)
+{
+	int i =0;
+	int res = 0;
+	struct libusb_device_descriptor desc;
+	libusb_get_device_descriptor(libusb_get_device(dev->device_handle), &desc);
+
+#ifdef DETACH_KERNEL_DRIVER
+	/* Detach the kernel driver, but only if the
+	   device is managed by the kernel */
+	dev->is_driver_detached = 0;
+	if (libusb_kernel_driver_active(dev->device_handle, intf_desc->bInterfaceNumber) == 1) {
+		res = libusb_detach_kernel_driver(dev->device_handle, intf_desc->bInterfaceNumber);
+		if (res < 0) {
+			LOG("Unable to detach Kernel Driver: (%d) %s\n", res, libusb_error_name(res));
+			return 0;
+		}
+		else {
+			dev->is_driver_detached = 1;
+			LOG("Driver successfully detached from kernel.\n");
+		}
+	}
+#endif
+	res = libusb_claim_interface(dev->device_handle, intf_desc->bInterfaceNumber);
+	if (res < 0) {
+		LOG("can't claim interface %d: (%d) %s\n", intf_desc->bInterfaceNumber, res, libusb_error_name(res));
+
+#ifdef DETACH_KERNEL_DRIVER
+		if (dev->is_driver_detached) {
+			res = libusb_attach_kernel_driver(dev->device_handle, intf_desc->bInterfaceNumber);
+			if (res < 0)
+				LOG("Failed to reattach the driver to kernel: (%d) %s\n", res, libusb_error_name(res));
+		}
+#endif
+		return 0;
+	}
+
+	/* Initialize XBox 360 controllers */
+	if (is_xbox360(desc.idVendor, intf_desc)) {
+		dev->no_skip_output_report_id = 1;
+		init_xbox360(dev->device_handle, desc.idVendor, desc.idProduct, conf_desc);
+	}
+
+	/* Initialize XBox One controllers */
+	if (is_xboxone(desc.idVendor, intf_desc)) {
+		init_xboxone(dev->device_handle, desc.idVendor, desc.idProduct, conf_desc);
+	}
+
+	/* Store off the string descriptor indexes */
+	dev->manufacturer_index = desc.iManufacturer;
+	dev->product_index      = desc.iProduct;
+	dev->serial_index       = desc.iSerialNumber;
+
+	/* Store off the USB information */
+	dev->config_number = conf_desc->bConfigurationValue;
+	dev->interface = intf_desc->bInterfaceNumber;
+	dev->interface_class = intf_desc->bInterfaceClass;
+	dev->interface_subclass = intf_desc->bInterfaceSubClass;
+	dev->interface_protocol = intf_desc->bInterfaceProtocol;
+
+	dev->report_descriptor_size = get_report_descriptor_size_from_interface_descriptors(intf_desc);
+
+	dev->input_endpoint = 0;
+	dev->input_ep_max_packet_size = 0;
+	dev->output_endpoint = 0;
+
+	/* Find the INPUT and OUTPUT endpoints. An
+	   OUTPUT endpoint is not required. */
+	for (i = 0; i < intf_desc->bNumEndpoints; i++) {
+		const struct libusb_endpoint_descriptor *ep
+			= &intf_desc->endpoint[i];
+
+		/* Determine the type and direction of this
+		   endpoint. */
+		int is_interrupt =
+			(ep->bmAttributes & LIBUSB_TRANSFER_TYPE_MASK)
+		      == LIBUSB_TRANSFER_TYPE_INTERRUPT;
+		int is_output =
+			(ep->bEndpointAddress & LIBUSB_ENDPOINT_DIR_MASK)
+		      == LIBUSB_ENDPOINT_OUT;
+		int is_input =
+			(ep->bEndpointAddress & LIBUSB_ENDPOINT_DIR_MASK)
+		      == LIBUSB_ENDPOINT_IN;
+
+		/* Decide whether to use it for input or output. */
+		if (dev->input_endpoint == 0 &&
+		    is_interrupt && is_input) {
+			/* Use this endpoint for INPUT */
+			dev->input_endpoint = ep->bEndpointAddress;
+			dev->input_ep_max_packet_size = ep->wMaxPacketSize;
+		}
+		if (dev->output_endpoint == 0 &&
+		    is_interrupt && is_output) {
+			/* Use this endpoint for OUTPUT */
+			dev->output_endpoint = ep->bEndpointAddress;
+		}
+	}
+
+	calculate_device_quirks(dev, desc.idVendor, desc.idProduct);
+
+	hidapi_thread_create(&dev->thread_state, read_thread, dev);
+
+	/* Wait here for the read thread to be initialized. */
+	hidapi_thread_barrier_wait(&dev->thread_state);
+	return 1;
+}
+
+
+HID_API_EXPORT hid_device *hid_open_path(const char *path)
 {
 	hid_device *dev = NULL;
 
-	libusb_device **devs;
-	libusb_device *usb_dev;
-	int res;
+	libusb_device **devs = NULL;
+	libusb_device *usb_dev = NULL;
+	int res = 0;
 	int d = 0;
 	int good_open = 0;
 
@@ -1223,129 +1433,45 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 	dev = new_hid_device();
 
 	libusb_get_device_list(usb_context, &devs);
-	while ((usb_dev = devs[d++]) != NULL) {
+	while ((usb_dev = devs[d++]) != NULL && !good_open) {
 		struct libusb_device_descriptor desc;
 		struct libusb_config_descriptor *conf_desc = NULL;
-		int i,j,k;
+		int j,k;
 
-		libusb_get_device_descriptor(usb_dev, &desc);
+		res = libusb_get_device_descriptor(usb_dev, &desc);
+		if (res < 0)
+			continue;
 
 		res = libusb_get_active_config_descriptor(usb_dev, &conf_desc);
 		if (res < 0)
 			libusb_get_config_descriptor(usb_dev, 0, &conf_desc);
 		if (!conf_desc)
 			continue;
+
 		for (j = 0; j < conf_desc->bNumInterfaces && !good_open; j++) {
 			const struct libusb_interface *intf = &conf_desc->interface[j];
 			for (k = 0; k < intf->num_altsetting && !good_open; k++) {
-				const struct libusb_interface_descriptor *intf_desc;
-				intf_desc = &intf->altsetting[k];
+				const struct libusb_interface_descriptor *intf_desc = &intf->altsetting[k];
 				if (should_enumerate_interface(desc.idVendor, intf_desc)) {
-					char *dev_path = make_path(usb_dev, intf_desc->bInterfaceNumber);
+					char dev_path[64];
+					get_path(&dev_path, usb_dev, conf_desc->bConfigurationValue, intf_desc->bInterfaceNumber);
 					if (!strcmp(dev_path, path)) {
-						int detached_driver = 0;
-
 						/* Matched Paths. Open this device */
 
 						/* OPEN HERE */
 						res = libusb_open(usb_dev, &dev->device_handle);
 						if (res < 0) {
 							LOG("can't open device\n");
-							free(dev_path);
 							break;
 						}
-						good_open = 1;
-
-#ifdef DETACH_KERNEL_DRIVER
-						/* Detach the kernel driver, but only if the
-						   device is managed by the kernel */
-						if (libusb_kernel_driver_active(dev->device_handle, intf_desc->bInterfaceNumber) == 1) {
-							res = libusb_detach_kernel_driver(dev->device_handle, intf_desc->bInterfaceNumber);
-							if (res < 0) {
-								libusb_close(dev->device_handle);
-								LOG("Unable to detach Kernel Driver\n");
-								free(dev_path);
-								good_open = 0;
-								break;
-							}
-							detached_driver = 1;
-						}
-#endif
-
-						res = libusb_claim_interface(dev->device_handle, intf_desc->bInterfaceNumber);
-						if (res < 0) {
-							LOG("can't claim interface %d: %d\n", intf_desc->bInterfaceNumber, res);
-							free(dev_path);
+						good_open = hidapi_initialize_device(dev, intf_desc, conf_desc);
+						if (!good_open)
 							libusb_close(dev->device_handle);
-							good_open = 0;
-							break;
-						}
-
-						/* Initialize XBox 360 controllers */
-						if (is_xbox360(desc.idVendor, intf_desc)) {
-							init_xbox360(dev->device_handle, desc.idVendor, desc.idProduct, conf_desc);
-						}
-
-						/* Initialize XBox One controllers */
-						if (is_xboxone(desc.idVendor, intf_desc)) {
-							init_xboxone(dev->device_handle, desc.idVendor, desc.idProduct, conf_desc);
-						}
-
-						/* Store off the string descriptor indexes */
-						dev->manufacturer_index = desc.iManufacturer;
-						dev->product_index      = desc.iProduct;
-						dev->serial_index       = desc.iSerialNumber;
-
-						/* Store off the interface number */
-						dev->interface = intf_desc->bInterfaceNumber;
-						dev->detached_driver = detached_driver;
-
-						/* Find the INPUT and OUTPUT endpoints. An
-						   OUTPUT endpoint is not required. */
-						for (i = 0; i < intf_desc->bNumEndpoints; i++) {
-							const struct libusb_endpoint_descriptor *ep
-								= &intf_desc->endpoint[i];
-
-							/* Determine the type and direction of this
-							   endpoint. */
-							int is_interrupt =
-								(ep->bmAttributes & LIBUSB_TRANSFER_TYPE_MASK)
-							      == LIBUSB_TRANSFER_TYPE_INTERRUPT;
-							int is_output =
-								(ep->bEndpointAddress & LIBUSB_ENDPOINT_DIR_MASK)
-							      == LIBUSB_ENDPOINT_OUT;
-							int is_input =
-								(ep->bEndpointAddress & LIBUSB_ENDPOINT_DIR_MASK)
-							      == LIBUSB_ENDPOINT_IN;
-
-							/* Decide whether to use it for input or output. */
-							if (dev->input_endpoint == 0 &&
-							    is_interrupt && is_input) {
-								/* Use this endpoint for INPUT */
-								dev->input_endpoint = ep->bEndpointAddress;
-								dev->input_ep_max_packet_size = ep->wMaxPacketSize;
-							}
-							if (dev->output_endpoint == 0 &&
-							    is_interrupt && is_output) {
-								/* Use this endpoint for OUTPUT */
-								dev->output_endpoint = ep->bEndpointAddress;
-							}
-						}
-
-						calculate_device_quirks(dev, desc.idVendor, desc.idProduct);
-
-						dev->thread = SDL_CreateThreadInternal(read_thread, "libusb", 0, dev);
-
-						/* Wait here for the read thread to be initialized. */
-						SDL_WaitThreadBarrier(&dev->barrier);
-
 					}
-					free(dev_path);
 				}
 			}
 		}
 		libusb_free_config_descriptor(conf_desc);
-
 	}
 
 	libusb_free_device_list(devs, 1);
@@ -1362,27 +1488,107 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 }
 
 
+HID_API_EXPORT hid_device * HID_API_CALL hid_libusb_wrap_sys_device(intptr_t sys_dev, int interface_num)
+{
+/* 0x01000107 is a LIBUSB_API_VERSION for 1.0.23 - version when libusb_wrap_sys_device was introduced */
+#if (!defined(HIDAPI_TARGET_LIBUSB_API_VERSION) || HIDAPI_TARGET_LIBUSB_API_VERSION >= 0x01000107) && (LIBUSB_API_VERSION >= 0x01000107)
+	hid_device *dev = NULL;
+	struct libusb_config_descriptor *conf_desc = NULL;
+	const struct libusb_interface_descriptor *selected_intf_desc = NULL;
+	int res = 0;
+	int j = 0, k = 0;
+
+	if(hid_init() < 0)
+		return NULL;
+
+	dev = new_hid_device();
+
+	res = libusb_wrap_sys_device(usb_context, sys_dev, &dev->device_handle);
+	if (res < 0) {
+		LOG("libusb_wrap_sys_device failed: %d %s\n", res, libusb_error_name(res));
+		goto err;
+	}
+
+	res = libusb_get_active_config_descriptor(libusb_get_device(dev->device_handle), &conf_desc);
+	if (res < 0)
+		libusb_get_config_descriptor(libusb_get_device(dev->device_handle), 0, &conf_desc);
+
+	if (!conf_desc) {
+		LOG("Failed to get configuration descriptor: %d %s\n", res, libusb_error_name(res));
+		goto err;
+	}
+
+	/* find matching HID interface */
+	for (j = 0; j < conf_desc->bNumInterfaces && !selected_intf_desc; j++) {
+		const struct libusb_interface *intf = &conf_desc->interface[j];
+		for (k = 0; k < intf->num_altsetting; k++) {
+			const struct libusb_interface_descriptor *intf_desc = &intf->altsetting[k];
+			if (intf_desc->bInterfaceClass == LIBUSB_CLASS_HID) {
+				if (interface_num < 0 || interface_num == intf_desc->bInterfaceNumber) {
+					selected_intf_desc = intf_desc;
+					break;
+				}
+			}
+		}
+	}
+
+	if (!selected_intf_desc) {
+		if (interface_num < 0) {
+			LOG("Sys USB device doesn't contain a HID interface\n");
+		}
+		else {
+			LOG("Sys USB device doesn't contain a HID interface with number %d\n", interface_num);
+		}
+		goto err;
+	}
+
+	if (!hidapi_initialize_device(dev, selected_intf_desc, conf_desc))
+		goto err;
+
+	return dev;
+
+err:
+	if (conf_desc)
+		libusb_free_config_descriptor(conf_desc);
+	if (dev->device_handle)
+		libusb_close(dev->device_handle);
+	free_hid_device(dev);
+#else
+	(void)sys_dev;
+	(void)interface_num;
+	LOG("libusb_wrap_sys_device is not available\n");
+#endif
+	return NULL;
+}
+
+
 int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t length)
 {
 	int res;
+	int report_number;
+	int skipped_report_id = 0;
+
+	if (!data || (length ==0)) {
+		return -1;
+	}
+
+	report_number = data[0];
+
+	if ((!dev->no_skip_output_report_id && report_number == 0x0) || dev->skip_output_report_id) {
+		data++;
+		length--;
+		skipped_report_id = 1;
+	}
+
 
 	if (dev->output_endpoint <= 0 || dev->no_output_reports_on_intr_ep) {
-		int report_number = data[0];
-		int skipped_report_id = 0;
-
-		if (report_number == 0x0 || dev->skip_output_report_id) {
-			data++;
-			length--;
-			skipped_report_id = 1;
-		}
-
 		/* No interrupt out endpoint. Use the Control Endpoint */
 		res = libusb_control_transfer(dev->device_handle,
 			LIBUSB_REQUEST_TYPE_CLASS|LIBUSB_RECIPIENT_INTERFACE|LIBUSB_ENDPOINT_OUT,
 			0x09/*HID Set_Report*/,
 			(2/*HID output*/ << 8) | report_number,
 			dev->interface,
-			(unsigned char *)data, length,
+			(unsigned char *)data, (uint16_t)length,
 			1000/*timeout millis*/);
 
 		if (res < 0)
@@ -1405,6 +1611,9 @@ int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t 
 		if (res < 0)
 			return -1;
 
+		if (skipped_report_id)
+			actual_length++;
+
 		return actual_length;
 	}
 }
@@ -1417,7 +1626,7 @@ static int return_data(hid_device *dev, unsigned char *data, size_t length)
 	   return buffer (data), and delete the liked list item. */
 	struct input_report *rpt = dev->input_reports;
 	size_t len = (length < rpt->len)? length: rpt->len;
-	if (data && len > 0)
+	if (len > 0)
 		memcpy(data, rpt->data, len);
 	dev->input_reports = rpt->next;
 	free(rpt->data);
@@ -1425,13 +1634,12 @@ static int return_data(hid_device *dev, unsigned char *data, size_t length)
 	return len;
 }
 
-#if 0 /* TODO: pthread_cleanup SDL? */
 static void cleanup_mutex(void *param)
 {
-	hid_device *dev = (hid_device *)param;
-	SDL_UnlockMutex(dev->mutex);
+	hid_device *dev = param;
+	hidapi_thread_mutex_unlock(&dev->thread_state);
 }
-#endif
+
 
 int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t length, int milliseconds)
 {
@@ -1441,10 +1649,12 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 	LOG("transferred: %d\n", transferred);
 	return transferred;
 #endif
-	int bytes_read;
+	/* by initialising this variable right here, GCC gives a compilation warning/error: */
+	/* error: variable ‘bytes_read’ might be clobbered by ‘longjmp’ or ‘vfork’ [-Werror=clobbered] */
+	int bytes_read; /* = -1; */
 
-	SDL_LockMutex(dev->mutex);
-	/* TODO: pthread_cleanup SDL? */
+	hidapi_thread_mutex_lock(&dev->thread_state);
+	hidapi_thread_cleanup_push(cleanup_mutex, dev);
 
 	bytes_read = -1;
 
@@ -1465,7 +1675,7 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 	if (milliseconds == -1) {
 		/* Blocking */
 		while (!dev->input_reports && !dev->shutdown_thread) {
-			SDL_CondWait(dev->condition, dev->mutex);
+			hidapi_thread_cond_wait(&dev->thread_state);
 		}
 		if (dev->input_reports) {
 			bytes_read = return_data(dev, data, length);
@@ -1474,9 +1684,12 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 	else if (milliseconds > 0) {
 		/* Non-blocking, but called with timeout. */
 		int res;
+		hidapi_timespec ts;
+		hidapi_thread_gettime(&ts);
+		hidapi_thread_addtime(&ts, milliseconds);
 
 		while (!dev->input_reports && !dev->shutdown_thread) {
-			res = SDL_CondWaitTimeout(dev->condition, dev->mutex, milliseconds);
+			res = hidapi_thread_cond_timedwait(&dev->thread_state, &ts);
 			if (res == 0) {
 				if (dev->input_reports) {
 					bytes_read = return_data(dev, data, length);
@@ -1487,7 +1700,7 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 				   or the read thread was shutdown. Run the
 				   loop again (ie: don't break). */
 			}
-			else if (res == SDL_MUTEX_TIMEDOUT) {
+			else if (res == HIDAPI_THREAD_TIMED_OUT) {
 				/* Timed out. */
 				bytes_read = 0;
 				break;
@@ -1505,8 +1718,8 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 	}
 
 ret:
-	SDL_UnlockMutex(dev->mutex);
-	/* TODO: pthread_cleanup SDL? */
+	hidapi_thread_mutex_unlock(&dev->thread_state);
+	hidapi_thread_cleanup_pop(0);
 
 	return bytes_read;
 }
@@ -1541,7 +1754,7 @@ int HID_API_EXPORT hid_send_feature_report(hid_device *dev, const unsigned char 
 		0x09/*HID set_report*/,
 		(3/*HID feature*/ << 8) | report_number,
 		dev->interface,
-		(unsigned char *)data, length,
+		(unsigned char *)data, (uint16_t)length,
 		1000/*timeout millis*/);
 
 	if (res < 0)
@@ -1572,7 +1785,7 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 		0x01/*HID get_report*/,
 		(3/*HID feature*/ << 8) | report_number,
 		dev->interface,
-		(unsigned char *)data, length,
+		(unsigned char *)data, (uint16_t)length,
 		1000/*timeout millis*/);
 
 	if (res < 0)
@@ -1584,11 +1797,38 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 	return res;
 }
 
+int HID_API_EXPORT HID_API_CALL hid_get_input_report(hid_device *dev, unsigned char *data, size_t length)
+{
+	int res = -1;
+	int skipped_report_id = 0;
+	int report_number = data[0];
+
+	if (report_number == 0x0) {
+		/* Offset the return buffer by 1, so that the report ID
+		   will remain in byte 0. */
+		data++;
+		length--;
+		skipped_report_id = 1;
+	}
+	res = libusb_control_transfer(dev->device_handle,
+		LIBUSB_REQUEST_TYPE_CLASS|LIBUSB_RECIPIENT_INTERFACE|LIBUSB_ENDPOINT_IN,
+		0x01/*HID get_report*/,
+		(1/*HID Input*/ << 8) | report_number,
+		dev->interface,
+		(unsigned char *)data, (uint16_t)length,
+		1000/*timeout millis*/);
+
+	if (res < 0)
+		return -1;
+
+	if (skipped_report_id)
+		res++;
+
+	return res;
+}
 
 void HID_API_EXPORT hid_close(hid_device *dev)
 {
-	int status;
-
 	if (!dev)
 		return;
 
@@ -1597,7 +1837,7 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 	libusb_cancel_transfer(dev->transfer);
 
 	/* Wait for read_thread() to end. */
-	SDL_WaitThread(dev->thread, &status);
+	hidapi_thread_join(&dev->thread_state);
 
 	/* Clean up the Transfer objects allocated in read_thread(). */
 	free(dev->transfer->buffer);
@@ -1607,12 +1847,12 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 	/* release the interface */
 	libusb_release_interface(dev->device_handle, dev->interface);
 
+	/* reattach the kernel driver if it was detached */
 #ifdef DETACH_KERNEL_DRIVER
-	/* Re-attach kernel driver if necessary. */
-	if (dev->detached_driver) {
+	if (dev->is_driver_detached) {
 		int res = libusb_attach_kernel_driver(dev->device_handle, dev->interface);
 		if (res < 0)
-			LOG("Couldn't re-attach kernel driver.\n");
+			LOG("Failed to reattach the driver to kernel.\n");
 	}
 #endif
 
@@ -1620,11 +1860,11 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 	libusb_close(dev->device_handle);
 
 	/* Clear out the queue of received reports. */
-	SDL_LockMutex(dev->mutex);
+	hidapi_thread_mutex_lock(&dev->thread_state);
 	while (dev->input_reports) {
 		return_data(dev, NULL, 0);
 	}
-	SDL_UnlockMutex(dev->mutex);
+	hidapi_thread_mutex_unlock(&dev->thread_state);
 
 	free_hid_device(dev);
 }
@@ -1645,6 +1885,23 @@ int HID_API_EXPORT_CALL hid_get_serial_number_string(hid_device *dev, wchar_t *s
 	return hid_get_indexed_string(dev, dev->serial_index, string, maxlen);
 }
 
+HID_API_EXPORT struct hid_device_info *HID_API_CALL hid_get_device_info(hid_device *dev) {
+	if (!dev->device_info) {
+		struct libusb_device_descriptor desc;
+		libusb_device *usb_device = libusb_get_device(dev->device_handle);
+		libusb_get_device_descriptor(usb_device, &desc);
+
+		dev->device_info = create_device_info_for_device(usb_device, dev->device_handle, &desc, dev->config_number, dev->interface, dev->interface_class, dev->interface_subclass, dev->interface_protocol);
+		// device error already set by create_device_info_for_device, if any
+
+		if (dev->device_info) {
+			fill_device_info_usage(dev->device_info, dev->device_handle, dev->interface, dev->report_descriptor_size);
+		}
+	}
+
+	return dev->device_info;
+}
+
 int HID_API_EXPORT_CALL hid_get_indexed_string(hid_device *dev, int string_index, wchar_t *string, size_t maxlen)
 {
 	wchar_t *str;
@@ -1661,9 +1918,16 @@ int HID_API_EXPORT_CALL hid_get_indexed_string(hid_device *dev, int string_index
 }
 
 
+int HID_API_EXPORT_CALL hid_get_report_descriptor(hid_device *dev, unsigned char *buf, size_t buf_size)
+{
+	return hid_get_report_descriptor_libusb(dev->device_handle, dev->interface, dev->report_descriptor_size, buf, buf_size);
+}
+
+
 HID_API_EXPORT const wchar_t * HID_API_CALL  hid_error(hid_device *dev)
 {
-	return NULL;
+	(void)dev;
+	return L"hid_error is not implemented yet";
 }
 
 
@@ -1752,7 +2016,7 @@ static struct lang_map_entry lang_map[] = {
 	LANG("Lithuanian", "lt", 0x0427),
 	LANG("F.Y.R.O. Macedonia", "mk", 0x042F),
 	LANG("Malay - Malaysia", "ms_my", 0x043E),
-	LANG("Malay ??? Brunei", "ms_bn", 0x083E),
+	LANG("Malay – Brunei", "ms_bn", 0x083E),
 	LANG("Maltese", "mt", 0x043A),
 	LANG("Marathi", "mr", 0x044E),
 	LANG("Norwegian - Bokml", "no_no", 0x0414),
@@ -1803,7 +2067,7 @@ static struct lang_map_entry lang_map[] = {
 	LANG("Ukrainian", "uk", 0x0422),
 	LANG("Urdu", "ur", 0x0420),
 	LANG("Uzbek - Cyrillic", "uz_uz", 0x0843),
-	LANG("Uzbek ??? Latin", "uz_uz", 0x0443),
+	LANG("Uzbek – Latin", "uz_uz", 0x0443),
 	LANG("Vietnamese", "vi", 0x042A),
 	LANG("Xhosa", "xh", 0x0434),
 	LANG("Yiddish", "yi", 0x043D),
@@ -1813,20 +2077,18 @@ static struct lang_map_entry lang_map[] = {
 
 uint16_t get_usb_code_for_current_locale(void)
 {
-	char *locale = NULL;
+	char *locale;
 	char search_string[64];
 	char *ptr;
 	struct lang_map_entry *lang;
 
 	/* Get the current locale. */
-#ifdef HAVE_SETLOCALE
 	locale = setlocale(0, NULL);
-#endif
 	if (!locale)
 		return 0x0;
 
 	/* Make a copy of the current locale string. */
-	strncpy(search_string, locale, sizeof(search_string));
+	strncpy(search_string, locale, sizeof(search_string)-1);
 	search_string[sizeof(search_string)-1] = '\0';
 
 	/* Chop off the encoding part, and make it lower case. */
@@ -1876,10 +2138,6 @@ uint16_t get_usb_code_for_current_locale(void)
 	return 0x0;
 }
 
-#if defined(__cplusplus) && !defined(NAMESPACE)
-}
-#endif
-
-#ifdef NAMESPACE
+#ifdef __cplusplus
 }
 #endif

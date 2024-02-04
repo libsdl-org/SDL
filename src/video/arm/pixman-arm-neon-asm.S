@@ -79,7 +79,7 @@
  * as NOP to workaround some HW bugs or for whatever other reason)
  *
  * PREFETCH_TYPE_SIMPLE (may be useful for simple single-issue ARM cores where
- * advanced prefetch intruduces heavy overhead)
+ * advanced prefetch introduces heavy overhead)
  *
  * PREFETCH_TYPE_ADVANCED (useful for superscalar cores such as ARM Cortex-A8
  * which can run ARM and NEON instructions simultaneously so that extra ARM

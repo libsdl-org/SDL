@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_WINDOWS) && defined(SDL_VIDEO_OPENGL_EGL) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if defined(SDL_VIDEO_DRIVER_WINDOWS) && defined(SDL_VIDEO_OPENGL_EGL) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsopengles.h"
@@ -29,7 +29,7 @@
 
 /* EGL implementation of SDL OpenGL support */
 
-int WIN_GLES_LoadLibrary(_THIS, const char *path)
+int WIN_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
 
     /* If the profile requested is not GL ES, switch over to WIN_GL functions  */
@@ -53,15 +53,14 @@ int WIN_GLES_LoadLibrary(_THIS, const char *path)
 #endif
     }
 
-    if (_this->egl_data == NULL) {
+    if (!_this->egl_data) {
         return SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, _this->gl_config.egl_platform);
     }
 
     return 0;
 }
 
-SDL_GLContext
-WIN_GLES_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext WIN_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_GLContext context;
     SDL_WindowData *data = window->driverdata;
@@ -94,7 +93,7 @@ WIN_GLES_CreateContext(_THIS, SDL_Window *window)
     return context;
 }
 
-int WIN_GLES_DeleteContext(_THIS, SDL_GLContext context)
+int WIN_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
 {
     SDL_EGL_DeleteContext(_this, context);
     return 0;
@@ -105,14 +104,14 @@ SDL_EGL_SwapWindow_impl(WIN)
 SDL_EGL_MakeCurrent_impl(WIN)
 /* *INDENT-ON* */ /* clang-format on */
 
-int WIN_GLES_SetupWindow(_THIS, SDL_Window *window)
+int WIN_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     /* The current context is lost in here; save it and reset it. */
     SDL_WindowData *windowdata = window->driverdata;
     SDL_Window *current_win = SDL_GL_GetCurrentWindow();
     SDL_GLContext current_ctx = SDL_GL_GetCurrentContext();
 
-    if (_this->egl_data == NULL) {
+    if (!_this->egl_data) {
 /* !!! FIXME: commenting out this assertion is (I think) incorrect; figure out why driver_loaded is wrong for ANGLE instead. --ryan. */
 #if 0 /* When hint SDL_HINT_OPENGL_ES_DRIVER is set to "1" (e.g. for ANGLE support), _this->gl_config.driver_loaded can be 1, while the below lines function. */
         SDL_assert(!_this->gl_config.driver_loaded);
@@ -135,7 +134,7 @@ int WIN_GLES_SetupWindow(_THIS, SDL_Window *window)
 }
 
 EGLSurface
-WIN_GLES_GetEGLSurface(_THIS, SDL_Window *window)
+WIN_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *windowdata = window->driverdata;
 

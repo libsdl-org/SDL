@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -11,23 +11,23 @@
 */
 /* Simple program:  Check viewports */
 
-#include <stdlib.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
 #include "testutils.h"
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
+#include <stdlib.h>
 
 static SDLTest_CommonState *state;
 
 static SDL_Rect viewport;
 static int done, j;
 static SDL_bool use_target = SDL_FALSE;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 static Uint32 wait_start;
 #endif
 static SDL_Texture *sprite;
@@ -109,7 +109,7 @@ static void loop(void)
 {
     SDL_Event event;
     int i;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     /* Avoid using delays */
     if (SDL_GetTicks() - wait_start < 1000) {
         return;
@@ -148,7 +148,7 @@ static void loop(void)
         }
     }
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {
         emscripten_cancel_main_loop();
     }
@@ -163,7 +163,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
 
     sprite = LoadTexture(state->renderers[0], "icon.bmp", SDL_TRUE, &sprite_w, &sprite_h);
 
-    if (sprite == NULL) {
+    if (!sprite) {
         quit(2);
     }
 
@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
     done = 0;
     j = 0;
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     wait_start = SDL_GetTicks();
     emscripten_set_main_loop(loop, 0, 1);
 #else

@@ -16,18 +16,24 @@ jobs:
       matrix:
         platform:
           - { name: Android.mk  }
-          - { name: CMake, cmake: 1, android_abi: "arm64-v8a", android_platform: 23, arch: "aarch64", artifact: "SDL-android-arm64" }
+          - { name: CMake, cmake: 1, android_abi: "arm64-v8a", android_platform: 23, arch: "aarch64", artifact: "SDL-android-arm64", apk-artifact: "SDL-android-apks-arm64" }
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: nttld/setup-ndk@v1
         id: setup_ndk
         with:
+          local-cache: true
           ndk-version: r21e
       - name: Build (Android.mk)
         if: ${{ matrix.platform.name == 'Android.mk' }}
         run: |
           ./build-scripts/androidbuildlibs.sh
+      - uses: actions/setup-java@v3
+        if: ${{ matrix.platform.name == 'CMake' }}
+        with:
+          distribution: 'temurin'
+          java-version: '11'
       - name: Setup (CMake)
         if: ${{ matrix.platform.name == 'CMake' }}
         run: |
@@ -56,6 +62,10 @@ jobs:
         if: ${{ matrix.platform.name == 'CMake' }}
         run: |
           cmake --build build --config Release --parallel --verbose
+      - name: Build test apk's (CMake)
+        if: ${{ matrix.platform.name == 'CMake' }}
+        run: |
+          cmake --build build --config Release --parallel --verbose --target testaudiocapture-apk testcontroller-apk testmultiaudio-apk testsprite-apk
       - name: Install (CMake)
         if: ${{ matrix.platform.name == 'CMake' }}
         run: |
@@ -82,9 +92,15 @@ jobs:
           export CC="${{ steps.setup_ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=${{ matrix.platform.arch }}-none-linux-androideabi${{ matrix.platform.android_platform }}"
           export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
           cmake/test/test_pkgconfig.sh
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ matrix.platform.name == 'CMake' }}
         with:
           if-no-files-found: error
           name: ${{ matrix.platform.artifact }}
           path: build/dist/SDL3*
+      - uses: actions/upload-artifact@v4
+        if: ${{ matrix.platform.name == 'CMake' }}
+        with:
+          if-no-files-found: error
+          name: ${{ matrix.platform.apk-artifact }}
+          path: build/test/*.apk

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -42,8 +42,6 @@
 #define HAVE_STRING_H 1
 #define HAVE_SYS_TYPES_H 1
 #define HAVE_WCHAR_H 1
-/* The libunwind functions are only available on x86 */
-/* #undef HAVE_LIBUNWIND_H */
 
 /* C library functions */
 #define HAVE_DLOPEN 1
@@ -51,7 +49,6 @@
 #define HAVE_CALLOC 1
 #define HAVE_REALLOC    1
 #define HAVE_FREE   1
-#define HAVE_ALLOCA 1
 #define HAVE_GETENV 1
 #define HAVE_SETENV 1
 #define HAVE_PUTENV 1
@@ -115,6 +112,7 @@
 #define HAVE_LROUND 1
 #define HAVE_LROUNDF 1
 #define HAVE_MODF   1
+#define HAVE_MODFF  1
 #define HAVE_POW    1
 #define HAVE_POWF   1
 #define HAVE_ROUND  1
@@ -150,7 +148,7 @@
 #define SDL_JOYSTICK_MFI 1
 #define SDL_JOYSTICK_VIRTUAL    1
 
-#ifdef __TVOS__
+#ifdef SDL_PLATFORM_TVOS
 #define SDL_SENSOR_DUMMY    1
 #else
 /* Enable the CoreMotion sensor driver */
@@ -172,7 +170,7 @@
 #define SDL_VIDEO_DRIVER_DUMMY  1
 
 /* Enable OpenGL ES */
-#if !TARGET_OS_MACCATALYST
+#if !TARGET_OS_MACCATALYST && !TARGET_OS_VISION
 #define SDL_VIDEO_OPENGL_ES2 1
 #define SDL_VIDEO_OPENGL_ES 1
 #define SDL_VIDEO_RENDER_OGL_ES2    1
@@ -198,6 +196,8 @@
 #if SDL_PLATFORM_SUPPORTS_METAL
 #define SDL_VIDEO_METAL 1
 #endif
+
+#define HAVE_COREMEDIA  1
 
 /* Enable system power support */
 #define SDL_POWER_UIKIT 1

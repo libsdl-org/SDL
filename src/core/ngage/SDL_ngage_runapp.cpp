@@ -4,7 +4,7 @@
 
 #include "SDL_internal.h"
 
-#ifdef __NGAGE__
+#ifdef SDL_PLATFORM_NGAGE
 
 #include <e32std.h>
 #include <e32def.h>
@@ -57,7 +57,7 @@ SDL_RunApp(int argc_, char* argv_[], SDL_main_func mainFunction, void * reserved
 
     newHeap = User::ChunkHeap(NULL, heapSize, heapSize, KMinHeapGrowBy);
 
-    if (newHeap == NULL) {
+    if (!newHeap) {
         ret = 3;
         goto cleanup;
     } else {
@@ -75,4 +75,4 @@ cleanup:
     return ret;
 }
 
-#endif // __NGAGE__
+#endif // SDL_PLATFORM_NGAGE

@@ -24,7 +24,6 @@ static const char *HintsEnum[] = {
     SDL_HINT_VIDEO_ALLOW_SCREENSAVER,
     SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES,
     SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS,
-    SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT,
     SDL_HINT_VIDEO_WIN_D3DCOMPILER,
     SDL_HINT_VIDEO_X11_XRANDR,
     SDL_HINT_XINPUT_ENABLED,
@@ -47,7 +46,6 @@ static const char *HintsVerbose[] = {
     "SDL_VIDEO_ALLOW_SCREENSAVER",
     "SDL_VIDEO_MAC_FULLSCREEN_SPACES",
     "SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS",
-    "SDL_VIDEO_WINDOW_SHARE_PIXEL_FORMAT",
     "SDL_VIDEO_WIN_D3DCOMPILER",
     "SDL_VIDEO_X11_XRANDR",
     "SDL_XINPUT_ENABLED"
@@ -60,7 +58,7 @@ static const int numHintsEnum = SDL_arraysize(HintsEnum);
 /* Test case functions */
 
 /**
- * \brief Call to SDL_GetHint
+ * Call to SDL_GetHint
  */
 static int hints_getHint(void *arg)
 {
@@ -89,7 +87,7 @@ static void SDLCALL hints_testHintChanged(void *userdata, const char *name, cons
 }
 
 /**
- * \brief Call to SDL_SetHint
+ * Call to SDL_SetHint
  */
 static int hints_setHint(void *arg)
 {
@@ -214,6 +212,7 @@ static int hints_setHint(void *arg)
         callbackValue && SDL_strcmp(callbackValue, "original") == 0,
         "callbackValue = %s, expected \"original\"",
         callbackValue);
+    SDL_free(callbackValue);
 
     SDLTest_AssertPass("Call to SDL_SetHintWithPriority(\"temp\", SDL_HINT_OVERRIDE), using callback after reset");
     callbackValue = NULL;

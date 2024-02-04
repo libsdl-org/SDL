@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -14,13 +14,13 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #endif
 
 #include <stdlib.h> /* exit() */
 
-#ifdef __IOS__
+#ifdef SDL_PLATFORM_IOS
 #define SCREEN_WIDTH  320
 #define SCREEN_HEIGHT 480
 #else
@@ -87,7 +87,7 @@ static void DrawObject(SDL_Renderer *renderer, Object *object)
 static void DrawObjects(SDL_Renderer *renderer)
 {
     Object *next = objects;
-    while (next != NULL) {
+    while (next) {
         DrawObject(renderer, next);
         next = next->next;
     }
@@ -97,7 +97,7 @@ static void AppendObject(Object *object)
 {
     if (objects) {
         Object *next = objects;
-        while (next->next != NULL) {
+        while (next->next) {
             next = next->next;
         }
         next->next = object;
@@ -125,15 +125,15 @@ static void loop(void *arg)
                 /* "positive to the right and negative to the left"  */
                 wheel_x += event.wheel.x * 10.0f;
             }
-            if (event.wheel.x != 0.0f) {
+            if (event.wheel.y != 0.0f) {
                 wheel_y_active = SDL_TRUE;
                 /* "positive away from the user and negative towards the user" */
-                wheel_y -= event.wheel.x * 10.0f;
+                wheel_y -= event.wheel.y * 10.0f;
             }
             break;
 
         case SDL_EVENT_MOUSE_MOTION:
-            if (active == NULL) {
+            if (!active) {
                 break;
             }
 
@@ -142,7 +142,7 @@ static void loop(void *arg)
             break;
 
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
-            if (active == NULL) {
+            if (!active) {
                 active = SDL_calloc(1, sizeof(*active));
                 active->x1 = active->x2 = event.button.x;
                 active->y1 = active->y2 = event.button.y;
@@ -176,7 +176,7 @@ static void loop(void *arg)
             break;
 
         case SDL_EVENT_MOUSE_BUTTON_UP:
-            if (active == NULL) {
+            if (!active) {
                 break;
             }
 
@@ -245,7 +245,7 @@ static void loop(void *arg)
 
     SDL_RenderPresent(renderer);
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (loop_data->done) {
         emscripten_cancel_main_loop();
     }
@@ -259,7 +259,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -294,7 +294,7 @@ int main(int argc, char *argv[])
     }
 
     /* Main render loop */
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop_arg(loop, &loop_data, 0, 1);
 #else
     while (loop_data.done == SDL_FALSE) {

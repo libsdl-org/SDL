@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,21 +22,20 @@
 #include "SDL_rwopsromfs.h"
 
 /* Checks if the mode is a kind of reading */
-SDL_FORCE_INLINE SDL_bool IsReadMode(const char *mode);
+static SDL_bool IsReadMode(const char *mode);
 
 /* Checks if the file starts with the given prefix */
-SDL_FORCE_INLINE SDL_bool HasPrefix(const char *file, const char *prefix);
+static SDL_bool HasPrefix(const char *file, const char *prefix);
 
-SDL_FORCE_INLINE FILE *TryOpenFile(const char *file, const char *mode);
-SDL_FORCE_INLINE FILE *TryOpenInRomfs(const char *file, const char *mode);
+static FILE *TryOpenFile(const char *file, const char *mode);
+static FILE *TryOpenInRomfs(const char *file, const char *mode);
 
 /* Nintendo 3DS applications may embed resources in the executable. The
   resources are stored in a special read-only partition prefixed with
   'romfs:/'. As such, when opening a file, we should first try the romfs
-  unless sdmc is specifically mentionned.
+  unless sdmc is specifically mentioned.
 */
-FILE *
-N3DS_FileOpen(const char *file, const char *mode)
+FILE *N3DS_FileOpen(const char *file, const char *mode)
 {
     /* romfs are read-only */
     if (!IsReadMode(mode)) {
@@ -51,39 +50,34 @@ N3DS_FileOpen(const char *file, const char *mode)
     return TryOpenFile(file, mode);
 }
 
-SDL_FORCE_INLINE SDL_bool
-IsReadMode(const char *mode)
+static SDL_bool IsReadMode(const char *mode)
 {
     return SDL_strchr(mode, 'r') != NULL;
 }
 
-SDL_FORCE_INLINE SDL_bool
-HasPrefix(const char *file, const char *prefix)
+static SDL_bool HasPrefix(const char *file, const char *prefix)
 {
     return SDL_strncmp(prefix, file, SDL_strlen(prefix)) == 0;
 }
 
-SDL_FORCE_INLINE FILE *
-TryOpenFile(const char *file, const char *mode)
+static FILE *TryOpenFile(const char *file, const char *mode)
 {
     FILE *fp = NULL;
 
     fp = TryOpenInRomfs(file, mode);
-    if (fp == NULL) {
+    if (!fp) {
         fp = fopen(file, mode);
     }
 
     return fp;
 }
 
-SDL_FORCE_INLINE FILE *
-TryOpenInRomfs(const char *file, const char *mode)
+FILE *TryOpenInRomfs(const char *file, const char *mode)
 {
     FILE *fp = NULL;
     char *prefixed_filepath = NULL;
 
     if (SDL_asprintf(&prefixed_filepath, "romfs:/%s", file) < 0) {
-        SDL_OutOfMemory();
         return NULL;
     }
 

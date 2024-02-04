@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,13 +25,13 @@
 
 #include "../SDL_sysvideo.h"
 
-extern int UIKit_GL_MakeCurrent(_THIS, SDL_Window *window,
+extern int UIKit_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window,
                                 SDL_GLContext context);
-extern int UIKit_GL_SwapWindow(_THIS, SDL_Window *window);
-extern SDL_GLContext UIKit_GL_CreateContext(_THIS, SDL_Window *window);
-extern int UIKit_GL_DeleteContext(_THIS, SDL_GLContext context);
-extern SDL_FunctionPointer UIKit_GL_GetProcAddress(_THIS, const char *proc);
-extern int UIKit_GL_LoadLibrary(_THIS, const char *path);
+extern int UIKit_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
+extern int UIKit_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
+extern SDL_FunctionPointer UIKit_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
+extern int UIKit_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 
 extern void UIKit_GL_RestoreCurrentContext(void);
 

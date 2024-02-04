@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,7 +34,7 @@ int SDL_SendClipboardUpdate(void)
     if (SDL_EventEnabled(SDL_EVENT_CLIPBOARD_UPDATE)) {
         SDL_Event event;
         event.type = SDL_EVENT_CLIPBOARD_UPDATE;
-        event.common.timestamp = 0;
+        event.clipboard.timestamp = 0;
         posted = (SDL_PushEvent(&event) > 0);
     }
     return posted;

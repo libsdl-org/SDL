@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,12 +22,14 @@
 
 #if SDL_VIDEO_RENDER_SW && !defined(SDL_RENDER_DISABLED)
 
+#include <limits.h>
+
 #include "SDL_triangle.h"
 
 #include "../../video/SDL_blit.h"
 
 /* fixed points bits precision
- * Set to 1, so that it can start rendering wth middle of a pixel precision.
+ * Set to 1, so that it can start rendering with middle of a pixel precision.
  * It doesn't need to be increased.
  * But, if increased too much, it overflows (srcx, srcy) coordinates used for filling with texture.
  * (which could be turned to int64).
@@ -86,9 +88,9 @@ int SDL_FillTriangle(SDL_Surface *dst, const SDL_Point points[3], Uint32 color)
 #endif
 
 /* cross product AB x AC */
-static int cross_product(const SDL_Point *a, const SDL_Point *b, int c_x, int c_y)
+static Sint64 cross_product(const SDL_Point *a, const SDL_Point *b, int c_x, int c_y)
 {
-    return (b->x - a->x) * (c_y - a->y) - (b->y - a->y) * (c_x - a->x);
+    return ((Sint64)(b->x - a->x)) * ((Sint64)(c_y - a->y)) - ((Sint64)(b->y - a->y)) * ((Sint64)(c_x - a->x));
 }
 
 /* check for top left rules */
@@ -112,10 +114,23 @@ static int is_top_left(const SDL_Point *a, const SDL_Point *b, int is_clockwise)
     return 0;
 }
 
+/* x = (y << FP_BITS) */
+/* prevent runtime error: left shift of negative value */
+#define PRECOMP(x, y)               \
+        val = y;                    \
+        if (val >= 0) {             \
+            x = val << FP_BITS;     \
+        } else {                    \
+            val *= -1;              \
+            x = val << FP_BITS;     \
+            x *= -1;                \
+        }
+
 void trianglepoint_2_fixedpoint(SDL_Point *a)
 {
-    a->x <<= FP_BITS;
-    a->y <<= FP_BITS;
+    int val;
+    PRECOMP(a->x, a->x);
+    PRECOMP(a->y, a->y);
 }
 
 /* bounding rect of three points (in fixed point) */
@@ -157,9 +172,9 @@ static void bounding_rect(const SDL_Point *a, const SDL_Point *b, const SDL_Poin
         int x, y;                                                                  \
         for (y = 0; y < dstrect.h; y++) {                                          \
             /* y start */                                                          \
-            int w0 = w0_row;                                                       \
-            int w1 = w1_row;                                                       \
-            int w2 = w2_row;                                                       \
+            Sint64 w0 = w0_row;                                                    \
+            Sint64 w1 = w1_row;                                                    \
+            Sint64 w2 = w2_row;                                                    \
             for (x = 0; x < dstrect.w; x++) {                                      \
                 /* In triangle */                                                  \
                 if (w0 + bias_w0 >= 0 && w1 + bias_w1 >= 0 && w2 + bias_w2 >= 0) { \
@@ -209,17 +224,18 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
     Uint8 *dst_ptr;
     int dst_pitch;
 
-    int area, is_clockwise;
+    Sint64 area;
+    int is_clockwise;
 
     int d2d1_y, d1d2_x, d0d2_y, d2d0_x, d1d0_y, d0d1_x;
-    int w0_row, w1_row, w2_row;
+    Sint64 w0_row, w1_row, w2_row;
     int bias_w0, bias_w1, bias_w2;
 
     int is_uniform;
 
     SDL_Surface *tmp = NULL;
 
-    if (dst == NULL) {
+    if (!dst) {
         return -1;
     }
 
@@ -271,7 +287,7 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
 
         /* Use an intermediate surface */
         tmp = SDL_CreateSurface(dstrect.w, dstrect.h, format);
-        if (tmp == NULL) {
+        if (!tmp) {
             ret = -1;
             goto end;
         }
@@ -295,14 +311,19 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
     }
 
     is_clockwise = area > 0;
-    area = SDL_abs(area);
+    if (area < 0) {
+        area = -area;
+    }
 
-    d2d1_y = (d1->y - d2->y) << FP_BITS;
-    d0d2_y = (d2->y - d0->y) << FP_BITS;
-    d1d0_y = (d0->y - d1->y) << FP_BITS;
-    d1d2_x = (d2->x - d1->x) << FP_BITS;
-    d2d0_x = (d0->x - d2->x) << FP_BITS;
-    d0d1_x = (d1->x - d0->x) << FP_BITS;
+    {
+        int val;
+        PRECOMP(d2d1_y, d1->y - d2->y)
+        PRECOMP(d0d2_y, d2->y - d0->y)
+        PRECOMP(d1d0_y, d0->y - d1->y)
+        PRECOMP(d1d2_x, d2->x - d1->x)
+        PRECOMP(d2d0_x, d0->x - d2->x)
+        PRECOMP(d0d1_x, d1->x - d0->x)
+    }
 
     /* Starting point for rendering, at the middle of a pixel */
     {
@@ -338,12 +359,7 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
     if (is_uniform) {
         Uint32 color;
         if (tmp) {
-            if (dst->format->Amask) {
-                color = SDL_MapRGBA(tmp->format, c0.r, c0.g, c0.b, c0.a);
-            } else {
-                // color = SDL_MapRGB(tmp->format, c0.r, c0.g, c0.b);
-                color = SDL_MapRGBA(tmp->format, c0.r, c0.g, c0.b, c0.a);
-            }
+            color = SDL_MapRGBA(tmp->format, c0.r, c0.g, c0.b, c0.a);
         } else {
             color = SDL_MapRGBA(dst->format, c0.r, c0.g, c0.b, c0.a);
         }
@@ -452,20 +468,24 @@ int SDL_SW_BlitTriangle(
     int *src_ptr;
     int src_pitch;
 
-    int area, is_clockwise;
+    Sint64 area, tmp64;
+    int is_clockwise;
 
     int d2d1_y, d1d2_x, d0d2_y, d2d0_x, d1d0_y, d0d1_x;
     int s2s0_x, s2s1_x, s2s0_y, s2s1_y;
 
-    int w0_row, w1_row, w2_row;
+    Sint64 w0_row, w1_row, w2_row;
     int bias_w0, bias_w1, bias_w2;
 
     int is_uniform;
 
     int has_modulation;
 
-    if (src == NULL || dst == NULL) {
-        return -1;
+    if (!src) {
+        return SDL_InvalidParamError("src");
+    }
+    if (!src) {
+        return SDL_InvalidParamError("dst");
     }
 
     area = cross_product(d0, d1, d2->x, d2->y);
@@ -567,15 +587,19 @@ int SDL_SW_BlitTriangle(
     src_pitch = src->pitch;
 
     is_clockwise = area > 0;
-    area = SDL_abs(area);
+    if (area < 0) {
+        area = -area;
+    }
 
-    d2d1_y = (d1->y - d2->y) << FP_BITS;
-    d0d2_y = (d2->y - d0->y) << FP_BITS;
-    d1d0_y = (d0->y - d1->y) << FP_BITS;
-
-    d1d2_x = (d2->x - d1->x) << FP_BITS;
-    d2d0_x = (d0->x - d2->x) << FP_BITS;
-    d0d1_x = (d1->x - d0->x) << FP_BITS;
+    {
+        int val;
+        PRECOMP(d2d1_y, d1->y - d2->y)
+        PRECOMP(d0d2_y, d2->y - d0->y)
+        PRECOMP(d1d0_y, d0->y - d1->y)
+        PRECOMP(d1d2_x, d2->x - d1->x)
+        PRECOMP(d2d0_x, d0->x - d2->x)
+        PRECOMP(d0d1_x, d1->x - d0->x)
+    }
 
     s2s0_x = s0->x - s2->x;
     s2s1_x = s1->x - s2->x;
@@ -614,8 +638,20 @@ int SDL_SW_BlitTriangle(
     bias_w2 = (is_top_left(d0, d1, is_clockwise) ? 0 : -1);
 
     /* precompute constant 's2->x * area' used in TRIANGLE_GET_TEXTCOORD */
-    s2_x_area.x = s2->x * area;
-    s2_x_area.y = s2->y * area;
+    tmp64 = s2->x * area;
+    if (tmp64 >= INT_MIN && tmp64 <= INT_MAX) {
+        s2_x_area.x = (int)tmp64;
+    } else {
+        ret = SDL_SetError("triangle area overflow");
+        goto end;
+    }
+    tmp64 = s2->y * area;
+    if (tmp64 >= INT_MIN && tmp64 <= INT_MAX) {
+        s2_x_area.y = (int)tmp64;
+    } else {
+        ret = SDL_SetError("triangle area overflow");
+        goto end;
+    }
 
     if (blend != SDL_BLENDMODE_NONE || src->format->format != dst->format->format || has_modulation || !is_uniform) {
         /* Use SDL_BlitTriangle_Slow */
@@ -661,9 +697,18 @@ int SDL_SW_BlitTriangle(
         tmp_info.dst = dst_ptr;
         tmp_info.dst_pitch = dst_pitch;
 
-        SDL_BlitTriangle_Slow(&tmp_info, s2_x_area, dstrect, area, bias_w0, bias_w1, bias_w2,
+#define CHECK_INT_RANGE(X) \
+    if ((X) < INT_MIN || (X) > INT_MAX) { \
+        ret = SDL_SetError("integer overflow (%s = %" SDL_PRIs64 ")", #X, X); \
+        goto end; \
+    }
+        CHECK_INT_RANGE(area);
+        CHECK_INT_RANGE(w0_row);
+        CHECK_INT_RANGE(w1_row);
+        CHECK_INT_RANGE(w2_row);
+        SDL_BlitTriangle_Slow(&tmp_info, s2_x_area, dstrect, (int)area, bias_w0, bias_w1, bias_w2,
                               d2d1_y, d1d2_x, d0d2_y, d2d0_x, d1d0_y, d0d1_x,
-                              s2s0_x, s2s1_x, s2s0_y, s2s1_y, w0_row, w1_row, w2_row,
+                              s2s0_x, s2s1_x, s2s0_y, s2s1_y, (int)w0_row, (int)w1_row, (int)w2_row,
                               c0, c1, c2, is_uniform);
 
         goto end;
@@ -788,15 +833,20 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
                 continue;
             }
         }
-        if (FORMAT_HAS_ALPHA(dstfmt_val)) {
-            DISEMBLE_RGBA(dst, dstbpp, dst_fmt, dstpixel, dstR, dstG, dstB, dstA);
-        } else if (FORMAT_HAS_NO_ALPHA(dstfmt_val)) {
-            DISEMBLE_RGB(dst, dstbpp, dst_fmt, dstpixel, dstR, dstG, dstB);
-            dstA = 0xFF;
+        if ((flags & (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL))) {
+            if (FORMAT_HAS_ALPHA(dstfmt_val)) {
+                DISEMBLE_RGBA(dst, dstbpp, dst_fmt, dstpixel, dstR, dstG, dstB, dstA);
+            } else if (FORMAT_HAS_NO_ALPHA(dstfmt_val)) {
+                DISEMBLE_RGB(dst, dstbpp, dst_fmt, dstpixel, dstR, dstG, dstB);
+                dstA = 0xFF;
+            } else {
+                /* SDL_PIXELFORMAT_ARGB2101010 */
+                dstpixel = *((Uint32 *) (dst));
+                RGBA_FROM_ARGB2101010(dstpixel, dstR, dstG, dstB, dstA);
+            }
         } else {
-            /* SDL_PIXELFORMAT_ARGB2101010 */
-            dstpixel = *((Uint32 *)(dst));
-            RGBA_FROM_ARGB2101010(dstpixel, dstR, dstG, dstB, dstA);
+            /* don't care */
+            dstR = dstG = dstB = dstA = 0;
         }
 
         if (!is_uniform) {

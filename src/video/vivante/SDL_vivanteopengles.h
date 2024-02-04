@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -36,10 +36,10 @@
 #define VIVANTE_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
 #define VIVANTE_GLES_DeleteContext   SDL_EGL_DeleteContext
 
-extern int VIVANTE_GLES_LoadLibrary(_THIS, const char *path);
-extern SDL_GLContext VIVANTE_GLES_CreateContext(_THIS, SDL_Window *window);
-extern int VIVANTE_GLES_SwapWindow(_THIS, SDL_Window *window);
-extern int VIVANTE_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
+extern int VIVANTE_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+extern SDL_GLContext VIVANTE_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
+extern int VIVANTE_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern int VIVANTE_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
 
 #endif /* SDL_VIDEO_DRIVER_VIVANTE && SDL_VIDEO_OPENGL_EGL */
 

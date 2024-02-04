@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 /**
  *  \file SDL_build_config.h
  *
- *  \brief This is a set of defines to configure the SDL features
+ *  This is a set of defines to configure the SDL features
  */
 
 #ifndef SDL_build_config_h_
@@ -41,6 +41,8 @@
 
 #cmakedefine HAVE_GCC_ATOMICS @HAVE_GCC_ATOMICS@
 #cmakedefine HAVE_GCC_SYNC_LOCK_TEST_AND_SET @HAVE_GCC_SYNC_LOCK_TEST_AND_SET@
+
+#cmakedefine SDL_DISABLE_ALLOCA
 
 /* Comment this if you want to build without any C library requirements */
 #cmakedefine HAVE_LIBC 1
@@ -67,7 +69,6 @@
 #cmakedefine HAVE_SYS_TYPES_H 1
 #cmakedefine HAVE_WCHAR_H 1
 #cmakedefine HAVE_PTHREAD_NP_H 1
-#cmakedefine HAVE_LIBUNWIND_H 1
 
 /* C library functions */
 #cmakedefine HAVE_DLOPEN 1
@@ -75,8 +76,7 @@
 #cmakedefine HAVE_CALLOC 1
 #cmakedefine HAVE_REALLOC 1
 #cmakedefine HAVE_FREE 1
-#cmakedefine HAVE_ALLOCA 1
-#ifndef __WIN32__ /* Don't use C runtime versions of these on Windows */
+#ifndef SDL_PLATFORM_WIN32 /* Don't use C runtime versions of these on Windows */
 #cmakedefine HAVE_GETENV 1
 #cmakedefine HAVE_SETENV 1
 #cmakedefine HAVE_PUTENV 1
@@ -91,6 +91,7 @@
 #cmakedefine HAVE_MEMMOVE 1
 #cmakedefine HAVE_MEMCMP 1
 #cmakedefine HAVE_WCSLEN 1
+#cmakedefine HAVE_WCSNLEN 1
 #cmakedefine HAVE_WCSLCPY 1
 #cmakedefine HAVE_WCSLCAT 1
 #cmakedefine HAVE__WCSDUP 1
@@ -102,7 +103,9 @@
 #cmakedefine HAVE__WCSICMP 1
 #cmakedefine HAVE_WCSNCASECMP 1
 #cmakedefine HAVE__WCSNICMP 1
+#cmakedefine HAVE_WCSTOL 1
 #cmakedefine HAVE_STRLEN 1
+#cmakedefine HAVE_STRNLEN 1
 #cmakedefine HAVE_STRLCPY 1
 #cmakedefine HAVE_STRLCAT 1
 #cmakedefine HAVE__STRREV 1
@@ -113,6 +116,7 @@
 #cmakedefine HAVE_STRCHR 1
 #cmakedefine HAVE_STRRCHR 1
 #cmakedefine HAVE_STRSTR 1
+#cmakedefine HAVE_STRNSTR 1
 #cmakedefine HAVE_STRTOK_R 1
 #cmakedefine HAVE_ITOA 1
 #cmakedefine HAVE__LTOA 1
@@ -192,8 +196,8 @@
 #cmakedefine HAVE_SYSCTLBYNAME 1
 #cmakedefine HAVE_CLOCK_GETTIME 1
 #cmakedefine HAVE_GETPAGESIZE 1
-#cmakedefine HAVE_MPROTECT 1
 #cmakedefine HAVE_ICONV 1
+#cmakedefine SDL_USE_LIBICONV 1
 #cmakedefine HAVE_PTHREAD_SETNAME_NP 1
 #cmakedefine HAVE_PTHREAD_SET_NAME_NP 1
 #cmakedefine HAVE_SEM_TIMEDWAIT 1
@@ -221,8 +225,7 @@
 
 #cmakedefine HAVE_LINUX_INPUT_H 1
 #cmakedefine HAVE_LIBUDEV_H 1
-#cmakedefine HAVE_LIBSAMPLERATE 1
-#cmakedefine HAVE_LIBDECOR_H  1
+#cmakedefine HAVE_LIBDECOR_H 1
 
 #cmakedefine HAVE_D3D_H @HAVE_D3D_H@
 #cmakedefine HAVE_D3D11_H @HAVE_D3D11_H@
@@ -241,35 +244,27 @@
 #cmakedefine HAVE_ROAPI_H @HAVE_ROAPI_H@
 #cmakedefine HAVE_SHELLSCALINGAPI_H @HAVE_SHELLSCALINGAPI_H@
 
-#cmakedefine HAVE_XINPUT_GAMEPAD_EX @HAVE_XINPUT_GAMEPAD_EX@
-#cmakedefine HAVE_XINPUT_STATE_EX @HAVE_XINPUT_STATE_EX@
-
 #cmakedefine USE_POSIX_SPAWN @USE_POSIX_SPAWN@
+
+#cmakedefine HAVE_COREMEDIA
 
 /* SDL internal assertion support */
 #if @SDL_DEFAULT_ASSERT_LEVEL_CONFIGURED@
 #cmakedefine SDL_DEFAULT_ASSERT_LEVEL @SDL_DEFAULT_ASSERT_LEVEL@
 #endif
 
-/* Allow disabling of core subsystems */
-#cmakedefine SDL_ATOMIC_DISABLED @SDL_ATOMIC_DISABLED@
+#cmakedefine SDL_VIDEO_CAPTURE
+
+/* Allow disabling of major subsystems */
 #cmakedefine SDL_AUDIO_DISABLED @SDL_AUDIO_DISABLED@
-#cmakedefine SDL_CPUINFO_DISABLED @SDL_CPUINFO_DISABLED@
-#cmakedefine SDL_EVENTS_DISABLED @SDL_EVENTS_DISABLED@
-#cmakedefine SDL_FILE_DISABLED @SDL_FILE_DISABLED@
 #cmakedefine SDL_JOYSTICK_DISABLED @SDL_JOYSTICK_DISABLED@
 #cmakedefine SDL_HAPTIC_DISABLED @SDL_HAPTIC_DISABLED@
 #cmakedefine SDL_HIDAPI_DISABLED @SDL_HIDAPI_DISABLED@
 #cmakedefine SDL_SENSOR_DISABLED @SDL_SENSOR_DISABLED@
-#cmakedefine SDL_LOADSO_DISABLED @SDL_LOADSO_DISABLED@
 #cmakedefine SDL_RENDER_DISABLED @SDL_RENDER_DISABLED@
 #cmakedefine SDL_THREADS_DISABLED @SDL_THREADS_DISABLED@
-#cmakedefine SDL_TIMERS_DISABLED @SDL_TIMERS_DISABLED@
 #cmakedefine SDL_VIDEO_DISABLED @SDL_VIDEO_DISABLED@
 #cmakedefine SDL_POWER_DISABLED @SDL_POWER_DISABLED@
-#cmakedefine SDL_FILESYSTEM_DISABLED @SDL_FILESYSTEM_DISABLED@
-#cmakedefine SDL_LOCALE_DISABLED @SDL_LOCALE_DISABLED@
-#cmakedefine SDL_MISC_DISABLED @SDL_MISC_DISABLED@
 
 /* Enable various audio drivers */
 #cmakedefine SDL_AUDIO_DRIVER_ALSA @SDL_AUDIO_DRIVER_ALSA@
@@ -328,7 +323,6 @@
 #cmakedefine SDL_HAPTIC_LINUX @SDL_HAPTIC_LINUX@
 #cmakedefine SDL_HAPTIC_IOKIT @SDL_HAPTIC_IOKIT@
 #cmakedefine SDL_HAPTIC_DINPUT @SDL_HAPTIC_DINPUT@
-#cmakedefine SDL_HAPTIC_XINPUT @SDL_HAPTIC_XINPUT@
 #cmakedefine SDL_HAPTIC_ANDROID @SDL_HAPTIC_ANDROID@
 #cmakedefine SDL_LIBUSB_DYNAMIC @SDL_LIBUSB_DYNAMIC@
 #cmakedefine SDL_UDEV_DYNAMIC @SDL_UDEV_DYNAMIC@
@@ -349,6 +343,7 @@
 
 /* Enable various threading systems */
 #cmakedefine SDL_THREAD_GENERIC_COND_SUFFIX @SDL_THREAD_GENERIC_COND_SUFFIX@
+#cmakedefine SDL_THREAD_GENERIC_RWLOCK_SUFFIX @SDL_THREAD_GENERIC_RWLOCK_SUFFIX@
 #cmakedefine SDL_THREAD_PTHREAD @SDL_THREAD_PTHREAD@
 #cmakedefine SDL_THREAD_PTHREAD_RECURSIVE_MUTEX @SDL_THREAD_PTHREAD_RECURSIVE_MUTEX@
 #cmakedefine SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP @SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP@
@@ -394,7 +389,6 @@
 #cmakedefine SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL @SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL@
 #cmakedefine SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR @SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR@
 #cmakedefine SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON @SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON@
-#cmakedefine SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH @SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH@
 #cmakedefine SDL_VIDEO_DRIVER_WINDOWS @SDL_VIDEO_DRIVER_WINDOWS@
 #cmakedefine SDL_VIDEO_DRIVER_WINRT @SDL_VIDEO_DRIVER_WINRT@
 #cmakedefine SDL_VIDEO_DRIVER_X11 @SDL_VIDEO_DRIVER_X11@
@@ -416,62 +410,6 @@
 #cmakedefine SDL_VIDEO_DRIVER_X11_XSCRNSAVER @SDL_VIDEO_DRIVER_X11_XSCRNSAVER@
 #cmakedefine SDL_VIDEO_DRIVER_X11_XSHAPE @SDL_VIDEO_DRIVER_X11_XSHAPE@
 #cmakedefine SDL_VIDEO_DRIVER_QNX @SDL_VIDEO_DRIVER_QNX@
-
-#ifdef SDL_VIDEO_DRIVER_ANDROID
-#define SDL_ENABLE_SYSWM_ANDROID
-#else
-#define SDL_DISABLE_SYSWM_ANDROID
-#endif
-#ifdef SDL_VIDEO_DRIVER_COCOA
-#define SDL_ENABLE_SYSWM_COCOA
-#else
-#define SDL_DISABLE_SYSWM_COCOA
-#endif
-#ifdef SDL_VIDEO_DRIVER_HAIKU
-#define SDL_ENABLE_SYSWM_HAIKU
-#else
-#define SDL_DISABLE_SYSWM_HAIKU
-#endif
-#ifdef SDL_VIDEO_DRIVER_KMSDRM
-#define SDL_ENABLE_SYSWM_KMSDRM
-#else
-#define SDL_DISABLE_SYSWM_KMSDRM
-#endif
-#ifdef SDL_VIDEO_DRIVER_RISCOS
-#define SDL_ENABLE_SYSWM_RISCOS
-#else
-#define SDL_DISABLE_SYSWM_RISCOS
-#endif
-#ifdef SDL_VIDEO_DRIVER_UIKIT
-#define SDL_ENABLE_SYSWM_UIKIT
-#else
-#define SDL_DISABLE_SYSWM_UIKIT
-#endif
-#ifdef SDL_VIDEO_DRIVER_VIVANTE
-#define SDL_ENABLE_SYSWM_VIVANTE
-#else
-#define SDL_DISABLE_SYSWM_VIVANTE
-#endif
-#ifdef SDL_VIDEO_DRIVER_WAYLAND
-#define SDL_ENABLE_SYSWM_WAYLAND
-#else
-#define SDL_DISABLE_SYSWM_WAYLAND
-#endif
-#ifdef SDL_VIDEO_DRIVER_WINDOWS
-#define SDL_ENABLE_SYSWM_WINDOWS
-#else
-#define SDL_DISABLE_SYSWM_WINDOWS
-#endif
-#ifdef SDL_VIDEO_DRIVER_WINRT
-#define SDL_ENABLE_SYSWM_WINRT
-#else
-#define SDL_DISABLE_SYSWM_WINRT
-#endif
-#ifdef SDL_VIDEO_DRIVER_X11
-#define SDL_ENABLE_SYSWM_X11
-#else
-#define SDL_DISABLE_SYSWM_X11
-#endif
 
 #cmakedefine SDL_VIDEO_RENDER_D3D @SDL_VIDEO_RENDER_D3D@
 #cmakedefine SDL_VIDEO_RENDER_D3D11 @SDL_VIDEO_RENDER_D3D11@
@@ -541,10 +479,7 @@
 #cmakedefine SDL_ARM_NEON_BLITTERS @SDL_ARM_NEON_BLITTERS@
 
 /* Whether SDL_DYNAMIC_API needs dlopen */
-#cmakedefine DYNAPI_NEEDS_DLOPEN  @DYNAPI_NEEDS_DLOPEN@
-
-/* Enable dynamic libsamplerate support */
-#cmakedefine SDL_LIBSAMPLERATE_DYNAMIC @SDL_LIBSAMPLERATE_DYNAMIC@
+#cmakedefine DYNAPI_NEEDS_DLOPEN @DYNAPI_NEEDS_DLOPEN@
 
 /* Enable ime support */
 #cmakedefine SDL_USE_IME @SDL_USE_IME@
@@ -557,7 +492,7 @@
 #cmakedefine SDL_VIDEO_VITA_PVR @SDL_VIDEO_VITA_PVR@
 #cmakedefine SDL_VIDEO_VITA_PVR_OGL @SDL_VIDEO_VITA_PVR_OGL@
 
-#cmakedefine SDL_HAVE_LIBDECOR_GET_MIN_MAX @SDL_HAVE_LIBDECOR_GET_MIN_MAX@
+#cmakedefine SDL_HAVE_LIBDECOR_VER_0_2_0 @SDL_HAVE_LIBDECOR_VER_0_2_0@
 
 #if !defined(HAVE_STDINT_H) && !defined(_STDINT_H_)
 /* Most everything except Visual Studio 2008 and earlier has stdint.h now */

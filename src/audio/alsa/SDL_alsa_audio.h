@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,20 +27,16 @@
 
 #include "../SDL_sysaudio.h"
 
-/* Hidden "this" pointer for the audio functions */
-#define _THIS SDL_AudioDevice *this
-
 struct SDL_PrivateAudioData
 {
-    /* The audio device handle */
+    // The audio device handle
     snd_pcm_t *pcm_handle;
 
-    /* Raw mixing buffer */
+    // Raw mixing buffer
     Uint8 *mixbuf;
-    int mixlen;
 
-    /* swizzle function */
-    void (*swizzle_func)(_THIS, void *buffer, Uint32 bufferlen);
+    // swizzle function
+    void (*swizzle_func)(SDL_AudioDevice *_this, void *buffer, Uint32 bufferlen);
 };
 
-#endif /* SDL_ALSA_audio_h_ */
+#endif // SDL_ALSA_audio_h_

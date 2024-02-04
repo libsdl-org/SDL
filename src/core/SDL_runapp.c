@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,20 +22,19 @@
 
 /* Most platforms that use/need SDL_main have their own SDL_RunApp() implementation.
  * If not, you can special case it here by appending || defined(__YOUR_PLATFORM__) */
-#if ( !defined(SDL_MAIN_NEEDED) && !defined(SDL_MAIN_AVAILABLE) ) || defined(__ANDROID__)
+#if ( !defined(SDL_MAIN_NEEDED) && !defined(SDL_MAIN_AVAILABLE) ) || defined(SDL_PLATFORM_ANDROID)
 
 DECLSPEC int
 SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
 {
-    char empty[1] = {0};
-    char* argvdummy[2] = { empty, NULL };
-
     (void)reserved;
 
-    if(argv == NULL)
+    if(!argv)
     {
-        argc = 0;
         /* make sure argv isn't NULL, in case some user code doesn't like that */
+        static char dummyargv0[] = { 'S', 'D', 'L', '_', 'a', 'p', 'p', '\0' };
+        static char* argvdummy[2] = { dummyargv0, NULL };
+        argc = 1;
         argv = argvdummy;
     }
 

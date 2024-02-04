@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -21,7 +21,7 @@
 
 #include "SDL_internal.h"
 
-#ifdef __PS2__
+#ifdef SDL_PLATFORM_PS2
 
 /* SDL_RunApp() code for PS2 based on SDL_ps2_main.c, fjtrujy@gmail.com */
 
@@ -82,4 +82,4 @@ SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
     return res;
 }
 
-#endif /* __PS2__ */
+#endif /* SDL_PLATFORM_PS2 */

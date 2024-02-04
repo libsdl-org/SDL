@@ -27,7 +27,7 @@
 #include <sys/keycodes.h>
 
 /**
- * A map thta translates Screen key names to SDL scan codes.
+ * A map that translates Screen key names to SDL scan codes.
  * This map is incomplete, but should include most major keys.
  */
 static int key_to_sdl[] = {
@@ -95,8 +95,7 @@ static int key_to_sdl[] = {
  * Translates the event such that it can be handled by SDL.
  * @param   event   Screen keyboard event
  */
-void
-handleKeyboardEvent(screen_event_t event)
+void handleKeyboardEvent(screen_event_t event)
 {
     int             val;
     SDL_Scancode    scancode;

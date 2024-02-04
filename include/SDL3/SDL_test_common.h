@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 /**
  *  \file SDL_test_common.h
  *
- *  \brief Common functions of SDL test framework.
+ *  Common functions of SDL test framework.
  *
  *  This code is a part of the SDL test library, not the main SDL library.
  */
@@ -34,10 +34,10 @@
 
 #include <SDL3/SDL.h>
 
-#ifdef __PSP__
+#ifdef SDL_PLATFORM_PSP
 #define DEFAULT_WINDOW_WIDTH  480
 #define DEFAULT_WINDOW_HEIGHT 272
-#elif defined(__VITA__)
+#elif defined(SDL_PLATFORM_VITA)
 #define DEFAULT_WINDOW_WIDTH  960
 #define DEFAULT_WINDOW_HEIGHT 544
 #else
@@ -77,6 +77,7 @@ typedef struct
     int window_maxH;
     int logical_w;
     int logical_h;
+    SDL_bool auto_scale_content;
     SDL_RendererLogicalPresentation logical_presentation;
     SDL_ScaleMode logical_scale_mode;
     float scale;
@@ -96,7 +97,9 @@ typedef struct
 
     /* Audio info */
     const char *audiodriver;
-    SDL_AudioSpec audiospec;
+    SDL_AudioFormat audio_format;
+    int audio_channels;
+    int audio_freq;
     SDL_AudioDeviceID audio_id;
 
     /* GL settings */
@@ -136,7 +139,7 @@ extern "C" {
 /* Function prototypes */
 
 /**
- * \brief Parse command line parameters and create common state.
+ * Parse command line parameters and create common state.
  *
  * \param argv Array of command line parameters
  * \param flags Flags indicating which subsystem to initialize (i.e. SDL_INIT_VIDEO | SDL_INIT_AUDIO)
@@ -146,14 +149,14 @@ extern "C" {
 SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, Uint32 flags);
 
 /**
- * \brief Free the common state object.
+ * Free the common state object.
  *
  * \param state The common state object to destroy
  */
 void SDLTest_CommonDestroyState(SDLTest_CommonState *state);
 
 /**
- * \brief Process one common argument.
+ * Process one common argument.
  *
  * \param state The common state describing the test window to create.
  * \param index The index of the argument to process in argv[].
@@ -164,7 +167,7 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index);
 
 
 /**
- * \brief Logs command line usage info.
+ * Logs command line usage info.
  *
  * This logs the appropriate command line options for the subsystems in use
  *  plus other common options, and then any application-specific options.
@@ -178,7 +181,7 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index);
 void SDLTest_CommonLogUsage(SDLTest_CommonState *state, const char *argv0, const char **options);
 
 /**
- * \brief Open test window.
+ * Open test window.
  *
  * \param state The common state describing the test window to create.
  *
@@ -187,7 +190,7 @@ void SDLTest_CommonLogUsage(SDLTest_CommonState *state, const char *argv0, const
 SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state);
 
 /**
- * \brief Easy argument handling when test app doesn't need any custom args.
+ * Easy argument handling when test app doesn't need any custom args.
  *
  * \param state The common state describing the test window to create.
  * \param argc argc, as supplied to SDL_main
@@ -198,17 +201,29 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state);
 SDL_bool SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, const int argc, char **argv);
 
 /**
- * \brief Common event handler for test windows.
+ * Common event handler for test windows if you use a standard SDL_main.
+ *
+ * This will free data from the event, like the string in a drop event!
  *
  * \param state The common state used to create test window.
  * \param event The event to handle.
  * \param done Flag indicating we are done.
- *
  */
 void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done);
 
 /**
- * \brief Close test window.
+ * Common event handler for test windows if you use SDL_AppEvent.
+ *
+ * This does _not_ free anything in `event`.
+ *
+ * \param state The common state used to create test window.
+ * \param event The event to handle.
+ * \returns Value suitable for returning from SDL_AppEvent().
+ */
+int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event *event);
+
+/**
+ * Close test window.
  *
  * \param state The common state used to create test window.
  *
@@ -216,7 +231,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
 void SDLTest_CommonQuit(SDLTest_CommonState *state);
 
 /**
- * \brief Draws various window information (position, size, etc.) to the renderer.
+ * Draws various window information (position, size, etc.) to the renderer.
  *
  * \param renderer The renderer to draw to.
  * \param window The window whose information should be displayed.

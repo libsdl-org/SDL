@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -39,31 +39,31 @@
 #error Nope, you have to edit this file to force this off.
 #endif
 
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
 #include "TargetConditionals.h"
 #endif
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE /* probably not useful on iOS. */
 #define SDL_DYNAMIC_API 0
-#elif defined(__ANDROID__) /* probably not useful on Android. */
+#elif defined(SDL_PLATFORM_ANDROID) /* probably not useful on Android. */
 #define SDL_DYNAMIC_API 0
-#elif defined(__EMSCRIPTEN__) && __EMSCRIPTEN__ /* probably not useful on Emscripten. */
+#elif defined(SDL_PLATFORM_EMSCRIPTEN) /* probably not useful on Emscripten. */
 #define SDL_DYNAMIC_API 0
 #elif defined(SDL_BUILDING_WINRT) && SDL_BUILDING_WINRT /* probably not useful on WinRT, given current .dll loading restrictions */
 #define SDL_DYNAMIC_API 0
-#elif defined(__PS2__) && __PS2__
+#elif defined(SDL_PLATFORM_PS2) && SDL_PLATFORM_PS2
 #define SDL_DYNAMIC_API 0
-#elif defined(__PSP__) && __PSP__
+#elif defined(SDL_PLATFORM_PSP) && SDL_PLATFORM_PSP
 #define SDL_DYNAMIC_API 0
-#elif defined(__riscos__) && __riscos__ /* probably not useful on RISC OS, since dlopen() can't be used when using static linking. */
+#elif defined(SDL_PLATFORM_RISCOS) /* probably not useful on RISC OS, since dlopen() can't be used when using static linking. */
 #define SDL_DYNAMIC_API 0
 #elif defined(__clang_analyzer__) || defined(SDL_THREAD_SAFETY_ANALYSIS)
 #define SDL_DYNAMIC_API 0 /* Turn off for static analysis, so reports are more clear. */
-#elif defined(__VITA__)
+#elif defined(SDL_PLATFORM_VITA)
 #define SDL_DYNAMIC_API 0 /* vitasdk doesn't support dynamic linking */
-#elif defined(__NGAGE__)
+#elif defined(SDL_PLATFORM_NGAGE)
 #define SDL_DYNAMIC_API 0 /* The N-Gage doesn't support dynamic linking either */
-#elif defined(__3DS__)
+#elif defined(SDL_PLATFORM_3DS)
 #define SDL_DYNAMIC_API 0 /* devkitARM doesn't support dynamic linking */
 #elif defined(DYNAPI_NEEDS_DLOPEN) && !defined(HAVE_DLOPEN)
 #define SDL_DYNAMIC_API 0 /* we need dlopen(), but don't have it.... */

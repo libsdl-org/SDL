@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,8 +27,8 @@ int SDL_ListAdd(SDL_ListNode **head, void *ent)
 {
     SDL_ListNode *node = SDL_malloc(sizeof(*node));
 
-    if (node == NULL) {
-        return SDL_OutOfMemory();
+    if (!node) {
+        return -1;
     }
 
     node->entry = ent;
@@ -43,7 +43,7 @@ void SDL_ListPop(SDL_ListNode **head, void **ent)
     SDL_ListNode **ptr = head;
 
     /* Invalid or empty */
-    if (head == NULL || *head == NULL) {
+    if (!head || !*head) {
         return;
     }
 

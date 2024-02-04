@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,8 +27,8 @@
 extern "C" {
 #endif
 
-extern void WINRT_InitMouse(_THIS);
-extern void WINRT_QuitMouse(_THIS);
+extern void WINRT_InitMouse(SDL_VideoDevice *_this);
+extern void WINRT_QuitMouse(SDL_VideoDevice *_this);
 extern SDL_bool WINRT_UsingRelativeMouseMode;
 
 #ifdef __cplusplus

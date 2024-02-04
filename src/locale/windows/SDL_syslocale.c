@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -65,8 +65,8 @@ static int SDL_SYS_GetPreferredLocales_vista(char *buf, size_t buflen)
     pGetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numlangs, NULL, &wbuflen);
 
     wbuf = SDL_small_alloc(WCHAR, wbuflen, &isstack);
-    if (wbuf == NULL) {
-        return SDL_OutOfMemory();
+    if (!wbuf) {
+        return -1;
     }
 
     if (!pGetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numlangs, wbuf, &wbuflen)) {
@@ -102,7 +102,7 @@ int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
         }
     }
 
-    if (pGetUserPreferredUILanguages == NULL) {
+    if (!pGetUserPreferredUILanguages) {
         SDL_SYS_GetPreferredLocales_winxp(buf, buflen); /* this is always available */
     } else {
         SDL_SYS_GetPreferredLocales_vista(buf, buflen); /* available on Vista and later. */

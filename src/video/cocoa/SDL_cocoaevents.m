@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -133,6 +133,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
                       ofObject:(id)object
                         change:(NSDictionary *)change
                        context:(void *)context;
+- (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app;
 @end
 
 @implementation SDLAppDelegate : NSObject
@@ -141,18 +142,21 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     self = [super init];
     if (self) {
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+        SDL_bool registerActivationHandlers = SDL_GetHintBoolean("SDL_MAC_REGISTER_ACTIVATION_HANDLERS", SDL_TRUE);
 
         seenFirstActivate = NO;
 
-        [center addObserver:self
-                   selector:@selector(windowWillClose:)
-                       name:NSWindowWillCloseNotification
-                     object:nil];
+        if (registerActivationHandlers) {
+            [center addObserver:self
+                       selector:@selector(windowWillClose:)
+                           name:NSWindowWillCloseNotification
+                         object:nil];
 
-        [center addObserver:self
-                   selector:@selector(focusSomeWindow:)
-                       name:NSApplicationDidBecomeActiveNotification
-                     object:nil];
+            [center addObserver:self
+                       selector:@selector(focusSomeWindow:)
+                           name:NSApplicationDidBecomeActiveNotification
+                         object:nil];
+        }
 
         [center addObserver:self
                    selector:@selector(localeDidChange:)
@@ -255,7 +259,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
         SDL_Window *window = device->windows;
         int i;
         for (i = 0; i < device->num_displays; ++i) {
-            SDL_Window *fullscreen_window = device->displays[i].fullscreen_window;
+            SDL_Window *fullscreen_window = device->displays[i]->fullscreen_window;
             if (fullscreen_window) {
                 if (fullscreen_window->flags & SDL_WINDOW_MINIMIZED) {
                     SDL_RestoreWindow(fullscreen_window);
@@ -287,11 +291,14 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename
 {
-    return (BOOL)SDL_SendDropFile(NULL, [filename UTF8String]) && SDL_SendDropComplete(NULL);
+    return (BOOL)SDL_SendDropFile(NULL, NULL, [filename UTF8String]) && SDL_SendDropComplete(NULL);
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
+    if (!SDL_GetHintBoolean("SDL_MAC_REGISTER_ACTIVATION_HANDLERS", SDL_TRUE))
+        return;
+
     /* The menu bar of SDL apps which don't have the typical .app bundle
      * structure fails to work the first time a window is created (until it's
      * de-focused and re-focused), if this call is in Cocoa_RegisterApp instead
@@ -315,8 +322,24 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 - (void)handleURLEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
 {
     NSString *path = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
-    SDL_SendDropFile(NULL, [path UTF8String]);
+    SDL_SendDropFile(NULL, NULL, [path UTF8String]);
     SDL_SendDropComplete(NULL);
+}
+
+- (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app
+{
+    // This just tells Cocoa that we didn't do any custom save state magic for the app,
+    // so the system is safe to use NSSecureCoding internally, instead of using unencrypted
+    // save states for backwards compatibility. If we don't return YES here, we'll get a
+    // warning on the console at startup:
+    //
+    // ```
+    // WARNING: Secure coding is not enabled for restorable state! Enable secure coding by implementing NSApplicationDelegate.applicationSupportsSecureRestorableState: and returning YES.
+    // ```
+    //
+    // More-detailed explanation:
+    // https://stackoverflow.com/questions/77283578/sonoma-and-nsapplicationdelegate-applicationsupportssecurerestorablestate/77320845#77320845
+    return YES;
 }
 
 @end
@@ -524,7 +547,7 @@ Uint64 Cocoa_GetEventTimestamp(NSTimeInterval nsTimestamp)
     return timestamp;
 }
 
-int Cocoa_PumpEventsUntilDate(_THIS, NSDate *expiration, bool accumulate)
+int Cocoa_PumpEventsUntilDate(SDL_VideoDevice *_this, NSDate *expiration, bool accumulate)
 {
     for (;;) {
         NSEvent *event = [NSApp nextEventMatchingMask:NSEventMaskAny untilDate:expiration inMode:NSDefaultRunLoopMode dequeue:YES];
@@ -545,7 +568,7 @@ int Cocoa_PumpEventsUntilDate(_THIS, NSDate *expiration, bool accumulate)
     return 1;
 }
 
-int Cocoa_WaitEventTimeout(_THIS, Sint64 timeoutNS)
+int Cocoa_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
 {
     @autoreleasepool {
         if (timeoutNS > 0) {
@@ -561,14 +584,14 @@ int Cocoa_WaitEventTimeout(_THIS, Sint64 timeoutNS)
     }
 }
 
-void Cocoa_PumpEvents(_THIS)
+void Cocoa_PumpEvents(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
         Cocoa_PumpEventsUntilDate(_this, [NSDate distantPast], true);
     }
 }
 
-void Cocoa_SendWakeupEvent(_THIS, SDL_Window *window)
+void Cocoa_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         NSEvent *event = [NSEvent otherEventWithType:NSEventTypeApplicationDefined
@@ -585,7 +608,7 @@ void Cocoa_SendWakeupEvent(_THIS, SDL_Window *window)
     }
 }
 
-int Cocoa_SuspendScreenSaver(_THIS)
+int Cocoa_SuspendScreenSaver(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
         SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;

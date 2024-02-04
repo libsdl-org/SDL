@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,7 +30,7 @@
 
 #include "../../events/SDL_events_c.h"
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
 #include <AvailabilityVersions.h>
 
 #ifndef __IPHONE_13_0
@@ -52,11 +52,15 @@ int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserv
     int i;
 
     /* store arguments */
+    /* Note that we need to be careful about how we allocate/free memory here.
+     * If the application calls SDL_SetMemoryFunctions(), we can't rely on
+     * SDL_free() to use the same allocator after SDL_main() returns.
+     */
     forward_main = mainFunction;
     forward_argc = argc;
-    forward_argv = (char **)malloc((argc + 1) * sizeof(char *));
+    forward_argv = (char **)malloc((argc + 1) * sizeof(char *)); /* This should NOT be SDL_malloc() */
     for (i = 0; i < argc; i++) {
-        forward_argv[i] = malloc((strlen(argv[i]) + 1) * sizeof(char));
+        forward_argv[i] = malloc((strlen(argv[i]) + 1) * sizeof(char)); /* This should NOT be SDL_malloc() */
         strcpy(forward_argv[i], argv[i]);
     }
     forward_argv[i] = NULL;
@@ -68,14 +72,14 @@ int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserv
 
     /* free the memory we used to hold copies of argc and argv */
     for (i = 0; i < forward_argc; i++) {
-        free(forward_argv[i]);
+        free(forward_argv[i]); /* This should NOT be SDL_free() */
     }
-    free(forward_argv);
+    free(forward_argv); /* This should NOT be SDL_free() */
 
     return exit_status;
 }
 
-#if !TARGET_OS_TV
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
 /* Load a launch image using the old UILaunchImageFile-era naming rules. */
 static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 {
@@ -138,8 +142,10 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     self.storyboardViewController.view.frame = self.view.bounds;
     [self.storyboardViewController didMoveToParentViewController:self];
 
+#ifndef SDL_PLATFORM_VISIONOS
     UIApplication.sharedApplication.statusBarHidden = self.prefersStatusBarHidden;
     UIApplication.sharedApplication.statusBarStyle = self.preferredStatusBarStyle;
+#endif
 }
 
 - (BOOL)prefersStatusBarHidden
@@ -164,11 +170,11 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 }
 
 @end
-#endif /* !TARGET_OS_TV */
+#endif /* !SDL_PLATFORM_TVOS */
 
 @interface SDLLaunchScreenController ()
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
 - (NSUInteger)supportedInterfaceOrientations;
 #endif
 
@@ -207,10 +213,17 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
         NSString *imagename = nil;
         UIImage *image = nil;
 
+#ifdef SDL_PLATFORM_VISIONOS
+        int screenw = SDL_XR_SCREENWIDTH;
+        int screenh = SDL_XR_SCREENHEIGHT;
+#else
         int screenw = (int)([UIScreen mainScreen].bounds.size.width + 0.5);
         int screenh = (int)([UIScreen mainScreen].bounds.size.height + 0.5);
+#endif
 
-#if !TARGET_OS_TV
+
+
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
         UIInterfaceOrientation curorient = [UIApplication sharedApplication].statusBarOrientation;
 
         /* We always want portrait-oriented size, to match UILaunchImageSize. */
@@ -240,7 +253,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
                     }
                 }
 
-#if !TARGET_OS_TV
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
                 UIInterfaceOrientationMask orientmask = UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown;
                 NSString *orientstring = dict[@"UILaunchImageOrientation"];
 
@@ -269,7 +282,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
                 image = [UIImage imageNamed:imagename];
             }
         }
-#if !TARGET_OS_TV
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
         else {
             imagename = [bundle objectForInfoDictionaryKey:@"UILaunchImageFile"];
 
@@ -284,10 +297,15 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 #endif
 
         if (image) {
-            UIImageView *view = [[UIImageView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+#ifdef SDL_PLATFORM_VISIONOS
+            CGRect viewFrame = CGRectMake(0, 0, screenw, screenh);
+#else
+            CGRect viewFrame = [UIScreen mainScreen].bounds;
+#endif
+            UIImageView *view = [[UIImageView alloc] initWithFrame:viewFrame];
             UIImageOrientation imageorient = UIImageOrientationUp;
 
-#if !TARGET_OS_TV
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
             /* Bugs observed / workaround tested in iOS 8.3. */
             if (UIInterfaceOrientationIsLandscape(curorient)) {
                 if (image.size.width < image.size.height) {
@@ -319,7 +337,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     /* Do nothing. */
 }
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
 - (BOOL)shouldAutorotate
 {
     /* If YES, the launch image will be incorrectly rotated in some cases. */
@@ -333,7 +351,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
      * the ones set here (it will cause an exception in that case.) */
     return UIInterfaceOrientationMaskAll;
 }
-#endif /* !TARGET_OS_TV */
+#endif /* !SDL_PLATFORM_TVOS */
 
 @end
 
@@ -416,7 +434,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     NSString *screenname = nil;
 
     /* tvOS only uses a plain launch image. */
-#if !TARGET_OS_TV
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
     screenname = [bundle objectForInfoDictionaryKey:@"UILaunchStoryboardName"];
 
     if (screenname) {
@@ -439,7 +457,12 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     }
 
     if (vc.view) {
-        launchWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+#ifdef SDL_PLATFORM_VISIONOS
+        CGRect viewFrame = CGRectMake(0, 0, SDL_XR_SCREENWIDTH, SDL_XR_SCREENHEIGHT);
+#else
+        CGRect viewFrame = [UIScreen mainScreen].bounds;
+#endif
+        launchWindow = [[UIWindow alloc] initWithFrame:viewFrame];
 
         /* We don't want the launch window immediately hidden when a real SDL
          * window is shown - we fade it out ourselves when we're ready. */
@@ -482,23 +505,24 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     /* Do nothing. */
 }
 
-- (void)sendDropFileForURL:(NSURL *)url
+- (void)sendDropFileForURL:(NSURL *)url fromSourceApplication:(NSString *)sourceApplication
 {
     NSURL *fileURL = url.filePathURL;
+    char *sourceApplicationCString = sourceApplication ? [sourceApplication UTF8String] : NULL;
     if (fileURL != nil) {
-        SDL_SendDropFile(NULL, fileURL.path.UTF8String);
+        SDL_SendDropFile(NULL, sourceApplicationCString, fileURL.path.UTF8String);
     } else {
-        SDL_SendDropFile(NULL, url.absoluteString.UTF8String);
+        SDL_SendDropFile(NULL, sourceApplicationCString, url.absoluteString.UTF8String);
     }
     SDL_SendDropComplete(NULL);
 }
 
-#if TARGET_OS_TV || (defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_9_0)
+#if defined(SDL_PLATFORM_TVOS) || (defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_9_0)
 
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options
 {
     /* TODO: Handle options */
-    [self sendDropFileForURL:url];
+    [self sendDropFileForURL:url fromSourceApplication:NULL];
     return YES;
 }
 
@@ -506,7 +530,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
 {
-    [self sendDropFileForURL:url];
+    [self sendDropFileForURL:url fromSourceApplication:sourceApplication];
     return YES;
 }
 

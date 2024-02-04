@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,14 +34,14 @@
 
 #if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_COCOA)
 
-int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path);
-void Cocoa_Vulkan_UnloadLibrary(_THIS);
-SDL_bool Cocoa_Vulkan_GetInstanceExtensions(_THIS,
-                                            unsigned *count,
-                                            const char **names);
-SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
+int Cocoa_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+void Cocoa_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
+char const* const* Cocoa_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+                                                      Uint32 *count);
+SDL_bool Cocoa_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                     SDL_Window *window,
                                     VkInstance instance,
+                                    const struct VkAllocationCallbacks *allocator,
                                     VkSurfaceKHR *surface);
 
 #endif

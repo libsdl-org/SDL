@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -56,5 +56,7 @@ extern int SDL_VideoInit(const char *driver_name);
 extern void SDL_VideoQuit(void);
 
 extern int SDL_SetWindowTextureVSync(SDL_Window *window, int vsync);
+
+extern int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
 
 #endif /* SDL_video_c_h_ */

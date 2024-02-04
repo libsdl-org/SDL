@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -63,7 +63,7 @@ void vita_gpu_free(SceUID uid)
     sceKernelFreeMemBlock(uid);
 }
 
-int VITA_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int VITA_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
     SDL_WindowData *data = window->driverdata;
     SceDisplayFrameBuf framebuf;
@@ -93,17 +93,17 @@ int VITA_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void
     return 0;
 }
 
-int VITA_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
+int VITA_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     // do nothing
     return 0;
 }
 
-void VITA_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
+void VITA_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
 
-    if (data == NULL) {
+    if (!data) {
         /* The window wasn't fully initialized */
         return;
     }

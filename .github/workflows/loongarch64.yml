@@ -15,7 +15,7 @@ jobs:
         platform:
           - { toolchain-version: 2022.09.06 }
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install build requirements
         run: |
           sudo apt-get update -y
@@ -85,7 +85,7 @@ jobs:
         run: |
           export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
           cmake/test/test_pkgconfig.sh
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           if-no-files-found: error
           name: SDL-loongarch64

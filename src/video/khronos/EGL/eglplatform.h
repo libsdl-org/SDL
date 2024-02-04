@@ -48,7 +48,7 @@
  * implementations.
  */
 
-#ifdef EGL_NO_PLATFORM_SPECIFIC_TYPES
+#if defined(EGL_NO_PLATFORM_SPECIFIC_TYPES)
 
 typedef void *EGLNativeDisplayType;
 typedef void *EGLNativePixmapType;
@@ -63,6 +63,12 @@ typedef void *EGLNativeWindowType;
 typedef HDC     EGLNativeDisplayType;
 typedef HBITMAP EGLNativePixmapType;
 typedef HWND    EGLNativeWindowType;
+
+#elif defined(__QNX__)
+
+typedef khronos_uintptr_t      EGLNativeDisplayType;
+typedef struct _screen_pixmap* EGLNativePixmapType;  /* screen_pixmap_t */
+typedef struct _screen_window* EGLNativeWindowType;  /* screen_window_t */
 
 #elif defined(__EMSCRIPTEN__)
 
@@ -160,7 +166,7 @@ typedef khronos_int32_t EGLint;
 
 
 /* C++ / C typecast macros for special EGL handle values */
-#ifdef __cplusplus
+#if defined(__cplusplus)
 #define EGL_CAST(type, value) (static_cast<type>(value))
 #else
 #define EGL_CAST(type, value) ((type) (value))

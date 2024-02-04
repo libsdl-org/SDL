@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,7 +33,7 @@
 #include "SDL_uikitwindow.h"
 #include "SDL_uikitopengles.h"
 
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
 static void SDLCALL SDL_AppleTVControllerUIHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     @autoreleasepool {
@@ -43,7 +43,7 @@ static void SDLCALL SDL_AppleTVControllerUIHintChanged(void *userdata, const cha
 }
 #endif
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
 static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     @autoreleasepool {
@@ -63,11 +63,11 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 @implementation SDLUITextField : UITextField
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
-	if (action == @selector(paste:)) {
-		return NO;
-	}
+    if (action == @selector(paste:)) {
+        return NO;
+    }
 
-	return [super canPerformAction:action withSender:sender];
+    return [super canPerformAction:action withSender:sender];
 }
 @end
 
@@ -82,6 +82,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     SDLUITextField *textField;
     BOOL hardwareKeyboard;
     BOOL showingKeyboard;
+    BOOL hidingKeyboard;
     BOOL rotatingOrientation;
     NSString *committedText;
     NSString *obligateForBackspace;
@@ -99,16 +100,17 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         [self initKeyboard];
         hardwareKeyboard = NO;
         showingKeyboard = NO;
+        hidingKeyboard = NO;
         rotatingOrientation = NO;
 #endif
 
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
         SDL_AddHintCallback(SDL_HINT_APPLE_TV_CONTROLLER_UI_EVENTS,
                             SDL_AppleTVControllerUIHintChanged,
                             (__bridge void *)self);
 #endif
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
         SDL_AddHintCallback(SDL_HINT_IOS_HIDE_HOME_INDICATOR,
                             SDL_HideHomeIndicatorHintChanged,
                             (__bridge void *)self);
@@ -123,13 +125,13 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     [self deinitKeyboard];
 #endif
 
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
     SDL_DelHintCallback(SDL_HINT_APPLE_TV_CONTROLLER_UI_EVENTS,
                         SDL_AppleTVControllerUIHintChanged,
                         (__bridge void *)self);
 #endif
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
     SDL_DelHintCallback(SDL_HINT_IOS_HIDE_HOME_INDICATOR,
                         SDL_HideHomeIndicatorHintChanged,
                         (__bridge void *)self);
@@ -160,7 +162,9 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 {
     displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(doLoop:)];
 
-#ifdef __IPHONE_10_3
+#ifdef SDL_PLATFORM_VISIONOS
+    displayLink.preferredFramesPerSecond = 90 / animationInterval;      //TODO: Get frame max frame rate on visionOS
+#elif defined(__IPHONE_10_3)
     SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
 
     if ([displayLink respondsToSelector:@selector(preferredFramesPerSecond)] && data != nil && data.uiwindow != nil && [data.uiwindow.screen respondsToSelector:@selector(maximumFramesPerSecond)]) {
@@ -209,7 +213,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, w, h);
 }
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
 - (NSUInteger)supportedInterfaceOrientations
 {
     return UIKit_GetSupportedOrientations(window);
@@ -253,7 +257,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     return SDL_GCMouseRelativeMode() ? YES : NO;
 }
 
-#endif /* !TARGET_OS_TV */
+#endif /* !SDL_PLATFORM_TVOS */
 
 /*
  ---- Keyboard related functionality below this line ----
@@ -287,12 +291,23 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     keyboardVisible = NO;
 
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
     [center addObserver:self
                selector:@selector(keyboardWillShow:)
                    name:UIKeyboardWillShowNotification
                  object:nil];
-    [center addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+    [center addObserver:self
+               selector:@selector(keyboardDidShow:)
+                   name:UIKeyboardDidShowNotification
+                 object:nil];
+    [center addObserver:self
+               selector:@selector(keyboardWillHide:)
+                   name:UIKeyboardWillHideNotification
+                 object:nil];
+    [center addObserver:self
+               selector:@selector(keyboardDidHide:)
+                   name:UIKeyboardDidHideNotification
+                 object:nil];
 #endif
     [center addObserver:self
                selector:@selector(textFieldTextDidChange:)
@@ -359,11 +374,19 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 - (void)deinitKeyboard
 {
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
     [center removeObserver:self
                       name:UIKeyboardWillShowNotification
                     object:nil];
-    [center removeObserver:self name:UIKeyboardWillHideNotification object:nil];
+    [center removeObserver:self
+                      name:UIKeyboardDidShowNotification
+                    object:nil];
+    [center removeObserver:self
+                      name:UIKeyboardWillHideNotification
+                    object:nil];
+    [center removeObserver:self
+                      name:UIKeyboardDidHideNotification
+                    object:nil];
 #endif
     [center removeObserver:self
                       name:UITextFieldTextDidChangeNotification
@@ -373,24 +396,41 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 /* reveal onscreen virtual keyboard */
 - (void)showKeyboard
 {
+    if (keyboardVisible) {
+        return;
+    }
+
     keyboardVisible = YES;
     if (textField.window) {
         showingKeyboard = YES;
         [textField becomeFirstResponder];
-        showingKeyboard = NO;
     }
 }
 
 /* hide onscreen virtual keyboard */
 - (void)hideKeyboard
 {
+    if (!keyboardVisible) {
+        return;
+    }
+
     keyboardVisible = NO;
-    [textField resignFirstResponder];
+    if (textField.window) {
+        hidingKeyboard = YES;
+        [textField resignFirstResponder];
+    }
 }
 
 - (void)keyboardWillShow:(NSNotification *)notification
 {
-#if !TARGET_OS_TV
+    BOOL shouldStartTextInput = NO;
+
+    if (!SDL_TextInputActive() && !hidingKeyboard && !rotatingOrientation) {
+        shouldStartTextInput = YES;
+    }
+
+    showingKeyboard = YES;
+#ifndef SDL_PLATFORM_TVOS
     CGRect kbrect = [[notification userInfo][UIKeyboardFrameEndUserInfoKey] CGRectValue];
 
     /* The keyboard rect is in the coordinate space of the screen/window, but we
@@ -399,14 +439,36 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
     [self setKeyboardHeight:(int)kbrect.size.height];
 #endif
+
+    if (shouldStartTextInput) {
+        SDL_StartTextInput();
+    }
+}
+
+- (void)keyboardDidShow:(NSNotification *)notification
+{
+    showingKeyboard = NO;
 }
 
 - (void)keyboardWillHide:(NSNotification *)notification
 {
-    if (!showingKeyboard && !rotatingOrientation) {
+    BOOL shouldStopTextInput = NO;
+
+    if (SDL_TextInputActive() && !showingKeyboard && !rotatingOrientation) {
+        shouldStopTextInput = YES;
+    }
+
+    hidingKeyboard = YES;
+    [self setKeyboardHeight:0];
+
+    if (shouldStopTextInput) {
         SDL_StopTextInput();
     }
-    [self setKeyboardHeight:0];
+}
+
+- (void)keyboardDidHide:(NSNotification *)notification
+{
+    hidingKeyboard = NO;
 }
 
 - (void)textFieldTextDidChange:(NSNotification *)notification
@@ -425,8 +487,8 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
             size_t deleteLength = SDL_utf8strlen([[committedText substringFromIndex:matchLength] UTF8String]);
             while (deleteLength > 0) {
                 /* Send distinct down and up events for each backspace action */
-                SDL_SendKeyboardKey(0, SDL_PRESSED, SDL_SCANCODE_BACKSPACE);
-                SDL_SendKeyboardKey(0, SDL_RELEASED, SDL_SCANCODE_BACKSPACE);
+                SDL_SendVirtualKeyboardKey(0, SDL_PRESSED, SDL_SCANCODE_BACKSPACE);
+                SDL_SendVirtualKeyboardKey(0, SDL_RELEASED, SDL_SCANCODE_BACKSPACE);
                 --deleteLength;
             }
         }
@@ -449,9 +511,15 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 - (void)updateKeyboard
 {
+    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *) window->driverdata;
+
     CGAffineTransform t = self.view.transform;
     CGPoint offset = CGPointMake(0.0, 0.0);
-    CGRect frame = UIKit_ComputeViewFrame(window, self.view.window.screen);
+#ifdef SDL_PLATFORM_VISIONOS
+    CGRect frame = UIKit_ComputeViewFrame(window);
+#else
+    CGRect frame = UIKit_ComputeViewFrame(window, data.uiwindow.screen);
+#endif
 
     if (self.keyboardHeight) {
         int rectbottom = self.textInputRect.y + self.textInputRect.h;
@@ -523,13 +591,12 @@ static SDL_uikitviewcontroller *GetWindowViewController(SDL_Window *window)
     return data.viewcontroller;
 }
 
-SDL_bool
-UIKit_HasScreenKeyboardSupport(_THIS)
+SDL_bool UIKit_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
     return SDL_TRUE;
 }
 
-void UIKit_ShowScreenKeyboard(_THIS, SDL_Window *window)
+void UIKit_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_uikitviewcontroller *vc = GetWindowViewController(window);
@@ -537,7 +604,7 @@ void UIKit_ShowScreenKeyboard(_THIS, SDL_Window *window)
     }
 }
 
-void UIKit_HideScreenKeyboard(_THIS, SDL_Window *window)
+void UIKit_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_uikitviewcontroller *vc = GetWindowViewController(window);
@@ -545,8 +612,7 @@ void UIKit_HideScreenKeyboard(_THIS, SDL_Window *window)
     }
 }
 
-SDL_bool
-UIKit_IsScreenKeyboardShown(_THIS, SDL_Window *window)
+SDL_bool UIKit_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_uikitviewcontroller *vc = GetWindowViewController(window);
@@ -557,10 +623,10 @@ UIKit_IsScreenKeyboardShown(_THIS, SDL_Window *window)
     }
 }
 
-int UIKit_SetTextInputRect(_THIS, const SDL_Rect *rect)
+int UIKit_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
 {
     @autoreleasepool {
-        SDL_uikitviewcontroller *vc = GetWindowViewController(SDL_GetFocusWindow());
+        SDL_uikitviewcontroller *vc = GetWindowViewController(SDL_GetKeyboardFocus());
         if (vc != nil) {
             vc.textInputRect = *rect;
 

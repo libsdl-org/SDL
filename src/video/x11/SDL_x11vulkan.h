@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,21 +23,21 @@
 #ifndef SDL_x11vulkan_h_
 #define SDL_x11vulkan_h_
 
-#include "../SDL_vulkan_internal.h"
+#include <SDL3/SDL_vulkan.h>
 
 #if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_X11)
 
-/*typedef struct xcb_connection_t xcb_connection_t;*/
+typedef struct xcb_connection_t xcb_connection_t;
 typedef xcb_connection_t *(*PFN_XGetXCBConnection)(Display *dpy);
 
-int X11_Vulkan_LoadLibrary(_THIS, const char *path);
-void X11_Vulkan_UnloadLibrary(_THIS);
-SDL_bool X11_Vulkan_GetInstanceExtensions(_THIS,
-                                          unsigned *count,
-                                          const char **names);
-SDL_bool X11_Vulkan_CreateSurface(_THIS,
+int X11_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+void X11_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
+char const* const* X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+                                          Uint32 *count);
+SDL_bool X11_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                   SDL_Window *window,
                                   VkInstance instance,
+                                  const struct VkAllocationCallbacks *allocator,
                                   VkSurfaceKHR *surface);
 
 #endif

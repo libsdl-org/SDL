@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -58,16 +58,17 @@
 #include <SDL3/SDL_misc.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_mutex.h>
+#include <SDL3/SDL_pen.h>
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_platform.h>
 #include <SDL3/SDL_power.h>
+#include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_quit.h>
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_rwops.h>
 #include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_sensor.h>
-#include <SDL3/SDL_shape.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_system.h>
 #include <SDL3/SDL_thread.h>
@@ -75,6 +76,7 @@
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_version.h>
 #include <SDL3/SDL_video.h>
+#include "SDL3/SDL_video_capture.h"
 #include <SDL3/SDL_oldnames.h>
 
 #endif /* SDL_h_ */

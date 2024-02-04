@@ -33,29 +33,26 @@ TODO: Add information regarding App Store requirements such as icons, etc.
 Notes -- Retina / High-DPI and window sizes
 ==============================================================================
 
-Window and display mode sizes in SDL are in "screen coordinates" (or "points",
-in Apple's terminology) rather than in pixels. On iOS this means that a window
-created on an iPhone 6 will have a size in screen coordinates of 375 x 667,
-rather than a size in pixels of 750 x 1334. All iOS apps are expected to
-size their content based on screen coordinates / points rather than pixels,
+Window and display mode sizes in SDL are in points rather than in pixels.
+On iOS this means that a window created on an iPhone 6 will have a size in
+points of 375 x 667, rather than a size in pixels of 750 x 1334. All iOS apps
+are expected to size their content based on points rather than pixels,
 as this allows different iOS devices to have different pixel densities
 (Retina versus non-Retina screens, etc.) without apps caring too much.
 
-SDL_GetWindowSize() and mouse coordinates are in screen coordinates rather
-than pixels, but the window will have a much greater pixel density when the
-device supports it, and the SDL_GetWindowSizeInPixels() can be called to
-determine the size in pixels of the drawable screen framebuffer.
+SDL_GetWindowSize() and mouse coordinates are in points rather than pixels,
+but the window will have a much greater pixel density when the device supports
+it, and the SDL_GetWindowSizeInPixels() can be called to determine the size
+in pixels of the drawable screen framebuffer.
 
 The SDL 2D rendering API will automatically handle this for you, by default
-providing a rendering area in screen coordinates, and you can call
-SDL_SetRenderLogicalPresentation() to gain access to the higher density
-resolution.
+providing a rendering area in points, and you can call SDL_SetRenderLogicalPresentation()
+to gain access to the higher density resolution.
 
 Some OpenGL ES functions such as glViewport expect sizes in pixels rather than
-sizes in screen coordinates. When doing 2D rendering with OpenGL ES, an
-orthographic projection matrix using the size in screen coordinates
-(SDL_GetWindowSize()) can be used in order to display content at the same scale
-no matter whether a Retina device is used or not.
+sizes in points. When doing 2D rendering with OpenGL ES, an orthographic projection
+matrix using the size in points (SDL_GetWindowSize()) can be used in order to
+display content at the same scale no matter whether a Retina device is used or not.
 
 
 Notes -- Application events
@@ -128,26 +125,6 @@ SDL for iPhone supports polling the built in accelerometer as a joystick device.
 The main thing to note when using the accelerometer with SDL is that while the iPhone natively reports accelerometer as floating point values in units of g-force, SDL_GetJoystickAxis() reports joystick values as signed integers.  Hence, in order to convert between the two, some clamping and scaling is necessary on the part of the iPhone SDL joystick driver.  To convert SDL_GetJoystickAxis() reported values BACK to units of g-force, simply multiply the values by SDL_IPHONE_MAX_GFORCE / 0x7FFF.
 
 
-Notes -- OpenGL ES
-==============================================================================
-
-Your SDL application for iOS uses OpenGL ES for video by default.
-
-OpenGL ES for iOS supports several display pixel formats, such as RGBA8 and RGB565, which provide a 32 bit and 16 bit color buffer respectively. By default, the implementation uses RGB565, but you may use RGBA8 by setting each color component to 8 bits in SDL_GL_SetAttribute().
-
-If your application doesn't use OpenGL's depth buffer, you may find significant performance improvement by setting SDL_GL_DEPTH_SIZE to 0.
-
-Finally, if your application completely redraws the screen each frame, you may find significant performance improvement by setting the attribute SDL_GL_RETAINED_BACKING to 0.
-
-OpenGL ES on iOS doesn't use the traditional system-framebuffer setup provided in other operating systems. Special care must be taken because of this:
-
-- The drawable Renderbuffer must be bound to the GL_RENDERBUFFER binding point when SDL_GL_SwapWindow() is called.
-- The drawable Framebuffer Object must be bound while rendering to the screen and when SDL_GL_SwapWindow() is called.
-- If multisample antialiasing (MSAA) is used and glReadPixels is used on the screen, the drawable framebuffer must be resolved to the MSAA resolve framebuffer (via glBlitFramebuffer or glResolveMultisampleFramebufferAPPLE), and the MSAA resolve framebuffer must be bound to the GL_READ_FRAMEBUFFER binding point, before glReadPixels is called.
-
-The above objects can be obtained via SDL_GetWindowWMInfo() (in SDL_syswm.h).
-
-
 Notes -- Keyboard
 ==============================================================================
 
@@ -218,7 +195,7 @@ Windows:
 	Full-size, single window applications only.  You cannot create multi-window SDL applications for iPhone OS.  The application window will fill the display, though you have the option of turning on or off the menu-bar (pass SDL_CreateWindow() the flag SDL_WINDOW_BORDERLESS).
 
 Textures:
-	The optimal texture formats on iOS are SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_BGR888, and SDL_PIXELFORMAT_RGB24 pixel formats.
+	The optimal texture formats on iOS are SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_XBGR8888, and SDL_PIXELFORMAT_RGB24 pixel formats.
 
 Loading Shared Objects:
 	This is disabled by default since it seems to break the terms of the iOS SDK agreement for iOS versions prior to iOS 8. It can be re-enabled in SDL_config_ios.h.
@@ -261,7 +238,7 @@ e.g.
     {
         ... initialize game ...
 
-    #ifdef __IOS__
+    #ifdef SDL_PLATFORM_IOS
         // Initialize the Game Center for scoring and matchmaking
         InitGameCenter();
 

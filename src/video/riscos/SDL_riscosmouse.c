@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,20 +22,18 @@
 
 #ifdef SDL_VIDEO_DRIVER_RISCOS
 
+#include "SDL_riscosvideo.h"
+#include "SDL_riscosmouse.h"
 #include "../../events/SDL_mouse_c.h"
 
 #include <kernel.h>
 
 static SDL_Cursor *RISCOS_CreateDefaultCursor()
 {
-    SDL_Cursor *cursor;
-
-    cursor = SDL_calloc(1, sizeof(*cursor));
+    SDL_Cursor *cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
         /* NULL is used to indicate the default cursor */
         cursor->driverdata = NULL;
-    } else {
-        SDL_OutOfMemory();
     }
 
     return cursor;
@@ -59,7 +57,7 @@ static int RISCOS_ShowCursor(SDL_Cursor *cursor)
     return 0;
 }
 
-int RISCOS_InitMouse(_THIS)
+int RISCOS_InitMouse(SDL_VideoDevice *_this)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 

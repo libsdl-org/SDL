@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -14,10 +14,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
+#define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
@@ -42,25 +39,18 @@ static Uint64 next_fps_check;
 static Uint32 frames;
 static const int fps_check_delay = 5000;
 static int use_rendergeometry = 0;
+static SDL_bool suspend_when_occluded;
 
 /* Number of iterations to move sprites - used for visual tests. */
 /* -1: infinite random moves (default); >=0: enables N deterministic moves */
 static int iterations = -1;
 
-static int done;
-
-/* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
-static void
-quit(int rc)
+void SDL_AppQuit(void)
 {
     SDL_free(sprites);
     SDL_free(positions);
     SDL_free(velocities);
     SDLTest_CommonQuit(state);
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
-    }
 }
 
 static int LoadSprite(const char *file)
@@ -151,13 +141,13 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
         SDL_RenderFillRect(renderer, &temp);
     } else {
         /* Draw two triangles, filled, uniform */
-        SDL_Color color;
+        SDL_FColor color;
         SDL_Vertex verts[3];
         SDL_zeroa(verts);
-        color.r = 0xFF;
-        color.g = 0xFF;
-        color.b = 0xFF;
-        color.a = 0xFF;
+        color.r = 1.0f;
+        color.g = 1.0f;
+        color.b = 1.0f;
+        color.a = 1.0f;
 
         verts[0].position.x = temp.x;
         verts[0].position.y = temp.y;
@@ -253,9 +243,9 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
         SDL_Vertex *verts = (SDL_Vertex *)SDL_malloc(num_sprites * sizeof(SDL_Vertex) * 6);
         SDL_Vertex *verts2 = verts;
         if (verts) {
-            SDL_Color color;
-            SDL_GetTextureColorMod(sprite, &color.r, &color.g, &color.b);
-            SDL_GetTextureAlphaMod(sprite, &color.a);
+            SDL_FColor color;
+            SDL_GetTextureColorModFloat(sprite, &color.r, &color.g, &color.b);
+            SDL_GetTextureAlphaModFloat(sprite, &color.a);
             for (i = 0; i < num_sprites; ++i) {
                 position = &positions[i];
                 /* 0 */
@@ -324,9 +314,9 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
         int *indices2 = indices;
         if (verts && indices) {
             int pos = 0;
-            SDL_Color color;
-            SDL_GetTextureColorMod(sprite, &color.r, &color.g, &color.b);
-            SDL_GetTextureAlphaMod(sprite, &color.a);
+            SDL_FColor color;
+            SDL_GetTextureColorModFloat(sprite, &color.r, &color.g, &color.b);
+            SDL_GetTextureAlphaModFloat(sprite, &color.a);
             for (i = 0; i < num_sprites; ++i) {
                 position = &positions[i];
                 /* 0 */
@@ -394,27 +384,30 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     SDL_RenderPresent(renderer);
 }
 
-static void loop(void)
+int SDL_AppEvent(const SDL_Event *event)
+{
+    return SDLTest_CommonEventMainCallbacks(state, event);
+}
+
+int SDL_AppIterate(void)
 {
     Uint64 now;
     int i;
-    SDL_Event event;
+    int active_windows = 0;
 
-    /* Check for events */
-    while (SDL_PollEvent(&event)) {
-        SDLTest_CommonEvent(state, &event, &done);
-    }
     for (i = 0; i < state->num_windows; ++i) {
-        if (state->windows[i] == NULL) {
+        if (state->windows[i] == NULL ||
+            (suspend_when_occluded && (SDL_GetWindowFlags(state->windows[i]) & SDL_WINDOW_OCCLUDED))) {
             continue;
         }
+        ++active_windows;
         MoveSprites(state->renderers[i], sprites[i]);
     }
-#ifdef __EMSCRIPTEN__
-    if (done) {
-        emscripten_cancel_main_loop();
+
+    /* If all windows are occluded, throttle the event polling to 15hz. */
+    if (!active_windows) {
+        SDL_DelayNS(SDL_NS_PER_SECOND / 15);
     }
-#endif
 
     frames++;
     now = SDL_GetTicks();
@@ -426,9 +419,11 @@ static void loop(void)
         next_fps_check = now + fps_check_delay;
         frames = 0;
     }
+
+    return 0;  /* keep going */
 }
 
-int main(int argc, char *argv[])
+int SDL_AppInit(int argc, char *argv[])
 {
     int i;
     Uint64 seed;
@@ -439,8 +434,8 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
-        return 1;
+    if (!state) {
+        return -1;
     }
 
     for (i = 1; i < argc;) {
@@ -485,6 +480,9 @@ int main(int argc, char *argv[])
             } else if (SDL_strcasecmp(argv[i], "--cyclealpha") == 0) {
                 cycle_alpha = SDL_TRUE;
                 consumed = 1;
+            } else if(SDL_strcasecmp(argv[i], "--suspend-when-occluded") == 0) {
+                suspend_when_occluded = SDL_TRUE;
+                consumed = 1;
             } else if (SDL_strcasecmp(argv[i], "--use-rendergeometry") == 0) {
                 if (argv[i + 1]) {
                     if (SDL_strcasecmp(argv[i + 1], "mode1") == 0) {
@@ -512,6 +510,7 @@ int main(int argc, char *argv[])
                 "[--blend none|blend|add|mod|mul|sub]",
                 "[--cyclecolor]",
                 "[--cyclealpha]",
+                "[--suspend-when-occluded]",
                 "[--iterations N]",
                 "[--use-rendergeometry mode1|mode2]",
                 "[num_sprites]",
@@ -519,20 +518,20 @@ int main(int argc, char *argv[])
                 NULL
             };
             SDLTest_CommonLogUsage(state, argv[0], options);
-            quit(1);
+            return -1;
         }
         i += consumed;
     }
     if (!SDLTest_CommonInit(state)) {
-        quit(2);
+        return -1;
     }
 
     /* Create the windows, initialize the renderers, and load the textures */
     sprites =
         (SDL_Texture **)SDL_malloc(state->num_windows * sizeof(*sprites));
-    if (sprites == NULL) {
+    if (!sprites) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
-        quit(2);
+        return -1;
     }
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Renderer *renderer = state->renderers[i];
@@ -540,15 +539,15 @@ int main(int argc, char *argv[])
         SDL_RenderClear(renderer);
     }
     if (LoadSprite(icon) < 0) {
-        quit(2);
+        return -1;
     }
 
     /* Allocate memory for the sprite info */
     positions = (SDL_FRect *)SDL_malloc(num_sprites * sizeof(*positions));
     velocities = (SDL_FRect *)SDL_malloc(num_sprites * sizeof(*velocities));
-    if (positions == NULL || velocities == NULL) {
+    if (!positions || !velocities) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
-        quit(2);
+        return -1;
     }
 
     /* Position sprites and set their velocities using the fuzzer */
@@ -573,19 +572,10 @@ int main(int argc, char *argv[])
         }
     }
 
-    /* Main render loop */
+    /* Main render loop in SDL_AppIterate will begin when this function returns. */
     frames = 0;
     next_fps_check = SDL_GetTicks() + fps_check_delay;
-    done = 0;
 
-#ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop(loop, 0, 1);
-#else
-    while (!done) {
-        loop();
-    }
-#endif
-
-    quit(0);
     return 0;
 }
+

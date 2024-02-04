@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,7 @@
 #define NUM_OVERHEAD_OPS      10000
 #define NUM_OVERHEAD_OPS_MULT 10
 
-static SDL_sem *sem;
+static SDL_Semaphore *sem;
 static int alive;
 
 typedef struct Thread_State
@@ -52,13 +52,13 @@ ThreadFuncRealWorld(void *data)
 {
     Thread_State *state = (Thread_State *)data;
     while (alive) {
-        SDL_SemWait(sem);
+        SDL_WaitSemaphore(sem);
         SDL_Log("Thread number %d has got the semaphore (value = %" SDL_PRIu32 ")!\n",
-                state->number, SDL_SemValue(sem));
+                state->number, SDL_GetSemaphoreValue(sem));
         SDL_Delay(200);
-        SDL_SemPost(sem);
+        SDL_PostSemaphore(sem);
         SDL_Log("Thread number %d has released the semaphore (value = %" SDL_PRIu32 ")!\n",
-                state->number, SDL_SemValue(sem));
+                state->number, SDL_GetSemaphoreValue(sem));
         ++state->loop_count;
         SDL_Delay(1); /* For the scheduler */
     }
@@ -114,7 +114,7 @@ TestWaitTimeout(void)
     SDL_Log("Waiting 2 seconds on semaphore\n");
 
     start_ticks = SDL_GetTicks();
-    retval = SDL_SemWaitTimeout(sem, 2000);
+    retval = SDL_WaitSemaphoreTimeout(sem, 2000);
     end_ticks = SDL_GetTicks();
 
     duration = end_ticks - start_ticks;
@@ -125,7 +125,7 @@ TestWaitTimeout(void)
 
     /* Check to make sure the return value indicates timed out */
     if (retval != SDL_MUTEX_TIMEDOUT) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_SemWaitTimeout returned: %d; expected: %d\n\n", retval, SDL_MUTEX_TIMEDOUT);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_WaitSemaphoreTimeout returned: %d; expected: %d\n\n", retval, SDL_MUTEX_TIMEDOUT);
     }
 
     SDL_DestroySemaphore(sem);
@@ -145,10 +145,10 @@ TestOverheadUncontended(void)
     start_ticks = SDL_GetTicks();
     for (i = 0; i < NUM_OVERHEAD_OPS_MULT; i++) {
         for (j = 0; j < NUM_OVERHEAD_OPS; j++) {
-            SDL_SemPost(sem);
+            SDL_PostSemaphore(sem);
         }
         for (j = 0; j < NUM_OVERHEAD_OPS; j++) {
-            SDL_SemWait(sem);
+            SDL_WaitSemaphore(sem);
         }
     }
     end_ticks = SDL_GetTicks();
@@ -166,7 +166,7 @@ ThreadFuncOverheadContended(void *data)
 
     if (state->flag) {
         while (alive) {
-            if (SDL_SemTryWait(sem) == SDL_MUTEX_TIMEDOUT) {
+            if (SDL_TryWaitSemaphore(sem) == SDL_MUTEX_TIMEDOUT) {
                 ++state->content_count;
             }
             ++state->loop_count;
@@ -174,7 +174,7 @@ ThreadFuncOverheadContended(void *data)
     } else {
         while (alive) {
             /* Timeout needed to allow check on alive flag */
-            if (SDL_SemWaitTimeout(sem, 50) == SDL_MUTEX_TIMEDOUT) {
+            if (SDL_WaitSemaphoreTimeout(sem, 50) == SDL_MUTEX_TIMEDOUT) {
                 ++state->content_count;
             }
             ++state->loop_count;
@@ -211,10 +211,10 @@ TestOverheadContended(SDL_bool try_wait)
     start_ticks = SDL_GetTicks();
     for (i = 0; i < NUM_OVERHEAD_OPS_MULT; i++) {
         for (j = 0; j < NUM_OVERHEAD_OPS; j++) {
-            SDL_SemPost(sem);
+            SDL_PostSemaphore(sem);
         }
         /* Make sure threads consumed everything */
-        while (SDL_SemValue(sem)) {
+        while (SDL_GetSemaphoreValue(sem)) {
             /* Friendlier with cooperative threading models */
             SDL_DelayNS(1);
         }
@@ -261,7 +261,7 @@ int main(int argc, char **argv)
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 

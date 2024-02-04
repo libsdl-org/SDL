@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -68,7 +68,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
     if (setting != 0) { /* nothing to do if vsync is disabled, don't even lock */
         SDL_LockMutex(nscontext->swapIntervalMutex);
         SDL_AtomicAdd(&nscontext->swapIntervalsPassed, 1);
-        SDL_CondSignal(nscontext->swapIntervalCond);
+        SDL_SignalCondition(nscontext->swapIntervalCond);
         SDL_UnlockMutex(nscontext->swapIntervalMutex);
     }
 
@@ -87,7 +87,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
         self->window = NULL;
         SDL_AtomicSet(&self->swapIntervalSetting, 0);
         SDL_AtomicSet(&self->swapIntervalsPassed, 0);
-        self->swapIntervalCond = SDL_CreateCond();
+        self->swapIntervalCond = SDL_CreateCondition();
         self->swapIntervalMutex = SDL_CreateMutex();
         if (!self->swapIntervalCond || !self->swapIntervalMutex) {
             return nil;
@@ -214,7 +214,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
         self->displayLink = nil;
     }
     if (self->swapIntervalCond) {
-        SDL_DestroyCond(self->swapIntervalCond);
+        SDL_DestroyCondition(self->swapIntervalCond);
         self->swapIntervalCond = NULL;
     }
     if (self->swapIntervalMutex) {
@@ -225,7 +225,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 
 @end
 
-int Cocoa_GL_LoadLibrary(_THIS, const char *path)
+int Cocoa_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     /* Load the OpenGL library */
     if (path == NULL) {
@@ -243,18 +243,18 @@ int Cocoa_GL_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-SDL_FunctionPointer Cocoa_GL_GetProcAddress(_THIS, const char *proc)
+SDL_FunctionPointer Cocoa_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc)
 {
     return SDL_LoadFunction(_this->gl_config.dll_handle, proc);
 }
 
-void Cocoa_GL_UnloadLibrary(_THIS)
+void Cocoa_GL_UnloadLibrary(SDL_VideoDevice *_this)
 {
     SDL_UnloadObject(_this->gl_config.dll_handle);
     _this->gl_config.dll_handle = NULL;
 }
 
-SDL_GLContext Cocoa_GL_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext Cocoa_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
@@ -435,7 +435,7 @@ SDL_GLContext Cocoa_GL_CreateContext(_THIS, SDL_Window *window)
     }
 }
 
-int Cocoa_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
+int Cocoa_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
     @autoreleasepool {
         if (context) {
@@ -453,7 +453,7 @@ int Cocoa_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
     }
 }
 
-int Cocoa_GL_SetSwapInterval(_THIS, int interval)
+int Cocoa_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 {
     @autoreleasepool {
         SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *)SDL_GL_GetCurrentContext();
@@ -473,7 +473,7 @@ int Cocoa_GL_SetSwapInterval(_THIS, int interval)
     }
 }
 
-int Cocoa_GL_GetSwapInterval(_THIS, int *interval)
+int Cocoa_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
 {
     @autoreleasepool {
         SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *)SDL_GL_GetCurrentContext();
@@ -486,7 +486,7 @@ int Cocoa_GL_GetSwapInterval(_THIS, int *interval)
     }
 }
 
-int Cocoa_GL_SwapWindow(_THIS, SDL_Window *window)
+int Cocoa_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *)SDL_GL_GetCurrentContext();
@@ -498,14 +498,14 @@ int Cocoa_GL_SwapWindow(_THIS, SDL_Window *window)
         } else if (setting < 0) { /* late swap tearing */
             SDL_LockMutex(nscontext->swapIntervalMutex);
             while (SDL_AtomicGet(&nscontext->swapIntervalsPassed) == 0) {
-                SDL_CondWait(nscontext->swapIntervalCond, nscontext->swapIntervalMutex);
+                SDL_WaitCondition(nscontext->swapIntervalCond, nscontext->swapIntervalMutex);
             }
             SDL_AtomicSet(&nscontext->swapIntervalsPassed, 0);
             SDL_UnlockMutex(nscontext->swapIntervalMutex);
         } else {
             SDL_LockMutex(nscontext->swapIntervalMutex);
             do { /* always wait here so we know we just hit a swap interval. */
-                SDL_CondWait(nscontext->swapIntervalCond, nscontext->swapIntervalMutex);
+                SDL_WaitCondition(nscontext->swapIntervalCond, nscontext->swapIntervalMutex);
             } while ((SDL_AtomicGet(&nscontext->swapIntervalsPassed) % setting) != 0);
             SDL_AtomicSet(&nscontext->swapIntervalsPassed, 0);
             SDL_UnlockMutex(nscontext->swapIntervalMutex);
@@ -523,7 +523,7 @@ int Cocoa_GL_SwapWindow(_THIS, SDL_Window *window)
     }
 }
 
-int Cocoa_GL_DeleteContext(_THIS, SDL_GLContext context)
+int Cocoa_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
 {
     @autoreleasepool {
         SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *)context;

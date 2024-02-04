@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,8 +30,7 @@
 /* Shared memory error handler routine */
 static int shm_error;
 static int (*X_handler)(Display *, XErrorEvent *) = NULL;
-static int
-shm_errhandler(Display *d, XErrorEvent *e)
+static int shm_errhandler(Display *d, XErrorEvent *e)
 {
     if (e->error_code == BadAccess) {
         shm_error = True;
@@ -48,7 +47,7 @@ static SDL_bool have_mitshm(Display *dpy)
 
 #endif /* !NO_SHARED_MEMORY */
 
-int X11_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format,
+int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format,
                                 void **pixels, int *pitch)
 {
     SDL_WindowData *data = window->driverdata;
@@ -128,8 +127,8 @@ int X11_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format,
 #endif /* not NO_SHARED_MEMORY */
 
     *pixels = SDL_malloc((size_t)h * (*pitch));
-    if (*pixels == NULL) {
-        return SDL_OutOfMemory();
+    if (!*pixels) {
+        return -1;
     }
 
     data->ximage = X11_XCreateImage(display, data->visual,
@@ -143,7 +142,7 @@ int X11_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format,
     return 0;
 }
 
-int X11_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects,
+int X11_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects,
                                 int numrects)
 {
     SDL_WindowData *data = window->driverdata;
@@ -222,12 +221,12 @@ int X11_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects
     return 0;
 }
 
-void X11_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
+void X11_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
     Display *display;
 
-    if (data == NULL) {
+    if (!data) {
         /* The window wasn't fully initialized */
         return;
     }

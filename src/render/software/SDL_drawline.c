@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -98,7 +98,7 @@ static void SDL_DrawLine4(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint
         if (fmt->Rmask == 0x00FF0000) {
             if (!fmt->Amask) {
                 AALINE(x1, y1, x2, y2,
-                       DRAW_FASTSETPIXELXY4, DRAW_SETPIXELXY_BLEND_RGB888,
+                       DRAW_FASTSETPIXELXY4, DRAW_SETPIXELXY_BLEND_XRGB8888,
                        draw_end);
             } else {
                 AALINE(x1, y1, x2, y2,
@@ -137,12 +137,12 @@ int SDL_DrawLine(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint32 color)
 {
     DrawLineFunc func;
 
-    if (dst == NULL) {
+    if (!dst) {
         return SDL_InvalidParamError("SDL_DrawLine(): dst");
     }
 
     func = SDL_CalculateDrawLineFunc(dst->format);
-    if (func == NULL) {
+    if (!func) {
         return SDL_SetError("SDL_DrawLine(): Unsupported surface format");
     }
 
@@ -165,12 +165,12 @@ int SDL_DrawLines(SDL_Surface *dst, const SDL_Point *points, int count,
     SDL_bool draw_end;
     DrawLineFunc func;
 
-    if (dst == NULL) {
+    if (!dst) {
         return SDL_InvalidParamError("SDL_DrawLines(): dst");
     }
 
     func = SDL_CalculateDrawLineFunc(dst->format);
-    if (func == NULL) {
+    if (!func) {
         return SDL_SetError("SDL_DrawLines(): Unsupported surface format");
     }
 

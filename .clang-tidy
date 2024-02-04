@@ -25,6 +25,7 @@ Checks: >
   clang-analyzer-core.*,
   clang-analyzer-valist.*,
   clang-analyzer-unix.Malloc,
+  clang-diagnostic-*,
   google-readability-casting,
   misc-misleading-bidirectional,
   misc-misleading-identifier,

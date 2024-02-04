@@ -6,11 +6,25 @@
 #include <SDL3/SDL_test.h>
 #include "testautomation_suites.h"
 
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+
 /* ================= Test Case Implementation ================== */
 
 /* Helper functions */
 
 #define NUM_TEST_GUIDS 5
+
+#ifndef UINT64_C
+#ifdef _MSC_VER
+#define UINT64_C(x) x##ui64
+#elif defined(_LP64)
+#define UINT64_C(x) x##UL
+#else
+#define UINT64_C(x) x##ULL
+#endif
+#endif
 
 static struct
 {
@@ -19,19 +33,19 @@ static struct
 } test_guids[NUM_TEST_GUIDS] = {
     { "0000000000000000"
       "ffffffffffffffff",
-      0x0000000000000000, 0xfffffffffffffffflu },
+      UINT64_C(0x0000000000000000), UINT64_C(0xffffffffffffffff) },
     { "0011223344556677"
       "8091a2b3c4d5e6f0",
-      0x0011223344556677lu, 0x8091a2b3c4d5e6f0lu },
+      UINT64_C(0x0011223344556677), UINT64_C(0x8091a2b3c4d5e6f0) },
     { "a011223344556677"
       "8091a2b3c4d5e6f0",
-      0xa011223344556677lu, 0x8091a2b3c4d5e6f0lu },
+      UINT64_C(0xa011223344556677), UINT64_C(0x8091a2b3c4d5e6f0) },
     { "a011223344556677"
       "8091a2b3c4d5e6f1",
-      0xa011223344556677lu, 0x8091a2b3c4d5e6f1lu },
+      UINT64_C(0xa011223344556677), UINT64_C(0x8091a2b3c4d5e6f1) },
     { "a011223344556677"
       "8191a2b3c4d5e6f0",
-      0xa011223344556677lu, 0x8191a2b3c4d5e6f0lu },
+      UINT64_C(0xa011223344556677), UINT64_C(0x8191a2b3c4d5e6f0) },
 };
 
 static void
@@ -56,7 +70,7 @@ upper_lower_to_bytestring(Uint8 *out, Uint64 upper, Uint64 lower)
 /* Test case functions */
 
 /**
- * \brief Check String-to-GUID conversion
+ * Check String-to-GUID conversion
  *
  * \sa SDL_GUIDFromString
  */
@@ -81,7 +95,7 @@ TestGuidFromString(void *arg)
 }
 
 /**
- * \brief Check GUID-to-String conversion
+ * Check GUID-to-String conversion
  *
  * \sa SDL_GUIDToString
  */
@@ -103,7 +117,7 @@ TestGuidToString(void *arg)
 
         /* Serialise to limited-length buffers */
         for (size = 0; size <= 36; ++size) {
-            const Uint8 fill_char = size + 0xa0;
+            const Uint8 fill_char = (Uint8)(size + 0xa0);
             Uint32 expected_prefix;
             Uint32 actual_prefix;
             int written_size;
@@ -112,7 +126,7 @@ TestGuidToString(void *arg)
             SDL_GUIDToString(guid, guid_str, size);
 
             /* Check bytes before guid_str_buf */
-            expected_prefix = fill_char | (fill_char << 8) | (fill_char << 16) | (fill_char << 24);
+            expected_prefix = fill_char | (fill_char << 8) | (fill_char << 16) | (((Uint32)fill_char) << 24);
             SDL_memcpy(&actual_prefix, guid_str_buf, 4);
             SDLTest_AssertCheck(expected_prefix == actual_prefix, "String buffer memory before output untouched, expected: %" SDL_PRIu32 ", got: %" SDL_PRIu32 ", at size=%d", expected_prefix, actual_prefix, size);
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,7 +30,7 @@
 #include <kernel.h>
 #include <swis.h>
 
-int RISCOS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
     SDL_WindowData *driverdata = window->driverdata;
     const char *sprite_name = "display";
@@ -52,7 +52,7 @@ int RISCOS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, vo
         *format = mode->format;
         sprite_mode = (unsigned int)mode->driverdata;
     } else {
-        *format = SDL_PIXELFORMAT_BGR888;
+        *format = SDL_PIXELFORMAT_XBGR8888;
         sprite_mode = (1 | (90 << 1) | (90 << 14) | (6 << 27));
     }
 
@@ -63,7 +63,7 @@ int RISCOS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, vo
     size = sizeof(sprite_area) + sizeof(sprite_header) + ((*pitch) * h);
     driverdata->fb_area = SDL_malloc(size);
     if (!driverdata->fb_area) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     driverdata->fb_area->size = size;
@@ -80,7 +80,7 @@ int RISCOS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, vo
     regs.r[5] = h;
     regs.r[6] = sprite_mode;
     error = _kernel_swi(OS_SpriteOp, &regs, &regs);
-    if (error != NULL) {
+    if (error) {
         SDL_free(driverdata->fb_area);
         return SDL_SetError("Unable to create sprite: %s (%i)", error->errmess, error->errnum);
     }
@@ -91,7 +91,7 @@ int RISCOS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, vo
     return 0;
 }
 
-int RISCOS_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
+int RISCOS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     SDL_WindowData *driverdata = window->driverdata;
     _kernel_swi_regs regs;
@@ -106,14 +106,14 @@ int RISCOS_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *re
     regs.r[6] = 0;
     regs.r[7] = 0;
     error = _kernel_swi(OS_SpriteOp, &regs, &regs);
-    if (error != NULL) {
+    if (error) {
         return SDL_SetError("OS_SpriteOp 52 failed: %s (%i)", error->errmess, error->errnum);
     }
 
     return 0;
 }
 
-void RISCOS_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
+void RISCOS_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *driverdata = window->driverdata;
 

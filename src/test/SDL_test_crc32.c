@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,7 +33,7 @@ int SDLTest_Crc32Init(SDLTest_Crc32Context *crcContext)
     CrcUint32 c;
 
     /* Sanity check context pointer */
-    if (crcContext == NULL) {
+    if (!crcContext) {
         return -1;
     }
 
@@ -87,7 +87,7 @@ int SDLTest_Crc32Calc(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, CrcUint
 int SDLTest_Crc32CalcStart(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32)
 {
     /* Sanity check pointers */
-    if (crcContext == NULL) {
+    if (!crcContext) {
         *crc32 = 0;
         return -1;
     }
@@ -105,7 +105,7 @@ int SDLTest_Crc32CalcStart(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32)
 int SDLTest_Crc32CalcEnd(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32)
 {
     /* Sanity check pointers */
-    if (crcContext == NULL) {
+    if (!crcContext) {
         *crc32 = 0;
         return -1;
     }
@@ -125,12 +125,12 @@ int SDLTest_Crc32CalcBuffer(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, C
     CrcUint8 *p;
     register CrcUint32 crc;
 
-    if (crcContext == NULL) {
+    if (!crcContext) {
         *crc32 = 0;
         return -1;
     }
 
-    if (inBuf == NULL) {
+    if (!inBuf) {
         return -1;
     }
 
@@ -152,7 +152,7 @@ int SDLTest_Crc32CalcBuffer(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, C
 
 int SDLTest_Crc32Done(SDLTest_Crc32Context *crcContext)
 {
-    if (crcContext == NULL) {
+    if (!crcContext) {
         return -1;
     }
 

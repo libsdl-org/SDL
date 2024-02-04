@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,7 +32,7 @@
 
 #define MAX_PATH 256 // vita limits are somehow wrong
 
-int VITA_GLES_LoadLibrary(_THIS, const char *path)
+int VITA_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     PVRSRV_PSP2_APPHINT hint;
     char *override = SDL_getenv("VITA_MODULE_PATH");
@@ -40,9 +40,9 @@ int VITA_GLES_LoadLibrary(_THIS, const char *path)
     char *default_path = "app0:module";
     char target_path[MAX_PATH];
 
-    if (skip_init == NULL) { // we don't care about actual value
+    if (!skip_init) { // we don't care about actual value
 
-        if (override != NULL) {
+        if (override) {
             default_path = override;
         }
 
@@ -67,13 +67,12 @@ int VITA_GLES_LoadLibrary(_THIS, const char *path)
     return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)0, 0);
 }
 
-SDL_GLContext
-VITA_GLES_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext VITA_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
     return SDL_EGL_CreateContext(_this, window->driverdata->egl_surface);
 }
 
-int VITA_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
+int VITA_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
     if (window && context) {
         return SDL_EGL_MakeCurrent(_this, window->driverdata->egl_surface, context);
@@ -82,7 +81,7 @@ int VITA_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
     }
 }
 
-int VITA_GLES_SwapWindow(_THIS, SDL_Window *window)
+int VITA_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *videodata = _this->driverdata;
     if (videodata->ime_active) {

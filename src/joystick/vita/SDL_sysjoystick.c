@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -151,7 +151,7 @@ void VITA_JoystickDetect()
 /* Function to perform the mapping from device index to the instance id for this index */
 SDL_JoystickID VITA_JoystickGetDeviceInstanceID(int device_index)
 {
-    return device_index;
+    return device_index + 1;
 }
 
 const char *VITA_JoystickGetDeviceName(int index)
@@ -181,6 +181,11 @@ const char *VITA_JoystickGetDevicePath(int index)
     return NULL;
 }
 
+static int VITA_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return -1;
+}
+
 static int VITA_JoystickGetDevicePlayerIndex(int device_index)
 {
     return -1;
@@ -201,6 +206,9 @@ int VITA_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->naxes = 6;
     joystick->nhats = 0;
     joystick->instance_id = device_index;
+
+    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, SDL_TRUE);
+    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
 
     return 0;
 }
@@ -339,12 +347,6 @@ static int VITA_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint
     return SDL_Unsupported();
 }
 
-static Uint32 VITA_JoystickGetCapabilities(SDL_Joystick *joystick)
-{
-    // always return LED and rumble supported for now
-    return SDL_JOYCAP_LED | SDL_JOYCAP_RUMBLE;
-}
-
 static int VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     int index = (int)SDL_GetJoystickInstanceID(joystick) - 1;
@@ -378,21 +380,17 @@ SDL_JoystickDriver SDL_VITA_JoystickDriver = {
     VITA_JoystickDetect,
     VITA_JoystickGetDeviceName,
     VITA_JoystickGetDevicePath,
+    VITA_JoystickGetDeviceSteamVirtualGamepadSlot,
     VITA_JoystickGetDevicePlayerIndex,
     VITA_JoystickSetDevicePlayerIndex,
     VITA_JoystickGetDeviceGUID,
     VITA_JoystickGetDeviceInstanceID,
-
     VITA_JoystickOpen,
-
     VITA_JoystickRumble,
     VITA_JoystickRumbleTriggers,
-
-    VITA_JoystickGetCapabilities,
     VITA_JoystickSetLED,
     VITA_JoystickSendEffect,
     VITA_JoystickSetSensorsEnabled,
-
     VITA_JoystickUpdate,
     VITA_JoystickClose,
     VITA_JoystickQuit,

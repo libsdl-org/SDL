@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -10,23 +10,10 @@
   freely.
 */
 
-#include <stdlib.h>
-
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
 
 static SDLTest_CommonState *state;
-
-/* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
-static void
-quit(int rc)
-{
-    SDLTest_CommonQuit(state);
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
-    }
-}
 
 int main(int argc, char *argv[])
 {
@@ -35,10 +22,11 @@ int main(int argc, char *argv[])
     SDL_bool is_hover = SDL_FALSE;
     float x = 0.0f, y = 0.0f;
     unsigned int windowID = 0;
+    int return_code = -1;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -58,16 +46,15 @@ int main(int argc, char *argv[])
         }
         if (consumed < 0) {
             SDLTest_CommonLogUsage(state, argv[0], NULL);
-            quit(1);
+            return_code = 1;
+            goto quit;
         }
         i += consumed;
     }
     if (!SDLTest_CommonInit(state)) {
-        quit(2);
+        return_code = 1;
+        goto quit;
     }
-
-
-    SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, SDL_TRUE);
 
     /* Main render loop */
     done = 0;
@@ -81,16 +68,13 @@ int main(int argc, char *argv[])
                 SDL_Log("Drop complete on window %u at (%f, %f)", (unsigned int)event.drop.windowID, event.drop.x, event.drop.y);
             } else if ((event.type == SDL_EVENT_DROP_FILE) || (event.type == SDL_EVENT_DROP_TEXT)) {
                 const char *typestr = (event.type == SDL_EVENT_DROP_FILE) ? "File" : "Text";
-                char *dropped_filedir = event.drop.file;
-                SDL_Log("%s dropped on window %u: %s at (%f, %f)", typestr, (unsigned int)event.drop.windowID, dropped_filedir, event.drop.x, event.drop.y);
-                /* Normally you'd have to do this, but this is freed in SDLTest_CommonEvent() */
-                /*SDL_free(dropped_filedir);*/
+                SDL_Log("%s dropped on window %u: %s at (%f, %f)", typestr, (unsigned int)event.drop.windowID, event.drop.data, event.drop.x, event.drop.y);
             } else if (event.type == SDL_EVENT_DROP_POSITION) {
                 is_hover = SDL_TRUE;
                 x = event.drop.x;
                 y = event.drop.y;
                 windowID = event.drop.windowID;
-                SDL_Log("Drop position on window %u at (%f, %f) file = %s", (unsigned int)event.drop.windowID, event.drop.x, event.drop.y, event.drop.file);
+                SDL_Log("Drop position on window %u at (%f, %f) data = %s", (unsigned int)event.drop.windowID, event.drop.x, event.drop.y, event.drop.data);
             }
 
             SDLTest_CommonEvent(state, &event, &done);
@@ -114,7 +98,8 @@ int main(int argc, char *argv[])
         SDL_Delay(16);
     }
 
-    quit(0);
-    /* keep the compiler happy ... */
-    return 0;
+    return_code = 0;
+quit:
+    SDLTest_CommonQuit(state);
+    return return_code;
 }

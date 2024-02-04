@@ -14,7 +14,7 @@
 //
 // A few options:
 //   --c++=11            to parse cpp file
-//   --max-width 200     to increase line witdth of generated source
+//   --max-width 200     to increase line width of generated source
 //
 // Apply the patch to your project:
 //	patch -p1 <patch.txt
@@ -28,7 +28,7 @@
 // @@
 // rule / transformation
 //
-// So this file is a set of many semantic patches, mostly independant.
+// So this file is a set of many semantic patches, mostly independent.
 
 
 @ rule_audio_open @
@@ -308,10 +308,10 @@ expression e;
 + SDL_PauseAudioDevice(e)
 |
 - SDL_PauseAudioDevice(e, 0)
-+ SDL_PlayAudioDevice(e)
++ SDL_ResumeAudioDevice(e)
 |
 - SDL_PauseAudioDevice(e, SDL_FALSE)
-+ SDL_PlayAudioDevice(e)
++ SDL_ResumeAudioDevice(e)
 )
 
 @@
@@ -321,7 +321,7 @@ expression e, pause_on;
 + if (pause_on) {
 +    SDL_PauseAudioDevice(e);
 + } else {
-+    SDL_PlayAudioDevice(e);
++    SDL_ResumeAudioDevice(e);
 + }
 
 
@@ -599,12 +599,12 @@ expression e1, e2, e3, e4, e5, e6, e7, e8, e9;
 |
 
 - SDL_CreateRGBSurface(e1, e2, e3, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000)
-+ SDL_CreateSurface(e2, e3, SDL_PIXELFORMAT_RGB888)
++ SDL_CreateSurface(e2, e3, SDL_PIXELFORMAT_XRGB8888)
 
 |
 
 - SDL_CreateRGBSurfaceFrom(e1, e2, e3, 32, e4, 0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000)
-+ SDL_CreateSurfaceFrom(e1, e2, e3, e4, SDL_PIXELFORMAT_RGB888)
++ SDL_CreateSurfaceFrom(e1, e2, e3, e4, SDL_PIXELFORMAT_XRGB8888)
 
 |
 
@@ -619,12 +619,12 @@ expression e1, e2, e3, e4, e5, e6, e7, e8, e9;
 |
 
 - SDL_CreateRGBSurface(e1, e2, e3, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000)
-+ SDL_CreateSurface(e2, e3, SDL_PIXELFORMAT_BGR888)
++ SDL_CreateSurface(e2, e3, SDL_PIXELFORMAT_XBGR8888)
 
 |
 
 - SDL_CreateRGBSurfaceFrom(e1, e2, e3, 32, e4, 0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000)
-+ SDL_CreateSurfaceFrom(e1, e2, e3, e4, SDL_PIXELFORMAT_BGR888)
++ SDL_CreateSurfaceFrom(e1, e2, e3, e4, SDL_PIXELFORMAT_XBGR8888)
 
 |
 
@@ -940,19 +940,19 @@ typedef SDL_ControllerTouchpadEvent, SDL_GamepadTouchpadEvent;
 @@
 @@
 - SDL_CONTROLLER_BUTTON_PADDLE1
-+ SDL_GAMEPAD_BUTTON_PADDLE1
++ SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1
 @@
 @@
 - SDL_CONTROLLER_BUTTON_PADDLE2
-+ SDL_GAMEPAD_BUTTON_PADDLE2
++ SDL_GAMEPAD_BUTTON_LEFT_PADDLE1
 @@
 @@
 - SDL_CONTROLLER_BUTTON_PADDLE3
-+ SDL_GAMEPAD_BUTTON_PADDLE3
++ SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2
 @@
 @@
 - SDL_CONTROLLER_BUTTON_PADDLE4
-+ SDL_GAMEPAD_BUTTON_PADDLE4
++ SDL_GAMEPAD_BUTTON_LEFT_PADDLE2
 @@
 @@
 - SDL_CONTROLLER_BUTTON_RIGHTSHOULDER
@@ -1069,11 +1069,6 @@ typedef SDL_GameControllerButton, SDL_GamepadButton;
 - SDL_GameControllerButton
 + SDL_GamepadButton
 @@
-typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
-@@
-- SDL_GameControllerButtonBind
-+ SDL_GamepadBinding
-@@
 @@
 - SDL_GameControllerClose
 + SDL_CloseGamepad
@@ -1112,16 +1107,6 @@ typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
 @@
 - SDL_GameControllerGetAxisFromString
 + SDL_GetGamepadAxisFromString
-  (...)
-@@
-@@
-- SDL_GameControllerGetBindForAxis
-+ SDL_GetGamepadBindForAxis
-  (...)
-@@
-@@
-- SDL_GameControllerGetBindForButton
-+ SDL_GetGamepadBindForButton
   (...)
 @@
 @@
@@ -1220,21 +1205,6 @@ typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
   (...)
 @@
 @@
-- SDL_GameControllerHasLED
-+ SDL_GamepadHasLED
-  (...)
-@@
-@@
-- SDL_GameControllerHasRumble
-+ SDL_GamepadHasRumble
-  (...)
-@@
-@@
-- SDL_GameControllerHasRumbleTriggers
-+ SDL_GamepadHasRumbleTriggers
-  (...)
-@@
-@@
 - SDL_GameControllerHasSensor
 + SDL_GamepadHasSensor
   (...)
@@ -1255,18 +1225,8 @@ typedef SDL_GameControllerButtonBind, SDL_GamepadBinding;
   (...)
 @@
 @@
-- SDL_GameControllerMappingForIndex
-+ SDL_GetGamepadMappingForIndex
-  (...)
-@@
-@@
 - SDL_GameControllerName
 + SDL_GetGamepadName
-  (...)
-@@
-@@
-- SDL_GameControllerNumMappings
-+ SDL_GetNumGamepadMappings
   (...)
 @@
 @@
@@ -1949,10 +1909,10 @@ expression e2;
 + SDL_BlitSurfaceUnchecked
   (...)
 @@
+expression e1, e2, e3, e4;
 @@
-- SDL_LowerBlitScaled
-+ SDL_BlitSurfaceUncheckedScaled
-  (...)
+- SDL_LowerBlitScaled(e1, e2, e3, e4)
++ SDL_BlitSurfaceUncheckedScaled(e1, e2, e3, e4, SDL_SCALEMODE_NEAREST)
 @@
 @@
 - SDL_SetClipRect
@@ -1969,10 +1929,10 @@ expression e2;
 + SDL_BlitSurface
   (...)
 @@
+expression e1, e2, e3, e4;
 @@
-- SDL_UpperBlitScaled
-+ SDL_BlitSurfaceScaled
-  (...)
+- SDL_UpperBlitScaled(e1, e2, e3, e4)
++ SDL_BlitSurfaceScaled(e1, e2, e3, e4, SDL_SCALEMODE_NEAREST)
 @@
 @@
 - SDL_RenderGetD3D11Device
@@ -2284,26 +2244,6 @@ expression e;
 - SDL_WINDOW_INPUT_GRABBED
 + SDL_WINDOW_MOUSE_GRABBED
 @@
-SDL_DisplayMode *e;
-@@
-(
-- e->w
-+ e->screen_w
-|
-- e->h
-+ e->screen_h
-)
-@@
-SDL_DisplayMode e;
-@@
-(
-- e.w
-+ e.screen_w
-|
-- e.h
-+ e.screen_h
-)
-@@
 @@
 - SDL_GetWindowDisplayIndex
 + SDL_GetDisplayForWindow
@@ -2538,3 +2478,429 @@ typedef SDL_atomic_t, SDL_AtomicInt;
 @@
 - SDL_atomic_t
 + SDL_AtomicInt
+@@
+@@
+- SDL_SemWait
++ SDL_WaitSemaphore
+  (...)
+@@
+@@
+- SDL_SemTryWait
++ SDL_TryWaitSemaphore
+  (...)
+@@
+@@
+- SDL_SemWaitTimeout
++ SDL_WaitSemaphoreTimeout
+  (...)
+@@
+@@
+- SDL_SemPost
++ SDL_PostSemaphore
+  (...)
+@@
+@@
+- SDL_SemValue
++ SDL_GetSemaphoreValue
+  (...)
+@@
+@@
+- SDL_CreateCond
++ SDL_CreateCondition
+  (...)
+@@
+@@
+- SDL_DestroyCond
++ SDL_DestroyCondition
+  (...)
+@@
+@@
+- SDL_CondSignal
++ SDL_SignalCondition
+  (...)
+@@
+@@
+- SDL_CondBroadcast
++ SDL_BroadcastCondition
+  (...)
+@@
+@@
+- SDL_CondWait
++ SDL_WaitCondition
+  (...)
+@@
+@@
+- SDL_CondWaitTimeout
++ SDL_WaitConditionTimeout
+  (...)
+@@
+typedef SDL_mutex, SDL_Mutex;
+@@
+- SDL_mutex
++ SDL_Mutex
+@@
+typedef SDL_sem, SDL_Semaphore;
+@@
+- SDL_sem
++ SDL_Semaphore
+@@
+typedef SDL_cond, SDL_Condition;
+@@
+- SDL_cond
++ SDL_Condition
+@@
+@@
+- AUDIO_F32
++ SDL_AUDIO_F32LE
+@@
+@@
+- AUDIO_F32LSB
++ SDL_AUDIO_F32LE
+@@
+@@
+- AUDIO_F32MSB
++ SDL_AUDIO_F32BE
+@@
+@@
+- AUDIO_F32SYS
++ SDL_AUDIO_F32
+@@
+@@
+- AUDIO_S16
++ SDL_AUDIO_S16LE
+@@
+@@
+- AUDIO_S16LSB
++ SDL_AUDIO_S16LE
+@@
+@@
+- AUDIO_S16MSB
++ SDL_AUDIO_S16BE
+@@
+@@
+- AUDIO_S16SYS
++ SDL_AUDIO_S16
+@@
+@@
+- AUDIO_S32
++ SDL_AUDIO_S32LE
+@@
+@@
+- AUDIO_S32LSB
++ SDL_AUDIO_S32LE
+@@
+@@
+- AUDIO_S32MSB
++ SDL_AUDIO_S32BE
+@@
+@@
+- AUDIO_S32SYS
++ SDL_AUDIO_S32
+@@
+@@
+- AUDIO_S8
++ SDL_AUDIO_S8
+@@
+@@
+- AUDIO_U8
++ SDL_AUDIO_U8
+@@
+@@
+- SDL_WINDOW_ALLOW_HIGHDPI
++ SDL_WINDOW_HIGH_PIXEL_DENSITY
+@@
+@@
+- SDL_TLSCreate
++ SDL_CreateTLS
+  (...)
+@@
+@@
+- SDL_TLSGet
++ SDL_GetTLS
+  (...)
+@@
+@@
+- SDL_TLSSet
++ SDL_SetTLS
+  (...)
+@@
+@@
+- SDL_TLSCleanup
++ SDL_CleanupTLS
+  (...)
+@@
+@@
+- SDL_GetDisplayOrientation
++ SDL_GetDisplayCurrentOrientation
+  (...)
+@@
+@@
+- SDL_WINDOW_SKIP_TASKBAR
++ SDL_WINDOW_UTILITY
+@@
+@@
+- SDL_PIXELFORMAT_RGB888
++ SDL_PIXELFORMAT_XRGB8888
+@@
+@@
+- SDL_PIXELFORMAT_BGR888
++ SDL_PIXELFORMAT_XBGR8888
+@@
+@@
+- SDL_strtokr
++ SDL_strtok_r
+  (...)
+@@
+@@
+- SDL_ReadLE16
++ SDL_ReadU16LE
+  (...)
+@@
+@@
+- SDL_ReadLE32
++ SDL_ReadU32LE
+  (...)
+@@
+@@
+- SDL_ReadBE32
++ SDL_ReadU32BE
+  (...)
+@@
+@@
+- SDL_ReadBE16
++ SDL_ReadU16BE
+  (...)
+@@
+@@
+- SDL_ReadLE64
++ SDL_ReadU64LE
+  (...)
+@@
+@@
+- SDL_ReadBE64
++ SDL_ReadU64BE
+  (...)
+@@
+@@
+- SDL_WriteLE16
++ SDL_WriteU16LE
+  (...)
+@@
+@@
+- SDL_WriteBE16
++ SDL_WriteU16BE
+  (...)
+@@
+@@
+- SDL_WriteLE32
++ SDL_WriteU32LE
+  (...)
+@@
+@@
+- SDL_WriteBE32
++ SDL_WriteU32BE
+  (...)
+@@
+@@
+- SDL_WriteLE64
++ SDL_WriteU64LE
+  (...)
+@@
+@@
+- SDL_WriteBE64
++ SDL_WriteU64BE
+  (...)
+@@
+expression e, n;
+@@
+- SDL_GetWindowData(e, n)
++ SDL_GetProperty(SDL_GetWindowProperties(e), n)
+@@
+expression e, n, v;
+@@
+- SDL_SetWindowData(e, n, v)
++ SDL_SetProperty(SDL_GetWindowProperties(e), n, v, NULL, NULL)
+@@
+expression w, i, s;
+@@
+- SDL_Vulkan_CreateSurface(w, i, s)
++ SDL_Vulkan_CreateSurface(w, i, NULL, s)
+@@
+@@
+- SDL_RenderFlush
++ SDL_FlushRenderer
+  (...)
+@@
+@@
+- SDL_CONTROLLERSTEAMHANDLEUPDATED
++ SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED
+@@
+@@
+- SDL_GameControllerGetSteamHandle
++ SDL_GetGamepadSteamHandle
+  (...)
+@@
+expression e1, e2, e3, e4;
+@@
+- SDL_SoftStretch(e1, e2, e3, e4)
++ SDL_SoftStretch(e1, e2, e3, e4, SDL_SCALEMODE_NEAREST)
+@@
+expression e1, e2, e3, e4;
+@@
+- SDL_SoftStretchLinear(e1, e2, e3, e4)
++ SDL_SoftStretch(e1, e2, e3, e4, SDL_SCALEMODE_LINEAR)
+@@
+@@
+- SDL_HapticClose
++ SDL_CloseHaptic
+  (...)
+@@
+@@
+- SDL_HapticOpen
++ SDL_OpenHaptic
+  (...)
+@@
+@@
+- SDL_HapticOpenFromMouse
++ SDL_OpenHapticFromMouse
+  (...)
+@@
+@@
+- SDL_HapticOpenFromJoystick
++ SDL_OpenHapticFromJoystick
+  (...)
+@@
+@@
+- SDL_MouseIsHaptic
++ SDL_IsMouseHaptic
+  (...)
+@@
+@@
+- SDL_JoystickIsHaptic
++ SDL_IsJoystickHaptic
+  (...)
+@@
+@@
+- SDL_HapticNumEffects
++ SDL_GetMaxHapticEffects
+  (...)
+@@
+@@
+- SDL_HapticNumEffectsPlaying
++ SDL_GetMaxHapticEffectsPlaying
+  (...)
+@@
+@@
+- SDL_HapticQuery
++ SDL_GetHapticFeatures
+  (...)
+@@
+@@
+- SDL_HapticNumAxes
++ SDL_GetNumHapticAxes
+  (...)
+@@
+@@
+- SDL_HapticNewEffect
++ SDL_CreateHapticEffect
+  (...)
+@@
+@@
+- SDL_HapticUpdateEffect
++ SDL_UpdateHapticEffect
+  (...)
+@@
+@@
+- SDL_HapticRunEffect
++ SDL_RunHapticEffect
+  (...)
+@@
+@@
+- SDL_HapticStopEffect
++ SDL_StopHapticEffect
+  (...)
+@@
+@@
+- SDL_HapticDestroyEffect
++ SDL_DestroyHapticEffect
+  (...)
+@@
+@@
+- SDL_HapticGetEffectStatus
++ SDL_GetHapticEffectStatus
+  (...)
+@@
+@@
+- SDL_HapticSetGain
++ SDL_SetHapticGain
+  (...)
+@@
+@@
+- SDL_HapticSetAutocenter
++ SDL_SetHapticAutocenter
+  (...)
+@@
+@@
+- SDL_HapticPause
++ SDL_PauseHaptic
+  (...)
+@@
+@@
+- SDL_HapticUnpause
++ SDL_ResumeHaptic
+  (...)
+@@
+@@
+- SDL_HapticStopAll
++ SDL_StopHapticEffects
+  (...)
+@@
+@@
+- SDL_HapticRumbleInit
++ SDL_InitHapticRumble
+  (...)
+@@
+@@
+- SDL_HapticRumblePlay
++ SDL_PlayHapticRumble
+  (...)
+@@
+@@
+- SDL_HapticRumbleStop
++ SDL_StopHapticRumble
+  (...)
+@@
+@@
+- SDL_AtomicTryLock
++ SDL_TryLockSpinlock
+  (...)
+@@
+@@
+- SDL_AtomicLock
++ SDL_LockSpinlock
+  (...)
+@@
+@@
+- SDL_AtomicUnlock
++ SDL_UnlockSpinlock
+  (...)
+@@
+@@
+- SDL_AtomicCAS
++ SDL_AtomicCompareAndSwap
+  (...)
+@@
+@@
+- SDL_AtomicCASPtr
++ SDL_AtomicCompareAndSwapPointer
+  (...)
+@@
+@@
+- SDL_ThreadID
++ SDL_GetCurrentThreadID
+  (...)
+@@
+@@
+- SDL_threadID
++ SDL_ThreadID
+  (...)

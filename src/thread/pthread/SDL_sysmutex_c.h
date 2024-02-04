@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,9 +23,18 @@
 #ifndef SDL_mutex_c_h_
 #define SDL_mutex_c_h_
 
-struct SDL_mutex
+#if !(defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX) || \
+    defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP))
+#define FAKE_RECURSIVE_MUTEX
+#endif
+
+struct SDL_Mutex
 {
     pthread_mutex_t id;
+#ifdef FAKE_RECURSIVE_MUTEX
+    int recursive;
+    pthread_t owner;
+#endif
 };
 
 #endif /* SDL_mutex_c_h_ */

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 /**
  *  \file SDL_hints.h
  *
- *  \brief Official documentation for SDL configuration variables
+ *  Official documentation for SDL configuration variables
  *
  *  This file contains functions to set and get configuration hints,
  *  as well as listing each of them alphabetically.
@@ -48,17 +48,16 @@ extern "C" {
 #endif
 
 /**
- *  \brief  A variable controlling whether the Android / iOS built-in
- *  accelerometer should be listed as a joystick device.
+ * Set if Android/iOS accelerometers should be listed as joystick devices.
  *
- *  This variable can be set to the following values:
+ * This variable can be set to the following values:
  *    "0"       - The accelerometer is not listed as a joystick
  *    "1"       - The accelerometer is available as a 3 axis joystick (the default).
  */
 #define SDL_HINT_ACCELEROMETER_AS_JOYSTICK "SDL_ACCELEROMETER_AS_JOYSTICK"
 
 /**
- *  \brief Specify the behavior of Alt+Tab while the keyboard is grabbed.
+ * Specify the behavior of Alt+Tab while the keyboard is grabbed.
  *
  * By default, SDL emulates Alt+Tab functionality while the keyboard is grabbed
  * and your window is full-screen. This prevents the user from getting stuck in
@@ -72,7 +71,7 @@ extern "C" {
 #define SDL_HINT_ALLOW_ALT_TAB_WHILE_GRABBED "SDL_ALLOW_ALT_TAB_WHILE_GRABBED"
 
 /**
- *  \brief If set to "0" then never set the top most bit on a SDL Window, even if the video mode expects it.
+ *  If set to "0" then never set the top most bit on a SDL Window, even if the video mode expects it.
  *      This is a debugging aid for developers and not expected to be used by end users. The default is "1"
  *
  *  This variable can be set to the following values:
@@ -82,31 +81,7 @@ extern "C" {
 #define SDL_HINT_ALLOW_TOPMOST "SDL_ALLOW_TOPMOST"
 
 /**
- * \brief Android APK expansion main file version. Should be a string number like "1", "2" etc.
- *
- * Must be set together with SDL_HINT_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION.
- *
- * If both hints were set then SDL_RWFromFile() will look into expansion files
- * after a given relative path was not found in the internal storage and assets.
- *
- * By default this hint is not set and the APK expansion files are not searched.
- */
-#define SDL_HINT_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION "SDL_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION"
-
-/**
- * \brief Android APK expansion patch file version. Should be a string number like "1", "2" etc.
- *
- * Must be set together with SDL_HINT_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION.
- *
- * If both hints were set then SDL_RWFromFile() will look into expansion files
- * after a given relative path was not found in the internal storage and assets.
- *
- * By default this hint is not set and the APK expansion files are not searched.
- */
-#define SDL_HINT_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION "SDL_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION"
-
-/**
- * \brief A variable to control whether the event loop will block itself when the app is paused.
+ * A variable to control whether the event loop will block itself when the app is paused.
  *
  * The variable can be set to the following values:
  *   "0"       - Non blocking.
@@ -117,7 +92,7 @@ extern "C" {
 #define SDL_HINT_ANDROID_BLOCK_ON_PAUSE "SDL_ANDROID_BLOCK_ON_PAUSE"
 
 /**
- * \brief A variable to control whether SDL will pause audio in background
+ * A variable to control whether SDL will pause audio in background
  *        (Requires SDL_ANDROID_BLOCK_ON_PAUSE as "Non blocking")
  *
  * The variable can be set to the following values:
@@ -129,7 +104,7 @@ extern "C" {
 #define SDL_HINT_ANDROID_BLOCK_ON_PAUSE_PAUSEAUDIO "SDL_ANDROID_BLOCK_ON_PAUSE_PAUSEAUDIO"
 
 /**
- * \brief A variable to control whether we trap the Android back button to handle it manually.
+ * A variable to control whether we trap the Android back button to handle it manually.
  *        This is necessary for the right mouse button to work on some Android devices, or
  *        to be able to trap the back button for use in your code reliably.  If set to true,
  *        the back button will show up as an SDL_EVENT_KEY_DOWN / SDL_EVENT_KEY_UP pair with a keycode of
@@ -146,7 +121,67 @@ extern "C" {
 #define SDL_HINT_ANDROID_TRAP_BACK_BUTTON "SDL_ANDROID_TRAP_BACK_BUTTON"
 
 /**
- *  \brief Specify an application name.
+ * A variable to control whether SDL activity is allowed to be re-created.
+ *        If so, java static datas and static datas from native libraries remain with their current values.
+ *        When not allowed, the activity terminates with exit(0) to be fully re-initialized afterward.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - Not allowed. (default)
+ *   "1"       - Allowed.
+ *
+ * The value of this hint is used at runtime, so it can be changed at any time.
+ */
+#define SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY "SDL_ANDROID_ALLOW_RECREATE_ACTIVITY"
+
+/**
+ *  A variable setting the app ID string.
+ *          This string is used by desktop compositors to identify and group windows
+ *          together, as well as match applications with associated desktop settings
+ *          and icons.
+ *
+ *          On Wayland this corresponds to the "app ID" window property and on X11 this
+ *          corresponds to the WM_CLASS property. Windows inherit the value of this hint
+ *          at creation time. Changing this hint after a window has been created will not
+ *          change the app ID or class of existing windows.
+ *
+ *          For *nix platforms, this string should be formatted in reverse-DNS notation
+ *          and follow some basic rules to be valid:
+ *
+ *          - The application ID must be composed of two or more elements separated by a
+ *            period (‘.’) character.
+ *
+ *          - Each element must contain one or more of the alphanumeric characters
+ *            (A-Z, a-z, 0-9) plus underscore (‘_’) and hyphen (‘-’) and must not start
+ *            with a digit. Note that hyphens, while technically allowed, should not be
+ *            used if possible, as they are not supported by all components that use the ID,
+ *            such as D-Bus. For maximum compatibility, replace hyphens with an underscore.
+ *
+ *          - The empty string is not a valid element (ie: your application ID may not
+ *            start or end with a period and it is not valid to have two periods in a row).
+ *
+ *          - The entire ID must be less than 255 characters in length.
+ *
+ *          Examples of valid app ID strings:
+ *
+ *          - org.MyOrg.MyApp
+ *          - com.your_company.your_app
+ *
+ *          Desktops such as GNOME and KDE require that the app ID string matches your
+ *          application's .desktop file name (e.g. if the app ID string is 'org.MyOrg.MyApp',
+ *          your application's .desktop file should be named 'org.MyOrg.MyApp.desktop').
+ *
+ *          If you plan to package your application in a container such as Flatpak, the
+ *          app ID should match the name of your Flatpak container as well.
+ *
+ *  If not set, SDL will attempt to use the application executable name.
+ *  If the executable name cannot be retrieved, the generic string "SDL_App" will be used.
+ *
+ *  On targets where this is not supported, this hint does nothing.
+ */
+#define SDL_HINT_APP_ID      "SDL_APP_ID"
+
+/**
+ *  Specify an application name.
  *
  * This hint lets you specify the application name sent to the OS when
  * required. For example, this will often appear in volume control applets for
@@ -166,7 +201,7 @@ extern "C" {
 #define SDL_HINT_APP_NAME "SDL_APP_NAME"
 
 /**
- *  \brief  A variable controlling whether controllers used with the Apple TV
+ *  A variable controlling whether controllers used with the Apple TV
  *  generate UI events.
  *
  * When UI events are generated by controller input, the app will be
@@ -184,7 +219,7 @@ extern "C" {
 #define SDL_HINT_APPLE_TV_CONTROLLER_UI_EVENTS "SDL_APPLE_TV_CONTROLLER_UI_EVENTS"
 
 /**
- * \brief  A variable controlling whether the Apple TV remote's joystick axes
+ * A variable controlling whether the Apple TV remote's joystick axes
  *         will automatically match the rotation of the remote.
  *
  *  This variable can be set to the following values:
@@ -194,7 +229,7 @@ extern "C" {
 #define SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION "SDL_APPLE_TV_REMOTE_ALLOW_ROTATION"
 
 /**
- *  \brief  A variable controlling the audio category on iOS and macOS
+ *  A variable controlling the audio category on iOS and macOS
  *
  *  This variable can be set to the following values:
  *
@@ -207,7 +242,7 @@ extern "C" {
 #define SDL_HINT_AUDIO_CATEGORY   "SDL_AUDIO_CATEGORY"
 
 /**
- *  \brief Specify an application name for an audio device.
+ *  Specify an application name for an audio device.
  *
  * Some audio backends (such as PulseAudio) allow you to describe your audio
  * stream. Among other things, this description might show up in a system
@@ -228,7 +263,7 @@ extern "C" {
 #define SDL_HINT_AUDIO_DEVICE_APP_NAME "SDL_AUDIO_DEVICE_APP_NAME"
 
 /**
- *  \brief Specify an application name for an audio device.
+ *  Specify an application name for an audio device.
  *
  * Some audio backends (such as PulseAudio) allow you to describe your audio
  * stream. Among other things, this description might show up in a system
@@ -249,7 +284,7 @@ extern "C" {
 #define SDL_HINT_AUDIO_DEVICE_STREAM_NAME "SDL_AUDIO_DEVICE_STREAM_NAME"
 
 /**
- *  \brief Specify an application role for an audio device.
+ *  Specify an application role for an audio device.
  *
  * Some audio backends (such as Pipewire) allow you to describe the role of
  * your audio stream. Among other things, this description might show up in
@@ -269,30 +304,7 @@ extern "C" {
 #define SDL_HINT_AUDIO_DEVICE_STREAM_ROLE "SDL_AUDIO_DEVICE_STREAM_ROLE"
 
 /**
- *  \brief  A variable controlling speed/quality tradeoff of audio resampling.
- *
- *  If available, SDL can use libsamplerate ( http://www.mega-nerd.com/SRC/ )
- *  to handle audio resampling. There are different resampling modes available
- *  that produce different levels of quality, using more CPU.
- *
- *  If this hint isn't specified to a valid setting, or libsamplerate isn't
- *  available, SDL will use the default, internal resampling algorithm.
- *
- *  As of SDL 2.26, SDL_ConvertAudio() respects this hint when libsamplerate is available.
- *
- *  This hint is currently only checked at audio subsystem initialization.
- *
- *  This variable can be set to the following values:
- *
- *    "0" or "default" - Use SDL's internal resampling (Default when not set - low quality, fast)
- *    "1" or "fast"    - Use fast, slightly higher quality resampling, if available
- *    "2" or "medium"  - Use medium quality resampling, if available
- *    "3" or "best"    - Use high quality resampling, if available
- */
-#define SDL_HINT_AUDIO_RESAMPLING_MODE   "SDL_AUDIO_RESAMPLING_MODE"
-
-/**
- *  \brief  A variable controlling whether SDL updates joystick state when getting input events
+ *  A variable controlling whether SDL updates joystick state when getting input events
  *
  *  This variable can be set to the following values:
  *
@@ -304,7 +316,7 @@ extern "C" {
 #define SDL_HINT_AUTO_UPDATE_JOYSTICKS  "SDL_AUTO_UPDATE_JOYSTICKS"
 
 /**
- *  \brief  A variable controlling whether SDL updates sensor state when getting input events
+ *  A variable controlling whether SDL updates sensor state when getting input events
  *
  *  This variable can be set to the following values:
  *
@@ -316,7 +328,7 @@ extern "C" {
 #define SDL_HINT_AUTO_UPDATE_SENSORS    "SDL_AUTO_UPDATE_SENSORS"
 
 /**
- *  \brief Prevent SDL from using version 4 of the bitmap header when saving BMPs.
+ *  Prevent SDL from using version 4 of the bitmap header when saving BMPs.
  *
  * The bitmap header version 4 is required for proper alpha channel support and
  * SDL will use it when required. Should this not be desired, this hint can
@@ -335,7 +347,7 @@ extern "C" {
 #define SDL_HINT_BMP_SAVE_LEGACY_FORMAT "SDL_BMP_SAVE_LEGACY_FORMAT"
 
 /**
- *  \brief Override for SDL_GetDisplayUsableBounds()
+ *  Override for SDL_GetDisplayUsableBounds()
  *
  *  If set, this hint will override the expected results for
  *  SDL_GetDisplayUsableBounds() for display index 0. Generally you don't want
@@ -349,7 +361,7 @@ extern "C" {
 #define SDL_HINT_DISPLAY_USABLE_BOUNDS "SDL_DISPLAY_USABLE_BOUNDS"
 
 /**
- *  \brief Disable giving back control to the browser automatically
+ *  Disable giving back control to the browser automatically
  *  when running with asyncify
  *
  * With -s ASYNCIFY, SDL calls emscripten_sleep during operations
@@ -364,7 +376,7 @@ extern "C" {
 #define SDL_HINT_EMSCRIPTEN_ASYNCIFY   "SDL_EMSCRIPTEN_ASYNCIFY"
 
 /**
- *  \brief Specify the CSS selector used for the "default" window/canvas
+ *  Specify the CSS selector used for the "default" window/canvas
  *
  * This hint only applies to the emscripten platform
  *
@@ -373,7 +385,7 @@ extern "C" {
 #define SDL_HINT_EMSCRIPTEN_CANVAS_SELECTOR "SDL_EMSCRIPTEN_CANVAS_SELECTOR"
 
 /**
- *  \brief override the binding element for keyboard inputs for Emscripten builds
+ *  override the binding element for keyboard inputs for Emscripten builds
  *
  * This hint only applies to the emscripten platform
  *
@@ -387,25 +399,24 @@ extern "C" {
 #define SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT   "SDL_EMSCRIPTEN_KEYBOARD_ELEMENT"
 
 /**
- *  \brief  A variable that controls whether Steam Controllers should be exposed using the SDL joystick and game controller APIs
+ *  A variable that controls whether the on-screen keyboard should be shown when text input is active
  *
  *  The variable can be set to the following values:
- *    "0"       - Do not scan for Steam Controllers
- *    "1"       - Scan for Steam Controllers (the default)
+ *    "0"       - Do not show the on-screen keyboard
+ *    "1"       - Show the on-screen keyboard
  *
- *  The default value is "1".  This hint must be set before initializing the joystick subsystem.
+ *  The default value is "1". This hint must be set before text input is activated.
  */
-#define SDL_HINT_ENABLE_STEAM_CONTROLLERS "SDL_ENABLE_STEAM_CONTROLLERS"
+#define SDL_HINT_ENABLE_SCREEN_KEYBOARD "SDL_ENABLE_SCREEN_KEYBOARD"
 
 /**
- *  \brief  A variable controlling verbosity of the logging of SDL events pushed onto the internal queue.
+ *  A variable controlling verbosity of the logging of SDL events pushed onto the internal queue.
  *
  *  This variable can be set to the following values, from least to most verbose:
  *
  *    "0"     - Don't log any events (default)
  *    "1"     - Log most events (other than the really spammy ones).
  *    "2"     - Include mouse and finger motion events.
- *    "3"     - Include SDL_SysWMEvent events.
  *
  *  This is generally meant to be used to debug SDL itself, but can be useful
  *  for application developers that need better visibility into what is going
@@ -420,7 +431,7 @@ extern "C" {
 #define SDL_HINT_EVENT_LOGGING   "SDL_EVENT_LOGGING"
 
 /**
- *  \brief  A variable controlling whether raising the window should be done more forcefully
+ *  A variable controlling whether raising the window should be done more forcefully
  *
  *  This variable can be set to the following values:
  *    "0"       - No forcing (the default)
@@ -433,7 +444,19 @@ extern "C" {
 #define SDL_HINT_FORCE_RAISEWINDOW    "SDL_HINT_FORCE_RAISEWINDOW"
 
 /**
- *  \brief  A variable controlling how 3D acceleration is used to accelerate the SDL screen surface.
+*  A variable controlling whether the window is activated when the SDL_RaiseWindow function is called
+*
+*  This variable can be set to the following values:
+*    "0"       - The window is not activated when the SDL_RaiseWindow function is called
+*    "1"       - The window is activated when the SDL_RaiseWindow function is called
+*
+*  By default SDL will activate the window when the SDL_RaiseWindow function is called.
+*  At present this is only available for MS Windows.
+*/
+#define SDL_HINT_WINDOW_ACTIVATE_WHEN_RAISED    "SDL_WINDOW_ACTIVATE_WHEN_RAISED"
+
+/**
+ *  A variable controlling how 3D acceleration is used to accelerate the SDL screen surface.
  *
  *  SDL can try to accelerate the SDL screen surface by using streaming
  *  textures with a 3D rendering engine.  This variable controls whether and
@@ -450,7 +473,7 @@ extern "C" {
 #define SDL_HINT_FRAMEBUFFER_ACCELERATION   "SDL_FRAMEBUFFER_ACCELERATION"
 
 /**
- *  \brief  A variable that lets you manually hint extra gamecontroller db entries.
+ *  A variable that lets you manually hint extra gamecontroller db entries.
  *
  *  The variable should be newline delimited rows of gamecontroller config data, see SDL_gamepad.h
  *
@@ -460,7 +483,7 @@ extern "C" {
 #define SDL_HINT_GAMECONTROLLERCONFIG "SDL_GAMECONTROLLERCONFIG"
 
 /**
- *  \brief  A variable that lets you provide a file with extra gamecontroller db entries.
+ *  A variable that lets you provide a file with extra gamecontroller db entries.
  *
  *  The file should contain lines of gamecontroller config data, see SDL_gamepad.h
  *
@@ -470,7 +493,7 @@ extern "C" {
 #define SDL_HINT_GAMECONTROLLERCONFIG_FILE "SDL_GAMECONTROLLERCONFIG_FILE"
 
 /**
- *  \brief  A variable that overrides the automatic controller type detection
+ *  A variable that overrides the automatic controller type detection
  *
  *  The variable should be comma separated entries, in the form: VID/PID=type
  *
@@ -489,7 +512,7 @@ extern "C" {
 #define SDL_HINT_GAMECONTROLLERTYPE "SDL_GAMECONTROLLERTYPE"
 
 /**
- *  \brief  A variable containing a list of devices to skip when scanning for game controllers.
+ *  A variable containing a list of devices to skip when scanning for game controllers.
  *
  *  The format of the string is a comma separated list of USB VID/PID pairs
  *  in hexadecimal form, e.g.
@@ -502,7 +525,7 @@ extern "C" {
 #define SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES "SDL_GAMECONTROLLER_IGNORE_DEVICES"
 
 /**
- *  \brief  If set, all devices will be skipped when scanning for game controllers except for the ones listed in this variable.
+ *  If set, all devices will be skipped when scanning for game controllers except for the ones listed in this variable.
  *
  *  The format of the string is a comma separated list of USB VID/PID pairs
  *  in hexadecimal form, e.g.
@@ -515,30 +538,26 @@ extern "C" {
 #define SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT "SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT"
 
 /**
- *  \brief  If set, game controller face buttons report their values according to their labels instead of their positional layout.
- *
- *  For example, on Nintendo Switch controllers, normally you'd get:
- *
- *      (Y)
- *  (X)     (B)
- *      (A)
- *
- *  but if this hint is set, you'll get:
- *
- *      (X)
- *  (Y)     (A)
- *      (B)
+ *  Controls whether the device's built-in accelerometer and gyro should be used as sensors for gamepads.
  *
  *  The variable can be set to the following values:
- *    "0"       - Report the face buttons by position, as though they were on an Xbox controller.
- *    "1"       - Report the face buttons by label instead of position
+ *    "0"       - Sensor fusion is disabled
+ *    "1"       - Sensor fusion is enabled for all controllers that lack sensors
  *
- *  The default value is "1".  This hint may be set at any time.
+ *  Or the variable can be a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ *
+ *  This hint is checked when a gamepad is opened.
  */
-#define SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS "SDL_GAMECONTROLLER_USE_BUTTON_LABELS"
+#define SDL_HINT_GAMECONTROLLER_SENSOR_FUSION "SDL_GAMECONTROLLER_SENSOR_FUSION"
 
 /**
- *  \brief  A variable controlling whether grabbing input grabs the keyboard
+ *  A variable controlling whether grabbing input grabs the keyboard
  *
  *  This variable can be set to the following values:
  *    "0"       - Grab will affect only the mouse
@@ -549,7 +568,18 @@ extern "C" {
 #define SDL_HINT_GRAB_KEYBOARD              "SDL_GRAB_KEYBOARD"
 
 /**
- *  \brief  A variable containing a list of devices to ignore in SDL_hid_enumerate()
+ *  A variable to control whether SDL_hid_enumerate() enumerates all HID devices or only controllers.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - SDL_hid_enumerate() will enumerate all HID devices
+ *    "1"       - SDL_hid_enumerate() will only enumerate controllers
+ *
+ *  By default SDL will only enumerate controllers, to reduce risk of hanging or crashing on devices with bad drivers and avoiding macOS keyboard capture permission prompts.
+ */
+#define SDL_HINT_HIDAPI_ENUMERATE_ONLY_CONTROLLERS "SDL_HIDAPI_ENUMERATE_ONLY_CONTROLLERS"
+
+/**
+ *  A variable containing a list of devices to ignore in SDL_hid_enumerate()
  *
  *  For example, to ignore the Shanwan DS3 controller and any Valve controller, you might
  *  have the string "0x2563/0x0523,0x28de/0x0000"
@@ -557,7 +587,7 @@ extern "C" {
 #define SDL_HINT_HIDAPI_IGNORE_DEVICES "SDL_HIDAPI_IGNORE_DEVICES"
 
 /**
- * \brief A variable to control whether certain IMEs should handle text editing internally instead of sending SDL_EVENT_TEXT_EDITING events.
+ * A variable to control whether certain IMEs should handle text editing internally instead of sending SDL_EVENT_TEXT_EDITING events.
  *
  * The variable can be set to the following values:
  *   "0"       - SDL_EVENT_TEXT_EDITING events are sent, and it is the application's
@@ -569,7 +599,7 @@ extern "C" {
 #define SDL_HINT_IME_INTERNAL_EDITING "SDL_IME_INTERNAL_EDITING"
 
 /**
- * \brief A variable to control whether certain IMEs should show native UI components (such as the Candidate List) instead of suppressing them.
+ * A variable to control whether certain IMEs should show native UI components (such as the Candidate List) instead of suppressing them.
  *
  * The variable can be set to the following values:
  *   "0"       - Native UI components are not display. (default)
@@ -578,18 +608,7 @@ extern "C" {
 #define SDL_HINT_IME_SHOW_UI "SDL_IME_SHOW_UI"
 
 /**
- * \brief A variable to control if extended IME text support is enabled.
- * If enabled then SDL_TextEditingExtEvent will be issued if the text would be truncated otherwise.
- * Additionally SDL_TextInputEvent will be dispatched multiple times so that it is not truncated.
- *
- * The variable can be set to the following values:
- *   "0"       - Legacy behavior. Text can be truncated, no heap allocations. (default)
- *   "1"       - Modern behavior.
- */
-#define SDL_HINT_IME_SUPPORT_EXTENDED_TEXT "SDL_IME_SUPPORT_EXTENDED_TEXT"
-
-/**
- * \brief  A variable controlling whether the home indicator bar on iPhone X
+ * A variable controlling whether the home indicator bar on iPhone X
  *         should be hidden.
  *
  *  This variable can be set to the following values:
@@ -600,7 +619,7 @@ extern "C" {
 #define SDL_HINT_IOS_HIDE_HOME_INDICATOR "SDL_IOS_HIDE_HOME_INDICATOR"
 
 /**
- *  \brief  A variable that lets you enable joystick (and gamecontroller) events even when your app is in the background.
+ *  A variable that lets you enable joystick (and gamecontroller) events even when your app is in the background.
  *
  *  The variable can be set to the following values:
  *    "0"       - Disable joystick & gamecontroller input events when the
@@ -613,7 +632,111 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS "SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI joystick drivers should be used.
+ *  A variable containing a list of arcade stick style controllers.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES "SDL_JOYSTICK_ARCADESTICK_DEVICES"
+
+/**
+ *  A variable containing a list of devices that are not arcade stick style controllers. This will override SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES and the built in device list.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED "SDL_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED"
+
+/**
+ *  A variable containing a list of devices that should not be considerd joysticks.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_BLACKLIST_DEVICES "SDL_JOYSTICK_BLACKLIST_DEVICES"
+
+/**
+ *  A variable containing a list of devices that should be considered joysticks. This will override SDL_HINT_JOYSTICK_BLACKLIST_DEVICES and the built in device list.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_BLACKLIST_DEVICES_EXCLUDED "SDL_JOYSTICK_BLACKLIST_DEVICES_EXCLUDED"
+
+/**
+ *  A variable containing a list of flightstick style controllers.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES "SDL_JOYSTICK_FLIGHTSTICK_DEVICES"
+
+/**
+ *  A variable containing a list of devices that are not flightstick style controllers. This will override SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES and the built in device list.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED "SDL_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED"
+
+/**
+ *  A variable containing a list of devices known to have a GameCube form factor.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_GAMECUBE_DEVICES "SDL_JOYSTICK_GAMECUBE_DEVICES"
+
+/**
+ *  A variable containing a list of devices known not to have a GameCube form factor. This will override SDL_HINT_JOYSTICK_GAMECUBE_DEVICES and the built in device list.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_GAMECUBE_DEVICES_EXCLUDED "SDL_JOYSTICK_GAMECUBE_DEVICES_EXCLUDED"
+
+/**
+ *  A variable controlling whether the HIDAPI joystick drivers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI drivers are not used
@@ -624,7 +747,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI "SDL_JOYSTICK_HIDAPI"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for Nintendo GameCube controllers should be used.
+ *  A variable controlling whether the HIDAPI driver for Nintendo GameCube controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
@@ -635,7 +758,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE "SDL_JOYSTICK_HIDAPI_GAMECUBE"
 
 /**
- *  \brief  A variable controlling whether "low_frequency_rumble" and "high_frequency_rumble" is used to implement
+ *  A variable controlling whether "low_frequency_rumble" and "high_frequency_rumble" is used to implement
  *          the GameCube controller's 3 rumble modes, Stop(0), Rumble(1), and StopHard(2)
  *          this is useful for applications that need full compatibility for things like ADSR envelopes.
  *          Stop is implemented by setting "low_frequency_rumble" to "0" and "high_frequency_rumble" ">0"
@@ -650,7 +773,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_GAMECUBE_RUMBLE_BRAKE "SDL_JOYSTICK_GAMECUBE_RUMBLE_BRAKE"
 
 /**
-  *  \brief  A variable controlling whether the HIDAPI driver for Nintendo Switch Joy-Cons should be used.
+  *  A variable controlling whether the HIDAPI driver for Nintendo Switch Joy-Cons should be used.
   *
   *  This variable can be set to the following values:
   *    "0"       - HIDAPI driver is not used
@@ -661,7 +784,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS "SDL_JOYSTICK_HIDAPI_JOY_CONS"
 
 /**
-  *  \brief  A variable controlling whether Nintendo Switch Joy-Con controllers will be combined into a single Pro-like controller when using the HIDAPI driver
+  *  A variable controlling whether Nintendo Switch Joy-Con controllers will be combined into a single Pro-like controller when using the HIDAPI driver
   *
   *  This variable can be set to the following values:
   *    "0"       - Left and right Joy-Con controllers will not be combined and each will be a mini-gamepad
@@ -670,7 +793,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_COMBINE_JOY_CONS "SDL_JOYSTICK_HIDAPI_COMBINE_JOY_CONS"
 
 /**
-  *  \brief  A variable controlling whether Nintendo Switch Joy-Con controllers will be in vertical mode when using the HIDAPI driver
+  *  A variable controlling whether Nintendo Switch Joy-Con controllers will be in vertical mode when using the HIDAPI driver
   *
   *  This variable can be set to the following values:
   *    "0"       - Left and right Joy-Con controllers will not be in vertical mode (the default)
@@ -681,7 +804,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS "SDL_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS"
 
 /**
-  *  \brief  A variable controlling whether the HIDAPI driver for Amazon Luna controllers connected via Bluetooth should be used.
+  *  A variable controlling whether the HIDAPI driver for Amazon Luna controllers connected via Bluetooth should be used.
   *
   *  This variable can be set to the following values:
   *    "0"       - HIDAPI driver is not used
@@ -692,7 +815,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_LUNA "SDL_JOYSTICK_HIDAPI_LUNA"
 
 /**
-  *  \brief  A variable controlling whether the HIDAPI driver for Nintendo Online classic controllers should be used.
+  *  A variable controlling whether the HIDAPI driver for Nintendo Online classic controllers should be used.
   *
   *  This variable can be set to the following values:
   *    "0"       - HIDAPI driver is not used
@@ -703,7 +826,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC "SDL_JOYSTICK_HIDAPI_NINTENDO_CLASSIC"
 
 /**
-  *  \brief  A variable controlling whether the HIDAPI driver for NVIDIA SHIELD controllers should be used.
+  *  A variable controlling whether the HIDAPI driver for NVIDIA SHIELD controllers should be used.
   *
   *  This variable can be set to the following values:
   *    "0"       - HIDAPI driver is not used
@@ -714,7 +837,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_SHIELD "SDL_JOYSTICK_HIDAPI_SHIELD"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for PS3 controllers should be used.
+ *  A variable controlling whether the HIDAPI driver for PS3 controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
@@ -728,7 +851,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_PS3 "SDL_JOYSTICK_HIDAPI_PS3"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for PS4 controllers should be used.
+ *  A variable controlling whether the HIDAPI driver for PS4 controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
@@ -739,7 +862,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_PS4 "SDL_JOYSTICK_HIDAPI_PS4"
 
 /**
- *  \brief  A variable controlling whether extended input reports should be used for PS4 controllers when using the HIDAPI driver.
+ *  A variable controlling whether extended input reports should be used for PS4 controllers when using the HIDAPI driver.
  *
  *  This variable can be set to the following values:
  *    "0"       - extended reports are not enabled (the default)
@@ -759,7 +882,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE "SDL_JOYSTICK_HIDAPI_PS4_RUMBLE"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for PS5 controllers should be used.
+ *  A variable controlling whether the HIDAPI driver for PS5 controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
@@ -770,7 +893,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_PS5 "SDL_JOYSTICK_HIDAPI_PS5"
 
 /**
- *  \brief  A variable controlling whether the player LEDs should be lit to indicate which player is associated with a PS5 controller.
+ *  A variable controlling whether the player LEDs should be lit to indicate which player is associated with a PS5 controller.
  *
  *  This variable can be set to the following values:
  *    "0"       - player LEDs are not enabled
@@ -779,7 +902,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED "SDL_JOYSTICK_HIDAPI_PS5_PLAYER_LED"
 
 /**
- *  \brief  A variable controlling whether extended input reports should be used for PS5 controllers when using the HIDAPI driver.
+ *  A variable controlling whether extended input reports should be used for PS5 controllers when using the HIDAPI driver.
  *
  *  This variable can be set to the following values:
  *    "0"       - extended reports are not enabled (the default)
@@ -798,7 +921,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE "SDL_JOYSTICK_HIDAPI_PS5_RUMBLE"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for Google Stadia controllers should be used.
+ *  A variable controlling whether the HIDAPI driver for Google Stadia controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
@@ -809,7 +932,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_STADIA "SDL_JOYSTICK_HIDAPI_STADIA"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for Bluetooth Steam Controllers should be used.
+ *  A variable controlling whether the HIDAPI driver for Bluetooth Steam Controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
@@ -821,7 +944,18 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_STEAM "SDL_JOYSTICK_HIDAPI_STEAM"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for Nintendo Switch controllers should be used.
+ *  A variable controlling whether the HIDAPI driver for the Steam Deck builtin controller should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_STEAMDECK "SDL_JOYSTICK_HIDAPI_STEAMDECK"
+
+/**
+ *  A variable controlling whether the HIDAPI driver for Nintendo Switch controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
@@ -832,7 +966,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_SWITCH "SDL_JOYSTICK_HIDAPI_SWITCH"
 
 /**
- *  \brief  A variable controlling whether the Home button LED should be turned on when a Nintendo Switch Pro controller is opened
+ *  A variable controlling whether the Home button LED should be turned on when a Nintendo Switch Pro controller is opened
  *
  *  This variable can be set to the following values:
  *    "0"       - home button LED is turned off
@@ -843,7 +977,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED "SDL_JOYSTICK_HIDAPI_SWITCH_HOME_LED"
 
 /**
- *  \brief  A variable controlling whether the Home button LED should be turned on when a Nintendo Switch Joy-Con controller is opened
+ *  A variable controlling whether the Home button LED should be turned on when a Nintendo Switch Joy-Con controller is opened
  *
  *  This variable can be set to the following values:
  *    "0"       - home button LED is turned off
@@ -854,7 +988,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_JOYCON_HOME_LED "SDL_JOYSTICK_HIDAPI_JOYCON_HOME_LED"
 
 /**
- *  \brief  A variable controlling whether the player LEDs should be lit to indicate which player is associated with a Nintendo Switch controller.
+ *  A variable controlling whether the player LEDs should be lit to indicate which player is associated with a Nintendo Switch controller.
  *
  *  This variable can be set to the following values:
  *    "0"       - player LEDs are not enabled
@@ -863,7 +997,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED "SDL_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for Nintendo Wii and Wii U controllers should be used.
+ *  A variable controlling whether the HIDAPI driver for Nintendo Wii and Wii U controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
@@ -874,7 +1008,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_WII "SDL_JOYSTICK_HIDAPI_WII"
 
 /**
- *  \brief  A variable controlling whether the player LEDs should be lit to indicate which player is associated with a Wii controller.
+ *  A variable controlling whether the player LEDs should be lit to indicate which player is associated with a Wii controller.
  *
  *  This variable can be set to the following values:
  *    "0"       - player LEDs are not enabled
@@ -883,7 +1017,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED "SDL_JOYSTICK_HIDAPI_WII_PLAYER_LED"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for XBox controllers should be used.
+ *  A variable controlling whether the HIDAPI driver for XBox controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
@@ -894,7 +1028,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX   "SDL_JOYSTICK_HIDAPI_XBOX"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for XBox 360 controllers should be used.
+ *  A variable controlling whether the HIDAPI driver for XBox 360 controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
@@ -905,7 +1039,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX_360   "SDL_JOYSTICK_HIDAPI_XBOX_360"
 
 /**
- *  \brief  A variable controlling whether the player LEDs should be lit to indicate which player is associated with an Xbox 360 controller.
+ *  A variable controlling whether the player LEDs should be lit to indicate which player is associated with an Xbox 360 controller.
  *
  *  This variable can be set to the following values:
  *    "0"       - player LEDs are not enabled
@@ -914,7 +1048,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED "SDL_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for XBox 360 wireless controllers should be used.
+ *  A variable controlling whether the HIDAPI driver for XBox 360 wireless controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
@@ -925,7 +1059,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS   "SDL_JOYSTICK_HIDAPI_XBOX_360_WIRELESS"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for XBox One controllers should be used.
+ *  A variable controlling whether the HIDAPI driver for XBox One controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
@@ -936,7 +1070,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE   "SDL_JOYSTICK_HIDAPI_XBOX_ONE"
 
 /**
- *  \brief  A variable controlling whether the Home button LED should be turned on when an Xbox One controller is opened
+ *  A variable controlling whether the Home button LED should be turned on when an Xbox One controller is opened
  *
  *  This variable can be set to the following values:
  *    "0"       - home button LED is turned off
@@ -947,7 +1081,25 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED "SDL_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED"
 
 /**
-  *  \brief  A variable controlling whether the RAWINPUT joystick drivers should be used for better handling XInput-capable devices.
+  *  A variable controlling whether IOKit should be used for controller handling.
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - IOKit is not used
+  *    "1"       - IOKit is used (the default)
+  */
+#define SDL_HINT_JOYSTICK_IOKIT "SDL_JOYSTICK_IOKIT"
+
+/**
+  *  A variable controlling whether GCController should be used for controller handling.
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - GCController is not used
+  *    "1"       - GCController is used (the default)
+  */
+#define SDL_HINT_JOYSTICK_MFI "SDL_JOYSTICK_MFI"
+
+/**
+  *  A variable controlling whether the RAWINPUT joystick drivers should be used for better handling XInput-capable devices.
   *
   *  This variable can be set to the following values:
   *    "0"       - RAWINPUT drivers are not used
@@ -956,7 +1108,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_RAWINPUT "SDL_JOYSTICK_RAWINPUT"
 
 /**
-  *  \brief  A variable controlling whether the RAWINPUT driver should pull correlated data from XInput.
+  *  A variable controlling whether the RAWINPUT driver should pull correlated data from XInput.
   *
   *  This variable can be set to the following values:
   *    "0"       - RAWINPUT driver will only use data from raw input APIs
@@ -969,7 +1121,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_RAWINPUT_CORRELATE_XINPUT   "SDL_JOYSTICK_RAWINPUT_CORRELATE_XINPUT"
 
 /**
-  *  \brief  A variable controlling whether the ROG Chakram mice should show up as joysticks
+  *  A variable controlling whether the ROG Chakram mice should show up as joysticks
   *
   *  This variable can be set to the following values:
   *    "0"       - ROG Chakram mice do not show up as joysticks (the default)
@@ -978,7 +1130,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_ROG_CHAKRAM "SDL_JOYSTICK_ROG_CHAKRAM"
 
 /**
-  *  \brief  A variable controlling whether a separate thread should be used
+  *  A variable controlling whether a separate thread should be used
   *          for handling joystick detection and raw input messages on Windows
   *
   *  This variable can be set to the following values:
@@ -989,7 +1141,81 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_THREAD "SDL_JOYSTICK_THREAD"
 
 /**
- * \brief Determines whether SDL enforces that DRM master is required in order
+ *  A variable containing a list of throttle style controllers.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_THROTTLE_DEVICES "SDL_JOYSTICK_THROTTLE_DEVICES"
+
+/**
+ *  A variable containing a list of devices that are not throttle style controllers. This will override SDL_HINT_JOYSTICK_THROTTLE_DEVICES and the built in device list.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_THROTTLE_DEVICES_EXCLUDED "SDL_JOYSTICK_THROTTLE_DEVICES_EXCLUDED"
+
+/**
+  *  A variable controlling whether Windows.Gaming.Input should be used for controller handling.
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - WGI is not used
+  *    "1"       - WGI is used (the default)
+  */
+#define SDL_HINT_JOYSTICK_WGI "SDL_JOYSTICK_WGI"
+
+/**
+ *  A variable containing a list of wheel style controllers.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_WHEEL_DEVICES "SDL_JOYSTICK_WHEEL_DEVICES"
+
+/**
+ *  A variable containing a list of devices that are not wheel style controllers. This will override SDL_HINT_JOYSTICK_WHEEL_DEVICES and the built in device list.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_WHEEL_DEVICES_EXCLUDED "SDL_JOYSTICK_WHEEL_DEVICES_EXCLUDED"
+
+/**
+ *  A variable containing a list of devices known to have all axes centered at zero.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_JOYSTICK_ZERO_CENTERED_DEVICES "SDL_JOYSTICK_ZERO_CENTERED_DEVICES"
+
+/**
+ * Determines whether SDL enforces that DRM master is required in order
  *        to initialize the KMSDRM video backend.
  *
  * The DRM subsystem has a concept of a "DRM master" which is a DRM client that
@@ -1012,14 +1238,14 @@ extern "C" {
 #define SDL_HINT_KMSDRM_REQUIRE_DRM_MASTER      "SDL_KMSDRM_REQUIRE_DRM_MASTER"
 
 /**
-  *  \brief  A comma separated list of devices to open as joysticks
+  *  A comma separated list of devices to open as joysticks
   *
   *  This variable is currently only used by the Linux joystick driver.
   */
 #define SDL_HINT_JOYSTICK_DEVICE "SDL_JOYSTICK_DEVICE"
 
 /**
-  *  \brief  A variable controlling whether joysticks on Linux will always treat 'hat' axis inputs (ABS_HAT0X - ABS_HAT3Y) as 8-way digital hats without checking whether they may be analog.
+  *  A variable controlling whether joysticks on Linux will always treat 'hat' axis inputs (ABS_HAT0X - ABS_HAT3Y) as 8-way digital hats without checking whether they may be analog.
   *
   *  This variable can be set to the following values:
   *    "0"       - Only map hat axis inputs to digital hat outputs if the input axes appear to actually be digital (the default)
@@ -1028,7 +1254,7 @@ extern "C" {
 #define SDL_HINT_LINUX_DIGITAL_HATS "SDL_LINUX_DIGITAL_HATS"
 
 /**
-  *  \brief  A variable controlling whether digital hats on Linux will apply deadzones to their underlying input axes or use unfiltered values.
+  *  A variable controlling whether digital hats on Linux will apply deadzones to their underlying input axes or use unfiltered values.
   *
   *  This variable can be set to the following values:
   *    "0"       - Return digital hat values based on unfiltered input axis values
@@ -1037,7 +1263,7 @@ extern "C" {
 #define SDL_HINT_LINUX_HAT_DEADZONES "SDL_LINUX_HAT_DEADZONES"
 
 /**
-  *  \brief  A variable controlling whether to use the classic /dev/input/js* joystick interface or the newer /dev/input/event* joystick interface on Linux
+  *  A variable controlling whether to use the classic /dev/input/js* joystick interface or the newer /dev/input/event* joystick interface on Linux
   *
   *  This variable can be set to the following values:
   *    "0"       - Use /dev/input/event*
@@ -1048,7 +1274,7 @@ extern "C" {
 #define SDL_HINT_LINUX_JOYSTICK_CLASSIC "SDL_LINUX_JOYSTICK_CLASSIC"
 
 /**
-  *  \brief  A variable controlling whether joysticks on Linux adhere to their HID-defined deadzones or return unfiltered values.
+  *  A variable controlling whether joysticks on Linux adhere to their HID-defined deadzones or return unfiltered values.
   *
   *  This variable can be set to the following values:
   *    "0"       - Return unfiltered joystick axis values (the default)
@@ -1057,7 +1283,23 @@ extern "C" {
 #define SDL_HINT_LINUX_JOYSTICK_DEADZONES "SDL_LINUX_JOYSTICK_DEADZONES"
 
 /**
-*  \brief  When set don't force the SDL app to become a foreground process
+ *  A variable controlling the default SDL log levels.
+ *
+ *  This variable is a comma separated set of category=level tokens that define the default logging levels for SDL applications.
+ *
+ *  The category can be a numeric category, one of "app", "error", "assert", "system", "audio", "video", "render", "input", "test", or `*` for any unspecified category.
+ *
+ *  The level can be a numeric level, one of "verbose", "debug", "info", "warn", "error", "critical", or "quiet" to disable that category.
+ *
+ *  You can omit the category if you want to set the logging level for all categories.
+ *
+ *  If this hint isn't set, the default log levels are equivalent to:
+ *  "app=info,assert=warn,test=verbose,*=error"
+ */
+#define SDL_HINT_LOGGING   "SDL_LOGGING"
+
+/**
+*  When set don't force the SDL app to become a foreground process
 *
 *  This hint only applies to macOS.
 *
@@ -1065,7 +1307,7 @@ extern "C" {
 #define SDL_HINT_MAC_BACKGROUND_APP    "SDL_MAC_BACKGROUND_APP"
 
 /**
- *  \brief A variable that determines whether ctrl+click should generate a right-click event on Mac
+ *  A variable that determines whether ctrl+click should generate a right-click event on Mac
  *
  *  If present, holding ctrl while left clicking will generate a right click
  *  event when on Mac.
@@ -1073,7 +1315,7 @@ extern "C" {
 #define SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK "SDL_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK"
 
 /**
- *  \brief   A variable controlling whether dispatching OpenGL context updates should block the dispatching thread until the main thread finishes processing
+ *  A variable controlling whether dispatching OpenGL context updates should block the dispatching thread until the main thread finishes processing
  *
  *  This variable can be set to the following values:
  *    "0"       - Dispatching OpenGL context updates will block the dispatching thread until the main thread finishes processing (default).
@@ -1091,17 +1333,17 @@ extern "C" {
 #define SDL_HINT_MAC_OPENGL_ASYNC_DISPATCH "SDL_MAC_OPENGL_ASYNC_DISPATCH"
 
 /**
- *  \brief  A variable setting the double click radius, in pixels.
+ *  A variable setting the double click radius, in pixels.
  */
 #define SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS    "SDL_MOUSE_DOUBLE_CLICK_RADIUS"
 
 /**
- *  \brief  A variable setting the double click time, in milliseconds.
+ *  A variable setting the double click time, in milliseconds.
  */
 #define SDL_HINT_MOUSE_DOUBLE_CLICK_TIME    "SDL_MOUSE_DOUBLE_CLICK_TIME"
 
 /**
- *  \brief Allow mouse click events when clicking to focus an SDL window
+ *  Allow mouse click events when clicking to focus an SDL window
  *
  *  This variable can be set to the following values:
  *    "0"       - Ignore mouse clicks that activate a window
@@ -1112,12 +1354,12 @@ extern "C" {
 #define SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH "SDL_MOUSE_FOCUS_CLICKTHROUGH"
 
 /**
- *  \brief  A variable setting the speed scale for mouse motion, in floating point, when the mouse is not in relative mode
+ *  A variable setting the speed scale for mouse motion, in floating point, when the mouse is not in relative mode
  */
 #define SDL_HINT_MOUSE_NORMAL_SPEED_SCALE    "SDL_MOUSE_NORMAL_SPEED_SCALE"
 
 /**
- *  \brief  A variable controlling whether relative mouse mode constrains the mouse to the center of the window
+ *  A variable controlling whether relative mouse mode constrains the mouse to the center of the window
  *
  *  This variable can be set to the following values:
  *    "0"       - Relative mouse mode constrains the mouse to the window
@@ -1133,7 +1375,7 @@ extern "C" {
 #define SDL_HINT_MOUSE_RELATIVE_MODE_CENTER    "SDL_MOUSE_RELATIVE_MODE_CENTER"
 
 /**
- *  \brief  A variable controlling whether relative mouse mode is implemented using mouse warping
+ *  A variable controlling whether relative mouse mode is implemented using mouse warping
  *
  *  This variable can be set to the following values:
  *    "0"       - Relative mouse mode uses raw input
@@ -1144,12 +1386,12 @@ extern "C" {
 #define SDL_HINT_MOUSE_RELATIVE_MODE_WARP    "SDL_MOUSE_RELATIVE_MODE_WARP"
 
 /**
- *  \brief  A variable setting the scale for mouse motion, in floating point, when the mouse is in relative mode
+ *  A variable setting the scale for mouse motion, in floating point, when the mouse is in relative mode
  */
 #define SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE    "SDL_MOUSE_RELATIVE_SPEED_SCALE"
 
 /**
- *  \brief  A variable controlling whether the system mouse acceleration curve is used for relative mouse motion.
+ *  A variable controlling whether the system mouse acceleration curve is used for relative mouse motion.
  *
  *  This variable can be set to the following values:
  *    "0"       - Relative mouse motion will be unscaled (the default)
@@ -1160,7 +1402,7 @@ extern "C" {
 #define SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE    "SDL_MOUSE_RELATIVE_SYSTEM_SCALE"
 
 /**
- *  \brief  A variable controlling whether a motion event should be generated for mouse warping in relative mode.
+ *  A variable controlling whether a motion event should be generated for mouse warping in relative mode.
  *
  *  This variable can be set to the following values:
  *    "0"       - Warping the mouse will not generate a motion event in relative mode
@@ -1171,7 +1413,7 @@ extern "C" {
 #define SDL_HINT_MOUSE_RELATIVE_WARP_MOTION  "SDL_MOUSE_RELATIVE_WARP_MOTION"
 
 /**
- *  \brief  A variable controlling whether mouse events should generate synthetic touch events
+ *  A variable controlling whether mouse events should generate synthetic touch events
  *
  *  This variable can be set to the following values:
  *    "0"       - Mouse events will not generate touch events (default for desktop platforms)
@@ -1180,7 +1422,7 @@ extern "C" {
 #define SDL_HINT_MOUSE_TOUCH_EVENTS    "SDL_MOUSE_TOUCH_EVENTS"
 
 /**
- *  \brief  A variable controlling whether the mouse is captured while mouse buttons are pressed
+ *  A variable controlling whether the mouse is captured while mouse buttons are pressed
  *
  *  This variable can be set to the following values:
  *    "0"       - The mouse is not captured while mouse buttons are pressed
@@ -1193,7 +1435,41 @@ extern "C" {
 #define SDL_HINT_MOUSE_AUTO_CAPTURE    "SDL_MOUSE_AUTO_CAPTURE"
 
 /**
- *  \brief Tell SDL not to catch the SIGINT or SIGTERM signals.
+ *  Treat pen movement as separate from mouse movement
+ *
+ *  By default, pens report both ::SDL_MouseMotionEvent and ::SDL_PenMotionEvent updates
+ *  (analogously for button presses).  This hint allows decoupling mouse and pen updates.
+ *
+ *  This variable toggles between the following behaviour:
+ *    "0"       - (Default) Pen acts as a mouse with mouse ID ::SDL_PEN_MOUSEID.
+ *                Use case: client application is not pen aware, user wants to
+ *                use pen instead of mouse to interact.
+ *    "1"       - Pen reports mouse clicks and movement events but does not update
+ *                SDL-internal mouse state (buttons pressed, current mouse location).
+ *                Use case: client application is not pen aware, user frequently
+ *                alternates between pen and "real" mouse.
+ *    "2"       - Pen reports no mouse events.
+ *                Use case: pen-aware client application uses this hint to allow user to
+ *                toggle between pen+mouse mode ("2") and pen-only mode ("1" or "0").
+ */
+#define SDL_HINT_PEN_NOT_MOUSE    "SDL_HINT_PEN_NOT_MOUSE"
+
+/**
+ *  Pen mouse button emulation triggers only when the pen touches the tablet surface
+ *
+ *    "0"       - The pen reports mouse button press/release immediately when the pen
+ *                button is pressed/released, and the pen tip touching the surface counts
+ *                as left mouse button press.
+ *    "1"       - (Default) Mouse button presses are sent when the pen first touches
+ *                the tablet (analogously for releases).  Not pressing a pen button
+ *                simulates mouse button 1, pressing the first pen button simulates
+ *                mouse button 2 etc.;  it is not possible to report multiple buttons
+ *                as pressed at the same time.
+ */
+#define SDL_HINT_PEN_DELAY_MOUSE_BUTTON    "SDL_HINT_PEN_DELAY_MOUSE_BUTTON"
+
+/**
+ *  Tell SDL not to catch the SIGINT or SIGTERM signals.
  *
  * This hint only applies to Unix-like platforms, and should set before
  * any calls to SDL_Init()
@@ -1206,7 +1482,7 @@ extern "C" {
 #define SDL_HINT_NO_SIGNAL_HANDLERS   "SDL_NO_SIGNAL_HANDLERS"
 
 /**
- *  \brief  A variable controlling what driver to use for OpenGL ES contexts.
+ *  A variable controlling what driver to use for OpenGL ES contexts.
  *
  *  On some platforms, currently Windows and X11, OpenGL drivers may support
  *  creating contexts with an OpenGL ES profile. By default SDL uses these
@@ -1237,7 +1513,7 @@ extern "C" {
 #define SDL_HINT_OPENGL_ES_DRIVER   "SDL_OPENGL_ES_DRIVER"
 
 /**
- *  \brief  A variable controlling which orientations are allowed on iOS/Android.
+ *  A variable controlling which orientations are allowed on iOS/Android.
  *
  *  In some circumstances it is necessary to be able to explicitly control
  *  which UI orientations are allowed.
@@ -1248,7 +1524,7 @@ extern "C" {
 #define SDL_HINT_ORIENTATIONS "SDL_IOS_ORIENTATIONS"
 
 /**
- *  \brief  A variable controlling the use of a sentinel event when polling the event queue
+ *  A variable controlling the use of a sentinel event when polling the event queue
  *
  *  This variable can be set to the following values:
  *    "0"       - Disable poll sentinels
@@ -1264,7 +1540,7 @@ extern "C" {
 #define SDL_HINT_POLL_SENTINEL "SDL_POLL_SENTINEL"
 
 /**
- *  \brief Override for SDL_GetPreferredLocales()
+ *  Override for SDL_GetPreferredLocales()
  *
  *  If set, this will be favored over anything the OS might report for the
  *  user's preferred locales. Changing this hint at runtime will not generate
@@ -1278,7 +1554,7 @@ extern "C" {
 #define SDL_HINT_PREFERRED_LOCALES "SDL_PREFERRED_LOCALES"
 
 /**
- *  \brief  A variable describing the content orientation on QtWayland-based platforms.
+ *  A variable describing the content orientation on QtWayland-based platforms.
  *
  *  On QtWayland platforms, windows are rotated client-side to allow for custom
  *  transitions. In order to correctly position overlays (e.g. volume bar) and
@@ -1291,11 +1567,13 @@ extern "C" {
  *
  *  This variable can be one of the following values:
  *    "primary" (default), "portrait", "landscape", "inverted-portrait", "inverted-landscape"
+ *
+ *  Since SDL 2.0.22 this variable accepts a comma-separated list of values above.
  */
 #define SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION "SDL_QTWAYLAND_CONTENT_ORIENTATION"
 
 /**
- *  \brief  Flags to set on QtWayland windows to integrate with the native window manager.
+ *  Flags to set on QtWayland windows to integrate with the native window manager.
  *
  *  On QtWayland platforms, this hint controls the flags to set on the windows.
  *  For example, on Sailfish OS "OverridesSystemGestures" disables swipe gestures.
@@ -1306,31 +1584,7 @@ extern "C" {
 #define SDL_HINT_QTWAYLAND_WINDOW_FLAGS "SDL_QTWAYLAND_WINDOW_FLAGS"
 
 /**
- *  \brief  A variable controlling whether the 2D render API is compatible or efficient.
- *
- *  This variable can be set to the following values:
- *
- *    "0"     - Don't use batching to make rendering more efficient.
- *    "1"     - Use batching, but might cause problems if app makes its own direct OpenGL calls.
- *
- *  Up to SDL 2.0.9, the render API would draw immediately when requested. Now
- *  it batches up draw requests and sends them all to the GPU only when forced
- *  to (during SDL_RenderPresent, when changing render targets, by updating a
- *  texture that the batch needs, etc). This is significantly more efficient,
- *  but it can cause problems for apps that expect to render on top of the
- *  render API's output. As such, SDL will disable batching if a specific
- *  render backend is requested (since this might indicate that the app is
- *  planning to use the underlying graphics API directly). This hint can
- *  be used to explicitly request batching in this instance. It is a contract
- *  that you will either never use the underlying graphics API directly, or
- *  if you do, you will call SDL_RenderFlush() before you do so any current
- *  batch goes to the GPU before your work begins. Not following this contract
- *  will result in undefined behavior.
- */
-#define SDL_HINT_RENDER_BATCHING  "SDL_RENDER_BATCHING"
-
-/**
- *  \brief  A variable controlling how the 2D render API renders lines
+ *  A variable controlling how the 2D render API renders lines
  *
  *  This variable can be set to the following values:
  *    "0"     - Use the default line drawing method (Bresenham's line algorithm as of SDL 2.0.20)
@@ -1343,7 +1597,7 @@ extern "C" {
 #define SDL_HINT_RENDER_LINE_METHOD "SDL_RENDER_LINE_METHOD"
 
 /**
- *  \brief  A variable controlling whether to enable Direct3D 11+'s Debug Layer.
+ *  A variable controlling whether to enable Direct3D 11+'s Debug Layer.
  *
  *  This variable does not have any effect on the Direct3D 9 based renderer.
  *
@@ -1356,7 +1610,7 @@ extern "C" {
 #define SDL_HINT_RENDER_DIRECT3D11_DEBUG    "SDL_RENDER_DIRECT3D11_DEBUG"
 
 /**
- *  \brief  A variable controlling whether the Direct3D device is initialized for thread-safe operations.
+ *  A variable controlling whether the Direct3D device is initialized for thread-safe operations.
  *
  *  This variable can be set to the following values:
  *    "0"       - Thread-safety is not enabled (faster)
@@ -1367,7 +1621,7 @@ extern "C" {
 #define SDL_HINT_RENDER_DIRECT3D_THREADSAFE "SDL_RENDER_DIRECT3D_THREADSAFE"
 
 /**
- *  \brief  A variable specifying which render driver to use.
+ *  A variable specifying which render driver to use.
  *
  *  If the application doesn't pick a specific renderer to use, this variable
  *  specifies the name of the preferred renderer.  If the preferred renderer
@@ -1389,7 +1643,7 @@ extern "C" {
 #define SDL_HINT_RENDER_DRIVER              "SDL_RENDER_DRIVER"
 
 /**
- *  \brief  A variable controlling whether the OpenGL render driver uses shaders if they are available.
+ *  A variable controlling whether the OpenGL render driver uses shaders if they are available.
  *
  *  This variable can be set to the following values:
  *    "0"       - Disable shaders
@@ -1400,7 +1654,7 @@ extern "C" {
 #define SDL_HINT_RENDER_OPENGL_SHADERS      "SDL_RENDER_OPENGL_SHADERS"
 
 /**
- *  \brief  A variable controlling the scaling quality
+ *  A variable controlling the scaling quality
  *
  *  This variable can be set to the following values:
  *    "0" or "nearest" - Nearest pixel sampling
@@ -1412,7 +1666,7 @@ extern "C" {
 #define SDL_HINT_RENDER_SCALE_QUALITY       "SDL_RENDER_SCALE_QUALITY"
 
 /**
- *  \brief  A variable controlling whether updates to the SDL screen surface should be synchronized with the vertical refresh, to avoid tearing.
+ *  A variable controlling whether updates to the SDL screen surface should be synchronized with the vertical refresh, to avoid tearing.
  *
  *  This variable can be set to the following values:
  *    "0"       - Disable vsync
@@ -1423,7 +1677,44 @@ extern "C" {
 #define SDL_HINT_RENDER_VSYNC               "SDL_RENDER_VSYNC"
 
 /**
- *  \brief  A variable controlling if VSYNC is automatically disable if doesn't reach the enough FPS
+ *  A variable controlling whether the Metal render driver select low power device over default one
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Use the prefered OS device
+ *    "1"       - Select a low power one
+ *
+ *  By default the prefered OS device is used.
+ */
+#define SDL_HINT_RENDER_METAL_PREFER_LOW_POWER_DEVICE "SDL_RENDER_METAL_PREFER_LOW_POWER_DEVICE"
+
+/**
+ *  A variable containing a list of ROG gamepad capable mice.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_ROG_GAMEPAD_MICE "SDL_ROG_GAMEPAD_MICE"
+
+/**
+ *  A variable containing a list of devices that are not ROG gamepad capable mice. This will override SDL_HINT_ROG_GAMEPAD_MICE and the built in device list.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_ROG_GAMEPAD_MICE_EXCLUDED "SDL_ROG_GAMEPAD_MICE_EXCLUDED"
+
+/**
+ *  A variable controlling if VSYNC is automatically disable if doesn't reach the enough FPS
  *
  *  This variable can be set to the following values:
  *    "0"       - It will be using VSYNC as defined in the main flag. Default
@@ -1434,7 +1725,7 @@ extern "C" {
 #define SDL_HINT_PS2_DYNAMIC_VSYNC    "SDL_PS2_DYNAMIC_VSYNC"
 
 /**
- * \brief A variable to control whether the return key on the soft keyboard
+ * A variable to control whether the return key on the soft keyboard
  *        should hide the soft keyboard on Android and iOS.
  *
  * The variable can be set to the following values:
@@ -1446,7 +1737,7 @@ extern "C" {
 #define SDL_HINT_RETURN_KEY_HIDES_IME "SDL_RETURN_KEY_HIDES_IME"
 
 /**
- * \brief Tell SDL which Dispmanx layer to use on a Raspberry PI
+ * Tell SDL which Dispmanx layer to use on a Raspberry PI
  *
  * Also known as Z-order. The variable can take a negative or positive value.
  * The default is 10000.
@@ -1454,7 +1745,7 @@ extern "C" {
 #define SDL_HINT_RPI_VIDEO_LAYER           "SDL_RPI_VIDEO_LAYER"
 
 /**
- *  \brief Specify an "activity name" for screensaver inhibition.
+ *  Specify an "activity name" for screensaver inhibition.
  *
  * Some platforms, notably Linux desktops, list the applications which are
  * inhibiting the screensaver or other power-saving features.
@@ -1474,7 +1765,7 @@ extern "C" {
 #define SDL_HINT_SCREENSAVER_INHIBIT_ACTIVITY_NAME "SDL_SCREENSAVER_INHIBIT_ACTIVITY_NAME"
 
 /**
- *  \brief Specifies whether SDL_THREAD_PRIORITY_TIME_CRITICAL should be treated as realtime.
+ *  Specifies whether SDL_THREAD_PRIORITY_TIME_CRITICAL should be treated as realtime.
  *
  *  On some platforms, like Linux, a realtime priority thread may be subject to restrictions
  *  that require special handling by the application. This hint exists to let SDL know that
@@ -1493,7 +1784,7 @@ extern "C" {
 #define SDL_HINT_THREAD_FORCE_REALTIME_TIME_CRITICAL "SDL_THREAD_FORCE_REALTIME_TIME_CRITICAL"
 
 /**
-*  \brief  A string specifying additional information to use with SDL_SetThreadPriority.
+*  A string specifying additional information to use with SDL_SetThreadPriority.
 *
 *  By default SDL_SetThreadPriority will make appropriate system changes in order to
 *  apply a thread priority.  For example on systems using pthreads the scheduler policy
@@ -1510,7 +1801,7 @@ extern "C" {
 #define SDL_HINT_THREAD_PRIORITY_POLICY         "SDL_THREAD_PRIORITY_POLICY"
 
 /**
-*  \brief  A string specifying SDL's threads stack size in bytes or "0" for the backend's default size
+*  A string specifying SDL's threads stack size in bytes or "0" for the backend's default size
 *
 *  Use this hint in case you need to set SDL's threads stack size to other than the default.
 *  This is specially useful if you build SDL against a non glibc libc library (such as musl) which
@@ -1524,7 +1815,7 @@ extern "C" {
 #define SDL_HINT_THREAD_STACK_SIZE              "SDL_THREAD_STACK_SIZE"
 
 /**
- *  \brief A variable that controls the timer resolution, in milliseconds.
+ *  A variable that controls the timer resolution, in milliseconds.
  *
  *  The higher resolution the timer, the more frequently the CPU services
  *  timer interrupts, and the more precise delays are, but this takes up
@@ -1540,7 +1831,7 @@ extern "C" {
 #define SDL_HINT_TIMER_RESOLUTION "SDL_TIMER_RESOLUTION"
 
 /**
- *  \brief  A variable controlling whether touch events should generate synthetic mouse events
+ *  A variable controlling whether touch events should generate synthetic mouse events
  *
  *  This variable can be set to the following values:
  *    "0"       - Touch events will not generate mouse events
@@ -1551,7 +1842,7 @@ extern "C" {
 #define SDL_HINT_TOUCH_MOUSE_EVENTS    "SDL_TOUCH_MOUSE_EVENTS"
 
 /**
- *  \brief  A variable controlling which touchpad should generate synthetic mouse events
+ *  A variable controlling which touchpad should generate synthetic mouse events
  *
  *  This variable can be set to the following values:
  *    "0"       - Only front touchpad should generate mouse events. Default
@@ -1563,7 +1854,7 @@ extern "C" {
 #define SDL_HINT_VITA_TOUCH_MOUSE_DEVICE    "SDL_HINT_VITA_TOUCH_MOUSE_DEVICE"
 
 /**
- *  \brief  A variable controlling whether the Android / tvOS remotes
+ *  A variable controlling whether the Android / tvOS remotes
  *  should be listed as joystick devices, instead of sending keyboard events.
  *
  *  This variable can be set to the following values:
@@ -1573,7 +1864,7 @@ extern "C" {
 #define SDL_HINT_TV_REMOTE_AS_JOYSTICK "SDL_TV_REMOTE_AS_JOYSTICK"
 
 /**
- *  \brief  A variable controlling whether the screensaver is enabled.
+ *  A variable controlling whether the screensaver is enabled.
  *
  *  This variable can be set to the following values:
  *    "0"       - Disable screensaver
@@ -1584,7 +1875,7 @@ extern "C" {
 #define SDL_HINT_VIDEO_ALLOW_SCREENSAVER    "SDL_VIDEO_ALLOW_SCREENSAVER"
 
 /**
- * \brief Tell the video driver that we only want a double buffer.
+ * Tell the video driver that we only want a double buffer.
  *
  * By default, most lowlevel 2D APIs will use a triple buffer scheme that
  * wastes no CPU time on waiting for vsync after issuing a flip, but
@@ -1603,7 +1894,7 @@ extern "C" {
 #define SDL_HINT_VIDEO_DOUBLE_BUFFER      "SDL_VIDEO_DOUBLE_BUFFER"
 
 /**
- * \brief If eglGetPlatformDisplay fails, fall back to calling eglGetDisplay.
+ * If eglGetPlatformDisplay fails, fall back to calling eglGetDisplay.
  *
  * This variable can be set to one of the following values:
  *   "0"        - Do not fall back to eglGetDisplay
@@ -1615,7 +1906,7 @@ extern "C" {
 #define SDL_HINT_VIDEO_EGL_ALLOW_GETDISPLAY_FALLBACK "SDL_VIDEO_EGL_GETDISPLAY_FALLBACK"
 
 /**
- * \brief A variable controlling whether the graphics context is externally managed.
+ * A variable controlling whether the graphics context is externally managed.
  *
  * This variable can be set to the following values:
  *  "0"         - SDL will manage graphics contexts that are attached to windows.
@@ -1624,13 +1915,13 @@ extern "C" {
  * By default SDL will manage OpenGL contexts in certain situations. For example, on Android the
  * context will be automatically saved and restored when pausing the application. Additionally, some
  * platforms will assume usage of OpenGL if Vulkan isn't used. Setting this to "1" will prevent this
- * behavior, which is desireable when the application manages the graphics context, such as
+ * behavior, which is desirable when the application manages the graphics context, such as
  * an externally managed OpenGL context or attaching a Vulkan surface to the window.
  */
 #define SDL_HINT_VIDEO_EXTERNAL_CONTEXT    "SDL_VIDEO_EXTERNAL_CONTEXT"
 
 /**
- *  \brief  A variable that dictates policy for fullscreen Spaces on macOS.
+ *  A variable that dictates policy for fullscreen Spaces on macOS.
  *
  *  This hint only applies to macOS.
  *
@@ -1647,7 +1938,7 @@ extern "C" {
 #define SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES    "SDL_VIDEO_MAC_FULLSCREEN_SPACES"
 
 /**
- *  \brief Minimize your SDL_Window if it loses key focus when in fullscreen mode. Defaults to false.
+ *  Minimize your SDL_Window if it loses key focus when in fullscreen mode. Defaults to false.
  *  \warning  Before SDL 2.0.14, this defaulted to true! In 2.0.14, we're
  *            seeing if "true" causes more problems than it solves in modern times.
  *
@@ -1655,7 +1946,7 @@ extern "C" {
 #define SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS   "SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS"
 
 /**
- *  \brief  A variable controlling whether the libdecor Wayland backend is allowed to be used.
+ *  A variable controlling whether the libdecor Wayland backend is allowed to be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - libdecor use is disabled.
@@ -1666,7 +1957,7 @@ extern "C" {
 #define SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR "SDL_VIDEO_WAYLAND_ALLOW_LIBDECOR"
 
 /**
- *  \brief  A variable controlling whether the libdecor Wayland backend is preferred over native decrations.
+ *  A variable controlling whether the libdecor Wayland backend is preferred over native decrations.
  *
  *  When this hint is set, libdecor will be used to provide window decorations, even if xdg-decoration is
  *  available. (Note that, by default, libdecor will use xdg-decoration itself if available).
@@ -1680,7 +1971,7 @@ extern "C" {
 #define SDL_HINT_VIDEO_WAYLAND_PREFER_LIBDECOR "SDL_VIDEO_WAYLAND_PREFER_LIBDECOR"
 
 /**
- *  \brief  A variable controlling whether video mode emulation is enabled under Wayland.
+ *  A variable controlling whether video mode emulation is enabled under Wayland.
  *
  *  When this hint is set, a standard set of emulated CVT video modes will be exposed for use by the application.
  *  If it is disabled, the only modes exposed will be the logical desktop size and, in the case of a scaled
@@ -1695,7 +1986,48 @@ extern "C" {
 #define SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION "SDL_VIDEO_WAYLAND_MODE_EMULATION"
 
 /**
- *  \brief  Enable or disable mouse pointer warp emulation, needed by some older games.
+ *  A variable controlling how modes with a non-native aspect ratio are displayed under Wayland.
+ *
+ *  When this hint is set, the requested scaling will be used when displaying fullscreen video modes
+ *  that don't match the display's native aspect ratio. This is contingent on compositor viewport support.
+ *
+ *  This variable can be set to the following values:
+ *    "aspect"       - Video modes will be displayed scaled, in their proper aspect ratio, with black bars.
+ *    "stretch"      - Video modes will be scaled to fill the entire display.
+ *    "none"         - Video modes will be displayed as 1:1 with no scaling.
+ *
+ *  By default 'stretch' is used.
+ */
+#define SDL_HINT_VIDEO_WAYLAND_MODE_SCALING "SDL_VIDEO_WAYLAND_MODE_SCALING"
+
+/**
+ *  A variable forcing non-DPI-aware Wayland windows to output at 1:1 scaling.
+ *
+ *  When this hint is set, Wayland windows that are not flagged as being DPI-aware will be
+ *  output with scaling designed to force 1:1 pixel mapping.
+ *
+ *  This is intended to allow legacy applications to be displayed without desktop scaling
+ *  being applied, and has issues with certain display configurations, as this forces the
+ *  window to behave in a way that Wayland desktops were not designed to accommodate:
+ *
+ *   - Rounding errors can result with odd window sizes and/or desktop scales.
+ *   - The window may be unusably small.
+ *   - The window may jump in size at times.
+ *   - The window may appear to be larger than the desktop size to the application.
+ *   - Possible loss of cursor precision.
+ *
+ *  New applications should be designed with proper DPI awareness handling instead of enabling this.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Windows will be scaled normally.
+ *    "1"       - Windows will be forced to scale to achieve 1:1 output.
+ *
+ *  By default, scaling to the display is disabled.
+ */
+#define SDL_HINT_VIDEO_WAYLAND_SCALE_TO_DISPLAY "SDL_VIDEO_WAYLAND_SCALE_TO_DISPLAY"
+
+/**
+ *  Enable or disable mouse pointer warp emulation, needed by some older games.
  *
  *  When this hint is set, any SDL will emulate mouse warps using relative mouse mode.
  *  This is required for some older games (such as Source engine games), which warp the
@@ -1712,48 +2044,26 @@ extern "C" {
 #define SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP "SDL_VIDEO_WAYLAND_EMULATE_MOUSE_WARP"
 
 /**
-*  \brief  A variable that is the address of another SDL_Window* (as a hex string formatted with "%p").
+*  Set whether all window operations will block until complete.
 *
-*  If this hint is set before SDL_CreateWindowFrom() and the SDL_Window* it is set to has
-*  SDL_WINDOW_OPENGL set (and running on WGL only, currently), then two things will occur on the newly
-*  created SDL_Window:
+*  Window systems that run asynchronously may not have the results of window operations that resize or move the window
+*  applied immediately upon the return of the requesting function. Setting this hint will cause such operations to block
+*  after every call until the pending operation has completed. Setting this to '1' is the equivalent of calling
+*  SDL_SyncWindow() after every function call.
 *
-*  1. Its pixel format will be set to the same pixel format as this SDL_Window.  This is
-*  needed for example when sharing an OpenGL context across multiple windows.
-*
-*  2. The flag SDL_WINDOW_OPENGL will be set on the new window so it can be used for
-*  OpenGL rendering.
+*  Be aware that amount of time spent blocking while waiting for window operations to complete can be quite lengthy, as
+*  animations may have to complete, which can take upwards of multiple seconds in some cases.
 *
 *  This variable can be set to the following values:
-*    The address (as a string "%p") of the SDL_Window* that new windows created with SDL_CreateWindowFrom() should
-*    share a pixel format with.
-*/
-#define SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT    "SDL_VIDEO_WINDOW_SHARE_PIXEL_FORMAT"
-
-/**
- *  \brief  When calling SDL_CreateWindowFrom(), make the window compatible with OpenGL.
- *
- * This variable can be set to the following values:
- * "0" - Don't add any graphics flags to the SDL_WindowFlags
- * "1" - Add SDL_WINDOW_OPENGL to the SDL_WindowFlags
- *
- * By default SDL will not make the foreign window compatible with OpenGL.
+*  "0" - Window operations are non-blocking
+*  "1" - Window operations will block until completed
+*
+*  By default SDL will run in non-blocking mode
  */
-#define SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL "SDL_VIDEO_FOREIGN_WINDOW_OPENGL"
+#define SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS "SDL_VIDEO_SYNC_WINDOW_OPERATIONS"
 
 /**
- *  \brief  When calling SDL_CreateWindowFrom(), make the window compatible with Vulkan.
- *
- * This variable can be set to the following values:
- * "0" - Don't add any graphics flags to the SDL_WindowFlags
- * "1" - Add SDL_WINDOW_VULKAN to the SDL_WindowFlags
- *
- * By default SDL will not make the foreign window compatible with Vulkan.
- */
-#define SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN "SDL_VIDEO_FOREIGN_WINDOW_VULKAN"
-
-/**
-*  \brief  A variable specifying which shader compiler to preload when using the Chrome ANGLE binaries
+*  A variable specifying which shader compiler to preload when using the Chrome ANGLE binaries
 *
 *  SDL has EGL and OpenGL ES2 support on Windows via the ANGLE project. It
 *  can use two different sets of binaries, those compiled by the user from source
@@ -1769,8 +2079,7 @@ extern "C" {
 #define SDL_HINT_VIDEO_WIN_D3DCOMPILER              "SDL_VIDEO_WIN_D3DCOMPILER"
 
 /**
- * \brief A variable controlling whether the OpenGL context should be created
- * with EGL by default
+ * Set whether the OpenGL context should be created with EGL by default
  *
  * This variable can be set to the following values:
  * "0" - Use platform-specific GL context creation API (GLX, WGL, CGL, etc)
@@ -1781,7 +2090,7 @@ extern "C" {
 #define SDL_HINT_VIDEO_FORCE_EGL "SDL_VIDEO_FORCE_EGL"
 
 /**
- * \brief A variable controlling whether the X11 _NET_WM_BYPASS_COMPOSITOR hint should be used.
+ * A variable controlling whether the X11 _NET_WM_BYPASS_COMPOSITOR hint should be used.
  *
  * This variable can be set to the following values:
  * "0" - Disable _NET_WM_BYPASS_COMPOSITOR
@@ -1793,7 +2102,7 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR "SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR"
 
 /**
- *  \brief  A variable controlling whether the X11 _NET_WM_PING protocol should be supported.
+ *  A variable controlling whether the X11 _NET_WM_PING protocol should be supported.
  *
  *  This variable can be set to the following values:
  *    "0"       - Disable _NET_WM_PING
@@ -1807,13 +2116,20 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_NET_WM_PING      "SDL_VIDEO_X11_NET_WM_PING"
 
 /**
- *  \brief  A variable forcing the visual ID chosen for new X11 windows
+ *  A variable forcing the visual ID chosen for new X11 windows
  *
  */
 #define SDL_HINT_VIDEO_X11_WINDOW_VISUALID      "SDL_VIDEO_X11_WINDOW_VISUALID"
 
 /**
- *  \brief  A variable controlling whether the X11 XRandR extension should be used.
+ *  A variable forcing the scaling factor for X11 windows
+ *
+ *  This variable can be set to a floating point value in the range 1.0-10.0f
+ */
+#define SDL_HINT_VIDEO_X11_SCALING_FACTOR      "SDL_VIDEO_X11_SCALING_FACTOR"
+
+/**
+ *  A variable controlling whether the X11 XRandR extension should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - Disable XRandR
@@ -1824,7 +2140,7 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_XRANDR           "SDL_VIDEO_X11_XRANDR"
 
 /**
- *  \brief  Controls how the fact chunk affects the loading of a WAVE file.
+ *  Controls how the fact chunk affects the loading of a WAVE file.
  *
  *  The fact chunk stores information about the number of samples of a WAVE
  *  file. The Standards Update from Microsoft notes that this value can be used
@@ -1851,7 +2167,7 @@ extern "C" {
 #define SDL_HINT_WAVE_FACT_CHUNK   "SDL_WAVE_FACT_CHUNK"
 
 /**
- *  \brief  Controls how the size of the RIFF chunk affects the loading of a WAVE file.
+ *  Controls how the size of the RIFF chunk affects the loading of a WAVE file.
  *
  *  The size of the RIFF chunk (which includes all the sub-chunks of the WAVE
  *  file) is not always reliable. In case the size is wrong, it's possible to
@@ -1872,7 +2188,7 @@ extern "C" {
 #define SDL_HINT_WAVE_RIFF_CHUNK_SIZE   "SDL_WAVE_RIFF_CHUNK_SIZE"
 
 /**
- *  \brief  Controls how a truncated WAVE file is handled.
+ *  Controls how a truncated WAVE file is handled.
  *
  *  A WAVE file is considered truncated if any of the chunks are incomplete or
  *  the data chunk size is not a multiple of the block size. By default, SDL
@@ -1888,23 +2204,7 @@ extern "C" {
 #define SDL_HINT_WAVE_TRUNCATION   "SDL_WAVE_TRUNCATION"
 
 /**
- * \brief Tell SDL not to name threads on Windows with the 0x406D1388 Exception.
- *        The 0x406D1388 Exception is a trick used to inform Visual Studio of a
- *        thread's name, but it tends to cause problems with other debuggers,
- *        and the .NET runtime. Note that SDL 2.0.6 and later will still use
- *        the (safer) SetThreadDescription API, introduced in the Windows 10
- *        Creators Update, if available.
- *
- * The variable can be set to the following values:
- *   "0"       - SDL will raise the 0x406D1388 Exception to name threads.
- *               This is the default behavior of SDL <= 2.0.4.
- *   "1"       - SDL will not raise this exception, and threads will be unnamed. (default)
- *               This is necessary with .NET languages or debuggers that aren't Visual Studio.
- */
-#define SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING "SDL_WINDOWS_DISABLE_THREAD_NAMING"
-
-/**
- *  \brief Controls whether menus can be opened with their keyboard shortcut (Alt+mnemonic).
+ *  Controls whether menus can be opened with their keyboard shortcut (Alt+mnemonic).
  *
  *  If the mnemonics are enabled, then menus can be opened by pressing the Alt
  *  key and the corresponding mnemonic (for example, Alt+F opens the File menu).
@@ -1926,7 +2226,7 @@ extern "C" {
 #define SDL_HINT_WINDOWS_ENABLE_MENU_MNEMONICS "SDL_WINDOWS_ENABLE_MENU_MNEMONICS"
 
 /**
- *  \brief  A variable controlling whether the windows message loop is processed by SDL
+ *  A variable controlling whether the windows message loop is processed by SDL
  *
  *  This variable can be set to the following values:
  *    "0"       - The window message loop is not run
@@ -1937,9 +2237,9 @@ extern "C" {
 #define SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP "SDL_WINDOWS_ENABLE_MESSAGELOOP"
 
 /**
- * \brief Force SDL to use Critical Sections for mutexes on Windows.
+ * Force SDL to use Critical Sections for mutexes on Windows.
  *        On Windows 7 and newer, Slim Reader/Writer Locks are available.
- *        They offer better performance, allocate no kernel ressources and
+ *        They offer better performance, allocate no kernel resources and
  *        use less memory. SDL will fall back to Critical Sections on older
  *        OS versions or if forced to by this hint.
  *
@@ -1951,7 +2251,7 @@ extern "C" {
 #define SDL_HINT_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS "SDL_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS"
 
 /**
- * \brief Force SDL to use Kernel Semaphores on Windows.
+ * Force SDL to use Kernel Semaphores on Windows.
  *        Kernel Semaphores are inter-process and require a context
  *        switch on every interaction. On Windows 8 and newer, the
  *        WaitOnAddress API is available. Using that and atomics to
@@ -1967,13 +2267,13 @@ extern "C" {
 #define SDL_HINT_WINDOWS_FORCE_SEMAPHORE_KERNEL "SDL_WINDOWS_FORCE_SEMAPHORE_KERNEL"
 
 /**
- * \brief A variable to specify custom icon resource id from RC file on Windows platform
+ * A variable to specify custom icon resource id from RC file on Windows platform
  */
 #define SDL_HINT_WINDOWS_INTRESOURCE_ICON       "SDL_WINDOWS_INTRESOURCE_ICON"
 #define SDL_HINT_WINDOWS_INTRESOURCE_ICON_SMALL "SDL_WINDOWS_INTRESOURCE_ICON_SMALL"
 
 /**
- *  \brief Tell SDL not to generate window-close events for Alt+F4 on Windows.
+ *  Tell SDL not to generate window-close events for Alt+F4 on Windows.
  *
  * The variable can be set to the following values:
  *   "0"       - SDL will generate a window-close event when it sees Alt+F4.
@@ -1982,7 +2282,7 @@ extern "C" {
 #define SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4 "SDL_WINDOWS_NO_CLOSE_ON_ALT_F4"
 
 /**
- * \brief Use the D3D9Ex API introduced in Windows Vista, instead of normal D3D9.
+ * Use the D3D9Ex API introduced in Windows Vista, instead of normal D3D9.
  *        Direct3D 9Ex contains changes to state management that can eliminate device
  *        loss errors during scenarios like Alt+Tab or UAC prompts. D3D9Ex may require
  *        some changes to your application to cope with the new behavior, so this
@@ -2002,7 +2302,7 @@ extern "C" {
 #define SDL_HINT_WINDOWS_USE_D3D9EX "SDL_WINDOWS_USE_D3D9EX"
 
 /**
- *  \brief  A variable controlling whether the window frame and title bar are interactive when the cursor is hidden
+ *  A variable controlling whether the window frame and title bar are interactive when the cursor is hidden
  *
  *  This variable can be set to the following values:
  *    "0"       - The window frame is not interactive when the cursor is hidden (no move, resize, etc)
@@ -2013,17 +2313,17 @@ extern "C" {
 #define SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN    "SDL_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN"
 
 /**
-*  \brief  A variable controlling whether the window is activated when the SDL_ShowWindow function is called
+*  A variable controlling whether the window is activated when the SDL_ShowWindow function is called
 *
 *  This variable can be set to the following values:
-*    "0"       - The window is activated when the SDL_ShowWindow function is called
-*    "1"       - The window is not activated when the SDL_ShowWindow function is called
+*    "0"       - The window is not activated when the SDL_ShowWindow function is called
+*    "1"       - The window is activated when the SDL_ShowWindow function is called
 *
 *  By default SDL will activate the window when the SDL_ShowWindow function is called
 */
-#define SDL_HINT_WINDOW_NO_ACTIVATION_WHEN_SHOWN    "SDL_WINDOW_NO_ACTIVATION_WHEN_SHOWN"
+#define SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN    "SDL_WINDOW_ACTIVATE_WHEN_SHOWN"
 
-/** \brief Allows back-button-press events on Windows Phone to be marked as handled
+/** Allows back-button-press events on Windows Phone to be marked as handled
  *
  *  Windows Phone devices typically feature a Back button.  When pressed,
  *  the OS will emit back-button-press events, which apps are expected to
@@ -2075,7 +2375,7 @@ extern "C" {
  */
 #define SDL_HINT_WINRT_HANDLE_BACK_BUTTON "SDL_WINRT_HANDLE_BACK_BUTTON"
 
-/** \brief Label text for a WinRT app's privacy policy link
+/** Label text for a WinRT app's privacy policy link
  *
  *  Network-enabled WinRT apps must include a privacy policy.  On Windows 8, 8.1, and RT,
  *  Microsoft mandates that this policy be available via the Windows Settings charm.
@@ -2097,7 +2397,7 @@ extern "C" {
 #define SDL_HINT_WINRT_PRIVACY_POLICY_LABEL "SDL_WINRT_PRIVACY_POLICY_LABEL"
 
 /**
- *  \brief A URL to a WinRT app's privacy policy
+ *  A URL to a WinRT app's privacy policy
  *
  *  All network-enabled WinRT apps must make a privacy policy available to its
  *  users.  On Windows 8, 8.1, and RT, Microsoft mandates that this policy be
@@ -2123,7 +2423,7 @@ extern "C" {
 #define SDL_HINT_WINRT_PRIVACY_POLICY_URL "SDL_WINRT_PRIVACY_POLICY_URL"
 
 /**
- *  \brief Mark X11 windows as override-redirect.
+ *  Mark X11 windows as override-redirect.
  *
  *  If set, this _might_ increase framerate at the expense of the desktop
  *  not working as expected. Override-redirect windows aren't noticed by the
@@ -2135,7 +2435,7 @@ extern "C" {
 #define SDL_HINT_X11_FORCE_OVERRIDE_REDIRECT "SDL_X11_FORCE_OVERRIDE_REDIRECT"
 
 /**
- *  \brief  A variable that lets you disable the detection and use of Xinput gamepad devices
+ *  A variable that lets you disable the detection and use of Xinput gamepad devices
  *
  *  The variable can be set to the following values:
  *    "0"       - Disable XInput detection (only uses direct input)
@@ -2144,7 +2444,7 @@ extern "C" {
 #define SDL_HINT_XINPUT_ENABLED "SDL_XINPUT_ENABLED"
 
  /**
-  *  \brief  A variable that lets you disable the detection and use of DirectInput gamepad devices
+  *  A variable that lets you disable the detection and use of DirectInput gamepad devices
   *
   *  The variable can be set to the following values:
   *    "0"       - Disable DirectInput detection (only uses XInput)
@@ -2153,16 +2453,7 @@ extern "C" {
 #define SDL_HINT_DIRECTINPUT_ENABLED "SDL_DIRECTINPUT_ENABLED"
 
 /**
- *  \brief  A variable that causes SDL to use the old axis and button mapping for XInput devices.
- *
- *  This hint is for backwards compatibility only and will be removed in SDL 2.1
- *
- *  The default value is "0".  This hint must be set before SDL_Init()
- */
-#define SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING "SDL_XINPUT_USE_OLD_JOYSTICK_MAPPING"
-
-/**
- *  \brief  A variable that causes SDL to not ignore audio "monitors"
+ *  A variable that causes SDL to not ignore audio "monitors"
  *
  *  This is currently only used for PulseAudio and ignored elsewhere.
  *
@@ -2181,7 +2472,7 @@ extern "C" {
 #define SDL_HINT_AUDIO_INCLUDE_MONITORS "SDL_AUDIO_INCLUDE_MONITORS"
 
 /**
- *  \brief  A variable that forces X11 windows to create as a custom type.
+ *  A variable that forces X11 windows to create as a custom type.
  *
  *  This is currently only used for X11 and ignored elsewhere.
  *
@@ -2201,7 +2492,7 @@ extern "C" {
 #define SDL_HINT_X11_WINDOW_TYPE "SDL_X11_WINDOW_TYPE"
 
 /**
- *  \brief  A variable that decides whether to send SDL_EVENT_QUIT when closing the final window.
+ *  A variable that decides whether to send SDL_EVENT_QUIT when closing the final window.
  *
  *  By default, SDL sends an SDL_EVENT_QUIT event when there is only one window
  *  and it receives an SDL_EVENT_WINDOW_CLOSE_REQUESTED event, under the assumption most
@@ -2226,7 +2517,7 @@ extern "C" {
 
 
 /**
- *  \brief  A variable that decides what video backend to use.
+ *  A variable that decides what video backend to use.
  *
  *  By default, SDL will try all available video backends in a reasonable
  *  order until it finds one that can work, but this hint allows the app
@@ -2236,7 +2527,7 @@ extern "C" {
  *  This functionality has existed since SDL 2.0.0 (indeed, before that)
  *  but before 2.0.22 this was an environment variable only. In 2.0.22,
  *  it was upgraded to a full SDL hint, so you can set the environment
- *  variable as usual or programatically set the hint with SDL_SetHint,
+ *  variable as usual or programmatically set the hint with SDL_SetHint,
  *  which won't propagate to child processes.
  *
  *  The default value is unset, in which case SDL will try to figure out
@@ -2249,7 +2540,7 @@ extern "C" {
 #define SDL_HINT_VIDEO_DRIVER "SDL_VIDEO_DRIVER"
 
 /**
- *  \brief  A variable that decides what audio backend to use.
+ *  A variable that decides what audio backend to use.
  *
  *  By default, SDL will try all available audio backends in a reasonable
  *  order until it finds one that can work, but this hint allows the app
@@ -2259,7 +2550,7 @@ extern "C" {
  *  This functionality has existed since SDL 2.0.0 (indeed, before that)
  *  but before 2.0.22 this was an environment variable only. In 2.0.22,
  *  it was upgraded to a full SDL hint, so you can set the environment
- *  variable as usual or programatically set the hint with SDL_SetHint,
+ *  variable as usual or programmatically set the hint with SDL_SetHint,
  *  which won't propagate to child processes.
  *
  *  The default value is unset, in which case SDL will try to figure out
@@ -2272,7 +2563,7 @@ extern "C" {
 #define SDL_HINT_AUDIO_DRIVER "SDL_AUDIO_DRIVER"
 
 /**
- *  \brief  A variable that decides what KMSDRM device to use.
+ *  A variable that decides what KMSDRM device to use.
  *
  *  Internally, SDL might open something like "/dev/dri/cardNN" to
  *  access KMSDRM functionality, where "NN" is a device index number.
@@ -2287,7 +2578,7 @@ extern "C" {
 
 
 /**
- *  \brief  A variable that treats trackpads as touch devices.
+ *  A variable that treats trackpads as touch devices.
  *
  *  On macOS (and possibly other platforms in the future), SDL will report
  *  touches on a trackpad as mouse input, which is generally what users
@@ -2309,7 +2600,162 @@ extern "C" {
 
 
 /**
- *  \brief  An enumeration of hint priorities
+ *  Sets the title of the TextInput window on GDK platforms.
+ *
+ *  On GDK, if SDL_GDK_TEXTINPUT is defined, you can use the
+ *  standard SDL text input and virtual keyboard capabilities
+ *  to get text from the user.
+ *
+ *  This hint allows you to customize the virtual keyboard
+ *  window that will be shown to the user.
+ *
+ *  Set this hint to change the title of the window.
+ *
+ *  This hint will not affect a window that is already being
+ *  shown to the user. It will only affect new input windows.
+ *
+ *  This hint is available only if SDL_GDK_TEXTINPUT defined.
+ */
+#define SDL_HINT_GDK_TEXTINPUT_TITLE "SDL_GDK_TEXTINPUT_TITLE"
+
+/**
+ *  Sets the description of the TextInput window on GDK platforms.
+ *
+ *  On GDK, if SDL_GDK_TEXTINPUT is defined, you can use the
+ *  standard SDL text input and virtual keyboard capabilities
+ *  to get text from the user.
+ *
+ *  This hint allows you to customize the virtual keyboard
+ *  window that will be shown to the user.
+ *
+ *  Set this hint to change the description of the window.
+ *
+ *  This hint will not affect a window that is already being
+ *  shown to the user. It will only affect new input windows.
+ *
+ *  This hint is available only if SDL_GDK_TEXTINPUT defined.
+ */
+#define SDL_HINT_GDK_TEXTINPUT_DESCRIPTION "SDL_GDK_TEXTINPUT_DESCRIPTION"
+
+/**
+ *  Sets the default text of the TextInput window on GDK platforms.
+ *
+ *  On GDK, if SDL_GDK_TEXTINPUT is defined, you can use the
+ *  standard SDL text input and virtual keyboard capabilities
+ *  to get text from the user.
+ *
+ *  This hint allows you to customize the virtual keyboard
+ *  window that will be shown to the user.
+ *
+ *  Set this hint to change the default text value of the window.
+ *
+ *  This hint will not affect a window that is already being
+ *  shown to the user. It will only affect new input windows.
+ *
+ *  This hint is available only if SDL_GDK_TEXTINPUT defined.
+ */
+#define SDL_HINT_GDK_TEXTINPUT_DEFAULT "SDL_GDK_TEXTINPUT_DEFAULT"
+
+/**
+ *  Sets the input scope of the TextInput window on GDK platforms.
+ *
+ *  On GDK, if SDL_GDK_TEXTINPUT is defined, you can use the
+ *  standard SDL text input and virtual keyboard capabilities
+ *  to get text from the user.
+ *
+ *  This hint allows you to customize the virtual keyboard
+ *  window that will be shown to the user.
+ *
+ *  Set this hint to change the XGameUiTextEntryInputScope value
+ *  that will be passed to the window creation function.
+ *
+ *  The value must be a stringified integer,
+ *  for example "0" for XGameUiTextEntryInputScope::Default.
+ *
+ *  This hint will not affect a window that is already being
+ *  shown to the user. It will only affect new input windows.
+ *
+ *  This hint is available only if SDL_GDK_TEXTINPUT defined.
+ */
+#define SDL_HINT_GDK_TEXTINPUT_SCOPE "SDL_GDK_TEXTINPUT_SCOPE"
+
+/**
+ *  Sets the maximum input length of the TextInput window on GDK platforms.
+ *
+ *  On GDK, if SDL_GDK_TEXTINPUT is defined, you can use the
+ *  standard SDL text input and virtual keyboard capabilities
+ *  to get text from the user.
+ *
+ *  This hint allows you to customize the virtual keyboard
+ *  window that will be shown to the user.
+ *
+ *  Set this hint to change the maximum allowed input
+ *  length of the text box in the virtual keyboard window.
+ *
+ *  The value must be a stringified integer,
+ *  for example "10" to allow for up to 10 characters of text input.
+ *
+ *  This hint will not affect a window that is already being
+ *  shown to the user. It will only affect new input windows.
+ *
+ *  This hint is available only if SDL_GDK_TEXTINPUT defined.
+ */
+#define SDL_HINT_GDK_TEXTINPUT_MAX_LENGTH "SDL_GDK_TEXTINPUT_MAX_LENGTH"
+
+/**
+ * Set the next device open's buffer size.
+ *
+ * This hint is an integer > 0, that represents the size of the device's
+ * buffer in sample frames (stereo audio data in 16-bit format is 4 bytes
+ * per sample frame, for example).
+ *
+ * SDL3 generally decides this value on behalf of the app, but if for some
+ * reason the app needs to dictate this (because they want either lower
+ * latency or higher throughput AND ARE WILLING TO DEAL WITH what that
+ * might require of the app), they can specify it.
+ *
+ * SDL will try to accomodate this value, but there is no promise you'll
+ * get the buffer size requested. Many platforms won't honor this request
+ * at all, or might adjust it.
+ *
+ * This hint is checked when opening an audio device and can be changed
+ * between calls.
+ */
+#define SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES "SDL_AUDIO_DEVICE_SAMPLE_FRAMES"
+
+/**
+ * Request SDL_AppIterate() be called at a specific rate.
+ *
+ * This number is in Hz, so "60" means try to iterate 60 times per second.
+ *
+ * On some platforms, or if you are using SDL_main instead of SDL_AppIterate,
+ * this hint is ignored. When the hint can be used, it is allowed to be
+ * changed at any time.
+ *
+ * This defaults to 60, and specifying NULL for the hint's value will restore
+ * the default.
+ */
+#define SDL_HINT_MAIN_CALLBACK_RATE "SDL_MAIN_CALLBACK_RATE"
+
+/**
+ * Cause SDL to call dbus_shutdown() on quit.
+ *
+ * This is useful as a debug tool to validate memory leaks, but shouldn't ever
+ * be set in production applications, as other libraries used by the application
+ * might use dbus under the hood and this cause cause crashes if they continue
+ * after SDL_Quit().
+ *
+ * This variable can be set to the following values:
+ *   "0"       - SDL will not call dbus_shutdown() on quit (default)
+ *   "1"       - SDL will call dbus_shutdown() on quit
+ *
+ * This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_SHUTDOWN_DBUS_ON_QUIT "SDL_SHUTDOWN_DBUS_ON_QUIT"
+
+
+/**
+ *  An enumeration of hint priorities
  */
 typedef enum
 {

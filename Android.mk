@@ -24,6 +24,7 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/src/audio/openslES/*.c) \
 	$(LOCAL_PATH)/src/atomic/SDL_atomic.c.arm \
 	$(LOCAL_PATH)/src/atomic/SDL_spinlock.c.arm \
+	$(wildcard $(LOCAL_PATH)/src/core/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/core/android/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/cpuinfo/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/dynapi/*.c) \
@@ -74,6 +75,8 @@ LOCAL_CFLAGS += \
 
 # Warnings we haven't fixed (yet)
 LOCAL_CFLAGS += -Wno-unused-parameter -Wno-sign-compare
+
+LOCAL_CXXFLAGS += -std=gnu++11
 
 LOCAL_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid
 

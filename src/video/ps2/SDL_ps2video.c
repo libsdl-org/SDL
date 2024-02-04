@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,7 +45,7 @@
 
 /* PS2 driver bootstrap functions */
 
-static int PS2_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+static int PS2_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     return 0;
 }
@@ -55,7 +55,7 @@ static void PS2_DeleteDevice(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
-static int PS2_CreateWindow(_THIS, SDL_Window *window)
+static int PS2_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_SetKeyboardFocus(window);
 
@@ -63,13 +63,13 @@ static int PS2_CreateWindow(_THIS, SDL_Window *window)
     return 0;
 }
 
-static int PS2_VideoInit(_THIS)
+static int PS2_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
 
     SDL_zero(mode);
-    mode.pixel_w = 640;
-    mode.pixel_h = 480;
+    mode.w = 640;
+    mode.h = 480;
     mode.refresh_rate = 60.0f;
 
     /* 32 bpp for default */
@@ -80,11 +80,11 @@ static int PS2_VideoInit(_THIS)
     return 1;
 }
 
-static void PS2_VideoQuit(_THIS)
+static void PS2_VideoQuit(SDL_VideoDevice *_this)
 {
 }
 
-static void PS2_PumpEvents(_THIS)
+static void PS2_PumpEvents(SDL_VideoDevice *_this)
 {
     /* do nothing. */
 }
@@ -95,8 +95,7 @@ static SDL_VideoDevice *PS2_CreateDevice(void)
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
-        SDL_OutOfMemory();
+    if (!device) {
         return 0;
     }
 
@@ -112,9 +111,10 @@ static SDL_VideoDevice *PS2_CreateDevice(void)
 }
 
 VideoBootStrap PS2_bootstrap = {
-    "PS2",
+    "ps2",
     "PS2 Video Driver",
-    PS2_CreateDevice
+    PS2_CreateDevice,
+    NULL /* no ShowMessageBox implementation */
 };
 
 #endif /* SDL_VIDEO_DRIVER_PS2 */

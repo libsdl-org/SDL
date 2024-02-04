@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -158,6 +158,7 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #define libdecor_frame_is_visible               (*WAYLAND_libdecor_frame_is_visible)
 #define libdecor_frame_is_floating              (*WAYLAND_libdecor_frame_is_floating)
 #define libdecor_frame_set_parent               (*WAYLAND_libdecor_frame_set_parent)
+#define libdecor_frame_show_window_menu         (*WAYLAND_libdecor_frame_show_window_menu)
 #define libdecor_frame_get_xdg_surface          (*WAYLAND_libdecor_frame_get_xdg_surface)
 #define libdecor_frame_get_xdg_toplevel         (*WAYLAND_libdecor_frame_get_xdg_toplevel)
 #define libdecor_frame_translate_coordinate     (*WAYLAND_libdecor_frame_translate_coordinate)

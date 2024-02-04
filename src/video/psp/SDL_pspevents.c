@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,7 +45,7 @@ static SDL_Keycode keymap[256];
 #endif
 
 static enum PspHprmKeys hprm = 0;
-static SDL_sem *event_sem = NULL;
+static SDL_Semaphore *event_sem = NULL;
 static SDL_Thread *thread = NULL;
 static int running = 0;
 static struct
@@ -64,25 +64,25 @@ static struct
 int EventUpdate(void *data)
 {
     while (running) {
-        SDL_SemWait(event_sem);
+        SDL_WaitSemaphore(event_sem);
         sceHprmPeekCurrentKey((u32 *)&hprm);
-        SDL_SemPost(event_sem);
+        SDL_PostSemaphore(event_sem);
         /* Delay 1/60th of a second */
         sceKernelDelayThread(1000000 / 60);
     }
     return 0;
 }
 
-void PSP_PumpEvents(_THIS)
+void PSP_PumpEvents(SDL_VideoDevice *_this)
 {
     int i;
     enum PspHprmKeys keys;
     enum PspHprmKeys changed;
     static enum PspHprmKeys old_keys = 0;
 
-    SDL_SemWait(event_sem);
+    SDL_WaitSemaphore(event_sem);
     keys = hprm;
-    SDL_SemPost(event_sem);
+    SDL_PostSemaphore(event_sem);
 
     /* HPRM Keyboard */
     changed = old_keys ^ keys;
@@ -124,7 +124,7 @@ void PSP_PumpEvents(_THIS)
     return;
 }
 
-void PSP_InitOSKeymap(_THIS)
+void PSP_InitOSKeymap(SDL_VideoDevice *_this)
 {
 #ifdef PSPIRKEYB
     int i;
@@ -235,7 +235,7 @@ void PSP_InitOSKeymap(_THIS)
 #endif
 }
 
-int PSP_EventInit(_THIS)
+int PSP_EventInit(SDL_VideoDevice *_this)
 {
 #ifdef PSPIRKEYB
     int outputmode = PSP_IRKBD_OUTPUT_MODE_SCANCODE;
@@ -258,7 +258,7 @@ int PSP_EventInit(_THIS)
     return 0;
 }
 
-void PSP_EventQuit(_THIS)
+void PSP_EventQuit(SDL_VideoDevice *_this)
 {
     running = 0;
     SDL_WaitThread(thread, NULL);

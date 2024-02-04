@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -37,7 +37,7 @@ extern "C" {
 /* File-specific globals: */
 static SDL_TouchID WINRT_TouchID = 1;
 
-void WINRT_InitTouch(_THIS)
+void WINRT_InitTouch(SDL_VideoDevice *_this)
 {
     SDL_AddTouch(WINRT_TouchID, SDL_TOUCH_DEVICE_DIRECT, "");
 }
@@ -111,8 +111,7 @@ WINRT_TransformCursorPosition(SDL_Window *window,
     return outputPosition;
 }
 
-SDL_bool
-WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^ pt, Uint8 *button, Uint8 *pressed)
+SDL_bool WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^ pt, Uint8 *button, Uint8 *pressed)
 {
     using namespace Windows::UI::Input;
 
@@ -228,7 +227,7 @@ void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::Po
 
         SDL_SendTouch(0,
             WINRT_TouchID,
-            (SDL_FingerID)pointerPoint->PointerId,
+            (SDL_FingerID)(pointerPoint->PointerId + 1),
             window,
             SDL_TRUE,
             normalizedPoint.X,
@@ -257,7 +256,7 @@ void WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::Poin
     } else {
         SDL_SendTouchMotion(0,
             WINRT_TouchID,
-            (SDL_FingerID)pointerPoint->PointerId,
+            (SDL_FingerID)(pointerPoint->PointerId + 1),
             window,
             normalizedPoint.X,
             normalizedPoint.Y,
@@ -281,7 +280,7 @@ void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::P
 
         SDL_SendTouch(0,
             WINRT_TouchID,
-            (SDL_FingerID)pointerPoint->PointerId,
+            (SDL_FingerID)(pointerPoint->PointerId + 1),
             window,
             SDL_FALSE,
             normalizedPoint.X,
@@ -379,10 +378,8 @@ void WINRT_ProcessMouseMovedEvent(SDL_Window *window, Windows::Devices::Input::M
     //
     // There may be some room for a workaround whereby OnPointerMoved's values
     // are compared to the values from OnMouseMoved in order to detect
-    // when this bug is active.  A suitable transformation could then be made to
-    // OnMouseMoved's values.  For now, however, the system-reported values are sent
-    // to SDL with minimal transformation: from native screen coordinates (in DIPs)
-    // to SDL window coordinates.
+    // when this bug is active. A suitable transformation could then be made to
+    // OnMouseMoved's values.
     //
     const Windows::Foundation::Point mouseDeltaInDIPs((float)args->MouseDelta.X, (float)args->MouseDelta.Y);
     const Windows::Foundation::Point mouseDeltaInSDLWindowCoords = WINRT_TransformCursorPosition(window, mouseDeltaInDIPs, TransformToSDLWindowSize);

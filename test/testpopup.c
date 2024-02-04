@@ -1,5 +1,5 @@
 /*
-Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -11,16 +11,16 @@ freely.
 */
 /* Simple program:  Move N sprites around on the screen as fast as possible */
 
-#include <stdlib.h>
-#include <time.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_test_font.h>
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
+#include <stdlib.h>
+#include <time.h>
 
 #define MENU_WIDTH  120
 #define MENU_HEIGHT 300
@@ -180,7 +180,7 @@ static void loop(void)
                         SDL_HideWindow(menus[i].win);
                     }
                 }
-                // Don't process this event in SDLTest_CommonEvent()
+                /* Don't process this event in SDLTest_CommonEvent() */
                 continue;
             }
         }
@@ -188,9 +188,13 @@ static void loop(void)
         SDLTest_CommonEvent(state, &event, &done);
     }
 
+    if (done) {
+        return;
+    }
+
     /* Show the tooltip if the delay period has elapsed */
     if (SDL_GetTicks() > tooltip_timer) {
-        if (tooltip.win == NULL) {
+        if (!tooltip.win) {
             create_popup(&tooltip, SDL_FALSE);
         }
     }
@@ -240,7 +244,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -265,7 +269,7 @@ int main(int argc, char *argv[])
 
     /* Main render loop */
     done = 0;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {

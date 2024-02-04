@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -75,7 +75,6 @@
 #define HAVE_CALLOC 1
 #define HAVE_REALLOC 1
 #define HAVE_FREE 1
-#define HAVE_ALLOCA 1
 #define HAVE_QSORT 1
 #define HAVE_BSEARCH 1
 #define HAVE_ABS 1
@@ -135,6 +134,7 @@
 #define HAVE_LROUND 1
 #define HAVE_LROUNDF 1
 #define HAVE_MODF   1
+#define HAVE_MODFF  1
 #define HAVE_POW    1
 #define HAVE_POWF   1
 #define HAVE_ROUND 1
@@ -168,7 +168,6 @@
 #define SDL_HAPTIC_DISABLED 1
 #else
 #define SDL_JOYSTICK_XINPUT 1
-#define SDL_HAPTIC_XINPUT   1
 #endif /* WIN10 */
 #endif
 
@@ -184,6 +183,7 @@
 /* Enable various threading systems */
 #if (NTDDI_VERSION >= NTDDI_WINBLUE)
 #define SDL_THREAD_GENERIC_COND_SUFFIX 1
+#define SDL_THREAD_GENERIC_RWLOCK_SUFFIX 1
 #define SDL_THREAD_WINDOWS  1
 #else
 /* WinRT on Windows 8.0 and Windows Phone 8.0 don't support CreateThread() */

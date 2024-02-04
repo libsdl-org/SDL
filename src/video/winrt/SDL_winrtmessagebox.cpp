@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -40,7 +40,7 @@ static String ^ WINRT_UTF8ToPlatformString(const char *str) {
     return rtstr;
 }
 
-    extern "C" int WINRT_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+extern "C" int WINRT_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
 #if SDL_WINAPI_FAMILY_PHONE && NTDDI_VERSION == NTDDI_WIN8
     /* Sadly, Windows Phone 8 doesn't include the MessageDialog class that

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,12 +31,11 @@
 #include "SDL_androidvideo.h"
 #include "SDL_androidwindow.h"
 
-#include <SDL3/SDL_syswm.h>
 
 /* Currently only one window */
 SDL_Window *Android_Window = NULL;
 
-int Android_CreateWindow(_THIS, SDL_Window *window)
+int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_WindowData *data;
     int retval = 0;
@@ -54,26 +53,26 @@ int Android_CreateWindow(_THIS, SDL_Window *window)
     /* Adjust the window data to match the screen */
     window->x = 0;
     window->y = 0;
-    window->w = (int)SDL_ceilf(Android_SurfaceWidth / Android_ScreenDensity);
-    window->h = (int)SDL_ceilf(Android_SurfaceHeight / Android_ScreenDensity);
+    window->w = Android_SurfaceWidth;
+    window->h = Android_SurfaceHeight;
 
     /* One window, it always has focus */
     SDL_SetMouseFocus(window);
     SDL_SetKeyboardFocus(window);
 
     data = (SDL_WindowData *)SDL_calloc(1, sizeof(*data));
-    if (data == NULL) {
-        retval = SDL_OutOfMemory();
+    if (!data) {
+        retval = -1;
         goto endfunction;
     }
 
     data->native_window = Android_JNI_GetNativeWindow();
-
     if (!data->native_window) {
         SDL_free(data);
         retval = SDL_SetError("Could not fetch native window");
         goto endfunction;
     }
+    SDL_SetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, data->native_window);
 
     /* Do not create EGLSurface for Vulkan window since it will then make the window
        incompatible with vkCreateAndroidSurfaceKHR */
@@ -88,6 +87,7 @@ int Android_CreateWindow(_THIS, SDL_Window *window)
             goto endfunction;
         }
     }
+    SDL_SetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_ANDROID_SURFACE_POINTER, data->egl_surface);
 #endif
 
     window->driverdata = data;
@@ -100,12 +100,12 @@ endfunction:
     return retval;
 }
 
-void Android_SetWindowTitle(_THIS, SDL_Window *window)
+void Android_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
     Android_JNI_SetActivityTitle(window->title);
 }
 
-void Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
+int Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
     SDL_LockMutex(Android_ActivityMutex);
 
@@ -129,7 +129,7 @@ void Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *di
         }
 
         data = window->driverdata;
-        if (data == NULL || !data->native_window) {
+        if (!data || !data->native_window) {
             if (data && !data->native_window) {
                 SDL_SetError("Missing native window");
             }
@@ -139,8 +139,8 @@ void Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *di
         old_w = window->w;
         old_h = window->h;
 
-        new_w = (int)SDL_ceilf(ANativeWindow_getWidth(data->native_window) / Android_ScreenDensity);
-        new_h = (int)SDL_ceilf(ANativeWindow_getHeight(data->native_window) / Android_ScreenDensity);
+        new_w = ANativeWindow_getWidth(data->native_window);
+        new_h = ANativeWindow_getHeight(data->native_window);
 
         if (new_w < 0 || new_h < 0) {
             SDL_SetError("ANativeWindow_getWidth/Height() fails");
@@ -154,20 +154,21 @@ void Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *di
 endfunction:
 
     SDL_UnlockMutex(Android_ActivityMutex);
+    return 0;
 }
 
-void Android_MinimizeWindow(_THIS, SDL_Window *window)
+void Android_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     Android_JNI_MinizeWindow();
 }
 
-void Android_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable)
+void Android_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable)
 {
     /* Set orientation */
     Android_JNI_SetOrientation(window->w, window->h, window->flags & SDL_WINDOW_RESIZABLE, SDL_GetHint(SDL_HINT_ORIENTATIONS));
 }
 
-void Android_DestroyWindow(_THIS, SDL_Window *window)
+void Android_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_LockMutex(Android_ActivityMutex);
 
@@ -192,20 +193,6 @@ void Android_DestroyWindow(_THIS, SDL_Window *window)
     }
 
     SDL_UnlockMutex(Android_ActivityMutex);
-}
-
-int Android_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
-{
-    SDL_WindowData *data = window->driverdata;
-
-    info->subsystem = SDL_SYSWM_ANDROID;
-    info->info.android.window = data->native_window;
-
-#ifdef SDL_VIDEO_OPENGL_EGL
-    info->info.android.surface = data->egl_surface;
-#endif
-
-    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_ANDROID */

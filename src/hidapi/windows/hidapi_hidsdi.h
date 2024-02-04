@@ -52,7 +52,7 @@ typedef BOOLEAN (__stdcall *HidD_GetIndexedString_)(HANDLE handle, ULONG string_
 typedef BOOLEAN (__stdcall *HidD_GetPreparsedData_)(HANDLE handle, PHIDP_PREPARSED_DATA *preparsed_data);
 typedef BOOLEAN (__stdcall *HidD_FreePreparsedData_)(PHIDP_PREPARSED_DATA preparsed_data);
 typedef BOOLEAN (__stdcall *HidD_SetNumInputBuffers_)(HANDLE handle, ULONG number_buffers);
-typedef BOOLEAN (__stdcall *HidD_SetOutputReport_)(HANDLE handle, PVOID buffer, ULONG buffer_len);
+typedef BOOLEAN (__stdcall *HidD_SetOutputReport_)(HANDLE HidDeviceObject, PVOID ReportBuffer, ULONG ReportBufferLength);
 
 #endif
 

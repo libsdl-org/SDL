@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,42 +28,39 @@
 
 /* Wrapper around POSIX 1003.1b semaphores */
 
-#if defined(__MACOS__) || defined(__IOS__)
+#if defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS)
 /* macOS doesn't support sem_getvalue() as of version 10.4 */
 #include "../generic/SDL_syssem.c"
 #else
 
-struct SDL_semaphore
+struct SDL_Semaphore
 {
     sem_t sem;
 };
 
 /* Create a semaphore, initialized with value */
-SDL_sem *
-SDL_CreateSemaphore(Uint32 initial_value)
+SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 {
-    SDL_sem *sem = (SDL_sem *)SDL_malloc(sizeof(SDL_sem));
-    if (sem != NULL) {
+    SDL_Semaphore *sem = (SDL_Semaphore *)SDL_malloc(sizeof(SDL_Semaphore));
+    if (sem) {
         if (sem_init(&sem->sem, 0, initial_value) < 0) {
             SDL_SetError("sem_init() failed");
             SDL_free(sem);
             sem = NULL;
         }
-    } else {
-        SDL_OutOfMemory();
     }
     return sem;
 }
 
-void SDL_DestroySemaphore(SDL_sem *sem)
+void SDL_DestroySemaphore(SDL_Semaphore *sem)
 {
-    if (sem != NULL) {
+    if (sem) {
         sem_destroy(&sem->sem);
         SDL_free(sem);
     }
 }
 
-int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
+int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
     int retval = 0;
 #ifdef HAVE_SEM_TIMEDWAIT
@@ -75,7 +72,7 @@ int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
     Uint64 end;
 #endif
 
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -149,12 +146,11 @@ int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
     return retval;
 }
 
-Uint32
-SDL_SemValue(SDL_sem *sem)
+Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     int ret = 0;
 
-    if (sem == NULL) {
+    if (!sem) {
         SDL_InvalidParamError("sem");
         return 0;
     }
@@ -166,11 +162,11 @@ SDL_SemValue(SDL_sem *sem)
     return (Uint32)ret;
 }
 
-int SDL_SemPost(SDL_sem *sem)
+int SDL_PostSemaphore(SDL_Semaphore *sem)
 {
     int retval;
 
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -181,4 +177,4 @@ int SDL_SemPost(SDL_sem *sem)
     return retval;
 }
 
-#endif /* __MACOS__ */
+#endif /* SDL_PLATFORM_MACOS */

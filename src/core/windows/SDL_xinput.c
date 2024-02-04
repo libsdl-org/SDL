@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,13 +30,14 @@ extern "C" {
 XInputGetState_t SDL_XInputGetState = NULL;
 XInputSetState_t SDL_XInputSetState = NULL;
 XInputGetCapabilities_t SDL_XInputGetCapabilities = NULL;
+XInputGetCapabilitiesEx_t SDL_XInputGetCapabilitiesEx = NULL;
 XInputGetBatteryInformation_t SDL_XInputGetBatteryInformation = NULL;
 DWORD SDL_XInputVersion = 0;
 
 static HMODULE s_pXInputDLL = NULL;
 static int s_XInputDLLRefCount = 0;
 
-#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 
 int WIN_LoadXInputDLL(void)
 {
@@ -67,7 +68,7 @@ void WIN_UnloadXInputDLL(void)
 {
 }
 
-#else /* !(defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)) */
+#else /* !(defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)) */
 
 int WIN_LoadXInputDLL(void)
 {
@@ -106,13 +107,15 @@ int WIN_LoadXInputDLL(void)
 
     /* 100 is the ordinal for _XInputGetStateEx, which returns the same struct as XinputGetState, but with extra data in wButtons for the guide button, we think... */
     SDL_XInputGetState = (XInputGetState_t)GetProcAddress(s_pXInputDLL, (LPCSTR)100);
-    if (SDL_XInputGetState == NULL) {
+    if (!SDL_XInputGetState) {
         SDL_XInputGetState = (XInputGetState_t)GetProcAddress(s_pXInputDLL, "XInputGetState");
     }
     SDL_XInputSetState = (XInputSetState_t)GetProcAddress(s_pXInputDLL, "XInputSetState");
     SDL_XInputGetCapabilities = (XInputGetCapabilities_t)GetProcAddress(s_pXInputDLL, "XInputGetCapabilities");
+    /* 108 is the ordinal for _XInputGetCapabilitiesEx, which additionally returns VID/PID of the controller. */
+    SDL_XInputGetCapabilitiesEx = (XInputGetCapabilitiesEx_t)GetProcAddress(s_pXInputDLL, (LPCSTR)108);
     SDL_XInputGetBatteryInformation = (XInputGetBatteryInformation_t)GetProcAddress(s_pXInputDLL, "XInputGetBatteryInformation");
-    if (SDL_XInputGetState == NULL || SDL_XInputSetState == NULL || SDL_XInputGetCapabilities == NULL) {
+    if (!SDL_XInputGetState || !SDL_XInputSetState || !SDL_XInputGetCapabilities) {
         WIN_UnloadXInputDLL();
         return -1;
     }
@@ -133,7 +136,7 @@ void WIN_UnloadXInputDLL(void)
     }
 }
 
-#endif /* __WINRT__ */
+#endif /* SDL_PLATFORM_WINRT */
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

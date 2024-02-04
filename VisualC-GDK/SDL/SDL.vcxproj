@@ -59,6 +59,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -121,7 +122,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)/../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\include;$(ProjectDir)\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <PreprocessorDefinitions>DLL_EXPORT;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -129,7 +130,7 @@
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <OmitDefaultLibName>true</OmitDefaultLibName>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>SDL_internal.h</PrecompiledHeaderFile>
     </ClCompile>
     <ResourceCompile>
@@ -151,7 +152,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)/../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\include;$(ProjectDir)\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <PreprocessorDefinitions>DLL_EXPORT;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -169,6 +170,12 @@
       <SubSystem>Windows</SubSystem>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)\shaders\buildshaders.bat $(SolutionDir)</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Building shader blobs (Xbox Series)</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.XboxOne.x64'">
     <Midl>
@@ -179,7 +186,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)/../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\include;$(ProjectDir)\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <PreprocessorDefinitions>DLL_EXPORT;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -197,6 +204,12 @@
       <SubSystem>Windows</SubSystem>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)\shaders\buildshaders.bat $(SolutionDir) one</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Building shader blobs (Xbox One)</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">
     <Midl>
@@ -206,7 +219,7 @@
       <TypeLibraryName>.\Release/SDL.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)/../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\include;$(ProjectDir)\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <PreprocessorDefinitions>DLL_EXPORT;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -214,7 +227,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <OmitDefaultLibName>true</OmitDefaultLibName>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>SDL_internal.h</PrecompiledHeaderFile>
     </ClCompile>
     <ResourceCompile>
@@ -237,7 +250,7 @@
       <TypeLibraryName>.\Release/SDL.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)/../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\include;$(ProjectDir)\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <PreprocessorDefinitions>DLL_EXPORT;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -257,6 +270,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)\shaders\buildshaders.bat $(SolutionDir)</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Building shader blobs (Xbox Series)</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'">
     <Midl>
@@ -266,7 +285,7 @@
       <TypeLibraryName>.\Release/SDL.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)/../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\include;$(ProjectDir)\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <PreprocessorDefinitions>DLL_EXPORT;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -286,6 +305,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)\shaders\buildshaders.bat $(SolutionDir) one</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Building shader blobs (Xbox One)</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h" />
@@ -329,6 +354,7 @@
     <ClInclude Include="..\..\include\SDL3\SDL_opengles2_gl2ext.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_opengles2_gl2platform.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_opengles2_khrplatform.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_pen.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_pixels.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_platform.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_platform_defines.h" />
@@ -340,11 +366,9 @@
     <ClInclude Include="..\..\include\SDL3\SDL_rwops.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_scancode.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_sensor.h" />
-    <ClInclude Include="..\..\include\SDL3\SDL_shape.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_stdinc.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_surface.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_system.h" />
-    <ClInclude Include="..\..\include\SDL3\SDL_syswm.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_assert.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_common.h" />
@@ -370,6 +394,8 @@
     <ClInclude Include="..\..\src\audio\SDL_audio_c.h" />
     <ClInclude Include="..\..\src\audio\SDL_audiodev_c.h" />
     <ClInclude Include="..\..\src\audio\SDL_sysaudio.h" />
+    <ClInclude Include="..\..\src\audio\SDL_audioqueue.h" />
+    <ClInclude Include="..\..\src\audio\SDL_audioresample.h" />
     <ClInclude Include="..\..\src\audio\SDL_wave.h" />
     <ClInclude Include="..\..\src\audio\wasapi\SDL_wasapi.h" />
     <ClInclude Include="..\..\src\core\gdk\SDL_gdk.h" />
@@ -396,7 +422,6 @@
     <ClInclude Include="..\..\src\haptic\SDL_syshaptic.h" />
     <ClInclude Include="..\..\src\haptic\windows\SDL_dinputhaptic_c.h" />
     <ClInclude Include="..\..\src\haptic\windows\SDL_windowshaptic_c.h" />
-    <ClInclude Include="..\..\src\haptic\windows\SDL_xinputhaptic_c.h" />
     <ClInclude Include="..\..\src\hidapi\hidapi\hidapi.h" />
     <ClInclude Include="..\..\src\hidapi\SDL_hidapi_c.h" />
     <ClInclude Include="..\..\src\joystick\controller_type.h" />
@@ -405,6 +430,7 @@
     <ClInclude Include="..\..\src\joystick\SDL_gamepad_c.h" />
     <ClInclude Include="..\..\src\joystick\SDL_gamepad_db.h" />
     <ClInclude Include="..\..\src\joystick\SDL_joystick_c.h" />
+    <ClInclude Include="..\..\src\joystick\SDL_steam_virtual_gamepad.h" />
     <ClInclude Include="..\..\src\joystick\SDL_sysjoystick.h" />
     <ClInclude Include="..\..\src\joystick\usb_ids.h" />
     <ClInclude Include="..\..\src\joystick\virtual\SDL_virtualjoystick_c.h" />
@@ -415,6 +441,7 @@
     <ClInclude Include="..\..\src\libm\math_libm.h" />
     <ClInclude Include="..\..\src\libm\math_private.h" />
     <ClInclude Include="..\..\src\locale\SDL_syslocale.h" />
+    <ClInclude Include="..\..\src\main\SDL_main_callbacks.h" />
     <ClInclude Include="..\..\src\misc\SDL_sysurl.h" />
     <ClInclude Include="..\..\src\power\SDL_syspower.h" />
     <ClInclude Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.h" />
@@ -438,7 +465,6 @@
     <ClInclude Include="..\..\src\render\software\SDL_rotate.h" />
     <ClInclude Include="..\..\src\render\software\SDL_triangle.h" />
     <ClInclude Include="..\..\src\SDL_assert_c.h" />
-    <ClInclude Include="..\..\src\SDL_dataqueue.h" />
     <ClInclude Include="..\..\src\SDL_error_c.h" />
     <ClCompile Include="..\..\src\core\gdk\SDL_gdk.cpp">
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
@@ -454,6 +480,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
+    <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfilesystem.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.Scarlett.x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.Scarlett.x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.XboxOne.x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\src\render\direct3d12\SDL_render_d3d12_xbox.cpp">
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
@@ -466,15 +498,20 @@
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
+    <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c" />
+    <ClCompile Include="..\..\src\main\SDL_main_callbacks.c" />
     <ClCompile Include="..\..\src\SDL_guid.c" />
+    <ClInclude Include="..\..\src\SDL_hashtable.h" />
     <ClInclude Include="..\..\src\SDL_hints_c.h" />
     <ClInclude Include="..\..\src\SDL_internal.h" />
     <ClInclude Include="..\..\src\SDL_list.h" />
     <ClInclude Include="..\..\src\SDL_log_c.h" />
+    <ClInclude Include="..\..\src\SDL_properties_c.h" />
     <ClInclude Include="..\..\src\sensor\dummy\SDL_dummysensor.h" />
     <ClInclude Include="..\..\src\sensor\SDL_sensor_c.h" />
     <ClInclude Include="..\..\src\sensor\SDL_syssensor.h" />
     <ClInclude Include="..\..\src\sensor\windows\SDL_windowssensor.h" />
+    <ClInclude Include="..\..\src\thread\generic\SDL_sysrwlock_c.h" />
     <ClInclude Include="..\..\src\thread\SDL_systhread.h" />
     <ClInclude Include="..\..\src\thread\SDL_thread_c.h" />
     <ClInclude Include="..\..\src\thread\generic\SDL_syscond_c.h" />
@@ -484,6 +521,7 @@
     <ClInclude Include="..\..\src\video\dummy\SDL_nullevents_c.h" />
     <ClInclude Include="..\..\src\video\dummy\SDL_nullframebuffer_c.h" />
     <ClInclude Include="..\..\src\video\dummy\SDL_nullvideo.h" />
+    <ClInclude Include="..\..\src\video\gdk\SDL_gdktextinput.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vk_icd.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vk_layer.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vk_platform.h" />
@@ -509,16 +547,15 @@
     <ClInclude Include="..\..\src\video\SDL_blit_auto.h" />
     <ClInclude Include="..\..\src\video\SDL_blit_copy.h" />
     <ClInclude Include="..\..\src\video\SDL_blit_slow.h" />
+    <ClInclude Include="..\..\src\video\SDL_clipboard_c.h" />
     <ClInclude Include="..\..\src\video\SDL_egl_c.h" />
     <ClInclude Include="..\..\src\video\SDL_pixels_c.h" />
     <ClInclude Include="..\..\src\video\SDL_rect_c.h" />
     <ClInclude Include="..\..\src\video\SDL_RLEaccel_c.h" />
-    <ClInclude Include="..\..\src\video\SDL_shape_internals.h" />
     <ClInclude Include="..\..\src\video\SDL_sysvideo.h" />
     <ClInclude Include="..\..\src\video\SDL_vulkan_internal.h" />
     <ClInclude Include="..\..\src\video\SDL_yuv_c.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_msctf.h" />
-    <ClInclude Include="..\..\src\video\windows\SDL_vkeys.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsclipboard.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsevents.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsframebuffer.h" />
@@ -528,16 +565,21 @@
     <ClInclude Include="..\..\src\video\windows\SDL_windowsmouse.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsopengl.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsopengles.h" />
-    <ClInclude Include="..\..\src\video\windows\SDL_windowsshape.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsvideo.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsvulkan.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowswindow.h" />
     <ClInclude Include="..\..\src\video\windows\wmmsg.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_common.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_internal.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx_func.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_sse.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_sse_func.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_std.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_std_func.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_sse_func.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_std_func.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\..\src\atomic\SDL_atomic.c" />
     <ClCompile Include="..\..\src\atomic\SDL_spinlock.c" />
     <ClCompile Include="..\..\src\audio\directsound\SDL_directsound.c" />
@@ -547,10 +589,14 @@
     <ClCompile Include="..\..\src\audio\SDL_audiocvt.c" />
     <ClCompile Include="..\..\src\audio\SDL_audiodev.c" />
     <ClCompile Include="..\..\src\audio\SDL_audiotypecvt.c" />
+    <ClCompile Include="..\..\src\audio\SDL_audioqueue.c" />
+    <ClCompile Include="..\..\src\audio\SDL_audioresample.c" />
     <ClCompile Include="..\..\src\audio\SDL_mixer.c" />
     <ClCompile Include="..\..\src\audio\SDL_wave.c" />
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi_win32.c" />
+    <ClCompile Include="..\..\src\core\SDL_core_unsupported.c" />
+    <ClCompile Include="..\..\src\core\SDL_runapp.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_hid.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_immdevice.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_windows.c" />
@@ -575,11 +621,15 @@
     <ClCompile Include="..\..\src\events\SDL_events.c" />
     <ClCompile Include="..\..\src\events\SDL_keyboard.c" />
     <ClCompile Include="..\..\src\events\SDL_mouse.c" />
+    <ClCompile Include="..\..\src\events\SDL_pen.c" />
     <ClCompile Include="..\..\src\events\SDL_quit.c" />
     <ClCompile Include="..\..\src\events\SDL_touch.c" />
     <ClCompile Include="..\..\src\events\SDL_windowevents.c" />
     <ClCompile Include="..\..\src\file\SDL_rwops.c" />
-    <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfilesystem.c" />
+    <ClCompile Include="..\..\src\filesystem\gdk\SDL_sysfilesystem.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\src\haptic\dummy\SDL_syshaptic.c" />
     <ClCompile Include="..\..\src\haptic\SDL_haptic.c" />
     <ClCompile Include="..\..\src\haptic\windows\SDL_dinputhaptic.c" />
@@ -592,16 +642,6 @@
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.XboxOne.x64'">stdcpp17</LanguageStandard>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.Scarlett.x64'">stdcpp17</LanguageStandard>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'">stdcpp17</LanguageStandard>
-    </ClCompile>
-    <ClCompile Include="..\..\src\haptic\windows\SDL_xinputhaptic.c">
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.Scarlett.x64'">stdcpp17</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.XboxOne.x64'">stdcpp17</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.Scarlett.x64'">stdcpp17</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'">stdcpp17</LanguageStandard>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.Scarlett.x64'">CompileAsCpp</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.XboxOne.x64'">CompileAsCpp</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.Scarlett.x64'">CompileAsCpp</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'">CompileAsCpp</CompileAs>
     </ClCompile>
     <ClCompile Include="..\..\src\hidapi\SDL_hidapi.c" />
     <ClCompile Include="..\..\src\joystick\controller_type.c" />
@@ -617,6 +657,7 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_shield.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_stadia.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_steam.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_steamdeck.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_switch.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_wii.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360.c" />
@@ -624,6 +665,7 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xboxone.c" />
     <ClCompile Include="..\..\src\joystick\SDL_gamepad.c" />
     <ClCompile Include="..\..\src\joystick\SDL_joystick.c" />
+    <ClCompile Include="..\..\src\joystick\SDL_steam_virtual_gamepad.c" />
     <ClCompile Include="..\..\src\joystick\virtual\SDL_virtualjoystick.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_dinputjoystick.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_rawinputjoystick.c" />
@@ -693,6 +735,7 @@
     <ClCompile Include="..\..\src\render\opengles2\SDL_shaders_gles2.c" />
     <ClCompile Include="..\..\src\render\SDL_d3dmath.c" />
     <ClCompile Include="..\..\src\render\SDL_render.c" />
+    <ClCompile Include="..\..\src\render\SDL_render_unsupported.c" />
     <ClCompile Include="..\..\src\render\SDL_yuv_sw.c" />
     <ClCompile Include="..\..\src\render\software\SDL_blendfillrect.c" />
     <ClCompile Include="..\..\src\render\software\SDL_blendline.c" />
@@ -704,11 +747,12 @@
     <ClCompile Include="..\..\src\render\software\SDL_triangle.c" />
     <ClCompile Include="..\..\src\SDL.c" />
     <ClCompile Include="..\..\src\SDL_assert.c" />
-    <ClCompile Include="..\..\src\SDL_dataqueue.c" />
     <ClCompile Include="..\..\src\SDL_list.c" />
     <ClCompile Include="..\..\src\SDL_error.c" />
+    <ClCompile Include="..\..\src\SDL_hashtable.c" />
     <ClCompile Include="..\..\src\SDL_hints.c" />
     <ClCompile Include="..\..\src\SDL_log.c" />
+    <ClCompile Include="..\..\src\SDL_properties.c" />
     <ClCompile Include="..\..\src\SDL_utils.c" />
     <ClCompile Include="..\..\src\sensor\dummy\SDL_dummysensor.c" />
     <ClCompile Include="..\..\src\sensor\SDL_sensor.c" />
@@ -718,15 +762,23 @@
     <ClCompile Include="..\..\src\stdlib\SDL_getenv.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_iconv.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_malloc.c" />
+    <ClCompile Include="..\..\src\stdlib\SDL_memcpy.c" />
+    <ClCompile Include="..\..\src\stdlib\SDL_memmove.c" />
+    <ClCompile Include="..\..\src\stdlib\SDL_memset.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_mslibc.c" />
+    <MASM Condition="'$(Platform)'=='x64'" Include="..\..\src\stdlib\SDL_mslibc_x64.masm">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </MASM>
     <ClCompile Include="..\..\src\stdlib\SDL_qsort.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_stdlib.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_string.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_strtokr.c" />
     <ClCompile Include="..\..\src\thread\generic\SDL_syscond.c" />
+    <ClCompile Include="..\..\src\thread\generic\SDL_sysrwlock.c" />
     <ClCompile Include="..\..\src\thread\SDL_thread.c" />
     <ClCompile Include="..\..\src\thread\windows\SDL_syscond_cv.c" />
     <ClCompile Include="..\..\src\thread\windows\SDL_sysmutex.c" />
+    <ClCompile Include="..\..\src\thread\windows\SDL_sysrwlock_srw.c" />
     <ClCompile Include="..\..\src\thread\windows\SDL_syssem.c" />
     <ClCompile Include="..\..\src\thread\windows\SDL_systhread.c" />
     <ClCompile Include="..\..\src\thread\windows\SDL_systls.c" />
@@ -735,6 +787,10 @@
     <ClCompile Include="..\..\src\video\dummy\SDL_nullevents.c" />
     <ClCompile Include="..\..\src\video\dummy\SDL_nullframebuffer.c" />
     <ClCompile Include="..\..\src\video\dummy\SDL_nullvideo.c" />
+    <ClCompile Include="..\..\src\video\gdk\SDL_gdktextinput.cpp">
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
+    </ClCompile>
     <ClCompile Include="..\..\src\video\SDL_blit.c" />
     <ClCompile Include="..\..\src\video\SDL_blit_0.c" />
     <ClCompile Include="..\..\src\video\SDL_blit_1.c" />
@@ -750,10 +806,11 @@
     <ClCompile Include="..\..\src\video\SDL_pixels.c" />
     <ClCompile Include="..\..\src\video\SDL_rect.c" />
     <ClCompile Include="..\..\src\video\SDL_RLEaccel.c" />
-    <ClCompile Include="..\..\src\video\SDL_shape.c" />
     <ClCompile Include="..\..\src\video\SDL_stretch.c" />
     <ClCompile Include="..\..\src\video\SDL_surface.c" />
     <ClCompile Include="..\..\src\video\SDL_video.c" />
+    <ClCompile Include="..\..\src\video\SDL_video_capture.c" />
+    <ClCompile Include="..\..\src\video\SDL_video_unsupported.c" />
     <ClCompile Include="..\..\src\video\SDL_vulkan_utils.c" />
     <ClCompile Include="..\..\src\video\SDL_yuv.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsclipboard.c" />
@@ -765,16 +822,18 @@
     <ClCompile Include="..\..\src\video\windows\SDL_windowsmouse.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsopengl.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsopengles.c" />
-    <ClCompile Include="..\..\src\video\windows\SDL_windowsshape.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsvideo.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsvulkan.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowswindow.c" />
-    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb.c" />
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx.c" />
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_sse.c" />
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_std.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\core\windows\version.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
   </ImportGroup>
 </Project>

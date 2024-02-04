@@ -11,6 +11,8 @@
 static const Uint32 g_AllFormats[] = {
     SDL_PIXELFORMAT_INDEX1LSB,
     SDL_PIXELFORMAT_INDEX1MSB,
+    SDL_PIXELFORMAT_INDEX2LSB,
+    SDL_PIXELFORMAT_INDEX2MSB,
     SDL_PIXELFORMAT_INDEX4LSB,
     SDL_PIXELFORMAT_INDEX4MSB,
     SDL_PIXELFORMAT_INDEX8,
@@ -31,15 +33,18 @@ static const Uint32 g_AllFormats[] = {
     SDL_PIXELFORMAT_BGR565,
     SDL_PIXELFORMAT_RGB24,
     SDL_PIXELFORMAT_BGR24,
-    SDL_PIXELFORMAT_RGB888,
+    SDL_PIXELFORMAT_XRGB8888,
     SDL_PIXELFORMAT_RGBX8888,
-    SDL_PIXELFORMAT_BGR888,
+    SDL_PIXELFORMAT_XBGR8888,
     SDL_PIXELFORMAT_BGRX8888,
     SDL_PIXELFORMAT_ARGB8888,
     SDL_PIXELFORMAT_RGBA8888,
     SDL_PIXELFORMAT_ABGR8888,
     SDL_PIXELFORMAT_BGRA8888,
+    SDL_PIXELFORMAT_XRGB2101010,
+    SDL_PIXELFORMAT_XBGR2101010,
     SDL_PIXELFORMAT_ARGB2101010,
+    SDL_PIXELFORMAT_ABGR2101010,
     SDL_PIXELFORMAT_YV12,
     SDL_PIXELFORMAT_IYUV,
     SDL_PIXELFORMAT_YUY2,
@@ -53,6 +58,8 @@ static const int g_numAllFormats = SDL_arraysize(g_AllFormats);
 static const char *g_AllFormatsVerbose[] = {
     "SDL_PIXELFORMAT_INDEX1LSB",
     "SDL_PIXELFORMAT_INDEX1MSB",
+    "SDL_PIXELFORMAT_INDEX2LSB",
+    "SDL_PIXELFORMAT_INDEX2MSB",
     "SDL_PIXELFORMAT_INDEX4LSB",
     "SDL_PIXELFORMAT_INDEX4MSB",
     "SDL_PIXELFORMAT_INDEX8",
@@ -73,15 +80,18 @@ static const char *g_AllFormatsVerbose[] = {
     "SDL_PIXELFORMAT_BGR565",
     "SDL_PIXELFORMAT_RGB24",
     "SDL_PIXELFORMAT_BGR24",
-    "SDL_PIXELFORMAT_RGB888",
+    "SDL_PIXELFORMAT_XRGB8888",
     "SDL_PIXELFORMAT_RGBX8888",
-    "SDL_PIXELFORMAT_BGR888",
+    "SDL_PIXELFORMAT_XBGR8888",
     "SDL_PIXELFORMAT_BGRX8888",
     "SDL_PIXELFORMAT_ARGB8888",
     "SDL_PIXELFORMAT_RGBA8888",
     "SDL_PIXELFORMAT_ABGR8888",
     "SDL_PIXELFORMAT_BGRA8888",
+    "SDL_PIXELFORMAT_XRGB2101010",
+    "SDL_PIXELFORMAT_XBGR2101010",
     "SDL_PIXELFORMAT_ARGB2101010",
+    "SDL_PIXELFORMAT_ABGR2101010",
     "SDL_PIXELFORMAT_YV12",
     "SDL_PIXELFORMAT_IYUV",
     "SDL_PIXELFORMAT_YUY2",
@@ -105,7 +115,7 @@ static const char *g_invalidPixelFormatsVerbose[] = {
 /* Test case functions */
 
 /**
- * \brief Call to SDL_CreatePixelFormat and SDL_DestroyPixelFormat
+ * Call to SDL_CreatePixelFormat and SDL_DestroyPixelFormat
  *
  * \sa SDL_CreatePixelFormat
  * \sa SDL_DestroyPixelFormat
@@ -122,7 +132,7 @@ static int pixels_allocFreeFormat(void *arg)
 
     /* Blank/unknown format */
     format = 0;
-    SDLTest_Log("RGB Format: %s (%" SDL_PRIu32 ")", unknownFormat, format);
+    SDLTest_Log("Pixel Format: %s (%" SDL_PRIu32 ")", unknownFormat, format);
 
     /* Allocate format */
     result = SDL_CreatePixelFormat(format);
@@ -143,7 +153,7 @@ static int pixels_allocFreeFormat(void *arg)
     /* RGB formats */
     for (i = 0; i < g_numAllFormats; i++) {
         format = g_AllFormats[i];
-        SDLTest_Log("RGB Format: %s (%" SDL_PRIu32 ")", g_AllFormatsVerbose[i], format);
+        SDLTest_Log("Pixel Format: %s (%" SDL_PRIu32 ")", g_AllFormatsVerbose[i], format);
 
         /* Allocate format */
         result = SDL_CreatePixelFormat(format);
@@ -151,11 +161,13 @@ static int pixels_allocFreeFormat(void *arg)
         SDLTest_AssertCheck(result != NULL, "Verify result is not NULL");
         if (result != NULL) {
             SDLTest_AssertCheck(result->format == format, "Verify value of result.format; expected: %" SDL_PRIu32 ", got %" SDL_PRIu32, format, result->format);
-            SDLTest_AssertCheck(result->BitsPerPixel > 0, "Verify value of result.BitsPerPixel; expected: >0, got %u", result->BitsPerPixel);
-            SDLTest_AssertCheck(result->BytesPerPixel > 0, "Verify value of result.BytesPerPixel; expected: >0, got %u", result->BytesPerPixel);
-            if (result->palette != NULL && !SDL_ISPIXELFORMAT_FOURCC(result->format)) {
-                masks = result->Rmask | result->Gmask | result->Bmask | result->Amask;
-                SDLTest_AssertCheck(masks > 0, "Verify value of result.[RGBA]mask combined; expected: >0, got %" SDL_PRIu32, masks);
+            if (!SDL_ISPIXELFORMAT_FOURCC(format)) {
+                SDLTest_AssertCheck(result->BitsPerPixel > 0, "Verify value of result.BitsPerPixel; expected: >0, got %u", result->BitsPerPixel);
+                SDLTest_AssertCheck(result->BytesPerPixel > 0, "Verify value of result.BytesPerPixel; expected: >0, got %u", result->BytesPerPixel);
+                if (!SDL_ISPIXELFORMAT_INDEXED(format)) {
+                    masks = result->Rmask | result->Gmask | result->Bmask | result->Amask;
+                    SDLTest_AssertCheck(masks > 0, "Verify value of result.[RGBA]mask combined; expected: >0, got %" SDL_PRIu32, masks);
+                }
             }
 
             /* Deallocate again */
@@ -196,7 +208,7 @@ static int pixels_allocFreeFormat(void *arg)
 }
 
 /**
- * \brief Call to SDL_GetPixelFormatName
+ * Call to SDL_GetPixelFormatName
  *
  * \sa SDL_GetPixelFormatName
  */
@@ -263,7 +275,7 @@ static int pixels_getPixelFormatName(void *arg)
 }
 
 /**
- * \brief Call to SDL_CreatePalette and SDL_DestroyPalette
+ * Call to SDL_CreatePalette and SDL_DestroyPalette
  *
  * \sa SDL_CreatePalette
  * \sa SDL_DestroyPalette

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,7 +26,7 @@
 
 #include "SDL_systhread_c.h"
 
-struct SDL_mutex
+struct SDL_Mutex
 {
     TInt handle;
 };
@@ -39,8 +39,7 @@ static TInt NewMutex(const TDesC &aName, TAny *aPtr1, TAny *)
 }
 
 /* Create a mutex */
-SDL_mutex *
-SDL_CreateMutex(void)
+SDL_Mutex *SDL_CreateMutex(void)
 {
     RMutex rmutex;
 
@@ -49,13 +48,13 @@ SDL_CreateMutex(void)
         SDL_SetError("Couldn't create mutex.");
         return NULL;
     }
-    SDL_mutex *mutex = new /*(ELeave)*/ SDL_mutex;
+    SDL_Mutex *mutex = new /*(ELeave)*/ SDL_Mutex;
     mutex->handle = rmutex.Handle();
     return mutex;
 }
 
 /* Free the mutex */
-void SDL_DestroyMutex(SDL_mutex *mutex)
+void SDL_DestroyMutex(SDL_Mutex *mutex)
 {
     if (mutex) {
         RMutex rmutex;
@@ -68,23 +67,18 @@ void SDL_DestroyMutex(SDL_mutex *mutex)
 }
 
 /* Lock the mutex */
-int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
-    if (mutex == NULL) {
-        return 0;
+    if (mutex != NULL) {
+        RMutex rmutex;
+        rmutex.SetHandle(mutex->handle);
+        rmutex.Wait();
     }
-
-    RMutex rmutex;
-    rmutex.SetHandle(mutex->handle);
-    rmutex.Wait();
-
-    return 0;
 }
 
 /* Try to lock the mutex */
 #if 0
-int
-SDL_TryLockMutex(SDL_mutex *mutex)
+int SDL_TryLockMutex(SDL_Mutex *mutex)
 {
     if (mutex == NULL)
     {
@@ -97,15 +91,12 @@ SDL_TryLockMutex(SDL_mutex *mutex)
 #endif
 
 /* Unlock the mutex */
-int SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
-    if (mutex == NULL) {
-        return 0;
+    if (mutex != NULL) {
+        RMutex rmutex;
+        rmutex.SetHandle(mutex->handle);
+        rmutex.Signal();
     }
-
-    RMutex rmutex;
-    rmutex.SetHandle(mutex->handle);
-    rmutex.Signal();
-
-    return 0;
 }
+

@@ -5,6 +5,7 @@ includedir=@includedir@
 
 Name: hidapi-hidraw
 Description: C Library for USB/Bluetooth HID device access from Linux, Mac OS X, FreeBSD, and Windows. This is the hidraw implementation.
+URL: https://github.com/libusb/hidapi
 Version: @VERSION@
 Libs: -L${libdir} -lhidapi-hidraw
 Cflags: -I${includedir}/hidapi

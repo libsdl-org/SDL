@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,7 +32,6 @@
 #ifdef SDL_VIDEO_DRIVER_X11
 #include "../../video/x11/SDL_x11video.h"
 #endif
-#include <SDL3/SDL_syswm.h>
 
 #include <sys/inotify.h>
 #include <unistd.h>
@@ -113,7 +112,7 @@ static SDL_bool IBus_EnterVariant(DBusConnection *conn, DBusMessageIter *iter, S
     }
 
     dbus->message_iter_get_basic(inside, &struct_id);
-    if (struct_id == NULL || SDL_strncmp(struct_id, struct_id, id_size) != 0) {
+    if (!struct_id || SDL_strncmp(struct_id, struct_id, id_size) != 0) {
         return SDL_FALSE;
     }
     return SDL_TRUE;
@@ -252,38 +251,23 @@ static DBusHandlerResult IBus_MessageHandler(DBusConnection *conn, DBusMessage *
         text = IBus_GetVariantText(conn, &iter, dbus);
 
         if (text) {
-            if (SDL_GetHintBoolean(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, SDL_FALSE)) {
-                Uint32 pos, start_pos, end_pos;
-                SDL_bool has_pos = SDL_FALSE;
-                SDL_bool has_dec_pos = SDL_FALSE;
+            Uint32 pos, start_pos, end_pos;
+            SDL_bool has_pos = SDL_FALSE;
+            SDL_bool has_dec_pos = SDL_FALSE;
 
+            dbus->message_iter_init(msg, &iter);
+            has_dec_pos = IBus_GetDecorationPosition(conn, &iter, dbus, &start_pos, &end_pos);
+            if (!has_dec_pos) {
                 dbus->message_iter_init(msg, &iter);
-                has_dec_pos = IBus_GetDecorationPosition(conn, &iter, dbus, &start_pos, &end_pos);
-                if (!has_dec_pos) {
-                    dbus->message_iter_init(msg, &iter);
-                    has_pos = IBus_GetVariantCursorPos(conn, &iter, dbus, &pos);
-                }
+                has_pos = IBus_GetVariantCursorPos(conn, &iter, dbus, &pos);
+            }
 
-                if (has_dec_pos) {
-                    SDL_SendEditingText(text, start_pos, end_pos - start_pos);
-                } else if (has_pos) {
-                    SDL_SendEditingText(text, pos, -1);
-                } else {
-                    SDL_SendEditingText(text, -1, -1);
-                }
+            if (has_dec_pos) {
+                SDL_SendEditingText(text, start_pos, end_pos - start_pos);
+            } else if (has_pos) {
+                SDL_SendEditingText(text, pos, -1);
             } else {
-                char buf[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
-                size_t text_bytes = SDL_strlen(text), i = 0;
-                size_t cursor = 0;
-
-                do {
-                    const size_t sz = SDL_utf8strlcpy(buf, text + i, sizeof(buf));
-                    const size_t chars = SDL_utf8strlen(buf);
-
-                    SDL_SendEditingText(buf, cursor, chars);
-                    i += sz;
-                    cursor += chars;
-                } while (i < text_bytes);
+                SDL_SendEditingText(text, -1, -1);
             }
         }
 
@@ -307,7 +291,7 @@ static char *IBus_ReadAddressFromFile(const char *file_path)
     FILE *addr_file;
 
     addr_file = fopen(file_path, "r");
-    if (addr_file == NULL) {
+    if (!addr_file) {
         return NULL;
     }
 
@@ -352,7 +336,7 @@ static char *IBus_GetDBusAddressFilename(void)
     }
 
     dbus = SDL_DBus_GetContext();
-    if (dbus == NULL) {
+    if (!dbus) {
         return NULL;
     }
 
@@ -366,7 +350,7 @@ static char *IBus_GetDBusAddressFilename(void)
        and look up the address from a filepath using all those bits, eek. */
     disp_env = SDL_getenv("DISPLAY");
 
-    if (disp_env == NULL || !*disp_env) {
+    if (!disp_env || !*disp_env) {
         display = SDL_strdup(":0.0");
     } else {
         display = SDL_strdup(disp_env);
@@ -376,7 +360,7 @@ static char *IBus_GetDBusAddressFilename(void)
     disp_num = SDL_strrchr(display, ':');
     screen_num = SDL_strrchr(display, '.');
 
-    if (disp_num == NULL) {
+    if (!disp_num) {
         SDL_free(display);
         return NULL;
     }
@@ -390,7 +374,7 @@ static char *IBus_GetDBusAddressFilename(void)
 
     if (!*host) {
         const char *session = SDL_getenv("XDG_SESSION_TYPE");
-        if (session != NULL && SDL_strcmp(session, "wayland") == 0) {
+        if (session && SDL_strcmp(session, "wayland") == 0) {
             host = "unix-wayland";
         } else {
             host = "unix";
@@ -404,14 +388,19 @@ static char *IBus_GetDBusAddressFilename(void)
         SDL_strlcpy(config_dir, conf_env, sizeof(config_dir));
     } else {
         const char *home_env = SDL_getenv("HOME");
-        if (home_env == NULL || !*home_env) {
+        if (!home_env || !*home_env) {
             SDL_free(display);
             return NULL;
         }
         (void)SDL_snprintf(config_dir, sizeof(config_dir), "%s/.config", home_env);
     }
 
-    key = dbus->get_local_machine_id();
+    key = SDL_DBus_GetLocalMachineId();
+
+    if (!key) {
+        SDL_free(display);
+        return NULL;
+    }
 
     SDL_memset(file_path, 0, sizeof(file_path));
     (void)SDL_snprintf(file_path, sizeof(file_path), "%s/ibus/bus/%s-%s-%s",
@@ -469,7 +458,7 @@ static SDL_bool IBus_SetupConnection(SDL_DBusContext *dbus, const char *addr)
         ibus_input_interface = IBUS_INPUT_INTERFACE;
         ibus_conn = dbus->connection_open_private(addr, NULL);
 
-        if (ibus_conn == NULL) {
+        if (!ibus_conn) {
             return SDL_FALSE; /* oh well. */
         }
 
@@ -509,7 +498,7 @@ static SDL_bool IBus_SetupConnection(SDL_DBusContext *dbus, const char *addr)
 
 static SDL_bool IBus_CheckConnection(SDL_DBusContext *dbus)
 {
-    if (dbus == NULL) {
+    if (!dbus) {
         return SDL_FALSE;
     }
 
@@ -529,7 +518,7 @@ static SDL_bool IBus_CheckConnection(SDL_DBusContext *dbus)
                 struct inotify_event *event = (struct inotify_event *)p;
                 if (event->len > 0) {
                     char *addr_file_no_path = SDL_strrchr(ibus_addr_file, '/');
-                    if (addr_file_no_path == NULL) {
+                    if (!addr_file_no_path) {
                         return SDL_FALSE;
                     }
 
@@ -556,8 +545,7 @@ static SDL_bool IBus_CheckConnection(SDL_DBusContext *dbus)
     return SDL_FALSE;
 }
 
-SDL_bool
-SDL_IBus_Init(void)
+SDL_bool SDL_IBus_Init(void)
 {
     SDL_bool result = SDL_FALSE;
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
@@ -567,18 +555,20 @@ SDL_IBus_Init(void)
         char *addr;
         char *addr_file_dir;
 
-        if (addr_file == NULL) {
+        if (!addr_file) {
             return SDL_FALSE;
         }
 
-        /* !!! FIXME: if ibus_addr_file != NULL, this will overwrite it and leak (twice!) */
-        ibus_addr_file = SDL_strdup(addr_file);
-
         addr = IBus_ReadAddressFromFile(addr_file);
-        if (addr == NULL) {
+        if (!addr) {
             SDL_free(addr_file);
             return SDL_FALSE;
         }
+
+        if (ibus_addr_file) {
+            SDL_free(ibus_addr_file);
+        }
+        ibus_addr_file = SDL_strdup(addr_file);
 
         if (inotify_fd < 0) {
             inotify_fd = inotify_init();
@@ -656,7 +646,7 @@ static void IBus_SimpleMessage(const char *method)
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
-    if ((input_ctx_path != NULL) && (IBus_CheckConnection(dbus))) {
+    if ((input_ctx_path) && (IBus_CheckConnection(dbus))) {
         SDL_DBus_CallVoidMethodOnConnection(ibus_conn, ibus_service, input_ctx_path, ibus_input_interface, method, DBUS_TYPE_INVALID);
     }
 }
@@ -672,8 +662,7 @@ void SDL_IBus_Reset(void)
     IBus_SimpleMessage("Reset");
 }
 
-SDL_bool
-SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
+SDL_bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 {
     Uint32 result = 0;
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
@@ -693,13 +682,12 @@ SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 
     SDL_IBus_UpdateTextRect(NULL);
 
-    return result ? SDL_TRUE : SDL_FALSE;
+    return (result != 0);
 }
 
 void SDL_IBus_UpdateTextRect(const SDL_Rect *rect)
 {
     SDL_Window *focused_win;
-    SDL_SysWMinfo info;
     int x = 0, y = 0;
     SDL_DBusContext *dbus;
 
@@ -708,24 +696,25 @@ void SDL_IBus_UpdateTextRect(const SDL_Rect *rect)
     }
 
     focused_win = SDL_GetKeyboardFocus();
-    if (focused_win == NULL) {
+    if (!focused_win) {
         return;
     }
 
     SDL_GetWindowPosition(focused_win, &x, &y);
 
-    if (SDL_GetWindowWMInfo(focused_win, &info, SDL_SYSWM_CURRENT_VERSION) == 0) {
-#ifdef SDL_ENABLE_SYSWM_X11
-        if (info.subsystem == SDL_SYSWM_X11) {
-            Display *x_disp = info.info.x11.display;
-            int x_screen = info.info.x11.screen;
-            Window x_win = info.info.x11.window;
-            Window unused;
+#ifdef SDL_VIDEO_DRIVER_X11
+    {
+        SDL_PropertiesID props = SDL_GetWindowProperties(focused_win);
+        Display *x_disp = (Display *)SDL_GetProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+        int x_screen = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_SCREEN_NUMBER, 0);
+        Window x_win = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+        Window unused;
 
+        if (x_disp && x_win) {
             X11_XTranslateCoordinates(x_disp, x_win, RootWindow(x_disp, x_screen), 0, 0, &x, &y, &unused);
         }
-#endif
     }
+#endif
 
     x += ibus_cursor_rect.x;
     y += ibus_cursor_rect.y;

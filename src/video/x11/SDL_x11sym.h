@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -157,6 +157,12 @@ SDL_X11_SYM(Bool,XSupportsLocale,(void),(),return)
 SDL_X11_SYM(Status,XmbTextListToTextProperty,(Display* a,char** b,int c,XICCEncodingStyle d,XTextProperty* e),(a,b,c,d,e),return)
 SDL_X11_SYM(Region,XCreateRegion,(void),(),return)
 SDL_X11_SYM(void,XDestroyRegion,(Region),(a),)
+SDL_X11_SYM(void,XrmInitialize,(),(),)
+SDL_X11_SYM(char*,XResourceManagerString,(Display *display),(display),)
+SDL_X11_SYM(XrmDatabase,XrmGetStringDatabase,(char *data),(data),)
+SDL_X11_SYM(void,XrmDestroyDatabase,(XrmDatabase db),(db),)
+SDL_X11_SYM(Bool,XrmGetResource,(XrmDatabase db, char* str_name, char* str_class, char **str_type_return, XrmValue *),(db, str_name, str_class,str_type_return,value_return),)
+
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
 SDL_X11_MODULE(XFIXES)
@@ -164,6 +170,7 @@ SDL_X11_SYM(PointerBarrier, XFixesCreatePointerBarrier, (Display* a, Window b, i
 SDL_X11_SYM(void, XFixesDestroyPointerBarrier, (Display* a, PointerBarrier b), (a,b),)
 SDL_X11_SYM(int, XIBarrierReleasePointer,(Display* a,  int b, PointerBarrier c, BarrierEventID d), (a,b,c,d), return) /* this is actually Xinput2 */
 SDL_X11_SYM(Status, XFixesQueryVersion,(Display* a, int* b, int* c), (a,b,c), return)
+SDL_X11_SYM(Status, XFixesSelectSelectionInput, (Display* a, Window b, Atom c, unsigned long d), (a,b,c,d), return)
 #endif
 
 #ifdef SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
@@ -186,10 +193,18 @@ SDL_X11_SYM(void,XkbFreeKeyboard,(XkbDescPtr a,unsigned int b, Bool c),(a,b,c),)
 SDL_X11_SYM(Bool,XkbSetDetectableAutoRepeat,(Display* a, Bool b, Bool* c),(a,b,c),return)
 #endif
 
+/* XKeycodeToKeysym is a deprecated function */
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
 #if NeedWidePrototypes
 SDL_X11_SYM(KeySym,XKeycodeToKeysym,(Display* a,unsigned int b,int c),(a,b,c),return)
 #else
 SDL_X11_SYM(KeySym,XKeycodeToKeysym,(Display* a,KeyCode b,int c),(a,b,c),return)
+#endif
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
+#pragma GCC diagnostic pop
 #endif
 
 #ifdef X_HAVE_UTF8_STRING
@@ -232,7 +247,7 @@ SDL_X11_SYM(void,_XRead32,(Display *dpy,register long *data,long len),(dpy,data,
 /*
  * These only show up on some variants of Unix.
  */
-#ifdef __osf__
+#ifdef SDL_PLATFORM_OSF
 SDL_X11_MODULE(OSF_ENTRY_POINTS)
 SDL_X11_SYM(void,_SmtBufferOverflow,(Display *dpy,register smtDisplayPtr p),(dpy,p),)
 SDL_X11_SYM(void,_SmtIpError,(Display *dpy,register smtDisplayPtr p,int i),(dpy,p,i),)
@@ -274,6 +289,7 @@ SDL_X11_SYM(Status,XIQueryVersion,(Display *a,int *b,int *c),(a,b,c),return)
 SDL_X11_SYM(XIEventMask*,XIGetSelectedEvents,(Display *a,Window b,int *c),(a,b,c),return)
 SDL_X11_SYM(Bool,XIGetClientPointer,(Display *a,Window b,int *c),(a,b,c),return)
 SDL_X11_SYM(Bool,XIWarpPointer,(Display *a,int b,Window c,Window d,double e,double f,int g,int h,double i,double j),(a,b,c,d,e,f,g,h,i,j),return)
+SDL_X11_SYM(Status,XIGetProperty,(Display *a,int b,Atom c,long d,long e,Bool f, Atom g, Atom *h, int *i, unsigned long *j, unsigned long *k, unsigned char **l),(a,b,c,d,e,f,g,h,i,j,k,l),return);
 #endif
 
 /* XRandR support */
@@ -303,6 +319,7 @@ SDL_X11_SYM(XRRPropertyInfo*,XRRQueryOutputProperty,(Display *dpy,RROutput outpu
 SDL_X11_SYM(int,XRRGetOutputProperty,(Display *dpy,RROutput output, Atom property, long offset, long length, Bool _delete, Bool pending, Atom req_type, Atom *actual_type, int *actual_format, unsigned long *nitems, unsigned long *bytes_after, unsigned char **prop),(dpy,output,property,offset,length, _delete, pending, req_type, actual_type, actual_format, nitems, bytes_after, prop),return)
 SDL_X11_SYM(RROutput,XRRGetOutputPrimary,(Display *dpy,Window window),(dpy,window),return)
 SDL_X11_SYM(void,XRRSelectInput,(Display *dpy, Window window, int mask),(dpy,window,mask),)
+SDL_X11_SYM(Status,XRRGetCrtcTransform,(Display *dpy,RRCrtc crtc,XRRCrtcTransformAttributes **attributes),(dpy,crtc,attributes),return)
 #endif
 
 /* MIT-SCREEN-SAVER support */

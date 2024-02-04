@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -39,9 +39,9 @@
 #define OFFSCREENVID_DRIVER_NAME "offscreen"
 
 /* Initialization/Query functions */
-static int OFFSCREEN_VideoInit(_THIS);
-static int OFFSCREEN_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-static void OFFSCREEN_VideoQuit(_THIS);
+static int OFFSCREEN_VideoInit(SDL_VideoDevice *_this);
+static int OFFSCREEN_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+static void OFFSCREEN_VideoQuit(SDL_VideoDevice *_this);
 
 /* OFFSCREEN driver bootstrap functions */
 
@@ -56,8 +56,7 @@ static SDL_VideoDevice *OFFSCREEN_CreateDevice(void)
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
-        SDL_OutOfMemory();
+    if (!device) {
         return 0;
     }
 
@@ -87,24 +86,26 @@ static SDL_VideoDevice *OFFSCREEN_CreateDevice(void)
     /* "Window" */
     device->CreateSDLWindow = OFFSCREEN_CreateWindow;
     device->DestroyWindow = OFFSCREEN_DestroyWindow;
+    device->SetWindowSize = OFFSCREEN_SetWindowSize;
 
     return device;
 }
 
 VideoBootStrap OFFSCREEN_bootstrap = {
     OFFSCREENVID_DRIVER_NAME, "SDL offscreen video driver",
-    OFFSCREEN_CreateDevice
+    OFFSCREEN_CreateDevice,
+    NULL /* no ShowMessageBox implementation */
 };
 
-int OFFSCREEN_VideoInit(_THIS)
+int OFFSCREEN_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
 
     /* Use a fake 32-bpp desktop mode */
     SDL_zero(mode);
-    mode.format = SDL_PIXELFORMAT_RGB888;
-    mode.pixel_w = 1024;
-    mode.pixel_h = 768;
+    mode.format = SDL_PIXELFORMAT_XRGB8888;
+    mode.w = 1024;
+    mode.h = 768;
     if (SDL_AddBasicVideoDisplay(&mode) == 0) {
         return -1;
     }
@@ -113,12 +114,12 @@ int OFFSCREEN_VideoInit(_THIS)
     return 0;
 }
 
-static int OFFSCREEN_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+static int OFFSCREEN_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     return 0;
 }
 
-void OFFSCREEN_VideoQuit(_THIS)
+void OFFSCREEN_VideoQuit(SDL_VideoDevice *_this)
 {
 }
 

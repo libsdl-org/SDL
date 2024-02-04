@@ -1,7 +1,14 @@
 /*
-Copyright 1997-2023 Sam Lantinga
-Copyright 2022 Collabora Ltd.
-SPDX-License-Identifier: Zlib
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright 2022 Collabora Ltd.
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely.
 */
 
 #include "testutils.h"
@@ -21,15 +28,14 @@ GetNearbyFilename(const char *file)
 
     base = SDL_GetBasePath();
 
-    if (base != NULL) {
+    if (base) {
         SDL_RWops *rw;
         size_t len = SDL_strlen(base) + SDL_strlen(file) + 1;
 
         path = SDL_malloc(len);
 
-        if (path == NULL) {
+        if (!path) {
             SDL_free(base);
-            SDL_OutOfMemory();
             return NULL;
         }
 
@@ -46,11 +52,7 @@ GetNearbyFilename(const char *file)
         SDL_free(path);
     }
 
-    path = SDL_strdup(file);
-    if (path == NULL) {
-        SDL_OutOfMemory();
-    }
-    return path;
+    return SDL_strdup(file);
 }
 
 /**
@@ -65,17 +67,10 @@ GetNearbyFilename(const char *file)
 char *
 GetResourceFilename(const char *user_specified, const char *def)
 {
-    if (user_specified != NULL) {
-        char *ret = SDL_strdup(user_specified);
-
-        if (ret == NULL) {
-            SDL_OutOfMemory();
-        }
-
-        return ret;
-    } else {
-        return GetNearbyFilename(def);
+    if (user_specified) {
+        return SDL_strdup(user_specified);
     }
+    return GetNearbyFilename(def);
 }
 
 /**
@@ -98,18 +93,23 @@ LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent,
 
     path = GetNearbyFilename(file);
 
-    if (path != NULL) {
+    if (path) {
         file = path;
     }
 
     temp = SDL_LoadBMP(file);
-    if (temp == NULL) {
+    if (!temp) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s", file, SDL_GetError());
     } else {
         /* Set transparent pixel as the pixel at (0,0) */
         if (transparent) {
             if (temp->format->palette) {
-                SDL_SetSurfaceColorKey(temp, SDL_TRUE, *(Uint8 *)temp->pixels);
+                const Uint8 bpp = temp->format->BitsPerPixel;
+                const Uint8 mask = (1 << bpp) - 1;
+                if (SDL_PIXELORDER(temp->format->format) == SDL_BITMAPORDER_4321)
+                    SDL_SetSurfaceColorKey(temp, SDL_TRUE, (*(Uint8 *)temp->pixels) & mask);
+                else
+                    SDL_SetSurfaceColorKey(temp, SDL_TRUE, ((*(Uint8 *)temp->pixels) >> (8 - bpp)) & mask);
             } else {
                 switch (temp->format->BitsPerPixel) {
                 case 15:
@@ -130,16 +130,16 @@ LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent,
             }
         }
 
-        if (width_out != NULL) {
+        if (width_out) {
             *width_out = temp->w;
         }
 
-        if (height_out != NULL) {
+        if (height_out) {
             *height_out = temp->h;
         }
 
         texture = SDL_CreateTextureFromSurface(renderer, temp);
-        if (texture == NULL) {
+        if (!texture) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s\n", SDL_GetError());
         }
     }

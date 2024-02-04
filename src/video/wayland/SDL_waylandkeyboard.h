@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,11 +31,11 @@ typedef struct SDL_WaylandTextInput
     SDL_bool is_enabled;
 } SDL_WaylandTextInput;
 
-extern int Wayland_InitKeyboard(_THIS);
-extern void Wayland_QuitKeyboard(_THIS);
-extern void Wayland_StartTextInput(_THIS);
-extern void Wayland_StopTextInput(_THIS);
-extern int Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect);
-extern SDL_bool Wayland_HasScreenKeyboardSupport(_THIS);
+extern int Wayland_InitKeyboard(SDL_VideoDevice *_this);
+extern void Wayland_QuitKeyboard(SDL_VideoDevice *_this);
+extern void Wayland_StartTextInput(SDL_VideoDevice *_this);
+extern void Wayland_StopTextInput(SDL_VideoDevice *_this);
+extern int Wayland_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect);
+extern SDL_bool Wayland_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
 
 #endif /* SDL_waylandkeyboard_h_ */

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,8 +28,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
-char *
-SDL_GetBasePath(void)
+char *SDL_GetBasePath(void)
 {
     char *retval = NULL;
     size_t len;
@@ -43,17 +42,16 @@ SDL_GetBasePath(void)
     return retval;
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     char *retval = NULL;
     size_t len;
     char *base = SDL_GetBasePath();
-    if (app == NULL) {
+    if (!app) {
         SDL_InvalidParamError("app");
         return NULL;
     }
-    if (org == NULL) {
+    if (!org) {
         org = "";
     }
 
@@ -65,10 +63,17 @@ SDL_GetPrefPath(const char *org, const char *app)
     } else {
         SDL_snprintf(retval, len, "%s%s/", base, app);
     }
-    free(base);
+    SDL_free(base);
 
     mkdir(retval, 0755);
     return retval;
+}
+
+/* TODO */
+char *SDL_GetUserFolder(SDL_Folder folder)
+{
+    SDL_Unsupported();
+    return NULL;
 }
 
 #endif /* SDL_FILESYSTEM_PSP */

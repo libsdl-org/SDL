@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,14 +28,14 @@
 
 #if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_WINDOWS)
 
+#include "../SDL_vulkan_internal.h"
+
 #include "SDL_windowsvideo.h"
 #include "SDL_windowswindow.h"
 
 #include "SDL_windowsvulkan.h"
 
-#include <SDL3/SDL_syswm.h>
-
-int WIN_Vulkan_LoadLibrary(_THIS, const char *path)
+int WIN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 extensionCount = 0;
@@ -48,10 +48,10 @@ int WIN_Vulkan_LoadLibrary(_THIS, const char *path)
     }
 
     /* Load the Vulkan loader library */
-    if (path == NULL) {
+    if (!path) {
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
     }
-    if (path == NULL) {
+    if (!path) {
         path = "vulkan-1.dll";
     }
     _this->vulkan_config.loader_handle = SDL_LoadObject(path);
@@ -65,9 +65,9 @@ int WIN_Vulkan_LoadLibrary(_THIS, const char *path)
     if (!vkGetInstanceProcAddr) {
         goto fail;
     }
-    _this->vulkan_config.vkGetInstanceProcAddr = (void *)vkGetInstanceProcAddr;
+    _this->vulkan_config.vkGetInstanceProcAddr = (SDL_FunctionPointer)vkGetInstanceProcAddr;
     _this->vulkan_config.vkEnumerateInstanceExtensionProperties =
-        (void *)((PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr)(
+        (SDL_FunctionPointer)vkGetInstanceProcAddr(
             VK_NULL_HANDLE, "vkEnumerateInstanceExtensionProperties");
     if (!_this->vulkan_config.vkEnumerateInstanceExtensionProperties) {
         goto fail;
@@ -76,7 +76,7 @@ int WIN_Vulkan_LoadLibrary(_THIS, const char *path)
         (PFN_vkEnumerateInstanceExtensionProperties)
             _this->vulkan_config.vkEnumerateInstanceExtensionProperties,
         &extensionCount);
-    if (extensions == NULL) {
+    if (!extensions) {
         goto fail;
     }
     for (i = 0; i < extensionCount; i++) {
@@ -102,7 +102,7 @@ fail:
     return -1;
 }
 
-void WIN_Vulkan_UnloadLibrary(_THIS)
+void WIN_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 {
     if (_this->vulkan_config.loader_handle) {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
@@ -110,25 +110,20 @@ void WIN_Vulkan_UnloadLibrary(_THIS)
     }
 }
 
-SDL_bool WIN_Vulkan_GetInstanceExtensions(_THIS,
-                                          unsigned *count,
-                                          const char **names)
+char const* const* WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+                                          Uint32 *count)
 {
     static const char *const extensionsForWin32[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME
     };
-    if (!_this->vulkan_config.loader_handle) {
-        SDL_SetError("Vulkan is not loaded");
-        return SDL_FALSE;
-    }
-    return SDL_Vulkan_GetInstanceExtensions_Helper(
-        count, names, SDL_arraysize(extensionsForWin32),
-        extensionsForWin32);
+    if(count) { *count = SDL_arraysize(extensionsForWin32); }
+    return extensionsForWin32;
 }
 
-SDL_bool WIN_Vulkan_CreateSurface(_THIS,
+SDL_bool WIN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                   SDL_Window *window,
                                   VkInstance instance,
+                                  const struct VkAllocationCallbacks *allocator,
                                   VkSurfaceKHR *surface)
 {
     SDL_WindowData *windowData = window->driverdata;
@@ -156,8 +151,7 @@ SDL_bool WIN_Vulkan_CreateSurface(_THIS,
     createInfo.flags = 0;
     createInfo.hinstance = windowData->hinstance;
     createInfo.hwnd = windowData->hwnd;
-    result = vkCreateWin32SurfaceKHR(instance, &createInfo,
-                                     NULL, surface);
+    result = vkCreateWin32SurfaceKHR(instance, &createInfo, allocator, surface);
     if (result != VK_SUCCESS) {
         SDL_SetError("vkCreateWin32SurfaceKHR failed: %s",
                      SDL_Vulkan_GetResultString(result));

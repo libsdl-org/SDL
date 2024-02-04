@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,9 +28,9 @@ void N3DS_SwkbInit();
 void N3DS_SwkbPoll();
 void N3DS_SwkbQuit();
 
-SDL_bool N3DS_HasScreenKeyboardSupport(_THIS);
+SDL_bool N3DS_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
 
-void N3DS_StartTextInput(_THIS);
-void N3DS_StopTextInput(_THIS);
+void N3DS_StartTextInput(SDL_VideoDevice *_this);
+void N3DS_StopTextInput(SDL_VideoDevice *_this);
 
 #endif /* SDL_n3dskeyboard_h_ */

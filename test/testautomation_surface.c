@@ -3,7 +3,7 @@
  * Adapted/rewritten for test lib by Andreas Schiffler
  */
 
-/* Supress C4996 VS compiler warnings for unlink() */
+/* Suppress C4996 VS compiler warnings for unlink() */
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_DEPRECATE)
 #define _CRT_SECURE_NO_DEPRECATE
 #endif
@@ -21,6 +21,15 @@
 #include <SDL3/SDL_test.h>
 #include "testautomation_suites.h"
 #include "testautomation_images.h"
+
+
+#define CHECK_FUNC(FUNC, PARAMS)    \
+{                                   \
+    int result = FUNC PARAMS;       \
+    if (result != 0) {              \
+        SDLTest_AssertCheck(result == 0, "Validate result from %s, expected: 0, got: %i, %s", #FUNC, result, SDL_GetError()); \
+    }                               \
+}
 
 /* ================= Test Case Implementation ================== */
 
@@ -146,13 +155,13 @@ static void testBlitBlendMode(int mode)
         for (i = 0; i <= ni; i += 4) {
             if (mode == -2) {
                 /* Set color mod. */
-                ret = SDL_SetSurfaceColorMod(face, (255 / nj) * j, (255 / ni) * i, (255 / nj) * j);
+                ret = SDL_SetSurfaceColorMod(face, (Uint8)((255 / nj) * j), (Uint8)((255 / ni) * i), (Uint8)((255 / nj) * j));
                 if (ret != 0) {
                     checkFailCount2++;
                 }
             } else if (mode == -3) {
                 /* Set alpha mod. */
-                ret = SDL_SetSurfaceAlphaMod(face, (255 / ni) * i);
+                ret = SDL_SetSurfaceAlphaMod(face, (Uint8)((255 / ni) * i));
                 if (ret != 0) {
                     checkFailCount3++;
                 }
@@ -209,7 +218,7 @@ static void AssertFileExist(const char *filename)
 /* Test case functions */
 
 /**
- * \brief Tests sprite saving and loading
+ * Tests sprite saving and loading
  */
 static int surface_testSaveLoadBitmap(void *arg)
 {
@@ -319,15 +328,20 @@ static int surface_testCompleteSurfaceConversion(void *arg)
         SDL_PIXELFORMAT_BGR565,
         SDL_PIXELFORMAT_RGB24,
         SDL_PIXELFORMAT_BGR24,
-        SDL_PIXELFORMAT_RGB888,
+        SDL_PIXELFORMAT_XRGB8888,
         SDL_PIXELFORMAT_RGBX8888,
-        SDL_PIXELFORMAT_BGR888,
+        SDL_PIXELFORMAT_XBGR8888,
         SDL_PIXELFORMAT_BGRX8888,
         SDL_PIXELFORMAT_ARGB8888,
         SDL_PIXELFORMAT_RGBA8888,
         SDL_PIXELFORMAT_ABGR8888,
         SDL_PIXELFORMAT_BGRA8888,
+#if 0 /* We aren't testing HDR10 colorspace conversion */
+        SDL_PIXELFORMAT_XRGB2101010,
+        SDL_PIXELFORMAT_XBGR2101010,
         SDL_PIXELFORMAT_ARGB2101010,
+        SDL_PIXELFORMAT_ABGR2101010,
+#endif
     };
     SDL_Surface *face = NULL, *cvt1, *cvt2, *final;
     SDL_PixelFormat *fmt1, *fmt2;
@@ -386,7 +400,7 @@ static int surface_testCompleteSurfaceConversion(void *arg)
 }
 
 /**
- * \brief Tests sprite loading. A failure case.
+ * Tests sprite loading. A failure case.
  */
 static int surface_testLoadFailure(void *arg)
 {
@@ -397,7 +411,7 @@ static int surface_testLoadFailure(void *arg)
 }
 
 /**
- * \brief Tests some blitting routines.
+ * Tests some blitting routines.
  */
 static int surface_testBlit(void *arg)
 {
@@ -419,7 +433,7 @@ static int surface_testBlit(void *arg)
 }
 
 /**
- * \brief Tests some blitting routines with color mod
+ * Tests some blitting routines with color mod
  */
 static int surface_testBlitColorMod(void *arg)
 {
@@ -441,7 +455,7 @@ static int surface_testBlitColorMod(void *arg)
 }
 
 /**
- * \brief Tests some blitting routines with alpha mod
+ * Tests some blitting routines with alpha mod
  */
 static int surface_testBlitAlphaMod(void *arg)
 {
@@ -463,7 +477,7 @@ static int surface_testBlitAlphaMod(void *arg)
 }
 
 /**
- * \brief Tests some more blitting routines.
+ * Tests some more blitting routines.
  */
 static int surface_testBlitBlendNone(void *arg)
 {
@@ -485,7 +499,7 @@ static int surface_testBlitBlendNone(void *arg)
 }
 
 /**
- * \brief Tests some more blitting routines.
+ * Tests some more blitting routines.
  */
 static int surface_testBlitBlendBlend(void *arg)
 {
@@ -507,7 +521,7 @@ static int surface_testBlitBlendBlend(void *arg)
 }
 
 /**
- * \brief Tests some more blitting routines.
+ * Tests some more blitting routines.
  */
 static int surface_testBlitBlendAdd(void *arg)
 {
@@ -529,7 +543,7 @@ static int surface_testBlitBlendAdd(void *arg)
 }
 
 /**
- * \brief Tests some more blitting routines.
+ * Tests some more blitting routines.
  */
 static int surface_testBlitBlendMod(void *arg)
 {
@@ -551,7 +565,7 @@ static int surface_testBlitBlendMod(void *arg)
 }
 
 /**
- * \brief Tests some more blitting routines with loop
+ * Tests some more blitting routines with loop
  */
 static int surface_testBlitBlendLoop(void *arg)
 {
@@ -629,12 +643,12 @@ static int surface_testOverflow(void *arg)
 
     /* Less than 1 byte per pixel: the pitch can legitimately be less than
      * the width, but it must be enough to hold the appropriate number of
-     * bits per pixel. SDL_PIXELFORMAT_INDEX4LSB* needs 1 byte per 2 pixels. */
+     * bits per pixel. SDL_PIXELFORMAT_INDEX4* needs 1 byte per 2 pixels. */
     surface = SDL_CreateSurfaceFrom(buf, 6, 1, 3, SDL_PIXELFORMAT_INDEX4LSB);
     SDLTest_AssertCheck(surface != NULL, "6px * 4 bits per px fits in 3 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_DestroySurface(surface);
-    surface = SDL_CreateSurfaceFrom(buf, 6, 1, 3, SDL_PIXELFORMAT_INDEX4LSB);
+    surface = SDL_CreateSurfaceFrom(buf, 6, 1, 3, SDL_PIXELFORMAT_INDEX4MSB);
     SDLTest_AssertCheck(surface != NULL, "6px * 4 bits per px fits in 3 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_DestroySurface(surface);
@@ -643,7 +657,7 @@ static int surface_testOverflow(void *arg)
     SDLTest_AssertCheck(surface == NULL, "Should detect pitch < width * bpp");
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
-    surface = SDL_CreateSurfaceFrom(buf, 7, 1, 3, SDL_PIXELFORMAT_INDEX4LSB);
+    surface = SDL_CreateSurfaceFrom(buf, 7, 1, 3, SDL_PIXELFORMAT_INDEX4MSB);
     SDLTest_AssertCheck(surface == NULL, "Should detect pitch < width * bpp");
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
@@ -652,8 +666,36 @@ static int surface_testOverflow(void *arg)
     SDLTest_AssertCheck(surface != NULL, "7px * 4 bits per px fits in 4 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_DestroySurface(surface);
-    surface = SDL_CreateSurfaceFrom(buf, 7, 1, 4, SDL_PIXELFORMAT_INDEX4LSB);
+    surface = SDL_CreateSurfaceFrom(buf, 7, 1, 4, SDL_PIXELFORMAT_INDEX4MSB);
     SDLTest_AssertCheck(surface != NULL, "7px * 4 bits per px fits in 4 bytes: %s",
+                        surface != NULL ? "(success)" : SDL_GetError());
+    SDL_DestroySurface(surface);
+
+    /* SDL_PIXELFORMAT_INDEX2* needs 1 byte per 4 pixels. */
+    surface = SDL_CreateSurfaceFrom(buf, 12, 1, 3, SDL_PIXELFORMAT_INDEX2LSB);
+    SDLTest_AssertCheck(surface != NULL, "12px * 2 bits per px fits in 3 bytes: %s",
+                        surface != NULL ? "(success)" : SDL_GetError());
+    SDL_DestroySurface(surface);
+    surface = SDL_CreateSurfaceFrom(buf, 12, 1, 3, SDL_PIXELFORMAT_INDEX2MSB);
+    SDLTest_AssertCheck(surface != NULL, "12px * 2 bits per px fits in 3 bytes: %s",
+                        surface != NULL ? "(success)" : SDL_GetError());
+    SDL_DestroySurface(surface);
+
+    surface = SDL_CreateSurfaceFrom(buf, 13, 1, 3, SDL_PIXELFORMAT_INDEX2LSB);
+    SDLTest_AssertCheck(surface == NULL, "Should detect pitch < width * bpp (%d)", surface ? surface->pitch : 0);
+    SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                        "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+    surface = SDL_CreateSurfaceFrom(buf, 13, 1, 3, SDL_PIXELFORMAT_INDEX2MSB);
+    SDLTest_AssertCheck(surface == NULL, "Should detect pitch < width * bpp");
+    SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                        "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+
+    surface = SDL_CreateSurfaceFrom(buf, 13, 1, 4, SDL_PIXELFORMAT_INDEX2LSB);
+    SDLTest_AssertCheck(surface != NULL, "13px * 2 bits per px fits in 4 bytes: %s",
+                        surface != NULL ? "(success)" : SDL_GetError());
+    SDL_DestroySurface(surface);
+    surface = SDL_CreateSurfaceFrom(buf, 13, 1, 4, SDL_PIXELFORMAT_INDEX2MSB);
+    SDLTest_AssertCheck(surface != NULL, "13px * 2 bits per px fits in 4 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_DestroySurface(surface);
 
@@ -662,7 +704,7 @@ static int surface_testOverflow(void *arg)
     SDLTest_AssertCheck(surface != NULL, "16px * 1 bit per px fits in 2 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_DestroySurface(surface);
-    surface = SDL_CreateSurfaceFrom(buf, 16, 1, 2, SDL_PIXELFORMAT_INDEX1LSB);
+    surface = SDL_CreateSurfaceFrom(buf, 16, 1, 2, SDL_PIXELFORMAT_INDEX1MSB);
     SDLTest_AssertCheck(surface != NULL, "16px * 1 bit per px fits in 2 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_DestroySurface(surface);
@@ -671,7 +713,7 @@ static int surface_testOverflow(void *arg)
     SDLTest_AssertCheck(surface == NULL, "Should detect pitch < width * bpp");
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
-    surface = SDL_CreateSurfaceFrom(buf, 17, 1, 2, SDL_PIXELFORMAT_INDEX1LSB);
+    surface = SDL_CreateSurfaceFrom(buf, 17, 1, 2, SDL_PIXELFORMAT_INDEX1MSB);
     SDLTest_AssertCheck(surface == NULL, "Should detect pitch < width * bpp");
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
@@ -680,7 +722,7 @@ static int surface_testOverflow(void *arg)
     SDLTest_AssertCheck(surface != NULL, "17px * 1 bit per px fits in 3 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_DestroySurface(surface);
-    surface = SDL_CreateSurfaceFrom(buf, 17, 1, 3, SDL_PIXELFORMAT_INDEX1LSB);
+    surface = SDL_CreateSurfaceFrom(buf, 17, 1, 3, SDL_PIXELFORMAT_INDEX1MSB);
     SDLTest_AssertCheck(surface != NULL, "17px * 1 bit per px fits in 3 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_DestroySurface(surface);
@@ -726,19 +768,29 @@ static int surface_testOverflow(void *arg)
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
 
     if (sizeof(size_t) == 4 && sizeof(int) >= 4) {
-        expectedError = "Out of memory";
-        surface = SDL_CreateSurface(SDL_MAX_SINT32, 1, SDL_PIXELFORMAT_INDEX8);
-        SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width + alignment");
+        SDL_ClearError();
+        expectedError = "aligning pitch would overflow";
+        /* 0x5555'5555 * 3bpp = 0xffff'ffff which fits in size_t, but adding
+         * alignment padding makes it overflow */
+        surface = SDL_CreateSurface(0x55555555, 1, SDL_PIXELFORMAT_RGB24);
+        SDLTest_AssertCheck(surface == NULL, "Should detect overflow in pitch + alignment");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
-        surface = SDL_CreateSurface(SDL_MAX_SINT32 / 2, 1, SDL_PIXELFORMAT_ARGB8888);
+        SDL_ClearError();
+        expectedError = "width * bpp would overflow";
+        /* 0x4000'0000 * 4bpp = 0x1'0000'0000 which (just) overflows */
+        surface = SDL_CreateSurface(0x40000000, 1, SDL_PIXELFORMAT_ARGB8888);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * bytes per pixel");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+        SDL_ClearError();
+        expectedError = "height * pitch would overflow";
         surface = SDL_CreateSurface((1 << 29) - 1, (1 << 29) - 1, SDL_PIXELFORMAT_INDEX8);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * height");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+        SDL_ClearError();
+        expectedError = "height * pitch would overflow";
         surface = SDL_CreateSurface((1 << 15) + 1, (1 << 15) + 1, SDL_PIXELFORMAT_ARGB8888);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * height * bytes per pixel");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
@@ -749,6 +801,54 @@ static int surface_testOverflow(void *arg)
 
     return TEST_COMPLETED;
 }
+
+static int surface_testFlip(void *arg)
+{
+    SDL_Surface *surface;
+    Uint8 *pixels;
+    int offset;
+    const char *expectedError;
+
+    surface = SDL_CreateSurface(3, 3, SDL_PIXELFORMAT_RGB24);
+    SDLTest_AssertCheck(surface != NULL, "SDL_CreateSurface()");
+
+    SDL_ClearError();
+    expectedError = "Parameter 'surface' is invalid";
+    SDL_FlipSurface(NULL, SDL_FLIP_HORIZONTAL);
+    SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                        "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+
+    SDL_ClearError();
+    expectedError = "Parameter 'flip' is invalid";
+    SDL_FlipSurface(surface, SDL_FLIP_NONE);
+    SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                        "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+
+    pixels = (Uint8 *)surface->pixels;
+    *pixels = 0xFF;
+    offset = 0;
+
+    SDLTest_AssertPass("Call to SDL_FlipSurface(surface, SDL_FLIP_VERTICAL)");
+    CHECK_FUNC(SDL_FlipSurface, (surface, SDL_FLIP_VERTICAL));
+    SDLTest_AssertCheck(pixels[offset] == 0x00,
+                        "Expected pixels[%d] == 0x00 got 0x%.2X", offset, pixels[offset]);
+    offset = 2 * surface->pitch;
+    SDLTest_AssertCheck(pixels[offset] == 0xFF,
+                        "Expected pixels[%d] == 0xFF got 0x%.2X", offset, pixels[offset]);
+
+    SDLTest_AssertPass("Call to SDL_FlipSurface(surface, SDL_FLIP_HORIZONTAL)");
+    CHECK_FUNC(SDL_FlipSurface, (surface, SDL_FLIP_HORIZONTAL));
+    SDLTest_AssertCheck(pixels[offset] == 0x00,
+                        "Expected pixels[%d] == 0x00 got 0x%.2X", offset, pixels[offset]);
+    offset += (surface->w - 1) * surface->format->BytesPerPixel;
+    SDLTest_AssertCheck(pixels[offset] == 0xFF,
+                        "Expected pixels[%d] == 0xFF got 0x%.2X", offset, pixels[offset]);
+
+    SDL_DestroySurface(surface);
+
+    return TEST_COMPLETED;
+}
+
 
 /* ================= Test References ================== */
 
@@ -808,11 +908,15 @@ static const SDLTest_TestCaseReference surfaceTestOverflow = {
     surface_testOverflow, "surface_testOverflow", "Test overflow detection.", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference surfaceTestFlip = {
+    surface_testFlip, "surface_testFlip", "Test surface flipping.", TEST_ENABLED
+};
+
 /* Sequence of Surface test cases */
 static const SDLTest_TestCaseReference *surfaceTests[] = {
     &surfaceTest1, &surfaceTest2, &surfaceTest3, &surfaceTest4, &surfaceTest5,
     &surfaceTest6, &surfaceTest7, &surfaceTest8, &surfaceTest9, &surfaceTest10,
-    &surfaceTest11, &surfaceTest12, &surfaceTestOverflow, NULL
+    &surfaceTest11, &surfaceTest12, &surfaceTestOverflow, &surfaceTestFlip, NULL
 };
 
 /* Surface test suite (global) */

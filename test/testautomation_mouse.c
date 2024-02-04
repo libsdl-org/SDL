@@ -25,7 +25,7 @@ static int mouseStateCheck(Uint32 state)
 }
 
 /**
- * \brief Check call to SDL_GetMouseState
+ * Check call to SDL_GetMouseState
  *
  */
 static int mouse_getMouseState(void *arg)
@@ -70,7 +70,7 @@ static int mouse_getMouseState(void *arg)
 }
 
 /**
- * \brief Check call to SDL_GetRelativeMouseState
+ * Check call to SDL_GetRelativeMouseState
  *
  */
 static int mouse_getRelativeMouseState(void *arg)
@@ -188,7 +188,7 @@ static SDL_Cursor *initArrowCursor(const char *image[])
 }
 
 /**
- * \brief Check call to SDL_CreateCursor and SDL_DestroyCursor
+ * Check call to SDL_CreateCursor and SDL_DestroyCursor
  *
  * \sa SDL_CreateCursor
  * \sa SDL_DestroyCursor
@@ -213,7 +213,7 @@ static int mouse_createFreeCursor(void *arg)
 }
 
 /**
- * \brief Check call to SDL_CreateColorCursor and SDL_DestroyCursor
+ * Check call to SDL_CreateColorCursor and SDL_DestroyCursor
  *
  * \sa SDL_CreateColorCursor
  * \sa SDL_DestroyCursor
@@ -269,7 +269,7 @@ static void changeCursorVisibility(SDL_bool state)
 }
 
 /**
- * \brief Check call to SDL_ShowCursor
+ * Check call to SDL_ShowCursor
  *
  * \sa SDL_ShowCursor
  */
@@ -294,7 +294,7 @@ static int mouse_showCursor(void *arg)
 }
 
 /**
- * \brief Check call to SDL_SetCursor
+ * Check call to SDL_SetCursor
  *
  * \sa SDL_SetCursor
  */
@@ -326,7 +326,7 @@ static int mouse_setCursor(void *arg)
 }
 
 /**
- * \brief Check call to SDL_GetCursor
+ * Check call to SDL_GetCursor
  *
  * \sa SDL_GetCursor
  */
@@ -343,7 +343,7 @@ static int mouse_getCursor(void *arg)
 }
 
 /**
- * \brief Check call to SDL_GetRelativeMouseMode and SDL_SetRelativeMouseMode
+ * Check call to SDL_GetRelativeMouseMode and SDL_SetRelativeMouseMode
  *
  * \sa SDL_GetRelativeMouseMode
  * \sa SDL_SetRelativeMouseMode
@@ -418,7 +418,7 @@ static SDL_Window *createMouseSuiteTestWindow(void)
  */
 static void destroyMouseSuiteTestWindow(SDL_Window *window)
 {
-    if (window != NULL) {
+    if (window) {
         SDL_DestroyWindow(window);
         window = NULL;
         SDLTest_AssertPass("SDL_DestroyWindow()");
@@ -426,7 +426,7 @@ static void destroyMouseSuiteTestWindow(SDL_Window *window)
 }
 
 /**
- * \brief Check call to SDL_WarpMouseInWindow
+ * Check call to SDL_WarpMouseInWindow
  *
  * \sa SDL_WarpMouseInWindow
  */
@@ -454,7 +454,7 @@ static int mouse_warpMouseInWindow(void *arg)
     yPositions[5] = (float)h + 1;
     /* Create test window */
     window = createMouseSuiteTestWindow();
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
@@ -489,7 +489,7 @@ static int mouse_warpMouseInWindow(void *arg)
 }
 
 /**
- * \brief Check call to SDL_GetMouseFocus
+ * Check call to SDL_GetMouseFocus
  *
  * \sa SDL_GetMouseFocus
  */
@@ -499,6 +499,7 @@ static int mouse_getMouseFocus(void *arg)
     float x, y;
     SDL_Window *window;
     SDL_Window *focusWindow;
+    const SDL_bool video_driver_is_wayland = !SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland");
 
     /* Get focus - focus non-deterministic */
     focusWindow = SDL_GetMouseFocus();
@@ -506,32 +507,37 @@ static int mouse_getMouseFocus(void *arg)
 
     /* Create test window */
     window = createMouseSuiteTestWindow();
-    if (window == NULL) {
+    if (!window) {
         return TEST_ABORTED;
     }
 
-    /* Mouse to random position inside window */
-    x = (float)SDLTest_RandomIntegerInRange(1, w - 1);
-    y = (float)SDLTest_RandomIntegerInRange(1, h - 1);
-    SDL_WarpMouseInWindow(window, x, y);
-    SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%.f,%.f)", x, y);
+    /* Wayland explicitly disallows warping the mouse pointer, so this test must be skipped. */
+    if (!video_driver_is_wayland) {
+        /* Mouse to random position inside window */
+        x = (float)SDLTest_RandomIntegerInRange(1, w - 1);
+        y = (float)SDLTest_RandomIntegerInRange(1, h - 1);
+        SDL_WarpMouseInWindow(window, x, y);
+        SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%.f,%.f)", x, y);
 
-    /* Pump events to update focus state */
-    SDL_Delay(100);
-    SDL_PumpEvents();
-    SDLTest_AssertPass("SDL_PumpEvents()");
+        /* Pump events to update focus state */
+        SDL_Delay(100);
+        SDL_PumpEvents();
+        SDLTest_AssertPass("SDL_PumpEvents()");
 
-    /* Get focus with explicit window setup - focus deterministic */
-    focusWindow = SDL_GetMouseFocus();
-    SDLTest_AssertPass("SDL_GetMouseFocus()");
-    SDLTest_AssertCheck(focusWindow != NULL, "Check returned window value is not NULL");
-    SDLTest_AssertCheck(focusWindow == window, "Check returned window value is test window");
+        /* Get focus with explicit window setup - focus deterministic */
+        focusWindow = SDL_GetMouseFocus();
+        SDLTest_AssertPass("SDL_GetMouseFocus()");
+        SDLTest_AssertCheck(focusWindow != NULL, "Check returned window value is not NULL");
+        SDLTest_AssertCheck(focusWindow == window, "Check returned window value is test window");
 
-    /* Mouse to random position outside window */
-    x = (float)SDLTest_RandomIntegerInRange(-9, -1);
-    y = (float)SDLTest_RandomIntegerInRange(-9, -1);
-    SDL_WarpMouseInWindow(window, x, y);
-    SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%.f,%.f)", x, y);
+        /* Mouse to random position outside window */
+        x = (float)SDLTest_RandomIntegerInRange(-9, -1);
+        y = (float)SDLTest_RandomIntegerInRange(-9, -1);
+        SDL_WarpMouseInWindow(window, x, y);
+        SDLTest_AssertPass("SDL_WarpMouseInWindow(...,%.f,%.f)", x, y);
+    } else {
+        SDLTest_Log("Skipping mouse warp focus tests: Wayland does not support warping the mouse pointer");
+    }
 
     /* Clean up test window */
     destroyMouseSuiteTestWindow(window);
@@ -549,7 +555,7 @@ static int mouse_getMouseFocus(void *arg)
 }
 
 /**
- * \brief Check call to SDL_GetDefaultCursor
+ * Check call to SDL_GetDefaultCursor
  *
  * \sa SDL_GetDefaultCursor
  */
@@ -566,7 +572,7 @@ static int mouse_getDefaultCursor(void *arg)
 }
 
 /**
- * \brief Check call to SDL_GetGlobalMouseState
+ * Check call to SDL_GetGlobalMouseState
  *
  * \sa SDL_GetGlobalMouseState
  */

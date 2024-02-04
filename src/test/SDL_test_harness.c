@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -47,7 +47,7 @@
 /* Final result message format */
 #define SDLTEST_FINAL_RESULT_FORMAT COLOR_YELLOW ">>> %s '%s':" COLOR_END " %s\n"
 
-/* ! \brief Timeout for single test case execution */
+/* ! Timeout for single test case execution */
 static Uint32 SDLTest_TestCaseTimeout = 3600;
 
 /**
@@ -60,8 +60,7 @@ static Uint32 SDLTest_TestCaseTimeout = 3600;
  *
  * \returns The generated seed string
  */
-char *
-SDLTest_GenerateRunSeed(const int length)
+char *SDLTest_GenerateRunSeed(const int length)
 {
     char *seed = NULL;
     SDLTest_RandomContext randomContext;
@@ -75,7 +74,7 @@ SDLTest_GenerateRunSeed(const int length)
 
     /* Allocate output buffer */
     seed = (char *)SDL_malloc((length + 1) * sizeof(char));
-    if (seed == NULL) {
+    if (!seed) {
         SDLTest_LogError("SDL_malloc for run seed output buffer failed.");
         SDL_Error(SDL_ENOMEM);
         return NULL;
@@ -119,24 +118,24 @@ static Uint64 SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName
     size_t entireStringLength;
     char *buffer;
 
-    if (runSeed == NULL || runSeed[0] == '\0') {
+    if (!runSeed || runSeed[0] == '\0') {
         SDLTest_LogError("Invalid runSeed string.");
-        return -1;
+        return 0;
     }
 
-    if (suiteName == NULL || suiteName[0] == '\0') {
+    if (!suiteName || suiteName[0] == '\0') {
         SDLTest_LogError("Invalid suiteName string.");
-        return -1;
+        return 0;
     }
 
-    if (testName == NULL || testName[0] == '\0') {
+    if (!testName || testName[0] == '\0') {
         SDLTest_LogError("Invalid testName string.");
-        return -1;
+        return 0;
     }
 
     if (iteration <= 0) {
         SDLTest_LogError("Invalid iteration count.");
-        return -1;
+        return 0;
     }
 
     /* Convert iteration number into a string */
@@ -150,7 +149,7 @@ static Uint64 SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName
     iterationStringLength = SDL_strlen(iterationString);
     entireStringLength = runSeedLength + suiteNameLength + testNameLength + iterationStringLength + 1;
     buffer = (char *)SDL_malloc(entireStringLength);
-    if (buffer == NULL) {
+    if (!buffer) {
         SDLTest_LogError("Failed to allocate buffer for execKey generation.");
         SDL_Error(SDL_ENOMEM);
         return 0;
@@ -168,7 +167,7 @@ static Uint64 SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName
 }
 
 /**
- * \brief Set timeout handler for test.
+ * Set timeout handler for test.
  *
  * Note: SDL_Init(SDL_INIT_TIMER) will be called if it wasn't done so before.
  *
@@ -182,21 +181,21 @@ static SDL_TimerID SDLTest_SetTestTimeout(int timeout, void(SDLCALL *callback)(v
     Uint32 timeoutInMilliseconds;
     SDL_TimerID timerID;
 
-    if (callback == NULL) {
+    if (!callback) {
         SDLTest_LogError("Timeout callback can't be NULL");
-        return -1;
+        return 0;
     }
 
     if (timeout < 0) {
         SDLTest_LogError("Timeout value must be bigger than zero.");
-        return -1;
+        return 0;
     }
 
     /* Init SDL timer if not initialized before */
     if (SDL_WasInit(SDL_INIT_TIMER) == 0) {
         if (SDL_InitSubSystem(SDL_INIT_TIMER)) {
             SDLTest_LogError("Failed to init timer subsystem: %s", SDL_GetError());
-            return -1;
+            return 0;
         }
     }
 
@@ -205,14 +204,14 @@ static SDL_TimerID SDLTest_SetTestTimeout(int timeout, void(SDLCALL *callback)(v
     timerID = SDL_AddTimer(timeoutInMilliseconds, (SDL_TimerCallback)callback, 0x0);
     if (timerID == 0) {
         SDLTest_LogError("Creation of SDL timer failed: %s", SDL_GetError());
-        return -1;
+        return 0;
     }
 
     return timerID;
 }
 
 /**
- * \brief Timeout handler. Aborts test run and exits harness process.
+ * Timeout handler. Aborts test run and exits harness process.
  */
 #ifdef __WATCOMC__
 #pragma aux SDLTest_BailOut aborts;
@@ -224,7 +223,7 @@ static SDL_NORETURN void SDLCALL SDLTest_BailOut(void)
 }
 
 /**
- * \brief Execute a test using the given execution key.
+ * Execute a test using the given execution key.
  *
  * \param testSuite Suite containing the test case.
  * \param testCase Case to execute.
@@ -240,7 +239,7 @@ static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_
     int testResult = 0;
     int fuzzerCount;
 
-    if (testSuite == NULL || testCase == NULL || testSuite->name == NULL || testCase->name == NULL) {
+    if (!testSuite || !testCase || !testSuite->name || !testCase->name) {
         SDLTest_LogError("Setup failure: testSuite or testCase references NULL");
         return TEST_RESULT_SETUP_FAILURE;
     }
@@ -259,7 +258,7 @@ static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_
     /* Set timeout timer */
     timer = SDLTest_SetTestTimeout(SDLTest_TestCaseTimeout, SDLTest_BailOut);
 
-    /* Maybe run suite initalizer function */
+    /* Maybe run suite initializer function */
     if (testSuite->testSetUp) {
         testSuite->testSetUp(0x0);
         if (SDLTest_AssertSummaryToTestResult() == TEST_RESULT_FAILED) {
@@ -273,7 +272,7 @@ static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_
 
     /* Convert test execution result into harness result */
     if (testCaseResult == TEST_SKIPPED) {
-        /* Test was programatically skipped */
+        /* Test was programmatically skipped */
         testResult = TEST_RESULT_SKIPPED;
     } else if (testCaseResult == TEST_STARTED) {
         /* Test did not return a TEST_COMPLETED value; assume it failed */
@@ -304,7 +303,7 @@ static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_
 
     /* Final log based on test execution result */
     if (testCaseResult == TEST_SKIPPED) {
-        /* Test was programatically skipped */
+        /* Test was programmatically skipped */
         SDLTest_Log(SDLTEST_FINAL_RESULT_FORMAT, "Test", testCase->name, COLOR_BLUE "Skipped (Programmatically)" COLOR_END);
     } else if (testCaseResult == TEST_STARTED) {
         /* Test did not return a TEST_COMPLETED value; assume it failed */
@@ -357,7 +356,7 @@ static float GetClock(void)
 }
 
 /**
- * \brief Execute a test suite using the given run seed and execution key.
+ * Execute a test suite using the given run seed and execution key.
  *
  * The filter string is matched to the suite name (full comparison) to select a single suite,
  * or if no suite matches, it is matched to the test names (full comparison) to select a single test.
@@ -413,9 +412,9 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
     }
 
     /* Generate run see if we don't have one already */
-    if (userRunSeed == NULL || userRunSeed[0] == '\0') {
+    if (!userRunSeed || userRunSeed[0] == '\0') {
         char *tmp = SDLTest_GenerateRunSeed(16);
-        if (tmp == NULL) {
+        if (!tmp) {
             SDLTest_LogError("Generating a random seed failed");
             return 2;
         }
@@ -456,20 +455,20 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
     /* Pre-allocate an array for tracking failed tests (potentially all test cases) */
     failedTests = (const SDLTest_TestCaseReference **)SDL_malloc(totalNumberOfTests * sizeof(SDLTest_TestCaseReference *));
-    if (failedTests == NULL) {
+    if (!failedTests) {
         SDLTest_LogError("Unable to allocate cache for failed tests");
         SDL_Error(SDL_ENOMEM);
         return -1;
     }
 
     /* Initialize filtering */
-    if (filter != NULL && filter[0] != '\0') {
+    if (filter && filter[0] != '\0') {
         /* Loop over all suites to check if we have a filter match */
         suiteCounter = 0;
         while (testSuites[suiteCounter] && suiteFilter == 0) {
             testSuite = testSuites[suiteCounter];
             suiteCounter++;
-            if (testSuite->name != NULL && SDL_strcasecmp(filter, testSuite->name) == 0) {
+            if (testSuite->name && SDL_strcasecmp(filter, testSuite->name) == 0) {
                 /* Matched a suite name */
                 suiteFilter = 1;
                 suiteFilterName = testSuite->name;
@@ -482,7 +481,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
             while (testSuite->testCases[testCounter] && testFilter == 0) {
                 testCase = testSuite->testCases[testCounter];
                 testCounter++;
-                if (testCase->name != NULL && SDL_strcasecmp(filter, testCase->name) == 0) {
+                if (testCase->name && SDL_strcasecmp(filter, testCase->name) == 0) {
                     /* Matched a test name */
                     suiteFilter = 1;
                     suiteFilterName = testSuite->name;
@@ -498,14 +497,14 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
             SDLTest_LogError("Filter '%s' did not match any test suite/case.", filter);
             for (suiteCounter = 0; testSuites[suiteCounter]; ++suiteCounter) {
                 testSuite = testSuites[suiteCounter];
-                if (testSuite->name != NULL) {
+                if (testSuite->name) {
                     SDLTest_Log("Test suite: %s", testSuite->name);
                 }
 
                 /* Within each suite, loop over all test cases to check if we have a filter match */
                 for (testCounter = 0; testSuite->testCases[testCounter]; ++testCounter) {
                     testCase = testSuite->testCases[testCounter];
-                    SDLTest_Log("      test: %s", testCase->name);
+                    SDLTest_Log("      test: %s%s", testCase->name, testCase->enabled ? "" : " (disabled)");
                 }
             }
             SDLTest_Log("Exit code: 2");
@@ -522,7 +521,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
         suiteCounter++;
 
         /* Filter suite if flag set and we have a name */
-        if (suiteFilter == 1 && suiteFilterName != NULL && testSuite->name != NULL &&
+        if (suiteFilter == 1 && suiteFilterName && testSuite->name &&
             SDL_strcasecmp(suiteFilterName, testSuite->name) != 0) {
             /* Skip suite */
             SDLTest_Log("===== Test Suite %i: '%s' " COLOR_BLUE "skipped" COLOR_END "\n",
@@ -551,7 +550,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                 testCounter++;
 
                 /* Filter tests if flag set and we have a name */
-                if (testFilter == 1 && testFilterName != NULL && testCase->name != NULL &&
+                if (testFilter == 1 && testFilterName && testCase->name &&
                     SDL_strcasecmp(testFilterName, testCase->name) != 0) {
                     /* Skip test */
                     SDLTest_Log("===== Test Case %i.%i: '%s' " COLOR_BLUE "skipped" COLOR_END "\n",
@@ -573,7 +572,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                                 suiteCounter,
                                 testCounter,
                                 currentTestName);
-                    if (testCase->description != NULL && testCase->description[0] != '\0') {
+                    if (testCase->description && testCase->description[0] != '\0') {
                         SDLTest_Log("Test Description: '%s'",
                                     (testCase->description) ? testCase->description : SDLTEST_INVALID_NAME_FORMAT);
                     }

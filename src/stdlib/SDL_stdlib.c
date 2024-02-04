@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,8 +24,7 @@
 
 #include "../libm/math_libm.h"
 
-double
-SDL_atan(double x)
+double SDL_atan(double x)
 {
 #ifdef HAVE_ATAN
     return atan(x);
@@ -43,8 +42,7 @@ float SDL_atanf(float x)
 #endif
 }
 
-double
-SDL_atan2(double y, double x)
+double SDL_atan2(double y, double x)
 {
 #ifdef HAVE_ATAN2
     return atan2(y, x);
@@ -62,8 +60,7 @@ float SDL_atan2f(float y, float x)
 #endif
 }
 
-double
-SDL_acos(double val)
+double SDL_acos(double val)
 {
 #ifdef HAVE_ACOS
     return acos(val);
@@ -90,8 +87,7 @@ float SDL_acosf(float val)
 #endif
 }
 
-double
-SDL_asin(double val)
+double SDL_asin(double val)
 {
 #ifdef HAVE_ASIN
     return asin(val);
@@ -115,8 +111,7 @@ float SDL_asinf(float val)
 #endif
 }
 
-double
-SDL_ceil(double x)
+double SDL_ceil(double x)
 {
 #ifdef HAVE_CEIL
     return ceil(x);
@@ -139,8 +134,7 @@ float SDL_ceilf(float x)
 #endif
 }
 
-double
-SDL_copysign(double x, double y)
+double SDL_copysign(double x, double y)
 {
 #ifdef HAVE_COPYSIGN
     return copysign(x, y);
@@ -166,8 +160,7 @@ float SDL_copysignf(float x, float y)
 #endif
 }
 
-double
-SDL_cos(double x)
+double SDL_cos(double x)
 {
 #ifdef HAVE_COS
     return cos(x);
@@ -185,8 +178,7 @@ float SDL_cosf(float x)
 #endif
 }
 
-double
-SDL_exp(double x)
+double SDL_exp(double x)
 {
 #ifdef HAVE_EXP
     return exp(x);
@@ -204,8 +196,7 @@ float SDL_expf(float x)
 #endif
 }
 
-double
-SDL_fabs(double x)
+double SDL_fabs(double x)
 {
 #ifdef HAVE_FABS
     return fabs(x);
@@ -223,8 +214,7 @@ float SDL_fabsf(float x)
 #endif
 }
 
-double
-SDL_floor(double x)
+double SDL_floor(double x)
 {
 #ifdef HAVE_FLOOR
     return floor(x);
@@ -242,8 +232,7 @@ float SDL_floorf(float x)
 #endif
 }
 
-double
-SDL_trunc(double x)
+double SDL_trunc(double x)
 {
 #ifdef HAVE_TRUNC
     return trunc(x);
@@ -265,8 +254,7 @@ float SDL_truncf(float x)
 #endif
 }
 
-double
-SDL_fmod(double x, double y)
+double SDL_fmod(double x, double y)
 {
 #ifdef HAVE_FMOD
     return fmod(x, y);
@@ -284,8 +272,7 @@ float SDL_fmodf(float x, float y)
 #endif
 }
 
-double
-SDL_log(double x)
+double SDL_log(double x)
 {
 #ifdef HAVE_LOG
     return log(x);
@@ -303,8 +290,7 @@ float SDL_logf(float x)
 #endif
 }
 
-double
-SDL_log10(double x)
+double SDL_log10(double x)
 {
 #ifdef HAVE_LOG10
     return log10(x);
@@ -322,8 +308,7 @@ float SDL_log10f(float x)
 #endif
 }
 
-double
-SDL_modf(double x, double *y)
+double SDL_modf(double x, double *y)
 {
 #ifdef HAVE_MODF
     return modf(x, y);
@@ -344,8 +329,7 @@ float SDL_modff(float x, float *y)
 #endif
 }
 
-double
-SDL_pow(double x, double y)
+double SDL_pow(double x, double y)
 {
 #ifdef HAVE_POW
     return pow(x, y);
@@ -363,8 +347,7 @@ float SDL_powf(float x, float y)
 #endif
 }
 
-double
-SDL_round(double arg)
+double SDL_round(double arg)
 {
 #if defined HAVE_ROUND
     return round(arg);
@@ -404,8 +387,7 @@ long SDL_lroundf(float arg)
 #endif
 }
 
-double
-SDL_scalbn(double x, int n)
+double SDL_scalbn(double x, int n)
 {
 #ifdef HAVE_SCALBN
     return scalbn(x, n);
@@ -429,8 +411,7 @@ float SDL_scalbnf(float x, int n)
 #endif
 }
 
-double
-SDL_sin(double x)
+double SDL_sin(double x)
 {
 #ifdef HAVE_SIN
     return sin(x);
@@ -448,8 +429,7 @@ float SDL_sinf(float x)
 #endif
 }
 
-double
-SDL_sqrt(double x)
+double SDL_sqrt(double x)
 {
 #ifdef HAVE_SQRT
     return sqrt(x);
@@ -467,8 +447,7 @@ float SDL_sqrtf(float x)
 #endif
 }
 
-double
-SDL_tan(double x)
+double SDL_tan(double x)
 {
 #ifdef HAVE_TAN
     return tan(x);
@@ -530,150 +509,6 @@ int SDL_iscntrl(int x) { return (((x) >= '\0') && ((x) <= '\x1f')) || ((x) == '\
 int SDL_toupper(int x) { return ((x) >= 'a') && ((x) <= 'z') ? ('A' + ((x) - 'a')) : (x); }
 int SDL_tolower(int x) { return ((x) >= 'A') && ((x) <= 'Z') ? ('a' + ((x) - 'A')) : (x); }
 #endif
-
-/* This file contains a portable memcpy manipulation function for SDL */
-
-void *
-SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len)
-{
-#ifdef __GNUC__
-    /* Presumably this is well tuned for speed.
-       On my machine this is twice as fast as the C code below.
-     */
-    return __builtin_memcpy(dst, src, len);
-#elif defined(HAVE_MEMCPY)
-    return memcpy(dst, src, len);
-#elif defined(HAVE_BCOPY)
-    bcopy(src, dst, len);
-    return dst;
-#else
-    /* GCC 4.9.0 with -O3 will generate movaps instructions with the loop
-       using Uint32* pointers, so we need to make sure the pointers are
-       aligned before we loop using them.
-     */
-    if (((uintptr_t)src & 0x3) || ((uintptr_t)dst & 0x3)) {
-        /* Do an unaligned byte copy */
-        Uint8 *srcp1 = (Uint8 *)src;
-        Uint8 *dstp1 = (Uint8 *)dst;
-
-        while (len--) {
-            *dstp1++ = *srcp1++;
-        }
-    } else {
-        size_t left = (len % 4);
-        Uint32 *srcp4, *dstp4;
-        Uint8 *srcp1, *dstp1;
-
-        srcp4 = (Uint32 *)src;
-        dstp4 = (Uint32 *)dst;
-        len /= 4;
-        while (len--) {
-            *dstp4++ = *srcp4++;
-        }
-
-        srcp1 = (Uint8 *)srcp4;
-        dstp1 = (Uint8 *)dstp4;
-        switch (left) {
-        case 3:
-            *dstp1++ = *srcp1++;
-        case 2:
-            *dstp1++ = *srcp1++;
-        case 1:
-            *dstp1++ = *srcp1++;
-        }
-    }
-    return dst;
-#endif /* __GNUC__ */
-}
-
-void *
-SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
-{
-#ifdef HAVE_MEMSET
-    return memset(dst, c, len);
-#else
-    size_t left;
-    Uint32 *dstp4;
-    Uint8 *dstp1 = (Uint8 *)dst;
-    Uint8 value1;
-    Uint32 value4;
-
-    /* The value used in memset() is a byte, passed as an int */
-    c &= 0xff;
-
-    /* The destination pointer needs to be aligned on a 4-byte boundary to
-     * execute a 32-bit set. Set first bytes manually if needed until it is
-     * aligned. */
-    value1 = (Uint8)c;
-    while ((uintptr_t)dstp1 & 0x3) {
-        if (len--) {
-            *dstp1++ = value1;
-        } else {
-            return dst;
-        }
-    }
-
-    value4 = ((Uint32)c | ((Uint32)c << 8) | ((Uint32)c << 16) | ((Uint32)c << 24));
-    dstp4 = (Uint32 *)dstp1;
-    left = (len % 4);
-    len /= 4;
-    while (len--) {
-        *dstp4++ = value4;
-    }
-
-    dstp1 = (Uint8 *)dstp4;
-    switch (left) {
-    case 3:
-        *dstp1++ = value1;
-    case 2:
-        *dstp1++ = value1;
-    case 1:
-        *dstp1++ = value1;
-    }
-
-    return dst;
-#endif /* HAVE_MEMSET */
-}
-
-/* Note that memset() is a byte assignment and this is a 32-bit assignment, so they're not directly equivalent. */
-void *
-SDL_memset4(void *dst, Uint32 val, size_t dwords)
-{
-#if defined(__APPLE__) && defined(HAVE_STRING_H)
-    memset_pattern4(dst, &val, dwords * 4);
-#elif defined(__GNUC__) && defined(__i386__)
-    int u0, u1, u2;
-    __asm__ __volatile__(
-        "cld \n\t"
-        "rep ; stosl \n\t"
-        : "=&D"(u0), "=&a"(u1), "=&c"(u2)
-        : "0"(dst), "1"(val), "2"(SDL_static_cast(Uint32, dwords))
-        : "memory");
-#else
-    size_t _n = (dwords + 3) / 4;
-    Uint32 *_p = SDL_static_cast(Uint32 *, dst);
-    Uint32 _val = (val);
-    if (dwords == 0) {
-        return dst;
-    }
-    switch (dwords % 4) {
-    case 0:
-        do {
-            *_p++ = _val;
-            SDL_FALLTHROUGH;
-        case 3:
-            *_p++ = _val;
-            SDL_FALLTHROUGH;
-        case 2:
-            *_p++ = _val;
-            SDL_FALLTHROUGH;
-        case 1:
-            *_p++ = _val;
-        } while (--_n);
-    }
-#endif
-    return dst;
-}
 
 #if defined(HAVE_CTYPE_H) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 int SDL_isblank(int x)

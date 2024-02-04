@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -488,15 +488,14 @@ static void DestroyShaderProgram(GL_ShaderContext *ctx, GL_ShaderData *data)
     ctx->glDeleteObjectARB(data->program);
 }
 
-GL_ShaderContext *
-GL_CreateShaderContext(void)
+GL_ShaderContext *GL_CreateShaderContext(void)
 {
     GL_ShaderContext *ctx;
     SDL_bool shaders_supported;
     int i;
 
     ctx = (GL_ShaderContext *)SDL_calloc(1, sizeof(*ctx));
-    if (ctx == NULL) {
+    if (!ctx) {
         return NULL;
     }
 

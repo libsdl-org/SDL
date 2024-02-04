@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -77,7 +77,6 @@
 #define HAVE_CALLOC 1
 #define HAVE_REALLOC 1
 #define HAVE_FREE 1
-#define HAVE_ALLOCA 1
 #define HAVE_QSORT 1
 #define HAVE_BSEARCH 1
 #define HAVE_ABS 1
@@ -182,7 +181,6 @@
 #endif
 #define SDL_JOYSTICK_XINPUT 1
 /*#define SDL_HAPTIC_DINPUT   1*/
-#define SDL_HAPTIC_XINPUT   1
 
 /* Enable the sensor driver */
 #ifdef HAVE_SENSORSAPI_H
@@ -196,6 +194,7 @@
 
 /* Enable various threading systems */
 #define SDL_THREAD_GENERIC_COND_SUFFIX 1
+#define SDL_THREAD_GENERIC_RWLOCK_SUFFIX 1
 #define SDL_THREAD_WINDOWS  1
 
 /* Enable various timer systems */
@@ -230,5 +229,7 @@
 
 /* Disable IME as not supported yet (TODO: Xbox IME?) */
 #define SDL_DISABLE_WINDOWS_IME 1
+/* Use the (inferior) GDK text input method for GDK platforms */
+#define SDL_GDK_TEXTINPUT 1
 
 #endif /* SDL_build_config_wingdk_h_ */

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,8 +32,8 @@ extern "C" {
 extern "C" {
 #endif
 
-extern void WINRT_InitTouch(_THIS);
-extern void WINRT_PumpEvents(_THIS);
+extern void WINRT_InitTouch(SDL_VideoDevice *_this);
+extern void WINRT_PumpEvents(SDL_VideoDevice *_this);
 
 #ifdef __cplusplus
 }
@@ -63,16 +63,15 @@ extern void WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::U
 extern void WINRT_ProcessMouseMovedEvent(SDL_Window *window, Windows::Devices::Input::MouseEventArgs ^ args);
 
 /* Keyboard */
-extern void WINRT_ProcessKeyDownEvent(Windows::UI::Core::KeyEventArgs ^ args);
-extern void WINRT_ProcessKeyUpEvent(Windows::UI::Core::KeyEventArgs ^ args);
-extern void WINRT_ProcessCharacterReceivedEvent(Windows::UI::Core::CharacterReceivedEventArgs ^ args);
+extern void WINRT_ProcessAcceleratorKeyActivated(Windows::UI::Core::AcceleratorKeyEventArgs ^ args);
+extern void WINRT_ProcessCharacterReceivedEvent(SDL_Window *window, Windows::UI::Core::CharacterReceivedEventArgs ^ args);
 
 #if NTDDI_VERSION >= NTDDI_WIN10
-extern void WINTRT_InitialiseInputPaneEvents(_THIS);
-extern SDL_bool WINRT_HasScreenKeyboardSupport(_THIS);
-extern void WINRT_ShowScreenKeyboard(_THIS, SDL_Window *window);
-extern void WINRT_HideScreenKeyboard(_THIS, SDL_Window *window);
-extern SDL_bool WINRT_IsScreenKeyboardShown(_THIS, SDL_Window *window);
+extern void WINTRT_InitialiseInputPaneEvents(SDL_VideoDevice *_this);
+extern SDL_bool WINRT_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
+extern void WINRT_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
+extern void WINRT_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
+extern SDL_bool WINRT_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
 #endif // NTDDI_VERSION >= ...
 
 /* XAML Thread Management */

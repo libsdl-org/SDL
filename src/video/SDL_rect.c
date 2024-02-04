@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,8 +24,7 @@
 
 /* There's no float version of this at the moment, because it's not a public API
    and internally we only need the int version. */
-SDL_bool
-SDL_GetSpanEnclosingRect(int width, int height,
+SDL_bool SDL_GetSpanEnclosingRect(int width, int height,
                          int numrects, const SDL_Rect *rects, SDL_Rect *span)
 {
     int i;
@@ -38,10 +37,10 @@ SDL_GetSpanEnclosingRect(int width, int height,
     } else if (height < 1) {
         SDL_InvalidParamError("height");
         return SDL_FALSE;
-    } else if (rects == NULL) {
+    } else if (!rects) {
         SDL_InvalidParamError("rects");
         return SDL_FALSE;
-    } else if (span == NULL) {
+    } else if (!span) {
         SDL_InvalidParamError("span");
         return SDL_FALSE;
     } else if (numrects < 1) {
@@ -89,6 +88,7 @@ SDL_GetSpanEnclosingRect(int width, int height,
 #define RECTTYPE                 SDL_Rect
 #define POINTTYPE                SDL_Point
 #define SCALARTYPE               int
+#define BIGSCALARTYPE            Sint64
 #define COMPUTEOUTCODE           ComputeOutCode
 #define SDL_HASINTERSECTION      SDL_HasRectIntersection
 #define SDL_INTERSECTRECT        SDL_GetRectIntersection
@@ -101,6 +101,7 @@ SDL_GetSpanEnclosingRect(int width, int height,
 #define RECTTYPE                 SDL_FRect
 #define POINTTYPE                SDL_FPoint
 #define SCALARTYPE               float
+#define BIGSCALARTYPE            double
 #define COMPUTEOUTCODE           ComputeOutCodeFloat
 #define SDL_HASINTERSECTION      SDL_HasRectIntersectionFloat
 #define SDL_INTERSECTRECT        SDL_GetRectIntersectionFloat
