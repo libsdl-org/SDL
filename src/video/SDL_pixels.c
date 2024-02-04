@@ -764,6 +764,63 @@ float SDL_PQfromNits(float v)
     return pow(num / den, m2);
 }
 
+const float *SDL_GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace)
+{
+    static const float matBT601Limited[] = {
+        -0.0627451017f, -0.501960814f, -0.501960814f, 0.0f, /* offset */
+        1.1644f,  0.0000f,  1.5960f, 0.0f,                  /* Rcoeff */
+        1.1644f, -0.3918f, -0.8130f, 0.0f,                  /* Gcoeff */
+        1.1644f,  2.0172f,  0.0000f, 0.0f,                  /* Bcoeff */
+    };
+
+    static const float matBT601Full[] = {
+        0.0f, -0.501960814f, -0.501960814f, 0.0f,           /* offset */
+        1.0000f,  0.0000f, 1.4020f, 0.0f,                   /* Rcoeff */
+        1.0000f, -0.3441f, -0.7141f, 0.0f,                  /* Gcoeff */
+        1.0000f,  1.7720f, 0.0000f, 0.0f,                   /* Bcoeff */
+    };
+
+    static const float matBT709Limited[] = {
+        -0.0627451017f, -0.501960814f, -0.501960814f, 0.0f, /* offset */
+        1.1644f,  0.0000f,  1.7927f, 0.0f,                  /* Rcoeff */
+        1.1644f, -0.2132f, -0.5329f, 0.0f,                  /* Gcoeff */
+        1.1644f,  2.1124f,  0.0000f, 0.0f,                  /* Bcoeff */
+    };
+
+    static const float matBT709Full[] = {
+        0.0f, -0.501960814f, -0.501960814f, 0.0f,           /* offset */
+        1.0000f,  0.0000f,  1.5748f, 0.0f,                  /* Rcoeff */
+        1.0000f, -0.1873f, -0.4681f, 0.0f,                  /* Gcoeff */
+        1.0000f,  1.8556f,  0.0000f, 0.0f,                  /* Bcoeff */
+    };
+
+    switch (SDL_COLORSPACEMATRIX(colorspace)) {
+    case SDL_MATRIX_COEFFICIENTS_BT601:
+        switch (SDL_COLORSPACERANGE(colorspace)) {
+        case SDL_COLOR_RANGE_LIMITED:
+            return matBT601Limited;
+        case SDL_COLOR_RANGE_FULL:
+            return matBT601Full;
+        default:
+            break;
+        }
+        break;
+    case SDL_MATRIX_COEFFICIENTS_BT709:
+        switch (SDL_COLORSPACERANGE(colorspace)) {
+        case SDL_COLOR_RANGE_LIMITED:
+            return matBT709Limited;
+        case SDL_COLOR_RANGE_FULL:
+            return matBT709Full;
+        default:
+            break;
+        }
+        break;
+    default:
+        break;
+    }
+    return NULL;
+}
+
 const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src, SDL_ColorPrimaries dst)
 {
     /* Conversion matrices generated using gamescope color helpers and the primaries definitions at:

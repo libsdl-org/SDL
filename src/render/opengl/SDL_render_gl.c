@@ -25,6 +25,7 @@
 #include <SDL3/SDL_opengl.h>
 #include "../SDL_sysrender.h"
 #include "SDL_shaders_gl.h"
+#include "../../video/SDL_pixels_c.h"
 #include "../../SDL_utils_c.h"
 
 #ifdef SDL_PLATFORM_MACOS
@@ -68,6 +69,7 @@ typedef struct
     int drawableh;
     SDL_BlendMode blend;
     GL_Shader shader;
+    const float *shader_params;
     SDL_bool cliprect_enabled_dirty;
     SDL_bool cliprect_enabled;
     SDL_bool cliprect_dirty;
@@ -132,6 +134,7 @@ typedef struct
     GLenum format;
     GLenum formattype;
     GL_Shader shader;
+    const float *shader_params;
     void *pixels;
     int pitch;
     SDL_Rect locked_rect;
@@ -662,46 +665,24 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
 
 #if SDL_HAVE_YUV
     if (data->yuv || data->nv12) {
-        if (SDL_ISCOLORSPACE_YUV_BT601(texture->colorspace)) {
-            if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
-                if (data->yuv) {
-                    data->shader = SHADER_YUV_BT601;
-                } else if (texture->format == SDL_PIXELFORMAT_NV12) {
-                    if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
-                        data->shader = SHADER_NV12_RG_BT601;
-                    } else {
-                        data->shader = SHADER_NV12_RA_BT601;
-                    }
-                } else {
-                    data->shader = SHADER_NV21_BT601;
-                }
+        if (data->yuv) {
+            data->shader = SHADER_YUV;
+        } else if (texture->format == SDL_PIXELFORMAT_NV12) {
+            if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
+                data->shader = SHADER_NV12_RG;
             } else {
-                if (data->yuv) {
-                    data->shader = SHADER_YUV_JPEG;
-                } else if (texture->format == SDL_PIXELFORMAT_NV12) {
-                    data->shader = SHADER_NV12_JPEG;
-                } else {
-                    data->shader = SHADER_NV21_JPEG;
-                }
-            }
-        } else if (SDL_ISCOLORSPACE_YUV_BT709(texture->colorspace)) {
-            if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
-                if (data->yuv) {
-                    data->shader = SHADER_YUV_BT709;
-                } else if (texture->format == SDL_PIXELFORMAT_NV12) {
-                    if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
-                        data->shader = SHADER_NV12_RG_BT709;
-                    } else {
-                        data->shader = SHADER_NV12_RA_BT709;
-                    }
-                } else {
-                    data->shader = SHADER_NV21_BT709;
-                }
-            } else {
-                return SDL_SetError("Unsupported YUV conversion mode");
+                data->shader = SHADER_NV12_RA;
             }
         } else {
-            return SDL_SetError("Unsupported YUV conversion mode");
+            if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
+                data->shader = SHADER_NV21_RG;
+            } else {
+                data->shader = SHADER_NV21_RA;
+            }
+        }
+        data->shader_params = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace);
+        if (!data->shader_params) {
+            return SDL_SetError("Unsupported YUV colorspace");
         }
     }
 #endif /* SDL_HAVE_YUV */
@@ -1049,7 +1030,7 @@ static int GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
     return 0;
 }
 
-static int SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const GL_Shader shader)
+static int SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const GL_Shader shader, const float *shader_params)
 {
     const SDL_BlendMode blend = cmd->data.draw.blend;
     SDL_bool vertex_array;
@@ -1106,9 +1087,11 @@ static int SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const
         data->drawstate.blend = blend;
     }
 
-    if (data->shaders && (shader != data->drawstate.shader)) {
-        GL_SelectShader(data->shaders, shader);
+    if (data->shaders &&
+        (shader != data->drawstate.shader || shader_params != data->drawstate.shader_params)) {
+        GL_SelectShader(data->shaders, shader, shader_params);
         data->drawstate.shader = shader;
+        data->drawstate.shader_params = shader_params;
     }
 
     if (data->drawstate.texturing_dirty || ((cmd->data.draw.texture != NULL) != data->drawstate.texturing)) {
@@ -1163,7 +1146,7 @@ static int SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
     SDL_Texture *texture = cmd->data.draw.texture;
     const GL_TextureData *texturedata = (GL_TextureData *)texture->driverdata;
 
-    SetDrawState(data, cmd, texturedata->shader);
+    SetDrawState(data, cmd, texturedata->shader, texturedata->shader_params);
 
     if (texture != data->drawstate.texture) {
         const GLenum textype = data->textype;
@@ -1325,7 +1308,7 @@ static int GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
 
         case SDL_RENDERCMD_DRAW_LINES:
         {
-            if (SetDrawState(data, cmd, SHADER_SOLID) == 0) {
+            if (SetDrawState(data, cmd, SHADER_SOLID, NULL) == 0) {
                 size_t count = cmd->data.draw.count;
                 const GLfloat *verts = (GLfloat *)(((Uint8 *)vertices) + cmd->data.draw.first);
 
@@ -1391,7 +1374,7 @@ static int GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
             if (thistexture) {
                 ret = SetCopyState(data, cmd);
             } else {
-                ret = SetDrawState(data, cmd, SHADER_SOLID);
+                ret = SetDrawState(data, cmd, SHADER_SOLID, NULL);
             }
 
             if (ret == 0) {

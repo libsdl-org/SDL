@@ -24,9 +24,8 @@
 
 typedef enum
 {
-    SHADER_YUV_JPEG,
-    SHADER_YUV_BT601,
-    SHADER_YUV_BT709,
+    SHADER_NONE,
+    SHADER_YUV,
     NUM_SHADERS
 } D3D9_Shader;
 

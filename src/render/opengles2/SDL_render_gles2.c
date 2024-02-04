@@ -26,6 +26,7 @@
 #include <SDL3/SDL_opengles2.h>
 #include "../SDL_sysrender.h"
 #include "../../video/SDL_blit.h"
+#include "../../video/SDL_pixels_c.h"
 #include "SDL_shaders_gles2.h"
 
 /* WebGL doesn't offer client-side arrays, so use Vertex Buffer Objects
@@ -79,24 +80,6 @@ typedef struct GLES2_TextureData
     GLES2_FBOList *fbo;
 } GLES2_TextureData;
 
-typedef struct GLES2_ProgramCacheEntry
-{
-    GLuint id;
-    GLuint vertex_shader;
-    GLuint fragment_shader;
-    GLuint uniform_locations[16];
-    GLfloat projection[4][4];
-    struct GLES2_ProgramCacheEntry *prev;
-    struct GLES2_ProgramCacheEntry *next;
-} GLES2_ProgramCacheEntry;
-
-typedef struct GLES2_ProgramCache
-{
-    int count;
-    GLES2_ProgramCacheEntry *head;
-    GLES2_ProgramCacheEntry *tail;
-} GLES2_ProgramCache;
-
 typedef enum
 {
     GLES2_ATTRIBUTE_POSITION = 0,
@@ -109,8 +92,40 @@ typedef enum
     GLES2_UNIFORM_PROJECTION,
     GLES2_UNIFORM_TEXTURE,
     GLES2_UNIFORM_TEXTURE_U,
-    GLES2_UNIFORM_TEXTURE_V
+    GLES2_UNIFORM_TEXTURE_V,
+    GLES2_UNIFORM_OFFSET,
+    GLES2_UNIFORM_MATRIX,
+    NUM_GLES2_UNIFORMS
 } GLES2_Uniform;
+
+static const char *GLES2_UniformNames[] = {
+    "u_projection",
+    "u_texture",
+    "u_texture_u",
+    "u_texture_v",
+    "u_offset",
+    "u_matrix"
+};
+SDL_COMPILE_TIME_ASSERT(GLES2_UniformNames, SDL_arraysize(GLES2_UniformNames) == NUM_GLES2_UNIFORMS);
+
+typedef struct GLES2_ProgramCacheEntry
+{
+    GLuint id;
+    GLuint vertex_shader;
+    GLuint fragment_shader;
+    GLuint uniform_locations[NUM_GLES2_UNIFORMS];
+    GLfloat projection[4][4];
+    const float *shader_params;
+    struct GLES2_ProgramCacheEntry *prev;
+    struct GLES2_ProgramCacheEntry *next;
+} GLES2_ProgramCacheEntry;
+
+typedef struct GLES2_ProgramCache
+{
+    int count;
+    GLES2_ProgramCacheEntry *head;
+    GLES2_ProgramCacheEntry *tail;
+} GLES2_ProgramCache;
 
 typedef enum
 {
@@ -144,6 +159,7 @@ typedef struct
     int drawablew;
     int drawableh;
     GLES2_ProgramCacheEntry *program;
+    const float *shader_params;
     GLfloat projection[4][4];
 } GLES2_DrawStateCache;
 
@@ -391,6 +407,7 @@ static GLES2_ProgramCacheEntry *GLES2_CacheProgram(GLES2_RenderData *data, GLuin
 {
     GLES2_ProgramCacheEntry *entry;
     GLint linkSuccessful;
+    int i;
 
     /* Check if we've already cached this program */
     entry = data->program_cache.head;
@@ -441,14 +458,9 @@ static GLES2_ProgramCacheEntry *GLES2_CacheProgram(GLES2_RenderData *data, GLuin
     }
 
     /* Predetermine locations of uniform variables */
-    entry->uniform_locations[GLES2_UNIFORM_PROJECTION] =
-        data->glGetUniformLocation(entry->id, "u_projection");
-    entry->uniform_locations[GLES2_UNIFORM_TEXTURE_V] =
-        data->glGetUniformLocation(entry->id, "u_texture_v");
-    entry->uniform_locations[GLES2_UNIFORM_TEXTURE_U] =
-        data->glGetUniformLocation(entry->id, "u_texture_u");
-    entry->uniform_locations[GLES2_UNIFORM_TEXTURE] =
-        data->glGetUniformLocation(entry->id, "u_texture");
+    for (i = 0; i < NUM_GLES2_UNIFORMS; ++i) {
+        entry->uniform_locations[i] = data->glGetUniformLocation(entry->id, GLES2_UniformNames[i]);
+    }
 
     data->glUseProgram(entry->id);
     if (entry->uniform_locations[GLES2_UNIFORM_TEXTURE_V] != -1) {
@@ -594,6 +606,7 @@ static int GLES2_SelectProgram(GLES2_RenderData *data, GLES2_ImageSource source,
     GLuint fragment;
     GLES2_ShaderType vtype, ftype;
     GLES2_ProgramCacheEntry *program;
+    const float *shader_params = NULL;
 
     /* Select an appropriate shader pair for the specified modes */
     vtype = GLES2_SHADER_VERTEX_DEFAULT;
@@ -615,67 +628,34 @@ static int GLES2_SelectProgram(GLES2_RenderData *data, GLES2_ImageSource source,
         break;
 #if SDL_HAVE_YUV
     case GLES2_IMAGESOURCE_TEXTURE_YUV:
-        if (SDL_ISCOLORSPACE_YUV_BT601(colorspace)) {
-            if (SDL_ISCOLORSPACE_LIMITED_RANGE(colorspace)) {
-                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_YUV_BT601;
-            } else {
-                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_YUV_JPEG;
-            }
-        } else if (SDL_ISCOLORSPACE_YUV_BT709(colorspace)) {
-            if (SDL_ISCOLORSPACE_LIMITED_RANGE(colorspace)) {
-                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_YUV_BT709;
-            } else {
-                SDL_SetError("Unsupported YUV conversion mode");
-                goto fault;
-            }
-        } else {
-            SDL_SetError("Unsupported YUV conversion mode");
+        ftype = GLES2_SHADER_FRAGMENT_TEXTURE_YUV;
+        shader_params = SDL_GetYCbCRtoRGBConversionMatrix(colorspace);
+        if (!shader_params) {
+            SDL_SetError("Unsupported YUV colorspace");
             goto fault;
         }
         break;
     case GLES2_IMAGESOURCE_TEXTURE_NV12:
-        if (SDL_ISCOLORSPACE_YUV_BT601(colorspace)) {
-            if (SDL_ISCOLORSPACE_LIMITED_RANGE(colorspace)) {
-                if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
-                    ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RG_BT601;
-                } else {
-                    ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RA_BT601;
-                }
-            } else {
-                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_JPEG;
-            }
-        } else if (SDL_ISCOLORSPACE_YUV_BT709(colorspace)) {
-            if (SDL_ISCOLORSPACE_LIMITED_RANGE(colorspace)) {
-                if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
-                    ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RG_BT709;
-                } else {
-                    ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RA_BT709;
-                }
-            } else {
-                SDL_SetError("Unsupported YUV conversion mode");
-                goto fault;
-            }
+        if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
+            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RG;
         } else {
-            SDL_SetError("Unsupported YUV conversion mode");
+            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RA;
+        }
+        shader_params = SDL_GetYCbCRtoRGBConversionMatrix(colorspace);
+        if (!shader_params) {
+            SDL_SetError("Unsupported YUV colorspace");
             goto fault;
         }
         break;
     case GLES2_IMAGESOURCE_TEXTURE_NV21:
-        if (SDL_ISCOLORSPACE_YUV_BT601(colorspace)) {
-            if (SDL_ISCOLORSPACE_LIMITED_RANGE(colorspace)) {
-                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT601;
-            } else {
-                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV21_JPEG;
-            }
-        } else if (SDL_ISCOLORSPACE_YUV_BT709(colorspace)) {
-            if (SDL_ISCOLORSPACE_LIMITED_RANGE(colorspace)) {
-                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT709;
-            } else {
-                SDL_SetError("Unsupported YUV conversion mode");
-                goto fault;
-            }
+        if (SDL_GetHintBoolean("SDL_RENDER_OPENGL_NV12_RG_SHADER", SDL_FALSE)) {
+            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV21_RG;
         } else {
-            SDL_SetError("Unsupported YUV conversion mode");
+            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV21_RA;
+        }
+        shader_params = SDL_GetYCbCRtoRGBConversionMatrix(colorspace);
+        if (!shader_params) {
+            SDL_SetError("Unsupported YUV colorspace");
             goto fault;
         }
         break;
@@ -707,7 +687,8 @@ static int GLES2_SelectProgram(GLES2_RenderData *data, GLES2_ImageSource source,
     /* Check if we need to change programs at all */
     if (data->drawstate.program &&
         data->drawstate.program->vertex_shader == vertex &&
-        data->drawstate.program->fragment_shader == fragment) {
+        data->drawstate.program->fragment_shader == fragment &&
+        data->drawstate.program->shader_params == shader_params) {
         return 0;
     }
 
@@ -719,6 +700,28 @@ static int GLES2_SelectProgram(GLES2_RenderData *data, GLES2_ImageSource source,
 
     /* Select that program in OpenGL */
     data->glUseProgram(program->id);
+
+    if (shader_params && shader_params != program->shader_params) {
+        /* YUV shader params are Yoffset, 0, Rcoeff, 0, Gcoeff, 0, Bcoeff, 0 */
+        if (program->uniform_locations[GLES2_UNIFORM_OFFSET] != -1) {
+            data->glUniform3f(program->uniform_locations[GLES2_UNIFORM_OFFSET], shader_params[0], shader_params[1], shader_params[2]);
+        }
+        if (program->uniform_locations[GLES2_UNIFORM_MATRIX] != -1) {
+            GLfloat matrix[3 * 3];
+
+            matrix[0 * 3 + 0] = shader_params[4];
+            matrix[0 * 3 + 1] = shader_params[5];
+            matrix[0 * 3 + 2] = shader_params[6];
+            matrix[1 * 3 + 0] = shader_params[8];
+            matrix[1 * 3 + 1] = shader_params[9];
+            matrix[1 * 3 + 2] = shader_params[10];
+            matrix[2 * 3 + 0] = shader_params[12];
+            matrix[2 * 3 + 1] = shader_params[13];
+            matrix[2 * 3 + 2] = shader_params[14];
+            data->glUniformMatrix3fv(program->uniform_locations[GLES2_UNIFORM_MATRIX], 1, GL_FALSE, matrix);
+        }
+        program->shader_params = shader_params;
+    }
 
     /* Set the current program */
     data->drawstate.program = program;
@@ -1545,6 +1548,9 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         }
         SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_U_NUMBER, data->texture_u);
 
+        if (!SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace)) {
+            return SDL_SetError("Unsupported YUV colorspace");
+        }
     } else if (data->nv12) {
         data->texture_u = (GLuint)SDL_GetNumberProperty(create_props, SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_UV_NUMBER, 0);
         if (data->texture_u) {
@@ -1566,6 +1572,10 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
             return -1;
         }
         SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_UV_NUMBER, data->texture_u);
+
+        if (!SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace)) {
+            return SDL_SetError("Unsupported YUV colorspace");
+        }
     }
 #endif
 

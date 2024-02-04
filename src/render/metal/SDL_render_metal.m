@@ -23,6 +23,7 @@
 #if defined(SDL_VIDEO_RENDER_METAL) && !defined(SDL_RENDER_DISABLED)
 
 #include "../SDL_sysrender.h"
+#include "../../video/SDL_pixels_c.h"
 
 #include <Availability.h>
 #import <Metal/Metal.h>
@@ -70,10 +71,11 @@
 static const size_t CONSTANTS_OFFSET_INVALID = 0xFFFFFFFF;
 static const size_t CONSTANTS_OFFSET_IDENTITY = 0;
 static const size_t CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_IDENTITY + sizeof(float) * 16);
-static const size_t CONSTANTS_OFFSET_DECODE_JPEG = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM + sizeof(float) * 16);
-static const size_t CONSTANTS_OFFSET_DECODE_BT601 = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_DECODE_JPEG + sizeof(float) * 4 * 4);
-static const size_t CONSTANTS_OFFSET_DECODE_BT709 = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_DECODE_BT601 + sizeof(float) * 4 * 4);
-static const size_t CONSTANTS_LENGTH = CONSTANTS_OFFSET_DECODE_BT709 + sizeof(float) * 4 * 4;
+static const size_t CONSTANTS_OFFSET_DECODE_BT601_LIMITED = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM + sizeof(float) * 16);
+static const size_t CONSTANTS_OFFSET_DECODE_BT601_FULL = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_DECODE_BT601_LIMITED + sizeof(float) * 4 * 4);
+static const size_t CONSTANTS_OFFSET_DECODE_BT709_LIMITED = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_DECODE_BT601_FULL + sizeof(float) * 4 * 4);
+static const size_t CONSTANTS_OFFSET_DECODE_BT709_FULL = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_DECODE_BT709_LIMITED + sizeof(float) * 4 * 4);
+static const size_t CONSTANTS_LENGTH = CONSTANTS_OFFSET_DECODE_BT709_FULL + sizeof(float) * 4 * 4;
 
 typedef enum SDL_MetalVertexFunction
 {
@@ -640,18 +642,18 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
             size_t offset = 0;
             if (SDL_ISCOLORSPACE_YUV_BT601(texture->colorspace)) {
                 if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
-                    offset = CONSTANTS_OFFSET_DECODE_BT601;
+                    offset = CONSTANTS_OFFSET_DECODE_BT601_LIMITED;
                 } else {
-                    offset = CONSTANTS_OFFSET_DECODE_JPEG;
+                    offset = CONSTANTS_OFFSET_DECODE_BT601_FULL;
                 }
             } else if (SDL_ISCOLORSPACE_YUV_BT709(texture->colorspace)) {
                 if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
-                    offset = CONSTANTS_OFFSET_DECODE_BT709;
+                    offset = CONSTANTS_OFFSET_DECODE_BT709_LIMITED;
                 } else {
-                    return SDL_SetError("Unsupported YUV conversion mode");
+                    offset = CONSTANTS_OFFSET_DECODE_BT709_FULL;
                 }
             } else {
-                return SDL_SetError("Unsupported YUV conversion mode");
+                offset = 0;
             }
             texturedata.conversionBufferOffset = offset;
         }
@@ -1699,27 +1701,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
             1.0f,
         };
 
-        /* Metal pads float3s to 16 bytes. */
-        float decodetransformJPEG[4 * 4] = {
-            0.0, -0.501960814, -0.501960814, 0.0, /* offset */
-            1.0000, 0.0000, 1.4020, 0.0,          /* Rcoeff */
-            1.0000, -0.3441, -0.7141, 0.0,        /* Gcoeff */
-            1.0000, 1.7720, 0.0000, 0.0,          /* Bcoeff */
-        };
-
-        float decodetransformBT601[4 * 4] = {
-            -0.0627451017, -0.501960814, -0.501960814, 0.0, /* offset */
-            1.1644, 0.0000, 1.5960, 0.0,                    /* Rcoeff */
-            1.1644, -0.3918, -0.8130, 0.0,                  /* Gcoeff */
-            1.1644, 2.0172, 0.0000, 0.0,                    /* Bcoeff */
-        };
-
-        float decodetransformBT709[4 * 4] = {
-            -0.0627451017, -0.501960814, -0.501960814, 0.0, /* offset */
-            1.1644,  0.0000,  1.7927, 0.0,                  /* Rcoeff */
-            1.1644, -0.2132, -0.5329, 0.0,                  /* Gcoeff */
-            1.1644,  2.1124,  0.0000, 0.0,                  /* Bcoeff */
-        };
+        const size_t YCbCr_shader_matrix_size = 4 * 4 * sizeof(float);
 
         if (!IsMetalAvailable()) {
             return NULL;
@@ -1840,9 +1822,10 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         constantdata = [mtlbufconstantstaging contents];
         SDL_memcpy(constantdata + CONSTANTS_OFFSET_IDENTITY, identitytransform, sizeof(identitytransform));
         SDL_memcpy(constantdata + CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM, halfpixeltransform, sizeof(halfpixeltransform));
-        SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_JPEG, decodetransformJPEG, sizeof(decodetransformJPEG));
-        SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT601, decodetransformBT601, sizeof(decodetransformBT601));
-        SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT709, decodetransformBT709, sizeof(decodetransformBT709));
+        SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT601_LIMITED, SDL_GetYCbCRtoRGBConversionMatrix(SDL_COLORSPACE_BT601_LIMITED), YCbCr_shader_matrix_size);
+        SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT601_FULL, SDL_GetYCbCRtoRGBConversionMatrix(SDL_COLORSPACE_BT601_FULL), YCbCr_shader_matrix_size);
+        SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT709_LIMITED, SDL_GetYCbCRtoRGBConversionMatrix(SDL_COLORSPACE_BT709_LIMITED), YCbCr_shader_matrix_size);
+        SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT709_FULL, SDL_GetYCbCRtoRGBConversionMatrix(SDL_COLORSPACE_BT709_FULL), YCbCr_shader_matrix_size);
 
         mtlbufquadindicesstaging = [data.mtldevice newBufferWithLength:indicessize options:MTLResourceStorageModeShared];
 
