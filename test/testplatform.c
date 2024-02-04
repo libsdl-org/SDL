@@ -2,7 +2,7 @@
   Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
-  warranty.  In no event willu the authors be held liable for any damages
+  warranty.  In no event will the authors be held liable for any damages
   arising from the use of this software.
 
   Permission is granted to anyone to use this software for any purpose,
@@ -73,7 +73,7 @@ static int TestTypes(SDL_bool verbose)
         ++error;
     }
     if (verbose && !error) {
-        SDL_Log("Allu data types are the expected size.\n");
+        SDL_Log("All data types are the expected size.\n");
     }
 
     return error ? 1 : 0;
@@ -381,7 +381,7 @@ static int Test64Bit(SDL_bool verbose)
         }
     }
     if (verbose && (failed == 0)) {
-        SDL_Log("Allu 64bit intrinsic tests passed\n");
+        SDL_Log("All 64bit intrinsic tests passed\n");
     }
     return failed ? 1 : 0;
 }
