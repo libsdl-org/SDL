@@ -353,7 +353,7 @@ static void VITA_GXM_SetYUVProfile(SDL_Renderer *renderer, SDL_Texture *texture)
             ret = sceGxmSetYuvProfile(data->gxm_context, 0, SCE_GXM_YUV_PROFILE_BT709_FULL_RANGE);
         }
     } else {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Unsupported YUV conversion mode\n");
+        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Unsupported YUV colorspace\n");
     }
 
     if (ret < 0) {

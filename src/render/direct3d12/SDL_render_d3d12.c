@@ -99,6 +99,7 @@ typedef struct
 /* Per-texture data */
 typedef struct
 {
+    int w, h;
     ID3D12Resource *mainTexture;
     D3D12_CPU_DESCRIPTOR_HANDLE mainTextureResourceView;
     D3D12_RESOURCE_STATES mainResourceState;
@@ -108,6 +109,8 @@ typedef struct
     ID3D12Resource *stagingBuffer;
     D3D12_RESOURCE_STATES stagingResourceState;
     D3D12_FILTER scaleMode;
+    D3D12_Shader shader;
+    const float *shader_params;
 #if SDL_HAVE_YUV
     /* YV12 texture support */
     SDL_bool yuv;
@@ -135,6 +138,7 @@ typedef struct
 typedef struct
 {
     D3D12_Shader shader;
+    const float *shader_params;
     SDL_BlendMode blendMode;
     D3D12_PRIMITIVE_TOPOLOGY_TYPE topology;
     DXGI_FORMAT rtvFormat;
@@ -1545,6 +1549,16 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
     textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
     textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
+    /* NV12 textures must have even width and height */
+    if (texture->format == SDL_PIXELFORMAT_NV12 ||
+        texture->format == SDL_PIXELFORMAT_NV21) {
+        textureDesc.Width = (textureDesc.Width + 1) & ~1;
+        textureDesc.Height = (textureDesc.Height + 1) & ~1;
+    }
+    textureData->w = (int)textureDesc.Width;
+    textureData->h = (int)textureDesc.Height;
+    textureData->shader = SHADER_RGB;
+
     if (texture->access == SDL_TEXTUREACCESS_TARGET) {
         textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     }
@@ -1620,11 +1634,23 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         }
         textureData->mainResourceStateV = D3D12_RESOURCE_STATE_COPY_DEST;
         SDL_SetProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D12_TEXTURE_V_POINTER, textureData->mainTextureV);
+
+        textureData->shader = SHADER_YUV;
+        textureData->shader_params = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace);
+        if (!textureData->shader_params) {
+            return SDL_SetError("Unsupported YUV colorspace");
+        }
     }
 
     if (texture->format == SDL_PIXELFORMAT_NV12 ||
         texture->format == SDL_PIXELFORMAT_NV21) {
         textureData->nv12 = SDL_TRUE;
+
+        textureData->shader = (texture->format == SDL_PIXELFORMAT_NV12 ? SHADER_NV12 : SHADER_NV21);
+        textureData->shader_params = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace);
+        if (!textureData->shader_params) {
+            return SDL_SetError("Unsupported YUV colorspace");
+        }
     }
 #endif /* SDL_HAVE_YUV */
     SDL_zero(resourceViewDesc);
@@ -1750,6 +1776,10 @@ static int D3D12_UpdateTextureInternal(D3D12_RenderData *rendererData, ID3D12Res
     D3D_CALL_RET(texture, GetDesc, &textureDesc);
     textureDesc.Width = w;
     textureDesc.Height = h;
+    if (textureDesc.Format == DXGI_FORMAT_NV12) {
+        textureDesc.Width = (textureDesc.Width + 1) & ~1;
+        textureDesc.Height = (textureDesc.Height + 1) & ~1;
+    }
 
     SDL_zero(uploadDesc);
     uploadDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
@@ -1895,7 +1925,7 @@ static int D3D12_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         /* Skip to the correct offset into the next texture */
         srcPixels = (const void *)((const Uint8 *)srcPixels + rect->h * srcPitch);
 
-        if (D3D12_UpdateTextureInternal(rendererData, textureData->mainTexture, 1, rect->x, rect->y, rect->w, rect->h, srcPixels, srcPitch, &textureData->mainResourceState) < 0) {
+        if (D3D12_UpdateTextureInternal(rendererData, textureData->mainTexture, 1, rect->x, rect->y, (rect->w + 1) & ~1, (rect->h + 1) & ~1, srcPixels, (srcPitch + 1) & ~1, &textureData->mainResourceState) < 0) {
             return -1;
         }
     }
@@ -2237,6 +2267,9 @@ static int D3D12_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
     int count = indices ? num_indices : num_vertices;
     VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
     SDL_bool convert_color = SDL_RenderingLinearSpace(renderer);
+    D3D12_TextureData *textureData = texture ? (D3D12_TextureData *)texture->driverdata : NULL;
+    float u_scale = textureData ? (float)texture->w / textureData->w : 0.0f;
+    float v_scale = textureData ? (float)texture->h / textureData->h : 0.0f;
 
     if (!verts) {
         return -1;
@@ -2269,8 +2302,8 @@ static int D3D12_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
 
         if (texture) {
             float *uv_ = (float *)((char *)uv + j * uv_stride);
-            verts->tex.x = uv_[0];
-            verts->tex.y = uv_[1];
+            verts->tex.x = uv_[0] * u_scale;
+            verts->tex.y = uv_[1] * v_scale;
         } else {
             verts->tex.x = 0.0f;
             verts->tex.y = 0.0f;
@@ -2422,7 +2455,7 @@ static int D3D12_UpdateViewport(SDL_Renderer *renderer)
     return 0;
 }
 
-static int D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, D3D12_Shader shader,
+static int D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, D3D12_Shader shader, const float *shader_params,
                               D3D12_PRIMITIVE_TOPOLOGY_TYPE topology,
                               const int numShaderResources, D3D12_CPU_DESCRIPTOR_HANDLE *shaderResources,
                               D3D12_CPU_DESCRIPTOR_HANDLE *sampler, const Float4X4 *matrix)
@@ -2514,7 +2547,7 @@ static int D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
     if (firstShaderResource.ptr != rendererData->currentShaderResource.ptr) {
         for (i = 0; i < numShaderResources; ++i) {
             D3D12_GPU_DESCRIPTOR_HANDLE GPUHandle = D3D12_CPUtoGPUHandle(rendererData->srvDescriptorHeap, shaderResources[i]);
-            D3D_CALL(rendererData->commandList, SetGraphicsRootDescriptorTable, i + 1, GPUHandle);
+            D3D_CALL(rendererData->commandList, SetGraphicsRootDescriptorTable, i + 2, GPUHandle);
         }
         rendererData->currentShaderResource.ptr = firstShaderResource.ptr;
     }
@@ -2526,21 +2559,15 @@ static int D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
         /* Figure out the correct sampler descriptor table index based on the type of shader */
         switch (shader) {
         case SHADER_RGB:
-            tableIndex = 2;
+            tableIndex = 3;
             break;
 #if SDL_HAVE_YUV
-        case SHADER_YUV_JPEG:
-        case SHADER_YUV_BT601:
-        case SHADER_YUV_BT709:
-            tableIndex = 4;
+        case SHADER_YUV:
+            tableIndex = 5;
             break;
-        case SHADER_NV12_JPEG:
-        case SHADER_NV12_BT601:
-        case SHADER_NV12_BT709:
-        case SHADER_NV21_JPEG:
-        case SHADER_NV21_BT601:
-        case SHADER_NV21_BT709:
-            tableIndex = 3;
+        case SHADER_NV12:
+        case SHADER_NV21:
+            tableIndex = 4;
             break;
 #endif
         default:
@@ -2559,6 +2586,15 @@ static int D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
                  32,
                  &rendererData->vertexShaderConstantsData,
                  0);
+    }
+
+    if (shader_params && (updateSubresource == SDL_TRUE || shader_params != rendererData->currentPipelineState->shader_params)) {
+        D3D_CALL(rendererData->commandList, SetGraphicsRoot32BitConstants,
+                 1,
+                 16,
+                 shader_params,
+                 0);
+        rendererData->currentPipelineState->shader_params = shader_params;
     }
 
     return 0;
@@ -2588,23 +2624,6 @@ static int D3D12_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *c
             textureData->mainTextureResourceViewU,
             textureData->mainTextureResourceViewV
         };
-        D3D12_Shader shader;
-
-        if (SDL_ISCOLORSPACE_YUV_BT601(texture->colorspace)) {
-            if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
-                shader = SHADER_YUV_BT601;
-            } else {
-                shader = SHADER_YUV_JPEG;
-            }
-        } else if (SDL_ISCOLORSPACE_YUV_BT709(texture->colorspace)) {
-            if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
-                shader = SHADER_YUV_BT709;
-            } else {
-                return SDL_SetError("Unsupported YUV conversion mode");
-            }
-        } else {
-            return SDL_SetError("Unsupported YUV conversion mode");
-        }
 
         /* Make sure each texture is in the correct state to be accessed by the pixel shader. */
         D3D12_TransitionResource(rendererData, textureData->mainTexture, textureData->mainResourceState, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
@@ -2614,43 +2633,23 @@ static int D3D12_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *c
         D3D12_TransitionResource(rendererData, textureData->mainTextureV, textureData->mainResourceStateV, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         textureData->mainResourceStateV = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
-        return D3D12_SetDrawState(renderer, cmd, shader, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, SDL_arraysize(shaderResources), shaderResources,
-                                  textureSampler, matrix);
+        return D3D12_SetDrawState(renderer, cmd, textureData->shader, textureData->shader_params, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, SDL_arraysize(shaderResources), shaderResources, textureSampler, matrix);
     } else if (textureData->nv12) {
         D3D12_CPU_DESCRIPTOR_HANDLE shaderResources[] = {
             textureData->mainTextureResourceView,
             textureData->mainTextureResourceViewNV,
         };
-        D3D12_Shader shader;
-
-        if (SDL_ISCOLORSPACE_YUV_BT601(texture->colorspace)) {
-            if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
-                shader = texture->format == SDL_PIXELFORMAT_NV12 ? SHADER_NV12_BT601 : SHADER_NV21_BT601;
-            } else {
-                shader = texture->format == SDL_PIXELFORMAT_NV12 ? SHADER_NV12_JPEG : SHADER_NV21_JPEG;
-            }
-        } else if (SDL_ISCOLORSPACE_YUV_BT709(texture->colorspace)) {
-            if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
-                shader = texture->format == SDL_PIXELFORMAT_NV12 ? SHADER_NV12_BT709 : SHADER_NV21_BT709;
-            } else {
-                return SDL_SetError("Unsupported YUV conversion mode");
-            }
-        } else {
-            return SDL_SetError("Unsupported YUV conversion mode");
-        }
 
         /* Make sure each texture is in the correct state to be accessed by the pixel shader. */
         D3D12_TransitionResource(rendererData, textureData->mainTexture, textureData->mainResourceState, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         textureData->mainResourceState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
-        return D3D12_SetDrawState(renderer, cmd, shader, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, SDL_arraysize(shaderResources), shaderResources,
-                                  textureSampler, matrix);
+        return D3D12_SetDrawState(renderer, cmd, textureData->shader, textureData->shader_params, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, SDL_arraysize(shaderResources), shaderResources, textureSampler, matrix);
     }
 #endif /* SDL_HAVE_YUV */
     D3D12_TransitionResource(rendererData, textureData->mainTexture, textureData->mainResourceState, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
     textureData->mainResourceState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-    return D3D12_SetDrawState(renderer, cmd, SHADER_RGB, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, 1, &textureData->mainTextureResourceView,
-                              textureSampler, matrix);
+    return D3D12_SetDrawState(renderer, cmd, textureData->shader, textureData->shader_params, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, 1, &textureData->mainTextureResourceView, textureSampler, matrix);
 }
 
 static void D3D12_DrawPrimitives(SDL_Renderer *renderer, D3D12_PRIMITIVE_TOPOLOGY primitiveTopology, const size_t vertexStart, const size_t vertexCount)
@@ -2747,7 +2746,7 @@ static int D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
             const size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
             const size_t start = first / sizeof(VertexPositionColor);
-            D3D12_SetDrawState(renderer, cmd, SHADER_SOLID, D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT, 0, NULL, NULL, NULL);
+            D3D12_SetDrawState(renderer, cmd, SHADER_SOLID, NULL, D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT, 0, NULL, NULL, NULL);
             D3D12_DrawPrimitives(renderer, D3D_PRIMITIVE_TOPOLOGY_POINTLIST, start, count);
             break;
         }
@@ -2758,7 +2757,7 @@ static int D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
             const size_t first = cmd->data.draw.first;
             const size_t start = first / sizeof(VertexPositionColor);
             const VertexPositionColor *verts = (VertexPositionColor *)(((Uint8 *)vertices) + first);
-            D3D12_SetDrawState(renderer, cmd, SHADER_SOLID, D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE, 0, NULL, NULL, NULL);
+            D3D12_SetDrawState(renderer, cmd, SHADER_SOLID, NULL, D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE, 0, NULL, NULL, NULL);
             D3D12_DrawPrimitives(renderer, D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, start, count);
             if (verts[0].pos.x != verts[count - 1].pos.x || verts[0].pos.y != verts[count - 1].pos.y) {
                 D3D12_DrawPrimitives(renderer, D3D_PRIMITIVE_TOPOLOGY_POINTLIST, start + (count - 1), 1);
@@ -2785,7 +2784,7 @@ static int D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
             if (texture) {
                 D3D12_SetCopyState(renderer, cmd, NULL);
             } else {
-                D3D12_SetDrawState(renderer, cmd, SHADER_SOLID, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, 0, NULL, NULL, NULL);
+                D3D12_SetDrawState(renderer, cmd, SHADER_SOLID, NULL, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, 0, NULL, NULL, NULL);
             }
 
             D3D12_DrawPrimitives(renderer, D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, start, count);
