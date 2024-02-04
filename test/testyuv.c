@@ -351,7 +351,7 @@ int main(int argc, char **argv)
         }
         if (consumed <= 0) {
             static const char *options[] = {
-                "[--jpeg|--bt601|-bt709|--auto]",
+                "[--jpeg|--bt601|--bt709|--auto]",
                 "[--yv12|--iyuv|--yuy2|--uyvy|--yvyu|--nv12|--nv21]",
                 "[--rgb555|--rgb565|--rgb24|--argb|--abgr|--rgba|--bgra]",
                 "[--automated]",
