@@ -22,7 +22,9 @@
 /**
  *  \file SDL_stdinc.h
  *
- *  This is a general header that includes C language support.
+ *  This is a general header that includes C language support. It implements
+ *  a subset of the C runtime: these should all behave the same way as their
+ *  C runtime equivalents, but with an SDL_ prefix.
  */
 
 #ifndef SDL_stdinc_h_
