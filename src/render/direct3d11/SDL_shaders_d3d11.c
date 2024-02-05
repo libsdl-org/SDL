@@ -56,6 +56,10 @@
 #include "D3D11_PixelShader_NV21.h"
 #undef g_main
 
+#define g_main D3D11_PixelShader_HDR10
+#include "D3D11_PixelShader_HDR10.h"
+#undef g_main
+
 #define g_main D3D11_VertexShader
 #include "D3D11_VertexShader.h"
 #undef g_main
@@ -73,6 +77,7 @@ static struct
     { D3D11_PixelShader_YUV, sizeof(D3D11_PixelShader_YUV) },
     { D3D11_PixelShader_NV12, sizeof(D3D11_PixelShader_NV12) },
     { D3D11_PixelShader_NV21, sizeof(D3D11_PixelShader_NV21) },
+    { D3D11_PixelShader_HDR10, sizeof(D3D11_PixelShader_HDR10) },
 #endif
 };
 SDL_COMPILE_TIME_ASSERT(D3D11_shaders, SDL_arraysize(D3D11_shaders) == NUM_SHADERS);
