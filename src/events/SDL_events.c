@@ -1559,7 +1559,6 @@ SDL_EventQueueElement SDL_EventQueueBegin() {
 }
 
 SDL_EventQueueElement SDL_EventQueueEnd() {
-    SDL_assert(SDL_EventQ.tail->next == NULL);
     return NULL;
 }
 
