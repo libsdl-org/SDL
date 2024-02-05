@@ -759,9 +759,9 @@ float SDL_PQfromNits(float v)
     const float m2 = 78.84375f;
 
     float y = SDL_clamp(v / 10000.0f, 0.0f, 1.0f);
-    float num = c1 + c2 * pow(y, m1);
-    float den = 1.0f + c3 * pow(y, m1);
-    return pow(num / den, m2);
+    float num = c1 + c2 * SDL_powf(y, m1);
+    float den = 1.0f + c3 * SDL_powf(y, m1);
+    return SDL_powf(num / den, m2);
 }
 
 const float *SDL_GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace)

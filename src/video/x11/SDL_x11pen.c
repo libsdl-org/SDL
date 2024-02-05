@@ -275,7 +275,7 @@ static SDL_bool xinput2_pen_is_eraser(SDL_VideoDevice *_this, int deviceid, char
     SDL_strlcpy(dev_name, devicename, PEN_ERASER_ID_MAXLEN);
     /* lowercase device name string so we can use strstr() */
     for (k = 0; dev_name[k]; ++k) {
-        dev_name[k] = tolower(dev_name[k]);
+        dev_name[k] = SDL_tolower(dev_name[k]);
     }
 
     return (SDL_strstr(dev_name, PEN_ERASER_NAME_TAG)) ? SDL_TRUE : SDL_FALSE;
