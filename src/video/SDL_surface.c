@@ -1733,6 +1733,7 @@ int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g,
     size_t bytes_per_pixel;
     Uint8 unused;
     Uint8 *p;
+    int result = -1;
 
     if (!surface || !surface->format || !surface->pixels) {
         return SDL_InvalidParamError("surface");
@@ -1764,28 +1765,41 @@ int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g,
 
     bytes_per_pixel = surface->format->BytesPerPixel;
 
-    if (bytes_per_pixel > sizeof(pixel)) {
-        return SDL_InvalidParamError("surface->format->BytesPerPixel");
-    }
-
     if (SDL_MUSTLOCK(surface)) {
         SDL_LockSurface(surface);
     }
 
     p = (Uint8 *)surface->pixels + y * surface->pitch + x * bytes_per_pixel;
-    /* Fill the appropriate number of least-significant bytes of pixel,
-     * leaving the most-significant bytes set to zero */
+
+    if (bytes_per_pixel > sizeof(pixel)) {
+        /* This is really slow, but it gets the job done */
+        Uint8 rgba[4];
+        SDL_Colorspace colorspace;
+
+        if (SDL_GetSurfaceColorspace(surface, &colorspace) == 0 &&
+            SDL_ConvertPixelsAndColorspace(1, 1, surface->format->format, colorspace, p, surface->pitch, SDL_PIXELFORMAT_RGBA32, SDL_COLORSPACE_SRGB, rgba, sizeof(rgba)) == 0) {
+            *r = rgba[0];
+            *g = rgba[1];
+            *b = rgba[2];
+            *a = rgba[3];
+            result = 0;
+        }
+    } else {
+        /* Fill the appropriate number of least-significant bytes of pixel,
+         * leaving the most-significant bytes set to zero */
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    SDL_memcpy(((Uint8 *) &pixel) + (sizeof(pixel) - bytes_per_pixel), p, bytes_per_pixel);
+        SDL_memcpy(((Uint8 *)&pixel) + (sizeof(pixel) - bytes_per_pixel), p, bytes_per_pixel);
 #else
-    SDL_memcpy(&pixel, p, bytes_per_pixel);
+        SDL_memcpy(&pixel, p, bytes_per_pixel);
 #endif
-    SDL_GetRGBA(pixel, surface->format, r, g, b, a);
+        SDL_GetRGBA(pixel, surface->format, r, g, b, a);
+        result = 0;
+    }
 
     if (SDL_MUSTLOCK(surface)) {
         SDL_UnlockSurface(surface);
     }
-    return 0;
+    return result;
 }
 
 /*
