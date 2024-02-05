@@ -3,6 +3,7 @@ dxc  -E main -T ps_6_0 -Fh D3D12_PixelShader_Textures.h D3D12_PixelShader_Textur
 dxc  -E main -T ps_6_0 -Fh D3D12_PixelShader_YUV.h D3D12_PixelShader_YUV.hlsl
 dxc  -E main -T ps_6_0 -Fh D3D12_PixelShader_NV12.h D3D12_PixelShader_NV12.hlsl
 dxc  -E main -T ps_6_0 -Fh D3D12_PixelShader_NV21.h D3D12_PixelShader_NV21.hlsl
+dxc  -E main -T ps_6_0 -Fh D3D12_PixelShader_HDR10.h D3D12_PixelShader_HDR10.hlsl
 
 dxc -E mainColor -T vs_6_0 -Fh D3D12_VertexShader_Color.h D3D12_VertexShader.hlsl
 dxc -E mainTexture -T vs_6_0 -Fh D3D12_VertexShader_Texture.h D3D12_VertexShader.hlsl

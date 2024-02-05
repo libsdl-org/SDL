@@ -380,6 +380,21 @@ static void D3D11_DestroyRenderer(SDL_Renderer *renderer)
     SDL_free(renderer);
 }
 
+static void D3D11_UpdateHDRState(SDL_Renderer *renderer)
+{
+    D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
+
+    /* Using some placeholder values here... */
+    data->HDR_enabled = SDL_TRUE;
+    if (renderer->output_colorspace == SDL_COLORSPACE_SCRGB && data->HDR_enabled) {
+        data->SDR_whitelevel = 200.0f;
+        data->HDR_whitelevel = 400.0f;
+    } else {
+        data->SDR_whitelevel = 80.0f;
+        data->HDR_whitelevel = 80.0f;
+    }
+}
+
 static D3D11_BLEND GetBlendFunc(SDL_BlendFactor factor)
 {
     switch (factor) {
@@ -468,21 +483,6 @@ static ID3D11BlendState *D3D11_CreateBlendState(SDL_Renderer *renderer, SDL_Blen
     ++data->blendModesCount;
 
     return blendState;
-}
-
-static void D3D11_UpdateHDRState(SDL_Renderer *renderer)
-{
-    D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
-
-    /* Using some placeholder values here... */
-    data->HDR_enabled = SDL_TRUE;
-    if (renderer->output_colorspace == SDL_COLORSPACE_SCRGB && data->HDR_enabled) {
-        data->SDR_whitelevel = 200.0f;
-        data->HDR_whitelevel = 400.0f;
-    } else {
-        data->SDR_whitelevel = 80.0f;
-        data->HDR_whitelevel = 80.0f;
-    }
 }
 
 /* Create resources that depend on the device. */
@@ -2222,7 +2222,6 @@ static int D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
         } else {
             constants.scRGB_output = 0.0f;
         }
-
         constants.SDR_whitelevel = (float)rendererData->SDR_whitelevel;
         constants.HDR_whitelevel = (float)rendererData->HDR_whitelevel;
         constants.maxCLL = 400.0f;

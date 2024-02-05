@@ -7,8 +7,6 @@ SamplerState theSampler : register(s0);
 
 float4 main(PixelShaderInput input) : SV_TARGET
 {
-    float4 Output;
-
     float3 yuv;
     yuv.x = theTextureY.Sample(theSampler, input.tex).r;
     yuv.y = theTextureU.Sample(theSampler, input.tex).r;
