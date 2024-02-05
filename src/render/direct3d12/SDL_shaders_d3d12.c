@@ -51,6 +51,10 @@
 #include "D3D12_PixelShader_NV21.h"
 #undef g_main
 
+#define g_main D3D12_PixelShader_HDR10
+#include "D3D12_PixelShader_HDR10.h"
+#undef g_main
+
 
 #define g_mainColor D3D12_VertexShader_Colors
 #include "D3D12_VertexShader_Color.h"
@@ -108,6 +112,9 @@ static struct
       D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
       ROOTSIG_NV },
     { D3D12_PixelShader_NV21, sizeof(D3D12_PixelShader_NV21),
+      D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
+      ROOTSIG_NV },
+    { D3D12_PixelShader_HDR10, sizeof(D3D12_PixelShader_HDR10),
       D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
       ROOTSIG_NV },
 #endif

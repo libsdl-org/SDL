@@ -35,6 +35,7 @@ typedef enum
     SHADER_YUV,
     SHADER_NV12,
     SHADER_NV21,
+    SHADER_HDR10,
 #endif
     NUM_SHADERS
 } D3D12_Shader;

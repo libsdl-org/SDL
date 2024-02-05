@@ -26,7 +26,7 @@ struct VertexShaderOutput
     "DENY_GEOMETRY_SHADER_ROOT_ACCESS |" \
     "DENY_HULL_SHADER_ROOT_ACCESS )," \
     "RootConstants(num32BitConstants=32, b0)," \
-    "RootConstants(num32BitConstants=0, b1)"\
+    "RootConstants(num32BitConstants=20, b1)"\
 
 #define TextureRS \
     "RootFlags ( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |" \
@@ -34,7 +34,7 @@ struct VertexShaderOutput
     "            DENY_GEOMETRY_SHADER_ROOT_ACCESS |" \
     "            DENY_HULL_SHADER_ROOT_ACCESS )," \
     "RootConstants(num32BitConstants=32, b0),"\
-    "RootConstants(num32BitConstants=0, b1),"\
+    "RootConstants(num32BitConstants=20, b1),"\
     "DescriptorTable ( SRV(t0), visibility = SHADER_VISIBILITY_PIXEL ),"\
     "DescriptorTable ( Sampler(s0), visibility = SHADER_VISIBILITY_PIXEL )"
 
@@ -44,7 +44,7 @@ struct VertexShaderOutput
     "            DENY_GEOMETRY_SHADER_ROOT_ACCESS |" \
     "            DENY_HULL_SHADER_ROOT_ACCESS )," \
     "RootConstants(num32BitConstants=32, b0),"\
-    "RootConstants(num32BitConstants=16, b1),"\
+    "RootConstants(num32BitConstants=20, b1),"\
     "DescriptorTable ( SRV(t0), visibility = SHADER_VISIBILITY_PIXEL ),"\
     "DescriptorTable ( SRV(t1), visibility = SHADER_VISIBILITY_PIXEL ),"\
     "DescriptorTable ( SRV(t2), visibility = SHADER_VISIBILITY_PIXEL ),"\
@@ -56,7 +56,7 @@ struct VertexShaderOutput
     "            DENY_GEOMETRY_SHADER_ROOT_ACCESS |" \
     "            DENY_HULL_SHADER_ROOT_ACCESS )," \
     "RootConstants(num32BitConstants=32, b0),"\
-    "RootConstants(num32BitConstants=16, b1),"\
+    "RootConstants(num32BitConstants=20, b1),"\
     "DescriptorTable ( SRV(t0), visibility = SHADER_VISIBILITY_PIXEL ),"\
     "DescriptorTable ( SRV(t1), visibility = SHADER_VISIBILITY_PIXEL ),"\
     "DescriptorTable ( Sampler(s0), visibility = SHADER_VISIBILITY_PIXEL )"
