@@ -2,41 +2,7 @@ Texture2D theTextureY : register(t0);
 Texture2D theTextureUV : register(t1);
 SamplerState theSampler : register(s0);
 
-struct PixelShaderInput
-{
-    float4 pos : SV_POSITION;
-    float2 tex : TEXCOORD0;
-    float4 color : COLOR0;
-};
-
-cbuffer Constants : register(b0)
-{
-    float4 Yoffset;
-    float4 Rcoeff;
-    float4 Gcoeff;
-    float4 Bcoeff;
-
-    float scRGB_output;
-    float SDR_whitelevel;
-    float HDR_whitelevel;
-    float maxCLL;
-};
-
-
-float3 scRGBfromNits(float3 v)
-{
-    return v / 80.0;
-}
-
-float sRGBfromLinear(float v)
-{
-    if (v <= 0.0031308) {
-        v = (v * 12.92);
-    } else {
-        v = (pow(abs(v), 1.0 / 2.4) * 1.055 - 0.055);
-    }
-    return v;
-}
+#include "D3D11_PixelShader_Common.incl"
 
 float3 PQtoNits(float3 v)
 {
@@ -58,6 +24,7 @@ float4 main(PixelShaderInput input) : SV_TARGET
         -0.124547, 1.132895, -0.008348,
         -0.018154, -0.100597, 1.118751
     };
+    float4 Output;
 
     float3 yuv;
     yuv.x = theTextureY.Sample(theSampler, input.tex).r;
@@ -84,9 +51,8 @@ float4 main(PixelShaderInput input) : SV_TARGET
         rgb.rgb = clamp(rgb.rgb, 0.0, 1.0);
     }
 
-    float4 Output;
     Output.rgb = rgb.rgb;
-    Output.a = 1.0f;
+    Output.a = 1.0;
 
     return Output * input.color;
 }
