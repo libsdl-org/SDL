@@ -40,7 +40,7 @@ extern float SDL_sRGBtoNits(float v);
 extern float SDL_sRGBfromNits(float v);
 extern float SDL_PQtoNits(float v);
 extern float SDL_PQfromNits(float v);
-extern const float *SDL_GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace);
+extern const float *SDL_GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace, int w, int h, int bits_per_pixel);
 extern const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src, SDL_ColorPrimaries dst);
 extern void SDL_ConvertColorPrimaries(float *fR, float *fG, float *fB, const float *matrix);
 

@@ -764,88 +764,126 @@ float SDL_PQfromNits(float v)
     return SDL_powf(num / den, m2);
 }
 
-const float *SDL_GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace)
+/* This is a helpful tool for deriving these:
+ * https://kdashg.github.io/misc/colors/from-coeffs.html
+ */
+static const float mat_BT601_Limited_8bit[] = {
+    -0.0627451017f, -0.501960814f, -0.501960814f, 0.0f, /* offset */
+    1.1644f, 0.0000f, 1.5960f, 0.0f,                    /* Rcoeff */
+    1.1644f, -0.3918f, -0.8130f, 0.0f,                  /* Gcoeff */
+    1.1644f, 2.0172f, 0.0000f, 0.0f,                    /* Bcoeff */
+};
+
+static const float mat_BT601_Full_8bit[] = {
+    0.0f, -0.501960814f, -0.501960814f, 0.0f,           /* offset */
+    1.0000f, 0.0000f, 1.4020f, 0.0f,                    /* Rcoeff */
+    1.0000f, -0.3441f, -0.7141f, 0.0f,                  /* Gcoeff */
+    1.0000f, 1.7720f, 0.0000f, 0.0f,                    /* Bcoeff */
+};
+
+static const float mat_BT709_Limited_8bit[] = {
+    -0.0627451017f, -0.501960814f, -0.501960814f, 0.0f, /* offset */
+    1.1644f, 0.0000f, 1.7927f, 0.0f,                    /* Rcoeff */
+    1.1644f, -0.2132f, -0.5329f, 0.0f,                  /* Gcoeff */
+    1.1644f, 2.1124f, 0.0000f, 0.0f,                    /* Bcoeff */
+};
+
+static const float mat_BT709_Full_8bit[] = {
+    0.0f, -0.501960814f, -0.501960814f, 0.0f,           /* offset */
+    1.0000f, 0.0000f, 1.5748f, 0.0f,                    /* Rcoeff */
+    1.0000f, -0.1873f, -0.4681f, 0.0f,                  /* Gcoeff */
+    1.0000f, 1.8556f, 0.0000f, 0.0f,                    /* Bcoeff */
+};
+
+static const float mat_BT2020_Limited_10bit[] = {
+    -0.062561095f, -0.500488759f, -0.500488759f, 0.0f,  /* offset */
+    1.1678f, 0.0000f, 1.6836f, 0.0f,                    /* Rcoeff */
+    1.1678f, -0.1879f, -0.6523f, 0.0f,                  /* Gcoeff */
+    1.1678f, 2.1481f, 0.0000f, 0.0f,                    /* Bcoeff */
+};
+
+static const float mat_BT2020_Full_10bit[] = {
+    0.0f, -0.500488759f, -0.500488759f, 0.0f,           /* offset */
+    1.0000f, 0.0000f, 1.4760f, 0.0f,                    /* Rcoeff */
+    1.0000f, -0.1647f, -0.5719f, 0.0f,                  /* Gcoeff */
+    1.0000f, 1.8832f, 0.0000f, 0.0f,                    /* Bcoeff */
+};
+
+static const float *SDL_GetBT601ConversionMatrix( SDL_Colorspace colorspace )
 {
-    /* This is a helpful tool for deriving these:
-     * https://kdashg.github.io/misc/colors/from-coeffs.html
-     */
-    static const float mat_BT601_Limited_8bit[] = {
-        -0.0627451017f, -0.501960814f, -0.501960814f, 0.0f, /* offset */
-        1.1644f,  0.0000f,  1.5960f, 0.0f,                  /* Rcoeff */
-        1.1644f, -0.3918f, -0.8130f, 0.0f,                  /* Gcoeff */
-        1.1644f,  2.0172f,  0.0000f, 0.0f,                  /* Bcoeff */
-    };
+    switch (SDL_COLORSPACERANGE(colorspace)) {
+    case SDL_COLOR_RANGE_LIMITED:
+    case SDL_COLOR_RANGE_UNKNOWN:
+        return mat_BT601_Limited_8bit;
+        break;
+    case SDL_COLOR_RANGE_FULL:
+        return mat_BT601_Full_8bit;
+        break;
+    default:
+        break;
+    }
+    return NULL;
+}
 
-    static const float mat_BT601_Full_8bit[] = {
-        0.0f, -0.501960814f, -0.501960814f, 0.0f,           /* offset */
-        1.0000f,  0.0000f, 1.4020f, 0.0f,                   /* Rcoeff */
-        1.0000f, -0.3441f, -0.7141f, 0.0f,                  /* Gcoeff */
-        1.0000f,  1.7720f, 0.0000f, 0.0f,                   /* Bcoeff */
-    };
+static const float *SDL_GetBT709ConversionMatrix(SDL_Colorspace colorspace)
+{
+    switch (SDL_COLORSPACERANGE(colorspace)) {
+    case SDL_COLOR_RANGE_LIMITED:
+    case SDL_COLOR_RANGE_UNKNOWN:
+        return mat_BT709_Limited_8bit;
+        break;
+    case SDL_COLOR_RANGE_FULL:
+        return mat_BT709_Full_8bit;
+        break;
+    default:
+        break;
+    }
+    return NULL;
+}
 
-    static const float mat_BT709_Limited_8bit[] = {
-        -0.0627451017f, -0.501960814f, -0.501960814f, 0.0f, /* offset */
-        1.1644f,  0.0000f,  1.7927f, 0.0f,                  /* Rcoeff */
-        1.1644f, -0.2132f, -0.5329f, 0.0f,                  /* Gcoeff */
-        1.1644f,  2.1124f,  0.0000f, 0.0f,                  /* Bcoeff */
-    };
+static const float *SDL_GetBT2020ConversionMatrix(SDL_Colorspace colorspace)
+{
+    switch (SDL_COLORSPACERANGE(colorspace)) {
+    case SDL_COLOR_RANGE_LIMITED:
+    case SDL_COLOR_RANGE_UNKNOWN:
+        return mat_BT2020_Limited_10bit;
+        break;
+    case SDL_COLOR_RANGE_FULL:
+        return mat_BT2020_Full_10bit;
+        break;
+    default:
+        break;
+    }
+    return NULL;
+}
 
-    static const float mat_BT709_Full_8bit[] = {
-        0.0f, -0.501960814f, -0.501960814f, 0.0f,           /* offset */
-        1.0000f,  0.0000f,  1.5748f, 0.0f,                  /* Rcoeff */
-        1.0000f, -0.1873f, -0.4681f, 0.0f,                  /* Gcoeff */
-        1.0000f,  1.8556f,  0.0000f, 0.0f,                  /* Bcoeff */
-    };
-
-    static const float mat_BT2020_Limited_10bit[] = {
-        -0.062561095f, -0.500488759f, -0.500488759f, 0.0f,  /* offset */
-        1.1678f,  0.0000f,  1.6836f, 0.0f,                  /* Rcoeff */
-        1.1678f, -0.1879f, -0.6523f, 0.0f,                  /* Gcoeff */
-        1.1678f,  2.1481f,  0.0000f, 0.0f,                  /* Bcoeff */
-    };
-
-    static const float mat_BT2020_Full_10bit[] = {
-        0.0f, -0.500488759f, -0.500488759f, 0.0f,           /* offset */
-        1.0000f,  0.0000f,  1.4760f, 0.0f,                  /* Rcoeff */
-        1.0000f, -0.1647f, -0.5719f, 0.0f,                  /* Gcoeff */
-        1.0000f,  1.8832f,  0.0000f, 0.0f,                  /* Bcoeff */
-    };
+const float *SDL_GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace, int w, int h, int bits_per_pixel)
+{
+    const int YUV_SD_THRESHOLD = 576;
 
     switch (SDL_COLORSPACEMATRIX(colorspace)) {
     case SDL_MATRIX_COEFFICIENTS_BT601:
-        switch (SDL_COLORSPACERANGE(colorspace)) {
-        case SDL_COLOR_RANGE_LIMITED:
-            return mat_BT601_Limited_8bit;
-            break;
-        case SDL_COLOR_RANGE_FULL:
-            return mat_BT601_Full_8bit;
-            break;
-        default:
-            break;
-        }
-        break;
+        return SDL_GetBT601ConversionMatrix(colorspace);
+
     case SDL_MATRIX_COEFFICIENTS_BT709:
-        switch (SDL_COLORSPACERANGE(colorspace)) {
-        case SDL_COLOR_RANGE_LIMITED:
-            return mat_BT709_Limited_8bit;
-            break;
-        case SDL_COLOR_RANGE_FULL:
-            return mat_BT709_Full_8bit;
-            break;
-        default:
-            break;
-        }
-        break;
+        return SDL_GetBT709ConversionMatrix(colorspace);
+
     /* FIXME: Are these the same? */
     case SDL_MATRIX_COEFFICIENTS_BT2020_NCL:
     case SDL_MATRIX_COEFFICIENTS_BT2020_CL:
-        switch (SDL_COLORSPACERANGE(colorspace)) {
-        case SDL_COLOR_RANGE_LIMITED:
-            return mat_BT2020_Limited_10bit;
-            break;
-        case SDL_COLOR_RANGE_FULL:
-            return mat_BT2020_Full_10bit;
-            break;
+        return SDL_GetBT2020ConversionMatrix(colorspace);
+
+    case SDL_MATRIX_COEFFICIENTS_UNSPECIFIED:
+        switch (bits_per_pixel) {
+        case 8:
+            if (h <= YUV_SD_THRESHOLD) {
+                return SDL_GetBT601ConversionMatrix(colorspace);
+            } else {
+                return SDL_GetBT709ConversionMatrix(colorspace);
+            }
+        case 10:
+        case 16:
+            return SDL_GetBT2020ConversionMatrix(colorspace);
         default:
             break;
         }

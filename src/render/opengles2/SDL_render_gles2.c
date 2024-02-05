@@ -629,7 +629,7 @@ static int GLES2_SelectProgram(GLES2_RenderData *data, GLES2_ImageSource source,
 #if SDL_HAVE_YUV
     case GLES2_IMAGESOURCE_TEXTURE_YUV:
         ftype = GLES2_SHADER_FRAGMENT_TEXTURE_YUV;
-        shader_params = SDL_GetYCbCRtoRGBConversionMatrix(colorspace);
+        shader_params = SDL_GetYCbCRtoRGBConversionMatrix(colorspace, 0, 0, 8);
         if (!shader_params) {
             SDL_SetError("Unsupported YUV colorspace");
             goto fault;
@@ -641,7 +641,7 @@ static int GLES2_SelectProgram(GLES2_RenderData *data, GLES2_ImageSource source,
         } else {
             ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RA;
         }
-        shader_params = SDL_GetYCbCRtoRGBConversionMatrix(colorspace);
+        shader_params = SDL_GetYCbCRtoRGBConversionMatrix(colorspace, 0, 0, 8);
         if (!shader_params) {
             SDL_SetError("Unsupported YUV colorspace");
             goto fault;
@@ -653,7 +653,7 @@ static int GLES2_SelectProgram(GLES2_RenderData *data, GLES2_ImageSource source,
         } else {
             ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV21_RA;
         }
-        shader_params = SDL_GetYCbCRtoRGBConversionMatrix(colorspace);
+        shader_params = SDL_GetYCbCRtoRGBConversionMatrix(colorspace, 0, 0, 8);
         if (!shader_params) {
             SDL_SetError("Unsupported YUV colorspace");
             goto fault;
@@ -1548,7 +1548,7 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         }
         SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_U_NUMBER, data->texture_u);
 
-        if (!SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace)) {
+        if (!SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8)) {
             return SDL_SetError("Unsupported YUV colorspace");
         }
     } else if (data->nv12) {
@@ -1573,7 +1573,7 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         }
         SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_UV_NUMBER, data->texture_u);
 
-        if (!SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace)) {
+        if (!SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8)) {
             return SDL_SetError("Unsupported YUV colorspace");
         }
     }

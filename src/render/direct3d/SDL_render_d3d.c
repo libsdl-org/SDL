@@ -558,7 +558,7 @@ static int D3D_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
         }
 
         texturedata->shader = SHADER_YUV;
-        texturedata->shader_params = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace);
+        texturedata->shader_params = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8);
         if (texturedata->shader_params == NULL) {
             return SDL_SetError("Unsupported YUV colorspace");
         }

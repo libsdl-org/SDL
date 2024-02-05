@@ -1297,7 +1297,7 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         SDL_SetProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D11_TEXTURE_V_POINTER, textureData->mainTextureV);
 
         textureData->shader = SHADER_YUV;
-        textureData->shader_params = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace);
+        textureData->shader_params = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8);
         if (!textureData->shader_params) {
             return SDL_SetError("Unsupported YUV colorspace");
         }
@@ -1306,6 +1306,8 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         texture->format == SDL_PIXELFORMAT_NV21 ||
         texture->format == SDL_PIXELFORMAT_P010 ||
         texture->format == SDL_PIXELFORMAT_P016) {
+        int bits_per_pixel;
+
         textureData->nv12 = SDL_TRUE;
 
         switch (texture->format) {
@@ -1328,7 +1330,18 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
             /* This should never happen because of the check above */
             return SDL_SetError("Unsupported YUV colorspace");
         }
-        textureData->shader_params = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace);
+        switch (texture->format) {
+        case SDL_PIXELFORMAT_P010:
+            bits_per_pixel = 10;
+            break;
+        case SDL_PIXELFORMAT_P016:
+            bits_per_pixel = 16;
+            break;
+        default:
+            bits_per_pixel = 8;
+            break;
+        }
+        textureData->shader_params = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, bits_per_pixel);
         if (!textureData->shader_params) {
             return SDL_SetError("Unsupported YUV colorspace");
         }
