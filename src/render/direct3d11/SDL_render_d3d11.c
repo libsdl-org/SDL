@@ -355,11 +355,11 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
          * to prevent IUnknown::Release() calls from crashing.
          */
         if (data->hD3D11Mod) {
-            SDL_UnloadObject(data->hD3D11Mod);
+            //SDL_UnloadObject(data->hD3D11Mod);
             data->hD3D11Mod = NULL;
         }
         if (data->hDXGIMod) {
-            SDL_UnloadObject(data->hDXGIMod);
+            //SDL_UnloadObject(data->hDXGIMod);
             data->hDXGIMod = NULL;
         }
     }
