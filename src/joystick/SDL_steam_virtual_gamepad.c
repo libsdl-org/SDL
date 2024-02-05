@@ -221,6 +221,7 @@ SDL_bool SDL_UpdateSteamVirtualGamepadInfo(void)
     if (slot >= 0) {
         AddVirtualGamepadInfo(slot, &info);
     }
+    SDL_free(info.name);
     SDL_free(data);
 
     SDL_steam_virtual_gamepad_info_file_mtime = mtime;
