@@ -76,11 +76,11 @@ typedef struct
 
 typedef struct
 {
-    float YCbCr_matrix[16];
     float scRGB_output;
     float SDR_whitelevel;
     float HDR_whitelevel;
     float maxCLL;
+    float YCbCr_matrix[16];
 } PixelShaderConstants;
 
 /* Per-vertex data */
@@ -154,6 +154,11 @@ typedef struct
     ID3D11SamplerState *linearSampler;
     D3D_FEATURE_LEVEL featureLevel;
     SDL_bool pixelSizeChanged;
+
+    /* HDR state */
+    SDL_bool HDR_enabled;
+    int SDR_whitelevel;
+    int HDR_whitelevel;
 
     /* Rasterizers */
     ID3D11RasterizerState *mainRasterizer;
@@ -465,6 +470,21 @@ static ID3D11BlendState *D3D11_CreateBlendState(SDL_Renderer *renderer, SDL_Blen
     return blendState;
 }
 
+static void D3D11_UpdateHDRState(SDL_Renderer *renderer)
+{
+    D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
+
+    /* Using some placeholder values here... */
+    data->HDR_enabled = SDL_TRUE;
+    if (renderer->output_colorspace == SDL_COLORSPACE_SCRGB && data->HDR_enabled) {
+        data->SDR_whitelevel = 200.0f;
+        data->HDR_whitelevel = 400.0f;
+    } else {
+        data->SDR_whitelevel = 80.0f;
+        data->HDR_whitelevel = 80.0f;
+    }
+}
+
 /* Create resources that depend on the device. */
 static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
 {
@@ -715,6 +735,8 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     ID3D11DeviceContext_VSSetConstantBuffers(data->d3dContext, 0, 1, &data->vertexShaderConstants);
 
     SDL_SetProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_D3D11_DEVICE_POINTER, data->d3dDevice);
+
+    D3D11_UpdateHDRState(renderer);
 
 done:
     SAFE_RELEASE(d3dDevice);
@@ -2177,46 +2199,42 @@ static int D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
         rendererData->currentBlendState = blendState;
     }
 
-    if (shader_params != rendererData->currentShaderParams[shader]) {
+    if (!rendererData->pixelShaderConstants[shader] ||
+        shader_params != rendererData->currentShaderParams[shader]) {
+        SAFE_RELEASE(rendererData->pixelShaderConstants[shader]);
+
+        PixelShaderConstants constants;
+        if (renderer->output_colorspace == SDL_COLORSPACE_SCRGB) {
+            constants.scRGB_output = 1.0f;
+        } else {
+            constants.scRGB_output = 0.0f;
+        }
+
+        constants.SDR_whitelevel = (float)rendererData->SDR_whitelevel;
+        constants.HDR_whitelevel = (float)rendererData->HDR_whitelevel;
+        constants.maxCLL = 400.0f;
+
         if (shader_params) {
-            SAFE_RELEASE(rendererData->pixelShaderConstants[shader]);
-
-            PixelShaderConstants constants;
             SDL_memcpy(constants.YCbCr_matrix, shader_params, sizeof(constants.YCbCr_matrix));
-            if (renderer->output_colorspace == SDL_COLORSPACE_SCRGB) {
-                constants.scRGB_output = 1.0f;
-            } else {
-                constants.scRGB_output = 0.0f;
-            }
+        }
 
-            /* Using some placeholder values here... */
-            const SDL_bool HDR = SDL_TRUE;
-            if (renderer->output_colorspace == SDL_COLORSPACE_SCRGB && HDR) {
-                constants.SDR_whitelevel = 200.0f;
-                constants.HDR_whitelevel = 400.0f;
-            } else {
-                constants.SDR_whitelevel = 80.0f;
-                constants.HDR_whitelevel = 80.0f;
-            }
-            constants.maxCLL = 400.0f;
+        D3D11_BUFFER_DESC desc;
+        SDL_zero(desc);
+        desc.Usage = D3D11_USAGE_DEFAULT;
+        desc.ByteWidth = sizeof(constants);
+        desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-            D3D11_BUFFER_DESC desc;
-            SDL_zero(desc);
-            desc.Usage = D3D11_USAGE_DEFAULT;
-            desc.ByteWidth = sizeof(constants);
-            desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        D3D11_SUBRESOURCE_DATA data;
+        SDL_zero(data);
+        data.pSysMem = &constants;
 
-            D3D11_SUBRESOURCE_DATA data;
-            SDL_zero(data);
-            data.pSysMem = &constants;
-
-            HRESULT result = ID3D11Device_CreateBuffer(rendererData->d3dDevice, &desc, &data, &rendererData->pixelShaderConstants[shader]);
-            if (FAILED(result)) {
-                WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device::CreateBuffer [create shader constants]"), result);
-                return -1;
-            }
+        HRESULT result = ID3D11Device_CreateBuffer(rendererData->d3dDevice, &desc, &data, &rendererData->pixelShaderConstants[shader]);
+        if (FAILED(result)) {
+            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device::CreateBuffer [create shader constants]"), result);
+            return -1;
         }
         rendererData->currentShaderParams[shader] = shader_params;
+        rendererData->currentShader = SHADER_NONE;
     }
     if (shader != rendererData->currentShader) {
         if (!rendererData->pixelShaders[shader]) {
@@ -2371,7 +2389,13 @@ static int D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
             SDL_bool convert_color = SDL_RenderingLinearSpace(renderer);
             SDL_FColor color = cmd->data.color.color;
             if (convert_color) {
+                float light_scale = (float)rendererData->SDR_whitelevel / 80.0f;
+
                 SDL_ConvertToLinear(&color);
+
+                color.r *= light_scale;
+                color.g *= light_scale;
+                color.b *= light_scale;
             }
             ID3D11DeviceContext_ClearRenderTargetView(rendererData->d3dContext, D3D11_GetCurrentRenderTargetView(renderer), &color.r);
             break;

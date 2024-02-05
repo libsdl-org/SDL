@@ -1,0 +1,75 @@
+struct PixelShaderInput
+{
+    float4 pos : SV_POSITION;
+    float2 tex : TEXCOORD0;
+    float4 color : COLOR0;
+};
+
+cbuffer Constants : register(b0)
+{
+    float scRGB_output;
+    float SDR_whitelevel;
+    float HDR_whitelevel;
+    float maxCLL;
+
+    float4 Yoffset;
+    float4 Rcoeff;
+    float4 Gcoeff;
+    float4 Bcoeff;
+};
+
+float3 scRGBtoNits(float3 v)
+{
+    return v * 80.0;
+}
+
+float3 scRGBfromNits(float3 v)
+{
+    return v / 80.0;
+}
+
+float sRGBtoLinear(float v)
+{
+    if (v <= 0.04045) {
+        v = (v / 12.92);
+    } else {
+        v = pow(abs(v + 0.055) / 1.055, 2.4);
+    }
+    return v;
+}
+
+float sRGBfromLinear(float v)
+{
+    if (v <= 0.0031308) {
+        v = (v * 12.92);
+    } else {
+        v = (pow(abs(v), 1.0 / 2.4) * 1.055 - 0.055);
+    }
+    return v;
+}
+
+float4 GetOutputColor(float4 rgba)
+{
+    if (scRGB_output) {
+        rgba.rgb = scRGBfromNits(rgba.rgb * SDR_whitelevel);
+    }
+
+    return rgba;
+}
+
+float4 GetOutputColorFromSRGB(float3 rgb)
+{
+    float4 output;
+
+    if (scRGB_output) {
+        output.r = sRGBtoLinear(rgb.r);
+        output.g = sRGBtoLinear(rgb.g);
+        output.b = sRGBtoLinear(rgb.b);
+        rgb = scRGBfromNits(rgb * SDR_whitelevel);
+    } else {
+        output.rgb = rgb.rgb;
+    }
+    output.a = 1.0;
+
+    return output;
+}
