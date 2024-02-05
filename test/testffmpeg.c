@@ -24,6 +24,7 @@
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavutil/avutil.h>
+#include <libavutil/mastering_display_metadata.h>
 #include <libavutil/pixdesc.h>
 #include <libswscale/swscale.h>
 
@@ -91,6 +92,7 @@ static int done;
 
 static SDL_bool CreateWindowAndRenderer(Uint32 window_flags, const char *driver)
 {
+    SDL_PropertiesID props;
     SDL_RendererInfo info;
     SDL_bool useEGL = (driver && SDL_strcmp(driver, "opengles2") == 0);
 
@@ -111,7 +113,23 @@ static SDL_bool CreateWindowAndRenderer(Uint32 window_flags, const char *driver)
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
 
     /* The window will be resized to the video size when it's loaded, in OpenVideoStream() */
-    if (SDL_CreateWindowAndRenderer(320, 200, window_flags, &window, &renderer) < 0) {
+    window = SDL_CreateWindow("testffmpeg", 1920, 1080, 0);
+    if (!window) {
+        return SDL_FALSE;
+    }
+
+    props = SDL_CreateProperties();
+    SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, driver);
+    SDL_SetProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
+    SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SCRGB);
+    renderer = SDL_CreateRendererWithProperties(props);
+    if (!renderer) {
+        /* Try again with the sRGB colorspace */
+        SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
+        renderer = SDL_CreateRendererWithProperties(props);
+    }
+    SDL_DestroyProperties(props);
+    if (!renderer) {
         return SDL_FALSE;
     }
 
@@ -393,6 +411,7 @@ static AVCodecContext *OpenVideoStream(AVFormatContext *ic, int stream, const AV
     }
 
     SDL_SetWindowSize(window, codecpar->width, codecpar->height);
+    SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
     return context;
 }
@@ -401,7 +420,7 @@ static SDL_Colorspace GetFrameColorspace(AVFrame *frame)
 {
     SDL_Colorspace colorspace = SDL_COLORSPACE_SRGB;
 
-    if (frame && (frame->format == AV_PIX_FMT_YUV420P || frame->format == AV_PIX_FMT_YUYV422 || frame->format == AV_PIX_FMT_UYVY422)) {
+    if (frame && frame->colorspace != AVCOL_SPC_RGB) {
         colorspace = SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
                                            frame->color_range,
                                            frame->color_primaries,
@@ -618,7 +637,7 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
     D3D11_TEXTURE2D_DESC desc;
     SDL_zero(desc);
     ID3D11Texture2D_GetDesc(pTexture, &desc);
-    if (desc.Format != DXGI_FORMAT_NV12) {
+    if (desc.Format != DXGI_FORMAT_NV12 && desc.Format != DXGI_FORMAT_P010 && desc.Format != DXGI_FORMAT_P016) {
         SDL_SetError("Unsupported texture format, expected DXGI_FORMAT_NV12, got %d", desc.Format);
         return SDL_FALSE;
     }
@@ -633,7 +652,21 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
 
         SDL_PropertiesID props = SDL_CreateProperties();
         SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, GetFrameColorspace(frame));
-        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_NV12);
+        switch (desc.Format) {
+        case DXGI_FORMAT_NV12:
+            SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_NV12);
+            break;
+        case DXGI_FORMAT_P010:
+            SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_P010);
+            break;
+        case DXGI_FORMAT_P016:
+            SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_P016);
+            break;
+        default:
+            /* This should be checked above */
+            SDL_assert(!"Unknown pixel format");
+            break;
+        }
         SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STATIC);
         SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, desc.Width);
         SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, desc.Height);
@@ -673,6 +706,20 @@ static SDL_bool GetTextureForFrame(AVFrame *frame, SDL_Texture **texture)
 
 static void DisplayVideoTexture(AVFrame *frame)
 {
+#if 1 /* This data doesn't seem to be valid in any of the videos I've tried */
+    AVFrameSideData *sd = av_frame_get_side_data(frame, AV_FRAME_DATA_MASTERING_DISPLAY_METADATA);
+    if (sd) {
+        AVMasteringDisplayMetadata *mdm = (AVMasteringDisplayMetadata *)sd->data;
+        mdm = mdm;
+    }
+
+    sd = av_frame_get_side_data(frame, AV_FRAME_DATA_CONTENT_LIGHT_LEVEL);
+    if (sd) {
+        AVContentLightMetadata *clm = (AVContentLightMetadata *)sd->data;
+        clm = clm;
+    }
+#endif /* 0 */
+
     /* Update the video texture */
     if (!GetTextureForFrame(frame, &video_texture)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't get texture for frame: %s\n", SDL_GetError());
