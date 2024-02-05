@@ -1641,7 +1641,7 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         SDL_SetProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D12_TEXTURE_V_POINTER, textureData->mainTextureV);
 
         textureData->shader = SHADER_YUV;
-        textureData->shader_params = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace);
+        textureData->shader_params = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8);
         if (!textureData->shader_params) {
             return SDL_SetError("Unsupported YUV colorspace");
         }
@@ -1652,7 +1652,7 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         textureData->nv12 = SDL_TRUE;
 
         textureData->shader = (texture->format == SDL_PIXELFORMAT_NV12 ? SHADER_NV12 : SHADER_NV21);
-        textureData->shader_params = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace);
+        textureData->shader_params = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8);
         if (!textureData->shader_params) {
             return SDL_SetError("Unsupported YUV colorspace");
         }

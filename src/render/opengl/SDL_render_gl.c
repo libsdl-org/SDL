@@ -680,7 +680,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
                 data->shader = SHADER_NV21_RA;
             }
         }
-        data->shader_params = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace);
+        data->shader_params = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8);
         if (!data->shader_params) {
             return SDL_SetError("Unsupported YUV colorspace");
         }

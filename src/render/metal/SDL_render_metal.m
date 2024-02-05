@@ -1822,10 +1822,10 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         constantdata = [mtlbufconstantstaging contents];
         SDL_memcpy(constantdata + CONSTANTS_OFFSET_IDENTITY, identitytransform, sizeof(identitytransform));
         SDL_memcpy(constantdata + CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM, halfpixeltransform, sizeof(halfpixeltransform));
-        SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT601_LIMITED, SDL_GetYCbCRtoRGBConversionMatrix(SDL_COLORSPACE_BT601_LIMITED), YCbCr_shader_matrix_size);
-        SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT601_FULL, SDL_GetYCbCRtoRGBConversionMatrix(SDL_COLORSPACE_BT601_FULL), YCbCr_shader_matrix_size);
-        SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT709_LIMITED, SDL_GetYCbCRtoRGBConversionMatrix(SDL_COLORSPACE_BT709_LIMITED), YCbCr_shader_matrix_size);
-        SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT709_FULL, SDL_GetYCbCRtoRGBConversionMatrix(SDL_COLORSPACE_BT709_FULL), YCbCr_shader_matrix_size);
+        SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT601_LIMITED, SDL_GetYCbCRtoRGBConversionMatrix(SDL_COLORSPACE_BT601_LIMITED, 0, 0, 8), YCbCr_shader_matrix_size);
+        SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT601_FULL, SDL_GetYCbCRtoRGBConversionMatrix(SDL_COLORSPACE_BT601_FULL, 0, 0, 8), YCbCr_shader_matrix_size);
+        SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT709_LIMITED, SDL_GetYCbCRtoRGBConversionMatrix(SDL_COLORSPACE_BT709_LIMITED, 0, 0, 8), YCbCr_shader_matrix_size);
+        SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT709_FULL, SDL_GetYCbCRtoRGBConversionMatrix(SDL_COLORSPACE_BT709_FULL, 0, 0, 8), YCbCr_shader_matrix_size);
 
         mtlbufquadindicesstaging = [data.mtldevice newBufferWithLength:indicessize options:MTLResourceStorageModeShared];
 
