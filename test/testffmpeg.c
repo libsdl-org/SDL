@@ -759,6 +759,11 @@ static SDL_bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **tex
     case kCVPixelFormatType_420YpCbCr8BiPlanarFullRange:
         format = SDL_PIXELFORMAT_NV12;
         break;
+    case kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange:
+    case kCVPixelFormatType_420YpCbCr10BiPlanarFullRange:
+        format = SDL_PIXELFORMAT_P010;
+        HDR_video = SDL_TRUE;
+        break;
     default:
         SDL_SetError("Unsupported texture format %c%c%c%c",
             (char)((nPixelBufferType >> 24) & 0xFF),

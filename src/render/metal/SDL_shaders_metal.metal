@@ -34,6 +34,19 @@ float sRGBfromLinear(float v)
     return v;
 }
 
+float3 PQtoNits(float3 v)
+{
+    const float c1 = 0.8359375;
+    const float c2 = 18.8515625;
+    const float c3 = 18.6875;
+    const float oo_m1 = 1.0 / 0.1593017578125;
+    const float oo_m2 = 1.0 / 78.84375;
+
+    float3 num = max(pow(abs(v), oo_m2) - c1, 0.0);
+    float3 den = c2 - c3 * pow(abs(v), oo_m2);
+    return 10000.0 * pow(abs(num / den), oo_m1);
+}
+
 float4 GetOutputColor(float4 rgba, float color_scale)
 {
     float4 output;
@@ -213,5 +226,37 @@ fragment float4 SDL_NV21_fragment(CopyVertexOutput vert [[stage_in]],
     rgb.b = dot(yuv, decode.Bcoeff);
 
     return GetOutputColorFromSRGB(rgb, c.scRGB_output, c.color_scale) * vert.color;
+}
+
+fragment float4 SDL_HDR10_fragment(CopyVertexOutput vert [[stage_in]],
+                                   constant ShaderConstants &c [[buffer(0)]],
+                                   constant YUVDecode &decode [[buffer(1)]],
+                                   texture2d<float> texY [[texture(0)]],
+                                   texture2d<float> texUV [[texture(1)]],
+                                   sampler s [[sampler(0)]])
+{
+    const float3x3 mat2020to709 = {
+        { 1.660496, -0.587656, -0.072840 },
+        { -0.124547, 1.132895, -0.008348 },
+        { -0.018154, -0.100597, 1.118751 }
+    };
+
+    float3 yuv;
+    yuv.x = texY.sample(s, vert.texcoord).r;
+    yuv.yz = texUV.sample(s, vert.texcoord).rg;
+
+    float3 rgb;
+    yuv += decode.offset;
+    rgb.r = dot(yuv, decode.Rcoeff);
+    rgb.g = dot(yuv, decode.Gcoeff);
+    rgb.b = dot(yuv, decode.Bcoeff);
+
+    rgb = PQtoNits(rgb);
+
+    rgb = rgb * mat2020to709;
+
+    rgb = scRGBfromNits(rgb);
+
+    return GetOutputColorFromSCRGB(rgb, c.scRGB_output, c.color_scale) * vert.color;
 }
 
