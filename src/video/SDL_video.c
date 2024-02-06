@@ -671,6 +671,7 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send
 {
     SDL_VideoDisplay **displays, *new_display;
     SDL_DisplayID id;
+    SDL_PropertiesID props;
     int i;
 
     new_display = (SDL_VideoDisplay *)SDL_malloc(sizeof(*new_display));
@@ -710,9 +711,15 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send
         new_display->fullscreen_modes[i].displayID = id;
     }
 
-    if (send_event) {
-        SDL_SendDisplayEvent(new_display, SDL_EVENT_DISPLAY_ADDED, 0);
+    props = SDL_GetDisplayProperties(id);
+
+    if (display->HDR.enabled) {
+        SDL_SetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, SDL_TRUE);
     }
+    if (display->HDR.SDR_whitelevel != 0.0f) {
+        SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_SDR_WHITE_LEVEL_FLOAT, display->HDR.SDR_whitelevel);
+    }
+
     return id;
 }
 
@@ -974,6 +981,26 @@ float SDL_GetDisplayContentScale(SDL_DisplayID displayID)
     CHECK_DISPLAY_MAGIC(display, 0.0f);
 
     return display->content_scale;
+}
+
+void SDL_SetDisplayHDRProperties(SDL_VideoDisplay *display, const SDL_HDRDisplayProperties *HDR)
+{
+    SDL_PropertiesID props = SDL_GetDisplayProperties(display->id);
+    SDL_bool changed = SDL_FALSE;
+
+    if (HDR->enabled != display->HDR.enabled) {
+        SDL_SetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, HDR->enabled);
+        changed = SDL_TRUE;
+    }
+    if (HDR->SDR_whitelevel != display->HDR.SDR_whitelevel) {
+        SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_SDR_WHITE_LEVEL_FLOAT, HDR->SDR_whitelevel);
+        changed = SDL_TRUE;
+    }
+    SDL_copyp(&display->HDR, HDR);
+
+    if (changed) {
+        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_HDR_STATE_CHANGED, HDR->enabled);
+    }
 }
 
 static const SDL_DisplayMode *SDL_GetFullscreenModeMatch(const SDL_DisplayMode *mode)

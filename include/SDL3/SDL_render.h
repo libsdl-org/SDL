@@ -234,12 +234,12 @@ extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, co
  *
  * These are the supported properties:
  *
- * - `SDL_PROP_RENDERER_CREATE_WINDOW_POINTER`: the window where rendering is
- *   displayed
- * - `SDL_PROP_RENDERER_CREATE_SURFACE_POINTER`: the surface where rendering
- *   is displayed, if you want a software renderer without a window
  * - `SDL_PROP_RENDERER_CREATE_NAME_STRING`: the name of the rendering driver
  *   to use, if a specific one is desired
+ * - `SDL_PROP_RENDERER_CREATE_WINDOW_POINTER`: the window where rendering is
+ *   displayed, required if this isn't a software renderer using a surface
+ * - `SDL_PROP_RENDERER_CREATE_SURFACE_POINTER`: the surface where rendering
+ *   is displayed, if you want a software renderer without a window
  * - `SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER`: an SDL_ColorSpace
  *   value describing the colorspace for output to the display, defaults to
  *   SDL_COLORSPACE_SRGB. The direct3d11 and direct3d12 renderers support
@@ -263,9 +263,9 @@ extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, co
  */
 extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_PropertiesID props);
 
+#define SDL_PROP_RENDERER_CREATE_NAME_STRING                    "name"
 #define SDL_PROP_RENDERER_CREATE_WINDOW_POINTER                 "window"
 #define SDL_PROP_RENDERER_CREATE_SURFACE_POINTER                "surface"
-#define SDL_PROP_RENDERER_CREATE_NAME_STRING                    "name"
 #define SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER       "output_colorspace"
 #define SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN          "present_vsync"
 
@@ -334,6 +334,10 @@ extern DECLSPEC int SDLCALL SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_Rend
  *
  * The following read-only properties are provided by SDL:
  *
+ * - `SDL_PROP_RENDERER_NAME_STRING`: the name of the rendering driver
+ * - `SDL_PROP_RENDERER_WINDOW_POINTER`: the window where rendering is displayed, if any
+ * - `SDL_PROP_RENDERER_SURFACE_POINTER`: the surface where rendering is displayed, if this is a software renderer without a window
+ * - `SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER`: an SDL_ColorSpace value describing the colorspace for output to the display, defaults to SDL_COLORSPACE_SRGB.
  * - `SDL_PROP_RENDERER_D3D9_DEVICE_POINTER`: the IDirect3DDevice9 associated
  *   with the renderer
  * - `SDL_PROP_RENDERER_D3D11_DEVICE_POINTER`: the ID3D11Device associated
@@ -354,6 +358,10 @@ extern DECLSPEC int SDLCALL SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_Rend
  */
 extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetRendererProperties(SDL_Renderer *renderer);
 
+#define SDL_PROP_RENDERER_NAME_STRING                   "SDL.renderer.name"
+#define SDL_PROP_RENDERER_WINDOW_POINTER                "SDL.renderer.window"
+#define SDL_PROP_RENDERER_SURFACE_POINTER               "SDL.renderer.surface"
+#define SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER      "SDL.renderer.output_colorspace"
 #define SDL_PROP_RENDERER_D3D9_DEVICE_POINTER           "SDL.renderer.d3d9.device"
 #define SDL_PROP_RENDERER_D3D11_DEVICE_POINTER          "SDL.renderer.d3d11.device"
 #define SDL_PROP_RENDERER_D3D12_DEVICE_POINTER          "SDL.renderer.d3d12.device"

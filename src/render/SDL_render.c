@@ -854,6 +854,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     const int n = SDL_GetNumRenderDrivers();
     const char *hint;
     int i, attempted = 0;
+    SDL_PropertiesID new_props;
 
     if (!window && surface) {
         return SDL_CreateSoftwareRenderer(surface);
@@ -963,6 +964,16 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     } else {
         renderer->hidden = SDL_FALSE;
     }
+
+    new_props = SDL_GetRendererProperties(renderer);
+    SDL_SetStringProperty(new_props, SDL_PROP_RENDERER_NAME_STRING, renderer->info.name);
+    if (window) {
+        SDL_SetProperty(new_props, SDL_PROP_RENDERER_WINDOW_POINTER, window);
+    }
+    if (surface) {
+        SDL_SetProperty(new_props, SDL_PROP_RENDERER_SURFACE_POINTER, surface);
+    }
+    SDL_SetNumberProperty(new_props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, renderer->output_colorspace);
 
     SDL_SetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_RENDERER, renderer);
 
