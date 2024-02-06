@@ -156,6 +156,11 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
                        selector:@selector(focusSomeWindow:)
                            name:NSApplicationDidBecomeActiveNotification
                          object:nil];
+
+            [center addObserver:self
+                       selector:@selector(screenParametersChanged:)
+                           name:NSApplicationDidChangeScreenParametersNotification
+                         object:nil];
         }
 
         [center addObserver:self
@@ -178,6 +183,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
     [center removeObserver:self name:NSWindowWillCloseNotification object:nil];
     [center removeObserver:self name:NSApplicationDidBecomeActiveNotification object:nil];
+    [center removeObserver:self name:NSApplicationDidChangeScreenParametersNotification object:nil];
     [center removeObserver:self name:NSCurrentLocaleDidChangeNotification object:nil];
     [NSApp removeObserver:self forKeyPath:@"effectiveAppearance"];
 
@@ -274,6 +280,11 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
             SDL_RaiseWindow(window);
         }
     }
+}
+
+- (void)screenParametersChanged:(NSNotification *)aNotification
+{
+    Cocoa_UpdateDisplays(SDL_GetVideoDevice());
 }
 
 - (void)localeDidChange:(NSNotification *)notification

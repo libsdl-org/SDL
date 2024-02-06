@@ -145,6 +145,8 @@ static void CreateRenderer(void)
     renderer_name = info.name;
 
     UpdateSDRWhiteLevel();
+
+    SDL_Log("HDR is %s\n", HDR_enabled ? "enabled" : "disabled");
 }
 
 static void NextRenderer( void )
@@ -745,6 +747,7 @@ static void loop(void)
                 OnMouseHeld(event.button.x, event.button.y);
             }
         } else if (event.type == SDL_EVENT_DISPLAY_HDR_STATE_CHANGED) {
+            SDL_Log("HDR %s\n", event.display.data1 ? "enabled" : "disabled");
             UpdateSDRWhiteLevel();
         } else if (event.type == SDL_EVENT_QUIT) {
             done = 1;

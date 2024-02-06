@@ -733,7 +733,7 @@ fault:
     return -1;
 }
 
-static int GLES2_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+static int GLES2_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     return 0; /* nothing to do in this backend. */
 }
@@ -1234,6 +1234,11 @@ static int GLES2_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
     while (cmd) {
         switch (cmd->command) {
         case SDL_RENDERCMD_SETDRAWCOLOR:
+        {
+            break;
+        }
+
+        case SDL_RENDERCMD_SETCOLORSCALE:
         {
             break;
         }
@@ -2181,8 +2186,9 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
     renderer->UnlockTexture = GLES2_UnlockTexture;
     renderer->SetTextureScaleMode = GLES2_SetTextureScaleMode;
     renderer->SetRenderTarget = GLES2_SetRenderTarget;
-    renderer->QueueSetViewport = GLES2_QueueSetViewport;
-    renderer->QueueSetDrawColor = GLES2_QueueSetViewport; /* SetViewport and SetDrawColor are (currently) no-ops. */
+    renderer->QueueSetViewport = GLES2_QueueNoOp;
+    renderer->QueueSetDrawColor = GLES2_QueueNoOp;
+    renderer->QueueSetColorScale = GLES2_QueueNoOp;
     renderer->QueueDrawPoints = GLES2_QueueDrawPoints;
     renderer->QueueDrawLines = GLES2_QueueDrawLines;
     renderer->QueueGeometry = GLES2_QueueGeometry;

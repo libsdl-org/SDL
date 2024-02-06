@@ -1,7 +1,87 @@
+#include <metal_common>
 #include <metal_texture>
 #include <metal_matrix>
 
 using namespace metal;
+
+float3 scRGBtoNits(float3 v)
+{
+    return v * 80.0;
+}
+
+float3 scRGBfromNits(float3 v)
+{
+    return v / 80.0;
+}
+
+float sRGBtoLinear(float v)
+{
+    if (v <= 0.04045) {
+        v = (v / 12.92);
+    } else {
+        v = pow(abs(v + 0.055) / 1.055, 2.4);
+    }
+    return v;
+}
+
+float sRGBfromLinear(float v)
+{
+    if (v <= 0.0031308) {
+        v = (v * 12.92);
+    } else {
+        v = (pow(abs(v), 1.0 / 2.4) * 1.055 - 0.055);
+    }
+    return v;
+}
+
+float4 GetOutputColor(float4 rgba, float color_scale)
+{
+    float4 output;
+
+    output.rgb = rgba.rgb * color_scale;
+    output.a = rgba.a;
+
+    return output;
+}
+
+float4 GetOutputColorFromSRGB(float3 rgb, float scRGB_output, float color_scale)
+{
+    float4 output;
+
+    if (scRGB_output) {
+        rgb.r = sRGBtoLinear(rgb.r);
+        rgb.g = sRGBtoLinear(rgb.g);
+        rgb.b = sRGBtoLinear(rgb.b);
+    }
+
+    output.rgb = rgb * color_scale;
+    output.a = 1.0;
+
+    return output;
+}
+
+float4 GetOutputColorFromSCRGB(float3 rgb, float scRGB_output, float color_scale)
+{
+    float4 output;
+
+    output.rgb = rgb * color_scale;
+    output.a = 1.0;
+
+    if (!scRGB_output) {
+        output.r = sRGBfromLinear(output.r);
+        output.g = sRGBfromLinear(output.g);
+        output.b = sRGBfromLinear(output.b);
+        output.rgb = clamp(output.rgb, 0.0, 1.0);
+    }
+
+    return output;
+}
+
+struct ShaderConstants
+{
+    float scRGB_output;
+    float color_scale;
+};
 
 struct SolidVertexInput
 {
@@ -27,9 +107,10 @@ vertex SolidVertexOutput SDL_Solid_vertex(SolidVertexInput in [[stage_in]],
     return v;
 }
 
-fragment float4 SDL_Solid_fragment(SolidVertexInput in [[stage_in]])
+fragment float4 SDL_Solid_fragment(SolidVertexInput in [[stage_in]],
+                                   constant ShaderConstants &c [[buffer(0)]])
 {
-    return in.color;
+    return GetOutputColor(1.0, c.color_scale) * in.color;
 }
 
 struct CopyVertexInput
@@ -58,10 +139,11 @@ vertex CopyVertexOutput SDL_Copy_vertex(CopyVertexInput in [[stage_in]],
 }
 
 fragment float4 SDL_Copy_fragment(CopyVertexOutput vert [[stage_in]],
+                                  constant ShaderConstants &c [[buffer(0)]],
                                   texture2d<float> tex [[texture(0)]],
                                   sampler s [[sampler(0)]])
 {
-    return tex.sample(s, vert.texcoord) * vert.color;
+    return GetOutputColor(tex.sample(s, vert.texcoord), c.color_scale) * vert.color;
 }
 
 struct YUVDecode
@@ -73,6 +155,7 @@ struct YUVDecode
 };
 
 fragment float4 SDL_YUV_fragment(CopyVertexOutput vert [[stage_in]],
+                                 constant ShaderConstants &c [[buffer(0)]],
                                  constant YUVDecode &decode [[buffer(1)]],
                                  texture2d<float> texY [[texture(0)]],
                                  texture2d_array<float> texUV [[texture(1)]],
@@ -83,38 +166,52 @@ fragment float4 SDL_YUV_fragment(CopyVertexOutput vert [[stage_in]],
     yuv.y = texUV.sample(s, vert.texcoord, 0).r;
     yuv.z = texUV.sample(s, vert.texcoord, 1).r;
 
+    float3 rgb;
     yuv += decode.offset;
+    rgb.r = dot(yuv, decode.Rcoeff);
+    rgb.g = dot(yuv, decode.Gcoeff);
+    rgb.b = dot(yuv, decode.Bcoeff);
 
-    return vert.color * float4(dot(yuv, decode.Rcoeff), dot(yuv, decode.Gcoeff), dot(yuv, decode.Bcoeff), 1.0);
+    return GetOutputColorFromSRGB(rgb, c.scRGB_output, c.color_scale) * vert.color;
 }
 
 fragment float4 SDL_NV12_fragment(CopyVertexOutput vert [[stage_in]],
-                                 constant YUVDecode &decode [[buffer(1)]],
-                                 texture2d<float> texY [[texture(0)]],
-                                 texture2d<float> texUV [[texture(1)]],
-                                 sampler s [[sampler(0)]])
+                                  constant ShaderConstants &c [[buffer(0)]],
+                                  constant YUVDecode &decode [[buffer(1)]],
+                                  texture2d<float> texY [[texture(0)]],
+                                  texture2d<float> texUV [[texture(1)]],
+                                  sampler s [[sampler(0)]])
 {
     float3 yuv;
     yuv.x = texY.sample(s, vert.texcoord).r;
     yuv.yz = texUV.sample(s, vert.texcoord).rg;
 
+    float3 rgb;
     yuv += decode.offset;
+    rgb.r = dot(yuv, decode.Rcoeff);
+    rgb.g = dot(yuv, decode.Gcoeff);
+    rgb.b = dot(yuv, decode.Bcoeff);
 
-    return vert.color * float4(dot(yuv, decode.Rcoeff), dot(yuv, decode.Gcoeff), dot(yuv, decode.Bcoeff), 1.0);
+    return GetOutputColorFromSRGB(rgb, c.scRGB_output, c.color_scale) * vert.color;
 }
 
 fragment float4 SDL_NV21_fragment(CopyVertexOutput vert [[stage_in]],
-                                 constant YUVDecode &decode [[buffer(1)]],
-                                 texture2d<float> texY [[texture(0)]],
-                                 texture2d<float> texUV [[texture(1)]],
-                                 sampler s [[sampler(0)]])
+                                  constant ShaderConstants &c [[buffer(0)]],
+                                  constant YUVDecode &decode [[buffer(1)]],
+                                  texture2d<float> texY [[texture(0)]],
+                                  texture2d<float> texUV [[texture(1)]],
+                                  sampler s [[sampler(0)]])
 {
     float3 yuv;
     yuv.x = texY.sample(s, vert.texcoord).r;
     yuv.yz = texUV.sample(s, vert.texcoord).gr;
 
+    float3 rgb;
     yuv += decode.offset;
+    rgb.r = dot(yuv, decode.Rcoeff);
+    rgb.g = dot(yuv, decode.Gcoeff);
+    rgb.b = dot(yuv, decode.Bcoeff);
 
-    return vert.color * float4(dot(yuv, decode.Rcoeff), dot(yuv, decode.Gcoeff), dot(yuv, decode.Bcoeff), 1.0);
+    return GetOutputColorFromSRGB(rgb, c.scRGB_output, c.color_scale) * vert.color;
 }
 

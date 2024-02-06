@@ -808,7 +808,7 @@ static int D3D_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
     return D3D_SetRenderTargetInternal(renderer, texture);
 }
 
-static int D3D_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+static int D3D_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     return 0; /* nothing to do in this backend. */
 }
@@ -1176,6 +1176,11 @@ static int D3D_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             /* currently this is sent with each vertex, but if we move to
                shaders, we can put this in a uniform here and reduce vertex
                buffer bandwidth */
+            break;
+        }
+
+        case SDL_RENDERCMD_SETCOLORSCALE:
+        {
             break;
         }
 
@@ -1615,8 +1620,9 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
     renderer->UnlockTexture = D3D_UnlockTexture;
     renderer->SetTextureScaleMode = D3D_SetTextureScaleMode;
     renderer->SetRenderTarget = D3D_SetRenderTarget;
-    renderer->QueueSetViewport = D3D_QueueSetViewport;
-    renderer->QueueSetDrawColor = D3D_QueueSetViewport; /* SetViewport and SetDrawColor are (currently) no-ops. */
+    renderer->QueueSetViewport = D3D_QueueNoOp;
+    renderer->QueueSetDrawColor = D3D_QueueNoOp;
+    renderer->QueueSetColorScale = D3D_QueueNoOp;
     renderer->QueueDrawPoints = D3D_QueueDrawPoints;
     renderer->QueueDrawLines = D3D_QueueDrawPoints; /* lines and points queue vertices the same way. */
     renderer->QueueGeometry = D3D_QueueGeometry;

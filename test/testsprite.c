@@ -127,7 +127,9 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     /* Test horizontal and vertical lines */
     SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
     SDL_RenderLine(renderer, 1.0f, 0.0f, (float)(viewport.w - 2), 0.0f);
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
     SDL_RenderLine(renderer, 1.0f, (float)(viewport.h - 1), (float)(viewport.w - 2), (float)(viewport.h - 1));
+    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0xFF, 0xFF);
     SDL_RenderLine(renderer, 0.0f, 1.0f, 0.0f, (float)(viewport.h - 2));
     SDL_RenderLine(renderer, (float)(viewport.w - 1), 1.0f, (float)(viewport.w - 1), (float)(viewport.h - 2));
 

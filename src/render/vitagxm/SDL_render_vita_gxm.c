@@ -75,7 +75,7 @@ static void VITA_GXM_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *te
 static int VITA_GXM_SetRenderTarget(SDL_Renderer *renderer,
                                     SDL_Texture *texture);
 
-static int VITA_GXM_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
+static int VITA_GXM_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
 
 static int VITA_GXM_QueueSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
 
@@ -247,8 +247,9 @@ SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, SDL_PropertiesID creat
     renderer->UnlockTexture = VITA_GXM_UnlockTexture;
     renderer->SetTextureScaleMode = VITA_GXM_SetTextureScaleMode;
     renderer->SetRenderTarget = VITA_GXM_SetRenderTarget;
-    renderer->QueueSetViewport = VITA_GXM_QueueSetViewport;
+    renderer->QueueSetViewport = VITA_GXM_QueueNoOp;
     renderer->QueueSetDrawColor = VITA_GXM_QueueSetDrawColor;
+    renderer->QueueSetColorScale = VITA_GXM_QueueNoOp;
     renderer->QueueDrawPoints = VITA_GXM_QueueDrawPoints;
     renderer->QueueDrawLines = VITA_GXM_QueueDrawLines;
     renderer->QueueGeometry = VITA_GXM_QueueGeometry;
@@ -661,7 +662,7 @@ static void VITA_GXM_SetBlendMode(VITA_GXM_RenderData *data, int blendMode)
     }
 }
 
-static int VITA_GXM_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+static int VITA_GXM_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     return 0;
 }
@@ -1001,6 +1002,11 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
         }
 
         case SDL_RENDERCMD_SETDRAWCOLOR:
+        {
+            break;
+        }
+
+        case SDL_RENDERCMD_SETCOLORSCALE:
         {
             break;
         }
