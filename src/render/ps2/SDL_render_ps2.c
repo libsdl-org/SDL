@@ -103,21 +103,21 @@ static int PixelFormatToPS2PSM(Uint32 format)
     }
 }
 
-static gs_rgbaq float_color_to_RGBAQ(const SDL_FColor *color)
+static gs_rgbaq float_color_to_RGBAQ(const SDL_FColor *color, float color_scale)
 {
-    uint8_t colorR = (uint8_t)SDL_roundf(SDL_clamp(color->r, 0.0f, 1.0f) * 255.0f);
-    uint8_t colorG = (uint8_t)SDL_roundf(SDL_clamp(color->g, 0.0f, 1.0f) * 255.0f);
-    uint8_t colorB = (uint8_t)SDL_roundf(SDL_clamp(color->b, 0.0f, 1.0f) * 255.0f);
+    uint8_t colorR = (uint8_t)SDL_roundf(SDL_clamp(color->r * color_scale, 0.0f, 1.0f) * 255.0f);
+    uint8_t colorG = (uint8_t)SDL_roundf(SDL_clamp(color->g * color_scale, 0.0f, 1.0f) * 255.0f);
+    uint8_t colorB = (uint8_t)SDL_roundf(SDL_clamp(color->b * color_scale, 0.0f, 1.0f) * 255.0f);
     uint8_t colorA = (uint8_t)SDL_roundf(SDL_clamp(color->a, 0.0f, 1.0f) * 255.0f);
 
     return color_to_RGBAQ(colorR, colorG, colorB, colorA, 0x00);
 }
 
-static uint64_t float_GS_SETREG_RGBAQ(const SDL_FColor *color)
+static uint64_t float_GS_SETREG_RGBAQ(const SDL_FColor *color, float color_scale)
 {
-    uint8_t colorR = (uint8_t)SDL_roundf(SDL_clamp(color->r, 0.0f, 1.0f) * 255.0f);
-    uint8_t colorG = (uint8_t)SDL_roundf(SDL_clamp(color->g, 0.0f, 1.0f) * 255.0f);
-    uint8_t colorB = (uint8_t)SDL_roundf(SDL_clamp(color->b, 0.0f, 1.0f) * 255.0f);
+    uint8_t colorR = (uint8_t)SDL_roundf(SDL_clamp(color->r * color_scale, 0.0f, 1.0f) * 255.0f);
+    uint8_t colorG = (uint8_t)SDL_roundf(SDL_clamp(color->g * color_scale, 0.0f, 1.0f) * 255.0f);
+    uint8_t colorB = (uint8_t)SDL_roundf(SDL_clamp(color->b * color_scale, 0.0f, 1.0f) * 255.0f);
     uint8_t colorA = (uint8_t)SDL_roundf(SDL_clamp(color->a, 0.0f, 1.0f) * 255.0f);
 
     return GS_SETREG_RGBAQ(colorR, colorG, colorB, colorA, 0x00);
@@ -246,7 +246,7 @@ static int PS2_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, c
 
     cmd->data.draw.count = count;
 
-    rgbaq = float_color_to_RGBAQ(&cmd->data.draw.color);
+    rgbaq = float_color_to_RGBAQ(&cmd->data.draw.color, cmd->data.draw.color_scale);
 
     for (i = 0; i < count; i++, vertices++, points++) {
         vertices->xyz2 = vertex_to_XYZ2(data->gsGlobal, points->x, points->y, 0);
@@ -263,6 +263,7 @@ static int PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
     int i;
     int count = indices ? num_indices : num_vertices;
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    const float color_scale = cmd->data.draw.color_scale;
 
     cmd->data.draw.count = count;
     size_indices = indices ? size_indices : 0;
@@ -295,7 +296,7 @@ static int PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
             uv_ = (float *)((char *)uv + j * uv_stride);
 
             vertices->xyz2 = vertex_to_XYZ2(data->gsGlobal, xy_[0] * scale_x, xy_[1] * scale_y, 0);
-            vertices->rgbaq = float_color_to_RGBAQ(col_);
+            vertices->rgbaq = float_color_to_RGBAQ(col_, color_scale);
             vertices->uv = vertex_to_UV(ps2_tex, uv_[0] * ps2_tex->Width, uv_[1] * ps2_tex->Height);
 
             vertices++;
@@ -326,7 +327,7 @@ static int PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
             col_ = (SDL_FColor *)((char *)color + j * color_stride);
 
             vertices->xyz2 = vertex_to_XYZ2(data->gsGlobal, xy_[0] * scale_x, xy_[1] * scale_y, 0);
-            vertices->rgbaq = float_color_to_RGBAQ(col_);
+            vertices->rgbaq = float_color_to_RGBAQ(col_, color_scale);
 
             vertices++;
         }
@@ -363,7 +364,7 @@ static int PS2_RenderSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd
 {
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
 
-    data->drawColor = float_GS_SETREG_RGBAQ(&cmd->data.color.color);
+    data->drawColor = float_GS_SETREG_RGBAQ(&cmd->data.color.color, cmd->data.color.color_scale);
     return 0;
 }
 
@@ -381,7 +382,7 @@ static int PS2_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     offsetY = data->gsGlobal->OffsetY;
     data->gsGlobal->OffsetX = (int)(2048.0f * 16.0f);
     data->gsGlobal->OffsetY = (int)(2048.0f * 16.0f);
-    gsKit_clear(data->gsGlobal, float_GS_SETREG_RGBAQ(&cmd->data.color.color));
+    gsKit_clear(data->gsGlobal, float_GS_SETREG_RGBAQ(&cmd->data.color.color, cmd->data.color.color_scale));
 
     /* Put back original offset */
     data->gsGlobal->OffsetX = offsetX;

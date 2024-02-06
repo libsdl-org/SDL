@@ -127,6 +127,7 @@ typedef struct SDL_RenderCommand
         {
             size_t first;
             size_t count;
+            float color_scale;
             SDL_FColor color;
             SDL_BlendMode blend;
             SDL_Texture *texture;
@@ -134,6 +135,7 @@ typedef struct SDL_RenderCommand
         struct
         {
             size_t first;
+            float color_scale;
             SDL_FColor color;
         } color;
     } data;
@@ -251,6 +253,7 @@ struct SDL_Renderer
 
     SDL_Colorspace output_colorspace;
 
+    float color_scale;
     SDL_FColor color;        /**< Color for drawing operations values */
     SDL_BlendMode blendMode; /**< The drawing blend mode */
 

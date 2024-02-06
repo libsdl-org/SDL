@@ -646,6 +646,10 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
         SDL_QueryTexture(*texture, NULL, NULL, &texture_width, &texture_height);
     }
     if (!*texture || (UINT)texture_width != desc.Width || (UINT)texture_height != desc.Height) {
+        SDL_bool HDR_display = SDL_TRUE;
+        SDL_bool HDR_video = SDL_FALSE;
+        float display_white_level, video_white_level;
+
         if (*texture) {
             SDL_DestroyTexture(*texture);
         }
@@ -658,9 +662,11 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
             break;
         case DXGI_FORMAT_P010:
             SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_P010);
+            HDR_video = SDL_TRUE;
             break;
         case DXGI_FORMAT_P016:
             SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_P016);
+            HDR_video = SDL_TRUE;
             break;
         default:
             /* This should be checked above */
@@ -674,6 +680,20 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
         SDL_DestroyProperties(props);
         if (!*texture) {
             return SDL_FALSE;
+        }
+
+        if (HDR_video != HDR_display) {
+            /* Use some reasonable assumptions for white levels */
+            if (HDR_display) {
+                display_white_level = 200.0f; /* SDR white level */
+                video_white_level = 80.0f;
+            } else {
+                display_white_level = 80.0f;
+                video_white_level = 400.0f;
+            }
+            SDL_SetRenderColorScale(renderer, display_white_level / video_white_level);
+        } else {
+            SDL_SetRenderColorScale(renderer, 1.0f);
         }
     }
 

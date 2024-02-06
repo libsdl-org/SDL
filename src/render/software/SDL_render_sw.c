@@ -546,6 +546,7 @@ static int SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
     int count = indices ? num_indices : num_vertices;
     void *verts;
     size_t sz = texture ? sizeof(GeometryCopyData) : sizeof(GeometryFillData);
+    const float color_scale = cmd->data.draw.color_scale;
 
     verts = SDL_AllocateRenderVertices(renderer, count * sz, 0, &cmd->data.draw.first);
     if (!verts) {
@@ -584,9 +585,9 @@ static int SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
             ptr->dst.y = (int)(xy_[1] * scale_y);
             trianglepoint_2_fixedpoint(&ptr->dst);
 
-            ptr->color.r = (Uint8)SDL_roundf(SDL_clamp(col_.r, 0.0f, 1.0f) * 255.0f);
-            ptr->color.g = (Uint8)SDL_roundf(SDL_clamp(col_.g, 0.0f, 1.0f) * 255.0f);
-            ptr->color.b = (Uint8)SDL_roundf(SDL_clamp(col_.b, 0.0f, 1.0f) * 255.0f);
+            ptr->color.r = (Uint8)SDL_roundf(SDL_clamp(col_.r * color_scale, 0.0f, 1.0f) * 255.0f);
+            ptr->color.g = (Uint8)SDL_roundf(SDL_clamp(col_.g * color_scale, 0.0f, 1.0f) * 255.0f);
+            ptr->color.b = (Uint8)SDL_roundf(SDL_clamp(col_.b * color_scale, 0.0f, 1.0f) * 255.0f);
             ptr->color.a = (Uint8)SDL_roundf(SDL_clamp(col_.a, 0.0f, 1.0f) * 255.0f);
 
             ptr++;
@@ -615,9 +616,9 @@ static int SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
             ptr->dst.y = (int)(xy_[1] * scale_y);
             trianglepoint_2_fixedpoint(&ptr->dst);
 
-            ptr->color.r = (Uint8)SDL_roundf(SDL_clamp(col_.r, 0.0f, 1.0f) * 255.0f);
-            ptr->color.g = (Uint8)SDL_roundf(SDL_clamp(col_.g, 0.0f, 1.0f) * 255.0f);
-            ptr->color.b = (Uint8)SDL_roundf(SDL_clamp(col_.b, 0.0f, 1.0f) * 255.0f);
+            ptr->color.r = (Uint8)SDL_roundf(SDL_clamp(col_.r * color_scale, 0.0f, 1.0f) * 255.0f);
+            ptr->color.g = (Uint8)SDL_roundf(SDL_clamp(col_.g * color_scale, 0.0f, 1.0f) * 255.0f);
+            ptr->color.b = (Uint8)SDL_roundf(SDL_clamp(col_.b * color_scale, 0.0f, 1.0f) * 255.0f);
             ptr->color.a = (Uint8)SDL_roundf(SDL_clamp(col_.a, 0.0f, 1.0f) * 255.0f);
 
             ptr++;
@@ -698,9 +699,9 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
         switch (cmd->command) {
         case SDL_RENDERCMD_SETDRAWCOLOR:
         {
-            drawstate.color.r = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.r, 0.0f, 1.0f) * 255.0f);
-            drawstate.color.g = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.g, 0.0f, 1.0f) * 255.0f);
-            drawstate.color.b = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.b, 0.0f, 1.0f) * 255.0f);
+            drawstate.color.r = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.r * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            drawstate.color.g = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.g * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            drawstate.color.b = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.b * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
             drawstate.color.a = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.a, 0.0f, 1.0f) * 255.0f);
             break;
         }
@@ -721,9 +722,9 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
 
         case SDL_RENDERCMD_CLEAR:
         {
-            const Uint8 r = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.r, 0.0f, 1.0f) * 255.0f);
-            const Uint8 g = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.g, 0.0f, 1.0f) * 255.0f);
-            const Uint8 b = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.b, 0.0f, 1.0f) * 255.0f);
+            const Uint8 r = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.r * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            const Uint8 g = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.g * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            const Uint8 b = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.b * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
             const Uint8 a = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.a, 0.0f, 1.0f) * 255.0f);
             /* By definition the clear ignores the clip rect */
             SDL_SetSurfaceClipRect(surface, NULL);

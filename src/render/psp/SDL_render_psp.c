@@ -656,6 +656,7 @@ static int PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
 {
     int i;
     int count = indices ? num_indices : num_vertices;
+    const float color_scale = cmd->data.draw.color_scale;
 
     cmd->data.draw.count = count;
     size_indices = indices ? size_indices : 0;
@@ -688,9 +689,9 @@ static int PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
             verts->y = xy_[1] * scale_y;
             verts->z = 0;
 
-            verts->col.r = (Uint8)SDL_roundf(SDL_clamp(col_->r, 0.0f, 1.0f) * 255.0f);
-            verts->col.g = (Uint8)SDL_roundf(SDL_clamp(col_->g, 0.0f, 1.0f) * 255.0f);
-            verts->col.b = (Uint8)SDL_roundf(SDL_clamp(col_->b, 0.0f, 1.0f) * 255.0f);
+            verts->col.r = (Uint8)SDL_roundf(SDL_clamp(col_->r * color_scale, 0.0f, 1.0f) * 255.0f);
+            verts->col.g = (Uint8)SDL_roundf(SDL_clamp(col_->g * color_scale, 0.0f, 1.0f) * 255.0f);
+            verts->col.b = (Uint8)SDL_roundf(SDL_clamp(col_->b * color_scale, 0.0f, 1.0f) * 255.0f);
             verts->col.a = (Uint8)SDL_roundf(SDL_clamp(col_->a, 0.0f, 1.0f) * 255.0f);
 
             verts++;
@@ -727,9 +728,9 @@ static int PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
             verts->y = xy_[1] * scale_y;
             verts->z = 0;
 
-            verts->col.r = (Uint8)SDL_roundf(SDL_clamp(col_->r, 0.0f, 1.0f) * 255.0f);
-            verts->col.g = (Uint8)SDL_roundf(SDL_clamp(col_->g, 0.0f, 1.0f) * 255.0f);
-            verts->col.b = (Uint8)SDL_roundf(SDL_clamp(col_->b, 0.0f, 1.0f) * 255.0f);
+            verts->col.r = (Uint8)SDL_roundf(SDL_clamp(col_->r * color_scale, 0.0f, 1.0f) * 255.0f);
+            verts->col.g = (Uint8)SDL_roundf(SDL_clamp(col_->g * color_scale, 0.0f, 1.0f) * 255.0f);
+            verts->col.b = (Uint8)SDL_roundf(SDL_clamp(col_->b * color_scale, 0.0f, 1.0f) * 255.0f);
             verts->col.a = (Uint8)SDL_roundf(SDL_clamp(col_->a, 0.0f, 1.0f) * 255.0f);
 
             verts->u = uv_[0] * psp_texture->textureWidth;
@@ -1063,9 +1064,9 @@ static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
         switch (cmd->command) {
         case SDL_RENDERCMD_SETDRAWCOLOR:
         {
-            const Uint8 r = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.r, 0.0f, 1.0f) * 255.0f);
-            const Uint8 g = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.g, 0.0f, 1.0f) * 255.0f);
-            const Uint8 b = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.b, 0.0f, 1.0f) * 255.0f);
+            const Uint8 r = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.r * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            const Uint8 g = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.g * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            const Uint8 b = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.b * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
             const Uint8 a = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.a, 0.0f, 1.0f) * 255.0f);
             drawstate.color = GU_RGBA(r, g, b, a);
             break;
@@ -1094,9 +1095,9 @@ static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
 
         case SDL_RENDERCMD_CLEAR:
         {
-            const Uint8 r = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.r, 0.0f, 1.0f) * 255.0f);
-            const Uint8 g = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.g, 0.0f, 1.0f) * 255.0f);
-            const Uint8 b = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.b, 0.0f, 1.0f) * 255.0f);
+            const Uint8 r = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.r * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            const Uint8 g = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.g * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
+            const Uint8 b = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.b * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
             const Uint8 a = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.a, 0.0f, 1.0f) * 255.0f);
             sceGuClearColor(GU_RGBA(r, g, b, a));
             sceGuClearStencil(a);

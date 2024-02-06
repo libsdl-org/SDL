@@ -815,9 +815,9 @@ static int D3D_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 
 static int D3D_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
-    const DWORD color = D3DCOLOR_COLORVALUE(cmd->data.draw.color.r,
-                                            cmd->data.draw.color.g,
-                                            cmd->data.draw.color.b,
+    const DWORD color = D3DCOLOR_COLORVALUE(cmd->data.draw.color.r * cmd->data.draw.color_scale,
+                                            cmd->data.draw.color.g * cmd->data.draw.color_scale,
+                                            cmd->data.draw.color.b * cmd->data.draw.color_scale,
                                             cmd->data.draw.color.a);
     const size_t vertslen = count * sizeof(Vertex);
     Vertex *verts = (Vertex *)SDL_AllocateRenderVertices(renderer, vertslen, 0, &cmd->data.draw.first);
@@ -847,6 +847,7 @@ static int D3D_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
     int i;
     int count = indices ? num_indices : num_vertices;
     Vertex *verts = (Vertex *)SDL_AllocateRenderVertices(renderer, count * sizeof(Vertex), 0, &cmd->data.draw.first);
+    const float color_scale = cmd->data.draw.color_scale;
 
     if (!verts) {
         return -1;
@@ -875,7 +876,7 @@ static int D3D_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
         verts->x = xy_[0] * scale_x - 0.5f;
         verts->y = xy_[1] * scale_y - 0.5f;
         verts->z = 0.0f;
-        verts->color = D3DCOLOR_COLORVALUE(col_->r, col_->g, col_->b, col_->a);
+        verts->color = D3DCOLOR_COLORVALUE(col_->r * color_scale, col_->g * color_scale, col_->b * color_scale, col_->a);
 
         if (texture) {
             float *uv_ = (float *)((char *)uv + j * uv_stride);
@@ -1205,7 +1206,10 @@ static int D3D_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
 
         case SDL_RENDERCMD_CLEAR:
         {
-            const DWORD color = D3DCOLOR_COLORVALUE(cmd->data.color.color.r, cmd->data.color.color.g, cmd->data.color.color.b, cmd->data.color.color.a);
+            const DWORD color = D3DCOLOR_COLORVALUE(cmd->data.color.color.r * cmd->data.color.color_scale,
+                                                    cmd->data.color.color.g * cmd->data.color.color_scale,
+                                                    cmd->data.color.color.b * cmd->data.color.color_scale,
+                                                    cmd->data.color.color.a);
             const SDL_Rect *viewport = &data->drawstate.viewport;
             const int backw = istarget ? renderer->target->w : data->pparams.BackBufferWidth;
             const int backh = istarget ? renderer->target->h : data->pparams.BackBufferHeight;
