@@ -815,10 +815,8 @@ static const float *SDL_GetBT601ConversionMatrix( SDL_Colorspace colorspace )
     case SDL_COLOR_RANGE_LIMITED:
     case SDL_COLOR_RANGE_UNKNOWN:
         return mat_BT601_Limited_8bit;
-        break;
     case SDL_COLOR_RANGE_FULL:
         return mat_BT601_Full_8bit;
-        break;
     default:
         break;
     }
@@ -831,10 +829,8 @@ static const float *SDL_GetBT709ConversionMatrix(SDL_Colorspace colorspace)
     case SDL_COLOR_RANGE_LIMITED:
     case SDL_COLOR_RANGE_UNKNOWN:
         return mat_BT709_Limited_8bit;
-        break;
     case SDL_COLOR_RANGE_FULL:
         return mat_BT709_Full_8bit;
-        break;
     default:
         break;
     }
@@ -847,10 +843,8 @@ static const float *SDL_GetBT2020ConversionMatrix(SDL_Colorspace colorspace)
     case SDL_COLOR_RANGE_LIMITED:
     case SDL_COLOR_RANGE_UNKNOWN:
         return mat_BT2020_Limited_10bit;
-        break;
     case SDL_COLOR_RANGE_FULL:
         return mat_BT2020_Full_10bit;
-        break;
     default:
         break;
     }

@@ -76,7 +76,9 @@ static const size_t CONSTANTS_OFFSET_DECODE_BT601_LIMITED = ALIGN_CONSTANTS(16, 
 static const size_t CONSTANTS_OFFSET_DECODE_BT601_FULL = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_DECODE_BT601_LIMITED + sizeof(float) * 4 * 4);
 static const size_t CONSTANTS_OFFSET_DECODE_BT709_LIMITED = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_DECODE_BT601_FULL + sizeof(float) * 4 * 4);
 static const size_t CONSTANTS_OFFSET_DECODE_BT709_FULL = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_DECODE_BT709_LIMITED + sizeof(float) * 4 * 4);
-static const size_t CONSTANTS_LENGTH = CONSTANTS_OFFSET_DECODE_BT709_FULL + sizeof(float) * 4 * 4;
+static const size_t CONSTANTS_OFFSET_DECODE_BT2020_LIMITED = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_DECODE_BT709_FULL + sizeof(float) * 4 * 4);
+static const size_t CONSTANTS_OFFSET_DECODE_BT2020_FULL = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_DECODE_BT2020_LIMITED + sizeof(float) * 4 * 4);
+static const size_t CONSTANTS_LENGTH = CONSTANTS_OFFSET_DECODE_BT2020_FULL + sizeof(float) * 4 * 4;
 
 typedef enum SDL_MetalVertexFunction
 {
@@ -91,6 +93,7 @@ typedef enum SDL_MetalFragmentFunction
     SDL_METAL_FRAGMENT_YUV,
     SDL_METAL_FRAGMENT_NV12,
     SDL_METAL_FRAGMENT_NV21,
+    SDL_METAL_FRAGMENT_HDR10,
     SDL_METAL_FRAGMENT_COUNT,
 } SDL_MetalFragmentFunction;
 
@@ -248,6 +251,8 @@ static NSString *GetFragmentFunctionName(SDL_MetalFragmentFunction function)
         return @"SDL_NV12_fragment";
     case SDL_METAL_FRAGMENT_NV21:
         return @"SDL_NV21_fragment";
+    case SDL_METAL_FRAGMENT_HDR10:
+        return @"SDL_HDR10_fragment";
     default:
         return nil;
     }
@@ -387,6 +392,7 @@ void MakeShaderPipelines(METAL_RenderData *data, METAL_ShaderPipelines *pipeline
     MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_YUV], "SDL YUV pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_YUV);
     MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_NV12], "SDL NV12 pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_NV12);
     MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_NV21], "SDL NV21 pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_NV21);
+    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_HDR10], "SDL HDR10 pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_HDR10);
 }
 
 static METAL_ShaderPipelines *ChooseShaderPipelines(METAL_RenderData *data, MTLPixelFormat rtformat)
@@ -551,10 +557,8 @@ size_t GetBT601ConversionMatrix( SDL_Colorspace colorspace )
     case SDL_COLOR_RANGE_LIMITED:
     case SDL_COLOR_RANGE_UNKNOWN:
         return CONSTANTS_OFFSET_DECODE_BT601_LIMITED;
-        break;
     case SDL_COLOR_RANGE_FULL:
         return CONSTANTS_OFFSET_DECODE_BT601_FULL;
-        break;
     default:
         break;
     }
@@ -567,10 +571,8 @@ size_t GetBT709ConversionMatrix(SDL_Colorspace colorspace)
     case SDL_COLOR_RANGE_LIMITED:
     case SDL_COLOR_RANGE_UNKNOWN:
         return CONSTANTS_OFFSET_DECODE_BT709_LIMITED;
-        break;
     case SDL_COLOR_RANGE_FULL:
         return CONSTANTS_OFFSET_DECODE_BT709_FULL;
-        break;
     default:
         break;
     }
@@ -582,11 +584,9 @@ size_t GetBT2020ConversionMatrix(SDL_Colorspace colorspace)
     switch (SDL_COLORSPACERANGE(colorspace)) {
     case SDL_COLOR_RANGE_LIMITED:
     case SDL_COLOR_RANGE_UNKNOWN:
-        return 0;
-        break;
+        return CONSTANTS_OFFSET_DECODE_BT2020_LIMITED;
     case SDL_COLOR_RANGE_FULL:
-        return 0;
-        break;
+        return CONSTANTS_OFFSET_DECODE_BT2020_FULL;
     default:
         break;
     }
@@ -671,6 +671,9 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         case SDL_PIXELFORMAT_NV21:
             pixfmt = MTLPixelFormatR8Unorm;
             break;
+        case SDL_PIXELFORMAT_P010:
+            pixfmt = MTLPixelFormatR16Unorm;
+            break;
         case SDL_PIXELFORMAT_RGBA64_FLOAT:
             pixfmt = MTLPixelFormatRGBA16Float;
             break;
@@ -706,8 +709,8 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 
         mtltextureUv = nil;
 #if SDL_HAVE_YUV
-        yuv = (texture->format == SDL_PIXELFORMAT_IYUV) || (texture->format == SDL_PIXELFORMAT_YV12);
-        nv12 = (texture->format == SDL_PIXELFORMAT_NV12) || (texture->format == SDL_PIXELFORMAT_NV21);
+        yuv = (texture->format == SDL_PIXELFORMAT_IYUV || texture->format == SDL_PIXELFORMAT_YV12);
+        nv12 = (texture->format == SDL_PIXELFORMAT_NV12 || texture->format == SDL_PIXELFORMAT_NV21 || texture->format == SDL_PIXELFORMAT_P010);
 
         if (yuv) {
             mtltexdesc.pixelFormat = MTLPixelFormatR8Unorm;
@@ -715,6 +718,10 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
             mtltexdesc.height = (texture->h + 1) / 2;
             mtltexdesc.textureType = MTLTextureType2DArray;
             mtltexdesc.arrayLength = 2;
+        } else if (texture->format == SDL_PIXELFORMAT_P010) {
+            mtltexdesc.pixelFormat = MTLPixelFormatRG16Unorm;
+            mtltexdesc.width = (texture->w + 1) / 2;
+            mtltexdesc.height = (texture->h + 1) / 2;
         } else if (nv12) {
             mtltexdesc.pixelFormat = MTLPixelFormatRG8Unorm;
             mtltexdesc.width = (texture->w + 1) / 2;
@@ -750,6 +757,8 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
             texturedata.fragmentFunction = SDL_METAL_FRAGMENT_NV12;
         } else if (texture->format == SDL_PIXELFORMAT_NV21) {
             texturedata.fragmentFunction = SDL_METAL_FRAGMENT_NV21;
+        } else if (texture->format == SDL_PIXELFORMAT_P010) {
+            texturedata.fragmentFunction = SDL_METAL_FRAGMENT_HDR10;
         } else
 #endif
         {
@@ -2011,6 +2020,8 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT601_FULL, SDL_GetYCbCRtoRGBConversionMatrix(SDL_COLORSPACE_BT601_FULL, 0, 0, 8), YCbCr_shader_matrix_size);
         SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT709_LIMITED, SDL_GetYCbCRtoRGBConversionMatrix(SDL_COLORSPACE_BT709_LIMITED, 0, 0, 8), YCbCr_shader_matrix_size);
         SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT709_FULL, SDL_GetYCbCRtoRGBConversionMatrix(SDL_COLORSPACE_BT709_FULL, 0, 0, 8), YCbCr_shader_matrix_size);
+        SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT2020_LIMITED, SDL_GetYCbCRtoRGBConversionMatrix(SDL_COLORSPACE_BT2020_LIMITED, 0, 0, 10), YCbCr_shader_matrix_size);
+        SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT2020_FULL, SDL_GetYCbCRtoRGBConversionMatrix(SDL_COLORSPACE_BT2020_FULL, 0, 0, 10), YCbCr_shader_matrix_size);
 
         mtlbufquadindicesstaging = [data.mtldevice newBufferWithLength:indicessize options:MTLResourceStorageModeShared];
 
@@ -2139,7 +2150,7 @@ SDL_RenderDriver METAL_RenderDriver = {
     {
         "metal",
         (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
-        8,
+        9,
         { SDL_PIXELFORMAT_ARGB8888,
           SDL_PIXELFORMAT_ABGR8888,
           SDL_PIXELFORMAT_RGBA64_FLOAT,
@@ -2147,7 +2158,8 @@ SDL_RenderDriver METAL_RenderDriver = {
           SDL_PIXELFORMAT_YV12,
           SDL_PIXELFORMAT_IYUV,
           SDL_PIXELFORMAT_NV12,
-          SDL_PIXELFORMAT_NV21 },
+          SDL_PIXELFORMAT_NV21,
+          SDL_PIXELFORMAT_P010 },
         0,
         0,
     }
