@@ -1226,8 +1226,6 @@ typedef struct
     SDL_bool viewport_dirty;
     SDL_Rect viewport;
     size_t projection_offset;
-    SDL_bool color_dirty;
-    size_t color_offset;
     SDL_bool color_scale_dirty;
     size_t color_scale_offset;
 } METAL_DrawStateCache;
@@ -1290,16 +1288,9 @@ static SDL_bool SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cm
         statecache->cliprect_dirty = SDL_FALSE;
     }
 
-#if 0 /* Not used... */
-    if (statecache->color_dirty) {
-        [data.mtlcmdencoder setFragmentBufferOffset:statecache->color_offset atIndex:0];
-        statecache->color_dirty = SDL_FALSE;
-    }
-#endif
-
     if (statecache->color_scale_dirty) {
         [data.mtlcmdencoder setFragmentBufferOffset:statecache->color_scale_offset atIndex:0];
-        statecache->color_dirty = SDL_FALSE;
+        statecache->color_scale_dirty = SDL_FALSE;
     }
 
     newpipeline = ChoosePipelineState(data, data.activepipelines, shader, blend);
@@ -1368,11 +1359,11 @@ static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
         statecache.vertex_buffer = nil;
         statecache.constants_offset = CONSTANTS_OFFSET_INVALID;
         statecache.texture = NULL;
-        statecache.color_dirty = SDL_TRUE;
+        statecache.color_scale_dirty = SDL_TRUE;
         statecache.cliprect_dirty = SDL_TRUE;
         statecache.viewport_dirty = SDL_TRUE;
         statecache.projection_offset = 0;
-        statecache.color_offset = 0;
+        statecache.color_scale_offset = 0;
 
         // !!! FIXME: have a ring of pre-made MTLBuffers we cycle through? How expensive is creation?
         if (vertsize > 0) {
@@ -1417,8 +1408,6 @@ static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
 
             case SDL_RENDERCMD_SETDRAWCOLOR:
             {
-                statecache.color_offset = cmd->data.color.first;
-                statecache.color_dirty = SDL_TRUE;
                 break;
             }
 
@@ -1447,7 +1436,7 @@ static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
                 statecache.pipeline = nil;
                 statecache.constants_offset = CONSTANTS_OFFSET_INVALID;
                 statecache.texture = NULL;
-                statecache.color_dirty = SDL_TRUE;
+                statecache.color_scale_dirty = SDL_TRUE;
                 statecache.cliprect_dirty = SDL_TRUE;
                 statecache.viewport_dirty = SDL_TRUE;
 

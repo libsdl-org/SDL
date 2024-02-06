@@ -849,10 +849,10 @@ static int COREAUDIO_OpenDevice(SDL_AudioDevice *device)
         #ifdef SDL_PLATFORM_TVOS
         if (device->iscapture) {
             [session setPreferredInputNumberOfChannels:device->spec.channels error:nil];
-            device->spec.channels = session.preferredInputNumberOfChannels;
+            device->spec.channels = (int)session.preferredInputNumberOfChannels;
         } else {
             [session setPreferredOutputNumberOfChannels:device->spec.channels error:nil];
-            device->spec.channels = session.preferredOutputNumberOfChannels;
+            device->spec.channels = (int)session.preferredOutputNumberOfChannels;
         }
         #else
         // Calling setPreferredOutputNumberOfChannels seems to break audio output on iOS

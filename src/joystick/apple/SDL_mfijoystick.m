@@ -546,7 +546,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
 #ifdef SDL_PLATFORM_TVOS
         /* tvOS turns the menu button into a system gesture, so we grab it here instead */
         if (elements[GCInputButtonMenu] && !elements[@"Button Home"]) {
-            device->pause_button_index = [device->buttons indexOfObject:GCInputButtonMenu];
+            device->pause_button_index = (int)[device->buttons indexOfObject:GCInputButtonMenu];
         }
 #endif
     } else
