@@ -501,8 +501,6 @@ static int MEDIAFOUNDATION_OpenDevice(SDL_CameraDevice *device, const SDL_Camera
     //PROPVARIANT var;
     HRESULT ret;
 
-SDL_Log("MEDIAFOUNDATION spec format: %s", SDL_GetPixelFormatName(spec->format));
-
     #if 0
     IMFStreamDescriptor *streamdesc = NULL;
     IMFPresentationDescriptor *presentdesc = NULL;
