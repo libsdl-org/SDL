@@ -556,16 +556,30 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 
         switch (texture->format) {
         case SDL_PIXELFORMAT_ABGR8888:
-            pixfmt = MTLPixelFormatRGBA8Unorm;
+            if (renderer->output_colorspace == SDL_COLORSPACE_SCRGB) {
+                pixfmt = MTLPixelFormatRGBA8Unorm_sRGB;
+            } else {
+                pixfmt = MTLPixelFormatRGBA8Unorm;
+            }
             break;
         case SDL_PIXELFORMAT_ARGB8888:
-            pixfmt = MTLPixelFormatBGRA8Unorm;
+            if (renderer->output_colorspace == SDL_COLORSPACE_SCRGB) {
+                pixfmt = MTLPixelFormatBGRA8Unorm_sRGB;
+            } else {
+                pixfmt = MTLPixelFormatBGRA8Unorm;
+            }
             break;
         case SDL_PIXELFORMAT_IYUV:
         case SDL_PIXELFORMAT_YV12:
         case SDL_PIXELFORMAT_NV12:
         case SDL_PIXELFORMAT_NV21:
             pixfmt = MTLPixelFormatR8Unorm;
+            break;
+        case SDL_PIXELFORMAT_RGBA64_FLOAT:
+            pixfmt = MTLPixelFormatRGBA16Float;
+            break;
+        case SDL_PIXELFORMAT_RGBA128_FLOAT:
+            pixfmt = MTLPixelFormatRGBA32Float;
             break;
         default:
             return SDL_SetError("Texture format %s not supported by Metal", SDL_GetPixelFormatName(texture->format));
@@ -1042,15 +1056,29 @@ static int METAL_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd
     return 0;
 }
 
-static int METAL_QueueSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+static int METAL_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
+    return 0; /* nothing to do in this backend. */
+}
+
+static int METAL_QueueSetColorScale(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+{
+    const size_t vertlen = (2 * sizeof(float));
+    float *verts = (float *)SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.color.first);
+    if (!verts) {
+        return -1;
+    }
+
+    *verts++ = (float)SDL_RenderingLinearSpace(renderer);
+    *verts++ = cmd->data.color.color_scale;
+
     return 0;
 }
 
 static int METAL_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
     SDL_FColor color = cmd->data.draw.color;
-    const float color_scale = cmd->data.draw.color_scale;
+    SDL_bool convert_color = SDL_RenderingLinearSpace(renderer);
 
     const size_t vertlen = (2 * sizeof(float) + 4 * sizeof(float)) * count;
     float *verts = (float *)SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
@@ -1059,9 +1087,9 @@ static int METAL_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
     }
     cmd->data.draw.count = count;
 
-    color.r *= color_scale;
-    color.g *= color_scale;
-    color.b *= color_scale;
+    if (convert_color) {
+        SDL_ConvertToLinear(&color);
+    }
 
     for (int i = 0; i < count; i++, points++) {
         *(verts++) = points->x;
@@ -1077,7 +1105,7 @@ static int METAL_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
 static int METAL_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
     SDL_FColor color = cmd->data.draw.color;
-    const float color_scale = cmd->data.draw.color_scale;
+    SDL_bool convert_color = SDL_RenderingLinearSpace(renderer);
     size_t vertlen;
     float *verts;
 
@@ -1090,9 +1118,9 @@ static int METAL_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
     }
     cmd->data.draw.count = count;
 
-    color.r *= color_scale;
-    color.g *= color_scale;
-    color.b *= color_scale;
+    if (convert_color) {
+        SDL_ConvertToLinear(&color);
+    }
 
     for (int i = 0; i < count; i++, points++) {
         *(verts++) = points->x;
@@ -1135,7 +1163,7 @@ static int METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
                                int num_vertices, const void *indices, int num_indices, int size_indices,
                                float scale_x, float scale_y)
 {
-    const float color_scale = cmd->data.draw.color_scale;
+    SDL_bool convert_color = SDL_RenderingLinearSpace(renderer);
     int count = indices ? num_indices : num_vertices;
     const size_t vertlen = (2 * sizeof(float) + 4 * sizeof(float) + (texture ? 2 : 0) * sizeof(float)) * count;
     float *verts = (float *)SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
@@ -1149,7 +1177,7 @@ static int METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
     for (int i = 0; i < count; i++) {
         int j;
         float *xy_;
-        SDL_FColor *col_;
+        SDL_FColor col_;
         if (size_indices == 4) {
             j = ((const Uint32 *)indices)[i];
         } else if (size_indices == 2) {
@@ -1165,12 +1193,16 @@ static int METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
         *(verts++) = xy_[0] * scale_x;
         *(verts++) = xy_[1] * scale_y;
 
-        col_ = (SDL_FColor *)((char *)color + j * color_stride);
+        col_ = *(SDL_FColor *)((char *)color + j * color_stride);
 
-        *(verts++) = col_->r * color_scale;
-        *(verts++) = col_->g * color_scale;
-        *(verts++) = col_->b * color_scale;
-        *(verts++) = col_->a;
+        if (convert_color) {
+            SDL_ConvertToLinear(&col_);
+        }
+
+        *(verts++) = col_.r;
+        *(verts++) = col_.g;
+        *(verts++) = col_.b;
+        *(verts++) = col_.a;
 
         if (texture) {
             float *uv_ = (float *)((char *)uv + j * uv_stride);
@@ -1196,6 +1228,8 @@ typedef struct
     size_t projection_offset;
     SDL_bool color_dirty;
     size_t color_offset;
+    SDL_bool color_scale_dirty;
+    size_t color_scale_offset;
 } METAL_DrawStateCache;
 
 static SDL_bool SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_MetalFragmentFunction shader,
@@ -1256,8 +1290,15 @@ static SDL_bool SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cm
         statecache->cliprect_dirty = SDL_FALSE;
     }
 
+#if 0 /* Not used... */
     if (statecache->color_dirty) {
         [data.mtlcmdencoder setFragmentBufferOffset:statecache->color_offset atIndex:0];
+        statecache->color_dirty = SDL_FALSE;
+    }
+#endif
+
+    if (statecache->color_scale_dirty) {
+        [data.mtlcmdencoder setFragmentBufferOffset:statecache->color_scale_offset atIndex:0];
         statecache->color_dirty = SDL_FALSE;
     }
 
@@ -1381,6 +1422,13 @@ static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
                 break;
             }
 
+            case SDL_RENDERCMD_SETCOLORSCALE:
+            {
+                statecache.color_scale_offset = cmd->data.color.first;
+                statecache.color_scale_dirty = SDL_TRUE;
+                break;
+            }
+
             case SDL_RENDERCMD_CLEAR:
             {
                 /* If we're already encoding a command buffer, dump it without committing it. We'd just
@@ -1404,15 +1452,19 @@ static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
                 statecache.viewport_dirty = SDL_TRUE;
 
                 {
-                    const float r = cmd->data.color.color.r * cmd->data.color.color_scale;
-                    const float g = cmd->data.color.color.g * cmd->data.color.color_scale;
-                    const float b = cmd->data.color.color.b * cmd->data.color.color_scale;
-                    const float a = cmd->data.color.color.a;
-                    MTLClearColor color = MTLClearColorMake(r, g, b, a);
+                    SDL_bool convert_color = SDL_RenderingLinearSpace(renderer);
+                    SDL_FColor color = cmd->data.color.color;
+                    if (convert_color) {
+                        SDL_ConvertToLinear(&color);
+                    }
+                    color.r *= cmd->data.color.color_scale;
+                    color.g *= cmd->data.color.color_scale;
+                    color.b *= cmd->data.color.color_scale;
+                    MTLClearColor mtlcolor = MTLClearColorMake(color.r, color.g, color.b, color.a);
 
                     // get new command encoder, set up with an initial clear operation.
                     // (this might fail, and future draw operations will notice.)
-                    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionClear, &color, mtlbufvertex);
+                    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionClear, &mtlcolor, mtlbufvertex);
                 }
                 break;
             }
@@ -1502,7 +1554,22 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
 
         mtlregion = MTLRegionMake2D(rect->x, rect->y, rect->w, rect->h);
 
-        format = (mtltexture.pixelFormat == MTLPixelFormatBGRA8Unorm) ? SDL_PIXELFORMAT_ARGB8888 : SDL_PIXELFORMAT_ABGR8888;
+        switch (mtltexture.pixelFormat) {
+        case MTLPixelFormatBGRA8Unorm:
+        case MTLPixelFormatBGRA8Unorm_sRGB:
+            format = SDL_PIXELFORMAT_ARGB8888;
+            break;
+        case MTLPixelFormatRGBA8Unorm:
+        case MTLPixelFormatRGBA8Unorm_sRGB:
+            format = SDL_PIXELFORMAT_ABGR8888;
+            break;
+        case MTLPixelFormatRGBA16Float:
+            format = SDL_PIXELFORMAT_RGBA64_FLOAT;
+            break;
+        default:
+            SDL_SetError("Unknown framebuffer pixel format");
+            return NULL;
+        }
         surface = SDL_CreateSurface(rect->w, rect->h, format);
         if (surface) {
             [mtltexture getBytes:surface->pixels bytesPerRow:surface->pitch fromRegion:mtlregion mipmapLevel:0];
@@ -1672,6 +1739,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         id<MTLBuffer> mtlbufconstantstaging, mtlbufquadindicesstaging, mtlbufconstants, mtlbufquadindices;
         id<MTLCommandBuffer> cmdbuffer;
         id<MTLBlitCommandEncoder> blitcmd;
+        SDL_bool scRGB_supported = SDL_FALSE;
 
         /* Note: matrices are column major. */
         float identitytransform[16] = {
@@ -1726,10 +1794,19 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
 
         SDL_SetupRendererColorspace(renderer, create_props);
 
+#ifndef SDL_PLATFORM_TVOS
+        if (@available(macos 10.11, iOS 16.0, *)) {
+            scRGB_supported = SDL_TRUE;
+        }
+#endif
         if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
-            SDL_SetError("Unsupported output colorspace");
-            SDL_free(renderer);
-            return NULL;
+            if (renderer->output_colorspace == SDL_COLORSPACE_SCRGB && scRGB_supported) {
+                /* This colorspace is supported */
+            } else {
+                SDL_SetError("Unsupported output colorspace");
+                SDL_free(renderer);
+                return NULL;
+            }
         }
 
 #ifdef SDL_PLATFORM_MACOS
@@ -1789,6 +1866,22 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
 #else
         layer = (CAMetalLayer *)[(__bridge UIView *)view layer];
 #endif
+
+#ifndef SDL_PLATFORM_TVOS
+        if (renderer->output_colorspace == SDL_COLORSPACE_SCRGB) {
+            if (@available(macos 10.11, iOS 16.0, *)) {
+                layer.wantsExtendedDynamicRangeContent = YES;
+            } else {
+                SDL_assert(!"Logic error, scRGB is not actually supported");
+            }
+            layer.pixelFormat = MTLPixelFormatRGBA16Float;
+
+            const CFStringRef name = kCGColorSpaceExtendedLinearSRGB;
+            CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(name);
+            layer.colorspace = colorspace;
+            CGColorSpaceRelease(colorspace);
+        }
+#endif /* !SDL_PLATFORM_TVOS */
 
         layer.device = mtldevice;
 
@@ -1889,7 +1982,8 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         renderer->SetTextureScaleMode = METAL_SetTextureScaleMode;
         renderer->SetRenderTarget = METAL_SetRenderTarget;
         renderer->QueueSetViewport = METAL_QueueSetViewport;
-        renderer->QueueSetDrawColor = METAL_QueueSetDrawColor;
+        renderer->QueueSetDrawColor = METAL_QueueNoOp;
+        renderer->QueueSetColorScale = METAL_QueueSetColorScale;
         renderer->QueueDrawPoints = METAL_QueueDrawPoints;
         renderer->QueueDrawLines = METAL_QueueDrawLines;
         renderer->QueueGeometry = METAL_QueueGeometry;
@@ -1964,9 +2058,11 @@ SDL_RenderDriver METAL_RenderDriver = {
     {
         "metal",
         (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
-        6,
+        8,
         { SDL_PIXELFORMAT_ARGB8888,
           SDL_PIXELFORMAT_ABGR8888,
+          SDL_PIXELFORMAT_RGBA64_FLOAT,
+          SDL_PIXELFORMAT_RGBA128_FLOAT,
           SDL_PIXELFORMAT_YV12,
           SDL_PIXELFORMAT_IYUV,
           SDL_PIXELFORMAT_NV12,

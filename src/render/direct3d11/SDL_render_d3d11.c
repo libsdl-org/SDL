@@ -1851,7 +1851,7 @@ static int D3D11_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
     return 0;
 }
 
-static int D3D11_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+static int D3D11_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     return 0; /* nothing to do in this backend. */
 }
@@ -1860,6 +1860,7 @@ static int D3D11_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
 {
     VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
     int i;
+    SDL_FColor color = cmd->data.draw.color;
     SDL_bool convert_color = SDL_RenderingLinearSpace(renderer);
 
     if (!verts) {
@@ -1868,15 +1869,16 @@ static int D3D11_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
 
     cmd->data.draw.count = count;
 
+    if (convert_color) {
+        SDL_ConvertToLinear(&color);
+    }
+
     for (i = 0; i < count; i++) {
         verts->pos.x = points[i].x + 0.5f;
         verts->pos.y = points[i].y + 0.5f;
         verts->tex.x = 0.0f;
         verts->tex.y = 0.0f;
-        verts->color = cmd->data.draw.color;
-        if (convert_color) {
-            SDL_ConvertToLinear(&verts->color);
-        }
+        verts->color = color;
         verts++;
     }
 
@@ -2358,6 +2360,11 @@ static int D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
             break; /* this isn't currently used in this render backend. */
         }
 
+        case SDL_RENDERCMD_SETCOLORSCALE:
+        {
+            break;
+        }
+
         case SDL_RENDERCMD_SETVIEWPORT:
         {
             SDL_Rect *viewport = &rendererData->currentViewport;
@@ -2661,8 +2668,9 @@ SDL_Renderer *D3D11_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_p
     renderer->UnlockTexture = D3D11_UnlockTexture;
     renderer->SetTextureScaleMode = D3D11_SetTextureScaleMode;
     renderer->SetRenderTarget = D3D11_SetRenderTarget;
-    renderer->QueueSetViewport = D3D11_QueueSetViewport;
-    renderer->QueueSetDrawColor = D3D11_QueueSetViewport; /* SetViewport and SetDrawColor are (currently) no-ops. */
+    renderer->QueueSetViewport = D3D11_QueueNoOp;
+    renderer->QueueSetDrawColor = D3D11_QueueNoOp;
+    renderer->QueueSetColorScale = D3D11_QueueNoOp;
     renderer->QueueDrawPoints = D3D11_QueueDrawPoints;
     renderer->QueueDrawLines = D3D11_QueueDrawPoints; /* lines and points queue vertices the same way. */
     renderer->QueueGeometry = D3D11_QueueGeometry;

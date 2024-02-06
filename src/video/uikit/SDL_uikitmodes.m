@@ -242,6 +242,15 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     }
     display.desktop_mode = mode;
 
+#ifndef SDL_PLATFORM_TVOS
+    if (@available(iOS 16.0, *)) {
+        if (uiscreen.potentialEDRHeadroom > 1.0f) {
+            display.HDR.enabled = SDL_TRUE;
+            display.HDR.SDR_whitelevel = 80.0f; /* SDR content is always at scRGB 1.0 */
+        }
+    }
+#endif /* !SDL_PLATFORM_TVOS */
+
     /* Allocate the display data */
 #ifdef SDL_PLATFORM_VISIONOS
     SDL_UIKitDisplayData *data = [[SDL_UIKitDisplayData alloc] init];
@@ -273,13 +282,13 @@ int UIKit_AddDisplay(SDL_bool send_event){
     mode.pixel_density = 1;
     mode.format = SDL_PIXELFORMAT_ABGR8888;
     mode.refresh_rate = 60;
-    
+
     display.natural_orientation = SDL_ORIENTATION_LANDSCAPE;
 
     display.desktop_mode = mode;
-    
+
     SDL_UIKitDisplayData *data = [[SDL_UIKitDisplayData alloc] init];
-    
+
     if (!data) {
         UIKit_FreeDisplayModeData(&display.desktop_mode);
         return SDL_OutOfMemory();
@@ -341,7 +350,7 @@ int UIKit_InitModes(SDL_VideoDevice *_this)
             }
         }
 #endif
-        
+
 #if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
         SDL_OnApplicationDidChangeStatusBarOrientation();
 #endif

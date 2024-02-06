@@ -188,7 +188,7 @@ static int SW_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
     return 0;
 }
 
-static int SW_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+static int SW_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     return 0; /* nothing to do in this backend. */
 }
@@ -706,6 +706,11 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
             break;
         }
 
+        case SDL_RENDERCMD_SETCOLORSCALE:
+        {
+            break;
+        }
+
         case SDL_RENDERCMD_SETVIEWPORT:
         {
             drawstate.viewport = &cmd->data.viewport.rect;
@@ -1149,8 +1154,9 @@ SDL_Renderer *SW_CreateRendererForSurface(SDL_Surface *surface)
     renderer->UnlockTexture = SW_UnlockTexture;
     renderer->SetTextureScaleMode = SW_SetTextureScaleMode;
     renderer->SetRenderTarget = SW_SetRenderTarget;
-    renderer->QueueSetViewport = SW_QueueSetViewport;
-    renderer->QueueSetDrawColor = SW_QueueSetViewport; /* SetViewport and SetDrawColor are (currently) no-ops. */
+    renderer->QueueSetViewport = SW_QueueNoOp;
+    renderer->QueueSetDrawColor = SW_QueueNoOp;
+    renderer->QueueSetColorScale = SW_QueueNoOp;
     renderer->QueueDrawPoints = SW_QueueDrawPoints;
     renderer->QueueDrawLines = SW_QueueDrawPoints; /* lines and points queue vertices the same way. */
     renderer->QueueFillRects = SW_QueueFillRects;

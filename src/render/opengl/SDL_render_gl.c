@@ -910,7 +910,7 @@ static int GL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 /* !!! FIXME: all these Queue* calls set up the vertex buffer the way the immediate mode
    !!! FIXME:  renderer wants it, but this might want to operate differently if we move to
    !!! FIXME:  VBOs at some point. */
-static int GL_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+static int GL_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     return 0; /* nothing to do in this backend. */
 }
@@ -1248,6 +1248,11 @@ static int GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
                 data->drawstate.color.a = a;
                 data->drawstate.color_dirty = SDL_FALSE;
             }
+            break;
+        }
+
+        case SDL_RENDERCMD_SETCOLORSCALE:
+        {
             break;
         }
 
@@ -1700,8 +1705,9 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
     renderer->UnlockTexture = GL_UnlockTexture;
     renderer->SetTextureScaleMode = GL_SetTextureScaleMode;
     renderer->SetRenderTarget = GL_SetRenderTarget;
-    renderer->QueueSetViewport = GL_QueueSetViewport;
-    renderer->QueueSetDrawColor = GL_QueueSetViewport; /* SetViewport and SetDrawColor are (currently) no-ops. */
+    renderer->QueueSetViewport = GL_QueueNoOp;
+    renderer->QueueSetDrawColor = GL_QueueNoOp;
+    renderer->QueueSetColorScale = GL_QueueNoOp;
     renderer->QueueDrawPoints = GL_QueueDrawPoints;
     renderer->QueueDrawLines = GL_QueueDrawLines;
     renderer->QueueGeometry = GL_QueueGeometry;

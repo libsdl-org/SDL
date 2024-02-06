@@ -99,6 +99,7 @@ typedef enum
     SDL_RENDERCMD_SETVIEWPORT,
     SDL_RENDERCMD_SETCLIPRECT,
     SDL_RENDERCMD_SETDRAWCOLOR,
+    SDL_RENDERCMD_SETCOLORSCALE,
     SDL_RENDERCMD_CLEAR,
     SDL_RENDERCMD_DRAW_POINTS,
     SDL_RENDERCMD_DRAW_LINES,
@@ -166,6 +167,7 @@ struct SDL_Renderer
     int (*CreateTexture)(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props);
     int (*QueueSetViewport)(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
     int (*QueueSetDrawColor)(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
+    int (*QueueSetColorScale)(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
     int (*QueueDrawPoints)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points,
                            int count);
     int (*QueueDrawLines)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points,
@@ -262,10 +264,12 @@ struct SDL_Renderer
     SDL_RenderCommand *render_commands_pool;
     Uint32 render_command_generation;
     SDL_FColor last_queued_color;
+    float last_queued_color_scale;
     SDL_Rect last_queued_viewport;
     SDL_Rect last_queued_cliprect;
     SDL_bool last_queued_cliprect_enabled;
     SDL_bool color_queued;
+    SDL_bool color_scale_queued;
     SDL_bool viewport_queued;
     SDL_bool cliprect_queued;
 
