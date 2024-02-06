@@ -26,6 +26,7 @@
 #include "../../video/SDL_pixels_c.h"
 
 #include <Availability.h>
+#import <CoreVideo/CoreVideo.h>
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
@@ -544,6 +545,91 @@ static SDL_bool METAL_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode bl
     return SDL_TRUE;
 }
 
+size_t GetBT601ConversionMatrix( SDL_Colorspace colorspace )
+{
+    switch (SDL_COLORSPACERANGE(colorspace)) {
+    case SDL_COLOR_RANGE_LIMITED:
+    case SDL_COLOR_RANGE_UNKNOWN:
+        return CONSTANTS_OFFSET_DECODE_BT601_LIMITED;
+        break;
+    case SDL_COLOR_RANGE_FULL:
+        return CONSTANTS_OFFSET_DECODE_BT601_FULL;
+        break;
+    default:
+        break;
+    }
+    return 0;
+}
+
+size_t GetBT709ConversionMatrix(SDL_Colorspace colorspace)
+{
+    switch (SDL_COLORSPACERANGE(colorspace)) {
+    case SDL_COLOR_RANGE_LIMITED:
+    case SDL_COLOR_RANGE_UNKNOWN:
+        return CONSTANTS_OFFSET_DECODE_BT709_LIMITED;
+        break;
+    case SDL_COLOR_RANGE_FULL:
+        return CONSTANTS_OFFSET_DECODE_BT709_FULL;
+        break;
+    default:
+        break;
+    }
+    return 0;
+}
+
+size_t GetBT2020ConversionMatrix(SDL_Colorspace colorspace)
+{
+    switch (SDL_COLORSPACERANGE(colorspace)) {
+    case SDL_COLOR_RANGE_LIMITED:
+    case SDL_COLOR_RANGE_UNKNOWN:
+        return 0;
+        break;
+    case SDL_COLOR_RANGE_FULL:
+        return 0;
+        break;
+    default:
+        break;
+    }
+    return 0;
+}
+
+size_t GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace, int w, int h, int bits_per_pixel)
+{
+    const int YUV_SD_THRESHOLD = 576;
+
+    switch (SDL_COLORSPACEMATRIX(colorspace)) {
+    case SDL_MATRIX_COEFFICIENTS_BT601:
+        return GetBT601ConversionMatrix(colorspace);
+
+    case SDL_MATRIX_COEFFICIENTS_BT709:
+        return GetBT709ConversionMatrix(colorspace);
+
+    /* FIXME: Are these the same? */
+    case SDL_MATRIX_COEFFICIENTS_BT2020_NCL:
+    case SDL_MATRIX_COEFFICIENTS_BT2020_CL:
+        return GetBT2020ConversionMatrix(colorspace);
+
+    case SDL_MATRIX_COEFFICIENTS_UNSPECIFIED:
+        switch (bits_per_pixel) {
+        case 8:
+            if (h <= YUV_SD_THRESHOLD) {
+                return GetBT601ConversionMatrix(colorspace);
+            } else {
+                return GetBT709ConversionMatrix(colorspace);
+            }
+        case 10:
+        case 16:
+            return GetBT2020ConversionMatrix(colorspace);
+        default:
+            break;
+        }
+        break;
+    default:
+        break;
+    }
+    return 0;
+}
+
 static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     @autoreleasepool {
@@ -553,6 +639,16 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         id<MTLTexture> mtltexture, mtltextureUv;
         BOOL yuv, nv12;
         METAL_TextureData *texturedata;
+        CVPixelBufferRef pixelbuffer = nil;
+        IOSurfaceRef surface = nil;
+
+        pixelbuffer = SDL_GetProperty(create_props, SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER, nil);
+        if (pixelbuffer) {
+            surface = CVPixelBufferGetIOSurface(pixelbuffer);
+            if (!surface) {
+                return SDL_SetError("CVPixelBufferGetIOSurface() failed");
+            }
+        }
 
         switch (texture->format) {
         case SDL_PIXELFORMAT_ABGR8888:
@@ -599,7 +695,11 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
             }
         }
 
-        mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
+        if (surface) {
+            mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:0];
+        } else {
+            mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
+        }
         if (mtltexture == nil) {
             return SDL_SetError("Texture allocation failed");
         }
@@ -622,7 +722,11 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         }
 
         if (yuv || nv12) {
-            mtltextureUv = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
+            if (surface) {
+                mtltextureUv = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:1];
+            } else {
+                mtltextureUv = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
+            }
             if (mtltextureUv == nil) {
                 return SDL_SetError("Texture allocation failed");
             }
@@ -653,21 +757,9 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         }
 #if SDL_HAVE_YUV
         if (yuv || nv12) {
-            size_t offset = 0;
-            if (SDL_ISCOLORSPACE_YUV_BT601(texture->colorspace)) {
-                if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
-                    offset = CONSTANTS_OFFSET_DECODE_BT601_LIMITED;
-                } else {
-                    offset = CONSTANTS_OFFSET_DECODE_BT601_FULL;
-                }
-            } else if (SDL_ISCOLORSPACE_YUV_BT709(texture->colorspace)) {
-                if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
-                    offset = CONSTANTS_OFFSET_DECODE_BT709_LIMITED;
-                } else {
-                    offset = CONSTANTS_OFFSET_DECODE_BT709_FULL;
-                }
-            } else {
-                offset = 0;
+            size_t offset = GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8);
+            if (offset == 0) {
+                return SDL_SetError("Unsupported YUV colorspace");
             }
             texturedata.conversionBufferOffset = offset;
         }
