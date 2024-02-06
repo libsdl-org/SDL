@@ -670,7 +670,10 @@ static int VITA_GXM_QueueSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand 
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
 
-    data->drawstate.color = cmd->data.color.color;
+    data->drawstate.color.r = cmd->data.color.color.r * cmd->data.color.color_scale;
+    data->drawstate.color.g = cmd->data.color.color.g * cmd->data.color.color_scale;
+    data->drawstate.color.b = cmd->data.color.color.b * cmd->data.color.color_scale;
+    data->drawstate.color.a = cmd->data.color.color.a;
 
     return 0;
 }
@@ -730,6 +733,7 @@ static int VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
     int i;
     int count = indices ? num_indices : num_vertices;
+    const float color_scale = cmd->data.draw.color_scale;
 
     cmd->data.draw.count = count;
     size_indices = indices ? size_indices : 0;
@@ -764,6 +768,10 @@ static int VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd
             xy_ = (float *)((char *)xy + j * xy_stride);
             col_ = *(SDL_FColor *)((char *)color + j * color_stride);
             uv_ = (float *)((char *)uv + j * uv_stride);
+
+            col_.r *= color_scale;
+            col_.g *= color_scale;
+            col_.b *= color_scale;
 
             vertices[i].x = xy_[0] * scale_x;
             vertices[i].y = xy_[1] * scale_y;
@@ -802,6 +810,10 @@ static int VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd
             xy_ = (float *)((char *)xy + j * xy_stride);
             col_ = *(SDL_FColor *)((char *)color + j * color_stride);
 
+            col_.r *= color_scale;
+            col_.g *= color_scale;
+            col_.b *= color_scale;
+
             vertices[i].x = xy_[0] * scale_x;
             vertices[i].y = xy_[1] * scale_y;
             vertices[i].color = col_;
@@ -815,6 +827,7 @@ static int VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd
 static int VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     void *color_buffer;
+    SDL_FColor color;
 
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
     unset_clip_rectangle(data);
@@ -826,8 +839,12 @@ static int VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     sceGxmSetFragmentProgram(data->gxm_context, data->clearFragmentProgram);
 
     // set the clear color
+    color = cmd->data.color.color;
+    color.r *= cmd->data.color.color_scale;
+    color.g *= cmd->data.color.color_scale;
+    color.b *= cmd->data.color.color_scale;
     sceGxmReserveFragmentDefaultUniformBuffer(data->gxm_context, &color_buffer);
-    sceGxmSetUniformDataF(color_buffer, data->clearClearColorParam, 0, 4, &cmd->data.color.color.r);
+    sceGxmSetUniformDataF(color_buffer, data->clearClearColorParam, 0, 4, &color.r);
 
     // draw the clear triangle
     sceGxmSetVertexStream(data->gxm_context, 0, data->clearVertices);

@@ -983,6 +983,7 @@ static int GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
     int count = indices ? num_indices : num_vertices;
     GLfloat *verts;
     size_t sz = 2 * sizeof(GLfloat) + 4 * sizeof(GLfloat) + (texture ? 2 : 0) * sizeof(GLfloat);
+    const float color_scale = cmd->data.draw.color_scale;
 
     verts = (GLfloat *)SDL_AllocateRenderVertices(renderer, count * sz, 0, &cmd->data.draw.first);
     if (!verts) {
@@ -1016,9 +1017,9 @@ static int GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
         *(verts++) = xy_[1] * scale_y;
 
         col_ = (SDL_FColor *)((char *)color + j * color_stride);
-        *(verts++) = col_->r;
-        *(verts++) = col_->g;
-        *(verts++) = col_->b;
+        *(verts++) = col_->r * color_scale;
+        *(verts++) = col_->g * color_scale;
+        *(verts++) = col_->b * color_scale;
         *(verts++) = col_->a;
 
         if (texture) {
@@ -1231,9 +1232,9 @@ static int GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
         switch (cmd->command) {
         case SDL_RENDERCMD_SETDRAWCOLOR:
         {
-            const float r = cmd->data.color.color.r;
-            const float g = cmd->data.color.color.g;
-            const float b = cmd->data.color.color.b;
+            const float r = cmd->data.color.color.r * cmd->data.color.color_scale;
+            const float g = cmd->data.color.color.g * cmd->data.color.color_scale;
+            const float b = cmd->data.color.color.b * cmd->data.color.color_scale;
             const float a = cmd->data.color.color.a;
             if (data->drawstate.clear_color_dirty ||
                 (r != data->drawstate.color.r) ||
@@ -1241,7 +1242,10 @@ static int GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
                 (b != data->drawstate.color.b) ||
                 (a != data->drawstate.color.a)) {
                 data->glColor4f(r, g, b, a);
-                data->drawstate.color = cmd->data.color.color;
+                data->drawstate.color.r = r;
+                data->drawstate.color.g = g;
+                data->drawstate.color.b = b;
+                data->drawstate.color.a = a;
                 data->drawstate.color_dirty = SDL_FALSE;
             }
             break;
@@ -1274,9 +1278,9 @@ static int GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
 
         case SDL_RENDERCMD_CLEAR:
         {
-            const float r = cmd->data.color.color.r;
-            const float g = cmd->data.color.color.g;
-            const float b = cmd->data.color.color.b;
+            const float r = cmd->data.color.color.r * cmd->data.color.color_scale;
+            const float g = cmd->data.color.color.g * cmd->data.color.color_scale;
+            const float b = cmd->data.color.color.b * cmd->data.color.color_scale;
             const float a = cmd->data.color.color.a;
             if (data->drawstate.clear_color_dirty ||
                 (r != data->drawstate.clear_color.r) ||
@@ -1284,7 +1288,10 @@ static int GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
                 (b != data->drawstate.clear_color.b) ||
                 (a != data->drawstate.clear_color.a)) {
                 data->glClearColor(r, g, b, a);
-                data->drawstate.clear_color = cmd->data.color.color;
+                data->drawstate.clear_color.r = r;
+                data->drawstate.clear_color.g = g;
+                data->drawstate.clear_color.b = b;
+                data->drawstate.clear_color.a = a;
                 data->drawstate.clear_color_dirty = SDL_FALSE;
             }
 

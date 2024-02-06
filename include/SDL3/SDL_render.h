@@ -1460,6 +1460,38 @@ extern DECLSPEC int SDLCALL SDL_GetRenderDrawColor(SDL_Renderer *renderer, Uint8
 extern DECLSPEC int SDLCALL SDL_GetRenderDrawColorFloat(SDL_Renderer *renderer, float *r, float *g, float *b, float *a);
 
 /**
+ * Set the color scale used for render operations.
+ *
+ * The color scale is an additional scale multiplied into the pixel color value while rendering. This can be used to adjust the brightness of colors during HDR rendering, or changing HDR video brightness when playing on an SDR display.
+ *
+ * The color scale does not affect the alpha channel, only the color brightness.
+ *
+ * \param renderer the rendering context
+ * \param scale the color scale value
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetRenderColorScale
+ */
+extern DECLSPEC int SDLCALL SDL_SetRenderColorScale(SDL_Renderer *renderer, float scale);
+
+/**
+ * Get the color scale used for render operations.
+ *
+ * \param renderer the rendering context
+ * \param scale a pointer filled in with the current color scale value
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetRenderColorScale
+ */
+extern DECLSPEC int SDLCALL SDL_GetRenderColorScale(SDL_Renderer *renderer, float *scale);
+
+/**
  * Set the blend mode used for drawing operations (Fill and Line).
  *
  * If the blend mode is not supported, the closest supported mode is chosen.

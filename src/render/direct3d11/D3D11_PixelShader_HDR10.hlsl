@@ -24,7 +24,6 @@ float4 main(PixelShaderInput input) : SV_TARGET
         -0.124547, 1.132895, -0.008348,
         -0.018154, -0.100597, 1.118751
     };
-    float4 Output;
 
     float3 yuv;
     yuv.x = theTextureY.Sample(theSampler, input.tex).r;
@@ -40,19 +39,7 @@ float4 main(PixelShaderInput input) : SV_TARGET
 
     rgb = mul(mat2020to709, rgb);
 
-    rgb = (rgb / maxCLL) * HDR_whitelevel;
-
     rgb = scRGBfromNits(rgb);
 
-    if (!scRGB_output) {
-        rgb.r = sRGBfromLinear(rgb.r);
-        rgb.g = sRGBfromLinear(rgb.g);
-        rgb.b = sRGBfromLinear(rgb.b);
-        rgb.rgb = clamp(rgb.rgb, 0.0, 1.0);
-    }
-
-    Output.rgb = rgb.rgb;
-    Output.a = 1.0;
-
-    return Output * input.color;
+    return GetOutputColorFromSCRGB(rgb) * input.color;
 }

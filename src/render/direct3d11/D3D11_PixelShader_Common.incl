@@ -8,9 +8,9 @@ struct PixelShaderInput
 cbuffer Constants : register(b0)
 {
     float scRGB_output;
-    float SDR_whitelevel;
-    float HDR_whitelevel;
-    float maxCLL;
+    float color_scale;
+    float unused1;
+    float unused2;
 
     float4 Yoffset;
     float4 Rcoeff;
@@ -50,11 +50,12 @@ float sRGBfromLinear(float v)
 
 float4 GetOutputColor(float4 rgba)
 {
-    if (scRGB_output) {
-        rgba.rgb = scRGBfromNits(rgba.rgb * SDR_whitelevel);
-    }
+    float4 output;
 
-    return rgba;
+    output.rgb = rgba.rgb * color_scale;
+    output.a = rgba.a;
+
+    return output;
 }
 
 float4 GetOutputColorFromSRGB(float3 rgb)
@@ -62,14 +63,30 @@ float4 GetOutputColorFromSRGB(float3 rgb)
     float4 output;
 
     if (scRGB_output) {
-        output.r = sRGBtoLinear(rgb.r);
-        output.g = sRGBtoLinear(rgb.g);
-        output.b = sRGBtoLinear(rgb.b);
-        rgb = scRGBfromNits(rgb * SDR_whitelevel);
-    } else {
-        output.rgb = rgb.rgb;
+        rgb.r = sRGBtoLinear(rgb.r);
+        rgb.g = sRGBtoLinear(rgb.g);
+        rgb.b = sRGBtoLinear(rgb.b);
     }
+
+    output.rgb = rgb * color_scale;
     output.a = 1.0;
+
+    return output;
+}
+
+float4 GetOutputColorFromSCRGB(float3 rgb)
+{
+    float4 output;
+
+    output.rgb = rgb * color_scale;
+    output.a = 1.0;
+
+    if (!scRGB_output) {
+        output.r = sRGBfromLinear(output.r);
+        output.g = sRGBfromLinear(output.g);
+        output.b = sRGBfromLinear(output.b);
+        output.rgb = clamp(output.rgb, 0.0, 1.0);
+    }
 
     return output;
 }

@@ -35,6 +35,8 @@ static int renderer_index = 0;
 static int stage_count = 6;
 static int stage_index = 0;
 static int done;
+static float SDR_color_scale = 1.0f;
+static float HDR_color_scale = 1.0f;
 
 static void FreeRenderer(void)
 {
@@ -47,6 +49,7 @@ static void CreateRenderer(void)
 {
     SDL_PropertiesID props;
     SDL_RendererInfo info;
+    float SDR_white_level;
 
     props = SDL_CreateProperties();
     SDL_SetProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
@@ -62,6 +65,16 @@ static void CreateRenderer(void)
     SDL_GetRendererInfo(renderer, &info);
     SDL_Log("Created renderer %s\n", info.name);
     renderer_name = info.name;
+
+    /* If HDR is enabled... */
+    if (colorspace == SDL_COLORSPACE_SCRGB) {
+        SDR_white_level = 200.0f;
+    } else {
+        SDR_white_level = 80.0f;
+    }
+    SDR_color_scale = SDR_white_level / 80.0f;
+
+    SDL_SetRenderColorScale(renderer, SDR_color_scale);
 }
 
 static void NextRenderer( void )
@@ -429,7 +442,9 @@ static void RenderGradientDrawing(void)
 
     DrawTextWhite(x, y, "HDR gradient (%d nits)", 400);
     y += TEXT_LINE_ADVANCE;
+    SDL_SetRenderColorScale(renderer, HDR_color_scale);
     DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(400.0f));
+    SDL_SetRenderColorScale(renderer, SDR_color_scale);
     y += 64.0f;
 
     y += TEXT_LINE_ADVANCE;
@@ -437,7 +452,9 @@ static void RenderGradientDrawing(void)
 
     DrawTextWhite(x, y, "HDR gradient (%d nits)", 1000);
     y += TEXT_LINE_ADVANCE;
+    SDL_SetRenderColorScale(renderer, HDR_color_scale);
     DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(1000));
+    SDL_SetRenderColorScale(renderer, SDR_color_scale);
     y += 64.0f;
 }
 

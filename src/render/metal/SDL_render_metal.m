@@ -1049,7 +1049,8 @@ static int METAL_QueueSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cm
 
 static int METAL_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
-    const SDL_FColor *color = &cmd->data.draw.color;
+    SDL_FColor color = cmd->data.draw.color;
+    const float color_scale = cmd->data.draw.color_scale;
 
     const size_t vertlen = (2 * sizeof(float) + 4 * sizeof(float)) * count;
     float *verts = (float *)SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
@@ -1058,20 +1059,25 @@ static int METAL_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
     }
     cmd->data.draw.count = count;
 
+    color.r *= color_scale;
+    color.g *= color_scale;
+    color.b *= color_scale;
+
     for (int i = 0; i < count; i++, points++) {
         *(verts++) = points->x;
         *(verts++) = points->y;
-        *(verts++) = color->r;
-        *(verts++) = color->g;
-        *(verts++) = color->b;
-        *(verts++) = color->a;
+        *(verts++) = color.r;
+        *(verts++) = color.g;
+        *(verts++) = color.b;
+        *(verts++) = color.a;
     }
     return 0;
 }
 
 static int METAL_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
-    const SDL_FColor *color = &cmd->data.draw.color;
+    SDL_FColor color = cmd->data.draw.color;
+    const float color_scale = cmd->data.draw.color_scale;
     size_t vertlen;
     float *verts;
 
@@ -1084,13 +1090,17 @@ static int METAL_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
     }
     cmd->data.draw.count = count;
 
+    color.r *= color_scale;
+    color.g *= color_scale;
+    color.b *= color_scale;
+
     for (int i = 0; i < count; i++, points++) {
         *(verts++) = points->x;
         *(verts++) = points->y;
-        *(verts++) = color->r;
-        *(verts++) = color->g;
-        *(verts++) = color->b;
-        *(verts++) = color->a;
+        *(verts++) = color.r;
+        *(verts++) = color.g;
+        *(verts++) = color.b;
+        *(verts++) = color.a;
     }
 
     /* If the line segment is completely horizontal or vertical,
@@ -1125,6 +1135,7 @@ static int METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
                                int num_vertices, const void *indices, int num_indices, int size_indices,
                                float scale_x, float scale_y)
 {
+    const float color_scale = cmd->data.draw.color_scale;
     int count = indices ? num_indices : num_vertices;
     const size_t vertlen = (2 * sizeof(float) + 4 * sizeof(float) + (texture ? 2 : 0) * sizeof(float)) * count;
     float *verts = (float *)SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
@@ -1156,9 +1167,9 @@ static int METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
 
         col_ = (SDL_FColor *)((char *)color + j * color_stride);
 
-        *(verts++) = col_->r;
-        *(verts++) = col_->g;
-        *(verts++) = col_->b;
+        *(verts++) = col_->r * color_scale;
+        *(verts++) = col_->g * color_scale;
+        *(verts++) = col_->b * color_scale;
         *(verts++) = col_->a;
 
         if (texture) {
@@ -1393,9 +1404,9 @@ static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
                 statecache.viewport_dirty = SDL_TRUE;
 
                 {
-                    const float r = cmd->data.color.color.r;
-                    const float g = cmd->data.color.color.g;
-                    const float b = cmd->data.color.color.b;
+                    const float r = cmd->data.color.color.r * cmd->data.color.color_scale;
+                    const float g = cmd->data.color.color.g * cmd->data.color.color_scale;
+                    const float b = cmd->data.color.color.b * cmd->data.color.color_scale;
                     const float a = cmd->data.color.color.a;
                     MTLClearColor color = MTLClearColorMake(r, g, b, a);
 

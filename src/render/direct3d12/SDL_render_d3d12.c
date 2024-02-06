@@ -91,9 +91,9 @@ typedef struct
 typedef struct
 {
     float scRGB_output;
-    float SDR_whitelevel;
-    float HDR_whitelevel;
-    float maxCLL;
+    float color_scale;
+    float unused1;
+    float unused2;
     float YCbCr_matrix[16];
 } PixelShaderConstants;
 
@@ -147,6 +147,8 @@ typedef struct
 typedef struct
 {
     D3D12_Shader shader;
+    SDL_bool scRGB_output;
+    float color_scale;
     const float *shader_params;
     SDL_BlendMode blendMode;
     D3D12_PRIMITIVE_TOPOLOGY_TYPE topology;
@@ -190,11 +192,6 @@ typedef struct
     UINT swapFlags;
     DXGI_FORMAT renderTargetFormat;
     SDL_bool pixelSizeChanged;
-
-    /* HDR state */
-    SDL_bool HDR_enabled;
-    int SDR_whitelevel;
-    int HDR_whitelevel;
 
     /* Descriptor heaps */
     ID3D12DescriptorHeap *rtvDescriptorHeap;
@@ -568,21 +565,6 @@ static void D3D12_DestroyRenderer(SDL_Renderer *renderer)
         SDL_free(data);
     }
     SDL_free(renderer);
-}
-
-static void D3D12_UpdateHDRState(SDL_Renderer *renderer)
-{
-    D3D12_RenderData *data = (D3D12_RenderData *)renderer->driverdata;
-
-    /* Using some placeholder values here... */
-    data->HDR_enabled = SDL_FALSE;
-    if (renderer->output_colorspace == SDL_COLORSPACE_SCRGB && data->HDR_enabled) {
-        data->SDR_whitelevel = 200.0f;
-        data->HDR_whitelevel = 400.0f;
-    } else {
-        data->SDR_whitelevel = 80.0f;
-        data->HDR_whitelevel = 80.0f;
-    }
 }
 
 static D3D12_BLEND GetBlendFunc(SDL_BlendFactor factor)
@@ -1147,8 +1129,6 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
     SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
     SDL_SetProperty(props, SDL_PROP_RENDERER_D3D12_DEVICE_POINTER, data->d3dDevice);
     SDL_SetProperty(props, SDL_PROP_RENDERER_D3D12_COMMAND_QUEUE_POINTER, data->commandQueue);
-
-    D3D12_UpdateHDRState(renderer);
 
 done:
     SAFE_RELEASE(d3dDevice);
@@ -2551,6 +2531,8 @@ static int D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
     int i;
     D3D12_CPU_DESCRIPTOR_HANDLE firstShaderResource;
     DXGI_FORMAT rtvFormat = rendererData->renderTargetFormat;
+    SDL_bool scRGB_output = SDL_RenderingLinearSpace(renderer);
+    float color_scale = cmd->data.draw.color_scale;
 
     if (rendererData->textureRenderTarget) {
         rtvFormat = rendererData->textureRenderTarget->mainTextureFormat;
@@ -2671,16 +2653,14 @@ static int D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
                  0);
     }
 
-    if (updateSubresource == SDL_TRUE || (shader_params && shader_params != rendererData->currentPipelineState->shader_params)) {
+    if (updateSubresource == SDL_TRUE ||
+        scRGB_output != rendererData->currentPipelineState->scRGB_output ||
+        color_scale != rendererData->currentPipelineState->color_scale ||
+        (shader_params && shader_params != rendererData->currentPipelineState->shader_params)) {
         PixelShaderConstants constants;
-        if (renderer->output_colorspace == SDL_COLORSPACE_SCRGB) {
-            constants.scRGB_output = 1.0f;
-        } else {
-            constants.scRGB_output = 0.0f;
-        }
-        constants.SDR_whitelevel = (float)rendererData->SDR_whitelevel;
-        constants.HDR_whitelevel = (float)rendererData->HDR_whitelevel;
-        constants.maxCLL = 400.0f;
+
+        constants.scRGB_output = (float)scRGB_output;
+        constants.color_scale = color_scale;
 
         if (shader_params) {
             SDL_memcpy(constants.YCbCr_matrix, shader_params, sizeof(constants.YCbCr_matrix));
@@ -2691,6 +2671,9 @@ static int D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
                  20,
                  &constants,
                  0);
+
+        rendererData->currentPipelineState->scRGB_output = scRGB_output;
+        rendererData->currentPipelineState->color_scale = color_scale;
         rendererData->currentPipelineState->shader_params = shader_params;
     }
 
@@ -2832,14 +2815,11 @@ static int D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
             SDL_bool convert_color = SDL_RenderingLinearSpace(renderer);
             SDL_FColor color = cmd->data.color.color;
             if (convert_color) {
-                float light_scale = (float)rendererData->SDR_whitelevel / 80.0f;
-
                 SDL_ConvertToLinear(&color);
-
-                color.r *= light_scale;
-                color.g *= light_scale;
-                color.b *= light_scale;
             }
+            color.r *= cmd->data.color.color_scale;
+            color.g *= cmd->data.color.color_scale;
+            color.b *= cmd->data.color.color_scale;
             D3D_CALL(rendererData->commandList, ClearRenderTargetView, rtvDescriptor, &color.r, 0, NULL);
             break;
         }
