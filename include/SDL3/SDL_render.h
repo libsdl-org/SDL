@@ -335,9 +335,13 @@ extern DECLSPEC int SDLCALL SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_Rend
  * The following read-only properties are provided by SDL:
  *
  * - `SDL_PROP_RENDERER_NAME_STRING`: the name of the rendering driver
- * - `SDL_PROP_RENDERER_WINDOW_POINTER`: the window where rendering is displayed, if any
- * - `SDL_PROP_RENDERER_SURFACE_POINTER`: the surface where rendering is displayed, if this is a software renderer without a window
- * - `SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER`: an SDL_ColorSpace value describing the colorspace for output to the display, defaults to SDL_COLORSPACE_SRGB.
+ * - `SDL_PROP_RENDERER_WINDOW_POINTER`: the window where rendering is
+ *   displayed, if any
+ * - `SDL_PROP_RENDERER_SURFACE_POINTER`: the surface where rendering is
+ *   displayed, if this is a software renderer without a window
+ * - `SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER`: an SDL_ColorSpace value
+ *   describing the colorspace for output to the display, defaults to
+ *   SDL_COLORSPACE_SRGB.
  * - `SDL_PROP_RENDERER_D3D9_DEVICE_POINTER`: the IDirect3DDevice9 associated
  *   with the renderer
  * - `SDL_PROP_RENDERER_D3D11_DEVICE_POINTER`: the ID3D11Device associated
@@ -1470,9 +1474,13 @@ extern DECLSPEC int SDLCALL SDL_GetRenderDrawColorFloat(SDL_Renderer *renderer, 
 /**
  * Set the color scale used for render operations.
  *
- * The color scale is an additional scale multiplied into the pixel color value while rendering. This can be used to adjust the brightness of colors during HDR rendering, or changing HDR video brightness when playing on an SDR display.
+ * The color scale is an additional scale multiplied into the pixel color
+ * value while rendering. This can be used to adjust the brightness of colors
+ * during HDR rendering, or changing HDR video brightness when playing on an
+ * SDR display.
  *
- * The color scale does not affect the alpha channel, only the color brightness.
+ * The color scale does not affect the alpha channel, only the color
+ * brightness.
  *
  * \param renderer the rendering context
  * \param scale the color scale value
