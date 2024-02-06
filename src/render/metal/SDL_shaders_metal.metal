@@ -162,9 +162,7 @@ fragment float4 SDL_Copy_fragment(CopyVertexOutput vert [[stage_in]],
 struct YUVDecode
 {
     float3 offset;
-    float3 Rcoeff;
-    float3 Gcoeff;
-    float3 Bcoeff;
+    float3x3 matrix;
 };
 
 fragment float4 SDL_YUV_fragment(CopyVertexOutput vert [[stage_in]],
@@ -180,10 +178,7 @@ fragment float4 SDL_YUV_fragment(CopyVertexOutput vert [[stage_in]],
     yuv.z = texUV.sample(s, vert.texcoord, 1).r;
 
     float3 rgb;
-    yuv += decode.offset;
-    rgb.r = dot(yuv, decode.Rcoeff);
-    rgb.g = dot(yuv, decode.Gcoeff);
-    rgb.b = dot(yuv, decode.Bcoeff);
+    rgb = (yuv + decode.offset) * decode.matrix;
 
     return GetOutputColorFromSRGB(rgb, c.scRGB_output, c.color_scale) * vert.color;
 }
@@ -200,10 +195,7 @@ fragment float4 SDL_NV12_fragment(CopyVertexOutput vert [[stage_in]],
     yuv.yz = texUV.sample(s, vert.texcoord).rg;
 
     float3 rgb;
-    yuv += decode.offset;
-    rgb.r = dot(yuv, decode.Rcoeff);
-    rgb.g = dot(yuv, decode.Gcoeff);
-    rgb.b = dot(yuv, decode.Bcoeff);
+    rgb = (yuv + decode.offset) * decode.matrix;
 
     return GetOutputColorFromSRGB(rgb, c.scRGB_output, c.color_scale) * vert.color;
 }
@@ -220,10 +212,7 @@ fragment float4 SDL_NV21_fragment(CopyVertexOutput vert [[stage_in]],
     yuv.yz = texUV.sample(s, vert.texcoord).gr;
 
     float3 rgb;
-    yuv += decode.offset;
-    rgb.r = dot(yuv, decode.Rcoeff);
-    rgb.g = dot(yuv, decode.Gcoeff);
-    rgb.b = dot(yuv, decode.Bcoeff);
+    rgb = (yuv + decode.offset) * decode.matrix;
 
     return GetOutputColorFromSRGB(rgb, c.scRGB_output, c.color_scale) * vert.color;
 }
@@ -246,10 +235,7 @@ fragment float4 SDL_HDR10_fragment(CopyVertexOutput vert [[stage_in]],
     yuv.yz = texUV.sample(s, vert.texcoord).rg;
 
     float3 rgb;
-    yuv += decode.offset;
-    rgb.r = dot(yuv, decode.Rcoeff);
-    rgb.g = dot(yuv, decode.Gcoeff);
-    rgb.b = dot(yuv, decode.Bcoeff);
+    rgb = (yuv + decode.offset) * decode.matrix;
 
     rgb = PQtoNits(rgb);
 
