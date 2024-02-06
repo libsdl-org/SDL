@@ -353,6 +353,11 @@ extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetPrimaryDisplay(void);
 /**
  * Get the properties associated with a display.
  *
+ * The following read-only properties are provided by SDL:
+ *
+ * - `SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN`: true if the display has High Dynamic Range enabled
+ * - `SDL_PROP_DISPLAY_SDR_WHITE_LEVEL_FLOAT`: the luminance, in nits, that SDR white is rendered on this display. If this value is not set or is zero, the value 200 is a reasonable default when HDR is enabled.
+ *
  * \param displayID the instance ID of the display to query
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -363,6 +368,9 @@ extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetPrimaryDisplay(void);
  * \sa SDL_SetProperty
  */
 extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetDisplayProperties(SDL_DisplayID displayID);
+
+#define SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN            "SDL.display.HDR_enabled"
+#define SDL_PROP_DISPLAY_SDR_WHITE_LEVEL_FLOAT          "SDL.display.SDR_white_level"
 
 /**
  * Get the name of a display in UTF-8 encoding.

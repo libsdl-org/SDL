@@ -18,6 +18,18 @@
 #include <emscripten/emscripten.h>
 #endif
 
+/* The value for the SDR white level on an SDR display, scRGB 1.0 */
+#define SDR_DISPLAY_WHITE_LEVEL  80.0f
+
+/* The default value for the SDR white level on an HDR display */
+#define DEFAULT_SDR_WHITE_LEVEL 200.0f
+
+/* The default value for the HDR white level on an HDR display */
+#define DEFAULT_HDR_WHITE_LEVEL 400.0f
+
+/* The maximum value for the HDR white level on an HDR display */
+#define MAXIMUM_HDR_WHITE_LEVEL 1000.0f
+
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
 
@@ -32,11 +44,27 @@ static SDL_Colorspace colorspace = SDL_COLORSPACE_SRGB;
 static const char *colorspace_name = "sRGB";
 static int renderer_count = 0;
 static int renderer_index = 0;
-static int stage_count = 6;
 static int stage_index = 0;
 static int done;
+static SDL_bool HDR_enabled = SDL_FALSE;
+static float SDR_white_level = SDR_DISPLAY_WHITE_LEVEL;
 static float SDR_color_scale = 1.0f;
-static float HDR_color_scale = 1.0f;
+static SDL_FRect SDR_calibration_rect;
+static float HDR_white_level = DEFAULT_HDR_WHITE_LEVEL;
+static float HDR_color_scale = DEFAULT_HDR_WHITE_LEVEL / SDR_DISPLAY_WHITE_LEVEL;
+static SDL_FRect HDR_calibration_rect;
+
+enum
+{
+    StageClearBackground,
+    StageDrawBackground,
+    StageBlendDrawing,
+    StageBlendTexture,
+    StageHDRCalibration,
+    StageGradientDrawing,
+    StageGradientTexture,
+    StageCount
+};
 
 static void FreeRenderer(void)
 {
@@ -45,11 +73,61 @@ static void FreeRenderer(void)
     renderer = NULL;
 }
 
+static float GetDisplaySDRWhiteLevel(void)
+{
+    SDL_PropertiesID props;
+
+    HDR_enabled = SDL_FALSE;
+
+    props = SDL_GetRendererProperties(renderer);
+    if (SDL_GetNumberProperty(props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB) != SDL_COLORSPACE_SCRGB) {
+        /* We're not displaying in HDR, use the SDR white level */
+        return SDR_DISPLAY_WHITE_LEVEL;
+    }
+
+    props = SDL_GetDisplayProperties(SDL_GetDisplayForWindow(window));
+    if (!SDL_GetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, SDL_FALSE)) {
+        /* HDR is not enabled on the display */
+        return SDR_DISPLAY_WHITE_LEVEL;
+    }
+
+    HDR_enabled = SDL_TRUE;
+
+    return SDL_GetFloatProperty(props, SDL_PROP_DISPLAY_SDR_WHITE_LEVEL_FLOAT, DEFAULT_SDR_WHITE_LEVEL);
+}
+
+static void SetSDRWhiteLevel(float value)
+{
+    if (value == SDR_white_level) {
+        return;
+    }
+
+    SDL_Log("SDR white level set to %g nits\n", value);
+    SDR_white_level = value;
+    SDR_color_scale = SDR_white_level / SDR_DISPLAY_WHITE_LEVEL;
+    SDL_SetRenderColorScale(renderer, SDR_color_scale);
+}
+
+static void UpdateSDRWhiteLevel(void)
+{
+    SetSDRWhiteLevel(GetDisplaySDRWhiteLevel());
+}
+
+static void SetHDRWhiteLevel(float value)
+{
+    if (value == HDR_white_level) {
+        return;
+    }
+
+    SDL_Log("HDR white level set to %g nits\n", value);
+    HDR_white_level = value;
+    HDR_color_scale = HDR_white_level / SDR_DISPLAY_WHITE_LEVEL;
+}
+
 static void CreateRenderer(void)
 {
     SDL_PropertiesID props;
     SDL_RendererInfo info;
-    float SDR_white_level;
 
     props = SDL_CreateProperties();
     SDL_SetProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
@@ -66,15 +144,7 @@ static void CreateRenderer(void)
     SDL_Log("Created renderer %s\n", info.name);
     renderer_name = info.name;
 
-    /* If HDR is enabled... */
-    if (colorspace == SDL_COLORSPACE_SCRGB) {
-        SDR_white_level = 200.0f;
-    } else {
-        SDR_white_level = 80.0f;
-    }
-    SDR_color_scale = SDR_white_level / 80.0f;
-
-    SDL_SetRenderColorScale(renderer, SDR_color_scale);
+    UpdateSDRWhiteLevel();
 }
 
 static void NextRenderer( void )
@@ -107,12 +177,12 @@ static void PrevRenderer(void)
 
 static void NextStage(void)
 {
-    if (stage_count <= 0) {
+    if (StageCount <= 0) {
         return;
     }
 
     ++stage_index;
-    if (stage_index == stage_count) {
+    if (stage_index == StageCount) {
         stage_index = 0;
     }
 }
@@ -121,7 +191,7 @@ static void PrevStage(void)
 {
     --stage_index;
     if (stage_index == -1) {
-        stage_index += stage_count;
+        stage_index += StageCount;
     }
 }
 
@@ -388,6 +458,11 @@ static void DrawGradient(float x, float y, float width, float height, float star
     SDL_RenderGeometryRaw(renderer, NULL, xy, xy_stride, color, color_stride, NULL, 0, num_vertices, indices, num_indices, size_indices);
 }
 
+static float scRGBtoNits(float v)
+{
+    return v * 80.0f;
+}
+
 static float scRGBfromNits(float v)
 {
     return v / 80.0f;
@@ -413,6 +488,11 @@ static float sRGBFromLinear(float v)
     return v;
 }
 
+static float sRGBtoNits(float v)
+{
+    return scRGBtoNits(sRGBtoLinear(v));
+}
+
 static float sRGBfromNits(float v)
 {
     return sRGBFromLinear(scRGBfromNits(v));
@@ -432,28 +512,30 @@ static void RenderGradientDrawing(void)
 
     y += TEXT_LINE_ADVANCE;
 
-    DrawTextWhite(x, y, "SDR gradient (%d nits)", 80);
+    DrawTextWhite(x, y, "SDR gradient (%g nits)", SDR_white_level);
     y += TEXT_LINE_ADVANCE;
-    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(80.0f));
-    y += 64.0f;
-
-    y += TEXT_LINE_ADVANCE;
-    y += TEXT_LINE_ADVANCE;
-
-    DrawTextWhite(x, y, "HDR gradient (%d nits)", 400);
-    y += TEXT_LINE_ADVANCE;
-    SDL_SetRenderColorScale(renderer, HDR_color_scale);
-    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(400.0f));
+    SDL_SetRenderColorScale(renderer, 1.0f);
+    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(SDR_white_level));
     SDL_SetRenderColorScale(renderer, SDR_color_scale);
     y += 64.0f;
 
     y += TEXT_LINE_ADVANCE;
     y += TEXT_LINE_ADVANCE;
 
-    DrawTextWhite(x, y, "HDR gradient (%d nits)", 1000);
+    DrawTextWhite(x, y, "HDR gradient (%g nits)", HDR_white_level);
     y += TEXT_LINE_ADVANCE;
-    SDL_SetRenderColorScale(renderer, HDR_color_scale);
-    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(1000));
+    SDL_SetRenderColorScale(renderer, 1.0f);
+    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(HDR_white_level));
+    SDL_SetRenderColorScale(renderer, SDR_color_scale);
+    y += 64.0f;
+
+    y += TEXT_LINE_ADVANCE;
+    y += TEXT_LINE_ADVANCE;
+
+    DrawTextWhite(x, y, "HDR gradient (%g nits)", MAXIMUM_HDR_WHITE_LEVEL);
+    y += TEXT_LINE_ADVANCE;
+    SDL_SetRenderColorScale(renderer, 1.0f);
+    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(MAXIMUM_HDR_WHITE_LEVEL));
     SDL_SetRenderColorScale(renderer, SDR_color_scale);
     y += 64.0f;
 }
@@ -517,26 +599,117 @@ static void RenderGradientTexture(void)
 
     y += TEXT_LINE_ADVANCE;
 
-    DrawTextWhite(x, y, "SDR gradient (%d nits)", 80);
+    DrawTextWhite(x, y, "SDR gradient (%g nits)", SDR_white_level);
     y += TEXT_LINE_ADVANCE;
-    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(80));
+    SDL_SetRenderColorScale(renderer, 1.0f);
+    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(SDR_white_level));
+    SDL_SetRenderColorScale(renderer, SDR_color_scale);
     y += 64.0f;
 
     y += TEXT_LINE_ADVANCE;
     y += TEXT_LINE_ADVANCE;
 
-    DrawTextWhite(x, y, "HDR gradient (%d nits)", 400);
+    DrawTextWhite(x, y, "HDR gradient (%g nits)", HDR_white_level);
     y += TEXT_LINE_ADVANCE;
-    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(400));
+    SDL_SetRenderColorScale(renderer, 1.0f);
+    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(HDR_white_level));
+    SDL_SetRenderColorScale(renderer, SDR_color_scale);
     y += 64.0f;
 
     y += TEXT_LINE_ADVANCE;
     y += TEXT_LINE_ADVANCE;
 
-    DrawTextWhite(x, y, "HDR gradient (%d nits)", 1000);
+    DrawTextWhite(x, y, "HDR gradient (%g nits)", MAXIMUM_HDR_WHITE_LEVEL);
     y += TEXT_LINE_ADVANCE;
-    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(1000));
+    SDL_SetRenderColorScale(renderer, 1.0f);
+    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(MAXIMUM_HDR_WHITE_LEVEL));
+    SDL_SetRenderColorScale(renderer, SDR_color_scale);
     y += 64.0f;
+}
+
+static void RenderHDRCalibration(void)
+{
+    SDL_FRect rect;
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    float x = TEXT_START_X;
+    float y = TEXT_START_Y;
+    DrawTextWhite(x, y, "%s %s", renderer_name, colorspace_name);
+    y += TEXT_LINE_ADVANCE;
+    DrawTextWhite(x, y, "Test: HDR calibration");
+    y += TEXT_LINE_ADVANCE;
+
+    y += TEXT_LINE_ADVANCE;
+
+    if (!HDR_enabled) {
+        DrawTextWhite(x, y, "HDR not enabled");
+        return;
+    }
+
+    DrawTextWhite(x, y, "Select HDR maximum brightness (%g nits)", HDR_white_level);
+    y += TEXT_LINE_ADVANCE;
+    DrawTextWhite(x, y, "The square in the middle should just barely be visible");
+    y += TEXT_LINE_ADVANCE;
+    HDR_calibration_rect.x = x;
+    HDR_calibration_rect.y = y;
+    HDR_calibration_rect.w = WINDOW_WIDTH - 2 * x;
+    HDR_calibration_rect.h = 64.0f;
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_SetRenderColorScale(renderer, MAXIMUM_HDR_WHITE_LEVEL / SDR_DISPLAY_WHITE_LEVEL);
+    SDL_RenderFillRect(renderer, &HDR_calibration_rect);
+    SDL_SetRenderColorScale(renderer, HDR_color_scale);
+    rect = HDR_calibration_rect;
+    rect.h -= 4.0f;
+    rect.w = 60.0f;
+    rect.x = (WINDOW_WIDTH - rect.w) / 2.0f;
+    rect.y += 2.0f;
+    SDL_RenderFillRect(renderer, &rect);
+    SDL_SetRenderColorScale(renderer, SDR_color_scale);
+    y += 64.0f;
+
+    y += TEXT_LINE_ADVANCE;
+    y += TEXT_LINE_ADVANCE;
+
+    DrawTextWhite(x, y, "Select SDR maximum brightness (%g nits)", SDR_white_level);
+    y += TEXT_LINE_ADVANCE;
+    SDR_calibration_rect.x = x;
+    SDR_calibration_rect.y = y;
+    SDR_calibration_rect.w = WINDOW_WIDTH - 2 * x;
+    SDR_calibration_rect.h = 64.0f;
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderFillRect(renderer, &SDR_calibration_rect);
+}
+
+static void OnHDRCalibrationMouseHeld(float x, float y)
+{
+    SDL_FPoint mouse = { x, y };
+
+    if (SDL_PointInRectFloat(&mouse, &HDR_calibration_rect)) {
+        float v = (x - HDR_calibration_rect.x) / HDR_calibration_rect.w;
+        v *= (sRGBfromNits(MAXIMUM_HDR_WHITE_LEVEL) - 1.0f);
+        v += 1.0f;
+        v = sRGBtoNits(v);
+        SetHDRWhiteLevel(v);
+        return;
+    }
+
+    if (SDL_PointInRectFloat(&mouse, &SDR_calibration_rect)) {
+        float v = (x - SDR_calibration_rect.x) / SDR_calibration_rect.w;
+        v *= (sRGBfromNits(MAXIMUM_HDR_WHITE_LEVEL) - 1.0f);
+        v += 1.0f;
+        v = sRGBtoNits(v);
+        SetSDRWhiteLevel(v);
+        return;
+    }
+}
+
+static void OnMouseHeld(float x, float y)
+{
+    if (stage_index == StageHDRCalibration) {
+        OnHDRCalibrationMouseHeld(x, y);
+    }
 }
 
 static void loop(void)
@@ -565,6 +738,14 @@ static void loop(void)
             default:
                 break;
             }
+        } else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+            OnMouseHeld(event.button.x, event.button.y);
+        } else if (event.type == SDL_EVENT_MOUSE_MOTION) {
+            if (event.motion.state) {
+                OnMouseHeld(event.button.x, event.button.y);
+            }
+        } else if (event.type == SDL_EVENT_DISPLAY_HDR_STATE_CHANGED) {
+            UpdateSDRWhiteLevel();
         } else if (event.type == SDL_EVENT_QUIT) {
             done = 1;
         }
@@ -575,22 +756,25 @@ static void loop(void)
         SDL_RenderClear(renderer);
 
         switch (stage_index) {
-        case 0:
+        case StageClearBackground:
             RenderClearBackground();
             break;
-        case 1:
+        case StageDrawBackground:
             RenderDrawBackground();
             break;
-        case 2:
+        case StageBlendDrawing:
             RenderBlendDrawing();
             break;
-        case 3:
+        case StageBlendTexture:
             RenderBlendTexture();
             break;
-        case 4:
+        case StageHDRCalibration:
+            RenderHDRCalibration();
+            break;
+        case StageGradientDrawing:
             RenderGradientDrawing();
             break;
-        case 5:
+        case StageGradientTexture:
             RenderGradientTexture();
             break;
         }
