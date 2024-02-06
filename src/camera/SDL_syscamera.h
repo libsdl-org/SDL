@@ -28,10 +28,7 @@
 #define DEBUG_CAMERA 0
 
 
-// !!! FIXME: update these drivers!
-#ifdef SDL_CAMERA_DRIVER_COREMEDIA
-#undef SDL_CAMERA_DRIVER_COREMEDIA
-#endif
+// !!! FIXME: update this driver!
 #ifdef SDL_CAMERA_DRIVER_ANDROID
 #undef SDL_CAMERA_DRIVER_ANDROID
 #endif
@@ -52,6 +49,9 @@ extern SDL_CameraDevice *SDL_FindPhysicalCameraDeviceByCallback(SDL_bool (*callb
 
 // Backends should call this when the user has approved/denied access to a camera.
 extern void SDL_CameraDevicePermissionOutcome(SDL_CameraDevice *device, SDL_bool approved);
+
+// Backends can call this to get a standardized name for a thread to power a specific camera device.
+extern char *SDL_GetCameraThreadName(SDL_CameraDevice *device, char *buf, size_t buflen);
 
 // These functions are the heart of the camera threads. Backends can call them directly if they aren't using the SDL-provided thread.
 extern void SDL_CameraThreadSetup(SDL_CameraDevice *device);

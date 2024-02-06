@@ -198,8 +198,6 @@
 #define SDL_VIDEO_METAL 1
 #endif
 
-#define HAVE_COREMEDIA  1
-
 /* Enable system power support */
 #define SDL_POWER_UIKIT 1
 
@@ -213,6 +211,10 @@
 #define SDL_FILESYSTEM_COCOA   1
 
 /* enable camera support */
+#ifndef SDL_PLATFORM_TVOS
 #define SDL_CAMERA_DRIVER_COREMEDIA 1
+#endif
+
+#define SDL_CAMERA_DRIVER_DUMMY 1
 
 #endif /* SDL_build_config_ios_h_ */

@@ -73,6 +73,12 @@ const char *SDL_GetCurrentCameraDriver(void)
     return camera_driver.name;
 }
 
+char *SDL_GetCameraThreadName(SDL_CameraDevice *device, char *buf, size_t buflen)
+{
+    (void)SDL_snprintf(buf, buflen, "SDLCamera%d", (int) device->instance_id);
+    return buf;
+}
+
 int SDL_AddCameraFormat(CameraFormatAddData *data, Uint32 fmt, int w, int h, int interval_numerator, int interval_denominator)
 {
     SDL_assert(data != NULL);
@@ -683,7 +689,7 @@ SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device)
         failed = SDL_TRUE;
     }
 
-    // we can let go of the lock once we've tried to grab a frame of video and maybe moved the output frame from the empty to the filled list.
+    // we can let go of the lock once we've tried to grab a frame of video and maybe moved the output frame off the empty list.
     // this lets us chew up the CPU for conversion and scaling without blocking other threads.
     SDL_UnlockMutex(device->lock);
 
@@ -988,7 +994,7 @@ SDL_Camera *SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_Camer
     // Start the camera thread if necessary
     if (!camera_driver.impl.ProvidesOwnCallbackThread) {
         char threadname[64];
-        SDL_snprintf(threadname, sizeof (threadname), "SDLCamera%d", (int) instance_id);
+        SDL_GetCameraThreadName(device, threadname, sizeof (threadname));
         device->thread = SDL_CreateThreadInternal(CameraThread, threadname, 0, device);
         if (!device->thread) {
             ClosePhysicalCameraDevice(device);
