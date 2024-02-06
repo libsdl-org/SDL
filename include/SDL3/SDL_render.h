@@ -505,7 +505,9 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *
  *
  * With the metal renderer:
  *
- * - `SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER`: the CVPixelBufferRef associated with the texture, if you want to create a texture from an existing pixel buffer.
+ * - `SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER`: the CVPixelBufferRef
+ *   associated with the texture, if you want to create a texture from an
+ *   existing pixel buffer.
  *
  * With the opengl renderer:
  *
