@@ -508,7 +508,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 - (void)sendDropFileForURL:(NSURL *)url fromSourceApplication:(NSString *)sourceApplication
 {
     NSURL *fileURL = url.filePathURL;
-    char *sourceApplicationCString = sourceApplication ? [sourceApplication UTF8String] : NULL;
+    const char *sourceApplicationCString = sourceApplication ? [sourceApplication UTF8String] : NULL;
     if (fileURL != nil) {
         SDL_SendDropFile(NULL, sourceApplicationCString, fileURL.path.UTF8String);
     } else {
