@@ -969,6 +969,7 @@ SDL3_0.0.0 {
     SDL_CopyProperties;
     SDL_SetRenderColorScale;
     SDL_GetRenderColorScale;
+    SDL_RenderGeometryRawFloat;
     # extra symbols go here (don't modify this line)
   local: *;
 };
