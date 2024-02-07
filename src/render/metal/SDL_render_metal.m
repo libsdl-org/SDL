@@ -758,7 +758,12 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         } else if (texture->format == SDL_PIXELFORMAT_NV21) {
             texturedata.fragmentFunction = SDL_METAL_FRAGMENT_NV21;
         } else if (texture->format == SDL_PIXELFORMAT_P010) {
-            texturedata.fragmentFunction = SDL_METAL_FRAGMENT_HDR10;
+            if(SDL_COLORSPACEPRIMARIES(texture->colorspace) == SDL_COLOR_PRIMARIES_BT2020 &&
+               SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
+                texturedata.fragmentFunction = SDL_METAL_FRAGMENT_HDR10;
+            } else {
+                return SDL_SetError("Unsupported YUV colorspace");
+            }
         } else
 #endif
         {
