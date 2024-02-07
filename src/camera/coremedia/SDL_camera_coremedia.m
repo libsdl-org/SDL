@@ -386,20 +386,36 @@ static SDL_bool FindCoreMediaCameraDeviceByUniqueID(SDL_CameraDevice *device, vo
     return ([uniqueid isEqualToString:avdev.uniqueID]) ? SDL_TRUE : SDL_FALSE;
 }
 
-static void MaybeAddDevice(AVCaptureDevice *device)
+static void MaybeAddDevice(AVCaptureDevice *avdevice)
 {
-    if (!device.connected) {
+    if (!avdevice.connected) {
         return;  // not connected.
-    } else if (![device hasMediaType:AVMediaTypeVideo]) {
+    } else if (![avdevice hasMediaType:AVMediaTypeVideo]) {
         return;  // not a camera.
-    } else if (SDL_FindPhysicalCameraDeviceByCallback(FindCoreMediaCameraDeviceByUniqueID, (__bridge void *) device.uniqueID)) {
+    } else if (SDL_FindPhysicalCameraDeviceByCallback(FindCoreMediaCameraDeviceByUniqueID, (__bridge void *) avdevice.uniqueID)) {
         return;  // already have this one.
     }
 
     CameraFormatAddData add_data;
-    GatherCameraSpecs(device, &add_data);
+    GatherCameraSpecs(avdevice, &add_data);
     if (add_data.num_specs > 0) {
-        SDL_AddCameraDevice(device.localizedName.UTF8String, add_data.num_specs, add_data.specs, (void *) CFBridgingRetain(device));
+        SDL_CameraDevice *device = SDL_AddCameraDevice(avdevice.localizedName.UTF8String, add_data.num_specs, add_data.specs, (void *) CFBridgingRetain(avdevice));
+        if (device) {
+            const char *posstr = NULL;
+            if (avdevice.position == AVCaptureDevicePositionFront) {
+                posstr = "front";
+            } else if (avdevice.position == AVCaptureDevicePositionBack) {
+                posstr = "back";
+            }
+
+            if (posstr) {
+                SDL_Camera *camera = (SDL_Camera *) device;  // currently there's no separation between physical and logical device.
+                SDL_PropertiesID props = SDL_GetCameraProperties(camera);
+                if (props) {
+                    SDL_SetStringProperty(props, SDL_PROP_CAMERA_POSITION_STRING, posstr);
+                }
+            }
+        }
     }
     SDL_free(add_data.specs);
 }
