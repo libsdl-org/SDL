@@ -294,6 +294,11 @@ typedef union
     } x;
 } FP32;
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4214)
+#endif
+
 typedef union
 {
     Uint16 u;
@@ -304,6 +309,10 @@ typedef union
         Uint16 Sign : 1;
     } x;
 } FP16;
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 static float half_to_float(Uint16 unValue)
 {
