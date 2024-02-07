@@ -187,11 +187,10 @@ int hid_winapi_descriptor_reconstruct_pp_data(void *preparsed_data, unsigned cha
 		return -1;
 	}
 
-	struct rd_buffer rpt_desc = {
-		.buf = buf,
-		.buf_size = buf_size,
-		.byte_idx = 0
-	};
+	struct rd_buffer rpt_desc;
+	rpt_desc.buf = buf;
+	rpt_desc.buf_size = buf_size;
+	rpt_desc.byte_idx = 0;
 
 	// Set pointer to the first node of link_collection_nodes
 	phid_pp_link_collection_node link_collection_nodes = (phid_pp_link_collection_node)(((unsigned char*)&pp_data->caps[0]) + pp_data->FirstByteOfLinkCollectionArray);

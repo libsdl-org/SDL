@@ -966,11 +966,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         if (IS_HIGH_SURROGATE(wParam)) {
             data->high_surrogate = (WCHAR)wParam;
         } else {
-            WCHAR utf16[] = {
-                data->high_surrogate ? data->high_surrogate : (WCHAR)wParam,
-                data->high_surrogate ? (WCHAR)wParam : L'\0',
-                L'\0'
-            };
+            WCHAR utf16[3];
+
+            utf16[0] = data->high_surrogate ? data->high_surrogate : (WCHAR)wParam;
+            utf16[1] = data->high_surrogate ? (WCHAR)wParam : L'\0';
+            utf16[2] = L'\0';
 
             char utf8[5];
             int result = WIN_WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, utf16, -1, utf8, sizeof(utf8), NULL, NULL);

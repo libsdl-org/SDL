@@ -2349,20 +2349,20 @@ static int D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *c
     }
 #if SDL_HAVE_YUV
     if (textureData->yuv) {
-        ID3D11ShaderResourceView *shaderResources[] = {
-            textureData->mainTextureResourceView,
-            textureData->mainTextureResourceViewU,
-            textureData->mainTextureResourceViewV
-        };
+        ID3D11ShaderResourceView *shaderResources[3];
+
+        shaderResources[0] = textureData->mainTextureResourceView;
+        shaderResources[1] = textureData->mainTextureResourceViewU;
+        shaderResources[2] = textureData->mainTextureResourceViewV;
 
         return D3D11_SetDrawState(renderer, cmd, textureData->shader, textureData->shader_params,
                                   SDL_arraysize(shaderResources), shaderResources, textureSampler, matrix);
 
     } else if (textureData->nv12) {
-        ID3D11ShaderResourceView *shaderResources[] = {
-            textureData->mainTextureResourceView,
-            textureData->mainTextureResourceViewNV,
-        };
+        ID3D11ShaderResourceView *shaderResources[2];
+
+        shaderResources[0] = textureData->mainTextureResourceView;
+        shaderResources[1] = textureData->mainTextureResourceViewNV;
 
         return D3D11_SetDrawState(renderer, cmd, textureData->shader, textureData->shader_params,
                                   SDL_arraysize(shaderResources), shaderResources, textureSampler, matrix);

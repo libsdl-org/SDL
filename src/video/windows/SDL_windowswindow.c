@@ -719,7 +719,11 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
                    We can use (-1, -1, 0, 0) boundary to make sure no pixels are being blurred
                 */
                 HRGN rgn = CreateRectRgn(-1, -1, 0, 0);
-                DWM_BLURBEHIND bb = {DWM_BB_ENABLE | DWM_BB_BLURREGION, TRUE, rgn, FALSE};
+                DWM_BLURBEHIND bb;
+                bb.flags = (DWM_BB_ENABLE | DWM_BB_BLURREGION);
+                bb.enable = TRUE;
+                bb.blur_region = rgn;
+                bb.transition_on_maxed = FALSE;
                 DwmEnableBlurBehindWindowFunc(hwnd, &bb);
                 DeleteObject(rgn);
             }

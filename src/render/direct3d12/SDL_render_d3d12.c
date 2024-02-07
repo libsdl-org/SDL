@@ -2701,11 +2701,11 @@ static int D3D12_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *c
     }
 #if SDL_HAVE_YUV
     if (textureData->yuv) {
-        D3D12_CPU_DESCRIPTOR_HANDLE shaderResources[] = {
-            textureData->mainTextureResourceView,
-            textureData->mainTextureResourceViewU,
-            textureData->mainTextureResourceViewV
-        };
+        D3D12_CPU_DESCRIPTOR_HANDLE shaderResources[3];
+
+        shaderResources[0] = textureData->mainTextureResourceView;
+        shaderResources[1] = textureData->mainTextureResourceViewU;
+        shaderResources[2] = textureData->mainTextureResourceViewV;
 
         /* Make sure each texture is in the correct state to be accessed by the pixel shader. */
         D3D12_TransitionResource(rendererData, textureData->mainTexture, textureData->mainResourceState, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
@@ -2717,10 +2717,10 @@ static int D3D12_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *c
 
         return D3D12_SetDrawState(renderer, cmd, textureData->shader, textureData->shader_params, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, SDL_arraysize(shaderResources), shaderResources, textureSampler, matrix);
     } else if (textureData->nv12) {
-        D3D12_CPU_DESCRIPTOR_HANDLE shaderResources[] = {
-            textureData->mainTextureResourceView,
-            textureData->mainTextureResourceViewNV,
-        };
+        D3D12_CPU_DESCRIPTOR_HANDLE shaderResources[2];
+
+        shaderResources[0] = textureData->mainTextureResourceView;
+        shaderResources[1] = textureData->mainTextureResourceViewNV;
 
         /* Make sure each texture is in the correct state to be accessed by the pixel shader. */
         D3D12_TransitionResource(rendererData, textureData->mainTexture, textureData->mainResourceState, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);

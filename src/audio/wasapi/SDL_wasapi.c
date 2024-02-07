@@ -265,7 +265,9 @@ static void WASAPI_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevi
 {
     int rc;
     // this blocks because it needs to finish before the audio subsystem inits
-    mgmtthrtask_DetectDevicesData data = { default_output, default_capture };
+    mgmtthrtask_DetectDevicesData data;
+    data.default_output = default_output;
+    data.default_capture = default_capture;
     WASAPI_ProxyToManagementThread(mgmtthrtask_DetectDevices, &data, &rc);
 }
 
