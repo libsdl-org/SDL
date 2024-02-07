@@ -33,6 +33,7 @@
 
 #include <d3d11_1.h>
 #include <dxgi1_4.h>
+#include <dxgidebug.h>
 
 #include "SDL_shaders_d3d11.h"
 
@@ -144,6 +145,7 @@ typedef struct
     void *hD3D11Mod;
     IDXGIFactory2 *dxgiFactory;
     IDXGIAdapter *dxgiAdapter;
+    IDXGIDebug *dxgiDebug;
     ID3D11Device1 *d3dDevice;
     ID3D11DeviceContext1 *d3dContext;
     IDXGISwapChain1 *swapChain;
@@ -211,8 +213,10 @@ static const GUID SDL_IID_IDXGIDevice3 = { 0x6007896c, 0x3244, 0x4afd, { 0xbf, 0
 static const GUID SDL_IID_ID3D11Texture2D = { 0x6f15aaf2, 0xd208, 0x4e89, { 0x9a, 0xb4, 0x48, 0x95, 0x35, 0xd3, 0x4f, 0x9c } };
 static const GUID SDL_IID_ID3D11Device1 = { 0xa04bfb29, 0x08ef, 0x43d6, { 0xa4, 0x9c, 0xa9, 0xbd, 0xbd, 0xcb, 0xe6, 0x86 } };
 static const GUID SDL_IID_ID3D11DeviceContext1 = { 0xbb2c6faa, 0xb5fb, 0x4082, { 0x8e, 0x6b, 0x38, 0x8b, 0x8c, 0xfa, 0x90, 0xe1 } };
-/*static const GUID SDL_IID_ID3D11Debug = { 0x79cf2233, 0x7536, 0x4948, { 0x9d, 0x36, 0x1e, 0x46, 0x92, 0xdc, 0x57, 0x60 } };*/
 static const GUID SDL_IID_IDXGISwapChain2 = { 0x94d99bdb, 0xf1f8, 0x4ab0, { 0xb2, 0x36, 0x7d, 0xa0, 0x17, 0x0e, 0xda, 0xb1 } };
+static const GUID SDL_IID_IDXGIDebug1 = { 0xc5a05f0c, 0x16f2, 0x4adf, { 0x9f, 0x4d, 0xa8, 0xc4, 0xd5, 0x8a, 0xc5, 0x50 } };
+static const GUID SDL_IID_IDXGIInfoQueue = { 0xD67441C7, 0x672A, 0x476f, { 0x9E, 0x82, 0xCD, 0x55, 0xB4, 0x49, 0x49, 0xCE } };
+static const GUID SDL_DXGI_DEBUG_ALL = { 0xe48ae283, 0xda80, 0x490b, { 0x87, 0xe6, 0x43, 0xe9, 0xa9, 0xcf, 0xda, 0x8 } };
 
 #ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 #pragma GCC diagnostic pop
@@ -310,6 +314,12 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
     if (data) {
         int i;
 
+        /* Make sure the swap chain is fully released */
+        if (data->d3dContext) {
+            ID3D11DeviceContext_ClearState(data->d3dContext);
+            ID3D11DeviceContext_Flush(data->d3dContext);
+        }
+
         SAFE_RELEASE(data->vertexShaderConstants);
         SAFE_RELEASE(data->clippedRasterizer);
         SAFE_RELEASE(data->mainRasterizer);
@@ -338,10 +348,6 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
         SAFE_RELEASE(data->mainRenderTargetView);
         SAFE_RELEASE(data->swapChain);
 
-        /* Make sure the swap chain is fully released */
-        ID3D11DeviceContext_ClearState(data->d3dContext);
-        ID3D11DeviceContext_Flush(data->d3dContext);
-
         SAFE_RELEASE(data->d3dContext);
         SAFE_RELEASE(data->d3dDevice);
         SAFE_RELEASE(data->dxgiAdapter);
@@ -358,15 +364,22 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
         data->currentShaderResource = NULL;
         data->currentSampler = NULL;
 
+        /* Check for any leaks if in debug mode */
+        if (data->dxgiDebug) {
+            DXGI_DEBUG_RLO_FLAGS rloFlags = (DXGI_DEBUG_RLO_FLAGS)(DXGI_DEBUG_RLO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL);
+            IDXGIDebug_ReportLiveObjects(data->dxgiDebug, SDL_DXGI_DEBUG_ALL, rloFlags);
+            SAFE_RELEASE(data->dxgiDebug);
+        }
+
         /* Unload the D3D libraries.  This should be done last, in order
          * to prevent IUnknown::Release() calls from crashing.
          */
         if (data->hD3D11Mod) {
-            //SDL_UnloadObject(data->hD3D11Mod);
+            SDL_UnloadObject(data->hD3D11Mod);
             data->hD3D11Mod = NULL;
         }
         if (data->hDXGIMod) {
-            //SDL_UnloadObject(data->hDXGIMod);
+            SDL_UnloadObject(data->hDXGIMod);
             data->hDXGIMod = NULL;
         }
     }
@@ -476,14 +489,17 @@ static ID3D11BlendState *D3D11_CreateBlendState(SDL_Renderer *renderer, SDL_Blen
 static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
 {
     typedef HRESULT(WINAPI * PFN_CREATE_DXGI_FACTORY)(REFIID riid, void **ppFactory);
-    PFN_CREATE_DXGI_FACTORY CreateDXGIFactoryFunc;
+    typedef HRESULT(WINAPI * PFN_CREATE_DXGI_FACTORY2)(UINT flags, REFIID riid, void **ppFactory);
+    PFN_CREATE_DXGI_FACTORY CreateDXGIFactoryFunc = NULL;
+    PFN_CREATE_DXGI_FACTORY2 CreateDXGIFactory2Func = NULL;
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
     PFN_D3D11_CREATE_DEVICE D3D11CreateDeviceFunc;
     ID3D11Device *d3dDevice = NULL;
     ID3D11DeviceContext *d3dContext = NULL;
     IDXGIDevice1 *dxgiDevice = NULL;
     HRESULT result = S_OK;
-    UINT creationFlags;
+    UINT creationFlags = 0;
+    SDL_bool createDebug;
 
     /* This array defines the set of DirectX hardware feature levels this app will support.
      * Note the ordering should be preserved.
@@ -504,8 +520,11 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     D3D11_SAMPLER_DESC samplerDesc;
     D3D11_RASTERIZER_DESC rasterDesc;
 
+    /* See if we need debug interfaces */
+    createDebug = SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, SDL_FALSE);
+
 #ifdef SDL_PLATFORM_WINRT
-    CreateDXGIFactoryFunc = CreateDXGIFactory1;
+    CreateDXGIFactory2Func = CreateDXGIFactory2;
     D3D11CreateDeviceFunc = D3D11CreateDevice;
 #else
     data->hDXGIMod = SDL_LoadObject("dxgi.dll");
@@ -514,10 +533,13 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         goto done;
     }
 
-    CreateDXGIFactoryFunc = (PFN_CREATE_DXGI_FACTORY)SDL_LoadFunction(data->hDXGIMod, "CreateDXGIFactory");
-    if (!CreateDXGIFactoryFunc) {
-        result = E_FAIL;
-        goto done;
+    CreateDXGIFactory2Func = (PFN_CREATE_DXGI_FACTORY2)SDL_LoadFunction(data->hDXGIMod, "CreateDXGIFactory2");
+    if (!CreateDXGIFactory2Func) {
+        CreateDXGIFactoryFunc = (PFN_CREATE_DXGI_FACTORY)SDL_LoadFunction(data->hDXGIMod, "CreateDXGIFactory");
+        if (!CreateDXGIFactoryFunc) {
+            result = E_FAIL;
+            goto done;
+        }
     }
 
     data->hD3D11Mod = SDL_LoadObject("d3d11.dll");
@@ -533,7 +555,42 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     }
 #endif /* SDL_PLATFORM_WINRT */
 
-    result = CreateDXGIFactoryFunc(&SDL_IID_IDXGIFactory2, (void **)&data->dxgiFactory);
+    if (createDebug) {
+#ifdef __IDXGIInfoQueue_INTERFACE_DEFINED__
+        IDXGIInfoQueue *dxgiInfoQueue = NULL;
+        PFN_CREATE_DXGI_FACTORY2 DXGIGetDebugInterfaceFunc;
+
+        /* If the debug hint is set, also create the DXGI factory in debug mode */
+        DXGIGetDebugInterfaceFunc = (PFN_CREATE_DXGI_FACTORY2)SDL_LoadFunction(data->hDXGIMod, "DXGIGetDebugInterface1");
+        if (!DXGIGetDebugInterfaceFunc) {
+            result = E_FAIL;
+            goto done;
+        }
+
+        result = DXGIGetDebugInterfaceFunc(0, &SDL_IID_IDXGIDebug1, (void **)&data->dxgiDebug);
+        if (FAILED(result)) {
+            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("DXGIGetDebugInterface1"), result);
+            goto done;
+        }
+
+        result = DXGIGetDebugInterfaceFunc(0, &SDL_IID_IDXGIInfoQueue, (void **)&dxgiInfoQueue);
+        if (FAILED(result)) {
+            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("DXGIGetDebugInterface1"), result);
+            goto done;
+        }
+
+        IDXGIInfoQueue_SetBreakOnSeverity(dxgiInfoQueue, SDL_DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, TRUE);
+        IDXGIInfoQueue_SetBreakOnSeverity(dxgiInfoQueue, SDL_DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+        SAFE_RELEASE(dxgiInfoQueue);
+#endif /* __IDXGIInfoQueue_INTERFACE_DEFINED__ */
+        creationFlags = DXGI_CREATE_FACTORY_DEBUG;
+    }
+
+    if (CreateDXGIFactory2Func) {
+        result = CreateDXGIFactory2Func(creationFlags, &SDL_IID_IDXGIFactory2, (void **)&data->dxgiFactory);
+    } else {
+        result = CreateDXGIFactoryFunc(&SDL_IID_IDXGIFactory2, (void **)&data->dxgiFactory);
+    }
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("CreateDXGIFactory"), result);
         goto done;
@@ -552,7 +609,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 
     /* Make sure Direct3D's debugging feature gets used, if the app requests it. */
-    if (SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, SDL_FALSE)) {
+    if (createDebug) {
         creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
     }
 
@@ -814,6 +871,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     IUnknown *coreWindow = NULL;
     const BOOL usingXAML = FALSE;
 #endif
+    IDXGISwapChain3 *swapChain3 = NULL;
     HRESULT result = S_OK;
 
     /* Create a swap chain using the same adapter as the existing Direct3D device. */
@@ -917,7 +975,6 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     }
     data->swapEffect = swapChainDesc.SwapEffect;
 
-    IDXGISwapChain3 *swapChain3 = NULL;
     if (SUCCEEDED(IDXGISwapChain1_QueryInterface(data->swapChain, &SDL_IID_IDXGISwapChain2, (void **)&swapChain3))) {
         UINT colorspace_support = 0;
         DXGI_COLOR_SPACE_TYPE colorspace;
@@ -948,6 +1005,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     }
 
 done:
+    SAFE_RELEASE(swapChain3);
     SAFE_RELEASE(coreWindow);
     return result;
 }
