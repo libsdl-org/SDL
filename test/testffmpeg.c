@@ -1282,7 +1282,7 @@ int main(int argc, char *argv[])
 quit:
 #ifdef SDL_PLATFORM_WIN32
     if (d3d11_context) {
-        ID3D11DeviceContext_Release(d3d11_device);
+        ID3D11DeviceContext_Release(d3d11_context);
         d3d11_context = NULL;
     }
     if (d3d11_device) {
