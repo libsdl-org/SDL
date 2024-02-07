@@ -1751,7 +1751,7 @@ extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
  * \param texture (optional) The SDL texture to use.
  * \param xy Vertex positions
  * \param xy_stride Byte size to move from one element to the next element
- * \param color Vertex colors (as SDL_FColor)
+ * \param color Vertex colors (as SDL_Color)
  * \param color_stride Byte size to move from one element to the next element
  * \param uv Vertex normalized texture coordinates
  * \param uv_stride Byte size to move from one element to the next element
@@ -1769,6 +1769,40 @@ extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
  * \sa SDL_Vertex
  */
 extern DECLSPEC int SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
+                                               SDL_Texture *texture,
+                                               const float *xy, int xy_stride,
+                                               const SDL_Color *color, int color_stride,
+                                               const float *uv, int uv_stride,
+                                               int num_vertices,
+                                               const void *indices, int num_indices, int size_indices);
+
+/**
+ * Render a list of triangles, optionally using a texture and indices into the
+ * vertex arrays Color and alpha modulation is done per vertex
+ * (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored).
+ *
+ * \param renderer The rendering context.
+ * \param texture (optional) The SDL texture to use.
+ * \param xy Vertex positions
+ * \param xy_stride Byte size to move from one element to the next element
+ * \param color Vertex colors (as SDL_FColor)
+ * \param color_stride Byte size to move from one element to the next element
+ * \param uv Vertex normalized texture coordinates
+ * \param uv_stride Byte size to move from one element to the next element
+ * \param num_vertices Number of vertices.
+ * \param indices (optional) An array of indices into the 'vertices' arrays,
+ *                if NULL all vertices will be rendered in sequential order.
+ * \param num_indices Number of indices.
+ * \param size_indices Index size: 1 (byte), 2 (short), 4 (int)
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_RenderGeometry
+ * \sa SDL_Vertex
+ */
+extern DECLSPEC int SDLCALL SDL_RenderGeometryRawFloat(SDL_Renderer *renderer,
                                                SDL_Texture *texture,
                                                const float *xy, int xy_stride,
                                                const SDL_FColor *color, int color_stride,

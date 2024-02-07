@@ -994,3 +994,4 @@
 #define SDL_CopyProperties SDL_CopyProperties_REAL
 #define SDL_SetRenderColorScale SDL_SetRenderColorScale_REAL
 #define SDL_GetRenderColorScale SDL_GetRenderColorScale_REAL
+#define SDL_RenderGeometryRawFloat SDL_RenderGeometryRawFloat_REAL
