@@ -295,6 +295,7 @@ static void Cocoa_GetHDRProperties(CGDirectDisplayID displayID, SDL_HDRDisplayPr
     HDR->enabled = SDL_FALSE;
     HDR->SDR_whitelevel = 0.0f;
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500 /* Added in the 10.15 SDK */
     if (@available(macOS 10.15, *)) {
         NSScreen *screen = GetNSScreenForDisplayID(displayID);
 
@@ -303,6 +304,7 @@ static void Cocoa_GetHDRProperties(CGDirectDisplayID displayID, SDL_HDRDisplayPr
             HDR->SDR_whitelevel = 80.0f; /* SDR content is always at scRGB 1.0 */
         }
     }
+#endif
 }
 
 void Cocoa_InitModes(SDL_VideoDevice *_this)
