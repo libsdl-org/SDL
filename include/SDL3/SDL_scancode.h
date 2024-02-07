@@ -33,6 +33,9 @@
 /**
  *  The SDL keyboard scancode representation.
  *
+ *  An SDL scancode is the physical representation of a key on the keyboard,
+ *  independent of language and keyboard mapping.
+ *
  *  Values of this type are used to represent keyboard keys, among other places
  *  in the \link SDL_Keysym::scancode key.keysym.scancode \endlink field of the
  *  SDL_Event structure.
