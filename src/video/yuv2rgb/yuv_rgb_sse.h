@@ -223,13 +223,6 @@ void yuvnv12_abgr_sseu(
         YCbCrType yuv_type);
 
 
-// rgb to yuv, standard c implementation
-void rgb24_yuv420_std(
-        uint32_t width, uint32_t height,
-        const uint8_t *rgb, uint32_t rgb_stride,
-        uint8_t *y, uint8_t *u, uint8_t *v, uint32_t y_stride, uint32_t uv_stride,
-        YCbCrType yuv_type);
-
 // rgb to yuv, sse implementation
 // pointers must be 16 byte aligned, and strides must be divisible by 16
 void rgb24_yuv420_sse(
