@@ -305,6 +305,16 @@ extern DECLSPEC SDL_CameraDeviceID SDLCALL SDL_GetCameraInstanceID(SDL_Camera *c
 /**
  * Get the properties associated with an opened camera.
  *
+ * The following read-only properties are provided by SDL:
+ *
+ * - `SDL_PROP_CAMERA_POSITION_STRING`: the position of the camera in
+ *   relation to the hardware it is connected to. This is currently either
+ *   the string "front" or "back", to signify which side of the user's
+ *   device a camera is on. Future versions of SDL may add other position
+ *   strings. This property is only set if this information can be
+ *   determined by SDL. Most platforms do not set this attribute at all,
+ *   but mobile devices tend to.
+ *
  * \param camera the SDL_Camera obtained from SDL_OpenCameraDevice()
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -317,6 +327,8 @@ extern DECLSPEC SDL_CameraDeviceID SDLCALL SDL_GetCameraInstanceID(SDL_Camera *c
  * \sa SDL_SetProperty
  */
 extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetCameraProperties(SDL_Camera *camera);
+
+#define SDL_PROP_CAMERA_POSITION_STRING "SDL.camera.position"
 
 /**
  * Get the spec that a camera is using when generating images.
