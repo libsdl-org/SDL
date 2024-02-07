@@ -893,15 +893,40 @@ const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src, SDL_C
     /* Conversion matrices generated using gamescope color helpers and the primaries definitions at:
      * https://www.itu.int/rec/T-REC-H.273-201612-S/en
      */
+    static const float mat601to709[] = {
+        0.939542f, 0.050181f, 0.010277f,
+        0.017772f, 0.965793f, 0.016435f,
+        -0.001622f, -0.004370f, 1.005991f,
+    };
+    static const float mat601to2020[] = {
+        0.595254f, 0.349314f, 0.055432f,
+        0.081244f, 0.891503f, 0.027253f,
+        0.015512f, 0.081912f, 0.902576f,
+    };
+    static const float mat709to601[] = {
+        1.065379f, -0.055401f, -0.009978f,
+        -0.019633f, 1.036363f, -0.016731f,
+        0.001632f, 0.004412f, 0.993956f,
+    };
     static const float mat709to2020[] = {
         0.627404f, 0.329283f, 0.043313f,
         0.069097f, 0.919541f, 0.011362f,
         0.016391f, 0.088013f, 0.895595f,
     };
+    static const float mat2020to601[] = {
+        1.776133f, -0.687820f, -0.088313f,
+        -0.161376f, 1.187315f, -0.025940f,
+        -0.015881f, -0.095931f, 1.111812f,
+    };
     static const float mat2020to709[] = {
         1.660496f, -0.587656f, -0.072840f,
         -0.124547f, 1.132895f, -0.008348f,
         -0.018154f, -0.100597f, 1.118751f
+    };
+    static const float matXYZto601[] = {
+        3.506001f, -1.739790f, -0.544058f,
+        -1.069047f, 1.977779f, 0.035171f,
+        0.056307f, -0.196976f, 1.049952f,
     };
     static const float matXYZto709[] = {
         3.240969f, -1.537383f, -0.498611f,
@@ -925,8 +950,24 @@ const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src, SDL_C
     };
 
     switch (dst) {
+    case SDL_COLOR_PRIMARIES_BT601:
+    case SDL_COLOR_PRIMARIES_SMPTE240:
+        switch (src) {
+        case SDL_COLOR_PRIMARIES_BT709:
+            return mat709to601;
+        case SDL_COLOR_PRIMARIES_BT2020:
+            return mat2020to601;
+        case SDL_COLOR_PRIMARIES_XYZ:
+            return matXYZto601;
+        default:
+            break;
+        }
+        break;
     case SDL_COLOR_PRIMARIES_BT709:
         switch (src) {
+        case SDL_COLOR_PRIMARIES_BT601:
+        case SDL_COLOR_PRIMARIES_SMPTE240:
+            return mat601to709;
         case SDL_COLOR_PRIMARIES_BT2020:
             return mat2020to709;
         case SDL_COLOR_PRIMARIES_XYZ:
@@ -941,6 +982,9 @@ const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src, SDL_C
         break;
     case SDL_COLOR_PRIMARIES_BT2020:
         switch (src) {
+        case SDL_COLOR_PRIMARIES_BT601:
+        case SDL_COLOR_PRIMARIES_SMPTE240:
+            return mat601to2020;
         case SDL_COLOR_PRIMARIES_BT709:
             return mat709to2020;
         case SDL_COLOR_PRIMARIES_XYZ:
