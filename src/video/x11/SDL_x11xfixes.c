@@ -81,7 +81,7 @@ int X11_XfixesIsInitialized(void)
 
 int X11_GetXFixesSelectionNotifyEvent()
 {
-	return xfixes_selection_notify_event;
+    return xfixes_selection_notify_event;
 }
 
 void X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)

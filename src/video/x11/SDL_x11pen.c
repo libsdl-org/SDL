@@ -494,9 +494,9 @@ void X11_InitPen(SDL_VideoDevice *_this)
 
                 if (axis == -1 && valuator_nr == 5) {
                     /* Wacom model-specific axis support */
-		    /* The meaning of the various axes is highly underspecitied in Xinput2.
-		     * As of 2023-08-26, Wacom seems to be the only vendor to support these axes, so the code below
-		     * captures the de-facto standard. */
+                    /* The meaning of the various axes is highly underspecitied in Xinput2.
+                     * As of 2023-08-26, Wacom seems to be the only vendor to support these axes, so the code below
+                     * captures the de-facto standard. */
                     axis = valuator_5_axis;
 
                     switch (axis) {
