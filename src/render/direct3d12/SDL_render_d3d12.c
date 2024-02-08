@@ -3139,6 +3139,12 @@ SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_p
     SDL_Renderer *renderer;
     D3D12_RenderData *data;
 
+    if (SDL_GetWindowFlags(window) & SDL_WINDOW_TRANSPARENT) {
+		/* D3D12 removed the swap effect needed to support transparent windows, use D3D11 instead */
+		SDL_SetError("The direct3d12 renderer doesn't work with transparent windows");
+		return NULL;
+	}
+
     renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
         return NULL;
