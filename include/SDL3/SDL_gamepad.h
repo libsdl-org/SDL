@@ -1199,6 +1199,8 @@ extern DECLSPEC int SDLCALL SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, SDL_S
  * Each call to this function cancels any previous rumble effect, and calling
  * it with 0 intensity stops any rumbling.
  *
+ * This function requires you to process SDL events or call SDL_UpdateJoysticks() to update rumble state.
+ *
  * \param gamepad The gamepad to vibrate
  * \param low_frequency_rumble The intensity of the low frequency (left)
  *                             rumble motor, from 0 to 0xFFFF
@@ -1220,6 +1222,8 @@ extern DECLSPEC int SDLCALL SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uint16 low_f
  * Note that this is rumbling of the _triggers_ and not the gamepad as a
  * whole. This is currently only supported on Xbox One gamepads. If you want
  * the (more common) whole-gamepad rumble, use SDL_RumbleGamepad() instead.
+ *
+ * This function requires you to process SDL events or call SDL_UpdateJoysticks() to update rumble state.
  *
  * \param gamepad The gamepad to vibrate
  * \param left_rumble The intensity of the left trigger rumble motor, from 0
