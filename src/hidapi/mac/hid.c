@@ -594,6 +594,14 @@ static struct hid_device_info *create_device_info_with_usage(IOHIDDeviceRef dev,
 	dev_vid = get_vendor_id(dev);
 	dev_pid = get_product_id(dev);
 
+#ifdef HIDAPI_IGNORE_DEVICE
+	/* See if there are any devices we should skip in enumeration */
+	if (HIDAPI_IGNORE_DEVICE(get_bus_type(dev), dev_vid, dev_pid, usage_page, usage)) {
+		free(cur_dev);
+		return NULL;
+	}
+#endif
+
 	cur_dev->usage_page = usage_page;
 	cur_dev->usage = usage;
 
@@ -691,9 +699,6 @@ static struct hid_device_info *create_device_info(IOHIDDeviceRef device)
 	struct hid_device_info *root = create_device_info_with_usage(device, primary_usage_page, primary_usage);
 	struct hid_device_info *cur = root;
 
-	if (!root)
-		return NULL;
-
 	CFArrayRef usage_pairs = get_usage_pairs(device);
 
 	if (usage_pairs != NULL) {
@@ -719,9 +724,13 @@ static struct hid_device_info *create_device_info(IOHIDDeviceRef device)
 				continue; /* Already added. */
 
 			next = create_device_info_with_usage(device, usage_page, usage);
-			cur->next = next;
-			if (next != NULL) {
-				cur = next;
+			if (cur) {
+				if (next != NULL) {
+					cur->next = next;
+					cur = next;
+				}
+			} else {
+				root = cur = next;
 			}
 		}
 	}
@@ -787,18 +796,6 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		if (!dev) {
 			continue;
 		}
-
-#ifdef HIDAPI_IGNORE_DEVICE
-		/* See if there are any devices we should skip in enumeration */
-		hid_bus_type bus_type = get_bus_type(dev);
-		unsigned short dev_vid = get_vendor_id(dev);
-		unsigned short dev_pid = get_product_id(dev);
-		unsigned short usage_page = get_int_property(dev, CFSTR(kIOHIDPrimaryUsagePageKey));
-		unsigned short usage = get_int_property(dev, CFSTR(kIOHIDPrimaryUsageKey));
-		if (HIDAPI_IGNORE_DEVICE(bus_type, dev_vid, dev_pid, usage_page, usage)) {
-			continue;
-		}
-#endif
 
 		struct hid_device_info *tmp = create_device_info(dev);
 		if (tmp == NULL) {
