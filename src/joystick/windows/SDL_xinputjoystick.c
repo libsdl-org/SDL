@@ -117,7 +117,7 @@ static const char *GetXInputName(const Uint8 userid, BYTE SubType)
 
 static SDL_bool GetXInputDeviceInfo(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
 {
-    XINPUT_CAPABILITIES_EX capabilities;
+    SDL_XINPUT_CAPABILITIES_EX capabilities;
 
     if (!XINPUTGETCAPABILITIESEX || XINPUTGETCAPABILITIESEX(1, userid, 0, &capabilities) != ERROR_SUCCESS) {
         return SDL_FALSE;
@@ -143,7 +143,7 @@ static SDL_bool GetXInputDeviceInfo(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Ui
 
 int SDL_XINPUT_GetSteamVirtualGamepadSlot(Uint8 userid)
 {
-    XINPUT_CAPABILITIES_EX capabilities;
+    SDL_XINPUT_CAPABILITIES_EX capabilities;
 
     if (XINPUTGETCAPABILITIESEX &&
         XINPUTGETCAPABILITIESEX(1, userid, 0, &capabilities) == ERROR_SUCCESS &&
