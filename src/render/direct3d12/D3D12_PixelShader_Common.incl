@@ -85,7 +85,7 @@ float4 GetOutputColorFromSCRGB(float3 rgb)
         output.r = sRGBfromLinear(output.r);
         output.g = sRGBfromLinear(output.g);
         output.b = sRGBfromLinear(output.b);
-        output.rgb = clamp(output.rgb, 0.0, 1.0);
+        output.rgb = saturate(output.rgb);
     }
 
     return output;
