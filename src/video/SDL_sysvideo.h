@@ -253,6 +253,7 @@ struct SDL_VideoDevice
     int (*UpdateWindowFramebuffer)(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects);
     void (*DestroyWindowFramebuffer)(SDL_VideoDevice *_this, SDL_Window *window);
     void (*OnWindowEnter)(SDL_VideoDevice *_this, SDL_Window *window);
+    int (*UpdateWindowShape)(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape);
     int (*FlashWindow)(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
     int (*SetWindowFocusable)(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool focusable);
     int (*SyncWindow)(SDL_VideoDevice *_this, SDL_Window *window);

@@ -348,6 +348,7 @@ int SDL_SetPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *v
 
     property = (SDL_Property *)SDL_calloc(1, sizeof(*property));
     if (!property) {
+        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_FALSE);
         return -1;
     }
     property->type = SDL_PROPERTY_TYPE_POINTER;
@@ -374,6 +375,17 @@ int SDL_SetProperty(SDL_PropertiesID props, const char *name, void *value)
     return SDL_PrivateSetProperty(props, name, property);
 }
 
+static void CleanupSurface(void *userdata, void *value)
+{
+    SDL_Surface *surface = (SDL_Surface *)value;
+
+    SDL_DestroySurface(surface);
+}
+
+int SDL_SetSurfaceProperty(SDL_PropertiesID props, const char *name, SDL_Surface *surface)
+{
+    return SDL_SetPropertyWithCleanup(props, name, surface, CleanupSurface, NULL);
+}
 
 int SDL_SetStringProperty(SDL_PropertiesID props, const char *name, const char *value)
 {

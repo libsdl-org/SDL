@@ -35,6 +35,7 @@
 #include "SDL_x11xfixes.h"
 #include "SDL_x11xinput2.h"
 #include "SDL_x11messagebox.h"
+#include "SDL_x11shape.h"
 
 #ifdef SDL_VIDEO_OPENGL_EGL
 #include "SDL_x11opengles.h"
@@ -208,6 +209,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->SetWindowHitTest = X11_SetWindowHitTest;
     device->AcceptDragAndDrop = X11_AcceptDragAndDrop;
     device->FlashWindow = X11_FlashWindow;
+    device->UpdateWindowShape = X11_UpdateWindowShape;
     device->ShowWindowSystemMenu = X11_ShowWindowSystemMenu;
     device->SetWindowFocusable = X11_SetWindowFocusable;
     device->SyncWindow = X11_SyncWindow;

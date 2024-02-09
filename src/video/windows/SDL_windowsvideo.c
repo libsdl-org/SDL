@@ -210,6 +210,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->ShowWindowSystemMenu = WIN_ShowWindowSystemMenu;
     device->SetWindowFocusable = WIN_SetWindowFocusable;
 #endif
+    device->UpdateWindowShape = WIN_UpdateWindowShape;
 
 #ifdef SDL_VIDEO_OPENGL_WGL
     device->GL_LoadLibrary = WIN_GL_LoadLibrary;

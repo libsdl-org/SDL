@@ -1020,3 +1020,4 @@ SDL_DYNAPI_PROC(int,SDL_CopyProperties,(SDL_PropertiesID a, SDL_PropertiesID b),
 SDL_DYNAPI_PROC(int,SDL_SetRenderColorScale,(SDL_Renderer *a, float b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_GetRenderColorScale,(SDL_Renderer *a, float *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_RenderGeometryRawFloat,(SDL_Renderer *a, SDL_Texture *b, const float *c, int d, const SDL_FColor *e, int f, const float *g, int h, int i, const void *j, int k, int l),(a,b,c,d,e,f,g,h,i,j,k,l),return)
+SDL_DYNAPI_PROC(int,SDL_SetWindowShape,(SDL_Window *a, SDL_Surface *b),(a,b),return)

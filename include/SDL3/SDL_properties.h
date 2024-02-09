@@ -141,6 +141,8 @@ extern DECLSPEC void SDLCALL SDL_UnlockProperties(SDL_PropertiesID props);
  * Set a property on a set of properties with a cleanup function that is
  * called when the property is deleted
  *
+ * The cleanup function is also called if setting the property fails for any reason.
+ *
  * \param props the properties to modify
  * \param name the name of the property to modify
  * \param value the new value of the property, or NULL to delete the property

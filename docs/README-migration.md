@@ -1305,7 +1305,7 @@ The following functions have been removed:
 
 ## SDL_shape.h
 
-This header has been removed. You can create a window with the SDL_WINDOW_TRANSPARENT flag and then render using the alpha channel to achieve a similar effect. You can see an example of this in test/testshape.c
+This header has been removed and a simplified version of this API has been added as SDL_SetWindowShape() in SDL_video.h. See test/testshape.c for an example.
 
 ## SDL_stdinc.h
 

@@ -277,6 +277,11 @@ struct SDL_Renderer
     size_t vertex_data_used;
     size_t vertex_data_allocation;
 
+    /* Shaped window support */
+    SDL_bool transparent_window;
+    SDL_Surface *shape_surface;
+    SDL_Texture *shape_texture;
+
     SDL_PropertiesID props;
 
     void *driverdata;

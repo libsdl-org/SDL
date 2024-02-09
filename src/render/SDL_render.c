@@ -989,10 +989,14 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
 
     renderer->color_scale = 1.0f;
 
-    if (SDL_GetWindowFlags(window) & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED)) {
-        renderer->hidden = SDL_TRUE;
-    } else {
-        renderer->hidden = SDL_FALSE;
+    if (window) {
+        if (SDL_GetWindowFlags(window) & SDL_WINDOW_TRANSPARENT) {
+            renderer->transparent_window = SDL_TRUE;
+        }
+
+        if (SDL_GetWindowFlags(window) & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED)) {
+            renderer->hidden = SDL_TRUE;
+        }
     }
 
     new_props = SDL_GetRendererProperties(renderer);
@@ -4247,6 +4251,32 @@ SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
     return renderer->RenderReadPixels(renderer, &real_rect);
 }
 
+static void SDL_RenderApplyWindowShape(SDL_Renderer *renderer)
+{
+    SDL_Surface *shape = (SDL_Surface *)SDL_GetProperty(SDL_GetWindowProperties(renderer->window), SDL_PROP_WINDOW_SHAPE_POINTER, NULL);
+    if (shape != renderer->shape_surface) {
+        if (renderer->shape_texture) {
+            SDL_DestroyTexture(renderer->shape_texture);
+            renderer->shape_texture = NULL;
+        }
+
+        if (shape) {
+            /* There's nothing we can do if this fails, so just keep on going */
+            renderer->shape_texture = SDL_CreateTextureFromSurface(renderer, shape);
+
+            SDL_SetTextureBlendMode(renderer->shape_texture,
+                SDL_ComposeCustomBlendMode(
+                    SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDOPERATION_ADD,
+                    SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDOPERATION_ADD));
+        }
+        renderer->shape_surface = shape;
+    }
+
+    if (renderer->shape_texture) {
+        SDL_RenderTexture(renderer, renderer->shape_texture, NULL, NULL);
+    }
+}
+
 static void SDL_SimulateRenderVSync(SDL_Renderer *renderer)
 {
     Uint64 now, elapsed;
@@ -4283,6 +4313,10 @@ int SDL_RenderPresent(SDL_Renderer *renderer)
     if (renderer->logical_target) {
         SDL_SetRenderTargetInternal(renderer, NULL);
         SDL_RenderLogicalPresentation(renderer);
+    }
+
+    if (renderer->transparent_window) {
+        SDL_RenderApplyWindowShape(renderer);
     }
 
     FlushRenderCommands(renderer); /* time to send everything to the GPU! */

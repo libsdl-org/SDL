@@ -31,6 +31,7 @@
 #include "SDL_video_c.h"
 #include "../events/SDL_events_c.h"
 #include "../SDL_hints_c.h"
+#include "../SDL_properties_c.h"
 #include "../timer/SDL_timer_c.h"
 #include "SDL_video_capture_c.h"
 
@@ -3485,6 +3486,13 @@ void SDL_OnWindowResized(SDL_Window *window)
 {
     SDL_CheckWindowDisplayChanged(window);
     SDL_CheckWindowPixelSizeChanged(window);
+
+    if ((window->flags & SDL_WINDOW_TRANSPARENT) && _this->UpdateWindowShape) {
+        SDL_Surface *surface = (SDL_Surface *)SDL_GetProperty(window->props, SDL_PROP_WINDOW_SHAPE_POINTER, NULL);
+        if (surface) {
+            _this->UpdateWindowShape(_this, window, surface);
+        }
+    }
 }
 
 void SDL_CheckWindowPixelSizeChanged(SDL_Window *window)
@@ -5051,6 +5059,39 @@ int SDL_SetWindowHitTest(SDL_Window *window, SDL_HitTest callback, void *callbac
     window->hit_test = callback;
     window->hit_test_data = callback_data;
 
+    return 0;
+}
+
+int SDL_SetWindowShape(SDL_Window *window, SDL_Surface *shape)
+{
+    SDL_PropertiesID props;
+    SDL_Surface *surface;
+
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    if (!(window->flags & SDL_WINDOW_TRANSPARENT)) {
+        return SDL_SetError("Window must be created with SDL_WINDOW_TRANSPARENT");
+    }
+
+    props = SDL_GetWindowProperties(window);
+    if (!props) {
+        return -1;
+    }
+
+    surface = SDL_ConvertSurfaceFormat(shape, SDL_PIXELFORMAT_ARGB32);
+    if (!surface) {
+        return -1;
+    }
+
+    if (SDL_SetSurfaceProperty(props, SDL_PROP_WINDOW_SHAPE_POINTER, surface) < 0) {
+        return -1;
+    }
+
+    if (_this->UpdateWindowShape) {
+        if (_this->UpdateWindowShape(_this, window, surface) < 0) {
+            return -1;
+        }
+    }
     return 0;
 }
 
