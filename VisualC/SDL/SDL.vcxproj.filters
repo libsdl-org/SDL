@@ -645,6 +645,9 @@
     <ClInclude Include="..\..\src\video\windows\SDL_windowsopengl.h">
       <Filter>video\windows</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\video\windows\SDL_windowsshape.h">
+      <Filter>video\windows</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\video\windows\SDL_windowsvideo.h">
       <Filter>video\windows</Filter>
     </ClInclude>
@@ -1229,6 +1232,9 @@
       <Filter>video\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\video\windows\SDL_windowsopengles.c">
+      <Filter>video\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\windows\SDL_windowsshape.c">
       <Filter>video\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\video\windows\SDL_windowsvideo.c">

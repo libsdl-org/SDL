@@ -834,6 +834,28 @@ static SDL_bool Cocoa_IsZoomed(SDL_Window *window)
     }
 }
 
+- (void)updateIgnoreMouseState:(NSEvent *)theEvent
+{
+    SDL_Window *window = _data.window;
+    SDL_Surface *shape = (SDL_Surface *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_SHAPE_POINTER, NULL);
+    BOOL ignoresMouseEvents = NO;
+
+    if (shape) {
+        NSPoint point = [theEvent locationInWindow];
+		NSRect windowRect = [[_data.nswindow contentView] frame];
+		if (NSMouseInRect(point, windowRect, NO)) {
+			int x = (int)SDL_roundf((point.x / (window->w - 1)) * (shape->w - 1));
+			int y = (int)SDL_roundf(((window->h - point.y) / (window->h - 1)) * (shape->h - 1));
+			Uint8 a;
+
+			if (SDL_ReadSurfacePixel(shape, x, y, NULL, NULL, NULL, &a) < 0 || a == SDL_ALPHA_TRANSPARENT) {
+				ignoresMouseEvents = YES;
+			}
+		}
+    }
+    _data.nswindow.ignoresMouseEvents = ignoresMouseEvents;
+}
+
 - (void)setPendingMoveX:(float)x Y:(float)y
 {
     pendingWindowWarpX = x;
@@ -1554,6 +1576,10 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
 
     mouseID = mouse->mouseID;
     window = _data.window;
+
+    if (window->flags & SDL_WINDOW_TRANSPARENT) {
+        [self updateIgnoreMouseState:theEvent];
+    }
 
     if ([self processHitTest:theEvent]) {
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0);

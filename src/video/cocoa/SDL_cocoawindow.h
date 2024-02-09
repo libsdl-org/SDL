@@ -74,6 +74,7 @@ typedef enum
 - (BOOL)isMovingOrFocusClickPending;
 - (void)setFocusClickPending:(NSInteger)button;
 - (void)clearFocusClickPending:(NSInteger)button;
+- (void)updateIgnoreMouseState:(NSEvent *)theEvent;
 - (void)setPendingMoveX:(float)x Y:(float)y;
 - (void)windowDidFinishMoving;
 - (void)onMovingOrFocusClickPendingStateCleared;

@@ -23,16 +23,11 @@
 #ifdef SDL_VIDEO_DRIVER_DUMMY
 
 #include "../SDL_sysvideo.h"
+#include "../../SDL_properties_c.h"
 #include "SDL_nullframebuffer_c.h"
 
 #define DUMMY_SURFACE "SDL.internal.window.surface"
 
-static void CleanupSurface(void *userdata, void *value)
-{
-    SDL_Surface *surface = (SDL_Surface *)value;
-
-    SDL_DestroySurface(surface);
-}
 
 int SDL_DUMMY_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
@@ -48,7 +43,7 @@ int SDL_DUMMY_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     }
 
     /* Save the info and return! */
-    SDL_SetPropertyWithCleanup(SDL_GetWindowProperties(window), DUMMY_SURFACE, surface, CleanupSurface, NULL);
+    SDL_SetSurfaceProperty(SDL_GetWindowProperties(window), DUMMY_SURFACE, surface);
     *format = surface_format;
     *pixels = surface->pixels;
     *pitch = surface->pitch;

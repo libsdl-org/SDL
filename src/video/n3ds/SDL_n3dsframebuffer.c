@@ -23,6 +23,7 @@
 #ifdef SDL_VIDEO_DRIVER_N3DS
 
 #include "../SDL_sysvideo.h"
+#include "../../SDL_properties_c.h"
 #include "SDL_n3dsframebuffer_c.h"
 #include "SDL_n3dsvideo.h"
 
@@ -38,12 +39,6 @@ static int GetDestOffset(int x, int y, int dest_width);
 static int GetSourceOffset(int x, int y, int source_width);
 static void FlushN3DSBuffer(const void *buffer, u32 bufsize, gfxScreen_t screen);
 
-static void CleanupSurface(void *userdata, void *value)
-{
-    SDL_Surface *surface = (SDL_Surface *)value;
-
-    SDL_DestroySurface(surface);
-}
 
 int SDL_N3DS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
@@ -57,7 +52,7 @@ int SDL_N3DS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
         return -1;
     }
 
-    SDL_SetPropertyWithCleanup(SDL_GetWindowProperties(window), N3DS_SURFACE, framebuffer, CleanupSurface, NULL);
+    SDL_SetSurfaceProperty(SDL_GetWindowProperties(window), N3DS_SURFACE, framebuffer);
     *format = FRAMEBUFFER_FORMAT;
     *pixels = framebuffer->pixels;
     *pitch = framebuffer->pitch;

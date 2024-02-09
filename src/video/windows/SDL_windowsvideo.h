@@ -42,6 +42,7 @@
 #include "SDL_windowsclipboard.h"
 #include "SDL_windowsevents.h"
 #include "SDL_windowsopengl.h"
+#include "SDL_windowsshape.h"
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 #include "SDL_windowskeyboard.h"

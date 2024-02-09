@@ -995,3 +995,4 @@
 #define SDL_SetRenderColorScale SDL_SetRenderColorScale_REAL
 #define SDL_GetRenderColorScale SDL_GetRenderColorScale_REAL
 #define SDL_RenderGeometryRawFloat SDL_RenderGeometryRawFloat_REAL
+#define SDL_SetWindowShape SDL_SetWindowShape_REAL

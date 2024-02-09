@@ -12,24 +12,69 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
+#include "glass.h"
+
+
+static SDL_HitTestResult SDLCALL ShapeHitTest(SDL_Window *window, const SDL_Point *area, void *userdata)
+{
+    SDL_Surface *shape = (SDL_Surface *)userdata;
+    Uint8 r, g, b, a;
+
+    if (SDL_ReadSurfacePixel(shape, area->x, area->y, &r, &g, &b, &a) == 0) {
+        if (a != SDL_ALPHA_TRANSPARENT) {
+            /* We'll just make everything draggable */
+            return SDL_HITTEST_DRAGGABLE;
+        }
+    }
+    return SDL_HITTEST_NORMAL;
+}
 
 int main(int argc, char *argv[])
 {
+    const char *image_file = NULL;
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
     SDL_Surface *shape = NULL;
-    SDL_Texture *shape_texture = NULL;
-    SDL_Event event;
+    SDL_bool resizable = SDL_FALSE;
+    Uint32 flags;
     SDL_bool done = SDL_FALSE;
+    SDL_Event event;
+    int i;
     int return_code = 1;
 
-    if (argc != 2) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Usage: %s shape.bmp\n", argv[0]);
-        goto quit;
+    for (i = 1; i < argc; ++i) {
+        if (SDL_strcmp(argv[i], "--resizable") == 0) {
+            resizable = SDL_TRUE;
+        } else if (!image_file) {
+            image_file = argv[i];
+        } else {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Usage: %s [--resizable] [shape.bmp]\n", argv[0]);
+            goto quit;
+        }
     }
 
-    /* Create the window hidden so we can set the window size to match our shape */
-    window = SDL_CreateWindow("Shape test", 1, 1, SDL_WINDOW_HIDDEN | SDL_WINDOW_TRANSPARENT);
+    if (image_file) {
+        shape = SDL_LoadBMP(image_file);
+        if (!shape) {
+            SDL_Log("Couldn't load %s: %s\n", image_file, SDL_GetError());
+            goto quit;
+        }
+    } else {
+        shape = SDL_LoadBMP_RW(SDL_RWFromConstMem(glass_bmp, sizeof(glass_bmp)), SDL_TRUE);
+        if (!shape) {
+            SDL_Log("Couldn't load glass.bmp: %s\n", SDL_GetError());
+            goto quit;
+        }
+    }
+
+    /* Create the window hidden so we can set the shape before it's visible */
+    flags = (SDL_WINDOW_HIDDEN | SDL_WINDOW_TRANSPARENT);
+    if (resizable) {
+        flags |= SDL_WINDOW_RESIZABLE;
+    } else {
+        flags |= SDL_WINDOW_BORDERLESS;
+    }
+    window = SDL_CreateWindow("SDL Shape Test", shape->w, shape->h, flags);
     if (!window) {
         SDL_Log("Couldn't create transparent window: %s\n", SDL_GetError());
         goto quit;
@@ -41,12 +86,6 @@ int main(int argc, char *argv[])
         goto quit;
     }
 
-    shape = SDL_LoadBMP(argv[1]);
-    if (!shape) {
-        SDL_Log("Couldn't load %s: %s\n", argv[1], SDL_GetError());
-        goto quit;
-    }
-
     if (!SDL_ISPIXELFORMAT_ALPHA(shape->format->format)) {
         /* Set the colorkey to the top-left pixel */
         Uint8 r, g, b, a;
@@ -55,24 +94,16 @@ int main(int argc, char *argv[])
         SDL_SetSurfaceColorKey(shape, 1, SDL_MapRGBA(shape->format, r, g, b, a));
     }
 
-    shape_texture = SDL_CreateTextureFromSurface(renderer, shape);
-    if (!shape_texture) {
-        SDL_Log("Couldn't create shape texture: %s\n", SDL_GetError());
-        goto quit;
-    }
-
-    /* Set the blend mode so the alpha channel of the shape is the window transparency */
-    if (SDL_SetTextureBlendMode(shape_texture,
-            SDL_ComposeCustomBlendMode(
-                SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDOPERATION_ADD,
-                SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDOPERATION_ADD)) < 0) {
-        SDL_Log("Couldn't set shape blend mode: %s\n", SDL_GetError());
-        goto quit;
+    if (!resizable) {
+        /* Set the hit test callback so we can drag the window */
+        if (SDL_SetWindowHitTest(window, ShapeHitTest, shape) < 0) {
+            SDL_Log("Couldn't set hit test callback: %s\n", SDL_GetError());
+            goto quit;
+        }
     }
 
     /* Set the window size to the size of our shape and show it */
-    SDL_SetWindowSize(window, shape->w, shape->h);
-    SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+    SDL_SetWindowShape(window, shape);
     SDL_ShowWindow(window);
 
     /* We're ready to go! */
@@ -80,8 +111,11 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_EVENT_KEY_DOWN:
+                if (event.key.keysym.sym == SDLK_ESCAPE) {
+                    done = SDL_TRUE;
+                }
+                break;
             case SDL_EVENT_QUIT:
-                /* Quit on keypress and quit event */
                 done = SDL_TRUE;
                 break;
             default:
@@ -92,9 +126,6 @@ int main(int argc, char *argv[])
         /* We'll clear to white, but you could do other drawing here */
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
-
-        /* Apply the shape */
-        SDL_RenderTexture(renderer, shape_texture, NULL, NULL);
 
         /* Show everything on the screen and wait a bit */
         SDL_RenderPresent(renderer);
