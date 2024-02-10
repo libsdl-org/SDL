@@ -2131,6 +2131,8 @@ extern DECLSPEC int SDLCALL SDL_SetWindowHitTest(SDL_Window *window, SDL_HitTest
  * something besides the SDL render API, then you are responsible for setting
  * the alpha channel of the window yourself.
  *
+ * The shape is copied inside this function, so you can free it afterwards. If your shape surface changes, you should call SDL_SetWindowShape() again to update the window.
+ *
  * The window must have been created with the SDL_WINDOW_TRANSPARENT flag.
  *
  * \param window the window
