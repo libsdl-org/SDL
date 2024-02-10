@@ -2732,6 +2732,17 @@ int SDL_GetRenderViewport(SDL_Renderer *renderer, SDL_Rect *rect)
     return 0;
 }
 
+SDL_bool SDL_RenderViewportSet(SDL_Renderer *renderer)
+{
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+	if (renderer->view->viewport.w >= 0 &&
+		renderer->view->viewport.h >= 0) {
+		return SDL_TRUE;
+	}
+	return SDL_FALSE;
+}
+
 static void GetRenderViewportSize(SDL_Renderer *renderer, SDL_FRect *rect)
 {
     rect->x = 0.0f;

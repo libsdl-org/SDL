@@ -1269,6 +1269,7 @@ extern DECLSPEC int SDLCALL SDL_ConvertEventToRenderCoordinates(SDL_Renderer *re
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetRenderViewport
+ * \sa SDL_RenderViewportSet
  */
 extern DECLSPEC int SDLCALL SDL_SetRenderViewport(SDL_Renderer *renderer, const SDL_Rect *rect);
 
@@ -1282,9 +1283,25 @@ extern DECLSPEC int SDLCALL SDL_SetRenderViewport(SDL_Renderer *renderer, const 
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_RenderViewportSet
  * \sa SDL_SetRenderViewport
  */
 extern DECLSPEC int SDLCALL SDL_GetRenderViewport(SDL_Renderer *renderer, SDL_Rect *rect);
+
+/**
+ * Return whether an explicit rectangle was set as the viewport.
+ *
+ * This is useful if you're saving and restoring the viewport and want to know whether you should restore a specific rectangle or NULL. Note that the viewport is always reset when changing rendering targets.
+ *
+ * \param renderer the rendering context
+ * \returns SDL_TRUE if the viewport was set to a specific rectangle, or SDL_FALSE if it was set to NULL (the entire target)
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetRenderViewport
+ * \sa SDL_SetRenderViewport
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_RenderViewportSet(SDL_Renderer *renderer);
 
 /**
  * Set the clip rectangle for rendering on the specified target.
