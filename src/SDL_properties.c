@@ -375,6 +375,16 @@ int SDL_SetProperty(SDL_PropertiesID props, const char *name, void *value)
     return SDL_PrivateSetProperty(props, name, property);
 }
 
+static void CleanupFreeableProperty(void *userdata, void *value)
+{
+    SDL_free(value);
+}
+
+int SDL_SetFreeableProperty(SDL_PropertiesID props, const char *name, void *value)
+{
+    return SDL_SetPropertyWithCleanup(props, name, value, CleanupFreeableProperty, NULL);
+}
+
 static void CleanupSurface(void *userdata, void *value)
 {
     SDL_Surface *surface = (SDL_Surface *)value;

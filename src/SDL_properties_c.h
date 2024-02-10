@@ -20,5 +20,6 @@
 */
 
 extern int SDL_InitProperties(void);
+extern int SDL_SetFreeableProperty(SDL_PropertiesID props, const char *name, void *value);
 extern int SDL_SetSurfaceProperty(SDL_PropertiesID props, const char *name, SDL_Surface *surface);
 extern void SDL_QuitProperties(void);
