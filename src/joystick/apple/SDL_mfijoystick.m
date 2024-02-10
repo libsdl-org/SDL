@@ -240,6 +240,7 @@ static void CheckControllerSiriRemote(GCController *controller, int *is_siri_rem
     *is_siri_remote = 0;
 }
 
+#ifdef ENABLE_PHYSICAL_INPUT_PROFILE
 static BOOL ElementAlreadyHandled(SDL_JoystickDeviceItem *device, NSString *element, NSDictionary<NSString *, GCControllerElement *> *elements)
 {
     if ([element isEqualToString:@"Left Thumbstick Left"] ||
@@ -338,6 +339,7 @@ static BOOL ElementAlreadyHandled(SDL_JoystickDeviceItem *device, NSString *elem
     }
     return FALSE;
 }
+#endif /* ENABLE_PHYSICAL_INPUT_PROFILE */
 
 static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controller)
 {
