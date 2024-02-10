@@ -1291,10 +1291,13 @@ extern DECLSPEC int SDLCALL SDL_GetRenderViewport(SDL_Renderer *renderer, SDL_Re
 /**
  * Return whether an explicit rectangle was set as the viewport.
  *
- * This is useful if you're saving and restoring the viewport and want to know whether you should restore a specific rectangle or NULL. Note that the viewport is always reset when changing rendering targets.
+ * This is useful if you're saving and restoring the viewport and want to know
+ * whether you should restore a specific rectangle or NULL. Note that the
+ * viewport is always reset when changing rendering targets.
  *
  * \param renderer the rendering context
- * \returns SDL_TRUE if the viewport was set to a specific rectangle, or SDL_FALSE if it was set to NULL (the entire target)
+ * \returns SDL_TRUE if the viewport was set to a specific rectangle, or
+ *          SDL_FALSE if it was set to NULL (the entire target)
  *
  * \since This function is available since SDL 3.0.0.
  *
