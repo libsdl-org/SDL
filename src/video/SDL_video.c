@@ -3119,7 +3119,7 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
     return SDL_CreateSurfaceFrom(pixels, w, h, pitch, format);
 }
 
-SDL_bool SDL_HasWindowSurface(SDL_Window *window)
+SDL_bool SDL_WindowHasSurface(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, SDL_FALSE);
 

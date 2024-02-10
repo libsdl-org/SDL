@@ -2904,3 +2904,8 @@ expression e1, e2, e3, e4;
 - SDL_threadID
 + SDL_ThreadID
   (...)
+@@
+@@
+- SDL_HasWindowSurface
++ SDL_WindowHasSurface
+  (...)

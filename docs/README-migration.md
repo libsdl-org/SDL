@@ -1626,6 +1626,7 @@ The following functions have been renamed:
 * SDL_GetRectDisplayIndex() => SDL_GetDisplayForRect()
 * SDL_GetWindowDisplayIndex() => SDL_GetDisplayForWindow()
 * SDL_GetWindowDisplayMode() => SDL_GetWindowFullscreenMode()
+* SDL_HasWindowSurface() => SDL_WindowHasSurface()
 * SDL_IsScreenSaverEnabled() => SDL_ScreenSaverEnabled()
 * SDL_SetWindowDisplayMode() => SDL_SetWindowFullscreenMode()
 
