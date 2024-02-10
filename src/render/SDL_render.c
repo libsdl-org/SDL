@@ -899,7 +899,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
         goto error;
     }
 
-    if (SDL_HasWindowSurface(window)) {
+    if (SDL_WindowHasSurface(window)) {
         SDL_SetError("Surface already associated with window");
         goto error;
     }

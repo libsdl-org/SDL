@@ -417,7 +417,7 @@
 #define SDL_HasSSE41 SDL_HasSSE41_REAL
 #define SDL_HasSSE42 SDL_HasSSE42_REAL
 #define SDL_HasScreenKeyboardSupport SDL_HasScreenKeyboardSupport_REAL
-#define SDL_HasWindowSurface SDL_HasWindowSurface_REAL
+#define SDL_WindowHasSurface SDL_WindowHasSurface_REAL
 #define SDL_HideCursor SDL_HideCursor_REAL
 #define SDL_HideWindow SDL_HideWindow_REAL
 #define SDL_Init SDL_Init_REAL

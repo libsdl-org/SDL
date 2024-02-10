@@ -393,7 +393,7 @@ SDL3_0.0.0 {
     SDL_HasSSE42;
     SDL_HasSSE;
     SDL_HasScreenKeyboardSupport;
-    SDL_HasWindowSurface;
+    SDL_WindowHasSurface;
     SDL_HideCursor;
     SDL_HideWindow;
     SDL_Init;

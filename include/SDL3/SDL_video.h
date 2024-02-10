@@ -1699,7 +1699,7 @@ extern DECLSPEC int SDLCALL SDL_SyncWindow(SDL_Window *window);
  *
  * \sa SDL_GetWindowSurface
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasWindowSurface(SDL_Window *window);
+extern DECLSPEC SDL_bool SDLCALL SDL_WindowHasSurface(SDL_Window *window);
 
 /**
  * Get the SDL surface associated with the window.
@@ -1722,7 +1722,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasWindowSurface(SDL_Window *window);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DestroyWindowSurface
- * \sa SDL_HasWindowSurface
+ * \sa SDL_WindowHasSurface
  * \sa SDL_UpdateWindowSurface
  * \sa SDL_UpdateWindowSurfaceRects
  */
@@ -1784,7 +1784,7 @@ extern DECLSPEC int SDLCALL SDL_UpdateWindowSurfaceRects(SDL_Window *window, con
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetWindowSurface
- * \sa SDL_HasWindowSurface
+ * \sa SDL_WindowHasSurface
  */
 extern DECLSPEC int SDLCALL SDL_DestroyWindowSurface(SDL_Window *window);
 
