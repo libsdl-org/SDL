@@ -1803,7 +1803,10 @@ void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
 int WIN_WaitEventTimeout(_THIS, int timeout)
 {
     if (g_WindowsEnableMessageLoop) {
-        if (MsgWaitForMultipleObjects(0, NULL, FALSE, (DWORD)timeout, QS_ALLINPUT)) {
+        DWORD dwMilliseconds, ret;
+        dwMilliseconds = timeout < 0 ? INFINITE : (DWORD)timeout;
+        ret = MsgWaitForMultipleObjects(0, NULL, FALSE, dwMilliseconds, QS_ALLINPUT);
+        if (ret == WAIT_OBJECT_0) {
             return 1;
         } else {
             return 0;
