@@ -222,7 +222,7 @@ static Uint32 SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
     return 0;
 }
 
-static void SDL_CleanupWindowTextureData(void *userdata, void *value)
+static void SDLCALL SDL_CleanupWindowTextureData(void *userdata, void *value)
 {
     SDL_WindowTextureData *data = (SDL_WindowTextureData *)value;
 
