@@ -131,7 +131,7 @@ static int get_zenity_version(int *major, int *minor)
     return -1; /* run_zenity should've called SDL_SetError() */
 }
 
-int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     int fd_pipe[2]; /* fd_pipe[0]: read end of pipe, fd_pipe[1]: write end of pipe */
     int zenity_major = 0, zenity_minor = 0, output_len = 0;
@@ -213,12 +213,12 @@ int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
         char *output = NULL;
         char *tmp = NULL;
 
-        if (!buttonid) {
-            /* if we don't need buttonid, we can return immediately */
+        if (!buttonID) {
+            /* if we don't need buttonID, we can return immediately */
             close(fd_pipe[0]);
             return 0; /* success */
         }
-        *buttonid = -1;
+        *buttonID = -1;
 
         output = SDL_malloc(output_len + 1);
         if (!output) {
@@ -251,7 +251,7 @@ int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
         for (i = 0; i < messageboxdata->numbuttons; i += 1) {
             if (messageboxdata->buttons[i].text) {
                 if (SDL_strcmp(output, messageboxdata->buttons[i].text) == 0) {
-                    *buttonid = messageboxdata->buttons[i].buttonid;
+                    *buttonID = messageboxdata->buttons[i].buttonID;
                     break;
                 }
             }

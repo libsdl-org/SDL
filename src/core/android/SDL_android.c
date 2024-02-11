@@ -2264,7 +2264,7 @@ SDL_bool Android_JNI_IsScreenKeyboardShown(void)
     return is_shown;
 }
 
-int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     JNIEnv *env;
     jclass clazz;
@@ -2304,7 +2304,7 @@ int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
 
         temp = sdlButton->flags;
         (*env)->SetIntArrayRegion(env, button_flags, i, 1, &temp);
-        temp = sdlButton->buttonid;
+        temp = sdlButton->buttonID;
         (*env)->SetIntArrayRegion(env, button_ids, i, 1, &temp);
         text = (*env)->NewStringUTF(env, sdlButton->text);
         (*env)->SetObjectArrayElement(env, button_texts, i, text);
@@ -2333,7 +2333,7 @@ int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
 
     mid = (*env)->GetMethodID(env, clazz,
                               "messageboxShowMessageBox", "(ILjava/lang/String;Ljava/lang/String;[I[I[Ljava/lang/String;[I)I");
-    *buttonid = (*env)->CallIntMethod(env, context, mid,
+    *buttonID = (*env)->CallIntMethod(env, context, mid,
                                       messageboxdata->flags,
                                       title,
                                       message,

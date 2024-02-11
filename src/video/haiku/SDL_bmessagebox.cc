@@ -78,7 +78,7 @@ class HAIKU_SDL_MessageBox : public BAlert
 	SortButtonsPredicate(const SDL_MessageBoxButtonData *aButtonLeft,
 	                                 const SDL_MessageBoxButtonData *aButtonRight)
 	{
-		return aButtonLeft->buttonid < aButtonRight->buttonid;
+		return aButtonLeft->buttonID < aButtonRight->buttonID;
 	}
 
 	alert_type
@@ -346,10 +346,10 @@ protected:
 extern "C" {
 #endif
 
-int HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+int HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
 	// Initialize button by closed or error value first.
-	*buttonid = G_CLOSE_BUTTON_ID;
+	*buttonID = G_CLOSE_BUTTON_ID;
 
 	// We need to check "be_app" pointer to "NULL". The "messageboxdata->window" pointer isn't appropriate here
 	// because it is possible to create a MessageBox from another thread. This fixes the following errors:
@@ -382,7 +382,7 @@ int HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid
 	}
 	*/
 	// Initialize button by real pushed value then.
-	*buttonid = pushedButton;
+	*buttonID = pushedButton;
 
 	return 0;
 }

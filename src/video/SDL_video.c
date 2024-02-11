@@ -4678,7 +4678,7 @@ static void CreateMaskFromColorKeyOrAlpha(SDL_Surface *icon, Uint8 *mask, int fl
     mask[(y * ((icon->w + 7) / 8)) + (x / 8)] &= ~(0x01 << (7 - (x % 8)))
 
     colorkey = icon->format->colorkey;
-    switch (icon->format->BytesPerPixel) {
+    switch (icon->format->bytes_per_pixel) {
     case 1:
         {
             Uint8 *pixels;
@@ -4891,7 +4891,7 @@ int SDL_GetMessageBoxCount(void)
 #include "vita/SDL_vitamessagebox.h"
 #endif
 
-int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     int dummybutton;
     int retval = -1;
@@ -4916,8 +4916,8 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     SDL_ShowCursor();
     SDL_ResetKeyboard();
 
-    if (!buttonid) {
-        buttonid = &dummybutton;
+    if (!buttonID) {
+        buttonID = &dummybutton;
     }
 
     SDL_memcpy(&mbdata, messageboxdata, sizeof(*messageboxdata));
@@ -4932,7 +4932,7 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     SDL_ClearError();
 
     if (_this && _this->ShowMessageBox) {
-        retval = _this->ShowMessageBox(_this, messageboxdata, buttonid);
+        retval = _this->ShowMessageBox(_this, messageboxdata, buttonID);
     } else {
         /* It's completely fine to call this function before video is initialized */
         const char *driver_name = SDL_GetHint(SDL_HINT_VIDEO_DRIVER);
@@ -4945,7 +4945,7 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
                 for (int i = 0; bootstrap[i]; ++i) {
                     if (bootstrap[i]->ShowMessageBox && (driver_attempt_len == SDL_strlen(bootstrap[i]->name)) &&
                         (SDL_strncasecmp(bootstrap[i]->name, driver_attempt, driver_attempt_len) == 0)) {
-                        if (bootstrap[i]->ShowMessageBox(messageboxdata, buttonid) == 0) {
+                        if (bootstrap[i]->ShowMessageBox(messageboxdata, buttonID) == 0) {
                             retval = 0;
                         }
                         break;
@@ -4956,7 +4956,7 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
             }
         } else {
             for (int i = 0; bootstrap[i]; ++i) {
-                if (bootstrap[i]->ShowMessageBox && bootstrap[i]->ShowMessageBox(messageboxdata, buttonid) == 0) {
+                if (bootstrap[i]->ShowMessageBox && bootstrap[i]->ShowMessageBox(messageboxdata, buttonID) == 0) {
                     retval = 0;
                     break;
                 }

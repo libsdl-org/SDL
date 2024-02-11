@@ -36,7 +36,8 @@ static int _CompareSurfaceCount = 0;
 static void
 LogErrorFormat(const char *name, const SDL_PixelFormat *format)
 {
-  SDLTest_LogError("%s: %08" SDL_PRIx32 " %s, %u bits/%u bytes per pixel", name, format->format, SDL_GetPixelFormatName(format->format), format->BitsPerPixel, format->BytesPerPixel);
+  SDLTest_LogError("%s: %08" SDL_PRIx32 " %s, %u bits/%u bytes per pixel", name, format->format, SDL_GetPixelFormatName(format->format),
+                   format->bits_per_pixel, format->bytes_per_pixel);
   SDLTest_LogError("%s: R mask %08" SDL_PRIx32 ", loss %u, shift %u", name, format->Rmask, format->Rloss, format->Rshift);
   SDLTest_LogError("%s: G mask %08" SDL_PRIx32 ", loss %u, shift %u", name, format->Gmask, format->Gloss, format->Gshift);
   SDLTest_LogError("%s: B mask %08" SDL_PRIx32 ", loss %u, shift %u", name, format->Bmask, format->Bloss, format->Bshift);

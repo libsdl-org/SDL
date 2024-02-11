@@ -160,11 +160,11 @@ static int SDL_SendGamepadButton(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_Gam
 
 static SDL_bool HasSameOutput(SDL_GamepadBinding *a, SDL_GamepadBinding *b)
 {
-    if (a->outputType != b->outputType) {
+    if (a->output_type != b->output_type) {
         return SDL_FALSE;
     }
 
-    if (a->outputType == SDL_GAMEPAD_BINDTYPE_AXIS) {
+    if (a->output_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
         return a->output.axis.axis == b->output.axis.axis;
     } else {
         return a->output.button == b->output.button;
@@ -173,7 +173,7 @@ static SDL_bool HasSameOutput(SDL_GamepadBinding *a, SDL_GamepadBinding *b)
 
 static void ResetOutput(Uint64 timestamp, SDL_Gamepad *gamepad, SDL_GamepadBinding *bind)
 {
-    if (bind->outputType == SDL_GAMEPAD_BINDTYPE_AXIS) {
+    if (bind->output_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
         SDL_SendGamepadAxis(timestamp, gamepad, bind->output.axis.axis, 0);
     } else {
         SDL_SendGamepadButton(timestamp, gamepad, bind->output.button, SDL_RELEASED);
@@ -191,7 +191,7 @@ static void HandleJoystickAxis(Uint64 timestamp, SDL_Gamepad *gamepad, int axis,
     last_match = gamepad->last_match_axis[axis];
     for (i = 0; i < gamepad->num_bindings; ++i) {
         SDL_GamepadBinding *binding = &gamepad->bindings[i];
-        if (binding->inputType == SDL_GAMEPAD_BINDTYPE_AXIS &&
+        if (binding->input_type == SDL_GAMEPAD_BINDTYPE_AXIS &&
             axis == binding->input.axis.axis) {
             if (binding->input.axis.axis_min < binding->input.axis.axis_max) {
                 if (value >= binding->input.axis.axis_min &&
@@ -215,7 +215,7 @@ static void HandleJoystickAxis(Uint64 timestamp, SDL_Gamepad *gamepad, int axis,
     }
 
     if (match) {
-        if (match->outputType == SDL_GAMEPAD_BINDTYPE_AXIS) {
+        if (match->output_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
             if (match->input.axis.axis_min != match->output.axis.axis_min || match->input.axis.axis_max != match->output.axis.axis_max) {
                 float normalized_value = (float)(value - match->input.axis.axis_min) / (match->input.axis.axis_max - match->input.axis.axis_min);
                 value = match->output.axis.axis_min + (int)(normalized_value * (match->output.axis.axis_max - match->output.axis.axis_min));
@@ -243,9 +243,9 @@ static void HandleJoystickButton(Uint64 timestamp, SDL_Gamepad *gamepad, int but
 
     for (i = 0; i < gamepad->num_bindings; ++i) {
         SDL_GamepadBinding *binding = &gamepad->bindings[i];
-        if (binding->inputType == SDL_GAMEPAD_BINDTYPE_BUTTON &&
+        if (binding->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON &&
             button == binding->input.button) {
-            if (binding->outputType == SDL_GAMEPAD_BINDTYPE_AXIS) {
+            if (binding->output_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
                 int value = state ? binding->output.axis.axis_max : binding->output.axis.axis_min;
                 SDL_SendGamepadAxis(timestamp, gamepad, binding->output.axis.axis, (Sint16)value);
             } else {
@@ -267,10 +267,10 @@ static void HandleJoystickHat(Uint64 timestamp, SDL_Gamepad *gamepad, int hat, U
     changed_mask = (last_mask ^ value);
     for (i = 0; i < gamepad->num_bindings; ++i) {
         SDL_GamepadBinding *binding = &gamepad->bindings[i];
-        if (binding->inputType == SDL_GAMEPAD_BINDTYPE_HAT && hat == binding->input.hat.hat) {
+        if (binding->input_type == SDL_GAMEPAD_BINDTYPE_HAT && hat == binding->input.hat.hat) {
             if ((changed_mask & binding->input.hat.hat_mask) != 0) {
                 if (value & binding->input.hat.hat_mask) {
-                    if (binding->outputType == SDL_GAMEPAD_BINDTYPE_AXIS) {
+                    if (binding->output_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
                         SDL_SendGamepadAxis(timestamp, gamepad, binding->output.axis.axis, (Sint16)binding->output.axis.axis_max);
                     } else {
                         SDL_SendGamepadButton(timestamp, gamepad, binding->output.button, SDL_PRESSED);
@@ -1173,7 +1173,7 @@ static SDL_bool SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char 
     axis = SDL_GetGamepadAxisFromString(szGameButton);
     button = SDL_PrivateGetGamepadButtonFromString(szGameButton, baxy_mapping);
     if (axis != SDL_GAMEPAD_AXIS_INVALID) {
-        bind.outputType = SDL_GAMEPAD_BINDTYPE_AXIS;
+        bind.output_type = SDL_GAMEPAD_BINDTYPE_AXIS;
         bind.output.axis.axis = axis;
         if (axis == SDL_GAMEPAD_AXIS_LEFT_TRIGGER || axis == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) {
             bind.output.axis.axis_min = 0;
@@ -1191,7 +1191,7 @@ static SDL_bool SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char 
             }
         }
     } else if (button != SDL_GAMEPAD_BUTTON_INVALID) {
-        bind.outputType = SDL_GAMEPAD_BINDTYPE_BUTTON;
+        bind.output_type = SDL_GAMEPAD_BINDTYPE_BUTTON;
         bind.output.button = button;
     } else {
         return SDL_FALSE;
@@ -1205,7 +1205,7 @@ static SDL_bool SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char 
     }
 
     if (szJoystickButton[0] == 'a' && SDL_isdigit((unsigned char)szJoystickButton[1])) {
-        bind.inputType = SDL_GAMEPAD_BINDTYPE_AXIS;
+        bind.input_type = SDL_GAMEPAD_BINDTYPE_AXIS;
         bind.input.axis.axis = SDL_atoi(&szJoystickButton[1]);
         if (half_axis_input == '+') {
             bind.input.axis.axis_min = 0;
@@ -1223,13 +1223,13 @@ static SDL_bool SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char 
             bind.input.axis.axis_max = tmp;
         }
     } else if (szJoystickButton[0] == 'b' && SDL_isdigit((unsigned char)szJoystickButton[1])) {
-        bind.inputType = SDL_GAMEPAD_BINDTYPE_BUTTON;
+        bind.input_type = SDL_GAMEPAD_BINDTYPE_BUTTON;
         bind.input.button = SDL_atoi(&szJoystickButton[1]);
     } else if (szJoystickButton[0] == 'h' && SDL_isdigit((unsigned char)szJoystickButton[1]) &&
                szJoystickButton[2] == '.' && SDL_isdigit((unsigned char)szJoystickButton[3])) {
         int hat = SDL_atoi(&szJoystickButton[1]);
         int mask = SDL_atoi(&szJoystickButton[3]);
-        bind.inputType = SDL_GAMEPAD_BINDTYPE_HAT;
+        bind.input_type = SDL_GAMEPAD_BINDTYPE_HAT;
         bind.input.hat.hat = hat;
         bind.input.hat.hat_mask = mask;
     } else {
@@ -1419,8 +1419,8 @@ static void SDL_PrivateLoadButtonMapping(SDL_Gamepad *gamepad, GamepadMapping_t 
     /* Set the zero point for triggers */
     for (i = 0; i < gamepad->num_bindings; ++i) {
         SDL_GamepadBinding *binding = &gamepad->bindings[i];
-        if (binding->inputType == SDL_GAMEPAD_BINDTYPE_AXIS &&
-            binding->outputType == SDL_GAMEPAD_BINDTYPE_AXIS &&
+        if (binding->input_type == SDL_GAMEPAD_BINDTYPE_AXIS &&
+            binding->output_type == SDL_GAMEPAD_BINDTYPE_AXIS &&
             (binding->output.axis.axis == SDL_GAMEPAD_AXIS_LEFT_TRIGGER ||
              binding->output.axis.axis == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER)) {
             if (binding->input.axis.axis < gamepad->joystick->naxes) {
@@ -2671,7 +2671,7 @@ SDL_bool SDL_GamepadHasAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
 
         for (i = 0; i < gamepad->num_bindings; ++i) {
             SDL_GamepadBinding *binding = &gamepad->bindings[i];
-            if (binding->outputType == SDL_GAMEPAD_BINDTYPE_AXIS && binding->output.axis.axis == axis) {
+            if (binding->output_type == SDL_GAMEPAD_BINDTYPE_AXIS && binding->output.axis.axis == axis) {
                 retval = SDL_TRUE;
                 break;
             }
@@ -2697,12 +2697,12 @@ Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
 
         for (i = 0; i < gamepad->num_bindings; ++i) {
             SDL_GamepadBinding *binding = &gamepad->bindings[i];
-            if (binding->outputType == SDL_GAMEPAD_BINDTYPE_AXIS && binding->output.axis.axis == axis) {
+            if (binding->output_type == SDL_GAMEPAD_BINDTYPE_AXIS && binding->output.axis.axis == axis) {
                 int value = 0;
                 SDL_bool valid_input_range;
                 SDL_bool valid_output_range;
 
-                if (binding->inputType == SDL_GAMEPAD_BINDTYPE_AXIS) {
+                if (binding->input_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
                     value = SDL_GetJoystickAxis(gamepad->joystick, binding->input.axis.axis);
                     if (binding->input.axis.axis_min < binding->input.axis.axis_max) {
                         valid_input_range = (value >= binding->input.axis.axis_min && value <= binding->input.axis.axis_max);
@@ -2717,12 +2717,12 @@ Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
                     } else {
                         value = 0;
                     }
-                } else if (binding->inputType == SDL_GAMEPAD_BINDTYPE_BUTTON) {
+                } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON) {
                     value = SDL_GetJoystickButton(gamepad->joystick, binding->input.button);
                     if (value == SDL_PRESSED) {
                         value = binding->output.axis.axis_max;
                     }
-                } else if (binding->inputType == SDL_GAMEPAD_BINDTYPE_HAT) {
+                } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_HAT) {
                     int hat_mask = SDL_GetJoystickHat(gamepad->joystick, binding->input.hat.hat);
                     if (hat_mask & binding->input.hat.hat_mask) {
                         value = binding->output.axis.axis_max;
@@ -2762,7 +2762,7 @@ SDL_bool SDL_GamepadHasButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 
         for (i = 0; i < gamepad->num_bindings; ++i) {
             SDL_GamepadBinding *binding = &gamepad->bindings[i];
-            if (binding->outputType == SDL_GAMEPAD_BINDTYPE_BUTTON && binding->output.button == button) {
+            if (binding->output_type == SDL_GAMEPAD_BINDTYPE_BUTTON && binding->output.button == button) {
                 retval = SDL_TRUE;
                 break;
             }
@@ -2788,8 +2788,8 @@ Uint8 SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 
         for (i = 0; i < gamepad->num_bindings; ++i) {
             SDL_GamepadBinding *binding = &gamepad->bindings[i];
-            if (binding->outputType == SDL_GAMEPAD_BINDTYPE_BUTTON && binding->output.button == button) {
-                if (binding->inputType == SDL_GAMEPAD_BINDTYPE_AXIS) {
+            if (binding->output_type == SDL_GAMEPAD_BINDTYPE_BUTTON && binding->output.button == button) {
+                if (binding->input_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
                     SDL_bool valid_input_range;
 
                     int value = SDL_GetJoystickAxis(gamepad->joystick, binding->input.axis.axis);
@@ -2807,10 +2807,10 @@ Uint8 SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
                             break;
                         }
                     }
-                } else if (binding->inputType == SDL_GAMEPAD_BINDTYPE_BUTTON) {
+                } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON) {
                     retval = SDL_GetJoystickButton(gamepad->joystick, binding->input.button);
                     break;
-                } else if (binding->inputType == SDL_GAMEPAD_BINDTYPE_HAT) {
+                } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_HAT) {
                     int hat_mask = SDL_GetJoystickHat(gamepad->joystick, binding->input.hat.hat);
                     retval = (hat_mask & binding->input.hat.hat_mask) ? SDL_PRESSED : SDL_RELEASED;
                     break;

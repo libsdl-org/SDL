@@ -299,13 +299,13 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
 
         SDL_SetSurfaceBlendMode(tmp, blend);
 
-        dstbpp = tmp->format->BytesPerPixel;
+        dstbpp = tmp->format->bytes_per_pixel;
         dst_ptr = tmp->pixels;
         dst_pitch = tmp->pitch;
 
     } else {
         /* Write directly to destination surface */
-        dstbpp = dst->format->BytesPerPixel;
+        dstbpp = dst->format->bytes_per_pixel;
         dst_ptr = (Uint8 *)dst->pixels + dstrect.x * dstbpp + dstrect.y * dst->pitch;
         dst_pitch = dst->pitch;
     }
@@ -578,7 +578,7 @@ int SDL_SW_BlitTriangle(
     }
 
     /* Set destination pointer */
-    dstbpp = dst->format->BytesPerPixel;
+    dstbpp = dst->format->bytes_per_pixel;
     dst_ptr = (Uint8 *)dst->pixels + dstrect.x * dstbpp + dstrect.y * dst->pitch;
     dst_pitch = dst->pitch;
 
@@ -794,8 +794,8 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
     Uint32 dstR, dstG, dstB, dstA;
     SDL_PixelFormat *src_fmt = info->src_fmt;
     SDL_PixelFormat *dst_fmt = info->dst_fmt;
-    int srcbpp = src_fmt->BytesPerPixel;
-    int dstbpp = dst_fmt->BytesPerPixel;
+    int srcbpp = src_fmt->bytes_per_pixel;
+    int dstbpp = dst_fmt->bytes_per_pixel;
     int srcfmt_val;
     int dstfmt_val;
     Uint32 rgbmask = ~src_fmt->Amask;

@@ -178,9 +178,9 @@ typedef enum
     SDL_GAMEPAD_BINDTYPE_HAT
 } SDL_GamepadBindingType;
 
-typedef struct
+typedef struct SDL_GamepadBinding
 {
-    SDL_GamepadBindingType inputType;
+    SDL_GamepadBindingType input_type;
     union
     {
         int button;
@@ -200,7 +200,7 @@ typedef struct
 
     } input;
 
-    SDL_GamepadBindingType outputType;
+    SDL_GamepadBindingType output_type;
     union
     {
         SDL_GamepadButton button;

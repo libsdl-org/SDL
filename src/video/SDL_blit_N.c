@@ -345,8 +345,8 @@ static void Blit_RGB565_32Altivec(SDL_BlitInfo *info)
     vector unsigned char vgreen2 =
         (vector unsigned char)(vec_add((vector unsigned int)vgreen1, vec_sl(v8, v8)));
 
-    SDL_assert(srcfmt->BytesPerPixel == 2);
-    SDL_assert(dstfmt->BytesPerPixel == 4);
+    SDL_assert(srcfmt->bytes_per_pixel == 2);
+    SDL_assert(dstfmt->bytes_per_pixel == 4);
 
     vf800 = (vector unsigned short)vec_splat_u8(-7);
     vf800 = vec_sl(vf800, vec_splat_u16(8));
@@ -483,8 +483,8 @@ static void Blit_RGB555_32Altivec(SDL_BlitInfo *info)
     vector unsigned char vgreen2 =
         (vector unsigned char)(vec_add((vector unsigned int)vgreen1, vec_sl(v8, v8)));
 
-    SDL_assert(srcfmt->BytesPerPixel == 2);
-    SDL_assert(dstfmt->BytesPerPixel == 4);
+    SDL_assert(srcfmt->bytes_per_pixel == 2);
+    SDL_assert(dstfmt->bytes_per_pixel == 4);
 
     vf800 = (vector unsigned short)vec_splat_u8(-7);
     vf800 = vec_sl(vf800, vec_splat_u16(8));
@@ -581,9 +581,9 @@ static void Blit32to32KeyAltivec(SDL_BlitInfo *info)
     Uint32 *dstp = (Uint32 *)info->dst;
     int dstskip = info->dst_skip / 4;
     SDL_PixelFormat *srcfmt = info->src_fmt;
-    int srcbpp = srcfmt->BytesPerPixel;
+    int srcbpp = srcfmt->bytes_per_pixel;
     SDL_PixelFormat *dstfmt = info->dst_fmt;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int dstbpp = dstfmt->bytes_per_pixel;
     int copy_alpha = (srcfmt->Amask && dstfmt->Amask);
     unsigned alpha = dstfmt->Amask ? info->a : 0;
     Uint32 rgbmask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
@@ -714,8 +714,8 @@ static void ConvertAltivec32to32_noprefetch(SDL_BlitInfo *info)
         }
     }
 
-    SDL_assert(srcfmt->BytesPerPixel == 4);
-    SDL_assert(dstfmt->BytesPerPixel == 4);
+    SDL_assert(srcfmt->bytes_per_pixel == 4);
+    SDL_assert(dstfmt->bytes_per_pixel == 4);
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
     /* reorder bytes for PowerPC little endian */
@@ -800,8 +800,8 @@ static void ConvertAltivec32to32_prefetch(SDL_BlitInfo *info)
         }
     }
 
-    SDL_assert(srcfmt->BytesPerPixel == 4);
-    SDL_assert(dstfmt->BytesPerPixel == 4);
+    SDL_assert(srcfmt->bytes_per_pixel == 4);
+    SDL_assert(dstfmt->bytes_per_pixel == 4);
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
     /* reorder bytes for PowerPC little endian */
@@ -2107,7 +2107,7 @@ static void BlitNto1(SDL_BlitInfo *info)
     dstskip = info->dst_skip;
     map = info->table;
     srcfmt = info->src_fmt;
-    srcbpp = srcfmt->BytesPerPixel;
+    srcbpp = srcfmt->bytes_per_pixel;
 
     if (!map) {
         while (height--) {
@@ -2232,8 +2232,8 @@ static void get_permutation(SDL_PixelFormat *srcfmt, SDL_PixelFormat *dstfmt,
     int Pixel = 0x04030201; /* identity permutation */
 #else
     int Pixel = 0x01020304; /* identity permutation */
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = srcfmt->bytes_per_pixel;
+    int dstbpp = dstfmt->bytes_per_pixel;
 #endif
 
     if (srcfmt->Amask) {
@@ -2319,9 +2319,9 @@ static void BlitNtoN(SDL_BlitInfo *info)
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
     SDL_PixelFormat *srcfmt = info->src_fmt;
-    int srcbpp = srcfmt->BytesPerPixel;
+    int srcbpp = srcfmt->bytes_per_pixel;
     SDL_PixelFormat *dstfmt = info->dst_fmt;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int dstbpp = dstfmt->bytes_per_pixel;
     unsigned alpha = dstfmt->Amask ? info->a : 0;
 
 #if HAVE_FAST_WRITE_INT8
@@ -2437,9 +2437,9 @@ static void BlitNtoNCopyAlpha(SDL_BlitInfo *info)
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
     SDL_PixelFormat *srcfmt = info->src_fmt;
-    int srcbpp = srcfmt->BytesPerPixel;
+    int srcbpp = srcfmt->bytes_per_pixel;
     SDL_PixelFormat *dstfmt = info->dst_fmt;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int dstbpp = dstfmt->bytes_per_pixel;
     int c;
 
 #if HAVE_FAST_WRITE_INT8
@@ -2502,7 +2502,7 @@ static void BlitNto1Key(SDL_BlitInfo *info)
     unsigned sR, sG, sB;
 
     /* Set up some basic variables */
-    srcbpp = srcfmt->BytesPerPixel;
+    srcbpp = srcfmt->bytes_per_pixel;
     ckey &= rgbmask;
 
     if (!palmap) {
@@ -2594,8 +2594,8 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
     Uint32 ckey = info->colorkey;
     SDL_PixelFormat *srcfmt = info->src_fmt;
     SDL_PixelFormat *dstfmt = info->dst_fmt;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = srcfmt->bytes_per_pixel;
+    int dstbpp = dstfmt->bytes_per_pixel;
     unsigned alpha = dstfmt->Amask ? info->a : 0;
     Uint32 rgbmask = ~srcfmt->Amask;
     int sfmt = srcfmt->format;
@@ -2873,8 +2873,8 @@ static void BlitNtoNKeyCopyAlpha(SDL_BlitInfo *info)
     unsigned sR, sG, sB, sA;
 
     /* Set up some basic variables */
-    srcbpp = srcfmt->BytesPerPixel;
-    dstbpp = dstfmt->BytesPerPixel;
+    srcbpp = srcfmt->bytes_per_pixel;
+    dstbpp = dstfmt->bytes_per_pixel;
     ckey &= rgbmask;
 
     /* Fastpath: same source/destination format, with Amask, bpp 32, loop is vectorized. ~10x faster */
@@ -2966,7 +2966,7 @@ static void Blit2101010toN(SDL_BlitInfo *info)
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
     SDL_PixelFormat *dstfmt = info->dst_fmt;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int dstbpp = dstfmt->bytes_per_pixel;
     Uint32 Pixel;
     unsigned sR, sG, sB, sA;
 
@@ -2997,7 +2997,7 @@ static void BlitNto2101010(SDL_BlitInfo *info)
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
     SDL_PixelFormat *srcfmt = info->src_fmt;
-    int srcbpp = srcfmt->BytesPerPixel;
+    int srcbpp = srcfmt->bytes_per_pixel;
     Uint32 Pixel;
     unsigned sR, sG, sB, sA;
 
@@ -3028,9 +3028,9 @@ static void Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo *info)
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
     SDL_PixelFormat *srcfmt = info->src_fmt;
-    int srcbpp = srcfmt->BytesPerPixel;
+    int srcbpp = srcfmt->bytes_per_pixel;
     SDL_PixelFormat *dstfmt = info->dst_fmt;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int dstbpp = dstfmt->bytes_per_pixel;
 
     if (dstfmt->Amask) {
         /* SET_ALPHA */
@@ -3101,9 +3101,9 @@ static void Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo *info)
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
     SDL_PixelFormat *srcfmt = info->src_fmt;
-    int srcbpp = srcfmt->BytesPerPixel;
+    int srcbpp = srcfmt->bytes_per_pixel;
     SDL_PixelFormat *dstfmt = info->dst_fmt;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int dstbpp = dstfmt->bytes_per_pixel;
 
     if (dstfmt->Amask) {
         if (srcfmt->Amask) {
@@ -3347,20 +3347,20 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
     dstfmt = surface->map->dst->format;
 
     /* We don't support destinations less than 8-bits */
-    if (dstfmt->BitsPerPixel < 8) {
+    if (dstfmt->bits_per_pixel < 8) {
         return NULL;
     }
 
     switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
     case 0:
         blitfun = NULL;
-        if (dstfmt->BitsPerPixel == 8) {
-            if ((srcfmt->BytesPerPixel == 4) &&
+        if (dstfmt->bits_per_pixel == 8) {
+            if ((srcfmt->bytes_per_pixel == 4) &&
                 (srcfmt->Rmask == 0x00FF0000) &&
                 (srcfmt->Gmask == 0x0000FF00) &&
                 (srcfmt->Bmask == 0x000000FF)) {
                 blitfun = Blit_XRGB8888_index8;
-            } else if ((srcfmt->BytesPerPixel == 4) &&
+            } else if ((srcfmt->bytes_per_pixel == 4) &&
                        (srcfmt->Rmask == 0x3FF00000) &&
                        (srcfmt->Gmask == 0x000FFC00) &&
                        (srcfmt->Bmask == 0x000003FF)) {
@@ -3374,9 +3374,9 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
             if (dstfmt->Amask) {
                 a_need = srcfmt->Amask ? COPY_ALPHA : SET_ALPHA;
             }
-            if (srcfmt->BytesPerPixel > 0 &&
-                srcfmt->BytesPerPixel <= SDL_arraysize(normal_blit)) {
-                table = normal_blit[srcfmt->BytesPerPixel - 1];
+            if (srcfmt->bytes_per_pixel > 0 &&
+                srcfmt->bytes_per_pixel <= SDL_arraysize(normal_blit)) {
+                table = normal_blit[srcfmt->bytes_per_pixel - 1];
                 for (which = 0; table[which].dstbpp; ++which) {
                     if (MASKOK(srcfmt->Rmask, table[which].srcR) &&
                         MASKOK(srcfmt->Gmask, table[which].srcG) &&
@@ -3384,7 +3384,7 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
                         MASKOK(dstfmt->Rmask, table[which].dstR) &&
                         MASKOK(dstfmt->Gmask, table[which].dstG) &&
                         MASKOK(dstfmt->Bmask, table[which].dstB) &&
-                        dstfmt->BytesPerPixel == table[which].dstbpp &&
+                        dstfmt->bytes_per_pixel == table[which].dstbpp &&
                         (a_need & table[which].alpha) == a_need &&
                         ((table[which].blit_features & GetBlitFeatures()) ==
                          table[which].blit_features)) {
@@ -3399,8 +3399,8 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
                     blitfun = Blit2101010toN;
                 } else if (dstfmt->format == SDL_PIXELFORMAT_ARGB2101010) {
                     blitfun = BlitNto2101010;
-                } else if (srcfmt->BytesPerPixel == 4 &&
-                           dstfmt->BytesPerPixel == 4 &&
+                } else if (srcfmt->bytes_per_pixel == 4 &&
+                           dstfmt->bytes_per_pixel == 4 &&
                            srcfmt->Rmask == dstfmt->Rmask &&
                            srcfmt->Gmask == dstfmt->Gmask &&
                            srcfmt->Bmask == dstfmt->Bmask) {
@@ -3427,13 +3427,13 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
            because RLE is the preferred fast way to deal with this.
            If a particular case turns out to be useful we'll add it. */
 
-        if (srcfmt->BytesPerPixel == 2 && surface->map->identity != 0) {
+        if (srcfmt->bytes_per_pixel == 2 && surface->map->identity != 0) {
             return Blit2to2Key;
-        } else if (dstfmt->BytesPerPixel == 1) {
+        } else if (dstfmt->bytes_per_pixel == 1) {
             return BlitNto1Key;
         } else {
 #ifdef SDL_ALTIVEC_BLITTERS
-            if ((srcfmt->BytesPerPixel == 4) && (dstfmt->BytesPerPixel == 4) && SDL_HasAltiVec()) {
+            if ((srcfmt->bytes_per_pixel == 4) && (dstfmt->bytes_per_pixel == 4) && SDL_HasAltiVec()) {
                 return Blit32to32KeyAltivec;
             } else
 #endif

@@ -440,7 +440,7 @@ static void Blit1toNAlpha(SDL_BlitInfo *info)
     const unsigned A = info->a;
 
     /* Set up some basic variables */
-    dstbpp = dstfmt->BytesPerPixel;
+    dstbpp = dstfmt->bytes_per_pixel;
 
     while (height--) {
         /* *INDENT-OFF* */ /* clang-format off */
@@ -481,7 +481,7 @@ static void Blit1toNAlphaKey(SDL_BlitInfo *info)
     const unsigned A = info->a;
 
     /* Set up some basic variables */
-    dstbpp = dstfmt->BytesPerPixel;
+    dstbpp = dstfmt->bytes_per_pixel;
 
     while (height--) {
         /* *INDENT-OFF* */ /* clang-format off */
@@ -520,10 +520,10 @@ SDL_BlitFunc SDL_CalculateBlit1(SDL_Surface *surface)
     SDL_PixelFormat *dstfmt;
 
     dstfmt = surface->map->dst->format;
-    if (dstfmt->BitsPerPixel < 8) {
+    if (dstfmt->bits_per_pixel < 8) {
         which = 0;
     } else {
-        which = dstfmt->BytesPerPixel;
+        which = dstfmt->bytes_per_pixel;
     }
     switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
     case 0:

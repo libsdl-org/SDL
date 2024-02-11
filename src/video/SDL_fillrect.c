@@ -325,11 +325,11 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     /* This function doesn't usually work on surfaces < 8 bpp
      * Except: support for 4bits, when filling full size.
      */
-    if (dst->format->BitsPerPixel < 8) {
+    if (dst->format->bits_per_pixel < 8) {
         if (count == 1) {
             const SDL_Rect *r = &rects[0];
             if (r->x == 0 && r->y == 0 && r->w == dst->w && r->h == dst->h) {
-                if (dst->format->BitsPerPixel == 4) {
+                if (dst->format->bits_per_pixel == 4) {
                     Uint8 b = (((Uint8)color << 4) | (Uint8)color);
                     SDL_memset(dst->pixels, b, (size_t)dst->h * dst->pitch);
                     return 1;
@@ -340,8 +340,8 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     }
 
 #ifdef SDL_ARM_NEON_BLITTERS
-    if (SDL_HasNEON() && dst->format->BytesPerPixel != 3 && !fill_function) {
-        switch (dst->format->BytesPerPixel) {
+    if (SDL_HasNEON() && dst->format->bytes_per_pixel != 3 && !fill_function) {
+        switch (dst->format->bytes_per_pixel) {
         case 1:
             fill_function = fill_8_neon;
             break;
@@ -355,8 +355,8 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     }
 #endif
 #ifdef SDL_ARM_SIMD_BLITTERS
-    if (SDL_HasARMSIMD() && dst->format->BytesPerPixel != 3 && !fill_function) {
-        switch (dst->format->BytesPerPixel) {
+    if (SDL_HasARMSIMD() && dst->format->bytes_per_pixel != 3 && !fill_function) {
+        switch (dst->format->bytes_per_pixel) {
         case 1:
             fill_function = fill_8_simd;
             break;
@@ -371,7 +371,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
 #endif
 
     if (!fill_function) {
-        switch (dst->format->BytesPerPixel) {
+        switch (dst->format->bytes_per_pixel) {
         case 1:
         {
             color |= (color << 8);
@@ -432,7 +432,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
         rect = &clipped;
 
         pixels = (Uint8 *)dst->pixels + rect->y * dst->pitch +
-                 rect->x * dst->format->BytesPerPixel;
+                 rect->x * dst->format->bytes_per_pixel;
 
         fill_function(pixels, dst->pitch, color, rect->w, rect->h);
     }

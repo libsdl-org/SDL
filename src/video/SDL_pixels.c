@@ -598,8 +598,8 @@ int SDL_InitFormat(SDL_PixelFormat *format, Uint32 pixel_format)
     /* Set up the format */
     SDL_zerop(format);
     format->format = pixel_format;
-    format->BitsPerPixel = (Uint8)bpp;
-    format->BytesPerPixel = (Uint8)((bpp + 7) / 8);
+    format->bits_per_pixel = (Uint8)bpp;
+    format->bytes_per_pixel = (Uint8)((bpp + 7) / 8);
 
     format->Rmask = Rmask;
     format->Rshift = 0;
@@ -1047,7 +1047,7 @@ int SDL_SetPixelFormatPalette(SDL_PixelFormat *format, SDL_Palette *palette)
         return SDL_InvalidParamError("SDL_SetPixelFormatPalette(): format");
     }
 
-    if (palette && palette->ncolors > (1 << format->BitsPerPixel)) {
+    if (palette && palette->ncolors > (1 << format->bits_per_pixel)) {
         return SDL_SetError("SDL_SetPixelFormatPalette() passed a palette that doesn't match the format");
     }
 
@@ -1325,7 +1325,7 @@ static Uint8 *Map1toN(SDL_PixelFormat *src, Uint8 Rmod, Uint8 Gmod, Uint8 Bmod, 
     int bpp;
     SDL_Palette *pal = src->palette;
 
-    bpp = ((dst->BytesPerPixel == 3) ? 4 : dst->BytesPerPixel);
+    bpp = ((dst->bytes_per_pixel == 3) ? 4 : dst->bytes_per_pixel);
     map = (Uint8 *)SDL_calloc(256, bpp);
     if (!map) {
         return NULL;
@@ -1337,7 +1337,8 @@ static Uint8 *Map1toN(SDL_PixelFormat *src, Uint8 Rmod, Uint8 Gmod, Uint8 Bmod, 
         Uint8 G = (Uint8)((pal->colors[i].g * Gmod) / 255);
         Uint8 B = (Uint8)((pal->colors[i].b * Bmod) / 255);
         Uint8 A = (Uint8)((pal->colors[i].a * Amod) / 255);
-        ASSEMBLE_RGBA(&map[i * bpp], dst->BytesPerPixel, dst, (Uint32)R, (Uint32)G, (Uint32)B, (Uint32)A);
+        ASSEMBLE_RGBA(&map[i * bpp], dst->bytes_per_pixel, dst, (Uint32)R,
+                      (Uint32)G, (Uint32)B, (Uint32)A);
     }
     return map;
 }
@@ -1433,7 +1434,7 @@ int SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
                     return -1;
                 }
             }
-            if (srcfmt->BitsPerPixel != dstfmt->BitsPerPixel) {
+            if (srcfmt->bits_per_pixel != dstfmt->bits_per_pixel) {
                 map->identity = 0;
             }
         } else {

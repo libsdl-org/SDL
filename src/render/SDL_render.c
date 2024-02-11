@@ -2668,7 +2668,10 @@ int SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *event
     } else if (event->type == SDL_EVENT_MOUSE_WHEEL) {
         SDL_Window *window = SDL_GetWindowFromID(event->wheel.windowID);
         if (window == renderer->window) {
-            SDL_RenderCoordinatesFromWindow(renderer, event->wheel.mouseX, event->wheel.mouseY, &event->wheel.mouseX, &event->wheel.mouseY);
+            SDL_RenderCoordinatesFromWindow(renderer, event->wheel.mouse_x,
+                                            event->wheel.mouse_y,
+                                            &event->wheel.mouse_x,
+                                            &event->wheel.mouse_y);
         }
     } else if (event->type == SDL_EVENT_FINGER_DOWN ||
                event->type == SDL_EVENT_FINGER_UP ||

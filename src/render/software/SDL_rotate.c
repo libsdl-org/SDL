@@ -508,8 +508,8 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
         }
     }
     /* This function requires a 32-bit surface or 8-bit surface with a colorkey */
-    is8bit = src->format->BitsPerPixel == 8 && colorKeyAvailable;
-    if (!(is8bit || (src->format->BitsPerPixel == 32 && src->format->Amask))) {
+    is8bit = src->format->bits_per_pixel == 8 && colorKeyAvailable;
+    if (!(is8bit || (src->format->bits_per_pixel == 32 && src->format->Amask))) {
         return NULL;
     }
 

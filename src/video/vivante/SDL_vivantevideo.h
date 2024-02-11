@@ -43,11 +43,11 @@ struct SDL_VideoData
     EGLNativeDisplayType(EGLAPIENTRY *fbGetDisplay)(void *context);
     EGLNativeDisplayType(EGLAPIENTRY *fbGetDisplayByIndex)(int DisplayIndex);
     void(EGLAPIENTRY *fbGetDisplayGeometry)(EGLNativeDisplayType Display, int *Width, int *Height);
-    void(EGLAPIENTRY *fbGetDisplayInfo)(EGLNativeDisplayType Display, int *Width, int *Height, unsigned long *Physical, int *Stride, int *BitsPerPixel);
+    void(EGLAPIENTRY *fbGetDisplayInfo)(EGLNativeDisplayType Display, int *Width, int *Height, unsigned long *Physical, int *Stride, int *bits_per_pixel);
     void(EGLAPIENTRY *fbDestroyDisplay)(EGLNativeDisplayType Display);
     EGLNativeWindowType(EGLAPIENTRY *fbCreateWindow)(EGLNativeDisplayType Display, int X, int Y, int Width, int Height);
     void(EGLAPIENTRY *fbGetWindowGeometry)(EGLNativeWindowType Window, int *X, int *Y, int *Width, int *Height);
-    void(EGLAPIENTRY *fbGetWindowInfo)(EGLNativeWindowType Window, int *X, int *Y, int *Width, int *Height, int *BitsPerPixel, unsigned int *Offset);
+    void(EGLAPIENTRY *fbGetWindowInfo)(EGLNativeWindowType Window, int *X, int *Y, int *Width, int *Height, int *bits_per_pixel, unsigned int *Offset);
     void(EGLAPIENTRY *fbDestroyWindow)(EGLNativeWindowType Window);
 #endif
 };

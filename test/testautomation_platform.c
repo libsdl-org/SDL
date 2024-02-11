@@ -209,7 +209,7 @@ static int platform_testHasFunctions(void *arg)
  */
 static int platform_testGetVersion(void *arg)
 {
-    SDL_version linked;
+    SDL_Version linked;
     int major = SDL_MAJOR_VERSION;
     int minor = SDL_MINOR_VERSION;
 
@@ -231,7 +231,7 @@ static int platform_testGetVersion(void *arg)
  */
 static int platform_testSDLVersion(void *arg)
 {
-    SDL_version compiled;
+    SDL_Version compiled;
     int major = SDL_MAJOR_VERSION;
     int minor = SDL_MINOR_VERSION;
 

@@ -22,6 +22,6 @@
 
 #ifdef SDL_VIDEO_DRIVER_WINRT
 
-extern int WINRT_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
+extern int WINRT_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
 #endif /* SDL_VIDEO_DRIVER_WINRT */

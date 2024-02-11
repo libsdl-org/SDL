@@ -137,13 +137,13 @@
 #endif
 
 /* Optimized functions from 'SDL_blit_0.c'
-   - blit with source BitsPerPixel < 8, palette */
+   - blit with source bits_per_pixel < 8, palette */
 #ifndef SDL_HAVE_BLIT_0
 #define SDL_HAVE_BLIT_0 !SDL_LEAN_AND_MEAN
 #endif
 
 /* Optimized functions from 'SDL_blit_1.c'
-   - blit with source BytesPerPixel == 1, palette */
+   - blit with source bytes_per_pixel == 1, palette */
 #ifndef SDL_HAVE_BLIT_1
 #define SDL_HAVE_BLIT_1 !SDL_LEAN_AND_MEAN
 #endif
