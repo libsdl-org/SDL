@@ -7,7 +7,6 @@
 #include "testautomation_suites.h"
 
 static const char *HintsEnum[] = {
-    SDL_HINT_ACCELEROMETER_AS_JOYSTICK,
     SDL_HINT_FRAMEBUFFER_ACCELERATION,
     SDL_HINT_GAMECONTROLLERCONFIG,
     SDL_HINT_GRAB_KEYBOARD,
@@ -29,7 +28,6 @@ static const char *HintsEnum[] = {
     SDL_HINT_XINPUT_ENABLED,
 };
 static const char *HintsVerbose[] = {
-    "SDL_ACCELEROMETER_AS_JOYSTICK",
     "SDL_FRAMEBUFFER_ACCELERATION",
     "SDL_GAMECONTROLLERCONFIG",
     "SDL_GRAB_KEYBOARD",
