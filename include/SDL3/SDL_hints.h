@@ -48,15 +48,6 @@ extern "C" {
 #endif
 
 /**
- * Set if Android/iOS accelerometers should be listed as joystick devices.
- *
- * This variable can be set to the following values:
- *    "0"       - The accelerometer is not listed as a joystick
- *    "1"       - The accelerometer is available as a 3 axis joystick (the default).
- */
-#define SDL_HINT_ACCELEROMETER_AS_JOYSTICK "SDL_ACCELEROMETER_AS_JOYSTICK"
-
-/**
  * Specify the behavior of Alt+Tab while the keyboard is grabbed.
  *
  * By default, SDL emulates Alt+Tab functionality while the keyboard is grabbed
