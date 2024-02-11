@@ -1890,8 +1890,8 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
 
     case SDL_EVENT_FINGER_MOTION:
         SDL_Log("SDL EVENT: Finger: motion touch=%" SDL_PRIu64 ", finger=%" SDL_PRIu64 ", x=%f, y=%f, dx=%f, dy=%f, pressure=%f",
-                event->tfinger.touchId,
-                event->tfinger.fingerId,
+                event->tfinger.touchID,
+                event->tfinger.fingerID,
                 event->tfinger.x, event->tfinger.y,
                 event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure);
         break;
@@ -1899,8 +1899,8 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
     case SDL_EVENT_FINGER_UP:
         SDL_Log("SDL EVENT: Finger: %s touch=%" SDL_PRIu64 ", finger=%" SDL_PRIu64 ", x=%f, y=%f, dx=%f, dy=%f, pressure=%f",
                 (event->type == SDL_EVENT_FINGER_DOWN) ? "down" : "up",
-                event->tfinger.touchId,
-                event->tfinger.fingerId,
+                event->tfinger.touchID,
+                event->tfinger.fingerID,
                 event->tfinger.x, event->tfinger.y,
                 event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure);
         break;

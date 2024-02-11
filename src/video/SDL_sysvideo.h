@@ -330,7 +330,7 @@ struct SDL_VideoDevice
     SDL_bool (*HasPrimarySelectionText)(SDL_VideoDevice *_this);
 
     /* MessageBox */
-    int (*ShowMessageBox)(SDL_VideoDevice *_this, const SDL_MessageBoxData *messageboxdata, int *buttonid);
+    int (*ShowMessageBox)(SDL_VideoDevice *_this, const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
     /* Hit-testing */
     int (*SetWindowHitTest)(SDL_Window *window, SDL_bool enabled);
@@ -455,7 +455,7 @@ typedef struct VideoBootStrap
     const char *name;
     const char *desc;
     SDL_VideoDevice *(*create)(void);
-    int (*ShowMessageBox)(const SDL_MessageBoxData *messageboxdata, int *buttonid);  /* can be done without initializing backend! */
+    int (*ShowMessageBox)(const SDL_MessageBoxData *messageboxdata, int *buttonID);  /* can be done without initializing backend! */
 } VideoBootStrap;
 
 /* Not all of these are available in a given build. Use #ifdefs, etc. */

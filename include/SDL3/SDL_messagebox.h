@@ -58,8 +58,8 @@ typedef enum
 typedef struct
 {
     Uint32 flags;       /**< ::SDL_MessageBoxButtonFlags */
-    int buttonid;       /**< User defined button id (value returned via SDL_ShowMessageBox) */
-    const char * text;  /**< The UTF-8 button text */
+    int buttonID;       /**< User defined button id (value returned via SDL_ShowMessageBox) */
+    const char *text;   /**< The UTF-8 button text */
 } SDL_MessageBoxButtonData;
 
 /**

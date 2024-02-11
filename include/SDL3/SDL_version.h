@@ -48,12 +48,12 @@ extern "C" {
  * \sa SDL_VERSION
  * \sa SDL_GetVersion
  */
-typedef struct SDL_version
+typedef struct SDL_Version
 {
     Uint8 major;        /**< major version */
     Uint8 minor;        /**< minor version */
     Uint8 patch;        /**< update version */
-} SDL_version;
+} SDL_Version;
 
 /* Printable format: "%d.%d.%d", MAJOR, MINOR, PATCHLEVEL
 */
@@ -64,16 +64,16 @@ typedef struct SDL_version
 /**
  * Macro to determine SDL version program was compiled against.
  *
- * This macro fills in a SDL_version structure with the version of the
+ * This macro fills in an SDL_Version structure with the version of the
  * library you compiled against. This is determined by what header the
  * compiler uses. Note that if you dynamically linked the library, you might
  * have a slightly newer or older version at runtime. That version can be
  * determined with SDL_GetVersion(), which, unlike SDL_VERSION(),
  * is not a macro.
  *
- * \param x A pointer to a SDL_version struct to initialize.
+ * \param x A pointer to an SDL_Version struct to initialize.
  *
- * \sa SDL_version
+ * \sa SDL_Version
  * \sa SDL_GetVersion
  */
 #define SDL_VERSION(x)                          \
@@ -114,7 +114,7 @@ typedef struct SDL_version
  *
  * This function may be called safely at any time, even before SDL_Init().
  *
- * \param ver the SDL_version structure that contains the version information
+ * \param ver the SDL_Version structure that contains the version information
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -122,7 +122,7 @@ typedef struct SDL_version
  *
  * \sa SDL_GetRevision
  */
-extern DECLSPEC int SDLCALL SDL_GetVersion(SDL_version * ver);
+extern DECLSPEC int SDLCALL SDL_GetVersion(SDL_Version * ver);
 
 /**
  * Get the code revision of SDL that is linked against your program.

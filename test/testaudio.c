@@ -1168,7 +1168,7 @@ int SDL_AppEvent(const SDL_Event *event)
             break;
 
         case SDL_EVENT_MOUSE_WHEEL:
-            UpdateMouseOver(event->wheel.mouseX, event->wheel.mouseY);
+            UpdateMouseOver(event->wheel.mouse_x, event->wheel.mouse_y);
             break;
 
         case SDL_EVENT_KEY_DOWN:

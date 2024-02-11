@@ -297,7 +297,7 @@
 #define CHOOSE_BLIT(blitter, alpha, fmt)                                                                                                              \
     do {                                                                                                                                              \
         if (alpha == 255) {                                                                                                                           \
-            switch (fmt->BytesPerPixel) {                                                                                                             \
+            switch (fmt->bytes_per_pixel) {                                                                                                             \
             case 1:                                                                                                                                   \
                 blitter(1, Uint8, OPAQUE_BLIT);                                                                                                       \
                 break;                                                                                                                                \
@@ -312,7 +312,7 @@
                 break;                                                                                                                                \
             }                                                                                                                                         \
         } else {                                                                                                                                      \
-            switch (fmt->BytesPerPixel) {                                                                                                             \
+            switch (fmt->bytes_per_pixel) {                                                                                                             \
             case 1:                                                                                                                                   \
                 /* No 8bpp alpha blitting */                                                                                                          \
                 break;                                                                                                                                \
@@ -461,7 +461,7 @@ static int SDLCALL SDL_RLEBlit(SDL_Surface *surf_src, const SDL_Rect *srcrect,
     /* Set up the source and destination pointers */
     x = dstrect->x;
     y = dstrect->y;
-    dstbuf = (Uint8 *)surf_dst->pixels + y * surf_dst->pitch + x * surf_src->format->BytesPerPixel;
+    dstbuf = (Uint8 *)surf_dst->pixels + y * surf_dst->pitch + x * surf_src->format->bytes_per_pixel;
     srcbuf = (Uint8 *)surf_src->map->data;
 
     {
@@ -488,7 +488,7 @@ static int SDLCALL SDL_RLEBlit(SDL_Surface *surf_src, const SDL_Rect *srcrect,
         }                           \
     }
 
-            switch (surf_src->format->BytesPerPixel) {
+            switch (surf_src->format->bytes_per_pixel) {
             case 1:
                 RLESKIP(1, Uint8);
                 break;
@@ -608,7 +608,7 @@ done:
    macro-compatible with SDL_PixelFormat but without the unneeded fields */
 typedef struct
 {
-    Uint8 BytesPerPixel;
+    Uint8 bytes_per_pixel;
     Uint8 padding[3];
     Uint32 Rmask;
     Uint32 Gmask;
@@ -702,7 +702,7 @@ static void RLEAlphaClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
         } while (--linecount);                                            \
     } while (0)
 
-    switch (df->BytesPerPixel) {
+    switch (df->bytes_per_pixel) {
     case 2:
         if (df->Gmask == 0x07e0 || df->Rmask == 0x07e0 || df->Bmask == 0x07e0) {
             RLEALPHACLIPBLIT(Uint16, Uint8, BLIT_TRANSL_565);
@@ -734,7 +734,7 @@ static int SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, const SDL_Rect *srcre
 
     x = dstrect->x;
     y = dstrect->y;
-    dstbuf = (Uint8 *)surf_dst->pixels + y * surf_dst->pitch + x * df->BytesPerPixel;
+    dstbuf = (Uint8 *)surf_dst->pixels + y * surf_dst->pitch + x * df->bytes_per_pixel;
     srcbuf = (Uint8 *)surf_src->map->data + sizeof(RLEDestFormat);
 
     {
@@ -742,7 +742,7 @@ static int SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, const SDL_Rect *srcre
         int vskip = srcrect->y;
         if (vskip) {
             int ofs;
-            if (df->BytesPerPixel == 2) {
+            if (df->bytes_per_pixel == 2) {
                 /* the 16/32 interleaved format */
                 do {
                     /* skip opaque line */
@@ -850,7 +850,7 @@ static int SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, const SDL_Rect *srcre
         } while (--linecount);                                       \
     } while (0)
 
-        switch (df->BytesPerPixel) {
+        switch (df->bytes_per_pixel) {
         case 2:
             if (df->Gmask == 0x07e0 || df->Rmask == 0x07e0 || df->Bmask == 0x07e0) {
                 RLEALPHABLIT(Uint16, Uint8, BLIT_TRANSL_565);
@@ -1027,14 +1027,14 @@ static int RLEAlphaSurface(SDL_Surface *surface)
         return -1;
     }
     df = dest->format;
-    if (surface->format->BitsPerPixel != 32) {
+    if (surface->format->bits_per_pixel != 32) {
         return -1; /* only 32bpp source supported */
     }
 
     /* find out whether the destination is one we support,
        and determine the max size of the encoded result */
     masksum = df->Rmask | df->Gmask | df->Bmask;
-    switch (df->BytesPerPixel) {
+    switch (df->bytes_per_pixel) {
     case 2:
         /* 16bpp: only support 565 and 555 formats */
         switch (masksum) {
@@ -1086,7 +1086,7 @@ static int RLEAlphaSurface(SDL_Surface *surface)
     {
         /* save the destination format so we can undo the encoding later */
         RLEDestFormat *r = (RLEDestFormat *)rlebuf;
-        r->BytesPerPixel = df->BytesPerPixel;
+        r->bytes_per_pixel = df->bytes_per_pixel;
         r->Rmask = df->Rmask;
         r->Gmask = df->Gmask;
         r->Bmask = df->Bmask;
@@ -1112,7 +1112,7 @@ static int RLEAlphaSurface(SDL_Surface *surface)
 
         /* opaque counts are 8 or 16 bits, depending on target depth */
 #define ADD_OPAQUE_COUNTS(n, m)           \
-    if (df->BytesPerPixel == 4) {         \
+    if (df->bytes_per_pixel == 4) {         \
         ((Uint16 *)dst)[0] = (Uint16)n;   \
         ((Uint16 *)dst)[1] = (Uint16)m;   \
         dst += 4;                         \
@@ -1272,7 +1272,7 @@ static int RLEColorkeySurface(SDL_Surface *surface)
     int y;
     Uint8 *srcbuf, *lastline;
     int maxsize = 0;
-    const int bpp = surface->format->BytesPerPixel;
+    const int bpp = surface->format->bytes_per_pixel;
     getpix_func getpix;
     Uint32 ckey, rgbmask;
     int w, h;
@@ -1413,7 +1413,7 @@ int SDL_RLESurface(SDL_Surface *surface)
     }
 
     /* We don't support RLE encoding of bitmaps */
-    if (surface->format->BitsPerPixel < 8) {
+    if (surface->format->bits_per_pixel < 8) {
         return -1;
     }
 
@@ -1481,7 +1481,7 @@ static SDL_bool UnRLEAlpha(SDL_Surface *surface)
     int (*uncopy_transl)(Uint32 *, void *, int,
                          RLEDestFormat *, SDL_PixelFormat *);
     int w = surface->w;
-    int bpp = df->BytesPerPixel;
+    int bpp = df->bytes_per_pixel;
     size_t size;
 
     if (bpp == 2) {

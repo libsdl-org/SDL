@@ -258,7 +258,7 @@ NSImage *Cocoa_CreateImage(SDL_Surface *surface)
                                                        isPlanar:NO
                                                  colorSpaceName:NSDeviceRGBColorSpace
                                                     bytesPerRow:converted->pitch
-                                                   bitsPerPixel:converted->format->BitsPerPixel];
+                                                   bitsPerPixel:converted->format->bits_per_pixel];
     if (imgrep == nil) {
         SDL_DestroySurface(converted);
         return nil;

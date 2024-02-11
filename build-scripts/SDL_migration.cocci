@@ -2413,20 +2413,40 @@ SDL_Event e1;
 - e1.caxis
 + e1.gaxis
 @@
+SDL_Event *e1;
+@@
+- e1->caxis
++ e1->gaxis
+@@
 SDL_Event e1;
 @@
 - e1.cbutton
 + e1.gbutton
+@@
+SDL_Event *e1;
+@@
+- e1->cbutton
++ e1->gbutton
 @@
 SDL_Event e1;
 @@
 - e1.cdevice
 + e1.gdevice
 @@
+SDL_Event *e1;
+@@
+- e1->cdevice
++ e1->gdevice
+@@
 SDL_Event e1;
 @@
 - e1.ctouchpad
 + e1.gtouchpad
+@@
+SDL_Event *e1;
+@@
+- e1->ctouchpad
++ e1->gtouchpad
 @@
 SDL_Event e1;
 @@
@@ -2435,28 +2455,48 @@ SDL_Event e1;
 @@
 SDL_Event *e1;
 @@
-- e1->caxis
-+ e1->gaxis
-@@
-SDL_Event *e1;
-@@
-- e1->cbutton
-+ e1->gbutton
-@@
-SDL_Event *e1;
-@@
-- e1->cdevice
-+ e1->gdevice
-@@
-SDL_Event *e1;
-@@
-- e1->ctouchpad
-+ e1->gtouchpad
-@@
-SDL_Event *e1;
-@@
 - e1->csensor
 + e1->gsensor
+@@
+SDL_Event e1;
+@@
+- e1.wheel.mouseX
++ e1.wheel.mouse_x
+@@
+SDL_Event *e1;
+@@
+- e1->wheel.mouseX
++ e1->wheel.mouse_x
+@@
+SDL_Event e1;
+@@
+- e1.wheel.mouseY
++ e1.wheel.mouse_y
+@@
+SDL_Event *e1;
+@@
+- e1->wheel.mouseY
++ e1->wheel.mouse_y
+@@
+SDL_Event e1;
+@@
+- e1.tfinger.touchId
++ e1.tfinger.touchID
+@@
+SDL_Event *e1;
+@@
+- e1->tfinger.touchId
++ e1->tfinger.touchID
+@@
+SDL_Event e1;
+@@
+- e1.tfinger.fingerId
++ e1.tfinger.fingerID
+@@
+SDL_Event *e1;
+@@
+- e1->tfinger.fingerId
++ e1->tfinger.fingerID
 @@
 expression e1, e2, e3, e4;
 @@
@@ -2909,3 +2949,62 @@ expression e1, e2, e3, e4;
 - SDL_HasWindowSurface
 + SDL_WindowHasSurface
   (...)
+@@
+SDL_PixelFormat e1;
+@@
+- e1.BitsPerPixel
++ e1.bits_per_pixel
+@@
+SDL_PixelFormat *e1;
+@@
+- e1->BitsPerPixel
++ e1->bits_per_pixel
+@@
+SDL_PixelFormat e1;
+@@
+- e1.BytesPerPixel
++ e1.bytes_per_pixel
+@@
+SDL_PixelFormat *e1;
+@@
+- e1->BytesPerPixel
++ e1->bytes_per_pixel
+@@
+SDL_MessageBoxButtonData e1;
+@@
+- e1.buttonid
++ e1.buttonID
+@@
+SDL_MessageBoxButtonData *e1;
+@@
+- e1->buttonid
++ e1->buttonID
+@@
+SDL_GamepadBinding e1;
+@@
+- e1.inputType
++ e1.input_type
+@@
+SDL_GamepadBinding *e1;
+@@
+- e1->inputType
++ e1->input_type
+@@
+SDL_GamepadBinding e1;
+@@
+- e1.outputType
++ e1.output_type
+@@
+SDL_GamepadBinding *e1;
+@@
+- e1->outputType
++ e1->output_type
+@@
+@@
+- SDL_version
++ SDL_Version
+@@
+typedef SDL_version, SDL_Version;
+@@
+- SDL_version
++ SDL_Version

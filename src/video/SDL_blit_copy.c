@@ -104,7 +104,7 @@ void SDL_BlitCopy(SDL_BlitInfo *info)
     int w, h;
     int srcskip, dstskip;
 
-    w = info->dst_w * info->dst_fmt->BytesPerPixel;
+    w = info->dst_w * info->dst_fmt->bytes_per_pixel;
     h = info->dst_h;
     src = info->src;
     dst = info->dst;

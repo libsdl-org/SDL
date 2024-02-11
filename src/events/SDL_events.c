@@ -463,8 +463,8 @@ static void SDL_LogEvent(const SDL_Event *event)
 
 #define PRINT_FINGER_EVENT(event)                                                                                                                      \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u touchid=%" SDL_PRIu64 " fingerid=%" SDL_PRIu64 " x=%f y=%f dx=%f dy=%f pressure=%f)", \
-                       (uint)event->tfinger.timestamp, event->tfinger.touchId,                                                              \
-                       event->tfinger.fingerId, event->tfinger.x, event->tfinger.y,                                                         \
+                       (uint)event->tfinger.timestamp, event->tfinger.touchID,                                                              \
+                       event->tfinger.fingerID, event->tfinger.x, event->tfinger.y,                                                         \
                        event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure)
         SDL_EVENT_CASE(SDL_EVENT_FINGER_DOWN)
         PRINT_FINGER_EVENT(event);

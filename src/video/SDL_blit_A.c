@@ -38,7 +38,7 @@ static void BlitNto1SurfaceAlpha(SDL_BlitInfo *info)
     Uint8 *palmap = info->table;
     SDL_PixelFormat *srcfmt = info->src_fmt;
     SDL_PixelFormat *dstfmt = info->dst_fmt;
-    int srcbpp = srcfmt->BytesPerPixel;
+    int srcbpp = srcfmt->bytes_per_pixel;
     Uint32 Pixel;
     unsigned sR, sG, sB;
     unsigned dR, dG, dB;
@@ -84,7 +84,7 @@ static void BlitNto1PixelAlpha(SDL_BlitInfo *info)
     Uint8 *palmap = info->table;
     SDL_PixelFormat *srcfmt = info->src_fmt;
     SDL_PixelFormat *dstfmt = info->dst_fmt;
-    int srcbpp = srcfmt->BytesPerPixel;
+    int srcbpp = srcfmt->bytes_per_pixel;
     Uint32 Pixel;
     unsigned sR, sG, sB, sA;
     unsigned dR, dG, dB;
@@ -129,7 +129,7 @@ static void BlitNto1SurfaceAlphaKey(SDL_BlitInfo *info)
     Uint8 *palmap = info->table;
     SDL_PixelFormat *srcfmt = info->src_fmt;
     SDL_PixelFormat *dstfmt = info->dst_fmt;
-    int srcbpp = srcfmt->BytesPerPixel;
+    int srcbpp = srcfmt->bytes_per_pixel;
     Uint32 ckey = info->colorkey;
     Uint32 Pixel;
     unsigned sR, sG, sB;
@@ -1208,8 +1208,8 @@ static void BlitNtoNSurfaceAlpha(SDL_BlitInfo *info)
     int dstskip = info->dst_skip;
     SDL_PixelFormat *srcfmt = info->src_fmt;
     SDL_PixelFormat *dstfmt = info->dst_fmt;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = srcfmt->bytes_per_pixel;
+    int dstbpp = dstfmt->bytes_per_pixel;
     Uint32 Pixel;
     unsigned sR, sG, sB;
     unsigned dR, dG, dB, dA;
@@ -1247,8 +1247,8 @@ static void BlitNtoNSurfaceAlphaKey(SDL_BlitInfo *info)
     SDL_PixelFormat *srcfmt = info->src_fmt;
     SDL_PixelFormat *dstfmt = info->dst_fmt;
     Uint32 ckey = info->colorkey;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = srcfmt->bytes_per_pixel;
+    int dstbpp = dstfmt->bytes_per_pixel;
     Uint32 Pixel;
     unsigned sR, sG, sB;
     unsigned dR, dG, dB, dA;
@@ -1293,8 +1293,8 @@ static void BlitNtoNPixelAlpha(SDL_BlitInfo *info)
     unsigned dR, dG, dB, dA;
 
     /* Set up some basic variables */
-    srcbpp = srcfmt->BytesPerPixel;
-    dstbpp = dstfmt->BytesPerPixel;
+    srcbpp = srcfmt->bytes_per_pixel;
+    dstbpp = dstfmt->bytes_per_pixel;
 
     while (height--) {
         /* *INDENT-OFF* */ /* clang-format off */
@@ -1324,7 +1324,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
     switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
     case SDL_COPY_BLEND:
         /* Per-pixel alpha blits */
-        switch (df->BytesPerPixel) {
+        switch (df->bytes_per_pixel) {
         case 1:
             if (df->palette) {
                 return BlitNto1PixelAlpha;
@@ -1335,7 +1335,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
 
         case 2:
 #if defined(SDL_ARM_NEON_BLITTERS) || defined(SDL_ARM_SIMD_BLITTERS)
-            if (sf->BytesPerPixel == 4 && sf->Amask == 0xff000000 && sf->Gmask == 0xff00 && df->Gmask == 0x7e0 && ((sf->Rmask == 0xff && df->Rmask == 0x1f) || (sf->Bmask == 0xff && df->Bmask == 0x1f))) {
+            if (sf->bytes_per_pixel == 4 && sf->Amask == 0xff000000 && sf->Gmask == 0xff00 && df->Gmask == 0x7e0 && ((sf->Rmask == 0xff && df->Rmask == 0x1f) || (sf->Bmask == 0xff && df->Bmask == 0x1f))) {
 #ifdef SDL_ARM_NEON_BLITTERS
                 if (SDL_HasNEON()) {
                     return BlitARGBto565PixelAlphaARMNEON;
@@ -1348,7 +1348,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
 #endif
             }
 #endif
-            if (sf->BytesPerPixel == 4 && sf->Amask == 0xff000000 && sf->Gmask == 0xff00 && ((sf->Rmask == 0xff && df->Rmask == 0x1f) || (sf->Bmask == 0xff && df->Bmask == 0x1f))) {
+            if (sf->bytes_per_pixel == 4 && sf->Amask == 0xff000000 && sf->Gmask == 0xff00 && ((sf->Rmask == 0xff && df->Rmask == 0x1f) || (sf->Bmask == 0xff && df->Bmask == 0x1f))) {
                 if (df->Gmask == 0x7e0) {
                     return BlitARGBto565PixelAlpha;
                 } else if (df->Gmask == 0x3e0) {
@@ -1358,7 +1358,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
             return BlitNtoNPixelAlpha;
 
         case 4:
-            if (sf->Rmask == df->Rmask && sf->Gmask == df->Gmask && sf->Bmask == df->Bmask && sf->BytesPerPixel == 4) {
+            if (sf->Rmask == df->Rmask && sf->Gmask == df->Gmask && sf->Bmask == df->Bmask && sf->bytes_per_pixel == 4) {
 #ifdef SDL_MMX_INTRINSICS
                 if (sf->Rshift % 8 == 0 && sf->Gshift % 8 == 0 && sf->Bshift % 8 == 0 && sf->Ashift % 8 == 0 && sf->Aloss == 0) {
                     if (SDL_HasMMX()) {
@@ -1379,7 +1379,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
 #endif
                     return BlitRGBtoRGBPixelAlpha;
                 }
-            } else if (sf->Rmask == df->Bmask && sf->Gmask == df->Gmask && sf->Bmask == df->Rmask && sf->BytesPerPixel == 4) {
+            } else if (sf->Rmask == df->Bmask && sf->Gmask == df->Gmask && sf->Bmask == df->Rmask && sf->bytes_per_pixel == 4) {
                 if (sf->Amask == 0xff000000) {
                     return BlitRGBtoBGRPixelAlpha;
                 }
@@ -1395,7 +1395,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
     case SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
         if (sf->Amask == 0) {
             /* Per-surface alpha blits */
-            switch (df->BytesPerPixel) {
+            switch (df->bytes_per_pixel) {
             case 1:
                 if (df->palette) {
                     return BlitNto1SurfaceAlpha;
@@ -1429,7 +1429,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
                 return BlitNtoNSurfaceAlpha;
 
             case 4:
-                if (sf->Rmask == df->Rmask && sf->Gmask == df->Gmask && sf->Bmask == df->Bmask && sf->BytesPerPixel == 4) {
+                if (sf->Rmask == df->Rmask && sf->Gmask == df->Gmask && sf->Bmask == df->Bmask && sf->bytes_per_pixel == 4) {
 #ifdef SDL_MMX_INTRINSICS
                     if (sf->Rshift % 8 == 0 && sf->Gshift % 8 == 0 && sf->Bshift % 8 == 0 && SDL_HasMMX()) {
                         return BlitRGBtoRGBSurfaceAlphaMMX;
@@ -1450,7 +1450,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
 
     case SDL_COPY_COLORKEY | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
         if (sf->Amask == 0) {
-            if (df->BytesPerPixel == 1) {
+            if (df->bytes_per_pixel == 1) {
 
                 if (df->palette) {
                     return BlitNto1SurfaceAlphaKey;

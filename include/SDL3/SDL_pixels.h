@@ -703,8 +703,8 @@ typedef struct SDL_PixelFormat
 {
     Uint32 format;
     SDL_Palette *palette;
-    Uint8 BitsPerPixel;
-    Uint8 BytesPerPixel;
+    Uint8 bits_per_pixel;
+    Uint8 bytes_per_pixel;
     Uint8 padding[2];
     Uint32 Rmask;
     Uint32 Gmask;

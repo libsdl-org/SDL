@@ -373,8 +373,8 @@ static int surface_testCompleteSurfaceConversion(void *arg)
             cvt2 = SDL_ConvertSurface(cvt1, fmt2);
             SDL_assert(cvt2 != NULL);
 
-            if (fmt1->BytesPerPixel == face->format->BytesPerPixel &&
-                fmt2->BytesPerPixel == face->format->BytesPerPixel &&
+            if (fmt1->bytes_per_pixel == face->format->bytes_per_pixel &&
+                fmt2->bytes_per_pixel == face->format->bytes_per_pixel &&
                 (fmt1->Amask != 0) == (face->format->Amask != 0) &&
                 (fmt2->Amask != 0) == (face->format->Amask != 0)) {
                 final = SDL_ConvertSurface(cvt2, face->format);
@@ -840,7 +840,7 @@ static int surface_testFlip(void *arg)
     CHECK_FUNC(SDL_FlipSurface, (surface, SDL_FLIP_HORIZONTAL));
     SDLTest_AssertCheck(pixels[offset] == 0x00,
                         "Expected pixels[%d] == 0x00 got 0x%.2X", offset, pixels[offset]);
-    offset += (surface->w - 1) * surface->format->BytesPerPixel;
+    offset += (surface->w - 1) * surface->format->bytes_per_pixel;
     SDLTest_AssertCheck(pixels[offset] == 0xFF,
                         "Expected pixels[%d] == 0xFF got 0x%.2X", offset, pixels[offset]);
 

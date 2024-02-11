@@ -151,7 +151,7 @@ SDL_Surface *SDL_CreateSurface(int width, int height, Uint32 format)
 
     if (SDL_ISPIXELFORMAT_INDEXED(surface->format->format)) {
         SDL_Palette *palette =
-            SDL_CreatePalette((1 << surface->format->BitsPerPixel));
+            SDL_CreatePalette((1 << surface->format->bits_per_pixel));
         if (!palette) {
             SDL_DestroySurface(surface);
             return NULL;
@@ -423,7 +423,7 @@ static void SDL_ConvertColorkeyToAlpha(SDL_Surface *surface, SDL_bool ignore_alp
         return;
     }
 
-    bpp = surface->format->BytesPerPixel;
+    bpp = surface->format->bytes_per_pixel;
 
     SDL_LockSurface(surface);
 
@@ -996,7 +996,7 @@ int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
         if (!(src->map->info.flags & complex_copy_flags) &&
             src->format->format == dst->format->format &&
             !SDL_ISPIXELFORMAT_INDEXED(src->format->format) &&
-            src->format->BytesPerPixel == 4 &&
+            src->format->bytes_per_pixel == 4 &&
             src->format->format != SDL_PIXELFORMAT_ARGB2101010) {
             /* fast path */
             return SDL_SoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_LINEAR);
@@ -1021,14 +1021,14 @@ int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
             srcrect2.h = srcrect->h;
 
             /* Change source format if not appropriate for scaling */
-            if (src->format->BytesPerPixel != 4 || src->format->format == SDL_PIXELFORMAT_ARGB2101010) {
+            if (src->format->bytes_per_pixel != 4 || src->format->format == SDL_PIXELFORMAT_ARGB2101010) {
                 SDL_Rect tmprect;
                 int fmt;
                 tmprect.x = 0;
                 tmprect.y = 0;
                 tmprect.w = src->w;
                 tmprect.h = src->h;
-                if (dst->format->BytesPerPixel == 4 && dst->format->format != SDL_PIXELFORMAT_ARGB2101010) {
+                if (dst->format->bytes_per_pixel == 4 && dst->format->format != SDL_PIXELFORMAT_ARGB2101010) {
                     fmt = dst->format->format;
                 } else {
                     fmt = SDL_PIXELFORMAT_ARGB8888;
@@ -1118,7 +1118,7 @@ static int SDL_FlipSurfaceHorizontal(SDL_Surface *surface)
     Uint8 *row, *a, *b, *tmp;
     int i, j, bpp;
 
-    if (surface->format->BitsPerPixel < 8) {
+    if (surface->format->bits_per_pixel < 8) {
         /* We could implement this if needed, but we'd have to flip sets of bits within a byte */
         return SDL_Unsupported();
     }
@@ -1131,7 +1131,7 @@ static int SDL_FlipSurfaceHorizontal(SDL_Surface *surface)
         return 0;
     }
 
-    bpp = surface->format->BytesPerPixel;
+    bpp = surface->format->bytes_per_pixel;
     row = (Uint8 *)surface->pixels;
     tmp = SDL_small_alloc(Uint8, surface->pitch, &isstack);
     for (i = surface->h; i--; ) {
@@ -1419,7 +1419,7 @@ static SDL_Surface *SDL_ConvertSurfaceWithPixelFormatAndColorspace(SDL_Surface *
             }
 
             /* Get the converted colorkey */
-            SDL_memcpy(&converted_colorkey, tmp2->pixels, tmp2->format->BytesPerPixel);
+            SDL_memcpy(&converted_colorkey, tmp2->pixels, tmp2->format->bytes_per_pixel);
 
             SDL_DestroySurface(tmp);
             SDL_DestroySurface(tmp2);
@@ -1763,7 +1763,7 @@ int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g,
         a = &unused;
     }
 
-    bytes_per_pixel = surface->format->BytesPerPixel;
+    bytes_per_pixel = surface->format->bytes_per_pixel;
 
     if (SDL_MUSTLOCK(surface)) {
         SDL_LockSurface(surface);

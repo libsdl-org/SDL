@@ -31,7 +31,7 @@ static void SDL_DrawLine1(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint
 {
     if (y1 == y2) {
         int length;
-        int pitch = (dst->pitch / dst->format->BytesPerPixel);
+        int pitch = (dst->pitch / dst->format->bytes_per_pixel);
         Uint8 *pixel;
         if (x1 <= x2) {
             pixel = (Uint8 *)dst->pixels + y1 * pitch + x1;
@@ -119,9 +119,9 @@ typedef void (*DrawLineFunc)(SDL_Surface *dst,
 
 static DrawLineFunc SDL_CalculateDrawLineFunc(const SDL_PixelFormat *fmt)
 {
-    switch (fmt->BytesPerPixel) {
+    switch (fmt->bytes_per_pixel) {
     case 1:
-        if (fmt->BitsPerPixel < 8) {
+        if (fmt->bits_per_pixel < 8) {
             break;
         }
         return SDL_DrawLine1;

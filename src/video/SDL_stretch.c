@@ -49,7 +49,7 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
     }
 
     if (scaleMode == SDL_SCALEMODE_LINEAR) {
-        if (src->format->BytesPerPixel != 4 || src->format->format == SDL_PIXELFORMAT_ARGB2101010) {
+        if (src->format->bytes_per_pixel != 4 || src->format->format == SDL_PIXELFORMAT_ARGB2101010) {
             return SDL_SetError("Wrong format");
         }
     }
@@ -929,7 +929,7 @@ int SDL_LowerSoftStretchNearest(SDL_Surface *s, const SDL_Rect *srcrect,
     int src_pitch = s->pitch;
     int dst_pitch = d->pitch;
 
-    const int bpp = d->format->BytesPerPixel;
+    const int bpp = d->format->bytes_per_pixel;
 
     Uint32 *src = (Uint32 *)((Uint8 *)s->pixels + srcrect->x * bpp + srcrect->y * src_pitch);
     Uint32 *dst = (Uint32 *)((Uint8 *)d->pixels + dstrect->x * bpp + dstrect->y * dst_pitch);

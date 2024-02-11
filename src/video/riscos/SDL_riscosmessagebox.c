@@ -27,7 +27,7 @@
 #include <kernel.h>
 #include <swis.h>
 
-int RISCOS_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+int RISCOS_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     _kernel_swi_regs regs;
     _kernel_oserror error;
@@ -60,7 +60,7 @@ int RISCOS_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttoni
 
     _kernel_swi(Wimp_ReportError, &regs, &regs);
 
-    *buttonid = (regs.r[1] == 0) ? -1 : messageboxdata->buttons[regs.r[1] - 3].buttonid;
+    *buttonID = (regs.r[1] == 0) ? -1 : messageboxdata->buttons[regs.r[1] - 3].buttonID;
     return 0;
 }
 

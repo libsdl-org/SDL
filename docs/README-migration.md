@@ -330,6 +330,10 @@ The SDL_EVENT_WINDOW_SIZE_CHANGED event has been removed, and you can use SDL_EV
 
 The gamepad event structures caxis, cbutton, cdevice, ctouchpad, and csensor have been renamed gaxis, gbutton, gdevice, gtouchpad, and gsensor.
 
+The mouseX and mouseY fields of SDL_MouseWheelEvent have been renamed mouse_x and mouse_y.
+
+The touchId and fingerId fields of SDL_TouchFingerEvent have been renamed touchID and fingerID.
+
 SDL_QUERY, SDL_IGNORE, SDL_ENABLE, and SDL_DISABLE have been removed. You can use the functions SDL_SetEventEnabled() and SDL_EventEnabled() to set and query event processing state.
 
 SDL_AddEventWatch() now returns -1 if it fails because it ran out of memory and couldn't add the event watch callback.
@@ -503,6 +507,8 @@ SDL_bool SDL_IsJoystickNVIDIASHIELDController(Uint16 vendor_id, Uint16 product_i
     return (vendor_id == 0x0955 && (product_id == 0x7210 || product_id == 0x7214));
 }
 ```
+
+The inputType and outputType fields of SDL_GamepadBinding have been renamed input_type and output_type.
 
 The following enums have been renamed:
 * SDL_GameControllerAxis => SDL_GamepadAxis
@@ -871,6 +877,10 @@ Several platform-specific entry point functions have been removed as unnecessary
 #define SDL_GDKRunApp(MAIN_FUNC, RESERVED)  SDL_RunApp(0, NULL, MAIN_FUNC, RESERVED)
 ```
 
+## SDL_messagebox.h
+
+The buttonid field of SDL_MessageBoxButtonData has been renamed buttonID.
+
 ## SDL_metal.h
 
 SDL_Metal_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
@@ -911,6 +921,8 @@ The following symbols have been renamed:
 ## SDL_pixels.h
 
 SDL_CalculateGammaRamp has been removed, because SDL_SetWindowGammaRamp has been removed as well due to poor support in modern operating systems (see [SDL_video.h](#sdl_videoh)).
+
+The BitsPerPixel and BytesPerPixel fields of SDL_PixelFormat have been renamed bits_per_pixel and bytes_per_pixel.
 
 The following functions have been renamed:
 * SDL_AllocFormat() => SDL_CreatePixelFormat()
@@ -1527,6 +1539,9 @@ The following functions have been removed:
 
 SDL_GetRevisionNumber() has been removed from the API, it always returned 0 in SDL 2.0.
 
+
+The following structures have been renamed:
+* SDL_version => SDL_Version
 
 ## SDL_video.h
 

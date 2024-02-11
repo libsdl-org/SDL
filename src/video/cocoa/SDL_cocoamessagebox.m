@@ -66,7 +66,7 @@
 }
 @end
 
-static void Cocoa_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonid, int *returnValue)
+static void Cocoa_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonID, int *returnValue)
 {
     NSAlert *alert;
     const SDL_MessageBoxButtonData *buttons = messageboxdata->buttons;
@@ -118,7 +118,7 @@ static void Cocoa_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, i
         if (messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT) {
             clicked = messageboxdata->numbuttons - 1 - clicked;
         }
-        *buttonid = buttons[clicked].buttonid;
+        *buttonID = buttons[clicked].buttonID;
         *returnValue = 0;
     } else {
         *returnValue = SDL_SetError("Did not get a valid `clicked button' id: %ld", (long)clicked);
@@ -126,16 +126,16 @@ static void Cocoa_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, i
 }
 
 /* Display a Cocoa message box */
-int Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+int Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     @autoreleasepool {
         __block int returnValue = 0;
 
         if ([NSThread isMainThread]) {
-            Cocoa_ShowMessageBoxImpl(messageboxdata, buttonid, &returnValue);
+            Cocoa_ShowMessageBoxImpl(messageboxdata, buttonID, &returnValue);
         } else {
             dispatch_sync(dispatch_get_main_queue(), ^{
-              Cocoa_ShowMessageBoxImpl(messageboxdata, buttonid, &returnValue);
+              Cocoa_ShowMessageBoxImpl(messageboxdata, buttonID, &returnValue);
             });
         }
         return returnValue;

@@ -639,7 +639,7 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, SDL_bool freedst)
 
 #ifdef SAVE_32BIT_BMP
         /* We can save alpha information in a 32-bit BMP */
-        if (surface->format->BitsPerPixel >= 8 &&
+        if (surface->format->bits_per_pixel >= 8 &&
             (surface->format->Amask != 0 ||
              surface->map->info.flags & SDL_COPY_COLORKEY)) {
             save32bit = SDL_TRUE;
@@ -647,14 +647,14 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, SDL_bool freedst)
 #endif /* SAVE_32BIT_BMP */
 
         if (surface->format->palette && !save32bit) {
-            if (surface->format->BitsPerPixel == 8) {
+            if (surface->format->bits_per_pixel == 8) {
                 intermediate_surface = surface;
             } else {
                 SDL_SetError("%u bpp BMP files not supported",
-                             surface->format->BitsPerPixel);
+                             surface->format->bits_per_pixel);
                 goto done;
             }
-        } else if ((surface->format->BitsPerPixel == 24) && !save32bit &&
+        } else if ((surface->format->bits_per_pixel == 24) && !save32bit &&
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
                    (surface->format->Rmask == 0x00FF0000) &&
                    (surface->format->Gmask == 0x0000FF00) &&
@@ -694,7 +694,7 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, SDL_bool freedst)
     }
 
     if (SDL_LockSurface(intermediate_surface) == 0) {
-        const size_t bw = intermediate_surface->w * intermediate_surface->format->BytesPerPixel;
+        const size_t bw = intermediate_surface->w * intermediate_surface->format->bytes_per_pixel;
 
         /* Set the BMP file header values */
         bfSize = 0; /* We'll write this when we're done */
@@ -720,7 +720,7 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, SDL_bool freedst)
         biWidth = intermediate_surface->w;
         biHeight = intermediate_surface->h;
         biPlanes = 1;
-        biBitCount = intermediate_surface->format->BitsPerPixel;
+        biBitCount = intermediate_surface->format->bits_per_pixel;
         biCompression = BI_RGB;
         biSizeImage = intermediate_surface->h * intermediate_surface->pitch;
         biXPelsPerMeter = 0;

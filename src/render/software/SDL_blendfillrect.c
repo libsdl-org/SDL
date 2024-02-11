@@ -131,7 +131,7 @@ static int SDL_BlendFillRect_RGB(SDL_Surface *dst, const SDL_Rect *rect,
     SDL_PixelFormat *fmt = dst->format;
     unsigned inva = 0xff - a;
 
-    switch (fmt->BytesPerPixel) {
+    switch (fmt->bytes_per_pixel) {
     case 2:
         switch (blendMode) {
         case SDL_BLENDMODE_BLEND:
@@ -181,7 +181,7 @@ static int SDL_BlendFillRect_RGBA(SDL_Surface *dst, const SDL_Rect *rect,
     SDL_PixelFormat *fmt = dst->format;
     unsigned inva = 0xff - a;
 
-    switch (fmt->BytesPerPixel) {
+    switch (fmt->bytes_per_pixel) {
     case 4:
         switch (blendMode) {
         case SDL_BLENDMODE_BLEND:
@@ -216,7 +216,7 @@ int SDL_BlendFillRect(SDL_Surface *dst, const SDL_Rect *rect,
     }
 
     /* This function doesn't work on surfaces < 8 bpp */
-    if (dst->format->BitsPerPixel < 8) {
+    if (dst->format->bits_per_pixel < 8) {
         return SDL_SetError("SDL_BlendFillRect(): Unsupported surface format");
     }
 
@@ -237,7 +237,7 @@ int SDL_BlendFillRect(SDL_Surface *dst, const SDL_Rect *rect,
         b = DRAW_MUL(b, a);
     }
 
-    switch (dst->format->BitsPerPixel) {
+    switch (dst->format->bits_per_pixel) {
     case 15:
         switch (dst->format->Rmask) {
         case 0x7C00:
@@ -286,7 +286,7 @@ int SDL_BlendFillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     }
 
     /* This function doesn't work on surfaces < 8 bpp */
-    if (dst->format->BitsPerPixel < 8) {
+    if (dst->format->bits_per_pixel < 8) {
         return SDL_SetError("SDL_BlendFillRects(): Unsupported surface format");
     }
 
@@ -297,7 +297,7 @@ int SDL_BlendFillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     }
 
     /* FIXME: Does this function pointer slow things down significantly? */
-    switch (dst->format->BitsPerPixel) {
+    switch (dst->format->bits_per_pixel) {
     case 15:
         switch (dst->format->Rmask) {
         case 0x7C00:

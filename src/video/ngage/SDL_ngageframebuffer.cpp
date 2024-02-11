@@ -257,7 +257,7 @@ void DirectDraw(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects, TUint16 *
 
         TInt targetStartOffset = fixedOffset.iX + rect2.x + (fixedOffset.iY + rect2.y) * targetScanlineLength;
 
-        switch (screen->format->BitsPerPixel) {
+        switch (screen->format->bits_per_pixel) {
         case 12:
         {
             TUint16 *bitmapLine = (TUint16 *)screen->pixels + sourceStartOffset;

@@ -34,7 +34,7 @@ typedef enum
 
 static SlowBlitPixelAccess GetPixelAccessMethod(SDL_PixelFormat *pf)
 {
-    if (pf->BytesPerPixel > 4) {
+    if (pf->bytes_per_pixel > 4) {
         return SlowBlitPixelAccess_Large;
     } else if (SDL_ISPIXELFORMAT_10BIT(pf->format)) {
         return SlowBlitPixelAccess_10Bit;
@@ -64,8 +64,8 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
     Uint64 incy, incx;
     SDL_PixelFormat *src_fmt = info->src_fmt;
     SDL_PixelFormat *dst_fmt = info->dst_fmt;
-    int srcbpp = src_fmt->BytesPerPixel;
-    int dstbpp = dst_fmt->BytesPerPixel;
+    int srcbpp = src_fmt->bytes_per_pixel;
+    int dstbpp = dst_fmt->bytes_per_pixel;
     SlowBlitPixelAccess src_access;
     SlowBlitPixelAccess dst_access;
     Uint32 rgbmask = ~src_fmt->Amask;
@@ -380,14 +380,14 @@ static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_PixelF
 
     switch (access) {
     case SlowBlitPixelAccess_RGB:
-        DISEMBLE_RGB(pixels, fmt->BytesPerPixel, fmt, pixel, R, G, B);
+        DISEMBLE_RGB(pixels, fmt->bytes_per_pixel, fmt, pixel, R, G, B);
         fR = (float)R / 255.0f;
         fG = (float)G / 255.0f;
         fB = (float)B / 255.0f;
         fA = 1.0f;
         break;
     case SlowBlitPixelAccess_RGBA:
-        DISEMBLE_RGBA(pixels, fmt->BytesPerPixel, fmt, pixel, R, G, B, A);
+        DISEMBLE_RGBA(pixels, fmt->bytes_per_pixel, fmt, pixel, R, G, B, A);
         fR = (float)R / 255.0f;
         fG = (float)G / 255.0f;
         fB = (float)B / 255.0f;
@@ -421,7 +421,7 @@ static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_PixelF
             v[0] = (float)(((Uint16 *)pixels)[0]) / SDL_MAX_UINT16;
             v[1] = (float)(((Uint16 *)pixels)[1]) / SDL_MAX_UINT16;
             v[2] = (float)(((Uint16 *)pixels)[2]) / SDL_MAX_UINT16;
-            if (fmt->BytesPerPixel == 8) {
+            if (fmt->bytes_per_pixel == 8) {
                 v[3] = (float)(((Uint16 *)pixels)[3]) / SDL_MAX_UINT16;
             } else {
                 v[3] = 1.0f;
@@ -431,7 +431,7 @@ static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_PixelF
             v[0] = half_to_float(((Uint16 *)pixels)[0]);
             v[1] = half_to_float(((Uint16 *)pixels)[1]);
             v[2] = half_to_float(((Uint16 *)pixels)[2]);
-            if (fmt->BytesPerPixel == 8) {
+            if (fmt->bytes_per_pixel == 8) {
                 v[3] = half_to_float(((Uint16 *)pixels)[3]);
             } else {
                 v[3] = 1.0f;
@@ -441,7 +441,7 @@ static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_PixelF
             v[0] = ((float *)pixels)[0];
             v[1] = ((float *)pixels)[1];
             v[2] = ((float *)pixels)[2];
-            if (fmt->BytesPerPixel == 16) {
+            if (fmt->bytes_per_pixel == 16) {
                 v[3] = ((float *)pixels)[3];
             } else {
                 v[3] = 1.0f;
@@ -560,14 +560,14 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_Pixel
         R = (Uint8)SDL_roundf(SDL_clamp(fR, 0.0f, 1.0f) * 255.0f);
         G = (Uint8)SDL_roundf(SDL_clamp(fG, 0.0f, 1.0f) * 255.0f);
         B = (Uint8)SDL_roundf(SDL_clamp(fB, 0.0f, 1.0f) * 255.0f);
-        ASSEMBLE_RGB(pixels, fmt->BytesPerPixel, fmt, R, G, B);
+        ASSEMBLE_RGB(pixels, fmt->bytes_per_pixel, fmt, R, G, B);
         break;
     case SlowBlitPixelAccess_RGBA:
         R = (Uint8)SDL_roundf(SDL_clamp(fR, 0.0f, 1.0f) * 255.0f);
         G = (Uint8)SDL_roundf(SDL_clamp(fG, 0.0f, 1.0f) * 255.0f);
         B = (Uint8)SDL_roundf(SDL_clamp(fB, 0.0f, 1.0f) * 255.0f);
         A = (Uint8)SDL_roundf(SDL_clamp(fA, 0.0f, 1.0f) * 255.0f);
-        ASSEMBLE_RGBA(pixels, fmt->BytesPerPixel, fmt, R, G, B, A);
+        ASSEMBLE_RGBA(pixels, fmt->bytes_per_pixel, fmt, R, G, B, A);
         break;
     case SlowBlitPixelAccess_10Bit:
     {
@@ -640,7 +640,7 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_Pixel
             ((Uint16 *)pixels)[0] = (Uint16)SDL_roundf(SDL_clamp(v[0], 0.0f, 1.0f) * SDL_MAX_UINT16);
             ((Uint16 *)pixels)[1] = (Uint16)SDL_roundf(SDL_clamp(v[1], 0.0f, 1.0f) * SDL_MAX_UINT16);
             ((Uint16 *)pixels)[2] = (Uint16)SDL_roundf(SDL_clamp(v[2], 0.0f, 1.0f) * SDL_MAX_UINT16);
-            if (fmt->BytesPerPixel == 8) {
+            if (fmt->bytes_per_pixel == 8) {
                 ((Uint16 *)pixels)[3] = (Uint16)SDL_roundf(SDL_clamp(v[3], 0.0f, 1.0f) * SDL_MAX_UINT16);
             }
             break;
@@ -648,7 +648,7 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_Pixel
             ((Uint16 *)pixels)[0] = float_to_half(v[0]);
             ((Uint16 *)pixels)[1] = float_to_half(v[1]);
             ((Uint16 *)pixels)[2] = float_to_half(v[2]);
-            if (fmt->BytesPerPixel == 8) {
+            if (fmt->bytes_per_pixel == 8) {
                 ((Uint16 *)pixels)[3] = float_to_half(v[3]);
             }
             break;
@@ -656,7 +656,7 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_Pixel
             ((float *)pixels)[0] = v[0];
             ((float *)pixels)[1] = v[1];
             ((float *)pixels)[2] = v[2];
-            if (fmt->BytesPerPixel == 16) {
+            if (fmt->bytes_per_pixel == 16) {
                 ((float *)pixels)[3] = v[3];
             }
             break;
@@ -725,8 +725,8 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
     Uint64 incy, incx;
     SDL_PixelFormat *src_fmt = info->src_fmt;
     SDL_PixelFormat *dst_fmt = info->dst_fmt;
-    int srcbpp = src_fmt->BytesPerPixel;
-    int dstbpp = dst_fmt->BytesPerPixel;
+    int srcbpp = src_fmt->bytes_per_pixel;
+    int dstbpp = dst_fmt->bytes_per_pixel;
     SlowBlitPixelAccess src_access;
     SlowBlitPixelAccess dst_access;
     SDL_Colorspace src_colorspace;

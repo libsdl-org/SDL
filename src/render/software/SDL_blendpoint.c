@@ -131,7 +131,7 @@ static int SDL_BlendPoint_RGB(SDL_Surface *dst, int x, int y, SDL_BlendMode blen
     SDL_PixelFormat *fmt = dst->format;
     unsigned inva = 0xff - a;
 
-    switch (fmt->BytesPerPixel) {
+    switch (fmt->bytes_per_pixel) {
     case 2:
         switch (blendMode) {
         case SDL_BLENDMODE_BLEND:
@@ -181,7 +181,7 @@ static int SDL_BlendPoint_RGBA(SDL_Surface *dst, int x, int y, SDL_BlendMode ble
     SDL_PixelFormat *fmt = dst->format;
     unsigned inva = 0xff - a;
 
-    switch (fmt->BytesPerPixel) {
+    switch (fmt->bytes_per_pixel) {
     case 4:
         switch (blendMode) {
         case SDL_BLENDMODE_BLEND:
@@ -214,7 +214,7 @@ int SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint
     }
 
     /* This function doesn't work on surfaces < 8 bpp */
-    if (dst->format->BitsPerPixel < 8) {
+    if (dst->format->bits_per_pixel < 8) {
         return SDL_SetError("SDL_BlendPoint(): Unsupported surface format");
     }
 
@@ -231,7 +231,7 @@ int SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint
         b = DRAW_MUL(b, a);
     }
 
-    switch (dst->format->BitsPerPixel) {
+    switch (dst->format->bits_per_pixel) {
     case 15:
         switch (dst->format->Rmask) {
         case 0x7C00:
@@ -282,7 +282,7 @@ int SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count,
     }
 
     /* This function doesn't work on surfaces < 8 bpp */
-    if (dst->format->BitsPerPixel < 8) {
+    if (dst->format->bits_per_pixel < 8) {
         return SDL_SetError("SDL_BlendPoints(): Unsupported surface format");
     }
 
@@ -293,7 +293,7 @@ int SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count,
     }
 
     /* FIXME: Does this function pointer slow things down significantly? */
-    switch (dst->format->BitsPerPixel) {
+    switch (dst->format->bits_per_pixel) {
     case 15:
         switch (dst->format->Rmask) {
         case 0x7C00:
