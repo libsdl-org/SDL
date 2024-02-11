@@ -253,7 +253,7 @@ static const char **SDL_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mim
     }
 }
 
-const void *SDL_ClipboardTextCallback(void *userdata, const char *mime_type, size_t *size)
+const void * SDLCALL SDL_ClipboardTextCallback(void *userdata, const char *mime_type, size_t *size)
 {
     char *text = (char *)userdata;
     if (text) {
@@ -278,9 +278,8 @@ int SDL_SetClipboardText(const char *text)
         text_mime_types = SDL_GetTextMimeTypes(_this, &num_mime_types);
 
         return SDL_SetClipboardData(SDL_ClipboardTextCallback, SDL_free, SDL_strdup(text), text_mime_types, num_mime_types);
-    } else {
-        return SDL_ClearClipboardData();
     }
+    return SDL_ClearClipboardData();
 }
 
 char *SDL_GetClipboardText(void)
