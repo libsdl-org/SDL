@@ -2392,12 +2392,12 @@ extern "C" {
  * A variable controlling whether SDL generates window-close events for Alt+F4 on Windows.
  *
  * The variable can be set to the following values:
- *   "0"       - SDL will generate a window-close event when it sees Alt+F4. (default)
- *   "1"       - SDL will only do normal key handling for Alt+F4.
+ *   "0"       - SDL will only do normal key handling for Alt+F4. (default)
+ *   "1"       - SDL will generate a window-close event when it sees Alt+F4.
  *
  * This hint can be set anytime.
  */
-#define SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4 "SDL_WINDOWS_NO_CLOSE_ON_ALT_F4"
+#define SDL_HINT_WINDOWS_CLOSE_ON_ALT_F4 "SDL_WINDOWS_CLOSE_ON_ALT_F4"
 
 /**
  * A variable controlling whether SDL uses the D3D9Ex API introduced in Windows Vista, instead of normal D3D9.
