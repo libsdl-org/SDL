@@ -564,7 +564,7 @@ extern "C" {
  *
  * This hint should be set before calling SDL_StartTextInput()
  */
-#define SDL_HINT_GDK_TEXTINPUT_DEFAULT  "SDL_GDK_TEXTINPUT_DEFAULT"
+#define SDL_HINT_GDK_TEXTINPUT_DEFAULT_TEXT  "SDL_GDK_TEXTINPUT_DEFAULT_TEXT"
 
 /**
  * This variable sets the description of the TextInput window on GDK platforms.

@@ -163,7 +163,7 @@ void GDK_EnsureHints(void)
             GDK_InternalHintCallback,
             &g_DescriptionText);
         SDL_AddHintCallback(
-            SDL_HINT_GDK_TEXTINPUT_DEFAULT,
+            SDL_HINT_GDK_TEXTINPUT_DEFAULT_TEXT,
             GDK_InternalHintCallback,
             &g_DefaultText);
         SDL_AddHintCallback(
