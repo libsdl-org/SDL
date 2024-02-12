@@ -1178,7 +1178,7 @@ static SDL_bool GuessIfAxesAreDigitalHat(struct input_absinfo *absinfo_x, struct
     }
 
     /* If the hint says so, treat all hats as digital. */
-    if (SDL_GetHintBoolean(SDL_HINT_LINUX_DIGITAL_HATS, SDL_FALSE)) {
+    if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_LINUX_DIGITAL_HATS, SDL_FALSE)) {
         return SDL_TRUE;
     }
 

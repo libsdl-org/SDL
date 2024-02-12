@@ -1232,7 +1232,7 @@ extern "C" {
  *
  * This hint should be set before a controller is opened.
  */
-#define SDL_HINT_LINUX_DIGITAL_HATS "SDL_LINUX_DIGITAL_HATS"
+#define SDL_HINT_JOYSTICK_LINUX_DIGITAL_HATS "SDL_JOYSTICK_LINUX_DIGITAL_HATS"
 
 /**
  * A variable controlling whether digital hats on Linux will apply deadzones to their underlying input axes or use unfiltered values.
