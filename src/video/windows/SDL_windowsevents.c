@@ -402,7 +402,7 @@ static void WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
 
 static SDL_bool ShouldGenerateWindowCloseOnAltF4(void)
 {
-    return !SDL_GetHintBoolean(SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4, SDL_FALSE);
+    return SDL_GetHintBoolean(SDL_HINT_WINDOWS_CLOSE_ON_ALT_F4, SDL_TRUE);
 }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
