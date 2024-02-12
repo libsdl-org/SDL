@@ -1205,7 +1205,7 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd, int fd_sensor)
     unsigned long ffbit[NBITS(FF_MAX)] = { 0 };
     Uint8 key_pam_size, abs_pam_size;
     SDL_bool use_deadzones = SDL_GetHintBoolean(SDL_HINT_LINUX_JOYSTICK_DEADZONES, SDL_FALSE);
-    SDL_bool use_hat_deadzones = SDL_GetHintBoolean(SDL_HINT_LINUX_HAT_DEADZONES, SDL_TRUE);
+    SDL_bool use_hat_deadzones = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_LINUX_HAT_DEADZONES, SDL_TRUE);
 
     SDL_AssertJoysticksLocked();
 

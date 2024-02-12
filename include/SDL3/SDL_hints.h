@@ -1243,7 +1243,7 @@ extern "C" {
  *
  * This hint should be set before a controller is opened.
  */
-#define SDL_HINT_LINUX_HAT_DEADZONES "SDL_LINUX_HAT_DEADZONES"
+#define SDL_HINT_JOYSTICK_LINUX_HAT_DEADZONES "SDL_JOYSTICK_LINUX_HAT_DEADZONES"
 
 /**
  * A variable controlling whether GCController should be used for controller handling.
