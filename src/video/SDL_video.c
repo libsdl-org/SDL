@@ -5030,7 +5030,7 @@ int SDL_ShowSimpleMessageBox(Uint32 flags, const char *title, const char *messag
 
 SDL_bool SDL_ShouldAllowTopmost(void)
 {
-    return SDL_GetHintBoolean(SDL_HINT_ALLOW_TOPMOST, SDL_TRUE);
+    return SDL_GetHintBoolean(SDL_HINT_WINDOW_ALLOW_TOPMOST, SDL_TRUE);
 }
 
 int SDL_ShowWindowSystemMenu(SDL_Window *window, int x, int y)

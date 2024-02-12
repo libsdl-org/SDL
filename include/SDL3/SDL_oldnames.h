@@ -279,6 +279,9 @@
 #define SDL_JoystickIsHaptic SDL_IsJoystickHaptic
 #define SDL_MouseIsHaptic SDL_IsMouseHaptic
 
+/* ##SDL_hints.h */
+#define SDL_HINT_ALLOW_TOPMOST SDL_HINT_WINDOW_ALLOW_TOPMOST
+
 /* ##SDL_joystick.h */
 #define SDL_JOYSTICK_TYPE_GAMECONTROLLER SDL_JOYSTICK_TYPE_GAMEPAD
 #define SDL_JoystickAttachVirtual SDL_AttachVirtualJoystick
@@ -750,6 +753,9 @@
 #define SDL_HapticUpdateEffect SDL_HapticUpdateEffect_renamed_SDL_UpdateHapticEffect
 #define SDL_JoystickIsHaptic SDL_JoystickIsHaptic_renamed_SDL_IsJoystickHaptic
 #define SDL_MouseIsHaptic SDL_MouseIsHaptic_renamed_SDL_IsMouseHaptic
+
+/* ##SDL_hints.h */
+#define SDL_HINT_ALLOW_TOPMOST SDL_HINT_ALLOW_TOPMOST_renamed_SDL_HINT_WINDOW_ALLOW_TOPMOST
 
 /* ##SDL_joystick.h */
 #define SDL_JOYSTICK_TYPE_GAMECONTROLLER SDL_JOYSTICK_TYPE_GAMECONTROLLER_renamed_SDL_JOYSTICK_TYPE_GAMEPAD
