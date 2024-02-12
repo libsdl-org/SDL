@@ -169,6 +169,16 @@ SDL_bool SDL_AndroidRequestPermission(const char *permission)
     return SDL_FALSE;
 }
 
+typedef void (SDLCALL *SDL_AndroidRequestPermissionCallback)(void *userdata, const char *permission, SDL_bool granted);
+DECLSPEC int SDLCALL SDL_AndroidRequestPermissionAsync(const char *permission, SDL_AndroidRequestPermissionCallback cb, void *userdata);
+int SDL_AndroidRequestPermissionAsync(const char *permission, SDL_AndroidRequestPermissionCallback cb, void *userdata)
+{
+    (void)permission;
+    (void)cb;
+    (void)userdata;
+    return SDL_Unsupported();
+}
+
 DECLSPEC int SDLCALL SDL_AndroidSendMessage(Uint32 command, int param);
 int SDL_AndroidSendMessage(Uint32 command, int param)
 {

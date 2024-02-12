@@ -45,4 +45,8 @@ typedef int SDL_WinRT_Path;
 typedef struct XUserHandle XUserHandle;
 #endif
 
+#ifndef SDL_PLATFORM_ANDROID
+typedef void *SDL_AndroidRequestPermissionCallback;
+#endif
+
 #endif

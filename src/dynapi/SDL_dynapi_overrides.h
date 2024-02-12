@@ -997,3 +997,4 @@
 #define SDL_RenderGeometryRawFloat SDL_RenderGeometryRawFloat_REAL
 #define SDL_SetWindowShape SDL_SetWindowShape_REAL
 #define SDL_RenderViewportSet SDL_RenderViewportSet_REAL
+#define SDL_AndroidRequestPermissionAsync SDL_AndroidRequestPermissionAsync_REAL
