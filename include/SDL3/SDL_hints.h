@@ -1210,7 +1210,7 @@ extern "C" {
  *
  * This hint should be set before SDL is initialized.
  */
-#define SDL_HINT_LINUX_JOYSTICK_CLASSIC "SDL_LINUX_JOYSTICK_CLASSIC"
+#define SDL_HINT_JOYSTICK_LINUX_CLASSIC "SDL_JOYSTICK_LINUX_CLASSIC"
 
 /**
  * A variable controlling whether joysticks on Linux adhere to their HID-defined deadzones or return unfiltered values.
