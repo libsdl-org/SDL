@@ -509,8 +509,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
-
     state->window_title = "Pressure-Sensitive Pen Test";
     state->window_w = WIDTH;
     state->window_h = HEIGHT;
