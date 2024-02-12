@@ -378,25 +378,10 @@ DECLSPEC SDL_Thread *SDLCALL SDL_CreateThread(int(SDLCALL *fn)(void *),
                  const char *name, void *data)
 #endif
 {
-    /* !!! FIXME: in 2.1, just make stackhint part of the usual API. */
-    const char *stackhint = SDL_GetHint(SDL_HINT_THREAD_STACK_SIZE);
-    size_t stacksize = 0;
-
-    /* If the SDL_HINT_THREAD_STACK_SIZE exists, use it */
-    if (stackhint) {
-        char *endp = NULL;
-        const Sint64 hintval = SDL_strtoll(stackhint, &endp, 10);
-        if ((*stackhint != '\0') && (*endp == '\0')) { /* a valid number? */
-            if (hintval > 0) {                         /* reject bogus values. */
-                stacksize = (size_t)hintval;
-            }
-        }
-    }
-
 #ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-    return SDL_CreateThreadWithStackSize(fn, name, stacksize, data, pfnBeginThread, pfnEndThread);
+    return SDL_CreateThreadWithStackSize(fn, name, 0, data, pfnBeginThread, pfnEndThread);
 #else
-    return SDL_CreateThreadWithStackSize(fn, name, stacksize, data);
+    return SDL_CreateThreadWithStackSize(fn, name, 0, data);
 #endif
 }
 
