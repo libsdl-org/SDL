@@ -790,11 +790,11 @@ static SDL_JoystickDeviceItem *IOS_RemoveJoystickDevice(SDL_JoystickDeviceItem *
             device->controller = nil;
         }
         if (device->axes) {
-            NSArray *axes = CFBridgingRelease((__bridge CFTypeRef)(device->axes));
+            CFRelease((__bridge CFTypeRef)device->axes);
             device->axes = nil;
         }
         if (device->buttons) {
-            NSArray *buttons = CFBridgingRelease((__bridge CFTypeRef)(device->buttons));
+            CFRelease((__bridge CFTypeRef)device->buttons);
             device->buttons = nil;
         }
     }
