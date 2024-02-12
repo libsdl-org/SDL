@@ -498,7 +498,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         NSDictionary<NSString *, GCControllerElement *> *elements = controller.physicalInputProfile.elements;
 
         /* Provide both axes and analog buttons as SDL axes */
-        device->axes = [[[elements allKeys] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)]
+        NSArray *axes = [[[elements allKeys] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)]
                                          filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id object, NSDictionary *bindings) {
             if (ElementAlreadyHandled(device, (NSString *)object, elements)) {
                 return NO;
@@ -513,8 +513,7 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
             }
             return NO;
         }]];
-        device->naxes = (int)device->axes.count;
-        device->buttons = [[[elements allKeys] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)]
+        NSArray *buttons = [[[elements allKeys] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)]
                                             filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id object, NSDictionary *bindings) {
             if (ElementAlreadyHandled(device, (NSString *)object, elements)) {
                 return NO;
@@ -526,7 +525,12 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
             }
             return NO;
         }]];
-        device->nbuttons = (int)device->buttons.count;
+        /* Explicitly retain the arrays because SDL_JoystickDeviceItem is a
+         * struct, and ARC doesn't work with structs. */
+        device->naxes = (int)axes.count;
+        device->axes = (__bridge NSArray *)CFBridgingRetain(axes);
+        device->nbuttons = (int)buttons.count;
+        device->buttons = (__bridge NSArray *)CFBridgingRetain(buttons);
         subtype = 4;
 
 #ifdef DEBUG_CONTROLLER_PROFILE
@@ -750,12 +754,19 @@ static SDL_JoystickDeviceItem *IOS_RemoveJoystickDevice(SDL_JoystickDeviceItem *
 
 #ifdef SDL_JOYSTICK_MFI
     @autoreleasepool {
+        /* These were explicitly retained in the struct, so they should be explicitly released before freeing the struct. */
         if (device->controller) {
-            /* The controller was explicitly retained in the struct, so it
-             * should be explicitly released before freeing the struct. */
             GCController *controller = CFBridgingRelease((__bridge CFTypeRef)(device->controller));
             controller.controllerPausedHandler = nil;
             device->controller = nil;
+        }
+        if (device->axes) {
+            NSArray *axes = CFBridgingRelease((__bridge CFTypeRef)(device->axes));
+            device->axes = nil;
+        }
+        if (device->buttons) {
+            NSArray *buttons = CFBridgingRelease((__bridge CFTypeRef)(device->buttons));
+            device->buttons = nil;
         }
     }
 #endif /* SDL_JOYSTICK_MFI */
