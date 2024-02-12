@@ -627,11 +627,6 @@ SDL_bool SDL_OnVideoThread(void)
     return (_this && SDL_GetCurrentThreadID() == _this->thread);
 }
 
-SDL_bool SDL_IsVideoContextExternal(void)
-{
-    return SDL_GetHintBoolean(SDL_HINT_VIDEO_EXTERNAL_CONTEXT, SDL_FALSE);
-}
-
 void SDL_SetSystemTheme(SDL_SystemTheme theme)
 {
     if (_this && theme != _this->system_theme) {
@@ -2005,6 +2000,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     Uint32 type_flags, graphics_flags;
     SDL_bool undefined_x = SDL_FALSE;
     SDL_bool undefined_y = SDL_FALSE;
+    SDL_bool external_graphics_context = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_EXTERNAL_GRAPHICS_CONTEXT_BOOLEAN, SDL_FALSE);
 
     if (!_this) {
         /* Initialize the video system if needed */
@@ -2092,7 +2088,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     }
 
     /* Some platforms have certain graphics backends enabled by default */
-    if (!graphics_flags && !SDL_IsVideoContextExternal()) {
+    if (!graphics_flags && !external_graphics_context) {
         flags |= SDL_DefaultGraphicsBackends(_this);
     }
 
@@ -2153,6 +2149,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     window->next = _this->windows;
     window->is_destroying = SDL_FALSE;
     window->last_displayID = SDL_GetDisplayForWindow(window);
+    window->external_graphics_context = external_graphics_context;
 
     if (_this->windows) {
         _this->windows->prev = window;

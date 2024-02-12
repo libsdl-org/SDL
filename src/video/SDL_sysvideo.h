@@ -49,6 +49,7 @@ struct SDL_Window
     Uint32 flags;
     Uint32 pending_flags;
     float display_scale;
+    SDL_bool external_graphics_context;
     SDL_bool fullscreen_exclusive;  /* The window is currently fullscreen exclusive */
     SDL_DisplayID last_fullscreen_exclusive_display;  /* The last fullscreen_exclusive display */
     SDL_DisplayID last_displayID;
@@ -487,7 +488,6 @@ extern VideoBootStrap QNX_bootstrap;
 /* Use SDL_OnVideoThread() sparingly, to avoid regressions in use cases that currently happen to work */
 extern SDL_bool SDL_OnVideoThread(void);
 extern SDL_VideoDevice *SDL_GetVideoDevice(void);
-extern SDL_bool SDL_IsVideoContextExternal(void);
 extern void SDL_SetSystemTheme(SDL_SystemTheme theme);
 extern SDL_DisplayID SDL_AddBasicVideoDisplay(const SDL_DisplayMode *desktop_mode);
 extern SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send_event);
