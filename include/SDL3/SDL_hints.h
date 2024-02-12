@@ -1766,17 +1766,6 @@ extern "C" {
 #define SDL_HINT_RENDER_METAL_PREFER_LOW_POWER_DEVICE "SDL_RENDER_METAL_PREFER_LOW_POWER_DEVICE"
 
 /**
- * A variable controlling whether the OpenGL render driver uses shaders if they are available.
- *
- * The variable can be set to the following values:
- *   "0"       - Disable shaders.
- *   "1"       - Enable shaders. (default)
- *
- * This hint should be set before creating a renderer.
- */
-#define SDL_HINT_RENDER_OPENGL_SHADERS      "SDL_RENDER_OPENGL_SHADERS"
-
-/**
  * A variable controlling whether vsync is automatically disabled if doesn't reach enough FPS.
  *
  * The variable can be set to the following values:
