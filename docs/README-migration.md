@@ -726,6 +726,7 @@ The following hints have been removed:
 
 The following hints have been renamed:
 * SDL_HINT_ALLOW_TOPMOST => SDL_HINT_WINDOW_ALLOW_TOPMOST
+* SDL_HINT_DIRECTINPUT_ENABLED => SDL_HINT_JOYSTICK_DIRECTINPUT
 
 ## SDL_init.h
 
