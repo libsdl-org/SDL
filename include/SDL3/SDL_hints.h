@@ -364,7 +364,7 @@ extern "C" {
  *
  * This hint should be set before SDL is initialized.
  */
-#define SDL_HINT_DIRECTINPUT_ENABLED "SDL_DIRECTINPUT_ENABLED"
+#define SDL_HINT_JOYSTICK_DIRECTINPUT "SDL_JOYSTICK_DIRECTINPUT"
 
 /**
  * Override for SDL_GetDisplayUsableBounds()
