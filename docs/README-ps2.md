@@ -17,7 +17,7 @@ cmake --install build
 ```
 
 ## Hints
-The PS2 port has a special Hint for having a dynamic VSYNC. The Hint is `SDL_HINT_PS2_DYNAMIC_VSYNC`.
+The PS2 port has a special Hint for having a dynamic VSYNC. The Hint is `SDL_HINT_RENDER_PS2_DYNAMIC_VSYNC`.
 If you enabled the dynamic vsync having as well `SDL_RENDERER_PRESENTVSYNC` enabled, then if the app is not able to run at 60 FPS, automatically the `vsync` will be disabled having a better performance, instead of dropping FPS to 30.
 
 ## Notes

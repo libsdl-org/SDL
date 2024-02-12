@@ -612,7 +612,7 @@ static void PS2_DestroyRenderer(SDL_Renderer *renderer)
 static int PS2_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
-    SDL_bool dynamicVsync = SDL_GetHintBoolean(SDL_HINT_PS2_DYNAMIC_VSYNC, SDL_FALSE);
+    SDL_bool dynamicVsync = SDL_GetHintBoolean(SDL_HINT_RENDER_PS2_DYNAMIC_VSYNC, SDL_FALSE);
     data->vsync = vsync ? (dynamicVsync ? 2 : 1) : 0;
     return 0;
 }
@@ -683,7 +683,7 @@ static SDL_Renderer *PS2_CreateRenderer(SDL_Window *window, SDL_PropertiesID cre
     gsKit_clear(gsGlobal, GS_BLACK);
 
     data->gsGlobal = gsGlobal;
-    dynamicVsync = SDL_GetHintBoolean(SDL_HINT_PS2_DYNAMIC_VSYNC, SDL_FALSE);
+    dynamicVsync = SDL_GetHintBoolean(SDL_HINT_RENDER_PS2_DYNAMIC_VSYNC, SDL_FALSE);
     if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
         data->vsync = (dynamicVsync ? 2 : 1);
     }
