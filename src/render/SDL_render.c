@@ -1206,21 +1206,6 @@ static Uint32 GetClosestSupportedFormat(SDL_Renderer *renderer, Uint32 format)
     return renderer->info.texture_formats[0];
 }
 
-static SDL_ScaleMode SDL_GetScaleMode(void)
-{
-    const char *hint = SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY);
-
-    if (!hint || SDL_strcasecmp(hint, "nearest") == 0) {
-        return SDL_SCALEMODE_NEAREST;
-    } else if (SDL_strcasecmp(hint, "linear") == 0) {
-        return SDL_SCALEMODE_LINEAR;
-    } else if (SDL_strcasecmp(hint, "best") == 0) {
-        return SDL_SCALEMODE_BEST;
-    } else {
-        return (SDL_ScaleMode)SDL_atoi(hint);
-    }
-}
-
 SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_PropertiesID props)
 {
     SDL_Texture *texture;
@@ -1272,7 +1257,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     texture->color.g = 1.0f;
     texture->color.b = 1.0f;
     texture->color.a = 1.0f;
-    texture->scaleMode = SDL_GetScaleMode();
+    texture->scaleMode = SDL_SCALEMODE_LINEAR;
     texture->view.pixel_w = w;
     texture->view.pixel_h = h;
     texture->view.viewport.w = -1;

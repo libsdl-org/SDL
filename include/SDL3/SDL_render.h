@@ -913,6 +913,8 @@ extern DECLSPEC int SDLCALL SDL_GetTextureBlendMode(SDL_Texture *texture, SDL_Bl
 /**
  * Set the scale mode used for texture scale operations.
  *
+ * The default texture scale mode is SDL_SCALEMODE_LINEAR.
+ *
  * If the scale mode is not supported, the closest supported mode is chosen.
  *
  * \param texture The texture to update.

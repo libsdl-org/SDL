@@ -1777,18 +1777,6 @@ extern "C" {
 #define SDL_HINT_RENDER_PS2_DYNAMIC_VSYNC    "SDL_RENDER_PS2_DYNAMIC_VSYNC"
 
 /**
- * A variable controlling texture scaling quality.
- *
- * The variable can be set to the following values:
- *   "0" or "nearest" - Nearest pixel sampling. (default)
- *   "1" or "linear"  - Linear filtering. (supported by OpenGL and Direct3D)
- *   "2" or "best"    - Currently this is the same as "linear".
- *
- * This hint should be set before creating a texture.
- */
-#define SDL_HINT_RENDER_SCALE_QUALITY       "SDL_RENDER_SCALE_QUALITY"
-
-/**
  * A variable controlling whether updates to the SDL screen surface should be synchronized with the vertical refresh, to avoid tearing.
  *
  * This hint overrides the application preference when creating a renderer.
