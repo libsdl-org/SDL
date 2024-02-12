@@ -1785,7 +1785,7 @@ extern "C" {
  *
  * This hint should be set before creating a renderer.
  */
-#define SDL_HINT_PS2_DYNAMIC_VSYNC    "SDL_PS2_DYNAMIC_VSYNC"
+#define SDL_HINT_RENDER_PS2_DYNAMIC_VSYNC    "SDL_RENDER_PS2_DYNAMIC_VSYNC"
 
 /**
  * A variable controlling texture scaling quality.
