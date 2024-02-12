@@ -3008,3 +3008,7 @@ typedef SDL_version, SDL_Version;
 @@
 - SDL_version
 + SDL_Version
+@@
+@@
+- SDL_HINT_ALLOW_TOPMOST
++ SDL_HINT_WINDOW_ALLOW_TOPMOST

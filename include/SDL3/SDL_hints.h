@@ -2338,7 +2338,7 @@ extern "C" {
  *
  * This hint can be set anytime.
  */
-#define SDL_HINT_ALLOW_TOPMOST "SDL_ALLOW_TOPMOST"
+#define SDL_HINT_WINDOW_ALLOW_TOPMOST "SDL_WINDOW_ALLOW_TOPMOST"
 
 /**
  * A variable controlling whether the window frame and title bar are interactive when the cursor is hidden
