@@ -208,8 +208,8 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->DestroyWindowFramebuffer = X11_DestroyWindowFramebuffer;
     device->SetWindowHitTest = X11_SetWindowHitTest;
     device->AcceptDragAndDrop = X11_AcceptDragAndDrop;
-    device->FlashWindow = X11_FlashWindow;
     device->UpdateWindowShape = X11_UpdateWindowShape;
+    device->FlashWindow = X11_FlashWindow;
     device->ShowWindowSystemMenu = X11_ShowWindowSystemMenu;
     device->SetWindowFocusable = X11_SetWindowFocusable;
     device->SyncWindow = X11_SyncWindow;

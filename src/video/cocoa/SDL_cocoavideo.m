@@ -31,6 +31,7 @@
 #include "SDL_cocoametalview.h"
 #include "SDL_cocoaopengles.h"
 #include "SDL_cocoamessagebox.h"
+#include "SDL_cocoashape.h"
 
 @implementation SDL_CocoaVideoData
 
@@ -115,6 +116,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->DestroyWindow = Cocoa_DestroyWindow;
         device->SetWindowHitTest = Cocoa_SetWindowHitTest;
         device->AcceptDragAndDrop = Cocoa_AcceptDragAndDrop;
+        device->UpdateWindowShape = Cocoa_UpdateWindowShape;
         device->FlashWindow = Cocoa_FlashWindow;
         device->SetWindowFocusable = Cocoa_SetWindowFocusable;
         device->SyncWindow = Cocoa_SyncWindow;
