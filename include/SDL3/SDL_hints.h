@@ -1991,19 +1991,6 @@ extern "C" {
 #define SDL_HINT_VIDEO_EGL_ALLOW_GETDISPLAY_FALLBACK "SDL_VIDEO_EGL_GETDISPLAY_FALLBACK"
 
 /**
- * A variable controlling whether the default graphics context should be initialized.
- *
- * By default a window will be created with the appropriate flags (SDL_WINDOW_OPENGL or SDL_WINDOW_METAL) for the current platform.
- *
- * The variable can be set to the following values:
- *   "0"       - SDL will manage graphics contexts that are attached to windows.
- *   "1"       - Disable graphics context management on windows.
- *
- * This hint should be set before creating a window.
- */
-#define SDL_HINT_VIDEO_EXTERNAL_CONTEXT    "SDL_VIDEO_EXTERNAL_CONTEXT"
-
-/**
  * A variable controlling whether the OpenGL context should be created with EGL.
  *
  * The variable can be set to the following values:

@@ -96,11 +96,9 @@ void Android_PumpEvents_Blocking(SDL_VideoDevice *_this)
     SDL_VideoData *videodata = _this->driverdata;
 
     if (videodata->isPaused) {
-        SDL_bool isContextExternal = SDL_IsVideoContextExternal();
-
 #ifdef SDL_VIDEO_OPENGL_EGL
         /* Make sure this is the last thing we do before pausing */
-        if (!isContextExternal) {
+        if (!Android_Window->external_graphics_context) {
             SDL_LockMutex(Android_ActivityMutex);
             android_egl_context_backup(Android_Window);
             SDL_UnlockMutex(Android_ActivityMutex);
@@ -124,7 +122,7 @@ void Android_PumpEvents_Blocking(SDL_VideoDevice *_this)
 
             /* Restore the GL Context from here, as this operation is thread dependent */
 #ifdef SDL_VIDEO_OPENGL_EGL
-            if (!isContextExternal && !SDL_HasEvent(SDL_EVENT_QUIT)) {
+            if (!Android_Window->external_graphics_context && !SDL_HasEvent(SDL_EVENT_QUIT)) {
                 SDL_LockMutex(Android_ActivityMutex);
                 android_egl_context_restore(Android_Window);
                 SDL_UnlockMutex(Android_ActivityMutex);
@@ -170,11 +168,10 @@ void Android_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
 
     if (videodata->isPaused) {
 
-        SDL_bool isContextExternal = SDL_IsVideoContextExternal();
         if (backup_context) {
 
 #ifdef SDL_VIDEO_OPENGL_EGL
-            if (!isContextExternal) {
+            if (!Android_Window->external_graphics_context) {
                 SDL_LockMutex(Android_ActivityMutex);
                 android_egl_context_backup(Android_Window);
                 SDL_UnlockMutex(Android_ActivityMutex);
@@ -205,7 +202,7 @@ void Android_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
 
 #ifdef SDL_VIDEO_OPENGL_EGL
             /* Restore the GL Context from here, as this operation is thread dependent */
-            if (!isContextExternal && !SDL_HasEvent(SDL_EVENT_QUIT)) {
+            if (!Android_Window->external_graphics_context && !SDL_HasEvent(SDL_EVENT_QUIT)) {
                 SDL_LockMutex(Android_ActivityMutex);
                 android_egl_context_restore(Android_Window);
                 SDL_UnlockMutex(Android_ActivityMutex);
