@@ -855,7 +855,7 @@ extern "C" {
  *
  * This hint can be set anytime.
  */
-#define SDL_HINT_JOYSTICK_GAMECUBE_RUMBLE_BRAKE "SDL_JOYSTICK_GAMECUBE_RUMBLE_BRAKE"
+#define SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE "SDL_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE"
 
 /**
  * A variable controlling whether the HIDAPI driver for Nintendo Switch Joy-Cons should be used.

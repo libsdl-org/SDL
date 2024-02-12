@@ -179,7 +179,7 @@ static SDL_bool HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
         }
     }
 
-    SDL_AddHintCallback(SDL_HINT_JOYSTICK_GAMECUBE_RUMBLE_BRAKE,
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE,
                         SDL_JoystickGameCubeRumbleBrakeHintChanged, ctx);
 
     HIDAPI_SetDeviceName(device, "Nintendo GameCube Controller");
@@ -499,7 +499,7 @@ static void HIDAPI_DriverGameCube_FreeDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
 
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_GAMECUBE_RUMBLE_BRAKE,
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE,
                         SDL_JoystickGameCubeRumbleBrakeHintChanged, ctx);
 }
 
