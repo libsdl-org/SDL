@@ -998,6 +998,7 @@ static int SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
             return -1;
         }
 
+#if SDL_HAVE_YUV
         if (shader != data->drawstate.shader) {
             const HRESULT result = IDirect3DDevice9_SetPixelShader(data->device, data->shaders[shader]);
             if (FAILED(result)) {
@@ -1016,6 +1017,7 @@ static int SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
             }
             data->drawstate.shader_params = shader_params;
         }
+#endif /* SDL_HAVE_YUV */
 
         data->drawstate.texture = texture;
     } else if (texture) {
