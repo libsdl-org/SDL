@@ -2367,8 +2367,8 @@ extern "C" {
  * A variable controlling whether SDL generates window-close events for Alt+F4 on Windows.
  *
  * The variable can be set to the following values:
- *   "0"       - SDL will only do normal key handling for Alt+F4. (default)
- *   "1"       - SDL will generate a window-close event when it sees Alt+F4.
+ *   "0"       - SDL will only do normal key handling for Alt+F4.
+ *   "1"       - SDL will generate a window-close event when it sees Alt+F4. (default)
  *
  * This hint can be set anytime.
  */
