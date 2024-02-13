@@ -1945,11 +1945,17 @@ SDL_AudioStream *SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_Au
             stream = SDL_CreateAudioStream(spec, &device->spec);
         }
 
-        if (!stream || (SDL_BindAudioStream(logdevid, stream) == -1)) {
+        if (!stream) {
             failed = SDL_TRUE;
         } else {
+            // don't do all the complicated validation and locking of SDL_BindAudioStream just to set a few fields here.
+            logdev->bound_streams = stream;
             logdev->simplified = SDL_TRUE;  // forbid further binding changes on this logical device.
+
+            stream->bound_device = logdev;
             stream->simplified = SDL_TRUE;  // so we know to close the audio device when this is destroyed.
+
+            UpdateAudioStreamFormatsPhysical(device);
 
             if (callback) {
                 int rc;
