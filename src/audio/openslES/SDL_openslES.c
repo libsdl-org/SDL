@@ -228,6 +228,12 @@ static void OPENSLES_DestroyPCMRecorder(SDL_AudioDevice *device)
     }
 }
 
+// !!! FIXME: make this non-blocking!
+static void SDLCALL AndroidRequestPermissionBlockingCallback(void *userdata, const char *permission, SDL_bool granted)
+{
+    SDL_AtomicSet((SDL_AtomicInt *) userdata, granted ? 1 : -1);
+}
+
 static int OPENSLES_CreatePCMRecorder(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *audiodata = device->hidden;
@@ -241,9 +247,22 @@ static int OPENSLES_CreatePCMRecorder(SDL_AudioDevice *device)
     SLresult result;
     int i;
 
-    if (!Android_JNI_RequestPermission("android.permission.RECORD_AUDIO")) {
-        LOGE("This app doesn't have RECORD_AUDIO permission");
-        return SDL_SetError("This app doesn't have RECORD_AUDIO permission");
+    // !!! FIXME: make this non-blocking!
+    {
+        SDL_AtomicInt permission_response;
+        SDL_AtomicSet(&permission_response, 0);
+        if (SDL_AndroidRequestPermission("android.permission.RECORD_AUDIO", AndroidRequestPermissionBlockingCallback, &permission_response) == -1) {
+            return -1;
+        }
+
+        while (SDL_AtomicGet(&permission_response) == 0) {
+            SDL_Delay(10);
+        }
+
+        if (SDL_AtomicGet(&permission_response) < 0) {
+            LOGE("This app doesn't have RECORD_AUDIO permission");
+            return SDL_SetError("This app doesn't have RECORD_AUDIO permission");
+        }
     }
 
     // Just go with signed 16-bit audio as it's the most compatible
