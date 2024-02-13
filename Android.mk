@@ -41,6 +41,8 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/src/loadso/dlopen/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/locale/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/locale/android/*.c) \
+	$(wildcard $(LOCAL_PATH)/src/main/*.c) \
+	$(wildcard $(LOCAL_PATH)/src/main/generic/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/misc/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/misc/android/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/power/*.c) \
