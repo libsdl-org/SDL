@@ -68,12 +68,12 @@ static void
 create_cameraMgr(void)
 {
     if (cameraMgr == NULL) {
-
+        #if 0  // !!! FIXME: this is getting replaced in a different branch.
         if (!Android_JNI_RequestPermission("android.permission.CAMERA")) {
             SDL_SetError("This app doesn't have CAMERA permission");
             return;
         }
-
+        #endif
         cameraMgr = ACameraManager_create();
         if (cameraMgr == NULL) {
             SDL_Log("Error creating ACameraManager");

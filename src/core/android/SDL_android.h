@@ -125,9 +125,6 @@ SDL_bool Android_JNI_SetSystemCursor(int cursorID);
 SDL_bool Android_JNI_SupportsRelativeMouse(void);
 SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled);
 
-/* Request permission */
-SDL_bool Android_JNI_RequestPermission(const char *permission);
-
 /* Show toast notification */
 int Android_JNI_ShowToast(const char *message, int duration, int gravity, int xOffset, int yOffset);
 

@@ -1424,6 +1424,8 @@ SDL_WindowsMessageHook has changed signatures so the message may be modified and
 
 SDL_AndroidGetExternalStorageState() takes the state as an output parameter and returns 0 if the function succeeds or a negative error code if there was an error.
 
+SDL_AndroidRequestPermission is no longer a blocking call; the caller now provides a callback function that fires when a response is available.
+
 The following functions have been removed:
 * SDL_RenderGetD3D11Device() - replaced with the "SDL.renderer.d3d11.device" property
 * SDL_RenderGetD3D12Device() - replaced with the "SDL.renderer.d3d12.device" property

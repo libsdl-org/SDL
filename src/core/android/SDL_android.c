@@ -2557,11 +2557,6 @@ const char *SDL_AndroidGetExternalStoragePath(void)
     return s_AndroidExternalFilesPath;
 }
 
-SDL_bool SDL_AndroidRequestPermission(const char *permission)
-{
-    return Android_JNI_RequestPermission(permission);
-}
-
 int SDL_AndroidShowToast(const char *message, int duration, int gravity, int xOffset, int yOffset)
 {
     return Android_JNI_ShowToast(message, duration, gravity, xOffset, yOffset);
@@ -2662,7 +2657,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
     SDL_assert(!"Shouldn't have hit this code");  // we had a permission response for a request we never made...?
 }
 
-int SDL_AndroidRequestPermissionAsync(const char *permission, SDL_AndroidRequestPermissionCallback cb, void *userdata)
+int SDL_AndroidRequestPermission(const char *permission, SDL_AndroidRequestPermissionCallback cb, void *userdata)
 {
     if (!permission) {
         return SDL_InvalidParamError("permission");
@@ -2699,29 +2694,6 @@ int SDL_AndroidRequestPermissionAsync(const char *permission, SDL_AndroidRequest
 
     return 0;
 }
-
-static void SDLCALL AndroidRequestPermissionBlockingCallback(void *userdata, const char *permission, SDL_bool granted)
-{
-    SDL_AtomicSet((SDL_AtomicInt *) userdata, granted ? 1 : -1);
-}
-
-SDL_bool Android_JNI_RequestPermission(const char *permission)
-{
-    SDL_AtomicInt response;
-    SDL_AtomicSet(&response, 0);
-
-    if (SDL_AndroidRequestPermissionAsync(permission, AndroidRequestPermissionBlockingCallback, &response) == -1) {
-        return SDL_FALSE;
-    }
-
-    /* Wait for the request to complete */
-    while (SDL_AtomicGet(&response) == 0) {
-        SDL_Delay(10);
-    }
-
-    return (SDL_AtomicGet(&response) < 0) ? SDL_FALSE : SDL_TRUE;
-}
-
 
 /* Show toast notification */
 int Android_JNI_ShowToast(const char *message, int duration, int gravity, int xOffset, int yOffset)

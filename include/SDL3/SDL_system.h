@@ -399,29 +399,6 @@ extern DECLSPEC int SDLCALL SDL_AndroidGetExternalStorageState(Uint32 *state);
  */
 extern DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath(void);
 
-/**
- * Request permissions at runtime.
- *
- * You do not need to call this for built-in functionality of SDL; recording
- * from a microphone or reading images from a camera, using standard SDL
- * APIs, will manage permission requests for you.
- *
- * This blocks the calling thread until the permission is granted or denied.
- * if the app already has the requested permission, this returns immediately,
- * but may block indefinitely until the user responds to the system's
- * permission request dialog.
- *
- * If possible, you should _not_ use this function. You should use
- * SDL_AndroidRequestPermissionAsync and deal with the response in a callback
- * at a later time, and possibly in a different thread.
- *
- * \param permission The permission to request.
- * \returns SDL_TRUE if the permission was granted, SDL_FALSE otherwise.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC SDL_bool SDLCALL SDL_AndroidRequestPermission(const char *permission);
-
 
 typedef void (SDLCALL *SDL_AndroidRequestPermissionCallback)(void *userdata, const char *permission, SDL_bool granted);
 
@@ -453,7 +430,7 @@ typedef void (SDLCALL *SDL_AndroidRequestPermissionCallback)(void *userdata, con
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_AndroidRequestPermissionAsync(const char *permission, SDL_AndroidRequestPermissionCallback cb, void *userdata);
+extern DECLSPEC int SDLCALL SDL_AndroidRequestPermission(const char *permission, SDL_AndroidRequestPermissionCallback cb, void *userdata);
 
 /**
  * Shows an Android toast notification.
