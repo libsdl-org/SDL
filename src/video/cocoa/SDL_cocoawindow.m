@@ -842,16 +842,16 @@ static SDL_bool Cocoa_IsZoomed(SDL_Window *window)
 
     if (shape) {
         NSPoint point = [theEvent locationInWindow];
-		NSRect windowRect = [[_data.nswindow contentView] frame];
-		if (NSMouseInRect(point, windowRect, NO)) {
-			int x = (int)SDL_roundf((point.x / (window->w - 1)) * (shape->w - 1));
-			int y = (int)SDL_roundf(((window->h - point.y) / (window->h - 1)) * (shape->h - 1));
-			Uint8 a;
+        NSRect windowRect = [[_data.nswindow contentView] frame];
+        if (NSMouseInRect(point, windowRect, NO)) {
+            int x = (int)SDL_roundf((point.x / (window->w - 1)) * (shape->w - 1));
+            int y = (int)SDL_roundf(((window->h - point.y) / (window->h - 1)) * (shape->h - 1));
+            Uint8 a;
 
-			if (SDL_ReadSurfacePixel(shape, x, y, NULL, NULL, NULL, &a) < 0 || a == SDL_ALPHA_TRANSPARENT) {
-				ignoresMouseEvents = YES;
-			}
-		}
+            if (SDL_ReadSurfacePixel(shape, x, y, NULL, NULL, NULL, &a) < 0 || a == SDL_ALPHA_TRANSPARENT) {
+                ignoresMouseEvents = YES;
+            }
+        }
     }
     _data.nswindow.ignoresMouseEvents = ignoresMouseEvents;
 }
@@ -1404,14 +1404,41 @@ static SDL_bool Cocoa_IsZoomed(SDL_Window *window)
     /*NSLog(@"doCommandBySelector: %@\n", NSStringFromSelector(aSelector));*/
 }
 
+- (void)updateHitTest
+{
+    SDL_Window *window = _data.window;
+    BOOL draggable = NO;
+
+    if (window->hit_test) {
+        float x, y;
+        SDL_Point point;
+
+        SDL_GetGlobalMouseState(&x, &y);
+        point.x = (int)SDL_roundf(x - window->x);
+        point.y = (int)SDL_roundf(y - window->y);
+        if (point.x >= 0 && point.x < window->w && point.y >= 0 && point.y < window->h) {
+            if (window->hit_test(window, &point, window->hit_test_data) == SDL_HITTEST_DRAGGABLE) {
+                draggable = YES;
+            }
+        }
+    }
+
+    if (isDragAreaRunning != draggable) {
+        isDragAreaRunning = draggable;
+        [_data.nswindow setMovableByWindowBackground:draggable];
+    }
+}
+
 - (BOOL)processHitTest:(NSEvent *)theEvent
 {
+    SDL_Window *window = _data.window;
+
     SDL_assert(isDragAreaRunning == [_data.nswindow isMovableByWindowBackground]);
 
-    if (_data.window->hit_test) { /* if no hit-test, skip this. */
+    if (window->hit_test) { /* if no hit-test, skip this. */
         const NSPoint location = [theEvent locationInWindow];
-        const SDL_Point point = { (int)location.x, _data.window->h - (((int)location.y) - 1) };
-        const SDL_HitTestResult rc = _data.window->hit_test(_data.window, &point, _data.window->hit_test_data);
+        const SDL_Point point = { (int)location.x, window->h - (((int)location.y) - 1) };
+        const SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
         if (rc == SDL_HITTEST_DRAGGABLE) {
             if (!isDragAreaRunning) {
                 isDragAreaRunning = YES;
@@ -2866,7 +2893,10 @@ SDL_bool Cocoa_SetWindowFullscreenSpace(SDL_Window *window, SDL_bool state, SDL_
 
 int Cocoa_SetWindowHitTest(SDL_Window *window, SDL_bool enabled)
 {
-    return 0; /* just succeed, the real work is done elsewhere. */
+    SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;
+
+    [data.listener updateHitTest];
+    return 0;
 }
 
 void Cocoa_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept)

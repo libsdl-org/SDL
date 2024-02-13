@@ -5056,14 +5056,12 @@ int SDL_SetWindowHitTest(SDL_Window *window, SDL_HitTest callback, void *callbac
 
     if (!_this->SetWindowHitTest) {
         return SDL_Unsupported();
-    } else if (_this->SetWindowHitTest(window, callback != NULL) == -1) {
-        return -1;
     }
 
     window->hit_test = callback;
     window->hit_test_data = callback_data;
 
-    return 0;
+    return _this->SetWindowHitTest(window, callback != NULL);
 }
 
 int SDL_SetWindowShape(SDL_Window *window, SDL_Surface *shape)

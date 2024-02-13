@@ -98,6 +98,7 @@ typedef enum
 - (NSApplicationPresentationOptions)window:(NSWindow *)window willUseFullScreenPresentationOptions:(NSApplicationPresentationOptions)proposedOptions;
 
 /* See if event is in a drag area, toggle on window dragging. */
+- (void)updateHitTest;
 - (BOOL)processHitTest:(NSEvent *)theEvent;
 
 /* Window event handling */
