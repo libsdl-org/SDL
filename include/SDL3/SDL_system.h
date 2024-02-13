@@ -406,20 +406,20 @@ typedef void (SDLCALL *SDL_AndroidRequestPermissionCallback)(void *userdata, con
  * Request permissions at runtime, asynchronously.
  *
  * You do not need to call this for built-in functionality of SDL; recording
- * from a microphone or reading images from a camera, using standard SDL
- * APIs, will manage permission requests for you.
+ * from a microphone or reading images from a camera, using standard SDL APIs,
+ * will manage permission requests for you.
  *
  * This function never blocks. Instead, the app-supplied callback will be
  * called when a decision has been made. This callback may happen on a
  * different thread, and possibly much later, as it might wait on a user to
- * respond to a system dialog. If permission has already been granted for
- * a specific entitlement, the callback will still fire, probably on the
- * current thread and before this function returns.
+ * respond to a system dialog. If permission has already been granted for a
+ * specific entitlement, the callback will still fire, probably on the current
+ * thread and before this function returns.
  *
- * If the request submission fails, this function returns -1 and the
- * callback will NOT be called, but this should only happen in
- * catastrophic conditions, like memory running out. Normally there will
- * be a yes or no to the request through the callback.
+ * If the request submission fails, this function returns -1 and the callback
+ * will NOT be called, but this should only happen in catastrophic conditions,
+ * like memory running out. Normally there will be a yes or no to the request
+ * through the callback.
  *
  * \param permission The permission to request.
  * \param cb The callback to trigger when the request has a response.
