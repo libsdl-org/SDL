@@ -2518,6 +2518,12 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_VideoData *data = _this->driverdata;
     SDL_WindowData *wind = window->driverdata;
 
+    /* Roundtrip before destroying the window to make sure that it has received input leave events, so that
+     * no internal structures are left pointing to the destroyed window. */
+    if (wind->show_hide_sync_required) {
+        WAYLAND_wl_display_roundtrip(data->display);
+    }
+
     if (data && wind) {
 #ifdef SDL_VIDEO_OPENGL_EGL
         if (wind->egl_surface) {

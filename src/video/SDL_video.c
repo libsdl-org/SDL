@@ -3619,6 +3619,13 @@ void SDL_DestroyWindow(SDL_Window *window)
         SDL_HideWindow(window);
     }
 
+    /* Make sure the destroyed window isn't referenced by any display as a fullscreen window. */
+    for (int i = 0; i < _this->num_displays; ++i) {
+        if (_this->displays[i]->fullscreen_window == window) {
+            _this->displays[i]->fullscreen_window = NULL;
+        }
+    }
+
     /* Make sure this window no longer has focus */
     if (SDL_GetKeyboardFocus() == window) {
         SDL_SetKeyboardFocus(NULL);
