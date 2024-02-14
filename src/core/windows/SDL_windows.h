@@ -36,7 +36,7 @@
 #endif
 #undef WINVER
 #undef _WIN32_WINNT
-#if defined(SDL_VIDEO_RENDER_D3D12)
+#if SDL_VIDEO_RENDER_D3D12
 #define _WIN32_WINNT 0xA00 /* For D3D12, 0xA00 is required */
 #elif defined(HAVE_SHELLSCALINGAPI_H)
 #define _WIN32_WINNT 0x603 /* For DPI support */
@@ -91,16 +91,6 @@
 
 #include <windows.h>
 #include <basetyps.h> /* for REFIID with broken mingw.org headers */
-
-/* Older Visual C++ headers don't have the Win64-compatible typedefs... */
-#if defined(_MSC_VER) && (_MSC_VER <= 1200)
-#ifndef DWORD_PTR
-#define DWORD_PTR DWORD
-#endif
-#ifndef LONG_PTR
-#define LONG_PTR LONG
-#endif
-#endif
 
 #include "SDL_rect.h"
 

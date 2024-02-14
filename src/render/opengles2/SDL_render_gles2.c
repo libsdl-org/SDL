@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if defined(SDL_VIDEO_RENDER_OGL_ES2) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_OGL_ES2
 
 #include "SDL_hints.h"
 #include "../../video/SDL_sysvideo.h" /* For SDL_GL_SwapWindowWithResult */
@@ -2244,6 +2244,6 @@ SDL_RenderDriver GLES2_RenderDriver = {
       0 }
 };
 
-#endif /* SDL_VIDEO_RENDER_OGL_ES2 && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_OGL_ES2 */
 
 /* vi: set ts=4 sw=4 expandtab: */

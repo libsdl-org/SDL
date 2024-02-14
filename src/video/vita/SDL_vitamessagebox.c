@@ -26,13 +26,13 @@
 #include "SDL_vitamessagebox.h"
 #include <psp2/message_dialog.h>
 
-#ifdef SDL_VIDEO_RENDER_VITA_GXM
+#if SDL_VIDEO_RENDER_VITA_GXM
 #include "../../render/vitagxm/SDL_render_vita_gxm_tools.h"
 #endif /* SDL_VIDEO_RENDER_VITA_GXM */
 
 int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
-#ifdef SDL_VIDEO_RENDER_VITA_GXM
+#if SDL_VIDEO_RENDER_VITA_GXM
     SceMsgDialogParam param;
     SceMsgDialogUserMessageParam msgParam;
     SceMsgDialogButtonsParam buttonParam;
