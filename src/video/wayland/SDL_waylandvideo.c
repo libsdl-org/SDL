@@ -644,7 +644,6 @@ static void AddEmulatedModes(SDL_DisplayData *dispdata, int native_width, int na
         SDL_zero(mode);
         mode.format = dpy->desktop_mode.format;
         mode.refresh_rate = dpy->desktop_mode.refresh_rate;
-        mode.driverdata = dpy->desktop_mode.driverdata;
 
         if (rot_90) {
             mode.w = mode_list[i].h;
@@ -770,16 +769,8 @@ static void display_handle_done(void *data,
     }
 
     /* If the display was already created, reset and rebuild the mode list. */
-    if (driverdata->display != 0) {
-        int i;
-        dpy = SDL_GetVideoDisplay(driverdata->display);
-
-        /* Clear the wl_output ref so Reset doesn't free it */
-        for (i = 0; i < dpy->num_fullscreen_modes; ++i) {
-            dpy->fullscreen_modes[i].driverdata = NULL;
-        }
-
-        /* Okay, now it's safe to reset */
+    dpy = SDL_GetVideoDisplay(driverdata->display);
+    if (dpy) {
         SDL_ResetFullscreenDisplayModes(dpy);
     }
 
@@ -796,7 +787,6 @@ static void display_handle_done(void *data,
         native_mode.h = driverdata->pixel_height;
     }
     native_mode.refresh_rate = ((100 * driverdata->refresh) / 1000) / 100.0f; /* mHz to Hz */
-    native_mode.driverdata = driverdata->output;
 
     if (driverdata->has_logical_size) { /* If xdg-output is present... */
         if (native_mode.w != driverdata->screen_width || native_mode.h != driverdata->screen_height) {
@@ -832,7 +822,6 @@ static void display_handle_done(void *data,
     desktop_mode.h = driverdata->screen_height;
     desktop_mode.pixel_density = driverdata->scale_factor;
     desktop_mode.refresh_rate = ((100 * driverdata->refresh) / 1000) / 100.0f; /* mHz to Hz */
-    desktop_mode.driverdata = driverdata->output;
 
     if (driverdata->display > 0) {
         dpy = SDL_GetVideoDisplay(driverdata->display);
@@ -954,7 +943,6 @@ static void Wayland_free_display(SDL_VideoDisplay *display)
 {
     if (display) {
         SDL_DisplayData *display_data = display->driverdata;
-        int i;
 
         SDL_free(display_data->wl_output_name);
 
@@ -971,11 +959,6 @@ static void Wayland_free_display(SDL_VideoDisplay *display)
         /* Unlink this display. */
         WAYLAND_wl_list_remove(&display_data->link);
 
-        /* Null the driverdata member of the mode structs, or they will be wrongly freed. */
-        for (i = display->num_fullscreen_modes; i--;) {
-            display->fullscreen_modes[i].driverdata = NULL;
-        }
-        display->desktop_mode.driverdata = NULL;
         SDL_DelVideoDisplay(display->id, SDL_FALSE);
     }
 }
