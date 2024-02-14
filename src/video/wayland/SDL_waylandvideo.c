@@ -478,17 +478,8 @@ static void display_handle_geometry(void *data,
 
 {
     SDL_WaylandOutputData *driverdata = data;
-    SDL_VideoDisplay *display;
-    int i;
 
     if (driverdata->wl_output_done_count) {
-        /* Clear the wl_output ref so Reset doesn't free it */
-        display = SDL_GetDisplay(driverdata->index);
-        for (i = 0; i < display->num_display_modes; i += 1) {
-            display->display_modes[i].driverdata = NULL;
-        }
-
-        /* Okay, now it's safe to reset */
         SDL_ResetDisplayModes(driverdata->index);
 
         /* The display has officially started over. */
@@ -600,7 +591,6 @@ static void display_handle_done(void *data,
         native_mode.h = driverdata->native_height;
     }
     native_mode.refresh_rate = (int)SDL_round(driverdata->refresh / 1000.0); /* mHz to Hz */
-    native_mode.driverdata = driverdata->output;
 
     /* The scaled desktop mode */
     SDL_zero(desktop_mode);
@@ -622,7 +612,6 @@ static void display_handle_done(void *data,
         desktop_mode.h = driverdata->width;
     }
     desktop_mode.refresh_rate = (int)SDL_round(driverdata->refresh / 1000.0); /* mHz to Hz */
-    desktop_mode.driverdata = driverdata->output;
 
     /*
      * The native display mode is only exposed separately from the desktop size if the
@@ -1014,7 +1003,7 @@ static int Wayland_GetDisplayDPI(_THIS, SDL_VideoDisplay *sdl_display, float *dd
 static void Wayland_VideoCleanup(_THIS)
 {
     SDL_VideoData *data = _this->driverdata;
-    int i, j;
+    int i;
 
     Wayland_QuitWin(data);
     Wayland_FiniMouse(data);
@@ -1030,10 +1019,6 @@ static void Wayland_VideoCleanup(_THIS)
         SDL_free(display->driverdata);
         display->driverdata = NULL;
 
-        for (j = display->num_display_modes; j--;) {
-            display->display_modes[j].driverdata = NULL;
-        }
-        display->desktop_mode.driverdata = NULL;
         SDL_DelVideoDisplay(i);
     }
     data->output_list = NULL;
