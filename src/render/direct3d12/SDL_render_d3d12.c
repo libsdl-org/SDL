@@ -23,7 +23,7 @@
 #include "SDL_render.h"
 #include "SDL_system.h"
 
-#if defined(SDL_VIDEO_RENDER_D3D12) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_D3D12
 
 #define SDL_D3D12_NUM_BUFFERS        2
 #define SDL_D3D12_NUM_VERTEX_BUFFERS 256
@@ -3055,7 +3055,7 @@ SDL_RenderDriver D3D12_RenderDriver = {
 }
 #endif
 
-#endif /* SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_D3D12 */
 
 #if defined(__WIN32__) || defined(__GDK__)
 #ifdef __cplusplus
@@ -3067,7 +3067,7 @@ extern "C"
 {
     ID3D12Device *device = NULL;
 
-#if defined(SDL_VIDEO_RENDER_D3D12) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_D3D12
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->driverdata;
 
     /* Make sure that this is a D3D renderer */
@@ -3080,7 +3080,7 @@ extern "C"
     if (device) {
         D3D_CALL(device, AddRef);
     }
-#endif /* SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_D3D12 */
 
     return device;
 }

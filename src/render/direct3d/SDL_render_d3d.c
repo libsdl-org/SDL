@@ -23,7 +23,7 @@
 #include "SDL_render.h"
 #include "SDL_system.h"
 
-#if defined(SDL_VIDEO_RENDER_D3D) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_D3D
 
 #include "../../core/windows/SDL_windows.h"
 
@@ -34,7 +34,7 @@
 #include "../SDL_d3dmath.h"
 #include "../../video/windows/SDL_windowsvideo.h"
 
-#ifdef SDL_VIDEO_RENDER_D3D
+#if SDL_VIDEO_RENDER_D3D
 #define D3D_DEBUG_INFO
 #include <d3d9.h>
 #endif
@@ -1731,7 +1731,7 @@ SDL_RenderDriver D3D_RenderDriver = {
       0,
       0 }
 };
-#endif /* SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_D3D */
 
 #if defined(__WIN32__) || defined(__WINGDK__)
 /* This function needs to always exist on Windows, for the Dynamic API. */
@@ -1739,7 +1739,7 @@ IDirect3DDevice9 *SDL_RenderGetD3D9Device(SDL_Renderer *renderer)
 {
     IDirect3DDevice9 *device = NULL;
 
-#if defined(SDL_VIDEO_RENDER_D3D) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_D3D
     D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;
 
     /* Make sure that this is a D3D renderer */
@@ -1752,7 +1752,7 @@ IDirect3DDevice9 *SDL_RenderGetD3D9Device(SDL_Renderer *renderer)
     if (device) {
         IDirect3DDevice9_AddRef(device);
     }
-#endif /* SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_D3D */
 
     return device;
 }
