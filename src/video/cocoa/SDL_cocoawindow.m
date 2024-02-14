@@ -1139,9 +1139,7 @@ static SDL_bool Cocoa_IsZoomed(SDL_Window *window)
     }
 
     if ([oldscale doubleValue] != [_data.nswindow backingScaleFactor]) {
-        /* Force a resize event when the backing scale factor changes. */
-        _data.window->w = 0;
-        _data.window->h = 0;
+        /* Send a resize event when the backing scale factor changes. */
         [self windowDidResize:aNotification];
     }
 }
