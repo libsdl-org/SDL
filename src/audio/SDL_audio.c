@@ -306,17 +306,17 @@ static void ReleaseAudioDevice(SDL_AudioDevice *device) SDL_NO_THREAD_SAFETY_ANA
 }
 
 // If found, this locks _the physical device_ this logical device is associated with, before returning.
-static SDL_LogicalAudioDevice *ObtainLogicalAudioDevice(SDL_AudioDeviceID devid, SDL_AudioDevice **device) SDL_NO_THREAD_SAFETY_ANALYSIS    // !!! FIXME: SDL_ACQUIRE
+static SDL_LogicalAudioDevice *ObtainLogicalAudioDevice(SDL_AudioDeviceID devid, SDL_AudioDevice **_device) SDL_NO_THREAD_SAFETY_ANALYSIS    // !!! FIXME: SDL_ACQUIRE
 {
-    SDL_assert(device != NULL);
-
-    *device = NULL;
+    SDL_assert(_device != NULL);
 
     if (!SDL_GetCurrentAudioDriver()) {
         SDL_SetError("Audio subsystem is not initialized");
+        *_device = NULL;
         return NULL;
     }
 
+    SDL_AudioDevice *device = NULL;
     SDL_LogicalAudioDevice *logdev = NULL;
 
     // bit #1 of devid is set for physical devices and unset for logical.
@@ -325,19 +325,36 @@ static SDL_LogicalAudioDevice *ObtainLogicalAudioDevice(SDL_AudioDeviceID devid,
         SDL_LockRWLockForReading(current_audio.device_hash_lock);
         SDL_FindInHashTable(current_audio.device_hash, (const void *) (uintptr_t) devid, (const void **) &logdev);
         if (logdev) {
-            *device = logdev->physical_device;
-            RefPhysicalAudioDevice(*device);  // reference it, in case the logical device migrates to a new default.
+            device = logdev->physical_device;
+            SDL_assert(device != NULL);
+            RefPhysicalAudioDevice(device);  // reference it, in case the logical device migrates to a new default.
         }
         SDL_UnlockRWLock(current_audio.device_hash_lock);
+
+        if (logdev) {
+            // we have to release the device_hash_lock before we take the device lock, to avoid deadlocks, so do a loop
+            //  to make sure the correct physical device gets locked, in case we're in a race with the default changing.
+            while (SDL_TRUE) {
+                SDL_LockMutex(device->lock);
+                SDL_AudioDevice *recheck_device = (SDL_AudioDevice *) SDL_AtomicGetPtr((void **) &logdev->physical_device);
+                if (device == recheck_device) {
+                    break;
+                }
+
+                // default changed from under us! Try again!
+                RefPhysicalAudioDevice(recheck_device);
+                SDL_UnlockMutex(device->lock);
+                UnrefPhysicalAudioDevice(device);
+                device = recheck_device;
+            }
+        }
     }
 
     if (!logdev) {
         SDL_SetError("Invalid audio device instance ID");
-    } else {
-        SDL_assert(*device != NULL);
-        SDL_LockMutex((*device)->lock);
     }
 
+    *_device = device;
     return logdev;
 }
 
