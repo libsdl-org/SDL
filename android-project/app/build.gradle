@@ -52,7 +52,7 @@ android {
             //     path 'jni/CMakeLists.txt'
             // }
         }
-       
+
     }
     lint {
         abortOnError false
