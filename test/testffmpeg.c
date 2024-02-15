@@ -743,7 +743,6 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
 static SDL_bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **texture)
 {
 #ifdef SDL_PLATFORM_APPLE
-    int texture_width = 0, texture_height = 0;
     CVPixelBufferRef pPixelBuffer = (CVPixelBufferRef)frame->data[3];
     OSType nPixelBufferType = CVPixelBufferGetPixelFormatType(pPixelBuffer);
     size_t nPixelBufferWidth = CVPixelBufferGetWidthOfPlane(pPixelBuffer, 0);
