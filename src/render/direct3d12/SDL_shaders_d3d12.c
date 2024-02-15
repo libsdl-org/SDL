@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_RENDER_D3D12) && !defined(SDL_RENDER_DISABLED) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+#if SDL_VIDEO_RENDER_D3D12 && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 #include "../../core/windows/SDL_windows.h"
 #include <d3d12.h>
@@ -156,4 +156,4 @@ void D3D12_GetRootSignatureData(D3D12_RootSignature rootSig, D3D12_SHADER_BYTECO
     outBytecode->BytecodeLength = D3D12_rootsigs[rootSig].rs_shader_size;
 }
 
-#endif /* SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED  && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) */
+#endif /* SDL_VIDEO_RENDER_D3D12 && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) */

@@ -23,7 +23,7 @@
 #ifndef SDL_shaders_gles2_h_
 #define SDL_shaders_gles2_h_
 
-#ifdef SDL_VIDEO_RENDER_OGL_ES2
+#if SDL_VIDEO_RENDER_OGL_ES2
 
 typedef enum
 {

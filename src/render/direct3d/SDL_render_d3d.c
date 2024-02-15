@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_RENDER_D3D) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_D3D
 
 #include "../../core/windows/SDL_windows.h"
 
@@ -29,7 +29,7 @@
 #include "../../video/windows/SDL_windowsvideo.h"
 #include "../../video/SDL_pixels_c.h"
 
-#ifdef SDL_VIDEO_RENDER_D3D
+#if SDL_VIDEO_RENDER_D3D
 #define D3D_DEBUG_INFO
 #include <d3d9.h>
 #endif

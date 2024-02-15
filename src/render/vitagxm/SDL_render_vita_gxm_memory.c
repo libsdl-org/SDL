@@ -21,7 +21,7 @@
 
 #include "SDL_internal.h"
 
-#ifdef SDL_VIDEO_RENDER_VITA_GXM
+#if SDL_VIDEO_RENDER_VITA_GXM
 
 #include "SDL_render_vita_gxm_memory.h"
 

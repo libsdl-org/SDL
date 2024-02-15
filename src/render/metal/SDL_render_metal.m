@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_RENDER_METAL) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_METAL
 
 #include "../SDL_sysrender.h"
 #include "../../video/SDL_pixels_c.h"
@@ -2170,4 +2170,4 @@ SDL_RenderDriver METAL_RenderDriver = {
     }
 };
 
-#endif /* SDL_VIDEO_RENDER_METAL && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_METAL */

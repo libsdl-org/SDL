@@ -89,31 +89,31 @@ this should probably be removed at some point in the future.  --ryan. */
 
 #ifndef SDL_RENDER_DISABLED
 static const SDL_RenderDriver *render_drivers[] = {
-#ifdef SDL_VIDEO_RENDER_D3D12
+#if SDL_VIDEO_RENDER_D3D12
     &D3D12_RenderDriver,
 #endif
-#ifdef SDL_VIDEO_RENDER_D3D11
+#if SDL_VIDEO_RENDER_D3D11
     &D3D11_RenderDriver,
 #endif
-#ifdef SDL_VIDEO_RENDER_D3D
+#if SDL_VIDEO_RENDER_D3D
     &D3D_RenderDriver,
 #endif
-#ifdef SDL_VIDEO_RENDER_METAL
+#if SDL_VIDEO_RENDER_METAL
     &METAL_RenderDriver,
 #endif
-#ifdef SDL_VIDEO_RENDER_OGL
+#if SDL_VIDEO_RENDER_OGL
     &GL_RenderDriver,
 #endif
-#ifdef SDL_VIDEO_RENDER_OGL_ES2
+#if SDL_VIDEO_RENDER_OGL_ES2
     &GLES2_RenderDriver,
 #endif
-#ifdef SDL_VIDEO_RENDER_PS2
+#if SDL_VIDEO_RENDER_PS2
     &PS2_RenderDriver,
 #endif
-#ifdef SDL_VIDEO_RENDER_PSP
+#if SDL_VIDEO_RENDER_PSP
     &PSP_RenderDriver,
 #endif
-#ifdef SDL_VIDEO_RENDER_VITA_GXM
+#if SDL_VIDEO_RENDER_VITA_GXM
     &VITA_GXM_RenderDriver,
 #endif
 #if SDL_VIDEO_RENDER_SW
@@ -1056,7 +1056,7 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 fl
 
 SDL_Renderer *SDL_CreateSoftwareRenderer(SDL_Surface *surface)
 {
-#if !defined(SDL_RENDER_DISABLED) && SDL_VIDEO_RENDER_SW
+#if SDL_VIDEO_RENDER_SW
     SDL_Renderer *renderer;
 
     renderer = SW_CreateRendererForSurface(surface);

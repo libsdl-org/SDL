@@ -20,7 +20,7 @@
 */
 
 #include "../../SDL_internal.h"
-#if SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED && (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+#if SDL_VIDEO_RENDER_D3D12 && (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
 #include "SDL_render_d3d12_xbox.h"
 #include "../../core/windows/SDL_windows.h"
 #include <XGameRuntime.h>

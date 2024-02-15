@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_RENDER_OGL) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_OGL
 
 #include <SDL3/SDL_opengl.h>
 #include "SDL_shaders_gl.h"
@@ -543,4 +543,4 @@ void GL_DestroyShaderContext(GL_ShaderContext *ctx)
     SDL_free(ctx);
 }
 
-#endif /* SDL_VIDEO_RENDER_OGL && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_OGL */

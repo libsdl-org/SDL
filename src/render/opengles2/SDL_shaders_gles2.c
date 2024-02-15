@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_RENDER_OGL_ES2) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_OGL_ES2
 
 #include <SDL3/SDL_opengles2.h>
 #include "SDL_shaders_gles2.h"
@@ -384,4 +384,4 @@ const char *GLES2_GetShader(GLES2_ShaderType type)
     }
 }
 
-#endif /* SDL_VIDEO_RENDER_OGL_ES2 && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_OGL_ES2 */

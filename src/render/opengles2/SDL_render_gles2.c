@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_RENDER_OGL_ES2) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_OGL_ES2
 
 #include "../../video/SDL_sysvideo.h" /* For SDL_RecreateWindow */
 #include <SDL3/SDL_opengles2.h>
@@ -2271,4 +2271,4 @@ SDL_RenderDriver GLES2_RenderDriver = {
       0 }
 };
 
-#endif /* SDL_VIDEO_RENDER_OGL_ES2 && !defined(SDL_RENDER_DISABLED) */
+#endif /* SDL_VIDEO_RENDER_OGL_ES2 */

@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_RENDER_D3D) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_D3D
 
 #include "../../core/windows/SDL_windows.h"
 
@@ -45,4 +45,4 @@ HRESULT D3D9_CreatePixelShader(IDirect3DDevice9 *d3dDevice, D3D9_Shader shader, 
     return IDirect3DDevice9_CreatePixelShader(d3dDevice, (const DWORD *)D3D9_shaders[shader], pixelShader);
 }
 
-#endif /* SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_D3D */
