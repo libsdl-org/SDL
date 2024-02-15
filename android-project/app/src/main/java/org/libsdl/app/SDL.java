@@ -44,13 +44,13 @@ public class SDL {
         }
 
         try {
-            // Let's see if we have ReLinker available in the project.  This is necessary for 
-            // some projects that have huge numbers of local libraries bundled, and thus may 
+            // Let's see if we have ReLinker available in the project.  This is necessary for
+            // some projects that have huge numbers of local libraries bundled, and thus may
             // trip a bug in Android's native library loader which ReLinker works around.  (If
             // loadLibrary works properly, ReLinker will simply use the normal Android method
             // internally.)
             //
-            // To use ReLinker, just add it as a dependency.  For more information, see 
+            // To use ReLinker, just add it as a dependency.  For more information, see
             // https://github.com/KeepSafe/ReLinker for ReLinker's repository.
             //
             Class<?> relinkClass = mContext.getClassLoader().loadClass("com.getkeepsafe.relinker.ReLinker");
@@ -58,7 +58,7 @@ public class SDL {
             Class<?> contextClass = mContext.getClassLoader().loadClass("android.content.Context");
             Class<?> stringClass = mContext.getClassLoader().loadClass("java.lang.String");
 
-            // Get a 'force' instance of the ReLinker, so we can ensure libraries are reinstalled if 
+            // Get a 'force' instance of the ReLinker, so we can ensure libraries are reinstalled if
             // they've changed during updates.
             Method forceMethod = relinkClass.getDeclaredMethod("force");
             Object relinkInstance = forceMethod.invoke(null);
