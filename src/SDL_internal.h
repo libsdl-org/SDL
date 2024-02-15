@@ -187,6 +187,24 @@
 #define SDL_VIDEO_RENDER_VITA_GXM 0
 #endif /* SDL_RENDER_DISABLED */
 
+#define SDL_HAS_RENDER_DRIVER \
+       (SDL_VIDEO_RENDER_SW       | \
+        SDL_VIDEO_RENDER_D3D      | \
+        SDL_VIDEO_RENDER_D3D11    | \
+        SDL_VIDEO_RENDER_D3D12    | \
+        SDL_VIDEO_RENDER_METAL    | \
+        SDL_VIDEO_RENDER_OGL      | \
+        SDL_VIDEO_RENDER_OGL_ES   | \
+        SDL_VIDEO_RENDER_OGL_ES2  | \
+        SDL_VIDEO_RENDER_DIRECTFB | \
+        SDL_VIDEO_RENDER_PS2      | \
+        SDL_VIDEO_RENDER_PSP      | \
+        SDL_VIDEO_RENDER_VITA_GXM)
+
+#if !defined(SDL_RENDER_DISABLED) && !SDL_HAS_RENDER_DRIVER
+#error SDL_RENDER enabled without any backend drivers.
+#endif
+
 #include "SDL_assert.h"
 #include "SDL_log.h"
 
