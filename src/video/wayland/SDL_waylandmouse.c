@@ -317,6 +317,7 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
     }
 
     /* Next, find the cursor from the theme. Names taken from: */
+    /*   https://www.w3.org/TR/css-ui-4/#cursor */
     /*   https://www.freedesktop.org/wiki/Specifications/cursor-spec/ */
     switch (cdata->system_cursor) {
     case SDL_SYSTEM_CURSOR_ARROW:
