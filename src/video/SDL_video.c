@@ -4780,4 +4780,93 @@ void SDL_Metal_GetDrawableSize(SDL_Window *window, int *w, int *h)
     }
 }
 
+#if defined(SDL_VIDEO_DRIVER_X11) || defined(SDL_VIDEO_DRIVER_WAYLAND) || defined(SDL_VIDEO_DRIVER_EMSCRIPTEN)
+const char *SDL_GetCSSCursorName(SDL_SystemCursor id, const char **fallback_name)
+{
+    /* Reference: https://www.w3.org/TR/css-ui-4/#cursor */
+    /* Also in: https://www.freedesktop.org/wiki/Specifications/cursor-spec/ */
+    switch (id) {
+    case SDL_SYSTEM_CURSOR_ARROW:
+        return "default";
+
+    case SDL_SYSTEM_CURSOR_IBEAM:
+        return "text";
+
+    case SDL_SYSTEM_CURSOR_WAIT:
+        return "wait";
+
+    case SDL_SYSTEM_CURSOR_CROSSHAIR:
+        return "crosshair";
+
+    case SDL_SYSTEM_CURSOR_WAITARROW:
+        return "progress";
+
+    case SDL_SYSTEM_CURSOR_SIZENWSE:
+        if (fallback_name) {
+            /* only a single arrow */
+            *fallback_name = "nw-resize";
+        }
+        return "nwse-resize";
+
+    case SDL_SYSTEM_CURSOR_SIZENESW:
+        if (fallback_name) {
+            /* only a single arrow */
+            *fallback_name = "ne-resize";
+        }
+        return "nesw-resize";
+
+    case SDL_SYSTEM_CURSOR_SIZEWE:
+        if (fallback_name) {
+            *fallback_name = "col-resize";
+        }
+        return "ew-resize";
+
+    case SDL_SYSTEM_CURSOR_SIZENS:
+        if (fallback_name) {
+            *fallback_name = "row-resize";
+        }
+        return "ns-resize";
+
+    case SDL_SYSTEM_CURSOR_SIZEALL:
+        return "all-scroll";
+
+    case SDL_SYSTEM_CURSOR_NO:
+        return "not-allowed";
+
+    case SDL_SYSTEM_CURSOR_HAND:
+        return "pointer";
+
+#if 0
+    case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT:
+        return "nw-resize";
+
+    case SDL_SYSTEM_CURSOR_WINDOW_TOP:
+        return "n-resize";
+
+    case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT:
+        return "ne-resize";
+
+    case SDL_SYSTEM_CURSOR_WINDOW_RIGHT:
+        return "e-resize";
+
+    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT:
+        return "se-resize";
+
+    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM:
+        return "s-resize";
+
+    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT:
+        return "sw-resize";
+
+    case SDL_SYSTEM_CURSOR_WINDOW_LEFT:
+        return "w-resize";
+#endif
+
+    default:
+        SDL_assert(0);
+        return "default";
+    }
+}
+#endif
+
 /* vi: set ts=4 sw=4 expandtab: */
