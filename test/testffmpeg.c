@@ -800,6 +800,9 @@ static SDL_bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **tex
             video_white_level = DEFAULT_HDR_WHITE_LEVEL;
         }
         SDL_SetRenderColorScale(renderer, SDR_white_level / video_white_level);
+    } else if (HDR_display) {
+        /* Apple platforms already scale up the brightness of content so we need to scale it down by the same amount for HDR video */
+        SDL_SetRenderColorScale(renderer, SDR_white_level / DEFAULT_SDR_WHITE_LEVEL);
     } else {
         SDL_SetRenderColorScale(renderer, 1.0f);
     }
