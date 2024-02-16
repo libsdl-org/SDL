@@ -220,75 +220,53 @@ static SDL_Cursor *X11_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
     return cursor;
 }
 
+static unsigned int GetLegacySystemCursorShape(SDL_SystemCursor id)
+{
+    switch (id) {
+        /* X Font Cursors reference: */
+        /*   http://tronche.com/gui/x/xlib/appendix/b/ */
+        case SDL_SYSTEM_CURSOR_ARROW: return XC_left_ptr;
+        case SDL_SYSTEM_CURSOR_IBEAM: return XC_xterm;
+        case SDL_SYSTEM_CURSOR_WAIT: return XC_watch;
+        case SDL_SYSTEM_CURSOR_CROSSHAIR: return XC_tcross;
+        case SDL_SYSTEM_CURSOR_WAITARROW: return XC_watch;
+        case SDL_SYSTEM_CURSOR_SIZENWSE: return XC_top_left_corner;
+        case SDL_SYSTEM_CURSOR_SIZENESW: return XC_top_right_corner;
+        case SDL_SYSTEM_CURSOR_SIZEWE: return XC_sb_h_double_arrow;
+        case SDL_SYSTEM_CURSOR_SIZENS: return XC_sb_v_double_arrow;
+        case SDL_SYSTEM_CURSOR_SIZEALL: return XC_fleur;
+        case SDL_SYSTEM_CURSOR_NO: return XC_pirate;
+        case SDL_SYSTEM_CURSOR_HAND: return XC_hand2;
+        case SDL_NUM_SYSTEM_CURSORS: break;  /* so the compiler might notice if an enum value is missing here. */
+    }
+
+    SDL_assert(0);
+    return 0;
+}
+
 static SDL_Cursor *X11_CreateSystemCursor(SDL_SystemCursor id)
 {
     SDL_Cursor *cursor = NULL;
-    unsigned int shape = 0;
-    const char *xcursorname = SDL_GetCSSCursorName(id, NULL);
-
-    switch (id) {
-    default:
-        SDL_assert(0);
-        return NULL;
-    /* X Font Cursors reference: */
-    /*   http://tronche.com/gui/x/xlib/appendix/b/ */
-    case SDL_SYSTEM_CURSOR_ARROW:
-        shape = XC_left_ptr;
-        break;
-    case SDL_SYSTEM_CURSOR_IBEAM:
-        shape = XC_xterm;
-        break;
-    case SDL_SYSTEM_CURSOR_WAIT:
-        shape = XC_watch;
-        break;
-    case SDL_SYSTEM_CURSOR_CROSSHAIR:
-        shape = XC_tcross;
-        break;
-    case SDL_SYSTEM_CURSOR_WAITARROW:
-        shape = XC_watch;
-        break;
-    case SDL_SYSTEM_CURSOR_SIZENWSE:
-        shape = XC_top_left_corner;
-        break;
-    case SDL_SYSTEM_CURSOR_SIZENESW:
-        shape = XC_top_right_corner;
-        break;
-    case SDL_SYSTEM_CURSOR_SIZEWE:
-        shape = XC_sb_h_double_arrow;
-        break;
-    case SDL_SYSTEM_CURSOR_SIZENS:
-        shape = XC_sb_v_double_arrow;
-        break;
-    case SDL_SYSTEM_CURSOR_SIZEALL:
-        shape = XC_fleur;
-        break;
-    case SDL_SYSTEM_CURSOR_NO:
-        shape = XC_pirate;
-        break;
-    case SDL_SYSTEM_CURSOR_HAND:
-        shape = XC_hand2;
-        break;
-    }
-
-    cursor = SDL_calloc(1, sizeof(*cursor));
-    if (cursor) {
-        Display *dpy = GetDisplay();
-        Cursor x11_cursor = None;
+    Display *dpy = GetDisplay();
+    Cursor x11_cursor = None;
 
 #ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
-        SDL_assert(xcursorname != NULL);
-        if (SDL_X11_HAVE_XCURSOR) {
-            x11_cursor = X11_XcursorLibraryLoadCursor(dpy, xcursorname);
-        }
+    if (SDL_X11_HAVE_XCURSOR) {
+        x11_cursor = X11_XcursorLibraryLoadCursor(dpy, SDL_GetCSSCursorName(id, NULL));
+    }
 #endif
 
-        if (x11_cursor == None) {
-            x11_cursor = X11_XCreateFontCursor(dpy, shape);
-        }
+    if (x11_cursor == None) {
+        x11_cursor = X11_XCreateFontCursor(dpy, GetLegacySystemCursorShape(id));
+    }
 
-        cursor->driverdata = (void *)(uintptr_t)x11_cursor;
-    } else {
-        SDL_OutOfMemory();
+    if (x11_cursor != None) {
+        cursor = SDL_calloc(1, sizeof(*cursor));
+        if (!cursor) {
+            SDL_OutOfMemory();
+        } else {
+            cursor->driverdata = (void *)(uintptr_t)x11_cursor;
+        }
     }
 
     return cursor;
