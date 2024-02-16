@@ -271,7 +271,7 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
         legacyname = "sb_v_double_arrow";
         break;
     case SDL_SYSTEM_CURSOR_SIZEALL:
-        cssname = "move";
+        cssname = "all-scroll";
         legacyname = "fleur";
         break;
     case SDL_SYSTEM_CURSOR_NO:
