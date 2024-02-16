@@ -30,6 +30,7 @@
 #include <limits.h>
 
 #include "../SDL_sysvideo.h"
+#include "../SDL_video_c.h"
 
 #include "../../events/SDL_mouse_c.h"
 #include "SDL_waylandvideo.h"
@@ -318,81 +319,7 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
         vdata->cursor_themes[vdata->num_cursor_themes++].theme = theme;
     }
 
-    /* Next, find the cursor from the theme. Names taken from: */
-    /*   https://www.w3.org/TR/css-ui-4/#cursor */
-    /*   https://www.freedesktop.org/wiki/Specifications/cursor-spec/ */
-    switch (cdata->system_cursor) {
-    case SDL_SYSTEM_CURSOR_ARROW:
-        css_name = "default";
-        break;
-    case SDL_SYSTEM_CURSOR_IBEAM:
-        css_name = "text";
-        break;
-    case SDL_SYSTEM_CURSOR_WAIT:
-        css_name = "wait";
-        break;
-    case SDL_SYSTEM_CURSOR_CROSSHAIR:
-        css_name = "crosshair";
-        break;
-    case SDL_SYSTEM_CURSOR_WAITARROW:
-        css_name = "progress";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZENWSE:
-        css_name = "nwse-resize";
-        /* only a single arrow */
-        fallback_name = "nw-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZENESW:
-        css_name = "nesw-resize";
-        /* only a single arrow */
-        fallback_name = "ne-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZEWE:
-        css_name = "ew-resize";
-        fallback_name = "col-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZENS:
-        css_name = "ns-resize";
-        fallback_name = "row-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZEALL:
-        css_name = "all-scroll";
-        break;
-    case SDL_SYSTEM_CURSOR_NO:
-        css_name = "not-allowed";
-        break;
-    case SDL_SYSTEM_CURSOR_HAND:
-        css_name = "pointer";
-        break;
-    case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT:
-        css_name = "nw-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_WINDOW_TOP:
-        css_name = "n-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT:
-        css_name = "ne-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_WINDOW_RIGHT:
-        css_name = "e-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT:
-        css_name = "se-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM:
-        css_name = "s-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT:
-        css_name = "sw-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_WINDOW_LEFT:
-        css_name = "w-resize";
-        break;
-    default:
-        SDL_assert(0);
-        return SDL_FALSE;
-    }
-
+    css_name = SDL_GetCSSCursorName(cdata->system_cursor, &fallback_name);
     cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, css_name);
     if (!cursor && fallback_name) {
         cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, fallback_name);
