@@ -270,7 +270,7 @@ static SDL_Cursor *X11_CreateSystemCursor(SDL_SystemCursor id)
         break;
     case SDL_SYSTEM_CURSOR_SIZEALL:
         shape = XC_fleur;
-        xcursorname = "move";
+        xcursorname = "all-scroll";
         break;
     case SDL_SYSTEM_CURSOR_NO:
         shape = XC_pirate;
