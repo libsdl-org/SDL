@@ -141,49 +141,7 @@ static SDL_Cursor *Emscripten_CreateCursor(SDL_Surface *surface, int hot_x, int 
 
 static SDL_Cursor *Emscripten_CreateSystemCursor(SDL_SystemCursor id)
 {
-    const char *cursor_name = NULL;
-
-    switch (id) {
-    case SDL_SYSTEM_CURSOR_ARROW:
-        cursor_name = "default";
-        break;
-    case SDL_SYSTEM_CURSOR_IBEAM:
-        cursor_name = "text";
-        break;
-    case SDL_SYSTEM_CURSOR_WAIT:
-        cursor_name = "wait";
-        break;
-    case SDL_SYSTEM_CURSOR_CROSSHAIR:
-        cursor_name = "crosshair";
-        break;
-    case SDL_SYSTEM_CURSOR_WAITARROW:
-        cursor_name = "progress";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZENWSE:
-        cursor_name = "nwse-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZENESW:
-        cursor_name = "nesw-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZEWE:
-        cursor_name = "ew-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZENS:
-        cursor_name = "ns-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZEALL:
-        cursor_name = "all-scroll";
-        break;
-    case SDL_SYSTEM_CURSOR_NO:
-        cursor_name = "not-allowed";
-        break;
-    case SDL_SYSTEM_CURSOR_HAND:
-        cursor_name = "pointer";
-        break;
-    default:
-        SDL_assert(0);
-        return NULL;
-    }
+    const char *cursor_name = SDL_GetCSSCursorName(id, NULL);
 
     return Emscripten_CreateCursorFromString(cursor_name, SDL_FALSE);
 }

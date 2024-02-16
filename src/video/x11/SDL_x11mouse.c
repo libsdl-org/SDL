@@ -224,7 +224,7 @@ static SDL_Cursor *X11_CreateSystemCursor(SDL_SystemCursor id)
 {
     SDL_Cursor *cursor = NULL;
     unsigned int shape = 0;
-    const char *xcursorname = NULL;
+    const char *xcursorname = SDL_GetCSSCursorName(id, NULL);
 
     switch (id) {
     default:
@@ -234,51 +234,39 @@ static SDL_Cursor *X11_CreateSystemCursor(SDL_SystemCursor id)
     /*   http://tronche.com/gui/x/xlib/appendix/b/ */
     case SDL_SYSTEM_CURSOR_ARROW:
         shape = XC_left_ptr;
-        xcursorname = "default";
         break;
     case SDL_SYSTEM_CURSOR_IBEAM:
         shape = XC_xterm;
-        xcursorname = "text";
         break;
     case SDL_SYSTEM_CURSOR_WAIT:
         shape = XC_watch;
-        xcursorname = "wait";
         break;
     case SDL_SYSTEM_CURSOR_CROSSHAIR:
         shape = XC_tcross;
-        xcursorname = "crosshair";
         break;
     case SDL_SYSTEM_CURSOR_WAITARROW:
         shape = XC_watch;
-        xcursorname = "progress";
         break;
     case SDL_SYSTEM_CURSOR_SIZENWSE:
         shape = XC_top_left_corner;
-        xcursorname = "nwse-resize";
         break;
     case SDL_SYSTEM_CURSOR_SIZENESW:
         shape = XC_top_right_corner;
-        xcursorname = "nesw-resize";
         break;
     case SDL_SYSTEM_CURSOR_SIZEWE:
         shape = XC_sb_h_double_arrow;
-        xcursorname = "ew-resize";
         break;
     case SDL_SYSTEM_CURSOR_SIZENS:
         shape = XC_sb_v_double_arrow;
-        xcursorname = "ns-resize";
         break;
     case SDL_SYSTEM_CURSOR_SIZEALL:
         shape = XC_fleur;
-        xcursorname = "all-scroll";
         break;
     case SDL_SYSTEM_CURSOR_NO:
         shape = XC_pirate;
-        xcursorname = "not-allowed";
         break;
     case SDL_SYSTEM_CURSOR_HAND:
         shape = XC_hand2;
-        xcursorname = "pointer";
         break;
     }
 
