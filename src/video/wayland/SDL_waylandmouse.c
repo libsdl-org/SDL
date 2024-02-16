@@ -160,6 +160,8 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
 {
     struct wl_cursor_theme *theme = NULL;
     struct wl_cursor *cursor;
+    const char *cssname = NULL;
+    const char *legacyname = NULL;
 
     char *xcursor_size;
     int size = 0;
@@ -233,44 +235,63 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
     /* Next, find the cursor from the theme... */
     switch (cdata->system_cursor) {
     case SDL_SYSTEM_CURSOR_ARROW:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "left_ptr");
+        cssname = "default";
+        legacyname = "left_ptr";
         break;
     case SDL_SYSTEM_CURSOR_IBEAM:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "xterm");
+        cssname = "text";
+        legacyname = "xterm";
         break;
     case SDL_SYSTEM_CURSOR_WAIT:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "watch");
+        cssname = "wait";
+        legacyname = "watch";
         break;
     case SDL_SYSTEM_CURSOR_CROSSHAIR:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "tcross");
+        cssname = "crosshair";
+        legacyname = "tcross";
         break;
     case SDL_SYSTEM_CURSOR_WAITARROW:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "watch");
+        cssname = "progress";
+        legacyname = "watch";
         break;
     case SDL_SYSTEM_CURSOR_SIZENWSE:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "top_left_corner");
+        cssname = "nwse-resize";
+        legacyname = "top_left_corner";
         break;
     case SDL_SYSTEM_CURSOR_SIZENESW:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "top_right_corner");
+        cssname = "nesw-resize";
+        legacyname = "top_right_corner";
         break;
     case SDL_SYSTEM_CURSOR_SIZEWE:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "sb_h_double_arrow");
+        cssname = "ew-resize";
+        legacyname = "sb_h_double_arrow";
         break;
     case SDL_SYSTEM_CURSOR_SIZENS:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "sb_v_double_arrow");
+        cssname = "ns-resize";
+        legacyname = "sb_v_double_arrow";
         break;
     case SDL_SYSTEM_CURSOR_SIZEALL:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "fleur");
+        cssname = "move";
+        legacyname = "fleur";
         break;
     case SDL_SYSTEM_CURSOR_NO:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "pirate");
+        cssname = "not-allowed";
+        legacyname = "pirate";
         break;
     case SDL_SYSTEM_CURSOR_HAND:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "hand2");
+        cssname = "pointer";
+        legacyname = "hand2";
         break;
     default:
         SDL_assert(0);
         return SDL_FALSE;
+    }
+
+    cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, cssname);
+
+    /* try the legacy name if the fancy new CSS name doesn't work... */
+    if (!cursor) {
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, legacyname);
     }
 
     /* Fallback to the default cursor if the chosen one wasn't found */
