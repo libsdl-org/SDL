@@ -401,10 +401,14 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
 
     /* Fallback to the default cursor if the chosen one wasn't found */
     if (!cursor) {
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "default");
+    }
+    /* Try the old X11 name as a last resort */
+    if (!cursor) {
         cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "left_ptr");
-        if (!cursor) {
-            return SDL_FALSE;
-        }
+    }
+    if (!cursor) {
+        return SDL_FALSE;
     }
 
     /* ... Set the cursor data, finally. */
