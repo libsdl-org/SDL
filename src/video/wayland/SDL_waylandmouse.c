@@ -156,13 +156,35 @@ static SDL_bool wayland_dbus_read_cursor_theme(char **theme)
 
 #endif
 
+
+static const char *GetLegacyCursorName(SDL_SystemCursor system_cursor)
+{
+    switch (system_cursor) {
+        case SDL_SYSTEM_CURSOR_ARROW: return "left_ptr";
+        case SDL_SYSTEM_CURSOR_IBEAM: return "xterm";
+        case SDL_SYSTEM_CURSOR_WAIT: return "watch";
+        case SDL_SYSTEM_CURSOR_CROSSHAIR: return "tcross";
+        case SDL_SYSTEM_CURSOR_WAITARROW: return "watch";
+        case SDL_SYSTEM_CURSOR_SIZENWSE: return "top_left_corner";
+        case SDL_SYSTEM_CURSOR_SIZENESW: return "top_right_corner";
+        case SDL_SYSTEM_CURSOR_SIZEWE: return "sb_h_double_arrow";
+        case SDL_SYSTEM_CURSOR_SIZENS: return "sb_v_double_arrow";
+        case SDL_SYSTEM_CURSOR_SIZEALL: return "fleur";
+        case SDL_SYSTEM_CURSOR_NO: return "pirate";
+        case SDL_SYSTEM_CURSOR_HAND: return "hand2";
+        case SDL_NUM_SYSTEM_CURSORS: break;  /* so the compiler might notice if an enum value is missing here. */
+    }
+
+    SDL_assert(0);
+    return NULL;
+}
+
 static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorData *cdata, float *scale)
 {
     struct wl_cursor_theme *theme = NULL;
     struct wl_cursor *cursor;
     const char *cssname = NULL;
     const char *fallback_name = NULL;
-    const char *legacyname = NULL;
 
     char *xcursor_size;
     int size = 0;
@@ -234,48 +256,6 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
     }
 
     /* Next, find the cursor from the theme... */
-    switch (cdata->system_cursor) {
-    case SDL_SYSTEM_CURSOR_ARROW:
-        legacyname = "left_ptr";
-        break;
-    case SDL_SYSTEM_CURSOR_IBEAM:
-        legacyname = "xterm";
-        break;
-    case SDL_SYSTEM_CURSOR_WAIT:
-        legacyname = "watch";
-        break;
-    case SDL_SYSTEM_CURSOR_CROSSHAIR:
-        legacyname = "tcross";
-        break;
-    case SDL_SYSTEM_CURSOR_WAITARROW:
-        legacyname = "watch";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZENWSE:
-        legacyname = "top_left_corner";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZENESW:
-        legacyname = "top_right_corner";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZEWE:
-        legacyname = "sb_h_double_arrow";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZENS:
-        legacyname = "sb_v_double_arrow";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZEALL:
-        legacyname = "fleur";
-        break;
-    case SDL_SYSTEM_CURSOR_NO:
-        legacyname = "pirate";
-        break;
-    case SDL_SYSTEM_CURSOR_HAND:
-        legacyname = "hand2";
-        break;
-    default:
-        SDL_assert(0);
-        return SDL_FALSE;
-    }
-
     cssname = SDL_GetCSSCursorName(cdata->system_cursor, &fallback_name);
 
     cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, cssname);
@@ -285,7 +265,7 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
 
     /* try the legacy name if the fancy new CSS name doesn't work... */
     if (!cursor) {
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, legacyname);
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, GetLegacyCursorName(cdata->system_cursor));
     }
 
     /* Fallback to the default cursor if the chosen one wasn't found */
