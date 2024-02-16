@@ -26,6 +26,7 @@
 #include "SDL_x11video.h"
 #include "SDL_x11mouse.h"
 #include "SDL_x11xinput2.h"
+#include "../SDL_video_c.h"
 #include "../../events/SDL_mouse_c.h"
 
 /* FIXME: Find a better place to put this... */
@@ -216,7 +217,7 @@ static SDL_Cursor *X11_CreateSystemCursor(SDL_SystemCursor id)
 {
     SDL_Cursor *cursor = NULL;
     unsigned int shape = 0;
-    const char *xcursorname = NULL;
+    const char *xcursorname = SDL_GetCSSCursorName(id, NULL);
 
     switch (id) {
     default:
@@ -226,83 +227,63 @@ static SDL_Cursor *X11_CreateSystemCursor(SDL_SystemCursor id)
     /*   http://tronche.com/gui/x/xlib/appendix/b/ */
     case SDL_SYSTEM_CURSOR_ARROW:
         shape = XC_left_ptr;
-        xcursorname = "default";
         break;
     case SDL_SYSTEM_CURSOR_IBEAM:
         shape = XC_xterm;
-        xcursorname = "text";
         break;
     case SDL_SYSTEM_CURSOR_WAIT:
         shape = XC_watch;
-        xcursorname = "wait";
         break;
     case SDL_SYSTEM_CURSOR_CROSSHAIR:
         shape = XC_tcross;
-        xcursorname = "crosshair";
         break;
     case SDL_SYSTEM_CURSOR_WAITARROW:
         shape = XC_watch;
-        xcursorname = "progress";
         break;
     case SDL_SYSTEM_CURSOR_SIZENWSE:
         shape = XC_top_left_corner;
-        xcursorname = "nwse-resize";
         break;
     case SDL_SYSTEM_CURSOR_SIZENESW:
         shape = XC_top_right_corner;
-        xcursorname = "nesw-resize";
         break;
     case SDL_SYSTEM_CURSOR_SIZEWE:
         shape = XC_sb_h_double_arrow;
-        xcursorname = "ew-resize";
         break;
     case SDL_SYSTEM_CURSOR_SIZENS:
         shape = XC_sb_v_double_arrow;
-        xcursorname = "ns-resize";
         break;
     case SDL_SYSTEM_CURSOR_SIZEALL:
         shape = XC_fleur;
-        xcursorname = "move";
         break;
     case SDL_SYSTEM_CURSOR_NO:
         shape = XC_pirate;
-        xcursorname = "not-allowed";
         break;
     case SDL_SYSTEM_CURSOR_HAND:
         shape = XC_hand2;
-        xcursorname = "pointer";
         break;
     case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT:
         shape = XC_top_left_corner;
-        xcursorname = "nw-resize";
         break;
     case SDL_SYSTEM_CURSOR_WINDOW_TOP:
         shape = XC_top_side;
-        xcursorname = "n-resize";
         break;
     case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT:
         shape = XC_top_right_corner;
-        xcursorname = "ne-resize";
         break;
     case SDL_SYSTEM_CURSOR_WINDOW_RIGHT:
         shape = XC_right_side;
-        xcursorname = "e-resize";
         break;
     case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT:
         shape = XC_bottom_right_corner;
-        xcursorname = "se-resize";
         break;
     case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM:
         shape = XC_bottom_side;
-        xcursorname = "s-resize";
         break;
     case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT:
         shape = XC_bottom_left_corner;
-        xcursorname = "sw-resize";
         break;
     case SDL_SYSTEM_CURSOR_WINDOW_LEFT:
         shape = XC_left_side;
-        xcursorname = "w-resize";
         break;
     }
 

@@ -59,4 +59,8 @@ extern int SDL_SetWindowTextureVSync(SDL_Window *window, int vsync);
 
 extern int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
 
+#if defined(SDL_VIDEO_DRIVER_X11) || defined(SDL_VIDEO_DRIVER_WAYLAND) || defined(SDL_VIDEO_DRIVER_EMSCRIPTEN)
+const char *SDL_GetCSSCursorName(SDL_SystemCursor id, const char **fallback_name);
+#endif
+
 #endif /* SDL_video_c_h_ */
