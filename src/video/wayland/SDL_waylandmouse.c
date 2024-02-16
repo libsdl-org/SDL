@@ -262,6 +262,8 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
 {
     struct wl_cursor_theme *theme = NULL;
     struct wl_cursor *cursor;
+    const char *css_name = "default";
+    const char *fallback_name = NULL;
 
     int size = dbus_cursor_size;
 
@@ -321,82 +323,79 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
     /*   https://www.freedesktop.org/wiki/Specifications/cursor-spec/ */
     switch (cdata->system_cursor) {
     case SDL_SYSTEM_CURSOR_ARROW:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "default");
+        css_name = "default";
         break;
     case SDL_SYSTEM_CURSOR_IBEAM:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "text");
+        css_name = "text";
         break;
     case SDL_SYSTEM_CURSOR_WAIT:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "wait");
+        css_name = "wait";
         break;
     case SDL_SYSTEM_CURSOR_CROSSHAIR:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "crosshair");
+        css_name = "crosshair";
         break;
     case SDL_SYSTEM_CURSOR_WAITARROW:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "progress");
+        css_name = "progress";
         break;
     case SDL_SYSTEM_CURSOR_SIZENWSE:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "nwse-resize");
-        if (!cursor) {
-            /* only a single arrow */
-            cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "nw-resize");
-        }
+        css_name = "nwse-resize";
+        /* only a single arrow */
+        fallback_name = "nw-resize";
         break;
     case SDL_SYSTEM_CURSOR_SIZENESW:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "nesw-resize");
-        if (!cursor) {
-            /* only a single arrow */
-            cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "ne-resize");
-        }
+        css_name = "nesw-resize";
+        /* only a single arrow */
+        fallback_name = "ne-resize";
         break;
     case SDL_SYSTEM_CURSOR_SIZEWE:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "ew-resize");
-        if (!cursor) {
-            cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "col-resize");
-        }
+        css_name = "ew-resize";
+        fallback_name = "col-resize";
         break;
     case SDL_SYSTEM_CURSOR_SIZENS:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "ns-resize");
-        if (!cursor) {
-            cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "row-resize");
-        }
+        css_name = "ns-resize";
+        fallback_name = "row-resize";
         break;
     case SDL_SYSTEM_CURSOR_SIZEALL:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "all-scroll");
+        css_name = "all-scroll";
         break;
     case SDL_SYSTEM_CURSOR_NO:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "not-allowed");
+        css_name = "not-allowed";
         break;
     case SDL_SYSTEM_CURSOR_HAND:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "pointer");
+        css_name = "pointer";
         break;
     case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "nw-resize");
+        css_name = "nw-resize";
         break;
     case SDL_SYSTEM_CURSOR_WINDOW_TOP:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "n-resize");
+        css_name = "n-resize";
         break;
     case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "ne-resize");
+        css_name = "ne-resize";
         break;
     case SDL_SYSTEM_CURSOR_WINDOW_RIGHT:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "e-resize");
+        css_name = "e-resize";
         break;
     case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "se-resize");
+        css_name = "se-resize";
         break;
     case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "s-resize");
+        css_name = "s-resize";
         break;
     case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "sw-resize");
+        css_name = "sw-resize";
         break;
     case SDL_SYSTEM_CURSOR_WINDOW_LEFT:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "w-resize");
+        css_name = "w-resize";
         break;
     default:
         SDL_assert(0);
         return SDL_FALSE;
+    }
+
+    cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, css_name);
+    if (!cursor && fallback_name) {
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, fallback_name);
     }
 
     /* Fallback to the default cursor if the chosen one wasn't found */
