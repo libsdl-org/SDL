@@ -118,7 +118,7 @@ void *SDL_memset4(void *dst, Uint32 val, size_t dwords)
 
 /* The optimizer on Visual Studio 2005 and later generates memcpy() and memset() calls.
    We will provide our own implementation if we're not building with a C runtime. */
-#if defined(_MSC_VER) && (_MSC_VER >= 1400) && !defined(_MT)
+#ifndef HAVE_LIBC
 /* NOLINTNEXTLINE(readability-redundant-declaration) */
 extern void *memset(void *dst, int c, size_t len);
 #ifndef __INTEL_LLVM_COMPILER
@@ -133,5 +133,5 @@ void *memset(void *dst, int c, size_t len)
 {
     return SDL_memset(dst, c, len);
 }
-#endif /* (_MSC_VER >= 1400) && !defined(_MT) */
+#endif /* !HAVE_LIBC */
 
