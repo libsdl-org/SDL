@@ -54,6 +54,9 @@ extern void SDL_AssertJoysticksLocked(void) SDL_ASSERT_CAPABILITY(SDL_joystick_l
 /* Function to return whether there are any joysticks opened by the application */
 extern SDL_bool SDL_JoysticksOpened(void);
 
+/* Function to determine whether a device is currently detected by this driver */
+extern SDL_bool SDL_JoystickHandledByAnotherDriver(struct SDL_JoystickDriver *driver, Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
+
 /* Function to standardize the name for a controller
    This should be freed with SDL_free() when no longer needed
  */

@@ -879,6 +879,12 @@ static void IOS_JoystickDetect(void)
 {
 }
 
+static SDL_bool IOS_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+{
+    /* We don't override any other drivers through this method */
+    return SDL_FALSE;
+}
+
 static const char *IOS_JoystickGetDeviceName(int device_index)
 {
     SDL_JoystickDeviceItem *device = GetDeviceForIndex(device_index);
@@ -2079,6 +2085,7 @@ SDL_JoystickDriver SDL_IOS_JoystickDriver = {
     IOS_JoystickInit,
     IOS_JoystickGetCount,
     IOS_JoystickDetect,
+    IOS_JoystickIsDevicePresent,
     IOS_JoystickGetDeviceName,
     IOS_JoystickGetDevicePath,
     IOS_JoystickGetDeviceSteamVirtualGamepadSlot,

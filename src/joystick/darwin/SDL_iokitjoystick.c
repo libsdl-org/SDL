@@ -490,12 +490,9 @@ static SDL_bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         SDL_free(name);
     }
 
-#ifdef SDL_JOYSTICK_HIDAPI
-    if (HIDAPI_IsDevicePresent(vendor, product, version, pDevice->product)) {
-        /* The HIDAPI driver is taking care of this device */
+    if (SDL_JoystickHandledByAnotherDriver(&SDL_DARWIN_JoystickDriver, vendor, product, version, pDevice->product)) {
         return SDL_FALSE;
     }
-#endif
 
     pDevice->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, (Uint16)vendor, (Uint16)product, (Uint16)version, manufacturer_string, product_string, 0, 0);
     pDevice->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot((Uint16)vendor, (Uint16)product, product_string);
@@ -714,13 +711,19 @@ static void DARWIN_JoystickDetect(void)
     }
 }
 
-const char *DARWIN_JoystickGetDeviceName(int device_index)
+static SDL_bool DARWIN_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+{
+    /* We don't override any other drivers */
+    return SDL_FALSE;
+}
+
+static const char *DARWIN_JoystickGetDeviceName(int device_index)
 {
     recDevice *device = GetDeviceForIndex(device_index);
     return device ? device->product : "UNKNOWN";
 }
 
-const char *DARWIN_JoystickGetDevicePath(int device_index)
+static const char *DARWIN_JoystickGetDevicePath(int device_index)
 {
     return NULL;
 }
@@ -1063,6 +1066,7 @@ SDL_JoystickDriver SDL_DARWIN_JoystickDriver = {
     DARWIN_JoystickInit,
     DARWIN_JoystickGetCount,
     DARWIN_JoystickDetect,
+    DARWIN_JoystickIsDevicePresent,
     DARWIN_JoystickGetDeviceName,
     DARWIN_JoystickGetDevicePath,
     DARWIN_JoystickGetDeviceSteamVirtualGamepadSlot,

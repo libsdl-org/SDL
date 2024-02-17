@@ -106,113 +106,7 @@ DEFINE_GUID(IID___x_ABI_CWindows_CGaming_CInput_CIRawGameController2, 0x43c0c035
 DEFINE_GUID(IID___x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics, 0xeb8d0792, 0xe95a, 0x4b19, 0xaf, 0xc7, 0x0a, 0x59, 0xf8, 0xbf, 0x75, 0x9e);
 
 extern SDL_bool SDL_XINPUT_Enabled(void);
-extern SDL_bool SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version);
 
-
-static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
-{
-#if defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_RAWINPUT)
-    PRAWINPUTDEVICELIST raw_devices = NULL;
-    UINT i, raw_device_count = 0;
-    LONG vidpid = MAKELONG(vendor, product);
-
-    /* XInput and RawInput backends will pick up XInput-compatible devices */
-    if (!SDL_XINPUT_Enabled()
-#ifdef SDL_JOYSTICK_RAWINPUT
-        && !RAWINPUT_IsEnabled()
-#endif
-    ) {
-        return SDL_FALSE;
-    }
-
-    /* Go through RAWINPUT (WinXP and later) to find HID devices. */
-    if ((GetRawInputDeviceList(NULL, &raw_device_count, sizeof(RAWINPUTDEVICELIST)) == -1) || (!raw_device_count)) {
-        return SDL_FALSE; /* oh well. */
-    }
-
-    raw_devices = (PRAWINPUTDEVICELIST)SDL_malloc(sizeof(RAWINPUTDEVICELIST) * raw_device_count);
-    if (!raw_devices) {
-        return SDL_FALSE;
-    }
-
-    raw_device_count = GetRawInputDeviceList(raw_devices, &raw_device_count, sizeof(RAWINPUTDEVICELIST));
-    if (raw_device_count == (UINT)-1) {
-        SDL_free(raw_devices);
-        raw_devices = NULL;
-        return SDL_FALSE; /* oh well. */
-    }
-
-    for (i = 0; i < raw_device_count; i++) {
-        RID_DEVICE_INFO rdi;
-        char devName[MAX_PATH] = { 0 };
-        UINT rdiSize = sizeof(rdi);
-        UINT nameSize = SDL_arraysize(devName);
-        DEVINST devNode;
-        char devVidPidString[32];
-        int j;
-
-        rdi.cbSize = sizeof(rdi);
-
-        if ((raw_devices[i].dwType != RIM_TYPEHID) ||
-            (GetRawInputDeviceInfoA(raw_devices[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize) == ((UINT)-1)) ||
-            (GetRawInputDeviceInfoA(raw_devices[i].hDevice, RIDI_DEVICENAME, devName, &nameSize) == ((UINT)-1)) ||
-            (SDL_strstr(devName, "IG_") == NULL)) {
-            /* Skip non-XInput devices */
-            continue;
-        }
-
-        /* First check for a simple VID/PID match. This will work for Xbox 360 controllers. */
-        if (MAKELONG(rdi.hid.dwVendorId, rdi.hid.dwProductId) == vidpid) {
-            SDL_free(raw_devices);
-            return SDL_TRUE;
-        }
-
-        /* For Xbox One controllers, Microsoft doesn't propagate the VID/PID down to the HID stack.
-         * We'll have to walk the device tree upwards searching for a match for our VID/PID. */
-
-        /* Make sure the device interface string is something we know how to parse */
-        /* Example: \\?\HID#VID_045E&PID_02FF&IG_00#9&2c203035&2&0000#{4d1e55b2-f16f-11cf-88cb-001111000030} */
-        if ((SDL_strstr(devName, "\\\\?\\") != devName) || (SDL_strstr(devName, "#{") == NULL)) {
-            continue;
-        }
-
-        /* Unescape the backslashes in the string and terminate before the GUID portion */
-        for (j = 0; devName[j] != '\0'; j++) {
-            if (devName[j] == '#') {
-                if (devName[j + 1] == '{') {
-                    devName[j] = '\0';
-                    break;
-                } else {
-                    devName[j] = '\\';
-                }
-            }
-        }
-
-        /* We'll be left with a string like this: \\?\HID\VID_045E&PID_02FF&IG_00\9&2c203035&2&0000
-         * Simply skip the \\?\ prefix and we'll have a properly formed device instance ID */
-        if (CM_Locate_DevNodeA(&devNode, &devName[4], CM_LOCATE_DEVNODE_NORMAL) != CR_SUCCESS) {
-            continue;
-        }
-
-        (void)SDL_snprintf(devVidPidString, sizeof(devVidPidString), "VID_%04X&PID_%04X", vendor, product);
-
-        while (CM_Get_Parent(&devNode, devNode, 0) == CR_SUCCESS) {
-            char deviceId[MAX_DEVICE_ID_LEN];
-
-            if ((CM_Get_Device_IDA(devNode, deviceId, SDL_arraysize(deviceId), 0) == CR_SUCCESS) &&
-                (SDL_strstr(deviceId, devVidPidString) != NULL)) {
-                /* The VID/PID matched a parent device */
-                SDL_free(raw_devices);
-                return SDL_TRUE;
-            }
-        }
-    }
-
-    SDL_free(raw_devices);
-#endif /* SDL_JOYSTICK_XINPUT || SDL_JOYSTICK_RAWINPUT */
-
-    return SDL_FALSE;
-}
 
 static void WGI_LoadRawGameControllerStatics()
 {
@@ -448,23 +342,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             name = SDL_strdup("");
         }
 
-#ifdef SDL_JOYSTICK_HIDAPI
-        if (!ignore_joystick && HIDAPI_IsDevicePresent(vendor, product, version, name)) {
-            ignore_joystick = SDL_TRUE;
-        }
-#endif
-
-#ifdef SDL_JOYSTICK_RAWINPUT
-        if (!ignore_joystick && RAWINPUT_IsDevicePresent(vendor, product, version, name)) {
-            ignore_joystick = SDL_TRUE;
-        }
-#endif
-
-        if (!ignore_joystick && SDL_DINPUT_JoystickPresent(vendor, product, version)) {
-            ignore_joystick = SDL_TRUE;
-        }
-
-        if (!ignore_joystick && SDL_IsXInputDevice(vendor, product)) {
+        if (!ignore_joystick && SDL_JoystickHandledByAnotherDriver(&SDL_WGI_JoystickDriver, vendor, product, version, name)) {
             ignore_joystick = SDL_TRUE;
         }
 
@@ -682,6 +560,12 @@ static int WGI_JoystickGetCount(void)
 
 static void WGI_JoystickDetect(void)
 {
+}
+
+static SDL_bool WGI_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+{
+    /* We don't override any other drivers */
+    return SDL_FALSE;
 }
 
 static const char *WGI_JoystickGetDeviceName(int device_index)
@@ -1009,6 +893,7 @@ SDL_JoystickDriver SDL_WGI_JoystickDriver = {
     WGI_JoystickInit,
     WGI_JoystickGetCount,
     WGI_JoystickDetect,
+    WGI_JoystickIsDevicePresent,
     WGI_JoystickGetDeviceName,
     WGI_JoystickGetDevicePath,
     WGI_JoystickGetDeviceSteamVirtualGamepadSlot,

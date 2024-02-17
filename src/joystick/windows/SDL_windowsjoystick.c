@@ -579,6 +579,17 @@ void WINDOWS_JoystickDetect(void)
     }
 }
 
+static SDL_bool WINDOWS_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+{
+    if (SDL_DINPUT_JoystickPresent(vendor_id, product_id, version)) {
+        return SDL_TRUE;
+    }
+    if (SDL_XINPUT_JoystickPresent(vendor_id, product_id, version)) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
 static const char *WINDOWS_JoystickGetDeviceName(int device_index)
 {
     JoyStick_DeviceData *device = SYS_Joystick;
@@ -788,6 +799,7 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver = {
     WINDOWS_JoystickInit,
     WINDOWS_JoystickGetCount,
     WINDOWS_JoystickDetect,
+    WINDOWS_JoystickIsDevicePresent,
     WINDOWS_JoystickGetDeviceName,
     WINDOWS_JoystickGetDevicePath,
     WINDOWS_JoystickGetDeviceSteamVirtualGamepadSlot,

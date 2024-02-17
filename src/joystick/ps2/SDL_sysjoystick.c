@@ -140,6 +140,12 @@ static void PS2_JoystickDetect()
 {
 }
 
+static SDL_bool PS2_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+{
+    /* We don't override any other drivers */
+    return SDL_FALSE;
+}
+
 /* Function to get the device-dependent name of a joystick */
 static const char *PS2_JoystickGetDeviceName(int index)
 {
@@ -341,6 +347,7 @@ SDL_JoystickDriver SDL_PS2_JoystickDriver = {
     PS2_JoystickInit,
     PS2_JoystickGetCount,
     PS2_JoystickDetect,
+    PS2_JoystickIsDevicePresent,
     PS2_JoystickGetDeviceName,
     PS2_JoystickGetDevicePath,
     PS2_JoystickGetDeviceSteamVirtualGamepadSlot,

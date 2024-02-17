@@ -91,6 +91,12 @@ extern "C"
     {
     }
 
+    static SDL_bool HAIKU_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+    {
+        /* We don't override any other drivers */
+        return SDL_FALSE;
+    }
+
     static const char *HAIKU_JoystickGetDeviceName(int device_index)
     {
         return SDL_joyname[device_index];
@@ -293,6 +299,7 @@ extern "C"
         HAIKU_JoystickInit,
         HAIKU_JoystickGetCount,
         HAIKU_JoystickDetect,
+        HAIKU_JoystickIsDevicePresent,
         HAIKU_JoystickGetDeviceName,
         HAIKU_JoystickGetDevicePath,
         HAIKU_JoystickGetDeviceSteamVirtualGamepadSlot,

@@ -427,15 +427,8 @@ static int MaybeAddDevice(const char *path)
             name = SDL_CreateJoystickName(di.udi_vendorNo, di.udi_productNo, di.udi_vendor, di.udi_product);
             guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, di.udi_vendor, di.udi_product, 0, 0);
 
-#ifdef SDL_JOYSTICK_HIDAPI
-            if (HIDAPI_IsDevicePresent(di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, name)) {
-                /* The HIDAPI driver is taking care of this device */
-                SDL_free(name);
-                FreeHwData(hw);
-                return -1;
-            }
-#endif
-            if (SDL_ShouldIgnoreJoystick(name, guid)) {
+            if (SDL_ShouldIgnoreJoystick(name, guid) ||
+                SDL_JoystickHandledByAnotherDriver(&SDL_BSD_JoystickDriver, di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, name)) {
                 SDL_free(name);
                 FreeHwData(hw);
                 return -1;
@@ -514,6 +507,12 @@ static int BSD_JoystickGetCount(void)
 
 static void BSD_JoystickDetect(void)
 {
+}
+
+static SDL_bool BSD_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+{
+    /* We don't override any other drivers */
+    return SDL_FALSE;
 }
 
 static SDL_joylist_item *GetJoystickByDevIndex(int device_index)
@@ -848,6 +847,7 @@ SDL_JoystickDriver SDL_BSD_JoystickDriver = {
     BSD_JoystickInit,
     BSD_JoystickGetCount,
     BSD_JoystickDetect,
+    BSD_JoystickIsDevicePresent,
     BSD_JoystickGetDeviceName,
     BSD_JoystickGetDevicePath,
     BSD_JoystickGetDeviceSteamVirtualGamepadSlot,

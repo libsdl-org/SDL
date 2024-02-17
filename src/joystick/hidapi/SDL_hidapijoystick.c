@@ -1699,6 +1699,7 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver = {
     HIDAPI_JoystickInit,
     HIDAPI_JoystickGetCount,
     HIDAPI_JoystickDetect,
+    HIDAPI_IsDevicePresent,
     HIDAPI_JoystickGetDeviceName,
     HIDAPI_JoystickGetDevicePath,
     HIDAPI_JoystickGetDeviceSteamVirtualGamepadSlot,

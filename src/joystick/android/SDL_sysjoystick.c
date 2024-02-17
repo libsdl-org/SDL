@@ -321,12 +321,9 @@ int Android_AddJoystick(int device_id, const char *name, const char *desc, int v
         goto done;
     }
 
-#ifdef SDL_JOYSTICK_HIDAPI
-    if (HIDAPI_IsDevicePresent(vendor_id, product_id, 0, name)) {
-        /* The HIDAPI driver is taking care of this device */
+    if (SDL_JoystickHandledByAnotherDriver(&SDL_ANDROID_JoystickDriver, vendor_id, product_id, 0, name)) {
         goto done;
     }
-#endif
 
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Joystick: %s, descriptor %s, vendor = 0x%.4x, product = 0x%.4x, %d axes, %d hats\n", name, desc, vendor_id, product_id, naxes, nhats);
@@ -480,6 +477,12 @@ static void ANDROID_JoystickDetect(void)
         timeout = now + 3000;
         Android_JNI_PollInputDevices();
     }
+}
+
+static SDL_bool ANDROID_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+{
+    /* We don't override any other drivers */
+    return SDL_FALSE;
 }
 
 static SDL_joylist_item *GetJoystickByDevIndex(int device_index)
@@ -646,6 +649,7 @@ SDL_JoystickDriver SDL_ANDROID_JoystickDriver = {
     ANDROID_JoystickInit,
     ANDROID_JoystickGetCount,
     ANDROID_JoystickDetect,
+    ANDROID_JoystickIsDevicePresent,
     ANDROID_JoystickGetDeviceName,
     ANDROID_JoystickGetDevicePath,
     ANDROID_JoystickGetDeviceSteamVirtualGamepadSlot,
