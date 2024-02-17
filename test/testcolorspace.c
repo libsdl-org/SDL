@@ -50,8 +50,8 @@ static SDL_bool HDR_enabled = SDL_FALSE;
 static float SDR_white_level = SDR_DISPLAY_WHITE_LEVEL;
 static float SDR_color_scale = 1.0f;
 static SDL_FRect SDR_calibration_rect;
-static float HDR_white_level = DEFAULT_HDR_WHITE_LEVEL;
-static float HDR_color_scale = DEFAULT_HDR_WHITE_LEVEL / SDR_DISPLAY_WHITE_LEVEL;
+static float HDR_white_level = SDR_DISPLAY_WHITE_LEVEL;
+static float HDR_color_scale = 1.0f;
 static SDL_FRect HDR_calibration_rect;
 
 enum
@@ -77,7 +77,10 @@ static float GetDisplaySDRWhiteLevel(void)
 {
     SDL_PropertiesID props;
 
-    HDR_enabled = SDL_FALSE;
+    if (!HDR_enabled) {
+        /* HDR is not enabled, use the SDR white level */
+        return SDR_DISPLAY_WHITE_LEVEL;
+    }
 
     props = SDL_GetRendererProperties(renderer);
     if (SDL_GetNumberProperty(props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB) != SDL_COLORSPACE_SCRGB) {
@@ -86,13 +89,6 @@ static float GetDisplaySDRWhiteLevel(void)
     }
 
     props = SDL_GetDisplayProperties(SDL_GetDisplayForWindow(window));
-    if (!SDL_GetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, SDL_FALSE)) {
-        /* HDR is not enabled on the display */
-        return SDR_DISPLAY_WHITE_LEVEL;
-    }
-
-    HDR_enabled = SDL_TRUE;
-
     return SDL_GetFloatProperty(props, SDL_PROP_DISPLAY_SDR_WHITE_LEVEL_FLOAT, DEFAULT_SDR_WHITE_LEVEL);
 }
 
@@ -108,9 +104,23 @@ static void SetSDRWhiteLevel(float value)
     SDL_SetRenderColorScale(renderer, SDR_color_scale);
 }
 
-static void UpdateSDRWhiteLevel(void)
+static float GetDisplayHDRWhiteLevel(void)
 {
-    SetSDRWhiteLevel(GetDisplaySDRWhiteLevel());
+    SDL_PropertiesID props;
+
+    if (!HDR_enabled) {
+        /* HDR is not enabled, use the SDR white level */
+        return SDR_DISPLAY_WHITE_LEVEL;
+    }
+
+    props = SDL_GetRendererProperties(renderer);
+    if (SDL_GetNumberProperty(props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB) != SDL_COLORSPACE_SCRGB) {
+        /* We're not displaying in HDR, use the SDR white level */
+        return SDR_DISPLAY_WHITE_LEVEL;
+    }
+
+    props = SDL_GetDisplayProperties(SDL_GetDisplayForWindow(window));
+    return SDL_GetFloatProperty(props, SDL_PROP_DISPLAY_HDR_WHITE_LEVEL_FLOAT, DEFAULT_HDR_WHITE_LEVEL);
 }
 
 static void SetHDRWhiteLevel(float value)
@@ -122,6 +132,26 @@ static void SetHDRWhiteLevel(float value)
     SDL_Log("HDR white level set to %g nits\n", value);
     HDR_white_level = value;
     HDR_color_scale = HDR_white_level / SDR_DISPLAY_WHITE_LEVEL;
+}
+
+static void UpdateHDRState(void)
+{
+    SDL_PropertiesID props;
+
+    props = SDL_GetDisplayProperties(SDL_GetDisplayForWindow(window));
+    HDR_enabled = SDL_GetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, SDL_FALSE);
+
+    SetHDRWhiteLevel(GetDisplayHDRWhiteLevel());
+    SetSDRWhiteLevel(GetDisplaySDRWhiteLevel());
+
+    SDL_Log("HDR %s\n", HDR_enabled ? "enabled" : "disabled");
+
+    if (HDR_enabled) {
+        props = SDL_GetRendererProperties(renderer);
+        if (SDL_GetNumberProperty(props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB) != SDL_COLORSPACE_SCRGB) {
+            SDL_Log("Run with --colorspace scRGB to display HDR colors\n");
+        }
+    }
 }
 
 static void CreateRenderer(void)
@@ -144,9 +174,7 @@ static void CreateRenderer(void)
     SDL_Log("Created renderer %s\n", info.name);
     renderer_name = info.name;
 
-    UpdateSDRWhiteLevel();
-
-    SDL_Log("HDR is %s\n", HDR_enabled ? "enabled" : "disabled");
+    UpdateHDRState();
 }
 
 static void NextRenderer( void )
@@ -661,7 +689,7 @@ static void RenderHDRCalibration(void)
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_SetRenderColorScale(renderer, MAXIMUM_HDR_WHITE_LEVEL / SDR_DISPLAY_WHITE_LEVEL);
     SDL_RenderFillRect(renderer, &HDR_calibration_rect);
-    SDL_SetRenderColorScale(renderer, HDR_color_scale);
+    SDL_SetRenderColorScale(renderer, HDR_color_scale * 0.90f);
     rect = HDR_calibration_rect;
     rect.h -= 4.0f;
     rect.w = 60.0f;
@@ -747,8 +775,7 @@ static void loop(void)
                 OnMouseHeld(event.button.x, event.button.y);
             }
         } else if (event.type == SDL_EVENT_DISPLAY_HDR_STATE_CHANGED) {
-            SDL_Log("HDR %s\n", event.display.data1 ? "enabled" : "disabled");
-            UpdateSDRWhiteLevel();
+            UpdateHDRState();
         } else if (event.type == SDL_EVENT_QUIT) {
             done = 1;
         }

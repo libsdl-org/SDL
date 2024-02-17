@@ -247,6 +247,7 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
         if (uiscreen.potentialEDRHeadroom > 1.0f) {
             display.HDR.enabled = SDL_TRUE;
             display.HDR.SDR_whitelevel = 80.0f; /* SDR content is always at scRGB 1.0 */
+            display.HDR.HDR_whitelevel = display.HDR.SDR_whitelevel * uiscreen.currentEDRHeadroom;
         }
     }
 #endif /* !SDL_PLATFORM_TVOS */

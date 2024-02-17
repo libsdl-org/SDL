@@ -122,6 +122,7 @@ typedef struct
 {
     SDL_bool enabled;
     float SDR_whitelevel;
+    float HDR_whitelevel;
 } SDL_HDRDisplayProperties;
 
 /*
