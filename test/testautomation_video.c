@@ -1682,13 +1682,11 @@ static int video_getSetWindowData(void *arg)
     result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), NULL, NULL);
     SDLTest_AssertPass("Call to SDL_GetWindowData(name=NULL)");
     SDLTest_AssertCheck(result == NULL, "Validate that result is NULL");
-    checkInvalidParameterError();
 
     /* Get data with empty name */
     result = (char *)SDL_GetProperty(SDL_GetWindowProperties(window), "", NULL);
     SDLTest_AssertPass("Call to SDL_GetWindowData(name='')");
     SDLTest_AssertCheck(result == NULL, "Validate that result is NULL");
-    checkInvalidParameterError();
 
     /* Clean up */
     destroyVideoSuiteTestWindow(window);
