@@ -41,6 +41,11 @@ static void DUMMY_JoystickDetect(void)
 {
 }
 
+static SDL_bool DUMMY_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+{
+    return SDL_FALSE;
+}
+
 static const char *DUMMY_JoystickGetDeviceName(int device_index)
 {
     return NULL;
@@ -128,6 +133,7 @@ SDL_JoystickDriver SDL_DUMMY_JoystickDriver = {
     DUMMY_JoystickInit,
     DUMMY_JoystickGetCount,
     DUMMY_JoystickDetect,
+    DUMMY_JoystickIsDevicePresent,
     DUMMY_JoystickGetDeviceName,
     DUMMY_JoystickGetDevicePath,
     DUMMY_JoystickGetDeviceSteamVirtualGamepadSlot,

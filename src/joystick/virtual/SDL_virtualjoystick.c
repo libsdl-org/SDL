@@ -353,6 +353,12 @@ static void VIRTUAL_JoystickDetect(void)
 {
 }
 
+static SDL_bool VIRTUAL_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+{
+    /* We don't override any other drivers... or do we? */
+    return SDL_FALSE;
+}
+
 static const char *VIRTUAL_JoystickGetDeviceName(int device_index)
 {
     joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
@@ -749,6 +755,7 @@ SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver = {
     VIRTUAL_JoystickInit,
     VIRTUAL_JoystickGetCount,
     VIRTUAL_JoystickDetect,
+    VIRTUAL_JoystickIsDevicePresent,
     VIRTUAL_JoystickGetDeviceName,
     VIRTUAL_JoystickGetDevicePath,
     VIRTUAL_JoystickGetDeviceSteamVirtualGamepadSlot,

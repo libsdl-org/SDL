@@ -226,6 +226,12 @@ static void N3DS_JoystickDetect(void)
 {
 }
 
+static SDL_bool N3DS_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+{
+    /* We don't override any other drivers */
+    return SDL_FALSE;
+}
+
 static const char *N3DS_JoystickGetDevicePath(int device_index)
 {
     return NULL;
@@ -266,26 +272,27 @@ static int N3DS_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int
 }
 
 SDL_JoystickDriver SDL_N3DS_JoystickDriver = {
-    .Init = N3DS_JoystickInit,
-    .GetCount = N3DS_JoystickGetCount,
-    .Detect = N3DS_JoystickDetect,
-    .GetDeviceName = N3DS_JoystickGetDeviceName,
-    .GetDevicePath = N3DS_JoystickGetDevicePath,
-    .GetDeviceSteamVirtualGamepadSlot = N3DS_JoystickGetDeviceSteamVirtualGamepadSlot,
-    .GetDevicePlayerIndex = N3DS_JoystickGetDevicePlayerIndex,
-    .SetDevicePlayerIndex = N3DS_JoystickSetDevicePlayerIndex,
-    .GetDeviceGUID = N3DS_JoystickGetDeviceGUID,
-    .GetDeviceInstanceID = N3DS_JoystickGetDeviceInstanceID,
-    .Open = N3DS_JoystickOpen,
-    .Rumble = N3DS_JoystickRumble,
-    .RumbleTriggers = N3DS_JoystickRumbleTriggers,
-    .SetLED = N3DS_JoystickSetLED,
-    .SendEffect = N3DS_JoystickSendEffect,
-    .SetSensorsEnabled = N3DS_JoystickSetSensorsEnabled,
-    .Update = N3DS_JoystickUpdate,
-    .Close = N3DS_JoystickClose,
-    .Quit = N3DS_JoystickQuit,
-    .GetGamepadMapping = N3DS_JoystickGetGamepadMapping
+    N3DS_JoystickInit,
+    N3DS_JoystickGetCount,
+    N3DS_JoystickDetect,
+    N3DS_JoystickIsDevicePresent,
+    N3DS_JoystickGetDeviceName,
+    N3DS_JoystickGetDevicePath,
+    N3DS_JoystickGetDeviceSteamVirtualGamepadSlot,
+    N3DS_JoystickGetDevicePlayerIndex,
+    N3DS_JoystickSetDevicePlayerIndex,
+    N3DS_JoystickGetDeviceGUID,
+    N3DS_JoystickGetDeviceInstanceID,
+    N3DS_JoystickOpen,
+    N3DS_JoystickRumble,
+    N3DS_JoystickRumbleTriggers,
+    N3DS_JoystickSetLED,
+    N3DS_JoystickSendEffect,
+    N3DS_JoystickSetSensorsEnabled,
+    N3DS_JoystickUpdate,
+    N3DS_JoystickClose,
+    N3DS_JoystickQuit,
+    N3DS_JoystickGetGamepadMapping
 };
 
 #endif /* SDL_JOYSTICK_N3DS */
