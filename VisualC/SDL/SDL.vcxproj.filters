@@ -88,6 +88,9 @@
     <Filter Include="joystick\dummy">
       <UniqueIdentifier>{d008487d-6ed0-4251-848b-79a68e3c1459}</UniqueIdentifier>
     </Filter>
+    <Filter Include="joystick\gdk">
+      <UniqueIdentifier>{c9e8273e-13ae-47dc-bef8-8ad8e64c9a3e}</UniqueIdentifier>
+    </Filter>
     <Filter Include="joystick\hidapi">
       <UniqueIdentifier>{c9e8273e-13ae-47dc-bef8-8ad8e64c9a3d}</UniqueIdentifier>
     </Filter>
@@ -545,6 +548,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\haptic\windows\SDL_windowshaptic_c.h">
       <Filter>haptic\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\joystick\gdk\SDL_gameinputjoystick_c.h">
+      <Filter>joystick\gdk</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\joystick\hidapi\SDL_hidapijoystick_c.h">
       <Filter>joystick\hidapi</Filter>
@@ -1062,6 +1068,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\dummy\SDL_sysjoystick.c">
       <Filter>joystick\dummy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\joystick\gdk\SDL_gameinputjoystick.c">
+      <Filter>joystick\gdk</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_combined.c">
       <Filter>joystick\hidapi</Filter>

@@ -23,13 +23,9 @@
 
 #if defined(SDL_JOYSTICK_GAMEINPUT) && SDL_JOYSTICK_GAMEINPUT
 
-/* include this file in C++ */
+#include <stdbool.h>
+#define COBJMACROS
 #include <GameInput.h>
-
-/* Set up for C function definitions, even when using C++ */
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef enum GAMEINPUT_JoystickEffectDataType
 {
@@ -49,10 +45,5 @@ typedef struct GAMEINPUT_JoystickEffectData
         };
     };
 } GAMEINPUT_JoystickEffectData;
-
-/* Ends C function definitions when using C++ */
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* defined(SDL_JOYSTICK_GAMEINPUT) && SDL_JOYSTICK_GAMEINPUT */

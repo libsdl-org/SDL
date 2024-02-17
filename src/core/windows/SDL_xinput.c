@@ -20,8 +20,6 @@
 */
 #include "SDL_internal.h"
 
-#ifndef SDL_JOYSTICK_GAMEINPUT
-
 #include "SDL_xinput.h"
 
 /* Set up for C function definitions, even when using C++ */
@@ -144,5 +142,3 @@ void WIN_UnloadXInputDLL(void)
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* !SDL_JOYSTICK_GAMEINPUT */
