@@ -360,6 +360,7 @@ extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetPrimaryDisplay(void);
  * - `SDL_PROP_DISPLAY_SDR_WHITE_LEVEL_FLOAT`: the luminance, in nits, that
  *   SDR white is rendered on this display. If this value is not set or is
  *   zero, the value 200 is a reasonable default when HDR is enabled.
+ * - `SDL_PROP_DISPLAY_HDR_WHITE_LEVEL_FLOAT`: the maximum luminance, in nits, of HDR content on this display. If this value is not set or is zero, the value 400 is a reasonable default when HDR is enabled.
  *
  * \param displayID the instance ID of the display to query
  * \returns a valid property ID on success or 0 on failure; call
@@ -374,6 +375,7 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetDisplayProperties(SDL_DisplayID 
 
 #define SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN            "SDL.display.HDR_enabled"
 #define SDL_PROP_DISPLAY_SDR_WHITE_LEVEL_FLOAT          "SDL.display.SDR_white_level"
+#define SDL_PROP_DISPLAY_HDR_WHITE_LEVEL_FLOAT          "SDL.display.HDR_white_level"
 
 /**
  * Get the name of a display in UTF-8 encoding.

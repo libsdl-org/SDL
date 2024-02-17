@@ -302,6 +302,7 @@ static void Cocoa_GetHDRProperties(CGDirectDisplayID displayID, SDL_HDRDisplayPr
         if (screen && screen.maximumPotentialExtendedDynamicRangeColorComponentValue > 1.0f) {
             HDR->enabled = SDL_TRUE;
             HDR->SDR_whitelevel = 80.0f; /* SDR content is always at scRGB 1.0 */
+            HDR->HDR_whitelevel = HDR->SDR_whitelevel * screen.maximumExtendedDynamicRangeColorComponentValue;
         }
     }
 #endif

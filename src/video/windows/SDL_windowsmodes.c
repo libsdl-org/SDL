@@ -339,7 +339,7 @@ WIN_GetDisplayNameVista_failed:
 
 static SDL_bool WIN_GetMonitorDESC1(HMONITOR hMonitor, DXGI_OUTPUT_DESC1 *desc)
 {
-    typedef HRESULT(WINAPI * PFN_CREATE_DXGI_FACTORY)(REFIID riid, void **ppFactory);
+    typedef HRESULT (WINAPI * PFN_CREATE_DXGI_FACTORY)(REFIID riid, void **ppFactory);
     PFN_CREATE_DXGI_FACTORY CreateDXGIFactoryFunc = NULL;
     void *hDXGIMod = NULL;
     SDL_bool found = SDL_FALSE;
@@ -349,18 +349,18 @@ static SDL_bool WIN_GetMonitorDESC1(HMONITOR hMonitor, DXGI_OUTPUT_DESC1 *desc)
 #else
     hDXGIMod = SDL_LoadObject("dxgi.dll");
     if (hDXGIMod) {
-        CreateDXGIFactoryFunc = (PFN_CREATE_DXGI_FACTORY)SDL_LoadFunction(hDXGIMod, "CreateDXGIFactory");
+        CreateDXGIFactoryFunc = (PFN_CREATE_DXGI_FACTORY)SDL_LoadFunction(hDXGIMod, "CreateDXGIFactory1");
     }
 #endif
     if (CreateDXGIFactoryFunc) {
-        static const GUID SDL_IID_IDXGIFactory2 = { 0x50c83a1c, 0xe072, 0x4c48, { 0x87, 0xb0, 0x36, 0x30, 0xfa, 0x36, 0xa6, 0xd0 } };
+        static const GUID SDL_IID_IDXGIFactory1 = { 0x770aae78, 0xf26f, 0x4dba, { 0xa8, 0x29, 0x25, 0x3c, 0x83, 0xd1, 0xb3, 0x87 } }; 
         static const GUID SDL_IID_IDXGIOutput6 = { 0x068346e8, 0xaaec, 0x4b84, { 0xad, 0xd7, 0x13, 0x7f, 0x51, 0x3f, 0x77, 0xa1 } };
-        IDXGIFactory2 *dxgiFactory;
+        IDXGIFactory1 *dxgiFactory;
 
-        if (SUCCEEDED(CreateDXGIFactoryFunc(&SDL_IID_IDXGIFactory2, (void **)&dxgiFactory))) {
+        if (SUCCEEDED(CreateDXGIFactoryFunc(&SDL_IID_IDXGIFactory1, (void **)&dxgiFactory))) {
             IDXGIAdapter1 *dxgiAdapter;
             UINT adapter = 0;
-            while (!found && SUCCEEDED(IDXGIFactory2_EnumAdapters1(dxgiFactory, adapter, &dxgiAdapter))) {
+            while (!found && SUCCEEDED(IDXGIFactory1_EnumAdapters1(dxgiFactory, adapter, &dxgiAdapter))) {
                 IDXGIOutput *dxgiOutput;
                 UINT output = 0;
                 while (!found && SUCCEEDED(IDXGIAdapter1_EnumOutputs(dxgiAdapter, output, &dxgiOutput))) {
@@ -482,13 +482,7 @@ static void WIN_GetHDRProperties(SDL_VideoDevice *_this, HMONITOR hMonitor, SDL_
         if (desc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020) {
             HDR->enabled = SDL_TRUE;
             HDR->SDR_whitelevel = WIN_GetSDRWhiteLevel(hMonitor);
-
-            /* In theory you can get the maximum luminence from desc.MaxLuminance, but this value is 80
-             * on my system regardless of whether HDR is enabled. Because the value isn't reliable games
-             * will typically have a calibration step where they show you a white image at high luminence
-             * and slowly lower the brightness until you can see it as distinct from the background and
-             * then use that as the calibrated maximum luminence. The value 400 is a reasonable default.
-             */
+            HDR->HDR_whitelevel = desc.MaxLuminance;
         }
     }
 }

@@ -715,6 +715,9 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send
     if (display->HDR.SDR_whitelevel != 0.0f) {
         SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_SDR_WHITE_LEVEL_FLOAT, display->HDR.SDR_whitelevel);
     }
+    if (display->HDR.HDR_whitelevel != 0.0f) {
+        SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_HDR_WHITE_LEVEL_FLOAT, display->HDR.HDR_whitelevel);
+    }
 
     return id;
 }
@@ -990,6 +993,10 @@ void SDL_SetDisplayHDRProperties(SDL_VideoDisplay *display, const SDL_HDRDisplay
     }
     if (HDR->SDR_whitelevel != display->HDR.SDR_whitelevel) {
         SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_SDR_WHITE_LEVEL_FLOAT, HDR->SDR_whitelevel);
+        changed = SDL_TRUE;
+    }
+    if (HDR->HDR_whitelevel != display->HDR.HDR_whitelevel) {
+        SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_HDR_WHITE_LEVEL_FLOAT, HDR->HDR_whitelevel);
         changed = SDL_TRUE;
     }
     SDL_copyp(&display->HDR, HDR);
