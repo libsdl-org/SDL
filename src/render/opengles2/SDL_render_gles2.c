@@ -1279,7 +1279,7 @@ static int GLES2_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
                 (g != data->drawstate.clear_color.g) ||
                 (b != data->drawstate.clear_color.b) ||
                 (a != data->drawstate.clear_color.a)) {
-                data->glClearColor(r, g, g, a);
+                data->glClearColor(r, g, b, a);
                 data->drawstate.clear_color.r = r;
                 data->drawstate.clear_color.g = g;
                 data->drawstate.clear_color.b = b;
