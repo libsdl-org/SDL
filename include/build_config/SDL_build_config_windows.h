@@ -112,8 +112,11 @@ typedef unsigned int uintptr_t;
 #endif
 
 /* This can be disabled to avoid C runtime dependencies and manifest requirements */
-#define HAVE_LIBC
-#ifdef HAVE_LIBC
+#ifndef HAVE_LIBC
+#define HAVE_LIBC   1
+#endif
+
+#if HAVE_LIBC
 /* Useful headers */
 #define HAVE_CTYPE_H 1
 #define HAVE_FLOAT_H 1

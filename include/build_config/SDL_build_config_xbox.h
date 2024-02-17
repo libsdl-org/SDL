@@ -56,8 +56,6 @@
 # define SDL_DISABLE_AVX 1
 #endif
 
-/* This is disabled by default to avoid C runtime dependencies and manifest requirements */
-#ifdef HAVE_LIBC
 /* Useful headers */
 #define HAVE_CTYPE_H 1
 #define HAVE_FLOAT_H 1
@@ -73,6 +71,7 @@
 #define HAVE_WCHAR_H 1
 
 /* C library functions */
+#define HAVE_LIBC   1
 #define HAVE_MALLOC 1
 #define HAVE_CALLOC 1
 #define HAVE_REALLOC 1
@@ -156,11 +155,6 @@
 #define HAVE_TRUNCF 1
 #define HAVE__FSEEKI64 1
 #endif    /* _MSC_VER */
-#else
-#define HAVE_STDARG_H   1
-#define HAVE_STDDEF_H   1
-#define HAVE_STDINT_H   1
-#endif
 
 /* Enable various audio drivers */
 #if defined(HAVE_MMDEVICEAPI_H) && defined(HAVE_AUDIOCLIENT_H)
