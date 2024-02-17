@@ -451,17 +451,20 @@ int SDL_SetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bool va
     return SDL_PrivateSetProperty(props, name, property);
 }
 
+SDL_bool SDL_HasProperty(SDL_PropertiesID props, const char *name)
+{
+    return (SDL_GetPropertyType(props, name) != SDL_PROPERTY_TYPE_INVALID);
+}
+
 SDL_PropertyType SDL_GetPropertyType(SDL_PropertiesID props, const char *name)
 {
     SDL_Properties *properties = NULL;
     SDL_PropertyType type = SDL_PROPERTY_TYPE_INVALID;
 
     if (!props) {
-        SDL_InvalidParamError("props");
         return SDL_PROPERTY_TYPE_INVALID;
     }
     if (!name || !*name) {
-        SDL_InvalidParamError("name");
         return SDL_PROPERTY_TYPE_INVALID;
     }
 
@@ -470,7 +473,6 @@ SDL_PropertyType SDL_GetPropertyType(SDL_PropertiesID props, const char *name)
     SDL_UnlockMutex(SDL_properties_lock);
 
     if (!properties) {
-        SDL_InvalidParamError("props");
         return SDL_PROPERTY_TYPE_INVALID;
     }
 
@@ -479,8 +481,6 @@ SDL_PropertyType SDL_GetPropertyType(SDL_PropertiesID props, const char *name)
         SDL_Property *property = NULL;
         if (SDL_FindInHashTable(properties->props, name, (const void **)&property)) {
             type = property->type;
-        } else {
-            SDL_SetError("Couldn't find property named %s", name);
         }
     }
     SDL_UnlockMutex(properties->lock);
@@ -494,11 +494,9 @@ void *SDL_GetProperty(SDL_PropertiesID props, const char *name, void *default_va
     void *value = default_value;
 
     if (!props) {
-        SDL_InvalidParamError("props");
         return value;
     }
     if (!name || !*name) {
-        SDL_InvalidParamError("name");
         return value;
     }
 
@@ -507,7 +505,6 @@ void *SDL_GetProperty(SDL_PropertiesID props, const char *name, void *default_va
     SDL_UnlockMutex(SDL_properties_lock);
 
     if (!properties) {
-        SDL_InvalidParamError("props");
         return value;
     }
 
@@ -521,11 +518,7 @@ void *SDL_GetProperty(SDL_PropertiesID props, const char *name, void *default_va
         if (SDL_FindInHashTable(properties->props, name, (const void **)&property)) {
             if (property->type == SDL_PROPERTY_TYPE_POINTER) {
                 value = property->value.pointer_value;
-            } else {
-                SDL_SetError("Property %s isn't a pointer value", name);
             }
-        } else {
-            SDL_SetError("Couldn't find property named %s", name);
         }
     }
     SDL_UnlockMutex(properties->lock);
@@ -539,11 +532,9 @@ const char *SDL_GetStringProperty(SDL_PropertiesID props, const char *name, cons
     const char *value = default_value;
 
     if (!props) {
-        SDL_InvalidParamError("props");
         return value;
     }
     if (!name || !*name) {
-        SDL_InvalidParamError("name");
         return value;
     }
 
@@ -552,7 +543,6 @@ const char *SDL_GetStringProperty(SDL_PropertiesID props, const char *name, cons
     SDL_UnlockMutex(SDL_properties_lock);
 
     if (!properties) {
-        SDL_InvalidParamError("props");
         return value;
     }
 
@@ -594,11 +584,8 @@ const char *SDL_GetStringProperty(SDL_PropertiesID props, const char *name, cons
                 value = property->value.boolean_value ? "true" : "false";
                 break;
             default:
-                SDL_SetError("Property %s isn't a string value", name);
                 break;
             }
-        } else {
-            SDL_SetError("Couldn't find property named %s", name);
         }
     }
     SDL_UnlockMutex(properties->lock);
@@ -612,11 +599,9 @@ Sint64 SDL_GetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 de
     Sint64 value = default_value;
 
     if (!props) {
-        SDL_InvalidParamError("props");
         return value;
     }
     if (!name || !*name) {
-        SDL_InvalidParamError("name");
         return value;
     }
 
@@ -625,7 +610,6 @@ Sint64 SDL_GetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 de
     SDL_UnlockMutex(SDL_properties_lock);
 
     if (!properties) {
-        SDL_InvalidParamError("props");
         return value;
     }
 
@@ -647,11 +631,8 @@ Sint64 SDL_GetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 de
                 value = property->value.boolean_value;
                 break;
             default:
-                SDL_SetError("Property %s isn't a number value", name);
                 break;
             }
-        } else {
-            SDL_SetError("Couldn't find property named %s", name);
         }
     }
     SDL_UnlockMutex(properties->lock);
@@ -665,11 +646,9 @@ float SDL_GetFloatProperty(SDL_PropertiesID props, const char *name, float defau
     float value = default_value;
 
     if (!props) {
-        SDL_InvalidParamError("props");
         return value;
     }
     if (!name || !*name) {
-        SDL_InvalidParamError("name");
         return value;
     }
 
@@ -678,7 +657,6 @@ float SDL_GetFloatProperty(SDL_PropertiesID props, const char *name, float defau
     SDL_UnlockMutex(SDL_properties_lock);
 
     if (!properties) {
-        SDL_InvalidParamError("props");
         return value;
     }
 
@@ -700,11 +678,8 @@ float SDL_GetFloatProperty(SDL_PropertiesID props, const char *name, float defau
                 value = (float)property->value.boolean_value;
                 break;
             default:
-                SDL_SetError("Property %s isn't a float value", name);
                 break;
             }
-        } else {
-            SDL_SetError("Couldn't find property named %s", name);
         }
     }
     SDL_UnlockMutex(properties->lock);
@@ -718,11 +693,9 @@ SDL_bool SDL_GetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bo
     SDL_bool value = default_value;
 
     if (!props) {
-        SDL_InvalidParamError("props");
         return value;
     }
     if (!name || !*name) {
-        SDL_InvalidParamError("name");
         return value;
     }
 
@@ -731,7 +704,6 @@ SDL_bool SDL_GetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bo
     SDL_UnlockMutex(SDL_properties_lock);
 
     if (!properties) {
-        SDL_InvalidParamError("props");
         return value;
     }
 
@@ -753,11 +725,8 @@ SDL_bool SDL_GetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bo
                 value = property->value.boolean_value;
                 break;
             default:
-                SDL_SetError("Property %s isn't a boolean value", name);
                 break;
             }
-        } else {
-            SDL_SetError("Couldn't find property named %s", name);
         }
     }
     SDL_UnlockMutex(properties->lock);

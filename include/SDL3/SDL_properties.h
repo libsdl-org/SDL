@@ -249,6 +249,21 @@ extern DECLSPEC int SDLCALL SDL_SetFloatProperty(SDL_PropertiesID props, const c
 extern DECLSPEC int SDLCALL SDL_SetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bool value);
 
 /**
+ * Return whether a property exists in a set of properties.
+ *
+ * \param props the properties to query
+ * \param name the name of the property to query
+ * \returns SDL_TRUE if the property exists, or SDL_FALSE if it doesn't.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetPropertyType
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_HasProperty(SDL_PropertiesID props, const char *name);
+
+/**
  * Get the type of a property on a set of properties
  *
  * \param props the properties to query
@@ -259,6 +274,8 @@ extern DECLSPEC int SDLCALL SDL_SetBooleanProperty(SDL_PropertiesID props, const
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_HasProperty
  */
 extern DECLSPEC SDL_PropertyType SDLCALL SDL_GetPropertyType(SDL_PropertiesID props, const char *name);
 
@@ -285,6 +302,7 @@ extern DECLSPEC SDL_PropertyType SDLCALL SDL_GetPropertyType(SDL_PropertiesID pr
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetPropertyType
+ * \sa SDL_HasProperty
  * \sa SDL_SetProperty
  */
 extern DECLSPEC void *SDLCALL SDL_GetProperty(SDL_PropertiesID props, const char *name, void *default_value);
@@ -303,6 +321,7 @@ extern DECLSPEC void *SDLCALL SDL_GetProperty(SDL_PropertiesID props, const char
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetPropertyType
+ * \sa SDL_HasProperty
  * \sa SDL_SetStringProperty
  */
 extern DECLSPEC const char *SDLCALL SDL_GetStringProperty(SDL_PropertiesID props, const char *name, const char *default_value);
@@ -324,6 +343,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetStringProperty(SDL_PropertiesID props
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetPropertyType
+ * \sa SDL_HasProperty
  * \sa SDL_SetNumberProperty
  */
 extern DECLSPEC Sint64 SDLCALL SDL_GetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 default_value);
@@ -345,6 +365,7 @@ extern DECLSPEC Sint64 SDLCALL SDL_GetNumberProperty(SDL_PropertiesID props, con
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetPropertyType
+ * \sa SDL_HasProperty
  * \sa SDL_SetFloatProperty
  */
 extern DECLSPEC float SDLCALL SDL_GetFloatProperty(SDL_PropertiesID props, const char *name, float default_value);
@@ -366,6 +387,7 @@ extern DECLSPEC float SDLCALL SDL_GetFloatProperty(SDL_PropertiesID props, const
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetPropertyType
+ * \sa SDL_HasProperty
  * \sa SDL_SetBooleanProperty
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_GetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bool default_value);
@@ -381,8 +403,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetBooleanProperty(SDL_PropertiesID props, 
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetProperty
  */
 extern DECLSPEC int SDLCALL SDL_ClearProperty(SDL_PropertiesID props, const char *name);
 
