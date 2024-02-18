@@ -259,7 +259,7 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
     cssname = SDL_GetCSSCursorName(cdata->system_cursor, &fallback_name);
 
     cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, cssname);
-    if (!cursor) {
+    if (!cursor && fallback_name) {
         cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, fallback_name);
     }
 
