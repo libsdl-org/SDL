@@ -76,15 +76,7 @@ static int GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     char tmp[4];
     int idx = 0;
 
-    if (!pDevice) {
-        return SDL_SetError("GAMEINPUT_InternalAddOrFind argument pDevice cannot be NULL");
-    }
-
     devinfo = IGameInputDevice_GetDeviceInfo(pDevice);
-    if (!devinfo) {
-        return SDL_SetError("GAMEINPUT_InternalAddOrFind GetDeviceInfo returned NULL");
-    }
-
     if (devinfo->capabilities & GameInputDeviceCapabilityWireless) {
         bus = SDL_HARDWARE_BUS_BLUETOOTH;
     } else {
@@ -102,7 +94,7 @@ static int GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
         elem = g_GameInputList.devices[idx];
         if (elem && elem->device == pDevice) {
             /* we're already added */
-            return idx;
+            return 0;
         }
     }
 
@@ -123,7 +115,6 @@ static int GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
         SDL_strlcat(elem->path, tmp, SDL_arraysize(tmp));
     }
 
-    g_GameInputList.devices = devicelist;
     IGameInputDevice_AddRef(pDevice);
     elem->device = pDevice;
     elem->name = "GameInput Gamepad";
@@ -133,10 +124,11 @@ static int GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     elem->device_instance = SDL_GetNextObjectID();
     elem->wireless = (devinfo->capabilities & GameInputDeviceCapabilityWireless);
     elem->supportedRumbleMotors = devinfo->supportedRumbleMotors;
-    g_GameInputList.devices[g_GameInputList.count] = elem;
 
-    /* finally increment the count and return */
-    return g_GameInputList.count++;
+    g_GameInputList.devices = devicelist;
+    g_GameInputList.devices[g_GameInputList.count++] = elem;
+
+    return 0;
 }
 
 static int GAMEINPUT_InternalRemoveByIndex(int idx)
@@ -193,6 +185,11 @@ static void CALLBACK GAMEINPUT_InternalJoystickDeviceCallback(
 {
     int idx = 0;
     GAMEINPUT_InternalDevice *elem = NULL;
+
+    if (!device) {
+        /* This should never happen, but ignore it if it does */
+        return;
+    }
 
     if (currentStatus & GameInputDeviceConnected) {
         GAMEINPUT_InternalAddOrFind(device);
