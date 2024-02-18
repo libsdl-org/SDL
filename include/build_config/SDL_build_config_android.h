@@ -192,5 +192,6 @@
 
 /* Enable the camera driver */
 #define SDL_CAMERA_DRIVER_ANDROID 1
+#define SDL_CAMERA_DRIVER_DUMMY 1
 
 #endif /* SDL_build_config_android_h_ */

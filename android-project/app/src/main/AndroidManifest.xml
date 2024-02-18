@@ -37,6 +37,13 @@
         android:name="android.hardware.microphone"
         android:required="false" /> -->
 
+    <!-- Camera support -->
+    <!-- if you want to record video, uncomment this. -->
+    <!--
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" />
+    -->
+
     <!-- Allow downloading to the external storage on Android 5.1 and older -->
     <!-- <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="22" /> -->
 
