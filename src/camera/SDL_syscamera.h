@@ -27,12 +27,6 @@
 
 #define DEBUG_CAMERA 0
 
-
-// !!! FIXME: update this driver!
-#ifdef SDL_CAMERA_DRIVER_ANDROID
-#undef SDL_CAMERA_DRIVER_ANDROID
-#endif
-
 typedef struct SDL_CameraDevice SDL_CameraDevice;
 
 /* Backends should call this as devices are added to the system (such as
@@ -52,6 +46,10 @@ extern void SDL_CameraDevicePermissionOutcome(SDL_CameraDevice *device, SDL_bool
 
 // Backends can call this to get a standardized name for a thread to power a specific camera device.
 extern char *SDL_GetCameraThreadName(SDL_CameraDevice *device, char *buf, size_t buflen);
+
+// Backends can call these to change a device's refcount.
+extern void RefPhysicalCameraDevice(SDL_CameraDevice *device);
+extern void UnrefPhysicalCameraDevice(SDL_CameraDevice *device);
 
 // These functions are the heart of the camera threads. Backends can call them directly if they aren't using the SDL-provided thread.
 extern void SDL_CameraThreadSetup(SDL_CameraDevice *device);
