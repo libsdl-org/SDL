@@ -539,7 +539,13 @@ char *SDL_GetCameraDeviceName(SDL_CameraDeviceID instance_id)
 
 SDL_CameraDeviceID *SDL_GetCameraDevices(int *count)
 {
+    int dummy_count;
+    if (!count) {
+        count = &dummy_count;
+    }
+
     if (!SDL_GetCurrentCameraDriver()) {
+        *count = 0;
         SDL_SetError("Camera subsystem is not initialized");
         return NULL;
     }
@@ -548,31 +554,26 @@ SDL_CameraDeviceID *SDL_GetCameraDevices(int *count)
 
     SDL_LockRWLockForReading(camera_driver.device_hash_lock);
     int num_devices = SDL_AtomicGet(&camera_driver.device_count);
-    if (num_devices > 0) {
-        retval = (SDL_CameraDeviceID *) SDL_malloc((num_devices + 1) * sizeof (SDL_CameraDeviceID));
-        if (!retval) {
-            num_devices = 0;
-        } else {
-            int devs_seen = 0;
-            const void *key;
-            const void *value;
-            void *iter = NULL;
-            while (SDL_IterateHashTable(camera_driver.device_hash, &key, &value, &iter)) {
-                retval[devs_seen++] = (SDL_CameraDeviceID) (uintptr_t) key;
-            }
-
-            SDL_assert(devs_seen == num_devices);
-            retval[devs_seen] = 0;  // null-terminated.
+    retval = (SDL_CameraDeviceID *) SDL_malloc((num_devices + 1) * sizeof (SDL_CameraDeviceID));
+    if (!retval) {
+        num_devices = 0;
+    } else {
+        int devs_seen = 0;
+        const void *key;
+        const void *value;
+        void *iter = NULL;
+        while (SDL_IterateHashTable(camera_driver.device_hash, &key, &value, &iter)) {
+            retval[devs_seen++] = (SDL_CameraDeviceID) (uintptr_t) key;
         }
+
+        SDL_assert(devs_seen == num_devices);
+        retval[devs_seen] = 0;  // null-terminated.
     }
     SDL_UnlockRWLock(camera_driver.device_hash_lock);
 
-    if (count) {
-        *count = num_devices;
-    }
+    *count = num_devices;
 
     return retval;
-
 }
 
 SDL_CameraSpec *SDL_GetCameraDeviceSupportedFormats(SDL_CameraDeviceID instance_id, int *count)
