@@ -54,7 +54,6 @@ typedef struct joystick_hwdata
 {
     GAMEINPUT_InternalDevice *devref;
     GameInputRumbleParams rumbleParams;
-    Uint64 lastTimestamp;
 } GAMEINPUT_InternalJoystickHwdata;
 
 
@@ -453,52 +452,39 @@ static int GAMEINPUT_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool 
 static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
 {
     static WORD s_XInputButtons[] = {
-        GameInputGamepadA, GameInputGamepadB, GameInputGamepadX, GameInputGamepadY,
-        GameInputGamepadLeftShoulder, GameInputGamepadRightShoulder, GameInputGamepadView, GameInputGamepadMenu,
-        GameInputGamepadLeftThumbstick, GameInputGamepadRightThumbstick,
-        0 /* Guide button is not supported on Xbox so ignore that... */
+        GameInputGamepadA,                  /* SDL_GAMEPAD_BUTTON_SOUTH */
+        GameInputGamepadB,                  /* SDL_GAMEPAD_BUTTON_EAST */
+        GameInputGamepadX,                  /* SDL_GAMEPAD_BUTTON_WEST */
+        GameInputGamepadY,                  /* SDL_GAMEPAD_BUTTON_NORTH */
+        GameInputGamepadView,               /* SDL_GAMEPAD_BUTTON_BACK */
+        0, /* The guide button is not available */
+        GameInputGamepadMenu,               /* SDL_GAMEPAD_BUTTON_START */
+        GameInputGamepadLeftThumbstick,     /* SDL_GAMEPAD_BUTTON_LEFT_STICK */
+        GameInputGamepadRightThumbstick,    /* SDL_GAMEPAD_BUTTON_RIGHT_STICK */
+        GameInputGamepadLeftShoulder,       /* SDL_GAMEPAD_BUTTON_LEFT_SHOULDER */
+        GameInputGamepadRightShoulder,      /* SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER */
     };
     Uint8 btnidx = 0, btnstate = 0, hat = 0;
     GAMEINPUT_InternalJoystickHwdata *hwdata = joystick->hwdata;
     IGameInputDevice *device = hwdata->devref->device;
     IGameInputReading *reading = NULL;
-    uint64_t ts = 0;
+    Uint64 timestamp = SDL_GetTicksNS();
     GameInputGamepadState state;
-    HRESULT hR = IGameInput_GetCurrentReading(g_pGameInput,
-        GameInputKindGamepad,
-        device,
-        &reading
-    );
+    HRESULT hR;
 
+
+    hR = IGameInput_GetCurrentReading(g_pGameInput, GameInputKindGamepad, device, &reading);
     if (FAILED(hR)) {
         /* don't SetError here since there can be a legitimate case when there's no reading avail */
         return;
     }
 
-    /* GDKX private docs for GetTimestamp: "The microsecond timestamp describing when the input was made." */
-    /* SDL expects a nanosecond timestamp, so I guess US_TO_NS should be used here? */
-    ts = SDL_US_TO_NS(IGameInputReading_GetTimestamp(reading));
+    /* FIXME: See if we can get the delta between the reading timestamp and current time and apply the offset to timestamp */
 
-    if (((!hwdata->lastTimestamp) || (ts != hwdata->lastTimestamp)) && IGameInputReading_GetGamepadState(reading, &state)) {
-        /* `state` is now valid */
-
-#define tosint16(_TheValue) ((Sint16)(((_TheValue) < 0.0f) ? ((_TheValue) * 32768.0f) : ((_TheValue) * 32767.0f)))
-        SDL_SendJoystickAxis(ts, joystick, 0, tosint16(state.leftThumbstickX));
-        SDL_SendJoystickAxis(ts, joystick, 1, tosint16(state.leftThumbstickY));
-        SDL_SendJoystickAxis(ts, joystick, 2, tosint16(state.leftTrigger));
-        SDL_SendJoystickAxis(ts, joystick, 3, tosint16(state.rightThumbstickX));
-        SDL_SendJoystickAxis(ts, joystick, 4, tosint16(state.rightThumbstickY));
-        SDL_SendJoystickAxis(ts, joystick, 5, tosint16(state.rightTrigger));
-#undef tosint16
-
-        for (btnidx = 0; btnidx < (Uint8)SDL_arraysize(s_XInputButtons); ++btnidx) {
-            if (s_XInputButtons[btnidx] == 0) {
-                btnstate = SDL_RELEASED;
-            } else {
-                btnstate = (state.buttons & s_XInputButtons[btnidx]) ? SDL_PRESSED : SDL_RELEASED;
-            }
-
-            SDL_SendJoystickButton(ts, joystick, btnidx, btnstate);
+    if (IGameInputReading_GetGamepadState(reading, &state)) {
+        for (btnidx = 0; btnidx < SDL_arraysize(s_XInputButtons); ++btnidx) {
+            btnstate = (state.buttons & s_XInputButtons[btnidx]) ? SDL_PRESSED : SDL_RELEASED;
+            SDL_SendJoystickButton(timestamp, joystick, btnidx, btnstate);
         }
 
         if (state.buttons & GameInputGamepadDPadUp) {
@@ -513,15 +499,32 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
         if (state.buttons & GameInputGamepadDPadRight) {
             hat |= SDL_HAT_RIGHT;
         }
-        SDL_SendJoystickHat(ts, joystick, 0, hat);
+        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
 
-        /* Xbox doesn't let you obtain the power level, pretend we're always full */
-        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
-
-        hwdata->lastTimestamp = ts;
+#define CONVERT_AXIS(v) (Sint16)(((v) < 0.0f) ? ((v)*32768.0f) : ((v)*32767.0f))
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, CONVERT_AXIS(state.leftThumbstickX));
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, CONVERT_AXIS(-state.leftThumbstickY));
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, CONVERT_AXIS(state.rightThumbstickX));
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, CONVERT_AXIS(-state.rightThumbstickY));
+#undef CONVERT_AXIS
+#define CONVERT_TRIGGER(v) (Sint16)((v)*65535.0f - 32768.0f)
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, CONVERT_TRIGGER(state.leftTrigger));
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, CONVERT_TRIGGER(state.rightTrigger));
+#undef CONVERT_TRIGGER
     }
 
     IGameInputReading_Release(reading);
+
+#if 0
+    /* FIXME: We can poll this at a much lower rate */
+    GameInputBatteryState battery_state;
+    SDL_zero(battery_state);
+    IGameInputDevice_GetBatteryState(device, &battery_state);
+
+
+    /* Xbox doesn't let you obtain the power level, pretend we're always full */
+    SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
+#endif
 }
 
 static void GAMEINPUT_JoystickClose(SDL_Joystick* joystick)
@@ -561,7 +564,69 @@ static void GAMEINPUT_JoystickQuit(void)
 
 static SDL_bool GAMEINPUT_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
-    return SDL_FALSE;
+    out->a.kind = EMappingKind_Button;
+    out->a.target = SDL_GAMEPAD_BUTTON_SOUTH;
+
+    out->b.kind = EMappingKind_Button;
+    out->b.target = SDL_GAMEPAD_BUTTON_EAST;
+
+    out->x.kind = EMappingKind_Button;
+    out->x.target = SDL_GAMEPAD_BUTTON_WEST;
+
+    out->y.kind = EMappingKind_Button;
+    out->y.target = SDL_GAMEPAD_BUTTON_NORTH;
+
+    out->back.kind = EMappingKind_Button;
+    out->back.target = SDL_GAMEPAD_BUTTON_BACK;
+
+    /* The guide button isn't available, so don't map it */
+
+    out->start.kind = EMappingKind_Button;
+    out->start.target = SDL_GAMEPAD_BUTTON_START;
+
+    out->leftstick.kind = EMappingKind_Button;
+    out->leftstick.target = SDL_GAMEPAD_BUTTON_LEFT_STICK;
+
+    out->rightstick.kind = EMappingKind_Button;
+    out->rightstick.target = SDL_GAMEPAD_BUTTON_RIGHT_STICK;
+
+    out->leftshoulder.kind = EMappingKind_Button;
+    out->leftshoulder.target = SDL_GAMEPAD_BUTTON_LEFT_SHOULDER;
+
+    out->rightshoulder.kind = EMappingKind_Button;
+    out->rightshoulder.target = SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER;
+
+    out->dpup.kind = EMappingKind_Hat;
+    out->dpup.target = SDL_HAT_UP;
+
+    out->dpdown.kind = EMappingKind_Hat;
+    out->dpdown.target = SDL_HAT_DOWN;
+
+    out->dpleft.kind = EMappingKind_Hat;
+    out->dpleft.target = SDL_HAT_LEFT;
+
+    out->dpright.kind = EMappingKind_Hat;
+    out->dpright.target = SDL_HAT_RIGHT;
+
+    out->leftx.kind = EMappingKind_Axis;
+    out->leftx.target = SDL_GAMEPAD_AXIS_LEFTX;
+
+    out->lefty.kind = EMappingKind_Axis;
+    out->lefty.target = SDL_GAMEPAD_AXIS_LEFTY;
+
+    out->rightx.kind = EMappingKind_Axis;
+    out->rightx.target = SDL_GAMEPAD_AXIS_RIGHTX;
+
+    out->righty.kind = EMappingKind_Axis;
+    out->righty.target = SDL_GAMEPAD_AXIS_RIGHTY;
+
+    out->lefttrigger.kind = EMappingKind_Axis;
+    out->lefttrigger.target = SDL_GAMEPAD_AXIS_LEFT_TRIGGER;
+
+    out->righttrigger.kind = EMappingKind_Axis;
+    out->righttrigger.target = SDL_GAMEPAD_AXIS_RIGHT_TRIGGER;
+
+    return SDL_TRUE;
 }
 
 
