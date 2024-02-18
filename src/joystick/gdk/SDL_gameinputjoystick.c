@@ -20,14 +20,14 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL_gameinputjoystick_c.h"
+#ifdef SDL_JOYSTICK_GAMEINPUT
 
-#if defined(SDL_JOYSTICK_GAMEINPUT) && SDL_JOYSTICK_GAMEINPUT
+#include "../SDL_sysjoystick.h"
 
-/* Public APIs: GAMEINPUT_Joystick... */
-/* Private APIs: GAMEINPUT_InternalJoystick... */
+#include <stdbool.h>
+#define COBJMACROS
+#include <GameInput.h>
 
-#include "../usb_ids.h"
 
 typedef struct GAMEINPUT_InternalDevice
 {
@@ -115,7 +115,7 @@ static int GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     }
     vendor = devinfo->vendorId;
     product = devinfo->productId;
-    version = (devinfo->major << 8) | devinfo->minor;
+    version = (devinfo->firmwareVersion.major << 8) | devinfo->firmwareVersion.minor;
 
     g_GameInputList.devices = devicelist;
     IGameInputDevice_AddRef(pDevice);
@@ -434,26 +434,7 @@ static int GAMEINPUT_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 gre
 
 static int GAMEINPUT_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
-    HRESULT hR = S_OK;
-    const GAMEINPUT_JoystickEffectData *effect = NULL;
-    GAMEINPUT_InternalJoystickHwdata *hwdata = joystick->hwdata;
-
-    if (!data || size != sizeof(GAMEINPUT_JoystickEffectData)) {
-        return SDL_SetError("GAMEINPUT_JoystickSendEffect invalid data or size");
-    }
-
-    effect = (const GAMEINPUT_JoystickEffectData *)data;
-    if (effect->type == GAMEINPUT_JoystickEffectDataType_HapticFeedback) {
-        hR = IGameInputDevice_SetHapticMotorState(hwdata->devref->device,
-            effect->hapticFeedbackMotorIndex,
-            &effect->hapticFeedbackParams
-        );
-        if (FAILED(hR)) {
-            return SDL_SetError("IGameInputDevice::SetHapticMotorState failure with HRESULT of %08X", hR);
-        }
-    }
-
-    return 0;
+    return SDL_Unsupported();
 }
 
 static int GAMEINPUT_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
@@ -603,4 +584,4 @@ SDL_JoystickDriver SDL_GAMEINPUT_JoystickDriver =
 };
 
 
-#endif /* defined(SDL_JOYSTICK_GAMEINPUT) && SDL_JOYSTICK_GAMEINPUT */
+#endif /* SDL_JOYSTICK_GAMEINPUT */
