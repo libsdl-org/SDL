@@ -53,6 +53,7 @@ typedef struct joystick_hwdata
     GAMEINPUT_InternalDevice *devref;
     SDL_bool report_sensors;
     GameInputRumbleParams rumbleParams;
+    GameInputCallbackToken guide_button_callback_token;
 } GAMEINPUT_InternalJoystickHwdata;
 
 
@@ -345,6 +346,17 @@ static SDL_JoystickPowerLevel GAMEINPUT_InternalGetPowerLevel(IGameInputDevice *
     return SDL_JOYSTICK_POWER_UNKNOWN;
 }
 
+#if 0
+static void CALLBACK GAMEINPUT_InternalGuideButtonCallback(GameInputCallbackToken callbackToken, void *context, IGameInputDevice *device, uint64_t timestamp, bool isPressed)
+{
+    SDL_Joystick *joystick = (SDL_Joystick *)context;
+
+    SDL_LockJoysticks();
+    SDL_SendJoystickButton(0, joystick, SDL_GAMEPAD_BUTTON_GUIDE, isPressed ? SDL_PRESSED : SDL_RELEASED);
+    SDL_UnlockJoysticks();
+}
+#endif
+
 static int GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     GAMEINPUT_InternalDevice *elem = GAMEINPUT_InternalFindByIndex(device_index);
@@ -365,6 +377,12 @@ static int GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->naxes = 6;
     joystick->nbuttons = 11;
     joystick->nhats = 1;
+
+    if (elem->info->supportedInput & GameInputKindGamepad) {
+#if 0 /* The actual signature for this function is GameInputClient::RegisterSystemButtonCallback(struct IGameInputDevice *,enum GameInputSystemButtons,void *,void (*)(unsigned __int64,void *,struct IGameInputDevice *,unsigned __int64,enum GameInputSystemButtons,enum GameInputSystemButtons),unsigned __int64 *) */
+        IGameInput_RegisterGuideButtonCallback(g_pGameInput, elem->device, joystick, GAMEINPUT_InternalGuideButtonCallback, &hwdata->guide_button_callback_token);
+#endif
+    }
 
     if (elem->info->supportedRumbleMotors & (GameInputRumbleLowFrequency | GameInputRumbleHighFrequency)) {
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
@@ -464,7 +482,11 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
 
     if (IGameInputReading_GetGamepadState(reading, &state)) {
         for (btnidx = 0; btnidx < SDL_arraysize(s_XInputButtons); ++btnidx) {
-            btnstate = (state.buttons & s_XInputButtons[btnidx]) ? SDL_PRESSED : SDL_RELEASED;
+            WORD button_mask = s_XInputButtons[btnidx];
+            if (!button_mask) {
+                continue;
+            }
+            btnstate = (state.buttons & button_mask) ? SDL_PRESSED : SDL_RELEASED;
             SDL_SendJoystickButton(timestamp, joystick, btnidx, btnstate);
         }
 
@@ -526,7 +548,13 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
 
 static void GAMEINPUT_JoystickClose(SDL_Joystick* joystick)
 {
-    SDL_free(joystick->hwdata);
+    GAMEINPUT_InternalJoystickHwdata *hwdata = joystick->hwdata;
+
+    if (hwdata->guide_button_callback_token) {
+        IGameInput_UnregisterCallback(g_pGameInput, hwdata->guide_button_callback_token, 5000);
+    }
+    SDL_free(hwdata);
+
     joystick->hwdata = NULL;
 }
 
