@@ -85,6 +85,19 @@ static int GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
         return SDL_SetError("GAMEINPUT_InternalAddOrFind GetDeviceInfo returned NULL");
     }
 
+    if (devinfo->capabilities & GameInputDeviceCapabilityWireless) {
+        bus = SDL_HARDWARE_BUS_BLUETOOTH;
+    } else {
+        bus = SDL_HARDWARE_BUS_USB;
+    }
+    vendor = devinfo->vendorId;
+    product = devinfo->productId;
+    version = (devinfo->firmwareVersion.major << 8) | devinfo->firmwareVersion.minor;
+
+    if (SDL_JoystickHandledByAnotherDriver(&SDL_GAMEINPUT_JoystickDriver, vendor, product, version, "")) {
+        return 0;
+    }
+
     for (idx = 0; idx < g_GameInputList.count; ++idx) {
         elem = g_GameInputList.devices[idx];
         if (elem && elem->device == pDevice) {
@@ -109,14 +122,6 @@ static int GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
         SDL_snprintf(tmp, SDL_arraysize(tmp), "%02hhX", devinfo->deviceId.value[idx]);
         SDL_strlcat(elem->path, tmp, SDL_arraysize(tmp));
     }
-    if (devinfo->capabilities & GameInputDeviceCapabilityWireless) {
-        bus = SDL_HARDWARE_BUS_BLUETOOTH;
-    } else {
-        bus = SDL_HARDWARE_BUS_USB;
-    }
-    vendor = devinfo->vendorId;
-    product = devinfo->productId;
-    version = (devinfo->firmwareVersion.major << 8) | devinfo->firmwareVersion.minor;
 
     g_GameInputList.devices = devicelist;
     IGameInputDevice_AddRef(pDevice);
