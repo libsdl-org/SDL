@@ -23,6 +23,7 @@
 #ifdef SDL_JOYSTICK_GAMEINPUT
 
 #include "../SDL_sysjoystick.h"
+#include "../usb_ids.h"
 
 #include <stdbool.h>
 #define COBJMACROS
@@ -280,6 +281,12 @@ static SDL_bool GAMEINPUT_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 produ
 {
     int idx = 0;
     GAMEINPUT_InternalDevice *elem = NULL;
+
+    if (vendor_id == USB_VENDOR_MICROSOFT &&
+        product_id == USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER) {
+        /* The Xbox One controller shows up as a hardcoded raw input VID/PID, which we definitely handle */
+        return SDL_TRUE;
+    }
 
     for (idx = 0; idx < g_GameInputList.count; ++idx) {
         elem = g_GameInputList.devices[idx];
