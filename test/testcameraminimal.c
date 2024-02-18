@@ -26,6 +26,9 @@ static SDL_Surface *frame_current = NULL;
 
 int SDL_AppInit(int argc, char *argv[])
 {
+    int devcount = 0;
+    int i;
+
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
     if (state == NULL) {
@@ -55,17 +58,24 @@ int SDL_AppInit(int argc, char *argv[])
         return -1;
     }
 
-    SDL_CameraDeviceID *devices = SDL_GetCameraDevices(NULL);
+    SDL_CameraDeviceID *devices = SDL_GetCameraDevices(&devcount);
     if (!devices) {
         SDL_Log("SDL_GetCameraDevices failed: %s", SDL_GetError());
         return -1;
+    }
+
+    SDL_Log("Saw %d camera devices.", devcount);
+    for (i = 0; i < devcount; i++) {
+        char *name = SDL_GetCameraDeviceName(devices[i]);
+        SDL_Log("  - Camera #%d: %s", i, name);
+        SDL_free(name);
     }
 
     const SDL_CameraDeviceID devid = devices[0];  /* just take the first one. */
     SDL_free(devices);
 
     if (!devid) {
-        SDL_Log("No cameras available? %s", SDL_GetError());
+        SDL_Log("No cameras available?");
         return -1;
     }
     
