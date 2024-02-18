@@ -63,6 +63,14 @@ static IGameInput *g_pGameInput = NULL;
 static GameInputCallbackToken g_GameInputCallbackToken = GAMEINPUT_INVALID_CALLBACK_TOKEN_VALUE;
 
 
+static SDL_bool GAMEINPUT_InternalIsGamepad(const GameInputDeviceInfo *info)
+{
+    if (info->supportedInput & GameInputKindGamepad) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
 static int GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 {
     GAMEINPUT_InternalDevice **devicelist = NULL;
@@ -234,7 +242,7 @@ static int GAMEINPUT_JoystickInit(void)
 
     hR = IGameInput_RegisterDeviceCallback(g_pGameInput,
                                            NULL,
-                                           GameInputKindGamepad,
+                                           GameInputKindController,
                                            GameInputDeviceConnected,
                                            GameInputBlockingEnumeration,
                                            NULL,
@@ -360,6 +368,7 @@ static void CALLBACK GAMEINPUT_InternalGuideButtonCallback(GameInputCallbackToke
 static int GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     GAMEINPUT_InternalDevice *elem = GAMEINPUT_InternalFindByIndex(device_index);
+    const GameInputDeviceInfo *info = elem->info;
     GAMEINPUT_InternalJoystickHwdata *hwdata = NULL;
 
     if (!elem) {
@@ -374,34 +383,40 @@ static int GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
     hwdata->devref = elem;
 
     joystick->hwdata = hwdata;
-    joystick->naxes = 6;
-    joystick->nbuttons = 11;
-    joystick->nhats = 1;
+    if (GAMEINPUT_InternalIsGamepad(info)) {
+        joystick->naxes = 6;
+        joystick->nbuttons = 11;
+        joystick->nhats = 1;
+    } else {
+        joystick->naxes = info->controllerAxisCount;
+        joystick->nbuttons = info->controllerButtonCount;
+        joystick->nhats = info->controllerSwitchCount;
+    }
 
-    if (elem->info->supportedInput & GameInputKindGamepad) {
+    if (GAMEINPUT_InternalIsGamepad(info)) {
 #if 0 /* The actual signature for this function is GameInputClient::RegisterSystemButtonCallback(struct IGameInputDevice *,enum GameInputSystemButtons,void *,void (*)(unsigned __int64,void *,struct IGameInputDevice *,unsigned __int64,enum GameInputSystemButtons,enum GameInputSystemButtons),unsigned __int64 *) */
         IGameInput_RegisterGuideButtonCallback(g_pGameInput, elem->device, joystick, GAMEINPUT_InternalGuideButtonCallback, &hwdata->guide_button_callback_token);
 #endif
     }
 
-    if (elem->info->supportedRumbleMotors & (GameInputRumbleLowFrequency | GameInputRumbleHighFrequency)) {
+    if (info->supportedRumbleMotors & (GameInputRumbleLowFrequency | GameInputRumbleHighFrequency)) {
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
     }
-    if (elem->info->supportedRumbleMotors & (GameInputRumbleLeftTrigger | GameInputRumbleRightTrigger)) {
+    if (info->supportedRumbleMotors & (GameInputRumbleLeftTrigger | GameInputRumbleRightTrigger)) {
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, SDL_TRUE);
     }
 
-    if (elem->info->supportedInput & GameInputKindTouch) {
-        SDL_PrivateJoystickAddTouchpad(joystick, elem->info->touchPointCount);
+    if (info->supportedInput & GameInputKindTouch) {
+        SDL_PrivateJoystickAddTouchpad(joystick, info->touchPointCount);
     }
 
-    if (elem->info->supportedInput & GameInputKindMotion) {
+    if (info->supportedInput & GameInputKindMotion) {
         /* FIXME: What's the sensor update rate? */
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 250.0f);
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 250.0f);
     }
 
-    if (elem->info->capabilities & GameInputDeviceCapabilityWireless) {
+    if (info->capabilities & GameInputDeviceCapabilityWireless) {
         joystick->epowerlevel = GAMEINPUT_InternalGetPowerLevel(elem->device);
     } else {
         joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
@@ -449,20 +464,6 @@ static int GAMEINPUT_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool 
 
 static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
 {
-    static WORD s_XInputButtons[] = {
-        GameInputGamepadA,                  /* SDL_GAMEPAD_BUTTON_SOUTH */
-        GameInputGamepadB,                  /* SDL_GAMEPAD_BUTTON_EAST */
-        GameInputGamepadX,                  /* SDL_GAMEPAD_BUTTON_WEST */
-        GameInputGamepadY,                  /* SDL_GAMEPAD_BUTTON_NORTH */
-        GameInputGamepadView,               /* SDL_GAMEPAD_BUTTON_BACK */
-        0, /* The guide button is not available */
-        GameInputGamepadMenu,               /* SDL_GAMEPAD_BUTTON_START */
-        GameInputGamepadLeftThumbstick,     /* SDL_GAMEPAD_BUTTON_LEFT_STICK */
-        GameInputGamepadRightThumbstick,    /* SDL_GAMEPAD_BUTTON_RIGHT_STICK */
-        GameInputGamepadLeftShoulder,       /* SDL_GAMEPAD_BUTTON_LEFT_SHOULDER */
-        GameInputGamepadRightShoulder,      /* SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER */
-    };
-    Uint8 btnidx = 0, btnstate = 0, hat = 0;
     GAMEINPUT_InternalJoystickHwdata *hwdata = joystick->hwdata;
     IGameInputDevice *device = hwdata->devref->device;
     const GameInputDeviceInfo *info = hwdata->devref->info;
@@ -471,8 +472,7 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
     GameInputGamepadState state;
     HRESULT hR;
 
-
-    hR = IGameInput_GetCurrentReading(g_pGameInput, GameInputKindGamepad, device, &reading);
+    hR = IGameInput_GetCurrentReading(g_pGameInput, info->supportedInput, device, &reading);
     if (FAILED(hR)) {
         /* don't SetError here since there can be a legitimate case when there's no reading avail */
         return;
@@ -480,40 +480,80 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
 
     /* FIXME: See if we can get the delta between the reading timestamp and current time and apply the offset to timestamp */
 
-    if (IGameInputReading_GetGamepadState(reading, &state)) {
-        for (btnidx = 0; btnidx < SDL_arraysize(s_XInputButtons); ++btnidx) {
-            WORD button_mask = s_XInputButtons[btnidx];
-            if (!button_mask) {
-                continue;
-            }
-            btnstate = (state.buttons & button_mask) ? SDL_PRESSED : SDL_RELEASED;
-            SDL_SendJoystickButton(timestamp, joystick, btnidx, btnstate);
-        }
+    if (GAMEINPUT_InternalIsGamepad(info)) {
+        static WORD s_XInputButtons[] = {
+            GameInputGamepadA,               /* SDL_GAMEPAD_BUTTON_SOUTH */
+            GameInputGamepadB,               /* SDL_GAMEPAD_BUTTON_EAST */
+            GameInputGamepadX,               /* SDL_GAMEPAD_BUTTON_WEST */
+            GameInputGamepadY,               /* SDL_GAMEPAD_BUTTON_NORTH */
+            GameInputGamepadView,            /* SDL_GAMEPAD_BUTTON_BACK */
+            0,                               /* The guide button is not available */
+            GameInputGamepadMenu,            /* SDL_GAMEPAD_BUTTON_START */
+            GameInputGamepadLeftThumbstick,  /* SDL_GAMEPAD_BUTTON_LEFT_STICK */
+            GameInputGamepadRightThumbstick, /* SDL_GAMEPAD_BUTTON_RIGHT_STICK */
+            GameInputGamepadLeftShoulder,    /* SDL_GAMEPAD_BUTTON_LEFT_SHOULDER */
+            GameInputGamepadRightShoulder,   /* SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER */
+        };
+        Uint8 btnidx = 0, btnstate = 0, hat = 0;
 
-        if (state.buttons & GameInputGamepadDPadUp) {
-            hat |= SDL_HAT_UP;
-        }
-        if (state.buttons & GameInputGamepadDPadDown) {
-            hat |= SDL_HAT_DOWN;
-        }
-        if (state.buttons & GameInputGamepadDPadLeft) {
-            hat |= SDL_HAT_LEFT;
-        }
-        if (state.buttons & GameInputGamepadDPadRight) {
-            hat |= SDL_HAT_RIGHT;
-        }
-        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
+        if (IGameInputReading_GetGamepadState(reading, &state)) {
+            for (btnidx = 0; btnidx < SDL_arraysize(s_XInputButtons); ++btnidx) {
+                WORD button_mask = s_XInputButtons[btnidx];
+                if (!button_mask) {
+                    continue;
+                }
+                btnstate = (state.buttons & button_mask) ? SDL_PRESSED : SDL_RELEASED;
+                SDL_SendJoystickButton(timestamp, joystick, btnidx, btnstate);
+            }
+
+            if (state.buttons & GameInputGamepadDPadUp) {
+                hat |= SDL_HAT_UP;
+            }
+            if (state.buttons & GameInputGamepadDPadDown) {
+                hat |= SDL_HAT_DOWN;
+            }
+            if (state.buttons & GameInputGamepadDPadLeft) {
+                hat |= SDL_HAT_LEFT;
+            }
+            if (state.buttons & GameInputGamepadDPadRight) {
+                hat |= SDL_HAT_RIGHT;
+            }
+            SDL_SendJoystickHat(timestamp, joystick, 0, hat);
 
 #define CONVERT_AXIS(v) (Sint16)(((v) < 0.0f) ? ((v)*32768.0f) : ((v)*32767.0f))
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, CONVERT_AXIS(state.leftThumbstickX));
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, CONVERT_AXIS(-state.leftThumbstickY));
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, CONVERT_AXIS(state.rightThumbstickX));
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, CONVERT_AXIS(-state.rightThumbstickY));
+            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, CONVERT_AXIS(state.leftThumbstickX));
+            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, CONVERT_AXIS(-state.leftThumbstickY));
+            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, CONVERT_AXIS(state.rightThumbstickX));
+            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, CONVERT_AXIS(-state.rightThumbstickY));
 #undef CONVERT_AXIS
 #define CONVERT_TRIGGER(v) (Sint16)((v)*65535.0f - 32768.0f)
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, CONVERT_TRIGGER(state.leftTrigger));
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, CONVERT_TRIGGER(state.rightTrigger));
+            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, CONVERT_TRIGGER(state.leftTrigger));
+            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, CONVERT_TRIGGER(state.rightTrigger));
 #undef CONVERT_TRIGGER
+        }
+    } else {
+        bool *button_state = SDL_stack_alloc(bool, info->controllerButtonCount);
+        float *axis_state = SDL_stack_alloc(float, info->controllerAxisCount);
+
+        if (button_state) {
+            uint32_t i;
+            uint32_t button_count = IGameInputReading_GetControllerButtonState(reading, info->controllerButtonCount, button_state);
+            for (i = 0; i < button_count; ++i) {
+                SDL_SendJoystickButton(timestamp, joystick, i, button_state[i]);
+            }
+            SDL_stack_free(button_state);
+        }
+
+#define CONVERT_AXIS(v) (Sint16)((v)*65535.0f - 32768.0f)
+        if (axis_state) {
+            uint32_t i;
+            uint32_t axis_count = IGameInputReading_GetControllerAxisState(reading, info->controllerAxisCount, axis_state);
+            for (i = 0; i < axis_count; ++i) {
+                SDL_SendJoystickAxis(timestamp, joystick, i, CONVERT_AXIS(axis_state[i]));
+            }
+            SDL_stack_free(axis_state);
+        }
+#undef CONVERT_AXIS
     }
 
     if (info->supportedInput & GameInputKindTouch) {
@@ -582,6 +622,12 @@ static void GAMEINPUT_JoystickQuit(void)
 
 static SDL_bool GAMEINPUT_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
+    GAMEINPUT_InternalDevice *elem = GAMEINPUT_InternalFindByIndex(device_index);
+
+    if (!GAMEINPUT_InternalIsGamepad(elem->info)) {
+        return SDL_FALSE;
+    }
+
     out->a.kind = EMappingKind_Button;
     out->a.target = SDL_GAMEPAD_BUTTON_SOUTH;
 
