@@ -29,7 +29,7 @@
 #endif
 void *SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len)
 {
-#ifdef __GNUC__
+#if defined(__GNUC__) && (defined(HAVE_LIBC) && HAVE_LIBC)
     /* Presumably this is well tuned for speed.
        On my machine this is twice as fast as the C code below.
      */
@@ -76,7 +76,7 @@ void *SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void 
         }
     }
     return dst;
-#endif /* __GNUC__ */
+#endif /* HAVE_MEMCPY */
 }
 
 /* The optimizer on Visual Studio 2005 and later generates memcpy() and memset() calls.

@@ -29,7 +29,7 @@
 #endif
 void *SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
 {
-#ifdef __GNUC__
+#if defined(__GNUC__) && (defined(HAVE_LIBC) && HAVE_LIBC)
     return __builtin_memset(dst, c, len);
 #elif defined(HAVE_MEMSET)
     return memset(dst, c, len);
