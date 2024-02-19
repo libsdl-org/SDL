@@ -105,6 +105,121 @@ int SDL_AddCameraFormat(CameraFormatAddData *data, Uint32 fmt, int w, int h, int
 }
 
 
+// Zombie device implementation...
+
+// These get used when a device is disconnected or fails. Apps that ignore the
+//  loss notifications will get black frames but otherwise keep functioning.
+static int ZombieWaitDevice(SDL_CameraDevice *device)
+{
+    if (!SDL_AtomicGet(&device->shutdown)) {
+        // !!! FIXME: this is bad for several reasons (uses double, could be precalculated, doesn't track elasped time).
+        const double duration = ((double) device->actual_spec.interval_numerator / ((double) device->actual_spec.interval_denominator));
+        SDL_Delay((Uint32) (duration * 1000.0));
+    }
+    return 0;
+}
+
+static size_t GetFrameBufLen(const SDL_CameraSpec *spec)
+{
+    const size_t w = (const size_t) spec->width;
+    const size_t h = (const size_t) spec->height;
+    const size_t wxh = w * h;
+    const Uint32 fmt = spec->format;
+
+    switch (fmt) {
+        // Some YUV formats have a larger Y plane than their U or V planes.
+        case SDL_PIXELFORMAT_YV12:
+        case SDL_PIXELFORMAT_IYUV:
+        case SDL_PIXELFORMAT_NV12:
+        case SDL_PIXELFORMAT_NV21:
+            return wxh + (wxh / 2);
+
+        default: break;
+    }
+
+    // this is correct for most things.
+    return wxh * SDL_BYTESPERPIXEL(fmt);
+}
+
+static int ZombieAcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, Uint64 *timestampNS)
+{
+    const SDL_CameraSpec *spec = &device->actual_spec;
+
+    if (!device->zombie_pixels) {
+        // attempt to allocate and initialize a fake frame of pixels.
+        const size_t buflen = GetFrameBufLen(&device->actual_spec);
+        device->zombie_pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), buflen);
+        if (!device->zombie_pixels) {
+            *timestampNS = 0;
+            return 0;  // oh well, say there isn't a frame yet, so we'll go back to waiting. Maybe allocation will succeed later...?
+        }
+
+        Uint8 *dst = device->zombie_pixels;
+        switch (spec->format) {
+            // in YUV formats, the U and V values must be 128 to get a black frame. If set to zero, it'll be bright green.
+            case SDL_PIXELFORMAT_YV12:
+            case SDL_PIXELFORMAT_IYUV:
+            case SDL_PIXELFORMAT_NV12:
+            case SDL_PIXELFORMAT_NV21:
+                SDL_memset(dst, 0, spec->width * spec->height);  // set Y to zero.
+                SDL_memset(dst + (spec->width * spec->height), 128, (spec->width * spec->height) / 2); // set U and V to 128.
+                break;
+
+            case SDL_PIXELFORMAT_YUY2:
+            case SDL_PIXELFORMAT_YVYU:
+                // Interleaved Y1[U1|V1]Y2[U2|V2].
+                for (size_t i = 0; i < buflen; i += 4) {
+                    dst[i] = 0;
+                    dst[i+1] = 128;
+                    dst[i+2] = 0;
+                    dst[i+3] = 128;
+                }
+                break;
+
+
+            case SDL_PIXELFORMAT_UYVY:
+                 // Interleaved [U1|V1]Y1[U2|V2]Y2.
+                for (size_t i = 0; i < buflen; i += 4) {
+                    dst[i] = 128;
+                    dst[i+1] = 0;
+                    dst[i+2] = 128;
+                    dst[i+3] = 0;
+                }
+                break;
+
+            default:
+                // just zero everything else, it'll _probably_ be okay.
+                SDL_memset(dst, 0, buflen);
+                break;
+        }
+    }
+
+
+    *timestampNS = SDL_GetTicksNS();
+    frame->pixels = device->zombie_pixels;
+
+    // SDL (currently) wants the pitch of YUV formats to be the pitch of the (1-byte-per-pixel) Y plane.
+    frame->pitch = spec->width;
+    if (!SDL_ISPIXELFORMAT_FOURCC(spec->format)) {  // checking if it's not FOURCC to only do this for non-YUV data is good enough for now.
+        frame->pitch *= SDL_BYTESPERPIXEL(spec->format);
+    }
+
+    #if DEBUG_CAMERA
+    SDL_Log("CAMERA: dev[%p] Acquired Zombie frame, timestamp %llu", device, (unsigned long long) *timestampNS);
+    #endif
+
+    return 1;  // frame is available.
+}
+
+static void ZombieReleaseFrame(SDL_CameraDevice *device, SDL_Surface *frame) // Reclaim frame->pixels and frame->pitch!
+{
+    if (frame->pixels != device->zombie_pixels) {
+        // this was a frame from before the disconnect event; let the backend make an attempt to free it.
+        camera_driver.impl.ReleaseFrame(device, frame);
+    }
+    // we just leave zombie_pixels alone, as we'll reuse it for every new frame until the camera is closed.
+}
+
 static void ClosePhysicalCameraDevice(SDL_CameraDevice *device)
 {
     if (!device) {
@@ -123,10 +238,10 @@ static void ClosePhysicalCameraDevice(SDL_CameraDevice *device)
     // release frames that are queued up somewhere...
     if (!device->needs_conversion && !device->needs_scaling) {
         for (SurfaceList *i = device->filled_output_surfaces.next; i != NULL; i = i->next) {
-            camera_driver.impl.ReleaseFrame(device, i->surface);
+            device->ReleaseFrame(device, i->surface);
         }
         for (SurfaceList *i = device->app_held_output_surfaces.next; i != NULL; i = i->next) {
-            camera_driver.impl.ReleaseFrame(device, i->surface);
+            device->ReleaseFrame(device, i->surface);
         }
     }
 
@@ -144,6 +259,9 @@ static void ClosePhysicalCameraDevice(SDL_CameraDevice *device)
     }
     SDL_zeroa(device->output_surfaces);
 
+    SDL_aligned_free(device->zombie_pixels);
+
+    device->zombie_pixels = NULL;
     device->filled_output_surfaces.next = NULL;
     device->empty_output_surfaces.next = NULL;
     device->app_held_output_surfaces.next = NULL;
@@ -389,6 +507,10 @@ void SDL_CameraDeviceDisconnected(SDL_CameraDevice *device)
         return;
     }
 
+    #if DEBUG_CAMERA
+    SDL_Log("CAMERA: DISCONNECTED! dev[%p]", device);
+    #endif
+
     // Save off removal info in a list so we can send events for each, next
     //  time the event queue pumps, in case something tries to close a device
     //  from an event filter, as this would risk deadlocks and other disasters
@@ -402,17 +524,16 @@ void SDL_CameraDeviceDisconnected(SDL_CameraDevice *device)
     const SDL_bool first_disconnect = SDL_AtomicCompareAndSwap(&device->zombie, 0, 1);
     if (first_disconnect) {   // if already disconnected this device, don't do it twice.
         // Swap in "Zombie" versions of the usual platform interfaces, so the device will keep
-        // making progress until the app closes it.
-#if 0 // !!! FIXME
-sdfsdf
+        // making progress until the app closes it. Otherwise, streams might continue to
+        // accumulate waste data that never drains, apps that depend on audio callbacks to
+        // progress will freeze, etc.
         device->WaitDevice = ZombieWaitDevice;
-        device->GetDeviceBuf = ZombieGetDeviceBuf;
-        device->PlayDevice = ZombiePlayDevice;
-        device->WaitCaptureDevice = ZombieWaitDevice;
-        device->CaptureFromDevice = ZombieCaptureFromDevice;
-        device->FlushCapture = ZombieFlushCapture;
-sdfsdf
-#endif
+        device->AcquireFrame = ZombieAcquireFrame;
+        device->ReleaseFrame = ZombieReleaseFrame;
+
+        // Zombie functions will just report the timestamp as SDL_GetTicksNS(), so we don't need to adjust anymore to get it to match.
+        device->adjust_timestamp = 0;
+        device->base_timestamp = 0;
 
         SDL_PendingCameraDeviceEvent *p = (SDL_PendingCameraDeviceEvent *) SDL_malloc(sizeof (SDL_PendingCameraDeviceEvent));
         if (p) {  // if this failed, no event for you, but you have deeper problems anyhow.
@@ -642,7 +763,7 @@ SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device)
     Uint64 timestampNS = 0;
 
     // AcquireFrame SHOULD NOT BLOCK, as we are holding a lock right now. Block in WaitDevice instead!
-    const int rc = camera_driver.impl.AcquireFrame(device, device->acquire_surface, &timestampNS);
+    const int rc = device->AcquireFrame(device, device->acquire_surface, &timestampNS);
 
     if (rc == 1) {  // new frame acquired!
         #if DEBUG_CAMERA
@@ -654,7 +775,7 @@ SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device)
             SDL_Log("CAMERA: Dropping an initial frame");
             #endif
             device->drop_frames--;
-            camera_driver.impl.ReleaseFrame(device, device->acquire_surface);
+            device->ReleaseFrame(device, device->acquire_surface);
             device->acquire_surface->pixels = NULL;
             device->acquire_surface->pitch = 0;
         } else if (device->empty_output_surfaces.next == NULL) {
@@ -662,7 +783,7 @@ SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device)
             #if DEBUG_CAMERA
             SDL_Log("CAMERA: No empty output surfaces! Dropping frame!");
             #endif
-            camera_driver.impl.ReleaseFrame(device, device->acquire_surface);
+            device->ReleaseFrame(device, device->acquire_surface);
             device->acquire_surface->pixels = NULL;
             device->acquire_surface->pitch = 0;
         } else {
@@ -728,7 +849,7 @@ SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device)
             }
 
             // we made a copy, so we can give the driver back its resources.
-            camera_driver.impl.ReleaseFrame(device, acquired);
+            device->ReleaseFrame(device, acquired);
         }
 
         // we either released these already after we copied the data, or the pointer was migrated to output_surface.
@@ -765,7 +886,7 @@ static int SDLCALL CameraThread(void *devicep)
     SDL_CameraThreadSetup(device);
 
     do {
-        if (camera_driver.impl.WaitDevice(device) < 0) {
+        if (device->WaitDevice(device) < 0) {
             SDL_CameraDeviceDisconnected(device);  // doh. (but don't break out of the loop, just be a zombie for now!)
         }
     } while (SDL_CameraThreadIterate(device));
@@ -911,6 +1032,11 @@ SDL_Camera *SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_Camer
     }
 
     SDL_AtomicSet(&device->shutdown, 0);
+
+    // These start with the backend's implementation, but we might swap them out with zombie versions later.
+    device->WaitDevice = camera_driver.impl.WaitDevice;
+    device->AcquireFrame = camera_driver.impl.AcquireFrame;
+    device->ReleaseFrame = camera_driver.impl.ReleaseFrame;
 
     SDL_CameraSpec closest;
     ChooseBestCameraSpec(device, spec, &closest);
@@ -1084,7 +1210,7 @@ int SDL_ReleaseCameraFrame(SDL_Camera *camera, SDL_Surface *frame)
 
     // this pointer was owned by the backend (DMA memory or whatever), clear it out.
     if (!device->needs_conversion && !device->needs_scaling) {
-        camera_driver.impl.ReleaseFrame(device, frame);
+        device->ReleaseFrame(device, frame);
         frame->pixels = NULL;
         frame->pitch = 0;
     }
