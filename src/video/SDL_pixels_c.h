@@ -34,10 +34,8 @@ extern int SDL_CalculateSize(Uint32 format, int width, int height, size_t *size,
 extern SDL_Colorspace SDL_GetDefaultColorspaceForFormat(Uint32 pixel_format);
 
 /* Colorspace conversion functions */
-extern float SDL_scRGBtoNits(float v);
-extern float SDL_scRGBfromNits(float v);
-extern float SDL_sRGBtoNits(float v);
-extern float SDL_sRGBfromNits(float v);
+extern float SDL_sRGBtoLinear(float v);
+extern float SDL_sRGBfromLinear(float v);
 extern float SDL_PQtoNits(float v);
 extern float SDL_PQfromNits(float v);
 extern const float *SDL_GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace, int w, int h, int bits_per_pixel);
@@ -51,6 +49,10 @@ extern int SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst);
 extern void SDL_FreeBlitMap(SDL_BlitMap *map);
 
 extern void SDL_InvalidateAllBlitMap(SDL_Surface *surface);
+
+/* Surface functions */
+extern float SDL_GetSurfaceSDRWhitePoint(SDL_Surface *surface, SDL_Colorspace colorspace);
+extern float SDL_GetSurfaceHDRHeadroom(SDL_Surface *surface, SDL_Colorspace colorspace);
 
 /* Miscellaneous functions */
 extern void SDL_DitherColors(SDL_Color *colors, int bpp);

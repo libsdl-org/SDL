@@ -652,14 +652,14 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 
         switch (texture->format) {
         case SDL_PIXELFORMAT_ABGR8888:
-            if (renderer->output_colorspace == SDL_COLORSPACE_SCRGB) {
+            if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
                 pixfmt = MTLPixelFormatRGBA8Unorm_sRGB;
             } else {
                 pixfmt = MTLPixelFormatRGBA8Unorm;
             }
             break;
         case SDL_PIXELFORMAT_ARGB8888:
-            if (renderer->output_colorspace == SDL_COLORSPACE_SCRGB) {
+            if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
                 pixfmt = MTLPixelFormatBGRA8Unorm_sRGB;
             } else {
                 pixfmt = MTLPixelFormatBGRA8Unorm;
@@ -1895,7 +1895,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         }
 #endif
         if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
-            if (renderer->output_colorspace == SDL_COLORSPACE_SCRGB && scRGB_supported) {
+            if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR && scRGB_supported) {
                 /* This colorspace is supported */
             } else {
                 SDL_SetError("Unsupported output colorspace");
@@ -1963,7 +1963,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
 #endif
 
 #ifndef SDL_PLATFORM_TVOS
-        if (renderer->output_colorspace == SDL_COLORSPACE_SCRGB) {
+        if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
             if (@available(macos 10.11, iOS 16.0, *)) {
                 layer.wantsExtendedDynamicRangeContent = YES;
             } else {

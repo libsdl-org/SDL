@@ -57,15 +57,6 @@
 
 #include "icon.h"
 
-/* The value for the SDR white level on an SDR display, scRGB 1.0 */
-#define SDR_DISPLAY_WHITE_LEVEL  80.0f
-
-/* The default value for the SDR white level on an HDR display */
-#define DEFAULT_SDR_WHITE_LEVEL 200.0f
-
-/* The default value for the HDR white level on an HDR display */
-#define DEFAULT_HDR_WHITE_LEVEL 400.0f
-
 
 static SDL_Texture *sprite;
 static SDL_FRect *positions;
@@ -96,56 +87,6 @@ struct SwsContextContainer
 };
 static const char *SWS_CONTEXT_CONTAINER_PROPERTY = "SWS_CONTEXT_CONTAINER";
 static int done;
-
-/* This function isn't platform specific, but we haven't hooked up HDR video support on other platforms yet */
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_APPLE)
-static void GetDisplayHDRProperties(SDL_bool *HDR_display, float *SDR_white_level, float *HDR_white_level)
-{
-    SDL_PropertiesID props;
-
-    *HDR_display = SDL_FALSE;
-    *SDR_white_level = SDR_DISPLAY_WHITE_LEVEL;
-    *HDR_white_level = SDR_DISPLAY_WHITE_LEVEL;
-
-    props = SDL_GetRendererProperties(renderer);
-    if (SDL_GetNumberProperty(props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB) != SDL_COLORSPACE_SCRGB) {
-        /* We're not displaying in HDR, use the SDR white level */
-        return;
-    }
-
-    props = SDL_GetDisplayProperties(SDL_GetDisplayForWindow(window));
-    if (!SDL_GetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, SDL_FALSE)) {
-        /* HDR is not enabled on the display */
-        return;
-    }
-
-    *HDR_display = SDL_TRUE;
-    *SDR_white_level = SDL_GetFloatProperty(props, SDL_PROP_DISPLAY_SDR_WHITE_LEVEL_FLOAT, DEFAULT_SDR_WHITE_LEVEL);
-    *HDR_white_level = SDL_GetFloatProperty(props, SDL_PROP_DISPLAY_HDR_WHITE_LEVEL_FLOAT, DEFAULT_HDR_WHITE_LEVEL);
-}
-
-static void UpdateVideoColorScale(SDL_bool HDR_video)
-{
-    SDL_bool HDR_display = SDL_FALSE;
-    float SDR_white_level, HDR_white_level, video_white_level;
-
-    GetDisplayHDRProperties(&HDR_display, &SDR_white_level, &HDR_white_level);
-
-    if (HDR_video) {
-        video_white_level = DEFAULT_HDR_WHITE_LEVEL;
-    } else {
-        video_white_level = SDR_DISPLAY_WHITE_LEVEL;
-    }
-
-    if (HDR_display && HDR_video) {
-        /* Scale the HDR range of the video to the HDR range of the display */
-        SDL_SetRenderColorScale(renderer, HDR_white_level / video_white_level);
-    } else {
-        /* Scale the range of the video to the SDR range of the display */
-        SDL_SetRenderColorScale(renderer, SDR_white_level / video_white_level);
-    }
-}
-#endif /* SDL_PLATFORM_WIN32 || SDL_PLATFORM_APPLE */
 
 static SDL_bool CreateWindowAndRenderer(Uint32 window_flags, const char *driver)
 {
@@ -178,7 +119,7 @@ static SDL_bool CreateWindowAndRenderer(Uint32 window_flags, const char *driver)
     props = SDL_CreateProperties();
     SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, driver);
     SDL_SetProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
-    SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SCRGB);
+    SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB_LINEAR);
     renderer = SDL_CreateRendererWithProperties(props);
     if (!renderer) {
         /* Try again with the sRGB colorspace */
@@ -699,7 +640,6 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
     }
     if (!*texture || (UINT)texture_width != desc.Width || (UINT)texture_height != desc.Height) {
         Uint32 format;
-        SDL_bool HDR_video = SDL_FALSE;
 
         switch (desc.Format) {
         case DXGI_FORMAT_NV12:
@@ -707,11 +647,6 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
             break;
         case DXGI_FORMAT_P010:
             format = SDL_PIXELFORMAT_P010;
-            HDR_video = SDL_TRUE;
-            break;
-        case DXGI_FORMAT_P016:
-            format = SDL_PIXELFORMAT_P016;
-            HDR_video = SDL_TRUE;
             break;
         default:
             SDL_SetError("Unsupported texture format %d", desc.Format);
@@ -733,8 +668,6 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
         if (!*texture) {
             return SDL_FALSE;
         }
-
-        UpdateVideoColorScale(HDR_video);
     }
 
     ID3D11Resource *dx11_resource = SDL_GetProperty(SDL_GetTextureProperties(*texture), SDL_PROP_TEXTURE_D3D11_TEXTURE_POINTER, NULL);
@@ -759,7 +692,6 @@ static SDL_bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **tex
     size_t nPixelBufferHeight = CVPixelBufferGetHeightOfPlane(pPixelBuffer, 0);
     SDL_PropertiesID props;
     Uint32 format;
-    SDL_bool HDR_video = SDL_FALSE;
 
     switch (nPixelBufferType) {
     case kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange:
@@ -769,7 +701,6 @@ static SDL_bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **tex
     case kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange:
     case kCVPixelFormatType_420YpCbCr10BiPlanarFullRange:
         format = SDL_PIXELFORMAT_P010;
-        HDR_video = SDL_TRUE;
         break;
     default:
         SDL_SetError("Unsupported texture format %c%c%c%c",
@@ -798,8 +729,6 @@ static SDL_bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **tex
     if (!*texture) {
         return SDL_FALSE;
     }
-
-    UpdateVideoColorScale(HDR_video);
 
     return SDL_TRUE;
 #else

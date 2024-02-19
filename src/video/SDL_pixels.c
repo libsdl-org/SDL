@@ -706,7 +706,7 @@ SDL_Colorspace SDL_GetDefaultColorspaceForFormat(Uint32 format)
     if (SDL_ISPIXELFORMAT_FOURCC(format)) {
         return SDL_COLORSPACE_YUV_DEFAULT;
     } else if (SDL_ISPIXELFORMAT_FLOAT(format)) {
-        return SDL_COLORSPACE_SCRGB;
+        return SDL_COLORSPACE_SRGB_LINEAR;
     } else if (SDL_ISPIXELFORMAT_10BIT(format)) {
         return SDL_COLORSPACE_HDR10;
     } else {
@@ -714,30 +714,18 @@ SDL_Colorspace SDL_GetDefaultColorspaceForFormat(Uint32 format)
     }
 }
 
-float SDL_scRGBtoNits(float v)
-{
-    return v * 80.0f;
-}
-
-float SDL_scRGBfromNits(float v)
-{
-    return v / 80.0f;
-}
-
-float SDL_sRGBtoNits(float v)
+float SDL_sRGBtoLinear(float v)
 {
     if (v <= 0.04045f) {
         v = (v / 12.92f);
     } else {
         v = SDL_powf((v + 0.055f) / 1.055f, 2.4f);
     }
-    return SDL_scRGBtoNits(v);
+    return v;
 }
 
-float SDL_sRGBfromNits(float v)
+float SDL_sRGBfromLinear(float v)
 {
-    v = SDL_scRGBfromNits(v);
-
     if (v <= 0.0031308f) {
         v = (v * 12.92f);
     } else {

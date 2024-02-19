@@ -242,13 +242,12 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     }
     display.desktop_mode = mode;
 
+    display.HDR.SDR_white_point = 1.0f;
+    display.HDR.HDR_headroom = 1.0f;
+
 #ifndef SDL_PLATFORM_TVOS
     if (@available(iOS 16.0, *)) {
-        if (uiscreen.potentialEDRHeadroom > 1.0f) {
-            display.HDR.enabled = SDL_TRUE;
-            display.HDR.SDR_whitelevel = 80.0f; /* SDR content is always at scRGB 1.0 */
-            display.HDR.HDR_whitelevel = display.HDR.SDR_whitelevel * uiscreen.currentEDRHeadroom;
-        }
+        display.HDR.HDR_headroom = uiscreen.currentEDRHeadroom;
     }
 #endif /* !SDL_PLATFORM_TVOS */
 
