@@ -778,7 +778,7 @@ static void MaybeAddDevice(const char *path)
             if (handle->path) {
                 handle->bus_info = SDL_strdup((char *)vcap.bus_info);
                 if (handle->bus_info) {
-                    if (SDL_AddCameraDevice((const char *) vcap.card, add_data.num_specs, add_data.specs, handle)) {
+                    if (SDL_AddCameraDevice((const char *) vcap.card, SDL_CAMERA_POSITION_UNKNOWN, add_data.num_specs, add_data.specs, handle)) {
                         SDL_free(add_data.specs);
                         return;  // good to go.
                     }
