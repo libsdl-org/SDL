@@ -575,7 +575,7 @@ static void ANDROIDCAMERA_FreeDeviceHandle(SDL_CameraDevice *device)
     }
 }
 
-static void GatherCameraSpecs(const char *devid, CameraFormatAddData *add_data, char **fullname, const char **posstr)
+static void GatherCameraSpecs(const char *devid, CameraFormatAddData *add_data, char **fullname, SDL_CameraPosition *position)
 {
     SDL_zerop(add_data);
 
@@ -608,16 +608,15 @@ static void GatherCameraSpecs(const char *devid, CameraFormatAddData *add_data, 
         }
     }
 
-    *posstr = NULL;
     ACameraMetadata_const_entry posentry;
     if (pACameraMetadata_getConstEntry(metadata, ACAMERA_LENS_FACING, &posentry) == ACAMERA_OK) {  // ignore this if it fails.
         if (*posentry.data.u8 == ACAMERA_LENS_FACING_FRONT) {
-            *posstr = "front";
+            *position = SDL_CAMERA_POSITION_FRONT_FACING;
             if (!*fullname) {
                 *fullname = SDL_strdup("Front-facing camera");
             }
         } else if (*posentry.data.u8 == ACAMERA_LENS_FACING_BACK) {
-            *posstr = "back";
+            *position = SDL_CAMERA_POSITION_BACK_FACING;
             if (!*fullname) {
                 *fullname = SDL_strdup("Back-facing camera");
             }
@@ -680,22 +679,16 @@ static void MaybeAddDevice(const char *devid)
         return;  // already have this one.
     }
 
-    const char *posstr = NULL;
+    SDL_CameraPosition position = SDL_CAMERA_POSITION_UNKNOWN;
     char *fullname = NULL;
     CameraFormatAddData add_data;
-    GatherCameraSpecs(devid, &add_data, &fullname, &posstr);
+    GatherCameraSpecs(devid, &add_data, &fullname, &position);
     if (add_data.num_specs > 0) {
         char *namecpy = SDL_strdup(devid);
         if (namecpy) {
-            SDL_CameraDevice *device = SDL_AddCameraDevice(fullname, add_data.num_specs, add_data.specs, namecpy);
+            SDL_CameraDevice *device = SDL_AddCameraDevice(fullname, position, add_data.num_specs, add_data.specs, namecpy);
             if (!device) {
                 SDL_free(namecpy);
-            } else if (device && posstr) {
-                SDL_Camera *camera = (SDL_Camera *) device;  // currently there's no separation between physical and logical device.
-                SDL_PropertiesID props = SDL_GetCameraProperties(camera);
-                if (props) {
-                    SDL_SetStringProperty(props, SDL_PROP_CAMERA_POSITION_STRING, posstr);
-                }
             }
         }
     }

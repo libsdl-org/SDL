@@ -228,7 +228,7 @@ static void EMSCRIPTENCAMERA_DetectDevices(void)
     //  will pop up a user permission dialog warning them we're trying to access the camera, and we generally
     //  don't want that during SDL_Init().
     if (supported) {
-        SDL_AddCameraDevice("Web browser's camera", 0, NULL, (void *) (size_t) 0x1);
+        SDL_AddCameraDevice("Web browser's camera", SDL_CAMERA_POSITION_UNKNOWN, 0, NULL, (void *) (size_t) 0x1);
     }
 }
 

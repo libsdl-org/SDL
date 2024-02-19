@@ -25,14 +25,14 @@
 
 #include "../SDL_hashtable.h"
 
-#define DEBUG_CAMERA 0
+#define DEBUG_CAMERA 1
 
 typedef struct SDL_CameraDevice SDL_CameraDevice;
 
 /* Backends should call this as devices are added to the system (such as
    a USB camera being plugged in), and should also be called for
    for every device found during DetectDevices(). */
-extern SDL_CameraDevice *SDL_AddCameraDevice(const char *name, int num_specs, const SDL_CameraSpec *specs, void *handle);
+extern SDL_CameraDevice *SDL_AddCameraDevice(const char *name, SDL_CameraPosition position, int num_specs, const SDL_CameraSpec *specs, void *handle);
 
 /* Backends should call this if an opened camera device is lost.
    This can happen due to i/o errors, or a device being unplugged, etc. */
@@ -81,6 +81,9 @@ struct SDL_CameraDevice
 
     // Human-readable device name.
     char *name;
+
+    // Position of camera (front-facing, back-facing, etc).
+    SDL_CameraPosition position;
 
     // When refcount hits zero, we destroy the device object.
     SDL_AtomicInt refcount;

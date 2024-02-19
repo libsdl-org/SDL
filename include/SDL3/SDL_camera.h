@@ -71,6 +71,19 @@ typedef struct SDL_CameraSpec
 } SDL_CameraSpec;
 
 /**
+ * The position of camera in relation to system device.
+ *
+ * \sa SDL_GetCameraDevicePosition
+ */
+typedef enum SDL_CameraPosition
+{
+    SDL_CAMERA_POSITION_UNKNOWN,
+    SDL_CAMERA_POSITION_FRONT_FACING,
+    SDL_CAMERA_POSITION_BACK_FACING
+} SDL_CameraPosition;
+
+
+/**
  * Use this function to get the number of built-in camera drivers.
  *
  * This function returns a hardcoded number. This never returns a negative
@@ -211,6 +224,25 @@ extern DECLSPEC SDL_CameraSpec *SDLCALL SDL_GetCameraDeviceSupportedFormats(SDL_
 extern DECLSPEC char * SDLCALL SDL_GetCameraDeviceName(SDL_CameraDeviceID instance_id);
 
 /**
+ * Get the position of the camera in relation to the system.
+ *
+ * Most platforms will report UNKNOWN, but mobile devices, like phones, can
+ * often make a distiction between cameras on the front of the device (that
+ * points towards the user, for taking "selfies") and cameras on the back
+ * (for filming in the direction the user is facing).
+ *
+ * \param instance_id the camera device instance ID
+ * \returns The position of the camera on the system hardware.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetCameraDevices
+ */
+extern DECLSPEC SDL_CameraPosition SDLCALL SDL_GetCameraDevicePosition(SDL_CameraDeviceID instance_id);
+
+/**
  * Open a video capture device (a "camera").
  *
  * You can open the device with any reasonable spec, and if the hardware can't
@@ -305,16 +337,6 @@ extern DECLSPEC SDL_CameraDeviceID SDLCALL SDL_GetCameraInstanceID(SDL_Camera *c
 /**
  * Get the properties associated with an opened camera.
  *
- * The following read-only properties are provided by SDL:
- *
- * - `SDL_PROP_CAMERA_POSITION_STRING`: the position of the camera in
- *   relation to the hardware it is connected to. This is currently either
- *   the string "front" or "back", to signify which side of the user's
- *   device a camera is on. Future versions of SDL may add other position
- *   strings. This property is only set if this information can be
- *   determined by SDL. Most platforms do not set this attribute at all,
- *   but mobile devices tend to.
- *
  * \param camera the SDL_Camera obtained from SDL_OpenCameraDevice()
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -327,8 +349,6 @@ extern DECLSPEC SDL_CameraDeviceID SDLCALL SDL_GetCameraInstanceID(SDL_Camera *c
  * \sa SDL_SetProperty
  */
 extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetCameraProperties(SDL_Camera *camera);
-
-#define SDL_PROP_CAMERA_POSITION_STRING "SDL.camera.position"
 
 /**
  * Get the spec that a camera is using when generating images.

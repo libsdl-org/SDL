@@ -398,9 +398,8 @@ static int SDLCALL CameraSpecCmp(const void *vpa, const void *vpb)
     return 0;  // apparently, they're equal.
 }
 
-
 // The camera backends call this when a new device is plugged in.
-SDL_CameraDevice *SDL_AddCameraDevice(const char *name, int num_specs, const SDL_CameraSpec *specs, void *handle)
+SDL_CameraDevice *SDL_AddCameraDevice(const char *name, SDL_CameraPosition position, int num_specs, const SDL_CameraSpec *specs, void *handle)
 {
     SDL_assert(name != NULL);
     SDL_assert(num_specs >= 0);
@@ -424,6 +423,8 @@ SDL_CameraDevice *SDL_AddCameraDevice(const char *name, int num_specs, const SDL
         SDL_free(device);
         return NULL;
     }
+
+    device->position = position;
 
     device->lock = SDL_CreateMutex();
     if (!device->lock) {
@@ -457,7 +458,13 @@ SDL_CameraDevice *SDL_AddCameraDevice(const char *name, int num_specs, const SDL
     }
 
     #if DEBUG_CAMERA
-    SDL_Log("CAMERA: Adding device ('%s') with %d spec%s%s", name, num_specs, (num_specs == 1) ? "" : "s", (num_specs == 0) ? "" : ":");
+    const char *posstr = "unknown position";
+    if (position == SDL_CAMERA_POSITION_FRONT_FACING) {
+        posstr = "front-facing";
+    } else if (position == SDL_CAMERA_POSITION_BACK_FACING) {
+        posstr = "back-facing";
+    }
+    SDL_Log("CAMERA: Adding device '%s' (%s) with %d spec%s%s", name, posstr, num_specs, (num_specs == 1) ? "" : "s", (num_specs == 0) ? "" : ":");
     for (int i = 0; i < num_specs; i++) {
         const SDL_CameraSpec *spec = &device->all_specs[i];
         SDL_Log("CAMERA:   - fmt=%s, w=%d, h=%d, numerator=%d, denominator=%d", SDL_GetPixelFormatName(spec->format), spec->width, spec->height, spec->interval_numerator, spec->interval_denominator);
@@ -657,6 +664,18 @@ char *SDL_GetCameraDeviceName(SDL_CameraDeviceID instance_id)
     }
     return retval;
 }
+
+SDL_CameraPosition SDL_GetCameraDevicePosition(SDL_CameraDeviceID instance_id)
+{
+    SDL_CameraPosition retval = SDL_CAMERA_POSITION_UNKNOWN;
+    SDL_CameraDevice *device = ObtainPhysicalCameraDevice(instance_id);
+    if (device) {
+        retval = device->position;
+        ReleaseCameraDevice(device);
+    }
+    return retval;
+}
+
 
 SDL_CameraDeviceID *SDL_GetCameraDevices(int *count)
 {

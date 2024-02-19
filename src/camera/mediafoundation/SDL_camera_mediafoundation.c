@@ -777,7 +777,7 @@ static void MaybeAddDevice(IMFActivate *activation)
             CameraFormatAddData add_data;
             GatherCameraSpecs(source, &add_data);
             if (add_data.num_specs > 0) {
-                SDL_AddCameraDevice(name, add_data.num_specs, add_data.specs, symlink);
+                SDL_AddCameraDevice(name, SDL_CAMERA_POSITION_UNKNOWN, add_data.num_specs, add_data.specs, symlink);
             }
             SDL_free(add_data.specs);
             IMFActivate_ShutdownObject(activation);
