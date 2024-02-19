@@ -297,7 +297,7 @@ static void SetSurfaceOpaqueRegion(SDL_WindowData *wind, bool is_opaque)
     }
 }
 
-static void ConfigureWindowGeometry(SDL_Window *window)
+static bool ConfigureWindowGeometry(SDL_Window *window)
 {
     SDL_WindowData *data = window->internal;
     const double scale_factor = GetWindowScale(window);
@@ -305,6 +305,17 @@ static void ConfigureWindowGeometry(SDL_Window *window)
     const int old_pixel_height = data->current.pixel_height;
     int window_width, window_height;
     bool window_size_changed;
+
+    // Throttle interactive resize events to once per refresh cycle to prevent lag.
+    if (data->resizing) {
+        data->resizing = false;
+
+        if (data->drop_interactive_resizes) {
+            return false;
+        } else {
+            data->drop_interactive_resizes = true;
+        }
+    }
 
     // Set the drawable backbuffer size.
     GetBufferSize(window, &data->current.pixel_width, &data->current.pixel_height);
@@ -454,6 +465,8 @@ static void ConfigureWindowGeometry(SDL_Window *window)
             SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_OCCLUDED, 0, 0);
         }
     }
+
+    return true;
 }
 
 static void CommitLibdecorFrame(SDL_Window *window)
@@ -666,6 +679,8 @@ static void surface_frame_done(void *data, struct wl_callback *cb, uint32_t time
         wl_surface_damage(wind->surface, 0, 0, SDL_MAX_SINT32, SDL_MAX_SINT32);
     }
 
+    wind->drop_interactive_resizes = false;
+
     if (wind->surface_status == WAYLAND_SURFACE_STATUS_WAITING_FOR_FRAME) {
         wind->surface_status = WAYLAND_SURFACE_STATUS_SHOWN;
 
@@ -720,8 +735,9 @@ static void handle_configure_xdg_shell_surface(void *data, struct xdg_surface *x
     SDL_WindowData *wind = (SDL_WindowData *)data;
     SDL_Window *window = wind->sdlwindow;
 
-    ConfigureWindowGeometry(window);
-    xdg_surface_ack_configure(xdg, serial);
+    if (ConfigureWindowGeometry(window)) {
+        xdg_surface_ack_configure(xdg, serial);
+    }
 
     wind->shell_surface.xdg.initial_configure_seen = true;
 }
@@ -745,6 +761,7 @@ static void handle_configure_xdg_toplevel(void *data,
     bool floating = true;
     bool tiled = false;
     bool active = false;
+    bool resizing = false;
     bool suspended = false;
     wl_array_for_each (state, states) {
         switch (*state) {
@@ -755,6 +772,9 @@ static void handle_configure_xdg_toplevel(void *data,
         case XDG_TOPLEVEL_STATE_MAXIMIZED:
             maximized = true;
             floating = false;
+            break;
+        case XDG_TOPLEVEL_STATE_RESIZING:
+            resizing = true;
             break;
         case XDG_TOPLEVEL_STATE_ACTIVATED:
             active = true;
@@ -931,6 +951,7 @@ static void handle_configure_xdg_toplevel(void *data,
     wind->suspended = suspended;
     wind->active = active;
     window->tiled = tiled;
+    wind->resizing = resizing;
 
     if (wind->surface_status == WAYLAND_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
         wind->surface_status = WAYLAND_SURFACE_STATUS_WAITING_FOR_FRAME;
@@ -1099,7 +1120,6 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
 {
     SDL_WindowData *wind = (SDL_WindowData *)user_data;
     SDL_Window *window = wind->sdlwindow;
-    struct libdecor_state *state;
 
     enum libdecor_window_state window_state;
     int width, height;
@@ -1110,6 +1130,7 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
     bool maximized = false;
     bool tiled = false;
     bool suspended = false;
+    bool resizing = false;
     bool floating;
 
     static const enum libdecor_window_state tiled_states = (LIBDECOR_WINDOW_STATE_TILED_LEFT | LIBDECOR_WINDOW_STATE_TILED_RIGHT |
@@ -1123,6 +1144,9 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
         tiled = (window_state & tiled_states) != 0;
 #if SDL_LIBDECOR_CHECK_VERSION(0, 2, 0)
         suspended = (window_state & LIBDECOR_WINDOW_STATE_SUSPENDED) != 0;
+#endif
+#if SDL_LIBDECOR_CHECK_VERSION(0, 3, 0)
+        resizing = (window_state & LIBDECOR_WINDOW_STATE_RESIZING) != 0;
 #endif
     }
     floating = !(fullscreen || maximized || tiled);
@@ -1295,14 +1319,15 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
     wind->suspended = suspended;
     wind->active = active;
     window->tiled = tiled;
+    wind->resizing = resizing;
 
     // Calculate the new window geometry
-    ConfigureWindowGeometry(window);
-
-    // ... then commit the changes on the libdecor side.
-    state = libdecor_state_new(wind->current.logical_width, wind->current.logical_height);
-    libdecor_frame_commit(frame, state, configuration);
-    libdecor_state_free(state);
+    if (ConfigureWindowGeometry(window)) {
+        // ... then commit the changes on the libdecor side.
+        struct libdecor_state *state = libdecor_state_new(wind->current.logical_width, wind->current.logical_height);
+        libdecor_frame_commit(frame, state, configuration);
+        libdecor_state_free(state);
+    }
 
     if (!wind->shell_surface.libdecor.initial_configure_seen) {
         LibdecorGetMinContentSize(frame, &wind->system_limits.min_width, &wind->system_limits.min_height);
