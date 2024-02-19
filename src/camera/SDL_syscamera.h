@@ -85,6 +85,11 @@ struct SDL_CameraDevice
     // When refcount hits zero, we destroy the device object.
     SDL_AtomicInt refcount;
 
+    // These are, initially, set from camera_driver, but we might swap them out with Zombie versions on disconnect/failure.
+    int (*WaitDevice)(SDL_CameraDevice *device);
+    int (*AcquireFrame)(SDL_CameraDevice *device, SDL_Surface *frame, Uint64 *timestampNS);
+    void (*ReleaseFrame)(SDL_CameraDevice *device, SDL_Surface *frame);
+
     // All supported formats/dimensions for this device.
     SDL_CameraSpec *all_specs;
 
@@ -123,6 +128,9 @@ struct SDL_CameraDevice
     SurfaceList filled_output_surfaces;        // this is FIFO
     SurfaceList empty_output_surfaces;         // this is LIFO
     SurfaceList app_held_output_surfaces;
+
+    // A fake video frame we allocate if the camera fails/disconnects.
+    Uint8 *zombie_pixels;
 
     // non-zero if acquire_surface needs to be scaled for final output.
     int needs_scaling;  // -1: downscale, 0: no scaling, 1: upscale
