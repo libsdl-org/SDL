@@ -165,7 +165,9 @@ struct SDL_WindowData
     Uint64 last_focus_event_time_ns;
     bool floating;
     bool suspended;
+    bool resizing;
     bool active;
+    bool drop_interactive_resizes;
     bool is_fullscreen;
     bool fullscreen_exclusive;
     bool drop_fullscreen_requests;
