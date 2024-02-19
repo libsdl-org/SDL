@@ -120,9 +120,8 @@ struct SDL_Window
 
 typedef struct
 {
-    SDL_bool enabled;
-    float SDR_whitelevel;
-    float HDR_whitelevel;
+    float SDR_white_point;
+    float HDR_headroom;
 } SDL_HDRDisplayProperties;
 
 /*

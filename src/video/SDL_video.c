@@ -701,14 +701,20 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send
 
     props = SDL_GetDisplayProperties(id);
 
-    if (display->HDR.enabled) {
+    if (display->HDR.HDR_headroom > 1.0f) {
         SDL_SetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, SDL_TRUE);
+    } else {
+        SDL_SetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, SDL_FALSE);
     }
-    if (display->HDR.SDR_whitelevel != 0.0f) {
-        SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_SDR_WHITE_LEVEL_FLOAT, display->HDR.SDR_whitelevel);
+    if (display->HDR.SDR_white_point <= 1.0f) {
+        SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_SDR_WHITE_POINT_FLOAT, 1.0f);
+    } else {
+        SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_SDR_WHITE_POINT_FLOAT, display->HDR.SDR_white_point);
     }
-    if (display->HDR.HDR_whitelevel != 0.0f) {
-        SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_HDR_WHITE_LEVEL_FLOAT, display->HDR.HDR_whitelevel);
+    if (display->HDR.HDR_headroom <= 1.0f) {
+        SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_HDR_HEADROOM_FLOAT, 1.0f);
+    } else {
+        SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_HDR_HEADROOM_FLOAT, display->HDR.HDR_headroom);
     }
 
     return id;
@@ -979,22 +985,32 @@ void SDL_SetDisplayHDRProperties(SDL_VideoDisplay *display, const SDL_HDRDisplay
     SDL_PropertiesID props = SDL_GetDisplayProperties(display->id);
     SDL_bool changed = SDL_FALSE;
 
-    if (HDR->enabled != display->HDR.enabled) {
-        SDL_SetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, HDR->enabled);
+    if (HDR->SDR_white_point != display->HDR.SDR_white_point) {
+        if (HDR->SDR_white_point <= 1.0f) {
+            SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_SDR_WHITE_POINT_FLOAT, 1.0f);
+        } else {
+            SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_SDR_WHITE_POINT_FLOAT, HDR->SDR_white_point);
+        }
         changed = SDL_TRUE;
     }
-    if (HDR->SDR_whitelevel != display->HDR.SDR_whitelevel) {
-        SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_SDR_WHITE_LEVEL_FLOAT, HDR->SDR_whitelevel);
-        changed = SDL_TRUE;
-    }
-    if (HDR->HDR_whitelevel != display->HDR.HDR_whitelevel) {
-        SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_HDR_WHITE_LEVEL_FLOAT, HDR->HDR_whitelevel);
+    if (HDR->HDR_headroom != display->HDR.HDR_headroom) {
+        if (HDR->HDR_headroom > 1.0f) {
+            SDL_SetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, SDL_TRUE);
+        } else {
+            SDL_SetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, SDL_FALSE);
+        }
+        if (HDR->HDR_headroom <= 1.0f) {
+            SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_HDR_HEADROOM_FLOAT, 1.0f);
+        } else {
+            SDL_SetFloatProperty(props, SDL_PROP_DISPLAY_HDR_HEADROOM_FLOAT, HDR->HDR_headroom);
+        }
         changed = SDL_TRUE;
     }
     SDL_copyp(&display->HDR, HDR);
 
     if (changed) {
-        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_HDR_STATE_CHANGED, HDR->enabled);
+        SDL_bool enabled = SDL_GetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, SDL_FALSE);
+        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_HDR_STATE_CHANGED, enabled);
     }
 }
 

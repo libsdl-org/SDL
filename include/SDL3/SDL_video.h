@@ -355,14 +355,9 @@ extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetPrimaryDisplay(void);
  *
  * The following read-only properties are provided by SDL:
  *
- * - `SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN`: true if the display has High
- *   Dynamic Range enabled
- * - `SDL_PROP_DISPLAY_SDR_WHITE_LEVEL_FLOAT`: the luminance, in nits, that
- *   SDR white is rendered on this display. If this value is not set or is
- *   zero, the value 200 is a reasonable default when HDR is enabled.
- * - `SDL_PROP_DISPLAY_HDR_WHITE_LEVEL_FLOAT`: the maximum luminance, in nits,
- *   of HDR content on this display. If this value is not set or is zero, the
- *   value 400 is a reasonable default when HDR is enabled.
+ * - `SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN`: true if the display has HDR headroom above the SDR white point.
+ * - `SDL_PROP_DISPLAY_SDR_WHITE_POINT_FLOAT`: the value of SDR white in the SDL_COLORSPACE_SRGB_LINEAR colorspace. On Windows this corresponds to the SDR white level in scRGB colorspace, and on Apple platforms this is always 1.0 for EDR content.
+ * - `SDL_PROP_DISPLAY_HDR_HEADROOM_FLOAT`: the additional high dynamic range that can be displayed, in terms of the SDR white point. When HDR is not enabled, this will be 1.0.
  *
  * \param displayID the instance ID of the display to query
  * \returns a valid property ID on success or 0 on failure; call
@@ -376,8 +371,8 @@ extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetPrimaryDisplay(void);
 extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetDisplayProperties(SDL_DisplayID displayID);
 
 #define SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN            "SDL.display.HDR_enabled"
-#define SDL_PROP_DISPLAY_SDR_WHITE_LEVEL_FLOAT          "SDL.display.SDR_white_level"
-#define SDL_PROP_DISPLAY_HDR_WHITE_LEVEL_FLOAT          "SDL.display.HDR_white_level"
+#define SDL_PROP_DISPLAY_SDR_WHITE_POINT_FLOAT          "SDL.display.SDR_white_point"
+#define SDL_PROP_DISPLAY_HDR_HEADROOM_FLOAT             "SDL.display.HDR_headroom"
 
 /**
  * Get the name of a display in UTF-8 encoding.

@@ -18,18 +18,6 @@
 #include <emscripten/emscripten.h>
 #endif
 
-/* The value for the SDR white level on an SDR display, scRGB 1.0 */
-#define SDR_DISPLAY_WHITE_LEVEL  80.0f
-
-/* The default value for the SDR white level on an HDR display */
-#define DEFAULT_SDR_WHITE_LEVEL 200.0f
-
-/* The default value for the HDR white level on an HDR display */
-#define DEFAULT_HDR_WHITE_LEVEL 400.0f
-
-/* The maximum value for the HDR white level on an HDR display */
-#define MAXIMUM_HDR_WHITE_LEVEL 1000.0f
-
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
 
@@ -46,13 +34,7 @@ static int renderer_count = 0;
 static int renderer_index = 0;
 static int stage_index = 0;
 static int done;
-static SDL_bool HDR_enabled = SDL_FALSE;
-static float SDR_white_level = SDR_DISPLAY_WHITE_LEVEL;
-static float SDR_color_scale = 1.0f;
-static SDL_FRect SDR_calibration_rect;
-static float HDR_white_level = SDR_DISPLAY_WHITE_LEVEL;
-static float HDR_color_scale = 1.0f;
-static SDL_FRect HDR_calibration_rect;
+static float HDR_headroom = 1.0f;
 
 enum
 {
@@ -60,7 +42,6 @@ enum
     StageDrawBackground,
     StageBlendDrawing,
     StageBlendTexture,
-    StageHDRCalibration,
     StageGradientDrawing,
     StageGradientTexture,
     StageCount
@@ -73,84 +54,22 @@ static void FreeRenderer(void)
     renderer = NULL;
 }
 
-static float GetDisplaySDRWhiteLevel(void)
-{
-    SDL_PropertiesID props;
-
-    if (!HDR_enabled) {
-        /* HDR is not enabled, use the SDR white level */
-        return SDR_DISPLAY_WHITE_LEVEL;
-    }
-
-    props = SDL_GetRendererProperties(renderer);
-    if (SDL_GetNumberProperty(props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB) != SDL_COLORSPACE_SCRGB) {
-        /* We're not displaying in HDR, use the SDR white level */
-        return SDR_DISPLAY_WHITE_LEVEL;
-    }
-
-    props = SDL_GetDisplayProperties(SDL_GetDisplayForWindow(window));
-    return SDL_GetFloatProperty(props, SDL_PROP_DISPLAY_SDR_WHITE_LEVEL_FLOAT, DEFAULT_SDR_WHITE_LEVEL);
-}
-
-static void SetSDRWhiteLevel(float value)
-{
-    if (value == SDR_white_level) {
-        return;
-    }
-
-    SDL_Log("SDR white level set to %g nits\n", value);
-    SDR_white_level = value;
-    SDR_color_scale = SDR_white_level / SDR_DISPLAY_WHITE_LEVEL;
-    SDL_SetRenderColorScale(renderer, SDR_color_scale);
-}
-
-static float GetDisplayHDRWhiteLevel(void)
-{
-    SDL_PropertiesID props;
-
-    if (!HDR_enabled) {
-        /* HDR is not enabled, use the SDR white level */
-        return SDR_DISPLAY_WHITE_LEVEL;
-    }
-
-    props = SDL_GetRendererProperties(renderer);
-    if (SDL_GetNumberProperty(props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB) != SDL_COLORSPACE_SCRGB) {
-        /* We're not displaying in HDR, use the SDR white level */
-        return SDR_DISPLAY_WHITE_LEVEL;
-    }
-
-    props = SDL_GetDisplayProperties(SDL_GetDisplayForWindow(window));
-    return SDL_GetFloatProperty(props, SDL_PROP_DISPLAY_HDR_WHITE_LEVEL_FLOAT, DEFAULT_HDR_WHITE_LEVEL);
-}
-
-static void SetHDRWhiteLevel(float value)
-{
-    if (value == HDR_white_level) {
-        return;
-    }
-
-    SDL_Log("HDR white level set to %g nits\n", value);
-    HDR_white_level = value;
-    HDR_color_scale = HDR_white_level / SDR_DISPLAY_WHITE_LEVEL;
-}
-
 static void UpdateHDRState(void)
 {
     SDL_PropertiesID props;
+    SDL_bool HDR_enabled;
 
     props = SDL_GetDisplayProperties(SDL_GetDisplayForWindow(window));
     HDR_enabled = SDL_GetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, SDL_FALSE);
-
-    SetHDRWhiteLevel(GetDisplayHDRWhiteLevel());
-    SetSDRWhiteLevel(GetDisplaySDRWhiteLevel());
 
     SDL_Log("HDR %s\n", HDR_enabled ? "enabled" : "disabled");
 
     if (HDR_enabled) {
         props = SDL_GetRendererProperties(renderer);
-        if (SDL_GetNumberProperty(props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB) != SDL_COLORSPACE_SCRGB) {
-            SDL_Log("Run with --colorspace scRGB to display HDR colors\n");
+        if (SDL_GetNumberProperty(props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB) != SDL_COLORSPACE_SRGB_LINEAR) {
+            SDL_Log("Run with --colorspace linear to display HDR colors\n");
         }
+        HDR_headroom = SDL_GetFloatProperty(props, SDL_PROP_RENDERER_HDR_HEADROOM_FLOAT, 1.0f);
     }
 }
 
@@ -238,6 +157,9 @@ static SDL_bool ReadPixel(int x, int y, SDL_Color *c)
 
     surface = SDL_RenderReadPixels(renderer, &r);
     if (surface) {
+        /* We don't want to do any HDR -> SDR tone mapping */
+        SDL_SetFloatProperty(SDL_GetSurfaceProperties(surface), SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, 0.0f);
+
         if (SDL_ReadSurfacePixel(surface, 0, 0, &c->r, &c->g, &c->b, &c->a) == 0) {
             result = SDL_TRUE;
         } else {
@@ -262,20 +184,6 @@ static void DrawText(float x, float y, const char *fmt, ...)
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDLTest_DrawString(renderer, x + 1.0f, y + 1.0f, text);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDLTest_DrawString(renderer, x, y, text);
-    SDL_free(text);
-}
-
-static void DrawTextWhite(float x, float y, const char *fmt, ...)
-{
-    char *text;
-
-    va_list ap;
-    va_start(ap, fmt);
-    SDL_vasprintf(&text, fmt, ap);
-    va_end(ap);
-
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDLTest_DrawString(renderer, x, y, text);
     SDL_free(text);
 }
@@ -488,85 +396,38 @@ static void DrawGradient(float x, float y, float width, float height, float star
     SDL_RenderGeometryRawFloat(renderer, NULL, xy, xy_stride, color, color_stride, NULL, 0, num_vertices, indices, num_indices, size_indices);
 }
 
-static float scRGBtoNits(float v)
-{
-    return v * 80.0f;
-}
-
-static float scRGBfromNits(float v)
-{
-    return v / 80.0f;
-}
-
-static float sRGBtoLinear(float v)
-{
-    if (v <= 0.04045f) {
-        v = (v / 12.92f);
-    } else {
-        v = SDL_powf(((v + 0.055f) / 1.055f), 2.4f);
-    }
-    return v;
-}
-
-static float sRGBFromLinear(float v)
-{
-    if (v <= 0.0031308f) {
-        v = (v * 12.92f);
-    } else {
-        v = (SDL_powf(v, 1.0f / 2.4f) * 1.055f - 0.055f);
-    }
-    return v;
-}
-
-static float sRGBtoNits(float v)
-{
-    return scRGBtoNits(sRGBtoLinear(v));
-}
-
-static float sRGBfromNits(float v)
-{
-    return sRGBFromLinear(scRGBfromNits(v));
-}
-
 static void RenderGradientDrawing(void)
 {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
 
     float x = TEXT_START_X;
     float y = TEXT_START_Y;
-    DrawTextWhite(x, y, "%s %s", renderer_name, colorspace_name);
+    DrawText(x, y, "%s %s", renderer_name, colorspace_name);
     y += TEXT_LINE_ADVANCE;
-    DrawTextWhite(x, y, "Test: Draw SDR and HDR gradients");
-    y += TEXT_LINE_ADVANCE;
-
+    DrawText(x, y, "Test: Draw SDR and HDR gradients");
     y += TEXT_LINE_ADVANCE;
 
-    DrawTextWhite(x, y, "SDR gradient (%g nits)", SDR_white_level);
     y += TEXT_LINE_ADVANCE;
-    SDL_SetRenderColorScale(renderer, 1.0f);
-    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(SDR_white_level));
-    SDL_SetRenderColorScale(renderer, SDR_color_scale);
+
+    DrawText(x, y, "SDR gradient");
+    y += TEXT_LINE_ADVANCE;
+    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, 1.0f);
     y += 64.0f;
 
     y += TEXT_LINE_ADVANCE;
     y += TEXT_LINE_ADVANCE;
 
-    DrawTextWhite(x, y, "HDR gradient (%g nits)", HDR_white_level);
+    if (HDR_headroom > 1.0f) {
+        DrawText(x, y, "HDR gradient");
+    } else {
+        DrawText(x, y, "No HDR headroom, HDR and SDR gradient are the same");
+    }
     y += TEXT_LINE_ADVANCE;
+    /* Drawing is in the sRGB colorspace, so we need to use the color scale, which is applied in linear space, to get into high dynamic range */
+    SDL_SetRenderColorScale(renderer, HDR_headroom);
+    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, 1.0f);
     SDL_SetRenderColorScale(renderer, 1.0f);
-    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(HDR_white_level));
-    SDL_SetRenderColorScale(renderer, SDR_color_scale);
-    y += 64.0f;
-
-    y += TEXT_LINE_ADVANCE;
-    y += TEXT_LINE_ADVANCE;
-
-    DrawTextWhite(x, y, "HDR gradient (%g nits)", MAXIMUM_HDR_WHITE_LEVEL);
-    y += TEXT_LINE_ADVANCE;
-    SDL_SetRenderColorScale(renderer, 1.0f);
-    DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(MAXIMUM_HDR_WHITE_LEVEL));
-    SDL_SetRenderColorScale(renderer, SDR_color_scale);
     y += 64.0f;
 }
 
@@ -575,18 +436,10 @@ static SDL_Texture *CreateGradientTexture(int width, float start, float end)
     SDL_Texture *texture;
     float *pixels;
 
-    /* Floating point textures are in the scRGB colorspace by default */
+    /* Floating point textures are in the linear colorspace by default */
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA128_FLOAT, SDL_TEXTUREACCESS_STATIC, width, 1);
     if (!texture) {
         return NULL;
-    }
-
-    if (colorspace == SDL_COLORSPACE_SCRGB) {
-        /* The input values are in the sRGB colorspace, but we're blending in linear space */
-        start = sRGBtoLinear(start);
-        end = sRGBtoLinear(end);
-    } else if (colorspace == SDL_COLORSPACE_SRGB) {
-        /* The input values are in the sRGB colorspace, and we're blending in sRGB space */
     }
 
     pixels = (float *)SDL_malloc(width * sizeof(float) * 4);
@@ -617,129 +470,35 @@ static void DrawGradientTexture(float x, float y, float width, float height, flo
 
 static void RenderGradientTexture(void)
 {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
 
     float x = TEXT_START_X;
     float y = TEXT_START_Y;
-    DrawTextWhite(x, y, "%s %s", renderer_name, colorspace_name);
+    DrawText(x, y, "%s %s", renderer_name, colorspace_name);
     y += TEXT_LINE_ADVANCE;
-    DrawTextWhite(x, y, "Test: Texture SDR and HDR gradients");
-    y += TEXT_LINE_ADVANCE;
-
+    DrawText(x, y, "Test: Texture SDR and HDR gradients");
     y += TEXT_LINE_ADVANCE;
 
-    DrawTextWhite(x, y, "SDR gradient (%g nits)", SDR_white_level);
     y += TEXT_LINE_ADVANCE;
-    SDL_SetRenderColorScale(renderer, 1.0f);
-    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(SDR_white_level));
-    SDL_SetRenderColorScale(renderer, SDR_color_scale);
+
+    DrawText(x, y, "SDR gradient");
+    y += TEXT_LINE_ADVANCE;
+    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, 1.0f);
     y += 64.0f;
 
     y += TEXT_LINE_ADVANCE;
     y += TEXT_LINE_ADVANCE;
 
-    DrawTextWhite(x, y, "HDR gradient (%g nits)", HDR_white_level);
+    if (HDR_headroom > 1.0f) {
+        DrawText(x, y, "HDR gradient");
+    } else {
+        DrawText(x, y, "No HDR headroom, HDR and SDR gradient are the same");
+    }
     y += TEXT_LINE_ADVANCE;
-    SDL_SetRenderColorScale(renderer, 1.0f);
-    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(HDR_white_level));
-    SDL_SetRenderColorScale(renderer, SDR_color_scale);
+    /* The gradient texture is in the linear colorspace, so we can use the HDR_headroom value directly */
+    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, HDR_headroom);
     y += 64.0f;
-
-    y += TEXT_LINE_ADVANCE;
-    y += TEXT_LINE_ADVANCE;
-
-    DrawTextWhite(x, y, "HDR gradient (%g nits)", MAXIMUM_HDR_WHITE_LEVEL);
-    y += TEXT_LINE_ADVANCE;
-    SDL_SetRenderColorScale(renderer, 1.0f);
-    DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, sRGBfromNits(MAXIMUM_HDR_WHITE_LEVEL));
-    SDL_SetRenderColorScale(renderer, SDR_color_scale);
-    y += 64.0f;
-}
-
-static void RenderHDRCalibration(void)
-{
-    SDL_FRect rect;
-
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-
-    float x = TEXT_START_X;
-    float y = TEXT_START_Y;
-    DrawTextWhite(x, y, "%s %s", renderer_name, colorspace_name);
-    y += TEXT_LINE_ADVANCE;
-    DrawTextWhite(x, y, "Test: HDR calibration");
-    y += TEXT_LINE_ADVANCE;
-
-    y += TEXT_LINE_ADVANCE;
-
-    if (!HDR_enabled) {
-        DrawTextWhite(x, y, "HDR not enabled");
-        return;
-    }
-
-    DrawTextWhite(x, y, "Select HDR maximum brightness (%g nits)", HDR_white_level);
-    y += TEXT_LINE_ADVANCE;
-    DrawTextWhite(x, y, "The square in the middle should just barely be visible");
-    y += TEXT_LINE_ADVANCE;
-    HDR_calibration_rect.x = x;
-    HDR_calibration_rect.y = y;
-    HDR_calibration_rect.w = WINDOW_WIDTH - 2 * x;
-    HDR_calibration_rect.h = 64.0f;
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_SetRenderColorScale(renderer, MAXIMUM_HDR_WHITE_LEVEL / SDR_DISPLAY_WHITE_LEVEL);
-    SDL_RenderFillRect(renderer, &HDR_calibration_rect);
-    SDL_SetRenderColorScale(renderer, HDR_color_scale * 0.90f);
-    rect = HDR_calibration_rect;
-    rect.h -= 4.0f;
-    rect.w = 60.0f;
-    rect.x = (WINDOW_WIDTH - rect.w) / 2.0f;
-    rect.y += 2.0f;
-    SDL_RenderFillRect(renderer, &rect);
-    SDL_SetRenderColorScale(renderer, SDR_color_scale);
-    y += 64.0f;
-
-    y += TEXT_LINE_ADVANCE;
-    y += TEXT_LINE_ADVANCE;
-
-    DrawTextWhite(x, y, "Select SDR maximum brightness (%g nits)", SDR_white_level);
-    y += TEXT_LINE_ADVANCE;
-    SDR_calibration_rect.x = x;
-    SDR_calibration_rect.y = y;
-    SDR_calibration_rect.w = WINDOW_WIDTH - 2 * x;
-    SDR_calibration_rect.h = 64.0f;
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderFillRect(renderer, &SDR_calibration_rect);
-}
-
-static void OnHDRCalibrationMouseHeld(float x, float y)
-{
-    SDL_FPoint mouse = { x, y };
-
-    if (SDL_PointInRectFloat(&mouse, &HDR_calibration_rect)) {
-        float v = (x - HDR_calibration_rect.x) / HDR_calibration_rect.w;
-        v *= (sRGBfromNits(MAXIMUM_HDR_WHITE_LEVEL) - 1.0f);
-        v += 1.0f;
-        v = sRGBtoNits(v);
-        SetHDRWhiteLevel(v);
-        return;
-    }
-
-    if (SDL_PointInRectFloat(&mouse, &SDR_calibration_rect)) {
-        float v = (x - SDR_calibration_rect.x) / SDR_calibration_rect.w;
-        v *= (sRGBfromNits(MAXIMUM_HDR_WHITE_LEVEL) - 1.0f);
-        v += 1.0f;
-        v = sRGBtoNits(v);
-        SetSDRWhiteLevel(v);
-        return;
-    }
-}
-
-static void OnMouseHeld(float x, float y)
-{
-    if (stage_index == StageHDRCalibration) {
-        OnHDRCalibrationMouseHeld(x, y);
-    }
 }
 
 static void loop(void)
@@ -768,12 +527,6 @@ static void loop(void)
             default:
                 break;
             }
-        } else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-            OnMouseHeld(event.button.x, event.button.y);
-        } else if (event.type == SDL_EVENT_MOUSE_MOTION) {
-            if (event.motion.state) {
-                OnMouseHeld(event.button.x, event.button.y);
-            }
         } else if (event.type == SDL_EVENT_DISPLAY_HDR_STATE_CHANGED) {
             UpdateHDRState();
         } else if (event.type == SDL_EVENT_QUIT) {
@@ -797,9 +550,6 @@ static void loop(void)
             break;
         case StageBlendTexture:
             RenderBlendTexture();
-            break;
-        case StageHDRCalibration:
-            RenderHDRCalibration();
             break;
         case StageGradientDrawing:
             RenderGradientDrawing();
@@ -844,8 +594,8 @@ int main(int argc, char *argv[])
                 colorspace_name = argv[i + 1];
                 if (SDL_strcasecmp(colorspace_name, "sRGB") == 0) {
                     colorspace = SDL_COLORSPACE_SRGB;
-                } else if (SDL_strcasecmp(colorspace_name, "scRGB") == 0) {
-                    colorspace = SDL_COLORSPACE_SCRGB;
+                } else if (SDL_strcasecmp(colorspace_name, "linear") == 0) {
+                    colorspace = SDL_COLORSPACE_SRGB_LINEAR;
 /* Not currently supported
                 } else if (SDL_strcasecmp(colorspace_name, "HDR10") == 0) {
                     colorspace = SDL_COLORSPACE_HDR10;

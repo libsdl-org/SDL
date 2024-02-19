@@ -576,16 +576,16 @@ typedef enum
                               SDL_COLOR_RANGE_FULL,
                               SDL_COLOR_PRIMARIES_BT709,
                               SDL_TRANSFER_CHARACTERISTICS_SRGB,
-                              SDL_MATRIX_COEFFICIENTS_UNSPECIFIED,
+                              SDL_MATRIX_COEFFICIENTS_IDENTITY,
                               SDL_CHROMA_LOCATION_NONE),
 
-    /* scRGB is a linear colorspace and the default colorspace for floating point surfaces */
-    SDL_COLORSPACE_SCRGB =   /**< Equivalent to DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709  */
+    /* This is a linear colorspace and the default colorspace for floating point surfaces. On Windows this is the scRGB colorspace, and on Apple platforms this is kCGColorSpaceExtendedLinearSRGB for EDR content */
+    SDL_COLORSPACE_SRGB_LINEAR =   /**< Equivalent to DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709  */
         SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_RGB,
                               SDL_COLOR_RANGE_FULL,
                               SDL_COLOR_PRIMARIES_BT709,
                               SDL_TRANSFER_CHARACTERISTICS_LINEAR,
-                              SDL_MATRIX_COEFFICIENTS_UNSPECIFIED,
+                              SDL_MATRIX_COEFFICIENTS_IDENTITY,
                               SDL_CHROMA_LOCATION_NONE),
 
     /* HDR10 is a non-linear HDR colorspace and the default colorspace for 10-bit surfaces */
@@ -594,7 +594,7 @@ typedef enum
                               SDL_COLOR_RANGE_FULL,
                               SDL_COLOR_PRIMARIES_BT2020,
                               SDL_TRANSFER_CHARACTERISTICS_PQ,
-                              SDL_MATRIX_COEFFICIENTS_UNSPECIFIED,
+                              SDL_MATRIX_COEFFICIENTS_IDENTITY,
                               SDL_CHROMA_LOCATION_NONE),
 
     SDL_COLORSPACE_JPEG =     /**< Equivalent to DXGI_COLOR_SPACE_YCBCR_FULL_G22_NONE_P709_X601 */

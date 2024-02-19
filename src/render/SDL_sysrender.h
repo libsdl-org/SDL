@@ -64,6 +64,8 @@ struct SDL_Texture
 {
     const void *magic;
     SDL_Colorspace colorspace;  /**< The colorspace of the texture */
+    float SDR_white_point;      /**< The SDR white point for this content */
+    float HDR_headroom;         /**< The HDR headroom needed by this content */
     Uint32 format;              /**< The pixel format of the texture */
     int access;                 /**< SDL_TextureAccess */
     int w;                      /**< The width of the texture */
@@ -254,6 +256,8 @@ struct SDL_Renderer
     SDL_Mutex *target_mutex;
 
     SDL_Colorspace output_colorspace;
+    float SDR_white_point;
+    float HDR_headroom;
 
     float color_scale;
     SDL_FColor color;        /**< Color for drawing operations values */

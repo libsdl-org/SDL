@@ -26,9 +26,9 @@
 
 /* YUV conversion functions */
 
-extern int SDL_ConvertPixels_YUV_to_RGB(int width, int height, Uint32 src_format, SDL_Colorspace src_colorspace, const void *src, int src_pitch, Uint32 dst_format, SDL_Colorspace dst_colorspace, void *dst, int dst_pitch);
-extern int SDL_ConvertPixels_RGB_to_YUV(int width, int height, Uint32 src_format, SDL_Colorspace src_colorspace, const void *src, int src_pitch, Uint32 dst_format, SDL_Colorspace dst_colorspace, void *dst, int dst_pitch);
-extern int SDL_ConvertPixels_YUV_to_YUV(int width, int height, Uint32 src_format, SDL_Colorspace src_colorspace, const void *src, int src_pitch, Uint32 dst_format, SDL_Colorspace dst_colorspace, void *dst, int dst_pitch);
+extern int SDL_ConvertPixels_YUV_to_RGB(int width, int height, Uint32 src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch, Uint32 dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch);
+extern int SDL_ConvertPixels_RGB_to_YUV(int width, int height, Uint32 src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch, Uint32 dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch);
+extern int SDL_ConvertPixels_YUV_to_YUV(int width, int height, Uint32 src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch, Uint32 dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch);
 
 
 extern int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, size_t *pitch);

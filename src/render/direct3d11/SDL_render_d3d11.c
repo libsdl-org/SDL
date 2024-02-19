@@ -246,12 +246,12 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 color
     case SDL_PIXELFORMAT_RGBA64_FLOAT:
         return DXGI_FORMAT_R16G16B16A16_FLOAT;
     case SDL_PIXELFORMAT_ARGB8888:
-        if (colorspace == SDL_COLORSPACE_SCRGB) {
+        if (colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
             return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
         }
         return DXGI_FORMAT_B8G8R8A8_UNORM;
     case SDL_PIXELFORMAT_XRGB8888:
-        if (colorspace == SDL_COLORSPACE_SCRGB) {
+        if (colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
             return DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
         }
         return DXGI_FORMAT_B8G8R8X8_UNORM;
@@ -276,12 +276,12 @@ static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(Uint32 format, Uin
     case SDL_PIXELFORMAT_RGBA64_FLOAT:
         return DXGI_FORMAT_R16G16B16A16_FLOAT;
     case SDL_PIXELFORMAT_ARGB8888:
-        if (colorspace == SDL_COLORSPACE_SCRGB) {
+        if (colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
             return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
         }
         return DXGI_FORMAT_B8G8R8A8_UNORM;
     case SDL_PIXELFORMAT_XRGB8888:
-        if (colorspace == SDL_COLORSPACE_SCRGB) {
+        if (colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
             return DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
         }
         return DXGI_FORMAT_B8G8R8X8_UNORM;
@@ -880,7 +880,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     swapChainDesc.Width = w;
     swapChainDesc.Height = h;
     switch (renderer->output_colorspace) {
-    case SDL_COLORSPACE_SCRGB:
+    case SDL_COLORSPACE_SRGB_LINEAR:
         swapChainDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
         break;
     case SDL_COLORSPACE_HDR10:
@@ -979,7 +979,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         UINT colorspace_support = 0;
         DXGI_COLOR_SPACE_TYPE colorspace;
         switch (renderer->output_colorspace) {
-        case SDL_COLORSPACE_SCRGB:
+        case SDL_COLORSPACE_SRGB_LINEAR:
             colorspace = DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709;
             break;
         case SDL_COLORSPACE_HDR10:
@@ -2699,7 +2699,7 @@ SDL_Renderer *D3D11_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_p
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB &&
-        renderer->output_colorspace != SDL_COLORSPACE_SCRGB
+        renderer->output_colorspace != SDL_COLORSPACE_SRGB_LINEAR
         /*&& renderer->output_colorspace != SDL_COLORSPACE_HDR10*/) {
         SDL_SetError("Unsupported output colorspace");
         SDL_free(renderer);
