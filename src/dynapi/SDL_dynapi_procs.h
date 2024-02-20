@@ -1021,3 +1021,4 @@ SDL_DYNAPI_PROC(SDL_Surface*,SDL_AcquireCameraFrame,(SDL_Camera *a, Uint64 *b),(
 SDL_DYNAPI_PROC(int,SDL_ReleaseCameraFrame,(SDL_Camera *a, SDL_Surface *b),(a,b),return)
 SDL_DYNAPI_PROC(void,SDL_CloseCamera,(SDL_Camera *a),(a),)
 SDL_DYNAPI_PROC(int,SDL_GetCameraPermissionState,(SDL_Camera *a),(a),return)
+SDL_DYNAPI_PROC(SDL_CameraPosition,SDL_GetCameraDevicePosition,(SDL_CameraDeviceID a),(a),return)
