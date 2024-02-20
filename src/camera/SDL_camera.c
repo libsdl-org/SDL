@@ -261,6 +261,7 @@ static void ClosePhysicalCameraDevice(SDL_CameraDevice *device)
 
     SDL_aligned_free(device->zombie_pixels);
 
+    device->permission = 0;
     device->zombie_pixels = NULL;
     device->filled_output_surfaces.next = NULL;
     device->empty_output_surfaces.next = NULL;
