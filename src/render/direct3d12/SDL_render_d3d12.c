@@ -2571,7 +2571,8 @@ static int D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
         }
 
         if (!rendererData->currentPipelineState) {
-            return SDL_SetError("[direct3d12] Unable to create required pipeline state");
+            /* The error has been set inside D3D12_CreatePipelineState() */
+            return -1;
         }
 
         D3D_CALL(rendererData->commandList, SetPipelineState, rendererData->currentPipelineState->pipelineState);
