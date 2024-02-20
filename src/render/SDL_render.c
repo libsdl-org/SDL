@@ -799,6 +799,20 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                 event->button.y = (int)(event->button.y / (scale.y * renderer->dpi_scale.y));
             }
         }
+    } else if (event->type == SDL_MOUSEWHEEL) {
+        SDL_Window *window = SDL_GetWindowFromID(event->wheel.windowID);
+        if (window == renderer->window) {
+            int logical_w, logical_h;
+            SDL_DRect viewport;
+            SDL_FPoint scale;
+            GetWindowViewportValues(renderer, &logical_w, &logical_h, &viewport, &scale);
+            if (logical_w) {
+                event->wheel.mouseX -= (int)(viewport.x * renderer->dpi_scale.x);
+                event->wheel.mouseY -= (int)(viewport.y * renderer->dpi_scale.y);
+                event->wheel.mouseX = (int)(event->wheel.mouseX / (scale.x * renderer->dpi_scale.x));
+                event->wheel.mouseY = (int)(event->wheel.mouseY / (scale.y * renderer->dpi_scale.y));
+            }
+        }
     } else if (event->type == SDL_FINGERDOWN ||
                event->type == SDL_FINGERUP ||
                event->type == SDL_FINGERMOTION) {
