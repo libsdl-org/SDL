@@ -1795,8 +1795,8 @@ int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int
                 for (j = 0; j < i; j++) {
                     SDL_UnlockMutex(streams[j]->lock);
                 }
-                if (streams[i]) {
-                    SDL_UnlockMutex(streams[i]->lock);
+                if (stream) {
+                    SDL_UnlockMutex(stream->lock);
                 }
                 break;
             }
