@@ -23,6 +23,8 @@ static SDL_CameraSpec spec;
 static SDL_Texture *texture = NULL;
 static SDL_bool texture_updated = SDL_FALSE;
 static SDL_Surface *frame_current = NULL;
+static SDL_CameraDeviceID front_camera = 0;
+static SDL_CameraDeviceID back_camera = 0;
 
 int SDL_AppInit(int argc, char *argv[])
 {
@@ -66,12 +68,23 @@ int SDL_AppInit(int argc, char *argv[])
 
     SDL_Log("Saw %d camera devices.", devcount);
     for (i = 0; i < devcount; i++) {
-        char *name = SDL_GetCameraDeviceName(devices[i]);
-        SDL_Log("  - Camera #%d: %s", i, name);
+        const SDL_CameraDeviceID device = devices[i];
+        char *name = SDL_GetCameraDeviceName(device);
+        const SDL_CameraPosition position = SDL_GetCameraDevicePosition(device);
+        const char *posstr = "";
+        if (position == SDL_CAMERA_POSITION_FRONT_FACING) {
+            front_camera = device;
+            posstr = "[front-facing] ";
+        } else if (position == SDL_CAMERA_POSITION_BACK_FACING) {
+            back_camera = device;
+            posstr = "[back-facing] ";
+        }
+        SDL_Log("  - Camera #%d: %s %s", i, posstr, name);
         SDL_free(name);
+
     }
 
-    const SDL_CameraDeviceID devid = devices[0];  /* just take the first one. */
+    const SDL_CameraDeviceID devid = front_camera ? front_camera : devices[0];  /* no front-facing? just take the first one. */
     SDL_free(devices);
 
     if (!devid) {
@@ -96,6 +109,51 @@ int SDL_AppInit(int argc, char *argv[])
     return 0;  /* start the main app loop. */
 }
 
+
+static int FlipCamera(void)
+{
+    static Uint64 last_flip = 0;
+    if ((SDL_GetTicks() - last_flip) < 3000) {  /* must wait at least 3 seconds between flips. */
+        return 0;
+    }
+
+    if (camera) {
+        const SDL_CameraDeviceID current = SDL_GetCameraInstanceID(camera);
+        SDL_CameraDeviceID nextcam = 0;
+        if (current == front_camera) {
+            nextcam = back_camera;
+        } else if (current == back_camera) {
+            nextcam = front_camera;
+        }
+
+        if (nextcam) {
+            SDL_Log("Flip camera!");
+
+            if (frame_current) {
+                SDL_ReleaseCameraFrame(camera, frame_current);
+                frame_current = NULL;
+            }
+
+            SDL_CloseCamera(camera);
+
+            if (texture) {
+                SDL_DestroyTexture(texture);
+                texture = NULL;  /* will rebuild when new camera is approved. */
+            }
+
+            camera = SDL_OpenCameraDevice(nextcam, NULL);
+            if (!camera) {
+                SDL_Log("Failed to open camera device: %s", SDL_GetError());
+                return -1;
+            }
+
+            last_flip = SDL_GetTicks();
+        }
+    }
+
+    return 0;
+}
+
 int SDL_AppEvent(const SDL_Event *event)
 {
     switch (event->type) {
@@ -104,21 +162,30 @@ int SDL_AppEvent(const SDL_Event *event)
             if (sym == SDLK_ESCAPE || sym == SDLK_AC_BACK) {
                 SDL_Log("Key : Escape!");
                 return 1;
+            } else if (sym == SDLK_SPACE) {
+                FlipCamera();
+                return 0;
             }
             break;
         }
+
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+            /* !!! FIXME: only flip if clicked in the area of a "flip" icon. */
+            return FlipCamera();
 
         case SDL_EVENT_QUIT:
             SDL_Log("Ctlr+C : Quit!");
             return 1;
 
         case SDL_EVENT_CAMERA_DEVICE_APPROVED:
+            SDL_Log("Camera approved!");
             if (SDL_GetCameraFormat(camera, &spec) < 0) {
                 SDL_Log("Couldn't get camera spec: %s", SDL_GetError());
                 return -1;
             }
 
             /* Create texture with appropriate format */
+            SDL_assert(texture == NULL);
             texture = SDL_CreateTexture(renderer, spec.format, SDL_TEXTUREACCESS_STATIC, spec.width, spec.height);
             if (texture == NULL) {
                 SDL_Log("Couldn't create texture: %s", SDL_GetError());
@@ -127,6 +194,7 @@ int SDL_AppEvent(const SDL_Event *event)
             break;
 
         case SDL_EVENT_CAMERA_DEVICE_DENIED:
+            SDL_Log("Camera denied!");
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Camera permission denied!", "User denied access to the camera!", window);
             return -1;
     }
@@ -143,7 +211,7 @@ int SDL_AppIterate(void)
         int win_w, win_h, tw, th;
         SDL_FRect d;
         Uint64 timestampNS = 0;
-        SDL_Surface *frame_next = SDL_AcquireCameraFrame(camera, &timestampNS);
+        SDL_Surface *frame_next = camera ? SDL_AcquireCameraFrame(camera, &timestampNS) : NULL;
 
         #if 0
         if (frame_next) {
@@ -179,6 +247,8 @@ int SDL_AppIterate(void)
         d.h = (float) th;
         SDL_RenderTexture(renderer, texture, NULL, &d);
     }
+
+    /* !!! FIXME: Render a "flip" icon if front_camera and back_camera are both != 0. */
 
     SDL_RenderPresent(renderer);
 
