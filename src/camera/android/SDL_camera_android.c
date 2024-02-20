@@ -376,18 +376,18 @@ static void onImageAvailable(void *context, AImageReader *reader)
 
 static void onDisconnected(void *context, ACameraDevice *device)
 {
-    // SDL_CameraDevice *_this = (SDL_CameraDevice *) context;
     #if DEBUG_CAMERA
     SDL_Log("CAMERA: CB onDisconnected");
     #endif
+    SDL_CameraDeviceDisconnected((SDL_CameraDevice *) context);
 }
 
 static void onError(void *context, ACameraDevice *device, int error)
 {
-    // SDL_CameraDevice *_this = (SDL_CameraDevice *) context;
     #if DEBUG_CAMERA
     SDL_Log("CAMERA: CB onError");
     #endif
+    SDL_CameraDeviceDisconnected((SDL_CameraDevice *) context);
 }
 
 static void onClosed(void* context, ACameraCaptureSession *session)
@@ -717,8 +717,15 @@ static void onCameraUnavailable(void *context, const char *cameraId)
     #if DEBUG_CAMERA
     SDL_Log("CAMERA: CB onCameraUnvailable('%s')", cameraId);
     #endif
+
     SDL_assert(cameraId != NULL);
-    SDL_CameraDeviceDisconnected(SDL_FindPhysicalCameraDeviceByCallback(FindAndroidCameraDeviceByID, (void *) cameraId));
+
+    // THIS CALLBACK FIRES WHEN YOU OPEN THE DEVICE YOURSELF.  :(
+    // Make sure we don't have the device opened, in which case onDisconnected will fire instead if actually lost.
+    SDL_CameraDevice *device = SDL_FindPhysicalCameraDeviceByCallback(FindAndroidCameraDeviceByID, (void *) cameraId);
+    if (device && !device->hidden) {
+        SDL_CameraDeviceDisconnected(device);
+    }
 }
 
 static const ACameraManager_AvailabilityCallbacks camera_availability_listener = {
