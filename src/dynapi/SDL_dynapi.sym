@@ -971,6 +971,7 @@ SDL3_0.0.0 {
     SDL_ReleaseCameraFrame;
     SDL_CloseCamera;
     SDL_GetCameraPermissionState;
+    SDL_GetCameraDevicePosition;
     # extra symbols go here (don't modify this line)
   local: *;
 };
