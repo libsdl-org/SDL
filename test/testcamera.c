@@ -32,30 +32,36 @@ int SDL_AppInit(int argc, char *argv[])
     int i;
 
     /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO | SDL_INIT_CAMERA);
+    if (!state) {
         return -1;
     }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return -1;
+    }
+
+    state->num_windows = 1;
+
     /* Load the SDL library */
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_CAMERA) < 0) {
+    if (!SDLTest_CommonInit(state)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return -1;
     }
 
-    window = SDL_CreateWindow("Local Video", 1000, 800, 0);
-    if (window == NULL) {
+    window = state->windows[0];
+    if (!window) {
         SDL_Log("Couldn't create window: %s", SDL_GetError());
         return -1;
     }
 
     SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
 
-    renderer = SDL_CreateRenderer(window, NULL, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    if (renderer == NULL) {
+    renderer = state->renderers[0];
+    if (!renderer) {
         /* SDL_Log("Couldn't create renderer: %s", SDL_GetError()); */
         return -1;
     }
@@ -81,7 +87,6 @@ int SDL_AppInit(int argc, char *argv[])
         }
         SDL_Log("  - Camera #%d: %s %s", i, posstr, name);
         SDL_free(name);
-
     }
 
     const SDL_CameraDeviceID devid = front_camera ? front_camera : devices[0];  /* no front-facing? just take the first one. */
@@ -91,7 +96,7 @@ int SDL_AppInit(int argc, char *argv[])
         SDL_Log("No cameras available?");
         return -1;
     }
-    
+
     SDL_CameraSpec *pspec = NULL;
     #if 0  /* just for edge-case testing purposes, ignore. */
     pspec = &spec;
@@ -187,7 +192,7 @@ int SDL_AppEvent(const SDL_Event *event)
             /* Create texture with appropriate format */
             SDL_assert(texture == NULL);
             texture = SDL_CreateTexture(renderer, spec.format, SDL_TEXTUREACCESS_STATIC, spec.width, spec.height);
-            if (texture == NULL) {
+            if (!texture) {
                 SDL_Log("Couldn't create texture: %s", SDL_GetError());
                 return -1;
             }
@@ -207,7 +212,7 @@ int SDL_AppIterate(void)
     SDL_SetRenderDrawColor(renderer, 0x99, 0x99, 0x99, 255);
     SDL_RenderClear(renderer);
 
-    if (texture != NULL) {   /* if not NULL, camera is ready to go. */
+    if (texture) {   /* if not NULL, camera is ready to go. */
         int win_w, win_h, tw, th;
         SDL_FRect d;
         Uint64 timestampNS = 0;
@@ -262,6 +267,6 @@ void SDL_AppQuit(void)
     SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
-    SDLTest_CommonDestroyState(state);
+    SDLTest_CommonQuit(state);
 }
 
