@@ -1792,15 +1792,11 @@ int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int
 
             if (retval != 0) {
                 int j;
-                for (j = 0; j <= i; j++) {
-#ifdef _MSC_VER /* Visual Studio analyzer can't tell that we've already verified streams[j] isn't NULL */
-#pragma warning(push)
-#pragma warning(disable : 28182)
-#endif
+                for (j = 0; j < i; j++) {
                     SDL_UnlockMutex(streams[j]->lock);
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
+                }
+                if (streams[i]) {
+                    SDL_UnlockMutex(streams[i]->lock);
                 }
                 break;
             }
