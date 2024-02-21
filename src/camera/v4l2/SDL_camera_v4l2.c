@@ -22,6 +22,7 @@
 
 #ifdef SDL_CAMERA_DRIVER_V4L2
 
+#include <stddef.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>              // low-level i/o
@@ -29,6 +30,12 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <linux/videodev2.h>
+
+#ifndef V4L2_CAP_DEVICE_CAPS
+// device_caps was added to struct v4l2_capability as of kernel 3.4.
+#define device_caps reserved[0]
+SDL_COMPILE_TIME_ASSERT(v4l2devicecaps, offsetof(struct v4l2_capability,device_caps) == offsetof(struct v4l2_capability,capabilities) + 4);
+#endif
 
 #include "../SDL_syscamera.h"
 #include "../SDL_camera_c.h"
