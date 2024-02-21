@@ -350,7 +350,7 @@ static void SDLCALL SDL_Convert_S8_to_F32_SSE2(SDL_AudioCVT *cvt, SDL_AudioForma
         i -= 16;
 
         {
-        const __m128i bytes = _mm_xor_si128(_mm_loadu_si128((const __m128i *)&src[i-16]), flipper);
+        const __m128i bytes = _mm_xor_si128(_mm_loadu_si128((const __m128i *)&src[i]), flipper);
 
         const __m128i shorts1 = _mm_unpacklo_epi8(bytes, zero);
         const __m128i shorts2 = _mm_unpackhi_epi8(bytes, zero);
