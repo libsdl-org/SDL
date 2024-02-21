@@ -31,12 +31,7 @@ typedef enum
 {
     SHADER_SOLID,
     SHADER_RGB,
-#if SDL_HAVE_YUV
-    SHADER_YUV,
-    SHADER_NV12,
-    SHADER_NV21,
-    SHADER_HDR10,
-#endif
+    SHADER_ADVANCED,
     NUM_SHADERS
 } D3D12_Shader;
 
@@ -44,10 +39,7 @@ typedef enum
 {
     ROOTSIG_COLOR,
     ROOTSIG_TEXTURE,
-#if SDL_HAVE_YUV
-    ROOTSIG_YUV,
-    ROOTSIG_NV,
-#endif
+    ROOTSIG_ADVANCED,
     NUM_ROOTSIGS
 } D3D12_RootSignature;
 

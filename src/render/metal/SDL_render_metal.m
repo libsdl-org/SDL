@@ -91,9 +91,7 @@ typedef enum SDL_MetalFragmentFunction
     SDL_METAL_FRAGMENT_SOLID = 0,
     SDL_METAL_FRAGMENT_COPY,
     SDL_METAL_FRAGMENT_YUV,
-    SDL_METAL_FRAGMENT_NV12,
-    SDL_METAL_FRAGMENT_NV21,
-    SDL_METAL_FRAGMENT_HDR10,
+    SDL_METAL_FRAGMENT_ADVANCED,
     SDL_METAL_FRAGMENT_COUNT,
 } SDL_MetalFragmentFunction;
 
@@ -247,12 +245,8 @@ static NSString *GetFragmentFunctionName(SDL_MetalFragmentFunction function)
         return @"SDL_Copy_fragment";
     case SDL_METAL_FRAGMENT_YUV:
         return @"SDL_YUV_fragment";
-    case SDL_METAL_FRAGMENT_NV12:
-        return @"SDL_NV12_fragment";
-    case SDL_METAL_FRAGMENT_NV21:
-        return @"SDL_NV21_fragment";
-    case SDL_METAL_FRAGMENT_HDR10:
-        return @"SDL_HDR10_fragment";
+    case SDL_METAL_FRAGMENT_ADVANCED:
+        return @"SDL_Advanced_fragment";
     default:
         return nil;
     }
@@ -390,9 +384,7 @@ void MakeShaderPipelines(METAL_RenderData *data, METAL_ShaderPipelines *pipeline
     MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_SOLID], "SDL primitives pipeline", rtformat, SDL_METAL_VERTEX_SOLID, SDL_METAL_FRAGMENT_SOLID);
     MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_COPY], "SDL copy pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_COPY);
     MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_YUV], "SDL YUV pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_YUV);
-    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_NV12], "SDL NV12 pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_NV12);
-    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_NV21], "SDL NV21 pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_NV21);
-    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_HDR10], "SDL HDR10 pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_HDR10);
+    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_ADVANCED], "SDL advanced pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_ADVANCED);
 }
 
 static METAL_ShaderPipelines *ChooseShaderPipelines(METAL_RenderData *data, MTLPixelFormat rtformat)
@@ -637,7 +629,8 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         MTLPixelFormat pixfmt;
         MTLTextureDescriptor *mtltexdesc;
         id<MTLTexture> mtltexture, mtltextureUv;
-        BOOL yuv, nv12;
+        BOOL yuv = FALSE;
+        BOOL nv12 = FALSE;
         METAL_TextureData *texturedata;
         CVPixelBufferRef pixelbuffer = nil;
         IOSurfaceRef surface = nil;
@@ -664,6 +657,9 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
             } else {
                 pixfmt = MTLPixelFormatBGRA8Unorm;
             }
+            break;
+        case SDL_PIXELFORMAT_XBGR2101010:
+            pixfmt = MTLPixelFormatRGB10A2Unorm;
             break;
         case SDL_PIXELFORMAT_IYUV:
         case SDL_PIXELFORMAT_YV12:
@@ -745,30 +741,17 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         } else {
             texturedata.mtlsampler = data.mtlsamplerlinear;
         }
+        if (SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_SRGB) {
+            texturedata.fragmentFunction = SDL_METAL_FRAGMENT_COPY;
+        } else if (yuv) {
+            texturedata.fragmentFunction = SDL_METAL_FRAGMENT_YUV;
+        } else {
+            texturedata.fragmentFunction = SDL_METAL_FRAGMENT_ADVANCED;
+        }
         texturedata.mtltexture = mtltexture;
         texturedata.mtltextureUv = mtltextureUv;
-#if SDL_HAVE_YUV
         texturedata.yuv = yuv;
         texturedata.nv12 = nv12;
-
-        if (yuv) {
-            texturedata.fragmentFunction = SDL_METAL_FRAGMENT_YUV;
-        } else if (texture->format == SDL_PIXELFORMAT_NV12) {
-            texturedata.fragmentFunction = SDL_METAL_FRAGMENT_NV12;
-        } else if (texture->format == SDL_PIXELFORMAT_NV21) {
-            texturedata.fragmentFunction = SDL_METAL_FRAGMENT_NV21;
-        } else if (texture->format == SDL_PIXELFORMAT_P010) {
-            if(SDL_COLORSPACEPRIMARIES(texture->colorspace) == SDL_COLOR_PRIMARIES_BT2020 &&
-               SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
-                texturedata.fragmentFunction = SDL_METAL_FRAGMENT_HDR10;
-            } else {
-                return SDL_SetError("Unsupported YUV colorspace");
-            }
-        } else
-#endif
-        {
-            texturedata.fragmentFunction = SDL_METAL_FRAGMENT_COPY;
-        }
 #if SDL_HAVE_YUV
         if (yuv || nv12) {
             size_t offset = GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8);
@@ -1167,20 +1150,6 @@ static int METAL_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     return 0; /* nothing to do in this backend. */
 }
 
-static int METAL_QueueSetColorScale(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
-{
-    const size_t vertlen = (2 * sizeof(float));
-    float *verts = (float *)SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.color.first);
-    if (!verts) {
-        return -1;
-    }
-
-    *verts++ = (float)SDL_RenderingLinearSpace(renderer);
-    *verts++ = cmd->data.color.color_scale;
-
-    return 0;
-}
-
 static int METAL_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
     SDL_FColor color = cmd->data.draw.color;
@@ -1320,6 +1289,35 @@ static int METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
     return 0;
 }
 
+/* These should mirror the definitions in SDL_shaders_metal.metal */
+//static const float TONEMAP_NONE = 0;
+//static const float TONEMAP_LINEAR = 1;
+static const float TONEMAP_CHROME = 2;
+
+//static const float TEXTURETYPE_NONE = 0;
+static const float TEXTURETYPE_RGB = 1;
+static const float TEXTURETYPE_NV12 = 2;
+static const float TEXTURETYPE_NV21 = 3;
+static const float TEXTURETYPE_YUV = 4;
+
+static const float INPUTTYPE_UNSPECIFIED = 0;
+static const float INPUTTYPE_SRGB = 1;
+static const float INPUTTYPE_SCRGB = 2;
+static const float INPUTTYPE_HDR10 = 3;
+
+typedef struct
+{
+    float scRGB_output;
+    float texture_type;
+    float input_type;
+    float color_scale;
+
+    float tonemap_method;
+    float tonemap_factor1;
+    float tonemap_factor2;
+    float sdr_white_point;
+} PixelShaderConstants;
+
 typedef struct
 {
     __unsafe_unretained id<MTLRenderPipelineState> pipeline;
@@ -1332,17 +1330,74 @@ typedef struct
     SDL_bool viewport_dirty;
     SDL_Rect viewport;
     size_t projection_offset;
-    SDL_bool color_scale_dirty;
-    size_t color_scale_offset;
+    SDL_bool shader_constants_dirty;
+    PixelShaderConstants shader_constants;
 } METAL_DrawStateCache;
 
-static SDL_bool SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_MetalFragmentFunction shader,
-                             const size_t constants_offset, id<MTLBuffer> mtlbufvertex, METAL_DrawStateCache *statecache)
+static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Texture *texture, PixelShaderConstants *constants)
+{
+    float output_headroom;
+
+    SDL_zerop(constants);
+
+    constants->scRGB_output = (float)SDL_RenderingLinearSpace(renderer);
+    constants->color_scale = cmd->data.draw.color_scale;
+
+    if (texture) {
+        switch (texture->format) {
+        case SDL_PIXELFORMAT_YV12:
+        case SDL_PIXELFORMAT_IYUV:
+            constants->texture_type = TEXTURETYPE_YUV;
+            constants->input_type = INPUTTYPE_SRGB;
+            break;
+        case SDL_PIXELFORMAT_NV12:
+            constants->texture_type = TEXTURETYPE_NV12;
+            constants->input_type = INPUTTYPE_SRGB;
+            break;
+        case SDL_PIXELFORMAT_NV21:
+            constants->texture_type = TEXTURETYPE_NV21;
+            constants->input_type = INPUTTYPE_SRGB;
+            break;
+        case SDL_PIXELFORMAT_P010:
+            constants->texture_type = TEXTURETYPE_NV12;
+            constants->input_type = INPUTTYPE_HDR10;
+            break;
+        default:
+            constants->texture_type = TEXTURETYPE_RGB;
+            if (texture->colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+                constants->input_type = INPUTTYPE_SCRGB;
+            } else if (SDL_COLORSPACEPRIMARIES(texture->colorspace) == SDL_COLOR_PRIMARIES_BT2020 &&
+                       SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
+                constants->input_type = INPUTTYPE_HDR10;
+            } else {
+                constants->input_type = INPUTTYPE_UNSPECIFIED;
+            }
+            break;
+        }
+
+        constants->sdr_white_point = texture->SDR_white_point;
+
+        if (renderer->target) {
+            output_headroom = renderer->target->HDR_headroom;
+        } else {
+            output_headroom = renderer->HDR_headroom;
+        }
+
+        if (texture->HDR_headroom > output_headroom) {
+            constants->tonemap_method = TONEMAP_CHROME;
+            constants->tonemap_factor1 = (output_headroom / (texture->HDR_headroom * texture->HDR_headroom));
+            constants->tonemap_factor2 = (1.0f / output_headroom);
+        }
+    }
+}
+
+static SDL_bool SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_MetalFragmentFunction shader, PixelShaderConstants *shader_constants, const size_t constants_offset, id<MTLBuffer> mtlbufvertex, METAL_DrawStateCache *statecache)
 {
     METAL_RenderData *data = (__bridge METAL_RenderData *)renderer->driverdata;
     const SDL_BlendMode blend = cmd->data.draw.blend;
     size_t first = cmd->data.draw.first;
     id<MTLRenderPipelineState> newpipeline;
+    PixelShaderConstants solid_constants;
 
     if (!METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, statecache->vertex_buffer)) {
         return SDL_FALSE;
@@ -1394,15 +1449,26 @@ static SDL_bool SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cm
         statecache->cliprect_dirty = SDL_FALSE;
     }
 
-    if (statecache->color_scale_dirty) {
-        [data.mtlcmdencoder setFragmentBufferOffset:statecache->color_scale_offset atIndex:0];
-        statecache->color_scale_dirty = SDL_FALSE;
-    }
-
     newpipeline = ChoosePipelineState(data, data.activepipelines, shader, blend);
     if (newpipeline != statecache->pipeline) {
         [data.mtlcmdencoder setRenderPipelineState:newpipeline];
         statecache->pipeline = newpipeline;
+    }
+
+    if (!shader_constants) {
+        SetupShaderConstants(renderer, cmd, NULL, &solid_constants);
+        shader_constants = &solid_constants;
+    }
+
+    if (statecache->shader_constants_dirty ||
+        SDL_memcmp(shader_constants, &statecache->shader_constants, sizeof(*shader_constants)) != 0) {
+        id<MTLBuffer> mtlbufconstants = [data.mtldevice newBufferWithLength:sizeof(*shader_constants) options:MTLResourceStorageModeShared];
+        mtlbufconstants.label = @"SDL shader constants data";
+        SDL_memcpy([mtlbufconstants contents], shader_constants, sizeof(*shader_constants));
+        [data.mtlcmdencoder setFragmentBuffer:mtlbufconstants offset:0 atIndex:0];
+
+        SDL_memcpy(&statecache->shader_constants, shader_constants, sizeof(*shader_constants));
+        statecache->shader_constants_dirty = SDL_FALSE;
     }
 
     if (constants_offset != statecache->constants_offset) {
@@ -1422,8 +1488,11 @@ static SDL_bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cm
     METAL_RenderData *data = (__bridge METAL_RenderData *)renderer->driverdata;
     SDL_Texture *texture = cmd->data.draw.texture;
     METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
+    PixelShaderConstants constants;
 
-    if (!SetDrawState(renderer, cmd, texturedata.fragmentFunction, constants_offset, mtlbufvertex, statecache)) {
+    SetupShaderConstants(renderer, cmd, texture, &constants);
+
+    if (!SetDrawState(renderer, cmd, texturedata.fragmentFunction, &constants, constants_offset, mtlbufvertex, statecache)) {
         return SDL_FALSE;
     }
 
@@ -1465,11 +1534,10 @@ static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
         statecache.vertex_buffer = nil;
         statecache.constants_offset = CONSTANTS_OFFSET_INVALID;
         statecache.texture = NULL;
-        statecache.color_scale_dirty = SDL_TRUE;
+        statecache.shader_constants_dirty = SDL_TRUE;
         statecache.cliprect_dirty = SDL_TRUE;
         statecache.viewport_dirty = SDL_TRUE;
         statecache.projection_offset = 0;
-        statecache.color_scale_offset = 0;
 
         // !!! FIXME: have a ring of pre-made MTLBuffers we cycle through? How expensive is creation?
         if (vertsize > 0) {
@@ -1478,8 +1546,7 @@ static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
              * data from the GPU than to read managed/private data, but we avoid the
              * cost of copying the data and the code's simpler. Apple's best
              * practices guide recommends this approach for streamed vertex data.
-             * TODO: this buffer is also used for constants. Is performance still
-             * good for those, or should we have a managed buffer for them? */
+             */
             mtlbufvertex = [data.mtldevice newBufferWithLength:vertsize options:MTLResourceStorageModeShared];
             mtlbufvertex.label = @"SDL vertex data";
             SDL_memcpy([mtlbufvertex contents], vertices, vertsize);
@@ -1519,8 +1586,6 @@ static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
 
             case SDL_RENDERCMD_SETCOLORSCALE:
             {
-                statecache.color_scale_offset = cmd->data.color.first;
-                statecache.color_scale_dirty = SDL_TRUE;
                 break;
             }
 
@@ -1542,7 +1607,7 @@ static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
                 statecache.pipeline = nil;
                 statecache.constants_offset = CONSTANTS_OFFSET_INVALID;
                 statecache.texture = NULL;
-                statecache.color_scale_dirty = SDL_TRUE;
+                statecache.shader_constants_dirty = SDL_TRUE;
                 statecache.cliprect_dirty = SDL_TRUE;
                 statecache.viewport_dirty = SDL_TRUE;
 
@@ -1569,7 +1634,7 @@ static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
             {
                 const size_t count = cmd->data.draw.count;
                 const MTLPrimitiveType primtype = (cmd->command == SDL_RENDERCMD_DRAW_POINTS) ? MTLPrimitiveTypePoint : MTLPrimitiveTypeLineStrip;
-                if (SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM, mtlbufvertex, &statecache)) {
+                if (SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, NULL, CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM, mtlbufvertex, &statecache)) {
                     [data.mtlcmdencoder drawPrimitives:primtype vertexStart:0 vertexCount:count];
                 }
                 break;
@@ -1594,7 +1659,7 @@ static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
                         [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:count];
                     }
                 } else {
-                    if (SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache)) {
+                    if (SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, NULL, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache)) {
                         [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:count];
                     }
                 }
@@ -1657,6 +1722,9 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
         case MTLPixelFormatRGBA8Unorm:
         case MTLPixelFormatRGBA8Unorm_sRGB:
             format = SDL_PIXELFORMAT_ABGR8888;
+            break;
+        case MTLPixelFormatRGB10A2Unorm:
+            format = SDL_PIXELFORMAT_XBGR2101010;
             break;
         case MTLPixelFormatRGBA16Float:
             format = SDL_PIXELFORMAT_RGBA64_FLOAT;
@@ -2080,7 +2148,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         renderer->SetRenderTarget = METAL_SetRenderTarget;
         renderer->QueueSetViewport = METAL_QueueSetViewport;
         renderer->QueueSetDrawColor = METAL_QueueNoOp;
-        renderer->QueueSetColorScale = METAL_QueueSetColorScale;
+        renderer->QueueSetColorScale = METAL_QueueNoOp;
         renderer->QueueDrawPoints = METAL_QueueDrawPoints;
         renderer->QueueDrawLines = METAL_QueueDrawLines;
         renderer->QueueGeometry = METAL_QueueGeometry;
@@ -2158,6 +2226,7 @@ SDL_RenderDriver METAL_RenderDriver = {
         9,
         { SDL_PIXELFORMAT_ARGB8888,
           SDL_PIXELFORMAT_ABGR8888,
+          SDL_PIXELFORMAT_XBGR2101010,
           SDL_PIXELFORMAT_RGBA64_FLOAT,
           SDL_PIXELFORMAT_RGBA128_FLOAT,
           SDL_PIXELFORMAT_YV12,
