@@ -670,7 +670,7 @@ typedef enum
 {
     SDL_TONEMAP_NONE,
     SDL_TONEMAP_LINEAR,
-    SDL_TONEMAP_PIECEWISE_HDR,
+    SDL_TONEMAP_CHROME
 } SDL_TonemapOperator;
 
 typedef struct
@@ -682,39 +682,51 @@ typedef struct
             float scale;
         } linear;
 
-        struct
-        {
-            float scale;
-        } piecewise_HDR;
+        struct {
+            float a;
+            float b;
+            const float *color_primaries_matrix;
+        } chrome;
+
     } data;
 
 } SDL_TonemapContext;
+
+static void TonemapLinear(float *r, float *g, float *b, float scale)
+{
+    *r *= scale;
+    *g *= scale;
+    *b *= scale;
+}
+
+static void TonemapChrome(float *r, float *g, float *b, float tonemap_a, float tonemap_b)
+{
+    float v1 = *r;
+    float v2 = *g;
+    float v3 = *b;
+    float vmax = SDL_max(v1, SDL_max(v2, v3));
+
+    if (vmax > 0.0f) {
+        float scale = (1.0f + tonemap_a * vmax) / (1.0f + tonemap_b * vmax);
+        TonemapLinear(r, g, b, scale);
+    }
+}
 
 static void ApplyTonemap(SDL_TonemapContext *ctx, float *r, float *g, float *b)
 {
     switch (ctx->op) {
     case SDL_TONEMAP_LINEAR:
-        *r *= ctx->data.linear.scale;
-        *g *= ctx->data.linear.scale;
-        *b *= ctx->data.linear.scale;
+        TonemapLinear(r, g, b, ctx->data.linear.scale);
         break;
-    case SDL_TONEMAP_PIECEWISE_HDR:
-        *r = (*r <= 1.0f) ? *r : (1.0f + (*r - 1.0f) * ctx->data.piecewise_HDR.scale);
-        *g = (*g <= 1.0f) ? *g : (1.0f + (*g - 1.0f) * ctx->data.piecewise_HDR.scale);
-        *b = (*r <= 1.0f) ? *b : (1.0f + (*b - 1.0f) * ctx->data.piecewise_HDR.scale);
+    case SDL_TONEMAP_CHROME:
+        if (ctx->data.chrome.color_primaries_matrix) {
+            SDL_ConvertColorPrimaries(r, g, b, ctx->data.chrome.color_primaries_matrix);
+        }
+        TonemapChrome(r, g, b, ctx->data.chrome.a, ctx->data.chrome.b);
         break;
     default:
         break;
     }
-}
-
-static SDL_bool IsHDRColorspace(SDL_Colorspace colorspace)
-{
-    if (colorspace == SDL_COLORSPACE_SRGB_LINEAR ||
-        SDL_COLORSPACETRANSFER(colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
-        return SDL_TRUE;
-    }
-    return SDL_FALSE;
 }
 
 /* The SECOND TRUE BLITTER
@@ -740,35 +752,63 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
     SlowBlitPixelAccess dst_access;
     SDL_Colorspace src_colorspace;
     SDL_Colorspace dst_colorspace;
+    SDL_ColorPrimaries src_primaries;
+    SDL_ColorPrimaries dst_primaries;
     const float *color_primaries_matrix = NULL;
-    float SDR_white_point_src = 1.0f;
-    float SDR_white_point_dst = 1.0f;
+    float src_white_point;
+    float dst_white_point;
+    float dst_headroom;
+    float src_headroom;
     SDL_TonemapContext tonemap;
 
     if (SDL_GetSurfaceColorspace(info->src_surface, &src_colorspace) < 0 ||
         SDL_GetSurfaceColorspace(info->dst_surface, &dst_colorspace) < 0) {
         return;
     }
+    src_primaries = SDL_COLORSPACEPRIMARIES(src_colorspace);
+    dst_primaries = SDL_COLORSPACEPRIMARIES(dst_colorspace);
 
-    tonemap.op = SDL_TONEMAP_NONE;
-    if (src_colorspace != dst_colorspace) {
-        SDL_ColorPrimaries src_primaries = SDL_COLORSPACEPRIMARIES(src_colorspace);
-        SDL_ColorPrimaries dst_primaries = SDL_COLORSPACEPRIMARIES(dst_colorspace);
-        color_primaries_matrix = SDL_GetColorPrimariesConversionMatrix(src_primaries, dst_primaries);
+    src_white_point = SDL_GetSurfaceSDRWhitePoint(info->src_surface, src_colorspace);
+    dst_white_point = SDL_GetSurfaceSDRWhitePoint(info->dst_surface, dst_colorspace);
+    src_headroom = SDL_GetSurfaceHDRHeadroom(info->src_surface, src_colorspace);
+    dst_headroom = SDL_GetSurfaceHDRHeadroom(info->dst_surface, dst_colorspace);
+    if (dst_headroom == 0.0f) {
+        /* The destination will have the same headroom as the source */
+        dst_headroom = src_headroom;
+        SDL_SetFloatProperty(SDL_GetSurfaceProperties(info->dst_surface), SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, dst_headroom);
+    }
 
-        if (IsHDRColorspace(src_colorspace) != IsHDRColorspace(dst_colorspace)) {
-            const char *tonemap_operator = SDL_GetStringProperty(SDL_GetSurfaceProperties(info->src_surface), SDL_PROP_SURFACE_TONEMAP_OPERATOR_STRING, NULL);
-            if (tonemap_operator) {
-                if (SDL_strncmp(tonemap_operator, "*=", 2) == 0) {
-                    tonemap.op = SDL_TONEMAP_LINEAR;
-                    tonemap.data.linear.scale = SDL_atof(tonemap_operator + 2);
-                }
+    SDL_zero(tonemap);
+
+    if (src_headroom > dst_headroom) {
+        const char *tonemap_operator = SDL_GetStringProperty(SDL_GetSurfaceProperties(info->src_surface), SDL_PROP_SURFACE_TONEMAP_OPERATOR_STRING, NULL);
+        if (tonemap_operator) {
+            if (SDL_strncmp(tonemap_operator, "*=", 2) == 0) {
+                tonemap.op = SDL_TONEMAP_LINEAR;
+                tonemap.data.linear.scale = SDL_atof(tonemap_operator + 2);
+            } else if (SDL_strcasecmp(tonemap_operator, "chrome") == 0) {
+                tonemap.op = SDL_TONEMAP_CHROME;
+            } else if (SDL_strcasecmp(tonemap_operator, "none") == 0) {
+                tonemap.op = SDL_TONEMAP_NONE;
+            }
+        } else {
+            tonemap.op = SDL_TONEMAP_CHROME;
+        }
+        if (tonemap.op == SDL_TONEMAP_CHROME) {
+            tonemap.data.chrome.a = (dst_headroom / (src_headroom * src_headroom));
+            tonemap.data.chrome.b = (1.0f / dst_headroom);
+
+            /* We'll convert to BT.2020 primaries for the tonemap operation */
+            tonemap.data.chrome.color_primaries_matrix = SDL_GetColorPrimariesConversionMatrix(src_primaries, SDL_COLOR_PRIMARIES_BT2020);
+            if (tonemap.data.chrome.color_primaries_matrix) {
+                src_primaries = SDL_COLOR_PRIMARIES_BT2020;
             }
         }
     }
 
-    SDR_white_point_src = SDL_GetSurfaceSDRWhitePoint(info->src_surface, src_colorspace);
-    SDR_white_point_dst = SDL_GetSurfaceSDRWhitePoint(info->dst_surface, dst_colorspace);
+    if (src_primaries != dst_primaries) {
+        color_primaries_matrix = SDL_GetColorPrimariesConversionMatrix(src_primaries, dst_primaries);
+    }
 
     src_access = GetPixelAccessMethod(src_fmt);
     dst_access = GetPixelAccessMethod(dst_fmt);
@@ -787,21 +827,21 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
             srcx = posx >> 16;
             src = (info->src + (srcy * info->src_pitch) + (srcx * srcbpp));
 
-            ReadFloatPixel(src, src_access, src_fmt, src_colorspace, SDR_white_point_src, &srcR, &srcG, &srcB, &srcA);
-
-            if (color_primaries_matrix) {
-                SDL_ConvertColorPrimaries(&srcR, &srcG, &srcB, color_primaries_matrix);
-            }
+            ReadFloatPixel(src, src_access, src_fmt, src_colorspace, src_white_point, &srcR, &srcG, &srcB, &srcA);
 
             if (tonemap.op) {
                 ApplyTonemap(&tonemap, &srcR, &srcG, &srcB);
+            }
+
+            if (color_primaries_matrix) {
+                SDL_ConvertColorPrimaries(&srcR, &srcG, &srcB, color_primaries_matrix);
             }
 
             if (flags & SDL_COPY_COLORKEY) {
                 /* colorkey isn't supported */
             }
             if ((flags & (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL))) {
-                ReadFloatPixel(dst, dst_access, dst_fmt, dst_colorspace, SDR_white_point_dst, &dstR, &dstG, &dstB, &dstA);
+                ReadFloatPixel(dst, dst_access, dst_fmt, dst_colorspace, dst_white_point, &dstR, &dstG, &dstB, &dstA);
             } else {
                 /* don't care */
                 dstR = dstG = dstB = dstA = 0.0f;
@@ -853,7 +893,7 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
                 break;
             }
 
-            WriteFloatPixel(dst, dst_access, dst_fmt, dst_colorspace, SDR_white_point_dst, dstR, dstG, dstB, dstA);
+            WriteFloatPixel(dst, dst_access, dst_fmt, dst_colorspace, dst_white_point, dstR, dstG, dstB, dstA);
 
             posx += incx;
             dst += dstbpp;

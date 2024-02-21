@@ -27,12 +27,7 @@ typedef enum
     SHADER_NONE,
     SHADER_SOLID,
     SHADER_RGB,
-#if SDL_HAVE_YUV
-    SHADER_YUV,
-    SHADER_NV12,
-    SHADER_NV21,
-    SHADER_HDR10,
-#endif
+    SHADER_ADVANCED,
     NUM_SHADERS
 } D3D11_Shader;
 

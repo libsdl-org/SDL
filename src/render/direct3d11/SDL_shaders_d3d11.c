@@ -44,20 +44,8 @@
 #include "D3D11_PixelShader_Textures.h"
 #undef g_main
 
-#define g_main D3D11_PixelShader_YUV
-#include "D3D11_PixelShader_YUV.h"
-#undef g_main
-
-#define g_main D3D11_PixelShader_NV12
-#include "D3D11_PixelShader_NV12.h"
-#undef g_main
-
-#define g_main D3D11_PixelShader_NV21
-#include "D3D11_PixelShader_NV21.h"
-#undef g_main
-
-#define g_main D3D11_PixelShader_HDR10
-#include "D3D11_PixelShader_HDR10.h"
+#define g_main D3D11_PixelShader_Advanced
+#include "D3D11_PixelShader_Advanced.h"
 #undef g_main
 
 #define g_main D3D11_VertexShader
@@ -73,12 +61,7 @@ static struct
     { NULL, 0 },
     { D3D11_PixelShader_Colors, sizeof(D3D11_PixelShader_Colors) },
     { D3D11_PixelShader_Textures, sizeof(D3D11_PixelShader_Textures) },
-#if SDL_HAVE_YUV
-    { D3D11_PixelShader_YUV, sizeof(D3D11_PixelShader_YUV) },
-    { D3D11_PixelShader_NV12, sizeof(D3D11_PixelShader_NV12) },
-    { D3D11_PixelShader_NV21, sizeof(D3D11_PixelShader_NV21) },
-    { D3D11_PixelShader_HDR10, sizeof(D3D11_PixelShader_HDR10) },
-#endif
+    { D3D11_PixelShader_Advanced, sizeof(D3D11_PixelShader_Advanced) },
 };
 SDL_COMPILE_TIME_ASSERT(D3D11_shaders, SDL_arraysize(D3D11_shaders) == NUM_SHADERS);
 

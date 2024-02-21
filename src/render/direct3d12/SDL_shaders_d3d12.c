@@ -39,20 +39,8 @@
 #include "D3D12_PixelShader_Textures.h"
 #undef g_main
 
-#define g_main D3D12_PixelShader_YUV
-#include "D3D12_PixelShader_YUV.h"
-#undef g_main
-
-#define g_main D3D12_PixelShader_NV12
-#include "D3D12_PixelShader_NV12.h"
-#undef g_main
-
-#define g_main D3D12_PixelShader_NV21
-#include "D3D12_PixelShader_NV21.h"
-#undef g_main
-
-#define g_main D3D12_PixelShader_HDR10
-#include "D3D12_PixelShader_HDR10.h"
+#define g_main D3D12_PixelShader_Advanced
+#include "D3D12_PixelShader_Advanced.h"
 #undef g_main
 
 
@@ -64,13 +52,9 @@
 #include "D3D12_VertexShader_Texture.h"
 #undef g_mainTexture
 
-#define g_mainYUV D3D12_VertexShader_YUV
-#include "D3D12_VertexShader_YUV.h"
-#undef g_mainYUV
-
-#define g_mainNV D3D12_VertexShader_NV
-#include "D3D12_VertexShader_NV.h"
-#undef g_mainNV
+#define g_mainAdvanced D3D12_VertexShader_Advanced
+#include "D3D12_VertexShader_Advanced.h"
+#undef g_mainAdvanced
 
 
 #define g_ColorRS D3D12_RootSig_Color
@@ -81,13 +65,9 @@
 #include "D3D12_RootSig_Texture.h"
 #undef g_TextureRS
 
-#define g_YUVRS D3D12_RootSig_YUV
-#include "D3D12_RootSig_YUV.h"
-#undef g_YUVRS
-
-#define g_NVRS D3D12_RootSig_NV
-#include "D3D12_RootSig_NV.h"
-#undef g_NVRS
+#define g_AdvancedRS D3D12_RootSig_Advanced
+#include "D3D12_RootSig_Advanced.h"
+#undef g_AdvancedRS
 
 
 static struct
@@ -104,20 +84,9 @@ static struct
     { D3D12_PixelShader_Textures, sizeof(D3D12_PixelShader_Textures),
       D3D12_VertexShader_Textures, sizeof(D3D12_VertexShader_Textures),
       ROOTSIG_TEXTURE },
-#if SDL_HAVE_YUV
-    { D3D12_PixelShader_YUV, sizeof(D3D12_PixelShader_YUV),
-      D3D12_VertexShader_YUV, sizeof(D3D12_VertexShader_YUV),
-      ROOTSIG_YUV },
-    { D3D12_PixelShader_NV12, sizeof(D3D12_PixelShader_NV12),
-      D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
-      ROOTSIG_NV },
-    { D3D12_PixelShader_NV21, sizeof(D3D12_PixelShader_NV21),
-      D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
-      ROOTSIG_NV },
-    { D3D12_PixelShader_HDR10, sizeof(D3D12_PixelShader_HDR10),
-      D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
-      ROOTSIG_NV },
-#endif
+    { D3D12_PixelShader_Advanced, sizeof(D3D12_PixelShader_Advanced),
+      D3D12_VertexShader_Advanced, sizeof(D3D12_VertexShader_Advanced),
+      ROOTSIG_ADVANCED },
 };
 
 static struct
@@ -127,10 +96,7 @@ static struct
 } D3D12_rootsigs[NUM_ROOTSIGS] = {
     { D3D12_RootSig_Color, sizeof(D3D12_RootSig_Color) },
     { D3D12_RootSig_Texture, sizeof(D3D12_RootSig_Texture) },
-#if SDL_HAVE_YUV
-    { D3D12_RootSig_YUV, sizeof(D3D12_RootSig_YUV) },
-    { D3D12_RootSig_NV, sizeof(D3D12_RootSig_NV) },
-#endif
+    { D3D12_RootSig_Advanced, sizeof(D3D12_RootSig_Advanced) },
 };
 
 void D3D12_GetVertexShader(D3D12_Shader shader, D3D12_SHADER_BYTECODE *outBytecode)

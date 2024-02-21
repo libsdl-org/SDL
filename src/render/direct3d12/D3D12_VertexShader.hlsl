@@ -38,7 +38,7 @@ struct VertexShaderOutput
     "DescriptorTable ( SRV(t0), visibility = SHADER_VISIBILITY_PIXEL ),"\
     "DescriptorTable ( Sampler(s0), visibility = SHADER_VISIBILITY_PIXEL )"
 
-#define YUVRS \
+#define AdvancedRS \
     "RootFlags ( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |" \
     "            DENY_DOMAIN_SHADER_ROOT_ACCESS |" \
     "            DENY_GEOMETRY_SHADER_ROOT_ACCESS |" \
@@ -48,17 +48,6 @@ struct VertexShaderOutput
     "DescriptorTable ( SRV(t0), visibility = SHADER_VISIBILITY_PIXEL ),"\
     "DescriptorTable ( SRV(t1), visibility = SHADER_VISIBILITY_PIXEL ),"\
     "DescriptorTable ( SRV(t2), visibility = SHADER_VISIBILITY_PIXEL ),"\
-    "DescriptorTable ( Sampler(s0), visibility = SHADER_VISIBILITY_PIXEL )"
-
-#define NVRS \
-    "RootFlags ( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |" \
-    "            DENY_DOMAIN_SHADER_ROOT_ACCESS |" \
-    "            DENY_GEOMETRY_SHADER_ROOT_ACCESS |" \
-    "            DENY_HULL_SHADER_ROOT_ACCESS )," \
-    "RootConstants(num32BitConstants=32, b0),"\
-    "RootConstants(num32BitConstants=20, b1),"\
-    "DescriptorTable ( SRV(t0), visibility = SHADER_VISIBILITY_PIXEL ),"\
-    "DescriptorTable ( SRV(t1), visibility = SHADER_VISIBILITY_PIXEL ),"\
     "DescriptorTable ( Sampler(s0), visibility = SHADER_VISIBILITY_PIXEL )"
 
 [RootSignature(ColorRS)]
@@ -85,14 +74,8 @@ VertexShaderOutput mainTexture(VertexShaderInput input)
     return mainColor(input);
 }
 
-[RootSignature(YUVRS)]
-VertexShaderOutput mainYUV(VertexShaderInput input)
-{
-    return mainColor(input);
-}
-
-[RootSignature(NVRS)]
-VertexShaderOutput mainNV(VertexShaderInput input)
+[RootSignature(AdvancedRS)]
+VertexShaderOutput mainAdvanced(VertexShaderInput input)
 {
     return mainColor(input);
 }
