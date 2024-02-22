@@ -1072,11 +1072,6 @@ static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             break;
         }
 
-        case SDL_RENDERCMD_SETCOLORSCALE:
-        {
-            break;
-        }
-
         case SDL_RENDERCMD_SETVIEWPORT:
         {
             SDL_Rect *viewport = &cmd->data.viewport.rect;
@@ -1327,7 +1322,6 @@ SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
     renderer->SetRenderTarget = PSP_SetRenderTarget;
     renderer->QueueSetViewport = PSP_QueueNoOp;
     renderer->QueueSetDrawColor = PSP_QueueNoOp;
-    renderer->QueueSetColorScale = PSP_QueueNoOp;
     renderer->QueueDrawPoints = PSP_QueueDrawPoints;
     renderer->QueueDrawLines = PSP_QueueDrawPoints; /* lines and points queue vertices the same way. */
     renderer->QueueGeometry = PSP_QueueGeometry;

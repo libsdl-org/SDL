@@ -504,10 +504,6 @@ static int PS2_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             PS2_RenderSetDrawColor(renderer, cmd);
             break;
         }
-        case SDL_RENDERCMD_SETCOLORSCALE:
-        {
-            break;
-        }
         case SDL_RENDERCMD_CLEAR:
         {
             PS2_RenderClear(renderer, cmd);
@@ -697,7 +693,6 @@ static SDL_Renderer *PS2_CreateRenderer(SDL_Window *window, SDL_PropertiesID cre
     renderer->SetRenderTarget = PS2_SetRenderTarget;
     renderer->QueueSetViewport = PS2_QueueSetViewport;
     renderer->QueueSetDrawColor = PS2_QueueNoOp;
-    renderer->QueueSetColorScale = PS2_QueueNoOp;
     renderer->QueueDrawPoints = PS2_QueueDrawPoints;
     renderer->QueueDrawLines = PS2_QueueDrawPoints;
     renderer->QueueGeometry = PS2_QueueGeometry;

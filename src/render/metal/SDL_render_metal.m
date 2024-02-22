@@ -1584,11 +1584,6 @@ static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
                 break;
             }
 
-            case SDL_RENDERCMD_SETCOLORSCALE:
-            {
-                break;
-            }
-
             case SDL_RENDERCMD_CLEAR:
             {
                 /* If we're already encoding a command buffer, dump it without committing it. We'd just
@@ -2148,7 +2143,6 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         renderer->SetRenderTarget = METAL_SetRenderTarget;
         renderer->QueueSetViewport = METAL_QueueSetViewport;
         renderer->QueueSetDrawColor = METAL_QueueNoOp;
-        renderer->QueueSetColorScale = METAL_QueueNoOp;
         renderer->QueueDrawPoints = METAL_QueueDrawPoints;
         renderer->QueueDrawLines = METAL_QueueDrawLines;
         renderer->QueueGeometry = METAL_QueueGeometry;
