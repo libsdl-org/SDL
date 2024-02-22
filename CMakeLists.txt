@@ -2081,10 +2081,12 @@ elseif(APPLE)
 
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/file/cocoa/*.m")
 
-  if(IOS OR TVOS OR MACOSX OR DARWIN)
-    set(SDL_CAMERA_DRIVER_COREMEDIA 1)
-    set(HAVE_CAMERA TRUE)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/camera/coremedia/*.m")
+  if(SDL_CAMERA)
+    if(IOS OR TVOS OR MACOSX OR DARWIN)
+      set(SDL_CAMERA_DRIVER_COREMEDIA 1)
+      set(HAVE_CAMERA TRUE)
+      sdl_glob_sources("${SDL3_SOURCE_DIR}/src/camera/coremedia/*.m")
+    endif()
   endif()
 
   if(IOS OR TVOS OR VISIONOS)
