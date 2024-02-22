@@ -101,7 +101,6 @@ typedef enum
     SDL_RENDERCMD_SETVIEWPORT,
     SDL_RENDERCMD_SETCLIPRECT,
     SDL_RENDERCMD_SETDRAWCOLOR,
-    SDL_RENDERCMD_SETCOLORSCALE,
     SDL_RENDERCMD_CLEAR,
     SDL_RENDERCMD_DRAW_POINTS,
     SDL_RENDERCMD_DRAW_LINES,
@@ -169,7 +168,6 @@ struct SDL_Renderer
     int (*CreateTexture)(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props);
     int (*QueueSetViewport)(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
     int (*QueueSetDrawColor)(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
-    int (*QueueSetColorScale)(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
     int (*QueueDrawPoints)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points,
                            int count);
     int (*QueueDrawLines)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points,

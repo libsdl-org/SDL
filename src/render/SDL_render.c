@@ -482,31 +482,6 @@ static int QueueCmdSetDrawColor(SDL_Renderer *renderer, SDL_FColor *color)
     return retval;
 }
 
-static int QueueCmdSetColorScale(SDL_Renderer *renderer)
-{
-    int retval = 0;
-
-    if (!renderer->color_scale_queued ||
-        renderer->color_scale != renderer->last_queued_color_scale) {
-        SDL_RenderCommand *cmd = AllocateRenderCommand(renderer);
-        retval = -1;
-
-        if (cmd) {
-            cmd->command = SDL_RENDERCMD_SETCOLORSCALE;
-            cmd->data.color.first = 0; /* render backend will fill this in. */
-            cmd->data.color.color_scale = renderer->color_scale;
-            retval = renderer->QueueSetColorScale(renderer, cmd);
-            if (retval < 0) {
-                cmd->command = SDL_RENDERCMD_NO_OP;
-            } else {
-                renderer->last_queued_color_scale = renderer->color_scale;
-                renderer->color_scale_queued = SDL_TRUE;
-            }
-        }
-    }
-    return retval;
-}
-
 static int QueueCmdClear(SDL_Renderer *renderer)
 {
     SDL_RenderCommand *cmd = AllocateRenderCommand(renderer);
@@ -538,10 +513,6 @@ static SDL_RenderCommand *PrepQueueCmdDraw(SDL_Renderer *renderer, const SDL_Ren
 
     if (cmdtype != SDL_RENDERCMD_GEOMETRY) {
         retval = QueueCmdSetDrawColor(renderer, color);
-    }
-
-    if (retval == 0) {
-        retval = QueueCmdSetColorScale(renderer);
     }
 
     /* Set the viewport and clip rect directly before draws, so the backends
