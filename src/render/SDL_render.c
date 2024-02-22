@@ -1497,7 +1497,18 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
         }
     }
 
-    if (format == surface->format->format) {
+    if (surface_colorspace == SDL_COLORSPACE_SRGB_LINEAR ||
+        SDL_COLORSPACETRANSFER(surface_colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
+        if (SDL_ISPIXELFORMAT_FLOAT(format)) {
+            texture_colorspace = SDL_COLORSPACE_SRGB_LINEAR;
+        } else if (SDL_ISPIXELFORMAT_10BIT(format)) {
+            texture_colorspace = SDL_COLORSPACE_HDR10;
+        } else {
+            texture_colorspace = SDL_COLORSPACE_SRGB;
+        }
+    }
+
+    if (format == surface->format->format && texture_colorspace == surface_colorspace) {
         if (surface->format->Amask && SDL_SurfaceHasColorKey(surface)) {
             /* Surface and Renderer formats are identical.
              * Intermediate conversion is needed to convert color key to alpha (SDL_ConvertColorkeyToAlpha()). */
@@ -1509,15 +1520,6 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     } else {
         /* Surface and Renderer formats are different, it needs an intermediate conversion. */
         direct_update = SDL_FALSE;
-    }
-
-    if ((SDL_COLORSPACETRANSFER(surface_colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ && !SDL_ISPIXELFORMAT_10BIT(format)) ||
-        surface_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-        if (SDL_ISPIXELFORMAT_FLOAT(format)) {
-            texture_colorspace = SDL_COLORSPACE_SRGB_LINEAR;
-        } else {
-            texture_colorspace = SDL_COLORSPACE_SRGB;
-        }
     }
 
     if (surface->flags & SDL_SURFACE_USES_PROPERTIES) {
