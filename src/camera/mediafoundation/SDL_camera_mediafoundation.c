@@ -48,6 +48,11 @@ static const GUID SDL_MF_MT_FRAME_SIZE = { 0x1652c33d, 0xd6b2, 0x4012, { 0xb8, 0
 static const GUID SDL_MF_MT_FRAME_RATE = { 0xc459a2e8, 0x3d2c, 0x4e44, { 0xb1, 0x32, 0xfe, 0xe5, 0x15, 0x6c, 0x7b, 0xb0 } };
 static const GUID SDL_MFMediaType_Video = { 0x73646976, 0x0000, 0x0010, { 0x80, 0x00, 0x00, 0xAA, 0x00, 0x38, 0x9B, 0x71 } };
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmultichar"
+#endif
+
 #define SDL_DEFINE_MEDIATYPE_GUID(name, fmt) static const GUID SDL_##name = { fmt, 0x0000, 0x0010, { 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } }
 SDL_DEFINE_MEDIATYPE_GUID(MFVideoFormat_RGB555, 24);
 SDL_DEFINE_MEDIATYPE_GUID(MFVideoFormat_RGB565, 23);
@@ -63,6 +68,10 @@ SDL_DEFINE_MEDIATYPE_GUID(MFVideoFormat_YVYU, FCC('YVYU'));
 SDL_DEFINE_MEDIATYPE_GUID(MFVideoFormat_NV12, FCC('NV12'));
 SDL_DEFINE_MEDIATYPE_GUID(MFVideoFormat_NV21, FCC('NV21'));
 #undef SDL_DEFINE_MEDIATYPE_GUID
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 static const struct { const GUID *guid; const Uint32 sdlfmt; } fmtmappings[] = {
     // This is not every possible format, just popular ones that SDL can reasonably handle.
@@ -170,7 +179,7 @@ static int MEDIAFOUNDATION_WaitDevice(SDL_CameraDevice *device)
 }
 
 
-#if KEEP_ACQUIRED_BUFFERS_LOCKED
+#ifdef KEEP_ACQUIRED_BUFFERS_LOCKED
 
 #define PROP_SURFACE_IMFOBJS_POINTER "SDL.camera.mediafoundation.imfobjs"
 
@@ -453,7 +462,7 @@ static HRESULT GetDefaultStride(IMFMediaType *pType, LONG *plStride)
 
         GUID subtype = GUID_NULL;
         UINT32 width = 0;
-        UINT32 height = 0;
+        /* UINT32 height = 0; */
         UINT64 val = 0;
 
         // Get the subtype and the image size.
@@ -468,7 +477,7 @@ static HRESULT GetDefaultStride(IMFMediaType *pType, LONG *plStride)
         }
 
         width = (UINT32) (val >> 32);
-        height = (UINT32) val;
+        /* height = (UINT32) val; */
 
         ret = pMFGetStrideForBitmapInfoHeader(subtype.Data1, width, &lStride);
         if (FAILED(ret)) {
@@ -496,7 +505,9 @@ static int MEDIAFOUNDATION_OpenDevice(SDL_CameraDevice *device, const SDL_Camera
     IMFMediaSource *source = NULL;
     IMFMediaType *mediatype = NULL;
     IMFSourceReader *srcreader = NULL;
+#if 0
     DWORD num_streams = 0;
+#endif
     LONG lstride = 0;
     //PROPVARIANT var;
     HRESULT ret;
@@ -772,7 +783,7 @@ static void MaybeAddDevice(IMFActivate *activation)
     if (name && symlink) {
         IMFMediaSource *source = NULL;
         // "activating" here only creates an object, it doesn't open the actual camera hardware or start recording.
-        HRESULT ret = IMFActivate_ActivateObject(activation, &SDL_IID_IMFMediaSource, &source);
+        HRESULT ret = IMFActivate_ActivateObject(activation, &SDL_IID_IMFMediaSource, (void**)&source);
         if (SUCCEEDED(ret) && source) {
             CameraFormatAddData add_data;
             GatherCameraSpecs(source, &add_data);
