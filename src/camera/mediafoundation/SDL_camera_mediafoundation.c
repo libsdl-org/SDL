@@ -146,7 +146,7 @@ static int MEDIAFOUNDATION_WaitDevice(SDL_CameraDevice *device)
 
     while (!SDL_AtomicGet(&device->shutdown)) {
         DWORD stream_flags = 0;
-        const HRESULT ret = IMFSourceReader_ReadSample(srcreader, MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, NULL, &stream_flags, NULL, &sample);
+        const HRESULT ret = IMFSourceReader_ReadSample(srcreader, (DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, NULL, &stream_flags, NULL, &sample);
         if (FAILED(ret)) {
             return -1;   // ruh roh.
         }
@@ -559,7 +559,7 @@ static int MEDIAFOUNDATION_OpenDevice(SDL_CameraDevice *device, const SDL_Camera
     ret = IMFMediaType_SetUINT64(mediatype, &SDL_MF_MT_FRAME_RATE, (((UINT64)spec->interval_numerator) << 32) | ((UINT64)spec->interval_denominator));
     CHECK_HRESULT("MFSetAttributeRatio(frame_rate)", ret);
 
-    ret = IMFSourceReader_SetCurrentMediaType(srcreader, MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, mediatype);
+    ret = IMFSourceReader_SetCurrentMediaType(srcreader, (DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, mediatype);
     CHECK_HRESULT("IMFSourceReader_SetCurrentMediaType", ret);
 
     #if 0  // this (untested thing) is what we would do to get started with a IMFMediaSource that _doesn't_ use IMFSourceReader...
