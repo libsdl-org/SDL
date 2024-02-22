@@ -889,6 +889,10 @@ const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src, SDL_C
 {
     /* Conversion matrices generated using gamescope color helpers and the primaries definitions at:
      * https://www.itu.int/rec/T-REC-H.273-201612-S/en
+     *
+     * You can also generate these online using the RGB-XYZ matrix calculator, and then multiplying
+     * XYZ_to_dst * src_to_XYZ to get the combined conversion matrix:
+     * https://www.russellcottrell.com/photo/matrixCalculator.htm
      */
     static const float mat601to709[] = {
         0.939542f, 0.050181f, 0.010277f,
@@ -920,30 +924,25 @@ const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src, SDL_C
         -0.124547f, 1.132895f, -0.008348f,
         -0.018154f, -0.100597f, 1.118751f
     };
-    static const float matXYZto601[] = {
-        3.506001f, -1.739790f, -0.544058f,
-        -1.069047f, 1.977779f, 0.035171f,
-        0.056307f, -0.196976f, 1.049952f,
-    };
-    static const float matXYZto709[] = {
-        3.240969f, -1.537383f, -0.498611f,
-        -0.969243f, 1.875967f, 0.041555f,
-        0.055630f, -0.203977f, 1.056971f,
-    };
-    static const float matXYZto2020[] = {
-        1.716651f, -0.355671f, -0.253366f,
-        -0.666684f, 1.616481f, 0.015769f,
-        0.017640f, -0.042771f, 0.942103f,
-    };
     static const float matSMPTE431to709[] = {
         1.120713f, -0.234649f, 0.000000f,
         -0.038478f, 1.087034f, 0.000000f,
         -0.017967f, -0.082030f, 0.954576f,
     };
+    static const float matSMPTE431to2020[] = {
+        0.689691f, 0.207169f, 0.041346f,
+        0.041852f, 0.982426f, 0.010846f,
+        -0.001107f, 0.018362f, 0.854914f,
+    };
     static const float matSMPTE432to709[] = {
         1.224940f, -0.224940f, -0.000000f,
         -0.042057f, 1.042057f, 0.000000f,
         -0.019638f, -0.078636f, 1.098273f,
+    };
+    static const float matSMPTE432to2020[] = {
+        0.753833f, 0.198597f, 0.047570f,
+        0.045744f, 0.941777f, 0.012479f,
+        -0.001210f, 0.017602f, 0.983609f,
     };
 
     switch (dst) {
@@ -954,8 +953,6 @@ const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src, SDL_C
             return mat709to601;
         case SDL_COLOR_PRIMARIES_BT2020:
             return mat2020to601;
-        case SDL_COLOR_PRIMARIES_XYZ:
-            return matXYZto601;
         default:
             break;
         }
@@ -967,8 +964,6 @@ const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src, SDL_C
             return mat601to709;
         case SDL_COLOR_PRIMARIES_BT2020:
             return mat2020to709;
-        case SDL_COLOR_PRIMARIES_XYZ:
-            return matXYZto709;
         case SDL_COLOR_PRIMARIES_SMPTE431:
             return matSMPTE431to709;
         case SDL_COLOR_PRIMARIES_SMPTE432:
@@ -984,8 +979,10 @@ const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src, SDL_C
             return mat601to2020;
         case SDL_COLOR_PRIMARIES_BT709:
             return mat709to2020;
-        case SDL_COLOR_PRIMARIES_XYZ:
-            return matXYZto2020;
+        case SDL_COLOR_PRIMARIES_SMPTE431:
+            return matSMPTE431to2020;
+        case SDL_COLOR_PRIMARIES_SMPTE432:
+            return matSMPTE432to2020;
         default:
             break;
         }
