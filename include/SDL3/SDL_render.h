@@ -242,11 +242,11 @@ extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, co
  *   is displayed, if you want a software renderer without a window
  * - `SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER`: an SDL_ColorSpace
  *   value describing the colorspace for output to the display, defaults to
- *   SDL_COLORSPACE_SRGB. The direct3d11, direct3d12, and metal renderers support
- *   SDL_COLORSPACE_SRGB_LINEAR, which is a linear color space and supports HDR
- *   output. If you select SDL_COLORSPACE_SRGB_LINEAR, drawing still uses the sRGB
- *   colorspace, but values can go beyond 1.0 and float (linear) format
- *   textures can be used for HDR content.
+ *   SDL_COLORSPACE_SRGB. The direct3d11, direct3d12, and metal renderers
+ *   support SDL_COLORSPACE_SRGB_LINEAR, which is a linear color space and
+ *   supports HDR output. If you select SDL_COLORSPACE_SRGB_LINEAR, drawing
+ *   still uses the sRGB colorspace, but values can go beyond 1.0 and float
+ *   (linear) format textures can be used for HDR content.
  * - `SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN`: true if you want
  *   present synchronized with the refresh rate
  *
@@ -342,9 +342,15 @@ extern DECLSPEC int SDLCALL SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_Rend
  * - `SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER`: an SDL_ColorSpace value
  *   describing the colorspace for output to the display, defaults to
  *   SDL_COLORSPACE_SRGB.
- * - `SDL_PROP_RENDERER_HDR_ENABLED_BOOLEAN`: true if the output colorspace is SDL_COLORSPACE_SRGB_LINEAR and the renderer is showing on a display with HDR enabled.
- * - `SDL_PROP_RENDERER_SDR_WHITE_POINT_FLOAT`: the value of SDR white in the SDL_COLORSPACE_SRGB_LINEAR colorspace. When HDR is enabled, this value is automatically multiplied into the color scale.
- * - `SDL_PROP_RENDERER_HDR_HEADROOM_FLOAT`: the additional high dynamic range that can be displayed, in terms of the SDR white point. When HDR is not enabled, this will be 1.0.
+ * - `SDL_PROP_RENDERER_HDR_ENABLED_BOOLEAN`: true if the output colorspace is
+ *   SDL_COLORSPACE_SRGB_LINEAR and the renderer is showing on a display with
+ *   HDR enabled.
+ * - `SDL_PROP_RENDERER_SDR_WHITE_POINT_FLOAT`: the value of SDR white in the
+ *   SDL_COLORSPACE_SRGB_LINEAR colorspace. When HDR is enabled, this value is
+ *   automatically multiplied into the color scale.
+ * - `SDL_PROP_RENDERER_HDR_HEADROOM_FLOAT`: the additional high dynamic range
+ *   that can be displayed, in terms of the SDR white point. When HDR is not
+ *   enabled, this will be 1.0.
  * - `SDL_PROP_RENDERER_D3D9_DEVICE_POINTER`: the IDirect3DDevice9 associated
  *   with the renderer
  * - `SDL_PROP_RENDERER_D3D11_DEVICE_POINTER`: the ID3D11Device associated
@@ -474,8 +480,8 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *
  * These are the supported properties:
  *
  * - `SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER`: an SDL_ColorSpace value
- *   describing the texture colorspace, defaults to SDL_COLORSPACE_SRGB_LINEAR for
- *   floating point textures, SDL_COLORSPACE_HDR10 for 10-bit textures,
+ *   describing the texture colorspace, defaults to SDL_COLORSPACE_SRGB_LINEAR
+ *   for floating point textures, SDL_COLORSPACE_HDR10 for 10-bit textures,
  *   SDL_COLORSPACE_SRGB for other RGB textures and SDL_COLORSPACE_JPEG for
  *   YUV textures.
  * - `SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER`: one of the enumerated values in
@@ -486,8 +492,17 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *
  *   pixels, required
  * - `SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER`: the height of the texture in
  *   pixels, required
- * - `SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT`: for HDR10 and floating point textures, this defines the value of 100% diffuse white, with higher values being displayed in the High Dynamic Range headroom. This defaults to 100 for HDR10 textures and 1.0 for floating point textures.
- * - `SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT`: for HDR10 and floating point textures, this defines the maximum dynamic range used by the content, in terms of the SDR white point. This would be equivalent to maxCLL / SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT for HDR10 content. If this is defined, any values outside the range supported by the display will be scaled into the available HDR headroom, otherwise they are clipped.
+ * - `SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT`: for HDR10 and floating
+ *   point textures, this defines the value of 100% diffuse white, with higher
+ *   values being displayed in the High Dynamic Range headroom. This defaults
+ *   to 100 for HDR10 textures and 1.0 for floating point textures.
+ * - `SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT`: for HDR10 and floating
+ *   point textures, this defines the maximum dynamic range used by the
+ *   content, in terms of the SDR white point. This would be equivalent to
+ *   maxCLL / SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT for HDR10 content.
+ *   If this is defined, any values outside the range supported by the display
+ *   will be scaled into the available HDR headroom, otherwise they are
+ *   clipped.
  *
  * With the direct3d11 renderer:
  *
@@ -594,8 +609,17 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Rendere
  *
  * - `SDL_PROP_TEXTURE_COLORSPACE_NUMBER`: an SDL_ColorSpace value describing
  *   the colorspace used by the texture
- * - `SDL_PROP_TEXTURE_SDR_WHITE_POINT_FLOAT`: for HDR10 and floating point textures, this defines the value of 100% diffuse white, with higher values being displayed in the High Dynamic Range headroom. This defaults to 100 for HDR10 textures and 1.0 for other textures.
- * - `SDL_PROP_TEXTURE_HDR_HEADROOM_FLOAT`: for HDR10 and floating point textures, this defines the maximum dynamic range used by the content, in terms of the SDR white point. If this is defined, any values outside the range supported by the display will be scaled into the available HDR headroom, otherwise they are clipped. This defaults to 1.0 for SDR textures, 4.0 for HDR10 textures, and no default for floating point textures.
+ * - `SDL_PROP_TEXTURE_SDR_WHITE_POINT_FLOAT`: for HDR10 and floating point
+ *   textures, this defines the value of 100% diffuse white, with higher
+ *   values being displayed in the High Dynamic Range headroom. This defaults
+ *   to 100 for HDR10 textures and 1.0 for other textures.
+ * - `SDL_PROP_TEXTURE_HDR_HEADROOM_FLOAT`: for HDR10 and floating point
+ *   textures, this defines the maximum dynamic range used by the content, in
+ *   terms of the SDR white point. If this is defined, any values outside the
+ *   range supported by the display will be scaled into the available HDR
+ *   headroom, otherwise they are clipped. This defaults to 1.0 for SDR
+ *   textures, 4.0 for HDR10 textures, and no default for floating point
+ *   textures.
  *
  * With the direct3d11 renderer:
  *
