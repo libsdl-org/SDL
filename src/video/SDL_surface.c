@@ -323,7 +323,12 @@ float SDL_GetSurfaceSDRWhitePoint(SDL_Surface *surface, SDL_Colorspace colorspac
             props = 0;
         }
         if (transfer == SDL_TRANSFER_CHARACTERISTICS_PQ) {
-            const float DEFAULT_PQ_SDR_WHITE_POINT = 100.0f;
+            /* The older standards use an SDR white point of 100 nits.
+             * ITU-R BT.2408-6 recommends using an SDR white point of 203 nits.
+             * This is the default Chrome uses, and what a lot of game content
+             * assumes, so we'll go with that.
+             */
+            const float DEFAULT_PQ_SDR_WHITE_POINT = 203.0f;
             default_value = DEFAULT_PQ_SDR_WHITE_POINT;
         }
         return SDL_GetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, default_value);
@@ -351,7 +356,8 @@ float SDL_GetSurfaceHDRHeadroom(SDL_Surface *surface, SDL_Colorspace colorspace)
             props = 0;
         }
         if (transfer == SDL_TRANSFER_CHARACTERISTICS_PQ) {
-            const int DEFAULT_PQ_MAXCLL = 400; /* The official definition is 10000, but PQ game content is often mastered for 400 nits */
+            /* The official definition is 10000, but PQ game content is often mastered for 400 or 1000 nits */
+            const int DEFAULT_PQ_MAXCLL = 1000;
             default_value = (float)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_MAXCLL_NUMBER, DEFAULT_PQ_MAXCLL) / SDL_GetSurfaceSDRWhitePoint(surface, colorspace);
         }
         return SDL_GetFloatProperty(props, SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, default_value);
