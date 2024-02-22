@@ -51,7 +51,9 @@ extern void SDL_FreeBlitMap(SDL_BlitMap *map);
 extern void SDL_InvalidateAllBlitMap(SDL_Surface *surface);
 
 /* Surface functions */
+extern float SDL_GetDefaultSDRWhitePoint(SDL_Colorspace colorspace);
 extern float SDL_GetSurfaceSDRWhitePoint(SDL_Surface *surface, SDL_Colorspace colorspace);
+extern float SDL_GetDefaultHDRHeadroom(SDL_Colorspace colorspace);
 extern float SDL_GetSurfaceHDRHeadroom(SDL_Surface *surface, SDL_Colorspace colorspace);
 
 /* Miscellaneous functions */

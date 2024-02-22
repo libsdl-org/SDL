@@ -303,6 +303,11 @@ int SDL_GetSurfaceColorspace(SDL_Surface *surface, SDL_Colorspace *colorspace)
     return 0;
 }
 
+float SDL_GetDefaultSDRWhitePoint(SDL_Colorspace colorspace)
+{
+    return SDL_GetSurfaceSDRWhitePoint(NULL, colorspace);
+}
+
 float SDL_GetSurfaceSDRWhitePoint(SDL_Surface *surface, SDL_Colorspace colorspace)
 {
     SDL_TransferCharacteristics transfer = SDL_COLORSPACETRANSFER(colorspace);
@@ -312,7 +317,7 @@ float SDL_GetSurfaceSDRWhitePoint(SDL_Surface *surface, SDL_Colorspace colorspac
         SDL_PropertiesID props;
         float default_value = 1.0f;
 
-        if (surface->flags & SDL_SURFACE_USES_PROPERTIES) {
+        if (surface && surface->flags & SDL_SURFACE_USES_PROPERTIES) {
             props = SDL_GetSurfaceProperties(surface);
         } else {
             props = 0;
@@ -326,6 +331,11 @@ float SDL_GetSurfaceSDRWhitePoint(SDL_Surface *surface, SDL_Colorspace colorspac
     return 1.0f;
 }
 
+float SDL_GetDefaultHDRHeadroom(SDL_Colorspace colorspace)
+{
+    return SDL_GetSurfaceHDRHeadroom(NULL, colorspace);
+}
+
 float SDL_GetSurfaceHDRHeadroom(SDL_Surface *surface, SDL_Colorspace colorspace)
 {
     SDL_TransferCharacteristics transfer = SDL_COLORSPACETRANSFER(colorspace);
@@ -335,7 +345,7 @@ float SDL_GetSurfaceHDRHeadroom(SDL_Surface *surface, SDL_Colorspace colorspace)
         SDL_PropertiesID props;
         float default_value = 0.0f;
 
-        if (surface->flags & SDL_SURFACE_USES_PROPERTIES) {
+        if (surface && surface->flags & SDL_SURFACE_USES_PROPERTIES) {
             props = SDL_GetSurfaceProperties(surface);
         } else {
             props = 0;
