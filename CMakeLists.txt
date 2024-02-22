@@ -231,23 +231,31 @@ if(SDL_SHARED_DEFAULT AND SDL_STATIC_DEFAULT AND SDL_SHARED_AVAILABLE)
   endif()
 endif()
 
-set(SDL_SUBSYSTEMS
-  Audio
-  Video
-  Render
-  Joystick
-  Haptic
-  Hidapi
-  Power
-  Sensor
-)
-foreach(_SUB IN LISTS SDL_SUBSYSTEMS)
-  string(TOUPPER ${_SUB} _OPT)
-  if(NOT DEFINED SDL_${_OPT}_DEFAULT)
-    set(SDL_${_OPT}_DEFAULT ON)
+set(SDL_SUBSYSTEMS )
+
+macro(define_sdl_subsystem _name)
+  cmake_parse_arguments("_ds" "" "" "DEPS" ${ARGN})
+  string(TOUPPER ${_name} _uname)
+  if(NOT DEFINED SDL_${_uname}_DEFAULT)
+    set(SDL_${_uname}_DEFAULT ON)
   endif()
-  option(SDL_${_OPT} "Enable the ${_SUB} subsystem" ${SDL_${_OPT}_DEFAULT})
-endforeach()
+  if(_ds_DEPS)
+    cmake_dependent_option(SDL_${_uname} "Enable the ${_name} subsystem" "${SDL_${_uname}_DEFAULT}" "${_ds_DEPS}" OFF)
+  else()
+    option(SDL_${_uname} "Enable the ${_name} subsystem" "${SDL_${_uname}_DEFAULT}")
+  endif()
+  list(APPEND SDL_SUBSYSTEMS "${_name}")
+endmacro()
+
+define_sdl_subsystem(Audio)
+define_sdl_subsystem(Video)
+define_sdl_subsystem(Render DEPS SDL_VIDEO)
+define_sdl_subsystem(Camera DEPS SDL_VIDEO)
+define_sdl_subsystem(Joystick)
+define_sdl_subsystem(Haptic)
+define_sdl_subsystem(Hidapi)
+define_sdl_subsystem(Power)
+define_sdl_subsystem(Sensor)
 
 cmake_dependent_option(SDL_FRAMEWORK "Build SDL libraries as Apple Framework" OFF "APPLE" OFF)
 if(SDL_FRAMEWORK)
@@ -331,7 +339,6 @@ set_option(SDL_METAL               "Enable Metal support" ${APPLE})
 set_option(SDL_KMSDRM              "Use KMS DRM video driver" ${UNIX_SYS})
 dep_option(SDL_KMSDRM_SHARED       "Dynamically load KMS DRM support" ON "SDL_KMSDRM" OFF)
 set_option(SDL_OFFSCREEN           "Use offscreen video driver" ON)
-dep_option(SDL_CAMERA              "Enable camera support" ON SDL_VIDEO OFF)
 set_option(SDL_DUMMYCAMERA         "Support the dummy camera driver" ON)
 option_string(SDL_BACKGROUNDING_SIGNAL "number to use for magic backgrounding signal or 'OFF'" OFF)
 option_string(SDL_FOREGROUNDING_SIGNAL "number to use for magic foregrounding signal or 'OFF'" OFF)
