@@ -641,14 +641,14 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Rendere
  *
  * With the vulkan renderer:
  *
- * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_POINTER`: the VkImage associated
- *   with the texture
- * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_U_POINTER`: the VkImage associated
- *   with the U plane of a YUV texture
- * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_V_POINTER`: the VkImage associated
- *   with the V plane of a YUV texture
- * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_UV_POINTER`: the VkImage associated
- *   with the UV plane of a NV12/NV21 texture
+ * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_POINTER`: the VkImage associated with
+ *   the texture
+ * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_U_POINTER`: the VkImage associated with
+ *   the U plane of a YUV texture
+ * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_V_POINTER`: the VkImage associated with
+ *   the V plane of a YUV texture
+ * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_UV_POINTER`: the VkImage associated with
+ *   the UV plane of a NV12/NV21 texture
  *
  * With the opengl renderer:
  *
