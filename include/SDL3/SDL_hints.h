@@ -1749,7 +1749,7 @@ extern "C" {
 #define SDL_HINT_RENDER_VULKAN_DEBUG    "SDL_RENDER_VULKAN_DEBUG"
 
 /**
- *  A variable controlling whether the Direct3D device is initialized for thread-safe operations.
+ * A variable specifying which render driver to use.
  *
  * If the application doesn't pick a specific renderer to use, this variable specifies the name of the preferred renderer.  If the preferred renderer can't be initialized, the normal default renderer is used.
  *
