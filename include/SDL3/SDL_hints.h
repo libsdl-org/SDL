@@ -1737,6 +1737,18 @@ extern "C" {
 #define SDL_HINT_RENDER_DIRECT3D11_DEBUG    "SDL_RENDER_DIRECT3D11_DEBUG"
 
 /**
+ *  A variable controlling whether to enable Vulkan Validation Layers
+ *
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Disable Validation Layer use
+ *    "1"       - Enable Validation Layer use
+ *
+ *  By default, SDL does not use Vulkan Validation Layers.
+ */
+#define SDL_HINT_RENDER_VULKAN_DEBUG    "SDL_RENDER_VULKAN_DEBUG"
+
+/**
  * A variable specifying which render driver to use.
  *
  * If the application doesn't pick a specific renderer to use, this variable specifies the name of the preferred renderer.  If the preferred renderer can't be initialized, the normal default renderer is used.

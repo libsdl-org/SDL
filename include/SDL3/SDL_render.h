@@ -639,6 +639,17 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Rendere
  * - `SDL_PROP_TEXTURE_D3D12_TEXTURE_V_POINTER`: the ID3D12Resource associated
  *   with the V plane of a YUV texture
  *
+ * With the vulkan renderer:
+ *
+ * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_POINTER`: the VkImage associated
+ *   with the texture
+ * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_U_POINTER`: the VkImage associated
+ *   with the U plane of a YUV texture
+ * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_V_POINTER`: the VkImage associated
+ *   with the V plane of a YUV texture
+ * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_UV_POINTER`: the VkImage associated
+ *   with the UV plane of a NV12/NV21 texture
+ *
  * With the opengl renderer:
  *
  * - `SDL_PROP_TEXTURE_OPENGL_TEXTURE_NUMBER`: the GLuint texture associated
@@ -701,6 +712,10 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTextureProperties(SDL_Texture *t
 #define SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_U_NUMBER         "SDL.texture.opengles2.texture_u"
 #define SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_V_NUMBER         "SDL.texture.opengles2.texture_v"
 #define SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER    "SDL.texture.opengles2.target"
+#define SDL_PROP_TEXTURE_VULKAN_TEXTURE_POINTER             "SDL.texture.vulkan.texture"
+#define SDL_PROP_TEXTURE_VULKAN_TEXTURE_U_POINTER           "SDL.texture.vulkan.texture_u"
+#define SDL_PROP_TEXTURE_VULKAN_TEXTURE_V_POINTER           "SDL.texture.vulkan.texture_v"
+#define SDL_PROP_TEXTURE_VULKAN_TEXTURE_UV_POINTER          "SDL.texture.vulkan.texture_uv"
 
 /**
  * Get the renderer that created an SDL_Texture.
