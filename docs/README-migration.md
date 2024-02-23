@@ -704,6 +704,7 @@ Calling SDL_GetHint() with the name of the hint being changed from within a hint
 
 The following hints have been removed:
 * SDL_HINT_ACCELEROMETER_AS_JOYSTICK
+* SDL_HINT_ANDROID_TRAP_BACK_BUTTON
 * SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS - gamepad buttons are always positional
 * SDL_HINT_IDLE_TIMER_DISABLED - use SDL_DisableScreenSaver() instead
 * SDL_HINT_IME_SUPPORT_EXTENDED_TEXT - the normal text editing event has extended text

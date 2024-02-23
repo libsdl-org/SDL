@@ -98,21 +98,6 @@ extern "C" {
 #define SDL_HINT_ANDROID_BLOCK_ON_PAUSE_PAUSEAUDIO "SDL_ANDROID_BLOCK_ON_PAUSE_PAUSEAUDIO"
 
 /**
- * A variable to control whether we trap the Android back button to handle it manually.
- *
- * This is necessary for the right mouse button to work on some Android devices, or to be able to trap the back button for use in your code reliably. If this hint is true, the back button will show up as an SDL_EVENT_KEY_DOWN / SDL_EVENT_KEY_UP pair with a keycode of SDL_SCANCODE_AC_BACK.
- *
- * The variable can be set to the following values:
- *   "0"       - Back button will be handled as usual for system. (default)
- *   "1"       - Back button will be trapped, allowing you to handle the key press
- *               manually.  (This will also let right mouse click work on systems
- *               where the right mouse button functions as back.)
- *
- * This hint can be set anytime.
- */
-#define SDL_HINT_ANDROID_TRAP_BACK_BUTTON "SDL_ANDROID_TRAP_BACK_BUTTON"
-
-/**
  * A variable setting the app ID string.
  *
  * This string is used by desktop compositors to identify and group windows together, as well as match applications with associated desktop settings and icons.
