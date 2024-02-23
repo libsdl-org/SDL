@@ -287,7 +287,7 @@ typedef struct
     VkFence *fences;
     VkSurfaceCapabilitiesKHR surfaceCapabilities;
     VkSurfaceFormatKHR *surfaceFormats;
-    SDL_bool pixelSizeChanged;
+    SDL_bool recreateSwapchain;
 
     VkFramebuffer *framebuffers;
     VkRenderPass renderPasses[SDL_VULKAN_NUM_RENDERPASSES];
@@ -2225,7 +2225,7 @@ static VkResult VULKAN_CreateWindowSizeDependentResources(SDL_Renderer *renderer
 
     result = VULKAN_CreateSwapChain(renderer, w, h);
     if (result != VK_SUCCESS) {
-        rendererData->pixelSizeChanged = VK_TRUE;
+        rendererData->recreateSwapchain = VK_TRUE;
     }
 
     rendererData->viewportDirty = SDL_TRUE;
@@ -2248,7 +2248,7 @@ static void VULKAN_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *ev
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->driverdata;
 
     if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
-        rendererData->pixelSizeChanged = SDL_TRUE;
+        rendererData->recreateSwapchain = SDL_TRUE;
     }
 }
 
@@ -3361,11 +3361,11 @@ static int VULKAN_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
     VULKAN_DrawStateCache stateCache;
     SDL_memset(&stateCache, 0, sizeof(stateCache));
 
-    if (rendererData->pixelSizeChanged) {
+    if (rendererData->recreateSwapchain) {
         if (VULKAN_UpdateForWindowSizeChange(renderer) != VK_SUCCESS) {
             return -1;
         }
-        rendererData->pixelSizeChanged = SDL_FALSE;
+        rendererData->recreateSwapchain = SDL_FALSE;
     }
 
     if (VULKAN_UpdateVertexBuffer(renderer, vertices, vertsize, &stateCache) < 0) {
@@ -3663,10 +3663,16 @@ static int VULKAN_RenderPresent(SDL_Renderer *renderer)
 
 static int VULKAN_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
+    VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->driverdata;
+
+    Uint32 prevFlags = renderer->info.flags;
     if (vsync) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     } else {
         renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+    }
+    if (prevFlags != renderer->info.flags) {
+        rendererData->recreateSwapchain = SDL_TRUE;
     }
     return 0;
 }
