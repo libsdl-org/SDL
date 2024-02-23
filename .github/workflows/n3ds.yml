@@ -8,7 +8,7 @@ jobs:
     container:
       image: devkitpro/devkitarm:latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install build requirements
         run: |
           apt update

@@ -19,7 +19,7 @@ jobs:
           - { name: GLES (pib),                    os: windows-latest, pib: true }
           - { name: GLES (PVR_PSP2 + gl4es4vita),  os: windows-latest, pvr: true }
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install build requirements
       run: |
         apk update 
