@@ -1912,6 +1912,45 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         return VK_ERROR_OUT_OF_DATE_KHR;
     }
 
+    /* Choose a present mode. If vsync is requested, then use VK_PRESENT_MODE_FIFO_KHR which is guaranteed to be supported */
+    VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
+    if (!(renderer->info.flags & SDL_RENDERER_PRESENTVSYNC)) {
+        uint32_t presentModeCount = 0;
+        result = vkGetPhysicalDeviceSurfacePresentModesKHR(rendererData->physicalDevice, rendererData->surface, &presentModeCount, NULL);
+        if (result != VK_SUCCESS) {
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkGetPhysicalDeviceSurfacePresentModesKHR(): %s\n", SDL_Vulkan_GetResultString(result));
+            return result;
+        }
+        if (presentModeCount > 0) {
+            VkPresentModeKHR *presentModes = SDL_calloc(sizeof(VkPresentModeKHR), presentModeCount);
+            result = vkGetPhysicalDeviceSurfacePresentModesKHR(rendererData->physicalDevice, rendererData->surface, &presentModeCount, presentModes);
+            if (result != VK_SUCCESS) {
+                SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkGetPhysicalDeviceSurfacePresentModesKHR(): %s\n", SDL_Vulkan_GetResultString(result));
+                SDL_free(presentModes);
+                return result;
+            }
+
+            /* If vsync is not requested, in favor these options in order:
+               VK_PRESENT_MODE_IMMEDIATE_KHR    - no v-sync with tearing
+               VK_PRESENT_MODE_MAILBOX_KHR      - no v-sync without tearing
+               VK_PRESENT_MODE_FIFO_RELAXED_KHR - no v-sync, may tear */
+            for (uint32_t i = 0; i < presentModeCount; i++) {
+                if (presentModes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR) {
+                    presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+                    break;
+                }
+                else if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
+                    presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
+                }
+                else if ((presentMode != VK_PRESENT_MODE_MAILBOX_KHR) &&
+                         (presentModes[i] == VK_PRESENT_MODE_FIFO_RELAXED_KHR)) {
+                    presentMode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+                }
+            }
+            SDL_free(presentModes);
+        }
+    }
+
 
     VkSwapchainCreateInfoKHR swapchainCreateInfo = { 0 };
     swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -1925,7 +1964,7 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     swapchainCreateInfo.preTransform = rendererData->surfaceCapabilities.currentTransform;
     swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    swapchainCreateInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR; // TODO
+    swapchainCreateInfo.presentMode = presentMode;
     swapchainCreateInfo.clipped = VK_TRUE;
     swapchainCreateInfo.oldSwapchain = rendererData->swapchain;
     result = vkCreateSwapchainKHR(rendererData->device, &swapchainCreateInfo, NULL, &rendererData->swapchain);
