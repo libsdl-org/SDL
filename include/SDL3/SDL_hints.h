@@ -372,6 +372,37 @@ extern "C" {
 #define SDL_HINT_CAMERA_DRIVER "SDL_CAMERA_DRIVER"
 
 /**
+ *  A variable that limits what CPU features are available.
+ *
+ *  By default, SDL marks all features the current CPU supports as available.
+ *  This hint allows to limit these to a subset.
+ *
+ *  When the hint is unset, or empty, SDL will enable all detected CPU
+ *  features.
+ *
+ * The variable can be set to a comma separated list containing the following items:
+ *   "all"
+ *   "altivec"
+ *   "sse"
+ *   "sse2"
+ *   "sse3"
+ *   "sse41"
+ *   "sse42"
+ *   "avx"
+ *   "avx2"
+ *   "avx512f"
+ *   "arm-simd"
+ *   "neon"
+ *   "lsx"
+ *   "lasx"
+ *
+ *  The items can be prefixed by '+'/'-' to add/remove features.
+ *
+ *  This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_CPU_FEATURE_MASK "SDL_CPU_FEATURE_MASK"
+
+/**
  * A variable controlling whether DirectInput should be used for controllers
  *
  * The variable can be set to the following values:

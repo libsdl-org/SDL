@@ -858,6 +858,80 @@ int SDL_GetCPUCacheLineSize(void)
 static Uint32 SDL_CPUFeatures = 0xFFFFFFFF;
 static Uint32 SDL_SIMDAlignment = 0xFFFFFFFF;
 
+static SDL_bool ref_string_equals(const char *ref, const char *test, const char *end_test) {
+    size_t len_test = end_test - test;
+    return SDL_strncmp(ref, test, len_test) == 0 && ref[len_test] == '\0' && (test[len_test] == '\0' || test[len_test] == ',');
+}
+
+static Uint32 SDLCALL SDL_CPUFeatureMaskFromHint(void)
+{
+    Uint32 result_mask = 0xFFFFFFFF;
+
+    const char *hint = SDL_GetHint(SDL_HINT_CPU_FEATURE_MASK);
+    
+    if (hint) {
+        for (const char *spot = hint, *next; *spot; spot = next) {
+            const char *end = SDL_strchr(spot, ',');
+            Uint32 spot_mask;
+            SDL_bool add_spot_mask = SDL_TRUE;
+            if (end) {
+                next = end + 1;
+            } else {
+                size_t len = SDL_strlen(spot);
+                end = spot + len;
+                next = end;
+            }
+            if (spot[0] == '+') {
+                add_spot_mask = SDL_TRUE;
+                spot += 1;
+            } else if (spot[0] == '-') {
+                add_spot_mask = SDL_FALSE;
+                spot += 1;
+            }
+            if (ref_string_equals("all", spot, end)) {
+                spot_mask = 0xFFFFFFFF;
+            } else if (ref_string_equals("altivec", spot, end)) {
+                spot_mask= CPU_HAS_ALTIVEC;
+            } else if (ref_string_equals("mmx", spot, end)) {
+                spot_mask = CPU_HAS_MMX;
+            } else if (ref_string_equals("sse", spot, end)) {
+                spot_mask = CPU_HAS_SSE;
+            } else if (ref_string_equals("sse2", spot, end)) {
+                spot_mask = CPU_HAS_SSE2;
+            } else if (ref_string_equals("sse3", spot, end)) {
+                spot_mask = CPU_HAS_SSE3;
+            } else if (ref_string_equals("sse41", spot, end)) {
+                spot_mask = CPU_HAS_SSE41;
+            } else if (ref_string_equals("sse42", spot, end)) {
+                spot_mask = CPU_HAS_SSE42;
+            } else if (ref_string_equals("avx", spot, end)) {
+                spot_mask = CPU_HAS_AVX;
+            } else if (ref_string_equals("avx2", spot, end)) {
+                spot_mask = CPU_HAS_AVX2;
+            } else if (ref_string_equals("avx512f", spot, end)) {
+                spot_mask = CPU_HAS_AVX512F;
+            } else if (ref_string_equals("arm-simd", spot, end)) {
+                spot_mask = CPU_HAS_ARM_SIMD;
+            } else if (ref_string_equals("neon", spot, end)) {
+                spot_mask = CPU_HAS_NEON;
+            } else if (ref_string_equals("lsx", spot, end)) {
+                spot_mask = CPU_HAS_LSX;
+            } else if (ref_string_equals("lasx", spot, end)) {
+                spot_mask = CPU_HAS_LASX;
+            } else {
+                /* Ignore unknown/incorrect cpu feature(s) */
+                continue;
+            }
+            if (add_spot_mask) {
+                result_mask |= spot_mask;
+            } else {
+                result_mask &= ~spot_mask;
+            }
+        }
+    }
+    return result_mask;
+}
+
 static Uint32 SDL_GetCPUFeatures(void)
 {
     if (SDL_CPUFeatures == 0xFFFFFFFF) {
@@ -920,6 +994,7 @@ static Uint32 SDL_GetCPUFeatures(void)
             SDL_CPUFeatures |= CPU_HAS_LASX;
             SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 32);
         }
+        SDL_CPUFeatures &= SDL_CPUFeatureMaskFromHint();
     }
     return SDL_CPUFeatures;
 }
