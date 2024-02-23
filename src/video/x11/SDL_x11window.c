@@ -865,7 +865,6 @@ void X11_SetWindowMinimumSize(_THIS, SDL_Window *window)
         /* See comment in X11_SetWindowSize. */
         X11_XResizeWindow(display, data->xwindow, window->w, window->h);
         X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
-        X11_XRaiseWindow(display, data->xwindow);
     }
 
     X11_XFlush(display);
@@ -893,7 +892,6 @@ void X11_SetWindowMaximumSize(_THIS, SDL_Window *window)
         /* See comment in X11_SetWindowSize. */
         X11_XResizeWindow(display, data->xwindow, window->w, window->h);
         X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
-        X11_XRaiseWindow(display, data->xwindow);
     }
 
     X11_XFlush(display);
