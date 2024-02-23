@@ -31,13 +31,12 @@
 
 
 #define VK_NO_PROTOTYPES
-#include "SDL_vulkan.h"
-#include "SDL_shaders_vulkan.h"
-#include <vulkan/vulkan.h>
+#include "../../video/SDL_vulkan_internal.h"
+#include "../../video/SDL_sysvideo.h"
 #include "../SDL_sysrender.h"
-#include "../SDL_sysvideo.h"
 #include "../SDL_d3dmath.h"
 #include "../../video/SDL_pixels_c.h"
+#include "SDL_shaders_vulkan.h"
 
 extern const char *SDL_Vulkan_GetResultString(VkResult result);
 
@@ -526,7 +525,7 @@ static void VULKAN_DestroyAll(SDL_Renderer *renderer)
             rendererData->pipelineLayouts[i] = VK_NULL_HANDLE;
         }
     }
-    for (uint32_t i = 0; i < rendererData->pipelineStateCount; i++) {
+    for (int i = 0; i < rendererData->pipelineStateCount; i++) {
         vkDestroyPipeline(rendererData->device, rendererData->pipelineStates[i].pipeline, NULL);
     }
     SDL_free(rendererData->pipelineStates);
@@ -534,7 +533,7 @@ static void VULKAN_DestroyAll(SDL_Renderer *renderer)
 
     if (rendererData->currentUploadBuffer) {
         for (uint32_t i = 0; i < rendererData->swapchainImageCount; ++i) {
-            for (uint32_t j = 0; j < rendererData->currentUploadBuffer[i]; ++j) {
+            for (int j = 0; j < rendererData->currentUploadBuffer[i]; ++j) {
                 VULKAN_DestroyBuffer(rendererData, &rendererData->uploadBuffers[i][j]);
             }
             SDL_free(rendererData->uploadBuffers[i]);
@@ -914,7 +913,7 @@ static void VULKAN_ResetCommandList(VULKAN_RenderData *rendererData)
     rendererData->currentConstantBufferOffset = -1;
 
     /* Release any upload buffers that were inflight */
-    for (uint32_t i = 0; i < rendererData->currentUploadBuffer[rendererData->currentCommandBufferIndex]; ++i) {
+    for (int i = 0; i < rendererData->currentUploadBuffer[rendererData->currentCommandBufferIndex]; ++i) {
         VULKAN_DestroyBuffer(rendererData, &rendererData->uploadBuffers[rendererData->currentCommandBufferIndex][i]);
     }
     rendererData->currentUploadBuffer[rendererData->currentCommandBufferIndex] = 0;
@@ -1843,7 +1842,7 @@ static VkResult VULKAN_CreateFramebuffersAndRenderPasses(SDL_Renderer *renderer,
     framebufferCreateInfo.height = rendererData->swapchainSize.height;
     framebufferCreateInfo.layers = 1;
 
-    for (uint32_t i = 0; i < imageViewCount; i++) {
+    for (int i = 0; i < imageViewCount; i++) {
         framebufferCreateInfo.pAttachments = &imageViews[i];
         result = vkCreateFramebuffer(rendererData->device, &framebufferCreateInfo, NULL, &framebuffers[i]);
         if (result != VK_SUCCESS) {
@@ -3107,7 +3106,7 @@ static SDL_bool VULKAN_SetDrawState(SDL_Renderer *renderer, const SDL_RenderComm
             /* Align the next address to the minUniformBufferOffsetAlignment */
             VkDeviceSize alignment = rendererData->physicalDeviceProperties.limits.minUniformBufferOffsetAlignment;
             SDL_assert(rendererData->currentConstantBufferOffset >= 0 );
-            rendererData->currentConstantBufferOffset += (sizeof(PixelShaderConstants) + alignment - 1) & ~(alignment - 1);
+            rendererData->currentConstantBufferOffset += (int32_t)(sizeof(PixelShaderConstants) + alignment - 1) & ~(alignment - 1);
             constantBufferOffset = rendererData->currentConstantBufferOffset;
         }
 
@@ -3303,7 +3302,7 @@ static SDL_bool VULKAN_SetCopyState(SDL_Renderer *renderer, const SDL_RenderComm
 static void VULKAN_DrawPrimitives(SDL_Renderer *renderer, VkPrimitiveTopology primitiveTopology, const size_t vertexStart, const size_t vertexCount)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->driverdata;
-    vkCmdDraw(rendererData->currentCommandBuffer, vertexCount, 1, vertexStart, 0);
+    vkCmdDraw(rendererData->currentCommandBuffer, (uint32_t)vertexCount, 1, (uint32_t)vertexStart, 0);
 }
 
 static void VULKAN_InvalidateCachedState(SDL_Renderer *renderer)

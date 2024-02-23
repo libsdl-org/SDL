@@ -187,6 +187,9 @@
     <Filter Include="camera\mediafoundation">
       <UniqueIdentifier>{0000fbfe2d21e4f451142e7d0e870000}</UniqueIdentifier>
     </Filter>
+    <Filter Include="render\vulkan">
+      <UniqueIdentifier>{5115ba31-20f8-4eab-a8c5-6a572ab78ff7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h">
@@ -853,6 +856,9 @@
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx_func.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_sse.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_std.h" />
+    <ClInclude Include="..\..\src\render\vulkan\SDL_shaders_vulkan.h">
+      <Filter>render\vulkan</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
@@ -1434,8 +1440,17 @@
     <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx.c" />
     <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_sse.c" />
     <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_std.c" />
+    <ClCompile Include="..\..\src\render\vulkan\SDL_render_vulkan.c">
+      <Filter>render\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\render\vulkan\SDL_shaders_vulkan.c">
+      <Filter>render\vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\core\windows\version.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="..\..\src\stdlib\SDL_mslibc_x64.masm" />
   </ItemGroup>
 </Project>

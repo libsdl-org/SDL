@@ -305,6 +305,10 @@ typedef unsigned int uintptr_t;
 /* Enable Vulkan support */
 #define SDL_VIDEO_VULKAN 1
 
+#ifndef SDL_VIDEO_RENDER_VULKAN
+#define SDL_VIDEO_RENDER_VULKAN    1
+#endif
+
 /* Enable system power support */
 #define SDL_POWER_WINDOWS 1
 
