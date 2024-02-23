@@ -583,40 +583,51 @@ set(TESTS_ENVIRONMENT
     PATH=$<TARGET_FILE_DIR:SDL3::${sdl_name_component}>
 )
 
-foreach(TEST ${SDL_TEST_EXECUTABLES})
-    get_property(noninteractive TARGET ${TEST} PROPERTY SDL_NONINTERACTIVE)
+function(add_sdl_test TEST TARGET)
+    cmake_parse_arguments(ast "INSTALL" "" "" ${ARGN})
+    get_property(noninteractive TARGET ${TARGET} PROPERTY SDL_NONINTERACTIVE)
     if(noninteractive)
-        set(command ${TEST})
-        get_property(noninteractive_arguments TARGET ${TEST} PROPERTY SDL_NONINTERACTIVE_ARGUMENTS)
+        set(command ${TARGET})
+        get_property(noninteractive_arguments TARGET ${TARGET} PROPERTY SDL_NONINTERACTIVE_ARGUMENTS)
         if(noninteractive_arguments)
             list(APPEND command ${noninteractive_arguments})
         endif()
         add_test(
-            NAME ${TEST}
-            COMMAND ${command}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                NAME ${TEST}
+                COMMAND ${command}
+                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         )
         set_tests_properties(${TEST} PROPERTIES ENVIRONMENT "${TESTS_ENVIRONMENT}")
-        get_property(noninteractive_timeout TARGET ${TEST} PROPERTY SDL_NONINTERACTIVE_TIMEOUT)
+        get_property(noninteractive_timeout TARGET ${TARGET} PROPERTY SDL_NONINTERACTIVE_TIMEOUT)
         if(NOT noninteractive_timeout)
             set(noninteractive_timeout 10)
         endif()
         math(EXPR noninteractive_timeout "${noninteractive_timeout}*${SDL_TESTS_TIMEOUT_MULTIPLIER}")
         set_tests_properties(${TEST} PROPERTIES TIMEOUT "${noninteractive_timeout}")
-        if(SDL_INSTALL_TESTS)
-            set(exe ${TEST})
+        if(ast_INSTALL AND SDL_INSTALL_TESTS)
+            set(exe ${TARGET})
             set(installedtestsdir "${CMAKE_INSTALL_FULL_LIBEXECDIR}/installed-tests/SDL3")
             configure_file(template.test.in "${exe}.test" @ONLY)
             install(
-                FILES "${CMAKE_CURRENT_BINARY_DIR}/${exe}.test"
-                DESTINATION ${CMAKE_INSTALL_DATADIR}/installed-tests/SDL3
+                    FILES "${CMAKE_CURRENT_BINARY_DIR}/${exe}.test"
+                    DESTINATION ${CMAKE_INSTALL_DATADIR}/installed-tests/SDL3
             )
         endif()
-        if(TARGET pretest AND NOT "${TEST}" MATCHES "pretest")
+        if(TARGET pretest AND NOT "${TARGET}" MATCHES "pretest")
             set_property(TEST ${TEST} APPEND PROPERTY DEPENDS pretest)
         endif()
     endif()
+endfunction()
+
+foreach(TARGET ${SDL_TEST_EXECUTABLES})
+    add_sdl_test(${TARGET} ${TARGET} INSTALL)
 endforeach()
+
+add_sdl_test(testautomation-no-simd testautomation)
+set_property(TEST testautomation-no-simd APPEND PROPERTY ENVIRONMENT "SDL_CPU_FEATURE_MASK=-all")
+
+add_sdl_test(testplatform-no-simd testplatform)
+set_property(TEST testplatform-no-simd APPEND PROPERTY ENVIRONMENT "SDL_CPU_FEATURE_MASK=-all")
 
 if(SDL_INSTALL_TESTS)
     if(RISCOS)
