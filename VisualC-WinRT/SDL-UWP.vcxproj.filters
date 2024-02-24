@@ -228,6 +228,9 @@
     <ClInclude Include="..\src\core\winrt\SDL_winrtapp_xaml.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\cpuinfo\SDL_cpuinfo_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\dynapi\SDL_dynapi.h">
       <Filter>Source Files</Filter>
     </ClInclude>

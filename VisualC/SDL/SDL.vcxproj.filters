@@ -465,6 +465,9 @@
     <ClInclude Include="..\..\src\core\windows\SDL_directx.h">
       <Filter>core\windows</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\cpuinfo\SDL_cpuinfo_c.h">
+      <Filter>cpuinfo</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\dynapi\SDL_dynapi.h">
       <Filter>dynapi</Filter>
     </ClInclude>
