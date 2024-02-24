@@ -3348,11 +3348,7 @@ static void VULKAN_InvalidateCachedState(SDL_Renderer *renderer)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->driverdata;
     rendererData->currentPipelineState = NULL;
-    rendererData->currentVertexBuffer = 0;
-    rendererData->issueBatch = SDL_FALSE;
     rendererData->cliprectDirty = SDL_TRUE;
-    rendererData->currentDescriptorSetIndex = 0;
-    rendererData->currentConstantBufferOffset = 0;
 }
 
 static int VULKAN_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
