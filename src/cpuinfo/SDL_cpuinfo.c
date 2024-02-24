@@ -18,6 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
 #include "SDL_internal.h"
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK)
@@ -855,7 +856,9 @@ int SDL_GetCPUCacheLineSize(void)
     }
 }
 
-static Uint32 SDL_CPUFeatures = 0xFFFFFFFF;
+#define SDL_CPUFEATURES_RESET_VALUE 0xFFFFFFFF
+
+static Uint32 SDL_CPUFeatures = SDL_CPUFEATURES_RESET_VALUE;
 static Uint32 SDL_SIMDAlignment = 0xFFFFFFFF;
 
 static SDL_bool ref_string_equals(const char *ref, const char *test, const char *end_test) {
@@ -865,10 +868,10 @@ static SDL_bool ref_string_equals(const char *ref, const char *test, const char 
 
 static Uint32 SDLCALL SDL_CPUFeatureMaskFromHint(void)
 {
-    Uint32 result_mask = 0xFFFFFFFF;
+    Uint32 result_mask = SDL_CPUFEATURES_RESET_VALUE;
 
     const char *hint = SDL_GetHint(SDL_HINT_CPU_FEATURE_MASK);
-    
+
     if (hint) {
         for (const char *spot = hint, *next; *spot; spot = next) {
             const char *end = SDL_strchr(spot, ',');
@@ -889,7 +892,7 @@ static Uint32 SDLCALL SDL_CPUFeatureMaskFromHint(void)
                 spot += 1;
             }
             if (ref_string_equals("all", spot, end)) {
-                spot_mask = 0xFFFFFFFF;
+                spot_mask = SDL_CPUFEATURES_RESET_VALUE;
             } else if (ref_string_equals("altivec", spot, end)) {
                 spot_mask= CPU_HAS_ALTIVEC;
             } else if (ref_string_equals("mmx", spot, end)) {
@@ -934,7 +937,7 @@ static Uint32 SDLCALL SDL_CPUFeatureMaskFromHint(void)
 
 static Uint32 SDL_GetCPUFeatures(void)
 {
-    if (SDL_CPUFeatures == 0xFFFFFFFF) {
+    if (SDL_CPUFeatures == SDL_CPUFEATURES_RESET_VALUE) {
         CPU_calcCPUIDFeatures();
         SDL_CPUFeatures = 0;
         SDL_SIMDAlignment = sizeof(void *); /* a good safe base value */
@@ -997,6 +1000,10 @@ static Uint32 SDL_GetCPUFeatures(void)
         SDL_CPUFeatures &= SDL_CPUFeatureMaskFromHint();
     }
     return SDL_CPUFeatures;
+}
+
+void SDL_QuitCPUInfo(void) {
+    SDL_CPUFeatures = SDL_CPUFEATURES_RESET_VALUE;
 }
 
 #define CPU_FEATURE_AVAILABLE(f) ((SDL_GetCPUFeatures() & (f)) ? SDL_TRUE : SDL_FALSE)
