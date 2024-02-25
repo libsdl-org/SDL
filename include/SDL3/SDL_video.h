@@ -355,15 +355,18 @@ extern DECLSPEC SDL_DisplayID SDLCALL SDL_GetPrimaryDisplay(void);
  *
  * The following read-only properties are provided by SDL:
  *
- * - `SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN`: true if the display has HDR 
- *   headroom above the SDR white point. This property can change dynamically when SDL_EVENT_DISPLAY_HDR_STATE_CHANGED is sent.
+ * - `SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN`: true if the display has HDR
+ *   headroom above the SDR white point. This property can change dynamically
+ *   when SDL_EVENT_DISPLAY_HDR_STATE_CHANGED is sent.
  * - `SDL_PROP_DISPLAY_SDR_WHITE_POINT_FLOAT`: the value of SDR white in the
  *   SDL_COLORSPACE_SRGB_LINEAR colorspace. On Windows this corresponds to the
  *   SDR white level in scRGB colorspace, and on Apple platforms this is
- *   always 1.0 for EDR content. This property can change dynamically when SDL_EVENT_DISPLAY_HDR_STATE_CHANGED is sent.
+ *   always 1.0 for EDR content. This property can change dynamically when
+ *   SDL_EVENT_DISPLAY_HDR_STATE_CHANGED is sent.
  * - `SDL_PROP_DISPLAY_HDR_HEADROOM_FLOAT`: the additional high dynamic range
  *   that can be displayed, in terms of the SDR white point. When HDR is not
- *   enabled, this will be 1.0. This property can change dynamically when SDL_EVENT_DISPLAY_HDR_STATE_CHANGED is sent.
+ *   enabled, this will be 1.0. This property can change dynamically when
+ *   SDL_EVENT_DISPLAY_HDR_STATE_CHANGED is sent.
  *
  * \param displayID the instance ID of the display to query
  * \returns a valid property ID on success or 0 on failure; call
