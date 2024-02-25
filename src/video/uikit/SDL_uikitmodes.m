@@ -247,7 +247,11 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
 
 #ifndef SDL_PLATFORM_TVOS
     if (@available(iOS 16.0, *)) {
-        display.HDR.HDR_headroom = uiscreen.currentEDRHeadroom;
+        if (uiscreen.currentEDRHeadroom > 1.0f) {
+            display.HDR.HDR_headroom = uiscreen.currentEDRHeadroom;
+        } else {
+            display.HDR.HDR_headroom = uiscreen.potentialEDRHeadroom;
+        }
     }
 #endif /* !SDL_PLATFORM_TVOS */
 

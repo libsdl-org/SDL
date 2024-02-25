@@ -299,7 +299,11 @@ static void Cocoa_GetHDRProperties(CGDirectDisplayID displayID, SDL_HDRDisplayPr
     if (@available(macOS 10.15, *)) {
         NSScreen *screen = GetNSScreenForDisplayID(displayID);
         if (screen) {
-            HDR->HDR_headroom = screen.maximumExtendedDynamicRangeColorComponentValue;
+            if (screen.maximumExtendedDynamicRangeColorComponentValue > 1.0f) {
+                HDR->HDR_headroom = screen.maximumExtendedDynamicRangeColorComponentValue;
+            } else {
+                HDR->HDR_headroom = screen.maximumPotentialExtendedDynamicRangeColorComponentValue;
+            }
         }
     }
 #endif
