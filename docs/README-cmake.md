@@ -8,14 +8,15 @@ The CMake build system is supported on the following platforms:
 * Linux
 * Microsoft Visual C
 * MinGW and Msys
-* macOS, iOS, and tvOS, with support for XCode
+* macOS, iOS, tvOS, and visionOS with support for XCode
 * Android
 * Emscripten
-* FreeBSD
+* NetBSD
 * Haiku
 * Nintendo 3DS
-* Playstation 2
-* Playstation Vita
+* PlayStation 2
+* PlayStation Portable
+* PlayStation Vita
 * QNX 7.x/8.x
 * RiscOS
 
@@ -136,26 +137,87 @@ flags to the compiler.
     cmake .. -DCMAKE_C_FLAGS="/ARCH:AVX2" -DCMAKE_CXX_FLAGS="/ARCH:AVX2"
     ```
 
-### iOS/tvOS
+### Apple
 
-CMake 3.14+ natively includes support for iOS and tvOS.  SDL binaries may be built
-using Xcode or Make, possibly among other build-systems.
+CMake documentation for cross building for Apple:
+[link](https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html#cross-compiling-for-ios-tvos-visionos-or-watchos)
 
-When using a recent version of CMake (3.14+), it should be possible to:
+#### iOS/tvOS/visionOS
 
-- build SDL for iOS, both static and dynamic
-- build SDL test apps (as iOS/tvOS .app bundles)
-- generate a working SDL_build_config.h for iOS (using SDL_build_config.h.cmake as a basis)
+CMake 3.14+ natively includes support for iOS, tvOS and watchOS. visionOS requires CMake 3.28+.
+SDL binaries may be built using Xcode or Make, possibly among other build-systems.
 
-To use, set the following CMake variables when running CMake's configuration stage:
+When using a compatible version of CMake, it should be possible to:
 
-- `CMAKE_SYSTEM_NAME=<OS>`   (either `iOS` or `tvOS`)
-- `CMAKE_OSX_SYSROOT=<SDK>`  (examples: `iphoneos`, `iphonesimulator`, `iphoneos12.4`, `/full/path/to/iPhoneOS.sdk`,
-                              `appletvos`, `appletvsimulator`, `appletvos12.4`, `/full/path/to/AppleTVOS.sdk`, etc.)
-- `CMAKE_OSX_ARCHITECTURES=<semicolon-separated list of CPU architectures>` (example: "arm64;armv7s;x86_64")
+- build SDL dylibs, both static and dynamic dylibs
+- build SDL frameworks, only shared
+- build SDL test apps
 
+#### Frameworks
+
+Configure with `-DSDL_FRAMEWORK=ON` to build a SDL framework instead of a dylib shared library. 
+Only shared frameworks are supported, no static ones.
+
+#### Platforms
+
+Use `-DCMAKE_PLATFORM_NAME=<value>` to configure the platform. CMake can target only one platform at a time.
+
+| Apple platform  | `CMAKE_SYSTEM_NAME` value |
+|-----------------|---------------------------|
+| macOS (MacOS X) | `Darwin`                  |
+| iOS             | `iOS`                     |
+| tvOS            | `tvOS`                    |
+| visionOS        | `visionOS`                |
+| watchOS         | `watchOS`                 |
+
+#### Universal binaries
+
+A universal binaries, can be built by configuring CMake with
+`-DCMAKE_OSX_ARCHITECTURES=<semicolon-separated list of CPU architectures>`.
+
+For example `-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"` will build binaries that run on both Intel cpus and Apple silicon.
+
+SDL supports following Apple architectures:
+
+| Platform                   | `CMAKE_OSX_ARCHITECTURES` value |
+|----------------------------|---------------------------------|
+| 64-bit ARM (Apple Silicon) | `arm64`                         |
+| x86_64                     | `x86_64`                        |
+| 32-bit ARM                 | `armv7s`                        |
+
+CMake documentation: [link](https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_ARCHITECTURES.html) 
+
+#### Simulators and/or non-default maxOS platform SDK
+
+Use `-DCMAKE_OSX_SYSROOT=<value>` to configure a different platform SDK.
+The value can be either the name of the SDK, or a full path to the sdk (e.g. `/full/path/to/iPhoneOS.sdk`).
+
+| SDK                  | `CMAKE_OSX_SYSROOT` value |
+|----------------------|---------------------------|
+| iphone               | `iphoneos`                |
+| iphonesimulator      | `iphonesimulator`         |
+| appleTV              | `appletvos`               |
+| appleTV simulator    | `appletvsimulator`        |
+| visionOS             | `xr`                      |
+| visionOS simulator   | `xrsimulator`             |
+| watchOS              | `watchos`                 |
+| watchOS simulator    | `watchsimulator`          |
+
+Append with a version number to target a specific SDK revision: e.g. `iphoneos12.4`, `appletvos12.4`.
+
+CMake documentation: [link](https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_SYSROOT.html)
 
 #### Examples
+
+- for macOS, building a dylib and/or static library for x86_64 and arm64:
+
+    ```bash
+    cmake ~/sdl -DCMAKE_SYSTEM_NAME=Darwin -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+
+- for macOS, building an universal framework for x86_64 and arm64:
+
+    ```bash
+    cmake ~/sdl -DSDL_FRAMEWORK=ON -DCMAKE_SYSTEM_NAME=Darwin -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
 
 - for iOS-Simulator, using the latest, installed SDK:
 
@@ -275,7 +337,9 @@ file(WRITE main.c [===========================================[
 /* START of source modifications */
 
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
+/*
+ * SDL3/SDL_main.h is explicitly not included such that a terminal window would appear on Windows. 
+ */
 
 int main(int argc, char *argv[]) {
     (void)argc;
