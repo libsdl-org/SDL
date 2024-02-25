@@ -244,6 +244,7 @@
 
 /* Enable filesystem support */
 #define SDL_FILESYSTEM_WINDOWS  1
+#define SDL_FSOPS_WINDOWS 1
 
 /* Enable the camera driver (src/camera/dummy/\*.c) */  /* !!! FIXME */
 #define SDL_CAMERA_DRIVER_DUMMY  1

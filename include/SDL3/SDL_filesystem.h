@@ -236,6 +236,125 @@ typedef enum
  */
 extern DECLSPEC char *SDLCALL SDL_GetUserFolder(SDL_Folder folder);
 
+
+/* Abstract filesystem interface */
+
+typedef enum SDL_StatPathType
+{
+    SDL_STATPATHTYPE_FILE, /**< a normal file */
+    SDL_STATPATHTYPE_DIRECTORY, /**< a directory */
+    SDL_STATPATHTYPE_OTHER /**< something completely different like a device node (not a symlink, those are always followed) */
+} SDL_StatPathType;
+
+typedef struct SDL_Stat
+{
+    SDL_StatPathType filetype;  /* is this a file? a dir? something else? */
+    Sint64 filesize;    /* size in bytes */
+    Sint64 modtime;     /* SDL filesystem timestamp */
+    Sint64 createtime;  /* SDL filesystem timestamp */
+    Sint64 accesstime;  /* SDL filesystem timestamp */
+} SDL_Stat;
+
+
+typedef struct SDL_FSops SDL_FSops;
+
+/* Callback for filesystem enumeration. Return 1 to keep enumerating, 0 to stop enumerating (no error), -1 to stop enumerating and report an error. "origdir" is the directory being enumerated, "fname" is the enumerated entry. */
+typedef int (SDLCALL *SDL_EnumerateCallback)(void *userdata, SDL_FSops *fs, const char *origdir, const char *fname);
+
+/**
+ * This is the directory operation interface, much like SDL_RWops is the filestream
+ * operation interface.  SDL provides a platform-independent way to
+ * access these that operate on the native filesystem, but the app and other libraries
+ * are welcome to provide their own implementations of any data that needs a simple
+ * tree-shaped hierarchy that looks a little like a filesystem.
+ *
+ * This struct is public so apps and libraries can provide their own implementations,
+ * but one should not call these function pointers directly to use an implementation;
+ * please call the SDL_FS* functions instead, as there is common code there that needs
+ * to run in addition to the implementation's function pointers.
+ */
+struct SDL_FSops
+{
+    /**
+     * Open a file in the filesystem.
+     *
+     * You do not necessarily have to use this, if you know you're working from
+     * a real filesystem and just want to enumerate paths and such.
+     *
+     * The caller should not close the filesystem while the returned RWops is still open.
+     *
+     * \param fs The SDL_FSops object to use.
+     * \param path the path in the SDL_FSops to open
+     * \param mode a fopen-style "mode" string of how to access the path.  !!! FIXME: maybe just offer read/write/append enums?
+     * \return a RWops for the path specified.
+     */
+    SDL_RWops *(SDLCALL * open)(SDL_FSops *fs, const char *path, const char *mode);
+
+    /* list all files in a directory. Each file is passed through a callback until we're done or the callback returns <= 0. */
+    int (SDLCALL * enumerate)(SDL_FSops *fs, const char *path, SDL_EnumerateCallback cb, void *userdata);
+
+    /* delete/unlink/rmdir a path. Will not remove non-empty directories! */
+    int (SDLCALL * remove)(SDL_FSops *fs, const char *path);
+
+    /* Create a directory. */
+    int (SDLCALL * mkdir)(SDL_FSops *fs, const char *path);
+
+    /* Obtain basic path metadata. */
+    int (SDLCALL * stat)(SDL_FSops *fs, const char *path, SDL_Stat *stat);
+
+    /* Close the filesystem and free its resources. */
+    void (SDLCALL * closefs)(SDL_FSops *fs);
+
+    /* Used by the SDL_FSops for private data. Don't touch! */
+    void *opaque;
+
+    /* Everything has properties! :) */
+    SDL_PropertiesID props;
+};
+
+
+/*
+ * Create an SDL_FSops that represents the native filesystem, treating `basedir` as
+ * the root of the tree. A NULL basedir is valid and gives you the actual root of the
+ * native filesystem.
+ *
+ * Enumerating root on Windows will give you available drive letters like they were directories,
+ * almost everything else assumes the root is a Unix "/" thing.
+ *
+ * Destroy this when done with SDL_DestroyFilesystem().
+ */
+extern DECLSPEC SDL_FSops * SDLCALL SDL_CreateFilesystem(const char *basedir);
+
+
+/* Use the filesystem... */
+extern DECLSPEC SDL_RWops * SDLCALL SDL_FSopen(SDL_FSops *fs, const char *path, const char *mode);
+extern DECLSPEC int SDLCALL SDL_FSenumerate(SDL_FSops *fs, const char *path, SDL_EnumerateCallback cb, void *userdata);
+extern DECLSPEC int SDLCALL SDL_FSremove(SDL_FSops *fs, const char *path);
+extern DECLSPEC int SDLCALL SDL_FSmkdir(SDL_FSops *fs, const char *path);
+extern DECLSPEC int SDLCALL SDL_FSstat(SDL_FSops *fs, const char *path, SDL_Stat *stat);
+
+/* returns `props` field of `context`, creating an SDL_PropertiesID for that field, if it doesn't exist yet. */
+extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetFSProperties(SDL_FSops *context);
+
+/**
+ * if fs is not NULL, this will call fs->closefs() (if closefs is not NULL), destroy fs->props, and then SDL_free(fs). You can use this
+ * with your own SDL_FSops implementations if that sequence of operations is correct.
+ */
+extern DECLSPEC void SDLCALL SDL_DestroyFilesystem(SDL_FSops *fs);
+
+
+/* some helper functions ... */
+
+/* returns "\\" or "/" etc. Read-only static data, don't free or modify! */
+extern DECLSPEC const char * SDLCALL SDL_GetFilePathSeparator(void);
+
+/* converts an SDL file timestamp into a win32 FILETIME (100-nanosecond intervals since January 1, 1601). Fills in the two 32-bit values of the win32 struct. */
+extern DECLSPEC void SDLCALL SDL_FileTimeToWindows(Sint64 ftime, Uint32 *low, Uint32 *high);
+
+/* converts an SDL file timestamp into a Unix time_t (seconds since the Unix epoch). */
+extern DECLSPEC Sint64 SDLCALL SDL_FileTimeToUnix(Sint64 ftime);
+
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

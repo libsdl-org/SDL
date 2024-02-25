@@ -206,6 +206,7 @@
 
 /* Enable system filesystem support */
 #define SDL_FILESYSTEM_EMSCRIPTEN 1
+#define SDL_FSOPS_POSIX 1
 
 /* Enable the camera driver */
 #define SDL_CAMERA_DRIVER_EMSCRIPTEN  1

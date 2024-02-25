@@ -465,6 +465,11 @@
 #cmakedefine SDL_FILESYSTEM_PS2 @SDL_FILESYSTEM_PS2@
 #cmakedefine SDL_FILESYSTEM_N3DS @SDL_FILESYSTEM_N3DS@
 
+/* Enable system FSops support */
+#cmakedefine SDL_FSOPS_POSIX @SDL_FSOPS_POSIX@
+#cmakedefine SDL_FSOPS_WINDOWS @SDL_FSOPS_WINDOWS@
+#cmakedefine SDL_FSOPS_DUMMY @SDL_FSOPS_DUMMY@
+
 /* Enable camera subsystem */
 #cmakedefine SDL_CAMERA_DRIVER_DUMMY @SDL_CAMERA_DRIVER_DUMMY@
 /* !!! FIXME: for later cmakedefine SDL_CAMERA_DRIVER_DISK @SDL_CAMERA_DRIVER_DISK@ */

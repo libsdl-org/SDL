@@ -1004,3 +1004,14 @@
 #define SDL_OpenIO SDL_OpenIO_REAL
 #define SDL_CloseIO SDL_CloseIO_REAL
 #define SDL_GetIOStatus SDL_GetIOStatus_REAL
+#define SDL_CreateFilesystem SDL_CreateFilesystem_REAL
+#define SDL_FSopen SDL_FSopen_REAL
+#define SDL_FSenumerate SDL_FSenumerate_REAL
+#define SDL_FSremove SDL_FSremove_REAL
+#define SDL_FSmkdir SDL_FSmkdir_REAL
+#define SDL_FSstat SDL_FSstat_REAL
+#define SDL_GetFSProperties SDL_GetFSProperties_REAL
+#define SDL_DestroyFilesystem SDL_DestroyFilesystem_REAL
+#define SDL_GetFilePathSeparator SDL_GetFilePathSeparator_REAL
+#define SDL_FileTimeToWindows SDL_FileTimeToWindows_REAL
+#define SDL_FileTimeToUnix SDL_FileTimeToUnix_REAL

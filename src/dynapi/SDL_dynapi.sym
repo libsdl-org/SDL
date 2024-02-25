@@ -979,6 +979,17 @@ SDL3_0.0.0 {
     SDL_OpenIO;
     SDL_CloseIO;
     SDL_GetIOStatus;
+    SDL_CreateFilesystem;
+    SDL_FSopen;
+    SDL_FSenumerate;
+    SDL_FSremove;
+    SDL_FSmkdir;
+    SDL_FSstat;
+    SDL_GetFSProperties;
+    SDL_DestroyFilesystem;
+    SDL_GetFilePathSeparator;
+    SDL_FileTimeToWindows;
+    SDL_FileTimeToUnix;
     # extra symbols go here (don't modify this line)
   local: *;
 };
