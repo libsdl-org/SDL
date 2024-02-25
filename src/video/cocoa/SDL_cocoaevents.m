@@ -284,7 +284,10 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
 - (void)screenParametersChanged:(NSNotification *)aNotification
 {
-    Cocoa_UpdateDisplays(SDL_GetVideoDevice());
+    SDL_VideoDevice *device = SDL_GetVideoDevice();
+    if (device) {
+        Cocoa_UpdateDisplays(device);
+    }
 }
 
 - (void)localeDidChange:(NSNotification *)notification
