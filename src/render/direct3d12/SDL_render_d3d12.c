@@ -1087,7 +1087,7 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
         const DXGI_FORMAT defaultRTVFormats[] = {
             DXGI_FORMAT_B8G8R8A8_UNORM,
         };
-        int i, j, k, l;
+        int j, k, l;
 
         /* Create a few default pipeline state objects, to verify that this renderer will work */
         for (i = 0; i < NUM_SHADERS; ++i) {
