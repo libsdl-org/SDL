@@ -155,7 +155,7 @@ When using a compatible version of CMake, it should be possible to:
 
 #### Frameworks
 
-Configure with `-DSDL_FRAMEWORK=ON` to build a SDL framework instead of a dylib shared library. 
+Configure with `-DSDL_FRAMEWORK=ON` to build a SDL framework instead of a dylib shared library.
 Only shared frameworks are supported, no static ones.
 
 #### Platforms
@@ -185,7 +185,7 @@ SDL supports following Apple architectures:
 | x86_64                     | `x86_64`                        |
 | 32-bit ARM                 | `armv7s`                        |
 
-CMake documentation: [link](https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_ARCHITECTURES.html) 
+CMake documentation: [link](https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_ARCHITECTURES.html)
 
 #### Simulators and/or non-default maxOS platform SDK
 
@@ -338,7 +338,7 @@ file(WRITE main.c [===========================================[
 
 #include <SDL3/SDL.h>
 /*
- * SDL3/SDL_main.h is explicitly not included such that a terminal window would appear on Windows. 
+ * SDL3/SDL_main.h is explicitly not included such that a terminal window would appear on Windows.
  */
 
 int main(int argc, char *argv[]) {
