@@ -36,9 +36,45 @@
 
 typedef enum
 {
+#ifdef SDL_PLATFORM_WIN32
+    k_EPS3ReportIdState = 0,
+    k_EPS3ReportIdEffects = 0,
+#else
     k_EPS3ReportIdState = 1,
     k_EPS3ReportIdEffects = 1,
+#endif
 } EPS3ReportId;
+
+#ifdef SDL_PLATFORM_WIN32
+/* Commands for Sony's sixaxis.sys Windows driver */
+/* All commands must be sent using 49-byte buffer containing output report */
+/* Byte 0 indicates reportId and must always be 0 */
+/* Byte 1 indicates a command, supported values are specified below: */
+typedef enum
+{
+    /* This command allows to set user LEDs. */
+    /* Bytes 5,6.7.8 contain mode for corresponding LED: 0 - LED is off, 1 - LED in on, 2 - LED is flashing. */
+    /* Bytes 9-16 specify 64-bit LED flash period in 100 ns units if some LED is flashing, otherwise not used. */
+    k_EPS3SixaxisCommandSetLEDs = 1,
+
+    /* This command allows to set left and right motors. */
+    /* Byte 5 is right motor duration (0-255) and byte 6, if not zero, activates right motor. Zero value disables right motor. */
+    /* Byte 7 is left motor duration (0-255) and byte 8 is left motor amplitude (0-255). */
+    k_EPS3SixaxisCommandSetMotors = 2,
+
+    /* This command allows to block/unblock setting device LEDs by applications. */
+    /* Byte 5 is used as parameter - any non-zero value blocks LEDs, zero value will unblock LEDs. */
+    k_EPS3SixaxisCommandBlockLEDs = 3,
+
+    /* This command refreshes driver settings. No parameters used. */
+    /* When sixaxis driver loads it reads 'CurrentDriverSetting' binary value from 'HKLM\System\CurrentControlSet\Services\sixaxis\Parameters' registry key. */
+    /* If the key is not present then default values are used. Sending this command forces sixaxis driver to re-read the registry and update driver settings. */
+    k_EPS3SixaxisCommandRefreshDriverSetting = 9,
+
+    /* This command clears current bluetooth pairing. No parameters used. */
+    k_EPS3SixaxisCommandClearPairing = 10
+} EPS3SixaxisDriverCommands;
+#endif
 
 typedef struct
 {
@@ -73,7 +109,7 @@ static SDL_bool HIDAPI_DriverPS3_IsEnabled(void)
     /* This works well on macOS */
     default_value = SDL_TRUE;
 #elif defined(SDL_PLATFORM_WIN32)
-    /* You can't initialize the controller with the stock Windows drivers
+    /* Working with official Sony Windows driver (sixaxis.sys). This driver supports USB only, not Bluetooth.
      * See https://github.com/ViGEm/DsHidMini as an alternative driver
      */
     default_value = SDL_FALSE;
@@ -153,6 +189,26 @@ static SDL_bool HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
     if (!device->is_bluetooth) {
         Uint8 data[USB_PACKET_LENGTH];
 
+#ifdef SDL_PLATFORM_WIN32
+        int size = ReadFeatureReport(device->dev, 0xf2, data, sizeof(data));
+        if (size < 0) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         "HIDAPI_DriverPS3_InitDevice(): Couldn't read feature report 0xf2. Trying again with 0x0.");
+            SDL_zeroa(data);
+            size = ReadFeatureReport(device->dev, 0x00, data, sizeof(data));
+            if (size < 0) {
+                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                             "HIDAPI_DriverPS3_InitDevice(): Couldn't read feature report 0x00.");
+                return SDL_FALSE;
+            }
+#ifdef DEBUG_PS3_PROTOCOL
+            HIDAPI_DumpPacket("PS3 0x0 packet: size = %d", data, size);
+#endif
+        }
+#ifdef DEBUG_PS3_PROTOCOL
+        HIDAPI_DumpPacket("PS3 0xF2 packet: size = %d", data, size);
+#endif
+#else
         int size = ReadFeatureReport(device->dev, 0xf2, data, 17);
         if (size < 0) {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
@@ -175,6 +231,7 @@ static SDL_bool HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
             /* An output report could cause ShanWan controllers to rumble non-stop */
             SDL_hid_write(device->dev, data, 1);
         }
+#endif
     }
 
     device->type = SDL_GAMEPAD_TYPE_PS3;
@@ -210,6 +267,47 @@ static int HIDAPI_DriverPS3_UpdateEffects(SDL_HIDAPI_Device *device)
     return HIDAPI_DriverPS3_SendJoystickEffect(device, ctx->joystick, effects, sizeof(effects));
 }
 
+#ifdef SDL_PLATFORM_WIN32
+static int HIDAPI_DriverPS3_UpdateRumbleWindows(SDL_HIDAPI_Device *device)
+{
+    SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
+
+    Uint8 effects[] = {
+        0x0,                           /* Report Id */
+        k_EPS3SixaxisCommandSetMotors, /* 2 = Set Motors */
+        0x00, 0x00, 0x00,              /* padding */
+        0xff,                          /* Small Motor duration - 0xff is forever */
+        0x00,                          /* Small Motor off/on (0 or 1) */
+        0xff,                          /* Large Motor duration - 0xff is forever */
+        0x00                           /* Large Motor force (0 to 255) */
+    };
+
+    effects[6] = ctx->rumble_right ? 1 : 0; /* Small motor */
+    effects[8] = ctx->rumble_left;          /* Large motor */
+
+    return HIDAPI_DriverPS3_SendJoystickEffect(device, ctx->joystick, effects, sizeof(effects));
+}
+
+static int HIDAPI_DriverPS3_UpdateLEDsWindows(SDL_HIDAPI_Device *device)
+{
+    SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
+
+    Uint8 effects[] = {
+        0x0,                         /* Report Id */
+        k_EPS3SixaxisCommandSetLEDs, /* 1 = Set LEDs */
+        0x00, 0x00, 0x00,            /* padding */
+        0x00, 0x00, 0x00, 0x00       /* LED #4, LED #3, LED #2, LED #1 (0 = Off, 1 = On, 2 = Flashing) */
+    };
+
+    /* Turn on LED light on DS3 Controller for relevant player (player_index 0 lights up LED #1, player_index 1 lights up LED #2, etc) */
+    if (ctx->player_index < 4) {
+        effects[8 - ctx->player_index] = 1;
+    }
+
+    return HIDAPI_DriverPS3_SendJoystickEffect(device, ctx->joystick, effects, sizeof(effects));
+}
+#endif
+
 static void HIDAPI_DriverPS3_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
@@ -221,7 +319,14 @@ static void HIDAPI_DriverPS3_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL
     ctx->player_index = player_index;
 
     /* This will set the new LED state based on the new player index */
-    HIDAPI_DriverPS3_UpdateEffects(device);
+    if (!ctx->effects_updated) {
+#ifdef SDL_PLATFORM_WIN32
+        HIDAPI_DriverPS3_UpdateLEDsWindows(device);
+#else
+        HIDAPI_DriverPS3_UpdateEffects(device);
+#endif
+        ctx->effects_updated = SDL_TRUE;
+    }
 }
 
 static SDL_bool HIDAPI_DriverPS3_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
@@ -257,6 +362,12 @@ static int HIDAPI_DriverPS3_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
     ctx->rumble_left = (low_frequency_rumble >> 8);
     ctx->rumble_right = (high_frequency_rumble >> 8);
 
+#ifdef SDL_PLATFORM_WIN32
+    return HIDAPI_DriverPS3_UpdateRumbleWindows(device);
+#else
+    return HIDAPI_DriverPS3_UpdateEffects(device);
+#endif
+
     return HIDAPI_DriverPS3_UpdateEffects(device);
 }
 
@@ -278,14 +389,23 @@ static int HIDAPI_DriverPS3_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joysti
 static int HIDAPI_DriverPS3_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size)
 {
     Uint8 data[49];
-    int report_size, offset;
+    int report_size;
+#ifndef SDL_PLATFORM_WIN32
+    int offset;
+#endif
 
     SDL_zeroa(data);
 
     data[0] = k_EPS3ReportIdEffects;
     report_size = sizeof(data);
+
+/* No offset on Windows */
+#ifdef SDL_PLATFORM_WIN32
+    SDL_memcpy(&data[0], effect, SDL_min(sizeof(data), (size_t)size));
+#else
     offset = 1;
     SDL_memcpy(&data[offset], effect, SDL_min((sizeof(data) - offset), (size_t)size));
+#endif
 
     if (SDL_HIDAPI_SendRumble(device, data, report_size) != report_size) {
         return SDL_SetError("Couldn't send rumble packet");
@@ -490,6 +610,37 @@ static SDL_bool HIDAPI_DriverPS3_UpdateDevice(SDL_HIDAPI_Device *device)
         return SDL_FALSE;
     }
 
+/* On Windows with sixaxis.sys driver we need to use hid_get_feature_report instead of hid_read */
+#ifdef SDL_PLATFORM_WIN32
+    if (!joystick) {
+        return SDL_FALSE;
+    }
+
+    size = ReadFeatureReport(device->dev, 0x0, data, sizeof(data));
+    if (size < 0) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     "HIDAPI_DriverPS3_UpdateDevice(): Couldn't read feature report 0x00");
+        return SDL_FALSE;
+    }
+
+    switch (data[0]) {
+    case k_EPS3ReportIdState:
+        HIDAPI_DriverPS3_HandleStatePacket(joystick, ctx, &data[1], size - 1); /* report data starts in data[1] */
+
+        /* Wait for the first report to set the LED state after the controller stops blinking */
+        if (!ctx->effects_updated) {
+            HIDAPI_DriverPS3_UpdateLEDsWindows(device);
+            ctx->effects_updated = SDL_TRUE;
+        }
+
+        break;
+    default:
+#ifdef DEBUG_JOYSTICK
+        SDL_Log("Unknown PS3 packet: 0x%.2x\n", data[0]);
+#endif
+        break;
+    }
+#else
     while ((size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
 #ifdef DEBUG_PS3_PROTOCOL
         HIDAPI_DumpPacket("PS3 packet: size = %d", data, size);
@@ -531,6 +682,7 @@ static SDL_bool HIDAPI_DriverPS3_UpdateDevice(SDL_HIDAPI_Device *device)
             break;
         }
     }
+#endif
 
     if (size < 0) {
         /* Read error, device is disconnected */
