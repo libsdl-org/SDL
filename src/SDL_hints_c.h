@@ -27,5 +27,6 @@
 
 extern SDL_bool SDL_GetStringBoolean(const char *value, SDL_bool default_value);
 extern int SDL_GetStringInteger(const char *value, int default_value);
+extern void SDL_ClearHints(void);
 
 #endif /* SDL_hints_c_h_ */
