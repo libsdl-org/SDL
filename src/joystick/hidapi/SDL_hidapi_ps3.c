@@ -429,6 +429,7 @@ static float HIDAPI_DriverPS3_ScaleAccel(Sint16 value)
     return ((float)(value - 511) / 113.0f) * SDL_STANDARD_GRAVITY;
 }
 
+#ifndef SDL_PLATFORM_WIN32
 static void HIDAPI_DriverPS3_HandleMiniStatePacket(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
 {
     Sint16 axis;
@@ -496,6 +497,7 @@ static void HIDAPI_DriverPS3_HandleMiniStatePacket(SDL_Joystick *joystick, SDL_D
 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
+#endif
 
 static void HIDAPI_DriverPS3_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
 {
