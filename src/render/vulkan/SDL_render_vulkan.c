@@ -1171,7 +1171,7 @@ static SDL_bool VULKAN_FindMemoryTypeIndex(VULKAN_RenderData *rendererData, uint
     if (!foundExactMatch) {
         for (memoryTypeIndex = 0; memoryTypeIndex < rendererData->physicalDeviceMemoryProperties.memoryTypeCount; memoryTypeIndex++) {
             if (typeBits & (1 << memoryTypeIndex)) {
-                if (rendererData->physicalDeviceMemoryProperties.memoryTypes[memoryTypeIndex].propertyFlags & flags) {
+                if ((rendererData->physicalDeviceMemoryProperties.memoryTypes[memoryTypeIndex].propertyFlags & flags) == flags) {
                     break;
                 }
             }
