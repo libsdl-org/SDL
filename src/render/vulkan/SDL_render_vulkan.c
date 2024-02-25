@@ -2989,14 +2989,30 @@ static int VULKAN_UpdateViewport(SDL_Renderer *renderer)
     vkViewport.maxDepth = 1.0f;
     vkCmdSetViewport(rendererData->currentCommandBuffer, 0, 1, &vkViewport);
 
+    rendererData->viewportDirty = SDL_FALSE;
+    return 0;
+}
+
+static int VULKAN_UpdateClipRect(SDL_Renderer *renderer)
+{
+    VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->driverdata;
+    const SDL_Rect *viewport = &rendererData->currentViewport;
+
     VkRect2D scissor;
-    scissor.offset.x = viewport->x;
-    scissor.offset.y = viewport->y;
-    scissor.extent.width = viewport->w;
-    scissor.extent.height = viewport->h;
+    if (rendererData->currentCliprectEnabled) {
+        scissor.offset.x = viewport->x + rendererData->currentCliprect.x;
+        scissor.offset.y = viewport->y + rendererData->currentCliprect.y;
+        scissor.extent.width = rendererData->currentCliprect.w;
+        scissor.extent.height = rendererData->currentCliprect.h;
+    } else {
+        scissor.offset.x = viewport->x;
+        scissor.offset.y = viewport->y;
+        scissor.extent.width = viewport->w;
+        scissor.extent.height = viewport->h;
+    }
     vkCmdSetScissor(rendererData->currentCommandBuffer, 0, 1, &scissor);
 
-    rendererData->viewportDirty = SDL_FALSE;
+    rendererData->cliprectDirty = SDL_FALSE;
     return 0;
 }
 
@@ -3118,6 +3134,10 @@ static SDL_bool VULKAN_SetDrawState(SDL_Renderer *renderer, const SDL_RenderComm
             /* vertexShaderConstantsData.projectionAndView has changed */
             updateConstants = SDL_TRUE;
         }
+    }
+
+    if (rendererData->cliprectDirty) {
+        VULKAN_UpdateClipRect(renderer);
     }
 
     if (updateConstants == SDL_TRUE || SDL_memcmp(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof(*newmatrix)) != 0) {
@@ -3393,19 +3413,9 @@ static int VULKAN_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
         case SDL_RENDERCMD_SETCLIPRECT:
         {
             const SDL_Rect *rect = &cmd->data.cliprect.rect;
-            SDL_Rect viewport_cliprect;
             if (rendererData->currentCliprectEnabled != cmd->data.cliprect.enabled) {
                 rendererData->currentCliprectEnabled = cmd->data.cliprect.enabled;
                 rendererData->cliprectDirty = SDL_TRUE;
-            }
-            if (!rendererData->currentCliprectEnabled) {
-                /* If the clip rect is disabled, then the scissor rect should be the whole viewport,
-                   since direct3d12 doesn't allow disabling the scissor rectangle */
-                viewport_cliprect.x = 0;
-                viewport_cliprect.y = 0;
-                viewport_cliprect.w = rendererData->currentViewport.w;
-                viewport_cliprect.h = rendererData->currentViewport.h;
-                rect = &viewport_cliprect;
             }
             if (SDL_memcmp(&rendererData->currentCliprect, rect, sizeof(*rect)) != 0) {
                 SDL_copyp(&rendererData->currentCliprect, rect);
