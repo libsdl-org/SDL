@@ -2216,7 +2216,7 @@ SDL_RenderDriver METAL_RenderDriver = {
     {
         "metal",
         (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
-        9,
+        10,
         { SDL_PIXELFORMAT_ARGB8888,
           SDL_PIXELFORMAT_ABGR8888,
           SDL_PIXELFORMAT_XBGR2101010,
