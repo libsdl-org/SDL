@@ -934,8 +934,8 @@ extern "C" {
  *
  * The default is the value of SDL_HINT_JOYSTICK_HIDAPI on macOS, and "0" on other platforms.
  *
- * It is not possible to use this driver on Windows, due to limitations in the default drivers
- * installed. See https://github.com/ViGEm/DsHidMini for an alternative driver on Windows.
+ * Working with official Sony Windows driver (sixaxis.sys). This driver supports USB only, not Bluetooth.
+ * See https://github.com/ViGEm/DsHidMini for an alternative driver on Windows.
  *
  * This hint should be set before enumerating controllers.
  */
