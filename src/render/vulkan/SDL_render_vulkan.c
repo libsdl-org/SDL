@@ -29,6 +29,7 @@
 #define SDL_VULKAN_NUM_UPLOAD_BUFFERS           32
 #define SDL_VULKAN_MAX_DESCRIPTOR_SETS          4096
 
+#define SDL_VULKAN_VALIDATION_LAYER_NAME        "VK_LAYER_KHRONOS_validation"
 
 #define VK_NO_PROTOTYPES
 #include "../../video/SDL_vulkan_internal.h"
@@ -1478,7 +1479,6 @@ static SDL_bool VULKAN_InstanceExtensionFound(VULKAN_RenderData *rendererData, c
 
 static SDL_bool VULKAN_ValidationLayersFound()
 {
-    const char *validationLayerName = "VK_LAYER_KHRONOS_validation";
     uint32_t instanceLayerCount = 0;
     uint32_t i;
     SDL_bool foundValidation = SDL_FALSE;
@@ -1488,7 +1488,7 @@ static SDL_bool VULKAN_ValidationLayersFound()
         VkLayerProperties *instanceLayers = SDL_calloc(instanceLayerCount, sizeof(VkLayerProperties));
         vkEnumerateInstanceLayerProperties(&instanceLayerCount, instanceLayers);
         for (i = 0; i < instanceLayerCount; i++) {
-            if (!SDL_strcmp(validationLayerName, instanceLayers[i].layerName)) {
+            if (!SDL_strcmp(SDL_VULKAN_VALIDATION_LAYER_NAME, instanceLayers[i].layerName)) {
                 foundValidation = SDL_TRUE;
                 break;
             }
@@ -1507,6 +1507,7 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer)
     VkResult result = VK_SUCCESS;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
     SDL_bool createDebug = SDL_GetHintBoolean(SDL_HINT_RENDER_VULKAN_DEBUG, SDL_FALSE);
+    const char *validationLayerName[] = { SDL_VULKAN_VALIDATION_LAYER_NAME };
 
     if (SDL_Vulkan_LoadLibrary(NULL) < 0) {
         SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "SDL_Vulkan_LoadLibrary failed." );
@@ -1551,7 +1552,6 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer)
     }
     instanceCreateInfo.ppEnabledExtensionNames = (const char* const*) instanceExtensionsCopy;
     if (createDebug && VULKAN_ValidationLayersFound()) {
-        const char *validationLayerName[] = { "VK_LAYER_KHRONOS_validation" };
         instanceCreateInfo.ppEnabledLayerNames = validationLayerName;
         instanceCreateInfo.enabledLayerCount = 1;
     }
