@@ -740,6 +740,9 @@ The following hints have been renamed:
 * SDL_HINT_LINUX_JOYSTICK_DEADZONES => SDL_HINT_JOYSTICK_LINUX_DEADZONES
 * SDL_HINT_PS2_DYNAMIC_VSYNC => SDL_HINT_RENDER_PS2_DYNAMIC_VSYNC
 
+The following functions have been removed:
+* SDL_ClearHints() - replaced with SDL_ResetHints()
+
 ## SDL_init.h
 
 The following symbols have been renamed:

@@ -37,6 +37,7 @@
 /* Initialization code for SDL */
 
 #include "SDL_assert_c.h"
+#include "SDL_hints_c.h"
 #include "SDL_log_c.h"
 #include "SDL_properties_c.h"
 #include "audio/SDL_sysaudio.h"

@@ -61,7 +61,6 @@
 #define SDL_CleanupTLS SDL_CleanupTLS_REAL
 #define SDL_ClearComposition SDL_ClearComposition_REAL
 #define SDL_ClearError SDL_ClearError_REAL
-#define SDL_ClearHints SDL_ClearHints_REAL
 #define SDL_CloseGamepad SDL_CloseGamepad_REAL
 #define SDL_CloseJoystick SDL_CloseJoystick_REAL
 #define SDL_CloseSensor SDL_CloseSensor_REAL

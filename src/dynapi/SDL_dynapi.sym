@@ -37,7 +37,6 @@ SDL3_0.0.0 {
     SDL_CleanupTLS;
     SDL_ClearComposition;
     SDL_ClearError;
-    SDL_ClearHints;
     SDL_CloseGamepad;
     SDL_CloseJoystick;
     SDL_CloseSensor;
