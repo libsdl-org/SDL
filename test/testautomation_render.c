@@ -860,6 +860,63 @@ static int render_testViewport(void *arg)
 }
 
 /**
+ * Test clip rect
+ */
+static int render_testClipRect(void *arg)
+{
+    SDL_Surface *referenceSurface;
+    SDL_Rect cliprect;
+
+    cliprect.x = TESTRENDER_SCREEN_W / 3;
+    cliprect.y = TESTRENDER_SCREEN_H / 3;
+    cliprect.w = TESTRENDER_SCREEN_W / 2;
+    cliprect.h = TESTRENDER_SCREEN_H / 2;
+
+    /* Create expected result */
+    referenceSurface = SDL_CreateSurface(TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, RENDER_COMPARE_FORMAT);
+    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, NULL, RENDER_COLOR_CLEAR))
+    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &cliprect, RENDER_COLOR_GREEN))
+
+    /* Clear surface. */
+    clearScreen();
+
+    /* Set the cliprect and do a fill operation */
+    CHECK_FUNC(SDL_SetRenderClipRect, (renderer, &cliprect))
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
+    CHECK_FUNC(SDL_RenderFillRect, (renderer, NULL))
+    CHECK_FUNC(SDL_SetRenderClipRect, (renderer, NULL))
+
+    /* Check to see if final image matches. */
+    compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
+
+    /*
+     * Verify that clear ignores the cliprect
+     */
+
+    /* Create expected result */
+    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, NULL, RENDER_COLOR_GREEN))
+
+    /* Clear surface. */
+    clearScreen();
+
+    /* Set the cliprect and do a clear operation */
+    CHECK_FUNC(SDL_SetRenderClipRect, (renderer, &cliprect))
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
+    CHECK_FUNC(SDL_RenderClear, (renderer))
+    CHECK_FUNC(SDL_SetRenderClipRect, (renderer, NULL))
+
+    /* Check to see if final image matches. */
+    compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
+
+    /* Make current */
+    SDL_RenderPresent(renderer);
+
+    SDL_DestroySurface(referenceSurface);
+
+    return TEST_COMPLETED;
+}
+
+/**
  * Test logical size
  */
 static int render_testLogicalSize(void *arg)
@@ -1319,6 +1376,10 @@ static const SDLTest_TestCaseReference renderTest9 = {
 };
 
 static const SDLTest_TestCaseReference renderTest10 = {
+    (SDLTest_TestCaseFp)render_testClipRect, "render_testClipRect", "Tests clip rect", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference renderTest11 = {
     (SDLTest_TestCaseFp)render_testLogicalSize, "render_testLogicalSize", "Tests logical size", TEST_ENABLED
 };
 
@@ -1326,7 +1387,7 @@ static const SDLTest_TestCaseReference renderTest10 = {
 static const SDLTest_TestCaseReference *renderTests[] = {
     &renderTest1, &renderTest2, &renderTest3, &renderTest4,
     &renderTest5, &renderTest6, &renderTest7, &renderTest8,
-    &renderTest9, &renderTest10, NULL
+    &renderTest9, &renderTest10, &renderTest11, NULL
 };
 
 /* Render test suite (global) */
