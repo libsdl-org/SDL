@@ -1080,32 +1080,23 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
         }
     }
 
-#if 0 /* Actually, don't do this, it causes a huge startup time on some systems */
     {
         const SDL_BlendMode defaultBlendModes[] = {
-            SDL_BLENDMODE_NONE,
             SDL_BLENDMODE_BLEND,
-            SDL_BLENDMODE_ADD,
-            SDL_BLENDMODE_MOD,
-            SDL_BLENDMODE_MUL
         };
         const DXGI_FORMAT defaultRTVFormats[] = {
-            DXGI_FORMAT_R16G16B16A16_FLOAT,
-            DXGI_FORMAT_R10G10B10A2_UNORM,
             DXGI_FORMAT_B8G8R8A8_UNORM,
-            DXGI_FORMAT_B8G8R8X8_UNORM,
-            DXGI_FORMAT_R8_UNORM
         };
         int i, j, k, l;
 
-        /* Create all the default pipeline state objects
-           (will add everything except custom blend states) */
+        /* Create a few default pipeline state objects, to verify that this renderer will work */
         for (i = 0; i < NUM_SHADERS; ++i) {
             for (j = 0; j < SDL_arraysize(defaultBlendModes); ++j) {
                 for (k = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT; k < D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH; ++k) {
                     for (l = 0; l < SDL_arraysize(defaultRTVFormats); ++l) {
                         if (!D3D12_CreatePipelineState(renderer, (D3D12_Shader)i, defaultBlendModes[j], (D3D12_PRIMITIVE_TOPOLOGY_TYPE)k, defaultRTVFormats[l])) {
                             /* D3D12_CreatePipelineState will set the SDL error, if it fails */
+                            result = E_FAIL;
                             goto done;
                         }
                     }
@@ -1113,7 +1104,6 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
             }
         }
     }
-#endif /* 0 */
 
     /* Create default vertex buffers  */
     for (i = 0; i < SDL_D3D12_NUM_VERTEX_BUFFERS; ++i) {
