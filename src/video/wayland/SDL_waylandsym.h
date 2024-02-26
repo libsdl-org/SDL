@@ -228,6 +228,10 @@ SDL_WAYLAND_SYM_OPT(void, libdecor_frame_get_max_content_size, (const struct lib
                                                             int *))
 #endif
 
+#if defined(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR) || SDL_LIBDECOR_CHECK_VERSION(0, 3, 0)
+SDL_WAYLAND_SYM_OPT(enum libdecor_wm_capabilities, libdecor_frame_get_wm_capabilities, (struct libdecor_frame *))
+#endif
+
 #endif
 
 #undef SDL_WAYLAND_MODULE

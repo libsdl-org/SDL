@@ -194,13 +194,13 @@ static void SetMinMaxDimensions(SDL_Window *window)
     } else
 #endif
         if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
-        if (wind->shell_surface.xdg.roleobj.toplevel == NULL) {
+        if (wind->shell_surface.xdg.toplevel.xdg_toplevel == NULL) {
             return; // Can't do anything yet, wait for ShowWindow
         }
-        xdg_toplevel_set_min_size(wind->shell_surface.xdg.roleobj.toplevel,
+        xdg_toplevel_set_min_size(wind->shell_surface.xdg.toplevel.xdg_toplevel,
                                   min_width,
                                   min_height);
-        xdg_toplevel_set_max_size(wind->shell_surface.xdg.roleobj.toplevel,
+        xdg_toplevel_set_max_size(wind->shell_surface.xdg.toplevel.xdg_toplevel,
                                   max_width,
                                   max_height);
     }
@@ -262,8 +262,8 @@ static void RepositionPopup(SDL_Window *window, bool use_current_position)
     SDL_WindowData *wind = window->internal;
 
     if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP &&
-        wind->shell_surface.xdg.roleobj.popup.positioner &&
-        xdg_popup_get_version(wind->shell_surface.xdg.roleobj.popup.popup) >= XDG_POPUP_REPOSITION_SINCE_VERSION) {
+        wind->shell_surface.xdg.popup.xdg_positioner &&
+        xdg_popup_get_version(wind->shell_surface.xdg.popup.xdg_popup) >= XDG_POPUP_REPOSITION_SINCE_VERSION) {
         int x = use_current_position ? window->x : window->floating.x;
         int y = use_current_position ? window->y : window->floating.y;
 
@@ -273,11 +273,11 @@ static void RepositionPopup(SDL_Window *window, bool use_current_position)
             y = PixelToPoint(window->parent, y);
         }
         AdjustPopupOffset(window, &x, &y);
-        xdg_positioner_set_anchor_rect(wind->shell_surface.xdg.roleobj.popup.positioner, 0, 0, window->parent->internal->current.logical_width, window->parent->internal->current.logical_height);
-        xdg_positioner_set_size(wind->shell_surface.xdg.roleobj.popup.positioner, wind->current.logical_width, wind->current.logical_height);
-        xdg_positioner_set_offset(wind->shell_surface.xdg.roleobj.popup.positioner, x, y);
-        xdg_popup_reposition(wind->shell_surface.xdg.roleobj.popup.popup,
-                             wind->shell_surface.xdg.roleobj.popup.positioner,
+        xdg_positioner_set_anchor_rect(wind->shell_surface.xdg.popup.xdg_positioner, 0, 0, window->parent->internal->current.logical_width, window->parent->internal->current.logical_height);
+        xdg_positioner_set_size(wind->shell_surface.xdg.popup.xdg_positioner, wind->current.logical_width, wind->current.logical_height);
+        xdg_positioner_set_offset(wind->shell_surface.xdg.popup.xdg_positioner, x, y);
+        xdg_popup_reposition(wind->shell_surface.xdg.popup.xdg_popup,
+                             wind->shell_surface.xdg.popup.xdg_positioner,
                              0);
     }
 }
@@ -602,7 +602,7 @@ static void SetFullscreen(SDL_Window *window, struct wl_output *output)
     } else
 #endif
         if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
-        if (wind->shell_surface.xdg.roleobj.toplevel == NULL) {
+        if (wind->shell_surface.xdg.toplevel.xdg_toplevel == NULL) {
             return; // Can't do anything yet, wait for ShowWindow
         }
 
@@ -612,9 +612,9 @@ static void SetFullscreen(SDL_Window *window, struct wl_output *output)
             Wayland_SetWindowResizable(SDL_GetVideoDevice(), window, true);
             wl_surface_commit(wind->surface);
 
-            xdg_toplevel_set_fullscreen(wind->shell_surface.xdg.roleobj.toplevel, output);
+            xdg_toplevel_set_fullscreen(wind->shell_surface.xdg.toplevel.xdg_toplevel, output);
         } else {
-            xdg_toplevel_unset_fullscreen(wind->shell_surface.xdg.roleobj.toplevel);
+            xdg_toplevel_unset_fullscreen(wind->shell_surface.xdg.toplevel.xdg_toplevel);
         }
     }
 
@@ -971,11 +971,33 @@ static void handle_xdg_configure_toplevel_bounds(void *data,
     // NOP
 }
 
-void handle_xdg_toplevel_wm_capabilities(void *data,
-                                         struct xdg_toplevel *xdg_toplevel,
-                                         struct wl_array *capabilities)
+static void handle_xdg_toplevel_wm_capabilities(void *data,
+                                                struct xdg_toplevel *xdg_toplevel,
+                                                struct wl_array *capabilities)
 {
-    // NOP
+    SDL_WindowData *wind = (SDL_WindowData *)data;
+    enum xdg_toplevel_wm_capabilities *wm_cap;
+
+    wind->wm_caps = 0;
+
+    wl_array_for_each (wm_cap, capabilities) {
+        switch (*wm_cap) {
+        case XDG_TOPLEVEL_WM_CAPABILITIES_WINDOW_MENU:
+            wind->wm_caps |= WAYLAND_WM_CAPS_WINDOW_MENU;
+            break;
+        case XDG_TOPLEVEL_WM_CAPABILITIES_MAXIMIZE:
+            wind->wm_caps |= WAYLAND_WM_CAPS_MAXIMIZE;
+            break;
+        case XDG_TOPLEVEL_WM_CAPABILITIES_FULLSCREEN:
+            wind->wm_caps |= WAYLAND_WM_CAPS_FULLSCREEN;
+            break;
+        case XDG_TOPLEVEL_WM_CAPABILITIES_MINIMIZE:
+            wind->wm_caps |= WAYLAND_WM_CAPS_MINIMIZE;
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 static const struct xdg_toplevel_listener toplevel_listener_xdg = {
@@ -1131,7 +1153,6 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
     bool tiled = false;
     bool suspended = false;
     bool resizing = false;
-    bool floating;
 
     static const enum libdecor_window_state tiled_states = (LIBDECOR_WINDOW_STATE_TILED_LEFT | LIBDECOR_WINDOW_STATE_TILED_RIGHT |
                                                             LIBDECOR_WINDOW_STATE_TILED_TOP | LIBDECOR_WINDOW_STATE_TILED_BOTTOM);
@@ -1149,7 +1170,7 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
         resizing = (window_state & LIBDECOR_WINDOW_STATE_RESIZING) != 0;
 #endif
     }
-    floating = !(fullscreen || maximized || tiled);
+    const bool floating = !(fullscreen || maximized || tiled);
 
     UpdateWindowFullscreen(window, fullscreen);
 
@@ -1320,6 +1341,24 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
     wind->active = active;
     window->tiled = tiled;
     wind->resizing = resizing;
+
+    // Update the window manager capabilities.
+#if SDL_LIBDECOR_CHECK_VERSION(0, 3, 0)
+    enum libdecor_wm_capabilities caps;
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR
+    if (libdecor_frame_get_wm_capabilities) {
+        caps = libdecor_frame_get_wm_capabilities(wind->shell_surface.libdecor.frame);
+#else
+    caps = libdecor_frame_get_wm_capabilities(wind->shell_surface.libdecor.frame);
+    {
+#endif
+        wind->wm_caps = 0;
+        wind->wm_caps |= caps & LIBDECOR_WM_CAPABILITIES_WINDOW_MENU ? WAYLAND_WM_CAPS_WINDOW_MENU : 0;
+        wind->wm_caps |= caps & LIBDECOR_WM_CAPABILITIES_MAXIMIZE ? WAYLAND_WM_CAPS_MAXIMIZE : 0;
+        wind->wm_caps |= caps & LIBDECOR_WM_CAPABILITIES_FULLSCREEN ? WAYLAND_WM_CAPS_FULLSCREEN : 0;
+        wind->wm_caps |= caps & LIBDECOR_WM_CAPABILITIES_MINIMIZE ? WAYLAND_WM_CAPS_MINIMIZE : 0;
+    }
+#endif
 
     // Calculate the new window geometry
     if (ConfigureWindowGeometry(window)) {
@@ -1602,8 +1641,8 @@ static struct xdg_toplevel *GetToplevelForWindow(SDL_WindowData *wind)
             return libdecor_frame_get_xdg_toplevel(wind->shell_surface.libdecor.frame);
         } else
 #endif
-            if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL && wind->shell_surface.xdg.roleobj.toplevel) {
-                return wind->shell_surface.xdg.roleobj.toplevel;
+            if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL && wind->shell_surface.xdg.toplevel.xdg_toplevel) {
+                return wind->shell_surface.xdg.toplevel.xdg_toplevel;
             }
     }
 
@@ -1801,13 +1840,13 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             }
 
             // Set up the positioner for the popup and configure the constraints
-            data->shell_surface.xdg.roleobj.popup.positioner = xdg_wm_base_create_positioner(c->shell.xdg);
-            xdg_positioner_set_anchor(data->shell_surface.xdg.roleobj.popup.positioner, XDG_POSITIONER_ANCHOR_TOP_LEFT);
-            xdg_positioner_set_anchor_rect(data->shell_surface.xdg.roleobj.popup.positioner, 0, 0, parent->internal->current.logical_width, parent->internal->current.logical_width);
-            xdg_positioner_set_constraint_adjustment(data->shell_surface.xdg.roleobj.popup.positioner,
+            data->shell_surface.xdg.popup.xdg_positioner = xdg_wm_base_create_positioner(c->shell.xdg);
+            xdg_positioner_set_anchor(data->shell_surface.xdg.popup.xdg_positioner, XDG_POSITIONER_ANCHOR_TOP_LEFT);
+            xdg_positioner_set_anchor_rect(data->shell_surface.xdg.popup.xdg_positioner, 0, 0, parent->internal->current.logical_width, parent->internal->current.logical_width);
+            xdg_positioner_set_constraint_adjustment(data->shell_surface.xdg.popup.xdg_positioner,
                                                      XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_X | XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_Y);
-            xdg_positioner_set_gravity(data->shell_surface.xdg.roleobj.popup.positioner, XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT);
-            xdg_positioner_set_size(data->shell_surface.xdg.roleobj.popup.positioner, data->current.logical_width, data->current.logical_height);
+            xdg_positioner_set_gravity(data->shell_surface.xdg.popup.xdg_positioner, XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT);
+            xdg_positioner_set_size(data->shell_surface.xdg.popup.xdg_positioner, data->current.logical_width, data->current.logical_height);
 
             // Set the popup initial position
             position_x = window->x;
@@ -1818,13 +1857,13 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 position_y = PixelToPoint(window->parent, position_y);
             }
             AdjustPopupOffset(window, &position_x, &position_y);
-            xdg_positioner_set_offset(data->shell_surface.xdg.roleobj.popup.positioner, position_x, position_y);
+            xdg_positioner_set_offset(data->shell_surface.xdg.popup.xdg_positioner, position_x, position_y);
 
             // Assign the popup role
-            data->shell_surface.xdg.roleobj.popup.popup = xdg_surface_get_popup(data->shell_surface.xdg.surface,
+            data->shell_surface.xdg.popup.xdg_popup = xdg_surface_get_popup(data->shell_surface.xdg.surface,
                                                                                 parent_xdg_surface,
-                                                                                data->shell_surface.xdg.roleobj.popup.positioner);
-            xdg_popup_add_listener(data->shell_surface.xdg.roleobj.popup.popup, &popup_listener_xdg, data);
+                                                                                data->shell_surface.xdg.popup.xdg_positioner);
+            xdg_popup_add_listener(data->shell_surface.xdg.popup.xdg_popup, &popup_listener_xdg, data);
 
             if (window->flags & SDL_WINDOW_TOOLTIP) {
                 struct wl_region *region;
@@ -1840,12 +1879,12 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 }
             }
 
-            SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_POPUP_POINTER, data->shell_surface.xdg.roleobj.popup.popup);
-            SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_POSITIONER_POINTER, data->shell_surface.xdg.roleobj.popup.positioner);
+            SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_POPUP_POINTER, data->shell_surface.xdg.popup.xdg_popup);
+            SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_POSITIONER_POINTER, data->shell_surface.xdg.popup.xdg_positioner);
         } else {
-            data->shell_surface.xdg.roleobj.toplevel = xdg_surface_get_toplevel(data->shell_surface.xdg.surface);
-            xdg_toplevel_set_app_id(data->shell_surface.xdg.roleobj.toplevel, data->app_id);
-            xdg_toplevel_add_listener(data->shell_surface.xdg.roleobj.toplevel, &toplevel_listener_xdg, data);
+            data->shell_surface.xdg.toplevel.xdg_toplevel = xdg_surface_get_toplevel(data->shell_surface.xdg.surface);
+            xdg_toplevel_set_app_id(data->shell_surface.xdg.toplevel.xdg_toplevel, data->app_id);
+            xdg_toplevel_add_listener(data->shell_surface.xdg.toplevel.xdg_toplevel, &toplevel_listener_xdg, data);
 
             if (c->zxdg_exporter_v2) {
                 data->exported = zxdg_exporter_v2_export_toplevel(c->zxdg_exporter_v2, data->surface);
@@ -1854,11 +1893,11 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
             if (c->xdg_toplevel_icon_manager_v1 && data->xdg_toplevel_icon_v1) {
                 xdg_toplevel_icon_manager_v1_set_icon(_this->internal->xdg_toplevel_icon_manager_v1,
-                                                      data->shell_surface.xdg.roleobj.toplevel,
+                                                      data->shell_surface.xdg.toplevel.xdg_toplevel,
                                                       data->xdg_toplevel_icon_v1);
             }
 
-            SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, data->shell_surface.xdg.roleobj.toplevel);
+            SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, data->shell_surface.xdg.toplevel.xdg_toplevel);
         }
     }
 
@@ -1898,8 +1937,8 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         }
 
         // Create the window decorations
-        if (data->shell_surface_type != WAYLAND_SURFACE_XDG_POPUP && data->shell_surface.xdg.roleobj.toplevel && c->decoration_manager) {
-            data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.roleobj.toplevel);
+        if (data->shell_surface_type != WAYLAND_SURFACE_XDG_POPUP && data->shell_surface.xdg.toplevel.xdg_toplevel && c->decoration_manager) {
+            data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.toplevel.xdg_toplevel);
             zxdg_toplevel_decoration_v1_add_listener(data->server_decoration,
                                                      &decoration_listener,
                                                      window);
@@ -1977,7 +2016,7 @@ static void Wayland_ReleasePopup(SDL_VideoDevice *_this, SDL_Window *popup)
     }
 
     // This may already be freed by a parent popup!
-    if (popupdata->shell_surface.xdg.roleobj.popup.popup == NULL) {
+    if (popupdata->shell_surface.xdg.popup.xdg_popup == NULL) {
         return;
     }
 
@@ -1994,10 +2033,10 @@ static void Wayland_ReleasePopup(SDL_VideoDevice *_this, SDL_Window *popup)
         }
     }
 
-    xdg_popup_destroy(popupdata->shell_surface.xdg.roleobj.popup.popup);
-    xdg_positioner_destroy(popupdata->shell_surface.xdg.roleobj.popup.positioner);
-    popupdata->shell_surface.xdg.roleobj.popup.popup = NULL;
-    popupdata->shell_surface.xdg.roleobj.popup.positioner = NULL;
+    xdg_popup_destroy(popupdata->shell_surface.xdg.popup.xdg_popup);
+    xdg_positioner_destroy(popupdata->shell_surface.xdg.popup.xdg_positioner);
+    popupdata->shell_surface.xdg.popup.xdg_popup = NULL;
+    popupdata->shell_surface.xdg.popup.xdg_positioner = NULL;
 
     SDL_PropertiesID props = SDL_GetWindowProperties(popup);
     SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_POPUP_POINTER, NULL);
@@ -2061,9 +2100,9 @@ void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
         if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
         Wayland_ReleasePopup(_this, window);
-    } else if (wind->shell_surface.xdg.roleobj.toplevel) {
-        xdg_toplevel_destroy(wind->shell_surface.xdg.roleobj.toplevel);
-        wind->shell_surface.xdg.roleobj.toplevel = NULL;
+    } else if (wind->shell_surface.xdg.toplevel.xdg_toplevel) {
+        xdg_toplevel_destroy(wind->shell_surface.xdg.toplevel.xdg_toplevel);
+        wind->shell_surface.xdg.toplevel.xdg_toplevel = NULL;
         SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, NULL);
     }
     if (wind->shell_surface.xdg.surface) {
@@ -2239,10 +2278,10 @@ void Wayland_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
         // Note that xdg-shell does NOT provide a way to unset minimize!
         if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
-            if (wind->shell_surface.xdg.roleobj.toplevel == NULL) {
+            if (wind->shell_surface.xdg.toplevel.xdg_toplevel == NULL) {
                 return; // Can't do anything yet, wait for ShowWindow
             }
-            xdg_toplevel_unset_maximized(wind->shell_surface.xdg.roleobj.toplevel);
+            xdg_toplevel_unset_maximized(wind->shell_surface.xdg.toplevel.xdg_toplevel);
         }
 }
 
@@ -2313,13 +2352,13 @@ void Wayland_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
     } else
 #endif
         if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
-        if (wind->shell_surface.xdg.roleobj.toplevel == NULL) {
+        if (wind->shell_surface.xdg.toplevel.xdg_toplevel == NULL) {
             return; // Can't do anything yet, wait for ShowWindow
         }
 
         // Commit to preserve any pending size data.
         wl_surface_commit(wind->surface);
-        xdg_toplevel_set_maximized(wind->shell_surface.xdg.roleobj.toplevel);
+        xdg_toplevel_set_maximized(wind->shell_surface.xdg.toplevel.xdg_toplevel);
     }
 
     ++wind->maximized_deadline_count;
@@ -2331,7 +2370,10 @@ void Wayland_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *wind = window->internal;
 
-    // TODO: Check compositor capabilities to see if minimizing is supported
+    if (!(wind->wm_caps & WAYLAND_WM_CAPS_MINIMIZE)) {
+        return;
+    }
+
 #ifdef HAVE_LIBDECOR_H
     if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
         if (!wind->shell_surface.libdecor.frame) {
@@ -2342,10 +2384,10 @@ void Wayland_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
     } else
 #endif
         if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
-        if (wind->shell_surface.xdg.roleobj.toplevel == NULL) {
+        if (wind->shell_surface.xdg.toplevel.xdg_toplevel == NULL) {
             return; // Can't do anything yet, wait for ShowWindow
         }
-        xdg_toplevel_set_minimized(wind->shell_surface.xdg.roleobj.toplevel);
+        xdg_toplevel_set_minimized(wind->shell_surface.xdg.toplevel.xdg_toplevel);
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
     }
 }
@@ -2419,6 +2461,9 @@ bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
 
     data->waylandData = c;
     data->sdlwindow = window;
+
+    // Default to all capabilities
+    data->wm_caps = WAYLAND_WM_CAPS_ALL;
 
     data->scale_factor = 1.0;
 
@@ -2597,8 +2642,8 @@ bool Wayland_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 
     // Only popup windows can be positioned relative to the parent.
     if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
-        if (wind->shell_surface.xdg.roleobj.popup.popup &&
-            xdg_popup_get_version(wind->shell_surface.xdg.roleobj.popup.popup) < XDG_POPUP_REPOSITION_SINCE_VERSION) {
+        if (wind->shell_surface.xdg.popup.xdg_popup &&
+            xdg_popup_get_version(wind->shell_surface.xdg.popup.xdg_popup) < XDG_POPUP_REPOSITION_SINCE_VERSION) {
             return SDL_Unsupported();
         }
 
@@ -2729,8 +2774,8 @@ void Wayland_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
         libdecor_frame_set_title(wind->shell_surface.libdecor.frame, title);
     } else
 #endif
-        if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL && wind->shell_surface.xdg.roleobj.toplevel) {
-        xdg_toplevel_set_title(wind->shell_surface.xdg.roleobj.toplevel, title);
+        if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL && wind->shell_surface.xdg.toplevel.xdg_toplevel) {
+        xdg_toplevel_set_title(wind->shell_surface.xdg.toplevel.xdg_toplevel, title);
     }
 }
 
@@ -2768,8 +2813,8 @@ bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
         toplevel = libdecor_frame_get_xdg_toplevel(wind->shell_surface.libdecor.frame);
     } else
 #endif
-        if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL && wind->shell_surface.xdg.roleobj.toplevel) {
-        toplevel = wind->shell_surface.xdg.roleobj.toplevel;
+        if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL && wind->shell_surface.xdg.toplevel.xdg_toplevel) {
+        toplevel = wind->shell_surface.xdg.toplevel.xdg_toplevel;
     }
 
     if (toplevel) {
@@ -2806,9 +2851,9 @@ void Wayland_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
         }
     } else
 #endif
-        if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
-        if (wind->shell_surface.xdg.roleobj.toplevel) {
-            xdg_toplevel_show_window_menu(wind->shell_surface.xdg.roleobj.toplevel, wind->waylandData->input->seat, wind->waylandData->input->last_implicit_grab_serial, x, y);
+    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
+        if (wind->shell_surface.xdg.toplevel.xdg_toplevel) {
+            xdg_toplevel_show_window_menu(wind->shell_surface.xdg.toplevel.xdg_toplevel, wind->waylandData->input->seat, wind->waylandData->input->last_implicit_grab_serial, x, y);
         }
     }
 }

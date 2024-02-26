@@ -56,13 +56,16 @@ struct SDL_WindowData
             struct xdg_surface *surface;
             union
             {
-                struct xdg_toplevel *toplevel;
                 struct
                 {
-                    struct xdg_popup *popup;
-                    struct xdg_positioner *positioner;
+                    struct xdg_toplevel *xdg_toplevel;
+                } toplevel;
+                struct
+                {
+                    struct xdg_popup *xdg_popup;
+                    struct xdg_positioner *xdg_positioner;
                 } popup;
-            } roleobj;
+            };
             bool initial_configure_seen;
         } xdg;
     } shell_surface;
@@ -82,6 +85,18 @@ struct SDL_WindowData
         WAYLAND_SURFACE_STATUS_SHOW_PENDING,
         WAYLAND_SURFACE_STATUS_SHOWN
     } surface_status;
+    enum
+    {
+        WAYLAND_WM_CAPS_WINDOW_MENU = 0x01,
+        WAYLAND_WM_CAPS_MAXIMIZE = 0x02,
+        WAYLAND_WM_CAPS_FULLSCREEN = 0x04,
+        WAYLAND_WM_CAPS_MINIMIZE = 0x08,
+
+        WAYLAND_WM_CAPS_ALL = WAYLAND_WM_CAPS_WINDOW_MENU |
+                              WAYLAND_WM_CAPS_MAXIMIZE |
+                              WAYLAND_WM_CAPS_FULLSCREEN |
+                              WAYLAND_WM_CAPS_MINIMIZE
+    } wm_caps;
 
     struct wl_egl_window *egl_window;
     struct SDL_WaylandInput *keyboard_device;
