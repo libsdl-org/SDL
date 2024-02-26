@@ -165,6 +165,7 @@ extern void SDL_WAYLAND_UnloadSymbols(void);
 #define libdecor_frame_is_floating              (*WAYLAND_libdecor_frame_is_floating)
 #define libdecor_frame_set_parent               (*WAYLAND_libdecor_frame_set_parent)
 #define libdecor_frame_show_window_menu         (*WAYLAND_libdecor_frame_show_window_menu)
+#define libdecor_frame_get_wm_capabilities      (*WAYLAND_libdecor_frame_get_wm_capabilities)
 #define libdecor_frame_get_xdg_surface          (*WAYLAND_libdecor_frame_get_xdg_surface)
 #define libdecor_frame_get_xdg_toplevel         (*WAYLAND_libdecor_frame_get_xdg_toplevel)
 #define libdecor_frame_translate_coordinate     (*WAYLAND_libdecor_frame_translate_coordinate)
