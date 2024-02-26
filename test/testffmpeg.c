@@ -259,6 +259,10 @@ static Uint32 GetTextureFormat(enum AVPixelFormat format)
         return SDL_PIXELFORMAT_YUY2;
     case AV_PIX_FMT_UYVY422:
         return SDL_PIXELFORMAT_UYVY;
+    case AV_PIX_FMT_NV12:
+        return SDL_PIXELFORMAT_NV12;
+    case AV_PIX_FMT_NV21:
+        return SDL_PIXELFORMAT_NV21;
     default:
         return SDL_PIXELFORMAT_UNKNOWN;
     }
