@@ -1016,6 +1016,9 @@ int main(int argc, char *argv[])
 #elif !defined(SDL_PLATFORM_WIN32)
     window_flags |= SDL_WINDOW_OPENGL;
 #endif
+    if (SDL_GetHint(SDL_HINT_RENDER_DRIVER) != NULL) {
+        CreateWindowAndRenderer(window_flags, SDL_GetHint(SDL_HINT_RENDER_DRIVER));
+    }
 #ifdef HAVE_EGL
     /* Try to create an EGL compatible window for DRM hardware frame support */
     if (!window) {
