@@ -308,11 +308,15 @@ typedef struct
     int *currentUploadBuffer;
 
     /* Data for updating constants */
-    VULKAN_Buffer *constantBuffers;
+    VULKAN_Buffer **constantBuffers;
+    uint32_t *numConstantBuffers;
+    uint32_t currentConstantBufferIndex;
     int32_t currentConstantBufferOffset;
 
     VkSampler samplers[SDL_VULKAN_NUM_SAMPLERS];
-    VkDescriptorPool *descriptorPools;
+    VkDescriptorPool **descriptorPools;
+    uint32_t *numDescriptorPools;
+    uint32_t currentDescriptorPoolIndex;
     uint32_t currentDescriptorSetIndex;
 
     int pipelineStateCount;
@@ -410,6 +414,7 @@ static void VULKAN_DestroyImage(VULKAN_RenderData *rendererData, VULKAN_Image *v
 static void VULKAN_ResetCommandList(VULKAN_RenderData *rendererData);
 static SDL_bool VULKAN_FindMemoryTypeIndex(VULKAN_RenderData *rendererData, uint32_t typeBits, VkMemoryPropertyFlags requiredFlags, VkMemoryPropertyFlags desiredFlags, uint32_t *memoryTypeIndexOut);
 static VkResult VULKAN_CreateWindowSizeDependentResources(SDL_Renderer *renderer);
+static VkDescriptorPool VULKAN_AllocateDescriptorPool(VULKAN_RenderData *rendererData);
 
 static void VULKAN_DestroyAll(SDL_Renderer *renderer)
 {
@@ -500,13 +505,17 @@ static void VULKAN_DestroyAll(SDL_Renderer *renderer)
         rendererData->commandPool = VK_NULL_HANDLE;
     }
     if (rendererData->descriptorPools) {
+        SDL_assert(rendererData->numDescriptorPools);
         for (uint32_t i = 0; i < rendererData->swapchainImageCount; i++) {
-            if (rendererData->descriptorPools[i] != VK_NULL_HANDLE) {
-                vkDestroyDescriptorPool(rendererData->device, rendererData->descriptorPools[i], NULL);
+            for (uint32_t j = 0; j < rendererData->numDescriptorPools[i]; j++) {
+                if (rendererData->descriptorPools[i][j] != VK_NULL_HANDLE) {
+                    vkDestroyDescriptorPool(rendererData->device, rendererData->descriptorPools[i][j], NULL);
+                }
             }
+            SDL_free(rendererData->descriptorPools[i]);
         }
         SDL_free(rendererData->descriptorPools);
-        rendererData->descriptorPools = NULL;
+        SDL_free(rendererData->numDescriptorPools);
     }
     for (uint32_t i = 0; i < NUM_SHADERS; i++) {
         if (rendererData->vertexShaderModules[i] != VK_NULL_HANDLE) {
@@ -544,10 +553,15 @@ static void VULKAN_DestroyAll(SDL_Renderer *renderer)
     }
 
     if (rendererData->constantBuffers) {
+        SDL_assert(rendererData->numConstantBuffers);
         for (uint32_t i = 0; i < rendererData->swapchainImageCount; ++i) {
-            VULKAN_DestroyBuffer(rendererData, &rendererData->constantBuffers[i]);
+            for (uint32_t j = 0; j < rendererData->numConstantBuffers[i]; j++) {
+                VULKAN_DestroyBuffer(rendererData, &rendererData->constantBuffers[i][j]);
+            }
+            SDL_free(rendererData->constantBuffers[i]);
         }
         SDL_free(rendererData->constantBuffers);
+        SDL_free(rendererData->numConstantBuffers);
         rendererData->constantBuffers = NULL;
     }
 
@@ -899,7 +913,9 @@ static void VULKAN_WaitForGPU(VULKAN_RenderData *rendererData)
 static void VULKAN_ResetCommandList(VULKAN_RenderData *rendererData)
 {
     vkResetCommandBuffer(rendererData->currentCommandBuffer, 0);
-    vkResetDescriptorPool(rendererData->device, rendererData->descriptorPools[rendererData->currentCommandBufferIndex], 0);
+    for (uint32_t i = 0; i < rendererData->numDescriptorPools[rendererData->currentCommandBufferIndex]; i++) {
+        vkResetDescriptorPool(rendererData->device, rendererData->descriptorPools[rendererData->currentCommandBufferIndex][i], 0);
+    }
 
     VkCommandBufferBeginInfo beginInfo = { 0 };
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -911,7 +927,9 @@ static void VULKAN_ResetCommandList(VULKAN_RenderData *rendererData)
     rendererData->issueBatch = SDL_FALSE;
     rendererData->cliprectDirty = SDL_TRUE;
     rendererData->currentDescriptorSetIndex = 0;
+    rendererData->currentDescriptorPoolIndex = 0;
     rendererData->currentConstantBufferOffset = -1;
+    rendererData->currentConstantBufferIndex = 0;
 
     /* Release any upload buffers that were inflight */
     for (int i = 0; i < rendererData->currentUploadBuffer[rendererData->currentCommandBufferIndex]; ++i) {
@@ -2114,35 +2132,29 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         return result;
     }
 
-    /* Create descriptor pools */
-     if (rendererData->descriptorPools) {
+    /* Create descriptor pools - start by allocating one per swapchain image, let it grow if more are needed */
+    if (rendererData->descriptorPools) {
+        SDL_assert(rendererData->numDescriptorPools);
         for (uint32_t i = 0; i < rendererData->swapchainImageCount; i++) {
-            if (rendererData->descriptorPools[i] != VK_NULL_HANDLE) {
-                vkDestroyDescriptorPool(rendererData->device, rendererData->descriptorPools[i], NULL);
+            for (uint32_t j = 0; j < rendererData->numDescriptorPools[i]; j++) {
+                if (rendererData->descriptorPools[i][j] != VK_NULL_HANDLE) {
+                    vkDestroyDescriptorPool(rendererData->device, rendererData->descriptorPools[i][j], NULL);
+                }
             }
+            SDL_free(rendererData->descriptorPools[i]);
         }
         SDL_free(rendererData->descriptorPools);
+        SDL_free(rendererData->numDescriptorPools);
     }
-    rendererData->descriptorPools = SDL_calloc(sizeof(VkDescriptorPool), rendererData->swapchainImageCount);
+    rendererData->descriptorPools = SDL_calloc(sizeof(VkDescriptorPool*), rendererData->swapchainImageCount);
+    rendererData->numDescriptorPools = SDL_calloc(sizeof(uint32_t), rendererData->swapchainImageCount);
     for (uint32_t i = 0; i < rendererData->swapchainImageCount; i++) {
-        VkDescriptorPoolSize descriptorPoolSizes[2];
-        descriptorPoolSizes[0].descriptorCount = SDL_VULKAN_MAX_DESCRIPTOR_SETS;
-        descriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_SAMPLER;
-
-        /* Allocate enough to hold a maximum of each descriptor set having YUV textures */
-        const int numTexturesPerYUV = 3;
-        descriptorPoolSizes[1].descriptorCount = SDL_VULKAN_MAX_DESCRIPTOR_SETS * numTexturesPerYUV;
-        descriptorPoolSizes[1].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-
-        VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = { 0 };
-        descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        descriptorPoolCreateInfo.poolSizeCount = SDL_arraysize(descriptorPoolSizes);
-        descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes;
-        descriptorPoolCreateInfo.maxSets = SDL_VULKAN_MAX_DESCRIPTOR_SETS;
-        result = vkCreateDescriptorPool(rendererData->device, &descriptorPoolCreateInfo, NULL, &rendererData->descriptorPools[i]);
+        /* Start by just allocating one pool, it will grow if needed */
+        rendererData->numDescriptorPools[i] = 1;
+        rendererData->descriptorPools[i] = SDL_calloc(sizeof(VkDescriptorPool), 1);
+        rendererData->descriptorPools[i][0] = VULKAN_AllocateDescriptorPool(rendererData);
         if (result != VK_SUCCESS) {
             VULKAN_DestroyAll(renderer);
-            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkCreateDescriptorPool(): %s\n", SDL_Vulkan_GetResultString(result));
             return result;
         }
     }
@@ -2184,20 +2196,30 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 
     /* Constant buffers */
     if (rendererData->constantBuffers) {
-        for (uint32_t i = 0; i < rendererData->swapchainImageCount; i++) {
-            VULKAN_DestroyBuffer(rendererData, &rendererData->constantBuffers[i]);
+        SDL_assert(rendererData->numConstantBuffers);
+        for (uint32_t i = 0; i < rendererData->swapchainImageCount; ++i) {
+            for (uint32_t j = 0; j < rendererData->numConstantBuffers[i]; j++) {
+                VULKAN_DestroyBuffer(rendererData, &rendererData->constantBuffers[i][j]);
+            }
+            SDL_free(rendererData->constantBuffers[i]);
         }
         SDL_free(rendererData->constantBuffers);
+        SDL_free(rendererData->numConstantBuffers);
+        rendererData->constantBuffers = NULL;
     }
-    rendererData->constantBuffers = SDL_calloc(sizeof(VULKAN_Buffer), rendererData->swapchainImageCount);
+    rendererData->constantBuffers = SDL_calloc(sizeof(VULKAN_Buffer*), rendererData->swapchainImageCount);
+    rendererData->numConstantBuffers = SDL_calloc(sizeof(VULKAN_Buffer*), rendererData->swapchainImageCount);
     for (uint32_t i = 0; i < rendererData->swapchainImageCount; i++) {
+        /* Start with just allocating one, will grow if needed */
+        rendererData->numConstantBuffers[i] = 1;
+        rendererData->constantBuffers[i] = SDL_calloc(sizeof(VULKAN_Buffer), 1);
         result = VULKAN_AllocateBuffer(rendererData,
             SDL_VULKAN_CONSTANT_BUFFER_DEFAULT_SIZE,
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
             VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            &rendererData->constantBuffers[i]);
+            &rendererData->constantBuffers[i][0]);
         if (result != VK_SUCCESS) {
             VULKAN_DestroyAll(renderer);
             SDL_LogError(SDL_LOG_CATEGORY_RENDER, "VULKAN_AllocateBuffer(): %s\n", SDL_Vulkan_GetResultString(result));
@@ -2205,6 +2227,7 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         }
     }
     rendererData->currentConstantBufferOffset = -1;
+    rendererData->currentConstantBufferIndex = 0;
 
     VULKAN_AcquireNextSwapchainImage(renderer);
 
@@ -3083,6 +3106,140 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
     }
 }
 
+static VkDescriptorPool VULKAN_AllocateDescriptorPool(VULKAN_RenderData *rendererData)
+{
+    VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
+    VkDescriptorPoolSize descriptorPoolSizes[2];
+    VkResult result;
+    descriptorPoolSizes[0].descriptorCount = SDL_VULKAN_MAX_DESCRIPTOR_SETS;
+    descriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_SAMPLER;
+
+    /* Allocate enough to hold a maximum of each descriptor set having YUV textures */
+    const int numTexturesPerYUV = 3;
+    descriptorPoolSizes[1].descriptorCount = SDL_VULKAN_MAX_DESCRIPTOR_SETS * numTexturesPerYUV;
+    descriptorPoolSizes[1].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+
+    VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = { 0 };
+    descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    descriptorPoolCreateInfo.poolSizeCount = SDL_arraysize(descriptorPoolSizes);
+    descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes;
+    descriptorPoolCreateInfo.maxSets = SDL_VULKAN_MAX_DESCRIPTOR_SETS;
+    result = vkCreateDescriptorPool(rendererData->device, &descriptorPoolCreateInfo, NULL, &descriptorPool);
+    if (result != VK_SUCCESS) {
+        SDL_SetError("[Vulkan] Unable to allocate descriptor pool vkCreateDescrptorPool: %s.\n", SDL_Vulkan_GetResultString(result));
+        return VK_NULL_HANDLE;
+    }
+
+    return descriptorPool;
+}
+
+static VkDescriptorSet VULKAN_AllocateDescriptorSet(SDL_Renderer *renderer, VULKAN_Shader shader, VkSampler sampler, VkBuffer constantBuffer, VkDeviceSize constantBufferOffset, int imageViewCount, VkImageView *imageViews)
+{
+    VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->driverdata;
+    uint32_t currentDescriptorPoolIndex = rendererData->currentDescriptorPoolIndex;
+    VkDescriptorPool descriptorPool = rendererData->descriptorPools[rendererData->currentCommandBufferIndex][currentDescriptorPoolIndex];
+
+    VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = { 0 };
+    descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    descriptorSetAllocateInfo.descriptorSetCount = 1;
+    descriptorSetAllocateInfo.descriptorPool = descriptorPool;
+    descriptorSetAllocateInfo.pSetLayouts = &rendererData->descriptorSetLayouts[shader];
+
+    VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
+    VkResult result = (rendererData->currentDescriptorSetIndex >= SDL_VULKAN_MAX_DESCRIPTOR_SETS) ? VK_ERROR_OUT_OF_DEVICE_MEMORY : VK_SUCCESS;
+    if (result == VK_SUCCESS) {
+        result = vkAllocateDescriptorSets(rendererData->device, &descriptorSetAllocateInfo, &descriptorSet);
+    }
+    if (result != VK_SUCCESS) {
+        /* Out of descriptor sets in this pool - see if we have more pools allocated */
+        currentDescriptorPoolIndex++;
+        if (currentDescriptorPoolIndex < rendererData->numDescriptorPools[rendererData->currentCommandBufferIndex]) {
+            descriptorPool = rendererData->descriptorPools[rendererData->currentCommandBufferIndex][currentDescriptorPoolIndex];
+            descriptorSetAllocateInfo.descriptorPool = descriptorPool;
+            result = vkAllocateDescriptorSets(rendererData->device, &descriptorSetAllocateInfo, &descriptorSet);
+            if (result != VK_SUCCESS) {
+                /* This should not fail - we are allocating from the front of the descriptor set */
+                SDL_SetError("[Vulkan] Unable to allocate descriptor set.");
+                return VK_NULL_HANDLE;
+            }
+            rendererData->currentDescriptorPoolIndex = currentDescriptorPoolIndex;
+            rendererData->currentDescriptorSetIndex = 0;
+
+        }
+        /* We are out of pools, create a new one */
+        else {
+            descriptorPool = VULKAN_AllocateDescriptorPool(rendererData);
+            if (descriptorPool == VK_NULL_HANDLE) {
+                /* SDL_SetError called in VULKAN_AllocateDescriptorPool if we failed to allocate a new pool */
+                return VK_NULL_HANDLE;
+            }
+            rendererData->numDescriptorPools[rendererData->currentCommandBufferIndex]++;
+            VkDescriptorPool *descriptorPools = SDL_realloc(rendererData->descriptorPools[rendererData->currentCommandBufferIndex],
+                                                            sizeof(VkDescriptorPool) * rendererData->numDescriptorPools[rendererData->currentCommandBufferIndex]);
+            descriptorPools[rendererData->numDescriptorPools[rendererData->currentCommandBufferIndex] - 1] = descriptorPool;
+            rendererData->descriptorPools[rendererData->currentCommandBufferIndex] = descriptorPools;
+            rendererData->currentDescriptorPoolIndex = currentDescriptorPoolIndex;
+            rendererData->currentDescriptorSetIndex = 0;
+
+            /* Call recursively to allocate from the new pool */
+            return VULKAN_AllocateDescriptorSet(renderer, shader, sampler, constantBuffer, constantBufferOffset, imageViewCount, imageViews);
+        }
+    }
+    rendererData->currentDescriptorSetIndex++;
+    VkDescriptorImageInfo samplerDescriptor = { 0 };
+    samplerDescriptor.sampler = sampler;
+
+    VkDescriptorImageInfo imageDescriptors[3];
+    SDL_memset(imageDescriptors, 0, sizeof(imageDescriptors));
+    VkDescriptorBufferInfo bufferDescriptor = { 0 };
+    bufferDescriptor.buffer = constantBuffer;
+    bufferDescriptor.offset = constantBufferOffset;
+    bufferDescriptor.range = sizeof(PixelShaderConstants);
+
+    VkWriteDescriptorSet descriptorWrites[5];
+    SDL_memset(descriptorWrites, 0, sizeof(descriptorWrites));
+    uint32_t descriptorCount = 1; /* Always have the uniform buffer */
+
+    descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrites[0].dstSet = descriptorSet;
+    descriptorWrites[0].dstBinding = 4;
+    descriptorWrites[0].dstArrayElement = 0;
+    descriptorWrites[0].descriptorCount = 1;
+    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorWrites[0].pBufferInfo = &bufferDescriptor;
+
+    if (sampler != VK_NULL_HANDLE) {
+        descriptorCount++;
+        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[1].dstSet = descriptorSet;
+        descriptorWrites[1].dstBinding = 0;
+        descriptorWrites[1].dstArrayElement = 0;
+        descriptorWrites[1].descriptorCount = 1;
+        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+        descriptorWrites[1].pImageInfo = &samplerDescriptor;
+    }
+
+    uint32_t startImageViews = descriptorCount;
+    for (uint32_t i = 0; i < 3 && imageViewCount > 0; i++) {
+        descriptorCount++;
+        imageDescriptors[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        /* There are up to 3 images in the shader, if we haven't specified that many, duplicate the first
+            one.  There is dynamic branching that determines how many actually get fetched, but we need
+            them all populated for validation. */
+        imageDescriptors[i].imageView = (i < imageViewCount) ? imageViews[i] : imageViews[0];
+        descriptorWrites[i+startImageViews].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[i+startImageViews].dstSet = descriptorSet;
+        descriptorWrites[i+startImageViews].dstBinding = 1 + i;
+        descriptorWrites[i+startImageViews].dstArrayElement = 0;
+        descriptorWrites[i+startImageViews].descriptorCount = 1;
+        descriptorWrites[i+startImageViews].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+        descriptorWrites[i+startImageViews].pImageInfo = &imageDescriptors[i];
+    }
+    vkUpdateDescriptorSets(rendererData->device, descriptorCount, descriptorWrites, 0, NULL);
+
+    return descriptorSet;
+}
+
 static SDL_bool VULKAN_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, VULKAN_Shader shader, const PixelShaderConstants *shader_constants,
                               VkPrimitiveTopology topology, int imageViewCount, VkImageView *imageViews, VkSampler sampler, const Float4X4 *matrix, VULKAN_DrawStateCache *stateCache)
 
@@ -3093,6 +3250,7 @@ static SDL_bool VULKAN_SetDrawState(SDL_Renderer *renderer, const SDL_RenderComm
     const Float4X4 *newmatrix = matrix ? matrix : &rendererData->identity;
     SDL_bool updateConstants = SDL_FALSE;
     PixelShaderConstants solid_constants;
+    VkDescriptorSet descriptorSet;
     VkBuffer constantBuffer;
     VkDeviceSize constantBufferOffset;
     int i;
@@ -3155,7 +3313,8 @@ static SDL_bool VULKAN_SetDrawState(SDL_Renderer *renderer, const SDL_RenderComm
         VULKAN_SetupShaderConstants(renderer, cmd, NULL, &solid_constants);
         shader_constants = &solid_constants;
     }
-    constantBuffer = rendererData->constantBuffers[rendererData->currentCommandBufferIndex].buffer;
+
+    constantBuffer = rendererData->constantBuffers[rendererData->currentCommandBufferIndex][rendererData->currentConstantBufferIndex].buffer;
     constantBufferOffset = (rendererData->currentConstantBufferOffset < 0) ? 0 : rendererData->currentConstantBufferOffset;
     if (updateConstants ||
         SDL_memcmp(shader_constants, &rendererData->currentPipelineState->shader_constants, sizeof(*shader_constants)) != 0) {
@@ -3173,94 +3332,55 @@ static SDL_bool VULKAN_SetDrawState(SDL_Renderer *renderer, const SDL_RenderComm
             constantBufferOffset = rendererData->currentConstantBufferOffset;
         }
 
-        /* Upload constants to persistently mapped buffer */
-        if (rendererData->currentConstantBufferOffset > SDL_VULKAN_CONSTANT_BUFFER_DEFAULT_SIZE) {
-            VULKAN_IssueBatch(rendererData);
+        /* If we have run out of size in this constant buffer, create another if needed */
+        if (rendererData->currentConstantBufferOffset >= SDL_VULKAN_CONSTANT_BUFFER_DEFAULT_SIZE) {
+            uint32_t newConstantBufferIndex = (rendererData->currentConstantBufferIndex + 1);
+            /* We need a new constant buffer */
+            if (newConstantBufferIndex >= rendererData->numConstantBuffers[rendererData->currentCommandBufferIndex]) {
+                VULKAN_Buffer newConstantBuffer;
+                VkResult result = VULKAN_AllocateBuffer(rendererData,
+                    SDL_VULKAN_CONSTANT_BUFFER_DEFAULT_SIZE,
+                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                    &newConstantBuffer);
+
+                if (result != VK_SUCCESS) {
+                    SDL_SetError("[Vulkan] Could not allocate new memory for constant buffer.\n" );
+                    return SDL_FALSE;
+                }
+
+                rendererData->numConstantBuffers[rendererData->currentCommandBufferIndex]++;
+                VULKAN_Buffer *newConstantBuffers = SDL_realloc(rendererData->constantBuffers[rendererData->currentCommandBufferIndex],
+                                                                sizeof(VULKAN_Buffer) * rendererData->numConstantBuffers[rendererData->currentCommandBufferIndex]);
+                newConstantBuffers[rendererData->numConstantBuffers[rendererData->currentCommandBufferIndex] - 1] = newConstantBuffer;
+                rendererData->constantBuffers[rendererData->currentCommandBufferIndex] = newConstantBuffers;
+            }
+            rendererData->currentConstantBufferIndex = newConstantBufferIndex;
             rendererData->currentConstantBufferOffset = 0;
             constantBufferOffset = 0;
+            constantBuffer = rendererData->constantBuffers[rendererData->currentCommandBufferIndex][rendererData->currentConstantBufferIndex].buffer;
         }
-        uint8_t *dst = rendererData->constantBuffers[rendererData->currentCommandBufferIndex].mappedBufferPtr;
+
+        /* Upload constants to persistently mapped buffer */
+        uint8_t *dst = rendererData->constantBuffers[rendererData->currentCommandBufferIndex][rendererData->currentConstantBufferIndex].mappedBufferPtr;
         dst += constantBufferOffset;
         SDL_memcpy(dst, &rendererData->currentPipelineState->shader_constants, sizeof(PixelShaderConstants));
 
         SDL_memcpy(&rendererData->currentPipelineState->shader_constants, shader_constants, sizeof(*shader_constants));
     }
 
-    /* Allocate the descriptor set */
-    {
-        VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = { 0 };
-        descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        descriptorSetAllocateInfo.descriptorSetCount = 1;
-        descriptorSetAllocateInfo.descriptorPool = rendererData->descriptorPools[rendererData->currentCommandBufferIndex];
-        descriptorSetAllocateInfo.pSetLayouts = &rendererData->descriptorSetLayouts[shader];
-
-        VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
-        VkResult result = (rendererData->currentDescriptorSetIndex >= SDL_VULKAN_MAX_DESCRIPTOR_SETS) ? VK_ERROR_OUT_OF_DEVICE_MEMORY : VK_SUCCESS;
-        if (result == VK_SUCCESS) {
-            result = vkAllocateDescriptorSets(rendererData->device, &descriptorSetAllocateInfo, &descriptorSet);
-        }
-        // Out of descriptor sets
-        if (result != VK_SUCCESS) {
-            VULKAN_IssueBatch(rendererData);
-            result = vkAllocateDescriptorSets(rendererData->device, &descriptorSetAllocateInfo, &descriptorSet);
-            if (result != VK_SUCCESS) {
-                SDL_SetError("[Vulkan] Unable to allocate descriptor set.");
-            }
-        }
-        rendererData->currentDescriptorSetIndex++;
-        VkDescriptorImageInfo samplerDescriptor = { 0 };
-        samplerDescriptor.sampler = sampler;
-
-        VkDescriptorImageInfo imageDescriptors[3];
-        SDL_memset(imageDescriptors, 0, sizeof(imageDescriptors));
-        VkDescriptorBufferInfo bufferDescriptor = { 0 };
-        bufferDescriptor.buffer = constantBuffer;
-        bufferDescriptor.offset = constantBufferOffset;
-        bufferDescriptor.range = sizeof(PixelShaderConstants);
-
-        VkWriteDescriptorSet descriptorWrites[5];
-        SDL_memset(descriptorWrites, 0, sizeof(descriptorWrites));
-        uint32_t descriptorCount = 1; /* Always have the uniform buffer */
-
-        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[0].dstSet = descriptorSet;
-        descriptorWrites[0].dstBinding = 4;
-        descriptorWrites[0].dstArrayElement = 0;
-        descriptorWrites[0].descriptorCount = 1;
-        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorWrites[0].pBufferInfo = &bufferDescriptor;
-
-        if (sampler != VK_NULL_HANDLE) {
-            descriptorCount++;
-            descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[1].dstSet = descriptorSet;
-            descriptorWrites[1].dstBinding = 0;
-            descriptorWrites[1].dstArrayElement = 0;
-            descriptorWrites[1].descriptorCount = 1;
-            descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-            descriptorWrites[1].pImageInfo = &samplerDescriptor;
-        }
-
-        uint32_t startImageViews = descriptorCount;
-        for (i = 0; i < 3 && imageViewCount > 0; i++) {
-            descriptorCount++;
-            imageDescriptors[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            /* There are up to 3 images in the shader, if we haven't specified that many, duplicate the first
-               one.  There is dynamic branching that determines how many actually get fetched, but we need
-               them all populated for validation. */
-            imageDescriptors[i].imageView = (i < imageViewCount) ? imageViews[i] : imageViews[0];
-            descriptorWrites[i+startImageViews].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[i+startImageViews].dstSet = descriptorSet;
-            descriptorWrites[i+startImageViews].dstBinding = 1 + i;
-            descriptorWrites[i+startImageViews].dstArrayElement = 0;
-            descriptorWrites[i+startImageViews].descriptorCount = 1;
-            descriptorWrites[i+startImageViews].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-            descriptorWrites[i+startImageViews].pImageInfo = &imageDescriptors[i];
-        }
-        vkUpdateDescriptorSets(rendererData->device, descriptorCount, descriptorWrites, 0, NULL);
-        vkCmdBindDescriptorSets(rendererData->currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, rendererData->currentPipelineState->pipelineLayout,
-            0, 1, &descriptorSet, 0, NULL);
+    /* Allocate/update descriptor set with the bindings */
+    descriptorSet = VULKAN_AllocateDescriptorSet(renderer, shader, sampler, constantBuffer, constantBufferOffset, imageViewCount, imageViews);
+    if (descriptorSet == VK_NULL_HANDLE) {
+        return SDL_FALSE;
     }
+
+    /* Bind the descriptor set with the sampler/UBO/image views */
+    vkCmdBindDescriptorSets(rendererData->currentCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, rendererData->currentPipelineState->pipelineLayout,
+            0, 1, &descriptorSet, 0, NULL);
+
     return SDL_TRUE;
 }
 
