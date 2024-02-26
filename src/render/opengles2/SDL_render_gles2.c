@@ -1999,6 +1999,7 @@ static SDL_Surface *GLES2_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
 
 static int GLES2_RenderPresent(SDL_Renderer *renderer)
 {
+    GLES2_ActivateRenderer(renderer);
     /* Tell the video driver to swap buffers */
     return SDL_GL_SwapWindow(renderer->window);
 }
