@@ -699,6 +699,17 @@ static void TonemapLinear(float *r, float *g, float *b, float scale)
     *b *= scale;
 }
 
+/* This uses the same tonemapping algorithm developed by Google for Chrome:
+ * https://colab.research.google.com/drive/1hI10nq6L6ru_UFvz7-f7xQaQp0qarz_K
+ *
+ * Essentially, you use the source headroom and the destination headroom
+ * to calculate scaling factors:
+ *  tonemap_a = (dst_headroom / (src_headroom * src_headroom));
+ *  tonemap_b = (1.0f / dst_headroom);
+ *
+ * Then you normalize your source color by the HDR whitepoint,
+ * and calculate a final scaling factor in BT.2020 colorspace.
+ */
 static void TonemapChrome(float *r, float *g, float *b, float tonemap_a, float tonemap_b)
 {
     float v1 = *r;
