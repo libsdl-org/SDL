@@ -404,6 +404,8 @@ static VkFormat SDLPixelFormatToVkTextureFormat(Uint32 format, Uint32 colorspace
     case SDL_PIXELFORMAT_NV12: /* Y plane */
     case SDL_PIXELFORMAT_NV21: /* Y plane */
         return VK_FORMAT_R8_UNORM;
+    case SDL_PIXELFORMAT_P010:
+        return VK_FORMAT_R16_UNORM;
     default:
         return VK_FORMAT_UNDEFINED;
     }
@@ -2408,7 +2410,7 @@ static int VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
              texture->format == SDL_PIXELFORMAT_P010) {
         int bits_per_pixel;
         VkFormat uvFormat = VK_FORMAT_R8G8_UNORM;
-        if (texture->format == SDL_PIXELFORMAT_P010 || texture->format == SDL_PIXELFORMAT_P016) {
+        if (texture->format == SDL_PIXELFORMAT_P010) {
             uvFormat = VK_FORMAT_R16G16_UNORM;
         }
         textureData->nv12 = SDL_TRUE;
@@ -3220,7 +3222,7 @@ static VkDescriptorSet VULKAN_AllocateDescriptorSet(SDL_Renderer *renderer, VULK
     }
 
     uint32_t startImageViews = descriptorCount;
-    for (uint32_t i = 0; i < 3 && imageViewCount > 0; i++) {
+    for (int i = 0; i < 3 && imageViewCount > 0; i++) {
         descriptorCount++;
         imageDescriptors[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         /* There are up to 3 images in the shader, if we haven't specified that many, duplicate the first
