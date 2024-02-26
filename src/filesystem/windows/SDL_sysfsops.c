@@ -119,17 +119,16 @@ int SDL_SYS_FSmkdir(SDL_FSops *fs, const char *fullpath)
 
 static Sint64 FileTimeToSDLTime(const FILETIME *ft)
 {
-    const ULONGLONG winEpochToUnixEpoch = 0x019DB1DED53E8000ull;
     const ULONGLONG nanosecToMillisec = 10000000ull;
+    const ULONGLONG delta_1601_epoch_s = 11644473600ull; // [seconds] (seconds between 1/1/1601 and 1/1/1970)
     ULARGE_INTEGER large;
     large.LowPart = ft->dwLowDateTime;
     large.HighPart = ft->dwHighDateTime;
     if (large.QuadPart == 0) {
         return 0;  // unsupported on this filesystem...0 is fine, I guess.
     }
-    return (Sint64) ((large.QuadPart - winEpochToUnixEpoch) / nanosecToMillisec);
+    return (Sint64) ((large.QuadPart - delta_1601_epoch_s) / nanosecToMillisec);
 }
-
 
 int SDL_SYS_FSstat(SDL_FSops *fs, const char *fullpath, SDL_Stat *st)
 {

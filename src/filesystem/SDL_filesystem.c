@@ -110,9 +110,8 @@ const char *SDL_GetFilePathSeparator(void)
 
 void SDL_FileTimeToWindows(Sint64 ftime, Uint32 *low, Uint32 *high)
 {
-// !!! FIXME: check this math.
-    const Uint64 epoch_convert = 0x019DB1DED53E8000ull;
-    const Uint64 cvt = (Uint64) ((ftime + epoch_convert) * 10000000);
+    const Uint64 delta_1601_epoch_s = 11644473600; // [seconds] (seconds between 1/1/1601 and 1/1/1970)
+    const Uint64 cvt = (delta_1601_epoch_s + ftime) * 10000000ull; // [100ns]
     if (low) {
         *low = cvt & 0xFFFFFFFFull;
     }
