@@ -166,8 +166,7 @@ typedef enum
         ((((X) == SDL_PIXELFORMAT_YUY2) || \
           ((X) == SDL_PIXELFORMAT_UYVY) || \
           ((X) == SDL_PIXELFORMAT_YVYU) || \
-          ((X) == SDL_PIXELFORMAT_P010) || \
-          ((X) == SDL_PIXELFORMAT_P016)) ? 2 : 1) : (((X) >> 0) & 0xFF))
+          ((X) == SDL_PIXELFORMAT_P010)) ? 2 : 1) : (((X) >> 0) & 0xFF))
 
 #define SDL_ISPIXELFORMAT_INDEXED(format)   \
     (!SDL_ISPIXELFORMAT_FOURCC(format) && \
@@ -418,8 +417,6 @@ typedef enum
         SDL_DEFINE_PIXELFOURCC('N', 'V', '2', '1'),
     SDL_PIXELFORMAT_P010 =      /**< Planar mode: Y + U/V interleaved  (2 planes) */
         SDL_DEFINE_PIXELFOURCC('P', '0', '1', '0'),
-    SDL_PIXELFORMAT_P016 =      /**< Planar mode: Y + U/V interleaved  (2 planes) */
-        SDL_DEFINE_PIXELFOURCC('P', '0', '1', '6'),
     SDL_PIXELFORMAT_EXTERNAL_OES =      /**< Android video texture format */
         SDL_DEFINE_PIXELFOURCC('O', 'E', 'S', ' ')
 } SDL_PixelFormatEnum;

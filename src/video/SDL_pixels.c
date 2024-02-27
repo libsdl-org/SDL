@@ -149,7 +149,6 @@ const char *SDL_GetPixelFormatName(Uint32 format)
         CASE(SDL_PIXELFORMAT_NV12)
         CASE(SDL_PIXELFORMAT_NV21)
         CASE(SDL_PIXELFORMAT_P010)
-        CASE(SDL_PIXELFORMAT_P016)
         CASE(SDL_PIXELFORMAT_EXTERNAL_OES)
 
     default:
