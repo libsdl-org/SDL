@@ -1098,38 +1098,10 @@ static void Wayland_move_window(SDL_Window *window,
     }
 }
 
-static void handle_surface_enter(void *data, struct wl_surface *surface,
-                                 struct wl_output *output)
+void Wayland_RemoveOutputFromWindow(SDL_WindowData *window, struct wl_output *output)
 {
-    SDL_WindowData *window = data;
-    SDL_WaylandOutputData *driverdata = wl_output_get_user_data(output);
-
-    if (!SDL_WAYLAND_own_output(output) || !SDL_WAYLAND_own_surface(surface)) {
-        return;
-    }
-
-    window->outputs = SDL_realloc(window->outputs,
-                                  sizeof(SDL_WaylandOutputData *) * (window->num_outputs + 1));
-    window->outputs[window->num_outputs++] = driverdata;
-
-    /* Update the scale factor after the move so that fullscreen outputs are updated. */
-    Wayland_move_window(window->sdlwindow, driverdata);
-
-    if (!window->fractional_scale) {
-        update_scale_factor(window);
-    }
-}
-
-static void handle_surface_leave(void *data, struct wl_surface *surface,
-                                 struct wl_output *output)
-{
-    SDL_WindowData *window = data;
     int i, send_move_event = 0;
     SDL_WaylandOutputData *driverdata = wl_output_get_user_data(output);
-
-    if (!SDL_WAYLAND_own_output(output) || !SDL_WAYLAND_own_surface(surface)) {
-        return;
-    }
 
     for (i = 0; i < window->num_outputs; i++) {
         if (window->outputs[i] == driverdata) { /* remove this one */
@@ -1157,6 +1129,40 @@ static void handle_surface_leave(void *data, struct wl_surface *surface,
     if (!window->fractional_scale) {
         update_scale_factor(window);
     }
+}
+
+static void handle_surface_enter(void *data, struct wl_surface *surface,
+                                 struct wl_output *output)
+{
+    SDL_WindowData *window = data;
+    SDL_WaylandOutputData *driverdata = wl_output_get_user_data(output);
+
+    if (!SDL_WAYLAND_own_output(output) || !SDL_WAYLAND_own_surface(surface)) {
+        return;
+    }
+
+    window->outputs = SDL_realloc(window->outputs,
+                                  sizeof(SDL_WaylandOutputData *) * (window->num_outputs + 1));
+    window->outputs[window->num_outputs++] = driverdata;
+
+    /* Update the scale factor after the move so that fullscreen outputs are updated. */
+    Wayland_move_window(window->sdlwindow, driverdata);
+
+    if (!window->fractional_scale) {
+        update_scale_factor(window);
+    }
+}
+
+static void handle_surface_leave(void *data, struct wl_surface *surface,
+                          struct wl_output *output)
+{
+    SDL_WindowData *window = (SDL_WindowData *)data;
+
+    if (!SDL_WAYLAND_own_output(output) || !SDL_WAYLAND_own_surface(surface)) {
+        return;
+    }
+
+    Wayland_RemoveOutputFromWindow(window, output);
 }
 
 static const struct wl_surface_listener surface_listener = {
