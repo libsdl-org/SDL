@@ -947,6 +947,13 @@ static void Wayland_free_display(SDL_VideoDisplay *display)
     if (display) {
         SDL_DisplayData *display_data = display->driverdata;
 
+        /* A preceding surface leave event is not guaranteed when an output is removed,
+         * so ensure that no window continues to hold a reference to a removed output.
+         */
+        for (SDL_Window *window = SDL_GetVideoDevice()->windows; window; window = window->next) {
+            Wayland_RemoveOutputFromWindow(window->driverdata, display_data->output);
+        }
+
         SDL_free(display_data->wl_output_name);
 
         if (display_data->xdg_output) {

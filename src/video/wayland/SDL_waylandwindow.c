@@ -1244,7 +1244,7 @@ static void Wayland_MaybeUpdateScaleFactor(SDL_WindowData *window)
             factor = SDL_max(factor, driverdata->scale_factor);
         }
     } else {
-        /* No monitor (somehow)? Just fall back. */
+        /* All outputs removed, just fall back. */
         factor = window->windowed_scale_factor;
     }
 
@@ -1304,6 +1304,37 @@ static void Wayland_move_window(SDL_Window *window, SDL_DisplayData *driverdata)
     }
 }
 
+void Wayland_RemoveOutputFromWindow(SDL_WindowData *window, struct wl_output *output)
+{
+    int i, send_move_event = 0;
+    SDL_DisplayData *driverdata = wl_output_get_user_data(output);
+
+    for (i = 0; i < window->num_outputs; i++) {
+        if (window->outputs[i] == driverdata) { /* remove this one */
+            if (i == (window->num_outputs - 1)) {
+                window->outputs[i] = NULL;
+                send_move_event = 1;
+            } else {
+                SDL_memmove(&window->outputs[i],
+                            &window->outputs[i + 1],
+                            sizeof(SDL_DisplayData *) * ((window->num_outputs - i) - 1));
+            }
+            window->num_outputs--;
+            i--;
+        }
+    }
+
+    if (window->num_outputs == 0) {
+        SDL_free(window->outputs);
+        window->outputs = NULL;
+    } else if (send_move_event) {
+        Wayland_move_window(window->sdlwindow,
+                            window->outputs[window->num_outputs - 1]);
+    }
+
+    Wayland_MaybeUpdateScaleFactor(window);
+}
+
 static void handle_surface_enter(void *data, struct wl_surface *surface,
                                  struct wl_output *output)
 {
@@ -1332,37 +1363,12 @@ static void handle_surface_leave(void *data, struct wl_surface *surface,
                                  struct wl_output *output)
 {
     SDL_WindowData *window = data;
-    int i, send_move_event = 0;
-    SDL_DisplayData *driverdata = wl_output_get_user_data(output);
 
     if (!SDL_WAYLAND_own_output(output) || !SDL_WAYLAND_own_surface(surface)) {
         return;
     }
 
-    for (i = 0; i < window->num_outputs; i++) {
-        if (window->outputs[i] == driverdata) { /* remove this one */
-            if (i == (window->num_outputs - 1)) {
-                window->outputs[i] = NULL;
-                send_move_event = 1;
-            } else {
-                SDL_memmove(&window->outputs[i],
-                            &window->outputs[i + 1],
-                            sizeof(SDL_DisplayData *) * ((window->num_outputs - i) - 1));
-            }
-            window->num_outputs--;
-            i--;
-        }
-    }
-
-    if (window->num_outputs == 0) {
-        SDL_free(window->outputs);
-        window->outputs = NULL;
-    } else if (send_move_event) {
-        Wayland_move_window(window->sdlwindow,
-                            window->outputs[window->num_outputs - 1]);
-    }
-
-    Wayland_MaybeUpdateScaleFactor(window);
+    Wayland_RemoveOutputFromWindow(window, output);
 }
 
 static void handle_preferred_buffer_scale(void *data, struct wl_surface *wl_surface, int32_t factor)
