@@ -79,18 +79,19 @@ int SDL_SYS_FSstat(SDL_FSops *fs, const char *fullpath, SDL_Stat *st)
         return SDL_SetError("Can't stat: %s", strerror(errno));
     } else if (S_ISREG(statbuf.st_mode)) {
         st->filetype = SDL_STATPATHTYPE_FILE;
-        st->filesize = statbuf.st_size;
+        st->filesize = (Uint64) statbuf.st_size;
     } else if(S_ISDIR(statbuf.st_mode)) {
         st->filetype = SDL_STATPATHTYPE_DIRECTORY;
         st->filesize = 0;
     } else {
         st->filetype = SDL_STATPATHTYPE_OTHER;
-        st->filesize = statbuf.st_size;
+        st->filesize = (Uint64) statbuf.st_size;
     }
 
-    st->modtime = statbuf.st_mtime;
-    st->createtime = statbuf.st_ctime;
-    st->accesstime = statbuf.st_atime;
+    // SDL file time is nanoseconds since the Unix epoch, so we just need to convert secs -> nanosecs.
+    st->modtime = ((Uint64) statbuf.st_mtime) * SDL_NS_PER_SECOND;
+    st->createtime = ((Uint64) statbuf.st_ctime) * SDL_NS_PER_SECOND;
+    st->accesstime = ((Uint64) statbuf.st_atime) * SDL_NS_PER_SECOND;
 
     return 0;
 }

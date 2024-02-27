@@ -246,13 +246,14 @@ typedef enum SDL_StatPathType
     SDL_STATPATHTYPE_OTHER /**< something completely different like a device node (not a symlink, those are always followed) */
 } SDL_StatPathType;
 
+/* SDL timestamps are in _nanoseconds_ since the Unix epoch (Jan 1, 1970). */
 typedef struct SDL_Stat
 {
     SDL_StatPathType filetype;  /* is this a file? a dir? something else? */
-    Sint64 filesize;    /* size in bytes */
-    Sint64 modtime;     /* SDL filesystem timestamp */
-    Sint64 createtime;  /* SDL filesystem timestamp */
-    Sint64 accesstime;  /* SDL filesystem timestamp */
+    Uint64 filesize;    /* size in bytes */
+    Uint64 modtime;     /* SDL filesystem timestamp */
+    Uint64 createtime;  /* SDL filesystem timestamp */
+    Uint64 accesstime;  /* SDL filesystem timestamp */
 } SDL_Stat;
 
 
@@ -349,10 +350,10 @@ extern DECLSPEC void SDLCALL SDL_DestroyFilesystem(SDL_FSops *fs);
 extern DECLSPEC const char * SDLCALL SDL_GetFilePathSeparator(void);
 
 /* converts an SDL file timestamp into a win32 FILETIME (100-nanosecond intervals since January 1, 1601). Fills in the two 32-bit values of the win32 struct. */
-extern DECLSPEC void SDLCALL SDL_FileTimeToWindows(Sint64 ftime, Uint32 *low, Uint32 *high);
+extern DECLSPEC void SDLCALL SDL_FileTimeToWindows(Uint64 ftime, Uint32 *low, Uint32 *high);
 
 /* converts an SDL file timestamp into a Unix time_t (seconds since the Unix epoch). */
-extern DECLSPEC Sint64 SDLCALL SDL_FileTimeToUnix(Sint64 ftime);
+extern DECLSPEC Uint64 SDLCALL SDL_FileTimeToUnix(Uint64 ftime);
 
 
 /* Ends C function definitions when using C++ */

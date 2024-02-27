@@ -108,21 +108,22 @@ const char *SDL_GetFilePathSeparator(void)
     return PLATFORM_PATH_SEPARATOR;
 }
 
-void SDL_FileTimeToWindows(Sint64 ftime, Uint32 *low, Uint32 *high)
+void SDL_FileTimeToWindows(Uint64 ftime, Uint32 *low, Uint32 *high)
 {
-    const Uint64 delta_1601_epoch_s = 11644473600; // [seconds] (seconds between 1/1/1601 and 1/1/1970)
-    const Uint64 cvt = (delta_1601_epoch_s + ftime) * 10000000ull; // [100ns]
+    const Uint64 delta_1601_epoch_ns = 11644473600ull * SDL_NS_PER_SECOND; // [ns] (nanoseconds between 1/1/1601 and 1/1/1970, 11644473600 seconds * 1000000000)
+    const Uint64 cvt = (ftime + delta_1601_epoch_ns) / 100ull; // [100ns] (adjust to epoch and convert nanoseconds to 1/100th nanosecond units).
     if (low) {
-        *low = cvt & 0xFFFFFFFFull;
+        *low = (Uint32) cvt;
     }
     if (high) {
-        *high = cvt >> 32;
+        *high = (Uint32) (cvt >> 32);
     }
 }
 
-Sint64 SDL_FileTimeToUnix(Sint64 ftime)
+Uint64 SDL_FileTimeToUnix(Uint64 ftime)
 {
-    return ftime;  // currently SDL time is just the unix epoch.
+    // SDL time uses the unix epoch, but in nanoseconds. Divide to convert to seconds.
+    return ftime / SDL_NS_PER_SECOND;
 }
 
 

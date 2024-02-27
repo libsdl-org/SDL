@@ -117,17 +117,16 @@ int SDL_SYS_FSmkdir(SDL_FSops *fs, const char *fullpath)
     return !rc ? WIN_SetError("Couldn't create directory") : 0;
 }
 
-static Sint64 FileTimeToSDLTime(const FILETIME *ft)
+static Uint64 FileTimeToSDLTime(const FILETIME *ft)
 {
-    const ULONGLONG nanosecToMillisec = 10000000ull;
-    const ULONGLONG delta_1601_epoch_s = 11644473600ull; // [seconds] (seconds between 1/1/1601 and 1/1/1970)
+    const Uint64 delta_1601_epoch_100ns = 11644473600ull * 10000000ull; // [ns] (100-ns chunks between 1/1/1601 and 1/1/1970, 11644473600 seconds * 10000000)
     ULARGE_INTEGER large;
     large.LowPart = ft->dwLowDateTime;
     large.HighPart = ft->dwHighDateTime;
     if (large.QuadPart == 0) {
         return 0;  // unsupported on this filesystem...0 is fine, I guess.
     }
-    return (Sint64) ((large.QuadPart - delta_1601_epoch_s) / nanosecToMillisec);
+    return (((Uint64)large.QuadPart) - delta_1601_epoch_100ns) * 100;  // [ns] (adjust to epoch and convert 1/100th nanosecond units to nanoseconds).
 }
 
 int SDL_SYS_FSstat(SDL_FSops *fs, const char *fullpath, SDL_Stat *st)
@@ -153,10 +152,10 @@ int SDL_SYS_FSstat(SDL_FSops *fs, const char *fullpath, SDL_Stat *st)
         st->filesize = 0;
     } else if (winstat.dwFileAttributes & (FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_DEVICE)) {
         st->filetype = SDL_STATPATHTYPE_OTHER;
-        st->filesize = (Sint64) ((((Uint64) winstat.nFileSizeHigh) << 32) | winstat.nFileSizeLow);
+        st->filesize = ((((Uint64) winstat.nFileSizeHigh) << 32) | winstat.nFileSizeLow);
     } else {
         st->filetype = SDL_STATPATHTYPE_FILE;
-        st->filesize = (Sint64) ((((Uint64) winstat.nFileSizeHigh) << 32) | winstat.nFileSizeLow);
+        st->filesize = ((((Uint64) winstat.nFileSizeHigh) << 32) | winstat.nFileSizeLow);
     }
 
     return 1;

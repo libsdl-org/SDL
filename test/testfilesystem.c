@@ -38,7 +38,7 @@ static int SDLCALL enum_callback(void *userdata, SDL_FSops *fsops, const char *o
         } else {
             type = "OTHER";
         }
-        SDL_Log("%s (type=%s, size=%" SDL_PRIs64 ", mod=%" SDL_PRIs64 ", create=%" SDL_PRIs64 ", access=%" SDL_PRIs64 ")",
+        SDL_Log("%s (type=%s, size=%" SDL_PRIu64 ", mod=%" SDL_PRIu64 ", create=%" SDL_PRIu64 ", access=%" SDL_PRIu64 ")",
                 fullpath, type, statbuf.filesize, statbuf.modtime, statbuf.createtime, statbuf.accesstime);
 
         if (statbuf.filetype == SDL_STATPATHTYPE_DIRECTORY) {
