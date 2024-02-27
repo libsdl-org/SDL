@@ -732,6 +732,7 @@ static void Wayland_free_display(SDL_VideoData *d, uint32_t id)
     int num_displays = SDL_GetNumVideoDisplays();
     SDL_VideoDisplay *display;
     SDL_WaylandOutputData *data;
+    SDL_Window *window;
     int i;
 
     for (i = 0; i < num_displays; i += 1) {
@@ -751,6 +752,14 @@ static void Wayland_free_display(SDL_VideoData *d, uint32_t id)
                     }
                 }
             }
+
+            /* Surface leave events may be implicit when an output is destroyed, so make sure that
+             * no windows retain a reference to a destroyed output.
+             */
+            for (window = SDL_GetVideoDevice()->windows; window; window = window->next) {
+                Wayland_RemoveOutputFromWindow(window->driverdata, data->output);
+            }
+
             SDL_DelVideoDisplay(i);
             if (data->xdg_output) {
                 zxdg_output_v1_destroy(data->xdg_output);
