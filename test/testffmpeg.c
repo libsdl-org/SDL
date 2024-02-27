@@ -432,6 +432,33 @@ static SDL_Colorspace GetFrameColorspace(AVFrame *frame)
     return colorspace;
 }
 
+static SDL_PropertiesID CreateVideoTextureProperties(AVFrame *frame, Uint32 format, int access, int w, int h)
+{
+    AVFrameSideData *pSideData;
+    SDL_PropertiesID props;
+
+    props = SDL_CreateProperties();
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, GetFrameColorspace(frame));
+    pSideData = av_frame_get_side_data(frame, AV_FRAME_DATA_MASTERING_DISPLAY_METADATA);
+    if (pSideData) {
+        /* ITU-R BT.2408-6 recommends using an SDR white point of 203 nits, which is more likely for game content */
+        static const float k_flSDRWhitePoint = 203.0f;
+
+        AVMasteringDisplayMetadata *pMasteringDisplayMetadata = (AVMasteringDisplayMetadata *)pSideData->data;
+        float flMaxLuminance = (float)pMasteringDisplayMetadata->max_luminance.num / pMasteringDisplayMetadata->max_luminance.den;
+        if (flMaxLuminance > k_flSDRWhitePoint) {
+            SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, k_flSDRWhitePoint);
+            SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT, flMaxLuminance / k_flSDRWhitePoint);
+        }
+    }
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, format);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, access);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, w);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, h);
+
+    return props;
+}
+
 static void SDLCALL FreeSwsContextContainer(void *userdata, void *value)
 {
     struct SwsContextContainer *sws_container = (struct SwsContextContainer *)value;
@@ -457,16 +484,12 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
             SDL_DestroyTexture(*texture);
         }
 
-        SDL_PropertiesID props = SDL_CreateProperties();
-        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, GetFrameColorspace(frame));
+        SDL_PropertiesID props;
         if (frame_format == SDL_PIXELFORMAT_UNKNOWN) {
-            SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_ARGB8888);
+            props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, frame->width, frame->height);
         } else {
-            SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, frame_format);
+            props = CreateVideoTextureProperties(frame, frame_format, SDL_TEXTUREACCESS_STREAMING, frame->width, frame->height);
         }
-        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STREAMING);
-        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, frame->width);
-        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, frame->height);
         *texture = SDL_CreateTextureWithProperties(renderer, props);
         SDL_DestroyProperties(props);
         if (!*texture) {
@@ -556,12 +579,7 @@ static SDL_bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
         SDL_SetHint("SDL_RENDER_OPENGL_NV12_RG_SHADER", "1");
     }
 
-    props = SDL_CreateProperties();
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, GetFrameColorspace(frame));
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_NV12);
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STATIC);
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, frame->width);
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, frame->height);
+    props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_NV12, SDL_TEXTUREACCESS_STATIC, frame->width, frame->height);
     *texture = SDL_CreateTextureWithProperties(renderer, props);
     SDL_DestroyProperties(props);
     if (!*texture) {
@@ -644,7 +662,6 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
     }
     if (!*texture || (UINT)texture_width != desc.Width || (UINT)texture_height != desc.Height) {
         Uint32 format;
-        AVFrameSideData *pSideData;
 
         switch (desc.Format) {
         case DXGI_FORMAT_NV12:
@@ -662,21 +679,7 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
             SDL_DestroyTexture(*texture);
         }
 
-        SDL_PropertiesID props = SDL_CreateProperties();
-        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, GetFrameColorspace(frame));
-        pSideData = av_frame_get_side_data(frame, AV_FRAME_DATA_MASTERING_DISPLAY_METADATA);
-        if (pSideData) {
-            /* ITU-R BT.2408-6 recommends using an SDR white point of 203 nits, which is more likely for game content */
-            static const float k_flSDRWhitePoint = 203.0f;
-
-            AVMasteringDisplayMetadata *pMasteringDisplayMetadata = (AVMasteringDisplayMetadata *)pSideData->data;
-            float flMaxLuminance = (float)pMasteringDisplayMetadata->max_luminance.num / pMasteringDisplayMetadata->max_luminance.den;
-            SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, k_flSDRWhitePoint);
-            SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT, flMaxLuminance / k_flSDRWhitePoint);
-        }
-        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, format);
-        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STATIC);
-        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, desc.Width);
+        SDL_PropertiesID props = CreateVideoTextureProperties(frame, format, SDL_TEXTUREACCESS_STATIC, desc.Width, desc.Height);
         SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, desc.Height);
         *texture = SDL_CreateTextureWithProperties(renderer, props);
         SDL_DestroyProperties(props);
@@ -707,7 +710,6 @@ static SDL_bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **tex
     size_t nPixelBufferHeight = CVPixelBufferGetHeightOfPlane(pPixelBuffer, 0);
     SDL_PropertiesID props;
     Uint32 format;
-    AVFrameSideData *pSideData;
 
     switch (nPixelBufferType) {
     case kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange:
@@ -733,22 +735,7 @@ static SDL_bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **tex
         SDL_DestroyTexture(*texture);
     }
 
-    props = SDL_CreateProperties();
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, GetFrameColorspace(frame));
-    pSideData = av_frame_get_side_data(frame, AV_FRAME_DATA_MASTERING_DISPLAY_METADATA);
-    if (pSideData) {
-        /* ITU-R BT.2408-6 recommends using an SDR white point of 203 nits, which is more likely for game content */
-        static const float k_flSDRWhitePoint = 203.0f;
-
-        AVMasteringDisplayMetadata *pMasteringDisplayMetadata = (AVMasteringDisplayMetadata *)pSideData->data;
-        float flMaxLuminance = (float)pMasteringDisplayMetadata->max_luminance.num / pMasteringDisplayMetadata->max_luminance.den;
-        SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, k_flSDRWhitePoint);
-        SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT, flMaxLuminance / k_flSDRWhitePoint);
-    }
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, format);
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STATIC);
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, nPixelBufferWidth);
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, nPixelBufferHeight);
+    props = CreateVideoTextureProperties(frame, format, SDL_TEXTUREACCESS_STATIC, nPixelBufferWidth, nPixelBufferHeight);
     SDL_SetProperty(props, SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER, pPixelBuffer);
     *texture = SDL_CreateTextureWithProperties(renderer, props);
     SDL_DestroyProperties(props);
