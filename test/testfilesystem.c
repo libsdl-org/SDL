@@ -15,14 +15,12 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
-static const char *pathsep = NULL;
-
 static int SDLCALL enum_callback(void *userdata, SDL_FSops *fsops, const char *origdir, const char *fname)
 {
     SDL_Stat statbuf;
     char *fullpath = NULL;
 
-    if (SDL_asprintf(&fullpath, "%s%s%s", origdir, *origdir ? pathsep : "", fname) < 0) {
+    if (SDL_asprintf(&fullpath, "%s%s%s", origdir, *origdir ? "/" : "", fname) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         return -1;
     }
@@ -77,8 +75,6 @@ int main(int argc, char *argv[])
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s\n", SDL_GetError());
         return 1;
     }
-
-    pathsep = SDL_GetFilePathSeparator();
 
     base_path = SDL_GetBasePath();
     if (!base_path) {

@@ -103,11 +103,6 @@ int SDL_FSstat(SDL_FSops *fs, const char *path, SDL_Stat *stat)
     return fs->stat(fs, path, stat);
 }
 
-const char *SDL_GetFilePathSeparator(void)
-{
-    return PLATFORM_PATH_SEPARATOR;
-}
-
 void SDL_FileTimeToWindows(Uint64 ftime, Uint32 *low, Uint32 *high)
 {
     const Uint64 delta_1601_epoch_ns = 11644473600ull * SDL_NS_PER_SECOND; // [ns] (nanoseconds between 1/1/1601 and 1/1/1970, 11644473600 seconds * 1000000000)

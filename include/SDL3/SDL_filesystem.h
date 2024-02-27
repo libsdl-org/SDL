@@ -346,9 +346,6 @@ extern DECLSPEC void SDLCALL SDL_DestroyFilesystem(SDL_FSops *fs);
 
 /* some helper functions ... */
 
-/* returns "\\" or "/" etc. Read-only static data, don't free or modify! */
-extern DECLSPEC const char * SDLCALL SDL_GetFilePathSeparator(void);
-
 /* converts an SDL file timestamp into a win32 FILETIME (100-nanosecond intervals since January 1, 1601). Fills in the two 32-bit values of the win32 struct. */
 extern DECLSPEC void SDLCALL SDL_FileTimeToWindows(Uint64 ftime, Uint32 *low, Uint32 *high);
 

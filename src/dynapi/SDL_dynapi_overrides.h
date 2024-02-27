@@ -1012,6 +1012,5 @@
 #define SDL_FSstat SDL_FSstat_REAL
 #define SDL_GetFSProperties SDL_GetFSProperties_REAL
 #define SDL_DestroyFilesystem SDL_DestroyFilesystem_REAL
-#define SDL_GetFilePathSeparator SDL_GetFilePathSeparator_REAL
 #define SDL_FileTimeToWindows SDL_FileTimeToWindows_REAL
 #define SDL_FileTimeToUnix SDL_FileTimeToUnix_REAL
