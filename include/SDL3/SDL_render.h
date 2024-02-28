@@ -250,6 +250,15 @@ extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, co
  * - `SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN`: true if you want
  *   present synchronized with the refresh rate
  *
+ * With the vulkan renderer:
+ *
+ * - `SDL_PROP_RENDERER_CREATE_VULKAN_INSTANCE_POINTER`: the VkInstance to use with the renderer, optional.
+ * - `SDL_PROP_RENDERER_CREATE_VULKAN_SURFACE_NUMBER`: the VkSurfaceKHR to use with the renderer, optional.
+ * - `SDL_PROP_RENDERER_CREATE_VULKAN_PHYSICAL_DEVICE_POINTER`: the VkPhysicalDevice to use with the renderer, optional.
+ * - `SDL_PROP_RENDERER_CREATE_VULKAN_DEVICE_POINTER`: the VkDevice to use with the renderer, optional.
+ * - `SDL_PROP_RENDERER_CREATE_VULKAN_GRAPHICS_QUEUE_FAMILY_INDEX_NUMBER`: the queue family index used for rendering.
+ * - `SDL_PROP_RENDERER_CREATE_VULKAN_PRESENT_QUEUE_FAMILY_INDEX_NUMBER`: the queue family index used for presentation.
+ *
  * \param props the properties to use
  * \returns a valid rendering context or NULL if there was an error; call
  *          SDL_GetError() for more information.
@@ -263,11 +272,17 @@ extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, co
  */
 extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_PropertiesID props);
 
-#define SDL_PROP_RENDERER_CREATE_NAME_STRING                    "name"
-#define SDL_PROP_RENDERER_CREATE_WINDOW_POINTER                 "window"
-#define SDL_PROP_RENDERER_CREATE_SURFACE_POINTER                "surface"
-#define SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER       "output_colorspace"
-#define SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN          "present_vsync"
+#define SDL_PROP_RENDERER_CREATE_NAME_STRING                                "name"
+#define SDL_PROP_RENDERER_CREATE_WINDOW_POINTER                             "window"
+#define SDL_PROP_RENDERER_CREATE_SURFACE_POINTER                            "surface"
+#define SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER                   "output_colorspace"
+#define SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN                      "present_vsync"
+#define SDL_PROP_RENDERER_CREATE_VULKAN_INSTANCE_POINTER                    "vulkan.instance"
+#define SDL_PROP_RENDERER_CREATE_VULKAN_SURFACE_NUMBER                      "vulkan.surface"
+#define SDL_PROP_RENDERER_CREATE_VULKAN_PHYSICAL_DEVICE_POINTER             "vulkan.physical_device"
+#define SDL_PROP_RENDERER_CREATE_VULKAN_DEVICE_POINTER                      "vulkan.device"
+#define SDL_PROP_RENDERER_CREATE_VULKAN_GRAPHICS_QUEUE_FAMILY_INDEX_NUMBER  "vulkan.graphics_queue_family_index"
+#define SDL_PROP_RENDERER_CREATE_VULKAN_PRESENT_QUEUE_FAMILY_INDEX_NUMBER   "vulkan.present_queue_family_index"
 
 /**
  * Create a 2D software rendering context for a surface.
@@ -354,14 +369,32 @@ extern DECLSPEC int SDLCALL SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_Rend
  *   that can be displayed, in terms of the SDR white point. When HDR is not
  *   enabled, this will be 1.0. This property can change dynamically when
  *   SDL_EVENT_DISPLAY_HDR_STATE_CHANGED is sent.
+ *
+ * With the direct3d renderer:
+ *
  * - `SDL_PROP_RENDERER_D3D9_DEVICE_POINTER`: the IDirect3DDevice9 associated
  *   with the renderer
+ *
+ * With the direct3d11 renderer:
+ *
  * - `SDL_PROP_RENDERER_D3D11_DEVICE_POINTER`: the ID3D11Device associated
  *   with the renderer
+ *
+ * With the direct3d12 renderer:
+ *
  * - `SDL_PROP_RENDERER_D3D12_DEVICE_POINTER`: the ID3D12Device associated
  *   with the renderer
  * - `SDL_PROP_RENDERER_D3D12_COMMAND_QUEUE_POINTER`: the ID3D12CommandQueue
  *   associated with the renderer
+ *
+ * With the vulkan renderer:
+ *
+ * - `SDL_PROP_RENDERER_VULKAN_INSTANCE_POINTER`: the VkInstance associated with the renderer
+ * - `SDL_PROP_RENDERER_VULKAN_SURFACE_NUMBER`: the VkSurfaceKHR associated with the renderer
+ * - `SDL_PROP_RENDERER_VULKAN_PHYSICAL_DEVICE_POINTER`: the VkPhysicalDevice associated with the renderer
+ * - `SDL_PROP_RENDERER_VULKAN_DEVICE_POINTER`: the VkDevice associated with the renderer
+ * - `SDL_PROP_RENDERER_VULKAN_GRAPHICS_QUEUE_FAMILY_INDEX_NUMBER`: the queue family index used for rendering
+ * - `SDL_PROP_RENDERER_VULKAN_PRESENT_QUEUE_FAMILY_INDEX_NUMBER`: the queue family index used for presentation
  *
  * \param renderer the rendering context
  * \returns a valid property ID on success or 0 on failure; call
@@ -374,17 +407,23 @@ extern DECLSPEC int SDLCALL SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_Rend
  */
 extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetRendererProperties(SDL_Renderer *renderer);
 
-#define SDL_PROP_RENDERER_NAME_STRING                   "SDL.renderer.name"
-#define SDL_PROP_RENDERER_WINDOW_POINTER                "SDL.renderer.window"
-#define SDL_PROP_RENDERER_SURFACE_POINTER               "SDL.renderer.surface"
-#define SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER      "SDL.renderer.output_colorspace"
-#define SDL_PROP_RENDERER_HDR_ENABLED_BOOLEAN           "SDL.renderer.HDR_enabled"
-#define SDL_PROP_RENDERER_SDR_WHITE_POINT_FLOAT         "SDL.renderer.SDR_white_point"
-#define SDL_PROP_RENDERER_HDR_HEADROOM_FLOAT            "SDL.renderer.HDR_headroom"
-#define SDL_PROP_RENDERER_D3D9_DEVICE_POINTER           "SDL.renderer.d3d9.device"
-#define SDL_PROP_RENDERER_D3D11_DEVICE_POINTER          "SDL.renderer.d3d11.device"
-#define SDL_PROP_RENDERER_D3D12_DEVICE_POINTER          "SDL.renderer.d3d12.device"
-#define SDL_PROP_RENDERER_D3D12_COMMAND_QUEUE_POINTER   "SDL.renderer.d3d12.command_queue"
+#define SDL_PROP_RENDERER_NAME_STRING                               "SDL.renderer.name"
+#define SDL_PROP_RENDERER_WINDOW_POINTER                            "SDL.renderer.window"
+#define SDL_PROP_RENDERER_SURFACE_POINTER                           "SDL.renderer.surface"
+#define SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER                  "SDL.renderer.output_colorspace"
+#define SDL_PROP_RENDERER_HDR_ENABLED_BOOLEAN                       "SDL.renderer.HDR_enabled"
+#define SDL_PROP_RENDERER_SDR_WHITE_POINT_FLOAT                     "SDL.renderer.SDR_white_point"
+#define SDL_PROP_RENDERER_HDR_HEADROOM_FLOAT                        "SDL.renderer.HDR_headroom"
+#define SDL_PROP_RENDERER_D3D9_DEVICE_POINTER                       "SDL.renderer.d3d9.device"
+#define SDL_PROP_RENDERER_D3D11_DEVICE_POINTER                      "SDL.renderer.d3d11.device"
+#define SDL_PROP_RENDERER_D3D12_DEVICE_POINTER                      "SDL.renderer.d3d12.device"
+#define SDL_PROP_RENDERER_D3D12_COMMAND_QUEUE_POINTER               "SDL.renderer.d3d12.command_queue"
+#define SDL_PROP_RENDERER_VULKAN_INSTANCE_POINTER                   "SDL.renderer.vulkan.instance"
+#define SDL_PROP_RENDERER_VULKAN_SURFACE_NUMBER                     "SDL.renderer.vulkan.surface"
+#define SDL_PROP_RENDERER_VULKAN_PHYSICAL_DEVICE_POINTER            "SDL.renderer.vulkan.physical_device"
+#define SDL_PROP_RENDERER_VULKAN_DEVICE_POINTER                     "SDL.renderer.vulkan.device"
+#define SDL_PROP_RENDERER_VULKAN_GRAPHICS_QUEUE_FAMILY_INDEX_NUMBER "SDL.renderer.vulkan.graphics_queue_family_index"
+#define SDL_PROP_RENDERER_VULKAN_PRESENT_QUEUE_FAMILY_INDEX_NUMBER  "SDL.renderer.vulkan.present_queue_family_index"
 
 /**
  * Get the output size in pixels of a rendering context.
