@@ -1688,7 +1688,7 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
             SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkCreateInstance(): %s\n", SDL_Vulkan_GetResultString(result));
             return result;
         }
-        SDL_free(instanceExtensionsCopy);
+        SDL_free((void *)instanceExtensionsCopy);
     }
 
     /* Load instance Vulkan functions */
