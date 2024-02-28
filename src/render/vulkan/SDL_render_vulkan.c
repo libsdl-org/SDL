@@ -1574,12 +1574,12 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
         instanceCreateInfo.pApplicationInfo = &appInfo;
         char const *const *instanceExtensions = SDL_Vulkan_GetInstanceExtensions(&instanceCreateInfo.enabledExtensionCount);
 
-        char **instanceExtensionsCopy = SDL_calloc(instanceCreateInfo.enabledExtensionCount + 1, sizeof(const char *));
+        const char **instanceExtensionsCopy = SDL_calloc(instanceCreateInfo.enabledExtensionCount + 1, sizeof(const char *));
         for (uint32_t i = 0; i < instanceCreateInfo.enabledExtensionCount; i++) {
-            instanceExtensionsCopy[i] = SDL_strdup(instanceExtensions[i]);
+            instanceExtensionsCopy[i] = instanceExtensions[i];
         }
         if (rendererData->supportsEXTSwapchainColorspace) {
-            instanceExtensionsCopy[instanceCreateInfo.enabledExtensionCount] = SDL_strdup(VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME);
+            instanceExtensionsCopy[instanceCreateInfo.enabledExtensionCount] = VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME;
             instanceCreateInfo.enabledExtensionCount++;
         }
         instanceCreateInfo.ppEnabledExtensionNames = (const char *const *)instanceExtensionsCopy;
@@ -1591,10 +1591,6 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
         if (result != VK_SUCCESS) {
             SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkCreateInstance(): %s\n", SDL_Vulkan_GetResultString(result));
             return result;
-        }
-
-        for (uint32_t i = 0; i < instanceCreateInfo.enabledExtensionCount; i++) {
-            SDL_free(instanceExtensionsCopy[i]);
         }
         SDL_free(instanceExtensionsCopy);
     }
