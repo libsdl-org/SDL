@@ -260,10 +260,13 @@ int main(int argc, char **argv)
     SDL_Texture *output[3];
     const char *titles[3] = { "ORIGINAL", "SOFTWARE", "HARDWARE" };
     char title[128];
-    const char *yuv_name;
-    const char *yuv_mode;
-    Uint32 rgb_format = SDL_PIXELFORMAT_RGBX8888;
+    YUV_CONVERSION_MODE yuv_mode;
+    const char *yuv_mode_name;
     Uint32 yuv_format = SDL_PIXELFORMAT_YV12;
+    const char *yuv_format_name;
+    Uint32 rgb_format = SDL_PIXELFORMAT_RGBX8888;
+    SDL_PropertiesID props;
+    SDL_Colorspace colorspace;
     int current = 0;
     int pitch;
     Uint8 *raw_yuv;
@@ -388,10 +391,28 @@ int main(int argc, char **argv)
         return 3;
     }
 
+    yuv_mode = GetYUVConversionModeForResolution(original->w, original->h);
+    switch (yuv_mode) {
+    case YUV_CONVERSION_JPEG:
+        yuv_mode_name = "JPEG";
+        colorspace = SDL_COLORSPACE_JPEG;
+        break;
+    case YUV_CONVERSION_BT601:
+        yuv_mode_name = "BT.601";
+        colorspace = SDL_COLORSPACE_BT601_LIMITED;
+        break;
+    case YUV_CONVERSION_BT709:
+        yuv_mode_name = "BT.709";
+        colorspace = SDL_COLORSPACE_BT709_LIMITED;
+        break;
+    default:
+        yuv_mode_name = "UNKNOWN";
+        colorspace = SDL_COLORSPACE_UNKNOWN;
+        break;
+    }
+
     raw_yuv = SDL_calloc(1, MAX_YUV_SURFACE_SIZE(original->w, original->h, 0));
-    ConvertRGBtoYUV(yuv_format, original->pixels, original->pitch, raw_yuv, original->w, original->h,
-                    GetYUVConversionModeForResolution(original->w, original->h),
-                    0, 100);
+    ConvertRGBtoYUV(yuv_format, original->pixels, original->pitch, raw_yuv, original->w, original->h, yuv_mode, 0, 100);
     pitch = CalculateYUVPitch(yuv_format, original->w);
 
     converted = SDL_CreateSurface(original->w, original->h, rgb_format);
@@ -402,7 +423,7 @@ int main(int argc, char **argv)
 
     then = SDL_GetTicks();
     for (i = 0; i < iterations; ++i) {
-        SDL_ConvertPixels(original->w, original->h, yuv_format, raw_yuv, pitch, rgb_format, converted->pixels, converted->pitch);
+        SDL_ConvertPixelsAndColorspace(original->w, original->h, yuv_format, colorspace, 0, raw_yuv, pitch, rgb_format, SDL_COLORSPACE_SRGB, 0, converted->pixels, converted->pitch);
     }
     now = SDL_GetTicks();
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%d iterations in %" SDL_PRIu64 " ms, %.2fms each\n", iterations, (now - then), (float)(now - then) / iterations);
@@ -421,31 +442,23 @@ int main(int argc, char **argv)
 
     output[0] = SDL_CreateTextureFromSurface(renderer, original);
     output[1] = SDL_CreateTextureFromSurface(renderer, converted);
-    output[2] = SDL_CreateTexture(renderer, yuv_format, SDL_TEXTUREACCESS_STREAMING, original->w, original->h);
+    props = SDL_CreateProperties();
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, colorspace);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, yuv_format);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STREAMING);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, original->w);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, original->h);
+    output[2] = SDL_CreateTextureWithProperties(renderer, props);
+    SDL_DestroyProperties(props);
     if (!output[0] || !output[1] || !output[2]) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create texture: %s\n", SDL_GetError());
         return 5;
     }
     SDL_UpdateTexture(output[2], NULL, raw_yuv, pitch);
 
-    yuv_name = SDL_GetPixelFormatName(yuv_format);
-    if (SDL_strncmp(yuv_name, "SDL_PIXELFORMAT_", 16) == 0) {
-        yuv_name += 16;
-    }
-
-    switch (GetYUVConversionModeForResolution(original->w, original->h)) {
-    case YUV_CONVERSION_JPEG:
-        yuv_mode = "JPEG";
-        break;
-    case YUV_CONVERSION_BT601:
-        yuv_mode = "BT.601";
-        break;
-    case YUV_CONVERSION_BT709:
-        yuv_mode = "BT.709";
-        break;
-    default:
-        yuv_mode = "UNKNOWN";
-        break;
+    yuv_format_name = SDL_GetPixelFormatName(yuv_format);
+    if (SDL_strncmp(yuv_format_name, "SDL_PIXELFORMAT_", 16) == 0) {
+        yuv_format_name += 16;
     }
 
     {
@@ -488,7 +501,7 @@ int main(int argc, char **argv)
             if (current == 0) {
                 SDLTest_DrawString(renderer, 4, 4, titles[current]);
             } else {
-                (void)SDL_snprintf(title, sizeof(title), "%s %s %s", titles[current], yuv_name, yuv_mode);
+                (void)SDL_snprintf(title, sizeof(title), "%s %s %s", titles[current], yuv_format_name, yuv_mode_name);
                 SDLTest_DrawString(renderer, 4, 4, title);
             }
             SDL_RenderPresent(renderer);
