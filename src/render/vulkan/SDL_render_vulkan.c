@@ -1547,9 +1547,9 @@ static SDL_bool VULKAN_DeviceExtensionsFound(VULKAN_RenderData *rendererData, in
             SDL_free(extensionProperties);
             return SDL_FALSE;
         }
-        for (uint32_t ext = 0; ext < extensionsToCheck && foundExtensions; ext++) {
+        for (int ext = 0; ext < extensionsToCheck && foundExtensions; ext++) {
             SDL_bool foundExtension = SDL_FALSE;
-            for (uint32_t i = 0; i< extensionCount; i++) {
+            for (uint32_t i = 0; i < extensionCount; i++) {
                 if (SDL_strcmp(extensionProperties[i].extensionName, extNames[ext]) == 0) {
                     foundExtension = SDL_TRUE;
                     break;
