@@ -1681,7 +1681,7 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
             instanceCreateInfo.enabledExtensionCount++;
         }
         if (rendererData->supportsKHRGetPhysicalDeviceProperties2) {
-            instanceExtensionsCopy[instanceCreateInfo.enabledExtensionCount] = SDL_strdup(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+            instanceExtensionsCopy[instanceCreateInfo.enabledExtensionCount] = VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME;
             instanceCreateInfo.enabledExtensionCount++;
         }
         instanceCreateInfo.ppEnabledExtensionNames = (const char *const *)instanceExtensionsCopy;
@@ -1746,16 +1746,19 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
         VkDeviceCreateInfo deviceCreateInfo = { 0 };
         static const char *const deviceExtensionNames[] = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-             /* VK_KHR_sampler_ycbcr_conversion + dependent extensions */
+             /* VK_KHR_sampler_ycbcr_conversion + dependent extensions.
+                Note VULKAN_DeviceExtensionsFound() call below, if these get moved in this
+                array, update that check too.
+            */
             VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME,
             VK_KHR_MAINTENANCE1_EXTENSION_NAME,
             VK_KHR_BIND_MEMORY_2_EXTENSION_NAME,
             VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,
         };
-        /* Check if YcBcr extensions are supported */
-        rendererData->supportsKHRSamplerYcBcrConversion = rendererData->supportsKHRGetPhysicalDeviceProperties2 &&
-
-        VULKAN_DeviceExtensionsFound(rendererData, 4, &deviceExtensionNames[1]);
+        if (rendererData->supportsKHRGetPhysicalDeviceProperties2 &&
+            VULKAN_DeviceExtensionsFound(rendererData, 4, &deviceExtensionNames[1])) {
+            rendererData->supportsKHRSamplerYcBcrConversion = SDL_TRUE;
+        }
         deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         deviceCreateInfo.queueCreateInfoCount = 0;
         deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfo;
