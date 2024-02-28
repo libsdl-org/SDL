@@ -1485,7 +1485,7 @@ static SDL_bool VULKAN_InstanceExtensionFound(VULKAN_RenderData *rendererData, c
         return SDL_FALSE;
     }
     if (extensionCount > 0 ) {
-        VkExtensionProperties *extensionProperties = SDL_calloc(sizeof(VkExtensionProperties), extensionCount);
+        VkExtensionProperties *extensionProperties = SDL_calloc(extensionCount, sizeof(VkExtensionProperties));
         result = vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, extensionProperties);
         if (result != VK_SUCCESS ) {
             SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkEnumerateInstanceExtensionProperties( NULL, ... ): %s.\n", SDL_Vulkan_GetResultString(result));
@@ -1574,7 +1574,7 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
         instanceCreateInfo.pApplicationInfo = &appInfo;
         char const *const *instanceExtensions = SDL_Vulkan_GetInstanceExtensions(&instanceCreateInfo.enabledExtensionCount);
 
-        char **instanceExtensionsCopy = SDL_calloc(sizeof(const char *), instanceCreateInfo.enabledExtensionCount + 1);
+        char **instanceExtensionsCopy = SDL_calloc(instanceCreateInfo.enabledExtensionCount + 1, sizeof(const char *));
         for (uint32_t i = 0; i < instanceCreateInfo.enabledExtensionCount; i++) {
             instanceExtensionsCopy[i] = SDL_strdup(instanceExtensions[i]);
         }
@@ -1997,7 +1997,7 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
             return result;
         }
         if (presentModeCount > 0) {
-            VkPresentModeKHR *presentModes = SDL_calloc(sizeof(VkPresentModeKHR), presentModeCount);
+            VkPresentModeKHR *presentModes = SDL_calloc(presentModeCount, sizeof(VkPresentModeKHR));
             result = vkGetPhysicalDeviceSurfacePresentModesKHR(rendererData->physicalDevice, rendererData->surface, &presentModeCount, presentModes);
             if (result != VK_SUCCESS) {
                 SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkGetPhysicalDeviceSurfacePresentModesKHR(): %s\n", SDL_Vulkan_GetResultString(result));
@@ -2098,9 +2098,9 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
              }
              SDL_free(rendererData->swapchainImageViews);
         }
-        rendererData->swapchainImageViews = SDL_calloc(sizeof(VkImageView), rendererData->swapchainImageCount);
+        rendererData->swapchainImageViews = SDL_calloc(rendererData->swapchainImageCount, sizeof(VkImageView));
         SDL_free(rendererData->swapchainImageLayouts);
-        rendererData->swapchainImageLayouts = SDL_calloc(sizeof(VkImageLayout), rendererData->swapchainImageCount);
+        rendererData->swapchainImageLayouts = SDL_calloc(rendererData->swapchainImageCount, sizeof(VkImageLayout));
         for (uint32_t i = 0; i < rendererData->swapchainImageCount; i++) {
             imageViewCreateInfo.image = rendererData->swapchainImages[i];
             result = vkCreateImageView(rendererData->device, &imageViewCreateInfo, NULL, &rendererData->swapchainImageViews[i]);
@@ -2125,7 +2125,7 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         rendererData->currentCommandBuffer = VK_NULL_HANDLE;
         rendererData->currentCommandBufferIndex = 0;
     }
-    rendererData->commandBuffers = SDL_calloc(sizeof(VkCommandBuffer), rendererData->swapchainImageCount);
+    rendererData->commandBuffers = SDL_calloc(rendererData->swapchainImageCount, sizeof(VkCommandBuffer));
     result = vkAllocateCommandBuffers(rendererData->device, &commandBufferAllocateInfo, rendererData->commandBuffers);
     if (result != VK_SUCCESS) {
         VULKAN_DestroyAll(renderer);
@@ -2142,7 +2142,7 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         }
         SDL_free(rendererData->fences);
     }
-    rendererData->fences = SDL_calloc(sizeof(VkFence), rendererData->swapchainImageCount);
+    rendererData->fences = SDL_calloc(rendererData->swapchainImageCount, sizeof(VkFence));
     for (uint32_t i = 0; i < rendererData->swapchainImageCount; i++) {
         VkFenceCreateInfo fenceCreateInfo = { 0 };
         fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -2170,7 +2170,7 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
             rendererData->renderPasses[i] = VK_NULL_HANDLE;
         }
     }
-    rendererData->framebuffers = SDL_calloc(sizeof(VkFramebuffer), rendererData->swapchainImageCount);
+    rendererData->framebuffers = SDL_calloc(rendererData->swapchainImageCount, sizeof(VkFramebuffer));
     result = VULKAN_CreateFramebuffersAndRenderPasses(renderer,
         rendererData->swapchainSize.width,
         rendererData->swapchainSize.height,
@@ -2199,12 +2199,12 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         SDL_free(rendererData->descriptorPools);
         SDL_free(rendererData->numDescriptorPools);
     }
-    rendererData->descriptorPools = SDL_calloc(sizeof(VkDescriptorPool*), rendererData->swapchainImageCount);
-    rendererData->numDescriptorPools = SDL_calloc(sizeof(uint32_t), rendererData->swapchainImageCount);
+    rendererData->descriptorPools = SDL_calloc(rendererData->swapchainImageCount, sizeof(VkDescriptorPool*));
+    rendererData->numDescriptorPools = SDL_calloc(rendererData->swapchainImageCount, sizeof(uint32_t));
     for (uint32_t i = 0; i < rendererData->swapchainImageCount; i++) {
         /* Start by just allocating one pool, it will grow if needed */
         rendererData->numDescriptorPools[i] = 1;
-        rendererData->descriptorPools[i] = SDL_calloc(sizeof(VkDescriptorPool), 1);
+        rendererData->descriptorPools[i] = SDL_calloc(1, sizeof(VkDescriptorPool));
         rendererData->descriptorPools[i][0] = VULKAN_AllocateDescriptorPool(rendererData);
         if (result != VK_SUCCESS) {
             VULKAN_DestroyAll(renderer);
@@ -2240,12 +2240,12 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         }
         SDL_free(rendererData->uploadBuffers);
     }
-    rendererData->uploadBuffers = SDL_calloc(sizeof(VULKAN_Buffer*), rendererData->swapchainImageCount);
+    rendererData->uploadBuffers = SDL_calloc(rendererData->swapchainImageCount, sizeof(VULKAN_Buffer*));
     for (uint32_t i = 0; i < rendererData->swapchainImageCount; i++) {
-        rendererData->uploadBuffers[i] = SDL_calloc(sizeof(VULKAN_Buffer), SDL_VULKAN_NUM_UPLOAD_BUFFERS);
+        rendererData->uploadBuffers[i] = SDL_calloc(SDL_VULKAN_NUM_UPLOAD_BUFFERS, sizeof(VULKAN_Buffer));
     }
     SDL_free(rendererData->currentUploadBuffer);
-    rendererData->currentUploadBuffer = SDL_calloc(sizeof(int), rendererData->swapchainImageCount);
+    rendererData->currentUploadBuffer = SDL_calloc(rendererData->swapchainImageCount, sizeof(int));
 
     /* Constant buffers */
     if (rendererData->constantBuffers) {
@@ -2260,12 +2260,12 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         SDL_free(rendererData->numConstantBuffers);
         rendererData->constantBuffers = NULL;
     }
-    rendererData->constantBuffers = SDL_calloc(sizeof(VULKAN_Buffer*), rendererData->swapchainImageCount);
-    rendererData->numConstantBuffers = SDL_calloc(sizeof(VULKAN_Buffer*), rendererData->swapchainImageCount);
+    rendererData->constantBuffers = SDL_calloc(rendererData->swapchainImageCount, sizeof(VULKAN_Buffer*));
+    rendererData->numConstantBuffers = SDL_calloc(rendererData->swapchainImageCount, sizeof(VULKAN_Buffer*));
     for (uint32_t i = 0; i < rendererData->swapchainImageCount; i++) {
         /* Start with just allocating one, will grow if needed */
         rendererData->numConstantBuffers[i] = 1;
-        rendererData->constantBuffers[i] = SDL_calloc(sizeof(VULKAN_Buffer), 1);
+        rendererData->constantBuffers[i] = SDL_calloc(1, sizeof(VULKAN_Buffer));
         result = VULKAN_AllocateBuffer(rendererData,
             SDL_VULKAN_CONSTANT_BUFFER_DEFAULT_SIZE,
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
