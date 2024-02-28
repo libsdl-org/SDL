@@ -8,16 +8,10 @@ struct PixelShaderInput
     float4 color : COLOR0;
 };
 
-// These should mirror the definitions in VULKAN_render_d3d12.c
+// These should mirror the definitions in SDL_render_vulkan.c
 static const float TONEMAP_NONE = 0;
 static const float TONEMAP_LINEAR = 1;
 static const float TONEMAP_CHROME = 2;
-
-static const float TEXTURETYPE_NONE = 0;
-static const float TEXTURETYPE_RGB = 1;
-static const float TEXTURETYPE_NV12 = 2;
-static const float TEXTURETYPE_NV21 = 3;
-static const float TEXTURETYPE_YUV = 4;
 
 static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
@@ -27,9 +21,9 @@ static const float INPUTTYPE_HDR10 = 3;
 cbuffer Constants : register(b1)
 {
     float scRGB_output;
-    float texture_type;
     float input_type;
     float color_scale;
+    float unused_pad0;
 
     float tonemap_method;
     float tonemap_factor1;
@@ -115,11 +109,8 @@ float4 GetInputColor(PixelShaderInput input)
 {
     float4 rgba;
 
-    if (texture_type == TEXTURETYPE_NONE) {
-        rgba = 1.0;
-    } else {
-        rgba = texture0.Sample(sampler0, input.tex).rgba;
-    }
+    rgba = texture0.Sample(sampler0, input.tex).rgba;
+
     return rgba;
 }
 
