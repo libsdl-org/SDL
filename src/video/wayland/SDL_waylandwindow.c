@@ -1304,16 +1304,15 @@ static void Wayland_move_window(SDL_Window *window, SDL_DisplayData *driverdata)
     }
 }
 
-void Wayland_RemoveOutputFromWindow(SDL_WindowData *window, struct wl_output *output)
+void Wayland_RemoveOutputFromWindow(SDL_WindowData *window, SDL_DisplayData *display_data)
 {
-    int i, send_move_event = 0;
-    SDL_DisplayData *driverdata = wl_output_get_user_data(output);
+    SDL_bool send_move_event = SDL_FALSE;
 
-    for (i = 0; i < window->num_outputs; i++) {
-        if (window->outputs[i] == driverdata) { /* remove this one */
+    for (int i = 0; i < window->num_outputs; i++) {
+        if (window->outputs[i] == display_data) { /* remove this one */
             if (i == (window->num_outputs - 1)) {
                 window->outputs[i] = NULL;
-                send_move_event = 1;
+                send_move_event = SDL_TRUE;
             } else {
                 SDL_memmove(&window->outputs[i],
                             &window->outputs[i + 1],
@@ -1335,8 +1334,7 @@ void Wayland_RemoveOutputFromWindow(SDL_WindowData *window, struct wl_output *ou
     Wayland_MaybeUpdateScaleFactor(window);
 }
 
-static void handle_surface_enter(void *data, struct wl_surface *surface,
-                                 struct wl_output *output)
+static void handle_surface_enter(void *data, struct wl_surface *surface, struct wl_output *output)
 {
     SDL_WindowData *window = data;
     SDL_DisplayData *driverdata = wl_output_get_user_data(output);
@@ -1359,16 +1357,15 @@ static void handle_surface_enter(void *data, struct wl_surface *surface,
     Wayland_MaybeUpdateScaleFactor(window);
 }
 
-static void handle_surface_leave(void *data, struct wl_surface *surface,
-                                 struct wl_output *output)
+static void handle_surface_leave(void *data, struct wl_surface *surface, struct wl_output *output)
 {
-    SDL_WindowData *window = data;
+    SDL_WindowData *window = (SDL_WindowData *)data;
 
     if (!SDL_WAYLAND_own_output(output) || !SDL_WAYLAND_own_surface(surface)) {
         return;
     }
 
-    Wayland_RemoveOutputFromWindow(window, output);
+    Wayland_RemoveOutputFromWindow(window, (SDL_DisplayData *)wl_output_get_user_data(output));
 }
 
 static void handle_preferred_buffer_scale(void *data, struct wl_surface *wl_surface, int32_t factor)

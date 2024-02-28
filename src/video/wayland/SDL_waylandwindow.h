@@ -206,6 +206,6 @@ extern int Wayland_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 extern int Wayland_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
 extern int Wayland_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
-extern void Wayland_RemoveOutputFromWindow(SDL_WindowData *window, struct wl_output *output);
+extern void Wayland_RemoveOutputFromWindow(SDL_WindowData *window, SDL_DisplayData *display_data);
 
 #endif /* SDL_waylandwindow_h_ */

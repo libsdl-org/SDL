@@ -951,7 +951,7 @@ static void Wayland_free_display(SDL_VideoDisplay *display)
          * so ensure that no window continues to hold a reference to a removed output.
          */
         for (SDL_Window *window = SDL_GetVideoDevice()->windows; window; window = window->next) {
-            Wayland_RemoveOutputFromWindow(window->driverdata, display_data->output);
+            Wayland_RemoveOutputFromWindow(window->driverdata, display_data);
         }
 
         SDL_free(display_data->wl_output_name);
