@@ -48,46 +48,54 @@ static float clip3(float x, float y, float z)
 
 static void RGBtoYUV(const Uint8 *rgb, int *yuv, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
 {
-    if (mode == YUV_CONVERSION_JPEG) {
-        /* Full range YUV */
-        yuv[0] = (int)(0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]);
-        yuv[1] = (int)((rgb[2] - yuv[0]) * 0.565 + 128);
-        yuv[2] = (int)((rgb[0] - yuv[0]) * 0.713 + 128);
+    /**
+     * This formula is from Microsoft's documentation:
+     * https://msdn.microsoft.com/en-us/library/windows/desktop/dd206750(v=vs.85).aspx
+     * L = Kr * R + Kb * B + (1 - Kr - Kb) * G
+     * Y =                   floor(2^(M-8) * (219*(L-Z)/S + 16) + 0.5);
+     * U = clip3(0, (2^M)-1, floor(2^(M-8) * (112*(B-L) / ((1-Kb)*S) + 128) + 0.5));
+     * V = clip3(0, (2^M)-1, floor(2^(M-8) * (112*(R-L) / ((1-Kr)*S) + 128) + 0.5));
+     */
+    SDL_bool studio_RGB = SDL_FALSE;
+    SDL_bool studio_YUV = SDL_FALSE;
+    float N, M, S, Z, R, G, B, L, Kr, Kb, Y, U, V;
+
+    N = 8.0f; /* 8 bit RGB */
+    M = 8.0f; /* 8 bit YUV */
+    if (mode == YUV_CONVERSION_BT709) {
+        /* BT.709 */
+        Kr = 0.2126f;
+        Kb = 0.0722f;
     } else {
-        /**
-         * This formula is from Microsoft's documentation:
-         * https://msdn.microsoft.com/en-us/library/windows/desktop/dd206750(v=vs.85).aspx
-         * L = Kr * R + Kb * B + (1 - Kr - Kb) * G
-         * Y =                   SDL_floor(2^(M-8) * (219*(L-Z)/S + 16) + 0.5);
-         * U = clip3(0, (2^M)-1, SDL_floor(2^(M-8) * (112*(B-L) / ((1-Kb)*S) + 128) + 0.5));
-         * V = clip3(0, (2^M)-1, SDL_floor(2^(M-8) * (112*(R-L) / ((1-Kr)*S) + 128) + 0.5));
-         */
-        float S, Z, R, G, B, L, Kr, Kb, Y, U, V;
+        /* BT.601 */
+        Kr = 0.299f;
+        Kb = 0.114f;
+    }
 
-        if (mode == YUV_CONVERSION_BT709) {
-            /* BT.709 */
-            Kr = 0.2126f;
-            Kb = 0.0722f;
-        } else {
-            /* BT.601 */
-            Kr = 0.299f;
-            Kb = 0.114f;
-        }
+    if (mode == YUV_CONVERSION_JPEG) {
+        studio_YUV = SDL_FALSE;
+    } else {
+        studio_YUV = SDL_TRUE;
+    }
 
+    if (studio_RGB || !studio_YUV) {
+        S = 219.0f * SDL_powf(2.0f, N - 8);
+        Z = 16.0f * SDL_powf(2.0f, N - 8);
+    } else {
         S = 255.0f;
         Z = 0.0f;
-        R = rgb[0];
-        G = rgb[1];
-        B = rgb[2];
-        L = Kr * R + Kb * B + (1 - Kr - Kb) * G;
-        Y = (Uint8)SDL_floorf((219 * (L - Z) / S + 16) + 0.5f);
-        U = (Uint8)clip3(0, 255, SDL_floorf((112.0f * (B - L) / ((1.0f - Kb) * S) + 128) + 0.5f));
-        V = (Uint8)clip3(0, 255, SDL_floorf((112.0f * (R - L) / ((1.0f - Kr) * S) + 128) + 0.5f));
-
-        yuv[0] = (Uint8)Y;
-        yuv[1] = (Uint8)U;
-        yuv[2] = (Uint8)V;
     }
+    R = rgb[0];
+    G = rgb[1];
+    B = rgb[2];
+    L = Kr * R + Kb * B + (1 - Kr - Kb) * G;
+    Y =                                 SDL_floorf(SDL_powf(2.0f, (M - 8)) * (219.0f * (L - Z) / S + 16) + 0.5f);
+    U = clip3(0, SDL_powf(2.0f, M) - 1, SDL_floorf(SDL_powf(2.0f, (M - 8)) * (112.0f * (B - L) / ((1.0f - Kb) * S) + 128) + 0.5f));
+    V = clip3(0, SDL_powf(2.0f, M) - 1, SDL_floorf(SDL_powf(2.0f, (M - 8)) * (112.0f * (R - L) / ((1.0f - Kr) * S) + 128) + 0.5f));
+
+    yuv[0] = (Uint8)Y;
+    yuv[1] = (Uint8)U;
+    yuv[2] = (Uint8)V;
 
     if (monochrome) {
         yuv[1] = 128;
@@ -95,7 +103,7 @@ static void RGBtoYUV(const Uint8 *rgb, int *yuv, YUV_CONVERSION_MODE mode, int m
     }
 
     if (luminance != 100) {
-        yuv[0] = yuv[0] * luminance / 100;
+        yuv[0] = (Uint8)SDL_roundf(yuv[0] * (luminance / 100.0f));
         if (yuv[0] > 255) {
             yuv[0] = 255;
         }
