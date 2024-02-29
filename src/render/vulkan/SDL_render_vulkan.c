@@ -2438,6 +2438,7 @@ static int VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         texture->format == SDL_PIXELFORMAT_NV12 ||
         texture->format == SDL_PIXELFORMAT_NV21 ||
         texture->format == SDL_PIXELFORMAT_P010) {
+        const uint32_t YUV_SD_THRESHOLD = 576;
 
         /* Check that we have VK_KHR_sampler_ycbcr_conversion support */
         if (!rendererData->supportsKHRSamplerYCbCrConversion) {
@@ -2464,6 +2465,15 @@ static int VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         case SDL_MATRIX_COEFFICIENTS_BT2020_NCL:
         case SDL_MATRIX_COEFFICIENTS_BT2020_CL:
             samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020_KHR;
+            break;
+        case SDL_MATRIX_COEFFICIENTS_UNSPECIFIED:
+            if (texture->format == SDL_PIXELFORMAT_P010) {
+                samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020_KHR;
+            } else if (height > YUV_SD_THRESHOLD) {
+                samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709_KHR;
+            } else {
+                samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601_KHR;
+            }
             break;
         default:
             return SDL_SetError("[Vulkan] Unsupported Ycbcr colorspace: %d", SDL_COLORSPACEMATRIX(texture->colorspace));
