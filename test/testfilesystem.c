@@ -20,7 +20,14 @@ static int SDLCALL enum_callback(void *userdata, SDL_FSops *fsops, const char *o
     SDL_Stat statbuf;
     char *fullpath = NULL;
 
-    if (SDL_asprintf(&fullpath, "%s%s%s", origdir, *origdir ? "/" : "", fname) < 0) {
+    /* you can use '/' for a path separator on Windows, but to make the log output look correct, we'll #ifdef this... */
+    #ifdef SDL_PLATFORM_WINDOWS
+    const char *pathsep = "\\";
+    #else
+    const char *pathsep = "/";
+    #endif
+
+    if (SDL_asprintf(&fullpath, "%s%s%s", origdir, *origdir ? pathsep : "", fname) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         return -1;
     }
