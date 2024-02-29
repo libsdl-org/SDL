@@ -331,7 +331,7 @@ typedef struct
 
     SDL_bool supportsEXTSwapchainColorspace;
     SDL_bool supportsKHRGetPhysicalDeviceProperties2;
-    SDL_bool supportsKHRSamplerYcBcrConversion;
+    SDL_bool supportsKHRSamplerYCbCrConversion;
     uint32_t surfaceFormatsAllocatedCount;
     uint32_t surfaceFormatsCount;
     uint32_t swapchainDesiredImageCount;
@@ -1614,6 +1614,17 @@ static SDL_bool VULKAN_ValidationLayersFound()
 /* Create resources that depend on the device. */
 static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_PropertiesID create_props)
 {
+    static const char *const deviceExtensionNames[] = {
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        /* VK_KHR_sampler_ycbcr_conversion + dependent extensions.
+           Note VULKAN_DeviceExtensionsFound() call below, if these get moved in this
+           array, update that check too.
+       */
+        VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME,
+        VK_KHR_MAINTENANCE1_EXTENSION_NAME,
+        VK_KHR_BIND_MEMORY_2_EXTENSION_NAME,
+        VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,
+    };
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->driverdata;
     SDL_VideoDevice *device = SDL_GetVideoDevice();
     VkResult result = VK_SUCCESS;
@@ -1725,7 +1736,10 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
         rendererData->presentQueueFamilyIndex = (uint32_t)SDL_GetNumberProperty(create_props, SDL_PROP_RENDERER_CREATE_VULKAN_PRESENT_QUEUE_FAMILY_INDEX_NUMBER, 0);
     }
 
-
+    if (rendererData->supportsKHRGetPhysicalDeviceProperties2 &&
+        VULKAN_DeviceExtensionsFound(rendererData, 4, &deviceExtensionNames[1])) {
+        rendererData->supportsKHRSamplerYCbCrConversion = SDL_TRUE;
+    }
 
     /* Create Vulkan device */
     rendererData->device = (VkDevice)SDL_GetProperty(create_props, SDL_PROP_RENDERER_CREATE_VULKAN_DEVICE_POINTER, NULL);
@@ -1735,26 +1749,12 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
         VkDeviceQueueCreateInfo deviceQueueCreateInfo[2] = { { 0 }, { 0 } };
         static const float queuePriority[] = { 1.0f };
         VkDeviceCreateInfo deviceCreateInfo = { 0 };
-        static const char *const deviceExtensionNames[] = {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-             /* VK_KHR_sampler_ycbcr_conversion + dependent extensions.
-                Note VULKAN_DeviceExtensionsFound() call below, if these get moved in this
-                array, update that check too.
-            */
-            VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME,
-            VK_KHR_MAINTENANCE1_EXTENSION_NAME,
-            VK_KHR_BIND_MEMORY_2_EXTENSION_NAME,
-            VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,
-        };
-        if (rendererData->supportsKHRGetPhysicalDeviceProperties2 &&
-            VULKAN_DeviceExtensionsFound(rendererData, 4, &deviceExtensionNames[1])) {
-            rendererData->supportsKHRSamplerYcBcrConversion = SDL_TRUE;
-        }
+
         deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         deviceCreateInfo.queueCreateInfoCount = 0;
         deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfo;
         deviceCreateInfo.pEnabledFeatures = NULL;
-        deviceCreateInfo.enabledExtensionCount = (rendererData->supportsKHRSamplerYcBcrConversion) ? 5 : 1;
+        deviceCreateInfo.enabledExtensionCount = (rendererData->supportsKHRSamplerYCbCrConversion) ? 5 : 1;
         deviceCreateInfo.ppEnabledExtensionNames = deviceExtensionNames;
 
         deviceQueueCreateInfo[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -2440,7 +2440,7 @@ static int VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         texture->format == SDL_PIXELFORMAT_P010) {
 
         /* Check that we have VK_KHR_sampler_ycbcr_conversion support */
-        if (!rendererData->supportsKHRSamplerYcBcrConversion) {
+        if (!rendererData->supportsKHRSamplerYCbCrConversion) {
             SDL_free(textureData);
             return SDL_SetError("[Vulkan] YUV textures require a Vulkan device that supports VK_KHR_sampler_ycbcr_conversion");
         }
@@ -3980,6 +3980,14 @@ SDL_Renderer *VULKAN_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_
         return NULL;
     }
 
+    if (rendererData->supportsKHRSamplerYCbCrConversion) {
+        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
+        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
+        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV12;
+        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
+        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_P010;
+    }
+
     return renderer;
 }
 
@@ -3989,17 +3997,12 @@ SDL_RenderDriver VULKAN_RenderDriver = {
         "vulkan",
         (SDL_RENDERER_ACCELERATED |
          SDL_RENDERER_PRESENTVSYNC), /* flags.  see SDL_RendererFlags */
-        9,                           /* num_texture_formats */
+        4,                           /* num_texture_formats */
         {                            /* texture_formats */
           SDL_PIXELFORMAT_ARGB8888,
           SDL_PIXELFORMAT_XRGB8888,
           SDL_PIXELFORMAT_XBGR2101010,
-          SDL_PIXELFORMAT_RGBA64_FLOAT,
-          SDL_PIXELFORMAT_YV12,
-          SDL_PIXELFORMAT_IYUV,
-          SDL_PIXELFORMAT_NV12,
-          SDL_PIXELFORMAT_NV21,
-          SDL_PIXELFORMAT_P010 },
+          SDL_PIXELFORMAT_RGBA64_FLOAT },
         16384, /* max_texture_width */
         16384  /* max_texture_height */
     }
