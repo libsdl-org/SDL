@@ -32,6 +32,7 @@ extern SDLTest_TestSuiteReference sdltestTestSuite;
 extern SDLTest_TestSuiteReference stdlibTestSuite;
 extern SDLTest_TestSuiteReference subsystemsTestSuite;
 extern SDLTest_TestSuiteReference surfaceTestSuite;
+extern SDLTest_TestSuiteReference timeTestSuite;
 extern SDLTest_TestSuiteReference timerTestSuite;
 extern SDLTest_TestSuiteReference videoTestSuite;
 

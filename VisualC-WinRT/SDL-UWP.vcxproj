@@ -86,6 +86,7 @@
     <ClInclude Include="..\include\SDL3\SDL_surface.h" />
     <ClInclude Include="..\include\SDL3\SDL_system.h" />
     <ClInclude Include="..\include\SDL3\SDL_thread.h" />
+    <ClInclude Include="..\include\SDL3\SDL_time.h" />
     <ClInclude Include="..\include\SDL3\SDL_timer.h" />
     <ClInclude Include="..\include\SDL3\SDL_touch.h" />
     <ClInclude Include="..\include\SDL3\SDL_types.h" />
@@ -521,6 +522,8 @@
     </ClCompile>
     <ClCompile Include="..\src\timer\SDL_timer.c" />
     <ClCompile Include="..\src\timer\windows\SDL_systimer.c" />
+    <ClCompile Include="..\src\time\SDL_time.c" />
+    <ClCompile Include="..\src\time\windows\SDL_systime.c" />
     <ClCompile Include="..\src\video\dummy\SDL_nullevents.c" />
     <ClCompile Include="..\src\video\dummy\SDL_nullframebuffer.c" />
     <ClCompile Include="..\src\video\dummy\SDL_nullvideo.c" />

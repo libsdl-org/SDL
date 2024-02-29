@@ -186,6 +186,16 @@ typedef int64_t Sint64;
 #define SDL_MIN_UINT64  ((Uint64)(0x0000000000000000ull))   /* 0 */
 typedef uint64_t Uint64;
 
+/**
+ * SDL times are signed, 64-bit integers representing nanoseconds since the Unix epoch (Jan 1, 1970)
+ *
+ * They can be converted between POSIX time_t values with SDL_NS_TO_SECONDS() and SDL_SECONDS_TO_NS(),
+ * and between Windows FILETIME values with SDL_TimeToWindows() and SDL_TimeFromWindows().
+ */
+#define SDL_MAX_TIME SDL_MAX_SINT64
+#define SDL_MIN_TIME SDL_MIN_SINT64
+typedef Sint64 SDL_Time;
+
 /* @} *//* Basic data types */
 
 /**

@@ -117,6 +117,7 @@
 #define SDL_CreateWindowWithProperties SDL_CreateWindowWithProperties_REAL
 #define SDL_CursorVisible SDL_CursorVisible_REAL
 #define SDL_DXGIGetOutputInfo   SDL_DXGIGetOutputInfo_REAL
+#define SDL_DateTimeToTime SDL_DateTimeToTime_REAL
 #define SDL_DelEventWatch SDL_DelEventWatch_REAL
 #define SDL_DelHintCallback SDL_DelHintCallback_REAL
 #define SDL_Delay SDL_Delay_REAL
@@ -153,8 +154,6 @@
 #define SDL_EnumerateStorageDirectory SDL_EnumerateStorageDirectory_REAL
 #define SDL_Error SDL_Error_REAL
 #define SDL_EventEnabled SDL_EventEnabled_REAL
-#define SDL_FileTimeFromWindows SDL_FileTimeFromWindows_REAL
-#define SDL_FileTimeToWindows SDL_FileTimeToWindows_REAL
 #define SDL_FillSurfaceRect SDL_FillSurfaceRect_REAL
 #define SDL_FillSurfaceRects SDL_FillSurfaceRects_REAL
 #define SDL_FilterEvents SDL_FilterEvents_REAL
@@ -227,8 +226,12 @@
 #define SDL_GetCurrentDisplayOrientation SDL_GetCurrentDisplayOrientation_REAL
 #define SDL_GetCurrentRenderOutputSize SDL_GetCurrentRenderOutputSize_REAL
 #define SDL_GetCurrentThreadID SDL_GetCurrentThreadID_REAL
+#define SDL_GetCurrentTime SDL_GetCurrentTime_REAL
 #define SDL_GetCurrentVideoDriver SDL_GetCurrentVideoDriver_REAL
 #define SDL_GetCursor SDL_GetCursor_REAL
+#define SDL_GetDayOfWeek SDL_GetDayOfWeek_REAL
+#define SDL_GetDayOfYear SDL_GetDayOfYear_REAL
+#define SDL_GetDaysInMonth SDL_GetDaysInMonth_REAL
 #define SDL_GetDefaultAssertionHandler SDL_GetDefaultAssertionHandler_REAL
 #define SDL_GetDefaultCursor SDL_GetDefaultCursor_REAL
 #define SDL_GetDesktopDisplayMode SDL_GetDesktopDisplayMode_REAL
@@ -805,6 +808,9 @@
 #define SDL_TellIO SDL_TellIO_REAL
 #define SDL_TextInputActive SDL_TextInputActive_REAL
 #define SDL_TextInputShown SDL_TextInputShown_REAL
+#define SDL_TimeFromWindows SDL_TimeFromWindows_REAL
+#define SDL_TimeToDateTime SDL_TimeToDateTime_REAL
+#define SDL_TimeToWindows SDL_TimeToWindows_REAL
 #define SDL_TryLockMutex SDL_TryLockMutex_REAL
 #define SDL_TryLockRWLockForReading SDL_TryLockRWLockForReading_REAL
 #define SDL_TryLockRWLockForWriting SDL_TryLockRWLockForWriting_REAL

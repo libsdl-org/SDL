@@ -192,6 +192,9 @@
 #cmakedefine HAVE_SA_SIGACTION 1
 #cmakedefine HAVE_SETJMP 1
 #cmakedefine HAVE_NANOSLEEP 1
+#cmakedefine HAVE_GMTIME_R 1
+#cmakedefine HAVE_LOCALTIME_R 1
+#cmakedefine HAVE_NL_LANGINFO 1
 #cmakedefine HAVE_SYSCONF 1
 #cmakedefine HAVE_SYSCTLBYNAME 1
 #cmakedefine HAVE_CLOCK_GETTIME 1
@@ -349,6 +352,14 @@
 #cmakedefine SDL_THREAD_PSP @SDL_THREAD_PSP@
 #cmakedefine SDL_THREAD_PS2 @SDL_THREAD_PS2@
 #cmakedefine SDL_THREAD_N3DS @SDL_THREAD_N3DS@
+
+/* Enable various RTC systems */
+#cmakedefine SDL_TIME_UNIX @SDL_TIME_UNIX@
+#cmakedefine SDL_TIME_WINDOWS @SDL_TIME_WINDOWS@
+#cmakedefine SDL_TIME_VITA @SDL_TIME_VITA@
+#cmakedefine SDL_TIME_PSP @SDL_TIME_PSP@
+#cmakedefine SDL_TIME_PS2 @SDL_TIME_PS2@
+#cmakedefine SDL_TIME_N3DS @SDL_TIME_N3DS@
 
 /* Enable various timer systems */
 #cmakedefine SDL_TIMER_HAIKU @SDL_TIMER_HAIKU@

@@ -413,6 +413,7 @@ add_sdl_test_executable(testvulkan NO_C90 SOURCES testvulkan.c)
 add_sdl_test_executable(testoffscreen SOURCES testoffscreen.c)
 add_sdl_test_executable(testpopup SOURCES testpopup.c)
 add_sdl_test_executable(testdialog SOURCES testdialog.c)
+add_sdl_test_executable(testtime SOURCES testtime.c)
 
 if (HAVE_WAYLAND)
     # Set the GENERATED property on the protocol file, since it is first created at build time

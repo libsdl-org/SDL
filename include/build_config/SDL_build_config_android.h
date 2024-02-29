@@ -137,6 +137,8 @@
 #define HAVE_SIGACTION 1
 #define HAVE_SETJMP 1
 #define HAVE_NANOSLEEP  1
+#define HAVE_GMTIME_R 1
+#define HAVE_LOCALTIME_R 1
 #define HAVE_SYSCONF    1
 #define HAVE_CLOCK_GETTIME  1
 
@@ -161,6 +163,9 @@
 /* Enable various threading systems */
 #define SDL_THREAD_PTHREAD  1
 #define SDL_THREAD_PTHREAD_RECURSIVE_MUTEX  1
+
+/* Enable RTC system */
+#define SDL_TIME_UNIX  1
 
 /* Enable various timer systems */
 #define SDL_TIMER_UNIX  1
@@ -192,5 +197,10 @@
 /* Enable the camera driver */
 #define SDL_CAMERA_DRIVER_ANDROID 1
 #define SDL_CAMERA_DRIVER_DUMMY 1
+
+/* Enable nl_langinfo on version 26 and higher. */
+#if __ANDROID_API__ >= 26
+#define HAVE_NL_LANGINFO 1
+#endif
 
 #endif /* SDL_build_config_android_h_ */

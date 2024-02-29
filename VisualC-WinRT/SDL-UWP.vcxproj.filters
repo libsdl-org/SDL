@@ -25,6 +25,12 @@
     <Filter Include="filesystem\windows">
       <UniqueIdentifier>{0000bc587ef6c558d75ce2e620cb0000}</UniqueIdentifier>
     </Filter>
+    <Filter Include="time">
+      <UniqueIdentifier>{0000948771d0040a6a55997a7f1e0000}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="time\windows">
+      <UniqueIdentifier>{0000012051ca8361c8e1013aee1d0000}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\SDL3\SDL_begin_code.h">
@@ -791,6 +797,12 @@
     </ClCompile>
     <ClCompile Include="..\src\timer\windows\SDL_systimer.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\time\SDL_time.c">
+      <Filter>time</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\time\windows\SDL_systime.c">
+      <Filter>time\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\src\video\dummy\SDL_nullevents.c">
       <Filter>Source Files</Filter>

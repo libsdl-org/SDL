@@ -245,19 +245,13 @@ typedef enum SDL_PathType
     SDL_PATHTYPE_OTHER      /**< something completely different like a device node (not a symlink, those are always followed) */
 } SDL_PathType;
 
-/* SDL file times are 64-bit integers representing nanoseconds since the Unix epoch (Jan 1, 1970)
- *
- * They can be converted between to POSIX time_t values with SDL_NS_TO_SECONDS() and SDL_SECONDS_TO_NS(), and between Windows FILETIME values with SDL_FileTimeToWindows() and SDL_FileTimeFromWindows()
- */
-typedef Sint64 SDL_FileTime;
-
 typedef struct SDL_PathInfo
 {
     SDL_PathType type;          /* the path type */
     Uint64 size;                /* the file size in bytes */
-    SDL_FileTime create_time;   /* the time when the path was created */
-    SDL_FileTime modify_time;   /* the last time the path was modified */
-    SDL_FileTime access_time;   /* the last time the path was read */
+    SDL_Time create_time;   /* the time when the path was created */
+    SDL_Time modify_time;   /* the last time the path was modified */
+    SDL_Time access_time;   /* the last time the path was read */
 } SDL_PathInfo;
 
 /**
@@ -322,30 +316,6 @@ extern DECLSPEC int SDLCALL SDL_RenamePath(const char *oldpath, const char *newp
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *info);
-
-/* Converts an SDL file time into a Windows FILETIME (100-nanosecond intervals since January 1, 1601).
- *
- * This function fills in the two 32-bit values of the FILETIME structure.
- *
- * \param ftime the time to convert
- * \param dwLowDateTime a pointer filled in with the low portion of the Windows FILETIME value
- * \param dwHighDateTime a pointer filled in with the high portion of the Windows FILETIME value
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC void SDLCALL SDL_FileTimeToWindows(SDL_FileTime ftime, Uint32 *dwLowDateTime, Uint32 *dwHighDateTime);
-
-/* Converts a Windows FILETIME (100-nanosecond intervals since January 1, 1601) to an SDL file time
- *
- * This function takes the two 32-bit values of the FILETIME structure as parameters.
- *
- * \param dwLowDateTime the low portion of the Windows FILETIME value
- * \param dwHighDateTime the high portion of the Windows FILETIME value
- * \returns the converted file time
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC SDL_FileTime SDLCALL SDL_FileTimeFromWindows(Uint32 dwLowDateTime, Uint32 dwHighDateTime);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
