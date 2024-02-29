@@ -689,44 +689,43 @@ static void VULKAN_DestroyImage(VULKAN_RenderData *rendererData, VULKAN_Image *v
     }
 
     if (vulkanImage->deviceMemory != VK_NULL_HANDLE) {
-        vkFreeMemory(rendererData->device, vulkanImage->deviceMemory, NULL);
+        if (vulkanImage->allocatedImage) {
+            vkFreeMemory(rendererData->device, vulkanImage->deviceMemory, NULL);
+        }
         vulkanImage->deviceMemory = VK_NULL_HANDLE;
     }
     SDL_memset(vulkanImage, 0, sizeof(VULKAN_Image));
 }
 
-static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, uint32_t width, uint32_t height, VkFormat format,
-    VkImageUsageFlags imageUsage, VkComponentMapping swizzle, VkImage externalImage,
-    VkSamplerYcbcrConversionKHR samplerYcbcrConversion,
-    VULKAN_Image *imageOut)
+static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, SDL_PropertiesID create_props, uint32_t width, uint32_t height, VkFormat format, VkImageUsageFlags imageUsage, VkComponentMapping swizzle, VkSamplerYcbcrConversionKHR samplerYcbcrConversion, VULKAN_Image *imageOut)
 {
     VkResult result;
-    VkImageCreateInfo imageCreateInfo = { 0 };
     VkSamplerYcbcrConversionInfoKHR samplerYcbcrConversionInfo = { 0 };
 
     SDL_memset(imageOut, 0, sizeof(VULKAN_Image));
     imageOut->format = format;
-    imageOut->imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageOut->image = (VkImage)SDL_GetNumberProperty(create_props, SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER, 0);
 
-    imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageCreateInfo.flags = 0;
-    imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-    imageCreateInfo.format = format;
-    imageCreateInfo.extent.width = width;
-    imageCreateInfo.extent.height = height;
-    imageCreateInfo.extent.depth = 1;
-    imageCreateInfo.mipLevels = 1;
-    imageCreateInfo.arrayLayers = 1;
-    imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-    imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    imageCreateInfo.usage = imageUsage;
-    imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    imageCreateInfo.queueFamilyIndexCount = 0;
-    imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-    imageOut->allocatedImage = VK_FALSE;
-    if (externalImage == VK_NULL_HANDLE) {
+    if (imageOut->image == VK_NULL_HANDLE) {
         imageOut->allocatedImage = VK_TRUE;
+
+        VkImageCreateInfo imageCreateInfo = { 0 };
+        imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageCreateInfo.flags = 0;
+        imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageCreateInfo.format = format;
+        imageCreateInfo.extent.width = width;
+        imageCreateInfo.extent.height = height;
+        imageCreateInfo.extent.depth = 1;
+        imageCreateInfo.mipLevels = 1;
+        imageCreateInfo.arrayLayers = 1;
+        imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        imageCreateInfo.usage = imageUsage;
+        imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        imageCreateInfo.queueFamilyIndexCount = 0;
+        imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
         result = vkCreateImage(rendererData->device, &imageCreateInfo, NULL, &imageOut->image);
         if (result != VK_SUCCESS) {
             VULKAN_DestroyImage(rendererData, imageOut);
@@ -765,13 +764,15 @@ static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, uint32_t w
             SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkBindImageMemory(): %s\n", SDL_Vulkan_GetResultString(result));
             return result;
         }
+    } else {
+        imageOut->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     }
 
     VkImageViewCreateInfo imageViewCreateInfo = { 0 };
     imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     imageViewCreateInfo.image = imageOut->image;
     imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    imageViewCreateInfo.format = imageCreateInfo.format;
+    imageViewCreateInfo.format = format;
     imageViewCreateInfo.components = swizzle;
     imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
@@ -779,7 +780,7 @@ static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, uint32_t w
     imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
     imageViewCreateInfo.subresourceRange.layerCount = 1;
 
-    /* If it's a YcBcBr image, we need to pass the conversion info to the VkImageView (and the VkSampler) */
+    /* If it's a YCbCr image, we need to pass the conversion info to the VkImageView (and the VkSampler) */
     if (samplerYcbcrConversion != VK_NULL_HANDLE) {
         samplerYcbcrConversionInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO_KHR;
         samplerYcbcrConversionInfo.conversion = samplerYcbcrConversion;
@@ -2395,22 +2396,11 @@ static SDL_bool VULKAN_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode b
     return SDL_TRUE;
 }
 
-static int GetTextureProperty(SDL_PropertiesID props, const char *name, VkImage *image)
-{
-    VkImage *propImage = (VkImage*)SDL_GetProperty(props, name, NULL);
-    if (propImage) {
-        *image = *propImage;
-    }
-    return 0;
-}
-
-
 static int VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->driverdata;
     VULKAN_TextureData *textureData;
     VkResult result;
-    VkImage externalImage = VK_NULL_HANDLE;
     VkFormat textureFormat = SDLPixelFormatToVkTextureFormat(texture->format, renderer->output_colorspace);
     uint32_t width = texture->w;
     uint32_t height = texture->h;
@@ -2562,17 +2552,14 @@ static int VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     }
 
-    if (GetTextureProperty(create_props, "vulkan.texture", &externalImage) < 0) {
-        return -1;
-    }
-
-    result = VULKAN_AllocateImage(rendererData, width, height, textureFormat, usage, imageViewSwizzle, externalImage, textureData->samplerYcbcrConversion, &textureData->mainImage);
+    result = VULKAN_AllocateImage(rendererData, create_props, width, height, textureFormat, usage, imageViewSwizzle, textureData->samplerYcbcrConversion, &textureData->mainImage);
     if (result != VK_SUCCESS) {
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "VULKAN_AllocateImage(): %s\n", SDL_Vulkan_GetResultString(result));
         return result;
     }
 
-    SDL_SetProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_VULKAN_TEXTURE_POINTER, &textureData->mainImage.image);
+    SDL_PropertiesID props = SDL_GetTextureProperties(texture);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER, (Sint64)textureData->mainImage.image);
 
     if (texture->access == SDL_TEXTUREACCESS_TARGET) {
         result = VULKAN_CreateFramebuffersAndRenderPasses(renderer,

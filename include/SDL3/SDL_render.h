@@ -616,6 +616,10 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *
  *   associated with the V plane of a YUV texture, if you want to wrap an
  *   existing texture.
  *
+ * With the vulkan renderer:
+ *
+ * - `SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER`: the VkImage with layout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL associated with the texture, if you want to wrap an existing texture.
+ *
  * \param renderer the rendering context
  * \param props the properties to use
  * \returns a pointer to the created texture or NULL if no rendering context
@@ -655,6 +659,7 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Rendere
 #define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_UV_NUMBER "opengles2.texture_uv"
 #define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_U_NUMBER  "opengles2.texture_u"
 #define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_V_NUMBER  "opengles2.texture_v"
+#define SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER       "vulkan.texture"
 
 /**
  * Get the properties associated with a texture.
@@ -734,6 +739,10 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Rendere
  * - `SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER`: the GLenum for the
  *   texture target (`GL_TEXTURE_2D`, `GL_TEXTURE_EXTERNAL_OES`, etc)
  *
+ * With the vulkan renderer:
+ *
+ * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_NUMBER`: the VkImage associated with the texture
+ *
  * \param texture the texture to query
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -766,10 +775,7 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTextureProperties(SDL_Texture *t
 #define SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_U_NUMBER         "SDL.texture.opengles2.texture_u"
 #define SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_V_NUMBER         "SDL.texture.opengles2.texture_v"
 #define SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER    "SDL.texture.opengles2.target"
-#define SDL_PROP_TEXTURE_VULKAN_TEXTURE_POINTER             "SDL.texture.vulkan.texture"
-#define SDL_PROP_TEXTURE_VULKAN_TEXTURE_U_POINTER           "SDL.texture.vulkan.texture_u"
-#define SDL_PROP_TEXTURE_VULKAN_TEXTURE_V_POINTER           "SDL.texture.vulkan.texture_v"
-#define SDL_PROP_TEXTURE_VULKAN_TEXTURE_UV_POINTER          "SDL.texture.vulkan.texture_uv"
+#define SDL_PROP_TEXTURE_VULKAN_TEXTURE_NUMBER              "SDL.texture.vulkan.texture"
 
 /**
  * Get the renderer that created an SDL_Texture.
