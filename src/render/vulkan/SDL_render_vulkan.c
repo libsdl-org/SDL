@@ -1012,7 +1012,7 @@ static void VULKAN_DestroyRenderer(SDL_Renderer *renderer)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->driverdata;
     if (rendererData->device != VK_NULL_HANDLE) {
-        VULKAN_WaitForGPU(rendererData);
+        vkDeviceWaitIdle(rendererData->device);
         VULKAN_DestroyAll(renderer);
     }
     if (rendererData) {
