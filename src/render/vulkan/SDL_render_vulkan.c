@@ -193,8 +193,6 @@ typedef struct
     float tonemap_factor1;
     float tonemap_factor2;
     float sdr_white_point;
-
-    float YCbCr_matrix[16];
 } PixelShaderConstants;
 
 /* Per-vertex data */
@@ -238,7 +236,6 @@ typedef struct
     int width;
     int height;
     VULKAN_Shader shader;
-    const float *YCbCr_matrix;
 
 #if SDL_HAVE_YUV
     /* Object passed to VkImageView and VkSampler for doing Ycbcr -> RGB conversion */
@@ -3170,8 +3167,6 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
     constants->color_scale = cmd->data.draw.color_scale;
 
     if (texture) {
-        VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->driverdata;
-
         switch (texture->format) {
         case SDL_PIXELFORMAT_YV12:
         case SDL_PIXELFORMAT_IYUV:
@@ -3206,10 +3201,6 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
             constants->tonemap_method = TONEMAP_CHROME;
             constants->tonemap_factor1 = (output_headroom / (texture->HDR_headroom * texture->HDR_headroom));
             constants->tonemap_factor2 = (1.0f / output_headroom);
-        }
-
-        if (textureData->YCbCr_matrix) {
-            SDL_memcpy(constants->YCbCr_matrix, textureData->YCbCr_matrix, sizeof(constants->YCbCr_matrix));
         }
     }
 }

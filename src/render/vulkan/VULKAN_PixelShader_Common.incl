@@ -29,11 +29,6 @@ cbuffer Constants : register(b1)
     float tonemap_factor1;
     float tonemap_factor2;
     float sdr_white_point;
-
-    float4 Yoffset;
-    float4 Rcoeff;
-    float4 Gcoeff;
-    float4 Bcoeff;
 };
 
 static const float3x3 mat709to2020 = {
