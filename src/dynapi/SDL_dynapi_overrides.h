@@ -996,3 +996,5 @@
 #define SDL_CloseCamera SDL_CloseCamera_REAL
 #define SDL_GetCameraPermissionState SDL_GetCameraPermissionState_REAL
 #define SDL_GetCameraDevicePosition SDL_GetCameraDevicePosition_REAL
+#define SDL_qsort_r SDL_qsort_r_REAL
+#define SDL_bsearch_r SDL_bsearch_r_REAL
