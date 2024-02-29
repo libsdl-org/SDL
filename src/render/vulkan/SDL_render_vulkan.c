@@ -1243,7 +1243,7 @@ static SDL_bool VULKAN_FindMemoryTypeIndex(VULKAN_RenderData *rendererData, uint
     }
 
     if (memoryTypeIndex >= rendererData->physicalDeviceMemoryProperties.memoryTypeCount) {
-        SDL_SetError("[Vulkan] Unable to find memory type for allocation.");
+        SDL_SetError("[Vulkan] Unable to find memory type for allocation");
         return SDL_FALSE;
     }
     *memoryTypeIndexOut = memoryTypeIndex;
@@ -1654,7 +1654,7 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
         renderer->output_colorspace == SDL_COLORSPACE_HDR10) {
         rendererData->supportsEXTSwapchainColorspace = VULKAN_InstanceExtensionFound(rendererData, VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME);
         if (!rendererData->supportsEXTSwapchainColorspace) {
-            return SDL_SetError("[Vulkan] Using HDR output but %s not supported.", VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME);
+            return SDL_SetError("[Vulkan] Using HDR output but %s not supported", VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME);
         }
     }
 
@@ -2441,9 +2441,9 @@ static int VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 
         /* Check that we have VK_KHR_sampler_ycbcr_conversion support */
         if (!rendererData->supportsKHRSamplerYCbCrConversion) {
-            SDL_free(textureData);
             return SDL_SetError("[Vulkan] YUV textures require a Vulkan device that supports VK_KHR_sampler_ycbcr_conversion");
         }
+
         VkSamplerYcbcrConversionCreateInfoKHR samplerYcbcrConversionCreateInfo = { 0 };
         samplerYcbcrConversionCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO_KHR;
 
@@ -2464,9 +2464,9 @@ static int VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         case SDL_MATRIX_COEFFICIENTS_BT2020_NCL:
         case SDL_MATRIX_COEFFICIENTS_BT2020_CL:
             samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020_KHR;
+            break;
         default:
-            VULKAN_DestroyTexture(renderer, texture);
-            return SDL_SetError("[Vulkan] Unsupported Ycbcr colorspace.\n");
+            return SDL_SetError("[Vulkan] Unsupported Ycbcr colorspace: %d", SDL_COLORSPACEMATRIX(texture->colorspace));
         }
         samplerYcbcrConversionCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
         samplerYcbcrConversionCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -2509,8 +2509,7 @@ static int VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 
         result = vkCreateSamplerYcbcrConversionKHR(rendererData->device, &samplerYcbcrConversionCreateInfo, NULL, &textureData->samplerYcbcrConversion);
         if (result != VK_SUCCESS) {
-            VULKAN_DestroyTexture(renderer, texture);
-            return SDL_SetError("[Vulkan] vkCreateSamplerYcbcrConversionKHR %s.\n", SDL_Vulkan_GetResultString(result));
+            return SDL_SetError("[Vulkan] vkCreateSamplerYcbcrConversionKHR %s", SDL_Vulkan_GetResultString(result));
         }
 
         /* Also create VkSampler object which we will need to pass to the PSO as an immutable sampler */
@@ -2534,16 +2533,14 @@ static int VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         samplerCreateInfo.pNext = &samplerYcbcrConversionInfo;
         result = vkCreateSampler(rendererData->device, &samplerCreateInfo, NULL, &textureData->samplerYcbcr);
         if (result != VK_SUCCESS) {
-            VULKAN_DestroyTexture(renderer, texture);
-            return SDL_SetError("[Vulkan] vkCreateSampler %s.\n", SDL_Vulkan_GetResultString(result));
+            return SDL_SetError("[Vulkan] vkCreateSampler %s", SDL_Vulkan_GetResultString(result));
         }
 
         /* Allocate special descriptor set layout with samplerYcbcr baked as an immutable sampler */
         result = VULKAN_CreateDescriptorSetAndPipelineLayout(rendererData, textureData->samplerYcbcr,
             &textureData->descriptorSetLayoutYcbcr, &textureData->pipelineLayoutYcbcr);
         if (result != VK_SUCCESS) {
-            VULKAN_DestroyTexture(renderer, texture);
-            return SDL_SetError("[Vulkan] VULKAN_CreateDescriptorSetAndPipelineLayout %s.\n", SDL_Vulkan_GetResultString(result));
+            return SDL_SetError("[Vulkan] VULKAN_CreateDescriptorSetAndPipelineLayout %s", SDL_Vulkan_GetResultString(result));
         }
     }
 #endif
@@ -2561,7 +2558,6 @@ static int VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 
     result = VULKAN_AllocateImage(rendererData, width, height, textureFormat, usage, imageViewSwizzle, externalImage, textureData->samplerYcbcrConversion, &textureData->mainImage);
     if (result != VK_SUCCESS) {
-        VULKAN_DestroyTexture(renderer, texture);
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "VULKAN_AllocateImage(): %s\n", SDL_Vulkan_GetResultString(result));
         return result;
     }
@@ -2578,7 +2574,6 @@ static int VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
             &textureData->mainFramebuffer,
             textureData->mainRenderpasses);
         if (result != VK_SUCCESS) {
-            VULKAN_DestroyTexture(renderer, texture);
             SDL_LogError(SDL_LOG_CATEGORY_RENDER, "VULKAN_CreateFramebuffersAndRenderPasses(): %s\n", SDL_Vulkan_GetResultString(result));
             return result;
         }
@@ -3223,7 +3218,7 @@ static VkDescriptorPool VULKAN_AllocateDescriptorPool(VULKAN_RenderData *rendere
     descriptorPoolCreateInfo.maxSets = SDL_VULKAN_MAX_DESCRIPTOR_SETS;
     result = vkCreateDescriptorPool(rendererData->device, &descriptorPoolCreateInfo, NULL, &descriptorPool);
     if (result != VK_SUCCESS) {
-        SDL_SetError("[Vulkan] Unable to allocate descriptor pool vkCreateDescrptorPool: %s.\n", SDL_Vulkan_GetResultString(result));
+        SDL_SetError("[Vulkan] Unable to allocate descriptor pool vkCreateDescrptorPool: %s", SDL_Vulkan_GetResultString(result));
         return VK_NULL_HANDLE;
     }
 
@@ -3309,7 +3304,7 @@ static VkDescriptorSet VULKAN_AllocateDescriptorSet(SDL_Renderer *renderer, VULK
             result = vkAllocateDescriptorSets(rendererData->device, &descriptorSetAllocateInfo, &descriptorSet);
             if (result != VK_SUCCESS) {
                 /* This should not fail - we are allocating from the front of the descriptor set */
-                SDL_SetError("[Vulkan] Unable to allocate descriptor set.");
+                SDL_SetError("[Vulkan] Unable to allocate descriptor set");
                 return VK_NULL_HANDLE;
             }
             rendererData->currentDescriptorPoolIndex = currentDescriptorPoolIndex;
@@ -3488,7 +3483,7 @@ static SDL_bool VULKAN_SetDrawState(SDL_Renderer *renderer, const SDL_RenderComm
                     &newConstantBuffer);
 
                 if (result != VK_SUCCESS) {
-                    SDL_SetError("[Vulkan] Could not allocate new memory for constant buffer.\n" );
+                    SDL_SetError("[Vulkan] Could not allocate new memory for constant buffer" );
                     return SDL_FALSE;
                 }
 
@@ -3546,7 +3541,7 @@ static SDL_bool VULKAN_SetCopyState(SDL_Renderer *renderer, const SDL_RenderComm
         textureSampler = rendererData->samplers[SDL_VULKAN_SAMPLER_LINEAR];
         break;
     default:
-        return SDL_SetError("Unknown scale mode: %d\n", textureData->scaleMode);
+        return SDL_SetError("Unknown scale mode: %d", textureData->scaleMode);
     }
 
     if (textureData->mainImage.imageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
@@ -3755,7 +3750,7 @@ static SDL_Surface* VULKAN_RenderReadPixels(SDL_Renderer *renderer, const SDL_Re
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
         &readbackBuffer) != VK_SUCCESS) {
-        SDL_SetError("[Vulkan] Failed to allocate buffer for readback.");
+        SDL_SetError("[Vulkan] Failed to allocate buffer for readback");
         return NULL;
     }
 
