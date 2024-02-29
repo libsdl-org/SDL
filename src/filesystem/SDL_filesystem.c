@@ -122,39 +122,170 @@ Uint64 SDL_FileTimeToUnix(Uint64 ftime)
 }
 
 
-#define MAKEFULLPATH() \
-    const char *base = (const char *) fs->opaque; \
-    SDL_bool isstack; \
-    const size_t fullpathlen = (base ? SDL_strlen(base) : 0) + (path ? SDL_strlen(path) : 0) + 8; \
-    char *fullpath = SDL_small_alloc(char, fullpathlen, &isstack); \
-    if (fullpath) { SDL_snprintf(fullpath, fullpathlen, "%s%s%s", base ? base : "", base ? PLATFORM_PATH_SEPARATOR : PLATFORM_ROOT_PATH, path ? path : ""); }
+// this assumes `sanitized` is as large a buffer as `path`!
+static SDL_bool SanitizePath(char *sanitized, const char *path, const size_t pathlen)
+{
+    // there is probably a more efficient way to do this, that parses `path` as it
+    // copies to the destination, but it's going to be just as complicated and
+    // twice as fragile.
+
+    // skip past any path separators at the start of the string.
+    #ifdef SDL_PLATFORM_WINDOWS
+    while ((*path == '\\') || (*path == '/')) {
+        path++;
+    }
+    #else
+    while (*path == '/') {
+        path++;
+    }
+    #endif
+
+    // copy `path` to `sanitized`, flipping any Windows path seps to '/' and counting pieces of the path.
+    int num_pieces = 1;
+    int i = 0;
+    while (path[i]) {
+        const char ch = path[i];
+
+        #ifdef SDL_PLATFORM_WINDOWS
+        const SDL_bool issep = (ch == '\\') || (ch == '/');
+        sanitized[i++] = issep ? '/' : ch;
+        #else
+        const SDL_bool issep = (ch == '/');
+        sanitized[i++] = ch;
+        #endif
+
+        if (issep) {
+            num_pieces++;
+        }
+    }
+
+    SDL_assert(i < pathlen);
+    sanitized[i] = '\0';
+
+    // `sanitized` is now a copy of path where all path separators are '/'
+
+    if (*sanitized == '\0') {
+        return SDL_TRUE;  // it's an empty string, we're already done.
+    }
+
+    // Allocate a list of pointers to individual pieces of the path.
+    SDL_bool isstack;
+    char **pieces = SDL_small_alloc(char *, num_pieces, &isstack);
+    if (!pieces) {
+        return SDL_FALSE;
+    }
+
+    // build the list, null-terminate the pieces.
+    char *start = sanitized;
+    char *ptr;
+    i = 0;
+    while ((ptr = SDL_strchr(start, '/')) != NULL) {
+        SDL_assert(i < num_pieces);
+        pieces[i++] = start;
+        *ptr = '\0';
+        start = ptr + 1;
+    }
+
+    SDL_assert(i == (num_pieces - 1));
+    pieces[i] = start;  // get the last piece that didn't have a separator after it.
+
+    for (i = 0; i < num_pieces; i++) {
+        char *piece = pieces[i];
+        if (*piece == '\0') {
+            pieces[i] = NULL;  // empty path, dump it ("a/b//.." will end up in a, not b, so clear these empties out up front).
+        } else if (piece[0] == '.') {
+            if (piece[1] == '\0') {
+                pieces[i] = NULL;  // a "." path, kill it.
+            } else if ((piece[1] == '.') && (piece[2] == '\0')) {
+                pieces[i] = NULL;  // a ".." path, kill it.
+                for (int j = i - 1; j >= 0; j--) {
+                    if (pieces[j]) {
+                        pieces[j] = NULL;  // kill next parent directory, too.
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    char *dst = sanitized;
+    for (i = 0; i < num_pieces; i++) {
+        char *piece = pieces[i];
+        if (piece) {
+            const size_t slen = SDL_strlen(piece);
+            if (dst > sanitized) {
+                #ifdef SDL_PLATFORM_WINDOWS  // might as well give the "blessed" path separator here, even though '/' also works.
+                *(dst++) = '\\';
+                #else
+                *(dst++) = '/';
+                #endif
+            }
+            if (piece != dst) {  // if already in the right place, don't copy it.
+                SDL_memmove(dst, piece, slen);
+            }
+            dst += slen;
+        }
+    }
+
+    SDL_assert(dst <= (sanitized + pathlen));
+    *dst = '\0';
+
+    SDL_small_free(pieces, isstack);
+
+    return SDL_TRUE;
+}
+
+static char *AssembleNativeFsPath(SDL_FSops *fs, const char *path)
+{
+    const char *base = (const char *) fs->opaque;
+    const size_t baselen = base ? SDL_strlen(base) : 0;
+    const size_t pathlen = path ? SDL_strlen(path) : 0;
+    SDL_bool isstack;
+    char *sanitized = path ? SDL_small_alloc(char, pathlen + 1, &isstack) : NULL;
+    if (path) {
+        if (!sanitized) {
+            return NULL;
+        } else if (!SanitizePath(sanitized, path, pathlen + 1)) {
+            SDL_small_free(sanitized, isstack);
+            return NULL;
+        }
+    }
+
+    const size_t sanitizedlen = sanitized ? SDL_strlen(sanitized) : 0;
+    const size_t fullpathlen = baselen + sanitizedlen + 2;
+    char *fullpath = (char *) SDL_malloc(fullpathlen);
+    if (!fullpath) {
+        SDL_small_free(sanitized, isstack);
+        return NULL;
+    }
+
+    const size_t slen = SDL_snprintf(fullpath, fullpathlen, "%s%s%s", base ? base : "", base ? PLATFORM_PATH_SEPARATOR : PLATFORM_ROOT_PATH, sanitized ? sanitized : "");
+    SDL_assert(slen < fullpathlen);
+
+    SDL_small_free(sanitized, isstack);
+
+    return fullpath;
+}
+
 
 static SDL_RWops * SDLCALL nativefs_open(SDL_FSops *fs, const char *path, const char *mode)
 {
     SDL_RWops *rwops = NULL;
-    MAKEFULLPATH();
+    char *fullpath = AssembleNativeFsPath(fs, path);
     if (fullpath) {
         rwops = SDL_RWFromFile(fullpath, mode);
-        SDL_small_free(fullpath, isstack);
+        SDL_free(fullpath);
     }
     return rwops;
 }
 
 static int nativefs_enumerate(SDL_FSops *fs, const char *path, SDL_EnumerateCallback cb, void *userdata)
 {
-    const char *pathsep = PLATFORM_PATH_SEPARATOR;
-    const char pathsepchar = pathsep[0];
     int retval = -1;
-    MAKEFULLPATH();
+    char *fullpath = AssembleNativeFsPath(fs, path);
     if (fullpath) {
-        for (int i = ((int) SDL_strlen(fullpath)) - 1; i >= 0; i++) {
-            if (fullpath[i] != pathsepchar) {
-                break;
-            }
-            fullpath[i] = '\0';
-        }
         retval = SDL_SYS_FSenumerate(fs, fullpath, path, cb, userdata);
-        SDL_small_free(fullpath, isstack);
+        SDL_free(fullpath);
     }
     return retval;
 }
@@ -162,10 +293,10 @@ static int nativefs_enumerate(SDL_FSops *fs, const char *path, SDL_EnumerateCall
 static int SDLCALL nativefs_remove(SDL_FSops *fs, const char *path)
 {
     int retval = -1;
-    MAKEFULLPATH();
+    char *fullpath = AssembleNativeFsPath(fs, path);
     if (fullpath) {
         retval = SDL_SYS_FSremove(fs, fullpath);
-        SDL_small_free(fullpath, isstack);
+        SDL_free(fullpath);
     }
     return retval;
 }
@@ -173,10 +304,10 @@ static int SDLCALL nativefs_remove(SDL_FSops *fs, const char *path)
 static int SDLCALL nativefs_mkdir(SDL_FSops *fs, const char *path)
 {
     int retval = -1;
-    MAKEFULLPATH();
+    char *fullpath = AssembleNativeFsPath(fs, path);
     if (fullpath) {
         retval = SDL_SYS_FSmkdir(fs, fullpath);
-        SDL_small_free(fullpath, isstack);
+        SDL_free(fullpath);
     }
     return retval;
 }
@@ -184,10 +315,10 @@ static int SDLCALL nativefs_mkdir(SDL_FSops *fs, const char *path)
 static int SDLCALL nativefs_stat(SDL_FSops *fs, const char *path, SDL_Stat *stat)
 {
     int retval = -1;
-    MAKEFULLPATH();
+    char *fullpath = AssembleNativeFsPath(fs, path);
     if (fullpath) {
         retval = SDL_SYS_FSstat(fs, fullpath, stat);
-        SDL_small_free(fullpath, isstack);
+        SDL_free(fullpath);
     }
     return retval;
 }
@@ -199,19 +330,42 @@ static void SDLCALL nativefs_closefs(SDL_FSops *fs)
     }
 }
 
-#undef MAKEFULLPATH
-
-
 SDL_FSops *SDL_CreateFilesystem(const char *basedir)
 {
     SDL_FSops *fs = (SDL_FSops *) SDL_calloc(1, sizeof (SDL_FSops));
     if (fs) {
         if (basedir) {
-            fs->opaque = SDL_strdup(basedir);
-            if (!fs->opaque) {
+            const size_t buflen = SDL_strlen(basedir) + 1;
+            char *sanitized = (char *) SDL_malloc(buflen);
+
+            // save an absolute path char that SanitizePath will trim off...
+            #ifdef SDL_PLATFORM_WINDOWS
+            const int absolute_path = ((*basedir == '\\') || (*basedir == '/')) ? 1 : 0;
+            #else
+            const int absolute_path = (*basedir == '/') ? 1 : 0;
+            #endif
+
+            if (!sanitized) {
+                SDL_free(fs);
+                return NULL;
+            } else if (!SanitizePath(sanitized + absolute_path, basedir + absolute_path, buflen - absolute_path)) {
+                SDL_free(sanitized);
                 SDL_free(fs);
                 return NULL;
             }
+
+            if (absolute_path) {
+                #ifdef SDL_PLATFORM_WINDOWS
+                *sanitized = '\\';
+                #else
+                *sanitized = '/';
+                #endif
+            } else if (*sanitized == '\0') {
+                SDL_free(sanitized);
+                sanitized = NULL;
+            }
+
+            fs->opaque = sanitized;
         }
 
         fs->open = nativefs_open;
