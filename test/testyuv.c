@@ -395,15 +395,30 @@ int main(int argc, char **argv)
     switch (yuv_mode) {
     case YUV_CONVERSION_JPEG:
         yuv_mode_name = "JPEG";
-        colorspace = SDL_COLORSPACE_JPEG;
+        colorspace = SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                                           SDL_COLOR_RANGE_FULL,
+                                           SDL_COLOR_PRIMARIES_BT709,
+                                           SDL_TRANSFER_CHARACTERISTICS_BT601,
+                                           SDL_MATRIX_COEFFICIENTS_BT601,
+                                           SDL_CHROMA_LOCATION_CENTER);
         break;
     case YUV_CONVERSION_BT601:
         yuv_mode_name = "BT.601";
-        colorspace = SDL_COLORSPACE_BT601_LIMITED;
+        colorspace = SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                                           SDL_COLOR_RANGE_LIMITED,
+                                           SDL_COLOR_PRIMARIES_BT709,
+                                           SDL_TRANSFER_CHARACTERISTICS_BT601,
+                                           SDL_MATRIX_COEFFICIENTS_BT601,
+                                           SDL_CHROMA_LOCATION_CENTER);
         break;
     case YUV_CONVERSION_BT709:
         yuv_mode_name = "BT.709";
-        colorspace = SDL_COLORSPACE_BT709_LIMITED;
+        colorspace = SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                                           SDL_COLOR_RANGE_LIMITED,
+                                           SDL_COLOR_PRIMARIES_BT709,
+                                           SDL_TRANSFER_CHARACTERISTICS_BT709,
+                                           SDL_MATRIX_COEFFICIENTS_BT709,
+                                           SDL_CHROMA_LOCATION_CENTER);
         break;
     default:
         yuv_mode_name = "UNKNOWN";
