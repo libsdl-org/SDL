@@ -189,6 +189,9 @@
 #define SDL_THREAD_STDCPP   1
 #endif
 
+/* Enable RTC system */
+#define SDL_TIME_WINDOWS   1
+
 /* Enable various timer systems */
 #define SDL_TIMER_WINDOWS   1
 

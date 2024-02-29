@@ -92,6 +92,7 @@ SDL3_0.0.0 {
     SDL_CreateWindowWithProperties;
     SDL_CursorVisible;
     SDL_DXGIGetOutputInfo;
+    SDL_DateTimeToTime;
     SDL_DelEventWatch;
     SDL_DelHintCallback;
     SDL_Delay;
@@ -128,8 +129,6 @@ SDL3_0.0.0 {
     SDL_EnumerateStorageDirectory;
     SDL_Error;
     SDL_EventEnabled;
-    SDL_FileTimeFromWindows;
-    SDL_FileTimeToWindows;
     SDL_FillSurfaceRect;
     SDL_FillSurfaceRects;
     SDL_FilterEvents;
@@ -202,8 +201,12 @@ SDL3_0.0.0 {
     SDL_GetCurrentDisplayOrientation;
     SDL_GetCurrentRenderOutputSize;
     SDL_GetCurrentThreadID;
+    SDL_GetCurrentTime;
     SDL_GetCurrentVideoDriver;
     SDL_GetCursor;
+    SDL_GetDayOfWeek;
+    SDL_GetDayOfYear;
+    SDL_GetDaysInMonth;
     SDL_GetDefaultAssertionHandler;
     SDL_GetDefaultCursor;
     SDL_GetDesktopDisplayMode;
@@ -781,6 +784,9 @@ SDL3_0.0.0 {
     SDL_TellIO;
     SDL_TextInputActive;
     SDL_TextInputShown;
+    SDL_TimeFromWindows;
+    SDL_TimeToDateTime;
+    SDL_TimeToWindows;
     SDL_TryLockMutex;
     SDL_TryLockRWLockForReading;
     SDL_TryLockRWLockForWriting;

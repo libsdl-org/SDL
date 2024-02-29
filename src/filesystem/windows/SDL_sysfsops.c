@@ -165,9 +165,9 @@ int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
         info->size = ((((Uint64) winstat.nFileSizeHigh) << 32) | winstat.nFileSizeLow);
     }
 
-    info->create_time = SDL_FileTimeFromWindows(winstat.ftCreationTime.dwLowDateTime, winstat.ftCreationTime.dwHighDateTime);
-    info->modify_time = SDL_FileTimeFromWindows(winstat.ftLastWriteTime.dwLowDateTime, winstat.ftLastWriteTime.dwHighDateTime);
-    info->access_time = SDL_FileTimeFromWindows(winstat.ftLastAccessTime.dwLowDateTime, winstat.ftLastAccessTime.dwHighDateTime);
+    info->create_time = SDL_TimeFromWindows(winstat.ftCreationTime.dwLowDateTime, winstat.ftCreationTime.dwHighDateTime);
+    info->modify_time = SDL_TimeFromWindows(winstat.ftLastWriteTime.dwLowDateTime, winstat.ftLastWriteTime.dwHighDateTime);
+    info->access_time = SDL_TimeFromWindows(winstat.ftLastAccessTime.dwLowDateTime, winstat.ftLastAccessTime.dwHighDateTime);
 
     return 1;
 }

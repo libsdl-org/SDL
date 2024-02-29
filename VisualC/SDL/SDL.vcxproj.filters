@@ -190,6 +190,12 @@
     <Filter Include="render\vulkan">
       <UniqueIdentifier>{5115ba31-20f8-4eab-a8c5-6a572ab78ff7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="time">
+      <UniqueIdentifier>{00003288226ff86b99eee5b443e90000}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="time\windows">
+      <UniqueIdentifier>{0000d7fda065b13b0ca4ab262c380000}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h">
@@ -1182,6 +1188,12 @@
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\virtual\SDL_virtualjoystick.c">
       <Filter>joystick\virtual</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\time\SDL_time.c">
+      <Filter>time</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\time\windows\SDL_systime.c">
+      <Filter>time\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\video\SDL_RLEaccel.c">
       <Filter>video</Filter>

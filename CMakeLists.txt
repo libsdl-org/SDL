@@ -497,6 +497,7 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/stdlib/*.c"
   "${SDL3_SOURCE_DIR}/src/storage/*.c"
   "${SDL3_SOURCE_DIR}/src/thread/*.c"
+  "${SDL3_SOURCE_DIR}/src/time/*.c"
   "${SDL3_SOURCE_DIR}/src/timer/*.c"
   "${SDL3_SOURCE_DIR}/src/video/*.c"
   "${SDL3_SOURCE_DIR}/src/video/yuv2rgb/*.c"
@@ -1044,6 +1045,7 @@ if(SDL_LIBC)
     string.h
     strings.h
     sys/types.h
+    time.h
     wchar.h
   )
   foreach(_HEADER IN LISTS headers_to_check)
@@ -1105,6 +1107,9 @@ if(SDL_LIBC)
     check_symbol_exists(sigaction "signal.h" HAVE_SIGACTION)
     check_symbol_exists(setjmp "setjmp.h" HAVE_SETJMP)
     check_symbol_exists(nanosleep "time.h" HAVE_NANOSLEEP)
+    check_symbol_exists(gmtime_r "time.h" HAVE_GMTIME_R)
+    check_symbol_exists(localtime_r "time.h" HAVE_LOCALTIME_R)
+    check_symbol_exists(nl_langinfo "langinfo.h" HAVE_NL_LANGINFO)
     check_symbol_exists(sysconf "unistd.h" HAVE_SYSCONF)
     check_symbol_exists(sysctlbyname "sys/types.h;sys/sysctl.h" HAVE_SYSCTLBYNAME)
     check_symbol_exists(getauxval "sys/auxv.h" HAVE_GETAUXVAL)
@@ -1329,6 +1334,10 @@ if(ANDROID)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/android/*.c")
   set(HAVE_SDL_LOCALE TRUE)
 
+  set(SDL_TIME_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/unix/*.c")
+  set(HAVE_SDL_TIME TRUE)
+
   set(SDL_TIMER_UNIX 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
   set(HAVE_SDL_TIMERS TRUE)
@@ -1483,6 +1492,10 @@ elseif(EMSCRIPTEN)
 
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/emscripten/*.c")
   set(HAVE_SDL_LOCALE TRUE)
+
+  set(SDL_TIME_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/unix/*.c")
+  set(HAVE_SDL_TIME TRUE)
 
   set(SDL_TIMER_UNIX 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
@@ -1783,6 +1796,10 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
   sdl_sources("${SDL3_SOURCE_DIR}/src/filesystem/posix/SDL_sysfsops.c")
   set(HAVE_SDL_FSOPS TRUE)
 
+  set(SDL_TIME_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/unix/*.c")
+  set(HAVE_SDL_TIME TRUE)
+
   set(SDL_TIMER_UNIX 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
   set(HAVE_SDL_TIMERS TRUE)
@@ -2030,6 +2047,10 @@ elseif(WINDOWS)
     )
   endif()
 
+  set(SDL_TIME_WINDOWS 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/windows/*.c")
+  set(HAVE_SDL_TIME TRUE)
+
   set(SDL_TIMER_WINDOWS 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/windows/*.c")
   set(HAVE_SDL_TIMERS TRUE)
@@ -2237,6 +2258,10 @@ elseif(APPLE)
 
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/macos/*.m")
   set(HAVE_SDL_LOCALE TRUE)
+
+  set(SDL_TIME_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/unix/*.c")
+  set(HAVE_SDL_TIME TRUE)
 
   set(SDL_TIMER_UNIX 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
@@ -2459,6 +2484,10 @@ elseif(HAIKU)
   sdl_sources("${SDL3_SOURCE_DIR}/src/filesystem/posix/SDL_sysfsops.c")
   set(HAVE_SDL_FSOPS TRUE)
 
+  set(SDL_TIME_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/unix/*.c")
+  set(HAVE_SDL_TIME TRUE)
+
   set(SDL_TIMER_HAIKU 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/haiku/*.c")
   set(HAVE_SDL_TIMERS TRUE)
@@ -2498,6 +2527,10 @@ elseif(RISCOS)
   set(SDL_FSOPS_POSIX 1)
   sdl_sources("${SDL3_SOURCE_DIR}/src/filesystem/posix/SDL_sysfsops.c")
   set(HAVE_SDL_FSOPS TRUE)
+
+  set(SDL_TIME_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/unix/*.c")
+  set(HAVE_SDL_TIME TRUE)
 
   set(SDL_TIMER_UNIX 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
@@ -2565,6 +2598,10 @@ elseif(VITA)
 
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/vita/*.c")
   set(HAVE_SDL_LOCALE TRUE)
+
+  set(SDL_TIME_VITA 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/vita/*.c")
+  set(HAVE_SDL_TIME TRUE)
 
   set(SDL_TIMER_VITA 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/vita/*.c")
@@ -2699,6 +2736,10 @@ elseif(PSP)
   )
   set(HAVE_SDL_THREADS TRUE)
 
+  set(SDL_TIME_PSP 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/psp/*.c")
+  set(HAVE_SDL_TIME TRUE)
+
   set(SDL_TIMER_PSP 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/psp/*.c")
   set(HAVE_SDL_TIMERS TRUE)
@@ -2761,6 +2802,10 @@ elseif(PS2)
   )
   set(HAVE_SDL_THREADS TRUE)
 
+  set(SDL_TIME_PS2 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/ps2/*.c")
+  set(HAVE_SDL_TIME TRUE)
+
   set(SDL_TIMER_PS2 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/ps2/*.c")
   set(HAVE_SDL_TIMERS TRUE)
@@ -2819,6 +2864,10 @@ elseif(N3DS)
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
   )
   set(HAVE_SDL_THREADS TRUE)
+
+  set(SDL_TIME_N3DS 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/n3ds/*.c")
+  set(HAVE_SDL_TIME TRUE)
 
   set(SDL_TIMER_N3DS 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/n3ds/*.c")

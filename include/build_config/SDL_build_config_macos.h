@@ -133,6 +133,9 @@
 #define HAVE_SIGACTION  1
 #define HAVE_SETJMP 1
 #define HAVE_NANOSLEEP  1
+#define HAVE_GMTIME_R 1
+#define HAVE_LOCALTIME_R 1
+#define HAVE_NL_LANGINFO 1
 #define HAVE_SYSCONF    1
 #define HAVE_SYSCTLBYNAME 1
 

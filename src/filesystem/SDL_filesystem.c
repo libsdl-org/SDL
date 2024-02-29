@@ -22,38 +22,6 @@
 #include "SDL_internal.h"
 #include "SDL_sysfilesystem.h"
 
-static const Sint64 delta_1601_epoch_100ns = 11644473600ll * 10000000ll; // [100 ns] (100 ns units between 1/1/1601 and 1/1/1970, 11644473600 seconds)
-
-void SDL_FileTimeToWindows(SDL_FileTime ftime, Uint32 *dwLowDateTime, Uint32 *dwHighDateTime)
-{
-    Uint64 wtime;
-
-    // Convert ftime to 100ns units
-    Sint64 ftime_100ns = (ftime / 100);
-
-    if (ftime_100ns < 0 && -ftime_100ns > delta_1601_epoch_100ns) {
-        // If we're trying to show a timestamp from before before the Windows epoch, (Jan 1, 1601), clamp it to zero
-        wtime = 0;
-    } else {
-        wtime = (Uint64)(delta_1601_epoch_100ns + ftime_100ns);
-    }
-
-    if (dwLowDateTime) {
-        *dwLowDateTime = (Uint32)wtime;
-    }
-
-    if (dwHighDateTime) {
-        *dwHighDateTime = (Uint32)(wtime >> 32);
-    }
-}
-
-SDL_FileTime SDL_FileTimeFromWindows(Uint32 dwLowDateTime, Uint32 dwHighDateTime)
-{
-    Uint64 wtime = (((Uint64)dwHighDateTime << 32) | dwLowDateTime);
-
-    return (Sint64)(wtime - delta_1601_epoch_100ns) * 100;
-}
-
 int SDL_RemovePath(const char *path)
 {
     if (!path) {

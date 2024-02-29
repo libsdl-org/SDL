@@ -225,6 +225,7 @@
     <ClCompile Include="..\..\..\test\testautomation_sdltest.c" />
     <ClCompile Include="..\..\..\test\testautomation_stdlib.c" />
     <ClCompile Include="..\..\..\test\testautomation_surface.c" />
+    <ClCompile Include="..\..\..\test\testautomation_time.c" />
     <ClCompile Include="..\..\..\test\testautomation_timer.c" />
     <ClCompile Include="..\..\..\test\testautomation_video.c" />
     <ClCompile Include="..\..\..\test\testautomation_subsystems.c" />
