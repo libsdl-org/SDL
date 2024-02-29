@@ -1956,8 +1956,8 @@ static VkResult VULKAN_CreateFramebuffersAndRenderPasses(SDL_Renderer *renderer,
     framebufferCreateInfo.pNext = NULL;
     framebufferCreateInfo.renderPass = rendererData->renderPasses[SDL_VULKAN_RENDERPASS_LOAD];
     framebufferCreateInfo.attachmentCount = 1;
-    framebufferCreateInfo.width = rendererData->swapchainSize.width;
-    framebufferCreateInfo.height = rendererData->swapchainSize.height;
+    framebufferCreateInfo.width = w;
+    framebufferCreateInfo.height = h;
     framebufferCreateInfo.layers = 1;
 
     for (int i = 0; i < imageViewCount; i++) {
@@ -3882,9 +3882,9 @@ static int VULKAN_RenderPresent(SDL_Renderer *renderer)
             SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkWaitForFences(): %s\n", SDL_Vulkan_GetResultString(result));
             return -1;
         }
-    }
 
-    VULKAN_AcquireNextSwapchainImage(renderer);
+        VULKAN_AcquireNextSwapchainImage(renderer);
+    }
 
     return (result == VK_SUCCESS);
 }
