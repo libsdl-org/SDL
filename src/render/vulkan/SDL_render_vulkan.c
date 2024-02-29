@@ -2456,14 +2456,16 @@ static int VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 
         /* Create samplerYcbcrConversion which will be used on the VkImageView and VkSampler */
         samplerYcbcrConversionCreateInfo.format = textureFormat;
-        switch (SDL_COLORSPACEPRIMARIES(texture->colorspace)) {
-        case SDL_COLOR_PRIMARIES_BT709:
-            samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709_KHR;
-            break;
-        case SDL_COLOR_PRIMARIES_BT601:
+        switch (SDL_COLORSPACEMATRIX(texture->colorspace)) {
+        case SDL_MATRIX_COEFFICIENTS_BT601:
             samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601_KHR;
             break;
-        case SDL_COLOR_PRIMARIES_BT2020:
+        case SDL_MATRIX_COEFFICIENTS_BT709:
+            samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709_KHR;
+            break;
+        /* FIXME: Are these the same? */
+        case SDL_MATRIX_COEFFICIENTS_BT2020_NCL:
+        case SDL_MATRIX_COEFFICIENTS_BT2020_CL:
             samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020_KHR;
         default:
             VULKAN_DestroyTexture(renderer, texture);
