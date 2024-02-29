@@ -88,10 +88,10 @@ int SDL_SYS_FSstat(SDL_FSops *fs, const char *fullpath, SDL_Stat *st)
         st->filesize = (Uint64) statbuf.st_size;
     }
 
-    // SDL file time is nanoseconds since the Unix epoch, so we just need to convert secs -> nanosecs.
-    st->modtime = ((Uint64) statbuf.st_mtime) * SDL_NS_PER_SECOND;
-    st->createtime = ((Uint64) statbuf.st_ctime) * SDL_NS_PER_SECOND;
-    st->accesstime = ((Uint64) statbuf.st_atime) * SDL_NS_PER_SECOND;
+    // SDL file time is seconds since the Unix epoch, so we're already good here.
+    st->modtime = (Uint64) statbuf.st_mtime;
+    st->createtime = (Uint64) statbuf.st_ctime;
+    st->accesstime = (Uint64) statbuf.st_atime;
 
     return 0;
 }

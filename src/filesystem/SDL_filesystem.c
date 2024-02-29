@@ -105,8 +105,8 @@ int SDL_FSstat(SDL_FSops *fs, const char *path, SDL_Stat *stat)
 
 void SDL_FileTimeToWindows(Uint64 ftime, Uint32 *low, Uint32 *high)
 {
-    const Uint64 delta_1601_epoch_ns = 11644473600ull * SDL_NS_PER_SECOND; // [ns] (nanoseconds between 1/1/1601 and 1/1/1970, 11644473600 seconds * 1000000000)
-    const Uint64 cvt = (ftime + delta_1601_epoch_ns) / 100ull; // [100ns] (adjust to epoch and convert nanoseconds to 1/100th nanosecond units).
+    const Uint64 delta_1601_epoch_s = 11644473600ull; // [seconds] (seconds between 1/1/1601 and 1/1/1970, 11644473600 seconds)
+    const Uint64 cvt = (ftime + delta_1601_epoch_s) * (SDL_NS_PER_SECOND / 100ull); // [100ns] (adjust to epoch and convert nanoseconds to 1/100th nanosecond units).
     if (low) {
         *low = (Uint32) cvt;
     }
@@ -117,8 +117,8 @@ void SDL_FileTimeToWindows(Uint64 ftime, Uint32 *low, Uint32 *high)
 
 Uint64 SDL_FileTimeToUnix(Uint64 ftime)
 {
-    // SDL time uses the unix epoch, but in nanoseconds. Divide to convert to seconds.
-    return ftime / SDL_NS_PER_SECOND;
+    // SDL time uses seconds since the unix epoch, so we're already there.
+    return ftime;
 }
 
 
