@@ -82,8 +82,6 @@
 #cmakedefine HAVE_PUTENV 1
 #cmakedefine HAVE_UNSETENV 1
 #endif
-#cmakedefine HAVE_QSORT 1
-#cmakedefine HAVE_BSEARCH 1
 #cmakedefine HAVE_ABS 1
 #cmakedefine HAVE_BCOPY 1
 #cmakedefine HAVE_MEMSET 1
