@@ -341,8 +341,8 @@ typedef struct
     VkImage *swapchainImages;
     VkImageView *swapchainImageViews;
     VkImageLayout *swapchainImageLayouts;
-    VkSemaphore imageAvailableSemaphore;
-    VkSemaphore renderingFinishedSemaphore;
+    VkSemaphore *imageAvailableSemaphores;
+    VkSemaphore *renderingFinishedSemaphores;
     uint32_t currentSwapchainImageIndex;
 
     /* Cached renderer properties */
@@ -515,13 +515,23 @@ static void VULKAN_DestroyAll(SDL_Renderer *renderer)
             rendererData->renderPasses[i] = VK_NULL_HANDLE;
         }
     }
-    if (rendererData->imageAvailableSemaphore != VK_NULL_HANDLE) {
-        vkDestroySemaphore(rendererData->device, rendererData->imageAvailableSemaphore, NULL);
-        rendererData->imageAvailableSemaphore = VK_NULL_HANDLE;
+    if (rendererData->imageAvailableSemaphores) {
+        for (uint32_t i = 0; i < rendererData->swapchainImageCount; ++i) {
+            if (rendererData->imageAvailableSemaphores[i] != VK_NULL_HANDLE) {
+                vkDestroySemaphore(rendererData->device, rendererData->imageAvailableSemaphores[i], NULL);
+            }
+        }
+        SDL_free(rendererData->imageAvailableSemaphores);
+        rendererData->imageAvailableSemaphores = NULL;
     }
-    if (rendererData->renderingFinishedSemaphore != VK_NULL_HANDLE) {
-        vkDestroySemaphore(rendererData->device, rendererData->renderingFinishedSemaphore, NULL);
-        rendererData->renderingFinishedSemaphore = VK_NULL_HANDLE;
+    if (rendererData->renderingFinishedSemaphores) {
+        for (uint32_t i = 0; i < rendererData->swapchainImageCount; ++i) {
+            if (rendererData->renderingFinishedSemaphores[i] != VK_NULL_HANDLE) {
+                vkDestroySemaphore(rendererData->device, rendererData->renderingFinishedSemaphores[i], NULL);
+            }
+        }
+        SDL_free(rendererData->renderingFinishedSemaphores);
+        rendererData->renderingFinishedSemaphores = NULL;
     }
     if (rendererData->commandPool) {
         if (rendererData->commandBuffers) {
@@ -832,7 +842,7 @@ static VkResult VULKAN_AcquireNextSwapchainImage(SDL_Renderer *renderer)
     VkResult result;
 
     result = vkAcquireNextImageKHR(rendererData->device, rendererData->swapchain, UINT64_MAX,
-        rendererData->imageAvailableSemaphore, VK_NULL_HANDLE, &rendererData->currentSwapchainImageIndex);
+        rendererData->imageAvailableSemaphores[rendererData->currentCommandBufferIndex], VK_NULL_HANDLE, &rendererData->currentSwapchainImageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_ERROR_SURFACE_LOST_KHR) {
         result = VULKAN_CreateWindowSizeDependentResources(renderer);
         return result;
@@ -2257,21 +2267,35 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     }
 
     /* Create semaphores */
-    if (rendererData->imageAvailableSemaphore != VK_NULL_HANDLE) {
-        vkDestroySemaphore(rendererData->device, rendererData->imageAvailableSemaphore, NULL);
+    if (rendererData->imageAvailableSemaphores) {
+        for (uint32_t i = 0; i < rendererData->swapchainImageCount; ++i) {
+            if (rendererData->imageAvailableSemaphores[i] != VK_NULL_HANDLE) {
+                vkDestroySemaphore(rendererData->device, rendererData->imageAvailableSemaphores[i], NULL);
+            }
+        }
+        SDL_free(rendererData->imageAvailableSemaphores);
     }
-    rendererData->imageAvailableSemaphore = VULKAN_CreateSemaphore(rendererData);
-    if (rendererData->imageAvailableSemaphore == VK_NULL_HANDLE) {
-        VULKAN_DestroyAll(renderer);
-        return VK_ERROR_UNKNOWN;
+    if (rendererData->renderingFinishedSemaphores) {
+        for (uint32_t i = 0; i < rendererData->swapchainImageCount; ++i) {
+            if (rendererData->renderingFinishedSemaphores[i] != VK_NULL_HANDLE) {
+                vkDestroySemaphore(rendererData->device, rendererData->renderingFinishedSemaphores[i], NULL);
+            }
+        }
+        SDL_free(rendererData->renderingFinishedSemaphores);
     }
-    if (rendererData->renderingFinishedSemaphore != VK_NULL_HANDLE) {
-        vkDestroySemaphore(rendererData->device, rendererData->renderingFinishedSemaphore, NULL);
-    }
-    rendererData->renderingFinishedSemaphore = VULKAN_CreateSemaphore(rendererData);
-    if (rendererData->renderingFinishedSemaphore == VK_NULL_HANDLE) {
-        VULKAN_DestroyAll(renderer);
-        return VK_ERROR_UNKNOWN;
+    rendererData->imageAvailableSemaphores = SDL_calloc(sizeof(VkSemaphore), rendererData->swapchainImageCount);
+    rendererData->renderingFinishedSemaphores = SDL_calloc(sizeof(VkSemaphore), rendererData->swapchainImageCount);
+    for (uint32_t i = 0; i < rendererData->swapchainImageCount; i++) {
+        rendererData->imageAvailableSemaphores[i] = VULKAN_CreateSemaphore(rendererData);
+        if (rendererData->imageAvailableSemaphores[i] == VK_NULL_HANDLE) {
+            VULKAN_DestroyAll(renderer);
+            return VK_ERROR_UNKNOWN;
+        }
+        rendererData->renderingFinishedSemaphores[i] = VULKAN_CreateSemaphore(rendererData);
+        if (rendererData->renderingFinishedSemaphores[i] == VK_NULL_HANDLE) {
+            VULKAN_DestroyAll(renderer);
+            return VK_ERROR_UNKNOWN;
+        }
     }
 
     /* Upload buffers */
@@ -3835,12 +3859,12 @@ static int VULKAN_RenderPresent(SDL_Renderer *renderer)
         VkSubmitInfo submitInfo = { 0 };
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = &rendererData->imageAvailableSemaphore;
+        submitInfo.pWaitSemaphores = &rendererData->imageAvailableSemaphores[rendererData->currentCommandBufferIndex];
         submitInfo.pWaitDstStageMask = &waitDestStageMask;
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &rendererData->currentCommandBuffer;
         submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = &rendererData->renderingFinishedSemaphore;
+        submitInfo.pSignalSemaphores = &rendererData->renderingFinishedSemaphores[rendererData->currentCommandBufferIndex];
         result = vkQueueSubmit(rendererData->graphicsQueue, 1, &submitInfo, rendererData->fences[rendererData->currentCommandBufferIndex]);
         if (result != VK_SUCCESS) {
             SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkQueueSubmit(): %s\n", SDL_Vulkan_GetResultString(result));
@@ -3851,7 +3875,7 @@ static int VULKAN_RenderPresent(SDL_Renderer *renderer)
         VkPresentInfoKHR presentInfo = { 0 };
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = &rendererData->renderingFinishedSemaphore;
+        presentInfo.pWaitSemaphores = &rendererData->renderingFinishedSemaphores[rendererData->currentCommandBufferIndex];
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = &rendererData->swapchain;
         presentInfo.pImageIndices = &rendererData->currentSwapchainImageIndex;
