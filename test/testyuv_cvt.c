@@ -41,6 +41,42 @@ YUV_CONVERSION_MODE GetYUVConversionModeForResolution(int width, int height)
     return mode;
 }
 
+SDL_Colorspace GetColorspaceForYUVConversionMode(YUV_CONVERSION_MODE mode)
+{
+    SDL_Colorspace colorspace;
+
+    switch (mode) {
+    case YUV_CONVERSION_JPEG:
+        colorspace = SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                                           SDL_COLOR_RANGE_FULL,
+                                           SDL_COLOR_PRIMARIES_BT709,
+                                           SDL_TRANSFER_CHARACTERISTICS_BT601,
+                                           SDL_MATRIX_COEFFICIENTS_BT601,
+                                           SDL_CHROMA_LOCATION_CENTER);
+        break;
+    case YUV_CONVERSION_BT601:
+        colorspace = SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                                           SDL_COLOR_RANGE_LIMITED,
+                                           SDL_COLOR_PRIMARIES_BT709,
+                                           SDL_TRANSFER_CHARACTERISTICS_BT601,
+                                           SDL_MATRIX_COEFFICIENTS_BT601,
+                                           SDL_CHROMA_LOCATION_CENTER);
+        break;
+    case YUV_CONVERSION_BT709:
+        colorspace = SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                                           SDL_COLOR_RANGE_LIMITED,
+                                           SDL_COLOR_PRIMARIES_BT709,
+                                           SDL_TRANSFER_CHARACTERISTICS_BT709,
+                                           SDL_MATRIX_COEFFICIENTS_BT709,
+                                           SDL_CHROMA_LOCATION_CENTER);
+        break;
+    default:
+        colorspace = SDL_COLORSPACE_UNKNOWN;
+        break;
+    }
+    return colorspace;
+}
+
 static float clip3(float x, float y, float z)
 {
     return (z < x) ? x : ((z > y) ? y : z);

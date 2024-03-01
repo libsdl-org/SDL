@@ -116,11 +116,6 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
         SDL_PIXELFORMAT_UYVY,
         SDL_PIXELFORMAT_YVYU
     };
-    const SDL_Colorspace colorspaces[] = {
-        SDL_COLORSPACE_JPEG,
-        SDL_COLORSPACE_BT601_LIMITED,
-        SDL_COLORSPACE_BT709_LIMITED
-    };
     int i, j;
     SDL_Surface *pattern = generate_test_pattern(pattern_size);
     const int yuv_len = MAX_YUV_SURFACE_SIZE(pattern->w, pattern->h, extra_pitch);
@@ -137,8 +132,7 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
     }
 
     mode = GetYUVConversionModeForResolution(pattern->w, pattern->h);
-    SDL_assert(mode < SDL_arraysize(colorspaces));
-    colorspace = colorspaces[mode];
+    colorspace = GetColorspaceForYUVConversionMode(mode);
 
     /* Verify conversion from YUV formats */
     for (i = 0; i < SDL_arraysize(formats); ++i) {
@@ -395,36 +389,18 @@ int main(int argc, char **argv)
     switch (yuv_mode) {
     case YUV_CONVERSION_JPEG:
         yuv_mode_name = "JPEG";
-        colorspace = SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
-                                           SDL_COLOR_RANGE_FULL,
-                                           SDL_COLOR_PRIMARIES_BT709,
-                                           SDL_TRANSFER_CHARACTERISTICS_BT601,
-                                           SDL_MATRIX_COEFFICIENTS_BT601,
-                                           SDL_CHROMA_LOCATION_CENTER);
         break;
     case YUV_CONVERSION_BT601:
         yuv_mode_name = "BT.601";
-        colorspace = SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
-                                           SDL_COLOR_RANGE_LIMITED,
-                                           SDL_COLOR_PRIMARIES_BT709,
-                                           SDL_TRANSFER_CHARACTERISTICS_BT601,
-                                           SDL_MATRIX_COEFFICIENTS_BT601,
-                                           SDL_CHROMA_LOCATION_CENTER);
         break;
     case YUV_CONVERSION_BT709:
         yuv_mode_name = "BT.709";
-        colorspace = SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
-                                           SDL_COLOR_RANGE_LIMITED,
-                                           SDL_COLOR_PRIMARIES_BT709,
-                                           SDL_TRANSFER_CHARACTERISTICS_BT709,
-                                           SDL_MATRIX_COEFFICIENTS_BT709,
-                                           SDL_CHROMA_LOCATION_CENTER);
         break;
     default:
         yuv_mode_name = "UNKNOWN";
-        colorspace = SDL_COLORSPACE_UNKNOWN;
         break;
     }
+    colorspace = GetColorspaceForYUVConversionMode(yuv_mode);
 
     raw_yuv = SDL_calloc(1, MAX_YUV_SURFACE_SIZE(original->w, original->h, 0));
     ConvertRGBtoYUV(yuv_format, original->pixels, original->pitch, raw_yuv, original->w, original->h, yuv_mode, 0, 100);
