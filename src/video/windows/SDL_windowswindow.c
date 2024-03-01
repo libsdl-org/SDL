@@ -453,7 +453,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
     }
     if (!(window->flags & SDL_WINDOW_MINIMIZED)) {
         RECT rect;
-        if (GetClientRect(hwnd, &rect) && !IsRectEmpty(&rect)) {
+        if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
             int w = rect.right;
             int h = rect.bottom;
 
