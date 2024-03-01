@@ -319,7 +319,7 @@ extern DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromFile(const char *file);
 extern DECLSPEC int SDLCALL SDL_ReloadGamepadMappings(void);
 
 /**
- * Get the mapping at a particular index.
+ * Get the current gamepad mappings.
  *
  * You must free the returned pointer with SDL_free() when you are done with
  * it, but you do _not_ free each string in the array.
