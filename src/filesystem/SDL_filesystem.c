@@ -264,7 +264,7 @@ static char *AssembleNativeFsPath(SDL_FSops *fs, const char *path)
     const char *base = (const char *) fs->opaque;
     const size_t baselen = base ? SDL_strlen(base) : 0;
     const size_t pathlen = path ? SDL_strlen(path) : 0;
-    SDL_bool isstack;
+    SDL_bool isstack = SDL_FALSE;
     char *sanitized = path ? SDL_small_alloc(char, pathlen + 1, &isstack) : NULL;
     if (path) {
         if (!sanitized) {
@@ -286,7 +286,9 @@ static char *AssembleNativeFsPath(SDL_FSops *fs, const char *path)
     const size_t slen = SDL_snprintf(fullpath, fullpathlen, "%s%s%s", base ? base : "", base ? PLATFORM_PATH_SEPARATOR : PLATFORM_ROOT_PATH, sanitized ? sanitized : "");
     SDL_assert(slen < fullpathlen);
 
-    SDL_small_free(sanitized, isstack);
+    if (sanitized) {
+        SDL_small_free(sanitized, isstack);
+    }
 
     return fullpath;
 }
