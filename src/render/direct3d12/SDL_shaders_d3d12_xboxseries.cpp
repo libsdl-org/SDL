@@ -31,28 +31,47 @@
 
 #define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(__FUNCTION__) ", " str
 
-/* Shader blob headers are generated with a pre-build step using buildshaders.bat */
-#include "../VisualC-GDK/shaders/D3D12_PixelShader_Colors_Series.h"
-#include "../VisualC-GDK/shaders/D3D12_PixelShader_Textures_Series.h"
-#include "../VisualC-GDK/shaders/D3D12_PixelShader_NV12_BT601_Series.h"
-#include "../VisualC-GDK/shaders/D3D12_PixelShader_NV12_BT709_Series.h"
-#include "../VisualC-GDK/shaders/D3D12_PixelShader_NV12_JPEG_Series.h"
-#include "../VisualC-GDK/shaders/D3D12_PixelShader_NV21_BT601_Series.h"
-#include "../VisualC-GDK/shaders/D3D12_PixelShader_NV21_BT709_Series.h"
-#include "../VisualC-GDK/shaders/D3D12_PixelShader_NV21_JPEG_Series.h"
-#include "../VisualC-GDK/shaders/D3D12_PixelShader_YUV_BT601_Series.h"
-#include "../VisualC-GDK/shaders/D3D12_PixelShader_YUV_BT709_Series.h"
-#include "../VisualC-GDK/shaders/D3D12_PixelShader_YUV_JPEG_Series.h"
 
-#include "../VisualC-GDK/shaders/D3D12_VertexShader_Color_Series.h"
-#include "../VisualC-GDK/shaders/D3D12_VertexShader_Texture_Series.h"
-#include "../VisualC-GDK/shaders/D3D12_VertexShader_NV_Series.h"
-#include "../VisualC-GDK/shaders/D3D12_VertexShader_YUV_Series.h"
+/* Shader blob headers are generated with a pre-build step using compile_shaders_xbox.bat */
 
-#include "../VisualC-GDK/shaders/D3D12_RootSig_Color_Series.h"
-#include "../VisualC-GDK/shaders/D3D12_RootSig_Texture_Series.h"
-#include "../VisualC-GDK/shaders/D3D12_RootSig_YUV_Series.h"
-#include "../VisualC-GDK/shaders/D3D12_RootSig_NV_Series.h"
+#define g_main D3D12_PixelShader_Colors
+#include "D3D12_PixelShader_Colors_Series.h"
+#undef g_main
+
+#define g_main D3D12_PixelShader_Textures
+#include "D3D12_PixelShader_Textures_Series.h"
+#undef g_main
+
+#define g_main D3D12_PixelShader_Advanced
+#include "D3D12_PixelShader_Advanced_Series.h"
+#undef g_main
+
+
+#define g_mainColor D3D12_VertexShader_Colors
+#include "D3D12_VertexShader_Color_Series.h"
+#undef g_mainColor
+
+#define g_mainTexture D3D12_VertexShader_Textures
+#include "D3D12_VertexShader_Texture_Series.h"
+#undef g_mainTexture
+
+#define g_mainAdvanced D3D12_VertexShader_Advanced
+#include "D3D12_VertexShader_Advanced_Series.h"
+#undef g_mainAdvanced
+
+
+#define g_ColorRS D3D12_RootSig_Color
+#include "D3D12_RootSig_Color_Series.h"
+#undef g_ColorRS
+
+#define g_TextureRS D3D12_RootSig_Texture
+#include "D3D12_RootSig_Texture_Series.h"
+#undef g_TextureRS
+
+#define g_AdvancedRS D3D12_RootSig_Advanced
+#include "D3D12_RootSig_Advanced_Series.h"
+#undef g_AdvancedRS
+
 
 static struct
 {
@@ -63,40 +82,14 @@ static struct
     D3D12_RootSignature root_sig;
 } D3D12_shaders[NUM_SHADERS] = {
     { D3D12_PixelShader_Colors, sizeof(D3D12_PixelShader_Colors),
-      D3D12_VertexShader_Color, sizeof(D3D12_VertexShader_Color),
+      D3D12_VertexShader_Colors, sizeof(D3D12_VertexShader_Colors),
       ROOTSIG_COLOR },
     { D3D12_PixelShader_Textures, sizeof(D3D12_PixelShader_Textures),
-      D3D12_VertexShader_Texture, sizeof(D3D12_VertexShader_Texture),
+      D3D12_VertexShader_Textures, sizeof(D3D12_VertexShader_Textures),
       ROOTSIG_TEXTURE },
-#if SDL_HAVE_YUV
-    { D3D12_PixelShader_YUV_JPEG, sizeof(D3D12_PixelShader_YUV_JPEG),
-      D3D12_VertexShader_YUV, sizeof(D3D12_VertexShader_YUV),
-      ROOTSIG_YUV },
-    { D3D12_PixelShader_YUV_BT601, sizeof(D3D12_PixelShader_YUV_BT601),
-      D3D12_VertexShader_YUV, sizeof(D3D12_VertexShader_YUV),
-      ROOTSIG_YUV },
-    { D3D12_PixelShader_YUV_BT709, sizeof(D3D12_PixelShader_YUV_BT709),
-      D3D12_VertexShader_YUV, sizeof(D3D12_VertexShader_YUV),
-      ROOTSIG_YUV },
-    { D3D12_PixelShader_NV12_JPEG, sizeof(D3D12_PixelShader_NV12_JPEG),
-      D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
-      ROOTSIG_NV },
-    { D3D12_PixelShader_NV12_BT601, sizeof(D3D12_PixelShader_NV12_BT601),
-      D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
-      ROOTSIG_NV },
-    { D3D12_PixelShader_NV12_BT709, sizeof(D3D12_PixelShader_NV12_BT709),
-      D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
-      ROOTSIG_NV },
-    { D3D12_PixelShader_NV21_JPEG, sizeof(D3D12_PixelShader_NV21_JPEG),
-      D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
-      ROOTSIG_NV },
-    { D3D12_PixelShader_NV21_BT601, sizeof(D3D12_PixelShader_NV21_BT601),
-      D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
-      ROOTSIG_NV },
-    { D3D12_PixelShader_NV21_BT709, sizeof(D3D12_PixelShader_NV21_BT709),
-      D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
-      ROOTSIG_NV },
-#endif
+    { D3D12_PixelShader_Advanced, sizeof(D3D12_PixelShader_Advanced),
+      D3D12_VertexShader_Advanced, sizeof(D3D12_VertexShader_Advanced),
+      ROOTSIG_ADVANCED },
 };
 
 static struct
@@ -106,10 +99,7 @@ static struct
 } D3D12_rootsigs[NUM_ROOTSIGS] = {
     { D3D12_RootSig_Color, sizeof(D3D12_RootSig_Color) },
     { D3D12_RootSig_Texture, sizeof(D3D12_RootSig_Texture) },
-#if SDL_HAVE_YUV
-    { D3D12_RootSig_YUV, sizeof(D3D12_RootSig_YUV) },
-    { D3D12_RootSig_NV, sizeof(D3D12_RootSig_NV) },
-#endif
+    { D3D12_RootSig_Advanced, sizeof(D3D12_RootSig_Advanced) },
 };
 
 extern "C" void
