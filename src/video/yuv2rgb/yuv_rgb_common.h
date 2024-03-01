@@ -7,7 +7,8 @@ typedef enum
 {
     YCBCR_JPEG,
     YCBCR_601,
-    YCBCR_709
+    YCBCR_709,
+    YCBCR_2020
 } YCbCrType;
 
 #endif /* YUV_RGB_COMMON_H_ */
