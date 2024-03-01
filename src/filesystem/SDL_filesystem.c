@@ -53,6 +53,8 @@ SDL_RWops *SDL_FSopen(SDL_FSops *fs, const char *path, const char *mode)
         SDL_InvalidParamError("path");
     } else if (!mode) {
         SDL_InvalidParamError("mode");
+    } else if (fs->open == NULL) {
+        SDL_Unsupported();
     } else {
         retval = fs->open(fs, path, mode);
     }
@@ -64,9 +66,11 @@ int SDL_FSenumerate(SDL_FSops *fs, const char *path, SDL_EnumerateCallback cb, v
     if (!fs) {
         return SDL_InvalidParamError("fs");
     } else if (!path) {
-        SDL_InvalidParamError("path");
+        return SDL_InvalidParamError("path");
     } else if (!cb) {
         return SDL_InvalidParamError("cb");
+    } else if (fs->enumerate == NULL) {
+        return SDL_Unsupported();
     }
     return fs->enumerate(fs, path, cb, userdata);
 }
@@ -77,6 +81,8 @@ int SDL_FSremove(SDL_FSops *fs, const char *path)
         return SDL_InvalidParamError("fs");
     } else if (!path) {
         return SDL_InvalidParamError("path");
+    } else if (fs->remove == NULL) {
+        return SDL_Unsupported();
     }
     return fs->remove(fs, path);
 }
@@ -89,6 +95,8 @@ int SDL_FSrename(SDL_FSops *fs, const char *oldpath, const char *newpath)
         return SDL_InvalidParamError("oldpath");
     } else if (!newpath) {
         return SDL_InvalidParamError("newpath");
+    } else if (fs->rename == NULL) {
+        return SDL_Unsupported();
     }
     return fs->rename(fs, oldpath, newpath);
 }
@@ -99,6 +107,8 @@ int SDL_FSmkdir(SDL_FSops *fs, const char *path)
         return SDL_InvalidParamError("fs");
     } else if (!path) {
         return SDL_InvalidParamError("path");
+    } else if (fs->mkdir == NULL) {
+        return SDL_Unsupported();
     }
     return fs->mkdir(fs, path);
 }
@@ -111,6 +121,8 @@ int SDL_FSstat(SDL_FSops *fs, const char *path, SDL_Stat *stat)
         return SDL_InvalidParamError("path");
     } else if (!stat) {
         return SDL_InvalidParamError("stat");
+    } else if (fs->stat == NULL) {
+        return SDL_Unsupported();
     }
     return fs->stat(fs, path, stat);
 }
