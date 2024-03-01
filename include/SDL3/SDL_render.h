@@ -618,7 +618,9 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *
  *
  * With the vulkan renderer:
  *
- * - `SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER`: the VkImage with layout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL associated with the texture, if you want to wrap an existing texture.
+ * - `SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER`: the VkImage with layout
+ *   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL associated with the texture, if
+ *   you want to wrap an existing texture.
  *
  * \param renderer the rendering context
  * \param props the properties to use
@@ -741,7 +743,8 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Rendere
  *
  * With the vulkan renderer:
  *
- * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_NUMBER`: the VkImage associated with the texture
+ * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_NUMBER`: the VkImage associated with the
+ *   texture
  *
  * \param texture the texture to query
  * \returns a valid property ID on success or 0 on failure; call
