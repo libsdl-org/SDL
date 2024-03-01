@@ -1008,6 +1008,7 @@
 #define SDL_FSopen SDL_FSopen_REAL
 #define SDL_FSenumerate SDL_FSenumerate_REAL
 #define SDL_FSremove SDL_FSremove_REAL
+#define SDL_FSrename SDL_FSrename_REAL
 #define SDL_FSmkdir SDL_FSmkdir_REAL
 #define SDL_FSstat SDL_FSstat_REAL
 #define SDL_GetFSProperties SDL_GetFSProperties_REAL

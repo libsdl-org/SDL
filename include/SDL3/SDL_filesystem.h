@@ -297,6 +297,9 @@ struct SDL_FSops
     /* delete/unlink/rmdir a path. Will not remove non-empty directories! */
     int (SDLCALL * remove)(SDL_FSops *fs, const char *path);
 
+    /* rename a file/dir from `oldpath` to `newpath` (there are some standard limitations, documentation forthcoming) */
+    int (SDLCALL * rename)(SDL_FSops *fs, const char *oldpath, const char *newpath);
+
     /* Create a directory. */
     int (SDLCALL * mkdir)(SDL_FSops *fs, const char *path);
 
@@ -331,6 +334,7 @@ extern DECLSPEC SDL_FSops * SDLCALL SDL_CreateFilesystem(const char *basedir);
 extern DECLSPEC SDL_RWops * SDLCALL SDL_FSopen(SDL_FSops *fs, const char *path, const char *mode);
 extern DECLSPEC int SDLCALL SDL_FSenumerate(SDL_FSops *fs, const char *path, SDL_EnumerateCallback cb, void *userdata);
 extern DECLSPEC int SDLCALL SDL_FSremove(SDL_FSops *fs, const char *path);
+extern DECLSPEC int SDLCALL SDL_FSrename(SDL_FSops *fs, const char *oldpath, const char *newpath);
 extern DECLSPEC int SDLCALL SDL_FSmkdir(SDL_FSops *fs, const char *path);
 extern DECLSPEC int SDLCALL SDL_FSstat(SDL_FSops *fs, const char *path, SDL_Stat *stat);
 

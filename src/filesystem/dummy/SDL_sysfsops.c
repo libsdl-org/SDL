@@ -35,6 +35,11 @@ int SDL_SYS_FSremove(SDL_FSops *fs, const char *fullpath)
     return SDL_Unsupported();
 }
 
+int SDL_SYS_FSrename(SDL_FSops *fs, const char *oldfullpath, const char *newfullpath)
+{
+    return SDL_Unsupported();
+}
+
 int SDL_SYS_FSmkdir(SDL_FSops *fs, const char *fullpath)
 {
     return SDL_Unsupported();

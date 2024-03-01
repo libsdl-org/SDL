@@ -63,6 +63,14 @@ int SDL_SYS_FSremove(SDL_FSops *fs, const char *fullpath)
     return 0;
 }
 
+int SDL_SYS_FSrename(SDL_FSops *fs, const char *oldfullpath, const char *newfullpath)
+{
+    if (rename(oldfullpath, newfullpath) < 0) {
+        return SDL_SetError("Can't remove path: %s", strerror(errno));
+    }
+    return 0;
+}
+
 int SDL_SYS_FSmkdir(SDL_FSops *fs, const char *fullpath)
 {
     if (mkdir(fullpath, 0770) < 0) {

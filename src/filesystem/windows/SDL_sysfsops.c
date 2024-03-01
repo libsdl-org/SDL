@@ -105,6 +105,25 @@ int SDL_SYS_FSremove(SDL_FSops *fs, const char *fullpath)
     return !rc ? WIN_SetError("Couldn't remove path") : 0;
 }
 
+int SDL_SYS_FSrename(SDL_FSops *fs, const char *oldfullpath, const char *newfullpath)
+{
+    WCHAR *woldpath = WIN_UTF8ToString(oldfullpath);
+    if (!woldpath) {
+        return -1;
+    }
+
+    WCHAR *wnewpath = WIN_UTF8ToString(newfullpath);
+    if (!wnewpath) {
+        SDL_free(woldpath);
+        return -1;
+    }
+
+    const BOOL rc = MoveFileExW(woldpath, wnewpath, MOVEFILE_REPLACE_EXISTING);
+    SDL_free(wnewpath);
+    SDL_free(woldpath);
+    return !rc ? WIN_SetError("Couldn't rename path") : 0;
+}
+
 int SDL_SYS_FSmkdir(SDL_FSops *fs, const char *fullpath)
 {
     WCHAR *wpath = WIN_UTF8ToString(fullpath);

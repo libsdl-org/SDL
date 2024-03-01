@@ -81,6 +81,18 @@ int SDL_FSremove(SDL_FSops *fs, const char *path)
     return fs->remove(fs, path);
 }
 
+int SDL_FSrename(SDL_FSops *fs, const char *oldpath, const char *newpath)
+{
+    if (!fs) {
+        return SDL_InvalidParamError("fs");
+    } else if (!oldpath) {
+        return SDL_InvalidParamError("oldpath");
+    } else if (!newpath) {
+        return SDL_InvalidParamError("newpath");
+    }
+    return fs->rename(fs, oldpath, newpath);
+}
+
 int SDL_FSmkdir(SDL_FSops *fs, const char *path)
 {
     if (!fs) {
@@ -301,6 +313,21 @@ static int SDLCALL nativefs_remove(SDL_FSops *fs, const char *path)
     return retval;
 }
 
+static int SDLCALL nativefs_rename(SDL_FSops *fs, const char *oldpath, const char *newpath)
+{
+    int retval = -1;
+    char *oldfullpath = AssembleNativeFsPath(fs, oldpath);
+    if (oldfullpath) {
+        char *newfullpath = AssembleNativeFsPath(fs, newpath);
+        if (newfullpath) {
+            retval = SDL_SYS_FSrename(fs, oldfullpath, newfullpath);
+            SDL_free(newfullpath);
+        }
+        SDL_free(oldfullpath);
+    }
+    return retval;
+}
+
 static int SDLCALL nativefs_mkdir(SDL_FSops *fs, const char *path)
 {
     int retval = -1;
@@ -371,6 +398,7 @@ SDL_FSops *SDL_CreateFilesystem(const char *basedir)
         fs->open = nativefs_open;
         fs->enumerate = nativefs_enumerate;
         fs->remove = nativefs_remove;
+        fs->rename = nativefs_rename;
         fs->mkdir = nativefs_mkdir;
         fs->stat = nativefs_stat;
         fs->closefs = nativefs_closefs;

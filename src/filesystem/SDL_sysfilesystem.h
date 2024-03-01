@@ -24,6 +24,7 @@
 
 int SDL_SYS_FSenumerate(SDL_FSops *fs, const char *fullpath, const char *dirname, SDL_EnumerateCallback cb, void *userdata);
 int SDL_SYS_FSremove(SDL_FSops *fs, const char *fullpath);
+int SDL_SYS_FSrename(SDL_FSops *fs, const char *oldfullpath, const char *newfullpath);
 int SDL_SYS_FSmkdir(SDL_FSops *fs, const char *fullpath);
 int SDL_SYS_FSstat(SDL_FSops *fs, const char *fullpath, SDL_Stat *stat);
 
