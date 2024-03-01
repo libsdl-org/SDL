@@ -90,7 +90,7 @@ typedef struct
     Float4X4 projectionAndView;
 } VertexShaderConstants;
 
-/* These should mirror the definitions in D3D12_PixelShader_Common.incl */
+/* These should mirror the definitions in D3D12_PixelShader_Common.hlsli */
 //static const float TONEMAP_NONE = 0;
 //static const float TONEMAP_LINEAR = 1;
 static const float TONEMAP_CHROME = 2;

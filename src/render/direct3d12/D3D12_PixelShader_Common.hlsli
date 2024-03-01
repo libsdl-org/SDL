@@ -1,3 +1,4 @@
+#include "D3D12_Shader_Common.hlsli"
 
 Texture2D texture0 : register(t0);
 Texture2D texture1 : register(t1);
