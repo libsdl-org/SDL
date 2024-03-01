@@ -129,9 +129,9 @@ static void RGBtoYUV(const Uint8 *rgb, int *yuv, YUV_CONVERSION_MODE mode, int m
     U = clip3(0, SDL_powf(2.0f, M) - 1, SDL_floorf(SDL_powf(2.0f, (M - 8)) * (112.0f * (B - L) / ((1.0f - Kb) * S) + 128) + 0.5f));
     V = clip3(0, SDL_powf(2.0f, M) - 1, SDL_floorf(SDL_powf(2.0f, (M - 8)) * (112.0f * (R - L) / ((1.0f - Kr) * S) + 128) + 0.5f));
 
-    yuv[0] = (Uint8)Y;
-    yuv[1] = (Uint8)U;
-    yuv[2] = (Uint8)V;
+    yuv[0] = (int)Y;
+    yuv[1] = (int)U;
+    yuv[2] = (int)V;
 
     if (monochrome) {
         yuv[1] = 128;
@@ -139,7 +139,7 @@ static void RGBtoYUV(const Uint8 *rgb, int *yuv, YUV_CONVERSION_MODE mode, int m
     }
 
     if (luminance != 100) {
-        yuv[0] = (Uint8)SDL_roundf(yuv[0] * (luminance / 100.0f));
+        yuv[0] = (int)SDL_roundf(yuv[0] * (luminance / 100.0f));
         if (yuv[0] > 255) {
             yuv[0] = 255;
         }

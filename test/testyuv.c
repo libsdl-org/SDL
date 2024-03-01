@@ -261,6 +261,8 @@ int main(int argc, char **argv)
     Uint32 rgb_format = SDL_PIXELFORMAT_RGBX8888;
     SDL_PropertiesID props;
     SDL_Colorspace colorspace;
+    SDL_bool monochrome = SDL_FALSE;
+    int luminance = 100;
     int current = 0;
     int pitch;
     Uint8 *raw_yuv;
@@ -338,6 +340,12 @@ int main(int argc, char **argv)
             } else if (SDL_strcmp(argv[i], "--bgra") == 0) {
                 rgb_format = SDL_PIXELFORMAT_BGRA8888;
                 consumed = 1;
+            } else if (SDL_strcmp(argv[i], "--monochrome") == 0) {
+                monochrome = SDL_TRUE;
+                consumed = 1;
+            } else if (SDL_strcmp(argv[i], "--luminance") == 0 && argv[i+1]) {
+                luminance = SDL_atoi(argv[i+1]);
+                consumed = 2;
             } else if (SDL_strcmp(argv[i], "--automated") == 0) {
                 should_run_automated_tests = SDL_TRUE;
                 consumed = 1;
@@ -351,6 +359,7 @@ int main(int argc, char **argv)
                 "[--jpeg|--bt601|--bt709|--auto]",
                 "[--yv12|--iyuv|--yuy2|--uyvy|--yvyu|--nv12|--nv21]",
                 "[--rgb555|--rgb565|--rgb24|--argb|--abgr|--rgba|--bgra]",
+                "[--monochrome] [--luminance N%]",
                 "[--automated]",
                 "[sample.bmp]",
                 NULL,
@@ -403,7 +412,7 @@ int main(int argc, char **argv)
     colorspace = GetColorspaceForYUVConversionMode(yuv_mode);
 
     raw_yuv = SDL_calloc(1, MAX_YUV_SURFACE_SIZE(original->w, original->h, 0));
-    ConvertRGBtoYUV(yuv_format, original->pixels, original->pitch, raw_yuv, original->w, original->h, yuv_mode, 0, 100);
+    ConvertRGBtoYUV(yuv_format, original->pixels, original->pitch, raw_yuv, original->w, original->h, yuv_mode, monochrome, luminance);
     pitch = CalculateYUVPitch(yuv_format, original->w);
 
     converted = SDL_CreateSurface(original->w, original->h, rgb_format);
