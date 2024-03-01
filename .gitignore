@@ -79,7 +79,8 @@ VisualC/tests/testscale/sample.bmp
 VisualC/tests/testsprite/icon.bmp
 VisualC/tests/testyuv/testyuv.bmp
 VisualC-GDK/**/Layout
-VisualC-GDK/shaders/*.h
+src/render/direct3d12/D3D12_*_One.h
+src/render/direct3d12/D3D12_*_Series.h
 
 # for Android
 android-project/local.properties
