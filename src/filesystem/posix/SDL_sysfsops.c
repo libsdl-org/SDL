@@ -57,8 +57,27 @@ int SDL_SYS_FSenumerate(SDL_FSops *fs, const char *fullpath, const char *dirname
 
 int SDL_SYS_FSremove(SDL_FSops *fs, const char *fullpath)
 {
-    if (remove(fullpath) < 0) {
-        return SDL_SetError("Can't remove path: %s", strerror(errno));
+    int rc = remove(fullpath);
+    if (rc < 0) {
+        const int origerrno = errno;
+        if (origerrno == ENOENT) {
+            char *parent = SDL_strdup(fullpath);
+            if (!parent) {
+                return -1;
+            }
+            char *ptr = SDL_strrchr(parent, '/');
+            if (ptr) {
+                *ptr = '\0';  // chop off thing we were removing, see if parent is there.
+                struct stat statbuf;
+                rc = stat(parent, &statbuf);
+                if (rc == 0) {
+                    SDL_free(parent);
+                    return 0;  // it's already gone, and parent exists, consider it success.
+                }
+            }
+            SDL_free(parent);
+        }
+        return SDL_SetError("Can't remove path: %s", strerror(origerrno));
     }
     return 0;
 }
@@ -73,8 +92,16 @@ int SDL_SYS_FSrename(SDL_FSops *fs, const char *oldfullpath, const char *newfull
 
 int SDL_SYS_FSmkdir(SDL_FSops *fs, const char *fullpath)
 {
-    if (mkdir(fullpath, 0770) < 0) {
-        return SDL_SetError("Can't create directory: %s", strerror(errno));
+    const int rc = mkdir(fullpath, 0770);
+    if (rc < 0) {
+        const int origerrno = errno;
+        if (origerrno == EEXIST) {
+            struct stat statbuf;
+            if ((stat(fullpath, &statbuf) == 0) && (S_ISDIR(statbuf.st_mode))) {
+                return 0;  // it already exists and it's a directory, consider it success.
+            }
+        }
+        return SDL_SetError("Can't create directory: %s", strerror(origerrno));
     }
     return 0;
 }
@@ -88,7 +115,7 @@ int SDL_SYS_FSstat(SDL_FSops *fs, const char *fullpath, SDL_Stat *st)
     } else if (S_ISREG(statbuf.st_mode)) {
         st->filetype = SDL_STATPATHTYPE_FILE;
         st->filesize = (Uint64) statbuf.st_size;
-    } else if(S_ISDIR(statbuf.st_mode)) {
+    } else if (S_ISDIR(statbuf.st_mode)) {
         st->filetype = SDL_STATPATHTYPE_DIRECTORY;
         st->filesize = 0;
     } else {

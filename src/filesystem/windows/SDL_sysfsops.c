@@ -96,6 +96,10 @@ int SDL_SYS_FSremove(SDL_FSops *fs, const char *fullpath)
 
     WIN32_FILE_ATTRIBUTE_DATA info;
     if (!GetFileAttributesExW(wpath, GetFileExInfoStandard, &info)) {
+        if (GetLastError() == ERROR_FILE_NOT_FOUND) {
+            // Note that ERROR_PATH_NOT_FOUND means a parent dir is missing, and we consider that an error.
+            return 0;  // thing is already gone, call it a success.
+        }
         return WIN_SetError("Couldn't get path's attributes");
     }
 
