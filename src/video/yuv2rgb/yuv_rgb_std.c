@@ -28,6 +28,19 @@ static uint8_t clampU8(int32_t v)
     return lut[((v+128*PRECISION_FACTOR)>>PRECISION)&511];
 }
 
+static uint16_t clamp10(int32_t v)
+{
+    v >>= PRECISION;
+    if (v < 0) {
+        return 0;
+    } else if (v > 1023) {
+        return 1023;
+    } else {
+        return (uint16_t)v;
+    }
+}
+
+#define YUV_BITS    8
 
 #define STD_FUNCTION_NAME	yuv420_rgb565_std
 #define YUV_FORMAT			YUV_FORMAT_420
@@ -117,6 +130,14 @@ static uint8_t clampU8(int32_t v)
 #define STD_FUNCTION_NAME	yuvnv12_abgr_std
 #define YUV_FORMAT			YUV_FORMAT_NV12
 #define RGB_FORMAT			RGB_FORMAT_ABGR
+#include "yuv_rgb_std_func.h"
+
+#undef YUV_BITS
+#define YUV_BITS    10
+
+#define STD_FUNCTION_NAME	yuvp010_xbgr2101010_std
+#define YUV_FORMAT			YUV_FORMAT_NV12
+#define RGB_FORMAT			RGB_FORMAT_XBGR2101010
 #include "yuv_rgb_std_func.h"
 
 void rgb24_yuv420_std(
