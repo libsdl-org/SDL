@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_WINDOWS
+#if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsshape.h"
@@ -121,4 +121,4 @@ int WIN_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfac
     return 0;
 }
 
-#endif /* SDL_VIDEO_DRIVER_WINDOWS */
+#endif /* defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) */
