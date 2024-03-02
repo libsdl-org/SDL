@@ -124,9 +124,11 @@ int SDL_SYS_FSstat(SDL_FSops *fs, const char *fullpath, SDL_Stat *st)
     }
 
     // SDL file time is seconds since the Unix epoch, so we're already good here.
-    st->modtime = (Uint64) statbuf.st_mtime;
-    st->createtime = (Uint64) statbuf.st_ctime;
-    st->accesstime = (Uint64) statbuf.st_atime;
+    // Note that this will fail on machines with 32-bit time_t in 2038, but that's not
+    // an SDL bug; those machines need to be fixed or everything will fail in the same way.
+    st->modtime = (Sint64) statbuf.st_mtime;
+    st->createtime = (Sint64) statbuf.st_ctime;
+    st->accesstime = (Sint64) statbuf.st_atime;
 
     return 0;
 }

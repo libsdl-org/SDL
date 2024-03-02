@@ -127,19 +127,28 @@ int SDL_FSstat(SDL_FSops *fs, const char *path, SDL_Stat *stat)
     return fs->stat(fs, path, stat);
 }
 
-void SDL_FileTimeToWindows(Uint64 ftime, Uint32 *low, Uint32 *high)
+void SDL_FileTimeToWindows(Sint64 ftime, Uint32 *low, Uint32 *high)
 {
-    const Uint64 delta_1601_epoch_s = 11644473600ull; // [seconds] (seconds between 1/1/1601 and 1/1/1970, 11644473600 seconds)
-    const Uint64 cvt = (ftime + delta_1601_epoch_s) * (SDL_NS_PER_SECOND / 100ull); // [100ns] (adjust to epoch and convert nanoseconds to 1/100th nanosecond units).
+    const Sint64 delta_1601_epoch_s = 11644473600ull; // [seconds] (seconds between 1/1/1601 and 1/1/1970, 11644473600 seconds)
+
+    Sint64 cvt = (ftime + delta_1601_epoch_s) * (SDL_NS_PER_SECOND / 100ull); // [100ns] (adjust to epoch and convert nanoseconds to 1/100th nanosecond units).
+
+    // Windows FILETIME is unsigned, so if we're trying to show a timestamp from before before the
+    // Windows epoch, (Jan 1, 1601), clamp it to zero so it doesn't go way into the future.
+    if (cvt < 0) {
+        cvt = 0;
+    }
+
     if (low) {
         *low = (Uint32) cvt;
     }
+
     if (high) {
         *high = (Uint32) (cvt >> 32);
     }
 }
 
-Uint64 SDL_FileTimeToUnix(Uint64 ftime)
+Sint64 SDL_FileTimeToUnix(Sint64 ftime)
 {
     // SDL time uses seconds since the unix epoch, so we're already there.
     return ftime;

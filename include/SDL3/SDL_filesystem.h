@@ -246,14 +246,14 @@ typedef enum SDL_StatPathType
     SDL_STATPATHTYPE_OTHER /**< something completely different like a device node (not a symlink, those are always followed) */
 } SDL_StatPathType;
 
-/* SDL timestamps are in _nanoseconds_ since the Unix epoch (Jan 1, 1970). */
+/* SDL timestamps are 64-bit integers representing seconds since the Unix epoch (Jan 1, 1970). Negative values are before the epoch. */
 typedef struct SDL_Stat
 {
     SDL_StatPathType filetype;  /* is this a file? a dir? something else? */
     Uint64 filesize;    /* size in bytes */
-    Uint64 modtime;     /* SDL filesystem timestamp */
-    Uint64 createtime;  /* SDL filesystem timestamp */
-    Uint64 accesstime;  /* SDL filesystem timestamp */
+    Sint64 modtime;     /* SDL filesystem timestamp */
+    Sint64 createtime;  /* SDL filesystem timestamp */
+    Sint64 accesstime;  /* SDL filesystem timestamp */
 } SDL_Stat;
 
 
