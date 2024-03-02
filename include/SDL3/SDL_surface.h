@@ -780,13 +780,15 @@ extern DECLSPEC int SDLCALL SDL_ConvertPixels(int width, int height, Uint32 src_
  * \param src_format an SDL_PixelFormatEnum value of the `src` pixels format
  * \param src_colorspace an SDL_ColorSpace value describing the colorspace of
  *                       the `src` pixels
- * \param src_properties an SDL_PropertiesID with additional source color properties, or 0
+ * \param src_properties an SDL_PropertiesID with additional source color
+ *                       properties, or 0
  * \param src a pointer to the source pixels
  * \param src_pitch the pitch of the source pixels, in bytes
  * \param dst_format an SDL_PixelFormatEnum value of the `dst` pixels format
  * \param dst_colorspace an SDL_ColorSpace value describing the colorspace of
  *                       the `dst` pixels
- * \param dst_properties an SDL_PropertiesID with additional destination color properties, or 0
+ * \param dst_properties an SDL_PropertiesID with additional destination color
+ *                       properties, or 0
  * \param dst a pointer to be filled in with new pixel data
  * \param dst_pitch the pitch of the destination pixels, in bytes
  * \returns 0 on success or a negative error code on failure; call
