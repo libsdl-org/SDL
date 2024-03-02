@@ -216,7 +216,8 @@ extern DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
  *   to 203 for HDR10 surfaces and 1.0 for floating point surfaces.
  * - `SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT`: for HDR10 and floating point
  *   surfaces, this defines the maximum dynamic range used by the content, in
- *   terms of the SDR white point. This defaults to 0.0, which disables tone mapping.
+ *   terms of the SDR white point. This defaults to 0.0, which disables tone
+ *   mapping.
  * - `SDL_PROP_SURFACE_TONEMAP_OPERATOR_STRING`: the tone mapping operator
  *   used when compressing from a surface with high dynamic range to another
  *   with lower dynamic range. Currently this supports "chrome", which uses
