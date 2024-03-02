@@ -345,6 +345,14 @@ typedef struct
     VkSemaphore *renderingFinishedSemaphores;
     uint32_t currentSwapchainImageIndex;
 
+    VkPipelineStageFlags *waitDestStageMasks;
+    VkSemaphore *waitRenderSemaphores;
+    uint32_t waitRenderSemaphoreCount;
+    uint32_t waitRenderSemaphoreMax;
+    VkSemaphore *signalRenderSemaphores;
+    uint32_t signalRenderSemaphoreCount;
+    uint32_t signalRenderSemaphoreMax;
+
     /* Cached renderer properties */
     VULKAN_TextureData *textureRenderTarget;
     SDL_bool cliprectDirty;
@@ -456,6 +464,18 @@ static void VULKAN_DestroyAll(SDL_Renderer *renderer)
         return;
     }
 
+    if (rendererData->waitDestStageMasks) {
+        SDL_free(rendererData->waitDestStageMasks);
+        rendererData->waitDestStageMasks = NULL;
+    }
+    if (rendererData->waitRenderSemaphores) {
+        SDL_free(rendererData->waitRenderSemaphores);
+        rendererData->waitRenderSemaphores = NULL;
+    }
+    if (rendererData->signalRenderSemaphores) {
+        SDL_free(rendererData->signalRenderSemaphores);
+        rendererData->signalRenderSemaphores = NULL;
+    }
     if (rendererData->surfaceFormats != NULL) {
         SDL_free(rendererData->surfaceFormats);
         rendererData->surfaceFormats = NULL;
@@ -1011,6 +1031,12 @@ static VkResult VULKAN_IssueBatch(VULKAN_RenderData *rendererData)
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &rendererData->currentCommandBuffer;
+    if (rendererData->waitRenderSemaphoreCount > 0) {
+        submitInfo.waitSemaphoreCount = rendererData->waitRenderSemaphoreCount;
+        submitInfo.pWaitSemaphores = rendererData->waitRenderSemaphores;
+        submitInfo.pWaitDstStageMask = rendererData->waitDestStageMasks;
+        rendererData->waitRenderSemaphoreCount = 0;
+    }
     result = vkQueueSubmit(rendererData->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 
     VULKAN_WaitForGPU(rendererData);
@@ -2352,6 +2378,9 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     rendererData->currentConstantBufferIndex = 0;
 
     VULKAN_AcquireNextSwapchainImage(renderer);
+
+    SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
+    SDL_SetNumberProperty(props, SDL_PROP_RENDERER_VULKAN_SWAPCHAIN_IMAGE_COUNT_NUMBER, rendererData->swapchainImageCount);
 
     return result;
 }
@@ -3835,6 +3864,48 @@ static SDL_Surface* VULKAN_RenderReadPixels(SDL_Renderer *renderer, const SDL_Re
     return output;
 }
 
+static int VULKAN_AddVulkanRenderSemaphores(SDL_Renderer *renderer, Uint32 wait_stage_mask, Sint64 wait_semaphore, Sint64 signal_semaphore)
+{
+    VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->driverdata;
+
+    if (wait_semaphore) {
+        if (rendererData->waitRenderSemaphoreCount == rendererData->waitRenderSemaphoreMax) {
+            /* Allocate an additional one at the end for the normal present wait */
+            VkPipelineStageFlags *waitDestStageMasks = (VkPipelineStageFlags *)SDL_realloc(rendererData->waitDestStageMasks, (rendererData->waitRenderSemaphoreMax + 2) * sizeof(*waitDestStageMasks));
+            if (!waitDestStageMasks) {
+                return -1;
+            }
+            rendererData->waitDestStageMasks = waitDestStageMasks;
+
+            VkSemaphore *semaphores = (VkSemaphore *)SDL_realloc(rendererData->waitRenderSemaphores, (rendererData->waitRenderSemaphoreMax + 2) * sizeof(*semaphores));
+            if (!semaphores) {
+                return -1;
+            }
+            rendererData->waitRenderSemaphores = semaphores;
+            ++rendererData->waitRenderSemaphoreMax;
+        }
+        rendererData->waitDestStageMasks[rendererData->waitRenderSemaphoreCount] = wait_stage_mask;
+        rendererData->waitRenderSemaphores[rendererData->waitRenderSemaphoreCount] = (VkSemaphore)wait_semaphore;
+        ++rendererData->waitRenderSemaphoreCount;
+    }
+
+    if (signal_semaphore) {
+        if (rendererData->signalRenderSemaphoreCount == rendererData->signalRenderSemaphoreMax) {
+            /* Allocate an additional one at the end for the normal present signal */
+            VkSemaphore *semaphores = (VkSemaphore *)SDL_realloc(rendererData->signalRenderSemaphores, (rendererData->signalRenderSemaphoreMax + 2) * sizeof(*semaphores));
+            if (!semaphores) {
+                return -1;
+            }
+            rendererData->signalRenderSemaphores = semaphores;
+            ++rendererData->signalRenderSemaphoreMax;
+        }
+        rendererData->signalRenderSemaphores[rendererData->signalRenderSemaphoreCount] = (VkSemaphore)signal_semaphore;
+        ++rendererData->signalRenderSemaphoreCount;
+    }
+
+    return 0;
+}
+
 static int VULKAN_RenderPresent(SDL_Renderer *renderer)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->driverdata;
@@ -3865,13 +3936,29 @@ static int VULKAN_RenderPresent(SDL_Renderer *renderer)
         VkPipelineStageFlags waitDestStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         VkSubmitInfo submitInfo = { 0 };
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = &rendererData->imageAvailableSemaphores[rendererData->currentCommandBufferIndex];
-        submitInfo.pWaitDstStageMask = &waitDestStageMask;
+        if (rendererData->waitRenderSemaphoreCount > 0) {
+            submitInfo.waitSemaphoreCount = rendererData->waitRenderSemaphoreCount + 1;
+            rendererData->waitRenderSemaphores[rendererData->waitRenderSemaphoreCount] = rendererData->imageAvailableSemaphores[rendererData->currentCommandBufferIndex];
+            rendererData->waitDestStageMasks[rendererData->waitRenderSemaphoreCount] = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            submitInfo.pWaitSemaphores = rendererData->waitRenderSemaphores;
+            submitInfo.pWaitDstStageMask = rendererData->waitDestStageMasks;
+            rendererData->waitRenderSemaphoreCount = 0;
+        } else {
+            submitInfo.waitSemaphoreCount = 1;
+            submitInfo.pWaitSemaphores = &rendererData->imageAvailableSemaphores[rendererData->currentCommandBufferIndex];
+            submitInfo.pWaitDstStageMask = &waitDestStageMask;
+        }
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &rendererData->currentCommandBuffer;
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = &rendererData->renderingFinishedSemaphores[rendererData->currentCommandBufferIndex];
+        if (rendererData->signalRenderSemaphoreCount > 0) {
+            submitInfo.signalSemaphoreCount = rendererData->signalRenderSemaphoreCount + 1;
+            rendererData->signalRenderSemaphores[rendererData->signalRenderSemaphoreCount] = rendererData->renderingFinishedSemaphores[rendererData->currentCommandBufferIndex];
+            submitInfo.pSignalSemaphores = rendererData->signalRenderSemaphores;
+            rendererData->signalRenderSemaphoreCount = 0;
+        } else {
+            submitInfo.signalSemaphoreCount = 1;
+            submitInfo.pSignalSemaphores = &rendererData->renderingFinishedSemaphores[rendererData->currentCommandBufferIndex];
+        }
         result = vkQueueSubmit(rendererData->graphicsQueue, 1, &submitInfo, rendererData->fences[rendererData->currentCommandBufferIndex]);
         if (result != VK_SUCCESS) {
             SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkQueueSubmit(): %s\n", SDL_Vulkan_GetResultString(result));
@@ -3975,6 +4062,7 @@ SDL_Renderer *VULKAN_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_
     renderer->InvalidateCachedState = VULKAN_InvalidateCachedState;
     renderer->RunCommandQueue = VULKAN_RunCommandQueue;
     renderer->RenderReadPixels = VULKAN_RenderReadPixels;
+    renderer->AddVulkanRenderSemaphores = VULKAN_AddVulkanRenderSemaphores;
     renderer->RenderPresent = VULKAN_RenderPresent;
     renderer->DestroyTexture = VULKAN_DestroyTexture;
     renderer->DestroyRenderer = VULKAN_DestroyRenderer;
