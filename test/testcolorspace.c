@@ -157,9 +157,6 @@ static SDL_bool ReadPixel(int x, int y, SDL_Color *c)
 
     surface = SDL_RenderReadPixels(renderer, &r);
     if (surface) {
-        /* We don't want to do any HDR -> SDR tone mapping */
-        SDL_SetFloatProperty(SDL_GetSurfaceProperties(surface), SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, 0.0f);
-
         if (SDL_ReadSurfacePixel(surface, 0, 0, &c->r, &c->g, &c->b, &c->a) == 0) {
             result = SDL_TRUE;
         } else {

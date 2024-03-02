@@ -436,20 +436,25 @@ static SDL_PropertiesID CreateVideoTextureProperties(AVFrame *frame, Uint32 form
 {
     AVFrameSideData *pSideData;
     SDL_PropertiesID props;
+    SDL_Colorspace colorspace = GetFrameColorspace(frame);
+
+    /* ITU-R BT.2408-6 recommends using an SDR white point of 203 nits, which is more likely for game content */
+    static const float k_flSDRWhitePoint = 203.0f;
+    float flMaxLuminance = k_flSDRWhitePoint;
 
     props = SDL_CreateProperties();
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, GetFrameColorspace(frame));
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, colorspace);
     pSideData = av_frame_get_side_data(frame, AV_FRAME_DATA_MASTERING_DISPLAY_METADATA);
     if (pSideData) {
-        /* ITU-R BT.2408-6 recommends using an SDR white point of 203 nits, which is more likely for game content */
-        static const float k_flSDRWhitePoint = 203.0f;
-
         AVMasteringDisplayMetadata *pMasteringDisplayMetadata = (AVMasteringDisplayMetadata *)pSideData->data;
-        float flMaxLuminance = (float)pMasteringDisplayMetadata->max_luminance.num / pMasteringDisplayMetadata->max_luminance.den;
-        if (flMaxLuminance > k_flSDRWhitePoint) {
-            SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, k_flSDRWhitePoint);
-            SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT, flMaxLuminance / k_flSDRWhitePoint);
-        }
+        flMaxLuminance = (float)pMasteringDisplayMetadata->max_luminance.num / pMasteringDisplayMetadata->max_luminance.den;
+    } else if (SDL_COLORSPACETRANSFER(colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
+        /* The official definition is 10000, but PQ game content is often mastered for 400 or 1000 nits */
+        flMaxLuminance = 1000.0f;
+    }
+    if (flMaxLuminance > k_flSDRWhitePoint) {
+        SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, k_flSDRWhitePoint);
+        SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT, flMaxLuminance / k_flSDRWhitePoint);
     }
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, format);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, access);

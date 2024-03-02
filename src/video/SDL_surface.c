@@ -355,11 +355,6 @@ float SDL_GetSurfaceHDRHeadroom(SDL_Surface *surface, SDL_Colorspace colorspace)
         } else {
             props = 0;
         }
-        if (transfer == SDL_TRANSFER_CHARACTERISTICS_PQ) {
-            /* The official definition is 10000, but PQ game content is often mastered for 400 or 1000 nits */
-            const int DEFAULT_PQ_MAXCLL = 1000;
-            default_value = (float)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_MAXCLL_NUMBER, DEFAULT_PQ_MAXCLL) / SDL_GetSurfaceSDRWhitePoint(surface, colorspace);
-        }
         return SDL_GetFloatProperty(props, SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, default_value);
     }
     return 1.0f;

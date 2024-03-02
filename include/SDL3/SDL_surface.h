@@ -210,27 +210,13 @@ extern DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
  *   floating point formats, SDL_COLORSPACE_HDR10 for 10-bit formats,
  *   SDL_COLORSPACE_SRGB for other RGB surfaces and SDL_COLORSPACE_BT709_FULL
  *   for YUV surfaces.
- * - `SDL_PROP_SURFACE_MAXCLL_NUMBER`: MaxCLL (Maximum Content Light Level)
- *   indicates the maximum light level of any single pixel (in cd/m2 or nits)
- *   of the content. MaxCLL is usually measured off the final delivered
- *   content after mastering. If one uses the full light level of the HDR
- *   mastering display and adds a hard clip at its maximum value, MaxCLL would
- *   be equal to the peak luminance of the mastering monitor. This defaults to
- *   400 for HDR10 surfaces.
- * - `SDL_PROP_SURFACE_MAXFALL_NUMBER`: MaxFALL (Maximum Frame Average Light
- *   Level) indicates the maximum value of the frame average light level (in
- *   cd/m2 or nits) of the content. MaxFALL is calculated by averaging the
- *   decoded luminance values of all the pixels within a frame. MaxFALL is
- *   usually much lower than MaxCLL.
  * - `SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT`: for HDR10 and floating point
  *   surfaces, this defines the value of 100% diffuse white, with higher
  *   values being displayed in the High Dynamic Range headroom. This defaults
- *   to 100 for HDR10 surfaces and 1.0 for other surfaces.
+ *   to 203 for HDR10 surfaces and 1.0 for floating point surfaces.
  * - `SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT`: for HDR10 and floating point
  *   surfaces, this defines the maximum dynamic range used by the content, in
- *   terms of the SDR white point. This defaults to
- *   SDL_PROP_SURFACE_MAXCLL_NUMBER / SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT,
- *   or 4.0, for HDR10 surfaces.
+ *   terms of the SDR white point. This defaults to 0.0, which disables tone mapping.
  * - `SDL_PROP_SURFACE_TONEMAP_OPERATOR_STRING`: the tone mapping operator
  *   used when compressing from a surface with high dynamic range to another
  *   with lower dynamic range. Currently this supports "chrome", which uses
@@ -250,8 +236,6 @@ extern DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
 extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSurfaceProperties(SDL_Surface *surface);
 
 #define SDL_PROP_SURFACE_COLORSPACE_NUMBER                  "SDL.surface.colorspace"
-#define SDL_PROP_SURFACE_MAXCLL_NUMBER                      "SDL.surface.maxCLL"
-#define SDL_PROP_SURFACE_MAXFALL_NUMBER                     "SDL.surface.maxFALL"
 #define SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT              "SDL.surface.SDR_white_point"
 #define SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT                 "SDL.surface.HDR_headroom"
 #define SDL_PROP_SURFACE_TONEMAP_OPERATOR_STRING            "SDL.surface.tonemap"
