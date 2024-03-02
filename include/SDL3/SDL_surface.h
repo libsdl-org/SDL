@@ -741,6 +741,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormat(SDL_Surface *surfa
  * \param surface the existing SDL_Surface structure to convert
  * \param pixel_format the new pixel format
  * \param colorspace the new colorspace
+ * \param props an SDL_PropertiesID with additional color properties, or 0
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
  *          call SDL_GetError() for more information.
  *
@@ -779,11 +780,13 @@ extern DECLSPEC int SDLCALL SDL_ConvertPixels(int width, int height, Uint32 src_
  * \param src_format an SDL_PixelFormatEnum value of the `src` pixels format
  * \param src_colorspace an SDL_ColorSpace value describing the colorspace of
  *                       the `src` pixels
+ * \param src_properties an SDL_PropertiesID with additional source color properties, or 0
  * \param src a pointer to the source pixels
  * \param src_pitch the pitch of the source pixels, in bytes
  * \param dst_format an SDL_PixelFormatEnum value of the `dst` pixels format
  * \param dst_colorspace an SDL_ColorSpace value describing the colorspace of
  *                       the `dst` pixels
+ * \param dst_properties an SDL_PropertiesID with additional destination color properties, or 0
  * \param dst a pointer to be filled in with new pixel data
  * \param dst_pitch the pitch of the destination pixels, in bytes
  * \returns 0 on success or a negative error code on failure; call
