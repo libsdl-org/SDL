@@ -1761,6 +1761,7 @@ extern "C" {
  *   "opengles2"
  *   "opengles"
  *   "metal"
+ *   "vulkan"
  *   "software"
  *
  * The default varies by platform, but it's the first one in the list that is available on the current platform.
