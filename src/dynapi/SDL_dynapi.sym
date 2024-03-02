@@ -973,6 +973,7 @@ SDL3_0.0.0 {
     SDL_GetCameraDevicePosition;
     SDL_qsort_r;
     SDL_bsearch_r;
+    SDL_AddVulkanRenderSemaphores;
     # extra symbols go here (don't modify this line)
   local: *;
 };

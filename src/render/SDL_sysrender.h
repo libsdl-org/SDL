@@ -216,6 +216,8 @@ struct SDL_Renderer
     void *(*GetMetalLayer)(SDL_Renderer *renderer);
     void *(*GetMetalCommandEncoder)(SDL_Renderer *renderer);
 
+    int (*AddVulkanRenderSemaphores)(SDL_Renderer *renderer, Uint32 wait_stage_mask, Sint64 wait_semaphore, Sint64 signal_semaphore);
+
     /* The current renderer info */
     SDL_RendererInfo info;
 

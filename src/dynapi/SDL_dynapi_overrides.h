@@ -998,3 +998,4 @@
 #define SDL_GetCameraDevicePosition SDL_GetCameraDevicePosition_REAL
 #define SDL_qsort_r SDL_qsort_r_REAL
 #define SDL_bsearch_r SDL_bsearch_r_REAL
+#define SDL_AddVulkanRenderSemaphores SDL_AddVulkanRenderSemaphores_REAL
