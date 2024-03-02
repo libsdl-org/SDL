@@ -55,6 +55,8 @@
 #include <libavutil/hwcontext_d3d11va.h>
 #endif /* SDL_PLATFORM_WIN32 */
 
+#include "testffmpeg_vulkan.h"
+
 #include "icon.h"
 
 
@@ -81,6 +83,7 @@ static ID3D11Device *d3d11_device;
 static ID3D11DeviceContext *d3d11_context;
 static const GUID SDL_IID_ID3D11Resource = { 0xdc8e63f3, 0xd12b, 0x4952, { 0xb4, 0x7b, 0x5e, 0x45, 0x02, 0x6a, 0x86, 0x2d } };
 #endif
+static VulkanVideoContext *vulkan_context;
 struct SwsContextContainer
 {
     struct SwsContext *context;
@@ -92,35 +95,59 @@ static SDL_bool CreateWindowAndRenderer(Uint32 window_flags, const char *driver)
 {
     SDL_PropertiesID props;
     SDL_RendererInfo info;
+    SDL_bool useOpenGL = (driver && (SDL_strcmp(driver, "opengl") == 0 || SDL_strcmp(driver, "opengles2") == 0));
     SDL_bool useEGL = (driver && SDL_strcmp(driver, "opengles2") == 0);
+    SDL_bool useVulkan = (driver && SDL_strcmp(driver, "vulkan") == 0);
+    Uint32 flags = SDL_WINDOW_HIDDEN;
 
-    SDL_SetHint(SDL_HINT_RENDER_DRIVER, driver);
-    if (useEGL) {
-        SDL_SetHint(SDL_HINT_VIDEO_FORCE_EGL, "1");
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-    } else {
-        SDL_SetHint(SDL_HINT_VIDEO_FORCE_EGL, "0");
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+    if (useOpenGL) {
+        if (useEGL) {
+            SDL_SetHint(SDL_HINT_VIDEO_FORCE_EGL, "1");
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+        } else {
+            SDL_SetHint(SDL_HINT_VIDEO_FORCE_EGL, "0");
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+        }
+        SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
+        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+
+        flags |= SDL_WINDOW_OPENGL;
     }
-    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
-    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
-    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+    if (useVulkan) {
+        flags |= SDL_WINDOW_VULKAN;
+    }
 
     /* The window will be resized to the video size when it's loaded, in OpenVideoStream() */
-    window = SDL_CreateWindow("testffmpeg", 1920, 1080, 0);
+    window = SDL_CreateWindow("testffmpeg", 1920, 1080, flags);
     if (!window) {
         return SDL_FALSE;
+    }
+
+    if (useVulkan) {
+        vulkan_context = CreateVulkanVideoContext(window);
+        if (!vulkan_context) {
+            SDL_DestroyWindow(window);
+            window = NULL;
+            return SDL_FALSE;
+        }
     }
 
     props = SDL_CreateProperties();
     SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, driver);
     SDL_SetProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
-    SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB_LINEAR);
-    renderer = SDL_CreateRendererWithProperties(props);
+    if (useVulkan) {
+        SetupVulkanRenderProperties(vulkan_context, props);
+    }
+    if (SDL_GetBooleanProperty(SDL_GetDisplayProperties(SDL_GetDisplayForWindow(window)), SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, SDL_FALSE)) {
+        /* Try to create an HDR capable renderer */
+        SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB_LINEAR);
+        renderer = SDL_CreateRendererWithProperties(props);
+    }
     if (!renderer) {
         /* Try again with the sRGB colorspace */
         SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
@@ -128,6 +155,8 @@ static SDL_bool CreateWindowAndRenderer(Uint32 window_flags, const char *driver)
     }
     SDL_DestroyProperties(props);
     if (!renderer) {
+        SDL_DestroyWindow(window);
+        window = NULL;
         return SDL_FALSE;
     }
 
@@ -263,6 +292,8 @@ static Uint32 GetTextureFormat(enum AVPixelFormat format)
         return SDL_PIXELFORMAT_NV12;
     case AV_PIX_FMT_NV21:
         return SDL_PIXELFORMAT_NV21;
+	case AV_PIX_FMT_P010:
+        return SDL_PIXELFORMAT_P010;
     default:
         return SDL_PIXELFORMAT_UNKNOWN;
     }
@@ -285,6 +316,9 @@ static SDL_bool SupportedPixelFormat(enum AVPixelFormat format)
             return SDL_TRUE;
         }
 #endif
+        if (format == AV_PIX_FMT_VULKAN) {
+            return SDL_TRUE;
+        }
     }
 
     if (GetTextureFormat(format) != SDL_PIXELFORMAT_UNKNOWN) {
@@ -387,7 +421,21 @@ static AVCodecContext *OpenVideoStream(AVFormatContext *ic, int stream, const AV
                 }
             } else
 #endif
-            {
+            if (vulkan_context && type == AV_HWDEVICE_TYPE_VULKAN) {
+                AVVulkanDeviceContext *device_context;
+
+                context->hw_device_ctx = av_hwdevice_ctx_alloc(type);
+
+                device_context = (AVVulkanDeviceContext *)((AVHWDeviceContext *)context->hw_device_ctx->data)->hwctx;
+                SetupVulkanDeviceContextData(vulkan_context, device_context);
+
+                result = av_hwdevice_ctx_init(context->hw_device_ctx);
+                if (result < 0) {
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create hardware device context: %s", av_err2str(result));
+                } else {
+                    SDL_Log("Using %s hardware acceleration with pixel format %s\n", av_hwdevice_get_type_name(config->device_type), av_get_pix_fmt_name(config->pix_fmt));
+                }
+            } else {
                 result = av_hwdevice_ctx_create(&context->hw_device_ctx, type, NULL, NULL, 0);
                 if (result < 0) {
                     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create hardware device context: %s", av_err2str(result));
@@ -749,6 +797,22 @@ static SDL_bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **tex
 #endif
 }
 
+static SDL_bool GetTextureForVulkanFrame(AVFrame *frame, SDL_Texture **texture)
+{
+    SDL_PropertiesID props;
+    if (*texture) {
+        SDL_DestroyTexture(*texture);
+    }
+
+    props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STATIC, frame->width, frame->height);
+    *texture = CreateVulkanVideoTexture(vulkan_context, frame, renderer, props);
+    SDL_DestroyProperties(props);
+    if (!*texture) {
+        return SDL_FALSE;
+    }
+    return SDL_TRUE;
+}
+
 static SDL_bool GetTextureForFrame(AVFrame *frame, SDL_Texture **texture)
 {
     switch (frame->format) {
@@ -760,6 +824,8 @@ static SDL_bool GetTextureForFrame(AVFrame *frame, SDL_Texture **texture)
         return GetTextureForD3D11Frame(frame, texture);
     case AV_PIX_FMT_VIDEOTOOLBOX:
         return GetTextureForVideoToolboxFrame(frame, texture);
+    case AV_PIX_FMT_VULKAN:
+        return GetTextureForVulkanFrame(frame, texture);
     default:
         return GetTextureForMemoryFrame(frame, texture);
     }
@@ -1227,6 +1293,9 @@ quit:
     avcodec_free_context(&video_context);
     avformat_close_input(&ic);
     SDL_DestroyRenderer(renderer);
+    if (vulkan_context) {
+        DestroyVulkanVideoContext(vulkan_context);
+    }
     SDL_DestroyWindow(window);
     SDL_Quit();
     SDLTest_CommonDestroyState(state);
