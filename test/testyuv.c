@@ -65,7 +65,7 @@ static SDL_Surface *generate_test_pattern(int pattern_size)
     return pattern;
 }
 
-static SDL_bool verify_yuv_data(Uint32 format, SDL_Colorspace colorspace, SDL_PropertiesID props, const Uint8 *yuv, int yuv_pitch, SDL_Surface *surface, int tolerance)
+static SDL_bool verify_yuv_data(Uint32 format, SDL_Colorspace colorspace, const Uint8 *yuv, int yuv_pitch, SDL_Surface *surface, int tolerance)
 {
     const int size = (surface->h * surface->pitch);
     Uint8 *rgb;
@@ -77,7 +77,7 @@ static SDL_bool verify_yuv_data(Uint32 format, SDL_Colorspace colorspace, SDL_Pr
         return SDL_FALSE;
     }
 
-    if (SDL_ConvertPixelsAndColorspace(surface->w, surface->h, format, colorspace, props, yuv, yuv_pitch, surface->format->format, SDL_COLORSPACE_SRGB, 0, rgb, surface->pitch) == 0) {
+    if (SDL_ConvertPixelsAndColorspace(surface->w, surface->h, format, colorspace, 0, yuv, yuv_pitch, surface->format->format, SDL_COLORSPACE_SRGB, 0, rgb, surface->pitch) == 0) {
         int x, y;
         result = SDL_TRUE;
         for (y = 0; y < surface->h; ++y) {
@@ -123,7 +123,6 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
     int yuv1_pitch, yuv2_pitch;
     YUV_CONVERSION_MODE mode;
     SDL_Colorspace colorspace;
-    SDL_PropertiesID props;
     const int tight_tolerance = 20;
     const int loose_tolerance = 333;
     int result = -1;
@@ -136,10 +135,6 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
     mode = GetYUVConversionModeForResolution(pattern->w, pattern->h);
     colorspace = GetColorspaceForYUVConversionMode(mode);
 
-    /* All tests are being done with SDR content */
-    props = SDL_CreateProperties();
-    SDL_SetFloatProperty(props, SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, 1.0f);
-
     /* Verify conversion from YUV formats */
     for (i = 0; i < SDL_arraysize(formats); ++i) {
         if (!ConvertRGBtoYUV(formats[i], pattern->pixels, pattern->pitch, yuv1, pattern->w, pattern->h, mode, 0, 100)) {
@@ -147,7 +142,7 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
             goto done;
         }
         yuv1_pitch = CalculateYUVPitch(formats[i], pattern->w);
-        if (!verify_yuv_data(formats[i], colorspace, props, yuv1, yuv1_pitch, pattern, tight_tolerance)) {
+        if (!verify_yuv_data(formats[i], colorspace, yuv1, yuv1_pitch, pattern, tight_tolerance)) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed conversion from %s to RGB\n", SDL_GetPixelFormatName(formats[i]));
             goto done;
         }
@@ -160,7 +155,7 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't convert %s to %s: %s\n", SDL_GetPixelFormatName(pattern->format->format), SDL_GetPixelFormatName(formats[i]), SDL_GetError());
             goto done;
         }
-        if (!verify_yuv_data(formats[i], colorspace, props, yuv1, yuv1_pitch, pattern, tight_tolerance)) {
+        if (!verify_yuv_data(formats[i], colorspace, yuv1, yuv1_pitch, pattern, tight_tolerance)) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed conversion from RGB to %s\n", SDL_GetPixelFormatName(formats[i]));
             goto done;
         }
@@ -179,7 +174,7 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't convert %s to %s: %s\n", SDL_GetPixelFormatName(formats[i]), SDL_GetPixelFormatName(formats[j]), SDL_GetError());
                 goto done;
             }
-            if (!verify_yuv_data(formats[j], colorspace, props, yuv2, yuv2_pitch, pattern, tight_tolerance)) {
+            if (!verify_yuv_data(formats[j], colorspace, yuv2, yuv2_pitch, pattern, tight_tolerance)) {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed conversion from %s to %s\n", SDL_GetPixelFormatName(formats[i]), SDL_GetPixelFormatName(formats[j]));
                 goto done;
             }
@@ -204,7 +199,7 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't convert %s to %s: %s\n", SDL_GetPixelFormatName(formats[i]), SDL_GetPixelFormatName(formats[j]), SDL_GetError());
                 goto done;
             }
-            if (!verify_yuv_data(formats[j], colorspace, props, yuv1, yuv2_pitch, pattern, tight_tolerance)) {
+            if (!verify_yuv_data(formats[j], colorspace, yuv1, yuv2_pitch, pattern, tight_tolerance)) {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed conversion from %s to %s\n", SDL_GetPixelFormatName(formats[i]), SDL_GetPixelFormatName(formats[j]));
                 goto done;
             }
@@ -218,19 +213,19 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
         goto done;
     }
     yuv1_pitch = CalculateYUVPitch(SDL_PIXELFORMAT_P010, pattern->w);
-    if (!verify_yuv_data(SDL_PIXELFORMAT_P010, colorspace, props, yuv1, yuv1_pitch, pattern, tight_tolerance)) {
+    if (!verify_yuv_data(SDL_PIXELFORMAT_P010, colorspace, yuv1, yuv1_pitch, pattern, tight_tolerance)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed conversion from %s to RGB\n", SDL_GetPixelFormatName(SDL_PIXELFORMAT_P010));
         goto done;
     }
 
     /* The pitch needs to be Uint16 aligned for P010 pixels */
     yuv1_pitch = CalculateYUVPitch(SDL_PIXELFORMAT_P010, pattern->w) + ((extra_pitch + 1) & ~1);
-    if (SDL_ConvertPixelsAndColorspace(pattern->w, pattern->h, pattern->format->format, SDL_COLORSPACE_SRGB, 0, pattern->pixels, pattern->pitch, SDL_PIXELFORMAT_P010, colorspace, props, yuv1, yuv1_pitch) < 0) {
+    if (SDL_ConvertPixelsAndColorspace(pattern->w, pattern->h, pattern->format->format, SDL_COLORSPACE_SRGB, 0, pattern->pixels, pattern->pitch, SDL_PIXELFORMAT_P010, colorspace, 0, yuv1, yuv1_pitch) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't convert %s to %s: %s\n", SDL_GetPixelFormatName(pattern->format->format), SDL_GetPixelFormatName(SDL_PIXELFORMAT_P010), SDL_GetError());
         goto done;
     }
     /* Going through XRGB2101010 format during P010 conversion is slightly lossy, so use looser tolerance here */
-    if (!verify_yuv_data(SDL_PIXELFORMAT_P010, colorspace, props, yuv1, yuv1_pitch, pattern, loose_tolerance)) {
+    if (!verify_yuv_data(SDL_PIXELFORMAT_P010, colorspace, yuv1, yuv1_pitch, pattern, loose_tolerance)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed conversion from RGB to %s\n", SDL_GetPixelFormatName(SDL_PIXELFORMAT_P010));
         goto done;
     }
@@ -463,13 +458,9 @@ int main(int argc, char **argv)
         return 3;
     }
 
-    /* All tests are being done with SDR content */
-    props = SDL_GetSurfaceProperties(converted);
-    SDL_SetFloatProperty(props, SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, 1.0f);
-
     then = SDL_GetTicks();
     for (i = 0; i < iterations; ++i) {
-        SDL_ConvertPixelsAndColorspace(original->w, original->h, yuv_format, yuv_colorspace, props, raw_yuv, pitch, rgb_format, rgb_colorspace, props, converted->pixels, converted->pitch);
+        SDL_ConvertPixelsAndColorspace(original->w, original->h, yuv_format, yuv_colorspace, 0, raw_yuv, pitch, rgb_format, rgb_colorspace, 0, converted->pixels, converted->pitch);
     }
     now = SDL_GetTicks();
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%d iterations in %" SDL_PRIu64 " ms, %.2fms each\n", iterations, (now - then), (float)(now - then) / iterations);
@@ -490,7 +481,6 @@ int main(int argc, char **argv)
     output[1] = SDL_CreateTextureFromSurface(renderer, converted);
     props = SDL_CreateProperties();
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, yuv_colorspace);
-    SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT, 1.0f);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, yuv_format);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STREAMING);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, original->w);
