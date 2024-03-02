@@ -1975,7 +1975,12 @@ static int D3D12_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         /* Skip to the correct offset into the next texture */
         srcPixels = (const void *)((const Uint8 *)srcPixels + rect->h * srcPitch);
 
-        if (D3D12_UpdateTextureInternal(rendererData, textureData->mainTexture, 1, rect->x, rect->y, (rect->w + 1) & ~1, (rect->h + 1) & ~1, srcPixels, (srcPitch + 1) & ~1, &textureData->mainResourceState) < 0) {
+        if (texture->format == SDL_PIXELFORMAT_P010) {
+            srcPitch = (srcPitch + 3) & ~3;
+        } else {
+            srcPitch = (srcPitch + 1) & ~1;
+        }
+        if (D3D12_UpdateTextureInternal(rendererData, textureData->mainTexture, 1, rect->x, rect->y, (rect->w + 1) & ~1, (rect->h + 1) & ~1, srcPixels, srcPitch, &textureData->mainResourceState) < 0) {
             return -1;
         }
     }

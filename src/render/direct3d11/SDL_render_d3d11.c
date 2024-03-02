@@ -1549,8 +1549,13 @@ static int D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Tex
         stagingTextureDesc.Format == DXGI_FORMAT_P010) {
         /* Copy the UV plane as well */
         h = (h + 1) / 2;
-        length = (length + 1) & ~1;
-        pitch = (pitch + 1) & ~1;
+        if (stagingTextureDesc.Format == DXGI_FORMAT_P010) {
+            length = (length + 3) & ~3;
+            pitch = (pitch + 3) & ~3;
+        } else {
+            length = (length + 1) & ~1;
+            pitch = (pitch + 1) & ~1;
+        }
         dst = (Uint8 *)textureMemory.pData + stagingTextureDesc.Height * textureMemory.RowPitch;
         for (row = 0; row < h; ++row) {
             SDL_memcpy(dst, src, length);

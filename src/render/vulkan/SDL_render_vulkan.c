@@ -187,7 +187,7 @@ typedef struct
     float scRGB_output;
     float input_type;
     float color_scale;
-	float unused_pad0;
+    float unused_pad0;
 
     float tonemap_method;
     float tonemap_factor1;
@@ -2779,8 +2779,14 @@ static int VULKAN_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     // NV12/NV21 data
     else if (numPlanes == 2)
     {
-        if (VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 1, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, (srcPitch + 1) & ~1, &textureData->mainImage.imageLayout) < 0) {
-                return -1;
+        if (texture->format == SDL_PIXELFORMAT_P010) {
+            srcPitch = (srcPitch + 3) & ~3;
+        } else {
+            srcPitch = (srcPitch + 1) & ~1;
+        }
+
+        if (VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 1, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, srcPitch, &textureData->mainImage.imageLayout) < 0) {
+            return -1;
         }
     }
 #endif
