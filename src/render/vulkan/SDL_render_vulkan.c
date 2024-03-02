@@ -379,6 +379,7 @@ Uint32 VULKAN_VkFormatGetNumPlanes(VkFormat vkFormat)
     case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
         return 3;
     case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
+    case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16:
         return 2;
     default:
         return 1;
