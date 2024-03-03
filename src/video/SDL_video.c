@@ -3788,9 +3788,6 @@ void SDL_VideoQuit(void)
         return;
     }
 
-    /* Make sure we don't try to serve clipboard data after this */
-    SDL_ClearClipboardData();
-
     /* Halt event processing before doing anything else */
     SDL_QuitTouch();
     SDL_QuitMouse();
