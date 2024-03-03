@@ -3280,10 +3280,11 @@ const char *SDL_GameControllerGetAppleSFSymbolsNameForAxis(SDL_GameController *g
     }
     SDL_UnlockJoysticks();
 
-    return retval;
-#else
-    return NULL;
+    if (retval && *retval) {
+        return retval;
+    }
 #endif
+    return NULL;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
