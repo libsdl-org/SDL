@@ -237,7 +237,6 @@ typedef struct
     int height;
     VULKAN_Shader shader;
 
-#if SDL_HAVE_YUV
     /* Object passed to VkImageView and VkSampler for doing Ycbcr -> RGB conversion */
     VkSamplerYcbcrConversion samplerYcbcrConversion;
     /* Sampler created with samplerYcbcrConversion, passed to PSO as immutable sampler */
@@ -246,7 +245,6 @@ typedef struct
     VkDescriptorSetLayout descriptorSetLayoutYcbcr;
     /* Pipeline layout with immutable sampler descriptor set layout */
     VkPipelineLayout pipelineLayoutYcbcr;
-#endif
 
 } VULKAN_TextureData;
 
@@ -797,7 +795,7 @@ static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, SDL_Proper
         samplerYcbcrConversionInfo.conversion = samplerYcbcrConversion;
         imageViewCreateInfo.pNext = &samplerYcbcrConversionInfo;
     }
-    
+
     result = vkCreateImageView(rendererData->device, &imageViewCreateInfo, NULL, &imageOut->imageView);
     if (result != VK_SUCCESS) {
         VULKAN_DestroyImage(rendererData, imageOut);
@@ -1566,7 +1564,7 @@ static SDL_bool VULKAN_DeviceExtensionsFound(VULKAN_RenderData *rendererData, in
             }
             foundExtensions &= foundExtension;
         }
-        
+
         SDL_free(extensionProperties);
     }
 
@@ -2502,7 +2500,7 @@ static int VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
             samplerYcbcrConversionCreateInfo.components.r = VK_COMPONENT_SWIZZLE_B;
             samplerYcbcrConversionCreateInfo.components.b = VK_COMPONENT_SWIZZLE_R;
         }
-        
+
         switch (SDL_COLORSPACERANGE(texture->colorspace)) {
         case SDL_COLOR_RANGE_LIMITED:
             samplerYcbcrConversionCreateInfo.ycbcrRange = VK_SAMPLER_YCBCR_RANGE_ITU_NARROW_KHR;
@@ -4003,6 +4001,7 @@ SDL_Renderer *VULKAN_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_
         return NULL;
     }
 
+#if SDL_HAVE_YUV
     if (rendererData->supportsKHRSamplerYCbCrConversion) {
         renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
         renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
@@ -4010,6 +4009,7 @@ SDL_Renderer *VULKAN_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_
         renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
         renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_P010;
     }
+#endif
 
     return renderer;
 }
