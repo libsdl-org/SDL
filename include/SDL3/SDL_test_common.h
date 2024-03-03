@@ -123,7 +123,7 @@ typedef struct
     int gl_major_version;
     int gl_minor_version;
     int gl_debug;
-    int gl_profile_mask;
+    SDL_GLprofile gl_profile_mask;
 
     /* Mouse info */
     SDL_Rect confine;
