@@ -3771,8 +3771,9 @@ const char *SDL_GetGamepadAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_Ga
     }
     SDL_UnlockJoysticks();
 
-    return retval;
-#else
-    return NULL;
+    if (retval && *retval) {
+        return retval;
+    }
 #endif
+    return NULL;
 }
