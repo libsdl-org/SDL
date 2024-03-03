@@ -1885,17 +1885,59 @@ int SDL_ReloadGamepadMappings(void)
     return 0;
 }
 
+static char *SDL_ConvertMappingToPositional(const char *mapping)
+{
+    /* Add space for '!' and null terminator */
+    size_t length = SDL_strlen(mapping) + 1 + 1;
+    char *remapped = (char *)SDL_malloc(length);
+    if (remapped) {
+        char *button_A;
+        char *button_B;
+        char *button_X;
+        char *button_Y;
+        char *hint;
+
+        SDL_strlcpy(remapped, mapping, length);
+        button_A = SDL_strstr(remapped, "a:");
+        button_B = SDL_strstr(remapped, "b:");
+        button_X = SDL_strstr(remapped, "x:");
+        button_Y = SDL_strstr(remapped, "y:");
+        hint = SDL_strstr(remapped, "hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS");
+
+        if (button_A) {
+            *button_A = 'b';
+        }
+        if (button_B) {
+            *button_B = 'a';
+        }
+        if (button_X) {
+            *button_X = 'y';
+        }
+        if (button_Y) {
+            *button_Y = 'x';
+        }
+        if (hint) {
+            hint += 5;
+            SDL_memmove(hint + 1, hint, SDL_strlen(hint) + 1);
+            *hint = '!';
+        }
+    }
+    return remapped;
+}
+
 /*
  * Add or update an entry into the Mappings Database with a priority
  */
 static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMappingPriority priority)
 {
+    char *remapped = NULL;
     char *pchGUID;
     SDL_JoystickGUID jGUID;
     SDL_bool is_default_mapping = SDL_FALSE;
     SDL_bool is_xinput_mapping = SDL_FALSE;
     SDL_bool existing = SDL_FALSE;
     GamepadMapping_t *pGamepadMapping;
+    int retval = -1;
 
     SDL_AssertJoysticksLocked();
 
@@ -1934,12 +1976,27 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
                 default_value = SDL_FALSE;
             }
 
-            value = SDL_GetHintBoolean(hint, default_value);
-            if (negate) {
-                value = !value;
-            }
-            if (!value) {
-                return 0;
+            if (SDL_strcmp(hint, "SDL_GAMECONTROLLER_USE_BUTTON_LABELS") == 0) {
+                /* This hint is used to signal whether the mapping uses positional buttons or not */
+                if (negate) {
+                    /* This mapping uses positional buttons, we can use it as-is */
+                } else {
+                    /* This mapping uses labeled buttons, we need to swap them to positional */
+                    remapped = SDL_ConvertMappingToPositional(mappingString);
+                    if (!remapped) {
+                        goto done;
+                    }
+                    mappingString = remapped;
+                }
+            } else {
+                value = SDL_GetHintBoolean(hint, default_value);
+                if (negate) {
+                    value = !value;
+                }
+                if (!value) {
+                    retval = 0;
+                    goto done;
+                }
             }
         }
     }
@@ -1952,14 +2009,16 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
         if (tmp) {
             tmp += SDL_GAMEPAD_SDKGE_FIELD_SIZE;
             if (!(SDL_GetAndroidSDKVersion() >= SDL_atoi(tmp))) {
-                return SDL_SetError("SDK version %d < minimum version %d", SDL_GetAndroidSDKVersion(), SDL_atoi(tmp));
+                SDL_SetError("SDK version %d < minimum version %d", SDL_GetAndroidSDKVersion(), SDL_atoi(tmp));
+                goto done;
             }
         }
         tmp = SDL_strstr(mappingString, SDL_GAMEPAD_SDKLE_FIELD);
         if (tmp) {
             tmp += SDL_GAMEPAD_SDKLE_FIELD_SIZE;
             if (!(SDL_GetAndroidSDKVersion() <= SDL_atoi(tmp))) {
-                return SDL_SetError("SDK version %d > maximum version %d", SDL_GetAndroidSDKVersion(), SDL_atoi(tmp));
+                SDL_SetError("SDK version %d > maximum version %d", SDL_GetAndroidSDKVersion(), SDL_atoi(tmp));
+                goto done;
             }
         }
     }
@@ -1967,7 +2026,8 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
 
     pchGUID = SDL_PrivateGetGamepadGUIDFromMappingString(mappingString);
     if (!pchGUID) {
-        return SDL_SetError("Couldn't parse GUID from %s", mappingString);
+        SDL_SetError("Couldn't parse GUID from %s", mappingString);
+        goto done;
     }
     if (!SDL_strcasecmp(pchGUID, "default")) {
         is_default_mapping = SDL_TRUE;
@@ -1979,19 +2039,24 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
 
     pGamepadMapping = SDL_PrivateAddMappingForGUID(jGUID, mappingString, &existing, priority);
     if (!pGamepadMapping) {
-        return -1;
+        goto done;
     }
 
     if (existing) {
-        return 0;
+        retval = 0;
     } else {
         if (is_default_mapping) {
             s_pDefaultMapping = pGamepadMapping;
         } else if (is_xinput_mapping) {
             s_pXInputMapping = pGamepadMapping;
         }
-        return 1;
+        retval = 1;
     }
+done:
+    if (remapped) {
+        SDL_free(remapped);
+    }
+    return retval;
 }
 
 /*
