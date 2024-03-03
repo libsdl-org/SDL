@@ -786,7 +786,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
  * \sa SDL_CreateWindowWithProperties
  * \sa SDL_DestroyWindow
  */
-extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int w, int h, Uint32 flags);
+extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int w, int h, SDL_WindowFlags flags);
 
 /**
  * Create a child popup window of the specified parent window.
@@ -841,7 +841,7 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int w, i
  * \sa SDL_DestroyWindow
  * \sa SDL_GetWindowParent
  */
-extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, Uint32 flags);
+extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, SDL_WindowFlags flags);
 
 /**
  * Create a window with the specified properties.
@@ -1180,7 +1180,7 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window *win
  * \sa SDL_SetWindowGrab
  * \sa SDL_ShowWindow
  */
-extern DECLSPEC Uint32 SDLCALL SDL_GetWindowFlags(SDL_Window *window);
+extern DECLSPEC SDL_WindowFlags SDLCALL SDL_GetWindowFlags(SDL_Window *window);
 
 /**
  * Set the title of a window.

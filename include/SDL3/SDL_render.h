@@ -192,7 +192,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetRenderDriver(int index);
  * \sa SDL_CreateRenderer
  * \sa SDL_CreateWindow
  */
-extern DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(int width, int height, Uint32 window_flags, SDL_Window **window, SDL_Renderer **renderer);
+extern DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(int width, int height, SDL_WindowFlags window_flags, SDL_Window **window, SDL_Renderer **renderer);
 
 /**
  * Create a 2D rendering context for a window.

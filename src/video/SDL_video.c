@@ -2218,7 +2218,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     return window;
 }
 
-SDL_Window *SDL_CreateWindow(const char *title, int w, int h, Uint32 flags)
+SDL_Window *SDL_CreateWindow(const char *title, int w, int h, SDL_WindowFlags flags)
 {
     SDL_Window *window;
     SDL_PropertiesID props = SDL_CreateProperties();
@@ -2233,7 +2233,7 @@ SDL_Window *SDL_CreateWindow(const char *title, int w, int h, Uint32 flags)
     return window;
 }
 
-SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, Uint32 flags)
+SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, SDL_WindowFlags flags)
 {
     SDL_Window *window;
     SDL_PropertiesID props = SDL_CreateProperties();
@@ -2450,7 +2450,7 @@ SDL_PropertiesID SDL_GetWindowProperties(SDL_Window *window)
     return window->props;
 }
 
-Uint32 SDL_GetWindowFlags(SDL_Window *window)
+SDL_WindowFlags SDL_GetWindowFlags(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, 0);
 
