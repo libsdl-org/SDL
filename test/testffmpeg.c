@@ -73,6 +73,7 @@ static SDL_bool software_only;
 static SDL_bool has_eglCreateImage;
 #ifdef HAVE_EGL
 static SDL_bool has_EGL_EXT_image_dma_buf_import;
+static SDL_bool has_EGL_EXT_image_dma_buf_import_modifiers;
 static PFNGLACTIVETEXTUREARBPROC glActiveTextureARBFunc;
 static PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOESFunc;
 #endif
@@ -137,10 +138,31 @@ static SDL_bool CreateWindowAndRenderer(Uint32 window_flags, const char *driver)
 
 #ifdef HAVE_EGL
     if (useEGL) {
-        const char *extensions = eglQueryString(eglGetCurrentDisplay(), EGL_EXTENSIONS);
-        if (SDL_strstr(extensions, "EGL_EXT_image_dma_buf_import") != NULL) {
-            has_EGL_EXT_image_dma_buf_import = SDL_TRUE;
+        const char *egl_extensions = eglQueryString(eglGetCurrentDisplay(), EGL_EXTENSIONS);
+        if (!egl_extensions) {
+            return SDL_FALSE;
         }
+
+        char *extensions = SDL_strdup(egl_extensions);
+        if (!extensions) {
+            return SDL_FALSE;
+        }
+
+        char *saveptr, *token;
+        token = SDL_strtok_r(extensions, " ", &saveptr);
+        if (!token) {
+            free(extensions);
+            return SDL_FALSE;
+        }
+        do {
+            if (SDL_strcmp(token, "EGL_EXT_image_dma_buf_import") == 0) {
+                has_EGL_EXT_image_dma_buf_import = SDL_TRUE;
+            } else if (SDL_strcmp(token, "EGL_EXT_image_dma_buf_import_modifiers") == 0) {
+                has_EGL_EXT_image_dma_buf_import_modifiers = SDL_TRUE;
+            }
+        } while ((token = SDL_strtok_r(NULL, " ", &saveptr)) != NULL);
+
+        free(extensions);
 
         if (SDL_GL_ExtensionSupported("GL_OES_EGL_image")) {
             glEGLImageTargetTexture2DOESFunc = (PFNGLEGLIMAGETARGETTEXTURE2DOESPROC)eglGetProcAddress("glEGLImageTargetTexture2DOES");
@@ -609,16 +631,39 @@ static SDL_bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
             static const uint32_t formats[ 2 ] = { DRM_FORMAT_R8, DRM_FORMAT_GR88 };
             const AVDRMPlaneDescriptor *plane = &layer->planes[j];
             const AVDRMObjectDescriptor *object = &desc->objects[plane->object_index];
-            EGLAttrib img_attr[] = {
-                EGL_LINUX_DRM_FOURCC_EXT,      formats[i],
-                EGL_WIDTH,                     frame->width  / ( image_index + 1 ),  /* half size for chroma */
-                EGL_HEIGHT,                    frame->height / ( image_index + 1 ),
-                EGL_DMA_BUF_PLANE0_FD_EXT,     object->fd,
-                EGL_DMA_BUF_PLANE0_OFFSET_EXT, plane->offset,
-                EGL_DMA_BUF_PLANE0_PITCH_EXT,  plane->pitch,
-                EGL_NONE
-            };
-            EGLImage pImage = eglCreateImage(display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, img_attr);
+
+            EGLAttrib attr[32];
+            size_t k = 0;
+
+            attr[k++] = EGL_LINUX_DRM_FOURCC_EXT;
+            attr[k++] = formats[i];
+
+            attr[k++] = EGL_WIDTH;
+            attr[k++] = frame->width  / ( image_index + 1 ); /* half size for chroma */
+
+            attr[k++] = EGL_HEIGHT;
+            attr[k++] = frame->height / ( image_index + 1 );
+
+            attr[k++] = EGL_DMA_BUF_PLANE0_FD_EXT;
+            attr[k++] = object->fd;
+
+            attr[k++] = EGL_DMA_BUF_PLANE0_OFFSET_EXT;
+            attr[k++] = plane->offset;
+
+            attr[k++] = EGL_DMA_BUF_PLANE0_PITCH_EXT;
+            attr[k++] = plane->pitch;
+
+            if (has_EGL_EXT_image_dma_buf_import_modifiers) {
+                attr[k++] = EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT;
+                attr[k++] = (object->format_modifier >>  0) & 0xFFFFFFFF;
+
+                attr[k++] = EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT;
+                attr[k++] = (object->format_modifier >> 32) & 0xFFFFFFFF;
+            }
+
+            attr[k++] = EGL_NONE;
+
+            EGLImage pImage = eglCreateImage(display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, attr);
 
             glActiveTextureARBFunc(GL_TEXTURE0_ARB + image_index);
             glBindTexture(GL_TEXTURE_2D, textures[image_index]);
