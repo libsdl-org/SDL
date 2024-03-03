@@ -177,7 +177,7 @@ void SDL_SetMainReady(void)
     SDL_MainIsReady = SDL_TRUE;
 }
 
-int SDL_InitSubSystem(Uint32 flags)
+int SDL_InitSubSystem(SDL_InitFlags flags)
 {
     Uint32 flags_initialized = 0;
 
@@ -400,12 +400,12 @@ quit_and_error:
     return -1;
 }
 
-int SDL_Init(Uint32 flags)
+int SDL_Init(SDL_InitFlags flags)
 {
     return SDL_InitSubSystem(flags);
 }
 
-void SDL_QuitSubSystem(Uint32 flags)
+void SDL_QuitSubSystem(SDL_InitFlags flags)
 {
     /* Shut down requested initialized subsystems */
 
@@ -495,7 +495,7 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 }
 
-Uint32 SDL_WasInit(Uint32 flags)
+SDL_InitFlags SDL_WasInit(SDL_InitFlags flags)
 {
     int i;
     int num_subsystems = SDL_arraysize(SDL_SubsystemRefCount);
