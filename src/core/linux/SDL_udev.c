@@ -428,6 +428,11 @@ static int device_class(struct udev_device *dev)
             devclass |= SDL_UDEV_DEVICE_JOYSTICK;
         }
 
+        val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_ACCELEROMETER");
+        if (val && SDL_strcmp(val, "1") == 0) {
+            devclass |= SDL_UDEV_DEVICE_ACCELEROMETER;
+        }
+
         val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_MOUSE");
         if (val && SDL_strcmp(val, "1") == 0) {
             devclass |= SDL_UDEV_DEVICE_MOUSE;
