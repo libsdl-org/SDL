@@ -230,7 +230,7 @@ static int GetYUVPlanes(int width, int height, Uint32 format, const void *yuv, i
     case SDL_PIXELFORMAT_P010:
         pitches[0] = yuv_pitch;
         uv_width = ((width + 1) / 2) * 2;
-        pitches[1] = SDL_max(pitches[0], uv_width * sizeof(Uint16));
+        pitches[1] = SDL_max(pitches[0], (int)(uv_width * sizeof(Uint16)));
         planes[0] = (const Uint8 *)yuv;
         planes[1] = planes[0] + pitches[0] * height;
         break;
