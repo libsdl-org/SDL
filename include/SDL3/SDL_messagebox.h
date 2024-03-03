@@ -57,7 +57,7 @@ typedef enum
  */
 typedef struct
 {
-    Uint32 flags;       /**< ::SDL_MessageBoxButtonFlags */
+    SDL_MessageBoxButtonFlags flags;       /**< ::SDL_MessageBoxButtonFlags */
     int buttonID;       /**< User defined button id (value returned via SDL_ShowMessageBox) */
     const char *text;   /**< The UTF-8 button text */
 } SDL_MessageBoxButtonData;
@@ -93,7 +93,7 @@ typedef struct
  */
 typedef struct
 {
-    Uint32 flags;                       /**< ::SDL_MessageBoxFlags */
+    SDL_MessageBoxFlags flags;                       /**< ::SDL_MessageBoxFlags */
     SDL_Window *window;                 /**< Parent window, can be NULL */
     const char *title;                  /**< UTF-8 title */
     const char *message;                /**< UTF-8 message text */
@@ -179,7 +179,7 @@ extern DECLSPEC int SDLCALL SDL_ShowMessageBox(const SDL_MessageBoxData *message
  *
  * \sa SDL_ShowMessageBox
  */
-extern DECLSPEC int SDLCALL SDL_ShowSimpleMessageBox(Uint32 flags, const char *title, const char *message, SDL_Window *window);
+extern DECLSPEC int SDLCALL SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags flags, const char *title, const char *message, SDL_Window *window);
 
 
 /* Ends C function definitions when using C++ */
