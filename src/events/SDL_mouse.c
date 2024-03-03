@@ -1163,7 +1163,7 @@ int SDL_UpdateMouseCapture(SDL_bool force_release)
         if (SDL_GetMessageBoxCount() == 0 &&
             (mouse->capture_desired || (mouse->auto_capture && GetButtonState(mouse, SDL_FALSE) != 0))) {
             if (!mouse->relative_mode) {
-                capture_window = SDL_GetKeyboardFocus();
+                capture_window = mouse->focus;
             }
         }
     }
