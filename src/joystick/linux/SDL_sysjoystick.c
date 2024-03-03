@@ -360,7 +360,7 @@ static void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_clas
 
     switch (udev_type) {
     case SDL_UDEV_DEVICEADDED:
-        if (!(udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
+        if (!(udev_class & (SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_ACCELEROMETER))) {
             return;
         }
         if (SDL_classic_joysticks) {
