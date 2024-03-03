@@ -1623,8 +1623,8 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                without ever mapping / unmapping them, so we handle that here,
                because they use the NETWM protocol to notify us of changes.
              */
-            const Uint32 flags = X11_GetNetWMState(_this, data->window, xevent->xproperty.window);
-            const Uint32 changed = flags ^ data->window->flags;
+            const SDL_WindowFlags flags = X11_GetNetWMState(_this, data->window, xevent->xproperty.window);
+            const SDL_WindowFlags changed = flags ^ data->window->flags;
 
             if ((changed & (SDL_WINDOW_HIDDEN | SDL_WINDOW_FULLSCREEN)) != 0) {
                 if (flags & SDL_WINDOW_HIDDEN) {

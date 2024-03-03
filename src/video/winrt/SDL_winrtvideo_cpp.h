@@ -67,8 +67,8 @@ extern SDL_Window *WINRT_GlobalSDLWindow;
 /* Updates one or more SDL_Window flags, by querying the OS' native windowing APIs.
    SDL_Window flags that can be updated should be specified in 'mask'.
 */
-extern void WINRT_UpdateWindowFlags(SDL_Window *window, Uint32 mask);
-extern "C" Uint32 WINRT_DetectWindowFlags(SDL_Window *window); /* detects flags w/o applying them */
+extern void WINRT_UpdateWindowFlags(SDL_Window *window, SDL_WindowFlags mask);
+extern "C" SDL_WindowFlags WINRT_DetectWindowFlags(SDL_Window *window); /* detects flags w/o applying them */
 
 /* Display mode internals */
 // typedef struct

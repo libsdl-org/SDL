@@ -472,12 +472,12 @@ void WINRT_VideoQuit(SDL_VideoDevice *_this)
     WINRT_QuitMouse(_this);
 }
 
-static const Uint32 WINRT_DetectableFlags = SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_HIDDEN | SDL_WINDOW_MOUSE_FOCUS;
+static const SDL_WindowFlags WINRT_DetectableFlags = SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_HIDDEN | SDL_WINDOW_MOUSE_FOCUS;
 
-extern "C" Uint32
+extern "C" SDL_WindowFlags
 WINRT_DetectWindowFlags(SDL_Window *window)
 {
-    Uint32 latestFlags = 0;
+    SDL_WindowFlags latestFlags = 0;
     SDL_WindowData *data = window->driverdata;
     bool is_fullscreen = false;
 
@@ -543,7 +543,7 @@ WINRT_DetectWindowFlags(SDL_Window *window)
 }
 
 // TODO, WinRT: consider removing WINRT_UpdateWindowFlags, and just calling WINRT_DetectWindowFlags as-appropriate (with appropriate calls to SDL_SendWindowEvent)
-void WINRT_UpdateWindowFlags(SDL_Window *window, Uint32 mask)
+void WINRT_UpdateWindowFlags(SDL_Window *window, SDL_WindowFlags mask)
 {
     mask &= WINRT_DetectableFlags;
     if (window) {

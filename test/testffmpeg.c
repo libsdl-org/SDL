@@ -88,7 +88,7 @@ struct SwsContextContainer
 static const char *SWS_CONTEXT_CONTAINER_PROPERTY = "SWS_CONTEXT_CONTAINER";
 static int done;
 
-static SDL_bool CreateWindowAndRenderer(Uint32 window_flags, const char *driver)
+static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char *driver)
 {
     SDL_PropertiesID props;
     SDL_RendererInfo info;
@@ -950,7 +950,7 @@ int main(int argc, char *argv[])
     int i;
     int result;
     int return_code = -1;
-    Uint32 window_flags;
+    SDL_WindowFlags window_flags;
     SDL_bool flushing = SDL_FALSE;
     SDL_bool decoded = SDL_FALSE;
     SDLTest_CommonState *state;

@@ -1643,7 +1643,7 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
     SDL_Renderer *renderer;
     GL_RenderData *data;
     GLint value;
-    Uint32 window_flags;
+    SDL_WindowFlags window_flags;
     int profile_mask = 0, major = 0, minor = 0;
     SDL_bool changed_window = SDL_FALSE;
     const char *hint;

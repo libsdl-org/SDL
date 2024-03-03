@@ -1555,7 +1555,7 @@ static void SDL_CheckWindowDisplayScaleChanged(SDL_Window *window)
 }
 
 #ifdef SDL_PLATFORM_WINRT
-extern Uint32 WINRT_DetectWindowFlags(SDL_Window *window);
+extern SDL_WindowFlags WINRT_DetectWindowFlags(SDL_Window *window);
 #endif
 
 static void SDL_RestoreMousePosition(SDL_Window *window)
@@ -1908,7 +1908,7 @@ void SDL_ToggleDragAndDropSupport(void)
     }
 }
 
-static void ApplyWindowFlags(SDL_Window *window, Uint32 flags)
+static void ApplyWindowFlags(SDL_Window *window, SDL_WindowFlags flags)
 {
     if (!(flags & (SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED))) {
         SDL_RestoreWindow(window);
@@ -1936,7 +1936,7 @@ static void ApplyWindowFlags(SDL_Window *window, Uint32 flags)
     }
 }
 
-static void SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
+static void SDL_FinishWindowCreation(SDL_Window *window, SDL_WindowFlags flags)
 {
     PrepareDragAndDropSupport(window);
     ApplyWindowFlags(window, flags);
@@ -1961,7 +1961,7 @@ static int SDL_DllNotSupported(const char *name)
 
 static struct {
     const char *property_name;
-    Uint32 flag;
+    SDL_WindowFlags flag;
     SDL_bool invert_value;
 } SDL_WindowFlagProperties[] = {
     { SDL_PROP_WINDOW_CREATE_ALWAYS_ON_TOP_BOOLEAN,      SDL_WINDOW_ALWAYS_ON_TOP,       SDL_FALSE },
@@ -1986,7 +1986,7 @@ static struct {
 static Uint32 SDL_GetWindowFlagProperties(SDL_PropertiesID props)
 {
     unsigned i;
-    Uint32 flags = (Uint32)SDL_GetNumberProperty(props, "flags", 0);
+    SDL_WindowFlags flags = (Uint32)SDL_GetNumberProperty(props, "flags", 0);
 
     for (i = 0; i < SDL_arraysize(SDL_WindowFlagProperties); ++i) {
         if (SDL_WindowFlagProperties[i].invert_value) {
@@ -2011,8 +2011,8 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     int w = (int)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 0);
     int h = (int)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 0);
     SDL_Window *parent = SDL_GetProperty(props, SDL_PROP_WINDOW_CREATE_PARENT_POINTER, NULL);
-    Uint32 flags = SDL_GetWindowFlagProperties(props);
-    Uint32 type_flags, graphics_flags;
+    SDL_WindowFlags flags = SDL_GetWindowFlagProperties(props);
+    SDL_WindowFlags type_flags, graphics_flags;
     SDL_bool undefined_x = SDL_FALSE;
     SDL_bool undefined_y = SDL_FALSE;
     SDL_bool external_graphics_context = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_EXTERNAL_GRAPHICS_CONTEXT_BOOLEAN, SDL_FALSE);
@@ -2255,7 +2255,7 @@ SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y
     return window;
 }
 
-int SDL_RecreateWindow(SDL_Window *window, Uint32 flags)
+int SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
 {
     SDL_bool loaded_opengl = SDL_FALSE;
     SDL_bool need_gl_unload = SDL_FALSE;
@@ -2263,7 +2263,7 @@ int SDL_RecreateWindow(SDL_Window *window, Uint32 flags)
     SDL_bool loaded_vulkan = SDL_FALSE;
     SDL_bool need_vulkan_unload = SDL_FALSE;
     SDL_bool need_vulkan_load = SDL_FALSE;
-    Uint32 graphics_flags;
+    SDL_WindowFlags graphics_flags;
 
     /* ensure no more than one of these flags is set */
     graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
