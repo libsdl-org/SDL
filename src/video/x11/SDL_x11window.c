@@ -124,7 +124,7 @@ static SDL_bool X11_IsActionAllowed(SDL_Window *window, Atom action)
 }
 #endif /* 0 */
 
-void X11_SetNetWMState(SDL_VideoDevice *_this, Window xwindow, Uint32 flags)
+void X11_SetNetWMState(SDL_VideoDevice *_this, Window xwindow, SDL_WindowFlags flags)
 {
     SDL_VideoData *videodata = _this->driverdata;
     Display *display = videodata->display;
@@ -245,7 +245,7 @@ Uint32 X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwin
     unsigned long i, numItems, bytesAfter;
     unsigned char *propertyValue = NULL;
     long maxLength = 1024;
-    Uint32 flags = 0;
+    SDL_WindowFlags flags = 0;
 
     if (X11_XGetWindowProperty(display, xwindow, _NET_WM_STATE,
                                0l, maxLength, False, XA_ATOM, &actualType,
@@ -1620,7 +1620,7 @@ static int X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this, SDL_Window *wind
                            SubstructureNotifyMask | SubstructureRedirectMask, &e);
         }
     } else {
-        Uint32 flags;
+        SDL_WindowFlags flags;
 
         flags = window->flags;
         if (fullscreen) {

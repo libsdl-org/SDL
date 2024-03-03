@@ -2037,7 +2037,7 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
 {
     SDL_Renderer *renderer;
     GLES2_RenderData *data;
-    Uint32 window_flags = 0; /* -Wconditional-uninitialized */
+    SDL_WindowFlags window_flags = 0; /* -Wconditional-uninitialized */
     GLint window_framebuffer;
     GLint value;
     int profile_mask = 0, major = 0, minor = 0;

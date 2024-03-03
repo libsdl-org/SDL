@@ -95,7 +95,7 @@ static SDL_bool create_popup(struct PopupWindow *new_popup, SDL_bool is_menu)
     const int w = is_menu ? MENU_WIDTH : TOOLTIP_WIDTH;
     const int h = is_menu ? MENU_HEIGHT : TOOLTIP_HEIGHT;
     const int v_off = is_menu ? 0 : 32;
-    const Uint32 flags = is_menu ? SDL_WINDOW_POPUP_MENU : SDL_WINDOW_TOOLTIP;
+    const SDL_WindowFlags flags = is_menu ? SDL_WINDOW_POPUP_MENU : SDL_WINDOW_TOOLTIP;
     float x, y;
 
     focus = SDL_GetMouseFocus();

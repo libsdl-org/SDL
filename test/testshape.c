@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     SDL_Renderer *renderer = NULL;
     SDL_Surface *shape = NULL;
     SDL_bool resizable = SDL_FALSE;
-    Uint32 flags;
+    SDL_WindowFlags flags;
     SDL_bool done = SDL_FALSE;
     SDL_Event event;
     int i;

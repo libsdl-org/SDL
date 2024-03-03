@@ -822,7 +822,7 @@ static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, Uint32 flag)
 
 static void SDLTest_PrintWindowFlags(char *text, size_t maxlen, Uint32 flags)
 {
-    const Uint32 window_flags[] = {
+    const SDL_WindowFlags window_flags[] = {
         SDL_WINDOW_FULLSCREEN,
         SDL_WINDOW_OPENGL,
         SDL_WINDOW_HIDDEN,
@@ -1993,7 +1993,7 @@ static void FullscreenTo(SDLTest_CommonState *state, int index, int windowId)
     int num_displays;
     SDL_DisplayID *displays;
     SDL_Window *window;
-    Uint32 flags;
+    SDL_WindowFlags flags;
     const SDL_DisplayMode *mode;
     struct SDL_Rect rect = { 0, 0, 0, 0 };
 
@@ -2297,7 +2297,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 /* Ctrl-M maximize */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
-                    Uint32 flags = SDL_GetWindowFlags(window);
+                    SDL_WindowFlags flags = SDL_GetWindowFlags(window);
                     if (flags & SDL_WINDOW_MAXIMIZED) {
                         SDL_RestoreWindow(window);
                     } else {
@@ -2325,7 +2325,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 /* Ctrl-T toggle topmost mode */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
-                    Uint32 flags = SDL_GetWindowFlags(window);
+                    SDL_WindowFlags flags = SDL_GetWindowFlags(window);
                     if (flags & SDL_WINDOW_ALWAYS_ON_TOP) {
                         SDL_SetWindowAlwaysOnTop(window, SDL_FALSE);
                     } else {
@@ -2348,7 +2348,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 /* Ctrl-Enter toggle fullscreen */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
-                    Uint32 flags = SDL_GetWindowFlags(window);
+                    SDL_WindowFlags flags = SDL_GetWindowFlags(window);
                     if (!(flags & SDL_WINDOW_FULLSCREEN) ||
 						!SDL_GetWindowFullscreenMode(window)) {
                         SDL_SetWindowFullscreenMode(window, &state->fullscreen_mode);
@@ -2361,7 +2361,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 /* Alt-Enter toggle fullscreen desktop */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
-                    Uint32 flags = SDL_GetWindowFlags(window);
+                    SDL_WindowFlags flags = SDL_GetWindowFlags(window);
                     if (!(flags & SDL_WINDOW_FULLSCREEN) ||
 						SDL_GetWindowFullscreenMode(window)) {
                         SDL_SetWindowFullscreenMode(window, NULL);
@@ -2378,7 +2378,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 /* Ctrl-B toggle window border */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
-                    const Uint32 flags = SDL_GetWindowFlags(window);
+                    const SDL_WindowFlags flags = SDL_GetWindowFlags(window);
                     const SDL_bool b = (flags & SDL_WINDOW_BORDERLESS) ? SDL_TRUE : SDL_FALSE;
                     SDL_SetWindowBordered(window, b);
                 }
