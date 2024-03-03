@@ -44,6 +44,7 @@ this should probably be removed at some point in the future.  --ryan. */
 #endif
 
 #define SDL_PROP_WINDOW_RENDERER_POINTER "SDL.internal.window.renderer"
+#define SDL_PROP_TEXTURE_PARENT_POINTER "SDL.internal.texture.parent"
 
 #define CHECK_RENDERER_MAGIC(renderer, retval)                  \
     if (!(renderer) || (renderer)->magic != &SDL_renderer_magic) { \
@@ -1333,6 +1334,8 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
             return NULL;
         }
 
+        SDL_SetProperty(SDL_GetTextureProperties(texture->native), SDL_PROP_TEXTURE_PARENT_POINTER, texture);
+
         /* Swap textures to have texture before texture->native in the list */
         texture->native->next = texture->next;
         if (texture->native->next) {
@@ -2356,7 +2359,7 @@ SDL_Texture *SDL_GetRenderTarget(SDL_Renderer *renderer)
     if (renderer->target == renderer->logical_target) {
         return NULL;
     } else {
-        return renderer->target;
+        return SDL_GetProperty(SDL_GetTextureProperties(renderer->target), SDL_PROP_TEXTURE_PARENT_POINTER, renderer->target);
     }
 }
 
