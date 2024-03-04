@@ -1702,11 +1702,11 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
             instanceCreateInfo.enabledLayerCount = 1;
         }
         result = vkCreateInstance(&instanceCreateInfo, NULL, &rendererData->instance);
+        SDL_free((void *)instanceExtensionsCopy);
         if (result != VK_SUCCESS) {
             SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkCreateInstance(): %s\n", SDL_Vulkan_GetResultString(result));
             return result;
         }
-        SDL_free((void *)instanceExtensionsCopy);
     }
 
     /* Load instance Vulkan functions */
