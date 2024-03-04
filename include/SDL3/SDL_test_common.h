@@ -56,7 +56,7 @@ typedef struct
 {
     /* SDL init flags */
     char **argv;
-    SDL_InitFlags flags;
+    Uint32 flags;
     Uint32 verbose;
 
     /* Video info */
@@ -90,7 +90,7 @@ typedef struct
 
     /* Renderer info */
     const char *renderdriver;
-    SDL_RendererFlags render_flags;
+    Uint32 render_flags;
     SDL_bool skip_renderer;
     SDL_Renderer **renderers;
     SDL_Texture **targets;
@@ -146,7 +146,7 @@ extern "C" {
  *
  * \returns a newly allocated common state object.
  */
-SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, SDL_InitFlags flags);
+SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, Uint32 flags);
 
 /**
  * Free the common state object.
