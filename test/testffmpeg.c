@@ -502,15 +502,31 @@ static SDL_Colorspace GetFrameColorspace(AVFrame *frame)
     return colorspace;
 }
 
-static SDL_PropertiesID CreateVideoTextureProperties(AVFrame *frame, Uint32 format, int access, int w, int h)
+static SDL_PropertiesID CreateVideoTextureProperties(AVFrame *frame, Uint32 format, int access)
 {
     AVFrameSideData *pSideData;
     SDL_PropertiesID props;
+    int width = frame->width;
+    int height = frame->height;
     SDL_Colorspace colorspace = GetFrameColorspace(frame);
 
     /* ITU-R BT.2408-6 recommends using an SDR white point of 203 nits, which is more likely for game content */
     static const float k_flSDRWhitePoint = 203.0f;
     float flMaxLuminance = k_flSDRWhitePoint;
+
+    if (frame->hw_frames_ctx) {
+        AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx->data);
+
+        width = frames->width;
+        height = frames->height;
+        if (format == SDL_PIXELFORMAT_UNKNOWN) {
+            format = GetTextureFormat(frames->sw_format);
+        }
+    } else {
+        if (format == SDL_PIXELFORMAT_UNKNOWN) {
+            format = GetTextureFormat(frame->format);
+        }
+    }
 
     props = SDL_CreateProperties();
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, colorspace);
@@ -528,8 +544,8 @@ static SDL_PropertiesID CreateVideoTextureProperties(AVFrame *frame, Uint32 form
     }
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, format);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, access);
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, w);
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, h);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, width);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, height);
 
     return props;
 }
@@ -561,9 +577,9 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
 
         SDL_PropertiesID props;
         if (frame_format == SDL_PIXELFORMAT_UNKNOWN) {
-            props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, frame->width, frame->height);
+            props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING);
         } else {
-            props = CreateVideoTextureProperties(frame, frame_format, SDL_TEXTUREACCESS_STREAMING, frame->width, frame->height);
+            props = CreateVideoTextureProperties(frame, frame_format, SDL_TEXTUREACCESS_STREAMING);
         }
         *texture = SDL_CreateTextureWithProperties(renderer, props);
         SDL_DestroyProperties(props);
@@ -630,6 +646,7 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
 static SDL_bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
 {
 #ifdef HAVE_EGL
+    AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx->data);
     const AVDRMFrameDescriptor *desc = (const AVDRMFrameDescriptor *)frame->data[0];
     int i, j, image_index, num_planes;
     EGLDisplay display = eglGetCurrentDisplay();
@@ -654,7 +671,7 @@ static SDL_bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
         SDL_SetHint("SDL_RENDER_OPENGL_NV12_RG_SHADER", "1");
     }
 
-    props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_NV12, SDL_TEXTUREACCESS_STATIC, frame->width, frame->height);
+    props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STATIC);
     *texture = SDL_CreateTextureWithProperties(renderer, props);
     SDL_DestroyProperties(props);
     if (!*texture) {
@@ -687,10 +704,10 @@ static SDL_bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
             attr[k++] = formats[i];
 
             attr[k++] = EGL_WIDTH;
-            attr[k++] = frame->width  / ( image_index + 1 ); /* half size for chroma */
+            attr[k++] = frames->width  / ( image_index + 1 ); /* half size for chroma */
 
             attr[k++] = EGL_HEIGHT;
-            attr[k++] = frame->height / ( image_index + 1 );
+            attr[k++] = frames->height / ( image_index + 1 );
 
             attr[k++] = EGL_DMA_BUF_PLANE0_FD_EXT;
             attr[k++] = object->fd;
@@ -747,38 +764,20 @@ static SDL_bool GetTextureForVAAPIFrame(AVFrame *frame, SDL_Texture **texture)
 static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
 {
 #ifdef SDL_PLATFORM_WIN32
+    AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx->data);
     int texture_width = 0, texture_height = 0;
     ID3D11Texture2D *pTexture = (ID3D11Texture2D *)frame->data[0];
     UINT iSliceIndex = (UINT)(uintptr_t)frame->data[1];
 
-    D3D11_TEXTURE2D_DESC desc;
-    SDL_zero(desc);
-    ID3D11Texture2D_GetDesc(pTexture, &desc);
-
     if (*texture) {
         SDL_QueryTexture(*texture, NULL, NULL, &texture_width, &texture_height);
     }
-    if (!*texture || (UINT)texture_width != desc.Width || (UINT)texture_height != desc.Height) {
-        Uint32 format;
-
-        switch (desc.Format) {
-        case DXGI_FORMAT_NV12:
-            format = SDL_PIXELFORMAT_NV12;
-            break;
-        case DXGI_FORMAT_P010:
-            format = SDL_PIXELFORMAT_P010;
-            break;
-        default:
-            SDL_SetError("Unsupported texture format %d", desc.Format);
-            return SDL_FALSE;
-        }
-
+    if (!*texture || texture_width != frames->width || texture_height != frames->height) {
         if (*texture) {
             SDL_DestroyTexture(*texture);
         }
 
-        SDL_PropertiesID props = CreateVideoTextureProperties(frame, format, SDL_TEXTUREACCESS_STATIC, desc.Width, desc.Height);
-        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, desc.Height);
+        SDL_PropertiesID props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STATIC);
         *texture = SDL_CreateTextureWithProperties(renderer, props);
         SDL_DestroyProperties(props);
         if (!*texture) {
@@ -803,29 +802,7 @@ static SDL_bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **tex
 {
 #ifdef SDL_PLATFORM_APPLE
     CVPixelBufferRef pPixelBuffer = (CVPixelBufferRef)frame->data[3];
-    OSType nPixelBufferType = CVPixelBufferGetPixelFormatType(pPixelBuffer);
-    size_t nPixelBufferWidth = CVPixelBufferGetWidthOfPlane(pPixelBuffer, 0);
-    size_t nPixelBufferHeight = CVPixelBufferGetHeightOfPlane(pPixelBuffer, 0);
     SDL_PropertiesID props;
-    Uint32 format;
-
-    switch (nPixelBufferType) {
-    case kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange:
-    case kCVPixelFormatType_420YpCbCr8BiPlanarFullRange:
-        format = SDL_PIXELFORMAT_NV12;
-        break;
-    case kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange:
-    case kCVPixelFormatType_420YpCbCr10BiPlanarFullRange:
-        format = SDL_PIXELFORMAT_P010;
-        break;
-    default:
-        SDL_SetError("Unsupported texture format %c%c%c%c",
-            (char)((nPixelBufferType >> 24) & 0xFF),
-            (char)((nPixelBufferType >> 16) & 0xFF),
-            (char)((nPixelBufferType >> 8) & 0xFF),
-            (char)((nPixelBufferType >> 0) & 0xFF));
-        return SDL_FALSE;
-    }
 
     if (*texture) {
         /* Free the previous texture now that we're about to render a new one */
@@ -833,7 +810,7 @@ static SDL_bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **tex
         SDL_DestroyTexture(*texture);
     }
 
-    props = CreateVideoTextureProperties(frame, format, SDL_TEXTUREACCESS_STATIC, nPixelBufferWidth, nPixelBufferHeight);
+    props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STATIC);
     SDL_SetProperty(props, SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER, pPixelBuffer);
     *texture = SDL_CreateTextureWithProperties(renderer, props);
     SDL_DestroyProperties(props);
@@ -850,11 +827,12 @@ static SDL_bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **tex
 static SDL_bool GetTextureForVulkanFrame(AVFrame *frame, SDL_Texture **texture)
 {
     SDL_PropertiesID props;
+
     if (*texture) {
         SDL_DestroyTexture(*texture);
     }
 
-    props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STATIC, frame->width, frame->height);
+    props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STATIC);
     *texture = CreateVulkanVideoTexture(vulkan_context, frame, renderer, props);
     SDL_DestroyProperties(props);
     if (!*texture) {
@@ -905,10 +883,15 @@ static void DisplayVideoTexture(AVFrame *frame)
         return;
     }
 
+    SDL_FRect src;
+    src.x = 0.0f;
+    src.y = 0.0f;
+    src.w = (float)frame->width;
+    src.h = (float)frame->height;
     if (frame->linesize[0] < 0) {
-        SDL_RenderTextureRotated(renderer, video_texture, NULL, NULL, 0.0, NULL, SDL_FLIP_VERTICAL);
+        SDL_RenderTextureRotated(renderer, video_texture, &src, NULL, 0.0, NULL, SDL_FLIP_VERTICAL);
     } else {
-        SDL_RenderTexture(renderer, video_texture, NULL, NULL);
+        SDL_RenderTexture(renderer, video_texture, &src, NULL);
     }
 }
 
