@@ -1782,10 +1782,11 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
     if (rendererData->device) {
         rendererData->device_external = SDL_TRUE;
     } else {
+        VkPhysicalDeviceSamplerYcbcrConversionFeatures deviceSamplerYcbcrConversionFeatures = { 0 };
         VkDeviceQueueCreateInfo deviceQueueCreateInfo[2] = { { 0 }, { 0 } };
         static const float queuePriority[] = { 1.0f };
-        VkDeviceCreateInfo deviceCreateInfo = { 0 };
 
+        VkDeviceCreateInfo deviceCreateInfo = { 0 };
         deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         deviceCreateInfo.queueCreateInfoCount = 0;
         deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfo;
@@ -1805,6 +1806,13 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
             deviceQueueCreateInfo[1].queueCount = 1;
             deviceQueueCreateInfo[1].pQueuePriorities = queuePriority;
             ++deviceCreateInfo.queueCreateInfoCount;
+        }
+
+        if (rendererData->supportsKHRSamplerYCbCrConversion) {
+            deviceSamplerYcbcrConversionFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES;
+            deviceSamplerYcbcrConversionFeatures.samplerYcbcrConversion = VK_TRUE;
+            deviceSamplerYcbcrConversionFeatures.pNext = (void *)deviceCreateInfo.pNext;
+            deviceCreateInfo.pNext = &deviceSamplerYcbcrConversionFeatures;
         }
 
         result = vkCreateDevice(rendererData->physicalDevice, &deviceCreateInfo, NULL, &rendererData->device);
