@@ -80,7 +80,8 @@ do
     cd $folder
 done
 
-ACTIVITY="${folder}Activity"
+# Uppercase the first char in the activity class name because it's Java
+ACTIVITY="${folder^}Activity"
 sed -i -e "s|\"SDLActivity\"|\"$ACTIVITY\"|g" $BUILDPATH/app/src/main/AndroidManifest.xml
 
 # Fill in a default Activity
