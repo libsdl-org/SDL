@@ -338,7 +338,7 @@ static SDL_bool SupportedPixelFormat(enum AVPixelFormat format)
             return SDL_TRUE;
         }
 #endif
-        if (format == AV_PIX_FMT_VULKAN) {
+        if (vulkan_context && format == AV_PIX_FMT_VULKAN) {
             return SDL_TRUE;
         }
     }
