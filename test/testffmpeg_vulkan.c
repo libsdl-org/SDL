@@ -773,9 +773,17 @@ static int CreateCommandBuffers(VulkanVideoContext *context, SDL_Renderer *rende
     return 0;
 }
 
-static int ScheduleFrameTransferToSDL(VulkanVideoContext *context, AVFrame *frame)
+int BeginVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer)
 {
+    AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx->data);
+    AVVulkanFramesContext *vk = (AVVulkanFramesContext *)(frames->hwctx);
     AVVkFrame *pVkFrame = (AVVkFrame *)frame->data[0];
+
+    if (CreateCommandBuffers(context, renderer) < 0) {
+        return -1;
+    }
+
+    vk->lock_frame(frames, pVkFrame);
 
     VkTimelineSemaphoreSubmitInfo timeline = { 0 };
     timeline.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
@@ -834,15 +842,22 @@ static int ScheduleFrameTransferToSDL(VulkanVideoContext *context, AVFrame *fram
 
     VkResult result = context->vkQueueSubmit(context->graphicsQueue, 1, &submitInfo, 0);
     if (result != VK_SUCCESS) {
-        return SDL_SetError("vkQueueSubmit(): %s", getVulkanResultString(result));
+        /* Don't return an error here, we need to complete the frame operation */
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION , "vkQueueSubmit(): %s", getVulkanResultString(result));
     }
+
+    SDL_AddVulkanRenderSemaphores(renderer, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, (Sint64)context->waitSemaphores[context->commandBufferIndex], (Sint64)context->signalSemaphores[context->commandBufferIndex]);
+
     return 0;
 }
 
-static int ScheduleFrameTransferToFFMPEG(VulkanVideoContext *context, AVFrame *frame)
+int FinishVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer)
 {
+    AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx->data);
+    AVVulkanFramesContext *vk = (AVVulkanFramesContext *)(frames->hwctx);
     AVVkFrame *pVkFrame = (AVVkFrame *)frame->data[0];
 
+    /* Transition the frame back to ffmpeg */
     ++pVkFrame->sem_value[0];
 
     VkTimelineSemaphoreSubmitInfo timeline = { 0 };
@@ -862,27 +877,11 @@ static int ScheduleFrameTransferToFFMPEG(VulkanVideoContext *context, AVFrame *f
 
     VkResult result = context->vkQueueSubmit(context->graphicsQueue, 1, &submitInfo, 0);
     if (result != VK_SUCCESS) {
-        return SDL_SetError("vkQueueSubmit(): %s", getVulkanResultString(result));
-    }
-    return 0;
-}
-
-static int PrepareFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer)
-{
-    AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx->data);
-    AVVulkanFramesContext *vk = (AVVulkanFramesContext *)(frames->hwctx);
-    AVVkFrame *pVkFrame = (AVVkFrame *)frame->data[0];
-
-    if (CreateCommandBuffers(context, renderer) < 0) {
-        return -1;
+        /* Don't return an error here, we need to complete the frame operation */
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "vkQueueSubmit(): %s", getVulkanResultString(result));
     }
 
-    vk->lock_frame(frames, pVkFrame);
-    ScheduleFrameTransferToSDL(context, frame);
-    ScheduleFrameTransferToFFMPEG(context, frame);
     vk->unlock_frame(frames, pVkFrame);
-
-    SDL_AddVulkanRenderSemaphores(renderer, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, (Sint64)context->waitSemaphores[context->commandBufferIndex], (Sint64)context->signalSemaphores[context->commandBufferIndex]);
 
     context->commandBufferIndex = (context->commandBufferIndex + 1) % context->commandBufferCount;
 
@@ -895,10 +894,6 @@ SDL_Texture *CreateVulkanVideoTexture(VulkanVideoContext *context, AVFrame *fram
     AVVulkanFramesContext *vk = (AVVulkanFramesContext *)(frames->hwctx);
     AVVkFrame *pVkFrame = (AVVkFrame *)frame->data[0];
     Uint32 format;
-
-    if (PrepareFrameRendering(context, frame, renderer) < 0) {
-        return NULL;
-    }
 
     switch (vk->format[0]) {
     case VK_FORMAT_G8B8G8R8_422_UNORM:
