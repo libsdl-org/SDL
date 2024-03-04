@@ -797,7 +797,7 @@ static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, SDL_Proper
         samplerYcbcrConversionInfo.conversion = samplerYcbcrConversion;
         imageViewCreateInfo.pNext = &samplerYcbcrConversionInfo;
     }
-    
+
     result = vkCreateImageView(rendererData->device, &imageViewCreateInfo, NULL, &imageOut->imageView);
     if (result != VK_SUCCESS) {
         VULKAN_DestroyImage(rendererData, imageOut);
@@ -1566,7 +1566,7 @@ static SDL_bool VULKAN_DeviceExtensionsFound(VULKAN_RenderData *rendererData, in
             }
             foundExtensions &= foundExtension;
         }
-        
+
         SDL_free(extensionProperties);
     }
 
@@ -1704,11 +1704,11 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
             instanceCreateInfo.enabledLayerCount = 1;
         }
         result = vkCreateInstance(&instanceCreateInfo, NULL, &rendererData->instance);
+        SDL_free((void *)instanceExtensionsCopy);
         if (result != VK_SUCCESS) {
             SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkCreateInstance(): %s\n", SDL_Vulkan_GetResultString(result));
             return result;
         }
-        SDL_free((void *)instanceExtensionsCopy);
     }
 
     /* Load instance Vulkan functions */
@@ -2502,7 +2502,7 @@ static int VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
             samplerYcbcrConversionCreateInfo.components.r = VK_COMPONENT_SWIZZLE_B;
             samplerYcbcrConversionCreateInfo.components.b = VK_COMPONENT_SWIZZLE_R;
         }
-        
+
         switch (SDL_COLORSPACERANGE(texture->colorspace)) {
         case SDL_COLOR_RANGE_LIMITED:
             samplerYcbcrConversionCreateInfo.ycbcrRange = VK_SAMPLER_YCBCR_RANGE_ITU_NARROW_KHR;
