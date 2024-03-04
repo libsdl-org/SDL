@@ -242,7 +242,6 @@ static int createInstance(VulkanVideoContext *context)
     context->instanceExtensionsCount = instanceCreateInfo.enabledExtensionCount;
 
     result = context->vkCreateInstance(&instanceCreateInfo, NULL, &context->instance);
-    SDL_free((void *)instanceExtensionsCopy);
     if (result != VK_SUCCESS) {
         context->instance = VK_NULL_HANDLE;
         return SDL_SetError("vkCreateInstance(): %s\n", getVulkanResultString(result));
