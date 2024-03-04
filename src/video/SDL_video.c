@@ -3460,7 +3460,7 @@ void SDL_OnWindowHidden(SDL_Window *window)
      * this was initiated by the window manager due to the window being unmapped
      * when minimized.
      */
-    window->pending_flags = (window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED));
+    window->pending_flags |= (window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED));
 
     /* The window is already hidden at this point, so just change the mode back if necessary. */
     SDL_UpdateFullscreenMode(window, SDL_FALSE, SDL_FALSE);
