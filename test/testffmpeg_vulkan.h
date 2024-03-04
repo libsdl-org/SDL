@@ -15,8 +15,10 @@
 
 typedef struct VulkanVideoContext VulkanVideoContext;
 
-VulkanVideoContext *CreateVulkanVideoContext(SDL_Window *window);
-void SetupVulkanRenderProperties(VulkanVideoContext *context, SDL_PropertiesID props);
-void SetupVulkanDeviceContextData(VulkanVideoContext *context, AVVulkanDeviceContext *ctx);
-SDL_Texture *CreateVulkanVideoTexture(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer, SDL_PropertiesID props);
-void DestroyVulkanVideoContext(VulkanVideoContext *context);
+extern VulkanVideoContext *CreateVulkanVideoContext(SDL_Window *window);
+extern void SetupVulkanRenderProperties(VulkanVideoContext *context, SDL_PropertiesID props);
+extern void SetupVulkanDeviceContextData(VulkanVideoContext *context, AVVulkanDeviceContext *ctx);
+extern SDL_Texture *CreateVulkanVideoTexture(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer, SDL_PropertiesID props);
+extern int BeginVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer);
+extern int FinishVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer);
+extern void DestroyVulkanVideoContext(VulkanVideoContext *context);

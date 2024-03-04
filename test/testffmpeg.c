@@ -881,6 +881,22 @@ static SDL_bool GetTextureForFrame(AVFrame *frame, SDL_Texture **texture)
     }
 }
 
+static int BeginFrameRendering(AVFrame *frame)
+{
+    if (frame->format == AV_PIX_FMT_VULKAN) {
+        return BeginVulkanFrameRendering(vulkan_context, frame, renderer);
+    }
+    return 0;
+}
+
+static int FinishFrameRendering(AVFrame *frame)
+{
+    if (frame->format == AV_PIX_FMT_VULKAN) {
+        return FinishVulkanFrameRendering(vulkan_context, frame, renderer);
+    }
+    return 0;
+}
+
 static void DisplayVideoTexture(AVFrame *frame)
 {
     /* Update the video texture */
@@ -913,6 +929,10 @@ static void HandleVideoFrame(AVFrame *frame, double pts)
         now = (double)(SDL_GetTicks() - video_start) / 1000.0;
     }
 
+    if (BeginFrameRendering(frame) < 0) {
+        return;
+    }
+
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
@@ -922,6 +942,8 @@ static void HandleVideoFrame(AVFrame *frame, double pts)
     MoveSprite();
 
     SDL_RenderPresent(renderer);
+
+    FinishFrameRendering(frame);
 }
 
 static AVCodecContext *OpenAudioStream(AVFormatContext *ic, int stream, const AVCodec *codec)
