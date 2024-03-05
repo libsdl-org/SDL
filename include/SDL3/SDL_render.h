@@ -79,7 +79,7 @@ typedef struct SDL_RendererInfo
 {
     const char *name;           /**< The name of the renderer */
     Uint32 flags;               /**< Supported ::SDL_RendererFlags */
-    Uint32 num_texture_formats; /**< The number of available texture formats */
+    int num_texture_formats;    /**< The number of available texture formats */
     Uint32 texture_formats[16]; /**< The available texture formats */
     int max_texture_width;      /**< The maximum texture width */
     int max_texture_height;     /**< The maximum texture height */

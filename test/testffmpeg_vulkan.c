@@ -206,7 +206,7 @@ static int createInstance(VulkanVideoContext *context)
     VkApplicationInfo appInfo = { 0 };
     VkInstanceCreateInfo instanceCreateInfo = { 0 };
     VkResult result;
-    char const *const *instanceExtensions = SDL_Vulkan_GetInstanceExtensions(&instanceCreateInfo.enabledExtensionCount);
+    char const *const *instanceExtensions = SDL_Vulkan_GetInstanceExtensions((int *)&instanceCreateInfo.enabledExtensionCount);
 
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.apiVersion = VK_API_VERSION_1_3;
