@@ -172,8 +172,8 @@ extern void Cocoa_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window *windo
 extern int Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
 extern void *Cocoa_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t *size);
 extern SDL_DisplayID Cocoa_GetDisplayForWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern void Cocoa_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window);
-extern void Cocoa_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
+extern int Cocoa_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window);
+extern int Cocoa_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
 extern void Cocoa_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern int Cocoa_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 extern void Cocoa_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept);

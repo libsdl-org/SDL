@@ -3309,24 +3309,36 @@ void SDL_UpdateWindowGrab(SDL_Window *window)
     }
 
     if (_this->SetWindowMouseGrab) {
-        _this->SetWindowMouseGrab(_this, window, mouse_grabbed);
+        if (_this->SetWindowMouseGrab(_this, window, mouse_grabbed) < 0) {
+            window->flags &= ~SDL_WINDOW_MOUSE_GRABBED;
+        }
     }
     if (_this->SetWindowKeyboardGrab) {
-        _this->SetWindowKeyboardGrab(_this, window, keyboard_grabbed);
+        if (_this->SetWindowKeyboardGrab(_this, window, keyboard_grabbed) < 0) {
+            window->flags &= ~SDL_WINDOW_KEYBOARD_GRABBED;
+        }
+    }
+
+    if (_this->grabbed_window && !(_this->grabbed_window->flags & (SDL_WINDOW_MOUSE_GRABBED | SDL_WINDOW_KEYBOARD_GRABBED))) {
+        _this->grabbed_window = NULL;
     }
 }
 
 int SDL_SetWindowGrab(SDL_Window *window, SDL_bool grabbed)
 {
+    int ret_mouse_grab = 0;
+    int ret_keyboard_grab = 0;
+
     CHECK_WINDOW_MAGIC(window, -1);
     CHECK_WINDOW_NOT_POPUP(window, -1);
 
-    SDL_SetWindowMouseGrab(window, grabbed);
+    ret_mouse_grab = SDL_SetWindowMouseGrab(window, grabbed);
 
     if (SDL_GetHintBoolean(SDL_HINT_GRAB_KEYBOARD, SDL_FALSE)) {
-        SDL_SetWindowKeyboardGrab(window, grabbed);
+        ret_keyboard_grab = SDL_SetWindowKeyboardGrab(window, grabbed);
     }
-    return 0;
+
+    return (!ret_mouse_grab && !ret_keyboard_grab) ? 0 : -1;
 }
 
 int SDL_SetWindowKeyboardGrab(SDL_Window *window, SDL_bool grabbed)
@@ -3352,6 +3364,10 @@ int SDL_SetWindowKeyboardGrab(SDL_Window *window, SDL_bool grabbed)
         window->flags &= ~SDL_WINDOW_KEYBOARD_GRABBED;
     }
     SDL_UpdateWindowGrab(window);
+
+    if (grabbed && !(window->flags & SDL_WINDOW_KEYBOARD_GRABBED)) {
+        return -1;
+    }
     return 0;
 }
 
@@ -3378,6 +3394,10 @@ int SDL_SetWindowMouseGrab(SDL_Window *window, SDL_bool grabbed)
         window->flags &= ~SDL_WINDOW_MOUSE_GRABBED;
     }
     SDL_UpdateWindowGrab(window);
+
+    if (grabbed && !(window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
+        return -1;
+    }
     return 0;
 }
 
@@ -3419,7 +3439,7 @@ int SDL_SetWindowMouseRect(SDL_Window *window, const SDL_Rect *rect)
     }
 
     if (_this->SetWindowMouseRect) {
-        _this->SetWindowMouseRect(_this, window);
+        return _this->SetWindowMouseRect(_this, window);
     }
     return 0;
 }

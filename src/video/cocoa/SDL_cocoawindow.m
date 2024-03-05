@@ -2753,12 +2753,13 @@ SDL_DisplayID Cocoa_GetDisplayForWindow(SDL_VideoDevice *_this, SDL_Window *wind
     }
 }
 
-void Cocoa_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
+int Cocoa_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
 {
     Cocoa_UpdateClipCursor(window);
+    return 0;
 }
 
-void Cocoa_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
+int Cocoa_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
 {
     @autoreleasepool {
         SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;
@@ -2777,6 +2778,8 @@ void Cocoa_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bo
             }
         }
     }
+
+    return 0;
 }
 
 void Cocoa_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
