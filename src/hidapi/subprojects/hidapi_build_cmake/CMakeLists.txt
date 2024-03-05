@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.1.3...3.25 FATAL_ERROR)
 project(hidapi LANGUAGES C)
 
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/root")
