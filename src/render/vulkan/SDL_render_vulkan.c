@@ -2511,9 +2511,7 @@ static int VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         case SDL_MATRIX_COEFFICIENTS_BT709:
             samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709_KHR;
             break;
-        /* FIXME: Are these the same? */
         case SDL_MATRIX_COEFFICIENTS_BT2020_NCL:
-        case SDL_MATRIX_COEFFICIENTS_BT2020_CL:
             samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020_KHR;
             break;
         case SDL_MATRIX_COEFFICIENTS_UNSPECIFIED:

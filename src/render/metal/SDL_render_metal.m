@@ -596,9 +596,7 @@ size_t GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace, int w, int h, in
     case SDL_MATRIX_COEFFICIENTS_BT709:
         return GetBT709ConversionMatrix(colorspace);
 
-    /* FIXME: Are these the same? */
     case SDL_MATRIX_COEFFICIENTS_BT2020_NCL:
-    case SDL_MATRIX_COEFFICIENTS_BT2020_CL:
         return GetBT2020ConversionMatrix(colorspace);
 
     case SDL_MATRIX_COEFFICIENTS_UNSPECIFIED:
