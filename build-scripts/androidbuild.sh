@@ -80,7 +80,8 @@ do
     cd $folder
 done
 
-ACTIVITY="${folder}Activity"
+# Uppercase the first char in the activity class name because it's Java
+ACTIVITY="$(echo $folder | awk '{$1=toupper(substr($1,0,1))substr($1,2)}1')Activity"
 sed -i -e "s|\"SDLActivity\"|\"$ACTIVITY\"|g" $BUILDPATH/app/src/main/AndroidManifest.xml
 
 # Fill in a default Activity

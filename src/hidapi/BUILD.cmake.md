@@ -159,7 +159,7 @@ endif()
 HIDAPI can be easily used as a subdirectory of a larger CMake project:
 ```cmake
 # root CMakeLists.txt
-cmake_minimum_required(VERSION 3.4.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.4.3...3.25 FATAL_ERROR)
 
 add_subdirectory(hidapi)
 add_subdirectory(my_application)

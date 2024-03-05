@@ -28,5 +28,6 @@ extern int Android_OnKeyUp(int keycode);
 extern SDL_bool Android_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
 extern void Android_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Android_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
+extern void Android_RestoreScreenKeyboardOnResume(SDL_VideoDevice *_this, SDL_Window *window);
 extern SDL_bool Android_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
 extern int Android_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect);

@@ -313,7 +313,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
     /* Find the first format with or without an alpha channel */
     *format = info.texture_formats[0];
 
-    for (i = 0; i < (int)info.num_texture_formats; ++i) {
+    for (i = 0; i < info.num_texture_formats; ++i) {
         if (!SDL_ISPIXELFORMAT_FOURCC(info.texture_formats[i]) &&
             transparent == SDL_ISPIXELFORMAT_ALPHA(info.texture_formats[i])) {
             *format = info.texture_formats[i];
@@ -3456,6 +3456,12 @@ void SDL_OnWindowShown(SDL_Window *window)
 
 void SDL_OnWindowHidden(SDL_Window *window)
 {
+    /* Store the maximized and fullscreen flags for restoration later, in case
+     * this was initiated by the window manager due to the window being unmapped
+     * when minimized.
+     */
+    window->pending_flags |= (window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED));
+
     /* The window is already hidden at this point, so just change the mode back if necessary. */
     SDL_UpdateFullscreenMode(window, SDL_FALSE, SDL_FALSE);
 }
@@ -3787,9 +3793,6 @@ void SDL_VideoQuit(void)
     if (!_this) {
         return;
     }
-
-    /* Make sure we don't try to serve clipboard data after this */
-    SDL_ClearClipboardData();
 
     /* Halt event processing before doing anything else */
     SDL_QuitTouch();

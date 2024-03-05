@@ -1187,7 +1187,7 @@ static SDL_bool IsSupportedBlendMode(SDL_Renderer *renderer, SDL_BlendMode blend
 
 static SDL_bool IsSupportedFormat(SDL_Renderer *renderer, Uint32 format)
 {
-    Uint32 i;
+    int i;
 
     for (i = 0; i < renderer->info.num_texture_formats; ++i) {
         if (renderer->info.texture_formats[i] == format) {
@@ -1199,7 +1199,7 @@ static SDL_bool IsSupportedFormat(SDL_Renderer *renderer, Uint32 format)
 
 static Uint32 GetClosestSupportedFormat(SDL_Renderer *renderer, Uint32 format)
 {
-    Uint32 i;
+    int i;
 
     if (SDL_ISPIXELFORMAT_FOURCC(format)) {
         /* Look for an exact match */
@@ -1438,14 +1438,14 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     /* No alpha, but a colorkey => promote to alpha */
     if (!fmt->Amask && SDL_SurfaceHasColorKey(surface)) {
         if (fmt->format == SDL_PIXELFORMAT_XRGB8888) {
-            for (i = 0; i < (int)renderer->info.num_texture_formats; ++i) {
+            for (i = 0; i < renderer->info.num_texture_formats; ++i) {
                 if (renderer->info.texture_formats[i] == SDL_PIXELFORMAT_ARGB8888) {
                     format = SDL_PIXELFORMAT_ARGB8888;
                     break;
                 }
             }
         } else if (fmt->format == SDL_PIXELFORMAT_XBGR8888) {
-            for (i = 0; i < (int)renderer->info.num_texture_formats; ++i) {
+            for (i = 0; i < renderer->info.num_texture_formats; ++i) {
                 if (renderer->info.texture_formats[i] == SDL_PIXELFORMAT_ABGR8888) {
                     format = SDL_PIXELFORMAT_ABGR8888;
                     break;
@@ -1454,7 +1454,7 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
         }
     } else {
         /* Exact match would be fine */
-        for (i = 0; i < (int)renderer->info.num_texture_formats; ++i) {
+        for (i = 0; i < renderer->info.num_texture_formats; ++i) {
             if (renderer->info.texture_formats[i] == fmt->format) {
                 format = fmt->format;
                 break;
@@ -1464,7 +1464,7 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
 
     /* Look for 10-bit pixel formats if needed */
     if (format == SDL_PIXELFORMAT_UNKNOWN && SDL_ISPIXELFORMAT_10BIT(fmt->format)) {
-        for (i = 0; i < (int)renderer->info.num_texture_formats; ++i) {
+        for (i = 0; i < renderer->info.num_texture_formats; ++i) {
             if (SDL_ISPIXELFORMAT_10BIT(renderer->info.texture_formats[i])) {
                 format = renderer->info.texture_formats[i];
                 break;
@@ -1475,7 +1475,7 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     /* Look for floating point pixel formats if needed */
     if (format == SDL_PIXELFORMAT_UNKNOWN &&
         (SDL_ISPIXELFORMAT_10BIT(fmt->format) || SDL_ISPIXELFORMAT_FLOAT(fmt->format))) {
-        for (i = 0; i < (int)renderer->info.num_texture_formats; ++i) {
+        for (i = 0; i < renderer->info.num_texture_formats; ++i) {
             if (SDL_ISPIXELFORMAT_FLOAT(renderer->info.texture_formats[i])) {
                 format = renderer->info.texture_formats[i];
                 break;
@@ -1486,7 +1486,7 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     /* Fallback, choose a valid pixel format */
     if (format == SDL_PIXELFORMAT_UNKNOWN) {
         format = renderer->info.texture_formats[0];
-        for (i = 0; i < (int)renderer->info.num_texture_formats; ++i) {
+        for (i = 0; i < renderer->info.num_texture_formats; ++i) {
             if (!SDL_ISPIXELFORMAT_FOURCC(renderer->info.texture_formats[i]) &&
                 SDL_ISPIXELFORMAT_ALPHA(renderer->info.texture_formats[i]) == needAlpha) {
                 format = renderer->info.texture_formats[i];
@@ -4563,6 +4563,16 @@ void *SDL_GetRenderMetalCommandEncoder(SDL_Renderer *renderer)
         return renderer->GetMetalCommandEncoder(renderer);
     }
     return NULL;
+}
+
+int SDL_AddVulkanRenderSemaphores(SDL_Renderer *renderer, Uint32 wait_stage_mask, Sint64 wait_semaphore, Sint64 signal_semaphore)
+{
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    if (!renderer->AddVulkanRenderSemaphores) {
+        return SDL_Unsupported();
+    }
+    return renderer->AddVulkanRenderSemaphores(renderer, wait_stage_mask, wait_semaphore, signal_semaphore);
 }
 
 static SDL_BlendMode SDL_GetShortBlendMode(SDL_BlendMode blendMode)
