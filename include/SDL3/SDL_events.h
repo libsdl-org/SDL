@@ -574,7 +574,7 @@ typedef struct SDL_PenTipEvent
     Uint32 type;        /**< ::SDL_EVENT_PEN_DOWN or ::SDL_EVENT_PEN_UP */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    Uint32 windowID;    /**< The window with pen focus, if any */
+    SDL_WindowID windowID;    /**< The window with pen focus, if any */
     SDL_PenID which;    /**< The pen instance id */
     Uint8 tip;          /**< ::SDL_PEN_TIP_INK when using a regular pen tip, or ::SDL_PEN_TIP_ERASER if the pen is being used as an eraser (e.g., flipped to use the eraser tip)  */
     Uint8 state;        /**< ::SDL_PRESSED on ::SDL_EVENT_PEN_DOWN and ::SDL_RELEASED on ::SDL_EVENT_PEN_UP */
@@ -594,7 +594,7 @@ typedef struct SDL_PenMotionEvent
     Uint32 type;        /**< ::SDL_EVENT_PEN_MOTION */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    Uint32 windowID;    /**< The window with pen focus, if any */
+    SDL_WindowID windowID;    /**< The window with pen focus, if any */
     SDL_PenID which;    /**< The pen instance id */
     Uint8 padding1;
     Uint8 padding2;
@@ -614,7 +614,7 @@ typedef struct SDL_PenButtonEvent
     Uint32 type;        /**< ::SDL_EVENT_PEN_BUTTON_DOWN or ::SDL_EVENT_PEN_BUTTON_UP */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    Uint32 windowID;    /**< The window with pen focus, if any */
+    SDL_WindowID windowID;    /**< The window with pen focus, if any */
     SDL_PenID which;    /**< The pen instance id */
     Uint8 button;       /**< The pen button index (1 represents the pen tip for compatibility with mouse events) */
     Uint8 state;        /**< ::SDL_PRESSED or ::SDL_RELEASED */
