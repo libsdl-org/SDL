@@ -1708,7 +1708,7 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
         appInfo.apiVersion = VK_API_VERSION_1_0;
         instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         instanceCreateInfo.pApplicationInfo = &appInfo;
-        char const *const *instanceExtensions = SDL_Vulkan_GetInstanceExtensions((int *)&instanceCreateInfo.enabledExtensionCount);
+        char const *const *instanceExtensions = SDL_Vulkan_GetInstanceExtensions(&instanceCreateInfo.enabledExtensionCount);
 
         const char **instanceExtensionsCopy = SDL_calloc(instanceCreateInfo.enabledExtensionCount + 2, sizeof(const char *));
         for (uint32_t i = 0; i < instanceCreateInfo.enabledExtensionCount; i++) {

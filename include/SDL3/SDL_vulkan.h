@@ -149,15 +149,14 @@ extern DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  *
  * You should not free the returned array; it is owned by SDL.
  *
- * \param count A pointer to an int that will be filled with the number of
- *              extensions returned.
+ * \param count a pointer filled in with the number of extensions returned.
  * \returns An array of extension name strings on success, NULL on error.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_Vulkan_CreateSurface
  */
-extern DECLSPEC char const* const* SDLCALL SDL_Vulkan_GetInstanceExtensions(int *count);
+extern DECLSPEC char const* const* SDLCALL SDL_Vulkan_GetInstanceExtensions(Uint32 *count);
 
 /**
  * Create a Vulkan rendering surface for a window.

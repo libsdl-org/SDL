@@ -5217,9 +5217,9 @@ void SDL_Vulkan_UnloadLibrary(void)
     }
 }
 
-char const* const* SDL_Vulkan_GetInstanceExtensions(int *count)
+char const* const* SDL_Vulkan_GetInstanceExtensions(Uint32 *count)
 {
-    return _this->Vulkan_GetInstanceExtensions(_this, (Uint32 *)count);
+    return _this->Vulkan_GetInstanceExtensions(_this, count);
 }
 
 SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window,
