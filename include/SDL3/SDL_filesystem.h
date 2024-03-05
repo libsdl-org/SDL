@@ -351,10 +351,10 @@ extern DECLSPEC void SDLCALL SDL_DestroyFilesystem(SDL_FSops *fs);
 /* some helper functions ... */
 
 /* converts an SDL file timestamp into a win32 FILETIME (100-nanosecond intervals since January 1, 1601). Fills in the two 32-bit values of the win32 struct. */
-extern DECLSPEC void SDLCALL SDL_FileTimeToWindows(Uint64 ftime, Uint32 *low, Uint32 *high);
+extern DECLSPEC void SDLCALL SDL_FileTimeToWindows(Sint64 ftime, Uint32 *low, Uint32 *high);
 
 /* converts an SDL file timestamp into a Unix time_t (seconds since the Unix epoch). */
-extern DECLSPEC Uint64 SDLCALL SDL_FileTimeToUnix(Uint64 ftime);
+extern DECLSPEC Sint64 SDLCALL SDL_FileTimeToUnix(Sint64 ftime);
 
 
 /* Ends C function definitions when using C++ */
