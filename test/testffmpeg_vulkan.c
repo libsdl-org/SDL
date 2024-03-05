@@ -841,7 +841,7 @@ int BeginVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_R
 
     VkResult result = context->vkQueueSubmit(context->graphicsQueue, 1, &submitInfo, 0);
     if (result != VK_SUCCESS) {
-        /* Don't return an error here, we need to complete the frame operation */
+        // Don't return an error here, we need to complete the frame operation
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION , "vkQueueSubmit(): %s", getVulkanResultString(result));
     }
 
@@ -856,7 +856,7 @@ int FinishVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_
     AVVulkanFramesContext *vk = (AVVulkanFramesContext *)(frames->hwctx);
     AVVkFrame *pVkFrame = (AVVkFrame *)frame->data[0];
 
-    /* Transition the frame back to ffmpeg */
+    // Transition the frame back to ffmpeg
     ++pVkFrame->sem_value[0];
 
     VkTimelineSemaphoreSubmitInfo timeline = { 0 };
@@ -876,7 +876,7 @@ int FinishVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_
 
     VkResult result = context->vkQueueSubmit(context->graphicsQueue, 1, &submitInfo, 0);
     if (result != VK_SUCCESS) {
-        /* Don't return an error here, we need to complete the frame operation */
+        // Don't return an error here, we need to complete the frame operation
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "vkQueueSubmit(): %s", getVulkanResultString(result));
     }
 
