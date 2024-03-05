@@ -229,7 +229,7 @@ static void createInstance(void)
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceCreateInfo.pApplicationInfo = &appInfo;
 
-    instanceCreateInfo.ppEnabledExtensionNames = SDL_Vulkan_GetInstanceExtensions(&instanceCreateInfo.enabledExtensionCount);
+    instanceCreateInfo.ppEnabledExtensionNames = SDL_Vulkan_GetInstanceExtensions((int *)&instanceCreateInfo.enabledExtensionCount);
     result = vkCreateInstance(&instanceCreateInfo, NULL, &vulkanContext->instance);
     if (result != VK_SUCCESS) {
         vulkanContext->instance = VK_NULL_HANDLE;

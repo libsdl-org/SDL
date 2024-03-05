@@ -313,7 +313,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
     /* Find the first format with or without an alpha channel */
     *format = info.texture_formats[0];
 
-    for (i = 0; i < (int)info.num_texture_formats; ++i) {
+    for (i = 0; i < info.num_texture_formats; ++i) {
         if (!SDL_ISPIXELFORMAT_FOURCC(info.texture_formats[i]) &&
             transparent == SDL_ISPIXELFORMAT_ALPHA(info.texture_formats[i])) {
             *format = info.texture_formats[i];
@@ -5217,9 +5217,9 @@ void SDL_Vulkan_UnloadLibrary(void)
     }
 }
 
-char const* const* SDL_Vulkan_GetInstanceExtensions(Uint32 *count)
+char const* const* SDL_Vulkan_GetInstanceExtensions(int *count)
 {
-    return _this->Vulkan_GetInstanceExtensions(_this, count);
+    return _this->Vulkan_GetInstanceExtensions(_this, (Uint32 *)count);
 }
 
 SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window,
