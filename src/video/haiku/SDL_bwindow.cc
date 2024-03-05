@@ -166,8 +166,9 @@ void HAIKU_SetWindowMinimumSize(SDL_VideoDevice *_this, SDL_Window * window) {
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window * window, SDL_bool grabbed) {
+int HAIKU_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window * window, SDL_bool grabbed) {
     /* TODO: Implement this! */
+    return SDL_Unsupported();
 }
 
 void HAIKU_DestroyWindow(SDL_VideoDevice *_this, SDL_Window * window) {

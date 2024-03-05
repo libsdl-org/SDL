@@ -2095,7 +2095,7 @@ void Wayland_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-void Wayland_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
+int Wayland_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *data = _this->driverdata;
 
@@ -2108,31 +2108,33 @@ void Wayland_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
      * lets you confine without a rect.
      */
     if (SDL_RectEmpty(&window->mouse_rect) && !(window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
-        Wayland_input_unconfine_pointer(data->input, window);
+        return Wayland_input_unconfine_pointer(data->input, window);
     } else {
-        Wayland_input_confine_pointer(data->input, window);
+        return Wayland_input_confine_pointer(data->input, window);
     }
 }
 
-void Wayland_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
+int Wayland_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
 {
     SDL_VideoData *data = _this->driverdata;
 
     if (grabbed) {
-        Wayland_input_confine_pointer(data->input, window);
+        return Wayland_input_confine_pointer(data->input, window);
     } else if (SDL_RectEmpty(&window->mouse_rect)) {
-        Wayland_input_unconfine_pointer(data->input, window);
+        return Wayland_input_unconfine_pointer(data->input, window);
     }
+
+    return 0;
 }
 
-void Wayland_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
+int Wayland_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
 {
     SDL_VideoData *data = _this->driverdata;
 
     if (grabbed) {
-        Wayland_input_grab_keyboard(window, data->input);
+        return Wayland_input_grab_keyboard(window, data->input);
     } else {
-        Wayland_input_ungrab_keyboard(window);
+        return Wayland_input_ungrab_keyboard(window);
     }
 }
 

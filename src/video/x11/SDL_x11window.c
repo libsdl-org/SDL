@@ -1705,13 +1705,13 @@ void *X11_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t
     return ret_icc_profile_data;
 }
 
-void X11_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
+int X11_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
 {
     SDL_WindowData *data = window->driverdata;
     Display *display;
 
     if (!data) {
-        return;
+        return SDL_SetError("Invalid window data");
     }
     data->mouse_grabbed = SDL_FALSE;
 
@@ -1722,7 +1722,7 @@ void X11_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool
            so when we get a MapNotify later, we'll try to update the grab as
            appropriate. */
         if (window->flags & SDL_WINDOW_HIDDEN) {
-            return;
+            return 0;
         }
 
         /* Try to grab the mouse */
@@ -1743,7 +1743,6 @@ void X11_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool
             }
 
             if (result != GrabSuccess) {
-                SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "The X server refused to let us grab the mouse. You might experience input bugs.");
                 data->videodata->broken_pointer_grab = SDL_TRUE; /* don't try again. */
             }
         }
@@ -1758,15 +1757,21 @@ void X11_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool
         X11_Xinput2UngrabTouch(_this, window);
     }
     X11_XSync(display, False);
+
+    if (!data->videodata->broken_pointer_grab) {
+        return 0;
+    } else {
+        return SDL_SetError("The X server refused to let us grab the mouse. You might experience input bugs.");
+    }
 }
 
-void X11_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
+int X11_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
 {
     SDL_WindowData *data = window->driverdata;
     Display *display;
 
     if (!data) {
-        return;
+        return SDL_SetError("Invalid window data");
     }
 
     display = data->videodata->display;
@@ -1776,7 +1781,7 @@ void X11_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_b
            so when we get a MapNotify later, we'll try to update the grab as
            appropriate. */
         if (window->flags & SDL_WINDOW_HIDDEN) {
-            return;
+            return 0;
         }
 
         X11_XGrabKeyboard(display, data->xwindow, True, GrabModeAsync,
@@ -1785,6 +1790,8 @@ void X11_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_b
         X11_XUngrabKeyboard(display, CurrentTime);
     }
     X11_XSync(display, False);
+
+    return 0;
 }
 
 void X11_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
