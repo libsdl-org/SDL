@@ -155,6 +155,8 @@ int main(int argc, char *argv[])
             case SDL_EVENT_JOYSTICK_BUTTON_UP:
                 SDL_Log("Button Release: %d\n", event.jbutton.button);
                 break;
+            default:
+                break;
             }
         }
     }
