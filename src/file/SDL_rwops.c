@@ -38,7 +38,6 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #endif
-
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
 #endif
@@ -525,16 +524,17 @@ static int SDLCALL mem_close(SDL_RWops *context)
 /* Functions to create SDL_RWops structures from various data sources */
 
 #if defined(HAVE_STDIO_H) && !(defined(__WIN32__) || defined(__GDK__))
-static SDL_bool SDL_IsRegularFile(FILE *f)
+static SDL_bool IsRegularFileOrPipe(FILE *f)
 {
     #ifdef __WINRT__
     struct __stat64 st;
-    if (_fstat64(_fileno(f), &st) < 0 || (st.st_mode & _S_IFMT) != _S_IFREG) {
+    if (_fstat64(_fileno(f), &st) < 0 ||
+        !((st.st_mode & _S_IFMT) == _S_IFREG || (st.st_mode & _S_IFMT) == _S_IFIFO)) {
         return SDL_FALSE;
     }
     #else
     struct stat st;
-    if (fstat(fileno(f), &st) < 0 || !S_ISREG(st.st_mode)) {
+    if (fstat(fileno(f), &st) < 0 || !(S_ISREG(st.st_mode) || S_ISFIFO(st.st_mode))) {
         return SDL_FALSE;
     }
     #endif
@@ -555,9 +555,9 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
     if (*file == '/') {
         FILE *fp = fopen(file, mode);
         if (fp) {
-            if (!SDL_IsRegularFile(fp)) {
+            if (!IsRegularFileOrPipe(fp)) {
                 fclose(fp);
-                SDL_SetError("%s is not a regular file", file);
+                SDL_SetError("%s is not a regular file or pipe", file);
                 return NULL;
             }
             return SDL_RWFromFP(fp, 1);
@@ -575,9 +575,9 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
             fp = fopen(path, mode);
             SDL_stack_free(path);
             if (fp) {
-                if (!SDL_IsRegularFile(fp)) {
+                if (!IsRegularFileOrPipe(fp)) {
                     fclose(fp);
-                    SDL_SetError("%s is not a regular file", path);
+                    SDL_SetError("%s is not a regular file or pipe", path);
                     return NULL;
                 }
                 return SDL_RWFromFP(fp, 1);
@@ -633,10 +633,10 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
 #endif
         if (!fp) {
             SDL_SetError("Couldn't open %s", file);
-        } else if (!SDL_IsRegularFile(fp)) {
+        } else if (!IsRegularFileOrPipe(fp)) {
             fclose(fp);
             fp = NULL;
-            SDL_SetError("%s is not a regular file", file);
+            SDL_SetError("%s is not a regular file or pipe", file);
         } else {
             rwops = SDL_RWFromFP(fp, SDL_TRUE);
         }
