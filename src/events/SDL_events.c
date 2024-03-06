@@ -883,30 +883,30 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_eventact
     return used;
 }
 int SDL_PeepEvents(SDL_Event *events, int numevents, SDL_eventaction action,
-                   Uint32 minType, Uint32 maxType)
+                   SDL_EventType minType, SDL_EventType maxType)
 {
     return SDL_PeepEventsInternal(events, numevents, action, minType, maxType, SDL_FALSE);
 }
 
-SDL_bool SDL_HasEvent(Uint32 type)
+SDL_bool SDL_HasEvent(SDL_EventType type)
 {
     return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, type, type) > 0;
 }
 
-SDL_bool SDL_HasEvents(Uint32 minType, Uint32 maxType)
+SDL_bool SDL_HasEvents(SDL_EventType minType, SDL_EventType maxType)
 {
     return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, minType, maxType) > 0;
 }
 
-void SDL_FlushEvent(Uint32 type)
+void SDL_FlushEvent(SDL_EventType type)
 {
     SDL_FlushEvents(type, type);
 }
 
-void SDL_FlushEvents(Uint32 minType, Uint32 maxType)
+void SDL_FlushEvents(SDL_EventType minType, SDL_EventType maxType)
 {
     SDL_EventEntry *entry, *next;
-    Uint32 type;
+    SDL_EventType type;
 
     /* Make sure the events are current */
 #if 0
@@ -1366,7 +1366,7 @@ void SDL_FilterEvents(SDL_EventFilter filter, void *userdata)
     SDL_UnlockMutex(SDL_EventQ.lock);
 }
 
-void SDL_SetEventEnabled(Uint32 type, SDL_bool enabled)
+void SDL_SetEventEnabled(SDL_EventType type, SDL_bool enabled)
 {
     SDL_bool current_state;
     Uint8 hi = ((type >> 8) & 0xff);
@@ -1432,7 +1432,7 @@ void SDL_SetEventEnabled(Uint32 type, SDL_bool enabled)
     }
 }
 
-SDL_bool SDL_EventEnabled(Uint32 type)
+SDL_bool SDL_EventEnabled(SDL_EventType type)
 {
     Uint8 hi = ((type >> 8) & 0xff);
     Uint8 lo = (type & 0xff);

@@ -113,7 +113,7 @@ int SDL_CalculateSize(Uint32 format, int width, int height, size_t *size, size_t
  * Create an empty RGB surface of the appropriate depth using the given
  * enum SDL_PIXELFORMAT_* format
  */
-SDL_Surface *SDL_CreateSurface(int width, int height, Uint32 format)
+SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormatEnum format)
 {
     size_t pitch, size;
     SDL_Surface *surface;
@@ -202,7 +202,7 @@ SDL_Surface *SDL_CreateSurface(int width, int height, Uint32 format)
  * Create an RGB surface from an existing memory buffer using the given
  * enum SDL_PIXELFORMAT_* format
  */
-SDL_Surface *SDL_CreateSurfaceFrom(void *pixels, int width, int height, int pitch, Uint32 format)
+SDL_Surface *SDL_CreateSurfaceFrom(void *pixels, int width, int height, int pitch, SDL_PixelFormatEnum format)
 {
     SDL_Surface *surface;
 
