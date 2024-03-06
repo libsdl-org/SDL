@@ -251,6 +251,8 @@ static void loop(void *arg)
                         (float)(rand() % 480));
                 }
                 break;
+            default:
+                break;
             }
             break;
         default:

@@ -1671,7 +1671,7 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
             SDL_strlcpy(modstr, "NONE", sizeof (modstr));
         }
 
-        SDL_Log("SDL EVENT: Keyboard: key %s in window %" SDL_PRIu32 ": scancode 0x%08X = %s, keycode 0x%08" SDL_PRIX32 " = %s, mods = %s",
+        SDL_Log("SDL EVENT: Keyboard: key %s in window %" SDL_PRIu32 ": scancode 0x%08X = %s, keycode 0x%08X = %s, mods = %s",
                 (event->type == SDL_EVENT_KEY_DOWN) ? "pressed" : "released",
                 event->key.windowID,
                 event->key.keysym.scancode,

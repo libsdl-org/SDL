@@ -742,6 +742,8 @@ int main(int argc, char *argv[])
                         Redraw();
                     }
                     break;
+                default:
+                    break;
                 }
 
                 if (done) {
