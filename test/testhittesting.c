@@ -153,6 +153,8 @@ int main(int argc, char **argv)
             case SDL_EVENT_QUIT:
                 done = 1;
                 break;
+            default:
+                break;
             }
         }
 

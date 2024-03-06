@@ -282,6 +282,8 @@ static void loop(void)
             if (event.key.keysym.sym != SDLK_ESCAPE) {
                 break;
             }
+        default:
+            break;
         }
     }
 
