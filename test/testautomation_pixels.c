@@ -139,7 +139,7 @@ static int pixels_allocFreeFormat(void *arg)
     SDLTest_AssertPass("Call to SDL_CreatePixelFormat()");
     SDLTest_AssertCheck(result != NULL, "Verify result is not NULL");
     if (result != NULL) {
-        SDLTest_AssertCheck(result->format == format, "Verify value of result.format; expected: %" SDL_PRIu32 ", got %" SDL_PRIu32, format, result->format);
+        SDLTest_AssertCheck(result->format == format, "Verify value of result.format; expected: %" SDL_PRIu32 ", got %d", format, result->format);
         SDLTest_AssertCheck(result->bits_per_pixel == 0,
                             "Verify value of result.bits_per_pixel; expected: 0, got %u",
                             result->bits_per_pixel);
@@ -164,7 +164,7 @@ static int pixels_allocFreeFormat(void *arg)
         SDLTest_AssertPass("Call to SDL_CreatePixelFormat()");
         SDLTest_AssertCheck(result != NULL, "Verify result is not NULL");
         if (result != NULL) {
-            SDLTest_AssertCheck(result->format == format, "Verify value of result.format; expected: %" SDL_PRIu32 ", got %" SDL_PRIu32, format, result->format);
+            SDLTest_AssertCheck(result->format == format, "Verify value of result.format; expected: %" SDL_PRIu32 ", got %d", format, result->format);
             if (!SDL_ISPIXELFORMAT_FOURCC(format)) {
                 SDLTest_AssertCheck(result->bits_per_pixel > 0,
                                     "Verify value of result.bits_per_pixel; expected: >0, got %u",

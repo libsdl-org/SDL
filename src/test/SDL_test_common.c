@@ -1671,7 +1671,7 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
             SDL_strlcpy(modstr, "NONE", sizeof (modstr));
         }
 
-        SDL_Log("SDL EVENT: Keyboard: key %s in window %" SDL_PRIu32 ": scancode 0x%08X = %s, keycode 0x%08" SDL_PRIX32 " = %s, mods = %s",
+        SDL_Log("SDL EVENT: Keyboard: key %s in window %" SDL_PRIu32 ": scancode 0x%08X = %s, keycode 0x%08X = %s, mods = %s",
                 (event->type == SDL_EVENT_KEY_DOWN) ? "pressed" : "released",
                 event->key.windowID,
                 event->key.keysym.scancode,
@@ -1708,7 +1708,7 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
                 event->button.windowID);
         break;
     case SDL_EVENT_MOUSE_WHEEL:
-        SDL_Log("SDL EVENT: Mouse: wheel scrolled %g in x and %g in y (reversed: %" SDL_PRIu32 ") in window %" SDL_PRIu32,
+        SDL_Log("SDL EVENT: Mouse: wheel scrolled %g in x and %g in y (reversed: %d) in window %" SDL_PRIu32,
                 event->wheel.x, event->wheel.y, event->wheel.direction, event->wheel.windowID);
         break;
     case SDL_EVENT_JOYSTICK_ADDED:
@@ -1855,7 +1855,7 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
         SDL_Log("SDL EVENT: User event %" SDL_PRIs32, event->user.code);
         break;
     default:
-        SDL_Log("Unknown event 0x%4.4" SDL_PRIu32, event->type);
+        SDL_Log("Unknown event 0x%4.4X", event->type);
         break;
     }
 }

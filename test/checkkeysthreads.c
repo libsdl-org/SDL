@@ -175,7 +175,7 @@ static void loop(void)
     (void)fprintf(stderr, "starting loop\n");
     (void)fflush(stderr);
     while (!done && SDL_WaitEvent(&event)) {
-        SDL_Log("Got event type: %" SDL_PRIu32 "\n", event.type);
+        SDL_Log("Got event type: %d\n", event.type);
         switch (event.type) {
         case SDL_EVENT_KEY_DOWN:
         case SDL_EVENT_KEY_UP:
