@@ -213,6 +213,8 @@ static void loop(void *arg)
                     active->isRect = isRect;
                 }
                 break;
+            default:
+                break;
             }
             break;
 

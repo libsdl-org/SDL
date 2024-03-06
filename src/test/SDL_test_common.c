@@ -2422,6 +2422,8 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
     }
     case SDL_EVENT_QUIT:
         return 1;
+    default:
+        break;
     }
 
     return 0;  /* keep going */

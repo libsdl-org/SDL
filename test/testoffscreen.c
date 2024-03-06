@@ -74,6 +74,8 @@ static void loop(void)
         case SDL_EVENT_QUIT:
             done = SDL_TRUE;
             break;
+        default:
+            break;
         }
     }
 

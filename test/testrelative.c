@@ -47,6 +47,8 @@ static void loop(void)
             mouseX += event.motion.xrel;
             mouseY += event.motion.yrel;
         } break;
+        default:
+            break;
         }
     }
     for (i = 0; i < state->num_windows; ++i) {

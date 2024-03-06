@@ -202,6 +202,8 @@ int SDL_AppEvent(const SDL_Event *event)
             SDL_Log("Camera denied!");
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Camera permission denied!", "User denied access to the camera!", window);
             return -1;
+        default:
+            break;
     }
 
     return SDLTest_CommonEventMainCallbacks(state, event);

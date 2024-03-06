@@ -742,6 +742,8 @@ int main(int argc, char *argv[])
                         Redraw();
                     }
                     break;
+                default:
+                    break;
                 }
 
                 if (done) {
@@ -781,6 +783,8 @@ int main(int argc, char *argv[])
                 SDL_strlcpy(markedText, event.edit.text, SDL_TEXTEDITINGEVENT_TEXT_SIZE);
                 cursor = event.edit.start;
                 Redraw();
+                break;
+            default:
                 break;
             }
         }

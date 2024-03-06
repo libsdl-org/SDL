@@ -516,6 +516,8 @@ static SDL_Keycode Emscripten_MapKeyCode(const EmscriptenKeyboardEvent *keyEvent
                 case SDLK_LGUI:
                     keycode = SDLK_RGUI;
                     break;
+                default:
+                    break;
                 }
             } else if (keyEvent->location == DOM_KEY_LOCATION_NUMPAD) {
                 switch (keycode) {
@@ -563,6 +565,8 @@ static SDL_Keycode Emscripten_MapKeyCode(const EmscriptenKeyboardEvent *keyEvent
                     break;
                 case SDLK_DELETE:
                     keycode = SDLK_KP_PERIOD;
+                    break;
+                default:
                     break;
                 }
             }
