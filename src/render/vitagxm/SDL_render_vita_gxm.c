@@ -340,13 +340,13 @@ static void VITA_GXM_SetYUVProfile(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
     int ret = 0;
-    if (SDL_ISCOLORSPACE_YUV_BT601(texture->colorspace)) {
+    if (SDL_ISCOLORSPACE_MATRIX_BT601(texture->colorspace)) {
         if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
             ret = sceGxmSetYuvProfile(data->gxm_context, 0, SCE_GXM_YUV_PROFILE_BT601_STANDARD);
         } else {
             ret = sceGxmSetYuvProfile(data->gxm_context, 0, SCE_GXM_YUV_PROFILE_BT601_FULL_RANGE);
         }
-    } else if (SDL_ISCOLORSPACE_YUV_BT709(texture->colorspace)) {
+    } else if (SDL_ISCOLORSPACE_MATRIX_BT709(texture->colorspace)) {
         if (SDL_ISCOLORSPACE_LIMITED_RANGE(texture->colorspace)) {
             ret = sceGxmSetYuvProfile(data->gxm_context, 0, SCE_GXM_YUV_PROFILE_BT709_STANDARD);
         } else {
