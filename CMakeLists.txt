@@ -589,7 +589,6 @@ if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
   cmake_pop_check_state()
 
   if(APPLE)
-    # FIXME: don't use deprecated declarations
     check_c_compiler_flag(-Wno-error=deprecated-declarations COMPILER_SUPPORTS_WNO_ERROR_DEPRECATED_DECLARATIONS)
     if(COMPILER_SUPPORTS_WNO_ERROR_DEPRECATED_DECLARATIONS)
       sdl_compile_options(PRIVATE "-Wno-error=deprecated-declarations")
