@@ -31,6 +31,9 @@
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_scancode.h>
 
+#define SDLK_SCANCODE_MASK (1<<30)
+#define SDL_SCANCODE_TO_KEYCODE(X)  (X | SDLK_SCANCODE_MASK)
+
 /**
  *  The SDL virtual key representation.
  *
@@ -42,10 +45,6 @@
  *  A special exception is the number keys at the top of the keyboard which
  *  map to SDLK_0...SDLK_9 on AZERTY layouts.
  */
-typedef Sint32 SDL_Keycode;
-
-#define SDLK_SCANCODE_MASK (1<<30)
-#define SDL_SCANCODE_TO_KEYCODE(X)  (X | SDLK_SCANCODE_MASK)
 
 typedef enum
 {
@@ -324,7 +323,7 @@ typedef enum
     SDLK_SOFTRIGHT = SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_SOFTRIGHT),
     SDLK_CALL = SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_CALL),
     SDLK_ENDCALL = SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_ENDCALL)
-} SDL_KeyCode;
+} SDL_Keycode;
 
 /**
  * Enumeration of valid key mods (possibly OR'd together).
