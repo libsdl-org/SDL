@@ -578,9 +578,7 @@ typedef struct SDL_PenTipEvent
     SDL_PenID which;        /**< The pen instance id */
     Uint8 tip;              /**< ::SDL_PEN_TIP_INK when using a regular pen tip, or ::SDL_PEN_TIP_ERASER if the pen is being used as an eraser (e.g., flipped to use the eraser tip)  */
     Uint8 state;            /**< ::SDL_PRESSED on ::SDL_EVENT_PEN_DOWN and ::SDL_RELEASED on ::SDL_EVENT_PEN_UP */
-    Uint16 pen_state;       /**< Pen button masks (where SDL_BUTTON(1) is the first button, SDL_BUTTON(2) is the second button etc.),
-			       ::SDL_PEN_DOWN_MASK is set if the pen is touching the surface, and
-			       ::SDL_PEN_ERASER_MASK is set if the pen is (used as) an eraser. */
+    Uint16 pen_state;       /**< Pen button masks (where SDL_BUTTON(1) is the first button, SDL_BUTTON(2) is the second button etc.), ::SDL_PEN_DOWN_MASK is set if the pen is touching the surface, and ::SDL_PEN_ERASER_MASK is set if the pen is (used as) an eraser. */
     float x;                /**< X coordinate, relative to window */
     float y;                /**< Y coordinate, relative to window */
     float axes[SDL_PEN_NUM_AXES];   /**< Pen axes such as pressure and tilt (ordered as per ::SDL_PenAxis) */
@@ -598,9 +596,7 @@ typedef struct SDL_PenMotionEvent
     SDL_PenID which;        /**< The pen instance id */
     Uint8 padding1;
     Uint8 padding2;
-    Uint16 pen_state;       /**< Pen button masks (where SDL_BUTTON(1) is the first button, SDL_BUTTON(2) is the second button etc.),
-			       ::SDL_PEN_DOWN_MASK is set if the pen is touching the surface, and
-			       ::SDL_PEN_ERASER_MASK is set if the pen is (used as) an eraser. */
+    Uint16 pen_state;       /**< Pen button masks (where SDL_BUTTON(1) is the first button, SDL_BUTTON(2) is the second button etc.), ::SDL_PEN_DOWN_MASK is set if the pen is touching the surface, and ::SDL_PEN_ERASER_MASK is set if the pen is (used as) an eraser. */
     float x;                /**< X coordinate, relative to window */
     float y;                /**< Y coordinate, relative to window */
     float axes[SDL_PEN_NUM_AXES];   /**< Pen axes such as pressure and tilt (ordered as per ::SDL_PenAxis) */
@@ -618,9 +614,7 @@ typedef struct SDL_PenButtonEvent
     SDL_PenID which;        /**< The pen instance id */
     Uint8 button;           /**< The pen button index (1 represents the pen tip for compatibility with mouse events) */
     Uint8 state;            /**< ::SDL_PRESSED or ::SDL_RELEASED */
-    Uint16 pen_state;       /**< Pen button masks (where SDL_BUTTON(1) is the first button, SDL_BUTTON(2) is the second button etc.),
-			       ::SDL_PEN_DOWN_MASK is set if the pen is touching the surface, and
-			       ::SDL_PEN_ERASER_MASK is set if the pen is (used as) an eraser. */
+    Uint16 pen_state;       /**< Pen button masks (where SDL_BUTTON(1) is the first button, SDL_BUTTON(2) is the second button etc.), ::SDL_PEN_DOWN_MASK is set if the pen is touching the surface, and ::SDL_PEN_ERASER_MASK is set if the pen is (used as) an eraser. */
     float x;                /**< X coordinate, relative to window */
     float y;                /**< Y coordinate, relative to window */
     float axes[SDL_PEN_NUM_AXES]; /**< Pen axes such as pressure and tilt (ordered as per ::SDL_PenAxis) */
