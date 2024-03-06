@@ -590,6 +590,7 @@ size_t GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace, int w, int h, in
     const int YUV_SD_THRESHOLD = 576;
 
     switch (SDL_COLORSPACEMATRIX(colorspace)) {
+    case SDL_MATRIX_COEFFICIENTS_BT470BG:
     case SDL_MATRIX_COEFFICIENTS_BT601:
         return GetBT601ConversionMatrix(colorspace);
 

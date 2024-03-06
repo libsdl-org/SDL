@@ -2505,6 +2505,7 @@ static int VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         /* Create samplerYcbcrConversion which will be used on the VkImageView and VkSampler */
         samplerYcbcrConversionCreateInfo.format = textureFormat;
         switch (SDL_COLORSPACEMATRIX(texture->colorspace)) {
+        case SDL_MATRIX_COEFFICIENTS_BT470BG:
         case SDL_MATRIX_COEFFICIENTS_BT601:
             samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601_KHR;
             break;

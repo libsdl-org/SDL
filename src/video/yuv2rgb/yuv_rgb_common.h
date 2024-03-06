@@ -5,10 +5,10 @@
 
 typedef enum
 {
-    YCBCR_JPEG,
-    YCBCR_601,
-    YCBCR_709,
-    YCBCR_2020
+    YCBCR_601_FULL,
+    YCBCR_601_LIMITED,
+    YCBCR_709_LIMITED,
+    YCBCR_2020_NCL_FULL,
 } YCbCrType;
 
 #endif /* YUV_RGB_COMMON_H_ */

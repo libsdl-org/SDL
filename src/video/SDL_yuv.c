@@ -161,25 +161,25 @@ int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, size_t *pitc
 
 static int GetYUVConversionType(SDL_Colorspace colorspace, YCbCrType *yuv_type)
 {
-    if (SDL_ISCOLORSPACE_YUV_BT601(colorspace)) {
+    if (SDL_ISCOLORSPACE_MATRIX_BT601(colorspace)) {
         if (SDL_ISCOLORSPACE_LIMITED_RANGE(colorspace)) {
-            *yuv_type = YCBCR_601;
+            *yuv_type = YCBCR_601_LIMITED;
         } else {
-            *yuv_type = YCBCR_JPEG;
+            *yuv_type = YCBCR_601_FULL;
         }
         return 0;
     }
 
-    if (SDL_ISCOLORSPACE_YUV_BT709(colorspace)) {
+    if (SDL_ISCOLORSPACE_MATRIX_BT709(colorspace)) {
         if (SDL_ISCOLORSPACE_LIMITED_RANGE(colorspace)) {
-            *yuv_type = YCBCR_709;
+            *yuv_type = YCBCR_709_LIMITED;
             return 0;
         }
     }
 
-    if (SDL_ISCOLORSPACE_YUV_BT2020(colorspace)) {
+    if (SDL_ISCOLORSPACE_MATRIX_BT2020_NCL(colorspace)) {
         if (SDL_ISCOLORSPACE_FULL_RANGE(colorspace)) {
-            *yuv_type = YCBCR_2020;
+            *yuv_type = YCBCR_2020_NCL_FULL;
             return 0;
         }
     }
@@ -593,7 +593,7 @@ int SDL_ConvertPixels_YUV_to_RGB(int width, int height,
     const Uint8 *v = NULL;
     Uint32 y_stride = 0;
     Uint32 uv_stride = 0;
-    YCbCrType yuv_type = YCBCR_601;
+    YCbCrType yuv_type = YCBCR_601_LIMITED;
 
     if (GetYUVPlanes(width, height, src_format, src, src_pitch, &y, &u, &v, &y_stride, &uv_stride) < 0) {
         return -1;
@@ -1121,7 +1121,7 @@ int SDL_ConvertPixels_RGB_to_YUV(int width, int height,
                                  Uint32 src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch,
                                  Uint32 dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch)
 {
-    YCbCrType yuv_type = YCBCR_601;
+    YCbCrType yuv_type = YCBCR_601_LIMITED;
 
     if (GetYUVConversionType(dst_colorspace, &yuv_type) < 0) {
         return -1;
