@@ -58,10 +58,10 @@ typedef struct SDL_Finger
 } SDL_Finger;
 
 /* Used as the device ID for mouse events simulated with touch input */
-#define SDL_TOUCH_MOUSEID ((Uint32)-1)
+#define SDL_TOUCH_MOUSEID ((SDL_MouseID)-1)
 
 /* Used as the SDL_TouchID for touch events simulated with mouse input */
-#define SDL_MOUSE_TOUCHID ((Uint64)-1)
+#define SDL_MOUSE_TOUCHID ((SDL_TouchID)-1)
 
 
 /**
