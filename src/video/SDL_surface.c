@@ -113,7 +113,7 @@ int SDL_CalculateSize(Uint32 format, int width, int height, size_t *size, size_t
  * Create an empty RGB surface of the appropriate depth using the given
  * enum SDL_PIXELFORMAT_* format
  */
-SDL_Surface *SDL_CreateSurface(int width, int height, Uint32 format)
+SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormatEnum format)
 {
     size_t pitch, size;
     SDL_Surface *surface;
@@ -202,7 +202,7 @@ SDL_Surface *SDL_CreateSurface(int width, int height, Uint32 format)
  * Create an RGB surface from an existing memory buffer using the given
  * enum SDL_PIXELFORMAT_* format
  */
-SDL_Surface *SDL_CreateSurfaceFrom(void *pixels, int width, int height, int pitch, Uint32 format)
+SDL_Surface *SDL_CreateSurfaceFrom(void *pixels, int width, int height, int pitch, SDL_PixelFormatEnum format)
 {
     SDL_Surface *surface;
 
@@ -1546,7 +1546,7 @@ SDL_Surface *SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *for
     return SDL_ConvertSurfaceWithPixelFormatAndColorspace(surface, format, colorspace, 0);
 }
 
-SDL_Surface *SDL_ConvertSurfaceFormat(SDL_Surface *surface, Uint32 pixel_format)
+SDL_Surface *SDL_ConvertSurfaceFormat(SDL_Surface *surface, SDL_PixelFormatEnum pixel_format)
 {
     SDL_Colorspace colorspace;
     SDL_PropertiesID props;
@@ -1567,7 +1567,7 @@ SDL_Surface *SDL_ConvertSurfaceFormat(SDL_Surface *surface, Uint32 pixel_format)
     return SDL_ConvertSurfaceFormatAndColorspace(surface, pixel_format, colorspace, props);
 }
 
-SDL_Surface *SDL_ConvertSurfaceFormatAndColorspace(SDL_Surface *surface, Uint32 pixel_format, SDL_Colorspace colorspace, SDL_PropertiesID props)
+SDL_Surface *SDL_ConvertSurfaceFormatAndColorspace(SDL_Surface *surface, SDL_PixelFormatEnum pixel_format, SDL_Colorspace colorspace, SDL_PropertiesID props)
 {
     SDL_PixelFormat *format;
     SDL_Surface *convert = NULL;
@@ -1655,8 +1655,8 @@ SDL_Surface *SDL_DuplicatePixels(int width, int height, Uint32 format, SDL_Color
 }
 
 int SDL_ConvertPixelsAndColorspace(int width, int height,
-                      Uint32 src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch,
-                      Uint32 dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch)
+                      SDL_PixelFormatEnum src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch,
+                      SDL_PixelFormatEnum dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch)
 {
     SDL_Surface src_surface, dst_surface;
     SDL_PixelFormat src_fmt, dst_fmt;
@@ -1734,8 +1734,8 @@ int SDL_ConvertPixelsAndColorspace(int width, int height,
 }
 
 int SDL_ConvertPixels(int width, int height,
-                      Uint32 src_format, const void *src, int src_pitch,
-                      Uint32 dst_format, void *dst, int dst_pitch)
+                      SDL_PixelFormatEnum src_format, const void *src, int src_pitch,
+                      SDL_PixelFormatEnum dst_format, void *dst, int dst_pitch)
 {
     return SDL_ConvertPixelsAndColorspace(width, height,
                       src_format, SDL_COLORSPACE_UNKNOWN, 0, src, src_pitch,
@@ -1752,8 +1752,8 @@ int SDL_ConvertPixels(int width, int height,
  * https://developer.arm.com/documentation/101964/0201/Pre-multiplied-alpha-channel-data
  */
 int SDL_PremultiplyAlpha(int width, int height,
-                         Uint32 src_format, const void *src, int src_pitch,
-                         Uint32 dst_format, void *dst, int dst_pitch)
+                         SDL_PixelFormatEnum src_format, const void *src, int src_pitch,
+                         SDL_PixelFormatEnum dst_format, void *dst, int dst_pitch)
 {
     int c;
     Uint32 srcpixel;
