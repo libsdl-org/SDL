@@ -63,6 +63,8 @@ struct SDL_WindowData
     Uint64 last_focus_event_time;
     PendingFocusEnum pending_focus;
     Uint64 pending_focus_time;
+    SDL_bool pending_move;
+    SDL_Point pending_move_point;
     XConfigureEvent last_xconfigure;
     struct SDL_VideoData *videodata;
     unsigned long user_time;

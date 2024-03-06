@@ -506,7 +506,7 @@ static void X11_DispatchUnmapNotify(SDL_WindowData *data)
     SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
 }
 
-static void InitiateWindowMove(SDL_VideoDevice *_this, const SDL_WindowData *data, const SDL_Point *point)
+static void DispatchWindowMove(SDL_VideoDevice *_this, const SDL_WindowData *data, const SDL_Point *point)
 {
     SDL_VideoData *viddata = _this->driverdata;
     SDL_Window *window = data->window;
@@ -529,6 +529,12 @@ static void InitiateWindowMove(SDL_VideoDevice *_this, const SDL_WindowData *dat
     X11_XSendEvent(display, DefaultRootWindow(display), False, SubstructureRedirectMask | SubstructureNotifyMask, &evt);
 
     X11_XSync(display, 0);
+}
+
+static void ScheduleWindowMove(SDL_VideoDevice *_this, SDL_WindowData *data, const SDL_Point *point)
+{
+    data->pending_move = SDL_TRUE;
+    data->pending_move_point = *point;
 }
 
 static void InitiateWindowResize(SDL_VideoDevice *_this, const SDL_WindowData *data, const SDL_Point *point, int direction)
@@ -574,7 +580,7 @@ SDL_bool X11_ProcessHitTest(SDL_VideoDevice *_this, SDL_WindowData *data, const 
     return SDL_TRUE;
 }
 
-SDL_bool X11_TriggerHitTestAction(SDL_VideoDevice *_this, const SDL_WindowData *data, const float x, const float y)
+SDL_bool X11_TriggerHitTestAction(SDL_VideoDevice *_this, SDL_WindowData *data, const float x, const float y)
 {
     SDL_Window *window = data->window;
 
@@ -589,7 +595,14 @@ SDL_bool X11_TriggerHitTestAction(SDL_VideoDevice *_this, const SDL_WindowData *
 
         switch (data->hit_test_result) {
         case SDL_HITTEST_DRAGGABLE:
-            InitiateWindowMove(_this, data, &point);
+            /* Some window managers get in a bad state when a move event starts while input is transitioning
+               to the SDL window. This can happen when clicking on a drag region of an unfocused window
+               where the same mouse down event will trigger a drag event and a window activate. */
+            if (data->window->flags & SDL_WINDOW_INPUT_FOCUS) {
+                DispatchWindowMove(_this, data, &point);
+            } else {
+                ScheduleWindowMove(_this, data, &point);
+            }
             return SDL_TRUE;
 
         case SDL_HITTEST_RESIZE_TOPLEFT:
@@ -1717,6 +1730,12 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                         data->expected.h = data->window->floating.h;
                         X11_XMoveWindow(display, data->xwindow, data->window->floating.x - data->border_left, data->window->floating.y - data->border_top);
                         X11_XResizeWindow(display, data->xwindow, data->window->floating.w, data->window->floating.h);
+                    }
+                }
+                if ((flags & SDL_WINDOW_INPUT_FOCUS)) {
+                    if (data->pending_move) {
+                        DispatchWindowMove(_this, data, &data->pending_move_point);
+                        data->pending_move = SDL_FALSE;
                     }
                 }
             }
