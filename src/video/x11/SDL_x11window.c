@@ -41,6 +41,22 @@
 #define _NET_WM_STATE_REMOVE 0l
 #define _NET_WM_STATE_ADD    1l
 
+#define CHECK_WINDOW_DATA(window)                                       \
+    if (!window) {                                                      \
+        return SDL_SetError("Invalid window");                          \
+    }                                                                   \
+    if (!window->driverdata) {                                          \
+        return SDL_SetError("Invalid window driver data");              \
+    }
+
+#define CHECK_DISPLAY_DATA(display)                                     \
+    if (!_display) {                                                    \
+        return SDL_SetError("Invalid display");                         \
+    }                                                                   \
+    if (!_display->driverdata) {                                        \
+        return SDL_SetError("Invalid display driver data");             \
+    }
+
 static Bool isMapNotify(Display *dpy, XEvent *ev, XPointer win) /* NOLINT(readability-non-const-parameter): cannot make XPointer a const pointer due to typedef */
 {
     return ev->type == MapNotify && ev->xmap.window == *((Window *)win);
@@ -1516,6 +1532,9 @@ void X11_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 /* This asks the Window Manager to handle fullscreen for us. This is the modern way. */
 static int X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *_display, SDL_bool fullscreen)
 {
+    CHECK_WINDOW_DATA(window);
+    CHECK_DISPLAY_DATA(_display);
+
     SDL_WindowData *data = window->driverdata;
     SDL_DisplayData *displaydata = _display->driverdata;
     Display *display = data->videodata->display;
