@@ -551,6 +551,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemo
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4028) /* formal parameter 3 different from declaration, when using older buggy WGI headers */
+#pragma warning(disable : 4113) /* formal parameter 3 different from declaration (a more specific warning added in VS 2022), when using older buggy WGI headers */
 #endif
 
 static __FIEventHandler_1_Windows__CGaming__CInput__CRawGameControllerVtbl controller_added_vtbl = {
