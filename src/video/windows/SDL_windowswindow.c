@@ -1376,23 +1376,27 @@ void WIN_UngrabKeyboard(SDL_Window *window)
     }
 }
 
-void WIN_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
+int WIN_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
 {
     WIN_UpdateClipCursor(window);
+    return 0;
 }
 
-void WIN_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
+int WIN_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
 {
     WIN_UpdateClipCursor(window);
+    return 0;
 }
 
-void WIN_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
+int WIN_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
 {
     if (grabbed) {
         WIN_GrabKeyboard(window);
     } else {
         WIN_UngrabKeyboard(window);
     }
+
+    return 0;
 }
 #endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 

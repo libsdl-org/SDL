@@ -84,7 +84,7 @@ int X11_GetXFixesSelectionNotifyEvent()
     return xfixes_selection_notify_event;
 }
 
-void X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
+int X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
 {
     if (SDL_RectEmpty(&window->mouse_rect)) {
         X11_ConfineCursorWithFlags(_this, window, NULL, 0);
@@ -100,6 +100,8 @@ void X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
             wdata->pointer_barrier_active = SDL_TRUE;
         }
     }
+
+    return 0;
 }
 
 int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rect, int flags)

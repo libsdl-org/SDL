@@ -319,8 +319,9 @@ void VITA_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
 void VITA_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
-void VITA_SetWindowGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
+int VITA_SetWindowGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
 {
+    return 0;
 }
 
 void VITA_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
