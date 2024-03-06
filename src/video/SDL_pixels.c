@@ -83,7 +83,7 @@ Uint8 *SDL_expand_byte[9] = {
 #define CASE(X) \
     case X:     \
         return #X;
-const char *SDL_GetPixelFormatName(Uint32 format)
+const char *SDL_GetPixelFormatName(SDL_PixelFormatEnum format)
 {
     switch (format) {
 
@@ -157,7 +157,7 @@ const char *SDL_GetPixelFormatName(Uint32 format)
 }
 #undef CASE
 
-SDL_bool SDL_GetMasksForPixelFormatEnum(Uint32 format, int *bpp, Uint32 *Rmask,
+SDL_bool SDL_GetMasksForPixelFormatEnum(SDL_PixelFormatEnum format, int *bpp, Uint32 *Rmask,
                                         Uint32 *Gmask, Uint32 *Bmask, Uint32 *Amask)
 {
     Uint32 masks[4];
@@ -574,7 +574,7 @@ Uint32 SDL_GetPixelFormatEnumForMasks(int bpp, Uint32 Rmask, Uint32 Gmask, Uint3
 static SDL_PixelFormat *formats;
 static SDL_SpinLock formats_lock = 0;
 
-SDL_PixelFormat *SDL_CreatePixelFormat(Uint32 pixel_format)
+SDL_PixelFormat *SDL_CreatePixelFormat(SDL_PixelFormatEnum pixel_format)
 {
     SDL_PixelFormat *format;
 
@@ -612,7 +612,7 @@ SDL_PixelFormat *SDL_CreatePixelFormat(Uint32 pixel_format)
     return format;
 }
 
-int SDL_InitFormat(SDL_PixelFormat *format, Uint32 pixel_format)
+int SDL_InitFormat(SDL_PixelFormat *format, SDL_PixelFormatEnum pixel_format)
 {
     int bpp;
     Uint32 Rmask, Gmask, Bmask, Amask;

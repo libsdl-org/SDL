@@ -699,7 +699,7 @@ typedef struct SDL_Palette
  */
 typedef struct SDL_PixelFormat
 {
-    Uint32 format;
+    SDL_PixelFormatEnum format;
     SDL_Palette *palette;
     Uint8 bits_per_pixel;
     Uint8 bytes_per_pixel;
@@ -729,7 +729,7 @@ typedef struct SDL_PixelFormat
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC const char* SDLCALL SDL_GetPixelFormatName(Uint32 format);
+extern DECLSPEC const char* SDLCALL SDL_GetPixelFormatName(SDL_PixelFormatEnum format);
 
 /**
  * Convert one of the enumerated pixel formats to a bpp value and RGBA masks.
@@ -747,7 +747,7 @@ extern DECLSPEC const char* SDLCALL SDL_GetPixelFormatName(Uint32 format);
  *
  * \sa SDL_GetPixelFormatEnumForMasks
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GetMasksForPixelFormatEnum(Uint32 format,
+extern DECLSPEC SDL_bool SDLCALL SDL_GetMasksForPixelFormatEnum(SDL_PixelFormatEnum format,
                                                             int *bpp,
                                                             Uint32 * Rmask,
                                                             Uint32 * Gmask,
@@ -792,7 +792,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetPixelFormatEnumForMasks(int bpp,
  *
  * \sa SDL_DestroyPixelFormat
  */
-extern DECLSPEC SDL_PixelFormat * SDLCALL SDL_CreatePixelFormat(Uint32 pixel_format);
+extern DECLSPEC SDL_PixelFormat * SDLCALL SDL_CreatePixelFormat(SDL_PixelFormatEnum pixel_format);
 
 /**
  * Free an SDL_PixelFormat structure allocated by SDL_CreatePixelFormat().
