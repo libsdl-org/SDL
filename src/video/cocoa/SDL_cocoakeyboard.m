@@ -467,11 +467,12 @@ typedef enum
 extern CGSConnection _CGSDefaultConnection(void);
 extern CGError CGSSetGlobalHotKeyOperatingMode(CGSConnection connection, CGSGlobalHotKeyOperatingMode mode);
 
-void Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
+int Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
 {
 #ifdef SDL_MAC_NO_SANDBOX
     CGSSetGlobalHotKeyOperatingMode(_CGSDefaultConnection(), grabbed ? CGSGlobalHotKeyDisable : CGSGlobalHotKeyEnable);
 #endif
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */
