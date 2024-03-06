@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
     {
         int status = 0;
         SDL_Event event;
-        intptr_t eventNumber = SDL_RegisterEvents(1);
+        Uint32 eventNumber = SDL_RegisterEvents(1);
         SDL_Thread *thread = SDL_CreateThread(&button_messagebox, "MessageBox", (void *)eventNumber);
 
         while (SDL_WaitEvent(&event)) {

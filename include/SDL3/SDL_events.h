@@ -1199,15 +1199,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_EventEnabled(Uint32 type);
  * Allocate a set of user-defined events, and return the beginning event
  * number for that set of events.
  *
- * Calling this function with `numevents` <= 0 is an error and will return
- * (Uint32)-1.
- *
- * Note, (Uint32)-1 means the maximum unsigned 32-bit integer value (or
- * 0xFFFFFFFF), but is clearer to write.
- *
  * \param numevents the number of events to be allocated
- * \returns the beginning event number, or (Uint32)-1 if there are not enough
- *          user-defined events left.
+ * \returns the beginning event number, or 0 if numevents is invalid or if there are not enough user-defined events left.
  *
  * \since This function is available since SDL 3.0.0.
  *

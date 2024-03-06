@@ -1447,13 +1447,11 @@ SDL_bool SDL_EventEnabled(Uint32 type)
 
 Uint32 SDL_RegisterEvents(int numevents)
 {
-    Uint32 event_base;
+    Uint32 event_base = 0;
 
     if ((numevents > 0) && (SDL_userevents + numevents <= SDL_EVENT_LAST)) {
         event_base = SDL_userevents;
         SDL_userevents += numevents;
-    } else {
-        event_base = (Uint32)-1;
     }
     return event_base;
 }

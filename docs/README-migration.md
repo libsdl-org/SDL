@@ -338,6 +338,8 @@ SDL_QUERY, SDL_IGNORE, SDL_ENABLE, and SDL_DISABLE have been removed. You can us
 
 SDL_AddEventWatch() now returns -1 if it fails because it ran out of memory and couldn't add the event watch callback.
 
+SDL_RegisterEvents() now returns 0 if it couldn't allocate any user events.
+
 The following symbols have been renamed:
 * SDL_APP_DIDENTERBACKGROUND => SDL_EVENT_DID_ENTER_BACKGROUND
 * SDL_APP_DIDENTERFOREGROUND => SDL_EVENT_DID_ENTER_FOREGROUND
