@@ -543,7 +543,7 @@ static SDL_bool METAL_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode bl
     return SDL_TRUE;
 }
 
-size_t GetBT601ConversionMatrix( SDL_Colorspace colorspace )
+size_t GetBT601ConversionMatrix(SDL_Colorspace colorspace)
 {
     switch (SDL_COLORSPACERANGE(colorspace)) {
     case SDL_COLOR_RANGE_LIMITED:
