@@ -1200,7 +1200,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_EventEnabled(Uint32 type);
  * number for that set of events.
  *
  * \param numevents the number of events to be allocated
- * \returns the beginning event number, or 0 if numevents is invalid or if there are not enough user-defined events left.
+ * \returns the beginning event number, or 0 if numevents is invalid or if
+ *          there are not enough user-defined events left.
  *
  * \since This function is available since SDL 3.0.0.
  *
