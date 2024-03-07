@@ -227,7 +227,11 @@ typedef enum
     /**
      *  This last event is only for bounding internal arrays
      */
-    SDL_EVENT_LAST    = 0xFFFF
+    SDL_EVENT_LAST    = 0xFFFF,
+
+    /* This just makes sure the enum is the size of Uint32 */
+    SDL_EVENT_ENUM_PADDING = 0x7FFFFFFF
+
 } SDL_EventType;
 
 /**

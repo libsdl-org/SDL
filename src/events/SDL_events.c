@@ -48,6 +48,9 @@
 /* Determines how often we wake to call SDL_PumpEvents() in SDL_WaitEventTimeout_Device() */
 #define PERIODIC_POLL_INTERVAL_NS (3 * SDL_NS_PER_SECOND)
 
+/* Make sure the type in the SDL_Event aligns properly across the union */
+SDL_COMPILE_TIME_ASSERT(SDL_Event_type, sizeof(Uint32) == sizeof(SDL_EventType));
+
 typedef struct SDL_EventWatcher
 {
     SDL_EventFilter callback;
