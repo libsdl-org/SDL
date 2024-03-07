@@ -427,7 +427,7 @@ SDL_Surface *SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc)
 
     /* Create a compatible surface, note that the colors are RGB ordered */
     {
-        Uint32 format;
+        SDL_PixelFormatEnum format;
 
         /* Get the pixel format */
         format = SDL_GetPixelFormatEnumForMasks(biBitCount, Rmask, Gmask, Bmask, Amask);

@@ -337,7 +337,7 @@ SDL_DYNAPI_PROC(void,SDL_GetOriginalMemoryFunctions,(SDL_malloc_func *a, SDL_cal
 SDL_DYNAPI_PROC(char*,SDL_GetUserFolder,(SDL_Folder a),(a),return)
 SDL_DYNAPI_PROC(Uint64,SDL_GetPerformanceCounter,(void),(),return)
 SDL_DYNAPI_PROC(Uint64,SDL_GetPerformanceFrequency,(void),(),return)
-SDL_DYNAPI_PROC(Uint32,SDL_GetPixelFormatEnumForMasks,(int a, Uint32 b, Uint32 c, Uint32 d, Uint32 e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(SDL_PixelFormatEnum,SDL_GetPixelFormatEnumForMasks,(int a, Uint32 b, Uint32 c, Uint32 d, Uint32 e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetPixelFormatName,(SDL_PixelFormatEnum a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetPlatform,(void),(),return)
 SDL_DYNAPI_PROC(SDL_PowerState,SDL_GetPowerInfo,(int *a, int *b),(a,b),return)

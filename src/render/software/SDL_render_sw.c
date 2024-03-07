@@ -486,7 +486,7 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
                          * to be created. This makes all source pixels opaque and the colors get copied correctly.
                          */
                         SDL_Surface *src_rotated_rgb;
-                        int f = SDL_GetPixelFormatEnumForMasks(src_rotated->format->bits_per_pixel,
+                        SDL_PixelFormatEnum f = SDL_GetPixelFormatEnumForMasks(src_rotated->format->bits_per_pixel,
                                                            src_rotated->format->Rmask,
                                                            src_rotated->format->Gmask,
                                                            src_rotated->format->Bmask,
