@@ -134,14 +134,14 @@ static SDL_AudioChunk *CreateAudioTrackChunk(SDL_ChunkedAudioTrack *track)
 
 static size_t AvailChunkedAudioTrack(void *ctx)
 {
-    SDL_ChunkedAudioTrack *track = ctx;
+    SDL_ChunkedAudioTrack *track = (SDL_ChunkedAudioTrack *)ctx;
 
     return track->queued_bytes;
 }
 
 static int WriteToChunkedAudioTrack(void *ctx, const Uint8 *data, size_t len)
 {
-    SDL_ChunkedAudioTrack *track = ctx;
+    SDL_ChunkedAudioTrack *track = (SDL_ChunkedAudioTrack *)ctx;
 
     SDL_AudioChunk *chunk = track->tail;
 
@@ -200,7 +200,7 @@ static int WriteToChunkedAudioTrack(void *ctx, const Uint8 *data, size_t len)
 
 static size_t ReadFromChunkedAudioTrack(void *ctx, Uint8 *data, size_t len, SDL_bool advance)
 {
-    SDL_ChunkedAudioTrack *track = ctx;
+    SDL_ChunkedAudioTrack *track = (SDL_ChunkedAudioTrack *)ctx;
     SDL_AudioChunk *chunk = track->head;
 
     size_t total = 0;
@@ -245,7 +245,7 @@ static size_t ReadFromChunkedAudioTrack(void *ctx, Uint8 *data, size_t len, SDL_
 
 static void DestroyChunkedAudioTrack(void *ctx)
 {
-    SDL_ChunkedAudioTrack *track = ctx;
+    SDL_ChunkedAudioTrack *track = (SDL_ChunkedAudioTrack *)ctx;
     DestroyAudioChunks(track->head);
     DestroyAudioChunks(track->free_chunks);
     SDL_free(track);
@@ -420,7 +420,7 @@ void *SDL_BeginAudioQueueIter(SDL_AudioQueue *queue)
 
 size_t SDL_NextAudioQueueIter(SDL_AudioQueue *queue, void **inout_iter, SDL_AudioSpec *out_spec, SDL_bool *out_flushed)
 {
-    SDL_AudioTrack *iter = *inout_iter;
+    SDL_AudioTrack *iter = (SDL_AudioTrack *)(*inout_iter);
     SDL_assert(iter != NULL);
 
     SDL_copyp(out_spec, &iter->spec);

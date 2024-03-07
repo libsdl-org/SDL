@@ -25,7 +25,7 @@
 #include "SDL_internal.h"
 
 extern int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
-                                       Uint32 *format,
+                                       SDL_PixelFormatEnum *format,
                                        void **pixels, int *pitch);
 extern int X11_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
                                        const SDL_Rect *rects, int numrects);

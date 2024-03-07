@@ -44,11 +44,11 @@ void DrawBackground(SDL_VideoDevice *_this);
 void DirectDraw(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects, TUint16 *screenBuffer);
 void RedrawWindowL(SDL_VideoDevice *_this);
 
-int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format, void **pixels, int *pitch)
 {
     SDL_VideoData *phdata = _this->driverdata;
     SDL_Surface *surface;
-    const Uint32 surface_format = SDL_PIXELFORMAT_RGB444;
+    const SDL_PixelFormatEnum surface_format = SDL_PIXELFORMAT_RGB444;
     int w, h;
 
     /* Free the old framebuffer surface */

@@ -27,7 +27,7 @@
 #include "SDL_yuv_sw_c.h"
 #include "../video/SDL_yuv_c.h"
 
-SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(Uint32 format, int w, int h)
+SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormatEnum format, int w, int h)
 {
     SDL_SW_YUVTexture *swdata;
 
@@ -212,6 +212,8 @@ int SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
             }
         }
     }
+    default:
+        return SDL_SetError("Unsupported YUV format");
     }
     return 0;
 }
@@ -316,6 +318,8 @@ int SDL_SW_LockYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
             return SDL_SetError("YV12, IYUV, NV12, NV21 textures only support full surface locks");
         }
         break;
+    default:
+        return SDL_SetError("Unsupported YUV format");
     }
 
     if (rect) {
@@ -332,7 +336,7 @@ void SDL_SW_UnlockYUVTexture(SDL_SW_YUVTexture *swdata)
 }
 
 int SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect,
-                        Uint32 target_format, int w, int h, void *pixels,
+                        SDL_PixelFormatEnum target_format, int w, int h, void *pixels,
                         int pitch)
 {
     int stretch;

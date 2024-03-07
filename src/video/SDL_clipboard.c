@@ -297,7 +297,7 @@ char *SDL_GetClipboardText(void)
 
     text_mime_types = SDL_GetTextMimeTypes(_this, &num_mime_types);
     for (i = 0; i < num_mime_types; ++i) {
-        text = SDL_GetClipboardData(text_mime_types[i], &length);
+        text = (char *)SDL_GetClipboardData(text_mime_types[i], &length);
         if (text) {
             break;
         }

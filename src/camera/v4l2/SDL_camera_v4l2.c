@@ -594,7 +594,7 @@ static int V4L2_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *spec)
     }
 
     size_t size, pitch;
-    SDL_CalculateSize(device->spec.format, device->spec.width, device->spec.height, &size, &pitch, SDL_FALSE);
+    SDL_CalculateSurfaceSize(device->spec.format, device->spec.width, device->spec.height, &size, &pitch, SDL_FALSE);
 
     int rc = 0;
     switch (io) {

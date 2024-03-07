@@ -133,6 +133,7 @@ typedef enum
  */
 typedef enum
 {
+    SDL_PEN_TYPE_UNKNOWN = 0,
     SDL_PEN_TYPE_ERASER = 1,                  /**< Eraser */
     SDL_PEN_TYPE_PEN,                         /**< Generic pen; this is the default. */
     SDL_PEN_TYPE_PENCIL,                      /**< Pencil */

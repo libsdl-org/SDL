@@ -232,7 +232,7 @@ typedef struct
 typedef struct
 {
     DLGTEMPLATEEX *lpDialog;
-    Uint8 *data;
+    void *data;
     size_t size;
     size_t used;
     WORD numbuttons;
@@ -373,7 +373,7 @@ static SDL_bool AddDialogData(WIN_DialogData *dialog, const void *data, size_t s
         return SDL_FALSE;
     }
 
-    SDL_memcpy(dialog->data + dialog->used, data, size);
+    SDL_memcpy((Uint8 *)dialog->data + dialog->used, data, size);
     dialog->used += size;
 
     return SDL_TRUE;
@@ -650,7 +650,7 @@ static const char *EscapeAmpersands(char **dst, size_t *dstlen, const char *src)
         *dstlen = srclen + ampcount + extraspace;
         SDL_free(*dst);
         *dst = NULL;
-        newdst = SDL_malloc(*dstlen);
+        newdst = (char *)SDL_malloc(*dstlen);
         if (!newdst) {
             return NULL;
         }
@@ -974,7 +974,7 @@ int WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 
     TaskConfig.pszContent = wmessage;
     TaskConfig.cButtons = messageboxdata->numbuttons;
-    pButtons = SDL_malloc(sizeof(TASKDIALOG_BUTTON) * messageboxdata->numbuttons);
+    pButtons = (TASKDIALOG_BUTTON *)SDL_malloc(sizeof(TASKDIALOG_BUTTON) * messageboxdata->numbuttons);
     TaskConfig.nDefaultButton = 0;
     nCancelButton = 0;
     for (i = 0; i < messageboxdata->numbuttons; i++) {

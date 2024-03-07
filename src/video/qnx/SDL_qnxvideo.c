@@ -147,7 +147,7 @@ fail:
  * @param[out]  pitch   Holds the number of bytes per line
  * @return  0 if successful, -1 on error
  */
-static int createWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * format,
+static int createWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window, SDL_PixelFormatEnum * format,
                         void ** pixels, int *pitch)
 {
     window_impl_t   *impl = (window_impl_t *)window->driverdata;

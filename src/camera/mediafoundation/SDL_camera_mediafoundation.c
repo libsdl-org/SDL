@@ -73,7 +73,11 @@ SDL_DEFINE_MEDIATYPE_GUID(MFVideoFormat_NV21, FCC('NV21'));
 #pragma GCC diagnostic pop
 #endif
 
-static const struct { const GUID *guid; const Uint32 sdlfmt; } fmtmappings[] = {
+static const struct
+{
+    const GUID *guid;
+    const SDL_PixelFormatEnum sdlfmt;
+} fmtmappings[] = {
     // This is not every possible format, just popular ones that SDL can reasonably handle.
     // (and we should probably trim this list more.)
     { &SDL_MFVideoFormat_RGB555, SDL_PIXELFORMAT_XRGB1555 },
@@ -91,7 +95,8 @@ static const struct { const GUID *guid; const Uint32 sdlfmt; } fmtmappings[] = {
     { &SDL_MFVideoFormat_NV21, SDL_PIXELFORMAT_NV21 }
 };
 
-static Uint32 MFVidFmtGuidToSDLFmt(const GUID *guid) {
+static SDL_PixelFormatEnum MFVidFmtGuidToSDLFmt(const GUID *guid)
+{
     for (size_t i = 0; i < SDL_arraysize(fmtmappings); i++) {
         if (WIN_IsEqualGUID(guid, fmtmappings[i].guid)) {
             return fmtmappings[i].sdlfmt;
@@ -734,7 +739,7 @@ static void GatherCameraSpecs(IMFMediaSource *source, CameraFormatAddData *add_d
                         if (SUCCEEDED(ret) && WIN_IsEqualGUID(&type, &SDL_MFMediaType_Video)) {
                             ret = IMFMediaType_GetGUID(mediatype, &SDL_MF_MT_SUBTYPE, &type);
                             if (SUCCEEDED(ret)) {
-                                const Uint32 sdlfmt = MFVidFmtGuidToSDLFmt(&type);
+                                const SDL_PixelFormatEnum sdlfmt = MFVidFmtGuidToSDLFmt(&type);
                                 if (sdlfmt != SDL_PIXELFORMAT_UNKNOWN) {
                                     UINT64 val = 0;
                                     UINT32 w = 0, h = 0;
@@ -858,18 +863,18 @@ static void MEDIAFOUNDATION_Deinitialize(void)
 static SDL_bool MEDIAFOUNDATION_Init(SDL_CameraDriverImpl *impl)
 {
     // !!! FIXME: slide this off into a subroutine
-    HANDLE mf = LoadLibrary(TEXT("Mf.dll")); // this library is available in Vista and later, but also can be on XP with service packs and Windows
+    HMODULE mf = LoadLibrary(TEXT("Mf.dll")); // this library is available in Vista and later, but also can be on XP with service packs and Windows
     if (!mf) {
         return SDL_FALSE;
     }
 
-    HANDLE mfplat = LoadLibrary(TEXT("Mfplat.dll")); // this library is available in Vista and later. No WinXP, so have to LoadLibrary to use it for now!
+    HMODULE mfplat = LoadLibrary(TEXT("Mfplat.dll")); // this library is available in Vista and later. No WinXP, so have to LoadLibrary to use it for now!
     if (!mfplat) {
         FreeLibrary(mf);
         return SDL_FALSE;
     }
 
-    HANDLE mfreadwrite = LoadLibrary(TEXT("Mfreadwrite.dll")); // this library is available in Vista and later. No WinXP, so have to LoadLibrary to use it for now!
+    HMODULE mfreadwrite = LoadLibrary(TEXT("Mfreadwrite.dll")); // this library is available in Vista and later. No WinXP, so have to LoadLibrary to use it for now!
     if (!mfreadwrite) {
         FreeLibrary(mfplat);
         FreeLibrary(mf);

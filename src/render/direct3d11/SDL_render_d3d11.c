@@ -242,7 +242,7 @@ static const GUID SDL_DXGI_DEBUG_ALL = { 0xe48ae283, 0xda80, 0x490b, { 0x87, 0xe
 #pragma GCC diagnostic pop
 #endif
 
-Uint32 D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
+SDL_PixelFormatEnum D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
 {
     switch (dxgiFormat) {
     case DXGI_FORMAT_B8G8R8A8_UNORM:

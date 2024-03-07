@@ -1411,8 +1411,8 @@ static SDL_bool UILess_SetupSinks(SDL_VideoData *videodata)
         return SDL_FALSE;
     }
 
-    videodata->ime_uielemsink = SDL_malloc(sizeof(TSFSink));
-    videodata->ime_ippasink = SDL_malloc(sizeof(TSFSink));
+    videodata->ime_uielemsink = (TSFSink *)SDL_malloc(sizeof(TSFSink));
+    videodata->ime_ippasink = (TSFSink *)SDL_malloc(sizeof(TSFSink));
 
     videodata->ime_uielemsink->lpVtbl = vtUIElementSink;
     videodata->ime_uielemsink->refcount = 1;

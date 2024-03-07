@@ -24,7 +24,7 @@
 
 #include "SDL_windowsvideo.h"
 
-int WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format, void **pixels, int *pitch)
 {
     SDL_WindowData *data = window->driverdata;
     SDL_bool isstack;

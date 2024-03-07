@@ -30,8 +30,8 @@
 
 /* Pixel format functions */
 extern int SDL_InitFormat(SDL_PixelFormat *format, SDL_PixelFormatEnum pixel_format);
-extern int SDL_CalculateSize(Uint32 format, int width, int height, size_t *size, size_t *pitch, SDL_bool minimalPitch);
-extern SDL_Colorspace SDL_GetDefaultColorspaceForFormat(Uint32 pixel_format);
+extern int SDL_CalculateSurfaceSize(SDL_PixelFormatEnum format, int width, int height, size_t *size, size_t *pitch, SDL_bool minimalPitch);
+extern SDL_Colorspace SDL_GetDefaultColorspaceForFormat(SDL_PixelFormatEnum pixel_format);
 
 /* Colorspace conversion functions */
 extern float SDL_sRGBtoLinear(float v);
@@ -60,6 +60,6 @@ extern float SDL_GetSurfaceHDRHeadroom(SDL_Surface *surface, SDL_Colorspace colo
 extern void SDL_DitherColors(SDL_Color *colors, int bpp);
 extern Uint8 SDL_FindColor(SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 extern void SDL_DetectPalette(SDL_Palette *pal, SDL_bool *is_opaque, SDL_bool *has_alpha_channel);
-extern SDL_Surface *SDL_DuplicatePixels(int width, int height, Uint32 format, SDL_Colorspace colorspace, void *pixels, int pitch);
+extern SDL_Surface *SDL_DuplicatePixels(int width, int height, SDL_PixelFormatEnum format, SDL_Colorspace colorspace, void *pixels, int pitch);
 
 #endif /* SDL_pixels_c_h_ */

@@ -74,7 +74,7 @@ static int SDL_CalculateRGBSize(Uint32 format, size_t width, size_t height, size
     return 0;
 }
 
-int SDL_CalculateSize(Uint32 format, int width, int height, size_t *size, size_t *pitch, SDL_bool minimalPitch)
+int SDL_CalculateSurfaceSize(SDL_PixelFormatEnum format, int width, int height, size_t *size, size_t *pitch, SDL_bool minimalPitch)
 {
     size_t p = 0, sz = 0;
 
@@ -128,7 +128,7 @@ SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormatEnum format
         return NULL;
     }
 
-    if (SDL_CalculateSize(format, width, height, &size, &pitch, SDL_FALSE /* not minimal pitch */) < 0) {
+    if (SDL_CalculateSurfaceSize(format, width, height, &size, &pitch, SDL_FALSE /* not minimal pitch */) < 0) {
         /* Overflow... */
         return NULL;
     }
@@ -221,7 +221,7 @@ SDL_Surface *SDL_CreateSurfaceFrom(void *pixels, int width, int height, int pitc
     } else {
         size_t minimalPitch;
 
-        if (SDL_CalculateSize(format, width, height, NULL, &minimalPitch, SDL_TRUE /* minimal pitch */) < 0) {
+        if (SDL_CalculateSurfaceSize(format, width, height, NULL, &minimalPitch, SDL_TRUE /* minimal pitch */) < 0) {
             /* Overflow... */
             return NULL;
         }
@@ -1080,7 +1080,7 @@ int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
             /* Change source format if not appropriate for scaling */
             if (src->format->bytes_per_pixel != 4 || src->format->format == SDL_PIXELFORMAT_ARGB2101010) {
                 SDL_Rect tmprect;
-                int fmt;
+                SDL_PixelFormatEnum fmt;
                 tmprect.x = 0;
                 tmprect.y = 0;
                 tmprect.w = src->w;
@@ -1250,7 +1250,7 @@ int SDL_FlipSurface(SDL_Surface *surface, SDL_FlipMode flip)
     }
 }
 
-static SDL_Surface *SDL_ConvertSurfaceWithPixelFormatAndColorspace(SDL_Surface *surface, const SDL_PixelFormat *format, Uint32 colorspace, SDL_PropertiesID props)
+static SDL_Surface *SDL_ConvertSurfaceWithPixelFormatAndColorspace(SDL_Surface *surface, const SDL_PixelFormat *format, SDL_Colorspace colorspace, SDL_PropertiesID props)
 {
     SDL_Surface *convert;
     SDL_Colorspace src_colorspace;
@@ -1583,7 +1583,7 @@ SDL_Surface *SDL_ConvertSurfaceFormatAndColorspace(SDL_Surface *surface, SDL_Pix
 /*
  * Create a surface on the stack for quick blit operations
  */
-static SDL_bool SDL_CreateSurfaceOnStack(int width, int height, Uint32 pixel_format, SDL_Colorspace colorspace, SDL_PropertiesID props, void *pixels, int pitch, SDL_Surface *surface, SDL_PixelFormat *format, SDL_BlitMap *blitmap)
+static SDL_bool SDL_CreateSurfaceOnStack(int width, int height, SDL_PixelFormatEnum pixel_format, SDL_Colorspace colorspace, SDL_PropertiesID props, void *pixels, int pitch, SDL_Surface *surface, SDL_PixelFormat *format, SDL_BlitMap *blitmap)
 {
     if (SDL_ISPIXELFORMAT_INDEXED(pixel_format)) {
         SDL_SetError("Indexed pixel formats not supported");
@@ -1635,7 +1635,7 @@ static void SDL_DestroySurfaceOnStack(SDL_Surface *surface)
     }
 }
 
-SDL_Surface *SDL_DuplicatePixels(int width, int height, Uint32 format, SDL_Colorspace colorspace, void *pixels, int pitch)
+SDL_Surface *SDL_DuplicatePixels(int width, int height, SDL_PixelFormatEnum format, SDL_Colorspace colorspace, void *pixels, int pitch)
 {
     SDL_Surface *surface = SDL_CreateSurface(width, height, format);
     if (surface) {

@@ -31,7 +31,7 @@ extern "C" {
 #include "../SDL_sysvideo.h"
 
 extern int HAIKU_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
-                                         Uint32 *format,
+                                         SDL_PixelFormatEnum *format,
                                          void **pixels, int *pitch);
 extern int HAIKU_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
                                          const SDL_Rect *rects, int numrects);

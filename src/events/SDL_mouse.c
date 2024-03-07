@@ -1306,7 +1306,7 @@ SDL_Cursor *SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
     if (mouse->CreateCursor) {
         cursor = mouse->CreateCursor(surface, hot_x, hot_y);
     } else {
-        cursor = SDL_calloc(1, sizeof(*cursor));
+        cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
     }
     if (cursor) {
         cursor->next = mouse->cursors;

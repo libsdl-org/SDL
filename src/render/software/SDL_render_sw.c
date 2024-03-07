@@ -112,20 +112,17 @@ static int SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
     g = (Uint8)SDL_roundf(SDL_clamp(texture->color.g, 0.0f, 1.0f) * 255.0f);
     b = (Uint8)SDL_roundf(SDL_clamp(texture->color.b, 0.0f, 1.0f) * 255.0f);
     a = (Uint8)SDL_roundf(SDL_clamp(texture->color.a, 0.0f, 1.0f) * 255.0f);
-    SDL_SetSurfaceColorMod(texture->driverdata, r, g, b);
-    SDL_SetSurfaceAlphaMod(texture->driverdata, a);
-    SDL_SetSurfaceBlendMode(texture->driverdata, texture->blendMode);
+    SDL_SetSurfaceColorMod(surface, r, g, b);
+    SDL_SetSurfaceAlphaMod(surface, a);
+    SDL_SetSurfaceBlendMode(surface, texture->blendMode);
 
     /* Only RLE encode textures without an alpha channel since the RLE coder
      * discards the color values of pixels with an alpha value of zero.
      */
     if (texture->access == SDL_TEXTUREACCESS_STATIC && !surface->format->Amask) {
-        SDL_SetSurfaceRLE(texture->driverdata, 1);
+        SDL_SetSurfaceRLE(surface, 1);
     }
 
-    if (!texture->driverdata) {
-        return -1;
-    }
     return 0;
 }
 
@@ -1024,7 +1021,7 @@ static void SW_DestroyRenderer(SDL_Renderer *renderer)
     SDL_free(renderer);
 }
 
-static void SW_SelectBestFormats(SDL_Renderer *renderer, Uint32 format)
+static void SW_SelectBestFormats(SDL_Renderer *renderer, SDL_PixelFormatEnum format)
 {
     /* Prefer the format used by the framebuffer by default. */
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = format;
@@ -1079,6 +1076,8 @@ static void SW_SelectBestFormats(SDL_Renderer *renderer, Uint32 format)
         break;
     case SDL_PIXELFORMAT_BGRA8888:
         renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_BGRX8888;
+        break;
+    default:
         break;
     }
 

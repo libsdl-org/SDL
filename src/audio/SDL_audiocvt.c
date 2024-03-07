@@ -666,7 +666,7 @@ int SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
         SDL_UnlockMutex(stream->lock);
 
         size_t chunk_size = SDL_GetAudioQueueChunkSize(stream->queue);
-        track = SDL_CreateChunkedAudioTrack(&src_spec, buf, len, chunk_size);
+        track = SDL_CreateChunkedAudioTrack(&src_spec, (const Uint8 *)buf, len, chunk_size);
 
         if (!track) {
             return -1;
@@ -682,7 +682,7 @@ int SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
     if (track) {
         SDL_AddTrackToAudioQueue(stream->queue, track);
     } else {
-        retval = SDL_WriteToAudioQueue(stream->queue, &stream->src_spec, buf, len);
+        retval = SDL_WriteToAudioQueue(stream->queue, &stream->src_spec, (const Uint8 *)buf, len);
     }
 
     if (retval == 0) {
@@ -874,7 +874,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int ou
         // Note, this is just to avoid extra copies.
         // Some other formats may fit directly into the output buffer, but i'd rather process data in a SIMD-aligned buffer.
         if ((src_format == dst_format) && (src_channels == dst_channels)) {
-            input_buffer = buf;
+            input_buffer = (Uint8 *)buf;
         } else {
             input_buffer = EnsureAudioStreamWorkBufferSize(stream, output_frames * max_frame_size);
 

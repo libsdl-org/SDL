@@ -883,11 +883,11 @@ done:
  */
 
 /* encode 32bpp rgb + a into 16bpp rgb, losing alpha */
-static int copy_opaque_16(void *dst, Uint32 *src, int n,
+static int copy_opaque_16(void *dst, const Uint32 *src, int n,
                           SDL_PixelFormat *sfmt, SDL_PixelFormat *dfmt)
 {
     int i;
-    Uint16 *d = dst;
+    Uint16 *d = (Uint16 *)dst;
     for (i = 0; i < n; i++) {
         unsigned r, g, b;
         RGB_FROM_PIXEL(*src, sfmt, r, g, b);
@@ -899,11 +899,11 @@ static int copy_opaque_16(void *dst, Uint32 *src, int n,
 }
 
 /* decode opaque pixels from 16bpp to 32bpp rgb + a */
-static int uncopy_opaque_16(Uint32 *dst, void *src, int n,
+static int uncopy_opaque_16(Uint32 *dst, const void *src, int n,
                             RLEDestFormat *sfmt, SDL_PixelFormat *dfmt)
 {
     int i;
-    Uint16 *s = src;
+    const Uint16 *s = (const Uint16 *)src;
     unsigned alpha = dfmt->Amask ? 255 : 0;
     for (i = 0; i < n; i++) {
         unsigned r, g, b;
@@ -916,11 +916,11 @@ static int uncopy_opaque_16(Uint32 *dst, void *src, int n,
 }
 
 /* encode 32bpp rgb + a into 32bpp G0RAB format for blitting into 565 */
-static int copy_transl_565(void *dst, Uint32 *src, int n,
+static int copy_transl_565(void *dst, const Uint32 *src, int n,
                            SDL_PixelFormat *sfmt, SDL_PixelFormat *dfmt)
 {
     int i;
-    Uint32 *d = dst;
+    Uint32 *d = (Uint32 *)dst;
     for (i = 0; i < n; i++) {
         unsigned r, g, b, a;
         Uint16 pix;
@@ -934,11 +934,11 @@ static int copy_transl_565(void *dst, Uint32 *src, int n,
 }
 
 /* encode 32bpp rgb + a into 32bpp G0RAB format for blitting into 555 */
-static int copy_transl_555(void *dst, Uint32 *src, int n,
+static int copy_transl_555(void *dst, const Uint32 *src, int n,
                            SDL_PixelFormat *sfmt, SDL_PixelFormat *dfmt)
 {
     int i;
-    Uint32 *d = dst;
+    Uint32 *d = (Uint32 *)dst;
     for (i = 0; i < n; i++) {
         unsigned r, g, b, a;
         Uint16 pix;
@@ -952,11 +952,11 @@ static int copy_transl_555(void *dst, Uint32 *src, int n,
 }
 
 /* decode translucent pixels from 32bpp GORAB to 32bpp rgb + a */
-static int uncopy_transl_16(Uint32 *dst, void *src, int n,
+static int uncopy_transl_16(Uint32 *dst, const void *src, int n,
                             RLEDestFormat *sfmt, SDL_PixelFormat *dfmt)
 {
     int i;
-    Uint32 *s = src;
+    const Uint32 *s = (const Uint32 *)src;
     for (i = 0; i < n; i++) {
         unsigned r, g, b, a;
         Uint32 pix = *s++;
@@ -970,11 +970,11 @@ static int uncopy_transl_16(Uint32 *dst, void *src, int n,
 }
 
 /* encode 32bpp rgba into 32bpp rgba, keeping alpha (dual purpose) */
-static int copy_32(void *dst, Uint32 *src, int n,
+static int copy_32(void *dst, const Uint32 *src, int n,
                    SDL_PixelFormat *sfmt, SDL_PixelFormat *dfmt)
 {
     int i;
-    Uint32 *d = dst;
+    Uint32 *d = (Uint32 *)dst;
     for (i = 0; i < n; i++) {
         unsigned r, g, b, a;
         RGBA_FROM_8888(*src, sfmt, r, g, b, a);
@@ -986,11 +986,11 @@ static int copy_32(void *dst, Uint32 *src, int n,
 }
 
 /* decode 32bpp rgba into 32bpp rgba, keeping alpha (dual purpose) */
-static int uncopy_32(Uint32 *dst, void *src, int n,
+static int uncopy_32(Uint32 *dst, const void *src, int n,
                      RLEDestFormat *sfmt, SDL_PixelFormat *dfmt)
 {
     int i;
-    Uint32 *s = src;
+    const Uint32 *s = (const Uint32 *)src;
     for (i = 0; i < n; i++) {
         unsigned r, g, b, a;
         Uint32 pixel = *s++;
@@ -1017,9 +1017,9 @@ static int RLEAlphaSurface(SDL_Surface *surface)
     int max_transl_run = 65535;
     unsigned masksum;
     Uint8 *rlebuf, *dst;
-    int (*copy_opaque)(void *, Uint32 *, int,
+    int (*copy_opaque)(void *, const Uint32 *, int,
                        SDL_PixelFormat *, SDL_PixelFormat *);
-    int (*copy_transl)(void *, Uint32 *, int,
+    int (*copy_transl)(void *, const Uint32 *, int,
                        SDL_PixelFormat *, SDL_PixelFormat *);
 
     dest = surface->map->dst;
@@ -1225,7 +1225,7 @@ static int RLEAlphaSurface(SDL_Surface *surface)
 
     /* reallocate the buffer to release unused memory */
     {
-        Uint8 *p = SDL_realloc(rlebuf, dst - rlebuf);
+        Uint8 *p = (Uint8 *)SDL_realloc(rlebuf, dst - rlebuf);
         if (!p) {
             p = rlebuf;
         }
@@ -1393,7 +1393,7 @@ static int RLEColorkeySurface(SDL_Surface *surface)
     /* reallocate the buffer to release unused memory */
     {
         /* If SDL_realloc returns NULL, the original block is left intact */
-        Uint8 *p = SDL_realloc(rlebuf, dst - rlebuf);
+        Uint8 *p = (Uint8 *)SDL_realloc(rlebuf, dst - rlebuf);
         if (!p) {
             p = rlebuf;
         }
@@ -1475,10 +1475,10 @@ static SDL_bool UnRLEAlpha(SDL_Surface *surface)
     Uint8 *srcbuf;
     Uint32 *dst;
     SDL_PixelFormat *sf = surface->format;
-    RLEDestFormat *df = surface->map->data;
-    int (*uncopy_opaque)(Uint32 *, void *, int,
+    RLEDestFormat *df = (RLEDestFormat *)surface->map->data;
+    int (*uncopy_opaque)(Uint32 *, const void *, int,
                          RLEDestFormat *, SDL_PixelFormat *);
-    int (*uncopy_transl)(Uint32 *, void *, int,
+    int (*uncopy_transl)(Uint32 *, const void *, int,
                          RLEDestFormat *, SDL_PixelFormat *);
     int w = surface->w;
     int bpp = df->bytes_per_pixel;
@@ -1503,7 +1503,7 @@ static SDL_bool UnRLEAlpha(SDL_Surface *surface)
     /* fill background with transparent pixels */
     SDL_memset(surface->pixels, 0, (size_t)surface->h * surface->pitch);
 
-    dst = surface->pixels;
+    dst = (Uint32 *)surface->pixels;
     srcbuf = (Uint8 *)(df + 1);
     for (;;) {
         /* copy opaque pixels */

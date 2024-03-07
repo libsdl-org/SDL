@@ -129,7 +129,7 @@ extern int SDL_EGL_ChooseConfig(SDL_VideoDevice *_this);
 extern int SDL_EGL_SetSwapInterval(SDL_VideoDevice *_this, int interval);
 extern int SDL_EGL_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
 extern int SDL_EGL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
-extern EGLSurface *SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, NativeWindowType nw);
+extern EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, NativeWindowType nw);
 extern void SDL_EGL_DestroySurface(SDL_VideoDevice *_this, EGLSurface egl_surface);
 
 extern EGLSurface SDL_EGL_CreateOffscreenSurface(SDL_VideoDevice *_this, int width, int height);

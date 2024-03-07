@@ -1216,7 +1216,7 @@ int SDL_EGL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
     return 0;
 }
 
-EGLSurface *SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, NativeWindowType nw)
+EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, NativeWindowType nw)
 {
 #ifdef SDL_VIDEO_DRIVER_ANDROID
     EGLint format_wanted;
@@ -1226,7 +1226,7 @@ EGLSurface *SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Na
     EGLint attribs[33];
     int attr = 0;
 
-    EGLSurface *surface;
+    EGLSurface surface;
 
     if (SDL_EGL_ChooseConfig(_this) != 0) {
         return EGL_NO_SURFACE;

@@ -79,7 +79,7 @@ char *SDL_GetCameraThreadName(SDL_CameraDevice *device, char *buf, size_t buflen
     return buf;
 }
 
-int SDL_AddCameraFormat(CameraFormatAddData *data, Uint32 fmt, int w, int h, int interval_numerator, int interval_denominator)
+int SDL_AddCameraFormat(CameraFormatAddData *data, SDL_PixelFormatEnum fmt, int w, int h, int interval_numerator, int interval_denominator)
 {
     SDL_assert(data != NULL);
     if (data->allocated_specs <= data->num_specs) {
@@ -148,7 +148,7 @@ static int ZombieAcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, Uint
     if (!device->zombie_pixels) {
         // attempt to allocate and initialize a fake frame of pixels.
         const size_t buflen = GetFrameBufLen(&device->actual_spec);
-        device->zombie_pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), buflen);
+        device->zombie_pixels = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), buflen);
         if (!device->zombie_pixels) {
             *timestampNS = 0;
             return 0;  // oh well, say there isn't a frame yet, so we'll go back to waiting. Maybe allocation will succeed later...?
@@ -434,7 +434,7 @@ SDL_CameraDevice *SDL_AddCameraDevice(const char *name, SDL_CameraPosition posit
         return NULL;
     }
 
-    device->all_specs = SDL_calloc(num_specs + 1, sizeof (*specs));
+    device->all_specs = (SDL_CameraSpec *)SDL_calloc(num_specs + 1, sizeof (*specs));
     if (!device->all_specs) {
         SDL_DestroyMutex(device->lock);
         SDL_free(device->name);
@@ -982,8 +982,8 @@ static void ChooseBestCameraSpec(SDL_CameraDevice *device, const SDL_CameraSpec 
         SDL_assert(closest->height > 0);
 
         // okay, we have what we think is the best resolution, now we just need the best format that supports it...
-        const Uint32 wantfmt = spec->format;
-        Uint32 bestfmt = SDL_PIXELFORMAT_UNKNOWN;
+        const SDL_PixelFormatEnum wantfmt = spec->format;
+        SDL_PixelFormatEnum bestfmt = SDL_PIXELFORMAT_UNKNOWN;
         for (int i = 0; i < num_specs; i++) {
             const SDL_CameraSpec *thisspec = &device->all_specs[i];
             if ((thisspec->width == closest->width) && (thisspec->height == closest->height)) {
@@ -1106,7 +1106,7 @@ SDL_Camera *SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_Camer
     if (device->needs_scaling && device->needs_conversion) {
         const SDL_bool downsampling_first = (device->needs_scaling < 0);
         const SDL_CameraSpec *s = downsampling_first ? &device->spec : &closest;
-        const Uint32 fmt = downsampling_first ? closest.format : device->spec.format;
+        const SDL_PixelFormatEnum fmt = downsampling_first ? closest.format : device->spec.format;
         device->conversion_surface = SDL_CreateSurface(s->width, s->height, fmt);
     }
 

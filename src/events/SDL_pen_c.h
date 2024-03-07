@@ -56,6 +56,13 @@ typedef struct SDL_PenStatusInfo
     Uint16 buttons; /* SDL_BUTTON(1) | SDL_BUTTON(2) | ... | SDL_PEN_DOWN_MASK */
 } SDL_PenStatusInfo;
 
+typedef struct
+{
+    SDL_PenID id;       /* id determines sort order unless SDL_PEN_FLAG_DETACHED is set */
+    Uint32 flags;       /* SDL_PEN_FLAG_* | SDK_PEN_DOWN_MASK | SDL_PEN_INK_MASK | SDL_PEN_ERASER_MASK | SDL_PEN_AXIS_* */
+    SDL_Window *window; /* Current SDL window for this pen, or NULL */
+} SDL_PenHeader;
+
 /**
  * Internal (backend driver-independent) pen representation
  *
@@ -66,12 +73,7 @@ typedef struct SDL_PenStatusInfo
 typedef struct SDL_Pen
 {
     /* Backend driver MUST NOT not write to: */
-    struct SDL_Pen_header
-    {
-        SDL_PenID id;       /* id determines sort order unless SDL_PEN_FLAG_DETACHED is set */
-        Uint32 flags;       /* SDL_PEN_FLAG_* | SDK_PEN_DOWN_MASK | SDL_PEN_INK_MASK | SDL_PEN_ERASER_MASK | SDL_PEN_AXIS_* */
-        SDL_Window *window; /* Current SDL window for this pen, or NULL */
-    } header;
+    SDL_PenHeader header;
 
     SDL_PenStatusInfo last; /* Last reported status, normally read-only for backend */
 

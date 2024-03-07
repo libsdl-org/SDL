@@ -292,17 +292,18 @@ static void HandleJoystickHat(Uint64 timestamp, SDL_Gamepad *gamepad, int hat, U
     duplicate events. */
 static void RecenterGamepad(SDL_Gamepad *gamepad)
 {
-    SDL_GamepadButton button;
-    SDL_GamepadAxis axis;
+    int i;
     Uint64 timestamp = SDL_GetTicksNS();
 
-    for (button = (SDL_GamepadButton)0; button < SDL_GAMEPAD_BUTTON_MAX; button++) {
+    for (i = 0; i < SDL_GAMEPAD_BUTTON_MAX; ++i) {
+        SDL_GamepadButton button = (SDL_GamepadButton)i;
         if (SDL_GetGamepadButton(gamepad, button)) {
             SDL_SendGamepadButton(timestamp, gamepad, button, SDL_RELEASED);
         }
     }
 
-    for (axis = (SDL_GamepadAxis)0; axis < SDL_GAMEPAD_AXIS_MAX; axis++) {
+    for (i = 0; i < SDL_GAMEPAD_AXIS_MAX; ++i) {
+        SDL_GamepadAxis axis = (SDL_GamepadAxis)i;
         if (SDL_GetGamepadAxis(gamepad, axis) != 0) {
             SDL_SendGamepadAxis(timestamp, gamepad, axis, 0);
         }
@@ -1438,7 +1439,7 @@ static char *SDL_PrivateGetGamepadGUIDFromMappingString(const char *pMapping)
 {
     const char *pFirstComma = SDL_strchr(pMapping, ',');
     if (pFirstComma) {
-        char *pchGUID = SDL_malloc(pFirstComma - pMapping + 1);
+        char *pchGUID = (char *)SDL_malloc(pFirstComma - pMapping + 1);
         if (!pchGUID) {
             return NULL;
         }
@@ -1486,7 +1487,7 @@ static char *SDL_PrivateGetGamepadNameFromMappingString(const char *pMapping)
         return NULL;
     }
 
-    pchName = SDL_malloc(pSecondComma - pFirstComma);
+    pchName = (char *)SDL_malloc(pSecondComma - pFirstComma);
     if (!pchName) {
         return NULL;
     }
@@ -1619,7 +1620,7 @@ static GamepadMapping_t *SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, co
         }
         AddMappingChangeTracking(pGamepadMapping);
     } else {
-        pGamepadMapping = SDL_malloc(sizeof(*pGamepadMapping));
+        pGamepadMapping = (GamepadMapping_t *)SDL_malloc(sizeof(*pGamepadMapping));
         if (!pGamepadMapping) {
             PopMappingChangeTracking();
             SDL_free(pchName);
@@ -2103,7 +2104,7 @@ static char *CreateMappingString(GamepadMapping_t *mapping, SDL_JoystickGUID gui
         needed += SDL_GAMEPAD_PLATFORM_FIELD_SIZE + SDL_strlen(platform) + 1;
     }
 
-    pMappingString = SDL_malloc(needed);
+    pMappingString = (char *)SDL_malloc(needed);
     if (!pMappingString) {
         return NULL;
     }

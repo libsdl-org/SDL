@@ -536,7 +536,7 @@ static int SDL_SYS_SetDirection(DIEFFECT *effect, const SDL_HapticDirection *dir
     }
 
     /* Has axes. */
-    rglDir = SDL_malloc(sizeof(LONG) * naxes);
+    rglDir = (LONG *)SDL_malloc(sizeof(LONG) * naxes);
     if (!rglDir) {
         return -1;
     }
@@ -610,7 +610,7 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
     dest->dwFlags = DIEFF_OBJECTOFFSETS; /* Seems obligatory. */
 
     /* Envelope. */
-    envelope = SDL_calloc(1, sizeof(DIENVELOPE));
+    envelope = (DIENVELOPE *)SDL_calloc(1, sizeof(DIENVELOPE));
     if (!envelope) {
         return -1;
     }
@@ -624,7 +624,7 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
         dest->cAxes = haptic->naxes;
     }
     if (dest->cAxes > 0) {
-        axes = SDL_malloc(sizeof(DWORD) * dest->cAxes);
+        axes = (DWORD *)SDL_malloc(sizeof(DWORD) * dest->cAxes);
         if (!axes) {
             return -1;
         }
@@ -642,7 +642,7 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
     switch (src->type) {
     case SDL_HAPTIC_CONSTANT:
         hap_constant = &src->constant;
-        constant = SDL_calloc(1, sizeof(DICONSTANTFORCE));
+        constant = (DICONSTANTFORCE *)SDL_calloc(1, sizeof(DICONSTANTFORCE));
         if (!constant) {
             return -1;
         }
@@ -682,7 +682,7 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
     case SDL_HAPTIC_SAWTOOTHUP:
     case SDL_HAPTIC_SAWTOOTHDOWN:
         hap_periodic = &src->periodic;
-        periodic = SDL_calloc(1, sizeof(DIPERIODIC));
+        periodic = (DIPERIODIC *)SDL_calloc(1, sizeof(DIPERIODIC));
         if (!periodic) {
             return -1;
         }
@@ -725,7 +725,7 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
     case SDL_HAPTIC_INERTIA:
     case SDL_HAPTIC_FRICTION:
         hap_condition = &src->condition;
-        condition = SDL_calloc(dest->cAxes, sizeof(DICONDITION));
+        condition = (DICONDITION *)SDL_calloc(dest->cAxes, sizeof(DICONDITION));
         if (!condition) {
             return -1;
         }
@@ -765,7 +765,7 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
 
     case SDL_HAPTIC_RAMP:
         hap_ramp = &src->ramp;
-        ramp = SDL_calloc(1, sizeof(DIRAMPFORCE));
+        ramp = (DIRAMPFORCE *)SDL_calloc(1, sizeof(DIRAMPFORCE));
         if (!ramp) {
             return -1;
         }
@@ -802,7 +802,7 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
 
     case SDL_HAPTIC_CUSTOM:
         hap_custom = &src->custom;
-        custom = SDL_calloc(1, sizeof(DICUSTOMFORCE));
+        custom = (DICUSTOMFORCE *)SDL_calloc(1, sizeof(DICUSTOMFORCE));
         if (!custom) {
             return -1;
         }
@@ -811,8 +811,7 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
         custom->cChannels = hap_custom->channels;
         custom->dwSamplePeriod = hap_custom->period * 1000UL;
         custom->cSamples = hap_custom->samples;
-        custom->rglForceData =
-            SDL_malloc(sizeof(LONG) * custom->cSamples * custom->cChannels);
+        custom->rglForceData = (LPLONG)SDL_malloc(sizeof(LONG) * custom->cSamples * custom->cChannels);
         for (i = 0; i < hap_custom->samples * hap_custom->channels; i++) { /* Copy data. */
             custom->rglForceData[i] = CCONVERT(hap_custom->data[i]);
         }

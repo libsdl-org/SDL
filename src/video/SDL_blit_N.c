@@ -3203,7 +3203,7 @@ struct blit_table
     Uint32 srcR, srcG, srcB;
     int dstbpp;
     Uint32 dstR, dstG, dstB;
-    enum blit_features blit_features;
+    Uint32 blit_features;
     SDL_BlitFunc blitfunc;
     Uint32 alpha; /* bitwise NO_ALPHA, SET_ALPHA, COPY_ALPHA */
 };

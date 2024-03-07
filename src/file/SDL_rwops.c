@@ -690,7 +690,7 @@ void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, SDL_bool freesrc)
                 if (size >= SDL_SIZE_MAX) {
                     newdata = NULL;
                 } else {
-                    newdata = SDL_realloc(data, (size_t)(size + 1));
+                    newdata = (char *)SDL_realloc(data, (size_t)(size + 1));
                 }
                 if (!newdata) {
                     SDL_free(data);
