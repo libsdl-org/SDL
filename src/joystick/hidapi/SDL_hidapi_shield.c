@@ -204,7 +204,7 @@ static SDL_bool HIDAPI_DriverShield_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
 
 static int HIDAPI_DriverShield_SendNextRumble(SDL_HIDAPI_Device *device)
 {
-    SDL_DriverShield_Context *ctx = device->context;
+    SDL_DriverShield_Context *ctx = (SDL_DriverShield_Context *)device->context;
     Uint8 rumble_data[3];
 
     if (!ctx->rumble_update_pending) {
@@ -235,7 +235,7 @@ static int HIDAPI_DriverShield_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joy
         return 0;
 
     } else {
-        SDL_DriverShield_Context *ctx = device->context;
+        SDL_DriverShield_Context *ctx = (SDL_DriverShield_Context *)device->context;
 
         /* The rumble motors are quite intense, so tone down the intensity like the official driver does */
         ctx->left_motor_amplitude = low_frequency_rumble >> 11;
@@ -268,7 +268,7 @@ static int HIDAPI_DriverShield_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joy
 
 static int HIDAPI_DriverShield_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
 {
-    const Uint8 *data_bytes = data;
+    const Uint8 *data_bytes = (const Uint8 *)data;
 
     if (size > 1) {
         /* Single command byte followed by a variable length payload */

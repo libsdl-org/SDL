@@ -27,7 +27,7 @@
 
 
 #if SDL_HAVE_YUV
-static SDL_bool IsPlanar2x2Format(Uint32 format);
+static SDL_bool IsPlanar2x2Format(SDL_PixelFormatEnum format);
 #endif
 
 /*
@@ -36,7 +36,7 @@ static SDL_bool IsPlanar2x2Format(Uint32 format);
  *
  * return 0 on success, -1 on error
  */
-int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, size_t *pitch)
+int SDL_CalculateYUVSize(SDL_PixelFormatEnum format, int w, int h, size_t *size, size_t *pitch)
 {
 #if SDL_HAVE_YUV
     int sz_plane = 0, sz_plane_chroma = 0, sz_plane_packed = 0;
@@ -187,7 +187,7 @@ static int GetYUVConversionType(SDL_Colorspace colorspace, YCbCrType *yuv_type)
     return SDL_SetError("Unsupported YUV colorspace");
 }
 
-static SDL_bool IsPlanar2x2Format(Uint32 format)
+static SDL_bool IsPlanar2x2Format(SDL_PixelFormatEnum format)
 {
     return format == SDL_PIXELFORMAT_YV12 || format == SDL_PIXELFORMAT_IYUV || format == SDL_PIXELFORMAT_NV12 || format == SDL_PIXELFORMAT_NV21 || format == SDL_PIXELFORMAT_P010;
 }
@@ -197,7 +197,7 @@ static SDL_bool IsPacked4Format(Uint32 format)
     return format == SDL_PIXELFORMAT_YUY2 || format == SDL_PIXELFORMAT_UYVY || format == SDL_PIXELFORMAT_YVYU;
 }
 
-static int GetYUVPlanes(int width, int height, Uint32 format, const void *yuv, int yuv_pitch,
+static int GetYUVPlanes(int width, int height, SDL_PixelFormatEnum format, const void *yuv, int yuv_pitch,
                         const Uint8 **y, const Uint8 **u, const Uint8 **v, Uint32 *y_stride, Uint32 *uv_stride)
 {
     const Uint8 *planes[3] = { NULL, NULL, NULL };
@@ -304,7 +304,7 @@ static int GetYUVPlanes(int width, int height, Uint32 format, const void *yuv, i
 
 #ifdef SDL_SSE2_INTRINSICS
 static SDL_bool SDL_TARGETING("sse2") yuv_rgb_sse(
-    Uint32 src_format, Uint32 dst_format,
+    SDL_PixelFormatEnum src_format, SDL_PixelFormatEnum dst_format,
     Uint32 width, Uint32 height,
     const Uint8 *y, const Uint8 *u, const Uint8 *v, Uint32 y_stride, Uint32 uv_stride,
     Uint8 *rgb, Uint32 rgb_stride,
@@ -411,7 +411,7 @@ static SDL_bool SDL_TARGETING("sse2") yuv_rgb_sse(
 }
 #else
 static SDL_bool yuv_rgb_sse(
-    Uint32 src_format, Uint32 dst_format,
+    SDL_PixelFormatEnum src_format, SDL_PixelFormatEnum dst_format,
     Uint32 width, Uint32 height,
     const Uint8 *y, const Uint8 *u, const Uint8 *v, Uint32 y_stride, Uint32 uv_stride,
     Uint8 *rgb, Uint32 rgb_stride,
@@ -423,7 +423,7 @@ static SDL_bool yuv_rgb_sse(
 
 #ifdef SDL_LSX_INTRINSICS
 static SDL_bool yuv_rgb_lsx(
-    Uint32 src_format, Uint32 dst_format,
+    SDL_PixelFormatEnum src_format, SDL_PixelFormatEnum dst_format,
     Uint32 width, Uint32 height,
     const Uint8 *y, const Uint8 *u, const Uint8 *v, Uint32 y_stride, Uint32 uv_stride,
     Uint8 *rgb, Uint32 rgb_stride,
@@ -463,7 +463,7 @@ static SDL_bool yuv_rgb_lsx(
 }
 #else
 static SDL_bool yuv_rgb_lsx(
-    Uint32 src_format, Uint32 dst_format,
+    SDL_PixelFormatEnum src_format, SDL_PixelFormatEnum dst_format,
     Uint32 width, Uint32 height,
     const Uint8 *y, const Uint8 *u, const Uint8 *v, Uint32 y_stride, Uint32 uv_stride,
     Uint8 *rgb, Uint32 rgb_stride,
@@ -474,7 +474,7 @@ static SDL_bool yuv_rgb_lsx(
 #endif
 
 static SDL_bool yuv_rgb_std(
-    Uint32 src_format, Uint32 dst_format,
+    SDL_PixelFormatEnum src_format, SDL_PixelFormatEnum dst_format,
     Uint32 width, Uint32 height,
     const Uint8 *y, const Uint8 *u, const Uint8 *v, Uint32 y_stride, Uint32 uv_stride,
     Uint8 *rgb, Uint32 rgb_stride,
@@ -579,14 +579,16 @@ static SDL_bool yuv_rgb_std(
         case SDL_PIXELFORMAT_XBGR2101010:
             yuvp010_xbgr2101010_std(width, height, (const uint16_t *)y, (const uint16_t *)u, (const uint16_t *)v, y_stride, uv_stride, rgb, rgb_stride, yuv_type);
             return SDL_TRUE;
+        default:
+            break;
         }
     }
     return SDL_FALSE;
 }
 
 int SDL_ConvertPixels_YUV_to_RGB(int width, int height,
-                                 Uint32 src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch,
-                                 Uint32 dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch)
+                                 SDL_PixelFormatEnum src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch,
+                                 SDL_PixelFormatEnum dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch)
 {
     const Uint8 *y = NULL;
     const Uint8 *u = NULL;
@@ -707,7 +709,7 @@ static struct RGB2YUVFactors RGB2YUVFactorTables[] = {
     },
 };
 
-static int SDL_ConvertPixels_ARGB8888_to_YUV(int width, int height, const void *src, int src_pitch, Uint32 dst_format, void *dst, int dst_pitch, YCbCrType yuv_type)
+static int SDL_ConvertPixels_ARGB8888_to_YUV(int width, int height, const void *src, int src_pitch, SDL_PixelFormatEnum dst_format, void *dst, int dst_pitch, YCbCrType yuv_type)
 {
     const int src_pitch_x_2 = src_pitch * 2;
     const int height_half = height / 2;
@@ -998,7 +1000,7 @@ static int SDL_ConvertPixels_ARGB8888_to_YUV(int width, int height, const void *
     return 0;
 }
 
-static int SDL_ConvertPixels_XBGR2101010_to_P010(int width, int height, const void *src, int src_pitch, Uint32 dst_format, void *dst, int dst_pitch, YCbCrType yuv_type)
+static int SDL_ConvertPixels_XBGR2101010_to_P010(int width, int height, const void *src, int src_pitch, SDL_PixelFormatEnum dst_format, void *dst, int dst_pitch, YCbCrType yuv_type)
 {
     const int src_pitch_x_2 = src_pitch * 2;
     const int height_half = height / 2;
@@ -1121,8 +1123,8 @@ static int SDL_ConvertPixels_XBGR2101010_to_P010(int width, int height, const vo
 }
 
 int SDL_ConvertPixels_RGB_to_YUV(int width, int height,
-                                 Uint32 src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch,
-                                 Uint32 dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch)
+                                 SDL_PixelFormatEnum src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch,
+                                 SDL_PixelFormatEnum dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch)
 {
     YCbCrType yuv_type = YCBCR_601_LIMITED;
 
@@ -1208,7 +1210,7 @@ int SDL_ConvertPixels_RGB_to_YUV(int width, int height,
     }
 }
 
-static int SDL_ConvertPixels_YUV_to_YUV_Copy(int width, int height, Uint32 format,
+static int SDL_ConvertPixels_YUV_to_YUV_Copy(int width, int height, SDL_PixelFormatEnum format,
                                              const void *src, int src_pitch, void *dst, int dst_pitch)
 {
     int i;
@@ -1285,8 +1287,8 @@ static int SDL_ConvertPixels_SwapUVPlanes(int width, int height, const void *src
     if (src == dst) {
         int UVpitch = (dst_pitch + 1) / 2;
         Uint8 *tmp;
-        Uint8 *row1 = dst;
-        Uint8 *row2 = (Uint8 *)dst + UVheight * UVpitch;
+        Uint8 *row1 = (Uint8 *)dst;
+        Uint8 *row2 = row1 + UVheight * UVpitch;
 
         /* Allocate a temporary row for the swap */
         tmp = (Uint8 *)SDL_malloc(UVwidth);
@@ -1675,8 +1677,8 @@ static int SDL_ConvertPixels_SwapNV(int width, int height, const void *src, int 
 }
 
 static int SDL_ConvertPixels_Planar2x2_to_Planar2x2(int width, int height,
-                                                    Uint32 src_format, const void *src, int src_pitch,
-                                                    Uint32 dst_format, void *dst, int dst_pitch)
+                                                    SDL_PixelFormatEnum src_format, const void *src, int src_pitch,
+                                                    SDL_PixelFormatEnum dst_format, void *dst, int dst_pitch)
 {
     if (src != dst) {
         /* Copy Y plane */
@@ -2233,8 +2235,8 @@ static int SDL_ConvertPixels_YVYU_to_UYVY(int width, int height, const void *src
 }
 
 static int SDL_ConvertPixels_Packed4_to_Packed4(int width, int height,
-                                                Uint32 src_format, const void *src, int src_pitch,
-                                                Uint32 dst_format, void *dst, int dst_pitch)
+                                                SDL_PixelFormatEnum src_format, const void *src, int src_pitch,
+                                                SDL_PixelFormatEnum dst_format, void *dst, int dst_pitch)
 {
     switch (src_format) {
     case SDL_PIXELFORMAT_YUY2:
@@ -2275,8 +2277,8 @@ static int SDL_ConvertPixels_Packed4_to_Packed4(int width, int height,
 }
 
 static int SDL_ConvertPixels_Planar2x2_to_Packed4(int width, int height,
-                                                  Uint32 src_format, const void *src, int src_pitch,
-                                                  Uint32 dst_format, void *dst, int dst_pitch)
+                                                  SDL_PixelFormatEnum src_format, const void *src, int src_pitch,
+                                                  SDL_PixelFormatEnum dst_format, void *dst, int dst_pitch)
 {
     int x, y;
     const Uint8 *srcY1, *srcY2, *srcU, *srcV;
@@ -2417,8 +2419,8 @@ static int SDL_ConvertPixels_Planar2x2_to_Packed4(int width, int height,
 }
 
 static int SDL_ConvertPixels_Packed4_to_Planar2x2(int width, int height,
-                                                  Uint32 src_format, const void *src, int src_pitch,
-                                                  Uint32 dst_format, void *dst, int dst_pitch)
+                                                  SDL_PixelFormatEnum src_format, const void *src, int src_pitch,
+                                                  SDL_PixelFormatEnum dst_format, void *dst, int dst_pitch)
 {
     int x, y;
     const Uint8 *srcY1, *srcY2, *srcU1, *srcU2, *srcV1, *srcV2;
@@ -2550,8 +2552,8 @@ static int SDL_ConvertPixels_Packed4_to_Planar2x2(int width, int height,
 #endif /* SDL_HAVE_YUV */
 
 int SDL_ConvertPixels_YUV_to_YUV(int width, int height,
-                                 Uint32 src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch,
-                                 Uint32 dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch)
+                                 SDL_PixelFormatEnum src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch,
+                                 SDL_PixelFormatEnum dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch)
 {
 #if SDL_HAVE_YUV
     if (src_colorspace != dst_colorspace) {

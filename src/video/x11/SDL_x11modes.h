@@ -56,10 +56,8 @@ extern int X11_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display,
 extern void X11_QuitModes(SDL_VideoDevice *_this);
 
 /* Some utility functions for working with visuals */
-extern int X11_GetVisualInfoFromVisual(Display *display, Visual *visual,
-                                       XVisualInfo *vinfo);
-extern Uint32 X11_GetPixelFormatFromVisualInfo(Display *display,
-                                               XVisualInfo *vinfo);
+extern int X11_GetVisualInfoFromVisual(Display *display, Visual *visual, XVisualInfo *vinfo);
+extern SDL_PixelFormatEnum X11_GetPixelFormatFromVisualInfo(Display *display, XVisualInfo *vinfo);
 extern int X11_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
 extern int X11_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
 

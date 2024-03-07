@@ -241,7 +241,7 @@ int WINRT_VideoInit(SDL_VideoDevice *_this)
     return 0;
 }
 
-extern "C" Uint32 D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat);
+extern "C" SDL_PixelFormatEnum D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat);
 
 static void WINRT_DXGIModeToSDLDisplayMode(const DXGI_MODE_DESC *dxgiMode, SDL_DisplayMode *sdlMode)
 {
@@ -298,7 +298,7 @@ static int WINRT_AddDisplaysForOutput(SDL_VideoDevice *_this, IDXGIAdapter1 *dxg
         display.name = SDL_strdup("Windows Simulator / Terminal Services Display");
         mode.w = (dxgiOutputDesc.DesktopCoordinates.right - dxgiOutputDesc.DesktopCoordinates.left);
         mode.h = (dxgiOutputDesc.DesktopCoordinates.bottom - dxgiOutputDesc.DesktopCoordinates.top);
-        mode.format = DXGI_FORMAT_B8G8R8A8_UNORM;
+        mode.format = D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM);
         display.desktop_mode = mode;
     } else if (FAILED(hr)) {
         WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGIOutput::FindClosestMatchingMode failed", hr);
@@ -411,7 +411,7 @@ static int WINRT_AddDisplaysForAdapter(SDL_VideoDevice *_this, IDXGIFactory2 *dx
                 mode.h = (int)SDL_floorf(coreWin->Bounds.Height);
 #endif
                 mode.pixel_density = WINRT_DISPLAY_PROPERTY(LogicalDpi) / 96.0f;
-                mode.format = DXGI_FORMAT_B8G8R8A8_UNORM;
+                mode.format = D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM);
 
                 display.desktop_mode = mode;
                 bool error = (SDL_AddVideoDisplay(&display, SDL_FALSE) == 0);

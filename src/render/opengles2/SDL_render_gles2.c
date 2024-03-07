@@ -165,7 +165,7 @@ typedef struct
 
 typedef struct GLES2_RenderData
 {
-    SDL_GLContext *context;
+    SDL_GLContext context;
 
     SDL_bool debug_enabled;
 
@@ -289,7 +289,7 @@ static GLES2_FBOList *GLES2_GetFBO(GLES2_RenderData *data, Uint32 w, Uint32 h)
         result = result->next;
     }
     if (!result) {
-        result = SDL_malloc(sizeof(GLES2_FBOList));
+        result = (GLES2_FBOList *)SDL_malloc(sizeof(GLES2_FBOList));
         result->w = w;
         result->h = h;
         data->glGenFramebuffers(1, &result->FBO);
@@ -1051,6 +1051,8 @@ static int SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, vo
                 case SDL_PIXELFORMAT_BGRX32:
                     sourceType = GLES2_IMAGESOURCE_TEXTURE_ABGR;
                     break;
+                default:
+                    break;
                 }
                 break;
             case SDL_PIXELFORMAT_RGBA32:
@@ -1061,6 +1063,8 @@ static int SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, vo
                     break;
                 case SDL_PIXELFORMAT_RGBX32:
                     sourceType = GLES2_IMAGESOURCE_TEXTURE_ABGR;
+                    break;
+                default:
                     break;
                 }
                 break;
@@ -1075,6 +1079,8 @@ static int SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, vo
                 case SDL_PIXELFORMAT_RGBX32:
                     sourceType = GLES2_IMAGESOURCE_TEXTURE_ARGB;
                     break;
+                default:
+                    break;
                 }
                 break;
             case SDL_PIXELFORMAT_RGBX32:
@@ -1087,6 +1093,8 @@ static int SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, vo
                     break;
                 case SDL_PIXELFORMAT_BGRX32:
                     sourceType = GLES2_IMAGESOURCE_TEXTURE_ARGB;
+                    break;
+                default:
                     break;
                 }
                 break;
@@ -1628,7 +1636,7 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
     SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER, data->texture_type);
 
     if (texture->access == SDL_TEXTUREACCESS_TARGET) {
-        data->fbo = GLES2_GetFBO(renderer->driverdata, texture->w, texture->h);
+        data->fbo = GLES2_GetFBO((GLES2_RenderData *)renderer->driverdata, texture->w, texture->h);
     } else {
         data->fbo = NULL;
     }
@@ -1959,7 +1967,7 @@ static void GLES2_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 static SDL_Surface *GLES2_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->driverdata;
-    Uint32 format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_RGBA32;
+    SDL_PixelFormatEnum format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_RGBA32;
     int w, h;
     SDL_Surface *surface;
 

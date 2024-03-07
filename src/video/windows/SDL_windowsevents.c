@@ -1881,7 +1881,7 @@ int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
     }
     SDL_Appname = WIN_UTF8ToString(name);
     SDL_Appstyle = style;
-    SDL_Instance = hInst ? hInst : GetModuleHandle(NULL);
+    SDL_Instance = hInst ? (HINSTANCE)hInst : GetModuleHandle(NULL);
 
     /* Register the application class */
     wcex.cbSize = sizeof(WNDCLASSEX);

@@ -590,7 +590,7 @@ SDL_PixelFormat *SDL_CreatePixelFormat(SDL_PixelFormatEnum pixel_format)
     }
 
     /* Allocate an empty pixel format structure, and initialize it */
-    format = SDL_malloc(sizeof(*format));
+    format = (SDL_PixelFormat *)SDL_malloc(sizeof(*format));
     if (!format) {
         SDL_UnlockSpinlock(&formats_lock);
         return NULL;
@@ -720,7 +720,7 @@ void SDL_DestroyPixelFormat(SDL_PixelFormat *format)
     return;
 }
 
-SDL_Colorspace SDL_GetDefaultColorspaceForFormat(Uint32 format)
+SDL_Colorspace SDL_GetDefaultColorspaceForFormat(SDL_PixelFormatEnum format)
 {
     if (SDL_ISPIXELFORMAT_FOURCC(format)) {
         if (format == SDL_PIXELFORMAT_P010) {
@@ -1393,7 +1393,7 @@ SDL_BlitMap *SDL_AllocBlitMap(void)
 
 void SDL_InvalidateAllBlitMap(SDL_Surface *surface)
 {
-    SDL_ListNode *l = surface->list_blitmap;
+    SDL_ListNode *l = (SDL_ListNode *)surface->list_blitmap;
 
     surface->list_blitmap = NULL;
 

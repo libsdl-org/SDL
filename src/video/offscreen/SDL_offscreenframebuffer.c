@@ -29,10 +29,10 @@
 #define OFFSCREEN_SURFACE "SDL.internal.window.surface"
 
 
-int SDL_OFFSCREEN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int SDL_OFFSCREEN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format, void **pixels, int *pitch)
 {
     SDL_Surface *surface;
-    const Uint32 surface_format = SDL_PIXELFORMAT_XRGB8888;
+    const SDL_PixelFormatEnum surface_format = SDL_PIXELFORMAT_XRGB8888;
     int w, h;
 
     /* Create a new framebuffer */

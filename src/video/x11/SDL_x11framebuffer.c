@@ -47,7 +47,7 @@ static SDL_bool have_mitshm(Display *dpy)
 
 #endif /* !NO_SHARED_MEMORY */
 
-int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format,
+int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format,
                                 void **pixels, int *pitch)
 {
     SDL_WindowData *data = window->driverdata;

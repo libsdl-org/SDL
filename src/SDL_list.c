@@ -25,7 +25,7 @@
 /* Push */
 int SDL_ListAdd(SDL_ListNode **head, void *ent)
 {
-    SDL_ListNode *node = SDL_malloc(sizeof(*node));
+    SDL_ListNode *node = (SDL_ListNode *)SDL_malloc(sizeof(*node));
 
     if (!node) {
         return -1;

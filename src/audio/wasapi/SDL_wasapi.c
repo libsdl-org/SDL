@@ -71,7 +71,7 @@ static void ManagementThreadMainloop(void)
 {
     SDL_LockMutex(ManagementThreadLock);
     ManagementThreadPendingTask *task;
-    while (((task = SDL_AtomicGetPtr((void **) &ManagementThreadPendingTasks)) != NULL) || !SDL_AtomicGet(&ManagementThreadShutdown)) {
+    while (((task = (ManagementThreadPendingTask *)SDL_AtomicGetPtr((void **)&ManagementThreadPendingTasks)) != NULL) || !SDL_AtomicGet(&ManagementThreadShutdown)) {
         if (!task) {
             SDL_WaitCondition(ManagementThreadCondition, ManagementThreadLock); // block until there's something to do.
         } else {
@@ -102,7 +102,7 @@ int WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, in
         return SDL_SetError("Can't add task, we're shutting down");
     }
 
-    ManagementThreadPendingTask *pending = SDL_calloc(1, sizeof(ManagementThreadPendingTask));
+    ManagementThreadPendingTask *pending = (ManagementThreadPendingTask *)SDL_calloc(1, sizeof(ManagementThreadPendingTask));
     if (!pending) {
         return -1;
     }
@@ -124,7 +124,7 @@ int WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, in
 
     // add to end of task list.
     ManagementThreadPendingTask *prev = NULL;
-    for (ManagementThreadPendingTask *i = SDL_AtomicGetPtr((void **) &ManagementThreadPendingTasks); i; i = i->next) {
+    for (ManagementThreadPendingTask *i = (ManagementThreadPendingTask *)SDL_AtomicGetPtr((void **)&ManagementThreadPendingTasks); i; i = i->next) {
         prev = i;
     }
 

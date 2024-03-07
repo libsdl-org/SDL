@@ -750,7 +750,7 @@ static void WIN_LogMonitor(SDL_VideoDevice *_this, HMONITOR mon)
 int WIN_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     SDL_DisplayData *displaydata = display->driverdata;
-    SDL_DisplayModeData *data = mode->driverdata;
+    SDL_DisplayModeData *data = (SDL_DisplayModeData *)mode->driverdata;
     LONG status;
 
 #ifdef DEBUG_MODES

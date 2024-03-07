@@ -667,7 +667,7 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, SDL_bool freedst)
         ) {
             intermediate_surface = surface;
         } else {
-            Uint32 pixel_format;
+            SDL_PixelFormatEnum pixel_format;
 
             /* If the surface has a colorkey or alpha channel we'll save a
                32-bit BMP with alpha channel, otherwise save a 24-bit BMP. */

@@ -303,12 +303,12 @@ static const GUID SDL_IID_ID3D12InfoQueue = { 0x0742a90b, 0xc387, 0x483f, { 0xb9
 #pragma GCC diagnostic pop
 #endif
 
-UINT D3D12_Align(UINT location, UINT alignment)
+static UINT D3D12_Align(UINT location, UINT alignment)
 {
     return (location + (alignment - 1)) & ~(alignment - 1);
 }
 
-Uint32 D3D12_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
+static SDL_PixelFormatEnum D3D12_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
 {
     switch (dxgiFormat) {
     case DXGI_FORMAT_B8G8R8A8_UNORM:

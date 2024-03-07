@@ -236,7 +236,7 @@ static void SDLCALL SDL_CleanupWindowTextureData(void *userdata, void *value)
     SDL_free(data);
 }
 
-static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format, void **pixels, int *pitch)
 {
     SDL_RendererInfo info;
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
@@ -363,7 +363,7 @@ static int SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window *window, 
 
     SDL_GetWindowSizeInPixels(window, &w, &h);
 
-    data = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_TEXTUREDATA_POINTER, NULL);
+    data = (SDL_WindowTextureData *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_TEXTUREDATA_POINTER, NULL);
     if (!data || !data->texture) {
         return SDL_SetError("No window texture data");
     }
@@ -395,7 +395,7 @@ int SDL_SetWindowTextureVSync(SDL_Window *window, int vsync)
 {
     SDL_WindowTextureData *data;
 
-    data = SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_TEXTUREDATA_POINTER, NULL);
+    data = (SDL_WindowTextureData *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_TEXTUREDATA_POINTER, NULL);
     if (!data) {
         return -1;
     }
@@ -2010,7 +2010,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     int y = (int)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, SDL_WINDOWPOS_UNDEFINED);
     int w = (int)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 0);
     int h = (int)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 0);
-    SDL_Window *parent = SDL_GetProperty(props, SDL_PROP_WINDOW_CREATE_PARENT_POINTER, NULL);
+    SDL_Window *parent = (SDL_Window *)SDL_GetProperty(props, SDL_PROP_WINDOW_CREATE_PARENT_POINTER, NULL);
     SDL_WindowFlags flags = SDL_GetWindowFlagProperties(props);
     SDL_WindowFlags type_flags, graphics_flags;
     SDL_bool undefined_x = SDL_FALSE;
@@ -3047,7 +3047,7 @@ int SDL_SyncWindow(SDL_Window *window)
 
 static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
 {
-    Uint32 format = 0;
+    SDL_PixelFormatEnum format = SDL_PIXELFORMAT_UNKNOWN;
     void *pixels = NULL;
     int pitch = 0;
     SDL_bool created_framebuffer = SDL_FALSE;

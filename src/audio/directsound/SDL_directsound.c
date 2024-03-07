@@ -532,6 +532,7 @@ static int DSOUND_OpenDevice(SDL_AudioDevice *device)
     }
 
     const DWORD numchunks = 8;
+    DWORD bufsize;
     SDL_bool tried_format = SDL_FALSE;
     SDL_AudioFormat test_format;
     const SDL_AudioFormat *closefmts = SDL_ClosestAudioFormats(device->spec.format);
@@ -548,7 +549,7 @@ static int DSOUND_OpenDevice(SDL_AudioDevice *device)
             // Update the fragment size as size in bytes
             SDL_UpdatedAudioDeviceFormat(device);
 
-            const DWORD bufsize = numchunks * device->buffer_size;
+            bufsize = numchunks * device->buffer_size;
             if ((bufsize < DSBSIZE_MIN) || (bufsize > DSBSIZE_MAX)) {
                 SDL_SetError("Sound buffer size must be between %d and %d",
                              (int)((DSBSIZE_MIN < numchunks) ? 1 : DSBSIZE_MIN / numchunks),

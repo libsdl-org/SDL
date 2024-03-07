@@ -47,13 +47,13 @@ static struct
 
 void VULKAN_GetVertexShader(VULKAN_Shader shader, const uint32_t **outBytecode, size_t *outSize)
 {
-    *outBytecode = VULKAN_shaders[shader].vs_shader_data;
+    *outBytecode = (const uint32_t *)VULKAN_shaders[shader].vs_shader_data;
     *outSize = VULKAN_shaders[shader].vs_shader_size;
 }
 
 void VULKAN_GetPixelShader(VULKAN_Shader shader, const uint32_t **outBytecode, size_t *outSize)
 {
-    *outBytecode = VULKAN_shaders[shader].ps_shader_data;
+    *outBytecode = (const uint32_t *)VULKAN_shaders[shader].ps_shader_data;
     *outSize = VULKAN_shaders[shader].ps_shader_size;
 }
 

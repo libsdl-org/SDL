@@ -122,7 +122,7 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
         return SDL_SetError("Unsupported virtual joystick description version %u", desc->version);
     }
 
-    hwdata = SDL_calloc(1, sizeof(joystick_hwdata));
+    hwdata = (joystick_hwdata *)SDL_calloc(1, sizeof(joystick_hwdata));
     if (!hwdata) {
         VIRTUAL_FreeHWData(hwdata);
         return 0;
@@ -207,7 +207,7 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
 
     /* Allocate fields for different control-types */
     if (hwdata->desc.naxes > 0) {
-        hwdata->axes = SDL_calloc(hwdata->desc.naxes, sizeof(Sint16));
+        hwdata->axes = (Sint16 *)SDL_calloc(hwdata->desc.naxes, sizeof(Sint16));
         if (!hwdata->axes) {
             VIRTUAL_FreeHWData(hwdata);
             return 0;
@@ -222,14 +222,14 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
         }
     }
     if (hwdata->desc.nbuttons > 0) {
-        hwdata->buttons = SDL_calloc(hwdata->desc.nbuttons, sizeof(Uint8));
+        hwdata->buttons = (Uint8 *)SDL_calloc(hwdata->desc.nbuttons, sizeof(Uint8));
         if (!hwdata->buttons) {
             VIRTUAL_FreeHWData(hwdata);
             return 0;
         }
     }
     if (hwdata->desc.nhats > 0) {
-        hwdata->hats = SDL_calloc(hwdata->desc.nhats, sizeof(Uint8));
+        hwdata->hats = (Uint8 *)SDL_calloc(hwdata->desc.nhats, sizeof(Uint8));
         if (!hwdata->hats) {
             VIRTUAL_FreeHWData(hwdata);
             return 0;
