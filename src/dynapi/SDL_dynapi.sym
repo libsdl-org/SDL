@@ -990,6 +990,11 @@ SDL3_0.0.0 {
     SDL_DestroyFilesystem;
     SDL_FileTimeToWindows;
     SDL_FileTimeToUnix;
+    SDL_EnumerateFilesystemPath;
+    SDL_RemoveFilesystemPath;
+    SDL_RenameFilesystemPath;
+    SDL_MakeFilesystemDirectory;
+    SDL_StatFilesystemPath;
     # extra symbols go here (don't modify this line)
   local: *;
 };

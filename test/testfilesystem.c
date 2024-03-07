@@ -32,7 +32,7 @@ static int SDLCALL enum_callback(void *userdata, SDL_FSops *fsops, const char *o
         return -1;
     }
 
-    if (SDL_FSstat(fsops, fullpath, &statbuf) < 0) {
+    if ((fsops ? SDL_FSstat(fsops, fullpath, &statbuf) : SDL_StatFilesystemPath(fullpath, &statbuf)) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't stat '%s': %s", fullpath, SDL_GetError());
     } else {
         const char *type;
@@ -47,7 +47,7 @@ static int SDLCALL enum_callback(void *userdata, SDL_FSops *fsops, const char *o
                 fullpath, type, statbuf.filesize, statbuf.modtime, statbuf.createtime, statbuf.accesstime);
 
         if (statbuf.filetype == SDL_STATPATHTYPE_DIRECTORY) {
-            if (SDL_FSenumerate(fsops, fullpath, enum_callback, userdata) < 0) {
+            if ((fsops ? SDL_FSenumerate(fsops, fullpath, enum_callback, userdata) : SDL_EnumerateFilesystemPath(fullpath, enum_callback, userdata)) < 0) {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Enumeration failed!");
             }
         }
@@ -126,16 +126,37 @@ int main(int argc, char *argv[])
             } else if (SDL_FSmkdir(fsops, "testfilesystem-test/1") == -1) {  /* THIS SHOULD NOT FAIL! Making a directory that already exists should succeed here. */
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_FSmkdir('testfilesystem-test/1') failed: %s", SDL_GetError());
             } else if (SDL_FSrename(fsops, "testfilesystem-test/1", "testfilesystem-test/2") == -1) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_FSrename(fsops, 'testfilesystem-test/1', 'testfilesystem-test/2') failed: %s", SDL_GetError());
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_FSrename('testfilesystem-test/1', 'testfilesystem-test/2') failed: %s", SDL_GetError());
             } else if (SDL_FSremove(fsops, "testfilesystem-test/2") == -1) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_FSremove(fsops, 'testfilesystem-test/2') failed: %s", SDL_GetError());
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_FSremove('testfilesystem-test/2') failed: %s", SDL_GetError());
             } else if (SDL_FSremove(fsops, "testfilesystem-test") == -1) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_FSremove(fsops, 'testfilesystem-test') failed: %s", SDL_GetError());
-            } else if (SDL_FSremove(fsops, "/testfilesystem-test") == -1) {  /* THIS SHOULD NOT FAIL! Removing a directory that is already gone should succeed here. */
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_FSremove(fsops, 'testfilesystem-test') failed: %s", SDL_GetError());
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_FSremove('testfilesystem-test') failed: %s", SDL_GetError());
+            } else if (SDL_FSremove(fsops, "testfilesystem-test") == -1) {  /* THIS SHOULD NOT FAIL! Removing a directory that is already gone should succeed here. */
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_FSremove('testfilesystem-test') failed: %s", SDL_GetError());
             }
 
             SDL_DestroyFilesystem(fsops);
+        }
+
+        if (SDL_EnumerateFilesystemPath(base_path, enum_callback, NULL) < 0) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Base path enumeration failed!");
+        }
+
+        /* !!! FIXME: put this in a subroutine and make it test more thoroughly (and put it in testautomation). */
+        if (SDL_MakeFilesystemDirectory("testfilesystem-test") == -1) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_MakeFilesystemDirectory('testfilesystem-test') failed: %s", SDL_GetError());
+        } else if (SDL_MakeFilesystemDirectory("testfilesystem-test/1") == -1) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_MakeFilesystemDirectory('testfilesystem-test/1') failed: %s", SDL_GetError());
+        } else if (SDL_MakeFilesystemDirectory("testfilesystem-test/1") == -1) {  /* THIS SHOULD NOT FAIL! Making a directory that already exists should succeed here. */
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_MakeFilesystemDirectory('testfilesystem-test/1') failed: %s", SDL_GetError());
+        } else if (SDL_RenameFilesystemPath("testfilesystem-test/1", "testfilesystem-test/2") == -1) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RenameFilesystemPath('testfilesystem-test/1', 'testfilesystem-test/2') failed: %s", SDL_GetError());
+        } else if (SDL_RemoveFilesystemPath("testfilesystem-test/2") == -1) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RemoveFilesystemPath('testfilesystem-test/2') failed: %s", SDL_GetError());
+        } else if (SDL_RemoveFilesystemPath("testfilesystem-test") == -1) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RemoveFilesystemPath('testfilesystem-test') failed: %s", SDL_GetError());
+        } else if (SDL_RemoveFilesystemPath("testfilesystem-test") == -1) {  /* THIS SHOULD NOT FAIL! Removing a directory that is already gone should succeed here. */
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RemoveFilesystemPath('testfilesystem-test') failed: %s", SDL_GetError());
         }
     }
 

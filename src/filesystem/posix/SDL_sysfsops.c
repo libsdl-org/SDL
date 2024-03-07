@@ -65,17 +65,18 @@ int SDL_SYS_FSremove(SDL_FSops *fs, const char *fullpath)
             if (!parent) {
                 return -1;
             }
+
             char *ptr = SDL_strrchr(parent, '/');
             if (ptr) {
                 *ptr = '\0';  // chop off thing we were removing, see if parent is there.
-                struct stat statbuf;
-                rc = stat(parent, &statbuf);
-                if (rc == 0) {
-                    SDL_free(parent);
-                    return 0;  // it's already gone, and parent exists, consider it success.
-                }
             }
+
+            struct stat statbuf;
+            rc = stat(ptr ? parent : ".", &statbuf);
             SDL_free(parent);
+            if (rc == 0) {
+                return 0;  // it's already gone, and parent exists, consider it success.
+            }
         }
         return SDL_SetError("Can't remove path: %s", strerror(origerrno));
     }

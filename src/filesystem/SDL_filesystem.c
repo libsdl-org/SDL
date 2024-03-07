@@ -232,6 +232,7 @@ static SDL_bool SanitizePath(char *sanitized, const char *path, const size_t pat
             } else if ((piece[1] == '.') && (piece[2] == '\0')) {
                 pieces[i] = NULL;  // a ".." path, kill it.
                 for (int j = i - 1; j >= 0; j--) {
+                    // !!! FIXME: on Windows, you shouldn't be able to ".." past a drive letter (and you shouldn't be able to specify a drive letter unless there's no base path at all!).
                     if (pieces[j]) {
                         pieces[j] = NULL;  // kill next parent directory, too.
                         break;
@@ -270,7 +271,7 @@ static SDL_bool SanitizePath(char *sanitized, const char *path, const size_t pat
 
 static char *AssembleNativeFsPath(SDL_FSops *fs, const char *path)
 {
-    const char *base = (const char *) fs->opaque;
+    const char *base = fs ? (const char *) fs->opaque : NULL;
     const size_t baselen = base ? SDL_strlen(base) : 0;
     const size_t pathlen = path ? SDL_strlen(path) : 0;
     SDL_bool isstack = SDL_FALSE;
@@ -390,6 +391,7 @@ SDL_FSops *SDL_CreateFilesystem(const char *basedir)
 
             // save an absolute path char that SanitizePath will trim off...
             #ifdef SDL_PLATFORM_WINDOWS
+            // !!! FIXME: on Windows, there could be an OPTIONAL drive letter _AND_ it starts with a path separator.
             const int absolute_path = ((*basedir == '\\') || (*basedir == '/')) ? 1 : 0;
             #else
             const int absolute_path = (*basedir == '/') ? 1 : 0;
@@ -439,4 +441,30 @@ void SDL_DestroyFilesystem(SDL_FSops *fs)
         SDL_free(fs);
     }
 }
+
+int SDL_EnumerateFilesystemPath(const char *path, SDL_EnumerateCallback cb, void *userdata)
+{
+    return SDL_SYS_FSenumerate(NULL, path, path, cb, userdata);
+}
+
+int SDL_RemoveFilesystemPath(const char *path)
+{
+    return SDL_SYS_FSremove(NULL, path);
+}
+
+int SDL_RenameFilesystemPath(const char *oldpath, const char *newpath)
+{
+    return SDL_SYS_FSrename(NULL, oldpath, newpath);
+}
+
+int SDL_MakeFilesystemDirectory(const char *path)
+{
+    return SDL_SYS_FSmkdir(NULL, path);
+}
+
+int SDL_StatFilesystemPath(const char *path, SDL_Stat *stat)
+{
+    return SDL_SYS_FSstat(NULL, path, stat);
+}
+
 

@@ -348,6 +348,14 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetFSProperties(SDL_FSops *context)
 extern DECLSPEC void SDLCALL SDL_DestroyFilesystem(SDL_FSops *fs);
 
 
+/* Don't want to mess with SDL_CreateFilesystem? You can use these to just
+work with native filesystem paths. */
+extern DECLSPEC int SDLCALL SDL_EnumerateFilesystemPath(const char *path, SDL_EnumerateCallback cb, void *userdata);  /* `fs` in the callback will be NULL */
+extern DECLSPEC int SDLCALL SDL_RemoveFilesystemPath(const char *path);
+extern DECLSPEC int SDLCALL SDL_RenameFilesystemPath(const char *oldpath, const char *newpath);
+extern DECLSPEC int SDLCALL SDL_MakeFilesystemDirectory(const char *path);
+extern DECLSPEC int SDLCALL SDL_StatFilesystemPath(const char *path, SDL_Stat *stat);
+
 /* some helper functions ... */
 
 /* converts an SDL file timestamp into a win32 FILETIME (100-nanosecond intervals since January 1, 1601). Fills in the two 32-bit values of the win32 struct. */
