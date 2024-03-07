@@ -765,7 +765,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetMasksForPixelFormatEnum(SDL_PixelFormatE
  * \param Gmask the green mask for the format
  * \param Bmask the blue mask for the format
  * \param Amask the alpha mask for the format
- * \returns the SDL_PixelFormatEnum value corresponding to the format masks, or SDL_PIXELFORMAT_UNKNOWN if there isn't a match.
+ * \returns the SDL_PixelFormatEnum value corresponding to the format masks,
+ *          or SDL_PIXELFORMAT_UNKNOWN if there isn't a match.
  *
  * \since This function is available since SDL 3.0.0.
  *
