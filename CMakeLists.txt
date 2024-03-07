@@ -2762,6 +2762,61 @@ if(SDL_VIDEO)
   endif()
 endif()
 
+find_program(GLSLANG NAMES glslang glslangValidator)
+
+if(SDL_VULKAN AND GLSLANG)
+  set(SDL3_Vulkan_headers)
+
+  function(glslang2vkpixelheader dir name)
+    set(input "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/VULKAN_PixelShader_${name}.hlsl")
+    set(intermediate "${CMAKE_CURRENT_BINARY_DIR}/${dir}/VULKAN_PixelShader_${name}.h")
+    set(output "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/VULKAN_PixelShader_${name}.h")
+    add_custom_command(OUTPUT "${intermediate}"
+      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${dir}"
+      COMMAND "${GLSLANG}"
+        -D --sep main -e main -S frag --target-env vulkan1.0
+        --auto-sampled-textures --vn "VULKAN_PixelShader_${name}"
+        -o "${intermediate}"
+        "VULKAN_PixelShader_${name}.hlsl"
+      COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${intermediate}" "${output}"
+      DEPENDS "${input}" "${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt"
+    )
+    set(SDL3_Vulkan_headers "${SDL3_Vulkan_headers};${intermediate}" PARENT_SCOPE)
+  endfunction()
+
+  function(glslang2vkvertexheader dir)
+    set(input "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/VULKAN_VertexShader.hlsl")
+    set(intermediate "${CMAKE_CURRENT_BINARY_DIR}/${dir}/VULKAN_VertexShader.h")
+    set(output "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/VULKAN_VertexShader.h")
+    add_custom_command(OUTPUT "${intermediate}"
+      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${dir}"
+      COMMAND "${GLSLANG}"
+        -D --sep mainColor -e main -S frag --iy --target-env vulkan1.0
+        --vn VULKAN_VertexShader
+        -o "${intermediate}"
+        "VULKAN_VertexShader.hlsl"
+      COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${intermediate}" "${output}"
+      DEPENDS "${input}" "${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt"
+    )
+    set(SDL3_Vulkan_headers "${SDL3_Vulkan_headers};${intermediate}" PARENT_SCOPE)
+  endfunction()
+
+  glslang2vkpixelheader(src/render/vulkan Colors)
+  glslang2vkpixelheader(src/render/vulkan Textures)
+  glslang2vkpixelheader(src/render/vulkan Advanced)
+  glslang2vkvertexheader(src/render/vulkan)
+
+  add_custom_target(SDL3-Vulkan-headers DEPENDS ${SDL3_Vulkan_headers})
+
+  if(TARGET SDL3-shared)
+    add_dependencies(SDL3-shared SDL3-Vulkan-headers)
+  endif()
+
+  if(TARGET SDL3-static)
+    add_dependencies(SDL3-static SDL3-Vulkan-headers)
+  endif()
+endif()
+
 # Dummies
 # configure.ac does it differently:
 # if not have X
