@@ -368,6 +368,7 @@
     <ClInclude Include="..\..\include\SDL3\SDL_scancode.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_sensor.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_stdinc.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_storage.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_surface.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_system.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test.h" />
@@ -778,6 +779,8 @@
     <ClCompile Include="..\..\src\stdlib\SDL_stdlib.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_string.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_strtokr.c" />
+    <ClCompile Include="..\..\src\storage\generic\SDL_genericstorage.c" />
+    <ClCompile Include="..\..\src\storage\SDL_storage.c" />
     <ClCompile Include="..\..\src\thread\generic\SDL_syscond.c" />
     <ClCompile Include="..\..\src\thread\generic\SDL_sysrwlock.c" />
     <ClCompile Include="..\..\src\thread\SDL_thread.c" />

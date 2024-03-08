@@ -1004,3 +1004,11 @@
 #define SDL_OpenIO SDL_OpenIO_REAL
 #define SDL_CloseIO SDL_CloseIO_REAL
 #define SDL_GetIOStatus SDL_GetIOStatus_REAL
+#define SDL_OpenTitleStorage SDL_OpenTitleStorage_REAL
+#define SDL_OpenUserStorage SDL_OpenUserStorage_REAL
+#define SDL_OpenStorage SDL_OpenStorage_REAL
+#define SDL_CloseStorage SDL_CloseStorage_REAL
+#define SDL_StorageReady SDL_StorageReady_REAL
+#define SDL_StorageFileSize SDL_StorageFileSize_REAL
+#define SDL_StorageReadFile SDL_StorageReadFile_REAL
+#define SDL_StorageSpaceRemaining SDL_StorageSpaceRemaining_REAL

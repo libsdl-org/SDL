@@ -1905,6 +1905,24 @@ extern "C" {
 #define SDL_HINT_SHUTDOWN_DBUS_ON_QUIT "SDL_SHUTDOWN_DBUS_ON_QUIT"
 
 /**
+ * A variable that specifies a backend to use for title storage.
+ *
+ * By default, SDL will try all available storage backends in a reasonable order until it finds one that can work, but this hint allows the app or user to force a specific target, such as "pc" if, say, you are on Steam but want to avoid SteamRemoteStorage for title data.
+ *
+ * This hint should be set before SDL is initialized.
+ */
+#define SDL_HINT_STORAGE_TITLE_DRIVER "SDL_STORAGE_TITLE_DRIVER"
+
+/**
+ * A variable that specifies a backend to use for user storage.
+ *
+ * By default, SDL will try all available storage backends in a reasonable order until it finds one that can work, but this hint allows the app or user to force a specific target, such as "pc" if, say, you are on Steam but want to avoid SteamRemoteStorage for user data.
+ *
+ * This hint should be set before SDL is initialized.
+ */
+#define SDL_HINT_STORAGE_USER_DRIVER "SDL_STORAGE_USER_DRIVER"
+
+/**
  * Specifies whether SDL_THREAD_PRIORITY_TIME_CRITICAL should be treated as realtime.
  *
  * On some platforms, like Linux, a realtime priority thread may be subject to restrictions that require special handling by the application. This hint exists to let SDL know that the app is prepared to handle said restrictions.

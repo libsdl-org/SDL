@@ -494,6 +494,7 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/render/*/*.c"
   "${SDL3_SOURCE_DIR}/src/sensor/*.c"
   "${SDL3_SOURCE_DIR}/src/stdlib/*.c"
+  "${SDL3_SOURCE_DIR}/src/storage/*.c"
   "${SDL3_SOURCE_DIR}/src/thread/*.c"
   "${SDL3_SOURCE_DIR}/src/timer/*.c"
   "${SDL3_SOURCE_DIR}/src/video/*.c"
@@ -1753,6 +1754,14 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/unix/*.c")
   set(HAVE_SDL_FILESYSTEM TRUE)
 
+  set(SDL_STORAGE_GENERIC 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/storage/generic/*.c")
+  if(LINUX)
+    set(SDL_STORAGE_STEAM 1)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/storage/steam/*.c")
+  endif()
+  set(HAVE_SDL_STORAGE 1)
+
   set(SDL_TIMER_UNIX 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
   set(HAVE_SDL_TIMERS TRUE)
@@ -1971,6 +1980,14 @@ elseif(WINDOWS)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/windows/*.c")
   endif()
   set(HAVE_SDL_FILESYSTEM TRUE)
+
+  set(SDL_STORAGE_GENERIC 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/storage/generic/*.c")
+  if(NOT WINDOWS_STORE)
+    set(SDL_STORAGE_STEAM 1)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/storage/steam/*.c")
+  endif()
+  set(HAVE_SDL_STORAGE 1)
 
   # Libraries for Win32 native and MinGW
   if(NOT WINDOWS_STORE)
@@ -2203,6 +2220,15 @@ elseif(APPLE)
   set(SDL_FILESYSTEM_COCOA 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/cocoa/*.m")
   set(HAVE_SDL_FILESYSTEM TRUE)
+
+  # TODO: SDL_STORAGE_ICLOUD
+  set(SDL_STORAGE_GENERIC 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/storage/generic/*.c")
+  if(DARWIN OR MACOSX)
+    set(SDL_STORAGE_STEAM 1)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/storage/steam/*.c")
+  endif()
+  set(HAVE_SDL_STORAGE 1)
 
   if(SDL_SENSOR)
     if(IOS OR VISIONOS)
@@ -2819,6 +2845,10 @@ endif()
 if(NOT HAVE_SDL_FILESYSTEM)
   set(SDL_FILESYSTEM_DUMMY 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/dummy/*.c")
+endif()
+if(NOT HAVE_SDL_STORAGE)
+  set(SDL_STORAGE_GENERIC 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/storage/generic/*.c")
 endif()
 if(NOT HAVE_SDL_LOCALE)
   set(SDL_LOCALE_DUMMY 1)
