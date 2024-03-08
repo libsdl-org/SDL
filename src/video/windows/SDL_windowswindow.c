@@ -1577,8 +1577,9 @@ void WIN_UpdateClipCursor(SDL_Window *window)
         if (PtInRect(&data->cursor_clipped_rect, first) &&
             PtInRect(&data->cursor_clipped_rect, second)) {
             ClipCursor(NULL);
-            SDL_zero(data->cursor_clipped_rect);
         }
+        /* Note that we don't have the cursor clipped anymore, even if it's not us that reset it */
+        SDL_zero(data->cursor_clipped_rect);
     }
     data->last_updated_clipcursor = SDL_GetTicks();
 }
