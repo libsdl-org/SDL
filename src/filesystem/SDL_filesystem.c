@@ -148,13 +148,6 @@ void SDL_FileTimeToWindows(Sint64 ftime, Uint32 *low, Uint32 *high)
     }
 }
 
-Sint64 SDL_FileTimeToUnix(Sint64 ftime)
-{
-    // SDL time uses seconds since the unix epoch, so we're already there.
-    return ftime;
-}
-
-
 // this assumes `sanitized` is as large a buffer as `path`!
 static SDL_bool SanitizePath(char *sanitized, const char *path, const size_t pathlen)
 {

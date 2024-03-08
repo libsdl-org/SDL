@@ -1014,7 +1014,6 @@
 #define SDL_GetFSProperties SDL_GetFSProperties_REAL
 #define SDL_DestroyFilesystem SDL_DestroyFilesystem_REAL
 #define SDL_FileTimeToWindows SDL_FileTimeToWindows_REAL
-#define SDL_FileTimeToUnix SDL_FileTimeToUnix_REAL
 #define SDL_EnumerateFilesystemPath SDL_EnumerateFilesystemPath_REAL
 #define SDL_RemoveFilesystemPath SDL_RemoveFilesystemPath_REAL
 #define SDL_RenameFilesystemPath SDL_RenameFilesystemPath_REAL

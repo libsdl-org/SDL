@@ -1039,7 +1039,6 @@ SDL_DYNAPI_PROC(int,SDL_FSstat,(SDL_FSops *a, const char *b, SDL_Stat *c),(a,b,c
 SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetFSProperties,(SDL_FSops *a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_DestroyFilesystem,(SDL_FSops *a),(a),)
 SDL_DYNAPI_PROC(void,SDL_FileTimeToWindows,(Sint64 a, Uint32 *b, Uint32 *c),(a,b,c),)
-SDL_DYNAPI_PROC(Sint64,SDL_FileTimeToUnix,(Sint64 a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_EnumerateFilesystemPath,(const char *a, SDL_EnumerateCallback b, void *c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_RemoveFilesystemPath,(const char *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_RenameFilesystemPath,(const char *a, const char *b),(a,b),return)

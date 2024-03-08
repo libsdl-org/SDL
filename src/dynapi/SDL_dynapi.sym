@@ -989,7 +989,6 @@ SDL3_0.0.0 {
     SDL_GetFSProperties;
     SDL_DestroyFilesystem;
     SDL_FileTimeToWindows;
-    SDL_FileTimeToUnix;
     SDL_EnumerateFilesystemPath;
     SDL_RemoveFilesystemPath;
     SDL_RenameFilesystemPath;
