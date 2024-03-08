@@ -426,7 +426,7 @@ def check_comment():
 
 # Parse 'sdl_dynapi_procs_h' file to find existing functions
 def find_existing_procs():
-    reg = re.compile(r'(?:(?:SDL_DYNAPI_PROC\([^,]*,)|(?:SDL_DYNAPI_PROC_VOID\())([^,]*),.*\)')
+    reg = re.compile(r'(?:(?:(?:SDL_DYNAPI_PROC|SDL_DYNAPI_PROC_NO_TAILCALL)\([^,]*,)|(?:SDL_DYNAPI_PROC_VOID\())([^,]*),.*\)')
     ret = []
 
     with open(SDL_DYNAPI_PROCS_H) as f:

@@ -32,6 +32,10 @@
 #define SDL_DYNAPI_PROC_VOID(fn, params, args) SDL_DYNAPI_PROC(void, fn, params, args,)
 #endif
 
+#ifndef SDL_DYNAPI_PROC_NO_TAILCALL
+#define SDL_DYNAPI_PROC_NO_TAILCALL(rc, fn, params, args, ret) SDL_DYNAPI_PROC(rc, fn, params, args, ret)
+#endif
+
 /* direct jump magic can use these, the rest needs special code. */
 #ifndef SDL_DYNAPI_PROC_NO_VARARGS
 SDL_DYNAPI_PROC_VOID(SDL_Log,(SDL_PRINTF_FORMAT_STRING const char *a, ...),(a))
@@ -213,7 +217,7 @@ SDL_DYNAPI_PROC(int,SDL_GL_SetSwapInterval,(int a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GL_SwapWindow,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC_VOID(SDL_GL_UnloadLibrary,(void),())
 SDL_DYNAPI_PROC(SDL_GUID,SDL_GUIDFromString,(const char *a),(a),return)
-SDL_DYNAPI_PROC(int,SDL_GUIDToString,(SDL_GUID a, char *b, int c),(a,b,c),return)
+SDL_DYNAPI_PROC_NO_TAILCALL(int,SDL_GUIDToString,(SDL_GUID a, char *b, int c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_GamepadConnected,(SDL_Gamepad *a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_GamepadEventsEnabled,(void),(),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_GamepadHasAxis,(SDL_Gamepad *a, SDL_GamepadAxis b),(a,b),return)
@@ -960,7 +964,7 @@ SDL_DYNAPI_PROC(SDL_GamepadButtonLabel,SDL_GetGamepadButtonLabelForType,(SDL_Gam
 SDL_DYNAPI_PROC(SDL_GamepadButtonLabel,SDL_GetGamepadButtonLabel,(SDL_Gamepad *a, SDL_GamepadButton b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_PenID*,SDL_GetPens,(int *a),(a),return)
 SDL_DYNAPI_PROC(Uint32,SDL_GetPenStatus,(SDL_PenID a, float *b, float *c, float *d, size_t e),(a,b,c,d,e),return)
-SDL_DYNAPI_PROC(SDL_PenID,SDL_GetPenFromGUID,(SDL_GUID a),(a),return)
+SDL_DYNAPI_PROC_NO_TAILCALL(SDL_PenID,SDL_GetPenFromGUID,(SDL_GUID a),(a),return)
 SDL_DYNAPI_PROC(SDL_GUID,SDL_GetPenGUID,(SDL_PenID a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_PenConnected,(SDL_PenID a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetPenName,(SDL_PenID a),(a),return)
@@ -1031,4 +1035,5 @@ SDL_DYNAPI_PROC(int,SDL_AddVulkanRenderSemaphores,(SDL_Renderer *a, Uint32 b, Si
 /* extra procs go here (don't modify this line) */
 
 #undef SDL_DYNAPI_PROC_VOID
+#undef SDL_DYNAPI_PROC_NO_TAILCALL
 #undef SDL_DYNAPI_PROC
