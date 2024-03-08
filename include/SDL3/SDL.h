@@ -71,6 +71,7 @@
 #include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_sensor.h>
+#include <SDL3/SDL_storage.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_system.h>
 #include <SDL3/SDL_thread.h>

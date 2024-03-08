@@ -465,6 +465,10 @@
 #cmakedefine SDL_FILESYSTEM_PS2 @SDL_FILESYSTEM_PS2@
 #cmakedefine SDL_FILESYSTEM_N3DS @SDL_FILESYSTEM_N3DS@
 
+/* Enable system storage support */
+#cmakedefine SDL_STORAGE_GENERIC @SDL_STORAGE_GENERIC@
+#cmakedefine SDL_STORAGE_STEAM @SDL_STORAGE_STEAM@
+
 /* Enable camera subsystem */
 #cmakedefine SDL_CAMERA_DRIVER_DUMMY @SDL_CAMERA_DRIVER_DUMMY@
 /* !!! FIXME: for later cmakedefine SDL_CAMERA_DRIVER_DISK @SDL_CAMERA_DRIVER_DISK@ */
