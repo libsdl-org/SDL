@@ -186,10 +186,6 @@ static int unifont_init(const char *fontname)
             SDL_memmove(hexBuffer, hexBuffer + codepointHexSize + 1, bytesOverread);
         }
         bytesRead = SDL_RWread(hexFile, hexBuffer + bytesOverread, 33 - bytesOverread);
-        if (bytesRead < 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "error SDL_RWread\n");
-            return -1;
-        }
 
         if (bytesRead < (33 - bytesOverread)) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Unexpected end of hex file.\n");
@@ -200,11 +196,6 @@ static int unifont_init(const char *fontname)
         } else {
             glyphWidth = 16;
             bytesRead = SDL_RWread(hexFile, hexBuffer + 33, 32);
-            if (bytesRead < 0) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "error SDL_RWread\n");
-                return -1;
-            }
-
             if (bytesRead < 32) {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Unexpected end of hex file.\n");
                 return -1;
