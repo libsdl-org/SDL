@@ -31,7 +31,7 @@
 
 #include "../SDL_sysfilesystem.h"
 
-int SDL_SYS_FSenumerate(SDL_FSops *fs, const char *fullpath, const char *dirname, SDL_EnumerateCallback cb, void *userdata)
+int SDL_SYS_FSenumerate(const char *fullpath, const char *dirname, SDL_EnumerateCallback cb, void *userdata)
 {
     int retval = 1;
 
@@ -47,7 +47,7 @@ int SDL_SYS_FSenumerate(SDL_FSops *fs, const char *fullpath, const char *dirname
         if ((SDL_strcmp(name, ".") == 0) || (SDL_strcmp(name, "..") == 0)) {
             continue;
         }
-        retval = cb(userdata, fs, dirname, name);
+        retval = cb(userdata, NULL, dirname, name);
     }
 
     closedir(dir);
@@ -55,7 +55,7 @@ int SDL_SYS_FSenumerate(SDL_FSops *fs, const char *fullpath, const char *dirname
     return retval;
 }
 
-int SDL_SYS_FSremove(SDL_FSops *fs, const char *fullpath)
+int SDL_SYS_FSremove(const char *fullpath)
 {
     int rc = remove(fullpath);
     if (rc < 0) {
@@ -83,7 +83,7 @@ int SDL_SYS_FSremove(SDL_FSops *fs, const char *fullpath)
     return 0;
 }
 
-int SDL_SYS_FSrename(SDL_FSops *fs, const char *oldfullpath, const char *newfullpath)
+int SDL_SYS_FSrename(const char *oldfullpath, const char *newfullpath)
 {
     if (rename(oldfullpath, newfullpath) < 0) {
         return SDL_SetError("Can't remove path: %s", strerror(errno));
@@ -91,7 +91,7 @@ int SDL_SYS_FSrename(SDL_FSops *fs, const char *oldfullpath, const char *newfull
     return 0;
 }
 
-int SDL_SYS_FSmkdir(SDL_FSops *fs, const char *fullpath)
+int SDL_SYS_FSmkdir(const char *fullpath)
 {
     const int rc = mkdir(fullpath, 0770);
     if (rc < 0) {
@@ -107,20 +107,20 @@ int SDL_SYS_FSmkdir(SDL_FSops *fs, const char *fullpath)
     return 0;
 }
 
-int SDL_SYS_FSstat(SDL_FSops *fs, const char *fullpath, SDL_Stat *st)
+int SDL_SYS_FSstat(const char *fullpath, SDL_Stat *st)
 {
     struct stat statbuf;
     const int rc = stat(fullpath, &statbuf);
     if (rc < 0) {
         return SDL_SetError("Can't stat: %s", strerror(errno));
     } else if (S_ISREG(statbuf.st_mode)) {
-        st->filetype = SDL_STATPATHTYPE_FILE;
+        st->filetype = SDL_STATTYPE_FILE;
         st->filesize = (Uint64) statbuf.st_size;
     } else if (S_ISDIR(statbuf.st_mode)) {
-        st->filetype = SDL_STATPATHTYPE_DIRECTORY;
+        st->filetype = SDL_STATTYPE_DIRECTORY;
         st->filesize = 0;
     } else {
-        st->filetype = SDL_STATPATHTYPE_OTHER;
+        st->filetype = SDL_STATTYPE_OTHER;
         st->filesize = (Uint64) statbuf.st_size;
     }
 

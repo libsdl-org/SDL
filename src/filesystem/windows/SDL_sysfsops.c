@@ -26,7 +26,7 @@
 #include "../../core/windows/SDL_windows.h"
 #include "../SDL_sysfilesystem.h"
 
-int SDL_SYS_FSenumerate(SDL_FSops *fs, const char *fullpath, const char *dirname, SDL_EnumerateCallback cb, void *userdata)
+int SDL_SYS_FSenumerate(const char *fullpath, const char *dirname, SDL_EnumerateCallback cb, void *userdata)
 {
     int retval = 1;
     if (*fullpath == '\0') {  // if empty (completely at the root), we need to enumerate drive letters.
@@ -35,7 +35,7 @@ int SDL_SYS_FSenumerate(SDL_FSops *fs, const char *fullpath, const char *dirname
         for (int i = 'A'; (retval == 1) && (i <= 'Z'); i++) {
             if (drives & (1 << (i - 'A'))) {
                 name[0] = (char) i;
-                retval = cb(userdata, fs, dirname, name);
+                retval = cb(userdata, NULL, dirname, name);
             }
         }
     } else {
@@ -76,7 +76,7 @@ int SDL_SYS_FSenumerate(SDL_FSops *fs, const char *fullpath, const char *dirname
             if (!utf8fn) {
                 retval = -1;
             } else {
-                retval = cb(userdata, fs, dirname, utf8fn);
+                retval = cb(userdata, NULL, dirname, utf8fn);
                 SDL_free(utf8fn);
             }
         } while ((retval == 1) && (FindNextFileW(dir, &entw) != 0));
@@ -87,7 +87,7 @@ int SDL_SYS_FSenumerate(SDL_FSops *fs, const char *fullpath, const char *dirname
     return retval;
 }
 
-int SDL_SYS_FSremove(SDL_FSops *fs, const char *fullpath)
+int SDL_SYS_FSremove(const char *fullpath)
 {
     WCHAR *wpath = WIN_UTF8ToString(fullpath);
     if (!wpath) {
@@ -109,7 +109,7 @@ int SDL_SYS_FSremove(SDL_FSops *fs, const char *fullpath)
     return !rc ? WIN_SetError("Couldn't remove path") : 0;
 }
 
-int SDL_SYS_FSrename(SDL_FSops *fs, const char *oldfullpath, const char *newfullpath)
+int SDL_SYS_FSrename(const char *oldfullpath, const char *newfullpath)
 {
     WCHAR *woldpath = WIN_UTF8ToString(oldfullpath);
     if (!woldpath) {
@@ -128,7 +128,7 @@ int SDL_SYS_FSrename(SDL_FSops *fs, const char *oldfullpath, const char *newfull
     return !rc ? WIN_SetError("Couldn't rename path") : 0;
 }
 
-int SDL_SYS_FSmkdir(SDL_FSops *fs, const char *fullpath)
+int SDL_SYS_FSmkdir(const char *fullpath)
 {
     WCHAR *wpath = WIN_UTF8ToString(fullpath);
     if (!wpath) {
@@ -152,7 +152,7 @@ static Sint64 FileTimeToSDLTime(const FILETIME *ft)
     return (Sint64) ((((Uint64)large.QuadPart) - delta_1601_epoch_100ns) / (SDL_NS_PER_SECOND / 100ull));  // [secs] (adjust to epoch and convert 1/100th nanosecond units to seconds).
 }
 
-int SDL_SYS_FSstat(SDL_FSops *fs, const char *fullpath, SDL_Stat *st)
+int SDL_SYS_FSstat(const char *fullpath, SDL_Stat *st)
 {
     WCHAR *wpath = WIN_UTF8ToString(fullpath);
     if (!wpath) {
@@ -171,13 +171,13 @@ int SDL_SYS_FSstat(SDL_FSops *fs, const char *fullpath, SDL_Stat *st)
     st->accesstime = FileTimeToSDLTime(&winstat.ftLastAccessTime);
 
     if (winstat.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-        st->filetype = SDL_STATPATHTYPE_DIRECTORY;
+        st->filetype = SDL_STATTYPE_DIRECTORY;
         st->filesize = 0;
     } else if (winstat.dwFileAttributes & (FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_DEVICE)) {
-        st->filetype = SDL_STATPATHTYPE_OTHER;
+        st->filetype = SDL_STATTYPE_OTHER;
         st->filesize = ((((Uint64) winstat.nFileSizeHigh) << 32) | winstat.nFileSizeLow);
     } else {
-        st->filetype = SDL_STATPATHTYPE_FILE;
+        st->filetype = SDL_STATTYPE_FILE;
         st->filesize = ((((Uint64) winstat.nFileSizeHigh) << 32) | winstat.nFileSizeLow);
     }
 
