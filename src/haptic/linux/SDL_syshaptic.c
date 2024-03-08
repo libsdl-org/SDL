@@ -240,22 +240,24 @@ static int MaybeAddDevice(const char *path)
         return -1;
     }
 
-    /* check to see if file exists */
-    if (stat(path, &sb) != 0) {
+    /* try to open */
+    fd = open(path, O_RDWR | O_CLOEXEC, 0);
+    if (fd < 0) {
+        return -1;
+    }
+
+    /* get file status */
+    if (fstat(fd, &sb) != 0) {
+        close(fd);
         return -1;
     }
 
     /* check for duplicates */
     for (item = SDL_hapticlist; item; item = item->next) {
         if (item->dev_num == sb.st_rdev) {
+            close(fd);
             return -1; /* duplicate. */
         }
-    }
-
-    /* try to open */
-    fd = open(path, O_RDWR | O_CLOEXEC, 0);
-    if (fd < 0) {
-        return -1;
     }
 
 #ifdef DEBUG_INPUT_EVENTS

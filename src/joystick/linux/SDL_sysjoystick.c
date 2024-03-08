@@ -417,7 +417,13 @@ static void MaybeAddDevice(const char *path)
         return;
     }
 
-    if (stat(path, &sb) == -1) {
+    fd = open(path, O_RDONLY | O_CLOEXEC, 0);
+    if (fd < 0) {
+        return;
+    }
+
+    if (fstat(fd, &sb) == -1) {
+        close(fd);
         return;
     }
 
@@ -433,11 +439,6 @@ static void MaybeAddDevice(const char *path)
         if (sb.st_rdev == item_sensor->devnum) {
             goto done; /* already have this one */
         }
-    }
-
-    fd = open(path, O_RDONLY | O_CLOEXEC, 0);
-    if (fd < 0) {
-        goto done;
     }
 
 #ifdef DEBUG_INPUT_EVENTS
@@ -507,9 +508,7 @@ static void MaybeAddDevice(const char *path)
     }
 
 done:
-    if (fd >= 0) {
-        close(fd);
-    }
+    close(fd);
     SDL_UnlockJoysticks();
 }
 
