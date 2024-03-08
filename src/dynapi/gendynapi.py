@@ -424,21 +424,19 @@ def check_comment():
                 print("  In file %s: function %s() has %d '\\since' but expected %d" % (header, name, count, expected));
 
 
-
 # Parse 'sdl_dynapi_procs_h' file to find existing functions
 def find_existing_procs():
-    reg = re.compile('SDL_DYNAPI_PROC\([^,]*,([^,]*),.*\)')
+    reg = re.compile(r'(?:(?:SDL_DYNAPI_PROC\([^,]*,)|(?:SDL_DYNAPI_PROC_VOID\())([^,]*),.*\)')
     ret = []
-    input = open(SDL_DYNAPI_PROCS_H)
 
-    for line in input:
-        match = reg.match(line)
-        if not match:
-            continue
-        existing_func = match.group(1)
-        ret.append(existing_func);
-        # print(existing_func)
-    input.close()
+    with open(SDL_DYNAPI_PROCS_H) as f:
+        for line in f:
+            match = reg.match(line)
+            if not match:
+                continue
+            existing_func = match.group(1)
+            ret.append(existing_func)
+            # print(existing_func)
 
     return ret
 
@@ -470,8 +468,10 @@ def add_dyn_api(proc):
     #
     # Add at last
     # SDL_DYNAPI_PROC(SDL_EGLConfig,SDL_EGL_GetCurrentEGLConfig,(void),(),return)
-    f = open(SDL_DYNAPI_PROCS_H, "a")
-    dyn_proc = "SDL_DYNAPI_PROC(" + func_ret + "," + func_name + ",("
+    if func_ret == "void":
+        dyn_proc = "SDL_DYNAPI_PROC_VOID(" + func_name + ",("
+    else:
+        dyn_proc = "SDL_DYNAPI_PROC(" + func_ret + "," + func_name + ",("
 
     i = ord('a')
     remove_last = False
@@ -520,36 +520,40 @@ def add_dyn_api(proc):
     if remove_last:
         dyn_proc = dyn_proc[:-1]
 
-    dyn_proc += "),"
+    dyn_proc += ")"
 
     if func_ret != "void":
-        dyn_proc += "return"
+        dyn_proc += ",return"
     dyn_proc += ")"
-    f.write(dyn_proc + "\n")
-    f.close()
+    with open(SDL_DYNAPI_PROCS_H) as f:
+        new_input = []
+        for line in f:
+            if "extra procs go here" in line:
+                new_input.append(dyn_proc + "\n")
+            new_input.append(line)
+    with open(SDL_DYNAPI_PROCS_H, "w") as f:
+        for line in new_input:
+            f.write(line)
 
     # File: SDL_dynapi_overrides.h
     #
     # Add at last
     # "#define SDL_DelayNS SDL_DelayNS_REAL
-    f = open(SDL_DYNAPI_OVERRIDES_H, "a")
-    f.write("#define " + func_name + " " + func_name + "_REAL\n")
-    f.close()
+    with open(SDL_DYNAPI_OVERRIDES_H, "a") as f:
+        f.write("#define " + func_name + " " + func_name + "_REAL\n")
 
     # File: SDL_dynapi.sym
     #
     # Add before "extra symbols go here" line
-    input = open(SDL_DYNAPI_SYM)
-    new_input = []
-    for line in input:
-        if "extra symbols go here" in line:
-            new_input.append("    " + func_name + ";\n")
-        new_input.append(line)
-    input.close()
-    f = open(SDL_DYNAPI_SYM, 'w')
-    for line in new_input:
-        f.write(line)
-    f.close()
+    with open(SDL_DYNAPI_SYM) as f:
+        new_input = []
+        for line in f:
+            if "extra symbols go here" in line:
+                new_input.append("    " + func_name + ";\n")
+            new_input.append(line)
+    with open(SDL_DYNAPI_SYM, 'w') as f:
+        for line in new_input:
+            f.write(line)
 
 
 if __name__ == '__main__':
