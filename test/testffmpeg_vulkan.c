@@ -12,10 +12,12 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 
+#include "testffmpeg_vulkan.h"
+
+#ifdef FFMPEG_VULKAN_SUPPORT
+
 #include <libavutil/hwcontext.h>
 #include <libavutil/hwcontext_vulkan.h>
-
-#include "testffmpeg_vulkan.h"
 
 #define VULKAN_FUNCTIONS()                                             \
     VULKAN_GLOBAL_FUNCTION(vkCreateInstance)                           \
@@ -966,3 +968,40 @@ void DestroyVulkanVideoContext(VulkanVideoContext *context)
         SDL_free(context);
     }
 }
+
+#else
+
+VulkanVideoContext *CreateVulkanVideoContext(SDL_Window *window)
+{
+    SDL_SetError("testffmpeg not built with Vulkan support");
+    return NULL;
+}
+
+void SetupVulkanRenderProperties(VulkanVideoContext *context, SDL_PropertiesID props)
+{
+}
+
+void SetupVulkanDeviceContextData(VulkanVideoContext *context, AVVulkanDeviceContext *ctx)
+{
+}
+
+SDL_Texture *CreateVulkanVideoTexture(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer, SDL_PropertiesID props)
+{
+    return NULL;
+}
+
+int BeginVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer)
+{
+    return -1;
+}
+
+int FinishVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer)
+{
+    return -1;
+}
+
+void DestroyVulkanVideoContext(VulkanVideoContext *context)
+{
+}
+
+#endif // FFMPEG_VULKAN_SUPPORT
