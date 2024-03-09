@@ -1547,8 +1547,6 @@ const char *SDL_GetJoystickName(SDL_Joystick *joystick)
         if (info) {
             retval = info->name;
         } else {
-            CHECK_JOYSTICK_MAGIC(joystick, NULL);
-
             retval = joystick->name;
         }
     }
