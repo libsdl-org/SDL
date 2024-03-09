@@ -171,7 +171,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface
  * \param pixels a pointer to existing pixel data
  * \param width the width of the surface
  * \param height the height of the surface
- * \param pitch the pitch of the surface in bytes
+ * \param pitch the number of bytes between each row, including padding
  * \param format the SDL_PixelFormatEnum for the new surface's pixel format.
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
  *          call SDL_GetError() for more information.
