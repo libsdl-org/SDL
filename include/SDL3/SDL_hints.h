@@ -1588,10 +1588,11 @@ extern "C" {
  *   "0"       - Warping the mouse will not generate a motion event in relative mode
  *   "1"       - Warping the mouse will generate a motion event in relative mode
  *
- *  By default warping the mouse will not generate motion events in relative mode. This avoids the application having to filter out large relative motion due to warping.
+ * By default warping the mouse will not generate motion events in relative mode. This avoids the application having to filter out large relative motion due to warping.
+ *
+ * This hint can be set anytime.
  */
 #define SDL_HINT_MOUSE_RELATIVE_WARP_MOTION  "SDL_MOUSE_RELATIVE_WARP_MOTION"
-
 
 /**
  *  \brief  A variable controlling whether the hardware cursor stays visible when relative mode is active.
@@ -1603,13 +1604,6 @@ extern "C" {
  *  Note that for systems without raw hardware inputs, relative mode is implemented using warping, so the hardware cursor will visibly warp between frames if this is enabled on those systems.
  */
 #define SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE  "SDL_MOUSE_RELATIVE_CURSOR_VISIBLE"
-
-/**
- *  \brief  A variable controlling whether mouse events should generate synthetic touch events
- *
- * This hint can be set anytime.
- */
-#define SDL_HINT_MOUSE_RELATIVE_WARP_MOTION  "SDL_MOUSE_RELATIVE_WARP_MOTION"
 
 /**
  * A variable controlling whether mouse events should generate synthetic touch events
