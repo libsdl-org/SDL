@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 /**
  * \file SDL_atomic.h
  *
- * \brief Atomic operations.
+ * Atomic operations.
  *
  * IMPORTANT:
  * If you are not an expert in concurrent lockless programming, you should
@@ -31,8 +31,8 @@
  * with full mutexes.
  *
  * The list of "safe" functions to use are:
- *  SDL_AtomicLock()
- *  SDL_AtomicUnlock()
+ *  SDL_LockSpinlock()
+ *  SDL_UnlockSpinlock()
  *  SDL_AtomicIncRef()
  *  SDL_AtomicDecRef()
  *
@@ -105,10 +105,10 @@ typedef int SDL_SpinLock;
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicLock
- * \sa SDL_AtomicUnlock
+ * \sa SDL_LockSpinlock
+ * \sa SDL_UnlockSpinlock
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_AtomicTryLock(SDL_SpinLock *lock);
+extern DECLSPEC SDL_bool SDLCALL SDL_TryLockSpinlock(SDL_SpinLock *lock);
 
 /**
  * Lock a spin lock by setting it to a non-zero value.
@@ -120,10 +120,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_AtomicTryLock(SDL_SpinLock *lock);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicTryLock
- * \sa SDL_AtomicUnlock
+ * \sa SDL_TryLockSpinlock
+ * \sa SDL_UnlockSpinlock
  */
-extern DECLSPEC void SDLCALL SDL_AtomicLock(SDL_SpinLock *lock);
+extern DECLSPEC void SDLCALL SDL_LockSpinlock(SDL_SpinLock *lock);
 
 /**
  * Unlock a spin lock by setting it to 0.
@@ -137,10 +137,10 @@ extern DECLSPEC void SDLCALL SDL_AtomicLock(SDL_SpinLock *lock);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicLock
- * \sa SDL_AtomicTryLock
+ * \sa SDL_LockSpinlock
+ * \sa SDL_TryLockSpinlock
  */
-extern DECLSPEC void SDLCALL SDL_AtomicUnlock(SDL_SpinLock *lock);
+extern DECLSPEC void SDLCALL SDL_UnlockSpinlock(SDL_SpinLock *lock);
 
 /* @} *//* SDL AtomicLock */
 
@@ -153,7 +153,7 @@ extern DECLSPEC void SDLCALL SDL_AtomicUnlock(SDL_SpinLock *lock);
 void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
 #define SDL_CompilerBarrier()   _ReadWriteBarrier()
-#elif (defined(__GNUC__) && !defined(__EMSCRIPTEN__)) || (defined(__SUNPRO_C) && (__SUNPRO_C >= 0x5120))
+#elif (defined(__GNUC__) && !defined(SDL_PLATFORM_EMSCRIPTEN)) || (defined(__SUNPRO_C) && (__SUNPRO_C >= 0x5120))
 /* This is correct for all CPUs when using GCC or Solaris Studio 12.1+. */
 #define SDL_CompilerBarrier()   __asm__ __volatile__ ("" : : : "memory")
 #elif defined(__WATCOMC__)
@@ -161,7 +161,7 @@ extern __inline void SDL_CompilerBarrier(void);
 #pragma aux SDL_CompilerBarrier = "" parm [] modify exact [];
 #else
 #define SDL_CompilerBarrier()   \
-{ SDL_SpinLock _tmp = 0; SDL_AtomicLock(&_tmp); SDL_AtomicUnlock(&_tmp); }
+{ SDL_SpinLock _tmp = 0; SDL_LockSpinlock(&_tmp); SDL_UnlockSpinlock(&_tmp); }
 #endif
 
 /**
@@ -199,7 +199,7 @@ extern DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
 #define SDL_MemoryBarrierRelease()   __asm__ __volatile__ ("dmb ish" : : : "memory")
 #define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("dmb ish" : : : "memory")
 #elif defined(__GNUC__) && defined(__arm__)
-#if 0 /* defined(__LINUX__) || defined(__ANDROID__) */
+#if 0 /* defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID) */
 /* Information from:
    https://chromium.googlesource.com/chromium/chromium/+/trunk/base/atomicops_internals_arm_gcc.h#19
 
@@ -213,7 +213,7 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
 #if defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7EM__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__) || defined(__ARM_ARCH_8A__)
 #define SDL_MemoryBarrierRelease()   __asm__ __volatile__ ("dmb ish" : : : "memory")
 #define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("dmb ish" : : : "memory")
-#elif defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6T2__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_5TE__)
+#elif defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6T2__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__)
 #ifdef __thumb__
 /* The mcr instruction isn't available in thumb mode, use real functions */
 #define SDL_MEMORY_BARRIER_USES_FUNCTION
@@ -226,7 +226,7 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
 #else
 #define SDL_MemoryBarrierRelease()   __asm__ __volatile__ ("" : : : "memory")
 #define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("" : : : "memory")
-#endif /* __LINUX__ || __ANDROID__ */
+#endif /* SDL_PLATFORM_LINUX || SDL_PLATFORM_ANDROID */
 #endif /* __GNUC__ && __arm__ */
 #else
 #if (defined(__SUNPRO_C) && (__SUNPRO_C >= 0x5120))
@@ -244,7 +244,7 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
 /* "REP NOP" is PAUSE, coded for tools that don't know it by that name. */
 #if (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
     #define SDL_CPUPauseInstruction() __asm__ __volatile__("pause\n")  /* Some assemblers can't do REP NOP, so go with PAUSE. */
-#elif (defined(__arm__) && __ARM_ARCH >= 7) || defined(__aarch64__)
+#elif (defined(__arm__) && defined(__ARM_ARCH) && __ARM_ARCH >= 7) || defined(__aarch64__)
     #define SDL_CPUPauseInstruction() __asm__ __volatile__("yield" ::: "memory")
 #elif (defined(__powerpc__) || defined(__powerpc64__))
     #define SDL_CPUPauseInstruction() __asm__ __volatile__("or 27,27,27");
@@ -263,8 +263,9 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
 
 
 /**
- * \brief A type representing an atomic integer value.  It is a struct
- *        so people don't accidentally use numeric operations on it.
+ * A type representing an atomic integer value.
+ *
+ * It is a struct so people don't accidentally use numeric operations on it.
  */
 typedef struct { int value; } SDL_AtomicInt;
 
@@ -281,11 +282,11 @@ typedef struct { int value; } SDL_AtomicInt;
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicCASPtr
+ * \sa SDL_AtomicCompareAndSwapPointer
  * \sa SDL_AtomicGet
  * \sa SDL_AtomicSet
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_AtomicCAS(SDL_AtomicInt *a, int oldval, int newval);
+extern DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwap(SDL_AtomicInt *a, int oldval, int newval);
 
 /**
  * Set an atomic variable to a value.
@@ -340,14 +341,14 @@ extern DECLSPEC int SDLCALL SDL_AtomicGet(SDL_AtomicInt *a);
 extern DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
 
 /**
- * \brief Increment an atomic variable used as a reference count.
+ * Increment an atomic variable used as a reference count.
  */
 #ifndef SDL_AtomicIncRef
 #define SDL_AtomicIncRef(a)    SDL_AtomicAdd(a, 1)
 #endif
 
 /**
- * \brief Decrement an atomic variable used as a reference count.
+ * Decrement an atomic variable used as a reference count.
  *
  * \return SDL_TRUE if the variable reached zero after decrementing,
  *         SDL_FALSE otherwise
@@ -369,11 +370,11 @@ extern DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicCAS
+ * \sa SDL_AtomicCompareAndSwap
  * \sa SDL_AtomicGetPtr
  * \sa SDL_AtomicSetPtr
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_AtomicCASPtr(void **a, void *oldval, void *newval);
+extern DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwapPointer(void **a, void *oldval, void *newval);
 
 /**
  * Set a pointer to a value atomically.
@@ -387,7 +388,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_AtomicCASPtr(void **a, void *oldval, void *
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicCASPtr
+ * \sa SDL_AtomicCompareAndSwapPointer
  * \sa SDL_AtomicGetPtr
  */
 extern DECLSPEC void* SDLCALL SDL_AtomicSetPtr(void **a, void* v);
@@ -403,7 +404,7 @@ extern DECLSPEC void* SDLCALL SDL_AtomicSetPtr(void **a, void* v);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AtomicCASPtr
+ * \sa SDL_AtomicCompareAndSwapPointer
  * \sa SDL_AtomicSetPtr
  */
 extern DECLSPEC void* SDLCALL SDL_AtomicGetPtr(void **a);

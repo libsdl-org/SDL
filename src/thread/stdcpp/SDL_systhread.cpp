@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,7 +31,7 @@ extern "C" {
 #include <thread>
 #include <system_error>
 
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
 #include <Windows.h>
 #endif
 
@@ -59,19 +59,19 @@ extern "C" void
 SDL_SYS_SetupThread(const char *name)
 {
     // Make sure a thread ID gets assigned ASAP, for debugging purposes:
-    SDL_ThreadID();
+    SDL_GetCurrentThreadID();
     return;
 }
 
-extern "C" SDL_threadID
-SDL_ThreadID(void)
+extern "C" SDL_ThreadID
+SDL_GetCurrentThreadID(void)
 {
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
     return GetCurrentThreadId();
 #else
     // HACK: Mimic a thread ID, if one isn't otherwise available.
-    static thread_local SDL_threadID current_thread_id = 0;
-    static SDL_threadID next_thread_id = 1;
+    static thread_local SDL_ThreadID current_thread_id = 0;
+    static SDL_ThreadID next_thread_id = 1;
     static std::mutex next_thread_id_mutex;
 
     if (current_thread_id == 0) {
@@ -87,7 +87,7 @@ SDL_ThreadID(void)
 extern "C" int
 SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
     int value;
 
     if (priority == SDL_THREAD_PRIORITY_LOW) {

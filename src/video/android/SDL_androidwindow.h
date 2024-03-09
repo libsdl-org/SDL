@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,14 +26,13 @@
 #include "../../core/android/SDL_android.h"
 #include "../SDL_egl_c.h"
 
-extern int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void Android_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
-extern void Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
+extern int Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
 extern void Android_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Android_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable);
 
 extern void Android_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int Android_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info);
 extern SDL_Window *Android_Window;
 
 struct SDL_WindowData

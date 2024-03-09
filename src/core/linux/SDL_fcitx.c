@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,7 +29,6 @@
 #ifdef SDL_VIDEO_DRIVER_X11
 #include "../../video/x11/SDL_x11video.h"
 #endif
-#include <SDL3/SDL_syswm.h>
 
 #define FCITX_DBUS_SERVICE "org.freedesktop.portal.Fcitx"
 
@@ -55,15 +54,15 @@ static FcitxClient fcitx_client;
 
 static char *GetAppName(void)
 {
-#if defined(__LINUX__) || defined(__FREEBSD__)
+#if defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_FREEBSD)
     char *spot;
     char procfile[1024];
     char linkfile[1024];
     int linksize;
 
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
     (void)SDL_snprintf(procfile, sizeof(procfile), "/proc/%d/exe", getpid());
-#elif defined(__FREEBSD__)
+#elif defined(SDL_PLATFORM_FREEBSD)
     (void)SDL_snprintf(procfile, sizeof(procfile), "/proc/%d/file", getpid());
 #endif
     linksize = readlink(procfile, linkfile, sizeof(linkfile) - 1);
@@ -76,7 +75,7 @@ static char *GetAppName(void)
             return SDL_strdup(linkfile);
         }
     }
-#endif /* __LINUX__ || __FREEBSD__ */
+#endif /* SDL_PLATFORM_LINUX || SDL_PLATFORM_FREEBSD */
 
     return SDL_strdup("SDL_App");
 }
@@ -212,26 +211,11 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
         Sint32 start_pos, end_pos;
         size_t text_bytes = Fcitx_GetPreeditString(dbus, msg, &text, &start_pos, &end_pos);
         if (text_bytes) {
-            if (SDL_GetHintBoolean(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, SDL_FALSE)) {
-                if (start_pos == -1) {
-                    Sint32 byte_pos = Fcitx_GetPreeditCursorByte(dbus, msg);
-                    start_pos = byte_pos >= 0 ? SDL_utf8strnlen(text, byte_pos) : -1;
-                }
-                SDL_SendEditingText(text, start_pos, end_pos >= 0 ? end_pos - start_pos : -1);
-            } else {
-                char buf[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
-                size_t i = 0;
-                size_t cursor = 0;
-                while (i < text_bytes) {
-                    const size_t sz = SDL_utf8strlcpy(buf, text + i, sizeof(buf));
-                    const size_t chars = SDL_utf8strlen(buf);
-
-                    SDL_SendEditingText(buf, cursor, chars);
-
-                    i += sz;
-                    cursor += chars;
-                }
+            if (start_pos == -1) {
+                Sint32 byte_pos = Fcitx_GetPreeditCursorByte(dbus, msg);
+                start_pos = byte_pos >= 0 ? SDL_utf8strnlen(text, byte_pos) : -1;
             }
+            SDL_SendEditingText(text, start_pos, end_pos >= 0 ? end_pos - start_pos : -1);
             SDL_free(text);
         } else {
             SDL_SendEditingText("", 0, 0);
@@ -399,7 +383,6 @@ void SDL_Fcitx_SetFocus(SDL_bool focused)
 void SDL_Fcitx_Reset(void)
 {
     FcitxClientICCallMethod(&fcitx_client, "Reset");
-    FcitxClientICCallMethod(&fcitx_client, "CloseIC");
 }
 
 SDL_bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
@@ -428,7 +411,6 @@ SDL_bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 void SDL_Fcitx_UpdateTextRect(const SDL_Rect *rect)
 {
     SDL_Window *focused_win = NULL;
-    SDL_SysWMinfo info;
     int x = 0, y = 0;
     SDL_Rect *cursor = &fcitx_client.cursor_rect;
 
@@ -437,23 +419,24 @@ void SDL_Fcitx_UpdateTextRect(const SDL_Rect *rect)
     }
 
     focused_win = SDL_GetKeyboardFocus();
-    if (focused_win == NULL) {
+    if (!focused_win) {
         return;
     }
 
     SDL_GetWindowPosition(focused_win, &x, &y);
 
-    if (SDL_GetWindowWMInfo(focused_win, &info, SDL_SYSWM_CURRENT_VERSION) == 0) {
-#ifdef SDL_ENABLE_SYSWM_X11
-        if (info.subsystem == SDL_SYSWM_X11) {
-            Display *x_disp = info.info.x11.display;
-            int x_screen = info.info.x11.screen;
-            Window x_win = info.info.x11.window;
-            Window unused;
+#ifdef SDL_VIDEO_DRIVER_X11
+    {
+        SDL_PropertiesID props = SDL_GetWindowProperties(focused_win);
+        Display *x_disp = (Display *)SDL_GetProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+        int x_screen = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_SCREEN_NUMBER, 0);
+        Window x_win = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+        Window unused;
+        if (x_disp && x_win) {
             X11_XTranslateCoordinates(x_disp, x_win, RootWindow(x_disp, x_screen), 0, 0, &x, &y, &unused);
         }
-#endif
     }
+#endif
 
     if (cursor->x == -1 && cursor->y == -1 && cursor->w == 0 && cursor->h == 0) {
         /* move to bottom left */

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,17 +31,7 @@ typedef enum
 {
     SHADER_SOLID,
     SHADER_RGB,
-#if SDL_HAVE_YUV
-    SHADER_YUV_JPEG,
-    SHADER_YUV_BT601,
-    SHADER_YUV_BT709,
-    SHADER_NV12_JPEG,
-    SHADER_NV12_BT601,
-    SHADER_NV12_BT709,
-    SHADER_NV21_JPEG,
-    SHADER_NV21_BT601,
-    SHADER_NV21_BT709,
-#endif
+    SHADER_ADVANCED,
     NUM_SHADERS
 } D3D12_Shader;
 
@@ -49,10 +39,7 @@ typedef enum
 {
     ROOTSIG_COLOR,
     ROOTSIG_TEXTURE,
-#if SDL_HAVE_YUV
-    ROOTSIG_YUV,
-    ROOTSIG_NV,
-#endif
+    ROOTSIG_ADVANCED,
     NUM_ROOTSIGS
 } D3D12_RootSignature;
 

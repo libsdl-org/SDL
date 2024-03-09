@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_RENDER_OGL) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_OGL
 
 #include <SDL3/SDL_opengl.h>
 #include "SDL_shaders_gl.h"
@@ -52,11 +52,13 @@ struct GL_ShaderContext
     PFNGLSHADERSOURCEARBPROC glShaderSourceARB;
     PFNGLUNIFORM1IARBPROC glUniform1iARB;
     PFNGLUNIFORM1FARBPROC glUniform1fARB;
+    PFNGLUNIFORM3FARBPROC glUniform3fARB;
     PFNGLUSEPROGRAMOBJECTARBPROC glUseProgramObjectARB;
 
     SDL_bool GL_ARB_texture_rectangle_supported;
 
     GL_ShaderData shaders[NUM_SHADERS];
+    const float *shader_params[NUM_SHADERS];
 };
 
 /* *INDENT-OFF* */ /* clang-format off */
@@ -81,39 +83,16 @@ struct GL_ShaderContext
 "    v_texCoord = vec2(gl_MultiTexCoord0);\n"                   \
 "}"                                                             \
 
-#define JPEG_SHADER_CONSTANTS                                   \
-"// YUV offset \n"                                              \
-"const vec3 offset = vec3(0, -0.501960814, -0.501960814);\n"    \
-"\n"                                                            \
-"// RGB coefficients \n"                                        \
-"const vec3 Rcoeff = vec3(1,  0.000,  1.402);\n"                \
-"const vec3 Gcoeff = vec3(1, -0.3441, -0.7141);\n"              \
-"const vec3 Bcoeff = vec3(1,  1.772,  0.000);\n"                \
-
-#define BT601_SHADER_CONSTANTS                                  \
-"// YUV offset \n"                                              \
-"const vec3 offset = vec3(-0.0627451017, -0.501960814, -0.501960814);\n" \
-"\n"                                                            \
-"// RGB coefficients \n"                                        \
-"const vec3 Rcoeff = vec3(1.1644,  0.000,  1.596);\n"           \
-"const vec3 Gcoeff = vec3(1.1644, -0.3918, -0.813);\n"          \
-"const vec3 Bcoeff = vec3(1.1644,  2.0172,  0.000);\n"          \
-
-#define BT709_SHADER_CONSTANTS                                  \
-"// YUV offset \n"                                              \
-"const vec3 offset = vec3(-0.0627451017, -0.501960814, -0.501960814);\n" \
-"\n"                                                            \
-"// RGB coefficients \n"                                        \
-"const vec3 Rcoeff = vec3(1.1644,  0.000,  1.7927);\n"          \
-"const vec3 Gcoeff = vec3(1.1644, -0.2132, -0.5329);\n"         \
-"const vec3 Bcoeff = vec3(1.1644,  2.1124,  0.000);\n"          \
-
 #define YUV_SHADER_PROLOGUE                                     \
 "varying vec4 v_color;\n"                                       \
 "varying vec2 v_texCoord;\n"                                    \
 "uniform sampler2D tex0; // Y \n"                               \
 "uniform sampler2D tex1; // U \n"                               \
 "uniform sampler2D tex2; // V \n"                               \
+"uniform vec3 Yoffset;\n"                                       \
+"uniform vec3 Rcoeff;\n"                                        \
+"uniform vec3 Gcoeff;\n"                                        \
+"uniform vec3 Bcoeff;\n"                                        \
 "\n"                                                            \
 
 #define YUV_SHADER_BODY                                         \
@@ -133,7 +112,7 @@ struct GL_ShaderContext
 "    yuv.z = texture2D(tex2, tcoord).r;\n"                      \
 "\n"                                                            \
 "    // Do the color transform \n"                              \
-"    yuv += offset;\n"                                          \
+"    yuv += Yoffset;\n"                                         \
 "    rgb.r = dot(yuv, Rcoeff);\n"                               \
 "    rgb.g = dot(yuv, Gcoeff);\n"                               \
 "    rgb.b = dot(yuv, Bcoeff);\n"                               \
@@ -147,6 +126,10 @@ struct GL_ShaderContext
 "varying vec2 v_texCoord;\n"                                    \
 "uniform sampler2D tex0; // Y \n"                               \
 "uniform sampler2D tex1; // U/V \n"                             \
+"uniform vec3 Yoffset;\n"                                       \
+"uniform vec3 Rcoeff;\n"                                        \
+"uniform vec3 Gcoeff;\n"                                        \
+"uniform vec3 Bcoeff;\n"                                        \
 "\n"                                                            \
 
 #define NV12_RA_SHADER_BODY                                     \
@@ -165,7 +148,7 @@ struct GL_ShaderContext
 "    yuv.yz = texture2D(tex1, tcoord).ra;\n"                    \
 "\n"                                                            \
 "    // Do the color transform \n"                              \
-"    yuv += offset;\n"                                          \
+"    yuv += Yoffset;\n"                                         \
 "    rgb.r = dot(yuv, Rcoeff);\n"                               \
 "    rgb.g = dot(yuv, Gcoeff);\n"                               \
 "    rgb.b = dot(yuv, Bcoeff);\n"                               \
@@ -190,7 +173,7 @@ struct GL_ShaderContext
 "    yuv.yz = texture2D(tex1, tcoord).rg;\n"                    \
 "\n"                                                            \
 "    // Do the color transform \n"                              \
-"    yuv += offset;\n"                                          \
+"    yuv += Yoffset;\n"                                         \
 "    rgb.r = dot(yuv, Rcoeff);\n"                               \
 "    rgb.g = dot(yuv, Gcoeff);\n"                               \
 "    rgb.b = dot(yuv, Bcoeff);\n"                               \
@@ -199,14 +182,7 @@ struct GL_ShaderContext
 "    gl_FragColor = vec4(rgb, 1.0) * v_color;\n"                \
 "}"                                                             \
 
-#define NV21_SHADER_PROLOGUE                                    \
-"varying vec4 v_color;\n"                                       \
-"varying vec2 v_texCoord;\n"                                    \
-"uniform sampler2D tex0; // Y \n"                               \
-"uniform sampler2D tex1; // U/V \n"                             \
-"\n"                                                            \
-
-#define NV21_SHADER_BODY                                        \
+#define NV21_RA_SHADER_BODY                                     \
 "\n"                                                            \
 "void main()\n"                                                 \
 "{\n"                                                           \
@@ -222,7 +198,32 @@ struct GL_ShaderContext
 "    yuv.yz = texture2D(tex1, tcoord).ar;\n"                    \
 "\n"                                                            \
 "    // Do the color transform \n"                              \
-"    yuv += offset;\n"                                          \
+"    yuv += Yoffset;\n"                                         \
+"    rgb.r = dot(yuv, Rcoeff);\n"                               \
+"    rgb.g = dot(yuv, Gcoeff);\n"                               \
+"    rgb.b = dot(yuv, Bcoeff);\n"                               \
+"\n"                                                            \
+"    // That was easy. :) \n"                                   \
+"    gl_FragColor = vec4(rgb, 1.0) * v_color;\n"                \
+"}"                                                             \
+
+#define NV21_RG_SHADER_BODY                                     \
+"\n"                                                            \
+"void main()\n"                                                 \
+"{\n"                                                           \
+"    vec2 tcoord;\n"                                            \
+"    vec3 yuv, rgb;\n"                                          \
+"\n"                                                            \
+"    // Get the Y value \n"                                     \
+"    tcoord = v_texCoord;\n"                                    \
+"    yuv.x = texture2D(tex0, tcoord).r;\n"                      \
+"\n"                                                            \
+"    // Get the U and V values \n"                              \
+"    tcoord *= UVCoordScale;\n"                                 \
+"    yuv.yz = texture2D(tex1, tcoord).gr;\n"                    \
+"\n"                                                            \
+"    // Do the color transform \n"                              \
+"    yuv += Yoffset;\n"                                         \
 "    rgb.r = dot(yuv, Rcoeff);\n"                               \
 "    rgb.g = dot(yuv, Gcoeff);\n"                               \
 "    rgb.b = dot(yuv, Bcoeff);\n"                               \
@@ -284,104 +285,45 @@ static const char *shader_source[NUM_SHADERS][2] = {
 "}"
     },
 #if SDL_HAVE_YUV
-    /* SHADER_YUV_JPEG */
+    /* SHADER_YUV */
     {
         /* vertex shader */
         TEXTURE_VERTEX_SHADER,
         /* fragment shader */
         YUV_SHADER_PROLOGUE
-        JPEG_SHADER_CONSTANTS
         YUV_SHADER_BODY
     },
-    /* SHADER_YUV_BT601 */
-    {
-        /* vertex shader */
-        TEXTURE_VERTEX_SHADER,
-        /* fragment shader */
-        YUV_SHADER_PROLOGUE
-        BT601_SHADER_CONSTANTS
-        YUV_SHADER_BODY
-    },
-    /* SHADER_YUV_BT709 */
-    {
-        /* vertex shader */
-        TEXTURE_VERTEX_SHADER,
-        /* fragment shader */
-        YUV_SHADER_PROLOGUE
-        BT709_SHADER_CONSTANTS
-        YUV_SHADER_BODY
-    },
-    /* SHADER_NV12_JPEG */
+    /* SHADER_NV12_RA */
     {
         /* vertex shader */
         TEXTURE_VERTEX_SHADER,
         /* fragment shader */
         NV12_SHADER_PROLOGUE
-        JPEG_SHADER_CONSTANTS
         NV12_RA_SHADER_BODY
     },
-    /* SHADER_NV12_RA_BT601 */
+    /* SHADER_NV12_RG */
     {
         /* vertex shader */
         TEXTURE_VERTEX_SHADER,
         /* fragment shader */
         NV12_SHADER_PROLOGUE
-        BT601_SHADER_CONSTANTS
-        NV12_RA_SHADER_BODY
-    },
-    /* SHADER_NV12_RG_BT601 */
-    {
-        /* vertex shader */
-        TEXTURE_VERTEX_SHADER,
-        /* fragment shader */
-        NV12_SHADER_PROLOGUE
-        BT601_SHADER_CONSTANTS
         NV12_RG_SHADER_BODY
     },
-    /* SHADER_NV12_RA_BT709 */
+    /* SHADER_NV21_RA */
     {
         /* vertex shader */
         TEXTURE_VERTEX_SHADER,
         /* fragment shader */
         NV12_SHADER_PROLOGUE
-        BT709_SHADER_CONSTANTS
-        NV12_RA_SHADER_BODY
+        NV21_RA_SHADER_BODY
     },
-    /* SHADER_NV12_RG_BT709 */
+    /* SHADER_NV21_RG */
     {
         /* vertex shader */
         TEXTURE_VERTEX_SHADER,
         /* fragment shader */
         NV12_SHADER_PROLOGUE
-        BT709_SHADER_CONSTANTS
-        NV12_RG_SHADER_BODY
-    },
-    /* SHADER_NV21_JPEG */
-    {
-        /* vertex shader */
-        TEXTURE_VERTEX_SHADER,
-        /* fragment shader */
-        NV21_SHADER_PROLOGUE
-        JPEG_SHADER_CONSTANTS
-        NV21_SHADER_BODY
-    },
-    /* SHADER_NV21_BT601 */
-    {
-        /* vertex shader */
-        TEXTURE_VERTEX_SHADER,
-        /* fragment shader */
-        NV21_SHADER_PROLOGUE
-        BT601_SHADER_CONSTANTS
-        NV21_SHADER_BODY
-    },
-    /* SHADER_NV21_BT709 */
-    {
-        /* vertex shader */
-        TEXTURE_VERTEX_SHADER,
-        /* fragment shader */
-        NV21_SHADER_PROLOGUE
-        BT709_SHADER_CONSTANTS
-        NV21_SHADER_BODY
+        NV21_RG_SHADER_BODY
     },
 #endif /* SDL_HAVE_YUV */
 };
@@ -495,7 +437,7 @@ GL_ShaderContext *GL_CreateShaderContext(void)
     int i;
 
     ctx = (GL_ShaderContext *)SDL_calloc(1, sizeof(*ctx));
-    if (ctx == NULL) {
+    if (!ctx) {
         return NULL;
     }
 
@@ -524,6 +466,7 @@ GL_ShaderContext *GL_CreateShaderContext(void)
         ctx->glShaderSourceARB = (PFNGLSHADERSOURCEARBPROC)SDL_GL_GetProcAddress("glShaderSourceARB");
         ctx->glUniform1iARB = (PFNGLUNIFORM1IARBPROC)SDL_GL_GetProcAddress("glUniform1iARB");
         ctx->glUniform1fARB = (PFNGLUNIFORM1FARBPROC)SDL_GL_GetProcAddress("glUniform1fARB");
+        ctx->glUniform3fARB = (PFNGLUNIFORM3FARBPROC)SDL_GL_GetProcAddress("glUniform3fARB");
         ctx->glUseProgramObjectARB = (PFNGLUSEPROGRAMOBJECTARBPROC)SDL_GL_GetProcAddress("glUseProgramObjectARB");
         if (ctx->glGetError &&
             ctx->glAttachObjectARB &&
@@ -538,6 +481,7 @@ GL_ShaderContext *GL_CreateShaderContext(void)
             ctx->glShaderSourceARB &&
             ctx->glUniform1iARB &&
             ctx->glUniform1fARB &&
+            ctx->glUniform3fARB &&
             ctx->glUseProgramObjectARB) {
             shaders_supported = SDL_TRUE;
         }
@@ -560,9 +504,33 @@ GL_ShaderContext *GL_CreateShaderContext(void)
     return ctx;
 }
 
-void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader)
+void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader, const float *shader_params)
 {
-    ctx->glUseProgramObjectARB(ctx->shaders[shader].program);
+    GLint location;
+    GLhandleARB program = ctx->shaders[shader].program;
+
+    ctx->glUseProgramObjectARB(program);
+
+    if (shader_params && shader_params != ctx->shader_params[shader]) {
+        /* YUV shader params are Yoffset, 0, Rcoeff, 0, Gcoeff, 0, Bcoeff, 0 */
+        location = ctx->glGetUniformLocationARB(program, "Yoffset");
+        if (location >= 0) {
+            ctx->glUniform3fARB(location, shader_params[0], shader_params[1], shader_params[2]);
+        }
+        location = ctx->glGetUniformLocationARB(program, "Rcoeff");
+        if (location >= 0) {
+            ctx->glUniform3fARB(location, shader_params[4], shader_params[5], shader_params[6]);
+        }
+        location = ctx->glGetUniformLocationARB(program, "Gcoeff");
+        if (location >= 0) {
+            ctx->glUniform3fARB(location, shader_params[8], shader_params[9], shader_params[10]);
+        }
+        location = ctx->glGetUniformLocationARB(program, "Bcoeff");
+        if (location >= 0) {
+            ctx->glUniform3fARB(location, shader_params[12], shader_params[13], shader_params[14]);
+        }
+        ctx->shader_params[shader] = shader_params;
+    }
 }
 
 void GL_DestroyShaderContext(GL_ShaderContext *ctx)
@@ -575,4 +543,4 @@ void GL_DestroyShaderContext(GL_ShaderContext *ctx)
     SDL_free(ctx);
 }
 
-#endif /* SDL_VIDEO_RENDER_OGL && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_OGL */

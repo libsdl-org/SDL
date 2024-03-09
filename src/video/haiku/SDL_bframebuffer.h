@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,7 +31,7 @@ extern "C" {
 #include "../SDL_sysvideo.h"
 
 extern int HAIKU_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
-                                         Uint32 *format,
+                                         SDL_PixelFormatEnum *format,
                                          void **pixels, int *pitch);
 extern int HAIKU_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
                                          const SDL_Rect *rects, int numrects);

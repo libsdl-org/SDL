@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -100,7 +100,7 @@ void SDL_DelayNS(Uint64 ns)
             ns = max_delay;
         }
 
-#if defined(__WINRT__) && defined(_MSC_FULL_VER) && (_MSC_FULL_VER <= 180030723)
+#if defined(SDL_PLATFORM_WINRT) && defined(_MSC_FULL_VER) && (_MSC_FULL_VER <= 180030723)
         static HANDLE mutex = 0;
         if (!mutex) {
             mutex = CreateEventEx(0, 0, 0, EVENT_ALL_ACCESS);

@@ -271,12 +271,10 @@ recompute:
 	}
 
     /* compute PIo2[0,...,jp]*q[jz,...,0] */
+	SDL_zero(fq);
 	for(i=jz;i>=0;i--) {
 	    for(fw=0.0,k=0;k<=jp&&k<=jz-i;k++) fw += PIo2[k]*q[i+k];
 	    fq[jz-i] = fw;
-	}
-	if ((jz+1) < SDL_arraysize(f)) {
-	    SDL_memset(&fq[jz+1], 0, sizeof (fq) - ((jz+1) * sizeof (fq[0])));
 	}
 
     /* compress fq[] into y[] */

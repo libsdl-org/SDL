@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,6 +30,7 @@
 
 @implementation SDL_UIKitDisplayData
 
+#ifndef SDL_PLATFORM_VISIONOS
 - (instancetype)initWithScreen:(UIScreen *)screen
 {
     if (self = [super init]) {
@@ -37,20 +38,23 @@
     }
     return self;
 }
-
 @synthesize uiscreen;
+#endif
 
 @end
 
 @implementation SDL_UIKitDisplayModeData
 
+#ifndef SDL_PLATFORM_VISIONOS
 @synthesize uiscreenmode;
+#endif
 
 @end
 
 @interface SDL_DisplayWatch : NSObject
 @end
 
+#ifndef SDL_PLATFORM_VISIONOS
 @implementation SDL_DisplayWatch
 
 + (void)start
@@ -92,7 +96,9 @@
 }
 
 @end
+#endif
 
+#ifndef SDL_PLATFORM_VISIONOS
 static int UIKit_AllocateDisplayModeData(SDL_DisplayMode *mode,
                                          UIScreenMode *uiscreenmode)
 {
@@ -112,6 +118,7 @@ static int UIKit_AllocateDisplayModeData(SDL_DisplayMode *mode,
 
     return 0;
 }
+#endif
 
 static void UIKit_FreeDisplayModeData(SDL_DisplayMode *mode)
 {
@@ -121,6 +128,7 @@ static void UIKit_FreeDisplayModeData(SDL_DisplayMode *mode)
     }
 }
 
+#ifndef SDL_PLATFORM_VISIONOS
 static float UIKit_GetDisplayModeRefreshRate(UIScreen *uiscreen)
 {
 #ifdef __IPHONE_10_3
@@ -135,16 +143,15 @@ static int UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,
                                       UIScreen *uiscreen, UIScreenMode *uiscreenmode)
 {
     SDL_DisplayMode mode;
-    float scale = uiscreen.nativeScale;
 
     SDL_zero(mode);
     if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode) < 0) {
         return -1;
     }
 
-    mode.w = w / scale;
-    mode.h = h / scale;
-    mode.pixel_density = scale;
+    mode.w = w;
+    mode.h = h;
+    mode.pixel_density = uiscreen.nativeScale;
     mode.refresh_rate = UIKit_GetDisplayModeRefreshRate(uiscreen);
     mode.format = SDL_PIXELFORMAT_ABGR8888;
 
@@ -189,7 +196,7 @@ static CGSize GetUIScreenModeSize(UIScreen *uiscreen, UIScreenMode *mode)
      * https://github.com/libsdl-org/SDL/issues/3220
      */
     CGSize size = mode.size;
-    
+
     size.width = SDL_round(size.width / uiscreen.scale);
     size.height = SDL_round(size.height / uiscreen.scale);
 
@@ -222,7 +229,7 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     }
 
     SDL_zero(display);
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
     if (uiscreen == [UIScreen mainScreen]) {
         /* The natural orientation (used by sensors) is portrait */
         display.natural_orientation = SDL_ORIENTATION_PORTRAIT;
@@ -235,8 +242,25 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     }
     display.desktop_mode = mode;
 
+    display.HDR.SDR_white_point = 1.0f;
+    display.HDR.HDR_headroom = 1.0f;
+
+#ifndef SDL_PLATFORM_TVOS
+    if (@available(iOS 16.0, *)) {
+        if (uiscreen.currentEDRHeadroom > 1.0f) {
+            display.HDR.HDR_headroom = uiscreen.currentEDRHeadroom;
+        } else {
+            display.HDR.HDR_headroom = uiscreen.potentialEDRHeadroom;
+        }
+    }
+#endif /* !SDL_PLATFORM_TVOS */
+
     /* Allocate the display data */
+#ifdef SDL_PLATFORM_VISIONOS
+    SDL_UIKitDisplayData *data = [[SDL_UIKitDisplayData alloc] init];
+#else
     SDL_UIKitDisplayData *data = [[SDL_UIKitDisplayData alloc] initWithScreen:uiscreen];
+#endif
     if (!data) {
         UIKit_FreeDisplayModeData(&display.desktop_mode);
         return SDL_OutOfMemory();
@@ -248,6 +272,41 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     }
     return 0;
 }
+#endif
+
+#ifdef SDL_PLATFORM_VISIONOS
+int UIKit_AddDisplay(SDL_bool send_event){
+    CGSize size = CGSizeMake(SDL_XR_SCREENWIDTH, SDL_XR_SCREENHEIGHT);
+    SDL_VideoDisplay display;
+    SDL_DisplayMode mode;
+
+    SDL_zero(mode);
+    mode.w = (int)size.width;
+    mode.h = (int)size.height;
+    mode.pixel_density = 1;
+    mode.format = SDL_PIXELFORMAT_ABGR8888;
+    mode.refresh_rate = 60;
+
+    display.natural_orientation = SDL_ORIENTATION_LANDSCAPE;
+
+    display.desktop_mode = mode;
+
+    SDL_UIKitDisplayData *data = [[SDL_UIKitDisplayData alloc] init];
+
+    if (!data) {
+        UIKit_FreeDisplayModeData(&display.desktop_mode);
+        return SDL_OutOfMemory();
+    }
+
+    display.driverdata = (SDL_DisplayData *)CFBridgingRetain(data);
+    if (SDL_AddVideoDisplay(&display, send_event) == 0) {
+        return -1;
+    }
+    return 0;
+}
+#endif
+
+#ifndef SDL_PLATFORM_VISIONOS
 
 void UIKit_DelDisplay(UIScreen *uiscreen)
 {
@@ -272,30 +331,37 @@ void UIKit_DelDisplay(UIScreen *uiscreen)
 
 SDL_bool UIKit_IsDisplayLandscape(UIScreen *uiscreen)
 {
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
     if (uiscreen == [UIScreen mainScreen]) {
         return UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation);
     } else
-#endif /* !TARGET_OS_TV */
+#endif /* !SDL_PLATFORM_TVOS */
     {
         CGSize size = uiscreen.bounds.size;
         return (size.width > size.height);
     }
 }
-
+#endif
 int UIKit_InitModes(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
+#ifdef SDL_PLATFORM_VISIONOS
+        UIKit_AddDisplay(SDL_FALSE);
+#else
         for (UIScreen *uiscreen in [UIScreen screens]) {
             if (UIKit_AddDisplay(uiscreen, SDL_FALSE) < 0) {
                 return -1;
             }
         }
-#if !TARGET_OS_TV
+#endif
+
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
         SDL_OnApplicationDidChangeStatusBarOrientation();
 #endif
 
+#ifndef SDL_PLATFORM_VISIONOS
         [SDL_DisplayWatch start];
+#endif
     }
 
     return 0;
@@ -303,6 +369,7 @@ int UIKit_InitModes(SDL_VideoDevice *_this)
 
 int UIKit_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 {
+#ifndef SDL_PLATFORM_VISIONOS
     @autoreleasepool {
         SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
 
@@ -310,7 +377,7 @@ int UIKit_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
         SDL_bool addRotation = (data.uiscreen == [UIScreen mainScreen]);
         NSArray *availableModes = nil;
 
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
         addRotation = SDL_FALSE;
         availableModes = @[ data.uiscreen.currentMode ];
 #else
@@ -332,15 +399,17 @@ int UIKit_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
             UIKit_AddDisplayMode(display, w, h, data.uiscreen, uimode, addRotation);
         }
     }
+#endif
     return 0;
 }
 
 int UIKit_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
+#ifndef SDL_PLATFORM_VISIONOS
     @autoreleasepool {
         SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
         SDL_UIKitDisplayModeData *modedata = (__bridge SDL_UIKitDisplayModeData *)mode->driverdata;
         [data.uiscreen setCurrentMode:modedata.uiscreenmode];
 #endif
@@ -360,7 +429,7 @@ int UIKit_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
             }
         }
     }
-
+#endif
     return 0;
 }
 
@@ -368,7 +437,11 @@ int UIKit_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *displ
 {
     @autoreleasepool {
         SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
+#ifdef SDL_PLATFORM_VISIONOS
+        CGRect frame = CGRectMake(0, 0, SDL_XR_SCREENWIDTH, SDL_XR_SCREENHEIGHT);
+#else
         CGRect frame = data.uiscreen.bounds;
+#endif
 
         /* the default function iterates displays to make a fake offset,
          as if all the displays were side-by-side, which is fine for iOS. */
@@ -387,13 +460,15 @@ int UIKit_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *displ
 
 void UIKit_QuitModes(SDL_VideoDevice *_this)
 {
+#ifndef SDL_PLATFORM_VISIONOS
     [SDL_DisplayWatch stop];
+#endif
 
     /* Release Objective-C objects, so higher level doesn't free() them. */
     int i, j;
     @autoreleasepool {
         for (i = 0; i < _this->num_displays; i++) {
-            SDL_VideoDisplay *display = &_this->displays[i];
+            SDL_VideoDisplay *display = _this->displays[i];
 
             UIKit_FreeDisplayModeData(&display->desktop_mode);
             for (j = 0; j < display->num_fullscreen_modes; j++) {
@@ -409,7 +484,7 @@ void UIKit_QuitModes(SDL_VideoDevice *_this)
     }
 }
 
-#if !TARGET_OS_TV
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
 void SDL_OnApplicationDidChangeStatusBarOrientation(void)
 {
     BOOL isLandscape = UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation);
@@ -461,6 +536,6 @@ void SDL_OnApplicationDidChangeStatusBarOrientation(void)
         SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ORIENTATION, orientation);
     }
 }
-#endif /* !TARGET_OS_TV */
+#endif /* !SDL_PLATFORM_TVOS */
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */

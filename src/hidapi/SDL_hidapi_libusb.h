@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,7 @@
 
 /* #pragma push_macro/pop_macro works correctly only as of gcc >= 4.4.3
    clang-3.0 _seems_ to be OK. */
+#pragma push_macro("calloc")
 #pragma push_macro("malloc")
 #pragma push_macro("realloc")
 #pragma push_macro("free")
@@ -38,6 +39,7 @@
 #pragma push_macro("tolower")
 #pragma push_macro("wcsdup")
 
+#undef calloc
 #undef malloc
 #undef realloc
 #undef free
@@ -53,6 +55,7 @@
 #undef tolower
 #undef wcsdup
 
+#define calloc          SDL_calloc
 #define malloc          SDL_malloc
 #define realloc         SDL_realloc
 #define free            SDL_free
@@ -73,7 +76,7 @@
 #define wcsdup          SDL_wcsdup
 
 
-#ifndef __FreeBSD__
+#ifndef SDL_PLATFORM_FREEBSD
 /* this is awkwardly inlined, so we need to re-implement it here
  * so we can override the libusb_control_transfer call */
 static int SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
@@ -84,7 +87,7 @@ static int SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
                                    data, (uint16_t)length, 1000); /* Endpoint 0 IN */
 }
 #define libusb_get_string_descriptor SDL_libusb_get_string_descriptor
-#endif /* __FreeBSD__ */
+#endif /* SDL_PLATFORM_FREEBSD */
 
 #define HIDAPI_THREAD_MODEL_INCLUDE "hidapi_thread_sdl.h"
 #ifndef LIBUSB_API_VERSION
@@ -106,6 +109,7 @@ static int SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
 #undef ICONV_CONST
 #undef UNDEF_ICONV_CONST
 #endif
+#pragma pop_macro("calloc")
 #pragma pop_macro("malloc")
 #pragma pop_macro("realloc")
 #pragma pop_macro("free")

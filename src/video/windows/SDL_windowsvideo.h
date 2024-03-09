@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,7 @@
 
 #include "../SDL_sysvideo.h"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1500) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if defined(_MSC_VER) && (_MSC_VER >= 1500) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 #include <msctf.h>
 #else
 #include "SDL_msctf.h"
@@ -43,7 +43,8 @@
 #include "SDL_windowsevents.h"
 #include "SDL_windowsopengl.h"
 
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+#include "SDL_windowsshape.h"
 #include "SDL_windowskeyboard.h"
 #include "SDL_windowsmodes.h"
 #include "SDL_windowsmouse.h"
@@ -51,6 +52,10 @@
 #endif
 
 #include "SDL_windowswindow.h"
+
+#ifndef USER_DEFAULT_SCREEN_DPI
+#define USER_DEFAULT_SCREEN_DPI 96
+#endif
 
 #if WINVER < 0x0601
 /* Touch input definitions */
@@ -370,7 +375,7 @@ struct SDL_VideoData
 
     DWORD clipboard_count;
 
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__) /* Xbox doesn't support user32/shcore*/
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) /* Xbox doesn't support user32/shcore*/
     /* Touch input functions */
     void *userDLL;
     /* *INDENT-OFF* */ /* clang-format off */
@@ -397,7 +402,7 @@ struct SDL_VideoData
                                         UINT             *dpiY );
     HRESULT (WINAPI *SetProcessDpiAwareness)(PROCESS_DPI_AWARENESS dpiAwareness);
     /* *INDENT-ON* */ /* clang-format on */
-#endif                /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+#endif                /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
     SDL_bool cleared;
 

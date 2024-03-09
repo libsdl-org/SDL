@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -435,9 +435,19 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
     case NSEventTypeKeyUp:
         SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_RELEASED, code);
         break;
-    case NSEventTypeFlagsChanged:
-        HandleModifiers(_this, code, (unsigned int)[event modifierFlags]);
+    case NSEventTypeFlagsChanged: {
+        // see if the new modifierFlags mean any existing keys should be pressed/released...
+        const unsigned int modflags = (unsigned int)[event modifierFlags];
+        HandleModifiers(_this, SDL_SCANCODE_LSHIFT, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_LCTRL, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_LALT, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_LGUI, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_RSHIFT, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_RCTRL, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_RALT, modflags);
+        HandleModifiers(_this, SDL_SCANCODE_RGUI, modflags);
         break;
+    }
     default: /* just to avoid compiler warnings */
         break;
     }
@@ -457,11 +467,12 @@ typedef enum
 extern CGSConnection _CGSDefaultConnection(void);
 extern CGError CGSSetGlobalHotKeyOperatingMode(CGSConnection connection, CGSGlobalHotKeyOperatingMode mode);
 
-void Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
+int Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
 {
 #ifdef SDL_MAC_NO_SANDBOX
     CGSSetGlobalHotKeyOperatingMode(_CGSDefaultConnection(), grabbed ? CGSGlobalHotKeyDisable : CGSGlobalHotKeyEnable);
 #endif
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */

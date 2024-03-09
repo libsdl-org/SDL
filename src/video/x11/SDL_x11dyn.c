@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -72,22 +72,22 @@ static void *X11_GetSym(const char *fnname, int *pHasModule)
     int i;
     void *fn = NULL;
     for (i = 0; i < SDL_TABLESIZE(x11libs); i++) {
-        if (x11libs[i].lib != NULL) {
+        if (x11libs[i].lib) {
             fn = SDL_LoadFunction(x11libs[i].lib, fnname);
-            if (fn != NULL) {
+            if (fn) {
                 break;
             }
         }
     }
 
 #if DEBUG_DYNAMIC_X11
-    if (fn != NULL)
+    if (fn)
         printf("X11: Found '%s' in %s (%p)\n", fnname, x11libs[i].libname, fn);
     else
         printf("X11: Symbol '%s' NOT FOUND!\n", fnname);
 #endif
 
-    if (fn == NULL) {
+    if (!fn) {
         *pHasModule = 0; /* kill this module. */
     }
 
@@ -133,7 +133,7 @@ void SDL_X11_UnloadSymbols(void)
 
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC
             for (i = 0; i < SDL_TABLESIZE(x11libs); i++) {
-                if (x11libs[i].lib != NULL) {
+                if (x11libs[i].lib) {
                     SDL_UnloadObject(x11libs[i].lib);
                     x11libs[i].lib = NULL;
                 }
@@ -154,7 +154,7 @@ int SDL_X11_LoadSymbols(void)
         int i;
         int *thismod = NULL;
         for (i = 0; i < SDL_TABLESIZE(x11libs); i++) {
-            if (x11libs[i].libname != NULL) {
+            if (x11libs[i].libname) {
                 x11libs[i].lib = SDL_LoadObject(x11libs[i].libname);
             }
         }

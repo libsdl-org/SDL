@@ -12,7 +12,7 @@
 /* Test case functions */
 
 /**
- * \brief Calls to SDLTest_GenerateRunSeed()
+ * Calls to SDLTest_GenerateRunSeed()
  */
 static int sdltest_generateRunSeed(void *arg)
 {
@@ -42,7 +42,7 @@ static int sdltest_generateRunSeed(void *arg)
 }
 
 /**
- * \brief Calls to SDLTest_GetFuzzerInvocationCount()
+ * Calls to SDLTest_GetFuzzerInvocationCount()
  */
 static int sdltest_getFuzzerInvocationCount(void *arg)
 {
@@ -64,7 +64,7 @@ static int sdltest_getFuzzerInvocationCount(void *arg)
 }
 
 /**
- * \brief Calls to random number generators
+ * Calls to random number generators
  */
 static int sdltest_randomNumber(void *arg)
 {
@@ -131,7 +131,7 @@ static int sdltest_randomNumber(void *arg)
 }
 
 /**
- * \brief Calls to random boundary number generators for Uint8
+ * Calls to random boundary number generators for Uint8
  */
 static int sdltest_randomBoundaryNumberUint8(void *arg)
 {
@@ -240,7 +240,7 @@ static int sdltest_randomBoundaryNumberUint8(void *arg)
 }
 
 /**
- * \brief Calls to random boundary number generators for Uint16
+ * Calls to random boundary number generators for Uint16
  */
 static int sdltest_randomBoundaryNumberUint16(void *arg)
 {
@@ -349,7 +349,7 @@ static int sdltest_randomBoundaryNumberUint16(void *arg)
 }
 
 /**
- * \brief Calls to random boundary number generators for Uint32
+ * Calls to random boundary number generators for Uint32
  */
 static int sdltest_randomBoundaryNumberUint32(void *arg)
 {
@@ -458,7 +458,7 @@ static int sdltest_randomBoundaryNumberUint32(void *arg)
 }
 
 /**
- * \brief Calls to random boundary number generators for Uint64
+ * Calls to random boundary number generators for Uint64
  */
 static int sdltest_randomBoundaryNumberUint64(void *arg)
 {
@@ -567,7 +567,7 @@ static int sdltest_randomBoundaryNumberUint64(void *arg)
 }
 
 /**
- * \brief Calls to random boundary number generators for Sint8
+ * Calls to random boundary number generators for Sint8
  */
 static int sdltest_randomBoundaryNumberSint8(void *arg)
 {
@@ -676,7 +676,7 @@ static int sdltest_randomBoundaryNumberSint8(void *arg)
 }
 
 /**
- * \brief Calls to random boundary number generators for Sint16
+ * Calls to random boundary number generators for Sint16
  */
 static int sdltest_randomBoundaryNumberSint16(void *arg)
 {
@@ -785,7 +785,7 @@ static int sdltest_randomBoundaryNumberSint16(void *arg)
 }
 
 /**
- * \brief Calls to random boundary number generators for Sint32
+ * Calls to random boundary number generators for Sint32
  */
 static int sdltest_randomBoundaryNumberSint32(void *arg)
 {
@@ -901,7 +901,7 @@ static int sdltest_randomBoundaryNumberSint32(void *arg)
 }
 
 /**
- * \brief Calls to random boundary number generators for Sint64
+ * Calls to random boundary number generators for Sint64
  */
 static int sdltest_randomBoundaryNumberSint64(void *arg)
 {
@@ -1010,7 +1010,7 @@ static int sdltest_randomBoundaryNumberSint64(void *arg)
 }
 
 /**
- * \brief Calls to SDLTest_RandomIntegerInRange
+ * Calls to SDLTest_RandomIntegerInRange
  */
 static int sdltest_randomIntegerInRange(void *arg)
 {
@@ -1084,7 +1084,7 @@ static int sdltest_randomIntegerInRange(void *arg)
 }
 
 /**
- * \brief Calls to SDLTest_RandomAsciiString
+ * Calls to SDLTest_RandomAsciiString
  */
 static int sdltest_randomAsciiString(void *arg)
 {
@@ -1116,7 +1116,7 @@ static int sdltest_randomAsciiString(void *arg)
 }
 
 /**
- * \brief Calls to SDLTest_RandomAsciiStringWithMaximumLength
+ * Calls to SDLTest_RandomAsciiStringWithMaximumLength
  */
 static int sdltest_randomAsciiStringWithMaximumLength(void *arg)
 {
@@ -1168,7 +1168,7 @@ static int sdltest_randomAsciiStringWithMaximumLength(void *arg)
 }
 
 /**
- * \brief Calls to SDLTest_RandomAsciiStringOfSize
+ * Calls to SDLTest_RandomAsciiStringOfSize
  */
 static int sdltest_randomAsciiStringOfSize(void *arg)
 {

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -90,7 +90,7 @@ SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 
 void SDL_DestroySemaphore(SDL_Semaphore *sem)
 {
-    if (sem != NULL) {
+    if (sem) {
         RSemaphore sema;
         sema.SetHandle(sem->handle);
         sema.Signal(sema.Count());
@@ -102,7 +102,7 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
 
 int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -114,7 +114,7 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
         return SDL_MUTEX_TIMEOUT;
     }
 
-    if (timeoutNS == SDL_MUTEX_MAXWAIT) {
+    if (timeoutNS == -1) {  // -1 == wait indefinitely.
         WaitAll(sem);
         return 0;
     }
@@ -140,7 +140,7 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 
 Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
-    if (sem == NULL) {
+    if (!sem) {
         SDL_InvalidParamError("sem");
         return 0;
     }
@@ -149,7 +149,7 @@ Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 
 int SDL_PostSemaphore(SDL_Semaphore *sem)
 {
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
     sem->count++;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,7 @@
 #ifndef _INCLUDED_WINDOWS_H
 #define _INCLUDED_WINDOWS_H
 
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -36,7 +36,7 @@
 #endif
 #undef WINVER
 #undef _WIN32_WINNT
-#ifdef SDL_VIDEO_RENDER_D3D12
+#if SDL_VIDEO_RENDER_D3D12
 #define _WIN32_WINNT 0xA00 /* For D3D12, 0xA00 is required */
 #elif defined(HAVE_SHELLSCALINGAPI_H)
 #define _WIN32_WINNT 0x603 /* For DPI support */
@@ -45,7 +45,7 @@
 #endif
 #define WINVER _WIN32_WINNT
 
-#elif defined(__WINGDK__)
+#elif defined(SDL_PLATFORM_WINGDK)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -60,7 +60,7 @@
 #define _WIN32_WINNT 0xA00
 #define WINVER       _WIN32_WINNT
 
-#elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#elif defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -74,20 +74,24 @@
 #undef _WIN32_WINNT
 #define _WIN32_WINNT 0xA00
 #define WINVER       _WIN32_WINNT
+#endif
+
+/* See https://github.com/libsdl-org/SDL/pull/7607  */
+/* force_align_arg_pointer attribute requires gcc >= 4.2.x.  */
+#if defined(__clang__)
+#define HAVE_FORCE_ALIGN_ARG_POINTER
+#elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
+#define HAVE_FORCE_ALIGN_ARG_POINTER
+#endif
+#if defined(__GNUC__) && defined(__i386__) && defined(HAVE_FORCE_ALIGN_ARG_POINTER)
+#define MINGW32_FORCEALIGN __attribute__((force_align_arg_pointer))
+#else
+#define MINGW32_FORCEALIGN
 #endif
 
 #include <windows.h>
 #include <basetyps.h> /* for REFIID with broken mingw.org headers */
-
-/* Older Visual C++ headers don't have the Win64-compatible typedefs... */
-#if defined(_MSC_VER) && (_MSC_VER <= 1200)
-#ifndef DWORD_PTR
-#define DWORD_PTR DWORD
-#endif
-#ifndef LONG_PTR
-#define LONG_PTR LONG
-#endif
-#endif
+#include <mmreg.h>
 
 /* Routines to convert from UTF8 to native Windows text */
 #define WIN_StringToUTF8W(S) SDL_iconv_string("UTF-8", "UTF-16LE", (const char *)(S), (SDL_wcslen(S) + 1) * sizeof(WCHAR))
@@ -118,9 +122,9 @@ extern int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr);
 /* Sets an error message based on GetLastError(). Always return -1. */
 extern int WIN_SetError(const char *prefix);
 
-#ifndef __WINRT__
+#ifndef SDL_PLATFORM_WINRT
 /* Load a function from combase.dll */
-void *WIN_LoadComBaseFunction(const char *name);
+FARPROC WIN_LoadComBaseFunction(const char *name);
 #endif
 
 /* Wrap up the oddities of CoInitialize() into a common function. */
@@ -130,6 +134,9 @@ extern void WIN_CoUninitialize(void);
 /* Wrap up the oddities of RoInitialize() into a common function. */
 extern HRESULT WIN_RoInitialize(void);
 extern void WIN_RoUninitialize(void);
+
+/* Returns SDL_TRUE if we're running on Windows XP (any service pack). DOES NOT CHECK XP "OR GREATER"! */
+extern BOOL WIN_IsWindowsXP(void);
 
 /* Returns SDL_TRUE if we're running on Windows Vista and newer */
 extern BOOL WIN_IsWindowsVistaOrGreater(void);
@@ -153,6 +160,11 @@ extern void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect);
 
 /* Returns SDL_TRUE if the rect is empty */
 extern BOOL WIN_IsRectEmpty(const RECT *rect);
+
+extern SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat);
+
+/* WideCharToMultiByte, but with some WinXP manangement. */
+extern int WIN_WideCharToMultiByte(UINT CodePage, DWORD dwFlags, LPCWCH lpWideCharStr, int cchWideChar, LPSTR lpMultiByteStr, int cbMultiByte, LPCCH lpDefaultChar, LPBOOL lpUsedDefaultChar);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

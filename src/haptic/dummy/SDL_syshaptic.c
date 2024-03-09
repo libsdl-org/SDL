@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -36,6 +36,12 @@ int SDL_SYS_HapticInit(void)
 
 int SDL_SYS_NumHaptics(void)
 {
+    return 0;
+}
+
+SDL_HapticID SDL_SYS_HapticInstanceID(int index)
+{
+    SDL_SYS_LogicError();
     return 0;
 }
 
@@ -81,14 +87,14 @@ void SDL_SYS_HapticQuit(void)
 }
 
 int SDL_SYS_HapticNewEffect(SDL_Haptic *haptic,
-                            struct haptic_effect *effect, SDL_HapticEffect *base)
+                            struct haptic_effect *effect, const SDL_HapticEffect *base)
 {
     return SDL_SYS_LogicError();
 }
 
 int SDL_SYS_HapticUpdateEffect(SDL_Haptic *haptic,
                                struct haptic_effect *effect,
-                               SDL_HapticEffect *data)
+                               const SDL_HapticEffect *data)
 {
     return SDL_SYS_LogicError();
 }

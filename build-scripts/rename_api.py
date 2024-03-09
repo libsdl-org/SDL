@@ -36,6 +36,10 @@ def main():
     if not header.exists():
         raise Exception("Couldn't find header %s" % header)
 
+    header_name = header.name
+    if (header.name == "SDL_gamepad.h"):
+        header_name = "SDL_gamecontroller.h"
+
     header_text = header.read_text()
 
     # Replace the symbols in source code
@@ -62,8 +66,8 @@ def main():
         oldname = args.args[i + 0]
         newname = args.args[i + 1]
 
-        add_symbol_to_oldnames(header.name, oldname, newname)
-        add_symbol_to_migration(header.name, args.type, oldname, newname)
+        add_symbol_to_oldnames(header_name, oldname, newname)
+        add_symbol_to_migration(header_name, args.type, oldname, newname)
         add_symbol_to_coccinelle(args.type, oldname, newname)
         i += 2
 

@@ -74,7 +74,7 @@ static int createWindow(SDL_VideoDevice *_this, SDL_Window *window)
     int             usage;
 
     impl = SDL_calloc(1, sizeof(*impl));
-    if (impl == NULL) {
+    if (!impl) {
         return -1;
     }
 
@@ -147,7 +147,7 @@ fail:
  * @param[out]  pitch   Holds the number of bytes per line
  * @return  0 if successful, -1 on error
  */
-static int createWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * format,
+static int createWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window, SDL_PixelFormatEnum * format,
                         void ** pixels, int *pitch)
 {
     window_impl_t   *impl = (window_impl_t *)window->driverdata;
@@ -241,12 +241,11 @@ static void setWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
     window_impl_t   *impl = (window_impl_t *)window->driverdata;
     int             size[2];
 
-    size[0] = window->w;
-    size[1] = window->h;
+    size[0] = window->floating.w;
+    size[1] = window->floating.h;
 
     screen_set_window_property_iv(impl->window, SCREEN_PROPERTY_SIZE, size);
-    screen_set_window_property_iv(impl->window, SCREEN_PROPERTY_SOURCE_SIZE,
-                                  size);
+    screen_set_window_property_iv(impl->window, SCREEN_PROPERTY_SOURCE_SIZE, size);
 }
 
 /**
@@ -310,7 +309,7 @@ static SDL_VideoDevice *createDevice()
     SDL_VideoDevice *device;
 
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
+    if (!device) {
         return NULL;
     }
 
@@ -341,5 +340,6 @@ static SDL_VideoDevice *createDevice()
 
 VideoBootStrap QNX_bootstrap = {
     "qnx", "QNX Screen",
-    createDevice
+    createDevice,
+    NULL /* no ShowMessageBox implementation */
 };

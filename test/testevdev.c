@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
   Copyright (C) 2020-2022 Collabora Ltd.
 
   This software is provided 'as-is', without any express or implied
@@ -978,6 +978,30 @@ static const GuessTest guess_tests[] =
           /* 0x2c0 */ 0x03,
       },
     },
+    { /* https://github.com/ValveSoftware/steam-devices/pull/40 */
+      .name = "PDP wired Pro Controller for Switch",
+      /* 0003:0e6f:0184 "Performance Designed Products" /
+       * "Faceoff Deluxe+ Audio Wired Controller for Nintendo Switch" appears
+       * to be functionally equivalent */
+      .eviocgname = "PDP CO.,LTD. Faceoff Wired Pro Controller for Nintendo Switch",
+      .usb_vendor_name = "PDP CO.,LTD.",
+      .usb_product_name = "Faceoff Wired Pro Controller for Nintendo Switch",
+      .bus_type = 0x0003,
+      .vendor_id = 0x0e6f,
+      .product_id = 0x0180,
+      .version = 0x0111,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS, MSC */
+      .ev = { 0x1b },
+      /* X, Y, Z, RZ, HAT0X, HAT0Y */
+      .abs = { 0x27, 0x00, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* ABC, XYZ, TL, TR, TL2, TR2, SELECT, START, MODE,
+           * THUMBL */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xff, 0x3f,
+      },
+    },
     {
       .name = "NES Controller (R) NES-style Joycon from Nintendo Online",
       .eviocgname = "NES Controller (R)",
@@ -1916,7 +1940,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,16 +25,14 @@
 
 #ifdef SDL_AUDIO_DRIVER_AAUDIO
 
-void aaudio_ResumeDevices(void);
-void aaudio_PauseDevices(void);
-SDL_bool aaudio_DetectBrokenPlayState(void);
+void AAUDIO_ResumeDevices(void);
+void AAUDIO_PauseDevices(void);
 
 #else
 
-static void aaudio_ResumeDevices(void) {}
-static void aaudio_PauseDevices(void) {}
-static SDL_bool aaudio_DetectBrokenPlayState(void) { return SDL_FALSE; }
+#define AAUDIO_ResumeDevices()
+#define AAUDIO_PauseDevices()
 
 #endif
 
-#endif /* SDL_aaudio_h_ */
+#endif // SDL_aaudio_h_

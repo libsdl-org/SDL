@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,6 +18,34 @@
 #include <SDL3/SDL_test.h>
 
 #define DEFAULT_RESOLUTION 1
+
+static int test_sdl_delay_within_bounds(void) {
+    const int testDelay = 100;
+    const int marginOfError = 25;
+    Uint64 result;
+    Uint64 result2;
+    Sint64 difference;
+
+    SDLTest_ResetAssertSummary();
+
+    /* Get ticks count - should be non-zero by now */
+    result = SDL_GetTicks();
+    SDLTest_AssertPass("Call to SDL_GetTicks()");
+    SDLTest_AssertCheck(result > 0, "Check result value, expected: >0, got: %" SDL_PRIu64, result);
+
+    /* Delay a bit longer and measure ticks and verify difference */
+    SDL_Delay(testDelay);
+    SDLTest_AssertPass("Call to SDL_Delay(%d)", testDelay);
+    result2 = SDL_GetTicks();
+    SDLTest_AssertPass("Call to SDL_GetTicks()");
+    SDLTest_AssertCheck(result2 > 0, "Check result value, expected: >0, got: %" SDL_PRIu64, result2);
+    difference = result2 - result;
+    SDLTest_AssertCheck(difference > (testDelay - marginOfError), "Check difference, expected: >%d, got: %" SDL_PRIu64, testDelay - marginOfError, difference);
+    /* Disabled because this might fail on non-interactive systems. */
+    SDLTest_AssertCheck(difference < (testDelay + marginOfError), "Check difference, expected: <%d, got: %" SDL_PRIu64, testDelay + marginOfError, difference);
+
+    return SDLTest_AssertSummaryToTestResult() == TEST_RESULT_PASSED ? 0 : 1;
+}
 
 static int ticks = 0;
 
@@ -43,10 +71,12 @@ int main(int argc, char *argv[])
     Uint64 start, now;
     Uint64 start_perf, now_perf;
     SDLTest_CommonState  *state;
+    SDL_bool run_interactive_tests = SDL_TRUE;
+    int return_code = 0;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -59,7 +89,10 @@ int main(int argc, char *argv[])
 
         consumed = SDLTest_CommonArg(state, i);
         if (!consumed) {
-            if (desired < 0) {
+            if (SDL_strcmp(argv[i], "--no-interactive") == 0) {
+                run_interactive_tests = SDL_FALSE;
+                consumed = 1;
+            } else if (desired < 0) {
                 char *endptr;
 
                 desired = SDL_strtoul(argv[i], &endptr, 0);
@@ -69,7 +102,7 @@ int main(int argc, char *argv[])
             }
         }
         if (consumed <= 0) {
-            static const char *options[] = { "[interval]", NULL };
+            static const char *options[] = { "[--no-interactive]", "[interval]", NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             return 1;
         }
@@ -162,7 +195,11 @@ int main(int argc, char *argv[])
     now = SDL_GetTicks();
     SDL_Log("Delay 1 second = %d ms in ticks, %f ms according to performance counter\n", (int)(now - start), (double)((now_perf - start_perf) * 1000) / SDL_GetPerformanceFrequency());
 
+    if (run_interactive_tests) {
+        return_code = test_sdl_delay_within_bounds();
+    }
+
     SDLTest_CommonDestroyState(state);
     SDL_Quit();
-    return 0;
+    return return_code;
 }

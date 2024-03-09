@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -65,7 +65,7 @@ static FILE *TryOpenFile(const char *file, const char *mode)
     FILE *fp = NULL;
 
     fp = TryOpenInRomfs(file, mode);
-    if (fp == NULL) {
+    if (!fp) {
         fp = fopen(file, mode);
     }
 
@@ -78,7 +78,6 @@ FILE *TryOpenInRomfs(const char *file, const char *mode)
     char *prefixed_filepath = NULL;
 
     if (SDL_asprintf(&prefixed_filepath, "romfs:/%s", file) < 0) {
-        SDL_OutOfMemory();
         return NULL;
     }
 

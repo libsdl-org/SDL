@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,7 +20,7 @@
 */
 
 /* Do our best to make sure va_copy is working */
-#ifdef __NGAGE__
+#ifdef SDL_PLATFORM_NGAGE
 #undef va_copy
 #define va_copy(dst, src) dst = src
 

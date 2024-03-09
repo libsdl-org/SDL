@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -41,13 +41,13 @@ char *SDL_GetBasePath(void)
 char *SDL_GetPrefPath(const char *org, const char *app)
 {
     char *pref_path = NULL;
-    if (app == NULL) {
+    if (!app) {
         SDL_InvalidParamError("app");
         return NULL;
     }
 
     pref_path = MakePrefPath(app);
-    if (pref_path == NULL) {
+    if (!pref_path) {
         return NULL;
     }
 
@@ -60,7 +60,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
 }
 
 /* TODO */
-char *SDL_GetPath(SDL_Folder folder)
+char *SDL_GetUserFolder(SDL_Folder folder)
 {
     SDL_Unsupported();
     return NULL;
@@ -70,7 +70,6 @@ static char *MakePrefPath(const char *app)
 {
     char *pref_path;
     if (SDL_asprintf(&pref_path, "sdmc:/3ds/%s/", app) < 0) {
-        SDL_OutOfMemory();
         return NULL;
     }
     return pref_path;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,22 +24,22 @@
 
 #include <unistd.h> /* For getpid() and readlink() */
 
-#include "../SDL_sysvideo.h"
-#include "../SDL_pixels_c.h"
 #include "../../core/linux/SDL_system_theme.h"
+#include "../SDL_pixels_c.h"
+#include "../SDL_sysvideo.h"
 
-#include "SDL_x11video.h"
 #include "SDL_x11framebuffer.h"
-#include "SDL_x11shape.h"
+#include "SDL_x11pen.h"
 #include "SDL_x11touch.h"
-#include "SDL_x11xinput2.h"
+#include "SDL_x11video.h"
 #include "SDL_x11xfixes.h"
+#include "SDL_x11xinput2.h"
+#include "SDL_x11messagebox.h"
+#include "SDL_x11shape.h"
 
 #ifdef SDL_VIDEO_OPENGL_EGL
 #include "SDL_x11opengles.h"
 #endif
-
-#include "SDL_x11vulkan.h"
 
 /* Initialization/Query functions */
 static int X11_VideoInit(SDL_VideoDevice *_this);
@@ -81,10 +81,10 @@ static int X11_SafetyNetErrHandler(Display *d, XErrorEvent *e)
     if (!safety_net_triggered) {
         safety_net_triggered = SDL_TRUE;
         device = SDL_GetVideoDevice();
-        if (device != NULL) {
+        if (device) {
             int i;
             for (i = 0; i < device->num_displays; i++) {
-                SDL_VideoDisplay *display = &device->displays[i];
+                SDL_VideoDisplay *display = device->displays[i];
                 if (SDL_GetCurrentDisplayMode(display->id) != SDL_GetDesktopDisplayMode(display->id)) {
                     X11_SetDisplayMode(device, display, &display->desktop_mode);
                 }
@@ -92,7 +92,7 @@ static int X11_SafetyNetErrHandler(Display *d, XErrorEvent *e)
         }
     }
 
-    if (orig_x11_errhandler != NULL) {
+    if (orig_x11_errhandler) {
         return orig_x11_errhandler(d, e); /* probably terminate. */
     }
 
@@ -117,21 +117,19 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     /* Open the display first to be sure that X11 is available */
     x11_display = X11_XOpenDisplay(display);
 
-    if (x11_display == NULL) {
+    if (!x11_display) {
         SDL_X11_UnloadSymbols();
         return NULL;
     }
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
-        SDL_OutOfMemory();
+    if (!device) {
         return NULL;
     }
     data = (struct SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
-    if (data == NULL) {
+    if (!data) {
         SDL_free(device);
-        SDL_OutOfMemory();
         return NULL;
     }
     device->driverdata = data;
@@ -144,7 +142,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 
     data->display = x11_display;
     data->request_display = X11_XOpenDisplay(display);
-    if (data->request_display == NULL) {
+    if (!data->request_display) {
         X11_XCloseDisplay(data->display);
         SDL_free(device->driverdata);
         SDL_free(device);
@@ -182,7 +180,6 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->SendWakeupEvent = X11_SendWakeupEvent;
 
     device->CreateSDLWindow = X11_CreateWindow;
-    device->CreateSDLWindowFrom = X11_CreateWindowFrom;
     device->SetWindowTitle = X11_SetWindowTitle;
     device->SetWindowIcon = X11_SetWindowIcon;
     device->SetWindowPosition = X11_SetWindowPosition;
@@ -209,17 +206,17 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->CreateWindowFramebuffer = X11_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = X11_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = X11_DestroyWindowFramebuffer;
-    device->GetWindowWMInfo = X11_GetWindowWMInfo;
     device->SetWindowHitTest = X11_SetWindowHitTest;
     device->AcceptDragAndDrop = X11_AcceptDragAndDrop;
+    device->UpdateWindowShape = X11_UpdateWindowShape;
     device->FlashWindow = X11_FlashWindow;
+    device->ShowWindowSystemMenu = X11_ShowWindowSystemMenu;
+    device->SetWindowFocusable = X11_SetWindowFocusable;
+    device->SyncWindow = X11_SyncWindow;
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     device->SetWindowMouseRect = X11_SetWindowMouseRect;
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
-
-    device->shape_driver.CreateShaper = X11_CreateShaper;
-    device->shape_driver.SetWindowShape = X11_SetWindowShape;
 
 #ifdef SDL_VIDEO_OPENGL_GLX
     device->GL_LoadLibrary = X11_GL_LoadLibrary;
@@ -281,14 +278,16 @@ static SDL_VideoDevice *X11_CreateDevice(void)
         device->system_theme = SDL_SystemTheme_Get();
 #endif
 
-    device->quirk_flags = VIDEO_DEVICE_QUIRK_HAS_POPUP_WINDOW_SUPPORT;
+    device->device_caps = VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT |
+                          VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS;
 
     return device;
 }
 
 VideoBootStrap X11_bootstrap = {
     "x11", "SDL X11 video driver",
-    X11_CreateDevice
+    X11_CreateDevice,
+    X11_ShowMessageBox
 };
 
 static int (*handler)(Display *, XErrorEvent *) = NULL;
@@ -433,6 +432,10 @@ int X11_VideoInit(SDL_VideoDevice *_this)
 
     X11_InitTouch(_this);
 
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
+    X11_InitPen(_this);
+#endif
+
     return 0;
 }
 
@@ -459,7 +462,7 @@ void X11_VideoQuit(SDL_VideoDevice *_this)
 
 SDL_bool X11_UseDirectColorVisuals(void)
 {
-    return SDL_getenv("SDL_VIDEO_X11_NODIRECTCOLOR") ? SDL_FALSE : SDL_TRUE;
+    return (SDL_getenv("SDL_VIDEO_X11_NODIRECTCOLOR") == NULL);
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */

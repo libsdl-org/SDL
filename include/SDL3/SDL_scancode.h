@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 /**
  *  \file SDL_scancode.h
  *
- *  \brief Defines keyboard scancodes.
+ *  Defines keyboard scancodes.
  */
 
 #ifndef SDL_scancode_h_
@@ -31,7 +31,10 @@
 #include <SDL3/SDL_stdinc.h>
 
 /**
- *  \brief The SDL keyboard scancode representation.
+ *  The SDL keyboard scancode representation.
+ *
+ *  An SDL scancode is the physical representation of a key on the keyboard,
+ *  independent of language and keyboard mapping.
  *
  *  Values of this type are used to represent keyboard keys, among other places
  *  in the \link SDL_Keysym::scancode key.keysym.scancode \endlink field of the

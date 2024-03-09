@@ -31,11 +31,13 @@
 #pragma warning(push)
 #pragma warning(disable: 4200)
 #pragma warning(disable: 4201)
+#pragma warning(disable: 4214)
 #endif
 
 #include <windows.h>
 
 #include "hidapi_hidsdi.h"
+/*#include <assert.h>*/
 
 #define NUM_OF_HIDP_REPORT_TYPES 3
 
@@ -118,11 +120,19 @@ typedef struct hid_pp_link_collection_node_ {
 	USHORT NumberOfChildren;
 	USHORT NextSibling;
 	USHORT FirstChild;
-	UINT   CollectionType : 8;
-	UINT   IsAlias : 1;
-	UINT   Reserved : 23;
+	ULONG  CollectionType : 8;
+	ULONG  IsAlias : 1;
+	ULONG  Reserved : 23;
 	// Same as the public API structure HIDP_LINK_COLLECTION_NODE, but without PVOID UserContext at the end
 } hid_pp_link_collection_node, *phid_pp_link_collection_node;
+
+// Note: This is risk-reduction-measure for this specific struct, as it has ULONG bit-field.
+//       Although very unlikely, it might still be possible that the compiler creates a memory layout that is
+//       not binary compatile.
+//       Other structs are not checked at the time of writing.
+//static_assert(sizeof(struct hid_pp_link_collection_node_) == 16,
+//    "Size of struct hid_pp_link_collection_node_ not as expected. This might break binary compatibility");
+SDL_COMPILE_TIME_ASSERT(hid_pp_link_collection_node_, sizeof(struct hid_pp_link_collection_node_) == 16);
 
 typedef struct hidp_unknown_token_ {
 	UCHAR Token; /* Specifies the one-byte prefix of a global item. */
@@ -145,17 +155,17 @@ typedef struct hid_pp_cap_ {
 	USAGE   LinkUsage;
 
 	// Start of 8 Flags in one byte
-	UINT    IsMultipleItemsForArray:1;
+	BOOLEAN IsMultipleItemsForArray:1;
 
-	UINT    IsPadding:1;
-	UINT    IsButtonCap:1;
-	UINT    IsAbsolute:1;
-	UINT    IsRange:1;
-	UINT    IsAlias:1; // IsAlias is set to TRUE in the first n-1 capability structures added to the capability array. IsAlias set to FALSE in the nth capability structure.
-	UINT    IsStringRange:1;
-	UINT    IsDesignatorRange:1;
+	BOOLEAN IsPadding:1;
+	BOOLEAN IsButtonCap:1;
+	BOOLEAN IsAbsolute:1;
+	BOOLEAN IsRange:1;
+	BOOLEAN IsAlias:1; // IsAlias is set to TRUE in the first n-1 capability structures added to the capability array. IsAlias set to FALSE in the nth capability structure.
+	BOOLEAN IsStringRange:1;
+	BOOLEAN IsDesignatorRange:1;
 	// End of 8 Flags in one byte
-	//BOOLEAN Reserved1[3];
+	BOOLEAN Reserved1[3];
 
 	hidp_unknown_token UnknownTokens[4]; // 4 x 8 Byte
 
@@ -212,15 +222,19 @@ typedef struct hidp_preparsed_data_ {
 	USHORT FirstByteOfLinkCollectionArray;
 	USHORT NumberLinkCollectionNodes;
 
-#if defined(__MINGW32__) || defined(__CYGWIN__)
+#ifndef _MSC_VER
 	// MINGW fails with: Flexible array member in union not supported
 	// Solution: https://gcc.gnu.org/onlinedocs/gcc/Zero-Length.html
 	union {
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
+#endif
 		hid_pp_cap caps[0];
 		hid_pp_link_collection_node LinkCollectionArray[0];
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 #pragma GCC diagnostic pop
+#endif
 	};
 #else
 	union {

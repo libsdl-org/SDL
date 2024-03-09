@@ -31,6 +31,7 @@ my $optionsfname = undef;
 my $wikipreamble = undef;
 my $changeformat = undef;
 my $manpath = undef;
+my $gitrev = undef;
 
 foreach (@ARGV) {
     $warn_about_missing = 1, next if $_ eq '--warn-about-missing';
@@ -46,6 +47,9 @@ foreach (@ARGV) {
         next;
     } elsif (/\A--manpath=(.*)\Z/) {
         $manpath = $1;
+        next;
+    } elsif (/\A--rev=(.*)\Z/) {
+        $gitrev = $1;
         next;
     }
     $srcpath = $_, next if not defined $srcpath;
@@ -788,6 +792,45 @@ while (my $d = readdir(DH)) {
 }
 closedir(DH);
 
+delete $wikifuncs{"Undocumented"};
+
+{
+    my $path = "$wikipath/Undocumented.md";
+    open(FH, '>', $path) or die("Can't open '$path': $!\n");
+
+    print FH "# Undocumented\n\n";
+
+    print FH "## Functions defined in the headers, but not in the wiki\n\n";
+    my $header_only_func = 0;
+    foreach (sort keys %headerfuncs) {
+        my $fn = $_;
+        if (not defined $wikifuncs{$fn}) {
+            print FH "- [$fn]($fn)\n";
+            $header_only_func = 1;
+        }
+    }
+    if (!$header_only_func) {
+        print FH "(none)\n";
+    }
+    print FH "\n";
+
+    print FH "## Functions defined in the wiki, but not in the headers\n\n";
+
+    my $wiki_only_func = 0;
+    foreach (sort keys %wikifuncs) {
+        my $fn = $_;
+        if (not defined $headerfuncs{$fn}) {
+            print FH "- [$fn]($fn)\n";
+            $wiki_only_func = 1;
+        }
+    }
+    if (!$wiki_only_func) {
+        print FH "(none)\n";
+    }
+    print FH "\n";
+
+    close(FH);
+}
 
 if ($warn_about_missing) {
     foreach (keys %wikifuncs) {
@@ -1047,7 +1090,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 my $dent = $_;
                 if ($dent =~ /\A(.*?)\.md\Z/) {  # we only bridge Markdown files here.
                     next if $1 eq 'FrontPage';
-                    filecopy("$wikireadmepath/$dent", "$readmepath/README-$dent", "\r\n");
+                    filecopy("$wikireadmepath/$dent", "$readmepath/README-$dent", "\n");
                 }
             }
             closedir(DH);
@@ -1437,8 +1480,10 @@ if ($copy_direction == 1) {  # --copy-to-headers
     close(FH);
     }
 
-    my $gitrev = `cd "$srcpath" ; git rev-list HEAD~..`;
-    chomp($gitrev);
+    if (!$gitrev) {
+        $gitrev = `cd "$srcpath" ; git rev-list HEAD~..`;
+        chomp($gitrev);
+    }
 
     # !!! FIXME
     open(FH, '<', "$srcpath/$versionfname") or die("Can't open '$srcpath/$versionfname': $!\n");

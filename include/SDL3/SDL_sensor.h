@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 /**
  *  \file SDL_sensor.h
  *
- *  \brief Include file for SDL sensor event handling
+ *  Include file for SDL sensor event handling
  */
 
 #ifndef SDL_sensor_h_
@@ -30,6 +30,7 @@
 
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
+#include <SDL3/SDL_properties.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
@@ -40,7 +41,7 @@ extern "C" {
 #endif
 
 /**
- *  \brief SDL_sensor.h
+ *  SDL_sensor.h
  *
  *  In order to use these functions, SDL_Init() must have been called
  *  with the ::SDL_INIT_SENSOR flag.  This causes SDL to scan the system
@@ -188,6 +189,20 @@ extern DECLSPEC SDL_Sensor *SDLCALL SDL_OpenSensor(SDL_SensorID instance_id);
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_Sensor *SDLCALL SDL_GetSensorFromInstanceID(SDL_SensorID instance_id);
+
+/**
+ * Get the properties associated with a sensor.
+ *
+ * \param sensor The SDL_Sensor object
+ * \returns a valid property ID on success or 0 on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetProperty
+ * \sa SDL_SetProperty
+ */
+extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSensorProperties(SDL_Sensor *sensor);
 
 /**
  * Get the implementation dependent name of a sensor

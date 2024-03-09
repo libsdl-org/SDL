@@ -20,6 +20,8 @@
 */
 #include "SDL_internal.h"
 
+#if defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
+
 #ifndef SDL_HIDAPI_DISABLED
 
 #include "../SDL_hidapi_c.h"
@@ -1031,3 +1033,5 @@ HID_API_EXPORT const wchar_t* HID_API_CALL hid_error(hid_device *dev)
 }
 
 #endif /* !SDL_HIDAPI_DISABLED */
+
+#endif /* SDL_PLATFORM_IOS || SDL_PLATFORM_TVOS */

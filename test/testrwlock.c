@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,7 +19,7 @@
 #include <SDL3/SDL_test.h>
 
 static SDL_RWLock *rwlock = NULL;
-static SDL_threadID mainthread;
+static SDL_ThreadID mainthread;
 static SDL_AtomicInt doterminate;
 static int nb_threads = 6;
 static SDL_Thread **threads;
@@ -30,35 +30,34 @@ static SDLTest_CommonState *state;
 
 static void DoWork(const int workticks)  /* "Work" */
 {
-    const SDL_threadID tid = SDL_ThreadID();
+    const SDL_ThreadID tid = SDL_GetCurrentThreadID();
     const SDL_bool is_reader = tid != mainthread;
     const char *typestr = is_reader ? "Reader" : "Writer";
-    int rc;
 
-    SDL_Log("%s Thread %lu: ready to work\n", typestr, (unsigned long) tid);
-    rc = is_reader ? SDL_LockRWLockForReading(rwlock) : SDL_LockRWLockForWriting(rwlock);
-    if (rc < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s Thread %lu: Couldn't lock rwlock: %s", typestr, (unsigned long) tid, SDL_GetError());
+    SDL_Log("%s Thread %" SDL_PRIu64 ": ready to work\n", typestr, tid);
+    if (is_reader) {
+        SDL_LockRWLockForReading(rwlock);
     } else {
-        SDL_Log("%s Thread %lu: start work!\n", typestr, (unsigned long) tid);
-        SDL_Delay(workticks);
-        SDL_Log("%s Thread %lu: work done!\n", typestr, (unsigned long) tid);
-        if (SDL_UnlockRWLock(rwlock) < 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s Thread %lu: Couldn't unlock rwlock: %s", typestr, (unsigned long) tid, SDL_GetError());
-        }
-        /* If this sleep isn't done, then threads may starve */
-        SDL_Delay(10);
+        SDL_LockRWLockForWriting(rwlock);
     }
+
+    SDL_Log("%s Thread %" SDL_PRIu64 ": start work!\n", typestr, tid);
+    SDL_Delay(workticks);
+    SDL_Log("%s Thread %" SDL_PRIu64 ": work done!\n", typestr, tid);
+    SDL_UnlockRWLock(rwlock);
+
+    /* If this sleep isn't done, then threads may starve */
+    SDL_Delay(10);
 }
 
 static int SDLCALL
 ReaderRun(void *data)
 {
-    SDL_Log("Reader Thread %lu: starting up", SDL_ThreadID());
+    SDL_Log("Reader Thread %" SDL_PRIu64 ": starting up", SDL_GetCurrentThreadID());
     while (!SDL_AtomicGet(&doterminate)) {
         DoWork(worktime);
     }
-    SDL_Log("Reader Thread %lu: exiting!\n", SDL_ThreadID());
+    SDL_Log("Reader Thread %" SDL_PRIu64 ": exiting!\n", SDL_GetCurrentThreadID());
     return 0;
 }
 
@@ -68,7 +67,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -142,15 +141,15 @@ int main(int argc, char *argv[])
     SDL_AtomicSet(&doterminate, 0);
 
     rwlock = SDL_CreateRWLock();
-    if (rwlock == NULL) {
+    if (!rwlock) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create rwlock: %s\n", SDL_GetError());
         SDL_Quit();
         SDLTest_CommonDestroyState(state);
         return 1;
     }
 
-    mainthread = SDL_ThreadID();
-    SDL_Log("Writer thread: %lu\n", mainthread);
+    mainthread = SDL_GetCurrentThreadID();
+    SDL_Log("Writer thread: %" SDL_PRIu64 "\n", mainthread);
     for (i = 0; i < nb_threads; ++i) {
         char name[64];
         (void)SDL_snprintf(name, sizeof(name), "Reader%d", i);

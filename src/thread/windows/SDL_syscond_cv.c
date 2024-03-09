@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -56,7 +56,7 @@ typedef struct CONDITION_VARIABLE
 } CONDITION_VARIABLE, *PCONDITION_VARIABLE;
 #endif
 
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
 #define pWakeConditionVariable     WakeConditionVariable
 #define pWakeAllConditionVariable  WakeAllConditionVariable
 #define pSleepConditionVariableSRW SleepConditionVariableSRW
@@ -80,29 +80,20 @@ typedef struct SDL_cond_cv
 
 static SDL_Condition *SDL_CreateCondition_cv(void)
 {
-    SDL_cond_cv *cond;
-
     /* Relies on CONDITION_VARIABLE_INIT == 0. */
-    cond = (SDL_cond_cv *)SDL_calloc(1, sizeof(*cond));
-    if (cond == NULL) {
-        SDL_OutOfMemory();
-    }
-
-    return (SDL_Condition *)cond;
+    return (SDL_Condition *)SDL_calloc(1, sizeof(SDL_cond_cv));
 }
 
 static void SDL_DestroyCondition_cv(SDL_Condition *cond)
 {
-    if (cond != NULL) {
-        /* There are no kernel allocated resources */
-        SDL_free(cond);
-    }
+    /* There are no kernel allocated resources */
+    SDL_free(cond);
 }
 
 static int SDL_SignalCondition_cv(SDL_Condition *_cond)
 {
     SDL_cond_cv *cond = (SDL_cond_cv *)_cond;
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -114,7 +105,7 @@ static int SDL_SignalCondition_cv(SDL_Condition *_cond)
 static int SDL_BroadcastCondition_cv(SDL_Condition *_cond)
 {
     SDL_cond_cv *cond = (SDL_cond_cv *)_cond;
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -129,10 +120,10 @@ static int SDL_WaitConditionTimeoutNS_cv(SDL_Condition *_cond, SDL_Mutex *_mutex
     DWORD timeout;
     int ret;
 
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
-    if (_mutex == NULL) {
+    if (!_mutex) {
         return SDL_InvalidParamError("mutex");
     }
 
@@ -195,7 +186,7 @@ static const SDL_cond_impl_t SDL_cond_impl_cv = {
 };
 
 
-#ifndef __WINRT__
+#ifndef SDL_PLATFORM_WINRT
 /* Generic Condition Variable implementation using SDL_Mutex and SDL_Semaphore */
 static const SDL_cond_impl_t SDL_cond_impl_generic = {
     &SDL_CreateCondition_generic,
@@ -208,13 +199,13 @@ static const SDL_cond_impl_t SDL_cond_impl_generic = {
 
 SDL_Condition *SDL_CreateCondition(void)
 {
-    if (SDL_cond_impl_active.Create == NULL) {
+    if (!SDL_cond_impl_active.Create) {
         const SDL_cond_impl_t *impl = NULL;
 
         if (SDL_mutex_impl_active.Type == SDL_MUTEX_INVALID) {
             /* The mutex implementation isn't decided yet, trigger it */
             SDL_Mutex *mutex = SDL_CreateMutex();
-            if (mutex == NULL) {
+            if (!mutex) {
                 return NULL;
             }
             SDL_DestroyMutex(mutex);
@@ -222,7 +213,7 @@ SDL_Condition *SDL_CreateCondition(void)
             SDL_assert(SDL_mutex_impl_active.Type != SDL_MUTEX_INVALID);
         }
 
-#ifdef __WINRT__
+#ifdef SDL_PLATFORM_WINRT
         /* Link statically on this platform */
         impl = &SDL_cond_impl_cv;
 #else

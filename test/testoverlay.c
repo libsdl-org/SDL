@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -16,16 +16,16 @@
  *                                                                              *
  ********************************************************************************/
 
-#include <stdlib.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
 #include "testutils.h"
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
+#include <stdlib.h>
 
 #define MOOSEPIC_W 64
 #define MOOSEPIC_H 88
@@ -147,6 +147,7 @@ static Uint64 next_fps_check;
 static Uint32 frames;
 static const Uint32 fps_check_delay = 5000;
 
+static Uint32 yuv_format = SDL_PIXELFORMAT_YV12;
 static SDL_Surface *MooseYUVSurfaces[MOOSEFRAMES_COUNT];
 static SDL_Texture *MooseTexture = NULL;
 static SDL_FRect displayrect;
@@ -187,31 +188,58 @@ static void MoveSprites(SDL_Renderer *renderer)
     static int i = 0;
 
     if (streaming) {
-        if (!paused) {
-            i = (i + 1) % MOOSEFRAMES_COUNT;
-            SDL_UpdateTexture(MooseTexture, NULL, MooseYUVSurfaces[i]->pixels, MooseYUVSurfaces[i]->pitch);
-        }
-        SDL_RenderClear(renderer);
-        SDL_RenderTexture(renderer, MooseTexture, NULL, &displayrect);
-        SDL_RenderPresent(renderer);
+         if (!paused) {
+             i = (i + 1) % MOOSEFRAMES_COUNT;
+             /* Test both upload paths for NV12/NV21 formats */
+             if ((yuv_format == SDL_PIXELFORMAT_NV12 || yuv_format == SDL_PIXELFORMAT_NV21) &&
+                 (i % 2) == 0) {
+#ifdef TEST_RECT_UPDATE
+                 SDL_Rect rect;
+
+                 if (i == 0) {
+                     rect.x = 0;
+                     rect.y = 0;
+                     rect.w = MOOSEPIC_W;
+                     rect.h = MOOSEPIC_H;
+                 } else {
+                     rect.x = MOOSEPIC_W / 4;
+                     rect.y = MOOSEPIC_H / 4;
+                     rect.w = MOOSEPIC_W / 2;
+                     rect.h = MOOSEPIC_H / 2;
+                 }
+                 SDL_UpdateNVTexture(MooseTexture, &rect,
+                                     (Uint8 *)MooseYUVSurfaces[i]->pixels + rect.y * MooseYUVSurfaces[i]->pitch + rect.x, MooseYUVSurfaces[i]->pitch,
+                                     (Uint8 *)MooseYUVSurfaces[i]->pixels + MOOSEFRAME_SIZE + (rect.y + 1) / 2 * MooseYUVSurfaces[i]->pitch + (rect.x + 1) / 2, MooseYUVSurfaces[i]->pitch);
+#else
+                 SDL_UpdateNVTexture(MooseTexture, NULL,
+                                     MooseYUVSurfaces[i]->pixels, MooseYUVSurfaces[i]->pitch,
+                                     (Uint8 *)MooseYUVSurfaces[i]->pixels + MOOSEFRAME_SIZE, MooseYUVSurfaces[i]->pitch);
+#endif
+             } else {
+                 SDL_UpdateTexture(MooseTexture, NULL, MooseYUVSurfaces[i]->pixels, MooseYUVSurfaces[i]->pitch);
+             }
+         }
+         SDL_RenderClear(renderer);
+         SDL_RenderTexture(renderer, MooseTexture, NULL, &displayrect);
+         SDL_RenderPresent(renderer);
     } else {
-        SDL_Texture *tmp;
+         SDL_Texture *tmp;
 
-        /* Test SDL_CreateTextureFromSurface */
-        if (!paused) {
-            i = (i + 1) % MOOSEFRAMES_COUNT;
-        }
+         /* Test SDL_CreateTextureFromSurface */
+         if (!paused) {
+             i = (i + 1) % MOOSEFRAMES_COUNT;
+         }
 
-        tmp = SDL_CreateTextureFromSurface(renderer, MooseYUVSurfaces[i]);
-        if (tmp == NULL) {
-            SDL_Log("Error %s", SDL_GetError());
-            quit(7);
-        }
+         tmp = SDL_CreateTextureFromSurface(renderer, MooseYUVSurfaces[i]);
+         if (!tmp) {
+             SDL_Log("Error %s", SDL_GetError());
+             quit(7);
+         }
 
-        SDL_RenderClear(renderer);
-        SDL_RenderTexture(renderer, tmp, NULL, &displayrect);
-        SDL_RenderPresent(renderer);
-        SDL_DestroyTexture(tmp);
+         SDL_RenderClear(renderer);
+         SDL_RenderTexture(renderer, tmp, NULL, &displayrect);
+         SDL_RenderPresent(renderer);
+         SDL_DestroyTexture(tmp);
     }
 }
 
@@ -254,10 +282,12 @@ static void loop(void)
             if (event.key.keysym.sym != SDLK_ESCAPE) {
                 break;
             }
+        default:
+            break;
         }
     }
 
-#ifndef __EMSCRIPTEN__
+#ifndef SDL_PLATFORM_EMSCRIPTEN
     SDL_Delay(fpsdelay);
 #endif
 
@@ -267,7 +297,7 @@ static void loop(void)
         }
         MoveSprites(state->renderers[i]);
     }
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {
         emscripten_cancel_main_loop();
     }
@@ -295,11 +325,10 @@ int main(int argc, char **argv)
     int nodelay = 0;
     int scale = 5;
     char *filename = NULL;
-    int yuv_format = SDL_PIXELFORMAT_YV12;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -403,20 +432,20 @@ int main(int argc, char **argv)
     }
 
     RawMooseData = (Uint8 *)SDL_malloc(MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
-    if (RawMooseData == NULL) {
+    if (!RawMooseData) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't allocate memory for movie !\n");
         quit(1);
     }
 
     /* load the trojan moose images */
     filename = GetResourceFilename(NULL, "moose.dat");
-    if (filename == NULL) {
+    if (!filename) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory\n");
         quit(2);
     }
     handle = SDL_RWFromFile(filename, "rb");
     SDL_free(filename);
-    if (handle == NULL) {
+    if (!handle) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't find the file moose.dat !\n");
         quit(2);
     }
@@ -439,7 +468,7 @@ int main(int argc, char **argv)
 
         if (streaming) {
             MooseTexture = SDL_CreateTexture(renderer, yuv_format, SDL_TEXTUREACCESS_STREAMING, MOOSEPIC_W, MOOSEPIC_H);
-            if (MooseTexture == NULL) {
+            if (!MooseTexture) {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create texture: %s\n", SDL_GetError());
                 quit(5);
             }
@@ -452,7 +481,7 @@ int main(int argc, char **argv)
     for (i = 0; i < MOOSEFRAMES_COUNT; i++) {
         /* Create RGB SDL_Surface */
         SDL_Surface *mooseRGBSurface = SDL_CreateSurface(MOOSEPIC_W, MOOSEPIC_H, SDL_PIXELFORMAT_RGB24);
-        if (mooseRGBSurface == NULL) {
+        if (!mooseRGBSurface) {
             quit(6);
         }
 
@@ -502,7 +531,7 @@ int main(int argc, char **argv)
     done = 0;
 
     /* Loop, waiting for QUIT or RESIZE */
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, nodelay ? 0 : fps, 1);
 #else
     while (!done) {

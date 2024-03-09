@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,7 +29,7 @@
 
 #include "../SDL_timer_c.h"
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten.h>
 #endif
 
@@ -47,7 +47,7 @@
 #if defined(HAVE_NANOSLEEP) || defined(HAVE_CLOCK_GETTIME)
 #include <time.h>
 #endif
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
 #include <mach/mach_time.h>
 #endif
 
@@ -61,7 +61,7 @@
 #endif
 
 /* The first ticks value of the application */
-#if !defined(HAVE_CLOCK_GETTIME) && defined(__APPLE__)
+#if !defined(HAVE_CLOCK_GETTIME) && defined(SDL_PLATFORM_APPLE)
 mach_timebase_info_data_t mach_base_info;
 #endif
 static SDL_bool checked_monotonic_time = SDL_FALSE;
@@ -74,7 +74,7 @@ static void CheckMonotonicTime(void)
     if (clock_gettime(SDL_MONOTONIC_CLOCK, &value) == 0) {
         has_monotonic_time = SDL_TRUE;
     } else
-#elif defined(__APPLE__)
+#elif defined(SDL_PLATFORM_APPLE)
     if (mach_timebase_info(&mach_base_info) == 0) {
         has_monotonic_time = SDL_TRUE;
     }
@@ -98,7 +98,7 @@ Uint64 SDL_GetPerformanceCounter(void)
         ticks = now.tv_sec;
         ticks *= SDL_NS_PER_SECOND;
         ticks += now.tv_nsec;
-#elif defined(__APPLE__)
+#elif defined(SDL_PLATFORM_APPLE)
         ticks = mach_absolute_time();
 #else
         SDL_assert(SDL_FALSE);
@@ -124,7 +124,7 @@ Uint64 SDL_GetPerformanceFrequency(void)
     if (has_monotonic_time) {
 #ifdef HAVE_CLOCK_GETTIME
         return SDL_NS_PER_SECOND;
-#elif defined(__APPLE__)
+#elif defined(SDL_PLATFORM_APPLE)
         Uint64 freq = mach_base_info.denom;
         freq *= SDL_NS_PER_SECOND;
         freq /= mach_base_info.numer;
@@ -146,7 +146,7 @@ void SDL_DelayNS(Uint64 ns)
     Uint64 then, now, elapsed;
 #endif
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
         /* pseudo-synchronous pause, used directly or through e.g. SDL_WaitEvent */
         emscripten_sleep(ns / SDL_NS_PER_MS);

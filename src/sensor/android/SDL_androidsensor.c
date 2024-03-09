@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -52,7 +52,6 @@ typedef struct
 static ASensorManager *SDL_sensor_manager;
 static ALooper *SDL_sensor_looper;
 static SDL_AndroidSensorThreadContext SDL_sensor_thread_context;
-static SDL_Mutex *SDL_sensors_lock;
 static SDL_AndroidSensor *SDL_sensors SDL_GUARDED_BY(SDL_sensors_lock);
 static int SDL_sensors_count;
 
@@ -72,7 +71,7 @@ static int SDLCALL SDL_ANDROID_SensorThread(void *data)
         Uint64 timestamp = SDL_GetTicksNS();
 
         if (ALooper_pollAll(-1, NULL, &events, (void **)&source) == LOOPER_ID_USER) {
-            SDL_LockMutex(SDL_sensors_lock);
+            SDL_LockSensors();
             for (i = 0; i < SDL_sensors_count; ++i) {
                 if (!SDL_sensors[i].event_queue) {
                     continue;
@@ -83,7 +82,7 @@ static int SDLCALL SDL_ANDROID_SensorThread(void *data)
                     SDL_SendSensorUpdate(timestamp, SDL_sensors[i].sensor, timestamp, event.data, SDL_arraysize(event.data));
                 }
             }
-            SDL_UnlockMutex(SDL_sensors_lock);
+            SDL_UnlockSensors();
         }
     }
 
@@ -138,13 +137,8 @@ static int SDL_ANDROID_SensorInit(void)
     int i, sensors_count;
     ASensorList sensors;
 
-    SDL_sensors_lock = SDL_CreateMutex();
-    if (!SDL_sensors_lock) {
-        return SDL_SetError("Couldn't create sensor lock");
-    }
-
     SDL_sensor_manager = ASensorManager_getInstance();
-    if (SDL_sensor_manager == NULL) {
+    if (!SDL_sensor_manager) {
         return SDL_SetError("Couldn't create sensor manager");
     }
 
@@ -152,13 +146,13 @@ static int SDL_ANDROID_SensorInit(void)
     sensors_count = ASensorManager_getSensorList(SDL_sensor_manager, &sensors);
     if (sensors_count > 0) {
         SDL_sensors = (SDL_AndroidSensor *)SDL_calloc(sensors_count, sizeof(*SDL_sensors));
-        if (SDL_sensors == NULL) {
-            return SDL_OutOfMemory();
+        if (!SDL_sensors) {
+            return -1;
         }
 
         for (i = 0; i < sensors_count; ++i) {
             SDL_sensors[i].asensor = sensors[i];
-            SDL_sensors[i].instance_id = SDL_GetNextSensorInstanceID();
+            SDL_sensors[i].instance_id = SDL_GetNextObjectID();
         }
         SDL_sensors_count = sensors_count;
     }
@@ -209,19 +203,19 @@ static int SDL_ANDROID_SensorOpen(SDL_Sensor *sensor, int device_index)
 {
     int delay_us, min_delay_us;
 
-    SDL_LockMutex(SDL_sensors_lock);
+    SDL_LockSensors();
     {
         SDL_sensors[device_index].sensor = sensor;
         SDL_sensors[device_index].event_queue = ASensorManager_createEventQueue(SDL_sensor_manager, SDL_sensor_looper, LOOPER_ID_USER, NULL, NULL);
         if (!SDL_sensors[device_index].event_queue) {
-            SDL_UnlockMutex(SDL_sensors_lock);
+            SDL_UnlockSensors();
             return SDL_SetError("Couldn't create sensor event queue");
         }
 
         if (ASensorEventQueue_enableSensor(SDL_sensors[device_index].event_queue, SDL_sensors[device_index].asensor) < 0) {
             ASensorManager_destroyEventQueue(SDL_sensor_manager, SDL_sensors[device_index].event_queue);
             SDL_sensors[device_index].event_queue = NULL;
-            SDL_UnlockMutex(SDL_sensors_lock);
+            SDL_UnlockSensors();
             return SDL_SetError("Couldn't enable sensor");
         }
 
@@ -234,7 +228,7 @@ static int SDL_ANDROID_SensorOpen(SDL_Sensor *sensor, int device_index)
         }
         ASensorEventQueue_setEventRate(SDL_sensors[device_index].event_queue, SDL_sensors[device_index].asensor, delay_us);
     }
-    SDL_UnlockMutex(SDL_sensors_lock);
+    SDL_UnlockSensors();
 
     return 0;
 }
@@ -249,14 +243,14 @@ static void SDL_ANDROID_SensorClose(SDL_Sensor *sensor)
 
     for (i = 0; i < SDL_sensors_count; ++i) {
         if (SDL_sensors[i].sensor == sensor) {
-            SDL_LockMutex(SDL_sensors_lock);
+            SDL_LockSensors();
             {
                 ASensorEventQueue_disableSensor(SDL_sensors[i].event_queue, SDL_sensors[i].asensor);
                 ASensorManager_destroyEventQueue(SDL_sensor_manager, SDL_sensors[i].event_queue);
                 SDL_sensors[i].event_queue = NULL;
                 SDL_sensors[i].sensor = NULL;
             }
-            SDL_UnlockMutex(SDL_sensors_lock);
+            SDL_UnlockSensors();
             break;
         }
     }
@@ -264,17 +258,16 @@ static void SDL_ANDROID_SensorClose(SDL_Sensor *sensor)
 
 static void SDL_ANDROID_SensorQuit(void)
 {
+    /* All sensors are closed, but we need to unblock the sensor thread */
+    SDL_AssertSensorsLocked();
+    SDL_UnlockSensors();
     SDL_ANDROID_StopSensorThread(&SDL_sensor_thread_context);
+    SDL_LockSensors();
 
     if (SDL_sensors) {
         SDL_free(SDL_sensors);
         SDL_sensors = NULL;
         SDL_sensors_count = 0;
-    }
-
-    if (SDL_sensors_lock) {
-        SDL_DestroyMutex(SDL_sensors_lock);
-        SDL_sensors_lock = NULL;
     }
 }
 

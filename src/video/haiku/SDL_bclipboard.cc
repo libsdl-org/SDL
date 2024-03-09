@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -64,7 +64,7 @@ char *HAIKU_GetClipboardText(SDL_VideoDevice *_this) {
         be_clipboard->Unlock();
     }
 
-    if (text == NULL) {
+    if (!text) {
         result = SDL_strdup("");
     } else {
         /* Copy the data and pass on to SDL */
@@ -79,7 +79,7 @@ SDL_bool HAIKU_HasClipboardText(SDL_VideoDevice *_this) {
     SDL_bool result = SDL_FALSE;
     char *text = HAIKU_GetClipboardText(_this);
     if (text) {
-        result = text[0] != '\0' ? SDL_TRUE : SDL_FALSE;
+        result = (text[0] != '\0');
         SDL_free(text);
     }
     return result;

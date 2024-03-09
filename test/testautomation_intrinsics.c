@@ -86,7 +86,7 @@ static void free_arrays(void *dest, void *a, void *b) {
 }
 
 /**
- * \brief Verify element-wise addition of 2 int arrays.
+ * Verify element-wise addition of 2 int arrays.
  */
 static void verify_ints_addition(const Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size, const char *desc) {
     size_t i;
@@ -95,7 +95,7 @@ static void verify_ints_addition(const Sint32 *dest, const Sint32 *a, const Sint
     for (i = 0; i < size; ++i) {
         Sint32 expected = a[i] + b[i];
         if (dest[i] != expected) {
-            SDLTest_AssertCheck(SDL_FALSE, "%"SDL_PRIs32" + %"SDL_PRIs32" = %"SDL_PRIs32", expected %"SDL_PRIs32" ([%"SDL_PRIu32"/%"SDL_PRIu32"] %s)",
+            SDLTest_AssertCheck(SDL_FALSE, "%" SDL_PRIs32 " + %" SDL_PRIs32 " = %" SDL_PRIs32 ", expected %" SDL_PRIs32 " ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
                                 a[i], b[i], dest[i], expected, (Uint32)i, (Uint32)size, desc);
             all_good = 0;
         }
@@ -106,7 +106,7 @@ static void verify_ints_addition(const Sint32 *dest, const Sint32 *a, const Sint
 }
 
 /**
- * \brief Verify element-wise multiplication of 2 int arrays.
+ * Verify element-wise multiplication of 2 int arrays.
  */
 static void verify_ints_multiplication(const Sint32 *dest, const Sint32 *a, const Sint32 *b, size_t size, const char *desc) {
     size_t i;
@@ -115,7 +115,7 @@ static void verify_ints_multiplication(const Sint32 *dest, const Sint32 *a, cons
     for (i = 0; i < size; ++i) {
         Sint32 expected = a[i] * b[i];
         if (dest[i] != expected) {
-            SDLTest_AssertCheck(SDL_FALSE, "%"SDL_PRIs32" * %"SDL_PRIs32" = %"SDL_PRIs32", expected %"SDL_PRIs32" ([%"SDL_PRIu32"/%"SDL_PRIu32"] %s)",
+            SDLTest_AssertCheck(SDL_FALSE, "%" SDL_PRIs32 " * %" SDL_PRIs32 " = %" SDL_PRIs32 ", expected %" SDL_PRIs32 " ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
                                 a[i], b[i], dest[i], expected, (Uint32)i, (Uint32)size, desc);
             all_good = 0;
         }
@@ -126,7 +126,7 @@ static void verify_ints_multiplication(const Sint32 *dest, const Sint32 *a, cons
 }
 
 /**
- * \brief Verify element-wise addition of 2 float arrays.
+ * Verify element-wise addition of 2 float arrays.
  */
 static void verify_floats_addition(const float *dest, const float *a, const float *b, size_t size, const char *desc) {
     size_t i;
@@ -136,7 +136,7 @@ static void verify_floats_addition(const float *dest, const float *a, const floa
         float expected = a[i] + b[i];
         float abs_error = SDL_fabsf(dest[i] - expected);
         if (abs_error > 1.0e-5f) {
-            SDLTest_AssertCheck(SDL_FALSE, "%g + %g = %g, expected %g (error = %g) ([%"SDL_PRIu32"/%"SDL_PRIu32"] %s)",
+            SDLTest_AssertCheck(SDL_FALSE, "%g + %g = %g, expected %g (error = %g) ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
                                 a[i], b[i], dest[i], expected, abs_error, (Uint32) i, (Uint32) size, desc);
             all_good = 0;
         }
@@ -147,7 +147,7 @@ static void verify_floats_addition(const float *dest, const float *a, const floa
 }
 
 /**
- * \brief Verify element-wise addition of 2 double arrays.
+ * Verify element-wise addition of 2 double arrays.
  */
 static void verify_doubles_addition(const double *dest, const double *a, const double *b, size_t size, const char *desc) {
     size_t i;
@@ -157,7 +157,7 @@ static void verify_doubles_addition(const double *dest, const double *a, const d
         double expected = a[i] + b[i];
         double abs_error = SDL_fabs(dest[i] - expected);
         if (abs_error > 1.0e-5) {
-            SDLTest_AssertCheck(abs_error < 1.0e-5f, "%g + %g = %g, expected %g (error = %g) ([%"SDL_PRIu32"/%"SDL_PRIu32"] %s)",
+            SDLTest_AssertCheck(abs_error < 1.0e-5f, "%g + %g = %g, expected %g (error = %g) ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
                                 a[i], b[i], dest[i], expected, abs_error, (Uint32) i, (Uint32) size, desc);
             all_good = SDL_FALSE;
         }
@@ -251,7 +251,7 @@ SDL_TARGETING("sse4.1") static void kernel_ints_mul_sse4_1(Sint32 *dest, const S
 
 #ifdef SDL_SSE4_2_INTRINSICS
 SDL_TARGETING("sse4.2") static Uint32 calculate_crc32c_sse4_2(const char *text) {
-    Uint32 crc32c = ~0;
+    Uint32 crc32c = ~0u;
     size_t len = SDL_strlen(text);
 
 #if defined(__x86_64__) || defined(_M_X64)

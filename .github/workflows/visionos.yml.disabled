@@ -1,0 +1,22 @@
+name: Build (visionOS)
+
+# FIXME: Enable this workflow once CMake 3.28 becomes available on GitHub
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  Build:
+    name: visionOS
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: |
+          cmake -B build -GXcode -DCMAKE_SYSTEM_NAME=visionOS
+      - name: Build
+        run: |
+          cmake --build build

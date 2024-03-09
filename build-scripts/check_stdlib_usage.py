@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 #  Simple DirectMedia Layer
-#  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+#  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 #
 #  This software is provided 'as-is', without any express or implied
 #  warranty.  In no event will the authors be held liable for any damages
@@ -42,6 +42,7 @@ words = [
     'atanf',
     'atof',
     'atoi',
+    'bsearch',
     'calloc',
     'ceil',
     'ceilf',
@@ -90,6 +91,8 @@ words = [
     'pow',
     'powf',
     'qsort',
+    'qsort_r',
+    'qsort_s',
     'realloc',
     'round',
     'roundf',

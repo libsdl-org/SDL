@@ -11,7 +11,7 @@
 /* Helper functions */
 
 /**
- * \brief Private helper to check SDL_GetRectAndLineIntersection results
+ * Private helper to check SDL_GetRectAndLineIntersection results
  */
 static void validateIntersectRectAndLineResults(
     SDL_bool intersection, SDL_bool expectedIntersection,
@@ -38,7 +38,7 @@ static void validateIntersectRectAndLineResults(
 /* Test case functions */
 
 /**
- * \brief Tests SDL_GetRectAndLineIntersection() clipping cases
+ * Tests SDL_GetRectAndLineIntersection() clipping cases
  *
  * \sa SDL_GetRectAndLineIntersection
  */
@@ -107,7 +107,7 @@ static int rect_testIntersectRectAndLine(void *arg)
 }
 
 /**
- * \brief Tests SDL_GetRectAndLineIntersection() non-clipping case line inside
+ * Tests SDL_GetRectAndLineIntersection() non-clipping case line inside
  *
  * \sa SDL_GetRectAndLineIntersection
  */
@@ -172,7 +172,7 @@ static int rect_testIntersectRectAndLineInside(void *arg)
 }
 
 /**
- * \brief Tests SDL_GetRectAndLineIntersection() non-clipping cases outside
+ * Tests SDL_GetRectAndLineIntersection() non-clipping cases outside
  *
  * \sa SDL_GetRectAndLineIntersection
  */
@@ -225,7 +225,7 @@ static int rect_testIntersectRectAndLineOutside(void *arg)
 }
 
 /**
- * \brief Tests SDL_GetRectAndLineIntersection() with empty rectangle
+ * Tests SDL_GetRectAndLineIntersection() with empty rectangle
  *
  * \sa SDL_GetRectAndLineIntersection
  */
@@ -258,7 +258,7 @@ static int rect_testIntersectRectAndLineEmpty(void *arg)
 }
 
 /**
- * \brief Negative tests against SDL_GetRectAndLineIntersection() with invalid parameters
+ * Negative tests against SDL_GetRectAndLineIntersection() with invalid parameters
  *
  * \sa SDL_GetRectAndLineIntersection
  */
@@ -291,7 +291,7 @@ static int rect_testIntersectRectAndLineParam(void *arg)
 }
 
 /**
- * \brief Private helper to check SDL_HasRectIntersection results
+ * Private helper to check SDL_HasRectIntersection results
  */
 static void validateHasIntersectionResults(
     SDL_bool intersection, SDL_bool expectedIntersection,
@@ -314,7 +314,7 @@ static void validateHasIntersectionResults(
 }
 
 /**
- * \brief Private helper to check SDL_GetRectIntersection results
+ * Private helper to check SDL_GetRectIntersection results
  */
 static void validateIntersectRectResults(
     SDL_bool intersection, SDL_bool expectedIntersection,
@@ -333,7 +333,7 @@ static void validateIntersectRectResults(
 }
 
 /**
- * \brief Private helper to check SDL_GetRectUnion results
+ * Private helper to check SDL_GetRectUnion results
  */
 static void validateUnionRectResults(
     SDL_Rect *rectA, SDL_Rect *rectB, SDL_Rect *refRectA, SDL_Rect *refRectB,
@@ -356,7 +356,7 @@ static void validateUnionRectResults(
 }
 
 /**
- * \brief Private helper to check SDL_RectEmpty results
+ * Private helper to check SDL_RectEmpty results
  */
 static void validateRectEmptyResults(
     SDL_bool empty, SDL_bool expectedEmpty,
@@ -374,7 +374,7 @@ static void validateRectEmptyResults(
 }
 
 /**
- * \brief Private helper to check SDL_RectsEqual results
+ * Private helper to check SDL_RectsEqual results
  */
 static void validateRectEqualsResults(
     SDL_bool equals, SDL_bool expectedEquals,
@@ -397,7 +397,7 @@ static void validateRectEqualsResults(
 }
 
 /**
- * \brief Private helper to check SDL_RectsEqualFloat results
+ * Private helper to check SDL_RectsEqualFloat results
  */
 static void validateFRectEqualsResults(
     SDL_bool equals, SDL_bool expectedEquals,
@@ -423,7 +423,7 @@ static void validateFRectEqualsResults(
 }
 
 /**
- * \brief Tests SDL_GetRectIntersection() with B fully inside A
+ * Tests SDL_GetRectIntersection() with B fully inside A
  *
  * \sa SDL_GetRectIntersection
  */
@@ -450,7 +450,7 @@ static int rect_testIntersectRectInside(void *arg)
 }
 
 /**
- * \brief Tests SDL_GetRectIntersection() with B fully outside A
+ * Tests SDL_GetRectIntersection() with B fully outside A
  *
  * \sa SDL_GetRectIntersection
  */
@@ -477,7 +477,7 @@ static int rect_testIntersectRectOutside(void *arg)
 }
 
 /**
- * \brief Tests SDL_GetRectIntersection() with B partially intersecting A
+ * Tests SDL_GetRectIntersection() with B partially intersecting A
  *
  * \sa SDL_GetRectIntersection
  */
@@ -565,7 +565,7 @@ static int rect_testIntersectRectPartial(void *arg)
 }
 
 /**
- * \brief Tests SDL_GetRectIntersection() with 1x1 pixel sized rectangles
+ * Tests SDL_GetRectIntersection() with 1x1 pixel sized rectangles
  *
  * \sa SDL_GetRectIntersection
  */
@@ -611,7 +611,7 @@ static int rect_testIntersectRectPoint(void *arg)
 }
 
 /**
- * \brief Tests SDL_GetRectIntersection() with empty rectangles
+ * Tests SDL_GetRectIntersection() with empty rectangles
  *
  * \sa SDL_GetRectIntersection
  */
@@ -682,7 +682,7 @@ static int rect_testIntersectRectEmpty(void *arg)
 }
 
 /**
- * \brief Negative tests against SDL_GetRectIntersection() with invalid parameters
+ * Negative tests against SDL_GetRectIntersection() with invalid parameters
  *
  * \sa SDL_GetRectIntersection
  */
@@ -711,7 +711,7 @@ static int rect_testIntersectRectParam(void *arg)
 }
 
 /**
- * \brief Tests SDL_HasRectIntersection() with B fully inside A
+ * Tests SDL_HasRectIntersection() with B fully inside A
  *
  * \sa SDL_HasRectIntersection
  */
@@ -737,7 +737,7 @@ static int rect_testHasIntersectionInside(void *arg)
 }
 
 /**
- * \brief Tests SDL_HasRectIntersection() with B fully outside A
+ * Tests SDL_HasRectIntersection() with B fully outside A
  *
  * \sa SDL_HasRectIntersection
  */
@@ -763,7 +763,7 @@ static int rect_testHasIntersectionOutside(void *arg)
 }
 
 /**
- * \brief Tests SDL_HasRectIntersection() with B partially intersecting A
+ * Tests SDL_HasRectIntersection() with B partially intersecting A
  *
  * \sa SDL_HasRectIntersection
  */
@@ -829,7 +829,7 @@ static int rect_testHasIntersectionPartial(void *arg)
 }
 
 /**
- * \brief Tests SDL_HasRectIntersection() with 1x1 pixel sized rectangles
+ * Tests SDL_HasRectIntersection() with 1x1 pixel sized rectangles
  *
  * \sa SDL_HasRectIntersection
  */
@@ -874,7 +874,7 @@ static int rect_testHasIntersectionPoint(void *arg)
 }
 
 /**
- * \brief Tests SDL_HasRectIntersection() with empty rectangles
+ * Tests SDL_HasRectIntersection() with empty rectangles
  *
  * \sa SDL_HasRectIntersection
  */
@@ -931,7 +931,7 @@ static int rect_testHasIntersectionEmpty(void *arg)
 }
 
 /**
- * \brief Negative tests against SDL_HasRectIntersection() with invalid parameters
+ * Negative tests against SDL_HasRectIntersection() with invalid parameters
  *
  * \sa SDL_HasRectIntersection
  */
@@ -953,7 +953,7 @@ static int rect_testHasIntersectionParam(void *arg)
 }
 
 /**
- * \brief Test SDL_GetRectEnclosingPoints() without clipping
+ * Test SDL_GetRectEnclosingPoints() without clipping
  *
  * \sa SDL_GetRectEnclosingPoints
  */
@@ -1030,7 +1030,7 @@ static int rect_testEnclosePoints(void *arg)
 }
 
 /**
- * \brief Test SDL_GetRectEnclosingPoints() with repeated input points
+ * Test SDL_GetRectEnclosingPoints() with repeated input points
  *
  * \sa SDL_GetRectEnclosingPoints
  */
@@ -1113,7 +1113,7 @@ static int rect_testEnclosePointsRepeatedInput(void *arg)
 }
 
 /**
- * \brief Test SDL_GetRectEnclosingPoints() with clipping
+ * Test SDL_GetRectEnclosingPoints() with clipping
  *
  * \sa SDL_GetRectEnclosingPoints
  */
@@ -1219,7 +1219,7 @@ static int rect_testEnclosePointsWithClipping(void *arg)
 }
 
 /**
- * \brief Negative tests against SDL_GetRectEnclosingPoints() with invalid parameters
+ * Negative tests against SDL_GetRectEnclosingPoints() with invalid parameters
  *
  * \sa SDL_GetRectEnclosingPoints
  */
@@ -1246,7 +1246,7 @@ static int rect_testEnclosePointsParam(void *arg)
 }
 
 /**
- * \brief Tests SDL_GetRectUnion() where rect B is outside rect A
+ * Tests SDL_GetRectUnion() where rect B is outside rect A
  *
  * \sa SDL_GetRectUnion
  */
@@ -1324,7 +1324,7 @@ static int rect_testUnionRectOutside(void *arg)
 }
 
 /**
- * \brief Tests SDL_GetRectUnion() where rect A or rect B are empty
+ * Tests SDL_GetRectUnion() where rect A or rect B are empty
  *
  * \sa SDL_GetRectUnion
  */
@@ -1388,7 +1388,7 @@ static int rect_testUnionRectEmpty(void *arg)
 }
 
 /**
- * \brief Tests SDL_GetRectUnion() where rect B is inside rect A
+ * Tests SDL_GetRectUnion() where rect B is inside rect A
  *
  * \sa SDL_GetRectUnion
  */
@@ -1459,7 +1459,7 @@ static int rect_testUnionRectInside(void *arg)
 }
 
 /**
- * \brief Negative tests against SDL_GetRectUnion() with invalid parameters
+ * Negative tests against SDL_GetRectUnion() with invalid parameters
  *
  * \sa SDL_GetRectUnion
  */
@@ -1486,7 +1486,7 @@ static int rect_testUnionRectParam(void *arg)
 }
 
 /**
- * \brief Tests SDL_RectEmpty() with various inputs
+ * Tests SDL_RectEmpty() with various inputs
  *
  * \sa SDL_RectEmpty
  */
@@ -1528,7 +1528,7 @@ static int rect_testRectEmpty(void *arg)
 }
 
 /**
- * \brief Negative tests against SDL_RectEmpty() with invalid parameters
+ * Negative tests against SDL_RectEmpty() with invalid parameters
  *
  * \sa SDL_RectEmpty
  */
@@ -1544,7 +1544,7 @@ static int rect_testRectEmptyParam(void *arg)
 }
 
 /**
- * \brief Tests SDL_RectsEqual() with various inputs
+ * Tests SDL_RectsEqual() with various inputs
  *
  * \sa SDL_RectsEqual
  */
@@ -1573,7 +1573,7 @@ static int rect_testRectEquals(void *arg)
 }
 
 /**
- * \brief Negative tests against SDL_RectsEqual() with invalid parameters
+ * Negative tests against SDL_RectsEqual() with invalid parameters
  *
  * \sa SDL_RectsEqual
  */
@@ -1605,7 +1605,7 @@ static int rect_testRectEqualsParam(void *arg)
 }
 
 /**
- * \brief Tests SDL_RectsEqualFloat() with various inputs
+ * Tests SDL_RectsEqualFloat() with various inputs
  *
  * \sa SDL_RectsEqualFloat
  */
@@ -1634,7 +1634,7 @@ static int rect_testFRectEquals(void *arg)
 }
 
 /**
- * \brief Negative tests against SDL_RectsEqualFloat() with invalid parameters
+ * Negative tests against SDL_RectsEqualFloat() with invalid parameters
  *
  * \sa SDL_RectsEqualFloat
  */
@@ -1804,7 +1804,7 @@ static const SDLTest_TestCaseReference rectTest31 = {
 };
 
 /**
- * \brief Sequence of Rect test cases; functions that handle simple rectangles including overlaps and merges.
+ * Sequence of Rect test cases; functions that handle simple rectangles including overlaps and merges.
  */
 static const SDLTest_TestCaseReference *rectTests[] = {
     &rectTest1, &rectTest2, &rectTest3, &rectTest4, &rectTest5, &rectTest6, &rectTest7, &rectTest8, &rectTest9, &rectTest10, &rectTest11, &rectTest12, &rectTest13, &rectTest14,

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,8 +28,8 @@
 
 struct SDL_SW_YUVTexture
 {
-    Uint32 format;
-    Uint32 target_format;
+    SDL_PixelFormatEnum format;
+    SDL_PixelFormatEnum target_format;
     int w, h;
     Uint8 *pixels;
 
@@ -44,7 +44,7 @@ struct SDL_SW_YUVTexture
 
 typedef struct SDL_SW_YUVTexture SDL_SW_YUVTexture;
 
-SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(Uint32 format, int w, int h);
+SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormatEnum format, int w, int h);
 int SDL_SW_QueryYUVTexturePixels(SDL_SW_YUVTexture *swdata, void **pixels,
                                  int *pitch);
 int SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
@@ -60,7 +60,7 @@ int SDL_SW_LockYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
                           void **pixels, int *pitch);
 void SDL_SW_UnlockYUVTexture(SDL_SW_YUVTexture *swdata);
 int SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect,
-                        Uint32 target_format, int w, int h, void *pixels,
+                        SDL_PixelFormatEnum target_format, int w, int h, void *pixels,
                         int pitch);
 void SDL_SW_DestroyYUVTexture(SDL_SW_YUVTexture *swdata);
 

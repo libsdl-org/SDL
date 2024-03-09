@@ -123,6 +123,7 @@ struct hid_device_ {
 
 	/* Quirks */
 	int skip_output_report_id;
+	int no_skip_output_report_id;
 	int no_output_reports_on_intr_ep;
 
 	/* List of received input reports. */
@@ -259,8 +260,16 @@ static int get_usage(uint8_t *report_descriptor, size_t size,
 			//printf("Usage Page: %x\n", (uint32_t)*usage_page);
 		}
 		if (key_cmd == 0x8) {
-			*usage = get_bytes(report_descriptor, size, data_len, i);
-			usage_found = 1;
+			if (data_len == 4) { /* Usages 5.5 / Usage Page 6.2.2.7 */
+				*usage_page = get_bytes(report_descriptor, size, 2, i + 2);
+				usage_page_found = 1;
+				*usage = get_bytes(report_descriptor, size, 2, i);
+				usage_found = 1;
+			}
+			else {
+				*usage = get_bytes(report_descriptor, size, data_len, i);
+				usage_found = 1;
+			}
 			//printf("Usage: %x\n", (uint32_t)*usage);
 		}
 
@@ -624,7 +633,7 @@ static int hid_get_report_descriptor_libusb(libusb_device_handle *handle, int in
 		expected_report_descriptor_size = HID_API_MAX_REPORT_DESCRIPTOR_SIZE;
 
 	/* Get the HID Report Descriptor.
-	   See USB HID Specificatin, sectin 7.1.1
+	   See USB HID Specification, section 7.1.1
 	*/
 	int res = libusb_control_transfer(handle, LIBUSB_ENDPOINT_IN|LIBUSB_RECIPIENT_INTERFACE, LIBUSB_REQUEST_GET_DESCRIPTOR, (LIBUSB_DT_REPORT << 8), interface_num, tmp, expected_report_descriptor_size, 5000);
 	if (res >= 0) {
@@ -859,6 +868,7 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
 	static const int xb1_iface_subclass = 71;
 	static const int xb1_iface_protocol = 208;
 	static const int supported_vendors[] = {
+		0x03f0, /* HP */
 		0x044f, /* Thrustmaster */
 		0x045e, /* Microsoft */
 		0x0738, /* Mad Catz */
@@ -1015,6 +1025,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 							libusb_close(handle);
 							handle = NULL;
 						}
+						break;
 					}
 				} /* altsettings */
 			} /* interfaces */
@@ -1337,6 +1348,7 @@ static int hidapi_initialize_device(hid_device *dev, const struct libusb_interfa
 
 	/* Initialize XBox 360 controllers */
 	if (is_xbox360(desc.idVendor, intf_desc)) {
+		dev->no_skip_output_report_id = 1;
 		init_xbox360(dev->device_handle, desc.idVendor, desc.idProduct, conf_desc);
 	}
 
@@ -1562,7 +1574,7 @@ int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t 
 
 	report_number = data[0];
 
-	if (report_number == 0x0 || dev->skip_output_report_id) {
+	if ((!dev->no_skip_output_report_id && report_number == 0x0) || dev->skip_output_report_id) {
 		data++;
 		length--;
 		skipped_report_id = 1;
@@ -2076,7 +2088,7 @@ uint16_t get_usb_code_for_current_locale(void)
 		return 0x0;
 
 	/* Make a copy of the current locale string. */
-	strncpy(search_string, locale, sizeof(search_string));
+	strncpy(search_string, locale, sizeof(search_string)-1);
 	search_string[sizeof(search_string)-1] = '\0';
 
 	/* Chop off the encoding part, and make it lower case. */

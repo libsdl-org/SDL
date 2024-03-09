@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,10 +26,13 @@
 #include "SDL_x11video.h"
 #include "SDL_x11mouse.h"
 #include "SDL_x11xinput2.h"
+#include "../SDL_video_c.h"
 #include "../../events/SDL_mouse_c.h"
 
 /* FIXME: Find a better place to put this... */
 static Cursor x11_empty_cursor = None;
+
+static SDL_Cursor *sys_cursors[SDL_HITTEST_RESIZE_LEFT + 1];
 
 static Display *GetDisplay(void)
 {
@@ -67,14 +70,10 @@ static void X11_DestroyEmptyCursor(void)
 
 static SDL_Cursor *X11_CreateDefaultCursor(void)
 {
-    SDL_Cursor *cursor;
-
-    cursor = SDL_calloc(1, sizeof(*cursor));
+    SDL_Cursor *cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
         /* None is used to indicate the default cursor */
         cursor->driverdata = (void *)(uintptr_t)None;
-    } else {
-        SDL_OutOfMemory();
     }
 
     return cursor;
@@ -88,7 +87,7 @@ static Cursor X11_CreateXCursorCursor(SDL_Surface *surface, int hot_x, int hot_y
     XcursorImage *image;
 
     image = X11_XcursorImageCreate(surface->w, surface->h);
-    if (image == NULL) {
+    if (!image) {
         SDL_OutOfMemory();
         return None;
     }
@@ -121,15 +120,13 @@ static Cursor X11_CreatePixmapCursor(SDL_Surface *surface, int hot_x, int hot_y)
     size_t width_bytes = ((surface->w + 7) & ~((size_t)7)) / 8;
 
     data_bits = SDL_calloc(1, surface->h * width_bytes);
-    if (data_bits == NULL) {
-        SDL_OutOfMemory();
+    if (!data_bits) {
         return None;
     }
 
     mask_bits = SDL_calloc(1, surface->h * width_bytes);
-    if (mask_bits == NULL) {
+    if (!mask_bits) {
         SDL_free(data_bits);
-        SDL_OutOfMemory();
         return None;
     }
 
@@ -198,9 +195,7 @@ static Cursor X11_CreatePixmapCursor(SDL_Surface *surface, int hot_x, int hot_y)
 
 static SDL_Cursor *X11_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
-    SDL_Cursor *cursor;
-
-    cursor = SDL_calloc(1, sizeof(*cursor));
+    SDL_Cursor *cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
         Cursor x11_cursor = None;
 
@@ -213,71 +208,66 @@ static SDL_Cursor *X11_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
             x11_cursor = X11_CreatePixmapCursor(surface, hot_x, hot_y);
         }
         cursor->driverdata = (void *)(uintptr_t)x11_cursor;
-    } else {
-        SDL_OutOfMemory();
     }
 
     return cursor;
 }
 
-static SDL_Cursor *X11_CreateSystemCursor(SDL_SystemCursor id)
+static unsigned int GetLegacySystemCursorShape(SDL_SystemCursor id)
 {
-    SDL_Cursor *cursor;
-    unsigned int shape;
-
     switch (id) {
-    default:
-        SDL_assert(0);
-        return NULL;
-    /* X Font Cursors reference: */
-    /*   http://tronche.com/gui/x/xlib/appendix/b/ */
-    case SDL_SYSTEM_CURSOR_ARROW:
-        shape = XC_left_ptr;
-        break;
-    case SDL_SYSTEM_CURSOR_IBEAM:
-        shape = XC_xterm;
-        break;
-    case SDL_SYSTEM_CURSOR_WAIT:
-        shape = XC_watch;
-        break;
-    case SDL_SYSTEM_CURSOR_CROSSHAIR:
-        shape = XC_tcross;
-        break;
-    case SDL_SYSTEM_CURSOR_WAITARROW:
-        shape = XC_watch;
-        break;
-    case SDL_SYSTEM_CURSOR_SIZENWSE:
-        shape = XC_top_left_corner;
-        break;
-    case SDL_SYSTEM_CURSOR_SIZENESW:
-        shape = XC_top_right_corner;
-        break;
-    case SDL_SYSTEM_CURSOR_SIZEWE:
-        shape = XC_sb_h_double_arrow;
-        break;
-    case SDL_SYSTEM_CURSOR_SIZENS:
-        shape = XC_sb_v_double_arrow;
-        break;
-    case SDL_SYSTEM_CURSOR_SIZEALL:
-        shape = XC_fleur;
-        break;
-    case SDL_SYSTEM_CURSOR_NO:
-        shape = XC_pirate;
-        break;
-    case SDL_SYSTEM_CURSOR_HAND:
-        shape = XC_hand2;
-        break;
+        /* X Font Cursors reference: */
+        /*   http://tronche.com/gui/x/xlib/appendix/b/ */
+        case SDL_SYSTEM_CURSOR_ARROW: return XC_left_ptr;
+        case SDL_SYSTEM_CURSOR_IBEAM: return XC_xterm;
+        case SDL_SYSTEM_CURSOR_WAIT: return XC_watch;
+        case SDL_SYSTEM_CURSOR_CROSSHAIR: return XC_tcross;
+        case SDL_SYSTEM_CURSOR_WAITARROW: return XC_watch;
+        case SDL_SYSTEM_CURSOR_SIZENWSE: return XC_top_left_corner;
+        case SDL_SYSTEM_CURSOR_SIZENESW: return XC_top_right_corner;
+        case SDL_SYSTEM_CURSOR_SIZEWE: return XC_sb_h_double_arrow;
+        case SDL_SYSTEM_CURSOR_SIZENS: return XC_sb_v_double_arrow;
+        case SDL_SYSTEM_CURSOR_SIZEALL: return XC_fleur;
+        case SDL_SYSTEM_CURSOR_NO: return XC_pirate;
+        case SDL_SYSTEM_CURSOR_HAND: return XC_hand2;
+        case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT: return XC_top_left_corner;
+        case SDL_SYSTEM_CURSOR_WINDOW_TOP: return XC_top_side;
+        case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT: return XC_top_right_corner;
+        case SDL_SYSTEM_CURSOR_WINDOW_RIGHT: return XC_right_side;
+        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT: return XC_bottom_right_corner;
+        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM: return XC_bottom_side;
+        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT: return XC_bottom_left_corner;
+        case SDL_SYSTEM_CURSOR_WINDOW_LEFT: return XC_left_side;
+        case SDL_NUM_SYSTEM_CURSORS: break;  /* so the compiler might notice if an enum value is missing here. */
     }
 
-    cursor = SDL_calloc(1, sizeof(*cursor));
-    if (cursor) {
-        Cursor x11_cursor;
+    SDL_assert(0);
+    return 0;
+}
 
-        x11_cursor = X11_XCreateFontCursor(GetDisplay(), shape);
+static SDL_Cursor *X11_CreateSystemCursor(SDL_SystemCursor id)
+{
+    SDL_Cursor *cursor = NULL;
+    Display *dpy = GetDisplay();
+    Cursor x11_cursor = None;
 
-        cursor->driverdata = (void *)(uintptr_t)x11_cursor;
-    } else {
-        SDL_OutOfMemory();
+#ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
+    if (SDL_X11_HAVE_XCURSOR) {
+        x11_cursor = X11_XcursorLibraryLoadCursor(dpy, SDL_GetCSSCursorName(id, NULL));
+    }
+#endif
+
+    if (x11_cursor == None) {
+        x11_cursor = X11_XCreateFontCursor(dpy, GetLegacySystemCursorShape(id));
+    }
+
+    if (x11_cursor != None) {
+        cursor = SDL_calloc(1, sizeof(*cursor));
+        if (!cursor) {
+            SDL_OutOfMemory();
+        } else {
+            cursor->driverdata = (void *)(uintptr_t)x11_cursor;
+        }
     }
 
     return cursor;
@@ -330,13 +320,16 @@ static void X11_WarpMouseInternal(Window xwindow, float x, float y)
     Display *display = videodata->display;
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     int deviceid = 0;
-    /* It seems XIWarpPointer() doesn't work correctly on multi-head setups:
-     * https://developer.blender.org/rB165caafb99c6846e53d11c4e966990aaffc06cea
-     */
-    if (ScreenCount(display) == 1) {
-        X11_XIGetClientPointer(display, None, &deviceid);
+    if (X11_Xinput2IsInitialized()) {
+        /* It seems XIWarpPointer() doesn't work correctly on multi-head setups:
+         * https://developer.blender.org/rB165caafb99c6846e53d11c4e966990aaffc06cea
+         */
+        if (ScreenCount(display) == 1) {
+            X11_XIGetClientPointer(display, None, &deviceid);
+        }
     }
     if (deviceid != 0) {
+        SDL_assert(SDL_X11_HAVE_XINPUT2);
         X11_XIWarpPointer(display, deviceid, None, xwindow, 0.0, 0.0, 0, 0, x, y);
     } else
 #endif
@@ -370,12 +363,7 @@ static int X11_WarpMouseGlobal(float x, float y)
 
 static int X11_SetRelativeMouseMode(SDL_bool enabled)
 {
-#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
-    if (X11_Xinput2IsInitialized()) {
-        return 0;
-    }
-#endif
-    return SDL_Unsupported();
+    return X11_Xinput2IsInitialized() ? 0 : SDL_Unsupported();
 }
 
 static int X11_CaptureMouse(SDL_Window *window)
@@ -413,12 +401,9 @@ static Uint32 X11_GetGlobalMouseState(float *x, float *y)
 
     /* !!! FIXME: should we XSync() here first? */
 
-#ifndef SDL_VIDEO_DRIVER_X11_XINPUT2
-    videodata->global_mouse_changed = SDL_TRUE;
-#else
-    if (!SDL_X11_HAVE_XINPUT2)
+    if (!X11_Xinput2IsInitialized()) {
         videodata->global_mouse_changed = SDL_TRUE;
-#endif
+    }
 
     /* check if we have this cached since XInput last saw the mouse move. */
     /* !!! FIXME: can we just calculate this from XInput's events? */
@@ -427,7 +412,7 @@ static Uint32 X11_GetGlobalMouseState(float *x, float *y)
         if (displays) {
             for (i = 0; displays[i]; ++i) {
                 SDL_DisplayData *data = SDL_GetDisplayDriverData(displays[i]);
-                if (data != NULL) {
+                if (data) {
                     Window root, child;
                     int rootx, rooty, winx, winy;
                     unsigned int mask;
@@ -477,6 +462,23 @@ void X11_InitMouse(SDL_VideoDevice *_this)
     mouse->CaptureMouse = X11_CaptureMouse;
     mouse->GetGlobalMouseState = X11_GetGlobalMouseState;
 
+    SDL_HitTestResult r = SDL_HITTEST_NORMAL;
+    while (r <= SDL_HITTEST_RESIZE_LEFT) {
+        switch (r) {
+        case SDL_HITTEST_NORMAL: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW); break;
+        case SDL_HITTEST_DRAGGABLE: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW); break;
+        case SDL_HITTEST_RESIZE_TOPLEFT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT); break;
+        case SDL_HITTEST_RESIZE_TOP: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_TOP); break;
+        case SDL_HITTEST_RESIZE_TOPRIGHT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT); break;
+        case SDL_HITTEST_RESIZE_RIGHT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_RIGHT); break;
+        case SDL_HITTEST_RESIZE_BOTTOMRIGHT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT); break;
+        case SDL_HITTEST_RESIZE_BOTTOM: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_BOTTOM); break;
+        case SDL_HITTEST_RESIZE_BOTTOMLEFT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT); break;
+        case SDL_HITTEST_RESIZE_LEFT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_LEFT); break;
+        }
+        r++;
+    }
+
     SDL_SetDefaultCursor(X11_CreateDefaultCursor());
 }
 
@@ -485,14 +487,29 @@ void X11_QuitMouse(SDL_VideoDevice *_this)
     SDL_VideoData *data = _this->driverdata;
     SDL_XInput2DeviceInfo *i;
     SDL_XInput2DeviceInfo *next;
+    int j;
 
-    for (i = data->mouse_device_info; i != NULL; i = next) {
+    for (j = 0; j < SDL_arraysize(sys_cursors); j++) {
+        X11_FreeCursor(sys_cursors[j]);
+        sys_cursors[j] = NULL;
+    }
+
+    for (i = data->mouse_device_info; i; i = next) {
         next = i->next;
         SDL_free(i);
     }
     data->mouse_device_info = NULL;
 
     X11_DestroyEmptyCursor();
+}
+
+void X11_SetHitTestCursor(SDL_HitTestResult rc)
+{
+    if (rc == SDL_HITTEST_NORMAL || rc == SDL_HITTEST_DRAGGABLE) {
+        SDL_SetCursor(NULL);
+    } else {
+        X11_ShowCursor(sys_cursors[rc]);
+    }
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */

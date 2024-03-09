@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,7 +26,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <timer_alarm.h>
+#include <kernel_util.h>
 
 #include <kernel.h>
 
@@ -35,11 +35,6 @@ struct SDL_Semaphore
     s32 semid;
 };
 
-static void usercb(struct timer_alarm_t *alarm, void *arg)
-{
-    iReleaseWaitThread((int)arg);
-}
-
 /* Create a semaphore */
 SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 {
@@ -47,7 +42,7 @@ SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
     ee_sema_t sema;
 
     sem = (SDL_Semaphore *)SDL_malloc(sizeof(*sem));
-    if (sem != NULL) {
+    if (sem) {
         /* TODO: Figure out the limit on the maximum value. */
         sema.init_count = initial_value;
         sema.max_count = 255;
@@ -59,8 +54,6 @@ SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
             SDL_free(sem);
             sem = NULL;
         }
-    } else {
-        SDL_OutOfMemory();
     }
 
     return sem;
@@ -69,7 +62,7 @@ SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 /* Free the semaphore */
 void SDL_DestroySemaphore(SDL_Semaphore *sem)
 {
-    if (sem != NULL) {
+    if (sem) {
         if (sem->semid > 0) {
             DeleteSema(sem->semid);
             sem->semid = 0;
@@ -82,10 +75,10 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
 int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
     int ret;
-    struct timer_alarm_t alarm;
-    InitializeTimerAlarm(&alarm);
+    u64 timeout_usec;
+    u64 *timeout_ptr;
 
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -96,12 +89,14 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
         return 0;
     }
 
-    if (timeoutNS != SDL_MUTEX_MAXWAIT) {
-        SetTimerAlarm(&alarm, MSec2TimerBusClock(SDL_NS_TO_MS(timeoutNS)), &usercb, (void *)GetThreadId());
+    timeout_ptr = NULL;
+
+    if (timeoutNS != -1) {  // -1 == wait indefinitely.
+        timeout_usec = SDL_NS_TO_US(timeoutNS);
+        timeout_ptr = &timeout_usec;
     }
 
-    ret = WaitSema(sem->semid);
-    StopTimerAlarm(&alarm);
+    ret = WaitSemaEx(sem->semid, 1, timeout_ptr);
 
     if (ret < 0) {
         return SDL_MUTEX_TIMEDOUT;
@@ -114,7 +109,7 @@ Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     ee_sema_t info;
 
-    if (sem == NULL) {
+    if (!sem) {
         SDL_InvalidParamError("sem");
         return 0;
     }
@@ -130,7 +125,7 @@ int SDL_PostSemaphore(SDL_Semaphore *sem)
 {
     int res;
 
-    if (sem == NULL) {
+    if (!sem) {
         return SDL_InvalidParamError("sem");
     }
 

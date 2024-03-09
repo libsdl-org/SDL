@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,5 +27,6 @@
 
 extern SDL_bool SDL_GetStringBoolean(const char *value, SDL_bool default_value);
 extern int SDL_GetStringInteger(const char *value, int default_value);
+extern void SDL_ClearHints(void);
 
 #endif /* SDL_hints_c_h_ */

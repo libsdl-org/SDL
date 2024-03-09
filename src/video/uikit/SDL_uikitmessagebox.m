@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -49,7 +49,7 @@ static void UIKit_WaitUntilMessageBoxClosed(const SDL_MessageBoxData *messagebox
     }
 }
 
-static BOOL UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+static BOOL UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     int i;
     int __block clickedindex = messageboxdata->numbuttons;
@@ -98,7 +98,11 @@ static BOOL UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messag
     }
 
     if (window == nil || window.rootViewController == nil) {
+#ifdef SDL_PLATFORM_VISIONOS
+        alertwindow = [[UIWindow alloc] init];
+#else
         alertwindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+#endif
         alertwindow.rootViewController = [UIViewController new];
         alertwindow.windowLevel = UIWindowLevelAlert;
 
@@ -116,14 +120,14 @@ static BOOL UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messag
 
     UIKit_ForceUpdateHomeIndicator();
 
-    *buttonid = messageboxdata->buttons[clickedindex].buttonid;
+    *buttonID = messageboxdata->buttons[clickedindex].buttonID;
     return YES;
 }
 
-static void UIKit_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonid, int *returnValue)
+static void UIKit_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonID, int *returnValue)
 {
     @autoreleasepool {
-        if (UIKit_ShowMessageBoxAlertController(messageboxdata, buttonid)) {
+        if (UIKit_ShowMessageBoxAlertController(messageboxdata, buttonID)) {
             *returnValue = 0;
         } else {
             *returnValue = SDL_SetError("Could not show message box.");
@@ -131,16 +135,16 @@ static void UIKit_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, i
     }
 }
 
-int UIKit_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+int UIKit_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     @autoreleasepool {
         __block int returnValue = 0;
 
         if ([NSThread isMainThread]) {
-            UIKit_ShowMessageBoxImpl(messageboxdata, buttonid, &returnValue);
+            UIKit_ShowMessageBoxImpl(messageboxdata, buttonID, &returnValue);
         } else {
             dispatch_sync(dispatch_get_main_queue(), ^{
-              UIKit_ShowMessageBoxImpl(messageboxdata, buttonid, &returnValue);
+              UIKit_ShowMessageBoxImpl(messageboxdata, buttonID, &returnValue);
             });
         }
         return returnValue;

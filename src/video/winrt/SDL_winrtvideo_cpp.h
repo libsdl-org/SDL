@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -67,8 +67,8 @@ extern SDL_Window *WINRT_GlobalSDLWindow;
 /* Updates one or more SDL_Window flags, by querying the OS' native windowing APIs.
    SDL_Window flags that can be updated should be specified in 'mask'.
 */
-extern void WINRT_UpdateWindowFlags(SDL_Window *window, Uint32 mask);
-extern "C" Uint32 WINRT_DetectWindowFlags(SDL_Window *window); /* detects flags w/o applying them */
+extern void WINRT_UpdateWindowFlags(SDL_Window *window, SDL_WindowFlags mask);
+extern "C" SDL_WindowFlags WINRT_DetectWindowFlags(SDL_Window *window); /* detects flags w/o applying them */
 
 /* Display mode internals */
 // typedef struct
@@ -100,6 +100,7 @@ struct SDL_WindowData
 #if SDL_WINRT_USE_APPLICATIONVIEW
     Windows::UI::ViewManagement::ApplicationView ^ appView;
 #endif
+    WCHAR high_surrogate;
 };
 
 #endif // ifdef __cplusplus_winrt

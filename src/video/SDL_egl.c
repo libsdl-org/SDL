@@ -1,6 +1,6 @@
 /*
  *  Simple DirectMedia Layer
- *  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+ *  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
  *
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the authors be held liable for any damages
@@ -89,7 +89,7 @@
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.dylib"   //???
 #define DEFAULT_OGL_ES     "libGLESv1_CM.dylib" //???
 
-#elif defined(__OpenBSD__)
+#elif defined(SDL_PLATFORM_OPENBSD)
 /* OpenBSD */
 #define DEFAULT_OGL        "libGL.so"
 #define DEFAULT_EGL        "libEGL.so"
@@ -184,7 +184,7 @@ SDL_bool SDL_EGL_HasExtension(SDL_VideoDevice *_this, SDL_EGL_ExtensionType type
     const char *ext_start;
 
     /* Invalid extensions can be rejected early */
-    if (ext == NULL || *ext == 0 || SDL_strchr(ext, ' ') != NULL) {
+    if (!ext || *ext == 0 || SDL_strchr(ext, ' ') != NULL) {
         /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "SDL_EGL_HasExtension: Invalid EGL extension"); */
         return SDL_FALSE;
     }
@@ -197,7 +197,7 @@ SDL_bool SDL_EGL_HasExtension(SDL_VideoDevice *_this, SDL_EGL_ExtensionType type
      *  1     If set, the client extension is masked and not present to SDL.
      */
     ext_override = SDL_getenv(ext);
-    if (ext_override != NULL) {
+    if (ext_override) {
         int disable_ext = SDL_atoi(ext_override);
         if (disable_ext & 0x01 && type == SDL_EGL_DISPLAY_EXTENSION) {
             return SDL_FALSE;
@@ -223,12 +223,12 @@ SDL_bool SDL_EGL_HasExtension(SDL_VideoDevice *_this, SDL_EGL_ExtensionType type
         return SDL_FALSE;
     }
 
-    if (egl_extstr != NULL) {
+    if (egl_extstr) {
         ext_start = egl_extstr;
 
         while (*ext_start) {
             ext_start = SDL_strstr(ext_start, ext);
-            if (ext_start == NULL) {
+            if (!ext_start) {
                 return SDL_FALSE;
             }
             /* Check if the match is not just a substring of one of the extensions */
@@ -251,24 +251,24 @@ SDL_bool SDL_EGL_HasExtension(SDL_VideoDevice *_this, SDL_EGL_ExtensionType type
 SDL_FunctionPointer SDL_EGL_GetProcAddressInternal(SDL_VideoDevice *_this, const char *proc)
 {
     SDL_FunctionPointer retval = NULL;
-    if (_this->egl_data != NULL) {
+    if (_this->egl_data) {
         const Uint32 eglver = (((Uint32)_this->egl_data->egl_version_major) << 16) | ((Uint32)_this->egl_data->egl_version_minor);
         const SDL_bool is_egl_15_or_later = eglver >= ((((Uint32)1) << 16) | 5);
 
         /* EGL 1.5 can use eglGetProcAddress() for any symbol. 1.4 and earlier can't use it for core entry points. */
-        if (retval == NULL && is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
+        if (!retval && is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
             retval = _this->egl_data->eglGetProcAddress(proc);
         }
 
-#if !defined(__EMSCRIPTEN__) && !defined(SDL_VIDEO_DRIVER_VITA) /* LoadFunction isn't needed on Emscripten and will call dlsym(), causing other problems. */
+#if !defined(SDL_PLATFORM_EMSCRIPTEN) && !defined(SDL_VIDEO_DRIVER_VITA) /* LoadFunction isn't needed on Emscripten and will call dlsym(), causing other problems. */
         /* Try SDL_LoadFunction() first for EGL <= 1.4, or as a fallback for >= 1.5. */
-        if (retval == NULL) {
+        if (!retval) {
             retval = SDL_LoadFunction(_this->egl_data->opengl_dll_handle, proc);
         }
 #endif
 
         /* Try eglGetProcAddress if we're on <= 1.4 and still searching... */
-        if (retval == NULL && !is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
+        if (!retval && !is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
             retval = _this->egl_data->eglGetProcAddress(proc);
         }
     }
@@ -342,17 +342,17 @@ static int SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_p
 #if !defined(SDL_VIDEO_STATIC_ANGLE) && !defined(SDL_VIDEO_DRIVER_VITA)
     /* A funny thing, loading EGL.so first does not work on the Raspberry, so we load libGL* first */
     path = SDL_getenv("SDL_VIDEO_GL_DRIVER");
-    if (path != NULL) {
+    if (path) {
         opengl_dll_handle = SDL_LoadObject(path);
     }
 
-    if (opengl_dll_handle == NULL) {
+    if (!opengl_dll_handle) {
         if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
             if (_this->gl_config.major_version > 1) {
                 path = DEFAULT_OGL_ES2;
                 opengl_dll_handle = SDL_LoadObject(path);
 #ifdef ALT_OGL_ES2
-                if (opengl_dll_handle == NULL && !vc4) {
+                if (!opengl_dll_handle && !vc4) {
                     path = ALT_OGL_ES2;
                     opengl_dll_handle = SDL_LoadObject(path);
                 }
@@ -361,12 +361,12 @@ static int SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_p
             } else {
                 path = DEFAULT_OGL_ES;
                 opengl_dll_handle = SDL_LoadObject(path);
-                if (opengl_dll_handle == NULL) {
+                if (!opengl_dll_handle) {
                     path = DEFAULT_OGL_ES_PVR;
                     opengl_dll_handle = SDL_LoadObject(path);
                 }
 #ifdef ALT_OGL_ES2
-                if (opengl_dll_handle == NULL && !vc4) {
+                if (!opengl_dll_handle && !vc4) {
                     path = ALT_OGL_ES2;
                     opengl_dll_handle = SDL_LoadObject(path);
                 }
@@ -378,7 +378,7 @@ static int SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_p
             path = DEFAULT_OGL;
             opengl_dll_handle = SDL_LoadObject(path);
 #ifdef ALT_OGL
-            if (opengl_dll_handle == NULL) {
+            if (!opengl_dll_handle) {
                 path = ALT_OGL;
                 opengl_dll_handle = SDL_LoadObject(path);
             }
@@ -388,34 +388,34 @@ static int SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_p
     }
     _this->egl_data->opengl_dll_handle = opengl_dll_handle;
 
-    if (opengl_dll_handle == NULL) {
+    if (!opengl_dll_handle) {
         return SDL_SetError("Could not initialize OpenGL / GLES library");
     }
 
     /* Loading libGL* in the previous step took care of loading libEGL.so, but we future proof by double checking */
-    if (egl_path != NULL) {
+    if (egl_path) {
         egl_dll_handle = SDL_LoadObject(egl_path);
     }
     /* Try loading a EGL symbol, if it does not work try the default library paths */
-    if (egl_dll_handle == NULL || SDL_LoadFunction(egl_dll_handle, "eglChooseConfig") == NULL) {
-        if (egl_dll_handle != NULL) {
+    if (!egl_dll_handle || SDL_LoadFunction(egl_dll_handle, "eglChooseConfig") == NULL) {
+        if (egl_dll_handle) {
             SDL_UnloadObject(egl_dll_handle);
         }
         path = SDL_getenv("SDL_VIDEO_EGL_DRIVER");
-        if (path == NULL) {
+        if (!path) {
             path = DEFAULT_EGL;
         }
         egl_dll_handle = SDL_LoadObject(path);
 
 #ifdef ALT_EGL
-        if (egl_dll_handle == NULL && !vc4) {
+        if (!egl_dll_handle && !vc4) {
             path = ALT_EGL;
             egl_dll_handle = SDL_LoadObject(path);
         }
 #endif
 
-        if (egl_dll_handle == NULL || SDL_LoadFunction(egl_dll_handle, "eglChooseConfig") == NULL) {
-            if (egl_dll_handle != NULL) {
+        if (!egl_dll_handle || SDL_LoadFunction(egl_dll_handle, "eglChooseConfig") == NULL) {
+            if (egl_dll_handle) {
                 SDL_UnloadObject(egl_dll_handle);
             }
             return SDL_SetError("Could not load EGL library");
@@ -476,7 +476,7 @@ int SDL_EGL_LoadLibraryOnly(SDL_VideoDevice *_this, const char *egl_path)
 
     _this->egl_data = (struct SDL_EGL_VideoData *)SDL_calloc(1, sizeof(SDL_EGL_VideoData));
     if (!_this->egl_data) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     if (SDL_EGL_LoadLibraryInternal(_this, egl_path) < 0) {
@@ -512,7 +512,7 @@ int SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *egl_path, NativeDisp
 
     _this->egl_data->egl_display = EGL_NO_DISPLAY;
 
-#ifndef __WINRT__
+#ifndef SDL_PLATFORM_WINRT
 #ifndef SDL_VIDEO_DRIVER_VITA
     if (platform) {
         /* EGL 1.5 allows querying for client version with EGL_NO_DISPLAY
@@ -550,7 +550,7 @@ int SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *egl_path, NativeDisp
 #endif
     /* Try the implementation-specific eglGetDisplay even if eglGetPlatformDisplay fails */
     if ((_this->egl_data->egl_display == EGL_NO_DISPLAY) &&
-        (_this->egl_data->eglGetDisplay != NULL) &&
+        (_this->egl_data->eglGetDisplay) &&
         SDL_GetHintBoolean(SDL_HINT_VIDEO_EGL_ALLOW_GETDISPLAY_FALLBACK, SDL_TRUE)) {
         _this->egl_data->egl_display = _this->egl_data->eglGetDisplay(native_display);
     }
@@ -594,11 +594,11 @@ int SDL_EGL_InitializeOffscreen(SDL_VideoDevice *_this, int device)
     }
 
     /* Check for all extensions that are optional until used and fail if any is missing */
-    if (_this->egl_data->eglQueryDevicesEXT == NULL) {
+    if (!_this->egl_data->eglQueryDevicesEXT) {
         return SDL_SetError("eglQueryDevicesEXT is missing (EXT_device_enumeration not supported by the drivers?)");
     }
 
-    if (_this->egl_data->eglGetPlatformDisplayEXT == NULL) {
+    if (!_this->egl_data->eglGetPlatformDisplayEXT) {
         return SDL_SetError("eglGetPlatformDisplayEXT is missing (EXT_platform_base not supported by the drivers?)");
     }
 
@@ -1216,7 +1216,7 @@ int SDL_EGL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
     return 0;
 }
 
-EGLSurface *SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, NativeWindowType nw)
+EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, NativeWindowType nw)
 {
 #ifdef SDL_VIDEO_DRIVER_ANDROID
     EGLint format_wanted;
@@ -1226,7 +1226,7 @@ EGLSurface *SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Na
     EGLint attribs[33];
     int attr = 0;
 
-    EGLSurface *surface;
+    EGLSurface surface;
 
     if (SDL_EGL_ChooseConfig(_this) != 0) {
         return EGL_NO_SURFACE;

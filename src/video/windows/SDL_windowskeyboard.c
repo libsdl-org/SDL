@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 #include "SDL_windowsvideo.h"
 
@@ -43,9 +43,6 @@ static SDL_bool IME_IsTextInputShown(SDL_VideoData *videodata);
 #endif
 #ifndef MAPVK_VSC_TO_VK
 #define MAPVK_VSC_TO_VK 1
-#endif
-#ifndef MAPVK_VK_TO_CHAR
-#define MAPVK_VK_TO_CHAR 2
 #endif
 
 /* Alphabetic scancodes for PC keyboards */
@@ -120,9 +117,12 @@ void WIN_UpdateKeymap(SDL_bool send_event)
     SDL_Keycode keymap[SDL_NUM_SCANCODES];
 
     SDL_GetDefaultKeymap(keymap);
+    WIN_ResetDeadKeys();
 
     for (i = 0; i < SDL_arraysize(windows_scancode_table); i++) {
-        int vk;
+        Uint8 vk;
+        Uint16 sc;
+
         /* Make sure this scancode is a valid character scancode */
         scancode = windows_scancode_table[i];
         if (scancode == SDL_SCANCODE_UNKNOWN) {
@@ -130,20 +130,46 @@ void WIN_UpdateKeymap(SDL_bool send_event)
         }
 
         /* If this key is one of the non-mappable keys, ignore it */
-        /* Uncomment the second part re-enable the behavior of not mapping the "`"(grave) key to the users actual keyboard layout */
-        if ((keymap[scancode] & SDLK_SCANCODE_MASK) /*|| scancode == SDL_SCANCODE_GRAVE*/) {
+        /* Uncomment the third part to re-enable the behavior of not mapping the "`"(grave) key to the users actual keyboard layout */
+        if ((keymap[scancode] & SDLK_SCANCODE_MASK) || scancode == SDL_SCANCODE_DELETE /*|| scancode == SDL_SCANCODE_GRAVE*/) {
             continue;
         }
 
-        vk = MapVirtualKey(i, MAPVK_VSC_TO_VK);
-        if (vk) {
-            int ch = (MapVirtualKey(vk, MAPVK_VK_TO_CHAR) & 0x7FFF);
+        /* Unpack the single byte index to make the scan code. */
+        sc = MAKEWORD(i & 0x7f, (i & 0x80) ? 0xe0 : 0x00);
+        vk = LOBYTE(MapVirtualKey(sc, MAPVK_VSC_TO_VK));
+        if (!vk) {
+            continue;
+        }
+
+        /* Always map VK_A..VK_Z to SDLK_a..SDLK_z codes.
+         * This was behavior with MapVirtualKey(MAPVK_VK_TO_CHAR). */
+        //if (vk >= 'A' && vk <= 'Z') {
+        //    keymap[scancode] = SDLK_a + (vk - 'A');
+        //} else {
+        {
+            BYTE keyboardState[256] = { 0 };
+            WCHAR buffer[16] = { 0 };
+            Uint32 *ch = 0;
+            int result = ToUnicode(vk, sc, keyboardState, buffer, 16, 0);
+            buffer[SDL_abs(result)] = 0;
+
+            /* Convert UTF-16 to UTF-32 code points */
+            ch = (Uint32 *)SDL_iconv_string("UTF-32LE", "UTF-16LE", (const char *)buffer, (SDL_abs(result) + 1) * sizeof(WCHAR));
             if (ch) {
-                if (ch >= 'A' && ch <= 'Z') {
-                    keymap[scancode] = SDLK_a + (ch - 'A');
+                if (ch[0] != 0 && ch[1] != 0) {
+                    /* We have several UTF-32 code points on a single key press.
+                     * Cannot fit into single SDL_Keycode in keymap.
+                     * See https://kbdlayout.info/features/ligatures */
+                    keymap[scancode] = 0xfffd; /* U+FFFD REPLACEMENT CHARACTER */
                 } else {
-                    keymap[scancode] = ch;
+                    keymap[scancode] = ch[0];
                 }
+                SDL_free(ch);
+            }
+
+            if (result < 0) {
+                WIN_ResetDeadKeys();
             }
         }
     }
@@ -174,19 +200,21 @@ void WIN_ResetDeadKeys()
     */
     BYTE keyboardState[256];
     WCHAR buffer[16];
-    int keycode, scancode, result, i;
+    int vk, sc, result, i;
 
-    GetKeyboardState(keyboardState);
+    if (!GetKeyboardState(keyboardState)) {
+        return;
+    }
 
-    keycode = VK_SPACE;
-    scancode = MapVirtualKey(keycode, MAPVK_VK_TO_VSC);
-    if (scancode == 0) {
+    vk = VK_SPACE;
+    sc = MapVirtualKey(vk, MAPVK_VK_TO_VSC);
+    if (sc == 0) {
         /* the keyboard doesn't have this key */
         return;
     }
 
     for (i = 0; i < 5; i++) {
-        result = ToUnicode(keycode, scancode, keyboardState, (LPWSTR)buffer, 16, 0);
+        result = ToUnicode(vk, sc, keyboardState, buffer, 16, 0);
         if (result > 0) {
             /* success */
             return;
@@ -693,7 +721,7 @@ static void IME_SetupAPI(SDL_VideoData *videodata)
     }
 
     hime = SDL_LoadObject(ime_file);
-    if (hime == NULL) {
+    if (!hime) {
         return;
     }
 
@@ -735,7 +763,7 @@ static void IME_UpdateInputLocale(SDL_VideoData *videodata)
     }
 
     videodata->ime_hkl = hklnext;
-    videodata->ime_candvertical = (PRIMLANG() == LANG_KOREAN || LANG() == LANG_CHS) ? SDL_FALSE : SDL_TRUE;
+    videodata->ime_candvertical = (PRIMLANG() != LANG_KOREAN && LANG() != LANG_CHS);
 }
 
 static void IME_ClearComposition(SDL_VideoData *videodata)
@@ -766,7 +794,7 @@ static SDL_bool IME_IsTextInputShown(SDL_VideoData *videodata)
         return SDL_FALSE;
     }
 
-    return videodata->ime_uicontext != 0 ? SDL_TRUE : SDL_FALSE;
+    return videodata->ime_uicontext != 0;
 }
 
 static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
@@ -776,7 +804,7 @@ static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD 
 
     length = ImmGetCompositionStringW(himc, string, NULL, 0);
     if (length > 0 && videodata->ime_composition_length < length) {
-        if (videodata->ime_composition != NULL) {
+        if (videodata->ime_composition) {
             SDL_free(videodata->ime_composition);
         }
 
@@ -968,11 +996,11 @@ static int IME_ShowCandidateList(SDL_VideoData *videodata)
 
     videodata->ime_candcount = 0;
     candidates = SDL_realloc(videodata->ime_candidates, MAX_CANDSIZE);
-    if (candidates != NULL) {
+    if (candidates) {
         videodata->ime_candidates = (WCHAR *)candidates;
     }
 
-    if (videodata->ime_candidates == NULL) {
+    if (!videodata->ime_candidates) {
         return -1;
     }
 
@@ -1186,7 +1214,7 @@ TSFSink_Release(TSFSink *sink)
 
 STDMETHODIMP UIElementSink_QueryInterface(TSFSink *sink, REFIID riid, PVOID *ppv)
 {
-    if (ppv == NULL) {
+    if (!ppv) {
         return E_INVALIDARG;
     }
 
@@ -1223,7 +1251,7 @@ STDMETHODIMP UIElementSink_BeginUIElement(TSFSink *sink, DWORD dwUIElementId, BO
     ITfReadingInformationUIElement *preading = 0;
     ITfCandidateListUIElement *pcandlist = 0;
     SDL_VideoData *videodata = (SDL_VideoData *)sink->data;
-    if (element == NULL) {
+    if (!element) {
         return E_INVALIDARG;
     }
 
@@ -1248,7 +1276,7 @@ STDMETHODIMP UIElementSink_UpdateUIElement(TSFSink *sink, DWORD dwUIElementId)
     ITfReadingInformationUIElement *preading = 0;
     ITfCandidateListUIElement *pcandlist = 0;
     SDL_VideoData *videodata = (SDL_VideoData *)sink->data;
-    if (element == NULL) {
+    if (!element) {
         return E_INVALIDARG;
     }
 
@@ -1274,7 +1302,7 @@ STDMETHODIMP UIElementSink_EndUIElement(TSFSink *sink, DWORD dwUIElementId)
     ITfReadingInformationUIElement *preading = 0;
     ITfCandidateListUIElement *pcandlist = 0;
     SDL_VideoData *videodata = (SDL_VideoData *)sink->data;
-    if (element == NULL) {
+    if (!element) {
         return E_INVALIDARG;
     }
 
@@ -1296,7 +1324,7 @@ STDMETHODIMP UIElementSink_EndUIElement(TSFSink *sink, DWORD dwUIElementId)
 
 STDMETHODIMP IPPASink_QueryInterface(TSFSink *sink, REFIID riid, PVOID *ppv)
 {
-    if (ppv == NULL) {
+    if (!ppv) {
         return E_INVALIDARG;
     }
 
@@ -1383,8 +1411,8 @@ static SDL_bool UILess_SetupSinks(SDL_VideoData *videodata)
         return SDL_FALSE;
     }
 
-    videodata->ime_uielemsink = SDL_malloc(sizeof(TSFSink));
-    videodata->ime_ippasink = SDL_malloc(sizeof(TSFSink));
+    videodata->ime_uielemsink = (TSFSink *)SDL_malloc(sizeof(TSFSink));
+    videodata->ime_ippasink = (TSFSink *)SDL_malloc(sizeof(TSFSink));
 
     videodata->ime_uielemsink->lpVtbl = vtUIElementSink;
     videodata->ime_uielemsink->refcount = 1;
@@ -1462,7 +1490,7 @@ static void StopDrawToBitmap(HDC hdc, HBITMAP *hhbm)
 static void DrawRect(HDC hdc, int left, int top, int right, int bottom, int pensize)
 {
     /* The case of no pen (PenSize = 0) is automatically taken care of. */
-    const int penadjust = (int)SDL_floor(pensize / 2.0f - 0.5f);
+    const int penadjust = (int)SDL_floorf(pensize / 2.0f - 0.5f);
     left += pensize / 2;
     top += pensize / 2;
     right -= penadjust;

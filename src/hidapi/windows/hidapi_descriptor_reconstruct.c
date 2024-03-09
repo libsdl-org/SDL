@@ -187,11 +187,10 @@ int hid_winapi_descriptor_reconstruct_pp_data(void *preparsed_data, unsigned cha
 		return -1;
 	}
 
-	struct rd_buffer rpt_desc = {
-		.buf = buf,
-		.buf_size = buf_size,
-		.byte_idx = 0
-	};
+	struct rd_buffer rpt_desc;
+	rpt_desc.buf = buf;
+	rpt_desc.buf_size = buf_size;
+	rpt_desc.byte_idx = 0;
 
 	// Set pointer to the first node of link_collection_nodes
 	phid_pp_link_collection_node link_collection_nodes = (phid_pp_link_collection_node)(((unsigned char*)&pp_data->caps[0]) + pp_data->FirstByteOfLinkCollectionArray);
@@ -235,7 +234,7 @@ int hid_winapi_descriptor_reconstruct_pp_data(void *preparsed_data, unsigned cha
 	}
 
 	// *************************************************************************
-	// -Determine hierachy levels of each collections and store it in:
+	// -Determine hierarchy levels of each collections and store it in:
 	//  coll_levels[COLLECTION_INDEX]
 	// -Determine number of direct childs of each collections and store it in:
 	//  coll_number_of_direct_childs[COLLECTION_INDEX]
@@ -303,10 +302,10 @@ int hid_winapi_descriptor_reconstruct_pp_data(void *preparsed_data, unsigned cha
 		}
 	}
 
-	// *************************************************************************************************
-	// Determine child collection order of the whole hierachy, based on previously determined bit ranges
+	// **************************************************************************************************
+	// Determine child collection order of the whole hierarchy, based on previously determined bit ranges
 	// and store it this index coll_child_order[COLLECTION_INDEX][DIRECT_CHILD_INDEX]
-	// *************************************************************************************************
+	// **************************************************************************************************
 	USHORT **coll_child_order;
 	coll_child_order = malloc(pp_data->NumberLinkCollectionNodes * sizeof(*coll_child_order));
 	{
@@ -326,7 +325,7 @@ int hid_winapi_descriptor_reconstruct_pp_data(void *preparsed_data, unsigned cha
 				{
 					// Create list of child collection indices
 					// sorted reverse to the order returned to HidP_GetLinkCollectionNodeschild
-					// which seems to match teh original order, as long as no bit position needs to be considered
+					// which seems to match the original order, as long as no bit position needs to be considered
 					USHORT child_idx = link_collection_nodes[collection_node_idx].FirstChild;
 					int child_count = coll_number_of_direct_childs[collection_node_idx] - 1;
 					coll_child_order[collection_node_idx][child_count] = child_idx;

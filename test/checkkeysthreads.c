@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -15,16 +15,16 @@
    pump the event loop and catch keystrokes.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
+#include <stdio.h>
+#include <stdlib.h>
 
 static int done;
 
@@ -179,7 +179,7 @@ static void loop(void)
         switch (event.type) {
         case SDL_EVENT_KEY_DOWN:
         case SDL_EVENT_KEY_UP:
-            PrintKey(&event.key.keysym, (event.key.state == SDL_PRESSED) ? SDL_TRUE : SDL_FALSE, (event.key.repeat) ? SDL_TRUE : SDL_FALSE);
+            PrintKey(&event.key.keysym, (event.key.state == SDL_PRESSED), (event.key.repeat > 0));
             break;
         case SDL_EVENT_TEXT_EDITING:
             PrintText("EDIT", event.text.text);
@@ -214,7 +214,7 @@ static void loop(void)
     }
     (void)fprintf(stderr, "exiting event loop\n");
     (void)fflush(stderr);
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {
         emscripten_cancel_main_loop();
     }
@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -267,7 +267,7 @@ int main(int argc, char *argv[])
 
     /* Set 640x480 video mode */
     window = SDL_CreateWindow("CheckKeys Test", 640, 480, 0);
-    if (window == NULL) {
+    if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create 640x480 window: %s\n",
                      SDL_GetError());
         quit(2);
@@ -279,7 +279,7 @@ int main(int argc, char *argv[])
     renderer = SDL_CreateRenderer(window, NULL, 0);
     SDL_RenderPresent(renderer);
 
-#ifdef __IOS__
+#ifdef SDL_PLATFORM_IOS
     /* Creating the context creates the view, which we need to show keyboard */
     SDL_GL_CreateContext(window);
 #endif
@@ -295,13 +295,16 @@ int main(int argc, char *argv[])
 
     thread = SDL_CreateThread(ping_thread, "PingThread", NULL);
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {
         loop();
     }
 #endif
+
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
 
     SDL_WaitThread(thread, NULL);
     SDL_Quit();

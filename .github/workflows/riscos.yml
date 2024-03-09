@@ -21,13 +21,14 @@ jobs:
     steps:
     - name: Setup dependencies
       run: apt-get update && apt-get install -y cmake ninja-build
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Configure (CMake)
       if: ${{ contains(matrix.platform.name, 'CMake') }}
       run: |
         cmake -S . -B build -G Ninja \
           -Wdeprecated -Wdev -Werror \
           -DCMAKE_TOOLCHAIN_FILE=/home/riscos/env/toolchain-riscos.cmake \
+          -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
           -DRISCOS:BOOL=ON \
           -DSDL_GCC_ATOMICS=OFF \
           -DSDL_TESTS=ON \
@@ -56,7 +57,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           ${{ matrix.platform.test_args }}
         cmake --build cmake_config_build --verbose
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         if-no-files-found: error
         name: SDL-riscos

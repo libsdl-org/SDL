@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,7 +34,7 @@
 /* Microsoft WAVE file loading routines */
 
 #include "SDL_wave.h"
-#include "SDL_audio_c.h"
+#include "SDL_sysaudio.h"
 
 /* Reads the value stored at the location of the f1 pointer, multiplies it
  * with the second argument and then stores the result to f1.
@@ -262,7 +262,7 @@ static void WaveDebugDumpFormat(WaveFile *file, Uint32 rifflen, Uint32 fmtlen, U
     int res;
 
     dumpstr = SDL_malloc(bufsize);
-    if (dumpstr == NULL) {
+    if (!dumpstr) {
         return;
     }
     dumpstr[0] = 0;
@@ -439,8 +439,8 @@ static int MS_ADPCM_Init(WaveFile *file, size_t datalength)
 
     coeffdata = (MS_ADPCM_CoeffData *)SDL_malloc(sizeof(MS_ADPCM_CoeffData) + coeffcount * 4);
     file->decoderdata = coeffdata; /* Freed in cleanup. */
-    if (coeffdata == NULL) {
-        return SDL_OutOfMemory();
+    if (!coeffdata) {
+        return -1;
     }
     coeffdata->coeff = &coeffdata->aligndummy;
     coeffdata->coeffcount = (Uint16)coeffcount;
@@ -674,7 +674,7 @@ static int MS_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
     /* The output size in bytes. May get modified if data is truncated. */
     outputsize = (size_t)state.framestotal;
     if (SafeMult(&outputsize, state.framesize)) {
-        return SDL_OutOfMemory();
+        return SDL_SetError("WAVE file too big");
     } else if (outputsize > SDL_MAX_UINT32 || state.framestotal > SIZE_MAX) {
         return SDL_SetError("WAVE file too big");
     }
@@ -682,8 +682,8 @@ static int MS_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
     state.output.pos = 0;
     state.output.size = outputsize / sizeof(Sint16);
     state.output.data = (Sint16 *)SDL_calloc(1, outputsize);
-    if (state.output.data == NULL) {
-        return SDL_OutOfMemory();
+    if (!state.output.data) {
+        return -1;
     }
 
     state.cstate = cstate;
@@ -985,7 +985,7 @@ static int IMA_ADPCM_DecodeBlockData(ADPCM_DecoderState *state)
         const size_t remainingbytes = blockleft % subblockframesize;
         blockframesleft = guaranteedframes;
         if (remainingbytes > subblockframesize - 4) {
-            blockframesleft += (remainingbytes % 4) * 2;
+            blockframesleft += (Sint64)(remainingbytes % 4) * 2;
         }
         /* Signal the truncation. */
         retval = -1;
@@ -1065,7 +1065,7 @@ static int IMA_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len
     /* The output size in bytes. May get modified if data is truncated. */
     outputsize = (size_t)state.framestotal;
     if (SafeMult(&outputsize, state.framesize)) {
-        return SDL_OutOfMemory();
+        return SDL_SetError("WAVE file too big");
     } else if (outputsize > SDL_MAX_UINT32 || state.framestotal > SIZE_MAX) {
         return SDL_SetError("WAVE file too big");
     }
@@ -1073,14 +1073,14 @@ static int IMA_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len
     state.output.pos = 0;
     state.output.size = outputsize / sizeof(Sint16);
     state.output.data = (Sint16 *)SDL_malloc(outputsize);
-    if (state.output.data == NULL) {
-        return SDL_OutOfMemory();
+    if (!state.output.data) {
+        return -1;
     }
 
     cstate = (Sint8 *)SDL_calloc(state.channels, sizeof(Sint8));
-    if (cstate == NULL) {
+    if (!cstate) {
         SDL_free(state.output.data);
-        return SDL_OutOfMemory();
+        return -1;
     }
     state.cstate = cstate;
 
@@ -1221,27 +1221,27 @@ static int LAW_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
 
     sample_count = (size_t)file->sampleframes;
     if (SafeMult(&sample_count, format->channels)) {
-        return SDL_OutOfMemory();
+        return SDL_SetError("WAVE file too big");
     }
 
     expanded_len = sample_count;
     if (SafeMult(&expanded_len, sizeof(Sint16))) {
-        return SDL_OutOfMemory();
+        return SDL_SetError("WAVE file too big");
     } else if (expanded_len > SDL_MAX_UINT32 || file->sampleframes > SIZE_MAX) {
         return SDL_SetError("WAVE file too big");
     }
 
     /* 1 to avoid allocating zero bytes, to keep static analysis happy. */
     src = (Uint8 *)SDL_realloc(chunk->data, expanded_len ? expanded_len : 1);
-    if (src == NULL) {
-        return SDL_OutOfMemory();
+    if (!src) {
+        return -1;
     }
     chunk->data = NULL;
     chunk->size = 0;
 
     dst = (Sint16 *)src;
 
-    /* Work backwards, since we're expanding in-place. SDL_AudioSpec.format will
+    /* Work backwards, since we're expanding in-place. `format` will
      * inform the caller about the byte order.
      */
     i = sample_count;
@@ -1352,20 +1352,20 @@ static int PCM_ConvertSint24ToSint32(WaveFile *file, Uint8 **audio_buf, Uint32 *
 
     sample_count = (size_t)file->sampleframes;
     if (SafeMult(&sample_count, format->channels)) {
-        return SDL_OutOfMemory();
+        return SDL_SetError("WAVE file too big");
     }
 
     expanded_len = sample_count;
     if (SafeMult(&expanded_len, sizeof(Sint32))) {
-        return SDL_OutOfMemory();
+        return SDL_SetError("WAVE file too big");
     } else if (expanded_len > SDL_MAX_UINT32 || file->sampleframes > SIZE_MAX) {
         return SDL_SetError("WAVE file too big");
     }
 
     /* 1 to avoid allocating zero bytes, to keep static analysis happy. */
     ptr = (Uint8 *)SDL_realloc(chunk->data, expanded_len ? expanded_len : 1);
-    if (ptr == NULL) {
-        return SDL_OutOfMemory();
+    if (!ptr) {
+        return -1;
     }
 
     /* This pointer is now invalid. */
@@ -1421,7 +1421,7 @@ static int PCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
 
     outputsize = (size_t)file->sampleframes;
     if (SafeMult(&outputsize, format->blockalign)) {
-        return SDL_OutOfMemory();
+        return SDL_SetError("WAVE file too big");
     } else if (outputsize > SDL_MAX_UINT32 || file->sampleframes > SIZE_MAX) {
         return SDL_SetError("WAVE file too big");
     }
@@ -1440,7 +1440,7 @@ static WaveRiffSizeHint WaveGetRiffSizeHint(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_WAVE_RIFF_CHUNK_SIZE);
 
-    if (hint != NULL) {
+    if (hint) {
         if (SDL_strcmp(hint, "force") == 0) {
             return RiffSizeForce;
         } else if (SDL_strcmp(hint, "ignore") == 0) {
@@ -1459,7 +1459,7 @@ static WaveTruncationHint WaveGetTruncationHint(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_WAVE_TRUNCATION);
 
-    if (hint != NULL) {
+    if (hint) {
         if (SDL_strcmp(hint, "verystrict") == 0) {
             return TruncVeryStrict;
         } else if (SDL_strcmp(hint, "strict") == 0) {
@@ -1478,7 +1478,7 @@ static WaveFactChunkHint WaveGetFactChunkHint(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_WAVE_FACT_CHUNK);
 
-    if (hint != NULL) {
+    if (hint) {
         if (SDL_strcmp(hint, "truncate") == 0) {
             return FactTruncate;
         } else if (SDL_strcmp(hint, "strict") == 0) {
@@ -1495,7 +1495,7 @@ static WaveFactChunkHint WaveGetFactChunkHint(void)
 
 static void WaveFreeChunkData(WaveChunk *chunk)
 {
-    if (chunk->data != NULL) {
+    if (chunk->data) {
         SDL_free(chunk->data);
         chunk->data = NULL;
     }
@@ -1544,8 +1544,8 @@ static int WaveReadPartialChunkData(SDL_RWops *src, WaveChunk *chunk, size_t len
 
     if (length > 0) {
         chunk->data = (Uint8 *)SDL_malloc(length);
-        if (chunk->data == NULL) {
-            return SDL_OutOfMemory();
+        if (!chunk->data) {
+            return -1;
         }
 
         if (SDL_RWseek(src, chunk->position, SDL_RW_SEEK_SET) != chunk->position) {
@@ -1553,7 +1553,7 @@ static int WaveReadPartialChunkData(SDL_RWops *src, WaveChunk *chunk, size_t len
             return -2;
         }
 
-        chunk->size = (size_t) SDL_RWread(src, chunk->data, length);
+        chunk->size = SDL_RWread(src, chunk->data, length);
         if (chunk->size != length) {
             /* Expected to be handled by the caller. */
         }
@@ -1610,20 +1610,24 @@ static int WaveReadFormat(WaveFile *file)
         return SDL_SetError("Data of WAVE fmt chunk too big");
     }
     fmtsrc = SDL_RWFromConstMem(chunk->data, (int)chunk->size);
-    if (fmtsrc == NULL) {
-        return SDL_OutOfMemory();
+    if (!fmtsrc) {
+        return -1;
     }
 
-    format->formattag = SDL_ReadLE16(fmtsrc);
+    if (!SDL_ReadU16LE(fmtsrc, &format->formattag) ||
+        !SDL_ReadU16LE(fmtsrc, &format->channels) ||
+        !SDL_ReadU32LE(fmtsrc, &format->frequency) ||
+        !SDL_ReadU32LE(fmtsrc, &format->byterate) ||
+        !SDL_ReadU16LE(fmtsrc, &format->blockalign)) {
+        return -1;
+    }
     format->encoding = format->formattag;
-    format->channels = SDL_ReadLE16(fmtsrc);
-    format->frequency = SDL_ReadLE32(fmtsrc);
-    format->byterate = SDL_ReadLE32(fmtsrc);
-    format->blockalign = SDL_ReadLE16(fmtsrc);
 
     /* This is PCM specific in the first version of the specification. */
     if (fmtlen >= 16) {
-        format->bitspersample = SDL_ReadLE16(fmtsrc);
+        if (!SDL_ReadU16LE(fmtsrc, &format->bitspersample)) {
+            return -1;
+        }
     } else if (format->encoding == PCM_CODE) {
         SDL_RWclose(fmtsrc);
         return SDL_SetError("Missing wBitsPerSample field in WAVE fmt chunk");
@@ -1631,7 +1635,9 @@ static int WaveReadFormat(WaveFile *file)
 
     /* The earlier versions also don't have this field. */
     if (fmtlen >= 18) {
-        format->extsize = SDL_ReadLE16(fmtsrc);
+        if (!SDL_ReadU16LE(fmtsrc, &format->extsize)) {
+            return -1;
+        }
     }
 
     if (format->formattag == EXTENSIBLE_CODE) {
@@ -1647,10 +1653,11 @@ static int WaveReadFormat(WaveFile *file)
             return SDL_SetError("Extensible WAVE header too small");
         }
 
-        format->validsamplebits = SDL_ReadLE16(fmtsrc);
+        if (!SDL_ReadU16LE(fmtsrc, &format->validsamplebits) ||
+            !SDL_ReadU32LE(fmtsrc, &format->channelmask) ||
+            SDL_RWread(fmtsrc, format->subformat, 16) != 16) {
+        }
         format->samplesperblock = format->validsamplebits;
-        format->channelmask = SDL_ReadLE32(fmtsrc);
-        SDL_RWread(fmtsrc, format->subformat, 16);
         format->encoding = WaveGetFormatGUIDEncoding(format);
     }
 
@@ -1667,15 +1674,11 @@ static int WaveCheckFormat(WaveFile *file, size_t datalength)
 
     if (format->channels == 0) {
         return SDL_SetError("Invalid number of channels");
-    } else if (format->channels > 255) {
-        /* Limit given by SDL_AudioSpec.channels. */
-        return SDL_SetError("Number of channels exceeds limit of 255");
     }
 
     if (format->frequency == 0) {
         return SDL_SetError("Invalid sample rate");
     } else if (format->frequency > INT_MAX) {
-        /* Limit given by SDL_AudioSpec.freq. */
         return SDL_SetError("Sample rate exceeds limit of %d", INT_MAX);
     }
 
@@ -1785,7 +1788,7 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
     SDL_zero(datachunk);
 
     envchunkcountlimit = SDL_getenv("SDL_WAVE_CHUNK_LIMIT");
-    if (envchunkcountlimit != NULL) {
+    if (envchunkcountlimit) {
         unsigned int count;
         if (SDL_sscanf(envchunkcountlimit, "%u", &count) == 1) {
             chunkcountlimit = count <= SDL_MAX_UINT32 ? count : SDL_MAX_UINT32;
@@ -1806,9 +1809,9 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
     if (RIFFchunk.fourcc == RIFF) {
         Uint32 formtype;
         /* Read the form type. "WAVE" expected. */
-        if (SDL_RWread(src, &formtype, sizeof(Uint32)) != sizeof(Uint32)) {
+        if (!SDL_ReadU32LE(src, &formtype)) {
             return SDL_SetError("Could not read RIFF form type");
-        } else if (SDL_SwapLE32(formtype) != WAVE) {
+        } else if (formtype != WAVE) {
             return SDL_SetError("RIFF form type is not WAVE (not a Waveform file)");
         }
     } else if (RIFFchunk.fourcc == WAVE) {
@@ -1895,10 +1898,8 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
                 } else {
                     /* Let's use src directly, it's just too convenient. */
                     Sint64 position = SDL_RWseek(src, chunk->position, SDL_RW_SEEK_SET);
-                    Uint32 samplelength;
-                    if (position == chunk->position && SDL_RWread(src, &samplelength, sizeof(Uint32)) == sizeof(Uint32)) {
+                    if (position == chunk->position && SDL_ReadU32LE(src, &file->fact.samplelength)) {
                         file->fact.status = 1;
-                        file->fact.samplelength = SDL_SwapLE32(samplelength);
                     } else {
                         file->fact.status = -1;
                     }
@@ -1941,7 +1942,7 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
             Uint64 position = (Uint64)chunk->position + chunk->length - 1;
             if (position > SDL_MAX_SINT64 || SDL_RWseek(src, (Sint64)position, SDL_RW_SEEK_SET) != (Sint64)position) {
                 return SDL_SetError("Could not seek to WAVE chunk data");
-            } else if (SDL_RWread(src, &tmp, 1) != 1) {
+            } else if (!SDL_ReadU8(src, &tmp)) {
                 return SDL_SetError("RIFF size truncates chunk");
             }
         }
@@ -2025,13 +2026,12 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
         break;
     }
 
-    /* Setting up the SDL_AudioSpec. All unsupported formats were filtered out
+    /* Setting up the specs. All unsupported formats were filtered out
      * by checks earlier in this function.
      */
-    SDL_zerop(spec);
     spec->freq = format->frequency;
     spec->channels = (Uint8)format->channels;
-    spec->samples = 4096; /* Good default buffer size */
+    spec->format = 0;
 
     switch (format->encoding) {
     case MS_ADPCM_CODE:
@@ -2039,10 +2039,10 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
     case ALAW_CODE:
     case MULAW_CODE:
         /* These can be easily stored in the byte order of the system. */
-        spec->format = SDL_AUDIO_S16SYS;
+        spec->format = SDL_AUDIO_S16;
         break;
     case IEEE_FLOAT_CODE:
-        spec->format = SDL_AUDIO_F32LSB;
+        spec->format = SDL_AUDIO_F32LE;
         break;
     case PCM_CODE:
         switch (format->bitspersample) {
@@ -2050,20 +2050,20 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
             spec->format = SDL_AUDIO_U8;
             break;
         case 16:
-            spec->format = SDL_AUDIO_S16LSB;
+            spec->format = SDL_AUDIO_S16LE;
             break;
         case 24: /* Has been shifted to 32 bits. */
         case 32:
-            spec->format = SDL_AUDIO_S32LSB;
+            spec->format = SDL_AUDIO_S32LE;
             break;
         default:
             /* Just in case something unexpected happened in the checks. */
             return SDL_SetError("Unexpected %u-bit PCM data format", (unsigned int)format->bitspersample);
         }
         break;
+    default:
+        return SDL_SetError("Unexpected data format");
     }
-
-    spec->silence = SDL_GetSilenceValueForFormat(spec->format);
 
     /* Report the end position back to the cleanup code. */
     if (RIFFlengthknown) {
@@ -2075,31 +2075,29 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
     return 0;
 }
 
-SDL_AudioSpec *SDL_LoadWAV_RW(SDL_RWops *src, int freesrc, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
+int SDL_LoadWAV_RW(SDL_RWops *src, SDL_bool freesrc, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
 {
-    int result;
+    int result = -1;
     WaveFile file;
 
-    SDL_zero(file);
-
     /* Make sure we are passed a valid data source */
-    if (src == NULL) {
-        /* Error may come from RWops. */
-        return NULL;
-    } else if (spec == NULL) {
+    if (!src) {
+        goto done;  /* Error may come from RWops. */
+    } else if (!spec) {
         SDL_InvalidParamError("spec");
-        return NULL;
-    } else if (audio_buf == NULL) {
+        goto done;
+    } else if (!audio_buf) {
         SDL_InvalidParamError("audio_buf");
-        return NULL;
-    } else if (audio_len == NULL) {
+        goto done;
+    } else if (!audio_len) {
         SDL_InvalidParamError("audio_len");
-        return NULL;
+        goto done;
     }
 
     *audio_buf = NULL;
     *audio_len = 0;
 
+    SDL_zero(file);
     file.riffhint = WaveGetRiffSizeHint();
     file.trunchint = WaveGetTruncationHint();
     file.facthint = WaveGetFactChunkHint();
@@ -2107,19 +2105,25 @@ SDL_AudioSpec *SDL_LoadWAV_RW(SDL_RWops *src, int freesrc, SDL_AudioSpec *spec, 
     result = WaveLoad(src, &file, spec, audio_buf, audio_len);
     if (result < 0) {
         SDL_free(*audio_buf);
-        spec = NULL;
         audio_buf = NULL;
         audio_len = 0;
     }
 
     /* Cleanup */
-    if (freesrc) {
-        SDL_RWclose(src);
-    } else {
+    if (!freesrc) {
         SDL_RWseek(src, file.chunk.position, SDL_RW_SEEK_SET);
     }
     WaveFreeChunkData(&file.chunk);
     SDL_free(file.decoderdata);
-
-    return spec;
+done:
+    if (freesrc && src) {
+        SDL_RWclose(src);
+    }
+    return result;
 }
+
+int SDL_LoadWAV(const char *path, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
+{
+    return SDL_LoadWAV_RW(SDL_RWFromFile(path, "rb"), 1, spec, audio_buf, audio_len);
+}
+

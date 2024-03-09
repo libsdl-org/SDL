@@ -3,14 +3,12 @@ These are test programs for the SDL library:
 
 	checkkeys	Watch the key events to check the keyboard
 	loopwave	Audio test -- loop playing a WAV file
-	loopwavequeue	Audio test -- loop playing a WAV file with SDL_QueueAudio
 	testsurround	Audio test -- play test tone on each audio channel
 	testaudioinfo	Lists audio device capabilities
 	testerror	Tests multi-threaded error handling
 	testfile	Tests RWops layer
 	testgl		A very simple example of using OpenGL with SDL
 	testiconv	Tests international string conversion
-	testjoystick	List joysticks and watch joystick events
 	testkeys	List the available keyboard keys
 	testloadso	Tests the loadable library layer
 	testlocale  Test Locale API

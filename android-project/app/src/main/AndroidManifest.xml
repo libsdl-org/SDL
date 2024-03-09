@@ -3,7 +3,6 @@
      com.gamemaker.game
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.libsdl.app"
     android:versionCode="1"
     android:versionName="1.0"
     android:installLocation="auto">
@@ -38,6 +37,13 @@
         android:name="android.hardware.microphone"
         android:required="false" /> -->
 
+    <!-- Camera support -->
+    <!-- if you want to record video, uncomment this. -->
+    <!--
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" />
+    -->
+
     <!-- Allow downloading to the external storage on Android 5.1 and older -->
     <!-- <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="22" /> -->
 
@@ -54,7 +60,7 @@
 
     <!-- Create a Java class extending SDLActivity and place it in a
          directory under app/src/main/java matching the package, e.g. app/src/main/java/com/gamemaker/game/MyGame.java
- 
+
          then replace "SDLActivity" with the name of your class (e.g. "MyGame")
          in the XML below.
 
@@ -67,9 +73,9 @@
         android:hardwareAccelerated="true" >
 
         <!-- Example of setting SDL hints from AndroidManifest.xml:
-        <meta-data android:name="SDL_ENV.SDL_ACCELEROMETER_AS_JOYSTICK" android:value="0"/>
+        <meta-data android:name="SDL_ENV.SDL_ANDROID_TRAP_BACK_BUTTON" android:value="0"/>
          -->
-     
+
         <activity android:name="SDLActivity"
             android:label="@string/app_name"
             android:alwaysRetainTaskState="true"

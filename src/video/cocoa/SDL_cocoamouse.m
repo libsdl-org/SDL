@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -188,6 +188,30 @@ static SDL_Cursor *Cocoa_CreateSystemCursor(SDL_SystemCursor id)
         case SDL_SYSTEM_CURSOR_HAND:
             nscursor = [NSCursor pointingHandCursor];
             break;
+        case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT:
+            nscursor = LoadHiddenSystemCursor(@"resizenorthwestsoutheast", @selector(closedHandCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_WINDOW_TOP:
+            nscursor = LoadHiddenSystemCursor(@"resizenorthsouth", @selector(resizeUpDownCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT:
+            nscursor = LoadHiddenSystemCursor(@"resizenortheastsouthwest", @selector(closedHandCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_WINDOW_RIGHT:
+            nscursor = LoadHiddenSystemCursor(@"resizeeastwest", @selector(resizeLeftRightCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT:
+            nscursor = LoadHiddenSystemCursor(@"resizenorthwestsoutheast", @selector(closedHandCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM:
+            nscursor = LoadHiddenSystemCursor(@"resizenorthsouth", @selector(resizeUpDownCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT:
+            nscursor = LoadHiddenSystemCursor(@"resizenortheastsouthwest", @selector(closedHandCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_WINDOW_LEFT:
+            nscursor = LoadHiddenSystemCursor(@"resizeeastwest", @selector(resizeLeftRightCursor));
+            break;
         default:
             SDL_assert(!"Unknown system cursor");
             return NULL;
@@ -219,15 +243,11 @@ static int Cocoa_ShowCursor(SDL_Cursor *cursor)
         SDL_VideoDevice *device = SDL_GetVideoDevice();
         SDL_Window *window = (device ? device->windows : NULL);
         for (; window != NULL; window = window->next) {
-            SDL_Mouse *mouse = SDL_GetMouse();
-            if(mouse->focus) {
-                if (mouse->cursor_shown && mouse->cur_cursor && !mouse->relative_mode) {
-                    [(__bridge NSCursor*)mouse->cur_cursor->driverdata set];
-                } else {
-                    [[NSCursor invisibleCursor] set];
-                }
-            } else {
-                [[NSCursor arrowCursor] set];
+            SDL_CocoaWindowData *driverdata = (__bridge SDL_CocoaWindowData *)window->driverdata;
+            if (driverdata) {
+                [driverdata.nswindow performSelectorOnMainThread:@selector(invalidateCursorRectsForView:)
+                                                      withObject:[driverdata.nswindow contentView]
+                                                   waitUntilDone:NO];
             }
         }
         return 0;
@@ -373,7 +393,7 @@ int Cocoa_InitMouse(SDL_VideoDevice *_this)
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_MouseData *driverdata = (SDL_MouseData *)SDL_calloc(1, sizeof(SDL_MouseData));
     if (driverdata == NULL) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     mouse->driverdata = driverdata;

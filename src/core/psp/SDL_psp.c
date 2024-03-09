@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -21,7 +21,7 @@
 
 #include "SDL_internal.h"
 
-#ifdef __PSP__
+#ifdef SDL_PLATFORM_PSP
 
 /* SDL_RunApp() for PSP based on SDL_psp_main.c, placed in the public domain by Sam Lantinga  3/13/14 */
 
@@ -79,4 +79,4 @@ SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
     return mainFunction(argc, argv);
 }
 
-#endif /* __PSP__ */
+#endif /* SDL_PLATFORM_PSP */

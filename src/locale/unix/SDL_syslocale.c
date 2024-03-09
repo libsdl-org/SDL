@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,12 +27,12 @@ static void normalize_locale_str(char *dst, char *str, size_t buflen)
     char *ptr;
 
     ptr = SDL_strchr(str, '.'); /* chop off encoding if specified. */
-    if (ptr != NULL) {
+    if (ptr) {
         *ptr = '\0';
     }
 
     ptr = SDL_strchr(str, '@'); /* chop off extra bits if specified. */
-    if (ptr != NULL) {
+    if (ptr) {
         *ptr = '\0';
     }
 
@@ -71,8 +71,8 @@ int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 
     SDL_assert(buflen > 0);
     tmp = SDL_small_alloc(char, buflen, &isstack);
-    if (tmp == NULL) {
-        return SDL_OutOfMemory();
+    if (!tmp) {
+        return -1;
     }
 
     *tmp = '\0';

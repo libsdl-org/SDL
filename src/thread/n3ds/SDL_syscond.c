@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -37,8 +37,6 @@ SDL_Condition *SDL_CreateCondition(void)
     SDL_Condition *cond = (SDL_Condition *)SDL_malloc(sizeof(SDL_Condition));
     if (cond) {
         CondVar_Init(&cond->cond_variable);
-    } else {
-        SDL_OutOfMemory();
     }
     return cond;
 }
@@ -54,7 +52,7 @@ void SDL_DestroyCondition(SDL_Condition *cond)
 /* Restart one of the threads that are waiting on the condition variable */
 int SDL_SignalCondition(SDL_Condition *cond)
 {
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -65,7 +63,7 @@ int SDL_SignalCondition(SDL_Condition *cond)
 /* Restart all threads that are waiting on the condition variable */
 int SDL_BroadcastCondition(SDL_Condition *cond)
 {
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -98,10 +96,10 @@ int SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 tim
 {
     Result res;
 
-    if (cond == NULL) {
+    if (!cond) {
         return SDL_InvalidParamError("cond");
     }
-    if (mutex == NULL) {
+    if (!mutex) {
         return SDL_InvalidParamError("mutex");
     }
 

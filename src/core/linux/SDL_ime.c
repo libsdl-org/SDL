@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -56,9 +56,9 @@ static void InitIME(void)
 
     /* See if fcitx IME support is being requested */
 #ifdef HAVE_FCITX
-    if (SDL_IME_Init_Real == NULL &&
+    if (!SDL_IME_Init_Real &&
         ((im_module && SDL_strcmp(im_module, "fcitx") == 0) ||
-         (im_module == NULL && xmodifiers && SDL_strstr(xmodifiers, "@im=fcitx") != NULL))) {
+         (!im_module && xmodifiers && SDL_strstr(xmodifiers, "@im=fcitx") != NULL))) {
         SDL_IME_Init_Real = SDL_Fcitx_Init;
         SDL_IME_Quit_Real = SDL_Fcitx_Quit;
         SDL_IME_SetFocus_Real = SDL_Fcitx_SetFocus;
@@ -71,7 +71,7 @@ static void InitIME(void)
 
     /* default to IBus */
 #ifdef HAVE_IBUS_IBUS_H
-    if (SDL_IME_Init_Real == NULL) {
+    if (!SDL_IME_Init_Real) {
         SDL_IME_Init_Real = SDL_IBus_Init;
         SDL_IME_Quit_Real = SDL_IBus_Quit;
         SDL_IME_SetFocus_Real = SDL_IBus_SetFocus;

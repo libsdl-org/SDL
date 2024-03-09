@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,10 +27,10 @@
 
 #include <emscripten/threading.h>
 
-int Emscripten_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int Emscripten_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format, void **pixels, int *pitch)
 {
     SDL_Surface *surface;
-    const Uint32 surface_format = SDL_PIXELFORMAT_XBGR8888;
+    const SDL_PixelFormatEnum surface_format = SDL_PIXELFORMAT_XBGR8888;
     int w, h;
 
     /* Free the old framebuffer surface */
@@ -42,7 +42,7 @@ int Emscripten_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *windo
     SDL_GetWindowSizeInPixels(window, &w, &h);
 
     surface = SDL_CreateSurface(w, h, surface_format);
-    if (surface == NULL) {
+    if (!surface) {
         return -1;
     }
 
@@ -60,7 +60,7 @@ int Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *windo
 
     SDL_WindowData *data = window->driverdata;
     surface = data->surface;
-    if (surface == NULL) {
+    if (!surface) {
         return SDL_SetError("Couldn't find framebuffer surface for window");
     }
 

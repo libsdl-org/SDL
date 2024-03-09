@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 /**
  *  \file SDL_mouse.h
  *
- *  \brief Include file for SDL mouse event handling.
+ *  Include file for SDL mouse event handling.
  */
 
 #ifndef SDL_mouse_h_
@@ -43,7 +43,7 @@ typedef Uint32 SDL_MouseID;
 typedef struct SDL_Cursor SDL_Cursor;   /**< Implementation dependent */
 
 /**
- * \brief Cursor types for SDL_CreateSystemCursor().
+ * Cursor types for SDL_CreateSystemCursor().
  */
 typedef enum
 {
@@ -59,11 +59,19 @@ typedef enum
     SDL_SYSTEM_CURSOR_SIZEALL,   /**< Four pointed arrow pointing north, south, east, and west */
     SDL_SYSTEM_CURSOR_NO,        /**< Slashed circle or crossbones */
     SDL_SYSTEM_CURSOR_HAND,      /**< Hand */
+    SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT,     /**< Window resize top-left (or SIZENWSE) */
+    SDL_SYSTEM_CURSOR_WINDOW_TOP,         /**< Window resize top (or SIZENS) */
+    SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT,    /**< Window resize top-right (or SIZENESW) */
+    SDL_SYSTEM_CURSOR_WINDOW_RIGHT,       /**< Window resize right (or SIZEWE) */
+    SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT, /**< Window resize bottom-right (or SIZENWSE) */
+    SDL_SYSTEM_CURSOR_WINDOW_BOTTOM,      /**< Window resize bottom (or SIZENS) */
+    SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT,  /**< Window resize bottom-left (or SIZENESW) */
+    SDL_SYSTEM_CURSOR_WINDOW_LEFT,        /**< Window resize left (or SIZEWE) */
     SDL_NUM_SYSTEM_CURSORS
 } SDL_SystemCursor;
 
 /**
- * \brief Scroll direction types for the Scroll event
+ * Scroll direction types for the Scroll event
  */
 typedef enum
 {

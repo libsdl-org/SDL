@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,7 +28,7 @@ extern "C" {
 
 #include "../SDL_sysvideo.h"
 
-extern int32 HAIKU_ColorSpaceToSDLPxFormat(uint32 colorspace);
+extern SDL_PixelFormatEnum HAIKU_ColorSpaceToSDLPxFormat(uint32 colorspace);
 
 extern int HAIKU_InitModes(SDL_VideoDevice *_this);
 extern int HAIKU_QuitModes(SDL_VideoDevice *_this);

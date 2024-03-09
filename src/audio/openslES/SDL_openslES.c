@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,12 +22,10 @@
 
 #ifdef SDL_AUDIO_DRIVER_OPENSLES
 
-/* For more discussion of low latency audio on Android, see this:
-   https://googlesamples.github.io/android-audio-high-performance/guides/opensl_es.html
-*/
+// For more discussion of low latency audio on Android, see this:
+//   https://googlesamples.github.io/android-audio-high-performance/guides/opensl_es.html
 
 #include "../SDL_sysaudio.h"
-#include "../SDL_audio_c.h"
 #include "SDL_openslES.h"
 
 #include "../../core/android/SDL_android.h"
@@ -36,7 +34,7 @@
 #include <android/log.h>
 
 
-#define NUM_BUFFERS 2 /* -- Don't lower this! */
+#define NUM_BUFFERS 2 // -- Don't lower this!
 
 struct SDL_PrivateAudioData
 {
@@ -83,14 +81,14 @@ struct SDL_PrivateAudioData
 #define SL_ANDROID_SPEAKER_5DOT1  (SL_ANDROID_SPEAKER_QUAD | SL_SPEAKER_FRONT_CENTER | SL_SPEAKER_LOW_FREQUENCY)
 #define SL_ANDROID_SPEAKER_7DOT1  (SL_ANDROID_SPEAKER_5DOT1 | SL_SPEAKER_SIDE_LEFT | SL_SPEAKER_SIDE_RIGHT)
 
-/* engine interfaces */
+// engine interfaces
 static SLObjectItf engineObject = NULL;
 static SLEngineItf engineEngine = NULL;
 
-/* output mix interfaces */
+// output mix interfaces
 static SLObjectItf outputMixObject = NULL;
 
-/* buffer queue player interfaces */
+// buffer queue player interfaces
 static SLObjectItf bqPlayerObject = NULL;
 static SLPlayItf bqPlayerPlay = NULL;
 static SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue = NULL;
@@ -98,7 +96,7 @@ static SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue = NULL;
 static SLVolumeItf bqPlayerVolume;
 #endif
 
-/* recorder interfaces */
+// recorder interfaces
 static SLObjectItf recorderObject = NULL;
 static SLRecordItf recorderRecord = NULL;
 static SLAndroidSimpleBufferQueueItf recorderBufferQueue = NULL;
@@ -109,7 +107,7 @@ static const char *sldevaudioplayerstr   = "SLES Audio Player";
 
 #define SLES_DEV_AUDIO_RECORDER sldevaudiorecorderstr
 #define SLES_DEV_AUDIO_PLAYER   sldevaudioplayerstr
-static void openslES_DetectDevices( int iscapture )
+static void OPENSLES_DetectDevices( int iscapture )
 {
     LOGI( "openSLES_DetectDevices()" );
     if ( iscapture )
@@ -119,17 +117,17 @@ static void openslES_DetectDevices( int iscapture )
 }
 #endif
 
-static void openslES_DestroyEngine(void)
+static void OPENSLES_DestroyEngine(void)
 {
-    LOGI("openslES_DestroyEngine()");
+    LOGI("OPENSLES_DestroyEngine()");
 
-    /* destroy output mix object, and invalidate all associated interfaces */
+    // destroy output mix object, and invalidate all associated interfaces
     if (outputMixObject != NULL) {
         (*outputMixObject)->Destroy(outputMixObject);
         outputMixObject = NULL;
     }
 
-    /* destroy engine object, and invalidate all associated interfaces */
+    // destroy engine object, and invalidate all associated interfaces
     if (engineObject != NULL) {
         (*engineObject)->Destroy(engineObject);
         engineObject = NULL;
@@ -137,7 +135,7 @@ static void openslES_DestroyEngine(void)
     }
 }
 
-static int openslES_CreateEngine(void)
+static int OPENSLES_CreateEngine(void)
 {
     const SLInterfaceID ids[1] = { SL_IID_VOLUME };
     const SLboolean req[1] = { SL_BOOLEAN_FALSE };
@@ -145,7 +143,7 @@ static int openslES_CreateEngine(void)
 
     LOGI("openSLES_CreateEngine()");
 
-    /* create engine */
+    // create engine
     result = slCreateEngine(&engineObject, 0, NULL, 0, NULL, NULL);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("slCreateEngine failed: %d", result);
@@ -153,7 +151,7 @@ static int openslES_CreateEngine(void)
     }
     LOGI("slCreateEngine OK");
 
-    /* realize the engine */
+    // realize the engine
     result = (*engineObject)->Realize(engineObject, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("RealizeEngine failed: %d", result);
@@ -161,7 +159,7 @@ static int openslES_CreateEngine(void)
     }
     LOGI("RealizeEngine OK");
 
-    /* get the engine interface, which is needed in order to create other objects */
+    // get the engine interface, which is needed in order to create other objects
     result = (*engineObject)->GetInterface(engineObject, SL_IID_ENGINE, &engineEngine);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("EngineGetInterface failed: %d", result);
@@ -169,7 +167,7 @@ static int openslES_CreateEngine(void)
     }
     LOGI("EngineGetInterface OK");
 
-    /* create output mix */
+    // create output mix
     result = (*engineEngine)->CreateOutputMix(engineEngine, &outputMixObject, 1, ids, req);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("CreateOutputMix failed: %d", result);
@@ -177,7 +175,7 @@ static int openslES_CreateEngine(void)
     }
     LOGI("CreateOutputMix OK");
 
-    /* realize the output mix */
+    // realize the output mix
     result = (*outputMixObject)->Realize(outputMixObject, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("RealizeOutputMix failed: %d", result);
@@ -186,11 +184,11 @@ static int openslES_CreateEngine(void)
     return 1;
 
 error:
-    openslES_DestroyEngine();
+    OPENSLES_DestroyEngine();
     return 0;
 }
 
-/* this callback handler is called every time a buffer finishes recording */
+// this callback handler is called every time a buffer finishes recording
 static void bqRecorderCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
 {
     struct SDL_PrivateAudioData *audiodata = (struct SDL_PrivateAudioData *)context;
@@ -199,12 +197,12 @@ static void bqRecorderCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
     SDL_PostSemaphore(audiodata->playsem);
 }
 
-static void openslES_DestroyPCMRecorder(SDL_AudioDevice *_this)
+static void OPENSLES_DestroyPCMRecorder(SDL_AudioDevice *device)
 {
-    struct SDL_PrivateAudioData *audiodata = _this->hidden;
+    struct SDL_PrivateAudioData *audiodata = device->hidden;
     SLresult result;
 
-    /* stop recording */
+    // stop recording
     if (recorderRecord != NULL) {
         result = (*recorderRecord)->SetRecordState(recorderRecord, SL_RECORDSTATE_STOPPED);
         if (SL_RESULT_SUCCESS != result) {
@@ -212,7 +210,7 @@ static void openslES_DestroyPCMRecorder(SDL_AudioDevice *_this)
         }
     }
 
-    /* destroy audio recorder object, and invalidate all associated interfaces */
+    // destroy audio recorder object, and invalidate all associated interfaces
     if (recorderObject != NULL) {
         (*recorderObject)->Destroy(recorderObject);
         recorderObject = NULL;
@@ -230,9 +228,15 @@ static void openslES_DestroyPCMRecorder(SDL_AudioDevice *_this)
     }
 }
 
-static int openslES_CreatePCMRecorder(SDL_AudioDevice *_this)
+// !!! FIXME: make this non-blocking!
+static void SDLCALL AndroidRequestPermissionBlockingCallback(void *userdata, const char *permission, SDL_bool granted)
 {
-    struct SDL_PrivateAudioData *audiodata = _this->hidden;
+    SDL_AtomicSet((SDL_AtomicInt *) userdata, granted ? 1 : -1);
+}
+
+static int OPENSLES_CreatePCMRecorder(SDL_AudioDevice *device)
+{
+    struct SDL_PrivateAudioData *audiodata = device->hidden;
     SLDataFormat_PCM format_pcm;
     SLDataLocator_AndroidSimpleBufferQueue loc_bufq;
     SLDataSink audioSnk;
@@ -243,24 +247,37 @@ static int openslES_CreatePCMRecorder(SDL_AudioDevice *_this)
     SLresult result;
     int i;
 
-    if (!Android_JNI_RequestPermission("android.permission.RECORD_AUDIO")) {
-        LOGE("This app doesn't have RECORD_AUDIO permission");
-        return SDL_SetError("This app doesn't have RECORD_AUDIO permission");
+    // !!! FIXME: make this non-blocking!
+    {
+        SDL_AtomicInt permission_response;
+        SDL_AtomicSet(&permission_response, 0);
+        if (SDL_AndroidRequestPermission("android.permission.RECORD_AUDIO", AndroidRequestPermissionBlockingCallback, &permission_response) == -1) {
+            return -1;
+        }
+
+        while (SDL_AtomicGet(&permission_response) == 0) {
+            SDL_Delay(10);
+        }
+
+        if (SDL_AtomicGet(&permission_response) < 0) {
+            LOGE("This app doesn't have RECORD_AUDIO permission");
+            return SDL_SetError("This app doesn't have RECORD_AUDIO permission");
+        }
     }
 
-    /* Just go with signed 16-bit audio as it's the most compatible */
-    _this->spec.format = SDL_AUDIO_S16SYS;
-    _this->spec.channels = 1;
-    /*_this->spec.freq = SL_SAMPLINGRATE_16 / 1000;*/
+    // Just go with signed 16-bit audio as it's the most compatible
+    device->spec.format = SDL_AUDIO_S16;
+    device->spec.channels = 1;
+    //device->spec.freq = SL_SAMPLINGRATE_16 / 1000;*/
 
-    /* Update the fragment size as size in bytes */
-    SDL_CalculateAudioSpec(&_this->spec);
+    // Update the fragment size as size in bytes
+    SDL_UpdatedAudioDeviceFormat(device);
 
     LOGI("Try to open %u hz %u bit chan %u %s samples %u",
-         _this->spec.freq, SDL_AUDIO_BITSIZE(_this->spec.format),
-         _this->spec.channels, (_this->spec.format & 0x1000) ? "BE" : "LE", _this->spec.samples);
+         device->spec.freq, SDL_AUDIO_BITSIZE(device->spec.format),
+         device->spec.channels, (device->spec.format & 0x1000) ? "BE" : "LE", device->sample_frames);
 
-    /* configure audio source */
+    // configure audio source
     loc_dev.locatorType = SL_DATALOCATOR_IODEVICE;
     loc_dev.deviceType = SL_IODEVICE_AUDIOINPUT;
     loc_dev.deviceID = SL_DEFAULTDEVICEID_AUDIOINPUT;
@@ -268,93 +285,93 @@ static int openslES_CreatePCMRecorder(SDL_AudioDevice *_this)
     audioSrc.pLocator = &loc_dev;
     audioSrc.pFormat = NULL;
 
-    /* configure audio sink */
+    // configure audio sink
     loc_bufq.locatorType = SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE;
     loc_bufq.numBuffers = NUM_BUFFERS;
 
     format_pcm.formatType = SL_DATAFORMAT_PCM;
-    format_pcm.numChannels = _this->spec.channels;
-    format_pcm.samplesPerSec = _this->spec.freq * 1000; /* / kilo Hz to milli Hz */
-    format_pcm.bitsPerSample = SDL_AUDIO_BITSIZE(_this->spec.format);
-    format_pcm.containerSize = SDL_AUDIO_BITSIZE(_this->spec.format);
+    format_pcm.numChannels = device->spec.channels;
+    format_pcm.samplesPerSec = device->spec.freq * 1000; // / kilo Hz to milli Hz
+    format_pcm.bitsPerSample = SDL_AUDIO_BITSIZE(device->spec.format);
+    format_pcm.containerSize = SDL_AUDIO_BITSIZE(device->spec.format);
     format_pcm.endianness = SL_BYTEORDER_LITTLEENDIAN;
     format_pcm.channelMask = SL_SPEAKER_FRONT_CENTER;
 
     audioSnk.pLocator = &loc_bufq;
     audioSnk.pFormat = &format_pcm;
 
-    /* create audio recorder */
-    /* (requires the RECORD_AUDIO permission) */
+    // create audio recorder
+    // (requires the RECORD_AUDIO permission)
     result = (*engineEngine)->CreateAudioRecorder(engineEngine, &recorderObject, &audioSrc, &audioSnk, 1, ids, req);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("CreateAudioRecorder failed: %d", result);
         goto failed;
     }
 
-    /* realize the recorder */
+    // realize the recorder
     result = (*recorderObject)->Realize(recorderObject, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("RealizeAudioPlayer failed: %d", result);
         goto failed;
     }
 
-    /* get the record interface */
+    // get the record interface
     result = (*recorderObject)->GetInterface(recorderObject, SL_IID_RECORD, &recorderRecord);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("SL_IID_RECORD interface get failed: %d", result);
         goto failed;
     }
 
-    /* get the buffer queue interface */
+    // get the buffer queue interface
     result = (*recorderObject)->GetInterface(recorderObject, SL_IID_ANDROIDSIMPLEBUFFERQUEUE, &recorderBufferQueue);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("SL_IID_BUFFERQUEUE interface get failed: %d", result);
         goto failed;
     }
 
-    /* register callback on the buffer queue */
-    /* context is '(SDL_PrivateAudioData *)_this->hidden' */
-    result = (*recorderBufferQueue)->RegisterCallback(recorderBufferQueue, bqRecorderCallback, _this->hidden);
+    // register callback on the buffer queue
+    // context is '(SDL_PrivateAudioData *)device->hidden'
+    result = (*recorderBufferQueue)->RegisterCallback(recorderBufferQueue, bqRecorderCallback, device->hidden);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("RegisterCallback failed: %d", result);
         goto failed;
     }
 
-    /* Create the audio buffer semaphore */
+    // Create the audio buffer semaphore
     audiodata->playsem = SDL_CreateSemaphore(0);
     if (!audiodata->playsem) {
         LOGE("cannot create Semaphore!");
         goto failed;
     }
 
-    /* Create the sound buffers */
-    audiodata->mixbuff = (Uint8 *)SDL_malloc(NUM_BUFFERS * _this->spec.size);
-    if (audiodata->mixbuff == NULL) {
+    // Create the sound buffers
+    audiodata->mixbuff = (Uint8 *)SDL_malloc(NUM_BUFFERS * device->buffer_size);
+    if (!audiodata->mixbuff) {
         LOGE("mixbuffer allocate - out of memory");
         goto failed;
     }
 
     for (i = 0; i < NUM_BUFFERS; i++) {
-        audiodata->pmixbuff[i] = audiodata->mixbuff + i * _this->spec.size;
+        audiodata->pmixbuff[i] = audiodata->mixbuff + i * device->buffer_size;
     }
 
-    /* in case already recording, stop recording and clear buffer queue */
+    // in case already recording, stop recording and clear buffer queue
     result = (*recorderRecord)->SetRecordState(recorderRecord, SL_RECORDSTATE_STOPPED);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Record set state failed: %d", result);
         goto failed;
     }
 
-    /* enqueue empty buffers to be filled by the recorder */
+    // enqueue empty buffers to be filled by the recorder
     for (i = 0; i < NUM_BUFFERS; i++) {
-        result = (*recorderBufferQueue)->Enqueue(recorderBufferQueue, audiodata->pmixbuff[i], _this->spec.size);
+        result = (*recorderBufferQueue)->Enqueue(recorderBufferQueue, audiodata->pmixbuff[i], device->buffer_size);
         if (SL_RESULT_SUCCESS != result) {
             LOGE("Record enqueue buffers failed: %d", result);
             goto failed;
         }
     }
 
-    /* start recording */
+    // start recording
     result = (*recorderRecord)->SetRecordState(recorderRecord, SL_RECORDSTATE_RECORDING);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Record set state failed: %d", result);
@@ -367,7 +384,7 @@ failed:
     return SDL_SetError("Open device failed!");
 }
 
-/* this callback handler is called every time a buffer finishes playing */
+// this callback handler is called every time a buffer finishes playing
 static void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
 {
     struct SDL_PrivateAudioData *audiodata = (struct SDL_PrivateAudioData *)context;
@@ -376,20 +393,19 @@ static void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
     SDL_PostSemaphore(audiodata->playsem);
 }
 
-static void openslES_DestroyPCMPlayer(SDL_AudioDevice *_this)
+static void OPENSLES_DestroyPCMPlayer(SDL_AudioDevice *device)
 {
-    struct SDL_PrivateAudioData *audiodata = _this->hidden;
-    SLresult result;
+    struct SDL_PrivateAudioData *audiodata = device->hidden;
 
-    /* set the player's state to 'stopped' */
+    // set the player's state to 'stopped'
     if (bqPlayerPlay != NULL) {
-        result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_STOPPED);
+        const SLresult result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_STOPPED);
         if (SL_RESULT_SUCCESS != result) {
             LOGE("SetPlayState stopped failed: %d", result);
         }
     }
 
-    /* destroy buffer queue audio player object, and invalidate all associated interfaces */
+    // destroy buffer queue audio player object, and invalidate all associated interfaces
     if (bqPlayerObject != NULL) {
         (*bqPlayerObject)->Destroy(bqPlayerObject);
 
@@ -408,26 +424,14 @@ static void openslES_DestroyPCMPlayer(SDL_AudioDevice *_this)
     }
 }
 
-static int openslES_CreatePCMPlayer(SDL_AudioDevice *_this)
+static int OPENSLES_CreatePCMPlayer(SDL_AudioDevice *device)
 {
-    struct SDL_PrivateAudioData *audiodata = _this->hidden;
-    SLDataLocator_AndroidSimpleBufferQueue loc_bufq;
-    SLDataFormat_PCM format_pcm;
-    SLAndroidDataFormat_PCM_EX format_pcm_ex;
-    SLDataSource audioSrc;
-    SLDataSink audioSnk;
-    SLDataLocator_OutputMix loc_outmix;
-    const SLInterfaceID ids[2] = { SL_IID_ANDROIDSIMPLEBUFFERQUEUE, SL_IID_VOLUME };
-    const SLboolean req[2] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_FALSE };
-    SLresult result;
-    int i;
-
     /* If we want to add floating point audio support (requires API level 21)
        it can be done as described here:
         https://developer.android.com/ndk/guides/audio/opensl/android-extensions.html#floating-point
     */
     if (SDL_GetAndroidSDKVersion() >= 21) {
-        const SDL_AudioFormat *closefmts = SDL_ClosestAudioFormats(_this->spec.format);
+        const SDL_AudioFormat *closefmts = SDL_ClosestAudioFormats(device->spec.format);
         SDL_AudioFormat test_format;
         while ((test_format = *(closefmts++)) != 0) {
             if (SDL_AUDIO_ISSIGNED(test_format)) {
@@ -436,40 +440,42 @@ static int openslES_CreatePCMPlayer(SDL_AudioDevice *_this)
         }
 
         if (!test_format) {
-            /* Didn't find a compatible format : */
+            // Didn't find a compatible format :
             LOGI("No compatible audio format, using signed 16-bit audio");
-            test_format = SDL_AUDIO_S16SYS;
+            test_format = SDL_AUDIO_S16;
         }
-        _this->spec.format = test_format;
+        device->spec.format = test_format;
     } else {
-        /* Just go with signed 16-bit audio as it's the most compatible */
-        _this->spec.format = SDL_AUDIO_S16SYS;
+        // Just go with signed 16-bit audio as it's the most compatible
+        device->spec.format = SDL_AUDIO_S16;
     }
 
-    /* Update the fragment size as size in bytes */
-    SDL_CalculateAudioSpec(&_this->spec);
+    // Update the fragment size as size in bytes
+    SDL_UpdatedAudioDeviceFormat(device);
 
     LOGI("Try to open %u hz %s %u bit chan %u %s samples %u",
-         _this->spec.freq, SDL_AUDIO_ISFLOAT(_this->spec.format) ? "float" : "pcm", SDL_AUDIO_BITSIZE(_this->spec.format),
-         _this->spec.channels, (_this->spec.format & 0x1000) ? "BE" : "LE", _this->spec.samples);
+         device->spec.freq, SDL_AUDIO_ISFLOAT(device->spec.format) ? "float" : "pcm", SDL_AUDIO_BITSIZE(device->spec.format),
+         device->spec.channels, (device->spec.format & 0x1000) ? "BE" : "LE", device->sample_frames);
 
-    /* configure audio source */
+    // configure audio source
+    SLDataLocator_AndroidSimpleBufferQueue loc_bufq;
     loc_bufq.locatorType = SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE;
     loc_bufq.numBuffers = NUM_BUFFERS;
 
+    SLDataFormat_PCM format_pcm;
     format_pcm.formatType = SL_DATAFORMAT_PCM;
-    format_pcm.numChannels = _this->spec.channels;
-    format_pcm.samplesPerSec = _this->spec.freq * 1000; /* / kilo Hz to milli Hz */
-    format_pcm.bitsPerSample = SDL_AUDIO_BITSIZE(_this->spec.format);
-    format_pcm.containerSize = SDL_AUDIO_BITSIZE(_this->spec.format);
+    format_pcm.numChannels = device->spec.channels;
+    format_pcm.samplesPerSec = device->spec.freq * 1000; // / kilo Hz to milli Hz
+    format_pcm.bitsPerSample = SDL_AUDIO_BITSIZE(device->spec.format);
+    format_pcm.containerSize = SDL_AUDIO_BITSIZE(device->spec.format);
 
-    if (SDL_AUDIO_ISBIGENDIAN(_this->spec.format)) {
+    if (SDL_AUDIO_ISBIGENDIAN(device->spec.format)) {
         format_pcm.endianness = SL_BYTEORDER_BIGENDIAN;
     } else {
         format_pcm.endianness = SL_BYTEORDER_LITTLEENDIAN;
     }
 
-    switch (_this->spec.channels) {
+    switch (device->spec.channels) {
     case 1:
         format_pcm.channelMask = SL_SPEAKER_FRONT_LEFT;
         break;
@@ -495,14 +501,19 @@ static int openslES_CreatePCMPlayer(SDL_AudioDevice *_this)
         format_pcm.channelMask = SL_ANDROID_SPEAKER_7DOT1;
         break;
     default:
-        /* Unknown number of channels, fall back to stereo */
-        _this->spec.channels = 2;
+        // Unknown number of channels, fall back to stereo
+        device->spec.channels = 2;
         format_pcm.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
         break;
     }
 
-    if (SDL_AUDIO_ISFLOAT(_this->spec.format)) {
-        /* Copy all setup into PCM EX structure */
+    SLDataSink audioSnk;
+    SLDataSource audioSrc;
+    audioSrc.pFormat = (void *)&format_pcm;
+
+    SLAndroidDataFormat_PCM_EX format_pcm_ex;
+    if (SDL_AUDIO_ISFLOAT(device->spec.format)) {
+        // Copy all setup into PCM EX structure
         format_pcm_ex.formatType = SL_ANDROID_DATAFORMAT_PCM_EX;
         format_pcm_ex.endianness = format_pcm.endianness;
         format_pcm_ex.channelMask = format_pcm.channelMask;
@@ -511,81 +522,87 @@ static int openslES_CreatePCMPlayer(SDL_AudioDevice *_this)
         format_pcm_ex.bitsPerSample = format_pcm.bitsPerSample;
         format_pcm_ex.containerSize = format_pcm.containerSize;
         format_pcm_ex.representation = SL_ANDROID_PCM_REPRESENTATION_FLOAT;
+        audioSrc.pFormat = (void *)&format_pcm_ex;
     }
 
     audioSrc.pLocator = &loc_bufq;
-    audioSrc.pFormat = SDL_AUDIO_ISFLOAT(_this->spec.format) ? (void *)&format_pcm_ex : (void *)&format_pcm;
 
-    /* configure audio sink */
+    // configure audio sink
+    SLDataLocator_OutputMix loc_outmix;
     loc_outmix.locatorType = SL_DATALOCATOR_OUTPUTMIX;
     loc_outmix.outputMix = outputMixObject;
     audioSnk.pLocator = &loc_outmix;
     audioSnk.pFormat = NULL;
 
-    /* create audio player */
+    // create audio player
+    const SLInterfaceID ids[2] = { SL_IID_ANDROIDSIMPLEBUFFERQUEUE, SL_IID_VOLUME };
+    const SLboolean req[2] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_FALSE };
+    SLresult result;
     result = (*engineEngine)->CreateAudioPlayer(engineEngine, &bqPlayerObject, &audioSrc, &audioSnk, 2, ids, req);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("CreateAudioPlayer failed: %d", result);
         goto failed;
     }
 
-    /* realize the player */
+    // realize the player
     result = (*bqPlayerObject)->Realize(bqPlayerObject, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("RealizeAudioPlayer failed: %d", result);
         goto failed;
     }
 
-    /* get the play interface */
+    // get the play interface
     result = (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_PLAY, &bqPlayerPlay);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("SL_IID_PLAY interface get failed: %d", result);
         goto failed;
     }
 
-    /* get the buffer queue interface */
+    // get the buffer queue interface
     result = (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_ANDROIDSIMPLEBUFFERQUEUE, &bqPlayerBufferQueue);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("SL_IID_BUFFERQUEUE interface get failed: %d", result);
         goto failed;
     }
 
-    /* register callback on the buffer queue */
-    /* context is '(SDL_PrivateAudioData *)_this->hidden' */
-    result = (*bqPlayerBufferQueue)->RegisterCallback(bqPlayerBufferQueue, bqPlayerCallback, _this->hidden);
+    // register callback on the buffer queue
+    // context is '(SDL_PrivateAudioData *)device->hidden'
+    result = (*bqPlayerBufferQueue)->RegisterCallback(bqPlayerBufferQueue, bqPlayerCallback, device->hidden);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("RegisterCallback failed: %d", result);
         goto failed;
     }
 
 #if 0
-    /* get the volume interface */
+    // get the volume interface
     result = (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_VOLUME, &bqPlayerVolume);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("SL_IID_VOLUME interface get failed: %d", result);
-        /* goto failed; */
+        // goto failed;
     }
 #endif
 
-    /* Create the audio buffer semaphore */
+    struct SDL_PrivateAudioData *audiodata = device->hidden;
+
+    // Create the audio buffer semaphore
     audiodata->playsem = SDL_CreateSemaphore(NUM_BUFFERS - 1);
     if (!audiodata->playsem) {
         LOGE("cannot create Semaphore!");
         goto failed;
     }
 
-    /* Create the sound buffers */
-    audiodata->mixbuff = (Uint8 *)SDL_malloc(NUM_BUFFERS * _this->spec.size);
-    if (audiodata->mixbuff == NULL) {
+    // Create the sound buffers
+    audiodata->mixbuff = (Uint8 *)SDL_malloc(NUM_BUFFERS * device->buffer_size);
+    if (!audiodata->mixbuff) {
         LOGE("mixbuffer allocate - out of memory");
         goto failed;
     }
 
-    for (i = 0; i < NUM_BUFFERS; i++) {
-        audiodata->pmixbuff[i] = audiodata->mixbuff + i * _this->spec.size;
+    for (int i = 0; i < NUM_BUFFERS; i++) {
+        audiodata->pmixbuff[i] = audiodata->mixbuff + i * device->buffer_size;
     }
 
-    /* set the player's state to playing */
+    // set the player's state to playing
     result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PLAYING);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Play set state failed: %d", result);
@@ -598,103 +615,100 @@ failed:
     return -1;
 }
 
-static int openslES_OpenDevice(SDL_AudioDevice *_this, const char *devname)
+static int OPENSLES_OpenDevice(SDL_AudioDevice *device)
 {
-    _this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*_this->hidden));
-    if (_this->hidden == NULL) {
-        return SDL_OutOfMemory();
+    device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
+    if (!device->hidden) {
+        return -1;
     }
 
-    if (_this->iscapture) {
-        LOGI("openslES_OpenDevice() %s for capture", devname);
-        return openslES_CreatePCMRecorder(_this);
+    if (device->iscapture) {
+        LOGI("OPENSLES_OpenDevice() for capture");
+        return OPENSLES_CreatePCMRecorder(device);
     } else {
         int ret;
-        LOGI("openslES_OpenDevice() %s for playing", devname);
-        ret = openslES_CreatePCMPlayer(_this);
+        LOGI("OPENSLES_OpenDevice() for playing");
+        ret = OPENSLES_CreatePCMPlayer(device);
         if (ret < 0) {
-            /* Another attempt to open the device with a lower frequency */
-            if (_this->spec.freq > 48000) {
-                openslES_DestroyPCMPlayer(_this);
-                _this->spec.freq = 48000;
-                ret = openslES_CreatePCMPlayer(_this);
+            // Another attempt to open the device with a lower frequency
+            if (device->spec.freq > 48000) {
+                OPENSLES_DestroyPCMPlayer(device);
+                device->spec.freq = 48000;
+                ret = OPENSLES_CreatePCMPlayer(device);
             }
         }
 
-        if (ret == 0) {
-            return 0;
-        } else {
+        if (ret != 0) {
             return SDL_SetError("Open device failed!");
         }
     }
+
+    return 0;
 }
 
-static void openslES_WaitDevice(SDL_AudioDevice *_this)
+static int OPENSLES_WaitDevice(SDL_AudioDevice *device)
 {
-    struct SDL_PrivateAudioData *audiodata = _this->hidden;
+    struct SDL_PrivateAudioData *audiodata = device->hidden;
 
-    LOGV("openslES_WaitDevice()");
+    LOGV("OPENSLES_WaitDevice()");
 
-    /* Wait for an audio chunk to finish */
-    SDL_WaitSemaphore(audiodata->playsem);
+    // Wait for an audio chunk to finish
+    return SDL_WaitSemaphore(audiodata->playsem);
 }
 
-static void openslES_PlayDevice(SDL_AudioDevice *_this)
+static int OPENSLES_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
-    struct SDL_PrivateAudioData *audiodata = _this->hidden;
-    SLresult result;
+    struct SDL_PrivateAudioData *audiodata = device->hidden;
 
-    LOGV("======openslES_PlayDevice()======");
+    LOGV("======OPENSLES_PlayDevice()======");
 
-    /* Queue it up */
-    result = (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, audiodata->pmixbuff[audiodata->next_buffer], _this->spec.size);
+    // Queue it up
+    const SLresult result = (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, buffer, buflen);
 
     audiodata->next_buffer++;
     if (audiodata->next_buffer >= NUM_BUFFERS) {
         audiodata->next_buffer = 0;
     }
 
-    /* If Enqueue fails, callback won't be called.
-     * Post the semaphore, not to run out of buffer */
+    // If Enqueue fails, callback won't be called.
+    // Post the semaphore, not to run out of buffer
     if (SL_RESULT_SUCCESS != result) {
         SDL_PostSemaphore(audiodata->playsem);
     }
+
+    return 0;
 }
 
-/*/           n   playn sem */
-/* getbuf     0   -     1 */
-/* fill buff  0   -     1 */
-/* play       0 - 0     1 */
-/* wait       1   0     0 */
-/* getbuf     1   0     0 */
-/* fill buff  1   0     0 */
-/* play       0   0     0 */
-/* wait */
-/* */
-/* okay.. */
+///           n   playn sem
+// getbuf     0   -     1
+// fill buff  0   -     1
+// play       0 - 0     1
+// wait       1   0     0
+// getbuf     1   0     0
+// fill buff  1   0     0
+// play       0   0     0
+// wait
+//
+// okay..
 
-static Uint8 *openslES_GetDeviceBuf(SDL_AudioDevice *_this)
+static Uint8 *OPENSLES_GetDeviceBuf(SDL_AudioDevice *device, int *bufsize)
 {
-    struct SDL_PrivateAudioData *audiodata = _this->hidden;
+    struct SDL_PrivateAudioData *audiodata = device->hidden;
 
-    LOGV("openslES_GetDeviceBuf()");
+    LOGV("OPENSLES_GetDeviceBuf()");
     return audiodata->pmixbuff[audiodata->next_buffer];
 }
 
-static int openslES_CaptureFromDevice(SDL_AudioDevice *_this, void *buffer, int buflen)
+static int OPENSLES_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
 {
-    struct SDL_PrivateAudioData *audiodata = _this->hidden;
-    SLresult result;
+    struct SDL_PrivateAudioData *audiodata = device->hidden;
 
-    /* Wait for new recorded data */
-    SDL_WaitSemaphore(audiodata->playsem);
+    // Copy it to the output buffer
+    SDL_assert(buflen == device->buffer_size);
+    SDL_memcpy(buffer, audiodata->pmixbuff[audiodata->next_buffer], device->buffer_size);
 
-    /* Copy it to the output buffer */
-    SDL_assert(buflen == _this->spec.size);
-    SDL_memcpy(buffer, audiodata->pmixbuff[audiodata->next_buffer], _this->spec.size);
-
-    /* Re-enqueue the buffer */
-    result = (*recorderBufferQueue)->Enqueue(recorderBufferQueue, audiodata->pmixbuff[audiodata->next_buffer], _this->spec.size);
+    // Re-enqueue the buffer
+    const SLresult result = (*recorderBufferQueue)->Enqueue(recorderBufferQueue, audiodata->pmixbuff[audiodata->next_buffer], device->buffer_size);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Record enqueue buffers failed: %d", result);
         return -1;
@@ -705,79 +719,83 @@ static int openslES_CaptureFromDevice(SDL_AudioDevice *_this, void *buffer, int 
         audiodata->next_buffer = 0;
     }
 
-    return _this->spec.size;
+    return device->buffer_size;
 }
 
-static void openslES_CloseDevice(SDL_AudioDevice *_this)
+static void OPENSLES_CloseDevice(SDL_AudioDevice *device)
 {
-    /* struct SDL_PrivateAudioData *audiodata = _this->hidden; */
+    // struct SDL_PrivateAudioData *audiodata = device->hidden;
+    if (device->hidden) {
+        if (device->iscapture) {
+            LOGI("OPENSLES_CloseDevice() for capture");
+            OPENSLES_DestroyPCMRecorder(device);
+        } else {
+            LOGI("OPENSLES_CloseDevice() for playing");
+            OPENSLES_DestroyPCMPlayer(device);
+        }
 
-    if (_this->iscapture) {
-        LOGI("openslES_CloseDevice() for capture");
-        openslES_DestroyPCMRecorder(_this);
-    } else {
-        LOGI("openslES_CloseDevice() for playing");
-        openslES_DestroyPCMPlayer(_this);
+        SDL_free(device->hidden);
+        device->hidden = NULL;
     }
-
-    SDL_free(_this->hidden);
 }
 
-static SDL_bool openslES_Init(SDL_AudioDriverImpl *impl)
+static SDL_bool OPENSLES_Init(SDL_AudioDriverImpl *impl)
 {
-    LOGI("openslES_Init() called");
+    LOGI("OPENSLES_Init() called");
 
-    if (!openslES_CreateEngine()) {
+    if (!OPENSLES_CreateEngine()) {
         return SDL_FALSE;
     }
 
-    LOGI("openslES_Init() - set pointers");
+    LOGI("OPENSLES_Init() - set pointers");
 
-    /* Set the function pointers */
-    /* impl->DetectDevices = openslES_DetectDevices; */
-    impl->OpenDevice = openslES_OpenDevice;
-    impl->WaitDevice = openslES_WaitDevice;
-    impl->PlayDevice = openslES_PlayDevice;
-    impl->GetDeviceBuf = openslES_GetDeviceBuf;
-    impl->CaptureFromDevice = openslES_CaptureFromDevice;
-    impl->CloseDevice = openslES_CloseDevice;
-    impl->Deinitialize = openslES_DestroyEngine;
+    // Set the function pointers
+    // impl->DetectDevices = OPENSLES_DetectDevices;
+    impl->ThreadInit = Android_AudioThreadInit;
+    impl->OpenDevice = OPENSLES_OpenDevice;
+    impl->WaitDevice = OPENSLES_WaitDevice;
+    impl->PlayDevice = OPENSLES_PlayDevice;
+    impl->GetDeviceBuf = OPENSLES_GetDeviceBuf;
+    impl->WaitCaptureDevice = OPENSLES_WaitDevice;
+    impl->CaptureFromDevice = OPENSLES_CaptureFromDevice;
+    impl->CloseDevice = OPENSLES_CloseDevice;
+    impl->Deinitialize = OPENSLES_DestroyEngine;
 
-    /* and the capabilities */
+    // and the capabilities
     impl->HasCaptureSupport = SDL_TRUE;
     impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
     impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
 
-    LOGI("openslES_Init() - success");
+    LOGI("OPENSLES_Init() - success");
 
-    /* this audio target is available. */
+    // this audio target is available.
     return SDL_TRUE;
 }
 
-AudioBootStrap openslES_bootstrap = {
-    "openslES", "opensl ES audio driver", openslES_Init, SDL_FALSE
+AudioBootStrap OPENSLES_bootstrap = {
+    "openslES", "OpenSL ES audio driver", OPENSLES_Init, SDL_FALSE
 };
 
-void openslES_ResumeDevices(void)
+void OPENSLES_ResumeDevices(void)
 {
     if (bqPlayerPlay != NULL) {
-        /* set the player's state to 'playing' */
+        // set the player's state to 'playing'
         SLresult result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PLAYING);
         if (SL_RESULT_SUCCESS != result) {
-            LOGE("openslES_ResumeDevices failed: %d", result);
+            LOGE("OPENSLES_ResumeDevices failed: %d", result);
         }
     }
 }
 
-void openslES_PauseDevices(void)
+void OPENSLES_PauseDevices(void)
 {
     if (bqPlayerPlay != NULL) {
-        /* set the player's state to 'paused' */
+        // set the player's state to 'paused'
         SLresult result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PAUSED);
         if (SL_RESULT_SUCCESS != result) {
-            LOGE("openslES_PauseDevices failed: %d", result);
+            LOGE("OPENSLES_PauseDevices failed: %d", result);
         }
     }
 }
 
-#endif /* SDL_AUDIO_DRIVER_OPENSLES */
+#endif // SDL_AUDIO_DRIVER_OPENSLES

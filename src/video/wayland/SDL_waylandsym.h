@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -204,6 +204,7 @@ SDL_WAYLAND_SYM(bool, libdecor_frame_is_visible, (struct libdecor_frame *))
 SDL_WAYLAND_SYM(bool, libdecor_frame_is_floating, (struct libdecor_frame *))
 SDL_WAYLAND_SYM(void, libdecor_frame_set_parent, (struct libdecor_frame *,\
                                                   struct libdecor_frame *))
+SDL_WAYLAND_SYM(void, libdecor_frame_show_window_menu, (struct libdecor_frame *, struct wl_seat *, uint32_t, int, int))
 SDL_WAYLAND_SYM(struct xdg_surface *, libdecor_frame_get_xdg_surface, (struct libdecor_frame *))
 SDL_WAYLAND_SYM(struct xdg_toplevel *, libdecor_frame_get_xdg_toplevel, (struct libdecor_frame *))
 SDL_WAYLAND_SYM(void, libdecor_frame_translate_coordinate, (struct libdecor_frame *, int, int, int *, int *))
@@ -218,12 +219,12 @@ SDL_WAYLAND_SYM(bool, libdecor_configuration_get_window_state, (struct libdecor_
                                                                 enum libdecor_window_state *))
 SDL_WAYLAND_SYM(int, libdecor_dispatch, (struct libdecor *, int))
 
-#if defined(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR) || defined(SDL_HAVE_LIBDECOR_GET_MIN_MAX)
+#if defined(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR) || SDL_LIBDECOR_CHECK_VERSION(0, 2, 0)
 /* Only found in libdecor 0.1.1 or higher, so failure to load them is not fatal. */
-SDL_WAYLAND_SYM_OPT(void, libdecor_frame_get_min_content_size, (struct libdecor_frame *,\
+SDL_WAYLAND_SYM_OPT(void, libdecor_frame_get_min_content_size, (const struct libdecor_frame *,\
                                                             int *,\
                                                             int *))
-SDL_WAYLAND_SYM_OPT(void, libdecor_frame_get_max_content_size, (struct libdecor_frame *,\
+SDL_WAYLAND_SYM_OPT(void, libdecor_frame_get_max_content_size, (const struct libdecor_frame *,\
                                                             int *,\
                                                             int *))
 #endif

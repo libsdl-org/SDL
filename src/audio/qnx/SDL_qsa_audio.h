@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,25 +30,11 @@
 
 struct SDL_PrivateAudioData
 {
-    /* SDL capture state */
-    SDL_bool iscapture;
-
-    /* The audio device handle */
-    int cardno;
-    int deviceno;
-    snd_pcm_t *audio_handle;
-
-    /* The audio file descriptor */
-    int audio_fd;
-
-    /* Select timeout status */
-    uint32_t timeout_on_wait;
-
-    /* Raw mixing buffer */
-    Uint8 *pcm_buf;
-    Uint32 pcm_len;
+    snd_pcm_t *audio_handle;  // The audio device handle
+    int audio_fd;  // The audio file descriptor, for selecting on
+    SDL_bool timeout_on_wait; // Select timeout status
+    Uint8 *pcm_buf;  // Raw mixing buffer
 };
 
-#endif /* __SDL_QSA_AUDIO_H__ */
+#endif // __SDL_QSA_AUDIO_H__
 
-/* vi: set ts=4 sw=4 expandtab: */

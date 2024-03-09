@@ -11,7 +11,7 @@
 #include "testautomation_suites.h"
 
 /**
- * \brief Tests SDL_InitSubSystem() and SDL_QuitSubSystem()
+ * Tests SDL_InitSubSystem() and SDL_QuitSubSystem()
  * \sa SDL_Init
  * \sa SDL_Quit
  */

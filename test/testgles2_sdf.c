@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -9,17 +9,18 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include <stdlib.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
 
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
 #include "testutils.h"
 
-#if defined(__IOS__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__) || defined(__WINDOWS__) || defined(__LINUX__)
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
+#include <stdlib.h>
+
+#if defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_EMSCRIPTEN) || defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_LINUX)
 #define HAVE_OPENGLES2
 #endif
 
@@ -91,7 +92,7 @@ quit(int rc)
 {
     int i;
 
-    if (context != NULL) {
+    if (context) {
         for (i = 0; i < state->num_windows; i++) {
             if (context[i]) {
                 SDL_GL_DeleteContext(context[i]);
@@ -425,7 +426,7 @@ static void loop(void)
             SDL_GL_SwapWindow(state->windows[i]);
         }
     }
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     else {
         emscripten_cancel_main_loop();
     }
@@ -449,7 +450,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
     for (i = 1; i < argc;) {
@@ -511,7 +512,7 @@ int main(int argc, char *argv[])
     }
 
     context = (SDL_GLContext *)SDL_calloc(state->num_windows, sizeof(*context));
-    if (context == NULL) {
+    if (!context) {
         SDL_Log("Out of memory!\n");
         quit(2);
     }
@@ -552,17 +553,17 @@ int main(int argc, char *argv[])
 #if 1
         path = GetNearbyFilename(f);
 
-        if (path == NULL) {
+        if (!path) {
             path = SDL_strdup(f);
         }
 
-        if (path == NULL) {
+        if (!path) {
             SDL_Log("out of memory\n");
             exit(-1);
         }
 
         tmp = SDL_LoadBMP(path);
-        if (tmp == NULL) {
+        if (!tmp) {
             SDL_Log("missing image file: %s", path);
             exit(-1);
         } else {
@@ -769,7 +770,7 @@ int main(int argc, char *argv[])
     then = SDL_GetTicks();
     done = 0;
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {
@@ -783,7 +784,7 @@ int main(int argc, char *argv[])
         SDL_Log("%2.2f frames per second\n",
                 ((double)frames * 1000) / (now - then));
     }
-#ifndef __ANDROID__
+#ifndef SDL_PLATFORM_ANDROID
     quit(0);
 #endif
     return 0;

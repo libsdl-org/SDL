@@ -11,20 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     container: ps2dev/ps2dev:latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup dependencies
       run: |
         apk update
         apk add cmake gmp mpc1 mpfr4 ninja pkgconf make git
-
-    # To be removed once ps2_drivers is part of PS2DEV
-    - name: Install ps2_drivers lib
-      run: |
-        git clone https://github.com/fjtrujy/ps2_drivers.git
-        cd ps2_drivers
-        make -j $(getconf _NPROCESSORS_ONLN) clean
-        make -j $(getconf _NPROCESSORS_ONLN)
-        make -j $(getconf _NPROCESSORS_ONLN) install
 
     - name: Configure (CMake)
       run: |
@@ -36,7 +27,7 @@ jobs:
           -DCMAKE_INSTALL_PREFIX=cmake_prefix \
           -DCMAKE_BUILD_TYPE=Release
     - name: Build (CMake)
-      run: cmake --build build --config Release --verbose -- -j 1
+      run: cmake --build build --config Release --verbose
     - name: Install (CMake)
       run: |
         set -eu
@@ -45,7 +36,7 @@ jobs:
         ( cd cmake_prefix; find ) | LC_ALL=C sort -u
     - name: Package (CPack)
       run: |
-        cmake --build build/ --config Release --target package -- -j 1
+        cmake --build build/ --config Release --target package
 
     - name: Verify CMake configuration files
       run: |
@@ -55,14 +46,14 @@ jobs:
           -DTEST_SHARED=FALSE \
           -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }} \
           -DCMAKE_BUILD_TYPE=Release
-        cmake --build cmake_config_build --verbose -- -j 1
+        cmake --build cmake_config_build --verbose
     - name: Verify sdl3.pc
       run: |
         export CC=mips64r5900el-ps2-elf-gcc
         export LDFLAGS="-L$PS2DEV/ps2sdk/ee/lib -L$PS2DEV/gsKit/lib -L$PS2DEV/ps2sdk/ports/lib"
         export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
         cmake/test/test_pkgconfig.sh
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         if-no-files-found: error
         name: SDL-ps2

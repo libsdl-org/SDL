@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -67,17 +67,13 @@ void SDL_DestroyMutex(SDL_Mutex *mutex)
 }
 
 /* Lock the mutex */
-int SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
-    if (mutex == NULL) {
-        return 0;
+    if (mutex != NULL) {
+        RMutex rmutex;
+        rmutex.SetHandle(mutex->handle);
+        rmutex.Wait();
     }
-
-    RMutex rmutex;
-    rmutex.SetHandle(mutex->handle);
-    rmutex.Wait();
-
-    return 0;
 }
 
 /* Try to lock the mutex */
@@ -95,16 +91,12 @@ int SDL_TryLockMutex(SDL_Mutex *mutex)
 #endif
 
 /* Unlock the mutex */
-int SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
-    if (mutex == NULL) {
-        return 0;
+    if (mutex != NULL) {
+        RMutex rmutex;
+        rmutex.SetHandle(mutex->handle);
+        rmutex.Signal();
     }
-
-    RMutex rmutex;
-    rmutex.SetHandle(mutex->handle);
-    rmutex.Signal();
-
-    return 0;
 }
 

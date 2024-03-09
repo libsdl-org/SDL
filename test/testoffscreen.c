@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -12,17 +12,17 @@
 
 /* Simple program: picks the offscreen backend and renders each frame to a bmp */
 
-#include <stdlib.h>
-#include <time.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_opengl.h>
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
+#include <stdlib.h>
+#include <time.h>
 
 static SDL_Renderer *renderer = NULL;
 static SDL_Window *window = NULL;
@@ -52,15 +52,10 @@ static void draw(void)
 
 static void save_surface_to_bmp(void)
 {
-    SDL_Surface* surface;
-    Uint32 pixel_format;
+    SDL_Surface *surface;
     char file[128];
 
-    pixel_format = SDL_GetWindowPixelFormat(window);
-
-    surface = SDL_CreateSurface(width, height, pixel_format);
-
-    SDL_RenderReadPixels(renderer, NULL, pixel_format, surface->pixels, surface->pitch);
+    surface = SDL_RenderReadPixels(renderer, NULL);
 
     (void)SDL_snprintf(file, sizeof(file), "SDL_window%" SDL_PRIs32 "-%8.8d.bmp",
                        SDL_GetWindowID(window), ++frame_number);
@@ -79,13 +74,15 @@ static void loop(void)
         case SDL_EVENT_QUIT:
             done = SDL_TRUE;
             break;
+        default:
+            break;
         }
     }
 
     draw();
     save_surface_to_bmp();
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {
         emscripten_cancel_main_loop();
     }
@@ -94,7 +91,7 @@ static void loop(void)
 
 int main(int argc, char *argv[])
 {
-#ifndef __EMSCRIPTEN__
+#ifndef SDL_PLATFORM_EMSCRIPTEN
     Uint64 then, now;
     Uint32 frames;
 #endif
@@ -102,7 +99,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -125,14 +122,14 @@ int main(int argc, char *argv[])
     /* If OPENGL fails to init it will fallback to using a framebuffer for rendering */
     window = SDL_CreateWindow("Offscreen Test", width, height, 0);
 
-    if (window == NULL) {
+    if (!window) {
         SDL_Log("Couldn't create window: %s\n", SDL_GetError());
         return SDL_FALSE;
     }
 
     renderer = SDL_CreateRenderer(window, NULL, 0);
 
-    if (renderer == NULL) {
+    if (!renderer) {
         SDL_Log("Couldn't create renderer: %s\n",
                 SDL_GetError());
         return SDL_FALSE;
@@ -142,7 +139,7 @@ int main(int argc, char *argv[])
 
     srand((unsigned int)time(NULL));
 
-#ifndef __EMSCRIPTEN__
+#ifndef SDL_PLATFORM_EMSCRIPTEN
     /* Main render loop */
     frames = 0;
     then = SDL_GetTicks();
@@ -151,7 +148,7 @@ int main(int argc, char *argv[])
 
     SDL_Log("Rendering %u frames offscreen\n", max_frames);
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done && frames < max_frames) {

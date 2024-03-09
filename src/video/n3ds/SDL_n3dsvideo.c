@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -36,7 +36,7 @@ static int AddN3DSDisplay(gfxScreen_t screen);
 static int N3DS_VideoInit(SDL_VideoDevice *_this);
 static void N3DS_VideoQuit(SDL_VideoDevice *_this);
 static int N3DS_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
-static int N3DS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
+static int N3DS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 static void N3DS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
 struct SDL_DisplayData
@@ -48,7 +48,6 @@ struct SDL_DisplayData
 
 static void N3DS_DeleteDevice(SDL_VideoDevice *device)
 {
-    SDL_free(device->displays);
     SDL_free(device->driverdata);
     SDL_free(device);
 }
@@ -56,8 +55,7 @@ static void N3DS_DeleteDevice(SDL_VideoDevice *device)
 static SDL_VideoDevice *N3DS_CreateDevice(void)
 {
     SDL_VideoDevice *device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
-        SDL_OutOfMemory();
+    if (!device) {
         return 0;
     }
 
@@ -84,7 +82,7 @@ static SDL_VideoDevice *N3DS_CreateDevice(void)
     return device;
 }
 
-VideoBootStrap N3DS_bootstrap = { N3DSVID_DRIVER_NAME, "N3DS Video Driver", N3DS_CreateDevice };
+VideoBootStrap N3DS_bootstrap = { N3DSVID_DRIVER_NAME, "N3DS Video Driver", N3DS_CreateDevice, NULL /* no ShowMessageBox implementation */ };
 
 static int N3DS_VideoInit(SDL_VideoDevice *_this)
 {
@@ -105,8 +103,8 @@ static int AddN3DSDisplay(gfxScreen_t screen)
     SDL_DisplayMode mode;
     SDL_VideoDisplay display;
     SDL_DisplayData *display_driver_data = SDL_calloc(1, sizeof(SDL_DisplayData));
-    if (display_driver_data == NULL) {
-        return SDL_OutOfMemory();
+    if (!display_driver_data) {
+        return -1;
     }
 
     SDL_zero(mode);
@@ -140,7 +138,7 @@ static int N3DS_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *displ
 {
     SDL_DisplayData *driver_data = display->driverdata;
 
-    if (driver_data == NULL) {
+    if (!driver_data) {
         return -1;
     }
 
@@ -151,12 +149,12 @@ static int N3DS_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *displ
     return 0;
 }
 
-static int N3DS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+static int N3DS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_DisplayData *display_data;
     SDL_WindowData *window_data = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
-    if (window_data == NULL) {
-        return SDL_OutOfMemory();
+    if (!window_data) {
+        return -1;
     }
     display_data = SDL_GetDisplayDriverDataForWindow(window);
     window_data->screen = display_data->screen;
@@ -167,7 +165,7 @@ static int N3DS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 static void N3DS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    if (window == NULL) {
+    if (!window) {
         return;
     }
     SDL_free(window->driverdata);

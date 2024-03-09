@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,6 +29,7 @@
 #include "../../events/SDL_touch_c.h"
 
 static int xfixes_initialized = 0;
+static int xfixes_selection_notify_event = 0;
 
 static int query_xfixes_version(Display *display, int major, int minor)
 {
@@ -50,10 +51,19 @@ void X11_InitXfixes(SDL_VideoDevice *_this)
     int event, error;
     int fixes_opcode;
 
+    Atom XA_CLIPBOARD = X11_XInternAtom(data->display, "CLIPBOARD", 0);
+
     if (!SDL_X11_HAVE_XFIXES ||
         !X11_XQueryExtension(data->display, "XFIXES", &fixes_opcode, &event, &error)) {
         return;
     }
+
+    /* Selection tracking is available in all versions of XFixes */
+    xfixes_selection_notify_event = event + XFixesSelectionNotify;
+    X11_XFixesSelectSelectionInput(data->display, DefaultRootWindow(data->display),
+            XA_CLIPBOARD, XFixesSetSelectionOwnerNotifyMask);
+    X11_XFixesSelectSelectionInput(data->display, DefaultRootWindow(data->display),
+            XA_PRIMARY, XFixesSetSelectionOwnerNotifyMask);
 
     /* We need at least 5.0 for barriers. */
     version = query_xfixes_version(data->display, 5, 0);
@@ -69,7 +79,12 @@ int X11_XfixesIsInitialized(void)
     return xfixes_initialized;
 }
 
-void X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
+int X11_GetXFixesSelectionNotifyEvent()
+{
+    return xfixes_selection_notify_event;
+}
+
+int X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
 {
     if (SDL_RectEmpty(&window->mouse_rect)) {
         X11_ConfineCursorWithFlags(_this, window, NULL, 0);
@@ -85,6 +100,8 @@ void X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
             wdata->pointer_barrier_active = SDL_TRUE;
         }
     }
+
+    return 0;
 }
 
 int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rect, int flags)

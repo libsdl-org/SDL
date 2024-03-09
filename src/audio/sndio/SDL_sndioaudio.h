@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,15 +30,9 @@
 
 struct SDL_PrivateAudioData
 {
-    /* The audio device handle */
-    struct sio_hdl *dev;
-
-    /* Raw mixing buffer */
-    Uint8 *mixbuf;
-    int mixlen;
-
-    /* Polling structures for non-blocking sndio devices */
-    struct pollfd *pfd;
+    struct sio_hdl *dev;  // The audio device handle
+    Uint8 *mixbuf; // Raw mixing buffer
+    struct pollfd *pfd;  // Polling structures for non-blocking sndio devices
 };
 
-#endif /* SDL_sndioaudio_h_ */
+#endif // SDL_sndioaudio_h_

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,6 +32,8 @@ struct SDL_DisplayData
     int x;
     int y;
 
+    Uint64 mode_switch_deadline_ns;
+
     SDL_bool use_xrandr;
 
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
@@ -54,10 +56,8 @@ extern int X11_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display,
 extern void X11_QuitModes(SDL_VideoDevice *_this);
 
 /* Some utility functions for working with visuals */
-extern int X11_GetVisualInfoFromVisual(Display *display, Visual *visual,
-                                       XVisualInfo *vinfo);
-extern Uint32 X11_GetPixelFormatFromVisualInfo(Display *display,
-                                               XVisualInfo *vinfo);
+extern int X11_GetVisualInfoFromVisual(Display *display, Visual *visual, XVisualInfo *vinfo);
+extern SDL_PixelFormatEnum X11_GetPixelFormatFromVisualInfo(Display *display, XVisualInfo *vinfo);
 extern int X11_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
 extern int X11_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
 

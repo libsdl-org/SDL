@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -10,15 +10,13 @@
   freely.
 */
 
-#include <stdlib.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_test_font.h>
 #include <SDL3/SDL_main.h>
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
 
 static SDLTest_CommonState *state;
 static int done;
@@ -36,22 +34,21 @@ static const char *cursorNames[] = {
     "sizeALL",
     "NO",
     "hand",
+    "window top left",
+    "window top",
+    "window top right",
+    "window right",
+    "window bottom right",
+    "window bottom",
+    "window bottom left",
+    "window left"
 };
+SDL_COMPILE_TIME_ASSERT(cursorNames, SDL_arraysize(cursorNames) == SDL_NUM_SYSTEM_CURSORS);
+
 static int system_cursor = -1;
 static SDL_Cursor *cursor = NULL;
 static SDL_bool relative_mode = SDL_FALSE;
 static const SDL_DisplayMode *highlighted_mode = NULL;
-
-/* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
-static void
-quit(int rc)
-{
-    SDLTest_CommonQuit(state);
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
-    }
-}
 
 /* Draws the modes menu, and stores the mode index under the mouse in highlighted_mode */
 static void
@@ -157,7 +154,17 @@ static void loop(void)
 {
     int i;
     SDL_Event event;
-    /* Check for events */
+
+#ifdef TEST_WAITEVENTTIMEOUT
+    /* Wait up to 20 ms for input, as a test */
+    Uint64 then = SDL_GetTicks();
+    if (SDL_WaitEventTimeout(NULL, 20)) {
+        SDL_Log("Got an event!\n");
+    }
+    Uint64 now = SDL_GetTicks();
+    SDL_Log("Waited %d ms for events\n", (int)(now - then));
+#endif
+
     while (SDL_PollEvent(&event)) {
         SDLTest_CommonEvent(state, &event, &done);
 
@@ -218,7 +225,7 @@ static void loop(void)
         }
         if (event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
             SDL_Window *window = SDL_GetMouseFocus();
-            if (highlighted_mode != NULL && window != NULL) {
+            if (highlighted_mode && window) {
                 SDL_memcpy(&state->fullscreen_mode, highlighted_mode, sizeof(state->fullscreen_mode));
                 SDL_SetWindowFullscreenMode(window, highlighted_mode);
             }
@@ -228,7 +235,7 @@ static void loop(void)
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Window *window = state->windows[i];
         SDL_Renderer *renderer = state->renderers[i];
-        if (window != NULL && renderer != NULL) {
+        if (window && renderer) {
             float y = 0.0f;
             SDL_Rect viewport;
             SDL_FRect menurect;
@@ -251,7 +258,7 @@ static void loop(void)
             SDL_RenderPresent(renderer);
         }
     }
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {
         emscripten_cancel_main_loop();
     }
@@ -264,22 +271,17 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    SDL_assert(SDL_arraysize(cursorNames) == SDL_NUM_SYSTEM_CURSORS);
-
     if (!SDLTest_CommonDefaultArgs(state, argc, argv) || !SDLTest_CommonInit(state)) {
         SDLTest_CommonQuit(state);
         return 1;
     }
-
-    SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, SDL_TRUE);
-    SDL_SetEventEnabled(SDL_EVENT_DROP_TEXT, SDL_TRUE);
 
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Renderer *renderer = state->renderers[i];
@@ -289,7 +291,7 @@ int main(int argc, char *argv[])
 
     /* Main render loop */
     done = 0;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {
@@ -298,7 +300,7 @@ int main(int argc, char *argv[])
 #endif
     SDL_DestroyCursor(cursor);
 
-    quit(0);
-    /* keep the compiler happy ... */
+    SDLTest_CleanupTextDrawing();
+    SDLTest_CommonQuit(state);
     return 0;
 }

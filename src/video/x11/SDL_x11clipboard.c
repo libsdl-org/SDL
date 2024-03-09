@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -92,20 +92,16 @@ static int SetSelectionData(SDL_VideoDevice *_this, Atom selection, SDL_Clipboar
     clipboard->mime_count = mime_count;
     clipboard->sequence = sequence;
 
-    if (!clipboard_owner) {
-        X11_XSetSelectionOwner(display, selection, window, CurrentTime);
-    }
+    X11_XSetSelectionOwner(display, selection, window, CurrentTime);
     return 0;
 }
 
 static void *CloneDataBuffer(const void *buffer, size_t *len)
 {
     void *clone = NULL;
-    if (*len > 0 && buffer != NULL) {
+    if (*len > 0 && buffer) {
         clone = SDL_malloc((*len)+sizeof(Uint32));
-        if (clone == NULL) {
-            SDL_OutOfMemory();
-        } else {
+        if (clone) {
             SDL_memcpy(clone, buffer, *len);
             SDL_memset((Uint8 *)clone + *len, 0, sizeof(Uint32));
         }
@@ -230,7 +226,7 @@ SDL_bool X11_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
     size_t length;
     void *data;
     data = X11_GetClipboardData(_this, mime_type, &length);
-    if (data != NULL) {
+    if (data) {
         SDL_free(data);
     }
     return length > 0;

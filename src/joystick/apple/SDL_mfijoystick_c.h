@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,18 +25,17 @@
 
 #include "../SDL_sysjoystick.h"
 
+#import <CoreFoundation/CoreFoundation.h>
+#import <Foundation/Foundation.h>
+
 @class GCController;
 
 typedef struct joystick_hwdata
 {
-    SDL_bool accelerometer;
-    SDL_bool remote;
-
     GCController __unsafe_unretained *controller;
     void *rumble;
-    SDL_bool uses_pause_handler;
-    int num_pause_presses;
-    Uint32 pause_button_down_time;
+    int pause_button_index;
+    Uint64 pause_button_pressed;
 
     char *name;
     SDL_Joystick *joystick;
@@ -47,9 +46,24 @@ typedef struct joystick_hwdata
     int nbuttons;
     int nhats;
     Uint32 button_mask;
+    SDL_bool is_xbox;
+    SDL_bool is_ps4;
+    SDL_bool is_ps5;
+    SDL_bool is_switch_pro;
+    SDL_bool is_switch_joycon_pair;
+    SDL_bool is_switch_joyconL;
+    SDL_bool is_switch_joyconR;
+    SDL_bool is_stadia;
+    SDL_bool is_backbone_one;
+    int is_siri_remote;
+
+    NSArray __unsafe_unretained *axes;
+    NSArray __unsafe_unretained *buttons;
+
     SDL_bool has_dualshock_touchpad;
     SDL_bool has_xbox_paddles;
     SDL_bool has_xbox_share_button;
+    SDL_bool has_nintendo_buttons;
 
     struct joystick_hwdata *next;
 } joystick_hwdata;

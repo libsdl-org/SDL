@@ -74,7 +74,7 @@ case $host in
 	backend="mac"
 	os="darwin"
 	threads="pthreads"
-	LIBS="${LIBS} -framework IOKit -framework CoreFoundation -framework AppKit"
+	LIBS="${LIBS} -framework IOKit -framework CoreFoundation"
 	;;
 *-freebsd*)
 	AC_MSG_RESULT([ (FreeBSD back-end)])

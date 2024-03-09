@@ -38,7 +38,7 @@ static int SDLCALL events_sampleNullEventFilter(void *userdata, SDL_Event *event
 }
 
 /**
- * \brief Test pumping and peeking events.
+ * Test pumping and peeking events.
  *
  * \sa SDL_PumpEvents
  * \sa SDL_PollEvent
@@ -75,7 +75,7 @@ static int events_pushPumpAndPollUserevent(void *arg)
 }
 
 /**
- * \brief Adds and deletes an event watch function with NULL userdata
+ * Adds and deletes an event watch function with NULL userdata
  *
  * \sa SDL_AddEventWatch
  * \sa SDL_DelEventWatch
@@ -125,7 +125,7 @@ static int events_addDelEventWatch(void *arg)
 }
 
 /**
- * \brief Adds and deletes an event watch function with userdata
+ * Adds and deletes an event watch function with userdata
  *
  * \sa SDL_AddEventWatch
  * \sa SDL_DelEventWatch

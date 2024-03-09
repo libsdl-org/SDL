@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,10 +27,11 @@
 #endif
 
 #include "SDL_cocoavideo.h"
-#include "SDL_cocoashape.h"
 #include "SDL_cocoavulkan.h"
 #include "SDL_cocoametalview.h"
 #include "SDL_cocoaopengles.h"
+#include "SDL_cocoamessagebox.h"
+#include "SDL_cocoashape.h"
 
 @implementation SDL_CocoaVideoData
 
@@ -69,7 +70,6 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
             data = nil;
         }
         if (!data) {
-            SDL_OutOfMemory();
             SDL_free(device);
             return NULL;
         }
@@ -90,7 +90,6 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->SuspendScreenSaver = Cocoa_SuspendScreenSaver;
 
         device->CreateSDLWindow = Cocoa_CreateWindow;
-        device->CreateSDLWindowFrom = Cocoa_CreateWindowFrom;
         device->SetWindowTitle = Cocoa_SetWindowTitle;
         device->SetWindowIcon = Cocoa_SetWindowIcon;
         device->SetWindowPosition = Cocoa_SetWindowPosition;
@@ -115,13 +114,12 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->SetWindowMouseGrab = Cocoa_SetWindowMouseGrab;
         device->SetWindowKeyboardGrab = Cocoa_SetWindowKeyboardGrab;
         device->DestroyWindow = Cocoa_DestroyWindow;
-        device->GetWindowWMInfo = Cocoa_GetWindowWMInfo;
         device->SetWindowHitTest = Cocoa_SetWindowHitTest;
         device->AcceptDragAndDrop = Cocoa_AcceptDragAndDrop;
+        device->UpdateWindowShape = Cocoa_UpdateWindowShape;
         device->FlashWindow = Cocoa_FlashWindow;
-
-        device->shape_driver.CreateShaper = Cocoa_CreateShaper;
-        device->shape_driver.SetWindowShape = Cocoa_SetWindowShape;
+        device->SetWindowFocusable = Cocoa_SetWindowFocusable;
+        device->SyncWindow = Cocoa_SyncWindow;
 
 #ifdef SDL_VIDEO_OPENGL_CGL
         device->GL_LoadLibrary = Cocoa_GL_LoadLibrary;
@@ -177,15 +175,16 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
 
         device->free = Cocoa_DeleteDevice;
 
-        device->quirk_flags = VIDEO_DEVICE_QUIRK_HAS_POPUP_WINDOW_SUPPORT;
-
+        device->device_caps = VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT |
+                              VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS;
         return device;
     }
 }
 
 VideoBootStrap COCOA_bootstrap = {
     "cocoa", "SDL Cocoa video driver",
-    Cocoa_CreateDevice
+    Cocoa_CreateDevice,
+    Cocoa_ShowMessageBox
 };
 
 int Cocoa_VideoInit(SDL_VideoDevice *_this)
@@ -261,7 +260,7 @@ NSImage *Cocoa_CreateImage(SDL_Surface *surface)
                                                        isPlanar:NO
                                                  colorSpaceName:NSDeviceRGBColorSpace
                                                     bytesPerRow:converted->pitch
-                                                   bitsPerPixel:converted->format->BitsPerPixel];
+                                                   bitsPerPixel:converted->format->bits_per_pixel];
     if (imgrep == nil) {
         SDL_DestroySurface(converted);
         return nil;

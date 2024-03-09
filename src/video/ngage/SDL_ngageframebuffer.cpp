@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -44,11 +44,11 @@ void DrawBackground(SDL_VideoDevice *_this);
 void DirectDraw(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects, TUint16 *screenBuffer);
 void RedrawWindowL(SDL_VideoDevice *_this);
 
-int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format, void **pixels, int *pitch)
 {
     SDL_VideoData *phdata = _this->driverdata;
     SDL_Surface *surface;
-    const Uint32 surface_format = SDL_PIXELFORMAT_RGB444;
+    const SDL_PixelFormatEnum surface_format = SDL_PIXELFORMAT_RGB444;
     int w, h;
 
     /* Free the old framebuffer surface */
@@ -57,7 +57,7 @@ int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     /* Create a new one */
     SDL_GetWindowSizeInPixels(window, &w, &h);
     surface = SDL_CreateSurface(w, h, surface_format);
-    if (surface == NULL) {
+    if (!surface) {
         return -1;
     }
 
@@ -149,7 +149,7 @@ int SDL_NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     SDL_Surface *surface;
 
     surface = (SDL_Surface *)SDL_GetWindowData(window, NGAGE_SURFACE);
-    if (surface == NULL) {
+    if (!surface) {
         return SDL_SetError("Couldn't find ngage surface for window");
     }
 
@@ -257,7 +257,7 @@ void DirectDraw(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects, TUint16 *
 
         TInt targetStartOffset = fixedOffset.iX + rect2.x + (fixedOffset.iY + rect2.y) * targetScanlineLength;
 
-        switch (screen->format->BitsPerPixel) {
+        switch (screen->format->bits_per_pixel) {
         case 12:
         {
             TUint16 *bitmapLine = (TUint16 *)screen->pixels + sourceStartOffset;

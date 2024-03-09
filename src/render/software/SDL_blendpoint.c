@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_SW && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_SW
 
 #include "SDL_draw.h"
 #include "SDL_blendpoint.h"
@@ -131,7 +131,7 @@ static int SDL_BlendPoint_RGB(SDL_Surface *dst, int x, int y, SDL_BlendMode blen
     SDL_PixelFormat *fmt = dst->format;
     unsigned inva = 0xff - a;
 
-    switch (fmt->BytesPerPixel) {
+    switch (fmt->bytes_per_pixel) {
     case 2:
         switch (blendMode) {
         case SDL_BLENDMODE_BLEND:
@@ -181,7 +181,7 @@ static int SDL_BlendPoint_RGBA(SDL_Surface *dst, int x, int y, SDL_BlendMode ble
     SDL_PixelFormat *fmt = dst->format;
     unsigned inva = 0xff - a;
 
-    switch (fmt->BytesPerPixel) {
+    switch (fmt->bytes_per_pixel) {
     case 4:
         switch (blendMode) {
         case SDL_BLENDMODE_BLEND:
@@ -209,12 +209,12 @@ static int SDL_BlendPoint_RGBA(SDL_Surface *dst, int x, int y, SDL_BlendMode ble
 int SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
                    Uint8 g, Uint8 b, Uint8 a)
 {
-    if (dst == NULL) {
+    if (!dst) {
         return SDL_InvalidParamError("SDL_BlendPoint(): dst");
     }
 
     /* This function doesn't work on surfaces < 8 bpp */
-    if (dst->format->BitsPerPixel < 8) {
+    if (dst->format->bits_per_pixel < 8) {
         return SDL_SetError("SDL_BlendPoint(): Unsupported surface format");
     }
 
@@ -231,7 +231,7 @@ int SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint
         b = DRAW_MUL(b, a);
     }
 
-    switch (dst->format->BitsPerPixel) {
+    switch (dst->format->bits_per_pixel) {
     case 15:
         switch (dst->format->Rmask) {
         case 0x7C00:
@@ -277,12 +277,12 @@ int SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count,
                 SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a) = NULL;
     int status = 0;
 
-    if (dst == NULL) {
+    if (!dst) {
         return SDL_InvalidParamError("SDL_BlendPoints(): dst");
     }
 
     /* This function doesn't work on surfaces < 8 bpp */
-    if (dst->format->BitsPerPixel < 8) {
+    if (dst->format->bits_per_pixel < 8) {
         return SDL_SetError("SDL_BlendPoints(): Unsupported surface format");
     }
 
@@ -293,7 +293,7 @@ int SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count,
     }
 
     /* FIXME: Does this function pointer slow things down significantly? */
-    switch (dst->format->BitsPerPixel) {
+    switch (dst->format->bits_per_pixel) {
     case 15:
         switch (dst->format->Rmask) {
         case 0x7C00:
@@ -323,7 +323,7 @@ int SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count,
         break;
     }
 
-    if (func == NULL) {
+    if (!func) {
         if (!dst->format->Amask) {
             func = SDL_BlendPoint_RGB;
         } else {
@@ -348,4 +348,4 @@ int SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count,
     return status;
 }
 
-#endif /* SDL_VIDEO_RENDER_SW && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_SW */

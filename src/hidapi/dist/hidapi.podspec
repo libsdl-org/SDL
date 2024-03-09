@@ -26,6 +26,6 @@ Pod::Spec.new do |spec|
 
   spec.public_header_files = "hidapi/hidapi.h", "mac/hidapi_darwin.h"
 
-  spec.frameworks   = "IOKit", "CoreFoundation", "AppKit"
+  spec.frameworks   = "IOKit", "CoreFoundation"
 
 end

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -49,8 +49,7 @@ int PSP_VideoInit(SDL_VideoDevice *_this);
 void PSP_VideoQuit(SDL_VideoDevice *_this);
 int PSP_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
 int PSP_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-int PSP_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
-int PSP_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, const void *data);
+int PSP_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 void PSP_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 int PSP_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
 void PSP_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);

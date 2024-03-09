@@ -23,7 +23,7 @@ public class SDLControllerManager
 
     public static native int nativeAddJoystick(int device_id, String name, String desc,
                                                int vendor_id, int product_id,
-                                               boolean is_accelerometer, int button_mask,
+                                               int button_mask,
                                                int naxes, int axis_mask, int nhats);
     public static native int nativeRemoveJoystick(int device_id);
     public static native int nativeAddHaptic(int device_id, String name);
@@ -235,7 +235,7 @@ class SDLJoystickHandler_API16 extends SDLJoystickHandler {
 
                     mJoysticks.add(joystick);
                     SDLControllerManager.nativeAddJoystick(joystick.device_id, joystick.name, joystick.desc,
-                            getVendorId(joystickDevice), getProductId(joystickDevice), false,
+                            getVendorId(joystickDevice), getProductId(joystickDevice),
                             getButtonMask(joystickDevice), joystick.axes.size(), getAxisMask(joystick.axes), joystick.hats.size()/2);
                 }
             }

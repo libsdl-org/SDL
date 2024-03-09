@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,8 +28,6 @@ extern "C" {
 
 #include "SDL_internal.h"
 #include "SDL_bframebuffer.h"
-
-#include <SDL3/SDL_syswm.h>
 
 #ifdef __cplusplus
 }
@@ -155,9 +153,12 @@ class SDL_BWin : public BWindow
 
     void UpdateCurrentView()
     {
+#ifdef SDL_VIDEO_OPENGL
         if (_SDL_GLView != NULL) {
             SetCurrentView(_SDL_GLView);
-        } else if (_SDL_View != NULL) {
+        } else
+#endif
+        if (_SDL_View != NULL) {
             SetCurrentView(_SDL_View);
         } else {
             SetCurrentView(NULL);
@@ -454,10 +455,13 @@ class SDL_BWin : public BWindow
                 delete pendingMessage;
             }
             if (_bitmap != NULL) {
-                if (_SDL_View != NULL && _cur_view == _SDL_View)
-                    _SDL_View->Draw(Bounds());
-                else if (_SDL_GLView != NULL && _cur_view == _SDL_GLView) {
+#ifdef SDL_VIDEO_OPENGL
+                if (_SDL_GLView != NULL && _cur_view == _SDL_GLView) {
                     _SDL_GLView->CopyPixelsIn(_bitmap, B_ORIGIN);
+                } else
+#endif
+                if (_SDL_View != NULL && _cur_view == _SDL_View) {
+                    _SDL_View->Draw(Bounds());
                 }
             }
             break;

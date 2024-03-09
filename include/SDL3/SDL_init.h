@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 /**
  *  \file SDL_init.h
  *
- *  \brief Init and quit header for the SDL library
+ *  Init and quit header for the SDL library
  */
 
 #ifndef SDL_init_h_
@@ -39,7 +39,7 @@ extern "C" {
 /* As of version 0.5, SDL is loaded dynamically into the application */
 
 /**
- *   \brief Initialization flags for SDL_Init and/or SDL_InitSubSystem
+ *   Initialization flags for SDL_Init and/or SDL_InitSubSystem
  *
  * These are the flags which may be passed to SDL_Init().  You should
  * specify the subsystems which you will be using in your application.
@@ -59,12 +59,9 @@ typedef enum
     SDL_INIT_HAPTIC       = 0x00001000,
     SDL_INIT_GAMEPAD      = 0x00002000,  /**< `SDL_INIT_GAMEPAD` implies `SDL_INIT_JOYSTICK` */
     SDL_INIT_EVENTS       = 0x00004000,
-    SDL_INIT_SENSOR       = 0x00008000
+    SDL_INIT_SENSOR       = 0x00008000,
+    SDL_INIT_CAMERA       = 0x00010000   /**< `SDL_INIT_CAMERA` implies `SDL_INIT_EVENTS` */
 } SDL_InitFlags;
-#define SDL_INIT_EVERYTHING ( \
-                SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS | \
-                SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_SENSOR \
-            )
 
 /**
  * Initialize the SDL library.
@@ -94,7 +91,7 @@ typedef enum
  * - `SDL_INIT_GAMEPAD`: gamepad subsystem; automatically initializes the
  *   joystick subsystem
  * - `SDL_INIT_EVENTS`: events subsystem
- * - `SDL_INIT_EVERYTHING`: all of the above subsystems
+ * - `SDL_INIT_SENSOR`: sensor subsystem
  *
  * Subsystem initialization is ref-counted, you must call SDL_QuitSubSystem()
  * for each SDL_InitSubSystem() to correctly shutdown a subsystem manually (or

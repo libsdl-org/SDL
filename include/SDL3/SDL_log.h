@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 /**
  *  \file SDL_log.h
  *
- *  \brief Simple log messages with categories and priorities.
+ *  Simple log messages with categories and priorities.
  *
  *  By default logs are quiet, but if you're debugging SDL you might want:
  *
@@ -47,19 +47,19 @@ extern "C" {
 
 
 /**
- *  \brief The maximum size of a log message prior to SDL 2.0.24
+ *  The maximum size of a log message prior to SDL 2.0.24
  *
  *  As of 2.0.24 there is no limit to the length of SDL log messages.
  */
 #define SDL_MAX_LOG_MESSAGE 4096
 
 /**
- *  \brief The predefined log categories
+ *  The predefined log categories
  *
  *  By default the application category is enabled at the INFO level,
  *  the assert category is enabled at the WARN level, test is enabled
  *  at the VERBOSE level and all other categories are enabled at the
- *  CRITICAL level.
+ *  ERROR level.
  */
 typedef enum
 {
@@ -97,7 +97,7 @@ typedef enum
 } SDL_LogCategory;
 
 /**
- *  \brief The predefined log priorities
+ *  The predefined log priorities
  */
 typedef enum
 {
@@ -163,8 +163,7 @@ extern DECLSPEC void SDLCALL SDL_LogResetPriorities(void);
 /**
  * Log a message with SDL_LOG_CATEGORY_APPLICATION and SDL_LOG_PRIORITY_INFO.
  *
- * = * \param fmt a printf() style message format string
- *
+ * \param fmt a printf() style message format string
  * \param ... additional parameters matching % tokens in the `fmt` string, if
  *            any
  *
@@ -352,7 +351,7 @@ extern DECLSPEC void SDLCALL SDL_LogMessage(int category,
  */
 extern DECLSPEC void SDLCALL SDL_LogMessageV(int category,
                                              SDL_LogPriority priority,
-                                             const char *fmt, va_list ap);
+                                             SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(3);
 
 /**
  * The prototype for the log output callback function.

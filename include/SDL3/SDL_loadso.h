@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 /**
  *  \file SDL_loadso.h
  *
- *  \brief System dependent library loading routines
+ *  System dependent library loading routines
  *
  *  Some things to keep in mind:
  *  \li These functions only work on C function names.  Other languages may

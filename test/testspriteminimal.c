@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -11,16 +11,17 @@
 */
 /* Simple program:  Move N sprites around on the screen as fast as possible */
 
-#include <stdlib.h>
-#include <time.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #endif
 
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include "testutils.h"
+#include <stdlib.h>
+#include <time.h>
+
+#include "icon.h"
 
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
@@ -35,15 +36,23 @@ static int sprite_w, sprite_h;
 static SDL_Renderer *renderer;
 static int done;
 
-/* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
-static void
-quit(int rc)
-{
-    SDL_Quit();
-    /* Let 'main()' return normally */
-    if (rc != 0) {
-        exit(rc);
+static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned int len, int *w, int *h) {
+    SDL_Texture *texture = NULL;
+    SDL_Surface *surface;
+    SDL_RWops *src = SDL_RWFromConstMem(data, len);
+    if (src) {
+        surface = SDL_LoadBMP_RW(src, SDL_TRUE);
+        if (surface) {
+            /* Treat white as transparent */
+            SDL_SetSurfaceColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, 255, 255, 255));
+
+            texture = SDL_CreateTextureFromSurface(r, surface);
+            *w = surface->w;
+            *h = surface->h;
+            SDL_DestroySurface(surface);
+        }
     }
+    return texture;
 }
 
 static void MoveSprites(void)
@@ -91,7 +100,7 @@ static void loop(void)
         }
     }
     MoveSprites();
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {
         emscripten_cancel_main_loop();
     }
@@ -100,7 +109,8 @@ static void loop(void)
 
 int main(int argc, char *argv[])
 {
-    SDL_Window *window;
+    SDL_Window *window = NULL;
+    int return_code = -1;
     int i;
 
     /* Enable standard application logging */
@@ -108,17 +118,25 @@ int main(int argc, char *argv[])
 
     if (argc > 1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "USAGE: %s\n", argv[0]);
-        quit(1);
+        return_code = 1;
+        goto quit;
     }
 
     if (SDL_CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer) < 0) {
-        quit(2);
+        return_code = 2;
+        goto quit;
     }
 
-    sprite = LoadTexture(renderer, "icon.bmp", SDL_TRUE, &sprite_w, &sprite_h);
+    if (SDL_SetWindowTitle(window, argv[0]) < 0) {
+        SDL_Log("SDL_SetWindowTitle: %s", SDL_GetError());
+    }
 
-    if (sprite == NULL) {
-        quit(2);
+    sprite = CreateTexture(renderer, icon_bmp, icon_bmp_len, &sprite_w, &sprite_h);
+
+    if (!sprite) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture (%s)", SDL_GetError());
+        return_code = 3;
+        goto quit;
     }
 
     /* Initialize the sprite positions */
@@ -139,14 +157,17 @@ int main(int argc, char *argv[])
     /* Main render loop */
     done = 0;
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {
         loop();
     }
 #endif
-    quit(0);
-
-    return 0; /* to prevent compiler warning */
+    return_code = 0;
+quit:
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    return return_code;
 }

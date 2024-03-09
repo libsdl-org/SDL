@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -51,9 +51,8 @@ char *SDL_GetBasePath(void)
 
     while (SDL_TRUE) {
         void *ptr = SDL_realloc(path, buflen * sizeof(WCHAR));
-        if (ptr == NULL) {
+        if (!ptr) {
             SDL_free(path);
-            SDL_OutOfMemory();
             return NULL;
         }
 
@@ -108,11 +107,11 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     size_t new_wpath_len = 0;
     BOOL api_result = FALSE;
 
-    if (app == NULL) {
+    if (!app) {
         SDL_InvalidParamError("app");
         return NULL;
     }
-    if (org == NULL) {
+    if (!org) {
         org = "";
     }
 
@@ -122,15 +121,13 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     }
 
     worg = WIN_UTF8ToStringW(org);
-    if (worg == NULL) {
-        SDL_OutOfMemory();
+    if (!worg) {
         return NULL;
     }
 
     wapp = WIN_UTF8ToStringW(app);
-    if (wapp == NULL) {
+    if (!wapp) {
         SDL_free(worg);
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -177,7 +174,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     return retval;
 }
 
-char *SDL_GetPath(SDL_Folder folder)
+char *SDL_GetUserFolder(SDL_Folder folder)
 {
     typedef HRESULT (WINAPI *pfnSHGetKnownFolderPath)(REFGUID /* REFKNOWNFOLDERID */, DWORD, HANDLE, PWSTR*);
     HMODULE lib = LoadLibrary(L"Shell32.dll");
@@ -332,23 +329,3 @@ done:
     return retval;
 }
 #endif /* SDL_FILESYSTEM_WINDOWS */
-
-#ifdef SDL_FILESYSTEM_XBOX
-char *SDL_GetBasePath(void)
-{
-    SDL_Unsupported();
-    return NULL;
-}
-
-char *SDL_GetPrefPath(const char *org, const char *app)
-{
-    SDL_Unsupported();
-    return NULL;
-}
-
-char *SDL_GetPath(SDL_Folder folder)
-{
-    SDL_Unsupported();
-    return NULL;
-}
-#endif /* SDL_FILESYSTEM_XBOX */

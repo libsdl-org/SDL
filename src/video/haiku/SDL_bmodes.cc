@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -132,7 +132,7 @@ void _SpoutModeData(display_mode *bmode) {
 
 
 
-int32 HAIKU_ColorSpaceToSDLPxFormat(uint32 colorspace)
+SDL_PixelFormatEnum HAIKU_ColorSpaceToSDLPxFormat(uint32 colorspace)
 {
     switch (colorspace) {
     case B_CMAP8:
@@ -162,7 +162,7 @@ int32 HAIKU_ColorSpaceToSDLPxFormat(uint32 colorspace)
 
     /* May never get here, but safer and needed to shut up compiler */
     SDL_SetError("Invalid color space");
-    return 0;
+    return SDL_PIXELFORMAT_UNKNOWN;
 }
 
 static void _BDisplayModeToSdlDisplayMode(display_mode *bmode, SDL_DisplayMode *mode) {

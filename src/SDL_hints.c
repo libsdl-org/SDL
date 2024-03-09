@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -49,7 +49,7 @@ SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPr
     SDL_Hint *hint;
     SDL_HintWatch *entry;
 
-    if (name == NULL) {
+    if (!name) {
         return SDL_FALSE;
     }
 
@@ -64,7 +64,7 @@ SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPr
                 return SDL_FALSE;
             }
             if (hint->value != value &&
-                (value == NULL || !hint->value || SDL_strcmp(hint->value, value) != 0)) {
+                (!value || !hint->value || SDL_strcmp(hint->value, value) != 0)) {
                 char *old_value = hint->value;
 
                 hint->value = value ? SDL_strdup(value) : NULL;
@@ -85,7 +85,7 @@ SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPr
 
     /* Couldn't find the hint, add a new one */
     hint = (SDL_Hint *)SDL_malloc(sizeof(*hint));
-    if (hint == NULL) {
+    if (!hint) {
         return SDL_FALSE;
     }
     hint->name = SDL_strdup(name);
@@ -103,16 +103,16 @@ SDL_bool SDL_ResetHint(const char *name)
     SDL_Hint *hint;
     SDL_HintWatch *entry;
 
-    if (name == NULL) {
+    if (!name) {
         return SDL_FALSE;
     }
 
     env = SDL_getenv(name);
     for (hint = SDL_hints; hint; hint = hint->next) {
         if (SDL_strcmp(name, hint->name) == 0) {
-            if ((env == NULL && hint->value != NULL) ||
-                (env != NULL && hint->value == NULL) ||
-                (env != NULL && SDL_strcmp(env, hint->value) != 0)) {
+            if ((!env && hint->value) ||
+                (env && !hint->value) ||
+                (env && SDL_strcmp(env, hint->value) != 0)) {
                 for (entry = hint->callbacks; entry;) {
                     /* Save the next entry in case this one is deleted */
                     SDL_HintWatch *next = entry->next;
@@ -137,9 +137,9 @@ void SDL_ResetHints(void)
 
     for (hint = SDL_hints; hint; hint = hint->next) {
         env = SDL_getenv(hint->name);
-        if ((env == NULL && hint->value != NULL) ||
-            (env != NULL && hint->value == NULL) ||
-            (env != NULL && SDL_strcmp(env, hint->value) != 0)) {
+        if ((!env && hint->value) ||
+            (env && !hint->value) ||
+            (env && SDL_strcmp(env, hint->value) != 0)) {
             for (entry = hint->callbacks; entry;) {
                 /* Save the next entry in case this one is deleted */
                 SDL_HintWatch *next = entry->next;
@@ -166,7 +166,7 @@ const char *SDL_GetHint(const char *name)
     env = SDL_getenv(name);
     for (hint = SDL_hints; hint; hint = hint->next) {
         if (SDL_strcmp(name, hint->name) == 0) {
-            if (env == NULL || hint->priority == SDL_HINT_OVERRIDE) {
+            if (!env || hint->priority == SDL_HINT_OVERRIDE) {
                 return hint->value;
             }
             break;
@@ -177,7 +177,7 @@ const char *SDL_GetHint(const char *name)
 
 int SDL_GetStringInteger(const char *value, int default_value)
 {
-    if (value == NULL || !*value) {
+    if (!value || !*value) {
         return default_value;
     }
     if (*value == '0' || SDL_strcasecmp(value, "false") == 0) {
@@ -194,7 +194,7 @@ int SDL_GetStringInteger(const char *value, int default_value)
 
 SDL_bool SDL_GetStringBoolean(const char *value, SDL_bool default_value)
 {
-    if (value == NULL || !*value) {
+    if (!value || !*value) {
         return default_value;
     }
     if (*value == '0' || SDL_strcasecmp(value, "false") == 0) {
@@ -215,7 +215,7 @@ int SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userd
     SDL_HintWatch *entry;
     const char *value;
 
-    if (name == NULL || !*name) {
+    if (!name || !*name) {
         return SDL_InvalidParamError("name");
     }
     if (!callback) {
@@ -225,8 +225,8 @@ int SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userd
     SDL_DelHintCallback(name, callback, userdata);
 
     entry = (SDL_HintWatch *)SDL_malloc(sizeof(*entry));
-    if (entry == NULL) {
-        return SDL_OutOfMemory();
+    if (!entry) {
+        return -1;
     }
     entry->callback = callback;
     entry->userdata = userdata;
@@ -236,18 +236,18 @@ int SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userd
             break;
         }
     }
-    if (hint == NULL) {
+    if (!hint) {
         /* Need to add a hint entry for this watcher */
         hint = (SDL_Hint *)SDL_malloc(sizeof(*hint));
-        if (hint == NULL) {
+        if (!hint) {
             SDL_free(entry);
-            return SDL_OutOfMemory();
+            return -1;
         }
         hint->name = SDL_strdup(name);
         if (!hint->name) {
             SDL_free(entry);
             SDL_free(hint);
-            return SDL_OutOfMemory();
+            return -1;
         }
         hint->value = NULL;
         hint->priority = SDL_HINT_DEFAULT;

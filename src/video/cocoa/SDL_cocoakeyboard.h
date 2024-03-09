@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,6 +31,6 @@ extern void Cocoa_StartTextInput(SDL_VideoDevice *_this);
 extern void Cocoa_StopTextInput(SDL_VideoDevice *_this);
 extern int Cocoa_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect);
 
-extern void Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
+extern int Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
 
 #endif /* SDL_cocoakeyboard_h_ */

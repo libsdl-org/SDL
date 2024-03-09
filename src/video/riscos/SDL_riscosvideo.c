@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,6 +32,7 @@
 #include "SDL_riscosmouse.h"
 #include "SDL_riscosmodes.h"
 #include "SDL_riscoswindow.h"
+#include "SDL_riscosmessagebox.h"
 
 #define RISCOSVID_DRIVER_NAME "riscos"
 
@@ -54,15 +55,13 @@ static SDL_VideoDevice *RISCOS_CreateDevice(void)
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device == NULL) {
-        SDL_OutOfMemory();
+    if (!device) {
         return 0;
     }
 
     /* Initialize internal data */
     phdata = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
-    if (phdata == NULL) {
-        SDL_OutOfMemory();
+    if (!phdata) {
         SDL_free(device);
         return NULL;
     }
@@ -79,7 +78,6 @@ static SDL_VideoDevice *RISCOS_CreateDevice(void)
 
     device->CreateSDLWindow = RISCOS_CreateWindow;
     device->DestroyWindow = RISCOS_DestroyWindow;
-    device->GetWindowWMInfo = RISCOS_GetWindowWMInfo;
 
     device->CreateWindowFramebuffer = RISCOS_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = RISCOS_UpdateWindowFramebuffer;
@@ -92,7 +90,8 @@ static SDL_VideoDevice *RISCOS_CreateDevice(void)
 
 VideoBootStrap RISCOS_bootstrap = {
     RISCOSVID_DRIVER_NAME, "SDL RISC OS video driver",
-    RISCOS_CreateDevice
+    RISCOS_CreateDevice,
+    RISCOS_ShowMessageBox
 };
 
 static int RISCOS_VideoInit(SDL_VideoDevice *_this)

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,6 +20,8 @@
 */
 #include "SDL_internal.h"
 
+#if defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
+
 #include "../SDL_sysurl.h"
 
 #import <UIKit/UIKit.h>
@@ -28,8 +30,14 @@ int SDL_SYS_OpenURL(const char *url)
 {
     @autoreleasepool {
 
+#ifdef SDL_PLATFORM_VISIONOS
+        return SDL_Unsupported();  // openURL is not suported on visionOS
+#else
         NSString *nsstr = [NSString stringWithUTF8String:url];
         NSURL *nsurl = [NSURL URLWithString:nsstr];
         return [[UIApplication sharedApplication] openURL:nsurl] ? 0 : -1;
+#endif
     }
 }
+
+#endif /* SDL_PLATFORM_IOS || SDL_PLATFORM_TVOS */

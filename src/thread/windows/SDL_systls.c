@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -46,7 +46,7 @@ SDL_TLSData *SDL_SYS_GetTLSData(void)
 {
     if (thread_local_storage == TLS_OUT_OF_INDEXES && !generic_local_storage) {
         static SDL_SpinLock lock;
-        SDL_AtomicLock(&lock);
+        SDL_LockSpinlock(&lock);
         if (thread_local_storage == TLS_OUT_OF_INDEXES && !generic_local_storage) {
             DWORD storage = TlsAlloc();
             if (storage != TLS_OUT_OF_INDEXES) {
@@ -56,7 +56,7 @@ SDL_TLSData *SDL_SYS_GetTLSData(void)
                 generic_local_storage = SDL_TRUE;
             }
         }
-        SDL_AtomicUnlock(&lock);
+        SDL_UnlockSpinlock(&lock);
     }
     if (generic_local_storage) {
         return SDL_Generic_GetTLSData();

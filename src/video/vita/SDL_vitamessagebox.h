@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,7 @@
 
 #ifdef SDL_VIDEO_DRIVER_VITA
 
-extern int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
+extern int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
 #endif /* SDL_VIDEO_DRIVER_VITA */
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,6 +25,7 @@
 #define SDL_waylandevents_h_
 
 #include "../../events/SDL_mouse_c.h"
+#include "../../events/SDL_pen_c.h"
 
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandwindow.h"
@@ -55,31 +56,38 @@ struct SDL_WaylandTabletInput
     struct SDL_WaylandTabletObjectListNode *tools;
     struct SDL_WaylandTabletObjectListNode *pads;
 
+    Uint32 id;
+    Uint32 num_pens; /* next pen ID is num_pens+1 */
+    struct SDL_WaylandCurrentPen
+    {
+        SDL_Pen *builder;                /* pen that is being defined or receiving updates, if any */
+        SDL_bool builder_guid_complete;  /* have complete/precise GUID information */
+        SDL_PenStatusInfo update_status; /* collects pen update information before sending event */
+	Uint16 buttons_pressed;        /* Mask of newly pressed buttons, plus SDL_PEN_DOWN_MASK for PEN_DOWN */
+        Uint16 buttons_released;       /* Mask of newly pressed buttons, plus SDL_PEN_DOWN_MASK for PEN_UP */
+        Uint32 serial;                 /* Most recent serial event number observed, or 0 */
+        SDL_WindowData *update_window; /* NULL while no event is in progress, otherwise the affected window */
+    } current_pen;
+
     SDL_WindowData *tool_focus;
     uint32_t tool_prox_serial;
 
-    /* Last motion location */
+    /* Last motion end location (kept separate from sx_w, sy_w for the mouse pointer) */
     wl_fixed_t sx_w;
     wl_fixed_t sy_w;
-
-    SDL_bool is_down;
-
-    SDL_bool btn_stylus;
-    SDL_bool btn_stylus2;
-    SDL_bool btn_stylus3;
 };
 
 typedef struct
 {
-    int32_t repeat_rate;      /* Repeat rate in range of [1, 1000] character(s) per second */
-    int32_t repeat_delay_ms;  /* Time to first repeat event in milliseconds */
+    int32_t repeat_rate;     /* Repeat rate in range of [1, 1000] character(s) per second */
+    int32_t repeat_delay_ms; /* Time to first repeat event in milliseconds */
     SDL_bool is_initialized;
 
     SDL_bool is_key_down;
     uint32_t key;
-    Uint64 wl_press_time_ns;   /* Key press time as reported by the Wayland API */
-    Uint64 sdl_press_time_ns;  /* Key press time expressed in SDL ticks */
-    Uint64 next_repeat_ns;     /* Next repeat event in nanoseconds */
+    Uint64 wl_press_time_ns;  /* Key press time as reported by the Wayland API */
+    Uint64 sdl_press_time_ns; /* Key press time expressed in SDL ticks */
+    Uint64 next_repeat_ns;    /* Next repeat event in nanoseconds */
     uint32_t scancode;
     char text[8];
 } SDL_WaylandKeyboardRepeat;
@@ -169,30 +177,30 @@ struct SDL_WaylandInput
     SDL_Keymod locked_modifiers;
 };
 
+struct SDL_WaylandTool
+{
+    SDL_PenID penid;
+    struct SDL_WaylandTabletInput *tablet;
+};
+
 extern Uint64 Wayland_GetTouchTimestamp(struct SDL_WaylandInput *input, Uint32 wl_timestamp_ms);
 
 extern void Wayland_PumpEvents(SDL_VideoDevice *_this);
 extern void Wayland_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window);
 extern int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS);
 
-extern void Wayland_add_data_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version);
-extern void Wayland_add_primary_selection_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version);
-extern void Wayland_add_text_input_manager(SDL_VideoData *d, uint32_t id, uint32_t version);
+extern void Wayland_create_data_device(SDL_VideoData *d);
+extern void Wayland_create_primary_selection_device(SDL_VideoData *d);
+extern void Wayland_create_text_input(SDL_VideoData *d);
 
-extern void Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version);
+extern void Wayland_input_initialize_seat(SDL_VideoData *d);
 extern void Wayland_display_destroy_input(SDL_VideoData *d);
-
-extern void Wayland_display_add_pointer_constraints(SDL_VideoData *d, uint32_t id);
-extern void Wayland_display_destroy_pointer_constraints(SDL_VideoData *d);
 
 extern int Wayland_input_lock_pointer(struct SDL_WaylandInput *input);
 extern int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input);
 
 extern int Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
 extern int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
-
-extern void Wayland_display_add_relative_pointer_manager(SDL_VideoData *d, uint32_t id);
-extern void Wayland_display_destroy_relative_pointer_manager(SDL_VideoData *d);
 
 extern int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *input);
 extern int Wayland_input_ungrab_keyboard(SDL_Window *window);

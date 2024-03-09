@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,11 +24,8 @@
 /* Return true if the RawInput driver is enabled */
 extern SDL_bool RAWINPUT_IsEnabled();
 
-/* Return true if a RawInput device is present and supported as a joystick */
-extern SDL_bool RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
-
 /* Registers for input events */
-extern SDL_bool RAWINPUT_RegisterNotifications(HWND hWnd);
+extern int RAWINPUT_RegisterNotifications(HWND hWnd);
 extern int RAWINPUT_UnregisterNotifications();
 
 /* Returns 0 if message was handled */

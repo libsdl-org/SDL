@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 /**
  *  \file SDL_filesystem.h
  *
- *  \brief Include file for filesystem SDL API functions
+ *  Include file for filesystem SDL API functions
  */
 
 #ifndef SDL_filesystem_h_
@@ -64,7 +64,7 @@ extern "C" {
  * directory of the application as it is uncommon to store resources outside
  * the executable. As such it is not a writable directory.
  *
- * The returned path is guaranteed to end with a path separator ('\' on
+ * The returned path is guaranteed to end with a path separator ('\\' on
  * Windows, '/' on most other platforms).
  *
  * The pointer returned is owned by the caller. Please call SDL_free() on the
@@ -120,7 +120,7 @@ extern DECLSPEC char *SDLCALL SDL_GetBasePath(void);
  * - ...only use letters, numbers, and spaces. Avoid punctuation like "Game
  *   Name 2: Bad Guy's Revenge!" ... "Game Name 2" is sufficient.
  *
- * The returned path is guaranteed to end with a path separator ('\' on
+ * The returned path is guaranteed to end with a path separator ('\\' on
  * Windows, '/' on most other platforms).
  *
  * The pointer returned is owned by the caller. Please call SDL_free() on the
@@ -159,11 +159,11 @@ extern DECLSPEC char *SDLCALL SDL_GetPrefPath(const char *org, const char *app);
  * | SAVEDGAMES  | Vista+  |           |      |            |       |            |
  * | SCREENSHOTS | Vista+  |           |      |            |       |            |
  * | TEMPLATES   | X       | X         |      | X          |       |            |
- * | VIDEOS      | X       | X         |      | X          |       |            |
+ * | VIDEOS      | X       | X*        |      | X          |       |            |
  *
- * Note that on macOS/iOS, the Videos folder is called "Movies".
+ * * Note that on macOS/iOS, the Videos folder is called "Movies".
  *
- * \sa SDL_GetPath
+ * \sa SDL_GetUserFolder
  */
 typedef enum
 {
@@ -206,12 +206,17 @@ typedef enum
 } SDL_Folder;
 
 /**
- * Finds the most suitable OS-provided folder for @p folder, and returns its
- * path in OS-specific notation.
+ * Finds the most suitable user folder for the specified purpose, and returns
+ * its path in OS-specific notation.
  *
  * Many OSes provide certain standard folders for certain purposes, such as
  * storing pictures, music or videos for a certain user. This function gives
  * the path for many of those special locations.
+ *
+ * This function is specifically for _user_ folders, which are meant for the
+ * user to access and manage. For application-specific folders, meant to hold
+ * data for the application to manage, see SDL_GetBasePath() and
+ * SDL_GetPrefPath().
  *
  * Note that the function is expensive, and should be called once at the
  * beginning of the execution and kept for as long as needed.
@@ -229,7 +234,7 @@ typedef enum
  *
  * \sa SDL_Folder
  */
-extern DECLSPEC char *SDLCALL SDL_GetPath(SDL_Folder folder);
+extern DECLSPEC char *SDLCALL SDL_GetUserFolder(SDL_Folder folder);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

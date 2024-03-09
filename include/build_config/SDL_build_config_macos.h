@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -49,18 +49,16 @@
 #define HAVE_WCHAR_H 1
 
 /* C library functions */
+#define HAVE_LIBC   1
 #define HAVE_DLOPEN 1
 #define HAVE_MALLOC 1
 #define HAVE_CALLOC 1
 #define HAVE_REALLOC    1
 #define HAVE_FREE   1
-#define HAVE_ALLOCA 1
 #define HAVE_GETENV 1
 #define HAVE_SETENV 1
 #define HAVE_PUTENV 1
 #define HAVE_UNSETENV   1
-#define HAVE_QSORT  1
-#define HAVE_BSEARCH 1
 #define HAVE_ABS    1
 #define HAVE_BCOPY  1
 #define HAVE_MEMSET 1
@@ -266,6 +264,10 @@
 
 /* enable filesystem support */
 #define SDL_FILESYSTEM_COCOA   1
+
+/* enable camera support */
+#define SDL_CAMERA_DRIVER_COREMEDIA 1
+#define SDL_CAMERA_DRIVER_DUMMY 1
 
 /* Enable assembly routines */
 #ifdef __ppc__

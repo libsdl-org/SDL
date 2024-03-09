@@ -22,6 +22,7 @@ standard_guid_pattern = re.compile(r'^([0-9a-fA-F]{4})([0-9a-fA-F]{2})([0-9a-fA-
 invalid_controllers = (
     ('0079', '0006', '0000'), # DragonRise Inc. Generic USB Joystick
     ('0079', '0006', '6120'), # DragonRise Inc. Generic USB Joystick
+    ('04b4', '2412', 'c529'), # Flydigi Vader 2, Vader 2 Pro, Apex 2, Apex 3
     ('16c0', '05e1', '0000'), # Xinmotek Controller
 )
 
@@ -70,6 +71,14 @@ def save_controller(line):
         if (vid_value, pid_value, crc_value) in invalid_controllers:
             print("Controller '%s' not unique, skipping" % name)
             return
+
+    pos = find_element("type", bindings)
+    if pos >= 0:
+        bindings.insert(0, bindings.pop(pos))
+
+    pos = find_element("platform", bindings)
+    if pos >= 0:
+        bindings.insert(0, bindings.pop(pos))
 
     pos = find_element("sdk", bindings)
     if pos >= 0:

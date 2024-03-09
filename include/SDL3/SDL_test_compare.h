@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 /**
  *  \file SDL_test_compare.h
  *
- *  \brief Comparison function of SDL test framework.
+ *  Comparison function of SDL test framework.
  *
  *  This code is a part of the SDL test library, not the main SDL library.
  */
@@ -45,7 +45,7 @@ extern "C" {
 #endif
 
 /**
- * \brief Compares a surface and with reference image data for equality
+ * Compares a surface and with reference image data for equality
  *
  * \param surface Surface used in comparison
  * \param referenceSurface Test Surface used in comparison

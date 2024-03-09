@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -80,10 +80,13 @@ typedef unsigned long      uintptr_t;
 /* Enable the stub sensor driver (src/sensor/dummy/\*.c) */
 #define SDL_SENSOR_DISABLED 1
 
-/* Enable the stub shared object loader (src/loadso/dummy/\*.c) */
-#define SDL_LOADSO_DISABLED 1
+/* Enable the dummy shared object loader (src/loadso/dummy/\*.c) */
+#define SDL_LOADSO_DUMMY 1
 
 /* Enable the dummy filesystem driver (src/filesystem/dummy/\*.c) */
 #define SDL_FILESYSTEM_DUMMY 1
+
+/* Enable the camera driver (src/camera/dummy/\*.c) */
+#define SDL_CAMERA_DRIVER_DUMMY  1
 
 #endif /* SDL_build_config_ngage_h_ */

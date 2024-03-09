@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.4.3...3.25 FATAL_ERROR)
 
 list(APPEND HIDAPI_PUBLIC_HEADERS "hidapi_darwin.h")
 
@@ -12,7 +12,7 @@ find_package(Threads REQUIRED)
 target_link_libraries(hidapi_darwin
     PUBLIC hidapi_include
     PRIVATE Threads::Threads
-    PRIVATE "-framework IOKit" "-framework CoreFoundation" "-framework AppKit"
+    PRIVATE "-framework IOKit" "-framework CoreFoundation"
 )
 
 set_target_properties(hidapi_darwin

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,7 @@
 
 #include "SDL_syspower.h"
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
 /* turn off the battery monitor if it's been more than X ms since last check. */
 static const int BATTERY_MONITORING_TIMEOUT = 3000;
 static Uint64 SDL_UIKitLastPowerInfoQuery = 0;
@@ -48,15 +48,15 @@ void SDL_UIKit_UpdateBatteryMonitoring(void)
 {
     /* Do nothing. */
 }
-#endif /* !TARGET_OS_TV */
+#endif /* !SDL_PLATFORM_TVOS */
 
 SDL_bool SDL_GetPowerInfo_UIKit(SDL_PowerState *state, int *seconds, int *percent)
 {
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
     *state = SDL_POWERSTATE_NO_BATTERY;
     *seconds = -1;
     *percent = -1;
-#else  /* TARGET_OS_TV */
+#else  /* SDL_PLATFORM_TVOS */
     @autoreleasepool {
         UIDevice *uidev = [UIDevice currentDevice];
 
@@ -96,7 +96,7 @@ SDL_bool SDL_GetPowerInfo_UIKit(SDL_PowerState *state, int *seconds, int *percen
         const float level = uidev.batteryLevel;
         *percent = ((level < 0.0f) ? -1 : ((int)((level * 100) + 0.5f)));
     }
-#endif /* TARGET_OS_TV */
+#endif /* SDL_PLATFORM_TVOS */
 
     return SDL_TRUE; /* always the definitive answer on iOS. */
 }

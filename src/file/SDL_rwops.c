@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,12 +20,13 @@
 */
 #include "SDL_internal.h"
 
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) || defined(SDL_PLATFORM_WINRT)
 #include "../core/windows/SDL_windows.h"
 #endif
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
+#include <sys/stat.h>
 #endif
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
@@ -35,22 +36,21 @@
    data sources.  It can easily be extended to files, memory, etc.
 */
 
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
 #include "cocoa/SDL_rwopsbundlesupport.h"
-#endif /* __APPLE__ */
+#endif /* SDL_PLATFORM_APPLE */
 
-#ifdef __3DS__
+#ifdef SDL_PLATFORM_3DS
 #include "n3ds/SDL_rwopsromfs.h"
-#endif /* __3DS__ */
+#endif /* SDL_PLATFORM_3DS */
 
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
 #include "../core/android/SDL_android.h"
 #endif
 
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) || defined(SDL_PLATFORM_WINRT)
 
 /* Functions to read/write Win32 API file pointers */
-
 #ifndef INVALID_SET_FILE_POINTER
 #define INVALID_SET_FILE_POINTER 0xFFFFFFFF
 #endif
@@ -59,17 +59,13 @@
 
 static int SDLCALL windows_file_open(SDL_RWops *context, const char *filename, const char *mode)
 {
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) && !defined(SDL_PLATFORM_WINRT)
     UINT old_error_mode;
 #endif
     HANDLE h;
     DWORD r_right, w_right;
     DWORD must_exist, truncate;
     int a_mode;
-
-    if (context == NULL) {
-        return -1; /* failed (invalid call) */
-    }
 
     context->hidden.windowsio.h = INVALID_HANDLE_VALUE; /* mark this as unusable */
     context->hidden.windowsio.buffer.data = NULL;
@@ -97,9 +93,9 @@ static int SDLCALL windows_file_open(SDL_RWops *context, const char *filename, c
     context->hidden.windowsio.buffer.data =
         (char *)SDL_malloc(READAHEAD_BUFFER_SIZE);
     if (!context->hidden.windowsio.buffer.data) {
-        return SDL_OutOfMemory();
+        return -1;
     }
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) && !defined(SDL_PLATFORM_WINRT)
     /* Do not open a dialog box if failure */
     old_error_mode =
         SetErrorMode(SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
@@ -107,14 +103,29 @@ static int SDLCALL windows_file_open(SDL_RWops *context, const char *filename, c
 
     {
         LPTSTR tstr = WIN_UTF8ToString(filename);
-        h = CreateFile(tstr, (w_right | r_right),
-                       (w_right) ? 0 : FILE_SHARE_READ, NULL,
+#if defined(SDL_PLATFORM_WINRT)
+        CREATEFILE2_EXTENDED_PARAMETERS extparams;
+        SDL_zero(extparams);
+        extparams.dwSize = sizeof(extparams);
+        extparams.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+        h = CreateFile2(tstr,
+                        (w_right | r_right),
+                        (w_right) ? 0 : FILE_SHARE_READ,
+                        (must_exist | truncate | a_mode),
+                        &extparams);
+#else
+        h = CreateFile(tstr,
+                       (w_right | r_right),
+                       (w_right) ? 0 : FILE_SHARE_READ,
+                       NULL,
                        (must_exist | truncate | a_mode),
-                       FILE_ATTRIBUTE_NORMAL, NULL);
+                       FILE_ATTRIBUTE_NORMAL,
+                       NULL);
+#endif
         SDL_free(tstr);
     }
 
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) && !defined(SDL_PLATFORM_WINRT)
     /* restore old behavior */
     SetErrorMode(old_error_mode);
 #endif
@@ -135,10 +146,6 @@ static Sint64 SDLCALL windows_file_size(SDL_RWops *context)
 {
     LARGE_INTEGER size;
 
-    if (context == NULL || context->hidden.windowsio.h == INVALID_HANDLE_VALUE) {
-        return SDL_SetError("windows_file_size: invalid context/file not opened");
-    }
-
     if (!GetFileSizeEx(context->hidden.windowsio.h, &size)) {
         return WIN_SetError("windows_file_size");
     }
@@ -151,13 +158,9 @@ static Sint64 SDLCALL windows_file_seek(SDL_RWops *context, Sint64 offset, int w
     DWORD windowswhence;
     LARGE_INTEGER windowsoffset;
 
-    if (context == NULL || context->hidden.windowsio.h == INVALID_HANDLE_VALUE) {
-        return SDL_SetError("windows_file_seek: invalid context/file not opened");
-    }
-
     /* FIXME: We may be able to satisfy the seek within buffered data */
     if (whence == SDL_RW_SEEK_CUR && context->hidden.windowsio.buffer.left) {
-        offset -= (long)context->hidden.windowsio.buffer.left;
+        offset -= context->hidden.windowsio.buffer.left;
     }
     context->hidden.windowsio.buffer.left = 0;
 
@@ -182,27 +185,18 @@ static Sint64 SDLCALL windows_file_seek(SDL_RWops *context, Sint64 offset, int w
     return windowsoffset.QuadPart;
 }
 
-static Sint64 SDLCALL
-windows_file_read(SDL_RWops *context, void *ptr, Sint64 size)
+static size_t SDLCALL windows_file_read(SDL_RWops *context, void *ptr, size_t size)
 {
-    size_t total_need = (size_t) size;
+    size_t total_need = size;
     size_t total_read = 0;
     size_t read_ahead;
-    DWORD byte_read;
-
-    if (context == NULL || context->hidden.windowsio.h == INVALID_HANDLE_VALUE) {
-        return SDL_SetError("Invalid file handle");
-    } else if (!total_need) {
-        return 0;
-    }
-
+    DWORD bytes;
 
     if (context->hidden.windowsio.buffer.left > 0) {
         void *data = (char *)context->hidden.windowsio.buffer.data +
                      context->hidden.windowsio.buffer.size -
                      context->hidden.windowsio.buffer.left;
-        read_ahead =
-            SDL_min(total_need, context->hidden.windowsio.buffer.left);
+        read_ahead = SDL_min(total_need, context->hidden.windowsio.buffer.left);
         SDL_memcpy(ptr, data, read_ahead);
         context->hidden.windowsio.buffer.left -= read_ahead;
 
@@ -216,39 +210,37 @@ windows_file_read(SDL_RWops *context, void *ptr, Sint64 size)
 
     if (total_need < READAHEAD_BUFFER_SIZE) {
         if (!ReadFile(context->hidden.windowsio.h, context->hidden.windowsio.buffer.data,
-                      READAHEAD_BUFFER_SIZE, &byte_read, NULL)) {
-            return SDL_Error(SDL_EFREAD);
+                      READAHEAD_BUFFER_SIZE, &bytes, NULL)) {
+            SDL_Error(SDL_EFREAD);
+            return 0;
         }
-        read_ahead = SDL_min(total_need, (int)byte_read);
+        read_ahead = SDL_min(total_need, bytes);
         SDL_memcpy(ptr, context->hidden.windowsio.buffer.data, read_ahead);
-        context->hidden.windowsio.buffer.size = byte_read;
-        context->hidden.windowsio.buffer.left = byte_read - read_ahead;
+        context->hidden.windowsio.buffer.size = bytes;
+        context->hidden.windowsio.buffer.left = bytes - read_ahead;
         total_read += read_ahead;
     } else {
-        if (!ReadFile(context->hidden.windowsio.h, ptr, (DWORD)total_need, &byte_read, NULL)) {
-            return SDL_Error(SDL_EFREAD);
+        if (!ReadFile(context->hidden.windowsio.h, ptr, (DWORD)total_need, &bytes, NULL)) {
+            SDL_Error(SDL_EFREAD);
+            return 0;
         }
-        total_read += byte_read;
+        total_read += bytes;
     }
     return total_read;
 }
 
-static Sint64 SDLCALL
-windows_file_write(SDL_RWops *context, const void *ptr, Sint64 size)
+static size_t SDLCALL windows_file_write(SDL_RWops *context, const void *ptr, size_t size)
 {
-    const size_t total_bytes = (size_t) size;
-    DWORD byte_written;
-
-    if (context == NULL || context->hidden.windowsio.h == INVALID_HANDLE_VALUE) {
-        return SDL_SetError("Invalid file handle");
-    } else if (!total_bytes) {
-        return 0;
-    }
+    const size_t total_bytes = size;
+    DWORD bytes;
 
     if (context->hidden.windowsio.buffer.left) {
-        SetFilePointer(context->hidden.windowsio.h,
+        if (!SetFilePointer(context->hidden.windowsio.h,
                        -(LONG)context->hidden.windowsio.buffer.left, NULL,
-                       FILE_CURRENT);
+                       FILE_CURRENT)) {
+            SDL_Error(SDL_EFSEEK);
+            return 0;
+        }
         context->hidden.windowsio.buffer.left = 0;
     }
 
@@ -257,33 +249,35 @@ windows_file_write(SDL_RWops *context, const void *ptr, Sint64 size)
         LARGE_INTEGER windowsoffset;
         windowsoffset.QuadPart = 0;
         if (!SetFilePointerEx(context->hidden.windowsio.h, windowsoffset, &windowsoffset, FILE_END)) {
-            return SDL_Error(SDL_EFWRITE);
+            SDL_Error(SDL_EFSEEK);
+            return 0;
         }
     }
 
-    if (!WriteFile(context->hidden.windowsio.h, ptr, (DWORD)total_bytes, &byte_written, NULL)) {
-        return SDL_Error(SDL_EFWRITE);
+    if (!WriteFile(context->hidden.windowsio.h, ptr, (DWORD)total_bytes, &bytes, NULL)) {
+        SDL_Error(SDL_EFWRITE);
+        return 0;
     }
 
-    return (Sint64) byte_written;
+    return bytes;
 }
 
 static int SDLCALL windows_file_close(SDL_RWops *context)
 {
-    if (context) {
-        if (context->hidden.windowsio.h != INVALID_HANDLE_VALUE) {
-            CloseHandle(context->hidden.windowsio.h);
-            context->hidden.windowsio.h = INVALID_HANDLE_VALUE; /* to be sure */
-        }
+    if (context->hidden.windowsio.h != INVALID_HANDLE_VALUE) {
+        CloseHandle(context->hidden.windowsio.h);
+        context->hidden.windowsio.h = INVALID_HANDLE_VALUE; /* to be sure */
+    }
+    if (context->hidden.windowsio.buffer.data) {
         SDL_free(context->hidden.windowsio.buffer.data);
         context->hidden.windowsio.buffer.data = NULL;
-        SDL_DestroyRW(context);
     }
+    SDL_DestroyRW(context);
     return 0;
 }
-#endif /* defined(__WIN32__) || defined(__GDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) */
 
-#if defined(HAVE_STDIO_H) && !(defined(__WIN32__) || defined(__GDK__))
+#if defined(HAVE_STDIO_H) && !(defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK))
 
 /* Functions to read/write stdio file pointers. Not used for windows. */
 
@@ -323,20 +317,6 @@ static int SDLCALL windows_file_close(SDL_RWops *context)
 #define fseek_off_t long
 #endif
 
-static Sint64 SDLCALL stdio_size(SDL_RWops *context)
-{
-    Sint64 pos, size;
-
-    pos = SDL_RWseek(context, 0, SDL_RW_SEEK_CUR);
-    if (pos < 0) {
-        return -1;
-    }
-    size = SDL_RWseek(context, 0, SDL_RW_SEEK_END);
-
-    SDL_RWseek(context, pos, SDL_RW_SEEK_SET);
-    return size;
-}
-
 static Sint64 SDLCALL stdio_seek(SDL_RWops *context, Sint64 offset, int whence)
 {
     int stdiowhence;
@@ -371,41 +351,37 @@ static Sint64 SDLCALL stdio_seek(SDL_RWops *context, Sint64 offset, int whence)
     return SDL_Error(SDL_EFSEEK);
 }
 
-static Sint64 SDLCALL
-stdio_read(SDL_RWops *context, void *ptr, Sint64 size)
+static size_t SDLCALL stdio_read(SDL_RWops *context, void *ptr, size_t size)
 {
-    size_t nread;
+    size_t bytes;
 
-    nread = fread(ptr, 1, (size_t)size, (FILE *)context->hidden.stdio.fp);
-    if (nread == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
-        return SDL_Error(SDL_EFREAD);
+    bytes = fread(ptr, 1, size, (FILE *)context->hidden.stdio.fp);
+    if (bytes == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
+        SDL_Error(SDL_EFREAD);
     }
-    return (Sint64) nread;
+    return bytes;
 }
 
-static Sint64 SDLCALL
-stdio_write(SDL_RWops *context, const void *ptr, Sint64 size)
+static size_t SDLCALL stdio_write(SDL_RWops *context, const void *ptr, size_t size)
 {
-    size_t nwrote;
+    size_t bytes;
 
-    nwrote = fwrite(ptr, 1, (size_t)size, (FILE *)context->hidden.stdio.fp);
-    if (nwrote == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
-        return SDL_Error(SDL_EFWRITE);
+    bytes = fwrite(ptr, 1, size, (FILE *)context->hidden.stdio.fp);
+    if (bytes == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
+        SDL_Error(SDL_EFWRITE);
     }
-    return (Sint64) nwrote;
+    return bytes;
 }
 
 static int SDLCALL stdio_close(SDL_RWops *context)
 {
     int status = 0;
-    if (context) {
-        if (context->hidden.stdio.autoclose) {
-            if (fclose((FILE *)context->hidden.stdio.fp) != 0) {
-                status = SDL_Error(SDL_EFWRITE);
-            }
+    if (context->hidden.stdio.autoclose) {
+        if (fclose((FILE *)context->hidden.stdio.fp) != 0) {
+            status = SDL_Error(SDL_EFWRITE);
         }
-        SDL_DestroyRW(context);
     }
+    SDL_DestroyRW(context);
     return status;
 }
 
@@ -414,8 +390,7 @@ static SDL_RWops *SDL_RWFromFP(void *fp, SDL_bool autoclose)
     SDL_RWops *rwops = NULL;
 
     rwops = SDL_CreateRW();
-    if (rwops != NULL) {
-        rwops->size = stdio_size;
+    if (rwops) {
         rwops->seek = stdio_seek;
         rwops->read = stdio_read;
         rwops->write = stdio_write;
@@ -426,13 +401,13 @@ static SDL_RWops *SDL_RWFromFP(void *fp, SDL_bool autoclose)
     }
     return rwops;
 }
-#endif /* !HAVE_STDIO_H && !(__WIN32__ || __GDK__) */
+#endif /* !HAVE_STDIO_H && !(SDL_PLATFORM_WIN32 || SDL_PLATFORM_GDK) */
 
 /* Functions to read/write memory pointers */
 
 static Sint64 SDLCALL mem_size(SDL_RWops *context)
 {
-    return (Sint64)(context->hidden.mem.stop - context->hidden.mem.base);
+    return (context->hidden.mem.stop - context->hidden.mem.base);
 }
 
 static Sint64 SDLCALL mem_seek(SDL_RWops *context, Sint64 offset, int whence)
@@ -462,58 +437,66 @@ static Sint64 SDLCALL mem_seek(SDL_RWops *context, Sint64 offset, int whence)
     return (Sint64)(context->hidden.mem.here - context->hidden.mem.base);
 }
 
-static Sint64 mem_io(SDL_RWops *context, void *dst, const void *src, Sint64 size)
+static size_t mem_io(SDL_RWops *context, void *dst, const void *src, size_t size)
 {
-    const Sint64 mem_available = (Sint64) (context->hidden.mem.stop - context->hidden.mem.here);
+    const size_t mem_available = (context->hidden.mem.stop - context->hidden.mem.here);
     if (size > mem_available) {
         size = mem_available;
     }
-    SDL_memcpy(dst, src, (size_t) size);
+    SDL_memcpy(dst, src, size);
     context->hidden.mem.here += size;
     return size;
 }
 
-static Sint64 SDLCALL
-mem_read(SDL_RWops *context, void *ptr, Sint64 size)
+static size_t SDLCALL mem_read(SDL_RWops *context, void *ptr, size_t size)
 {
     return mem_io(context, ptr, context->hidden.mem.here, size);
 }
 
-static Sint64 SDLCALL
-mem_write(SDL_RWops *context, const void *ptr, Sint64 size)
+static size_t SDLCALL mem_write(SDL_RWops *context, const void *ptr, size_t size)
 {
     return mem_io(context, context->hidden.mem.here, ptr, size);
 }
 
-static Sint64 SDLCALL
-mem_writeconst(SDL_RWops *context, const void *ptr, Sint64 size)
-{
-    return SDL_SetError("Can't write to read-only memory");
-}
-
-static int SDLCALL mem_close(SDL_RWops *context)
-{
-    if (context) {
-        SDL_DestroyRW(context);
-    }
-    return 0;
-}
-
 /* Functions to create SDL_RWops structures from various data sources */
+
+#if defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINDOWS)
+static SDL_bool IsRegularFileOrPipe(FILE *f)
+{
+    #ifdef SDL_PLATFORM_WINRT
+    struct __stat64 st;
+    if (_fstat64(_fileno(f), &st) < 0 ||
+        !((st.st_mode & _S_IFMT) == _S_IFREG || (st.st_mode & _S_IFMT) == _S_IFIFO)) {
+        return SDL_FALSE;
+    }
+    #else
+    struct stat st;
+    if (fstat(fileno(f), &st) < 0 || !(S_ISREG(st.st_mode) || S_ISFIFO(st.st_mode))) {
+        return SDL_FALSE;
+    }
+    #endif
+    return SDL_TRUE;
+}
+#endif
 
 SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
 {
     SDL_RWops *rwops = NULL;
-    if (file == NULL || !*file || mode == NULL || !*mode) {
+    if (!file || !*file || !mode || !*mode) {
         SDL_SetError("SDL_RWFromFile(): No file or no mode specified");
         return NULL;
     }
-#ifdef __ANDROID__
+#ifdef SDL_PLATFORM_ANDROID
 #ifdef HAVE_STDIO_H
     /* Try to open the file on the filesystem first */
     if (*file == '/') {
         FILE *fp = fopen(file, mode);
         if (fp) {
+            if (!IsRegularFileOrPipe(fp)) {
+                fclose(fp);
+                SDL_SetError("%s is not a regular file or pipe", file);
+                return NULL;
+            }
             return SDL_RWFromFP(fp, 1);
         }
     } else {
@@ -529,6 +512,11 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
             fp = fopen(path, mode);
             SDL_stack_free(path);
             if (fp) {
+                if (!IsRegularFileOrPipe(fp)) {
+                    fclose(fp);
+                    SDL_SetError("%s is not a regular file or pipe", path);
+                    return NULL;
+                }
                 return SDL_RWFromFP(fp, 1);
             }
         }
@@ -537,7 +525,7 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
 
     /* Try to open the file from the asset system */
     rwops = SDL_CreateRW();
-    if (rwops == NULL) {
+    if (!rwops) {
         return NULL; /* SDL_SetError already setup by SDL_CreateRW() */
     }
 
@@ -552,9 +540,9 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
     rwops->close = Android_JNI_FileClose;
     rwops->type = SDL_RWOPS_JNIFILE;
 
-#elif defined(__WIN32__) || defined(__GDK__)
+#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) || defined(SDL_PLATFORM_WINRT)
     rwops = SDL_CreateRW();
-    if (rwops == NULL) {
+    if (!rwops) {
         return NULL; /* SDL_SetError already setup by SDL_CreateRW() */
     }
 
@@ -570,18 +558,22 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
     rwops->type = SDL_RWOPS_WINFILE;
 #elif defined(HAVE_STDIO_H)
     {
-#if defined(__APPLE__) && !defined(SDL_FILE_DISABLED) // TODO: add dummy?
+#if defined(SDL_PLATFORM_APPLE)
         FILE *fp = SDL_OpenFPFromBundleOrFallback(file, mode);
-#elif defined(__WINRT__)
+#elif defined(SDL_PLATFORM_WINRT)
         FILE *fp = NULL;
         fopen_s(&fp, file, mode);
-#elif defined(__3DS__)
+#elif defined(SDL_PLATFORM_3DS)
         FILE *fp = N3DS_FileOpen(file, mode);
 #else
         FILE *fp = fopen(file, mode);
 #endif
-        if (fp == NULL) {
+        if (!fp) {
             SDL_SetError("Couldn't open %s", file);
+        } else if (!IsRegularFileOrPipe(fp)) {
+            fclose(fp);
+            fp = NULL;
+            SDL_SetError("%s is not a regular file or pipe", file);
         } else {
             rwops = SDL_RWFromFP(fp, SDL_TRUE);
         }
@@ -593,25 +585,25 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
     return rwops;
 }
 
-SDL_RWops *SDL_RWFromMem(void *mem, int size)
+SDL_RWops *SDL_RWFromMem(void *mem, size_t size)
 {
     SDL_RWops *rwops = NULL;
-    if (mem == NULL) {
+
+    if (!mem) {
         SDL_InvalidParamError("mem");
-        return rwops;
+        return NULL;
     }
     if (!size) {
         SDL_InvalidParamError("size");
-        return rwops;
+        return NULL;
     }
 
     rwops = SDL_CreateRW();
-    if (rwops != NULL) {
+    if (rwops) {
         rwops->size = mem_size;
         rwops->seek = mem_seek;
         rwops->read = mem_read;
         rwops->write = mem_write;
-        rwops->close = mem_close;
         rwops->hidden.mem.base = (Uint8 *)mem;
         rwops->hidden.mem.here = rwops->hidden.mem.base;
         rwops->hidden.mem.stop = rwops->hidden.mem.base + size;
@@ -620,25 +612,24 @@ SDL_RWops *SDL_RWFromMem(void *mem, int size)
     return rwops;
 }
 
-SDL_RWops *SDL_RWFromConstMem(const void *mem, int size)
+SDL_RWops *SDL_RWFromConstMem(const void *mem, size_t size)
 {
     SDL_RWops *rwops = NULL;
-    if (mem == NULL) {
+
+    if (!mem) {
         SDL_InvalidParamError("mem");
-        return rwops;
+        return NULL;
     }
     if (!size) {
         SDL_InvalidParamError("size");
-        return rwops;
+        return NULL;
     }
 
     rwops = SDL_CreateRW();
-    if (rwops != NULL) {
+    if (rwops) {
         rwops->size = mem_size;
         rwops->seek = mem_seek;
         rwops->read = mem_read;
-        rwops->write = mem_writeconst;
-        rwops->close = mem_close;
         rwops->hidden.mem.base = (Uint8 *)mem;
         rwops->hidden.mem.here = rwops->hidden.mem.base;
         rwops->hidden.mem.stop = rwops->hidden.mem.base + size;
@@ -649,80 +640,83 @@ SDL_RWops *SDL_RWFromConstMem(const void *mem, int size)
 
 SDL_RWops *SDL_CreateRW(void)
 {
-    SDL_RWops *area;
+    SDL_RWops *context;
 
-    area = (SDL_RWops *)SDL_malloc(sizeof(*area));
-    if (area == NULL) {
-        SDL_OutOfMemory();
-    } else {
-        area->type = SDL_RWOPS_UNKNOWN;
+    context = (SDL_RWops *)SDL_calloc(1, sizeof(*context));
+    if (context) {
+        context->type = SDL_RWOPS_UNKNOWN;
     }
-    return area;
+    return context;
 }
 
-void SDL_DestroyRW(SDL_RWops *area)
+void SDL_DestroyRW(SDL_RWops *context)
 {
-    SDL_free(area);
+    SDL_DestroyProperties(context->props);
+    SDL_free(context);
 }
 
 /* Load all the data from an SDL data stream */
-void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, int freesrc)
+void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, SDL_bool freesrc)
 {
-    static const Sint64 FILE_CHUNK_SIZE = 1024;
-    Sint64 size;
-    Sint64 size_read, size_total;
-    void *data = NULL, *newdata;
+    const int FILE_CHUNK_SIZE = 1024;
+    Sint64 size, size_total = 0;
+    size_t size_read;
+    char *data = NULL, *newdata;
+    SDL_bool loading_chunks = SDL_FALSE;
 
-    if (src == NULL) {
+    if (!src) {
         SDL_InvalidParamError("src");
-        return NULL;
+        goto done;
     }
 
     size = SDL_RWsize(src);
     if (size < 0) {
         size = FILE_CHUNK_SIZE;
+        loading_chunks = SDL_TRUE;
     }
-    data = SDL_malloc((size_t)(size + 1));
+    if (size >= SDL_SIZE_MAX) {
+        goto done;
+    }
+    data = (char *)SDL_malloc((size_t)(size + 1));
+    if (!data) {
+        goto done;
+    }
 
     size_total = 0;
     for (;;) {
-        if ((size_total + FILE_CHUNK_SIZE) > size) {
-            size = (size_total + FILE_CHUNK_SIZE);
-            newdata = SDL_realloc(data, (size_t)(size + 1));
-            if (newdata == NULL) {
-                SDL_free(data);
-                data = NULL;
-                SDL_OutOfMemory();
-                goto done;
+        if (loading_chunks) {
+            if ((size_total + FILE_CHUNK_SIZE) > size) {
+                size = (size_total + FILE_CHUNK_SIZE);
+                if (size >= SDL_SIZE_MAX) {
+                    newdata = NULL;
+                } else {
+                    newdata = (char *)SDL_realloc(data, (size_t)(size + 1));
+                }
+                if (!newdata) {
+                    SDL_free(data);
+                    data = NULL;
+                    goto done;
+                }
+                data = newdata;
             }
-            data = newdata;
         }
 
-        size_read = SDL_RWread(src, (char *)data + size_total, size - size_total);
+        size_read = SDL_RWread(src, data + size_total, (size_t)(size - size_total));
         if (size_read > 0) {
             size_total += size_read;
             continue;
         }
-        if (size_read == 0) {
-            /* End of file */
-            break;
-        }
-        if (size_read == -2) {
-            /* Non-blocking I/O, should we wait here? */
-        }
 
-        /* Read error */
-        SDL_free(data);
-        data = NULL;
-        goto done;
+        /* The stream status will remain set for the caller to check */
+        break;
     }
 
-    if (datasize) {
-        *datasize = (size_t) size_total;
-    }
-    ((char *)data)[size_total] = '\0';
+    data[size_total] = '\0';
 
 done:
+    if (datasize) {
+        *datasize = (size_t)size_total;
+    }
     if (freesrc && src) {
         SDL_RWclose(src);
     }
@@ -731,134 +725,362 @@ done:
 
 void *SDL_LoadFile(const char *file, size_t *datasize)
 {
-    return SDL_LoadFile_RW(SDL_RWFromFile(file, "rb"), datasize, 1);
+    return SDL_LoadFile_RW(SDL_RWFromFile(file, "rb"), datasize, SDL_TRUE);
+}
+
+SDL_PropertiesID SDL_GetRWProperties(SDL_RWops *context)
+{
+    if (!context) {
+        SDL_InvalidParamError("context");
+        return 0;
+    }
+
+    if (context->props == 0) {
+        context->props = SDL_CreateProperties();
+    }
+    return context->props;
 }
 
 Sint64 SDL_RWsize(SDL_RWops *context)
 {
+    if (!context) {
+        return SDL_InvalidParamError("context");
+    }
+    if (!context->size) {
+        Sint64 pos, size;
+
+        pos = SDL_RWseek(context, 0, SDL_RW_SEEK_CUR);
+        if (pos < 0) {
+            return -1;
+        }
+        size = SDL_RWseek(context, 0, SDL_RW_SEEK_END);
+
+        SDL_RWseek(context, pos, SDL_RW_SEEK_SET);
+        return size;
+    }
     return context->size(context);
 }
 
 Sint64 SDL_RWseek(SDL_RWops *context, Sint64 offset, int whence)
 {
+    if (!context) {
+        return SDL_InvalidParamError("context");
+    }
+    if (!context->seek) {
+        return SDL_Unsupported();
+    }
     return context->seek(context, offset, whence);
 }
 
 Sint64 SDL_RWtell(SDL_RWops *context)
 {
-    return context->seek(context, 0, SDL_RW_SEEK_CUR);
+    return SDL_RWseek(context, 0, SDL_RW_SEEK_CUR);
 }
 
-Sint64 SDL_RWread(SDL_RWops *context, void *ptr, Sint64 size)
+size_t SDL_RWread(SDL_RWops *context, void *ptr, size_t size)
 {
-    return context->read(context, ptr, size);
+    size_t bytes;
+
+    if (!context) {
+        SDL_InvalidParamError("context");
+        return 0;
+    }
+    if (!context->read) {
+        context->status = SDL_RWOPS_STATUS_WRITEONLY;
+        SDL_Unsupported();
+        return 0;
+    }
+
+    context->status = SDL_RWOPS_STATUS_READY;
+    SDL_ClearError();
+
+    if (size == 0) {
+        return 0;
+    }
+
+    bytes = context->read(context, ptr, size);
+    if (bytes == 0 && context->status == SDL_RWOPS_STATUS_READY) {
+        if (*SDL_GetError()) {
+            context->status = SDL_RWOPS_STATUS_ERROR;
+        } else {
+            context->status = SDL_RWOPS_STATUS_EOF;
+        }
+    }
+    return bytes;
 }
 
-Sint64 SDL_RWwrite(SDL_RWops *context, const void *ptr, Sint64 size)
+size_t SDL_RWwrite(SDL_RWops *context, const void *ptr, size_t size)
 {
-    return context->write(context, ptr, size);
+    size_t bytes;
+
+    if (!context) {
+        SDL_InvalidParamError("context");
+        return 0;
+    }
+    if (!context->write) {
+        context->status = SDL_RWOPS_STATUS_READONLY;
+        SDL_Unsupported();
+        return 0;
+    }
+
+    context->status = SDL_RWOPS_STATUS_READY;
+    SDL_ClearError();
+
+    if (size == 0) {
+        return 0;
+    }
+
+    bytes = context->write(context, ptr, size);
+    if (bytes == 0 && context->status == SDL_RWOPS_STATUS_READY) {
+        context->status = SDL_RWOPS_STATUS_ERROR;
+    }
+    return bytes;
+}
+
+size_t SDL_RWprintf(SDL_RWops *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
+{
+    va_list ap;
+    int size;
+    char *string;
+    size_t bytes;
+
+    va_start(ap, fmt);
+    size = SDL_vasprintf(&string, fmt, ap);
+    va_end(ap);
+    if (size < 0) {
+        return 0;
+    }
+
+    bytes = SDL_RWwrite(context, string, (size_t)size);
+    SDL_free(string);
+    return bytes;
+}
+
+size_t SDL_RWvprintf(SDL_RWops *context, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
+{
+    int size;
+    char *string;
+    size_t bytes;
+
+    size = SDL_vasprintf(&string, fmt, ap);
+    if (size < 0) {
+        return 0;
+    }
+
+    bytes = SDL_RWwrite(context, string, (size_t)size);
+    SDL_free(string);
+    return bytes;
 }
 
 int SDL_RWclose(SDL_RWops *context)
 {
+    if (!context) {
+        return SDL_InvalidParamError("context");
+    }
+    if (!context->close) {
+        SDL_DestroyRW(context);
+        return 0;
+    }
     return context->close(context);
 }
 
 /* Functions for dynamically reading and writing endian-specific values */
 
-Uint8 SDL_ReadU8(SDL_RWops *src)
+SDL_bool SDL_ReadU8(SDL_RWops *src, Uint8 *value)
 {
-    Uint8 value = 0;
+    Uint8 data = 0;
+    SDL_bool result = SDL_FALSE;
 
-    SDL_RWread(src, &value, sizeof(value));
-    return value;
+    if (SDL_RWread(src, &data, sizeof(data)) == sizeof(data)) {
+        result = SDL_TRUE;
+    }
+    if (value) {
+        *value = data;
+    }
+    return result;
 }
 
-Uint16 SDL_ReadLE16(SDL_RWops *src)
+SDL_bool SDL_ReadU16LE(SDL_RWops *src, Uint16 *value)
 {
-    Uint16 value = 0;
+    Uint16 data = 0;
+    SDL_bool result = SDL_FALSE;
 
-    SDL_RWread(src, &value, sizeof(value));
-    return SDL_SwapLE16(value);
+    if (SDL_RWread(src, &data, sizeof(data)) == sizeof(data)) {
+        result = SDL_TRUE;
+    }
+    if (value) {
+        *value = SDL_SwapLE16(data);
+    }
+    return result;
 }
 
-Uint16 SDL_ReadBE16(SDL_RWops *src)
+SDL_bool SDL_ReadS16LE(SDL_RWops *src, Sint16 *value)
 {
-    Uint16 value = 0;
-
-    SDL_RWread(src, &value, sizeof(value));
-    return SDL_SwapBE16(value);
+    return SDL_ReadU16LE(src, (Uint16 *)value);
 }
 
-Uint32 SDL_ReadLE32(SDL_RWops *src)
+SDL_bool SDL_ReadU16BE(SDL_RWops *src, Uint16 *value)
 {
-    Uint32 value = 0;
+    Uint16 data = 0;
+    SDL_bool result = SDL_FALSE;
 
-    SDL_RWread(src, &value, sizeof(value));
-    return SDL_SwapLE32(value);
+    if (SDL_RWread(src, &data, sizeof(data)) == sizeof(data)) {
+        result = SDL_TRUE;
+    }
+    if (value) {
+        *value = SDL_SwapBE16(data);
+    }
+    return result;
 }
 
-Uint32 SDL_ReadBE32(SDL_RWops *src)
+SDL_bool SDL_ReadS16BE(SDL_RWops *src, Sint16 *value)
 {
-    Uint32 value = 0;
-
-    SDL_RWread(src, &value, sizeof(value));
-    return SDL_SwapBE32(value);
+    return SDL_ReadU16BE(src, (Uint16 *)value);
 }
 
-Uint64 SDL_ReadLE64(SDL_RWops *src)
+SDL_bool SDL_ReadU32LE(SDL_RWops *src, Uint32 *value)
 {
-    Uint64 value = 0;
+    Uint32 data = 0;
+    SDL_bool result = SDL_FALSE;
 
-    SDL_RWread(src, &value, sizeof(value));
-    return SDL_SwapLE64(value);
+    if (SDL_RWread(src, &data, sizeof(data)) == sizeof(data)) {
+        result = SDL_TRUE;
+    }
+    if (value) {
+        *value = SDL_SwapLE32(data);
+    }
+    return result;
 }
 
-Uint64 SDL_ReadBE64(SDL_RWops *src)
+SDL_bool SDL_ReadS32LE(SDL_RWops *src, Sint32 *value)
 {
-    Uint64 value = 0;
-
-    SDL_RWread(src, &value, sizeof(value));
-    return SDL_SwapBE64(value);
+    return SDL_ReadU32LE(src, (Uint32 *)value);
 }
 
-size_t SDL_WriteU8(SDL_RWops *dst, Uint8 value)
+SDL_bool SDL_ReadU32BE(SDL_RWops *src, Uint32 *value)
 {
-    return (SDL_RWwrite(dst, &value, sizeof(value)) == sizeof(value)) ? 1 : 0;
+    Uint32 data = 0;
+    SDL_bool result = SDL_FALSE;
+
+    if (SDL_RWread(src, &data, sizeof(data)) == sizeof(data)) {
+        result = SDL_TRUE;
+    }
+    if (value) {
+        *value = SDL_SwapBE32(data);
+    }
+    return result;
 }
 
-size_t SDL_WriteLE16(SDL_RWops *dst, Uint16 value)
+SDL_bool SDL_ReadS32BE(SDL_RWops *src, Sint32 *value)
+{
+    return SDL_ReadU32BE(src, (Uint32 *)value);
+}
+
+SDL_bool SDL_ReadU64LE(SDL_RWops *src, Uint64 *value)
+{
+    Uint64 data = 0;
+    SDL_bool result = SDL_FALSE;
+
+    if (SDL_RWread(src, &data, sizeof(data)) == sizeof(data)) {
+        result = SDL_TRUE;
+    }
+    if (value) {
+        *value = SDL_SwapLE64(data);
+    }
+    return result;
+}
+
+SDL_bool SDL_ReadS64LE(SDL_RWops *src, Sint64 *value)
+{
+    return SDL_ReadU64LE(src, (Uint64 *)value);
+}
+
+SDL_bool SDL_ReadU64BE(SDL_RWops *src, Uint64 *value)
+{
+    Uint64 data = 0;
+    SDL_bool result = SDL_FALSE;
+
+    if (SDL_RWread(src, &data, sizeof(data)) == sizeof(data)) {
+        result = SDL_TRUE;
+    }
+    if (value) {
+        *value = SDL_SwapBE64(data);
+    }
+    return result;
+}
+
+SDL_bool SDL_ReadS64BE(SDL_RWops *src, Sint64 *value)
+{
+    return SDL_ReadU64BE(src, (Uint64 *)value);
+}
+
+SDL_bool SDL_WriteU8(SDL_RWops *dst, Uint8 value)
+{
+    return (SDL_RWwrite(dst, &value, sizeof(value)) == sizeof(value));
+}
+
+SDL_bool SDL_WriteU16LE(SDL_RWops *dst, Uint16 value)
 {
     const Uint16 swapped = SDL_SwapLE16(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;
+    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
-size_t SDL_WriteBE16(SDL_RWops *dst, Uint16 value)
+SDL_bool SDL_WriteS16LE(SDL_RWops *dst, Sint16 value)
+{
+    return SDL_WriteU16LE(dst, (Uint16)value);
+}
+
+SDL_bool SDL_WriteU16BE(SDL_RWops *dst, Uint16 value)
 {
     const Uint16 swapped = SDL_SwapBE16(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;
+    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
-size_t SDL_WriteLE32(SDL_RWops *dst, Uint32 value)
+SDL_bool SDL_WriteS16BE(SDL_RWops *dst, Sint16 value)
+{
+    return SDL_WriteU16BE(dst, (Uint16)value);
+}
+
+SDL_bool SDL_WriteU32LE(SDL_RWops *dst, Uint32 value)
 {
     const Uint32 swapped = SDL_SwapLE32(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;
+    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
-size_t SDL_WriteBE32(SDL_RWops *dst, Uint32 value)
+SDL_bool SDL_WriteS32LE(SDL_RWops *dst, Sint32 value)
+{
+    return SDL_WriteU32LE(dst, (Uint32)value);
+}
+
+SDL_bool SDL_WriteU32BE(SDL_RWops *dst, Uint32 value)
 {
     const Uint32 swapped = SDL_SwapBE32(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;
+    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
-size_t SDL_WriteLE64(SDL_RWops *dst, Uint64 value)
+SDL_bool SDL_WriteS32BE(SDL_RWops *dst, Sint32 value)
+{
+    return SDL_WriteU32BE(dst, (Uint32)value);
+}
+
+SDL_bool SDL_WriteU64LE(SDL_RWops *dst, Uint64 value)
 {
     const Uint64 swapped = SDL_SwapLE64(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;
+    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
-size_t SDL_WriteBE64(SDL_RWops *dst, Uint64 value)
+SDL_bool SDL_WriteS64LE(SDL_RWops *dst, Sint64 value)
+{
+    return SDL_WriteU64LE(dst, (Uint64)value);
+}
+
+SDL_bool SDL_WriteU64BE(SDL_RWops *dst, Uint64 value)
 {
     const Uint64 swapped = SDL_SwapBE64(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped)) ? 1 : 0;
+    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
+}
+
+SDL_bool SDL_WriteS64BE(SDL_RWops *dst, Sint64 value)
+{
+    return SDL_WriteU64BE(dst, (Uint64)value);
 }

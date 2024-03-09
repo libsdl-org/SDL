@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,8 +33,6 @@
 
 #include "SDL_uikitvulkan.h"
 #include "SDL_uikitmetalview.h"
-
-#include <SDL3/SDL_syswm.h>
 
 #include <dlfcn.h>
 
@@ -169,26 +167,22 @@ void UIKit_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-SDL_bool UIKit_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                            unsigned *count,
-                                            const char **names)
+char const* const* UIKit_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+                                            Uint32 *count)
 {
     static const char *const extensionsForUIKit[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_METAL_SURFACE_EXTENSION_NAME
     };
-    if (!_this->vulkan_config.loader_handle) {
-        SDL_SetError("Vulkan is not loaded");
-        return SDL_FALSE;
+    if(count) {
+        *count = SDL_arraysize(extensionsForUIKit);
     }
-
-    return SDL_Vulkan_GetInstanceExtensions_Helper(
-        count, names, SDL_arraysize(extensionsForUIKit),
-        extensionsForUIKit);
+    return extensionsForUIKit;
 }
 
 SDL_bool UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                     SDL_Window *window,
                                     VkInstance instance,
+                                    const struct VkAllocationCallbacks *allocator,
                                     VkSurfaceKHR *surface)
 {
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
@@ -227,7 +221,7 @@ SDL_bool UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         createInfo.flags = 0;
         createInfo.pLayer = (__bridge const CAMetalLayer *)
             UIKit_Metal_GetLayer(_this, metalview);
-        result = vkCreateMetalSurfaceEXT(instance, &createInfo, NULL, surface);
+        result = vkCreateMetalSurfaceEXT(instance, &createInfo, allocator, surface);
         if (result != VK_SUCCESS) {
             UIKit_Metal_DestroyView(_this, metalview);
             SDL_SetError("vkCreateMetalSurfaceEXT failed: %s",
@@ -241,7 +235,7 @@ SDL_bool UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         createInfo.flags = 0;
         createInfo.pView = (const void *)metalview;
         result = vkCreateIOSSurfaceMVK(instance, &createInfo,
-                                       NULL, surface);
+                                       allocator, surface);
         if (result != VK_SUCCESS) {
             UIKit_Metal_DestroyView(_this, metalview);
             SDL_SetError("vkCreateIOSSurfaceMVK failed: %s",

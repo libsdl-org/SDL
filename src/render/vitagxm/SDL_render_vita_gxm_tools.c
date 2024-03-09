@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#ifdef SDL_VIDEO_RENDER_VITA_GXM
+#if SDL_VIDEO_RENDER_VITA_GXM
 
 #include "../SDL_sysrender.h"
 
@@ -1001,7 +1001,7 @@ gxm_texture *create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsig
         tex_size += (((aligned_w + 1) / 2) * ((h + 1) / 2)) * 2;
     }
 
-    if (texture == NULL) {
+    if (!texture) {
         return NULL;
     }
 
@@ -1015,7 +1015,7 @@ gxm_texture *create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsig
         tex_size);
 
     /* Try SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE in case we're out of VRAM */
-    if (texture_data == NULL) {
+    if (!texture_data) {
         SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "CDRAM texture allocation failed\n");
         texture_data = vita_mem_alloc(
             SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
@@ -1028,7 +1028,7 @@ gxm_texture *create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsig
         texture->cdram = 1;
     }
 
-    if (texture_data == NULL) {
+    if (!texture_data) {
         SDL_free(texture);
         return NULL;
     }

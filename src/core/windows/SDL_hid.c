@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#ifndef __WINRT__
+#ifndef SDL_PLATFORM_WINRT
 
 #include "SDL_hid.h"
 
@@ -58,9 +58,9 @@ int WIN_LoadHIDDLL(void)
     SDL_HidP_GetValueCaps = (HidP_GetValueCaps_t)GetProcAddress(s_pHIDDLL, "HidP_GetValueCaps");
     SDL_HidP_MaxDataListLength = (HidP_MaxDataListLength_t)GetProcAddress(s_pHIDDLL, "HidP_MaxDataListLength");
     SDL_HidP_GetData = (HidP_GetData_t)GetProcAddress(s_pHIDDLL, "HidP_GetData");
-    if (SDL_HidD_GetManufacturerString == NULL || SDL_HidD_GetProductString == NULL ||
-        SDL_HidP_GetCaps == NULL || SDL_HidP_GetButtonCaps == NULL ||
-        SDL_HidP_GetValueCaps == NULL || SDL_HidP_MaxDataListLength == NULL || SDL_HidP_GetData == NULL) {
+    if (!SDL_HidD_GetManufacturerString || !SDL_HidD_GetProductString ||
+        !SDL_HidP_GetCaps || !SDL_HidP_GetButtonCaps ||
+        !SDL_HidP_GetValueCaps || !SDL_HidP_MaxDataListLength || !SDL_HidP_GetData) {
         WIN_UnloadHIDDLL();
         return -1;
     }
@@ -81,4 +81,4 @@ void WIN_UnloadHIDDLL(void)
     }
 }
 
-#endif /* !__WINRT__ */
+#endif /* !SDL_PLATFORM_WINRT */

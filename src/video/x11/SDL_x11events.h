@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,5 +29,10 @@ extern void X11_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window);
 extern int X11_SuspendScreenSaver(SDL_VideoDevice *_this);
 extern void X11_ReconcileKeyboardState(SDL_VideoDevice *_this);
 extern void X11_GetBorderValues(SDL_WindowData *data);
+extern void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *wdata, int button, const float x, const float y, const unsigned long time);
+extern void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *wdata, int button);
+extern SDL_WindowData *X11_FindWindow(SDL_VideoDevice *_this, Window window);
+extern SDL_bool X11_ProcessHitTest(SDL_VideoDevice *_this, SDL_WindowData *data, const float x, const float y, SDL_bool force_new_result);
+extern SDL_bool X11_TriggerHitTestAction(SDL_VideoDevice *_this, SDL_WindowData *data, const float x, const float y);
 
 #endif /* SDL_x11events_h_ */

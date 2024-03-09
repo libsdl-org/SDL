@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,7 +30,7 @@
 #include <kernel.h>
 #include <swis.h>
 
-int RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format, void **pixels, int *pitch)
 {
     SDL_WindowData *driverdata = window->driverdata;
     const char *sprite_name = "display";
@@ -63,7 +63,7 @@ int RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, U
     size = sizeof(sprite_area) + sizeof(sprite_header) + ((*pitch) * h);
     driverdata->fb_area = SDL_malloc(size);
     if (!driverdata->fb_area) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     driverdata->fb_area->size = size;
@@ -80,7 +80,7 @@ int RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, U
     regs.r[5] = h;
     regs.r[6] = sprite_mode;
     error = _kernel_swi(OS_SpriteOp, &regs, &regs);
-    if (error != NULL) {
+    if (error) {
         SDL_free(driverdata->fb_area);
         return SDL_SetError("Unable to create sprite: %s (%i)", error->errmess, error->errnum);
     }
@@ -106,7 +106,7 @@ int RISCOS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, c
     regs.r[6] = 0;
     regs.r[7] = 0;
     error = _kernel_swi(OS_SpriteOp, &regs, &regs);
-    if (error != NULL) {
+    if (error) {
         return SDL_SetError("OS_SpriteOp 52 failed: %s (%i)", error->errmess, error->errnum);
     }
 

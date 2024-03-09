@@ -1,6 +1,6 @@
 /*
  Simple DirectMedia Layer
- Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+ Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
  This software is provided 'as-is', without any express or implied
  warranty.  In no event will the authors be held liable for any damages
@@ -34,8 +34,6 @@
 
 #import "SDL_uikitwindow.h"
 #import "SDL_uikitmetalview.h"
-
-#include <SDL3/SDL_syswm.h>
 
 @implementation SDL_uikitmetalview
 
@@ -81,6 +79,7 @@ SDL_MetalView UIKit_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window)
         CGFloat scale = 1.0;
         SDL_uikitmetalview *metalview;
 
+#ifndef SDL_PLATFORM_VISIONOS
         if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
             /* Set the scale to the natural scale factor of the screen - then
              * the backing dimensions of the Metal view will match the pixel
@@ -89,6 +88,7 @@ SDL_MetalView UIKit_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window)
              */
             scale = data.uiwindow.screen.nativeScale;
         }
+#endif
 
         metalview = [[SDL_uikitmetalview alloc] initWithFrame:data.uiwindow.bounds
                                                         scale:scale];

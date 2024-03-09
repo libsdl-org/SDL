@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,12 +19,6 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
-
-/* Standard C++11 includes */
-#include <functional>
-#include <string>
-#include <sstream>
-using namespace std;
 
 /* Windows includes */
 #include "ppltasks.h"
@@ -59,7 +53,7 @@ extern "C" {
 #include "SDL_winrtapp_common.h"
 #include "SDL_winrtapp_direct3d.h"
 
-#if defined(SDL_VIDEO_RENDER_D3D11) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_D3D11
 /* Calling IDXGIDevice3::Trim on the active Direct3D 11.x device is necessary
  * when Windows 8.1 apps are about to get suspended.
  */
@@ -296,11 +290,8 @@ void SDL_WinRTApp::SetWindow(CoreWindow ^ window)
         ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &SDL_WinRTApp::OnMouseMoved);
 #endif
 
-    window->KeyDown +=
-        ref new TypedEventHandler<CoreWindow ^, KeyEventArgs ^>(this, &SDL_WinRTApp::OnKeyDown);
-
-    window->KeyUp +=
-        ref new TypedEventHandler<CoreWindow ^, KeyEventArgs ^>(this, &SDL_WinRTApp::OnKeyUp);
+    window->Dispatcher->AcceleratorKeyActivated +=
+        ref new TypedEventHandler<CoreDispatcher ^, AcceleratorKeyEventArgs ^>(this, &SDL_WinRTApp::OnAcceleratorKeyActivated);
 
     window->CharacterReceived +=
         ref new TypedEventHandler<CoreWindow ^, CharacterReceivedEventArgs ^>(this, &SDL_WinRTApp::OnCharacterReceived);
@@ -343,7 +334,7 @@ void SDL_WinRTApp::Run()
         // representation of command line arguments.
         int argc = 1;
         char **argv = (char **)SDL_malloc(2 * sizeof(*argv));
-        if (argv == NULL) {
+        if (!argv) {
             return;
         }
         argv[0] = SDL_strdup("WinRTApp");
@@ -618,7 +609,7 @@ void SDL_WinRTApp::OnSuspending(Platform::Object ^ sender, SuspendingEventArgs ^
         // Let the Direct3D 11 renderer prepare for the app to be backgrounded.
         // This is necessary for Windows 8.1, possibly elsewhere in the future.
         // More details at: http://msdn.microsoft.com/en-us/library/windows/apps/Hh994929.aspx
-#if defined(SDL_VIDEO_RENDER_D3D11) && !defined(SDL_RENDER_DISABLED)
+#if SDL_VIDEO_RENDER_D3D11
         if (WINRT_GlobalSDLWindow) {
             SDL_Renderer *renderer = SDL_GetRenderer(WINRT_GlobalSDLWindow);
             if (renderer && (SDL_strcmp(renderer->info.name, "direct3d11") == 0)) {
@@ -720,19 +711,14 @@ void SDL_WinRTApp::OnMouseMoved(MouseDevice ^ mouseDevice, MouseEventArgs ^ args
     WINRT_ProcessMouseMovedEvent(WINRT_GlobalSDLWindow, args);
 }
 
-void SDL_WinRTApp::OnKeyDown(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::KeyEventArgs ^ args)
+void SDL_WinRTApp::OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher ^ sender, Windows::UI::Core::AcceleratorKeyEventArgs ^ args)
 {
-    WINRT_ProcessKeyDownEvent(args);
-}
-
-void SDL_WinRTApp::OnKeyUp(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::KeyEventArgs ^ args)
-{
-    WINRT_ProcessKeyUpEvent(args);
+    WINRT_ProcessAcceleratorKeyActivated(args);
 }
 
 void SDL_WinRTApp::OnCharacterReceived(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::CharacterReceivedEventArgs ^ args)
 {
-    WINRT_ProcessCharacterReceivedEvent(args);
+    WINRT_ProcessCharacterReceivedEvent(WINRT_GlobalSDLWindow, args);
 }
 
 template <typename BackButtonEventArgs>

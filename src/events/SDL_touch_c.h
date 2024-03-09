@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -35,6 +35,9 @@ typedef struct SDL_Touch
 
 /* Initialize the touch subsystem */
 extern int SDL_InitTouch(void);
+
+/* Returns SDL_TRUE if _any_ connected touch devices are known to SDL */
+extern SDL_bool SDL_TouchDevicesAvailable(void);
 
 /* Add a touch, returning the index of the touch, or -1 if there was an error. */
 extern int SDL_AddTouch(SDL_TouchID id, SDL_TouchDeviceType type, const char *name);

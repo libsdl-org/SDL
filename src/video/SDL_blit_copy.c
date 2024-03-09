@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -104,7 +104,7 @@ void SDL_BlitCopy(SDL_BlitInfo *info)
     int w, h;
     int srcskip, dstskip;
 
-    w = info->dst_w * info->dst_fmt->BytesPerPixel;
+    w = info->dst_w * info->dst_fmt->bytes_per_pixel;
     h = info->dst_h;
     src = info->src;
     dst = info->dst;

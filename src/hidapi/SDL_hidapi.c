@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +27,7 @@
  * This merges the two, at a small performance cost, until distributions
  * have granted access to /dev/hidraw*
  */
+
 #include "SDL_internal.h"
 
 #include "SDL_hidapi_c.h"
@@ -39,11 +40,11 @@
 
 #ifndef SDL_HIDAPI_DISABLED
 
-#if defined(__WIN32__) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 #include "../core/windows/SDL_windows.h"
 #endif
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
 #include <CoreFoundation/CoreFoundation.h>
 #include <mach/mach.h>
 #include <IOKit/IOKitLib.h>
@@ -100,15 +101,15 @@ static struct
     SDL_bool m_bCanGetNotifications;
     Uint64 m_unLastDetect;
 
-#if defined(__WIN32__) || defined(__WINGDK__)
-    SDL_threadID m_nThreadID;
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+    SDL_ThreadID m_nThreadID;
     WNDCLASSEXA m_wndClass;
     HWND m_hwndMsg;
     HDEVNOTIFY m_hNotify;
     double m_flLastWin32MessageCheck;
 #endif
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
     IONotificationPortRef m_notificationPort;
     mach_port_t m_notificationMach;
 #endif
@@ -120,7 +121,7 @@ static struct
 #endif
 } SDL_HIDAPI_discovery;
 
-#if defined(__WIN32__) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 struct _DEV_BROADCAST_HDR
 {
     DWORD dbch_size;
@@ -166,9 +167,9 @@ static LRESULT CALLBACK ControllerWndProc(HWND hwnd, UINT message, WPARAM wParam
 
     return DefWindowProc(hwnd, message, wParam, lParam);
 }
-#endif /* defined(__WIN32__) || defined(__WINGDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) */
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
 static void CallbackIOServiceFunc(void *context, io_iterator_t portIterator)
 {
     /* Must drain the iterator, or we won't receive new notifications */
@@ -178,7 +179,7 @@ static void CallbackIOServiceFunc(void *context, io_iterator_t portIterator)
         ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
     }
 }
-#endif /* __MACOS__ */
+#endif /* SDL_PLATFORM_MACOS */
 
 #ifdef HAVE_INOTIFY
 #ifdef HAVE_INOTIFY_INIT1
@@ -229,8 +230,8 @@ static void HIDAPI_InitializeDiscovery(void)
     SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_FALSE;
     SDL_HIDAPI_discovery.m_unLastDetect = 0;
 
-#if defined(__WIN32__) || defined(__WINGDK__)
-    SDL_HIDAPI_discovery.m_nThreadID = SDL_ThreadID();
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+    SDL_HIDAPI_discovery.m_nThreadID = SDL_GetCurrentThreadID();
 
     SDL_zero(SDL_HIDAPI_discovery.m_wndClass);
     SDL_HIDAPI_discovery.m_wndClass.hInstance = GetModuleHandle(NULL);
@@ -256,9 +257,9 @@ static void HIDAPI_InitializeDiscovery(void)
         SDL_HIDAPI_discovery.m_hNotify = RegisterDeviceNotification(SDL_HIDAPI_discovery.m_hwndMsg, &devBroadcast, DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES);
         SDL_HIDAPI_discovery.m_bCanGetNotifications = (SDL_HIDAPI_discovery.m_hNotify != 0);
     }
-#endif /* defined(__WIN32__) || defined(__WINGDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) */
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
     SDL_HIDAPI_discovery.m_notificationPort = IONotificationPortCreate(kIOMainPortDefault);
     if (SDL_HIDAPI_discovery.m_notificationPort) {
         {
@@ -308,7 +309,7 @@ static void HIDAPI_InitializeDiscovery(void)
 
     SDL_HIDAPI_discovery.m_bCanGetNotifications = (SDL_HIDAPI_discovery.m_notificationMach != MACH_PORT_NULL);
 
-#endif /* __MACOS__ */
+#endif /* SDL_PLATFORM_MACOS */
 
 #ifdef SDL_USE_LIBUDEV
     if (linux_enumeration_method == ENUMERATION_LIBUDEV) {
@@ -377,10 +378,10 @@ static void HIDAPI_UpdateDiscovery(void)
         return;
     }
 
-#if defined(__WIN32__) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 #if 0 /* just let the usual SDL_PumpEvents loop dispatch these, fixing bug 4286. --ryan. */
     /* We'll only get messages on the same thread that created the window */
-    if (SDL_ThreadID() == SDL_HIDAPI_discovery.m_nThreadID) {
+    if (SDL_GetCurrentThreadID() == SDL_HIDAPI_discovery.m_nThreadID) {
         MSG msg;
         while (PeekMessage(&msg, SDL_HIDAPI_discovery.m_hwndMsg, 0, 0, PM_NOREMOVE)) {
             if (GetMessageA(&msg, SDL_HIDAPI_discovery.m_hwndMsg, 0, 0) != 0) {
@@ -390,9 +391,9 @@ static void HIDAPI_UpdateDiscovery(void)
         }
     }
 #endif
-#endif /* defined(__WIN32__) || defined(__WINGDK__) */
+#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) */
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
     if (SDL_HIDAPI_discovery.m_notificationPort) {
         struct
         {
@@ -484,7 +485,7 @@ static void HIDAPI_ShutdownDiscovery(void)
         return;
     }
 
-#if defined(__WIN32__) || defined(__WINGDK__)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
     if (SDL_HIDAPI_discovery.m_hNotify) {
         UnregisterDeviceNotification(SDL_HIDAPI_discovery.m_hNotify);
     }
@@ -496,7 +497,7 @@ static void HIDAPI_ShutdownDiscovery(void)
     UnregisterClassA(SDL_HIDAPI_discovery.m_wndClass.lpszClassName, SDL_HIDAPI_discovery.m_wndClass.hInstance);
 #endif
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
     if (SDL_HIDAPI_discovery.m_notificationPort) {
         IONotificationPortDestroy(SDL_HIDAPI_discovery.m_notificationPort);
     }
@@ -571,15 +572,17 @@ typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
 #define read_thread                  PLATFORM_read_thread
 #define return_data                  PLATFORM_return_data
 
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
 #include "SDL_hidapi_linux.h"
-#elif defined(__MACOS__)
+#elif defined(SDL_PLATFORM_NETBSD)
+#include "SDL_hidapi_netbsd.h"
+#elif defined(SDL_PLATFORM_MACOS)
 #include "SDL_hidapi_mac.h"
-#elif defined(__WINDOWS__) || defined(__WINGDK__)
+#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 #include "SDL_hidapi_windows.h"
-#elif defined(__ANDROID__)
+#elif defined(SDL_PLATFORM_ANDROID)
 #include "SDL_hidapi_android.h"
-#elif defined(__IOS__) || defined(__TVOS__)
+#elif defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
 #include "SDL_hidapi_ios.h"
 #endif
 
@@ -873,9 +876,46 @@ typedef struct LIBUSB_hid_device_ LIBUSB_hid_device;
 #undef read_thread
 #undef return_data
 
+/* If the platform has any backend other than libusb, try to avoid using
+ * libusb as the main backend for devices, since it detaches drivers and
+ * therefore makes devices inaccessible to the rest of the OS.
+ *
+ * We do this by whitelisting devices we know to be accessible _exclusively_
+ * via libusb; these are typically devices that look like HIDs but have a
+ * quirk that requires direct access to the hardware.
+ */
+static const struct {
+    Uint16 vendor;
+    Uint16 product;
+} SDL_libusb_whitelist[] = {
+    { 0x057e, 0x0337 } /* Nintendo WUP-028, Wii U/Switch GameCube Adapter */
+};
+
+static SDL_bool IsInWhitelist(Uint16 vendor, Uint16 product)
+{
+    int i;
+    for (i = 0; i < SDL_arraysize(SDL_libusb_whitelist); i += 1) {
+        if (vendor == SDL_libusb_whitelist[i].vendor &&
+            product == SDL_libusb_whitelist[i].product) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
 #endif /* HAVE_LIBUSB */
 
 #endif /* !SDL_HIDAPI_DISABLED */
+
+#if defined(HAVE_PLATFORM_BACKEND) || defined(HAVE_DRIVER_BACKEND)
+/* We have another way to get HID devices, so use the whitelist to get devices where libusb is preferred */
+#define SDL_HIDAPI_LIBUSB_WHITELIST_DEFAULT SDL_TRUE
+#else
+/* libusb is the only way to get HID devices, so don't use the whitelist, get them all */
+#define SDL_HIDAPI_LIBUSB_WHITELIST_DEFAULT SDL_FALSE
+#endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND */
+
+static SDL_bool use_libusb_whitelist = SDL_HIDAPI_LIBUSB_WHITELIST_DEFAULT;
 
 /* Shared HIDAPI Implementation */
 
@@ -1060,7 +1100,7 @@ SDL_bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product
         if (vendor_id == USB_VENDOR_VALVE) {
             /* Ignore the mouse/keyboard interface on Steam Controllers */
             if (
-#ifdef __WIN32__
+#ifdef SDL_PLATFORM_WIN32
                 /* Check the usage page and usage on both USB and Bluetooth */
 #else
                 /* Only check the usage page and usage on USB */
@@ -1117,6 +1157,8 @@ int SDL_hid_init(void)
     }
 #endif
 
+    use_libusb_whitelist = SDL_GetHintBoolean("SDL_HIDAPI_LIBUSB_WHITELIST",
+                                              SDL_HIDAPI_LIBUSB_WHITELIST_DEFAULT);
 #ifdef HAVE_LIBUSB
     if (SDL_getenv("SDL_HIDAPI_DISABLE_LIBUSB") != NULL) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
@@ -1191,7 +1233,7 @@ int SDL_hid_init(void)
 
 #ifdef HAVE_PLATFORM_BACKEND
     ++attempts;
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
     udev_ctx = SDL_UDEV_GetUdevSyms();
 #endif /* __LINUX __ */
     if (udev_ctx && PLATFORM_hid_init() == 0) {
@@ -1203,7 +1245,7 @@ int SDL_hid_init(void)
         return -1;
     }
 
-#ifdef __MACOS__
+#ifdef SDL_PLATFORM_MACOS
     hid_darwin_set_open_exclusive(0);
 #endif
 
@@ -1232,7 +1274,7 @@ int SDL_hid_exit(void)
     if (udev_ctx) {
         result |= PLATFORM_hid_exit();
     }
-#ifdef __LINUX__
+#ifdef SDL_PLATFORM_LINUX
     SDL_UDEV_ReleaseUdevSyms();
 #endif /* __LINUX __ */
 #endif /* HAVE_PLATFORM_BACKEND */
@@ -1280,144 +1322,170 @@ Uint32 SDL_hid_device_change_count(void)
     return counter;
 }
 
+static void AddDeviceToEnumeration(const char *driver_name, struct hid_device_info *dev, struct SDL_hid_device_info **devs, struct SDL_hid_device_info **last)
+{
+    struct SDL_hid_device_info *new_dev;
+
+#ifdef DEBUG_HIDAPI
+    SDL_Log("Adding %s device to enumeration: %ls %ls 0x%.4hx/0x%.4hx/%d",
+            driver_name, dev->manufacturer_string, dev->product_string, dev->vendor_id, dev->product_id, dev->interface_number);
+#else
+    (void)driver_name;
+#endif
+
+    new_dev = (struct SDL_hid_device_info *)SDL_malloc(sizeof(struct SDL_hid_device_info));
+    if (new_dev == NULL) {
+        /* Don't bother returning an error, get as many devices as possible */
+        return;
+    }
+    CopyHIDDeviceInfo(dev, new_dev);
+
+    if ((*last) != NULL) {
+        (*last)->next = new_dev;
+    } else {
+        *devs = new_dev;
+    }
+    *last = new_dev;
+}
+
+#if defined(HAVE_LIBUSB) || defined(HAVE_PLATFORM_BACKEND)
+static void RemoveDeviceFromEnumeration(const char *driver_name, struct hid_device_info *dev, struct hid_device_info **devs, void (*free_device_info)(struct hid_device_info *))
+{
+    struct hid_device_info *last = NULL, *curr, *next;
+
+    for (curr = *devs; curr; curr = next) {
+        next = curr->next;
+
+        if (dev->vendor_id == curr->vendor_id &&
+            dev->product_id == curr->product_id &&
+            (dev->interface_number < 0 || curr->interface_number < 0 || dev->interface_number == curr->interface_number)) {
+#ifdef DEBUG_HIDAPI
+            SDL_Log("Skipping %s device: %ls %ls 0x%.4hx/0x%.4hx/%d",
+                    driver_name, curr->manufacturer_string, curr->product_string, curr->vendor_id, curr->product_id, curr->interface_number);
+#else
+            (void)driver_name;
+#endif
+            if (last) {
+                last->next = next;
+            } else {
+                *devs = next;
+            }
+
+            curr->next = NULL;
+            free_device_info(curr);
+            continue;
+        }
+        last = curr;
+    }
+}
+#endif /* HAVE_LIBUSB || HAVE_PLATFORM_BACKEND */
+
+#ifdef HAVE_LIBUSB
+static void RemoveNonWhitelistedDevicesFromEnumeration(struct hid_device_info **devs, void (*free_device_info)(struct hid_device_info *))
+{
+    struct hid_device_info *last = NULL, *curr, *next;
+
+    for (curr = *devs; curr; curr = next) {
+        next = curr->next;
+
+        if (!IsInWhitelist(curr->vendor_id, curr->product_id)) {
+#ifdef DEBUG_HIDAPI
+            SDL_Log("Device was not in libusb whitelist, skipping: %ls %ls 0x%.4hx/0x%.4hx/%d",
+                    curr->manufacturer_string, curr->product_string, curr->vendor_id, curr->product_id, curr->interface_number);
+#endif
+            if (last) {
+                last->next = next;
+            } else {
+                *devs = next;
+            }
+
+            curr->next = NULL;
+            free_device_info(curr);
+            continue;
+        }
+        last = curr;
+    }
+}
+#endif /* HAVE_LIBUSB */
+
 struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
-#if defined(HAVE_PLATFORM_BACKEND) || defined(HAVE_DRIVER_BACKEND) || defined(HAVE_LIBUSB)
-#ifdef HAVE_LIBUSB
-    struct hid_device_info *usb_devs = NULL;
-    struct hid_device_info *usb_dev;
-#endif
-#ifdef HAVE_DRIVER_BACKEND
     struct hid_device_info *driver_devs = NULL;
-    struct hid_device_info *driver_dev;
-#endif
-#ifdef HAVE_PLATFORM_BACKEND
+    struct hid_device_info *usb_devs = NULL;
     struct hid_device_info *raw_devs = NULL;
-    struct hid_device_info *raw_dev;
-#endif
-    struct SDL_hid_device_info *devs = NULL, *last = NULL, *new_dev;
+    struct hid_device_info *dev;
+    struct SDL_hid_device_info *devs = NULL, *last = NULL;
 
     if (SDL_hidapi_refcount == 0 && SDL_hid_init() != 0) {
         return NULL;
     }
 
+    /* Collect the available devices */
+#ifdef HAVE_DRIVER_BACKEND
+    driver_devs = DRIVER_hid_enumerate(vendor_id, product_id);
+#endif
+
 #ifdef HAVE_LIBUSB
     if (libusb_ctx.libhandle) {
         usb_devs = LIBUSB_hid_enumerate(vendor_id, product_id);
-#ifdef DEBUG_HIDAPI
-        SDL_Log("libusb devices found:");
-#endif
-        for (usb_dev = usb_devs; usb_dev; usb_dev = usb_dev->next) {
-            new_dev = (struct SDL_hid_device_info *)SDL_malloc(sizeof(struct SDL_hid_device_info));
-            if (new_dev == NULL) {
-                LIBUSB_hid_free_enumeration(usb_devs);
-                SDL_hid_free_enumeration(devs);
-                SDL_OutOfMemory();
-                return NULL;
-            }
-            CopyHIDDeviceInfo(usb_dev, new_dev);
-#ifdef DEBUG_HIDAPI
-            SDL_Log(" - %ls %ls 0x%.4hx 0x%.4hx",
-                    usb_dev->manufacturer_string, usb_dev->product_string,
-                    usb_dev->vendor_id, usb_dev->product_id);
-#endif
 
-            if (last != NULL) {
-                last->next = new_dev;
-            } else {
-                devs = new_dev;
-            }
-            last = new_dev;
+        if (use_libusb_whitelist) {
+            RemoveNonWhitelistedDevicesFromEnumeration(&usb_devs,  LIBUSB_hid_free_enumeration);
         }
     }
 #endif /* HAVE_LIBUSB */
 
-#ifdef HAVE_DRIVER_BACKEND
-    driver_devs = DRIVER_hid_enumerate(vendor_id, product_id);
-    for (driver_dev = driver_devs; driver_dev; driver_dev = driver_dev->next) {
-        new_dev = (struct SDL_hid_device_info *)SDL_malloc(sizeof(struct SDL_hid_device_info));
-        CopyHIDDeviceInfo(driver_dev, new_dev);
-
-        if (last != NULL) {
-            last->next = new_dev;
-        } else {
-            devs = new_dev;
-        }
-        last = new_dev;
-    }
-#endif /* HAVE_DRIVER_BACKEND */
-
 #ifdef HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
         raw_devs = PLATFORM_hid_enumerate(vendor_id, product_id);
-#ifdef DEBUG_HIDAPI
-        SDL_Log("hidraw devices found:");
+    }
 #endif
-        for (raw_dev = raw_devs; raw_dev; raw_dev = raw_dev->next) {
-            SDL_bool bFound = SDL_FALSE;
-#ifdef DEBUG_HIDAPI
-            SDL_Log(" - %ls %ls 0x%.4hx 0x%.4hx",
-                    raw_dev->manufacturer_string, raw_dev->product_string,
-                    raw_dev->vendor_id, raw_dev->product_id);
-#endif
-#ifdef HAVE_LIBUSB
-            for (usb_dev = usb_devs; usb_dev; usb_dev = usb_dev->next) {
-                if (raw_dev->vendor_id == usb_dev->vendor_id &&
-                    raw_dev->product_id == usb_dev->product_id &&
-                    (raw_dev->interface_number < 0 || raw_dev->interface_number == usb_dev->interface_number)) {
-                    bFound = SDL_TRUE;
-                    break;
-                }
-            }
-#endif
-#ifdef HAVE_DRIVER_BACKEND
-            for (driver_dev = driver_devs; driver_dev; driver_dev = driver_dev->next) {
-                if (raw_dev->vendor_id == driver_dev->vendor_id &&
-                    raw_dev->product_id == driver_dev->product_id &&
-                    (raw_dev->interface_number < 0 || raw_dev->interface_number == driver_dev->interface_number)) {
-                    bFound = SDL_TRUE;
-                    break;
-                }
-            }
-#endif
-            if (!bFound) {
-                new_dev = (struct SDL_hid_device_info *)SDL_malloc(sizeof(struct SDL_hid_device_info));
-                if (new_dev == NULL) {
-#ifdef HAVE_LIBUSB
-                    if (libusb_ctx.libhandle) {
-                        LIBUSB_hid_free_enumeration(usb_devs);
-                    }
-#endif
-                    PLATFORM_hid_free_enumeration(raw_devs);
-                    SDL_hid_free_enumeration(devs);
-                    SDL_OutOfMemory();
-                    return NULL;
-                }
-                CopyHIDDeviceInfo(raw_dev, new_dev);
-                new_dev->next = NULL;
 
-                if (last != NULL) {
-                    last->next = new_dev;
-                } else {
-                    devs = new_dev;
-                }
-                last = new_dev;
-            }
+    /* Highest priority are custom driver devices */
+    for (dev = driver_devs; dev; dev = dev->next) {
+        AddDeviceToEnumeration("driver", dev, &devs, &last);
+#ifdef HAVE_LIBUSB
+        RemoveDeviceFromEnumeration("libusb", dev, &usb_devs, LIBUSB_hid_free_enumeration);
+#endif
+#ifdef HAVE_PLATFORM_BACKEND
+        RemoveDeviceFromEnumeration("raw", dev, &raw_devs, PLATFORM_hid_free_enumeration);
+#endif
+    }
+
+    /* If whitelist is in effect, libusb has priority, otherwise raw devices do */
+    if (use_libusb_whitelist) {
+        for (dev = usb_devs; dev; dev = dev->next) {
+            AddDeviceToEnumeration("libusb", dev, &devs, &last);
+#ifdef HAVE_PLATFORM_BACKEND
+            RemoveDeviceFromEnumeration("raw", dev, &raw_devs, PLATFORM_hid_free_enumeration);
+#endif
         }
-        PLATFORM_hid_free_enumeration(raw_devs);
-    }
-#endif /* HAVE_PLATFORM_BACKEND */
-
+        for (dev = raw_devs; dev; dev = dev->next) {
+            AddDeviceToEnumeration("platform", dev, &devs, &last);
+        }
+    } else {
+        for (dev = raw_devs; dev; dev = dev->next) {
+            AddDeviceToEnumeration("raw", dev, &devs, &last);
 #ifdef HAVE_LIBUSB
-    if (libusb_ctx.libhandle) {
-        LIBUSB_hid_free_enumeration(usb_devs);
-    }
+            RemoveDeviceFromEnumeration("libusb", dev, &usb_devs, LIBUSB_hid_free_enumeration);
 #endif
-    return devs;
+        }
+        for (dev = usb_devs; dev; dev = dev->next) {
+            AddDeviceToEnumeration("libusb", dev, &devs, &last);
+        }
+    }
 
-#else
-    return NULL;
-#endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || HAVE_LIBUSB */
+#ifdef HAVE_DRIVER_BACKEND
+    DRIVER_hid_free_enumeration(driver_devs);
+#endif
+#ifdef HAVE_LIBUSB
+    LIBUSB_hid_free_enumeration(usb_devs);
+#endif
+#ifdef HAVE_PLATFORM_BACKEND
+    PLATFORM_hid_free_enumeration(raw_devs);
+#endif
+
+    return devs;
 }
 
 void SDL_hid_free_enumeration(struct SDL_hid_device_info *devs)
@@ -1621,7 +1689,7 @@ int SDL_hid_get_report_descriptor(SDL_hid_device *device, unsigned char *buf, si
 
 void SDL_hid_ble_scan(SDL_bool active)
 {
-#if !defined(SDL_HIDAPI_DISABLED) && (defined(__IOS__) || defined(__TVOS__))
+#if !defined(SDL_HIDAPI_DISABLED) && (defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS))
     extern void hid_ble_scan(int bStart);
     hid_ble_scan(active);
 #endif

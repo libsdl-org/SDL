@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -9,16 +9,17 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include <stdlib.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
 
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
 
-#if defined(__IOS__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__) || defined(__WINDOWS__) || defined(__LINUX__)
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
+#include <stdlib.h>
+
+#if defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_EMSCRIPTEN) || defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_LINUX)
 #define HAVE_OPENGLES2
 #endif
 
@@ -46,9 +47,18 @@ typedef struct shader_data
     GLuint color_buffer;
 } shader_data;
 
+typedef enum wait_state
+{
+    WAIT_STATE_GO = 0,
+    WAIT_STATE_ENTER_SEM,
+    WAIT_STATE_WAITING_ON_SEM,
+} wait_state;
+
 typedef struct thread_data
 {
     SDL_Thread *thread;
+    SDL_Semaphore *suspend_sem;
+    SDL_AtomicInt suspended;
     int done;
     int index;
 } thread_data;
@@ -56,6 +66,7 @@ typedef struct thread_data
 static SDLTest_CommonState *state;
 static SDL_GLContext *context = NULL;
 static int depth = 16;
+static SDL_bool suspend_when_occluded;
 static GLES2_Context ctx;
 
 static int LoadContext(GLES2_Context *data)
@@ -89,7 +100,7 @@ quit(int rc)
 {
     int i;
 
-    if (context != NULL) {
+    if (context) {
         for (i = 0; i < state->num_windows; i++) {
             if (context[i]) {
                 SDL_GL_DeleteContext(context[i]);
@@ -525,7 +536,7 @@ Render(unsigned int width, unsigned int height, shader_data *data)
 static int done;
 static Uint32 frames;
 static shader_data *datas;
-#ifndef __EMSCRIPTEN__
+#ifndef SDL_PLATFORM_EMSCRIPTEN
 static thread_data *threads;
 #endif
 
@@ -550,13 +561,16 @@ render_window(int index)
     ++frames;
 }
 
-#ifndef __EMSCRIPTEN__
+#ifndef SDL_PLATFORM_EMSCRIPTEN
 static int SDLCALL
 render_thread_fn(void *render_ctx)
 {
     thread_data *thread = render_ctx;
 
     while (!done && !thread->done && state->windows[thread->index]) {
+        if (SDL_AtomicCompareAndSwap(&thread->suspended, WAIT_STATE_ENTER_SEM, WAIT_STATE_WAITING_ON_SEM)) {
+            SDL_WaitSemaphore(thread->suspend_sem);
+        }
         render_window(thread->index);
     }
 
@@ -564,28 +578,53 @@ render_thread_fn(void *render_ctx)
     return 0;
 }
 
+static thread_data *GetThreadDataForWindow(SDL_WindowID id)
+{
+    int i;
+    SDL_Window *window = SDL_GetWindowFromID(id);
+    if (window) {
+        for (i = 0; i < state->num_windows; ++i) {
+            if (window == state->windows[i]) {
+                return &threads[i];
+            }
+        }
+    }
+    return NULL;
+}
+
 static void
 loop_threaded(void)
 {
     SDL_Event event;
-    int i;
+    thread_data *tdata;
 
     /* Wait for events */
     while (SDL_WaitEvent(&event) && !done) {
-        if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
-            SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
-            if (window) {
-                for (i = 0; i < state->num_windows; ++i) {
-                    if (window == state->windows[i]) {
-                        /* Stop the render thread when the window is closed */
-                        threads[i].done = 1;
-                        if (threads[i].thread) {
-                            SDL_WaitThread(threads[i].thread, NULL);
-                            threads[i].thread = NULL;
-                        }
-                        break;
-                    }
+        if (suspend_when_occluded && event.type == SDL_EVENT_WINDOW_OCCLUDED) {
+            tdata = GetThreadDataForWindow(event.window.windowID);
+            if (tdata) {
+                SDL_AtomicCompareAndSwap(&tdata->suspended, WAIT_STATE_GO, WAIT_STATE_ENTER_SEM);
+            }
+        } else if (suspend_when_occluded && event.type == SDL_EVENT_WINDOW_EXPOSED) {
+            tdata = GetThreadDataForWindow(event.window.windowID);
+            if (tdata) {
+                if (SDL_AtomicSet(&tdata->suspended, WAIT_STATE_GO) == WAIT_STATE_WAITING_ON_SEM) {
+                    SDL_PostSemaphore(tdata->suspend_sem);
                 }
+            }
+        } else if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
+            tdata = GetThreadDataForWindow(event.window.windowID);
+            if (tdata) {
+                /* Stop the render thread when the window is closed */
+                tdata->done = 1;
+                if (tdata->thread) {
+                    SDL_AtomicSet(&tdata->suspended, WAIT_STATE_GO);
+                    SDL_PostSemaphore(tdata->suspend_sem);
+                    SDL_WaitThread(tdata->thread, NULL);
+                    tdata->thread = NULL;
+                    SDL_DestroySemaphore(tdata->suspend_sem);
+                }
+                break;
             }
         }
         SDLTest_CommonEvent(state, &event, &done);
@@ -598,6 +637,7 @@ loop(void)
 {
     SDL_Event event;
     int i;
+    int active_windows = 0;
 
     /* Check for events */
     while (SDL_PollEvent(&event) && !done) {
@@ -605,14 +645,24 @@ loop(void)
     }
     if (!done) {
         for (i = 0; i < state->num_windows; ++i) {
+            if (state->windows[i] == NULL ||
+                (suspend_when_occluded && (SDL_GetWindowFlags(state->windows[i]) & SDL_WINDOW_OCCLUDED))) {
+                continue;
+            }
+            ++active_windows;
             render_window(i);
         }
     }
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     else {
         emscripten_cancel_main_loop();
     }
 #endif
+
+    /* If all windows are occluded, throttle event polling to 15hz. */
+    if (!done && !active_windows) {
+        SDL_DelayNS(SDL_NS_PER_SECOND / 15);
+    }
 }
 
 int main(int argc, char *argv[])
@@ -632,7 +682,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
     for (i = 1; i < argc;) {
@@ -648,6 +698,9 @@ int main(int argc, char *argv[])
                 consumed = 1;
             } else if (SDL_strcasecmp(argv[i], "--threaded") == 0) {
                 ++threaded;
+                consumed = 1;
+            } else if(SDL_strcasecmp(argv[i], "--suspend-when-occluded") == 0) {
+                suspend_when_occluded = SDL_TRUE;
                 consumed = 1;
             } else if (SDL_strcasecmp(argv[i], "--zdepth") == 0) {
                 i++;
@@ -667,7 +720,7 @@ int main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            static const char *options[] = { "[--fsaa]", "[--accel]", "[--zdepth %d]", "[--threaded]", NULL };
+            static const char *options[] = { "[--fsaa]", "[--accel]", "[--zdepth %d]", "[--threaded]", "[--suspend-when-occluded]",NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             quit(1);
         }
@@ -697,7 +750,7 @@ int main(int argc, char *argv[])
     }
 
     context = (SDL_GLContext *)SDL_calloc(state->num_windows, sizeof(*context));
-    if (context == NULL) {
+    if (!context) {
         SDL_Log("Out of memory!\n");
         quit(2);
     }
@@ -860,7 +913,7 @@ int main(int argc, char *argv[])
     then = SDL_GetTicks();
     done = 0;
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     if (threaded) {
@@ -869,6 +922,8 @@ int main(int argc, char *argv[])
         /* Start a render thread for each window */
         for (i = 0; i < state->num_windows; ++i) {
             threads[i].index = i;
+            SDL_AtomicSet(&threads[i].suspended, 0);
+            threads[i].suspend_sem = SDL_CreateSemaphore(0);
             threads[i].thread = SDL_CreateThread(render_thread_fn, "RenderThread", &threads[i]);
         }
 
@@ -896,7 +951,7 @@ int main(int argc, char *argv[])
         SDL_Log("%2.2f frames per second\n",
                 ((double)frames * 1000) / (now - then));
     }
-#ifndef __ANDROID__
+#ifndef SDL_PLATFORM_ANDROID
     quit(0);
 #endif
     return 0;

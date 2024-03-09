@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -11,15 +11,15 @@
 */
 /* Simple program:  Move N sprites around on the screen as fast as possible */
 
-#include <stdlib.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
 #include "testutils.h"
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
+#include <stdlib.h>
 
 static SDLTest_CommonState *state;
 
@@ -54,11 +54,11 @@ DrawComposite(DrawState *s)
     SDL_Rect viewport;
     SDL_FRect R;
     SDL_Texture *target;
+    SDL_Surface *surface;
 
     static SDL_bool blend_tested = SDL_FALSE;
     if (!blend_tested) {
         SDL_Texture *A, *B;
-        Uint32 P;
 
         A = SDL_CreateTexture(s->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
         SDL_SetTextureBlendMode(A, SDL_BLENDMODE_BLEND);
@@ -74,9 +74,15 @@ DrawComposite(DrawState *s)
         SDL_SetRenderDrawColor(s->renderer, 0x00, 0x00, 0x00, 0x00);
         SDL_RenderFillRect(s->renderer, NULL);
         SDL_RenderTexture(s->renderer, A, NULL, NULL);
-        SDL_RenderReadPixels(s->renderer, NULL, SDL_PIXELFORMAT_ARGB8888, &P, sizeof(P));
 
-        SDL_Log("Blended pixel: 0x%8.8" SDL_PRIX32 "\n", P);
+        surface = SDL_RenderReadPixels(s->renderer, NULL);
+        if (surface) {
+            Uint8 r, g, b, a;
+            if (SDL_ReadSurfacePixel(surface, 0, 0, &r, &g, &b, &a) == 0) {
+                SDL_Log("Blended pixel: 0x%.2x%.2x%.2x%.2x\n", r, g, b, a);
+            }
+            SDL_DestroySurface(surface);
+        }
 
         SDL_DestroyTexture(A);
         SDL_DestroyTexture(B);
@@ -141,7 +147,7 @@ Draw(DrawState *s)
     SDL_GetRenderViewport(s->renderer, &viewport);
 
     target = SDL_CreateTexture(s->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, viewport.w, viewport.h);
-    if (target == NULL) {
+    if (!target) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create render target texture: %s\n", SDL_GetError());
         return SDL_FALSE;
     }
@@ -199,7 +205,7 @@ static void loop(void)
             }
         }
     }
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {
         emscripten_cancel_main_loop();
     }
@@ -217,7 +223,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
     for (i = 1; i < argc;) {
@@ -269,7 +275,7 @@ int main(int argc, char *argv[])
     then = SDL_GetTicks();
     done = 0;
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {

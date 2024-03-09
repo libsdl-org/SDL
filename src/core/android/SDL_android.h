@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,6 +30,11 @@ extern "C" {
 #include <EGL/eglplatform.h>
 #include <android/native_window_jni.h>
 
+#include "../../audio/SDL_sysaudio.h"
+
+// this appears to be broken right now (on Android, not SDL, I think...?).
+#define ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES 0
+
 /* Interface from the SDL library into the Android Java activity */
 extern void Android_JNI_SetActivityTitle(const char *title);
 extern void Android_JNI_SetWindowStyle(SDL_bool fullscreen);
@@ -38,8 +43,8 @@ extern void Android_JNI_MinizeWindow(void);
 extern SDL_bool Android_JNI_ShouldMinimizeOnFocusLoss(void);
 
 extern SDL_bool Android_JNI_GetAccelerometerValues(float values[3]);
-extern void Android_JNI_ShowTextInput(SDL_Rect *inputRect);
-extern void Android_JNI_HideTextInput(void);
+extern void Android_JNI_ShowScreenKeyboard(SDL_Rect *inputRect);
+extern void Android_JNI_HideScreenKeyboard(void);
 extern SDL_bool Android_JNI_IsScreenKeyboardShown(void);
 extern ANativeWindow *Android_JNI_GetNativeWindow(void);
 
@@ -47,14 +52,15 @@ extern SDL_DisplayOrientation Android_JNI_GetDisplayNaturalOrientation(void);
 extern SDL_DisplayOrientation Android_JNI_GetDisplayCurrentOrientation(void);
 
 /* Audio support */
-extern void Android_DetectDevices(void);
-extern int Android_JNI_OpenAudioDevice(int iscapture, int device_id, SDL_AudioSpec *spec);
+void Android_StartAudioHotplug(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture);
+void Android_StopAudioHotplug(void);
+extern void Android_AudioThreadInit(SDL_AudioDevice *device);
+extern int Android_JNI_OpenAudioDevice(SDL_AudioDevice *device);
 extern void *Android_JNI_GetAudioBuffer(void);
 extern void Android_JNI_WriteAudioBuffer(void);
 extern int Android_JNI_CaptureAudioBuffer(void *buffer, int buflen);
 extern void Android_JNI_FlushCapturedAudio(void);
 extern void Android_JNI_CloseAudioDevice(const int iscapture);
-extern void Android_JNI_AudioSetThreadPriority(int iscapture, int device_id);
 
 /* Detecting device type */
 extern SDL_bool Android_IsDeXMode(void);
@@ -63,8 +69,8 @@ extern SDL_bool Android_IsChromebook(void);
 int Android_JNI_FileOpen(SDL_RWops *ctx, const char *fileName, const char *mode);
 Sint64 Android_JNI_FileSize(SDL_RWops *ctx);
 Sint64 Android_JNI_FileSeek(SDL_RWops *ctx, Sint64 offset, int whence);
-Sint64 Android_JNI_FileRead(SDL_RWops *ctx, void *buffer, Sint64 size);
-Sint64 Android_JNI_FileWrite(SDL_RWops *ctx, const void *buffer, Sint64 size);
+size_t Android_JNI_FileRead(SDL_RWops *ctx, void *buffer, size_t size);
+size_t Android_JNI_FileWrite(SDL_RWops *ctx, const void *buffer, size_t size);
 int Android_JNI_FileClose(SDL_RWops *ctx);
 
 /* Environment support */
@@ -107,7 +113,7 @@ int Android_JNI_SendMessage(int command, int param);
 JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv *mEnv, jclass cls);
 
 /* MessageBox */
-int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
+int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
 /* Cursor support */
 int Android_JNI_CreateCustomCursor(SDL_Surface *surface, int hot_x, int hot_y);
@@ -118,9 +124,6 @@ SDL_bool Android_JNI_SetSystemCursor(int cursorID);
 /* Relative mouse support */
 SDL_bool Android_JNI_SupportsRelativeMouse(void);
 SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled);
-
-/* Request permission */
-SDL_bool Android_JNI_RequestPermission(const char *permission);
 
 /* Show toast notification */
 int Android_JNI_ShowToast(const char *message, int duration, int gravity, int xOffset, int yOffset);
