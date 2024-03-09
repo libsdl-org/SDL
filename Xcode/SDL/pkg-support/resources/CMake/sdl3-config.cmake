@@ -33,8 +33,8 @@ set(SDL3_FOUND TRUE)
 
 # Compute the installation prefix relative to this file.
 get_filename_component(_sdl3_framework_path "${CMAKE_CURRENT_LIST_FILE}" PATH)      # /SDL3.framework/Resources/CMake/
-get_filename_component(_sdl3_framework_path "${_IMPORT_PREFIX}" PATH)               # /SDL3.framework/Resources/
-get_filename_component(_sdl3_framework_path "${_IMPORT_PREFIX}" PATH)               # /SDL3.framework/
+get_filename_component(_sdl3_framework_path "${_sdl3_framework_path}" PATH)         # /SDL3.framework/Resources/
+get_filename_component(_sdl3_framework_path "${_sdl3_framework_path}" PATH)         # /SDL3.framework/
 get_filename_component(_sdl3_framework_parent_path "${_sdl3_framework_path}" PATH)  # /
 
 set_and_check(_sdl3_include_dirs "${_sdl3_framework_path}/Headers")
