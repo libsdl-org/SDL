@@ -934,12 +934,25 @@ extern "C" {
  *
  * The default is the value of SDL_HINT_JOYSTICK_HIDAPI on macOS, and "0" on other platforms.
  *
- * Working with official Sony Windows driver (sixaxis.sys). This driver supports USB only, not Bluetooth.
+ * For official Sony driver (sixaxis.sys) use SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER.
  * See https://github.com/ViGEm/DsHidMini for an alternative driver on Windows.
  *
  * This hint should be set before enumerating controllers.
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_PS3 "SDL_JOYSTICK_HIDAPI_PS3"
+
+/**
+ * A variable controlling whether the Sony driver (sixaxis.sys) for PS3 controllers (Sixaxis/DualShock 3) should be used.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - Sony driver (sixaxis.sys) is not used.
+ *   "1"       - Sony driver (sixaxis.sys) is used.
+ *
+ * The default value is 0.
+ * 
+ * This hint should be set before enumerating controllers.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER "SDL_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER"
 
 /**
  * A variable controlling whether the HIDAPI driver for PS4 controllers should be used.
