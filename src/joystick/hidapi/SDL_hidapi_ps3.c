@@ -1064,12 +1064,12 @@ static SDL_bool HIDAPI_DriverPS3SonySixaxis_InitDevice(SDL_HIDAPI_Device *device
     int size = ReadFeatureReport(device->dev, 0xf2, data, sizeof(data));
     if (size < 0) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                     "HIDAPI_DriverPS3_InitDevice(): Couldn't read feature report 0xf2. Trying again with 0x0.");
+                     "HIDAPI_DriverPS3SonySixaxis_InitDevice(): Couldn't read feature report 0xf2. Trying again with 0x0.");
         SDL_zeroa(data);
         size = ReadFeatureReport(device->dev, 0x00, data, sizeof(data));
         if (size < 0) {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "HIDAPI_DriverPS3_InitDevice(): Couldn't read feature report 0x00.");
+                         "HIDAPI_DriverPS3SonySixaxis_InitDevice(): Couldn't read feature report 0x00.");
             return SDL_FALSE;
         }
 #ifdef DEBUG_PS3_PROTOCOL
@@ -1305,7 +1305,7 @@ static SDL_bool HIDAPI_DriverPS3SonySixaxis_UpdateDevice(SDL_HIDAPI_Device *devi
     size = ReadFeatureReport(device->dev, 0x0, data, sizeof(data));
     if (size < 0) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                     "HIDAPI_DriverPS3_UpdateDevice(): Couldn't read feature report 0x00");
+                     "HIDAPI_DriverPS3SonySixaxis_UpdateDevice(): Couldn't read feature report 0x00");
         return SDL_FALSE;
     }
 
