@@ -82,7 +82,7 @@ assert can have unique static variables associated with it.
 
 #if defined(_MSC_VER) && (_MSC_VER > 1400)
     #define SDL_Assume(cond) __assume(cond)
-#elif _SDL_HAS_BUILTIN(__builtin_assume)
+#elif SDL_HAS_BUILTIN(__builtin_assume)
     #define SDL_Assume(cond) __builtin_assume(cond)
 #elif defined(__clang__) || (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 4)))
     #define SDL_Assume(cond) do {						\
