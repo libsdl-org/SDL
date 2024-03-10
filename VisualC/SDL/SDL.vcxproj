@@ -504,6 +504,7 @@
     <ClCompile Include="..\..\src\core\windows\SDL_windows.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_xinput.c" />
     <ClCompile Include="..\..\src\cpuinfo\SDL_cpuinfo.c" />
+    <ClCompile Include="..\..\src\dialog\windows\SDL_windowsdialog.c" />
     <ClCompile Include="..\..\src\dynapi\SDL_dynapi.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>

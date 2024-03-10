@@ -937,6 +937,9 @@
     <ClCompile Include="..\..\src\cpuinfo\SDL_cpuinfo.c">
       <Filter>cpuinfo</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\dialog\windows\SDL_windowsdialog.c">
+      <Filter>dialog</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\dynapi\SDL_dynapi.c">
       <Filter>dynapi</Filter>
     </ClCompile>

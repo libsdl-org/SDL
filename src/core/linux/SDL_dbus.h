@@ -31,6 +31,9 @@
 #ifndef DBUS_TIMEOUT_USE_DEFAULT
 #define DBUS_TIMEOUT_USE_DEFAULT -1
 #endif
+#ifndef DBUS_TIMEOUT_INFINITE
+#define DBUS_TIMEOUT_INFINITE ((int) 0x7fffffff)
+#endif
 
 typedef struct SDL_DBusContext
 {
@@ -44,6 +47,7 @@ typedef struct SDL_DBusContext
     void (*connection_set_exit_on_disconnect)(DBusConnection *, dbus_bool_t);
     dbus_bool_t (*connection_get_is_connected)(DBusConnection *);
     dbus_bool_t (*connection_add_filter)(DBusConnection *, DBusHandleMessageFunction, void *, DBusFreeFunction);
+    dbus_bool_t (*connection_remove_filter)(DBusConnection *, DBusHandleMessageFunction, void *);
     dbus_bool_t (*connection_try_register_object_path)(DBusConnection *, const char *,
                                                        const DBusObjectPathVTable *, void *, DBusError *);
     dbus_bool_t (*connection_send)(DBusConnection *, DBusMessage *, dbus_uint32_t *);
@@ -55,6 +59,7 @@ typedef struct SDL_DBusContext
     dbus_bool_t (*connection_read_write)(DBusConnection *, int);
     DBusDispatchStatus (*connection_dispatch)(DBusConnection *);
     dbus_bool_t (*message_is_signal)(DBusMessage *, const char *, const char *);
+    dbus_bool_t (*message_has_path)(DBusMessage *, const char *);
     DBusMessage *(*message_new_method_call)(const char *, const char *, const char *, const char *);
     dbus_bool_t (*message_append_args)(DBusMessage *, int, ...);
     dbus_bool_t (*message_append_args_valist)(DBusMessage *, int, va_list);

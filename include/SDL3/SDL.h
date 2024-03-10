@@ -38,6 +38,7 @@
 #include <SDL3/SDL_camera.h>
 #include <SDL3/SDL_clipboard.h>
 #include <SDL3/SDL_cpuinfo.h>
+#include <SDL3/SDL_dialog.h>
 #include <SDL3/SDL_endian.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
