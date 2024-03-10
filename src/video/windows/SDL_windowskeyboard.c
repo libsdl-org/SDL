@@ -210,6 +210,11 @@ void WIN_ResetDeadKeys()
     }
 }
 
+SDL_bool WIN_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
+{
+    return SDL_FALSE;
+}
+
 void WIN_StartTextInput(SDL_VideoDevice *_this)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
