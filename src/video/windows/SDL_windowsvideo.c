@@ -250,9 +250,10 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->Vulkan_CreateSurface = WIN_Vulkan_CreateSurface;
 #endif
 
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     device->StartTextInput = WIN_StartTextInput;
     device->StopTextInput = WIN_StopTextInput;
+    device->HasScreenKeyboardSupport = WIN_HasScreenKeyboardSupport;
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     device->SetTextInputRect = WIN_SetTextInputRect;
     device->ClearComposition = WIN_ClearComposition;
     device->IsTextInputShown = WIN_IsTextInputShown;
