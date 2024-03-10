@@ -257,7 +257,7 @@ static void HIDAPI_DriverPS3_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL
     ctx->player_index = player_index;
 
     /* This will set the new LED state based on the new player index */
-    HIDAPI_DriverPS3_UpdateEffects(device);        
+    HIDAPI_DriverPS3_UpdateEffects(device);
 }
 
 static SDL_bool HIDAPI_DriverPS3_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
@@ -320,7 +320,6 @@ static int HIDAPI_DriverPS3_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Jo
 
     data[0] = k_EPS3ReportIdEffects;
     report_size = sizeof(data);
-
     offset = 1;
     SDL_memcpy(&data[offset], effect, SDL_min((sizeof(data) - offset), (size_t)size));
 
