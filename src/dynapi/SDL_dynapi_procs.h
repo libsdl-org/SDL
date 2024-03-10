@@ -1026,3 +1026,6 @@ SDL_DYNAPI_PROC(void*,SDL_bsearch_r,(const void *a, const void *b, size_t c, siz
 SDL_DYNAPI_PROC(int,SDL_AddVulkanRenderSemaphores,(SDL_Renderer *a, Uint32 b, Sint64 c, Sint64 d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_GetNumJoystickBalls,(SDL_Joystick *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetJoystickBall,(SDL_Joystick *a, int b, int *c, int *d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(void,SDL_ShowOpenFileDialog,(SDL_DialogFileCallback a, void *b, SDL_Window *c, const SDL_DialogFileFilter *d, const char *e, int f),(a,b,c,d,e,f),)
+SDL_DYNAPI_PROC(void,SDL_ShowSaveFileDialog,(SDL_DialogFileCallback a, void *b, SDL_Window *c, const SDL_DialogFileFilter *d, const char *e),(a,b,c,d,e),)
+SDL_DYNAPI_PROC(void,SDL_ShowOpenFolderDialog,(SDL_DialogFileCallback a, void *b, SDL_Window *c, const char *d, int e),(a,b,c,d,e),)

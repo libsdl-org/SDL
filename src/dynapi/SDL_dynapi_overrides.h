@@ -1001,3 +1001,6 @@
 #define SDL_AddVulkanRenderSemaphores SDL_AddVulkanRenderSemaphores_REAL
 #define SDL_GetNumJoystickBalls SDL_GetNumJoystickBalls_REAL
 #define SDL_GetJoystickBall SDL_GetJoystickBall_REAL
+#define SDL_ShowOpenFileDialog SDL_ShowOpenFileDialog_REAL
+#define SDL_ShowSaveFileDialog SDL_ShowSaveFileDialog_REAL
+#define SDL_ShowOpenFolderDialog SDL_ShowOpenFolderDialog_REAL
