@@ -906,25 +906,21 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     int i, attempted = 0;
     SDL_PropertiesID new_props;
 
-    if (!window && surface) {
-        return SDL_CreateSoftwareRenderer(surface);
-    }
-
 #ifdef SDL_PLATFORM_ANDROID
     Android_ActivityMutex_Lock_Running();
 #endif
 
-    if (!window) {
+    if ((!window && !surface) || (window && surface)) {
         SDL_InvalidParamError("window");
         goto error;
     }
 
-    if (SDL_WindowHasSurface(window)) {
+    if (window && SDL_WindowHasSurface(window)) {
         SDL_SetError("Surface already associated with window");
         goto error;
     }
 
-    if (SDL_GetRenderer(window)) {
+    if (window && SDL_GetRenderer(window)) {
         SDL_SetError("Renderer already associated with window");
         goto error;
     }
@@ -934,38 +930,45 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
         SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_GetHintBoolean(SDL_HINT_RENDER_VSYNC, SDL_TRUE));
     }
 
-    if (!name) {
-        name = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
-    }
+    if (surface) {
+        renderer = SW_CreateRendererForSurface(surface, props);
+        if (!renderer) {
+            goto error;
+        }
+    } else {
+        if (!name) {
+            name = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
+        }
 
-    if (name) {
-        for (i = 0; i < n; i++) {
-            const SDL_RenderDriver *driver = render_drivers[i];
-            if (SDL_strcasecmp(name, driver->info.name) == 0) {
+        if (name) {
+            for (i = 0; i < n; i++) {
+                const SDL_RenderDriver *driver = render_drivers[i];
+                if (SDL_strcasecmp(name, driver->info.name) == 0) {
+                    /* Create a new renderer instance */
+                    ++attempted;
+                    renderer = driver->CreateRenderer(window, props);
+                    break;
+                }
+            }
+        } else {
+            for (i = 0; i < n; i++) {
+                const SDL_RenderDriver *driver = render_drivers[i];
                 /* Create a new renderer instance */
                 ++attempted;
                 renderer = driver->CreateRenderer(window, props);
-                break;
+                if (renderer) {
+                    /* Yay, we got one! */
+                    break;
+                }
             }
         }
-    } else {
-        for (i = 0; i < n; i++) {
-            const SDL_RenderDriver *driver = render_drivers[i];
-            /* Create a new renderer instance */
-            ++attempted;
-            renderer = driver->CreateRenderer(window, props);
-            if (renderer) {
-                /* Yay, we got one! */
-                break;
-            }
-        }
-    }
 
-    if (!renderer) {
-        if (!name || !attempted) {
-            SDL_SetError("Couldn't find matching render driver");
+        if (!renderer) {
+            if (!name || !attempted) {
+                SDL_SetError("Couldn't find matching render driver");
+            }
+            goto error;
         }
-        goto error;
     }
 
     if (SDL_GetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
@@ -983,6 +986,10 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     renderer->magic = &SDL_renderer_magic;
     renderer->window = window;
     renderer->target_mutex = SDL_CreateMutex();
+    if (surface) {
+        renderer->main_view.pixel_w = surface->w;
+        renderer->main_view.pixel_h = surface->h;
+    }
     renderer->main_view.viewport.w = -1;
     renderer->main_view.viewport.h = -1;
     renderer->main_view.scale.x = 1.0f;
@@ -1005,7 +1012,12 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     /* new textures start at zero, so we start at 1 so first render doesn't flush by accident. */
     renderer->render_command_generation = 1;
 
-    renderer->line_method = SDL_GetRenderLineMethod();
+    if (renderer->info.flags & SDL_RENDERER_SOFTWARE) {
+        /* Software renderer always uses line method, for speed */
+        renderer->line_method = SDL_RENDERLINEMETHOD_LINES;
+    } else {
+        renderer->line_method = SDL_GetRenderLineMethod();
+    }
 
     renderer->SDR_white_point = 1.0f;
     renderer->HDR_headroom = 1.0f;
@@ -1032,11 +1044,15 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     SDL_SetNumberProperty(new_props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, renderer->output_colorspace);
     UpdateHDRProperties(renderer);
 
-    SDL_SetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_RENDERER_POINTER, renderer);
+    if (window) {
+        SDL_SetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_RENDERER_POINTER, renderer);
+    }
 
     SDL_SetRenderViewport(renderer, NULL);
 
-    SDL_AddEventWatch(SDL_RendererEventWatch, renderer);
+    if (window) {
+        SDL_AddEventWatch(SDL_RendererEventWatch, renderer);
+    }
 
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER,
                 "Created renderer: %s", renderer->info.name);
@@ -1081,31 +1097,10 @@ SDL_Renderer *SDL_CreateSoftwareRenderer(SDL_Surface *surface)
 {
 #if SDL_VIDEO_RENDER_SW
     SDL_Renderer *renderer;
-
-    renderer = SW_CreateRendererForSurface(surface);
-
-    if (renderer) {
-        VerifyDrawQueueFunctions(renderer);
-        renderer->magic = &SDL_renderer_magic;
-        renderer->target_mutex = SDL_CreateMutex();
-        renderer->main_view.pixel_w = surface->w;
-        renderer->main_view.pixel_h = surface->h;
-        renderer->main_view.viewport.w = -1;
-        renderer->main_view.viewport.h = -1;
-        renderer->main_view.scale.x = 1.0f;
-        renderer->main_view.scale.y = 1.0f;
-        renderer->view = &renderer->main_view;
-        renderer->dpi_scale.x = 1.0f;
-        renderer->dpi_scale.y = 1.0f;
-
-        /* new textures start at zero, so we start at 1 so first render doesn't flush by accident. */
-        renderer->render_command_generation = 1;
-
-        /* Software renderer always uses line method, for speed */
-        renderer->line_method = SDL_RENDERLINEMETHOD_LINES;
-
-        SDL_SetRenderViewport(renderer, NULL);
-    }
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetProperty(props, SDL_PROP_RENDERER_CREATE_SURFACE_POINTER, surface);
+    renderer = SDL_CreateRendererWithProperties(props);
+    SDL_DestroyProperties(props);
     return renderer;
 #else
     SDL_SetError("SDL not built with rendering support");

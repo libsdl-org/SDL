@@ -1116,7 +1116,7 @@ static void SW_SelectBestFormats(SDL_Renderer *renderer, SDL_PixelFormatEnum for
     }
 }
 
-SDL_Renderer *SW_CreateRendererForSurface(SDL_Surface *surface)
+SDL_Renderer *SW_CreateRendererForSurface(SDL_Surface *surface, SDL_PropertiesID create_props)
 {
     SDL_Renderer *renderer;
     SW_RenderData *data;
@@ -1168,12 +1168,19 @@ SDL_Renderer *SW_CreateRendererForSurface(SDL_Surface *surface)
 
     SW_SelectBestFormats(renderer, surface->format->format);
 
+    SDL_SetupRendererColorspace(renderer, create_props);
+
+    if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
+        SDL_SetError("Unsupported output colorspace");
+        SW_DestroyRenderer(renderer);
+        return NULL;
+    }
+
     return renderer;
 }
 
 static SDL_Renderer *SW_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
 {
-    SDL_Renderer *renderer;
     const char *hint;
     SDL_Surface *surface;
     SDL_bool no_hint_set;
@@ -1205,20 +1212,7 @@ static SDL_Renderer *SW_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
         return NULL;
     }
 
-    renderer = SW_CreateRendererForSurface(surface);
-    if (!renderer) {
-        return NULL;
-    }
-
-    SDL_SetupRendererColorspace(renderer, create_props);
-
-    if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
-        SDL_SetError("Unsupported output colorspace");
-        SW_DestroyRenderer(renderer);
-        return NULL;
-    }
-
-    return renderer;
+    return SW_CreateRendererForSurface(surface, create_props);
 }
 
 SDL_RenderDriver SW_RenderDriver = {
