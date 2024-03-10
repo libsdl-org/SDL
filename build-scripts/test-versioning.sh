@@ -25,7 +25,7 @@ not_ok () {
     failed=1
 }
 
-version=$(sed -Ene 's/^project\(SDL[0-9]+ LANGUAGES C CXX VERSION "([0-9.]*)"\)$/\1/p' CMakeLists.txt)
+version=$(sed -Ene 's/^project\(SDL[0-9]+ LANGUAGES C VERSION "([0-9.]*)"\)$/\1/p' CMakeLists.txt)
 
 if [ "$ref_version" = "$version" ]; then
     ok "CMakeLists.txt $version"
