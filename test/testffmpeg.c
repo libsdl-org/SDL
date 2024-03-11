@@ -91,6 +91,7 @@ struct SwsContextContainer
 };
 static const char *SWS_CONTEXT_CONTAINER_PROPERTY = "SWS_CONTEXT_CONTAINER";
 static int done;
+static SDL_bool verbose;
 
 static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char *driver)
 {
@@ -314,7 +315,7 @@ static Uint32 GetTextureFormat(enum AVPixelFormat format)
         return SDL_PIXELFORMAT_NV12;
     case AV_PIX_FMT_NV21:
         return SDL_PIXELFORMAT_NV21;
-	case AV_PIX_FMT_P010:
+    case AV_PIX_FMT_P010:
         return SDL_PIXELFORMAT_P010;
     default:
         return SDL_PIXELFORMAT_UNKNOWN;
@@ -1034,8 +1035,47 @@ static void HandleAudioFrame(AVFrame *frame)
     }
 }
 
+static void av_log_callback(void* avcl, int level, const char *fmt, va_list vl)
+{
+    const char *pszCategory = NULL;
+    char *message;
+
+    switch (level) {
+    case AV_LOG_PANIC:
+    case AV_LOG_FATAL:
+        pszCategory = "fatal error";
+        break;
+    case AV_LOG_ERROR:
+        pszCategory = "error";
+        break;
+    case AV_LOG_WARNING:
+        pszCategory = "warning";
+        break;
+    case AV_LOG_INFO:
+        pszCategory = "info";
+        break;
+    case AV_LOG_VERBOSE:
+        pszCategory = "verbose";
+        break;
+    case AV_LOG_DEBUG:
+        if (verbose) {
+            pszCategory = "debug";
+        }
+        break;
+    }
+
+    if (!pszCategory) {
+        // We don't care about this message
+        return;
+    }
+
+    SDL_vasprintf(&message, fmt, vl);
+    SDL_Log("ffmpeg %s: %s", pszCategory, message);
+    SDL_free(message);
+}
+
 static void print_usage(SDLTest_CommonState *state, const char *argv0) {
-    static const char *options[] = { "[--sprites N]", "[--audio-codec codec]", "[--video-codec codec]", "[--software]", "video_file", NULL };
+    static const char *options[] = { "[--verbose]", "[--sprites N]", "[--audio-codec codec]", "[--video-codec codec]", "[--software]", "video_file", NULL };
     SDLTest_CommonLogUsage(state, argv0, options);
 }
 
@@ -1068,13 +1108,19 @@ int main(int argc, char *argv[])
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
+    /* Log ffmpeg messages */
+    av_log_set_callback( av_log_callback );
+
     /* Parse commandline */
     for (i = 1; i < argc;) {
         int consumed;
 
         consumed = SDLTest_CommonArg(state, i);
         if (!consumed) {
-            if (SDL_strcmp(argv[i], "--sprites") == 0 && argv[i+1]) {
+            if (SDL_strcmp(argv[i], "--verbose") == 0) {
+                verbose = SDL_TRUE;
+                consumed = 1;
+            } else if (SDL_strcmp(argv[i], "--sprites") == 0 && argv[i+1]) {
                 num_sprites = SDL_atoi(argv[i+1]);
                 consumed = 2;
             } else if (SDL_strcmp(argv[i], "--audio-codec") == 0 && argv[i+1]) {
