@@ -383,7 +383,6 @@ static AVCodecContext *OpenVideoStream(AVFormatContext *ic, int stream, const AV
     AVCodecParameters *codecpar = st->codecpar;
     AVCodecContext *context;
     const AVCodecHWConfig *config;
-    enum AVHWDeviceType type;
     int i;
     int result;
 
@@ -416,54 +415,46 @@ static AVCodecContext *OpenVideoStream(AVFormatContext *ic, int stream, const AV
             continue;
         }
 
-        type = AV_HWDEVICE_TYPE_NONE;
-        while (!context->hw_device_ctx &&
-               (type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE) {
-            if (type != config->device_type) {
-                continue;
-            }
-
 #ifdef SDL_PLATFORM_WIN32
-            if (d3d11_device && type == AV_HWDEVICE_TYPE_D3D11VA) {
-                AVD3D11VADeviceContext *device_context;
+        if (d3d11_device && config->device_type == AV_HWDEVICE_TYPE_D3D11VA) {
+            AVD3D11VADeviceContext *device_context;
 
-                context->hw_device_ctx = av_hwdevice_ctx_alloc(type);
+            context->hw_device_ctx = av_hwdevice_ctx_alloc(config->device_type);
 
-                device_context = (AVD3D11VADeviceContext *)((AVHWDeviceContext *)context->hw_device_ctx->data)->hwctx;
-                device_context->device = d3d11_device;
-                ID3D11Device_AddRef(device_context->device);
-                device_context->device_context = d3d11_context;
-                ID3D11DeviceContext_AddRef(device_context->device_context);
+            device_context = (AVD3D11VADeviceContext *)((AVHWDeviceContext *)context->hw_device_ctx->data)->hwctx;
+            device_context->device = d3d11_device;
+            ID3D11Device_AddRef(device_context->device);
+            device_context->device_context = d3d11_context;
+            ID3D11DeviceContext_AddRef(device_context->device_context);
 
-                result = av_hwdevice_ctx_init(context->hw_device_ctx);
-                if (result < 0) {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create hardware device context: %s", av_err2str(result));
-                } else {
-                    SDL_Log("Using %s hardware acceleration with pixel format %s\n", av_hwdevice_get_type_name(config->device_type), av_get_pix_fmt_name(config->pix_fmt));
-                }
-            } else
-#endif
-            if (vulkan_context && type == AV_HWDEVICE_TYPE_VULKAN) {
-                AVVulkanDeviceContext *device_context;
-
-                context->hw_device_ctx = av_hwdevice_ctx_alloc(type);
-
-                device_context = (AVVulkanDeviceContext *)((AVHWDeviceContext *)context->hw_device_ctx->data)->hwctx;
-                SetupVulkanDeviceContextData(vulkan_context, device_context);
-
-                result = av_hwdevice_ctx_init(context->hw_device_ctx);
-                if (result < 0) {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create hardware device context: %s", av_err2str(result));
-                } else {
-                    SDL_Log("Using %s hardware acceleration with pixel format %s\n", av_hwdevice_get_type_name(config->device_type), av_get_pix_fmt_name(config->pix_fmt));
-                }
+            result = av_hwdevice_ctx_init(context->hw_device_ctx);
+            if (result < 0) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create %s hardware device context: %s", av_hwdevice_get_type_name(config->device_type), av_err2str(result));
             } else {
-                result = av_hwdevice_ctx_create(&context->hw_device_ctx, type, NULL, NULL, 0);
-                if (result < 0) {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create hardware device context: %s", av_err2str(result));
-                } else {
-                    SDL_Log("Using %s hardware acceleration with pixel format %s\n", av_hwdevice_get_type_name(config->device_type), av_get_pix_fmt_name(config->pix_fmt));
-                }
+                SDL_Log("Using %s hardware acceleration with pixel format %s\n", av_hwdevice_get_type_name(config->device_type), av_get_pix_fmt_name(config->pix_fmt));
+            }
+        } else
+#endif
+        if (vulkan_context && config->device_type == AV_HWDEVICE_TYPE_VULKAN) {
+            AVVulkanDeviceContext *device_context;
+
+            context->hw_device_ctx = av_hwdevice_ctx_alloc(config->device_type);
+
+            device_context = (AVVulkanDeviceContext *)((AVHWDeviceContext *)context->hw_device_ctx->data)->hwctx;
+            SetupVulkanDeviceContextData(vulkan_context, device_context);
+
+            result = av_hwdevice_ctx_init(context->hw_device_ctx);
+            if (result < 0) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create %s hardware device context: %s", av_hwdevice_get_type_name(config->device_type), av_err2str(result));
+            } else {
+                SDL_Log("Using %s hardware acceleration with pixel format %s\n", av_hwdevice_get_type_name(config->device_type), av_get_pix_fmt_name(config->pix_fmt));
+            }
+        } else {
+            result = av_hwdevice_ctx_create(&context->hw_device_ctx, config->device_type, NULL, NULL, 0);
+            if (result < 0) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create %s hardware device context: %s", av_hwdevice_get_type_name(config->device_type), av_err2str(result));
+            } else {
+                SDL_Log("Using %s hardware acceleration with pixel format %s\n", av_hwdevice_get_type_name(config->device_type), av_get_pix_fmt_name(config->pix_fmt));
             }
         }
     }
@@ -1076,7 +1067,6 @@ int main(int argc, char *argv[])
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
