@@ -1765,7 +1765,10 @@ int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen, SDL_bool c
         if (commit) {
             int ret = 0;
             if (_this->SetWindowFullscreen) {
-                ret = _this->SetWindowFullscreen(_this, window, display ? display : SDL_GetVideoDisplayForFullscreenWindow(window), SDL_FALSE);
+                SDL_VideoDisplay *full_screen_display = display ? display : SDL_GetVideoDisplayForFullscreenWindow(window);
+                if (full_screen_display) {
+                    ret = _this->SetWindowFullscreen(_this, window, full_screen_display, SDL_FALSE);
+                }
             } else {
                 resized = SDL_TRUE;
             }
