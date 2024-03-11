@@ -2153,6 +2153,10 @@ expression e;
 + SDL_EVENT_JOYSTICK_AXIS_MOTION
 @@
 @@
+- SDL_JOYBALLMOTION
++ SDL_EVENT_JOYSTICK_BALL_MOTION
+@@
+@@
 - SDL_JOYHATMOTION
 + SDL_EVENT_JOYSTICK_HAT_MOTION
 @@
@@ -3044,3 +3048,13 @@ typedef SDL_version, SDL_Version;
 @@
 - SDL_HINT_PS2_DYNAMIC_VSYNC
 + SDL_HINT_RENDER_PS2_DYNAMIC_VSYNC
+@@
+@@
+- SDL_JoystickNumBalls
++ SDL_NumJoystickBalls
+  (...)
+@@
+@@
+- SDL_JoystickGetBall
++ SDL_GetJoystickBall
+  (...)

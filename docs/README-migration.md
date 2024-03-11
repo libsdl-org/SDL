@@ -370,6 +370,7 @@ The following symbols have been renamed:
 * SDL_FINGERUP => SDL_EVENT_FINGER_UP
 * SDL_FIRSTEVENT => SDL_EVENT_FIRST
 * SDL_JOYAXISMOTION => SDL_EVENT_JOYSTICK_AXIS_MOTION
+* SDL_JOYBALLMOTION => SDL_EVENT_JOYSTICK_BALL_MOTION
 * SDL_JOYBATTERYUPDATED => SDL_EVENT_JOYSTICK_BATTERY_UPDATED
 * SDL_JOYBUTTONDOWN => SDL_EVENT_JOYSTICK_BUTTON_DOWN
 * SDL_JOYBUTTONUP => SDL_EVENT_JOYSTICK_BUTTON_UP
@@ -797,6 +798,7 @@ The following functions have been renamed:
 * SDL_JoystickGetAttached() => SDL_JoystickConnected()
 * SDL_JoystickGetAxis() => SDL_GetJoystickAxis()
 * SDL_JoystickGetAxisInitialState() => SDL_GetJoystickAxisInitialState()
+* SDL_JoystickGetBall() => SDL_GetJoystickBall()
 * SDL_JoystickGetButton() => SDL_GetJoystickButton()
 * SDL_JoystickGetFirmwareVersion() => SDL_GetJoystickFirmwareVersion()
 * SDL_JoystickGetGUID() => SDL_GetJoystickGUID()
@@ -813,6 +815,7 @@ The following functions have been renamed:
 * SDL_JoystickIsVirtual() => SDL_IsJoystickVirtual()
 * SDL_JoystickName() => SDL_GetJoystickName()
 * SDL_JoystickNumAxes() => SDL_GetNumJoystickAxes()
+* SDL_JoystickNumBalls() => SDL_GetNumJoystickBalls()
 * SDL_JoystickNumButtons() => SDL_GetNumJoystickButtons()
 * SDL_JoystickNumHats() => SDL_GetNumJoystickHats()
 * SDL_JoystickOpen() => SDL_OpenJoystick()
@@ -843,7 +846,6 @@ The following functions have been removed:
 * SDL_JoystickHasRumble() - replaced with SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN
 * SDL_JoystickHasRumbleTriggers() - replaced with SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN
 * SDL_JoystickNameForIndex() - replaced with SDL_GetJoystickInstanceName()
-* SDL_JoystickNumBalls() - API has been removed, see https://github.com/libsdl-org/SDL/issues/6766
 * SDL_JoystickPathForIndex() - replaced with SDL_GetJoystickInstancePath()
 * SDL_NumJoysticks() - replaced with SDL_GetJoysticks()
 

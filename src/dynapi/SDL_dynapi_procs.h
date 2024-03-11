@@ -1024,3 +1024,5 @@ SDL_DYNAPI_PROC(SDL_CameraPosition,SDL_GetCameraDevicePosition,(SDL_CameraDevice
 SDL_DYNAPI_PROC(void,SDL_qsort_r,(void *a, size_t b, size_t c, int (SDLCALL *d)(void *, const void *, const void *), void *e),(a,b,c,d,e),)
 SDL_DYNAPI_PROC(void*,SDL_bsearch_r,(const void *a, const void *b, size_t c, size_t d, int (SDLCALL *e)(void *, const void *, const void *), void *f),(a,b,c,d,e,f),return)
 SDL_DYNAPI_PROC(int,SDL_AddVulkanRenderSemaphores,(SDL_Renderer *a, Uint32 b, Sint64 c, Sint64 d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(int,SDL_GetNumJoystickBalls,(SDL_Joystick *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_GetJoystickBall,(SDL_Joystick *a, int b, int *c, int *d),(a,b,c,d),return)

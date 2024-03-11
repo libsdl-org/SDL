@@ -1091,15 +1091,21 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     joystick->guid = driver->GetDeviceGUID(device_index);
 
     if (joystick->naxes > 0) {
-        joystick->axes = (SDL_JoystickAxisInfo *)SDL_calloc(joystick->naxes, sizeof(SDL_JoystickAxisInfo));
+        joystick->axes = (SDL_JoystickAxisInfo *)SDL_calloc(joystick->naxes, sizeof(*joystick->axes));
+    }
+    if (joystick->nballs > 0) {
+        joystick->balls = (SDL_JoystickBallData *)SDL_calloc(joystick->nballs, sizeof(*joystick->balls));
     }
     if (joystick->nhats > 0) {
-        joystick->hats = (Uint8 *)SDL_calloc(joystick->nhats, sizeof(Uint8));
+        joystick->hats = (Uint8 *)SDL_calloc(joystick->nhats, sizeof(*joystick->hats));
     }
     if (joystick->nbuttons > 0) {
-        joystick->buttons = (Uint8 *)SDL_calloc(joystick->nbuttons, sizeof(Uint8));
+        joystick->buttons = (Uint8 *)SDL_calloc(joystick->nbuttons, sizeof(*joystick->buttons));
     }
-    if (((joystick->naxes > 0) && !joystick->axes) || ((joystick->nhats > 0) && !joystick->hats) || ((joystick->nbuttons > 0) && !joystick->buttons)) {
+    if (((joystick->naxes > 0) && !joystick->axes) ||
+        ((joystick->nballs > 0) && !joystick->balls) ||
+        ((joystick->nhats > 0) && !joystick->hats) ||
+        ((joystick->nbuttons > 0) && !joystick->buttons)) {
         SDL_CloseJoystick(joystick);
         SDL_UnlockJoysticks();
         return NULL;
@@ -1325,6 +1331,16 @@ int SDL_GetNumJoystickHats(SDL_Joystick *joystick)
 }
 
 /*
+ * Get the number of trackballs on a joystick
+ */
+int SDL_GetNumJoystickBalls(SDL_Joystick *joystick)
+{
+    CHECK_JOYSTICK_MAGIC(joystick, -1);
+
+    return joystick->nballs;
+}
+
+/*
  * Get the number of buttons on a joystick
  */
 int SDL_GetNumJoystickButtons(SDL_Joystick *joystick)
@@ -1412,6 +1428,31 @@ Uint8 SDL_GetJoystickHat(SDL_Joystick *joystick, int hat)
     SDL_UnlockJoysticks();
 
     return state;
+}
+
+/*
+ * Get the ball axis change since the last poll
+ */
+int SDL_GetJoystickBall(SDL_Joystick *joystick, int ball, int *dx, int *dy)
+{
+    int retval;
+
+    CHECK_JOYSTICK_MAGIC(joystick, -1);
+
+    retval = 0;
+    if (ball < joystick->nballs) {
+        if (dx) {
+            *dx = joystick->balls[ball].dx;
+        }
+        if (dy) {
+            *dy = joystick->balls[ball].dy;
+        }
+        joystick->balls[ball].dx = 0;
+        joystick->balls[ball].dy = 0;
+    } else {
+        return SDL_SetError("Joystick only has %d balls", joystick->nballs);
+    }
+    return retval;
 }
 
 /*
@@ -1781,6 +1822,7 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
         SDL_free(joystick->path);
         SDL_free(joystick->serial);
         SDL_free(joystick->axes);
+        SDL_free(joystick->balls);
         SDL_free(joystick->hats);
         SDL_free(joystick->buttons);
         for (i = 0; i < joystick->ntouchpads; i++) {
@@ -2101,6 +2143,41 @@ int SDL_SendJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis, S
     return posted;
 }
 
+int SDL_SendJoystickBall(Uint64 timestamp, SDL_Joystick *joystick, Uint8 ball, Sint16 xrel, Sint16 yrel)
+{
+    int posted;
+
+    SDL_AssertJoysticksLocked();
+
+    /* Make sure we're not getting garbage events */
+    if (ball >= joystick->nballs) {
+        return 0;
+    }
+
+    /* We ignore events if we don't have keyboard focus. */
+    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
+        return 0;
+    }
+
+    /* Update internal mouse state */
+    joystick->balls[ball].dx += xrel;
+    joystick->balls[ball].dy += yrel;
+
+    /* Post the event, if desired */
+    posted = 0;
+    if (SDL_EventEnabled(SDL_EVENT_JOYSTICK_BALL_MOTION)) {
+        SDL_Event event;
+        event.type = SDL_EVENT_JOYSTICK_BALL_MOTION;
+        event.common.timestamp = timestamp;
+        event.jball.which = joystick->instance_id;
+        event.jball.ball = ball;
+        event.jball.xrel = xrel;
+        event.jball.yrel = yrel;
+        posted = SDL_PushEvent(&event) == 1;
+    }
+    return posted;
+}
+
 int SDL_SendJoystickHat(Uint64 timestamp, SDL_Joystick *joystick, Uint8 hat, Uint8 value)
 {
     int posted;
@@ -2310,6 +2387,7 @@ void SDL_UpdateJoysticks(void)
 
 static const Uint32 SDL_joystick_event_list[] = {
     SDL_EVENT_JOYSTICK_AXIS_MOTION,
+    SDL_EVENT_JOYSTICK_BALL_MOTION,
     SDL_EVENT_JOYSTICK_HAT_MOTION,
     SDL_EVENT_JOYSTICK_BUTTON_DOWN,
     SDL_EVENT_JOYSTICK_BUTTON_UP,
