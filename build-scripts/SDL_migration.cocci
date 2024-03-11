@@ -3051,7 +3051,7 @@ typedef SDL_version, SDL_Version;
 @@
 @@
 - SDL_JoystickNumBalls
-+ SDL_NumJoystickBalls
++ SDL_GetNumJoystickBalls
   (...)
 @@
 @@
