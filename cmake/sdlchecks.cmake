@@ -1249,6 +1249,7 @@ macro(CheckHIDAPI)
 
     if(HAVE_HIDAPI)
       if(ANDROID)
+        enable_language(CXX)
         list(APPEND SOURCE_FILES ${SDL2_SOURCE_DIR}/src/hidapi/android/hid.cpp)
       endif()
       if(IOS OR TVOS)

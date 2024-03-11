@@ -6,7 +6,7 @@ endif()
 set(CMAKE_POLICY_DEFAULT_CMP0091 NEW)
 
 cmake_minimum_required(VERSION 3.0.0...3.5)
-project(SDL2 C CXX)
+project(SDL2 C)
 
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(SDL2_SUBPROJECT OFF)
@@ -15,6 +15,7 @@ else()
 endif()
 
 if (HAIKU)
+  enable_language(CXX)
   set(LINKER_LANGUAGE CXX)
 endif()
 
@@ -1787,6 +1788,7 @@ elseif(WINDOWS)
   list(APPEND SOURCE_FILES ${CORE_SOURCES})
 
   if(WINDOWS_STORE)
+    enable_language(CXX)
     file(GLOB WINRT_SOURCE_FILES ${SDL2_SOURCE_DIR}/src/core/winrt/*.c ${SDL2_SOURCE_DIR}/src/core/winrt/*.cpp)
     list(APPEND SOURCE_FILES ${WINRT_SOURCE_FILES})
   endif()
