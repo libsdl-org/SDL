@@ -1147,6 +1147,16 @@ static SDL_JoystickID LINUX_JoystickGetDeviceInstanceID(int device_index)
     return GetJoystickByDevIndex(device_index)->device_instance;
 }
 
+static int allocate_balldata(SDL_Joystick *joystick)
+{
+    joystick->hwdata->balls =
+        (struct hwdata_ball *)SDL_calloc(joystick->nballs, sizeof(struct hwdata_ball));
+    if (joystick->hwdata->balls == NULL) {
+        return -1;
+    }
+    return 0;
+}
+
 static int allocate_hatdata(SDL_Joystick *joystick)
 {
     int i;
@@ -1319,6 +1329,9 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd, int fd_sensor)
                 ++joystick->naxes;
             }
         }
+        if (test_bit(REL_X, relbit) || test_bit(REL_Y, relbit)) {
+            ++joystick->nballs;
+        }
 
     } else if ((ioctl(fd, JSIOCGBUTTONS, &key_pam_size, sizeof(key_pam_size)) >= 0) &&
                (ioctl(fd, JSIOCGAXES, &abs_pam_size, sizeof(abs_pam_size)) >= 0)) {
@@ -1426,6 +1439,11 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd, int fd_sensor)
     }
 
     /* Allocate data to keep track of these thingamajigs */
+    if (joystick->nballs > 0) {
+        if (allocate_balldata(joystick) < 0) {
+            joystick->nballs = 0;
+        }
+    }
     if (joystick->nhats > 0) {
         if (allocate_hatdata(joystick) < 0) {
             joystick->nhats = 0;
@@ -1754,6 +1772,11 @@ static void HandleHat(Uint64 timestamp, SDL_Joystick *stick, int hatidx, int axi
     }
 }
 
+static void HandleBall(SDL_Joystick *stick, Uint8 ball, int axis, int value)
+{
+    stick->hwdata->balls[ball].axis[axis] += value;
+}
+
 static int AxisCorrect(SDL_Joystick *joystick, int which, int value)
 {
     struct axis_correct *correct;
@@ -1844,6 +1867,8 @@ static void PollAllValues(Uint64 timestamp, SDL_Joystick *joystick)
             }
         }
     }
+
+    /* Joyballs are relative input, so there's no poll state. Events only! */
 }
 
 static void PollAllSensors(Uint64 timestamp, SDL_Joystick *joystick)
@@ -1949,6 +1974,17 @@ static void HandleInputEvents(SDL_Joystick *joystick)
                     SDL_SendJoystickAxis(SDL_EVDEV_GetEventTimestamp(event), joystick,
                                             joystick->hwdata->abs_map[code],
                                             event->value);
+                    break;
+                }
+                break;
+            case EV_REL:
+                switch (code) {
+                case REL_X:
+                case REL_Y:
+                    code -= REL_X;
+                    HandleBall(joystick, code / 2, code % 2, event->value);
+                    break;
+                default:
                     break;
                 }
                 break;
@@ -2121,6 +2157,8 @@ static void HandleClassicEvents(SDL_Joystick *joystick)
 
 static void LINUX_JoystickUpdate(SDL_Joystick *joystick)
 {
+    int i;
+
     SDL_AssertJoysticksLocked();
 
     if (joystick->hwdata->m_bSteamController) {
@@ -2132,6 +2170,19 @@ static void LINUX_JoystickUpdate(SDL_Joystick *joystick)
         HandleClassicEvents(joystick);
     } else {
         HandleInputEvents(joystick);
+    }
+
+    /* Deliver ball motion updates */
+    for (i = 0; i < joystick->nballs; ++i) {
+        int xrel, yrel;
+
+        xrel = joystick->hwdata->balls[i].axis[0];
+        yrel = joystick->hwdata->balls[i].axis[1];
+        if (xrel || yrel) {
+            joystick->hwdata->balls[i].axis[0] = 0;
+            joystick->hwdata->balls[i].axis[1] = 0;
+            SDL_SendJoystickBall(0, joystick, (Uint8)i, xrel, yrel);
+        }
     }
 }
 
@@ -2160,6 +2211,7 @@ static void LINUX_JoystickClose(SDL_Joystick *joystick)
         SDL_free(joystick->hwdata->key_pam);
         SDL_free(joystick->hwdata->abs_pam);
         SDL_free(joystick->hwdata->hats);
+        SDL_free(joystick->hwdata->balls);
         SDL_free(joystick->hwdata->fname);
         SDL_free(joystick->hwdata);
     }

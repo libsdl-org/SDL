@@ -32,6 +32,7 @@ extern "C" {
 #endif
 
 /* The SDL joystick structure */
+
 typedef struct SDL_JoystickAxisInfo
 {
     Sint16 initial_value;           /* Initial axis state */
@@ -42,6 +43,12 @@ typedef struct SDL_JoystickAxisInfo
     SDL_bool sent_initial_value;    /* Whether we've sent the initial axis value */
     SDL_bool sending_initial_value; /* Whether we are sending the initial axis value */
 } SDL_JoystickAxisInfo;
+
+typedef struct SDL_JoystickBallData
+{
+    int dx;
+    int dy;
+} SDL_JoystickBallData;
 
 typedef struct SDL_JoystickTouchpadFingerInfo
 {
@@ -81,6 +88,9 @@ struct SDL_Joystick
 
     int naxes _guarded; /* Number of axis controls on the joystick */
     SDL_JoystickAxisInfo *axes _guarded;
+
+    int nballs _guarded; /* Number of trackballs on the joystick */
+    SDL_JoystickBallData *balls _guarded; /* Current ball motion deltas */
 
     int nhats _guarded;   /* Number of hats on the joystick */
     Uint8 *hats _guarded; /* Current hat states */

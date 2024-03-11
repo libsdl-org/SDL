@@ -50,6 +50,7 @@ static int TestVirtualJoystick(void *arg)
             SDLTest_AssertCheck(SDL_GetJoystickSerial(joystick) == NULL, "SDL_GetJoystickSerial()");
             SDLTest_AssertCheck(SDL_GetJoystickType(joystick) == desc.type, "SDL_GetJoystickType()");
             SDLTest_AssertCheck(SDL_GetNumJoystickAxes(joystick) == desc.naxes, "SDL_GetNumJoystickAxes()");
+            SDLTest_AssertCheck(SDL_GetNumJoystickBalls(joystick) == 0, "SDL_GetNumJoystickBalls()");
             SDLTest_AssertCheck(SDL_GetNumJoystickHats(joystick) == desc.nhats, "SDL_GetNumJoystickHats()");
             SDLTest_AssertCheck(SDL_GetNumJoystickButtons(joystick) == desc.nbuttons, "SDL_GetNumJoystickButtons()");
 

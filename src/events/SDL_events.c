@@ -383,6 +383,12 @@ static void SDL_LogEvent(const SDL_Event *event)
                            (uint)event->jaxis.axis, (int)event->jaxis.value);
         break;
 
+        SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_BALL_MOTION)
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d ball=%u xrel=%d yrel=%d)",
+                           (uint)event->jball.timestamp, (int)event->jball.which,
+                           (uint)event->jball.ball, (int)event->jball.xrel, (int)event->jball.yrel);
+        break;
+
         SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_HAT_MOTION)
         (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d hat=%u value=%u)",
                            (uint)event->jhat.timestamp, (int)event->jhat.which,

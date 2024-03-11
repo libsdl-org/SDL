@@ -999,3 +999,5 @@
 #define SDL_qsort_r SDL_qsort_r_REAL
 #define SDL_bsearch_r SDL_bsearch_r_REAL
 #define SDL_AddVulkanRenderSemaphores SDL_AddVulkanRenderSemaphores_REAL
+#define SDL_GetNumJoystickBalls SDL_GetNumJoystickBalls_REAL
+#define SDL_GetJoystickBall SDL_GetJoystickBall_REAL
