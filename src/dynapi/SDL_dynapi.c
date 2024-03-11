@@ -38,6 +38,16 @@
 #define SDL_MAIN_NOIMPL /* don't drag in header-only implementation of SDL_main */
 #include <SDL3/SDL_main.h>
 
+#if defined(__clang__) && __clang_major__ >= 13
+#define HAVE_ATTRIBUTE_MUSTTAIL
+#define MAYBE_ATTRIBUTE_MUSTTAIL __attribute__((musttail))
+#define MAYBE_ATTRIBUTE_MUSTTAIL_RETURN __attribute__((musttail)) return
+#endif
+
+#ifndef HAVE_ATTRIBUTE_MUSTTAIL
+#define MAYBE_ATTRIBUTE_MUSTTAIL
+#define MAYBE_ATTRIBUTE_MUSTTAIL_RETURN
+#endif
 
 /* These headers have system specific definitions, so aren't included above */
 #include <SDL3/SDL_vulkan.h>
@@ -188,39 +198,46 @@ static void SDL_InitDynamicAPI(void);
     static rc SDLCALL fn##_DEFAULT params;         \
     extern rc SDLCALL fn##_REAL params;
 #include "SDL_dynapi_procs.h"
-#undef SDL_DYNAPI_PROC
 
 /* The jump table! */
 typedef struct
 {
 #define SDL_DYNAPI_PROC(rc, fn, params, args, ret) SDL_DYNAPIFN_##fn fn;
 #include "SDL_dynapi_procs.h"
-#undef SDL_DYNAPI_PROC
 } SDL_DYNAPI_jump_table;
 
 /* Predeclare the default functions for initializing the jump table. */
 #define SDL_DYNAPI_PROC(rc, fn, params, args, ret) static rc SDLCALL fn##_DEFAULT params;
 #include "SDL_dynapi_procs.h"
-#undef SDL_DYNAPI_PROC
 
 /* The actual jump table. */
 static SDL_DYNAPI_jump_table jump_table = {
 #define SDL_DYNAPI_PROC(rc, fn, params, args, ret) fn##_DEFAULT,
 #include "SDL_dynapi_procs.h"
-#undef SDL_DYNAPI_PROC
 };
 
 /* Default functions init the function table then call right thing. */
 #if DISABLE_JUMP_MAGIC
-#define SDL_DYNAPI_PROC(rc, fn, params, args, ret) \
-    static rc SDLCALL fn##_DEFAULT params          \
-    {                                              \
-        SDL_InitDynamicAPI();                      \
-        ret jump_table.fn args;                    \
+#define SDL_DYNAPI_PROC(rc, fn, params, args, ret)       \
+    static rc SDLCALL fn##_DEFAULT params                \
+    {                                                    \
+        SDL_InitDynamicAPI();                            \
+        MAYBE_ATTRIBUTE_MUSTTAIL ret jump_table.fn args; \
+    }
+#define SDL_DYNAPI_PROC_NO_TAILCALL(rc, fn, params, args, ret) \
+    rc SDLCALL fn##_DEFAULT params                             \
+    {                                                          \
+        SDL_InitDynamicAPI();                                  \
+        ret jump_table.fn args;                                \
+    }
+#define SDL_DYNAPI_PROC_VOID(fn, params, args)              \
+    static void SDLCALL fn##_DEFAULT params                 \
+    {                                                       \
+        SDL_InitDynamicAPI();                               \
+        MAYBE_ATTRIBUTE_MUSTTAIL_RETURN jump_table.fn args; \
     }
 #define SDL_DYNAPI_PROC_NO_VARARGS 1
 #include "SDL_dynapi_procs.h"
-#undef SDL_DYNAPI_PROC
 #undef SDL_DYNAPI_PROC_NO_VARARGS
 SDL_DYNAPI_VARARGS(static, _DEFAULT, SDL_InitDynamicAPI())
 #else
@@ -230,14 +247,23 @@ SDL_DYNAPI_VARARGS(static, _DEFAULT, SDL_InitDynamicAPI())
 
 /* Public API functions to jump into the jump table. */
 #if DISABLE_JUMP_MAGIC
-#define SDL_DYNAPI_PROC(rc, fn, params, args, ret) \
-    rc SDLCALL fn params                           \
-    {                                              \
-        ret jump_table.fn args;                    \
+#define SDL_DYNAPI_PROC(rc, fn, params, args, ret)       \
+    rc SDLCALL fn params                                 \
+    {                                                    \
+        MAYBE_ATTRIBUTE_MUSTTAIL ret jump_table.fn args; \
+    }
+#define SDL_DYNAPI_PROC_NO_TAILCALL(rc, fn, params, args, ret) \
+    rc SDLCALL fn params                                       \
+    {                                                          \
+        ret jump_table.fn args;                                \
+    }
+#define SDL_DYNAPI_PROC_VOID(fn, params, args)              \
+    void SDLCALL fn params                                  \
+    {                                                       \
+        MAYBE_ATTRIBUTE_MUSTTAIL_RETURN jump_table.fn args; \
     }
 #define SDL_DYNAPI_PROC_NO_VARARGS 1
 #include "SDL_dynapi_procs.h"
-#undef SDL_DYNAPI_PROC
 #undef SDL_DYNAPI_PROC_NO_VARARGS
 SDL_DYNAPI_VARARGS(, , )
 #else
@@ -346,7 +372,6 @@ SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Critical, CRITICAL)
     }
 #define SDL_DYNAPI_PROC_NO_VARARGS 1
 #include "SDL_dynapi_procs.h"
-#undef SDL_DYNAPI_PROC
 #undef SDL_DYNAPI_PROC_NO_VARARGS
 #endif
 
@@ -371,17 +396,14 @@ static Sint32 initialize_jumptable(Uint32 apiver, void *table, Uint32 tablesize)
         if (log_calls) {
 #define SDL_DYNAPI_PROC(rc, fn, params, args, ret) jump_table.fn = fn##_LOGSDLCALLS;
 #include "SDL_dynapi_procs.h"
-#undef SDL_DYNAPI_PROC
         } else {
 #define SDL_DYNAPI_PROC(rc, fn, params, args, ret) jump_table.fn = fn##_REAL;
 #include "SDL_dynapi_procs.h"
-#undef SDL_DYNAPI_PROC
         }
     }
 #else
 #define SDL_DYNAPI_PROC(rc, fn, params, args, ret) jump_table.fn = fn##_REAL;
 #include "SDL_dynapi_procs.h"
-#undef SDL_DYNAPI_PROC
 #endif
 
     /* Then the external table... */
