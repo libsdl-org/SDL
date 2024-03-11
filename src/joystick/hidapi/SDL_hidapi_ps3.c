@@ -109,7 +109,7 @@ static SDL_bool HIDAPI_DriverPS3_IsEnabled(void)
     default_value = SDL_TRUE;
 #elif defined(SDL_PLATFORM_WIN32)
     /* For official Sony driver (sixaxis.sys) use SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER.
-     * 
+     *
      * See https://github.com/ViGEm/DsHidMini as an alternative driver
      */
     default_value = SDL_FALSE;
@@ -1035,7 +1035,11 @@ static void HIDAPI_DriverPS3SonySixaxis_UnregisterHints(SDL_HintCallback callbac
 
 static SDL_bool HIDAPI_DriverPS3SonySixaxis_IsEnabled(void)
 {
-    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER, 0);
+#ifdef SDL_PLATFORM_WIN32
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER, SDL_FALSE);
+#else
+    return SDL_FALSE;
+#endif
 }
 
 static SDL_bool HIDAPI_DriverPS3SonySixaxis_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
@@ -1043,7 +1047,6 @@ static SDL_bool HIDAPI_DriverPS3SonySixaxis_IsSupportedDevice(SDL_HIDAPI_Device 
     if (vendor_id == USB_VENDOR_SONY && product_id == USB_PRODUCT_SONY_DS3) {
         return SDL_TRUE;
     }
-
     return SDL_FALSE;
 }
 
