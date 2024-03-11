@@ -931,7 +931,12 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     }
 
     if (surface) {
+#if SDL_VIDEO_RENDER_SW
         renderer = SW_CreateRendererForSurface(surface, props);
+#else
+        renderer = NULL;
+        SDL_SetError("SDL not built with software renderer");
+#endif
         if (!renderer) {
             goto error;
         }
