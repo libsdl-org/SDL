@@ -1568,18 +1568,27 @@ void WIN_UpdateClipCursor(SDL_Window *window)
             }
         }
     } else {
-        POINT first, second;
+        SDL_bool unclip_cursor = SDL_FALSE;
 
-        first.x = clipped_rect.left;
-        first.y = clipped_rect.top;
-        second.x = clipped_rect.right - 1;
-        second.y = clipped_rect.bottom - 1;
-        if (PtInRect(&data->cursor_clipped_rect, first) &&
-            PtInRect(&data->cursor_clipped_rect, second)) {
-            ClipCursor(NULL);
+        /* If the cursor is clipped to the screen, clear the clip state */
+        if (clipped_rect.left == 0 && clipped_rect.top == 0) {
+            unclip_cursor = SDL_TRUE;
+        } else {
+            POINT first, second;
+
+            first.x = clipped_rect.left;
+            first.y = clipped_rect.top;
+            second.x = clipped_rect.right - 1;
+            second.y = clipped_rect.bottom - 1;
+            if (PtInRect(&data->cursor_clipped_rect, first) &&
+                PtInRect(&data->cursor_clipped_rect, second)) {
+                unclip_cursor = SDL_TRUE;
+            }
         }
-        /* Note that we don't have the cursor clipped anymore, even if it's not us that reset it */
-        SDL_zero(data->cursor_clipped_rect);
+        if (unclip_cursor) {
+            ClipCursor(NULL);
+            SDL_zero(data->cursor_clipped_rect);
+        }
     }
     data->last_updated_clipcursor = SDL_GetTicks();
 }
