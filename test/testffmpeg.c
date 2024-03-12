@@ -46,6 +46,21 @@
 #endif
 #endif
 
+#define DRM_FORMAT_MOD_VENDOR_NONE    0
+#define DRM_FORMAT_RESERVED	      ((1ULL << 56) - 1)
+
+#define fourcc_mod_get_vendor(modifier) \
+	(((modifier) >> 56) & 0xff)
+
+#define fourcc_mod_is_vendor(modifier, vendor) \
+	(fourcc_mod_get_vendor(modifier) == DRM_FORMAT_MOD_VENDOR_## vendor)
+
+#define fourcc_mod_code(vendor, val) \
+	((((__u64)DRM_FORMAT_MOD_VENDOR_## vendor) << 56) | ((val) & 0x00ffffffffffffffULL))
+
+#define DRM_FORMAT_MOD_INVALID  fourcc_mod_code(NONE, DRM_FORMAT_RESERVED)
+#define DRM_FORMAT_MOD_LINEAR   fourcc_mod_code(NONE, 0)
+
 #ifdef SDL_PLATFORM_APPLE
 #include <CoreVideo/CoreVideo.h>
 #endif
@@ -635,6 +650,189 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
     return SDL_TRUE;
 }
 
+#ifdef HAVE_EGL
+
+static SDL_bool GetOESTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
+{
+    AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx->data);
+    const AVDRMFrameDescriptor *desc = (const AVDRMFrameDescriptor *)frame->data[0];
+    int i, j, k, image_index;
+    EGLDisplay display = eglGetCurrentDisplay();
+    SDL_PropertiesID props;
+    GLuint textureID;
+    EGLAttrib attr[64];
+    SDL_Colorspace colorspace;
+
+    if (*texture) {
+        /* Free the previous texture now that we're about to render a new one */
+        SDL_DestroyTexture(*texture);
+    }
+
+    props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_EXTERNAL_OES, SDL_TEXTUREACCESS_STATIC);
+    *texture = SDL_CreateTextureWithProperties(renderer, props);
+    SDL_DestroyProperties(props);
+    if (!*texture) {
+        return SDL_FALSE;
+    }
+    SDL_SetTextureBlendMode(*texture, SDL_BLENDMODE_NONE);
+    SDL_SetTextureScaleMode(*texture, SDL_SCALEMODE_LINEAR);
+
+    props = SDL_GetTextureProperties(*texture);
+    textureID = (GLuint)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_NUMBER, 0);
+    if (!textureID) {
+        SDL_SetError("Couldn't get OpenGL texture");
+        return SDL_FALSE;
+    }
+    colorspace = (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_COLORSPACE_NUMBER, SDL_COLORSPACE_UNKNOWN);
+
+    /* import the frame into OpenGL */
+    k = 0;
+    attr[k++] = EGL_LINUX_DRM_FOURCC_EXT;
+    attr[k++] = desc->layers[0].format;
+    attr[k++] = EGL_WIDTH;
+    attr[k++] = frames->width;
+    attr[k++] = EGL_HEIGHT;
+    attr[k++] = frames->height;
+    image_index = 0;
+    for (i = 0; i < desc->nb_layers; ++i) {
+        const AVDRMLayerDescriptor *layer = &desc->layers[i];
+        for (j = 0; j < layer->nb_planes; ++j) {
+            const AVDRMPlaneDescriptor *plane = &layer->planes[j];
+            const AVDRMObjectDescriptor *object = &desc->objects[plane->object_index];
+
+            switch (image_index) {
+            case 0:
+                attr[k++] = EGL_DMA_BUF_PLANE0_FD_EXT;
+                attr[k++] = object->fd;
+                attr[k++] = EGL_DMA_BUF_PLANE0_OFFSET_EXT;
+                attr[k++] = plane->offset;
+                attr[k++] = EGL_DMA_BUF_PLANE0_PITCH_EXT;
+                attr[k++] = plane->pitch;
+                if (has_EGL_EXT_image_dma_buf_import_modifiers && object->format_modifier != DRM_FORMAT_MOD_INVALID) {
+                    attr[k++] = EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT;
+                    attr[k++] = (object->format_modifier & 0xFFFFFFFF);
+                    attr[k++] = EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT;
+                    attr[k++] = (object->format_modifier >> 32);
+                }
+                break;
+            case 1:
+                attr[k++] = EGL_DMA_BUF_PLANE1_FD_EXT;
+                attr[k++] = object->fd;
+                attr[k++] = EGL_DMA_BUF_PLANE1_OFFSET_EXT;
+                attr[k++] = plane->offset;
+                attr[k++] = EGL_DMA_BUF_PLANE1_PITCH_EXT;
+                attr[k++] = plane->pitch;
+                if (has_EGL_EXT_image_dma_buf_import_modifiers && object->format_modifier != DRM_FORMAT_MOD_INVALID) {
+                    attr[k++] = EGL_DMA_BUF_PLANE1_MODIFIER_LO_EXT;
+                    attr[k++] = (object->format_modifier & 0xFFFFFFFF);
+                    attr[k++] = EGL_DMA_BUF_PLANE1_MODIFIER_HI_EXT;
+                    attr[k++] = (object->format_modifier >> 32);
+                }
+                break;
+            case 2:
+                attr[k++] = EGL_DMA_BUF_PLANE2_FD_EXT;
+                attr[k++] = object->fd;
+                attr[k++] = EGL_DMA_BUF_PLANE2_OFFSET_EXT;
+                attr[k++] = plane->offset;
+                attr[k++] = EGL_DMA_BUF_PLANE2_PITCH_EXT;
+                attr[k++] = plane->pitch;
+                if (has_EGL_EXT_image_dma_buf_import_modifiers && object->format_modifier != DRM_FORMAT_MOD_INVALID) {
+                    attr[k++] = EGL_DMA_BUF_PLANE2_MODIFIER_LO_EXT;
+                    attr[k++] = (object->format_modifier & 0xFFFFFFFF);
+                    attr[k++] = EGL_DMA_BUF_PLANE2_MODIFIER_HI_EXT;
+                    attr[k++] = (object->format_modifier >> 32);
+                }
+                break;
+            case 3:
+                attr[k++] = EGL_DMA_BUF_PLANE3_FD_EXT;
+                attr[k++] = object->fd;
+                attr[k++] = EGL_DMA_BUF_PLANE3_OFFSET_EXT;
+                attr[k++] = plane->offset;
+                attr[k++] = EGL_DMA_BUF_PLANE3_PITCH_EXT;
+                attr[k++] = plane->pitch;
+                if (has_EGL_EXT_image_dma_buf_import_modifiers && object->format_modifier != DRM_FORMAT_MOD_INVALID) {
+                    attr[k++] = EGL_DMA_BUF_PLANE3_MODIFIER_LO_EXT;
+                    attr[k++] = (object->format_modifier & 0xFFFFFFFF);
+                    attr[k++] = EGL_DMA_BUF_PLANE3_MODIFIER_HI_EXT;
+                    attr[k++] = (object->format_modifier >> 32);
+                }
+                break;
+
+            default:
+                break;
+            }
+            ++image_index;
+        }
+    }
+
+    switch (SDL_COLORSPACEPRIMARIES(colorspace)) {
+    case SDL_COLOR_PRIMARIES_BT601:
+    case SDL_COLOR_PRIMARIES_SMPTE240:
+        attr[k++] = EGL_YUV_COLOR_SPACE_HINT_EXT;
+        attr[k++] = EGL_ITU_REC601_EXT;
+        break;
+    case SDL_COLOR_PRIMARIES_BT709:
+        attr[k++] = EGL_YUV_COLOR_SPACE_HINT_EXT;
+        attr[k++] = EGL_ITU_REC709_EXT;
+        break;
+    case SDL_COLOR_PRIMARIES_BT2020:
+        attr[k++] = EGL_YUV_COLOR_SPACE_HINT_EXT;
+        attr[k++] = EGL_ITU_REC2020_EXT;
+    default:
+        break;
+    }
+
+    switch (SDL_COLORSPACERANGE(colorspace)) {
+    case SDL_COLOR_RANGE_FULL:
+        attr[k++] = EGL_SAMPLE_RANGE_HINT_EXT;
+        attr[k++] = EGL_YUV_FULL_RANGE_EXT;
+        break;
+    case SDL_COLOR_RANGE_LIMITED:
+    default:
+        attr[k++] = EGL_SAMPLE_RANGE_HINT_EXT;
+        attr[k++] = EGL_YUV_NARROW_RANGE_EXT;
+        break;
+    }
+
+    switch (SDL_COLORSPACECHROMA(colorspace)) {
+    case SDL_CHROMA_LOCATION_LEFT:
+        attr[k++] = EGL_YUV_CHROMA_HORIZONTAL_SITING_HINT_EXT;
+        attr[k++] = EGL_YUV_CHROMA_SITING_0_EXT;
+        attr[k++] = EGL_YUV_CHROMA_VERTICAL_SITING_HINT_EXT;
+        attr[k++] = EGL_YUV_CHROMA_SITING_0_5_EXT;
+        break;
+    case SDL_CHROMA_LOCATION_CENTER:
+        attr[k++] = EGL_YUV_CHROMA_HORIZONTAL_SITING_HINT_EXT;
+        attr[k++] = EGL_YUV_CHROMA_SITING_0_5_EXT;
+        attr[k++] = EGL_YUV_CHROMA_VERTICAL_SITING_HINT_EXT;
+        attr[k++] = EGL_YUV_CHROMA_SITING_0_5_EXT;
+        break;
+    case SDL_CHROMA_LOCATION_TOPLEFT:
+        attr[k++] = EGL_YUV_CHROMA_HORIZONTAL_SITING_HINT_EXT;
+        attr[k++] = EGL_YUV_CHROMA_SITING_0_EXT;
+        attr[k++] = EGL_YUV_CHROMA_VERTICAL_SITING_HINT_EXT;
+        attr[k++] = EGL_YUV_CHROMA_SITING_0_EXT;
+        break;
+    default:
+        break;
+    }
+
+    SDL_assert(k < SDL_arraysize(attr));
+    attr[k++] = EGL_NONE;
+
+    EGLImage image = eglCreateImage(display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, attr);
+    if (image == EGL_NO_IMAGE) {
+        SDL_Log("Couldn't create image: %d\n", glGetError());
+        return SDL_FALSE;
+    }
+
+    glActiveTextureARBFunc(GL_TEXTURE0_ARB);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, textureID);
+    glEGLImageTargetTexture2DOESFunc(GL_TEXTURE_EXTERNAL_OES, image);
+    return SDL_TRUE;
+}
+#endif // HAVE_EGL
+
 static SDL_bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
 {
 #ifdef HAVE_EGL
@@ -644,6 +842,12 @@ static SDL_bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
     EGLDisplay display = eglGetCurrentDisplay();
     SDL_PropertiesID props;
     GLuint textures[2];
+    uint64_t format_modifier = desc->objects[0].format_modifier;
+
+    if (format_modifier != DRM_FORMAT_MOD_INVALID &&
+        format_modifier != DRM_FORMAT_MOD_LINEAR) {
+        return GetOESTextureForDRMFrame(frame, texture);
+    }
 
     /* FIXME: Assuming NV12 data format */
     num_planes = 0;
@@ -663,7 +867,7 @@ static SDL_bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
         SDL_SetHint("SDL_RENDER_OPENGL_NV12_RG_SHADER", "1");
     }
 
-    props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STATIC);
+    props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_NV12, SDL_TEXTUREACCESS_STATIC);
     *texture = SDL_CreateTextureWithProperties(renderer, props);
     SDL_DestroyProperties(props);
     if (!*texture) {
@@ -720,11 +924,15 @@ static SDL_bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
 
             attr[k++] = EGL_NONE;
 
-            EGLImage pImage = eglCreateImage(display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, attr);
+            EGLImage image = eglCreateImage(display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, attr);
+            if (image == EGL_NO_IMAGE) {
+                SDL_Log("Couldn't create image: %d\n", glGetError());
+                return SDL_FALSE;
+            }
 
             glActiveTextureARBFunc(GL_TEXTURE0_ARB + image_index);
             glBindTexture(GL_TEXTURE_2D, textures[image_index]);
-            glEGLImageTargetTexture2DOESFunc(GL_TEXTURE_2D, pImage);
+            glEGLImageTargetTexture2DOESFunc(GL_TEXTURE_2D, image);
             ++image_index;
         }
     }
