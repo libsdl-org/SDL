@@ -68,7 +68,7 @@ static int DISKAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, in
         buflen -= br;
         buffer = ((Uint8 *)buffer) + br;
         if (buflen > 0) { // EOF (or error, but whatever).
-            SDL_RWclose(h->io);
+            SDL_DestroyRW(h->io);
             h->io = NULL;
         }
     }
@@ -88,7 +88,7 @@ static void DISKAUDIO_CloseDevice(SDL_AudioDevice *device)
 {
     if (device->hidden) {
         if (device->hidden->io) {
-            SDL_RWclose(device->hidden->io);
+            SDL_DestroyRW(device->hidden->io);
         }
         SDL_free(device->hidden->mixbuf);
         SDL_free(device->hidden);

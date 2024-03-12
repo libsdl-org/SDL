@@ -469,7 +469,6 @@ SDL3_0.0.0 {
     SDL_RWFromConstMem;
     SDL_RWFromFile;
     SDL_RWFromMem;
-    SDL_RWclose;
     SDL_RWread;
     SDL_RWseek;
     SDL_RWsize;

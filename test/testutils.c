@@ -44,7 +44,7 @@ GetNearbyFilename(const char *file)
 
         rw = SDL_RWFromFile(path, "rb");
         if (rw) {
-            SDL_RWclose(rw);
+            SDL_DestroyRW(rw);
             return path;
         }
 

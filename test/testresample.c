@@ -141,7 +141,7 @@ int main(int argc, char **argv)
     SDL_WriteU32LE(io, dst_len);                                /* size */
     SDL_RWwrite(io, dst_buf, dst_len);
 
-    if (SDL_RWclose(io) == -1) {
+    if (SDL_DestroyRW(io) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fclose('%s') failed: %s\n", file_out, SDL_GetError());
         ret = 6;
         goto end;

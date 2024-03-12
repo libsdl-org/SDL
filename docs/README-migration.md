@@ -1156,7 +1156,11 @@ The following symbols have been renamed:
 * RW_SEEK_END => SDL_RW_SEEK_END
 * RW_SEEK_SET => SDL_RW_SEEK_SET
 
-SDL_RWread and SDL_RWwrite (and SDL_RWops::read, SDL_RWops::write) have a different function signature in SDL3.
+SDL_RWops is now an opaque structure. The existing APIs to create a RWops (SDL_RWFromFile, etc) still function as expected, but to make a custom RWops with app-provided function pointers, call SDL_CreateRW and provide the function pointers through there. To call into a RWops's functionality, use the standard APIs (SDL_RWread, etc) instead of calling into function pointers directly.
+
+The RWops function pointers are now in a separate structure called SDL_RWopsInteface, which is provided to SDL_CreateRW. All the functions now take a `void *` userdata argument for their first parameter instead of an SDL_RWops, since that's now an opaque structure.
+
+SDL_RWread and SDL_RWwrite (and SDL_RWopsInterface::read, SDL_RWopsInterface::write) have a different function signature in SDL3.
 
 Previously they looked more like stdio:
 
@@ -1168,19 +1172,19 @@ size_t SDL_RWwrite(SDL_RWops *context, const void *ptr, size_t size, size_t maxn
 But now they look more like POSIX:
 
 ```c
-size_t SDL_RWread(SDL_RWops *context, void *ptr, size_t size);
-size_t SDL_RWwrite(SDL_RWops *context, const void *ptr, size_t size);
+size_t SDL_RWread(void *userdata, void *ptr, size_t size);
+size_t SDL_RWwrite(void *userdata, const void *ptr, size_t size);
 ```
 
 Code that used to look like this:
-```
+```c
 size_t custom_read(void *ptr, size_t size, size_t nitems, SDL_RWops *stream)
 {
     return SDL_RWread(stream, ptr, size, nitems);
 }
 ```
 should be changed to:
-```
+```c
 size_t custom_read(void *ptr, size_t size, size_t nitems, SDL_RWops *stream)
 {
     if (size > 0 && nitems > 0) {
@@ -1190,15 +1194,28 @@ size_t custom_read(void *ptr, size_t size, size_t nitems, SDL_RWops *stream)
 }
 ```
 
+SDL_RWops::type was removed and has no replacement; it wasn't meaningful for app-provided implementations at all, and wasn't much use for SDL's internal implementations, either.
+
+SDL_RWopsInterface::close implementations should clean up their own userdata, but not call SDL_DestroyRW on themselves; now the contract is always that SDL_DestroyRW is called, which calls `->close` and then frees the opaque object.
+
 SDL_RWFromFP has been removed from the API, due to issues when the SDL library uses a different C runtime from the application.
+
+SDL_AllocRW(), SDL_FreeRW(), SDL_RWclose() and direct access to the `->close` function pointer have been removed from the API, so there's only one path to manage RWops lifetimes now: SDL_CreateRW() and SDL_DestroyRW().
+
 
 You can implement this in your own code easily:
 ```c
 #include <stdio.h>
 
-
-static Sint64 SDLCALL stdio_seek(SDL_RWops *context, Sint64 offset, int whence)
+typedef struct RWopsStdioFPData
 {
+    FILE *fp;
+    SDL_bool autoclose;
+} RWopsStdioFPData;
+
+static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, int whence)
+{
+    FILE *fp = ((RWopsStdioFPData *) userdata)->fp;
     int stdiowhence;
 
     switch (whence) {
@@ -1215,8 +1232,8 @@ static Sint64 SDLCALL stdio_seek(SDL_RWops *context, Sint64 offset, int whence)
         return SDL_SetError("Unknown value for 'whence'");
     }
 
-    if (fseek((FILE *)context->hidden.stdio.fp, (fseek_off_t)offset, stdiowhence) == 0) {
-        Sint64 pos = ftell((FILE *)context->hidden.stdio.fp);
+    if (fseek(fp, (fseek_off_t)offset, stdiowhence) == 0) {
+        const Sint64 pos = ftell(fp);
         if (pos < 0) {
             return SDL_SetError("Couldn't get stream offset");
         }
@@ -1225,53 +1242,62 @@ static Sint64 SDLCALL stdio_seek(SDL_RWops *context, Sint64 offset, int whence)
     return SDL_Error(SDL_EFSEEK);
 }
 
-static size_t SDLCALL stdio_read(SDL_RWops *context, void *ptr, size_t size)
+static size_t SDLCALL stdio_read(void *userdata, void *ptr, size_t size)
 {
-    size_t bytes;
-
-    bytes = fread(ptr, 1, size, (FILE *)context->hidden.stdio.fp);
-    if (bytes == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
+    FILE *fp = ((RWopsStdioFPData *) userdata)->fp;
+    const size_t bytes = fread(ptr, 1, size, fp);
+    if (bytes == 0 && ferror(fp)) {
         SDL_Error(SDL_EFREAD);
     }
     return bytes;
 }
 
-static size_t SDLCALL stdio_write(SDL_RWops *context, const void *ptr, size_t size)
+static size_t SDLCALL stdio_write(void *userdata, const void *ptr, size_t size)
 {
-    size_t bytes;
-
-    bytes = fwrite(ptr, 1, size, (FILE *)context->hidden.stdio.fp);
-    if (bytes == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
+    FILE *fp = ((RWopsStdioFPData *) userdata)->fp;
+    const size_t bytes = fwrite(ptr, 1, size, fp);
+    if (bytes == 0 && ferror(fp)) {
         SDL_Error(SDL_EFWRITE);
     }
     return bytes;
 }
 
-static int SDLCALL stdio_close(SDL_RWops *context)
+static int SDLCALL stdio_close(void *userdata)
 {
+    RWopsStdioData *rwopsdata = (RWopsStdioData *) userdata;
     int status = 0;
-    if (context->hidden.stdio.autoclose) {
-        if (fclose((FILE *)context->hidden.stdio.fp) != 0) {
+    if (rwopsdata->autoclose) {
+        if (fclose(rwopsdata->fp) != 0) {
             status = SDL_Error(SDL_EFWRITE);
         }
     }
-    SDL_DestroyRW(context);
     return status;
 }
 
-SDL_RWops *SDL_RWFromFP(void *fp, SDL_bool autoclose)
+SDL_RWops *SDL_RWFromFP(FILE *fp, SDL_bool autoclose)
 {
-    SDL_RWops *rwops = NULL;
+    SDL_RWopsInterface iface;
+    RWopsStdioFPData *rwopsdata;
+    SDL_RWops *rwops;
 
-    rwops = SDL_CreateRW();
-    if (rwops != NULL) {
-        rwops->seek = stdio_seek;
-        rwops->read = stdio_read;
-        rwops->write = stdio_write;
-        rwops->close = stdio_close;
-        rwops->hidden.stdio.fp = fp;
-        rwops->hidden.stdio.autoclose = autoclose;
-        rwops->type = SDL_RWOPS_STDFILE;
+    rwopsdata = (RWopsStdioFPData *) SDL_malloc(sizeof (*rwopsdata));
+    if (!rwopsdata) {
+        return NULL;
+    }
+
+    SDL_zero(iface);
+    /* There's no stdio_size because SDL_RWsize emulates it the same way we'd do it for stdio anyhow. */
+    iface.seek = stdio_seek;
+    iface.read = stdio_read;
+    iface.write = stdio_write;
+    iface.close = stdio_close;
+
+    rwopsdata->fp = fp;
+    rwopsdata->autoclose = autoclose;
+
+    rwops = SDL_CreateRW(&iface, rwopsdata);
+    if (!rwops) {
+        iface.close(rwopsdata);
     }
     return rwops;
 }
@@ -1280,8 +1306,6 @@ SDL_RWops *SDL_RWFromFP(void *fp, SDL_bool autoclose)
 The functions SDL_ReadU8(), SDL_ReadU16LE(), SDL_ReadU16BE(), SDL_ReadU32LE(), SDL_ReadU32BE(), SDL_ReadU64LE(), and SDL_ReadU64BE() now return SDL_TRUE if the read succeeded and SDL_FALSE if it didn't, and store the data in a pointer passed in as a parameter.
 
 The following functions have been renamed:
-* SDL_AllocRW() => SDL_CreateRW()
-* SDL_FreeRW() => SDL_DestroyRW()
 * SDL_ReadBE16() => SDL_ReadU16BE()
 * SDL_ReadBE32() => SDL_ReadU32BE()
 * SDL_ReadBE64() => SDL_ReadU64BE()

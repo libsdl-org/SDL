@@ -578,7 +578,7 @@ done:
         surface = NULL;
     }
     if (freesrc && src) {
-        SDL_RWclose(src);
+        SDL_DestroyRW(src);
     }
     return surface;
 }
@@ -857,7 +857,7 @@ done:
         SDL_DestroySurface(intermediate_surface);
     }
     if (freedst && dst) {
-        if (SDL_RWclose(dst) < 0) {
+        if (SDL_DestroyRW(dst) < 0) {
             was_error = SDL_TRUE;
         }
     }

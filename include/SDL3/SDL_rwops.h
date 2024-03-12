@@ -39,15 +39,8 @@
 extern "C" {
 #endif
 
-/* RWops types */
-#define SDL_RWOPS_UNKNOWN   0   /**< Unknown stream type */
-#define SDL_RWOPS_WINFILE   1   /**< Win32 file */
-#define SDL_RWOPS_STDFILE   2   /**< Stdio file */
-#define SDL_RWOPS_JNIFILE   3   /**< Android asset */
-#define SDL_RWOPS_MEMORY    4   /**< Memory stream */
-#define SDL_RWOPS_MEMORY_RO 5   /**< Read-Only memory stream */
-
 /* RWops status, set by a read or write operation */
+/* !!! FIXME: make this an enum? */
 #define SDL_RWOPS_STATUS_READY          0   /**< Everything is ready */
 #define SDL_RWOPS_STATUS_ERROR          1   /**< Read or write I/O error */
 #define SDL_RWOPS_STATUS_EOF            2   /**< End of file */
@@ -55,17 +48,14 @@ extern "C" {
 #define SDL_RWOPS_STATUS_READONLY       4   /**< Tried to write a read-only buffer */
 #define SDL_RWOPS_STATUS_WRITEONLY      5   /**< Tried to read a write-only buffer */
 
-/**
- * This is the read/write operation structure -- very basic.
- */
-typedef struct SDL_RWops
+typedef struct SDL_RWopsInterface
 {
     /**
      *  Return the number of bytes in this rwops
      *
      *  \return the total size of the data stream, or -1 on error.
      */
-    Sint64 (SDLCALL *size)(struct SDL_RWops *context);
+    Sint64 (SDLCALL *size)(void *userdata);
 
     /**
      *  Seek to \c offset relative to \c whence, one of stdio's whence values:
@@ -73,7 +63,7 @@ typedef struct SDL_RWops
      *
      *  \return the final offset in the data stream, or -1 on error.
      */
-    Sint64 (SDLCALL *seek)(struct SDL_RWops *context, Sint64 offset, int whence);
+    Sint64 (SDLCALL *seek)(void *userdata, Sint64 offset, int whence);
 
     /**
      *  Read up to \c size bytes from the data stream to the area pointed
@@ -81,7 +71,7 @@ typedef struct SDL_RWops
      *
      *  \return the number of bytes read
      */
-    size_t (SDLCALL *read)(struct SDL_RWops *context, void *ptr, size_t size);
+    size_t (SDLCALL *read)(void *userdata, void *ptr, size_t size);
 
     /**
      *  Write exactly \c size bytes from the area pointed at by \c ptr
@@ -89,61 +79,24 @@ typedef struct SDL_RWops
      *
      *  \return the number of bytes written
      */
-    size_t (SDLCALL *write)(struct SDL_RWops *context, const void *ptr, size_t size);
+    size_t (SDLCALL *write)(void *userdata, const void *ptr, size_t size);
 
     /**
-     *  Close and free an allocated SDL_RWops structure.
+     *  Close and free any allocated resources.
+     *
+     *  The RWops is still destroyed even if this fails, so clean up anything
+     *  even if flushing to disk returns an error.
      *
      *  \return 0 if successful or -1 on write error when flushing data.
      */
-    int (SDLCALL *close)(struct SDL_RWops *context);
+    int (SDLCALL *close)(void *userdata);
+} SDL_RWopsInterface;
 
-    Uint32 type;
-    Uint32 status;
-    SDL_PropertiesID props;
-    union
-    {
-#ifdef SDL_PLATFORM_ANDROID
-        struct
-        {
-            void *asset;
-        } androidio;
 
-#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) || defined(SDL_PLATFORM_WINRT)
-        struct
-        {
-            SDL_bool append;
-            void *h;
-            struct
-            {
-                void *data;
-                size_t size;
-                size_t left;
-            } buffer;
-        } windowsio;
-#endif
-
-        struct
-        {
-            SDL_bool autoclose;
-            void *fp;
-        } stdio;
-
-        struct
-        {
-            Uint8 *base;
-            Uint8 *here;
-            Uint8 *stop;
-        } mem;
-
-        struct
-        {
-            void *data1;
-            void *data2;
-        } unknown;
-    } hidden;
-
-} SDL_RWops;
+/**
+ * This is the read/write operation structure -- opaque, as of SDL3!
+ */
+typedef struct SDL_RWops SDL_RWops;
 
 
 /**
@@ -195,7 +148,7 @@ typedef struct SDL_RWops
  * As a fallback, SDL_RWFromFile() will transparently open a matching filename
  * in an Android app's `assets`.
  *
- * Closing the SDL_RWops will close the file handle SDL is holding internally.
+ * Destroying the SDL_RWops will close the file handle SDL is holding internally.
  *
  * \param file a UTF-8 string representing the filename to open
  * \param mode an ASCII string representing the mode to be used for opening
@@ -205,7 +158,6 @@ typedef struct SDL_RWops
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWclose
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromMem
  * \sa SDL_RWread
@@ -236,7 +188,6 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromFile(const char *file, const char *
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWclose
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
  * \sa SDL_RWFromMem
@@ -270,7 +221,6 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromMem(void *mem, size_t size);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWclose
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
  * \sa SDL_RWFromMem
@@ -284,20 +234,14 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromConstMem(const void *mem, size_t si
 
 
 /**
- * Use this function to allocate an empty, unpopulated SDL_RWops structure.
+ * Use this function to allocate a SDL_RWops structure.
  *
  * Applications do not need to use this function unless they are providing
  * their own SDL_RWops implementation. If you just need an SDL_RWops to
  * read/write a common data source, you should use the built-in
  * implementations in SDL, like SDL_RWFromFile() or SDL_RWFromMem(), etc.
  *
- * You must free the returned pointer with SDL_DestroyRW(). Depending on your
- * operating system and compiler, there may be a difference between the
- * malloc() and free() your program uses and the versions SDL calls
- * internally. Trying to mix the two can cause crashing such as segmentation
- * faults. Since all SDL_RWops must free themselves when their **close**
- * method is called, all SDL_RWops must be allocated through this function, so
- * they can all be freed correctly with SDL_DestroyRW().
+ * You must free the returned pointer with SDL_DestroyRW().
  *
  * \returns a pointer to the allocated memory on success, or NULL on failure;
  *          call SDL_GetError() for more information.
@@ -306,32 +250,33 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromConstMem(const void *mem, size_t si
  *
  * \sa SDL_DestroyRW
  */
-extern DECLSPEC SDL_RWops *SDLCALL SDL_CreateRW(void);
+extern DECLSPEC SDL_RWops *SDLCALL SDL_CreateRW(const SDL_RWopsInterface *iface, void *userdata);
 
 /**
- * Use this function to free an SDL_RWops structure allocated by
- * SDL_CreateRW().
+ * Close and free an allocated SDL_RWops structure.
  *
- * Applications do not need to use this function unless they are providing
- * their own SDL_RWops implementation. If you just need an SDL_RWops to
- * read/write a common data source, you should use the built-in
- * implementations in SDL, like SDL_RWFromFile() or SDL_RWFromMem(), etc, and
- * call the **close** method on those SDL_RWops pointers when you are done
- * with them.
+ * SDL_DestroyRW() closes and cleans up the SDL_RWops stream. It releases any
+ * resources used by the stream and frees the SDL_RWops itself with
+ * SDL_DestroyRW(). This returns 0 on success, or -1 if the stream failed to
+ * flush to its output (e.g. to disk).
  *
- * Only use SDL_DestroyRW() on pointers returned by SDL_CreateRW(). The
- * pointer is invalid as soon as this function returns. Any extra memory
- * allocated during creation of the SDL_RWops is not freed by SDL_DestroyRW();
- * the programmer must be responsible for managing that memory in their
- * **close** method.
+ * Note that if this fails to flush the stream to disk, this function reports
+ * an error, but the SDL_RWops is still invalid once this function returns.
  *
- * \param context the SDL_RWops structure to be freed
+ * \param context SDL_RWops structure to close
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateRW
+ * \sa SDL_RWFromConstMem
+ * \sa SDL_RWFromFile
+ * \sa SDL_RWFromMem
+ * \sa SDL_RWread
+ * \sa SDL_RWseek
+ * \sa SDL_RWwrite
  */
-extern DECLSPEC void SDLCALL SDL_DestroyRW(SDL_RWops *context);
+extern DECLSPEC int SDLCALL SDL_DestroyRW(SDL_RWops *context);
 
 /**
  * Get the properties associated with an SDL_RWops.
@@ -389,7 +334,6 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWsize(SDL_RWops *context);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWclose
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
  * \sa SDL_RWFromMem
@@ -413,7 +357,6 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWseek(SDL_RWops *context, Sint64 offset, int
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWclose
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
  * \sa SDL_RWFromMem
@@ -444,7 +387,6 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWtell(SDL_RWops *context);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWclose
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
  * \sa SDL_RWFromMem
@@ -482,7 +424,6 @@ extern DECLSPEC size_t SDLCALL SDL_RWread(SDL_RWops *context, void *ptr, size_t 
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWclose
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
  * \sa SDL_RWFromMem
@@ -506,7 +447,6 @@ extern DECLSPEC size_t SDLCALL SDL_RWwrite(SDL_RWops *context, const void *ptr, 
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWclose
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
  * \sa SDL_RWFromMem
@@ -529,7 +469,6 @@ extern DECLSPEC size_t SDLCALL SDL_RWprintf(SDL_RWops *context, SDL_PRINTF_FORMA
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWclose
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
  * \sa SDL_RWFromMem
@@ -538,32 +477,6 @@ extern DECLSPEC size_t SDLCALL SDL_RWprintf(SDL_RWops *context, SDL_PRINTF_FORMA
  * \sa SDL_RWwrite
  */
 extern DECLSPEC size_t SDLCALL SDL_RWvprintf(SDL_RWops *context, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
-
-/**
- * Close and free an allocated SDL_RWops structure.
- *
- * SDL_RWclose() closes and cleans up the SDL_RWops stream. It releases any
- * resources used by the stream and frees the SDL_RWops itself with
- * SDL_DestroyRW(). This returns 0 on success, or -1 if the stream failed to
- * flush to its output (e.g. to disk).
- *
- * Note that if this fails to flush the stream to disk, this function reports
- * an error, but the SDL_RWops is still invalid once this function returns.
- *
- * \param context SDL_RWops structure to close
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_RWFromConstMem
- * \sa SDL_RWFromFile
- * \sa SDL_RWFromMem
- * \sa SDL_RWread
- * \sa SDL_RWseek
- * \sa SDL_RWwrite
- */
-extern DECLSPEC int SDLCALL SDL_RWclose(SDL_RWops *context);
 
 /**
  * Load all the data from an SDL data stream.
@@ -576,7 +489,7 @@ extern DECLSPEC int SDLCALL SDL_RWclose(SDL_RWops *context);
  *
  * \param src the SDL_RWops to read all available data from
  * \param datasize if not NULL, will store the number of bytes read
- * \param freesrc if SDL_TRUE, calls SDL_RWclose() on `src` before returning,
+ * \param freesrc if SDL_TRUE, calls SDL_DestroyRW() on `src` before returning,
  *                even in the case of an error
  * \returns the data, or NULL if there was an error.
  *

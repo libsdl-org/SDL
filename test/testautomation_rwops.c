@@ -269,15 +269,12 @@ static int rwops_testMem(void *arg)
         return TEST_ABORTED;
     }
 
-    /* Check type */
-    SDLTest_AssertCheck(rw->type == SDL_RWOPS_MEMORY, "Verify RWops type is SDL_RWOPS_MEMORY; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_MEMORY, rw->type);
-
     /* Run generic tests */
     testGenericRWopsValidations(rw, SDL_TRUE);
 
     /* Close */
-    result = SDL_RWclose(rw);
-    SDLTest_AssertPass("Call to SDL_RWclose() succeeded");
+    result = SDL_DestroyRW(rw);
+    SDLTest_AssertPass("Call to SDL_DestroyRW() succeeded");
     SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
     return TEST_COMPLETED;
@@ -304,15 +301,12 @@ static int rwops_testConstMem(void *arg)
         return TEST_ABORTED;
     }
 
-    /* Check type */
-    SDLTest_AssertCheck(rw->type == SDL_RWOPS_MEMORY_RO, "Verify RWops type is SDL_RWOPS_MEMORY_RO; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_MEMORY_RO, rw->type);
-
     /* Run generic tests */
     testGenericRWopsValidations(rw, SDL_FALSE);
 
     /* Close handle */
-    result = SDL_RWclose(rw);
-    SDLTest_AssertPass("Call to SDL_RWclose() succeeded");
+    result = SDL_DestroyRW(rw);
+    SDLTest_AssertPass("Call to SDL_DestroyRW() succeeded");
     SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
     return TEST_COMPLETED;
@@ -339,27 +333,12 @@ static int rwops_testFileRead(void *arg)
         return TEST_ABORTED;
     }
 
-    /* Check type */
-#ifdef SDL_PLATFORM_ANDROID
-    SDLTest_AssertCheck(
-        rw->type == SDL_RWOPS_STDFILE || rw->type == SDL_RWOPS_JNIFILE,
-        "Verify RWops type is SDL_RWOPS_STDFILE or SDL_RWOPS_JNIFILE; expected: %d|%d, got: %d", SDL_RWOPS_STDFILE, SDL_RWOPS_JNIFILE, rw->type);
-#elif defined(SDL_PLATFORM_WIN32)
-    SDLTest_AssertCheck(
-        rw->type == SDL_RWOPS_WINFILE,
-        "Verify RWops type is SDL_RWOPS_WINFILE; expected: %d, got: %d", SDL_RWOPS_WINFILE, rw->type);
-#else
-    SDLTest_AssertCheck(
-        rw->type == SDL_RWOPS_STDFILE,
-        "Verify RWops type is SDL_RWOPS_STDFILE; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_STDFILE, rw->type);
-#endif
-
     /* Run generic tests */
     testGenericRWopsValidations(rw, SDL_FALSE);
 
     /* Close handle */
-    result = SDL_RWclose(rw);
-    SDLTest_AssertPass("Call to SDL_RWclose() succeeded");
+    result = SDL_DestroyRW(rw);
+    SDLTest_AssertPass("Call to SDL_DestroyRW() succeeded");
     SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
     return TEST_COMPLETED;
@@ -386,27 +365,12 @@ static int rwops_testFileWrite(void *arg)
         return TEST_ABORTED;
     }
 
-    /* Check type */
-#ifdef SDL_PLATFORM_ANDROID
-    SDLTest_AssertCheck(
-        rw->type == SDL_RWOPS_STDFILE || rw->type == SDL_RWOPS_JNIFILE,
-        "Verify RWops type is SDL_RWOPS_STDFILE or SDL_RWOPS_JNIFILE; expected: %d|%d, got: %d", SDL_RWOPS_STDFILE, SDL_RWOPS_JNIFILE, rw->type);
-#elif defined(SDL_PLATFORM_WIN32)
-    SDLTest_AssertCheck(
-        rw->type == SDL_RWOPS_WINFILE,
-        "Verify RWops type is SDL_RWOPS_WINFILE; expected: %d, got: %d", SDL_RWOPS_WINFILE, rw->type);
-#else
-    SDLTest_AssertCheck(
-        rw->type == SDL_RWOPS_STDFILE,
-        "Verify RWops type is SDL_RWOPS_STDFILE; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_STDFILE, rw->type);
-#endif
-
     /* Run generic tests */
     testGenericRWopsValidations(rw, SDL_TRUE);
 
     /* Close handle */
-    result = SDL_RWclose(rw);
-    SDLTest_AssertPass("Call to SDL_RWclose() succeeded");
+    result = SDL_DestroyRW(rw);
+    SDLTest_AssertPass("Call to SDL_DestroyRW() succeeded");
     SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
     return TEST_COMPLETED;
@@ -421,17 +385,16 @@ static int rwops_testFileWrite(void *arg)
 static int rwops_testAllocFree(void *arg)
 {
     /* Allocate context */
-    SDL_RWops *rw = SDL_CreateRW();
+    SDL_RWopsInterface iface;
+    SDL_RWops *rw;
+
+    SDL_zero(iface);
+    rw = SDL_CreateRW(&iface, NULL);
     SDLTest_AssertPass("Call to SDL_CreateRW() succeeded");
     SDLTest_AssertCheck(rw != NULL, "Validate result from SDL_CreateRW() is not NULL");
     if (rw == NULL) {
         return TEST_ABORTED;
     }
-
-    /* Check type */
-    SDLTest_AssertCheck(
-        rw->type == SDL_RWOPS_UNKNOWN,
-        "Verify RWops type is SDL_RWOPS_UNKNOWN; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_UNKNOWN, rw->type);
 
     /* Free context again */
     SDL_DestroyRW(rw);
@@ -472,8 +435,8 @@ static int rwops_testCompareRWFromMemWithRWFromFile(void *arg)
         SDLTest_AssertPass("Call to SDL_RWread(mem, size=%d)", size * 6);
         sv_mem = SDL_RWseek(rwops_mem, 0, SEEK_END);
         SDLTest_AssertPass("Call to SDL_RWseek(mem,SEEK_END)");
-        result = SDL_RWclose(rwops_mem);
-        SDLTest_AssertPass("Call to SDL_RWclose(mem)");
+        result = SDL_DestroyRW(rwops_mem);
+        SDLTest_AssertPass("Call to SDL_DestroyRW(mem)");
         SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
         /* Read/see from file */
@@ -483,8 +446,8 @@ static int rwops_testCompareRWFromMemWithRWFromFile(void *arg)
         SDLTest_AssertPass("Call to SDL_RWread(file, size=%d)", size * 6);
         sv_file = SDL_RWseek(rwops_file, 0, SEEK_END);
         SDLTest_AssertPass("Call to SDL_RWseek(file,SEEK_END)");
-        result = SDL_RWclose(rwops_file);
-        SDLTest_AssertPass("Call to SDL_RWclose(file)");
+        result = SDL_DestroyRW(rwops_file);
+        SDLTest_AssertPass("Call to SDL_DestroyRW(file)");
         SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
         /* Compare */
@@ -627,8 +590,8 @@ static int rwops_testFileWriteReadEndian(void *arg)
         SDLTest_AssertCheck(LE64test == LE64value, "Validate object read from SDL_ReadU64LE, expected: %" SDL_PRIu64 ", got: %" SDL_PRIu64, LE64value, LE64test);
 
         /* Close handle */
-        cresult = SDL_RWclose(rw);
-        SDLTest_AssertPass("Call to SDL_RWclose() succeeded");
+        cresult = SDL_DestroyRW(rw);
+        SDLTest_AssertPass("Call to SDL_DestroyRW() succeeded");
         SDLTest_AssertCheck(cresult == 0, "Verify result value is 0; got: %d", cresult);
     }
 

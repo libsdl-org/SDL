@@ -1913,7 +1913,7 @@ static const void *SDLTest_ScreenShotClipboardProvider(void *context, const char
                     image = NULL;
                 }
             }
-            SDL_RWclose(file);
+            SDL_DestroyRW(file);
 
             if (image) {
                 data->image = image;
@@ -1984,7 +1984,7 @@ static void SDLTest_PasteScreenShot(void)
             if (file) {
                 SDL_Log("Writing clipboard image to %s", filename);
                 SDL_RWwrite(file, data, size);
-                SDL_RWclose(file);
+                SDL_DestroyRW(file);
             }
             SDL_free(data);
             return;

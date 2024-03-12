@@ -493,7 +493,6 @@
 #define SDL_RWFromConstMem SDL_RWFromConstMem_REAL
 #define SDL_RWFromFile SDL_RWFromFile_REAL
 #define SDL_RWFromMem SDL_RWFromMem_REAL
-#define SDL_RWclose SDL_RWclose_REAL
 #define SDL_RWread SDL_RWread_REAL
 #define SDL_RWseek SDL_RWseek_REAL
 #define SDL_RWsize SDL_RWsize_REAL

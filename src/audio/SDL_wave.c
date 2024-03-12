@@ -1629,7 +1629,7 @@ static int WaveReadFormat(WaveFile *file)
             return -1;
         }
     } else if (format->encoding == PCM_CODE) {
-        SDL_RWclose(fmtsrc);
+        SDL_DestroyRW(fmtsrc);
         return SDL_SetError("Missing wBitsPerSample field in WAVE fmt chunk");
     }
 
@@ -1649,7 +1649,7 @@ static int WaveReadFormat(WaveFile *file)
 
         /* Extensible header must be at least 22 bytes. */
         if (fmtlen < 40 || format->extsize < 22) {
-            SDL_RWclose(fmtsrc);
+            SDL_DestroyRW(fmtsrc);
             return SDL_SetError("Extensible WAVE header too small");
         }
 
@@ -1661,7 +1661,7 @@ static int WaveReadFormat(WaveFile *file)
         format->encoding = WaveGetFormatGUIDEncoding(format);
     }
 
-    SDL_RWclose(fmtsrc);
+    SDL_DestroyRW(fmtsrc);
 
     return 0;
 }
@@ -2117,7 +2117,7 @@ int SDL_LoadWAV_RW(SDL_RWops *src, SDL_bool freesrc, SDL_AudioSpec *spec, Uint8 
     SDL_free(file.decoderdata);
 done:
     if (freesrc && src) {
-        SDL_RWclose(src);
+        SDL_DestroyRW(src);
     }
     return result;
 }

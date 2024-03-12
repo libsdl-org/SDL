@@ -55,7 +55,7 @@ rwops_error_quit(unsigned line, SDL_RWops *rwops)
 {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "testfile.c(%d): failed\n", line);
     if (rwops) {
-        SDL_RWclose(rwops); /* This calls SDL_DestroyRW(rwops); */
+        SDL_DestroyRW(rwops);
     }
     cleanup();
     SDLTest_CommonDestroyState(state);
@@ -126,25 +126,25 @@ int main(int argc, char *argv[])
     if (!rwops) {
         RWOP_ERR_QUIT(rwops);
     }
-    SDL_RWclose(rwops);
+    SDL_DestroyRW(rwops);
     unlink(FBASENAME2);
     rwops = SDL_RWFromFile(FBASENAME2, "wb+");
     if (!rwops) {
         RWOP_ERR_QUIT(rwops);
     }
-    SDL_RWclose(rwops);
+    SDL_DestroyRW(rwops);
     unlink(FBASENAME2);
     rwops = SDL_RWFromFile(FBASENAME2, "ab");
     if (!rwops) {
         RWOP_ERR_QUIT(rwops);
     }
-    SDL_RWclose(rwops);
+    SDL_DestroyRW(rwops);
     unlink(FBASENAME2);
     rwops = SDL_RWFromFile(FBASENAME2, "ab+");
     if (!rwops) {
         RWOP_ERR_QUIT(rwops);
     }
-    SDL_RWclose(rwops);
+    SDL_DestroyRW(rwops);
     unlink(FBASENAME2);
     SDL_Log("test2 OK\n");
 
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
         RWOP_ERR_QUIT(rwops); /* we are in write only mode */
     }
 
-    SDL_RWclose(rwops);
+    SDL_DestroyRW(rwops);
 
     rwops = SDL_RWFromFile(FBASENAME1, "rb"); /* read mode, file must exist */
     if (!rwops) {
@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
         RWOP_ERR_QUIT(rwops); /* readonly mode */
     }
 
-    SDL_RWclose(rwops);
+    SDL_DestroyRW(rwops);
 
     /* test 3: same with w+ mode */
     rwops = SDL_RWFromFile(FBASENAME1, "wb+"); /* write + read + truncation */
@@ -258,7 +258,7 @@ int main(int argc, char *argv[])
     if (SDL_memcmp(test_buf, "12345678901234567890", 20) != 0) {
         RWOP_ERR_QUIT(rwops);
     }
-    SDL_RWclose(rwops);
+    SDL_DestroyRW(rwops);
     SDL_Log("test3 OK\n");
 
     /* test 4: same in r+ mode */
@@ -309,7 +309,7 @@ int main(int argc, char *argv[])
     if (SDL_memcmp(test_buf, "12345678901234567890", 20) != 0) {
         RWOP_ERR_QUIT(rwops);
     }
-    SDL_RWclose(rwops);
+    SDL_DestroyRW(rwops);
     SDL_Log("test4 OK\n");
 
     /* test5 : append mode */
@@ -366,7 +366,7 @@ int main(int argc, char *argv[])
     if (SDL_memcmp(test_buf, "123456789012345678901234567123", 30) != 0) {
         RWOP_ERR_QUIT(rwops);
     }
-    SDL_RWclose(rwops);
+    SDL_DestroyRW(rwops);
     SDL_Log("test5 OK\n");
     cleanup();
     SDL_Quit();

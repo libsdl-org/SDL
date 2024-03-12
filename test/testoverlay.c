@@ -452,7 +452,7 @@ int main(int argc, char **argv)
 
     SDL_RWread(handle, RawMooseData, MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
 
-    SDL_RWclose(handle);
+    SDL_DestroyRW(handle);
 
     /* Create the window and renderer */
     window_w = MOOSEPIC_W * scale;
