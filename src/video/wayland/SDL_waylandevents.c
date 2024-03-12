@@ -56,13 +56,14 @@
 #define BTN_SIDE   (0x113)
 #define BTN_EXTRA  (0x114)
 #endif
+#include "../../events/SDL_keysym_to_scancode_c.h"
+#include "../../events/imKStoUCS.h"
+#include <errno.h>
 #include <sys/mman.h>
 #include <unistd.h>
-#include <errno.h>
-#include <xkbcommon/xkbcommon.h>
 #include <xkbcommon/xkbcommon-compose.h>
-#include "../../events/imKStoUCS.h"
-#include "../../events/SDL_keysym_to_scancode_c.h"
+#include <xkbcommon/xkbcommon.h>
+#include "cursor-shape-v1-client-protocol.h"
 
 /* Weston uses a ratio of 10 units per scroll tick */
 #define WAYLAND_WHEEL_AXIS_UNIT 10
@@ -241,6 +242,17 @@ void Wayland_RegisterTimestampListeners(struct SDL_WaylandInput *input)
         if (input->touch && !input->touch_timestamps) {
             input->touch_timestamps = zwp_input_timestamps_manager_v1_get_touch_timestamps(viddata->input_timestamps_manager, input->touch);
             zwp_input_timestamps_v1_add_listener(input->touch_timestamps, &timestamp_listener, &input->touch_timestamp_ns);
+        }
+    }
+}
+
+void Wayland_CreateCursorShapeDevice(struct SDL_WaylandInput *input)
+{
+    SDL_VideoData *viddata = input->display;
+
+    if (viddata->cursor_shape_manager) {
+        if (input->pointer && !input->cursor_shape) {
+            input->cursor_shape = wp_cursor_shape_manager_v1_get_pointer(viddata->cursor_shape_manager, input->pointer);
         }
     }
 }
@@ -1696,10 +1708,17 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
         input->pointer = wl_seat_get_pointer(seat);
         SDL_memset(&input->pointer_curr_axis_info, 0, sizeof(input->pointer_curr_axis_info));
         input->display->pointer = input->pointer;
+
+        Wayland_CreateCursorShapeDevice(input);
+
         wl_pointer_set_user_data(input->pointer, input);
         wl_pointer_add_listener(input->pointer, &pointer_listener,
                                 input);
     } else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && input->pointer) {
+        if (input->cursor_shape) {
+            wp_cursor_shape_device_v1_destroy(input->cursor_shape);
+            input->cursor_shape = NULL;
+        }
         wl_pointer_destroy(input->pointer);
         input->pointer = NULL;
         input->display->pointer = NULL;
@@ -3064,6 +3083,10 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
         } else {
             wl_keyboard_destroy(input->keyboard);
         }
+    }
+
+    if (input->cursor_shape) {
+        wp_cursor_shape_device_v1_destroy(input->cursor_shape);
     }
 
     if (input->pointer) {
