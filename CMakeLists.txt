@@ -1108,6 +1108,8 @@ if(SDL_LIBC)
     check_symbol_exists(getauxval "sys/auxv.h" HAVE_GETAUXVAL)
     check_symbol_exists(elf_aux_info "sys/auxv.h" HAVE_ELF_AUX_INFO)
     check_symbol_exists(poll "poll.h" HAVE_POLL)
+    check_symbol_exists(memfd_create "sys/mman.h" HAVE_MEMFD_CREATE)
+    check_symbol_exists(posix_fallocate "fcntl.h" HAVE_POSIX_FALLOCATE)
 
     check_library_exists(m pow "" HAVE_LIBM)
     if(HAVE_LIBM)

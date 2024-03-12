@@ -23,11 +23,12 @@
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
-#include <sys/types.h>
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <limits.h>
+#include <signal.h>
+#include <errno.h>
 
 #include "../SDL_sysvideo.h"
 
@@ -58,6 +59,7 @@ typedef struct
      */
     SDL_SystemCursor system_cursor;
     void *shm_data;
+    size_t shm_data_size;
 } Wayland_CursorData;
 
 #ifdef SDL_USE_LIBDBUS
@@ -289,27 +291,72 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
     return SDL_TRUE;
 }
 
-static int wayland_create_tmp_file(off_t size)
+static int set_tmp_file_size(int fd, off_t size)
 {
-    static const char template[] = "/sdl-shared-XXXXXX";
-    char *xdg_path;
-    char tmp_path[PATH_MAX];
-    int fd;
+#ifdef HAVE_POSIX_FALLOCATE
+    sigset_t set, old_set;
+    int ret;
 
-    xdg_path = SDL_getenv("XDG_RUNTIME_DIR");
-    if (!xdg_path) {
+    /* SIGALRM can potentially block a large posix_fallocate() operation
+     * from succeeding, so block it.
+     */
+    sigemptyset(&set);
+    sigaddset(&set, SIGALRM);
+    sigprocmask(SIG_BLOCK, &set, &old_set);
+
+    do {
+        ret = posix_fallocate(fd, 0, size);
+    } while (ret == EINTR);
+
+    sigprocmask(SIG_SETMASK, &old_set, NULL);
+
+    if (ret == 0) {
+        return 0;
+    }
+    else if (ret != EINVAL && errno != EOPNOTSUPP) {
         return -1;
     }
-
-    SDL_strlcpy(tmp_path, xdg_path, PATH_MAX);
-    SDL_strlcat(tmp_path, template, PATH_MAX);
-
-    fd = mkostemp(tmp_path, O_CLOEXEC);
-    if (fd < 0) {
-        return -1;
-    }
+#endif
 
     if (ftruncate(fd, size) < 0) {
+        return -1;
+    }
+    return 0;
+}
+
+static int wayland_create_tmp_file(off_t size)
+{
+    int fd;
+
+#ifdef HAVE_MEMFD_CREATE
+    fd = memfd_create("SDL", MFD_CLOEXEC | MFD_ALLOW_SEALING);
+    if (fd >= 0) {
+        fcntl(fd, F_ADD_SEALS, F_SEAL_SHRINK | F_SEAL_SEAL);
+    } else
+#endif
+    {
+        static const char template[] = "/sdl-shared-XXXXXX";
+        char *xdg_path;
+        char tmp_path[PATH_MAX];
+
+        xdg_path = SDL_getenv("XDG_RUNTIME_DIR");
+        if (!xdg_path) {
+            return -1;
+        }
+
+        SDL_strlcpy(tmp_path, xdg_path, PATH_MAX);
+        SDL_strlcat(tmp_path, template, PATH_MAX);
+
+        fd = mkostemp(tmp_path, O_CLOEXEC);
+        if (fd < 0) {
+            return -1;
+        }
+
+        /* Need to manually unlink the temp files, or they can persist after close and fill up the temp storage. */
+        unlink(tmp_path);
+    }
+
+    if (set_tmp_file_size(fd, size) < 0) {
         close(fd);
         return -1;
     }
@@ -335,17 +382,17 @@ static int create_buffer_from_shm(Wayland_CursorData *d,
     struct wl_shm_pool *shm_pool;
 
     int stride = width * 4;
-    int size = stride * height;
+    d->shm_data_size = stride * height;
 
     int shm_fd;
 
-    shm_fd = wayland_create_tmp_file(size);
+    shm_fd = wayland_create_tmp_file(d->shm_data_size);
     if (shm_fd < 0) {
         return SDL_SetError("Creating mouse cursor buffer failed.");
     }
 
     d->shm_data = mmap(NULL,
-                       size,
+                       d->shm_data_size,
                        PROT_READ | PROT_WRITE,
                        MAP_SHARED,
                        shm_fd,
@@ -358,7 +405,7 @@ static int create_buffer_from_shm(Wayland_CursorData *d,
 
     SDL_assert(d->shm_data != NULL);
 
-    shm_pool = wl_shm_create_pool(data->shm, shm_fd, size);
+    shm_pool = wl_shm_create_pool(data->shm, shm_fd, d->shm_data_size);
     d->buffer = wl_shm_pool_create_buffer(shm_pool,
                                           0,
                                           width,
@@ -459,6 +506,7 @@ static void Wayland_FreeCursorData(Wayland_CursorData *d)
     if (d->buffer) {
         if (d->shm_data) {
             wl_buffer_destroy(d->buffer);
+            munmap(d->shm_data, d->shm_data_size);
         }
         d->buffer = NULL;
     }
@@ -482,7 +530,6 @@ static void Wayland_FreeCursor(SDL_Cursor *cursor)
 
     Wayland_FreeCursorData((Wayland_CursorData *)cursor->driverdata);
 
-    /* Not sure what's meant to happen to shm_data */
     SDL_free(cursor->driverdata);
     SDL_free(cursor);
 }

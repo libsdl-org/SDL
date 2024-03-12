@@ -190,6 +190,8 @@
 #cmakedefine HAVE_FOPEN64 1
 #cmakedefine HAVE_FSEEKO 1
 #cmakedefine HAVE_FSEEKO64 1
+#cmakedefine HAVE_MEMFD_CREATE 1
+#cmakedefine HAVE_POSIX_FALLOCATE 1
 #cmakedefine HAVE_SIGACTION 1
 #cmakedefine HAVE_SA_SIGACTION 1
 #cmakedefine HAVE_SETJMP 1
