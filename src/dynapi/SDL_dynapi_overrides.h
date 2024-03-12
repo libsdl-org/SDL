@@ -76,7 +76,6 @@
 #define SDL_CreatePalette SDL_CreatePalette_REAL
 #define SDL_CreatePixelFormat SDL_CreatePixelFormat_REAL
 #define SDL_CreatePopupWindow SDL_CreatePopupWindow_REAL
-#define SDL_CreateRW SDL_CreateRW_REAL
 #define SDL_CreateRWLock SDL_CreateRWLock_REAL
 #define SDL_CreateRenderer SDL_CreateRenderer_REAL
 #define SDL_CreateSemaphore SDL_CreateSemaphore_REAL
@@ -103,7 +102,6 @@
 #define SDL_DestroyMutex SDL_DestroyMutex_REAL
 #define SDL_DestroyPalette SDL_DestroyPalette_REAL
 #define SDL_DestroyPixelFormat SDL_DestroyPixelFormat_REAL
-#define SDL_DestroyRW SDL_DestroyRW_REAL
 #define SDL_DestroyRWLock SDL_DestroyRWLock_REAL
 #define SDL_DestroyRenderer SDL_DestroyRenderer_REAL
 #define SDL_DestroySemaphore SDL_DestroySemaphore_REAL
@@ -1003,3 +1001,5 @@
 #define SDL_ShowOpenFileDialog SDL_ShowOpenFileDialog_REAL
 #define SDL_ShowSaveFileDialog SDL_ShowSaveFileDialog_REAL
 #define SDL_ShowOpenFolderDialog SDL_ShowOpenFolderDialog_REAL
+#define SDL_OpenRW SDL_OpenRW_REAL
+#define SDL_CloseRW SDL_CloseRW_REAL

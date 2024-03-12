@@ -328,7 +328,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
  * will result in a memory leak.
  *
  * \param src the data stream for the surface
- * \param freesrc if SDL_TRUE, calls SDL_DestroyRW() on `src` before returning,
+ * \param freesrc if SDL_TRUE, calls SDL_CloseRW() on `src` before returning,
  *                even in the case of an error
  * \returns a pointer to a new SDL_Surface structure or NULL if there was an
  *          error; call SDL_GetError() for more information.
@@ -370,7 +370,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP(const char *file);
  *
  * \param surface the SDL_Surface structure containing the image to be saved
  * \param dst a data stream to save to
- * \param freedst if SDL_TRUE, calls SDL_DestroyRW() on `dst` before returning,
+ * \param freedst if SDL_TRUE, calls SDL_CloseRW() on `dst` before returning,
  *                even in the case of an error
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.

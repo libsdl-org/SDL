@@ -424,7 +424,7 @@ static SDL_RWops *SDL_RWFromFP(FILE *fp, SDL_bool autoclose)
     rwopsdata->fp = fp;
     rwopsdata->autoclose = autoclose;
 
-    SDL_RWops *rwops = SDL_CreateRW(&iface, rwopsdata);
+    SDL_RWops *rwops = SDL_OpenRW(&iface, rwopsdata);
     if (!rwops) {
         iface.close(rwopsdata);
     }
@@ -565,7 +565,7 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
 
     void *rwopsdata = NULL;
     if (Android_JNI_FileOpen(&rwopsdata, file, mode) < 0) {
-        SDL_DestroyRW(rwops);
+        SDL_CloseRW(rwops);
         return NULL;
     }
 
@@ -577,7 +577,7 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
     iface.write = Android_JNI_FileWrite;
     iface.close = Android_JNI_FileClose;
 
-    rwops = SDL_CreateRW(&iface, rwopsdata);
+    rwops = SDL_OpenRW(&iface, rwopsdata);
     if (!rwops) {
         iface.close(rwopsdata);
     }
@@ -591,7 +591,7 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
     }
 
     if (windows_file_open(rwopsdata, file, mode) < 0) {
-        SDL_DestroyRW(rwops);
+        SDL_CloseRW(rwops);
         return NULL;
     }
 
@@ -603,7 +603,7 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
     iface.write = windows_file_write;
     iface.close = windows_file_close;
 
-    rwops = SDL_CreateRW(&iface, rwopsdata);
+    rwops = SDL_OpenRW(&iface, rwopsdata);
     if (!rwops) {
         windows_file_close(rwopsdata);
     }
@@ -666,7 +666,7 @@ SDL_RWops *SDL_RWFromMem(void *mem, size_t size)
     rwopsdata->here = rwopsdata->base;
     rwopsdata->stop = rwopsdata->base + size;
 
-    SDL_RWops *rwops = SDL_CreateRW(&iface, rwopsdata);
+    SDL_RWops *rwops = SDL_OpenRW(&iface, rwopsdata);
     if (!rwops) {
         SDL_free(rwopsdata);
     }
@@ -699,14 +699,14 @@ SDL_RWops *SDL_RWFromConstMem(const void *mem, size_t size)
     rwopsdata->here = rwopsdata->base;
     rwopsdata->stop = rwopsdata->base + size;
 
-    SDL_RWops *rwops = SDL_CreateRW(&iface, rwopsdata);
+    SDL_RWops *rwops = SDL_OpenRW(&iface, rwopsdata);
     if (!rwops) {
         SDL_free(rwopsdata);
     }
     return rwops;
 }
 
-SDL_RWops *SDL_CreateRW(const SDL_RWopsInterface *iface, void *userdata)
+SDL_RWops *SDL_OpenRW(const SDL_RWopsInterface *iface, void *userdata)
 {
     if (!iface) {
         SDL_InvalidParamError("iface");
@@ -721,7 +721,7 @@ SDL_RWops *SDL_CreateRW(const SDL_RWopsInterface *iface, void *userdata)
     return rwops;
 }
 
-int SDL_DestroyRW(SDL_RWops *rwops)
+int SDL_CloseRW(SDL_RWops *rwops)
 {
     int retval = 0;
     if (rwops) {
@@ -797,7 +797,7 @@ done:
         *datasize = (size_t)size_total;
     }
     if (freesrc && src) {
-        SDL_DestroyRW(src);
+        SDL_CloseRW(src);
     }
     return data;
 }

@@ -1317,7 +1317,7 @@ extern DECLSPEC int SDLCALL SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid,
  * ```
  *
  * \param src The data source for the WAVE data
- * \param freesrc If SDL_TRUE, calls SDL_DestroyRW() on `src` before returning,
+ * \param freesrc If SDL_TRUE, calls SDL_CloseRW() on `src` before returning,
  *                even in the case of an error
  * \param spec A pointer to an SDL_AudioSpec that will be set to the WAVE
  *             data's format details on successful return

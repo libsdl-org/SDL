@@ -52,7 +52,6 @@ SDL3_0.0.0 {
     SDL_CreatePalette;
     SDL_CreatePixelFormat;
     SDL_CreatePopupWindow;
-    SDL_CreateRW;
     SDL_CreateRWLock;
     SDL_CreateRenderer;
     SDL_CreateSemaphore;
@@ -79,7 +78,6 @@ SDL3_0.0.0 {
     SDL_DestroyMutex;
     SDL_DestroyPalette;
     SDL_DestroyPixelFormat;
-    SDL_DestroyRW;
     SDL_DestroyRWLock;
     SDL_DestroyRenderer;
     SDL_DestroySemaphore;
@@ -978,6 +976,8 @@ SDL3_0.0.0 {
     SDL_ShowOpenFileDialog;
     SDL_ShowSaveFileDialog;
     SDL_ShowOpenFolderDialog;
+    SDL_OpenRW;
+    SDL_CloseRW;
     # extra symbols go here (don't modify this line)
   local: *;
 };

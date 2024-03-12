@@ -1815,16 +1815,6 @@ expression e2;
 + SDL_RW_SEEK_SET
 @@
 @@
-- SDL_AllocRW
-+ SDL_CreateRW
-  (...)
-@@
-@@
-- SDL_FreeRW
-+ SDL_DestroyRW
-  (...)
-@@
-@@
 - SDL_SensorClose
 + SDL_CloseSensor
   (...)

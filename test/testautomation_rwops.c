@@ -273,8 +273,8 @@ static int rwops_testMem(void *arg)
     testGenericRWopsValidations(rw, SDL_TRUE);
 
     /* Close */
-    result = SDL_DestroyRW(rw);
-    SDLTest_AssertPass("Call to SDL_DestroyRW() succeeded");
+    result = SDL_CloseRW(rw);
+    SDLTest_AssertPass("Call to SDL_CloseRW() succeeded");
     SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
     return TEST_COMPLETED;
@@ -305,8 +305,8 @@ static int rwops_testConstMem(void *arg)
     testGenericRWopsValidations(rw, SDL_FALSE);
 
     /* Close handle */
-    result = SDL_DestroyRW(rw);
-    SDLTest_AssertPass("Call to SDL_DestroyRW() succeeded");
+    result = SDL_CloseRW(rw);
+    SDLTest_AssertPass("Call to SDL_CloseRW() succeeded");
     SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
     return TEST_COMPLETED;
@@ -337,8 +337,8 @@ static int rwops_testFileRead(void *arg)
     testGenericRWopsValidations(rw, SDL_FALSE);
 
     /* Close handle */
-    result = SDL_DestroyRW(rw);
-    SDLTest_AssertPass("Call to SDL_DestroyRW() succeeded");
+    result = SDL_CloseRW(rw);
+    SDLTest_AssertPass("Call to SDL_CloseRW() succeeded");
     SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
     return TEST_COMPLETED;
@@ -369,8 +369,8 @@ static int rwops_testFileWrite(void *arg)
     testGenericRWopsValidations(rw, SDL_TRUE);
 
     /* Close handle */
-    result = SDL_DestroyRW(rw);
-    SDLTest_AssertPass("Call to SDL_DestroyRW() succeeded");
+    result = SDL_CloseRW(rw);
+    SDLTest_AssertPass("Call to SDL_CloseRW() succeeded");
     SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
     return TEST_COMPLETED;
@@ -379,8 +379,8 @@ static int rwops_testFileWrite(void *arg)
 /**
  * Tests alloc and free RW context.
  *
- * \sa SDL_CreateRW
- * \sa SDL_DestroyRW
+ * \sa SDL_OpenRW
+ * \sa SDL_CloseRW
  */
 static int rwops_testAllocFree(void *arg)
 {
@@ -389,16 +389,16 @@ static int rwops_testAllocFree(void *arg)
     SDL_RWops *rw;
 
     SDL_zero(iface);
-    rw = SDL_CreateRW(&iface, NULL);
-    SDLTest_AssertPass("Call to SDL_CreateRW() succeeded");
-    SDLTest_AssertCheck(rw != NULL, "Validate result from SDL_CreateRW() is not NULL");
+    rw = SDL_OpenRW(&iface, NULL);
+    SDLTest_AssertPass("Call to SDL_OpenRW() succeeded");
+    SDLTest_AssertCheck(rw != NULL, "Validate result from SDL_OpenRW() is not NULL");
     if (rw == NULL) {
         return TEST_ABORTED;
     }
 
     /* Free context again */
-    SDL_DestroyRW(rw);
-    SDLTest_AssertPass("Call to SDL_DestroyRW() succeeded");
+    SDL_CloseRW(rw);
+    SDLTest_AssertPass("Call to SDL_CloseRW() succeeded");
 
     return TEST_COMPLETED;
 }
@@ -435,8 +435,8 @@ static int rwops_testCompareRWFromMemWithRWFromFile(void *arg)
         SDLTest_AssertPass("Call to SDL_RWread(mem, size=%d)", size * 6);
         sv_mem = SDL_RWseek(rwops_mem, 0, SEEK_END);
         SDLTest_AssertPass("Call to SDL_RWseek(mem,SEEK_END)");
-        result = SDL_DestroyRW(rwops_mem);
-        SDLTest_AssertPass("Call to SDL_DestroyRW(mem)");
+        result = SDL_CloseRW(rwops_mem);
+        SDLTest_AssertPass("Call to SDL_CloseRW(mem)");
         SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
         /* Read/see from file */
@@ -446,8 +446,8 @@ static int rwops_testCompareRWFromMemWithRWFromFile(void *arg)
         SDLTest_AssertPass("Call to SDL_RWread(file, size=%d)", size * 6);
         sv_file = SDL_RWseek(rwops_file, 0, SEEK_END);
         SDLTest_AssertPass("Call to SDL_RWseek(file,SEEK_END)");
-        result = SDL_DestroyRW(rwops_file);
-        SDLTest_AssertPass("Call to SDL_DestroyRW(file)");
+        result = SDL_CloseRW(rwops_file);
+        SDLTest_AssertPass("Call to SDL_CloseRW(file)");
         SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
         /* Compare */
@@ -590,8 +590,8 @@ static int rwops_testFileWriteReadEndian(void *arg)
         SDLTest_AssertCheck(LE64test == LE64value, "Validate object read from SDL_ReadU64LE, expected: %" SDL_PRIu64 ", got: %" SDL_PRIu64, LE64value, LE64test);
 
         /* Close handle */
-        cresult = SDL_DestroyRW(rw);
-        SDLTest_AssertPass("Call to SDL_DestroyRW() succeeded");
+        cresult = SDL_CloseRW(rw);
+        SDLTest_AssertPass("Call to SDL_CloseRW() succeeded");
         SDLTest_AssertCheck(cresult == 0, "Verify result value is 0; got: %d", cresult);
     }
 

@@ -171,7 +171,7 @@ int main(int argc, char **argv)
         quit(2);
     }
     SDL_RWread(handle, MooseFrames, MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
-    SDL_DestroyRW(handle);
+    SDL_CloseRW(handle);
 
     /* Create the window and renderer */
     window = SDL_CreateWindow("Happy Moose", MOOSEPIC_W * 4, MOOSEPIC_H * 4, SDL_WINDOW_RESIZABLE);

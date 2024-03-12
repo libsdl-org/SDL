@@ -1156,9 +1156,9 @@ The following symbols have been renamed:
 * RW_SEEK_END => SDL_RW_SEEK_END
 * RW_SEEK_SET => SDL_RW_SEEK_SET
 
-SDL_RWops is now an opaque structure. The existing APIs to create a RWops (SDL_RWFromFile, etc) still function as expected, but to make a custom RWops with app-provided function pointers, call SDL_CreateRW and provide the function pointers through there. To call into a RWops's functionality, use the standard APIs (SDL_RWread, etc) instead of calling into function pointers directly.
+SDL_RWops is now an opaque structure. The existing APIs to create a RWops (SDL_RWFromFile, etc) still function as expected, but to make a custom RWops with app-provided function pointers, call SDL_OpenRW and provide the function pointers through there. To call into a RWops's functionality, use the standard APIs (SDL_RWread, etc) instead of calling into function pointers directly.
 
-The RWops function pointers are now in a separate structure called SDL_RWopsInteface, which is provided to SDL_CreateRW. All the functions now take a `void *` userdata argument for their first parameter instead of an SDL_RWops, since that's now an opaque structure.
+The RWops function pointers are now in a separate structure called SDL_RWopsInteface, which is provided to SDL_OpenRW. All the functions now take a `void *` userdata argument for their first parameter instead of an SDL_RWops, since that's now an opaque structure.
 
 SDL_RWread and SDL_RWwrite (and SDL_RWopsInterface::read, SDL_RWopsInterface::write) have a different function signature in SDL3.
 
@@ -1196,11 +1196,11 @@ size_t custom_read(void *ptr, size_t size, size_t nitems, SDL_RWops *stream)
 
 SDL_RWops::type was removed and has no replacement; it wasn't meaningful for app-provided implementations at all, and wasn't much use for SDL's internal implementations, either.
 
-SDL_RWopsInterface::close implementations should clean up their own userdata, but not call SDL_DestroyRW on themselves; now the contract is always that SDL_DestroyRW is called, which calls `->close` and then frees the opaque object.
+SDL_RWopsInterface::close implementations should clean up their own userdata, but not call SDL_CloseRW on themselves; now the contract is always that SDL_CloseRW is called, which calls `->close` and then frees the opaque object.
 
 SDL_RWFromFP has been removed from the API, due to issues when the SDL library uses a different C runtime from the application.
 
-SDL_AllocRW(), SDL_FreeRW(), SDL_RWclose() and direct access to the `->close` function pointer have been removed from the API, so there's only one path to manage RWops lifetimes now: SDL_CreateRW() and SDL_DestroyRW().
+SDL_AllocRW(), SDL_FreeRW(), SDL_RWclose() and direct access to the `->close` function pointer have been removed from the API, so there's only one path to manage RWops lifetimes now: SDL_OpenRW() and SDL_CloseRW().
 
 
 You can implement this in your own code easily:
@@ -1295,7 +1295,7 @@ SDL_RWops *SDL_RWFromFP(FILE *fp, SDL_bool autoclose)
     rwopsdata->fp = fp;
     rwopsdata->autoclose = autoclose;
 
-    rwops = SDL_CreateRW(&iface, rwopsdata);
+    rwops = SDL_OpenRW(&iface, rwopsdata);
     if (!rwops) {
         iface.close(rwopsdata);
     }

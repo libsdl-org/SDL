@@ -223,7 +223,7 @@ static int unifont_init(const char *fontname)
         lineNumber++;
     } while (bytesRead > 0);
 
-    SDL_DestroyRW(hexFile);
+    SDL_CloseRW(hexFile);
     SDL_Log("unifont: Loaded %" SDL_PRIu32 " glyphs.\n", numGlyphs);
     return 0;
 }

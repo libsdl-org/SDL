@@ -234,30 +234,30 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromConstMem(const void *mem, size_t si
 
 
 /**
- * Use this function to allocate a SDL_RWops structure.
+ * Create a custom SDL_RWops.
  *
  * Applications do not need to use this function unless they are providing
  * their own SDL_RWops implementation. If you just need an SDL_RWops to
  * read/write a common data source, you should use the built-in
  * implementations in SDL, like SDL_RWFromFile() or SDL_RWFromMem(), etc.
  *
- * You must free the returned pointer with SDL_DestroyRW().
+ * You must free the returned pointer with SDL_CloseRW().
  *
  * \returns a pointer to the allocated memory on success, or NULL on failure;
  *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_DestroyRW
+ * \sa SDL_CloseRW
  */
-extern DECLSPEC SDL_RWops *SDLCALL SDL_CreateRW(const SDL_RWopsInterface *iface, void *userdata);
+extern DECLSPEC SDL_RWops *SDLCALL SDL_OpenRW(const SDL_RWopsInterface *iface, void *userdata);
 
 /**
  * Close and free an allocated SDL_RWops structure.
  *
- * SDL_DestroyRW() closes and cleans up the SDL_RWops stream. It releases any
+ * SDL_CloseRW() closes and cleans up the SDL_RWops stream. It releases any
  * resources used by the stream and frees the SDL_RWops itself with
- * SDL_DestroyRW(). This returns 0 on success, or -1 if the stream failed to
+ * SDL_CloseRW(). This returns 0 on success, or -1 if the stream failed to
  * flush to its output (e.g. to disk).
  *
  * Note that if this fails to flush the stream to disk, this function reports
@@ -276,7 +276,7 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_CreateRW(const SDL_RWopsInterface *iface,
  * \sa SDL_RWseek
  * \sa SDL_RWwrite
  */
-extern DECLSPEC int SDLCALL SDL_DestroyRW(SDL_RWops *context);
+extern DECLSPEC int SDLCALL SDL_CloseRW(SDL_RWops *context);
 
 /**
  * Get the properties associated with an SDL_RWops.
@@ -489,7 +489,7 @@ extern DECLSPEC size_t SDLCALL SDL_RWvprintf(SDL_RWops *context, SDL_PRINTF_FORM
  *
  * \param src the SDL_RWops to read all available data from
  * \param datasize if not NULL, will store the number of bytes read
- * \param freesrc if SDL_TRUE, calls SDL_DestroyRW() on `src` before returning,
+ * \param freesrc if SDL_TRUE, calls SDL_CloseRW() on `src` before returning,
  *                even in the case of an error
  * \returns the data, or NULL if there was an error.
  *

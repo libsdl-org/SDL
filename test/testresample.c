@@ -117,7 +117,7 @@ int main(int argc, char **argv)
     /* write out a WAV header... */
     io = SDL_RWFromFile(file_out, "wb");
     if (!io) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fopen('%s') failed: %s\n", file_out, SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "opening '%s' failed: %s\n", file_out, SDL_GetError());
         ret = 5;
         goto end;
     }
@@ -141,8 +141,8 @@ int main(int argc, char **argv)
     SDL_WriteU32LE(io, dst_len);                                /* size */
     SDL_RWwrite(io, dst_buf, dst_len);
 
-    if (SDL_DestroyRW(io) == -1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fclose('%s') failed: %s\n", file_out, SDL_GetError());
+    if (SDL_CloseRW(io) == -1) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "closing '%s' failed: %s\n", file_out, SDL_GetError());
         ret = 6;
         goto end;
     }
