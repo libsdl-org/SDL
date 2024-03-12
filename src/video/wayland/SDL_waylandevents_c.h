@@ -102,6 +102,7 @@ struct SDL_WaylandInput
     SDL_WaylandDataDevice *data_device;
     SDL_WaylandPrimarySelectionDevice *primary_selection_device;
     SDL_WaylandTextInput *text_input;
+    struct wp_cursor_shape_device_v1 *cursor_shape;
     struct zwp_relative_pointer_v1 *relative_pointer;
     struct zwp_input_timestamps_v1 *keyboard_timestamps;
     struct zwp_input_timestamps_v1 *pointer_timestamps;
@@ -209,6 +210,7 @@ extern void Wayland_input_add_tablet(struct SDL_WaylandInput *input, struct SDL_
 extern void Wayland_input_destroy_tablet(struct SDL_WaylandInput *input);
 
 extern void Wayland_RegisterTimestampListeners(struct SDL_WaylandInput *input);
+extern void Wayland_CreateCursorShapeDevice(struct SDL_WaylandInput *input);
 
 /* The implicit grab serial needs to be updated on:
  * - Keyboard key down/up

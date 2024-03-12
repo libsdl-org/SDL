@@ -23,41 +23,42 @@
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
-#include "../../events/SDL_events_c.h"
 #include "../../core/linux/SDL_system_theme.h"
+#include "../../events/SDL_events_c.h"
 
-#include "SDL_waylandvideo.h"
-#include "SDL_waylandevents_c.h"
-#include "SDL_waylandwindow.h"
-#include "SDL_waylandopengles.h"
-#include "SDL_waylandmouse.h"
-#include "SDL_waylandkeyboard.h"
 #include "SDL_waylandclipboard.h"
-#include "SDL_waylandvulkan.h"
+#include "SDL_waylandevents_c.h"
+#include "SDL_waylandkeyboard.h"
 #include "SDL_waylandmessagebox.h"
+#include "SDL_waylandmouse.h"
+#include "SDL_waylandopengles.h"
+#include "SDL_waylandvideo.h"
+#include "SDL_waylandvulkan.h"
+#include "SDL_waylandwindow.h"
 
+#include <fcntl.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <xkbcommon/xkbcommon.h>
 
 #include <wayland-util.h>
 
-#include "xdg-shell-client-protocol.h"
-#include "xdg-decoration-unstable-v1-client-protocol.h"
-#include "keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
-#include "idle-inhibit-unstable-v1-client-protocol.h"
-#include "xdg-activation-v1-client-protocol.h"
-#include "text-input-unstable-v3-client-protocol.h"
-#include "tablet-unstable-v2-client-protocol.h"
-#include "xdg-output-unstable-v1-client-protocol.h"
-#include "viewporter-client-protocol.h"
-#include "primary-selection-unstable-v1-client-protocol.h"
+#include "cursor-shape-v1-client-protocol.h"
 #include "fractional-scale-v1-client-protocol.h"
+#include "idle-inhibit-unstable-v1-client-protocol.h"
 #include "input-timestamps-unstable-v1-client-protocol.h"
-#include "relative-pointer-unstable-v1-client-protocol.h"
-#include "pointer-constraints-unstable-v1-client-protocol.h"
 #include "kde-output-order-v1-client-protocol.h"
+#include "keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
+#include "pointer-constraints-unstable-v1-client-protocol.h"
+#include "primary-selection-unstable-v1-client-protocol.h"
+#include "relative-pointer-unstable-v1-client-protocol.h"
+#include "tablet-unstable-v2-client-protocol.h"
+#include "text-input-unstable-v3-client-protocol.h"
+#include "viewporter-client-protocol.h"
+#include "xdg-activation-v1-client-protocol.h"
+#include "xdg-decoration-unstable-v1-client-protocol.h"
+#include "xdg-output-unstable-v1-client-protocol.h"
+#include "xdg-shell-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -200,7 +201,8 @@ error:
 static void Wayland_FlushOutputOrder(SDL_VideoData *vid)
 {
     SDL_WaylandConnectorName *c, *tmp;
-    wl_list_for_each_safe (c, tmp, &vid->output_order, link) {
+    wl_list_for_each_safe(c, tmp, &vid->output_order, link)
+    {
         WAYLAND_wl_list_remove(&c->link);
         SDL_free(c);
     }
@@ -796,7 +798,7 @@ static void display_handle_done(void *data,
             /* ...and the compositor scales the logical viewport... */
             if (video->viewporter) {
                 /* ...and viewports are supported, calculate the true scale of the output. */
-                driverdata->scale_factor = (float) native_mode.w / (float)driverdata->screen_width;
+                driverdata->scale_factor = (float)native_mode.w / (float)driverdata->screen_width;
             } else {
                 /* ...otherwise, the 'native' pixel values are a multiple of the logical screen size. */
                 driverdata->pixel_width = driverdata->screen_width * (int)driverdata->scale_factor;
@@ -906,11 +908,11 @@ static void display_handle_description(void *data, struct wl_output *wl_output, 
 }
 
 static const struct wl_output_listener output_listener = {
-    display_handle_geometry, /* Version 1 */
-    display_handle_mode, /* Version 1 */
-    display_handle_done, /* Version 2 */
-    display_handle_scale, /* Version 2 */
-    display_handle_name, /* Version 4 */
+    display_handle_geometry,   /* Version 1 */
+    display_handle_mode,       /* Version 1 */
+    display_handle_done,       /* Version 2 */
+    display_handle_scale,      /* Version 2 */
+    display_handle_name,       /* Version 4 */
     display_handle_description /* Version 4 */
 };
 
@@ -978,7 +980,7 @@ static void Wayland_FinalizeDisplays(SDL_VideoData *vid)
     SDL_DisplayData *d;
 
     Wayland_SortOutputs(vid);
-    wl_list_for_each(d, &vid->output_list, link) {
+    wl_list_for_each (d, &vid->output_list, link) {
         d->display = SDL_AddVideoDisplay(&d->placeholder, SDL_FALSE);
         SDL_free(d->placeholder.name);
         SDL_zero(d->placeholder);
@@ -1072,6 +1074,11 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         if (d->input) {
             Wayland_RegisterTimestampListeners(d->input);
         }
+    } else if (SDL_strcmp(interface, "wp_cursor_shape_manager_v1") == 0) {
+        d->cursor_shape_manager = wl_registry_bind(d->registry, id, &wp_cursor_shape_manager_v1_interface, 1);
+        if (d->input) {
+            Wayland_CreateCursorShapeDevice(d->input);
+        }
     } else if (SDL_strcmp(interface, "kde_output_order_v1") == 0) {
         d->kde_output_order = wl_registry_bind(d->registry, id, &kde_output_order_v1_interface, 1);
         kde_output_order_v1_add_listener(d->kde_output_order, &kde_output_order_listener, d);
@@ -1081,7 +1088,7 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
 static void display_remove_global(void *data, struct wl_registry *registry, uint32_t id)
 {
     SDL_VideoData *d = data;
-    SDL_DisplayData  *node;
+    SDL_DisplayData *node;
 
     /* We don't get an interface, just an ID, so assume it's a wl_output :shrug: */
     wl_list_for_each (node, &d->output_list, link) {
@@ -1318,6 +1325,11 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     if (data->input_timestamps_manager) {
         zwp_input_timestamps_manager_v1_destroy(data->input_timestamps_manager);
         data->input_timestamps_manager = NULL;
+    }
+
+    if (data->cursor_shape_manager) {
+        wp_cursor_shape_manager_v1_destroy(data->cursor_shape_manager);
+        data->cursor_shape_manager = NULL;
     }
 
     if (data->kde_output_order) {

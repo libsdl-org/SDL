@@ -41,6 +41,8 @@
 #include "wayland-cursor.h"
 #include "SDL_waylandmouse.h"
 
+#include "cursor-shape-v1-client-protocol.h"
+
 #include "../../SDL_hints_c.h"
 
 static SDL_Cursor *sys_cursors[SDL_HITTEST_RESIZE_LEFT + 1];
@@ -529,14 +531,19 @@ static SDL_Cursor *Wayland_CreateSystemCursor(SDL_SystemCursor id)
             SDL_free(cursor);
             return NULL;
         }
+
         cursor->driverdata = (void *)cdata;
 
-        cdata->surface = wl_compositor_create_surface(data->compositor);
-        wl_surface_set_user_data(cdata->surface, NULL);
-
-        /* Note that we can't actually set any other cursor properties, as this
+        /* The surface is only necessary if the cursor shape manager is not present.
+         *
+         * Note that we can't actually set any other cursor properties, as this
          * is output-specific. See wayland_get_system_cursor for the rest!
          */
+        if (!data->cursor_shape_manager) {
+            cdata->surface = wl_compositor_create_surface(data->compositor);
+            wl_surface_set_user_data(cdata->surface, NULL);
+        }
+
         cdata->system_cursor = id;
     }
 
@@ -581,6 +588,79 @@ static void Wayland_FreeCursor(SDL_Cursor *cursor)
     SDL_free(cursor);
 }
 
+static void Wayland_SetSystemCursorShape(struct SDL_WaylandInput *input, SDL_SystemCursor id)
+{
+    Uint32 shape;
+
+    switch (id) {
+    case SDL_SYSTEM_CURSOR_ARROW:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT;
+        break;
+    case SDL_SYSTEM_CURSOR_IBEAM:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_TEXT;
+        break;
+    case SDL_SYSTEM_CURSOR_WAIT:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_WAIT;
+        break;
+    case SDL_SYSTEM_CURSOR_CROSSHAIR:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_CROSSHAIR;
+        break;
+    case SDL_SYSTEM_CURSOR_WAITARROW:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_PROGRESS;
+        break;
+    case SDL_SYSTEM_CURSOR_SIZENWSE:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NWSE_RESIZE;
+        break;
+    case SDL_SYSTEM_CURSOR_SIZENESW:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NESW_RESIZE;
+        break;
+    case SDL_SYSTEM_CURSOR_SIZEWE:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_EW_RESIZE;
+        break;
+    case SDL_SYSTEM_CURSOR_SIZENS:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NS_RESIZE;
+        break;
+    case SDL_SYSTEM_CURSOR_SIZEALL:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ALL_SCROLL;
+        break;
+    case SDL_SYSTEM_CURSOR_NO:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NOT_ALLOWED;
+        break;
+    case SDL_SYSTEM_CURSOR_HAND:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_POINTER;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NW_RESIZE;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_TOP:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_N_RESIZE;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NE_RESIZE;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_RIGHT:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_E_RESIZE;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_SE_RESIZE;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_S_RESIZE;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_SW_RESIZE;
+        break;
+    case SDL_SYSTEM_CURSOR_WINDOW_LEFT:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_W_RESIZE;
+        break;
+    default:
+        SDL_assert(0); /* Should never be here... */
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT;
+    }
+
+    wp_cursor_shape_device_v1_set_shape(input->cursor_shape, input->pointer_enter_serial, shape);
+}
+
 static int Wayland_ShowCursor(SDL_Cursor *cursor)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
@@ -598,7 +678,10 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
 
         /* TODO: High-DPI custom cursors? -flibit */
         if (!data->shm_data) {
-            if (!wayland_get_system_cursor(d, data, &scale)) {
+            if (input->cursor_shape) {
+                Wayland_SetSystemCursorShape(input, data->system_cursor);
+                return 0;
+            } else if (!wayland_get_system_cursor(d, data, &scale)) {
                 return -1;
             }
         }
