@@ -452,6 +452,12 @@
 #define RW_SEEK_CUR SDL_RW_SEEK_CUR
 #define RW_SEEK_END SDL_RW_SEEK_END
 #define RW_SEEK_SET SDL_RW_SEEK_SET
+#define SDL_RWclose SDL_CloseRW
+#define SDL_RWread SDL_ReadRW
+#define SDL_RWseek SDL_SeekRW
+#define SDL_RWsize SDL_SizeRW
+#define SDL_RWtell SDL_TellRW
+#define SDL_RWwrite SDL_WriteRW
 #define SDL_ReadBE16 SDL_ReadU16BE
 #define SDL_ReadBE32 SDL_ReadU32BE
 #define SDL_ReadBE64 SDL_ReadU64BE
@@ -936,6 +942,12 @@
 #define RW_SEEK_CUR RW_SEEK_CUR_renamed_SDL_RW_SEEK_CUR
 #define RW_SEEK_END RW_SEEK_END_renamed_SDL_RW_SEEK_END
 #define RW_SEEK_SET RW_SEEK_SET_renamed_SDL_RW_SEEK_SET
+#define SDL_RWclose SDL_RWclose_renamed_SDL_CloseRW
+#define SDL_RWread SDL_RWread_renamed_SDL_ReadRW
+#define SDL_RWseek SDL_RWseek_renamed_SDL_SeekRW
+#define SDL_RWsize SDL_RWsize_renamed_SDL_SizeRW
+#define SDL_RWtell SDL_RWtell_renamed_SDL_TellRW
+#define SDL_RWwrite SDL_RWwrite_renamed_SDL_WriteRW
 #define SDL_ReadBE16 SDL_ReadBE16_renamed_SDL_ReadU16BE
 #define SDL_ReadBE32 SDL_ReadBE32_renamed_SDL_ReadU32BE
 #define SDL_ReadBE64 SDL_ReadBE64_renamed_SDL_ReadU64BE

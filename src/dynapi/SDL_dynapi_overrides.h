@@ -491,11 +491,11 @@
 #define SDL_RWFromConstMem SDL_RWFromConstMem_REAL
 #define SDL_RWFromFile SDL_RWFromFile_REAL
 #define SDL_RWFromMem SDL_RWFromMem_REAL
-#define SDL_RWread SDL_RWread_REAL
-#define SDL_RWseek SDL_RWseek_REAL
-#define SDL_RWsize SDL_RWsize_REAL
-#define SDL_RWtell SDL_RWtell_REAL
-#define SDL_RWwrite SDL_RWwrite_REAL
+#define SDL_ReadRW SDL_ReadRW_REAL
+#define SDL_SeekRW SDL_SeekRW_REAL
+#define SDL_SizeRW SDL_SizeRW_REAL
+#define SDL_TellRW SDL_TellRW_REAL
+#define SDL_WriteRW SDL_WriteRW_REAL
 #define SDL_RaiseWindow SDL_RaiseWindow_REAL
 #define SDL_ReadU16BE SDL_ReadU16BE_REAL
 #define SDL_ReadU32BE SDL_ReadU32BE_REAL

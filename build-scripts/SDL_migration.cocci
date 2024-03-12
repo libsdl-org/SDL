@@ -3048,3 +3048,33 @@ typedef SDL_version, SDL_Version;
 - SDL_JoystickGetBall
 + SDL_GetJoystickBall
   (...)
+@@
+@@
+- SDL_RWclose
++ SDL_CloseRW
+  (...)
+@@
+@@
+- SDL_RWread
++ SDL_ReadRW
+  (...)
+@@
+@@
+- SDL_RWwrite
++ SDL_WriteRW
+  (...)
+@@
+@@
+- SDL_RWtell
++ SDL_TellRW
+  (...)
+@@
+@@
+- SDL_RWsize
++ SDL_SizeRW
+  (...)
+@@
+@@
+- SDL_RWseek
++ SDL_SeekRW
+  (...)

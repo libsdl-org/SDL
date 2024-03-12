@@ -139,7 +139,7 @@ int main(int argc, char **argv)
     SDL_WriteU16LE(io, (Uint16)bitsize);                        /* significant bits per sample */
     SDL_WriteU32LE(io, 0x61746164);                             /* data */
     SDL_WriteU32LE(io, dst_len);                                /* size */
-    SDL_RWwrite(io, dst_buf, dst_len);
+    SDL_WriteRW(io, dst_buf, dst_len);
 
     if (SDL_CloseRW(io) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "closing '%s' failed: %s\n", file_out, SDL_GetError());

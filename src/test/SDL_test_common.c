@@ -1904,10 +1904,10 @@ static const void *SDLTest_ScreenShotClipboardProvider(void *context, const char
 
         file = SDL_RWFromFile(SCREENSHOT_FILE, "r");
         if (file) {
-            size_t length = (size_t)SDL_RWsize(file);
+            size_t length = (size_t)SDL_SizeRW(file);
             void *image = SDL_malloc(length);
             if (image) {
-                if (SDL_RWread(file, image, length) != length) {
+                if (SDL_ReadRW(file, image, length) != length) {
                     SDL_Log("Couldn't read %s: %s\n", SCREENSHOT_FILE, SDL_GetError());
                     SDL_free(image);
                     image = NULL;
@@ -1983,7 +1983,7 @@ static void SDLTest_PasteScreenShot(void)
             file = SDL_RWFromFile(filename, "w");
             if (file) {
                 SDL_Log("Writing clipboard image to %s", filename);
-                SDL_RWwrite(file, data, size);
+                SDL_WriteRW(file, data, size);
                 SDL_CloseRW(file);
             }
             SDL_free(data);

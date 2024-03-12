@@ -467,11 +467,11 @@ SDL3_0.0.0 {
     SDL_RWFromConstMem;
     SDL_RWFromFile;
     SDL_RWFromMem;
-    SDL_RWread;
-    SDL_RWseek;
-    SDL_RWsize;
-    SDL_RWtell;
-    SDL_RWwrite;
+    SDL_ReadRW;
+    SDL_SeekRW;
+    SDL_SizeRW;
+    SDL_TellRW;
+    SDL_WriteRW;
     SDL_RaiseWindow;
     SDL_ReadU16BE;
     SDL_ReadU32BE;

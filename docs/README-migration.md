@@ -1156,11 +1156,11 @@ The following symbols have been renamed:
 * RW_SEEK_END => SDL_RW_SEEK_END
 * RW_SEEK_SET => SDL_RW_SEEK_SET
 
-SDL_RWops is now an opaque structure. The existing APIs to create a RWops (SDL_RWFromFile, etc) still function as expected, but to make a custom RWops with app-provided function pointers, call SDL_OpenRW and provide the function pointers through there. To call into a RWops's functionality, use the standard APIs (SDL_RWread, etc) instead of calling into function pointers directly.
+SDL_RWops is now an opaque structure. The existing APIs to create a RWops (SDL_RWFromFile, etc) still function as expected, but to make a custom RWops with app-provided function pointers, call SDL_OpenRW and provide the function pointers through there. To call into a RWops's functionality, use the standard APIs (SDL_ReadRW, etc) instead of calling into function pointers directly.
 
 The RWops function pointers are now in a separate structure called SDL_RWopsInteface, which is provided to SDL_OpenRW. All the functions now take a `void *` userdata argument for their first parameter instead of an SDL_RWops, since that's now an opaque structure.
 
-SDL_RWread and SDL_RWwrite (and SDL_RWopsInterface::read, SDL_RWopsInterface::write) have a different function signature in SDL3.
+SDL_RWread and SDL_RWwrite (and the read and write function pointers) have a different function signature in SDL3 in addition to being renamed.
 
 Previously they looked more like stdio:
 
@@ -1172,8 +1172,8 @@ size_t SDL_RWwrite(SDL_RWops *context, const void *ptr, size_t size, size_t maxn
 But now they look more like POSIX:
 
 ```c
-size_t SDL_RWread(void *userdata, void *ptr, size_t size);
-size_t SDL_RWwrite(void *userdata, const void *ptr, size_t size);
+size_t SDL_ReadRW(void *userdata, void *ptr, size_t size);
+size_t SDL_WriteRW(void *userdata, const void *ptr, size_t size);
 ```
 
 Code that used to look like this:
@@ -1188,7 +1188,7 @@ should be changed to:
 size_t custom_read(void *ptr, size_t size, size_t nitems, SDL_RWops *stream)
 {
     if (size > 0 && nitems > 0) {
-        return SDL_RWread(stream, ptr, size * nitems) / size;
+        return SDL_ReadRW(stream, ptr, size * nitems) / size;
     }
     return 0;
 }
@@ -1200,7 +1200,7 @@ SDL_RWopsInterface::close implementations should clean up their own userdata, bu
 
 SDL_RWFromFP has been removed from the API, due to issues when the SDL library uses a different C runtime from the application.
 
-SDL_AllocRW(), SDL_FreeRW(), SDL_RWclose() and direct access to the `->close` function pointer have been removed from the API, so there's only one path to manage RWops lifetimes now: SDL_OpenRW() and SDL_CloseRW().
+SDL_AllocRW(), SDL_FreeRW(), SDL_CloseRW() and direct access to the `->close` function pointer have been removed from the API, so there's only one path to manage RWops lifetimes now: SDL_OpenRW() and SDL_CloseRW().
 
 
 You can implement this in your own code easily:
@@ -1286,7 +1286,7 @@ SDL_RWops *SDL_RWFromFP(FILE *fp, SDL_bool autoclose)
     }
 
     SDL_zero(iface);
-    /* There's no stdio_size because SDL_RWsize emulates it the same way we'd do it for stdio anyhow. */
+    /* There's no stdio_size because SDL_SizeRW emulates it the same way we'd do it for stdio anyhow. */
     iface.seek = stdio_seek;
     iface.read = stdio_read;
     iface.write = stdio_write;
@@ -1306,6 +1306,12 @@ SDL_RWops *SDL_RWFromFP(FILE *fp, SDL_bool autoclose)
 The functions SDL_ReadU8(), SDL_ReadU16LE(), SDL_ReadU16BE(), SDL_ReadU32LE(), SDL_ReadU32BE(), SDL_ReadU64LE(), and SDL_ReadU64BE() now return SDL_TRUE if the read succeeded and SDL_FALSE if it didn't, and store the data in a pointer passed in as a parameter.
 
 The following functions have been renamed:
+* SDL_RWclose() => SDL_CloseRW()
+* SDL_RWread() => SDL_ReadRW()
+* SDL_RWseek() => SDL_SeekRW()
+* SDL_RWsize() => SDL_SizeRW()
+* SDL_RWtell() => SDL_TellRW()
+* SDL_RWwrite() => SDL_WriteRW()
 * SDL_ReadBE16() => SDL_ReadU16BE()
 * SDL_ReadBE32() => SDL_ReadU32BE()
 * SDL_ReadBE64() => SDL_ReadU64BE()

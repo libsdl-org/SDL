@@ -160,10 +160,10 @@ typedef struct SDL_RWops SDL_RWops;
  *
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromMem
- * \sa SDL_RWread
- * \sa SDL_RWseek
- * \sa SDL_RWtell
- * \sa SDL_RWwrite
+ * \sa SDL_ReadRW
+ * \sa SDL_SeekRW
+ * \sa SDL_TellRW
+ * \sa SDL_WriteRW
  */
 extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromFile(const char *file, const char *mode);
 
@@ -191,10 +191,10 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromFile(const char *file, const char *
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
  * \sa SDL_RWFromMem
- * \sa SDL_RWread
- * \sa SDL_RWseek
- * \sa SDL_RWtell
- * \sa SDL_RWwrite
+ * \sa SDL_ReadRW
+ * \sa SDL_SeekRW
+ * \sa SDL_TellRW
+ * \sa SDL_WriteRW
  */
 extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromMem(void *mem, size_t size);
 
@@ -224,9 +224,9 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromMem(void *mem, size_t size);
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
  * \sa SDL_RWFromMem
- * \sa SDL_RWread
- * \sa SDL_RWseek
- * \sa SDL_RWtell
+ * \sa SDL_ReadRW
+ * \sa SDL_SeekRW
+ * \sa SDL_TellRW
  */
 extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromConstMem(const void *mem, size_t size);
 
@@ -272,9 +272,9 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_OpenRW(const SDL_RWopsInterface *iface, v
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
  * \sa SDL_RWFromMem
- * \sa SDL_RWread
- * \sa SDL_RWseek
- * \sa SDL_RWwrite
+ * \sa SDL_ReadRW
+ * \sa SDL_SeekRW
+ * \sa SDL_WriteRW
  */
 extern DECLSPEC int SDLCALL SDL_CloseRW(SDL_RWops *context);
 
@@ -306,7 +306,7 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetRWProperties(SDL_RWops *context)
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC Sint64 SDLCALL SDL_RWsize(SDL_RWops *context);
+extern DECLSPEC Sint64 SDLCALL SDL_SizeRW(SDL_RWops *context);
 
 /**
  * Seek within an SDL_RWops data stream.
@@ -321,9 +321,6 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWsize(SDL_RWops *context);
  *
  * If this stream can not seek, it will return -1.
  *
- * SDL_RWseek() is actually a wrapper function that calls the SDL_RWops's
- * `seek` method appropriately, to simplify application development.
- *
  * \param context a pointer to an SDL_RWops structure
  * \param offset an offset in bytes, relative to **whence** location; can be
  *               negative
@@ -337,16 +334,16 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWsize(SDL_RWops *context);
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
  * \sa SDL_RWFromMem
- * \sa SDL_RWread
- * \sa SDL_RWtell
- * \sa SDL_RWwrite
+ * \sa SDL_ReadRW
+ * \sa SDL_TellRW
+ * \sa SDL_WriteRW
  */
-extern DECLSPEC Sint64 SDLCALL SDL_RWseek(SDL_RWops *context, Sint64 offset, int whence);
+extern DECLSPEC Sint64 SDLCALL SDL_SeekRW(SDL_RWops *context, Sint64 offset, int whence);
 
 /**
  * Determine the current read/write offset in an SDL_RWops data stream.
  *
- * SDL_RWtell is actually a wrapper function that calls the SDL_RWops's `seek`
+ * SDL_TellRW is actually a wrapper function that calls the SDL_RWops's `seek`
  * method, with an offset of 0 bytes from `SDL_RW_SEEK_CUR`, to simplify
  * application development.
  *
@@ -360,11 +357,11 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWseek(SDL_RWops *context, Sint64 offset, int
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
  * \sa SDL_RWFromMem
- * \sa SDL_RWread
- * \sa SDL_RWseek
- * \sa SDL_RWwrite
+ * \sa SDL_ReadRW
+ * \sa SDL_SeekRW
+ * \sa SDL_WriteRW
  */
-extern DECLSPEC Sint64 SDLCALL SDL_RWtell(SDL_RWops *context);
+extern DECLSPEC Sint64 SDLCALL SDL_TellRW(SDL_RWops *context);
 
 /**
  * Read from a data source.
@@ -377,7 +374,7 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWtell(SDL_RWops *context);
  * that this is not an error or end-of-file, and the caller can try again
  * later.
  *
- * SDL_RWread() is actually a function wrapper that calls the SDL_RWops's
+ * SDL_ReadRW() is actually a function wrapper that calls the SDL_RWops's
  * `read` method appropriately, to simplify application development.
  *
  * \param context a pointer to an SDL_RWops structure
@@ -390,10 +387,10 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWtell(SDL_RWops *context);
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
  * \sa SDL_RWFromMem
- * \sa SDL_RWseek
- * \sa SDL_RWwrite
+ * \sa SDL_SeekRW
+ * \sa SDL_WriteRW
  */
-extern DECLSPEC size_t SDLCALL SDL_RWread(SDL_RWops *context, void *ptr, size_t size);
+extern DECLSPEC size_t SDLCALL SDL_ReadRW(SDL_RWops *context, void *ptr, size_t size);
 
 /**
  * Write to an SDL_RWops data stream.
@@ -409,7 +406,7 @@ extern DECLSPEC size_t SDLCALL SDL_RWread(SDL_RWops *context, void *ptr, size_t 
  * written because it would require blocking, this function returns -2 to
  * distinguish that this is not an error and the caller can try again later.
  *
- * SDL_RWwrite is actually a function wrapper that calls the SDL_RWops's
+ * SDL_WriteRW is actually a function wrapper that calls the SDL_RWops's
  * `write` method appropriately, to simplify application development.
  *
  * It is an error to specify a negative `size`, but this parameter is signed
@@ -428,10 +425,10 @@ extern DECLSPEC size_t SDLCALL SDL_RWread(SDL_RWops *context, void *ptr, size_t 
  * \sa SDL_RWFromFile
  * \sa SDL_RWFromMem
  * \sa SDL_RWprint
- * \sa SDL_RWread
- * \sa SDL_RWseek
+ * \sa SDL_ReadRW
+ * \sa SDL_SeekRW
  */
-extern DECLSPEC size_t SDLCALL SDL_RWwrite(SDL_RWops *context, const void *ptr, size_t size);
+extern DECLSPEC size_t SDLCALL SDL_WriteRW(SDL_RWops *context, const void *ptr, size_t size);
 
 /**
  * Print to an SDL_RWops data stream.
@@ -450,9 +447,9 @@ extern DECLSPEC size_t SDLCALL SDL_RWwrite(SDL_RWops *context, const void *ptr, 
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
  * \sa SDL_RWFromMem
- * \sa SDL_RWread
- * \sa SDL_RWseek
- * \sa SDL_RWwrite
+ * \sa SDL_ReadRW
+ * \sa SDL_SeekRW
+ * \sa SDL_WriteRW
  */
 extern DECLSPEC size_t SDLCALL SDL_RWprintf(SDL_RWops *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)  SDL_PRINTF_VARARG_FUNC(2);
 
@@ -472,9 +469,9 @@ extern DECLSPEC size_t SDLCALL SDL_RWprintf(SDL_RWops *context, SDL_PRINTF_FORMA
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
  * \sa SDL_RWFromMem
- * \sa SDL_RWread
- * \sa SDL_RWseek
- * \sa SDL_RWwrite
+ * \sa SDL_ReadRW
+ * \sa SDL_SeekRW
+ * \sa SDL_WriteRW
  */
 extern DECLSPEC size_t SDLCALL SDL_RWvprintf(SDL_RWops *context, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
 

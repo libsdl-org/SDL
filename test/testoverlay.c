@@ -450,7 +450,7 @@ int main(int argc, char **argv)
         quit(2);
     }
 
-    SDL_RWread(handle, RawMooseData, MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
+    SDL_ReadRW(handle, RawMooseData, MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
 
     SDL_CloseRW(handle);
 

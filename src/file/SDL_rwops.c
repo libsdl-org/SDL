@@ -415,7 +415,7 @@ static SDL_RWops *SDL_RWFromFP(FILE *fp, SDL_bool autoclose)
 
     SDL_RWopsInterface iface;
     SDL_zero(iface);
-    // There's no stdio_size because SDL_RWsize emulates it the same way we'd do it for stdio anyhow.
+    // There's no stdio_size because SDL_SizeRW emulates it the same way we'd do it for stdio anyhow.
     iface.seek = stdio_seek;
     iface.read = stdio_read;
     iface.write = stdio_write;
@@ -748,7 +748,7 @@ void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, SDL_bool freesrc)
         goto done;
     }
 
-    size = SDL_RWsize(src);
+    size = SDL_SizeRW(src);
     if (size < 0) {
         size = FILE_CHUNK_SIZE;
         loading_chunks = SDL_TRUE;
@@ -780,7 +780,7 @@ void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, SDL_bool freesrc)
             }
         }
 
-        size_read = SDL_RWread(src, data + size_total, (size_t)(size - size_total));
+        size_read = SDL_ReadRW(src, data + size_total, (size_t)(size - size_total));
         if (size_read > 0) {
             size_total += size_read;
             continue;
@@ -820,7 +820,7 @@ SDL_PropertiesID SDL_GetRWProperties(SDL_RWops *context)
     return context->props;
 }
 
-Sint64 SDL_RWsize(SDL_RWops *context)
+Sint64 SDL_SizeRW(SDL_RWops *context)
 {
     if (!context) {
         return SDL_InvalidParamError("context");
@@ -828,19 +828,19 @@ Sint64 SDL_RWsize(SDL_RWops *context)
     if (!context->iface.size) {
         Sint64 pos, size;
 
-        pos = SDL_RWseek(context, 0, SDL_RW_SEEK_CUR);
+        pos = SDL_SeekRW(context, 0, SDL_RW_SEEK_CUR);
         if (pos < 0) {
             return -1;
         }
-        size = SDL_RWseek(context, 0, SDL_RW_SEEK_END);
+        size = SDL_SeekRW(context, 0, SDL_RW_SEEK_END);
 
-        SDL_RWseek(context, pos, SDL_RW_SEEK_SET);
+        SDL_SeekRW(context, pos, SDL_RW_SEEK_SET);
         return size;
     }
     return context->iface.size(context->userdata);
 }
 
-Sint64 SDL_RWseek(SDL_RWops *context, Sint64 offset, int whence)
+Sint64 SDL_SeekRW(SDL_RWops *context, Sint64 offset, int whence)
 {
     if (!context) {
         return SDL_InvalidParamError("context");
@@ -850,12 +850,12 @@ Sint64 SDL_RWseek(SDL_RWops *context, Sint64 offset, int whence)
     return context->iface.seek(context->userdata, offset, whence);
 }
 
-Sint64 SDL_RWtell(SDL_RWops *context)
+Sint64 SDL_TellRW(SDL_RWops *context)
 {
-    return SDL_RWseek(context, 0, SDL_RW_SEEK_CUR);
+    return SDL_SeekRW(context, 0, SDL_RW_SEEK_CUR);
 }
 
-size_t SDL_RWread(SDL_RWops *context, void *ptr, size_t size)
+size_t SDL_ReadRW(SDL_RWops *context, void *ptr, size_t size)
 {
     size_t bytes;
 
@@ -886,7 +886,7 @@ size_t SDL_RWread(SDL_RWops *context, void *ptr, size_t size)
     return bytes;
 }
 
-size_t SDL_RWwrite(SDL_RWops *context, const void *ptr, size_t size)
+size_t SDL_WriteRW(SDL_RWops *context, const void *ptr, size_t size)
 {
     size_t bytes;
 
@@ -927,7 +927,7 @@ size_t SDL_RWprintf(SDL_RWops *context, SDL_PRINTF_FORMAT_STRING const char *fmt
         return 0;
     }
 
-    bytes = SDL_RWwrite(context, string, (size_t)size);
+    bytes = SDL_WriteRW(context, string, (size_t)size);
     SDL_free(string);
     return bytes;
 }
@@ -943,7 +943,7 @@ size_t SDL_RWvprintf(SDL_RWops *context, SDL_PRINTF_FORMAT_STRING const char *fm
         return 0;
     }
 
-    bytes = SDL_RWwrite(context, string, (size_t)size);
+    bytes = SDL_WriteRW(context, string, (size_t)size);
     SDL_free(string);
     return bytes;
 }
@@ -955,7 +955,7 @@ SDL_bool SDL_ReadU8(SDL_RWops *src, Uint8 *value)
     Uint8 data = 0;
     SDL_bool result = SDL_FALSE;
 
-    if (SDL_RWread(src, &data, sizeof(data)) == sizeof(data)) {
+    if (SDL_ReadRW(src, &data, sizeof(data)) == sizeof(data)) {
         result = SDL_TRUE;
     }
     if (value) {
@@ -969,7 +969,7 @@ SDL_bool SDL_ReadU16LE(SDL_RWops *src, Uint16 *value)
     Uint16 data = 0;
     SDL_bool result = SDL_FALSE;
 
-    if (SDL_RWread(src, &data, sizeof(data)) == sizeof(data)) {
+    if (SDL_ReadRW(src, &data, sizeof(data)) == sizeof(data)) {
         result = SDL_TRUE;
     }
     if (value) {
@@ -988,7 +988,7 @@ SDL_bool SDL_ReadU16BE(SDL_RWops *src, Uint16 *value)
     Uint16 data = 0;
     SDL_bool result = SDL_FALSE;
 
-    if (SDL_RWread(src, &data, sizeof(data)) == sizeof(data)) {
+    if (SDL_ReadRW(src, &data, sizeof(data)) == sizeof(data)) {
         result = SDL_TRUE;
     }
     if (value) {
@@ -1007,7 +1007,7 @@ SDL_bool SDL_ReadU32LE(SDL_RWops *src, Uint32 *value)
     Uint32 data = 0;
     SDL_bool result = SDL_FALSE;
 
-    if (SDL_RWread(src, &data, sizeof(data)) == sizeof(data)) {
+    if (SDL_ReadRW(src, &data, sizeof(data)) == sizeof(data)) {
         result = SDL_TRUE;
     }
     if (value) {
@@ -1026,7 +1026,7 @@ SDL_bool SDL_ReadU32BE(SDL_RWops *src, Uint32 *value)
     Uint32 data = 0;
     SDL_bool result = SDL_FALSE;
 
-    if (SDL_RWread(src, &data, sizeof(data)) == sizeof(data)) {
+    if (SDL_ReadRW(src, &data, sizeof(data)) == sizeof(data)) {
         result = SDL_TRUE;
     }
     if (value) {
@@ -1045,7 +1045,7 @@ SDL_bool SDL_ReadU64LE(SDL_RWops *src, Uint64 *value)
     Uint64 data = 0;
     SDL_bool result = SDL_FALSE;
 
-    if (SDL_RWread(src, &data, sizeof(data)) == sizeof(data)) {
+    if (SDL_ReadRW(src, &data, sizeof(data)) == sizeof(data)) {
         result = SDL_TRUE;
     }
     if (value) {
@@ -1064,7 +1064,7 @@ SDL_bool SDL_ReadU64BE(SDL_RWops *src, Uint64 *value)
     Uint64 data = 0;
     SDL_bool result = SDL_FALSE;
 
-    if (SDL_RWread(src, &data, sizeof(data)) == sizeof(data)) {
+    if (SDL_ReadRW(src, &data, sizeof(data)) == sizeof(data)) {
         result = SDL_TRUE;
     }
     if (value) {
@@ -1080,13 +1080,13 @@ SDL_bool SDL_ReadS64BE(SDL_RWops *src, Sint64 *value)
 
 SDL_bool SDL_WriteU8(SDL_RWops *dst, Uint8 value)
 {
-    return (SDL_RWwrite(dst, &value, sizeof(value)) == sizeof(value));
+    return (SDL_WriteRW(dst, &value, sizeof(value)) == sizeof(value));
 }
 
 SDL_bool SDL_WriteU16LE(SDL_RWops *dst, Uint16 value)
 {
     const Uint16 swapped = SDL_SwapLE16(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
+    return (SDL_WriteRW(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
 SDL_bool SDL_WriteS16LE(SDL_RWops *dst, Sint16 value)
@@ -1097,7 +1097,7 @@ SDL_bool SDL_WriteS16LE(SDL_RWops *dst, Sint16 value)
 SDL_bool SDL_WriteU16BE(SDL_RWops *dst, Uint16 value)
 {
     const Uint16 swapped = SDL_SwapBE16(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
+    return (SDL_WriteRW(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
 SDL_bool SDL_WriteS16BE(SDL_RWops *dst, Sint16 value)
@@ -1108,7 +1108,7 @@ SDL_bool SDL_WriteS16BE(SDL_RWops *dst, Sint16 value)
 SDL_bool SDL_WriteU32LE(SDL_RWops *dst, Uint32 value)
 {
     const Uint32 swapped = SDL_SwapLE32(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
+    return (SDL_WriteRW(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
 SDL_bool SDL_WriteS32LE(SDL_RWops *dst, Sint32 value)
@@ -1119,7 +1119,7 @@ SDL_bool SDL_WriteS32LE(SDL_RWops *dst, Sint32 value)
 SDL_bool SDL_WriteU32BE(SDL_RWops *dst, Uint32 value)
 {
     const Uint32 swapped = SDL_SwapBE32(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
+    return (SDL_WriteRW(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
 SDL_bool SDL_WriteS32BE(SDL_RWops *dst, Sint32 value)
@@ -1130,7 +1130,7 @@ SDL_bool SDL_WriteS32BE(SDL_RWops *dst, Sint32 value)
 SDL_bool SDL_WriteU64LE(SDL_RWops *dst, Uint64 value)
 {
     const Uint64 swapped = SDL_SwapLE64(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
+    return (SDL_WriteRW(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
 SDL_bool SDL_WriteS64LE(SDL_RWops *dst, Sint64 value)
@@ -1141,7 +1141,7 @@ SDL_bool SDL_WriteS64LE(SDL_RWops *dst, Sint64 value)
 SDL_bool SDL_WriteU64BE(SDL_RWops *dst, Uint64 value)
 {
     const Uint64 swapped = SDL_SwapBE64(value);
-    return (SDL_RWwrite(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
+    return (SDL_WriteRW(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
 SDL_bool SDL_WriteS64BE(SDL_RWops *dst, Sint64 value)
