@@ -380,11 +380,10 @@ static int create_buffer_from_shm(Wayland_CursorData *d,
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *data = (SDL_VideoData *)vd->driverdata;
     struct wl_shm_pool *shm_pool;
+    int shm_fd;
 
     int stride = width * 4;
     d->shm_data_size = stride * height;
-
-    int shm_fd;
 
     shm_fd = wayland_create_tmp_file(d->shm_data_size);
     if (shm_fd < 0) {
