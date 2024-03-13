@@ -211,6 +211,8 @@
 #undef HAVE_GETAUXVAL
 #undef HAVE_ELF_AUX_INFO
 #undef HAVE_POLL
+#undef HAVE_MEMFD_CREATE
+#undef HAVE_POSIX_FALLOCATE
 #undef HAVE__EXIT
 
 #else
