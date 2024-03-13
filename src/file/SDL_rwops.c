@@ -427,7 +427,13 @@ static SDL_RWops *SDL_RWFromFP(FILE *fp, SDL_bool autoclose)
     SDL_RWops *rwops = SDL_OpenRW(&iface, rwopsdata);
     if (!rwops) {
         iface.close(rwopsdata);
+    } else {
+        const SDL_PropertiesID props = SDL_GetRWProperties(rwops);
+        if (props) {
+            SDL_SetProperty(props, SDL_PROP_RWOPS_STDIO_HANDLE_POINTER, fp);
+        }
     }
+
     return rwops;
 }
 #endif /* !HAVE_STDIO_H && !(SDL_PLATFORM_WIN32 || SDL_PLATFORM_GDK) */
@@ -580,7 +586,13 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
     rwops = SDL_OpenRW(&iface, rwopsdata);
     if (!rwops) {
         iface.close(rwopsdata);
+    } else {
+        const SDL_PropertiesID props = SDL_GetRWProperties(rwops);
+        if (props) {
+            SDL_SetProperty(props, SDL_PROP_RWOPS_ANDROID_AASSET_POINTER, rwopsdata);
+        }
     }
+
     return rwops;
 
 
@@ -606,7 +618,13 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
     rwops = SDL_OpenRW(&iface, rwopsdata);
     if (!rwops) {
         windows_file_close(rwopsdata);
+    } else {
+        const SDL_PropertiesID props = SDL_GetRWProperties(rwops);
+        if (props) {
+            SDL_SetProperty(props, SDL_PROP_RWOPS_WINDOWS_HANDLE_POINTER, rwopsdata->h);
+        }
     }
+
     return rwops;
 
 #elif defined(HAVE_STDIO_H)

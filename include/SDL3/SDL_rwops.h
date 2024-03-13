@@ -150,6 +150,24 @@ typedef struct SDL_RWops SDL_RWops;
  *
  * Destroying the SDL_RWops will close the file handle SDL is holding internally.
  *
+ * The following properties may be set at creation time by SDL:
+ *
+ * - `SDL_PROP_RWOPS_WINDOWS_HANDLE_POINTER`: a pointer, that can be cast
+ *   to a win32 `HANDLE`, that this RWops is using to access the filesystem.
+ *   If the program isn't running on Windows, or SDL used some other method
+ *   to access the filesystem, this property will not be set.
+ * - `SDL_PROP_RWOPS_STDIO_HANDLE_POINTER`: a pointer, that can be cast
+ *   to a stdio `FILE *`, that this RWops is using to access the filesystem.
+ *   If SDL used some other method to access the filesystem, this property
+ *   will not be set. PLEASE NOTE that if SDL is using a different C runtime
+ *   than your app, trying to use this pointer will almost certainly result
+ *   in a crash! This is mostly a problem on Windows; make sure you build SDL
+ *   and your app with the same compiler and settings to avoid it.
+ * - `SDL_PROP_RWOPS_ANDROID_AASSET_POINTER`: a pointer, that can be cast
+ *   to an Android NDK `AAsset *`, that this RWops is using to access the
+ *   filesystem. If SDL used some other method to access the filesystem, this
+ *   property will not be set.
+ *
  * \param file a UTF-8 string representing the filename to open
  * \param mode an ASCII string representing the mode to be used for opening
  *             the file.
@@ -166,6 +184,10 @@ typedef struct SDL_RWops SDL_RWops;
  * \sa SDL_WriteRW
  */
 extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromFile(const char *file, const char *mode);
+
+#define SDL_PROP_RWOPS_WINDOWS_HANDLE_POINTER "SDL.rwops.windows.handle"
+#define SDL_PROP_RWOPS_STDIO_HANDLE_POINTER "SDL.rwops.stdio.handle"
+#define SDL_PROP_RWOPS_ANDROID_AASSET_POINTER "SDL.rwops.android.aasset"
 
 /**
  * Use this function to prepare a read-write memory buffer for use with
