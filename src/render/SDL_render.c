@@ -3820,6 +3820,7 @@ static int remap_one_indice(
     return prev;
 }
 
+#if SDL_VIDEO_RENDER_SW
 static int remap_indices(
     int prev[3],
     int k,
@@ -3844,7 +3845,6 @@ static int remap_indices(
 
 #define DEBUG_SW_RENDER_GEOMETRY 0
 /* For the software renderer, try to reinterpret triangles as SDL_Rect */
-#if SDL_VIDEO_RENDER_SW
 static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                                             SDL_Texture *texture,
                                             const float *xy, int xy_stride,
