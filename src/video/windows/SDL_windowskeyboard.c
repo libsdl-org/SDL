@@ -115,13 +115,15 @@ void WIN_UpdateKeymap(SDL_bool send_event)
     int i;
     SDL_Scancode scancode;
     SDL_Keycode keymap[SDL_NUM_SCANCODES];
+    BYTE keyboardState[256] = { 0 };
+    WCHAR buffer[16];
 
     SDL_GetDefaultKeymap(keymap);
     WIN_ResetDeadKeys();
 
     for (i = 0; i < SDL_arraysize(windows_scancode_table); i++) {
-        Uint8 vk;
-        Uint16 sc;
+        int vk, sc, result;
+        Uint32 *ch = 0;
 
         /* Make sure this scancode is a valid character scancode */
         scancode = windows_scancode_table[i];
@@ -142,35 +144,21 @@ void WIN_UpdateKeymap(SDL_bool send_event)
             continue;
         }
 
-        /* Always map VK_A..VK_Z to SDLK_a..SDLK_z codes.
-         * This was behavior with MapVirtualKey(MAPVK_VK_TO_CHAR). */
-        //if (vk >= 'A' && vk <= 'Z') {
-        //    keymap[scancode] = SDLK_a + (vk - 'A');
-        //} else {
-        {
-            BYTE keyboardState[256] = { 0 };
-            WCHAR buffer[16] = { 0 };
-            Uint32 *ch = 0;
-            int result = ToUnicode(vk, sc, keyboardState, buffer, 16, 0);
-            buffer[SDL_abs(result)] = 0;
+        result = ToUnicode(vk, sc, keyboardState, buffer, 16, 0);
+        buffer[SDL_abs(result)] = 0;
 
-            /* Convert UTF-16 to UTF-32 code points */
-            ch = (Uint32 *)SDL_iconv_string("UTF-32LE", "UTF-16LE", (const char *)buffer, (SDL_abs(result) + 1) * sizeof(WCHAR));
-            if (ch) {
-                if (ch[0] != 0 && ch[1] != 0) {
-                    /* We have several UTF-32 code points on a single key press.
-                     * Cannot fit into single SDL_Keycode in keymap.
-                     * See https://kbdlayout.info/features/ligatures */
-                    keymap[scancode] = 0xfffd; /* U+FFFD REPLACEMENT CHARACTER */
-                } else {
-                    keymap[scancode] = ch[0];
-                }
-                SDL_free(ch);
-            }
+        /* Convert UTF-16 to UTF-32 code points */
+        ch = (Uint32 *)SDL_iconv_string("UTF-32LE", "UTF-16LE", (const char *)buffer, (SDL_abs(result) + 1) * sizeof(WCHAR));
+        if (ch) {
+            /* Windows keyboard layouts can emit several UTF-32 code points on a single key press.
+             * Use <U+FFFD REPLACEMENT CHARACTER> since we cannot fit into single SDL_Keycode value in SDL keymap.
+             * See https://kbdlayout.info/features/ligatures for a list of such keys. */
+            keymap[scancode] = ch[1] == 0 ? ch[0] : 0xfffd;
+            SDL_free(ch);
+        }
 
-            if (result < 0) {
-                WIN_ResetDeadKeys();
-            }
+        if (result < 0) {
+            WIN_ResetDeadKeys();
         }
     }
 
