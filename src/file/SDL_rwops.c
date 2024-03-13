@@ -40,7 +40,7 @@ struct SDL_RWops
 {
     SDL_RWopsInterface iface;
     void *userdata;
-    Uint32 status;
+    SDL_RWopsStatus status;
     SDL_PropertiesID props;
 };
 
@@ -723,6 +723,16 @@ SDL_RWops *SDL_RWFromConstMem(const void *mem, size_t size)
     }
     return rwops;
 }
+
+SDL_RWopsStatus SDL_GetRWStatus(SDL_RWops *context)
+{
+    if (!context) {
+        SDL_InvalidParamError("context");
+        return SDL_RWOPS_STATUS_ERROR;
+    }
+    return context->status;
+}
+
 
 SDL_RWops *SDL_OpenRW(const SDL_RWopsInterface *iface, void *userdata)
 {

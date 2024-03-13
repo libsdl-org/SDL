@@ -1003,3 +1003,4 @@
 #define SDL_ShowOpenFolderDialog SDL_ShowOpenFolderDialog_REAL
 #define SDL_OpenRW SDL_OpenRW_REAL
 #define SDL_CloseRW SDL_CloseRW_REAL
+#define SDL_GetRWStatus SDL_GetRWStatus_REAL

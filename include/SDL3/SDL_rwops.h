@@ -40,13 +40,15 @@ extern "C" {
 #endif
 
 /* RWops status, set by a read or write operation */
-/* !!! FIXME: make this an enum? */
-#define SDL_RWOPS_STATUS_READY          0   /**< Everything is ready */
-#define SDL_RWOPS_STATUS_ERROR          1   /**< Read or write I/O error */
-#define SDL_RWOPS_STATUS_EOF            2   /**< End of file */
-#define SDL_RWOPS_STATUS_NOT_READY      3   /**< Non blocking I/O, not ready */
-#define SDL_RWOPS_STATUS_READONLY       4   /**< Tried to write a read-only buffer */
-#define SDL_RWOPS_STATUS_WRITEONLY      5   /**< Tried to read a write-only buffer */
+typedef enum SDL_RWopsStatus
+{
+    SDL_RWOPS_STATUS_READY,     /**< Everything is ready */
+    SDL_RWOPS_STATUS_ERROR,     /**< Read or write I/O error */
+    SDL_RWOPS_STATUS_EOF,       /**< End of file */
+    SDL_RWOPS_STATUS_NOT_READY, /**< Non blocking I/O, not ready */
+    SDL_RWOPS_STATUS_READONLY,  /**< Tried to write a read-only buffer */
+    SDL_RWOPS_STATUS_WRITEONLY  /**< Tried to read a write-only buffer */
+} SDL_RWopsStatus;
 
 typedef struct SDL_RWopsInterface
 {
@@ -317,6 +319,27 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetRWProperties(SDL_RWops *context)
 #define SDL_RW_SEEK_SET 0       /**< Seek from the beginning of data */
 #define SDL_RW_SEEK_CUR 1       /**< Seek relative to current read point */
 #define SDL_RW_SEEK_END 2       /**< Seek relative to the end of data */
+
+/**
+ * Query the stream status of a RWops.
+ *
+ * This information can be useful to decide if a short read or write was
+ * due to an error, an EOF, or a non-blocking operation that isn't yet
+ * ready to complete.
+ *
+ * A RWops's status is only expected to change after a SDL_ReadRW or
+ * SDL_WriteRW call; don't expect it to change if you just call this
+ * query function in a tight loop.
+ *
+ * \param context the SDL_RWops to query.
+ * \returns an SDL_RWopsStatus enum with the current state.
+ *
+ * \threadsafety This function should not be called at the same time that
+ *               another thread is operating on the same SDL_RWops.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC SDL_RWopsStatus SDLCALL SDL_GetRWStatus(SDL_RWops *context);
 
 /**
  * Use this function to get the size of the data stream in an SDL_RWops.

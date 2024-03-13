@@ -1028,3 +1028,4 @@ SDL_DYNAPI_PROC(void,SDL_ShowSaveFileDialog,(SDL_DialogFileCallback a, void *b, 
 SDL_DYNAPI_PROC(void,SDL_ShowOpenFolderDialog,(SDL_DialogFileCallback a, void *b, SDL_Window *c, const char *d, int e),(a,b,c,d,e),)
 SDL_DYNAPI_PROC(SDL_RWops*,SDL_OpenRW,(const SDL_RWopsInterface *a, void *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_CloseRW,(SDL_RWops *a),(a),return)
+SDL_DYNAPI_PROC(SDL_RWopsStatus,SDL_GetRWStatus,(SDL_RWops *a),(a),return)
