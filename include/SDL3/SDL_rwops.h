@@ -267,6 +267,9 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromConstMem(const void *mem, size_t si
  *
  * You must free the returned pointer with SDL_CloseRW().
  *
+ *
+ * \param iface The function pointers that implement this RWops.
+ * \param userdata The app-controlled pointer that is passed to iface's functions when called.
  * \returns a pointer to the allocated memory on success, or NULL on failure;
  *          call SDL_GetError() for more information.
  *
