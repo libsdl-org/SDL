@@ -3782,6 +3782,7 @@ int SDL_RenderGeometry(SDL_Renderer *renderer,
     }
 }
 
+#if SDL_VIDEO_RENDER_SW
 static int remap_one_indice(
     int prev,
     int k,
@@ -3820,7 +3821,6 @@ static int remap_one_indice(
     return prev;
 }
 
-#if SDL_VIDEO_RENDER_SW
 static int remap_indices(
     int prev[3],
     int k,
@@ -4151,7 +4151,7 @@ end:
 
     return retval;
 }
-#endif
+#endif /* SDL_VIDEO_RENDER_SW */
 
 int SDL_RenderGeometryRawFloat(SDL_Renderer *renderer,
                           SDL_Texture *texture,
