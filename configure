@@ -19750,6 +19750,18 @@ then :
   printf "%s\n" "#define HAVE_POLL 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "memfd_create" "ac_cv_func_memfd_create"
+if test "x$ac_cv_func_memfd_create" = xyes
+then :
+  printf "%s\n" "#define HAVE_MEMFD_CREATE 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "posix_fallocate" "ac_cv_func_posix_fallocate"
+if test "x$ac_cv_func_posix_fallocate" = xyes
+then :
+  printf "%s\n" "#define HAVE_POSIX_FALLOCATE 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "_Exit" "ac_cv_func__Exit"
 if test "x$ac_cv_func__Exit" = xyes
 then :
