@@ -203,7 +203,7 @@ static Sint64 SDLCALL windows_file_seek(void *userdata, Sint64 offset, int whenc
     return windowsoffset.QuadPart;
 }
 
-static size_t SDLCALL windows_file_read(void *userdata, void *ptr, size_t size)
+static size_t SDLCALL windows_file_read(void *userdata, void *ptr, size_t size, SDL_RWopsStatus *status)
 {
     RWopsWindowsData *rwopsdata = (RWopsWindowsData *) userdata;
     size_t total_need = size;
@@ -247,7 +247,7 @@ static size_t SDLCALL windows_file_read(void *userdata, void *ptr, size_t size)
     return total_read;
 }
 
-static size_t SDLCALL windows_file_write(void *userdata, const void *ptr, size_t size)
+static size_t SDLCALL windows_file_write(void *userdata, const void *ptr, size_t size, SDL_RWopsStatus *status)
 {
     RWopsWindowsData *rwopsdata = (RWopsWindowsData *) userdata;
     const size_t total_bytes = size;
@@ -373,7 +373,7 @@ static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, int whence)
     return SDL_Error(SDL_EFSEEK);
 }
 
-static size_t SDLCALL stdio_read(void *userdata, void *ptr, size_t size)
+static size_t SDLCALL stdio_read(void *userdata, void *ptr, size_t size, SDL_RWopsStatus *status)
 {
     RWopsStdioData *rwopsdata = (RWopsStdioData *) userdata;
     const size_t bytes = fread(ptr, 1, size, rwopsdata->fp);
@@ -383,7 +383,7 @@ static size_t SDLCALL stdio_read(void *userdata, void *ptr, size_t size)
     return bytes;
 }
 
-static size_t SDLCALL stdio_write(void *userdata, const void *ptr, size_t size)
+static size_t SDLCALL stdio_write(void *userdata, const void *ptr, size_t size, SDL_RWopsStatus *status)
 {
     RWopsStdioData *rwopsdata = (RWopsStdioData *) userdata;
     const size_t bytes = fwrite(ptr, 1, size, rwopsdata->fp);
@@ -493,13 +493,13 @@ static size_t mem_io(void *userdata, void *dst, const void *src, size_t size)
     return size;
 }
 
-static size_t SDLCALL mem_read(void *userdata, void *ptr, size_t size)
+static size_t SDLCALL mem_read(void *userdata, void *ptr, size_t size, SDL_RWopsStatus *status)
 {
     const RWopsMemData *rwopsdata = (RWopsMemData *) userdata;
     return mem_io(userdata, ptr, rwopsdata->here, size);
 }
 
-static size_t SDLCALL mem_write(void *userdata, const void *ptr, size_t size)
+static size_t SDLCALL mem_write(void *userdata, const void *ptr, size_t size, SDL_RWopsStatus *status)
 {
     const RWopsMemData *rwopsdata = (RWopsMemData *) userdata;
     return mem_io(userdata, rwopsdata->here, ptr, size);
@@ -903,7 +903,7 @@ size_t SDL_ReadRW(SDL_RWops *context, void *ptr, size_t size)
         return 0;
     }
 
-    bytes = context->iface.read(context->userdata, ptr, size);
+    bytes = context->iface.read(context->userdata, ptr, size, &context->status);
     if (bytes == 0 && context->status == SDL_RWOPS_STATUS_READY) {
         if (*SDL_GetError()) {
             context->status = SDL_RWOPS_STATUS_ERROR;
@@ -934,7 +934,7 @@ size_t SDL_WriteRW(SDL_RWops *context, const void *ptr, size_t size)
         return 0;
     }
 
-    bytes = context->iface.write(context->userdata, ptr, size);
+    bytes = context->iface.write(context->userdata, ptr, size, &context->status);
     if ((bytes == 0) && (context->status == SDL_RWOPS_STATUS_READY)) {
         context->status = SDL_RWOPS_STATUS_ERROR;
     }

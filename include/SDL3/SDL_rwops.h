@@ -71,17 +71,25 @@ typedef struct SDL_RWopsInterface
      *  Read up to \c size bytes from the data stream to the area pointed
      *  at by \c ptr.
      *
+     *  On an incomplete read, you should set `*status` to a value from the
+     *  SDL_RWopsStatus enum. You do not have to explicitly set this on
+     *  a complete, successful read.
+     *
      *  \return the number of bytes read
      */
-    size_t (SDLCALL *read)(void *userdata, void *ptr, size_t size);
+    size_t (SDLCALL *read)(void *userdata, void *ptr, size_t size, SDL_RWopsStatus *status);
 
     /**
      *  Write exactly \c size bytes from the area pointed at by \c ptr
      *  to data stream.
      *
+     *  On an incomplete write, you should set `*status` to a value from the
+     *  SDL_RWopsStatus enum. You do not have to explicitly set this on
+     *  a complete, successful write.
+     *
      *  \return the number of bytes written
      */
-    size_t (SDLCALL *write)(void *userdata, const void *ptr, size_t size);
+    size_t (SDLCALL *write)(void *userdata, const void *ptr, size_t size, SDL_RWopsStatus *status);
 
     /**
      *  Close and free any allocated resources.
