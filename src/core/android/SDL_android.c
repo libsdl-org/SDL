@@ -1980,7 +1980,7 @@ int Android_JNI_FileOpen(void **puserdata, const char *fileName, const char *mod
     return 0;
 }
 
-size_t Android_JNI_FileRead(void *userdata, void *buffer, size_t size)
+size_t Android_JNI_FileRead(void *userdata, void *buffer, size_t size, SDL_IOStatus *status)
 {
     const int bytes = AAsset_read((AAsset *)userdata, buffer, size);
     if (bytes < 0) {
@@ -1990,7 +1990,7 @@ size_t Android_JNI_FileRead(void *userdata, void *buffer, size_t size)
     return (size_t)bytes;
 }
 
-size_t Android_JNI_FileWrite(void *userdata, const void *buffer, size_t size)
+size_t Android_JNI_FileWrite(void *userdata, const void *buffer, size_t size, SDL_IOStatus *status)
 {
     return SDL_SetError("Cannot write to Android package filesystem");
 }
