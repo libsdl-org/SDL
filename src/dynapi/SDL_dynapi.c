@@ -146,13 +146,13 @@ static void SDL_InitDynamicAPI(void);
         va_end(ap);                                                                                                                       \
         return retval;                                                                                                                    \
     }                                                                                                                                     \
-    _static size_t SDLCALL SDL_RWprintf##name(SDL_RWops *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)                          \
+    _static size_t SDLCALL SDL_IOprintf##name(SDL_IOStream *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)                          \
     {                                                                                                                                     \
         size_t retval;                                                                                                                    \
         va_list ap;                                                                                                                       \
         initcall;                                                                                                                         \
         va_start(ap, fmt);                                                                                                                \
-        retval = jump_table.SDL_RWvprintf(context, fmt, ap);                                                                              \
+        retval = jump_table.SDL_IOvprintf(context, fmt, ap);                                                                              \
         va_end(ap);                                                                                                                       \
         return retval;                                                                                                                    \
     }                                                                                                                                     \
@@ -297,13 +297,13 @@ static int SDLCALL SDL_swprintf_LOGSDLCALLS(SDL_OUT_Z_CAP(maxlen) wchar_t *buf, 
     va_end(ap);
     return retval;
 }
-_static size_t SDLCALL SDL_RWprintf_LOGSDLCALLS(SDL_RWops *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
+_static size_t SDLCALL SDL_IOprintf_LOGSDLCALLS(SDL_IOStream *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
     size_t retval;
     va_list ap;
-    SDL_Log_REAL("SDL3CALL SDL_RWprintf");
+    SDL_Log_REAL("SDL3CALL SDL_IOprintf");
     va_start(ap, fmt);
-    retval = SDL_RWvprintf_REAL(context, fmt, ap);
+    retval = SDL_IOvprintf_REAL(context, fmt, ap);
     va_end(ap);
     return retval;
 }

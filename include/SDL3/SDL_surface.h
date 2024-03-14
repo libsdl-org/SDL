@@ -196,7 +196,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurfaceFrom
  * \sa SDL_CreateSurface
  * \sa SDL_CreateSurfaceFrom
  * \sa SDL_LoadBMP
- * \sa SDL_LoadBMP_RW
+ * \sa SDL_LoadBMP_IO
  */
 extern DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
 
@@ -328,7 +328,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
  * will result in a memory leak.
  *
  * \param src the data stream for the surface
- * \param freesrc if SDL_TRUE, calls SDL_CloseRW() on `src` before returning,
+ * \param freesrc if SDL_TRUE, calls SDL_CloseIO() on `src` before returning,
  *                even in the case of an error
  * \returns a pointer to a new SDL_Surface structure or NULL if there was an
  *          error; call SDL_GetError() for more information.
@@ -337,9 +337,9 @@ extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
  *
  * \sa SDL_DestroySurface
  * \sa SDL_LoadBMP
- * \sa SDL_SaveBMP_RW
+ * \sa SDL_SaveBMP_IO
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc);
+extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool freesrc);
 
 /**
  * Load a BMP image from a file.
@@ -354,7 +354,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool fre
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DestroySurface
- * \sa SDL_LoadBMP_RW
+ * \sa SDL_LoadBMP_IO
  * \sa SDL_SaveBMP
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP(const char *file);
@@ -370,17 +370,17 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP(const char *file);
  *
  * \param surface the SDL_Surface structure containing the image to be saved
  * \param dst a data stream to save to
- * \param freedst if SDL_TRUE, calls SDL_CloseRW() on `dst` before returning,
+ * \param freedst if SDL_TRUE, calls SDL_CloseIO() on `dst` before returning,
  *                even in the case of an error
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_LoadBMP_RW
+ * \sa SDL_LoadBMP_IO
  * \sa SDL_SaveBMP
  */
-extern DECLSPEC int SDLCALL SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, SDL_bool freedst);
+extern DECLSPEC int SDLCALL SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, SDL_bool freedst);
 
 /**
  * Save a surface to a file.
@@ -399,7 +399,7 @@ extern DECLSPEC int SDLCALL SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_LoadBMP
- * \sa SDL_SaveBMP_RW
+ * \sa SDL_SaveBMP_IO
  */
 extern DECLSPEC int SDLCALL SDL_SaveBMP(SDL_Surface *surface, const char *file);
 

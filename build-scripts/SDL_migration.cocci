@@ -1804,15 +1804,15 @@ expression e2;
 @@
 @@
 - RW_SEEK_CUR
-+ SDL_RW_SEEK_CUR
++ SDL_IO_SEEK_CUR
 @@
 @@
 - RW_SEEK_END
-+ SDL_RW_SEEK_END
++ SDL_IO_SEEK_END
 @@
 @@
 - RW_SEEK_SET
-+ SDL_RW_SEEK_SET
++ SDL_IO_SEEK_SET
 @@
 @@
 - SDL_SensorClose
@@ -3051,30 +3051,65 @@ typedef SDL_version, SDL_Version;
 @@
 @@
 - SDL_RWclose
-+ SDL_CloseRW
++ SDL_CloseIO
   (...)
 @@
 @@
 - SDL_RWread
-+ SDL_ReadRW
++ SDL_ReadIO
   (...)
 @@
 @@
 - SDL_RWwrite
-+ SDL_WriteRW
++ SDL_WriteIO
   (...)
 @@
 @@
 - SDL_RWtell
-+ SDL_TellRW
++ SDL_TellIO
   (...)
 @@
 @@
 - SDL_RWsize
-+ SDL_SizeRW
++ SDL_SizeIO
   (...)
 @@
 @@
 - SDL_RWseek
-+ SDL_SeekRW
++ SDL_SeekIO
   (...)
+@@
+@@
+- SDL_LoadBMP_RW
++ SDL_LoadBMP_IO
+  (...)
+@@
+@@
+- SDL_LoadWAV_RW
++ SDL_LoadWAV_IO
+  (...)
+@@
+@@
+- SDL_SaveBMP_RW
++ SDL_SaveBMP_IO
+  (...)
+@@
+@@
+- SDL_RWFromFile
++ SDL_IOFromFile
+  (...)
+@@
+@@
+- SDL_RWFromMem
++ SDL_IOFromMem
+  (...)
+@@
+@@
+- SDL_RWFromConstMem
++ SDL_IOFromConstMem
+  (...)
+@@
+typedef SDL_RWops, SDL_IOStream;
+@@
+- SDL_RWops
++ SDL_IOStream

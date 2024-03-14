@@ -1306,7 +1306,7 @@ extern DECLSPEC int SDLCALL SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid,
  * Example:
  *
  * ```c
- * SDL_LoadWAV_RW(SDL_RWFromFile("sample.wav", "rb"), 1, &spec, &buf, &len);
+ * SDL_LoadWAV_IO(SDL_IOFromFile("sample.wav", "rb"), 1, &spec, &buf, &len);
  * ```
  *
  * Note that the SDL_LoadWAV function does this same thing for you, but in a
@@ -1317,7 +1317,7 @@ extern DECLSPEC int SDLCALL SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid,
  * ```
  *
  * \param src The data source for the WAVE data
- * \param freesrc If SDL_TRUE, calls SDL_CloseRW() on `src` before returning,
+ * \param freesrc If SDL_TRUE, calls SDL_CloseIO() on `src` before returning,
  *                even in the case of an error
  * \param spec A pointer to an SDL_AudioSpec that will be set to the WAVE
  *             data's format details on successful return
@@ -1344,7 +1344,7 @@ extern DECLSPEC int SDLCALL SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid,
  * \sa SDL_free
  * \sa SDL_LoadWAV
  */
-extern DECLSPEC int SDLCALL SDL_LoadWAV_RW(SDL_RWops * src, SDL_bool freesrc,
+extern DECLSPEC int SDLCALL SDL_LoadWAV_IO(SDL_IOStream * src, SDL_bool freesrc,
                                            SDL_AudioSpec * spec, Uint8 ** audio_buf,
                                            Uint32 * audio_len);
 
@@ -1354,7 +1354,7 @@ extern DECLSPEC int SDLCALL SDL_LoadWAV_RW(SDL_RWops * src, SDL_bool freesrc,
  * This is a convenience function that is effectively the same as:
  *
  * ```c
- * SDL_LoadWAV_RW(SDL_RWFromFile(path, "rb"), 1, spec, audio_buf, audio_len);
+ * SDL_LoadWAV_IO(SDL_IOFromFile(path, "rb"), 1, spec, audio_buf, audio_len);
  * ```
  *
  * Note that in SDL2, this was a preprocessor macro and not a real function.
@@ -1383,7 +1383,7 @@ extern DECLSPEC int SDLCALL SDL_LoadWAV_RW(SDL_RWops * src, SDL_bool freesrc,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_free
- * \sa SDL_LoadWAV_RW
+ * \sa SDL_LoadWAV_IO
  */
 extern DECLSPEC int SDLCALL SDL_LoadWAV(const char *path, SDL_AudioSpec * spec,
                                         Uint8 ** audio_buf, Uint32 * audio_len);

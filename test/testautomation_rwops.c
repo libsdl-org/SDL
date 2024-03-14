@@ -1,6 +1,6 @@
 
 /**
- * Automated SDL_RWops test.
+ * Automated SDL_IOStream test.
  *
  * Original code written by Edgar Simo "bobbens"
  * Ported by Markus Kauppila (markus.kauppila@gmail.com)
@@ -22,17 +22,17 @@
 
 /* ================= Test Case Implementation ================== */
 
-static const char *RWopsReadTestFilename = "rwops_read";
-static const char *RWopsWriteTestFilename = "rwops_write";
-static const char *RWopsAlphabetFilename = "rwops_alphabet";
+static const char *IOStreamReadTestFilename = "iostrm_read";
+static const char *IOStreamWriteTestFilename = "iostrm_write";
+static const char *IOStreamAlphabetFilename = "iostrm_alphabet";
 
-static const char RWopsHelloWorldTestString[] = "Hello World!";
-static const char RWopsHelloWorldCompString[] = "Hello World!";
-static const char RWopsAlphabetString[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static const char IOStreamHelloWorldTestString[] = "Hello World!";
+static const char IOStreamHelloWorldCompString[] = "Hello World!";
+static const char IOStreamAlphabetString[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /* Fixture */
 
-static void RWopsSetUp(void *arg)
+static void IOStreamSetUp(void *arg)
 {
     size_t fileLen;
     FILE *handle;
@@ -40,34 +40,34 @@ static void RWopsSetUp(void *arg)
     int result;
 
     /* Clean up from previous runs (if any); ignore errors */
-    (void)remove(RWopsReadTestFilename);
-    (void)remove(RWopsWriteTestFilename);
-    (void)remove(RWopsAlphabetFilename);
+    (void)remove(IOStreamReadTestFilename);
+    (void)remove(IOStreamWriteTestFilename);
+    (void)remove(IOStreamAlphabetFilename);
 
     /* Create a test file */
-    handle = fopen(RWopsReadTestFilename, "w");
-    SDLTest_AssertCheck(handle != NULL, "Verify creation of file '%s' returned non NULL handle", RWopsReadTestFilename);
+    handle = fopen(IOStreamReadTestFilename, "w");
+    SDLTest_AssertCheck(handle != NULL, "Verify creation of file '%s' returned non NULL handle", IOStreamReadTestFilename);
     if (handle == NULL) {
         return;
     }
 
     /* Write some known text into it */
-    fileLen = SDL_strlen(RWopsHelloWorldTestString);
-    writtenLen = fwrite(RWopsHelloWorldTestString, 1, fileLen, handle);
+    fileLen = SDL_strlen(IOStreamHelloWorldTestString);
+    writtenLen = fwrite(IOStreamHelloWorldTestString, 1, fileLen, handle);
     SDLTest_AssertCheck(fileLen == writtenLen, "Verify number of written bytes, expected %i, got %i", (int)fileLen, (int)writtenLen);
     result = fclose(handle);
     SDLTest_AssertCheck(result == 0, "Verify result from fclose, expected 0, got %i", result);
 
     /* Create a second test file */
-    handle = fopen(RWopsAlphabetFilename, "w");
-    SDLTest_AssertCheck(handle != NULL, "Verify creation of file '%s' returned non NULL handle", RWopsAlphabetFilename);
+    handle = fopen(IOStreamAlphabetFilename, "w");
+    SDLTest_AssertCheck(handle != NULL, "Verify creation of file '%s' returned non NULL handle", IOStreamAlphabetFilename);
     if (handle == NULL) {
         return;
     }
 
     /* Write alphabet text into it */
-    fileLen = SDL_strlen(RWopsAlphabetString);
-    writtenLen = fwrite(RWopsAlphabetString, 1, fileLen, handle);
+    fileLen = SDL_strlen(IOStreamAlphabetString);
+    writtenLen = fwrite(IOStreamAlphabetString, 1, fileLen, handle);
     SDLTest_AssertCheck(fileLen == writtenLen, "Verify number of written bytes, expected %i, got %i", (int)fileLen, (int)writtenLen);
     result = fclose(handle);
     SDLTest_AssertCheck(result == 0, "Verify result from fclose, expected 0, got %i", result);
@@ -75,16 +75,16 @@ static void RWopsSetUp(void *arg)
     SDLTest_AssertPass("Creation of test file completed");
 }
 
-static void RWopsTearDown(void *arg)
+static void IOStreamTearDown(void *arg)
 {
     int result;
 
     /* Remove the created files to clean up; ignore errors for write filename */
-    result = remove(RWopsReadTestFilename);
-    SDLTest_AssertCheck(result == 0, "Verify result from remove(%s), expected 0, got %i", RWopsReadTestFilename, result);
-    (void)remove(RWopsWriteTestFilename);
-    result = remove(RWopsAlphabetFilename);
-    SDLTest_AssertCheck(result == 0, "Verify result from remove(%s), expected 0, got %i", RWopsAlphabetFilename, result);
+    result = remove(IOStreamReadTestFilename);
+    SDLTest_AssertCheck(result == 0, "Verify result from remove(%s), expected 0, got %i", IOStreamReadTestFilename, result);
+    (void)remove(IOStreamWriteTestFilename);
+    result = remove(IOStreamAlphabetFilename);
+    SDLTest_AssertCheck(result == 0, "Verify result from remove(%s), expected 0, got %i", IOStreamAlphabetFilename, result);
 
     SDLTest_AssertPass("Cleanup of test files completed");
 }
@@ -92,12 +92,12 @@ static void RWopsTearDown(void *arg)
 /**
  * Makes sure parameters work properly. Local helper function.
  *
- * \sa SDL_SeekRW
- * \sa SDL_ReadRW
+ * \sa SDL_SeekIO
+ * \sa SDL_ReadIO
  */
-static void testGenericRWopsValidations(SDL_RWops *rw, SDL_bool write)
+static void testGenericIOStreamValidations(SDL_IOStream *rw, SDL_bool write)
 {
-    char buf[sizeof(RWopsHelloWorldTestString)];
+    char buf[sizeof(IOStreamHelloWorldTestString)];
     Sint64 i;
     size_t s;
     int seekPos = SDLTest_RandomIntegerInRange(4, 8);
@@ -106,140 +106,140 @@ static void testGenericRWopsValidations(SDL_RWops *rw, SDL_bool write)
     SDL_zeroa(buf);
 
     /* Set to start. */
-    i = SDL_SeekRW(rw, 0, SDL_RW_SEEK_SET);
-    SDLTest_AssertPass("Call to SDL_SeekRW succeeded");
-    SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_SeekRW (SDL_RW_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
+    i = SDL_SeekIO(rw, 0, SDL_IO_SEEK_SET);
+    SDLTest_AssertPass("Call to SDL_SeekIO succeeded");
+    SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_SeekIO (SDL_IO_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
 
     /* Test write */
-    s = SDL_WriteRW(rw, RWopsHelloWorldTestString, sizeof(RWopsHelloWorldTestString) - 1);
-    SDLTest_AssertPass("Call to SDL_WriteRW succeeded");
+    s = SDL_WriteIO(rw, IOStreamHelloWorldTestString, sizeof(IOStreamHelloWorldTestString) - 1);
+    SDLTest_AssertPass("Call to SDL_WriteIO succeeded");
     if (write) {
-        SDLTest_AssertCheck(s == sizeof(RWopsHelloWorldTestString) - 1, "Verify result of writing with SDL_WriteRW, expected %i, got %i", (int)sizeof(RWopsHelloWorldTestString) - 1, (int)s);
+        SDLTest_AssertCheck(s == sizeof(IOStreamHelloWorldTestString) - 1, "Verify result of writing with SDL_WriteIO, expected %i, got %i", (int)sizeof(IOStreamHelloWorldTestString) - 1, (int)s);
     } else {
-        SDLTest_AssertCheck(s == 0, "Verify result of writing with SDL_WriteRW, expected: 0, got %i", (int)s);
+        SDLTest_AssertCheck(s == 0, "Verify result of writing with SDL_WriteIO, expected: 0, got %i", (int)s);
     }
 
     /* Test seek to random position */
-    i = SDL_SeekRW(rw, seekPos, SDL_RW_SEEK_SET);
-    SDLTest_AssertPass("Call to SDL_SeekRW succeeded");
-    SDLTest_AssertCheck(i == (Sint64)seekPos, "Verify seek to %i with SDL_SeekRW (SDL_RW_SEEK_SET), expected %i, got %" SDL_PRIs64, seekPos, seekPos, i);
+    i = SDL_SeekIO(rw, seekPos, SDL_IO_SEEK_SET);
+    SDLTest_AssertPass("Call to SDL_SeekIO succeeded");
+    SDLTest_AssertCheck(i == (Sint64)seekPos, "Verify seek to %i with SDL_SeekIO (SDL_IO_SEEK_SET), expected %i, got %" SDL_PRIs64, seekPos, seekPos, i);
 
     /* Test seek back to start */
-    i = SDL_SeekRW(rw, 0, SDL_RW_SEEK_SET);
-    SDLTest_AssertPass("Call to SDL_SeekRW succeeded");
-    SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_SeekRW (SDL_RW_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
+    i = SDL_SeekIO(rw, 0, SDL_IO_SEEK_SET);
+    SDLTest_AssertPass("Call to SDL_SeekIO succeeded");
+    SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_SeekIO (SDL_IO_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
 
     /* Test read */
-    s = SDL_ReadRW(rw, buf, sizeof(RWopsHelloWorldTestString) - 1);
-    SDLTest_AssertPass("Call to SDL_ReadRW succeeded");
+    s = SDL_ReadIO(rw, buf, sizeof(IOStreamHelloWorldTestString) - 1);
+    SDLTest_AssertPass("Call to SDL_ReadIO succeeded");
     SDLTest_AssertCheck(
-        s == (sizeof(RWopsHelloWorldTestString) - 1),
-        "Verify result from SDL_ReadRW, expected %i, got %i",
-        (int)(sizeof(RWopsHelloWorldTestString) - 1),
+        s == (sizeof(IOStreamHelloWorldTestString) - 1),
+        "Verify result from SDL_ReadIO, expected %i, got %i",
+        (int)(sizeof(IOStreamHelloWorldTestString) - 1),
         (int)s);
     SDLTest_AssertCheck(
-        SDL_memcmp(buf, RWopsHelloWorldTestString, sizeof(RWopsHelloWorldTestString) - 1) == 0,
-        "Verify read bytes match expected string, expected '%s', got '%s'", RWopsHelloWorldTestString, buf);
+        SDL_memcmp(buf, IOStreamHelloWorldTestString, sizeof(IOStreamHelloWorldTestString) - 1) == 0,
+        "Verify read bytes match expected string, expected '%s', got '%s'", IOStreamHelloWorldTestString, buf);
 
     /* Test seek back to start */
-    i = SDL_SeekRW(rw, 0, SDL_RW_SEEK_SET);
-    SDLTest_AssertPass("Call to SDL_SeekRW succeeded");
-    SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_SeekRW (SDL_RW_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
+    i = SDL_SeekIO(rw, 0, SDL_IO_SEEK_SET);
+    SDLTest_AssertPass("Call to SDL_SeekIO succeeded");
+    SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_SeekIO (SDL_IO_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
 
     /* Test printf */
-    s = SDL_RWprintf(rw, "%s", RWopsHelloWorldTestString);
-    SDLTest_AssertPass("Call to SDL_RWprintf succeeded");
+    s = SDL_IOprintf(rw, "%s", IOStreamHelloWorldTestString);
+    SDLTest_AssertPass("Call to SDL_IOprintf succeeded");
     if (write) {
-        SDLTest_AssertCheck(s == sizeof(RWopsHelloWorldTestString) - 1, "Verify result of writing with SDL_RWprintf, expected %i, got %i", (int)sizeof(RWopsHelloWorldTestString) - 1, (int)s);
+        SDLTest_AssertCheck(s == sizeof(IOStreamHelloWorldTestString) - 1, "Verify result of writing with SDL_IOprintf, expected %i, got %i", (int)sizeof(IOStreamHelloWorldTestString) - 1, (int)s);
     } else {
-        SDLTest_AssertCheck(s == 0, "Verify result of writing with SDL_WriteRW, expected: 0, got %i", (int)s);
+        SDLTest_AssertCheck(s == 0, "Verify result of writing with SDL_WriteIO, expected: 0, got %i", (int)s);
     }
 
     /* Test seek back to start */
-    i = SDL_SeekRW(rw, 0, SDL_RW_SEEK_SET);
-    SDLTest_AssertPass("Call to SDL_SeekRW succeeded");
-    SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_SeekRW (SDL_RW_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
+    i = SDL_SeekIO(rw, 0, SDL_IO_SEEK_SET);
+    SDLTest_AssertPass("Call to SDL_SeekIO succeeded");
+    SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_SeekIO (SDL_IO_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
 
     /* Test read */
-    s = SDL_ReadRW(rw, buf, sizeof(RWopsHelloWorldTestString) - 1);
-    SDLTest_AssertPass("Call to SDL_ReadRW succeeded");
+    s = SDL_ReadIO(rw, buf, sizeof(IOStreamHelloWorldTestString) - 1);
+    SDLTest_AssertPass("Call to SDL_ReadIO succeeded");
     SDLTest_AssertCheck(
-        s == (sizeof(RWopsHelloWorldTestString) - 1),
-        "Verify result from SDL_ReadRW, expected %i, got %i",
-        (int)(sizeof(RWopsHelloWorldTestString) - 1),
+        s == (sizeof(IOStreamHelloWorldTestString) - 1),
+        "Verify result from SDL_ReadIO, expected %i, got %i",
+        (int)(sizeof(IOStreamHelloWorldTestString) - 1),
         (int)s);
     SDLTest_AssertCheck(
-        SDL_memcmp(buf, RWopsHelloWorldTestString, sizeof(RWopsHelloWorldTestString) - 1) == 0,
-        "Verify read bytes match expected string, expected '%s', got '%s'", RWopsHelloWorldTestString, buf);
+        SDL_memcmp(buf, IOStreamHelloWorldTestString, sizeof(IOStreamHelloWorldTestString) - 1) == 0,
+        "Verify read bytes match expected string, expected '%s', got '%s'", IOStreamHelloWorldTestString, buf);
 
     /* More seek tests. */
-    i = SDL_SeekRW(rw, -4, SDL_RW_SEEK_CUR);
-    SDLTest_AssertPass("Call to SDL_SeekRW(...,-4,SDL_RW_SEEK_CUR) succeeded");
+    i = SDL_SeekIO(rw, -4, SDL_IO_SEEK_CUR);
+    SDLTest_AssertPass("Call to SDL_SeekIO(...,-4,SDL_IO_SEEK_CUR) succeeded");
     SDLTest_AssertCheck(
-        i == (Sint64)(sizeof(RWopsHelloWorldTestString) - 5),
-        "Verify seek to -4 with SDL_SeekRW (SDL_RW_SEEK_CUR), expected %i, got %i",
-        (int)(sizeof(RWopsHelloWorldTestString) - 5),
+        i == (Sint64)(sizeof(IOStreamHelloWorldTestString) - 5),
+        "Verify seek to -4 with SDL_SeekIO (SDL_IO_SEEK_CUR), expected %i, got %i",
+        (int)(sizeof(IOStreamHelloWorldTestString) - 5),
         (int)i);
 
-    i = SDL_SeekRW(rw, -1, SDL_RW_SEEK_END);
-    SDLTest_AssertPass("Call to SDL_SeekRW(...,-1,SDL_RW_SEEK_END) succeeded");
+    i = SDL_SeekIO(rw, -1, SDL_IO_SEEK_END);
+    SDLTest_AssertPass("Call to SDL_SeekIO(...,-1,SDL_IO_SEEK_END) succeeded");
     SDLTest_AssertCheck(
-        i == (Sint64)(sizeof(RWopsHelloWorldTestString) - 2),
-        "Verify seek to -1 with SDL_SeekRW (SDL_RW_SEEK_END), expected %i, got %i",
-        (int)(sizeof(RWopsHelloWorldTestString) - 2),
+        i == (Sint64)(sizeof(IOStreamHelloWorldTestString) - 2),
+        "Verify seek to -1 with SDL_SeekIO (SDL_IO_SEEK_END), expected %i, got %i",
+        (int)(sizeof(IOStreamHelloWorldTestString) - 2),
         (int)i);
 
     /* Invalid whence seek */
-    i = SDL_SeekRW(rw, 0, 999);
-    SDLTest_AssertPass("Call to SDL_SeekRW(...,0,invalid_whence) succeeded");
+    i = SDL_SeekIO(rw, 0, 999);
+    SDLTest_AssertPass("Call to SDL_SeekIO(...,0,invalid_whence) succeeded");
     SDLTest_AssertCheck(
         i == (Sint64)(-1),
-        "Verify seek with SDL_SeekRW (invalid_whence); expected: -1, got %i",
+        "Verify seek with SDL_SeekIO (invalid_whence); expected: -1, got %i",
         (int)i);
 }
 
 /**
- * Negative test for SDL_RWFromFile parameters
+ * Negative test for SDL_IOFromFile parameters
  *
- * \sa SDL_RWFromFile
+ * \sa SDL_IOFromFile
  *
  */
-static int rwops_testParamNegative(void *arg)
+static int iostrm_testParamNegative(void *arg)
 {
-    SDL_RWops *rwops;
+    SDL_IOStream *iostrm;
 
     /* These should all fail. */
-    rwops = SDL_RWFromFile(NULL, NULL);
-    SDLTest_AssertPass("Call to SDL_RWFromFile(NULL, NULL) succeeded");
-    SDLTest_AssertCheck(rwops == NULL, "Verify SDL_RWFromFile(NULL, NULL) returns NULL");
+    iostrm = SDL_IOFromFile(NULL, NULL);
+    SDLTest_AssertPass("Call to SDL_IOFromFile(NULL, NULL) succeeded");
+    SDLTest_AssertCheck(iostrm == NULL, "Verify SDL_IOFromFile(NULL, NULL) returns NULL");
 
-    rwops = SDL_RWFromFile(NULL, "ab+");
-    SDLTest_AssertPass("Call to SDL_RWFromFile(NULL, \"ab+\") succeeded");
-    SDLTest_AssertCheck(rwops == NULL, "Verify SDL_RWFromFile(NULL, \"ab+\") returns NULL");
+    iostrm = SDL_IOFromFile(NULL, "ab+");
+    SDLTest_AssertPass("Call to SDL_IOFromFile(NULL, \"ab+\") succeeded");
+    SDLTest_AssertCheck(iostrm == NULL, "Verify SDL_IOFromFile(NULL, \"ab+\") returns NULL");
 
-    rwops = SDL_RWFromFile(NULL, "sldfkjsldkfj");
-    SDLTest_AssertPass("Call to SDL_RWFromFile(NULL, \"sldfkjsldkfj\") succeeded");
-    SDLTest_AssertCheck(rwops == NULL, "Verify SDL_RWFromFile(NULL, \"sldfkjsldkfj\") returns NULL");
+    iostrm = SDL_IOFromFile(NULL, "sldfkjsldkfj");
+    SDLTest_AssertPass("Call to SDL_IOFromFile(NULL, \"sldfkjsldkfj\") succeeded");
+    SDLTest_AssertCheck(iostrm == NULL, "Verify SDL_IOFromFile(NULL, \"sldfkjsldkfj\") returns NULL");
 
-    rwops = SDL_RWFromFile("something", "");
-    SDLTest_AssertPass("Call to SDL_RWFromFile(\"something\", \"\") succeeded");
-    SDLTest_AssertCheck(rwops == NULL, "Verify SDL_RWFromFile(\"something\", \"\") returns NULL");
+    iostrm = SDL_IOFromFile("something", "");
+    SDLTest_AssertPass("Call to SDL_IOFromFile(\"something\", \"\") succeeded");
+    SDLTest_AssertCheck(iostrm == NULL, "Verify SDL_IOFromFile(\"something\", \"\") returns NULL");
 
-    rwops = SDL_RWFromFile("something", NULL);
-    SDLTest_AssertPass("Call to SDL_RWFromFile(\"something\", NULL) succeeded");
-    SDLTest_AssertCheck(rwops == NULL, "Verify SDL_RWFromFile(\"something\", NULL) returns NULL");
+    iostrm = SDL_IOFromFile("something", NULL);
+    SDLTest_AssertPass("Call to SDL_IOFromFile(\"something\", NULL) succeeded");
+    SDLTest_AssertCheck(iostrm == NULL, "Verify SDL_IOFromFile(\"something\", NULL) returns NULL");
 
-    rwops = SDL_RWFromMem(NULL, 10);
-    SDLTest_AssertPass("Call to SDL_RWFromMem(NULL, 10) succeeded");
-    SDLTest_AssertCheck(rwops == NULL, "Verify SDL_RWFromMem(NULL, 10) returns NULL");
+    iostrm = SDL_IOFromMem(NULL, 10);
+    SDLTest_AssertPass("Call to SDL_IOFromMem(NULL, 10) succeeded");
+    SDLTest_AssertCheck(iostrm == NULL, "Verify SDL_IOFromMem(NULL, 10) returns NULL");
 
-    rwops = SDL_RWFromMem((void *)RWopsAlphabetString, 0);
-    SDLTest_AssertPass("Call to SDL_RWFromMem(data, 0) succeeded");
-    SDLTest_AssertCheck(rwops == NULL, "Verify SDL_RWFromMem(data, 0) returns NULL");
+    iostrm = SDL_IOFromMem((void *)IOStreamAlphabetString, 0);
+    SDLTest_AssertPass("Call to SDL_IOFromMem(data, 0) succeeded");
+    SDLTest_AssertCheck(iostrm == NULL, "Verify SDL_IOFromMem(data, 0) returns NULL");
 
-    rwops = SDL_RWFromConstMem((const void *)RWopsAlphabetString, 0);
-    SDLTest_AssertPass("Call to SDL_RWFromConstMem(data, 0) succeeded");
-    SDLTest_AssertCheck(rwops == NULL, "Verify SDL_RWFromConstMem(data, 0) returns NULL");
+    iostrm = SDL_IOFromConstMem((const void *)IOStreamAlphabetString, 0);
+    SDLTest_AssertPass("Call to SDL_IOFromConstMem(data, 0) succeeded");
+    SDLTest_AssertCheck(iostrm == NULL, "Verify SDL_IOFromConstMem(data, 0) returns NULL");
 
     return TEST_COMPLETED;
 }
@@ -247,22 +247,22 @@ static int rwops_testParamNegative(void *arg)
 /**
  * Tests opening from memory.
  *
- * \sa SDL_RWFromMem
- * \sa SDL_RWClose
+ * \sa SDL_IOFromMem
+ * \sa SDL_CloseIO
  */
-static int rwops_testMem(void *arg)
+static int iostrm_testMem(void *arg)
 {
-    char mem[sizeof(RWopsHelloWorldTestString)];
-    SDL_RWops *rw;
+    char mem[sizeof(IOStreamHelloWorldTestString)];
+    SDL_IOStream *rw;
     int result;
 
     /* Clear buffer */
     SDL_zeroa(mem);
 
     /* Open */
-    rw = SDL_RWFromMem(mem, sizeof(RWopsHelloWorldTestString) - 1);
-    SDLTest_AssertPass("Call to SDL_RWFromMem() succeeded");
-    SDLTest_AssertCheck(rw != NULL, "Verify opening memory with SDL_RWFromMem does not return NULL");
+    rw = SDL_IOFromMem(mem, sizeof(IOStreamHelloWorldTestString) - 1);
+    SDLTest_AssertPass("Call to SDL_IOFromMem() succeeded");
+    SDLTest_AssertCheck(rw != NULL, "Verify opening memory with SDL_IOFromMem does not return NULL");
 
     /* Bail out if NULL */
     if (rw == NULL) {
@@ -270,11 +270,11 @@ static int rwops_testMem(void *arg)
     }
 
     /* Run generic tests */
-    testGenericRWopsValidations(rw, SDL_TRUE);
+    testGenericIOStreamValidations(rw, SDL_TRUE);
 
     /* Close */
-    result = SDL_CloseRW(rw);
-    SDLTest_AssertPass("Call to SDL_CloseRW() succeeded");
+    result = SDL_CloseIO(rw);
+    SDLTest_AssertPass("Call to SDL_CloseIO() succeeded");
     SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
     return TEST_COMPLETED;
@@ -283,18 +283,18 @@ static int rwops_testMem(void *arg)
 /**
  * Tests opening from memory.
  *
- * \sa SDL_RWFromConstMem
- * \sa SDL_RWClose
+ * \sa SDL_IOFromConstMem
+ * \sa SDL_CloseIO
  */
-static int rwops_testConstMem(void *arg)
+static int iostrm_testConstMem(void *arg)
 {
-    SDL_RWops *rw;
+    SDL_IOStream *rw;
     int result;
 
     /* Open handle */
-    rw = SDL_RWFromConstMem(RWopsHelloWorldCompString, sizeof(RWopsHelloWorldCompString) - 1);
-    SDLTest_AssertPass("Call to SDL_RWFromConstMem() succeeded");
-    SDLTest_AssertCheck(rw != NULL, "Verify opening memory with SDL_RWFromConstMem does not return NULL");
+    rw = SDL_IOFromConstMem(IOStreamHelloWorldCompString, sizeof(IOStreamHelloWorldCompString) - 1);
+    SDLTest_AssertPass("Call to SDL_IOFromConstMem() succeeded");
+    SDLTest_AssertCheck(rw != NULL, "Verify opening memory with SDL_IOFromConstMem does not return NULL");
 
     /* Bail out if NULL */
     if (rw == NULL) {
@@ -302,11 +302,11 @@ static int rwops_testConstMem(void *arg)
     }
 
     /* Run generic tests */
-    testGenericRWopsValidations(rw, SDL_FALSE);
+    testGenericIOStreamValidations(rw, SDL_FALSE);
 
     /* Close handle */
-    result = SDL_CloseRW(rw);
-    SDLTest_AssertPass("Call to SDL_CloseRW() succeeded");
+    result = SDL_CloseIO(rw);
+    SDLTest_AssertPass("Call to SDL_CloseIO() succeeded");
     SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
     return TEST_COMPLETED;
@@ -315,18 +315,18 @@ static int rwops_testConstMem(void *arg)
 /**
  * Tests reading from file.
  *
- * \sa SDL_RWFromFile
- * \sa SDL_RWClose
+ * \sa SDL_IOFromFile
+ * \sa SDL_CloseIO
  */
-static int rwops_testFileRead(void *arg)
+static int iostrm_testFileRead(void *arg)
 {
-    SDL_RWops *rw;
+    SDL_IOStream *rw;
     int result;
 
     /* Read test. */
-    rw = SDL_RWFromFile(RWopsReadTestFilename, "r");
-    SDLTest_AssertPass("Call to SDL_RWFromFile(..,\"r\") succeeded");
-    SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_RWFromFile in read mode does not return NULL");
+    rw = SDL_IOFromFile(IOStreamReadTestFilename, "r");
+    SDLTest_AssertPass("Call to SDL_IOFromFile(..,\"r\") succeeded");
+    SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_IOFromFile in read mode does not return NULL");
 
     /* Bail out if NULL */
     if (rw == NULL) {
@@ -334,11 +334,11 @@ static int rwops_testFileRead(void *arg)
     }
 
     /* Run generic tests */
-    testGenericRWopsValidations(rw, SDL_FALSE);
+    testGenericIOStreamValidations(rw, SDL_FALSE);
 
     /* Close handle */
-    result = SDL_CloseRW(rw);
-    SDLTest_AssertPass("Call to SDL_CloseRW() succeeded");
+    result = SDL_CloseIO(rw);
+    SDLTest_AssertPass("Call to SDL_CloseIO() succeeded");
     SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
     return TEST_COMPLETED;
@@ -347,18 +347,18 @@ static int rwops_testFileRead(void *arg)
 /**
  * Tests writing from file.
  *
- * \sa SDL_RWFromFile
- * \sa SDL_RWClose
+ * \sa SDL_IOFromFile
+ * \sa SDL_CloseIO
  */
-static int rwops_testFileWrite(void *arg)
+static int iostrm_testFileWrite(void *arg)
 {
-    SDL_RWops *rw;
+    SDL_IOStream *rw;
     int result;
 
     /* Write test. */
-    rw = SDL_RWFromFile(RWopsWriteTestFilename, "w+");
-    SDLTest_AssertPass("Call to SDL_RWFromFile(..,\"w+\") succeeded");
-    SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_RWFromFile in write mode does not return NULL");
+    rw = SDL_IOFromFile(IOStreamWriteTestFilename, "w+");
+    SDLTest_AssertPass("Call to SDL_IOFromFile(..,\"w+\") succeeded");
+    SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_IOFromFile in write mode does not return NULL");
 
     /* Bail out if NULL */
     if (rw == NULL) {
@@ -366,11 +366,11 @@ static int rwops_testFileWrite(void *arg)
     }
 
     /* Run generic tests */
-    testGenericRWopsValidations(rw, SDL_TRUE);
+    testGenericIOStreamValidations(rw, SDL_TRUE);
 
     /* Close handle */
-    result = SDL_CloseRW(rw);
-    SDLTest_AssertPass("Call to SDL_CloseRW() succeeded");
+    result = SDL_CloseIO(rw);
+    SDLTest_AssertPass("Call to SDL_CloseIO() succeeded");
     SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
     return TEST_COMPLETED;
@@ -379,26 +379,26 @@ static int rwops_testFileWrite(void *arg)
 /**
  * Tests alloc and free RW context.
  *
- * \sa SDL_OpenRW
- * \sa SDL_CloseRW
+ * \sa SDL_OpenIO
+ * \sa SDL_CloseIO
  */
-static int rwops_testAllocFree(void *arg)
+static int iostrm_testAllocFree(void *arg)
 {
     /* Allocate context */
-    SDL_RWopsInterface iface;
-    SDL_RWops *rw;
+    SDL_IOStreamInterface iface;
+    SDL_IOStream *rw;
 
     SDL_zero(iface);
-    rw = SDL_OpenRW(&iface, NULL);
-    SDLTest_AssertPass("Call to SDL_OpenRW() succeeded");
-    SDLTest_AssertCheck(rw != NULL, "Validate result from SDL_OpenRW() is not NULL");
+    rw = SDL_OpenIO(&iface, NULL);
+    SDLTest_AssertPass("Call to SDL_OpenIO() succeeded");
+    SDLTest_AssertCheck(rw != NULL, "Validate result from SDL_OpenIO() is not NULL");
     if (rw == NULL) {
         return TEST_ABORTED;
     }
 
     /* Free context again */
-    SDL_CloseRW(rw);
-    SDLTest_AssertPass("Call to SDL_CloseRW() succeeded");
+    SDL_CloseIO(rw);
+    SDLTest_AssertPass("Call to SDL_CloseIO() succeeded");
 
     return TEST_COMPLETED;
 }
@@ -406,10 +406,10 @@ static int rwops_testAllocFree(void *arg)
 /**
  * Compare memory and file reads
  *
- * \sa SDL_RWFromMem
- * \sa SDL_RWFromFile
+ * \sa SDL_IOFromMem
+ * \sa SDL_IOFromFile
  */
-static int rwops_testCompareRWFromMemWithRWFromFile(void *arg)
+static int iostrm_testCompareRWFromMemWithRWFromFile(void *arg)
 {
     int slen = 26;
     char buffer_file[27];
@@ -418,8 +418,8 @@ static int rwops_testCompareRWFromMemWithRWFromFile(void *arg)
     size_t rv_mem;
     Uint64 sv_file;
     Uint64 sv_mem;
-    SDL_RWops *rwops_file;
-    SDL_RWops *rwops_mem;
+    SDL_IOStream *iostrm_file;
+    SDL_IOStream *iostrm_mem;
     int size;
     int result;
 
@@ -429,25 +429,25 @@ static int rwops_testCompareRWFromMemWithRWFromFile(void *arg)
         buffer_mem[slen] = 0;
 
         /* Read/seek from memory */
-        rwops_mem = SDL_RWFromMem((void *)RWopsAlphabetString, slen);
-        SDLTest_AssertPass("Call to SDL_RWFromMem()");
-        rv_mem = SDL_ReadRW(rwops_mem, buffer_mem, size * 6);
-        SDLTest_AssertPass("Call to SDL_ReadRW(mem, size=%d)", size * 6);
-        sv_mem = SDL_SeekRW(rwops_mem, 0, SEEK_END);
-        SDLTest_AssertPass("Call to SDL_SeekRW(mem,SEEK_END)");
-        result = SDL_CloseRW(rwops_mem);
-        SDLTest_AssertPass("Call to SDL_CloseRW(mem)");
+        iostrm_mem = SDL_IOFromMem((void *)IOStreamAlphabetString, slen);
+        SDLTest_AssertPass("Call to SDL_IOFromMem()");
+        rv_mem = SDL_ReadIO(iostrm_mem, buffer_mem, size * 6);
+        SDLTest_AssertPass("Call to SDL_ReadIO(mem, size=%d)", size * 6);
+        sv_mem = SDL_SeekIO(iostrm_mem, 0, SEEK_END);
+        SDLTest_AssertPass("Call to SDL_SeekIO(mem,SEEK_END)");
+        result = SDL_CloseIO(iostrm_mem);
+        SDLTest_AssertPass("Call to SDL_CloseIO(mem)");
         SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
         /* Read/see from file */
-        rwops_file = SDL_RWFromFile(RWopsAlphabetFilename, "r");
-        SDLTest_AssertPass("Call to SDL_RWFromFile()");
-        rv_file = SDL_ReadRW(rwops_file, buffer_file, size * 6);
-        SDLTest_AssertPass("Call to SDL_ReadRW(file, size=%d)", size * 6);
-        sv_file = SDL_SeekRW(rwops_file, 0, SEEK_END);
-        SDLTest_AssertPass("Call to SDL_SeekRW(file,SEEK_END)");
-        result = SDL_CloseRW(rwops_file);
-        SDLTest_AssertPass("Call to SDL_CloseRW(file)");
+        iostrm_file = SDL_IOFromFile(IOStreamAlphabetFilename, "r");
+        SDLTest_AssertPass("Call to SDL_IOFromFile()");
+        rv_file = SDL_ReadIO(iostrm_file, buffer_file, size * 6);
+        SDLTest_AssertPass("Call to SDL_ReadIO(file, size=%d)", size * 6);
+        sv_file = SDL_SeekIO(iostrm_file, 0, SEEK_END);
+        SDLTest_AssertPass("Call to SDL_SeekIO(file,SEEK_END)");
+        result = SDL_CloseIO(iostrm_file);
+        SDLTest_AssertPass("Call to SDL_CloseIO(file)");
         SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
         /* Compare */
@@ -456,11 +456,11 @@ static int rwops_testCompareRWFromMemWithRWFromFile(void *arg)
         SDLTest_AssertCheck(buffer_mem[slen] == 0, "Verify mem buffer termination; expected: 0, got: %d", buffer_mem[slen]);
         SDLTest_AssertCheck(buffer_file[slen] == 0, "Verify file buffer termination; expected: 0, got: %d", buffer_file[slen]);
         SDLTest_AssertCheck(
-            SDL_strncmp(buffer_mem, RWopsAlphabetString, slen) == 0,
-            "Verify mem buffer contain alphabet string; expected: %s, got: %s", RWopsAlphabetString, buffer_mem);
+            SDL_strncmp(buffer_mem, IOStreamAlphabetString, slen) == 0,
+            "Verify mem buffer contain alphabet string; expected: %s, got: %s", IOStreamAlphabetString, buffer_mem);
         SDLTest_AssertCheck(
-            SDL_strncmp(buffer_file, RWopsAlphabetString, slen) == 0,
-            "Verify file buffer contain alphabet string; expected: %s, got: %s", RWopsAlphabetString, buffer_file);
+            SDL_strncmp(buffer_file, IOStreamAlphabetString, slen) == 0,
+            "Verify file buffer contain alphabet string; expected: %s, got: %s", IOStreamAlphabetString, buffer_file);
     }
 
     return TEST_COMPLETED;
@@ -469,14 +469,14 @@ static int rwops_testCompareRWFromMemWithRWFromFile(void *arg)
 /**
  * Tests writing and reading from file using endian aware functions.
  *
- * \sa SDL_RWFromFile
- * \sa SDL_RWClose
+ * \sa SDL_IOFromFile
+ * \sa SDL_CloseIO
  * \sa SDL_ReadU16BE
  * \sa SDL_WriteU16BE
  */
-static int rwops_testFileWriteReadEndian(void *arg)
+static int iostrm_testFileWriteReadEndian(void *arg)
 {
-    SDL_RWops *rw;
+    SDL_IOStream *rw;
     Sint64 result;
     int mode;
     Uint16 BE16value;
@@ -529,9 +529,9 @@ static int rwops_testFileWriteReadEndian(void *arg)
         }
 
         /* Write test. */
-        rw = SDL_RWFromFile(RWopsWriteTestFilename, "w+");
-        SDLTest_AssertPass("Call to SDL_RWFromFile(..,\"w+\")");
-        SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_RWFromFile in write mode does not return NULL");
+        rw = SDL_IOFromFile(IOStreamWriteTestFilename, "w+");
+        SDLTest_AssertPass("Call to SDL_IOFromFile(..,\"w+\")");
+        SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_IOFromFile in write mode does not return NULL");
 
         /* Bail out if NULL */
         if (rw == NULL) {
@@ -559,9 +559,9 @@ static int rwops_testFileWriteReadEndian(void *arg)
         SDLTest_AssertCheck(bresult == SDL_TRUE, "Validate object written, expected: SDL_TRUE, got: SDL_FALSE");
 
         /* Test seek to start */
-        result = SDL_SeekRW(rw, 0, SDL_RW_SEEK_SET);
-        SDLTest_AssertPass("Call to SDL_SeekRW succeeded");
-        SDLTest_AssertCheck(result == 0, "Verify result from position 0 with SDL_SeekRW, expected 0, got %i", (int)result);
+        result = SDL_SeekIO(rw, 0, SDL_IO_SEEK_SET);
+        SDLTest_AssertPass("Call to SDL_SeekIO succeeded");
+        SDLTest_AssertCheck(result == 0, "Verify result from position 0 with SDL_SeekIO, expected 0, got %i", (int)result);
 
         /* Read test data */
         bresult = SDL_ReadU16BE(rw, &BE16test);
@@ -590,8 +590,8 @@ static int rwops_testFileWriteReadEndian(void *arg)
         SDLTest_AssertCheck(LE64test == LE64value, "Validate object read from SDL_ReadU64LE, expected: %" SDL_PRIu64 ", got: %" SDL_PRIu64, LE64value, LE64test);
 
         /* Close handle */
-        cresult = SDL_CloseRW(rw);
-        SDLTest_AssertPass("Call to SDL_CloseRW() succeeded");
+        cresult = SDL_CloseIO(rw);
+        SDLTest_AssertPass("Call to SDL_CloseIO() succeeded");
         SDLTest_AssertCheck(cresult == 0, "Verify result value is 0; got: %d", cresult);
     }
 
@@ -600,49 +600,49 @@ static int rwops_testFileWriteReadEndian(void *arg)
 
 /* ================= Test References ================== */
 
-/* RWops test cases */
-static const SDLTest_TestCaseReference rwopsTest1 = {
-    (SDLTest_TestCaseFp)rwops_testParamNegative, "rwops_testParamNegative", "Negative test for SDL_RWFromFile parameters", TEST_ENABLED
+/* IOStream test cases */
+static const SDLTest_TestCaseReference iostrmTest1 = {
+    (SDLTest_TestCaseFp)iostrm_testParamNegative, "iostrm_testParamNegative", "Negative test for SDL_IOFromFile parameters", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rwopsTest2 = {
-    (SDLTest_TestCaseFp)rwops_testMem, "rwops_testMem", "Tests opening from memory", TEST_ENABLED
+static const SDLTest_TestCaseReference iostrmTest2 = {
+    (SDLTest_TestCaseFp)iostrm_testMem, "iostrm_testMem", "Tests opening from memory", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rwopsTest3 = {
-    (SDLTest_TestCaseFp)rwops_testConstMem, "rwops_testConstMem", "Tests opening from (const) memory", TEST_ENABLED
+static const SDLTest_TestCaseReference iostrmTest3 = {
+    (SDLTest_TestCaseFp)iostrm_testConstMem, "iostrm_testConstMem", "Tests opening from (const) memory", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rwopsTest4 = {
-    (SDLTest_TestCaseFp)rwops_testFileRead, "rwops_testFileRead", "Tests reading from a file", TEST_ENABLED
+static const SDLTest_TestCaseReference iostrmTest4 = {
+    (SDLTest_TestCaseFp)iostrm_testFileRead, "iostrm_testFileRead", "Tests reading from a file", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rwopsTest5 = {
-    (SDLTest_TestCaseFp)rwops_testFileWrite, "rwops_testFileWrite", "Test writing to a file", TEST_ENABLED
+static const SDLTest_TestCaseReference iostrmTest5 = {
+    (SDLTest_TestCaseFp)iostrm_testFileWrite, "iostrm_testFileWrite", "Test writing to a file", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rwopsTest6 = {
-    (SDLTest_TestCaseFp)rwops_testAllocFree, "rwops_testAllocFree", "Test alloc and free of RW context", TEST_ENABLED
+static const SDLTest_TestCaseReference iostrmTest6 = {
+    (SDLTest_TestCaseFp)iostrm_testAllocFree, "iostrm_testAllocFree", "Test alloc and free of RW context", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rwopsTest7 = {
-    (SDLTest_TestCaseFp)rwops_testFileWriteReadEndian, "rwops_testFileWriteReadEndian", "Test writing and reading via the Endian aware functions", TEST_ENABLED
+static const SDLTest_TestCaseReference iostrmTest7 = {
+    (SDLTest_TestCaseFp)iostrm_testFileWriteReadEndian, "iostrm_testFileWriteReadEndian", "Test writing and reading via the Endian aware functions", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rwopsTest8 = {
-    (SDLTest_TestCaseFp)rwops_testCompareRWFromMemWithRWFromFile, "rwops_testCompareRWFromMemWithRWFromFile", "Compare RWFromMem and RWFromFile RWops for read and seek", TEST_ENABLED
+static const SDLTest_TestCaseReference iostrmTest8 = {
+    (SDLTest_TestCaseFp)iostrm_testCompareRWFromMemWithRWFromFile, "iostrm_testCompareRWFromMemWithRWFromFile", "Compare RWFromMem and RWFromFile IOStream for read and seek", TEST_ENABLED
 };
 
-/* Sequence of RWops test cases */
-static const SDLTest_TestCaseReference *rwopsTests[] = {
-    &rwopsTest1, &rwopsTest2, &rwopsTest3, &rwopsTest4, &rwopsTest5, &rwopsTest6,
-    &rwopsTest7, &rwopsTest8, NULL
+/* Sequence of IOStream test cases */
+static const SDLTest_TestCaseReference *iostrmTests[] = {
+    &iostrmTest1, &iostrmTest2, &iostrmTest3, &iostrmTest4, &iostrmTest5, &iostrmTest6,
+    &iostrmTest7, &iostrmTest8, NULL
 };
 
-/* RWops test suite (global) */
-SDLTest_TestSuiteReference rwopsTestSuite = {
-    "RWops",
-    RWopsSetUp,
-    rwopsTests,
-    RWopsTearDown
+/* IOStream test suite (global) */
+SDLTest_TestSuiteReference iostrmTestSuite = {
+    "IOStream",
+    IOStreamSetUp,
+    iostrmTests,
+    IOStreamTearDown
 };

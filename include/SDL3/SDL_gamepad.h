@@ -268,7 +268,7 @@ extern DECLSPEC int SDLCALL SDL_AddGamepadMapping(const char *mapping);
  * constrained environment.
  *
  * \param src the data stream for the mappings to be added
- * \param freesrc if SDL_TRUE, calls SDL_CloseRW() on `src` before returning,
+ * \param freesrc if SDL_TRUE, calls SDL_CloseIO() on `src` before returning,
  *                even in the case of an error
  * \returns the number of mappings added or -1 on error; call SDL_GetError()
  *          for more information.
@@ -279,7 +279,7 @@ extern DECLSPEC int SDLCALL SDL_AddGamepadMapping(const char *mapping);
  * \sa SDL_AddGamepadMappingsFromFile
  * \sa SDL_GetGamepadMappingForGUID
  */
-extern DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromRW(SDL_RWops *src, SDL_bool freesrc);
+extern DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromRW(SDL_IOStream *src, SDL_bool freesrc);
 
 /**
  * Load a set of gamepad mappings from a file.

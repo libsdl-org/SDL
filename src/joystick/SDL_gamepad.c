@@ -1789,7 +1789,7 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMapping(SDL_JoystickID instance_id
 /*
  * Add or update an entry into the Mappings Database
  */
-int SDL_AddGamepadMappingsFromRW(SDL_RWops *src, SDL_bool freesrc)
+int SDL_AddGamepadMappingsFromRW(SDL_IOStream *src, SDL_bool freesrc)
 {
     const char *platform = SDL_GetPlatform();
     int gamepads = 0;
@@ -1845,7 +1845,7 @@ int SDL_AddGamepadMappingsFromRW(SDL_RWops *src, SDL_bool freesrc)
 
 int SDL_AddGamepadMappingsFromFile(const char *file)
 {
-    return SDL_AddGamepadMappingsFromRW(SDL_RWFromFile(file, "rb"), 1);
+    return SDL_AddGamepadMappingsFromRW(SDL_IOFromFile(file, "rb"), 1);
 }
 
 int SDL_ReloadGamepadMappings(void)

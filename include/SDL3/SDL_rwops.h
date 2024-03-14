@@ -39,21 +39,21 @@
 extern "C" {
 #endif
 
-/* RWops status, set by a read or write operation */
-typedef enum SDL_RWopsStatus
+/* SDL_IOStream status, set by a read or write operation */
+typedef enum SDL_IOStatus
 {
-    SDL_RWOPS_STATUS_READY,     /**< Everything is ready */
-    SDL_RWOPS_STATUS_ERROR,     /**< Read or write I/O error */
-    SDL_RWOPS_STATUS_EOF,       /**< End of file */
-    SDL_RWOPS_STATUS_NOT_READY, /**< Non blocking I/O, not ready */
-    SDL_RWOPS_STATUS_READONLY,  /**< Tried to write a read-only buffer */
-    SDL_RWOPS_STATUS_WRITEONLY  /**< Tried to read a write-only buffer */
-} SDL_RWopsStatus;
+    SDL_IO_STATUS_READY,     /**< Everything is ready */
+    SDL_IO_STATUS_ERROR,     /**< Read or write I/O error */
+    SDL_IO_STATUS_EOF,       /**< End of file */
+    SDL_IO_STATUS_NOT_READY, /**< Non blocking I/O, not ready */
+    SDL_IO_STATUS_READONLY,  /**< Tried to write a read-only buffer */
+    SDL_IO_STATUS_WRITEONLY  /**< Tried to read a write-only buffer */
+} SDL_IOStatus;
 
-typedef struct SDL_RWopsInterface
+typedef struct SDL_IOStreamInterface
 {
     /**
-     *  Return the number of bytes in this rwops
+     *  Return the number of bytes in this SDL_IOStream
      *
      *  \return the total size of the data stream, or -1 on error.
      */
@@ -61,7 +61,7 @@ typedef struct SDL_RWopsInterface
 
     /**
      *  Seek to \c offset relative to \c whence, one of stdio's whence values:
-     *  SDL_RW_SEEK_SET, SDL_RW_SEEK_CUR, SDL_RW_SEEK_END
+     *  SDL_IO_SEEK_SET, SDL_IO_SEEK_CUR, SDL_IO_SEEK_END
      *
      *  \return the final offset in the data stream, or -1 on error.
      */
@@ -72,52 +72,52 @@ typedef struct SDL_RWopsInterface
      *  at by \c ptr.
      *
      *  On an incomplete read, you should set `*status` to a value from the
-     *  SDL_RWopsStatus enum. You do not have to explicitly set this on
+     *  SDL_IOStatus enum. You do not have to explicitly set this on
      *  a complete, successful read.
      *
      *  \return the number of bytes read
      */
-    size_t (SDLCALL *read)(void *userdata, void *ptr, size_t size, SDL_RWopsStatus *status);
+    size_t (SDLCALL *read)(void *userdata, void *ptr, size_t size, SDL_IOStatus *status);
 
     /**
      *  Write exactly \c size bytes from the area pointed at by \c ptr
      *  to data stream.
      *
      *  On an incomplete write, you should set `*status` to a value from the
-     *  SDL_RWopsStatus enum. You do not have to explicitly set this on
+     *  SDL_IOStatus enum. You do not have to explicitly set this on
      *  a complete, successful write.
      *
      *  \return the number of bytes written
      */
-    size_t (SDLCALL *write)(void *userdata, const void *ptr, size_t size, SDL_RWopsStatus *status);
+    size_t (SDLCALL *write)(void *userdata, const void *ptr, size_t size, SDL_IOStatus *status);
 
     /**
      *  Close and free any allocated resources.
      *
-     *  The RWops is still destroyed even if this fails, so clean up anything
+     *  The SDL_IOStream is still destroyed even if this fails, so clean up anything
      *  even if flushing to disk returns an error.
      *
      *  \return 0 if successful or -1 on write error when flushing data.
      */
     int (SDLCALL *close)(void *userdata);
-} SDL_RWopsInterface;
+} SDL_IOStreamInterface;
 
 
 /**
  * This is the read/write operation structure -- opaque, as of SDL3!
  */
-typedef struct SDL_RWops SDL_RWops;
+typedef struct SDL_IOStream SDL_IOStream;
 
 
 /**
- *  \name RWFrom functions
+ *  \name IOFrom functions
  *
- *  Functions to create SDL_RWops structures from various data streams.
+ *  Functions to create SDL_IOStream structures from various data streams.
  */
 /* @{ */
 
 /**
- * Use this function to create a new SDL_RWops structure for reading from
+ * Use this function to create a new SDL_IOStream structure for reading from
  * and/or writing to a named file.
  *
  * The `mode` string is treated roughly the same as in a call to the C
@@ -155,168 +155,168 @@ typedef struct SDL_RWops SDL_RWops;
  * This function supports Unicode filenames, but they must be encoded in UTF-8
  * format, regardless of the underlying operating system.
  *
- * As a fallback, SDL_RWFromFile() will transparently open a matching filename
+ * As a fallback, SDL_IOFromFile() will transparently open a matching filename
  * in an Android app's `assets`.
  *
- * Destroying the SDL_RWops will close the file handle SDL is holding internally.
+ * Destroying the SDL_IOStream will close the file handle SDL is holding internally.
  *
  * The following properties may be set at creation time by SDL:
  *
- * - `SDL_PROP_RWOPS_WINDOWS_HANDLE_POINTER`: a pointer, that can be cast
- *   to a win32 `HANDLE`, that this RWops is using to access the filesystem.
+ * - `SDL_PROP_IOSTREAM_WINDOWS_HANDLE_POINTER`: a pointer, that can be cast
+ *   to a win32 `HANDLE`, that this SDL_IOStream is using to access the filesystem.
  *   If the program isn't running on Windows, or SDL used some other method
  *   to access the filesystem, this property will not be set.
- * - `SDL_PROP_RWOPS_STDIO_HANDLE_POINTER`: a pointer, that can be cast
- *   to a stdio `FILE *`, that this RWops is using to access the filesystem.
+ * - `SDL_PROP_IOSTREAM_STDIO_HANDLE_POINTER`: a pointer, that can be cast
+ *   to a stdio `FILE *`, that this SDL_IOStream is using to access the filesystem.
  *   If SDL used some other method to access the filesystem, this property
  *   will not be set. PLEASE NOTE that if SDL is using a different C runtime
  *   than your app, trying to use this pointer will almost certainly result
  *   in a crash! This is mostly a problem on Windows; make sure you build SDL
  *   and your app with the same compiler and settings to avoid it.
- * - `SDL_PROP_RWOPS_ANDROID_AASSET_POINTER`: a pointer, that can be cast
- *   to an Android NDK `AAsset *`, that this RWops is using to access the
+ * - `SDL_PROP_IOSTREAM_ANDROID_AASSET_POINTER`: a pointer, that can be cast
+ *   to an Android NDK `AAsset *`, that this SDL_IOStream is using to access the
  *   filesystem. If SDL used some other method to access the filesystem, this
  *   property will not be set.
  *
  * \param file a UTF-8 string representing the filename to open
  * \param mode an ASCII string representing the mode to be used for opening
  *             the file.
- * \returns a pointer to the SDL_RWops structure that is created, or NULL on
+ * \returns a pointer to the SDL_IOStream structure that is created, or NULL on
  *          failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWFromConstMem
- * \sa SDL_RWFromMem
- * \sa SDL_ReadRW
- * \sa SDL_SeekRW
- * \sa SDL_TellRW
- * \sa SDL_WriteRW
+ * \sa SDL_IOFromConstMem
+ * \sa SDL_IOFromMem
+ * \sa SDL_ReadIO
+ * \sa SDL_SeekIO
+ * \sa SDL_TellIO
+ * \sa SDL_WriteIO
  */
-extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromFile(const char *file, const char *mode);
+extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromFile(const char *file, const char *mode);
 
-#define SDL_PROP_RWOPS_WINDOWS_HANDLE_POINTER "SDL.rwops.windows.handle"
-#define SDL_PROP_RWOPS_STDIO_HANDLE_POINTER "SDL.rwops.stdio.handle"
-#define SDL_PROP_RWOPS_ANDROID_AASSET_POINTER "SDL.rwops.android.aasset"
+#define SDL_PROP_IOSTREAM_WINDOWS_HANDLE_POINTER "SDL.iostream.windows.handle"
+#define SDL_PROP_IOSTREAM_STDIO_HANDLE_POINTER "SDL.iostream.stdio.handle"
+#define SDL_PROP_IOSTREAM_ANDROID_AASSET_POINTER "SDL.opstream.android.aasset"
 
 /**
  * Use this function to prepare a read-write memory buffer for use with
- * SDL_RWops.
+ * SDL_IOStream.
  *
- * This function sets up an SDL_RWops struct based on a memory area of a
+ * This function sets up an SDL_IOStream struct based on a memory area of a
  * certain size, for both read and write access.
  *
- * This memory buffer is not copied by the RWops; the pointer you provide must
+ * This memory buffer is not copied by the SDL_IOStream; the pointer you provide must
  * remain valid until you close the stream. Closing the stream will not free
  * the original buffer.
  *
- * If you need to make sure the RWops never writes to the memory buffer, you
- * should use SDL_RWFromConstMem() with a read-only buffer of memory instead.
+ * If you need to make sure the SDL_IOStream never writes to the memory buffer, you
+ * should use SDL_IOFromConstMem() with a read-only buffer of memory instead.
  *
- * \param mem a pointer to a buffer to feed an SDL_RWops stream
+ * \param mem a pointer to a buffer to feed an SDL_IOStream stream
  * \param size the buffer size, in bytes
- * \returns a pointer to a new SDL_RWops structure, or NULL if it fails; call
+ * \returns a pointer to a new SDL_IOStream structure, or NULL if it fails; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWFromConstMem
- * \sa SDL_RWFromFile
- * \sa SDL_RWFromMem
- * \sa SDL_ReadRW
- * \sa SDL_SeekRW
- * \sa SDL_TellRW
- * \sa SDL_WriteRW
+ * \sa SDL_IOFromConstMem
+ * \sa SDL_IOFromFile
+ * \sa SDL_IOFromMem
+ * \sa SDL_ReadIO
+ * \sa SDL_SeekIO
+ * \sa SDL_TellIO
+ * \sa SDL_WriteIO
  */
-extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromMem(void *mem, size_t size);
+extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromMem(void *mem, size_t size);
 
 /**
- * Use this function to prepare a read-only memory buffer for use with RWops.
+ * Use this function to prepare a read-only memory buffer for use with SDL_IOStream.
  *
- * This function sets up an SDL_RWops struct based on a memory area of a
+ * This function sets up an SDL_IOStream struct based on a memory area of a
  * certain size. It assumes the memory area is not writable.
  *
- * Attempting to write to this RWops stream will report an error without
+ * Attempting to write to this SDL_IOStream stream will report an error without
  * writing to the memory buffer.
  *
- * This memory buffer is not copied by the RWops; the pointer you provide must
+ * This memory buffer is not copied by the SDL_IOStream; the pointer you provide must
  * remain valid until you close the stream. Closing the stream will not free
  * the original buffer.
  *
- * If you need to write to a memory buffer, you should use SDL_RWFromMem()
+ * If you need to write to a memory buffer, you should use SDL_IOFromMem()
  * with a writable buffer of memory instead.
  *
- * \param mem a pointer to a read-only buffer to feed an SDL_RWops stream
+ * \param mem a pointer to a read-only buffer to feed an SDL_IOStream stream
  * \param size the buffer size, in bytes
- * \returns a pointer to a new SDL_RWops structure, or NULL if it fails; call
+ * \returns a pointer to a new SDL_IOStream structure, or NULL if it fails; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWFromConstMem
- * \sa SDL_RWFromFile
- * \sa SDL_RWFromMem
- * \sa SDL_ReadRW
- * \sa SDL_SeekRW
- * \sa SDL_TellRW
+ * \sa SDL_IOFromConstMem
+ * \sa SDL_IOFromFile
+ * \sa SDL_IOFromMem
+ * \sa SDL_ReadIO
+ * \sa SDL_SeekIO
+ * \sa SDL_TellIO
  */
-extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromConstMem(const void *mem, size_t size);
+extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromConstMem(const void *mem, size_t size);
 
-/* @} *//* RWFrom functions */
+/* @} *//* IOFrom functions */
 
 
 /**
- * Create a custom SDL_RWops.
+ * Create a custom SDL_IOStream.
  *
  * Applications do not need to use this function unless they are providing
- * their own SDL_RWops implementation. If you just need an SDL_RWops to
+ * their own SDL_IOStream implementation. If you just need an SDL_IOStream to
  * read/write a common data source, you should use the built-in
- * implementations in SDL, like SDL_RWFromFile() or SDL_RWFromMem(), etc.
+ * implementations in SDL, like SDL_IOFromFile() or SDL_IOFromMem(), etc.
  *
- * You must free the returned pointer with SDL_CloseRW().
+ * You must free the returned pointer with SDL_CloseIO().
  *
  *
- * \param iface The function pointers that implement this RWops.
+ * \param iface The function pointers that implement this SDL_IOStream.
  * \param userdata The app-controlled pointer that is passed to iface's functions when called.
  * \returns a pointer to the allocated memory on success, or NULL on failure;
  *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CloseRW
+ * \sa SDL_CloseIO
  */
-extern DECLSPEC SDL_RWops *SDLCALL SDL_OpenRW(const SDL_RWopsInterface *iface, void *userdata);
+extern DECLSPEC SDL_IOStream *SDLCALL SDL_OpenIO(const SDL_IOStreamInterface *iface, void *userdata);
 
 /**
- * Close and free an allocated SDL_RWops structure.
+ * Close and free an allocated SDL_IOStream structure.
  *
- * SDL_CloseRW() closes and cleans up the SDL_RWops stream. It releases any
- * resources used by the stream and frees the SDL_RWops itself with
- * SDL_CloseRW(). This returns 0 on success, or -1 if the stream failed to
+ * SDL_CloseIO() closes and cleans up the SDL_IOStream stream. It releases any
+ * resources used by the stream and frees the SDL_IOStream itself with
+ * SDL_CloseIO(). This returns 0 on success, or -1 if the stream failed to
  * flush to its output (e.g. to disk).
  *
  * Note that if this fails to flush the stream to disk, this function reports
- * an error, but the SDL_RWops is still invalid once this function returns.
+ * an error, but the SDL_IOStream is still invalid once this function returns.
  *
- * \param context SDL_RWops structure to close
+ * \param context SDL_IOStream structure to close
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWFromConstMem
- * \sa SDL_RWFromFile
- * \sa SDL_RWFromMem
- * \sa SDL_ReadRW
- * \sa SDL_SeekRW
- * \sa SDL_WriteRW
+ * \sa SDL_IOFromConstMem
+ * \sa SDL_IOFromFile
+ * \sa SDL_IOFromMem
+ * \sa SDL_ReadIO
+ * \sa SDL_SeekIO
+ * \sa SDL_WriteIO
  */
-extern DECLSPEC int SDLCALL SDL_CloseRW(SDL_RWops *context);
+extern DECLSPEC int SDLCALL SDL_CloseIO(SDL_IOStream *context);
 
 /**
- * Get the properties associated with an SDL_RWops.
+ * Get the properties associated with an SDL_IOStream.
  *
- * \param context a pointer to an SDL_RWops structure
+ * \param context a pointer to an SDL_IOStream structure
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
  *
@@ -325,99 +325,99 @@ extern DECLSPEC int SDLCALL SDL_CloseRW(SDL_RWops *context);
  * \sa SDL_GetProperty
  * \sa SDL_SetProperty
  */
-extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetRWProperties(SDL_RWops *context);
+extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetRWProperties(SDL_IOStream *context);
 
-#define SDL_RW_SEEK_SET 0       /**< Seek from the beginning of data */
-#define SDL_RW_SEEK_CUR 1       /**< Seek relative to current read point */
-#define SDL_RW_SEEK_END 2       /**< Seek relative to the end of data */
+#define SDL_IO_SEEK_SET 0       /**< Seek from the beginning of data */
+#define SDL_IO_SEEK_CUR 1       /**< Seek relative to current read point */
+#define SDL_IO_SEEK_END 2       /**< Seek relative to the end of data */
 
 /**
- * Query the stream status of a RWops.
+ * Query the stream status of an SDL_IOStream.
  *
  * This information can be useful to decide if a short read or write was
  * due to an error, an EOF, or a non-blocking operation that isn't yet
  * ready to complete.
  *
- * A RWops's status is only expected to change after a SDL_ReadRW or
- * SDL_WriteRW call; don't expect it to change if you just call this
+ * An SDL_IOStream's status is only expected to change after a SDL_ReadIO or
+ * SDL_WriteIO call; don't expect it to change if you just call this
  * query function in a tight loop.
  *
- * \param context the SDL_RWops to query.
- * \returns an SDL_RWopsStatus enum with the current state.
+ * \param context the SDL_IOStream to query.
+ * \returns an SDL_IOStatus enum with the current state.
  *
  * \threadsafety This function should not be called at the same time that
- *               another thread is operating on the same SDL_RWops.
+ *               another thread is operating on the same SDL_IOStream.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_RWopsStatus SDLCALL SDL_GetRWStatus(SDL_RWops *context);
+extern DECLSPEC SDL_IOStatus SDLCALL SDL_GetRWStatus(SDL_IOStream *context);
 
 /**
- * Use this function to get the size of the data stream in an SDL_RWops.
+ * Use this function to get the size of the data stream in an SDL_IOStream.
  *
- * \param context the SDL_RWops to get the size of the data stream from
- * \returns the size of the data stream in the SDL_RWops on success or a
+ * \param context the SDL_IOStream to get the size of the data stream from
+ * \returns the size of the data stream in the SDL_IOStream on success or a
  *          negative error code on failure; call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC Sint64 SDLCALL SDL_SizeRW(SDL_RWops *context);
+extern DECLSPEC Sint64 SDLCALL SDL_SizeIO(SDL_IOStream *context);
 
 /**
- * Seek within an SDL_RWops data stream.
+ * Seek within an SDL_IOStream data stream.
  *
  * This function seeks to byte `offset`, relative to `whence`.
  *
  * `whence` may be any of the following values:
  *
- * - `SDL_RW_SEEK_SET`: seek from the beginning of data
- * - `SDL_RW_SEEK_CUR`: seek relative to current read point
- * - `SDL_RW_SEEK_END`: seek relative to the end of data
+ * - `SDL_IO_SEEK_SET`: seek from the beginning of data
+ * - `SDL_IO_SEEK_CUR`: seek relative to current read point
+ * - `SDL_IO_SEEK_END`: seek relative to the end of data
  *
  * If this stream can not seek, it will return -1.
  *
- * \param context a pointer to an SDL_RWops structure
+ * \param context a pointer to an SDL_IOStream structure
  * \param offset an offset in bytes, relative to **whence** location; can be
  *               negative
- * \param whence any of `SDL_RW_SEEK_SET`, `SDL_RW_SEEK_CUR`,
- *               `SDL_RW_SEEK_END`
+ * \param whence any of `SDL_IO_SEEK_SET`, `SDL_IO_SEEK_CUR`,
+ *               `SDL_IO_SEEK_END`
  * \returns the final offset in the data stream after the seek or a negative
  *          error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWFromConstMem
- * \sa SDL_RWFromFile
- * \sa SDL_RWFromMem
- * \sa SDL_ReadRW
- * \sa SDL_TellRW
- * \sa SDL_WriteRW
+ * \sa SDL_IOFromConstMem
+ * \sa SDL_IOFromFile
+ * \sa SDL_IOFromMem
+ * \sa SDL_ReadIO
+ * \sa SDL_TellIO
+ * \sa SDL_WriteIO
  */
-extern DECLSPEC Sint64 SDLCALL SDL_SeekRW(SDL_RWops *context, Sint64 offset, int whence);
+extern DECLSPEC Sint64 SDLCALL SDL_SeekIO(SDL_IOStream *context, Sint64 offset, int whence);
 
 /**
- * Determine the current read/write offset in an SDL_RWops data stream.
+ * Determine the current read/write offset in an SDL_IOStream data stream.
  *
- * SDL_TellRW is actually a wrapper function that calls the SDL_RWops's `seek`
- * method, with an offset of 0 bytes from `SDL_RW_SEEK_CUR`, to simplify
+ * SDL_TellIO is actually a wrapper function that calls the SDL_IOStream's `seek`
+ * method, with an offset of 0 bytes from `SDL_IO_SEEK_CUR`, to simplify
  * application development.
  *
- * \param context an SDL_RWops data stream object from which to get the
+ * \param context an SDL_IOStream data stream object from which to get the
  *                current offset
  * \returns the current offset in the stream, or -1 if the information can not
  *          be determined.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWFromConstMem
- * \sa SDL_RWFromFile
- * \sa SDL_RWFromMem
- * \sa SDL_ReadRW
- * \sa SDL_SeekRW
- * \sa SDL_WriteRW
+ * \sa SDL_IOFromConstMem
+ * \sa SDL_IOFromFile
+ * \sa SDL_IOFromMem
+ * \sa SDL_ReadIO
+ * \sa SDL_SeekIO
+ * \sa SDL_WriteIO
  */
-extern DECLSPEC Sint64 SDLCALL SDL_TellRW(SDL_RWops *context);
+extern DECLSPEC Sint64 SDLCALL SDL_TellIO(SDL_IOStream *context);
 
 /**
  * Read from a data source.
@@ -430,26 +430,26 @@ extern DECLSPEC Sint64 SDLCALL SDL_TellRW(SDL_RWops *context);
  * that this is not an error or end-of-file, and the caller can try again
  * later.
  *
- * SDL_ReadRW() is actually a function wrapper that calls the SDL_RWops's
+ * SDL_ReadIO() is actually a function wrapper that calls the SDL_IOStream's
  * `read` method appropriately, to simplify application development.
  *
- * \param context a pointer to an SDL_RWops structure
+ * \param context a pointer to an SDL_IOStream structure
  * \param ptr a pointer to a buffer to read data into
  * \param size the number of bytes to read from the data source.
  * \returns the number of bytes read, or 0 on end of file or other error.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWFromConstMem
- * \sa SDL_RWFromFile
- * \sa SDL_RWFromMem
- * \sa SDL_SeekRW
- * \sa SDL_WriteRW
+ * \sa SDL_IOFromConstMem
+ * \sa SDL_IOFromFile
+ * \sa SDL_IOFromMem
+ * \sa SDL_SeekIO
+ * \sa SDL_WriteIO
  */
-extern DECLSPEC size_t SDLCALL SDL_ReadRW(SDL_RWops *context, void *ptr, size_t size);
+extern DECLSPEC size_t SDLCALL SDL_ReadIO(SDL_IOStream *context, void *ptr, size_t size);
 
 /**
- * Write to an SDL_RWops data stream.
+ * Write to an SDL_IOStream data stream.
  *
  * This function writes exactly `size` bytes from the area pointed at by `ptr`
  * to the stream. If this fails for any reason, it'll return less than `size`
@@ -462,14 +462,14 @@ extern DECLSPEC size_t SDLCALL SDL_ReadRW(SDL_RWops *context, void *ptr, size_t 
  * written because it would require blocking, this function returns -2 to
  * distinguish that this is not an error and the caller can try again later.
  *
- * SDL_WriteRW is actually a function wrapper that calls the SDL_RWops's
+ * SDL_WriteIO is actually a function wrapper that calls the SDL_IOStream's
  * `write` method appropriately, to simplify application development.
  *
  * It is an error to specify a negative `size`, but this parameter is signed
  * so you definitely cannot overflow the return value on a successful run with
  * enormous amounts of data.
  *
- * \param context a pointer to an SDL_RWops structure
+ * \param context a pointer to an SDL_IOStream structure
  * \param ptr a pointer to a buffer containing data to write
  * \param size the number of bytes to write
  * \returns the number of bytes written, which will be less than `num` on
@@ -477,21 +477,21 @@ extern DECLSPEC size_t SDLCALL SDL_ReadRW(SDL_RWops *context, void *ptr, size_t 
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWFromConstMem
- * \sa SDL_RWFromFile
- * \sa SDL_RWFromMem
- * \sa SDL_RWprint
- * \sa SDL_ReadRW
- * \sa SDL_SeekRW
+ * \sa SDL_IOFromConstMem
+ * \sa SDL_IOFromFile
+ * \sa SDL_IOFromMem
+ * \sa SDL_IOprintf
+ * \sa SDL_ReadIO
+ * \sa SDL_SeekIO
  */
-extern DECLSPEC size_t SDLCALL SDL_WriteRW(SDL_RWops *context, const void *ptr, size_t size);
+extern DECLSPEC size_t SDLCALL SDL_WriteIO(SDL_IOStream *context, const void *ptr, size_t size);
 
 /**
- * Print to an SDL_RWops data stream.
+ * Print to an SDL_IOStream data stream.
  *
  * This function does formatted printing to the stream.
  *
- * \param context a pointer to an SDL_RWops structure
+ * \param context a pointer to an SDL_IOStream structure
  * \param fmt a printf() style format string
  * \param ... additional parameters matching % tokens in the `fmt` string, if
  *            any
@@ -500,21 +500,21 @@ extern DECLSPEC size_t SDLCALL SDL_WriteRW(SDL_RWops *context, const void *ptr, 
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWFromConstMem
- * \sa SDL_RWFromFile
- * \sa SDL_RWFromMem
- * \sa SDL_ReadRW
- * \sa SDL_SeekRW
- * \sa SDL_WriteRW
+ * \sa SDL_IOFromConstMem
+ * \sa SDL_IOFromFile
+ * \sa SDL_IOFromMem
+ * \sa SDL_ReadIO
+ * \sa SDL_SeekIO
+ * \sa SDL_WriteIO
  */
-extern DECLSPEC size_t SDLCALL SDL_RWprintf(SDL_RWops *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)  SDL_PRINTF_VARARG_FUNC(2);
+extern DECLSPEC size_t SDLCALL SDL_IOprintf(SDL_IOStream *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)  SDL_PRINTF_VARARG_FUNC(2);
 
 /**
- * Print to an SDL_RWops data stream.
+ * Print to an SDL_IOStream data stream.
  *
  * This function does formatted printing to the stream.
  *
- * \param context a pointer to an SDL_RWops structure
+ * \param context a pointer to an SDL_IOStream structure
  * \param fmt a printf() style format string
  * \param ap a variable argument list
  * \returns the number of bytes written, or 0 on error; call SDL_GetError()
@@ -522,14 +522,14 @@ extern DECLSPEC size_t SDLCALL SDL_RWprintf(SDL_RWops *context, SDL_PRINTF_FORMA
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_RWFromConstMem
- * \sa SDL_RWFromFile
- * \sa SDL_RWFromMem
- * \sa SDL_ReadRW
- * \sa SDL_SeekRW
- * \sa SDL_WriteRW
+ * \sa SDL_IOFromConstMem
+ * \sa SDL_IOFromFile
+ * \sa SDL_IOFromMem
+ * \sa SDL_ReadIO
+ * \sa SDL_SeekIO
+ * \sa SDL_WriteIO
  */
-extern DECLSPEC size_t SDLCALL SDL_RWvprintf(SDL_RWops *context, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
+extern DECLSPEC size_t SDLCALL SDL_IOvprintf(SDL_IOStream *context, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
 
 /**
  * Load all the data from an SDL data stream.
@@ -540,15 +540,15 @@ extern DECLSPEC size_t SDLCALL SDL_RWvprintf(SDL_RWops *context, SDL_PRINTF_FORM
  *
  * The data should be freed with SDL_free().
  *
- * \param src the SDL_RWops to read all available data from
+ * \param src the SDL_IOStream to read all available data from
  * \param datasize if not NULL, will store the number of bytes read
- * \param freesrc if SDL_TRUE, calls SDL_CloseRW() on `src` before returning,
+ * \param freesrc if SDL_TRUE, calls SDL_CloseIO() on `src` before returning,
  *                even in the case of an error
  * \returns the data, or NULL if there was an error.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void *SDLCALL SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, SDL_bool freesrc);
+extern DECLSPEC void *SDLCALL SDL_LoadFile_RW(SDL_IOStream *src, size_t *datasize, SDL_bool freesrc);
 
 /**
  * Load all the data from a file path.
@@ -575,19 +575,19 @@ extern DECLSPEC void *SDLCALL SDL_LoadFile(const char *file, size_t *datasize);
 /* @{ */
 
 /**
- * Use this function to read a byte from an SDL_RWops.
+ * Use this function to read a byte from an SDL_IOStream.
  *
- * \param src the SDL_RWops to read from
+ * \param src the SDL_IOStream to read from
  * \param value a pointer filled in with the data read
  * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
  *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_ReadU8(SDL_RWops *src, Uint8 *value);
+extern DECLSPEC SDL_bool SDLCALL SDL_ReadU8(SDL_IOStream *src, Uint8 *value);
 
 /**
- * Use this function to read 16 bits of little-endian data from an SDL_RWops
+ * Use this function to read 16 bits of little-endian data from an SDL_IOStream
  * and return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
@@ -600,10 +600,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU8(SDL_RWops *src, Uint8 *value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_ReadU16LE(SDL_RWops *src, Uint16 *value);
+extern DECLSPEC SDL_bool SDLCALL SDL_ReadU16LE(SDL_IOStream *src, Uint16 *value);
 
 /**
- * Use this function to read 16 bits of little-endian data from an SDL_RWops
+ * Use this function to read 16 bits of little-endian data from an SDL_IOStream
  * and return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
@@ -616,10 +616,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU16LE(SDL_RWops *src, Uint16 *value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_ReadS16LE(SDL_RWops *src, Sint16 *value);
+extern DECLSPEC SDL_bool SDLCALL SDL_ReadS16LE(SDL_IOStream *src, Sint16 *value);
 
 /**
- * Use this function to read 16 bits of big-endian data from an SDL_RWops and
+ * Use this function to read 16 bits of big-endian data from an SDL_IOStream and
  * return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
@@ -632,10 +632,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadS16LE(SDL_RWops *src, Sint16 *value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_ReadU16BE(SDL_RWops *src, Uint16 *value);
+extern DECLSPEC SDL_bool SDLCALL SDL_ReadU16BE(SDL_IOStream *src, Uint16 *value);
 
 /**
- * Use this function to read 16 bits of big-endian data from an SDL_RWops and
+ * Use this function to read 16 bits of big-endian data from an SDL_IOStream and
  * return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
@@ -648,10 +648,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU16BE(SDL_RWops *src, Uint16 *value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_ReadS16BE(SDL_RWops *src, Sint16 *value);
+extern DECLSPEC SDL_bool SDLCALL SDL_ReadS16BE(SDL_IOStream *src, Sint16 *value);
 
 /**
- * Use this function to read 32 bits of little-endian data from an SDL_RWops
+ * Use this function to read 32 bits of little-endian data from an SDL_IOStream
  * and return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
@@ -664,10 +664,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadS16BE(SDL_RWops *src, Sint16 *value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_ReadU32LE(SDL_RWops *src, Uint32 *value);
+extern DECLSPEC SDL_bool SDLCALL SDL_ReadU32LE(SDL_IOStream *src, Uint32 *value);
 
 /**
- * Use this function to read 32 bits of little-endian data from an SDL_RWops
+ * Use this function to read 32 bits of little-endian data from an SDL_IOStream
  * and return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
@@ -680,10 +680,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU32LE(SDL_RWops *src, Uint32 *value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_ReadS32LE(SDL_RWops *src, Sint32 *value);
+extern DECLSPEC SDL_bool SDLCALL SDL_ReadS32LE(SDL_IOStream *src, Sint32 *value);
 
 /**
- * Use this function to read 32 bits of big-endian data from an SDL_RWops and
+ * Use this function to read 32 bits of big-endian data from an SDL_IOStream and
  * return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
@@ -696,10 +696,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadS32LE(SDL_RWops *src, Sint32 *value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_ReadU32BE(SDL_RWops *src, Uint32 *value);
+extern DECLSPEC SDL_bool SDLCALL SDL_ReadU32BE(SDL_IOStream *src, Uint32 *value);
 
 /**
- * Use this function to read 32 bits of big-endian data from an SDL_RWops and
+ * Use this function to read 32 bits of big-endian data from an SDL_IOStream and
  * return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
@@ -712,10 +712,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU32BE(SDL_RWops *src, Uint32 *value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_ReadS32BE(SDL_RWops *src, Sint32 *value);
+extern DECLSPEC SDL_bool SDLCALL SDL_ReadS32BE(SDL_IOStream *src, Sint32 *value);
 
 /**
- * Use this function to read 64 bits of little-endian data from an SDL_RWops
+ * Use this function to read 64 bits of little-endian data from an SDL_IOStream
  * and return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
@@ -728,10 +728,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadS32BE(SDL_RWops *src, Sint32 *value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_ReadU64LE(SDL_RWops *src, Uint64 *value);
+extern DECLSPEC SDL_bool SDLCALL SDL_ReadU64LE(SDL_IOStream *src, Uint64 *value);
 
 /**
- * Use this function to read 64 bits of little-endian data from an SDL_RWops
+ * Use this function to read 64 bits of little-endian data from an SDL_IOStream
  * and return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
@@ -744,10 +744,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU64LE(SDL_RWops *src, Uint64 *value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_ReadS64LE(SDL_RWops *src, Sint64 *value);
+extern DECLSPEC SDL_bool SDLCALL SDL_ReadS64LE(SDL_IOStream *src, Sint64 *value);
 
 /**
- * Use this function to read 64 bits of big-endian data from an SDL_RWops and
+ * Use this function to read 64 bits of big-endian data from an SDL_IOStream and
  * return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
@@ -760,10 +760,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadS64LE(SDL_RWops *src, Sint64 *value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_ReadU64BE(SDL_RWops *src, Uint64 *value);
+extern DECLSPEC SDL_bool SDLCALL SDL_ReadU64BE(SDL_IOStream *src, Uint64 *value);
 
 /**
- * Use this function to read 64 bits of big-endian data from an SDL_RWops and
+ * Use this function to read 64 bits of big-endian data from an SDL_IOStream and
  * return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
@@ -776,7 +776,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU64BE(SDL_RWops *src, Uint64 *value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_ReadS64BE(SDL_RWops *src, Sint64 *value);
+extern DECLSPEC SDL_bool SDLCALL SDL_ReadS64BE(SDL_IOStream *src, Sint64 *value);
 /* @} *//* Read endian functions */
 
 /**
@@ -787,19 +787,19 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadS64BE(SDL_RWops *src, Sint64 *value);
 /* @{ */
 
 /**
- * Use this function to write a byte to an SDL_RWops.
+ * Use this function to write a byte to an SDL_IOStream.
  *
- * \param dst the SDL_RWops to write to
+ * \param dst the SDL_IOStream to write to
  * \param value the byte value to write
  * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_WriteU8(SDL_RWops *dst, Uint8 value);
+extern DECLSPEC SDL_bool SDLCALL SDL_WriteU8(SDL_IOStream *dst, Uint8 value);
 
 /**
- * Use this function to write 16 bits in native format to an SDL_RWops as
+ * Use this function to write 16 bits in native format to an SDL_IOStream as
  * little-endian data.
  *
  * SDL byteswaps the data only if necessary, so the application always
@@ -813,10 +813,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteU8(SDL_RWops *dst, Uint8 value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_WriteU16LE(SDL_RWops *dst, Uint16 value);
+extern DECLSPEC SDL_bool SDLCALL SDL_WriteU16LE(SDL_IOStream *dst, Uint16 value);
 
 /**
- * Use this function to write 16 bits in native format to an SDL_RWops as
+ * Use this function to write 16 bits in native format to an SDL_IOStream as
  * little-endian data.
  *
  * SDL byteswaps the data only if necessary, so the application always
@@ -830,10 +830,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteU16LE(SDL_RWops *dst, Uint16 value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_WriteS16LE(SDL_RWops *dst, Sint16 value);
+extern DECLSPEC SDL_bool SDLCALL SDL_WriteS16LE(SDL_IOStream *dst, Sint16 value);
 
 /**
- * Use this function to write 16 bits in native format to an SDL_RWops as
+ * Use this function to write 16 bits in native format to an SDL_IOStream as
  * big-endian data.
  *
  * SDL byteswaps the data only if necessary, so the application always
@@ -846,10 +846,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteS16LE(SDL_RWops *dst, Sint16 value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_WriteU16BE(SDL_RWops *dst, Uint16 value);
+extern DECLSPEC SDL_bool SDLCALL SDL_WriteU16BE(SDL_IOStream *dst, Uint16 value);
 
 /**
- * Use this function to write 16 bits in native format to an SDL_RWops as
+ * Use this function to write 16 bits in native format to an SDL_IOStream as
  * big-endian data.
  *
  * SDL byteswaps the data only if necessary, so the application always
@@ -862,10 +862,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteU16BE(SDL_RWops *dst, Uint16 value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_WriteS16BE(SDL_RWops *dst, Sint16 value);
+extern DECLSPEC SDL_bool SDLCALL SDL_WriteS16BE(SDL_IOStream *dst, Sint16 value);
 
 /**
- * Use this function to write 32 bits in native format to an SDL_RWops as
+ * Use this function to write 32 bits in native format to an SDL_IOStream as
  * little-endian data.
  *
  * SDL byteswaps the data only if necessary, so the application always
@@ -879,10 +879,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteS16BE(SDL_RWops *dst, Sint16 value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_WriteU32LE(SDL_RWops *dst, Uint32 value);
+extern DECLSPEC SDL_bool SDLCALL SDL_WriteU32LE(SDL_IOStream *dst, Uint32 value);
 
 /**
- * Use this function to write 32 bits in native format to an SDL_RWops as
+ * Use this function to write 32 bits in native format to an SDL_IOStream as
  * little-endian data.
  *
  * SDL byteswaps the data only if necessary, so the application always
@@ -896,10 +896,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteU32LE(SDL_RWops *dst, Uint32 value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_WriteS32LE(SDL_RWops *dst, Sint32 value);
+extern DECLSPEC SDL_bool SDLCALL SDL_WriteS32LE(SDL_IOStream *dst, Sint32 value);
 
 /**
- * Use this function to write 32 bits in native format to an SDL_RWops as
+ * Use this function to write 32 bits in native format to an SDL_IOStream as
  * big-endian data.
  *
  * SDL byteswaps the data only if necessary, so the application always
@@ -912,10 +912,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteS32LE(SDL_RWops *dst, Sint32 value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_WriteU32BE(SDL_RWops *dst, Uint32 value);
+extern DECLSPEC SDL_bool SDLCALL SDL_WriteU32BE(SDL_IOStream *dst, Uint32 value);
 
 /**
- * Use this function to write 32 bits in native format to an SDL_RWops as
+ * Use this function to write 32 bits in native format to an SDL_IOStream as
  * big-endian data.
  *
  * SDL byteswaps the data only if necessary, so the application always
@@ -928,10 +928,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteU32BE(SDL_RWops *dst, Uint32 value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_WriteS32BE(SDL_RWops *dst, Sint32 value);
+extern DECLSPEC SDL_bool SDLCALL SDL_WriteS32BE(SDL_IOStream *dst, Sint32 value);
 
 /**
- * Use this function to write 64 bits in native format to an SDL_RWops as
+ * Use this function to write 64 bits in native format to an SDL_IOStream as
  * little-endian data.
  *
  * SDL byteswaps the data only if necessary, so the application always
@@ -945,10 +945,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteS32BE(SDL_RWops *dst, Sint32 value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_WriteU64LE(SDL_RWops *dst, Uint64 value);
+extern DECLSPEC SDL_bool SDLCALL SDL_WriteU64LE(SDL_IOStream *dst, Uint64 value);
 
 /**
- * Use this function to write 64 bits in native format to an SDL_RWops as
+ * Use this function to write 64 bits in native format to an SDL_IOStream as
  * little-endian data.
  *
  * SDL byteswaps the data only if necessary, so the application always
@@ -962,10 +962,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteU64LE(SDL_RWops *dst, Uint64 value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_WriteS64LE(SDL_RWops *dst, Sint64 value);
+extern DECLSPEC SDL_bool SDLCALL SDL_WriteS64LE(SDL_IOStream *dst, Sint64 value);
 
 /**
- * Use this function to write 64 bits in native format to an SDL_RWops as
+ * Use this function to write 64 bits in native format to an SDL_IOStream as
  * big-endian data.
  *
  * SDL byteswaps the data only if necessary, so the application always
@@ -978,10 +978,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteS64LE(SDL_RWops *dst, Sint64 value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_WriteU64BE(SDL_RWops *dst, Uint64 value);
+extern DECLSPEC SDL_bool SDLCALL SDL_WriteU64BE(SDL_IOStream *dst, Uint64 value);
 
 /**
- * Use this function to write 64 bits in native format to an SDL_RWops as
+ * Use this function to write 64 bits in native format to an SDL_IOStream as
  * big-endian data.
  *
  * SDL byteswaps the data only if necessary, so the application always
@@ -994,7 +994,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteU64BE(SDL_RWops *dst, Uint64 value);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_WriteS64BE(SDL_RWops *dst, Sint64 value);
+extern DECLSPEC SDL_bool SDLCALL SDL_WriteS64BE(SDL_IOStream *dst, Sint64 value);
 
 /* @} *//* Write endian functions */
 

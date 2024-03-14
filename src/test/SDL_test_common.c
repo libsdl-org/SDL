@@ -1900,20 +1900,20 @@ static const void *SDLTest_ScreenShotClipboardProvider(void *context, const char
     SDL_Log("Providing screenshot image to clipboard!\n");
 
     if (!data->image) {
-        SDL_RWops *file;
+        SDL_IOStream *file;
 
-        file = SDL_RWFromFile(SCREENSHOT_FILE, "r");
+        file = SDL_IOFromFile(SCREENSHOT_FILE, "r");
         if (file) {
-            size_t length = (size_t)SDL_SizeRW(file);
+            size_t length = (size_t)SDL_SizeIO(file);
             void *image = SDL_malloc(length);
             if (image) {
-                if (SDL_ReadRW(file, image, length) != length) {
+                if (SDL_ReadIO(file, image, length) != length) {
                     SDL_Log("Couldn't read %s: %s\n", SCREENSHOT_FILE, SDL_GetError());
                     SDL_free(image);
                     image = NULL;
                 }
             }
-            SDL_CloseRW(file);
+            SDL_CloseIO(file);
 
             if (image) {
                 data->image = image;
@@ -1977,14 +1977,14 @@ static void SDLTest_PasteScreenShot(void)
         void *data = SDL_GetClipboardData(image_formats[i], &size);
         if (data) {
             char filename[16];
-            SDL_RWops *file;
+            SDL_IOStream *file;
 
             SDL_snprintf(filename, sizeof(filename), "clipboard.%s", image_formats[i] + 6);
-            file = SDL_RWFromFile(filename, "w");
+            file = SDL_IOFromFile(filename, "w");
             if (file) {
                 SDL_Log("Writing clipboard image to %s", filename);
-                SDL_WriteRW(file, data, size);
-                SDL_CloseRW(file);
+                SDL_WriteIO(file, data, size);
+                SDL_CloseIO(file);
             }
             SDL_free(data);
             return;
