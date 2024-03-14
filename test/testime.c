@@ -775,6 +775,9 @@ int main(int argc, char *argv[])
                 cursor = event.edit.start;
                 Redraw();
                 break;
+
+            default:
+                break;
             }
         }
     }
