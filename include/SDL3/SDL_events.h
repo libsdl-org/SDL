@@ -240,7 +240,7 @@ typedef enum
  */
 typedef struct SDL_CommonEvent
 {
-    Uint32 type;
+    Uint32 type;        /**< Event type, shared with all events, Uint32 to cover user events which are not in the SDL_EventType enumeration */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
 } SDL_CommonEvent;
