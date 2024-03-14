@@ -81,8 +81,8 @@ typedef void(SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * const
  *
  * This function should only be invoked from the main thread.
  *
- * This is an asynchronous function; it will return immediately, and the result
- * will be passed to the callback.
+ * This is an asynchronous function; it will return immediately, and the
+ * result will be passed to the callback.
  *
  * The callback will be invoked with a null-terminated list of files the user
  * chose. The list will be empty if the user canceled the dialog, and it will
@@ -91,15 +91,28 @@ typedef void(SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * const
  * Note that the callback may be called from a different thread than the one
  * the function was invoked on.
  *
- * Depending on the platform, the user may be allowed to input paths that don't
- * yet exist.
+ * Depending on the platform, the user may be allowed to input paths that
+ * don't yet exist.
  *
- * \param callback The function to be invoked when the user selects a file and accepts, or the user cancels the dialog, or an error occurs. The first argument is a null-terminated list of C strings, representing the paths chosen by the user. The list will be empty if the user canceled the dialog, and it will be NULL if an error occured. If an error occured, it can be fetched with SDL_GetError(). The second argument is the userdata pointer passed to the function.
- * \param userdata An optional pointer to pass extra data to the callback when it will be invoked.
- * \param window The window that the dialog should be modal for. May be NULL. Not all platforms support this option.
- * \param filters A null-terminated list of SDL_DialogFileFilter's. May be NULL. Not all platforms support this option, and platforms that do support it may allow the user to ignore the filters.
- * \param default_location The default folder or file to start the dialog at. May be NULL. Not all platforms support this option.
- * \param allow_many If non-zero, the user will be allowed to select multiple entries. Not all platforms support this option.
+ * \param callback The function to be invoked when the user selects a file and
+ *                 accepts, or the user cancels the dialog, or an error
+ *                 occurs. The first argument is a null-terminated list of C
+ *                 strings, representing the paths chosen by the user. The
+ *                 list will be empty if the user canceled the dialog, and it
+ *                 will be NULL if an error occured. If an error occured, it
+ *                 can be fetched with SDL_GetError(). The second argument is
+ *                 the userdata pointer passed to the function.
+ * \param userdata An optional pointer to pass extra data to the callback when
+ *                 it will be invoked.
+ * \param window The window that the dialog should be modal for. May be NULL.
+ *               Not all platforms support this option.
+ * \param filters A null-terminated list of SDL_DialogFileFilter's. May be
+ *                NULL. Not all platforms support this option, and platforms
+ *                that do support it may allow the user to ignore the filters.
+ * \param default_location The default folder or file to start the dialog at.
+ *                         May be NULL. Not all platforms support this option.
+ * \param allow_many If non-zero, the user will be allowed to select multiple
+ *                   entries. Not all platforms support this option.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -111,12 +124,13 @@ typedef void(SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * const
 extern DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, const char *default_location, SDL_bool allow_many);
 
 /**
- * Displays a dialog that lets the user choose a new or existing file on their filesystem.
+ * Displays a dialog that lets the user choose a new or existing file on their
+ * filesystem.
  *
  * This function should only be invoked from the main thread.
  *
- * This is an asynchronous function; it will return immediately, and the result
- * will be passed to the callback.
+ * This is an asynchronous function; it will return immediately, and the
+ * result will be passed to the callback.
  *
  * The callback will be invoked with a null-terminated list of files the user
  * chose. The list will be empty if the user canceled the dialog, and it will
@@ -127,11 +141,23 @@ extern DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback callb
  *
  * The chosen file may or may not already exist.
  *
- * \param callback The function to be invoked when the user selects a file and accepts, or the user cancels the dialog, or an error occurs. The first argument is a null-terminated list of C strings, representing the paths chosen by the user. The list will be empty if the user canceled the dialog, and it will be NULL if an error occured. If an error occured, it can be fetched with SDL_GetError(). The second argument is the userdata pointer passed to the function.
- * \param userdata An optional pointer to pass extra data to the callback when it will be invoked.
- * \param window The window that the dialog should be modal for. May be NULL. Not all platforms support this option.
- * \param filters A null-terminated list of SDL_DialogFileFilter's. May be NULL. Not all platforms support this option, and platforms that do support it may allow the user to ignore the filters.
- * \param default_location The default folder or file to start the dialog at. May be NULL. Not all platforms support this option.
+ * \param callback The function to be invoked when the user selects a file and
+ *                 accepts, or the user cancels the dialog, or an error
+ *                 occurs. The first argument is a null-terminated list of C
+ *                 strings, representing the paths chosen by the user. The
+ *                 list will be empty if the user canceled the dialog, and it
+ *                 will be NULL if an error occured. If an error occured, it
+ *                 can be fetched with SDL_GetError(). The second argument is
+ *                 the userdata pointer passed to the function.
+ * \param userdata An optional pointer to pass extra data to the callback when
+ *                 it will be invoked.
+ * \param window The window that the dialog should be modal for. May be NULL.
+ *               Not all platforms support this option.
+ * \param filters A null-terminated list of SDL_DialogFileFilter's. May be
+ *                NULL. Not all platforms support this option, and platforms
+ *                that do support it may allow the user to ignore the filters.
+ * \param default_location The default folder or file to start the dialog at.
+ *                         May be NULL. Not all platforms support this option.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -147,8 +173,8 @@ extern DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback callb
  *
  * This function should only be invoked from the main thread.
  *
- * This is an asynchronous function; it will return immediately, and the result
- * will be passed to the callback.
+ * This is an asynchronous function; it will return immediately, and the
+ * result will be passed to the callback.
  *
  * The callback will be invoked with a null-terminated list of files the user
  * chose. The list will be empty if the user canceled the dialog, and it will
@@ -157,14 +183,25 @@ extern DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback callb
  * Note that the callback may be called from a different thread than the one
  * the function was invoked on.
  *
- * Depending on the platform, the user may be allowed to input paths that don't
- * yet exist.
+ * Depending on the platform, the user may be allowed to input paths that
+ * don't yet exist.
  *
- * \param callback The function to be invoked when the user selects a folder and accepts, or the user cancels the dialog, or an error occurs. The first argument is a null-terminated list of C strings, representing the paths chosen by the user. The list will be empty if the user canceled the dialog, and it will be NULL if an error occured. If an error occured, it can be fetched with SDL_GetError(). The second argument is the userdata pointer passed to the function.
- * \param userdata An optional pointer to pass extra data to the callback when it will be invoked.
- * \param window The window that the dialog should be modal for. May be NULL. Not all platforms support this option.
- * \param default_location The default folder or file to start the dialog at. May be NULL. Not all platforms support this option.
- * \param allow_many If non-zero, the user will be allowed to select multiple entries. Not all platforms support this option.
+ * \param callback The function to be invoked when the user selects a folder
+ *                 and accepts, or the user cancels the dialog, or an error
+ *                 occurs. The first argument is a null-terminated list of C
+ *                 strings, representing the paths chosen by the user. The
+ *                 list will be empty if the user canceled the dialog, and it
+ *                 will be NULL if an error occured. If an error occured, it
+ *                 can be fetched with SDL_GetError(). The second argument is
+ *                 the userdata pointer passed to the function.
+ * \param userdata An optional pointer to pass extra data to the callback when
+ *                 it will be invoked.
+ * \param window The window that the dialog should be modal for. May be NULL.
+ *               Not all platforms support this option.
+ * \param default_location The default folder or file to start the dialog at.
+ *                         May be NULL. Not all platforms support this option.
+ * \param allow_many If non-zero, the user will be allowed to select multiple
+ *                   entries. Not all platforms support this option.
  *
  * \since This function is available since SDL 3.0.0.
  *
