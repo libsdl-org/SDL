@@ -36,6 +36,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <vram.h>
+#include "SDL_render_psp.h"
 
 /* PSP renderer implementation, based on the PGE  */
 
@@ -123,6 +124,24 @@ typedef struct
     SDL_Color col;
     float x, y, z;
 } VertTCV;
+
+int SDL_PSP_RenderGetProp(SDL_Renderer *r, enum SDL_PSP_RenderProps which, void** out)
+{
+    PSP_RenderData *rd;
+    if (r == NULL) {
+        return -1;
+    }
+    rd = r->driverdata;
+    switch (which) {
+        case SDL_PSP_RENDERPROPS_FRONTBUFFER:
+            *out = rd->frontbuffer;
+            return 0;
+        case SDL_PSP_RENDERPROPS_BACKBUFFER:
+            *out = rd->backbuffer;
+            return 0;
+    }
+    return -1;
+}
 
 #define PI 3.14159265358979f
 

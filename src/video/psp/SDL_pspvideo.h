@@ -68,6 +68,14 @@ void PSP_MinimizeWindow(_THIS, SDL_Window *window);
 void PSP_RestoreWindow(_THIS, SDL_Window *window);
 void PSP_DestroyWindow(_THIS, SDL_Window *window);
 
+/* "methods" aka callbacks for SDL_WindowSurface API */
+int PSP_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format,
+ void **pixels, int *pitch);
+int PSP_UpdateWindowFramebuffer(_THIS, SDL_Window *window,
+const SDL_Rect *rects, int numrects);
+void PSP_DestroyWindowFramebuffer(_THIS, SDL_Window *window);
+
+
 /* Window manager function */
 SDL_bool PSP_GetWindowWMInfo(_THIS, SDL_Window * window,
                              struct SDL_SysWMinfo *info);
