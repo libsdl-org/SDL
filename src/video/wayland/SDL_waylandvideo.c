@@ -201,8 +201,7 @@ error:
 static void Wayland_FlushOutputOrder(SDL_VideoData *vid)
 {
     SDL_WaylandConnectorName *c, *tmp;
-    wl_list_for_each_safe(c, tmp, &vid->output_order, link)
-    {
+    wl_list_for_each_safe (c, tmp, &vid->output_order, link) {
         WAYLAND_wl_list_remove(&c->link);
         SDL_free(c);
     }

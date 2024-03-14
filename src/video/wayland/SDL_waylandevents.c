@@ -3107,8 +3107,7 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
             wl_touch_destroy(input->touch);
         }
 
-        wl_list_for_each_safe(tp, tmp, &touch_points, link)
-        {
+        wl_list_for_each_safe (tp, tmp, &touch_points, link) {
             WAYLAND_wl_list_remove(&tp->link);
             SDL_free(tp);
         }
