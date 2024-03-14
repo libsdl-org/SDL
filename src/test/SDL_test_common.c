@@ -1855,7 +1855,7 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
         SDL_Log("SDL EVENT: User event %" SDL_PRIs32, event->user.code);
         break;
     default:
-        SDL_Log("Unknown event 0x%4.4" SDL_PRIu32, event->type);
+        SDL_Log("Unknown event 0x%4.4" SDL_PRIu32, (Uint32) event->type);
         break;
     }
 }
