@@ -92,6 +92,7 @@ struct SDL_WaylandInput
     SDL_WaylandDataDevice *data_device;
     SDL_WaylandPrimarySelectionDevice *primary_selection_device;
     SDL_WaylandTextInput *text_input;
+    struct wp_cursor_shape_device_v1 *cursor_shape;
     struct zwp_relative_pointer_v1 *relative_pointer;
     SDL_WindowData *pointer_focus;
     SDL_WindowData *keyboard_focus;
@@ -174,6 +175,8 @@ extern int Wayland_input_ungrab_keyboard(SDL_Window *window);
 
 extern void Wayland_input_add_tablet(struct SDL_WaylandInput *input, struct SDL_WaylandTabletManager *tablet_manager);
 extern void Wayland_input_destroy_tablet(struct SDL_WaylandInput *input);
+
+extern void Wayland_CreateCursorShapeDevice(struct SDL_WaylandInput *input);
 
 #endif /* SDL_waylandevents_h_ */
 

@@ -58,6 +58,7 @@
 #include "viewporter-client-protocol.h"
 #include "primary-selection-unstable-v1-client-protocol.h"
 #include "fractional-scale-v1-client-protocol.h"
+#include "cursor-shape-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -875,6 +876,11 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         d->viewporter = wl_registry_bind(d->registry, id, &wp_viewporter_interface, 1);
     } else if (SDL_strcmp(interface, "wp_fractional_scale_manager_v1") == 0) {
         d->fractional_scale_manager = wl_registry_bind(d->registry, id, &wp_fractional_scale_manager_v1_interface, 1);
+    } else if (SDL_strcmp(interface, "wp_cursor_shape_manager_v1") == 0) {
+        d->cursor_shape_manager = wl_registry_bind(d->registry, id, &wp_cursor_shape_manager_v1_interface, 1);
+        if (d->input) {
+            Wayland_CreateCursorShapeDevice(d->input);
+        }
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     } else if (SDL_strcmp(interface, "qt_touch_extension") == 0) {
         Wayland_touch_create(d, id);
@@ -1119,6 +1125,11 @@ static void Wayland_VideoCleanup(_THIS)
     if (data->fractional_scale_manager) {
         wp_fractional_scale_manager_v1_destroy(data->fractional_scale_manager);
         data->fractional_scale_manager = NULL;
+    }
+
+    if (data->cursor_shape_manager) {
+        wp_cursor_shape_manager_v1_destroy(data->cursor_shape_manager);
+        data->cursor_shape_manager = NULL;
     }
 
     if (data->compositor) {
