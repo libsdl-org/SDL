@@ -279,7 +279,7 @@ extern DECLSPEC int SDLCALL SDL_AddGamepadMapping(const char *mapping);
  * \sa SDL_AddGamepadMappingsFromFile
  * \sa SDL_GetGamepadMappingForGUID
  */
-extern DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromRW(SDL_IOStream *src, SDL_bool freesrc);
+extern DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromIO(SDL_IOStream *src, SDL_bool freesrc);
 
 /**
  * Load a set of gamepad mappings from a file.
@@ -301,7 +301,7 @@ extern DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromRW(SDL_IOStream *src, SDL_
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AddGamepadMapping
- * \sa SDL_AddGamepadMappingsFromRW
+ * \sa SDL_AddGamepadMappingsFromIO
  * \sa SDL_GetGamepadMappingForGUID
  */
 extern DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromFile(const char *file);

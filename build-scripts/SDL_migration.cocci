@@ -1051,7 +1051,7 @@ typedef SDL_GameController, SDL_Gamepad;
 @@
 @@
 - SDL_GameControllerAddMappingsFromRW
-+ SDL_AddGamepadMappingsFromRW
++ SDL_AddGamepadMappingsFromIO
   (...)
 @@
 typedef SDL_GameControllerAxis, SDL_GamepadAxis;

@@ -763,7 +763,7 @@ int SDL_CloseIO(SDL_IOStream *iostr)
 }
 
 /* Load all the data from an SDL data stream */
-void *SDL_LoadFile_RW(SDL_IOStream *src, size_t *datasize, SDL_bool freesrc)
+void *SDL_LoadFile_IO(SDL_IOStream *src, size_t *datasize, SDL_bool freesrc)
 {
     const int FILE_CHUNK_SIZE = 1024;
     Sint64 size, size_total = 0;
@@ -832,7 +832,7 @@ done:
 
 void *SDL_LoadFile(const char *file, size_t *datasize)
 {
-    return SDL_LoadFile_RW(SDL_IOFromFile(file, "rb"), datasize, SDL_TRUE);
+    return SDL_LoadFile_IO(SDL_IOFromFile(file, "rb"), datasize, SDL_TRUE);
 }
 
 SDL_PropertiesID SDL_GetRWProperties(SDL_IOStream *context)

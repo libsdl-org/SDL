@@ -28,7 +28,7 @@
 
 #define SDL_AddEventWatch SDL_AddEventWatch_REAL
 #define SDL_AddGamepadMapping SDL_AddGamepadMapping_REAL
-#define SDL_AddGamepadMappingsFromRW SDL_AddGamepadMappingsFromRW_REAL
+#define SDL_AddGamepadMappingsFromIO SDL_AddGamepadMappingsFromIO_REAL
 #define SDL_AddHintCallback SDL_AddHintCallback_REAL
 #define SDL_AddTimer SDL_AddTimer_REAL
 #define SDL_AndroidBackButton   SDL_AndroidBackButton_REAL
@@ -433,7 +433,7 @@
 #define SDL_LoadBMP SDL_LoadBMP_REAL
 #define SDL_LoadBMP_IO SDL_LoadBMP_IO_REAL
 #define SDL_LoadFile SDL_LoadFile_REAL
-#define SDL_LoadFile_RW SDL_LoadFile_RW_REAL
+#define SDL_LoadFile_IO SDL_LoadFile_IO_REAL
 #define SDL_LoadFunction SDL_LoadFunction_REAL
 #define SDL_LoadObject SDL_LoadObject_REAL
 #define SDL_LockJoysticks SDL_LockJoysticks_REAL

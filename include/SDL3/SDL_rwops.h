@@ -548,7 +548,7 @@ extern DECLSPEC size_t SDLCALL SDL_IOvprintf(SDL_IOStream *context, SDL_PRINTF_F
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void *SDLCALL SDL_LoadFile_RW(SDL_IOStream *src, size_t *datasize, SDL_bool freesrc);
+extern DECLSPEC void *SDLCALL SDL_LoadFile_IO(SDL_IOStream *src, size_t *datasize, SDL_bool freesrc);
 
 /**
  * Load all the data from a file path.

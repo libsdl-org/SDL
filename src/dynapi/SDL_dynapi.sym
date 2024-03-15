@@ -4,7 +4,7 @@ SDL3_0.0.0 {
     SDL_DYNAPI_entry;
     SDL_AddEventWatch;
     SDL_AddGamepadMapping;
-    SDL_AddGamepadMappingsFromRW;
+    SDL_AddGamepadMappingsFromIO;
     SDL_AddHintCallback;
     SDL_AddTimer;
     SDL_AndroidBackButton;
@@ -409,7 +409,7 @@ SDL3_0.0.0 {
     SDL_LoadBMP;
     SDL_LoadBMP_IO;
     SDL_LoadFile;
-    SDL_LoadFile_RW;
+    SDL_LoadFile_IO;
     SDL_LoadFunction;
     SDL_LoadObject;
     SDL_LockJoysticks;

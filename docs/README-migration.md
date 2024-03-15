@@ -526,7 +526,7 @@ The following structures have been renamed:
 The following functions have been renamed:
 * SDL_GameControllerAddMapping() => SDL_AddGamepadMapping()
 * SDL_GameControllerAddMappingsFromFile() => SDL_AddGamepadMappingsFromFile()
-* SDL_GameControllerAddMappingsFromRW() => SDL_AddGamepadMappingsFromRW()
+* SDL_GameControllerAddMappingsFromRW() => SDL_AddGamepadMappingsFromIO()
 * SDL_GameControllerClose() => SDL_CloseGamepad()
 * SDL_GameControllerFromInstanceID() => SDL_GetGamepadFromInstanceID()
 * SDL_GameControllerFromPlayerIndex() => SDL_GetGamepadFromPlayerIndex()
