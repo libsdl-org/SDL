@@ -328,7 +328,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
  * will result in a memory leak.
  *
  * \param src the data stream for the surface
- * \param freesrc if SDL_TRUE, calls SDL_CloseIO() on `src` before returning,
+ * \param closeio if SDL_TRUE, calls SDL_CloseIO() on `src` before returning,
  *                even in the case of an error
  * \returns a pointer to a new SDL_Surface structure or NULL if there was an
  *          error; call SDL_GetError() for more information.
@@ -339,7 +339,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
  * \sa SDL_LoadBMP
  * \sa SDL_SaveBMP_IO
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool freesrc);
+extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio);
 
 /**
  * Load a BMP image from a file.
@@ -370,7 +370,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP(const char *file);
  *
  * \param surface the SDL_Surface structure containing the image to be saved
  * \param dst a data stream to save to
- * \param freedst if SDL_TRUE, calls SDL_CloseIO() on `dst` before returning,
+ * \param closeio if SDL_TRUE, calls SDL_CloseIO() on `dst` before returning,
  *                even in the case of an error
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -380,7 +380,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP(const char *file);
  * \sa SDL_LoadBMP_IO
  * \sa SDL_SaveBMP
  */
-extern DECLSPEC int SDLCALL SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, SDL_bool freedst);
+extern DECLSPEC int SDLCALL SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, SDL_bool closeio);
 
 /**
  * Save a surface to a file.

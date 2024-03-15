@@ -2075,7 +2075,7 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
     return 0;
 }
 
-int SDL_LoadWAV_IO(SDL_IOStream *src, SDL_bool freesrc, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
+int SDL_LoadWAV_IO(SDL_IOStream *src, SDL_bool closeio, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
 {
     int result = -1;
     WaveFile file;
@@ -2110,13 +2110,13 @@ int SDL_LoadWAV_IO(SDL_IOStream *src, SDL_bool freesrc, SDL_AudioSpec *spec, Uin
     }
 
     /* Cleanup */
-    if (!freesrc) {
+    if (!closeio) {
         SDL_SeekIO(src, file.chunk.position, SDL_IO_SEEK_SET);
     }
     WaveFreeChunkData(&file.chunk);
     SDL_free(file.decoderdata);
 done:
-    if (freesrc && src) {
+    if (closeio && src) {
         SDL_CloseIO(src);
     }
     return result;

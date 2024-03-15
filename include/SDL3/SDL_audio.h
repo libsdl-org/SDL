@@ -1317,7 +1317,7 @@ extern DECLSPEC int SDLCALL SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid,
  * ```
  *
  * \param src The data source for the WAVE data
- * \param freesrc If SDL_TRUE, calls SDL_CloseIO() on `src` before returning,
+ * \param closeio If SDL_TRUE, calls SDL_CloseIO() on `src` before returning,
  *                even in the case of an error
  * \param spec A pointer to an SDL_AudioSpec that will be set to the WAVE
  *             data's format details on successful return
@@ -1344,7 +1344,7 @@ extern DECLSPEC int SDLCALL SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid,
  * \sa SDL_free
  * \sa SDL_LoadWAV
  */
-extern DECLSPEC int SDLCALL SDL_LoadWAV_IO(SDL_IOStream * src, SDL_bool freesrc,
+extern DECLSPEC int SDLCALL SDL_LoadWAV_IO(SDL_IOStream * src, SDL_bool closeio,
                                            SDL_AudioSpec * spec, Uint8 ** audio_buf,
                                            Uint32 * audio_len);
 

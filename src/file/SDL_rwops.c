@@ -763,7 +763,7 @@ int SDL_CloseIO(SDL_IOStream *iostr)
 }
 
 /* Load all the data from an SDL data stream */
-void *SDL_LoadFile_IO(SDL_IOStream *src, size_t *datasize, SDL_bool freesrc)
+void *SDL_LoadFile_IO(SDL_IOStream *src, size_t *datasize, SDL_bool closeio)
 {
     const int FILE_CHUNK_SIZE = 1024;
     Sint64 size, size_total = 0;
@@ -824,7 +824,7 @@ done:
     if (datasize) {
         *datasize = (size_t)size_total;
     }
-    if (freesrc && src) {
+    if (closeio && src) {
         SDL_CloseIO(src);
     }
     return data;

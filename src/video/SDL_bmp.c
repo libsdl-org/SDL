@@ -193,7 +193,7 @@ static void CorrectAlphaChannel(SDL_Surface *surface)
     }
 }
 
-SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool freesrc)
+SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
 {
     SDL_bool was_error = SDL_TRUE;
     Sint64 fp_offset = 0;
@@ -577,7 +577,7 @@ done:
         SDL_DestroySurface(surface);
         surface = NULL;
     }
-    if (freesrc && src) {
+    if (closeio && src) {
         SDL_CloseIO(src);
     }
     return surface;
@@ -588,7 +588,7 @@ SDL_Surface *SDL_LoadBMP(const char *file)
     return SDL_LoadBMP_IO(SDL_IOFromFile(file, "rb"), 1);
 }
 
-int SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, SDL_bool freedst)
+int SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, SDL_bool closeio)
 {
     SDL_bool was_error = SDL_TRUE;
     Sint64 fp_offset, new_offset;
@@ -856,7 +856,7 @@ done:
     if (intermediate_surface && intermediate_surface != surface) {
         SDL_DestroySurface(intermediate_surface);
     }
-    if (freedst && dst) {
+    if (closeio && dst) {
         if (SDL_CloseIO(dst) < 0) {
             was_error = SDL_TRUE;
         }

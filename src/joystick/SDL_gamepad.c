@@ -1789,7 +1789,7 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMapping(SDL_JoystickID instance_id
 /*
  * Add or update an entry into the Mappings Database
  */
-int SDL_AddGamepadMappingsFromIO(SDL_IOStream *src, SDL_bool freesrc)
+int SDL_AddGamepadMappingsFromIO(SDL_IOStream *src, SDL_bool closeio)
 {
     const char *platform = SDL_GetPlatform();
     int gamepads = 0;
@@ -1797,7 +1797,7 @@ int SDL_AddGamepadMappingsFromIO(SDL_IOStream *src, SDL_bool freesrc)
     size_t db_size;
     size_t platform_len;
 
-    buf = (char *)SDL_LoadFile_IO(src, &db_size, freesrc);
+    buf = (char *)SDL_LoadFile_IO(src, &db_size, closeio);
     if (!buf) {
         return SDL_SetError("Could not allocate space to read DB into memory");
     }

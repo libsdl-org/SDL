@@ -290,10 +290,10 @@ extern DECLSPEC SDL_IOStream *SDLCALL SDL_OpenIO(const SDL_IOStreamInterface *if
 /**
  * Close and free an allocated SDL_IOStream structure.
  *
- * SDL_CloseIO() closes and cleans up the SDL_IOStream stream. It releases any
- * resources used by the stream and frees the SDL_IOStream itself with
- * SDL_CloseIO(). This returns 0 on success, or -1 if the stream failed to
- * flush to its output (e.g. to disk).
+ * SDL_CloseIO() closes and cleans up the SDL_IOStream stream. It releases
+ * any resources used by the stream and frees the SDL_IOStream itself. This
+ * returns 0 on success, or -1 if the stream failed to flush to its output
+ * (e.g. to disk).
  *
  * Note that if this fails to flush the stream to disk, this function reports
  * an error, but the SDL_IOStream is still invalid once this function returns.
@@ -542,13 +542,13 @@ extern DECLSPEC size_t SDLCALL SDL_IOvprintf(SDL_IOStream *context, SDL_PRINTF_F
  *
  * \param src the SDL_IOStream to read all available data from
  * \param datasize if not NULL, will store the number of bytes read
- * \param freesrc if SDL_TRUE, calls SDL_CloseIO() on `src` before returning,
+ * \param closeio if SDL_TRUE, calls SDL_CloseIO() on `src` before returning,
  *                even in the case of an error
  * \returns the data, or NULL if there was an error.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void *SDLCALL SDL_LoadFile_IO(SDL_IOStream *src, size_t *datasize, SDL_bool freesrc);
+extern DECLSPEC void *SDLCALL SDL_LoadFile_IO(SDL_IOStream *src, size_t *datasize, SDL_bool closeio);
 
 /**
  * Load all the data from a file path.
