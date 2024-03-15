@@ -41,6 +41,9 @@
 
 #define HANDLE_LEN 10
 
+#define WAYLAND_HANDLE_PREFIX "wayland:"
+#define X11_HANDLE_PREFIX "x11:"
+
 typedef struct {
     SDL_DialogFileCallback callback;
     void *userdata;
@@ -263,8 +266,9 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
     const char *signal_id;
     char *handle_str, *filter;
     int filter_len;
-    static const char *parent_window = ""; /* TODO: Consider using X11's PID or the Wayland handle */
     static uint32_t handle_id = 0;
+    static char *default_parent_window = "";
+    SDL_PropertiesID props = SDL_GetWindowProperties(window);
 
     if (dbus == NULL) {
         SDL_SetError("%s", "Failed to connect to DBus!");
@@ -278,7 +282,39 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
     }
 
     dbus->message_iter_init_append(msg, &params);
-    dbus->message_iter_append_basic(&params, DBUS_TYPE_STRING, &parent_window);
+
+    handle_str = default_parent_window;
+    if (props) {
+        const char *parent_handle = SDL_GetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_POINTER, NULL);
+        if (parent_handle) {
+            size_t len = SDL_strlen(parent_handle);
+            len += sizeof(WAYLAND_HANDLE_PREFIX) + 1;
+            handle_str = SDL_malloc(len * sizeof(char));
+            if (!handle_str) {
+                return;
+            }
+
+            SDL_snprintf(handle_str, len, "%s%s", WAYLAND_HANDLE_PREFIX, parent_handle);
+        } else {
+            const Uint64 xid = (Uint64)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+            if (xid) {
+                const size_t len = sizeof(X11_HANDLE_PREFIX) + 24; /* A 64-bit number can be 20 characters max. */
+                handle_str = SDL_malloc(len * sizeof(char));
+                if (!handle_str) {
+                    return;
+                }
+
+                /* The portal wants X11 window ID numbers in hex. */
+                SDL_snprintf(handle_str, len, "%s%" SDL_PRIx64, X11_HANDLE_PREFIX, xid);
+            }
+        }
+    }
+
+    dbus->message_iter_append_basic(&params, DBUS_TYPE_STRING, &handle_str);
+    if (handle_str != default_parent_window) {
+        SDL_free(handle_str);
+    }
+
     dbus->message_iter_append_basic(&params, DBUS_TYPE_STRING, &method_title);
     dbus->message_iter_open_container(&params, DBUS_TYPE_ARRAY, "{sv}", &options);
 
