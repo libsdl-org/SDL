@@ -166,26 +166,26 @@ typedef struct SDL_IOStream SDL_IOStream;
  * The following properties may be set at creation time by SDL:
  *
  * - `SDL_PROP_IOSTREAM_WINDOWS_HANDLE_POINTER`: a pointer, that can be cast
- *   to a win32 `HANDLE`, that this SDL_IOStream is using to access the filesystem.
- *   If the program isn't running on Windows, or SDL used some other method
- *   to access the filesystem, this property will not be set.
- * - `SDL_PROP_IOSTREAM_STDIO_HANDLE_POINTER`: a pointer, that can be cast
- *   to a stdio `FILE *`, that this SDL_IOStream is using to access the filesystem.
- *   If SDL used some other method to access the filesystem, this property
- *   will not be set. PLEASE NOTE that if SDL is using a different C runtime
- *   than your app, trying to use this pointer will almost certainly result
- *   in a crash! This is mostly a problem on Windows; make sure you build SDL
- *   and your app with the same compiler and settings to avoid it.
- * - `SDL_PROP_IOSTREAM_ANDROID_AASSET_POINTER`: a pointer, that can be cast
- *   to an Android NDK `AAsset *`, that this SDL_IOStream is using to access the
+ *   to a win32 `HANDLE`, that this SDL_IOStream is using to access the
+ *   filesystem. If the program isn't running on Windows, or SDL used some
+ *   other method to access the filesystem, this property will not be set.
+ * - `SDL_PROP_IOSTREAM_STDIO_HANDLE_POINTER`: a pointer, that can be cast to
+ *   a stdio `FILE *`, that this SDL_IOStream is using to access the
  *   filesystem. If SDL used some other method to access the filesystem, this
- *   property will not be set.
+ *   property will not be set. PLEASE NOTE that if SDL is using a different C
+ *   runtime than your app, trying to use this pointer will almost certainly
+ *   result in a crash! This is mostly a problem on Windows; make sure you
+ *   build SDL and your app with the same compiler and settings to avoid it.
+ * - `SDL_PROP_IOSTREAM_ANDROID_AASSET_POINTER`: a pointer, that can be cast
+ *   to an Android NDK `AAsset *`, that this SDL_IOStream is using to access
+ *   the filesystem. If SDL used some other method to access the filesystem,
+ *   this property will not be set.
  *
  * \param file a UTF-8 string representing the filename to open
  * \param mode an ASCII string representing the mode to be used for opening
  *             the file.
- * \returns a pointer to the SDL_IOStream structure that is created, or NULL on
- *          failure; call SDL_GetError() for more information.
+ * \returns a pointer to the SDL_IOStream structure that is created, or NULL
+ *          on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -210,17 +210,18 @@ extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromFile(const char *file, const cha
  * This function sets up an SDL_IOStream struct based on a memory area of a
  * certain size, for both read and write access.
  *
- * This memory buffer is not copied by the SDL_IOStream; the pointer you provide must
- * remain valid until you close the stream. Closing the stream will not free
- * the original buffer.
+ * This memory buffer is not copied by the SDL_IOStream; the pointer you
+ * provide must remain valid until you close the stream. Closing the stream
+ * will not free the original buffer.
  *
- * If you need to make sure the SDL_IOStream never writes to the memory buffer, you
- * should use SDL_IOFromConstMem() with a read-only buffer of memory instead.
+ * If you need to make sure the SDL_IOStream never writes to the memory
+ * buffer, you should use SDL_IOFromConstMem() with a read-only buffer of
+ * memory instead.
  *
  * \param mem a pointer to a buffer to feed an SDL_IOStream stream
  * \param size the buffer size, in bytes
- * \returns a pointer to a new SDL_IOStream structure, or NULL if it fails; call
- *          SDL_GetError() for more information.
+ * \returns a pointer to a new SDL_IOStream structure, or NULL if it fails;
+ *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -236,25 +237,26 @@ extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromFile(const char *file, const cha
 extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromMem(void *mem, size_t size);
 
 /**
- * Use this function to prepare a read-only memory buffer for use with SDL_IOStream.
+ * Use this function to prepare a read-only memory buffer for use with
+ * SDL_IOStream.
  *
  * This function sets up an SDL_IOStream struct based on a memory area of a
  * certain size. It assumes the memory area is not writable.
  *
- * Attempting to write to this SDL_IOStream stream will report an error without
- * writing to the memory buffer.
+ * Attempting to write to this SDL_IOStream stream will report an error
+ * without writing to the memory buffer.
  *
- * This memory buffer is not copied by the SDL_IOStream; the pointer you provide must
- * remain valid until you close the stream. Closing the stream will not free
- * the original buffer.
+ * This memory buffer is not copied by the SDL_IOStream; the pointer you
+ * provide must remain valid until you close the stream. Closing the stream
+ * will not free the original buffer.
  *
  * If you need to write to a memory buffer, you should use SDL_IOFromMem()
  * with a writable buffer of memory instead.
  *
  * \param mem a pointer to a read-only buffer to feed an SDL_IOStream stream
  * \param size the buffer size, in bytes
- * \returns a pointer to a new SDL_IOStream structure, or NULL if it fails; call
- *          SDL_GetError() for more information.
+ * \returns a pointer to a new SDL_IOStream structure, or NULL if it fails;
+ *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -281,9 +283,9 @@ extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromConstMem(const void *mem, size_t
  *
  * You must free the returned pointer with SDL_CloseIO().
  *
- *
  * \param iface The function pointers that implement this SDL_IOStream.
- * \param userdata The app-controlled pointer that is passed to iface's functions when called.
+ * \param userdata The app-controlled pointer that is passed to iface's
+ *                 functions when called.
  * \returns a pointer to the allocated memory on success, or NULL on failure;
  *          call SDL_GetError() for more information.
  *
@@ -296,8 +298,8 @@ extern DECLSPEC SDL_IOStream *SDLCALL SDL_OpenIO(const SDL_IOStreamInterface *if
 /**
  * Close and free an allocated SDL_IOStream structure.
  *
- * SDL_CloseIO() closes and cleans up the SDL_IOStream stream. It releases
- * any resources used by the stream and frees the SDL_IOStream itself. This
+ * SDL_CloseIO() closes and cleans up the SDL_IOStream stream. It releases any
+ * resources used by the stream and frees the SDL_IOStream itself. This
  * returns 0 on success, or -1 if the stream failed to flush to its output
  * (e.g. to disk).
  *
@@ -340,13 +342,13 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetIOProperties(SDL_IOStream *conte
 /**
  * Query the stream status of an SDL_IOStream.
  *
- * This information can be useful to decide if a short read or write was
- * due to an error, an EOF, or a non-blocking operation that isn't yet
- * ready to complete.
+ * This information can be useful to decide if a short read or write was due
+ * to an error, an EOF, or a non-blocking operation that isn't yet ready to
+ * complete.
  *
  * An SDL_IOStream's status is only expected to change after a SDL_ReadIO or
- * SDL_WriteIO call; don't expect it to change if you just call this
- * query function in a tight loop.
+ * SDL_WriteIO call; don't expect it to change if you just call this query
+ * function in a tight loop.
  *
  * \param context the SDL_IOStream to query.
  * \returns an SDL_IOStatus enum with the current state.
@@ -405,9 +407,9 @@ extern DECLSPEC Sint64 SDLCALL SDL_SeekIO(SDL_IOStream *context, Sint64 offset, 
 /**
  * Determine the current read/write offset in an SDL_IOStream data stream.
  *
- * SDL_TellIO is actually a wrapper function that calls the SDL_IOStream's `seek`
- * method, with an offset of 0 bytes from `SDL_IO_SEEK_CUR`, to simplify
- * application development.
+ * SDL_TellIO is actually a wrapper function that calls the SDL_IOStream's
+ * `seek` method, with an offset of 0 bytes from `SDL_IO_SEEK_CUR`, to
+ * simplify application development.
  *
  * \param context an SDL_IOStream data stream object from which to get the
  *                current offset
@@ -587,8 +589,8 @@ extern DECLSPEC void *SDLCALL SDL_LoadFile(const char *file, size_t *datasize);
 extern DECLSPEC SDL_bool SDLCALL SDL_ReadU8(SDL_IOStream *src, Uint8 *value);
 
 /**
- * Use this function to read 16 bits of little-endian data from an SDL_IOStream
- * and return in native format.
+ * Use this function to read 16 bits of little-endian data from an
+ * SDL_IOStream and return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
@@ -603,8 +605,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU8(SDL_IOStream *src, Uint8 *value);
 extern DECLSPEC SDL_bool SDLCALL SDL_ReadU16LE(SDL_IOStream *src, Uint16 *value);
 
 /**
- * Use this function to read 16 bits of little-endian data from an SDL_IOStream
- * and return in native format.
+ * Use this function to read 16 bits of little-endian data from an
+ * SDL_IOStream and return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
@@ -619,8 +621,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU16LE(SDL_IOStream *src, Uint16 *value)
 extern DECLSPEC SDL_bool SDLCALL SDL_ReadS16LE(SDL_IOStream *src, Sint16 *value);
 
 /**
- * Use this function to read 16 bits of big-endian data from an SDL_IOStream and
- * return in native format.
+ * Use this function to read 16 bits of big-endian data from an SDL_IOStream
+ * and return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
@@ -635,8 +637,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadS16LE(SDL_IOStream *src, Sint16 *value)
 extern DECLSPEC SDL_bool SDLCALL SDL_ReadU16BE(SDL_IOStream *src, Uint16 *value);
 
 /**
- * Use this function to read 16 bits of big-endian data from an SDL_IOStream and
- * return in native format.
+ * Use this function to read 16 bits of big-endian data from an SDL_IOStream
+ * and return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
@@ -651,8 +653,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU16BE(SDL_IOStream *src, Uint16 *value)
 extern DECLSPEC SDL_bool SDLCALL SDL_ReadS16BE(SDL_IOStream *src, Sint16 *value);
 
 /**
- * Use this function to read 32 bits of little-endian data from an SDL_IOStream
- * and return in native format.
+ * Use this function to read 32 bits of little-endian data from an
+ * SDL_IOStream and return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
@@ -667,8 +669,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadS16BE(SDL_IOStream *src, Sint16 *value)
 extern DECLSPEC SDL_bool SDLCALL SDL_ReadU32LE(SDL_IOStream *src, Uint32 *value);
 
 /**
- * Use this function to read 32 bits of little-endian data from an SDL_IOStream
- * and return in native format.
+ * Use this function to read 32 bits of little-endian data from an
+ * SDL_IOStream and return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
@@ -683,8 +685,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU32LE(SDL_IOStream *src, Uint32 *value)
 extern DECLSPEC SDL_bool SDLCALL SDL_ReadS32LE(SDL_IOStream *src, Sint32 *value);
 
 /**
- * Use this function to read 32 bits of big-endian data from an SDL_IOStream and
- * return in native format.
+ * Use this function to read 32 bits of big-endian data from an SDL_IOStream
+ * and return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
@@ -699,8 +701,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadS32LE(SDL_IOStream *src, Sint32 *value)
 extern DECLSPEC SDL_bool SDLCALL SDL_ReadU32BE(SDL_IOStream *src, Uint32 *value);
 
 /**
- * Use this function to read 32 bits of big-endian data from an SDL_IOStream and
- * return in native format.
+ * Use this function to read 32 bits of big-endian data from an SDL_IOStream
+ * and return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
@@ -715,8 +717,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU32BE(SDL_IOStream *src, Uint32 *value)
 extern DECLSPEC SDL_bool SDLCALL SDL_ReadS32BE(SDL_IOStream *src, Sint32 *value);
 
 /**
- * Use this function to read 64 bits of little-endian data from an SDL_IOStream
- * and return in native format.
+ * Use this function to read 64 bits of little-endian data from an
+ * SDL_IOStream and return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
@@ -731,8 +733,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadS32BE(SDL_IOStream *src, Sint32 *value)
 extern DECLSPEC SDL_bool SDLCALL SDL_ReadU64LE(SDL_IOStream *src, Uint64 *value);
 
 /**
- * Use this function to read 64 bits of little-endian data from an SDL_IOStream
- * and return in native format.
+ * Use this function to read 64 bits of little-endian data from an
+ * SDL_IOStream and return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
@@ -747,8 +749,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadU64LE(SDL_IOStream *src, Uint64 *value)
 extern DECLSPEC SDL_bool SDLCALL SDL_ReadS64LE(SDL_IOStream *src, Sint64 *value);
 
 /**
- * Use this function to read 64 bits of big-endian data from an SDL_IOStream and
- * return in native format.
+ * Use this function to read 64 bits of big-endian data from an SDL_IOStream
+ * and return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
@@ -763,8 +765,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ReadS64LE(SDL_IOStream *src, Sint64 *value)
 extern DECLSPEC SDL_bool SDLCALL SDL_ReadU64BE(SDL_IOStream *src, Uint64 *value);
 
 /**
- * Use this function to read 64 bits of big-endian data from an SDL_IOStream and
- * return in native format.
+ * Use this function to read 64 bits of big-endian data from an SDL_IOStream
+ * and return in native format.
  *
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
