@@ -428,7 +428,7 @@ static SDL_IOStream *SDL_IOFromFP(FILE *fp, SDL_bool autoclose)
     if (!iostr) {
         iface.close(iodata);
     } else {
-        const SDL_PropertiesID props = SDL_GetRWProperties(iostr);
+        const SDL_PropertiesID props = SDL_GetIOProperties(iostr);
         if (props) {
             SDL_SetProperty(props, SDL_PROP_IOSTREAM_STDIO_HANDLE_POINTER, fp);
         }
@@ -587,7 +587,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
     if (!iostr) {
         iface.close(iodata);
     } else {
-        const SDL_PropertiesID props = SDL_GetRWProperties(iostr);
+        const SDL_PropertiesID props = SDL_GetIOProperties(iostr);
         if (props) {
             SDL_SetProperty(props, SDL_PROP_IOSTREAM_ANDROID_AASSET_POINTER, iodata);
         }
@@ -619,7 +619,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
     if (!iostr) {
         windows_file_close(iodata);
     } else {
-        const SDL_PropertiesID props = SDL_GetRWProperties(iostr);
+        const SDL_PropertiesID props = SDL_GetIOProperties(iostr);
         if (props) {
             SDL_SetProperty(props, SDL_PROP_IOSTREAM_WINDOWS_HANDLE_POINTER, iodata->h);
         }
@@ -724,7 +724,7 @@ SDL_IOStream *SDL_IOFromConstMem(const void *mem, size_t size)
     return iostr;
 }
 
-SDL_IOStatus SDL_GetRWStatus(SDL_IOStream *context)
+SDL_IOStatus SDL_GetIOStatus(SDL_IOStream *context)
 {
     if (!context) {
         SDL_InvalidParamError("context");
@@ -835,7 +835,7 @@ void *SDL_LoadFile(const char *file, size_t *datasize)
     return SDL_LoadFile_IO(SDL_IOFromFile(file, "rb"), datasize, SDL_TRUE);
 }
 
-SDL_PropertiesID SDL_GetRWProperties(SDL_IOStream *context)
+SDL_PropertiesID SDL_GetIOProperties(SDL_IOStream *context)
 {
     if (!context) {
         SDL_InvalidParamError("context");

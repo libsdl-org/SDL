@@ -903,7 +903,7 @@
 #define SDL_GetJoystickProperties SDL_GetJoystickProperties_REAL
 #define SDL_GetRendererProperties SDL_GetRendererProperties_REAL
 #define SDL_GetTextureProperties SDL_GetTextureProperties_REAL
-#define SDL_GetRWProperties SDL_GetRWProperties_REAL
+#define SDL_GetIOProperties SDL_GetIOProperties_REAL
 #define SDL_GetSensorProperties SDL_GetSensorProperties_REAL
 #define SDL_GetSurfaceProperties SDL_GetSurfaceProperties_REAL
 #define SDL_GetWindowProperties SDL_GetWindowProperties_REAL
@@ -1003,4 +1003,4 @@
 #define SDL_ShowOpenFolderDialog SDL_ShowOpenFolderDialog_REAL
 #define SDL_OpenIO SDL_OpenIO_REAL
 #define SDL_CloseIO SDL_CloseIO_REAL
-#define SDL_GetRWStatus SDL_GetRWStatus_REAL
+#define SDL_GetIOStatus SDL_GetIOStatus_REAL

@@ -878,7 +878,7 @@ SDL3_0.0.0 {
     SDL_GetJoystickProperties;
     SDL_GetRendererProperties;
     SDL_GetTextureProperties;
-    SDL_GetRWProperties;
+    SDL_GetIOProperties;
     SDL_GetSensorProperties;
     SDL_GetSurfaceProperties;
     SDL_GetWindowProperties;
@@ -978,7 +978,7 @@ SDL3_0.0.0 {
     SDL_ShowOpenFolderDialog;
     SDL_OpenIO;
     SDL_CloseIO;
-    SDL_GetRWStatus;
+    SDL_GetIOStatus;
     # extra symbols go here (don't modify this line)
   local: *;
 };

@@ -161,7 +161,7 @@ typedef struct SDL_IOStream SDL_IOStream;
  * As a fallback, SDL_IOFromFile() will transparently open a matching filename
  * in an Android app's `assets`.
  *
- * Destroying the SDL_IOStream will close the file handle SDL is holding internally.
+ * Closing the SDL_IOStream will close SDL's internal file handle.
  *
  * The following properties may be set at creation time by SDL:
  *
@@ -191,6 +191,7 @@ typedef struct SDL_IOStream SDL_IOStream;
  *
  * \sa SDL_IOFromConstMem
  * \sa SDL_IOFromMem
+ * \sa SDL_CloseIO
  * \sa SDL_ReadIO
  * \sa SDL_SeekIO
  * \sa SDL_TellIO
@@ -226,6 +227,7 @@ extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromFile(const char *file, const cha
  * \sa SDL_IOFromConstMem
  * \sa SDL_IOFromFile
  * \sa SDL_IOFromMem
+ * \sa SDL_CloseIO
  * \sa SDL_ReadIO
  * \sa SDL_SeekIO
  * \sa SDL_TellIO
@@ -259,6 +261,7 @@ extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromMem(void *mem, size_t size);
  * \sa SDL_IOFromConstMem
  * \sa SDL_IOFromFile
  * \sa SDL_IOFromMem
+ * \sa SDL_CloseIO
  * \sa SDL_ReadIO
  * \sa SDL_SeekIO
  * \sa SDL_TellIO
@@ -328,7 +331,7 @@ extern DECLSPEC int SDLCALL SDL_CloseIO(SDL_IOStream *context);
  * \sa SDL_GetProperty
  * \sa SDL_SetProperty
  */
-extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetRWProperties(SDL_IOStream *context);
+extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetIOProperties(SDL_IOStream *context);
 
 #define SDL_IO_SEEK_SET 0       /**< Seek from the beginning of data */
 #define SDL_IO_SEEK_CUR 1       /**< Seek relative to current read point */
@@ -353,7 +356,7 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetRWProperties(SDL_IOStream *conte
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_IOStatus SDLCALL SDL_GetRWStatus(SDL_IOStream *context);
+extern DECLSPEC SDL_IOStatus SDLCALL SDL_GetIOStatus(SDL_IOStream *context);
 
 /**
  * Use this function to get the size of the data stream in an SDL_IOStream.
@@ -433,9 +436,6 @@ extern DECLSPEC Sint64 SDLCALL SDL_TellIO(SDL_IOStream *context);
  * that this is not an error or end-of-file, and the caller can try again
  * later.
  *
- * SDL_ReadIO() is actually a function wrapper that calls the SDL_IOStream's
- * `read` method appropriately, to simplify application development.
- *
  * \param context a pointer to an SDL_IOStream structure
  * \param ptr a pointer to a buffer to read data into
  * \param size the number of bytes to read from the data source.
@@ -464,9 +464,6 @@ extern DECLSPEC size_t SDLCALL SDL_ReadIO(SDL_IOStream *context, void *ptr, size
  * return -1. For streams that support non-blocking operation, if nothing was
  * written because it would require blocking, this function returns -2 to
  * distinguish that this is not an error and the caller can try again later.
- *
- * SDL_WriteIO is actually a function wrapper that calls the SDL_IOStream's
- * `write` method appropriately, to simplify application development.
  *
  * It is an error to specify a negative `size`, but this parameter is signed
  * so you definitely cannot overflow the return value on a successful run with
