@@ -505,6 +505,11 @@ static size_t SDLCALL mem_write(void *userdata, const void *ptr, size_t size, SD
     return mem_io(userdata, iodata->here, ptr, size);
 }
 
+static int SDLCALL mem_close(void *userdata) {
+    SDL_free(userdata);
+    return 0;
+}
+
 /* Functions to create SDL_IOStream structures from various data sources */
 
 #if defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINDOWS)
@@ -679,6 +684,7 @@ SDL_IOStream *SDL_IOFromMem(void *mem, size_t size)
     iface.seek = mem_seek;
     iface.read = mem_read;
     iface.write = mem_write;
+    iface.close = mem_close;
 
     iodata->base = (Uint8 *)mem;
     iodata->here = iodata->base;
@@ -712,6 +718,7 @@ SDL_IOStream *SDL_IOFromConstMem(const void *mem, size_t size)
     iface.seek = mem_seek;
     iface.read = mem_read;
     // leave iface.write as NULL.
+    iface.close = mem_close;
 
     iodata->base = (Uint8 *)mem;
     iodata->here = iodata->base;
