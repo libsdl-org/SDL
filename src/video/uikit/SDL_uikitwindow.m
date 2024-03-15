@@ -315,11 +315,6 @@ int UIKit_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_Vi
     return 0;
 }
 
-void UIKit_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
-{
-    /* There really isn't a concept of window grab or cursor confinement on iOS */
-}
-
 void UIKit_UpdatePointerLock(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifndef SDL_PLATFORM_TVOS
