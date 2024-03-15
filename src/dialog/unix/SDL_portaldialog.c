@@ -374,8 +374,58 @@ void SDL_Portal_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* user
 
 int SDL_Portal_detect(void)
 {
-    /* TODO */
-    return 0;
+    SDL_DBusContext *dbus = SDL_DBus_GetContext();
+    DBusMessage *msg = NULL, *reply = NULL;
+    char *reply_str = NULL;
+    DBusMessageIter reply_iter;
+    static int portal_present = -1;
+
+    /* No need for this if the result is cached. */
+    if (portal_present != -1) {
+        return portal_present;
+    }
+
+    portal_present = 0;
+
+    if (!dbus) {
+        SDL_SetError("%s", "Failed to connect to DBus!");
+        return 0;
+    }
+
+    /* Use introspection to get the available services. */
+    msg = dbus->message_new_method_call(PORTAL_DESTINATION, PORTAL_PATH, "org.freedesktop.DBus.Introspectable", "Introspect");
+    if (!msg) {
+        goto done;
+    }
+
+    reply = dbus->connection_send_with_reply_and_block(dbus->session_conn, msg, DBUS_TIMEOUT_INFINITE, NULL);
+    dbus->message_unref(msg);
+    if (!reply) {
+        goto done;
+    }
+
+    if (!dbus->message_iter_init(reply, &reply_iter)) {
+        goto done;
+    }
+
+    if (dbus->message_iter_get_arg_type(&reply_iter) != DBUS_TYPE_STRING) {
+        goto done;
+    }
+
+    /* Introspection gives us a dump of all the services on the destination in XML format, so search the
+     * giant string for the file chooser protocol.
+     */
+    dbus->message_iter_get_basic(&reply_iter, &reply_str);
+    if (SDL_strstr(reply_str, PORTAL_INTERFACE)) {
+        portal_present = 1; /* Found it! */
+    }
+
+done:
+    if (reply) {
+        dbus->message_unref(reply);
+    }
+
+    return portal_present;
 }
 
 #else
