@@ -38,6 +38,7 @@
 #include "xdg-activation-v1-client-protocol.h"
 #include "viewporter-client-protocol.h"
 #include "fractional-scale-v1-client-protocol.h"
+#include "xdg-foreign-unstable-v2-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -1484,6 +1485,21 @@ static struct wl_callback_listener show_hide_sync_listener = {
     show_hide_sync_handler
 };
 
+static void exported_handle_handler(void *data, struct zxdg_exported_v2 *zxdg_exported_v2, const char *handle)
+{
+    SDL_WindowData *wind = (SDL_WindowData*)data;
+    SDL_PropertiesID props = SDL_GetWindowProperties(wind->sdlwindow);
+
+    SDL_free(wind->export_handle);
+    wind->export_handle = SDL_strdup(handle);
+
+    SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_POINTER, wind->export_handle);
+}
+
+static struct zxdg_exported_v2_listener exported_v2_listener = {
+    exported_handle_handler
+};
+
 void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *c = _this->driverdata;
@@ -1548,6 +1564,11 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         } else {
             libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, data->app_id);
             libdecor_frame_map(data->shell_surface.libdecor.frame);
+
+            if (c->zxdg_exporter_v2) {
+                data->exported = zxdg_exporter_v2_export_toplevel(c->zxdg_exporter_v2, data->surface);
+                zxdg_exported_v2_add_listener(data->exported, &exported_v2_listener, data);
+            }
 
             SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_SURFACE_POINTER, libdecor_frame_get_xdg_surface(data->shell_surface.libdecor.frame));
             SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, libdecor_frame_get_xdg_toplevel(data->shell_surface.libdecor.frame));
@@ -1623,6 +1644,12 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             data->shell_surface.xdg.roleobj.toplevel = xdg_surface_get_toplevel(data->shell_surface.xdg.surface);
             xdg_toplevel_set_app_id(data->shell_surface.xdg.roleobj.toplevel, data->app_id);
             xdg_toplevel_add_listener(data->shell_surface.xdg.roleobj.toplevel, &toplevel_listener_xdg, data);
+
+            if (c->zxdg_exporter_v2) {
+                data->exported = zxdg_exporter_v2_export_toplevel(c->zxdg_exporter_v2, data->surface);
+                zxdg_exported_v2_add_listener(data->exported, &exported_v2_listener, data);
+            }
+
             SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, data->shell_surface.xdg.roleobj.toplevel);
         }
     }
@@ -1698,7 +1725,6 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
     Wayland_SetWindowResizable(_this, window, !!(window->flags & SDL_WINDOW_RESIZABLE));
     Wayland_SetWindowBordered(_this, window, !(window->flags & SDL_WINDOW_BORDERLESS));
-
 
     /* We're finally done putting the window together, raise if possible */
     if (c->activation_manager) {
@@ -1796,6 +1822,17 @@ void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
     if (wind->shell_surface_type != WAYLAND_SURFACE_XDG_POPUP) {
         wl_surface_attach(wind->surface, NULL, 0, 0);
         wl_surface_commit(wind->surface);
+    }
+
+    /* Clean up the export handle. */
+    if (wind->exported) {
+        zxdg_exported_v2_destroy(wind->exported);
+        wind->exported = NULL;
+
+        SDL_free(wind->export_handle);
+        wind->export_handle = NULL;
+
+        SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_POINTER, NULL);
     }
 
 #ifdef HAVE_LIBDECOR_H
