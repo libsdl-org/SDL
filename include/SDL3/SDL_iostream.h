@@ -24,6 +24,9 @@
  *
  *  This file provides a general interface for SDL to read and write
  *  data streams.  It can easily be extended to files, memory, etc.
+ *
+ *  SDL_IOStream is not related to the standard C++ iostream class, other
+ *  than both are abstract interfaces to read/write data.
  */
 
 #ifndef SDL_iostream_h_
