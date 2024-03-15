@@ -46,11 +46,11 @@ struct SDL_IOStream
 
 
 #ifdef SDL_PLATFORM_APPLE
-#include "cocoa/SDL_rwopsbundlesupport.h"
+#include "cocoa/SDL_iostreambundlesupport.h"
 #endif /* SDL_PLATFORM_APPLE */
 
 #ifdef SDL_PLATFORM_3DS
-#include "n3ds/SDL_rwopsromfs.h"
+#include "n3ds/SDL_iostreamromfs.h"
 #endif /* SDL_PLATFORM_3DS */
 
 #ifdef SDL_PLATFORM_ANDROID

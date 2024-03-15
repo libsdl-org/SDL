@@ -1157,6 +1157,8 @@ The following symbols have been renamed:
 * RW_SEEK_END => SDL_IO_SEEK_END
 * RW_SEEK_SET => SDL_IO_SEEK_SET
 
+SDL_rwops.h is now named SDL_iostream.h.
+
 SDL_RWops is now an opaque structure, and has been renamed to SDL_IOStream. The SDL3 APIs to create an SDL_IOStream (SDL_IOFromFile, etc) are renamed but otherwise still function as they did in SDL2. However, to make a custom SDL_IOStream with app-provided function pointers, call SDL_OpenIO and provide the function pointers through there. To call into an SDL_IOStream's functionality, use the standard APIs (SDL_ReadIO, etc), as the function pointers are internal.
 
 The RWops function pointers are now in a separate structure called SDL_IOStreamInterface, which is provided to SDL_OpenIO when creating a custom SDL_IOStream implementation. All the functions now take a `void *` userdata argument for their first parameter instead of an SDL_IOStream, since that's now an opaque structure.

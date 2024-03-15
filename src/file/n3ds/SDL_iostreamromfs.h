@@ -18,13 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "SDL_internal.h"
 
-#ifdef SDL_PLATFORM_APPLE
+#ifndef SDL_iostreamromfs_h_
+#define SDL_iostreamromfs_h_
 
-#include <stdio.h>
+FILE *N3DS_FileOpen(const char *file, const char *mode);
 
-#ifndef SDL_rwopsbundlesupport_h
-#define SDL_rwopsbundlesupport_h
-FILE *SDL_OpenFPFromBundleOrFallback(const char *file, const char *mode);
-#endif
-#endif
+#endif /* SDL_iostreamromfs_h_ */

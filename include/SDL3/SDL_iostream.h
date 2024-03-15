@@ -20,14 +20,14 @@
 */
 
 /**
- *  \file SDL_rwops.h
+ *  \file SDL_iostream.h
  *
  *  This file provides a general interface for SDL to read and write
  *  data streams.  It can easily be extended to files, memory, etc.
  */
 
-#ifndef SDL_rwops_h_
-#define SDL_rwops_h_
+#ifndef SDL_iostream_h_
+#define SDL_iostream_h_
 
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
@@ -1004,4 +1004,4 @@ extern DECLSPEC SDL_bool SDLCALL SDL_WriteS64BE(SDL_IOStream *dst, Sint64 value)
 #endif
 #include <SDL3/SDL_close_code.h>
 
-#endif /* SDL_rwops_h_ */
+#endif /* SDL_iostream_h_ */

@@ -32,7 +32,7 @@
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_joystick.h>
 #include <SDL3/SDL_properties.h>
-#include <SDL3/SDL_rwops.h>
+#include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_sensor.h>
 
 #include <SDL3/SDL_begin_code.h>

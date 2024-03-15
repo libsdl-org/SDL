@@ -165,7 +165,7 @@ Loading assets
 
 Any files you put in the "app/src/main/assets" directory of your project
 directory will get bundled into the application package and you can load
-them using the standard functions in SDL_rwops.h.
+them using the standard functions in SDL_iostream.h.
 
 There are also a few Android specific functions that allow you to get other
 useful paths for saving and loading data:

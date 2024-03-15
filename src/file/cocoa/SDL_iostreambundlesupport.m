@@ -23,7 +23,7 @@
 #ifdef SDL_PLATFORM_APPLE
 #import <Foundation/Foundation.h>
 
-#include "SDL_rwopsbundlesupport.h"
+#include "SDL_iostreambundlesupport.h"
 
 /* For proper macOS applications, the resources are contained inside the application bundle.
  So the strategy is to first check the application bundle for the file, then fallback to the current working directory.

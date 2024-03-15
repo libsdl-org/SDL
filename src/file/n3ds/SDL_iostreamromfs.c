@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_rwopsromfs.h"
+#include "SDL_iostreamromfs.h"
 
 /* Checks if the mode is a kind of reading */
 static SDL_bool IsReadMode(const char *mode);

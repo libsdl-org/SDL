@@ -33,7 +33,7 @@
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_rect.h>
-#include <SDL3/SDL_rwops.h>
+#include <SDL3/SDL_iostream.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
