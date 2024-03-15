@@ -28,7 +28,7 @@
 
 #define SDL_AddEventWatch SDL_AddEventWatch_REAL
 #define SDL_AddGamepadMapping SDL_AddGamepadMapping_REAL
-#define SDL_AddGamepadMappingsFromRW SDL_AddGamepadMappingsFromRW_REAL
+#define SDL_AddGamepadMappingsFromIO SDL_AddGamepadMappingsFromIO_REAL
 #define SDL_AddHintCallback SDL_AddHintCallback_REAL
 #define SDL_AddTimer SDL_AddTimer_REAL
 #define SDL_AndroidBackButton   SDL_AndroidBackButton_REAL
@@ -76,7 +76,6 @@
 #define SDL_CreatePalette SDL_CreatePalette_REAL
 #define SDL_CreatePixelFormat SDL_CreatePixelFormat_REAL
 #define SDL_CreatePopupWindow SDL_CreatePopupWindow_REAL
-#define SDL_CreateRW SDL_CreateRW_REAL
 #define SDL_CreateRWLock SDL_CreateRWLock_REAL
 #define SDL_CreateRenderer SDL_CreateRenderer_REAL
 #define SDL_CreateSemaphore SDL_CreateSemaphore_REAL
@@ -103,7 +102,6 @@
 #define SDL_DestroyMutex SDL_DestroyMutex_REAL
 #define SDL_DestroyPalette SDL_DestroyPalette_REAL
 #define SDL_DestroyPixelFormat SDL_DestroyPixelFormat_REAL
-#define SDL_DestroyRW SDL_DestroyRW_REAL
 #define SDL_DestroyRWLock SDL_DestroyRWLock_REAL
 #define SDL_DestroyRenderer SDL_DestroyRenderer_REAL
 #define SDL_DestroySemaphore SDL_DestroySemaphore_REAL
@@ -433,9 +431,9 @@
 #define SDL_LinuxSetThreadPriority  SDL_LinuxSetThreadPriority_REAL
 #define SDL_LinuxSetThreadPriorityAndPolicy SDL_LinuxSetThreadPriorityAndPolicy_REAL
 #define SDL_LoadBMP SDL_LoadBMP_REAL
-#define SDL_LoadBMP_RW SDL_LoadBMP_RW_REAL
+#define SDL_LoadBMP_IO SDL_LoadBMP_IO_REAL
 #define SDL_LoadFile SDL_LoadFile_REAL
-#define SDL_LoadFile_RW SDL_LoadFile_RW_REAL
+#define SDL_LoadFile_IO SDL_LoadFile_IO_REAL
 #define SDL_LoadFunction SDL_LoadFunction_REAL
 #define SDL_LoadObject SDL_LoadObject_REAL
 #define SDL_LockJoysticks SDL_LockJoysticks_REAL
@@ -490,15 +488,14 @@
 #define SDL_QueryTexture SDL_QueryTexture_REAL
 #define SDL_Quit SDL_Quit_REAL
 #define SDL_QuitSubSystem SDL_QuitSubSystem_REAL
-#define SDL_RWFromConstMem SDL_RWFromConstMem_REAL
-#define SDL_RWFromFile SDL_RWFromFile_REAL
-#define SDL_RWFromMem SDL_RWFromMem_REAL
-#define SDL_RWclose SDL_RWclose_REAL
-#define SDL_RWread SDL_RWread_REAL
-#define SDL_RWseek SDL_RWseek_REAL
-#define SDL_RWsize SDL_RWsize_REAL
-#define SDL_RWtell SDL_RWtell_REAL
-#define SDL_RWwrite SDL_RWwrite_REAL
+#define SDL_IOFromConstMem SDL_IOFromConstMem_REAL
+#define SDL_IOFromFile SDL_IOFromFile_REAL
+#define SDL_IOFromMem SDL_IOFromMem_REAL
+#define SDL_ReadIO SDL_ReadIO_REAL
+#define SDL_SeekIO SDL_SeekIO_REAL
+#define SDL_SizeIO SDL_SizeIO_REAL
+#define SDL_TellIO SDL_TellIO_REAL
+#define SDL_WriteIO SDL_WriteIO_REAL
 #define SDL_RaiseWindow SDL_RaiseWindow_REAL
 #define SDL_ReadU16BE SDL_ReadU16BE_REAL
 #define SDL_ReadU32BE SDL_ReadU32BE_REAL
@@ -541,7 +538,7 @@
 #define SDL_RunApp SDL_RunApp_REAL
 #define SDL_SIMDGetAlignment SDL_SIMDGetAlignment_REAL
 #define SDL_SaveBMP SDL_SaveBMP_REAL
-#define SDL_SaveBMP_RW SDL_SaveBMP_RW_REAL
+#define SDL_SaveBMP_IO SDL_SaveBMP_IO_REAL
 #define SDL_ScreenKeyboardShown SDL_ScreenKeyboardShown_REAL
 #define SDL_ScreenSaverEnabled SDL_ScreenSaverEnabled_REAL
 #define SDL_SendGamepadEffect SDL_SendGamepadEffect_REAL
@@ -867,7 +864,7 @@
 #define SDL_SetAudioStreamPutCallback SDL_SetAudioStreamPutCallback_REAL
 #define SDL_DestroyAudioStream SDL_DestroyAudioStream_REAL
 #define SDL_OpenAudioDeviceStream SDL_OpenAudioDeviceStream_REAL
-#define SDL_LoadWAV_RW SDL_LoadWAV_RW_REAL
+#define SDL_LoadWAV_IO SDL_LoadWAV_IO_REAL
 #define SDL_LoadWAV SDL_LoadWAV_REAL
 #define SDL_MixAudioFormat SDL_MixAudioFormat_REAL
 #define SDL_ConvertAudioSamples SDL_ConvertAudioSamples_REAL
@@ -906,14 +903,14 @@
 #define SDL_GetJoystickProperties SDL_GetJoystickProperties_REAL
 #define SDL_GetRendererProperties SDL_GetRendererProperties_REAL
 #define SDL_GetTextureProperties SDL_GetTextureProperties_REAL
-#define SDL_GetRWProperties SDL_GetRWProperties_REAL
+#define SDL_GetIOProperties SDL_GetIOProperties_REAL
 #define SDL_GetSensorProperties SDL_GetSensorProperties_REAL
 #define SDL_GetSurfaceProperties SDL_GetSurfaceProperties_REAL
 #define SDL_GetWindowProperties SDL_GetWindowProperties_REAL
 #define SDL_ClearProperty SDL_ClearProperty_REAL
 #define SDL_EnterAppMainCallbacks SDL_EnterAppMainCallbacks_REAL
-#define SDL_RWprintf SDL_RWprintf_REAL
-#define SDL_RWvprintf SDL_RWvprintf_REAL
+#define SDL_IOprintf SDL_IOprintf_REAL
+#define SDL_IOvprintf SDL_IOvprintf_REAL
 #define SDL_AllocateEventMemory SDL_AllocateEventMemory_REAL
 #define SDL_GetDisplayProperties SDL_GetDisplayProperties_REAL
 #define SDL_SetPropertyWithCleanup SDL_SetPropertyWithCleanup_REAL
@@ -1004,3 +1001,6 @@
 #define SDL_ShowOpenFileDialog SDL_ShowOpenFileDialog_REAL
 #define SDL_ShowSaveFileDialog SDL_ShowSaveFileDialog_REAL
 #define SDL_ShowOpenFolderDialog SDL_ShowOpenFolderDialog_REAL
+#define SDL_OpenIO SDL_OpenIO_REAL
+#define SDL_CloseIO SDL_CloseIO_REAL
+#define SDL_GetIOStatus SDL_GetIOStatus_REAL

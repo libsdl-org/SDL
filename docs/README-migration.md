@@ -191,7 +191,7 @@ SDL_FreeWAV has been removed and calls can be replaced with SDL_free.
 
 SDL_LoadWAV() is a proper function now and no longer a macro (but offers the same functionality otherwise).
 
-SDL_LoadWAV_RW() and SDL_LoadWAV() return an int now: zero on success, -1 on error, like most of SDL. They no longer return a pointer to an SDL_AudioSpec.
+SDL_LoadWAV_IO() and SDL_LoadWAV() return an int now: zero on success, -1 on error, like most of SDL. They no longer return a pointer to an SDL_AudioSpec.
 
 SDL_AudioCVT interface has been removed, the SDL_AudioStream interface (for audio supplied in pieces) or the new SDL_ConvertAudioSamples() function (for converting a complete audio buffer in one call) can be used instead.
 
@@ -253,6 +253,7 @@ The following functions have been renamed:
 * SDL_AudioStreamGet() => SDL_GetAudioStreamData()
 * SDL_AudioStreamPut() => SDL_PutAudioStreamData()
 * SDL_FreeAudioStream() => SDL_DestroyAudioStream()
+* SDL_LoadWAV_RW() => SDL_LoadWAV_IO()
 * SDL_NewAudioStream() => SDL_CreateAudioStream()
 
 
@@ -525,7 +526,7 @@ The following structures have been renamed:
 The following functions have been renamed:
 * SDL_GameControllerAddMapping() => SDL_AddGamepadMapping()
 * SDL_GameControllerAddMappingsFromFile() => SDL_AddGamepadMappingsFromFile()
-* SDL_GameControllerAddMappingsFromRW() => SDL_AddGamepadMappingsFromRW()
+* SDL_GameControllerAddMappingsFromRW() => SDL_AddGamepadMappingsFromIO()
 * SDL_GameControllerClose() => SDL_CloseGamepad()
 * SDL_GameControllerFromInstanceID() => SDL_GetGamepadFromInstanceID()
 * SDL_GameControllerFromPlayerIndex() => SDL_GetGamepadFromPlayerIndex()
@@ -1152,11 +1153,19 @@ The following symbols have been renamed:
 ## SDL_rwops.h
 
 The following symbols have been renamed:
-* RW_SEEK_CUR => SDL_RW_SEEK_CUR
-* RW_SEEK_END => SDL_RW_SEEK_END
-* RW_SEEK_SET => SDL_RW_SEEK_SET
+* RW_SEEK_CUR => SDL_IO_SEEK_CUR
+* RW_SEEK_END => SDL_IO_SEEK_END
+* RW_SEEK_SET => SDL_IO_SEEK_SET
 
-SDL_RWread and SDL_RWwrite (and SDL_RWops::read, SDL_RWops::write) have a different function signature in SDL3.
+SDL_rwops.h is now named SDL_iostream.h
+
+SDL_RWops is now an opaque structure, and has been renamed to SDL_IOStream. The SDL3 APIs to create an SDL_IOStream (SDL_IOFromFile, etc) are renamed but otherwise still function as they did in SDL2. However, to make a custom SDL_IOStream with app-provided function pointers, call SDL_OpenIO and provide the function pointers through there. To call into an SDL_IOStream's functionality, use the standard APIs (SDL_ReadIO, etc), as the function pointers are internal.
+
+SDL_IOStream is not to be confused with the unrelated standard C++ iostream class!
+
+The RWops function pointers are now in a separate structure called SDL_IOStreamInterface, which is provided to SDL_OpenIO when creating a custom SDL_IOStream implementation. All the functions now take a `void *` userdata argument for their first parameter instead of an SDL_IOStream, since that's now an opaque structure.
+
+SDL_RWread and SDL_RWwrite (and the read and write function pointers) have a different function signature in SDL3, in addition to being renamed.
 
 Previously they looked more like stdio:
 
@@ -1168,27 +1177,33 @@ size_t SDL_RWwrite(SDL_RWops *context, const void *ptr, size_t size, size_t maxn
 But now they look more like POSIX:
 
 ```c
-size_t SDL_RWread(SDL_RWops *context, void *ptr, size_t size);
-size_t SDL_RWwrite(SDL_RWops *context, const void *ptr, size_t size);
+size_t SDL_ReadIO(void *userdata, void *ptr, size_t size);
+size_t SDL_WriteIO(void *userdata, const void *ptr, size_t size);
 ```
 
 Code that used to look like this:
-```
+```c
 size_t custom_read(void *ptr, size_t size, size_t nitems, SDL_RWops *stream)
 {
     return SDL_RWread(stream, ptr, size, nitems);
 }
 ```
 should be changed to:
-```
-size_t custom_read(void *ptr, size_t size, size_t nitems, SDL_RWops *stream)
+```c
+size_t custom_read(void *ptr, size_t size, size_t nitems, SDL_IOStream *stream)
 {
     if (size > 0 && nitems > 0) {
-        return SDL_RWread(stream, ptr, size * nitems) / size;
+        return SDL_ReadIO(stream, ptr, size * nitems) / size;
     }
     return 0;
 }
 ```
+
+SDL_RWops::type was removed; it wasn't meaningful for app-provided implementations at all, and wasn't much use for SDL's internal implementations, either. If you _have_ to identify the type, you can examine the SDL_IOStream's properties to detect built-in implementations.
+
+SDL_IOStreamInterface::close implementations should clean up their own userdata, but not call SDL_CloseIO on themselves; now the contract is always that SDL_CloseIO is called, which calls `->close` before freeing the opaque object.
+
+SDL_AllocRW(), SDL_FreeRW(), SDL_RWclose() and direct access to the `->close` function pointer have been removed from the API, so there's only one path to manage RWops lifetimes now: SDL_OpenIO() and SDL_CloseIO().
 
 SDL_RWFromFP has been removed from the API, due to issues when the SDL library uses a different C runtime from the application.
 
@@ -1196,27 +1211,33 @@ You can implement this in your own code easily:
 ```c
 #include <stdio.h>
 
-
-static Sint64 SDLCALL stdio_seek(SDL_RWops *context, Sint64 offset, int whence)
+typedef struct IOStreamStdioFPData
 {
+    FILE *fp;
+    SDL_bool autoclose;
+} IOStreamStdioFPData;
+
+static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, int whence)
+{
+    FILE *fp = ((IOStreamStdioFPData *) userdata)->fp;
     int stdiowhence;
 
     switch (whence) {
-    case SDL_RW_SEEK_SET:
+    case SDL_IO_SEEK_SET:
         stdiowhence = SEEK_SET;
         break;
-    case SDL_RW_SEEK_CUR:
+    case SDL_IO_SEEK_CUR:
         stdiowhence = SEEK_CUR;
         break;
-    case SDL_RW_SEEK_END:
+    case SDL_IO_SEEK_END:
         stdiowhence = SEEK_END;
         break;
     default:
         return SDL_SetError("Unknown value for 'whence'");
     }
 
-    if (fseek((FILE *)context->hidden.stdio.fp, (fseek_off_t)offset, stdiowhence) == 0) {
-        Sint64 pos = ftell((FILE *)context->hidden.stdio.fp);
+    if (fseek(fp, (fseek_off_t)offset, stdiowhence) == 0) {
+        const Sint64 pos = ftell(fp);
         if (pos < 0) {
             return SDL_SetError("Couldn't get stream offset");
         }
@@ -1225,63 +1246,82 @@ static Sint64 SDLCALL stdio_seek(SDL_RWops *context, Sint64 offset, int whence)
     return SDL_Error(SDL_EFSEEK);
 }
 
-static size_t SDLCALL stdio_read(SDL_RWops *context, void *ptr, size_t size)
+static size_t SDLCALL stdio_read(void *userdata, void *ptr, size_t size, SDL_IOStatus *status)
 {
-    size_t bytes;
-
-    bytes = fread(ptr, 1, size, (FILE *)context->hidden.stdio.fp);
-    if (bytes == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
+    FILE *fp = ((IOStreamStdioFPData *) userdata)->fp;
+    const size_t bytes = fread(ptr, 1, size, fp);
+    if (bytes == 0 && ferror(fp)) {
         SDL_Error(SDL_EFREAD);
     }
     return bytes;
 }
 
-static size_t SDLCALL stdio_write(SDL_RWops *context, const void *ptr, size_t size)
+static size_t SDLCALL stdio_write(void *userdata, const void *ptr, size_t size, SDL_IOStatus *status)
 {
-    size_t bytes;
-
-    bytes = fwrite(ptr, 1, size, (FILE *)context->hidden.stdio.fp);
-    if (bytes == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
+    FILE *fp = ((IOStreamStdioFPData *) userdata)->fp;
+    const size_t bytes = fwrite(ptr, 1, size, fp);
+    if (bytes == 0 && ferror(fp)) {
         SDL_Error(SDL_EFWRITE);
     }
     return bytes;
 }
 
-static int SDLCALL stdio_close(SDL_RWops *context)
+static int SDLCALL stdio_close(void *userdata)
 {
+    IOStreamStdioData *rwopsdata = (IOStreamStdioData *) userdata;
     int status = 0;
-    if (context->hidden.stdio.autoclose) {
-        if (fclose((FILE *)context->hidden.stdio.fp) != 0) {
+    if (rwopsdata->autoclose) {
+        if (fclose(rwopsdata->fp) != 0) {
             status = SDL_Error(SDL_EFWRITE);
         }
     }
-    SDL_DestroyRW(context);
     return status;
 }
 
-SDL_RWops *SDL_RWFromFP(void *fp, SDL_bool autoclose)
+SDL_IOStream *SDL_RWFromFP(FILE *fp, SDL_bool autoclose)
 {
-    SDL_RWops *rwops = NULL;
+    SDL_IOStreamInterface iface;
+    IOStreamStdioFPData *rwopsdata;
+    SDL_IOStream *rwops;
 
-    rwops = SDL_CreateRW();
-    if (rwops != NULL) {
-        rwops->seek = stdio_seek;
-        rwops->read = stdio_read;
-        rwops->write = stdio_write;
-        rwops->close = stdio_close;
-        rwops->hidden.stdio.fp = fp;
-        rwops->hidden.stdio.autoclose = autoclose;
-        rwops->type = SDL_RWOPS_STDFILE;
+    rwopsdata = (IOStreamStdioFPData *) SDL_malloc(sizeof (*rwopsdata));
+    if (!rwopsdata) {
+        return NULL;
+    }
+
+    SDL_zero(iface);
+    /* There's no stdio_size because SDL_SizeIO emulates it the same way we'd do it for stdio anyhow. */
+    iface.seek = stdio_seek;
+    iface.read = stdio_read;
+    iface.write = stdio_write;
+    iface.close = stdio_close;
+
+    rwopsdata->fp = fp;
+    rwopsdata->autoclose = autoclose;
+
+    rwops = SDL_OpenIO(&iface, rwopsdata);
+    if (!rwops) {
+        iface.close(rwopsdata);
     }
     return rwops;
 }
 ```
 
+The internal `FILE *` is available through a standard SDL_IOStream property, for streams made through SDL_IOFromFile() that use stdio behind the scenes; apps use this pointer at their own risk and should make sure that SDL and the app are using the same C runtime.
+
+
 The functions SDL_ReadU8(), SDL_ReadU16LE(), SDL_ReadU16BE(), SDL_ReadU32LE(), SDL_ReadU32BE(), SDL_ReadU64LE(), and SDL_ReadU64BE() now return SDL_TRUE if the read succeeded and SDL_FALSE if it didn't, and store the data in a pointer passed in as a parameter.
 
 The following functions have been renamed:
-* SDL_AllocRW() => SDL_CreateRW()
-* SDL_FreeRW() => SDL_DestroyRW()
+* SDL_RWFromConstMem() => SDL_IOFromConstMem()
+* SDL_RWFromFile() => SDL_IOFromFile()
+* SDL_RWFromMem() => SDL_IOFromMem()
+* SDL_RWclose() => SDL_CloseIO()
+* SDL_RWread() => SDL_ReadIO()
+* SDL_RWseek() => SDL_SeekIO()
+* SDL_RWsize() => SDL_SizeIO()
+* SDL_RWtell() => SDL_TellIO()
+* SDL_RWwrite() => SDL_WriteIO()
 * SDL_ReadBE16() => SDL_ReadU16BE()
 * SDL_ReadBE32() => SDL_ReadU32BE()
 * SDL_ReadBE64() => SDL_ReadU64BE()
@@ -1294,6 +1334,10 @@ The following functions have been renamed:
 * SDL_WriteLE16() => SDL_WriteU16LE()
 * SDL_WriteLE32() => SDL_WriteU32LE()
 * SDL_WriteLE64() => SDL_WriteU64LE()
+
+
+The following structures have been renamed:
+* SDL_RWops => SDL_IOStream
 
 ## SDL_sensor.h
 
@@ -1418,8 +1462,10 @@ The following functions have been renamed:
 * SDL_GetColorKey() => SDL_GetSurfaceColorKey()
 * SDL_HasColorKey() => SDL_SurfaceHasColorKey()
 * SDL_HasSurfaceRLE() => SDL_SurfaceHasRLE()
+* SDL_LoadBMP_RW() => SDL_LoadBMP_IO()
 * SDL_LowerBlit() => SDL_BlitSurfaceUnchecked()
 * SDL_LowerBlitScaled() => SDL_BlitSurfaceUncheckedScaled()
+* SDL_SaveBMP_RW() => SDL_SaveBMP_IO()
 * SDL_SetClipRect() => SDL_SetSurfaceClipRect()
 * SDL_SetColorKey() => SDL_SetSurfaceColorKey()
 * SDL_UpperBlit() => SDL_BlitSurface()

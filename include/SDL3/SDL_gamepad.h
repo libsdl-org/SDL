@@ -32,7 +32,7 @@
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_joystick.h>
 #include <SDL3/SDL_properties.h>
-#include <SDL3/SDL_rwops.h>
+#include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_sensor.h>
 
 #include <SDL3/SDL_begin_code.h>
@@ -268,7 +268,7 @@ extern DECLSPEC int SDLCALL SDL_AddGamepadMapping(const char *mapping);
  * constrained environment.
  *
  * \param src the data stream for the mappings to be added
- * \param freesrc if SDL_TRUE, calls SDL_RWclose() on `src` before returning,
+ * \param closeio if SDL_TRUE, calls SDL_CloseIO() on `src` before returning,
  *                even in the case of an error
  * \returns the number of mappings added or -1 on error; call SDL_GetError()
  *          for more information.
@@ -279,7 +279,7 @@ extern DECLSPEC int SDLCALL SDL_AddGamepadMapping(const char *mapping);
  * \sa SDL_AddGamepadMappingsFromFile
  * \sa SDL_GetGamepadMappingForGUID
  */
-extern DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromRW(SDL_RWops *src, SDL_bool freesrc);
+extern DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromIO(SDL_IOStream *src, SDL_bool closeio);
 
 /**
  * Load a set of gamepad mappings from a file.
@@ -301,7 +301,7 @@ extern DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromRW(SDL_RWops *src, SDL_boo
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AddGamepadMapping
- * \sa SDL_AddGamepadMappingsFromRW
+ * \sa SDL_AddGamepadMappingsFromIO
  * \sa SDL_GetGamepadMappingForGUID
  */
 extern DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromFile(const char *file);

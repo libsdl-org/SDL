@@ -4,7 +4,7 @@ SDL3_0.0.0 {
     SDL_DYNAPI_entry;
     SDL_AddEventWatch;
     SDL_AddGamepadMapping;
-    SDL_AddGamepadMappingsFromRW;
+    SDL_AddGamepadMappingsFromIO;
     SDL_AddHintCallback;
     SDL_AddTimer;
     SDL_AndroidBackButton;
@@ -52,7 +52,6 @@ SDL3_0.0.0 {
     SDL_CreatePalette;
     SDL_CreatePixelFormat;
     SDL_CreatePopupWindow;
-    SDL_CreateRW;
     SDL_CreateRWLock;
     SDL_CreateRenderer;
     SDL_CreateSemaphore;
@@ -79,7 +78,6 @@ SDL3_0.0.0 {
     SDL_DestroyMutex;
     SDL_DestroyPalette;
     SDL_DestroyPixelFormat;
-    SDL_DestroyRW;
     SDL_DestroyRWLock;
     SDL_DestroyRenderer;
     SDL_DestroySemaphore;
@@ -409,9 +407,9 @@ SDL3_0.0.0 {
     SDL_LinuxSetThreadPriority;
     SDL_LinuxSetThreadPriorityAndPolicy;
     SDL_LoadBMP;
-    SDL_LoadBMP_RW;
+    SDL_LoadBMP_IO;
     SDL_LoadFile;
-    SDL_LoadFile_RW;
+    SDL_LoadFile_IO;
     SDL_LoadFunction;
     SDL_LoadObject;
     SDL_LockJoysticks;
@@ -466,15 +464,14 @@ SDL3_0.0.0 {
     SDL_QueryTexture;
     SDL_Quit;
     SDL_QuitSubSystem;
-    SDL_RWFromConstMem;
-    SDL_RWFromFile;
-    SDL_RWFromMem;
-    SDL_RWclose;
-    SDL_RWread;
-    SDL_RWseek;
-    SDL_RWsize;
-    SDL_RWtell;
-    SDL_RWwrite;
+    SDL_IOFromConstMem;
+    SDL_IOFromFile;
+    SDL_IOFromMem;
+    SDL_ReadIO;
+    SDL_SeekIO;
+    SDL_SizeIO;
+    SDL_TellIO;
+    SDL_WriteIO;
     SDL_RaiseWindow;
     SDL_ReadU16BE;
     SDL_ReadU32BE;
@@ -517,7 +514,7 @@ SDL3_0.0.0 {
     SDL_RunApp;
     SDL_SIMDGetAlignment;
     SDL_SaveBMP;
-    SDL_SaveBMP_RW;
+    SDL_SaveBMP_IO;
     SDL_ScreenKeyboardShown;
     SDL_ScreenSaverEnabled;
     SDL_SendGamepadEffect;
@@ -842,7 +839,7 @@ SDL3_0.0.0 {
     SDL_SetAudioStreamPutCallback;
     SDL_DestroyAudioStream;
     SDL_OpenAudioDeviceStream;
-    SDL_LoadWAV_RW;
+    SDL_LoadWAV_IO;
     SDL_LoadWAV;
     SDL_MixAudioFormat;
     SDL_ConvertAudioSamples;
@@ -881,14 +878,14 @@ SDL3_0.0.0 {
     SDL_GetJoystickProperties;
     SDL_GetRendererProperties;
     SDL_GetTextureProperties;
-    SDL_GetRWProperties;
+    SDL_GetIOProperties;
     SDL_GetSensorProperties;
     SDL_GetSurfaceProperties;
     SDL_GetWindowProperties;
     SDL_ClearProperty;
     SDL_EnterAppMainCallbacks;
-    SDL_RWprintf;
-    SDL_RWvprintf;
+    SDL_IOprintf;
+    SDL_IOvprintf;
     SDL_AllocateEventMemory;
     SDL_GetDisplayProperties;
     SDL_SetPropertyWithCleanup;
@@ -979,6 +976,9 @@ SDL3_0.0.0 {
     SDL_ShowOpenFileDialog;
     SDL_ShowSaveFileDialog;
     SDL_ShowOpenFolderDialog;
+    SDL_OpenIO;
+    SDL_CloseIO;
+    SDL_GetIOStatus;
     # extra symbols go here (don't modify this line)
   local: *;
 };

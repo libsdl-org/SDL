@@ -30,7 +30,7 @@ int main(int argc, char **argv)
     int bitsize = 0;
     int blockalign = 0;
     int avgbytes = 0;
-    SDL_RWops *io = NULL;
+    SDL_IOStream *io = NULL;
     int dst_len;
     int ret = 0;
     int argpos = 0;
@@ -115,9 +115,9 @@ int main(int argc, char **argv)
     }
 
     /* write out a WAV header... */
-    io = SDL_RWFromFile(file_out, "wb");
+    io = SDL_IOFromFile(file_out, "wb");
     if (!io) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fopen('%s') failed: %s\n", file_out, SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "opening '%s' failed: %s\n", file_out, SDL_GetError());
         ret = 5;
         goto end;
     }
@@ -139,10 +139,10 @@ int main(int argc, char **argv)
     SDL_WriteU16LE(io, (Uint16)bitsize);                        /* significant bits per sample */
     SDL_WriteU32LE(io, 0x61746164);                             /* data */
     SDL_WriteU32LE(io, dst_len);                                /* size */
-    SDL_RWwrite(io, dst_buf, dst_len);
+    SDL_WriteIO(io, dst_buf, dst_len);
 
-    if (SDL_RWclose(io) == -1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fclose('%s') failed: %s\n", file_out, SDL_GetError());
+    if (SDL_CloseIO(io) == -1) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "closing '%s' failed: %s\n", file_out, SDL_GetError());
         ret = 6;
         goto end;
     }

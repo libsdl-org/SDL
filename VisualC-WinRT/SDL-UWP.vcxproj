@@ -78,7 +78,7 @@
     <ClInclude Include="..\include\SDL3\SDL_rect.h" />
     <ClInclude Include="..\include\SDL3\SDL_render.h" />
     <ClInclude Include="..\include\SDL3\SDL_revision.h" />
-    <ClInclude Include="..\include\SDL3\SDL_rwops.h" />
+    <ClInclude Include="..\include\SDL3\SDL_iostream.h" />
     <ClInclude Include="..\include\SDL3\SDL_scancode.h" />
     <ClInclude Include="..\include\SDL3\SDL_sensor.h" />
     <ClInclude Include="..\include\SDL3\SDL_stdinc.h" />
@@ -332,7 +332,7 @@
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
-    <ClCompile Include="..\src\file\SDL_rwops.c" />
+    <ClCompile Include="..\src\file\SDL_iostream.c" />
     <ClCompile Include="..\src\haptic\dummy\SDL_syshaptic.c" />
     <ClCompile Include="..\src\haptic\SDL_haptic.c" />
     <ClCompile Include="..\src\haptic\windows\SDL_dinputhaptic.c" />

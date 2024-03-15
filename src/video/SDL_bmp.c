@@ -50,7 +50,7 @@
 #define LCS_WINDOWS_COLOR_SPACE 0x57696E20
 #endif
 
-static SDL_bool readRlePixels(SDL_Surface *surface, SDL_RWops *src, int isRle8)
+static SDL_bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
 {
     /*
     | Sets the surface pixels from src.  A bmp image is upside down.
@@ -193,7 +193,7 @@ static void CorrectAlphaChannel(SDL_Surface *surface)
     }
 }
 
-SDL_Surface *SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc)
+SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
 {
     SDL_bool was_error = SDL_TRUE;
     Sint64 fp_offset = 0;
@@ -239,12 +239,12 @@ SDL_Surface *SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc)
     }
 
     /* Read in the BMP file header */
-    fp_offset = SDL_RWtell(src);
+    fp_offset = SDL_TellIO(src);
     if (fp_offset < 0) {
         goto done;
     }
     SDL_ClearError();
-    if (SDL_RWread(src, magic, 2) != 2) {
+    if (SDL_ReadIO(src, magic, 2) != 2) {
         goto done;
     }
     if (SDL_strncmp(magic, "BM", 2) != 0) {
@@ -340,9 +340,9 @@ SDL_Surface *SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc)
         }
 
         /* skip any header bytes we didn't handle... */
-        headerSize = (Uint32)(SDL_RWtell(src) - (fp_offset + 14));
+        headerSize = (Uint32)(SDL_TellIO(src) - (fp_offset + 14));
         if (biSize > headerSize) {
-            if (SDL_RWseek(src, (biSize - headerSize), SDL_RW_SEEK_CUR) < 0) {
+            if (SDL_SeekIO(src, (biSize - headerSize), SDL_IO_SEEK_CUR) < 0) {
                 goto done;
             }
         }
@@ -441,7 +441,7 @@ SDL_Surface *SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc)
     /* Load the palette, if any */
     palette = (surface->format)->palette;
     if (palette) {
-        if (SDL_RWseek(src, fp_offset + 14 + biSize, SDL_RW_SEEK_SET) < 0) {
+        if (SDL_SeekIO(src, fp_offset + 14 + biSize, SDL_IO_SEEK_SET) < 0) {
             SDL_Error(SDL_EFSEEK);
             goto done;
         }
@@ -492,7 +492,7 @@ SDL_Surface *SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc)
     }
 
     /* Read the surface pixels.  Note that the bmp image is upside down */
-    if (SDL_RWseek(src, fp_offset + bfOffBits, SDL_RW_SEEK_SET) < 0) {
+    if (SDL_SeekIO(src, fp_offset + bfOffBits, SDL_IO_SEEK_SET) < 0) {
         SDL_Error(SDL_EFSEEK);
         goto done;
     }
@@ -512,7 +512,7 @@ SDL_Surface *SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc)
         bits = end - surface->pitch;
     }
     while (bits >= top && bits < end) {
-        if (SDL_RWread(src, bits, surface->pitch) != (size_t)surface->pitch) {
+        if (SDL_ReadIO(src, bits, surface->pitch) != (size_t)surface->pitch) {
             goto done;
         }
         if (biBitCount == 8 && palette && biClrUsed < (1u << biBitCount)) {
@@ -572,23 +572,23 @@ SDL_Surface *SDL_LoadBMP_RW(SDL_RWops *src, SDL_bool freesrc)
 done:
     if (was_error) {
         if (src) {
-            SDL_RWseek(src, fp_offset, SDL_RW_SEEK_SET);
+            SDL_SeekIO(src, fp_offset, SDL_IO_SEEK_SET);
         }
         SDL_DestroySurface(surface);
         surface = NULL;
     }
-    if (freesrc && src) {
-        SDL_RWclose(src);
+    if (closeio && src) {
+        SDL_CloseIO(src);
     }
     return surface;
 }
 
 SDL_Surface *SDL_LoadBMP(const char *file)
 {
-    return SDL_LoadBMP_RW(SDL_RWFromFile(file, "rb"), 1);
+    return SDL_LoadBMP_IO(SDL_IOFromFile(file, "rb"), 1);
 }
 
-int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, SDL_bool freedst)
+int SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, SDL_bool closeio)
 {
     SDL_bool was_error = SDL_TRUE;
     Sint64 fp_offset, new_offset;
@@ -685,7 +685,7 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, SDL_bool freedst)
         }
     } else {
         /* Set no error here because it may overwrite a more useful message from
-           SDL_RWFromFile() if SDL_SaveBMP_RW() is called from SDL_SaveBMP(). */
+           SDL_IOFromFile() if SDL_SaveBMP_IO() is called from SDL_SaveBMP(). */
         goto done;
     }
 
@@ -703,11 +703,11 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, SDL_bool freedst)
         bfOffBits = 0; /* We'll write this when we're done */
 
         /* Write the BMP file header values */
-        fp_offset = SDL_RWtell(dst);
+        fp_offset = SDL_TellIO(dst);
         if (fp_offset < 0) {
             goto done;
         }
-        if (SDL_RWwrite(dst, magic, 2) != 2 ||
+        if (SDL_WriteIO(dst, magic, 2) != 2 ||
             !SDL_WriteU32LE(dst, bfSize) ||
             !SDL_WriteU16LE(dst, bfReserved1) ||
             !SDL_WriteU16LE(dst, bfReserved2) ||
@@ -801,14 +801,14 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, SDL_bool freedst)
         }
 
         /* Write the bitmap offset */
-        bfOffBits = (Uint32)(SDL_RWtell(dst) - fp_offset);
-        if (SDL_RWseek(dst, fp_offset + 10, SDL_RW_SEEK_SET) < 0) {
+        bfOffBits = (Uint32)(SDL_TellIO(dst) - fp_offset);
+        if (SDL_SeekIO(dst, fp_offset + 10, SDL_IO_SEEK_SET) < 0) {
             goto done;
         }
         if (!SDL_WriteU32LE(dst, bfOffBits)) {
             goto done;
         }
-        if (SDL_RWseek(dst, fp_offset + bfOffBits, SDL_RW_SEEK_SET) < 0) {
+        if (SDL_SeekIO(dst, fp_offset + bfOffBits, SDL_IO_SEEK_SET) < 0) {
             goto done;
         }
 
@@ -817,7 +817,7 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, SDL_bool freedst)
         pad = ((bw % 4) ? (4 - (bw % 4)) : 0);
         while (bits > (Uint8 *)intermediate_surface->pixels) {
             bits -= intermediate_surface->pitch;
-            if (SDL_RWwrite(dst, bits, bw) != bw) {
+            if (SDL_WriteIO(dst, bits, bw) != bw) {
                 goto done;
             }
             if (pad) {
@@ -831,18 +831,18 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, SDL_bool freedst)
         }
 
         /* Write the BMP file size */
-        new_offset = SDL_RWtell(dst);
+        new_offset = SDL_TellIO(dst);
         if (new_offset < 0) {
             goto done;
         }
         bfSize = (Uint32)(new_offset - fp_offset);
-        if (SDL_RWseek(dst, fp_offset + 2, SDL_RW_SEEK_SET) < 0) {
+        if (SDL_SeekIO(dst, fp_offset + 2, SDL_IO_SEEK_SET) < 0) {
             goto done;
         }
         if (!SDL_WriteU32LE(dst, bfSize)) {
             goto done;
         }
-        if (SDL_RWseek(dst, fp_offset + bfSize, SDL_RW_SEEK_SET) < 0) {
+        if (SDL_SeekIO(dst, fp_offset + bfSize, SDL_IO_SEEK_SET) < 0) {
             goto done;
         }
 
@@ -856,8 +856,8 @@ done:
     if (intermediate_surface && intermediate_surface != surface) {
         SDL_DestroySurface(intermediate_surface);
     }
-    if (freedst && dst) {
-        if (SDL_RWclose(dst) < 0) {
+    if (closeio && dst) {
+        if (SDL_CloseIO(dst) < 0) {
             was_error = SDL_TRUE;
         }
     }
@@ -869,5 +869,5 @@ done:
 
 int SDL_SaveBMP(SDL_Surface *surface, const char *file)
 {
-    return SDL_SaveBMP_RW(surface, SDL_RWFromFile(file, "wb"), 1);
+    return SDL_SaveBMP_IO(surface, SDL_IOFromFile(file, "wb"), 1);
 }

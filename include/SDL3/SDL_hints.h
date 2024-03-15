@@ -2261,7 +2261,7 @@ extern "C" {
  *   "ignorezero"  - Like "truncate", but ignore fact chunk if the number of samples is zero.
  *   "ignore"      - Ignore fact chunk entirely. (default)
  *
- * This hint should be set before calling SDL_LoadWAV() or SDL_LoadWAV_RW()
+ * This hint should be set before calling SDL_LoadWAV() or SDL_LoadWAV_IO()
  */
 #define SDL_HINT_WAVE_FACT_CHUNK   "SDL_WAVE_FACT_CHUNK"
 
@@ -2278,7 +2278,7 @@ extern "C" {
  *   "ignore"       - Ignore the RIFF chunk size and always search up to 4 GiB.
  *   "maximum"      - Search for chunks until the end of file. (not recommended)
  *
- * This hint should be set before calling SDL_LoadWAV() or SDL_LoadWAV_RW()
+ * This hint should be set before calling SDL_LoadWAV() or SDL_LoadWAV_IO()
  */
 #define SDL_HINT_WAVE_RIFF_CHUNK_SIZE   "SDL_WAVE_RIFF_CHUNK_SIZE"
 
@@ -2293,7 +2293,7 @@ extern "C" {
  *   "dropframe"  - Decode until the first incomplete sample frame.
  *   "dropblock"  - Decode until the first incomplete block. (default)
  *
- * This hint should be set before calling SDL_LoadWAV() or SDL_LoadWAV_RW()
+ * This hint should be set before calling SDL_LoadWAV() or SDL_LoadWAV_IO()
  */
 #define SDL_HINT_WAVE_TRUNCATION   "SDL_WAVE_TRUNCATION"
 

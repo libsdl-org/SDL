@@ -318,7 +318,7 @@ static void loop(void)
 
 int main(int argc, char **argv)
 {
-    SDL_RWops *handle;
+    SDL_IOStream *handle;
     int i;
     int j;
     int fps = 12;
@@ -443,16 +443,16 @@ int main(int argc, char **argv)
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory\n");
         quit(2);
     }
-    handle = SDL_RWFromFile(filename, "rb");
+    handle = SDL_IOFromFile(filename, "rb");
     SDL_free(filename);
     if (!handle) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't find the file moose.dat !\n");
         quit(2);
     }
 
-    SDL_RWread(handle, RawMooseData, MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
+    SDL_ReadIO(handle, RawMooseData, MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
 
-    SDL_RWclose(handle);
+    SDL_CloseIO(handle);
 
     /* Create the window and renderer */
     window_w = MOOSEPIC_W * scale;

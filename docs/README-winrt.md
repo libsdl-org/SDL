@@ -42,7 +42,7 @@ Here is a rough list of what works, and what doesn't:
   * threads
   * timers (via SDL_GetTicks(), SDL_AddTimer(), SDL_GetPerformanceCounter(),
     SDL_GetPerformanceFrequency(), etc.)
-  * file I/O via SDL_RWops
+  * file I/O via SDL_IOStream
   * mouse input  (unsupported on Windows Phone)
   * audio, via SDL's WASAPI backend (if you want to record, your app must
     have "Microphone" capabilities enabled in its manifest, and the user must

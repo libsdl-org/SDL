@@ -70,7 +70,7 @@ typedef enum
  * two may be used interchangeably. Though for readability of your code
  * SDL_InitSubSystem() might be preferred.
  *
- * The file I/O (for example: SDL_RWFromFile) and threading (SDL_CreateThread)
+ * The file I/O (for example: SDL_IOFromFile) and threading (SDL_CreateThread)
  * subsystems are initialized by default. Message boxes
  * (SDL_ShowSimpleMessageBox) also attempt to work without initializing the
  * video subsystem, in hopes of being useful in showing an error dialog when

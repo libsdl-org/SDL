@@ -287,7 +287,7 @@
     <ClInclude Include="..\..\include\SDL3\SDL_rect.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_render.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_revision.h" />
-    <ClInclude Include="..\..\include\SDL3\SDL_rwops.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_iostream.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_scancode.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_sensor.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_stdinc.h" />
@@ -521,7 +521,7 @@
     <ClCompile Include="..\..\src\events\SDL_quit.c" />
     <ClCompile Include="..\..\src\events\SDL_touch.c" />
     <ClCompile Include="..\..\src\events\SDL_windowevents.c" />
-    <ClCompile Include="..\..\src\file\SDL_rwops.c" />
+    <ClCompile Include="..\..\src\file\SDL_iostream.c" />
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfilesystem.c" />
     <ClCompile Include="..\..\src\haptic\dummy\SDL_syshaptic.c" />
     <ClCompile Include="..\..\src\haptic\SDL_haptic.c" />

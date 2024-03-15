@@ -1956,11 +1956,12 @@ static void Internal_Android_Destroy_AssetManager()
     }
 }
 
-int Android_JNI_FileOpen(SDL_RWops *ctx,
-                         const char *fileName, const char *mode)
+int Android_JNI_FileOpen(void **puserdata, const char *fileName, const char *mode)
 {
+    SDL_assert(puserdata != NULL);
+
     AAsset *asset = NULL;
-    ctx->hidden.androidio.asset = NULL;
+    *puserdata = NULL;
 
     if (!asset_manager) {
         Internal_Android_Create_AssetManager();
@@ -1975,14 +1976,13 @@ int Android_JNI_FileOpen(SDL_RWops *ctx,
         return SDL_SetError("Couldn't open asset '%s'", fileName);
     }
 
-    ctx->hidden.androidio.asset = (void *)asset;
+    *puserdata = (void *)asset;
     return 0;
 }
 
-size_t Android_JNI_FileRead(SDL_RWops *ctx, void *buffer, size_t size)
+size_t Android_JNI_FileRead(void *userdata, void *buffer, size_t size, SDL_IOStatus *status)
 {
-    AAsset *asset = (AAsset *)ctx->hidden.androidio.asset;
-    int bytes = AAsset_read(asset, buffer, size);
+    const int bytes = AAsset_read((AAsset *)userdata, buffer, size);
     if (bytes < 0) {
         SDL_SetError("AAsset_read() failed");
         return 0;
@@ -1990,31 +1990,24 @@ size_t Android_JNI_FileRead(SDL_RWops *ctx, void *buffer, size_t size)
     return (size_t)bytes;
 }
 
-size_t Android_JNI_FileWrite(SDL_RWops *ctx, const void *buffer, size_t size)
+size_t Android_JNI_FileWrite(void *userdata, const void *buffer, size_t size, SDL_IOStatus *status)
 {
     return SDL_SetError("Cannot write to Android package filesystem");
 }
 
-Sint64 Android_JNI_FileSize(SDL_RWops *ctx)
+Sint64 Android_JNI_FileSize(void *userdata)
 {
-    off64_t result;
-    AAsset *asset = (AAsset *)ctx->hidden.androidio.asset;
-    result = AAsset_getLength64(asset);
-    return result;
+    return (Sint64) AAsset_getLength64((AAsset *)userdata);
 }
 
-Sint64 Android_JNI_FileSeek(SDL_RWops *ctx, Sint64 offset, int whence)
+Sint64 Android_JNI_FileSeek(void *userdata, Sint64 offset, int whence)
 {
-    off64_t result;
-    AAsset *asset = (AAsset *)ctx->hidden.androidio.asset;
-    result = AAsset_seek64(asset, offset, whence);
-    return result;
+    return (Sint64) AAsset_seek64((AAsset *)userdata, offset, whence);
 }
 
-int Android_JNI_FileClose(SDL_RWops *ctx)
+int Android_JNI_FileClose(void *userdata)
 {
-    AAsset *asset = (AAsset *)ctx->hidden.androidio.asset;
-    AAsset_close(asset);
+    AAsset_close((AAsset *)userdata);
     return 0;
 }
 

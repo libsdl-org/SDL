@@ -137,7 +137,7 @@
 		F35E56CF2983130F00A43A5F /* testautomation_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56B62983130A00A43A5F /* testautomation_main.c */; };
 		F35E56D02983130F00A43A5F /* testautomation_hints.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56B72983130A00A43A5F /* testautomation_hints.c */; };
 		F35E56D12983130F00A43A5F /* testautomation_render.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56B82983130A00A43A5F /* testautomation_render.c */; };
-		F35E56D22983130F00A43A5F /* testautomation_rwops.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56B92983130B00A43A5F /* testautomation_rwops.c */; };
+		F35E56D22983130F00A43A5F /* testautomation_iostream.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56B92983130B00A43A5F /* testautomation_iostream.c */; };
 		F35E56D32983130F00A43A5F /* testautomation_math.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56BA2983130B00A43A5F /* testautomation_math.c */; };
 		F35E56D42983130F00A43A5F /* testautomation_events.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56BB2983130B00A43A5F /* testautomation_events.c */; };
 		F35E56D52983130F00A43A5F /* testautomation_clipboard.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56BC2983130B00A43A5F /* testautomation_clipboard.c */; };
@@ -1312,7 +1312,7 @@
 		F35E56B62983130A00A43A5F /* testautomation_main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_main.c; sourceTree = "<group>"; };
 		F35E56B72983130A00A43A5F /* testautomation_hints.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_hints.c; sourceTree = "<group>"; };
 		F35E56B82983130A00A43A5F /* testautomation_render.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_render.c; sourceTree = "<group>"; };
-		F35E56B92983130B00A43A5F /* testautomation_rwops.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_rwops.c; sourceTree = "<group>"; };
+		F35E56B92983130B00A43A5F /* testautomation_iostream.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_iostream.c; sourceTree = "<group>"; };
 		F35E56BA2983130B00A43A5F /* testautomation_math.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_math.c; sourceTree = "<group>"; };
 		F35E56BB2983130B00A43A5F /* testautomation_events.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_events.c; sourceTree = "<group>"; };
 		F35E56BC2983130B00A43A5F /* testautomation_clipboard.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_clipboard.c; sourceTree = "<group>"; };
@@ -1774,7 +1774,7 @@
 				F35E56C32983130D00A43A5F /* testautomation_platform.c */,
 				F35E56C52983130D00A43A5F /* testautomation_rect.c */,
 				F35E56B82983130A00A43A5F /* testautomation_render.c */,
-				F35E56B92983130B00A43A5F /* testautomation_rwops.c */,
+				F35E56B92983130B00A43A5F /* testautomation_iostream.c */,
 				F35E56C82983130E00A43A5F /* testautomation_sdltest.c */,
 				F35E56BE2983130C00A43A5F /* testautomation_stdlib.c */,
 				F35E56CB2983130F00A43A5F /* testautomation_surface.c */,
@@ -3355,7 +3355,7 @@
 			files = (
 				F35E56D12983130F00A43A5F /* testautomation_render.c in Sources */,
 				F399C6512A7892D800C86979 /* testautomation_intrinsics.c in Sources */,
-				F35E56D22983130F00A43A5F /* testautomation_rwops.c in Sources */,
+				F35E56D22983130F00A43A5F /* testautomation_iostream.c in Sources */,
 				F35E56E32983130F00A43A5F /* testautomation_surface.c in Sources */,
 				F35E56DB2983130F00A43A5F /* testautomation_platform.c in Sources */,
 				F35E56DD2983130F00A43A5F /* testautomation_rect.c in Sources */,

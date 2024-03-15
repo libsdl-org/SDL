@@ -43,7 +43,7 @@ static int DISKAUDIO_WaitDevice(SDL_AudioDevice *device)
 
 static int DISKAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
-    const int written = (int)SDL_RWwrite(device->hidden->io, buffer, (size_t)buffer_size);
+    const int written = (int)SDL_WriteIO(device->hidden->io, buffer, (size_t)buffer_size);
     if (written != buffer_size) { // If we couldn't write, assume fatal error for now
         return -1;
     }
@@ -64,11 +64,11 @@ static int DISKAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, in
     const int origbuflen = buflen;
 
     if (h->io) {
-        const int br = (int)SDL_RWread(h->io, buffer, (size_t)buflen);
+        const int br = (int)SDL_ReadIO(h->io, buffer, (size_t)buflen);
         buflen -= br;
         buffer = ((Uint8 *)buffer) + br;
         if (buflen > 0) { // EOF (or error, but whatever).
-            SDL_RWclose(h->io);
+            SDL_CloseIO(h->io);
             h->io = NULL;
         }
     }
@@ -88,7 +88,7 @@ static void DISKAUDIO_CloseDevice(SDL_AudioDevice *device)
 {
     if (device->hidden) {
         if (device->hidden->io) {
-            SDL_RWclose(device->hidden->io);
+            SDL_CloseIO(device->hidden->io);
         }
         SDL_free(device->hidden->mixbuf);
         SDL_free(device->hidden);
@@ -123,7 +123,7 @@ static int DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
     }
 
     // Open the "audio device"
-    device->hidden->io = SDL_RWFromFile(fname, iscapture ? "rb" : "wb");
+    device->hidden->io = SDL_IOFromFile(fname, iscapture ? "rb" : "wb");
     if (!device->hidden->io) {
         return -1;
     }

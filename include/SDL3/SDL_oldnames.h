@@ -69,6 +69,7 @@
 #define SDL_AudioStreamPut SDL_PutAudioStreamData
 #define SDL_FreeAudioStream SDL_DestroyAudioStream
 #define SDL_FreeWAV SDL_free
+#define SDL_LoadWAV_RW SDL_LoadWAV_IO
 #define SDL_NewAudioStream SDL_CreateAudioStream
 
 /* ##SDL_events.h */
@@ -204,7 +205,7 @@
 #define SDL_GameController SDL_Gamepad
 #define SDL_GameControllerAddMapping SDL_AddGamepadMapping
 #define SDL_GameControllerAddMappingsFromFile SDL_AddGamepadMappingsFromFile
-#define SDL_GameControllerAddMappingsFromRW SDL_AddGamepadMappingsFromRW
+#define SDL_GameControllerAddMappingsFromRW SDL_AddGamepadMappingsFromIO
 #define SDL_GameControllerAxis SDL_GamepadAxis
 #define SDL_GameControllerBindType SDL_GamepadBindingType
 #define SDL_GameControllerButton SDL_GamepadButton
@@ -449,11 +450,19 @@
 #define SDL_ScaleModeNearest SDL_SCALEMODE_NEAREST
 
 /* ##SDL_rwops.h */
-#define RW_SEEK_CUR SDL_RW_SEEK_CUR
-#define RW_SEEK_END SDL_RW_SEEK_END
-#define RW_SEEK_SET SDL_RW_SEEK_SET
-#define SDL_AllocRW SDL_CreateRW
-#define SDL_FreeRW SDL_DestroyRW
+#define RW_SEEK_CUR SDL_IO_SEEK_CUR
+#define RW_SEEK_END SDL_IO_SEEK_END
+#define RW_SEEK_SET SDL_IO_SEEK_SET
+#define SDL_RWFromConstMem SDL_IOFromConstMem
+#define SDL_RWFromFile SDL_IOFromFile
+#define SDL_RWFromMem SDL_IOFromMem
+#define SDL_RWclose SDL_CloseIO
+#define SDL_RWops SDL_IOStream
+#define SDL_RWread SDL_ReadIO
+#define SDL_RWseek SDL_SeekIO
+#define SDL_RWsize SDL_SizeIO
+#define SDL_RWtell SDL_TellIO
+#define SDL_RWwrite SDL_WriteIO
 #define SDL_ReadBE16 SDL_ReadU16BE
 #define SDL_ReadBE32 SDL_ReadU32BE
 #define SDL_ReadBE64 SDL_ReadU64BE
@@ -489,8 +498,10 @@
 #define SDL_GetColorKey SDL_GetSurfaceColorKey
 #define SDL_HasColorKey SDL_SurfaceHasColorKey
 #define SDL_HasSurfaceRLE SDL_SurfaceHasRLE
+#define SDL_LoadBMP_RW SDL_LoadBMP_IO
 #define SDL_LowerBlit SDL_BlitSurfaceUnchecked
 #define SDL_LowerBlitScaled SDL_BlitSurfaceUncheckedScaled
+#define SDL_SaveBMP_RW SDL_SaveBMP_IO
 #define SDL_SetClipRect SDL_SetSurfaceClipRect
 #define SDL_SetColorKey SDL_SetSurfaceColorKey
 #define SDL_UpperBlit SDL_BlitSurface
@@ -554,6 +565,7 @@
 #define SDL_AudioStreamPut SDL_AudioStreamPut_renamed_SDL_PutAudioStreamData
 #define SDL_FreeAudioStream SDL_FreeAudioStream_renamed_SDL_DestroyAudioStream
 #define SDL_FreeWAV SDL_FreeWAV_renamed_SDL_free
+#define SDL_LoadWAV_RW SDL_LoadWAV_RW_renamed_SDL_LoadWAV_IO
 #define SDL_NewAudioStream SDL_NewAudioStream_renamed_SDL_CreateAudioStream
 
 /* ##SDL_events.h */
@@ -689,7 +701,7 @@
 #define SDL_GameController SDL_GameController_renamed_SDL_Gamepad
 #define SDL_GameControllerAddMapping SDL_GameControllerAddMapping_renamed_SDL_AddGamepadMapping
 #define SDL_GameControllerAddMappingsFromFile SDL_GameControllerAddMappingsFromFile_renamed_SDL_AddGamepadMappingsFromFile
-#define SDL_GameControllerAddMappingsFromRW SDL_GameControllerAddMappingsFromRW_renamed_SDL_AddGamepadMappingsFromRW
+#define SDL_GameControllerAddMappingsFromRW SDL_GameControllerAddMappingsFromRW_renamed_SDL_AddGamepadMappingsFromIO
 #define SDL_GameControllerAxis SDL_GameControllerAxis_renamed_SDL_GamepadAxis
 #define SDL_GameControllerBindType SDL_GameControllerBindType_renamed_SDL_GamepadBindingType
 #define SDL_GameControllerButton SDL_GameControllerButton_renamed_SDL_GamepadButton
@@ -935,11 +947,19 @@
 #define SDL_ScaleModeNearest SDL_ScaleModeNearest_renamed_SDL_SCALEMODE_NEAREST
 
 /* ##SDL_rwops.h */
-#define RW_SEEK_CUR RW_SEEK_CUR_renamed_SDL_RW_SEEK_CUR
-#define RW_SEEK_END RW_SEEK_END_renamed_SDL_RW_SEEK_END
-#define RW_SEEK_SET RW_SEEK_SET_renamed_SDL_RW_SEEK_SET
-#define SDL_AllocRW SDL_AllocRW_renamed_SDL_CreateRW
-#define SDL_FreeRW SDL_FreeRW_renamed_SDL_DestroyRW
+#define RW_SEEK_CUR RW_SEEK_CUR_renamed_SDL_IO_SEEK_CUR
+#define RW_SEEK_END RW_SEEK_END_renamed_SDL_IO_SEEK_END
+#define RW_SEEK_SET RW_SEEK_SET_renamed_SDL_IO_SEEK_SET
+#define SDL_RWFromConstMem SDL_RWFromConstMem_renamed_SDL_IOFromConstMem
+#define SDL_RWFromFile SDL_RWFromFile_renamed_SDL_IOFromFile
+#define SDL_RWFromMem SDL_RWFromMem_renamed_SDL_IOFromMem
+#define SDL_RWclose SDL_RWclose_renamed_SDL_CloseIO
+#define SDL_RWops SDL_RWops_renamed_SDL_IOStream
+#define SDL_RWread SDL_RWread_renamed_SDL_ReadIO
+#define SDL_RWseek SDL_RWseek_renamed_SDL_SeekIO
+#define SDL_RWsize SDL_RWsize_renamed_SDL_SizeIO
+#define SDL_RWtell SDL_RWtell_renamed_SDL_TellIO
+#define SDL_RWwrite SDL_RWwrite_renamed_SDL_WriteIO
 #define SDL_ReadBE16 SDL_ReadBE16_renamed_SDL_ReadU16BE
 #define SDL_ReadBE32 SDL_ReadBE32_renamed_SDL_ReadU32BE
 #define SDL_ReadBE64 SDL_ReadBE64_renamed_SDL_ReadU64BE
@@ -975,8 +995,10 @@
 #define SDL_GetColorKey SDL_GetColorKey_renamed_SDL_GetSurfaceColorKey
 #define SDL_HasColorKey SDL_HasColorKey_renamed_SDL_SurfaceHasColorKey
 #define SDL_HasSurfaceRLE SDL_HasSurfaceRLE_renamed_SDL_SurfaceHasRLE
+#define SDL_LoadBMP_RW SDL_LoadBMP_RW_renamed_SDL_LoadBMP_IO
 #define SDL_LowerBlit SDL_LowerBlit_renamed_SDL_BlitSurfaceUnchecked
 #define SDL_LowerBlitScaled SDL_LowerBlitScaled_renamed_SDL_BlitSurfaceUncheckedScaled
+#define SDL_SaveBMP_RW SDL_SaveBMP_RW_renamed_SDL_SaveBMP_IO
 #define SDL_SetClipRect SDL_SetClipRect_renamed_SDL_SetSurfaceClipRect
 #define SDL_SetColorKey SDL_SetColorKey_renamed_SDL_SetSurfaceColorKey
 #define SDL_UpperBlit SDL_UpperBlit_renamed_SDL_BlitSurface

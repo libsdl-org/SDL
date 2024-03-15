@@ -237,9 +237,9 @@ static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char
 static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned int len, int *w, int *h) {
     SDL_Texture *texture = NULL;
     SDL_Surface *surface;
-    SDL_RWops *src = SDL_RWFromConstMem(data, len);
+    SDL_IOStream *src = SDL_IOFromConstMem(data, len);
     if (src) {
-        surface = SDL_LoadBMP_RW(src, SDL_TRUE);
+        surface = SDL_LoadBMP_IO(src, SDL_TRUE);
         if (surface) {
             /* Treat white as transparent */
             SDL_SetSurfaceColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, 255, 255, 255));

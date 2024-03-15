@@ -6,7 +6,7 @@ These are test programs for the SDL library:
 	testsurround	Audio test -- play test tone on each audio channel
 	testaudioinfo	Lists audio device capabilities
 	testerror	Tests multi-threaded error handling
-	testfile	Tests RWops layer
+	testfile	Tests SDL_IOStream layer
 	testgl		A very simple example of using OpenGL with SDL
 	testiconv	Tests international string conversion
 	testkeys	List the available keyboard keys
