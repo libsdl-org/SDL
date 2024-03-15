@@ -196,7 +196,7 @@ static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char
         char *saveptr, *token;
         token = SDL_strtok_r(extensions, " ", &saveptr);
         if (!token) {
-            free(extensions);
+            SDL_free(extensions);
             return SDL_FALSE;
         }
         do {
@@ -207,7 +207,7 @@ static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char
             }
         } while ((token = SDL_strtok_r(NULL, " ", &saveptr)) != NULL);
 
-        free(extensions);
+        SDL_free(extensions);
 
         if (SDL_GL_ExtensionSupported("GL_OES_EGL_image")) {
             glEGLImageTargetTexture2DOESFunc = (PFNGLEGLIMAGETARGETTEXTURE2DOESPROC)eglGetProcAddress("glEGLImageTargetTexture2DOES");
