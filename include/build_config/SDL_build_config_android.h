@@ -187,6 +187,7 @@
 
 /* Enable the filesystem driver */
 #define SDL_FILESYSTEM_ANDROID   1
+#define SDL_FSOPS_POSIX 1
 
 /* Enable the camera driver */
 #define SDL_CAMERA_DRIVER_ANDROID 1

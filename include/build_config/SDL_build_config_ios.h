@@ -207,6 +207,7 @@
 
 /* enable filesystem support */
 #define SDL_FILESYSTEM_COCOA   1
+#define SDL_FSOPS_POSIX 1
 
 /* enable camera support */
 #ifndef SDL_PLATFORM_TVOS

@@ -19,6 +19,12 @@
     <Filter Include="camera\dummy">
       <UniqueIdentifier>{000031d805439b865ff4550d2f620000}</UniqueIdentifier>
     </Filter>
+    <Filter Include="filesystem">
+      <UniqueIdentifier>{00004389761f0ae646deb5a3d65f0000}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="filesystem\windows">
+      <UniqueIdentifier>{0000bc587ef6c558d75ce2e620cb0000}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\SDL3\SDL_begin_code.h">
@@ -179,6 +185,9 @@
     </ClInclude>
     <ClInclude Include="..\src\camera\SDL_syscamera.h">
       <Filter>camera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\filesystem\SDL_filesystem.h">
+      <Filter>filesystem</Filter>
     </ClInclude>
     <ClInclude Include="..\src\joystick\SDL_gamepad_c.h">
       <Filter>Header Files</Filter>
@@ -578,6 +587,12 @@
     </ClCompile>
     <ClCompile Include="..\src\events\SDL_windowevents.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\filesystem\SDL_filesystem.c">
+      <Filter>filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\filesystem\windows\SDL_sysfsops.c">
+      <Filter>filesystem\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\src\filesystem\winrt\SDL_sysfilesystem.cpp">
       <Filter>Source Files</Filter>

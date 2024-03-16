@@ -417,6 +417,9 @@
     <ClInclude Include="..\..\src\camera\SDL_syscamera.h">
       <Filter>camera</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\filesystem\SDL_filesystem.h">
+      <Filter>filesystem</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\main\SDL_main_callbacks.h">
       <Filter>main</Filter>
     </ClInclude>
@@ -870,6 +873,12 @@
     </ClCompile>
     <ClCompile Include="..\..\src\camera\SDL_camera.c">
       <Filter>camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\filesystem\SDL_filesystem.c">
+      <Filter>filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfsops.c">
+      <Filter>filesystem\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c">
       <Filter>main\generic</Filter>
