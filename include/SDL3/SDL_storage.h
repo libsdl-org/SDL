@@ -73,10 +73,10 @@ typedef struct SDL_Storage SDL_Storage;
  * \sa SDL_TitleStorageReady
  * \sa SDL_CloseStorage
  * \sa SDL_StorageReady
- * \sa SDL_StorageFileSize
- * \sa SDL_StorageReadFile
- * \sa SDL_StorageWriteFile
- * \sa SDL_StorageSpaceRemaining
+ * \sa SDL_GetStorageFileSize
+ * \sa SDL_ReadStorageFile
+ * \sa SDL_WriteStorageFile
+ * \sa SDL_GetStorageSpaceRemaining
  */
 extern DECLSPEC SDL_Storage *SDLCALL SDL_OpenTitleStorage(const char *override, SDL_PropertiesID props);
 
@@ -100,10 +100,10 @@ extern DECLSPEC SDL_Storage *SDLCALL SDL_OpenTitleStorage(const char *override, 
  * \sa SDL_OpenStorage
  * \sa SDL_CloseStorage
  * \sa SDL_StorageReady
- * \sa SDL_StorageFileSize
- * \sa SDL_StorageReadFile
- * \sa SDL_StorageWriteFile
- * \sa SDL_StorageSpaceRemaining
+ * \sa SDL_GetStorageFileSize
+ * \sa SDL_ReadStorageFile
+ * \sa SDL_WriteStorageFile
+ * \sa SDL_GetStorageSpaceRemaining
  */
 extern DECLSPEC SDL_Storage *SDLCALL SDL_OpenUserStorage(const char *org, const char *app, SDL_PropertiesID props);
 
@@ -126,10 +126,10 @@ extern DECLSPEC SDL_Storage *SDLCALL SDL_OpenUserStorage(const char *org, const 
  * \sa SDL_OpenUserStorage
  * \sa SDL_CloseStorage
  * \sa SDL_StorageReady
- * \sa SDL_StorageFileSize
- * \sa SDL_StorageReadFile
- * \sa SDL_StorageWriteFile
- * \sa SDL_StorageSpaceRemaining
+ * \sa SDL_GetStorageFileSize
+ * \sa SDL_ReadStorageFile
+ * \sa SDL_WriteStorageFile
+ * \sa SDL_GetStorageSpaceRemaining
  */
 extern DECLSPEC SDL_Storage *SDLCALL SDL_OpenStorage(const SDL_StorageInterface *iface, void *userdata);
 
@@ -148,10 +148,10 @@ extern DECLSPEC SDL_Storage *SDLCALL SDL_OpenStorage(const SDL_StorageInterface 
  * \sa SDL_OpenUserStorage
  * \sa SDL_OpenStorage
  * \sa SDL_StorageReady
- * \sa SDL_StorageFileSize
- * \sa SDL_StorageReadFile
- * \sa SDL_StorageWriteFile
- * \sa SDL_StorageSpaceRemaining
+ * \sa SDL_GetStorageFileSize
+ * \sa SDL_ReadStorageFile
+ * \sa SDL_WriteStorageFile
+ * \sa SDL_GetStorageSpaceRemaining
  */
 extern DECLSPEC int SDLCALL SDL_CloseStorage(SDL_Storage *storage);
 
@@ -171,10 +171,10 @@ extern DECLSPEC int SDLCALL SDL_CloseStorage(SDL_Storage *storage);
  * \sa SDL_OpenUserStorage
  * \sa SDL_OpenStorage
  * \sa SDL_CloseStorage
- * \sa SDL_StorageFileSize
- * \sa SDL_StorageReadFile
- * \sa SDL_StorageWriteFile
- * \sa SDL_StorageSpaceRemaining
+ * \sa SDL_GetStorageFileSize
+ * \sa SDL_ReadStorageFile
+ * \sa SDL_WriteStorageFile
+ * \sa SDL_GetStorageSpaceRemaining
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_StorageReady(SDL_Storage *storage);
 
@@ -194,11 +194,11 @@ extern DECLSPEC SDL_bool SDLCALL SDL_StorageReady(SDL_Storage *storage);
  * \sa SDL_OpenStorage
  * \sa SDL_CloseStorage
  * \sa SDL_StorageReady
- * \sa SDL_StorageReadFile
- * \sa SDL_StorageWriteFile
- * \sa SDL_StorageSpaceRemaining
+ * \sa SDL_ReadStorageFile
+ * \sa SDL_WriteStorageFile
+ * \sa SDL_GetStorageSpaceRemaining
  */
-extern DECLSPEC int SDLCALL SDL_StorageFileSize(SDL_Storage *storage, const char *path, Uint64 *length);
+extern DECLSPEC int SDLCALL SDL_GetStorageFileSize(SDL_Storage *storage, const char *path, Uint64 *length);
 
 /**
  * Synchronously read a file from a storage container into a client-provided
@@ -218,11 +218,11 @@ extern DECLSPEC int SDLCALL SDL_StorageFileSize(SDL_Storage *storage, const char
  * \sa SDL_OpenStorage
  * \sa SDL_CloseStorage
  * \sa SDL_StorageReady
- * \sa SDL_StorageFileSize
- * \sa SDL_StorageWriteFile
- * \sa SDL_StorageSpaceRemaining
+ * \sa SDL_GetStorageFileSize
+ * \sa SDL_WriteStorageFile
+ * \sa SDL_GetStorageSpaceRemaining
  */
-extern DECLSPEC int SDLCALL SDL_StorageReadFile(SDL_Storage *storage, const char *path, void *destination, Uint64 length);
+extern DECLSPEC int SDLCALL SDL_ReadStorageFile(SDL_Storage *storage, const char *path, void *destination, Uint64 length);
 
 /**
  * Synchronously write a file from client memory into a storage container.
@@ -241,11 +241,11 @@ extern DECLSPEC int SDLCALL SDL_StorageReadFile(SDL_Storage *storage, const char
  * \sa SDL_OpenStorage
  * \sa SDL_CloseStorage
  * \sa SDL_StorageReady
- * \sa SDL_StorageFileSize
- * \sa SDL_StorageReadFile
- * \sa SDL_StorageSpaceRemaining
+ * \sa SDL_GetStorageFileSize
+ * \sa SDL_ReadStorageFile
+ * \sa SDL_GetStorageSpaceRemaining
  */
-extern DECLSPEC int SDL_StorageWriteFile(SDL_Storage *storage, const char *path, const void *source, Uint64 length);
+extern DECLSPEC int SDL_WriteStorageFile(SDL_Storage *storage, const char *path, const void *source, Uint64 length);
 
 /**
  * Queries the remaining space in a storage container.
@@ -260,13 +260,13 @@ extern DECLSPEC int SDL_StorageWriteFile(SDL_Storage *storage, const char *path,
  * \sa SDL_OpenStorage
  * \sa SDL_CloseStorage
  * \sa SDL_StorageReady
- * \sa SDL_StorageFileSize
- * \sa SDL_StorageReadFile
- * \sa SDL_StorageReadFileAsync
- * \sa SDL_StorageWriteFile
- * \sa SDL_StorageWriteFileAsync
+ * \sa SDL_GetStorageFileSize
+ * \sa SDL_ReadStorageFile
+ * \sa SDL_ReadStorageFileAsync
+ * \sa SDL_WriteStorageFile
+ * \sa SDL_WriteStorageFileAsync
  */
-extern DECLSPEC Uint64 SDLCALL SDL_StorageSpaceRemaining(SDL_Storage *storage);
+extern DECLSPEC Uint64 SDLCALL SDL_GetStorageSpaceRemaining(SDL_Storage *storage);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
