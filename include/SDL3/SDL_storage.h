@@ -85,8 +85,8 @@ extern DECLSPEC SDL_Storage *SDLCALL SDL_OpenTitleStorage(const char *override, 
  *
  * While title storage can generally be kept open throughout runtime, user
  * storage should only be opened when the client is ready to read/write files.
- * This allows the backend to properly batch R/W operations and flush them when
- * the container has been closed; ensuring safe and optimal save I/O.
+ * This allows the backend to properly batch R/W operations and flush them
+ * when the container has been closed; ensuring safe and optimal save I/O.
  *
  * \param org the name of your organization
  * \param app the name of your application
@@ -111,9 +111,9 @@ extern DECLSPEC SDL_Storage *SDLCALL SDL_OpenUserStorage(const char *org, const 
  * Opens up a container using a client-provided storage interface.
  *
  * Applications do not need to use this function unless they are providing
- * their own SDL_Storage implementation. If you just need an
- * SDL_Storage, you should use the built-in implementations in SDL,
- * like SDL_OpenTitleStorage() or SDL_OpenUserStorage().
+ * their own SDL_Storage implementation. If you just need an SDL_Storage, you
+ * should use the built-in implementations in SDL, like SDL_OpenTitleStorage()
+ * or SDL_OpenUserStorage().
  *
  * \param iface the function table to be used by this container
  * \param userdata the pointer that will be passed to the store interface
@@ -159,8 +159,8 @@ extern DECLSPEC int SDLCALL SDL_CloseStorage(SDL_Storage *storage);
  * Checks if the storage container is ready to use.
  *
  * This function should be called in regular intervals until it returns
- * SDL_TRUE - however, it is not recommended to spinwait on this call, as
- * the backend may depend on a synchronous message loop.
+ * SDL_TRUE - however, it is not recommended to spinwait on this call, as the
+ * backend may depend on a synchronous message loop.
  *
  * \param storage a storage container to query
  * \returns SDL_TRUE if the container is ready, SDL_FALSE otherwise
@@ -201,7 +201,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_StorageReady(SDL_Storage *storage);
 extern DECLSPEC int SDLCALL SDL_StorageFileSize(SDL_Storage *storage, const char *path, Uint64 *length);
 
 /**
- * Synchronously read a file from a storage container into a client-provided buffer.
+ * Synchronously read a file from a storage container into a client-provided
+ * buffer.
  *
  * \param storage a storage container to read from
  * \param path the relative path of the file to read
