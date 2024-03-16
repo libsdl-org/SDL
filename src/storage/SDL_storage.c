@@ -141,13 +141,8 @@ SDL_Storage *SDL_OpenStorage(const SDL_StorageInterface *iface, void *userdata)
 {
     SDL_Storage *storage;
 
-    if (iface->close == NULL || iface->ready == NULL || iface->fileSize == NULL) {
-        SDL_SetError("iface is missing required callbacks");
-        return NULL;
-    }
-
-    if ((iface->writeFile != NULL) != (iface->spaceRemaining != NULL)) {
-        SDL_SetError("Writeable containers must have both writeFile and spaceRemaining");
+    if (!iface) {
+        SDL_InvalidParamError("iface");
         return NULL;
     }
 
@@ -177,7 +172,10 @@ SDL_bool SDL_StorageReady(SDL_Storage *storage)
 {
     CHECK_STORAGE_MAGIC_RET(SDL_FALSE)
 
-    return storage->iface.ready(storage->userdata);
+    if (storage->iface.ready) {
+        return storage->iface.ready(storage->userdata);
+    }
+    return SDL_TRUE;
 }
 
 int SDL_GetStorageFileSize(SDL_Storage *storage, const char *path, Uint64 *length)
