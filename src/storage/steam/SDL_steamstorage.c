@@ -40,7 +40,7 @@ typedef struct STEAM_RemoteStorage
     #include "SDL_steamstorage_proc.h"
 } STEAM_RemoteStorage;
 
-static int STEAM_UserStorageClose(void *userdata)
+static int STEAM_CloseStorage(void *userdata)
 {
     int result = 0;
     STEAM_RemoteStorage *steam = (STEAM_RemoteStorage*) userdata;
@@ -55,25 +55,30 @@ static int STEAM_UserStorageClose(void *userdata)
     return result;
 }
 
-static SDL_bool STEAM_UserStorageReady(void *userdata)
+static SDL_bool STEAM_StorageReady(void *userdata)
 {
     return SDL_TRUE;
 }
 
-static int STEAM_UserStorageFileSize(void *userdata, const char *path, Uint64 *length)
+static int STEAM_GetStoragePathInfo(void *userdata, const char *path, SDL_PathInfo *info)
 {
     STEAM_RemoteStorage *steam = (STEAM_RemoteStorage*) userdata;
     void *steamremotestorage = steam->SteamAPI_SteamRemoteStorage_v016();
     if (steamremotestorage == NULL) {
         return SDL_SetError("SteamRemoteStorage unavailable");
     }
-    *length = steam->SteamAPI_ISteamRemoteStorage_GetFileSize(steamremotestorage, path);
+
+    if (info) {
+        SDL_zerop(info);
+        info->type = SDL_PATHTYPE_FILE;
+        info->size = steam->SteamAPI_ISteamRemoteStorage_GetFileSize(steamremotestorage, path);
+    }
     return 0;
 }
 
-static int STEAM_UserStorageReadFile(void *userdata, const char *path, void *destination, Uint64 length)
+static int STEAM_ReadStorageFile(void *userdata, const char *path, void *destination, Uint64 length)
 {
-    int retval;
+    int result = -1;
     STEAM_RemoteStorage *steam = (STEAM_RemoteStorage*) userdata;
     void *steamremotestorage = steam->SteamAPI_SteamRemoteStorage_v016();
     if (steamremotestorage == NULL) {
@@ -82,13 +87,17 @@ static int STEAM_UserStorageReadFile(void *userdata, const char *path, void *des
     if (length > SDL_MAX_SINT32) {
         return SDL_SetError("SteamRemoteStorage only supports INT32_MAX read size");
     }
-    retval = steam->SteamAPI_ISteamRemoteStorage_FileRead(steamremotestorage, path, destination, (Sint32) length) == length;
-    return retval - 1;
+    if (steam->SteamAPI_ISteamRemoteStorage_FileRead(steamremotestorage, path, destination, (Sint32) length) == length) {
+        result = 0;
+    } else {
+        SDL_SetError("SteamAPI_ISteamRemoteStorage_FileRead() failed");
+    }
+    return result;
 }
 
-static int STEAM_UserStorageWriteFile(void *userdata, const char *path, const void *source, Uint64 length)
+static int STEAM_WriteStorageFile(void *userdata, const char *path, const void *source, Uint64 length)
 {
-    int retval;
+    int result = -1;
     STEAM_RemoteStorage *steam = (STEAM_RemoteStorage*) userdata;
     void *steamremotestorage = steam->SteamAPI_SteamRemoteStorage_v016();
     if (steamremotestorage == NULL) {
@@ -97,11 +106,15 @@ static int STEAM_UserStorageWriteFile(void *userdata, const char *path, const vo
     if (length > SDL_MAX_SINT32) {
         return SDL_SetError("SteamRemoteStorage only supports INT32_MAX write size");
     }
-    retval = steam->SteamAPI_ISteamRemoteStorage_FileWrite(steamremotestorage, path, source, (Sint32) length) == length;
-    return retval - 1;
+    if (steam->SteamAPI_ISteamRemoteStorage_FileWrite(steamremotestorage, path, source, (Sint32) length) == length) {
+        result = 0;
+    } else {
+        SDL_SetError("SteamAPI_ISteamRemoteStorage_FileRead() failed");
+    }
+    return result;
 }
 
-static Uint64 STEAM_UserStorageSpaceRemaining(void *userdata)
+static Uint64 STEAM_GetStorageSpaceRemaining(void *userdata)
 {
     Uint64 total, remaining;
     STEAM_RemoteStorage *steam = (STEAM_RemoteStorage*) userdata;
@@ -118,12 +131,16 @@ static Uint64 STEAM_UserStorageSpaceRemaining(void *userdata)
 }
 
 static const SDL_StorageInterface STEAM_user_iface = {
-    STEAM_UserStorageClose,
-    STEAM_UserStorageReady,
-    STEAM_UserStorageFileSize,
-    STEAM_UserStorageReadFile,
-    STEAM_UserStorageWriteFile,
-    STEAM_UserStorageSpaceRemaining
+    STEAM_CloseStorage,
+    STEAM_StorageReady,
+    NULL,   /* enumerate */
+    STEAM_GetStoragePathInfo,
+    STEAM_ReadStorageFile,
+    STEAM_WriteStorageFile,
+    NULL,   /* mkdir */
+    NULL,   /* remove */
+    NULL,   /* rename */
+    STEAM_GetStorageSpaceRemaining
 };
 
 static SDL_Storage *STEAM_User_Create(const char *org, const char *app, SDL_PropertiesID props)

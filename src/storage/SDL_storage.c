@@ -152,7 +152,7 @@ SDL_Storage *SDL_OpenStorage(const SDL_StorageInterface *iface, void *userdata)
     }
 
     storage = (SDL_Storage*) SDL_malloc(sizeof(SDL_Storage));
-    if (storage == NULL) {
+    if (!storage) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -185,41 +185,133 @@ SDL_bool SDL_StorageReady(SDL_Storage *storage)
 
 int SDL_GetStorageFileSize(SDL_Storage *storage, const char *path, Uint64 *length)
 {
-    CHECK_STORAGE_MAGIC()
+    SDL_PathInfo info;
 
-    return storage->iface.fileSize(storage->userdata, path, length);
+    if (SDL_GetStoragePathInfo(storage, path, &info) < 0) {
+        return -1;
+    }
+    if (length) {
+        *length = info.size;
+    }
+    return 0;
 }
 
 int SDL_ReadStorageFile(SDL_Storage *storage, const char *path, void *destination, Uint64 length)
 {
     CHECK_STORAGE_MAGIC()
 
-    if (storage->iface.readFile == NULL) {
-        return SDL_SetError("Storage container does not have read capability");
+    if (!path) {
+        return SDL_InvalidParamError("path");
     }
 
-    return storage->iface.readFile(storage->userdata, path, destination, length);
+    if (!storage->iface.read_file) {
+        return SDL_Unsupported();
+    }
+
+    return storage->iface.read_file(storage->userdata, path, destination, length);
 }
 
 int SDL_WriteStorageFile(SDL_Storage *storage, const char *path, const void *source, Uint64 length)
 {
     CHECK_STORAGE_MAGIC()
 
-    if (storage->iface.writeFile == NULL) {
-        return SDL_SetError("Storage container does not have write capability");
+    if (!path) {
+        return SDL_InvalidParamError("path");
     }
 
-    return storage->iface.writeFile(storage->userdata, path, source, length);
+    if (!storage->iface.write_file) {
+        return SDL_Unsupported();
+    }
+
+    return storage->iface.write_file(storage->userdata, path, source, length);
+}
+
+int SDL_CreateStorageDirectory(SDL_Storage *storage, const char *path)
+{
+    CHECK_STORAGE_MAGIC()
+
+    if (!path) {
+        return SDL_InvalidParamError("path");
+    }
+
+    if (!storage->iface.mkdir) {
+        return SDL_Unsupported();
+    }
+
+    return storage->iface.mkdir(storage->userdata, path);
+}
+
+int SDL_EnumerateStorageDirectory(SDL_Storage *storage, const char *path, SDL_EnumerateDirectoryCallback callback, void *userdata)
+{
+    CHECK_STORAGE_MAGIC()
+
+    if (!path) {
+        return SDL_InvalidParamError("path");
+    }
+
+    if (!storage->iface.enumerate) {
+        return SDL_Unsupported();
+    }
+
+    return storage->iface.enumerate(storage->userdata, path, callback, userdata);
+}
+
+int SDL_RemoveStoragePath(SDL_Storage *storage, const char *path)
+{
+    CHECK_STORAGE_MAGIC()
+
+    if (!path) {
+        return SDL_InvalidParamError("path");
+    }
+
+    if (!storage->iface.remove) {
+        return SDL_Unsupported();
+    }
+
+    return storage->iface.remove(storage->userdata, path);
+}
+
+int SDL_RenameStoragePath(SDL_Storage *storage, const char *oldpath, const char *newpath)
+{
+    CHECK_STORAGE_MAGIC()
+
+    if (!oldpath) {
+        return SDL_InvalidParamError("oldpath");
+    }
+    if (!newpath) {
+        return SDL_InvalidParamError("newpath");
+    }
+
+    if (!storage->iface.rename) {
+        return SDL_Unsupported();
+    }
+
+    return storage->iface.rename(storage->userdata, oldpath, newpath);
+}
+
+int SDL_GetStoragePathInfo(SDL_Storage *storage, const char *path, SDL_PathInfo *info)
+{
+    CHECK_STORAGE_MAGIC()
+
+    if (!path) {
+        return SDL_InvalidParamError("path");
+    }
+
+    if (!storage->iface.info) {
+        return SDL_Unsupported();
+    }
+
+    return storage->iface.info(storage->userdata, path, info);
 }
 
 Uint64 SDL_GetStorageSpaceRemaining(SDL_Storage *storage)
 {
     CHECK_STORAGE_MAGIC_RET(0)
 
-    if (storage->iface.spaceRemaining == NULL) {
-        SDL_SetError("Storage container does not have write capability");
+    if (!storage->iface.space_remaining) {
+        SDL_Unsupported();
         return 0;
     }
 
-    return storage->iface.spaceRemaining(storage->userdata);
+    return storage->iface.space_remaining(storage->userdata);
 }
