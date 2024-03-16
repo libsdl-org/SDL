@@ -25,10 +25,16 @@
 
 static char *GENERIC_INTERNAL_CreateFullPath(const char *base, const char *relative)
 {
-    size_t fulllen = SDL_strlen(base) + SDL_strlen(relative) + 1;
-    char *result = (char*) SDL_malloc(fulllen);
+    size_t len = 0;
+
+    if (base) {
+        len += SDL_strlen(base);
+    }
+    len += SDL_strlen(relative) + 1;
+
+    char *result = (char*) SDL_malloc(len);
     if (result != NULL) {
-        SDL_snprintf(result, fulllen, "%s%s", base, relative);
+        SDL_snprintf(result, len, "%s%s", base, relative);
     }
     return result;
 }
@@ -186,3 +192,40 @@ UserStorageBootStrap GENERIC_userbootstrap = {
     "SDL generic user storage driver",
     GENERIC_User_Create
 };
+
+static const SDL_StorageInterface GENERIC_file_iface = {
+    GENERIC_StorageClose,
+    GENERIC_StorageReady,
+    GENERIC_StorageFileSize,
+    GENERIC_StorageReadFile,
+    GENERIC_StorageWriteFile,
+    GENERIC_StorageSpaceRemaining
+};
+
+SDL_Storage *GENERIC_OpenFileStorage(const char *path)
+{
+    SDL_Storage *result;
+    size_t len = 0;
+    char *basepath = NULL;
+
+    if (path) {
+        len += SDL_strlen(path);
+    }
+    if (len > 0) {
+        if (path[len-1] == '/') {
+            basepath = SDL_strdup(path);
+            if (!basepath) {
+                return NULL;
+            }
+        } else {
+            if (SDL_asprintf(&basepath, "%s/", path) < 0) {
+                return NULL;
+            }
+        }
+    }
+    result = SDL_OpenStorage(&GENERIC_file_iface, basepath);
+    if (result == NULL) {
+        SDL_free(basepath);
+    }
+    return result;
+}

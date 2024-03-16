@@ -137,6 +137,11 @@ SDL_Storage *SDL_OpenUserStorage(const char *org, const char *app, SDL_Propertie
     return storage;
 }
 
+SDL_Storage *SDL_OpenFileStorage(const char *path)
+{
+    return GENERIC_OpenFileStorage(path);
+}
+
 SDL_Storage *SDL_OpenStorage(const SDL_StorageInterface *iface, void *userdata)
 {
     SDL_Storage *storage;

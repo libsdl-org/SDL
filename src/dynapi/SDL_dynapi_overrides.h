@@ -1018,3 +1018,4 @@
 #define SDL_RenamePath SDL_RenamePath_REAL
 #define SDL_GetPathInfo SDL_GetPathInfo_REAL
 #define SDL_FileTimeToWindows SDL_FileTimeToWindows_REAL
+#define SDL_OpenFileStorage SDL_OpenFileStorage_REAL
