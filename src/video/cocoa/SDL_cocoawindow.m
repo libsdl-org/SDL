@@ -599,6 +599,17 @@ static SDL_bool Cocoa_IsZoomed(SDL_Window *window)
     return ret;
 }
 
+static NSCursor *Cocoa_GetDesiredCursor(void)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+
+    if (mouse->cursor_shown && mouse->cur_cursor && !mouse->relative_mode) {
+        return (__bridge NSCursor *)mouse->cur_cursor->driverdata;
+    }
+
+    return [NSCursor invisibleCursor];
+}
+
 @implementation Cocoa_WindowListener
 
 - (void)listen:(SDL_CocoaWindowData *)data
@@ -1592,12 +1603,24 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
     NSPoint point;
     float x, y;
     SDL_Window *window;
+    NSView *contentView;
 
     if (!mouse) {
         return;
     }
 
     window = _data.window;
+    contentView = _data.sdlContentView;
+    point = [theEvent locationInWindow];
+
+    if ([contentView mouse:[contentView convertPoint:point fromView:nil] inRect:[contentView bounds]] &&
+        [NSCursor currentCursor] != Cocoa_GetDesiredCursor()) {
+        // The wrong cursor is on screen, fix it. This fixes an macOS bug that is only known to
+        // occur in fullscreen windows on the built-in displays of newer MacBooks with camera
+        // notches. When the mouse is moved near the top of such a window (within about 44 units)
+        // and then moved back down, the cursor rects aren't respected.
+        [_data.nswindow invalidateCursorRectsForView:contentView];
+    }
 
     if (window->flags & SDL_WINDOW_TRANSPARENT) {
         [self updateIgnoreMouseState:theEvent];
@@ -1612,7 +1635,6 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
         return;
     }
 
-    point = [theEvent locationInWindow];
     x = point.x;
     y = (window->h - point.y);
 
@@ -1867,17 +1889,9 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
 
 - (void)resetCursorRects
 {
-    SDL_Mouse *mouse;
     [super resetCursorRects];
-    mouse = SDL_GetMouse();
-
-    if (mouse->cursor_shown && mouse->cur_cursor && !mouse->relative_mode) {
-        [self addCursorRect:[self bounds]
-                     cursor:(__bridge NSCursor *)mouse->cur_cursor->driverdata];
-    } else {
-        [self addCursorRect:[self bounds]
-                     cursor:[NSCursor invisibleCursor]];
-    }
+    [self addCursorRect:[self bounds]
+                 cursor:Cocoa_GetDesiredCursor()];
 }
 
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
