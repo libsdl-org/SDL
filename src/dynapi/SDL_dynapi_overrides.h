@@ -1009,6 +1009,6 @@
 #define SDL_OpenStorage SDL_OpenStorage_REAL
 #define SDL_CloseStorage SDL_CloseStorage_REAL
 #define SDL_StorageReady SDL_StorageReady_REAL
-#define SDL_StorageFileSize SDL_StorageFileSize_REAL
-#define SDL_StorageReadFile SDL_StorageReadFile_REAL
-#define SDL_StorageSpaceRemaining SDL_StorageSpaceRemaining_REAL
+#define SDL_GetStorageFileSize SDL_GetStorageFileSize_REAL
+#define SDL_ReadStorageFile SDL_ReadStorageFile_REAL
+#define SDL_GetStorageSpaceRemaining SDL_GetStorageSpaceRemaining_REAL
