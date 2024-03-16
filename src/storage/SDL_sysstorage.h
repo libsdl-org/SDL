@@ -46,4 +46,6 @@ extern TitleStorageBootStrap GENERIC_titlebootstrap;
 extern UserStorageBootStrap GENERIC_userbootstrap;
 extern UserStorageBootStrap STEAM_userbootstrap;
 
+extern SDL_Storage *GENERIC_OpenFileStorage(const char *path);
+
 #endif /* SDL_sysstorage_h_ */
