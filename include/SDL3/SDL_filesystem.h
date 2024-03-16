@@ -269,8 +269,8 @@ typedef struct SDL_PathInfo
  */
 extern DECLSPEC int SDLCALL SDL_CreateDirectory(const char *path);
 
-/* Callback for filesystem enumeration. Return 1 to keep enumerating, 0 to stop enumerating (no error), -1 to stop enumerating and report an error. "origdir" is the directory being enumerated, "fname" is the enumerated entry. */
-typedef int (SDLCALL *SDL_EnumerateDirectoryCallback)(void *userdata, void *reserved, const char *origdir, const char *fname);
+/* Callback for directory enumeration. Return 1 to keep enumerating, 0 to stop enumerating (no error), -1 to stop enumerating and report an error. `dirname` is the directory being enumerated, `fname` is the enumerated entry. */
+typedef int (SDLCALL *SDL_EnumerateDirectoryCallback)(void *userdata, const char *dirname, const char *fname);
 
 /**
  * Enumerate a directory.

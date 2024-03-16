@@ -47,7 +47,7 @@ int SDL_SYS_FSenumerate(const char *fullpath, const char *dirname, SDL_Enumerate
         if ((SDL_strcmp(name, ".") == 0) || (SDL_strcmp(name, "..") == 0)) {
             continue;
         }
-        retval = cb(userdata, NULL, dirname, name);
+        retval = cb(userdata, dirname, name);
     }
 
     closedir(dir);
@@ -134,5 +134,5 @@ int SDL_SYS_FSstat(const char *fullpath, SDL_PathInfo *info)
     return 0;
 }
 
-#endif
+#endif // SDL_FSOPS_POSIX
 

@@ -35,7 +35,7 @@ int SDL_SYS_FSenumerate(const char *fullpath, const char *dirname, SDL_Enumerate
         for (int i = 'A'; (retval == 1) && (i <= 'Z'); i++) {
             if (drives & (1 << (i - 'A'))) {
                 name[0] = (char) i;
-                retval = cb(userdata, NULL, dirname, name);
+                retval = cb(userdata, dirname, name);
             }
         }
     } else {
@@ -49,7 +49,7 @@ int SDL_SYS_FSenumerate(const char *fullpath, const char *dirname, SDL_Enumerate
         // filename element at the end of the path string, so always tack on a "\\*" to get everything, and
         // also prevent any wildcards inserted by the app from being respected.
         SDL_snprintf(pattern, patternlen, "%s\\*", fullpath);
-    
+
         WCHAR *wpattern = WIN_UTF8ToString(pattern);
         SDL_free(pattern);
         if (!wpattern) {
@@ -76,7 +76,7 @@ int SDL_SYS_FSenumerate(const char *fullpath, const char *dirname, SDL_Enumerate
             if (!utf8fn) {
                 retval = -1;
             } else {
-                retval = cb(userdata, NULL, dirname, utf8fn);
+                retval = cb(userdata, dirname, utf8fn);
                 SDL_free(utf8fn);
             }
         } while ((retval == 1) && (FindNextFileW(dir, &entw) != 0));
@@ -184,5 +184,5 @@ int SDL_SYS_FSstat(const char *fullpath, SDL_PathInfo *info)
     return 1;
 }
 
-#endif
+#endif // SDL_FSOPS_WINDOWS
 

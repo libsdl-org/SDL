@@ -15,7 +15,7 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
-static int SDLCALL enum_callback(void *userdata, void *reserved, const char *origdir, const char *fname)
+static int SDLCALL enum_callback(void *userdata, const char *origdir, const char *fname)
 {
     SDL_PathInfo info;
     char *fullpath = NULL;
