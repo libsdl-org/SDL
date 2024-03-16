@@ -50,5 +50,5 @@ int SDL_SYS_FSstat(const char *fullpath, SDL_PathInfo *st)
     return SDL_Unsupported();
 }
 
-#endif
+#endif // SDL_FSOPS_DUMMY
 
