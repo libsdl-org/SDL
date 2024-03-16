@@ -29,7 +29,7 @@
 #define SDL_storage_h_
 
 #include <SDL3/SDL_stdinc.h>
-#include <SDL3/SDL_mutex.h>
+#include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_properties.h>
 
 #include <SDL3/SDL_begin_code.h>
@@ -43,17 +43,36 @@ extern "C" {
 
 typedef struct SDL_StorageInterface
 {
+    /* Called when the storage is closed */
     int (SDLCALL *close)(void *userdata);
 
+    /* Optional, returns whether the storage is currently ready for access */
     SDL_bool (SDLCALL *ready)(void *userdata);
 
-    int (SDLCALL *fileSize)(void *userdata, const char *path, Uint64 *length);
+    /* Enumerate a directory, optional for write-only storage */
+    int (SDLCALL *enumerate)(void *userdata, const char *path, SDL_EnumerateDirectoryCallback callback, void *callback_userdata);
 
-    int (SDLCALL *readFile)(void *userdata, const char *path, void *destination, Uint64 length);
+    /* Get path information, optional for write-only storage */
+    int (SDLCALL *info)(void *userdata, const char *path, SDL_PathInfo *info);
 
-    int (SDLCALL *writeFile)(void *userdata, const char *path, const void *source, Uint64 length);
+    /* Read a file from storage, optional for write-only storage */
+    int (SDLCALL *read_file)(void *userdata, const char *path, void *destination, Uint64 length);
 
-    Uint64 (SDLCALL *spaceRemaining)(void *userdata);
+    /* Write a file to storage, optional for read-only storage */
+    int (SDLCALL *write_file)(void *userdata, const char *path, const void *source, Uint64 length);
+
+    /* Create a directory, optional for read-only storage */
+    int (SDLCALL *mkdir)(void *userdata, const char *path);
+
+    /* Remove a file or empty directory, optional for read-only storage */
+    int (SDLCALL *remove)(void *userdata, const char *path);
+
+    /* Rename a path, optional for read-only storage */
+    int (SDLCALL *rename)(void *userdata, const char *oldpath, const char *newpath);
+
+    /* Get the space remaining, optional for read-only storage */
+    Uint64 (SDLCALL *space_remaining)(void *userdata);
+
 } SDL_StorageInterface;
 
 typedef struct SDL_Storage SDL_Storage;
@@ -268,6 +287,70 @@ extern DECLSPEC int SDLCALL SDL_ReadStorageFile(SDL_Storage *storage, const char
 extern DECLSPEC int SDL_WriteStorageFile(SDL_Storage *storage, const char *path, const void *source, Uint64 length);
 
 /**
+ * Create a directory in a writable storage container.
+ *
+ * \param storage a storage container
+ * \param path the path of the directory to create
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_CreateStorageDirectory(SDL_Storage *storage, const char *path);
+
+/**
+ * Enumerate a directory in a storage container.
+ *
+ * \param storage a storage container
+ * \param path the path of the directory to enumerate
+ * \param callback a function that is called for each entry in the directory
+ * \param userdata a pointer that is passed to `callback`
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_EnumerateStorageDirectory(SDL_Storage *storage, const char *path, SDL_EnumerateDirectoryCallback callback, void *userdata);
+
+/**
+ * Remove a file or an empty directory in a writable storage container.
+ *
+ * \param storage a storage container
+ * \param path the path of the directory to enumerate
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_RemoveStoragePath(SDL_Storage *storage, const char *path);
+
+/**
+ * Rename a file or directory in a writable storage container.
+ *
+ * \param storage a storage container
+ * \param oldpath the old path
+ * \param newpath the new path
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_RenameStoragePath(SDL_Storage *storage, const char *oldpath, const char *newpath);
+
+/**
+ * Get information about a filesystem path in a storage container.
+ *
+ * \param storage a storage container
+ * \param path the path to query
+ * \param info a pointer filled in with information about the path
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_GetStoragePathInfo(SDL_Storage *storage, const char *path, SDL_PathInfo *info);
+
+/**
  * Queries the remaining space in a storage container.
  *
  * \param storage a storage container to query
@@ -282,9 +365,7 @@ extern DECLSPEC int SDL_WriteStorageFile(SDL_Storage *storage, const char *path,
  * \sa SDL_StorageReady
  * \sa SDL_GetStorageFileSize
  * \sa SDL_ReadStorageFile
- * \sa SDL_ReadStorageFileAsync
  * \sa SDL_WriteStorageFile
- * \sa SDL_WriteStorageFileAsync
  */
 extern DECLSPEC Uint64 SDLCALL SDL_GetStorageSpaceRemaining(SDL_Storage *storage);
 

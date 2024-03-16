@@ -23,116 +23,160 @@
 
 #include "../SDL_sysstorage.h"
 
+
 static char *GENERIC_INTERNAL_CreateFullPath(const char *base, const char *relative)
 {
-    size_t len = 0;
-
-    if (base) {
-        len += SDL_strlen(base);
+    if (!base) {
+        return SDL_strdup(relative);
     }
-    len += SDL_strlen(relative) + 1;
 
-    char *result = (char*) SDL_malloc(len);
+    size_t len = SDL_strlen(base) + SDL_strlen(relative) + 1;
+    char *result = (char*)SDL_malloc(len);
     if (result != NULL) {
         SDL_snprintf(result, len, "%s%s", base, relative);
     }
     return result;
 }
 
-static int GENERIC_StorageClose(void *userdata)
+static int GENERIC_CloseStorage(void *userdata)
 {
     SDL_free(userdata);
     return 0;
 }
 
-static SDL_bool GENERIC_StorageReady(void *userdata)
+static int GENERIC_EnumerateStorageDirectory(void *userdata, const char *path, SDL_EnumerateDirectoryCallback callback, void *callback_userdata)
 {
-    return SDL_TRUE;
+    int result = -1;
+
+    char *fullpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, path);
+    if (fullpath) {
+        result = SDL_EnumerateDirectory(fullpath, callback, callback_userdata);
+
+        SDL_free(fullpath);
+    }
+    return result;
 }
 
-static int GENERIC_StorageFileSize(void *userdata, const char *path, Uint64 *length)
+static int GENERIC_GetStoragePathInfo(void *userdata, const char *path, SDL_PathInfo *info)
 {
-    SDL_IOStream *stream;
-    Sint64 result;
+    int result = -1;
 
-    char *fullpath = GENERIC_INTERNAL_CreateFullPath((char*) userdata, path);
-    if (fullpath == NULL) {
-        return SDL_OutOfMemory();
+    char *fullpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, path);
+    if (fullpath) {
+        result = SDL_GetPathInfo(fullpath, info);
+
+        SDL_free(fullpath);
     }
-    stream = SDL_IOFromFile(fullpath, "rb");
-    SDL_free(fullpath);
-
-    result = SDL_SizeIO(stream);
-    SDL_CloseIO(stream);
-    if (result < 0) {
-        return result;
-    }
-
-    /* FIXME: Should SDL_SizeIO use u64 now...? */
-    *length = (Uint64) result;
-    return 0;
+    return result;
 }
 
-static int GENERIC_StorageReadFile(void *userdata, const char *path, void *destination, Uint64 length)
+static int GENERIC_ReadStorageFile(void *userdata, const char *path, void *destination, Uint64 length)
 {
-    SDL_IOStream *stream;
-    char *fullpath;
-    int fullread;
+    int result = -1;
 
     if (length > SDL_SIZE_MAX) {
         return SDL_SetError("Read size exceeds SDL_SIZE_MAX");
     }
 
-    fullpath = GENERIC_INTERNAL_CreateFullPath((char*) userdata, path);
-    if (fullpath == NULL) {
-        return SDL_OutOfMemory();
+    char *fullpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, path);
+    if (fullpath) {
+        SDL_IOStream *stream = SDL_IOFromFile(fullpath, "rb");
+        if (stream) {
+            /* FIXME: Should SDL_ReadIO use u64 now...? */
+            if (SDL_ReadIO(stream, destination, (size_t)length) == length) {
+                result = 0;
+            }
+            SDL_CloseIO(stream);
+        }
+        SDL_free(fullpath);
     }
-    stream = SDL_IOFromFile(fullpath, "rb");
-    SDL_free(fullpath);
-
-    /* FIXME: Should SDL_ReadIO use u64 now...? */
-    fullread = (SDL_ReadIO(stream, destination, (size_t) length) == length);
-    SDL_CloseIO(stream);
-    return fullread - 1;
+    return result;
 }
 
-static int GENERIC_StorageWriteFile(void *userdata, const char *path, const void *source, Uint64 length)
+static int GENERIC_WriteStorageFile(void *userdata, const char *path, const void *source, Uint64 length)
 {
-    /* TODO: Recursively create subdirectories with SDL_mkdir */
-    SDL_IOStream *stream;
-    char *fullpath;
-    int fullwrite;
+    /* TODO: Recursively create subdirectories with SDL_CreateDirectory */
+    int result = -1;
 
     if (length > SDL_SIZE_MAX) {
         return SDL_SetError("Write size exceeds SDL_SIZE_MAX");
     }
 
-    fullpath = GENERIC_INTERNAL_CreateFullPath((char*) userdata, path);
-    if (fullpath == NULL) {
-        return SDL_OutOfMemory();
-    }
-    stream = SDL_IOFromFile(fullpath, "wb");
-    SDL_free(fullpath);
+    char *fullpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, path);
+    if (fullpath) {
+        SDL_IOStream *stream = SDL_IOFromFile(fullpath, "wb");
 
-    /* FIXME: Should SDL_WriteIO use u64 now...? */
-    fullwrite = (SDL_WriteIO(stream, source, (size_t) length) == length);
-    SDL_CloseIO(stream);
-    return fullwrite - 1;
+        if (stream) {
+            /* FIXME: Should SDL_WriteIO use u64 now...? */
+            if (SDL_WriteIO(stream, source, (size_t)length) == length) {
+                result = 0;
+            }
+            SDL_CloseIO(stream);
+        }
+        SDL_free(fullpath);
+    }
+    return result;
 }
 
-static Uint64 GENERIC_StorageSpaceRemaining(void *userdata)
+static int GENERIC_CreateStorageDirectory(void *userdata, const char *path)
+{
+    /* TODO: Recursively create subdirectories with SDL_CreateDirectory */
+    int result = -1;
+
+    char *fullpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, path);
+    if (fullpath) {
+        result = SDL_CreateDirectory(fullpath);
+
+        SDL_free(fullpath);
+    }
+    return result;
+}
+
+static int GENERIC_RemoveStoragePath(void *userdata, const char *path)
+{
+    int result = -1;
+
+    char *fullpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, path);
+    if (fullpath) {
+        result = SDL_RemovePath(fullpath);
+
+        SDL_free(fullpath);
+    }
+    return result;
+}
+
+static int GENERIC_RenameStoragePath(void *userdata, const char *oldpath, const char *newpath)
+{
+    int result = -1;
+
+    char *fulloldpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, oldpath);
+    char *fullnewpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, newpath);
+    if (fulloldpath && fullnewpath) {
+        result = SDL_RenamePath(fulloldpath, fullnewpath);
+    }
+    SDL_free(fulloldpath);
+    SDL_free(fullnewpath);
+
+    return result;
+}
+
+static Uint64 GENERIC_GetStorageSpaceRemaining(void *userdata)
 {
     /* TODO: There's totally a way to query a folder root's quota... */
     return SDL_MAX_UINT64;
 }
 
 static const SDL_StorageInterface GENERIC_title_iface = {
-    GENERIC_StorageClose,
-    GENERIC_StorageReady,
-    GENERIC_StorageFileSize,
-    GENERIC_StorageReadFile,
-    NULL,
-    NULL
+    GENERIC_CloseStorage,
+    NULL,   /* ready */
+    GENERIC_EnumerateStorageDirectory,
+    GENERIC_GetStoragePathInfo,
+    GENERIC_ReadStorageFile,
+    NULL,   /* write_file */
+    NULL,   /* mkdir */
+    NULL,   /* remove */
+    NULL,   /* rename */
+    NULL    /* space_remaining */
 };
 
 static SDL_Storage *GENERIC_Title_Create(const char *override, SDL_PropertiesID props)
@@ -163,12 +207,16 @@ TitleStorageBootStrap GENERIC_titlebootstrap = {
 };
 
 static const SDL_StorageInterface GENERIC_user_iface = {
-    GENERIC_StorageClose,
-    GENERIC_StorageReady,
-    GENERIC_StorageFileSize,
-    GENERIC_StorageReadFile,
-    GENERIC_StorageWriteFile,
-    GENERIC_StorageSpaceRemaining
+    GENERIC_CloseStorage,
+    NULL,   /* ready */
+    GENERIC_EnumerateStorageDirectory,
+    GENERIC_GetStoragePathInfo,
+    GENERIC_ReadStorageFile,
+    GENERIC_WriteStorageFile,
+    GENERIC_CreateStorageDirectory,
+    GENERIC_RemoveStoragePath,
+    GENERIC_RenameStoragePath,
+    GENERIC_GetStorageSpaceRemaining
 };
 
 static SDL_Storage *GENERIC_User_Create(const char *org, const char *app, SDL_PropertiesID props)
@@ -194,12 +242,16 @@ UserStorageBootStrap GENERIC_userbootstrap = {
 };
 
 static const SDL_StorageInterface GENERIC_file_iface = {
-    GENERIC_StorageClose,
-    GENERIC_StorageReady,
-    GENERIC_StorageFileSize,
-    GENERIC_StorageReadFile,
-    GENERIC_StorageWriteFile,
-    GENERIC_StorageSpaceRemaining
+    GENERIC_CloseStorage,
+    NULL,   /* ready */
+    GENERIC_EnumerateStorageDirectory,
+    GENERIC_GetStoragePathInfo,
+    GENERIC_ReadStorageFile,
+    GENERIC_WriteStorageFile,
+    GENERIC_CreateStorageDirectory,
+    GENERIC_RemoveStoragePath,
+    GENERIC_RenameStoragePath,
+    GENERIC_GetStorageSpaceRemaining
 };
 
 SDL_Storage *GENERIC_OpenFileStorage(const char *path)
