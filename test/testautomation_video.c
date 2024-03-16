@@ -55,6 +55,7 @@ static SDL_Window *createVideoSuiteTestWindow(const char *title)
              * so delay to give the window time to actually appear on the desktop.
              */
             SDL_Delay(100);
+            SDL_DestroyRenderer(renderer);
         } else {
             SDLTest_Log("Unable to create a renderer, some tests may fail on Wayland/XWayland");
         }
@@ -1786,6 +1787,7 @@ static int video_setWindowCenteredOnDisplay(void *arg)
                          * so delay to give the window time to actually appear on the desktop.
                          */
                         SDL_Delay(100);
+                        SDL_DestroyRenderer(renderer);
                     } else {
                         SDLTest_Log("Unable to create a renderer, tests may fail under Wayland");
                     }
