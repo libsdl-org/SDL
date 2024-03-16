@@ -236,6 +236,102 @@ typedef enum
  */
 extern DECLSPEC char *SDLCALL SDL_GetUserFolder(SDL_Folder folder);
 
+
+/* Abstract filesystem interface */
+
+typedef enum SDL_PathType
+{
+    SDL_PATHTYPE_FILE, /**< a normal file */
+    SDL_PATHTYPE_DIRECTORY, /**< a directory */
+    SDL_PATHTYPE_OTHER /**< something completely different like a device node (not a symlink, those are always followed) */
+} SDL_PathType;
+
+/* SDL file timestamps are 64-bit integers representing seconds since the Unix epoch (Jan 1, 1970) */
+typedef Sint64 SDL_FileTimestamp;
+
+typedef struct SDL_PathInfo
+{
+    SDL_PathType type;              /* the path type */
+    Uint64 size;                    /* the file size in bytes */
+    SDL_FileTimestamp create_time;  /* the time when the path was created */
+    SDL_FileTimestamp modify_time;  /* the last time the path was modified */
+    SDL_FileTimestamp access_time;  /* the last time the path was read */
+} SDL_PathInfo;
+
+/**
+ * Create a directory.
+ *
+ * \param path the path of the directory to create
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_CreateDirectory(const char *path);
+
+/* Callback for filesystem enumeration. Return 1 to keep enumerating, 0 to stop enumerating (no error), -1 to stop enumerating and report an error. "origdir" is the directory being enumerated, "fname" is the enumerated entry. */
+typedef int (SDLCALL *SDL_EnumerateDirectoryCallback)(void *userdata, void *reserved, const char *origdir, const char *fname);
+
+/**
+ * Enumerate a directory.
+ *
+ * \param path the path of the directory to enumerate
+ * \param callback a function that is called for each entry in the directory
+ * \param userdata a pointer that is passed to `callback`
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback callback, void *userdata);
+
+/**
+ * Remove a file or an empty directory.
+ *
+ * \param path the path of the directory to enumerate
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_RemovePath(const char *path);
+
+/**
+ * Rename a file or directory.
+ *
+ * \param oldpath the old path
+ * \param newpath the new path
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_RenamePath(const char *oldpath, const char *newpath);
+
+/**
+ * Get information about a filesystem path.
+ *
+ * \param path the path to query
+ * \param info a pointer filled in with information about the path
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *info);
+
+/* some helper functions ... */
+
+/* Converts an SDL file timestamp into a Windows FILETIME (100-nanosecond intervals since January 1, 1601). Fills in the two 32-bit values of the FILETIME structure.
+ *
+ * \param ftime the time to convert
+ * \param low a pointer filled in with the low portion of the Windows FILETIME value
+ * \param high a pointer filled in with the high portion of the Windows FILETIME value
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC void SDLCALL SDL_FileTimeToWindows(Sint64 ftime, Uint32 *low, Uint32 *high);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

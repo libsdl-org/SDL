@@ -469,6 +469,11 @@
 #cmakedefine SDL_STORAGE_GENERIC @SDL_STORAGE_GENERIC@
 #cmakedefine SDL_STORAGE_STEAM @SDL_STORAGE_STEAM@
 
+/* Enable system FSops support */
+#cmakedefine SDL_FSOPS_POSIX @SDL_FSOPS_POSIX@
+#cmakedefine SDL_FSOPS_WINDOWS @SDL_FSOPS_WINDOWS@
+#cmakedefine SDL_FSOPS_DUMMY @SDL_FSOPS_DUMMY@
+
 /* Enable camera subsystem */
 #cmakedefine SDL_CAMERA_DRIVER_DUMMY @SDL_CAMERA_DRIVER_DUMMY@
 /* !!! FIXME: for later cmakedefine SDL_CAMERA_DRIVER_DISK @SDL_CAMERA_DRIVER_DISK@ */

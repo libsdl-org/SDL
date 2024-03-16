@@ -312,6 +312,7 @@ typedef unsigned int uintptr_t;
 
 /* Enable filesystem support */
 #define SDL_FILESYSTEM_WINDOWS  1
+#define SDL_FSOPS_WINDOWS 1
 
 /* Enable the camera driver */
 #define SDL_CAMERA_DRIVER_MEDIAFOUNDATION 1

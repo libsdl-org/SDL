@@ -1012,3 +1012,9 @@
 #define SDL_GetStorageFileSize SDL_GetStorageFileSize_REAL
 #define SDL_ReadStorageFile SDL_ReadStorageFile_REAL
 #define SDL_GetStorageSpaceRemaining SDL_GetStorageSpaceRemaining_REAL
+#define SDL_CreateDirectory SDL_CreateDirectory_REAL
+#define SDL_EnumerateDirectory SDL_EnumerateDirectory_REAL
+#define SDL_RemovePath SDL_RemovePath_REAL
+#define SDL_RenamePath SDL_RenamePath_REAL
+#define SDL_GetPathInfo SDL_GetPathInfo_REAL
+#define SDL_FileTimeToWindows SDL_FileTimeToWindows_REAL
