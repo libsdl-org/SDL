@@ -151,24 +151,23 @@ SDL_Storage *SDL_OpenStorage(const SDL_StorageInterface *iface, void *userdata)
         return NULL;
     }
 
-    storage = (SDL_Storage*) SDL_malloc(sizeof(SDL_Storage));
-    if (!storage) {
-        SDL_OutOfMemory();
-        return NULL;
+    storage = (SDL_Storage *)SDL_calloc(1, sizeof(*storage));
+    if (storage) {
+        SDL_copyp(&storage->iface, iface);
+        storage->userdata = userdata;
     }
-
-    SDL_memcpy(&storage->iface, iface, sizeof(SDL_StorageInterface));
-    storage->userdata = userdata;
     return storage;
 }
 
 int SDL_CloseStorage(SDL_Storage *storage)
 {
-    int retval;
+    int retval = 0;
 
     CHECK_STORAGE_MAGIC()
 
-    retval = storage->iface.close(storage->userdata);
+    if (storage->iface.close) {
+        retval = storage->iface.close(storage->userdata);
+    }
     SDL_free(storage);
     return retval;
 }
