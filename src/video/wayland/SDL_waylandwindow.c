@@ -202,7 +202,7 @@ static void SetDrawSurfaceViewport(SDL_Window *window, int src_width, int src_he
             wind->draw_viewport = wp_viewporter_get_viewport(video->viewporter, wind->surface);
         }
 
-        wp_viewport_set_source(wind->draw_viewport, wl_fixed_from_int(0), wl_fixed_from_int(0), wl_fixed_from_int(src_width), wl_fixed_from_int(src_height));
+        wp_viewport_set_source(wind->draw_viewport, wl_fixed_from_int(-1), wl_fixed_from_int(-1), wl_fixed_from_int(-1), wl_fixed_from_int(-1));
         wp_viewport_set_destination(wind->draw_viewport, dst_width, dst_height);
     }
 }
