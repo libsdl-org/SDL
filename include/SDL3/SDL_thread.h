@@ -190,8 +190,7 @@ SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn,
  * \sa SDL_CreateThreadWithStackSize
  * \sa SDL_WaitThread
  */
-extern DECLSPEC SDL_Thread *SDLCALL
-SDL_CreateThread(SDL_ThreadFunction fn, const char *name, void *data);
+extern DECLSPEC SDL_Thread * SDLCALL SDL_CreateThread(SDL_ThreadFunction fn, const char *name, void *data);
 
 /**
  * Create a new thread with a specific stack size.
@@ -230,10 +229,10 @@ SDL_CreateThread(SDL_ThreadFunction fn, const char *name, void *data);
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_CreateThread
  * \sa SDL_WaitThread
  */
-extern DECLSPEC SDL_Thread *SDLCALL
-SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn, const char *name, const size_t stacksize, void *data);
+extern DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn, const char *name, const size_t stacksize, void *data);
 
 #endif
 
@@ -248,8 +247,6 @@ SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn, const char *name, const siz
  *          NULL if it doesn't have a name.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_CreateThread
  */
 extern DECLSPEC const char *SDLCALL SDL_GetThreadName(SDL_Thread *thread);
 
@@ -398,7 +395,6 @@ extern DECLSPEC SDL_TLSID SDLCALL SDL_CreateTLS(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateTLS
  * \sa SDL_SetTLS
  */
 extern DECLSPEC void * SDLCALL SDL_GetTLS(SDL_TLSID id);
@@ -423,7 +419,6 @@ extern DECLSPEC void * SDLCALL SDL_GetTLS(SDL_TLSID id);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateTLS
  * \sa SDL_GetTLS
  */
 extern DECLSPEC int SDLCALL SDL_SetTLS(SDL_TLSID id, const void *value, void (SDLCALL *destructor)(void*));

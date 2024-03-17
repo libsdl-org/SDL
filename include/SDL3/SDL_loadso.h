@@ -87,7 +87,6 @@ extern DECLSPEC void *SDLCALL SDL_LoadObject(const char *sofile);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_LoadObject
- * \sa SDL_UnloadObject
  */
 extern DECLSPEC SDL_FunctionPointer SDLCALL SDL_LoadFunction(void *handle, const char *name);
 
@@ -98,7 +97,6 @@ extern DECLSPEC SDL_FunctionPointer SDLCALL SDL_LoadFunction(void *handle, const
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_LoadFunction
  * \sa SDL_LoadObject
  */
 extern DECLSPEC void SDLCALL SDL_UnloadObject(void *handle);

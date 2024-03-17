@@ -263,7 +263,6 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppInit(int argc, char *argv[]);
  *
  * \sa SDL_AppInit
  * \sa SDL_AppEvent
- * \sa SDL_AppQuit
  */
 extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppIterate(void);
 
@@ -309,7 +308,6 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppIterate(void);
  *
  * \sa SDL_AppInit
  * \sa SDL_AppIterate
- * \sa SDL_AppQuit
  */
 extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppEvent(const SDL_Event *event);
 
@@ -337,8 +335,6 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppEvent(const SDL_Event *event);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AppInit
- * \sa SDL_AppIterate
- * \sa SDL_AppEvent
  */
 extern SDLMAIN_DECLSPEC void SDLCALL SDL_AppQuit(void);
 

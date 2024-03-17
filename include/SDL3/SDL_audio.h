@@ -561,7 +561,6 @@ extern DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID devid);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BindAudioStreams
- * \sa SDL_UnbindAudioStreams
  * \sa SDL_UnbindAudioStream
  * \sa SDL_GetAudioStreamDevice
  */
@@ -583,7 +582,6 @@ extern DECLSPEC int SDLCALL SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_Au
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BindAudioStreams
- * \sa SDL_UnbindAudioStreams
  * \sa SDL_UnbindAudioStream
  * \sa SDL_GetAudioStreamDevice
  */
@@ -607,9 +605,6 @@ extern DECLSPEC int SDLCALL SDL_BindAudioStream(SDL_AudioDeviceID devid, SDL_Aud
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BindAudioStreams
- * \sa SDL_BindAudioStream
- * \sa SDL_UnbindAudioStream
- * \sa SDL_GetAudioStreamDevice
  */
 extern DECLSPEC void SDLCALL SDL_UnbindAudioStreams(SDL_AudioStream **streams, int num_streams);
 
@@ -626,9 +621,6 @@ extern DECLSPEC void SDLCALL SDL_UnbindAudioStreams(SDL_AudioStream **streams, i
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BindAudioStream
- * \sa SDL_BindAudioStreams
- * \sa SDL_UnbindAudioStreams
- * \sa SDL_GetAudioStreamDevice
  */
 extern DECLSPEC void SDLCALL SDL_UnbindAudioStream(SDL_AudioStream *stream);
 
@@ -649,8 +641,6 @@ extern DECLSPEC void SDLCALL SDL_UnbindAudioStream(SDL_AudioStream *stream);
  *
  * \sa SDL_BindAudioStream
  * \sa SDL_BindAudioStreams
- * \sa SDL_UnbindAudioStream
- * \sa SDL_UnbindAudioStreams
  */
 extern DECLSPEC SDL_AudioDeviceID SDLCALL SDL_GetAudioStreamDevice(SDL_AudioStream *stream);
 
@@ -727,9 +717,6 @@ extern DECLSPEC int SDLCALL SDL_GetAudioStreamFormat(SDL_AudioStream *stream,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetAudioStreamFormat
- * \sa SDL_PutAudioStreamData
- * \sa SDL_GetAudioStreamData
- * \sa SDL_GetAudioStreamAvailable
  * \sa SDL_SetAudioStreamFrequencyRatio
  */
 extern DECLSPEC int SDLCALL SDL_SetAudioStreamFormat(SDL_AudioStream *stream,
@@ -801,12 +788,10 @@ extern DECLSPEC int SDLCALL SDL_SetAudioStreamFrequencyRatio(SDL_AudioStream *st
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateAudioStream
- * \sa SDL_GetAudioStreamData
- * \sa SDL_GetAudioStreamAvailable
- * \sa SDL_FlushAudioStream
  * \sa SDL_ClearAudioStream
- * \sa SDL_DestroyAudioStream
+ * \sa SDL_FlushAudioStream
+ * \sa SDL_GetAudioStreamData
+ * \sa SDL_GetAudioStreamQueued
  */
 extern DECLSPEC int SDLCALL SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len);
 
@@ -833,13 +818,9 @@ extern DECLSPEC int SDLCALL SDL_PutAudioStreamData(SDL_AudioStream *stream, cons
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateAudioStream
- * \sa SDL_PutAudioStreamData
- * \sa SDL_GetAudioStreamAvailable
- * \sa SDL_SetAudioStreamFormat
- * \sa SDL_FlushAudioStream
  * \sa SDL_ClearAudioStream
- * \sa SDL_DestroyAudioStream
+ * \sa SDL_GetAudioStreamAvailable
+ * \sa SDL_PutAudioStreamData
  */
 extern DECLSPEC int SDLCALL SDL_GetAudioStreamData(SDL_AudioStream *stream, void *buf, int len);
 
@@ -863,12 +844,8 @@ extern DECLSPEC int SDLCALL SDL_GetAudioStreamData(SDL_AudioStream *stream, void
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateAudioStream
- * \sa SDL_PutAudioStreamData
  * \sa SDL_GetAudioStreamData
- * \sa SDL_FlushAudioStream
- * \sa SDL_ClearAudioStream
- * \sa SDL_DestroyAudioStream
+ * \sa SDL_PutAudioStreamData
  */
 extern DECLSPEC int SDLCALL SDL_GetAudioStreamAvailable(SDL_AudioStream *stream);
 
@@ -900,7 +877,6 @@ extern DECLSPEC int SDLCALL SDL_GetAudioStreamAvailable(SDL_AudioStream *stream)
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_PutAudioStreamData
- * \sa SDL_GetAudioStreamData
  * \sa SDL_ClearAudioStream
  */
 extern DECLSPEC int SDLCALL SDL_GetAudioStreamQueued(SDL_AudioStream *stream);
@@ -922,12 +898,7 @@ extern DECLSPEC int SDLCALL SDL_GetAudioStreamQueued(SDL_AudioStream *stream);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateAudioStream
  * \sa SDL_PutAudioStreamData
- * \sa SDL_GetAudioStreamData
- * \sa SDL_GetAudioStreamAvailable
- * \sa SDL_ClearAudioStream
- * \sa SDL_DestroyAudioStream
  */
 extern DECLSPEC int SDLCALL SDL_FlushAudioStream(SDL_AudioStream *stream);
 
@@ -942,12 +913,10 @@ extern DECLSPEC int SDLCALL SDL_FlushAudioStream(SDL_AudioStream *stream);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateAudioStream
- * \sa SDL_PutAudioStreamData
- * \sa SDL_GetAudioStreamData
  * \sa SDL_GetAudioStreamAvailable
- * \sa SDL_FlushAudioStream
- * \sa SDL_DestroyAudioStream
+ * \sa SDL_GetAudioStreamData
+ * \sa SDL_GetAudioStreamQueued
+ * \sa SDL_PutAudioStreamData
  */
 extern DECLSPEC int SDLCALL SDL_ClearAudioStream(SDL_AudioStream *stream);
 
@@ -976,8 +945,6 @@ extern DECLSPEC int SDLCALL SDL_ClearAudioStream(SDL_AudioStream *stream);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_UnlockAudioStream
- * \sa SDL_SetAudioStreamPutCallback
- * \sa SDL_SetAudioStreamGetCallback
  */
 extern DECLSPEC int SDLCALL SDL_LockAudioStream(SDL_AudioStream *stream);
 
@@ -997,8 +964,6 @@ extern DECLSPEC int SDLCALL SDL_LockAudioStream(SDL_AudioStream *stream);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_LockAudioStream
- * \sa SDL_SetAudioStreamPutCallback
- * \sa SDL_SetAudioStreamGetCallback
  */
 extern DECLSPEC int SDLCALL SDL_UnlockAudioStream(SDL_AudioStream *stream);
 
@@ -1134,11 +1099,6 @@ extern DECLSPEC int SDLCALL SDL_SetAudioStreamPutCallback(SDL_AudioStream *strea
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateAudioStream
- * \sa SDL_PutAudioStreamData
- * \sa SDL_GetAudioStreamData
- * \sa SDL_GetAudioStreamAvailable
- * \sa SDL_FlushAudioStream
- * \sa SDL_ClearAudioStream
  */
 extern DECLSPEC void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *stream);
 
@@ -1458,8 +1418,6 @@ extern DECLSPEC int SDLCALL SDL_MixAudioFormat(Uint8 * dst,
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_CreateAudioStream
  */
 extern DECLSPEC int SDLCALL SDL_ConvertAudioSamples(const SDL_AudioSpec *src_spec,
                                                     const Uint8 *src_data,

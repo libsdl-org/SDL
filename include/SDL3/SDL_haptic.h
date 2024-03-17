@@ -898,10 +898,8 @@ extern DECLSPEC const char *SDLCALL SDL_GetHapticInstanceName(SDL_HapticID insta
  * \sa SDL_GetHaptics
  * \sa SDL_OpenHapticFromJoystick
  * \sa SDL_OpenHapticFromMouse
- * \sa SDL_PauseHaptic
  * \sa SDL_SetHapticAutocenter
  * \sa SDL_SetHapticGain
- * \sa SDL_StopHapticEffects
  */
 extern DECLSPEC SDL_Haptic *SDLCALL SDL_OpenHaptic(SDL_HapticID instance_id);
 
@@ -925,8 +923,6 @@ extern DECLSPEC SDL_Haptic *SDLCALL SDL_GetHapticFromInstanceID(SDL_HapticID ins
  *          failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_OpenHaptic
  */
 extern DECLSPEC SDL_HapticID SDLCALL SDL_GetHapticInstanceID(SDL_Haptic *haptic);
 
@@ -941,7 +937,6 @@ extern DECLSPEC SDL_HapticID SDLCALL SDL_GetHapticInstanceID(SDL_Haptic *haptic)
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHapticInstanceName
- * \sa SDL_OpenHaptic
  */
 extern DECLSPEC const char *SDLCALL SDL_GetHapticName(SDL_Haptic *haptic);
 
@@ -964,7 +959,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsMouseHaptic(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_OpenHaptic
+ * \sa SDL_CloseHaptic
  * \sa SDL_IsMouseHaptic
  */
 extern DECLSPEC SDL_Haptic *SDLCALL SDL_OpenHapticFromMouse(void);
@@ -999,7 +994,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsJoystickHaptic(SDL_Joystick *joystick);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CloseHaptic
- * \sa SDL_OpenHaptic
  * \sa SDL_IsJoystickHaptic
  */
 extern DECLSPEC SDL_Haptic *SDLCALL SDL_OpenHapticFromJoystick(SDL_Joystick *joystick);
@@ -1127,7 +1121,6 @@ extern DECLSPEC int SDLCALL SDL_CreateHapticEffect(SDL_Haptic *haptic, const SDL
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_DestroyHapticEffect
  * \sa SDL_CreateHapticEffect
  * \sa SDL_RunHapticEffect
  */
@@ -1151,9 +1144,9 @@ extern DECLSPEC int SDLCALL SDL_UpdateHapticEffect(SDL_Haptic *haptic, int effec
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_DestroyHapticEffect
  * \sa SDL_GetHapticEffectStatus
  * \sa SDL_StopHapticEffect
+ * \sa SDL_StopHapticEffects
  */
 extern DECLSPEC int SDLCALL SDL_RunHapticEffect(SDL_Haptic *haptic, int effect, Uint32 iterations);
 
@@ -1169,8 +1162,8 @@ extern DECLSPEC int SDLCALL SDL_RunHapticEffect(SDL_Haptic *haptic, int effect, 
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_DestroyHapticEffect
  * \sa SDL_RunHapticEffect
+ * \sa SDL_StopHapticEffects
  */
 extern DECLSPEC int SDLCALL SDL_StopHapticEffect(SDL_Haptic *haptic, int effect);
 
@@ -1200,9 +1193,6 @@ extern DECLSPEC void SDLCALL SDL_DestroyHapticEffect(SDL_Haptic *haptic, int eff
  *          code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_RunHapticEffect
- * \sa SDL_StopHapticEffect
  */
 extern DECLSPEC int SDLCALL SDL_GetHapticEffectStatus(SDL_Haptic *haptic, int effect);
 
@@ -1288,6 +1278,9 @@ extern DECLSPEC int SDLCALL SDL_ResumeHaptic(SDL_Haptic *haptic);
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_RunHapticEffect
+ * \sa SDL_StopHapticEffects
  */
 extern DECLSPEC int SDLCALL SDL_StopHapticEffects(SDL_Haptic *haptic);
 
@@ -1300,8 +1293,6 @@ extern DECLSPEC int SDLCALL SDL_StopHapticEffects(SDL_Haptic *haptic);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_InitHapticRumble
- * \sa SDL_PlayHapticRumble
- * \sa SDL_StopHapticRumble
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_HapticRumbleSupported(SDL_Haptic *haptic);
 
@@ -1314,7 +1305,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HapticRumbleSupported(SDL_Haptic *haptic);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_OpenHaptic
  * \sa SDL_PlayHapticRumble
  * \sa SDL_StopHapticRumble
  * \sa SDL_HapticRumbleSupported
@@ -1334,7 +1324,6 @@ extern DECLSPEC int SDLCALL SDL_InitHapticRumble(SDL_Haptic *haptic);
  *
  * \sa SDL_InitHapticRumble
  * \sa SDL_StopHapticRumble
- * \sa SDL_HapticRumbleSupported
  */
 extern DECLSPEC int SDLCALL SDL_PlayHapticRumble(SDL_Haptic *haptic, float strength, Uint32 length);
 
@@ -1347,9 +1336,7 @@ extern DECLSPEC int SDLCALL SDL_PlayHapticRumble(SDL_Haptic *haptic, float stren
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_InitHapticRumble
  * \sa SDL_PlayHapticRumble
- * \sa SDL_HapticRumbleSupported
  */
 extern DECLSPEC int SDLCALL SDL_StopHapticRumble(SDL_Haptic *haptic);
 

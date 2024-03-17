@@ -118,6 +118,7 @@ typedef enum
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_LogResetPriorities
  * \sa SDL_LogSetPriority
  */
 extern DECLSPEC void SDLCALL SDL_LogSetAllPriority(SDL_LogPriority priority);
@@ -131,6 +132,7 @@ extern DECLSPEC void SDLCALL SDL_LogSetAllPriority(SDL_LogPriority priority);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_LogGetPriority
+ * \sa SDL_LogResetPriorities
  * \sa SDL_LogSetAllPriority
  */
 extern DECLSPEC void SDLCALL SDL_LogSetPriority(int category,

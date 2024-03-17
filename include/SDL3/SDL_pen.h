@@ -191,8 +191,6 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetPenStatus(SDL_PenID instance_id, float *x,
  *          SDL_PenID.
  *
  * \since This function is available since SDL 3.0.0
- *
- * \sa SDL_GUID
  */
 extern DECLSPEC SDL_PenID SDLCALL SDL_GetPenFromGUID(SDL_GUID guid);
 
@@ -204,8 +202,6 @@ extern DECLSPEC SDL_PenID SDLCALL SDL_GetPenFromGUID(SDL_GUID guid);
  *          If "instance_id" is ::SDL_PEN_INVALID, returns an all-zeroes GUID.
  *
  * \since This function is available since SDL 3.0.0
- *
- * \sa SDL_PenForID
  */
 extern DECLSPEC SDL_GUID SDLCALL SDL_GetPenGUID(SDL_PenID instance_id);
 

@@ -87,15 +87,10 @@ typedef struct SDL_Storage SDL_Storage;
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_OpenUserStorage
- * \sa SDL_OpenStorage
- * \sa SDL_TitleStorageReady
  * \sa SDL_CloseStorage
- * \sa SDL_StorageReady
  * \sa SDL_GetStorageFileSize
+ * \sa SDL_OpenUserStorage
  * \sa SDL_ReadStorageFile
- * \sa SDL_WriteStorageFile
- * \sa SDL_GetStorageSpaceRemaining
  */
 extern DECLSPEC SDL_Storage *SDLCALL SDL_OpenTitleStorage(const char *override, SDL_PropertiesID props);
 
@@ -115,14 +110,13 @@ extern DECLSPEC SDL_Storage *SDLCALL SDL_OpenTitleStorage(const char *override, 
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_OpenTitleStorage
- * \sa SDL_OpenStorage
  * \sa SDL_CloseStorage
- * \sa SDL_StorageReady
  * \sa SDL_GetStorageFileSize
- * \sa SDL_ReadStorageFile
- * \sa SDL_WriteStorageFile
  * \sa SDL_GetStorageSpaceRemaining
+ * \sa SDL_OpenTitleStorage
+ * \sa SDL_ReadStorageFile
+ * \sa SDL_StorageReady
+ * \sa SDL_WriteStorageFile
  */
 extern DECLSPEC SDL_Storage *SDLCALL SDL_OpenUserStorage(const char *org, const char *app, SDL_PropertiesID props);
 
@@ -140,13 +134,13 @@ extern DECLSPEC SDL_Storage *SDLCALL SDL_OpenUserStorage(const char *org, const 
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_OpenStorage
  * \sa SDL_CloseStorage
- * \sa SDL_StorageReady
  * \sa SDL_GetStorageFileSize
+ * \sa SDL_GetStorageSpaceRemaining
+ * \sa SDL_OpenTitleStorage
+ * \sa SDL_OpenUserStorage
  * \sa SDL_ReadStorageFile
  * \sa SDL_WriteStorageFile
- * \sa SDL_GetStorageSpaceRemaining
  */
 extern DECLSPEC SDL_Storage *SDLCALL SDL_OpenFileStorage(const char *path);
 
@@ -165,14 +159,12 @@ extern DECLSPEC SDL_Storage *SDLCALL SDL_OpenFileStorage(const char *path);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_OpenTitleStorage
- * \sa SDL_OpenUserStorage
  * \sa SDL_CloseStorage
- * \sa SDL_StorageReady
  * \sa SDL_GetStorageFileSize
- * \sa SDL_ReadStorageFile
- * \sa SDL_WriteStorageFile
  * \sa SDL_GetStorageSpaceRemaining
+ * \sa SDL_ReadStorageFile
+ * \sa SDL_StorageReady
+ * \sa SDL_WriteStorageFile
  */
 extern DECLSPEC SDL_Storage *SDLCALL SDL_OpenStorage(const SDL_StorageInterface *iface, void *userdata);
 
@@ -187,14 +179,10 @@ extern DECLSPEC SDL_Storage *SDLCALL SDL_OpenStorage(const SDL_StorageInterface 
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_OpenFileStorage
+ * \sa SDL_OpenStorage
  * \sa SDL_OpenTitleStorage
  * \sa SDL_OpenUserStorage
- * \sa SDL_OpenStorage
- * \sa SDL_StorageReady
- * \sa SDL_GetStorageFileSize
- * \sa SDL_ReadStorageFile
- * \sa SDL_WriteStorageFile
- * \sa SDL_GetStorageSpaceRemaining
  */
 extern DECLSPEC int SDLCALL SDL_CloseStorage(SDL_Storage *storage);
 
@@ -209,15 +197,6 @@ extern DECLSPEC int SDLCALL SDL_CloseStorage(SDL_Storage *storage);
  * \returns SDL_TRUE if the container is ready, SDL_FALSE otherwise
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_OpenTitleStorage
- * \sa SDL_OpenUserStorage
- * \sa SDL_OpenStorage
- * \sa SDL_CloseStorage
- * \sa SDL_GetStorageFileSize
- * \sa SDL_ReadStorageFile
- * \sa SDL_WriteStorageFile
- * \sa SDL_GetStorageSpaceRemaining
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_StorageReady(SDL_Storage *storage);
 
@@ -232,14 +211,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_StorageReady(SDL_Storage *storage);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_OpenTitleStorage
- * \sa SDL_OpenUserStorage
- * \sa SDL_OpenStorage
- * \sa SDL_CloseStorage
- * \sa SDL_StorageReady
  * \sa SDL_ReadStorageFile
- * \sa SDL_WriteStorageFile
- * \sa SDL_GetStorageSpaceRemaining
+ * \sa SDL_StorageReady
  */
 extern DECLSPEC int SDLCALL SDL_GetStorageFileSize(SDL_Storage *storage, const char *path, Uint64 *length);
 
@@ -256,14 +229,9 @@ extern DECLSPEC int SDLCALL SDL_GetStorageFileSize(SDL_Storage *storage, const c
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_OpenTitleStorage
- * \sa SDL_OpenUserStorage
- * \sa SDL_OpenStorage
- * \sa SDL_CloseStorage
- * \sa SDL_StorageReady
  * \sa SDL_GetStorageFileSize
+ * \sa SDL_StorageReady
  * \sa SDL_WriteStorageFile
- * \sa SDL_GetStorageSpaceRemaining
  */
 extern DECLSPEC int SDLCALL SDL_ReadStorageFile(SDL_Storage *storage, const char *path, void *destination, Uint64 length);
 
@@ -279,14 +247,9 @@ extern DECLSPEC int SDLCALL SDL_ReadStorageFile(SDL_Storage *storage, const char
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_OpenTitleStorage
- * \sa SDL_OpenUserStorage
- * \sa SDL_OpenStorage
- * \sa SDL_CloseStorage
- * \sa SDL_StorageReady
- * \sa SDL_GetStorageFileSize
- * \sa SDL_ReadStorageFile
  * \sa SDL_GetStorageSpaceRemaining
+ * \sa SDL_ReadStorageFile
+ * \sa SDL_StorageReady
  */
 extern DECLSPEC int SDL_WriteStorageFile(SDL_Storage *storage, const char *path, const void *source, Uint64 length);
 
@@ -299,6 +262,8 @@ extern DECLSPEC int SDL_WriteStorageFile(SDL_Storage *storage, const char *path,
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_StorageReady
  */
 extern DECLSPEC int SDLCALL SDL_CreateStorageDirectory(SDL_Storage *storage, const char *path);
 
@@ -313,6 +278,8 @@ extern DECLSPEC int SDLCALL SDL_CreateStorageDirectory(SDL_Storage *storage, con
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_StorageReady
  */
 extern DECLSPEC int SDLCALL SDL_EnumerateStorageDirectory(SDL_Storage *storage, const char *path, SDL_EnumerateDirectoryCallback callback, void *userdata);
 
@@ -325,6 +292,8 @@ extern DECLSPEC int SDLCALL SDL_EnumerateStorageDirectory(SDL_Storage *storage, 
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_StorageReady
  */
 extern DECLSPEC int SDLCALL SDL_RemoveStoragePath(SDL_Storage *storage, const char *path);
 
@@ -338,6 +307,8 @@ extern DECLSPEC int SDLCALL SDL_RemoveStoragePath(SDL_Storage *storage, const ch
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_StorageReady
  */
 extern DECLSPEC int SDLCALL SDL_RenameStoragePath(SDL_Storage *storage, const char *oldpath, const char *newpath);
 
@@ -351,6 +322,8 @@ extern DECLSPEC int SDLCALL SDL_RenameStoragePath(SDL_Storage *storage, const ch
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_StorageReady
  */
 extern DECLSPEC int SDLCALL SDL_GetStoragePathInfo(SDL_Storage *storage, const char *path, SDL_PathInfo *info);
 
@@ -362,13 +335,7 @@ extern DECLSPEC int SDLCALL SDL_GetStoragePathInfo(SDL_Storage *storage, const c
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_OpenTitleStorage
- * \sa SDL_OpenUserStorage
- * \sa SDL_OpenStorage
- * \sa SDL_CloseStorage
  * \sa SDL_StorageReady
- * \sa SDL_GetStorageFileSize
- * \sa SDL_ReadStorageFile
  * \sa SDL_WriteStorageFile
  */
 extern DECLSPEC Uint64 SDLCALL SDL_GetStorageSpaceRemaining(SDL_Storage *storage);
