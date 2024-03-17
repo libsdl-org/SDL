@@ -3113,3 +3113,13 @@ typedef SDL_RWops, SDL_IOStream;
 @@
 - SDL_RWops
 + SDL_IOStream
+@@
+@@
+- SDL_LogGetOutputFunction
++ SDL_GetLogOutputFunction
+  (...)
+@@
+@@
+- SDL_LogSetOutputFunction
++ SDL_SetLogOutputFunction
+  (...)

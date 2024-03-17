@@ -423,14 +423,14 @@ SDL3_0.0.0 {
     SDL_LogCritical;
     SDL_LogDebug;
     SDL_LogError;
-    SDL_LogGetOutputFunction;
+    SDL_GetLogOutputFunction;
     SDL_LogGetPriority;
     SDL_LogInfo;
     SDL_LogMessage;
     SDL_LogMessageV;
     SDL_LogResetPriorities;
     SDL_LogSetAllPriority;
-    SDL_LogSetOutputFunction;
+    SDL_SetLogOutputFunction;
     SDL_LogSetPriority;
     SDL_LogVerbose;
     SDL_LogWarn;

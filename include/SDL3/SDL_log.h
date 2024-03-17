@@ -360,7 +360,7 @@ extern DECLSPEC void SDLCALL SDL_LogMessageV(int category,
  *
  * This function is called by SDL when there is new text to be logged.
  *
- * \param userdata what was passed as `userdata` to SDL_LogSetOutputFunction()
+ * \param userdata what was passed as `userdata` to SDL_SetLogOutputFunction()
  * \param category the category of the message
  * \param priority the priority of the message
  * \param message the message being output
@@ -377,9 +377,9 @@ typedef void (SDLCALL *SDL_LogOutputFunction)(void *userdata, int category, SDL_
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_LogSetOutputFunction
+ * \sa SDL_SetLogOutputFunction
  */
-extern DECLSPEC void SDLCALL SDL_LogGetOutputFunction(SDL_LogOutputFunction *callback, void **userdata);
+extern DECLSPEC void SDLCALL SDL_GetLogOutputFunction(SDL_LogOutputFunction *callback, void **userdata);
 
 /**
  * Replace the default log output function with one of your own.
@@ -389,9 +389,9 @@ extern DECLSPEC void SDLCALL SDL_LogGetOutputFunction(SDL_LogOutputFunction *cal
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_LogGetOutputFunction
+ * \sa SDL_GetLogOutputFunction
  */
-extern DECLSPEC void SDLCALL SDL_LogSetOutputFunction(SDL_LogOutputFunction callback, void *userdata);
+extern DECLSPEC void SDLCALL SDL_SetLogOutputFunction(SDL_LogOutputFunction callback, void *userdata);
 
 
 /* Ends C function definitions when using C++ */

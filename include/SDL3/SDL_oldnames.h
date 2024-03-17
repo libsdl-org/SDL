@@ -361,6 +361,10 @@
 #define KMOD_SCROLL SDL_KMOD_SCROLL
 #define KMOD_SHIFT SDL_KMOD_SHIFT
 
+/* ##SDL_log.h */
+#define SDL_LogGetOutputFunction SDL_GetLogOutputFunction
+#define SDL_LogSetOutputFunction SDL_SetLogOutputFunction
+
 /* ##SDL_mouse.h */
 #define SDL_FreeCursor SDL_DestroyCursor
 
@@ -857,6 +861,10 @@
 #define KMOD_RSHIFT KMOD_RSHIFT_renamed_SDL_KMOD_RSHIFT
 #define KMOD_SCROLL KMOD_SCROLL_renamed_SDL_KMOD_SCROLL
 #define KMOD_SHIFT KMOD_SHIFT_renamed_SDL_KMOD_SHIFT
+
+/* ##SDL_log.h */
+#define SDL_LogGetOutputFunction SDL_LogGetOutputFunction_renamed_SDL_GetLogOutputFunction
+#define SDL_LogSetOutputFunction SDL_LogSetOutputFunction_renamed_SDL_SetLogOutputFunction
 
 /* ##SDL_mouse.h */
 #define SDL_FreeCursor SDL_FreeCursor_renamed_SDL_DestroyCursor

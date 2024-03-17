@@ -454,7 +454,7 @@ extern "C" {
  *   "1"       - Log most events (other than the really spammy ones).
  *   "2"       - Include mouse and finger motion events.
  *
- * This is generally meant to be used to debug SDL itself, but can be useful for application developers that need better visibility into what is going on in the event queue. Logged events are sent through SDL_Log(), which means by default they appear on stdout on most platforms or maybe OutputDebugString() on Windows, and can be funneled by the app with SDL_LogSetOutputFunction(), etc.
+ * This is generally meant to be used to debug SDL itself, but can be useful for application developers that need better visibility into what is going on in the event queue. Logged events are sent through SDL_Log(), which means by default they appear on stdout on most platforms or maybe OutputDebugString() on Windows, and can be funneled by the app with SDL_SetLogOutputFunction(), etc.
  *
  * This hint can be set anytime.
  */

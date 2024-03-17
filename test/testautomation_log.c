@@ -17,13 +17,13 @@ static void SDLCALL TestLogOutput(void *userdata, int category, SDL_LogPriority 
 static void EnableTestLog(int *message_count)
 {
     *message_count = 0;
-    SDL_LogGetOutputFunction(&original_function, &original_userdata);
-    SDL_LogSetOutputFunction(TestLogOutput, message_count);
+    SDL_GetLogOutputFunction(&original_function, &original_userdata);
+    SDL_SetLogOutputFunction(TestLogOutput, message_count);
 }
 
 static void DisableTestLog()
 {
-    SDL_LogSetOutputFunction(original_function, original_userdata);
+    SDL_SetLogOutputFunction(original_function, original_userdata);
 }
 
 /* Fixture */
