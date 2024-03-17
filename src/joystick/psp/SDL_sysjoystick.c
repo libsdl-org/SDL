@@ -209,7 +209,7 @@ static void PSP_JoystickUpdate(SDL_Joystick *joystick)
     static unsigned char old_x = 0, old_y = 0;
     Uint64 timestamp = SDL_GetTicksNS();
 
-    sceCtrlReadBufferPositive(&pad, 1);
+    if(sceCtrlPeekBufferPositive(&pad, 1) <= 0) return;
     buttons = pad.Buttons;
     x = pad.Lx;
     y = pad.Ly;
