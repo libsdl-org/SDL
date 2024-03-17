@@ -103,7 +103,6 @@ typedef enum
  *
  * \note  This structure should be treated as read-only, except for \c pixels,
  *        which, if not NULL, contains the raw pixel data for the surface.
- * \sa SDL_CreateSurfaceFrom
  */
 typedef struct SDL_Surface
 {
@@ -152,8 +151,7 @@ typedef int (SDLCALL *SDL_blit) (struct SDL_Surface *src, const SDL_Rect *srcrec
  * \sa SDL_CreateSurfaceFrom
  * \sa SDL_DestroySurface
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface
-    (int width, int height, SDL_PixelFormatEnum format);
+extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface(int width, int height, SDL_PixelFormatEnum format);
 
 /**
  * Allocate a new RGB surface with a specific pixel format and existing pixel
@@ -181,8 +179,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface
  * \sa SDL_CreateSurface
  * \sa SDL_DestroySurface
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurfaceFrom
-    (void *pixels, int width, int height, int pitch, SDL_PixelFormatEnum format);
+extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurfaceFrom(void *pixels, int width, int height, int pitch, SDL_PixelFormatEnum format);
 
 /**
  * Free an RGB surface.
@@ -195,8 +192,6 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurfaceFrom
  *
  * \sa SDL_CreateSurface
  * \sa SDL_CreateSurfaceFrom
- * \sa SDL_LoadBMP
- * \sa SDL_LoadBMP_IO
  */
 extern DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
 
@@ -457,8 +452,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SurfaceHasRLE(SDL_Surface *surface);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_BlitSurface
  * \sa SDL_GetSurfaceColorKey
+ * \sa SDL_SurfaceHasColorKey
  */
 extern DECLSPEC int SDLCALL SDL_SetSurfaceColorKey(SDL_Surface *surface, int flag, Uint32 key);
 
@@ -492,8 +487,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SurfaceHasColorKey(SDL_Surface *surface);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_BlitSurface
  * \sa SDL_SetSurfaceColorKey
+ * \sa SDL_SurfaceHasColorKey
  */
 extern DECLSPEC int SDLCALL SDL_GetSurfaceColorKey(SDL_Surface *surface, Uint32 *key);
 
@@ -622,7 +617,6 @@ extern DECLSPEC int SDLCALL SDL_GetSurfaceBlendMode(SDL_Surface *surface, SDL_Bl
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_BlitSurface
  * \sa SDL_GetSurfaceClipRect
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_SetSurfaceClipRect(SDL_Surface *surface, const SDL_Rect *rect);
@@ -642,7 +636,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetSurfaceClipRect(SDL_Surface *surface, co
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_BlitSurface
  * \sa SDL_SetSurfaceClipRect
  */
 extern DECLSPEC int SDLCALL SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect);
@@ -669,6 +662,8 @@ extern DECLSPEC int SDLCALL SDL_FlipSurface(SDL_Surface *surface, SDL_FlipMode f
  *          more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_DestroySurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface *surface);
 
@@ -688,9 +683,10 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface *surface);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreatePixelFormat
  * \sa SDL_ConvertSurfaceFormat
- * \sa SDL_CreateSurface
+ * \sa SDL_ConvertSurfaceFormatAndColorspace
+ * \sa SDL_CreatePixelFormat
+ * \sa SDL_DestroySurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *format);
 
@@ -709,9 +705,9 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface(SDL_Surface *surface, co
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreatePixelFormat
  * \sa SDL_ConvertSurface
- * \sa SDL_CreateSurface
+ * \sa SDL_ConvertSurfaceFormatAndColorspace
+ * \sa SDL_DestroySurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormat(SDL_Surface *surface, SDL_PixelFormatEnum pixel_format);
 
@@ -732,9 +728,9 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormat(SDL_Surface *surfa
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreatePixelFormat
  * \sa SDL_ConvertSurface
- * \sa SDL_CreateSurface
+ * \sa SDL_ConvertSurfaceFormat
+ * \sa SDL_DestroySurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormatAndColorspace(SDL_Surface *surface, SDL_PixelFormatEnum pixel_format, SDL_Colorspace colorspace, SDL_PropertiesID props);
 
@@ -753,6 +749,8 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormatAndColorspace(SDL_S
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_ConvertPixelsAndColorspace
  */
 extern DECLSPEC int SDLCALL SDL_ConvertPixels(int width, int height, SDL_PixelFormatEnum src_format, const void *src, int src_pitch, SDL_PixelFormatEnum dst_format, void *dst, int dst_pitch);
 
@@ -780,6 +778,8 @@ extern DECLSPEC int SDLCALL SDL_ConvertPixels(int width, int height, SDL_PixelFo
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_ConvertPixels
  */
 extern DECLSPEC int SDLCALL SDL_ConvertPixelsAndColorspace(int width, int height, SDL_PixelFormatEnum src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch, SDL_PixelFormatEnum dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch);
 
@@ -969,7 +969,7 @@ extern DECLSPEC int SDLCALL SDL_BlitSurfaceUnchecked(SDL_Surface *src, const SDL
 extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
 
 /**
- * Perform a scaled surface copy to a destination surface.
+ * Perform a scaled blit to a destination surface, which may be of a different format.
  *
  * \param src the SDL_Surface structure to be copied from
  * \param srcrect the SDL_Rect structure representing the rectangle to be

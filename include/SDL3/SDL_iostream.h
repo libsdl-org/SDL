@@ -292,6 +292,9 @@ extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromConstMem(const void *mem, size_t
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CloseIO
+ * \sa SDL_IOFromConstMem
+ * \sa SDL_IOFromFile
+ * \sa SDL_IOFromMem
  */
 extern DECLSPEC SDL_IOStream *SDLCALL SDL_OpenIO(const SDL_IOStreamInterface *iface, void *userdata);
 
@@ -312,12 +315,7 @@ extern DECLSPEC SDL_IOStream *SDLCALL SDL_OpenIO(const SDL_IOStreamInterface *if
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_IOFromConstMem
- * \sa SDL_IOFromFile
- * \sa SDL_IOFromMem
- * \sa SDL_ReadIO
- * \sa SDL_SeekIO
- * \sa SDL_WriteIO
+ * \sa SDL_OpenIO
  */
 extern DECLSPEC int SDLCALL SDL_CloseIO(SDL_IOStream *context);
 
@@ -395,12 +393,7 @@ extern DECLSPEC Sint64 SDLCALL SDL_SizeIO(SDL_IOStream *context);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_IOFromConstMem
- * \sa SDL_IOFromFile
- * \sa SDL_IOFromMem
- * \sa SDL_ReadIO
  * \sa SDL_TellIO
- * \sa SDL_WriteIO
  */
 extern DECLSPEC Sint64 SDLCALL SDL_SeekIO(SDL_IOStream *context, Sint64 offset, int whence);
 
@@ -418,12 +411,7 @@ extern DECLSPEC Sint64 SDLCALL SDL_SeekIO(SDL_IOStream *context, Sint64 offset, 
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_IOFromConstMem
- * \sa SDL_IOFromFile
- * \sa SDL_IOFromMem
- * \sa SDL_ReadIO
  * \sa SDL_SeekIO
- * \sa SDL_WriteIO
  */
 extern DECLSPEC Sint64 SDLCALL SDL_TellIO(SDL_IOStream *context);
 
@@ -445,9 +433,6 @@ extern DECLSPEC Sint64 SDLCALL SDL_TellIO(SDL_IOStream *context);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_IOFromConstMem
- * \sa SDL_IOFromFile
- * \sa SDL_IOFromMem
  * \sa SDL_SeekIO
  * \sa SDL_WriteIO
  */
@@ -479,9 +464,6 @@ extern DECLSPEC size_t SDLCALL SDL_ReadIO(SDL_IOStream *context, void *ptr, size
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_IOFromConstMem
- * \sa SDL_IOFromFile
- * \sa SDL_IOFromMem
  * \sa SDL_IOprintf
  * \sa SDL_ReadIO
  * \sa SDL_SeekIO
@@ -502,11 +484,7 @@ extern DECLSPEC size_t SDLCALL SDL_WriteIO(SDL_IOStream *context, const void *pt
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_IOFromConstMem
- * \sa SDL_IOFromFile
- * \sa SDL_IOFromMem
- * \sa SDL_ReadIO
- * \sa SDL_SeekIO
+ * \sa SDL_IOvprintf
  * \sa SDL_WriteIO
  */
 extern DECLSPEC size_t SDLCALL SDL_IOprintf(SDL_IOStream *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)  SDL_PRINTF_VARARG_FUNC(2);
@@ -524,11 +502,7 @@ extern DECLSPEC size_t SDLCALL SDL_IOprintf(SDL_IOStream *context, SDL_PRINTF_FO
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_IOFromConstMem
- * \sa SDL_IOFromFile
- * \sa SDL_IOFromMem
- * \sa SDL_ReadIO
- * \sa SDL_SeekIO
+ * \sa SDL_IOprintf
  * \sa SDL_WriteIO
  */
 extern DECLSPEC size_t SDLCALL SDL_IOvprintf(SDL_IOStream *context, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
@@ -549,6 +523,8 @@ extern DECLSPEC size_t SDLCALL SDL_IOvprintf(SDL_IOStream *context, SDL_PRINTF_F
  * \returns the data, or NULL if there was an error.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_LoadFile
  */
 extern DECLSPEC void *SDLCALL SDL_LoadFile_IO(SDL_IOStream *src, size_t *datasize, SDL_bool closeio);
 
@@ -566,6 +542,8 @@ extern DECLSPEC void *SDLCALL SDL_LoadFile_IO(SDL_IOStream *src, size_t *datasiz
  * \returns the data, or NULL if there was an error.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_LoadFile_IO
  */
 extern DECLSPEC void *SDLCALL SDL_LoadFile(const char *file, size_t *datasize);
 

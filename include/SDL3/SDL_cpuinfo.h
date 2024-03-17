@@ -75,16 +75,6 @@ extern DECLSPEC int SDLCALL SDL_GetCPUCacheLineSize(void);
  * \returns SDL_TRUE if the CPU has AltiVec features or SDL_FALSE if not.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_HasAVX
- * \sa SDL_HasAVX2
- * \sa SDL_HasAVX512F
- * \sa SDL_HasMMX
- * \sa SDL_HasSSE
- * \sa SDL_HasSSE2
- * \sa SDL_HasSSE3
- * \sa SDL_HasSSE41
- * \sa SDL_HasSSE42
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_HasAltiVec(void);
 
@@ -96,16 +86,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasAltiVec(void);
  * \returns SDL_TRUE if the CPU has MMX features or SDL_FALSE if not.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_HasAltiVec
- * \sa SDL_HasAVX
- * \sa SDL_HasAVX2
- * \sa SDL_HasAVX512F
- * \sa SDL_HasSSE
- * \sa SDL_HasSSE2
- * \sa SDL_HasSSE3
- * \sa SDL_HasSSE41
- * \sa SDL_HasSSE42
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_HasMMX(void);
 
@@ -118,11 +98,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasMMX(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_HasAltiVec
- * \sa SDL_HasAVX
- * \sa SDL_HasAVX2
- * \sa SDL_HasAVX512F
- * \sa SDL_HasMMX
  * \sa SDL_HasSSE2
  * \sa SDL_HasSSE3
  * \sa SDL_HasSSE41
@@ -139,11 +114,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_HasAltiVec
- * \sa SDL_HasAVX
- * \sa SDL_HasAVX2
- * \sa SDL_HasAVX512F
- * \sa SDL_HasMMX
  * \sa SDL_HasSSE
  * \sa SDL_HasSSE3
  * \sa SDL_HasSSE41
@@ -160,11 +130,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE2(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_HasAltiVec
- * \sa SDL_HasAVX
- * \sa SDL_HasAVX2
- * \sa SDL_HasAVX512F
- * \sa SDL_HasMMX
  * \sa SDL_HasSSE
  * \sa SDL_HasSSE2
  * \sa SDL_HasSSE41
@@ -181,11 +146,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE3(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_HasAltiVec
- * \sa SDL_HasAVX
- * \sa SDL_HasAVX2
- * \sa SDL_HasAVX512F
- * \sa SDL_HasMMX
  * \sa SDL_HasSSE
  * \sa SDL_HasSSE2
  * \sa SDL_HasSSE3
@@ -202,11 +162,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE41(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_HasAltiVec
- * \sa SDL_HasAVX
- * \sa SDL_HasAVX2
- * \sa SDL_HasAVX512F
- * \sa SDL_HasMMX
  * \sa SDL_HasSSE
  * \sa SDL_HasSSE2
  * \sa SDL_HasSSE3
@@ -223,15 +178,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE42(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_HasAltiVec
  * \sa SDL_HasAVX2
  * \sa SDL_HasAVX512F
- * \sa SDL_HasMMX
- * \sa SDL_HasSSE
- * \sa SDL_HasSSE2
- * \sa SDL_HasSSE3
- * \sa SDL_HasSSE41
- * \sa SDL_HasSSE42
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX(void);
 
@@ -244,15 +192,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_HasAltiVec
  * \sa SDL_HasAVX
  * \sa SDL_HasAVX512F
- * \sa SDL_HasMMX
- * \sa SDL_HasSSE
- * \sa SDL_HasSSE2
- * \sa SDL_HasSSE3
- * \sa SDL_HasSSE41
- * \sa SDL_HasSSE42
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX2(void);
 
@@ -265,15 +206,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX2(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_HasAltiVec
  * \sa SDL_HasAVX
  * \sa SDL_HasAVX2
- * \sa SDL_HasMMX
- * \sa SDL_HasSSE
- * \sa SDL_HasSSE2
- * \sa SDL_HasSSE3
- * \sa SDL_HasSSE41
- * \sa SDL_HasSSE42
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX512F(void);
 

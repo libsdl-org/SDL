@@ -116,8 +116,6 @@ typedef void(SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * const
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_DialogFileFilter
- * \sa SDL_DialogFileCallback
  * \sa SDL_ShowSaveFileDialog
  * \sa SDL_ShowOpenFolderDialog
  */
@@ -161,10 +159,7 @@ extern DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback callb
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_DialogFileFilter
- * \sa SDL_DialogFileCallback
  * \sa SDL_ShowOpenFileDialog
- * \sa SDL_ShowOpenFolderDialog
  */
 extern DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, const char *default_location);
 
@@ -205,10 +200,7 @@ extern DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback callb
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_DialogFileFilter
- * \sa SDL_DialogFileCallback
  * \sa SDL_ShowOpenFileDialog
- * \sa SDL_ShowSaveFileDialog
  */
 extern DECLSPEC void SDLCALL SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const char *default_location, SDL_bool allow_many);
 

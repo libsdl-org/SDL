@@ -131,6 +131,8 @@ extern DECLSPEC int SDLCALL SDL_GetNumTouchFingers(SDL_TouchID touchID);
  *          given ID and index could be found.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetNumTouchFingers
  */
 extern DECLSPEC SDL_Finger * SDLCALL SDL_GetTouchFinger(SDL_TouchID touchID, int index);
 

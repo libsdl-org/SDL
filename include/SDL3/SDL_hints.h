@@ -949,7 +949,7 @@ extern "C" {
  *   "1"       - Sony driver (sixaxis.sys) is used.
  *
  * The default value is 0.
- * 
+ *
  * This hint should be set before enumerating controllers.
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER "SDL_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER"
@@ -2564,6 +2564,7 @@ typedef enum
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
+ * \sa SDL_ResetHint
  * \sa SDL_SetHint
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
@@ -2584,6 +2585,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
+ * \sa SDL_ResetHint
  * \sa SDL_SetHintWithPriority
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
@@ -2601,8 +2603,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetHint
  * \sa SDL_SetHint
+ * \sa SDL_ResetHints
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
 
@@ -2615,8 +2617,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetHint
- * \sa SDL_SetHint
  * \sa SDL_ResetHint
  */
 extern DECLSPEC void SDLCALL SDL_ResetHints(void);

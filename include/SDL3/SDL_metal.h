@@ -89,8 +89,6 @@ extern DECLSPEC void SDLCALL SDL_Metal_DestroyView(SDL_MetalView view);
  * \returns a pointer
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_Metal_CreateView
  */
 extern DECLSPEC void *SDLCALL SDL_Metal_GetLayer(SDL_MetalView view);
 

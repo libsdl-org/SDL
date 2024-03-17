@@ -792,6 +792,7 @@ extern DECLSPEC SDL_PixelFormatEnum SDLCALL SDL_GetPixelFormatEnumForMasks(int b
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DestroyPixelFormat
+ * \sa SDL_SetPixelFormatPalette
  */
 extern DECLSPEC SDL_PixelFormat * SDLCALL SDL_CreatePixelFormat(SDL_PixelFormatEnum pixel_format);
 
@@ -819,6 +820,8 @@ extern DECLSPEC void SDLCALL SDL_DestroyPixelFormat(SDL_PixelFormat *format);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DestroyPalette
+ * \sa SDL_SetPaletteColors
+ * \sa SDL_SetPixelFormatPalette
  */
 extern DECLSPEC SDL_Palette *SDLCALL SDL_CreatePalette(int ncolors);
 
@@ -831,9 +834,6 @@ extern DECLSPEC SDL_Palette *SDLCALL SDL_CreatePalette(int ncolors);
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_CreatePalette
- * \sa SDL_DestroyPalette
  */
 extern DECLSPEC int SDLCALL SDL_SetPixelFormatPalette(SDL_PixelFormat * format,
                                                       SDL_Palette *palette);
@@ -849,9 +849,6 @@ extern DECLSPEC int SDLCALL SDL_SetPixelFormatPalette(SDL_PixelFormat * format,
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_CreatePalette
- * \sa SDL_CreateSurface
  */
 extern DECLSPEC int SDLCALL SDL_SetPaletteColors(SDL_Palette * palette,
                                                  const SDL_Color * colors,

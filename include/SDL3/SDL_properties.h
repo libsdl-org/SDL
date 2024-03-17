@@ -178,7 +178,12 @@ extern DECLSPEC int SDLCALL SDL_SetPropertyWithCleanup(SDL_PropertiesID props, c
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetProperty
+ * \sa SDL_HasProperty
+ * \sa SDL_SetBooleanProperty
+ * \sa SDL_SetFloatProperty
+ * \sa SDL_SetNumberProperty
  * \sa SDL_SetPropertyWithCleanup
+ * \sa SDL_SetStringProperty
  */
 extern DECLSPEC int SDLCALL SDL_SetProperty(SDL_PropertiesID props, const char *name, void *value);
 
@@ -306,7 +311,11 @@ extern DECLSPEC SDL_PropertyType SDLCALL SDL_GetPropertyType(SDL_PropertiesID pr
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_GetBooleanProperty
+ * \sa SDL_GetFloatProperty
+ * \sa SDL_GetNumberProperty
  * \sa SDL_GetPropertyType
+ * \sa SDL_GetStringProperty
  * \sa SDL_HasProperty
  * \sa SDL_SetProperty
  */
