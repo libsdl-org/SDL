@@ -888,6 +888,12 @@ The following symbols have been renamed:
 
 SDL_LoadFunction() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to the appropriate function type. You can define SDL_FUNCTION_POINTER_IS_VOID_POINTER in your project to restore the previous behavior.
 
+## SDL_log.h
+
+The following functions have been renamed:
+* SDL_LogGetOutputFunction() => SDL_GetLogOutputFunction()
+* SDL_LogSetOutputFunction() => SDL_SetLogOutputFunction()
+
 ## SDL_main.h
 
 SDL3 doesn't have a static libSDLmain to link against anymore.
