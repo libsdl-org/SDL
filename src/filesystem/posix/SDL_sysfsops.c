@@ -31,11 +31,11 @@
 
 #include "../SDL_sysfilesystem.h"
 
-int SDL_SYS_FSenumerate(const char *fullpath, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
+int SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
     int retval = 1;
 
-    DIR *dir = opendir(fullpath);
+    DIR *dir = opendir(path);
     if (!dir) {
         return SDL_SetError("Can't open directory: %s", strerror(errno));
     }
@@ -55,13 +55,13 @@ int SDL_SYS_FSenumerate(const char *fullpath, const char *dirname, SDL_Enumerate
     return retval;
 }
 
-int SDL_SYS_FSremove(const char *fullpath)
+int SDL_SYS_RemovePath(const char *path)
 {
-    int rc = remove(fullpath);
+    int rc = remove(path);
     if (rc < 0) {
         const int origerrno = errno;
         if (origerrno == ENOENT) {
-            char *parent = SDL_strdup(fullpath);
+            char *parent = SDL_strdup(path);
             if (!parent) {
                 return -1;
             }
@@ -83,22 +83,22 @@ int SDL_SYS_FSremove(const char *fullpath)
     return 0;
 }
 
-int SDL_SYS_FSrename(const char *oldfullpath, const char *newfullpath)
+int SDL_SYS_RenamePath(const char *oldpath, const char *newpath)
 {
-    if (rename(oldfullpath, newfullpath) < 0) {
+    if (rename(oldpath, newpath) < 0) {
         return SDL_SetError("Can't remove path: %s", strerror(errno));
     }
     return 0;
 }
 
-int SDL_SYS_FSmkdir(const char *fullpath)
+int SDL_SYS_CreateDirectory(const char *path)
 {
-    const int rc = mkdir(fullpath, 0770);
+    const int rc = mkdir(path, 0770);
     if (rc < 0) {
         const int origerrno = errno;
         if (origerrno == EEXIST) {
             struct stat statbuf;
-            if ((stat(fullpath, &statbuf) == 0) && (S_ISDIR(statbuf.st_mode))) {
+            if ((stat(path, &statbuf) == 0) && (S_ISDIR(statbuf.st_mode))) {
                 return 0;  // it already exists and it's a directory, consider it success.
             }
         }
@@ -107,10 +107,10 @@ int SDL_SYS_FSmkdir(const char *fullpath)
     return 0;
 }
 
-int SDL_SYS_FSstat(const char *fullpath, SDL_PathInfo *info)
+int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
 {
     struct stat statbuf;
-    const int rc = stat(fullpath, &statbuf);
+    const int rc = stat(path, &statbuf);
     if (rc < 0) {
         return SDL_SetError("Can't stat: %s", strerror(errno));
     } else if (S_ISREG(statbuf.st_mode)) {
