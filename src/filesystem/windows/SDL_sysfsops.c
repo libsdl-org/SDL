@@ -140,18 +140,6 @@ int SDL_SYS_CreateDirectory(const char *path)
     return !rc ? WIN_SetError("Couldn't create directory") : 0;
 }
 
-static Sint64 FileTimeToSDLTime(const FILETIME *ft)
-{
-    const Uint64 delta_1601_epoch_100ns = 11644473600ull * 10000000ull; // [100ns] (100-ns chunks between 1/1/1601 and 1/1/1970, 11644473600 seconds * 10000000)
-    ULARGE_INTEGER large;
-    large.LowPart = ft->dwLowDateTime;
-    large.HighPart = ft->dwHighDateTime;
-    if (large.QuadPart == 0) {
-        return 0;  // unsupported on this filesystem...0 is fine, I guess.
-    }
-    return (Sint64) ((((Uint64)large.QuadPart) - delta_1601_epoch_100ns) / (SDL_NS_PER_SECOND / 100ull));  // [secs] (adjust to epoch and convert 1/100th nanosecond units to seconds).
-}
-
 int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
 {
     WCHAR *wpath = WIN_UTF8ToString(path);
@@ -177,9 +165,9 @@ int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
         info->size = ((((Uint64) winstat.nFileSizeHigh) << 32) | winstat.nFileSizeLow);
     }
 
-    info->create_time = FileTimeToSDLTime(&winstat.ftCreationTime);
-    info->modify_time = FileTimeToSDLTime(&winstat.ftLastWriteTime);
-    info->access_time = FileTimeToSDLTime(&winstat.ftLastAccessTime);
+    info->create_time = SDL_FileTimeFromWindows(winstat.ftCreationTime.dwLowDateTime, winstat.ftCreationTime.dwHighDateTime);
+    info->modify_time = SDL_FileTimeFromWindows(winstat.ftLastWriteTime.dwLowDateTime, winstat.ftLastWriteTime.dwHighDateTime);
+    info->access_time = SDL_FileTimeFromWindows(winstat.ftLastAccessTime.dwLowDateTime, winstat.ftLastAccessTime.dwHighDateTime);
 
     return 1;
 }

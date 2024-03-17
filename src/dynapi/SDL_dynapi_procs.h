@@ -1049,3 +1049,4 @@ SDL_DYNAPI_PROC(int,SDL_EnumerateStorageDirectory,(SDL_Storage *a, const char *b
 SDL_DYNAPI_PROC(int,SDL_RemoveStoragePath,(SDL_Storage *a, const char *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_RenameStoragePath,(SDL_Storage *a, const char *b, const char *c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_GetStoragePathInfo,(SDL_Storage *a, const char *b, SDL_PathInfo *c),(a,b,c),return)
+SDL_DYNAPI_PROC(SDL_FileTime,SDL_FileTimeFromWindows,(Uint32 a, Uint32 b),(a,b),return)
