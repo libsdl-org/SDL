@@ -35,6 +35,15 @@ def find_element(prefix, bindings):
 
     return -1
 
+def get_crc_from_entry(entry):
+    crc = ""
+    line = "".join(entry)
+    bindings = line.split(",")
+    pos = find_element("crc:", bindings)
+    if pos >= 0:
+        crc = bindings[pos][4:]
+    return crc
+
 def save_controller(line):
     global controllers
     match = split_pattern.match(line)
@@ -93,7 +102,7 @@ def save_controller(line):
     entry.append(match.group(5))
     controllers.append(entry)
 
-    entry_id = entry[1] + entry[3]
+    entry_id = entry[1] + get_crc_from_entry(entry)
     if ',sdk' in line or ',hint:' in line:
         conditionals.append(entry_id)
 
@@ -102,7 +111,7 @@ def write_controllers():
     global controller_guids
     # Check for duplicates
     for entry in controllers:
-        entry_id = entry[1] + entry[3]
+        entry_id = entry[1] + get_crc_from_entry(entry)
         if (entry_id in controller_guids and entry_id not in conditionals):
             current_name = entry[2]
             existing_name = controller_guids[entry_id][2]
