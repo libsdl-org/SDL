@@ -210,7 +210,7 @@ static void PSP_JoystickUpdate(SDL_Joystick *joystick)
     static enum PspCtrlButtons old_buttons = 0;
     static unsigned char old_x = 0, old_y = 0;
 
-    sceCtrlReadBufferPositive(&pad, 1);
+    if(sceCtrlPeekBufferPositive(&pad, 1) <= 0) return;
     buttons = pad.Buttons;
     x = pad.Lx;
     y = pad.Ly;
