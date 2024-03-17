@@ -346,9 +346,6 @@ static void ConfigureWindowGeometry(SDL_Window *window)
 
         if (window_size_changed || drawable_size_changed) {
             if (data->viewport) {
-                wp_viewport_set_source(data->viewport,
-                                       wl_fixed_from_int(0), wl_fixed_from_int(0),
-                                       wl_fixed_from_int(data->current.drawable_width), wl_fixed_from_int(data->current.drawable_height));
                 wp_viewport_set_destination(data->viewport, output_width, output_height);
 
                 data->current.logical_width = output_width;
@@ -2265,6 +2262,11 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     if (!custom_surface_role || (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY)) {
         if (c->viewporter) {
             data->viewport = wp_viewporter_get_viewport(c->viewporter, data->surface);
+
+            /* The viewport always uses the entire buffer. */
+            wp_viewport_set_source(data->viewport,
+                                   wl_fixed_from_int(-1), wl_fixed_from_int(-1),
+                                   wl_fixed_from_int(-1), wl_fixed_from_int(-1));
         }
         if (c->fractional_scale_manager) {
             data->fractional_scale = wp_fractional_scale_manager_v1_get_fractional_scale(c->fractional_scale_manager, data->surface);
