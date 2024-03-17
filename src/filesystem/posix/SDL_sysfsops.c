@@ -124,12 +124,9 @@ int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
         info->size = (Uint64) statbuf.st_size;
     }
 
-    // SDL file time is seconds since the Unix epoch, so we're already good here.
-    // Note that this will fail on machines with 32-bit time_t in 2038, but that's not
-    // an SDL bug; those machines need to be fixed or everything will fail in the same way.
-    info->create_time = (Sint64) statbuf.st_ctime;
-    info->modify_time = (Sint64) statbuf.st_mtime;
-    info->access_time = (Sint64) statbuf.st_atime;
+    info->create_time = (SDL_FileTime)SDL_SECONDS_TO_NS(statbuf.st_ctime);
+    info->modify_time = (SDL_FileTime)SDL_SECONDS_TO_NS(statbuf.st_mtime);
+    info->access_time = (SDL_FileTime)SDL_SECONDS_TO_NS(statbuf.st_atime);
 
     return 0;
 }

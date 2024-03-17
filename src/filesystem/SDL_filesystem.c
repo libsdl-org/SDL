@@ -22,25 +22,36 @@
 #include "SDL_internal.h"
 #include "SDL_sysfilesystem.h"
 
-void SDL_FileTimeToWindows(Sint64 ftime, Uint32 *low, Uint32 *high)
+static const Sint64 delta_1601_epoch_100ns = 11644473600ll * 10000000ll; // [100 ns] (100 ns units between 1/1/1601 and 1/1/1970, 11644473600 seconds)
+
+void SDL_FileTimeToWindows(SDL_FileTime ftime, Uint32 *dwLowDateTime, Uint32 *dwHighDateTime)
 {
-    const Sint64 delta_1601_epoch_s = 11644473600ull; // [seconds] (seconds between 1/1/1601 and 1/1/1970, 11644473600 seconds)
+    Uint64 wtime;
 
-    Sint64 cvt = (ftime + delta_1601_epoch_s) * (SDL_NS_PER_SECOND / 100ull); // [100ns] (adjust to epoch and convert nanoseconds to 1/100th nanosecond units).
+    // Convert ftime to 100ns units
+    Sint64 ftime_100ns = (ftime / 100);
 
-    // Windows FILETIME is unsigned, so if we're trying to show a timestamp from before before the
-    // Windows epoch, (Jan 1, 1601), clamp it to zero so it doesn't go way into the future.
-    if (cvt < 0) {
-        cvt = 0;
+    if (ftime_100ns < 0 && -ftime_100ns > delta_1601_epoch_100ns) {
+        // If we're trying to show a timestamp from before before the Windows epoch, (Jan 1, 1601), clamp it to zero
+        wtime = 0;
+    } else {
+        wtime = (Uint64)(delta_1601_epoch_100ns + ftime_100ns);
     }
 
-    if (low) {
-        *low = (Uint32) cvt;
+    if (dwLowDateTime) {
+        *dwLowDateTime = (Uint32)wtime;
     }
 
-    if (high) {
-        *high = (Uint32) (cvt >> 32);
+    if (dwHighDateTime) {
+        *dwHighDateTime = (Uint32)(wtime >> 32);
     }
+}
+
+SDL_FileTime SDL_FileTimeFromWindows(Uint32 dwLowDateTime, Uint32 dwHighDateTime)
+{
+    Uint64 wtime = (((Uint64)dwHighDateTime << 32) | dwLowDateTime);
+
+    return (Sint64)(wtime - delta_1601_epoch_100ns) * 100;
 }
 
 int SDL_RemovePath(const char *path)

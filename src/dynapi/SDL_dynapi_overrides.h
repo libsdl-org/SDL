@@ -1024,3 +1024,4 @@
 #define SDL_RemoveStoragePath SDL_RemoveStoragePath_REAL
 #define SDL_RenameStoragePath SDL_RenameStoragePath_REAL
 #define SDL_GetStoragePathInfo SDL_GetStoragePathInfo_REAL
+#define SDL_FileTimeFromWindows SDL_FileTimeFromWindows_REAL
