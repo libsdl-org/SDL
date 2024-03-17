@@ -25,27 +25,27 @@
 
 #include "../SDL_sysfilesystem.h"
 
-int SDL_SYS_FSenumerate(const char *fullpath, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
+int SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
     return SDL_Unsupported();
 }
 
-int SDL_SYS_FSremove(const char *fullpath)
+int SDL_SYS_RemovePath(const char *path)
 {
     return SDL_Unsupported();
 }
 
-int SDL_SYS_FSrename(const char *oldfullpath, const char *newfullpath)
+int SDL_SYS_RenamePath(const char *oldpath, const char *newpath)
 {
     return SDL_Unsupported();
 }
 
-int SDL_SYS_FSmkdir(const char *fullpath)
+int SDL_SYS_CreateDirectory(const char *path)
 {
     return SDL_Unsupported();
 }
 
-int SDL_SYS_FSstat(const char *fullpath, SDL_PathInfo *st)
+int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
 {
     return SDL_Unsupported();
 }

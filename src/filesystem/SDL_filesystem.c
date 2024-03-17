@@ -48,7 +48,7 @@ int SDL_RemovePath(const char *path)
     if (!path) {
         return SDL_InvalidParamError("path");
     }
-    return SDL_SYS_FSremove(path);
+    return SDL_SYS_RemovePath(path);
 }
 
 int SDL_RenamePath(const char *oldpath, const char *newpath)
@@ -58,7 +58,7 @@ int SDL_RenamePath(const char *oldpath, const char *newpath)
     } else if (!newpath) {
         return SDL_InvalidParamError("newpath");
     }
-    return SDL_SYS_FSrename(oldpath, newpath);
+    return SDL_SYS_RenamePath(oldpath, newpath);
 }
 
 int SDL_CreateDirectory(const char *path)
@@ -67,7 +67,7 @@ int SDL_CreateDirectory(const char *path)
     if (!path) {
         return SDL_InvalidParamError("path");
     }
-    return SDL_SYS_FSmkdir(path);
+    return SDL_SYS_CreateDirectory(path);
 }
 
 int SDL_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback callback, void *userdata)
@@ -77,15 +77,15 @@ int SDL_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback call
     } else if (!callback) {
         return SDL_InvalidParamError("callback");
     }
-    return SDL_SYS_FSenumerate(path, path, callback, userdata);
+    return SDL_SYS_EnumerateDirectory(path, path, callback, userdata);
 }
 
-int SDL_GetPathInfo(const char *path, SDL_PathInfo *stat)
+int SDL_GetPathInfo(const char *path, SDL_PathInfo *info)
 {
     if (!path) {
         return SDL_InvalidParamError("path");
-    } else if (!stat) {
-        return SDL_InvalidParamError("stat");
+    } else if (!info) {
+        return SDL_InvalidParamError("info");
     }
-    return SDL_SYS_FSstat(path, stat);
+    return SDL_SYS_GetPathInfo(path, info);
 }

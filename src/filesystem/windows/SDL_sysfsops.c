@@ -26,10 +26,10 @@
 #include "../../core/windows/SDL_windows.h"
 #include "../SDL_sysfilesystem.h"
 
-int SDL_SYS_FSenumerate(const char *fullpath, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
+int SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
     int retval = 1;
-    if (*fullpath == '\0') {  // if empty (completely at the root), we need to enumerate drive letters.
+    if (*path == '\0') {  // if empty (completely at the root), we need to enumerate drive letters.
         const DWORD drives = GetLogicalDrives();
         char name[3] = { 0, ':', '\0' };
         for (int i = 'A'; (retval == 1) && (i <= 'Z'); i++) {
@@ -39,7 +39,7 @@ int SDL_SYS_FSenumerate(const char *fullpath, const char *dirname, SDL_Enumerate
             }
         }
     } else {
-        const size_t patternlen = SDL_strlen(fullpath) + 3;
+        const size_t patternlen = SDL_strlen(path) + 3;
         char *pattern = (char *) SDL_malloc(patternlen);
         if (!pattern) {
             return -1;
@@ -48,7 +48,7 @@ int SDL_SYS_FSenumerate(const char *fullpath, const char *dirname, SDL_Enumerate
         // you need a wildcard to enumerate through FindFirstFileEx(), but the wildcard is only checked in the
         // filename element at the end of the path string, so always tack on a "\\*" to get everything, and
         // also prevent any wildcards inserted by the app from being respected.
-        SDL_snprintf(pattern, patternlen, "%s\\*", fullpath);
+        SDL_snprintf(pattern, patternlen, "%s\\*", path);
 
         WCHAR *wpattern = WIN_UTF8ToString(pattern);
         SDL_free(pattern);
@@ -87,9 +87,9 @@ int SDL_SYS_FSenumerate(const char *fullpath, const char *dirname, SDL_Enumerate
     return retval;
 }
 
-int SDL_SYS_FSremove(const char *fullpath)
+int SDL_SYS_RemovePath(const char *path)
 {
-    WCHAR *wpath = WIN_UTF8ToString(fullpath);
+    WCHAR *wpath = WIN_UTF8ToString(path);
     if (!wpath) {
         return -1;
     }
@@ -109,14 +109,14 @@ int SDL_SYS_FSremove(const char *fullpath)
     return !rc ? WIN_SetError("Couldn't remove path") : 0;
 }
 
-int SDL_SYS_FSrename(const char *oldfullpath, const char *newfullpath)
+int SDL_SYS_RenamePath(const char *oldpath, const char *newpath)
 {
-    WCHAR *woldpath = WIN_UTF8ToString(oldfullpath);
+    WCHAR *woldpath = WIN_UTF8ToString(oldpath);
     if (!woldpath) {
         return -1;
     }
 
-    WCHAR *wnewpath = WIN_UTF8ToString(newfullpath);
+    WCHAR *wnewpath = WIN_UTF8ToString(newpath);
     if (!wnewpath) {
         SDL_free(woldpath);
         return -1;
@@ -128,9 +128,9 @@ int SDL_SYS_FSrename(const char *oldfullpath, const char *newfullpath)
     return !rc ? WIN_SetError("Couldn't rename path") : 0;
 }
 
-int SDL_SYS_FSmkdir(const char *fullpath)
+int SDL_SYS_CreateDirectory(const char *path)
 {
-    WCHAR *wpath = WIN_UTF8ToString(fullpath);
+    WCHAR *wpath = WIN_UTF8ToString(path);
     if (!wpath) {
         return -1;
     }
@@ -152,9 +152,9 @@ static Sint64 FileTimeToSDLTime(const FILETIME *ft)
     return (Sint64) ((((Uint64)large.QuadPart) - delta_1601_epoch_100ns) / (SDL_NS_PER_SECOND / 100ull));  // [secs] (adjust to epoch and convert 1/100th nanosecond units to seconds).
 }
 
-int SDL_SYS_FSstat(const char *fullpath, SDL_PathInfo *info)
+int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
 {
-    WCHAR *wpath = WIN_UTF8ToString(fullpath);
+    WCHAR *wpath = WIN_UTF8ToString(path);
     if (!wpath) {
         return -1;
     }

@@ -22,11 +22,11 @@
 #ifndef SDL_sysfilesystem_h_
 #define SDL_sysfilesystem_h_
 
-int SDL_SYS_FSenumerate(const char *fullpath, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata);
-int SDL_SYS_FSremove(const char *fullpath);
-int SDL_SYS_FSrename(const char *oldfullpath, const char *newfullpath);
-int SDL_SYS_FSmkdir(const char *fullpath);
-int SDL_SYS_FSstat(const char *fullpath, SDL_PathInfo *info);
+int SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata);
+int SDL_SYS_RemovePath(const char *path);
+int SDL_SYS_RenamePath(const char *oldpath, const char *newpath);
+int SDL_SYS_CreateDirectory(const char *path);
+int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info);
 
 #endif
 
