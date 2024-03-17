@@ -104,8 +104,8 @@ extern DECLSPEC SDL_Storage *SDLCALL SDL_OpenTitleStorage(const char *override, 
  *
  * While title storage can generally be kept open throughout runtime, user
  * storage should only be opened when the client is ready to read/write files.
- * This allows the backend to properly batch file operations and flush them when
- * the container has been closed; ensuring safe and optimal save I/O.
+ * This allows the backend to properly batch file operations and flush them
+ * when the container has been closed; ensuring safe and optimal save I/O.
  *
  * \param org the name of your organization
  * \param app the name of your application
@@ -129,10 +129,14 @@ extern DECLSPEC SDL_Storage *SDLCALL SDL_OpenUserStorage(const char *org, const 
 /**
  * Opens up a container for local filesystem storage.
  *
- * This is provided for development and tools. Portable applications should use SDL_OpenTitleStorage() for access to game data and SDL_OpenUserStorage() for access to user data.
+ * This is provided for development and tools. Portable applications should
+ * use SDL_OpenTitleStorage() for access to game data and
+ * SDL_OpenUserStorage() for access to user data.
  *
- * \param path the base path prepended to all storage paths, or NULL for no base path
- * \returns a filesystem storage container on success or NULL on failure; call SDL_GetError() for more information.
+ * \param path the base path prepended to all storage paths, or NULL for no
+ *             base path
+ * \returns a filesystem storage container on success or NULL on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
