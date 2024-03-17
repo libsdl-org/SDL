@@ -375,9 +375,6 @@ static void ConfigureWindowGeometry(SDL_Window *window)
 
         if (window_size_changed || drawable_size_changed) {
             if (data->viewport) {
-                wp_viewport_set_source(data->viewport,
-                                       wl_fixed_from_int(0), wl_fixed_from_int(0),
-                                       wl_fixed_from_int(data->current.drawable_width), wl_fixed_from_int(data->current.drawable_height));
                 wp_viewport_set_destination(data->viewport, window_width, window_height);
             } else if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
                 /* Don't change this if the DPI awareness flag is unset, as an application may have set this manually on a custom or external surface. */
