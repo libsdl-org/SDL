@@ -254,6 +254,8 @@
 #endif
 #endif
 
+#define SDL_GPU_VULKAN SDL_VIDEO_VULKAN
+
 #ifndef SDL_VIDEO_METAL
 #if SDL_PLATFORM_SUPPORTS_METAL
 #define SDL_VIDEO_METAL 1
@@ -261,6 +263,8 @@
 #define SDL_VIDEO_METAL 0
 #endif
 #endif
+
+#define SDL_GPU_METAL SDL_VIDEO_METAL
 
 /* Enable system power support */
 #define SDL_POWER_MACOSX 1
