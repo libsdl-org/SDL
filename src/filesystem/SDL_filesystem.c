@@ -141,16 +141,10 @@ static SDL_bool WildcardMatch(const char *pattern, const char *str)
     return SDL_TRUE;   // matched to the end of the string!
 }
 
-typedef struct GlobCallbackData
-{
-    const char *pattern;
-    SDL_IOStream *string_stream;
-    int num_entries;
-} GlobCallbackData;
 
-static int SDLCALL GlobCallback(void *userdata, const char *dirname, const char *fname)
+int SDL_GlobDirectoryCallback(void *userdata, const char *dirname, const char *fname)
 {
-    GlobCallbackData *data = (GlobCallbackData *) userdata;
+    SDL_GlobDirCallbackData *data = (SDL_GlobDirCallbackData *) userdata;
 
     if (WildcardMatch(data->pattern, fname)) {
         const size_t slen = SDL_strlen(fname) + 1;
@@ -163,50 +157,73 @@ static int SDLCALL GlobCallback(void *userdata, const char *dirname, const char 
     return 1;  // keep enumerating.
 }
 
+int SDL_InitGlobDirectoryCallback(const char *path, const char *pattern, SDL_GlobDirCallbackData *data)
+{
+    SDL_assert(data != NULL);
+
+    if (!path) {
+        SDL_InvalidParamError("path");
+        return -1;
+    }
+
+    SDL_zerop(data);
+    data->pattern = pattern;
+    data->string_stream = SDL_IOFromDynamicMem();
+    if (!data->string_stream) {
+        return -1;
+    }
+
+    return 0;
+}
+
+char **SDL_ProcessGlobDirectoryCallback(SDL_GlobDirCallbackData *data, int *count)
+{
+    const size_t streamlen = (size_t) SDL_GetIOSize(data->string_stream);
+    const size_t buflen = streamlen + ((data->num_entries + 1) * sizeof (char *));  // +1 for NULL terminator at end of array.
+    char **retval = (char **) SDL_malloc(buflen);
+    if (retval) {
+        if (data->num_entries > 0) {
+            Sint64 iorc = SDL_SeekIO(data->string_stream, 0, SDL_IO_SEEK_SET);
+            SDL_assert(iorc == 0);  // this should never fail for a memory stream!
+            char *ptr = (char *) (retval + (data->num_entries + 1));
+            iorc = SDL_ReadIO(data->string_stream, ptr, streamlen);
+            SDL_assert(iorc == (Sint64) streamlen);  // this should never fail for a memory stream!
+            for (int i = 0; i < data->num_entries; i++) {
+                retval[i] = ptr;
+                ptr += SDL_strlen(ptr) + 1;
+            }
+        }
+        retval[data->num_entries] = NULL;  // NULL terminate the list.
+        *count = data->num_entries;
+    }
+    return retval;
+}
+
+
+void SDL_QuitGlobDirectoryCallback(SDL_GlobDirCallbackData *data)
+{
+    if (data->string_stream) {
+        SDL_CloseIO(data->string_stream);
+    }
+}
+
 char **SDL_GlobDirectory(const char *path, const char *pattern, int *count)
 {
     int dummycount;
     if (!count) {
         count = &dummycount;
     }
-
     *count = 0;
 
-    if (!path) {
-        SDL_InvalidParamError("path");
-        return NULL;
-    }
-
     char **retval = NULL;
+    SDL_GlobDirCallbackData data;
 
-    GlobCallbackData data;
-    SDL_zero(data);
-    data.pattern = pattern;
-    data.string_stream = SDL_IOFromDynamicMem();
-    if (data.string_stream) {
-        if (SDL_EnumerateDirectory(path, GlobCallback, &data) == 0) {
-            const size_t streamlen = (size_t) SDL_GetIOSize(data.string_stream);
-            const size_t buflen = streamlen + ((data.num_entries + 1) * sizeof (char *));  // +1 for NULL terminator at end of array.
-            retval = (char **) SDL_malloc(buflen);
-            if (retval) {
-                if (data.num_entries > 0) {
-                    Sint64 iorc = SDL_SeekIO(data.string_stream, 0, SDL_IO_SEEK_SET);
-                    SDL_assert(iorc == 0);  // this should never fail for a memory stream!
-                    char *ptr = (char *) (retval + (data.num_entries + 1));
-                    iorc = SDL_ReadIO(data.string_stream, ptr, streamlen);
-                    SDL_assert(iorc == (Sint64) streamlen);  // this should never fail for a memory stream!
-                    for (int i = 0; i < data.num_entries; i++) {
-                        retval[i] = ptr;
-                        ptr += SDL_strlen(ptr) + 1;
-                    }
-                }
-                retval[data.num_entries] = NULL;  // NULL terminate the list.
-                *count = data.num_entries;
-            }
-        }
-        SDL_CloseIO(data.string_stream);
+    if (SDL_InitGlobDirectoryCallback(path, pattern, &data) < 0) {
+        return NULL;
+    } else if (SDL_EnumerateDirectory(path, SDL_GlobDirectoryCallback, &data) == 0) {
+        retval = SDL_ProcessGlobDirectoryCallback(&data, count);
     }
-
+    SDL_QuitGlobDirectoryCallback(&data);
     return retval;
 }
 

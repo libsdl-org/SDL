@@ -22,6 +22,7 @@
 #include "SDL_internal.h"
 
 #include "SDL_sysstorage.h"
+#include "../filesystem/SDL_sysfilesystem.h"
 
 /* Available title storage drivers */
 static TitleStorageBootStrap *titlebootstrap[] = {
@@ -320,4 +321,26 @@ Uint64 SDL_GetStorageSpaceRemaining(SDL_Storage *storage)
     }
 
     return storage->iface.space_remaining(storage->userdata);
+}
+
+char **SDL_GlobStorageDirectory(SDL_Storage *storage, const char *path, const char *pattern, int *count)
+{
+    int dummycount;
+    if (!count) {
+        count = &dummycount;
+    }
+    *count = 0;
+
+    CHECK_STORAGE_MAGIC_RET(NULL)
+
+    char **retval = NULL;
+    SDL_GlobDirCallbackData data;
+
+    if (SDL_InitGlobDirectoryCallback(path, pattern, &data) < 0) {
+        return NULL;
+    } else if (SDL_EnumerateStorageDirectory(storage, path, SDL_GlobDirectoryCallback, &data) == 0) {
+        retval = SDL_ProcessGlobDirectoryCallback(&data, count);
+    }
+    SDL_QuitGlobDirectoryCallback(&data);
+    return retval;
 }

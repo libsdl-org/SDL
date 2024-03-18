@@ -28,5 +28,17 @@ int SDL_SYS_RenamePath(const char *oldpath, const char *newpath);
 int SDL_SYS_CreateDirectory(const char *path);
 int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info);
 
+typedef struct SDL_GlobDirCallbackData
+{
+    const char *pattern;
+    SDL_IOStream *string_stream;
+    int num_entries;
+} SDL_GlobDirCallbackData;
+
+int SDL_InitGlobDirectoryCallback(const char *path, const char *pattern, SDL_GlobDirCallbackData *data);
+int SDLCALL SDL_GlobDirectoryCallback(void *userdata, const char *dirname, const char *fname);
+char **SDL_ProcessGlobDirectoryCallback(SDL_GlobDirCallbackData *data, int *count);
+void SDL_QuitGlobDirectoryCallback(SDL_GlobDirCallbackData *data);
+
 #endif
 
