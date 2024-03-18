@@ -1025,3 +1025,4 @@
 #define SDL_RenameStoragePath SDL_RenameStoragePath_REAL
 #define SDL_GetStoragePathInfo SDL_GetStoragePathInfo_REAL
 #define SDL_FileTimeFromWindows SDL_FileTimeFromWindows_REAL
+#define SDL_IOFromDynamicMem SDL_IOFromDynamicMem_REAL

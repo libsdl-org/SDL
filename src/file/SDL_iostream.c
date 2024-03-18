@@ -495,17 +495,18 @@ static size_t mem_io(void *userdata, void *dst, const void *src, size_t size)
 
 static size_t SDLCALL mem_read(void *userdata, void *ptr, size_t size, SDL_IOStatus *status)
 {
-    const IOStreamMemData *iodata = (IOStreamMemData *) userdata;
+    IOStreamMemData *iodata = (IOStreamMemData *) userdata;
     return mem_io(userdata, ptr, iodata->here, size);
 }
 
 static size_t SDLCALL mem_write(void *userdata, const void *ptr, size_t size, SDL_IOStatus *status)
 {
-    const IOStreamMemData *iodata = (IOStreamMemData *) userdata;
+    IOStreamMemData *iodata = (IOStreamMemData *) userdata;
     return mem_io(userdata, iodata->here, ptr, size);
 }
 
-static int SDLCALL mem_close(void *userdata) {
+static int SDLCALL mem_close(void *userdata)
+{
     SDL_free(userdata);
     return 0;
 }
@@ -731,6 +732,109 @@ SDL_IOStream *SDL_IOFromConstMem(const void *mem, size_t size)
     return iostr;
 }
 
+typedef struct IOStreamDynamicMemData
+{
+    SDL_IOStream *stream;
+    IOStreamMemData data;
+    Uint8 *end;
+} IOStreamDynamicMemData;
+
+static Sint64 SDLCALL dynamic_mem_size(void *userdata)
+{
+    IOStreamDynamicMemData *iodata = (IOStreamDynamicMemData *) userdata;
+    return mem_size(&iodata->data);
+}
+
+static Sint64 SDLCALL dynamic_mem_seek(void *userdata, Sint64 offset, int whence)
+{
+    IOStreamDynamicMemData *iodata = (IOStreamDynamicMemData *) userdata;
+    return mem_seek(&iodata->data, offset, whence);
+}
+
+static size_t SDLCALL dynamic_mem_read(void *userdata, void *ptr, size_t size, SDL_IOStatus *status)
+{
+    IOStreamDynamicMemData *iodata = (IOStreamDynamicMemData *) userdata;
+    return mem_io(&iodata->data, ptr, iodata->data.here, size);
+}
+
+static int dynamic_mem_realloc(IOStreamDynamicMemData *iodata, size_t size)
+{
+    size_t chunksize = (size_t)SDL_GetNumberProperty(SDL_GetIOProperties(iodata->stream), SDL_PROP_IOSTREAM_DYNAMIC_CHUNKSIZE_NUMBER, 0);
+    if (!chunksize) {
+        chunksize = 1024;
+    }
+
+    // We're intentionally allocating more memory than needed so it can be null terminated
+    size_t chunks = (((iodata->end - iodata->data.base) + size) / chunksize) + 1;
+    size_t length = (chunks * chunksize);
+    Uint8 *base = (Uint8 *)SDL_realloc(iodata->data.base, length);
+    if (!base) {
+        return -1;
+    }
+
+    size_t here_offset = (iodata->data.here - iodata->data.base);
+    size_t stop_offset = (iodata->data.stop - iodata->data.base);
+    iodata->data.base = base;
+    iodata->data.here = base + here_offset;
+    iodata->data.stop = base + stop_offset;
+    iodata->end = base + length;
+    return SDL_SetProperty(SDL_GetIOProperties(iodata->stream), SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, base);
+}
+
+static size_t SDLCALL dynamic_mem_write(void *userdata, const void *ptr, size_t size, SDL_IOStatus *status)
+{
+    IOStreamDynamicMemData *iodata = (IOStreamDynamicMemData *) userdata;
+    if (size > (iodata->data.stop - iodata->data.here)) {
+        if (size > (iodata->end - iodata->data.here)) {
+            if (dynamic_mem_realloc(iodata, size) < 0) {
+                return 0;
+            }
+        }
+        iodata->data.stop = iodata->data.here + size;
+    }
+    return mem_io(&iodata->data, iodata->data.here, ptr, size);
+}
+
+static int SDLCALL dynamic_mem_close(void *userdata)
+{
+    const IOStreamDynamicMemData *iodata = (IOStreamDynamicMemData *) userdata;
+    void *mem = SDL_GetProperty(SDL_GetIOProperties(iodata->stream), SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, NULL);
+    if (mem) {
+        SDL_free(mem);
+    }
+    SDL_free(userdata);
+    return 0;
+}
+
+SDL_IOStream *SDL_IOFromDynamicMem(void)
+{
+    IOStreamDynamicMemData *iodata = (IOStreamDynamicMemData *) SDL_malloc(sizeof (*iodata));
+    if (!iodata) {
+        return NULL;
+    }
+
+    SDL_IOStreamInterface iface;
+    SDL_zero(iface);
+    iface.size = dynamic_mem_size;
+    iface.seek = dynamic_mem_seek;
+    iface.read = dynamic_mem_read;
+    iface.write = dynamic_mem_write;
+    iface.close = dynamic_mem_close;
+
+    iodata->data.base = NULL;
+    iodata->data.here = NULL;
+    iodata->data.stop = NULL;
+    iodata->end = NULL;
+
+    SDL_IOStream *iostr = SDL_OpenIO(&iface, iodata);
+    if (iostr) {
+        iodata->stream = iostr;
+    } else {
+        SDL_free(iodata);
+    }
+    return iostr;
+}
+
 SDL_IOStatus SDL_GetIOStatus(SDL_IOStream *context)
 {
     if (!context) {
@@ -739,7 +843,6 @@ SDL_IOStatus SDL_GetIOStatus(SDL_IOStream *context)
     }
     return context->status;
 }
-
 
 SDL_IOStream *SDL_OpenIO(const SDL_IOStreamInterface *iface, void *userdata)
 {

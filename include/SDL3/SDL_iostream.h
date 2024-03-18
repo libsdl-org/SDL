@@ -189,8 +189,6 @@ typedef struct SDL_IOStream SDL_IOStream;
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_IOFromConstMem
- * \sa SDL_IOFromMem
  * \sa SDL_CloseIO
  * \sa SDL_ReadIO
  * \sa SDL_SeekIO
@@ -201,7 +199,7 @@ extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromFile(const char *file, const cha
 
 #define SDL_PROP_IOSTREAM_WINDOWS_HANDLE_POINTER "SDL.iostream.windows.handle"
 #define SDL_PROP_IOSTREAM_STDIO_HANDLE_POINTER "SDL.iostream.stdio.handle"
-#define SDL_PROP_IOSTREAM_ANDROID_AASSET_POINTER "SDL.opstream.android.aasset"
+#define SDL_PROP_IOSTREAM_ANDROID_AASSET_POINTER "SDL.iostream.android.aasset"
 
 /**
  * Use this function to prepare a read-write memory buffer for use with
@@ -226,8 +224,6 @@ extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromFile(const char *file, const cha
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_IOFromConstMem
- * \sa SDL_IOFromFile
- * \sa SDL_IOFromMem
  * \sa SDL_CloseIO
  * \sa SDL_ReadIO
  * \sa SDL_SeekIO
@@ -260,8 +256,6 @@ extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromMem(void *mem, size_t size);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_IOFromConstMem
- * \sa SDL_IOFromFile
  * \sa SDL_IOFromMem
  * \sa SDL_CloseIO
  * \sa SDL_ReadIO
@@ -269,6 +263,29 @@ extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromMem(void *mem, size_t size);
  * \sa SDL_TellIO
  */
 extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromConstMem(const void *mem, size_t size);
+
+/**
+ * Use this function to create an SDL_IOStream that is backed by dynamically allocated memory.
+ *
+ * This supports the following properties to provide access to the memory and control over allocations:
+ * - `SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER`: a pointer to the internal memory of the stream. This can be set to NULL to transfer ownership of the memory to the application, which should free the memory with SDL_free(). If this is done, the next operation on the stream must be SDL_CloseIO().
+ * - `SDL_PROP_IOSTREAM_DYNAMIC_CHUNKSIZE_NUMBER`: memory will be allocated in multiples of this size, defaulting to 1024.
+ *
+ * \returns a pointer to a new SDL_IOStream structure, or NULL if it fails;
+ *          call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CloseIO
+ * \sa SDL_ReadIO
+ * \sa SDL_SeekIO
+ * \sa SDL_TellIO
+ * \sa SDL_WriteIO
+ */
+extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromDynamicMem(void);
+
+#define SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER    "SDL.iostream.dynamic.memory"
+#define SDL_PROP_IOSTREAM_DYNAMIC_CHUNKSIZE_NUMBER  "SDL.iostream.dynamic.chunksize"
 
 /* @} *//* IOFrom functions */
 
