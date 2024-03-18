@@ -198,6 +198,8 @@
     </Filter>
     <Filter Include="time\windows">
       <UniqueIdentifier>{0000d7fda065b13b0ca4ab262c380000}</UniqueIdentifier>
+    <Filter Include="gpu">
+      <UniqueIdentifier>{098fbef9-d8a0-4b3b-b57b-d157d395335d}</UniqueIdentifier>
     </Filter>
     <Filter Include="dialog">
       <UniqueIdentifier>{00008dfdfa0190856fbf3c7db52d0000}</UniqueIdentifier>
@@ -907,6 +909,14 @@
     </ClInclude>
     <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenwindow.h">
       <Filter>video\offscreen</Filter>
+    <ClInclude Include="..\..\include\SDL3\SDL_gpu.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\gpu\SDL_sysgpu.h">
+      <Filter>gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan_vkfuncs.h">
+      <Filter>gpu</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1561,6 +1571,18 @@
     </ClCompile>
     <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenwindow.c">
       <Filter>video\offscreen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\gpu\SDL_gpu.c">
+      <Filter>gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\gpu\d3d11\SDL_gpu_d3d11.c">
+      <Filter>gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\gpu\d3d12\SDL_gpu_d3d12.c">
+      <Filter>gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan.c">
+      <Filter>gpu</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -426,6 +426,7 @@
 #cmakedefine SDL_VIDEO_RENDER_PS2 @SDL_VIDEO_RENDER_PS2@
 #cmakedefine SDL_VIDEO_RENDER_PSP @SDL_VIDEO_RENDER_PSP@
 #cmakedefine SDL_VIDEO_RENDER_VITA_GXM @SDL_VIDEO_RENDER_VITA_GXM@
+#cmakedefine SDL_VIDEO_RENDER_GPU @SDL_VIDEO_RENDER_GPU@
 
 /* Enable OpenGL support */
 #cmakedefine SDL_VIDEO_OPENGL @SDL_VIDEO_OPENGL@
@@ -444,6 +445,12 @@
 
 /* Enable Metal support */
 #cmakedefine SDL_VIDEO_METAL @SDL_VIDEO_METAL@
+
+/* Enable GPU support */
+#cmakedefine SDL_GPU_D3D11 @SDL_GPU_D3D11@
+#cmakedefine SDL_GPU_D3D12 @SDL_GPU_D3D12@
+#cmakedefine SDL_GPU_VULKAN @SDL_GPU_VULKAN@
+#cmakedefine SDL_GPU_METAL @SDL_GPU_METAL@
 
 /* Enable system power support */
 #cmakedefine SDL_POWER_ANDROID @SDL_POWER_ANDROID@
