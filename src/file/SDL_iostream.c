@@ -784,8 +784,8 @@ static int dynamic_mem_realloc(IOStreamDynamicMemData *iodata, size_t size)
 static size_t SDLCALL dynamic_mem_write(void *userdata, const void *ptr, size_t size, SDL_IOStatus *status)
 {
     IOStreamDynamicMemData *iodata = (IOStreamDynamicMemData *) userdata;
-    if (size > (iodata->data.stop - iodata->data.here)) {
-        if (size > (iodata->end - iodata->data.here)) {
+    if (size > (size_t)(iodata->data.stop - iodata->data.here)) {
+        if (size > (size_t)(iodata->end - iodata->data.here)) {
             if (dynamic_mem_realloc(iodata, size) < 0) {
                 return 0;
             }
