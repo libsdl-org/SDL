@@ -290,6 +290,13 @@ int SDL_RenameStoragePath(SDL_Storage *storage, const char *oldpath, const char 
 
 int SDL_GetStoragePathInfo(SDL_Storage *storage, const char *path, SDL_PathInfo *info)
 {
+    SDL_PathInfo dummy;
+
+    if (!info) {
+        info = &dummy;
+    }
+    SDL_zerop(info);
+
     CHECK_STORAGE_MAGIC()
 
     if (!path) {

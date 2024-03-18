@@ -239,9 +239,10 @@ extern DECLSPEC char *SDLCALL SDL_GetUserFolder(SDL_Folder folder);
 
 typedef enum SDL_PathType
 {
-    SDL_PATHTYPE_FILE, /**< a normal file */
+    SDL_PATHTYPE_NONE,      /**< path does not exist */
+    SDL_PATHTYPE_FILE,      /**< a normal file */
     SDL_PATHTYPE_DIRECTORY, /**< a directory */
-    SDL_PATHTYPE_OTHER /**< something completely different like a device node (not a symlink, those are always followed) */
+    SDL_PATHTYPE_OTHER      /**< something completely different like a device node (not a symlink, those are always followed) */
 } SDL_PathType;
 
 /* SDL file times are 64-bit integers representing nanoseconds since the Unix epoch (Jan 1, 1970)
@@ -313,8 +314,8 @@ extern DECLSPEC int SDLCALL SDL_RenamePath(const char *oldpath, const char *newp
  * Get information about a filesystem path.
  *
  * \param path the path to query
- * \param info a pointer filled in with information about the path
- * \returns 0 on success or a negative error code on failure; call
+ * \param info a pointer filled in with information about the path, or NULL to check for the existence of a file
+ * \returns 0 on success or a negative error code if the file doesn't exist, or another failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
