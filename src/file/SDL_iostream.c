@@ -415,7 +415,7 @@ static SDL_IOStream *SDL_IOFromFP(FILE *fp, SDL_bool autoclose)
 
     SDL_IOStreamInterface iface;
     SDL_zero(iface);
-    // There's no stdio_size because SDL_SizeIO emulates it the same way we'd do it for stdio anyhow.
+    // There's no stdio_size because SDL_GetIOSize emulates it the same way we'd do it for stdio anyhow.
     iface.seek = stdio_seek;
     iface.read = stdio_read;
     iface.write = stdio_write;
@@ -886,7 +886,7 @@ void *SDL_LoadFile_IO(SDL_IOStream *src, size_t *datasize, SDL_bool closeio)
         goto done;
     }
 
-    size = SDL_SizeIO(src);
+    size = SDL_GetIOSize(src);
     if (size < 0) {
         size = FILE_CHUNK_SIZE;
         loading_chunks = SDL_TRUE;
@@ -958,7 +958,7 @@ SDL_PropertiesID SDL_GetIOProperties(SDL_IOStream *context)
     return context->props;
 }
 
-Sint64 SDL_SizeIO(SDL_IOStream *context)
+Sint64 SDL_GetIOSize(SDL_IOStream *context)
 {
     if (!context) {
         return SDL_InvalidParamError("context");

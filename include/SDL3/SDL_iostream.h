@@ -385,7 +385,7 @@ extern DECLSPEC SDL_IOStatus SDLCALL SDL_GetIOStatus(SDL_IOStream *context);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC Sint64 SDLCALL SDL_SizeIO(SDL_IOStream *context);
+extern DECLSPEC Sint64 SDLCALL SDL_GetIOSize(SDL_IOStream *context);
 
 /**
  * Seek within an SDL_IOStream data stream.

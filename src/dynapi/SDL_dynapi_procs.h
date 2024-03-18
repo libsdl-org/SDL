@@ -538,7 +538,7 @@ SDL_DYNAPI_PROC(SDL_IOStream*,SDL_IOFromFile,(const char *a, const char *b),(a,b
 SDL_DYNAPI_PROC(SDL_IOStream*,SDL_IOFromMem,(void *a, size_t b),(a,b),return)
 SDL_DYNAPI_PROC(size_t,SDL_ReadIO,(SDL_IOStream *a, void *b, size_t c),(a,b,c),return)
 SDL_DYNAPI_PROC(Sint64,SDL_SeekIO,(SDL_IOStream *a, Sint64 b, int c),(a,b,c),return)
-SDL_DYNAPI_PROC(Sint64,SDL_SizeIO,(SDL_IOStream *a),(a),return)
+SDL_DYNAPI_PROC(Sint64,SDL_GetIOSize,(SDL_IOStream *a),(a),return)
 SDL_DYNAPI_PROC(Sint64,SDL_TellIO,(SDL_IOStream *a),(a),return)
 SDL_DYNAPI_PROC(size_t,SDL_WriteIO,(SDL_IOStream *a, const void *b, size_t c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_RaiseWindow,(SDL_Window *a),(a),return)

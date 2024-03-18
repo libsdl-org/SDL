@@ -1904,7 +1904,7 @@ static const void *SDLTest_ScreenShotClipboardProvider(void *context, const char
 
         file = SDL_IOFromFile(SCREENSHOT_FILE, "r");
         if (file) {
-            size_t length = (size_t)SDL_SizeIO(file);
+            size_t length = (size_t)SDL_GetIOSize(file);
             void *image = SDL_malloc(length);
             if (image) {
                 if (SDL_ReadIO(file, image, length) != length) {
