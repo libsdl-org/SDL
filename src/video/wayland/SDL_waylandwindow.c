@@ -1484,10 +1484,7 @@ static void exported_handle_handler(void *data, struct zxdg_exported_v2 *zxdg_ex
     SDL_WindowData *wind = (SDL_WindowData*)data;
     SDL_PropertiesID props = SDL_GetWindowProperties(wind->sdlwindow);
 
-    SDL_free(wind->export_handle);
-    wind->export_handle = SDL_strdup(handle);
-
-    SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_POINTER, wind->export_handle);
+    SDL_SetStringProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_STRING, handle);
 }
 
 static struct zxdg_exported_v2_listener exported_v2_listener = {
@@ -1823,10 +1820,7 @@ void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
         zxdg_exported_v2_destroy(wind->exported);
         wind->exported = NULL;
 
-        SDL_free(wind->export_handle);
-        wind->export_handle = NULL;
-
-        SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_POINTER, NULL);
+        SDL_SetStringProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_STRING, NULL);
     }
 
 #ifdef HAVE_LIBDECOR_H

@@ -285,7 +285,7 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
 
     handle_str = default_parent_window;
     if (props) {
-        const char *parent_handle = SDL_GetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_POINTER, NULL);
+        const char *parent_handle = SDL_GetStringProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_STRING, NULL);
         if (parent_handle) {
             size_t len = SDL_strlen(parent_handle);
             len += sizeof(WAYLAND_HANDLE_PREFIX) + 1;

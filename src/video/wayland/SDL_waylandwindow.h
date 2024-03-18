@@ -105,7 +105,6 @@ struct SDL_WindowData
     SDL_Window *keyboard_focus;
 
     char *app_id;
-    char *export_handle;
     float windowed_scale_factor;
 
     struct
