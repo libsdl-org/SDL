@@ -268,7 +268,11 @@ extern DECLSPEC int SDL_WriteStorageFile(SDL_Storage *storage, const char *path,
 extern DECLSPEC int SDLCALL SDL_CreateStorageDirectory(SDL_Storage *storage, const char *path);
 
 /**
- * Enumerate a directory in a storage container.
+ * Enumerate a directory in a storage container through a callback function.
+ *
+ * This function provides every directory entry through an app-provided
+ * callback, called once for each directory entry, until all results have
+ * been provided or the callback returns <= 0.
  *
  * \param storage a storage container
  * \param path the path of the directory to enumerate
@@ -340,6 +344,40 @@ extern DECLSPEC int SDLCALL SDL_GetStoragePathInfo(SDL_Storage *storage, const c
  * \sa SDL_WriteStorageFile
  */
 extern DECLSPEC Uint64 SDLCALL SDL_GetStorageSpaceRemaining(SDL_Storage *storage);
+
+/**
+ * Enumerate a directory tree, filtered by pattern, and return a list.
+ *
+ * Files are filtered out if they don't match the string in `pattern`, which
+ * may contain wildcard characters '*' (match everything) and '?' (match one
+ * character). If pattern is NULL, no filtering is done and all results are
+ * returned. Subdirectories are permitted, and are specified with a path
+ * separator of '/'. Wildcard characters '*' and '?' never match a path
+ * separator.
+ *
+ * `flags` may be set to SDL_GLOBDIR_CASEINSENSITIVE to make the pattern
+ * matching case-insensitive.
+ *
+ * The returned array is always NULL-terminated, for your iterating
+ * convenience, but if `count` is non-NULL, on return it will contain the
+ * number of items in the array, not counting the NULL terminator.
+ *
+ * You must free the returned pointer with SDL_free() when done with it.
+ *
+ * \param storage a storage container
+ * \param path the path of the directory to enumerate
+ * \param pattern the pattern that files in the directory must match. Can be NULL.
+ * \param flags `SDL_GLOBDIR_*` bitflags that affect this search.
+ * \param count on return, will be set to the number of items in the returned array. Can be NULL.
+ * \returns an array of strings on success or NULL on failure; call
+ *          SDL_GetError() for more information. The caller should pass the
+ *          returned pointer to SDL_free when done with it.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \threadsafety It is safe to call this function from any thread, assuming the `storage` object is thread-safe.
+ */
+extern DECLSPEC char **SDLCALL SDL_GlobStorageDirectory(SDL_Storage *storage, const char *path, const char *pattern, Uint32 flags, int *count);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

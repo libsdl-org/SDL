@@ -506,6 +506,8 @@
 #define SDL_GetWindowSizeInPixels SDL_GetWindowSizeInPixels_REAL
 #define SDL_GetWindowSurface SDL_GetWindowSurface_REAL
 #define SDL_GetWindowTitle SDL_GetWindowTitle_REAL
+#define SDL_GlobDirectory SDL_GlobDirectory_REAL
+#define SDL_GlobStorageDirectory SDL_GlobStorageDirectory_REAL
 #define SDL_HapticEffectSupported SDL_HapticEffectSupported_REAL
 #define SDL_HapticRumbleSupported SDL_HapticRumbleSupported_REAL
 #define SDL_HasARMSIMD SDL_HasARMSIMD_REAL

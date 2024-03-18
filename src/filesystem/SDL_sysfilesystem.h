@@ -28,5 +28,9 @@ int SDL_SYS_RenamePath(const char *oldpath, const char *newpath);
 int SDL_SYS_CreateDirectory(const char *path);
 int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info);
 
+typedef int (*SDL_GlobEnumeratorFunc)(const char *path, SDL_EnumerateDirectoryCallback cb, void *cbuserdata, void *userdata);
+typedef int (*SDL_GlobGetPathInfoFunc)(const char *path, SDL_PathInfo *info, void *userdata);
+char **SDL_InternalGlobDirectory(const char *path, const char *pattern, Uint32 flags, int *count, SDL_GlobEnumeratorFunc enumerator, SDL_GlobGetPathInfoFunc getpathinfo, void *userdata);
+
 #endif
 
