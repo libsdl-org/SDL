@@ -346,7 +346,7 @@ static int iostrm_testDynamicMem(void *arg)
     mem = (char *)SDL_GetProperty(props, SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, NULL);
     SDLTest_AssertPass("Call to SDL_GetProperty(props, SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, NULL) succeeded");
     SDLTest_AssertCheck(mem != NULL, "Verify memory value is not NULL");
-    mem[SDL_SizeIO(rw)] = '\0';
+    mem[SDL_GetIOSize(rw)] = '\0';
     SDLTest_AssertCheck(SDL_strcmp(mem, IOStreamHelloWorldTestString) == 0, "Verify memory value is correct");
 
     /* Take the memory and free it ourselves */

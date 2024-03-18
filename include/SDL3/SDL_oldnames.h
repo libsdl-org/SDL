@@ -464,7 +464,7 @@
 #define SDL_RWops SDL_IOStream
 #define SDL_RWread SDL_ReadIO
 #define SDL_RWseek SDL_SeekIO
-#define SDL_RWsize SDL_SizeIO
+#define SDL_RWsize SDL_GetIOSize
 #define SDL_RWtell SDL_TellIO
 #define SDL_RWwrite SDL_WriteIO
 #define SDL_ReadBE16 SDL_ReadU16BE
@@ -965,7 +965,7 @@
 #define SDL_RWops SDL_RWops_renamed_SDL_IOStream
 #define SDL_RWread SDL_RWread_renamed_SDL_ReadIO
 #define SDL_RWseek SDL_RWseek_renamed_SDL_SeekIO
-#define SDL_RWsize SDL_RWsize_renamed_SDL_SizeIO
+#define SDL_RWsize SDL_RWsize_renamed_SDL_GetIOSize
 #define SDL_RWtell SDL_RWtell_renamed_SDL_TellIO
 #define SDL_RWwrite SDL_RWwrite_renamed_SDL_WriteIO
 #define SDL_ReadBE16 SDL_ReadBE16_renamed_SDL_ReadU16BE

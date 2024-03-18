@@ -1296,7 +1296,7 @@ SDL_IOStream *SDL_RWFromFP(FILE *fp, SDL_bool autoclose)
     }
 
     SDL_zero(iface);
-    /* There's no stdio_size because SDL_SizeIO emulates it the same way we'd do it for stdio anyhow. */
+    /* There's no stdio_size because SDL_GetIOSize emulates it the same way we'd do it for stdio anyhow. */
     iface.seek = stdio_seek;
     iface.read = stdio_read;
     iface.write = stdio_write;
@@ -1325,7 +1325,7 @@ The following functions have been renamed:
 * SDL_RWclose() => SDL_CloseIO()
 * SDL_RWread() => SDL_ReadIO()
 * SDL_RWseek() => SDL_SeekIO()
-* SDL_RWsize() => SDL_SizeIO()
+* SDL_RWsize() => SDL_GetIOSize()
 * SDL_RWtell() => SDL_TellIO()
 * SDL_RWwrite() => SDL_WriteIO()
 * SDL_ReadBE16() => SDL_ReadU16BE()

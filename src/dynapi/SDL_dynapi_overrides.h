@@ -493,7 +493,7 @@
 #define SDL_IOFromMem SDL_IOFromMem_REAL
 #define SDL_ReadIO SDL_ReadIO_REAL
 #define SDL_SeekIO SDL_SeekIO_REAL
-#define SDL_SizeIO SDL_SizeIO_REAL
+#define SDL_GetIOSize SDL_GetIOSize_REAL
 #define SDL_TellIO SDL_TellIO_REAL
 #define SDL_WriteIO SDL_WriteIO_REAL
 #define SDL_RaiseWindow SDL_RaiseWindow_REAL
