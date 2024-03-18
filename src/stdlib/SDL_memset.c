@@ -67,8 +67,10 @@ void *SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
     switch (left) {
     case 3:
         *dstp1++ = value1;
+        SDL_FALLTHROUGH;
     case 2:
         *dstp1++ = value1;
+        SDL_FALLTHROUGH;
     case 1:
         *dstp1++ = value1;
     }
@@ -121,11 +123,11 @@ void *SDL_memset4(void *dst, Uint32 val, size_t dwords)
 #ifndef HAVE_LIBC
 /* NOLINTNEXTLINE(readability-redundant-declaration) */
 extern void *memset(void *dst, int c, size_t len);
-#ifndef __INTEL_LLVM_COMPILER
+#if defined(_MSC_VER) && !defined(__INTEL_LLVM_COMPILER)
 #pragma intrinsic(memset)
 #endif
 
-#ifndef __clang__
+#if defined(_MSC_VER) && !defined(__clang__)
 #pragma function(memset)
 #endif
 /* NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) */
