@@ -354,6 +354,7 @@ add_sdl_test_executable(testcontroller TESTUTILS SOURCES testcontroller.c gamepa
 add_sdl_test_executable(testgeometry TESTUTILS SOURCES testgeometry.c)
 add_sdl_test_executable(testgl SOURCES testgl.c)
 add_sdl_test_executable(testgles SOURCES testgles.c)
+add_sdl_test_executable(testgpu_spinning_cube SOURCES testgpu_spinning_cube.c)
 if(ANDROID)
     target_link_libraries(testgles PRIVATE GLESv1_CM)
 elseif(IOS OR TVOS)

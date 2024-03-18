@@ -250,6 +250,7 @@ endmacro()
 
 define_sdl_subsystem(Audio)
 define_sdl_subsystem(Video)
+define_sdl_subsystem(Gpu DEPS SDL_VIDEO)
 define_sdl_subsystem(Render DEPS SDL_VIDEO)
 define_sdl_subsystem(Camera DEPS SDL_VIDEO)
 define_sdl_subsystem(Joystick)
@@ -378,6 +379,12 @@ if(VITA)
   set_option(VIDEO_VITA_PVR  "Build with PSVita PVR gles/gles2 support" OFF)
 endif()
 
+# FIXME: Eventually this will use pkgconfig:
+# https://github.com/doitsujin/dxvk/pull/3834
+if(LINUX)
+  option(SDL_USE_DXVK "Build with dxvk-native support" OFF)
+endif()
+
 set(HAVE_STATIC_PIC "${SDL_STATIC_PIC}")
 
 if(NOT (SDL_SHARED OR SDL_STATIC))
@@ -485,6 +492,8 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/events/*.c"
   "${SDL3_SOURCE_DIR}/src/file/*.c"
   "${SDL3_SOURCE_DIR}/src/filesystem/*.c"
+  "${SDL3_SOURCE_DIR}/src/gpu/*.c"
+  "${SDL3_SOURCE_DIR}/src/gpu/*/*.c"
   "${SDL3_SOURCE_DIR}/src/joystick/*.c"
   "${SDL3_SOURCE_DIR}/src/haptic/*.c"
   "${SDL3_SOURCE_DIR}/src/hidapi/*.c"
@@ -2350,6 +2359,10 @@ elseif(APPLE)
           set(SDL_VIDEO_RENDER_METAL 1)
           set(HAVE_RENDER_METAL TRUE)
         endif()
+        if (SDL_GPU)
+          set(SDL_GPU_METAL 1)
+          sdl_glob_sources("${SDL3_SOURCE_DIR}/src/gpu/metal/*.m")
+        endif()
       endif()
     endif()
   endif()
@@ -2908,6 +2921,18 @@ if(SDL_VIDEO)
   endif()
 endif()
 
+if(SDL_GPU)
+  if(SDL_VIDEO_RENDER_D3D11 OR SDL_USE_DXVK)
+    set(SDL_GPU_D3D11 1)
+    set(HAVE_SDL_GPU TRUE)
+  endif()
+
+  if(SDL_VIDEO_VULKAN)
+    set(SDL_GPU_VULKAN 1)
+    set(HAVE_SDL_GPU TRUE)
+  endif()
+endif()
+
 # Dummies
 # configure.ac does it differently:
 # if not have X
@@ -3304,6 +3329,16 @@ if(SDL_SHARED)
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
       "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/src>"
   )
+  if(SDL_USE_DXVK)
+    # FIXME: Eventually this will use pkgconfig:
+    # https://github.com/doitsujin/dxvk/pull/3834
+    target_include_directories(SDL3-shared
+      PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../dxvk/include/native/directx>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../dxvk/include/native/windows>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../dxvk/include/native/wsi>
+    )
+  endif()
   target_link_libraries(SDL3-shared PUBLIC $<TARGET_NAME:SDL3::Headers>)
   if(MINGW OR CYGWIN)
     target_link_options(SDL3-shared PRIVATE -static-libgcc)
@@ -3332,6 +3367,16 @@ if(SDL_STATIC)
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
       "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/src>"
   )
+  if(SDL_USE_DXVK)
+    # FIXME: Eventually this will use pkgconfig:
+    # https://github.com/doitsujin/dxvk/pull/3834
+    target_include_directories(SDL3-static
+      PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../dxvk/include/native/directx>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../dxvk/include/native/windows>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../dxvk/include/native/wsi>
+    )
+  endif()
   target_link_libraries(SDL3-static PUBLIC $<TARGET_NAME:SDL3::Headers>)
   # Use `Compatible Interface Properties` to:
   # - allow consumers to enforce a shared/static library
