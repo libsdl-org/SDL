@@ -105,6 +105,11 @@ function(SDL_AddCommonCompilerFlags TARGET)
     if(HAVE_GCC_WUNUSED_LOCAL_TYPEDEFS)
       sdl_target_compile_option_all_languages(${TARGET} "-Wno-unused-local-typedefs")
     endif()
+
+    check_c_compiler_flag(-Wimplicit-fallthrough HAVE_GCC_WIMPLICIT_FALLTHROUGH)
+    if(HAVE_GCC_WIMPLICIT_FALLTHROUGH)
+      sdl_target_compile_option_all_languages(${TARGET} "-Wimplicit-fallthrough")
+    endif()
   endif()
 
   if(SDL_WERROR)

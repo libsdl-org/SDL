@@ -188,6 +188,7 @@ static int audio_initOpenCloseQuitAudio(void *arg)
                 desired.freq = 22050;
                 desired.format = SDL_AUDIO_S16;
                 desired.channels = 2;
+                break;
 
             case 1:
                 /* Set custom desired spec */
