@@ -317,9 +317,10 @@ extern DECLSPEC int SDLCALL SDL_RenameStoragePath(SDL_Storage *storage, const ch
  *
  * \param storage a storage container
  * \param path the path to query
- * \param info a pointer filled in with information about the path, or NULL to check for the existence of a file
- * \returns 0 on success or a negative error code if the file doesn't exist, or another failure; call
- *          SDL_GetError() for more information.
+ * \param info a pointer filled in with information about the path, or NULL to
+ *             check for the existence of a file
+ * \returns 0 on success or a negative error code if the file doesn't exist,
+ *          or another failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
