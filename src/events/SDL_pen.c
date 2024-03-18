@@ -269,7 +269,7 @@ static void pen_sort(void)
               pen_compare);
     pen_handler.sorted = SDL_TRUE;
 }
-
+#include<stdio.h>
 SDL_Pen *SDL_PenModifyBegin(Uint32 instance_id)
 {
     SDL_PenID id = { 0 };
@@ -357,6 +357,7 @@ void SDL_PenModifyEnd(SDL_Pen *pen, SDL_bool attach)
             attach = SDL_FALSE;
         } else {
             pen_handler.pens_known -= 1;
+            SDL_free(pen->name);
             SDL_memset(pen, 0, sizeof(SDL_Pen));
             SDL_UNLOCK_PENS();
             return;
@@ -828,6 +829,8 @@ void SDL_PenInit(void)
 
 void SDL_PenQuit(void)
 {
+    unsigned int i;
+
     SDL_DelHintCallback(SDL_HINT_PEN_NOT_MOUSE,
                         SDL_PenUpdateHint, &pen_mouse_emulation_mode);
 
@@ -837,6 +840,15 @@ void SDL_PenQuit(void)
     SDL_DestroyMutex(SDL_pen_access_lock);
     SDL_pen_access_lock = NULL;
 #endif
+
+    if (pen_handler.pens) {
+        for (i = 0; i < pen_handler.pens_known; ++i) {
+            SDL_free(pen_handler.pens[i].name);
+        }
+        SDL_free(pen_handler.pens);
+        /* Reset static pen information */
+        SDL_memset(&pen_handler, 0, sizeof(pen_handler));
+    }
 }
 
 SDL_bool SDL_PenPerformHitTest(void)
