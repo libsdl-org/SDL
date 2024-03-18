@@ -313,6 +313,55 @@ static int iostrm_testConstMem(void *arg)
 }
 
 /**
+ * Tests dynamic memory
+ *
+ * \sa SDL_IOFromDynamicMem
+ * \sa SDL_CloseIO
+ */
+static int iostrm_testDynamicMem(void *arg)
+{
+    SDL_IOStream *rw;
+    SDL_PropertiesID props;
+    char *mem;
+    int result;
+
+    /* Open */
+    rw = SDL_IOFromDynamicMem();
+    SDLTest_AssertPass("Call to SDL_IOFromDynamicMem() succeeded");
+    SDLTest_AssertCheck(rw != NULL, "Verify opening memory with SDL_IOFromDynamicMem does not return NULL");
+
+    /* Bail out if NULL */
+    if (rw == NULL) {
+        return TEST_ABORTED;
+    }
+
+    /* Set the chunk size to 1 byte */
+    props = SDL_GetIOProperties(rw);
+    SDL_SetNumberProperty(props, SDL_PROP_IOSTREAM_DYNAMIC_CHUNKSIZE_NUMBER, 1);
+
+    /* Run generic tests */
+    testGenericIOStreamValidations(rw, SDL_TRUE);
+
+    /* Get the dynamic memory and verify it */
+    mem = (char *)SDL_GetProperty(props, SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, NULL);
+    SDLTest_AssertPass("Call to SDL_GetProperty(props, SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, NULL) succeeded");
+    SDLTest_AssertCheck(mem != NULL, "Verify memory value is not NULL");
+    mem[SDL_SizeIO(rw)] = '\0';
+    SDLTest_AssertCheck(SDL_strcmp(mem, IOStreamHelloWorldTestString) == 0, "Verify memory value is correct");
+
+    /* Take the memory and free it ourselves */
+    SDL_SetProperty(props, SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, NULL);
+    SDL_free(mem);
+
+    /* Close */
+    result = SDL_CloseIO(rw);
+    SDLTest_AssertPass("Call to SDL_CloseIO() succeeded");
+    SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
+
+    return TEST_COMPLETED;
+}
+
+/**
  * Tests reading from file.
  *
  * \sa SDL_IOFromFile
@@ -614,29 +663,33 @@ static const SDLTest_TestCaseReference iostrmTest3 = {
 };
 
 static const SDLTest_TestCaseReference iostrmTest4 = {
-    (SDLTest_TestCaseFp)iostrm_testFileRead, "iostrm_testFileRead", "Tests reading from a file", TEST_ENABLED
+    (SDLTest_TestCaseFp)iostrm_testDynamicMem, "iostrm_testDynamicMem", "Tests opening dynamic memory", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference iostrmTest5 = {
-    (SDLTest_TestCaseFp)iostrm_testFileWrite, "iostrm_testFileWrite", "Test writing to a file", TEST_ENABLED
+    (SDLTest_TestCaseFp)iostrm_testFileRead, "iostrm_testFileRead", "Tests reading from a file", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference iostrmTest6 = {
-    (SDLTest_TestCaseFp)iostrm_testAllocFree, "iostrm_testAllocFree", "Test alloc and free of RW context", TEST_ENABLED
+    (SDLTest_TestCaseFp)iostrm_testFileWrite, "iostrm_testFileWrite", "Test writing to a file", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference iostrmTest7 = {
-    (SDLTest_TestCaseFp)iostrm_testFileWriteReadEndian, "iostrm_testFileWriteReadEndian", "Test writing and reading via the Endian aware functions", TEST_ENABLED
+    (SDLTest_TestCaseFp)iostrm_testAllocFree, "iostrm_testAllocFree", "Test alloc and free of RW context", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference iostrmTest8 = {
+    (SDLTest_TestCaseFp)iostrm_testFileWriteReadEndian, "iostrm_testFileWriteReadEndian", "Test writing and reading via the Endian aware functions", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference iostrmTest9 = {
     (SDLTest_TestCaseFp)iostrm_testCompareRWFromMemWithRWFromFile, "iostrm_testCompareRWFromMemWithRWFromFile", "Compare RWFromMem and RWFromFile IOStream for read and seek", TEST_ENABLED
 };
 
 /* Sequence of IOStream test cases */
 static const SDLTest_TestCaseReference *iostrmTests[] = {
     &iostrmTest1, &iostrmTest2, &iostrmTest3, &iostrmTest4, &iostrmTest5, &iostrmTest6,
-    &iostrmTest7, &iostrmTest8, NULL
+    &iostrmTest7, &iostrmTest8, &iostrmTest9, NULL
 };
 
 /* IOStream test suite (global) */
