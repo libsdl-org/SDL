@@ -200,6 +200,10 @@
 #define SDL_VIDEO_RENDER_D3D12  1
 #endif
 
+#if !defined(SDL_GPU_D3D12)
+#define SDL_GPU_D3D12 1
+#endif
+
 /* Enable OpenGL support */
 #ifndef SDL_VIDEO_OPENGL
 #define SDL_VIDEO_OPENGL    1
